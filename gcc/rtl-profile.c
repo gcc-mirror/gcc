@@ -64,6 +64,16 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree.h"
 #include "ggc.h"
 
+/* Do initialization work for the edge profiler.  */
+
+static void
+rtl_init_edge_profiler (void)
+{
+  /* gen_edge_profiler calls safe_insert_insn_on_edge which needs
+     register liveness data to be available.  */
+  life_analysis (NULL, 0);
+}
+
 /* Output instructions as RTL to increment the edge execution count.  */
 
 static void
@@ -85,7 +95,7 @@ rtl_gen_edge_profiler (int edgeno, edge e)
 
   sequence = get_insns ();
   end_sequence ();
-  insert_insn_on_edge (sequence, e);
+  safe_insert_insn_on_edge (sequence, e);
   rebuild_jump_labels (e->insns.r);
 }
 
@@ -413,6 +423,7 @@ static FILE *rtl_profile_dump_file (void) {
 
 struct profile_hooks rtl_profile_hooks =
 {
+  rtl_init_edge_profiler,
   rtl_gen_edge_profiler,
   rtl_gen_interval_profiler,
   rtl_gen_pow2_profiler,

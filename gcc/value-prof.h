@@ -80,6 +80,10 @@ extern bool value_profile_transformations (void);
 
 /* External declarations for edge-based profiling.  */
 struct profile_hooks {
+
+  /* Insert code to initialize edge profiler.  */
+  void (*init_edge_profiler) (void);
+
   /* Insert code to increment an edge count.  */
   void (*gen_edge_profiler) (int, edge);
 

@@ -69,6 +69,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "value-prof.h"
 
 
+
+/* Do initialization work for the edge profiler.  */
+
+static void
+tree_init_edge_profiler (void)
+{
+}
+
 /* Output instructions as GIMPLE trees to increment the edge 
    execution count, and insert them on E.  We rely on 
    bsi_insert_on_edge to preserve the order.  */
@@ -195,6 +203,7 @@ struct tree_opt_pass pass_tree_profile =
 
 struct profile_hooks tree_profile_hooks =
 {
+  tree_init_edge_profiler,      /* init_edge_profiler */
   tree_gen_edge_profiler,	/* gen_edge_profiler */
   tree_gen_interval_profiler,   /* gen_interval_profiler */
   tree_gen_pow2_profiler,       /* gen_pow2_profiler */

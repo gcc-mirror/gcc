@@ -1,3 +1,14 @@
+2004-10-28  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* profile.c (branch_prob): Call to init_edge_profiler added.
+	* rtl-profile.c (rtl_init_edge_profiler): New function.
+	(rtl_gen_edge_profiler): Replaced call to insert_insn_on_edge with
+	call to safe_insert_insn_on_edge.
+	(rtl_profile_hooks): rtl_init_edge_profiler added.
+	* tree-profile.c (tree_init_edge_profiler): New function.
+	(tree_profile_hooks): tree_init_edge_profiler added.
+	* value-prof.h (profile_hooks) init_edge_profiler prototype added.
+
 2004-10-28  Nick Clifton  <nickc@redhat.com>
 
 	* config/iq2000/iq2000.c (iq2000_expand_epilogue): Use
