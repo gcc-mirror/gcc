@@ -49,6 +49,7 @@ import java.io.Serializable;
  * @since 1.4
  */
 public class ScrollPaneAdjustable
+  extends Scrollbar
   implements Adjustable, Serializable
 {
   private static final long serialVersionUID = -3359745691033257079L;
@@ -62,9 +63,14 @@ public class ScrollPaneAdjustable
   int unitIncrement;
   int blockIncrement;
   AdjustmentListener adjustmentListener;
+
+  ScrollPaneAdjustable (int orientation)
+  {
+    throw new Error ("not implemented");
+  }
   
   ScrollPaneAdjustable (ScrollPane sp, int orientation, int value, int minimum,
-                        int maximum, in visibleAmount, int unitIncrement,
+                        int maximum, int visibleAmount, int unitIncrement,
                         int blockIncrement)
   {
     this.sp = sp;
@@ -73,8 +79,8 @@ public class ScrollPaneAdjustable
     this.minimum = minimum;
     this.maximum = maximum;
     this.visibleAmount = visibleAmount;
-    this.unitIncrement = Increment;
-    this.blockIncrement = Increment;
+    this.unitIncrement = unitIncrement;
+    this.blockIncrement = blockIncrement;
   }
   
   public void addAdjustmentListener (AdjustmentListener listener)
@@ -89,7 +95,8 @@ public class ScrollPaneAdjustable
   
   public AdjustmentListener[] getAdjustmentListeners ()
   {
-    return (AdjustmentListener) AWTEventMulticaster.getListeners (AdjustmentListener.class);
+    return (AdjustmentListener[]) AWTEventMulticaster.getListeners
+                               (adjustmentListener, AdjustmentListener.class);
   }
 
   public int getBlockIncrement ()
