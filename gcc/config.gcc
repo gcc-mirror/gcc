@@ -2403,13 +2403,12 @@ fi
 		supported_defaults="arch cpu tune"
 		for which in arch cpu tune; do
 			eval "val=\$with_$which"
-			case "x$val" in
-			x \
-			| xi386 | xi486 \
-			| xi586 | xpentium | xpentium-mmx | xwinchip-c6 | xwinchip2 \
-			| xc3 | xc3-2 | xi686 | xpentiumpro | xpentium2 | xpentium3 \
-			| xpentium4 | xk6 | xk6-2 | xk6-3 | xathlon | xathlon-tbird \
-			| xathlon-4 | xathlon-xp | xathlon-mp | xk8)
+			case ${val} in
+			"" | i386 | i486 \
+			| i586 | pentium | pentium-mmx | winchip-c6 | winchip2 \
+			| c3 | c3-2 | i686 | pentiumpro | pentium2 | pentium3 \
+			| pentium4 | k6 | k6-2 | k6-3 | athlon | athlon-tbird \
+			| athlon-4 | athlon-xp | athlon-mp | k8)
 				# OK
 				;;
 			*)
@@ -2423,9 +2422,8 @@ fi
 	mips*-*-*)
 		supported_defaults="abi arch float tune"
 
-		case "x$with_float" in
-		x \
-		| xsoft | xhard)
+		case ${with_float} in
+		"" | soft | hard)
 			# OK
 			;;
 		*)
@@ -2434,9 +2432,8 @@ fi
 			;;
 		esac
 
-		case "x$with_abi" in
-		x \
-		| x32 | xo64 | xn32 | x64 | xeabi)
+		case ${with_abi} in
+		"" | 32 | o64 | n32 | 64 | eabi)
 			# OK
 			;;
 		*)
@@ -2451,17 +2448,15 @@ fi
 
 		for which in cpu tune; do
 			eval "val=\$with_$which"
-			case "x$val" in
-			x \
-			| xdefault32 | xdefault64 \
-			| xcommon \
-			| xpower | xpower2 | xpower3 | xpower4 \
-			| xpowerpc | xpowerpc64 \
-			| xrios | xrios1 | xrios2 | xrsc | xrsc1 | xrs64a \
-			| x401 | x403 | x405 | x405fp | x440 | x440fp | x505 \
-			| x601 | x602 | x603 | x603e | xec603e | x604 \
-			| x604e | x620 | x630 | x740 | x750 | x7400 | x7450 \
-			| x8540 | x801 | x821 | x823 | x860 | x970)
+			case ${val} in
+			"" | default32 | default64 | common \
+			| power | power2 | power3 | power4 \
+			| powerpc | powerpc64 \
+			| rios | rios1 | rios2 | rsc | rsc1 | rs64a \
+			| 401 | 403 | 405 | 405fp | 440 | 440fp | 505 \
+			| 601 | 602 | 603 | 603e | ec603e | 604 \
+			| 604e | 620 | 630 | 740 | 750 | 7400 | 7450 \
+			| 8540 | 801 | 821 | 823 | 860 | 970)
 				# OK
 				;;
 			*)
@@ -2477,9 +2472,8 @@ fi
 
 		for which in arch tune; do
 			eval "val=\$with_$which"
-			case x$val in
-			x \
-			| xg5 | xg6 | xz900 | xz990)
+			case ${val} in
+			"" | g5 | g6 | z900 | z990)
 				# OK
 				;;
 			*)
@@ -2489,9 +2483,8 @@ fi
 			esac
 		done
 
-		case "x$with_mode" in
-		x \
-		| xesa | xzarch)
+		case ${with_mode} in
+		"" | esa | zarch)
 			# OK
 			;;
 		*)
@@ -2506,12 +2499,11 @@ fi
 
 		for which in cpu tune; do
 			eval "val=\$with_$which"
-			case x$val in
-			x \
-			| xsparc | xsparcv9 | xsparc64 | xsparc86x \
-			| xv7 | xcypress | xv8 | xsupersparc | xsparclite | xf930 \
-			| xf934 | xhypersparc | xsparclite86x | xsparclet | tsc701 \
-			| xv9 | xultrasparc | xultrasparc3)
+			case ${val} in
+			"" | sparc | sparcv9 | sparc64 | sparc86x \
+			| v7 | cypress | v8 | supersparc | sparclite | f930 \
+			| f934 | hypersparc | sparclite86x | sparclet | tsc701 \
+			| v9 | ultrasparc | ultrasparc3)
 				# OK
 				;;
 			*)
@@ -2521,9 +2513,8 @@ fi
 			esac
 		done
 
-		case "x$with_float" in
-		x \
-		| xsoft | xhard)
+		case ${with_float} in
+		"" | soft | hard)
 			# OK
 			;;
 		*)
@@ -2535,8 +2526,8 @@ fi
 
 	v850*-*-*)
 		supported_defaults=cpu
-		case "x$with_cpu" in
-		x | xv850e | xv850e1)
+		case ${with_cpu} in
+		"" | v850e | v850e1)
 			# OK
 			;;
 		*)

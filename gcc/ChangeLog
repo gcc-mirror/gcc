@@ -1,3 +1,8 @@
+2003-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc: Get rid of more gratuitious 'x'es.  Actually allow
+	tsc701 as a --with-cpu, --with-tune setting for sparc.
+
 2003-09-25  Ziemowit Laski  <zlaski@apple.com>
 
 	* cp-parse.in (objc_try_stmt): Do not specify a %type.
