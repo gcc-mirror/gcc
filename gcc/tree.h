@@ -3169,21 +3169,10 @@ extern int first_rtl_op (enum tree_code);
 
 enum tree_node_structure_enum tree_node_structure (tree);
 
-/* unsave_expr (EXP) returns an expression equivalent to EXP but it
-   can be used multiple times and will evaluate EXP in its entirety
-   each time.  */
-
-extern tree unsave_expr (tree);
-
 /* Reset EXP in place so that it can be expanded again.  Does not
    recurse into subtrees.  */
 
 extern void unsave_expr_1 (tree);
-
-/* Return 0 if it is safe to evaluate EXPR multiple times,
-   return 1 if it is safe if EXPR is unsaved afterward, or
-   return 2 if it is completely unsafe.  */
-extern int unsafe_for_reeval (tree);
 
 /* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size
    or offset that depends on a field within a record.

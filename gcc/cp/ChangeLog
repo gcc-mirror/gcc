@@ -1,3 +1,7 @@
+2004-07-28  Eric Christopher  <echristo@redhat.com>
+
+	* cp-lang.c (LANG_HOOKS_UNSAFE_FOR_REEVAL): Delete.
+
 2004-07-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (struct tree_pair_s): New.

@@ -304,7 +304,7 @@ int flag_zero_link = 0;
    unit.  It will inform the ObjC runtime that class definition(s) herein
    contained are to replace one(s) previously loaded.  */
 int flag_replace_objc_classes = 0;
-   
+
 /* C/ObjC language option variables.  */
 
 
@@ -1474,7 +1474,7 @@ check_case_bounds (tree type, tree orig_type,
       warning ("case label value is less than minimum value for type");
       return false;
     }
- 
+
   /* Case value is greater than maximum for type.  */
   if (tree_int_cst_compare (case_low, max_value) > 0
       && tree_int_cst_compare (case_high, max_value) > 0)
@@ -1491,7 +1491,7 @@ check_case_bounds (tree type, tree orig_type,
 	       " less than minimum value for type");
       case_low = min_value;
     }
- 
+
   /* Saturate upper case label value to maximum.  */
   if (tree_int_cst_compare (case_low, max_value) <= 0
       && tree_int_cst_compare (case_high, max_value) > 0)
@@ -1610,7 +1610,7 @@ c_common_type_for_mode (enum machine_mode mode, int unsignedp)
 
   if (mode == TYPE_MODE (void_type_node))
     return void_type_node;
-  
+
   if (mode == TYPE_MODE (build_pointer_type (char_type_node)))
     return unsignedp ? make_unsigned_type (mode) : make_signed_type (mode);
 
@@ -2475,7 +2475,7 @@ c_build_qualified_type (tree type, int type_quals)
 {
   if (type == error_mark_node)
     return type;
-  
+
   if (TREE_CODE (type) == ARRAY_TYPE)
     return build_array_type (c_build_qualified_type (TREE_TYPE (type),
 						     type_quals),
@@ -2501,7 +2501,7 @@ void
 c_apply_type_quals_to_decl (int type_quals, tree decl)
 {
   tree type = TREE_TYPE (decl);
-  
+
   if (type == error_mark_node)
     return;
 
@@ -2681,11 +2681,11 @@ c_common_get_alias_set (tree t)
     {
       tree t2;
       /* Find bottom type under any nested POINTERs.  */
-      for (t2 = TREE_TYPE (t); 
+      for (t2 = TREE_TYPE (t);
      TREE_CODE (t2) == POINTER_TYPE;
      t2 = TREE_TYPE (t2))
   ;
-      if (TREE_CODE (t2) != RECORD_TYPE 
+      if (TREE_CODE (t2) != RECORD_TYPE
     && TREE_CODE (t2) != ENUMERAL_TYPE
     && TREE_CODE (t2) != QUAL_UNION_TYPE
     && TREE_CODE (t2) != UNION_TYPE)
@@ -2694,7 +2694,7 @@ c_common_get_alias_set (tree t)
   return -1;
     }
   /* These are the only cases that need special handling.  */
-  if (TREE_CODE (t) != RECORD_TYPE 
+  if (TREE_CODE (t) != RECORD_TYPE
       && TREE_CODE (t) != ENUMERAL_TYPE
       && TREE_CODE (t) != QUAL_UNION_TYPE
       && TREE_CODE (t) != UNION_TYPE
@@ -2704,7 +2704,7 @@ c_common_get_alias_set (tree t)
   if (TYPE_SIZE (t) == 0)
     return -1;
 
-  /* Look up t in hash table.  Only one of the compatible types within each 
+  /* Look up t in hash table.  Only one of the compatible types within each
      alias set is recorded in the table.  */
   if (!type_hash_table)
     type_hash_table = htab_create (1021, c_type_hash,
@@ -2756,7 +2756,7 @@ c_sizeof_or_alignof_type (tree type, enum tree_code op, int complain)
   else if (!COMPLETE_TYPE_P (type))
     {
       if (complain)
-	error ("invalid application of `%s' to incomplete type `%T' ", 
+	error ("invalid application of `%s' to incomplete type `%T' ",
 	       op_name, type);
       value = size_zero_node;
     }
@@ -3701,7 +3701,7 @@ match_case_to_enum (splay_tree_node node, void *data)
 void
 c_do_switch_warnings (splay_tree cases, tree switch_stmt)
 {
-  splay_tree_node default_node;  
+  splay_tree_node default_node;
   location_t switch_location;
   tree type;
 
@@ -3730,7 +3730,7 @@ c_do_switch_warnings (splay_tree cases, tree switch_stmt)
       tree chain;
 
       /* The time complexity here is O(N*lg(N)) worst case, but for the
-	 common case of monotonically increasing enumerators, it is 
+	 common case of monotonically increasing enumerators, it is
 	 O(N), since the nature of the splay tree will keep the next
 	 element adjacent to the root at all times.  */
 
@@ -3742,7 +3742,7 @@ c_do_switch_warnings (splay_tree cases, tree switch_stmt)
 	  if (node)
 	    {
 	      /* Mark the CASE_LOW part of the case entry as seen, so
-		 that we save time later.  Choose TREE_ADDRESSABLE 
+		 that we save time later.  Choose TREE_ADDRESSABLE
 		 randomly as a bit that won't have been set to-date.  */
 	      tree label = (tree) node->value;
 	      TREE_ADDRESSABLE (label) = 1;
@@ -3762,7 +3762,7 @@ c_do_switch_warnings (splay_tree cases, tree switch_stmt)
 
 	 The time complexity here is O(N**2) worst case, since we've
 	 not sorted the enumeration values.  However, in the absence
-	 of case ranges this is O(N), since all single cases that 
+	 of case ranges this is O(N), since all single cases that
 	 corresponded to enumerations have been marked above.  */
 
       splay_tree_foreach (cases, match_case_to_enum, type);
@@ -3799,12 +3799,12 @@ finish_label_address_expr (tree label)
 }
 
 /* Hook used by expand_expr to expand language-specific tree codes.  */
-/* The only things that should go here are bits needed to expand 
+/* The only things that should go here are bits needed to expand
    constant initializers.  Everything else should be handled by the
    gimplification routines.  */
 
 rtx
-c_expand_expr (tree exp, rtx target, enum machine_mode tmode, 
+c_expand_expr (tree exp, rtx target, enum machine_mode tmode,
 	       int modifier /* Actually enum_modifier.  */,
 	       rtx *alt_rtl)
 {
@@ -3822,21 +3822,6 @@ c_expand_expr (tree exp, rtx target, enum machine_mode tmode,
     default:
       abort ();
     }
-}
-
-/* Hook used by unsafe_for_reeval to handle language-specific tree codes.  */
-
-int
-c_common_unsafe_for_reeval (tree exp)
-{
-  /* Statement expressions may not be reevaluated, likewise compound
-     literals.  */
-  if (TREE_CODE (exp) == STMT_EXPR
-      || TREE_CODE (exp) == COMPOUND_LITERAL_EXPR)
-    return 2;
-
-  /* Walk all other expressions.  */
-  return -1;
 }
 
 /* Hook used by staticp to handle language-specific tree codes.  */
@@ -3939,17 +3924,17 @@ handle_packed_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 	{
 	  /* If it is the main variant, then pack the other variants
    	     too. This happens in,
-	     
+
 	     struct Foo {
 	       struct Foo const *ptr; // creates a variant w/o packed flag
 	       } __ attribute__((packed)); // packs it now.
 	  */
 	  tree probe;
-	  
+
 	  for (probe = *node; probe; probe = TYPE_NEXT_VARIANT (probe))
 	    TYPE_PACKED (probe) = 1;
 	}
-      
+
     }
   else if (TREE_CODE (*node) == FIELD_DECL)
     DECL_PACKED (*node) = 1;
@@ -4583,7 +4568,7 @@ handle_visibility_attribute (tree *node, tree name, tree args,
       error ("visibility arg not a string");
       return NULL_TREE;
     }
-  
+
   /*  If this is a type, set the visibility on the type decl.  */
   if (TYPE_P (decl))
     {
@@ -4597,7 +4582,7 @@ handle_visibility_attribute (tree *node, tree name, tree args,
   else if (strcmp (TREE_STRING_POINTER (id), "internal") == 0)
     DECL_VISIBILITY (decl) = VISIBILITY_INTERNAL;
   else if (strcmp (TREE_STRING_POINTER (id), "hidden") == 0)
-    DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;  
+    DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
   else if (strcmp (TREE_STRING_POINTER (id), "protected") == 0)
     DECL_VISIBILITY (decl) = VISIBILITY_PROTECTED;
   else
@@ -5320,8 +5305,8 @@ c_parse_error (const char *msgid, enum cpp_ttype token, tree value)
 
 /* Walk a gimplified function and warn for functions whose return value is
    ignored and attribute((warn_unused_result)) is set.  This is done before
-   inlining, so we don't have to worry about that.  */  
-   
+   inlining, so we don't have to worry about that.  */
+
 void
 c_warn_unused_result (tree *top_p)
 {

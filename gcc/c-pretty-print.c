@@ -225,7 +225,7 @@ void
 pp_c_type_qualifier_list (c_pretty_printer *pp, tree t)
 {
    int qualifiers;
-   
+
   if (!TYPE_P (t))
     t = TREE_TYPE (t);
 
@@ -481,7 +481,7 @@ pp_c_direct_abstract_declarator (c_pretty_printer *pp, tree t)
     case POINTER_TYPE:
       pp_abstract_declarator (pp, t);
       break;
-      
+
     case FUNCTION_TYPE:
       pp_c_parameter_type_list (pp, t);
       pp_direct_abstract_declarator (pp, TREE_TYPE (t));
@@ -507,7 +507,7 @@ pp_c_direct_abstract_declarator (c_pretty_printer *pp, tree t)
     case COMPLEX_TYPE:
     case TYPE_DECL:
       break;
-      
+
     default:
       pp_unsupported_tree (pp, t);
       break;
@@ -654,7 +654,7 @@ pp_c_declarator (c_pretty_printer *pp, tree t)
       pp_direct_declarator (pp, t);
     break;
 
-    
+
     default:
       pp_unsupported_tree (pp, t);
       break;
@@ -810,7 +810,7 @@ pp_c_character_constant (c_pretty_printer *pp, tree c)
 {
   tree type = TREE_TYPE (c);
   if (type == wchar_type_node)
-    pp_character (pp, 'L'); 
+    pp_character (pp, 'L');
   pp_quote (pp);
   if (host_integerp (c, TYPE_UNSIGNED (type)))
     pp_c_char (pp, tree_low_cst (c, TYPE_UNSIGNED (type)));
@@ -893,12 +893,12 @@ pp_c_floating_constant (c_pretty_printer *pp, tree r)
 }
 
 /* Pretty-print a compound literal expression.  GNU extensions include
-   vector constants.  */ 
+   vector constants.  */
 
 static void
 pp_c_compound_literal (c_pretty_printer *pp, tree e)
 {
-  tree type = TREE_TYPE (e);  
+  tree type = TREE_TYPE (e);
   pp_c_type_cast (pp, type);
 
   switch (TREE_CODE (type))
@@ -939,8 +939,8 @@ pp_c_constant (c_pretty_printer *pp, tree e)
           pp_c_character_constant (pp, e);
         else if (TREE_CODE (type) == ENUMERAL_TYPE
                  && pp_c_enumeration_constant (pp, e))
-          ; 
-        else 
+          ;
+        else
           pp_c_integer_constant (pp, e);
       }
       break;
@@ -964,8 +964,8 @@ pp_c_constant (c_pretty_printer *pp, tree e)
 void
 pp_c_identifier (c_pretty_printer *pp, const char *id)
 {
-  pp_c_maybe_whitespace (pp);            
-  pp_identifier (pp, id);  
+  pp_c_maybe_whitespace (pp);
+  pp_identifier (pp, id);
   pp_base (pp)->padding = pp_before;
 }
 
@@ -1401,7 +1401,7 @@ pp_c_call_argument_list (c_pretty_printer *pp, tree t)
 
   unary-operator: one of
       * &  + - ! ~
-      
+
    GNU extensions.
    unary-expression:
       __alignof__ unary-expression
@@ -1538,7 +1538,7 @@ pp_c_additive_expression (c_pretty_printer *pp, tree e)
       else
 	pp_minus (pp);
       pp_c_whitespace (pp);
-      pp_multiplicative_expression (pp, TREE_OPERAND (e, 1)); 
+      pp_multiplicative_expression (pp, TREE_OPERAND (e, 1));
       break;
 
     default:
@@ -1756,7 +1756,7 @@ pp_c_conditional_expression (c_pretty_printer *pp, tree e)
 
 /* assignment-expression:
       conditional-expression
-      unary-expression assignment-operator  assignment-expression 
+      unary-expression assignment-operator  assignment-expression
 
    assignment-expression: one of
       =    *=    /=    %=    +=    -=    >>=    <<=    &=    ^=    |=  */
@@ -1903,7 +1903,7 @@ pp_c_expression (c_pretty_printer *pp, tree e)
     case NE_EXPR:
       pp_c_equality_expression (pp, e);
       break;
-      
+
     case COND_EXPR:
       pp_conditional_expression (pp, e);
       break;
@@ -1929,14 +1929,13 @@ pp_c_expression (c_pretty_printer *pp, tree e)
     case NOP_EXPR:
     case NON_LVALUE_EXPR:
     case SAVE_EXPR:
-    case UNSAVE_EXPR:
       pp_expression (pp, TREE_OPERAND (e, 0));
       break;
 
     case TARGET_EXPR:
       pp_postfix_expression (pp, TREE_OPERAND (e, 1));
       break;
-      
+
     default:
       pp_unsupported_tree (pp, e);
       break;
@@ -1965,7 +1964,7 @@ pp_c_statement (c_pretty_printer *pp, tree stmt)
 
   if (pp_needs_newline (pp))
     pp_newline_and_indent (pp, 0);
-  
+
   code = TREE_CODE (stmt);
   switch (code)
     {

@@ -60,7 +60,7 @@ lhd_do_nothing_i (int ARG_UNUSED (i))
 /* Do nothing (int, int, int).  Return NULL_TREE.  */
 
 tree
-lhd_do_nothing_iii_return_null_tree (int ARG_UNUSED (i), 
+lhd_do_nothing_iii_return_null_tree (int ARG_UNUSED (i),
 				     int ARG_UNUSED (j),
 				     int ARG_UNUSED (k))
 {
@@ -123,14 +123,6 @@ lhd_safe_from_p (rtx ARG_UNUSED (x), tree ARG_UNUSED (exp))
   return 1;
 }
 
-/* Called from unsafe_for_reeval.  */
-
-int
-lhd_unsafe_for_reeval (tree ARG_UNUSED (t))
-{
-  return -1;
-}
-
 /* Called from staticp.  */
 
 bool
@@ -175,7 +167,7 @@ lhd_set_decl_assembler_name (tree decl)
 	 same as that used in the source language.  (That's correct
 	 for C, and GCC used to set DECL_ASSEMBLER_NAME to the same
 	 value as DECL_NAME in build_decl, so this choice provides
-	 backwards compatibility with existing front-ends.  
+	 backwards compatibility with existing front-ends.
 
          Can't use just the variable's own name for a variable whose
 	 scope is less than the whole compilation.  Concatenate a
@@ -214,7 +206,7 @@ lhd_type_promotes_to (tree ARG_UNUSED (type))
 
 /* Registration of machine- or os-specific builtin types.  */
 void
-lhd_register_builtin_type (tree ARG_UNUSED (type), 
+lhd_register_builtin_type (tree ARG_UNUSED (type),
 			   const char * ARG_UNUSED (name))
 {
 }

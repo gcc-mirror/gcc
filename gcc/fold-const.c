@@ -2027,7 +2027,6 @@ non_lvalue (tree x)
   case PREINCREMENT_EXPR:
   case PREDECREMENT_EXPR:
   case SAVE_EXPR:
-  case UNSAVE_EXPR:
   case TRY_CATCH_EXPR:
   case WITH_CLEANUP_EXPR:
   case COMPOUND_EXPR:

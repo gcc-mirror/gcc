@@ -144,7 +144,6 @@ static int check_sibcall_argument_overlap (rtx, struct arg_data *, int);
 
 static int combine_pending_stack_adjustment_and_call (int, struct args_size *,
 						      unsigned int);
-static tree fix_unsafe_tree (tree);
 static bool shift_returned_value (tree, rtx *);
 
 #ifdef REG_PARM_STACK_SPACE
@@ -1724,35 +1723,6 @@ check_sibcall_argument_overlap (rtx insn, struct arg_data *arg, int mark_stored_
   return insn != NULL_RTX;
 }
 
-static tree
-fix_unsafe_tree (tree t)
-{
-  switch (unsafe_for_reeval (t))
-    {
-    case 0: /* Safe.  */
-      break;
-
-    case 1: /* Mildly unsafe.  */
-      t = unsave_expr (t);
-      break;
-
-    case 2: /* Wildly unsafe.  */
-      {
-	tree var = build_decl (VAR_DECL, NULL_TREE,
-			       TREE_TYPE (t));
-	SET_DECL_RTL (var,
-		      expand_expr (t, NULL_RTX, VOIDmode, EXPAND_NORMAL));
-	t = var;
-      }
-      break;
-
-    default:
-      abort ();
-    }
-  return t;
-}
-
-
 /* If function value *VALUE was returned at the most significant end of a
    register, shift it towards the least significant end and convert it to
    TYPE's mode.  Return true and update *VALUE if some action was needed.
@@ -2269,48 +2239,6 @@ expand_call (tree exp, rtx target, int ignore)
 			       current_function_args_size))
       || !lang_hooks.decls.ok_for_sibcall (fndecl))
     try_tail_call = 0;
-
-  if (try_tail_call)
-    {
-      int end, inc;
-      actparms = NULL_TREE;
-      /* Ok, we're going to give the tail call the old college try.
-	 This means we're going to evaluate the function arguments
-	 up to three times.  There are two degrees of badness we can
-	 encounter, those that can be unsaved and those that can't.
-	 (See unsafe_for_reeval commentary for details.)
-
-	 Generate a new argument list.  Pass safe arguments through
-	 unchanged.  For the easy badness wrap them in UNSAVE_EXPRs.
-	 For hard badness, evaluate them now and put their resulting
-	 rtx in a temporary VAR_DECL.
-
-	 initialize_argument_information has ordered the array for the
-	 order to be pushed, and we must remember this when reconstructing
-	 the original argument order.  */
-
-      if (PUSH_ARGS_REVERSED)
-	{
-	  inc = 1;
-	  i = 0;
-	  end = num_actuals;
-	}
-      else
-	{
-	  inc = -1;
-	  i = num_actuals - 1;
-	  end = -1;
-	}
-
-      for (; i != end; i += inc)
-	{
-          args[i].tree_value = fix_unsafe_tree (args[i].tree_value);
-	}
-      /* Do the same for the function address if it is an expression.  */
-      if (!fndecl)
-        addr = fix_unsafe_tree (addr);
-    }
-
 
   /* Ensure current function's preferred stack boundary is at least
      what we need.  We don't have to increase alignment for recursive

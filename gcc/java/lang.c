@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA. 
+Boston, MA 02111-1307, USA.
 
 Java and all Java-based marks are trademarks or registered trademarks
 of Sun Microsystems, Inc. in the United States and other countries.
@@ -59,7 +59,6 @@ static void put_decl_node (tree);
 static void java_print_error_function (diagnostic_context *, const char *);
 static tree java_tree_inlining_walk_subtrees (tree *, int *, walk_tree_fn,
 					      void *, void *);
-static int java_unsafe_for_reeval (tree);
 static int merge_init_test_initialization (void * *, void *);
 static int inline_init_test_initialization (void * *, void *);
 static bool java_can_use_bit_fields_p (void);
@@ -221,8 +220,6 @@ struct language_function GTY(())
 #define LANG_HOOKS_POST_OPTIONS java_post_options
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE java_parse_file
-#undef LANG_HOOKS_UNSAFE_FOR_REEVAL
-#define LANG_HOOKS_UNSAFE_FOR_REEVAL java_unsafe_for_reeval
 #undef LANG_HOOKS_MARK_ADDRESSABLE
 #define LANG_HOOKS_MARK_ADDRESSABLE java_mark_addressable
 #undef LANG_HOOKS_TRUTHVALUE_CONVERSION
@@ -672,7 +669,7 @@ java_print_error_function (diagnostic_context *context ATTRIBUTE_UNUSED,
 	{
 	  const char *name = lang_printable_name (current_function_decl, 2);
 	  fprintf (stderr, "In %s `%s':\n",
-		   (DECL_CONSTRUCTOR_P (current_function_decl) ? "constructor" 
+		   (DECL_CONSTRUCTOR_P (current_function_decl) ? "constructor"
 		    : "method"),
 		   name);
 	}
@@ -866,38 +863,19 @@ java_tree_inlining_walk_subtrees (tree *tp ATTRIBUTE_UNUSED,
   #undef WALK_SUBTREE
 }
 
-/* Called from unsafe_for_reeval.  */
-static int
-java_unsafe_for_reeval (tree t)
-{
-  switch (TREE_CODE (t))
-    {
-    case BLOCK:
-      /* Our expander tries to expand the variables twice.  Boom.  */
-      if (BLOCK_EXPR_DECLS (t) != NULL)
-	return 2;
-      return unsafe_for_reeval (BLOCK_EXPR_BODY (t));
-
-    default:
-      break;
-    }
-
-  return -1;
-}
-
 /* Every call to a static constructor has an associated boolean
    variable which is in the outermost scope of the calling method.
    This variable is used to avoid multiple calls to the static
-   constructor for each class.  
+   constructor for each class.
 
    It looks something like this:
 
    foo ()
    {
       boolean dummy = OtherClass.is_initialized;
-  
+
      ...
-  
+
      if (! dummy)
        OtherClass.initialize();
 
@@ -920,7 +898,7 @@ merge_init_test_initialization (void **entry, void *x)
   splay_tree decl_map = (splay_tree)x;
   splay_tree_node n;
   tree *init_test_decl;
-  
+
   /* See if we have remapped this declaration.  If we haven't there's
      a bug in the inliner.  */
   n = splay_tree_lookup (decl_map, (splay_tree_key) ite->value);
@@ -935,18 +913,18 @@ merge_init_test_initialization (void **entry, void *x)
   if (!*init_test_decl)
     *init_test_decl = (tree)n->value;
 
-  /* This fixes a weird case.  
+  /* This fixes a weird case.
 
   The front end assumes that once we have called a method that
   initializes some class, we can assume the class is initialized.  It
   does this by setting the DECL_INITIAL of the init_test_decl for that
   class, and no initializations are emitted for that class.
-  
+
   However, what if the method that is suppoed to do the initialization
   is itself inlined in the caller?  When expanding the called method
   we'll assume that the class initialization has already been done,
   because the DECL_INITIAL of the init_test_decl is set.
-  
+
   To fix this we remove the DECL_INITIAL (in the caller scope) of all
   the init_test_decls corresponding to classes initialized by the
   inlined method.  This makes the caller no longer assume that the
@@ -962,7 +940,7 @@ merge_init_test_initialization (void **entry, void *x)
 void
 java_inlining_merge_static_initializers (tree fn, void *decl_map)
 {
-  htab_traverse 
+  htab_traverse
     (DECL_FUNCTION_INIT_TEST_TABLE (fn),
      merge_init_test_initialization, decl_map);
 }
@@ -978,8 +956,8 @@ inline_init_test_initialization (void **entry, void *x)
 {
   struct treetreehash_entry *ite = (struct treetreehash_entry *) *entry;
   splay_tree decl_map = (splay_tree)x;
-  
-  tree h = java_treetreehash_find 
+
+  tree h = java_treetreehash_find
     (DECL_FUNCTION_INIT_TEST_TABLE (current_function_decl), ite->key);
   if (! h)
     return true;
@@ -997,7 +975,7 @@ inline_init_test_initialization (void **entry, void *x)
 void
 java_inlining_map_static_initializers (tree fn, void *decl_map)
 {
-  htab_traverse 
+  htab_traverse
     (DECL_FUNCTION_INIT_TEST_TABLE (fn),
      inline_init_test_initialization, decl_map);
 }
@@ -1029,7 +1007,7 @@ dump_compound_expr (dump_info_p di, tree t)
 	}
     }
 }
-  
+
 static bool
 java_dump_tree (void *dump_info, tree t)
 {
@@ -1087,7 +1065,7 @@ java_dump_tree (void *dump_info, tree t)
 	      dump_child ("var", local);
 	      local = next;
 	    }
-	  
+
 	  {
 	    tree block = BLOCK_EXPR_BODY (t);
 	    dump_child ("body", block);
@@ -1095,7 +1073,7 @@ java_dump_tree (void *dump_info, tree t)
 	  }
 	}
       return true;
-      
+
     case COMPOUND_EXPR:
       if (!dump_flag (di, TDF_SLIM, t))
 	return false;
@@ -1139,13 +1117,13 @@ java_get_callee_fndecl (tree call_expr)
     return NULL;
   table = TREE_OPERAND (method, 0);
   if (! DECL_LANG_SPECIFIC(table)
-      || !DECL_OWNER (table) 
+      || !DECL_OWNER (table)
       || TYPE_ATABLE_DECL (DECL_OWNER (table)) != table)
     return NULL;
 
   atable_methods = TYPE_ATABLE_METHODS (DECL_OWNER (table));
   index = TREE_INT_CST_LOW (TREE_OPERAND (method, 1));
-  
+
   /* FIXME: Replace this for loop with a hash table lookup.  */
   for (element = atable_methods; element; element = TREE_CHAIN (element))
     {

@@ -754,7 +754,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       {
 	tree_stmt_iterator si;
 	bool first = true;
-  
+
 	if ((flags & TDF_SLIM) || !dumping_stmts)
 	  {
 	    pp_string (buffer, "<STATEMENT_LIST>");
@@ -1095,12 +1095,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case SAVE_EXPR:
       pp_string (buffer, "SAVE_EXPR <");
-      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_character (buffer, '>');
-      break;
-
-    case UNSAVE_EXPR:
-      pp_string (buffer, "UNSAVE_EXPR <");
       dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
       pp_character (buffer, '>');
       break;
@@ -2051,10 +2045,10 @@ dump_vops (pretty_printer *buffer, tree stmt, int spc, int flags)
   for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
     {
       pp_string (buffer, "#   ");
-      dump_generic_node (buffer, V_MAY_DEF_RESULT (v_may_defs, i), 
+      dump_generic_node (buffer, V_MAY_DEF_RESULT (v_may_defs, i),
                          spc + 2, flags, false);
       pp_string (buffer, " = V_MAY_DEF <");
-      dump_generic_node (buffer, V_MAY_DEF_OP (v_may_defs, i), 
+      dump_generic_node (buffer, V_MAY_DEF_OP (v_may_defs, i),
                          spc + 2, flags, false);
       pp_string (buffer, ">;");
       newline_and_indent (buffer, spc);
@@ -2283,7 +2277,7 @@ dump_generic_bb_buff (pretty_printer *buffer, basic_block bb,
 
   if (bb_ann (bb))
     dump_phi_nodes (buffer, bb, indent, flags);
-  
+
   for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
     {
       int curr_indent;

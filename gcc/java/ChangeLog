@@ -1,3 +1,8 @@
+2004-07-28  Eric Christopher  <echristo@redhat.com>
+
+	* lang.c (LANG_HOOKS_UNSAFE_FOR_REEVAL): Delete.
+	(java_unsafe_for_reeval): Ditto.
+
 2004-07-26    <hp@bitrange.com>
 
 	* parse.y (build_super_invocation): Adjust declaration order to
@@ -72,7 +77,7 @@
 	(start_java_method): Reset uniq.  Create base_decl_map.  Set
 	function_binding_level.
 	(end_java_method): Null unused fields to save memory.
-	
+
 2004-07-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (add_interface_do): Remove.
@@ -183,8 +188,8 @@
 	(create_class): Fix comment typo.
 	(resolve_qualified_expression_name): Pass type of qualifier to
 	not_accessible_p, not the type in which target field was found.
-	(not_accessible_p): Handle inner classes. Expand protected 
-	qualifier-subtype check to enclosing instances, but don't apply this 
+	(not_accessible_p): Handle inner classes. Expand protected
+	qualifier-subtype check to enclosing instances, but don't apply this
 	check to static members. Allow protected access to inner classes
 	of a subtype. Allow private access within common enclosing context.
 	(build_super_invocation): Get WFL line number info from current
@@ -195,7 +200,7 @@
 	common_enclosing_instance_p.
 	* class.c (common_enclosing_context_p): New. Determine if types
 	share a common enclosing context, even across static contexts.
-	(common_enclosing_instance_p): Renamed from 
+	(common_enclosing_instance_p): Renamed from
 	common_enclosing_context_p. Determines if types share a common
 	non-static enclosing instance.
 	* java-tree.h (common_enclosing_instance_p): Declare.
@@ -356,7 +361,7 @@
 	* parse.y (create_interface): Set correct access modifiers for
 	interfaces.
 	* jcf-write.c (get_classfile_modifiers): New function.
-	(generate_classfile): Use get_classfile_modifiers, not 
+	(generate_classfile): Use get_classfile_modifiers, not
 	get_access_flags.
 
 2004-06-26  Bryce McKinlay  <mckinlay@redhat.com>
@@ -369,7 +374,7 @@
 
 2004-06-26  Bryce McKinlay  <mckinlay@redhat.com>
 
-	* parse.y (qualify_and_find): Pass type decl, not identifier, to 
+	* parse.y (qualify_and_find): Pass type decl, not identifier, to
 	load_class.
 
 2004-06-26  Bryce McKinlay  <mckinlay@redhat.com>
@@ -403,7 +408,7 @@
 
 2004-06-22  Andrew Haley  <aph@redhat.com>
             Ranjit Mathew  <rmathew@hotmail.com>
-	
+
 	Fixes PR java/16113.
 	* decl.c (force_poplevels): Remove call to expand_end_bindings.
 
@@ -424,7 +429,7 @@
 	(emit_init_test_initialization): Likewise.
 	* java-gimplify.c (java_gimplify_new_array_init): Likewise.
 	* parse.y (make_qualifed_name, build_array_ref): Likewise.
-	
+
 2004-06-21  Andrew Haley  <aph@redhat.com>
 
 	* java-gimplify.c (java_gimplify_block): set TREE_USED on the new
@@ -455,7 +460,7 @@
 	do not set current_function_cannot_inline.
 	* resource.c (write_resource_constructor): Do not reset
 	flag_inline_functions around rest_of_compilation.
-	
+
 2004-06-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR java/15769
@@ -490,8 +495,8 @@
 
 2004-05-28  Bryce McKinlay  <mckinlay@redhat.com>
 
-	* jcf-write.c (generate_bytecode_conditional): Handle binops 
-	UNLT_EXPR, UNLE_EXPR, UNGT_EXPR, UNGE_EXPR, UNEQ_EXPR, 
+	* jcf-write.c (generate_bytecode_conditional): Handle binops
+	UNLT_EXPR, UNLE_EXPR, UNGT_EXPR, UNGE_EXPR, UNEQ_EXPR,
 	and LTGT_EXPR.
 	(generate_bytecode_insns): Likewise.
 
@@ -599,7 +604,7 @@
 	Fix comment typo.
 	Use check_pkg_class_access() instead of not_accessible_p()
 	for unqualified types.
-	(not_accessible_p): Use DECL_CONTEXT (member) instead of 
+	(not_accessible_p): Use DECL_CONTEXT (member) instead of
 	REFERENCE for package-private access checking.
 	(patch_method_invocation): Use accessibility_string() instead
 	of java_accstring_lookup().
@@ -626,12 +631,12 @@
 2004-04-19  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* class.c (make_class_data): Add new field aux_info.
-	* decl.c (java_init_decl_processing): Push type and decl for 
+	* decl.c (java_init_decl_processing): Push type and decl for
 	`aux_info'.
 
 2004-04-15  Bryce McKinlay  <mckinlay@redhat.com>
 
-	* expr.c (expand_java_NEW): Don't use size argument for 
+	* expr.c (expand_java_NEW): Don't use size argument for
 	_Jv_AllocObject calls.
 	* parse.y (patch_invoke): Likewise.
 
@@ -642,7 +647,7 @@
 
 2004-04-12  Bryce McKinlay  <mckinlay@redhat.com>
 
-	* class.c (get_interface_method_index): New function. Return dispatch 
+	* class.c (get_interface_method_index): New function. Return dispatch
 	index for interface method.
 	(make_method_value): For interface methods, set index field to
 	iface dispatch index, not DECL_VINDEX.
