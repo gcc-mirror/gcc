@@ -1,3 +1,10 @@
+2001-03-21  Jason Merrill  <jason@redhat.com>
+
+	* collect2.c (is_ctor_dtor): Always use '_' in the file fn names,
+	not '.' or '$'.
+	* tree.c (FILE_FUNCTION_FORMAT): Likewise.
+	* varasm.c (CHKR_PREFIX): Likewise.
+
 2001-03-25  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md (umodqi3): Output a tab instead of a
@@ -32,11 +39,6 @@
 2001-03-22  Brad Lucier  <lucier@math.purdue.edu>
 
 	* Makefile.in: Have splay-tree.o depend on $(GCONFIG_H).
-
-2001-03-22  Jason Merrill  <jason@redhat.com>
-
-	* toplev.c (wrapup_global_declarations): Don't emit DECL_COMDAT
-	variables unless necessary, either.
 
 2001-03-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
