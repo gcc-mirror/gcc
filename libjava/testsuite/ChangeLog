@@ -1,3 +1,10 @@
+2000-04-16  Anthony Green  <green@redhat.com>
+
+	* libjava.compile/PR207.java: New file.
+	libjava.compile/PR207_A.java: New file.
+	libjava.compile/PR206.java: New file.
+	libjava.compile/PR206_A.java: New file.
+
 2000-04-14  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Additional test for PR gcj/148:
