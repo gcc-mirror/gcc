@@ -500,7 +500,7 @@ build_vfield_ref (tree datum, tree type)
   /* Second, the requested type may not be the owner of its own vptr.
      If not, convert to the base class that owns it.  We cannot use
      convert_to_base here, because VCONTEXT may appear more than once
-     in the inheritence hierarchy of TYPE, and thus direct conversion
+     in the inheritance hierarchy of TYPE, and thus direct conversion
      between the types may be ambiguous.  Following the path back up
      one step at a time via primary bases avoids the problem.  */
   vfield = TYPE_VFIELD (type);
