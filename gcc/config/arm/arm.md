@@ -286,6 +286,8 @@
 ;; distant label.  Only applicable to Thumb code.
 (define_attr "far_jump" "yes,no" (const_string "no"))
 
+(include "predicates.md")
+
 ;;---------------------------------------------------------------------------
 ;; Pipeline descriptions
 
