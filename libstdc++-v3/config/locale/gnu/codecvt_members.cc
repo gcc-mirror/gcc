@@ -48,56 +48,66 @@ namespace std
 	 extern_type*& __to_next) const
   {
     result __ret = ok;
-    // A temporary state must be used since the result of the last
-    // conversion may be thrown away.
-    state_type __tmp_state(__state);   
+    state_type __tmp_state(__state);
 
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __c_locale __old = __uselocale(_M_c_locale_codecvt);
 #endif
 
-    // The conversion must be done by calling wcrtomb in a loop rather
-    // than using wcsrtombs because wcsrtombs assumes that the input is
-    // zero-terminated.
-
-    // Either we can upper bound the total number of external characters to
-    // something smaller than __to_end - __to or the conversion must be done
-    // using a temporary destination buffer since it is not possible to
-    // pass the size of the buffer to wcrtomb
-    if (MB_CUR_MAX * (__from_end - __from) - (__to_end - __to) <= 0)
-      while (__from < __from_end)
-	{
-	  const size_t __conv = wcrtomb(__to, *__from, &__tmp_state);
-	  if (__conv == static_cast<size_t>(-1))
-	    {
-	      __ret = error;
-	      break;
-	    }
-	  __state = __tmp_state;
-	  __to += __conv;
-	  __from++;
-	}
-    else
+    // wcsnrtombs is *very* fast but stops if encounters NUL characters:
+    // in case we fall back to wcrtomb and then continue, in a loop.
+    // NB: wcsnrtombs is a GNU extension
+    __from_next = __from;
+    __to_next = __to;
+    while (__from_next < __from_end && __to_next < __to_end
+	   && __ret == ok)
       {
-	extern_type __buf[MB_LEN_MAX];
-	while (__from < __from_end && __to < __to_end)
+	const intern_type* __from_chunk_end = wmemchr(__from_next, L'\0',
+						      __from_end - __from_next);
+	if (!__from_chunk_end)
+	  __from_chunk_end = __from_end;
+
+	const intern_type* __tmp_from = __from_next;
+	const size_t __conv = wcsnrtombs(__to_next, &__from_next,
+					 __from_chunk_end - __from_next,
+					 __to_end - __to_next, &__state);
+	if (__conv == static_cast<size_t>(-1))
 	  {
-	    const size_t __conv = wcrtomb(__buf, *__from, &__tmp_state);
+	    // In case of error, in order to stop at the exact place we
+	    // have to start again from the beginning with a series of
+	    // wcrtomb.
+	    while (__tmp_from < __from_next)
+	      __to_next += wcrtomb(__to_next, *__tmp_from++, &__tmp_state);
+	    __state = __tmp_state;	    
+	    __ret = error;
+	  }
+	else if (__from_next && __from_next < __from_chunk_end)
+	  {
+	    __to_next += __conv;
+	    __ret = partial;
+	  }
+	else
+	  {
+	    __from_next = __from_chunk_end;
+	    __to_next += __conv;
+	  }
+
+	if (__from_next < __from_end && __ret == ok)
+	  {
+	    extern_type __buf[MB_LEN_MAX];
+	    __tmp_state = __state;
+	    const size_t __conv = wcrtomb(__buf, *__from_next, &__tmp_state);
 	    if (__conv == static_cast<size_t>(-1))
+	      __ret = error;
+	    else if (__conv > static_cast<size_t>(__to_end - __to_next))
+	      __ret = partial;
+	    else
 	      {
-		__ret = error;
-		break;
+		memcpy(__to_next, __buf, __conv);
+		__state = __tmp_state;
+		__to_next += __conv;
+		++__from_next;
 	      }
-	    else if (__conv > static_cast<size_t>(__to_end - __to))
-	      {
-		__ret = partial;
-		break;
-	      }
-	    
-	    memcpy(__to, __buf, __conv);
-	    __state = __tmp_state;
-	    __to += __conv;
-	    __from++;
 	  }
       }
 
@@ -105,11 +115,6 @@ namespace std
     __uselocale(__old);
 #endif
 
-    if (__ret == ok && __from < __from_end)
-      __ret = partial;
-
-    __from_next = __from;
-    __to_next = __to;
     return __ret; 
   }
   
