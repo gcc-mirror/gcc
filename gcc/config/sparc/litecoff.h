@@ -53,7 +53,7 @@ Boston, MA 02111-1307, USA.  */
    given time.  */
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_bss, in_ctors, in_dtors
+#define EXTRA_SECTIONS in_const, in_ctors, in_dtors
 
 /* A list of extra section function definitions.  */
 
