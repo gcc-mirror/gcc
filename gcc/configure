@@ -3522,7 +3522,7 @@ for machine in $build $host $target; do
 		xmake_file=x-linux-aout
 		tmake_file="t-linux-aout i386/t-crtstuff"
 		tm_file=i386/linux-oldld.h
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=fixinc.x86-linux-gnu
 		gnu_ld=yes
 		float_format=i386
 		;;
@@ -3530,7 +3530,7 @@ for machine in $build $host $target; do
 		xmake_file=x-linux-aout
 		tmake_file="t-linux-aout i386/t-crtstuff"
 		tm_file=i386/linux-aout.h
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=fixinc.x86-linux-gnu
 		gnu_ld=yes
 		float_format=i386
 		;;
@@ -3540,7 +3540,7 @@ for machine in $build $host $target; do
 		tm_file=i386/linux.h	
 		tmake_file="t-linux t-linux-gnulibc1 i386/t-crtstuff"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=fixinc.x86-linux-gnu
 		gnu_ld=yes
 		float_format=i386
  		if test x$enable_threads = xyes; then
@@ -3553,7 +3553,7 @@ for machine in $build $host $target; do
 		tm_file=i386/linux.h
 		tmake_file="t-linux i386/t-crtstuff"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=fixinc.x86-linux-gnu
 		gnu_ld=yes
 		float_format=i386
  		if test x$enable_threads = xyes; then
