@@ -2562,12 +2562,49 @@ generate_ctor_and_dtor_functions_for_priority (splay_tree_node n, void * data)
 /* Callgraph code does not understand the member pointers.  Mark the methods
    referenced as used.  */
 static tree
-mark_member_pointers (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-		      void *data ATTRIBUTE_UNUSED)
+mark_member_pointers_and_eh_handlers (tree *tp,
+				      int *walk_subtrees,
+		      		      void *data ATTRIBUTE_UNUSED)
 {
-  if (TREE_CODE (*tp) == PTRMEM_CST
-      && TYPE_PTRMEMFUNC_P (TREE_TYPE (*tp)))
-    cgraph_mark_needed_node (cgraph_node (PTRMEM_CST_MEMBER (*tp)), 1);
+  /* Avoid useless walking of complex type and declaration nodes.  */
+  if (TYPE_P (*tp) || DECL_P (*tp))
+    {
+      *walk_subtrees = 0;
+      return 0;
+    }
+  switch (TREE_CODE (*tp))
+    {
+    case PTRMEM_CST:
+      if (TYPE_PTRMEMFUNC_P (TREE_TYPE (*tp)))
+	cgraph_mark_needed_node (cgraph_node (PTRMEM_CST_MEMBER (*tp)), 1);
+      break;
+
+    /* EH handlers will emit EH tables referencing typeinfo.  */
+    case HANDLER:
+      if (HANDLER_TYPE (*tp))
+	{
+	  tree tinfo = eh_type_info (HANDLER_TYPE (*tp));
+
+	  cgraph_varpool_mark_needed_node (cgraph_varpool_node (tinfo));
+	}
+      break;
+
+    case EH_SPEC_BLOCK:
+	{
+	  tree type;
+
+	  for (type = EH_SPEC_RAISES ((*tp)); type;
+	       type = TREE_CHAIN (type))
+	    {
+	       tree tinfo = eh_type_info (TREE_VALUE (type));
+
+	       cgraph_varpool_mark_needed_node (cgraph_varpool_node (tinfo));
+	    }
+	}
+      break;
+    default:
+      break;
+    }
   return 0;
 }
 
@@ -2576,7 +2613,8 @@ mark_member_pointers (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 void
 lower_function (tree fn)
 {
-  walk_tree_without_duplicates (&DECL_SAVED_TREE (fn), mark_member_pointers,
+  walk_tree_without_duplicates (&DECL_SAVED_TREE (fn),
+		  		mark_member_pointers_and_eh_handlers,
 				NULL);
 }
 

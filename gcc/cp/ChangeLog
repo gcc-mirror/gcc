@@ -1,3 +1,14 @@
+2003-08-14  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (mark_member_pointers): Rename to...
+	(mark_member_pointers_and_eh_tinfos): ... this one; deal with eh tinfos
+	(lower_function): Update call.
+	* except.c (eh_type_info): Break out from ...
+	(build_eh_type): ... here; tinfo is already used.
+        (finish_eh_spec_block): Mark tinfos as used.
+        * semantics.c (finish_handler_params): Mark tinfo as used.
+	* cp-tree.h(eh_type_info): Declare.
+
 2003-08-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (instantiate_class_template): Set location before
