@@ -50,8 +50,7 @@ trunc_int_for_mode (HOST_WIDE_INT c, enum machine_mode mode)
   int width = GET_MODE_BITSIZE (mode);
 
   /* You want to truncate to a _what_?  */
-  if (! SCALAR_INT_MODE_P (mode))
-    abort ();
+  gcc_assert (SCALAR_INT_MODE_P (mode));
 
   /* Canonicalize BImode to 0 and STORE_FLAG_VALUE.  */
   if (mode == BImode)
@@ -633,8 +632,7 @@ copy_to_mode_reg (enum machine_mode mode, rtx x)
   if (! general_operand (x, VOIDmode))
     x = force_operand (x, temp);
 
-  if (GET_MODE (x) != mode && GET_MODE (x) != VOIDmode)
-    abort ();
+  gcc_assert (GET_MODE (x) == mode || GET_MODE (x) == VOIDmode);
   if (x != temp)
     emit_move_insn (temp, x);
   return temp;
@@ -1106,11 +1104,10 @@ optimize_save_area_alloca (void)
 
 		 Right now only supported port with stack that grow upward
 		 is the HPPA and it does not define SETJMP_VIA_SAVE_AREA.  */
-	      if (GET_CODE (pat) != SET
-		  || SET_DEST (pat) != stack_pointer_rtx
-		  || GET_CODE (SET_SRC (pat)) != MINUS
-		  || XEXP (SET_SRC (pat), 0) != stack_pointer_rtx)
-		abort ();
+	      gcc_assert (GET_CODE (pat) == SET
+			  && SET_DEST (pat) == stack_pointer_rtx
+			  && GET_CODE (SET_SRC (pat)) == MINUS
+			  && XEXP (SET_SRC (pat), 0) == stack_pointer_rtx);
 
 	      /* This will now be transformed into a (set REG REG)
 		 so we can just blow away all the other notes.  */
@@ -1134,8 +1131,7 @@ optimize_save_area_alloca (void)
 		    if (XEXP (srch, 1) == note)
 		      break;
 
-		  if (srch == NULL_RTX)
-		    abort ();
+		  gcc_assert (srch);
 
 		  XEXP (srch, 1) = XEXP (note, 1);
 		}
@@ -1229,8 +1225,7 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align)
 
 	/* ??? Code below assumes that the save area needs maximal
 	   alignment.  This constraint may be too strong.  */
-	if (PREFERRED_STACK_BOUNDARY != BIGGEST_ALIGNMENT)
-	  abort ();
+	gcc_assert (PREFERRED_STACK_BOUNDARY == BIGGEST_ALIGNMENT);
 
 	if (GET_CODE (size) == CONST_INT)
 	  {
@@ -1287,8 +1282,8 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align)
 
  /* We ought to be called always on the toplevel and stack ought to be aligned
     properly.  */
-  if (stack_pointer_delta % (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT))
-    abort ();
+  gcc_assert (!(stack_pointer_delta
+		% (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)));
 
   /* If needed, check that we have the required amount of stack.  Take into
      account what has already been checked.  */
@@ -1539,8 +1534,7 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 			   1, OPTAB_WIDEN);
 #endif
 
-      if (temp != test_addr)
-	abort ();
+      gcc_assert (temp == test_addr);
 
       emit_label (test_lab);
       emit_cmp_and_jump_insns (test_addr, last_addr, CMP_OPCODE,
@@ -1594,8 +1588,7 @@ hard_function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
 	}
 
       /* No suitable mode found.  */
-      if (tmpmode == VOIDmode)
-	abort ();
+      gcc_assert (tmpmode != VOIDmode);
 
       PUT_MODE (val, tmpmode);
     }
