@@ -2644,6 +2644,20 @@ fmpysuboperands(operands)
   return 1;
 }
 
+
+/* Return 1 iff OP is a valid operator to use in an incscc 
+   instruction.  Adding or subtracting the condition code
+   to/from another operand is valid on the PA, so return 1 
+   for PLUS or MINUS.  */
+int
+incscc_operator (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == PLUS || GET_CODE (op) == MINUS);
+}
+
+
 /* Return 1 if OP is suitable for the second add operand (the unshifed 
    operand) in an shadd instruction.   Allow CONST_INT to work around
    a reload bug.  */
