@@ -3053,7 +3053,7 @@
 ;; is sufficient.
 (define_insn "cacheflush"
   [(unspec_volatile [(const_int 1)] 0)
-   (use (match_operand:SI 0 "" ""))]
+   (use (mem:SI (match_operand:SI 0 "register_operand" "r")))]
   ""
-  "fdc %0\;sync\;fic %0\;sync\;nop\;nop\;nop\;nop\;nop\;nop\;nop"
+  "fdc 0(0,%0)\;sync\;fic 0(0,%0)\;sync\;nop\;nop\;nop\;nop\;nop\;nop\;nop"
   [(set_attr "length" "11")])
