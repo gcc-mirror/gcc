@@ -1,3 +1,8 @@
+Tue Jul  7 00:50:17 1998  Manfred Hollstein   (manfred@s-direktnet.de)
+
+        * libgcc2.c (L_exit): Provide a fake for atexit on systems which
+        define ON_EXIT but not HAVE_ATEXIT.
+
 Tue Jul  7 00:44:35 1998  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* m68k.md (zero_extend QI to HI): Correctly handle TARGET_5200.
