@@ -1,3 +1,12 @@
+2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* exception.cc (__cp_pop_exception): Cleanup the original object.
+
+1999-11-13  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* rtti.c (get_tinfo_fn_unused): Split out from get_tinfo_fn.
+	* class.c (set_rtti_entry): Use it.
+
 Wed Apr 12 00:45:49 2000  Jeffrey A Law  (law@cygnus.com)
 
 	2000-02-03    <loewis@informatik.hu-berlin.de>

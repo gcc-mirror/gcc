@@ -3249,6 +3249,7 @@ extern tree get_tinfo_fn_dynamic		PROTO((tree));
 extern tree build_typeid			PROTO((tree));
 extern tree build_x_typeid			PROTO((tree));
 extern tree get_tinfo_fn			PROTO((tree));
+extern tree get_tinfo_fn_unused			PROTO((tree));
 extern tree get_typeid				PROTO((tree));
 extern tree get_typeid_1			PROTO((tree));
 extern tree build_dynamic_cast			PROTO((tree, tree));

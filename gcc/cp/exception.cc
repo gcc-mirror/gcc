@@ -247,10 +247,10 @@ __cp_pop_exception (cp_eh_info *p)
 
   if (p->cleanup)
     /* 2 is a magic value for destructors; see build_delete().  */
-    p->cleanup (p->value, 2);
+    p->cleanup (p->original_value, 2);  // value may have been adjusted.
 
   if (! __is_pointer (p->type))
-    __eh_free (p->original_value);  // value may have been co-erced.
+    __eh_free (p->original_value);  // value may have been adjusted.
 
   __eh_free (p);
 }

@@ -680,7 +680,7 @@ set_rtti_entry (virtuals, offset, type)
     return;
 
   if (flag_rtti)
-    vfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, get_tinfo_fn (type));
+    vfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, get_tinfo_fn_unused (type));
   else
     vfn = build1 (NOP_EXPR, vfunc_ptr_type_node, size_zero_node);
   TREE_CONSTANT (vfn) = 1;

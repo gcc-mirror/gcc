@@ -363,8 +363,19 @@ get_tinfo_var (type)
   return tdecl;
 }
 
+/* Returns the decl for a function which will return a type_info node for
+   TYPE.  This version does not mark the function used, for use in
+   set_rtti_entry; for the vtable case, we'll get marked in
+   finish_vtable_vardecl, when we know that we want to be emitted.
+
+   We do this to avoid emitting the tinfo node itself, since we don't
+   currently support DECL_DEFER_OUTPUT for variables.  Also, we don't
+   associate constant pools with their functions properly, so we would
+   emit string constants and such even though we don't emit the actual
+   function.  When those bugs are fixed, this function should go away.  */
+
 tree
-get_tinfo_fn (type)
+get_tinfo_fn_unused (type)
      tree type;
 {
   tree name;
@@ -393,10 +404,20 @@ get_tinfo_fn (type)
 
   pushdecl_top_level (d);
   make_function_rtl (d);
-  mark_used (d);
   mark_inline_for_output (d);
   pop_obstacks ();
 
+  return d;
+}
+
+/* Likewise, but also mark it used.  Called by various EH and RTTI code.  */
+
+tree
+get_tinfo_fn (type)
+     tree type;
+{
+  tree d = get_tinfo_fn_unused (type);
+  mark_used (d);
   return d;
 }
 
