@@ -37,6 +37,13 @@
   "efsabs %0,%1"
   [(set_attr "type" "fpsimple")])
 
+(define_insn "*nabssf2_gpr"
+  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
+	(neg:SF (abs:SF (match_operand:SF 1 "gpc_reg_operand" "r"))))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS"
+  "efsnabs %0,%1"
+  [(set_attr "type" "fpsimple")])
+
 (define_insn "*addsf3_gpr"
   [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
 	(plus:SF (match_operand:SF 1 "gpc_reg_operand" "%r")

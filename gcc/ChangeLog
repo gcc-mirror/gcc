@@ -1,3 +1,7 @@
+2003-08-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/spe.md ("*nabssf2_gpr"): New.
+
 2003-08-18  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md: Quote C code in braces.  Remove use of
