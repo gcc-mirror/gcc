@@ -146,7 +146,7 @@ HFILES =
 
 # NOTE: If you add new files to the library, add them to this list
 # (alphabetical), and add them to REQUIRED_OFILES or 'functions.def'.
-CFILES = alloca.c argv.c atexit.c basename.c bcmp.c bcopy.c bzero.c \
+CFILES = asprintf.c alloca.c argv.c atexit.c basename.c bcmp.c bcopy.c bzero.c \
 	 choose-temp.c clock.c concat.c cplus-dem.c fdmatch.c fnmatch.c \
 	 getcwd.c getopt.c getopt1.c getpagesize.c getruntime.c \
          floatformat.c hex.c index.c insque.c \

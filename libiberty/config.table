@@ -10,6 +10,8 @@ case "${host}" in
   *-*-cxux7*)		frag=mh-cxux7 ;;
   *-*-cygwin32)		frag=mh-cygwin32 ;;
   *-*-dgux*)		frag=mh-sysv ;;
+  *-*-freebsd2.1.*)	frag=mh-fbsd21 ;;
+  *-*-freebsd2.2.*)	frag=mh-fbsd21 ;;
   hppa*-hp-bsd*)	frag=mh-hpbsd ;;
   *-*-hpux*)		frag=mh-hpux ;;
   *-*-hiux*)		frag=mh-hpux ;;

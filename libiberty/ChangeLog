@@ -1,9 +1,61 @@
+Tue Oct 14 12:01:00 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* cplus-dem.c (demangle_signature): Don't look for return types on
+	constructors.  Handle member template constructors.
+
+Fri Oct  3 17:53:30 1997  Ian Lance Taylor  <ian@cygnus.com>
+
+	* README: Fix configuration instructions.
+
+Mon Sep 29 12:28:41 1997  Ian Lance Taylor  <ian@cygnus.com>
+
+	* pexecute.c: Update to current version from /gd/gnu/lib:
+
+	Mon Sep 29 12:27:59 1997  Ian Lance Taylor  <ian@cygnus.com>
+
+        * pexecute.c: Use spawn if __CYGWIN32__.
+
+	1997-08-08  Paul Eggert  <eggert@twinsun.com>
+
+        * pexecute.c: Include "config.h" first, as per autoconf manual.
+
+	Fri Jun 27 15:20:29 1997  Scott Christley <scottc@net-community.com>
+
+        * pexecute.c (fix_argv): New function.
+        (pexecute): Win32 but not Cygwin32 needs its arguments fixed.
+        Add underscore to cwait function call.
+
 Sun Sep 28 12:00:52 1997  Mark Mitchell  <mmitchell@usa.net>
 
         * cplus-dem.c (demangle_template): Add new parameter.  Handle new
         template-function mangling.
         (consume_count_with_underscores): New function.
         (demangle_signature): Handle new name-mangling scheme.
+
+Sun Sep 28 12:00:52 1997  Mark Mitchell  <mmitchell@usa.net>
+
+        * cplus-dem.c (demangle_template): Add new parameter.  Handle new
+        template-function mangling.
+        (consume_count_with_underscores): New function.
+        (demangle_signature): Handle new name-mangling scheme.
+
+Wed Sep 24 00:31:59 1997  Felix Lee  <flee@yin.cygnus.com>
+
+	* asprintf.c: stdarg.h when ALMOST_STDC
+	* config/mh-windows (EXTRA_OFILES): add asprintf.o and
+ 	strncasecmp.o.
+
+Thu Aug 28 14:27:15 1997  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* vasprintf.c (vasprintf): Allow for _BSD_VA_LIST_.
+
+	* config.table: Add case for FreeBSD 2.1 and 2.2, needs mh-fbsd21.
+
+	* config/mh-fbsd21 (EXTRA_OFILES): Force vasprintf.o
+
+Wed Sep 10 12:43:10 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cplus-dem.c (demangle_fund_type): Change "complex" to "__complex".
 
 Tue Sep  9 19:39:12 1997  Jim Wilson  <wilson@cygnus.com>
 
@@ -14,10 +66,20 @@ Fri Sep  5 17:28:50 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (distclean): Do MULTICLEAN before deleting Makefile.
 
+Fri Sep  5 16:34:42 1997  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* asprintf.c (asprintf): New file.
+	* Makefile.in (CFILES): Add asprintf.c
+	* functions.def: Ditto.
+
 Wed Sep  3 14:35:52 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (stamp-needed, stamp-config): Add MULTISRCTOP to
 	pathname for move-if-change.
+
+Thu Aug 28 18:53:34 1997  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* argv.c (dupargv): New function, duplicate an argument vector.
 
 Tue Aug 19 20:28:45 1997  Geoffrey Noer  <noer@cygnus.com>
 

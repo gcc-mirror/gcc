@@ -118,7 +118,11 @@ int
 vasprintf (result, format, args)
      char **result;
      const char *format;
+#if defined (_BSD_VA_LIST_) && defined (__FreeBSD__)
+     _BSD_VA_LIST_ args;
+#else
      va_list args;
+#endif
 {
   return int_vasprintf (result, format, &args);
 }

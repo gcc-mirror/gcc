@@ -23,11 +23,14 @@ Boston, MA 02111-1307, USA.  */
 /* This file lives in at least two places: libiberty and gcc.
    Don't change one without the other.  */
 
+#ifdef IN_GCC
+#include "config.h"
+#endif
+
 #include <stdio.h>
 #include <errno.h>
 
 #ifdef IN_GCC
-#include "config.h"
 #include "gansidecl.h"
 /* ??? Need to find a suitable header file.  */
 #define PEXECUTE_FIRST   1
@@ -223,6 +226,51 @@ pwait (pid, status, flags)
 extern int _spawnv ();
 extern int _spawnvp ();
 
+#ifdef __CYGWIN32__
+
+#define fix_argv(argvec) (argvec)
+
+#else
+
+/* This is a kludge to get around the Microsoft C spawn functions' propensity
+   to remove the outermost set of double quotes from all arguments.  */
+
+const char * const *
+fix_argv (argvec)
+     char **argvec;
+{
+  int i;
+
+  for (i = 1; argvec[i] != 0; i++)
+    {
+      int len, j;
+      char *temp, *newtemp;
+
+      temp = argvec[i];
+      len = strlen (temp);
+      for (j = 0; j < len; j++)
+        {
+          if (temp[j] == '"')
+            {
+              newtemp = xmalloc (len + 2);
+              strncpy (newtemp, temp, j);
+              newtemp [j] = '\\';
+              strncpy (&newtemp [j+1], &temp [j], len-j);
+              newtemp [len+1] = 0;
+              temp = newtemp;
+              len++;
+              j++;
+            }
+        }
+
+        argvec[i] = temp;
+      }
+
+  return (const char * const *) argvec;
+}
+
+#endif /* ! defined (__CYGWIN32__) */
+
 int
 pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
      const char *program;
@@ -236,7 +284,8 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
 
   if ((flags & PEXECUTE_ONE) != PEXECUTE_ONE)
     abort ();
-  pid = (flags & PEXECUTE_SEARCH ? _spawnvp : _spawnv) (_P_NOWAIT, program, argv);
+  pid = (flags & PEXECUTE_SEARCH ? _spawnvp : _spawnv)
+    (_P_NOWAIT, program, fix_argv(argv));
   if (pid == -1)
     {
       *errmsg_fmt = install_error_msg;
@@ -254,7 +303,7 @@ pwait (pid, status, flags)
 {
   /* ??? Here's an opportunity to canonicalize the values in STATUS.
      Needed?  */
-  return cwait (status, pid, WAIT_CHILD);
+  return _cwait (status, pid, WAIT_CHILD);
 }
 
 #endif /* _WIN32 */

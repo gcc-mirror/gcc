@@ -293,6 +293,9 @@ string_prependn PARAMS ((string *, const char *, int));
 static int
 get_count PARAMS ((const char **, int *));
 
+static int 
+consume_count_with_underscores PARAMS ((const char**));
+
 static int
 consume_count PARAMS ((const char **));
 
@@ -339,6 +342,42 @@ consume_count (type)
       (*type)++;
     }
   return (count);
+}
+
+
+/* Like consume_count, but for counts that are preceeded and followed
+   by '_' if they are greater than 10.  Also, -1 is returned for
+   failure, since 0 can be a valid value.  */
+
+static int
+consume_count_with_underscores (mangled)
+     const char **mangled;
+{
+  int idx;
+
+  if (**mangled == '_')
+    {
+      (*mangled)++;
+      if (!isdigit (**mangled))
+	return -1;
+
+      idx = consume_count (mangled);
+      if (**mangled != '_')
+	/* The trailing underscore was missing. */
+	return -1;
+	    
+      (*mangled)++;
+    }
+  else
+    {
+      if (**mangled < '0' || **mangled > '9')
+	return -1;
+	    
+      idx = **mangled - '0';
+      (*mangled)++;
+    }
+
+  return idx;
 }
 
 
@@ -831,7 +870,8 @@ demangle_signature (work, mangled, declp)
 	    {
 	      /* A G++ template function.  Read the template arguments. */
 	      success = demangle_template (work, mangled, declp, 0, 0);
-	      expect_return_type = 1;
+	      if (!(work->constructor & 1))
+		expect_return_type = 1;
 	      (*mangled)++;
 	      break;
 	    }
@@ -1534,7 +1574,8 @@ demangle_prefix (work, mangled, declp)
 	}
     }
   else if ((scan == *mangled)
-	   && (isdigit (scan[2]) || (scan[2] == 'Q') || (scan[2] == 't')))
+	   && (isdigit (scan[2]) || (scan[2] == 'Q') || (scan[2] == 't')
+	       || (scan[2] == 'H')))
     {
       /* The ARM says nothing about the mangling of local variables.
 	 But cfront mangles local variables by prepending __<nesting_level>
@@ -1551,7 +1592,8 @@ demangle_prefix (work, mangled, declp)
 	{
 	  /* A GNU style constructor starts with __[0-9Qt].  But cfront uses
 	     names like __Q2_3foo3bar for nested type names.  So don't accept
-	     this style of constructor for cfront demangling.  */
+	     this style of constructor for cfront demangling.  A GNU
+	     style member-template constructor starts with 'H'. */
 	  if (!(LUCID_DEMANGLING || ARM_DEMANGLING))
 	    work -> constructor += 1;
 	  *mangled = scan + 2;
@@ -2345,6 +2387,37 @@ do_type (work, mangled, result)
       }
     break;
 
+    case 'X':
+    case 'Y':
+      /* A template parm.  We substitute the corresponding argument. */
+      {
+	int idx;
+	int lvl;
+
+	(*mangled)++;
+	idx = consume_count_with_underscores (mangled);
+
+	if (idx == -1 
+	    || (work->tmpl_argvec && idx >= work->ntmpl_args)
+	    || consume_count_with_underscores (mangled) == -1)
+	  {
+	    success = 0;
+	    break;
+	  }
+
+	if (work->tmpl_argvec)
+	  string_append (result, work->tmpl_argvec[idx]);
+	else
+	  {
+	    char buf[10];
+	    sprintf(buf, "T%d", idx);
+	    string_append (result, buf);
+	  }
+
+	success = 1;
+      }
+    break;
+
     default:
       success = demangle_fund_type (work, mangled, result);
       break;
@@ -2423,7 +2496,7 @@ demangle_fund_type (work, mangled, result)
 	case 'J':
 	  (*mangled)++;
 	  APPEND_BLANK (result);
-	  string_append (result, "complex");
+	  string_append (result, "__complex");
 	  break;
 	default:
 	  done = 1;
