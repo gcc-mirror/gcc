@@ -1,5 +1,5 @@
 /* Optimize jump instructions, for GNU compiler.
-   Copyright (C) 1987, 1988, 1989, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91, 92, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1155,10 +1155,22 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 					     1, OPTAB_WIDEN);
 		    }
 		  else if (normalizep != 1)
-		    target = expand_and (uval, target,
-					 (GET_CODE (target) == REG
-					  && ! preserve_subexpressions_p ()
-					  ? target : NULL_RTX));
+		    {
+		      /* We know that either CVAL or UVAL is zero.  If
+			 UVAL is zero, negate TARGET and `and' with CVAL.
+			 Otherwise, `and' with UVAL.  */
+		      if (uval == const0_rtx)
+			{
+			  target = expand_unop (GET_MODE (var), one_cmpl_optab,
+						target, NULL_RTX, 0);
+			  uval = cval;
+			}
+
+		      target = expand_and (uval, target,
+					   (GET_CODE (target) == REG
+					    && ! preserve_subexpressions_p ()
+					    ? target : NULL_RTX));
+		    }
 		  
 		  emit_move_insn (var, target);
 		  seq = get_insns ();
