@@ -1,3 +1,7 @@
+2001-05-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* README.ALTOS: Remove obsolete file.
+
 Tue May 15 22:12:41 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (life_analysis): After life analysis is complete, do
