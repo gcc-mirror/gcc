@@ -6766,7 +6766,7 @@ move\\t%0,%z4\\n\\
 ;; to make it simple enough for combine to understand.
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "d,d")
+  [(set (match_operand:SI 0 "register_operand" "=d,d")
 	(lshiftrt:SI (match_operand:SI 1 "memory_operand" "R,m")
 		     (match_operand:SI 2 "immediate_operand" "I,I")))]
   "TARGET_MIPS16"
