@@ -19,22 +19,26 @@
 #
 # This file is contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
-## This file contains support routines for dg.exp-based testsuite
+## This file contains support routines for dg.exp based testsuite
 ## framework.
 
 ## The global associative array lib_env contains the totality
 ## of options necessary to run testcases; the meanings of which are
 ## as follows:
-##    lib_env(CXX):  The compiler used to run testcases
-##    lib_env(CXXFLAGS): Special flags passed to the compiler
-##    lib_env(INCLUDES):
-##    lib_env(LDFLAGS): Additional library flags 
-##    lib_env(LIBTOOL):
-##    lib_env(SRC_DIR):
-##    lib_env(BUILD_DIR):
-##    lib_env(static):
-##    lib_env(shared):
-##    lib_env(testcase_options):
+##    lib_env(CXX)       The compiler used to run testcases.
+##    lib_env(CXXFLAGS)  Special flags passed to the compiler.
+##    lib_env(INCLUDES)  Includes options to pass to the compiler.
+##    lib_env(LDFLAGS)   Additional library flags.
+##    lib_env(LIBTOOL)   Path to the `libtool' script.
+##    lib_env(SRC_DIR)   Where V3 master source lives.
+##    lib_env(BUILD_DIR) Where V3 is built.
+##    lib_env(static)    Flags to pass to the linker to build a 
+##                       statically linked executable.
+##    lib_env(shared)    Flags to pass to the linker to build a 
+##                       dynamically linked executable.
+##    lib_env(testcase_options) Options specified by current testcase.
+##                       These are specified through the @xxx@-keywords.
+
 
 load_lib dg.exp
 
@@ -55,8 +59,7 @@ proc libstdc++-dg-init { args } {
     # Set proper environment variables for the framework.
     libstdc++-setup-flags ${src-dir} ${build-dir}
     
-    # mkcheck.in used to output these information.  Maybe we should
-    # abandon that practice.
+    # mkcheck.in used to output these information.
     set output [remote_exec host $lib_env(CXX) -v]
     if { [lindex $output 0] == 0 } {
 	set output [lindex $output 1]
@@ -69,14 +72,17 @@ proc libstdc++-dg-init { args } {
     }
 }
 
-## dg.exp callback.  Called from dg-test to run PROGRAM images.
+## dg.exp callback.  Called from dg-test to run PROGRAM.
+##
+## This is the heart of the framework.  For the time being, it is
+## pretty much baroque, but it will improve as time goes.
 proc libstdc++_load { prog } {
     global lib_env
     set opts $lib_env(testcase_options)
     set results [remote_load target $lib_env(LIBTOOL) "--mode=execute $prog"]
 
     if { [lindex $results 0] == "pass" && [info exists opts(diff)] } {
-	# FIXME: We should first test for any mentioned output file here
+	# FIXME: We should first test for any mentioned @output@ file here
 	#        before taking any other action.
 
 	set firsts [glob -nocomplain [lindex $opts(diff) 0]]
@@ -84,7 +90,7 @@ proc libstdc++_load { prog } {
 	foreach f $firsts s $seconds {
 	    if { [diff $f $s] == 0 } {
 		# FIXME: Well we should report a message.  But for the time
-		#        being, just pretend, there is nothing much to say.
+		#        being, just pretend there is nothing much to say.
 		#        Yes, that is silly, I know.  But we need, first, to
 		#        to have a working framework.
 		break
@@ -129,20 +135,20 @@ proc libstdc++_runtest { testdirs } {
 	    continue
 	}
 	
-	# Make the appropriate test-dirs with accompaning .libs/
+	# Make the appropriate test-dirs with related .libs/ subdir
 	# to keep libtool happy.
 	set td "$outdir/[dg-trim-dirname $srcdir $d]"
 	maybe-make-directory $td
 	maybe-make-directory $td/.libs
-	cd $td;
 
+	cd $td;
 	foreach testfile $testfiles {
-	    # We're not supposed to test this file, just skip it.
+	    # If we're not supposed to test this file, just skip it.
 	    if ![runtest_file_p $runtests $testfile] {
 		continue
 	    }
 	    
-	    verbose "Testing [dg-trim-dirname $srcdir $testfile]"
+#	    verbose "Testing [dg-trim-dirname $srcdir $testfile]"
 	    libstdc++_do_test $testfile static
 	    libstdc++_do_test $testfile shared
 	}
@@ -155,10 +161,8 @@ proc libstdc++_runtest { testdirs } {
 ##
 ## TESTCASE is the file-name of the program to test;
 ## COMPILE_TYPE is the kind of compilation to apply to TESTCASE; 
-##              current compilation kinds are: preprocessing(preprocess),
-##              compiling-only-no-assembling-nor-linking(compile),
-##              compiling-and-assmbling-no-linking(assemble),
-##              linking-no-running(link), running(run).
+##              current compilation kinds are: preprocess, compile,
+##              assemble, link, run.
 proc libstdc++-dg-test { testfile compile_type additional-options } {
     global srcdir; global outdir
     global lib_env
@@ -167,7 +171,7 @@ proc libstdc++-dg-test { testfile compile_type additional-options } {
     # Prepare for compilation output
     set comp_output ""
 
-    # By default, we want to use libtool to run tests.
+    # By default, we want to use libtool to compile and run tests.
     set lt $lib_env(LIBTOOL)
     set lt_args "--tag=CXX"
     
@@ -188,7 +192,7 @@ proc libstdc++-dg-test { testfile compile_type additional-options } {
 	"run" -
 	"link" {
 	    # If we're asked to run a testcase, then just do a `link'.
-	    # The framework will load the program image latter through
+	    # Later, the framework will load the program image through
 	    # libstdc++_load callback.
 	    if { $which_library == "static" } {
 		append output_file ".st-exe"
@@ -240,8 +244,7 @@ proc libstdc++-setup-flags {src-dir build-dir} {
 	set lib_env(FLAGS) "$lib_env(CXX) -B$lib_env(BUILD_DIR)/ \
 		$lib_env(INCLUDES) $lib_env(CXXFLAGS)"
     } else {
-	warning "$output"
-	exit $status
+	perror "$output"
     }
 }
 
@@ -253,6 +256,7 @@ proc maybe-make-directory {dir} {
 
 proc libstdc++_do_test { testfile lib } {
     global which_library; set which_library $lib
+    ## Is it planed to handle -keep-output throught @xxx@-option
     dg-test -keep-output $testfile "" ""
 }
 
