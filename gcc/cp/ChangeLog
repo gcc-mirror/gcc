@@ -1,3 +1,9 @@
+2003-07-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* parser.c (cp_parser_type_parameter): Reformat.
+	(cp_parser_parameter_declaration): Deprecate default args where
+	not allowed.
+
 2003-07-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cfns.h: Rebuilt.
