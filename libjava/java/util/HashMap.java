@@ -743,18 +743,9 @@ public class HashMap extends AbstractMap
           {
             int idx = hash(e.key);
             HashEntry dest = buckets[idx];
-
-            if (dest != null)
-              {
-                while (dest.next != null)
-                  dest = dest.next;
-                dest.next = e;
-              }
-            else
-              buckets[idx] = e;
-
             HashEntry next = e.next;
-            e.next = null;
+            e.next = buckets[idx];
+            buckets[idx] = e;
             e = next;
           }
       }
