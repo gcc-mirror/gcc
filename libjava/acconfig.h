@@ -28,8 +28,11 @@
 /* Define if you have sleep.  */
 #undef HAVE_SLEEP
 
-/* Define if you have __int32_t and __uint32_t. */
+/* Define if you have int32_t and uint32_t. */
 #undef HAVE_INT32_DEFINED
+
+/* Define if you have u_int32_t */
+#undef HAVE_BSD_INT32_DEFINED
 
 /* Define if you're running eCos. */
 #undef ECOS

@@ -1,3 +1,24 @@
+Fri May 28 22:20:03 1999  Anthony Green  <green@cygnus.com>
+
+	* java/lang/fdlibm.h: Don't use __uint32_t.  Include mprec.h.
+	* java/lang/e_log.c: Don't use __uint32_t.
+
+1999-05-27  Eric Christopher <echristo@cygnus.com>
+
+	* configure: Rebuilt
+	* configure.in: Fixed ISO C9X and namespace collision with __uint32_t
+	* acconfig.h: Rebuilt
+	* include/config.h.in: Rebuilt
+
+	* java/lang/mprec.h, java/lang/e_acos.c, java/lang/e_asin.c,
+ 	java/lang/e_atan2.c, java/lang/e_exp.c, java/lang/e_fmod.c,
+ 	e_log.c, java/lang/e_pow.c, java/lang/e_rem_pio2.c,
+ 	java/lang/e_remainder.c, java/lang/e_sqrt.c, java/lang/fdlibm.h,
+ 	k_tan.c, java/lang/mprec.h, java/lang/s_atan.c,
+ 	java/lang/s_ceil.c, java/lang/s_copysign.c, java/lang/s_fabs.c,
+ 	s_floor.c, java/lang/s_rint.c, java/lang/sf_rint.c: Fixed ISO C9X
+ 	and namespace collision with __uint32_t
+
 1999-06-23  Tom Tromey  <tromey@cygnus.com>
 
 	* java/util/zip/InflaterInputStream.java (read): Throw
