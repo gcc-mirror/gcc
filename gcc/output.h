@@ -418,7 +418,7 @@ extern int current_function_uses_only_leaf_regs;
 /* Default file in which to dump debug output.  */
 
 #ifdef BUFSIZ
-extern FILE *rtl_dump_file;
+extern FILE *dump_file;
 #endif
 
 /* Nonnull if the insn currently being emitted was a COND_EXEC pattern.  */

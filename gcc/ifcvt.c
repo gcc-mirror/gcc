@@ -566,8 +566,8 @@ cond_exec_process_if_block (ce_if_block_t * ce_info,
 #endif
 
   /* Conversion succeeded.  */
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "%d insn%s converted to conditional execution.\n",
+  if (dump_file)
+    fprintf (dump_file, "%d insn%s converted to conditional execution.\n",
 	     n_insns, (n_insns == 1) ? " was" : "s were");
 
   /* Merge the blocks!  */
@@ -2273,8 +2273,8 @@ find_if_header (basic_block test_bb, int pass)
   return NULL;
 
  success:
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Conversion succeeded on pass %d.\n", pass);
+  if (dump_file)
+    fprintf (dump_file, "Conversion succeeded on pass %d.\n", pass);
   return ce_info.test_bb;
 }
 
@@ -2514,23 +2514,29 @@ find_if_block (struct ce_if_block * ce_info)
 
   num_possible_if_blocks++;
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
-      fprintf (rtl_dump_file, "\nIF-THEN%s block found, pass %d, start block %d [insn %d], then %d [%d]",
+      fprintf (dump_file,
+	       "\nIF-THEN%s block found, pass %d, start block %d "
+	       "[insn %d], then %d [%d]",
 	       (else_bb) ? "-ELSE" : "",
 	       ce_info->pass,
-	       test_bb->index, (BB_HEAD (test_bb)) ? (int)INSN_UID (BB_HEAD (test_bb)) : -1,
-	       then_bb->index, (BB_HEAD (then_bb)) ? (int)INSN_UID (BB_HEAD (then_bb)) : -1);
+	       test_bb->index,
+	       BB_HEAD (test_bb) ? (int)INSN_UID (BB_HEAD (test_bb)) : -1,
+	       then_bb->index,
+	       BB_HEAD (then_bb) ? (int)INSN_UID (BB_HEAD (then_bb)) : -1);
 
       if (else_bb)
-	fprintf (rtl_dump_file, ", else %d [%d]",
-		 else_bb->index, (BB_HEAD (else_bb)) ? (int)INSN_UID (BB_HEAD (else_bb)) : -1);
+	fprintf (dump_file, ", else %d [%d]",
+		 else_bb->index,
+		 BB_HEAD (else_bb) ? (int)INSN_UID (BB_HEAD (else_bb)) : -1);
 
-      fprintf (rtl_dump_file, ", join %d [%d]",
-	       join_bb->index, (BB_HEAD (join_bb)) ? (int)INSN_UID (BB_HEAD (join_bb)) : -1);
+      fprintf (dump_file, ", join %d [%d]",
+	       join_bb->index,
+	       BB_HEAD (join_bb) ? (int)INSN_UID (BB_HEAD (join_bb)) : -1);
 
       if (ce_info->num_multiple_test_blocks > 0)
-	fprintf (rtl_dump_file, ", %d %s block%s last test %d [%d]",
+	fprintf (dump_file, ", %d %s block%s last test %d [%d]",
 		 ce_info->num_multiple_test_blocks,
 		 (ce_info->and_and_p) ? "&&" : "||",
 		 (ce_info->num_multiple_test_blocks == 1) ? "" : "s",
@@ -2539,7 +2545,7 @@ find_if_block (struct ce_if_block * ce_info)
 		  ? (int)INSN_UID (BB_HEAD (ce_info->last_test_bb))
 		  : -1));
 
-      fputc ('\n', rtl_dump_file);
+      fputc ('\n', dump_file);
     }
 
   /* Make sure IF, THEN, and ELSE, blocks are adjacent.  Actually, we get the
@@ -2590,9 +2596,9 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
   else
     return FALSE;
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
-      fprintf (rtl_dump_file, "\nTRAP-IF block found, start %d, trap %d\n",
+      fprintf (dump_file, "\nTRAP-IF block found, start %d, trap %d\n",
 	       test_bb->index, trap_bb->index);
     }
 
@@ -2794,8 +2800,8 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
     return FALSE;
 
   num_possible_if_blocks++;
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file,
+  if (dump_file)
+    fprintf (dump_file,
 	     "\nIF-CASE-1 found, start %d, then %d\n",
 	     test_bb->index, then_bb->index);
 
@@ -2873,8 +2879,8 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
     return FALSE;
 
   num_possible_if_blocks++;
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file,
+  if (dump_file)
+    fprintf (dump_file,
 	     "\nIF-CASE-2 found, start %d, else %d\n",
 	     test_bb->index, else_bb->index);
 
@@ -3213,8 +3219,8 @@ if_convert (int x_life_data_ok)
       pass++;
 
 #ifdef IFCVT_MULTIPLE_DUMPS
-      if (rtl_dump_file && pass > 1)
-	fprintf (rtl_dump_file, "\n\n========== Pass %d ==========\n", pass);
+      if (dump_file && pass > 1)
+	fprintf (dump_file, "\n\n========== Pass %d ==========\n", pass);
 #endif
 
       FOR_EACH_BB (bb)
@@ -3225,21 +3231,21 @@ if_convert (int x_life_data_ok)
 	}
 
 #ifdef IFCVT_MULTIPLE_DUMPS
-      if (rtl_dump_file && cond_exec_changed_p)
-	print_rtl_with_bb (rtl_dump_file, get_insns ());
+      if (dump_file && cond_exec_changed_p)
+	print_rtl_with_bb (dump_file, get_insns ());
 #endif
     }
   while (cond_exec_changed_p);
 
 #ifdef IFCVT_MULTIPLE_DUMPS
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "\n\n========== no more changes\n");
+  if (dump_file)
+    fprintf (dump_file, "\n\n========== no more changes\n");
 #endif
 
   free_dominance_info (CDI_POST_DOMINATORS);
 
-  if (rtl_dump_file)
-    fflush (rtl_dump_file);
+  if (dump_file)
+    fflush (dump_file);
 
   clear_aux_for_blocks ();
 
@@ -3258,15 +3264,15 @@ if_convert (int x_life_data_ok)
     }
 
   /* Write the final stats.  */
-  if (rtl_dump_file && num_possible_if_blocks > 0)
+  if (dump_file && num_possible_if_blocks > 0)
     {
-      fprintf (rtl_dump_file,
+      fprintf (dump_file,
 	       "\n%d possible IF blocks searched.\n",
 	       num_possible_if_blocks);
-      fprintf (rtl_dump_file,
+      fprintf (dump_file,
 	       "%d IF blocks converted.\n",
 	       num_updated_if_blocks);
-      fprintf (rtl_dump_file,
+      fprintf (dump_file,
 	       "%d true changes made.\n\n\n",
 	       num_true_changes);
     }

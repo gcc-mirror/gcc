@@ -536,10 +536,10 @@ verify_wide_reg (int regno, basic_block bb)
       head = NEXT_INSN (head);
     }
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
-      fprintf (rtl_dump_file, "Register %d died unexpectedly.\n", regno);
-      dump_bb (bb, rtl_dump_file, 0);
+      fprintf (dump_file, "Register %d died unexpectedly.\n", regno);
+      dump_bb (bb, dump_file, 0);
     }
   abort ();
 }
@@ -556,14 +556,14 @@ verify_local_live_at_start (regset new_live_at_start, basic_block bb)
 	 registers.  The regsets should exactly match.  */
       if (! REG_SET_EQUAL_P (new_live_at_start, bb->global_live_at_start))
 	{
-	  if (rtl_dump_file)
+	  if (dump_file)
 	    {
-	      fprintf (rtl_dump_file,
+	      fprintf (dump_file,
 		       "live_at_start mismatch in bb %d, aborting\nNew:\n",
 		       bb->index);
-	      debug_bitmap_file (rtl_dump_file, new_live_at_start);
-	      fputs ("Old:\n", rtl_dump_file);
-	      dump_bb (bb, rtl_dump_file, 0);
+	      debug_bitmap_file (dump_file, new_live_at_start);
+	      fputs ("Old:\n", dump_file);
+	      dump_bb (bb, dump_file, 0);
 	    }
 	  abort ();
 	}
@@ -580,11 +580,11 @@ verify_local_live_at_start (regset new_live_at_start, basic_block bb)
 	  /* No registers should die.  */
 	  if (REGNO_REG_SET_P (bb->global_live_at_start, i))
 	    {
-	      if (rtl_dump_file)
+	      if (dump_file)
 		{
-		  fprintf (rtl_dump_file,
+		  fprintf (dump_file,
 			   "Register %d died unexpectedly.\n", i);
-		  dump_bb (bb, rtl_dump_file, 0);
+		  dump_bb (bb, dump_file, 0);
 		}
 	      abort ();
 	    }
@@ -766,8 +766,8 @@ update_life_info (sbitmap blocks, enum update_life_extent extent, int prop_flags
     }
   timevar_pop ((extent == UPDATE_LIFE_LOCAL || blocks)
 	       ? TV_LIFE_UPDATE : TV_LIFE);
-  if (ndead && rtl_dump_file)
-    fprintf (rtl_dump_file, "deleted %i dead insns\n", ndead);
+  if (ndead && dump_file)
+    fprintf (dump_file, "deleted %i dead insns\n", ndead);
   return ndead;
 }
 
@@ -871,8 +871,8 @@ delete_noop_moves (rtx f ATTRIBUTE_UNUSED)
 	    }
 	}
     }
-  if (nnoops && rtl_dump_file)
-    fprintf (rtl_dump_file, "deleted %i noop moves", nnoops);
+  if (nnoops && dump_file)
+    fprintf (dump_file, "deleted %i noop moves", nnoops);
   return nnoops;
 }
 
@@ -893,8 +893,8 @@ delete_dead_jumptables (void)
 	  && (GET_CODE (PATTERN (next)) == ADDR_VEC
 	      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
 	{
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file, "Dead jumptable %i removed\n", INSN_UID (insn));
+	  if (dump_file)
+	    fprintf (dump_file, "Dead jumptable %i removed\n", INSN_UID (insn));
 	  delete_insn (NEXT_INSN (insn));
 	  delete_insn (insn);
 	  next = NEXT_INSN (next);

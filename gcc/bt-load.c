@@ -319,8 +319,8 @@ add_btr_def (fibheap_t all_btr_defs, basic_block bb, int insn_luid, rtx insn,
 
   fibheap_insert (all_btr_defs, -this->cost, this);
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file,
+  if (dump_file)
+    fprintf (dump_file,
       "Found target reg definition: sets %u { bb %d, insn %d }%s priority %d\n",
       dest_reg, bb->index, INSN_UID (insn), (this->group ? "" : ":not const"),
       this->cost);
@@ -363,13 +363,13 @@ new_btr_user (basic_block bb, int insn_luid, rtx insn)
   user->n_reaching_defs = 0;
   user->first_reaching_def = -1;
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
-      fprintf (rtl_dump_file, "Uses target reg: { bb %d, insn %d }",
+      fprintf (dump_file, "Uses target reg: { bb %d, insn %d }",
 	       bb->index, INSN_UID (insn));
 
       if (user->use)
-	fprintf (rtl_dump_file, ": unambiguous use of reg %d\n",
+	fprintf (dump_file, ": unambiguous use of reg %d\n",
 		 REGNO (user->use));
     }
 
@@ -383,16 +383,16 @@ dump_hard_reg_set (HARD_REG_SET s)
   int reg;
   for (reg = 0; reg < FIRST_PSEUDO_REGISTER; reg++)
     if (TEST_HARD_REG_BIT (s, reg))
-      fprintf (rtl_dump_file, " %d", reg);
+      fprintf (dump_file, " %d", reg);
 }
 
 /* Write the set of target regs live in block BB to the dump file.  */
 static void
 dump_btrs_live (int bb)
 {
-  fprintf (rtl_dump_file, "BB%d live:", bb);
+  fprintf (dump_file, "BB%d live:", bb);
   dump_hard_reg_set (btrs_live[bb]);
-  fprintf (rtl_dump_file, "\n");
+  fprintf (dump_file, "\n");
 }
 
 /* REGNO is the number of a branch target register that is being used or
@@ -589,7 +589,7 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
 	      SET_HARD_REG_BIT (btrs_live_at_end[i], regno);
 	}
 
-      if (rtl_dump_file)
+      if (dump_file)
 	dump_btrs_live(i);
     }
 }
@@ -710,8 +710,8 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 
 		      /* We now know that def reaches user.  */
 
-		      if (rtl_dump_file)
-			fprintf (rtl_dump_file,
+		      if (dump_file)
+			fprintf (dump_file,
 			  "Def in insn %d reaches use in insn %d\n",
 			  uid, insn_uid);
 
@@ -725,8 +725,8 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 			  def->has_ambiguous_use = 1;
 			  def_array[user->first_reaching_def]
 			    ->has_ambiguous_use = 1;
-			  if (rtl_dump_file)
-			    fprintf (rtl_dump_file,
+			  if (dump_file)
+			    fprintf (dump_file,
 				     "(use %d has multiple reaching defs)\n",
 				     insn_uid);
 			}
@@ -832,7 +832,7 @@ clear_btr_from_live_range (btr_def def)
 	 {
 	   CLEAR_HARD_REG_BIT (btrs_live[bb], def->btr);
 	   CLEAR_HARD_REG_BIT (btrs_live_at_end[bb], def->btr);
-	   if (rtl_dump_file)
+	   if (dump_file)
 	     dump_btrs_live (bb);
 	 }
      });
@@ -851,7 +851,7 @@ add_btr_to_live_range (btr_def def)
      {
        SET_HARD_REG_BIT (btrs_live[bb], def->btr);
        SET_HARD_REG_BIT (btrs_live_at_end[bb], def->btr);
-       if (rtl_dump_file)
+       if (dump_file)
 	 dump_btrs_live (bb);
      });
 }
@@ -888,14 +888,14 @@ augment_live_range (bitmap live_range, HARD_REG_SET *btrs_live_in_range,
 	  IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live_at_end[new_block]);
 	  IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live[head_bb->index]);
 	}
-      if (rtl_dump_file)
+      if (dump_file)
 	{
-	  fprintf (rtl_dump_file,
+	  fprintf (dump_file,
 		   "Adding end of block %d and rest of %d to live range\n",
 		   new_block, head_bb->index);
-	  fprintf (rtl_dump_file,"Now live btrs are ");
+	  fprintf (dump_file,"Now live btrs are ");
 	  dump_hard_reg_set (*btrs_live_in_range);
-	  fprintf (rtl_dump_file, "\n");
+	  fprintf (dump_file, "\n");
 	}
       for (e = head_bb->pred; e; e = e->pred_next)
 	*tos++ = e->src;
@@ -913,13 +913,13 @@ augment_live_range (bitmap live_range, HARD_REG_SET *btrs_live_in_range,
 	  bitmap_set_bit (live_range, bb->index);
 	  IOR_HARD_REG_SET (*btrs_live_in_range,
 	    btrs_live[bb->index]);
-	  if (rtl_dump_file)
+	  if (dump_file)
 	    {
-	      fprintf (rtl_dump_file,
+	      fprintf (dump_file,
 		"Adding block %d to live range\n", bb->index);
-	      fprintf (rtl_dump_file,"Now live btrs are ");
+	      fprintf (dump_file,"Now live btrs are ");
 	      dump_hard_reg_set (*btrs_live_in_range);
-	      fprintf (rtl_dump_file, "\n");
+	      fprintf (dump_file, "\n");
 	    }
 
 	  for (e = bb->pred; e != NULL; e = e->pred_next)
@@ -1054,8 +1054,8 @@ combine_btr_defs (btr_def def, HARD_REG_SET *btrs_live_in_range)
 	  if (btr != -1)
 	    {
 	      /* We can combine them.  */
-	      if (rtl_dump_file)
-		fprintf (rtl_dump_file,
+	      if (dump_file)
+		fprintf (dump_file,
 			 "Combining def in insn %d with def in insn %d\n",
 			 INSN_UID (other_def->insn), INSN_UID (def->insn));
 
@@ -1120,8 +1120,8 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
   btr_user user;
   rtx set;
 
-  if (rtl_dump_file)
-    fprintf(rtl_dump_file, "migrating to basic block %d, using reg %d\n",
+  if (dump_file)
+    fprintf(dump_file, "migrating to basic block %d, using reg %d\n",
 	    new_def_bb->index, btr);
 
   clear_btr_from_live_range (def);
@@ -1164,8 +1164,8 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
 
   regs_ever_live[btr] = 1;
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "New pt is insn %d, inserted after insn %d\n",
+  if (dump_file)
+    fprintf (dump_file, "New pt is insn %d, inserted after insn %d\n",
 	     INSN_UID (def->insn), INSN_UID (insp));
 
   /* Delete the old target register initialization.  */
@@ -1239,16 +1239,16 @@ migrate_btr_def (btr_def def, int min_cost)
   btr_user user;
   int def_latency = 1;
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file,
+  if (dump_file)
+    fprintf (dump_file,
 	     "Attempting to migrate pt from insn %d (cost = %d, min_cost = %d) ... ",
 	     INSN_UID (def->insn), def->cost, min_cost);
 
   if (!def->group || def->has_ambiguous_use)
     /* These defs are not migratable.  */
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "it's not migratable\n");
+      if (dump_file)
+	fprintf (dump_file, "it's not migratable\n");
       return 0;
     }
 
@@ -1257,8 +1257,8 @@ migrate_btr_def (btr_def def, int min_cost)
        no need to consider it further.
     */
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "it's already combined with another pt\n");
+      if (dump_file)
+	fprintf (dump_file, "it's already combined with another pt\n");
       return 0;
     }
 
@@ -1298,19 +1298,19 @@ migrate_btr_def (btr_def def, int min_cost)
 	 basic block TRY.  */
       int try_freq = basic_block_freq (try);
 
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "trying block %d ...", try->index);
+      if (dump_file)
+	fprintf (dump_file, "trying block %d ...", try->index);
 
       if (try_freq < def_basic_block_freq
 	  || (try_freq == def_basic_block_freq && btr_used_near_def))
 	{
 	  int btr;
 	  augment_live_range (live_range, &btrs_live_in_range, def->bb, try);
-	  if (rtl_dump_file)
+	  if (dump_file)
 	    {
-	      fprintf (rtl_dump_file, "Now btrs live in range are: ");
+	      fprintf (dump_file, "Now btrs live in range are: ");
 	      dump_hard_reg_set (btrs_live_in_range);
-	      fprintf (rtl_dump_file, "\n");
+	      fprintf (dump_file, "\n");
 	    }
 	  btr = choose_btr (btrs_live_in_range);
 	  if (btr != -1)
@@ -1326,8 +1326,8 @@ migrate_btr_def (btr_def def, int min_cost)
 	      /* There are no free target registers available to move
 		 this far forward, so give up */
 	      give_up = 1;
-	      if (rtl_dump_file)
-		fprintf (rtl_dump_file,
+	      if (dump_file)
+		fprintf (dump_file,
 			 "giving up because there are no free target registers\n");
 	    }
 
@@ -1336,8 +1336,8 @@ migrate_btr_def (btr_def def, int min_cost)
   if (!def_moved)
     {
       give_up = 1;
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "failed to move\n");
+      if (dump_file)
+	fprintf (dump_file, "failed to move\n");
     }
   BITMAP_XFREE (live_range);
   return !give_up;
@@ -1352,14 +1352,14 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
   int reg;
 
   gcc_obstack_init (&migrate_btrl_obstack);
-  if (rtl_dump_file)
+  if (dump_file)
     {
       int i;
 
       for (i = 0; i < n_basic_blocks; i++)
 	{
 	  basic_block bb = BASIC_BLOCK (i);
-	  fprintf(rtl_dump_file,
+	  fprintf(dump_file,
 	    "Basic block %d: count = " HOST_WIDEST_INT_PRINT_DEC
 	    " loop-depth = %d idom = %d\n",
 	    i, (HOST_WIDEST_INT) bb->count, bb->loop_depth,
@@ -1391,9 +1391,9 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
       if (migrate_btr_def (def, min_cost))
 	{
 	  fibheap_insert (all_btr_defs, -def->cost, (void *) def);
-	  if (rtl_dump_file)
+	  if (dump_file)
 	    {
-	      fprintf (rtl_dump_file,
+	      fprintf (dump_file,
 		"Putting insn %d back on queue with priority %d\n",
 		INSN_UID (def->insn), def->cost);
 	    }

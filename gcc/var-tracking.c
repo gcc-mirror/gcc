@@ -1689,11 +1689,11 @@ dump_attrs_list (attrs list)
 {
   for (; list; list = list->next)
     {
-      print_mem_expr (rtl_dump_file, list->decl);
-      fprintf (rtl_dump_file, "+");
-      fprintf (rtl_dump_file, HOST_WIDE_INT_PRINT_DEC, list->offset);
+      print_mem_expr (dump_file, list->decl);
+      fprintf (dump_file, "+");
+      fprintf (dump_file, HOST_WIDE_INT_PRINT_DEC, list->offset);
     }
-  fprintf (rtl_dump_file, "\n");
+  fprintf (dump_file, "\n");
 }
 
 /* Print the information about variable *SLOT to dump file.  */
@@ -1705,16 +1705,16 @@ dump_variable (void **slot, void *data ATTRIBUTE_UNUSED)
   int i;
   location_chain node;
 
-  fprintf (rtl_dump_file, "  name: %s\n",
+  fprintf (dump_file, "  name: %s\n",
 	   IDENTIFIER_POINTER (DECL_NAME (var->decl)));
   for (i = 0; i < var->n_var_parts; i++)
     {
-      fprintf (rtl_dump_file, "    offset %ld\n",
+      fprintf (dump_file, "    offset %ld\n",
 	       (long) var->var_part[i].offset);
       for (node = var->var_part[i].loc_chain; node; node = node->next)
 	{
-	  fprintf (rtl_dump_file, "      ");
-	  print_rtl_single (rtl_dump_file, node->loc);
+	  fprintf (dump_file, "      ");
+	  print_rtl_single (dump_file, node->loc);
 	}
     }
 
@@ -1729,7 +1729,7 @@ dump_vars (htab_t vars)
 {
   if (htab_elements (vars) > 0)
     {
-      fprintf (rtl_dump_file, "Variables:\n");
+      fprintf (dump_file, "Variables:\n");
       htab_traverse (vars, dump_variable, NULL);
     }
 }
@@ -1741,19 +1741,19 @@ dump_dataflow_set (dataflow_set *set)
 {
   int i;
 
-  fprintf (rtl_dump_file, "Stack adjustment: ");
-  fprintf (rtl_dump_file, HOST_WIDE_INT_PRINT_DEC, set->stack_adjust);
-  fprintf (rtl_dump_file, "\n");
+  fprintf (dump_file, "Stack adjustment: ");
+  fprintf (dump_file, HOST_WIDE_INT_PRINT_DEC, set->stack_adjust);
+  fprintf (dump_file, "\n");
   for (i = 1; i < FIRST_PSEUDO_REGISTER; i++)
     {
       if (set->regs[i])
 	{
-	  fprintf (rtl_dump_file, "Reg %d:", i);
+	  fprintf (dump_file, "Reg %d:", i);
 	  dump_attrs_list (set->regs[i]);
 	}
     }
   dump_vars (set->vars);
-  fprintf (rtl_dump_file, "\n");
+  fprintf (dump_file, "\n");
 }
 
 /* Print the IN and OUT sets for each basic block to dump file.  */
@@ -1765,10 +1765,10 @@ dump_dataflow_sets (void)
 
   FOR_EACH_BB (bb)
     {
-      fprintf (rtl_dump_file, "\nBasic block %d:\n", bb->index);
-      fprintf (rtl_dump_file, "IN:\n");
+      fprintf (dump_file, "\nBasic block %d:\n", bb->index);
+      fprintf (dump_file, "IN:\n");
       dump_dataflow_set (&VTI (bb)->in);
-      fprintf (rtl_dump_file, "OUT:\n");
+      fprintf (dump_file, "OUT:\n");
       dump_dataflow_set (&VTI (bb)->out);
     }
 }
@@ -2627,10 +2627,10 @@ variable_tracking_main (void)
   vt_find_locations ();
   vt_emit_notes ();
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
       dump_dataflow_sets ();
-      dump_flow_info (rtl_dump_file);
+      dump_flow_info (dump_file);
     }
 
   vt_finalize ();

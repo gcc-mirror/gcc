@@ -7103,8 +7103,8 @@ dump_minipool (rtx scan)
 	  break;
 	}
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file,
+  if (dump_file)
+    fprintf (dump_file,
 	     ";; Emitting minipool after insn %u; address %ld; align %d (bytes)\n",
 	     INSN_UID (scan), (unsigned long) minipool_barrier->address, align64 ? 8 : 4);
 
@@ -7116,14 +7116,14 @@ dump_minipool (rtx scan)
     {
       if (mp->refcount > 0)
 	{
-	  if (rtl_dump_file)
+	  if (dump_file)
 	    {
-	      fprintf (rtl_dump_file, 
+	      fprintf (dump_file, 
 		       ";;  Offset %u, min %ld, max %ld ",
 		       (unsigned) mp->offset, (unsigned long) mp->min_address,
 		       (unsigned long) mp->max_address);
-	      arm_print_value (rtl_dump_file, mp->value);
-	      fputc ('\n', rtl_dump_file);
+	      arm_print_value (dump_file, mp->value);
+	      fputc ('\n', dump_file);
 	    }
 
 	  switch (mp->fix_size)
@@ -7344,15 +7344,15 @@ push_minipool_fix (rtx insn, HOST_WIDE_INT address, rtx *loc,
   if (TARGET_REALLY_IWMMXT && fix->fix_size == 8)
     fix->forwards -= 4;
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
-      fprintf (rtl_dump_file,
+      fprintf (dump_file,
 	       ";; %smode fixup for i%d; addr %lu, range (%ld,%ld): ",
 	       GET_MODE_NAME (mode),
 	       INSN_UID (insn), (unsigned long) address, 
 	       -1 * (long)fix->backwards, (long)fix->forwards);
-      arm_print_value (rtl_dump_file, fix->value);
-      fprintf (rtl_dump_file, "\n");
+      arm_print_value (dump_file, fix->value);
+      fprintf (dump_file, "\n");
     }
 
   /* Add it to the chain of fixes.  */

@@ -2608,7 +2608,7 @@ check_uncoalesced_moves (void)
 void
 ra_colorize_graph (struct df *df)
 {
-  if (rtl_dump_file)
+  if (dump_file)
     dump_igraph (df);
   build_worklists (df);
 

@@ -54,8 +54,8 @@ ra_debug_msg (unsigned int level, const char *format, ...)
   va_list ap;
   
   va_start (ap, format);
-  if ((debug_new_regalloc & level) != 0 && rtl_dump_file != NULL)
-    vfprintf (rtl_dump_file, format, ap);
+  if ((debug_new_regalloc & level) != 0 && dump_file != NULL)
+    vfprintf (dump_file, format, ap);
   va_end (ap);
 }
 
@@ -643,7 +643,7 @@ dump_igraph (struct df *df ATTRIBUTE_UNUSED)
   int num = 0;
   int num2;
   unsigned int i;
-  if (!rtl_dump_file || (debug_new_regalloc & (DUMP_IGRAPH | DUMP_WEBS)) == 0)
+  if (!dump_file || (debug_new_regalloc & (DUMP_IGRAPH | DUMP_WEBS)) == 0)
     return;
   ra_debug_msg (DUMP_IGRAPH, "conflicts:\n  ");
   for (def1 = 0; def1 < num_webs; def1++)
@@ -726,7 +726,7 @@ dump_igraph_machine (void)
 {
   unsigned int i;
 
-  if (!rtl_dump_file || (debug_new_regalloc & DUMP_IGRAPH_M) == 0)
+  if (!dump_file || (debug_new_regalloc & DUMP_IGRAPH_M) == 0)
     return;
   ra_debug_msg (DUMP_IGRAPH_M, "g %d %d\n", num_webs - num_subwebs,
 	     FIRST_PSEUDO_REGISTER);
@@ -786,7 +786,7 @@ dump_constraints (void)
 {
   rtx insn;
   int i;
-  if (!rtl_dump_file || (debug_new_regalloc & DUMP_CONSTRAINTS) == 0)
+  if (!dump_file || (debug_new_regalloc & DUMP_CONSTRAINTS) == 0)
     return;
   for (i = FIRST_PSEUDO_REGISTER; i < ra_max_regno; i++)
     if (regno_reg_rtx[i] && GET_CODE (regno_reg_rtx[i]) == REG)
@@ -839,7 +839,7 @@ dump_graph_cost (unsigned int level, const char *msg)
 {
   unsigned int i;
   unsigned HOST_WIDE_INT cost;
-  if (!rtl_dump_file || (debug_new_regalloc & level) == 0)
+  if (!dump_file || (debug_new_regalloc & level) == 0)
     return;
 
   cost = 0;
@@ -861,7 +861,7 @@ dump_ra (struct df *df ATTRIBUTE_UNUSED)
 {
   struct web *web;
   struct dlist *d;
-  if (!rtl_dump_file || (debug_new_regalloc & DUMP_RESULTS) == 0)
+  if (!dump_file || (debug_new_regalloc & DUMP_RESULTS) == 0)
     return;
 
   ra_debug_msg (DUMP_RESULTS, "\nColored:\n");

@@ -176,8 +176,8 @@ label_for_bb (basic_block bb)
 
   if (GET_CODE (label) != CODE_LABEL)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Emitting label for block %d\n", bb->index);
+      if (dump_file)
+	fprintf (dump_file, "Emitting label for block %d\n", bb->index);
 
       label = block_label (bb);
     }
@@ -775,20 +775,23 @@ fixup_reorder_chain (void)
 
   /* Put basic_block_info in the new order.  */
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
-      fprintf (rtl_dump_file, "Reordered sequence:\n");
-      for (bb = ENTRY_BLOCK_PTR->next_bb, index = 0; bb; bb = bb->rbi->next, index ++)
+      fprintf (dump_file, "Reordered sequence:\n");
+      for (bb = ENTRY_BLOCK_PTR->next_bb, index = 0;
+	   bb;
+	   bb = bb->rbi->next, index++)
 	{
-	  fprintf (rtl_dump_file, " %i ", index);
+	  fprintf (dump_file, " %i ", index);
 	  if (bb->rbi->original)
-	    fprintf (rtl_dump_file, "duplicate of %i ",
+	    fprintf (dump_file, "duplicate of %i ",
 		     bb->rbi->original->index);
-	  else if (forwarder_block_p (bb) && GET_CODE (BB_HEAD (bb)) != CODE_LABEL)
-	    fprintf (rtl_dump_file, "compensation ");
+	  else if (forwarder_block_p (bb)
+		   && GET_CODE (BB_HEAD (bb)) != CODE_LABEL)
+	    fprintf (dump_file, "compensation ");
 	  else
-	    fprintf (rtl_dump_file, "bb %i ", bb->index);
-	  fprintf (rtl_dump_file, " [%i]\n", bb->frequency);
+	    fprintf (dump_file, "bb %i ", bb->index);
+	  fprintf (dump_file, " [%i]\n", bb->frequency);
 	}
     }
 

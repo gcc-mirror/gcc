@@ -1720,8 +1720,8 @@ find_reg (struct insn_chain *chain, int order)
   if (best_reg == -1)
     return 0;
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Using reg %d for reload %d\n", best_reg, rnum);
+  if (dump_file)
+    fprintf (dump_file, "Using reg %d for reload %d\n", best_reg, rnum);
 
   rl->nregs = hard_regno_nregs[best_reg][rl->mode];
   rl->regno = best_reg;
@@ -1783,8 +1783,8 @@ find_reload_regs (struct insn_chain *chain)
 
   CLEAR_HARD_REG_SET (used_spill_regs_local);
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Spilling for insn %d.\n", INSN_UID (chain->insn));
+  if (dump_file)
+    fprintf (dump_file, "Spilling for insn %d.\n", INSN_UID (chain->insn));
 
   qsort (reload_order, n_reloads, sizeof (short), reload_reg_class_lower);
 
@@ -3699,12 +3699,12 @@ finish_spills (int global)
 
       alter_reg (i, reg_old_renumber[i]);
       reg_old_renumber[i] = regno;
-      if (rtl_dump_file)
+      if (dump_file)
 	{
 	  if (regno == -1)
-	    fprintf (rtl_dump_file, " Register %d now on stack.\n\n", i);
+	    fprintf (dump_file, " Register %d now on stack.\n\n", i);
 	  else
-	    fprintf (rtl_dump_file, " Register %d now in %d.\n\n",
+	    fprintf (dump_file, " Register %d now in %d.\n\n",
 		     i, reg_renumber[i]);
 	}
     }
@@ -6944,10 +6944,10 @@ emit_reload_insns (struct insn_chain *chain)
   other_operand_reload_insns = 0;
 
   /* Dump reloads into the dump file.  */
-  if (rtl_dump_file)
+  if (dump_file)
     {
-      fprintf (rtl_dump_file, "\nReloads for insn # %d\n", INSN_UID (insn));
-      debug_reload_to_stream (rtl_dump_file);
+      fprintf (dump_file, "\nReloads for insn # %d\n", INSN_UID (insn));
+      debug_reload_to_stream (dump_file);
     }
 
   /* Now output the instructions to copy the data into and out of the

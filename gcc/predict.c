@@ -260,29 +260,29 @@ dump_prediction (enum br_predictor predictor, int probability,
 {
   edge e = bb->succ;
 
-  if (!rtl_dump_file)
+  if (!dump_file)
     return;
 
   while (e && (e->flags & EDGE_FALLTHRU))
     e = e->succ_next;
 
-  fprintf (rtl_dump_file, "  %s heuristics%s: %.1f%%",
+  fprintf (dump_file, "  %s heuristics%s: %.1f%%",
 	   predictor_info[predictor].name,
 	   used ? "" : " (ignored)", probability * 100.0 / REG_BR_PROB_BASE);
 
   if (bb->count)
     {
-      fprintf (rtl_dump_file, "  exec ");
-      fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC, bb->count);
+      fprintf (dump_file, "  exec ");
+      fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC, bb->count);
       if (e)
 	{
-	  fprintf (rtl_dump_file, " hit ");
-	  fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC, e->count);
-	  fprintf (rtl_dump_file, " (%.1f%%)", e->count * 100.0 / bb->count);
+	  fprintf (dump_file, " hit ");
+	  fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC, e->count);
+	  fprintf (dump_file, " (%.1f%%)", e->count * 100.0 / bb->count);
 	}
     }
 
-  fprintf (rtl_dump_file, "\n");
+  fprintf (dump_file, "\n");
 }
 
 /* Combine all REG_BR_PRED notes into single probability and attach REG_BR_PROB
@@ -301,8 +301,8 @@ combine_predictions_for_insn (rtx insn, basic_block bb)
   bool first_match = false;
   bool found = false;
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Predictions for insn %i bb %i\n", INSN_UID (insn),
+  if (dump_file)
+    fprintf (dump_file, "Predictions for insn %i bb %i\n", INSN_UID (insn),
 	     bb->index);
 
   /* We implement "first match" heuristics and use probability guessed
@@ -915,8 +915,8 @@ propagate_freq (struct loop *loop)
 	    if (BLOCK_INFO (e->src)->tovisit && !(e->flags & EDGE_DFS_BACK))
 	      count++;
 	    else if (BLOCK_INFO (e->src)->tovisit
-		     && rtl_dump_file && !EDGE_INFO (e)->back_edge)
-	      fprintf (rtl_dump_file,
+		     && dump_file && !EDGE_INFO (e)->back_edge)
+	      fprintf (dump_file,
 		       "Irreducible region hit, ignoring edge to %i->%i\n",
 		       e->src->index, bb->index);
 	  BLOCK_INFO (bb)->npredecessors = count;

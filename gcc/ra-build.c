@@ -2944,7 +2944,7 @@ handle_asm_insn (struct df *df, rtx insn)
 	      record_conflict (web, hardreg2web[c]);
 #endif
 	}
-      if (rtl_dump_file)
+      if (dump_file)
 	{
 	  int c;
 	  ra_debug_msg (DUMP_ASM, " ASM constrain Web %d conflicts with:", web->id);

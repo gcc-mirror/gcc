@@ -185,8 +185,8 @@ find_traces (int *n_traces, struct trace *traces)
     {
       gcov_type count_threshold;
 
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "STC - round %d\n", i + 1);
+      if (dump_file)
+	fprintf (dump_file, "STC - round %d\n", i + 1);
 
       if (max_entry_count < INT_MAX / 1000)
 	count_threshold = max_entry_count * exec_threshold[i] / 1000;
@@ -199,18 +199,18 @@ find_traces (int *n_traces, struct trace *traces)
     }
   fibheap_delete (heap);
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
       for (i = 0; i < *n_traces; i++)
 	{
 	  basic_block bb;
-	  fprintf (rtl_dump_file, "Trace %d (round %d):  ", i + 1,
+	  fprintf (dump_file, "Trace %d (round %d):  ", i + 1,
 		   traces[i].round + 1);
 	  for (bb = traces[i].first; bb != traces[i].last; bb = bb->rbi->next)
-	    fprintf (rtl_dump_file, "%d [%d] ", bb->index, bb->frequency);
-	  fprintf (rtl_dump_file, "%d [%d]\n", bb->index, bb->frequency);
+	    fprintf (dump_file, "%d [%d] ", bb->index, bb->frequency);
+	  fprintf (dump_file, "%d [%d]\n", bb->index, bb->frequency);
 	}
-      fflush (rtl_dump_file);
+      fflush (dump_file);
     }
 }
 
@@ -371,8 +371,8 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
       bbd[bb->index].heap = NULL;
       bbd[bb->index].node = NULL;
 
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Getting bb %d\n", bb->index);
+      if (dump_file)
+	fprintf (dump_file, "Getting bb %d\n", bb->index);
 
       /* If the BB's frequency is too low send BB to the next round.  */
       if (round < N_ROUNDS - 1
@@ -383,8 +383,8 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	  bbd[bb->index].heap = new_heap;
 	  bbd[bb->index].node = fibheap_insert (new_heap, key, bb);
 
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file,
+	  if (dump_file)
+	    fprintf (dump_file,
 		     "  Possible start point of next round: %d (key: %d)\n",
 		     bb->index, key);
 	  continue;
@@ -408,8 +408,8 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	  mark_bb_visited (bb, *n_traces);
 	  trace->length++;
 
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file, "Basic block %d was visited in trace %d\n",
+	  if (dump_file)
+	    fprintf (dump_file, "Basic block %d was visited in trace %d\n",
 		     bb->index, *n_traces - 1);
 
 	  /* Select the successor that will be placed after BB.  */
@@ -466,9 +466,9 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		  /* E->DEST is already in some heap.  */
 		  if (key != bbd[e->dest->index].node->key)
 		    {
-		      if (rtl_dump_file)
+		      if (dump_file)
 			{
-			  fprintf (rtl_dump_file,
+			  fprintf (dump_file,
 				   "Changing key for bb %d from %ld to %ld.\n",
 				   e->dest->index,
 				   (long) bbd[e->dest->index].node->key,
@@ -498,9 +498,9 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		  bbd[e->dest->index].node = fibheap_insert (which_heap,
 								key, e->dest);
 
-		  if (rtl_dump_file)
+		  if (dump_file)
 		    {
-		      fprintf (rtl_dump_file,
+		      fprintf (dump_file,
 			       "  Possible start of %s round: %d (key: %ld)\n",
 			       (which_heap == new_heap) ? "next" : "this",
 			       e->dest->index, (long) key);
@@ -525,9 +525,9 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 
 			  if (best_edge->dest != ENTRY_BLOCK_PTR->next_bb)
 			    {
-			      if (rtl_dump_file)
+			      if (dump_file)
 				{
-				  fprintf (rtl_dump_file,
+				  fprintf (dump_file,
 					   "Rotating loop %d - %d\n",
 					   best_edge->dest->index, bb->index);
 				}
@@ -596,8 +596,8 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 			&& 2 * e->dest->frequency >= EDGE_FREQUENCY (best_edge))
 		      {
 			best_edge = e;
-			if (rtl_dump_file)
-			  fprintf (rtl_dump_file, "Selecting BB %d\n",
+			if (dump_file)
+			  fprintf (dump_file, "Selecting BB %d\n",
 				   best_edge->dest->index);
 			break;
 		      }
@@ -626,9 +626,9 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	      key = bb_to_key (e->dest);
 	      if (key != bbd[e->dest->index].node->key)
 		{
-		  if (rtl_dump_file)
+		  if (dump_file)
 		    {
-		      fprintf (rtl_dump_file,
+		      fprintf (dump_file,
 			       "Changing key for bb %d from %ld to %ld.\n",
 			       e->dest->index,
 			       (long) bbd[e->dest->index].node->key, key);
@@ -661,8 +661,8 @@ copy_bb (basic_block old_bb, edge e, basic_block bb, int trace)
     abort ();
   if (e->dest->rbi->visited)
     abort ();
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file,
+  if (dump_file)
+    fprintf (dump_file,
 	     "Duplicated bb %d (created bb %d)\n",
 	     old_bb->index, new_bb->index);
   new_bb->rbi->visited = trace;
@@ -686,9 +686,9 @@ copy_bb (basic_block old_bb, edge e, basic_block bb, int trace)
 	}
       array_size = new_size;
 
-      if (rtl_dump_file)
+      if (dump_file)
 	{
-	  fprintf (rtl_dump_file,
+	  fprintf (dump_file,
 		   "Growing the dynamic array to %d elements.\n",
 		   array_size);
 	}
@@ -832,9 +832,9 @@ connect_traces (int n_traces, struct trace *traces)
 	      best->src->rbi->next = best->dest;
 	      t2 = bbd[best->src->index].end_of_trace;
 	      connected[t2] = true;
-	      if (rtl_dump_file)
+	      if (dump_file)
 		{
-		  fprintf (rtl_dump_file, "Connection: %d %d\n",
+		  fprintf (dump_file, "Connection: %d %d\n",
 			   best->src->index, best->dest->index);
 		}
 	    }
@@ -873,9 +873,9 @@ connect_traces (int n_traces, struct trace *traces)
 
 	  if (best)
 	    {
-	      if (rtl_dump_file)
+	      if (dump_file)
 		{
-		  fprintf (rtl_dump_file, "Connection: %d %d\n",
+		  fprintf (dump_file, "Connection: %d %d\n",
 			   best->src->index, best->dest->index);
 		}
 	      t = bbd[best->dest->index].start_of_trace;
@@ -950,16 +950,16 @@ connect_traces (int n_traces, struct trace *traces)
 		{
 		  basic_block new_bb;
 
-		  if (rtl_dump_file)
+		  if (dump_file)
 		    {
-		      fprintf (rtl_dump_file, "Connection: %d %d ",
+		      fprintf (dump_file, "Connection: %d %d ",
 			       traces[t].last->index, best->dest->index);
 		      if (!next_bb)
-			fputc ('\n', rtl_dump_file);
+			fputc ('\n', dump_file);
 		      else if (next_bb == EXIT_BLOCK_PTR)
-			fprintf (rtl_dump_file, "exit\n");
+			fprintf (dump_file, "exit\n");
 		      else
-			fprintf (rtl_dump_file, "%d\n", next_bb->index);
+			fprintf (dump_file, "%d\n", next_bb->index);
 		    }
 
 		  new_bb = copy_bb (best->dest, best, traces[t].last, t);
@@ -980,15 +980,15 @@ connect_traces (int n_traces, struct trace *traces)
 	}
     }
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
       basic_block bb;
 
-      fprintf (rtl_dump_file, "Final order:\n");
+      fprintf (dump_file, "Final order:\n");
       for (bb = traces[0].first; bb; bb = bb->rbi->next)
-	fprintf (rtl_dump_file, "%d ", bb->index);
-      fprintf (rtl_dump_file, "\n");
-      fflush (rtl_dump_file);
+	fprintf (dump_file, "%d ", bb->index);
+      fprintf (dump_file, "\n");
+      fflush (dump_file);
     }
 
   FREE (connected);
@@ -1035,9 +1035,9 @@ copy_bb_p (basic_block bb, int code_may_grow)
   if (size <= max_size)
     return true;
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
-      fprintf (rtl_dump_file,
+      fprintf (dump_file,
 	       "Block %d can't be copied because its size = %d.\n",
 	       bb->index, size);
     }
@@ -1108,8 +1108,8 @@ reorder_basic_blocks (void)
   FREE (traces);
   FREE (bbd);
 
-  if (rtl_dump_file)
-    dump_flow_info (rtl_dump_file);
+  if (dump_file)
+    dump_flow_info (dump_file);
 
   cfg_layout_finalize ();
 

@@ -204,12 +204,12 @@ regrename_optimize (void)
 
       CLEAR_HARD_REG_SET (unavailable);
 
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "\nBasic block %d:\n", bb->index);
+      if (dump_file)
+	fprintf (dump_file, "\nBasic block %d:\n", bb->index);
 
       all_chains = build_def_use (bb);
 
-      if (rtl_dump_file)
+      if (dump_file)
 	dump_def_use_chain (all_chains);
 
       CLEAR_HARD_REG_SET (unavailable);
@@ -327,27 +327,27 @@ regrename_optimize (void)
 		}
 	    }
 
-	  if (rtl_dump_file)
+	  if (dump_file)
 	    {
-	      fprintf (rtl_dump_file, "Register %s in insn %d",
+	      fprintf (dump_file, "Register %s in insn %d",
 		       reg_names[reg], INSN_UID (last->insn));
 	      if (last->need_caller_save_reg)
-		fprintf (rtl_dump_file, " crosses a call");
+		fprintf (dump_file, " crosses a call");
 	    }
 
 	  if (best_new_reg == reg)
 	    {
 	      tick[reg] = ++this_tick;
-	      if (rtl_dump_file)
-		fprintf (rtl_dump_file, "; no available better choice\n");
+	      if (dump_file)
+		fprintf (dump_file, "; no available better choice\n");
 	      continue;
 	    }
 
 	  do_replace (this, best_new_reg);
 	  tick[best_new_reg] = ++this_tick;
 
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file, ", renamed as %s\n", reg_names[best_new_reg]);
+	  if (dump_file)
+	    fprintf (dump_file, ", renamed as %s\n", reg_names[best_new_reg]);
 	}
 
       obstack_free (&rename_obstack, first_obj);
@@ -355,8 +355,8 @@ regrename_optimize (void)
 
   obstack_free (&rename_obstack, NULL);
 
-  if (rtl_dump_file)
-    fputc ('\n', rtl_dump_file);
+  if (dump_file)
+    fputc ('\n', dump_file);
 
   count_or_remove_death_notes (NULL, 1);
   update_life_info (NULL, UPDATE_LIFE_LOCAL,
@@ -479,16 +479,16 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class class,
 		{
 		  this->next_chain = closed_chains;
 		  closed_chains = this;
-		  if (rtl_dump_file)
-		    fprintf (rtl_dump_file,
+		  if (dump_file)
+		    fprintf (dump_file,
 			     "Closing chain %s at insn %d (%s)\n",
 			     reg_names[REGNO (*this->loc)], INSN_UID (insn),
 			     scan_actions_name[(int) action]);
 		}
 	      else
 		{
-		  if (rtl_dump_file)
-		    fprintf (rtl_dump_file,
+		  if (dump_file)
+		    fprintf (dump_file,
 			     "Discarding chain %s at insn %d (%s)\n",
 			     reg_names[REGNO (*this->loc)], INSN_UID (insn),
 			     scan_actions_name[(int) action]);
@@ -963,7 +963,7 @@ build_def_use (basic_block bb)
   return closed_chains;
 }
 
-/* Dump all def/use chains in CHAINS to RTL_DUMP_FILE.  They are
+/* Dump all def/use chains in CHAINS to DUMP_FILE.  They are
    printed in reverse order as that's how we build them.  */
 
 static void
@@ -974,14 +974,14 @@ dump_def_use_chain (struct du_chain *chains)
       struct du_chain *this = chains;
       int r = REGNO (*this->loc);
       int nregs = hard_regno_nregs[r][GET_MODE (*this->loc)];
-      fprintf (rtl_dump_file, "Register %s (%d):", reg_names[r], nregs);
+      fprintf (dump_file, "Register %s (%d):", reg_names[r], nregs);
       while (this)
 	{
-	  fprintf (rtl_dump_file, " %d [%s]", INSN_UID (this->insn),
+	  fprintf (dump_file, " %d [%s]", INSN_UID (this->insn),
 		   reg_class_names[this->class]);
 	  this = this->next_use;
 	}
-      fprintf (rtl_dump_file, "\n");
+      fprintf (dump_file, "\n");
       chains = chains->next_chain;
     }
 }
@@ -1367,8 +1367,8 @@ replace_oldest_value_reg (rtx *loc, enum reg_class class, rtx insn,
   rtx new = find_oldest_value_reg (class, *loc, vd);
   if (new)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "insn %u: replaced reg %u with %u\n",
+      if (dump_file)
+	fprintf (dump_file, "insn %u: replaced reg %u with %u\n",
 		 INSN_UID (insn), REGNO (*loc), REGNO (new));
 
       *loc = new;
@@ -1612,8 +1612,8 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	      new = find_oldest_value_reg (REGNO_REG_CLASS (regno), src, vd);
 	      if (new && validate_change (insn, &SET_SRC (set), new, 0))
 		{
-		  if (rtl_dump_file)
-		    fprintf (rtl_dump_file,
+		  if (dump_file)
+		    fprintf (dump_file,
 			     "insn %u: replaced reg %u with %u\n",
 			     INSN_UID (insn), regno, REGNO (new));
 		  changed = true;
@@ -1633,8 +1633,8 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		    {
 		      ORIGINAL_REGNO (new) = ORIGINAL_REGNO (src);
 		      REG_ATTRS (new) = REG_ATTRS (src);
-		      if (rtl_dump_file)
-			fprintf (rtl_dump_file,
+		      if (dump_file)
+			fprintf (dump_file,
 				 "insn %u: replaced reg %u with %u\n",
 				 INSN_UID (insn), regno, REGNO (new));
 		      changed = true;
@@ -1756,8 +1756,8 @@ copyprop_hardreg_forward (void)
 
   if (need_refresh)
     {
-      if (rtl_dump_file)
-	fputs ("\n\n", rtl_dump_file);
+      if (dump_file)
+	fputs ("\n\n", dump_file);
 
       /* ??? Irritatingly, delete_noop_moves does not take a set of blocks
 	 to scan, so we have to do a life update with no initial set of

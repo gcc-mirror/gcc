@@ -8750,7 +8750,7 @@ mips_reorg (void)
   else if (TARGET_EXPLICIT_RELOCS)
     {
       if (mips_flag_delayed_branch)
-	dbr_schedule (get_insns (), rtl_dump_file);
+	dbr_schedule (get_insns (), dump_file);
       mips_avoid_hazards ();
     }
 }

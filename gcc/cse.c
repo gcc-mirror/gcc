@@ -7672,8 +7672,8 @@ delete_trivially_dead_insns (rtx insns, int nreg)
     }
   while (ndead != nlastdead);
 
-  if (rtl_dump_file && ndead)
-    fprintf (rtl_dump_file, "Deleted %i trivially dead insns; %i iterations\n",
+  if (dump_file && ndead)
+    fprintf (dump_file, "Deleted %i trivially dead insns; %i iterations\n",
 	     ndead, niterations);
   /* Clean up.  */
   free (counts);

@@ -191,16 +191,16 @@ entry_register (struct web_entry *entry, struct ref *ref, char *used,
   else if (REG_USERVAR_P (reg) && 0/*&& !flag_messy_debugging*/)
     {
       newreg = reg;
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file,
+      if (dump_file)
+	fprintf (dump_file,
 		 "New web forced to keep reg=%i (user variable)\n",
 		 REGNO (reg));
     }
   else if (use_addressof [REGNO (reg)])
     {
       newreg = reg;
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file,
+      if (dump_file)
+	fprintf (dump_file,
 		 "New web forced to keep reg=%i (address taken)\n",
 		 REGNO (reg));
     }
@@ -212,8 +212,8 @@ entry_register (struct web_entry *entry, struct ref *ref, char *used,
       REG_LOOP_TEST_P (newreg) = REG_LOOP_TEST_P (reg);
       RTX_UNCHANGING_P (newreg) = RTX_UNCHANGING_P (reg);
       REG_ATTRS (newreg) = REG_ATTRS (reg);
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Web oldreg=%i newreg=%i\n", REGNO (reg),
+      if (dump_file)
+	fprintf (dump_file, "Web oldreg=%i newreg=%i\n", REGNO (reg),
 		 REGNO (newreg));
     }
 
@@ -231,8 +231,8 @@ replace_ref (struct ref *ref, rtx reg)
 
   if (oldreg == reg)
     return;
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Updating insn %i (%i->%i)\n",
+  if (dump_file)
+    fprintf (dump_file, "Updating insn %i (%i->%i)\n",
 	     INSN_UID (DF_REF_INSN (ref)), REGNO (oldreg), REGNO (reg)); 
   *loc = reg;
 }
@@ -274,8 +274,8 @@ web_main (void)
   used = (char *) xcalloc (max, sizeof (char));
   use_addressof = (char *) xcalloc (max, sizeof (char));
 
-  if (rtl_dump_file)
-    df_dump (df, DF_UD_CHAIN | DF_DU_CHAIN, rtl_dump_file);
+  if (dump_file)
+    df_dump (df, DF_UD_CHAIN | DF_DU_CHAIN, dump_file);
 
   /* Produce the web.  */
   for (i = 0; i < df->n_uses; i++)

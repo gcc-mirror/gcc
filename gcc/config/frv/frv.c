@@ -6773,8 +6773,8 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
       rtx insn = BB_HEAD (bb[j]);
       int regno;
 
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Scanning %s block %d, start %d, end %d\n",
+      if (dump_file)
+	fprintf (dump_file, "Scanning %s block %d, start %d, end %d\n",
 		 (bb[j] == else_bb) ? "else" : ((bb[j] == then_bb) ? "then" : "test"),
 		 (int) bb[j]->index,
 		 (int) INSN_UID (BB_HEAD (bb[j])),
@@ -6860,36 +6860,36 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
 	  CLEAR_HARD_REG_BIT (tmp_reg->regs, j);
     }
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
       int num_gprs = 0;
-      fprintf (rtl_dump_file, "Available GPRs: ");
+      fprintf (dump_file, "Available GPRs: ");
 
       for (j = GPR_FIRST; j <= GPR_LAST; j++)
 	if (TEST_HARD_REG_BIT (tmp_reg->regs, j))
 	  {
-	    fprintf (rtl_dump_file, " %d [%s]", j, reg_names[j]);
+	    fprintf (dump_file, " %d [%s]", j, reg_names[j]);
 	    if (++num_gprs > GPR_TEMP_NUM+2)
 	      break;
 	  }
 
-      fprintf (rtl_dump_file, "%s\nAvailable CRs:  ",
+      fprintf (dump_file, "%s\nAvailable CRs:  ",
 	       (num_gprs > GPR_TEMP_NUM+2) ? " ..." : "");
 
       for (j = CR_FIRST; j <= CR_LAST; j++)
 	if (TEST_HARD_REG_BIT (tmp_reg->regs, j))
-	  fprintf (rtl_dump_file, " %d [%s]", j, reg_names[j]);
+	  fprintf (dump_file, " %d [%s]", j, reg_names[j]);
 
-      fputs ("\n", rtl_dump_file);
+      fputs ("\n", dump_file);
 
       if (ce_info->pass > 1)
 	{
-	  fprintf (rtl_dump_file, "Modifiable CCs: ");
+	  fprintf (dump_file, "Modifiable CCs: ");
 	  for (j = CC_FIRST; j <= CC_LAST; j++)
 	    if (TEST_HARD_REG_BIT (tmp_reg->regs, j))
-	      fprintf (rtl_dump_file, " %d [%s]", j, reg_names[j]);
+	      fprintf (dump_file, " %d [%s]", j, reg_names[j]);
 
-	  fprintf (rtl_dump_file, "\n%d nested COND_EXEC statements\n",
+	  fprintf (dump_file, "\n%d nested COND_EXEC statements\n",
 		   frv_ifcvt.num_nested_cond_exec);
 	}
     }
@@ -6946,14 +6946,14 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
 
   if (! cr)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Could not allocate a CR temporary register\n");
+      if (dump_file)
+	fprintf (dump_file, "Could not allocate a CR temporary register\n");
 
       goto fail;
     }
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file,
+  if (dump_file)
+    fprintf (dump_file,
 	     "Will use %s for conditional execution, %s for nested comparisons\n",
 	     reg_names[ REGNO (cr)],
 	     (nested_cc) ? reg_names[ REGNO (nested_cc) ] : "<none>");
@@ -6991,8 +6991,8 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
  fail:
   *p_true = NULL_RTX;
   *p_false = NULL_RTX;
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Disabling this conditional execution.\n");
+  if (dump_file)
+    fprintf (dump_file, "Disabling this conditional execution.\n");
 
   return;
 }
@@ -7169,8 +7169,8 @@ frv_ifcvt_load_value (rtx value, rtx insn ATTRIBUTE_UNUSED)
   /* Have we exhausted the number of registers available?  */
   if (num_alloc >= GPR_TEMP_NUM)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Too many temporary registers allocated\n");
+      if (dump_file)
+	fprintf (dump_file, "Too many temporary registers allocated\n");
 
       return NULL_RTX;
     }
@@ -7179,8 +7179,8 @@ frv_ifcvt_load_value (rtx value, rtx insn ATTRIBUTE_UNUSED)
   reg = frv_alloc_temp_reg (&frv_ifcvt.tmp_reg, GPR_REGS, SImode, TRUE, TRUE);
   if (! reg)
     {
-      if (rtl_dump_file)
-	fputs ("Could not find a scratch register\n", rtl_dump_file);
+      if (dump_file)
+	fputs ("Could not find a scratch register\n", dump_file);
 
       return NULL_RTX;
     }
@@ -7188,18 +7188,18 @@ frv_ifcvt_load_value (rtx value, rtx insn ATTRIBUTE_UNUSED)
   frv_ifcvt.cur_scratch_regs++;
   frv_ifcvt.scratch_regs[num_alloc] = gen_rtx_SET (VOIDmode, reg, value);
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
       if (GET_CODE (value) == CONST_INT)
-	fprintf (rtl_dump_file, "Register %s will hold %ld\n",
+	fprintf (dump_file, "Register %s will hold %ld\n",
 		 reg_names[ REGNO (reg)], (long)INTVAL (value));
 
       else if (GET_CODE (value) == REG && REGNO (value) == LR_REGNO)
-	fprintf (rtl_dump_file, "Register %s will hold LR\n",
+	fprintf (dump_file, "Register %s will hold LR\n",
 		 reg_names[ REGNO (reg)]);
 
       else
-	fprintf (rtl_dump_file, "Register %s will hold a saved value\n",
+	fprintf (dump_file, "Register %s will hold a saved value\n",
 		 reg_names[ REGNO (reg)]);
     }
 
