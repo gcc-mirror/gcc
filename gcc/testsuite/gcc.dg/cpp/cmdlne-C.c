@@ -10,7 +10,7 @@
    the beginning of a directive turns it into a non-directive.  */
 
 #define simple no comments
-#/**/define bad_directive		/* { dg-error "invalid" } */
+
 #define/**/obj_like/**/(some)/**/thing/**/
 #define fun_like(/**/x/**/,/**/y/**/)/**/
 /**/#define not_a_macro

@@ -1,3 +1,49 @@
+Mon 18-Sep-2000 19:21:35 BST  Neil Booth  <NeilB@earthling.net>
+
+	* cpphash.h (HASHSTEP): Take character rather than pointer
+	to character.
+	(_cpp_check_directive, _cpp_check_linemarker): Update prototypes.
+
+	* cpphash.c (cpp_loookup): Update for new HASHSTEP.
+
+	* cpplex.c (auto_expand_name_space, trigraph_replace,
+	backslash_start, handle_newline, parse_name, INIT_TOKEN_STR,
+	IMMED_TOKEN, PREV_TOKEN_TYPE, PUSH_TOKEN, REVISE_TOKEN,
+	BACKUP_TOKEN, BACKUP_TRIGRAPH, MIGHT_BE_DIRECTIVE,
+	KNOWN_DIRECTIVE): Delete.
+
+	(handle_newline, check_long_token, skip_escaped_newlines,
+	unterminated): New functions.
+	(ACCEPT_CHAR, SAVE_STATE, RESTORE_STATE): New macros.
+
+	(parse_identifier): Was parse_name, new implementation.
+	(skip_line_comment, skip_block_comment, skip_whitespace,
+	parse_number, parse_string, trigraph_ok, save_comment,
+	adjust_column, _cpp_get_line): New implementations.
+
+	(lex_token): New function.  Lexes a token at a time, looking
+	forwards.  Contains most of the guts of the old lex_line.
+	(lex_line): New implementation, using lex_token to obtain
+	individual tokens.
+	(cpp_scan_buffer): Use the token's line, not the list's line.
+
+	* cpplib.c (_cpp_check_directive, _cpp_check_linemarker):
+	 New implementations.
+	(do_assert): Don't bother setting the answer's list's line.
+	(cpp_push_buffer): Initialise new pfile and read_ahead members
+	of struct cpp_buffer.
+
+	* cpplib.h (cppchar_t): New typedef.
+	(struct cpp_buffer): read_ahead, pfile and col_adjust are
+	new members.
+	(struct lexer_state): New structure that determines the state
+	and behaviour of the lexer.
+	(IN_DIRECTIVE, KNOWN_DIRECTIVE): New macros.
+	(struct cpp_reader): New member "state". Rename
+	multiline_string_line and multiline_string_column. Delete
+	col_adjust, in_lex_line members.
+	(CPP_BUF_COLUMN): Update.
+
 2000-09-18  Richard Henderson  <rth@cygnus.com>
 
 	* combine.c (simplify_comparison): Shift a NOT out of a single

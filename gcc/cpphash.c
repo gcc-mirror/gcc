@@ -104,7 +104,7 @@ cpp_lookup (pfile, name, len)
 
   do
     {
-      r = HASHSTEP (r, str);
+      r = HASHSTEP (r, *str);
       str++;
     }
   while (--n);
