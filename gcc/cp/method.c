@@ -1,6 +1,6 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987, 1989, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1989, 1992, 1993, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
    This file is part of GNU CC.
@@ -314,7 +314,7 @@ flush_repeats (type)
     OB_PUTC ('_');
 }
 
-static int numeric_outputed_need_bar;
+static int numeric_output_need_bar;
 static void build_overload_identifier ();
 
 static void
@@ -338,10 +338,10 @@ build_overload_nested_name (decl)
       ASM_FORMAT_PRIVATE_NAME (label, IDENTIFIER_POINTER (name), var_labelno);
       var_labelno++;
 
-      if (numeric_outputed_need_bar)
+      if (numeric_output_need_bar)
 	{
 	  OB_PUTC ('_');
-	  numeric_outputed_need_bar = 0;
+	  numeric_output_need_bar = 0;
 	}
       icat (strlen (label));
       OB_PUTCP (label);
@@ -511,16 +511,16 @@ build_overload_identifier (name)
 	      /* It's a PARM_DECL.  */
 	      build_overload_name (TREE_TYPE (parm), 0, 0);
 	      build_overload_value (parm, arg);
-	      numeric_outputed_need_bar = 1;
+	      numeric_output_need_bar = 1;
 	    }
 	}
     }
   else
     {
-      if (numeric_outputed_need_bar)
+      if (numeric_output_need_bar)
 	{
 	  OB_PUTC ('_');
-	  numeric_outputed_need_bar = 0;
+	  numeric_output_need_bar = 0;
 	}
       icat (IDENTIFIER_LENGTH (name));
       OB_PUTID (name);
@@ -548,7 +548,7 @@ build_overload_name (parmtypes, begin, end)
   tree parmtype;
 
   if (begin) OB_INIT ();
-  numeric_outputed_need_bar = 0;
+  numeric_output_need_bar = 0;
 
   if ((just_one = (TREE_CODE (parmtypes) != TREE_LIST)))
     {
@@ -807,7 +807,7 @@ build_overload_name (parmtypes, begin, end)
 		icat (i);
 		if (i > 9)
 		  OB_PUTC ('_');
-		numeric_outputed_need_bar = 0;
+		numeric_output_need_bar = 0;
 		build_overload_nested_name (TYPE_MAIN_DECL (parmtype));
 	      }
 	    else
