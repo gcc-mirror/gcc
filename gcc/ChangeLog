@@ -1,3 +1,14 @@
+2000-10-23  Richard Henderson  <rth@cygnus.com>
+
+	* config/alpha/alpha.md: Add names for all unnamed insns; use
+	define_insn_and_split in some obvious places.
+	(lda): Remove.
+	(zero_extendqihi2): Use an expander w/ nonimmediate_operand for BWX.
+	(zero_extendqisi2, zero_extendqidi2): Likewise.
+	(zero_extendhisi2, zero_extendhidi2): Likewise.
+	(abs splitters): Fix match_scratch operand number.
+	(bcc_reverse): Swap pc & label instead of non-canonical compare.
+
 2000-10-23  Jim Wilson  <wilson@cygnus.com>
 
 	* ia64.c (ia64_print_operand, case 'r'): Correct comment.  Handle
