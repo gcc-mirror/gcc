@@ -4110,25 +4110,26 @@ init_propagate_block_info (bb, live, local_set, cond_local_set, flags)
 	  || (bb->succ->succ_next == NULL
 	      && bb->succ->dest == EXIT_BLOCK_PTR)))
     {
-      rtx insn;
+      rtx insn, set;
       for (insn = bb->end; insn != bb->head; insn = PREV_INSN (insn))
 	if (GET_CODE (insn) == INSN
-	    && GET_CODE (PATTERN (insn)) == SET
-	    && GET_CODE (SET_DEST (PATTERN (insn))) == MEM)
+	    && (set = single_set (insn))
+	    && GET_CODE (SET_DEST (set)) == MEM)
 	  {
-	    rtx mem = SET_DEST (PATTERN (insn));
+	    rtx mem = SET_DEST (set);
+	    rtx canon_mem = canon_rtx (mem);
 
 	    /* This optimization is performed by faking a store to the
 	       memory at the end of the block.  This doesn't work for
 	       unchanging memories because multiple stores to unchanging
 	       memory is illegal and alias analysis doesn't consider it.  */
-	    if (RTX_UNCHANGING_P (mem))
+	    if (RTX_UNCHANGING_P (canon_mem))
 	      continue;
 
-	    if (XEXP (mem, 0) == frame_pointer_rtx
-		|| (GET_CODE (XEXP (mem, 0)) == PLUS
-		    && XEXP (XEXP (mem, 0), 0) == frame_pointer_rtx
-		    && GET_CODE (XEXP (XEXP (mem, 0), 1)) == CONST_INT))
+	    if (XEXP (canon_mem, 0) == frame_pointer_rtx
+		|| (GET_CODE (XEXP (canon_mem, 0)) == PLUS
+		    && XEXP (XEXP (canon_mem, 0), 0) == frame_pointer_rtx
+		    && GET_CODE (XEXP (XEXP (canon_mem, 0), 1)) == CONST_INT))
 	      {
 #ifdef AUTO_INC_DEC
 		/* Store a copy of mem, otherwise the address may be scrogged
