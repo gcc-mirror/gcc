@@ -327,7 +327,7 @@ static void free_chunk (struct alloc_chunk *, size_t, struct alloc_zone *);
 static void free_page (struct page_entry *);
 static void release_pages (struct alloc_zone *);
 static void sweep_pages (struct alloc_zone *);
-static void * ggc_alloc_zone_1 (size_t, struct alloc_zone *, short);
+static void * ggc_alloc_zone_1 (size_t, struct alloc_zone *, short MEM_STAT_DECL);
 static bool ggc_collect_1 (struct alloc_zone *, bool);
 static void check_cookies (void);
 
@@ -569,7 +569,8 @@ free_chunk (struct alloc_chunk *chunk, size_t size, struct alloc_zone *zone)
 /* Allocate a chunk of memory of SIZE bytes.  */
 
 static void *
-ggc_alloc_zone_1 (size_t size, struct alloc_zone *zone, short type)
+ggc_alloc_zone_1 (size_t size, struct alloc_zone *zone, short type
+		  MEM_STAT_DECL)
 {
   size_t bin = 0;
   size_t lsize = 0;
@@ -659,7 +660,12 @@ ggc_alloc_zone_1 (size_t size, struct alloc_zone *zone, short type)
       lchunk->size = lsize;
       lchunk->large = 0;
       free_chunk (lchunk, lsize, zone);
+      lsize = 0;
     }
+#ifdef GATHER_STATISTICS
+  ggc_record_overhead (size, lsize PASS_MEM_STAT);
+#endif
+
   /* Calculate the object's address.  */
  found:
 #ifdef COOKIE_CHECKING
@@ -701,38 +707,39 @@ ggc_alloc_zone_1 (size_t size, struct alloc_zone *zone, short type)
    for that type.  */
 
 void *
-ggc_alloc_typed (enum gt_types_enum gte, size_t size)
+ggc_alloc_typed_stat (enum gt_types_enum gte, size_t size
+		      MEM_STAT_DECL)
 {
   switch (gte)
     {
     case gt_ggc_e_14lang_tree_node:
-      return ggc_alloc_zone_1 (size, tree_zone, gte);
+      return ggc_alloc_zone_1 (size, tree_zone, gte PASS_MEM_STAT);
 
     case gt_ggc_e_7rtx_def:
-      return ggc_alloc_zone_1 (size, rtl_zone, gte);
+      return ggc_alloc_zone_1 (size, rtl_zone, gte PASS_MEM_STAT);
 
     case gt_ggc_e_9rtvec_def:
-      return ggc_alloc_zone_1 (size, rtl_zone, gte);
+      return ggc_alloc_zone_1 (size, rtl_zone, gte PASS_MEM_STAT);
 
     default:
-      return ggc_alloc_zone_1 (size, &main_zone, gte);
+      return ggc_alloc_zone_1 (size, &main_zone, gte PASS_MEM_STAT);
     }
 }
 
 /* Normal ggc_alloc simply allocates into the main zone.  */
 
 void *
-ggc_alloc (size_t size)
+ggc_alloc_stat (size_t size MEM_STAT_DECL)
 {
-  return ggc_alloc_zone_1 (size, &main_zone, -1);
+  return ggc_alloc_zone_1 (size, &main_zone, -1 PASS_MEM_STAT);
 }
 
 /* Zone allocation allocates into the specified zone.  */
 
 void *
-ggc_alloc_zone (size_t size, struct alloc_zone *zone)
+ggc_alloc_zone_stat (size_t size, struct alloc_zone *zone MEM_STAT_DECL)
 {
-  return ggc_alloc_zone_1 (size, zone, -1);
+  return ggc_alloc_zone_1 (size, zone, -1 PASS_MEM_STAT);
 }
 
 /* Poison the chunk.  */
