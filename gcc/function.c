@@ -1772,8 +1772,9 @@ fixup_stack_1 (x, insn)
 	 (displacement is too large), compute the sum in a register.  */
       if (GET_CODE (ad) == PLUS
 	  && GET_CODE (XEXP (ad, 0)) == REG
-	  && REGNO (XEXP (ad, 0)) >= FIRST_VIRTUAL_REGISTER
-	  && REGNO (XEXP (ad, 0)) <= LAST_VIRTUAL_REGISTER
+	  && ((REGNO (XEXP (ad, 0)) >= FIRST_VIRTUAL_REGISTER
+	       && REGNO (XEXP (ad, 0)) <= LAST_VIRTUAL_REGISTER)
+	      || XEXP (ad, 0) == current_function_internal_arg_pointer)
 	  && GET_CODE (XEXP (ad, 1)) == CONST_INT)
 	{
 	  rtx temp, seq;
