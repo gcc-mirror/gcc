@@ -1,3 +1,8 @@
+2002-07-10  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/i386/i386.c  (ix86_svr3_asm_out_constructor): Add
+	HAS_INIT_SECTION to protection.
+
 2002-07-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/invoke.texi (Debugging Options): Mention that -gdwarf is
