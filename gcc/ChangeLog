@@ -1,3 +1,9 @@
+Thu Sep 16 16:35:41 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md: Revert Thu Nov 26 change that came in through the
+	last gcc2 merge: reinstate (plus (plus ...)) reload patterns.
+	Avoid earlyclobber when possible.
+
 Thu Sep 16 18:44:48 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libgcc2.c (__do_global_ctors): Call atexit with one arg.
