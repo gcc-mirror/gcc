@@ -2085,9 +2085,9 @@ clean: mostlyclean bytecode.clean lang.clean
 	-if [ -f md.pre-cpp ]; then \
 	  rm -f md ; \
 	fi
-# Delete the include directory.
-	-rm -rf stmp-* include
-	-rm -f */stmp-*
+# Delete the include directory and timestamp files.
+	-rm -rf stmp-* stamp-* include
+	-rm -f */stmp-* */stamp-*
 # Delete files used by the "multilib" facility (including libgcc subdirs).
 	-rm -f multilib.h tmpmultilib*
 	-if [ "x$(MULTILIB_DIRNAMES)" != x ] ; then \
