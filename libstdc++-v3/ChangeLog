@@ -26,6 +26,8 @@
 	
 2004-10-25  Geoffrey Keating  <geoffk@apple.com>
 
+	* configure.host (darwin*): Build libstdc++ single module
+	and flat namespace.
 	* libsupc++/new_op.cc (new): Make weak.
 	* libsupc++/new_opnt.cc (new): Make weak.
 	* libsupc++/new_opv.cc (new): Make weak.
