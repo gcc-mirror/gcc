@@ -2252,7 +2252,7 @@ __register_exceptions (exception_table *table)
   exception_table_list = node;
 }
 
-#ifdef __i386
+#if #machine(i386)
 void
 __unwind_function(void *ptr)
 {
