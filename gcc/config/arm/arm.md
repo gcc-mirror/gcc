@@ -70,13 +70,13 @@
 
 (define_attr "cpu" "arm2,arm3,arm6" (const (symbol_ref "arm_cpu_attr")))
 
-; LENGTH, all instructions are 4 bytes
-(define_attr "length" "" (const_int 1))
+; LENGTH of an instruction (in bytes)
+(define_attr "length" "" (const_int 4))
 
 ; An assembler sequence may clobber the condition codes without us knowing
 (define_asm_attributes
  [(set_attr "conds" "clob")
-  (set_attr "length" "1")])
+  (set_attr "length" "4")])
 
 ; TYPE attribute is used to detect floating point instructions which, if
 ; running on a co-processor can run in parallel with other, basic instructions
@@ -154,7 +154,7 @@
   return (arm_output_asm_insn (\"adc\\t%R0, %R1, %R2\", operands));
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
@@ -168,7 +168,7 @@
   return (arm_output_asm_insn (\"adc\\t%R0, %R2, %1, asr #31\", operands));
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
@@ -182,7 +182,7 @@
   return (arm_output_asm_insn (\"adc\\t%R0, %R2, #0\", operands));
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -248,7 +248,7 @@
   return arm_output_asm_insn (\"add%d2\\t%0, %1, #1\", operands);
 "
 [(set_attr "conds" "use")
- (set_attr "length" "*,2")])
+ (set_attr "length" "*,8")])
 
 ; If a constant is too big to fit in a single instruction then the constant
 ; will be pre-loaded into a register taking at least two insns, we might be
@@ -433,7 +433,7 @@
   return (arm_output_asm_insn (\"sbc\\t%R0, %R1, %R2\", operands));
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
@@ -447,7 +447,7 @@
   return (arm_output_asm_insn (\"sbc\\t%R0, %R1, #0\", operands));
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
@@ -461,7 +461,7 @@
   return (arm_output_asm_insn (\"sbc\\t%R0, %R1, %2, asr #31\", operands));
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
@@ -475,7 +475,7 @@
   return (arm_output_asm_insn (\"rsc\\t%R0, %R1, #0\", operands));
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
@@ -489,7 +489,7 @@
   return (arm_output_asm_insn (\"rsc\\t%R0, %R1, %2, asr #31\", operands));
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "s_register_operand" "=r")
@@ -505,7 +505,7 @@
 	  operands));
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn "subsi3"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -553,7 +553,7 @@
   return arm_output_asm_insn (\"sub%d2\\t%0, %1, #1\", operands);
 "
 [(set_attr "conds" "use")
- (set_attr "length" "*,2")])
+ (set_attr "length" "*,8")])
 
 (define_insn "subsf3"
   [(set (match_operand:SF 0 "s_register_operand" "=f,f")
@@ -952,7 +952,7 @@
   arm_output_asm_insn (\"and\\t%0, %1, %2\", operands);
   return (arm_output_asm_insn (\"and\\t%R0, %R1, %R2\", operands));
 "
-[(set_attr "length" "2")])
+[(set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
@@ -964,7 +964,7 @@
   arm_output_asm_insn (\"and\\t%0, %1, %2\", operands);
   return arm_output_asm_insn (\"mov\\t%R0, #0\", operands);
 "
-[(set_attr "length" "2")])
+[(set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
@@ -976,7 +976,7 @@
   arm_output_asm_insn (\"and\\t%0, %1, %2\", operands);
   return arm_output_asm_insn (\"and\\t%R0, %R1, %2, asr #31\", operands);
 "
-[(set_attr "length" "2")])
+[(set_attr "length" "8")])
 
 (define_insn "andsi3"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -1083,7 +1083,7 @@
 }
 "
 [(set_attr "conds" "set")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 ;; constants for op 2 will never be given to these patterns.
 (define_insn ""
@@ -1095,7 +1095,7 @@
   arm_output_asm_insn (\"bic\\t%0, %1, %2\", operands);
   return arm_output_asm_insn (\"bic\\t%R0, %R1, %R2\", operands);
 "
-[(set_attr "length" "2")])
+[(set_attr "length" "8")])
   
 (define_insn ""
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
@@ -1109,7 +1109,7 @@
     return arm_output_asm_insn (\"mov\\t%R0, %R1\", operands);
   return \"\";
 "
-[(set_attr "length" "2,1")])
+[(set_attr "length" "8,4")])
   
 (define_insn ""
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
@@ -1121,7 +1121,7 @@
   arm_output_asm_insn (\"bic\\t%0, %1, %2\", operands);
   return arm_output_asm_insn (\"bic\\t%R0, %R1, %2, asr #31\", operands);
 "
-[(set_attr "length" "2")])
+[(set_attr "length" "8")])
   
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -1168,7 +1168,7 @@
   arm_output_asm_insn (\"orr\\t%0, %1, %2\", operands);
   return (arm_output_asm_insn (\"orr\\t%R0, %R1, %R2\", operands));
 "
-[(set_attr "length" "2")])
+[(set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
@@ -1182,7 +1182,7 @@
     return (arm_output_asm_insn (\"mov\\t%R0, %R1\", operands));
   return \"\";
 "
-[(set_attr "length" "2,1")])
+[(set_attr "length" "8,4")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
@@ -1194,7 +1194,7 @@
   arm_output_asm_insn (\"orr\\t%0, %1, %2\", operands);
   return (arm_output_asm_insn (\"orr\\t%R0, %R1, %2, asr #31\", operands));
 "
-[(set_attr "length" "2")])
+[(set_attr "length" "8")])
 
 (define_insn "iorsi3"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -1239,7 +1239,7 @@
   arm_output_asm_insn (\"eor\\t%0, %1, %2\", operands);
   return arm_output_asm_insn (\"eor\\t%R0, %R1, %R2\", operands);
 "
-[(set_attr "length" "2")])
+[(set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
@@ -1253,7 +1253,7 @@
     return arm_output_asm_insn (\"mov\\t%R0, %R1\", operands);
   return \"\";
 "
-[(set_attr "length" "2,1")])
+[(set_attr "length" "8,4")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
@@ -1265,7 +1265,7 @@
   arm_output_asm_insn (\"eor\\t%0, %1, %2\", operands);
   return arm_output_asm_insn (\"eor\\t%R0, %R1, %2, asr #31\", operands);
 "
-[(set_attr "length" "2")])
+[(set_attr "length" "8")])
 
 (define_insn "xorsi3"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -1327,7 +1327,7 @@
   arm_output_asm_insn (\"orr\\t%0, %1, %2\", operands);
   return arm_output_asm_insn (\"bic\\t%0, %0, %3\", operands);
 "
-[(set_attr "length" "2")])
+[(set_attr "length" "8")])
 
 
 
@@ -1348,7 +1348,7 @@
   return \"\";
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2,2,3")])
+ (set_attr "length" "8,8,12")])
 
 (define_insn "sminsi3"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
@@ -1365,7 +1365,7 @@
   return \"\";
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2,2,3")])
+ (set_attr "length" "8,8,12")])
 
 (define_insn "umaxsi3"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
@@ -1382,7 +1382,7 @@
   return \"\";
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2,2,3")])
+ (set_attr "length" "8,8,12")])
 
 (define_insn "uminsi3"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
@@ -1399,7 +1399,7 @@
   return \"\";
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2,2,3")])
+ (set_attr "length" "8,8,12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "memory_operand" "=m")
@@ -1416,7 +1416,7 @@
   return arm_output_asm_insn (\"str%D3\\t%2, %0\", operands);
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "3")
+ (set_attr "length" "12")
  (set_attr "type" "store1")])
 
 (define_insn ""
@@ -1449,7 +1449,7 @@
 }
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "3")])
+ (set_attr "length" "12")])
 
 
 ;; Shift and rotation insns
@@ -1603,7 +1603,7 @@
   return (arm_output_asm_insn (\"rsc\\t%R0, %R1, #0\", operands));
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn "negsi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -1672,7 +1672,7 @@
     }
 "
 [(set_attr "conds" "clob,*")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r,&r")
@@ -1691,7 +1691,7 @@
     }
 "
 [(set_attr "conds" "clob,*")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn "abssf2"
   [(set (match_operand:SF 0 "s_register_operand" "=f")
@@ -1849,7 +1849,7 @@
   arm_output_asm_insn (\"mvn\\t%0, %1\", operands);
   return arm_output_asm_insn (\"mvn\\t%R0, %R1\", operands);
 "
-[(set_attr "length" "2")])
+[(set_attr "length" "8")])
 
 (define_insn "one_cmplsi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -1981,7 +1981,7 @@
     arm_output_asm_insn (\"mov\\t%0, %1\", operands);
   return arm_output_asm_insn (\"mov\\t%R0, #0\", operands);
 "
-[(set_attr "length" "2")])
+[(set_attr "length" "8")])
 
 (define_insn "zero_extendqidi2"
   [(set (match_operand:DI 0 "s_register_operand" "=r,r")
@@ -1999,7 +1999,7 @@
     }
   return arm_output_asm_insn (\"mov\\t%R0, #0\", operands);
 "
-[(set_attr "length" "2")
+[(set_attr "length" "8")
  (set_attr "type" "*,load")])
 
 (define_insn "extendsidi2"
@@ -2011,7 +2011,7 @@
     arm_output_asm_insn (\"mov\\t%0, %1\", operands);
   return arm_output_asm_insn (\"mov\\t%R0, %0, asr #31\", operands);
 "
-[(set_attr "length" "2")])
+[(set_attr "length" "8")])
 
 (define_expand "zero_extendhisi2"
   [(set (match_dup 2)
@@ -2228,7 +2228,7 @@
   "*
   return (output_move_double (operands));
 "
-[(set_attr "length" "2,8,2,2,8")
+[(set_attr "length" "8,32,8,8,32")
  (set_attr "type" "*,*,load,store2,*")])
 
 (define_expand "movsi"
@@ -2378,7 +2378,7 @@
       return output_load_symbol (operands);
     }
 "
-[(set_attr "length" "2,*,*,*,4")
+[(set_attr "length" "8,*,*,*,16")
  (set_attr "type" "load,*,*,store1,*")])
 
 ;; If copying one reg to another we can set the condition codes according to
@@ -2639,7 +2639,7 @@
   }
 }
 "
-[(set_attr "length" "1,1,1,1,2,2,1,1,1")
+[(set_attr "length" "4,4,4,4,8,8,4,4,4")
  (set_attr "type" "float,float,f_load,f_store,r_mem_f,f_mem_r,*,load,store1")])
 
 (define_expand "movdf"
@@ -2719,7 +2719,7 @@
     }
 }
 "
-[(set_attr "length" "1,1,2,2,1,1,1,1,1,2,2,2")
+[(set_attr "length" "4,4,8,8,4,4,4,4,4,8,8,8")
  (set_attr "type" 
 "load,store2,load,store2,float,float,float,f_load,f_store,r_mem_f,f_mem_r,*")])
 
@@ -2747,7 +2747,7 @@
     }
 }
 "
-[(set_attr "length" "1,1,1,1,2,2,3")
+[(set_attr "length" "4,4,4,4,8,8,12")
  (set_attr "type" "float,float,f_load,f_store,r_mem_f,f_mem_r,*")])
 
 
@@ -3626,7 +3626,7 @@
   return arm_output_asm_insn (\"mov%D1\\t%0, #0\", operands);
 "
 [(set_attr "conds" "use")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -3638,7 +3638,7 @@
   return arm_output_asm_insn (\"mov%D1\\t%0, #0\", operands);
 "
 [(set_attr "conds" "use")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -3650,7 +3650,7 @@
   return arm_output_asm_insn (\"mov%D1\\t%0, #0\", operands);
 "
 [(set_attr "conds" "use")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 
 ;; Jump and linkage insns
@@ -3691,7 +3691,7 @@
 		    (const_string "clob")
 		    (const_string "nocond")))
 ;; length is worst case, normally it is only two
- (set_attr "length" "3")
+ (set_attr "length" "12")
  (set_attr "type" "call")])
 
 (define_insn ""
@@ -3706,7 +3706,7 @@
       (if_then_else (eq_attr "cpu" "arm6")
 		    (const_string "clob")
 		    (const_string "nocond")))
- (set_attr "length" "3")
+ (set_attr "length" "12")
  (set_attr "type" "call")])
 
 (define_expand "call_value"
@@ -3730,7 +3730,7 @@
       (if_then_else (eq_attr "cpu" "arm6")
 		    (const_string "clob")
 		    (const_string "nocond")))
- (set_attr "length" "3")
+ (set_attr "length" "12")
  (set_attr "type" "call")])
 
 (define_insn ""
@@ -3746,7 +3746,7 @@
       (if_then_else (eq_attr "cpu" "arm6")
 		    (const_string "clob")
 		    (const_string "nocond")))
- (set_attr "length" "3")
+ (set_attr "length" "12")
  (set_attr "type" "call")])
 
 ;; Allow calls to SYMBOL_REFs specially as they are not valid general addresses
@@ -4074,7 +4074,7 @@
   return output_add_immediate (operands);
 }"
 ; we have no idea how long the add_immediate is, it could be up to 4.
-[(set_attr "length" "5")])
+[(set_attr "length" "20")])
 
 (define_insn ""
   [(set (reg:CC_NOOV 24)
@@ -4100,7 +4100,7 @@
   return arm_output_asm_insn (instr, operands);
 }"
 [(set_attr "conds" "set")
- (set_attr "length" "5")])
+ (set_attr "length" "20")])
 
 (define_insn ""
   [(set (reg:CC_NOOV 24)
@@ -4123,7 +4123,7 @@
   return arm_output_asm_insn (instr, operands);
 }"
 [(set_attr "conds" "set")
- (set_attr "length" "5")])
+ (set_attr "length" "20")])
 
 ;; These are similar, but are needed when the mla pattern contains the
 ;; eliminated register as operand 3.
@@ -4141,7 +4141,7 @@
   operands[1] = operands[0];
   return output_add_immediate (operands);
 "
-[(set_attr "length" "5")])
+[(set_attr "length" "20")])
 
 (define_insn ""
   [(set (reg:CC_NOOV 24)
@@ -4159,7 +4159,7 @@
   output_add_immediate (operands);
   return arm_output_asm_insn (\"mlas\\t%0, %3, %4, %0\", operands);
 "
-[(set_attr "length" "5")
+[(set_attr "length" "20")
  (set_attr "conds" "set")])
 
 (define_insn ""
@@ -4176,7 +4176,7 @@
   output_add_immediate (operands);
   return arm_output_asm_insn (\"mlas\\t%0, %3, %4, %0\", operands);
 "
-[(set_attr "length" "5")
+[(set_attr "length" "20")
  (set_attr "conds" "set")])
 
 
@@ -4193,7 +4193,7 @@
   return arm_output_asm_insn (\"and%d1\\t%0, %2, #1\", operands);
 "
 [(set_attr "conds" "use")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -4207,7 +4207,7 @@
   return arm_output_asm_insn (\"orr%d2\\t%0, %1, #1\", operands);
 "
 [(set_attr "conds" "use")
- (set_attr "length" "1,2")])
+ (set_attr "length" "4,8")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -4242,7 +4242,7 @@
   return arm_output_asm_insn (\"mov%d1\\t%0, #1\", operands);
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "3")])
+ (set_attr "length" "12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
@@ -4281,7 +4281,7 @@
 "
 [(set_attr "conds" "clob")
 ; worst case length
- (set_attr "length" "5")])
+ (set_attr "length" "20")])
 
 (define_split
   [(set (pc)
@@ -4367,7 +4367,7 @@
   return arm_output_asm_insn (\"b%d6\\t%l4\", operands);
 }"
 [(set_attr "conds" "jump_clob")
- (set_attr "length" "4")])
+ (set_attr "length" "16")])
 
 (define_insn ""
   [(set (reg:CC 24)
@@ -4405,7 +4405,7 @@
   return arm_output_asm_insn (\"cmp%D4\\t%2, %3\", operands);
 "
 [(set_attr "conds" "set")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
@@ -4432,7 +4432,7 @@
   return \"\";
 "
 [(set_attr "conds" "use")
- (set_attr "length" "1,1,2")])
+ (set_attr "length" "4,4,8")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -4463,7 +4463,7 @@
 }
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "3")])
+ (set_attr "length" "12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -4480,7 +4480,7 @@
   return arm_output_asm_insn (\"sub%d4\\t%0, %1, #1\", operands);
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2,3")])
+ (set_attr "length" "8,12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
@@ -4519,7 +4519,7 @@
 }
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "5")])
+ (set_attr "length" "20")])
 
 (define_split
   [(set (pc)
@@ -4616,7 +4616,7 @@
   return arm_output_asm_insn (\"b%D4\\t%l0\", operands);
 }"
 [(set_attr "conds" "jump_clob")
- (set_attr "length" "4")])
+ (set_attr "length" "16")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -4643,7 +4643,7 @@
   return arm_output_asm_insn (\"mvn%d3\\t%0, #0\", operands);
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "3")])
+ (set_attr "length" "12")])
 
 (define_insn "movcond"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
@@ -4707,7 +4707,7 @@
   return \"\";
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2,2,3")])
+ (set_attr "length" "8,8,12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -4740,7 +4740,7 @@
 }
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "3")])
+ (set_attr "length" "12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -4801,7 +4801,7 @@
 }
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2,3")])
+ (set_attr "length" "8,12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -4861,7 +4861,7 @@
 }
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2,3")])
+ (set_attr "length" "8,12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -4897,7 +4897,7 @@
 }
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2,3")])
+ (set_attr "length" "8,12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -4933,7 +4933,7 @@
 }
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2,3")])
+ (set_attr "length" "8,12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -4947,7 +4947,7 @@
   ""
   "#"
 [(set_attr "conds" "clob")
- (set_attr "length" "2,3")])
+ (set_attr "length" "8,12")])
 
 ;;  if (GET_CODE (operands[3]) == CONST_INT
 ;;      && !const_ok_for_arm (INTVAL (operands[3])))
@@ -4984,7 +4984,7 @@
 }
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2,3")])
+ (set_attr "length" "8,12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -5014,7 +5014,7 @@
 }
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2,3")])
+ (set_attr "length" "8,12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -5044,7 +5044,7 @@
 }
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2,3")])
+ (set_attr "length" "8,12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -5077,7 +5077,7 @@
 }
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "3")])
+ (set_attr "length" "12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -5106,7 +5106,7 @@
 }
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "3")])
+ (set_attr "length" "12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -5135,7 +5135,7 @@
 }
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "3")])
+ (set_attr "length" "12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -5158,7 +5158,7 @@
   return arm_output_asm_insn (\"rsb%d5\\t%0, %2, #0\", operands);
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2,3")])
+ (set_attr "length" "8,12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -5181,7 +5181,7 @@
   return arm_output_asm_insn (\"rsb%D5\\t%0, %2, #0\", operands);
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2,3")])
+ (set_attr "length" "8,12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -5255,7 +5255,7 @@
   return arm_output_asm_insn (pattern, arith);
 }
 "
-[(set_attr "length" "3")
+[(set_attr "length" "12")
  (set_attr "type" "load")])
 
 ;; the arm can support extended pre-inc instructions
@@ -5929,7 +5929,7 @@
       (if_then_else (eq_attr "cpu" "arm6")
 		    (const_string "clob")
 		    (const_string "nocond")))
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_peephole
   [(parallel [(set (match_operand 0 "s_register_operand" "=rf")
@@ -5960,7 +5960,7 @@
       (if_then_else (eq_attr "cpu" "arm6")
 		    (const_string "clob")
 		    (const_string "nocond")))
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 ;; As above but when this function is not void, we must be returning the
 ;; result of the called subroutine.
@@ -5995,7 +5995,7 @@
       (if_then_else (eq_attr "cpu" "arm6")
 		    (const_string "clob")
 		    (const_string "nocond")))
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 ;; If calling a subroutine and then jumping back to somewhere else, but not
 ;; too far away, then we can set the link register with the branch address
@@ -6046,8 +6046,8 @@
 		    (const_string "nocond")))
  (set (attr "length")
       (if_then_else (eq_attr "cpu" "arm6")
-		    (const_int 2)
-		    (const_int 3)))])
+		    (const_int 8)
+		    (const_int 12)))])
 
 (define_peephole
   [(parallel[(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -6092,8 +6092,8 @@
 		    (const_string "nocond")))
  (set (attr "length")
       (if_then_else (eq_attr "cpu" "arm6")
-		    (const_int 2)
-		    (const_int 3)))])
+		    (const_int 8)
+		    (const_int 12)))])
 
 (define_split
   [(set (pc)
@@ -6152,7 +6152,7 @@
   return arm_output_asm_insn (\"cmp\\t%2, %1\", operands);
 "
 [(set_attr "conds" "set")
- (set_attr "length" "2")
+ (set_attr "length" "8")
  (set_attr "type" "load")])
 
 (define_expand "save_stack_nonlocal"
@@ -6226,7 +6226,7 @@
   return arm_output_asm_insn (\"mvn%D4\\t%0, %2\", operands);
 "
 [(set_attr "conds" "use")
- (set_attr "length" "1,2")])
+ (set_attr "length" "4,8")])
 
 ;; The next two patterns occur when an AND operation is followed by a
 ;; scc insn sequence 
@@ -6243,7 +6243,7 @@
   return arm_output_asm_insn (\"mvnne\\t%0, #0\", operands);
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "2")])
+ (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -6259,4 +6259,4 @@
   return arm_output_asm_insn (\"movne\\t%0, #0\", operands);
 "
 [(set_attr "conds" "clob")
- (set_attr "length" "3")])
+ (set_attr "length" "12")])
