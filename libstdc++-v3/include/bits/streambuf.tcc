@@ -215,7 +215,7 @@ namespace std {
       }
       catch(exception& __fail) {
 	if ((__ios.exceptions() & ios_base::failbit) != 0)
-	  throw;
+	  __throw_exception_again;
       }
       return __ret;
     }

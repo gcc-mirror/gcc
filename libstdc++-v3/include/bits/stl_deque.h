@@ -499,7 +499,7 @@ public:                         // Basic accessors
 #ifdef __STL_THROW_RANGE_ERRORS
   void _M_range_check(size_type __n) const {
     if (__n >= this->size())
-      __stl_throw_range_error("deque");
+      __throw_range_error("deque");
   }
 
   reference at(size_type __n)

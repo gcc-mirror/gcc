@@ -349,7 +349,7 @@ namespace std
     catch (...) 
       { 
 	_M_impl->_M_remove_reference(); 
-	throw; 
+	__throw_exception_again;
       }
   }
 
@@ -376,7 +376,7 @@ namespace std
 	  _M_impl = new _Impl(__s, 1);
       }
     else
-      throw runtime_error("attempt to create locale from NULL name");
+      __throw_runtime_error("attempt to create locale from NULL name");
   }
 
   locale::locale(const locale& __base, const char* __s, category __cat)
@@ -468,7 +468,7 @@ namespace std
 	      }
 	    _S_classic = _S_global = 0;
 	    // XXX MT
-	    throw;
+	    __throw_exception_again;
 	  }
       }
     return *__classic_locale;
@@ -509,7 +509,7 @@ namespace std
 	    __ret = all;
 	    break;
 	  default:
-	    throw runtime_error("bad locale category");
+	    __throw_runtime_error("bad locale category");
 	  }
       }
     return __ret;

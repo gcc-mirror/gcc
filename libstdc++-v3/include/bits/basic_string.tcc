@@ -87,44 +87,46 @@ namespace std
 	_Rep* __r = _Rep::_S_create(__i, __a);
 	traits_type::copy(__r->_M_refdata(), __buf, __i);
 	__r->_M_length = __i;
-	try {
-	  // NB: this loop looks precisely this way because
-	  // it avoids comparing __beg != __end any more
-	  // than strictly necessary; != might be expensive!
-	  for (;;)
-	    {
-	      _CharT* __p = __r->_M_refdata() + __r->_M_length;
-	      _CharT* __last = __r->_M_refdata() + __r->_M_capacity;
-	      for (;;)
-		{
-		  if (__beg == __end)
-		    {
-		      __r->_M_length = __p - __r->_M_refdata();
-		      *__p = _Rep::_S_terminal;       // grrr.
-		      return __r->_M_refdata();
-		    }
-		  if (__p == __last)
-		    break;
-		  *__p++ = *__beg; 
-		  ++__beg;
-		}
-	      // Allocate more space.
-	      size_type __len = __p - __r->_M_refdata();
-	      _Rep* __another = _Rep::_S_create(__len + 1, __a);
-	      traits_type::copy(__another->_M_refdata(), 
-				__r->_M_refdata(), __len);
-	      __r->_M_destroy(__a);
-	      __r = __another;
-	      __r->_M_length = __len;
-	    }
-	}
-	catch (...) {
+	try 
+	  {
+	    // NB: this loop looks precisely this way because
+	    // it avoids comparing __beg != __end any more
+	    // than strictly necessary; != might be expensive!
+	    for (;;)
+	      {
+		_CharT* __p = __r->_M_refdata() + __r->_M_length;
+		_CharT* __last = __r->_M_refdata() + __r->_M_capacity;
+		for (;;)
+		  {
+		    if (__beg == __end)
+		      {
+			__r->_M_length = __p - __r->_M_refdata();
+			*__p = _Rep::_S_terminal;       // grrr.
+			return __r->_M_refdata();
+		      }
+		    if (__p == __last)
+		      break;
+		    *__p++ = *__beg; 
+		    ++__beg;
+		  }
+		// Allocate more space.
+		size_type __len = __p - __r->_M_refdata();
+		_Rep* __another = _Rep::_S_create(__len + 1, __a);
+		traits_type::copy(__another->_M_refdata(), 
+				  __r->_M_refdata(), __len);
+		__r->_M_destroy(__a);
+		__r = __another;
+		__r->_M_length = __len;
+	      }
+	  }
+	catch(...) 
+	  {
 	    __r->_M_destroy(__a); 
-	    throw;
-	}
+	    __throw_exception_again;
+	  }
 	return 0;
       }
-
+  
   template<typename _CharT, typename _Traits, typename _Alloc>
     template <class _InIter>
       _CharT*
@@ -139,13 +141,13 @@ namespace std
 
 	// Check for out_of_range and length_error exceptions.
 	_Rep* __r = _Rep::_S_create(__dnew, __a);
-	try { 
-	  _S_copy_chars(__r->_M_refdata(), __beg, __end); 
-	}
-	catch (...) { 
-	  __r->_M_destroy(__a); 
-	  throw; 
-	}
+	try 
+	  { _S_copy_chars(__r->_M_refdata(), __beg, __end); }
+	catch(...) 
+	  { 
+	    __r->_M_destroy(__a); 
+	    __throw_exception_again;
+	  }
 	__r->_M_length = __dnew;
 
 	__r->_M_refdata()[__dnew] = _Rep::_S_terminal;  // grrr.
@@ -162,14 +164,16 @@ namespace std
 
       // Check for out_of_range and length_error exceptions.
       _Rep* __r = _Rep::_S_create(__n, __a);
-      try { 
-	if (__n) 
-	  traits_type::assign(__r->_M_refdata(), __n, __c); 
-      }
-      catch (...) { 
-	__r->_M_destroy(__a); 
-	throw; 
-      }
+      try 
+	{ 
+	  if (__n) 
+	    traits_type::assign(__r->_M_refdata(), __n, __c); 
+	}
+      catch(...) 
+	{ 
+	  __r->_M_destroy(__a); 
+	  __throw_exception_again;
+	}
       __r->_M_length = __n;
       __r->_M_refdata()[__n] = _Rep::_S_terminal;  // grrr
       return __r->_M_refdata();
@@ -276,17 +280,19 @@ namespace std
 	  // Must reallocate.
 	  allocator_type __a = get_allocator();
 	  _Rep* __r = _Rep::_S_create(__new_size, __a);
-	  try {
-	    if (__pos)
-	      traits_type::copy(__r->_M_refdata(), _M_data(), __pos);
-	    if (__how_much)
-	      traits_type::copy(__r->_M_refdata() + __pos + __len2, 
-				__src, __how_much);
-	  }
-	  catch (...) { 
-	    __r->_M_dispose(get_allocator()); 
-	    throw; 
-	  }
+	  try 
+	    {
+	      if (__pos)
+		traits_type::copy(__r->_M_refdata(), _M_data(), __pos);
+	      if (__how_much)
+		traits_type::copy(__r->_M_refdata() + __pos + __len2, 
+				  __src, __how_much);
+	    }
+	  catch(...) 
+	    { 
+	      __r->_M_dispose(get_allocator()); 
+	      __throw_exception_again;
+	    }
 	  _M_rep()->_M_dispose(__a);
 	  _M_data(__r->_M_refdata());
       }
@@ -307,7 +313,8 @@ namespace std
     {
       if (__res > this->capacity() || _M_rep()->_M_is_shared())
         {
-	  __LENGTHERROR(__res > this->max_size());
+	  if (__res > this->max_size())
+	    __throw_length_error("basic_string::reserve");
 	  allocator_type __a = get_allocator();
 	  _CharT* __tmp = _M_rep()->_M_clone(__a, __res - this->size());
 	  _M_rep()->_M_dispose(__a);
@@ -351,13 +358,14 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::_Rep::
     _S_create(size_t __capacity, const _Alloc& __alloc)
     {
+      typedef basic_string<_CharT, _Traits, _Alloc> __string_type;
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
       // 83.  String::npos vs. string::max_size()
-      typedef basic_string<_CharT, _Traits, _Alloc> __string_type;
-      __LENGTHERROR(__capacity > _S_max_size);
+      if (__capacity > _S_max_size)
 #else
-      __LENGTHERROR(__capacity == npos);
+      if (__capacity == npos)
 #endif
+	__throw_length_error("basic_string::_S_create");
 
       // NB: Need an array of char_type[__capacity], plus a
       // terminating null char_type() element, plus enough for the
@@ -381,13 +389,13 @@ namespace std
       _Rep* __r = _Rep::_S_create(_M_length + __res, __alloc);
       if (_M_length)
 	{
-	  try { 
-	    traits_type::copy(__r->_M_refdata(), _M_refdata(), _M_length); 
-	  }
-	  catch (...)  { 
-	    __r->_M_destroy(__alloc); 
-	    throw; 
-	  }
+	  try 
+	    { traits_type::copy(__r->_M_refdata(), _M_refdata(), _M_length); }
+	  catch(...)  
+	    { 
+	      __r->_M_destroy(__alloc); 
+	      __throw_exception_again;
+	    }
 	}
       __r->_M_length = _M_length;
       return __r->_M_refdata();
@@ -410,7 +418,8 @@ namespace std
     void
     basic_string<_CharT, _Traits, _Alloc>::resize(size_type __n, _CharT __c)
     {
-      __LENGTHERROR(__n > max_size());
+      if (__n > max_size())
+	__throw_length_error("basic_string::resize");
       size_type __size = this->size();
       if (__size < __n)
 	this->append(__n - __size, __c);
@@ -441,7 +450,8 @@ namespace std
 	size_type __dmax = this->max_size();
 	size_type __dnew = static_cast<size_type>(distance(__k1, __k2));
 
-	__LENGTHERROR(__dmax <= __dnew);
+	if (__dmax <= __dnew)
+	  __throw_length_error("basic_string::_M_replace");
 	size_type __off = __i1 - _M_ibegin();
 	_M_mutate(__off, __dold, __dnew);
 	// Invalidated __i1, __i2
@@ -551,7 +561,8 @@ namespace std
     {
       size_type __n1 = __i2 - __i1;
       size_type __off1 = __i1 - _M_ibegin();
-      __LENGTHERROR(max_size() - (this->size() - __n1) <= __n2);
+      if (max_size() - (this->size() - __n1) <= __n2)
+	__throw_length_error("basic_string::replace");
       _M_mutate (__off1, __n1, __n2);
       // Invalidated __i1, __i2
       if (__n2)
@@ -564,7 +575,8 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     copy(_CharT* __s, size_type __n, size_type __pos) const
     {
-      __OUTOFRANGE(__pos > this->size());
+      if (__pos > this->size())
+	__throw_out_of_range("basic_string::copy");
       
       if (__n > this->size() - __pos)
 	__n = this->size() - __pos;
@@ -751,7 +763,8 @@ namespace std
     {
       size_type __size = this->size();
       size_type __osize = __str.size();
-      __OUTOFRANGE(__pos > __size);
+      if (__pos > __size)
+	__throw_out_of_range("basic_string::compare");
       
       size_type __rsize= min(__size - __pos, __n);
       size_type __len = min(__rsize, __osize);
@@ -769,8 +782,8 @@ namespace std
     {
       size_type __size = this->size();
       size_type __osize = __str.size();
-      __OUTOFRANGE(__pos1 > __size);
-      __OUTOFRANGE(__pos2 > __osize);
+      if (__pos1 > __size || __pos2 > __osize)
+	__throw_out_of_range("basic_string::compare");
       
       size_type __rsize = min(__size - __pos1, __n1);
       size_type __rosize = min(__osize - __pos2, __n2);
@@ -803,7 +816,8 @@ namespace std
 	    size_type __n2) const
     {
       size_type __size = this->size();
-      __OUTOFRANGE(__pos > __size);
+      if (__pos > __size)
+	__throw_out_of_range("basic_string::compare");
       
       size_type __osize = min(traits_type::length(__s), __n2);
       size_type __rsize = min(__size - __pos, __n1);

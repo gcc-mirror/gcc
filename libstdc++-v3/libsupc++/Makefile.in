@@ -150,7 +150,7 @@ TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 INCLUDES =  	-I$(toplevel_srcdir)/gcc -I$(toplevel_srcdir)/include 	-I$(GLIBCPP_INCLUDE_DIR) $(CSTD_INCLUDES) -I$(top_builddir)/include 	 $(LIBSUPCXX_INCLUDES)
 
 
-headers =  	cxxabi.h exception new typeinfo
+headers =  	exception new typeinfo cxxabi.h exception_defines.h 
 
 
 sources =  	del_op.cc 	del_opnt.cc 	del_opv.cc 	del_opvnt.cc 	exception_support.cc 	new_handler.cc 	new_op.cc 	new_opnt.cc 	new_opv.cc 	new_opvnt.cc 	pure.cc 	tinfo.cc 	tinfo2.cc 	vec.cc

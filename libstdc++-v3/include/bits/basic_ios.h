@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -105,7 +105,7 @@ namespace std {
 	else
 	  _M_streambuf_state = __state | badbit;
 	if ((this->rdstate() & this->exceptions()))
-	  throw failure("basic_ios::clear(iostate) caused exception");
+	  __throw_ios_failure("basic_ios::clear(iostate) caused exception");
       }
 
       inline void 

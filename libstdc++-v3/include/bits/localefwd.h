@@ -35,10 +35,11 @@
 #define _CPP_BITS_LOCCORE_H	1
 
 #include <bits/c++config.h>
+#include <bits/c++locale.h>     // Defines __c_locale.
 #include <bits/std_climits.h>	// For CHAR_BIT
 #include <bits/std_string.h> 	// For string
 #include <bits/std_cctype.h>	// For isspace, etc.
-#include <bits/c++locale.h>     // Defines __c_locale.
+#include <bits/functexcept.h>
 
 namespace std
 {

@@ -1,5 +1,5 @@
 // Support routines for the -*- C++ -*- dynamic memory management.
-// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation
 //
 // This file is part of GNU CC.
 //
@@ -28,6 +28,8 @@
 // the GNU General Public License.
 
 #include "new"
+#include <exception_defines.h>
+
 using std::new_handler;
 using std::bad_alloc;
 
@@ -47,7 +49,11 @@ operator new (std::size_t sz) throw (std::bad_alloc)
     {
       new_handler handler = __new_handler;
       if (! handler)
-	throw bad_alloc ();
+#ifdef __EXCEPTIONS
+	throw bad_alloc();
+#else
+        std::abort();
+#endif
       handler ();
       p = (void *) malloc (sz);
     }

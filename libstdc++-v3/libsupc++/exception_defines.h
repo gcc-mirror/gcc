@@ -1,6 +1,6 @@
-// Methods for Exception Support for -*- C++ -*-
+// -fno-exceptions Support -*- C++ -*-
 
-// Copyright (C) 1997, 1999, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,51 +31,12 @@
 // ISO C++ 14882: 19.1  Exception classes
 //
 
-#include <bits/std_string.h>
-#include <bits/std_stdexcept.h>
-
-namespace std 
-{
-  logic_error::logic_error(const string& __arg) 
-  : exception(), _M_msg(__arg) { }
-
-  logic_error::~logic_error() throw() { };
-
-  const char*
-  logic_error::what() const throw()
-  { return _M_msg.c_str(); }
-
-  domain_error::domain_error(const string& __arg)
-  : logic_error(__arg) { }
-
-  invalid_argument::invalid_argument(const string& __arg)
-  : logic_error(__arg) { }
-
-  length_error::length_error(const string& __arg)
-  : logic_error(__arg) { }
-
-  out_of_range::out_of_range(const string& __arg)
-  : logic_error(__arg) { }
-
-  runtime_error::runtime_error(const string& __arg) 
-  : exception(), _M_msg(__arg) { }
-
-  runtime_error::~runtime_error() throw() { };
-
-  const char*
-  runtime_error::what() const throw()
-  { return _M_msg.c_str(); }
-
-  range_error::range_error(const string& __arg)
-  : runtime_error(__arg) { }
-
-  overflow_error::overflow_error(const string& __arg)
-  : runtime_error(__arg) { }
-
-  underflow_error::underflow_error(const string& __arg)
-  : runtime_error(__arg) { }
-} // namespace std
-
-
-
-
+#ifndef __EXCEPTIONS
+// Iff -fno-exceptions, transform error handling code to work without it.
+# define try      if (true)
+# define catch(X) if (false)
+# define __throw_exception_again
+#else
+// Else proceed normally.
+# define __throw_exception_again throw
+#endif

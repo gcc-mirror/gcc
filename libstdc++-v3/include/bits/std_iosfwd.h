@@ -1,6 +1,6 @@
 // Forwarding declarations -*- C++ -*-
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,6 +37,7 @@
 #include <bits/c++config.h>
 #include <bits/std_cwchar.h> // For mbstate_t
 #include <bits/stringfwd.h> // For string forward declarations.
+#include <bits/functexcept.h>
 
 namespace std 
 {

@@ -92,7 +92,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -114,7 +114,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -136,7 +136,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -160,7 +160,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -184,7 +184,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -208,7 +208,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -232,7 +232,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -256,7 +256,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -280,7 +280,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -304,7 +304,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -329,7 +329,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -353,7 +353,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -378,7 +378,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -402,7 +402,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -426,7 +426,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -450,7 +450,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -495,7 +495,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return __c;
@@ -527,7 +527,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -568,7 +568,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       *__s = char_type(NULL);
@@ -664,7 +664,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       *__s = char_type(NULL);
@@ -708,7 +708,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -732,7 +732,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	} 
       return __c;
@@ -776,7 +776,7 @@ namespace std {
 		// Turn this on without causing an ios::failure to be thrown.
 		this->setstate(ios_base::badbit);
 		if ((this->exceptions() & ios_base::badbit) != 0)
-		  throw;
+		  __throw_exception_again;
 	      }
 	    }
 	}
@@ -813,7 +813,7 @@ namespace std {
 		// Turn this on without causing an ios::failure to be thrown.
 		this->setstate(ios_base::badbit);
 		if ((this->exceptions() & ios_base::badbit) != 0)
-		  throw;
+		  __throw_exception_again;
 	      }
 	    }
 	}
@@ -841,7 +841,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       else
@@ -869,7 +869,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       else
@@ -899,7 +899,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return __ret;
@@ -923,7 +923,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return __ret;
@@ -950,7 +950,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -976,7 +976,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -999,7 +999,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    __in.setstate(ios_base::badbit);
 	    if ((__in.exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       else
@@ -1059,7 +1059,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    __in.setstate(ios_base::badbit);
 	    if ((__in.exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       if (!__extracted)

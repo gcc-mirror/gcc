@@ -1,8 +1,10 @@
 // Methods for type_info for -*- C++ -*- Run Time Type Identification.
-// Copyright (C) 1994, 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation
 
+// Copyright (C) 1994, 1996, 1997, 1998, 1999, 2000, 2001 
+// Free Software Foundation
+//
 // This file is part of GNU CC.
-
+//
 // GNU CC is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2, or (at your option)

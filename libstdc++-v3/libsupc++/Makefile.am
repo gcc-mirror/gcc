@@ -68,7 +68,7 @@ INCLUDES = \
 	 $(LIBSUPCXX_INCLUDES)
 
 headers = \
-	cxxabi.h exception new typeinfo
+	exception new typeinfo cxxabi.h exception_defines.h 
 
 sources = \
 	del_op.cc \

@@ -1,4 +1,5 @@
 // -*- C++ -*- 
+
 // Copyright (C) 2000 Free Software Foundation
 //
 // This file is part of GNU CC.

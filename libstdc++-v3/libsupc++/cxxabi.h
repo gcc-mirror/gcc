@@ -1,8 +1,7 @@
-/* new abi support -*- C++ -*-
-   Copyright (C) 2000
-   Free Software Foundation, Inc.
-   Written by Nathan Sidwell, Codesourcery LLC, <nathan@codesourcery.com>  */
-
+// new abi support -*- C++ -*-
+  
+// Copyright (C) 2000 Free Software Foundation, Inc.
+//
 // This file is part of GNU CC.
 //
 // GNU CC is free software; you can redistribute it and/or modify
@@ -29,6 +28,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+// Written by Nathan Sidwell, Codesourcery LLC, <nathan@codesourcery.com>
+ 
 /* This file declares the new abi entry points into the runtime. It is not
    normally necessary for user programs to include this header, or use the
    entry points directly. However, this header is available should that be
