@@ -1,3 +1,9 @@
+2004-11-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* ifcvt.c (find_if_block): Move the check for the number of edges
+	above the loops checking for complex edges.
+	Remove the counting of edges as we use EDGE_COUNT now.
+
 2004-11-18  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.comn>
 
 	* config/m32r/linux.h (TARGET_ASM_FILE_END): Set
