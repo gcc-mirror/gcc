@@ -1,3 +1,8 @@
+2004-10-26  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/protocol/http/Connection.java
+	(getOutputStream): Implicitely switch to POST method.
+
 2004-10-26  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* libjava/java/lang/Class.h
