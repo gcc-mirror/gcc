@@ -965,7 +965,8 @@ crtend.o:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h \
     $(srcdir)/c-parse.h c-tree.h input.h flags.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/c-parse.c
-$(srcdir)/c-parse.c $(srcdir)/c-parse.h: $(srcdir)/c-parse.y
+$(srcdir)/c-parse.h: $(srcdir)/c-parse.c
+$(srcdir)/c-parse.c: $(srcdir)/c-parse.y
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d c-parse.y -o c-parse.c
 $(srcdir)/c-parse.y: $(srcdir)/c-parse.in
 	sed -e "/^ifobjc$$/,/^end ifobjc$$/d" \
@@ -1452,7 +1453,8 @@ bi-opname: bi-opname.o $(BI_OBJ) $(HOST_LIBDEPS)
 bi-run.o:	$(srcdir)/bi-run.c $(srcdir)/bi-run.h $(srcdir)/bc-typecd.h \
   bc-opname.h bc-arity.h bc-opcode.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/bi-run.c
-$(srcdir)/bi-parser.c $(srcdir)/bi-parser.h: $(srcdir)/bi-parser.y
+$(srcdir)/bi-parser.h: $(srcdir)/bi-parser.c
+$(srcdir)/bi-parser.c: $(srcdir)/bi-parser.y
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d bi-parser.y -o bi-parser.c
 bi-parser.o:	$(srcdir)/bi-parser.c $(srcdir)/bi-defs.h hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
