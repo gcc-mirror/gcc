@@ -2933,18 +2933,7 @@ optimization and code generation options plus
 Control Optimization}).
 
 The other use of @option{-fprofile-arcs} is for use with @code{gcov},
-when it is used with the @option{-ftest-coverage} option.  GCC
-supports two methods of determining code coverage: the options that
-support @code{gcov}, and options @option{-a} and @option{-ax}, which
-write information to text files.  The options that support @code{gcov}
-do not need to instrument every arc in the program, so a program compiled
-with them runs faster than a program compiled with @option{-a}, which
-adds instrumentation code to every basic block in the program.  The
-tradeoff: since @code{gcov} does not have execution counts for all
-branches, it must start with the execution counts for the instrumented
-branches, and then iterate over the program flow graph until the entire
-graph has been solved.  Hence, @code{gcov} runs a little more slowly than
-a program which uses information from @option{-a} and @option{-ax}.
+when it is used with the @option{-ftest-coverage} option.
 
 With @option{-fprofile-arcs}, for each function of your program GCC
 creates a program flow graph, then finds a spanning tree for the graph.
@@ -2953,11 +2942,6 @@ compiler adds code to count the number of times that these arcs are
 executed.  When an arc is the only exit or only entrance to a block, the
 instrumentation code can be added to the block; otherwise, a new basic
 block must be created to hold the instrumentation code.
-
-This option makes it possible to estimate branch probabilities and to
-calculate basic block execution counts.  In general, basic block
-execution counts as provided by @option{-a} do not give enough
-information to estimate all branch probabilities.
 
 @need 2000
 @item -ftest-coverage

@@ -1,3 +1,7 @@
+2002-10-29  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/invoke.texi (-profile-arcs): Remove references to -a and -ax.
+
 2002-10-29  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* expr.c (expand_expr) [PLUS]: Don't use simplify_binary_operation;
