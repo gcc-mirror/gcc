@@ -44,9 +44,9 @@ typedef void *__gnuc_va_list;
 
 #define va_arg(AP, TYPE)						\
  (AP = (__gnuc_va_list) ((char *) (AP) + __va_rounded_size (TYPE)),	\
-  *((TYPE *) (void *) ((char *) (AP) - ((sizeof (TYPE) < 4		\
-					 ? sizeof (TYPE)		\
-					 : __va_rounded_size (TYPE))))))
+  *((TYPE *) (void *) ((char *) (AP)					\
+		       - ((sizeof (TYPE) < __va_rounded_size (int)	\
+			  ? sizeof (TYPE) : __va_rounded_size (TYPE))))))
 
 #define va_end(AP)	((void) 0)
 
