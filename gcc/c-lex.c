@@ -113,7 +113,7 @@ init_c_lex (filename)
       body_time = get_run_time ();
       toplevel->time = body_time;
     }
-  
+
 #ifdef MULTIBYTE_CHARS
   /* Change to the native locale for multibyte conversions.  */
   setlocale (LC_CTYPE, "");
@@ -146,7 +146,7 @@ init_c_lex (filename)
   return filename;
 }
 
-/* A thin wrapper around the real parser that initializes the 
+/* A thin wrapper around the real parser that initializes the
    integrated preprocessor after debug output has been initialized.  */
 
 int
@@ -352,7 +352,7 @@ cb_undef (pfile, node)
 
 /* Parse a '\uNNNN' or '\UNNNNNNNN' sequence.
 
-   [lex.charset]: The character designated by the universal-character-name 
+   [lex.charset]: The character designated by the universal-character-name
    \UNNNNNNNN is that character whose character short name in ISO/IEC 10646
    is NNNNNNNN; the character designated by the universal-character-name
    \uNNNN is that character whose character short name in ISO/IEC 10646 is
@@ -550,7 +550,7 @@ readescape (p, limit, cptr)
 	warning ("the meaning of '\\%c' varies with -traditional", c);
 
       return read_ucs (p, limit, cptr, c == 'u' ? 4 : 8);
-      
+
     case 'e': case 'E':
       if (pedantic)
 	pedwarn ("non-ISO-standard escape sequence, '\\%c'", c);
@@ -601,7 +601,7 @@ is_extended_char (c)
       error ("universal-character-name '\\U%08x' not valid in identifier", c);
       return 1;
     }
-  
+
   /* Latin */
   if ((c >= 0x00c0 && c <= 0x00d6)
       || (c >= 0x00d8 && c <= 0x00f6)
@@ -915,7 +915,7 @@ struct pf_args
   REAL_VALUE_TYPE value;
   tree type;
 };
- 
+
 static void
 parse_float (data)
   PTR data;
@@ -963,7 +963,7 @@ parse_float (data)
   if (REAL_VALUE_ISINF (args->value) && pedantic)
     warning ("floating point number exceeds range of '%s'", typename);
 }
- 
+
 int
 c_lex (value)
      tree *value;
@@ -995,7 +995,7 @@ c_lex (value)
       else
 	error ("stray '\\%o' in program", tok.val.c);
       goto retry;
-      
+
     case CPP_NAME:
       *value = get_identifier ((const char *)tok.val.node->name);
       break;
@@ -1046,10 +1046,10 @@ lex_number (str, len)
   tree value;
   const char *p;
   enum anon1 { NOT_FLOAT = 0, AFTER_POINT, AFTER_EXPON } floatflag = NOT_FLOAT;
-  
+
   /* We actually store only HOST_BITS_PER_CHAR bits in each part.
      The code below which fills the parts array assumes that a host
-     int is at least twice as wide as a host char, and that 
+     int is at least twice as wide as a host char, and that
      HOST_BITS_PER_WIDE_INT is an even multiple of HOST_BITS_PER_CHAR.
      Two HOST_WIDE_INTs is the largest int literal we can store.
      In order to detect overflow below, the number of parts (TOTAL_PARTS)
@@ -1057,7 +1057,7 @@ lex_number (str, len)
      of two HOST_WIDE_INTs. */
 #define TOTAL_PARTS ((HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR) * 2)
   unsigned int parts[TOTAL_PARTS];
-  
+
   /* Optimize for most frequent case.  */
   if (len == 1)
     {
@@ -1164,7 +1164,7 @@ lex_number (str, len)
 	    }
 
 	  /* If the highest-order part overflows (gets larger than
-	     a host char will hold) then the whole number has 
+	     a host char will hold) then the whole number has
 	     overflowed.  Record this and truncate the highest-order
 	     part. */
 	  if (parts[TOTAL_PARTS - 1] >> HOST_BITS_PER_CHAR)
@@ -1272,7 +1272,7 @@ lex_number (str, len)
       /* Receive output from parse_float() */
       conversion_errno = args.conversion_errno;
       type = args.type;
-	    
+
 #ifdef ERANGE
       /* ERANGE is also reported for underflow,
 	 so test the value to distinguish overflow from that.  */
@@ -1394,9 +1394,9 @@ lex_number (str, len)
 			 ? long_unsigned_type_node
 			 : long_integer_type_node);
 	  else if (int_fits_type_p (value,
-				    spec_unsigned 
+				    spec_unsigned
 				    ? long_long_unsigned_type_node
-				    : long_long_integer_type_node)) 
+				    : long_long_integer_type_node))
 	    trad_type = (spec_unsigned
 			 ? long_long_unsigned_type_node
 			 : long_long_integer_type_node);
@@ -1553,7 +1553,7 @@ lex_string (str, len, wide)
 	      && (unsigned) c >= ((unsigned)1 << width))
 	    pedwarn ("escape sequence out of range for character");
 	}
-	
+
       /* Add this single character into the buffer either as a wchar_t
 	 or as a single byte.  */
       if (wide)
@@ -1662,7 +1662,7 @@ lex_charconst (str, len, wide)
       if (ISPRINT (c))
 	c = MAP_CHARACTER (c);
 #endif
-      
+
       /* Merge character into result; ignore excess chars.  */
       num_chars += (width / TYPE_PRECISION (char_type_node));
       if (num_chars < max_chars + 1)
