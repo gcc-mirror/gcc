@@ -6,15 +6,15 @@
 	when result is is needed (target is STACK_TARGET).
 
 	* parse.h (JDEP_SOLV):  Removed.
-	* parse.y (incomplete_class_list):  Removed.
-	(register_incomplete_type):  Use JDEP_TO_RESOLVE instead of JDEP_SOLV.
+	* parse.y (register_incomplete_type):  Use JDEP_TO_RESOLVE instead.
 
-	* parse.y (obtain_incomplete_type): Removed.  It doesn't work if
-	resolve_class changes the name of an array type that is on the list
-	and then someone else looks for the modified name.  Also, seems liable
-	to break when compiling multiple source files at once.  So the simplest
-	is to just remove incomplete_class_list - it is only a minor
-	space win and it is not even clear it saves time.
+	* parse.y (incomplete_class_list): Removed.
+	(obtain_incomplete_type): Don't use or set incomplete_class_list.
+	It doesn't work if resolve_class changes the name of an array type
+	that is on the list and then someone else looks for the modified name.
+	Also, seems liable to break when compiling multiple source files at
+	once.  So the simplest is to just remove incomplete_class_list -
+	it is only a minor space win and it is not even clear it saves time.
 
 	* parse.y (resolve_class):  Remove unneeded promote_type.
 
