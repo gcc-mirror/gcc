@@ -1,3 +1,114 @@
+2005-02-16  Mark Wielaard  <mark@klomp.org>
+
+	* Makefile.am (ordinary_java_source_files): Add new files
+	gnu/java/security/ber/BER.java,
+	gnu/java/security/ber/BEREncodingException.java,
+	gnu/java/security/ber/BERReader.java,
+	gnu/java/security/ber/BERValue.java,
+	gnu/java/security/pkcs/PKCS7SignedData.java and
+	gnu/java/security/pkcs/SignerInfo.java.
+	* Makefile.in: Regenerated.
+
+2005-02-16  Casey Marshall  <csm@gnu.org>
+
+	* gnu/java/security/provider/GnuDSAPrivateKey.java
+	(encodedKey): new field.
+	(getFormat): return "PKCS#8".
+	(getEncoded): implemented.
+	(toString): check for 'null' values.
+	* gnu/java/security/provider/GnuDSAPublicKey.java
+	(encodedKey): new field.
+	(getFormat): return "X.509".
+	(getEncoded): implemented.
+	(toString): check for 'null' values.
+
+2005-02-16  Michael Koch  <konqueror@gmx.de>
+
+	* java/util/jar/JarFile.java: Imports reworked.
+
+2005-02-16  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/jar/JarFile.java (verify): Make package private.
+	(signaturesRead): Likewise.
+	(verified): Likewise.
+	(entryCerts): Likewise.
+	(DEBUG): Likewise.
+	(debug): Likewise.
+	(entries): Construct new JarEnumeration with reference to this.
+	(JarEnumeration): Make static.
+	(JarEnumeration.jarfile): New field.
+	(JarEnumeration.nextElement): Use and synchronize on jarfile.
+	Compare verified value to Boolean.TRUE or Boolean.False only
+	when verify is true.
+	(getEntry): Make synchronized. Compare value of verified to
+	Boolean.TRUE.
+	(getInputStream): Construct EntryInputStream with reference to this.
+	(getManifest): Make synchronized.
+	(EntryInputStream): Make static.
+	(EntryInputStream.jarfile): New field.
+	(EntryInputStream.EntryInputStream): Check if manifest exists,
+	before getting attributes.
+	(eof): Synchronize on jarfile.
+
+2005-02-16  Casey Marshall  <csm@gnu.org>
+
+	* java/util/jar/JarFile.java (verify): return if the jar is signed
+	with an unsupported algorithm.
+
+2005-02-16  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/jar/JarFile.java (EntryInputStream): Add actual
+	InputStream as argument.
+	(getInputStream): Construct a new EntryInputStream with the result of
+	super.getInputStream(entry).
+
+2005-02-16  Casey Marshall  <csm@gnu.org>
+
+	Signed JAR file support.
+	* java/net/URLClassLoader.java
+	(JarURLResource.getCertificates): re-read jar entry to ensure
+	certificates are picked up.
+	(findClass): fill in class `signers' field, too.
+	* java/util/jar/JarFile.java (META_INF): new constant.
+	(PKCS7_DSA_SUFFIX): new constant.
+	(PKCS7_RSA_SUFFIX): new constant.
+	(DIGEST_KEY_SUFFIX): new constant.
+	(SF_SUFFIX): new constant.
+	(MD2_OID): new constant.
+	(MD4_OID): new constant.
+	(MD5_OID): new constant.
+	(SHA1_OID): new constant.
+	(DSA_ENCRYPTION_OID): new constant.
+	(RSA_ENCRYPTION_OID): new constant.
+	(signaturesRead): new field.
+	(verified): new field.
+	(entryCerts): new field.
+	(DEBUG): new constant.
+	(debug): new method.
+	(JarEnumeration.nextElement): fill in entry certificates, read
+	signatures if they haven't been read.
+	(getEntry): likewise.
+	(getInputStream): verify stream if it hasn't been verified yet.
+	(readSignatures): new method.
+	(verify): new method.
+	(verifyHashes): new method.
+	(readManifestEntry): new method.
+	(EntryInputStream): new class.
+	* gnu/java/io/Base64InputStream.java (decode): new class
+	method.
+	* gnu/java/security/der/DERReader.java don't make class
+	final.
+	(in): made protected.
+	(encBuf): likewise.
+	(readLength): likewise.
+	* gnu/java/security/ber/BER.java,
+	* gnu/java/security/ber/BEREncodingException.java,
+	* gnu/java/security/ber/BERReader.java,
+	* gnu/java/security/ber/BERValue.java,
+	* gnu/java/security/pkcs/PKCS7SignedData.java,
+	* gnu/java/security/pkcs/SignerInfo.java:
+	new files.
+
 2005-02-16  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/runtime/SharedLibHelper.java (findHelper): Delete

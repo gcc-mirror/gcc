@@ -332,7 +332,7 @@ public class URLClassLoader extends SecureClassLoader
 	  Manifest manifest;
 	  Attributes attributes;
 	  String classPathString;
-	  
+
 	  if ((manifest = jarfile.getManifest()) != null
 	      && (attributes = manifest.getMainAttributes()) != null
 	      && ((classPathString 
@@ -422,7 +422,11 @@ public class URLClassLoader extends SecureClassLoader
 
     Certificate[] getCertificates()
     {
-      return entry.getCertificates();
+      // We have to get the entry from the jar file again, because the
+      // certificates will not be available until the entire entry has
+      // been read.
+      return ((JarEntry) ((JarURLLoader) loader).jarfile.getEntry(name))
+        .getCertificates();
     }
 
     URL getURL()
@@ -977,9 +981,10 @@ public class URLClassLoader extends SecureClassLoader
 
         // And finally construct the class!
         SecurityManager sm = System.getSecurityManager();
+        Class result = null;
         if (sm != null && securityContext != null)
           {
-	    return (Class)AccessController.doPrivileged
+            result = (Class)AccessController.doPrivileged
               (new PrivilegedAction()
                 {
                   public Object run()
@@ -991,7 +996,10 @@ public class URLClassLoader extends SecureClassLoader
                 }, securityContext);
           }
         else
-	  return defineClass(className, classData, 0, classData.length, source);
+          result = defineClass(className, classData, 0, classData.length, source);
+
+        super.setSigners(result, resource.getCertificates());
+        return result;
       }
     catch (IOException ioe)
       {

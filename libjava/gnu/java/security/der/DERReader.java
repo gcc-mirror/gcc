@@ -62,15 +62,15 @@ import gnu.java.security.OID;
  *
  * @author Casey Marshall (csm@gnu.org)
  */
-public final class DERReader implements DER
+public class DERReader implements DER
 {
 
   // Fields.
   // ------------------------------------------------------------------------
 
-  private InputStream in;
+  protected InputStream in;
 
-  private final ByteArrayOutputStream encBuf;
+  protected final ByteArrayOutputStream encBuf;
 
   // Constructor.
   // ------------------------------------------------------------------------
@@ -185,6 +185,26 @@ public final class DERReader implements DER
     return value;
   }
 
+  protected int readLength() throws IOException
+  {
+    int i = in.read();
+    if (i == -1)
+      throw new EOFException();
+    encBuf.write(i);
+    if ((i & ~0x7F) == 0)
+      {
+        return i;
+      }
+    else if (i < 0xFF)
+      {
+        byte[] octets = new byte[i & 0x7F];
+        in.read(octets);
+        encBuf.write(octets);
+        return new BigInteger(1, octets).intValue();
+      }
+    throw new DEREncodingException();
+  }
+
   // Own methods.
   // ------------------------------------------------------------------------
 
@@ -234,26 +254,6 @@ public final class DERReader implements DER
         default:
           throw new DEREncodingException("unknown tag " + tag);
       }
-  }
-
-  private int readLength() throws IOException
-  {
-    int i = in.read();
-    if (i == -1)
-      throw new EOFException();
-    encBuf.write(i);
-    if ((i & ~0x7F) == 0)
-      {
-        return i;
-      }
-    else if (i < 0xFF)
-      {
-        byte[] octets = new byte[i & 0x7F];
-        in.read(octets);
-        encBuf.write(octets);
-        return new BigInteger(1, octets).intValue();
-      }
-    throw new DEREncodingException();
   }
 
   private static String makeString(int tag, byte[] value)
