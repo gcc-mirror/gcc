@@ -1,3 +1,7 @@
+Sun Aug 16 01:29:19 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.dg/980816-1.c: New test.
+
 1998-08-01  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/compile/980729-0.f: New test.
