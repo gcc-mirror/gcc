@@ -9270,6 +9270,7 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
   tree list;
   int is_static_flag = 0;
   int is_super_init = 0;
+  tree this_arg = NULL_TREE;
   
   /* Should be overriden if everything goes well. Otherwise, if
      something fails, it should keep this value. It stop the
@@ -9367,7 +9368,8 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 				       identifier, args);
 
 	  /* 4- Add the field as an argument */
-	  args = tree_cons (NULL_TREE, field, nreverse (args));
+	  args = nreverse (args);
+	  this_arg = field;
 	}
 
       /* IDENTIFIER_WFL will be used to report any problem further */
@@ -9462,8 +9464,8 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 	 returned by the object allocator. If method is resolved as a
 	 primary, use the primary otherwise use the current THIS. */
       args = nreverse (args);
-      if (!METHOD_STATIC (list) && TREE_CODE (patch) != NEW_CLASS_EXPR)
-	args = tree_cons (NULL_TREE, primary ? primary : current_this, args);
+      if (TREE_CODE (patch) != NEW_CLASS_EXPR)
+	this_arg = primary ? primary : current_this;
     }
 
   /* Merge point of all resolution schemes. If we have nothing, this
@@ -9488,6 +9490,8 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
   check_deprecation (wfl, list);
 
   is_static_flag = METHOD_STATIC (list);
+  if (! METHOD_STATIC (list) && this_arg != NULL_TREE)
+    args = tree_cons (NULL_TREE, this_arg, args);
 
   /* In the context of an explicit constructor invocation, we can't
      invoke any method relying on `this'. Exceptions are: we're
@@ -10365,10 +10369,18 @@ java_complete_lhs (node)
       TREE_OPERAND (node, 0) = nn = 
 	java_complete_tree (TREE_OPERAND (node, 0));
       if (! CAN_COMPLETE_NORMALLY (nn) && TREE_CODE (nn) != ERROR_MARK
-	  && TREE_OPERAND (node, 1) != empty_stmt_node)
+	  && wfl_op2 != empty_stmt_node)
 	{
-	  SET_WFL_OPERATOR (wfl_operator, node, wfl_op2);
-	  parse_error_context (wfl_operator, "Unreachable statement");
+	  /* An unreachable condition in a do-while statement
+	     is *not* (technically) an unreachable statement. */
+	  nn = wfl_op2;
+	  if (TREE_CODE (nn) == EXPR_WITH_FILE_LOCATION)
+	    nn = EXPR_WFL_NODE (nn);
+	  if (TREE_CODE (nn) != EXIT_EXPR)
+	    {
+	      SET_WFL_OPERATOR (wfl_operator, node, wfl_op2);
+	      parse_error_context (wfl_operator, "Unreachable statement");
+	    }
 	}
       TREE_OPERAND (node, 1) = java_complete_tree (TREE_OPERAND (node, 1));
       if (TREE_OPERAND (node, 1) == error_mark_node)
