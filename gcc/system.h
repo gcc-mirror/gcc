@@ -8,6 +8,12 @@
 #define __GCC_SYSTEM_H__
 
 #include <stdio.h>
+
+/* Define a generic NULL if one hasn't already been defined.  */
+#ifndef NULL
+#define NULL 0
+#endif
+
 #include <ctype.h>
 
 /* Jim Meyering writes:
