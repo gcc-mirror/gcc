@@ -295,24 +295,27 @@ static struct reg_eqv_elem *reg_eqv_table;
 
 struct cse_reg_info
 {
-  /* The number of times the register has been altered in the current
-     basic block.  */
-  int reg_tick;
+  /* Next in hash chain.  */
+  struct cse_reg_info *hash_next;
 
   /* The next cse_reg_info structure in the free or used list.  */
   struct cse_reg_info *next;
+
+  /* Search key */
+  int regno;
+
+  /* The quantity number of the register's current contents.  */
+  int reg_qty;
+
+  /* The number of times the register has been altered in the current
+     basic block.  */
+  int reg_tick;
 
   /* The REG_TICK value at which rtx's containing this register are
      valid in the hash table.  If this does not equal the current
      reg_tick value, such expressions existing in the hash table are
      invalid.  */
   int reg_in_table;
-
-  /* The quantity number of the register's current contents.  */
-  int reg_qty;
-
-  /* Search key */
-  int regno;
 };
 
 /* A free list of cse_reg_info entries.  */
@@ -323,7 +326,13 @@ static struct cse_reg_info *cse_reg_info_used_list;
 static struct cse_reg_info *cse_reg_info_used_list_end;
 
 /* A mapping from registers to cse_reg_info data structures.  */
-static hash_table_t cse_reg_info_tree;
+#define REGHASH_SHIFT	7
+#define REGHASH_SIZE	(1 << REGHASH_SHIFT)
+#define REGHASH_MASK	(REGHASH_SIZE - 1)
+static struct cse_reg_info *reg_hash[REGHASH_SIZE];
+
+#define REGHASH_FN(REGNO)	\
+	(((REGNO) ^ ((REGNO) >> REGHASH_SHIFT)) & REGHASH_MASK)
 
 /* The last lookup we did into the cse_reg_info_tree.  This allows us
    to cache repeated lookups.  */
@@ -449,15 +458,17 @@ struct table_elt
 /* We don't want a lot of buckets, because we rarely have very many
    things stored in the hash table, and a lot of buckets slows
    down a lot of loops that happen frequently.  */
-#define NBUCKETS 31
+#define HASH_SHIFT	5
+#define HASH_SIZE	(1 << HASH_SHIFT)
+#define HASH_MASK	(HASH_SIZE - 1)
 
 /* Compute hash code of X in mode M.  Special-case case where X is a pseudo
    register (hard registers may require `do_not_record' to be set).  */
 
 #define HASH(X, M)	\
- (GET_CODE (X) == REG && REGNO (X) >= FIRST_PSEUDO_REGISTER	\
-  ? (((unsigned) REG << 7) + (unsigned) REG_QTY (REGNO (X))) % NBUCKETS	\
-  : canon_hash (X, M) % NBUCKETS)
+ ((GET_CODE (X) == REG && REGNO (X) >= FIRST_PSEUDO_REGISTER	\
+  ? (((unsigned) REG << 7) + (unsigned) REG_QTY (REGNO (X)))	\
+  : canon_hash (X, M)) & HASH_MASK)
 
 /* Determine whether register number N is considered a fixed register for CSE.
    It is desirable to replace other regs with fixed regs, to reduce need for
@@ -527,7 +538,7 @@ struct table_elt
    ? -1 : ADDRESS_COST(RTX))
 #endif 
 
-static struct table_elt *table[NBUCKETS];
+static struct table_elt *table[HASH_SIZE];
 
 /* Chain of `struct table_elt's made so far for this function
    but currently removed from the table.  */
@@ -836,63 +847,45 @@ static struct cse_reg_info *
 get_cse_reg_info (regno)
      int regno;
 {
-  struct cse_reg_info *cri;
-  struct cse_reg_info **entry;
-  struct cse_reg_info temp;
+  struct cse_reg_info **hash_head = &reg_hash[REGHASH_FN (regno)];
+  struct cse_reg_info *p;
 
-  /* See if we already have this entry.  */
-  temp.regno = regno;
-  entry = (struct cse_reg_info **) find_hash_table_entry (cse_reg_info_tree,
-							  &temp, TRUE);
+  for (p = *hash_head ; p != NULL; p = p->hash_next)
+    if (p->regno == regno)
+      break;
 
-  if (*entry)
-    cri = *entry;
-  else 
+  if (p == NULL)
     {
       /* Get a new cse_reg_info structure.  */
-      if (cse_reg_info_free_list) 
+      if (cse_reg_info_free_list)
 	{
-	  cri = cse_reg_info_free_list;
-	  cse_reg_info_free_list = cri->next;
+	  p = cse_reg_info_free_list;
+	  cse_reg_info_free_list = p->next;
 	}
       else
-	cri = (struct cse_reg_info *) xmalloc (sizeof (struct cse_reg_info));
+	p = (struct cse_reg_info *) xmalloc (sizeof (struct cse_reg_info));
+
+      /* Insert into hash table.  */
+      p->hash_next = *hash_head;
+      *hash_head = p;
 
       /* Initialize it.  */
-      cri->reg_tick = 0;
-      cri->reg_in_table = -1;
-      cri->reg_qty = regno;
-      cri->regno = regno;
-      cri->next = cse_reg_info_used_list;
-      cse_reg_info_used_list = cri;
+      p->reg_tick = 1;
+      p->reg_in_table = -1;
+      p->reg_qty = regno;
+      p->regno = regno;
+      p->next = cse_reg_info_used_list;
+      cse_reg_info_used_list = p;
       if (!cse_reg_info_used_list_end)
-	cse_reg_info_used_list_end = cri;
-      
-      *entry = cri;
+	cse_reg_info_used_list_end = p;
     }
 
   /* Cache this lookup; we tend to be looking up information about the
      same register several times in a row.  */
   cached_regno = regno;
-  cached_cse_reg_info = cri;
+  cached_cse_reg_info = p;
 
-  return cri;
-}
-
-static unsigned int
-hash_cse_reg_info (el_ptr)
-     hash_table_entry_t el_ptr;
-{
-  return ((const struct cse_reg_info *) el_ptr)->regno;
-}
-
-static int
-cse_reg_info_equal_p (el_ptr1, el_ptr2)
-     hash_table_entry_t el_ptr1;
-     hash_table_entry_t el_ptr2;
-{
-  return (((const struct cse_reg_info *) el_ptr1)->regno
-	  == ((const struct cse_reg_info *) el_ptr2)->regno);
+  return p;
 }
 
 /* Clear the hash table and initialize each register with its own quantity,
@@ -905,37 +898,44 @@ new_basic_block ()
 
   next_qty = max_reg;
 
-  if (cse_reg_info_tree) 
-    {
-      delete_hash_table (cse_reg_info_tree);
-      if (cse_reg_info_used_list)
-	{
-	  cse_reg_info_used_list_end->next = cse_reg_info_free_list;
-	  cse_reg_info_free_list = cse_reg_info_used_list;
-	  cse_reg_info_used_list = cse_reg_info_used_list_end = 0;
-	}
-      cached_cse_reg_info = 0;
-    }
+  /* Clear out hash table state for this pass.  */
 
-  cse_reg_info_tree = create_hash_table (0, hash_cse_reg_info,
-					 cse_reg_info_equal_p);
+  bzero ((char *) reg_hash, sizeof reg_hash);
+
+  if (cse_reg_info_used_list)
+    {
+      cse_reg_info_used_list_end->next = cse_reg_info_free_list;
+      cse_reg_info_free_list = cse_reg_info_used_list;
+      cse_reg_info_used_list = cse_reg_info_used_list_end = 0;
+    }
+  cached_cse_reg_info = 0;
 
   CLEAR_HARD_REG_SET (hard_regs_in_table);
 
   /* The per-quantity values used to be initialized here, but it is
      much faster to initialize each as it is made in `make_new_qty'.  */
 
-  for (i = 0; i < NBUCKETS; i++)
+  for (i = 0; i < HASH_SIZE; i++)
     {
-      register struct table_elt *this, *next;
-      for (this = table[i]; this; this = next)
+      struct table_elt *first;
+
+      first = table[i];
+      if (first != NULL)
 	{
-	  next = this->next_same_hash;
-	  free_element (this);
+	  struct table_elt *last = first;
+
+	  table[i] = NULL;
+
+	  while (last->next_same_hash != NULL)
+	    last = last->next_same_hash;
+
+	  /* Now relink this hash entire chain into
+	     the free element list.  */
+
+	  last->next_same_hash = free_element_chain;
+	  free_element_chain = first;
 	}
     }
-
-  bzero ((char *) table, sizeof table);
 
   prev_insn = 0;
 
@@ -1258,31 +1258,6 @@ insert_regs (x, classp, modified)
 
 /* Look in or update the hash table.  */
 
-/* Put the element ELT on the list of free elements.  */
-
-static void
-free_element (elt)
-     struct table_elt *elt;
-{
-  elt->next_same_hash = free_element_chain;
-  free_element_chain = elt;
-}
-
-/* Return an element that is free for use.  */
-
-static struct table_elt *
-get_element ()
-{
-  struct table_elt *elt = free_element_chain;
-  if (elt)
-    {
-      free_element_chain = elt->next_same_hash;
-      return elt;
-    }
-  n_elements_made++;
-  return (struct table_elt *) oballoc (sizeof (struct table_elt));
-}
-
 /* Remove table element ELT from use in the table.
    HASH is its hash code, made using the HASH macro.
    It's an argument because often that is known in advance
@@ -1338,7 +1313,7 @@ remove_from_table (elt, hash)
 	   when two classes were merged by `merge_equiv_classes'.  Search
 	   for the hash bucket that it heads.  This happens only very
 	   rarely, so the cost is acceptable.  */
-	for (hash = 0; hash < NBUCKETS; hash++)
+	for (hash = 0; hash < HASH_SIZE; hash++)
 	  if (table[hash] == elt)
 	    table[hash] = next;
       }
@@ -1356,7 +1331,9 @@ remove_from_table (elt, hash)
 	p->related_value = 0;
     }
 
-  free_element (elt);
+  /* Now add it to the free element chain.  */
+  elt->next_same_hash = free_element_chain;
+  free_element_chain = elt;
 }
 
 /* Look up X in the hash table and return its table element,
@@ -1423,7 +1400,7 @@ lookup_as_function (x, code)
      rtx x;
      enum rtx_code code;
 {
-  register struct table_elt *p = lookup (x, safe_hash (x, VOIDmode) % NBUCKETS,
+  register struct table_elt *p = lookup (x, safe_hash (x, VOIDmode) & HASH_MASK,
 					 GET_MODE (x));
   /* If we are looking for a CONST_INT, the mode doesn't really matter, as
      long as we are narrowing.  So if we looked in vain for a mode narrower
@@ -1433,7 +1410,7 @@ lookup_as_function (x, code)
     {
       x = copy_rtx (x);
       PUT_MODE (x, word_mode);
-      p = lookup (x, safe_hash (x, VOIDmode) % NBUCKETS, word_mode);
+      p = lookup (x, safe_hash (x, VOIDmode) & HASH_MASK, word_mode);
     }
 
   if (p == 0)
@@ -1509,7 +1486,17 @@ insert (x, classp, hash, mode)
 
   /* Put an element for X into the right hash bucket.  */
 
-  elt = get_element ();
+  elt = free_element_chain;
+  if (elt)
+    {
+      free_element_chain = elt->next_same_hash;
+    }
+  else
+    {
+      n_elements_made++;
+      elt = (struct table_elt *) oballoc (sizeof (struct table_elt));
+    }
+
   elt->exp = x;
   elt->cost = COST (x);
   elt->next_same_value = 0;
@@ -1628,7 +1615,7 @@ insert (x, classp, hash, mode)
       if (subexp != 0)
 	{
 	  /* Get the integer-free subexpression in the hash table.  */
-	  subhash = safe_hash (subexp, mode) % NBUCKETS;
+	  subhash = safe_hash (subexp, mode) & HASH_MASK;
 	  subelt = lookup (subexp, subhash, mode);
 	  if (subelt == 0)
 	    subelt = insert (subexp, NULL_PTR, subhash, mode);
@@ -1713,7 +1700,7 @@ flush_hash_table ()
   int i;
   struct table_elt *p;
 
-  for (i = 0; i < NBUCKETS; i++)
+  for (i = 0; i < HASH_SIZE; i++)
     for (p = table[i]; p; p = table[i])
       {
 	/* Note that invalidate can remove elements
@@ -1796,7 +1783,7 @@ invalidate (x, full_mode)
 	      }
 
 	    if (in_table)
-	      for (hash = 0; hash < NBUCKETS; hash++)
+	      for (hash = 0; hash < HASH_SIZE; hash++)
 		for (p = table[hash]; p; p = next)
 		  {
 		    next = p->next_same_hash;
@@ -1836,7 +1823,7 @@ invalidate (x, full_mode)
       if (full_mode == VOIDmode)
 	full_mode = GET_MODE (x);
 
-      for (i = 0; i < NBUCKETS; i++)
+      for (i = 0; i < HASH_SIZE; i++)
 	{
 	  register struct table_elt *next;
 
@@ -1869,7 +1856,7 @@ remove_invalid_refs (regno)
   register int i;
   register struct table_elt *p, *next;
 
-  for (i = 0; i < NBUCKETS; i++)
+  for (i = 0; i < HASH_SIZE; i++)
     for (p = table[i]; p; p = next)
       {
 	next = p->next_same_hash;
@@ -1890,7 +1877,7 @@ remove_invalid_subreg_refs (regno, word, mode)
   register struct table_elt *p, *next;
   int end = word + (GET_MODE_SIZE (mode) - 1) / UNITS_PER_WORD;
 
-  for (i = 0; i < NBUCKETS; i++)
+  for (i = 0; i < HASH_SIZE; i++)
     for (p = table[i]; p; p = next)
       {
 	rtx exp;
@@ -1938,13 +1925,13 @@ rehash_using_reg (x)
      If we find one and it is in the wrong hash chain, move it.  We can skip
      objects that are registers, since they are handled specially.  */
 
-  for (i = 0; i < NBUCKETS; i++)
+  for (i = 0; i < HASH_SIZE; i++)
     for (p = table[i]; p; p = next)
       {
 	next = p->next_same_hash;
 	if (GET_CODE (p->exp) != REG && reg_mentioned_p (x, p->exp)
 	    && exp_equiv_p (p->exp, p->exp, 1, 0)
-	    && i != (hash = safe_hash (p->exp, p->mode) % NBUCKETS))
+	    && i != (hash = safe_hash (p->exp, p->mode) & HASH_MASK))
 	  {
 	    if (p->next_same_hash)
 	      p->next_same_hash->prev_same_hash = p->prev_same_hash;
@@ -1995,7 +1982,7 @@ invalidate_for_call ()
      entry that overlaps a call-clobbered register.  */
 
   if (in_table)
-    for (hash = 0; hash < NBUCKETS; hash++)
+    for (hash = 0; hash < HASH_SIZE; hash++)
       for (p = table[hash]; p; p = next)
 	{
 	  next = p->next_same_hash;
@@ -2042,7 +2029,7 @@ use_related_value (x, elt)
       rtx subexp = get_related_value (x);
       if (subexp != 0)
 	relt = lookup (subexp,
-		       safe_hash (subexp, GET_MODE (subexp)) % NBUCKETS,
+		       safe_hash (subexp, GET_MODE (subexp)) & HASH_MASK,
 		       GET_MODE (subexp));
     }
 
@@ -2942,7 +2929,7 @@ find_comparison_args (code, parg1, parg2, pmode1, pmode2)
       if (x == 0)
 	/* Look up ARG1 in the hash table and see if it has an equivalence
 	   that lets us see what is being compared.  */
-	p = lookup (arg1, safe_hash (arg1, GET_MODE (arg1)) % NBUCKETS,
+	p = lookup (arg1, safe_hash (arg1, GET_MODE (arg1)) & HASH_MASK,
 		    GET_MODE (arg1));
       if (p) p = p->first_same_value;
 
@@ -3712,10 +3699,10 @@ fold_rtx (x, insn)
 			      == REG_QTY (REGNO (folded_arg1))))
 		      || ((p0 = lookup (folded_arg0,
 					(safe_hash (folded_arg0, mode_arg0)
-					 % NBUCKETS), mode_arg0))
+					 & HASH_MASK), mode_arg0))
 			  && (p1 = lookup (folded_arg1,
 					   (safe_hash (folded_arg1, mode_arg0)
-					    % NBUCKETS), mode_arg0))
+					    & HASH_MASK), mode_arg0))
 			  && p0->first_same_value == p1->first_same_value)))
 		return ((code == EQ || code == LE || code == GE
 			 || code == LEU || code == GEU)
@@ -3881,7 +3868,7 @@ fold_rtx (x, insn)
 	    {
 	      rtx new_const = GEN_INT (- INTVAL (const_arg1));
 	      struct table_elt *p
-		= lookup (new_const, safe_hash (new_const, mode) % NBUCKETS,
+		= lookup (new_const, safe_hash (new_const, mode) & HASH_MASK,
 			  mode);
 
 	      if (p)
@@ -4067,7 +4054,7 @@ equiv_constant (x)
       if (CONSTANT_P (x))
 	return x;
 
-      elt = lookup (x, safe_hash (x, GET_MODE (x)) % NBUCKETS, GET_MODE (x));
+      elt = lookup (x, safe_hash (x, GET_MODE (x)) & HASH_MASK, GET_MODE (x));
       if (elt == 0)
 	return 0;
 
@@ -5694,7 +5681,7 @@ cse_insn (insn, libcall_insn)
 	      /* We used to rely on all references to a register becoming
 		 inaccessible when a register changes to a new quantity,
 		 since that changes the hash code.  However, that is not
-		 safe, since after NBUCKETS new quantities we get a
+		 safe, since after HASH_SIZE new quantities we get a
 		 hash 'collision' of a register with its own invalid
 		 entries.  And since SUBREGs have been changed not to
 		 change their hash code with the hash code of the register,
@@ -5997,7 +5984,7 @@ invalidate_memory ()
   register int i;
   register struct table_elt *p, *next;
 
-  for (i = 0; i < NBUCKETS; i++)
+  for (i = 0; i < HASH_SIZE; i++)
     for (p = table[i]; p; p = next)
       {
 	next = p->next_same_hash;
