@@ -448,6 +448,10 @@ int flag_shared_data;
 
 int flag_delayed_branch;
 
+/* Nonzero means to run cleanups after CALL_EXPRs.  */
+
+int flag_short_temps;
+
 /* Nonzero if we are compiling pure (sharable) code.
    Value is 1 if we are doing reasonable (i.e. simple
    offset into offset table) pic.  Value is 2 if we can
@@ -666,6 +670,8 @@ char *lang_options[] =
   "-fno-nonnull-objects",
   "-fsave-memoized",
   "-fno-save-memoized",
+  "-fshort-temps",
+  "-fno-short-temps",
   "-fstats",
   "-fno-stats",
   "-fstrict-prototype",
