@@ -1,0 +1,77 @@
+<html>
+<body>
+
+<h1>GNU JAXP XSL transformer</h1>
+
+<div>
+This package contains a Java XSL transformer compliant with the JAXP
+specification. It depends on the GNU DOM and XPath implementations, and
+will generate GNU DOM nodes unless a specific target from another
+implementation was given. It understands DOM, SAX, and stream sources
+and result sinks and supports these JAXP features.
+</div>
+
+<div>
+To use this transformer, set the system property
+<code>javax.xml.transform.TransformerFactory</code> to the value
+<code>gnu.xml.transform.TransformerFactoryImpl</code>. You can then
+instantiate <a href='TransformerFactory.html'>TransformerFactory</a>
+and transformers in the ordinary manner. Reuse of stylesheets is
+supported using the JAXP <a href='Templates.html'>Templates</a>
+mechanism.
+</div>
+
+<h3>Architecture</h3>
+
+<div>
+When given a stylesheet source, this implementation compiles it internally
+into a Stylesheet object, which is a container for templates and state.
+Each stylesheet instruction is represented by a subclass of TemplateNode,
+which is arranged in a directed graph: each TemplateNode has a reference
+to its first child and the next node.
+</div>
+
+<div>
+The transformation process consists of identifying the Template that matches
+the root of the source context, and calling <code>apply</code> on its
+corresponding TemplateNode. This in turn processes its children and next
+TemplateNode, depending on the semantics of each node type.
+</div>
+
+<div>
+Template nodes may reference XPath expressions or patterns. These are fully
+compiled to objects of type <a href='../xpath/Expr.html'>Expr</a> at the
+time the stylesheet is compiled.
+</div>
+
+<h3>Conformance</h3>
+
+<div>
+This implementation is feature complete, but the XSLT specification is
+large and there are still many bugs that need to be ironed out. It has
+been tested against the OASIS XSLT TC test suite, comprising unit tests
+from the Xalan project and Microsoft. Conformance to these unit tests
+is approximately 70% at the current time, although normal usage of the
+transformer should involve relatively few surprises (the test suite is
+designed to test very complex and obscure functionality).
+</div>
+
+<h3>Known bugs</h3>
+
+<ul>
+<li>When reusing stylesheets using the JAXP Templates mechanism, XSL
+<code>apply-imports</code> instructions will not work.</li>
+<li>XPath filter expressions do not always work as expected (this is a
+problem with the GNU XPath implementation rather than the transformer).
+This can result in problems with the <code>position()</code> function,
+as well as <code>select</code> expressions and numbering.</li>
+</ul>
+
+<div>
+Obviously we'd like to improve conformance and fix these bugs. If you're
+interested in working on any of these issues please
+<a href='mailto:classpathx-xml@gnu.org'>contact us</a>.
+</div>
+
+</body>
+</html>

@@ -16316,7 +16316,7 @@ here=`${PWDCMD-pwd}`
 # We get this from the environment.
 
 
-                                                                                ac_config_files="$ac_config_files Makefile libgcj.pc libgcj.spec libgcj-test.spec gnu/classpath/Configuration.java gcj/Makefile include/Makefile testsuite/Makefile"
+                                                                                                              ac_config_files="$ac_config_files Makefile libgcj.pc libgcj.spec libgcj-test.spec gnu/classpath/Configuration.java gcj/Makefile include/Makefile testsuite/Makefile external/Makefile external/sax/Makefile external/w3c_dom/Makefile"
 
 
           ac_config_commands="$ac_config_commands default"
@@ -17040,6 +17040,9 @@ do
   "gcj/Makefile" ) CONFIG_FILES="$CONFIG_FILES gcj/Makefile" ;;
   "include/Makefile" ) CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
   "testsuite/Makefile" ) CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
+  "external/Makefile" ) CONFIG_FILES="$CONFIG_FILES external/Makefile" ;;
+  "external/sax/Makefile" ) CONFIG_FILES="$CONFIG_FILES external/sax/Makefile" ;;
+  "external/w3c_dom/Makefile" ) CONFIG_FILES="$CONFIG_FILES external/w3c_dom/Makefile" ;;
   "include/platform.h" ) CONFIG_LINKS="$CONFIG_LINKS include/platform.h:include/$PLATFORMH" ;;
   "java/io/natFile.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/io/natFile.cc:java/io/natFile${FILE-${PLATFORM}}.cc" ;;
   "java/lang/ConcreteProcess.java" ) CONFIG_LINKS="$CONFIG_LINKS java/lang/ConcreteProcess.java:java/lang/${PLATFORM}Process.java" ;;

@@ -64,9 +64,9 @@ endif
 
 ## Testsuite conditional.
 if TESTSUBDIR
-SUBDIRS = $(DIRLTDL) testsuite gcj include
+SUBDIRS = $(DIRLTDL) testsuite gcj include external
 else
-SUBDIRS = $(DIRLTDL) gcj include
+SUBDIRS = $(DIRLTDL) gcj include external
 endif
 
 ## Darwin uses the jcr section, but doesn't use crtstuff.
@@ -106,8 +106,7 @@ else
 cond_gtk_ltlibrary =
 endif
 
-toolexeclib_LTLIBRARIES = libgcj.la libgij.la lib-org-xml-sax.la \
-	lib-org-w3c-dom.la lib-org-ietf-jgss.la \
+toolexeclib_LTLIBRARIES = libgcj.la libgij.la \
     $(cond_gtk_ltlibrary) $(cond_xlib_ltlibrary)
 toolexecmainlib_DATA = libgcj.spec
 
@@ -174,7 +173,7 @@ AM_CXXFLAGS = \
 
 AM_GCJFLAGS = \
 	@LIBGCJ_JAVAFLAGS@ \
-	-fclasspath= -fbootclasspath=$(here) \
+	-fclasspath= -fbootclasspath=$(BOOTCLASSPATH) \
 	--encoding=UTF-8 \
 	-Wno-deprecated
 
@@ -196,6 +195,8 @@ AM_CPPFLAGS = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 	$(GCINCS) $(THREADINCS) $(INCLTDL) \
 	$(GCC_UNWIND_INCLUDE) $(ZINCS) $(LIBFFIINCS)
 
+BOOTCLASSPATH = $(here)'$(CLASSPATH_SEPARATOR)'$(srcdir)
+
 ## ################################################################
 
 ##
@@ -213,7 +214,7 @@ libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
 	link.cc defineclass.cc interpret.cc verify.cc \
 	$(nat_source_files) $(math_c_source_files) $(java_source_files) \
-	$(built_java_source_files) \
+	$(gnu_xml_source_files) $(built_java_source_files) \
 	$(BOEHMGC_SRC) $(NOGC_SRC) \
 	$(BACKTRACE_SRC) \
 	$(POSIX_PLATFORM_SRC) $(WIN32_PLATFORM_SRC) $(ECOS_PLATFORM_SRC) \
@@ -233,7 +234,10 @@ xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLDFLAGS) $(THREADLIBS) \
 	$(LIBLTDL) $(SYS_ZLIBS) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
-libgcj_la_LIBADD = $(LIBFFI) $(ZLIBS) $(GCLIBS) $(propertyo_files)
+libgcj_la_LIBADD = \
+	external/sax/libsax_convenience.la \
+	external/w3c_dom/libw3c_convenience.la \
+	$(LIBFFI) $(ZLIBS) $(GCLIBS) $(propertyo_files)
 libgcj_la_LINK = $(LIBLINK)
 
 # Gtk/Cairo JNI sources.
@@ -456,93 +460,6 @@ lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 lib_gnu_java_awt_peer_gtk_la_LINK = $(LIBLINK)
 
-lib_org_ietf_jgss_la_SOURCES = \
-org/ietf/jgss/ChannelBinding.java \
-org/ietf/jgss/GSSContext.java \
-org/ietf/jgss/GSSCredential.java \
-org/ietf/jgss/GSSException.java \
-org/ietf/jgss/GSSManager.java \
-org/ietf/jgss/GSSName.java \
-org/ietf/jgss/MessageProp.java \
-org/ietf/jgss/Oid.java
-
-lib_org_ietf_jgss_la_DEPENDENCIES= $(jgss_propertyo_files) \
-	libgcj-@gcc_version@.jar libgcj.la libgcj.spec
-## See jv_convert_LDADD.
-lib_org_ietf_jgss_la_LIBADD = -L$(here)/.libs  $(jgss_propertyo_files) \
-	libgcj.la
-
-## The mysterious backslash in the grep pattern is consumed by make.
-lib_org_ietf_jgss_la_LDFLAGS = -rpath $(toolexeclibdir) \
-	-version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
-
-lib_org_w3c_dom_la_SOURCES = org/w3c/dom/Attr.java \
-org/w3c/dom/CDATASection.java \
-org/w3c/dom/CharacterData.java \
-org/w3c/dom/Comment.java \
-org/w3c/dom/DOMException.java \
-org/w3c/dom/DOMImplementation.java \
-org/w3c/dom/Document.java \
-org/w3c/dom/DocumentFragment.java \
-org/w3c/dom/DocumentType.java \
-org/w3c/dom/Element.java \
-org/w3c/dom/Entity.java \
-org/w3c/dom/EntityReference.java \
-org/w3c/dom/NamedNodeMap.java \
-org/w3c/dom/Node.java \
-org/w3c/dom/NodeList.java \
-org/w3c/dom/Notation.java \
-org/w3c/dom/ProcessingInstruction.java \
-org/w3c/dom/Text.java \
-org/w3c/dom/ranges/DocumentRange.java \
-org/w3c/dom/ranges/Range.java \
-org/w3c/dom/ranges/RangeException.java \
-org/w3c/dom/traversal/DocumentTraversal.java \
-org/w3c/dom/traversal/NodeFilter.java \
-org/w3c/dom/traversal/NodeIterator.java \
-org/w3c/dom/traversal/TreeWalker.java
-## See jv_convert_LDADD.
-lib_org_w3c_dom_la_LIBADD = -L$(here)/.libs libgcj.la
-## The mysterious backslash in the grep pattern is consumed by make.
-lib_org_w3c_dom_la_LDFLAGS = -rpath $(toolexeclibdir) \
-        -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
-
-lib_org_xml_sax_la_SOURCES = org/xml/sax/ext/DeclHandler.java \
-org/xml/sax/ext/LexicalHandler.java \
-org/xml/sax/helpers/AttributeListImpl.java \
-org/xml/sax/helpers/AttributesImpl.java \
-org/xml/sax/helpers/DefaultHandler.java \
-org/xml/sax/helpers/LocatorImpl.java \
-org/xml/sax/helpers/NamespaceSupport.java \
-org/xml/sax/helpers/NewInstance.java \
-org/xml/sax/helpers/ParserAdapter.java \
-org/xml/sax/helpers/ParserFactory.java \
-org/xml/sax/helpers/XMLFilterImpl.java \
-org/xml/sax/helpers/XMLReaderAdapter.java \
-org/xml/sax/helpers/XMLReaderFactory.java \
-org/xml/sax/AttributeList.java \
-org/xml/sax/Attributes.java \
-org/xml/sax/ContentHandler.java \
-org/xml/sax/DTDHandler.java \
-org/xml/sax/DocumentHandler.java \
-org/xml/sax/EntityResolver.java \
-org/xml/sax/ErrorHandler.java \
-org/xml/sax/HandlerBase.java \
-org/xml/sax/InputSource.java \
-org/xml/sax/Locator.java \
-org/xml/sax/Parser.java \
-org/xml/sax/SAXException.java \
-org/xml/sax/SAXNotRecognizedException.java \
-org/xml/sax/SAXNotSupportedException.java \
-org/xml/sax/SAXParseException.java \
-org/xml/sax/XMLFilter.java \
-org/xml/sax/XMLReader.java
-## See jv_convert_LDADD.
-lib_org_xml_sax_la_LIBADD = -L$(here)/.libs libgcj.la
-## The mysterious backslash in the grep pattern is consumed by make.
-lib_org_xml_sax_la_LDFLAGS = -rpath $(toolexeclibdir) \
-        -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
-
 lib_gnu_awt_xlib_la_SOURCES = \
 	$(xlib_java_source_files) \
 	$(xlib_nat_source_files)
@@ -563,11 +480,9 @@ lib_gnu_awt_xlib_la_LINK = $(LIBLINK)
 all_java_source_files = \
     $(java_source_files) \
     $(built_java_source_files) \
-    $(lib_org_ietf_jgss_la_SOURCES) \
-    $(lib_org_xml_sax_la_SOURCES) \
-    $(lib_org_w3c_dom_la_SOURCES) \
     $(gtk_awt_peer_sources) \
-    $(xlib_java_source_files)
+    $(xlib_java_source_files) \
+    $(gnu_xml_source_files)
 
 all_java_class_files = $(all_java_source_files:.java=.class)
 
@@ -577,18 +492,10 @@ all_property_files = $(property_files) $(jgss_property_files) \
 ## Build property files into the library.
 property_files = \
 gnu/regexp/MessagesBundle.properties \
-gnu/regexp/MessagesBundle_fr.properties
-
-propertyo_files = $(property_files:.properties=.properties.lo) 
-
-%.properties.lo: %.properties
-	$(LTGCJCOMPILE) -o $@ -c $< -Wc,--resource,`echo $@ | sed "s/\.lo$$//"`
-
-## Build property files into the lib-org-ietf-jgss library.
-jgss_property_files = \
+gnu/regexp/MessagesBundle_fr.properties \
 org/ietf/jgss/MessagesBundle.properties
 
-jgss_propertyo_files = $(jgss_property_files:.properties=.properties.lo)
+propertyo_files = $(property_files:.properties=.properties.lo) 
 
 %.properties.lo: %.properties
 	$(LTGCJCOMPILE) -o $@ -c $< -Wc,--resource,`echo $@ | sed "s/\.lo$$//"`
@@ -601,7 +508,7 @@ libgcj-@gcc_version@.jar: $(all_java_source_files)
 	-@rm -f libgcj-@gcc_version@.jar
 	@echo Compiling Java sourcefiles...
 	@: $(call write_entries_to_file,$?,libgcj.sourcelist)
-	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here)'$(CLASSPATH_SEPARATOR)'$(srcdir) -d $(here) @libgcj.sourcelist
+	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(BOOTCLASSPATH) -d $(here) @libgcj.sourcelist
 ## Note that we explicitly want to include directory information.
 	(find java gnu javax org -type d -o -type f -name '*.class'; \
 ## Ugly code to avoid "echo -C".  Must separate each entry by a newline
@@ -613,6 +520,16 @@ libgcj-@gcc_version@.jar: $(all_java_source_files)
 	done) | \
 	  sed -e '/\/xlib/d' -e '/\/\.libs/d' -e '/\/\.deps/d' | \
 	  $(ZIP) -cfM0E@ $@
+## Now include the classes from external/.
+	for dir in sax w3c_dom; do \
+	  (cd external/$$dir; \
+	  find org -type f -name '*.class' -print | while read file; do \
+	    echo "x-C" | sed -e 's/^.//'; \
+	    echo external/$$dir; \
+	    echo $$file; \
+          done) | \
+	  $(ZIP) -ufM0E@ $@; \
+	done
 
 # This next rule seems backward, but reflects the fact
 # that 1) all classfiles are compiled in one go when the
@@ -641,6 +558,16 @@ libgcj-@gcc_version@.jar: $(all_java_class_files) $(all_property_files)
 	done) | \
 	  sed -e '/\/xlib/d' -e '/\/\.libs/d' -e '/\/\.deps/d' | \
 	  $(ZIP) -cfM0E@ $@
+## Now include the classes from external/.
+	for dir in sax w3c_dom; do \
+	  (cd external/$$dir; \
+	  find org -type f -name '*.class' -print | while read file; do \
+	    echo "x-C" | sed -e 's/^.//'; \
+	    echo external/$$dir; \
+	    echo $$file; \
+          done) | \
+	  $(ZIP) -ufM0E@ $@; \
+	done
 
 endif
 
@@ -669,10 +596,10 @@ SUFFIXES = .class .java .h .properties
 
 ## Note: we omit StackTrace here, since it has an explicit rule a bit
 ## later, and GNU make will warn in this case.
-$(filter-out gnu/gcj/runtime/StackTrace.lo, $(javao_files)) $(xlib_javao_files) $(lib_org_w3c_dom_la_OBJECTS) $(lib_org_xml_sax_la_OBJECTS) $(lib_org_ietf_jgss_la_OBJECTS): %.lo: %.java
+$(filter-out gnu/gcj/runtime/StackTrace.lo, $(javao_files)) $(xlib_javao_files): %.lo: %.java
 	$(LTGCJCOMPILE) -o $@ -c $<
 
-$(gtk_awt_peer_sources:.java=.lo): %.lo: %.java
+$(gtk_awt_peer_sources:.java=.lo) $(gnu_xml_source_files:.java=.lo): %.lo: %.java
 	$(LTGCJCOMPILE) -fjni -o $@ -c $<
 
 ## A special case.  The sibcall optimization can change the number of
@@ -702,12 +629,13 @@ lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPEND
 ## How to build header files.
 ##
 
-.class.h:
+%.h: %.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) $(basename $<)
 
 ## Header files used when compiling some of the nat* files.
-ordinary_nat_headers = $(ordinary_java_source_files:.java=.h) \
-	$(built_java_source_files:.java=.h)
+ordinary_nat_headers = \
+    $(ordinary_java_source_files:.java=.h) \
+    $(built_java_source_files:.java=.h)
 
 inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
 	java/io/ObjectInputStream$$GetField.h \
@@ -2005,426 +1933,663 @@ gnu/java/rmi/server/UnicastServer.java \
 gnu/java/rmi/server/UnicastServerRef.java
 
 javax_source_files = \
-javax/accessibility/Accessible.java \
-javax/accessibility/AccessibleAction.java \
-javax/accessibility/AccessibleBundle.java \
-javax/accessibility/AccessibleComponent.java \
-javax/accessibility/AccessibleContext.java \
-javax/accessibility/AccessibleEditableText.java \
-javax/accessibility/AccessibleExtendedComponent.java \
-javax/accessibility/AccessibleExtendedTable.java \
-javax/accessibility/AccessibleHyperlink.java \
-javax/accessibility/AccessibleHypertext.java \
-javax/accessibility/AccessibleIcon.java \
-javax/accessibility/AccessibleKeyBinding.java \
-javax/accessibility/AccessibleRelation.java \
-javax/accessibility/AccessibleRelationSet.java \
-javax/accessibility/AccessibleResourceBundle.java \
-javax/accessibility/AccessibleRole.java \
-javax/accessibility/AccessibleSelection.java \
-javax/accessibility/AccessibleState.java \
-javax/accessibility/AccessibleStateSet.java \
-javax/accessibility/AccessibleTable.java \
-javax/accessibility/AccessibleTableModelChange.java \
-javax/accessibility/AccessibleText.java \
-javax/accessibility/AccessibleValue.java \
-javax/crypto/BadPaddingException.java \
-javax/crypto/Cipher.java \
-javax/crypto/CipherInputStream.java \
-javax/crypto/CipherOutputStream.java \
-javax/crypto/CipherSpi.java \
-javax/crypto/EncryptedPrivateKeyInfo.java \
-javax/crypto/KeyGeneratorSpi.java \
-javax/crypto/ExemptionMechanism.java \
-javax/crypto/ExemptionMechanismException.java \
-javax/crypto/ExemptionMechanismSpi.java \
-javax/crypto/IllegalBlockSizeException.java \
-javax/crypto/KeyAgreement.java \
-javax/crypto/KeyAgreementSpi.java \
-javax/crypto/KeyGenerator.java \
-javax/crypto/Mac.java \
-javax/crypto/MacSpi.java \
-javax/crypto/NoSuchPaddingException.java \
-javax/crypto/NullCipher.java \
-javax/crypto/NullCipherImpl.java \
-javax/crypto/SealedObject.java \
-javax/crypto/SecretKey.java \
-javax/crypto/SecretKeyFactory.java \
-javax/crypto/SecretKeyFactorySpi.java \
-javax/crypto/ShortBufferException.java \
-javax/crypto/interfaces/DHKey.java \
-javax/crypto/interfaces/DHPrivateKey.java \
-javax/crypto/interfaces/DHPublicKey.java \
-javax/crypto/interfaces/PBEKey.java \
-javax/crypto/spec/DESKeySpec.java \
-javax/crypto/spec/DESedeKeySpec.java \
-javax/crypto/spec/DHGenParameterSpec.java \
-javax/crypto/spec/DHParameterSpec.java \
-javax/crypto/spec/DHPrivateKeySpec.java \
-javax/crypto/spec/DHPublicKeySpec.java \
-javax/crypto/spec/IvParameterSpec.java \
-javax/crypto/spec/PBEKeySpec.java \
-javax/crypto/spec/PBEParameterSpec.java \
-javax/crypto/spec/RC2ParameterSpec.java \
-javax/crypto/spec/RC5ParameterSpec.java \
-javax/crypto/spec/SecretKeySpec.java \
-javax/imageio/IIOException.java \
-javax/imageio/IIOImage.java \
-javax/imageio/IIOParam.java \
-javax/imageio/IIOParamController.java \
-javax/imageio/ImageIO.java \
-javax/imageio/ImageReadParam.java \
+javax/imageio/ImageWriteParam.java \
 javax/imageio/ImageReader.java \
+javax/imageio/ImageWriter.java \
+javax/imageio/IIOException.java	\
+javax/imageio/IIOParamController.java \
+javax/imageio/ImageReadParam.java \
+javax/imageio/IIOParam.java \
+javax/imageio/spi/IIORegistry.java \
+javax/imageio/spi/ImageWriterSpi.java \
+javax/imageio/spi/ImageOutputStreamSpi.java \
+javax/imageio/spi/ServiceRegistry.java \
+javax/imageio/spi/ImageTranscoderSpi.java \
+javax/imageio/spi/ImageReaderSpi.java \
+javax/imageio/spi/IIOServiceProvider.java \
+javax/imageio/spi/ImageReaderWriterSpi.java \
+javax/imageio/spi/ImageInputStreamSpi.java \
+javax/imageio/spi/RegisterableService.java \
+javax/imageio/metadata/IIOMetadataFormatImpl.java \
+javax/imageio/metadata/IIOInvalidTreeException.java \
+javax/imageio/metadata/IIOMetadataFormat.java \
+javax/imageio/metadata/IIOMetadataController.java \
+javax/imageio/metadata/IIOMetadataNode.java \
+javax/imageio/metadata/IIOMetadata.java	\
+javax/imageio/stream/FileImageOutputStream.java	\
+javax/imageio/stream/ImageInputStream.java \
+javax/imageio/stream/IIOByteBuffer.java	\
+javax/imageio/stream/FileCacheImageInputStream.java \
+javax/imageio/stream/ImageInputStreamImpl.java \
+javax/imageio/stream/ImageOutputStreamImpl.java	\
+javax/imageio/stream/MemoryCacheImageInputStream.java \
+javax/imageio/stream/FileCacheImageOutputStream.java \
+javax/imageio/stream/ImageOutputStream.java \
+javax/imageio/stream/MemoryCacheImageOutputStream.java \
+javax/imageio/stream/FileImageInputStream.java \
+javax/imageio/event/IIOReadProgressListener.java \
+javax/imageio/event/IIOWriteWarningListener.java \
+javax/imageio/event/IIOReadWarningListener.java	\
+javax/imageio/event/IIOReadUpdateListener.java \
+javax/imageio/event/IIOWriteProgressListener.java \
 javax/imageio/ImageTranscoder.java \
 javax/imageio/ImageTypeSpecifier.java \
-javax/imageio/ImageWriteParam.java \
-javax/imageio/ImageWriter.java \
-javax/imageio/event/IIOReadProgressListener.java \
-javax/imageio/event/IIOReadUpdateListener.java \
-javax/imageio/event/IIOReadWarningListener.java \
-javax/imageio/event/IIOWriteProgressListener.java \
-javax/imageio/event/IIOWriteWarningListener.java \
-javax/imageio/metadata/IIOInvalidTreeException.java \
-javax/imageio/metadata/IIOMetadata.java \
-javax/imageio/metadata/IIOMetadataController.java \
-javax/imageio/metadata/IIOMetadataFormat.java \
-javax/imageio/metadata/IIOMetadataFormatImpl.java \
-javax/imageio/metadata/IIOMetadataNode.java \
-javax/imageio/spi/IIOServiceProvider.java \
-javax/imageio/spi/IIORegistry.java \
-javax/imageio/spi/ImageInputStreamSpi.java \
-javax/imageio/spi/ImageOutputStreamSpi.java \
-javax/imageio/spi/ImageReaderSpi.java \
-javax/imageio/spi/ImageReaderWriterSpi.java \
-javax/imageio/spi/ImageTranscoderSpi.java \
-javax/imageio/spi/RegisterableService.java \
-javax/imageio/spi/ServiceRegistry.java \
-javax/imageio/spi/ImageWriterSpi.java \
-javax/imageio/stream/FileCacheImageInputStream.java \
-javax/imageio/stream/FileCacheImageOutputStream.java \
-javax/imageio/stream/FileImageInputStream.java \
-javax/imageio/stream/FileImageOutputStream.java \
-javax/imageio/stream/IIOByteBuffer.java \
-javax/imageio/stream/ImageInputStream.java \
-javax/imageio/stream/ImageInputStreamImpl.java \
-javax/imageio/stream/ImageOutputStream.java \
-javax/imageio/stream/ImageOutputStreamImpl.java \
-javax/imageio/stream/MemoryCacheImageInputStream.java \
-javax/imageio/stream/MemoryCacheImageOutputStream.java \
-javax/naming/directory/Attribute.java \
-javax/naming/directory/AttributeInUseException.java \
-javax/naming/directory/AttributeModificationException.java \
-javax/naming/directory/Attributes.java \
-javax/naming/directory/DirContext.java \
-javax/naming/directory/InvalidAttributeIdentifierException.java	\
-javax/naming/directory/InvalidAttributeValueException.java \
-javax/naming/directory/InvalidAttributesException.java \
-javax/naming/directory/InvalidSearchControlsException.java \
-javax/naming/directory/InvalidSearchFilterException.java \
-javax/naming/directory/NoSuchAttributeException.java \
-javax/naming/directory/SchemaViolationException.java \
-javax/naming/directory/BasicAttribute.java \
-javax/naming/directory/BasicAttributes.java \
-javax/naming/directory/ModificationItem.java \
-javax/naming/directory/SearchControls.java \
-javax/naming/directory/SearchResult.java \
-javax/naming/directory/InitialDirContext.java \
-javax/naming/AuthenticationException.java \
-javax/naming/AuthenticationNotSupportedException.java \
-javax/naming/CannotProceedException.java \
-javax/naming/CommunicationException.java \
-javax/naming/ConfigurationException.java \
-javax/naming/Context.java \
-javax/naming/ContextNotEmptyException.java \
-javax/naming/InsufficientResourcesException.java \
-javax/naming/InterruptedNamingException.java \
-javax/naming/BinaryRefAddr.java	\
-javax/naming/LimitExceededException.java \
-javax/naming/LinkException.java	\
-javax/naming/LinkLoopException.java \
-javax/naming/MalformedLinkException.java \
-javax/naming/Name.java \
-javax/naming/NameAlreadyBoundException.java \
-javax/naming/NameNotFoundException.java	\
-javax/naming/NameParser.java \
-javax/naming/NamingEnumeration.java \
-javax/naming/InitialContext.java \
-javax/naming/NamingSecurityException.java \
-javax/naming/NoInitialContextException.java \
-javax/naming/NoPermissionException.java	\
-javax/naming/NotContextException.java \
-javax/naming/NamingException.java \
-javax/naming/PartialResultException.java \
-javax/naming/event/EventContext.java \
-javax/naming/event/EventDirContext.java	\
-javax/naming/event/NamespaceChangeListener.java	\
-javax/naming/event/NamingEvent.java \
-javax/naming/event/NamingExceptionEvent.java \
-javax/naming/event/NamingListener.java \
-javax/naming/event/ObjectChangeListener.java \
-javax/naming/RefAddr.java \
-javax/naming/Reference.java \
-javax/naming/Referenceable.java	\
-javax/naming/ReferralException.java \
-javax/naming/ServiceUnavailableException.java \
-javax/naming/SizeLimitExceededException.java \
-javax/naming/StringRefAddr.java	\
-javax/naming/TimeLimitExceededException.java \
-javax/naming/spi/InitialContextFactory.java \
-javax/naming/spi/InitialContextFactoryBuilder.java \
-javax/naming/spi/NamingManager.java \
-javax/naming/spi/ObjectFactory.java \
-javax/naming/spi/Resolver.java \
-javax/naming/spi/DirObjectFactory.java \
-javax/naming/spi/DirStateFactory.java \
-javax/naming/spi/DirectoryManager.java \
-javax/naming/spi/ObjectFactoryBuilder.java \
-javax/naming/spi/ResolveResult.java \
-javax/naming/spi/StateFactory.java \
-javax/naming/InvalidNameException.java \
-javax/naming/Binding.java \
-javax/naming/CompositeName.java	\
-javax/naming/CompoundName.java \
-javax/naming/LinkRef.java \
-javax/naming/NameClassPair.java	\
-javax/naming/ldap/Control.java \
-javax/naming/ldap/ControlFactory.java \
-javax/naming/ldap/ExtendedRequest.java \
-javax/naming/ldap/ExtendedResponse.java	\
-javax/naming/ldap/HasControls.java \
-javax/naming/ldap/InitialLdapContext.java \
-javax/naming/ldap/LdapContext.java \
-javax/naming/ldap/LdapReferralException.java \
-javax/naming/ldap/UnsolicitedNotification.java \
-javax/naming/ldap/UnsolicitedNotificationEvent.java \
-javax/naming/ldap/UnsolicitedNotificationListener.java \
-javax/naming/OperationNotSupportedException.java \
-javax/net/ServerSocketFactory.java \
-javax/net/SocketFactory.java \
-javax/net/ssl/HandshakeCompletedEvent.java \
-javax/net/ssl/HandshakeCompletedListener.java \
-javax/net/ssl/HostnameVerifier.java \
-javax/net/ssl/HttpsURLConnection.java \
-javax/net/ssl/KeyManager.java \
-javax/net/ssl/KeyManagerFactory.java \
-javax/net/ssl/KeyManagerFactorySpi.java \
-javax/net/ssl/ManagerFactoryParameters.java \
-javax/net/ssl/SSLProtocolException.java \
-javax/net/ssl/SSLContext.java \
-javax/net/ssl/SSLContextSpi.java \
-javax/net/ssl/SSLException.java \
-javax/net/ssl/SSLHandshakeException.java \
+javax/imageio/ImageIO.java \
+javax/imageio/IIOImage.java \
+javax/net/VanillaSocketFactory.java \
+javax/net/ssl/TrustManagerFactorySpi.java \
 javax/net/ssl/SSLKeyException.java \
-javax/net/ssl/SSLPeerUnverifiedException.java \
-javax/net/ssl/SSLPermission.java \
+javax/net/ssl/TrustManager.java	\
 javax/net/ssl/SSLServerSocket.java \
+javax/net/ssl/TrustManagerFactory.java \
+javax/net/ssl/KeyManager.java \
+javax/net/ssl/SSLSocketFactory.java \
+javax/net/ssl/SSLPermission.java \
+javax/net/ssl/SSLContext.java \
+javax/net/ssl/TrivialHostnameVerifier.java \
+javax/net/ssl/X509KeyManager.java \
 javax/net/ssl/SSLServerSocketFactory.java \
-javax/net/ssl/SSLSession.java \
-javax/net/ssl/SSLSessionBindingEvent.java \
 javax/net/ssl/SSLSessionBindingListener.java \
 javax/net/ssl/SSLSessionContext.java \
+javax/net/ssl/KeyManagerFactory.java \
+javax/net/ssl/SSLProtocolException.java	\
 javax/net/ssl/SSLSocket.java \
-javax/net/ssl/SSLSocketFactory.java \
-javax/net/ssl/TrivialHostnameVerifier.java \
-javax/net/ssl/TrustManager.java \
-javax/net/ssl/TrustManagerFactory.java \
-javax/net/ssl/TrustManagerFactorySpi.java \
-javax/net/ssl/X509KeyManager.java \
+javax/net/ssl/HostnameVerifier.java \
+javax/net/ssl/HandshakeCompletedListener.java \
+javax/net/ssl/HttpsURLConnection.java \
+javax/net/ssl/KeyManagerFactorySpi.java	\
+javax/net/ssl/SSLHandshakeException.java \
+javax/net/ssl/SSLPeerUnverifiedException.java \
 javax/net/ssl/X509TrustManager.java \
-javax/net/VanillaSocketFactory.java \
+javax/net/ssl/SSLSession.java \
+javax/net/ssl/SSLContextSpi.java \
+javax/net/ssl/HandshakeCompletedEvent.java \
+javax/net/ssl/SSLSessionBindingEvent.java \
+javax/net/ssl/SSLException.java	\
+javax/net/ssl/ManagerFactoryParameters.java \
+javax/net/SocketFactory.java \
 javax/net/VanillaServerSocketFactory.java \
-javax/print/AttributeException.java \
-javax/print/CancelablePrintJob.java \
-javax/print/Doc.java \
+javax/net/ServerSocketFactory.java \
+javax/print/attribute/HashPrintServiceAttributeSet.java	\
+javax/print/attribute/Attribute.java \
+javax/print/attribute/DocAttributeSet.java \
+javax/print/attribute/PrintRequestAttributeSet.java \
+javax/print/attribute/standard/NumberOfInterveningJobs.java \
+javax/print/attribute/standard/PrinterMakeAndModel.java	\
+javax/print/attribute/standard/PrinterStateReason.java \
+javax/print/attribute/standard/JobImpressions.java \
+javax/print/attribute/standard/JobHoldUntil.java \
+javax/print/attribute/standard/JobKOctetsSupported.java	\
+javax/print/attribute/standard/JobPriority.java	\
+javax/print/attribute/standard/QueuedJobCount.java \
+javax/print/attribute/standard/JobOriginatingUserName.java \
+javax/print/attribute/standard/PrinterName.java	\
+javax/print/attribute/standard/PDLOverrideSupported.java \
+javax/print/attribute/standard/PrinterStateReasons.java	\
+javax/print/attribute/standard/JobMediaSheets.java \
+javax/print/attribute/standard/JobKOctets.java \
+javax/print/attribute/standard/MultipleDocumentHandling.java \
+javax/print/attribute/standard/PrinterMessageFromOperator.java \
+javax/print/attribute/standard/Severity.java \
+javax/print/attribute/standard/ReferenceUriSchemesSupported.java \
+javax/print/attribute/standard/DocumentName.java \
+javax/print/attribute/standard/PrinterMoreInfo.java \
+javax/print/attribute/standard/JobMessageFromOperator.java \
+javax/print/attribute/standard/JobStateReasons.java \
+javax/print/attribute/standard/PrinterIsAcceptingJobs.java \
+javax/print/attribute/standard/DateTimeAtProcessing.java \
+javax/print/attribute/standard/PagesPerMinute.java \
+javax/print/attribute/standard/PrinterResolution.java \
+javax/print/attribute/standard/JobMediaSheetsSupported.java \
+javax/print/attribute/standard/NumberUpSupported.java \
+javax/print/attribute/standard/Finishings.java \
+javax/print/attribute/standard/DateTimeAtCompleted.java	\
+javax/print/attribute/standard/NumberOfDocuments.java \
+javax/print/attribute/standard/PrinterInfo.java	\
+javax/print/attribute/standard/PrintQuality.java \
+javax/print/attribute/standard/JobSheets.java \
+javax/print/attribute/standard/Media.java \
+javax/print/attribute/standard/Fidelity.java \
+javax/print/attribute/standard/PrinterLocation.java \
+javax/print/attribute/standard/PrinterMoreInfoManufacturer.java	\
+javax/print/attribute/standard/OrientationRequested.java \
+javax/print/attribute/standard/JobState.java \
+javax/print/attribute/standard/DateTimeAtCreation.java \
+javax/print/attribute/standard/PresentationDirection.java \
+javax/print/attribute/standard/JobName.java \
+javax/print/attribute/standard/PagesPerMinuteColor.java	\
+javax/print/attribute/standard/CopiesSupported.java \
+javax/print/attribute/standard/PrinterURI.java \
+javax/print/attribute/standard/PageRanges.java \
+javax/print/attribute/standard/RequestingUserName.java \
+javax/print/attribute/standard/JobPrioritySupported.java \
+javax/print/attribute/standard/JobMediaSheetsCompleted.java \
+javax/print/attribute/standard/JobKOctetsProcessed.java	\
+javax/print/attribute/standard/JobImpressionsCompleted.java \
+javax/print/attribute/standard/Compression.java	\
+javax/print/attribute/standard/JobImpressionsSupported.java \
+javax/print/attribute/standard/Sides.java \
+javax/print/attribute/standard/JobStateReason.java \
+javax/print/attribute/standard/SheetCollate.java \
+javax/print/attribute/standard/Copies.java \
+javax/print/attribute/standard/MediaSizeName.java \
+javax/print/attribute/standard/OutputDeviceAssigned.java \
+javax/print/attribute/standard/PrinterState.java \
+javax/print/attribute/standard/NumberUp.java \
+javax/print/attribute/standard/ColorSupported.java \
+javax/print/attribute/HashAttributeSet.java \
+javax/print/attribute/SetOfIntegerSyntax.java \
+javax/print/attribute/HashDocAttributeSet.java \
+javax/print/attribute/PrintRequestAttribute.java \
+javax/print/attribute/DateTimeSyntax.java \
+javax/print/attribute/PrintServiceAttribute.java \
+javax/print/attribute/UnmodifiableSetException.java \
+javax/print/attribute/HashPrintJobAttributeSet.java \
+javax/print/attribute/PrintJobAttribute.java \
+javax/print/attribute/AttributeSet.java	\
+javax/print/attribute/ResolutionSyntax.java \
+javax/print/attribute/URISyntax.java \
+javax/print/attribute/AttributeSetUtilities.java \
+javax/print/attribute/HashPrintRequestAttributeSet.java	\
+javax/print/attribute/TextSyntax.java \
+javax/print/attribute/PrintJobAttributeSet.java	\
+javax/print/attribute/SupportedValuesAttribute.java \
+javax/print/attribute/EnumSyntax.java \
+javax/print/attribute/DocAttribute.java	\
+javax/print/attribute/Size2DSyntax.java	\
+javax/print/attribute/IntegerSyntax.java \
+javax/print/attribute/PrintServiceAttributeSet.java \
+javax/print/PrintService.java \
 javax/print/DocFlavor.java \
 javax/print/DocPrintJob.java \
-javax/print/FlavorException.java \
-javax/print/MultiDoc.java \
-javax/print/MultiDocPrintJob.java \
-javax/print/MultiDocPrintService.java \
-javax/print/PrintException.java \
-javax/print/PrintService.java \
-javax/print/PrintServiceLookup.java \
-javax/print/ServiceUIFactory.java \
-javax/print/StreamPrintService.java \
-javax/print/URIException.java \
-javax/print/attribute/Attribute.java \
-javax/print/attribute/AttributeSet.java \
-javax/print/attribute/AttributeSetUtilities.java \
-javax/print/attribute/DateTimeSyntax.java \
-javax/print/attribute/DocAttribute.java \
-javax/print/attribute/DocAttributeSet.java \
-javax/print/attribute/EnumSyntax.java \
-javax/print/attribute/HashAttributeSet.java \
-javax/print/attribute/HashDocAttributeSet.java \
-javax/print/attribute/HashPrintJobAttributeSet.java \
-javax/print/attribute/HashPrintRequestAttributeSet.java \
-javax/print/attribute/HashPrintServiceAttributeSet.java \
-javax/print/attribute/IntegerSyntax.java \
-javax/print/attribute/PrintJobAttribute.java \
-javax/print/attribute/PrintJobAttributeSet.java \
-javax/print/attribute/PrintRequestAttribute.java \
-javax/print/attribute/PrintRequestAttributeSet.java \
-javax/print/attribute/PrintServiceAttribute.java \
-javax/print/attribute/PrintServiceAttributeSet.java \
-javax/print/attribute/ResolutionSyntax.java \
-javax/print/attribute/SetOfIntegerSyntax.java \
-javax/print/attribute/Size2DSyntax.java \
-javax/print/attribute/SupportedValuesAttribute.java \
-javax/print/attribute/TextSyntax.java \
-javax/print/attribute/UnmodifiableSetException.java \
-javax/print/attribute/URISyntax.java \
-javax/print/attribute/standard/ColorSupported.java \
-javax/print/attribute/standard/Compression.java \
-javax/print/attribute/standard/Copies.java \
-javax/print/attribute/standard/CopiesSupported.java \
-javax/print/attribute/standard/DateTimeAtCompleted.java \
-javax/print/attribute/standard/DateTimeAtCreation.java \
-javax/print/attribute/standard/DateTimeAtProcessing.java \
-javax/print/attribute/standard/DocumentName.java \
-javax/print/attribute/standard/Fidelity.java \
-javax/print/attribute/standard/Finishings.java \
-javax/print/attribute/standard/JobHoldUntil.java \
-javax/print/attribute/standard/JobImpressions.java \
-javax/print/attribute/standard/JobImpressionsCompleted.java \
-javax/print/attribute/standard/JobImpressionsSupported.java \
-javax/print/attribute/standard/JobKOctets.java \
-javax/print/attribute/standard/JobKOctetsProcessed.java \
-javax/print/attribute/standard/JobKOctetsSupported.java \
-javax/print/attribute/standard/JobMediaSheets.java \
-javax/print/attribute/standard/JobMediaSheetsCompleted.java \
-javax/print/attribute/standard/JobMediaSheetsSupported.java \
-javax/print/attribute/standard/JobMessageFromOperator.java \
-javax/print/attribute/standard/JobName.java \
-javax/print/attribute/standard/JobOriginatingUserName.java \
-javax/print/attribute/standard/JobPriority.java \
-javax/print/attribute/standard/JobPrioritySupported.java \
-javax/print/attribute/standard/JobSheets.java \
-javax/print/attribute/standard/JobState.java \
-javax/print/attribute/standard/JobStateReason.java \
-javax/print/attribute/standard/JobStateReasons.java \
-javax/print/attribute/standard/Media.java \
-javax/print/attribute/standard/MediaSizeName.java \
-javax/print/attribute/standard/MultipleDocumentHandling.java \
-javax/print/attribute/standard/NumberOfDocuments.java \
-javax/print/attribute/standard/NumberOfInterveningJobs.java \
-javax/print/attribute/standard/NumberUp.java \
-javax/print/attribute/standard/NumberUpSupported.java \
-javax/print/attribute/standard/OrientationRequested.java \
-javax/print/attribute/standard/OutputDeviceAssigned.java \
-javax/print/attribute/standard/PDLOverrideSupported.java \
-javax/print/attribute/standard/PageRanges.java \
-javax/print/attribute/standard/PagesPerMinute.java \
-javax/print/attribute/standard/PagesPerMinuteColor.java \
-javax/print/attribute/standard/PresentationDirection.java \
-javax/print/attribute/standard/PrintQuality.java \
-javax/print/attribute/standard/PrinterInfo.java \
-javax/print/attribute/standard/PrinterIsAcceptingJobs.java \
-javax/print/attribute/standard/PrinterLocation.java \
-javax/print/attribute/standard/PrinterMakeAndModel.java \
-javax/print/attribute/standard/PrinterMessageFromOperator.java \
-javax/print/attribute/standard/PrinterMoreInfo.java \
-javax/print/attribute/standard/PrinterMoreInfoManufacturer.java \
-javax/print/attribute/standard/PrinterName.java \
-javax/print/attribute/standard/PrinterResolution.java \
-javax/print/attribute/standard/PrinterState.java \
-javax/print/attribute/standard/PrinterStateReason.java \
-javax/print/attribute/standard/PrinterStateReasons.java \
-javax/print/attribute/standard/PrinterURI.java \
-javax/print/attribute/standard/QueuedJobCount.java \
-javax/print/attribute/standard/ReferenceUriSchemesSupported.java \
-javax/print/attribute/standard/RequestingUserName.java \
-javax/print/attribute/standard/Severity.java \
-javax/print/attribute/standard/SheetCollate.java \
-javax/print/attribute/standard/Sides.java \
 javax/print/event/PrintEvent.java \
 javax/print/event/PrintJobAdapter.java \
-javax/print/event/PrintJobAttributeEvent.java \
-javax/print/event/PrintJobAttributeListener.java \
-javax/print/event/PrintJobEvent.java \
-javax/print/event/PrintJobListener.java \
 javax/print/event/PrintServiceAttributeEvent.java \
+javax/print/event/PrintJobAttributeEvent.java \
 javax/print/event/PrintServiceAttributeListener.java \
-javax/security/auth/AuthPermission.java \
+javax/print/event/PrintJobEvent.java \
+javax/print/event/PrintJobListener.java	\
+javax/print/event/PrintJobAttributeListener.java \
+javax/print/PrintServiceLookup.java \
+javax/print/URIException.java \
+javax/print/StreamPrintService.java \
+javax/print/MultiDoc.java \
+javax/print/FlavorException.java \
+javax/print/Doc.java \
+javax/print/MultiDocPrintJob.java \
+javax/print/CancelablePrintJob.java \
+javax/print/MultiDocPrintService.java \
+javax/print/ServiceUIFactory.java \
+javax/print/AttributeException.java \
+javax/print/PrintException.java	\
+javax/naming/ServiceUnavailableException.java \
+javax/naming/directory/Attribute.java \
+javax/naming/directory/SchemaViolationException.java \
+javax/naming/directory/InitialDirContext.java \
+javax/naming/directory/BasicAttribute.java \
+javax/naming/directory/NoSuchAttributeException.java \
+javax/naming/directory/InvalidAttributesException.java \
+javax/naming/directory/InvalidAttributeValueException.java \
+javax/naming/directory/BasicAttributes.java \
+javax/naming/directory/AttributeModificationException.java \
+javax/naming/directory/InvalidAttributeIdentifierException.java	\
+javax/naming/directory/DirContext.java \
+javax/naming/directory/Attributes.java \
+javax/naming/directory/InvalidSearchControlsException.java \
+javax/naming/directory/SearchControls.java \
+javax/naming/directory/AttributeInUseException.java \
+javax/naming/directory/InvalidSearchFilterException.java \
+javax/naming/directory/ModificationItem.java \
+javax/naming/directory/SearchResult.java \
+javax/naming/Binding.java \
+javax/naming/ContextNotEmptyException.java \
+javax/naming/Referenceable.java	\
+javax/naming/InterruptedNamingException.java \
+javax/naming/CommunicationException.java \
+javax/naming/LinkException.java	\
+javax/naming/BinaryRefAddr.java	\
+javax/naming/LinkLoopException.java \
+javax/naming/AuthenticationException.java \
+javax/naming/NameAlreadyBoundException.java \
+javax/naming/MalformedLinkException.java \
+javax/naming/NotContextException.java \
+javax/naming/spi/DirStateFactory.java \
+javax/naming/spi/ResolveResult.java \
+javax/naming/spi/ObjectFactoryBuilder.java \
+javax/naming/spi/DirObjectFactory.java \
+javax/naming/spi/DirectoryManager.java \
+javax/naming/spi/InitialContextFactoryBuilder.java \
+javax/naming/spi/ObjectFactory.java \
+javax/naming/spi/Resolver.java \
+javax/naming/spi/StateFactory.java \
+javax/naming/spi/InitialContextFactory.java \
+javax/naming/spi/NamingManager.java \
+javax/naming/InvalidNameException.java \
+javax/naming/NamingEnumeration.java \
+javax/naming/LinkRef.java \
+javax/naming/event/NamingListener.java \
+javax/naming/event/NamingEvent.java \
+javax/naming/event/NamespaceChangeListener.java	\
+javax/naming/event/ObjectChangeListener.java \
+javax/naming/event/EventContext.java \
+javax/naming/event/NamingExceptionEvent.java \
+javax/naming/event/EventDirContext.java	\
+javax/naming/NamingException.java \
+javax/naming/CannotProceedException.java \
+javax/naming/PartialResultException.java \
+javax/naming/TimeLimitExceededException.java \
+javax/naming/NoPermissionException.java	\
+javax/naming/CompoundName.java \
+javax/naming/SizeLimitExceededException.java \
+javax/naming/NoInitialContextException.java \
+javax/naming/NameNotFoundException.java	\
+javax/naming/InitialContext.java \
+javax/naming/NamingSecurityException.java \
+javax/naming/Context.java \
+javax/naming/ConfigurationException.java \
+javax/naming/InsufficientResourcesException.java \
+javax/naming/AuthenticationNotSupportedException.java \
+javax/naming/StringRefAddr.java	\
+javax/naming/ldap/InitialLdapContext.java \
+javax/naming/ldap/ExtendedRequest.java \
+javax/naming/ldap/Control.java \
+javax/naming/ldap/UnsolicitedNotificationListener.java \
+javax/naming/ldap/LdapReferralException.java \
+javax/naming/ldap/UnsolicitedNotificationEvent.java \
+javax/naming/ldap/HasControls.java \
+javax/naming/ldap/LdapContext.java \
+javax/naming/ldap/ExtendedResponse.java	\
+javax/naming/ldap/UnsolicitedNotification.java \
+javax/naming/ldap/ControlFactory.java \
+javax/naming/OperationNotSupportedException.java \
+javax/naming/ReferralException.java \
+javax/naming/LimitExceededException.java \
+javax/naming/Reference.java \
+javax/naming/NameParser.java \
+javax/naming/NameClassPair.java	\
+javax/naming/RefAddr.java \
+javax/naming/CompositeName.java	\
+javax/naming/Name.java \
+javax/xml/xpath/XPathConstants.java \
+javax/xml/xpath/XPathFunction.java \
+javax/xml/xpath/XPathVariableResolver.java \
+javax/xml/xpath/XPathExpressionException.java \
+javax/xml/xpath/XPathFunctionResolver.java \
+javax/xml/xpath/XPath.java \
+javax/xml/xpath/XPathFactoryConfigurationException.java	\
+javax/xml/xpath/XPathFactory.java \
+javax/xml/xpath/XPathException.java \
+javax/xml/xpath/XPathExpression.java \
+javax/xml/xpath/XPathFunctionException.java \
+javax/xml/validation/ValidatorHandler.java \
+javax/xml/validation/Validator.java \
+javax/xml/validation/TypeInfoProvider.java \
+javax/xml/validation/SchemaFactory.java	\
+javax/xml/validation/Schema.java \
+javax/xml/parsers/SAXParserFactory.java	\
+javax/xml/parsers/FactoryConfigurationError.java \
+javax/xml/parsers/SAXParser.java \
+javax/xml/parsers/DocumentBuilderFactory.java \
+javax/xml/parsers/ParserConfigurationException.java \
+javax/xml/parsers/DocumentBuilder.java \
+javax/xml/datatype/DatatypeFactory.java	\
+javax/xml/datatype/XMLGregorianCalendar.java \
+javax/xml/datatype/Duration.java \
+javax/xml/datatype/DatatypeConfigurationException.java \
+javax/xml/datatype/DatatypeConstants.java \
+javax/xml/XMLConstants.java \
+javax/xml/namespace/NamespaceContext.java \
+javax/xml/namespace/QName.java \
+javax/xml/transform/TransformerException.java \
+javax/xml/transform/TransformerFactoryConfigurationError.java \
+javax/xml/transform/sax/SAXResult.java \
+javax/xml/transform/sax/TransformerHandler.java	\
+javax/xml/transform/sax/SAXTransformerFactory.java \
+javax/xml/transform/sax/SAXSource.java \
+javax/xml/transform/sax/TemplatesHandler.java \
+javax/xml/transform/OutputKeys.java \
+javax/xml/transform/stream/StreamResult.java \
+javax/xml/transform/stream/StreamSource.java \
+javax/xml/transform/Source.java	\
+javax/xml/transform/SourceLocator.java \
+javax/xml/transform/ErrorListener.java \
+javax/xml/transform/TransformerConfigurationException.java \
+javax/xml/transform/Templates.java \
+javax/xml/transform/Result.java	\
+javax/xml/transform/URIResolver.java \
+javax/xml/transform/dom/DOMSource.java \
+javax/xml/transform/dom/DOMLocator.java	\
+javax/xml/transform/dom/DOMResult.java \
+javax/xml/transform/Transformer.java \
+javax/xml/transform/TransformerFactory.java \
+javax/security/cert/CertificateNotYetValidException.java \
+javax/security/cert/Certificate.java \
+javax/security/cert/X509Certificate.java \
+javax/security/cert/X509CertBridge.java	\
+javax/security/cert/CertificateEncodingException.java \
+javax/security/cert/CertificateExpiredException.java \
+javax/security/cert/CertificateException.java \
+javax/security/cert/CertificateParsingException.java \
 javax/security/auth/Destroyable.java \
-javax/security/auth/DestroyFailedException.java \
+javax/security/auth/x500/X500PrivateCredential.java \
+javax/security/auth/x500/X500Principal.java \
+javax/security/auth/spi/LoginModule.java \
+javax/security/auth/DestroyFailedException.java	\
+javax/security/auth/SubjectDomainCombiner.java \
+javax/security/auth/AuthPermission.java	\
+javax/security/auth/login/CredentialExpiredException.java \
+javax/security/auth/login/NullConfiguration.java \
 javax/security/auth/login/AccountExpiredException.java \
+javax/security/auth/login/LoginException.java \
 javax/security/auth/login/AppConfigurationEntry.java \
 javax/security/auth/login/Configuration.java \
-javax/security/auth/login/CredentialExpiredException.java \
-javax/security/auth/login/FailedLoginException.java \
 javax/security/auth/login/LoginContext.java \
-javax/security/auth/login/LoginException.java \
-javax/security/auth/login/NullConfiguration.java \
-javax/security/auth/spi/LoginModule.java \
-javax/security/auth/Policy.java \
+javax/security/auth/login/FailedLoginException.java \
 javax/security/auth/PrivateCredentialPermission.java \
-javax/security/auth/Refreshable.java \
-javax/security/auth/RefreshFailedException.java \
 javax/security/auth/Subject.java \
-javax/security/auth/SubjectDomainCombiner.java \
-javax/security/auth/x500/X500Principal.java \
-javax/security/auth/x500/X500PrivateCredential.java \
-javax/security/auth/callback/Callback.java \
-javax/security/auth/callback/CallbackHandler.java \
-javax/security/auth/callback/ChoiceCallback.java \
-javax/security/auth/callback/ConfirmationCallback.java \
-javax/security/auth/callback/LanguageCallback.java \
-javax/security/auth/callback/NameCallback.java \
-javax/security/auth/callback/PasswordCallback.java \
+javax/security/auth/Policy.java	\
+javax/security/auth/Refreshable.java \
 javax/security/auth/callback/TextInputCallback.java \
+javax/security/auth/callback/LanguageCallback.java \
 javax/security/auth/callback/TextOutputCallback.java \
 javax/security/auth/callback/UnsupportedCallbackException.java \
-javax/security/cert/Certificate.java \
-javax/security/cert/CertificateEncodingException.java \
-javax/security/cert/CertificateException.java \
-javax/security/cert/CertificateExpiredException.java \
-javax/security/cert/CertificateNotYetValidException.java \
-javax/security/cert/CertificateParsingException.java \
-javax/security/cert/X509CertBridge.java \
-javax/security/cert/X509Certificate.java \
-javax/security/sasl/AuthenticationException.java \
-javax/security/sasl/AuthorizeCallback.java \
+javax/security/auth/callback/Callback.java \
+javax/security/auth/callback/ConfirmationCallback.java \
+javax/security/auth/callback/ChoiceCallback.java \
+javax/security/auth/callback/NameCallback.java \
+javax/security/auth/callback/PasswordCallback.java \
+javax/security/auth/callback/CallbackHandler.java \
+javax/security/auth/RefreshFailedException.java	\
 javax/security/sasl/RealmCallback.java \
-javax/security/sasl/RealmChoiceCallback.java \
-javax/security/sasl/Sasl.java \
 javax/security/sasl/SaslClient.java \
+javax/security/sasl/RealmChoiceCallback.java \
+javax/security/sasl/AuthenticationException.java \
+javax/security/sasl/Sasl.java \
 javax/security/sasl/SaslClientFactory.java \
+javax/security/sasl/AuthorizeCallback.java \
+javax/security/sasl/SaslServerFactory.java \
 javax/security/sasl/SaslException.java \
 javax/security/sasl/SaslServer.java \
-javax/security/sasl/SaslServerFactory.java \
-javax/sql/ConnectionEvent.java \
-javax/sql/ConnectionEventListener.java \
-javax/sql/ConnectionPoolDataSource.java \
-javax/sql/DataSource.java \
-javax/sql/PooledConnection.java \
-javax/sql/RowSetEvent.java \
-javax/sql/RowSetInternal.java \
-javax/sql/RowSet.java \
-javax/sql/RowSetListener.java \
-javax/sql/RowSetMetaData.java \
-javax/sql/RowSetReader.java \
-javax/sql/RowSetWriter.java \
-javax/sql/XAConnection.java \
-javax/sql/XADataSource.java \
+javax/transaction/TransactionRolledbackException.java \
+javax/transaction/Synchronization.java \
+javax/transaction/TransactionRequiredException.java \
+javax/transaction/RollbackException.java \
+javax/transaction/Status.java \
+javax/transaction/HeuristicMixedException.java \
+javax/transaction/HeuristicRollbackException.java \
+javax/transaction/SystemException.java \
+javax/transaction/UserTransaction.java \
+javax/transaction/NotSupportedException.java \
+javax/transaction/HeuristicCommitException.java	\
+javax/transaction/Transaction.java \
+javax/transaction/TransactionManager.java \
+javax/transaction/InvalidTransactionException.java \
 javax/transaction/xa/XAException.java \
 javax/transaction/xa/XAResource.java \
 javax/transaction/xa/Xid.java \
-javax/transaction/HeuristicCommitException.java	\
-javax/transaction/HeuristicMixedException.java \
-javax/transaction/HeuristicRollbackException.java \
-javax/transaction/InvalidTransactionException.java \
-javax/transaction/NotSupportedException.java \
-javax/transaction/RollbackException.java \
-javax/transaction/Status.java \
-javax/transaction/Synchronization.java \
-javax/transaction/SystemException.java \
-javax/transaction/Transaction.java \
-javax/transaction/TransactionManager.java \
-javax/transaction/TransactionRequiredException.java \
-javax/transaction/TransactionRolledbackException.java \
-javax/transaction/UserTransaction.java
+javax/accessibility/AccessibleValue.java \
+javax/accessibility/AccessibleBundle.java \
+javax/accessibility/AccessibleContext.java \
+javax/accessibility/AccessibleRelationSet.java \
+javax/accessibility/Accessible.java \
+javax/accessibility/AccessibleTableModelChange.java \
+javax/accessibility/AccessibleState.java \
+javax/accessibility/AccessibleIcon.java	\
+javax/accessibility/AccessibleHypertext.java \
+javax/accessibility/AccessibleComponent.java \
+javax/accessibility/AccessibleText.java	\
+javax/accessibility/AccessibleRole.java	\
+javax/accessibility/AccessibleEditableText.java	\
+javax/accessibility/AccessibleRelation.java \
+javax/accessibility/AccessibleTable.java \
+javax/accessibility/AccessibleStateSet.java \
+javax/accessibility/AccessibleSelection.java \
+javax/accessibility/AccessibleExtendedTable.java \
+javax/accessibility/AccessibleResourceBundle.java \
+javax/accessibility/AccessibleExtendedComponent.java \
+javax/accessibility/AccessibleHyperlink.java \
+javax/accessibility/AccessibleKeyBinding.java \
+javax/accessibility/AccessibleAction.java \
+javax/sql/ConnectionEventListener.java \
+javax/sql/RowSetEvent.java \
+javax/sql/ConnectionPoolDataSource.java	\
+javax/sql/RowSetWriter.java \
+javax/sql/XAConnection.java \
+javax/sql/RowSet.java \
+javax/sql/DataSource.java \
+javax/sql/RowSetInternal.java \
+javax/sql/RowSetReader.java \
+javax/sql/RowSetMetaData.java \
+javax/sql/PooledConnection.java	\
+javax/sql/XADataSource.java \
+javax/sql/RowSetListener.java \
+javax/sql/ConnectionEvent.java \
+javax/crypto/Cipher.java \
+javax/crypto/IllegalBlockSizeException.java \
+javax/crypto/MacSpi.java \
+javax/crypto/SecretKeyFactorySpi.java \
+javax/crypto/ShortBufferException.java \
+javax/crypto/KeyAgreement.java \
+javax/crypto/ExemptionMechanism.java \
+javax/crypto/CipherOutputStream.java \
+javax/crypto/SealedObject.java \
+javax/crypto/NullCipher.java \
+javax/crypto/KeyAgreementSpi.java \
+javax/crypto/SecretKeyFactory.java \
+javax/crypto/SecretKey.java \
+javax/crypto/NullCipherImpl.java \
+javax/crypto/spec/DESKeySpec.java \
+javax/crypto/spec/DHPrivateKeySpec.java	\
+javax/crypto/spec/DHParameterSpec.java \
+javax/crypto/spec/PBEParameterSpec.java	\
+javax/crypto/spec/DESedeKeySpec.java \
+javax/crypto/spec/DHGenParameterSpec.java \
+javax/crypto/spec/DHPublicKeySpec.java \
+javax/crypto/spec/PBEKeySpec.java \
+javax/crypto/spec/RC5ParameterSpec.java	\
+javax/crypto/spec/RC2ParameterSpec.java	\
+javax/crypto/spec/IvParameterSpec.java \
+javax/crypto/spec/SecretKeySpec.java \
+javax/crypto/interfaces/DHPublicKey.java \
+javax/crypto/interfaces/DHKey.java \
+javax/crypto/interfaces/DHPrivateKey.java \
+javax/crypto/interfaces/PBEKey.java \
+javax/crypto/NoSuchPaddingException.java \
+javax/crypto/KeyGeneratorSpi.java \
+javax/crypto/BadPaddingException.java \
+javax/crypto/CipherSpi.java \
+javax/crypto/KeyGenerator.java \
+javax/crypto/CipherInputStream.java \
+javax/crypto/ExemptionMechanismException.java \
+javax/crypto/ExemptionMechanismSpi.java	\
+javax/crypto/EncryptedPrivateKeyInfo.java \
+javax/crypto/Mac.java
 
+org_source_files = \
+org/ietf/jgss/GSSManager.java \
+org/ietf/jgss/GSSException.java	\
+org/ietf/jgss/MessageProp.java \
+org/ietf/jgss/GSSName.java \
+org/ietf/jgss/GSSContext.java \
+org/ietf/jgss/Oid.java \
+org/ietf/jgss/GSSCredential.java \
+org/ietf/jgss/ChannelBinding.java
+
+gnu_xml_source_files = \
+gnu/xml/xpath/EqualityExpr.java	\
+gnu/xml/xpath/NumberFunction.java \
+gnu/xml/xpath/StringLengthFunction.java	\
+gnu/xml/xpath/NameFunction.java	\
+gnu/xml/xpath/SumFunction.java \
+gnu/xml/xpath/Pattern.java \
+gnu/xml/xpath/StringFunction.java \
+gnu/xml/xpath/NegativeExpr.java	\
+gnu/xml/xpath/UnionExpr.java \
+gnu/xml/xpath/SubstringFunction.java \
+gnu/xml/xpath/Expr.java	\
+gnu/xml/xpath/XPathFactoryImpl.java \
+gnu/xml/xpath/NormalizeSpaceFunction.java \
+gnu/xml/xpath/Constant.java \
+gnu/xml/xpath/Predicate.java \
+gnu/xml/xpath/Path.java	\
+gnu/xml/xpath/OrExpr.java \
+gnu/xml/xpath/LangFunction.java	\
+gnu/xml/xpath/StartsWithFunction.java \
+gnu/xml/xpath/SubstringAfterFunction.java \
+gnu/xml/xpath/FloorFunction.java \
+gnu/xml/xpath/NotFunction.java \
+gnu/xml/xpath/Root.java	\
+gnu/xml/xpath/PositionFunction.java \
+gnu/xml/xpath/VariableReference.java \
+gnu/xml/xpath/DocumentOrderComparator.java \
+gnu/xml/xpath/LocalNameFunction.java \
+gnu/xml/xpath/NamespaceUriFunction.java	\
+gnu/xml/xpath/TranslateFunction.java \
+gnu/xml/xpath/FalseFunction.java \
+gnu/xml/xpath/AndExpr.java \
+gnu/xml/xpath/XPathParser.java \
+gnu/xml/xpath/NamespaceTest.java \
+gnu/xml/xpath/ConcatFunction.java \
+gnu/xml/xpath/NameTest.java \
+gnu/xml/xpath/CountFunction.java \
+gnu/xml/xpath/IdFunction.java \
+gnu/xml/xpath/LastFunction.java	\
+gnu/xml/xpath/XPathTokenizer.java \
+gnu/xml/xpath/Steps.java \
+gnu/xml/xpath/TrueFunction.java	\
+gnu/xml/xpath/BooleanFunction.java \
+gnu/xml/xpath/ParenthesizedExpr.java \
+gnu/xml/xpath/XPathImpl.java \
+gnu/xml/xpath/Selector.java \
+gnu/xml/xpath/RoundFunction.java \
+gnu/xml/xpath/SubstringBeforeFunction.java \
+gnu/xml/xpath/Function.java \
+gnu/xml/xpath/CeilingFunction.java \
+gnu/xml/xpath/RelationalExpr.java \
+gnu/xml/xpath/FunctionCall.java	\
+gnu/xml/xpath/NodeTypeTest.java	\
+gnu/xml/xpath/ArithmeticExpr.java \
+gnu/xml/xpath/Test.java	\
+gnu/xml/xpath/ContainsFunction.java \
+gnu/xml/pipeline/EventFilter.java \
+gnu/xml/pipeline/NSFilter.java \
+gnu/xml/pipeline/XsltFilter.java \
+gnu/xml/pipeline/ValidationConsumer.java \
+gnu/xml/pipeline/PipelineFactory.java \
+gnu/xml/pipeline/TextConsumer.java \
+gnu/xml/pipeline/LinkFilter.java \
+gnu/xml/pipeline/TeeConsumer.java \
+gnu/xml/pipeline/DomConsumer.java \
+gnu/xml/pipeline/EventConsumer.java \
+gnu/xml/pipeline/WellFormednessFilter.java \
+gnu/xml/pipeline/XIncludeFilter.java \
+gnu/xml/pipeline/CallFilter.java \
+gnu/xml/aelfred2/XmlParser.java	\
+gnu/xml/aelfred2/XmlReader.java	\
+gnu/xml/aelfred2/JAXPFactory.java \
+gnu/xml/aelfred2/ContentHandler2.java \
+gnu/xml/aelfred2/SAXDriver.java	\
+gnu/xml/util/XCat.java \
+gnu/xml/util/DomParser.java \
+gnu/xml/util/XMLWriter.java \
+gnu/xml/util/Resolver.java \
+gnu/xml/util/DoParse.java \
+gnu/xml/util/XHTMLWriter.java \
+gnu/xml/util/SAXNullTransformerFactory.java \
+gnu/xml/dom/DomCDATA.java \
+gnu/xml/dom/DomXPathNSResolver.java \
+gnu/xml/dom/ls/DomLSEx.java \
+gnu/xml/dom/ls/FilteredSAXEventSink.java \
+gnu/xml/dom/ls/DomLSSerializer.java \
+gnu/xml/dom/ls/DomLSInput.java \
+gnu/xml/dom/ls/DomLSOutput.java	\
+gnu/xml/dom/ls/SAXEventSink.java \
+gnu/xml/dom/ls/DomLSParser.java	\
+gnu/xml/dom/ls/ReaderInputStream.java \
+gnu/xml/dom/ls/WriterOutputStream.java \
+gnu/xml/dom/DomElement.java \
+gnu/xml/dom/DomNsNode.java \
+gnu/xml/dom/DomAttr.java \
+gnu/xml/dom/DomPI.java \
+gnu/xml/dom/DTDAttributeTypeInfo.java \
+gnu/xml/dom/DomDocumentBuilder.java \
+gnu/xml/dom/DTDElementTypeInfo.java \
+gnu/xml/dom/DomEx.java \
+gnu/xml/dom/DomDocument.java \
+gnu/xml/dom/DomXPathExpression.java \
+gnu/xml/dom/DomDocumentConfiguration.java \
+gnu/xml/dom/Consumer.java \
+gnu/xml/dom/DomComment.java \
+gnu/xml/dom/DomCharacterData.java \
+gnu/xml/dom/DomExtern.java \
+gnu/xml/dom/DomEntityReference.java \
+gnu/xml/dom/DomNamedNodeMap.java \
+gnu/xml/dom/ImplementationList.java \
+gnu/xml/dom/ImplementationSource.java \
+gnu/xml/dom/DomImpl.java \
+gnu/xml/dom/DomDoctype.java \
+gnu/xml/dom/DomNode.java \
+gnu/xml/dom/DomXPathResult.java	\
+gnu/xml/dom/DomDocumentBuilderFactory.java \
+gnu/xml/dom/DomText.java \
+gnu/xml/dom/DomNSResolverContext.java \
+gnu/xml/dom/DomNodeIterator.java \
+gnu/xml/dom/DomNotation.java \
+gnu/xml/dom/JAXPFactory.java \
+gnu/xml/dom/DomIterator.java \
+gnu/xml/dom/DomFragment.java \
+gnu/xml/dom/DomEvent.java \
+gnu/xml/dom/DomEntity.java \
+gnu/xml/transform/GenerateIdFunction.java \
+gnu/xml/transform/FormatNumberFunction.java \
+gnu/xml/transform/ValueOfNode.java \
+gnu/xml/transform/ApplyImportsNode.java	\
+gnu/xml/transform/WithParam.java \
+gnu/xml/transform/DocumentFunction.java	\
+gnu/xml/transform/SAXSerializer.java \
+gnu/xml/transform/FunctionAvailableFunction.java \
+gnu/xml/transform/ElementAvailableFunction.java	\
+gnu/xml/transform/IfNode.java \
+gnu/xml/transform/ApplyTemplatesNode.java \
+gnu/xml/transform/SortKey.java \
+gnu/xml/transform/Key.java \
+gnu/xml/transform/ElementNode.java \
+gnu/xml/transform/CurrentFunction.java \
+gnu/xml/transform/XSLComparator.java \
+gnu/xml/transform/CallTemplateNode.java	\
+gnu/xml/transform/TemplatesImpl.java \
+gnu/xml/transform/ChooseNode.java \
+gnu/xml/transform/NumberNode.java \
+gnu/xml/transform/CopyOfNode.java \
+gnu/xml/transform/ParameterNode.java \
+gnu/xml/transform/TransformerFactoryImpl.java \
+gnu/xml/transform/TextNode.java	\
+gnu/xml/transform/CopyNode.java	\
+gnu/xml/transform/SystemPropertyFunction.java \
+gnu/xml/transform/Stylesheet.java \
+gnu/xml/transform/ProcessingInstructionNode.java \
+gnu/xml/transform/UnparsedEntityUriFunction.java \
+gnu/xml/transform/URIResolverEntityResolver.java \
+gnu/xml/transform/ErrorListenerErrorHandler.java \
+gnu/xml/transform/Bindings.java	\
+gnu/xml/transform/AttributeSet.java \
+gnu/xml/transform/Template.java	\
+gnu/xml/transform/MessageNode.java \
+gnu/xml/transform/LiteralNode.java \
+gnu/xml/transform/StreamSerializer.java	\
+gnu/xml/transform/XSLURIResolver.java \
+gnu/xml/transform/AttributeNode.java \
+gnu/xml/transform/CommentNode.java \
+gnu/xml/transform/ForEachNode.java \
+gnu/xml/transform/KeyFunction.java \
+gnu/xml/transform/TransformerImpl.java \
+gnu/xml/transform/WhenNode.java	\
+gnu/xml/transform/NodeNumberNode.java \
+gnu/xml/transform/OtherwiseNode.java \
+gnu/xml/transform/AbstractNumberNode.java \
+gnu/xml/transform/TemplateNode.java \
+gnu/xml/transform/TransformerOutputProperties.java \
+gnu/xml/transform/DOMSourceLocator.java
 
 ## Java files which are created by configure and thus are in the build
 ## directory.
@@ -3401,7 +3566,8 @@ java/util/zip/ZipOutputStream.java \
 $(rmi_java_source_files) \
 $(awt_java_source_files) \
 $(convert_source_files) \
-$(javax_source_files)
+$(javax_source_files) \
+$(org_source_files)
 
 
 java_source_files = $(special_java_source_files) $(ordinary_java_source_files)
