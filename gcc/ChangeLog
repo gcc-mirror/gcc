@@ -1,3 +1,8 @@
+2001-12-29  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.c (init_gcc_spec): Do not link with static libgcc.a if
+	gcc invoked with -shared.
+
 2001-12-29  Graham Stott  <grahams@redhat.com>
 
         * config/i386/i386.c (ix86_asm_dialect): Fix enum type.
