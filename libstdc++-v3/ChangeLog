@@ -1,10 +1,18 @@
 2002-11-13  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/8230
+	* include/bits/vector.tcc (vector::reserve): Throw length_error if
+	requested size is bigger than max_size().
+	* include/bits/stl_bvector.h (vector<bool>::reserve): Same.
+	* testsuite/23_containers/vector_capacity.cc (test02): Add.
+	
+2002-11-13  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* config/linker-map.gnu: Export all _S_construct.
 
 2002-11-13  Loren J. Rittle  <ljrittle@acm.org>
 
-	libstdc++/7445
+	PR libstdc++/7445
 	* src/locale.cc (std::locale::classic()): Weaken locking protocol.
 
 2002-11-13  Jonathan Wakely  <redi@gcc.gnu.org>
