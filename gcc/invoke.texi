@@ -151,6 +151,7 @@ in the following sections.
 -frerun-cse-after-loop  -fschedule-insns
 -fschedule-insns2  -fstrength-reduce  -fthread-jumps
 -funroll-all-loops  -funroll-loops
+-fmove-all-movables  -freduce-all-givs
 -O  -O0  -O1  -O2  -O3
 @end smallexample
 
@@ -354,6 +355,8 @@ in the following sections.
 -freg-struct-return  -fshared-data  -fshort-enums
 -fshort-double  -fvolatile  -fvolatile-global
 -fverbose-asm -fpack-struct  -fstack-check  +e0  +e1
+-fargument-alias  -fargument-noalias
+-fargument-noalias-global
 @end smallexample
 @end table
 
@@ -2175,6 +2178,31 @@ whose number of iterations can be determined at compile time or run time.
 Perform the optimization of loop unrolling.  This is done for all loops
 and usually makes programs run more slowly.  @samp{-funroll-all-loops}
 implies @samp{-fstrength-reduce} as well as @samp{-frerun-cse-after-loop}.
+
+@item -fmove-all-movables
+Forces all invariant computations in loops to be moved
+outside the loop.
+
+@item -freduce-all-givs
+Forces all general-induction variables in loops to be
+strength-reduced.
+
+@emph{Note:} When compiling programs written in Fortran,
+@samp{-fmove-all-moveables} and @samp{-freduce-all-givs} are enabled
+by default when you use the optimizer.
+
+These options may generate better or worse code; results are highly
+dependent on the structure of loops within the source code.
+
+These two options are intended to be removed someday, once
+they have helped determine the efficacy of various
+approaches to improving loop optimizations.
+
+Please let us (@code{egcs@cygnus.com and fortran@@gnu.ai.mit.edu})
+know how use of these options affects
+the performance of your production code.
+We're very interested in code that runs @emph{slower}
+when these options are @emph{enabled}.
 
 @item -fno-peephole
 Disable any machine-specific peephole optimizations.
@@ -5138,6 +5166,24 @@ compilation).
 
 With @samp{+e1}, G++ actually generates the code implementing virtual
 functions defined in the code, and makes them publicly visible.
+
+@cindex aliasing of parameters
+@cindex parameters, aliased
+@item -fargument-alias
+@item -fargument-noalias
+@item -fargument-noalias-global
+Specify the possible relationships among parameters and between
+parameters and global data.
+
+@samp{-fargument-alias} specifies that arguments (parameters) may
+alias each other and may alias global storage.
+@samp{-fargument-noalias} specifies that arguments do not alias
+each other, but may alias global storage.
+@samp{-fargument-noalias-global} specifies that arguments do not
+alias each other and do not alias global storage.
+
+Each language will automatically use whatever option is required by
+the language standard.  You should not need to use these options yourself.
 @end table
 
 @node Environment Variables
