@@ -783,7 +783,7 @@ namespace __gnu_cxx
 
       struct _Alloc_block
       {
-	char __unused[aligned_size<sizeof(value_type), 8>::value];
+	char __M_unused[aligned_size<sizeof(value_type), 8>::value];
       };
 
 
