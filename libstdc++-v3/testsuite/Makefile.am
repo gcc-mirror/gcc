@@ -23,6 +23,8 @@
 
 AUTOMAKE_OPTIONS =  cygnus dejagnu
 
+mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
+
 DEJATOOL = libstdc++-v3
 
 EXPECT = `if [ -f @glibcpp_builddir@/../../expect/expect ] ; then \
@@ -83,8 +85,9 @@ check-am:
 
 check-local: check-abi
 
-baseline_file = @baseline_file@
-extract_symvers = @glibcpp_srcdir@/scripts/extract_symvers
+baseline_dir = @baseline_dir@
+baseline_file = ${baseline_dir}/baseline_symbols.txt
+extract_symvers = @glibcpp_srcdir@/config/abi/extract_symvers
 
 current_symbols.txt: ${extract_symvers} ../src/.libs/libstdc++.so
 	  -@(${extract_symvers} ../src/.libs/libstdc++.so current_symbols.txt)
@@ -99,6 +102,7 @@ baseline_symbols:
 	touch baseline_symbols)
 
 new-abi-baseline: 
+	-@$(mkinstalldirs) ${baseline_dir}
 	-@(output=${baseline_file}; \
 	  if test -f $${output}; then \
 	    output=$${output}.new; \
