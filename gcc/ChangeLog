@@ -1,3 +1,7 @@
+2004-10-25  Ben Elliston  <bje@au.ibm.com>
+
+	* cfgcleanup.c (outgoing_edges_match): Fix typo in dump output.
+
 2004-10-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* predict.c (predict_loops): Call scev_finalize instead of
