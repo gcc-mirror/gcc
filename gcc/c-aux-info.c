@@ -1,7 +1,7 @@
 /* Generate information regarding function declarations and definitions based
    on information stored in GCC's tree structure.  This code implements the
    -aux-info option.
-   Copyright (C) 1989, 91, 94, 95, 97-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 91, 94, 95, 97-99, 2000 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@segfault.us.com).
 
 This file is part of GNU CC.
@@ -38,12 +38,12 @@ typedef enum formals_style_enum formals_style;
 
 static const char *data_type;
 
-static char *affix_data_type		PROTO((const char *));
-static const char *gen_formal_list_for_type PROTO((tree, formals_style));
-static int   deserves_ellipsis		PROTO((tree));
-static const char *gen_formal_list_for_func_def PROTO((tree, formals_style));
-static const char *gen_type		PROTO((const char *, tree, formals_style));
-static const char *gen_decl		PROTO((tree, int, formals_style));
+static char *affix_data_type		PARAMS ((const char *));
+static const char *gen_formal_list_for_type PARAMS ((tree, formals_style));
+static int   deserves_ellipsis		PARAMS ((tree));
+static const char *gen_formal_list_for_func_def PARAMS ((tree, formals_style));
+static const char *gen_type		PARAMS ((const char *, tree, formals_style));
+static const char *gen_decl		PARAMS ((tree, int, formals_style));
 
 /* Given a string representing an entire type or an entire declaration
    which only lacks the actual "data-type" specifier (at its left end),

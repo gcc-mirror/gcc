@@ -51,40 +51,40 @@ Boston, MA 02111-1307, USA.  */
 #define OUTGOING_REGNO(IN) (IN)
 #endif
 
-tree (*lang_type_promotes_to) PROTO((tree));
+tree (*lang_type_promotes_to) PARAMS ((tree));
 
-static int get_pointer_alignment	PROTO((tree, unsigned));
-static tree c_strlen			PROTO((tree));
-static rtx get_memory_rtx		PROTO((tree));
-static int apply_args_size		PROTO((void));
-static int apply_result_size		PROTO((void));
+static int get_pointer_alignment	PARAMS ((tree, unsigned));
+static tree c_strlen			PARAMS ((tree));
+static rtx get_memory_rtx		PARAMS ((tree));
+static int apply_args_size		PARAMS ((void));
+static int apply_result_size		PARAMS ((void));
 #if defined (HAVE_untyped_call) || defined (HAVE_untyped_return)
-static rtx result_vector		PROTO((int, rtx));
+static rtx result_vector		PARAMS ((int, rtx));
 #endif
-static rtx expand_builtin_apply_args	PROTO((void));
-static rtx expand_builtin_apply_args_1	PROTO((void));
-static rtx expand_builtin_apply		PROTO((rtx, rtx, rtx));
-static void expand_builtin_return	PROTO((rtx));
-static rtx expand_builtin_classify_type	PROTO((tree));
-static rtx expand_builtin_mathfn	PROTO((tree, rtx, rtx));
-static rtx expand_builtin_constant_p	PROTO((tree));
-static rtx expand_builtin_args_info	PROTO((tree));
-static rtx expand_builtin_next_arg	PROTO((tree));
-static rtx expand_builtin_va_start	PROTO((int, tree));
-static rtx expand_builtin_va_end	PROTO((tree));
-static rtx expand_builtin_va_copy	PROTO((tree));
+static rtx expand_builtin_apply_args	PARAMS ((void));
+static rtx expand_builtin_apply_args_1	PARAMS ((void));
+static rtx expand_builtin_apply		PARAMS ((rtx, rtx, rtx));
+static void expand_builtin_return	PARAMS ((rtx));
+static rtx expand_builtin_classify_type	PARAMS ((tree));
+static rtx expand_builtin_mathfn	PARAMS ((tree, rtx, rtx));
+static rtx expand_builtin_constant_p	PARAMS ((tree));
+static rtx expand_builtin_args_info	PARAMS ((tree));
+static rtx expand_builtin_next_arg	PARAMS ((tree));
+static rtx expand_builtin_va_start	PARAMS ((int, tree));
+static rtx expand_builtin_va_end	PARAMS ((tree));
+static rtx expand_builtin_va_copy	PARAMS ((tree));
 #ifdef HAVE_cmpstrsi
-static rtx expand_builtin_memcmp	PROTO((tree, tree, rtx));
-static rtx expand_builtin_strcmp	PROTO((tree, rtx));
+static rtx expand_builtin_memcmp	PARAMS ((tree, tree, rtx));
+static rtx expand_builtin_strcmp	PARAMS ((tree, rtx));
 #endif
-static rtx expand_builtin_memcpy	PROTO((tree));
-static rtx expand_builtin_strcpy	PROTO((tree));
-static rtx expand_builtin_memset	PROTO((tree));
-static rtx expand_builtin_strlen	PROTO((tree, rtx, enum machine_mode));
-static rtx expand_builtin_alloca	PROTO((tree, rtx));
-static rtx expand_builtin_ffs		PROTO((tree, rtx, rtx));
-static rtx expand_builtin_frame_address	PROTO((tree));
-static tree stabilize_va_list		PROTO((tree, int));
+static rtx expand_builtin_memcpy	PARAMS ((tree));
+static rtx expand_builtin_strcpy	PARAMS ((tree));
+static rtx expand_builtin_memset	PARAMS ((tree));
+static rtx expand_builtin_strlen	PARAMS ((tree, rtx, enum machine_mode));
+static rtx expand_builtin_alloca	PARAMS ((tree, rtx));
+static rtx expand_builtin_ffs		PARAMS ((tree, rtx, rtx));
+static rtx expand_builtin_frame_address	PARAMS ((tree));
+static tree stabilize_va_list		PARAMS ((tree, int));
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.

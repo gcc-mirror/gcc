@@ -1,5 +1,16 @@
 2000-01-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* alias.c: PROTO -> PARAMS.
+	* basic-block.h: Likewise.
+	* bitmap.c: Likewise.
+	* bitmap.h: Likewise.
+	* builtins.c: Likewise.
+	* c-aux-info.c: Likewise.
+	* caller-save.c: Likewise.
+	* calls.c: Likewise.
+
+2000-01-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* Makefile.in (toplev.o): Depend on regs.h.
 
 	* output.h (tdesc_section): Prototype.

@@ -129,41 +129,42 @@ static int highest_outgoing_arg_in_use;
 int stack_arg_under_construction;
 #endif
 
-static int calls_function	PROTO ((tree, int));
-static int calls_function_1	PROTO ((tree, int));
-static void emit_call_1		PROTO ((rtx, tree, tree, HOST_WIDE_INT,
-					HOST_WIDE_INT, HOST_WIDE_INT, rtx,
-					rtx, int, rtx, int));
-static void precompute_register_parameters	PROTO ((int, struct arg_data *,
-							int *));
-static void store_one_arg	PROTO ((struct arg_data *, rtx, int, int,
-					int));
-static void store_unaligned_arguments_into_pseudos PROTO ((struct arg_data *,
-							   int));
-static int finalize_must_preallocate		PROTO ((int, int,
-							struct arg_data *,
-							struct args_size *));
-static void precompute_arguments 		PROTO ((int, int, int,
-							struct arg_data *,
-							struct args_size *));
-static int compute_argument_block_size		PROTO ((int, 
-							struct args_size *));
-static void initialize_argument_information	PROTO ((int,
-							struct arg_data *,
-							struct args_size *,
-							int, tree, tree,
-							CUMULATIVE_ARGS *,
-							int, rtx *, int *,
-							int *, int *));
-static void compute_argument_addresses		PROTO ((struct arg_data *,
-							rtx, int));
-static rtx rtx_for_function_call		PROTO ((tree, tree));
-static void load_register_parameters		PROTO ((struct arg_data *,
-							int, rtx *));
+static int calls_function	PARAMS ((tree, int));
+static int calls_function_1	PARAMS ((tree, int));
+static void emit_call_1		PARAMS ((rtx, tree, tree, HOST_WIDE_INT,
+					 HOST_WIDE_INT, HOST_WIDE_INT, rtx,
+					 rtx, int, rtx, int));
+static void precompute_register_parameters	PARAMS ((int,
+							 struct arg_data *,
+							 int *));
+static void store_one_arg	PARAMS ((struct arg_data *, rtx, int, int,
+					 int));
+static void store_unaligned_arguments_into_pseudos PARAMS ((struct arg_data *,
+							    int));
+static int finalize_must_preallocate		PARAMS ((int, int,
+							 struct arg_data *,
+							 struct args_size *));
+static void precompute_arguments 		PARAMS ((int, int, int,
+							 struct arg_data *,
+							 struct args_size *));
+static int compute_argument_block_size		PARAMS ((int, 
+							 struct args_size *));
+static void initialize_argument_information	PARAMS ((int,
+							 struct arg_data *,
+							 struct args_size *,
+							 int, tree, tree,
+							 CUMULATIVE_ARGS *,
+							 int, rtx *, int *,
+							 int *, int *));
+static void compute_argument_addresses		PARAMS ((struct arg_data *,
+							 rtx, int));
+static rtx rtx_for_function_call		PARAMS ((tree, tree));
+static void load_register_parameters		PARAMS ((struct arg_data *,
+							 int, rtx *));
 
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
-static rtx save_fixed_argument_area	PROTO ((int, rtx, int *, int *));
-static void restore_fixed_argument_area	PROTO ((rtx, rtx, int, int));
+static rtx save_fixed_argument_area	PARAMS ((int, rtx, int *, int *));
+static void restore_fixed_argument_area	PARAMS ((rtx, rtx, int, int));
 #endif
 
 /* If WHICH is 1, return 1 if EXP contains a call to the built-in function
@@ -2590,8 +2591,8 @@ expand_call (exp, target, ignore)
    move memory references across the non-const call.  */
 
 void
-emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
-			  int nargs, ...))
+emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
+			   int nargs, ...))
 {
 #ifndef ANSI_PROTOTYPES
   rtx orgfun;
@@ -3087,8 +3088,8 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
    If VALUE is nonzero, VALUE is returned.  */
 
 rtx
-emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
-				enum machine_mode outmode, int nargs, ...))
+emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
+				 enum machine_mode outmode, int nargs, ...))
 {
 #ifndef ANSI_PROTOTYPES
   rtx orgfun;

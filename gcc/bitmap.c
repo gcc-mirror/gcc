@@ -1,5 +1,5 @@
 /* Functions to support general ended bitmaps.
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -42,11 +42,11 @@ static int bitmap_obstack_init = FALSE;
 bitmap_element bitmap_zero;		/* An element of all zero bits. */
 bitmap_element *bitmap_free;		/* Freelist of bitmap elements. */
 
-static void bitmap_element_free		PROTO((bitmap, bitmap_element *));
-static bitmap_element *bitmap_element_allocate PROTO((void));
-static int bitmap_element_zerop		PROTO((bitmap_element *));
-static void bitmap_element_link		PROTO((bitmap, bitmap_element *));
-static bitmap_element *bitmap_find_bit	PROTO((bitmap, unsigned int));
+static void bitmap_element_free		PARAMS ((bitmap, bitmap_element *));
+static bitmap_element *bitmap_element_allocate PARAMS ((void));
+static int bitmap_element_zerop		PARAMS ((bitmap_element *));
+static void bitmap_element_link		PARAMS ((bitmap, bitmap_element *));
+static bitmap_element *bitmap_find_bit	PARAMS ((bitmap, unsigned int));
 
 /* Free a bitmap element */
 
