@@ -1,3 +1,9 @@
+1999-04-21 14:55 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* gen-protos.c: #undef abort after including system.h.  
+	Delete defns of fancy_abort and	fatal.
+	* fix-header.c: Delete defn of fancy_abort.
+
 Wed Apr 21 12:09:38 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* cccp.c (simplify_filename): Always preserve leading double slash.

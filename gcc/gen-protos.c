@@ -20,6 +20,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "scan.h"
 #include "cpplib.h"
 #include "cpphash.h"
+#undef abort
 
 int verbose = 0;
 char *progname;
@@ -181,22 +182,4 @@ main (argc, argv)
   fprintf (outf, "};\n");
 
   return 0;
-}
-
-/* Avoid error if config defines abort as fancy_abort.
-   It's not worth "really" implementing this because ordinary
-   compiler users never run fix-header.  */
-
-void
-fancy_abort ()
-{
-  abort ();
-}
-
-void
-fatal (s)
-     char *s;
-{
-  fprintf (stderr, "%s: %s\n", "gen-protos", s);
-  exit (FATAL_EXIT_CODE);
 }
