@@ -848,6 +848,7 @@ template <class _CharT, class _Traits, size_t _Nb>
 basic_istream<_CharT, _Traits>&
 operator>>(basic_istream<_CharT, _Traits>& __is, bitset<_Nb>& __x)
 {
+  typedef typename _Traits::char_type char_type;
   basic_string<_CharT, _Traits> __tmp;
   __tmp.reserve(_Nb);
 
@@ -864,8 +865,8 @@ operator>>(basic_istream<_CharT, _Traits>& __is, bitset<_Nb>& __x)
         break;
       }
       else {
-        char __c2 = _Traits::to_char_type(__c1);
-        char __c  = __is.narrow(__c2, '*');
+        char_type __c2 = _Traits::to_char_type(__c1);
+        char_type __c  = __is.narrow(__c2, '*');
 
         if (__c == '0' || __c == '1')
           __tmp.push_back(__c);

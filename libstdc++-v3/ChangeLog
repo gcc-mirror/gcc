@@ -1,3 +1,7 @@
+2000-09-18  Yuri V. Baskakov  <yuribsk@lab.sun.mcst.ru>
+
+	* bits/std_bitset.h (operator>>): Change to char_type.
+
 2000-09-15  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* src/locale.cc (locale::locale(const char* __name)): Consolidate
