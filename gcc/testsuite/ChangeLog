@@ -1,3 +1,7 @@
+2000-07-17  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.c-torture/execute/20000717-4.c: New test.
+
 2000-07-17  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/cpp/syshdr.c: New test.
