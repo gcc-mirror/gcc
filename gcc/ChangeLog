@@ -1,3 +1,9 @@
+Mon May 31 15:23:23 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (reload_*_help): New patterns and splitters.
+	(reload_*): Use them.
+	(mov[qh]i): Likewise.
+
 Mon May 31 09:36:11 1999  Cort Dougan  <cort@cs.nmt.edu>
 
 	* rs6000/linux.h (LINK_SPEC): Use emulation elf32ppclinux.

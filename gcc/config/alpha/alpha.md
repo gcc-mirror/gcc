@@ -4563,15 +4563,22 @@
     {
       if (aligned_memory_operand (operands[1], QImode))
 	{
-	  rtx aligned_mem, bitnum;
-	  rtx scratch = (reload_in_progress
-			 ? gen_rtx_REG (SImode, REGNO (operands[0]))
-			 : gen_reg_rtx (SImode));
+	  if (reload_in_progress)
+	    {
+	      emit_insn (gen_reload_inqi_help
+		         (operands[0], operands[1],
+			  gen_rtx_REG (SImode, REGNO (operands[0]))));
+	    }
+	  else
+	    {
+	      rtx aligned_mem, bitnum;
+	      rtx scratch = gen_reg_rtx (SImode);
 
-	  get_aligned_mem (operands[1], &aligned_mem, &bitnum);
+	      get_aligned_mem (operands[1], &aligned_mem, &bitnum);
 
-	  emit_insn (gen_aligned_loadqi (operands[0], aligned_mem, bitnum,
-					 scratch));
+	      emit_insn (gen_aligned_loadqi (operands[0], aligned_mem, bitnum,
+					     scratch));
+	    }
 	}
       else
 	{
@@ -4674,15 +4681,22 @@
     {
       if (aligned_memory_operand (operands[1], HImode))
 	{
-	  rtx aligned_mem, bitnum;
-	  rtx scratch = (reload_in_progress
-			 ? gen_rtx_REG (SImode, REGNO (operands[0]))
-			 : gen_reg_rtx (SImode));
+	  if (reload_in_progress)
+	    {
+	      emit_insn (gen_reload_inhi_help
+		         (operands[0], operands[1],
+			  gen_rtx_REG (SImode, REGNO (operands[0]))));
+	    }
+	  else
+	    {
+	      rtx aligned_mem, bitnum;
+	      rtx scratch = gen_reg_rtx (SImode);
 
-	  get_aligned_mem (operands[1], &aligned_mem, &bitnum);
+	      get_aligned_mem (operands[1], &aligned_mem, &bitnum);
 
-	  emit_insn (gen_aligned_loadhi (operands[0], aligned_mem, bitnum,
-					 scratch));
+	      emit_insn (gen_aligned_loadhi (operands[0], aligned_mem, bitnum,
+					     scratch));
+	    }
 	}
       else
 	{
@@ -4760,11 +4774,8 @@
 
   if (aligned_memory_operand (operands[1], QImode))
     {
-      rtx aligned_mem, bitnum;
-
-      get_aligned_mem (operands[1], &aligned_mem, &bitnum);
-      seq = gen_aligned_loadqi (operands[0], aligned_mem, bitnum,
-				gen_rtx_REG (SImode, REGNO (operands[2])));
+      seq = gen_reload_inqi_help (operands[0], operands[1],
+				  gen_rtx_REG (SImode, REGNO (operands[2])));
     }
   else
     {
@@ -4801,11 +4812,8 @@
 
   if (aligned_memory_operand (operands[1], HImode))
     {
-      rtx aligned_mem, bitnum;
-
-      get_aligned_mem (operands[1], &aligned_mem, &bitnum);
-      seq = gen_aligned_loadhi (operands[0], aligned_mem, bitnum,
-				gen_rtx_REG (SImode, REGNO (operands[2])));
+      seq = gen_reload_inhi_help (operands[0], operands[1], 
+				  gen_rtx_REG (SImode, REGNO (operands[2])));
     }
   else
     {
@@ -4840,14 +4848,10 @@
 
   if (aligned_memory_operand (operands[0], QImode))
     {
-      rtx aligned_mem, bitnum;
-
-      get_aligned_mem (operands[0], &aligned_mem, &bitnum);
-
-      emit_insn (gen_aligned_store (aligned_mem, operands[1], bitnum,
-				    gen_rtx_REG (SImode, REGNO (operands[2])),
-				    gen_rtx_REG (SImode,
-						 REGNO (operands[2]) + 1)));
+      emit_insn (gen_reload_outqi_help
+		 (operands[0], operands[1],
+		  gen_rtx_REG (SImode, REGNO (operands[2])),
+		  gen_rtx_REG (SImode, REGNO (operands[2]) + 1)));
     }
   else
     {
@@ -4880,14 +4884,10 @@
 
   if (aligned_memory_operand (operands[0], HImode))
     {
-      rtx aligned_mem, bitnum;
-
-      get_aligned_mem (operands[0], &aligned_mem, &bitnum);
-
-      emit_insn (gen_aligned_store (aligned_mem, operands[1], bitnum,
-				    gen_rtx_REG (SImode, REGNO (operands[2])),
-				    gen_rtx_REG (SImode,
-						 REGNO (operands[2]) + 1)));
+      emit_insn (gen_reload_outhi_help
+		 (operands[0], operands[1],
+		  gen_rtx_REG (SImode, REGNO (operands[2])),
+		  gen_rtx_REG (SImode, REGNO (operands[2]) + 1)));
     }
   else
     {
@@ -4905,6 +4905,102 @@
       alpha_set_memflags (seq, operands[0]);
       emit_insn (seq);
     }
+  DONE;
+}")
+
+;; Helpers for the above.  The way reload is structured, we can't
+;; always get a proper address for a stack slot during reload_foo
+;; expansion, so we must delay our address manipulations until after.
+
+(define_insn "reload_inqi_help"
+  [(set (match_operand:QI 0 "register_operand" "r")
+        (match_operand:QI 1 "memory_operand" "m"))
+   (clobber (match_operand:SI 2 "register_operand" "r"))]
+  "! TARGET_BWX && (reload_in_progress || reload_completed)"
+  "#")
+
+(define_insn "reload_inhi_help"
+  [(set (match_operand:HI 0 "register_operand" "r")
+        (match_operand:HI 1 "memory_operand" "m"))
+   (clobber (match_operand:SI 2 "register_operand" "r"))]
+  "! TARGET_BWX && (reload_in_progress || reload_completed)"
+  "#")
+
+(define_insn "reload_outqi_help"
+  [(set (match_operand:QI 0 "memory_operand" "m")
+        (match_operand:QI 1 "register_operand" "r"))
+   (clobber (match_operand:SI 2 "register_operand" "r"))
+   (clobber (match_operand:SI 3 "register_operand" "r"))]
+  "! TARGET_BWX && (reload_in_progress || reload_completed)"
+  "#")
+
+(define_insn "reload_outhi_help"
+  [(set (match_operand:HI 0 "memory_operand" "m")
+        (match_operand:HI 1 "register_operand" "r"))
+   (clobber (match_operand:SI 2 "register_operand" "r"))
+   (clobber (match_operand:SI 3 "register_operand" "r"))]
+  "! TARGET_BWX && (reload_in_progress || reload_completed)"
+  "#")
+
+(define_split
+  [(set (match_operand:QI 0 "register_operand" "r")
+        (match_operand:QI 1 "memory_operand" "m"))
+   (clobber (match_operand:SI 2 "register_operand" "r"))]
+  "! TARGET_BWX && reload_completed"
+  [(const_int 0)]
+  "
+{
+  rtx aligned_mem, bitnum;
+  get_aligned_mem (operands[1], &aligned_mem, &bitnum);
+  emit_insn (gen_aligned_loadqi (operands[0], aligned_mem, bitnum,
+				 operands[2]));
+  DONE;
+}")
+  
+(define_split
+  [(set (match_operand:HI 0 "register_operand" "r")
+        (match_operand:HI 1 "memory_operand" "m"))
+   (clobber (match_operand:SI 2 "register_operand" "r"))]
+  "! TARGET_BWX && reload_completed"
+  [(const_int 0)]
+  "
+{
+  rtx aligned_mem, bitnum;
+  get_aligned_mem (operands[1], &aligned_mem, &bitnum);
+  emit_insn (gen_aligned_loadhi (operands[0], aligned_mem, bitnum,
+				 operands[2]));
+  DONE;
+}")
+  
+(define_split
+  [(set (match_operand:QI 0 "memory_operand" "m")
+        (match_operand:QI 1 "register_operand" "r"))
+   (clobber (match_operand:SI 2 "register_operand" "r"))
+   (clobber (match_operand:SI 3 "register_operand" "r"))]
+  "! TARGET_BWX && reload_completed"
+  [(const_int 0)]
+  "
+{
+  rtx aligned_mem, bitnum;
+  get_aligned_mem (operands[0], &aligned_mem, &bitnum);
+  emit_insn (gen_aligned_store (aligned_mem, operands[1], bitnum,
+				operands[2], operands[3]));
+  DONE;
+}")
+
+(define_split
+  [(set (match_operand:HI 0 "memory_operand" "m")
+        (match_operand:HI 1 "register_operand" "r"))
+   (clobber (match_operand:SI 2 "register_operand" "r"))
+   (clobber (match_operand:SI 3 "register_operand" "r"))]
+  "! TARGET_BWX && reload_completed"
+  [(const_int 0)]
+  "
+{
+  rtx aligned_mem, bitnum;
+  get_aligned_mem (operands[0], &aligned_mem, &bitnum);
+  emit_insn (gen_aligned_store (aligned_mem, operands[1], bitnum,
+				operands[2], operands[3]));
   DONE;
 }")
 
