@@ -1,5 +1,10 @@
 2004-07-12  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (make_binfo): Remove.
+	* decl.c (xref_basetypes): Use make_tree_binfo directly.
+	* tree.h (copy_base_binfos): Likewise.
+	(make_binfo): Remove.
+	
 	* call.c (build_user_type_conversion_1, build_new_op,
 	check_constructor_callable, build_temp,
 	perform_direct_initialization_of_possible): Pass type directly to
