@@ -210,6 +210,13 @@ static char direct_store[NUM_MACHINE_MODES];
 #endif
 #endif
 
+/* This macro is used to determine whether move_by_pieces should be called
+   to perform a structure copy. */
+#ifndef MOVE_BY_PIECES_P
+#define MOVE_BY_PIECES_P(SIZE, ALIGN) (move_by_pieces_ninsns        \
+                                       (SIZE, ALIGN) < MOVE_RATIO)
+#endif
+
 /* This array records the insn_code of insns to perform block moves.  */
 enum insn_code movstr_optab[NUM_MACHINE_MODES];
 
@@ -1383,6 +1390,38 @@ convert_modes (mode, oldmode, x, unsignedp)
   return temp;
 }
 
+
+/* This macro is used to determine what the largest unit size that
+   move_by_pieces can use is. */
+
+/* MOVE_MAX_PIECES is the number of bytes at a time which we can
+   move efficiently, as opposed to  MOVE_MAX which is the maximum
+   number of bhytes we can move with a single instruction. */
+
+#ifndef MOVE_MAX_PIECES
+#define MOVE_MAX_PIECES   MOVE_MAX
+#endif
+
+/* Some architectures do not have complete pre/post increment/decrement
+   instruction sets, or only move some modes efficiently. these macros
+   allow us to fine tune move_by_pieces for these targets. */
+
+#ifndef USE_LOAD_POST_INCREMENT
+#define USE_LOAD_POST_INCREMENT(MODE)   HAVE_POST_INCREMENT
+#endif
+
+#ifndef USE_LOAD_PRE_DECREMENT
+#define USE_LOAD_PRE_DECREMENT(MODE)    HAVE_PRE_DECREMENT
+#endif
+
+#ifndef USE_STORE_POST_INCREMENT
+#define USE_STORE_POST_INCREMENT(MODE)  HAVE_POST_INCREMENT
+#endif
+
+#ifndef USE_STORE_PRE_DECREMENT
+#define USE_STORE_PRE_DECREMENT(MODE)   HAVE_PRE_DECREMENT
+#endif
+
 /* Generate several move instructions to copy LEN bytes
    from block FROM to block TO.  (These are MEM rtx's with BLKmode).
    The caller must pass FROM and TO
@@ -1396,7 +1435,9 @@ move_by_pieces (to, from, len, align)
 {
   struct move_by_pieces data;
   rtx to_addr = XEXP (to, 0), from_addr = XEXP (from, 0);
-  int max_size = MOVE_MAX + 1;
+  int max_size = MOVE_MAX_PIECES + 1;
+  enum machine_mode mode = VOIDmode, tmode;
+  enum insn_code icode;
 
   data.offset = 0;
   data.to_addr = to_addr;
@@ -1427,13 +1468,19 @@ move_by_pieces (to, from, len, align)
   if (!(data.autinc_from && data.autinc_to)
       && move_by_pieces_ninsns (len, align) > 2)
     {
-      if (HAVE_PRE_DECREMENT && data.reverse && ! data.autinc_from)
+      /* Find the mode of the largest move... */
+      for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+	   tmode != VOIDmode; tmode = GET_MODE_WIDER_MODE (tmode))
+	if (GET_MODE_SIZE (tmode) < max_size)
+	  mode = tmode;
+
+      if (USE_LOAD_PRE_DECREMENT (mode) && data.reverse && ! data.autinc_from)
 	{
 	  data.from_addr = copy_addr_to_reg (plus_constant (from_addr, len));
 	  data.autinc_from = 1;
 	  data.explicit_inc_from = -1;
 	}
-      if (HAVE_POST_INCREMENT && ! data.autinc_from)
+      if (USE_LOAD_POST_INCREMENT (mode) && ! data.autinc_from)
 	{
 	  data.from_addr = copy_addr_to_reg (from_addr);
 	  data.autinc_from = 1;
@@ -1441,13 +1488,13 @@ move_by_pieces (to, from, len, align)
 	}
       if (!data.autinc_from && CONSTANT_P (from_addr))
 	data.from_addr = copy_addr_to_reg (from_addr);
-      if (HAVE_PRE_DECREMENT && data.reverse && ! data.autinc_to)
+      if (USE_STORE_PRE_DECREMENT (mode) && data.reverse && ! data.autinc_to)
 	{
 	  data.to_addr = copy_addr_to_reg (plus_constant (to_addr, len));
 	  data.autinc_to = 1;
 	  data.explicit_inc_to = -1;
 	}
-      if (HAVE_POST_INCREMENT && ! data.reverse && ! data.autinc_to)
+      if (USE_STORE_POST_INCREMENT (mode) && ! data.reverse && ! data.autinc_to)
 	{
 	  data.to_addr = copy_addr_to_reg (to_addr);
 	  data.autinc_to = 1;
@@ -1466,9 +1513,6 @@ move_by_pieces (to, from, len, align)
 
   while (max_size > 1)
     {
-      enum machine_mode mode = VOIDmode, tmode;
-      enum insn_code icode;
-
       for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
 	   tmode != VOIDmode; tmode = GET_MODE_WIDER_MODE (tmode))
 	if (GET_MODE_SIZE (tmode) < max_size)
@@ -1622,8 +1666,7 @@ emit_block_move (x, y, size, align)
   if (size == 0)
     abort ();
 
-  if (GET_CODE (size) == CONST_INT
-      && (move_by_pieces_ninsns (INTVAL (size), align) < MOVE_RATIO))
+  if (GET_CODE (size) == CONST_INT && MOVE_BY_PIECES_P (INTVAL (size), align))
     move_by_pieces (x, y, INTVAL (size), align);
   else
     {
@@ -2217,7 +2260,9 @@ clear_by_pieces (to, len, align)
 {
   struct clear_by_pieces data;
   rtx to_addr = XEXP (to, 0);
-  int max_size = MOVE_MAX + 1;
+  int max_size = MOVE_MAX_PIECES + 1;
+  enum machine_mode mode = VOIDmode, tmode;
+  enum insn_code icode;
 
   data.offset = 0;
   data.to_addr = to_addr;
@@ -2240,13 +2285,19 @@ clear_by_pieces (to, len, align)
   if (!data.autinc_to
       && move_by_pieces_ninsns (len, align) > 2)
     {
-      if (HAVE_PRE_DECREMENT && data.reverse && ! data.autinc_to)
+      /* Determine the main mode we'll be using */
+      for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+	   tmode != VOIDmode; tmode = GET_MODE_WIDER_MODE (tmode))
+	if (GET_MODE_SIZE (tmode) < max_size)
+	  mode = tmode;
+
+      if (USE_STORE_PRE_DECREMENT (mode) && data.reverse && ! data.autinc_to)
 	{
 	  data.to_addr = copy_addr_to_reg (plus_constant (to_addr, len));
 	  data.autinc_to = 1;
 	  data.explicit_inc_to = -1;
 	}
-      if (HAVE_POST_INCREMENT && ! data.reverse && ! data.autinc_to)
+      if (USE_STORE_POST_INCREMENT (mode) && ! data.reverse && ! data.autinc_to)
 	{
 	  data.to_addr = copy_addr_to_reg (to_addr);
 	  data.autinc_to = 1;
@@ -2265,9 +2316,6 @@ clear_by_pieces (to, len, align)
 
   while (max_size > 1)
     {
-      enum machine_mode mode = VOIDmode, tmode;
-      enum insn_code icode;
-
       for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
 	   tmode != VOIDmode; tmode = GET_MODE_WIDER_MODE (tmode))
 	if (GET_MODE_SIZE (tmode) < max_size)
@@ -2351,7 +2399,7 @@ clear_storage (object, size, align)
       size = protect_from_queue (size, 0);
 
       if (GET_CODE (size) == CONST_INT
-	  && (move_by_pieces_ninsns (INTVAL (size), align) < MOVE_RATIO))
+	  && MOVE_BY_PIECES_P (INTVAL (size), align))
 	clear_by_pieces (object, INTVAL (size), align);
 
       else
@@ -2839,8 +2887,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
       if (args_addr == 0
 	  && GET_CODE (size) == CONST_INT
 	  && skip == 0
-	  && (move_by_pieces_ninsns ((unsigned) INTVAL (size) - used, align)
-	      < MOVE_RATIO)
+	  && (MOVE_BY_PIECES_P ((unsigned) INTVAL (size) - used, align)))
 	  /* Here we avoid the case of a structure whose weak alignment
 	     forces many pushes of a small amount of data,
 	     and such small pushes do rounding that causes trouble.  */
@@ -2938,8 +2985,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 
 	  /* TEMP is the address of the block.  Copy the data there.  */
 	  if (GET_CODE (size) == CONST_INT
-	      && (move_by_pieces_ninsns ((unsigned) INTVAL (size), align)
-		  < MOVE_RATIO))
+	      && (MOVE_BY_PIECES_P ((unsigned) INTVAL (size), align)))
 	    {
 	      move_by_pieces (gen_rtx_MEM (BLKmode, temp), xinner,
 			      INTVAL (size), align);
@@ -6048,10 +6094,9 @@ expand_expr (exp, target, tmode, modifier)
 		     && ! (target != 0 && safe_from_p (target, exp, 1)))
 		    || TREE_ADDRESSABLE (exp)
 		    || (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-			&& (move_by_pieces_ninsns
-			    (TREE_INT_CST_LOW (TYPE_SIZE (type))/BITS_PER_UNIT,
-			     TYPE_ALIGN (type) / BITS_PER_UNIT)
-			    >= MOVE_RATIO)
+			&& (!MOVE_BY_PIECES_P 
+                             (TREE_INT_CST_LOW (TYPE_SIZE (type))/BITS_PER_UNIT,
+			     TYPE_ALIGN (type) / BITS_PER_UNIT))
 			&& ! mostly_zeros_p (exp))))
 	       || (modifier == EXPAND_INITIALIZER && TREE_CONSTANT (exp)))
 	{
