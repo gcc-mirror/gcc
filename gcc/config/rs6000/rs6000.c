@@ -63,6 +63,12 @@ static int common_mode_defined;
 
 rtx rs6000_compare_op0, rs6000_compare_op1;
 int rs6000_compare_fp_p;
+
+#ifdef USING_SVR4_H
+/* Label number of label created for -mrelocatable, to call to so we can
+   get the address of the GOT section */
+int rs6000_pic_labelno;
+#endif
 
 /* Override command line options.  Mostly we process the processor
    type and sometimes adjust other TARGET_ options.  */
@@ -1588,6 +1594,7 @@ output_prolog (file, size)
   int first_fp_reg = first_fp_reg_to_save ();
   int basic_size = rs6000_sa_size ();
   int total_size = (basic_size + size + current_function_outgoing_args_size);
+  char buf[256];
 
   /* Round size to multiple of 8 bytes.  */
   total_size = (total_size + 7) & ~7;
@@ -1701,24 +1708,30 @@ output_prolog (file, size)
 #ifdef USING_SVR4_H
       if (TARGET_RELOCATABLE)
 	{
-	  static int labelno = 0;
-
-	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", labelno);
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
 	  fprintf (file, "\tbl ");
 	  assemble_name (file, buf);
 	  fprintf (file, "\n");
 
-	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
-	  fprintf (file, (TARGET_POWERPC64) ? "\t.quad " : "\t.long ");
-	  assemble_name (file, buf);
-	  fprintf (file, "-.\n");
-
-	  ASM_OUTPUT_INTERNAL_LABEL (file, "LCF", labelno);
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "LCF", rs6000_pic_labelno);
 	  fprintf (file, "\tmflr 30\n");
 
-	  asm_fprintf (file, (TARGET_POWERPC64) ? "\tld 0,0(30)\n" : "\t{l|lwz} 0,0(30)\n");
+	  if (TARGET_POWERPC64)
+	    fprintf (file, "\tld 0,");
+	  else if (TARGET_NEW_MNEMONICS)
+	    fprintf (file, "\tlwz 0,");
+	  else
+	    fprintf (file, "\tl 0,");
+
+	  fprintf (file, "(");
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_labelno);
+	  assemble_name (file, buf);
+	  fprintf (file, "-");
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
+	  assemble_name (file, buf);
+	  fprintf (file, ")(30)\n");
 	  asm_fprintf (file, "\t{cax|add} 30,0,30\n");
-	  labelno++;
+	  rs6000_pic_labelno++;
 	}
       else
 #endif /* USING_SVR4_H */

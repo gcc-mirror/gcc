@@ -188,10 +188,27 @@ toc_section ()								\
    function's return value.  We allow for that here.  */
 
 extern void svr4_traceback ();
+extern int rs6000_pic_labelno;
 
 #undef	ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do {									\
+    if (TARGET_RELOCATABLE && get_pool_size () != 0)			\
+      {									\
+	char buf[256];							\
+									\
+	ASM_OUTPUT_INTERNAL_LABEL (FILE, "LCL", rs6000_pic_labelno);	\
+									\
+	ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);			\
+	fprintf (FILE, (TARGET_POWERPC64) ? "\t.quad " : "\t.long ");	\
+	assemble_name (FILE, buf);					\
+	putc ('-', FILE);						\
+									\
+	ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);	\
+	assemble_name (FILE, buf);					\
+	putc ('\n', FILE);						\
+      }									\
+									\
     fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
     assemble_name (FILE, NAME);						\
     putc (',', FILE);							\
