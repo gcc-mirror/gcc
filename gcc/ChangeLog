@@ -1,3 +1,11 @@
+2004-08-13  Roger Sayle  <roger@eyesopen.com>
+	    David Billinghurst  <David.Billinghurst@riotinto.com>
+
+	PR libgfortran/15930
+	* fixinc/inclhack.def (irix___generic1, irix___generic2): New.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/internal/math_core.h: New file.
+
 2004-08-13  Richard Henderson  <rth@redhat.com>
 
 	* dbxout.c (NO_DBX_FUNCTION_END): Default to zero.
