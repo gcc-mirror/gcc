@@ -20,6 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "gcc.h"
 
 /* This bit is set if we saw a `-xfoo' language specification.  */
 #define LANGSPEC	(1<<1)
@@ -37,8 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 void
-lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
-     void (*fn)();
+lang_specific_driver (in_argc, in_argv, in_added_libraries)
      int *in_argc;
      char ***in_argv;
      int *in_added_libraries;
@@ -59,10 +59,11 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 
   /* Used to track options that take arguments, so we don't go wrapping
      those with -xc++/-xnone.  */
-  char *quote = NULL;
+  const char *quote = NULL;
 
   /* The new argument list will be contained in this.  */
-  char **arglist;
+  char **real_arglist;
+  const char **arglist;
 
   /* Non-zero if we saw a `-xfoo' language specification on the
      command line.  Used to avoid adding our own -xc++ if the user
@@ -70,10 +71,10 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   int saw_speclang = 0;
 
   /* "-lm" or "-lmath" if it appears on the command line.  */
-  char *saw_math = 0;
+  const char *saw_math = 0;
 
   /* "-lc" if it appears on the command line.  */
-  char *saw_libc = 0;
+  const char *saw_libc = 0;
 
   /* An array used to flag each argument that needs a bit set for
      LANGSPEC, MATHLIB, or WITHLIBC.  */
@@ -98,8 +99,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   argv = *in_argv;
   added_libraries = *in_added_libraries;
 
-  args = (int *) xmalloc (argc * sizeof (int));
-  bzero ((char *) args, argc * sizeof (int));
+  args = (int *) xcalloc (argc, sizeof (int));
 
   for (i = 1; i < argc; i++)
     {
@@ -188,7 +188,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
     }
 
   if (quote)
-    (*fn) ("argument to `%s' missing\n", quote);
+    fatal ("argument to `%s' missing\n", quote);
 
   /* If we know we don't have to do anything, bail now.  */
   if (! added && ! library)
@@ -199,7 +199,8 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 
   /* Make sure to have room for the trailing NULL argument.  */
   num_args = argc + added + need_math + 1;
-  arglist = (char **) xmalloc (num_args * sizeof (char *));
+  real_arglist = (char **) xmalloc (num_args * sizeof (char *));
+  arglist = (const char **) real_arglist;
 
   /* NOTE: We start at 1 now, not 0.  */
   for (i = 0, j = 0; i < argc; i++, j++)
@@ -253,7 +254,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   arglist[j] = NULL;
 
   *in_argc = j;
-  *in_argv = arglist;
+  *in_argv = real_arglist;
   *in_added_libraries = added_libraries;
 }
 

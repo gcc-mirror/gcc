@@ -1419,13 +1419,13 @@ DRIVER_DEFINES = \
   -DDEFAULT_TARGET_MACHINE=\"$(target_alias)\" \
   -DTOOLDIR_BASE_PREFIX=\"$(exec_prefix)/\"
 gcc.o: gcc.c $(CONFIG_H) system.h intl.h multilib.h \
-    Makefile $(lang_specs_files) prefix.h
+    Makefile $(lang_specs_files) prefix.h gcc.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   $(DRIVER_DEFINES) \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
 
-gccspec.o: gccspec.c $(CONFIG_H) system.h
-cppspec.o: cppspec.c $(CONFIG_H) system.h
+gccspec.o: gccspec.c $(CONFIG_H) system.h gcc.h
+cppspec.o: cppspec.c $(CONFIG_H) system.h gcc.h
 
 tree-check.h: s-check ; @true
 s-check : gencheck $(srcdir)/move-if-change

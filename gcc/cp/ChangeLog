@@ -1,3 +1,12 @@
+Sun Sep 12 23:29:07 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (g++spec.o): Depend on system.h and gcc.h.
+
+	* g++spec.c: Include gcc.h.
+	(lang_specific_driver): Constify a char*.  Call xcalloc, not
+ 	xmalloc/bzero.  All calls to the function pointer parameter now
+ 	explicitly call `fatal'.
+
 1999-09-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (implicit_conversion): Robustify.  Handle OFFSET_REFs.
