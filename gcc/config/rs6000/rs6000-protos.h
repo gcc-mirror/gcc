@@ -103,8 +103,6 @@ extern rtx rs6000_emit_set_const PARAMS ((rtx, enum machine_mode, rtx, int));
 extern int rs6000_emit_cmove PARAMS ((rtx, rtx, rtx, rtx));
 extern void rs6000_emit_minmax PARAMS ((rtx, enum rtx_code, rtx, rtx));
 extern void output_toc PARAMS ((FILE *, rtx, int, enum machine_mode));
-extern int rs6000_adjust_cost PARAMS ((rtx, rtx, rtx, int));
-extern int rs6000_adjust_priority PARAMS ((rtx, int));
 extern void rs6000_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern struct rtx_def *rs6000_longcall_ref PARAMS ((rtx));
 extern void rs6000_fatal_bad_address PARAMS ((rtx));
@@ -157,7 +155,6 @@ extern void rs6000_file_start PARAMS ((FILE *, const char *));
 extern struct rtx_def *rs6000_float_const PARAMS ((const char *,
 						   enum machine_mode));
 extern int direct_return PARAMS ((void));
-extern int get_issue_rate PARAMS ((void));
 extern union tree_node *rs6000_build_va_list PARAMS ((void));
 extern int first_reg_to_save PARAMS ((void));
 extern int first_fp_reg_to_save PARAMS ((void));

@@ -574,6 +574,11 @@ static HOST_WIDE_INT ix86_GOT_alias_set PARAMS ((void));
 static void ix86_adjust_counter PARAMS ((rtx, HOST_WIDE_INT));
 static rtx ix86_expand_aligntest PARAMS ((rtx, int));
 static void ix86_expand_strlensi_unroll_1 PARAMS ((rtx, rtx));
+static int ix86_issue_rate PARAMS ((void));
+static int ix86_adjust_cost PARAMS ((rtx, rtx, rtx, int));
+static void ix86_sched_init PARAMS ((FILE *, int, int));
+static int ix86_sched_reorder PARAMS ((FILE *, int, rtx *, int *, int));
+static int ix86_variable_issue PARAMS ((FILE *, int, rtx, int));
 
 struct ix86_address
 {
@@ -648,6 +653,17 @@ static void sco_asm_out_constructor PARAMS ((rtx, int));
 #define TARGET_ASM_OPEN_PAREN ""
 #undef TARGET_ASM_CLOSE_PAREN
 #define TARGET_ASM_CLOSE_PAREN ""
+
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST ix86_adjust_cost
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE ix86_issue_rate
+#undef TARGET_SCHED_VARIABLE_ISSUE
+#define TARGET_SCHED_VARIABLE_ISSUE ix86_variable_issue
+#undef TARGET_SCHED_INIT
+#define TARGET_SCHED_INIT ix86_sched_init
+#undef TARGET_SCHED_REORDER
+#define TARGET_SCHED_REORDER ix86_sched_reorder
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -8373,7 +8389,7 @@ ix86_attr_length_address_default (insn)
 
 /* Return the maximum number of instructions a cpu can issue.  */
 
-int
+static int
 ix86_issue_rate ()
 {
   switch (ix86_cpu)
@@ -8479,7 +8495,7 @@ ix86_agi_dependant (insn, dep_insn, insn_type)
   return modified_in_p (addr, dep_insn);
 }
 
-int
+static int
 ix86_adjust_cost (insn, link, dep_insn, cost)
      rtx insn, link, dep_insn;
      int cost;
@@ -8707,10 +8723,11 @@ ix86_dump_ppro_packet (dump)
 
 /* We're beginning a new block.  Initialize data structures as necessary.  */
 
-void
-ix86_sched_init (dump, sched_verbose)
+static void
+ix86_sched_init (dump, sched_verbose, veclen)
      FILE *dump ATTRIBUTE_UNUSED;
      int sched_verbose ATTRIBUTE_UNUSED;
+     int veclen ATTRIBUTE_UNUSED;
 {
   memset (&ix86_sched_data, 0, sizeof (ix86_sched_data));
 }
@@ -8941,14 +8958,15 @@ ix86_sched_reorder_ppro (ready, e_ready)
 
 /* We are about to being issuing insns for this clock cycle.
    Override the default sort algorithm to better slot instructions.  */
-int
-ix86_sched_reorder (dump, sched_verbose, ready, n_ready, clock_var)
+static int
+ix86_sched_reorder (dump, sched_verbose, ready, n_readyp, clock_var)
      FILE *dump ATTRIBUTE_UNUSED;
      int sched_verbose ATTRIBUTE_UNUSED;
      rtx *ready;
-     int n_ready;
+     int *n_readyp;
      int clock_var ATTRIBUTE_UNUSED;
 {
+  int n_ready = *n_readyp;
   rtx *e_ready = ready + n_ready - 1;
 
   if (n_ready < 2)
@@ -8975,7 +8993,7 @@ out:
 /* We are about to issue INSN.  Return the number of insns left on the
    ready queue that can be issued this cycle.  */
 
-int
+static int
 ix86_variable_issue (dump, sched_verbose, insn, can_issue_more)
      FILE *dump;
      int sched_verbose;

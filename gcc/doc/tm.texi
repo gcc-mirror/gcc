@@ -41,6 +41,7 @@ through the macros defined in the @file{.h} file.
 * Addressing Modes::    Defining addressing modes valid for memory operands.
 * Condition Code::      Defining how insns update the condition code.
 * Costs::               Defining relative costs of different operations.
+* Scheduling::          Adjusting the behavior of the instruction scheduler.
 * Sections::            Dividing storage into text, data, and other sections.
 * PIC::			Macros for position independent code.
 * Assembler Format::    Defining how to write insns and pseudo-ops to output.
@@ -465,8 +466,8 @@ standard choice of @file{/usr/local/include} as the default prefix to
 try when searching for local header files.  @code{LOCAL_INCLUDE_DIR}
 comes before @code{SYSTEM_INCLUDE_DIR} in the search order.
 
-Cross compilers do not use this macro and do not search either
-@file{/usr/local/include} or its replacement.
+Cross compilers do not search either @file{/usr/local/include} or its
+replacement.
 
 @findex MODIFY_TARGET_NAME
 @item MODIFY_TARGET_NAME
@@ -1735,19 +1736,18 @@ preserve the entire contents of a register across a call.
 @item CONDITIONAL_REGISTER_USAGE
 Zero or more C statements that may conditionally modify five variables
 @code{fixed_regs}, @code{call_used_regs}, @code{global_regs},
-(these three are of type @code{char []}), @code{reg_names} (of type
-@code{const char * []}) and @code{reg_class_contents} (of type
-@code{HARD_REG_SET}).
-Before the macro is called @code{fixed_regs}, @code{call_used_regs}
-@code{reg_class_contents} and @code{reg_names} have been initialized
+@code{reg_names}, and @code{reg_class_contents}, to take into account
+any dependence of these register sets on target flags.  The first three
+of these are of type @code{char []} (interpreted as Boolean vectors).
+@code{global_regs} is a @code{const char *[]}, and
+@code{reg_class_contents} is a @code{HARD_REG_SET}.  Before the macro is
+called, @code{fixed_regs}, @code{call_used_regs},
+@code{reg_class_contents}, and @code{reg_names} have been initialized
 from @code{FIXED_REGISTERS}, @code{CALL_USED_REGISTERS},
-@code{REG_CLASS_CONTENTS} and @code{REGISTER_NAMES}, respectively,
+@code{REG_CLASS_CONTENTS}, and @code{REGISTER_NAMES}, respectively.
 @code{global_regs} has been cleared, and any @option{-ffixed-@var{reg}},
-@option{-fcall-used-@var{reg}} and @option{-fcall-saved-@var{reg}} command
-options have been applied.
-
-This is necessary in case the fixed or call-clobbered registers depend
-on target flags.
+@option{-fcall-used-@var{reg}} and @option{-fcall-saved-@var{reg}}
+command options have been applied.
 
 You need not define this macro if it has no work to do.
 
@@ -2025,11 +2025,11 @@ this.
 
 @findex current_function_is_leaf
 @findex current_function_uses_only_leaf_regs
-Normally, @code{TARGET_ASM_FUNCTION_PROLOGUE} and
-@code{TARGET_ASM_FUNCTION_EPILOGUE} must treat leaf functions specially.
-They can test the C variable @code{current_function_is_leaf} which is
-nonzero for leaf functions.  @code{current_function_is_leaf} is set
-prior to local register allocation and is valid for the remaining
+@code{TARGET_ASM_FUNCTION_PROLOGUE} and
+@code{TARGET_ASM_FUNCTION_EPILOGUE} must usually treat leaf functions
+specially.  They can test the C variable @code{current_function_is_leaf}
+which is nonzero for leaf functions.  @code{current_function_is_leaf} is
+set prior to local register allocation and is valid for the remaining
 compiler passes.  They can also test the C variable
 @code{current_function_uses_only_leaf_regs} which is nonzero for leaf
 functions which only use leaf registers.
@@ -2528,8 +2528,7 @@ This describes the stack layout and calling conventions.
 * Caller Saves::
 * Function Entry::
 * Profiling::
-* Inlining::
-* Tail Calling::
+* Inlining and Tail Calls::
 @end menu
 
 @node Frame Layout
@@ -4205,27 +4204,22 @@ profiling when the frame pointer is omitted.
 
 @end table
 
-@node Inlining
-@subsection Permitting inlining of functions with attributes
+@node Inlining and Tail Calls
+@subsection Permitting inlining and tail calls
 @cindex inlining
 
-By default if a function has a target specific attribute attached to it,
-it will not be inlined.  This behaviour can be overridden if the target
-defines the @samp{FUNCTION_ATTRIBUTE_INLINABLE_P} macro.  This macro
-takes one argument, a @samp{DECL} describing the function.  It should
-return non-zero if the function can be inlined, otherwise it should
-return 0.
-
-@node Tail Calling
-@subsection Permitting tail calls to functions
-@cindex tail calls
-@cindex sibling calls
-
 @table @code
+@findex FUNCTION_ATTRIBUTE_INLINABLE_P
+@item FUNCTION_ATTRIBUTE_INLINABLE_P (@var{decl})
+A C expression that evaluates to true if it is ok to inline @var{decl}
+into the current function, despite its having target-specific
+attributes.  By default, if a function has a target specific attribute
+attached to it, it will not be inlined.
+
 @findex FUNCTION_OK_FOR_SIBCALL
 @item FUNCTION_OK_FOR_SIBCALL (@var{decl})
 A C expression that evaluates to true if it is ok to perform a sibling
-call to @var{decl}.
+call to @var{decl} from the current function.
 
 It is not uncommon for limitations of calling conventions to prevent
 tail calls to functions outside the current unit of translation, or
@@ -5441,24 +5435,107 @@ function address than to call an address kept in a register.
 Define this macro if it is as good or better for a function to call
 itself with an explicit address than to call an address kept in a
 register.
-
-@findex ADJUST_COST
-@item ADJUST_COST (@var{insn}, @var{link}, @var{dep_insn}, @var{cost})
-A C statement (sans semicolon) to update the integer variable @var{cost}
-based on the relationship between @var{insn} that is dependent on
-@var{dep_insn} through the dependence @var{link}.  The default is to
-make no adjustment to @var{cost}.  This can be used for example to
-specify to the scheduler that an output- or anti-dependence does not
-incur the same cost as a data-dependence.
-
-@findex ADJUST_PRIORITY
-@item ADJUST_PRIORITY (@var{insn})
-A C statement (sans semicolon) to update the integer scheduling
-priority @code{INSN_PRIORITY(@var{insn})}.  Reduce the priority
-to execute the @var{insn} earlier, increase the priority to execute
-@var{insn} later.    Do not define this macro if you do not need to
-adjust the scheduling priorities of insns.
 @end table
+
+@node Scheduling
+@section Adjusting the Instruction Scheduler
+
+The instruction scheduler may need a fair amount of machine-specific
+adjustment in order to produce good code.  GCC provides several target
+hooks for this purpose.  It is usually enough to define just a few of
+them: try the first ones in this list first.
+
+@deftypefn {Target Hook} int TARGET_SCHED_ISSUE_RATE (void)
+This hook returns the maximum number of instructions that can ever issue
+at the same time on the target machine.  The default is one.  This value
+must be constant over the entire compilation.  If you need it to vary
+depending on what the instructions are, you must use
+@samp{TARGET_SCHED_VARIABLE_ISSUE}.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_SCHED_VARIABLE_ISSUE (FILE *@var{file}, int @var{verbose}, rtx @var{insn}, int @var{more})
+This hook is executed by the scheduler after it has scheduled an insn
+from the ready list.  It should return the number of insns which can
+still be issued in the current cycle.  Normally this is
+@samp{@w{@var{more} - 1}}.  You should define this hook if some insns
+take more machine resources than others, so that fewer insns can follow
+them in the same cycle.  @var{file} is either a null pointer, or a stdio
+stream to write any debug output to.  @var{verbose} is the verbose level
+provided by @option{-fsched-verbose-@var{n}}.  @var{insn} is the
+instruction that was scheduled.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_SCHED_ADJUST_COST (rtx @var{insn}, rtx @var{link}, rtx @var{dep_insn}, int @var{cost})
+This function corrects the value of @var{cost} based on the relationship
+between @var{insn} and @var{dep_insn} through the dependence @var{link}.
+It should return the new value.  The default is to make no adjustment to
+@var{cost}.  This can be used for example to specify to the scheduler
+that an output- or anti-dependence does not incur the same cost as a
+data-dependence.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_SCHED_ADJUST_PRIORITY (rtx @var{insn}, int @var{priority})
+This hook adjusts the integer scheduling priority @var{priority} of
+@var{insn}.  It should return the new priority.  Reduce the priority to
+execute @var{insn} earlier, increase the priority to execute @var{insn}
+later.  Do not define this hook if you do not need to adjust the
+scheduling priorities of insns.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_SCHED_REORDER (FILE *@var{file}, int @var{verbose}, rtx *@var{ready}, int *@var{n_readyp}, int @var{clock})
+This hook is executed by the scheduler after it has scheduled the ready
+list, to allow the machine description to reorder it (for example to
+combine two small instructions together on @samp{VLIW} machines).
+@var{file} is either a null pointer, or a stdio stream to write any
+debug output to.  @var{verbose} is the verbose level provided by
+@option{-fsched-verbose-@var{n}}.  @var{ready} is a pointer to the ready
+list of instructions that are ready to be scheduled.  @var{n_readyp} is
+a pointer to the number of elements in the ready list.  The scheduler
+reads the ready list in reverse order, starting with
+@var{ready}[@var{*n_readyp}-1] and going to @var{ready}[0].  @var{clock}
+is the timer tick of the scheduler.  You may modify the ready list and
+the number of ready insns.  The return value is the number of insns that
+can issue this cycle; normally this is just @code{issue_rate}.  See also
+@samp{TARGET_SCHED_REORDER2}.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_SCHED_REORDER2 (FILE *@var{file}, int @var{verbose}, rtx *@var{ready}, int *@var{n_ready}, @var{clock})
+Like @samp{TARGET_SCHED_REORDER}, but called at a different time.  That
+function is called whenever the scheduler starts a new cycle.  This one
+is called once per iteration over a cycle, immediately after
+@samp{TARGET_SCHED_VARIABLE_ISSUE}; it can reorder the ready list and
+return the number of insns to be scheduled in the same cycle.  Defining
+this hook can be useful if there are frequent situations where
+scheduling one insn causes other insns to become ready in the same
+cycle.  These other insns can then be taken into account properly.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SCHED_INIT (FILE *@var{file}, int @var{verbose}, int @var{max_ready})
+This hook is executed by the scheduler at the beginning of each block of
+instructions that are to be scheduled.  @var{file} is either a null
+pointer, or a stdio stream to write any debug output to.  @var{verbose}
+is the verbose level provided by @option{-fsched-verbose-@var{n}}.
+@var{max_ready} is the maximum number of insns in the current scheduling
+region that can be live at the same time.  This can be used to allocate
+scratch space if it is needed, e.g. by @samp{TARGET_SCHED_REORDER}.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SCHED_FINISH (FILE *@var{file}, int @var{verbose})
+This hook is executed by the scheduler at the end of each block of
+instructions that are to be scheduled.  It can be used to perform
+cleanup of any actions done by the other scheduling hooks.  @var{file}
+is either a null pointer, or a stdio stream to write any debug output
+to.  @var{verbose} is the verbose level provided by
+@option{-fsched-verbose-@var{n}}.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_SCHED_CYCLE_DISPLAY (int @var{clock}, rtx @var{last})
+This hook is called in verbose mode only, at the beginning of each pass
+over a basic block.  It should insert an insn into the chain after
+@var{last}, which has no effect, but records the value @var{clock} in
+RTL dumps and assembly output.  Define this hook only if you need this
+level of detail about what the scheduler is doing.
+@end deftypefn
 
 @node Sections
 @section Dividing the Output into Sections (Texts, Data, @dots{})
@@ -6932,12 +7009,17 @@ numeric index of the assembler language dialect to use, with zero as the
 first variant.
 
 If this macro is defined, you may use constructs of the form
-@samp{@{option0|option1|option2@dots{}@}} in the output
-templates of patterns (@pxref{Output Template}) or in the first argument
-of @code{asm_fprintf}.  This construct outputs @samp{option0},
-@samp{option1} or @samp{option2}, etc., if the value of
-@code{ASSEMBLER_DIALECT} is zero, one or two, etc.  Any special
-characters within these strings retain their usual meaning.
+@smallexample
+@samp{@{option0|option1|option2@dots{}@}} 
+@end smallexample
+@noindent
+in the output templates of patterns (@pxref{Output Template}) or in the
+first argument of @code{asm_fprintf}.  This construct outputs
+@samp{option0}, @samp{option1}, @samp{option2}, etc., if the value of
+@code{ASSEMBLER_DIALECT} is zero, one, two, etc.  Any special characters
+within these strings retain their usual meaning.  If there are fewer
+alternatives within the braces than the value of
+@code{ASSEMBLER_DIALECT}, the construct outputs nothing.
 
 If you do not define this macro, the characters @samp{@{}, @samp{|} and
 @samp{@}} do not have any special meaning when used in templates or
@@ -8312,8 +8394,8 @@ The primary reason to define this macro is to provide compatibility with
 other compilers for the same target.  In general, we discourage
 definition of target-specific pragmas for GCC@.
 
-If the pragma can be implemented by attributes then the macro
-@samp{INSERT_ATTRIBUTES} might be a useful one to define as well.
+If the pragma can be implemented by attributes then you should consider
+defining @samp{INSERT_ATTRIBUTES} as well.
 
 Preprocessor macros that appear on pragma lines are not expanded.  All
 @samp{#pragma} directives that do not match any registered pragma are
@@ -8561,68 +8643,6 @@ symbols must be explicitly imported from shared libraries (DLLs).
 A C statement that adds to @var{clobbers} @code{STRING_CST} trees for
 any hard regs the port wishes to automatically clobber for all asms.
 
-@findex ISSUE_RATE
-@item ISSUE_RATE
-A C expression that returns how many instructions can be issued at the
-same time if the machine is a superscalar machine.
-
-@findex MD_SCHED_INIT
-@item MD_SCHED_INIT (@var{file}, @var{verbose}, @var{max_ready})
-A C statement which is executed by the scheduler at the
-beginning of each block of instructions that are to be scheduled.
-@var{file} is either a null pointer, or a stdio stream to write any
-debug output to.  @var{verbose} is the verbose level provided by
-@option{-fsched-verbose-@var{n}}.  @var{max_ready} is the maximum number
-of insns in the current scheduling region that can be live at the same
-time.  This can be used to allocate scratch space if it is needed.
-
-@findex MD_SCHED_FINISH
-@item MD_SCHED_FINISH (@var{file}, @var{verbose})
-A C statement which is executed by the scheduler at the end of each block
-of instructions that are to be scheduled.  It can be used to perform
-cleanup of any actions done by the other scheduling macros.
-@var{file} is either a null pointer, or a stdio stream to write any
-debug output to.  @var{verbose} is the verbose level provided by
-@option{-fsched-verbose-@var{n}}.
-
-@findex MD_SCHED_REORDER
-@item MD_SCHED_REORDER (@var{file}, @var{verbose}, @var{ready}, @var{n_ready}, @var{clock}, @var{can_issue_more})
-A C statement which is executed by the scheduler after it
-has scheduled the ready list to allow the machine description to reorder
-it (for example to combine two small instructions together on
-@samp{VLIW} machines).  @var{file} is either a null pointer, or a stdio
-stream to write any debug output to.  @var{verbose} is the verbose level
-provided by @option{-fsched-verbose-@var{n}}.  @var{ready} is a pointer to
-the ready list of instructions that are ready to be scheduled.
-@var{n_ready} is the number of elements in the ready list.  The
-scheduler reads the ready list in reverse order, starting with
-@var{ready}[@var{n_ready}-1] and going to @var{ready}[0].  @var{clock}
-is the timer tick of the scheduler.  @var{can_issue_more} is an output
-parameter that is set to the number of insns that can issue this clock;
-normally this is just @code{issue_rate}.  See also @samp{MD_SCHED_REORDER2}.
-
-@findex MD_SCHED_REORDER2
-@item MD_SCHED_REORDER2 (@var{file}, @var{verbose}, @var{ready}, @var{n_ready}, @var{clock}, @var{can_issue_more})
-Like @samp{MD_SCHED_REORDER}, but called at a different time.  While the
-@samp{MD_SCHED_REORDER} macro is called whenever the scheduler starts a
-new cycle, this macro is used immediately after @samp{MD_SCHED_VARIABLE_ISSUE}
-is called; it can reorder the ready list and set @var{can_issue_more} to
-determine whether there are more insns to be scheduled in the same cycle.
-Defining this macro can be useful if there are frequent situations where
-scheduling one insn causes other insns to become ready in the same cycle,
-these other insns can then be taken into account properly.
-
-@findex MD_SCHED_VARIABLE_ISSUE
-@item MD_SCHED_VARIABLE_ISSUE (@var{file}, @var{verbose}, @var{insn}, @var{more})
-A C statement which is executed by the scheduler after it
-has scheduled an insn from the ready list.  @var{file} is either a null
-pointer, or a stdio stream to write any debug output to.  @var{verbose}
-is the verbose level provided by @option{-fsched-verbose-@var{n}}.
-@var{insn} is the instruction that was scheduled.  @var{more} is the
-number of instructions that can be issued in the current cycle.  The
-@samp{MD_SCHED_VARIABLE_ISSUE} macro is responsible for updating the
-value of @var{more} (typically by @samp{@var{more}--}).
-
 @findex MAX_INTEGER_COMPUTATION_MODE
 @item MAX_INTEGER_COMPUTATION_MODE
 Define this to the largest integer machine mode which can be used for
@@ -8688,6 +8708,7 @@ converting code to conditional execution in the basic blocks
 A C expression to cancel any machine dependent modifications in
 converting code to conditional execution in the basic blocks
 @code{TEST_BB}, @code{THEN_BB}, @code{ELSE_BB}, and @code{JOIN_BB}.
+@end table
 
 @deftypefn {Target Hook} void TARGET_INIT_BUILTINS ()
 Define this hook if you have any machine-specific built-in functions
@@ -8702,7 +8723,7 @@ instructions or prefetch instructions).
 To create a built-in function, call the function @code{builtin_function}
 which is defined by the language front end.  You can use any type nodes set
 up by @code{build_common_tree_nodes} and @code{build_common_tree_nodes_2};
-only language front ends that use these two functions will use
+only language front ends that use those two functions will call
 @samp{TARGET_INIT_BUILTINS}.
 @end deftypefn
 
@@ -8718,6 +8739,7 @@ ignored.  This function should return the result of the call to the
 built-in function.
 @end deftypefn
 
+@table @code
 @findex MD_CAN_REDIRECT_BRANCH
 @item MD_CAN_REDIRECT_BRANCH(@var{branch1}, @var{branch2})
 

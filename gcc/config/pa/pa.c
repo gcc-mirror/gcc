@@ -69,6 +69,9 @@ static rtx store_reg PARAMS ((int, int, int));
 static rtx load_reg PARAMS ((int, int, int));
 static rtx set_reg_plus_d PARAMS ((int, int, int));
 static void pa_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static int pa_adjust_cost PARAMS ((rtx, rtx, rtx, int));
+static int pa_adjust_priority PARAMS ((rtx, int));
+static int pa_issue_rate PARAMS ((void));
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -114,6 +117,13 @@ int n_deferred_plabels = 0;
 #define TARGET_ASM_FUNCTION_PROLOGUE pa_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE pa_output_function_epilogue
+
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST pa_adjust_cost
+#undef TARGET_SCHED_ADJUST_PRIORITY
+#define TARGET_SCHED_ADJUST_PRIORITY pa_adjust_priority
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE pa_issue_rate
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3591,7 +3601,7 @@ gen_cmp_fp (code, operand0, operand1)
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
-int
+static int
 pa_adjust_cost (insn, link, dep_insn, cost)
      rtx insn;
      rtx link;
@@ -3828,6 +3838,60 @@ pa_adjust_cost (insn, link, dep_insn, cost)
   else
     abort ();
 }
+
+/* Adjust scheduling priorities.  We use this to try and keep addil
+   and the next use of %r1 close together.  */
+static int
+pa_adjust_priority (insn, priority)
+     rtx insn;
+     int priority;
+{
+  rtx set = single_set (insn);
+  rtx src, dest;
+  if (set)
+    {
+      src = SET_SRC (set);
+      dest = SET_DEST (set);
+      if (GET_CODE (src) == LO_SUM
+	  && symbolic_operand (XEXP (src, 1), VOIDmode)
+	  && ! read_only_operand (XEXP (src, 1), VOIDmode))
+	priority >>= 3;
+
+      else if (GET_CODE (src) == MEM
+	       && GET_CODE (XEXP (src, 0)) == LO_SUM
+	       && symbolic_operand (XEXP (XEXP (src, 0), 1), VOIDmode)
+	       && ! read_only_operand (XEXP (XEXP (src, 0), 1), VOIDmode))
+	priority >>= 1;
+
+      else if (GET_CODE (dest) == MEM
+	       && GET_CODE (XEXP (dest, 0)) == LO_SUM
+	       && symbolic_operand (XEXP (XEXP (dest, 0), 1), VOIDmode)
+	       && ! read_only_operand (XEXP (XEXP (dest, 0), 1), VOIDmode))
+	priority >>= 3;
+    }
+  return priority;
+}
+
+/* The 700 can only issue a single insn at a time.
+   The 7XXX processors can issue two insns at a time.
+   The 8000 can issue 4 insns at a time.  */
+static int
+pa_issue_rate ()
+{
+  switch (pa_cpu)
+    {
+    case PROCESSOR_700:		return 1;
+    case PROCESSOR_7100:	return 2;
+    case PROCESSOR_7100LC:	return 2;
+    case PROCESSOR_7200:	return 2;
+    case PROCESSOR_8000:	return 4;
+
+    default:
+      abort ();
+    }
+}
+
+
 
 /* Return any length adjustment needed by INSN which already has its length
    computed as LENGTH.   Return zero if no adjustment is necessary.

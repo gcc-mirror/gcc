@@ -679,15 +679,6 @@ enum reg_class { NO_REGS, LR0_REGS, GENERAL_REGS, BP_REGS, FC_REGS, CR_REGS,
    most expensive register-register copy.  */
 
 #define MEMORY_MOVE_COST(MODE,CLASS,IN) 6
-
-/* A C statement (sans semicolon) to update the integer variable COST
-   based on the relationship between INSN that is dependent on
-   DEP_INSN through the dependence LINK.  The default is to make no
-   adjustment to COST.  On the a29k, ignore the cost of anti- and
-   output-dependencies.  */
-#define ADJUST_COST(INSN,LINK,DEP_INSN,COST)				\
-  if (REG_NOTE_KIND (LINK) != 0)					\
-    (COST) = 0; /* Anti or output dependence.  */
 
 /* Stack layout; function entry, exit and calling.  */
 

@@ -1115,35 +1115,6 @@ enum reg_class {
 
 #define BRANCH_COST 0
 
-/* Adjust the cost of dependences. */
-
-#define ADJUST_COST(INSN,LINK,DEP,COST) 				\
-{									\
-  /* Antidependencies don't block issue. */				\
-  if (REG_NOTE_KIND (LINK) != 0)					\
-    (COST) = 0;								\
-  /* C38 situations where delay depends on context */			\
-  else if (TARGET_C38							\
-	   && GET_CODE (PATTERN (INSN)) == SET				\
-	   && GET_CODE (PATTERN (DEP)) == SET)				\
-    {									\
-      enum attr_type insn_type = get_attr_type (INSN);			\
-      enum attr_type dep_type = get_attr_type (DEP);			\
-      /* index register must be ready one cycle early */		\
-      if (insn_type == TYPE_MLDW || insn_type == TYPE_MLDL		\
-          || (insn_type == TYPE_MST					\
-	      && reg_mentioned_p (SET_DEST (PATTERN (DEP)),		\
-				  SET_SRC (PATTERN (INSN)))))		\
-	(COST) += 1;							\
-      /* alu forwarding off alu takes two */				\
-      if (dep_type == TYPE_ALU						\
-	  && insn_type != TYPE_ALU					\
-	  && ! (insn_type == TYPE_MST					\
-		&& SET_DEST (PATTERN (DEP)) == SET_SRC (PATTERN (INSN)))) \
-	(COST) += 1;							\
-    }									\
-}
-
 /* Convex uses VAX or IEEE floats.
    Follow the host format. */
 #define TARGET_FLOAT_FORMAT HOST_FLOAT_FORMAT

@@ -1743,17 +1743,6 @@ extern struct rtx_def *s390_compare_op0, *s390_compare_op1;
   {"tmxx_operand", { CONST_INT, MEM }},
 
 
-/* A C statement (sans semicolon) to update the integer variable COST
-   based on the relationship between INSN that is dependent on
-   DEP_INSN through the dependence LINK.  The default is to make no
-   adjustment to COST.  This can be used for example to specify to
-   the scheduler that an output- or anti-dependence does not incur
-   the same cost as a data-dependence.  */
-
-#define ADJUST_COST(insn, link, dep_insn, cost) \
-  (cost) = s390_adjust_cost (insn, link, dep_insn, cost)
-
-
 /* Constant Pool for all symbols operands which are changed with
    force_const_mem during insn generation (expand_insn).  */
 

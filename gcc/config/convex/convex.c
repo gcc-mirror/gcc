@@ -66,12 +66,15 @@ static rtx convert_arg_pushes ();
 static void expand_movstr_call PARAMS ((rtx *));
 static void convex_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void convex_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static int convex_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE convex_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE convex_output_function_epilogue
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST convex_adjust_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -110,6 +113,43 @@ convex_output_function_epilogue (file, size)
   /* Follow function with a zero to stop c34 icache prefetching. */
   fprintf (file, "\tds.h 0\n");
 }
+
+/* Adjust the cost of dependences. */
+static int
+convex_adjust_cost (insn, link, dep, cost)
+     rtx insn;
+     rtx link;
+     rtx dep;
+     int cost;
+{
+  /* Antidependencies don't block issue. */
+  if (REG_NOTE_KIND (link) != 0)
+    cost = 0;
+  /* C38 situations where delay depends on context */
+  else if (TARGET_C38
+	   && GET_CODE (PATTERN (insn)) == SET
+	   && GET_CODE (PATTERN (dep)) == SET)
+    {
+      enum attr_type insn_type = get_attr_type (insn);
+      enum attr_type dep_type = get_attr_type (dep);
+      /* index register must be ready one cycle early */
+      if (insn_type == TYPE_MLDW || insn_type == TYPE_MLDL
+          || (insn_type == TYPE_MST
+	      && reg_mentioned_p (SET_DEST (PATTERN (dep)),
+				  SET_SRC (PATTERN (insn)))))
+	cost += 1;
+      /* alu forwarding off alu takes two */
+      if (dep_type == TYPE_ALU
+	  && insn_type != TYPE_ALU
+	  && ! (insn_type == TYPE_MST
+		&& SET_DEST (PATTERN (dep)) == SET_SRC (PATTERN (insn))))
+	cost += 1;
+    }
+
+  return cost;
+}
+
+
 
 /* Here from OVERRIDE_OPTIONS at startup.  Initialize constant tables. */
 

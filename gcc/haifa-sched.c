@@ -148,6 +148,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "recog.h"
 #include "sched-int.h"
+#include "target.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -156,10 +157,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    otherwise we set it to 1.  */
 
 static int issue_rate;
-
-#ifndef ISSUE_RATE
-#define ISSUE_RATE 1
-#endif
 
 /* sched-verbose controls the amount of debugging output the
    scheduler prints.  It is controlled by -fsched-verbose=N:
@@ -693,12 +690,10 @@ insn_cost (insn, link, used)
 
   if (LINK_COST_FREE (link))
     cost = 0;
-#ifdef ADJUST_COST
-  else if (!LINK_COST_ZERO (link))
+  else if (!LINK_COST_ZERO (link) && targetm.sched.adjust_cost)
     {
-      int ncost = cost;
+      int ncost = (*targetm.sched.adjust_cost) (used, link, insn, cost);
 
-      ADJUST_COST (used, link, insn, ncost);
       if (ncost < 1)
 	{
 	  LINK_COST_FREE (link) = 1;
@@ -708,7 +703,7 @@ insn_cost (insn, link, used)
 	LINK_COST_ZERO (link) = 1;
       cost = ncost;
     }
-#endif
+
   return cost;
 }
 
@@ -952,7 +947,7 @@ ready_sort (ready)
 
 HAIFA_INLINE static void
 adjust_priority (prev)
-     rtx prev ATTRIBUTE_UNUSED;
+     rtx prev;
 {
   /* ??? There used to be code here to try and estimate how an insn
      affected register lifetimes, but it did it by looking at REG_DEAD
@@ -961,9 +956,9 @@ adjust_priority (prev)
 
      Revisit when we have a machine model to work with and not before.  */
 
-#ifdef ADJUST_PRIORITY
-  ADJUST_PRIORITY (prev);
-#endif
+  if (targetm.sched.adjust_priority)
+    INSN_PRIORITY (prev) =
+      (*targetm.sched.adjust_priority) (prev, INSN_PRIORITY (prev));
 }
 
 /* Clock at which the previous instruction was issued.  */
@@ -1668,16 +1663,15 @@ schedule_block (b, rgn_n_insns)
   clear_units ();
 
   /* Allocate the ready list.  */
-  ready.veclen = rgn_n_insns + 1 + ISSUE_RATE;
+  ready.veclen = rgn_n_insns + 1 + issue_rate;
   ready.first = ready.veclen - 1;
   ready.vec = (rtx *) xmalloc (ready.veclen * sizeof (rtx));
   ready.n_ready = 0;
 
   (*current_sched_info->init_ready_list) (&ready);
 
-#ifdef MD_SCHED_INIT
-  MD_SCHED_INIT (sched_dump, sched_verbose, ready.veclen);
-#endif
+  if (targetm.sched.md_init)
+    (*targetm.sched.md_init) (sched_dump, sched_verbose, ready.veclen);
 
   /* No insns scheduled in this block yet.  */
   last_scheduled_insn = 0;
@@ -1706,10 +1700,8 @@ schedule_block (b, rgn_n_insns)
          list.  */
       queue_to_ready (&ready);
 
-#ifdef HAVE_cycle_display
-      if (HAVE_cycle_display)
-	last = emit_insn_after (gen_cycle_display (GEN_INT (clock_var)), last);
-#endif
+      if (sched_verbose && targetm.sched.cycle_display)
+	last = (*targetm.sched.cycle_display) (clock_var, last);
 
       if (ready.n_ready == 0)
 	abort ();
@@ -1725,12 +1717,13 @@ schedule_block (b, rgn_n_insns)
 
       /* Allow the target to reorder the list, typically for
 	 better instruction bundling.  */
-#ifdef MD_SCHED_REORDER
-      MD_SCHED_REORDER (sched_dump, sched_verbose, ready_lastpos (&ready),
-			ready.n_ready, clock_var, can_issue_more);
-#else
-      can_issue_more = issue_rate;
-#endif
+      if (targetm.sched.reorder)
+	can_issue_more =
+	  (*targetm.sched.reorder) (sched_dump, sched_verbose,
+				    ready_lastpos (&ready),
+				    &ready.n_ready, clock_var);
+      else
+	can_issue_more = issue_rate;
 
       if (sched_verbose)
 	{
@@ -1759,25 +1752,27 @@ schedule_block (b, rgn_n_insns)
 	  last_scheduled_insn = insn;
 	  last = move_insn (insn, last);
 
-#ifdef MD_SCHED_VARIABLE_ISSUE
-	  MD_SCHED_VARIABLE_ISSUE (sched_dump, sched_verbose, insn,
-				   can_issue_more);
-#else
-	  can_issue_more--;
-#endif
+	  if (targetm.sched.variable_issue)
+	    can_issue_more =
+	      (*targetm.sched.variable_issue) (sched_dump, sched_verbose,
+					       insn, can_issue_more);
+	  else
+	    can_issue_more--;
 
 	  schedule_insn (insn, &ready, clock_var);
 
 	next:
-	  ;
-#ifdef MD_SCHED_REORDER2
-	  /* Sort the ready list based on priority.  */
-	  if (ready.n_ready > 0)
-	    ready_sort (&ready);
-	  MD_SCHED_REORDER2 (sched_dump, sched_verbose,
-			     ready.n_ready ? ready_lastpos (&ready) : NULL,
-			     ready.n_ready, clock_var, can_issue_more);
-#endif
+	  if (targetm.sched.reorder2)
+	    {
+	      /* Sort the ready list based on priority.  */
+	      if (ready.n_ready > 0)
+		ready_sort (&ready);
+	      can_issue_more =
+		(*targetm.sched.reorder2) (sched_dump,sched_verbose,
+					   ready.n_ready
+					   ? ready_lastpos (&ready) : NULL,
+					   &ready.n_ready, clock_var);
+	    }
 	}
 
       /* Debug info.  */
@@ -1785,9 +1780,8 @@ schedule_block (b, rgn_n_insns)
 	visualize_scheduled_insns (clock_var);
     }
 
-#ifdef MD_SCHED_FINISH
-  MD_SCHED_FINISH (sched_dump, sched_verbose);
-#endif
+  if (targetm.sched.md_finish)
+    (*targetm.sched.md_finish) (sched_dump, sched_verbose);
 
   /* Debug info.  */
   if (sched_verbose)
@@ -1896,7 +1890,10 @@ sched_init (dump_file)
 		? stderr : dump_file);
 
   /* Initialize issue_rate.  */
-  issue_rate = ISSUE_RATE;
+  if (targetm.sched.issue_rate)
+    issue_rate = (*targetm.sched.issue_rate) ();
+  else
+    issue_rate = 1;
 
   /* We use LUID 0 for the fake insn (UID 0) which holds dependencies for
      pseudos which do not cross calls.  */

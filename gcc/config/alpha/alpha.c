@@ -136,6 +136,12 @@ static rtx alpha_emit_xfloating_compare
   PARAMS ((enum rtx_code, rtx, rtx));
 static void alpha_output_function_end_prologue
   PARAMS ((FILE *));
+static int alpha_adjust_cost
+  PARAMS ((rtx, rtx, rtx, int));
+static int alpha_issue_rate
+  PARAMS ((void));
+static int alpha_variable_issue
+  PARAMS ((FILE *, int, rtx, int));
 
 /* Get the number of args of a function in one of two ways.  */
 #if TARGET_ABI_OPEN_VMS
@@ -162,6 +168,13 @@ static void vms_asm_out_destructor PARAMS ((rtx, int));
 
 #undef TARGET_ASM_FUNCTION_END_PROLOGUE
 #define TARGET_ASM_FUNCTION_END_PROLOGUE alpha_output_function_end_prologue
+
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST alpha_adjust_cost
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE alpha_issue_rate
+#undef TARGET_SCHED_VARIABLE_ISSUE
+#define TARGET_SCHED_VARIABLE_ISSUE alpha_variable_issue
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3542,7 +3555,7 @@ alpha_expand_block_clear (operands)
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
-int
+static int
 alpha_adjust_cost (insn, link, dep_insn, cost)
      rtx insn;
      rtx link;
@@ -3686,6 +3699,27 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
   /* Otherwise, return the default cost. */
   return cost;
 }
+
+/* Function to initialize the issue rate used by the scheduler.  */
+static int
+alpha_issue_rate ()
+{
+  return (alpha_cpu == PROCESSOR_EV4 ? 2 : 4);
+}
+
+static int
+alpha_variable_issue (dump, verbose, insn, cim)
+     FILE *dump ATTRIBUTE_UNUSED;
+     int verbose ATTRIBUTE_UNUSED;
+     rtx insn;
+     int cim;
+{
+    if (recog_memoized (insn) < 0 || get_attr_type (insn) == TYPE_MULTI)
+      return 0;
+
+    return cim - 1;
+}
+
 
 /* Functions to save and restore alpha_return_addr_rtx.  */
 

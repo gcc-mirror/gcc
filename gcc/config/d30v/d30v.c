@@ -51,6 +51,8 @@ static void d30v_mark_machine_status PARAMS ((struct function *));
 static void d30v_free_machine_status PARAMS ((struct function *));
 static void d30v_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void d30v_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static int d30v_adjust_cost PARAMS ((rtx, rtx, rtx, int));
+static int d30v_issue_rate PARAMS ((void));
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  */
@@ -86,6 +88,10 @@ enum reg_class reg_class_from_letter[256];
 #define TARGET_ASM_FUNCTION_PROLOGUE d30v_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE d30v_output_function_epilogue
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST d30v_adjust_cost
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE d30v_issue_rate
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3490,7 +3496,7 @@ d30v_machine_dependent_reorg (insn)
 /* For the d30v, try to insure that the source operands for a load/store are
    set 2 cycles before the memory reference.  */
 
-int
+static int
 d30v_adjust_cost (insn, link, dep_insn, cost)
      rtx insn;
      rtx link ATTRIBUTE_UNUSED;
@@ -3511,11 +3517,20 @@ d30v_adjust_cost (insn, link, dep_insn, cost)
 	  || (GET_CODE (mem = SET_DEST (set_insn)) == MEM
 	      && reg_mentioned_p (reg, XEXP (mem, 0))))
 	{
-	  return cost + ((HAIFA_P) ? 2 : 4);
+	  return cost + 2;
 	}
     }
 
   return cost;
+}
+
+/* Function which returns the number of insns that can be
+   scheduled in the same machine cycle.  This must be constant
+   over an entire compilation.  The default is 1.  */
+static int
+d30v_issue_rate ()
+{
+  return 2;
 }
 
 

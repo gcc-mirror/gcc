@@ -812,24 +812,6 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 
 #define BRANCH_COST 3
 
-/* A C statement (sans semicolon) to update the integer variable COST
-   based on the relationship between INSN that is dependent on
-   DEP_INSN through the dependence LINK.  The default is to make no
-   adjustment to COST.  On the RS/6000, ignore the cost of anti- and
-   output-dependencies.  In fact, output dependencies on the CR do have
-   a cost, but it is probably not worthwhile to track it.  */
-
-#define ADJUST_COST(INSN, LINK, DEP_INSN, COST)				\
-  (COST) = rs6000_adjust_cost (INSN,LINK,DEP_INSN,COST)
-
-/* A C statement (sans semicolon) to update the integer scheduling priority
-   INSN_PRIORITY (INSN).  Reduce the priority to execute the INSN earlier,
-   increase the priority to execute INSN later.  Do not define this macro if
-   you do not need to adjust the scheduling priorities of insns.  */
-
-#define ADJUST_PRIORITY(INSN)						\
-  INSN_PRIORITY (INSN) = rs6000_adjust_priority (INSN, INSN_PRIORITY (INSN))
-
 /* Define this macro to change register usage conditional on target flags.
    Set MQ register fixed (already call_used) if not POWER architecture
    (RIOS1, RIOS2, RSC, and PPC601) so that it will not be allocated.
@@ -2631,10 +2613,6 @@ do {									\
 /* #define  MACHINE_no_sched_interblock */
 /* #define  MACHINE_no_sched_speculative */
 /* #define  MACHINE_no_sched_speculative_load */
-
-/* indicate that issue rate is defined for this machine
-   (no need to use the default) */
-#define ISSUE_RATE get_issue_rate ()
 
 /* General flags.  */
 extern int flag_pic;

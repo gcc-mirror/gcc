@@ -53,7 +53,6 @@ extern void emit_pic_move PARAMS ((rtx *, enum machine_mode));
 extern void s390_output_symbolic_const PARAMS ((FILE *, rtx));
 extern void print_operand_address PARAMS ((FILE *, rtx));
 extern void print_operand PARAMS ((FILE *, rtx, int));
-extern int s390_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 extern int s390_stop_dump_lit_p PARAMS ((rtx));
 extern void s390_dump_literal_pool PARAMS ((rtx, rtx));
 extern void s390_trampoline_template PARAMS ((FILE *));

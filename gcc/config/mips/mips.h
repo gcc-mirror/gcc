@@ -3688,16 +3688,6 @@ while (0)
     && (TUNE_MIPS4000 || TUNE_MIPS6000))	\
    ? 2 : 1)
 
-/* A C statement (sans semicolon) to update the integer variable COST
-   based on the relationship between INSN that is dependent on
-   DEP_INSN through the dependence LINK.  The default is to make no
-   adjustment to COST.  On the MIPS, ignore the cost of anti- and
-   output-dependencies.  */
-
-#define ADJUST_COST(INSN,LINK,DEP_INSN,COST)				\
-  if (REG_NOTE_KIND (LINK) != 0)					\
-    (COST) = 0; /* Anti or output dependence.  */
-
 /* If defined, modifies the length assigned to instruction INSN as a
    function of the context in which it is used.  LENGTH is an lvalue
    that contains the initially computed length of the insn and should

@@ -117,6 +117,8 @@ static int	 arm_comp_type_attributes	PARAMS ((tree, tree));
 static void	 arm_set_default_type_attributes	PARAMS ((tree));
 static void	 arm_elf_asm_named_section	PARAMS ((const char *,
 							 unsigned int));
+static int	 arm_adjust_cost		PARAMS ((rtx, rtx, rtx, int));
+
 #undef Hint
 #undef Mmode
 #undef Ulong
@@ -156,6 +158,9 @@ static void	 arm_elf_asm_named_section	PARAMS ((const char *,
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN arm_expand_builtin
+
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST arm_adjust_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2744,7 +2749,7 @@ arm_rtx_costs (x, code, outer)
     }
 }
 
-int
+static int
 arm_adjust_cost (insn, link, dep, cost)
      rtx insn;
      rtx link;

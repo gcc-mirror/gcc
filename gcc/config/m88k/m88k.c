@@ -72,6 +72,8 @@ static void m88k_output_function_begin_epilogue PARAMS ((FILE *));
 static void m88k_svr3_asm_out_constructor PARAMS ((rtx, int));
 static void m88k_svr3_asm_out_destructor PARAMS ((rtx, int));
 #endif
+
+static int m88k_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_FUNCTION_PROLOGUE
@@ -82,6 +84,9 @@ static void m88k_svr3_asm_out_destructor PARAMS ((rtx, int));
 #define TARGET_ASM_FUNCTION_BEGIN_EPILOGUE m88k_output_function_begin_epilogue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE m88k_output_function_epilogue
+
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST m88k_adjust_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3316,3 +3321,30 @@ m88k_svr3_asm_out_destructor (symbol, priority)
     assemble_integer (constm1_rtx, UNITS_PER_WORD, BITS_PER_WORD, 1);
 }
 #endif
+
+/* Adjust the cost of INSN based on the relationship between INSN that
+   is dependent on DEP_INSN through the dependence LINK.  The default
+   is to make no adjustment to COST.
+
+   On the m88k, ignore the cost of anti- and output-dependencies.  On
+   the m88100, a store can issue two cycles before the value (not the
+   address) has finished computing.  */
+
+static int
+m88k_adjust_cost (insn, link, dep, cost)
+     rtx insn;
+     rtx link;
+     rtx dep;
+     int cost;
+{
+  if (REG_NOTE_KIND (link) != 0)
+    return 0;  /* Anti or output dependence.  */
+
+  if (! TARGET_88100
+      && recog_memoized (insn) >= 0
+      && get_attr_type (insn) == TYPE_STORE
+      && SET_SRC (PATTERN (insn)) == SET_DEST (PATTERN (dep)))
+    return cost - 4;  /* 88110 store reservation station.  */
+
+  return cost;
+}

@@ -2755,40 +2755,6 @@ do {									\
 /* ??? Investigate.  */
 #define MAX_CONDITIONAL_EXECUTE 12
 
-/* A C statement (sans semicolon) to update the integer scheduling
-   priority `INSN_PRIORITY(INSN)'.  */
-
-/* ??? Investigate.  */
-/* #define ADJUST_PRIORITY (INSN) */
-
-/* A C statement (sans semicolon) to update the integer variable COST
-   based on the relationship between INSN that is dependent on
-   DEP_INSN through the dependence LINK.  The default is to make no
-   adjustment to COST.  This can be used for example to specify to
-   the scheduler that an output- or anti-dependence does not incur
-   the same cost as a data-dependence.  */
-
-#define ADJUST_COST(insn,link,dep_insn,cost) \
-  (cost) = ia64_adjust_cost(insn, link, dep_insn, cost)
-
-#define ISSUE_RATE ia64_issue_rate ()
-
-#define MD_SCHED_INIT(DUMP, SCHED_VERBOSE, MAX_READY) \
-  ia64_sched_init (DUMP, SCHED_VERBOSE, MAX_READY)
-
-#define MD_SCHED_REORDER(DUMP, SCHED_VERBOSE, READY, N_READY, CLOCK, CIM) \
-  (CIM) = ia64_sched_reorder (DUMP, SCHED_VERBOSE, READY, &N_READY, 0, CLOCK)
-
-#define MD_SCHED_REORDER2(DUMP, SCHED_VERBOSE, READY, N_READY, CLOCK, CIM) \
-  (CIM) = ia64_sched_reorder2 (DUMP, SCHED_VERBOSE, READY, &N_READY, CLOCK)
-
-#define MD_SCHED_FINISH(DUMP, SCHED_VERBOSE) \
-  ia64_sched_finish (DUMP, SCHED_VERBOSE)
-
-#define MD_SCHED_VARIABLE_ISSUE(DUMP, SCHED_VERBOSE, INSN, CAN_ISSUE_MORE) \
-  ((CAN_ISSUE_MORE)							   \
-   = ia64_variable_issue (DUMP, SCHED_VERBOSE, INSN, CAN_ISSUE_MORE))
-
 extern int ia64_final_schedule;
 
 #define IA64_UNWIND_INFO	1

@@ -66,7 +66,6 @@ extern int arith11_operand PARAMS ((rtx, enum machine_mode));
 extern int symbolic_expression_p PARAMS ((rtx));
 extern int hppa_address_cost PARAMS ((rtx));
 extern int symbolic_memory_operand PARAMS ((rtx, enum machine_mode));
-extern int pa_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 extern int pa_adjust_insn_length PARAMS ((rtx, int));
 extern int int11_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_cint_move_operand PARAMS ((rtx, enum machine_mode));

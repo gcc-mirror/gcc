@@ -1842,23 +1842,7 @@ do {									    \
 #define NO_RECURSIVE_FUNCTION_CSE
 /* Define this macro if it is as good or better for a function to call
    itself with an explicit address than to call an address kept in a
-   register.
-
-   `ADJUST_COST (INSN, LINK, DEP_INSN, COST)'
-   A C statement (sans semicolon) to update the integer variable COST
-   based on the relationship between INSN that is dependent on
-   DEP_INSN through the dependence LINK.  The default is to make no
-   adjustment to COST.  This can be used for example to specify to
-   the scheduler that an output- or anti-dependence does not incur
-   the same cost as a data-dependence.
-
-   `ADJUST_PRIORITY (INSN)'
-   A C statement (sans semicolon) to update the integer scheduling
-   priority `INSN_PRIORITY(INSN)'.  Reduce the priority to execute
-   the INSN earlier, increase the priority to execute INSN later.
-   Do not define this macro if you do not need to adjust the
-   scheduling priorities of insns.  */
-
+   register.  */
 
 #define TEXT_SECTION_ASM_OP "\t.text"
 /* A C expression whose value is a string containing the assembler

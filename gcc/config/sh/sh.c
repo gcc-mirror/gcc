@@ -158,6 +158,7 @@ static int sh_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
 static void sh_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void sh_insert_attributes PARAMS ((tree, tree *));
 static void sh_asm_named_section PARAMS ((const char *, unsigned int));
+static int sh_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_DECL_ATTRIBUTE
@@ -168,6 +169,9 @@ static void sh_asm_named_section PARAMS ((const char *, unsigned int));
 
 #undef TARGET_INSERT_ATTRIBUTES
 #define TARGET_INSERT_ATTRIBUTES sh_insert_attributes
+
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST sh_adjust_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5565,4 +5569,62 @@ sh_asm_named_section (name, flags)
 {
   /* ??? Perhaps we should be using default_coff_asm_named_section.  */
   fprintf (asm_out_file, "\t.section %s\n", name);
+}
+
+/* A C statement (sans semicolon) to update the integer variable COST
+   based on the relationship between INSN that is dependent on
+   DEP_INSN through the dependence LINK.  The default is to make no
+   adjustment to COST.  This can be used for example to specify to
+   the scheduler that an output- or anti-dependence does not incur
+   the same cost as a data-dependence.  */
+static int
+sh_adjust_cost (insn, link, dep_insn, cost)
+     rtx insn;
+     rtx link;
+     rtx dep_insn;
+     int cost;
+{
+  rtx reg;
+
+  if (GET_CODE(insn) == CALL_INSN)
+    {
+      /* The only input for a call that is timing-critical is the
+	 function's address.  */
+      rtx call = PATTERN (insn);
+
+      if (GET_CODE (call) == PARALLEL)
+	call = XVECEXP (call, 0 ,0);
+      if (GET_CODE (call) == SET)
+	call = SET_SRC (call);
+      if (GET_CODE (call) == CALL && GET_CODE (XEXP (call, 0)) == MEM
+	  && ! reg_set_p (XEXP (XEXP (call, 0), 0), dep_insn))
+	cost = 0;
+    }
+  /* All sfunc calls are parallels with at least four components.
+     Exploit this to avoid unnecessary calls to sfunc_uses_reg.  */
+  else if (GET_CODE (PATTERN (insn)) == PARALLEL
+	   && XVECLEN (PATTERN (insn), 0) >= 4
+	   && (reg = sfunc_uses_reg (insn)))
+    {
+      /* Likewise, the most timing critical input for an sfuncs call
+	 is the function address.  However, sfuncs typically start
+	 using their arguments pretty quickly.
+	 Assume a four cycle delay before they are needed.  */
+      if (! reg_set_p (reg, dep_insn))
+	cost -= TARGET_SUPERSCALAR ? 40 : 4;
+    }
+  /* Adjust load_si / pcload_si type insns latency.  Use the known
+     nominal latency and form of the insn to speed up the check.  */
+  else if (cost == 3
+	   && GET_CODE (PATTERN (dep_insn)) == SET
+	   /* Latency for dmpy type insns is also 3, so check the that
+	      it's actually a move insn.  */
+	   && general_movsrc_operand (SET_SRC (PATTERN (dep_insn)), SImode))
+    cost = 2;
+  else if (cost == 30
+	   && GET_CODE (PATTERN (dep_insn)) == SET
+	   && GET_MODE (SET_SRC (PATTERN (dep_insn))) == SImode)
+    cost = 20;
+
+  return cost;
 }

@@ -126,6 +126,7 @@ static int iris_section_align_entry_eq		PARAMS ((const PTR, const PTR));
 static hashval_t iris_section_align_entry_hash	PARAMS ((const PTR));
 static int iris6_section_align_1		PARAMS ((void **, void *));
 #endif
+static int mips_adjust_cost			PARAMS ((rtx, rtx, rtx, int));
 
 /* Global variables for machine-dependent things.  */
 
@@ -454,6 +455,9 @@ enum reg_class mips_char_to_class[256] =
 #define TARGET_ASM_FUNCTION_PROLOGUE mips_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE mips_output_function_epilogue
+
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST mips_adjust_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -9743,6 +9747,23 @@ mips_parse_cpu (cpu_string)
   return cpu;
 }
 
+/* Adjust the cost of INSN based on the relationship between INSN that
+   is dependent on DEP_INSN through the dependence LINK.  The default
+   is to make no adjustment to COST.
+
+   On the MIPS, ignore the cost of anti- and output-dependencies.  */
+static int
+mips_adjust_cost (insn, link, dep, cost)
+     rtx insn ATTRIBUTE_UNUSED;
+     rtx link;
+     rtx dep ATTRIBUTE_UNUSED;
+     int cost;
+{
+  if (REG_NOTE_KIND (link) != 0)
+    return 0;	/* Anti or output dependence.  */
+  return cost;
+}
+
 /* Cover function for UNIQUE_SECTION.  */
 
 void
@@ -9815,6 +9836,7 @@ mips_unique_section (decl, reloc)
 
   DECL_SECTION_NAME (decl) = build_string (len, string);
 }
+
 
 #ifdef TARGET_IRIX6
 /* Output assembly to switch to section NAME with attribute FLAGS.  */

@@ -49,6 +49,7 @@ static void check_epilogue_internal_label PARAMS ((FILE *));
 static void output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void a29k_asm_named_section PARAMS ((const char *, unsigned int));
+static int a29k_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 
 #define min(A,B)	((A) < (B) ? (A) : (B))
 
@@ -100,6 +101,8 @@ int a29k_compare_fp_p;
 #define TARGET_ASM_FUNCTION_PROLOGUE output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE output_function_epilogue
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST a29k_adjust_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1577,4 +1580,22 @@ a29k_asm_named_section (name, flags)
 {
   /* ??? Is it really correct to mark all sections as "bss"?  */
   fprintf (asm_out_file, "\t.sect %s, bss\n\t.use %s\n", name, name);
+}
+
+/* Return a new value for COST based on the relationship between INSN
+   that is dependent on DEP_INSN through the dependence LINK.  The
+   default is to make no adjustment to COST.
+
+   On the a29k, ignore the cost of anti- and output-dependencies.  */
+static int
+a29k_adjust_cost (insn, link, dep_insn, cost)
+     rtx insn ATTRIBUTE_UNUSED;
+     rtx link;
+     rtx dep_insn ATTRIBUTE_UNUSED;
+     int cost;
+{
+  if (REG_NOTE_KIND (link) != 0)
+    return 0;	/* Anti or output dependence.  */
+
+  return cost;
 }

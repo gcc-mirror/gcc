@@ -870,11 +870,6 @@ extern int alpha_memory_latency;
 
 /* Provide the cost of a branch.  Exact meaning under development.  */
 #define BRANCH_COST 5
-
-/* Adjust the cost of dependencies.  */
-
-#define ADJUST_COST(INSN,LINK,DEP,COST) \
-  (COST) = alpha_adjust_cost (INSN, LINK, DEP, COST)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -1723,15 +1718,6 @@ do {									\
 /* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits. */
 #define SHIFT_COUNT_TRUNCATED 1
-
-/* The EV4 is dual issue; EV5/EV6 are quad issue.  */
-#define ISSUE_RATE  (alpha_cpu == PROCESSOR_EV4 ? 2 : 4)
-
-/* Describe the fact that MULTI instructions are multiple instructions
-   and so to assume they don't pair with anything.  */
-#define MD_SCHED_VARIABLE_ISSUE(DUMP, SCHED_VERBOSE, INSN, CAN_ISSUE_MORE) \
-  if (recog_memoized (INSN) < 0 || get_attr_type (INSN) == TYPE_MULTI)	   \
-     (CAN_ISSUE_MORE) = 0
 
 /* Compute the cost of computing a constant rtl expression RTX
    whose rtx-code is CODE.  The body of this macro is a portion

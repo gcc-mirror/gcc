@@ -31,7 +31,6 @@ extern int    m32r_first_insn_address		PARAMS ((void));
 extern void   m32r_expand_prologue		PARAMS ((void));
 extern void   m32r_finalize_pic			PARAMS ((void));
 extern void   m32r_asm_file_start		PARAMS ((FILE *));
-extern void   m32r_sched_init 			PARAMS ((FILE *, int));
 extern int    direct_return 			PARAMS ((void));
 #ifdef TREE_CODE
 extern void   m32r_select_section		PARAMS ((tree, int));
@@ -60,10 +59,6 @@ extern void   m32r_expand_block_move 		PARAMS ((rtx *));
 extern void   m32r_print_operand		PARAMS ((FILE *, rtx, int));
 extern void   m32r_print_operand_address	PARAMS ((FILE *, rtx));
 extern int    m32r_address_cost 		PARAMS ((rtx));
-extern int    m32r_adjust_cost 			PARAMS ((rtx, rtx, rtx, int));
-extern int    m32r_adjust_priority 		PARAMS ((rtx, int));
-extern void   m32r_sched_reorder 		PARAMS ((FILE *, int, rtx *, int));
-extern int    m32r_sched_variable_issue 	PARAMS ((FILE *, int, rtx, int));
 extern int    m32r_not_same_reg 		PARAMS ((rtx, rtx));
 
 #ifdef HAVE_MACHINE_MODES
