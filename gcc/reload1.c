@@ -2349,13 +2349,13 @@ alter_reg (i, from_reg)
 	  /* No known place to spill from => no slot to reuse.  */
 	  x = assign_stack_local (GET_MODE (regno_reg_rtx[i]), total_size, -1);
 	  if (BYTES_BIG_ENDIAN)
-	    {
-	      /* Cancel the  big-endian correction done in assign_stack_local.
-		 Get the address of the beginning of the slot.
-		 This is so we can do a big-endian correction unconditionally
-		 below.  */
-	      adjust = inherent_size - total_size;
-	    }
+	    /* Cancel the  big-endian correction done in assign_stack_local.
+	       Get the address of the beginning of the slot.
+	       This is so we can do a big-endian correction unconditionally
+	       below.  */
+	    adjust = inherent_size - total_size;
+
+	  RTX_UNCHANGING_P (x) = RTX_UNCHANGING_P (regno_reg_rtx[i]);
 	}
       /* Reuse a stack slot if possible.  */
       else if (spill_stack_slot[from_reg] != 0
@@ -2389,14 +2389,10 @@ alter_reg (i, from_reg)
 		 below.  */
 	      adjust = GET_MODE_SIZE (mode) - total_size;
 	      if (adjust)
-		{
-		  stack_slot = gen_rtx (MEM, mode_for_size (total_size
-							    * BITS_PER_UNIT,
-							    MODE_INT, 1),
-					plus_constant (XEXP (x, 0), adjust));
-		  RTX_UNCHANGING_P (stack_slot)
-		    = RTX_UNCHANGING_P (regno_reg_rtx[i]);
-		}
+		stack_slot = gen_rtx (MEM, mode_for_size (total_size
+							  * BITS_PER_UNIT,
+							  MODE_INT, 1),
+				      plus_constant (XEXP (x, 0), adjust));
 	    }
 	  spill_stack_slot[from_reg] = stack_slot;
 	  spill_stack_slot_width[from_reg] = total_size;
