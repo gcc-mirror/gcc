@@ -1,3 +1,10 @@
+2004-06-14  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* config.gcc: Remove sparc64-*-aout*.
+	* config/sparc/sparc.c (sparc_aout_select_rtx_section): Remove.
+	* config/sparc/sp64-aout.h: Remove.
+	* config/sparc/aout.h: Remove.
+
 2004-06-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c: Include "tree-gimple.h".

@@ -151,9 +151,6 @@ static void sparc_function_prologue (FILE *, HOST_WIDE_INT, int);
 #ifdef OBJECT_FORMAT_ELF
 static void sparc_elf_asm_named_section (const char *, unsigned int);
 #endif
-static void sparc_aout_select_rtx_section (enum machine_mode, rtx,
-					   unsigned HOST_WIDE_INT)
-     ATTRIBUTE_UNUSED;
 
 static int sparc_adjust_cost (rtx, rtx, rtx, int);
 static int sparc_issue_rate (void);
@@ -8137,20 +8134,6 @@ sparc_init_libfuncs (void)
   gofast_maybe_init_libfuncs ();
 }
 
-/* Use text section for a constant unless we need more alignment than
-   that offers.  */
-
-static void
-sparc_aout_select_rtx_section (enum machine_mode mode, rtx x,
-			       unsigned HOST_WIDE_INT align)
-{
-  if (align <= MAX_TEXT_ALIGN
-      && ! (flag_pic && symbolic_operand (x, mode)))
-    readonly_data_section ();
-  else
-    data_section ();
-}
-
 int
 sparc_extra_constraint_check (rtx op, int c, int strict)
 {

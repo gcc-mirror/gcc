@@ -1903,10 +1903,6 @@ sparc86x-*-elf*)
         extra_parts="crtbegin.o crtend.o"
 	use_fixproto=yes
 	;;
-sparc64-*-aout*)
-	tm_file="sparc/sparc.h sparc/aout.h sparc/sp64-aout.h"
-	use_fixproto=yes
-	;;
 sparc64-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/sp64-elf.h"
 	tmake_file="${tmake_file} sparc/t-crtfm"
