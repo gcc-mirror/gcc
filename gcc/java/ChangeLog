@@ -1,3 +1,8 @@
+2001-12-11  Tom Tromey  <tromey@redhat.com>
+
+	* lex.c (java_init_lex): Define wfl_to_string as
+	gnu.gcj.runtime.StringBuffer unless generating bytecode.
+
 2001-12-11  Jeff Sturm  <jsturm@one-point.com>
 
 	* class.c (make_method_value): Use null_pointer_node to
