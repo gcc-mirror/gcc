@@ -1,3 +1,11 @@
+2004-12-05  Steven G. Kargl  <kargls@comcast.net>
+
+	PR libfortran/18966
+	* gfortran.h: typedef GFC_INTEGER_1 and GFC_INTEGER_2
+	* intrinsics/cshift0.c (cshift0_1,cshift0_2): New functions.
+	* intrinsics/eoshift0.c (eoshift0_1,eoshift0_2): New functions.
+	* intrinsics/eoshift2.c (eoshift2_1,eoshift2_2): New functions.
+
 2004-12-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* io/transfer.c (read_sf): Change bitwise "and" to logical "and".

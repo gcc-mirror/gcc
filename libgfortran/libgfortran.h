@@ -185,6 +185,8 @@ isfinite (double x)
 #define IMAGPART(z) (__imag__(z))
 #define COMPLEX_ASSIGN(z_, r_, i_) {__real__(z_) = (r_); __imag__(z_) = (i_);}
 
+typedef int8_t GFC_INTEGER_1;
+typedef int16_t GFC_INTEGER_2;
 typedef int32_t GFC_INTEGER_4;
 typedef int64_t GFC_INTEGER_8;
 typedef uint32_t GFC_UINTEGER_4;
