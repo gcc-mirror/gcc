@@ -1,3 +1,7 @@
+2001-02-25  Greg Freemyer <freemyer@NorcrossGroup.com>
+
+	* libmath/mathconf.h (GET_LDOUBLE_MSW64): Fix thinko.
+
 2001-02-23  Alexandre Oliva <aoliva@redhat.com>
 
         * mknumeric_limits (CC): Use VAR=${VAR=...} form.
