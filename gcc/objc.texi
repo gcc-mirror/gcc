@@ -1,14 +1,9 @@
-\input texinfo  @c -*-texinfo-*-
-@c %**start of header 
-@setfilename objc-features.info
-@settitle GNU Objective-C runtime features
-@setchapternewpage odd
-@c %**end of header
-     
-Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-1999, 2000, 2001 Free Software Foundation, Inc.
+@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+@c 1999, 2000, 2001 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
 
-@node Top, Executing code before main, (dir), (dir)
+@node Objective C
 @comment  node-name,  next,  previous,  up
 
 @chapter GNU Objective-C runtime features
@@ -25,10 +20,9 @@ comments about this document to Ovidiu Predescu
 * Garbage Collection::          
 * Constant string objects::     
 * compatibility_alias::
-* GNU Free Documentation License::
 @end menu
 
-@node Executing code before main, Type encoding, Top, Top
+@node Executing code before main, Type encoding, Objective C, Objective C
 @section @code{+load}: Executing code before main
 
 
@@ -174,7 +168,7 @@ above apply to classes defined in bundle.
 
 
 
-@node Type encoding, Garbage Collection, Executing code before main, Top
+@node Type encoding, Garbage Collection, Executing code before main, Objective C
 @section Type encoding
 
 The Objective-C compiler generates type encodings for all the
@@ -314,7 +308,7 @@ however, the type specifiers are only encoded when they appear in method
 argument types.
 
 
-@node Garbage Collection, Constant string objects, Type encoding, Top
+@node Garbage Collection, Constant string objects, Type encoding, Objective C
 @section Garbage Collection
 
 Support for a new memory management policy has been added by using a
@@ -434,8 +428,6 @@ as argument to this option. It is possible to have multiple compilation
 units referring to different constant string classes, neither the
 compiler nor the linker impose any restrictions in doing this.
 
-@include fdl.texi
-
 @c =========================================================================
 @node compatibility_alias
 @section compatibility_alias
@@ -464,5 +456,3 @@ There are some constraints on how this can be used -
 @item @code{GSWApplication} (the real class) must be an existing class.
 
 @end itemize
-
-@bye

@@ -1,3 +1,11 @@
+2001-05-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* objc.texi: Move from ../libobjc/objc-features.texi.  Adjust for
+	inclusion as a chapter of the GCC manual.
+	* gcc.texi: Include objc.texi.
+	* fdl.texi: Use @unnumberedsec for the addendum.
+	* Makefile.in ($(srcdir)/gcc.info, gcc.dvi): Update dependencies.
+
 Wed May  9 16:01:41 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (DImode move splitters): Use !MMX and !SSE for the condition.

@@ -368,7 +368,7 @@ as a draft) by the Free Software Foundation.
 @end enumerate
 
 @page
-@subsection ADDENDUM: How to use this License for your documents
+@unnumberedsec ADDENDUM: How to use this License for your documents
 
 To use this License in a document you have written, include a copy of
 the License in the document and put the following copyright and

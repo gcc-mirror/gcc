@@ -2246,7 +2246,8 @@ $(srcdir)/cpp.info: $(srcdir)/cpp.texi
 
 $(srcdir)/gcc.info: $(srcdir)/gcc.texi $(srcdir)/extend.texi $(srcdir)/install.texi \
 	  $(srcdir)/invoke.texi $(srcdir)/md.texi $(srcdir)/rtl.texi \
-	  $(srcdir)/tm.texi $(srcdir)/gcov.texi $(srcdir)/contrib.texi
+	  $(srcdir)/tm.texi $(srcdir)/gcov.texi $(srcdir)/contrib.texi \
+	  $(srcdir)/objc.texi
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -o gcc.info gcc.texi
 
 $(srcdir)/c-tree.info: $(srcdir)/c-tree.texi
@@ -2262,7 +2263,8 @@ dvi: gcc.dvi cpp.dvi lang.dvi
 # This works with GNU Make's default rule.
 gcc.dvi: $(srcdir)/gcc.texi $(srcdir)/extend.texi $(srcdir)/install.texi \
 	 $(srcdir)/invoke.texi $(srcdir)/md.texi $(srcdir)/rtl.texi \
-	 $(srcdir)/tm.texi $(srcdir)/gcov.texi
+	 $(srcdir)/tm.texi $(srcdir)/gcov.texi $(srcdir)/contrib.texi \
+	 $(srcdir)/objc.texi
 	TEXINPUTS=${texidir}:$(srcdir):$$TEXINPUTS tex gcc.texi
 	texindex gcc.??
 	TEXINPUTS=${texidir}:$(srcdir):$$TEXINPUTS tex gcc.texi
