@@ -1085,7 +1085,7 @@ coerce_template_parms (parms, arglist, in_decl)
 	    }
 	  else if (!TREE_CONSTANT (val))
 	    {
-	      cp_error ("non-const `%E' cannot be used as template argument",
+	      cp_error ("non-constant `%E' cannot be used as template argument",
 			arg);
 	      val = error_mark_node;
 	    }
@@ -1157,7 +1157,13 @@ comp_template_args (oldargs, newargs)
 	continue;
       if (TREE_CODE (nt) != TREE_CODE (ot))
 	return 0;
-      if (TREE_CODE_CLASS (TREE_CODE (ot)) == 't')
+      if (TREE_CODE (nt) == TREE_VEC)
+        {
+          /* For member templates */
+	  if (comp_template_args (nt, ot))
+	    continue;
+        }
+      else if (TREE_CODE_CLASS (TREE_CODE (ot)) == 't')
 	{
 	  if (comptypes (ot, nt, 1))
 	    continue;
@@ -2025,6 +2031,39 @@ lookup_nested_type_by_name (ctype, name)
   return NULL_TREE;
 }
 
+/* If arg is a non-type template parameter that does not depend on template
+   arguments, fold it like we weren't in the body of a template.  */
+
+static tree
+maybe_fold_nontype_arg (arg)
+     tree arg;
+{
+  if (TREE_CODE_CLASS (TREE_CODE (arg)) != 't'
+      && !uses_template_parms (arg))
+    {
+      /* Sometimes, one of the args was an expression involving a
+	 template constant parameter, like N - 1.  Now that we've
+	 tsubst'd, we might have something like 2 - 1.  This will
+	 confuse lookup_template_class, so we do constant folding
+	 here.  We have to unset processing_template_decl, to
+	 fool build_expr_from_tree() into building an actual
+	 tree.  */
+
+      int saved_processing_template_decl = processing_template_decl; 
+      processing_template_decl = 0;
+      arg = fold (build_expr_from_tree (arg));
+      processing_template_decl = saved_processing_template_decl; 
+    }
+  return arg;
+}
+
+/* Take the tree structure T and replace template parameters used therein
+   with the argument vector ARGS.  NARGS is the number of args; should
+   be removed.  IN_DECL is an associated decl for diagnostics.
+
+   tsubst is used for dealing with types, decls and the like; for
+   expressions, use tsubst_expr or tsubst_copy.  */
+
 tree
 tsubst (t, args, nargs, in_decl)
      tree t, args;
@@ -2246,14 +2285,6 @@ tsubst (t, args, nargs, in_decl)
 	    type = tsubst (type, args, nargs, in_decl);
 	  }
 
-	if (type == TREE_TYPE (t)
-	    && (! member || ctx == DECL_CLASS_CONTEXT (t)))
-	  {
-	    t = copy_node (t);
-	    copy_lang_decl (t);
-	    return t;
-	  }
-
 	/* Do we already have this instantiation?  */
 	if (DECL_TEMPLATE_INFO (t) != NULL_TREE)
 	  {
@@ -2262,7 +2293,8 @@ tsubst (t, args, nargs, in_decl)
 
 	    for (; decls; decls = TREE_CHAIN (decls))
 	      if (TREE_TYPE (TREE_VALUE (decls)) == type
-		  && DECL_CLASS_CONTEXT (TREE_VALUE (decls)) == ctx)
+		  && DECL_CLASS_CONTEXT (TREE_VALUE (decls)) == ctx
+		  && comp_template_args (TREE_PURPOSE (decls), args))
 		return TREE_VALUE (decls);
 	  }
 
@@ -2616,24 +2648,8 @@ tsubst (t, args, nargs, in_decl)
 
 	for (i = 0; i < len; i++)
 	  {
-	    elts[i] = tsubst_expr (TREE_VEC_ELT (t, i), args, nargs, in_decl);
-
-	    if (TREE_CODE_CLASS (TREE_CODE (elts[i])) != 't'
-		&& !uses_template_parms (elts[i]))
-	      {
-		/* Sometimes, one of the args was an expression involving a
-		   template constant parameter, like N - 1.  Now that we've
-		   tsubst'd, we might have something like 2 - 1.  This will
-		   confuse lookup_template_class, so we do constant folding
-		   here.  We have to unset processing_template_decl, to
-		   fool build_expr_from_tree() into building an actual
-		   tree.  */
-
-		int saved_processing_template_decl = processing_template_decl; 
-		processing_template_decl = 0;
-		elts[i] = fold (build_expr_from_tree (elts[i]));
-		processing_template_decl = saved_processing_template_decl; 
-	      }
+	    elts[i] = maybe_fold_nontype_arg
+	      (tsubst_expr (TREE_VEC_ELT (t, i), args, nargs, in_decl));
 
 	    if (elts[i] != TREE_VEC_ELT (t, i))
 	      need_new = 1;
@@ -2847,6 +2863,10 @@ do_poplevel ()
   return t;
 }
 
+/* Like tsubst, but deals with expressions.  This function just replaces
+   template parms; to finish processing the resultant expression, use
+   tsubst_expr.  */
+
 tree
 tsubst_copy (t, args, nargs, in_decl)
      tree t, args;
@@ -2966,7 +2986,7 @@ tsubst_copy (t, args, nargs, in_decl)
       {
 	tree fn = TREE_OPERAND (t, 0);
 	if (really_overloaded_fn (fn))
-	  fn = tsubst_copy (TREE_VALUE (fn), args, nargs, in_decl);
+	  fn = tsubst_copy (get_first_fn (fn), args, nargs, in_decl);
 	else
 	  fn = tsubst_copy (fn, args, nargs, in_decl);
 	return build_nt
@@ -3028,10 +3048,14 @@ tsubst_copy (t, args, nargs, in_decl)
 
     case TEMPLATE_ID_EXPR:
       {
-	tree r = lookup_template_function
-	  (tsubst_copy (TREE_OPERAND (t, 0), args, nargs, in_decl),
-	   tsubst_copy (TREE_OPERAND (t, 1), args, nargs, in_decl));
-	return r;
+        /* Substituted template arguments */
+	tree targs = tsubst_copy (TREE_OPERAND (t, 1), args, nargs, in_decl);
+	tree chain;
+	for (chain = targs; chain; chain = TREE_CHAIN (chain))
+	  TREE_VALUE (chain) = maybe_fold_nontype_arg (TREE_VALUE (chain));
+
+	return lookup_template_function
+	  (tsubst_copy (TREE_OPERAND (t, 0), args, nargs, in_decl), targs);
       }
 
     case TREE_LIST:
@@ -3088,6 +3112,8 @@ tsubst_copy (t, args, nargs, in_decl)
       return t;
     }
 }
+
+/* Like tsubst_copy, but also does semantic processing and RTL expansion.  */
 
 tree
 tsubst_expr (t, args, nargs, in_decl)

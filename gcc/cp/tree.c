@@ -1306,7 +1306,8 @@ tree
 get_first_fn (from)
      tree from;
 {
-  if (TREE_CODE (from) == FUNCTION_DECL 
+  if (TREE_CODE (from) == FUNCTION_DECL
+      || TREE_CODE (from) == TEMPLATE_ID_EXPR
       || DECL_FUNCTION_TEMPLATE_P (from))
     return from;
 

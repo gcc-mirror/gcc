@@ -61,6 +61,35 @@ Tue Nov 11 02:53:44 1997  Jason Merrill  <jason@lasher.cygnus.com>
 
 	* except.c (do_pop_exception): Return a value.
 
+Mon Nov 10 20:25:31 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_new_method_call): Handle getting a
+ 	TEMPLATE_ID_EXPR around a TEMPLATE_DECL.  Don't look for a field
+ 	if we got template parms.
+	* typeck.c (build_x_function_call): Remember the TEMPLATE_ID_EXPR,
+ 	not just the args.
+	* decl2.c (build_expr_from_tree): Tweak last change.
+	* pt.c (tsubst_copy): Use get_first_fn instead of TREE_VALUE.
+	(maybe_fold_nontype_arg): Split out from tsubst_copy.
+	* tree.c (get_first_fn): Just return a TEMPLATE_ID_EXPR.
+
+Mon Nov 10 20:08:38 1997  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
+
+	* pt.c (tsubst_copy): Handle explicit template arguments in 
+	function calls.
+	* typeck.c (build_x_function_call): Likewise.
+	* decl2.c (build_expr_from_tree): Lookup function name if it 
+	hasn't been done.
+
+	* pt.c (tsubst): Instantiate template functions properly when 
+	template parameter does not appear in function arguments and return 
+	type.
+	(comp_template_args): Handle member templates required by tsubst.
+
+Mon Nov 10 20:08:29 1997  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
+
+	* pt.c (coerce_template_parms): Tweak error message.
+
 Mon Nov 10 03:04:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	Complete nested exception support.
