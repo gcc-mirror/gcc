@@ -986,7 +986,7 @@ namespace std
       insert_equal(_II __first, _II __last)
       {
 	for (; __first != __last; ++__first)
-	  insert_equal(*__first);
+	  insert_equal(end(), *__first);
       }
 
   template<typename _Key, typename _Val, typename _KoV,
@@ -997,7 +997,7 @@ namespace std
     insert_unique(_II __first, _II __last)
     {
       for (; __first != __last; ++__first)
-	insert_unique(*__first);
+	insert_unique(end(), *__first);
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
