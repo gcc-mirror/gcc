@@ -1,4 +1,9 @@
 2002-01-28  Paolo Carlini  <pcarlini@unitus.it>
+            Charles Leggett <CGLeggett@lbl.gov>
+
+	* testsuite/27_io/filebuf_members.cc (test_05): Add test.
+
+2002-01-28  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/27_io/ostream_inserter_arith.cc (test03):
 	Fix to deal correctly with both 32 bit and 64 bit architectures
