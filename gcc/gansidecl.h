@@ -35,7 +35,9 @@ Boston, MA 02111-1307, USA.  */
    gcc header files in case they use these keywords.  Otherwise
    conflicts might occur. */
 #if (GCC_VERSION >= 2007)
-# undef const
+# ifdef __STDC__
+#  undef const
+# endif
 # undef inline
 # define inline __inline__  /* Modern gcc can use `__inline__' freely. */
 # ifndef HAVE_LONG_DOUBLE
