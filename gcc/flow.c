@@ -2630,7 +2630,7 @@ life_analysis (f, file, flags)
 #endif
 
   if (! optimize)
-    flags &= PROP_DEATH_NOTES | PROP_REG_INFO;
+    flags &= ~(PROP_LOG_LINKS | PROP_AUTOINC);
 
   /* The post-reload life analysis have (on a global basis) the same
      registers live as was computed by reload itself.  elimination
@@ -2646,7 +2646,7 @@ life_analysis (f, file, flags)
     flags &= ~(PROP_REG_INFO | PROP_AUTOINC);
 
   /* We want alias analysis information for local dead store elimination.  */
-  if (flags & PROP_SCAN_DEAD_CODE)
+  if (optimize && (flags & PROP_SCAN_DEAD_CODE))
     init_alias_analysis ();
 
   /* Always remove no-op moves.  Do this before other processing so
@@ -2676,7 +2676,7 @@ life_analysis (f, file, flags)
   update_life_info (NULL, UPDATE_LIFE_GLOBAL, flags);
 
   /* Clean up.  */
-  if (flags & PROP_SCAN_DEAD_CODE)
+  if (optimize && (flags & PROP_SCAN_DEAD_CODE))
     end_alias_analysis ();
 
   if (file)
@@ -3756,7 +3756,8 @@ init_propagate_block_info (bb, live, local_set, flags)
      used later in the block are dead.  So make a pass over the block
      recording any such that are made and show them dead at the end.  We do
      a very conservative and simple job here.  */
-  if ((flags & PROP_SCAN_DEAD_CODE)
+  if (optimize
+      && (flags & PROP_SCAN_DEAD_CODE)
       && (bb->succ == NULL
           || (bb->succ->succ_next == NULL
 	      && bb->succ->dest == EXIT_BLOCK_PTR)))
@@ -4346,7 +4347,7 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 
   /* If this set is a MEM, then it kills any aliased writes. 
      If this set is a REG, then it kills any MEMs which use the reg.  */
-  if (flags & PROP_SCAN_DEAD_CODE)
+  if (optimize && (flags & PROP_SCAN_DEAD_CODE))
     {
       if (GET_CODE (reg) == MEM || GET_CODE (reg) == REG)
 	{
@@ -5321,7 +5322,7 @@ mark_used_regs (pbi, x, cond, insn)
     case MEM:
       /* Don't bother watching stores to mems if this is not the 
 	 final pass.  We'll not be deleting dead stores this round.  */
-      if (flags & PROP_SCAN_DEAD_CODE)
+      if (optimize && (flags & PROP_SCAN_DEAD_CODE))
 	{
           /* Invalidate the data for the last MEM stored, but only if MEM is
 	     something that can be stored into.  */
