@@ -1,5 +1,8 @@
 Sun Apr  4 13:55:20 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (placeholder_list): Move decl to file scope.
+	(do_jump, case WITH_RECORD_EXPR): New case.
+
 	* tree.h (STRIP_SIGN_NOPS): New macro.
 	* fold-const.c (optimize_minmax_comparison): New function.
 	(invert_truthvalue, case WITH_RECORD_EXPR): New case.
