@@ -314,6 +314,10 @@ extern void output_deferred_addressed_constants PROTO((void));
 /* Return the size of the constant pool.  */
 extern int get_pool_size		PROTO((void));
 
+#ifdef HAVE_peephole
+extern rtx peephole			PROTO((rtx));
+#endif
+
 #ifdef TREE_CODE
 /* Write all the constants in the constant pool.  */
 extern void output_constant_pool	PROTO((char *, tree));

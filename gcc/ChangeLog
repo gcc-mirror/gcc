@@ -1,3 +1,15 @@
+Sun Oct 24 15:20:59 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* final.c (peephole): Delete prototype.
+
+	* gcse.c (process_insert_insn, pre_edge_insert): Add prototypes.
+	(pre_insert_copies): Remove unused variable `bb'.
+
+	* genrecog.c (debug_decision_0, debug_decision_list, main): Add
+	prototypes.
+
+	* output.h (peephole): Add prototype.
+
 Sun Oct 24 11:35:30 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* config/mips/iris6.h (SUBTARGET_ASM_OPTIMIZING_SPEC): Define to
