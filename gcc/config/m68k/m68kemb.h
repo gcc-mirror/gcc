@@ -38,6 +38,35 @@
 #undef NEEDS_UNTYPED_CALL
 #define NEEDS_UNTYPED_CALL 1
 
-/* crt0.o should be specified in the linker script.  */
-#undef STARTFILE_SPEC
-#define STARTFILE_SPEC ""
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES "-Dmc68000 -D__embedded__ -Asystem(embedded) \
+  -Amachine(mc68000)"
+
+#undef LINK_SPEC
+#define LINK_SPEC "\
+  %{midp: %{!Ttext*: -Ttext 0x00010000}} \
+  %{mbcc: %{!Ttext*: -Ttext 0x00003000}} \
+  %{mmvme135: %{!Ttext*: -Ttext 0x00005000}} \
+  %{mmvme162: %{!Ttext*: -Ttext 0x00010000}}"
+
+/* Use the target specific crt0 and libgloss/newlib libraries if desired */
+#undef  STARTFILE_SPEC
+#define STARTFILE_SPEC "\
+  %{midp: idp-crt0.o} \
+  %{mbcc: bcc-crt0.o} \
+  %{mmvme135: mvme135-crt0.o} \
+  %{mmvme162: mvme162-crt0.o}"
+
+#undef  LIB_SPEC
+#define LIB_SPEC "\
+  %{mmvme135: -lc -lmvme135 -lc} \
+  %{mmvme162: -lc -lmvme162 -lc} \
+  %{midp: -lc -lidp -lc} \
+  %{mbcc: -lc -lbcc -lc}"
+
+#undef  SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES \
+  { "mvme135", 0 }, \
+  { "mvme162", 0 }, \
+  { "bcc", 0}, \
+  { "idp", 0 }, \
