@@ -10351,9 +10351,17 @@ invalid_nontype_parm_type_p (type, complain)
   else if (TYPE_PTRMEMFUNC_P (type))
     return 0;
   else if (!pedantic && TREE_CODE (type) == REAL_TYPE)
-    return 0; /* GNU extension */
+    {
+      if (complain)
+        cp_deprecated ("floating point template constant parameter");
+      return 0; /* GNU extension */
+    }
   else if (!pedantic && TREE_CODE (type) == COMPLEX_TYPE)
-    return 0; /* GNU extension */
+    {
+      if (complain)
+        cp_deprecated ("complex template constant parameter");
+      return 0; /* GNU extension */
+    }
   else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
     return 0;
   else if (TREE_CODE (type) == TYPENAME_TYPE)

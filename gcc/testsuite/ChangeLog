@@ -1,3 +1,7 @@
+2001-02-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.ext/realpt1.C: Deprecate.
+
 2001-02-28  Geoffrey Keating  <geoffk@redhat.com>
 
         * g++.dg/vtgc1.C: Update for new ABI.

@@ -1,3 +1,8 @@
+2001-02-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* extend.texi (Deprecated Features): Deprecate float and
+	complex template constant parms.
+
 Tue Feb 27 16:45:00 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (override_options): Promote -fpic to -fPIC.

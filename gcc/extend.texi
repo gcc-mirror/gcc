@@ -4393,6 +4393,9 @@ removed from g++ at some point.
 The use of initializer lists with new expressions has been deprecated,
 and will be removed from g++ at some point.
 
+Floating point and complex template constant parameters are deprecated,
+and will be removed from g++ at some point.
+
 @node Backwards Compatibility
 @section Backwards Compatibility
 @cindex Backwards Compatibility
