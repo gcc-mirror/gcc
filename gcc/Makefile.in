@@ -2468,7 +2468,7 @@ s-gtyp-gen: Makefile
 	$(STAMP) s-gtyp-gen
 
 s-gtype: gengtype$(build_exeext) $(GTFILES)
-	$(RUN_GEN) ./gengtype
+	$(RUN_GEN) ./gengtype$(build_exeext)
 	$(STAMP) s-gtype
 
 #
