@@ -323,7 +323,7 @@ init_attributes ()
   add_attribute (A_COMMON, "common", 0, 0, 1);
   add_attribute (A_NORETURN, "noreturn", 0, 0, 1);
   add_attribute (A_NORETURN, "volatile", 0, 0, 1);
-  add_attribute (A_UNUSED, "unused", 0, 0, 1);
+  add_attribute (A_UNUSED, "unused", 0, 0, 0);
   add_attribute (A_CONST, "const", 0, 0, 1);
   add_attribute (A_T_UNION, "transparent_union", 0, 0, 0);
   add_attribute (A_CONSTRUCTOR, "constructor", 0, 0, 1);
@@ -440,8 +440,11 @@ decl_attributes (node, attributes, prefix_attributes)
 	  break;
 
 	case A_UNUSED:
-	  if (TREE_CODE (decl) == PARM_DECL || TREE_CODE (decl) == VAR_DECL
-	      || TREE_CODE (decl) == FUNCTION_DECL)
+	  if (is_type)
+	    TREE_USED (type) = 1;
+	  else if (TREE_CODE (decl) == PARM_DECL 
+		   || TREE_CODE (decl) == VAR_DECL
+		   || TREE_CODE (decl) == FUNCTION_DECL)
 	    TREE_USED (decl) = 1;
 	  else
 	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
