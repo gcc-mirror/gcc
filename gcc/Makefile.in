@@ -910,6 +910,7 @@ gcc.o: gcc.c $(CONFIG_H) gvarargs.h config.status
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   -DSTANDARD_STARTFILE_PREFIX=\"$(libdir)/\" \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc-lib/\" \
+  -DDEFAULT_TARGET_VERSION=\"$(version)\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target)\" \
   -DTOOLDIR_BASE_PREFIX=\"$(exec_prefix)/\" \
   -DTOOLDIR=\"$(tooldir)/\" \
