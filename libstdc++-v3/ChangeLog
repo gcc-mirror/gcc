@@ -1,3 +1,14 @@
+2003-11-08  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/12967
+	* include/bits/list.tcc (merge): Implement resolution of
+	DR 300 [WP].
+	* docs/html/ext/howto.html: Add entry for DR 300; tweak entry
+	for DR 231.
+
+	* docs/html/ext/lwg-active.html, docs/html/ext/lwg-defects.html:
+	Import R27.
+
 2003-11-07  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* libsupc++/vec.cc: Conform to C++STYLE.
