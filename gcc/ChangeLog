@@ -1,3 +1,8 @@
+2003-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgcleanup.c (outgoing_edges_match): Check REG_EH_REGION notes
+	even if nehedges1 is 0.
+
 2003-08-01  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/fixfixes.c, fixinc/fixlib.c, fixinc/fixlib.h,

@@ -1337,15 +1337,17 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 	return false;
     }
 
-  /* In case we do have EH edges, ensure we are in the same region.  */
-  if (nehedges1)
-    {
-      rtx n1 = find_reg_note (bb1->end, REG_EH_REGION, 0);
-      rtx n2 = find_reg_note (bb2->end, REG_EH_REGION, 0);
+  /* Ensure the same EH region.  */
+  {
+    rtx n1 = find_reg_note (bb1->end, REG_EH_REGION, 0);
+    rtx n2 = find_reg_note (bb2->end, REG_EH_REGION, 0);
 
-      if (XEXP (n1, 0) != XEXP (n2, 0))
-	return false;
-    }
+    if (!n1 && n2)
+      return false;
+
+    if (n1 && (!n2 || XEXP (n1, 0) != XEXP (n2, 0)))
+      return false;
+  }
 
   /* We don't need to match the rest of edges as above checks should be enough
      to ensure that they are equivalent.  */
