@@ -59,11 +59,11 @@ do								\
   do {							\
     extern char *version_string, *language_string;	\
     {							\
-      int len = strlen (dump_base_name);		\
-      char *na = dump_base_name + len;			\
+      int len = strlen (main_input_filename);		\
+      char *na = main_input_filename + len;		\
       char shorter[15];					\
-      /* NA gets DUMP_BASE_NAME sans directory names.  */\
-      while (na > dump_base_name)			\
+      /* NA gets MAIN_INPUT_FILENAME sans directory names.  */\
+      while (na > main_input_filename)			\
 	{						\
 	  if (na[-1] == '/')				\
 	    break;					\
