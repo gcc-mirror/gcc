@@ -272,6 +272,7 @@ static int frv_registers_used_p			PARAMS ((rtx, unsigned char [],
 							 int));
 static int frv_registers_set_p			PARAMS ((rtx, unsigned char [],
 							 int));
+static int frv_issue_rate			PARAMS ((void));
 static int frv_use_dfa_pipeline_interface	PARAMS ((void));
 static void frv_pack_insns			PARAMS ((void));
 static void frv_function_prologue		PARAMS ((FILE *, HOST_WIDE_INT));
@@ -314,6 +315,8 @@ static void frv_asm_out_destructor		PARAMS ((rtx, int));
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
+#undef  TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE frv_issue_rate
 #undef  TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
 #define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE frv_use_dfa_pipeline_interface
 
@@ -8195,6 +8198,32 @@ frv_init_machine_status ()
   return ggc_alloc_cleared (sizeof (struct machine_function));
 }
 
+/* Implement TARGET_SCHED_ISSUE_RATE.  */
+
+static int
+frv_issue_rate (void)
+{
+  if (!TARGET_PACK)
+    return 1;
+
+  switch (frv_cpu_type)
+    {
+    default:
+    case FRV_CPU_FR300:
+    case FRV_CPU_SIMPLE:
+      return 1;
+
+    case FRV_CPU_FR400:
+      return 2;
+
+    case FRV_CPU_GENERIC:
+    case FRV_CPU_FR500:
+    case FRV_CPU_TOMCAT:
+      return 4;
+    }
+}
+
+
 /* Implement TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE.  */
 
 static int
@@ -8645,22 +8674,11 @@ frv_pack_insns ()
   unsigned char reg_state[FIRST_PSEUDO_REGISTER];
 
   /* If we weren't going to pack the insns, don't bother with this pass.  */
-  if (!optimize || !flag_schedule_insns_after_reload || TARGET_NO_VLIW_BRANCH)
+  if (!optimize
+      || !flag_schedule_insns_after_reload
+      || TARGET_NO_VLIW_BRANCH
+      || frv_issue_rate () == 1)
     return;
-
-  switch (frv_cpu_type)
-    {
-    default:
-    case FRV_CPU_FR300:		/* FR300/simple are single issue */
-    case FRV_CPU_SIMPLE:
-      return;
-
-    case FRV_CPU_GENERIC:	/* FR-V and FR500 are multi-issue */
-    case FRV_CPU_FR400:
-    case FRV_CPU_FR500:
-    case FRV_CPU_TOMCAT:
-      break;
-    }
 
   /* Set up the instruction and register states.  */
   dfa_start ();

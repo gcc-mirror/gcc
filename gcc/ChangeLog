@@ -1,3 +1,9 @@
+2003-10-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/frv/frv.c (frv_issue_rate): New function.
+	(frv_pack_insns): Use it.
+	(TARGET_SCHED_ISSUE_RATE): Define.
+
 2003-10-02  Steven Bosscher <s.bosscher@student.tudelft.nl>
 
 	* config/mcore/mcore.c: Convert to ISO C90 function declarations
