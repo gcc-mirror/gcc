@@ -33,9 +33,7 @@ public final class Character implements Serializable, Comparable
   public static final int MIN_RADIX = 2;
   public static final int MAX_RADIX = 36;
 
-  // This initialization is seemingly circular, but it is accepted
-  // by javac, and is handled specially by gcc.
-  public static final Class TYPE = char.class;
+  public static final Class TYPE = VMClassLoader.getPrimitiveClass('C');
 
   // Space.
   public static final byte SPACE_SEPARATOR     = 12;

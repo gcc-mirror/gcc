@@ -35,6 +35,7 @@ details.  */
 #include <java/lang/ClassCircularityError.h>
 #include <java/lang/IncompatibleClassChangeError.h>
 #include <java/lang/VirtualMachineError.h>
+#include <java/lang/VMClassLoader.h>
 #include <java/lang/reflect/Modifier.h>
 #include <java/lang/Runtime.h>
 #include <java/lang/StringBuffer.h>
@@ -174,6 +175,15 @@ java::lang::ClassLoader::markClassErrorState0 (java::lang::Class *klass)
 {
   klass->state = JV_STATE_ERROR;
   klass->notifyAll ();
+}
+
+jclass
+java::lang::VMClassLoader::getPrimitiveClass (jchar type)
+{
+  char sig[2];
+  sig[0] = (char) type;
+  sig[1] = '\0';
+  return _Jv_FindClassFromSignature (sig, NULL);
 }
 
 // This is the findClass() implementation for the System classloader. It is 

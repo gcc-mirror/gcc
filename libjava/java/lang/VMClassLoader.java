@@ -54,32 +54,9 @@ class VMClassLoader {
 
     /** 
      * Helper for java.lang.Integer, Byte, etc. to get the TYPE class
-     * at initialization time.  If there are multiple classloaders, this
-     * method may be called once per ClassLoader per type.
+     * at initialization time. 
      *
-     * @param type name of the primitive type; i.e. "int", "byte", etc.
-     * @return a "bogus" class representing the primitive type.
+     * @param type code for the primitive type.
      */
-  static final Class getPrimitiveClass(String type)
-  {
-    if ("int".equals (type))
-      return int.class;
-    else if ("long".equals (type))
-      return long.class;
-    else if ("boolean".equals (type))
-      return boolean.class;
-    else if ("short".equals (type))
-      return short.class;
-    else if ("char".equals (type))
-      return char.class;
-    else if ("byte".equals (type))
-      return byte.class;
-    else if ("float".equals (type))
-      return float.class;
-    else if ("double".equals (type))
-      return double.class;
-    else if ("void".equals (type))
-      return void.class;
-    return null;
-  }
+  static native Class getPrimitiveClass(char type);
 }

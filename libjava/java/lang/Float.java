@@ -79,7 +79,7 @@ public final class Float extends Number implements Comparable
    * The primitive type <code>float</code> is represented by this 
    * <code>Class</code> object.
    */
-  public static final Class TYPE = VMClassLoader.getPrimitiveClass ("float");
+  public static final Class TYPE = VMClassLoader.getPrimitiveClass('F');
 
   /**
    * The immutable value of this Float.
