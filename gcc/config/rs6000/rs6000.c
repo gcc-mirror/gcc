@@ -698,6 +698,11 @@ rs6000_override_options (default_cpu)
   SUBSUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
+  /* The e500 does not have string instructions, and we set
+     MASK_STRING above when optimizing for size.  */
+  if (TARGET_SPE && (target_flags & MASK_STRING) != 0)
+    target_flags = target_flags & ~MASK_STRING;
+
   /* Handle -m(no-)longcall option.  This is a bit of a cheap hack,
      using TARGET_OPTIONS to handle a toggle switch, but we're out of
      bits in target_flags so TARGET_SWITCHES cannot be used.

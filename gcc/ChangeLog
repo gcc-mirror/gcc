@@ -1,3 +1,8 @@
+2003-03-11  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (rs6000_override_options): Disable string
+        instructions for e500.
+
 2003-03-11  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in: Update.
