@@ -1170,10 +1170,6 @@ __enable_execute_stack (addr)						\
    forms can be surrounded with an AND that clear the low-order three bits;
    this is an "unaligned" access.
 
-   We also allow a SYMBOL_REF that is the name of the current function as
-   valid address.  This is for CALL_INSNs.  It cannot be used in any other
-   context.
-
    First define the basic valid address.  */
 
 #define GO_IF_LEGITIMATE_SIMPLE_ADDRESS(MODE, X, ADDR) \
@@ -1191,8 +1187,6 @@ __enable_execute_stack (addr)						\
 /* Now accept the simple address, or, for DImode only, an AND of a simple
    address that turns off the low three bits.  */
 
-extern char *current_function_name;
-
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR) \
 { GO_IF_LEGITIMATE_SIMPLE_ADDRESS (MODE, X, ADDR); \
   if ((MODE) == DImode				\
@@ -1200,9 +1194,6 @@ extern char *current_function_name;
       && GET_CODE (XEXP (X, 1)) == CONST_INT	\
       && INTVAL (XEXP (X, 1)) == -8)		\
     GO_IF_LEGITIMATE_SIMPLE_ADDRESS (MODE, XEXP (X, 0), ADDR); \
-  if ((MODE) == Pmode && GET_CODE (X) == SYMBOL_REF	\
-      && ! strcmp (XSTR (X, 0), current_function_name))	\
-    goto ADDR;					\
 }
 
 /* Try machine-dependent ways of modifying an illegitimate address
