@@ -35,6 +35,9 @@
 	cpp_buffer->system_header_p.
 	(cpp_pop_buffer): Close file here, only if DO_NOT_REREAD.
 
+	* Makefile.in (SPLAY_TREE_H): New macro.
+	(cppfiles.o, cppinit.o): Update dependencies.
+
 Wed Jun 21 11:05:48 2000  Martin Buchholz <martin@xemacs.org>
 
 	* invoke.texi (g++): "g++" is not a script anymore.
