@@ -2627,3 +2627,12 @@ shadd_operand (op, mode)
     return 1;
   return 0;
 }
+
+int
+plus_xor_ior_operator (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == PLUS || GET_CODE (op) == XOR
+	  || GET_CODE (op) == IOR);
+}
