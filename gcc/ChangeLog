@@ -1,3 +1,7 @@
+Wed Feb 18 09:37:29 1998  Paul Eggert  <eggert@twinsun.com>
+
+	* fixincludes (stdlib.h): Do not double-wrap the size_t typedef.
+
 Wed Feb 18 07:32:11 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* m68k.h (MACHINE_STATE_{SAVE,RESTORE} [MOTOROLA]): Add %# and %/;
