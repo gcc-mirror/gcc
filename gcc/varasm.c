@@ -1409,6 +1409,9 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   int reloc = 0;
   rtx decl_rtl;
 
+  if (lang_hooks.decls.prepare_assemble_variable)
+    (*lang_hooks.decls.prepare_assemble_variable) (decl);
+
   last_assemble_variable_decl = 0;
 
   /* Normally no need to say anything here for external references,

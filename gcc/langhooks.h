@@ -181,6 +181,9 @@ struct lang_hooks_for_decls
      of compilation */
   void (*final_write_globals) PARAMS ((void));
 
+  /* Do necessary preparations before assemble_variable can proceed.  */
+  void (*prepare_assemble_variable) PARAMS ((tree));
+
   /* True if this decl may be called via a sibcall.  */
   bool (*ok_for_sibcall) PARAMS ((tree));
 };

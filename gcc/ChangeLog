@@ -1,3 +1,9 @@
+Tue Jun 24 13:52:11 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* langhooks-def.h (LANG_HOOKS_PREPARE_ASSEMBLE_VARIABLE): New macro.
+	* langhooks.h (lang_hooks_for_decls): Add prepare_assemble_variable.
+	* varasm.c (assemble_variable): Call prepare_assemble_variable.
+
 2003-06-23  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin): Use expand_builtin_pow to expand

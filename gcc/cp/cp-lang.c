@@ -145,6 +145,9 @@ static bool cp_var_mod_type_p (tree);
 #undef LANG_HOOKS_EXPR_SIZE
 #define LANG_HOOKS_EXPR_SIZE cp_expr_size
 
+#undef LANG_HOOKS_PREPARE_ASSEMBLE_VARIABLE 
+#define LANG_HOOKS_PREPARE_ASSEMBLE_VARIABLE prepare_assemble_variable
+
 #undef LANG_HOOKS_MAKE_TYPE
 #define LANG_HOOKS_MAKE_TYPE cxx_make_type
 #undef LANG_HOOKS_TYPE_FOR_MODE
