@@ -1,3 +1,9 @@
+2002-04-27  Tom Tromey  <tromey@redhat.com>
+
+	For PR java/6382:
+	* parse.y (string_convert_int_cst): New function.
+	(merge_string_cste): Use it.
+
 2002-04-25  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* java-tree.h (java_parse_file): Update.
