@@ -14892,8 +14892,8 @@ ix86_memory_move_cost (mode, class, in)
 	if (mode == TFmode)
 	  mode = XFmode;
 	return ((in ? ix86_cost->int_load[2] : ix86_cost->int_store[2])
-		* ((int) GET_MODE_SIZE (mode)
-		   + UNITS_PER_WORD -1 ) / UNITS_PER_WORD);
+		* (((int) GET_MODE_SIZE (mode)
+		    + UNITS_PER_WORD - 1) / UNITS_PER_WORD));
     }
 }
 
