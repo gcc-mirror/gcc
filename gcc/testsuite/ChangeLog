@@ -1,3 +1,11 @@
+2004-12-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/17431
+	* g++.dg/overload/arg1.C: New.
+	* g++.dg/overload/arg2.C: New.
+	* g++.dg/overload/arg3.C: New.
+	* g++.dg/overload/arg4.C: New.
+
 2004-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20041126-1.c: New test.

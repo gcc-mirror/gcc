@@ -86,7 +86,7 @@ static struct z_candidate *add_conv_candidate
 static struct z_candidate *add_function_candidate 
 	(struct z_candidate **, tree, tree, tree, tree, tree, int);
 static tree implicit_conversion (tree, tree, tree, int);
-static tree standard_conversion (tree, tree, tree);
+static tree standard_conversion (tree, tree, tree, int);
 static tree reference_binding (tree, tree, tree, int);
 static tree build_conv (enum tree_code, tree, tree);
 static bool is_subseq (tree, tree);
@@ -454,7 +454,7 @@ strip_top_quals (tree t)
    also pass the expression EXPR to convert from.  */
 
 static tree
-standard_conversion (tree to, tree from, tree expr)
+standard_conversion (tree to, tree from, tree expr, int flags)
 {
   enum tree_code fcode, tcode;
   tree conv;
@@ -505,7 +505,7 @@ standard_conversion (tree to, tree from, tree expr)
          the standard conversion sequence to perform componentwise
          conversion.  */
       tree part_conv = standard_conversion
-        (TREE_TYPE (to), TREE_TYPE (from), NULL_TREE);
+        (TREE_TYPE (to), TREE_TYPE (from), NULL_TREE, flags);
       
       if (part_conv)
         {
@@ -692,7 +692,8 @@ standard_conversion (tree to, tree from, tree expr)
       && ((*targetm.vector_opaque_p) (from)
 	  || (*targetm.vector_opaque_p) (to)))
     return build_conv (STD_CONV, to, conv);
-  else if (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
+  else if (!(flags & LOOKUP_CONSTRUCTOR_CALLABLE)
+	   && IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
 	   && is_properly_derived_from (from, to))
     {
       if (TREE_CODE (conv) == RVALUE_CONV)
@@ -1105,7 +1106,7 @@ implicit_conversion (tree to, tree from, tree expr, int flags)
   if (TREE_CODE (to) == REFERENCE_TYPE)
     conv = reference_binding (to, from, expr, flags);
   else
-    conv = standard_conversion (to, from, expr);
+    conv = standard_conversion (to, from, expr, flags);
 
   if (conv)
     return conv;
@@ -3878,6 +3879,7 @@ check_constructor_callable (tree type, tree expr)
 			     build_tree_list (NULL_TREE, expr), 
 			     TYPE_BINFO (type),
 			     LOOKUP_NORMAL | LOOKUP_ONLYCONVERTING
+			     | LOOKUP_NO_CONVERSION
 			     | LOOKUP_CONSTRUCTOR_CALLABLE);
 }
 

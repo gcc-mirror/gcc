@@ -1,3 +1,12 @@
+2004-12-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/17431
+	* call.c (standard_conversion): Add FLAGS parameter. Do not allow
+	derived to base conversion when checking constructor
+	accessibility.
+	(implicit_conversion): Pass FLAGS to standard_conversion.
+	(check_constructir_callable): Disallow conversion functions.
+
 2004-11-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18389
