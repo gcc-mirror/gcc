@@ -1,3 +1,25 @@
+2000-01-12  Gabriel Dos Reis  <gdr@codesourcery.com>
+ 
+       * toplev.h (set_message_length): Declare.
+ 
+       * diagnostic.c (obstack_chunk_alloc): Define macro.
+       (obstack_chunk_free): Likewise.
+       (struct output_buffer): New data structure.
+       (vmessage): Remove.
+       (output_maximum_width): New variable.
+       (doing_line_wrapping, set_message_length, init_output_buffer,
+       get_output_prefix, output_space_left, emit_output_prefix,
+       output_newline, output_append, output_puts, dump_output,
+       vbuild_message_string, build_message_string, build_location_prefix,
+       voutput_notice, output_printf, line_wrapper_printf,
+       vline_wrapper_message_with_location):  New functions. Implement
+       automatic line wrapping.
+       (v_message_with_decl): Make it handle automatic line wrapping.
+       (v_error_with_file_and_line): Likewise.
+       (v_warning_with_file_and_line): Likewise.
+       (announce_function): Likewise.
+       (default_print_error_function): Likewise.
+	
 2000-01-11 16:24 -0800  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.h (struct cpp_options): Change lang_asm to char.
