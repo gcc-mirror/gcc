@@ -89,7 +89,6 @@ Boston, MA 02111-1307, USA.  */
 /* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
    is a valid machine specific attribute for DECL.
    The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-extern int arm_pe_valid_machine_decl_attribute ();
 #undef  VALID_MACHINE_DECL_ATTRIBUTE
 #define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
 arm_pe_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
@@ -99,12 +98,10 @@ arm_pe_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
    TYPE1 and TYPE2 are incompatible, one if they are compatible,
    and two if they are nearly compatible (which causes a warning to be
    generated).  */
-extern int arm_pe_comp_type_attributes ();
 #define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) \
 arm_pe_comp_type_attributes ((TYPE1), (TYPE2))
 #endif
 
-extern union tree_node *arm_pe_merge_machine_decl_attributes ();
 #define MERGE_MACHINE_DECL_ATTRIBUTES(OLD, NEW) \
 arm_pe_merge_machine_decl_attributes ((OLD), (NEW))
 
@@ -115,7 +112,6 @@ arm_pe_merge_machine_decl_attributes ((OLD), (NEW))
    This is also needed to implement one-only vtables: they go into their own
    section and we need to set DECL_SECTION_NAME so we do that here.
    Note that we can be called twice on the same decl.  */
-extern void arm_pe_encode_section_info ();
 #undef  ENCODE_SECTION_INFO
 #define ENCODE_SECTION_INFO(DECL) \
 arm_pe_encode_section_info (DECL)
@@ -149,7 +145,7 @@ arm_pe_encode_section_info (DECL)
 #define MULTIPLE_SYMBOL_SPACES
 
 #define UNIQUE_SECTION_P(DECL) DECL_ONE_ONLY (DECL)
-extern void arm_pe_unique_section ();
+
 #define UNIQUE_SECTION(DECL,RELOC) arm_pe_unique_section (DECL, RELOC)
 
 #define SUPPORTS_ONE_ONLY 1
