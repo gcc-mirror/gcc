@@ -635,7 +635,7 @@ check_attr_test (exp, is_const)
 
       else if (n_comma_elts (XSTR (exp, 1)) == 1)
 	{
-	  attr = find_attr (XEXP (exp, 0), 0);
+	  attr = find_attr (XSTR (exp, 0), 0);
 	  if (attr == NULL)
 	    {
 	      if (! strcmp (XSTR (exp, 0), "alternative"))

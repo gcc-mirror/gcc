@@ -125,7 +125,7 @@ mark_operand_seen (opno)
   if (opno >= operand_seen_length)
     {
       operand_seen_length *= 2;
-      operand_seen = (char *) xrealloc (operand_seen_length);
+      operand_seen = (char *) xrealloc (operand_seen, operand_seen_length);
     }
 
   operand_seen[opno] = 1;
