@@ -5470,6 +5470,7 @@ tsubst_decl (t, args, type, in_decl)
       {
 	tree ctx;
 	tree argvec = NULL_TREE;
+	tree *friends;
 	tree gen_tmpl;
 	int member;
 	int args_depth;
@@ -5667,6 +5668,17 @@ tsubst_decl (t, args, type, in_decl)
 		&& (IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (r)) 
 		    == NULL_TREE))
 	      SET_IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (r), r);
+	  }
+
+	/* Copy the list of befriending classes.  */
+	for (friends = &DECL_BEFRIENDING_CLASSES (r);
+	     *friends;
+	     friends = &TREE_CHAIN (*friends)) 
+	  {
+	    *friends = copy_node (*friends);
+	    TREE_VALUE (*friends) = tsubst (TREE_VALUE (*friends),
+					    args, /*complain=*/1, 
+					    in_decl);
 	  }
 
 	if (DECL_CONSTRUCTOR_P (r))
