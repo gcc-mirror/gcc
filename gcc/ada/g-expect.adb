@@ -31,12 +31,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System;        use System;
-with Ada.Calendar;  use Ada.Calendar;
+with System;       use System;
+with Ada.Calendar; use Ada.Calendar;
 
 with GNAT.IO;
-with GNAT.OS_Lib;   use GNAT.OS_Lib;
-with GNAT.Regpat;   use GNAT.Regpat;
+with GNAT.OS_Lib;  use GNAT.OS_Lib;
+with GNAT.Regpat;  use GNAT.Regpat;
 
 with Unchecked_Deallocation;
 
@@ -762,9 +762,7 @@ package body GNAT.Expect is
    ------------------
 
    function Get_Error_Fd
-     (Descriptor : Process_Descriptor)
-      return       GNAT.OS_Lib.File_Descriptor
-   is
+     (Descriptor : Process_Descriptor) return GNAT.OS_Lib.File_Descriptor is
    begin
       return Descriptor.Error_Fd;
    end Get_Error_Fd;
@@ -774,9 +772,7 @@ package body GNAT.Expect is
    ------------------
 
    function Get_Input_Fd
-     (Descriptor : Process_Descriptor)
-      return       GNAT.OS_Lib.File_Descriptor
-   is
+     (Descriptor : Process_Descriptor) return GNAT.OS_Lib.File_Descriptor is
    begin
       return Descriptor.Input_Fd;
    end Get_Input_Fd;
@@ -786,9 +782,7 @@ package body GNAT.Expect is
    -------------------
 
    function Get_Output_Fd
-     (Descriptor : Process_Descriptor)
-      return       GNAT.OS_Lib.File_Descriptor
-   is
+     (Descriptor : Process_Descriptor) return GNAT.OS_Lib.File_Descriptor is
    begin
       return Descriptor.Output_Fd;
    end Get_Output_Fd;
@@ -798,9 +792,7 @@ package body GNAT.Expect is
    -------------
 
    function Get_Pid
-     (Descriptor : Process_Descriptor)
-      return       Process_Id
-   is
+     (Descriptor : Process_Descriptor) return Process_Id is
    begin
       return Descriptor.Pid;
    end Get_Pid;
@@ -847,7 +839,7 @@ package body GNAT.Expect is
 
       Arg        : String_Access;
       Arg_List   : String_List (1 .. Args'Length + 2);
-      C_Arg_List :  aliased array (1 .. Args'Length + 2) of System.Address;
+      C_Arg_List : aliased array (1 .. Args'Length + 2) of System.Address;
 
       Command_With_Path : String_Access;
 
@@ -1004,9 +996,9 @@ package body GNAT.Expect is
    ----------
 
    procedure Send
-     (Descriptor : in out Process_Descriptor;
-      Str        : String;
-      Add_LF     : Boolean := True;
+     (Descriptor   : in out Process_Descriptor;
+      Str          : String;
+      Add_LF       : Boolean := True;
       Empty_Buffer : Boolean := False)
    is
       Full_Str    : constant String := Str & ASCII.LF;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,27 +33,27 @@
 
 --  Invariants:
 
---  All user-handleable signals are masked at all times in all
---  tasks/threads except possibly for the Interrupt_Manager task.
+--  All user-handleable signals are masked at all times in all tasks/threads
+--  except possibly for the Interrupt_Manager task.
 
---  When a user task wants to have the effect of masking/unmasking an
---  signal, it must call Block_Interrupt/Unblock_Interrupt, which
---  will have the effect of unmasking/masking the signal in the
---  Interrupt_Manager task.  These comments do not apply to vectored
---  hardware interrupts, which may be masked or unmasked using routined
---  interfaced to the relevant VxWorks system calls.
+--  When a user task wants to have the effect of masking/unmasking an signal,
+--  it must call Block_Interrupt/Unblock_Interrupt, which will have the effect
+--  of unmasking/masking the signal in the Interrupt_Manager task. These
+--  comments do not apply to vectored hardware interrupts, which may be masked
+--  or unmasked using routined interfaced to the relevant VxWorks system
+--  calls.
 
---  Once we associate a Signal_Server_Task with an signal, the task never
---  goes away, and we never remove the association. On the other hand, it
---  is more convenient to terminate an associated Interrupt_Server_Task
---  for a vectored hardware interrupt (since we use a binary semaphore
---  for synchronization with the umbrella handler).
+--  Once we associate a Signal_Server_Task with an signal, the task never goes
+--  away, and we never remove the association. On the other hand, it is more
+--  convenient to terminate an associated Interrupt_Server_Task for a vectored
+--  hardware interrupt (since we use a binary semaphore for synchronization
+--  with the umbrella handler).
 
 --  There is no more than one signal per Signal_Server_Task and no more than
---  one Signal_Server_Task per signal.  The same relation holds for hardware
---  interrupts and Interrupt_Server_Task's at any given time.  That is,
---  only one non-terminated Interrupt_Server_Task exists for a give
---  interrupt at any time.
+--  one Signal_Server_Task per signal. The same relation holds for hardware
+--  interrupts and Interrupt_Server_Task's at any given time. That is, only
+--  one non-terminated Interrupt_Server_Task exists for a give interrupt at
+--  any time.
 
 --  Within this package, the lock L is used to protect the various status
 --  tables. If there is a Server_Task associated with a signal or interrupt,
@@ -124,9 +124,8 @@ package body System.Interrupts is
    -- Local Tasks --
    -----------------
 
-   --  WARNING: System.Tasking.Stages performs calls to this task
-   --  with low-level constructs. Do not change this spec without synchro-
-   --  nizing it.
+   --  WARNING: System.Tasking.Stages performs calls to this task with
+   --  low-level constructs. Do not change this spec without synchronizing it.
 
    task Interrupt_Manager is
       entry Detach_Interrupt_Entries (T : Task_Id);
@@ -331,7 +330,8 @@ package body System.Interrupts is
    ---------------------
 
    function Current_Handler
-     (Interrupt : Interrupt_ID) return Parameterless_Handler is
+     (Interrupt : Interrupt_ID) return Parameterless_Handler
+   is
    begin
       Check_Reserved_Interrupt (Interrupt);
 
@@ -386,7 +386,8 @@ package body System.Interrupts is
      (Old_Handler : out Parameterless_Handler;
       New_Handler : Parameterless_Handler;
       Interrupt   : Interrupt_ID;
-      Static      : Boolean := False) is
+      Static      : Boolean := False)
+   is
    begin
       Check_Reserved_Interrupt (Interrupt);
       Interrupt_Manager.Exchange_Handler
@@ -421,7 +422,7 @@ package body System.Interrupts is
    -- Finalize_Interrupt_Servers --
    --------------------------------
 
-   --  Restore default handlers for interrupt servers.
+   --  Restore default handlers for interrupt servers
 
    --  This is called by the Interrupt_Manager task when it receives the abort
    --  signal during program finalization.
@@ -456,7 +457,6 @@ package body System.Interrupts is
       return   Boolean
    is
       pragma Unreferenced (Object);
-
    begin
       return True;
    end Has_Interrupt_Or_Attach_Handler;
@@ -466,7 +466,6 @@ package body System.Interrupts is
       return   Boolean
    is
       pragma Unreferenced (Object);
-
    begin
       return True;
    end Has_Interrupt_Or_Attach_Handler;
@@ -500,9 +499,11 @@ package body System.Interrupts is
 
    procedure Install_Handlers
      (Object       : access Static_Interrupt_Protection;
-      New_Handlers : New_Handler_Array) is
+      New_Handlers : New_Handler_Array)
+   is
    begin
       for N in New_Handlers'Range loop
+
          --  We need a lock around this ???
 
          Object.Previous_Handlers (N).Interrupt := New_Handlers (N).Interrupt;
@@ -687,6 +688,7 @@ package body System.Interrupts is
 
    procedure Register_Interrupt_Handler (Handler_Addr : System.Address) is
       New_Node_Ptr : R_Link;
+
    begin
       --  This routine registers a handler as usable for dynamic
       --  interrupt handler association. Routines attaching and detaching
@@ -727,7 +729,8 @@ package body System.Interrupts is
    ------------------
 
    function Unblocked_By
-     (Interrupt : Interrupt_ID) return System.Tasking.Task_Id is
+     (Interrupt : Interrupt_ID) return System.Tasking.Task_Id
+   is
    begin
       Unimplemented ("Unblocked_By");
       return Null_Task;
@@ -836,8 +839,9 @@ package body System.Interrupts is
          --  status of the Current_Handler.
 
          if not Static and then User_Handler (Interrupt).Static then
-            --  Trying to detach a static Interrupt Handler.
-            --  raise Program_Error.
+
+            --  Trying to detach a static Interrupt Handler. raise
+            --  Program_Error.
 
             Raise_Exception (Program_Error'Identity,
               "Trying to detach a static Interrupt Handler");
@@ -864,9 +868,11 @@ package body System.Interrupts is
          New_Handler : Parameterless_Handler;
          Interrupt   : Interrupt_ID;
          Static      : Boolean;
-         Restoration : Boolean := False) is
+         Restoration : Boolean := False)
+      is
       begin
          if User_Entry (Interrupt).T /= Null_Task then
+
             --  If an interrupt entry is already installed, raise
             --  Program_Error. (propagate it to the caller).
 
@@ -909,7 +915,7 @@ package body System.Interrupts is
 
          if New_Handler = null then
 
-            --  The null handler means we are detaching the handler.
+            --  The null handler means we are detaching the handler
 
             User_Handler (Interrupt).Static := False;
 
@@ -935,11 +941,13 @@ package body System.Interrupts is
          end if;
 
          if (New_Handler = null) and then Old_Handler /= null then
+
             --  Restore default handler
 
             Unbind_Handler (Interrupt);
 
          elsif Old_Handler = null then
+
             --  Save default handler
 
             Bind_Handler (Interrupt);
@@ -1046,7 +1054,7 @@ package body System.Interrupts is
                      end if;
                   end loop;
 
-                  --  Indicate in ATCB that no interrupt entries are attached.
+                  --  Indicate in ATCB that no interrupt entries are attached
 
                   T.Interrupt_Entry := False;
                end Detach_Interrupt_Entries;
@@ -1140,7 +1148,7 @@ package body System.Interrupts is
    end Interrupt_Server_Task;
 
 begin
-   --  Get Interrupt_Manager's ID so that Abort_Interrupt can be sent.
+   --  Get Interrupt_Manager's ID so that Abort_Interrupt can be sent
 
    Interrupt_Manager_ID := To_System (Interrupt_Manager'Identity);
 end System.Interrupts;

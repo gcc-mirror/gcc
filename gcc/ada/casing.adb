@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,6 +140,17 @@ package body Casing is
       Ptr := 1;
 
       while Ptr <= Name_Len loop
+
+         --  Wide character. Note that we do nothing with casing in this case.
+         --  In Ada 2005 mode, required folding of lower case letters happened
+         --  as the identifier was scanned, and we do not attempt any further
+         --  messing with case (note that in any case we do not know how to
+         --  fold upper case to lower case in wide character mode). We also
+         --  do not bother with recognizing punctuation as equivalent to an
+         --  underscore. There is nothing functional at this stage in doing
+         --  the requested casing operation, beyond folding to upper case
+         --  when it is mandatory, which does not involve underscores.
+
          if Name_Buffer (Ptr) = ASCII.ESC
            or else Name_Buffer (Ptr) = '['
            or else (Upper_Half_Encoding
@@ -148,11 +159,15 @@ package body Casing is
             Skip_Wide (Name_Buffer, Ptr);
             After_Und := False;
 
+         --  Underscore, or non-identifer character (error case)
+
          elsif Name_Buffer (Ptr) = '_'
             or else not Identifier_Char (Name_Buffer (Ptr))
          then
             After_Und := True;
             Ptr := Ptr + 1;
+
+         --  Lower case letter
 
          elsif Is_Lower_Case_Letter (Name_Buffer (Ptr)) then
             if Actual_Casing = All_Upper_Case
@@ -164,6 +179,8 @@ package body Casing is
             After_Und := False;
             Ptr := Ptr + 1;
 
+         --  Upper case letter
+
          elsif Is_Upper_Case_Letter (Name_Buffer (Ptr)) then
             if Actual_Casing = All_Lower_Case
               or else (not After_Und and then Actual_Casing = Mixed_Case)
@@ -174,7 +191,9 @@ package body Casing is
             After_Und := False;
             Ptr := Ptr + 1;
 
-         else  --  all other characters
+         --  Other identifier character (must be digit)
+
+         else
             After_Und := False;
             Ptr := Ptr + 1;
          end if;

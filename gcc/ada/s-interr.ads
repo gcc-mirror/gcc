@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@
 --  It is made a child of System to allow visibility of various
 --  runtime system internal data and operations.
 
---  See System.Interrupt_Management for core interrupt/signal interfaces.
+--  See System.Interrupt_Management for core interrupt/signal interfaces
 
 --  These two packages are separated in order to allow
 --  System.Interrupt_Management to be used without requiring the whole
@@ -95,8 +95,7 @@ package System.Interrupts is
    function Is_Handler_Attached (Interrupt : Interrupt_ID) return Boolean;
 
    function Current_Handler
-     (Interrupt : Interrupt_ID)
-      return Parameterless_Handler;
+     (Interrupt : Interrupt_ID) return Parameterless_Handler;
 
    --  Calling the following procedures with New_Handler = null
    --  and Static = true means that we want to modify the current handler
@@ -119,8 +118,7 @@ package System.Interrupts is
       Static    : Boolean := False);
 
    function Reference
-     (Interrupt : Interrupt_ID)
-     return       System.Address;
+     (Interrupt : Interrupt_ID) return System.Address;
 
    --------------------------------
    -- Interrupt Entries Services --
@@ -150,8 +148,7 @@ package System.Interrupts is
    procedure Unblock_Interrupt (Interrupt : Interrupt_ID);
 
    function Unblocked_By
-     (Interrupt   : Interrupt_ID)
-      return System.Tasking.Task_Id;
+     (Interrupt : Interrupt_ID) return System.Tasking.Task_Id;
    --  It returns the ID of the last Task which Unblocked this Interrupt.
    --  It returns Null_Task if no tasks have ever requested the
    --  Unblocking operation or the Interrupt is currently Blocked.
@@ -185,38 +182,36 @@ package System.Interrupts is
 
    --  There are two kinds of protected objects that deal with interrupts:
 
-   --  (1) Only Interrupt_Handler pragmas are used. We need to be able to
-   --  tell if an Interrupt_Handler applies to a given procedure, so
+   --  (1) Only Interrupt_Handler pragmas are used. We need to be able to tell
+   --  if an Interrupt_Handler applies to a given procedure, so
    --  Register_Interrupt_Handler has to be called for all the potential
-   --  handlers, it should be done by calling Register_Interrupt_Handler
-   --  with the handler code address. On finalization, which can happen only
-   --  has part of library level finalization since PO with
-   --  Interrupt_Handler pragmas can only be declared at library level,
-   --  nothing special needs to be done since the default handlers have been
-   --  restored as part of task completion which is done just before global
-   --  finalization.  Dynamic_Interrupt_Protection should be used in this
-   --  case.
+   --  handlers, it should be done by calling Register_Interrupt_Handler with
+   --  the handler code address. On finalization, which can happen only has
+   --  part of library level finalization since PO with Interrupt_Handler
+   --  pragmas can only be declared at library level, nothing special needs to
+   --  be done since the default handlers have been restored as part of task
+   --  completion which is done just before global finalization.
+   --  Dynamic_Interrupt_Protection should be used in this case.
 
    --  (2) Attach_Handler pragmas are used, and possibly Interrupt_Handler
-   --  pragma. We need to attach the handlers to the given interrupts when
-   --  the objet is elaborated. This should be done by constructing an array
-   --  of pairs (interrupt, handler) from the pragmas and calling
-   --  Install_Handlers with it (types to be used are New_Handler_Item and
-   --  New_Handler_Array). On finalization, we need to restore the handlers
-   --  that were installed before the elaboration of the PO, so we need to
-   --  store these previous handlers. This is also done by Install_Handlers,
-   --  the room for these informations is provided by adding a discriminant
-   --  which is the number of Attach_Handler pragmas and an array of this
-   --  size in the protection type, Static_Interrupt_Protection.
+   --  pragma. We need to attach the handlers to the given interrupts when the
+   --  objet is elaborated. This should be done by constructing an array of
+   --  pairs (interrupt, handler) from the pragmas and calling Install_Handlers
+   --  with it (types to be used are New_Handler_Item and New_Handler_Array).
+   --  On finalization, we need to restore the handlers that were installed
+   --  before the elaboration of the PO, so we need to store these previous
+   --  handlers. This is also done by Install_Handlers, the room for these
+   --  informations is provided by adding a discriminant which is the number
+   --  of Attach_Handler pragmas and an array of this size in the protection
+   --  type, Static_Interrupt_Protection.
 
    procedure Register_Interrupt_Handler
      (Handler_Addr : System.Address);
-   --  This routine should be called by the compiler to allow the
-   --  handler be used as an Interrupt Handler. That means call this
-   --  procedure for each pragma Interrup_Handler providing the
-   --  address of the handler (not including the pointer to the
-   --  actual PO, this way this routine is called only once for
-   --  each type definition of PO).
+   --  This routine should be called by the compiler to allow the handler be
+   --  used as an Interrupt Handler. That means call this procedure for each
+   --  pragma Interrup_Handler providing the address of the handler (not
+   --  including the pointer to the actual PO, this way this routine is called
+   --  only once for each type definition of PO).
 
    type Static_Handler_Index is range 0 .. Integer'Last;
    subtype Positive_Static_Handler_Index is
@@ -228,7 +223,7 @@ package System.Interrupts is
       Handler   : Parameterless_Handler;
       Static    : Boolean;
    end record;
-   --  Contains all the information needed to restore a previous handler.
+   --  Contains all the information needed to restore a previous handler
 
    type Previous_Handler_Array is array
      (Positive_Static_Handler_Index range <>) of Previous_Handler_Item;
@@ -237,7 +232,7 @@ package System.Interrupts is
       Interrupt : Interrupt_ID;
       Handler   : Parameterless_Handler;
    end record;
-   --  Contains all the information from an Attach_Handler pragma.
+   --  Contains all the information from an Attach_Handler pragma
 
    type New_Handler_Array is
      array (Positive_Static_Handler_Index range <>) of New_Handler_Item;
@@ -253,7 +248,7 @@ package System.Interrupts is
 
    function Has_Interrupt_Or_Attach_Handler
      (Object : access Dynamic_Interrupt_Protection) return Boolean;
-   --  Returns True.
+   --  Returns True
 
    --  Case (2)
 
@@ -267,9 +262,8 @@ package System.Interrupts is
      end record;
 
    function Has_Interrupt_Or_Attach_Handler
-     (Object : access Static_Interrupt_Protection)
-      return   Boolean;
-   --  Returns True.
+     (Object : access Static_Interrupt_Protection) return Boolean;
+   --  Returns True
 
    procedure Finalize (Object : in out Static_Interrupt_Protection);
    --  Restore previous handlers as required by C.3.1(12) then call
@@ -277,7 +271,7 @@ package System.Interrupts is
 
    procedure Install_Handlers
      (Object       : access Static_Interrupt_Protection;
-      New_Handlers : in New_Handler_Array);
+      New_Handlers : New_Handler_Array);
    --  Store the old handlers in Object.Previous_Handlers and install
    --  the new static handlers.
 
