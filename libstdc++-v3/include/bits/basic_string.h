@@ -419,10 +419,7 @@ namespace std
        */
       basic_string&
       operator=(const basic_string& __str) 
-      { 
-	this->assign(__str); 
-	return *this;
-      }
+      { return this->assign(__str); }
 
       /**
        *  @brief  Copy contents of @a s into this string.
@@ -430,10 +427,7 @@ namespace std
        */
       basic_string&
       operator=(const _CharT* __s) 
-      { 
-	this->assign(__s); 
-	return *this;
-      }
+      { return this->assign(__s); }
 
       /**
        *  @brief  Set value to string of length 1.
