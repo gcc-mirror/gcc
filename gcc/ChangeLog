@@ -1,3 +1,14 @@
+Sat Sep 19 23:58:07 1998  Melissa O'Neill <oneill@cs.sfu.ca>
+			 
+	* configure.in: Disable collect2 for nextstep.  Instead use
+	crtbegin/crtend.
+	* configure: Rebuilt.
+	* config/nextstep.h (STARTFILE_SPEC): Add crtbegin.
+	(ENDFILE_SPEC): Define.
+	(OBJECT_FORMAT_MACHO): Define.
+	(EH_FRAME_SECTION_ASM_OP): Define.
+	* crtstuff.c: Handle MACHO.
+
 Sun Sep 20 00:24:24 1998  Robert Lipe  <robertl@dgii.com>
 
 	* config/i386/sco5.h (TARGET_MEM_FUNCTIONS):  Define.

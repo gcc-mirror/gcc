@@ -167,7 +167,12 @@ Boston, MA 02111-1307, USA.  */
      %{!p:-lcrt0.o}}}\
      %{posix*:%{pg:-lgposixcrt0.o}%{!pg: \
      %{p:%e-p profiling is no longer supported.  Use -pg instead.} \
-     %{!p:-lposixcrt0.o}}}"
+     %{!p:-lposixcrt0.o}}} \
+     -lcrtbegin.o"
+
+#undef	ENDFILE_SPEC
+#define ENDFILE_SPEC \
+    "-lcrtend.o"
 
 /* Allow #sscs (but don't do anything). */
 
@@ -203,6 +208,9 @@ Boston, MA 02111-1307, USA.  */
 	   "\t.text\n\t.stabs \"%s\",%d,0,0,Letext\nLetext:\n",		\
 	   "" , N_SO)
 
+/* Define our object format type for crtstuff.c */
+#define OBJECT_FORMAT_MACHO
+
 /* Don't use .gcc_compiled symbols to communicate with GDB;
    They interfere with numerically sorted symbol lists. */
 
@@ -231,6 +239,8 @@ Boston, MA 02111-1307, USA.  */
        fprintf (FILE, "\n");                                    \
        fprintf (FILE, ".reference .destructors_used\n");        \
       } while (0)
+
+#define EH_FRAME_SECTION_ASM_OP ".section __TEXT,__eh_frame,regular"
 
 /* Don't output a .file directive.  That is only used by the assembler for
    error reporting.  */
