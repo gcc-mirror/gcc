@@ -1,3 +1,7 @@
+2001-02-05  Phil Edwards  <pme@sources.redhat.com>
+
+	* testsuite/27_io/ios_base_members_static.cc:  Swap order of tests.
+
 2001-02-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* src/string-inst.cc (string::_M_replace): Explicitly instantiate.

@@ -30,7 +30,33 @@
 
 #include <debug_assert.h>
 
-bool test01() 
+// N.B. Once we have called sync_with_stdio(false), we can never go back.
+
+void
+test01()
+{
+  std::ios_base::sync_with_stdio();
+ 
+  std::freopen("ios_base_members_static-1.txt", "w", stdout);
+ 
+  for (int i = 0; i < 2; i++)
+    {
+      std::printf("1");
+      std::cout << "2";
+      std::putc('3', stdout); // std::stdout doesn't work here
+      std::cout << '4';
+      std::fputs("5", stdout);
+      std::cout << 6;
+      std::putchar('7');
+      std::cout << 8 << '9';
+      if (i)
+	std::printf ("0\n");
+      else
+	std::cout << "0" << std::endl;
+    }
+}
+
+bool test02() 
 {
   bool test = true;
   
@@ -55,37 +81,11 @@ bool test01()
   return test;
 }
 
-void
-test02()
-{
-  std::ios_base::sync_with_stdio();
- 
-  std::freopen("ios_base_members_static-1.txt", "w", stdout);
- 
-  for (int i = 0; i < 2; i++)
-    {
-      std::printf("1");
-      std::cout << "2";
-      std::putc('3', stdout); // std::stdout doesn't work here
-      std::cout << '4';
-      std::fputs("5", stdout);
-      std::cout << 6;
-      std::putchar('7');
-      std::cout << 8 << '9';
-      if (i)
-	std::printf ("0\n");
-      else
-	std::cout << "0" << std::endl;
-    }
-}
-
 int main(void)
 {
   test01();
   test02();
   return 0;
 }
-
-
 
 
