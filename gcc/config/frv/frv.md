@@ -2754,22 +2754,11 @@
 
 ;; Subtraction  No need to worry about constants, since the compiler
 ;; canonicalizes them into adddi3's.
-(define_expand "subdi3"
-  [(parallel [(set (match_operand:DI 0 "integer_register_operand" "")
-		   (minus:DI (match_operand:DI 1 "integer_register_operand" "")
-			     (match_operand:DI 2 "integer_register_operand" "")))
-	      (clobber (match_dup 3))])]
-  ""
-  "
-{
-  operands[3] = gen_reg_rtx (CCmode);
-}")
-
-(define_insn_and_split "*subdi3_internal"
+(define_insn_and_split "subdi3"
   [(set (match_operand:DI 0 "integer_register_operand" "=&e,e,e")
 	(minus:DI (match_operand:DI 1 "integer_register_operand" "e,0,e")
 		  (match_operand:DI 2 "integer_register_operand" "e,e,0")))
-   (clobber (match_operand:CC 3 "icc_operand" "=t,t,t"))]
+   (clobber (match_scratch:CC 3 "=t,t,t"))]
   ""
   "#"
   "reload_completed"
@@ -2841,6 +2830,31 @@
    subx %1,%.,%0,%3"
   [(set_attr "length" "4")
    (set_attr "type" "int")])
+
+(define_insn_and_split "negdi2"
+  [(set (match_operand:DI 0 "integer_register_operand" "=&e,e")
+	(neg:DI (match_operand:DI 1 "integer_register_operand" "e,0")))
+   (clobber (match_scratch:CC 2 "=t,t"))]
+  ""
+  "#"
+  "reload_completed"
+  [(match_dup 3)
+   (match_dup 4)]
+  "
+{
+  rtx op0_high = gen_highpart (SImode, operands[0]);
+  rtx op1_high = gen_rtx_REG (SImode, GPR_FIRST);
+  rtx op2_high = gen_highpart (SImode, operands[1]);
+  rtx op0_low  = gen_lowpart (SImode, operands[0]);
+  rtx op1_low  = op1_high;
+  rtx op2_low  = gen_lowpart (SImode, operands[1]);
+  rtx op3 = operands[2];
+
+  operands[3] = gen_subdi3_lower (op0_low, op1_low, op2_low, op3);
+  operands[4] = gen_subdi3_upper (op0_high, op1_high, op2_high, op3);
+}"
+  [(set_attr "length" "8")
+   (set_attr "type" "multi")])
 
 ;; Multiplication (same size)
 ;; (define_insn "muldi3"
