@@ -1,7 +1,6 @@
 2002-10-26  Hans-Peter Nilsson  <hp@bitrange.com>
 
-	* gcc.dg/nest.c, gcc.dg/20021014-1.c: Expect build failure on
-	mmix-*-*.
+	* gcc.dg/20021014-1.c: Expect build failure on mmix-*-*.
 
 2002-10-25  Mike Stump  <mrs@apple.com>
 
