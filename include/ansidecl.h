@@ -222,4 +222,11 @@ So instead we use the macro below and test it against specific values.  */
 #define ATTRIBUTE_PRINTF_5 ATTRIBUTE_PRINTF(5, 6)
 #endif /* ATTRIBUTE_PRINTF */
 
+/* We use __extension__ in some places to suppress -pedantic warnings
+   about GCC extensions.  This feature didn't work properly before
+   gcc 2.8.  */
+#if GCC_VERSION < 2008
+#define __extension__
+#endif
+
 #endif	/* ansidecl.h	*/

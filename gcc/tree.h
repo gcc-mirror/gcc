@@ -277,13 +277,13 @@ struct tree_common
    is accessed incorrectly. The macros abort with a fatal error.  */
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 
-#define TREE_CHECK(t, code)						\
+#define TREE_CHECK(t, code) __extension__				\
 ({  const tree __t = t;							\
     if (TREE_CODE(__t) != (code))					\
       tree_check_failed (__t, code, __FILE__,				\
 			 __LINE__, __PRETTY_FUNCTION__);		\
     __t; })
-#define TREE_CLASS_CHECK(t, class)					\
+#define TREE_CLASS_CHECK(t, class) __extension__			\
 ({  const tree __t = t;							\
     if (TREE_CODE_CLASS(TREE_CODE(__t)) != (class))			\
       tree_class_check_failed (__t, class, __FILE__,			\
@@ -291,14 +291,14 @@ struct tree_common
     __t; })
 
 /* These checks have to be special cased.  */
-#define CST_OR_CONSTRUCTOR_CHECK(t)					\
+#define CST_OR_CONSTRUCTOR_CHECK(t) __extension__			\
 ({  const tree __t = t;							\
     enum tree_code __c = TREE_CODE(__t);				\
     if (__c != CONSTRUCTOR && TREE_CODE_CLASS(__c) != 'c')		\
       tree_check_failed (__t, CONSTRUCTOR, __FILE__,			\
 			 __LINE__, __PRETTY_FUNCTION__);		\
     __t; })
-#define EXPR_CHECK(t)							\
+#define EXPR_CHECK(t) __extension__					\
 ({  const tree __t = t;							\
     char __c = TREE_CODE_CLASS(TREE_CODE(__t));				\
     if (__c != 'r' && __c != 's' && __c != '<'				\

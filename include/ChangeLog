@@ -1,3 +1,8 @@
+2000-05-06  Zack Weinberg  <zack@wolery.cumb.org>
+
+ 	* ansidecl.h: #define __extension__ to nothing if
+ 	GCC_VERSION < 2008.
+
 2000-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* demangle.h (demangler_engine): Constify.

@@ -25,13 +25,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 typedef unsigned char U_CHAR;
 #define U (const U_CHAR *)  /* Intended use: U"string" */
 
-/* gcc 2.7.2 can't handle __extension__ const char array[] = { ... }.
-   I don't know when this was added - be conservative, assume it only
-   works in 2.95.  */
-#if GCC_VERSION < 2095
-#define __extension__
-#endif
-
 /* The structure of a node in the hash table.  The hash table
    has entries for all tokens defined by #define commands (type T_MACRO),
    plus some special tokens like __LINE__ (these each have their own
