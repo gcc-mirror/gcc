@@ -648,7 +648,7 @@ two_insn_adds_subs_operand (op, mode)
 	  /* A constant addition/subtraction takes 2 states in QImode,
 	     4 states in HImode, and 6 states in SImode.  Thus, the
 	     only case we can win is when SImode is used, in which
-	     case, two adds/subs is used, taking 4 states.  */
+	     case, two adds/subs are used, taking 4 states.  */
 	  if (mode == SImode
 	      && (value == 2 + 1
 		  || value == 4 + 1
