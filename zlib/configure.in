@@ -113,7 +113,18 @@ AC_SUBST(target_all)
 
 AC_CHECK_HEADERS(unistd.h)
 
-AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
+if test -n "$with_cross_host" &&
+   test x"$with_cross_host" != x"no"; then
+  toolexecdir='$(exec_prefix)/$(target_alias)'
+  toolexeclibdir='$(toolexecdir)/lib'
+else
+  toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+  toolexeclibdir='$(libdir)'
+fi
+toolexeclibdir=$toolexeclibdir/`$CC -print-multi-os-directory 2>/dev/null || echo .`
+AC_SUBST(toolexecdir)
+AC_SUBST(toolexeclibdir)
+
 AM_CONDITIONAL(TARGET_LIBRARY, test -n "$with_target_subdir")
 
 if test "${multilib}" = "yes"; then

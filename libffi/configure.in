@@ -149,7 +149,17 @@ AC_ARG_ENABLE(purify-safety,
     AC_DEFINE(USING_PURIFY)
   fi)
 
-AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
+if test -n "$with_cross_host" &&
+   test x"$with_cross_host" != x"no"; then
+  toolexecdir='$(exec_prefix)/$(target_alias)'
+  toolexeclibdir='$(toolexecdir)/lib'
+else
+  toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+  toolexeclibdir='$(libdir)'
+fi
+toolexeclibdir=$toolexeclibdir/`$CC -print-multi-os-directory`
+AC_SUBST(toolexecdir)
+AC_SUBST(toolexeclibdir)
 
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"
