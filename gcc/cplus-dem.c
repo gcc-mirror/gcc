@@ -37,6 +37,30 @@ extern char *xmalloc PARAMS((unsigned));
 extern char *xrealloc PARAMS((char *, unsigned));
 extern char *strstr ();
 
+#ifndef POSIX
+char *
+strstr (s1, s2)
+  char *s1, *s2;
+{
+  register char *p = s1;
+  extern char *strchr ();
+  extern int strncmp ();
+#if __GNUC__==2
+  extern __SIZE_TYPE__ strlen ();
+#endif
+  register int len = strlen (s2);
+
+  for (; (p = strchr (p, *s2)) != 0; p++)
+    {
+      if (strncmp (p, s2, len) == 0)
+	{
+	  return (p);
+	}
+    }
+  return (0);
+}
+#endif
+
 /* In order to allow a single demangler executable to demangle strings
    using various common values of CPLUS_MARKER, as well as any specific
    one set at compile time, we maintain a string containing all the
