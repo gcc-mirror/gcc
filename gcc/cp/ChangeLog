@@ -1,3 +1,14 @@
+2000-09-05  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* tree.c (walk_tree): Expose tail recursion.
+	(walk_stmt_tree): New function.
+	* cp-tree.h: Prototype walk_stmt_tree.
+	* semantics.c (prune_unused_decls): Operate on SCOPE_STMTs not
+	the BLOCKs directly.  If a BLOCK has no variables after
+	pruning, discard it.
+	(finish_stmt_tree): Use walk_stmt_tree.  No need to save and
+	restore the line number.
+
 2000-09-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (CXX_TREE_H): Add dependency on HTAB_H.
