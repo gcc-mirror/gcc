@@ -3120,13 +3120,13 @@ ia64_hard_regno_rename_ok (int from, int to)
 static bool
 ia64_assemble_integer (rtx x, unsigned int size, int aligned_p)
 {
-  if (size == (TARGET_ILP32 ? 4 : 8)
+  if (size == POINTER_SIZE / BITS_PER_UNIT
       && aligned_p
       && !(TARGET_NO_PIC || TARGET_AUTO_PIC)
       && GET_CODE (x) == SYMBOL_REF
       && SYMBOL_REF_FUNCTION_P (x))
     {
-      if (TARGET_ILP32)
+      if (POINTER_SIZE == 32)
 	fputs ("\tdata4\t@fptr(", asm_out_file);
       else
 	fputs ("\tdata8\t@fptr(", asm_out_file);
@@ -3282,7 +3282,8 @@ ia64_initialize_trampoline (rtx addr, rtx fnaddr, rtx static_chain)
       if (!declared_ia64_trampoline)
 	{
 	  declared_ia64_trampoline = true;
-	  fputs ("\t.global\t__ia64_trampoline\n", asm_out_file);
+	  (*targetm.asm_out.globalize_label) (asm_out_file,
+					      "__ia64_trampoline");
 	}
     }
 
@@ -4405,7 +4406,7 @@ ia64_asm_output_external (FILE *file, tree decl, const char *name)
   if (TARGET_GNU_AS
       && (!TARGET_HPUX_LD
 	  || TREE_CODE (decl) != FUNCTION_DECL
-	  || strstr(name, "__builtin_") == name))
+	  || strstr (name, "__builtin_") == name))
     return;
 
   /* ??? The Intel assembler creates a reference that needs to be satisfied by
