@@ -1,3 +1,8 @@
+2000-11-02  Neil Booth  <neilb@earthling.net>
+
+	* configure.in: Make integrated CPP the default.
+	* configure: Regenerate.
+
 Thu Nov  2 19:20:12 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* reload.c (find_equiv_reg): Test all hard registers for membership
