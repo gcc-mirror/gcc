@@ -70,7 +70,6 @@ static void dump_expr_list (tree, int);
 static void dump_global_iord (tree);
 static void dump_parameters (tree, int);
 static void dump_exception_spec (tree, int);
-static const char *class_key_or_enum (tree);
 static void dump_template_argument (tree, int);
 static void dump_template_argument_list (tree, int);
 static void dump_template_parameter (tree, int);
@@ -396,8 +395,8 @@ dump_typename (tree t, int flags)
 
 /* Return the name of the supplied aggregate, or enumeral type.  */
 
-static const char *
-class_key_or_enum (tree t)
+const char *
+class_key_or_enum_as_string (tree t)
 {
   if (TREE_CODE (t) == ENUMERAL_TYPE)
     return "enum";
@@ -416,7 +415,7 @@ static void
 dump_aggr_type (tree t, int flags)
 {
   tree name;
-  const char *variety = class_key_or_enum (t);
+  const char *variety = class_key_or_enum_as_string (t);
   int typdef = 0;
   int tmplate = 0;
 
