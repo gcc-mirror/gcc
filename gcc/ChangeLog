@@ -1,3 +1,26 @@
+2005-01-29  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-common.c (fix_string_type): Just use c_build_qualified_type to
+	build string type.
+	(c_build_qualified_type): Build qualified array types with
+	TYPE_MAIN_VARIANT pointing to corresponding unqualified type.
+	* c-decl.c (c_make_fname_decl): Build unqualified array type
+	before qualified type.
+	(grokdeclarator): Use TYPE_MAIN_VARIANT of typedef type if element
+	type is qualified, not just if type itself is.  Don't apply
+	qualifiers to array type when declarator is processed.  Apply
+	qualifiers to field type whether or not it is an array type.
+	Don't handle array types specially for applying qualifiers to
+	variables.
+	* c-typeck.c (composite_type): Build unqualified element type and
+	array type when forming composite of array types.
+	(common_pointer_type, comptypes, comp_target_types,
+	type_lists_compatible_p, build_indirect_ref, build_array_ref,
+	convert_for_assignment): Don't apply TYPE_MAIN_VARIANT to array
+	types.
+	(type_lists_compatible_p): Cache TREE_VALUE (args1) and TREE_VALUE
+	(args2) in variables a1 and a2.
+
 2005-01-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cse.c (n_elements_made, max_elements_made): Remove.

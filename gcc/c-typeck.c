@@ -277,7 +277,9 @@ composite_type (tree t1, tree t2)
     case ARRAY_TYPE:
       {
 	tree elt = composite_type (TREE_TYPE (t1), TREE_TYPE (t2));
-	
+	int quals;
+	tree unqual_elt;
+
 	/* We should not have any type quals on arrays at all.  */
 	gcc_assert (!TYPE_QUALS (t1) && !TYPE_QUALS (t2));
 	
@@ -292,8 +294,16 @@ composite_type (tree t1, tree t2)
 	if (elt == TREE_TYPE (t2) && !TYPE_DOMAIN (t2) && !TYPE_DOMAIN (t1))
 	  return build_type_attribute_variant (t2, attributes);
 	
-	/* Merge the element types, and have a size if either arg has one.  */
-	t1 = build_array_type (elt, TYPE_DOMAIN (TYPE_DOMAIN (t1) ? t1 : t2));
+	/* Merge the element types, and have a size if either arg has
+	   one.  We may have qualifiers on the element types.  To set
+	   up TYPE_MAIN_VARIANT correctly, we need to form the
+	   composite of the unqualified types and add the qualifiers
+	   back at the end.  */
+	quals = TYPE_QUALS (strip_array_types (elt));
+	unqual_elt = c_build_qualified_type (elt, TYPE_UNQUALIFIED);
+	t1 = build_array_type (unqual_elt,
+			       TYPE_DOMAIN (TYPE_DOMAIN (t1) ? t1 : t2));
+	t1 = c_build_qualified_type (t1, quals);
 	return build_type_attribute_variant (t1, attributes);
       }
 
@@ -415,8 +425,8 @@ static tree
 common_pointer_type (tree t1, tree t2)
 {
   tree attributes;
-  tree pointed_to_1;
-  tree pointed_to_2;
+  tree pointed_to_1, mv1;
+  tree pointed_to_2, mv2;
   tree target;
 
   /* Save time if the two types are the same.  */
@@ -436,11 +446,15 @@ common_pointer_type (tree t1, tree t2)
   attributes = targetm.merge_type_attributes (t1, t2);
 
   /* Find the composite type of the target types, and combine the
-     qualifiers of the two types' targets.  */
-  pointed_to_1 = TREE_TYPE (t1);
-  pointed_to_2 = TREE_TYPE (t2);
-  target = composite_type (TYPE_MAIN_VARIANT (pointed_to_1),
-			   TYPE_MAIN_VARIANT (pointed_to_2));
+     qualifiers of the two types' targets.  Do not lose qualifiers on
+     array element types by taking the TYPE_MAIN_VARIANT.  */
+  mv1 = pointed_to_1 = TREE_TYPE (t1);
+  mv2 = pointed_to_2 = TREE_TYPE (t2);
+  if (TREE_CODE (mv1) != ARRAY_TYPE)
+    mv1 = TYPE_MAIN_VARIANT (pointed_to_1);
+  if (TREE_CODE (mv2) != ARRAY_TYPE)
+    mv2 = TYPE_MAIN_VARIANT (pointed_to_2);
+  target = composite_type (mv1, mv2);
   t1 = build_pointer_type (c_build_qualified_type
 			   (target,
 			    TYPE_QUALS (pointed_to_1) |
@@ -632,7 +646,8 @@ comptypes (tree type1, tree type2)
      definition.  Note that we already checked for equality of the type
      qualifiers (just above).  */
 
-  if (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
+  if (TREE_CODE (t1) != ARRAY_TYPE
+      && TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
     return 1;
 
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
@@ -734,13 +749,21 @@ static int
 comp_target_types (tree ttl, tree ttr, int reflexive)
 {
   int val;
+  tree mvl, mvr;
 
   /* Give objc_comptypes a crack at letting these types through.  */
   if ((val = objc_comptypes (ttl, ttr, reflexive)) >= 0)
     return val;
 
-  val = comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (ttl)),
-		   TYPE_MAIN_VARIANT (TREE_TYPE (ttr)));
+  /* Do not lose qualifiers on element types of array types that are
+     pointer targets by taking their TYPE_MAIN_VARIANT.  */
+  mvl = TREE_TYPE (ttl);
+  mvr = TREE_TYPE (ttr);
+  if (TREE_CODE (mvl) != ARRAY_TYPE)
+    mvl = TYPE_MAIN_VARIANT (mvl);
+  if (TREE_CODE (mvr) != ARRAY_TYPE)
+    mvr = TYPE_MAIN_VARIANT (mvr);
+  val = comptypes (mvl, mvr);
 
   if (val == 2 && pedantic)
     pedwarn ("types are not quite compatible");
@@ -1042,61 +1065,67 @@ type_lists_compatible_p (tree args1, tree args2)
 
   while (1)
     {
+      tree a1, mv1, a2, mv2;
       if (args1 == 0 && args2 == 0)
 	return val;
       /* If one list is shorter than the other,
 	 they fail to match.  */
       if (args1 == 0 || args2 == 0)
 	return 0;
+      mv1 = a1 = TREE_VALUE (args1);
+      mv2 = a2 = TREE_VALUE (args2);
+      if (mv1 && mv1 != error_mark_node && TREE_CODE (mv1) != ARRAY_TYPE)
+	mv1 = TYPE_MAIN_VARIANT (mv1);
+      if (mv2 && mv2 != error_mark_node && TREE_CODE (mv2) != ARRAY_TYPE)
+	mv2 = TYPE_MAIN_VARIANT (mv2);
       /* A null pointer instead of a type
 	 means there is supposed to be an argument
 	 but nothing is specified about what type it has.
 	 So match anything that self-promotes.  */
-      if (TREE_VALUE (args1) == 0)
+      if (a1 == 0)
 	{
-	  if (c_type_promotes_to (TREE_VALUE (args2)) != TREE_VALUE (args2))
+	  if (c_type_promotes_to (a2) != a2)
 	    return 0;
 	}
-      else if (TREE_VALUE (args2) == 0)
+      else if (a2 == 0)
 	{
-	  if (c_type_promotes_to (TREE_VALUE (args1)) != TREE_VALUE (args1))
+	  if (c_type_promotes_to (a1) != a1)
 	    return 0;
 	}
       /* If one of the lists has an error marker, ignore this arg.  */
-      else if (TREE_CODE (TREE_VALUE (args1)) == ERROR_MARK
-	       || TREE_CODE (TREE_VALUE (args2)) == ERROR_MARK)
+      else if (TREE_CODE (a1) == ERROR_MARK
+	       || TREE_CODE (a2) == ERROR_MARK)
 	;
-      else if (!(newval = comptypes (TYPE_MAIN_VARIANT (TREE_VALUE (args1)),
-				     TYPE_MAIN_VARIANT (TREE_VALUE (args2)))))
+      else if (!(newval = comptypes (mv1, mv2)))
 	{
 	  /* Allow  wait (union {union wait *u; int *i} *)
 	     and  wait (union wait *)  to be compatible.  */
-	  if (TREE_CODE (TREE_VALUE (args1)) == UNION_TYPE
-	      && (TYPE_NAME (TREE_VALUE (args1)) == 0
-		  || TYPE_TRANSPARENT_UNION (TREE_VALUE (args1)))
-	      && TREE_CODE (TYPE_SIZE (TREE_VALUE (args1))) == INTEGER_CST
-	      && tree_int_cst_equal (TYPE_SIZE (TREE_VALUE (args1)),
-				     TYPE_SIZE (TREE_VALUE (args2))))
+	  if (TREE_CODE (a1) == UNION_TYPE
+	      && (TYPE_NAME (a1) == 0
+		  || TYPE_TRANSPARENT_UNION (a1))
+	      && TREE_CODE (TYPE_SIZE (a1)) == INTEGER_CST
+	      && tree_int_cst_equal (TYPE_SIZE (a1),
+				     TYPE_SIZE (a2)))
 	    {
 	      tree memb;
-	      for (memb = TYPE_FIELDS (TREE_VALUE (args1));
+	      for (memb = TYPE_FIELDS (a1);
 		   memb; memb = TREE_CHAIN (memb))
-		if (comptypes (TREE_TYPE (memb), TREE_VALUE (args2)))
+		if (comptypes (TREE_TYPE (memb), a2))
 		  break;
 	      if (memb == 0)
 		return 0;
 	    }
-	  else if (TREE_CODE (TREE_VALUE (args2)) == UNION_TYPE
-		   && (TYPE_NAME (TREE_VALUE (args2)) == 0
-		       || TYPE_TRANSPARENT_UNION (TREE_VALUE (args2)))
-		   && TREE_CODE (TYPE_SIZE (TREE_VALUE (args2))) == INTEGER_CST
-		   && tree_int_cst_equal (TYPE_SIZE (TREE_VALUE (args2)),
-					  TYPE_SIZE (TREE_VALUE (args1))))
+	  else if (TREE_CODE (a2) == UNION_TYPE
+		   && (TYPE_NAME (a2) == 0
+		       || TYPE_TRANSPARENT_UNION (a2))
+		   && TREE_CODE (TYPE_SIZE (a2)) == INTEGER_CST
+		   && tree_int_cst_equal (TYPE_SIZE (a2),
+					  TYPE_SIZE (a1)))
 	    {
 	      tree memb;
-	      for (memb = TYPE_FIELDS (TREE_VALUE (args2));
+	      for (memb = TYPE_FIELDS (a2);
 		   memb; memb = TREE_CHAIN (memb))
-		if (comptypes (TREE_TYPE (memb), TREE_VALUE (args1)))
+		if (comptypes (TREE_TYPE (memb), a1))
 		  break;
 	      if (memb == 0)
 		return 0;
@@ -1542,7 +1571,12 @@ build_indirect_ref (tree ptr, const char *errorstring)
       else
 	{
 	  tree t = TREE_TYPE (type);
-	  tree ref = build1 (INDIRECT_REF, TYPE_MAIN_VARIANT (t), pointer);
+	  tree mvt = t;
+	  tree ref;
+
+	  if (TREE_CODE (mvt) != ARRAY_TYPE)
+	    mvt = TYPE_MAIN_VARIANT (mvt);
+	  ref = build1 (INDIRECT_REF, mvt, pointer);
 
 	  if (!COMPLETE_OR_VOID_TYPE_P (t) && TREE_CODE (t) != ARRAY_TYPE)
 	    {
@@ -1670,7 +1704,9 @@ build_array_ref (tree array, tree index)
 	    pedwarn ("ISO C90 forbids subscripting non-lvalue array");
 	}
 
-      type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (array)));
+      type = TREE_TYPE (TREE_TYPE (array));
+      if (TREE_CODE (type) != ARRAY_TYPE)
+	type = TYPE_MAIN_VARIANT (type);
       rval = build4 (ARRAY_REF, type, array, index, NULL_TREE, NULL_TREE);
       /* Array ref is const/volatile if the array elements are
          or if the array is.  */
@@ -3597,9 +3633,15 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
     {
       tree ttl = TREE_TYPE (type);
       tree ttr = TREE_TYPE (rhstype);
+      tree mvl = ttl;
+      tree mvr = ttr;
       bool is_opaque_pointer;
       int target_cmp = 0;   /* Cache comp_target_types () result.  */
 
+      if (TREE_CODE (mvl) != ARRAY_TYPE)
+	mvl = TYPE_MAIN_VARIANT (mvl);
+      if (TREE_CODE (mvr) != ARRAY_TYPE)
+	mvr = TYPE_MAIN_VARIANT (mvr);
       /* Opaque pointers are treated like void pointers.  */
       is_opaque_pointer = (targetm.vector_opaque_p (type)
                            || targetm.vector_opaque_p (rhstype))
@@ -3612,8 +3654,8 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
       if (VOID_TYPE_P (ttl) || VOID_TYPE_P (ttr)
 	  || (target_cmp = comp_target_types (type, rhstype, 0))
 	  || is_opaque_pointer
-	  || (c_common_unsigned_type (TYPE_MAIN_VARIANT (ttl))
-	      == c_common_unsigned_type (TYPE_MAIN_VARIANT (ttr))))
+	  || (c_common_unsigned_type (mvl)
+	      == c_common_unsigned_type (mvr)))
 	{
 	  if (pedantic
 	      && ((VOID_TYPE_P (ttl) && TREE_CODE (ttr) == FUNCTION_TYPE)

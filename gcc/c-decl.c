@@ -2632,9 +2632,9 @@ c_make_fname_decl (tree id, int type_dep)
   tree decl, type, init;
   size_t length = strlen (name);
 
-  type =  build_array_type
-          (build_qualified_type (char_type_node, TYPE_QUAL_CONST),
-	   build_index_type (size_int (length)));
+  type = build_array_type (char_type_node,
+			   build_index_type (size_int (length)));
+  type = c_build_qualified_type (type, TYPE_QUAL_CONST);
 
   decl = build_decl (VAR_DECL, id, type);
 
@@ -3861,7 +3861,7 @@ grokdeclarator (const struct c_declarator *declarator,
       if (volatilep > 1)
 	pedwarn ("duplicate %<volatile%>");
     }
-  if (!flag_gen_aux_info && (TYPE_QUALS (type)))
+  if (!flag_gen_aux_info && (TYPE_QUALS (element_type)))
     type = TYPE_MAIN_VARIANT (type);
   type_quals = ((constp ? TYPE_QUAL_CONST : 0)
 		| (restrictp ? TYPE_QUAL_RESTRICT : 0)
@@ -3946,7 +3946,13 @@ grokdeclarator (const struct c_declarator *declarator,
 
   /* Now figure out the structure of the declarator proper.
      Descend through it, creating more complex types, until we reach
-     the declared identifier (or NULL_TREE, in an absolute declarator).  */
+     the declared identifier (or NULL_TREE, in an absolute declarator).
+     At each stage we maintain an unqualified version of the type
+     together with any qualifiers that should be applied to it with
+     c_build_qualified_type; this way, array types including
+     multidimensional array types are first built up in unqualified
+     form and then the qualified form is created with
+     TYPE_MAIN_VARIANT pointing to the unqualified form.  */
 
   while (declarator && declarator->kind != cdk_id)
     {
@@ -4146,13 +4152,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	    if (pedantic && !COMPLETE_TYPE_P (type))
 	      pedwarn ("array type has incomplete element type");
 
-	    /* Build the array type itself, then merge any constancy
-	       or volatility into the target type.  We must do it in
-	       this order to ensure that the TYPE_MAIN_VARIANT field
-	       of the array type is set correctly.  */
 	    type = build_array_type (type, itype);
-	    if (type_quals)
-	      type = c_build_qualified_type (type, type_quals);
 
 	    if (size_varies)
 	      C_TYPE_VARIABLE_SIZE (type) = 1;
@@ -4278,7 +4278,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	}
     }
 
-  /* Now TYPE has the actual type.  */
+  /* Now TYPE has the actual type, apart from any qualifiers in
+     TYPE_QUALS.  */
 
   /* Check the type and width of a bit-field.  */
   if (bitfield)
@@ -4447,11 +4448,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	    error ("field %qs has incomplete type", name);
 	    type = error_mark_node;
 	  }
-	/* Move type qualifiers down to element of an array.  */
-	if (TREE_CODE (type) == ARRAY_TYPE && type_quals)
-	  type = build_array_type (c_build_qualified_type (TREE_TYPE (type),
-							   type_quals),
-				   TYPE_DOMAIN (type));
+	type = c_build_qualified_type (type, type_quals);
 	decl = build_decl (FIELD_DECL, declarator->u.id, type);
 	DECL_NONADDRESSABLE_P (decl) = bitfield;
 
@@ -4556,17 +4553,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	/* An uninitialized decl with `extern' is a reference.  */
 	int extern_ref = !initialized && storage_class == csc_extern;
 
-	/* Move type qualifiers down to element of an array.  */
-	if (TREE_CODE (type) == ARRAY_TYPE && type_quals)
-	  {
-	    int saved_align = TYPE_ALIGN(type);
-	    type = build_array_type (c_build_qualified_type (TREE_TYPE (type),
-							     type_quals),
-				     TYPE_DOMAIN (type));
-	    TYPE_ALIGN (type) = saved_align;
-	  }
-	else if (type_quals)
-	  type = c_build_qualified_type (type, type_quals);
+	type = c_build_qualified_type (type, type_quals);
 
 	/* C99 6.2.2p7: It is invalid (compile-time undefined
 	   behavior) to create an 'extern' declaration for a

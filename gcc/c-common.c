@@ -862,12 +862,7 @@ fix_string_type (tree value)
   i_type = build_index_type (build_int_cst (NULL_TREE, nchars - 1));
   a_type = build_array_type (e_type, i_type);
   if (flag_const_strings)
-    {
-      /* bleah, c_build_qualified_type should set TYPE_MAIN_VARIANT.  */
-      tree qa_type = c_build_qualified_type (a_type, TYPE_QUAL_CONST);
-      TYPE_MAIN_VARIANT (qa_type) = a_type;
-      a_type = qa_type;
-    }
+    a_type = c_build_qualified_type (a_type, TYPE_QUAL_CONST);
 
   TREE_TYPE (value) = a_type;
   TREE_CONSTANT (value) = 1;
@@ -2483,9 +2478,28 @@ c_build_qualified_type (tree type, int type_quals)
     return type;
 
   if (TREE_CODE (type) == ARRAY_TYPE)
-    return build_array_type (c_build_qualified_type (TREE_TYPE (type),
-						     type_quals),
-			     TYPE_DOMAIN (type));
+    {
+      tree t;
+      tree element_type = c_build_qualified_type (TREE_TYPE (type),
+						  type_quals);
+
+      /* See if we already have an identically qualified type.  */
+      for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+	{
+	  if (TYPE_QUALS (strip_array_types (t)) == type_quals
+	      && TYPE_NAME (t) == TYPE_NAME (type)
+	      && TYPE_CONTEXT (t) == TYPE_CONTEXT (type)
+	      && attribute_list_equal (TYPE_ATTRIBUTES (t),
+				       TYPE_ATTRIBUTES (type)))
+	    break;
+	}
+      if (!t)
+	{
+	  t = build_variant_type_copy (type);
+	  TREE_TYPE (t) = element_type;
+	}
+      return t;
+    }
 
   /* A restrict-qualified pointer type must be a pointer to object or
      incomplete type.  Note that the use of POINTER_TYPE_P also allows

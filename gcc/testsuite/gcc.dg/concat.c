@@ -8,8 +8,8 @@
 
 void foo ()
 {
-  char s1[] = __FUNCTION__".";	     /* { dg-error "(parse|syntax|expected|invalid)" } */
-  char s2[] = __PRETTY_FUNCTION__".";/* { dg-error "(parse|syntax|expected|invalid)" } */
+  char s1[] = __FUNCTION__".";	     /* { dg-error "(parse|syntax|expected|invalid|array)" } */
+  char s2[] = __PRETTY_FUNCTION__".";/* { dg-error "(parse|syntax|expected|invalid|array)" } */
   char s3[] = "."__FUNCTION__;	     /* { dg-error "(parse|syntax|expected|invalid)" } */
   char s4[] = "."__PRETTY_FUNCTION__;/* { dg-error "(parse|syntax|expected|invalid)" } */
   char s5[] = "."".";                /* No error.  */
