@@ -95,6 +95,8 @@ ggc_alloc_string (const char *contents, int length)
    If an identifier with that name has previously been referred to,
    the same node is returned this time.  */
 
+#undef get_identifier
+
 tree
 get_identifier (const char *text)
 {
@@ -110,7 +112,7 @@ get_identifier (const char *text)
    known.  */
 
 tree
-get_identifier_with_length (const char *text, unsigned int length)
+get_identifier_with_length (const char *text, size_t length)
 {
   hashnode ht_node = ht_lookup (ident_hash,
 				(const unsigned char *) text,

@@ -2050,10 +2050,18 @@ extern tree make_tree_vec (int);
 
 extern tree get_identifier (const char *);
 
+#if GCC_VERSION >= 3000
+#define get_identifier(str) \
+  (__builtin_constant_p (str)				\
+    ? get_identifier_with_length ((str), strlen (str))  \
+    : get_identifier (str))
+#endif
+
+
 /* Identical to get_identifier, except that the length is assumed
    known.  */
 
-extern tree get_identifier_with_length (const char *, unsigned int);
+extern tree get_identifier_with_length (const char *, size_t);
 
 /* If an identifier with the name TEXT (a null-terminated string) has
    previously been referred to, return that node; otherwise return
