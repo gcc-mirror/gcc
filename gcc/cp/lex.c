@@ -446,6 +446,8 @@ lang_init_options ()
   flag_exceptions = 1;
   /* Mark as "unspecified".  */
   flag_bounds_check = -1;
+  /* By default wrap lines at 72 characters.  */
+  set_message_length (72);
 }
 
 void
