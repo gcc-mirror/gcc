@@ -27,14 +27,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 extern struct obstack permanent_obstack;
 
+static void declare_hidden_char_array PROTO((char *, char *));
+
 /* Make bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
 
 void
 declare_function_name ()
 {
-  tree decl, type, init;
   char *name, *printable_name;
-  int len;
 
   if (current_function_decl == NULL)
     {
@@ -54,44 +54,34 @@ declare_function_name ()
       printable_name = (*decl_printable_name) (current_function_decl, &kind);
     }
 
+  declare_hidden_char_array ("__FUNCTION__", name);
+  declare_hidden_char_array ("__PRETTY_FUNCTION__", printable_name);
+}
+
+static void
+declare_hidden_char_array (name, value)
+     char *name, *value;
+{
+  tree decl, type, init;
+  int vlen;
+
   /* If the default size of char arrays isn't big enough for the name,
      make a bigger one.  */
-  len = strlen (name) + 1;
+  vlen = strlen (value) + 1;
   type = char_array_type_node;
-  if (TREE_INT_CST_LOW (TYPE_MAX_VALUE (TREE_TYPE (char_array_type_node)))
-      < len)
+  if (TREE_INT_CST_LOW (TYPE_MAX_VALUE (TREE_TYPE (type))) < vlen)
     type = build_array_type (char_type_node,
-			     build_index_type (build_int_2 (len, 0)));
+			     build_index_type (build_int_2 (vlen, 0)));
 
   push_obstacks_nochange ();
-  decl = build_decl (VAR_DECL, get_identifier ("__FUNCTION__"), type);
+  decl = build_decl (VAR_DECL, get_identifier (name), type);
   TREE_STATIC (decl) = 1;
   TREE_READONLY (decl) = 1;
+  TREE_ASM_WRITTEN (decl) = 1;
   DECL_SOURCE_LINE (decl) = 0;
   DECL_IN_SYSTEM_HEADER (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
-  DECL_EXTERNAL (decl) = 1;
-  init = build_string (len, name);
-  TREE_TYPE (init) = type;
-  DECL_INITIAL (decl) = init;
-  finish_decl (pushdecl (decl), init, NULL_TREE);
-
-  len = strlen (printable_name) + 1;
-  type = char_array_type_node;
-  if (TREE_INT_CST_LOW (TYPE_MAX_VALUE (TREE_TYPE (char_array_type_node)))
-      < len)
-    type = build_array_type (char_type_node,
-			     build_index_type (build_int_2 (len, 0)));
-
-  push_obstacks_nochange ();
-  decl = build_decl (VAR_DECL, get_identifier ("__PRETTY_FUNCTION__"), type);
-  TREE_STATIC (decl) = 1;
-  TREE_READONLY (decl) = 1;
-  DECL_SOURCE_LINE (decl) = 0;
-  DECL_IN_SYSTEM_HEADER (decl) = 1;
-  DECL_IGNORED_P (decl) = 1;
-  DECL_EXTERNAL (decl) = 1;
-  init = build_string (len, printable_name);
+  init = build_string (vlen, value);
   TREE_TYPE (init) = type;
   DECL_INITIAL (decl) = init;
   finish_decl (pushdecl (decl), init, NULL_TREE);
