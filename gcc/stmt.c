@@ -2603,7 +2603,8 @@ preserve_subexpressions_p ()
   if (flag_expensive_optimizations)
     return 1;
 
-  if (optimize == 0 || current_function == 0 || loop_stack == 0)
+  if (optimize == 0 || current_function == 0 
+      || current_function->stmt == 0 || loop_stack == 0)
     return 0;
 
   insn = get_last_insn_anywhere ();
