@@ -294,6 +294,19 @@ void schedule_insns ();
    for pseudo-register N.  */
 static rtx *reg_known_value;
 
+/* Vector recording for each reg_known_value whether it is due to a
+   REG_EQUIV note.  Future passes (viz., reload) may replace the
+   pseudo with the equivalent expression and so we account for the
+   dependences that would be introduced if that happens. */
+/* ??? This is a problem only on the Convex.  The REG_EQUIV notes created in
+   assign_parms mention the arg pointer, and there are explicit insns in the
+   RTL that modify the arg pointer.  Thus we must ensure that such insns don't
+   get scheduled across each other because that would invalidate the REG_EQUIV
+   notes.  One could argue that the REG_EQUIV notes are wrong, but solving
+   the problem in the scheduler will likely give better code, so we do it
+   here.  */
+static char *reg_known_equiv_p;
+
 /* Indicates number of valid entries in reg_known_value.  */
 static int reg_known_value_size;
 
@@ -341,6 +354,12 @@ init_alias_analysis ()
   bzero (reg_known_value+FIRST_PSEUDO_REGISTER,
 	 (maxreg-FIRST_PSEUDO_REGISTER) * sizeof (rtx));
 
+  reg_known_equiv_p
+    = (char *) oballoc ((maxreg-FIRST_PSEUDO_REGISTER) * sizeof (char))
+      - FIRST_PSEUDO_REGISTER;
+  bzero (reg_known_equiv_p+FIRST_PSEUDO_REGISTER,
+	 (maxreg-FIRST_PSEUDO_REGISTER) * sizeof (char));
+
   /* Fill in the entries with known constant values.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if ((set = single_set (insn)) != 0
@@ -350,7 +369,11 @@ init_alias_analysis ()
 	     && reg_n_sets[REGNO (SET_DEST (set))] == 1)
 	    || (note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != 0)
 	&& GET_CODE (XEXP (note, 0)) != EXPR_LIST)
-      reg_known_value[REGNO (SET_DEST (set))] = XEXP (note, 0);
+      {
+	int regno = REGNO (SET_DEST (set));
+	reg_known_value[regno] = XEXP (note, 0);
+	reg_known_equiv_p[regno] = REG_NOTE_KIND (note) == REG_EQUIV;
+      }
 
   /* Fill in the remaining entries.  */
   while (--maxreg >= FIRST_PSEUDO_REGISTER)
@@ -1622,24 +1645,13 @@ sched_analyze_1 (x, insn)
 	    add_dependence (insn, reg_last_sets[regno], REG_DEP_OUTPUT);
 	  reg_last_sets[regno] = insn;
 
-#if 0
-	  /* ??? This code has two serious problems:
-	     1) It can cause an infinite loop if regno is mentioned in
-	        its reg_known_value.
-	     2) It can cause execution time exponential in the size of the
-	        input if there are long chains of reg_known_values pointing
-		to other reg_known_values.
-	     This code was specifically added to handle fake argument pointers.
-	     It may need to be rewritten to just handle that specific case.  */
-
 	  /* Pseudos that are REG_EQUIV to something may be replaced
-	     by that during reloading, so we can potentially read
-	     quantities mentioned in those addresses. */
-	  if (! reload_completed)
-	    if (reg_known_value[regno] != regno_reg_rtx[regno])
-	      if (GET_CODE (reg_known_value[regno]) == MEM)
-		sched_analyze_2 (XEXP (reg_known_value[regno], 0), insn);
-#endif
+	     by that during reloading.  We need only add dependencies for
+	     the address in the REG_EQUIV note.  */
+	  if (! reload_completed
+	      && reg_known_equiv_p[regno]
+	      && GET_CODE (reg_known_value[regno]) == MEM)
+	    sched_analyze_2 (XEXP (reg_known_value[regno], 0), insn);
 
 	  /* Don't let it cross a call after scheduling if it doesn't
 	     already cross one.  */
@@ -1793,22 +1805,13 @@ sched_analyze_2 (x, insn)
 	    if (reg_last_sets[regno])
 	      add_dependence (insn, reg_last_sets[regno], 0);
 
-#if 0
-	  /* ??? This code has two serious problems:
-	     1) It can cause an infinite loop if regno is mentioned in
-	        its reg_known_value.
-	     2) It can cause execution time exponential in the size of the
-	        input if there are long chains of reg_known_values pointing
-		to other reg_known_values.
-	     This code was specifically added to handle fake argument pointers.
-	     It may need to be rewritten to just handle that specific case.  */
-
 	    /* Pseudos that are REG_EQUIV to something may be replaced
-	       by that, so we depend on anything mentioned there too. */
-	    if (! reload_completed)
-	      if (reg_known_value[regno] != regno_reg_rtx[regno])
-		sched_analyze_2 (reg_known_value[regno], insn);
-#endif
+	       by that during reloading.  We need only add dependencies for
+	       the address in the REG_EQUIV note.  */
+	    if (! reload_completed
+		&& reg_known_equiv_p[regno]
+		&& GET_CODE (reg_known_value[regno]) == MEM)
+	      sched_analyze_2 (XEXP (reg_known_value[regno], 0), insn);
 
 	    /* If the register does not already cross any calls, then add this
 	       insn to the sched_before_next_call list so that it will still
