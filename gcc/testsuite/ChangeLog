@@ -1,3 +1,8 @@
+2004-06-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15862
+	* g++.dg/parse/enum1.C: New test.
+
 2004-06-10  Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/compile/20040610-1.c: New test.
