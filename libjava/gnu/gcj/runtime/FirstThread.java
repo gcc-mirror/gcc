@@ -94,4 +94,6 @@ final class FirstThread extends Thread
   static final Class Kfile = gnu.gcj.protocol.file.Handler.class;
   static final Class Khttp = gnu.gcj.protocol.http.Handler.class;
   static final Class Kjar  = gnu.gcj.protocol.jar.Handler.class;
+  static final Class KinputASCII  = gnu.gcj.convert.Input_ASCII.class;
+  static final Class KoutputASCII = gnu.gcj.convert.Output_ASCII.class;
 }
