@@ -338,6 +338,26 @@ copy_body_r (tp, walk_subtrees, data)
 	  TREE_OPERAND (*tp, 1) = TREE_OPERAND (*tp, 3);
 	  TREE_OPERAND (*tp, 3) = NULL_TREE;
 	}
+      else if (TREE_CODE (*tp) == MODIFY_EXPR
+	       && TREE_OPERAND (*tp, 0) == TREE_OPERAND (*tp, 1)
+	       && nonstatic_local_decl_p (TREE_OPERAND (*tp, 0))
+	       && DECL_CONTEXT (TREE_OPERAND (*tp, 0)) == fn)
+	{
+	  /* Assignments like a = a; don't generate any rtl code
+	     and don't count as variable modification.  Avoid
+	     keeping bogosities like 0 = 0.  */
+	  tree decl = TREE_OPERAND (*tp, 0), value;
+	  splay_tree_node n;
+
+	  n = splay_tree_lookup (id->decl_map, (splay_tree_key) decl);
+	  if (n)
+	    {
+	      value = (tree) n->value;
+	      STRIP_TYPE_NOPS (value);
+	      if (TREE_CONSTANT (value) || TREE_READONLY_DECL_P (value))
+		*tp = value;
+	    }
+	}
     }
 
   /* Keep iterating.  */

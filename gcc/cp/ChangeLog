@@ -1,3 +1,9 @@
+2001-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* optimize.c (copy_body_r): If MODIFY_EXPR has both arguments
+	identical and they would be replaced with constant, remove
+	MODIFY_EXPR from the tree.
+
 2001-01-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in: Remove all dependencies on defaults.h.
