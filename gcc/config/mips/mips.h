@@ -162,27 +162,17 @@ extern struct rtx_def *embedded_pic_fnaddr_rtx;	/* function address */
 extern int mips_string_length;		/* length of strings for mips16 */
 extern struct rtx_def *mips16_gp_pseudo_rtx; /* psuedo reg holding $gp */
 
-/* Functions within mips.c that we reference.  Some of these return  type
-   HOST_WIDE_INT, so define that here.  This is a copy of code in machmode.h.
+/* Functions within mips.c that we reference.  Some of these return
+   type HOST_WIDE_INT, so define that here.  */
 
-   ??? It would be good to try to put this as common code someplace.  */
-
-#ifndef HOST_BITS_PER_WIDE_INT
-
-#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
-#define HOST_WIDE_INT long
-#else
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
-#define HOST_WIDE_INT int
-#endif
-
-#endif
+#include "hwint.h"
 
 extern int		arith32_operand ();
 extern int		arith_operand ();
 extern int		cmp_op ();
+#ifdef HOST_WIDE_INT
 extern HOST_WIDE_INT	compute_frame_size ();
+#endif
 extern int		const_float_1_operand ();
 extern void		expand_block_move ();
 extern int		equality_op ();
@@ -205,7 +195,9 @@ extern void		mips_asm_file_start ();
 extern int		mips_can_use_return_insn ();
 extern int		mips_const_double_ok ();
 extern void		mips_count_memory_refs ();
+#ifdef HOST_WIDE_INT
 extern HOST_WIDE_INT	mips_debugger_offset ();
+#endif
 extern void		mips_declare_object ();
 extern int		mips_epilogue_delay_slots ();
 extern void		mips_expand_epilogue ();
