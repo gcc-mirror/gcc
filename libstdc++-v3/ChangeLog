@@ -1,3 +1,8 @@
+2003-06-20  Matthias Klose  <doko@debian.org>
+
+	* configure.host: Set try_cpu to target_cpu for existing
+	baseline files.
+
 2003-06-19  Andreas Jaeger  <aj@suse.de>
 
 	* testsuite/Makefile.am (extract_symvers): Revert accidental
