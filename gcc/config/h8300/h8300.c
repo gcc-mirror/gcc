@@ -2420,32 +2420,21 @@ get_shift_alg (shift_type, shift_mode, count, info)
     case HIshift:
       if (count == 7)
 	{
-	  if (shift_type == SHIFT_ASHIFT && TARGET_H8300)
+	  switch (shift_type)
 	    {
-	      info->special = "shar.b\t%t0\n\tmov.b\t%s0,%t0\n\trotxr.b\t%t0\n\trotr.b\t%s0\n\tand.b\t#0x80,%s0";
+	    case SHIFT_ASHIFT:
+	      if (TARGET_H8300)
+		info->special = "shar.b\t%t0\n\tmov.b\t%s0,%t0\n\trotxr.b\t%t0\n\trotr.b\t%s0\n\tand.b\t#0x80,%s0";
+	      else
+		info->special = "shar.b\t%t0\n\tmov.b\t%s0,%t0\n\trotxr.w\t%T0\n\tand.b\t#0x80,%s0";
 	      goto end;
-	    }
-
-	  if (shift_type == SHIFT_ASHIFT && TARGET_H8300H)
-	    {
-	      info->special = "shar.b\t%t0\n\tmov.b\t%s0,%t0\n\trotxr.w\t%T0\n\tand.b\t#0x80,%s0";
+	    case SHIFT_LSHIFTRT:
+	      if (TARGET_H8300)
+		info->special = "shal.b\t%s0\n\tmov.b\t%t0,%s0\n\trotxl.b\t%s0\n\trotl.b\t%t0\n\tand.b\t#0x01,%t0";
+	      else
+		info->special = "shal.b\t%s0\n\tmov.b\t%t0,%s0\n\trotxl.w\t%T0\n\tand.b\t#0x01,%t0";
 	      goto end;
-	    }
-
-	  if (shift_type == SHIFT_LSHIFTRT && TARGET_H8300)
-	    {
-	      info->special = "shal.b\t%s0\n\tmov.b\t%t0,%s0\n\trotxl.b\t%s0\n\trotl.b\t%t0\n\tand.b\t#0x01,%t0";
-	      goto end;
-	    }
-
-	  if (shift_type == SHIFT_LSHIFTRT && TARGET_H8300H)
-	    {
-	      info->special = "shal.b\t%s0\n\tmov.b\t%t0,%s0\n\trotxl.w\t%T0\n\tand.b\t#0x01,%t0";
-	      goto end;
-	    }
-
-	  if (shift_type == SHIFT_ASHIFTRT)
-	    {
+	    case SHIFT_ASHIFTRT:
 	      info->special = "shal.b\t%s0\n\tmov.b\t%t0,%s0\n\trotxl.b\t%s0\n\tsubx\t%t0,%t0";
 	      goto end;
 	    }
