@@ -256,7 +256,7 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
       if (ex != NULL)
 	{
 	  if (iaddr == NULL || iaddr->address == NULL)
-	    JvThrow (ex);
+	    throw ex;
 	  hptr = NULL;
 	}
     }
@@ -268,7 +268,7 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
 	  return NULL;
 	}
       else
-	JvThrow (new java::net::UnknownHostException(host));
+	throw new java::net::UnknownHostException(host);
     }
   int count;
   if (all)
