@@ -476,6 +476,9 @@ collect_objlike_expansion (pfile, list)
   len = CPP_WRITTEN (pfile) - start;
   CPP_SET_WRITTEN (pfile, start);
 
+  if (len <= 4)
+    cpp_ice (pfile, "empty object-like macro went through full #define");
+
   exp = (U_CHAR *) xmalloc (len + 1);
   memcpy (exp, pfile->token_buffer + start, len);
   exp[len] = '\0';
@@ -1101,16 +1104,10 @@ special_symbol (pfile, hp)
 	  return;
 	}
 #endif
-      /* else fall through */
-    case T_CONST:
-    case T_MCONST:
-    case T_XCONST:
     constant:
       buf = hp->value.cpval;
-      if (!buf)
+      if (!buf || *buf == '\0')
 	return;
-      if (*buf == '\0')
-	buf = "\r \r ";
 
       CPP_PUTS (pfile, buf, strlen (buf));
       return;
@@ -1130,7 +1127,7 @@ special_symbol (pfile, hp)
     case T_DATE:
     case T_TIME:
       /* Generate both __DATE__ and __TIME__, stuff them into their
-	 respective hash nodes, and mark the nodes T_MCONST so we
+	 respective hash nodes, and mark the nodes T_XCONST so we
 	 don't have to do this again.  We don't generate these strings
 	 at init time because time() and localtime() are very slow on
 	 some systems.  */
@@ -1147,12 +1144,12 @@ special_symbol (pfile, hp)
 	d->value.cpval = xmalloc (sizeof "'Oct 11 1347'");
 	sprintf ((char *)d->value.cpval, "\"%s %2d %4d\"",
 		 monthnames[tb->tm_mon], tb->tm_mday, tb->tm_year + 1900);
-	d->type = T_MCONST;
+	d->type = T_XCONST;
 
 	t->value.cpval = xmalloc (sizeof "'12:34:56'");
 	sprintf ((char *)t->value.cpval, "\"%02d:%02d:%02d\"",
 		 tb->tm_hour, tb->tm_min, tb->tm_sec);
-	t->type = T_MCONST;
+	t->type = T_XCONST;
 	goto constant;
       }
 
@@ -1198,9 +1195,8 @@ _cpp_macroexpand (pfile, hp)
   if (hp->type == T_MCONST || hp->type == T_CONST || hp->type == T_XCONST)
     {
       const U_CHAR *cpval = hp->value.cpval;
-      if (!cpval || *cpval == '\0')
-	cpval = (const U_CHAR *) "\r \r ";
-      push_macro_expansion (pfile, cpval, strlen (cpval), hp);
+      if (cpval && *cpval != '\0')
+	push_macro_expansion (pfile, cpval, strlen (cpval), hp);
       return;
     }
 
@@ -1213,6 +1209,9 @@ _cpp_macroexpand (pfile, hp)
       special_symbol (pfile, hp);
       len = CPP_WRITTEN (pfile) - old_written;
       CPP_SET_WRITTEN (pfile, old_written);
+      if (len == 0)
+	return;
+
       xbuf = (U_CHAR *) xmalloc (len + 1);
       memcpy (xbuf, CPP_PWRITTEN (pfile), len);
       xbuf[len] = '\0';
@@ -1239,13 +1238,14 @@ _cpp_macroexpand (pfile, hp)
      Read directly from the macro definition.  */
   if (defn->nargs == 0 || defn->pattern == 0)
     {
-      CPP_SET_WRITTEN (pfile, old_written);
-      pfile->output_escapes--;
-      push_macro_expansion (pfile, defn->expansion, defn->length, hp);
-      return;
+      /* If the defn is the empty string, don't bother pushing it.  */
+      if (defn->length > 4)
+	push_macro_expansion (pfile, defn->expansion, defn->length, hp);
     }
+  else
+    funlike_macroexpand (pfile, hp, args);
 
-  funlike_macroexpand (pfile, hp, args);
+  CPP_SET_WRITTEN (pfile, old_written);
   pfile->output_escapes--;
 }
 
@@ -1433,7 +1433,6 @@ funlike_macroexpand (pfile, hp, args)
   DEFINITION *defn = hp->value.defn;
   register U_CHAR *xbuf;
   int xbuf_len;
-  long old_written = CPP_WRITTEN (pfile);
   U_CHAR *exp = defn->expansion;
   int offset;	/* offset in expansion, copied a piece at a time */
   int totlen;	/* total amount of exp buffer filled so far */
@@ -1601,9 +1600,6 @@ funlike_macroexpand (pfile, hp, args)
   /* Now put the expansion on the input stack
      so our caller will commence reading from it.  */
   push_macro_expansion (pfile, xbuf, totlen, hp);
-
-  /* Pop the space we've used in the token_buffer for argument expansion.  */
-  CPP_SET_WRITTEN (pfile, old_written);
 }
 
 /* Return 1 iff a token ending in C1 followed directly by a token C2
@@ -1703,7 +1699,7 @@ push_macro_expansion (pfile, xbuf, len, hp)
       && !unsafe_chars (pfile, xbuf[len-3], CPP_BUF_PEEK (CPP_BUFFER (pfile))))
     len -= 2;
 
-  /* If the total expansion is "\r \r", we must not trim both escapes.  */
+  /* If the total expansion is "\r \r ", we must not trim both escapes.  */
   if (len == 2 && advance_cur)
     advance_cur = 0;
 
