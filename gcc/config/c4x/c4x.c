@@ -152,9 +152,7 @@ enum machine_mode c4x_caller_save_map[FIRST_PSEUDO_REGISTER] =
 rtx c4x_compare_op0;
 rtx c4x_compare_op1;
 
-const char *c4x_rpts_cycles_string;
 int c4x_rpts_cycles = 0;	/* Max. cycles for RPTS.  */
-const char *c4x_cpu_version_string;
 int c4x_cpu_version = 40;	/* CPU version C30/31/32/33/40/44.  */
 
 /* Pragma definitions.  */
@@ -167,6 +165,7 @@ tree interrupt_tree = NULL_TREE;
 tree naked_tree = NULL_TREE;
 
 /* Forward declarations */
+static bool c4x_handle_option (size_t, const char *, int);
 static int c4x_isr_reg_used_p (unsigned int);
 static int c4x_leaf_function_p (void);
 static int c4x_naked_function_p (void);
@@ -221,6 +220,13 @@ static tree c4x_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 #undef TARGET_ASM_EXTERNAL_LIBCALL
 #define TARGET_ASM_EXTERNAL_LIBCALL c4x_external_libcall
 
+/* Play safe, not the fastest code.  */
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS (MASK_ALIASES | MASK_PARALLEL \
+				     | MASK_PARALLEL_MPY | MASK_RPTB)
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION c4x_handle_option
+
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE c4x_attribute_table
 
@@ -258,6 +264,41 @@ static tree c4x_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+c4x_handle_option (size_t code, const char *arg, int value)
+{
+  switch (code)
+    {
+    case OPT_m30: c4x_cpu_version = 30; return true;
+    case OPT_m31: c4x_cpu_version = 31; return true;
+    case OPT_m32: c4x_cpu_version = 32; return true;
+    case OPT_m33: c4x_cpu_version = 33; return true;
+    case OPT_m40: c4x_cpu_version = 40; return true;
+    case OPT_m44: c4x_cpu_version = 44; return true;
+
+    case OPT_mcpu_:
+      if (arg[0] == 'c' || arg[0] == 'C')
+	arg++;
+      value = atoi (arg);
+      switch (value)
+	{
+	case 30: case 31: case 32: case 33: case 40: case 44:
+	  c4x_cpu_version = value;
+	  return true;
+	}
+      return false;
+
+    case OPT_mrpts_:
+      c4x_rpts_cycles = value;
+      return true;
+
+    default:
+      return true;
+    }
+}
+
 /* Override command line options.
    Called once after all options have been parsed.
    Mostly we process the processor
@@ -266,59 +307,6 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 void
 c4x_override_options (void)
 {
-  if (c4x_rpts_cycles_string)
-    c4x_rpts_cycles = atoi (c4x_rpts_cycles_string);
-  else
-    c4x_rpts_cycles = 0;
-
-  if (TARGET_C30)
-    c4x_cpu_version = 30;
-  else if (TARGET_C31)
-    c4x_cpu_version = 31;
-  else if (TARGET_C32)
-    c4x_cpu_version = 32;
-  else if (TARGET_C33)
-    c4x_cpu_version = 33;
-  else if (TARGET_C40)
-    c4x_cpu_version = 40;
-  else if (TARGET_C44)
-    c4x_cpu_version = 44;
-  else
-    c4x_cpu_version = 40;	       
-
-  /* -mcpu=xx overrides -m40 etc.  */
-  if (c4x_cpu_version_string)
-    {
-      const char *p = c4x_cpu_version_string;
-      
-      /* Also allow -mcpu=c30 etc.  */
-      if (*p == 'c' || *p == 'C')
-	p++;
-      c4x_cpu_version = atoi (p);
-    }
-
-  target_flags &= ~(C30_FLAG | C31_FLAG | C32_FLAG | C33_FLAG |
-		    C40_FLAG | C44_FLAG);
-
-  switch (c4x_cpu_version)
-    {
-    case 30: target_flags |= C30_FLAG; break;
-    case 31: target_flags |= C31_FLAG; break;
-    case 32: target_flags |= C32_FLAG; break;
-    case 33: target_flags |= C33_FLAG; break;
-    case 40: target_flags |= C40_FLAG; break;
-    case 44: target_flags |= C44_FLAG; break;
-    default:
-      warning ("unknown CPU version %d, using 40.\n", c4x_cpu_version);
-      c4x_cpu_version = 40;
-      target_flags |= C40_FLAG;
-    }
-
-  if (TARGET_C30 || TARGET_C31 || TARGET_C32 || TARGET_C33)
-    target_flags |= C3X_FLAG;
-  else
-    target_flags &= ~C3X_FLAG;
-
   /* Convert foo / 8.0 into foo * 0.125, etc.  */
   set_fast_math_flags (1);
 
@@ -326,6 +314,15 @@ c4x_override_options (void)
      This provides compatibility with the old -mno-aliases option.  */
   if (! TARGET_ALIASES && ! flag_argument_noalias)
     flag_argument_noalias = 1;
+
+  if (!TARGET_C3X)
+    target_flags |= MASK_MPYI | MASK_DB;
+
+  if (optimize < 2)
+    target_flags &= ~(MASK_RPTB | MASK_PARALLEL);
+
+  if (!TARGET_PARALLEL)
+    target_flags &= ~MASK_PARALLEL_MPY;
 }
 
 
@@ -4409,16 +4406,8 @@ c4x_external_ref (const char *name)
 static void
 c4x_file_start (void)
 {
-  int dspversion = 0;
-  if (TARGET_C30) dspversion = 30;
-  if (TARGET_C31) dspversion = 31;
-  if (TARGET_C32) dspversion = 32;
-  if (TARGET_C33) dspversion = 33;
-  if (TARGET_C40) dspversion = 40;
-  if (TARGET_C44) dspversion = 44;
-
   default_file_start ();
-  fprintf (asm_out_file, "\t.version\t%d\n", dspversion);
+  fprintf (asm_out_file, "\t.version\t%d\n", c4x_cpu_version);
   fputs ("\n\t.data\ndata_sec:\n", asm_out_file);
 }
 
