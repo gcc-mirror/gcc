@@ -422,7 +422,7 @@ pre_edge_lcm (file, n_exprs, transp, avloc, antloc, kill, insert, delete)
   avin = sbitmap_vector_alloc (n_basic_blocks, n_exprs);
   avout = sbitmap_vector_alloc (n_basic_blocks, n_exprs);
   compute_available (avloc, kill, avout, avin);
-  free (avin);
+  sbitmap_vector_free (avin);
 
   /* Compute global anticipatability.  */
   antin = sbitmap_vector_alloc (n_basic_blocks, n_exprs);
@@ -446,9 +446,9 @@ pre_edge_lcm (file, n_exprs, transp, avloc, antloc, kill, insert, delete)
     dump_sbitmap_vector (file, "earliest", "", earliest, num_edges);
 #endif
 
-  free (antout);
-  free (antin);
-  free (avout);
+  sbitmap_vector_free (antout);
+  sbitmap_vector_free (antin);
+  sbitmap_vector_free (avout);
 
   later = sbitmap_vector_alloc (num_edges, n_exprs);
 
@@ -464,14 +464,14 @@ pre_edge_lcm (file, n_exprs, transp, avloc, antloc, kill, insert, delete)
     }
 #endif
 
-  free (earliest);
+  sbitmap_vector_free (earliest);
 
   *insert = sbitmap_vector_alloc (num_edges, n_exprs);
   *delete = sbitmap_vector_alloc (n_basic_blocks, n_exprs);
   compute_insert_delete (edge_list, antloc, later, laterin, *insert, *delete);
 
-  free (laterin);
-  free (later);
+  sbitmap_vector_free (laterin);
+  sbitmap_vector_free (later);
 
 #ifdef LCM_DEBUG_INFO
   if (file)
@@ -791,8 +791,11 @@ pre_edge_rev_lcm (file, n_exprs, transp, st_avloc, st_antloc, kill,
     dump_sbitmap_vector (file, "farthest", "", farthest, num_edges);
 #endif
 
-  free (st_avin);
-  free (st_avout);
+  sbitmap_vector_free (st_antin);
+  sbitmap_vector_free (st_antout);
+
+  sbitmap_vector_free (st_avin);
+  sbitmap_vector_free (st_avout);
 
   nearer = sbitmap_vector_alloc (num_edges, n_exprs);
 
@@ -809,15 +812,15 @@ pre_edge_rev_lcm (file, n_exprs, transp, st_avloc, st_antloc, kill,
     }
 #endif
 
-  free (farthest);
+  sbitmap_vector_free (farthest);
 
   *insert = sbitmap_vector_alloc (num_edges, n_exprs);
   *delete = sbitmap_vector_alloc (n_basic_blocks, n_exprs);
   compute_rev_insert_delete (edge_list, st_avloc, nearer, nearerout,
 			     *insert, *delete);
 
-  free (nearerout);
-  free (nearer);
+  sbitmap_vector_free (nearerout);
+  sbitmap_vector_free (nearer);
 
 #ifdef LCM_DEBUG_INFO
   if (file)
@@ -827,7 +830,6 @@ pre_edge_rev_lcm (file, n_exprs, transp, st_avloc, st_antloc, kill,
 			   n_basic_blocks);
     }
 #endif
-
   return edge_list;
 }
 

@@ -1051,7 +1051,7 @@ free_gcse_mem ()
 
   free (reg_set_bitmap);
 
-  free (reg_set_in_block);
+  sbitmap_vector_free (reg_set_in_block);
   free (mem_set_in_block);
   /* re-Cache any INSN_LIST nodes we have allocated.  */
   {
@@ -2959,10 +2959,10 @@ alloc_rd_mem (n_blocks, n_insns)
 static void
 free_rd_mem ()
 {
-  free (rd_kill);
-  free (rd_gen);
-  free (reaching_defs);
-  free (rd_out);
+  sbitmap_vector_free (rd_kill);
+  sbitmap_vector_free (rd_gen);
+  sbitmap_vector_free (reaching_defs);
+  sbitmap_vector_free (rd_out);
 }
 
 /* Add INSN to the kills of BB.  REGNO, set in BB, is killed by INSN.  */
@@ -3101,10 +3101,10 @@ alloc_avail_expr_mem (n_blocks, n_exprs)
 static void
 free_avail_expr_mem ()
 {
-  free (ae_kill);
-  free (ae_gen);
-  free (ae_in);
-  free (ae_out);
+  sbitmap_vector_free (ae_kill);
+  sbitmap_vector_free (ae_gen);
+  sbitmap_vector_free (ae_in);
+  sbitmap_vector_free (ae_out);
 }
 
 /* Compute the set of available expressions generated in each basic block.  */
@@ -3751,10 +3751,10 @@ alloc_cprop_mem (n_blocks, n_sets)
 static void
 free_cprop_mem ()
 {
-  free (cprop_pavloc);
-  free (cprop_absaltered);
-  free (cprop_avin);
-  free (cprop_avout);
+  sbitmap_vector_free (cprop_pavloc);
+  sbitmap_vector_free (cprop_absaltered);
+  sbitmap_vector_free (cprop_avin);
+  sbitmap_vector_free (cprop_avout);
 }
 
 /* For each block, compute whether X is transparent.  X is either an
@@ -4462,24 +4462,23 @@ alloc_pre_mem (n_blocks, n_exprs)
 static void
 free_pre_mem ()
 {
-  free (transp);
-  free (comp);
+  sbitmap_vector_free (transp);
+  sbitmap_vector_free (comp);
 
   /* ANTLOC and AE_KILL are freed just after pre_lcm finishes.  */
 
   if (pre_optimal)
-    free (pre_optimal);
+    sbitmap_vector_free (pre_optimal);
   if (pre_redundant)
-    free (pre_redundant);
+    sbitmap_vector_free (pre_redundant);
   if (pre_insert_map)
-    free (pre_insert_map);
+    sbitmap_vector_free (pre_insert_map);
   if (pre_delete_map)
-    free (pre_delete_map);
-
+    sbitmap_vector_free (pre_delete_map);
   if (ae_in)
-    free (ae_in);
+    sbitmap_vector_free (ae_in);
   if (ae_out)
-    free (ae_out);
+    sbitmap_vector_free (ae_out);
 
   transp = comp = NULL;
   pre_optimal = pre_redundant = pre_insert_map = pre_delete_map = NULL;
@@ -4537,9 +4536,9 @@ compute_pre_data ()
 
   edge_list = pre_edge_lcm (gcse_file, n_exprs, transp, comp, antloc,
 			    ae_kill, &pre_insert_map, &pre_delete_map);
-  free (antloc);
+  sbitmap_vector_free (antloc);
   antloc = NULL;
-  free (ae_kill);
+  sbitmap_vector_free (ae_kill);
   ae_kill = NULL; 
   free (trapping_expr);
 }
@@ -4907,7 +4906,7 @@ pre_edge_insert (edge_list, index_map)
 	}
     }
 
-  free (inserted);
+  sbitmap_vector_free (inserted);
   return did_insert;
 }
 
@@ -5587,10 +5586,10 @@ delete_null_pointer_checks (f)
   free (block_reg);
 
   /* Free bitmaps.  */
-  free (npi.nonnull_local);
-  free (npi.nonnull_killed);
-  free (nonnull_avin);
-  free (nonnull_avout);
+  sbitmap_vector_free (npi.nonnull_local);
+  sbitmap_vector_free (npi.nonnull_killed);
+  sbitmap_vector_free (nonnull_avin);
+  sbitmap_vector_free (nonnull_avout);
 }
 
 /* Code Hoisting variables and subroutines.  */
@@ -5635,16 +5634,16 @@ alloc_code_hoist_mem (n_blocks, n_exprs)
 static void
 free_code_hoist_mem ()
 {
-  free (antloc);
-  free (transp);
-  free (comp);
+  sbitmap_vector_free (antloc);
+  sbitmap_vector_free (transp);
+  sbitmap_vector_free (comp);
 
-  free (hoist_vbein);
-  free (hoist_vbeout);
-  free (hoist_exprs);
-  free (transpout);
+  sbitmap_vector_free (hoist_vbein);
+  sbitmap_vector_free (hoist_vbeout);
+  sbitmap_vector_free (hoist_exprs);
+  sbitmap_vector_free (transpout);
 
-  free (dominators);
+  sbitmap_vector_free (dominators);
 }
 
 /* Compute the very busy expressions at entry/exit from each block.
@@ -7026,19 +7025,19 @@ free_store_memory ()
   free_ldst_mems ();
   
   if (ae_gen)
-    free (ae_gen);
+    sbitmap_vector_free (ae_gen);
   if (ae_kill)
-    free (ae_kill);
+    sbitmap_vector_free (ae_kill);
   if (transp)
-    free (transp);
+    sbitmap_vector_free (transp);
   if (st_antloc)
-    free (st_antloc);
+    sbitmap_vector_free (st_antloc);
   if (pre_insert_map)
-    free (pre_insert_map);
+    sbitmap_vector_free (pre_insert_map);
   if (pre_delete_map)
-    free (pre_delete_map);
+    sbitmap_vector_free (pre_delete_map);
   if (reg_set_in_block)
-    free (reg_set_in_block);
+    sbitmap_vector_free (reg_set_in_block);
   
   ae_gen = ae_kill = transp = st_antloc = NULL;
   pre_insert_map = pre_delete_map = reg_set_in_block = NULL;
@@ -7067,7 +7066,7 @@ store_motion ()
   num_stores = compute_store_table ();
   if (num_stores == 0)
     {
-      free (reg_set_in_block);
+      sbitmap_vector_free (reg_set_in_block);
       end_alias_analysis ();
       return;
     }

@@ -9017,6 +9017,10 @@ flow_loops_find (loops, flags)
 
       sbitmap_free (headers);
     }
+  else
+    {
+      sbitmap_vector_free (dom);
+    }
 
   loops->num = num_loops;
 
