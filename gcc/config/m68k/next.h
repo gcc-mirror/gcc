@@ -18,6 +18,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "m68k.h"
 
+/* Use new NeXT include file search path.  */
+
+#define INCLUDE_DEFAULTS                                \
+  {                                                     \
+    { "/NextDeveloper/Headers", 0},                     \
+    { "/NextDeveloper/Headers/ansi", 0},                \
+    { "/NextDeveloper/Headers/bsd", 0},                 \
+    { "/LocalDeveloper/Headers", 0},                    \
+    { "/LocalDeveloper/Headers/ansi", 0},               \
+    { "/LocalDeveloper/Headers/bsd", 0},                \
+    { "/NextDeveloper/2.0CompatibleHeaders", 0},        \
+    { 0, 0}                                             \
+  }
+
 #define EXTRA_FORMAT_FUNCTIONS \
       "NXPrintf",	FALSE,	2,	FALSE,	\
       "NXScanf",	TRUE,	2,	FALSE,	\
