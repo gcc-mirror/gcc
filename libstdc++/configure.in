@@ -115,6 +115,19 @@ CXX_INTERFACE=${cxx_interface}
 LIBC_INTERFACE=${libc_interface}
 " >> ${package_makefile_frag}
 
+# This duplicated the AC_PROG_LN_S macro in GNU autoconf.
+rm -f conttestdata
+if ln -s X conftestdata 2>/dev/null
+then
+  rm -f conftestdata
+  LN_S="ln -s"
+else
+  LN_S=ln
+fi
+echo "
+LN_S=$LN_S
+" >> ${package_makefile_frag}
+
 # post-target:
 
 # If cross-compiling, we install in $(tooldir)/lib or in $(libsubdir)
