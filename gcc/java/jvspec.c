@@ -54,15 +54,15 @@ int lang_specific_extra_outfiles = 0;
 #define COMBINE_INPUTS 0
 
 char jvgenmain_spec[] =
-  "jvgenmain %i %{!pipe:%u.i} |\n\
-   cc1 %{!pipe:%U.i} %1 \
+  "jvgenmain %i %{!pipe:%umain.i} |\n\
+   cc1 %{!pipe:%Umain.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
 		   %{g*} %{O*} \
 		   %{v:-version} %{pg:-p} %{p} %{f*}\
 		   %{aux-info*}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%U.s}} |\n\
-              %{!S:as %a %Y -o %d%w%u%O %{!pipe:%U.s} %A\n }";
+		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%Umain.s}} |\n\
+              %{!S:as %a %Y -o %d%w%umain%O %{!pipe:%Umain.s} %A\n }";
 
 /* Return full path name of spec file if it is in DIR, or NULL if
    not.  */
