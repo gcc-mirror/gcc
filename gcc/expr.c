@@ -7751,14 +7751,14 @@ do_store_flag (exp, target, mode, only_cheap)
 	code = unsignedp ? LTU : LT;
       break;
     case LE_EXPR:
-      if (integer_all_onesp (arg1))
-	arg1 = integer_zero_node, code = unsignedp ? LTU : LT;
+      if (! unsignedp && integer_all_onesp (arg1))
+	arg1 = integer_zero_node, code = LT;
       else
 	code = unsignedp ? LEU : LE;
       break;
     case GT_EXPR:
-      if (integer_all_onesp (arg1))
-	arg1 = integer_zero_node, code = unsignedp ? GEU : GE;
+      if (! unsignedp && integer_all_onesp (arg1))
+	arg1 = integer_zero_node, code = GE;
       else
 	code = unsignedp ? GTU : GT;
       break;
