@@ -187,8 +187,18 @@ dump_prediction (predictor, probability, bb)
 	   probability * 100.0 / REG_BR_PROB_BASE);
 
   if (bb->count)
-    fprintf (rtl_dump_file, "  exec %i hit %i (%.1f%%)",
-	     bb->count, e->count, e->count * 100.0 / bb->count);
+    {
+      fprintf (rtl_dump_file, "  exec ",
+	       bb->count, e->count, e->count * 100.0 / bb->count);
+      fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC,
+	       (HOST_WIDEST_INT) bb->count);
+      fprintf (rtl_dump_file, " hit ",
+	       e->count, e->count * 100.0 / bb->count);
+      fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC,
+	       (HOST_WIDEST_INT) e->count);
+      fprintf (rtl_dump_file, " (%.1f%%)",
+	       e->count, e->count * 100.0 / bb->count);
+    }
   fprintf (rtl_dump_file, "\n");
 }
 
@@ -701,7 +711,9 @@ estimate_bb_frequencies (loops)
       int probability;
       edge fallthru, branch;
 
-      if (GET_CODE (last_insn) != JUMP_INSN || !any_condjump_p (last_insn))
+      if (GET_CODE (last_insn) != JUMP_INSN || !any_condjump_p (last_insn)
+	  /* Avoid handling of conditionals jump jumping to fallthru edge.  */
+	  || BASIC_BLOCK (i)->succ->succ_next == NULL)
 	{
 	  /* We can predict only conditional jumps at the moment.
 	     Expect each edge to be equall probable.
