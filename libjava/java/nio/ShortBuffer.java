@@ -148,7 +148,7 @@ public abstract class ShortBuffer extends Buffer
       {
         short[] toPut = new short [src.remaining ()];
         src.get (toPut);
-        src.put (toPut);
+        put (toPut);
       }
 
     return this;
