@@ -1,5 +1,5 @@
 /* Sparse Arrays for Objective C dispatch tables
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
 
 Author: Kresten Krab Thorup
 
@@ -41,6 +41,8 @@ extern const char* __objc_sparse3_id;
 #endif
 
 #include <stddef.h>
+
+#include "objc/thread.h"
 
 extern int nbuckets;		/* for stats */
 extern int nindices;
@@ -111,16 +113,21 @@ union sofftype {
 void * __objc_xrealloc (void *optr, size_t size);
 void * __objc_xmalloc (size_t size);
 
+union sversion {
+  int	version;
+  void *next_free;
+};
+
 struct sbucket {
   void* elems[BUCKET_SIZE];	/* elements stored in array */
-  short version;			/* used for copy-on-write */
+  union sversion	version;		/* used for copy-on-write */
 };
 
 #ifdef OBJC_SPARSE3
 
 struct sindex {
   struct sbucket* buckets[INDEX_SIZE];
-  short version;
+  union sversion	version;		/* used for copy-on-write */
 };
 
 #endif /* OBJC_SPARSE3 */
@@ -133,7 +140,7 @@ struct sarray {
   struct sbucket** buckets;
 #endif  /* OBJC_SPARSE2 */
   struct sbucket* empty_bucket;
-  short version;
+  union sversion	version;		/* used for copy-on-write */
   short ref_count;
   struct sarray* is_copy_of;
   size_t capacity;
@@ -142,10 +149,12 @@ struct sarray {
 struct sarray* sarray_new(int, void* default_element);
 void sarray_free(struct sarray*);
 struct sarray* sarray_lazy_copy(struct sarray*);
-struct sarray* sarray_hard_copy(struct sarray*); /* ... like the name? */
 void sarray_realloc(struct sarray*, int new_size);
 void sarray_at_put(struct sarray*, sidx index, void* elem);
 void sarray_at_put_safe(struct sarray*, sidx index, void* elem);
+
+struct sarray* sarray_hard_copy(struct sarray*); /* ... like the name? */
+void sarray_remove_garbage(void);
 
 
 #ifdef PRECOMPUTE_SELECTORS
