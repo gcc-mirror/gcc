@@ -1,3 +1,10 @@
+2000-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in (ac_libiberty_warn_cflags): Turn on warnings if
+	we're using gcc.
+
+	* Makefile.in (COMPILE.c): Add @ac_libiberty_warn_cflags@
+
 1999-12-27  Geoff Keating  <geoffk@cygnus.com>
 
 	* vasprintf.c (int_vasprintf): Don't re-read the format character
