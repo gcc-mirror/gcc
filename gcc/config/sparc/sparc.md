@@ -348,7 +348,7 @@
 	(compare:CC (match_operand:SI 0 "register_operand" "r")
 		    (match_operand:SI 1 "arith_operand" "rI")))]
   ""
-  "cmp %r0,%1"
+  "cmp %0,%1"
   [(set_attr "type" "compare")])
 
 (define_insn "*cmpsf_fpe_sp32"
@@ -404,7 +404,7 @@
 	(compare:CCX (match_operand:DI 0 "register_operand" "r")
 		     (match_operand:DI 1 "arith_double_operand" "rHI")))]
   "TARGET_ARCH64"
-  "cmp %r0,%1"
+  "cmp %0,%1"
   [(set_attr "type" "compare")])
 
 (define_insn "*cmpsf_fpe_sp64"
@@ -2183,11 +2183,13 @@
 
 ;; Must handle overlapping registers here, since parameters can be unaligned
 ;; in registers.
-;; ??? Do we need a v9 version of this?
+
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
 	(match_operand:DF 1 "register_operand" ""))]
-  "! TARGET_ARCH64 && reload_completed"
+  "! TARGET_ARCH64 && reload_completed
+   && REGNO (operands[0]) < SPARC_FIRST_V9_FP_REG
+   && REGNO (operands[1]) < SPARC_FIRST_V9_FP_REG"
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
   "
@@ -2575,7 +2577,7 @@
 		      (match_operand:SF 3 "register_operand" "f")
 		      (match_operand:SF 4 "register_operand" "0")))]
   "TARGET_ARCH64 && TARGET_FPU"
-  "fmovrs%D1 %2,%r3,%0"
+  "fmovrs%D1 %2,%3,%0"
   [(set_attr "type" "cmove")])
 
 (define_insn "*movdf_cc_reg_sp64"
@@ -2586,7 +2588,7 @@
 		      (match_operand:DF 3 "register_operand" "e")
 		      (match_operand:DF 4 "register_operand" "0")))]
   "TARGET_ARCH64 && TARGET_FPU"
-  "fmovrd%D1 %2,%r3,%0"
+  "fmovrd%D1 %2,%3,%0"
   [(set_attr "type" "cmove")])
 
 (define_insn "*movtf_cc_reg_sp64"
@@ -2597,7 +2599,7 @@
 		      (match_operand:TF 3 "register_operand" "e")
 		      (match_operand:TF 4 "register_operand" "0")))]
   "TARGET_ARCH64 && TARGET_FPU"
-  "fmovrq%D1 %2,%r3,%0"
+  "fmovrq%D1 %2,%3,%0"
   [(set_attr "type" "cmove")])
 
 (define_insn "*movsf_ccfp_sp64"
