@@ -1,3 +1,9 @@
+2000-01-04  Warren Levy  <warrenl@cygnus.com>
+
+	* java/net/natPlainDatagramSocketImpl.cc (peek): Removed unnecesary
+	comment.
+	(receive): Set the sender's address in the DatagramPacket.
+
 2000-01-04  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/reflect/natConstructor.cc (newInstance): Pass
