@@ -1785,7 +1785,7 @@ integrate_decl_tree (let, map)
 	  else if (GET_CODE (r) == CONCAT)
 	    {
 	      REGNO_DECL (REGNO (XEXP (r, 0))) = d;
-	      REGNO_DECL (REGNO (XEPX (r, 1))) = d;
+	      REGNO_DECL (REGNO (XEXP (r, 1))) = d;
 	    }
 
 	  apply_change_group ();
