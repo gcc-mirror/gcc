@@ -165,12 +165,6 @@ do {									\
   ASM_OUTPUT_SKIP((FILE), (SIZE));					\
 } while (0)
 
-/* This is the pseudo-op used to generate a 64-bit word of data with a
-   specific value in some section.  */
-
-#undef  INT_ASM_OP
-#define INT_ASM_OP		"\t.quad\t"
-
 /* Biggest alignment supported by the object file format of this
    machine.  Use this macro to limit the alignment which can be
    specified using the `__attribute__ ((aligned (N)))' construct.  If

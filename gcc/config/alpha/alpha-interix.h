@@ -126,8 +126,6 @@ const_section ()							\
     }									\
 }
 
-#define INT_ASM_OP		"\t.long\t"
-
 /* The linker will take care of this, and having them causes problems with
    ld -r (specifically -rU).  */
 #define CTOR_LISTS_DEFINED_EXTERNALLY 1

@@ -1570,15 +1570,6 @@ do {                                                                    \
 /* Output before uninitialized data.  */
 #define BSS_SECTION_ASM_OP 	("\t.sect\t.bss")
 
-/* This is the pseudo-op used to generate a reference to a specific
-   symbol in some section.  It is only used in machine-specific
-   configuration files.  This is the same for all known svr4
-   assemblers, except those in targets that don't use 32-bit pointers.
-   Those should override INT_ASM_OP.  Yes, the name of the macro is
-   misleading.  */
-#undef INT_ASM_OP
-#define INT_ASM_OP		"\t.word\t"
-
 /* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
 
    Same as config/elfos.h but don't mark these section SHF_WRITE since

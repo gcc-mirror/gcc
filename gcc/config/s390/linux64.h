@@ -59,9 +59,6 @@ Boston, MA 02111-1307, USA.  */
 	%{static:-static}}}"
 #endif
 
-#undef INT_ASM_OP
-#define INT_ASM_OP "\t.quad\t"
-
 #undef PROMOTE_PROTOTYPES 
 #undef MASK_RETURN_ADDR 
 #undef SELECT_SECTION

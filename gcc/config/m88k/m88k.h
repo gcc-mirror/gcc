@@ -1651,7 +1651,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define ASM_COMMENT_START ";"
 
 /* Allow pseudo-ops to be overridden.  Override these in svr[34].h.  */
-#undef	INT_ASM_OP
 #undef	ASCII_DATA_ASM_OP
 #undef	CONST_SECTION_ASM_OP
 #undef	CTORS_SECTION_ASM_OP
@@ -1697,8 +1696,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define BSS_ASM_OP		"\tbss\t"
 #define FLOAT_ASM_OP		"\tfloat\t"
 #define DOUBLE_ASM_OP		"\tdouble\t"
-#define INT_ASM_OP		"\tword\t"
-#define ASM_LONG		INT_ASM_OP
+#define ASM_LONG		"\tword\t"
 #define SHORT_ASM_OP		"\thalf\t"
 #define CHAR_ASM_OP		"\tbyte\t"
 #define ASCII_DATA_ASM_OP	"\tstring\t"
@@ -2049,7 +2047,7 @@ do {									 \
   do {									\
     union { REAL_VALUE_TYPE d; long l[2]; } x;				\
     x.d = (VALUE);							\
-    fprintf (FILE, "%s0x%.8lx, 0x%.8lx\n", INT_ASM_OP,			\
+    fprintf (FILE, "%s0x%.8lx, 0x%.8lx\n", ASM_LONG,			\
 	     (long) x.l[0], (long) x.l[1]);				\
   } while (0)
 
@@ -2058,12 +2056,12 @@ do {									 \
   do {									\
     int i;								\
     FLOAT_TO_INT_INTERNAL (VALUE, i);					\
-    fprintf (FILE, "%s0x%.8x\n", INT_ASM_OP, i);			\
+    fprintf (FILE, "%s0x%.8x\n", ASM_LONG, i);			\
   } while (0)
 
 /* Likewise for `int', `short', and `char' constants.  */
 #define ASM_OUTPUT_INT(FILE,VALUE)					\
-( fprintf (FILE, "%s", INT_ASM_OP),					\
+( fprintf (FILE, "%s", ASM_LONG),					\
   output_addr_const (FILE, (VALUE)),					\
   fprintf (FILE, "\n"))
 

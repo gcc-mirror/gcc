@@ -1929,11 +1929,6 @@ while (0)
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION  sh_asm_named_section
 
-/* This is the pseudo-op used to generate a reference to a specific
-   symbol in some section.  */
-
-#define INT_ASM_OP	"\t.long\t"
-     
 #undef DO_GLOBAL_CTORS_BODY
 #define DO_GLOBAL_CTORS_BODY			\
 {						\

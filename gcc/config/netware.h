@@ -100,6 +100,3 @@ const_section ()                                                        \
       in_section = in_const;                                            \
     }                                                                   \
 }
-
-#undef	INT_ASM_OP
-#define INT_ASM_OP ".long"

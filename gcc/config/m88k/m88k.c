@@ -2367,7 +2367,7 @@ output_tdesc (file, offset)
 
   tdesc_section ();
 
-  fprintf (file, "%s%d,%d", INT_ASM_OP, /* 8:0,22:(20 or 16),2:2 */
+  fprintf (file, "%s%d,%d", ASM_LONG, /* 8:0,22:(20 or 16),2:2 */
 	   (((xmask != 0) ? 20 : 16) << 2) | 2,
 	   flag_pic ? 2 : 1);
 

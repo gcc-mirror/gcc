@@ -2969,7 +2969,6 @@ do { long l;						\
    degenerate to the macros used above.  */
 #define UNALIGNED_SHORT_ASM_OP		ASM_SHORT
 #define UNALIGNED_INT_ASM_OP		ASM_LONG
-#define INT_ASM_OP			ASM_LONG
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 

@@ -183,8 +183,6 @@ rdata_section ()						\
 #define STARTFILE_SPEC "crt0.o%s"
 #define ENDFILE_SPEC  "%{!mno-lsim:-lsim}"
 
-#define INT_ASM_OP "\t.long\t"
-
 /* __CTOR_LIST__ and __DTOR_LIST__ must be defined by the linker script.  */
 #define CTOR_LISTS_DEFINED_EXTERNALLY
 

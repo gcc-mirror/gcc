@@ -44,8 +44,6 @@ Boston, MA 02111-1307, USA.  */
 #define EXTRA_SECTION_FUNCTIONS						\
   CONST_SECTION_FUNCTION
 
-#define INT_ASM_OP "\t.long\t"
-
 #undef DO_GLOBAL_CTORS_BODY
 #undef DO_GLOBAL_DTORS_BODY
 
