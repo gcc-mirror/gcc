@@ -1,3 +1,7 @@
+2004-03-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* verify.cc: Undef PC.
+
 2004-03-11  Alan Modra  <amodra@bigpond.net.au>
 
 	* include/powerpc-signal.h: Revert 2004-01-21 change.
