@@ -1,3 +1,10 @@
+Sun Dec 14 22:34:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (cp_convert_to_pointer): Fix base conversion of pm's.
+
+	* pt.c (type_unification_real): Change __null to type void* with 
+	a warning.
+
 Sun Dec 14 20:38:35 1997  Mark Mitchell  <mmitchell@usa.net>
 
 	* call.c (implicit_conversion): Don't call

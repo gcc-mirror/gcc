@@ -3722,6 +3722,12 @@ type_unification_real (tparms, targs, parms, args, nsubsts, subr,
 	  arg = TREE_TYPE (arg);
 	}
 #endif
+      if (! flag_ansi && arg == TREE_TYPE (null_node))
+	{
+	  warning ("using type void* for NULL");
+	  arg = ptr_type_node;
+	}
+
       if (! subr && TREE_CODE (arg) == REFERENCE_TYPE)
 	arg = TREE_TYPE (arg);
 
