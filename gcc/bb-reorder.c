@@ -448,6 +448,12 @@ find_traces_1_round (branch_th, exec_th, count_th, traces, n_traces, round,
 		  || prob < branch_th || freq < exec_th || e->count < count_th)
 		continue;
 
+	      /* If the destination has multiple precessesors, and can be
+		 duplicated cheaper than a jump, don't allow it to be added
+		 to a trace.  We'll duplicate it when connecting traces.  */
+	      if (e->dest->pred->pred_next && copy_bb_p (e->dest, 0))
+		continue;
+
 	      if (better_edge_p (bb, e, prob, freq, best_prob, best_freq))
 		{
 		  best_edge = e;
@@ -905,18 +911,26 @@ connect_traces (n_traces, traces)
 	      /* Try to connect the traces by duplication of 1 block.  */
 	      edge e2;
 	      basic_block next_bb = NULL;
+	      bool try_copy = false;
 
 	      for (e = traces[t].last->succ; e; e = e->succ_next)
 		if (e->dest != EXIT_BLOCK_PTR
 		    && (e->flags & EDGE_CAN_FALLTHRU)
 		    && !(e->flags & EDGE_COMPLEX)
-		    && (EDGE_FREQUENCY (e) >= freq_threshold)
-		    && (e->count >= count_threshold)
-		    && (!best
-			|| e->probability > best->probability))
+		    && (!best || e->probability > best->probability))
 		  {
 		    edge best2 = NULL;
 		    int best2_len = 0;
+
+		    /* If the destination trace is only one block
+		       long, then no need to search the successor
+		       blocks of the trace.  Accept it.  */
+		   if (traces[bbd[e->dest->index].start_of_trace].length == 1)
+		     {
+		       best = e;
+		       try_copy = true;
+		       continue;
+		     }
 
 		    for (e2 = e->dest->succ; e2; e2 = e2->succ_next)
 		      {
@@ -942,10 +956,18 @@ connect_traces (n_traces, traces)
 			    else
 			      best2_len = INT_MAX;
 			    next_bb = e2->dest;
+			    try_copy = true;
 			  }
 		      }
 		  }
-	      if (best && next_bb && copy_bb_p (best->dest, !optimize_size))
+
+	      /* Copy tiny blocks always; copy larger blocks only when the
+		 edge is traversed frequently enough.  */
+	      if (try_copy
+		  && copy_bb_p (best->dest,
+				!optimize_size
+				&& EDGE_FREQUENCY (best) >= freq_threshold
+				&& best->count >= count_threshold))
 		{
 		  basic_block new_bb;
 
@@ -953,7 +975,9 @@ connect_traces (n_traces, traces)
 		    {
 		      fprintf (rtl_dump_file, "Connection: %d %d ",
 			       traces[t].last->index, best->dest->index);
-		      if (next_bb == EXIT_BLOCK_PTR)
+		      if (!next_bb)
+			fputc ('\n', rtl_dump_file);
+		      else if (next_bb == EXIT_BLOCK_PTR)
 			fprintf (rtl_dump_file, "exit\n");
 		      else
 			fprintf (rtl_dump_file, "%d\n", next_bb->index);
@@ -961,7 +985,7 @@ connect_traces (n_traces, traces)
 
 		  new_bb = copy_bb (best->dest, best, traces[t].last, t);
 		  traces[t].last = new_bb;
-		  if (next_bb != EXIT_BLOCK_PTR)
+		  if (next_bb && next_bb != EXIT_BLOCK_PTR)
 		    {
 		      t = bbd[next_bb->index].start_of_trace;
 		      RBI (traces[last_trace].last)->next = traces[t].first;
