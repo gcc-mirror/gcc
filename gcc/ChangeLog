@@ -1,3 +1,9 @@
+2003-06-07  Magnus Kreth <magnus.kreth@gmx.de>
+	    Thibaud Gaillard <thibaud.gaillard@nto.atmel.com>
+
+	* Makefile.in (install-common): Remove GCOV_INSTALL_NAME instead of
+	gcov.
+
 2003-06-07  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* configure.in (HAVE_LD_RO_RW_SECTION_MIXING): Remove quotes in
