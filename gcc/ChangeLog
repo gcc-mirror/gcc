@@ -1,3 +1,8 @@
+Mon Jul 17 23:43:26 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* real.h (REAL_VALUE_TO_TARGET_LONG_DOUBLE): Use LONG_DOUBLE_TYPE_SIZE
+	instead of MAX_LONG_DOUBLE_TYPE_SIZE to decide output format.
+
 2000-07-17  Chandrakala Chavva   <cchavva@cygnus.com>
 
 	* loop.c (check_dbra_loop) : Changed loop_continue to loop->cont.
