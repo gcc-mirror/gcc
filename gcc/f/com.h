@@ -127,6 +127,10 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
 #endif
 
+/* The C front-end provides __g77_integer and __g77_uinteger types so that
+   the appropriately-sized signed and unsigned integer types are available
+   for libf2c.  If you change this, also the definitions of those types
+   in ../c-decl.c. */
 #define FFECOM_f2cINTEGER			\
   (LONG_TYPE_SIZE == FLOAT_TYPE_SIZE		\
    ? FFECOM_f2ccodeLONG				\
@@ -136,6 +140,10 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define FFECOM_f2cLOGICAL FFECOM_f2cINTEGER
 
+/* The C front-end provides __g77_longint and __g77_ulongint types so that
+   the appropriately-sized signed and unsigned integer types are available
+   for libf2c.  If you change this, also the definitions of those types
+   in ../c-decl.c. */
 #define FFECOM_f2cLONGINT				\
  (LONG_TYPE_SIZE == (FLOAT_TYPE_SIZE * 2)		\
   ? FFECOM_f2ccodeLONG					\
