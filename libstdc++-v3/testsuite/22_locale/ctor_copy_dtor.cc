@@ -21,6 +21,7 @@
 // 22.1.1.2 locale constructors and destructors [lib.locale.cons]
 
 #include <locale>
+#include <stdexcept>
 #include <debug_assert.h>
 
 typedef std::codecvt<char, char, mbstate_t> ccodecvt;
@@ -35,25 +36,46 @@ void test01()
 
   // construct a locale object with the C facet
   const locale& 	loc01 = locale::classic();
-  // construct a locale object with the specialized facet.
-  locale                loc02(locale::classic(), new gnu_codecvt);
-  VERIFY ( loc01 != loc02 );
-  VERIFY ( !(loc01 == loc02) );
 
   // 1
+  // template <class Facet> locale(const locale& other, Facet* f)
+  // construct a locale object with the specialized facet.
+  locale loc02(locale::classic(), new gnu_codecvt);
+  VERIFY (loc01 != loc02);
+  VERIFY (loc02.name() == "*");
+
+  // 2
   // locale() throw()
   locale loc03;
-  VERIFY ( loc03 == loc01);
-  locale loc04 = global(loc02);
+  VERIFY (loc03 == loc01);
+  VERIFY (loc03.name() == "C");
+  locale loc04 = locale::global(loc02);
   locale loc05;
   VERIFY (loc05 != loc03);
   VERIFY (loc05 == loc02);
 
-#if  0
-  str1 = cloc.name();
-  str2 = loc.name();  
-  VERIFY( loc(str1, str2) == false );
- #endif
+  // 3
+  // explicit locale(const char* std_name)
+  locale loc06("fr_FR");
+  VERIFY (loc06 != loc01);  
+  VERIFY (loc06 != loc02);  
+  VERIFY (loc06.name() == "fr_FR");
+  locale loc07("");
+  VERIFY (loc07 != loc01);  
+  VERIFY (loc07 != loc02);  
+  VERIFY (loc06.name() == "");
+  try
+    { locale loc08(static_cast<const char*>(NULL)); }
+  catch(runtime_error& obj)
+    { VERIFY (true); }
+  catch(...)
+    { VERIFY (false); }
+
+  // 4
+  // locale(const locale& other, const char* std_name, category)
+  
+
+
 }
 
 int main ()

@@ -250,9 +250,9 @@ namespace std
     explicit  
     locale(const char* __std_name);
 
-    locale(const locale& __other, const char* __std_name, category __cats);
+    locale(const locale& __other, const char* __std_name, category __cat);
 
-    locale(const locale& __other, const locale& __one, category __cats);
+    locale(const locale& __other, const locale& __one, category __cat);
 
     template<typename _Facet>
       locale(const locale& __other, _Facet* __f);
@@ -300,6 +300,8 @@ namespace std
     // Current global reference locale
     static _Impl* 	_S_global;  
 
+    static const int 	_S_num_categories = _Count_ones<all>::_S_count;
+
     explicit 
     locale(_Impl*) throw();
 
@@ -309,9 +311,6 @@ namespace std
 
     static int  
     _S_normalize_category(int);
-
-    static const int 
-    _S_num_categories = _Count_ones<all>::_S_count;
   };
 
 
@@ -337,12 +336,11 @@ namespace std
 
   private:
     // Data Members.
-    size_t 				_M_num_references;
+    size_t 				_M_references;
     __vec_facet* 			_M_facets;
     __vec_string* 			_M_category_names;
     bool 				_M_has_name;
-    bool 				_M_cached_name_ok;
-    string 				_M_cached_name;
+    string 				_M_name;
     static const locale::id* const 	_S_id_collate[];
     static const locale::id* const 	_S_id_ctype[];
     static const locale::id* const 	_S_id_monetary[];
@@ -353,12 +351,12 @@ namespace std
 
     inline void 
     _M_add_reference() throw()
-    { ++_M_num_references; }  // XXX MT
+    { ++_M_references; }  // XXX MT
 
     inline void 
     _M_remove_reference() throw()
     {
-      if (_M_num_references-- == 0)  // XXX MT
+      if (_M_references-- == 0)  // XXX MT
 	{
 	  try { 
 	    delete this; 
@@ -370,7 +368,7 @@ namespace std
 
     _Impl(const _Impl&, size_t __refs);
     _Impl(const _Impl&, const string&, category, size_t __refs);
-    _Impl(size_t __facets, size_t __refs);
+    _Impl(size_t __facets, size_t __refs, bool __has_name, string __name);
    ~_Impl() throw();
 
     void 
@@ -409,7 +407,7 @@ namespace std
     _M_construct_messages(const char*);
 
     category 
-    _M_normalize_category_names(const string&, category __cats);
+    _M_normalize_category_names(const string&, category __cat);
   };
 
   // class locale inlines, that need declaration of locale::_Imp
@@ -428,6 +426,7 @@ namespace std
       _M_impl = new _Impl(*__other._M_impl, 0);
       _M_impl->_M_install_facet(&_Facet::id, __f);
       _M_impl->_M_has_name = false;
+      _M_impl->_M_name = "*";
     }
 
   locale::~locale() throw()
@@ -447,7 +446,7 @@ namespace std
     ~facet() {};
 
   private:
-    size_t _M_num_references;
+    size_t _M_references;
 
     void 
     _M_add_reference() throw();

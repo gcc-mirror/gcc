@@ -105,7 +105,7 @@ namespace std {
       //      _CharT() where the interface does not require it.
       //   2. _M_capacity >= _M_length
       //      Allocated memory is always _M_capacity + (1 * sizeof(_CharT)).
-      //   3. _M_state has three states:
+      //   3. _M_references has three states:
       //      -1: leaked, one reference, no ref-copies allowed, non-const.
       //       0: one reference, non-const.
       //     n>0: n + 1 references, operations require a lock, const.
@@ -136,23 +136,23 @@ namespace std {
 
 	size_type 		_M_length;
 	size_type 		_M_capacity;
-	_Atomic_word		_M_state;
+	_Atomic_word		_M_references;
 	
         bool
 	_M_is_leaked() const
-        { return _M_state < 0; }
+        { return _M_references < 0; }
 
         bool
 	_M_is_shared() const
-        { return _M_state > 0; }
+        { return _M_references > 0; }
 
         void
 	_M_set_leaked() 
-        { _M_state = -1; }
+        { _M_references = -1; }
 
         void
 	_M_set_sharable() 
-        { _M_state = 0; }
+        { _M_references = 0; }
 
 	_CharT* 
 	_M_refdata() throw()
@@ -174,7 +174,7 @@ namespace std {
 	void 
 	_M_dispose(const _Alloc& __a)
 	{ 
-	  if (__exchange_and_add(&_M_state, -1) <= 0)  
+	  if (__exchange_and_add(&_M_references, -1) <= 0)  
 	    _M_destroy(__a); 
 	}  // XXX MT
 
@@ -184,7 +184,7 @@ namespace std {
 	_CharT* 
 	_M_refcopy() throw()
 	{ 
-	  __atomic_add(&_M_state, 1); 
+	  __atomic_add(&_M_references, 1); 
 	  return _M_refdata(); 
 	}  // XXX MT
 
