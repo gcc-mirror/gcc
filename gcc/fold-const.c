@@ -3853,13 +3853,11 @@ fold_truthop (code, truth_type, lhs, rhs)
   /* If the RHS can be evaluated unconditionally and its operands are
      simple, it wins to evaluate the RHS unconditionally on machines
      with expensive branches.  In this case, this isn't a comparison
-     that can be merged.  */
-
-  /* @@ I'm not sure it wins on the m88110 to do this if the comparisons
-     are with zero (tmw).  */
+     that can be merged.  Avoid doing this if the RHS is a floating-point
+     comparison since those can trap.  */
 
   if (BRANCH_COST >= 2
-      && INTEGRAL_TYPE_P (TREE_TYPE (rhs))
+      && ! FLOAT_TYPE_P (TREE_TYPE (rl_arg))
       && simple_operand_p (rl_arg)
       && simple_operand_p (rr_arg))
     return build (code, truth_type, lhs, rhs);
