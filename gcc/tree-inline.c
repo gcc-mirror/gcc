@@ -1364,7 +1364,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case ASM_EXPR:
 
     case RESX_EXPR:
-      *count++;
+      *count += 1;
       break;
 
     /* Few special cases of expensive operations.  This is useful

@@ -1,3 +1,7 @@
+2004-07-16  Krister Walfridsson  <cato@df.lth.se>
+
+	* tree-inline.c (estimate_num_insns_1): Correct increase of count.
+
 2004-07-16  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (std_expand_builtin_va_arg): Remove.
