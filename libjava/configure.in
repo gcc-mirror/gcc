@@ -1019,6 +1019,15 @@ if test "$enable_sjlj_exceptions" = yes; then
    SIGNAL_HANDLER=include/default-signal.h
 fi
 
+# Define here any compiler flags that you need in order to make backtrace() work.
+BACKTRACESPEC=
+case "${host}" in
+ x86_64*-*-linux*)
+    BACKTRACESPEC=-fno-omit-frame-pointer
+    ;;
+esac
+AC_SUBST(BACKTRACESPEC)
+
 AC_SUBST(SYSDEP_SOURCES)
 
 AC_LINK_FILES($SIGNAL_HANDLER, include/java-signal.h)
