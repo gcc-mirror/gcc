@@ -1,3 +1,17 @@
+2002-04-24  Matt Hiller  <hiller@redhat.com>
+
+	* cpplex.c: Remove conditional #undef of MULTIBYTE_CHARS.
+	* c-lex.c: Ditto.
+
+	* cpplex.c (skip_line_comment): Process comment one multibyte
+	character at a time rather than one char at a time, if
+	appropriate.
+	(parse_string): Process string one multibyte character at a time
+	rather than one char at a time, if appropriate.
+	* c-lex.c (lex_string): Lex and copy multibyte strings
+	appropriately.
+	* cpplib.h (cppchar_t): Change to unsigned.
+
 2002-04-24  Richard Henderson  <rth@redhat.com>
 
 	PR c/3467
@@ -255,6 +269,7 @@ Wed Apr 24 13:48:25 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(vec_vupklsh): New.
 	(vec_vxor): New.
 
+>>>>>>> 1.13835
 2002-04-23  Eric Botcazou  <ebotcazou@multimania.com>
 
 	PR c/5430
