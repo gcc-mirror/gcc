@@ -708,8 +708,8 @@ merge_types (tree t1, tree t2)
 	t2 = build_function_type (TREE_TYPE (t2),
 				  TREE_CHAIN (TYPE_ARG_TYPES (t2)));
 	t3 = merge_types (t1, t2);
-	t3 = build_cplus_method_type (basetype, TREE_TYPE (t3),
-				      TYPE_ARG_TYPES (t3));
+	t3 = build_method_type_directly (basetype, TREE_TYPE (t3),
+					 TYPE_ARG_TYPES (t3));
 	t1 = build_exception_variant (t3, raises);
 	break;
       }

@@ -1382,9 +1382,9 @@ copy_default_args_to_explicit_spec (tree decl)
 			  	         TREE_VALUE (in_charge),
 				         new_spec_types);
 
-      new_type = build_cplus_method_type (object_type,
-					  TREE_TYPE (old_type),
-					  new_spec_types);
+      new_type = build_method_type_directly (object_type,
+					     TREE_TYPE (old_type),
+					     new_spec_types);
     }
   else
     new_type = build_function_type (TREE_TYPE (old_type),
@@ -6293,8 +6293,8 @@ tsubst_function_type (tree t,
 	  return error_mark_node;
 	}
       
-      fntype = build_cplus_method_type (r, return_type, TREE_CHAIN
-					(arg_types));
+      fntype = build_method_type_directly (r, return_type, 
+					   TREE_CHAIN (arg_types));
     }
   fntype = cp_build_qualified_type_real (fntype, TYPE_QUALS (t), complain);
   fntype = build_type_attribute_variant (fntype, TYPE_ATTRIBUTES (t));
@@ -6761,9 +6761,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		*/
 	    tree method_type;
 
-	    method_type = build_cplus_method_type (TYPE_MAIN_VARIANT (r),
-						   TREE_TYPE (type),
-						   TYPE_ARG_TYPES (type));
+	    method_type = build_method_type_directly (TYPE_MAIN_VARIANT (r),
+						      TREE_TYPE (type),
+						      TYPE_ARG_TYPES (type));
 	    return build_ptrmemfunc_type (build_pointer_type (method_type));
 	  }
 	else
