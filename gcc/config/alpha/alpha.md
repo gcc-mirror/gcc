@@ -4673,7 +4673,7 @@
   "
 {
   alpha_split_tfmode_pair (operands);
-  if (rtx_equal_p (operands[0], operands[3]))
+  if (reg_overlap_mentioned_p (operands[0], operands[3]))
     {
       rtx tmp;
       tmp = operands[0], operands[0] = operands[1], operands[1] = tmp;
