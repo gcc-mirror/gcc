@@ -1,5 +1,9 @@
 2003-08-03  Neil Booth  <neil@daikokuya.co.uk>
 
+	* cppexp.c (parse_defined): Warn only if -pedantic.
+
+2003-08-03  Neil Booth  <neil@daikokuya.co.uk>
+
 	* cppfiles.c (stack_file): Use file path.
 
 2003-08-02  Roger Sayle  <roger@eyesopen.com>
