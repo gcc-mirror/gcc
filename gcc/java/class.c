@@ -1172,8 +1172,11 @@ get_dispatch_table (type, this_class_addr)
 			build1 (ADDR_EXPR, nativecode_ptr_type_node, method),
 			list);
     }
-  /* Dummy entry for compatibility with G++ -fvtable-thunks. */
-  list = tree_cons (integer_zero_node, null_pointer_node, list);
+  /* Dummy entry for compatibility with G++ -fvtable-thunks.  When
+     using the Boehm GC we sometimes stash a GC type descriptor
+     there.  */
+  list = tree_cons (integer_zero_node, get_boehm_type_descriptor (type),
+		    list);
   list = tree_cons (integer_zero_node, this_class_addr, list);
   return build (CONSTRUCTOR, build_prim_array_type (nativecode_ptr_type_node,
 						    nvirtuals + 2),
@@ -1343,12 +1346,8 @@ make_class_data (type)
   constant_pool_constructor = build_constants_constructor ();
 
   START_RECORD_CONSTRUCTOR (temp, object_type_node);
-#if 0
-  PUSH_FIELD_VALUE (temp, "vtable", NULL_TREE);
-#else
   PUSH_FIELD_VALUE (temp, "vtable",
 		    build1 (ADDR_EXPR, dtable_ptr_type, class_dtable_decl));
-#endif
   PUSH_FIELD_VALUE (temp, "sync_info", null_pointer_node);
   FINISH_RECORD_CONSTRUCTOR (temp);
   START_RECORD_CONSTRUCTOR (cons, class_type_node);

@@ -1,3 +1,18 @@
+2000-02-17  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in (JAVA_OBJS): Added boehm.o.
+	(boehm.o): New target.
+	* Make-lang.in (JAVA_SRCS): Added boehm.c.
+	* java-tree.h (flag_use_boehm_gc): Declare.
+	(get_boehm_type_descriptor): Declare.
+	* lang.c (lang_f_options): Added `use-boehm-gc'.
+	(flag_use_boehm_gc): New global.
+	* lang-options.h: Added -fuse-boehm-gc.
+	* boehm.c: New file.
+	* class.c (get_dispatch_table): If class uses a Boehm type
+	descriptor, put it in the vtable.
+	(make_class_data): Removed dead code.
+
 2000-03-03  Per Bothner  <per@bothner.com>
 
 	* decl.c (init_decl_processing):  Initialize sizetype properly.
