@@ -1,5 +1,15 @@
 2000-12-10  Richard Henderson  <rth@redhat.com>
 
+	* genrecog.c (find_operand): Handle 'V' format code.
+	(find_matching_operand): New.
+	(validate_pattern): Accept '=' for an in-out operand if there
+	is another operand with a matching constraint.
+
+	* config/i386/i386.md (andqi_ext_0_cc): Use matching constraint
+	for op1 to op0.
+
+2000-12-10  Richard Henderson  <rth@redhat.com>
+
 	* genrecog.c (validate_pattern) [STRICT_LOW_PART]: Fix thinko.
 
 2000-12-09  Richard Henderson  <rth@redhat.com>
@@ -30,16 +40,16 @@
 
 2000-12-09  Neil Booth  <neilb@earthling.net>
 
-        * cppfiles.c (NEVER_REREAD, DO_NOT_REREAD): Move from cpphash.h.
-        * cpphash.h (NEVER_REREAD, DO_NOT_REREAD, ABSOLUTE_PATH): Delete.
-        * cpplex.c (parse_identifier): Improve diagnostic.
-        (_cpp_lex_token): Return unconditionally at the end of a directive.
-        * cpplib.c (read_flag): Verify legality of each flag.
-        (end_directive): Resotre pfile->skipping before skip_rest_of_line.
-        (do_line): Use the new read_flag.
-        * cppmacro.c (struct cpp_macro, parse_arg, replace_args,
-        check_macro_redefinition, parse_params): Rename var_args to
-        variadic.
+	* cppfiles.c (NEVER_REREAD, DO_NOT_REREAD): Move from cpphash.h.
+	* cpphash.h (NEVER_REREAD, DO_NOT_REREAD, ABSOLUTE_PATH): Delete.
+	* cpplex.c (parse_identifier): Improve diagnostic.
+	(_cpp_lex_token): Return unconditionally at the end of a directive.
+	* cpplib.c (read_flag): Verify legality of each flag.
+	(end_directive): Resotre pfile->skipping before skip_rest_of_line.
+	(do_line): Use the new read_flag.
+	* cppmacro.c (struct cpp_macro, parse_arg, replace_args,
+	check_macro_redefinition, parse_params): Rename var_args to
+	variadic.
 
 2000-12-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -130,7 +140,7 @@
 
 2000-12-08  Brad Lucier <lucier@math.purdue.edu>
 
-        * tradcpp.c (do_include): Make pointer differences 64-bit clean.
+	* tradcpp.c (do_include): Make pointer differences 64-bit clean.
 
 Fri Dec  8 08:23:29 2000  J"orn Rennecke <amylaar@redhat.com>
 

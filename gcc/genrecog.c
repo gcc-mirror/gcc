@@ -230,6 +230,8 @@ static struct decision_test *new_decision_test
   PARAMS ((enum decision_type, struct decision_test ***));
 static rtx find_operand
   PARAMS ((rtx, int));
+static rtx find_matching_operand
+  PARAMS ((rtx, int));
 static void validate_pattern
   PARAMS ((rtx, rtx, rtx, int));
 static struct decision *add_to_sequence
@@ -379,6 +381,11 @@ find_operand (pattern, n)
 	    return r;
 	  break;
 
+	case 'V':
+	  if (! XVEC (pattern, i))
+	    break;
+	  /* FALLTHRU */
+
 	case 'E':
 	  for (j = 0; j < XVECLEN (pattern, i); j++)
 	    if ((r = find_operand (XVECEXP (pattern, i, j), n)) != NULL_RTX)
@@ -395,6 +402,60 @@ find_operand (pattern, n)
 
   return NULL;
 }
+
+/* Search for and return operand M, such that it has a matching
+   constraint for operand N.  */
+
+static rtx
+find_matching_operand (pattern, n)
+     rtx pattern;
+     int n;
+{
+  const char *fmt;
+  RTX_CODE code;
+  int i, j, len;
+  rtx r;
+
+  code = GET_CODE (pattern);
+  if (code == MATCH_OPERAND
+      && (XSTR (pattern, 2)[0] == '0' + n
+	  || (XSTR (pattern, 2)[0] == '%'
+	      && XSTR (pattern, 2)[1] == '0' + n)))
+    return pattern;
+
+  fmt = GET_RTX_FORMAT (code);
+  len = GET_RTX_LENGTH (code);
+  for (i = 0; i < len; i++)
+    {
+      switch (fmt[i])
+	{
+	case 'e': case 'u':
+	  if ((r = find_matching_operand (XEXP (pattern, i), n)))
+	    return r;
+	  break;
+
+	case 'V':
+	  if (! XVEC (pattern, i))
+	    break;
+	  /* FALLTHRU */
+
+	case 'E':
+	  for (j = 0; j < XVECLEN (pattern, i); j++)
+	    if ((r = find_matching_operand (XVECEXP (pattern, i, j), n)))
+	      return r;
+	  break;
+
+	case 'i': case 'w': case '0': case 's':
+	  break;
+
+	default:
+	  abort ();
+	}
+    }
+
+  return NULL;
+}
+
 
 /* Check for various errors in patterns.  SET is nonnull for a destination,
    and is the complete set pattern.  SET_CODE is '=' for normal sets, and
@@ -484,19 +545,27 @@ validate_pattern (pattern, insn, set, set_code)
 	  }
 
 	/* A MATCH_OPERAND that is a SET should have an output reload.  */
-	if (set && code == MATCH_OPERAND)
+	if (set && code == MATCH_OPERAND
+	    && XSTR (pattern, 2)[0] != '\0')
 	  {
-	    if (set_code == '+'
-		&& XSTR (pattern, 2)[0] != '\0'
-		&& XSTR (pattern, 2)[0] != '+')
+	    if (set_code == '+')
 	      {
-		message_with_line (pattern_lineno,
-				   "operand %d missing in-out reload",
-				   XINT (pattern, 0));
-		error_count++;
+		if (XSTR (pattern, 2)[0] == '+')
+		  ;
+		/* If we've only got an output reload for this operand,
+		   we'd better have a matching input operand.  */
+		else if (XSTR (pattern, 2)[0] == '='
+			 && find_matching_operand (insn, XINT (pattern, 0)))
+		  ;
+		else
+		  {
+		    message_with_line (pattern_lineno,
+				       "operand %d missing in-out reload",
+				       XINT (pattern, 0));
+		    error_count++;
+		  }
 	      }
-	    else if (XSTR (pattern, 2)[0] != '\0'
-		     && XSTR (pattern, 2)[0] != '='
+	    else if (XSTR (pattern, 2)[0] != '='
 		     && XSTR (pattern, 2)[0] != '+')
 	      {
 		message_with_line (pattern_lineno,
