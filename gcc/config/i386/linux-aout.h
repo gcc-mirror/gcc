@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running Linux-based GNU systems using a.out.
-   Copyright (C) 1992, 1994, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1994, 1995, 1997, 1998 Free Software Foundation, Inc.
    Contributed by H.J. Lu (hjl@nynexst.com)
 
 This file is part of GNU CC.
@@ -24,6 +24,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include <i386/gstabs.h>
 #include <linux-aout.h>	/* some common stuff */
+
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START "#"
 
 /* Specify predefined symbols in preprocessor.  */
 
