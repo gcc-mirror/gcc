@@ -1,3 +1,9 @@
+2004-10-19  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c++/18047
+
+	* g++.dg/parse/expr3.C: New test.
+
 2004-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/smod-1.c: New test.
