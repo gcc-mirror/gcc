@@ -34,9 +34,9 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 
 # Build the libraries for both hard and soft floating point
 
-MULTILIB_OPTIONS=msoft-float EL/EB
-MULTILIB_DIRNAMES=soft-float el eb
-MULTILIB_MATCHES=
+MULTILIB_OPTIONS = msoft-float EL/EB mips1/mips3
+MULTILIB_DIRNAMES = soft-float el eb mips1 mips3
+MULTILIB_MATCHES =
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
