@@ -2960,7 +2960,7 @@ setup_class_bindings (name, type_binding_p)
        binding.  This means that we already processed this binding
        above.  */
     my_friendly_assert (type_binding_p, 19990401);
-  else
+  else if (value_binding)
     {
       if (TREE_CODE (value_binding) == TREE_LIST 
 	  && TREE_TYPE (value_binding) == error_mark_node)
