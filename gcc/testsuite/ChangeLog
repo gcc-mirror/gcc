@@ -1,3 +1,7 @@
+2002-03-31  Kazu Hirata  <kazu@hxi.com>
+
+	* gcc.dg/weak-1.c: Disable on h8300 port.
+
 2002-03-29  Janis Johnson  <janis187@us.ibm.com>
 
 	* g++.dg/dg.exp: Ignore tests in new directories bprob and gcov.
