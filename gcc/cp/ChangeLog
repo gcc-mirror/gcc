@@ -1,3 +1,9 @@
+2002-12-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+	
+        PR C++/8031
+	* cvt.c (convert_to_pointer_force): Don't try comparing against
+	erronous type.
+
 2002-12-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8372
