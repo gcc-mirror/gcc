@@ -331,6 +331,8 @@ struct d_print_mod
   const struct d_comp *mod;
   /* Whether this modifier was printed.  */
   int printed;
+  /* The list of templates which applies to this modifier.  */
+  struct d_print_template *templates;
 };
 
 /* We use this structure to hold information during printing.  */
@@ -411,7 +413,7 @@ static struct d_comp *d_make_dtor PARAMS ((struct d_info *,
 					   struct d_comp *));
 static struct d_comp *d_make_template_param PARAMS ((struct d_info *, long));
 static struct d_comp *d_make_sub PARAMS ((struct d_info *, const char *));
-static struct d_comp *d_mangled_name PARAMS ((struct d_info *));
+static struct d_comp *d_mangled_name PARAMS ((struct d_info *, int));
 static int has_return_type PARAMS ((struct d_comp *));
 static int is_ctor_dtor_or_conversion PARAMS ((struct d_comp *));
 static struct d_comp *d_encoding PARAMS ((struct d_info *, int));
@@ -664,7 +666,8 @@ d_make_comp (di, type, left, right)
   struct d_comp *p;
 
   /* We check for errors here.  A typical error would be a NULL return
-     from a subroutine.  We catch here, and return NULL on upward.  */
+     from a subroutine.  We catch those here, and return NULL
+     upward.  */
   switch (type)
     {
       /* These types require two parameters.  */
@@ -766,6 +769,8 @@ d_make_builtin_type (di, type)
 {
   struct d_comp *p;
 
+  if (type == NULL)
+    return NULL;
   p = d_make_empty (di, D_COMP_BUILTIN_TYPE);
   if (p != NULL)
     p->u.s_builtin.type = type;
@@ -797,6 +802,8 @@ d_make_extended_operator (di, args, name)
 {
   struct d_comp *p;
 
+  if (name == NULL)
+    return NULL;
   p = d_make_empty (di, D_COMP_EXTENDED_OPERATOR);
   if (p != NULL)
     {
@@ -816,6 +823,8 @@ d_make_ctor (di, kind,  name)
 {
   struct d_comp *p;
 
+  if (name == NULL)
+    return NULL;
   p = d_make_empty (di, D_COMP_CTOR);
   if (p != NULL)
     {
@@ -835,6 +844,8 @@ d_make_dtor (di, kind, name)
 {
   struct d_comp *p;
 
+  if (name == NULL)
+    return NULL;
   p = d_make_empty (di, D_COMP_DTOR);
   if (p != NULL)
     {
@@ -874,17 +885,20 @@ d_make_sub (di, name)
   return p;
 }
 
-/* <mangled-name> ::= _Z <encoding> */
+/* <mangled-name> ::= _Z <encoding>
+
+   TOP_LEVEL is non-zero when called at the top level.  */
 
 static struct d_comp *
-d_mangled_name (di)
+d_mangled_name (di, top_level)
      struct d_info *di;
+     int top_level;
 {
   if (d_next_char (di) != '_')
     return NULL;
   if (d_next_char (di) != 'Z')
     return NULL;
-  return d_encoding (di, 1);
+  return d_encoding (di, top_level);
 }
 
 /* Return whether a function should have a return type.  The argument
@@ -961,10 +975,21 @@ d_encoding (di, top_level)
       struct d_comp *dc;
 
       dc = d_name (di);
+
+      if (dc != NULL && top_level && (di->options & DMGL_PARAMS) == 0)
+	{
+	  /* Strip off any initial CV-qualifiers, as they really apply
+	     to the `this' parameter, and they were not output by the
+	     v2 demangler without DMGL_PARAMS.  */
+	  while (dc->type == D_COMP_RESTRICT
+		 || dc->type == D_COMP_VOLATILE
+		 || dc->type == D_COMP_CONST)
+	    dc = d_left (dc);
+	  return dc;
+	}
+
       peek = d_peek_char (di);
-      if (peek == '\0'
-	  || peek == 'E'
-	  || (top_level && (di->options & DMGL_PARAMS) == 0))
+      if (peek == '\0' || peek == 'E')
 	return dc;
       return d_make_comp (di, D_COMP_TYPED_NAME, dc,
 			  d_bare_function_type (di, has_return_type (dc)));
@@ -1610,9 +1635,13 @@ d_type (di)
      CV-qualifiers would cause subsets to be substitutable, so instead
      we pull them all off now.
 
-     FIXME: The ABI specifies that vendor qualifiers are handled just
-     like the standard CV-qualifiers with respect to subsetting and
-     substitution, but g++ does not appear to work this way.  */
+     FIXME: The ABI says that order-insensitive vendor qualifiers
+     should be handled in the same way, but we have no way to tell
+     which vendor qualifiers are order-insensitive and which are
+     order-sensitive.  So we just assume that they are all
+     order-sensitive.  g++ 3.4 supports only one vendor qualifier,
+     __vector, and it treats it as order-sensitive when mangling
+     names.  */
 
   peek = d_peek_char (di);
   if (peek == 'r' || peek == 'V' || peek == 'K')
@@ -1620,6 +1649,8 @@ d_type (di)
       struct d_comp **pret;
 
       pret = d_cv_qualifiers (di, &ret);
+      if (pret == NULL)
+	return NULL;
       *pret = d_type (di);
       if (! d_add_substitution (di, ret))
 	return NULL;
@@ -1703,7 +1734,7 @@ d_type (di)
 	       a new substitution candidate.  However, if the
 	       substitution was followed by template arguments, then
 	       the whole thing is a substitution candidate.  */
-	    if (ret->type == D_COMP_SUB_STD)
+	    if (ret != NULL && ret->type == D_COMP_SUB_STD)
 	      can_subst = 0;
 	  }
       }
@@ -1836,6 +1867,8 @@ d_bare_function_type (di, has_return_type)
       else
 	{
 	  *ptl = d_make_comp (di, D_COMP_ARGLIST, type, NULL);
+	  if (*ptl == NULL)
+	    return NULL;
 	  ptl = &d_right (*ptl);
 	}
     }
@@ -1893,6 +1926,8 @@ d_array_type (di)
 	}
       while (IS_DIGIT (peek));
       dim = d_make_name (di, s, d_str (di) - s);
+      if (dim == NULL)
+	return NULL;
     }
   else
     {
@@ -1936,6 +1971,8 @@ d_pointer_to_member_type (di)
      avoid calling add_substitution() in d_type().  */
 
   pmem = d_cv_qualifiers (di, &mem);
+  if (pmem == NULL)
+    return NULL;
   *pmem = d_type (di);
 
   return d_make_comp (di, D_COMP_PTRMEM_TYPE, cl, mem);
@@ -1999,6 +2036,8 @@ d_template_args (di)
 	return NULL;
 
       *pal = d_make_comp (di, D_COMP_TEMPLATE_ARGLIST, a, NULL);
+      if (*pal == NULL)
+	return NULL;
       pal = &d_right (*pal);
 
       if (d_peek_char (di) == 'E')
@@ -2152,7 +2191,7 @@ d_expr_primary (di)
   if (d_next_char (di) != 'L')
     return NULL;
   if (d_peek_char (di) == '_')
-    ret = d_mangled_name (di);
+    ret = d_mangled_name (di, 0);
   else
     {
       struct d_comp *type;
@@ -2247,6 +2286,8 @@ d_add_substitution (di, dc)
      struct d_info *di;
      struct d_comp *dc;
 {
+  if (dc == NULL)
+    return 0;
   if (di->next_sub >= di->num_subs)
     return 0;
   di->subs[di->next_sub] = dc;
@@ -2341,6 +2382,8 @@ d_print_resize (dpi, add)
 {
   size_t need;
 
+  if (dpi->buf == NULL)
+    return;
   need = dpi->len + add;
   while (need > dpi->alc)
     {
@@ -2505,6 +2548,7 @@ d_print_comp (dpi, dc)
 	dpi->modifiers = &dpm;
 	dpm.mod = typed_name;
 	dpm.printed = 0;
+	dpm.templates = dpi->templates;
 
 	/* If typed_name is a template, then it applies to the
 	   function type as well.  */
@@ -2545,15 +2589,29 @@ d_print_comp (dpi, dc)
       }
 
     case D_COMP_TEMPLATE:
-      d_print_comp (dpi, d_left (dc));
-      d_append_char (dpi, '<');
-      d_print_comp (dpi, d_right (dc));
-      /* Avoid generating two consecutive '>' characters, to avoid the
-	 C++ syntactic ambiguity.  */
-      if (dpi->buf[dpi->len - 1] == '>')
-	d_append_char (dpi, ' ');
-      d_append_char (dpi, '>');
-      return;
+      {
+	struct d_print_mod *hold_dpm;
+
+	/* Don't push modifiers into a template definition.  Doing so
+	   could give the wrong definition for a template argument.
+	   Instead, treat the template essentially as a name.  */
+
+	hold_dpm = dpi->modifiers;
+	dpi->modifiers = NULL;
+
+	d_print_comp (dpi, d_left (dc));
+	d_append_char (dpi, '<');
+	d_print_comp (dpi, d_right (dc));
+	/* Avoid generating two consecutive '>' characters, to avoid
+	   the C++ syntactic ambiguity.  */
+	if (dpi->buf != NULL && dpi->buf[dpi->len - 1] == '>')
+	  d_append_char (dpi, ' ');
+	d_append_char (dpi, '>');
+
+	dpi->modifiers = hold_dpm;
+
+	return;
+      }
 
     case D_COMP_TEMPLATE_PARAM:
       {
@@ -2692,6 +2750,7 @@ d_print_comp (dpi, dc)
 	dpi->modifiers = &dpm;
 	dpm.mod = dc;
 	dpm.printed = 0;
+	dpm.templates = dpi->templates;
 
 	d_print_comp (dpi, d_left (dc));
 
@@ -2729,6 +2788,7 @@ d_print_comp (dpi, dc)
 	    dpi->modifiers = &dpm;
 	    dpm.mod = dc;
 	    dpm.printed = 0;
+	    dpm.templates = dpi->templates;
 
 	    d_print_comp (dpi, d_left (dc));
 
@@ -2756,6 +2816,7 @@ d_print_comp (dpi, dc)
 	dpi->modifiers = &dpm;
 	dpm.mod = dc;
 	dpm.printed = 0;
+	dpm.templates = dpi->templates;
 
 	d_print_comp (dpi, d_right (dc));
 
@@ -2789,6 +2850,7 @@ d_print_comp (dpi, dc)
 	dpi->modifiers = &dpm;
 	dpm.mod = dc;
 	dpm.printed = 0;
+	dpm.templates = dpi->templates;
 
 	d_print_comp (dpi, target_type);
 
@@ -3035,29 +3097,36 @@ d_print_mod_list (dpi, mods)
      struct d_print_info *dpi;
      struct d_print_mod *mods;
 {
+  struct d_print_template *hold_dpt;
+
   if (mods == NULL || mods->printed || d_print_saw_error (dpi))
     return;
 
+  mods->printed = 1;
+
+  hold_dpt = dpi->templates;
+  dpi->templates = mods->templates;
+
   if (mods->mod->type == D_COMP_FUNCTION_TYPE)
     {
-      mods->printed = 1;
       d_print_function_type (dpi, mods->mod, mods->next);
+      dpi->templates = hold_dpt;
       return;
     }
   else if (mods->mod->type == D_COMP_ARRAY_TYPE)
     {
-      mods->printed = 1;
       d_print_array_type (dpi, mods->mod, mods->next);
+      dpi->templates = hold_dpt;
       return;
     }
 
-  mods->printed = 1;
-
   d_print_mod (dpi, mods->mod);
+
+  dpi->templates = hold_dpt;
 
   d_print_mod_list (dpi, mods->next);
 }
- 
+
 /* Print a modifier.  */
 
 static void
@@ -3095,7 +3164,7 @@ d_print_mod (dpi, mod)
       d_append_string (dpi, "imaginary ");
       return;
     case D_COMP_PTRMEM_TYPE:
-      if (dpi->buf[dpi->len - 1] != '(')
+      if (dpi->buf != NULL && dpi->buf[dpi->len - 1] != '(')
 	d_append_char (dpi, ' ');
       d_print_comp (dpi, d_left (mod));
       d_append_string (dpi, "::*");
@@ -3119,51 +3188,48 @@ d_print_function_type (dpi, dc, mods)
      const struct d_comp *dc;
      struct d_print_mod *mods;
 {
-  if (mods != NULL)
+  int need_paren;
+  int saw_mod;
+  struct d_print_mod *p;
+
+  need_paren = 0;
+  saw_mod = 0;
+  for (p = mods; p != NULL; p = p->next)
     {
-      int need_paren;
-      int saw_mod;
-      struct d_print_mod *p;
+      if (p->printed)
+	break;
 
-      need_paren = 0;
-      saw_mod = 0;
-      for (p = mods; p != NULL; p = p->next)
+      saw_mod = 1;
+      switch (p->mod->type)
 	{
-	  if (p->printed)
-	    break;
-
-	  saw_mod = 1;
-	  switch (p->mod->type)
-	    {
-	    case D_COMP_RESTRICT:
-	    case D_COMP_VOLATILE:
-	    case D_COMP_CONST:
-	    case D_COMP_VENDOR_TYPE_QUAL:
-	    case D_COMP_POINTER:
-	    case D_COMP_REFERENCE:
-	    case D_COMP_COMPLEX:
-	    case D_COMP_IMAGINARY:
-	    case D_COMP_PTRMEM_TYPE:
-	      need_paren = 1;
-	      break;
-	    default:
-	      break;
-	    }
-	  if (need_paren)
-	    break;
+	case D_COMP_RESTRICT:
+	case D_COMP_VOLATILE:
+	case D_COMP_CONST:
+	case D_COMP_VENDOR_TYPE_QUAL:
+	case D_COMP_POINTER:
+	case D_COMP_REFERENCE:
+	case D_COMP_COMPLEX:
+	case D_COMP_IMAGINARY:
+	case D_COMP_PTRMEM_TYPE:
+	  need_paren = 1;
+	  break;
+	default:
+	  break;
 	}
-
-      if (d_left (dc) != NULL && ! saw_mod)
-	need_paren = 1;
-
       if (need_paren)
-	d_append_char (dpi, '(');
-
-      d_print_mod_list (dpi, mods);
-
-      if (need_paren)
-	d_append_char (dpi, ')');
+	break;
     }
+
+  if (d_left (dc) != NULL && ! saw_mod)
+    need_paren = 1;
+
+  if (need_paren)
+    d_append_char (dpi, '(');
+
+  d_print_mod_list (dpi, mods);
+
+  if (need_paren)
+    d_append_char (dpi, ')');
 
   d_append_char (dpi, '(');
 
@@ -3252,12 +3318,16 @@ d_print_cast (dpi, dc)
     d_print_comp (dpi, d_left (dc));
   else
     {
+      struct d_print_mod *hold_dpm;
       struct d_print_template dpt;
 
       /* It appears that for a templated cast operator, we need to put
 	 the template parameters in scope for the operator name, but
 	 not for the parameters.  The effect is that we need to handle
 	 the template printing here.  FIXME: Verify this.  */
+
+      hold_dpm = dpi->modifiers;
+      dpi->modifiers = NULL;
 
       dpt.next = dpi->templates;
       dpi->templates = &dpt;
@@ -3271,9 +3341,11 @@ d_print_cast (dpi, dc)
       d_print_comp (dpi, d_right (d_left (dc)));
       /* Avoid generating two consecutive '>' characters, to avoid
 	 the C++ syntactic ambiguity.  */
-      if (dpi->buf[dpi->len - 1] == '>')
+      if (dpi->buf != NULL && dpi->buf[dpi->len - 1] == '>')
 	d_append_char (dpi, ' ');
       d_append_char (dpi, '>');
+
+      dpi->modifiers = hold_dpm;
     }
 }
 
@@ -3301,9 +3373,8 @@ d_init_info (mangled, options, len, di)
   di->next_comp = 0;
 
   /* Similarly, we can not need more substitutions than there are
-     chars in the mangled string divided by 2, since it takes at least
-     two chars to refer to a substitution.  */
-  di->num_subs = (len + 1) / 2;
+     chars in the mangled string.  */
+  di->num_subs = len;
   di->subs = (struct d_comp **) malloc (di->num_subs
 					* sizeof (struct d_comp *));
   di->next_sub = 0;
@@ -3381,7 +3452,7 @@ d_demangle (mangled, options, palc)
     }
 
   if (! type)
-    dc = d_mangled_name (&di);
+    dc = d_mangled_name (&di, 1);
   else
     dc = d_type (&di);
 
@@ -3584,7 +3655,7 @@ is_ctor_or_dtor (mangled, ctor_kind, dtor_kind)
   if (! d_init_info (mangled, DMGL_GNU_V3, strlen (mangled), &di))
     return 0;
 
-  dc = d_mangled_name (&di);
+  dc = d_mangled_name (&di, 1);
 
   if (dc == NULL)
     return 0;

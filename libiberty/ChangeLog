@@ -1,3 +1,29 @@
+2003-11-26  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cp-demangle.c (struct d_print_mod): Add templates field.
+	(d_make_builtin_type): Check for NULL type.
+	(d_make_extended_operator): Check for NULL name.
+	(d_make_ctor, d_make_dtor): Likewise.
+	(d_mangled_name): Add top_level parameter.  Change all callers.
+	(d_encoding): If DMGL_PARAMS is not set, strip off initial
+	CV-qualifiers.
+	(d_type): Check some return values we rely on.
+	(d_bare_function_type, d_array_type): Likewise.
+	(d_pointer_to_member_type, d_template_args): Likewise.
+	(d_add_substitution): Fail if argument is NULL.
+	(d_print_resize): Check whether buf is NULL.
+	(d_print_comp): Save current templates list with each modifier.
+	Don't pass the modifier list down when printing a template.
+	(d_print_cast): Don't pass the modifier list down when printing a
+	template.
+	(d_print_mod_list): Temporarily set templates list while printing
+	a modifier.
+	(d_print_mod): Check that buf is not NULL before using it.
+	(d_print_function_type): Print parens if there is no modifier.
+	(d_init_info): Permit as many substitutions as there are
+	characters in the mangled name.
+	* testsuite/demangle-expected: Add two new test cases.
+
 2003-11-25  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* cp-demangle.c (java_demangle_v3): Pass DMGL_PARAMS to
