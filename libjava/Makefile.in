@@ -201,7 +201,7 @@ EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	win32-threads.cc posix.cc win32.cc \
 	$(c_source_files) $(java_source_files) $(built_java_source_files)
 
-libgcj_la_DEPENDENCIES = libgcj.jar $(javao_files) \
+libgcj_la_DEPENDENCIES = libgcj-@gcc_version@.jar $(javao_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS) $(PLATFORMOBJS) $(LIBLTDL) \
 	$(LIBFFI) $(ZLIBS) $(GCLIBS)
 
