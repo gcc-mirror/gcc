@@ -1,3 +1,10 @@
+2000-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* actions.c (update_else_range_for_int_const): Initialize
+	variables `lowval' and `highval'.
+	(update_else_range_for_range): Likewise for `low_range_val' and
+	`high_range_val'.
+
 1999-12-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* typeck.c (apply_chill_array_layout, apply_chill_field_layout):

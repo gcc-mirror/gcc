@@ -1,5 +1,5 @@
 /* Move registers around to reduce number of move instructions needed.
-   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1604,9 +1604,9 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
   int success = 0;
   int num_calls = 0, s_num_calls = 0;
   enum rtx_code code = NOTE;
-  HOST_WIDE_INT insn_const, newconst;
+  HOST_WIDE_INT insn_const = 0, newconst;
   rtx overlap = 0; /* need to move insn ? */
-  rtx src_note = find_reg_note (insn, REG_DEAD, src), dst_note;
+  rtx src_note = find_reg_note (insn, REG_DEAD, src), dst_note = NULL_RTX;
   int length, s_length;
 
   /* If SRC is marked as unchanging, we may not change it.
@@ -1695,7 +1695,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	  if (! src_note)
 	    {
 	      rtx q;
-	      rtx set2;
+	      rtx set2 = NULL_RTX;
 
 	      /* If an optimization is done, the value of SRC while P
 		 is executed will be changed.  Check that this is OK.  */
@@ -1872,7 +1872,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
   if (! overlap && (code == PLUS || code == MINUS))
     {
       rtx note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
-      rtx q, set2;
+      rtx q, set2 = NULL_RTX;
       int num_calls2 = 0, s_length2 = 0;
 
       if (note && CONSTANT_P (XEXP (note, 0)))

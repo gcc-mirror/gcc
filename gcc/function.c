@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
-   Copyright (C) 1987, 88, 89, 91-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -5078,8 +5078,8 @@ pad_to_arg_alignment (offset_ptr, boundary, alignment_pad)
      int boundary;
      struct args_size *alignment_pad;
 {
-  tree save_var;
-  HOST_WIDE_INT save_constant;
+  tree save_var = NULL_TREE;
+  HOST_WIDE_INT save_constant = 0;
 
   int boundary_in_bytes = boundary / BITS_PER_UNIT;
   

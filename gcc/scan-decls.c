@@ -1,5 +1,5 @@
 /* scan-decls.c - Extracts declarations from cpp output.
-   Copyright (C) 1993, 1995, 97-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 97-99, 2000 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -88,7 +88,7 @@ scan_decls (pfile, argc, argv)
      declarator.  If it is zero, we are either still parsing the
      decl-specs, or prev_id_start marks the start of the declarator.  */
   int declarator_start;
-  int prev_id_start, prev_id_end;
+  int prev_id_start, prev_id_end = 0;
   enum cpp_token token;
 
  new_statement:

@@ -1301,7 +1301,7 @@ expand_builtin_strlen (exp, target, mode)
 
       rtx result, src_rtx, char_rtx;
       enum machine_mode insn_mode = value_mode, char_mode;
-      enum insn_code icode;
+      enum insn_code icode = CODE_FOR_nothing;
 
       /* If the length is known, just return it.  */
       if (len != 0)

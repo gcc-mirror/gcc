@@ -1,5 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2383,7 +2383,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   int swapped;
   int goal_alternative[MAX_RECOG_OPERANDS];
   int this_alternative_number;
-  int goal_alternative_number;
+  int goal_alternative_number = 0;
   int operand_reloadnum[MAX_RECOG_OPERANDS];
   int goal_alternative_matches[MAX_RECOG_OPERANDS];
   int goal_alternative_matched[MAX_RECOG_OPERANDS];
@@ -2397,7 +2397,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   rtx substed_operand[MAX_RECOG_OPERANDS];
   rtx body = PATTERN (insn);
   rtx set = single_set (insn);
-  int goal_earlyclobber, this_earlyclobber;
+  int goal_earlyclobber = 0, this_earlyclobber;
   enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
   int retval = 0;
 

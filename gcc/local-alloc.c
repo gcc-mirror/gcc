@@ -1,5 +1,5 @@
 /* Allocate registers within a basic block, for GNU compiler.
-   Copyright (C) 1987, 88, 91, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 93-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1082,7 +1082,7 @@ block_alloc (b)
 	{
 	  register rtx link, set;
 	  register int win = 0;
-	  register rtx r0, r1;
+	  register rtx r0, r1 = NULL_RTX;
 	  int combined_regno = -1;
 	  int i;
 

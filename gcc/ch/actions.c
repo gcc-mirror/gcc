@@ -1,5 +1,5 @@
 /* Implement actions for CHILL.
-   Copyright (C) 1992, 93, 1994, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 98, 99, 2000 Free Software Foundation, Inc.
    Authors: Per Bothner, Bill Cox, Michael Tiemann, Michael North
 
 This file is part of GNU CC.
@@ -788,7 +788,7 @@ static tree
 update_else_range_for_int_const (else_range, label)
      tree else_range, label;
 {
-  int  lowval, highval;
+  int  lowval = 0, highval = 0;
   int  label_value = TREE_INT_CST_LOW (label);
   tree this_range, prev_range, new_range;
 
@@ -846,7 +846,7 @@ update_else_range_for_range (else_range, low_target, high_target)
      tree else_range, low_target, high_target;
 {
   tree this_range, prev_range, new_range, next_range;
-  int  low_range_val, high_range_val;
+  int  low_range_val = 0, high_range_val = 0;
   int  low_target_val  = TREE_INT_CST_LOW (low_target);
   int  high_target_val = TREE_INT_CST_LOW (high_target);
 

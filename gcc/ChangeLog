@@ -1,3 +1,46 @@
+2000-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_strlen): Initialize variable `icode'.
+
+	* calls.c (expand_call): Likewise for
+	`old_stack_arg_under_construction'.
+
+	* cpphash.c (macroexpand): Likewise for `args' and `rest_zero'.
+
+	* function.c (pad_to_arg_alignment): Likewise for `save_var' and
+	`save_constant'.
+
+	* gcc.c (execute): Likewise for `ut' and `st'.
+
+	* genattrtab.c (attr_rtx): Likewise for `rt_val'.
+
+	* genopinit.c (gen_insn): Likewise for `m1', `m2' and `op'.
+
+	* jump.c (jump_optimize_1): Likewise for `temp2'.
+
+	* local-alloc.c (block_alloc): Likewise for `r1'.
+
+	* loop.c (recombine_givs): Likewise for `life_start' and `life_end'.
+
+	* reg-stack.c (check_asm_stack_operands): Likewise for `clobber_reg'.
+	(subst_asm_stack_regs): Likewise for `clobber_reg' and `clobber_loc'.
+	
+	* regmove.c (fixup_match_1): Likewise for `insn_const', `dst_node'
+	and `set2'.
+
+	* reload.c (find_reloads): Likewise for `goal_alternative_number'
+	and `goal_earlyclobber'.
+
+	* scan-decls.c (scan_decls): Likewise for `prev_id_end'.
+
+	* sdbout.c (sdbout_one_type): Likewise for `member_scl'.
+
+	* stupid.c (stupid_life_analysis): Likewise for `chain'.
+
+	* unroll.c (copy_loop_body): Likewise for `copy'.
+
+	* varasm.c (output_constructor): Likewise for `byte'.	
+
 Tue Jan  4 15:34:34 MET 2000  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* i386.c (ix86_expand_move): Allow pushes of memory, offload to memory

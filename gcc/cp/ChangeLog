@@ -1,3 +1,7 @@
+2000-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* class.c (warn_hidden): Initialize variable `fndecl'.
+
 2000-01-03  Ulrich Drepper  <drepper@cygnus.com>
 
 	* decl.c (flag_isoc9x): New variable to be able to use code in

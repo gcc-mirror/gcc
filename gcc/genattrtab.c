@@ -1,5 +1,5 @@
 /* Generate code from machine description to compute values of attributes.
-   Copyright (C) 1991, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93-99, 2000 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -542,8 +542,8 @@ attr_rtx VPROTO((enum rtx_code code, ...))
 #endif
   va_list p;
   register int i;		/* Array indices...			*/
-  register const char *fmt;		/* Current rtx's format...		*/
-  register rtx rt_val;		/* RTX to return to caller...		*/
+  register const char *fmt;	/* Current rtx's format...		*/
+  register rtx rt_val = NULL_RTX;/* RTX to return to caller...		*/
   int hashcode;
   register struct attr_hash *h;
   struct obstack *old_obstack = rtl_obstack;

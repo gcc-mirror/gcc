@@ -1,5 +1,5 @@
 /* Dummy data flow analysis for GNU compiler in nonoptimizing mode.
-   Copyright (C) 1987, 91, 94-96, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91, 94-96, 98, 99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -264,7 +264,7 @@ stupid_life_analysis (f, nregs, file)
   for (insn = last; insn; insn = PREV_INSN (insn))
     {
       register HARD_REG_SET *p = after_insn_hard_regs + INSN_SUID (insn);
-      struct insn_chain *chain;
+      struct insn_chain *chain = 0;
 
       /* Copy the info in regs_live into the element of after_insn_hard_regs
 	 for the current position in the rtl code.  */

@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4318,7 +4318,7 @@ output_constructor (exp, size)
   int total_bytes = 0;
   /* Non-zero means BYTE contains part of a byte, to be output.  */
   int byte_buffer_in_use = 0;
-  register int byte;
+  register int byte = 0;
 
   if (HOST_BITS_PER_WIDE_INT < BITS_PER_UNIT)
     abort ();

@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987, 89, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2575,7 +2575,7 @@ execute ()
     int ret_code = 0;
 #ifdef HAVE_GETRUSAGE
     struct timeval d;
-    double ut, st;
+    double ut = 0.0, st = 0.0;
 #endif
 
     for (i = 0; i < n_commands; )

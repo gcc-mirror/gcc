@@ -1,5 +1,5 @@
 /* Generate code to initialize optabs from machine description.
-   Copyright (C) 1993, 94-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993, 94-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -128,7 +128,7 @@ gen_insn (insn)
      rtx insn;
 {
   char *name = XSTR (insn, 0);
-  int m1, m2, op;
+  int m1 = 0, m2 = 0, op = 0;
   size_t pindex;
   int i;
   const char *np, *pp, *p, *q;
