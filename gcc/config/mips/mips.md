@@ -9684,10 +9684,10 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
 {
   register rtx target = operands[0];
 
-  if (GET_CODE (target) == SYMBOL_REF)
-    return \"%*jal\\t%0\";
-  else if (GET_CODE (target) == CONST_INT)
+  if (GET_CODE (target) == CONST_INT)
     return \"%[li\\t%@,%0\\n\\t%*jal\\t%2,%@%]\";
+  else if (CONSTANT_ADDRESS_P (target))
+    return \"%*jal\\t%0\";
   else
     return \"%*jal\\t%2,%0\";
 }"
@@ -9703,15 +9703,15 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
 {
   register rtx target = operands[0];
 
-  if (GET_CODE (target) == SYMBOL_REF)
+  if (GET_CODE (target) == CONST_INT)
+    return \"li\\t%^,%0\\n\\tjal\\t%2,%^\";
+  else if (CONSTANT_ADDRESS_P (target))
     {
       if (GET_MODE (target) == SImode)
 	return \"la\\t%^,%0\\n\\tjal\\t%2,%^\";
       else
 	return \"dla\\t%^,%0\\n\\tjal\\t%2,%^\";
     }
-  else if (GET_CODE (target) == CONST_INT)
-    return \"li\\t%^,%0\\n\\tjal\\t%2,%^\";
   else if (REGNO (target) != PIC_FUNCTION_ADDR_REGNUM)
     return \"move\\t%^,%0\\n\\tjal\\t%2,%^\";
   else
@@ -9891,10 +9891,10 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
 {
   register rtx target = operands[1];
 
-  if (GET_CODE (target) == SYMBOL_REF)
-    return \"%*jal\\t%1\";
-  else if (GET_CODE (target) == CONST_INT)
+  if (GET_CODE (target) == CONST_INT)
     return \"%[li\\t%@,%1\\n\\t%*jal\\t%3,%@%]\";
+  else if (CONSTANT_ADDRESS_P (target))
+    return \"%*jal\\t%1\";
   else
     return \"%*jal\\t%3,%1\";
 }"
@@ -9911,15 +9911,15 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
 {
   register rtx target = operands[1];
 
-  if (GET_CODE (target) == SYMBOL_REF)
+  if (GET_CODE (target) == CONST_INT)
+    return \"li\\t%^,%1\\n\\tjal\\t%3,%^\";
+  else if (CONSTANT_ADDRESS_P (target))
     {
       if (GET_MODE (target) == SImode)
 	return \"la\\t%^,%1\\n\\tjal\\t%3,%^\";
       else
 	return \"dla\\t%^,%1\\n\\tjal\\t%3,%^\";
     }
-  else if (GET_CODE (target) == CONST_INT)
-    return \"li\\t%^,%1\\n\\tjal\\t%3,%^\";
   else if (REGNO (target) != PIC_FUNCTION_ADDR_REGNUM)
     return \"move\\t%^,%1\\n\\tjal\\t%3,%^\";
   else
@@ -10023,10 +10023,10 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
 {
   register rtx target = operands[1];
 
-  if (GET_CODE (target) == SYMBOL_REF)
-    return \"%*jal\\t%1\";
-  else if (GET_CODE (target) == CONST_INT)
+  if (GET_CODE (target) == CONST_INT)
     return \"%[li\\t%@,%1\\n\\t%*jal\\t%4,%@%]\";
+  else if (CONSTANT_ADDRESS_P (target))
+    return \"%*jal\\t%1\";
   else
     return \"%*jal\\t%4,%1\";
 }"
@@ -10046,15 +10046,15 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
 {
   register rtx target = operands[1];
 
-  if (GET_CODE (target) == SYMBOL_REF)
+  if (GET_CODE (target) == CONST_INT)
+    return \"li\\t%^,%1\\n\\tjal\\t%4,%^\";
+  else if (CONSTANT_ADDRESS_P (target))
     {
       if (GET_MODE (target) == SImode)
 	return \"la\\t%^,%1\\n\\tjal\\t%4,%^\";
       else
 	return \"la\\t%^,%1\\n\\tjal\\t%4,%^\";
     }
-  else if (GET_CODE (target) == CONST_INT)
-    return \"li\\t%^,%1\\n\\tjal\\t%4,%^\";
   else if (REGNO (target) != PIC_FUNCTION_ADDR_REGNUM)
     return \"move\\t%^,%1\\n\\tjal\\t%4,%^\";
   else
