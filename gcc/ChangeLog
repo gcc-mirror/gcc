@@ -1,5 +1,11 @@
 2001-12-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-typeck.c (output_init_element): Call digest_init
+	just once, not in each if branch and check its return value for
+	error_mark_node.
+
+2001-12-05  Jakub Jelinek  <jakub@redhat.com>
+
 	* c-decl.c (pushdecl): Only increase n_incomplete if pushed decl's
 	type is RECORD_TYPE, UNION_TYPE or ARRAY_TYPE thereof.
 	(finish_struct): Break the loop if n_incomplete went to 0.
