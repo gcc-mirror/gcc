@@ -1,3 +1,10 @@
+2002-05-25  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.c (avr_handle_progmem_attribute): Handle TYPE_DECL.
+
+	* config/avr/avr.c (machine_dependent_reorg): Sign extend the
+	CONST_INT operand to the correct mode after adding 1 to it.
+
 2002-05-24  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
 
         * config/alpha/unicosmk.h (REAL_VALUE_TO_TARGET_SINGLE,
