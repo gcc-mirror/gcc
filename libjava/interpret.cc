@@ -36,9 +36,6 @@ details.  */
 #ifdef INTERPRETER
 
 #include <stdlib.h>
-#if HAVE_ALLOCA_H
-#include <alloca.h>
-#endif
 
 static _Jv_Utf8Const *init_name = _Jv_makeUtf8Const ("<init>", 6);
 
@@ -336,8 +333,8 @@ void _Jv_InterpMethod::run_normal (ffi_cif* cif,
   // "run" ro be inlined.  Otherwise gcc will ignore the inline directive.
   int storage_size = _this->max_stack+_this->max_locals;
   _Jv_InterpMethodInvocation* inv = (_Jv_InterpMethodInvocation*) 
-    alloca (sizeof (_Jv_InterpMethodInvocation)
-	    + storage_size * sizeof (_Jv_word));
+    __builtin_alloca (sizeof (_Jv_InterpMethodInvocation)
+		      + storage_size * sizeof (_Jv_word));
 
   jobject ex = _this->run (cif, ret, args, inv);
   if (ex != 0) _Jv_Throw (ex);
@@ -353,8 +350,8 @@ void _Jv_InterpMethod::run_synch_object (ffi_cif* cif,
 
   int storage_size = _this->max_stack+_this->max_locals;
   _Jv_InterpMethodInvocation* inv = (_Jv_InterpMethodInvocation*) 
-    alloca (sizeof (_Jv_InterpMethodInvocation)
-	    + storage_size * sizeof (_Jv_word));
+    __builtin_alloca (sizeof (_Jv_InterpMethodInvocation)
+		      + storage_size * sizeof (_Jv_word));
 
   _Jv_MonitorEnter (rcv);
   jobject ex = _this->run (cif, ret, args, inv);
@@ -373,8 +370,8 @@ void _Jv_InterpMethod::run_synch_class (ffi_cif* cif,
 
   int storage_size = _this->max_stack+_this->max_locals;
   _Jv_InterpMethodInvocation* inv = (_Jv_InterpMethodInvocation*) 
-    alloca (sizeof (_Jv_InterpMethodInvocation)
-	    + storage_size * sizeof (_Jv_word));
+    __builtin_alloca (sizeof (_Jv_InterpMethodInvocation)
+		      + storage_size * sizeof (_Jv_word));
 
   _Jv_MonitorEnter (sync);
   jobject ex = _this->run (cif, ret, args, inv);
@@ -2380,7 +2377,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jclass type    
 	  = (_Jv_ResolvePoolEntry (defining_class, kind_index)).clazz;
 	_Jv_InitClass (type);
-	jint *sizes    = (jint*) alloca (sizeof (jint)*dim);
+	jint *sizes    = (jint*) __builtin_alloca (sizeof (jint)*dim);
 
 	for (int i = dim - 1; i >= 0; i--)
 	  {
