@@ -1223,6 +1223,10 @@ freestanding and hosted environments.
 @opindex fms-extensions
 Accept some non-standard constructs used in Microsoft header files.
 
+Some cases of unnamed fields in structures and unions are only
+accepted with this option.  @xref{Unnamed Fields,,Unnamed struct/union
+fields within structs/unions}, for details.
+
 @item -trigraphs
 @opindex trigraphs
 Support ISO C trigraphs.  The @option{-ansi} option (and @option{-std}
