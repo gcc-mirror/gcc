@@ -5,6 +5,11 @@
 
 2003-03-13  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl2.c (do_nonmember_using_decl): Correct handling of
+	simultaneous type/non-type bindings.
+
+2003-03-13  Mark Mitchell  <mark@codesourcery.com>
+
 	* call.c (initialize_reference): Remove bogus assertion.
 	* decl.c (build_ptrmemfunc_type): Revert change of 2003-03-09.
 
