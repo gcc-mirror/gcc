@@ -546,7 +546,16 @@ i386_pe_record_external_function (name)
   extern_head = p;
 }
 
-static struct extern_list *exports_head;
+/* Keep a list of exported symbols.  */
+
+struct export_list
+{
+  struct export_list *next;
+  char *name;
+  int is_data;		/* used to type tag exported symbols. */
+};
+
+static struct export_list *export_head;
 
 /* Assemble an export symbol entry.  We need to keep a list of
    these, so that we can output the export list at the end of the
@@ -555,15 +564,17 @@ static struct extern_list *exports_head;
    linkonce.  */
 
 void
-i386_pe_record_exported_symbol (name)
+i386_pe_record_exported_symbol (name, is_data)
      char *name;
+     int is_data;
 {
-  struct extern_list *p;
+  struct export_list *p;
 
-  p = (struct extern_list *) permalloc (sizeof *p);
-  p->next = exports_head;
+  p = (struct export_list *) permalloc (sizeof *p);
+  p->next = export_head;
   p->name = name;
-  exports_head = p;
+  p->is_data = is_data;
+  export_head = p;
 }
 
 /* This is called at the end of assembly.  For each external function
@@ -590,12 +601,16 @@ i386_pe_asm_file_end (file)
 	}
     }
 
-  if (exports_head)
-    drectve_section ();
-  for (p = exports_head; p != NULL; p = p->next)
+  if (export_head)
     {
-      fprintf (file, "\t.ascii \" -export:%s\"\n",
-               I386_PE_STRIP_ENCODING (p->name));
+      struct export_list *q;
+      drectve_section ();
+      for (q = export_head; q != NULL; q = q->next)
+	{
+	  fprintf (file, "\t.ascii \" -export:%s%s\"\n",
+		   I386_PE_STRIP_ENCODING (q->name),
+		   (q->is_data) ? ",data" : "");
+	}
     }
 }
 
