@@ -733,6 +733,8 @@ FIXME: Talk about @code{TYPE_NONCOPIED_PARTS}.
 @tindex NAMESPACE_DECL
 @tindex RESULT_DECL
 @tindex TEMPLATE_DECL
+@tindex THUNK_DECL
+@findex THUNK_DELTA
 @tindex USING_DECL
 @findex DECL_INITIAL
 @findex DECL_SIZE
@@ -855,6 +857,21 @@ can safely ignore @code{TEMPLATE_DECL}s, but should examine
 @code{FUNCTION_DECL} nodes on the specializations list just as they
 would ordinary @code{FUNCTION_DECL} nodes.
 
+@item THUNK_DECL
+
+These nodes represent stub code that adjusts the @code{this} pointer and
+then jumps to another function.  When the jumped-to function returns,
+control is transferred directly to the caller, without returning to the
+thunk.  The first parameter to the thunk is always the @code{this}
+pointer; the thunk should add @code{THUNK_DELTA} to this value.  (The
+@code{THUNK_DECL} is an @code{int}, not an @code{INTEGER_CST}.)  Then,
+the thunk should jump to the location given by @code{DECL_INITIAL}; this
+will always be an expression for the address of a function.  
+
+You can use @code{DECL_ASSEMBLER_NAME}, @code{TREE_PUBLIC}, and
+@code{DECL_ARGUMENTS} with a @code{THUNK_DECL}, just as with a
+@code{FUNCTION_DECL}.
+
 @item USING_DECL
 
 Back-ends can safely ignore these nodes.
@@ -870,7 +887,8 @@ Back-ends can safely ignore these nodes.
 @cindex function
 @tindex FUNCTION_DECL
 @tindex OVERLOAD
-@findex OVL_
+@findex OVL_CURRENT
+@findex OVL_NEXT
 
 A function is represented by a @code{FUNCTION_DECL} node.  A set of
 overloaded functions is sometimes represented by a @code{OVERLOAD} node.

@@ -600,6 +600,7 @@ dequeue_and_dump (di)
       break;
 
     case FUNCTION_DECL:
+    case THUNK_DECL:
       if (dump_children_p)
 	{
 	  queue_and_dump_index (di, "scpe", DECL_REAL_CONTEXT (t), 0);
@@ -610,18 +611,26 @@ dequeue_and_dump (di)
 	dump_string(di, "extern");
       else
 	dump_string (di, "static");
-      if (DECL_FUNCTION_MEMBER_P (t))
-	dump_string (di, "member");
-      if (DECL_CONSTRUCTOR_P (t))
-	dump_string (di, "constructor");
-      if (DECL_DESTRUCTOR_P (t))
-	dump_string (di, "destructor");
-      if (DECL_OVERLOADED_OPERATOR_P (t))
-	dump_string (di, "operator");
-      if (DECL_CONV_FN_P (t))
-	dump_string (di, "conversion");
-      if (dump_children_p)
-	dump_child ("body", DECL_SAVED_TREE (t));
+      if (TREE_CODE (t) == FUNCTION_DECL)
+	{
+	  if (DECL_FUNCTION_MEMBER_P (t))
+	    dump_string (di, "member");
+	  if (DECL_CONSTRUCTOR_P (t))
+	    dump_string (di, "constructor");
+	  if (DECL_DESTRUCTOR_P (t))
+	    dump_string (di, "destructor");
+	  if (DECL_OVERLOADED_OPERATOR_P (t))
+	    dump_string (di, "operator");
+	  if (DECL_CONV_FN_P (t))
+	    dump_string (di, "conversion");
+	  if (dump_children_p)
+	    dump_child ("body", DECL_SAVED_TREE (t));
+	}
+      else
+	{
+	  dump_int (di, "dlta", THUNK_DELTA (t));
+	  dump_child ("init", DECL_INITIAL (t));
+	}
       break;
 
     case NAMESPACE_DECL:
