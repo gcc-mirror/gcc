@@ -307,7 +307,8 @@ output_float (fnode *f, double value, int len)
 	edigits = 2;
     }
   
-  if (FMT_F || FMT_ES)
+  if (ft == FMT_F || ft == FMT_EN
+      || ((ft == FMT_D || ft == FMT_E) && g.scale_factor != 0))
     {
       /* Always convert at full precision to avoid double rounding.  */
       ndigits = 27 - edigits;
@@ -368,18 +369,26 @@ output_float (fnode *f, double value, int len)
     case FMT_E:
     case FMT_D:
       i = g.scale_factor;
+      e -= i;
       if (i < 0)
 	{
 	  nbefore = 0;
 	  nzero = -i;
 	  nafter = d + i;
 	}
-      else
+      else if (i > 0)
 	{
 	  nbefore = i;
 	  nzero = 0;
-	  nafter = d - i;
+	  nafter = (d - i) + 1;
 	}
+      else /* i == 0 */
+	{
+	  nbefore = 0;
+	  nzero = 0;
+	  nafter = d;
+	}
+
       if (ft = FMT_E)
 	expchar = 'E';
       else

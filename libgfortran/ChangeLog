@@ -1,3 +1,9 @@
+2004-09-02  Paul Brook  <paul@codesourcery.com>
+
+	* io/format.c (parse_format_list): Set repeat count for P descriptors.
+	* write.c (output_float): Fix condition.  Correctly handle nonzero
+	scale factor.
+
 2004-09-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* mk-sik-inc.sh: Use a temporary string instead of 'echo -n'.
