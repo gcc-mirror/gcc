@@ -1526,13 +1526,25 @@ do {									\
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
 do {									\
   if (CONST_OK_FOR_I (DELTA))						\
-    fprintf (FILE, "\tadds r32 = %d, r32\n", (DELTA));			\
+    {									\
+      fprintf (FILE, "\tadds r32 = ");					\
+      fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));			\
+      fprintf (FILE, ", r32\n");					\
+    }									\
   else									\
     {									\
       if (CONST_OK_FOR_J (DELTA))					\
-        fprintf (FILE, "\taddl r2 = %d, r0\n", (DELTA));		\
+        {								\
+          fprintf (FILE, "\taddl r2 = ");				\
+          fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));		\
+          fprintf (FILE, ", r0\n");					\
+        }								\
       else								\
-	fprintf (FILE, "\tmovl r2 = %d\n", (DELTA));			\
+        {								\
+	  fprintf (FILE, "\tmovl r2 = ");				\
+	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));		\
+	  fprintf (FILE, "\n");						\
+        }								\
       fprintf (FILE, "\t;;\n");						\
       fprintf (FILE, "\tadd r32 = r2, r32\n");				\
     }									\

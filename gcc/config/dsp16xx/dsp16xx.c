@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "toplev.h"
 #include "recog.h"
-#include "dsp16xx-protos.h"
+#include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
 
@@ -1362,21 +1362,6 @@ compute_frame_size (size)
   return total_size;
 }
 
-int 
-frame_size ()
-{
-  return (int) compute_frame_size(get_frame_size());
-}
-
-int 
-frame_pointer_offset ()
-{
-  if (!leaf_function_p())
-    return (-(current_function_outgoing_args_size + 1));
-  else
-    return 1;
-}
-
 int
 dsp16xx_call_saved_register (regno)
      int regno;
@@ -1405,7 +1390,7 @@ ybase_regs_ever_used ()
   return live;
 }
 
-void 
+static void 
 dsp16xx_output_function_prologue (file, size)
      FILE *file;
      HOST_WIDE_INT size;
@@ -1420,14 +1405,14 @@ dsp16xx_output_function_prologue (file, size)
   total_size = compute_frame_size (size);
   
   fprintf (file, "\t/* FUNCTION PROLOGUE: */\n");
-  fprintf (file, "\t/* total=%d, vars= %d, regs= %d, args=%d, extra= %d */\n",
+  fprintf (file, "\t/* total=%ld, vars= %ld, regs= %d, args=%d, extra= %ld */\n",
 	   current_frame_info.total_size,
 	   current_frame_info.var_size,
 	   current_frame_info.reg_size,
 	   current_function_outgoing_args_size,
 	   current_frame_info.extra_size);
   
-  fprintf (file, "\t/* fp save offset= %d, sp save_offset= %d */\n\n",
+  fprintf (file, "\t/* fp save offset= %ld, sp save_offset= %ld */\n\n",
 	   current_frame_info.fp_save_offset,
 	   current_frame_info.sp_save_offset);
   /* Set up the 'ybase' register window.  */
@@ -1449,7 +1434,7 @@ dsp16xx_output_function_prologue (file, size)
       else
         {
 	  if (SMALL_INTVAL(current_frame_info.var_size) && ((current_frame_info.var_size & 0x8000) == 0))
-	    fprintf (file, "\t%s=%d\n\t*%s++%s\n", reg_names[REG_J], current_frame_info.var_size, sp, reg_names[REG_J]);
+	    fprintf (file, "\t%s=%ld\n\t*%s++%s\n", reg_names[REG_J], current_frame_info.var_size, sp, reg_names[REG_J]);
 	  else
 	    fatal_error ("Stack size > 32k");
 	}
@@ -1481,7 +1466,7 @@ dsp16xx_output_function_prologue (file, size)
     {
       fprintf (file, "\t%s=%s\n", a1h, sp);
       fprintf (file, "\t%s=%s\n", fp, a1h);  /* Establish new base frame */
-      fprintf (file, "\t%s=%d\n", reg_names[REG_J], -total_size);
+      fprintf (file, "\t%s=%ld\n", reg_names[REG_J], -total_size);
       fprintf (file, "\t*%s++%s\n", fp, reg_names[REG_J]);
     }
   
@@ -1515,7 +1500,7 @@ init_emulation_routines ()
  dsp16xx_lshrhi3_libcall = (rtx) 0;
 
 }
-void
+static void
 dsp16xx_output_function_epilogue (file, size)
      FILE *file;
      HOST_WIDE_INT size ATTRIBUTE_UNUSED;
@@ -1535,7 +1520,7 @@ dsp16xx_output_function_epilogue (file, size)
 	fprintf (file, "\t*%s--\n", sp);
       else
 	{
-	  fprintf (file, "\t%s=%d\n\t*%s++%s\n", 
+	  fprintf (file, "\t%s=%ld\n\t*%s++%s\n", 
 		   reg_names[REG_J], -current_frame_info.args_size, sp, reg_names[REG_J]);
 	}
     }
@@ -1565,7 +1550,7 @@ dsp16xx_output_function_epilogue (file, size)
 	fprintf (file, "\t*%s--\n", sp);
       else
 	{
-	  fprintf (file, "\t%s=%d\n\t*%s++%s\n", 
+	  fprintf (file, "\t%s=%ld\n\t*%s++%s\n", 
 		   reg_names[REG_J], -current_frame_info.var_size, sp, reg_names[REG_J]);
 	}
     }
@@ -2478,7 +2463,6 @@ luxworks_dsp16xx_file_start (file)
          }
 #endif
     fprintf (file, "\"%s\"\n", temp_filename);
-    fprintf (file, "");
 
   fprintf (file, "#include <%s.h>\n", save_chip_name);
 

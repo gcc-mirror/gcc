@@ -617,11 +617,6 @@ enum reg_class
 /*}}}*/ 
 /*{{{  CONSTANTS.  */ 
 
-/* Return true if a value is inside a range */
-#define IN_RANGE(VALUE, LOW, HIGH)					\
-  (   ((unsigned HOST_WIDE_INT)((VALUE) - (LOW)))			\
-   <= ((unsigned HOST_WIDE_INT)( (HIGH) - (LOW))))
-
 /* A C expression that defines the machine-dependent operand constraint letters
    (`I', `J', `K', .. 'P') that specify particular ranges of integer values.
    If C is one of those letters, the expression should check that VALUE, an

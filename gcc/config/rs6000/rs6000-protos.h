@@ -170,6 +170,8 @@ extern void sdata_section PARAMS ((void));
 extern void sdata2_section PARAMS ((void));
 extern void sbss_section PARAMS ((void));
 extern void private_data_section PARAMS ((void));
+extern void read_only_data_section PARAMS ((void));
+extern void read_only_private_data_section PARAMS ((void));
 extern int get_TOC_alias_set PARAMS ((void));
 extern int uses_TOC PARAMS ((void));
 extern void rs6000_emit_prologue PARAMS ((void));

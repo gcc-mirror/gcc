@@ -1095,7 +1095,8 @@ extern enum reg_class reg_class_from_letter[];
    ASM_DECLARE_OBJECT_NAME and then switch back to the original section
    afterwards.  */
 #define SWITCH_SECTION_FUNCTION					\
-void								\
+static void switch_to_section PARAMS ((enum in_section, tree));	\
+static void							\
 switch_to_section (section, decl)				\
      enum in_section section;					\
      tree decl;							\

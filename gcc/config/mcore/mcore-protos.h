@@ -57,7 +57,7 @@ extern rtx arch_compare_op1;
 
 extern const char * mcore_output_bclri         		PARAMS ((rtx, int));
 extern const char * mcore_output_bseti         		PARAMS ((rtx, int));
-extern const char * mcore_output_cmov          		PARAMS ((rtx *, int, char *));
+extern const char * mcore_output_cmov          		PARAMS ((rtx *, int, const char *));
 extern char *       mcore_output_call          		PARAMS ((rtx *, int));
 extern int          mcore_is_dead                	PARAMS ((rtx, rtx));
 extern int          mcore_expand_insv            	PARAMS ((rtx *));

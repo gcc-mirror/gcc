@@ -49,6 +49,7 @@ extern void output_dsp16xx_float_const PARAMS ((rtx *));
 extern void emit_1600_core_shift PARAMS ((enum rtx_code, rtx *, int));
 extern int dsp16xx_address_cost PARAMS ((rtx));
 extern int symbolic_address_p PARAMS ((rtx));
+extern int uns_comparison_operator PARAMS ((rtx, enum machine_mode));
 #endif /* RTX_CODE */
 
 
@@ -87,3 +88,4 @@ extern enum reg_class dsp16xx_reg_class_from_letter PARAMS ((int));
 extern int regno_reg_class PARAMS ((int));
 extern void function_prologue PARAMS ((FILE *, int));
 extern void function_epilogue PARAMS ((FILE *, int));
+extern int num_1600_core_shifts PARAMS ((int));
