@@ -1,3 +1,8 @@
+2004-02-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md: Remove an incorrect comment about
+	peephole2.  Add comments.
+
 2004-02-10  Josef Zlomek  <zlomekj@suse.cz>
 
 	PR/14058
