@@ -668,6 +668,11 @@ emit_base_init (mem_init_list, base_init_list)
   int i;
   int n_baseclasses = BINFO_N_BASETYPES (t_binfo);
 
+  /* We did a keep_next_level (1) in begin_function_body.  We don't want
+     that to apply to any blocks generated for member initializers, so
+     clear it out.  */
+  keep_next_level (0);
+  
   mem_init_list = sort_member_init (t, mem_init_list);
   sort_base_init (t, base_init_list, &rbase_init_list, &vbase_init_list);
 
@@ -748,6 +753,9 @@ emit_base_init (mem_init_list, base_init_list)
       perform_member_init (member, init, from_init_list);
       mem_init_list = TREE_CHAIN (mem_init_list);
     }
+
+  /* And restore it.  */
+  keep_next_level (1);
 }
 
 /* Returns the address of the vtable (i.e., the value that should be

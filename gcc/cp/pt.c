@@ -7274,7 +7274,7 @@ tsubst_expr (t, args, complain, in_decl)
 	  = tsubst_initializer_list (TREE_OPERAND (t, 0), args);
 	base_init_list
 	  = tsubst_initializer_list (TREE_OPERAND (t, 1), args);
-	setup_vtbl_ptr (member_init_list, base_init_list);
+	emit_base_init (member_init_list, base_init_list);
 	break;
       }
 
