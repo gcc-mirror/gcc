@@ -1,3 +1,18 @@
+Fri Oct  9 16:03:19 1998  Graham  <grahams@rcp.co.uk>
+
+	* flow.c (print_rtl_with_bb): Changed type of in_bb_p to match use.
+	* gcc.c (add_preprocessor_option): Correct typo when allocating
+	memory, sizeof() argument had one too many `*'.
+	(add_assembler_option): Likewise.
+	(add_linker_option): Likewise.
+	* gcov.c (output_data): Likewise.
+	* local-alloc.c (memref_used_between_p): Likewise.
+	(update_equiv_regs): Likewise.
+	* loop.c (strength_reduce): Likewise.
+	* reg-stack.c (record_asm_reg_life): Likewise.
+	(subst_asm_stack_reg): Likewise.
+	* reorg.c (dbr_schedule): Likewise.
+
 Fri Oct  9 15:57:51 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
 
 	* flow.c (life_analysis_1): Break out some functions.
