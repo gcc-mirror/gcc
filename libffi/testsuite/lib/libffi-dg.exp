@@ -17,6 +17,8 @@
 load_lib dg.exp
 load_lib libgloss.exp
 
+
+
 # Define libffi callbacks for dg.exp.
 
 proc libffi-dg-test-1 { target_compile prog do_what extra_tool_flags } {
@@ -134,6 +136,7 @@ proc libffi-init { args } {
     setenv  LD_LIBRARYN32_PATH  $ld_library_path
     setenv  LD_LIBRARY64_PATH   $ld_library_path
     setenv  LD_LIBRARY_PATH_64  $ld_library_path
+    setenv  DYLD_LIBRARY_PATH   $ld_library_path
 }
 
 proc libffi_target_compile { source dest type options } {
@@ -144,6 +147,7 @@ proc libffi_target_compile { source dest type options } {
     global ld_library_path
     global libffi_link_flags
     global libffi_include
+    global target_triplet
 
 
     if { [target_info needs_status_wrapper]!="" && [info exists gluefile] } {
@@ -160,7 +164,8 @@ proc libffi_target_compile { source dest type options } {
     # search for ffi_mips.h in srcdir, too
     lappend options "additional_flags=-I${libffi_include} -I${srcdir}/../include"
     lappend options "additional_flags=${libffi_link_flags}"
-    lappend options "libs= -lffi"
+    lappend options "libs= -lffi -lgcc_s"
+
     verbose "options: $options"
     return [target_compile $source $dest $type $options]
 }

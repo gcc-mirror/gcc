@@ -1,3 +1,8 @@
+2003-11-19  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/lib/libffi-dg.exp: Add DYLD_LIBRARY_PATH for darwin.
+	Add -lgcc_s to additional flags.
+
 2003-11-12  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* configure.in, include/Makefile.am: PR libgcj/11147, install
