@@ -1,3 +1,8 @@
+2002-09-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa32-regs.h (CLASS_CANNOT_CHANGE_MODE, CLASS_CANNOT_CHANGE_MODE_P):
+	Delete macros.
+
 2002-09-03   Arati Dikey  <aratid@kpit.com>
 
 	* h8300.c (asm_file_start): Corrected optimization comment.
