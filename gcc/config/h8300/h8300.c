@@ -2082,7 +2082,7 @@ compute_plussi_length (operands)
     }
 }
 
-enum attr_cc
+int
 compute_plussi_cc (operands)
      rtx *operands;
 {

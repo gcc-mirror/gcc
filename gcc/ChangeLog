@@ -1,4 +1,14 @@
-2003-01-30	Ralf Corsepius <corsepiu@faw.uni-ulm.de>
+2003-01-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Update the prototype for
+	compute_plussi_cc.
+	(cpp_reader): Declare before it is used.
+	* config/h8300/h8300.c (compute_plussi_cc): Change the return
+	type to int.
+	* config/h8300/h8300.md (monitor_prologue): Call abort() if we
+	see an unknown H8 variant.
+
+2003-01-30  Ralf Corsepius  <corsepiu@faw.uni-ulm.de>
 
 	PR target/9316 
 	* config/rs6000/rtems.h: Add CPP_OS_DEFAULT_SPEC.
