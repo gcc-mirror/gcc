@@ -56,6 +56,7 @@ extern int input_operand PARAMS ((rtx, enum machine_mode));
 extern int current_file_function_operand PARAMS ((rtx, enum machine_mode));
 extern int local_symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int call_operand PARAMS ((rtx, enum machine_mode));
+extern int symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int alpha_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int alpha_zero_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int alpha_swapped_comparison_operator PARAMS ((rtx, enum machine_mode));
@@ -149,3 +150,23 @@ extern void alpha_start_function PARAMS ((FILE *, const char *, tree));
 extern void alpha_end_function PARAMS ((FILE *, const char *, tree));
 extern void alpha_encode_section_info PARAMS ((tree));
 #endif /* TREE CODE */
+
+#ifdef RTX_CODE
+extern rtx unicosmk_add_call_info_word PARAMS ((rtx));
+#endif
+
+#if TARGET_ABI_UNICOSMK
+#ifdef RTX_CODE
+extern void unicosmk_defer_case_vector PARAMS ((rtx, rtx));
+#endif
+#ifdef TREE_CODE
+extern void unicosmk_unique_section PARAMS ((tree, int));
+#endif
+extern void unicosmk_add_extern PARAMS ((const char *));
+extern void unicosmk_output_align PARAMS ((FILE *, int));
+extern char * unicosmk_text_section PARAMS ((void));
+extern char * unicosmk_data_section PARAMS ((void));
+extern void unicosmk_asm_file_start PARAMS ((FILE *));
+extern void unicosmk_asm_file_end PARAMS ((FILE *));
+extern void unicosmk_output_common PARAMS ((FILE *, const char *, int, int));
+#endif /* TARGET_ABI_UNICOSMK */

@@ -398,6 +398,14 @@ a29k-wrs-vxworks*)
 a29k-*-*)			# Default a29k environment.
 	use_collect2=yes
 	;;
+alpha*-*-unicosmk*)
+	use_collect2=yes
+	tm_file="${tm_file} alpha/unicosmk.h"
+	
+	# Don't include t-ieee for now because we don't support that yet
+	# tmake_file="alpha/t-ieee"
+	tmake_file="alpha/t-unicosmk"
+	;;
 alpha-*-interix)
 	tm_file="${tm_file} alpha/alpha32.h interix.h alpha/alpha-interix.h"
 

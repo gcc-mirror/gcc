@@ -1,3 +1,93 @@
+2001-09-11  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c: Tidy formatting.
+	(local_symbolic_operand): Verify mode.
+	(alpha_sa_mask): Ignore unicos for eh_return.
+	(alpha_expand_epilogue): Handle sp_adj2 zero, not NULL.
+	* config/alpha/alpha.md (umk divsi patterns): Remove.
+	(extendsfdf2): Remove unicos check.
+	(tablejump): Merge vms and unicos code; always use direct set
+	plus label_ref use.
+
+2001-09-11  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
+
+	* config.gcc (alpha*-*-unicosmk*): New target.
+
+	* config/alpha/alpha-protos.h (symbolic_operand,
+	unicosmk_add_call_info_word, unicosmk_add_extern,
+	unicosmk_defer_case_vector, unicosmk_unique_section,
+	unicosmk_output_align, unicosmk_text_section, unicosmk_data_section,
+	unicosmk_asm_file_start, unicosmk_asm_file_end,
+	unicosmk_output_common): Declare.
+
+	* config/alpha/alpha.c (NUM_ARGS, override_options, call_operand,
+	direct_return, function_arg, alpha_va_start, alpha_va_arg,
+	alpha_does_function_need_gp, alpha_end_function): Support Cray
+	Unicos/Mk.
+	(alpha_init_machine_status, alpha_mark_machine_status,
+	alpha_free_machine_status, unicosmk_output_deferred_case_vectors,
+	unicosmk_gen_dsib, unicosmk_output_ssib, unicosmk_need_dex,
+	unicosmk_asm_named_section, unicosmk_insert_attributes,
+	unicosmk_section_type_flags, symbolic_operand,
+	unicosmk_output_module_name, unicosmk_output_default_externs,
+	unicosmk_output_dex, unicosmk_output_externs,
+	unicosmk_output_addr_vec, unicosmk_ssib_name,
+	unicosmk_initial_elimination_offset, unicosmk_asm_file_start,
+	unicosmk_asm_file_end, unicosmk_output_common,
+	unicosmk_section_type_flags, unicosmk_unique_section,
+	unicosmk_add_call_info_word, unicosmk_text_section,
+	unicosmk_data_section, unicosmk_extern_list, unicosmk_extern_head,
+	unicosmk_add_extern, unicosmk_dex, unicosmk_dex_list,
+	unicosmk_dex_count, unicosmk_special_name): New.
+	(TARGET_INSERT_ATTRIBUTES, TARGET_SECTION_TYPE_FLAGS): Define for
+	TARGET_ABI_UNICOSMK.
+	(get_aligned_mem, alpha_expand_unaligned_load,
+	alpha_expand_unaligned_store, alpha_expand_unaligned_load_words,
+	alpha_expand_unaligned_store_words): Support big-endian mode.
+	(print_operand): Likewise. New format specifier 't'. Use
+	TARGET_AS_SLASH_BEFORE_SUFFIX.
+	(alpha_is_stack_procedure): Rename from vms_is_stack_procedure.
+	(alpha_pv_save_size): Update with above change.
+	(alpha_sa_mask, alpha_sa_size, alpha_expand_prologue,
+	alpha_start_function, alpha_expand_epilogue): Likewise. Support Cray
+	Unicos/Mk.
+
+	* config/alpha/alpha.h (TARGET_ABI_UNICOSMK): New.
+	(TARGET_ABI_OSF): Exclude TARGET_ABI_UNICOSMK.
+	(TARGET_AS_SLASH_BEFORE_SUFFIX): New.
+	(EXTRA_CONSTRAINT): New constraint 'U'.
+	(PREDICATE_CODES): Add symbolic_operand.
+
+	* config/alpha/alpha.md (UNSPEC_UMK_LAUM, UNSPEC_UMK_LALM,
+	UNSPEC_UMK_LAL, UNSPEC_UMK_LOAD_CIW): New constants.
+	(mulsi3, *mulsi_se, mulvsi3): Disable for TARGET_ABI_UNICOSMK.
+	(integer division and modulus patterns): Split in default and
+	Unicos/Mk versions.
+	(*divmodsi_internal, *divmoddi_internal): Disable for
+	TARGET_ABI_UNICOSMK.
+	(unaligned_extend?idi, unaligned_load?i, unaligned_store?i): Split in 
+	little-endian and big-endian versions.
+	(ext, ins, msk): Likewise.
+	(extv, extzv, insv): Support big-endian mode.
+	(call, call_value, tablejump): Support TARGET_ABI_UNICOSMK.
+	(call_umk, call_value_umk, *call_umk, tablejump_umk,
+	*tablejump_umk_internal, *call_value_umk): New.
+	(*movdi_nofix): Add pattern for loading an address into a register on
+	TARGET_ABI_UNICOSMK.
+	(umk_laum, umk_lal, umk_lalm, *umk_load_ciw): New.
+	(umk_mismatch_args, arg_home_umk): New.
+	(various insns): Don't use mov, fmov, nop, fnop and unop.
+	(realign): Support TARGET_ABI_UNICOSMK.
+
+	* config/alpha/unicosmk.h: New file.
+	* config/alpha/t-unicosmk: New file.
+
+	* fixinc/inclhack.def (unicosmk_restrict): New.
+	* fixinc/fixincl.x: Regenerate.
+
+	* ginclude/stddef.h (size_t): Check for and define __SIZE_T__.
+	(wchar_t): Check for and define __WCHAR_T__.
+
 2001-09-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* combine.c (simplify_shift_const): Treat shifts by the mode

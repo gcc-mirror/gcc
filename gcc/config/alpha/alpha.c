@@ -153,8 +153,22 @@ static int alpha_issue_rate
 static int alpha_variable_issue
   PARAMS ((FILE *, int, rtx, int));
 
+#if TARGET_ABI_UNICOSMK
+static void alpha_init_machine_status
+  PARAMS ((struct function *p));
+static void alpha_mark_machine_status
+  PARAMS ((struct function *p));
+static void alpha_free_machine_status
+  PARAMS ((struct function *p));
+#endif
+
+static void unicosmk_output_deferred_case_vectors PARAMS ((FILE *));
+static void unicosmk_gen_dsib PARAMS ((unsigned long *imaskP));
+static void unicosmk_output_ssib PARAMS ((FILE *, const char *));
+static int unicosmk_need_dex PARAMS ((rtx));
+
 /* Get the number of args of a function in one of two ways.  */
-#if TARGET_ABI_OPEN_VMS
+#if TARGET_ABI_OPEN_VMS || TARGET_ABI_UNICOSMK
 #define NUM_ARGS current_function_args_info.num_args
 #else
 #define NUM_ARGS current_function_args_info
@@ -174,6 +188,17 @@ static void vms_asm_out_destructor PARAMS ((rtx, int));
 # define TARGET_VALID_DECL_ATTRIBUTE vms_valid_decl_attribute_p
 # undef TARGET_SECTION_TYPE_FLAGS
 # define TARGET_SECTION_TYPE_FLAGS vms_section_type_flags
+#endif
+
+#if TARGET_ABI_UNICOSMK
+static void unicosmk_asm_named_section PARAMS ((const char *, unsigned int));
+static void unicosmk_insert_attributes PARAMS ((tree, tree *));
+static unsigned int unicosmk_section_type_flags PARAMS ((tree, const char *, 
+							 int));
+# undef TARGET_INSERT_ATTRIBUTES
+# define TARGET_INSERT_ATTRIBUTES unicosmk_insert_attributes
+# undef TARGET_SECTION_TYPE_FLAGS
+# define TARGET_SECTION_TYPE_FLAGS unicosmk_section_type_flags
 #endif
 
 #undef TARGET_ASM_FUNCTION_END_PROLOGUE
@@ -218,20 +243,50 @@ override_options ()
     { 0, 0, 0 }
   };
                   
+  /* Unicos/Mk doesn't have shared libraries.  */
+  if (TARGET_ABI_UNICOSMK && flag_pic)
+    {
+      warning ("-f%s ignored for Unicos/Mk (not supported)",
+	       (flag_pic > 1) ? "PIC" : "pic");
+      flag_pic = 0;
+    }
+
+  /* On Unicos/Mk, the native compiler consistenly generates /d suffices for 
+     floating-point instructions.  Make that the default for this target.  */
+  if (TARGET_ABI_UNICOSMK)
+    alpha_fprm = ALPHA_FPRM_DYN;
+  else
+    alpha_fprm = ALPHA_FPRM_NORM;
+
   alpha_tp = ALPHA_TP_PROG;
-  alpha_fprm = ALPHA_FPRM_NORM;
   alpha_fptm = ALPHA_FPTM_N;
+
+  /* We cannot use su and sui qualifiers for conversion instructions on 
+     Unicos/Mk.  I'm not sure if this is due to assembler or hardware
+     limitations.  Right now, we issue a warning if -mieee is specified
+     and then ignore it; eventually, we should either get it right or
+     disable the option altogether.  */
 
   if (TARGET_IEEE)
     {
-      alpha_tp = ALPHA_TP_INSN;
-      alpha_fptm = ALPHA_FPTM_SU;
+      if (TARGET_ABI_UNICOSMK)
+	warning ("-mieee not supported on Unicos/Mk");
+      else
+	{
+	  alpha_tp = ALPHA_TP_INSN;
+	  alpha_fptm = ALPHA_FPTM_SU;
+	}
     }
 
   if (TARGET_IEEE_WITH_INEXACT)
     {
-      alpha_tp = ALPHA_TP_INSN;
-      alpha_fptm = ALPHA_FPTM_SUI;
+      if (TARGET_ABI_UNICOSMK)
+	warning ("-mieee-with-inexact not supported on Unicos/Mk");
+      else
+	{
+	  alpha_tp = ALPHA_TP_INSN;
+	  alpha_fptm = ALPHA_FPTM_SUI;
+	}
     }
 
   if (alpha_tp_string)
@@ -307,6 +362,12 @@ override_options ()
     }
 
   /* Do some sanity checks on the above options. */
+
+  if (TARGET_ABI_UNICOSMK && alpha_fptm != ALPHA_FPTM_N)
+    {
+      warning ("trap mode not supported on Unicos/Mk");
+      alpha_fptm = ALPHA_FPTM_N;
+    }
 
   if ((alpha_fptm == ALPHA_FPTM_SU || alpha_fptm == ALPHA_FPTM_SUI)
       && alpha_tp != ALPHA_TP_INSN && ! TARGET_CPU_EV6)
@@ -402,6 +463,15 @@ override_options ()
 
   /* Acquire a unique set number for our register saves and restores.  */
   alpha_sr_alias_set = new_alias_set ();
+
+  /* Register variables and functions with the garbage collector.  */
+
+#if TARGET_ABI_UNICOSMK
+  /* Set up function hooks.  */
+  init_machine_status = alpha_init_machine_status;
+  mark_machine_status = alpha_mark_machine_status;
+  free_machine_status = alpha_free_machine_status;
+#endif
 }
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
@@ -774,9 +844,12 @@ current_file_function_operand (op, mode)
 int
 local_symbolic_operand (op, mode)
      rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+     enum machine_mode mode;
 {
   const char *str;
+
+  if (mode != VOIDmode && GET_MODE (op) != VOIDmode && mode != GET_MODE (op))
+    return 0;
 
   if (GET_CODE (op) == LABEL_REF)
     return 1;
@@ -813,6 +886,8 @@ call_operand (op, mode)
   if (mode != Pmode)
     return 0;
 
+  if (TARGET_ABI_UNICOSMK)
+    return GET_CODE (op) == REG;
   if (GET_CODE (op) == SYMBOL_REF)
     return 1;
   if (GET_CODE (op) == REG)
@@ -823,6 +898,26 @@ call_operand (op, mode)
 	return 1;
     }
 
+  return 0;
+}
+
+/* Returns 1 if OP is a symbolic operand, i.e. a symbol_ref or a label_ref,
+   possibly with an offset.  */
+
+int
+symbolic_operand (op, mode)
+      register rtx op;
+      enum machine_mode mode;
+{
+  if (mode != VOIDmode && GET_MODE (op) != VOIDmode && mode != GET_MODE (op))
+    return 0;
+  if (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF)
+    return 1;
+  if (GET_CODE (op) == CONST
+      && GET_CODE (XEXP (op,0)) == PLUS
+      && GET_CODE (XEXP (XEXP (op,0), 0)) == SYMBOL_REF
+      && GET_CODE (XEXP (XEXP (op,0), 1)) == CONST_INT)
+    return 1;
   return 0;
 }
 
@@ -1140,7 +1235,7 @@ addition_operation (op, mode)
 int
 direct_return ()
 {
-  return (! TARGET_ABI_OPEN_VMS
+  return (! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK
 	  && reload_completed
 	  && alpha_sa_size () == 0
 	  && get_frame_size () == 0
@@ -1582,7 +1677,11 @@ get_aligned_mem (ref, paligned_mem, pbitnum)
      data in a different alias set.  */
   set_mem_alias_set (*paligned_mem, 0);
 
-  *pbitnum = GEN_INT ((offset & 3) * 8);
+  if (WORDS_BIG_ENDIAN)
+    *pbitnum = GEN_INT (32 - (GET_MODE_BITSIZE (GET_MODE (ref))
+			      + (offset & 3) * 8));
+  else
+    *pbitnum = GEN_INT ((offset & 3) * 8);
 }
 
 /* Similar, but just get the address.  Handle the two reload cases.  
@@ -1912,7 +2011,7 @@ alpha_emit_set_const_1 (target, mode, c, n)
       /* Now try high-order 1 bits.  We get that with a sign-extension.
 	 But one bit isn't enough here.  Be careful to avoid shifting outside
 	 the mode and to avoid shifting outside the host wide int size. */
-      
+
       if ((bits = (MIN (HOST_BITS_PER_WIDE_INT, GET_MODE_SIZE (mode) * 8)
 		   - floor_log2 (~ c) - 2)) > 0)
 	for (; bits > 0; bits--)
@@ -3197,12 +3296,23 @@ alpha_expand_unaligned_load (tgt, mem, size, ofs, sign)
   set_mem_alias_set (tmp, 0);
   emit_move_insn (memh, tmp);
 
-  if (sign && size == 2)
+  if (WORDS_BIG_ENDIAN && sign && (size == 2 || size == 4))
+    {
+      emit_move_insn (addr, plus_constant (mema, -1));
+
+      emit_insn (gen_extqh_be (extl, meml, addr));
+      emit_insn (gen_extxl_be (exth, memh, GEN_INT (64), addr));
+
+      addr = expand_binop (DImode, ior_optab, extl, exth, tgt, 1, OPTAB_WIDEN);
+      addr = expand_binop (DImode, ashr_optab, addr, GEN_INT (64 - size*8),
+			   addr, 1, OPTAB_WIDEN);
+    }
+  else if (sign && size == 2)
     {
       emit_move_insn (addr, plus_constant (mema, ofs+2));
 
-      emit_insn (gen_extxl (extl, meml, GEN_INT (64), addr));
-      emit_insn (gen_extqh (exth, memh, addr));
+      emit_insn (gen_extxl_le (extl, meml, GEN_INT (64), addr));
+      emit_insn (gen_extqh_le (exth, memh, addr));
 
       /* We must use tgt here for the target.  Alpha-vms port fails if we use
 	 addr for the target, because addr is marked as a pointer and combine
@@ -3213,27 +3323,55 @@ alpha_expand_unaligned_load (tgt, mem, size, ofs, sign)
     }
   else
     {
-      emit_move_insn (addr, plus_constant (mema, ofs));
-      emit_insn (gen_extxl (extl, meml, GEN_INT (size*8), addr));
-      switch ((int) size)
+      if (WORDS_BIG_ENDIAN)
 	{
-	case 2:
-	  emit_insn (gen_extwh (exth, memh, addr));
-	  mode = HImode;
-	  break;
+	  emit_move_insn (addr, plus_constant (mema, ofs+size-1));
+	  switch ((int) size)
+	    {
+	    case 2:
+	      emit_insn (gen_extwh_be (extl, meml, addr));
+	      mode = HImode;
+	      break;
 
-	case 4:
-	  emit_insn (gen_extlh (exth, memh, addr));
-	  mode = SImode;
-	  break;
+	    case 4:
+	      emit_insn (gen_extlh_be (extl, meml, addr));
+	      mode = SImode;
+	      break;
 
-	case 8:
-	  emit_insn (gen_extqh (exth, memh, addr));
-	  mode = DImode;
-	  break;
+	    case 8:
+	      emit_insn (gen_extqh_be (extl, meml, addr));
+	      mode = DImode;
+	      break;
 
-	default:
-	  abort();
+	    default:
+	      abort ();
+	    }
+	  emit_insn (gen_extxl_be (exth, memh, GEN_INT (size*8), addr));
+	}
+      else
+	{
+	  emit_move_insn (addr, plus_constant (mema, ofs));
+	  emit_insn (gen_extxl_le (extl, meml, GEN_INT (size*8), addr));
+	  switch ((int) size)
+	    {
+	    case 2:
+	      emit_insn (gen_extwh_le (exth, memh, addr));
+	      mode = HImode;
+	      break;
+
+	    case 4:
+	      emit_insn (gen_extlh_le (exth, memh, addr));
+	      mode = SImode;
+	      break;
+
+	    case 8:
+	      emit_insn (gen_extqh_le (exth, memh, addr));
+	      mode = DImode;
+	      break;
+
+	    default:
+	      abort();
+	    }
 	}
 
       addr = expand_binop (mode, ior_optab, gen_lowpart (mode, extl),
@@ -3281,47 +3419,94 @@ alpha_expand_unaligned_store (dst, src, size, ofs)
 
   emit_move_insn (dsth, memh);
   emit_move_insn (dstl, meml);
-  addr = copy_addr_to_reg (plus_constant (dsta, ofs));
-
-  if (src != const0_rtx)
+  if (WORDS_BIG_ENDIAN)
     {
-      emit_insn (gen_insxh (insh, gen_lowpart (DImode, src),
-			    GEN_INT (size*8), addr));
+      addr = copy_addr_to_reg (plus_constant (dsta, ofs+size-1));
+
+      if (src != const0_rtx)
+	{
+	  switch ((int) size)
+	    {
+	    case 2:
+	      emit_insn (gen_inswl_be (insh, gen_lowpart (HImode,src), addr));
+	      break;
+	    case 4:
+	      emit_insn (gen_insll_be (insh, gen_lowpart (SImode,src), addr));
+	      break;
+	    case 8:
+	      emit_insn (gen_insql_be (insh, gen_lowpart (DImode,src), addr));
+	      break;
+	    }
+	  emit_insn (gen_insxh (insl, gen_lowpart (DImode, src),
+				GEN_INT (size*8), addr));
+	}
 
       switch ((int) size)
 	{
 	case 2:
-	  emit_insn (gen_inswl (insl, gen_lowpart (HImode, src), addr));
+	  emit_insn (gen_mskxl_be (dsth, dsth, GEN_INT (0xffff), addr));
 	  break;
 	case 4:
-	  emit_insn (gen_insll (insl, gen_lowpart (SImode, src), addr));
+	  emit_insn (gen_mskxl_be (dsth, dsth, GEN_INT (0xffffffff), addr));
 	  break;
 	case 8:
-	  emit_insn (gen_insql (insl, src, addr));
+	  {
+#if HOST_BITS_PER_WIDE_INT == 32
+	    rtx msk = immed_double_const (0xffffffff, 0xffffffff, DImode);
+#else
+	    rtx msk = immed_double_const (0xffffffffffffffff, 0, DImode);
+#endif
+	    emit_insn (gen_mskxl_be (dsth, dsth, msk, addr));
+	  }
 	  break;
 	}
+
+      emit_insn (gen_mskxh (dstl, dstl, GEN_INT (size*8), addr));
     }
-
-  emit_insn (gen_mskxh (dsth, dsth, GEN_INT (size*8), addr));
-
-  switch ((int) size)
+  else
     {
-    case 2:
-      emit_insn (gen_mskxl (dstl, dstl, GEN_INT (0xffff), addr));
-      break;
-    case 4:
-      emit_insn (gen_mskxl (dstl, dstl, GEN_INT (0xffffffff), addr));
-      break;
-    case 8:
-      {
+      addr = copy_addr_to_reg (plus_constant (dsta, ofs));
+
+      if (src != const0_rtx)
+	{
+	  emit_insn (gen_insxh (insh, gen_lowpart (DImode, src),
+				GEN_INT (size*8), addr));
+
+	  switch ((int) size)
+	    {
+	    case 2:
+	      emit_insn (gen_inswl_le (insl, gen_lowpart (HImode, src), addr));
+	      break;
+	    case 4:
+	      emit_insn (gen_insll_le (insl, gen_lowpart (SImode, src), addr));
+	      break;
+	    case 8:
+	      emit_insn (gen_insql_le (insl, src, addr));
+	      break;
+	    }
+	}
+
+      emit_insn (gen_mskxh (dsth, dsth, GEN_INT (size*8), addr));
+
+      switch ((int) size)
+	{
+	case 2:
+	  emit_insn (gen_mskxl_le (dstl, dstl, GEN_INT (0xffff), addr));
+	  break;
+	case 4:
+	  emit_insn (gen_mskxl_le (dstl, dstl, GEN_INT (0xffffffff), addr));
+	  break;
+	case 8:
+	  {
 #if HOST_BITS_PER_WIDE_INT == 32
-	rtx msk = immed_double_const (0xffffffff, 0xffffffff, DImode);
+	    rtx msk = immed_double_const (0xffffffff, 0xffffffff, DImode);
 #else
-	rtx msk = immed_double_const (0xffffffffffffffff, 0, DImode);
+	    rtx msk = immed_double_const (0xffffffffffffffff, 0, DImode);
 #endif
-	emit_insn (gen_mskxl (dstl, dstl, msk, addr));
-      }
-      break;
+	    emit_insn (gen_mskxl_le (dstl, dstl, msk, addr));
+	  }
+	  break;
+	}
     }
 
   if (src != const0_rtx)
@@ -3329,10 +3514,18 @@ alpha_expand_unaligned_store (dst, src, size, ofs)
       dsth = expand_binop (DImode, ior_optab, insh, dsth, dsth, 0, OPTAB_WIDEN);
       dstl = expand_binop (DImode, ior_optab, insl, dstl, dstl, 0, OPTAB_WIDEN);
     }
-  
-  /* Must store high before low for degenerate case of aligned.  */
-  emit_move_insn (memh, dsth);
-  emit_move_insn (meml, dstl);
+ 
+  if (WORDS_BIG_ENDIAN)
+    {
+      emit_move_insn (meml, dstl);
+      emit_move_insn (memh, dsth);
+    }
+  else
+    {
+      /* Must store high before low for degenerate case of aligned.  */
+      emit_move_insn (memh, dsth);
+      emit_move_insn (meml, dstl);
+    }
 }
 
 /* The block move code tries to maximize speed by separating loads and
@@ -3397,11 +3590,20 @@ alpha_expand_unaligned_load_words (out_regs, smem, words, ofs)
   sreg = copy_addr_to_reg (smema);
   areg = expand_binop (DImode, and_optab, sreg, GEN_INT (7), NULL, 
 		       1, OPTAB_WIDEN);
+  if (WORDS_BIG_ENDIAN)
+    emit_move_insn (sreg, plus_constant (sreg, 7));
   for (i = 0; i < words; ++i)
     {
-      emit_insn (gen_extxl (data_regs[i], data_regs[i], i64, sreg));
-
-      emit_insn (gen_extqh (ext_tmps[i], data_regs[i+1], sreg));
+      if (WORDS_BIG_ENDIAN)
+	{
+	  emit_insn (gen_extqh_be (data_regs[i], data_regs[i], sreg));
+	  emit_insn (gen_extxl_be (ext_tmps[i], data_regs[i+1], i64, sreg));
+	}
+      else
+	{
+	  emit_insn (gen_extxl_le (data_regs[i], data_regs[i], i64, sreg));
+	  emit_insn (gen_extqh_le (ext_tmps[i], data_regs[i+1], sreg));
+	}
       emit_insn (gen_rtx_SET (VOIDmode, ext_tmps[i],
 			      gen_rtx_IF_THEN_ELSE (DImode,
 						    gen_rtx_EQ (DImode, areg,
@@ -3468,12 +3670,22 @@ alpha_expand_unaligned_store_words (data_regs, dmem, words, ofs)
 
   /* Shift the input data into place.  */
   dreg = copy_addr_to_reg (dmema);
+  if (WORDS_BIG_ENDIAN)
+    emit_move_insn (dreg, plus_constant (dreg, 7));
   if (data_regs != NULL)
     {
       for (i = words-1; i >= 0; --i)
 	{
-	  emit_insn (gen_insxh (ins_tmps[i], data_regs[i], i64, dreg));
-	  emit_insn (gen_insql (data_regs[i], data_regs[i], dreg));
+	  if (WORDS_BIG_ENDIAN)
+	    {
+	      emit_insn (gen_insql_be (ins_tmps[i], data_regs[i], dreg));
+	      emit_insn (gen_insxh (data_regs[i], data_regs[i], i64, dreg));
+	    }
+	  else
+	    {
+	      emit_insn (gen_insxh (ins_tmps[i], data_regs[i], i64, dreg));
+	      emit_insn (gen_insql_le (data_regs[i], data_regs[i], dreg));
+	    }
 	}
       for (i = words-1; i > 0; --i)
 	{
@@ -3484,8 +3696,16 @@ alpha_expand_unaligned_store_words (data_regs, dmem, words, ofs)
     }
 
   /* Split and merge the ends with the destination data.  */
-  emit_insn (gen_mskxh (st_tmp_2, st_tmp_2, i64, dreg));
-  emit_insn (gen_mskxl (st_tmp_1, st_tmp_1, im1, dreg));
+  if (WORDS_BIG_ENDIAN)
+    {
+      emit_insn (gen_mskxl_be (st_tmp_2, st_tmp_2, im1, dreg));
+      emit_insn (gen_mskxh (st_tmp_1, st_tmp_1, i64, dreg));
+    }
+  else
+    {
+      emit_insn (gen_mskxh (st_tmp_2, st_tmp_2, i64, dreg));
+      emit_insn (gen_mskxl_le (st_tmp_1, st_tmp_1, im1, dreg));
+    }
 
   if (data_regs != NULL)
     {
@@ -3496,17 +3716,24 @@ alpha_expand_unaligned_store_words (data_regs, dmem, words, ofs)
     }
 
   /* Store it all.  */
-  emit_move_insn (st_addr_2, st_tmp_2);
+  if (WORDS_BIG_ENDIAN)
+    emit_move_insn (st_addr_1, st_tmp_1);
+  else
+    emit_move_insn (st_addr_2, st_tmp_2);
   for (i = words-1; i > 0; --i)
     {
       rtx tmp = change_address (dmem, DImode,
 				gen_rtx_AND (DImode,
-					     plus_constant(dmema, i*8),
+					     plus_constant(dmema,
+					     WORDS_BIG_ENDIAN ? i*8-1 : i*8),
 					     im8));
       set_mem_alias_set (tmp, 0);
       emit_move_insn (tmp, data_regs ? ins_tmps[i-1] : const0_rtx);
     }
-  emit_move_insn (st_addr_1, st_tmp_1);
+  if (WORDS_BIG_ENDIAN)
+    emit_move_insn (st_addr_2, st_tmp_2);
+  else
+    emit_move_insn (st_addr_1, st_tmp_1);
 }
 
 
@@ -4312,6 +4539,45 @@ alpha_variable_issue (dump, verbose, insn, cim)
 }
 
 
+/* Register global variables and machine-specific functions with the
+   garbage collector.  */
+
+#if TARGET_ABI_UNICOSMK
+static void
+alpha_init_machine_status (p)
+     struct function *p;
+{
+  p->machine =
+    (struct machine_function *) xcalloc (1, sizeof (struct machine_function));
+
+  p->machine->first_ciw = NULL_RTX;
+  p->machine->last_ciw = NULL_RTX;
+  p->machine->ciw_count = 0;
+  p->machine->addr_list = NULL_RTX;
+}
+
+static void
+alpha_mark_machine_status (p)
+     struct function *p;
+{
+  struct machine_function *machine = p->machine;
+
+  if (machine)
+    {
+      ggc_mark_rtx (machine->first_ciw);
+      ggc_mark_rtx (machine->addr_list);
+    }
+}
+
+static void
+alpha_free_machine_status (p)
+     struct function *p;
+{
+  free (p->machine);
+  p->machine = NULL;
+}
+#endif /* TARGET_ABI_UNICOSMK */
+
 /* Functions to save and restore alpha_return_addr_rtx.  */
 
 /* Start the ball rolling with RETURN_ADDR_RTX.  */
@@ -4478,8 +4744,8 @@ print_operand (file, x, code)
 	const char *round = get_round_mode_suffix ();
 
 	if (trap || round)
-	  fprintf (file, "%s%s", (trap ? trap : ""), (round ? round : ""));
-
+	  fprintf (file, (TARGET_AS_SLASH_BEFORE_SUFFIX ? "/%s%s" : "%s%s"),
+		   (trap ? trap : ""), (round ? round : ""));
 	break;
       }
 
@@ -4648,13 +4914,20 @@ print_operand (file, x, code)
       break;
 
     case 's':
-      /* Write the constant value divided by 8.  */
+      /* Write the constant value divided by 8 for little-endian mode or
+	 (56 - value) / 8 for big-endian mode.  */
+
       if (GET_CODE (x) != CONST_INT
-	  && (unsigned HOST_WIDE_INT) INTVAL (x) >= 64
-	  && (INTVAL (x) & 7) != 8)
+	  || (unsigned HOST_WIDE_INT) INTVAL (x) >= (WORDS_BIG_ENDIAN
+						     ? 56
+						     : 64)  
+	  || (INTVAL (x) & 7) != 0)
 	output_operand_lossage ("invalid %%s value");
 
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) / 8);
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+	       WORDS_BIG_ENDIAN
+	       ? (56 - INTVAL (x)) / 8
+	       : INTVAL (x) / 8);
       break;
 
     case 'S':
@@ -4666,6 +4939,18 @@ print_operand (file, x, code)
 	output_operand_lossage ("invalid %%s value");
 
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, (64 - INTVAL (x)) / 8);
+      break;
+
+    case 't':
+      {
+        /* On Unicos/Mk systems: use a DEX expression if the symbol
+	   clashes with a register name.  */
+	int dex = unicosmk_need_dex (x);
+	if (dex)
+	  fprintf (file, "DEX(%d)", dex);
+	else
+	  output_addr_const (file, x);
+      }
       break;
 
     case 'C': case 'D': case 'c': case 'd':
@@ -4878,32 +5163,106 @@ function_arg (cum, mode, type, named)
   int basereg;
   int num_args;
 
-#if TARGET_ABI_OPEN_VMS
-  if (mode == VOIDmode)
-    return alpha_arg_info_reg_val (cum);
-
-  num_args = cum.num_args;
-  if (num_args >= 6 || MUST_PASS_IN_STACK (mode, type))
-    return NULL_RTX;
-#else
-  if (cum >= 6)
-    return NULL_RTX;
-  num_args = cum;
-
-  /* VOID is passed as a special flag for "last argument".  */
-  if (type == void_type_node)
-    basereg = 16;
-  else if (MUST_PASS_IN_STACK (mode, type))
-    return NULL_RTX;
-  else if (FUNCTION_ARG_PASS_BY_REFERENCE (cum, mode, type, named))
-    basereg = 16;
-#endif /* TARGET_ABI_OPEN_VMS */
-  else if (TARGET_FPREGS
-	   && (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-	       || GET_MODE_CLASS (mode) == MODE_FLOAT))
+  /* Set up defaults for FP operands passed in FP registers, and
+     integral operands passed in integer registers.  */
+  if (TARGET_FPREGS
+      && (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
+	  || GET_MODE_CLASS (mode) == MODE_FLOAT))
     basereg = 32 + 16;
   else
     basereg = 16;
+
+  /* ??? Irritatingly, the definition of CUMULATIVE_ARGS is different for
+     the three platforms, so we can't avoid conditional compilation.  */
+#if TARGET_ABI_OPEN_VMS
+    {
+      if (mode == VOIDmode)
+	return alpha_arg_info_reg_val (cum);
+
+      num_args = cum.num_args;
+      if (num_args >= 6 || MUST_PASS_IN_STACK (mode, type))
+	return NULL_RTX;
+    }
+#else
+#if TARGET_ABI_UNICOSMK
+    {
+      int size;
+
+      /* If this is the last argument, generate the call info word (CIW).  */
+      /* ??? We don't include the caller's line number in the CIW because
+	 I don't know how to determine it if debug infos are turned off.  */
+      if (mode == VOIDmode)
+	{
+	  int i;
+	  HOST_WIDE_INT lo;
+	  HOST_WIDE_INT hi;
+	  rtx ciw;
+
+	  lo = 0;
+
+	  for (i = 0; i < cum.num_reg_words && i < 5; i++)
+	    if (cum.reg_args_type[i])
+	      lo |= (1 << (7 - i));
+
+	  if (cum.num_reg_words == 6 && cum.reg_args_type[5])
+	    lo |= 7;
+	  else
+	    lo |= cum.num_reg_words;
+
+#if HOST_BITS_PER_WIDE_INT == 32
+	  hi = (cum.num_args << 20) | cum.num_arg_words;
+#else
+	  lo = lo | (cum.num_args << 52) | (cum.num_arg_words << 32);
+	  hi = 0;
+#endif
+	  ciw = immed_double_const (lo, hi, DImode);
+
+	  return gen_rtx_UNSPEC (DImode, gen_rtvec (1, ciw),
+				 UNSPEC_UMK_LOAD_CIW);
+	}
+
+      size = ALPHA_ARG_SIZE (mode, type, named);
+      num_args = cum.num_reg_words;
+      if (MUST_PASS_IN_STACK (mode, type)
+	  || cum.num_reg_words + size > 6 || cum.force_stack)
+	return NULL_RTX;
+      else if (type && TYPE_MODE (type) == BLKmode)
+	{
+	  rtx reg1, reg2;
+
+	  reg1 = gen_rtx_REG (DImode, num_args + 16);
+	  reg1 = gen_rtx_EXPR_LIST (DImode, reg1, const0_rtx);
+
+	  /* The argument fits in two registers. Note that we still need to
+	     reserve a register for empty structures.  */
+	  if (size == 0)
+	    return NULL_RTX;
+	  else if (size == 1)
+	    return gen_rtx_PARALLEL (mode, gen_rtvec (1, reg1));
+	  else
+	    {
+	      reg2 = gen_rtx_REG (DImode, num_args + 17);
+	      reg2 = gen_rtx_EXPR_LIST (DImode, reg2, GEN_INT (8));
+	      return gen_rtx_PARALLEL (mode, gen_rtvec (2, reg1, reg2));
+	    }
+	}
+    }
+#else
+    {
+      if (cum >= 6)
+	return NULL_RTX;
+      num_args = cum;
+
+      /* VOID is passed as a special flag for "last argument".  */
+      if (type == void_type_node)
+	basereg = 16;
+      else if (MUST_PASS_IN_STACK (mode, type))
+	return NULL_RTX;
+      else if (FUNCTION_ARG_PASS_BY_REFERENCE (cum, mode, type, named))
+	basereg = 16;
+    }
+#endif /* TARGET_ABI_UNICOSMK */
+#endif /* TARGET_ABI_OPEN_VMS */
 
   return gen_rtx_REG (mode, num_args + basereg);
 }
@@ -4913,7 +5272,7 @@ alpha_build_va_list ()
 {
   tree base, ofs, record, type_decl;
 
-  if (TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS || TARGET_ABI_UNICOSMK)
     return ptr_type_node;
 
   record = make_lang_type (RECORD_TYPE);
@@ -4950,7 +5309,7 @@ alpha_va_start (stdarg_p, valist, nextarg)
   if (TREE_CODE (TREE_TYPE (valist)) == ERROR_MARK)
     return;
 
-  if (TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS || TARGET_ABI_UNICOSMK)
     std_expand_builtin_va_start (stdarg_p, valist, nextarg);
 
   /* For Unix, SETUP_INCOMING_VARARGS moves the starting address base
@@ -4998,7 +5357,7 @@ alpha_va_arg (valist, type)
   tree wide_type, wide_ofs;
   int indirect = 0;
 
-  if (TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS || TARGET_ABI_UNICOSMK)
     return std_expand_builtin_va_arg (valist, type);
 
   tsize = ((TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_UNIT + 7) / 8) * 8;
@@ -5067,7 +5426,7 @@ alpha_va_arg (valist, type)
    descriptior to generate. */
 
 /* Nonzero if we need a stack procedure.  */
-static int vms_is_stack_procedure;
+static int alpha_is_stack_procedure;
 
 /* Register number (either FP or SP) that is used to unwind the frame.  */
 static int vms_unwind_regno;
@@ -5095,13 +5454,14 @@ alpha_sa_mask (imaskP, fmaskP)
   if (!current_function_is_thunk)
 #endif
     {
-      if (TARGET_ABI_OPEN_VMS && vms_is_stack_procedure)
+      if (TARGET_ABI_OPEN_VMS && alpha_is_stack_procedure)
 	imask |= (1L << HARD_FRAME_POINTER_REGNUM);
 
       /* One for every register we have to save.  */
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (! fixed_regs[i] && ! call_used_regs[i]
-	    && regs_ever_live[i] && i != REG_RA)
+	    && regs_ever_live[i] && i != REG_RA
+	    && (!TARGET_ABI_UNICOSMK || i != HARD_FRAME_POINTER_REGNUM))
 	  {
 	    if (i < 32)
 	      imask |= (1L << i);
@@ -5120,9 +5480,15 @@ alpha_sa_mask (imaskP, fmaskP)
 	      imask |= 1L << regno;
 	    }
 	}
-
-      if (imask || fmask || alpha_ra_ever_killed ())
-	imask |= (1L << REG_RA);
+     
+      if (!TARGET_ABI_UNICOSMK)
+	{
+	  /* If any register spilled, then spill the return address also.  */
+	  /* ??? This is required by the Digital stack unwind specification
+	     and isn't needed if we're doing Dwarf2 unwinding.  */
+	  if (imask || fmask || alpha_ra_ever_killed ())
+	    imask |= (1L << REG_RA);
+	}
     }
 
   *imaskP = imask;
@@ -5141,19 +5507,55 @@ alpha_sa_size ()
   else
 #endif
     {
-      /* One for every register we have to save.  */
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (! fixed_regs[i] && ! call_used_regs[i]
-	    && regs_ever_live[i] && i != REG_RA)
-	  sa_size++;
+      if (TARGET_ABI_UNICOSMK)
+	{
+	  for (i = 9; i < 15 && sa_size == 0; i++)
+	    if (! fixed_regs[i] && ! call_used_regs[i]
+		&& regs_ever_live[i])
+	      sa_size = 14;
+	  for (i = 32 + 2; i < 32 + 10 && sa_size == 0; i++)
+	    if (! fixed_regs[i] && ! call_used_regs[i]
+		&& regs_ever_live[i])
+	      sa_size = 14;
+	}
+      else
+	{
+	  /* One for every register we have to save.  */
+	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	    if (! fixed_regs[i] && ! call_used_regs[i]
+	        && regs_ever_live[i] && i != REG_RA)
+	      sa_size++;
+	}
     }
 
-  if (TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_UNICOSMK)
+    {
+      /* We might not need to generate a frame if we don't make any calls
+	 (including calls to __T3E_MISMATCH if this is a vararg function),
+	 don't have any local variables which require stack slots, don't
+	 use alloca and have not determined that we need a frame for other
+	 reasons.  */
+
+      alpha_is_stack_procedure = sa_size != 0
+				|| alpha_ra_ever_killed ()
+				|| get_frame_size() != 0
+				|| current_function_outgoing_args_size
+				|| current_function_varargs
+				|| current_function_stdarg
+				|| current_function_calls_alloca
+				|| frame_pointer_needed;
+
+      /* Always reserve space for saving callee-saved registers if we
+	 need a frame as required by the calling convention.  */
+      if (alpha_is_stack_procedure)
+        sa_size = 14;
+    }
+  else if (TARGET_ABI_OPEN_VMS)
     {
       /* Start by assuming we can use a register procedure if we don't
 	 make any calls (REG_RA not used) or need to save any
 	 registers and a stack procedure if we do.  */
-      vms_is_stack_procedure = sa_size != 0 || alpha_ra_ever_killed ();
+      alpha_is_stack_procedure = sa_size != 0 || alpha_ra_ever_killed ();
 
       /* Decide whether to refer to objects off our PV via FP or PV.
 	 If we need FP for something else or if we receive a nonlocal
@@ -5161,7 +5563,7 @@ alpha_sa_size ()
 	 Otherwise, start by assuming we can use FP.  */
       vms_base_regno = (frame_pointer_needed
 			|| current_function_has_nonlocal_label
-			|| vms_is_stack_procedure
+			|| alpha_is_stack_procedure
 			|| current_function_outgoing_args_size
 			? REG_PV : HARD_FRAME_POINTER_REGNUM);
 
@@ -5175,21 +5577,21 @@ alpha_sa_size ()
 	    vms_save_fp_regno = i;
 
       if (vms_save_fp_regno == -1)
-	vms_base_regno = REG_PV, vms_is_stack_procedure = 1;
+	vms_base_regno = REG_PV, alpha_is_stack_procedure = 1;
 
       /* Stack unwinding should be done via FP unless we use it for PV.  */
       vms_unwind_regno = (vms_base_regno == REG_PV
 			  ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
 
       /* If this is a stack procedure, allow space for saving FP and RA.  */
-      if (vms_is_stack_procedure)
+      if (alpha_is_stack_procedure)
 	sa_size += 2;
     }
   else
     {
       /* If some registers were saved but not RA, RA must also be saved,
 	 so leave space for it.  */
-      if (sa_size != 0 || alpha_ra_ever_killed ())
+      if (!TARGET_ABI_UNICOSMK && (sa_size != 0 || alpha_ra_ever_killed ()))
 	sa_size++;
 
       /* Our size must be even (multiple of 16 bytes).  */
@@ -5204,7 +5606,7 @@ int
 alpha_pv_save_size ()
 {
   alpha_sa_size ();
-  return vms_is_stack_procedure ? 8 : 0;
+  return alpha_is_stack_procedure ? 8 : 0;
 }
 
 int
@@ -5243,8 +5645,8 @@ alpha_does_function_need_gp ()
 {
   rtx insn;
 
-  /* We never need a GP for Windows/NT or VMS.  */
-  if (TARGET_ABI_WINDOWS_NT || TARGET_ABI_OPEN_VMS)
+  /* The GP being variable is an OSF abi thing.  */
+  if (! TARGET_ABI_OSF)
     return 0;
 
   if (TARGET_PROFILING_NEEDS_GP && profile_flag)
@@ -5358,9 +5760,15 @@ alpha_expand_prologue ()
   frame_size = get_frame_size ();
   if (TARGET_ABI_OPEN_VMS)
     frame_size = ALPHA_ROUND (sa_size 
-			      + (vms_is_stack_procedure ? 8 : 0)
+			      + (alpha_is_stack_procedure ? 8 : 0)
 			      + frame_size
 			      + current_function_pretend_args_size);
+  else if (TARGET_ABI_UNICOSMK)
+    /* We have to allocate space for the DSIB if we generate a frame.  */
+    frame_size = ALPHA_ROUND (sa_size
+			      + (alpha_is_stack_procedure ? 48 : 0))
+		 + ALPHA_ROUND (frame_size
+				+ current_function_outgoing_args_size);
   else
     frame_size = (ALPHA_ROUND (current_function_outgoing_args_size)
 		  + sa_size
@@ -5388,7 +5796,10 @@ alpha_expand_prologue ()
      don't represent the call as a call.  */
   if (TARGET_PROFILING_NEEDS_GP && profile_flag)
     emit_insn (gen_prologue_mcount ());
-      
+
+  if (TARGET_ABI_UNICOSMK)
+    unicosmk_gen_dsib (&imask);
+
   /* Adjust the stack by the frame size.  If the frame size is > 4096
      bytes, we need to be sure we probe somewhere in the first and last
      4096 bytes (we can probably get away without the latter test) and
@@ -5405,7 +5816,9 @@ alpha_expand_prologue ()
 	  int probed = 4096;
 
 	  do
-	    emit_insn (gen_probe_stack (GEN_INT (-probed)));
+	    emit_insn (gen_probe_stack (GEN_INT (TARGET_ABI_UNICOSMK
+						 ? -probed + 64
+						 : -probed)));
 	  while ((probed += 8192) < frame_size);
 
 	  /* We only have to do this probe if we aren't saving registers.  */
@@ -5415,7 +5828,9 @@ alpha_expand_prologue ()
 
       if (frame_size != 0)
 	FRP (emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
-				    GEN_INT (-frame_size))));
+				    GEN_INT (TARGET_ABI_UNICOSMK
+					     ? -frame_size + 64
+					     : -frame_size))));
     }
   else
     {
@@ -5432,7 +5847,8 @@ alpha_expand_prologue ()
       rtx seq;
 
       emit_move_insn (count, GEN_INT (blocks));
-      emit_insn (gen_adddi3 (ptr, stack_pointer_rtx, GEN_INT (4096)));
+      emit_insn (gen_adddi3 (ptr, stack_pointer_rtx,
+			     GEN_INT (TARGET_ABI_UNICOSMK ? 4096 - 64 : 4096)));
 
       /* Because of the difficulty in emitting a new basic block this
 	 late in the compilation, generate the loop as a single insn.  */
@@ -5479,66 +5895,98 @@ alpha_expand_prologue ()
         = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
 			     gen_rtx_SET (VOIDmode, stack_pointer_rtx,
 			       gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					     GEN_INT (-frame_size))),
+					     GEN_INT (TARGET_ABI_UNICOSMK
+						      ? -frame_size + 64
+						      : -frame_size))),
 			     REG_NOTES (seq));
     }
 
-  /* Cope with very large offsets to the register save area.  */
-  sa_reg = stack_pointer_rtx;
-  if (reg_offset + sa_size > 0x8000)
+  if (!TARGET_ABI_UNICOSMK)
     {
-      int low = ((reg_offset & 0xffff) ^ 0x8000) - 0x8000;
-      HOST_WIDE_INT bias;
+      /* Cope with very large offsets to the register save area.  */
+      sa_reg = stack_pointer_rtx;
+      if (reg_offset + sa_size > 0x8000)
+	{
+	  int low = ((reg_offset & 0xffff) ^ 0x8000) - 0x8000;
+	  HOST_WIDE_INT bias;
 
-      if (low + sa_size <= 0x8000)
-	bias = reg_offset - low, reg_offset = low;
-      else 
-	bias = reg_offset, reg_offset = 0;
+	  if (low + sa_size <= 0x8000)
+	    bias = reg_offset - low, reg_offset = low;
+	  else 
+	    bias = reg_offset, reg_offset = 0;
 
-      sa_reg = gen_rtx_REG (DImode, 24);
-      FRP (emit_insn (gen_adddi3 (sa_reg, stack_pointer_rtx, GEN_INT (bias))));
-    }
+	  sa_reg = gen_rtx_REG (DImode, 24);
+	  FRP (emit_insn (gen_adddi3 (sa_reg, stack_pointer_rtx,
+				      GEN_INT (bias))));
+	}
     
-  /* Save regs in stack order.  Beginning with VMS PV.  */
-  if (TARGET_ABI_OPEN_VMS && vms_is_stack_procedure)
-    {
-      mem = gen_rtx_MEM (DImode, stack_pointer_rtx);
-      set_mem_alias_set (mem, alpha_sr_alias_set);
-      FRP (emit_move_insn (mem, gen_rtx_REG (DImode, REG_PV)));
+      /* Save regs in stack order.  Beginning with VMS PV.  */
+      if (TARGET_ABI_OPEN_VMS && alpha_is_stack_procedure)
+	{
+	  mem = gen_rtx_MEM (DImode, stack_pointer_rtx);
+	  set_mem_alias_set (mem, alpha_sr_alias_set);
+	  FRP (emit_move_insn (mem, gen_rtx_REG (DImode, REG_PV)));
+	}
+
+      /* Save register RA next.  */
+      if (imask & (1L << REG_RA))
+	{
+	  mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
+	  set_mem_alias_set (mem, alpha_sr_alias_set);
+	  FRP (emit_move_insn (mem, gen_rtx_REG (DImode, REG_RA)));
+	  imask &= ~(1L << REG_RA);
+	  reg_offset += 8;
+	}
+
+      /* Now save any other registers required to be saved.  */
+      for (i = 0; i < 32; i++)
+	if (imask & (1L << i))
+	  {
+	    mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
+	    set_mem_alias_set (mem, alpha_sr_alias_set);
+	    FRP (emit_move_insn (mem, gen_rtx_REG (DImode, i)));
+	    reg_offset += 8;
+	  }
+
+      for (i = 0; i < 32; i++)
+	if (fmask & (1L << i))
+	  {
+	    mem = gen_rtx_MEM (DFmode, plus_constant (sa_reg, reg_offset));
+	    set_mem_alias_set (mem, alpha_sr_alias_set);
+	    FRP (emit_move_insn (mem, gen_rtx_REG (DFmode, i+32)));
+	    reg_offset += 8;
+	  }
     }
-
-  /* Save register RA next.  */
-  if (imask & (1L << REG_RA))
+  else if (TARGET_ABI_UNICOSMK && alpha_is_stack_procedure)
     {
-      mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
-      set_mem_alias_set (mem, alpha_sr_alias_set);
-      FRP (emit_move_insn (mem, gen_rtx_REG (DImode, REG_RA)));
-      imask &= ~(1L << REG_RA);
-      reg_offset += 8;
+      /* The standard frame on the T3E includes space for saving registers.
+	 We just have to use it. We don't have to save the return address and
+	 the old frame pointer here - they are saved in the DSIB.  */
+
+      reg_offset = -56;
+      for (i = 9; i < 15; i++)
+	if (imask & (1L << i))
+	  {
+	    mem = gen_rtx_MEM (DImode, plus_constant(hard_frame_pointer_rtx,
+						     reg_offset));
+	    set_mem_alias_set (mem, alpha_sr_alias_set);
+	    FRP (emit_move_insn (mem, gen_rtx_REG (DImode, i)));
+	    reg_offset -= 8;
+	  }
+      for (i = 2; i < 10; i++)
+	if (fmask & (1L << i))
+	  {
+	    mem = gen_rtx_MEM (DFmode, plus_constant (hard_frame_pointer_rtx,
+						      reg_offset));
+	    set_mem_alias_set (mem, alpha_sr_alias_set);
+	    FRP (emit_move_insn (mem, gen_rtx_REG (DFmode, i+32)));
+	    reg_offset -= 8;
+	  }
     }
-
-  /* Now save any other registers required to be saved.  */
-  for (i = 0; i < 32; i++)
-    if (imask & (1L << i))
-      {
-	mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
-	set_mem_alias_set (mem, alpha_sr_alias_set);
-	FRP (emit_move_insn (mem, gen_rtx_REG (DImode, i)));
-	reg_offset += 8;
-      }
-
-  for (i = 0; i < 32; i++)
-    if (fmask & (1L << i))
-      {
-	mem = gen_rtx_MEM (DFmode, plus_constant (sa_reg, reg_offset));
-	set_mem_alias_set (mem, alpha_sr_alias_set);
-	FRP (emit_move_insn (mem, gen_rtx_REG (DFmode, i+32)));
-	reg_offset += 8;
-      }
 
   if (TARGET_ABI_OPEN_VMS)
     {
-      if (!vms_is_stack_procedure)
+      if (!alpha_is_stack_procedure)
 	/* Register frame procedures save the fp.  */
 	/* ??? Ought to have a dwarf2 save for this.  */
 	emit_move_insn (gen_rtx_REG (DImode, vms_save_fp_regno),
@@ -5559,7 +6007,7 @@ alpha_expand_prologue ()
 			     - (ALPHA_ROUND
 				(current_function_outgoing_args_size)))));
     }
-  else
+  else if (!TARGET_ABI_UNICOSMK)
     {
       /* If we need a frame pointer, set it from the stack pointer.  */
       if (frame_pointer_needed)
@@ -5607,15 +6055,28 @@ alpha_start_function (file, fnname, decl)
   char *entry_label = (char *) alloca (strlen (fnname) + 6);
   int i;
 
+  /* Don't emit an extern directive for functions defined in the same file.  */
+  if (TARGET_ABI_UNICOSMK)
+    {
+      tree name_tree;
+      name_tree = get_identifier (fnname);
+      TREE_ASM_WRITTEN (name_tree) = 1;
+    }
+
   alpha_fnname = fnname;
   sa_size = alpha_sa_size ();
 
   frame_size = get_frame_size ();
   if (TARGET_ABI_OPEN_VMS)
     frame_size = ALPHA_ROUND (sa_size 
-			      + (vms_is_stack_procedure ? 8 : 0)
+			      + (alpha_is_stack_procedure ? 8 : 0)
 			      + frame_size
 			      + current_function_pretend_args_size);
+  else if (TARGET_ABI_UNICOSMK)
+    frame_size = ALPHA_ROUND (sa_size
+			      + (alpha_is_stack_procedure ? 48 : 0))
+		 + ALPHA_ROUND (frame_size
+			      + current_function_outgoing_args_size);
   else
     frame_size = (ALPHA_ROUND (current_function_outgoing_args_size)
 		  + sa_size
@@ -5639,15 +6100,20 @@ alpha_start_function (file, fnname, decl)
 
   if (write_symbols == SDB_DEBUG)
     {
+#ifdef ASM_OUTPUT_SOURCE_FILENAME
       ASM_OUTPUT_SOURCE_FILENAME (file,
 				  DECL_SOURCE_FILE (current_function_decl));
+#endif
+#ifdef ASM_OUTPUT_SOURCE_LINE
       if (debug_info_level != DINFO_LEVEL_TERSE)
         ASM_OUTPUT_SOURCE_LINE (file,
 				DECL_SOURCE_LINE (current_function_decl));
+#endif
     }
 
   /* Issue function start and label.  */
-  if (TARGET_ABI_OPEN_VMS || !flag_inhibit_size_directive)
+  if (TARGET_ABI_OPEN_VMS
+      || (!TARGET_ABI_UNICOSMK && !flag_inhibit_size_directive))
     {
       fputs ("\t.ent ", file);
       assemble_name (file, fnname);
@@ -5666,13 +6132,19 @@ alpha_start_function (file, fnname, decl)
   strcpy (entry_label, fnname);
   if (TARGET_ABI_OPEN_VMS)
     strcat (entry_label, "..en");
+
+  /* For public functions, the label must be globalized by appending an
+     additional colon.  */
+  if (TARGET_ABI_UNICOSMK && TREE_PUBLIC (decl))
+    strcat (entry_label, ":");
+
   ASM_OUTPUT_LABEL (file, entry_label);
   inside_function = TRUE;
 
   if (TARGET_ABI_OPEN_VMS)
     fprintf (file, "\t.base $%d\n", vms_base_regno);
 
-  if (!TARGET_ABI_OPEN_VMS && TARGET_IEEE_CONFORMANT
+  if (!TARGET_ABI_OPEN_VMS && !TARGET_ABI_UNICOSMK && TARGET_IEEE_CONFORMANT
       && !flag_inhibit_size_directive)
     {
       /* Set flags in procedure descriptor to request IEEE-conformant
@@ -5688,7 +6160,9 @@ alpha_start_function (file, fnname, decl)
   /* Describe our frame.  If the frame size is larger than an integer,
      print it as zero to avoid an assembler error.  We won't be
      properly describing such a frame, but that's the best we can do.  */
-  if (TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_UNICOSMK)
+    ;
+  else if (TARGET_ABI_OPEN_VMS)
     {
       fprintf (file, "\t.frame $%d,", vms_unwind_regno);
       fprintf (file, HOST_WIDE_INT_PRINT_DEC,
@@ -5708,15 +6182,17 @@ alpha_start_function (file, fnname, decl)
     }
 
   /* Describe which registers were spilled.  */
-  if (TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_UNICOSMK)
+    ;
+  else if (TARGET_ABI_OPEN_VMS)
     {
       if (imask)
-        /* ??? Does VMS care if mask contains ra?  The old code did'nt
+        /* ??? Does VMS care if mask contains ra?  The old code didn't
            set it, so I don't here.  */
 	fprintf (file, "\t.mask 0x%lx,0\n", imask & ~(1L << REG_RA));
       if (fmask)
 	fprintf (file, "\t.fmask 0x%lx,0\n", fmask);
-      if (!vms_is_stack_procedure)
+      if (!alpha_is_stack_procedure)
 	fprintf (file, "\t.fp_save $%d\n", vms_save_fp_regno);
     }
   else if (!flag_inhibit_size_directive)
@@ -5760,7 +6236,7 @@ alpha_start_function (file, fnname, decl)
   ASM_OUTPUT_LABEL (file, fnname);
   fprintf (file, "\t.pdesc ");
   assemble_name (file, fnname);
-  fprintf (file, "..en,%s\n", vms_is_stack_procedure ? "stack" : "reg");
+  fprintf (file, "..en,%s\n", alpha_is_stack_procedure ? "stack" : "reg");
   alpha_need_linkage (fnname, 1);
   text_section ();
 #endif
@@ -5772,7 +6248,9 @@ static void
 alpha_output_function_end_prologue (file)
      FILE *file;
 {
-  if (TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_UNICOSMK)
+    ;
+  else if (TARGET_ABI_OPEN_VMS)
     fputs ("\t.prologue\n", file);
   else if (TARGET_ABI_WINDOWS_NT)
     fputs ("\t.prologue 0\n", file);
@@ -5811,9 +6289,14 @@ alpha_expand_epilogue ()
   frame_size = get_frame_size ();
   if (TARGET_ABI_OPEN_VMS)
     frame_size = ALPHA_ROUND (sa_size 
-			      + (vms_is_stack_procedure ? 8 : 0)
+			      + (alpha_is_stack_procedure ? 8 : 0)
 			      + frame_size
 			      + current_function_pretend_args_size);
+  else if (TARGET_ABI_UNICOSMK)
+    frame_size = ALPHA_ROUND (sa_size
+			      + (alpha_is_stack_procedure ? 48 : 0))
+		 + ALPHA_ROUND (frame_size
+			      + current_function_outgoing_args_size);
   else
     frame_size = (ALPHA_ROUND (current_function_outgoing_args_size)
 		  + sa_size
@@ -5827,7 +6310,7 @@ alpha_expand_epilogue ()
 
   alpha_sa_mask (&imask, &fmask);
 
-  fp_is_frame_pointer = ((TARGET_ABI_OPEN_VMS && vms_is_stack_procedure)
+  fp_is_frame_pointer = ((TARGET_ABI_OPEN_VMS && alpha_is_stack_procedure)
 			 || (!TARGET_ABI_OPEN_VMS && frame_pointer_needed));
   fp_offset = 0;
   sa_reg = stack_pointer_rtx;
@@ -5837,7 +6320,7 @@ alpha_expand_epilogue ()
   else
     eh_ofs = NULL_RTX;
 
-  if (sa_size)
+  if (!TARGET_ABI_UNICOSMK && sa_size)
     {
       /* If we have a frame pointer, restore SP from it.  */
       if ((TARGET_ABI_OPEN_VMS
@@ -5895,6 +6378,38 @@ alpha_expand_epilogue ()
 	    reg_offset += 8;
 	  }
     }
+  else if (TARGET_ABI_UNICOSMK && alpha_is_stack_procedure)
+    {
+      /* Restore callee-saved general-purpose registers.  */
+
+      reg_offset = -56;
+
+      for (i = 9; i < 15; i++)
+	if (imask & (1L << i))
+	  {
+	    mem = gen_rtx_MEM (DImode, plus_constant(hard_frame_pointer_rtx,
+						     reg_offset));
+	    set_mem_alias_set (mem, alpha_sr_alias_set);
+	    FRP (emit_move_insn (gen_rtx_REG (DImode, i), mem));
+	    reg_offset -= 8;
+	  }
+
+      for (i = 2; i < 10; i++)
+	if (fmask & (1L << i))
+	  {
+	    mem = gen_rtx_MEM (DFmode, plus_constant(hard_frame_pointer_rtx,
+						     reg_offset));
+	    set_mem_alias_set (mem, alpha_sr_alias_set);
+	    FRP (emit_move_insn (gen_rtx_REG (DFmode, i+32), mem));
+	    reg_offset -= 8;
+	  }
+
+      /* Restore the return address from the DSIB.  */
+
+      mem = gen_rtx_MEM (DImode, plus_constant(hard_frame_pointer_rtx, -8));
+      set_mem_alias_set (mem, alpha_sr_alias_set);
+      FRP (emit_move_insn (gen_rtx_REG (DImode, REG_RA), mem));
+    }
 
   if (frame_size || eh_ofs)
     {
@@ -5910,8 +6425,15 @@ alpha_expand_epilogue ()
       /* If the stack size is large, begin computation into a temporary
 	 register so as not to interfere with a potential fp restore,
 	 which must be consecutive with an SP restore.  */
-      if (frame_size < 32768)
+      if (frame_size < 32768
+	  && ! (TARGET_ABI_UNICOSMK && current_function_calls_alloca))
 	sp_adj2 = GEN_INT (frame_size);
+      else if (TARGET_ABI_UNICOSMK)
+	{
+	  sp_adj1 = gen_rtx_REG (DImode, 23);
+	  FRP (emit_move_insn (sp_adj1, hard_frame_pointer_rtx));
+	  sp_adj2 = const0_rtx;
+	}
       else if (frame_size < 0x40007fffL)
 	{
 	  int low = ((frame_size & 0xffff) ^ 0x8000) - 0x8000;
@@ -5944,7 +6466,15 @@ alpha_expand_epilogue ()
       /* From now on, things must be in order.  So emit blockages.  */
 
       /* Restore the frame pointer.  */
-      if (fp_is_frame_pointer)
+      if (TARGET_ABI_UNICOSMK)
+	{
+	  emit_insn (gen_blockage ());
+	  mem = gen_rtx_MEM (DImode,
+			     plus_constant (hard_frame_pointer_rtx, -16));
+	  set_mem_alias_set (mem, alpha_sr_alias_set);
+	  FRP (emit_move_insn (hard_frame_pointer_rtx, mem));
+	}
+      else if (fp_is_frame_pointer)
 	{
 	  emit_insn (gen_blockage ());
 	  mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, fp_offset));
@@ -5960,16 +6490,28 @@ alpha_expand_epilogue ()
 
       /* Restore the stack pointer.  */
       emit_insn (gen_blockage ());
-      FRP (emit_move_insn (stack_pointer_rtx,
-		           gen_rtx_PLUS (DImode, sp_adj1, sp_adj2)));
+      if (sp_adj2 == const0_rtx)
+	FRP (emit_move_insn (stack_pointer_rtx, sp_adj1));
+      else
+	FRP (emit_move_insn (stack_pointer_rtx,
+			     gen_rtx_PLUS (DImode, sp_adj1, sp_adj2)));
     }
   else 
     {
-      if (TARGET_ABI_OPEN_VMS && !vms_is_stack_procedure)
+      if (TARGET_ABI_OPEN_VMS && !alpha_is_stack_procedure)
         {
           emit_insn (gen_blockage ());
           FRP (emit_move_insn (hard_frame_pointer_rtx,
 			       gen_rtx_REG (DImode, vms_save_fp_regno)));
+        }
+      else if (TARGET_ABI_UNICOSMK && !alpha_is_stack_procedure)
+	{
+	  /* Decrement the frame pointer if the function does not have a
+	     frame.  */
+
+	  emit_insn (gen_blockage ());
+	  FRP (emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
+				      hard_frame_pointer_rtx, GEN_INT (-1))));
         }
     }
 }
@@ -5983,7 +6525,7 @@ alpha_end_function (file, fnname, decl)
      tree decl ATTRIBUTE_UNUSED;
 {
   /* End the function.  */
-  if (!flag_inhibit_size_directive)
+  if (!TARGET_ABI_UNICOSMK && !flag_inhibit_size_directive)
     {
       fputs ("\t.end ", file);
       assemble_name (file, fnname);
@@ -6000,6 +6542,13 @@ alpha_end_function (file, fnname, decl)
   if (!DECL_WEAK (current_function_decl)
       && (!flag_pic || !TREE_PUBLIC (current_function_decl)))
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
+
+  /* Output jump tables and the static subroutine information block.  */
+  if (TARGET_ABI_UNICOSMK)
+    {
+      unicosmk_output_ssib (file, fnname);
+      unicosmk_output_deferred_case_vectors (file);
+    }
 }
 
 /* Debugging support.  */
@@ -7032,7 +7581,7 @@ check_float_value (mode, d, overflow)
 
   return 0;
 }
-
+
 #if TARGET_ABI_OPEN_VMS
 
 /* Return the VMS argument type corresponding to MODE.  */
@@ -7296,3 +7845,801 @@ alpha_need_linkage (name, is_local)
 }
 
 #endif /* TARGET_ABI_OPEN_VMS */
+
+#if TARGET_ABI_UNICOSMK
+
+static void unicosmk_output_module_name PARAMS ((FILE *));
+static void unicosmk_output_default_externs PARAMS ((FILE *));
+static void unicosmk_output_dex PARAMS ((FILE *));
+static void unicosmk_output_externs PARAMS ((FILE *));
+static void unicosmk_output_addr_vec PARAMS ((FILE *, rtx));
+static const char *unicosmk_ssib_name PARAMS ((void));
+
+
+/* Define the offset between two registers, one to be eliminated, and the
+   other its replacement, at the start of a routine.  */
+
+int
+unicosmk_initial_elimination_offset (from, to)
+      int from;
+      int to;
+{
+  int fixed_size;
+  
+  fixed_size = alpha_sa_size();
+  if (fixed_size != 0)
+    fixed_size += 48;
+
+  if (from == FRAME_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
+    return -fixed_size; 
+  else if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
+    return 0;
+  else if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
+    return (ALPHA_ROUND (current_function_outgoing_args_size)
+	    + ALPHA_ROUND (get_frame_size()));
+  else if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
+    return (ALPHA_ROUND (fixed_size)
+	    + ALPHA_ROUND (get_frame_size() 
+			   + current_function_outgoing_args_size));
+  else
+    abort ();
+}
+
+/* Output the module name for .ident and .end directives. We have to strip
+   directories and add make sure that the module name starts with a letter
+   or '$'.  */
+
+static void
+unicosmk_output_module_name (file)
+      FILE *file;
+{
+  const char *name;
+
+  /* Strip directories.  */
+
+  name = strrchr (main_input_filename, '/');
+  if (name)
+    ++name;
+  else
+    name = main_input_filename;
+
+  /* CAM only accepts module names that start with a letter or '$'. We
+     prefix the module name with a '$' if necessary.  */
+
+  if (!ISALPHA (*name))
+    fprintf (file, "$%s", name);
+  else
+    fputs (name, file);
+}
+
+/* Output text that to appear at the beginning of an assembler file.  */
+
+void 
+unicosmk_asm_file_start (file)
+      FILE *file;
+{
+  int i;
+
+  fputs ("\t.ident\t", file);
+  unicosmk_output_module_name (file);
+  fputs ("\n\n", file);
+
+  /* The Unicos/Mk assembler uses different register names. Instead of trying
+     to support them, we simply use micro definitions.  */
+
+  /* CAM has different register names: rN for the integer register N and fN
+     for the floating-point register N. Instead of trying to use these in
+     alpha.md, we define the symbols $N and $fN to refer to the appropriate
+     register.  */
+
+  for (i = 0; i < 32; ++i)
+    fprintf (file, "$%d <- r%d\n", i, i);
+
+  for (i = 0; i < 32; ++i)
+    fprintf (file, "$f%d <- f%d\n", i, i);
+
+  putc ('\n', file);
+
+  /* The .align directive fill unused space with zeroes which does not work
+     in code sections. We define the macro 'gcc@code@align' which uses nops
+     instead. Note that it assumes that code sections always have the
+     biggest possible alignment since . refers to the current offset from
+     the beginning of the section.  */
+
+  fputs ("\t.macro gcc@code@align n\n", file);
+  fputs ("gcc@n@bytes = 1 << n\n", file);
+  fputs ("gcc@here = . % gcc@n@bytes\n", file);
+  fputs ("\t.if ne, gcc@here, 0\n", file);
+  fputs ("\t.repeat (gcc@n@bytes - gcc@here) / 4\n", file);
+  fputs ("\tbis r31,r31,r31\n", file);
+  fputs ("\t.endr\n", file);
+  fputs ("\t.endif\n", file);
+  fputs ("\t.endm gcc@code@align\n\n", file);
+
+  /* Output extern declarations which should always be visible.  */
+  unicosmk_output_default_externs (file);
+
+  /* Open a dummy section. We always need to be inside a section for the
+     section-switching code to work correctly.
+     ??? This should be a module id or something like that. I still have to
+     figure out what the rules for those are.  */
+  fputs ("\n\t.psect\t$SG00000,data\n", file);
+}
+
+/* Output text to appear at the end of an assembler file. This includes all
+   pending extern declarations and DEX expressions.  */
+
+void
+unicosmk_asm_file_end (file)
+      FILE *file;
+{
+  fputs ("\t.endp\n\n", file);
+
+  /* Output all pending externs.  */
+
+  unicosmk_output_externs (file);
+
+  /* Output dex definitions used for functions whose names conflict with 
+     register names.  */
+
+  unicosmk_output_dex (file);
+
+  fputs ("\t.end\t", file);
+  unicosmk_output_module_name (file);
+  putc ('\n', file);
+}
+
+/* Output the definition of a common variable.  */
+
+void
+unicosmk_output_common (file, name, size, align)
+      FILE *file;
+      const char *name;
+      int size;
+      int align;
+{
+  tree name_tree;
+  printf ("T3E__: common %s\n", name);
+
+  common_section ();
+  fputs("\t.endp\n\n\t.psect ", file);
+  assemble_name(file, name);
+  fprintf(file, ",%d,common\n", floor_log2 (align / BITS_PER_UNIT));
+  fprintf(file, "\t.byte\t0:%d\n", size);
+
+  /* Mark the symbol as defined in this module.  */
+  name_tree = get_identifier (name);
+  TREE_ASM_WRITTEN (name_tree) = 1;
+}
+
+#define SECTION_PUBLIC SECTION_MACH_DEP
+#define SECTION_MAIN (SECTION_PUBLIC << 1)
+static int current_section_align;
+
+static unsigned int
+unicosmk_section_type_flags (decl, name, reloc)
+     tree decl;
+     const char *name;
+     int reloc ATTRIBUTE_UNUSED;
+{
+  unsigned int flags = default_section_type_flags (decl, name, reloc);
+
+  if (!decl)
+    return flags;
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      current_section_align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
+      if (align_functions_log > current_section_align)
+	current_section_align = align_functions_log;
+
+      if (! strcmp (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), "main"))
+	flags |= SECTION_MAIN;
+    }
+  else
+    current_section_align = floor_log2 (DECL_ALIGN (decl) / BITS_PER_UNIT);
+
+  if (TREE_PUBLIC (decl))
+    flags |= SECTION_PUBLIC;
+
+  return flags;
+}
+
+/* Generate a section name for decl and associate it with the
+   declaration.  */
+
+void
+unicosmk_unique_section (decl, reloc)
+      tree decl;
+      int reloc ATTRIBUTE_UNUSED;
+{
+  const char *name;
+  int len;
+
+  if (!decl) 
+    abort ();
+
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  STRIP_NAME_ENCODING (name, name);
+  len = strlen (name);
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      char *string;
+
+      /* It is essential that we prefix the section name here because 
+	 otherwise the section names generated for constructors and 
+	 destructors confuse collect2.  */
+
+      string = alloca (len + 6);
+      sprintf (string, "code@%s", name);
+      DECL_SECTION_NAME (decl) = build_string (len + 5, string);
+    }
+  else if (TREE_PUBLIC (decl))
+    DECL_SECTION_NAME (decl) = build_string (len, name);
+  else
+    {
+      char *string;
+
+      string = alloca (len + 6);
+      sprintf (string, "data@%s", name);
+      DECL_SECTION_NAME (decl) = build_string (len + 5, string);
+    }
+}
+
+/* Switch to an arbitrary section NAME with attributes as specified
+   by FLAGS.  ALIGN specifies any known alignment requirements for
+   the section; 0 if the default should be used.  */
+
+static void
+unicosmk_asm_named_section (name, flags)
+     const char *name;
+     unsigned int flags;
+{
+  const char *kind;
+
+  /* Close the previous section.  */
+
+  fputs ("\t.endp\n\n", asm_out_file);
+
+  /* Find out what kind of section we are opening.  */
+
+  if (flags & SECTION_MAIN)
+    fputs ("\t.start\tmain\n", asm_out_file);
+
+  if (flags & SECTION_CODE)
+    kind = "code";
+  else if (flags & SECTION_PUBLIC)
+    kind = "common";
+  else
+    kind = "data";
+
+  if (current_section_align != 0)
+    fprintf (asm_out_file, "\t.psect\t%s,%d,%s\n", name,
+	     current_section_align, kind);
+  else
+    fprintf (asm_out_file, "\t.psect\t%s,%s\n", name, kind);
+}
+
+static void
+unicosmk_insert_attributes (decl, attr_ptr)
+     tree decl;
+     tree *attr_ptr ATTRIBUTE_UNUSED;
+{
+  if (DECL_P (decl)
+      && (TREE_PUBLIC (decl) || TREE_CODE (decl) == FUNCTION_DECL))
+    UNIQUE_SECTION (decl, 0);
+}
+
+/* Output an alignment directive. We have to use the macro 'gcc@code@align'
+   in code sections because .align fill unused space with zeroes.  */
+      
+void
+unicosmk_output_align (file, align)
+      FILE *file;
+      int align;
+{
+  if (inside_function)
+    fprintf (file, "\tgcc@code@align\t%d\n", align);
+  else
+    fprintf (file, "\t.align\t%d\n", align);
+}
+
+/* Add a case vector to the current function's list of deferred case
+   vectors. Case vectors have to be put into a separate section because CAM
+   does not allow data definitions in code sections.  */
+
+void
+unicosmk_defer_case_vector (lab, vec)
+      rtx lab;
+      rtx vec;
+{
+  struct machine_function *machine = cfun->machine;
+  
+  vec = gen_rtx_EXPR_LIST (VOIDmode, lab, vec);
+  machine->addr_list = gen_rtx_EXPR_LIST (VOIDmode, vec,
+					  machine->addr_list); 
+}
+
+/* Output a case vector.  */
+
+static void
+unicosmk_output_addr_vec (file, vec)
+      FILE *file;
+      rtx vec;
+{
+  rtx lab  = XEXP (vec, 0);
+  rtx body = XEXP (vec, 1);
+  int vlen = XVECLEN (body, 0);
+  int idx;
+
+  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (lab));
+
+  for (idx = 0; idx < vlen; idx++)
+    {
+      ASM_OUTPUT_ADDR_VEC_ELT
+        (file, CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 0, idx), 0)));
+    }
+}
+
+/* Output current function's deferred case vectors.  */
+
+static void
+unicosmk_output_deferred_case_vectors (file)
+      FILE *file;
+{
+  struct machine_function *machine = cfun->machine;
+  rtx t;
+
+  if (machine->addr_list == NULL_RTX)
+    return;
+
+  data_section ();
+  for (t = machine->addr_list; t; t = XEXP (t, 1))
+    unicosmk_output_addr_vec (file, XEXP (t, 0));
+}
+
+/* Set up the dynamic subprogram information block (DSIB) and update the 
+   frame pointer register ($15) for subroutines which have a frame. If the 
+   subroutine doesn't have a frame, simply increment $15.  */
+
+static void
+unicosmk_gen_dsib (imaskP)
+      unsigned long * imaskP;
+{
+  if (alpha_is_stack_procedure)
+    {
+      const char *ssib_name;
+      rtx mem;
+
+      /* Allocate 64 bytes for the DSIB.  */
+
+      FRP (emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
+                                  GEN_INT (-64))));
+      emit_insn (gen_blockage ());
+
+      /* Save the return address.  */
+
+      mem = gen_rtx_MEM (DImode, plus_constant (stack_pointer_rtx, 56));
+      set_mem_alias_set (mem, alpha_sr_alias_set);
+      FRP (emit_move_insn (mem, gen_rtx_REG (DImode, REG_RA)));
+      (*imaskP) &= ~(1L << REG_RA);
+
+      /* Save the old frame pointer.  */
+
+      mem = gen_rtx_MEM (DImode, plus_constant (stack_pointer_rtx, 48));
+      set_mem_alias_set (mem, alpha_sr_alias_set);
+      FRP (emit_move_insn (mem, hard_frame_pointer_rtx));
+      (*imaskP) &= ~(1L << HARD_FRAME_POINTER_REGNUM);
+
+      emit_insn (gen_blockage ());
+
+      /* Store the SSIB pointer.  */
+
+      ssib_name = ggc_strdup (unicosmk_ssib_name ());
+      mem = gen_rtx_MEM (DImode, plus_constant (stack_pointer_rtx, 32));
+      set_mem_alias_set (mem, alpha_sr_alias_set);
+
+      FRP (emit_move_insn (gen_rtx_REG (DImode, 5),
+                           gen_rtx_SYMBOL_REF (Pmode, ssib_name)));
+      FRP (emit_move_insn (mem, gen_rtx_REG (DImode, 5)));
+
+      /* Save the CIW index.  */
+
+      mem = gen_rtx_MEM (DImode, plus_constant (stack_pointer_rtx, 24));
+      set_mem_alias_set (mem, alpha_sr_alias_set);
+      FRP (emit_move_insn (mem, gen_rtx_REG (DImode, 25)));
+
+      emit_insn (gen_blockage ());
+
+      /* Set the new frame pointer.  */
+
+      FRP (emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
+                                  stack_pointer_rtx, GEN_INT (64))));
+
+    }
+  else
+    {
+      /* Increment the frame pointer register to indicate that we do not
+         have a frame.  */
+
+      FRP (emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
+                                  hard_frame_pointer_rtx, GEN_INT (1))));
+    }
+}
+
+#define SSIB_PREFIX "__SSIB_"
+#define SSIB_PREFIX_LEN 7
+
+/* Generate the name of the SSIB section for the current function.  */
+
+static const char *
+unicosmk_ssib_name ()
+{
+  /* This is ok since CAM won't be able to deal with names longer than that 
+     anyway.  */
+
+  static char name[256];
+
+  rtx x;
+  const char *fnname;
+  char *ssib_name;
+  int len;
+
+  x = DECL_RTL (cfun->decl);
+  if (GET_CODE (x) != MEM)
+    abort ();
+  x = XEXP (x, 0);
+  if (GET_CODE (x) != SYMBOL_REF)
+    abort ();
+  fnname = XSTR (x, 0);
+  STRIP_NAME_ENCODING (fnname, fnname);
+
+  len = strlen (fnname);
+  if (len + SSIB_PREFIX_LEN > 255)
+    len = 255 - SSIB_PREFIX_LEN;
+
+  strcpy (name, SSIB_PREFIX);
+  strncpy (name + SSIB_PREFIX_LEN, fnname, len);
+  name[len + SSIB_PREFIX_LEN] = 0;
+
+  return name;
+}
+
+/* Output the static subroutine information block for the current
+   function.  */
+
+static void
+unicosmk_output_ssib (file, fnname)
+      FILE *file;
+      const char *fnname;
+{
+  int len;
+  int i;
+  rtx x;
+  rtx ciw;
+  struct machine_function *machine = cfun->machine;
+
+  ssib_section ();
+  fprintf (file, "\t.endp\n\n\t.psect\t%s%s,data\n", user_label_prefix,
+	   unicosmk_ssib_name ());
+
+  /* Some required stuff and the function name length.  */
+
+  len = strlen (fnname);
+  fprintf (file, "\t.quad\t^X20008%2.2X28\n", len);
+
+  /* Saved registers
+     ??? We don't do that yet.  */
+
+  fputs ("\t.quad\t0\n", file);
+
+  /* Function address.  */
+
+  fputs ("\t.quad\t", file);
+  assemble_name (file, fnname);
+  putc ('\n', file);
+
+  fputs ("\t.quad\t0\n", file);
+  fputs ("\t.quad\t0\n", file);
+
+  /* Function name.
+     ??? We do it the same way Cray CC does it but this could be
+     simplified.  */
+
+  for( i = 0; i < len; i++ )
+    fprintf (file, "\t.byte\t%d\n", (int)(fnname[i]));
+  if( (len % 8) == 0 )
+    fputs ("\t.quad\t0\n", file);
+  else
+    fprintf (file, "\t.bits\t%d : 0\n", (8 - (len % 8))*8);
+
+  /* All call information words used in the function.  */
+
+  for (x = machine->first_ciw; x; x = XEXP (x, 1))
+    {
+      ciw = XEXP (x, 0);
+      fprintf (file, "\t.quad\t");
+#if HOST_BITS_PER_WIDE_INT == 32
+      fprintf (file, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
+	       CONST_DOUBLE_HIGH (ciw), CONST_DOUBLE_LOW (ciw));
+#else
+      fprintf (file, HOST_WIDE_INT_PRINT_HEX, INTVAL (ciw));
+#endif
+      fprintf (file, "\n");
+    }
+}
+
+/* Add a call information word (CIW) to the list of the current function's
+   CIWs and return its index.
+
+   X is a CONST_INT or CONST_DOUBLE representing the CIW.  */
+
+rtx
+unicosmk_add_call_info_word (x)
+      rtx x;
+{
+  rtx node;
+  struct machine_function *machine = cfun->machine;
+
+  node = gen_rtx_EXPR_LIST (VOIDmode, x, NULL_RTX);
+  if (machine->first_ciw == NULL_RTX)
+    machine->first_ciw = node;
+  else
+    XEXP (machine->last_ciw, 1) = node;
+
+  machine->last_ciw = node;
+  ++machine->ciw_count;
+
+  return GEN_INT (machine->ciw_count
+		  + strlen (current_function_name)/8 + 5);
+}
+
+static char unicosmk_section_buf[100];
+
+char *
+unicosmk_text_section ()
+{
+  static int count = 0;
+  sprintf (unicosmk_section_buf, "\t.endp\n\n\t.psect\tgcc@text___%d,code", 
+				 count++);
+  return unicosmk_section_buf;
+}
+
+char *
+unicosmk_data_section ()
+{
+  static int count = 1;
+  sprintf (unicosmk_section_buf, "\t.endp\n\n\t.psect\tgcc@data___%d,data", 
+				 count++);
+  return unicosmk_section_buf;
+}
+
+/* The Cray assembler doesn't accept extern declarations for symbols which
+   are defined in the same file. We have to keep track of all global
+   symbols which are referenced and/or defined in a source file and output
+   extern declarations for those which are referenced but not defined at
+   the end of file.  */
+
+/* List of identifiers for which an extern declaration might have to be
+   emitted.  */
+
+struct unicosmk_extern_list
+{
+  struct unicosmk_extern_list *next;
+  const char *name;
+};
+
+static struct unicosmk_extern_list *unicosmk_extern_head = 0;
+
+/* Output extern declarations which are required for every asm file.  */
+
+static void
+unicosmk_output_default_externs (file)
+	FILE *file;
+{
+  static const char *externs[] =
+    { "__T3E_MISMATCH" };
+
+  int i;
+  int n;
+
+  n = ARRAY_SIZE (externs);
+
+  for (i = 0; i < n; i++)
+    fprintf (file, "\t.extern\t%s\n", externs[i]);
+}
+
+/* Output extern declarations for global symbols which are have been
+   referenced but not defined.  */
+
+static void
+unicosmk_output_externs (file)
+      FILE *file;
+{
+  struct unicosmk_extern_list *p;
+  const char *real_name;
+  int len;
+  tree name_tree;
+
+  len = strlen (user_label_prefix);
+  for (p = unicosmk_extern_head; p != 0; p = p->next)
+    {
+      /* We have to strip the encoding and possibly remove user_label_prefix 
+	 from the identifier in order to handle -fleading-underscore and
+	 explicit asm names correctly (cf. gcc.dg/asm-names-1.c).  */
+      STRIP_NAME_ENCODING (real_name, p->name);
+      if (len && p->name[0] == '*'
+	  && !memcmp (real_name, user_label_prefix, len))
+	real_name += len;
+	
+      name_tree = get_identifier (real_name);
+      if (! TREE_ASM_WRITTEN (name_tree))
+	{
+	  TREE_ASM_WRITTEN (name_tree) = 1;
+	  fputs ("\t.extern\t", file);
+	  assemble_name (file, p->name);
+	  putc ('\n', file);
+	}
+    }
+}
+      
+/* Record an extern.  */
+
+void
+unicosmk_add_extern (name)
+     const char *name;
+{
+  struct unicosmk_extern_list *p;
+
+  p = (struct unicosmk_extern_list *)
+       permalloc (sizeof (struct unicosmk_extern_list));
+  p->next = unicosmk_extern_head;
+  p->name = name;
+  unicosmk_extern_head = p;
+}
+
+/* The Cray assembler generates incorrect code if identifiers which
+   conflict with register names are used as instruction operands. We have
+   to replace such identifiers with DEX expressions.  */
+
+/* Structure to collect identifiers which have been replaced by DEX
+   expressions.  */
+
+struct unicosmk_dex {
+  struct unicosmk_dex *next;
+  const char *name;
+};
+
+/* List of identifiers which have been replaced by DEX expressions. The DEX 
+   number is determined by the position in the list.  */
+
+static struct unicosmk_dex *unicosmk_dex_list = NULL; 
+
+/* The number of elements in the DEX list.  */
+
+static int unicosmk_dex_count = 0;
+
+/* Check if NAME must be replaced by a DEX expression.  */
+
+static int
+unicosmk_special_name (name)
+      const char *name;
+{
+  if (name[0] == '*')
+    ++name;
+
+  if (name[0] == '$')
+    ++name;
+
+  if (name[0] != 'r' && name[0] != 'f' && name[0] != 'R' && name[0] != 'F')
+    return 0;
+
+  switch (name[1])
+    {
+    case '1':  case '2':
+      return (name[2] == '\0' || (ISDIGIT (name[2]) && name[3] == '\0'));
+
+    case '3':
+      return (name[2] == '\0'
+	       || ((name[2] == '0' || name[2] == '1') && name[3] == '\0'));
+
+    default:
+      return (ISDIGIT (name[1]) && name[2] == '\0');
+    }
+}
+
+/* Return the DEX number if X must be replaced by a DEX expression and 0
+   otherwise.  */
+
+static int
+unicosmk_need_dex (x)
+      rtx x;
+{
+  struct unicosmk_dex *dex;
+  const char *name;
+  int i;
+  
+  if (GET_CODE (x) != SYMBOL_REF)
+    return 0;
+
+  name = XSTR (x,0);
+  if (! unicosmk_special_name (name))
+    return 0;
+
+  i = unicosmk_dex_count;
+  for (dex = unicosmk_dex_list; dex; dex = dex->next)
+    {
+      if (! strcmp (name, dex->name))
+        return i;
+      --i;
+    }
+      
+  dex = (struct unicosmk_dex *) permalloc (sizeof (struct unicosmk_dex));
+  dex->name = name;
+  dex->next = unicosmk_dex_list;
+  unicosmk_dex_list = dex;
+
+  ++unicosmk_dex_count;
+  return unicosmk_dex_count;
+}
+
+/* Output the DEX definitions for this file.  */
+
+static void
+unicosmk_output_dex (file)
+      FILE *file;
+{
+  struct unicosmk_dex *dex;
+  int i;
+
+  if (unicosmk_dex_list == NULL)
+    return;
+
+  fprintf (file, "\t.dexstart\n");
+
+  i = unicosmk_dex_count;
+  for (dex = unicosmk_dex_list; dex; dex = dex->next)
+    {
+      fprintf (file, "\tDEX (%d) = ", i);
+      assemble_name (file, dex->name);
+      putc ('\n', file);
+      --i;
+    }
+  
+  fprintf (file, "\t.dexend\n");
+}
+
+#else
+
+static void
+unicosmk_output_deferred_case_vectors (file)
+      FILE *file ATTRIBUTE_UNUSED;
+{}
+
+static void
+unicosmk_gen_dsib (imaskP)
+      unsigned long * imaskP ATTRIBUTE_UNUSED;
+{}
+
+static void
+unicosmk_output_ssib (file, fnname)
+      FILE * file ATTRIBUTE_UNUSED;
+      const char * fnname ATTRIBUTE_UNUSED;
+{}
+
+rtx
+unicosmk_add_call_info_word (x)
+     rtx x ATTRIBUTE_UNUSED;
+{
+  return NULL_RTX;
+}
+
+static int
+unicosmk_need_dex (x)
+      rtx x ATTRIBUTE_UNUSED;
+{
+  return 0;
+}
+
+#endif /* TARGET_ABI_UNICOSMK */
