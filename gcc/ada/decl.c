@@ -959,7 +959,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				 NULL_TREE, gnu_new_type, gnu_expr,
 				 0, 0, 0, 0, 0);
 	    annotate_decl_with_node (gnu_new_var, gnat_entity);
-	    add_decl_stmt (gnu_new_var, gnat_entity);
+	    add_decl_expr (gnu_new_var, gnat_entity);
 
 	    if (gnu_expr != 0)
 	      add_stmt_with_node
@@ -1041,7 +1041,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if (Present (Address_Clause (gnat_entity)) && used_by_ref)
 	  DECL_POINTER_ALIAS_SET (gnu_decl) = 0;
 
-	add_decl_stmt (gnu_decl, gnat_entity);
+	add_decl_expr (gnu_decl, gnat_entity);
 
 	if (definition && DECL_SIZE (gnu_decl) != 0
 	    && get_block_jmpbuf_decl ()
@@ -1071,7 +1071,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				 gnu_expr, 0, Is_Public (gnat_entity), 0,
 				 static_p, 0);
 
-	    add_decl_stmt (gnu_corr_var, gnat_entity);
+	    add_decl_expr (gnu_corr_var, gnat_entity);
 	    SET_DECL_CONST_CORRESPONDING_VAR (gnu_decl, gnu_corr_var);
 	  }
 
@@ -1154,7 +1154,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      = create_var_decl (get_entity_name (gnat_literal),
 				 0, gnu_type, gnu_value, 1, 0, 0, 0, 0);
 
-	    add_decl_stmt (gnu_literal, gnat_literal);
+	    add_decl_expr (gnu_literal, gnat_literal);
 	    save_gnu_tree (gnat_literal, gnu_literal, 0);
 	    gnu_literal_list = tree_cons (DECL_NAME (gnu_literal),
 					  gnu_value, gnu_literal_list);
@@ -3627,7 +3627,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				 gnu_address, 0, Is_Public (gnat_entity),
 				 extern_flag, 0, 0);
 	    DECL_BY_REF_P (gnu_decl) = 1;
-	    add_decl_stmt (gnu_decl, gnat_entity);
+	    add_decl_expr (gnu_decl, gnat_entity);
 	  }
 
 	else if (kind == E_Subprogram_Type)
@@ -3925,7 +3925,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       else
 	TREE_TYPE (gnu_decl) = gnu_type;
 
-      add_decl_stmt (gnu_decl, gnat_entity);
+      add_decl_expr (gnu_decl, gnat_entity);
     }
 
   if (IN (kind, Type_Kind) && ! TYPE_IS_DUMMY_P (TREE_TYPE (gnu_decl)))
@@ -4545,7 +4545,7 @@ elaborate_expression_1 (Node_Id gnat_expr, Entity_Id gnat_entity,
 			   NULL_TREE, TREE_TYPE (gnu_expr), gnu_expr, 1,
 			   Is_Public (gnat_entity), ! definition, 0, 0);
       annotate_decl_with_node (gnu_decl, gnat_entity);
-      add_decl_stmt (gnu_decl, gnat_entity);
+      add_decl_expr (gnu_decl, gnat_entity);
     }
 
   /* We only need to use this variable if we are in global context since GCC
@@ -4824,7 +4824,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 	    = create_var_decl (concat_id_with_name (name, "XVZ"), NULL_TREE,
 			       sizetype, TYPE_SIZE (record), 0, 0, 0, 0, 0);
 
-	  add_decl_stmt (gnu_xvz, gnat_entity);
+	  add_decl_expr (gnu_xvz, gnat_entity);
 	}
     }
 

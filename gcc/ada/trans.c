@@ -133,8 +133,6 @@ static tree build_stmt_group (List_Id, bool);
 static void push_stack (tree *, tree, tree);
 static void pop_stack (tree *);
 static enum gimplify_status gnat_gimplify_stmt (tree *);
-static tree gnat_gimplify_type_sizes (tree);
-static void gnat_gimplify_one_sizepos (tree *, tree *);
 static void gnat_expand_body_1 (tree, bool);
 static void elaborate_all_entities (Node_Id);
 static void process_freeze_entity (Node_Id);
@@ -729,7 +727,7 @@ gnat_to_gnu (Node_Id gnat_node)
 				       NULL_TREE, TREE_TYPE (gnu_expr),
 				       gnu_expr, 0, Is_Public (gnat_temp), 0,
 				       0, 0);
-		  add_decl_stmt (gnu_expr, gnat_temp);
+		  add_decl_expr (gnu_expr, gnat_temp);
 		}
 	      else
 		gnu_expr = maybe_variable (gnu_expr);
@@ -2598,7 +2596,16 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	pop_stack (&gnu_return_label_stack);
 	if (!type_annotate_only)
-	  add_decl_stmt (current_function_decl, gnat_node);
+	  add_decl_expr (current_function_decl, gnat_node);
+
+	/* Initialize the information node for the function and set the
+	   end location.  */
+	allocate_struct_function (current_function_decl);
+	Sloc_to_locus
+	  ((Present (End_Label (Handled_Statement_Sequence (gnat_node)))
+	    ? Sloc (End_Label (Handled_Statement_Sequence (gnat_node)))
+	    : Sloc (gnat_node)),
+	   &cfun->function_end_locus);
 
 	end_subprog_body (gnu_result);
 
@@ -3284,8 +3291,8 @@ gnat_to_gnu (Node_Id gnat_node)
 				 NULL_TREE, jmpbuf_type,
 				 NULL_TREE, 0, 0, 0, 0, 0);
 
-	    add_decl_stmt (gnu_jmpsave_decl, gnat_node);
-	    add_decl_stmt (gnu_jmpbuf_decl, gnat_node);
+	    add_decl_expr (gnu_jmpsave_decl, gnat_node);
+	    add_decl_expr (gnu_jmpbuf_decl, gnat_node);
 	    set_block_jmpbuf_decl (gnu_jmpbuf_decl);
 
 	    /* When we exit this block, restore the saved value.  */
@@ -3334,7 +3341,7 @@ gnat_to_gnu (Node_Id gnat_node)
 					 build_pointer_type (except_type_node),
 					 build_call_0_expr (get_excptr_decl),
 					 0, 0, 0, 0, 0));
-	    add_decl_stmt (TREE_VALUE (gnu_except_ptr_stack), gnat_node);
+	    add_decl_expr (TREE_VALUE (gnu_except_ptr_stack), gnat_node);
 
 	    /* Generate code for each handler. The N_Exception_Handler case
 	       below does the real work and returns a COND_EXPR for each
@@ -3597,7 +3604,7 @@ gnat_to_gnu (Node_Id gnat_node)
 			       ptr_type_node, gnu_current_exc_ptr,
 			       0, 0, 0, 0, 0);
 
-	  add_decl_stmt (gnu_incoming_exc_ptr, gnat_node);
+	  add_decl_expr (gnu_incoming_exc_ptr, gnat_node);
 	  add_stmt_with_node (build_call_1_expr (begin_handler_decl,
 						 gnu_incoming_exc_ptr),
 			      gnat_node);
@@ -4023,26 +4030,23 @@ add_stmt (tree gnu_stmt)
 {
   append_to_statement_list (gnu_stmt, &current_stmt_group->stmt_list);
 
-  /* If this is a DECL_STMT for a variable with DECL_INITIAL set,
-     generate the assignment statement too.  */
-  if (TREE_CODE (gnu_stmt) == DECL_STMT
-      && TREE_CODE (DECL_STMT_VAR (gnu_stmt)) == VAR_DECL
-      && DECL_INITIAL (DECL_STMT_VAR (gnu_stmt)))
+  /* If this is a DECL_EXPR for a variable with DECL_INITIAL set
+     and decl has a padded type, convert it to the unpadded type so the
+     assignment is done properly.  In other case, the gimplification
+     of the DECL_EXPR will deal with DECL_INITIAL.  */
+  if (TREE_CODE (gnu_stmt) == DECL_EXPR
+      && TREE_CODE (DECL_EXPR_DECL (gnu_stmt)) == VAR_DECL
+      && DECL_INITIAL (DECL_EXPR_DECL (gnu_stmt))
+      && TREE_CODE (TREE_TYPE (DECL_EXPR_DECL (gnu_stmt))) == RECORD_TYPE
+      && TYPE_IS_PADDING_P (TREE_TYPE (DECL_EXPR_DECL (gnu_stmt))))
     {
-      tree gnu_decl = DECL_STMT_VAR (gnu_stmt);
-      tree gnu_lhs = gnu_decl;
-      tree gnu_assign_stmt;
-
-      /* If decl has a padded type, convert it to the unpadded type so the
-	 assignment is done properly.  */
-      if (TREE_CODE (TREE_TYPE (gnu_lhs)) == RECORD_TYPE
-	  && TYPE_IS_PADDING_P (TREE_TYPE (gnu_lhs)))
-	gnu_lhs
-	  = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_lhs))), gnu_lhs);
-
-      gnu_assign_stmt
+      tree gnu_decl = DECL_EXPR_DECL (gnu_stmt);
+      tree gnu_lhs
+	= convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_decl))), gnu_decl);
+      tree gnu_assign_stmt
 	= build_binary_op (MODIFY_EXPR, NULL_TREE,
 			   gnu_lhs, DECL_INITIAL (gnu_decl));
+
       DECL_INITIAL (gnu_decl) = 0;
 
       annotate_with_locus (gnu_assign_stmt, DECL_SOURCE_LOCATION (gnu_decl));
@@ -4055,7 +4059,8 @@ add_stmt (tree gnu_stmt)
 void
 add_stmt_with_node (tree gnu_stmt, Node_Id gnat_node)
 {
-  annotate_with_node (gnu_stmt, gnat_node);
+  if (Present (gnat_node))
+    annotate_with_node (gnu_stmt, gnat_node);
   add_stmt (gnu_stmt);
 }
 
@@ -4063,7 +4068,7 @@ add_stmt_with_node (tree gnu_stmt, Node_Id gnat_node)
    Get SLOC from Entity_Id.  */
 
 void
-add_decl_stmt (tree gnu_decl, Entity_Id gnat_entity)
+add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 {
   /* If this is a variable that Gigi is to ignore, we may have been given
      an ERROR_MARK.  So test for it.  We also might have been given a
@@ -4074,7 +4079,7 @@ add_decl_stmt (tree gnu_decl, Entity_Id gnat_entity)
 	  && TREE_CODE (TREE_TYPE (gnu_decl)) == UNCONSTRAINED_ARRAY_TYPE))
     return;
 
-  add_stmt_with_node (build (DECL_STMT, void_type_node, gnu_decl),
+  add_stmt_with_node (build (DECL_EXPR, void_type_node, gnu_decl),
 		      gnat_entity);
 }
 
@@ -4273,38 +4278,8 @@ gnat_gimplify_stmt (tree *stmt_p)
       return GS_OK;
 
     case USE_STMT:
-      *stmt_p = alloc_stmt_list ();
+      *stmt_p = NULL_TREE;
       return GS_ALL_DONE;
-
-    case DECL_STMT:
-      {
-	tree var = DECL_STMT_VAR (stmt);
-
-	*stmt_p = NULL_TREE;
-	if (TREE_CODE (var) == TYPE_DECL)
-	  gimplify_type_sizes (TREE_TYPE (var), stmt_p);
-	else if (TREE_CODE (var) == VAR_DECL)
-	  {
-	    gimplify_one_sizepos (&DECL_SIZE (var), stmt_p);
-	    gimplify_one_sizepos (&DECL_SIZE_UNIT (var), stmt_p);
-
-	    if (!DECL_EXTERNAL (var) && !TREE_CONSTANT (DECL_SIZE_UNIT (var)))
-	      {
-		DECL_DEFER_OUTPUT (var) = 1;
-		append_to_statement_list
-		  (build_function_call_expr
-		   (implicit_built_in_decls[BUILT_IN_STACK_ALLOC],
-		    tree_cons (NULL_TREE,
-			       build1 (ADDR_EXPR,
-				       build_pointer_type (TREE_TYPE (var)),
-				       var),
-			       tree_cons (NULL_TREE, DECL_SIZE_UNIT (var),
-					  NULL_TREE))),
-		   stmt_p);
-	      }
-	  }
-	return GS_ALL_DONE;
-      }
 
     case LOOP_STMT:
       {
@@ -5493,9 +5468,20 @@ gnat_stabilize_reference_1 (tree e, int force)
     case 's':
     case 'e':
     case 'r':
-      if (TREE_SIDE_EFFECTS (e) || force)
+      /* If this is a COMPONENT_REF of a fat pointer, save the entire
+	 fat pointer.  This may be more efficient, but will also allow
+	 us to more easily find the match for the PLACEHOLDER_EXPR.  */
+      if (code == COMPONENT_REF
+	  && TYPE_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (e, 0))))
+	result = build (COMPONENT_REF, type,
+			gnat_stabilize_reference_1 (TREE_OPERAND (e, 0),
+						    force),
+			TREE_OPERAND (e, 1), TREE_OPERAND (e, 2));
+      else if (TREE_SIDE_EFFECTS (e) || force)
 	return save_expr (e);
-      return e;
+      else
+	return e;
+      break;
 
     case 'c':
       /* Constants need no processing.  In fact, we should never reach

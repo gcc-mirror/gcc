@@ -365,8 +365,12 @@ pushdecl (tree decl)
      that are part of sizes and positions.  */
   if (global_bindings_p () && TREE_CODE (decl) != PARM_DECL)
     {
+      /* Make a DECL_EXPR so we'll walk into the appropriate fields of
+	 the type or decl.  */
+      tree decl_expr = build1 (DECL_EXPR, void_type_node, decl);
+
       DECL_CONTEXT (decl) = 0;
-      walk_tree (&decl, mark_visited, NULL, NULL);
+      walk_tree (&decl_expr, mark_visited, NULL, NULL);
     }
   else
     DECL_CONTEXT (decl) = current_function_decl;
@@ -1271,6 +1275,7 @@ create_index_type (tree min, tree max, tree index)
     type = copy_type (type);
 
   SET_TYPE_INDEX_TYPE (type, index);
+  add_decl_expr (create_type_decl (NULL_TREE, type, NULL, 1, 0), Empty);
   return type;
 }
 
@@ -1899,9 +1904,6 @@ end_subprog_body (tree body)
   DECL_INLINE (fndecl)
     = DECL_DECLARED_INLINE_P (fndecl) || flag_inline_trees == 2;
 
-  /* Initialize the RTL code for the function.  */
-  allocate_struct_function (fndecl);
-
   /* We handle pending sizes via the elaboration of types, so we don't
      need to save them.  */
   get_pending_sizes ();
@@ -1912,6 +1914,7 @@ end_subprog_body (tree body)
   DECL_SAVED_TREE (fndecl) = body;
 
   current_function_decl = DECL_CONTEXT (fndecl);
+  cfun = NULL;
 
   /* If we're only annotating types, don't actually compile this function.  */
   if (type_annotate_only)
