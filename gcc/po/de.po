@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 3.4-b20040206\n"
+"Project-Id-Version: gcc 3.4.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-07-01 11:41-0700\n"
-"PO-Revision-Date: 2004-02-15 12:14+0100\n"
+"PO-Revision-Date: 2004-10-04 10:20+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -121,7 +121,7 @@ msgstr "(Sie sollten also »%s« statt »%s« an »va_arg« übergeben)"
 #. Call abort to encourage the user to fix the program.
 #: builtins.c:4134 c-typeck.c:1733
 msgid "if this code is reached, the program will abort"
-msgstr ""
+msgstr "Wenn dieser Code erreicht wird, wird das Programm abgebrochen."
 
 #: builtins.c:4241
 msgid "invalid arg to `__builtin_frame_address'"
@@ -284,9 +284,8 @@ msgid "invalid application of `%s' to a void type"
 msgstr "ungültige Anwendung von »%s« auf einen void-Typen"
 
 #: c-common.c:2951
-#, fuzzy
 msgid "invalid application of `%s' to incomplete type `%T' "
-msgstr "ungültige Anwendung von »%s« auf einen unvollständigen Typen"
+msgstr "ungültige Anwendung von »%s« auf unvollständigen Typen »%T«"
 
 #: c-common.c:2992
 msgid "`__alignof' applied to a bit-field"
@@ -683,9 +682,8 @@ msgid "%J'%D' declared inline after its definition"
 msgstr "%J»%D« nach der Definition als inline deklariert"
 
 #: c-decl.c:1221
-#, fuzzy
 msgid "%Jredefinition of parameter '%D'"
-msgstr "%JRedefinition des typedef »%D«"
+msgstr "%JRedefinition des Parameters »%D«"
 
 #: c-decl.c:1230
 msgid "%Jvolatile declaration of '%D' follows non-volatile declaration"
@@ -708,19 +706,16 @@ msgid "%Jredundant redeclaration of '%D'"
 msgstr "%Jredundante Redeklaration von »%D«"
 
 #: c-decl.c:1581
-#, fuzzy
 msgid "%Jdeclaration of '%D' shadows a parameter"
-msgstr "Deklaration von »%s« überdeckt einen Parameter"
+msgstr "%JDeklaration von »%D« überdeckt einen Parameter"
 
 #: c-decl.c:1583
-#, fuzzy
 msgid "%Jdeclaration of '%D' shadows a global declaration"
-msgstr "Deklaration von »%s« überdeckt eine globale Deklaration"
+msgstr "%JDeklaration von »%D« überdeckt eine globale Deklaration"
 
 #: c-decl.c:1585
-#, fuzzy
 msgid "%Jdeclaration of '%D' shadows a previous local"
-msgstr "Deklaration von »%s« überdeckt einen vorhergehenden lokalen Bezeichner"
+msgstr "%JDeklaration von »%D« überdeckt einen vorhergehenden lokalen Bezeichner"
 
 #: c-decl.c:1587 cp/name-lookup.c:969 cp/name-lookup.c:992
 #: cp/name-lookup.c:1000
@@ -2108,9 +2103,8 @@ msgid "traditional C rejects string constant concatenation"
 msgstr "traditionelles C weist Stringkonstantenverkettung zurück"
 
 #: c-objc-common.c:82
-#, fuzzy
 msgid "%Jfunction '%F' can never be inlined because it is suppressed using -fno-inline"
-msgstr "%JFunktion »%F« kann nie inline sein, da dies mit -fno-inline unterdrückt wird"
+msgstr "%JFunktion »%F« kann nie inline sein, da sie mit -fno-inline unterdrückt wird"
 
 #: c-objc-common.c:92
 msgid "%Jfunction '%F' can never be inlined because it might not be bound within this unit of translation"
@@ -2286,9 +2280,8 @@ msgid "ISO C forbids omitting the middle term of a ?: expression"
 msgstr "ISO-C verbietet das Weglassen des mittleren Terms eines ?:-Ausdruckes"
 
 #: c-parse.y:611 objc/objc-parse.y:636
-#, fuzzy
 msgid "ISO C90 forbids compound literals"
-msgstr "ISO-C89 verbietet zusammengesetzte Literale"
+msgstr "ISO-C90 verbietet zusammengesetzte Literale"
 
 #: c-parse.y:625 objc/objc-parse.y:650
 msgid "ISO C forbids braced-groups within expressions"
@@ -2328,9 +2321,8 @@ msgid "ISO C forbids empty initializer braces"
 msgstr "ISO-C verbietet leere Initialisierungsklammern"
 
 #: c-parse.y:1441 objc/objc-parse.y:1491
-#, fuzzy
 msgid "ISO C90 forbids specifying subobject to initialize"
-msgstr "ISO-C89 verbietet die Angabe von zu initialisierenden Unterobjekten"
+msgstr "ISO-C90 verbietet die Angabe von zu initialisierenden Unterobjekten"
 
 #: c-parse.y:1444 objc/objc-parse.y:1494
 msgid "obsolete use of designated initializer without `='"
@@ -2423,7 +2415,6 @@ msgid "`...' in old-style identifier list"
 msgstr "»...« in einer Bezeichnerliste alten Stils"
 
 #: /usr/share/bison/bison.simple:795
-#, fuzzy
 msgid "parse error; also virtual memory exhausted"
 msgstr "Syntaxfehler; auch virtueller Speicher verbraucht"
 
@@ -2503,9 +2494,9 @@ msgid "%s: created by version `%.*s', but this is version `%s'"
 msgstr "%s: durch Version »%.*s« erzeugt, aber dies ist Version »%s«"
 
 #: c-pch.c:313
-#, fuzzy, c-format
+#, c-format
 msgid "%s: created using different flags"
-msgstr "%D mit anderem Zugriff redeklariert"
+msgstr "%s: mit anderen Marken erzeugt"
 
 #: c-pch.c:326
 #, c-format
@@ -7484,107 +7475,106 @@ msgid "trap mode not supported for VAX floats"
 msgstr ""
 
 #: config/alpha/alpha.c:394
-#, fuzzy
 msgid "128-bit long double not supported for VAX floats"
-msgstr "ms-Bitfelder nicht unterstützt für objc"
+msgstr "128-bit long double nicht unterstützt für VAX floats"
 
 #: config/alpha/alpha.c:422
 #, c-format
 msgid "L%d cache latency unknown for %s"
-msgstr ""
+msgstr "L%d Cache-Wartezeit unbekannt für %s"
 
 #: config/alpha/alpha.c:437
 #, c-format
 msgid "bad value `%s' for -mmemory-latency"
-msgstr ""
+msgstr "Falscher Wert »%s« für -mmemory-latency"
 
 #: config/alpha/alpha.c:5425
 #, c-format
 msgid "invalid %%H value"
-msgstr ""
+msgstr "Ungültiger %%H-Wert"
 
 #: config/alpha/alpha.c:5446
 #, c-format
 msgid "invalid %%J value"
-msgstr ""
+msgstr "Ungültiger %%J-Wert"
 
 #: config/alpha/alpha.c:5462 config/ia64/ia64.c:4263
 #, c-format
 msgid "invalid %%r value"
-msgstr ""
+msgstr "Ungültiger %%r-Wert"
 
 #: config/alpha/alpha.c:5472 config/rs6000/rs6000.c:9241
 #: config/xtensa/xtensa.c:2014
 #, c-format
 msgid "invalid %%R value"
-msgstr ""
+msgstr "Ungültiger %%R-Wert"
 
 #: config/alpha/alpha.c:5478 config/rs6000/rs6000.c:9160
 #: config/xtensa/xtensa.c:1981
 #, c-format
 msgid "invalid %%N value"
-msgstr ""
+msgstr "Ungültiger %%N-Wert"
 
 #: config/alpha/alpha.c:5486 config/rs6000/rs6000.c:9188
 #, c-format
 msgid "invalid %%P value"
-msgstr ""
+msgstr "Ungültiger %%P-Wert"
 
 #: config/alpha/alpha.c:5494
 #, c-format
 msgid "invalid %%h value"
-msgstr ""
+msgstr "Ungültiger %%h-Wert"
 
 #: config/alpha/alpha.c:5502 config/xtensa/xtensa.c:2007
 #, c-format
 msgid "invalid %%L value"
-msgstr ""
+msgstr "Ungültiger %%L-Wert"
 
 #: config/alpha/alpha.c:5541 config/rs6000/rs6000.c:9142
 #, c-format
 msgid "invalid %%m value"
-msgstr ""
+msgstr "Ungültiger %%m-Wert"
 
 #: config/alpha/alpha.c:5549 config/rs6000/rs6000.c:9150
 #, c-format
 msgid "invalid %%M value"
-msgstr ""
+msgstr "Ungültiger %%M-Wert"
 
 #: config/alpha/alpha.c:5593
 #, c-format
 msgid "invalid %%U value"
-msgstr ""
+msgstr "Ungültiger %%U-Wert"
 
 #: config/alpha/alpha.c:5605 config/alpha/alpha.c:5619
 #: config/rs6000/rs6000.c:9249
 #, c-format
 msgid "invalid %%s value"
-msgstr ""
+msgstr "Ungültiger %%s-Wert"
 
 #: config/alpha/alpha.c:5642
 #, c-format
 msgid "invalid %%C value"
-msgstr ""
+msgstr "Ungültiger %%C-Wert"
 
 #: config/alpha/alpha.c:5679 config/rs6000/rs6000.c:8979
 #: config/rs6000/rs6000.c:8999
 #, c-format
 msgid "invalid %%E value"
-msgstr ""
+msgstr "Ungültiger %%E-Wert"
 
 #: config/alpha/alpha.c:5704 config/alpha/alpha.c:5752
 msgid "unknown relocation unspec"
-msgstr ""
+msgstr "Unbekanntes relocation unspec"
 
 #: config/alpha/alpha.c:5713 config/rs6000/rs6000.c:9562
 #, c-format
 msgid "invalid %%xn code"
-msgstr ""
+msgstr "Ungültiger %%xn-Code"
 
 #: config/alpha/alpha.c:6657 config/alpha/alpha.c:6660 config/s390/s390.c:6575
 #: config/s390/s390.c:6578
 msgid "bad builtin fcode"
-msgstr ""
+msgstr "Falscher eingebauter fcode"
 
 #. Macro to define tables used to set the flags.
 #. This is a list in braces of pairs in braces,
@@ -7595,96 +7585,96 @@ msgstr ""
 #: config/i386/i386.h:331 config/ns32k/ns32k.h:140 config/s390/s390.h:124
 #: config/sparc/sparc.h:543 config/sparc/sparc.h:548
 msgid "Use hardware fp"
-msgstr ""
+msgstr "Hardware-FP verwenden"
 
 #: config/alpha/alpha.h:294 config/i386/i386.h:328 config/i386/i386.h:330
 #: config/sparc/sparc.h:545 config/sparc/sparc.h:550
 msgid "Do not use hardware fp"
-msgstr ""
+msgstr "Hardware-FP nicht verwenden"
 
 #: config/alpha/alpha.h:295
 msgid "Use fp registers"
-msgstr ""
+msgstr "FP-Register verwenden"
 
 #: config/alpha/alpha.h:297
 msgid "Do not use fp registers"
-msgstr ""
+msgstr "FP-Register nicht verwenden"
 
 #: config/alpha/alpha.h:298
 msgid "Do not assume GAS"
-msgstr ""
+msgstr "Nicht GAS vermuten"
 
 #: config/alpha/alpha.h:299
 msgid "Assume GAS"
-msgstr ""
+msgstr "GAS vermuten"
 
 #: config/alpha/alpha.h:301
 msgid "Request IEEE-conformant math library routines (OSF/1)"
-msgstr ""
+msgstr "IEEE-konforme Mathematik-Bibliotheksroutinen (OSF/1) anfordern"
 
 #: config/alpha/alpha.h:303
 msgid "Emit IEEE-conformant code, without inexact exceptions"
-msgstr ""
+msgstr "IEEE-konformen Code erzeugen, ohne ungenaue Ausnahmen"
 
 #: config/alpha/alpha.h:305
 msgid "Emit IEEE-conformant code, with inexact exceptions"
-msgstr ""
+msgstr "IEEE-konformen Code erzeugen, mit ungenauen Ausnahmen"
 
 #: config/alpha/alpha.h:307
 msgid "Do not emit complex integer constants to read-only memory"
-msgstr ""
+msgstr "Keine komplexen Ganzzahlkonstanten im Nur-Lese-Speicher erzeugen"
 
 #: config/alpha/alpha.h:308
 msgid "Use VAX fp"
-msgstr ""
+msgstr "VAX-FP verwenden"
 
 #: config/alpha/alpha.h:309
 msgid "Do not use VAX fp"
-msgstr ""
+msgstr "VAX-FP nicht verwenden"
 
 #: config/alpha/alpha.h:310
 msgid "Emit code for the byte/word ISA extension"
-msgstr ""
+msgstr "Code für die Byte/Word-ISA-Erweiterung erzeugen"
 
 #: config/alpha/alpha.h:313
 msgid "Emit code for the motion video ISA extension"
-msgstr ""
+msgstr "Code für die Video-ISA-Erweiterung erzeugen"
 
 #: config/alpha/alpha.h:316
 msgid "Emit code for the fp move and sqrt ISA extension"
-msgstr ""
+msgstr "Code für die FP-Move und SQRT-ISA-Erweiterung erzeugen"
 
 #: config/alpha/alpha.h:318
 msgid "Emit code for the counting ISA extension"
-msgstr ""
+msgstr "Code für die zählende ISA-Erweiterung erzeugen"
 
 #: config/alpha/alpha.h:321
 msgid "Emit code using explicit relocation directives"
-msgstr ""
+msgstr "Code mit expliziten Auslagerungsanweisungen erzeugen"
 
 #: config/alpha/alpha.h:324
 msgid "Emit 16-bit relocations to the small data areas"
-msgstr ""
+msgstr "16-bit Auslagerungen in kleinen Datenbereichen erzeugen"
 
 #: config/alpha/alpha.h:326
 msgid "Emit 32-bit relocations to the small data areas"
-msgstr ""
+msgstr "32-bit Auslagerungen in kleinen Datenbereichen erzeugen"
 
 #: config/alpha/alpha.h:328
 msgid "Emit direct branches to local functions"
-msgstr ""
+msgstr "Direkte Zweige in lokalen Funktionen erzeugen"
 
 #: config/alpha/alpha.h:331
 msgid "Emit rdval instead of rduniq for thread pointer"
-msgstr ""
+msgstr "rdval statt rduniq für Zhread-Zeiger erzeugen"
 
 #: config/alpha/alpha.h:333
 msgid "Use 128-bit long double"
-msgstr ""
+msgstr "128-bit long double verwenden"
 
 #: config/alpha/alpha.h:335
 msgid "Use 64-bit long double"
-msgstr ""
+msgstr "64-bit long double verwenden"
 
 #. For -mcpu=
 #. For -mtune=
@@ -7695,154 +7685,154 @@ msgstr ""
 #. For -mtls-size=
 #: config/alpha/alpha.h:364
 msgid "Use features of and schedule given CPU"
-msgstr ""
+msgstr "Für angegebene CPU planen und deren Eigenschaften verwenden"
 
 #: config/alpha/alpha.h:366
 msgid "Schedule given CPU"
-msgstr ""
+msgstr "Für angegebene CPU planen"
 
 #: config/alpha/alpha.h:368
 msgid "Control the generated fp rounding mode"
-msgstr ""
+msgstr "Den generierten FP-Rundungsmodus steuern"
 
 #: config/alpha/alpha.h:370
 msgid "Control the IEEE trap mode"
-msgstr ""
+msgstr "Den IEEE-Trap-Modus steuern"
 
 #: config/alpha/alpha.h:372
 msgid "Control the precision given to fp exceptions"
-msgstr ""
+msgstr "Die Präzision der FP-Ausnahmen steuern"
 
 #: config/alpha/alpha.h:374
 msgid "Tune expected memory latency"
-msgstr ""
+msgstr "Die erwartete Speicher-Wartezeit abstimmen"
 
 #: config/alpha/alpha.h:376 config/ia64/ia64.h:267 config/rs6000/sysv4.h:90
 msgid "Specify bit size of immediate TLS offsets"
-msgstr ""
+msgstr "Bit-Breite des unmittelbaren TLS-Versatzes angeben"
 
 #: config/arc/arc.c:147
 #, c-format
 msgid "bad value (%s) for -mcpu switch"
-msgstr ""
+msgstr "Falscher Wert (%s) für -mcpu Schalter"
 
 #: config/arc/arc.c:369
 #, c-format
 msgid "argument of `%s' attribute is not a string constant"
-msgstr ""
+msgstr "Argument des Attributes »%s« ist keine Zeichenkettenkonstante"
 
 #: config/arc/arc.c:376
 #, c-format
 msgid "argument of `%s' attribute is not \"ilink1\" or \"ilink2\""
-msgstr ""
+msgstr "Argument des Attributes »%s« ist nicht \"ilink1\" oder \"ilink2\""
 
 #: config/arc/arc.c:1714 config/m32r/m32r.c:2352
 #, c-format
 msgid "invalid operand to %%R code"
-msgstr ""
+msgstr "Ungültiger Operand für %%R-Code"
 
 #: config/arc/arc.c:1746 config/m32r/m32r.c:2375
 #, c-format
 msgid "invalid operand to %%H/%%L code"
-msgstr ""
+msgstr "Ungültiger Operand für %%H/%%L-Code"
 
 #: config/arc/arc.c:1769 config/m32r/m32r.c:2446
 #, c-format
 msgid "invalid operand to %%U code"
-msgstr ""
+msgstr "Ungültiger Operand für %%U-Code"
 
 #: config/arc/arc.c:1780
 #, c-format
 msgid "invalid operand to %%V code"
-msgstr ""
+msgstr "Ungültiger Operand für %%V-Code"
 
 #. Unknown flag.
 #: config/arc/arc.c:1787 config/m32r/m32r.c:2473 config/sparc/sparc.c:7010
 msgid "invalid operand output code"
-msgstr ""
+msgstr "Ungültiger Operanden-Ausgabecode"
 
 #: config/arm/arm.c:520
 #, c-format
 msgid "switch -mcpu=%s conflicts with -march= switch"
-msgstr ""
+msgstr "Schalter -mcpu=%s steht in Konflikt mit dem Schalter -march="
 
 #: config/arm/arm.c:530 config/rs6000/rs6000.c:767 config/sparc/sparc.c:424
 #, c-format
 msgid "bad value (%s) for %s switch"
-msgstr ""
+msgstr "Falscher Wert (%s) für Schalter %s"
 
 #: config/arm/arm.c:672
 msgid "target CPU does not support APCS-32"
-msgstr ""
+msgstr "Ziel-CPU unterstützt nicht APCS-32"
 
 #: config/arm/arm.c:677
 msgid "target CPU does not support APCS-26"
-msgstr ""
+msgstr "Ziel-CPU unterstützt nicht APCS-26"
 
 #: config/arm/arm.c:683
 msgid "target CPU does not support interworking"
-msgstr ""
+msgstr "Ziel-CPU unterstützt keine Zusammenarbeit"
 
 #: config/arm/arm.c:689
 msgid "target CPU does not support THUMB instructions"
-msgstr ""
+msgstr "Ziel-CPU unterstützt keine THUMB-Befehle"
 
 #: config/arm/arm.c:694
 msgid "future releases of GCC will not support -mapcs-26"
-msgstr ""
+msgstr "Zukünftige Ausgaben des GCC werden nicht -mapcs-26 unterstützen"
 
 #: config/arm/arm.c:706
 msgid "enabling backtrace support is only meaningful when compiling for the Thumb"
-msgstr ""
+msgstr "Das Aktivieren der Ablaufverfolgung ist nur bei der Übersetzung für THUMB sinnvoll"
 
 #: config/arm/arm.c:709
 msgid "enabling callee interworking support is only meaningful when compiling for the Thumb"
-msgstr ""
+msgstr "Das Aktivieren der Unterstützung der Aufgerufenen-Zusammenarbeit ist nur bei der Übersetzung für THUMB sinnvoll"
 
 #: config/arm/arm.c:712
 msgid "enabling caller interworking support is only meaningful when compiling for the Thumb"
-msgstr ""
+msgstr "Das Aktivieren der Unterstützung der Aufrufer-Zusammenarbeit ist nur bei der Übersetzung für THUMB sinnvoll"
 
 #: config/arm/arm.c:718
 msgid "interworking forces APCS-32 to be used"
-msgstr ""
+msgstr "Zusammenarbeit erzingt die Verwendung von APCS-32"
 
 #: config/arm/arm.c:724
 msgid "-mapcs-stack-check incompatible with -mno-apcs-frame"
-msgstr ""
+msgstr "-mapcs-stack-check inkompatibel mit -mno-apcs-frame"
 
 #: config/arm/arm.c:732
 msgid "-fpic and -mapcs-reent are incompatible"
-msgstr ""
+msgstr "-fpic und -mapcs-reent sind inkompatibel"
 
 #: config/arm/arm.c:735
 msgid "APCS reentrant code not supported.  Ignored"
-msgstr ""
+msgstr "APCS wieder einsprungsfähiger Code nicht unterstützt. Ignoriert."
 
 #: config/arm/arm.c:743
 msgid "-g with -mno-apcs-frame may not give sensible debugging"
-msgstr ""
+msgstr "-g mit -mno-apcs-frame könnte vernünftige Fehlersuche verhindern"
 
 #: config/arm/arm.c:751
 msgid "passing floating point arguments in fp regs not yet supported"
-msgstr ""
+msgstr "Die Übergabe von Fließkommaargumenten in FP-Registern wird noch nicht unterstützt"
 
 #: config/arm/arm.c:795
 #, c-format
 msgid "invalid floating point emulation option: -mfpe-%s"
-msgstr ""
+msgstr "Ungültige Option für Fließkommaemulation: -mfpe-%s"
 
 #: config/arm/arm.c:806
 msgid "-mfpe switch not supported by ep9312 target cpu - ignored."
-msgstr ""
+msgstr "Schalter -mfpe wird von der Ziel-CPU ep9312 nicht unterstützt. Ignoriert."
 
 #: config/arm/arm.c:826
 msgid "structure size boundary can only be set to 8 or 32"
-msgstr ""
+msgstr "Grenze für Strukturgrößen kann nur auf 8 oder 32 gesetzt werden"
 
 #: config/arm/arm.c:834
 msgid "-mpic-register= is useless without -fpic"
-msgstr ""
+msgstr "-mpic-register= ist ohne -fpic nutzlos"
 
 #: config/arm/arm.c:841
 #, c-format
@@ -13260,9 +13250,8 @@ msgid "ignoring packed attribute on unpacked non-POD field `%#D'"
 msgstr ""
 
 #: cp/class.c:2939
-#, fuzzy
 msgid "`%D' may not be static because it is a member of a union"
-msgstr "»%#D« ist kein Nicht-static-Datenelement von »%T«"
+msgstr "»%D« kann nicht static sein, da es ein union-Element ist"
 
 #: cp/class.c:2944
 msgid "`%D' may not have reference type `%T' because it is a member of a union"
@@ -14673,9 +14662,8 @@ msgid "use of enum `%#D' without previous declaration"
 msgstr ""
 
 #: cp/decl.c:9471
-#, fuzzy
 msgid "redeclaration of `%T' as a non-template"
-msgstr "Deklaration von »%s« überdeckt einen Parameter"
+msgstr "Redeklaration von »%T« als Nicht-Template"
 
 #: cp/decl.c:9517
 msgid "derived union `%T' invalid"
@@ -15197,9 +15185,8 @@ msgstr ""
 #. fixed correctly in mainline), but on the release branch
 #. we prefer this less-intrusive approacch.
 #: cp/init.c:2077
-#, fuzzy
 msgid "no suitable or ambiguous `%D' found in class `%T'"
-msgstr "kein geeigneter »operator %s« für »%T«"
+msgstr "kein geeignetes oder mehrdeutiges »%D« in Klasse »%T« gefunden"
 
 #: cp/init.c:2083
 msgid "request for member `%D' is ambiguous"
@@ -15361,25 +15348,21 @@ msgid "global declaration `%#D'"
 msgstr ""
 
 #: cp/name-lookup.c:961 cp/name-lookup.c:968
-#, fuzzy
 msgid "declaration of '%#D' shadows a parameter"
-msgstr "Deklaration von »%s« überdeckt einen Parameter"
+msgstr "Deklaration von »%#D« überdeckt einen Parameter"
 
 #. Location of previous decl is not useful in this case.
 #: cp/name-lookup.c:985
-#, fuzzy
 msgid "declaration of '%D' shadows a member of 'this'"
-msgstr "Deklaration von »%s« überdeckt einen Parameter"
+msgstr "Deklaration von »%D« überdeckt ein Element von 'this'"
 
 #: cp/name-lookup.c:991
-#, fuzzy
 msgid "declaration of '%D' shadows a previous local"
-msgstr "Deklaration von »%s« überdeckt einen vorhergehenden lokalen Bezeichner"
+msgstr "Deklaration von »%D« überdeckt einen vorhergehenden lokalen Bezeichner"
 
 #: cp/name-lookup.c:998
-#, fuzzy
 msgid "declaration of '%D' shadows a global declaration"
-msgstr "Deklaration von »%s« überdeckt eine globale Deklaration"
+msgstr "Deklaration von »%D« überdeckt eine globale Deklaration"
 
 #: cp/name-lookup.c:1167
 msgid "name lookup of `%D' changed"
@@ -15650,9 +15633,8 @@ msgid "ISO C++ forbids compound-literals"
 msgstr "ISO-C++ verbietet zusammengesetzte Literale"
 
 #: cp/parser.c:4461
-#, fuzzy
 msgid "array bound forbidden after parenthesized type-id"
-msgstr "Attribute hinter geklammerter Initialisierung werden ignoriert"
+msgstr "Feldgrenze hinter geklammerter type-id ist verboten"
 
 #: cp/parser.c:4462
 msgid "try removing the parentheses around the type-id"
@@ -15763,9 +15745,8 @@ msgid "attributes after parenthesized initializer ignored"
 msgstr "Attribute hinter geklammerter Initialisierung werden ignoriert"
 
 #: cp/parser.c:10540
-#, fuzzy
 msgid "`%T::%D' is not a type"
-msgstr "»%s« ist kein Template"
+msgstr "»%T::%D« ist kein Typ"
 
 #: cp/parser.c:11288
 msgid "file ends in default argument"
@@ -15853,9 +15834,8 @@ msgid "spurious `>>', use `>' to terminate a template argument list"
 msgstr ""
 
 #: cp/parser.c:14574
-#, fuzzy
 msgid "missing `>' to terminate the template argument list"
-msgstr "fehlendes ')' in Makroparameterliste"
+msgstr "fehlendes '>', um Templateargumentliste zu beenden"
 
 #: cp/parser.c:15062
 msgid "`%s' tag used in naming `%#T'"
