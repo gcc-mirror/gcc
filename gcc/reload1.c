@@ -1829,11 +1829,11 @@ reload (first, global, dumpfile)
       basic_block_live_at_start[i][FRAME_POINTER_REGNUM / REGSET_ELT_BITS]
 	&= ~ ((REGSET_ELT_TYPE) 1 << (FRAME_POINTER_REGNUM % REGSET_ELT_BITS));
 
-  reload_in_progress = 0;
-
   /* Come here (with failure set nonzero) if we can't get enough spill regs
      and we decide not to abort about it.  */
  failed:
+
+  reload_in_progress = 0;
 
   /* Now eliminate all pseudo regs by modifying them into
      their equivalent memory references.
