@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  SONY NEWS-OS 4 version.
-   Copyright (C) 1987, 1989 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1989, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -120,8 +120,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define FUNCTION_VALUE(VALTYPE,FUNC) LIBCALL_VALUE (TYPE_MODE (VALTYPE))
 
-#define LIBCALL_VALUE(MODE) \
- gen_rtx (REG, (MODE), ((TARGET_68881 && ((MODE) == SFmode || (MODE) == DFmode)) ? 16 : 0))
+#define LIBCALL_VALUE(MODE)						   \
+ gen_rtx (REG, (MODE),							   \
+	  ((TARGET_68881						   \
+	    && ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode)) \
+	   ? 16 : 0))
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
   fprintf (FILE, "\t.align %d\n", (LOG))
@@ -258,7 +261,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   fprintf (FILE, "\tmove.l (sp)+,%s\n", reg_names[REGNO])
   
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-  fprintf (FILE, "\t.double 0d%.20e\n", (VALUE))
+do { char dstr[30];					\
+     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);	\
+     fprintf (FILE, "\t.double 0d%s\n", dstr);		\
+   } while (0)
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.space %u\n", (SIZE))
@@ -299,18 +305,27 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   else if (GET_CODE (X) == MEM)						\
     output_address (XEXP (X, 0));					\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == SFmode)	\
-    { union { double d; int i[2]; } u;					\
-      union { float f; int i; } u1;					\
-      u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
-      u1.f = u.d;							\
+    { REAL_VALUE_TYPE r;						\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
       if (CODE == 'f')							\
-        fprintf (FILE, "#0f%.9e", u1.f);				\
+        { char dstr[30];						\
+          REAL_VALUE_TO_DECIMAL (r, "%.9e", dstr);			\
+          fprintf (FILE, "#0f%s", dstr);				\
+        }								\
       else								\
-        fprintf (FILE, "#0x%x", u1.i); }				\
+        { long l;							\
+          REAL_VALUE_TO_TARGET_SINGLE (r, l);				\
+          fprintf (FILE, "#0x%x", l);					\
+        }}								\
+  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == XFmode)	\
+    { REAL_VALUE_TYPE r;						\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      ASM_OUTPUT_LONG_DOUBLE_OPERAND (FILE, r); }			\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != DImode)	\
-    { union { double d; int i[2]; } u;					\
-      u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
-      fprintf (FILE, "#0d%.20e", u.d); }				\
+    { REAL_VALUE_TYPE r; char dstr[30];					\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      REAL_VALUE_TO_DECIMAL (r, "%.20e", dstr );			\
+      fprintf (FILE, "#0d%s", dstr); }					\
   else if (CODE == 'b') output_addr_const (FILE, X);			\
   else { putc ('#', FILE); output_addr_const (FILE, X); }}
 
