@@ -1225,7 +1225,7 @@ do {						\
   fprintf (FILE, "\t.word 0x0ffc\n");		\
   fprintf (FILE, "\taddl2 $%d,4(ap)\n", DELTA);	\
   fprintf (FILE, "\tjmp ");			\
-  assemble_name (FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION))); \
+  assemble_name (FILE,  XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0)); \
   fprintf (FILE, "+2\n");			\
 } while (0)
 

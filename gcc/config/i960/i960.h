@@ -1568,7 +1568,6 @@ do {									\
       fprintf (FILE, "\taddo r5,g0,g0\n");				\
     }									\
   fprintf (FILE, "\tbx ");						\
-  assemble_name								\
-    (FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)));	\
+  assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
   fprintf (FILE, "\n");							\
 } while (0);

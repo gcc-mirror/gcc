@@ -375,15 +375,13 @@ do {									\
   if (flag_pic)								\
     {									\
       fprintf (FILE, "\tbra.l ");					\
-      assemble_name							\
-	(FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)));	\
+      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
       fprintf (FILE, "@PLTPC\n");					\
     }									\
   else									\
     {									\
       fprintf (FILE, "\tjmp ");						\
-      assemble_name							\
-	(FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)));	\
+      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
       fprintf (FILE, "\n");						\
     }									\
 } while (0)

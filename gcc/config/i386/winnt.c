@@ -37,6 +37,8 @@ gen_stdcall_suffix (decl)
   tree decl;
 {
   int total = 0;
+  /* ??? This probably should use XSTR (XEXP (DECL_RTL (decl), 0), 0) instead
+     of DECL_ASSEMBLER_NAME.  */
   char *asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   char *newsym;
 
