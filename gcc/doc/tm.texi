@@ -3903,6 +3903,18 @@ need more space than is implied by @code{FUNCTION_VALUE_REGNO_P} for
 saving and restoring an arbitrary return value.
 @end defmac
 
+@deftypefn {Target Hook} bool TARGET_RETURN_IN_MSB (tree @var{type})
+This hook should return true if values of type @var{type} are returned
+at the most significant end of a register (in other words, if they are
+padded at the least significant end).  You can assume that @var{type}
+is returned in a register; the caller is required to check this.
+
+Note that the register provided by @code{FUNCTION_VALUE} must be able
+to hold the complete return value.  For example, if a 1-, 2- or 3-byte
+structure is returned at the most significant end of a 4-byte register,
+@code{FUNCTION_VALUE} should provide an @code{SImode} rtx.
+@end deftypefn
+
 @node Aggregate Return
 @subsection How Large Values Are Returned
 @cindex aggregates as return values

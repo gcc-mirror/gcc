@@ -47,6 +47,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "intl.h"
 #include "tm_p.h"
+#include "target.h"
 
 /* Decide whether a function's arguments should be processed
    from first to last or from last to first.
@@ -2121,10 +2122,10 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
    set of registers starting with SRCREG into TGTBLK.  If TGTBLK
    is null, a stack temporary is created.  TGTBLK is returned.
 
-   The primary purpose of this routine is to handle functions
-   that return BLKmode structures in registers.  Some machines
-   (the PA for example) want to return all small structures
-   in registers regardless of the structure's alignment.  */
+   The purpose of this routine is to handle functions that return
+   BLKmode structures in registers.  Some machines (the PA for example)
+   want to return all small structures in registers regardless of the
+   structure's alignment.  */
 
 rtx
 copy_blkmode_from_reg (rtx tgtblk, rtx srcreg, tree type)
@@ -2132,7 +2133,7 @@ copy_blkmode_from_reg (rtx tgtblk, rtx srcreg, tree type)
   unsigned HOST_WIDE_INT bytes = int_size_in_bytes (type);
   rtx src = NULL, dst = NULL;
   unsigned HOST_WIDE_INT bitsize = MIN (TYPE_ALIGN (type), BITS_PER_WORD);
-  unsigned HOST_WIDE_INT bitpos, xbitpos, big_endian_correction = 0;
+  unsigned HOST_WIDE_INT bitpos, xbitpos, padding_correction = 0;
 
   if (tgtblk == 0)
     {
@@ -2150,13 +2151,20 @@ copy_blkmode_from_reg (rtx tgtblk, rtx srcreg, tree type)
       && GET_MODE_SIZE (GET_MODE (srcreg)) < UNITS_PER_WORD)
     srcreg = convert_to_mode (word_mode, srcreg, TREE_UNSIGNED (type));
 
-  /* Structures whose size is not a multiple of a word are aligned
-     to the least significant byte (to the right).  On a BYTES_BIG_ENDIAN
-     machine, this means we must skip the empty high order bytes when
-     calculating the bit offset.  */
-  if (BYTES_BIG_ENDIAN
-      && bytes % UNITS_PER_WORD)
-    big_endian_correction
+  /* If the structure doesn't take up a whole number of words, see whether
+     SRCREG is padded on the left or on the right.  If it's on the left,
+     set PADDING_CORRECTION to the number of bits to skip.
+
+     In most ABIs, the structure will be returned at the least end of
+     the register, which translates to right padding on little-endian
+     targets and left padding on big-endian targets.  The opposite
+     holds if the structure is returned at the most significant
+     end of the register.  */
+  if (bytes % UNITS_PER_WORD != 0
+      && (targetm.calls.return_in_msb (type)
+	  ? !BYTES_BIG_ENDIAN
+	  : BYTES_BIG_ENDIAN))
+    padding_correction
       = (BITS_PER_WORD - ((bytes % UNITS_PER_WORD) * BITS_PER_UNIT));
 
   /* Copy the structure BITSIZE bites at a time.
@@ -2164,15 +2172,15 @@ copy_blkmode_from_reg (rtx tgtblk, rtx srcreg, tree type)
      We could probably emit more efficient code for machines which do not use
      strict alignment, but it doesn't seem worth the effort at the current
      time.  */
-  for (bitpos = 0, xbitpos = big_endian_correction;
+  for (bitpos = 0, xbitpos = padding_correction;
        bitpos < bytes * BITS_PER_UNIT;
        bitpos += bitsize, xbitpos += bitsize)
     {
       /* We need a new source operand each time xbitpos is on a
-	 word boundary and when xbitpos == big_endian_correction
+	 word boundary and when xbitpos == padding_correction
 	 (the first time through).  */
       if (xbitpos % BITS_PER_WORD == 0
-	  || xbitpos == big_endian_correction)
+	  || xbitpos == padding_correction)
 	src = operand_subword_force (srcreg, xbitpos / BITS_PER_WORD,
 				     GET_MODE (srcreg));
 

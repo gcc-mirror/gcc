@@ -329,6 +329,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #define TARGET_STRUCT_VALUE_RTX default_struct_value_rtx
 #define TARGET_RETURN_IN_MEMORY default_return_in_memory
+#define TARGET_RETURN_IN_MSB hook_bool_tree_false
 
 #define TARGET_EXPAND_BUILTIN_SAVEREGS default_expand_builtin_saveregs
 #define TARGET_SETUP_INCOMING_VARARGS default_setup_incoming_varargs
@@ -341,6 +342,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    TARGET_PROMOTE_PROTOTYPES,					\
    TARGET_STRUCT_VALUE_RTX,					\
    TARGET_RETURN_IN_MEMORY,					\
+   TARGET_RETURN_IN_MSB,					\
    TARGET_EXPAND_BUILTIN_SAVEREGS,				\
    TARGET_SETUP_INCOMING_VARARGS,				\
    TARGET_STRICT_ARGUMENT_NAMING,				\

@@ -255,6 +255,11 @@ static void mips_select_section (tree, int, unsigned HOST_WIDE_INT)
 				  ATTRIBUTE_UNUSED;
 static bool mips_in_small_data_p (tree);
 static void mips_encode_section_info (tree, rtx, int);
+static int mips_fpr_return_fields (tree, tree *);
+static bool mips_return_in_msb (tree);
+static rtx mips_return_fpr_pair (enum machine_mode mode,
+				 enum machine_mode mode1, HOST_WIDE_INT,
+				 enum machine_mode mode2, HOST_WIDE_INT);
 static rtx mips16_gp_pseudo_reg (void);
 static void mips16_fp_args (FILE *, int, int);
 static void build_mips16_function_stub (FILE *);
@@ -787,6 +792,8 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST mips_build_builtin_va_list
+#undef TARGET_RETURN_IN_MSB
+#define TARGET_RETURN_IN_MSB mips_return_in_msb
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -7120,6 +7127,96 @@ mips_encode_section_info (tree decl, rtx rtl, int first)
   default_encode_section_info (decl, rtl, first);
 }
 
+/* See whether VALTYPE is a record whose fields should be returned in
+   floating-point registers.  If so, return the number of fields and
+   list them in FIELDS (which should have two elements).  Return 0
+   otherwise.
+
+   For n32 & n64, a structure with one or two fields is returned in
+   floating-point registers as long as every field has a floating-point
+   type.  */
+
+static int
+mips_fpr_return_fields (tree valtype, tree *fields)
+{
+  tree field;
+  int i;
+
+  if (!TARGET_NEWABI)
+    return 0;
+
+  if (TREE_CODE (valtype) != RECORD_TYPE)
+    return 0;
+
+  i = 0;
+  for (field = TYPE_FIELDS (valtype); field != 0; field = TREE_CHAIN (field))
+    {
+      if (TREE_CODE (field) != FIELD_DECL)
+	continue;
+
+      if (TREE_CODE (TREE_TYPE (field)) != REAL_TYPE)
+	return 0;
+
+      if (i == 2)
+	return 0;
+
+      fields[i++] = field;
+    }
+  return i;
+}
+
+
+/* Implement TARGET_RETURN_IN_MSB.  For n32 & n64, we should return
+   a value in the most significant part of $2/$3 if:
+
+      - the target is big-endian;
+
+      - the value has a structure or union type (we generalize this to
+	cover aggregates from other languages too); and
+
+      - the structure is not returned in floating-point registers.  */
+
+static bool
+mips_return_in_msb (tree valtype)
+{
+  tree fields[2];
+
+  return (TARGET_NEWABI
+	  && TARGET_BIG_ENDIAN
+	  && AGGREGATE_TYPE_P (valtype)
+	  && mips_fpr_return_fields (valtype, fields) == 0);
+}
+
+
+/* Return a composite value in a pair of floating-point registers.
+   MODE1 and OFFSET1 are the mode and byte offset for the first value,
+   likewise MODE2 and OFFSET2 for the second.  MODE is the mode of the
+   complete value.
+
+   For n32 & n64, $f0 always holds the first value and $f2 the second.
+   Otherwise the values are packed together as closely as possible.  */
+
+static rtx
+mips_return_fpr_pair (enum machine_mode mode,
+		      enum machine_mode mode1, HOST_WIDE_INT offset1,
+		      enum machine_mode mode2, HOST_WIDE_INT offset2)
+{
+  int inc;
+
+  inc = (TARGET_NEWABI ? 2 : FP_INC);
+  return gen_rtx_PARALLEL
+    (mode,
+     gen_rtvec (2,
+		gen_rtx_EXPR_LIST (VOIDmode,
+				   gen_rtx_REG (mode1, FP_RETURN),
+				   GEN_INT (offset1)),
+		gen_rtx_EXPR_LIST (VOIDmode,
+				   gen_rtx_REG (mode2, FP_RETURN + inc),
+				   GEN_INT (offset2))));
+
+}
+
+
 /* Implement FUNCTION_VALUE and LIBCALL_VALUE.  For normal calls,
    VALTYPE is the return type and MODE is VOIDmode.  For libcalls,
    VALTYPE is null and MODE is the mode of the return value.  */
@@ -7128,121 +7225,63 @@ rtx
 mips_function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
 		     enum machine_mode mode)
 {
-  int reg = GP_RETURN;
-  enum mode_class mclass;
-  int unsignedp = 1;
-
   if (valtype)
     {
+      tree fields[2];
+      int unsignedp;
+
       mode = TYPE_MODE (valtype);
       unsignedp = TREE_UNSIGNED (valtype);
 
       /* Since we define PROMOTE_FUNCTION_RETURN, we must promote
 	 the mode just as PROMOTE_MODE does.  */
       mode = promote_mode (valtype, mode, &unsignedp, 1);
-    }
-  mclass = GET_MODE_CLASS (mode);
 
-  if (mclass == MODE_FLOAT && GET_MODE_SIZE (mode) <= UNITS_PER_HWFPVALUE)
-    reg = FP_RETURN;
-
-  else if (mclass == MODE_FLOAT && mode == TFmode)
-    /* long doubles are really split between f0 and f2, not f1.  Eek.
-       Use DImode for each component, since GCC wants integer modes
-       for subregs.  */
-    return gen_rtx_PARALLEL
-      (VOIDmode,
-       gen_rtvec (2,
-		  gen_rtx_EXPR_LIST (VOIDmode,
-				     gen_rtx_REG (DImode, FP_RETURN),
-				     GEN_INT (0)),
-		  gen_rtx_EXPR_LIST (VOIDmode,
-				     gen_rtx_REG (DImode, FP_RETURN + 2),
-				     GEN_INT (GET_MODE_SIZE (mode) / 2))));
-
-
-  else if (mclass == MODE_COMPLEX_FLOAT
-	   && GET_MODE_SIZE (mode) <= UNITS_PER_HWFPVALUE * 2)
-    {
-      enum machine_mode cmode = GET_MODE_INNER (mode);
-
-      return gen_rtx_PARALLEL
-	(VOIDmode,
-	 gen_rtvec (2,
-		    gen_rtx_EXPR_LIST (VOIDmode,
-				       gen_rtx_REG (cmode, FP_RETURN),
-				       GEN_INT (0)),
-		    gen_rtx_EXPR_LIST (VOIDmode,
-				       gen_rtx_REG (cmode, FP_RETURN + FP_INC),
-				       GEN_INT (GET_MODE_SIZE (cmode)))));
-    }
-
-  else if (valtype && TREE_CODE (valtype) == RECORD_TYPE
-	   && mips_abi != ABI_32
-	   && mips_abi != ABI_O64
-	   && mips_abi != ABI_EABI)
-    {
-      /* A struct with only one or two floating point fields is returned in
-	 the floating point registers.  */
-      tree field, fields[2];
-      int i;
-
-      for (i = 0, field = TYPE_FIELDS (valtype); field;
-	   field = TREE_CHAIN (field))
+      /* Handle structures whose fields are returned in $f0/$f2.  */
+      switch (mips_fpr_return_fields (valtype, fields))
 	{
-	  if (TREE_CODE (field) != FIELD_DECL)
-	    continue;
+	case 1:
+	  return gen_rtx_REG (mode, FP_RETURN);
 
-	  if (TREE_CODE (TREE_TYPE (field)) != REAL_TYPE || i >= 2)
-	    break;
-
-	  fields[i++] = field;
+	case 2:
+	  return mips_return_fpr_pair (mode,
+				       TYPE_MODE (TREE_TYPE (fields[0])),
+				       int_byte_position (fields[0]),
+				       TYPE_MODE (TREE_TYPE (fields[1])),
+				       int_byte_position (fields[1]));
 	}
 
-      /* Must check i, so that we reject structures with no elements.  */
-      if (! field)
+      /* If a value is passed in the most significant part of a register, see
+	 whether we have to round the mode up to a whole number of words.  */
+      if (mips_return_in_msb (valtype))
 	{
-	  if (i == 1)
+	  HOST_WIDE_INT size = int_size_in_bytes (valtype);
+	  if (size % UNITS_PER_WORD != 0)
 	    {
-	      /* The structure has DImode, but we don't allow DImode values
-		 in FP registers, so we use a PARALLEL even though it isn't
-		 strictly necessary.  */
-	      enum machine_mode field_mode = TYPE_MODE (TREE_TYPE (fields[0]));
-
-	      return gen_rtx_PARALLEL
-		(mode,
-		 gen_rtvec (1,
-			    gen_rtx_EXPR_LIST (VOIDmode,
-					       gen_rtx_REG (field_mode,
-							    FP_RETURN),
-					       const0_rtx)));
-	    }
-
-	  else if (i == 2)
-	    {
-	      enum machine_mode first_mode
-		= TYPE_MODE (TREE_TYPE (fields[0]));
-	      enum machine_mode second_mode
-		= TYPE_MODE (TREE_TYPE (fields[1]));
-	      HOST_WIDE_INT first_offset = int_byte_position (fields[0]);
-	      HOST_WIDE_INT second_offset = int_byte_position (fields[1]);
-
-	      return gen_rtx_PARALLEL
-		(mode,
-		 gen_rtvec (2,
-			    gen_rtx_EXPR_LIST (VOIDmode,
-					       gen_rtx_REG (first_mode,
-							    FP_RETURN),
-					       GEN_INT (first_offset)),
-			    gen_rtx_EXPR_LIST (VOIDmode,
-					       gen_rtx_REG (second_mode,
-							    FP_RETURN + 2),
-					       GEN_INT (second_offset))));
+	      size += UNITS_PER_WORD - size % UNITS_PER_WORD;
+	      mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
 	    }
 	}
     }
 
-  return gen_rtx_REG (mode, reg);
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT
+      && GET_MODE_SIZE (mode) <= UNITS_PER_HWFPVALUE)
+    return gen_rtx_REG (mode, FP_RETURN);
+
+  /* Handle long doubles for n32 & n64.  */
+  if (mode == TFmode)
+    return mips_return_fpr_pair (mode,
+				 DImode, 0,
+				 DImode, GET_MODE_SIZE (mode) / 2);
+
+  if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
+      && GET_MODE_SIZE (mode) <= UNITS_PER_HWFPVALUE * 2)
+    return mips_return_fpr_pair (mode,
+				 GET_MODE_INNER (mode), 0,
+				 GET_MODE_INNER (mode),
+				 GET_MODE_SIZE (mode) / 2);
+
+  return gen_rtx_REG (mode, GP_RETURN);
 }
 
 /* The implementation of FUNCTION_ARG_PASS_BY_REFERENCE.  Return
