@@ -1,3 +1,7 @@
+2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/rtl.texi: Reference manual chapter about trees.
+
 2001-06-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/iris6.h (NO_BUILTIN_WINT_TYPE): Define.
