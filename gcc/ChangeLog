@@ -1,3 +1,9 @@
+Wed Jul  7 02:00:04 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* reload1.c (gen_reload): When synthesizing a 3 operand add 
+	sequence, improve test for when to reload OP1 into the reload
+	register instead of OP0.
+
 Wed Jul  7 01:38:03 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* unroll.c (unroll_loop): Don't delete NOTE_INSN_DELETED_LABEL notes.
