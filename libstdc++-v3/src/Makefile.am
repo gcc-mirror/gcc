@@ -69,8 +69,8 @@ sources = \
 	collate.cc ctype.cc messages.cc monetary.cc numeric.cc time.cc \
 	concept-inst.cc locale-inst.cc misc-inst.cc stl-inst.cc \
 	string-inst.cc wstring-inst.cc valarray-inst.cc  ext-inst.cc \
-	fstream-inst.cc io-inst.cc istream-inst.cc ostream-inst.cc \
-	streambuf-inst.cc sstream-inst.cc
+	fstream.cc fstream-inst.cc io-inst.cc istream-inst.cc \
+	ostream-inst.cc streambuf-inst.cc sstream-inst.cc
 
 VPATH = $(top_srcdir)/src:$(top_srcdir)
 

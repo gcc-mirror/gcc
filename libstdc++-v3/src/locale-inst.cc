@@ -420,15 +420,7 @@ namespace std
     bool
     __verify_grouping<char>(const basic_string<char>&, basic_string<char>&);
 
-  template
-    void 
-    __pad<char>(ios_base&, char, char*, const char *, streamsize, 
-		streamsize, const bool);
-
-  template
-    void 
-    __pad<char, char_traits<char> >(ios_base&, char, char*, const char *, 
-				    streamsize, streamsize, const bool);
+  template class __pad<char, char_traits<char> >;
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   template
@@ -440,29 +432,23 @@ namespace std
     __verify_grouping<wchar_t>(const basic_string<wchar_t>&, 
 			       basic_string<wchar_t>&);
 
-  template
-    void 
-    __pad<wchar_t>(ios_base&, wchar_t, wchar_t*, const wchar_t*, 
-		   streamsize, streamsize, const bool);
-
-  template
-    void 
-    __pad<wchar_t, char_traits<wchar_t> >(ios_base&, wchar_t, wchar_t*, 
-					  const wchar_t*, streamsize, 
-					  streamsize, const bool);
-#endif // _GLIBCPP_USE_WCHAR_T
+  template class __pad<wchar_t, char_traits<wchar_t> >;
+#endif 
 
   template
     int
-    __convert_from_v(char*, const int, const char*, double, const __c_locale&, int);
+    __convert_from_v(char*, const int, const char*, double, 
+		     const __c_locale&, int);
 
   template
     int
-    __convert_from_v(char*, const int, const char*, long double, const __c_locale&, int);
+    __convert_from_v(char*, const int, const char*, long double, 
+		     const __c_locale&, int);
 
   template
     int
-    __convert_from_v(char*, const int, const char*, long, const __c_locale&, int);
+    __convert_from_v(char*, const int, const char*, long, 
+		     const __c_locale&, int);
 
   template
     int
@@ -471,7 +457,8 @@ namespace std
 
   template
     int
-    __convert_from_v(char*, const int, const char*, long long, const __c_locale&, int);
+    __convert_from_v(char*, const int, const char*, long long, 
+		     const __c_locale&, int);
 
   template
     int

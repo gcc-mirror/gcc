@@ -42,11 +42,67 @@ void test01()
 // test05
 // libstdc++/1886
 // should be able to instantiate basic_filebuf for non-standard types.
-template class std::basic_filebuf<short, std::char_traits<short> >;
+namespace test 
+{
+  using namespace std;
+  typedef short type_t;
+  template class basic_filebuf<type_t, char_traits<type_t> >;
+  template class basic_filebuf<gnu_char, char_traits<gnu_char> >;
+} // test
+
+
+// test07
+// libstdc++/2020
+// should be able to use custom char_type
+class gnu_char_type
+{
+  unsigned long character;
+public:
+  // operator ==
+  bool
+  operator==(const gnu_char_type& __lhs) 
+  { return character == __lhs.character; }
+
+  // operator <
+  bool
+  operator<(const gnu_char_type& __lhs) 
+  { return character < __lhs.character; }
+
+  // default ctor
+  gnu_char_type() { }
+
+  // to_char_type
+  gnu_char_type(const unsigned long& __l) : character(__l) { } 
+
+  // to_int_type
+  operator unsigned long() const { return character; }
+};
+
+void test07()
+{
+  bool test = true;
+  typedef std::basic_filebuf<gnu_char_type> gnu_filebuf;
+  
+  try
+    { gnu_filebuf obj; }
+  catch(std::exception& obj)
+    { 
+      test = false; 
+      VERIFY( test );
+    }
+}
+
+#if !__GXX_WEAK__
+// Explicitly instantiate for systems with no COMDAT or weak support.
+template 
+  std::basic_streambuf<gnu_char_type>::int_type
+  std::basic_streambuf<gnu_char_type>::_S_pback_size;
+#endif
 
 int main() 
 {
   test01();
+  test07();
   return 0;
 }
 

@@ -174,8 +174,8 @@ sources = \
 	collate.cc ctype.cc messages.cc monetary.cc numeric.cc time.cc \
 	concept-inst.cc locale-inst.cc misc-inst.cc stl-inst.cc \
 	string-inst.cc wstring-inst.cc valarray-inst.cc  ext-inst.cc \
-	fstream-inst.cc io-inst.cc istream-inst.cc ostream-inst.cc \
-	streambuf-inst.cc sstream-inst.cc
+	fstream.cc fstream-inst.cc io-inst.cc istream-inst.cc \
+	ostream-inst.cc streambuf-inst.cc sstream-inst.cc
 
 
 VPATH = $(top_srcdir)/src:$(top_srcdir)
@@ -258,8 +258,8 @@ ios.lo strstream.lo bitset.lo functexcept.lo stdexcept.lo vterminate.lo \
 c++locale.lo locale.lo localename.lo codecvt.lo collate.lo ctype.lo \
 messages.lo monetary.lo numeric.lo time.lo concept-inst.lo \
 locale-inst.lo misc-inst.lo stl-inst.lo string-inst.lo wstring-inst.lo \
-valarray-inst.lo ext-inst.lo fstream-inst.lo io-inst.lo istream-inst.lo \
-ostream-inst.lo streambuf-inst.lo sstream-inst.lo
+valarray-inst.lo ext-inst.lo fstream.lo fstream-inst.lo io-inst.lo \
+istream-inst.lo ostream-inst.lo streambuf-inst.lo sstream-inst.lo
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)

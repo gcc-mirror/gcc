@@ -69,13 +69,13 @@ namespace std
 
     public:
       istreambuf_iterator() throw() 
-      : _M_sbuf(0), _M_c(-2) { }
+      : _M_sbuf(0), _M_c(traits_type::eof()) { }
       
       istreambuf_iterator(istream_type& __s) throw()
-      : _M_sbuf(__s.rdbuf()), _M_c(-2) { }
+      : _M_sbuf(__s.rdbuf()), _M_c(traits_type::eof()) { }
 
       istreambuf_iterator(streambuf_type* __s) throw()
-      : _M_sbuf(__s), _M_c(-2) { }
+      : _M_sbuf(__s), _M_c(traits_type::eof()) { }
        
       // NB: The result of operator*() on an end of stream is undefined.
       char_type 
@@ -85,21 +85,25 @@ namespace std
       istreambuf_iterator& 
       operator++()
       { 
-	if (_M_sbuf && _M_sbuf->sbumpc() == traits_type::eof())
+	const int_type __eof = traits_type::eof();
+	if (_M_sbuf && traits_type::eq_int_type(_M_sbuf->sbumpc(), __eof))
 	  _M_sbuf = 0;
 	else
-	  _M_c = -2;
+	  _M_c = __eof;
 	return *this; 
       }
 
       istreambuf_iterator
       operator++(int)
       {
+	const int_type __eof = traits_type::eof();
 	istreambuf_iterator __old = *this;
-	if (_M_sbuf && (__old._M_c = _M_sbuf->sbumpc()) == traits_type::eof())
+	if (_M_sbuf
+	    && traits_type::eq_int_type((__old._M_c = _M_sbuf->sbumpc()), 
+					__eof))
 	  _M_sbuf = 0;
 	else
-	  _M_c = -2;
+	  _M_c = __eof;
 	return __old; 
       }
 
@@ -110,8 +114,8 @@ namespace std
       equal(const istreambuf_iterator& __b) const
       {
 	const int_type __eof = traits_type::eof();
-	bool __thiseof = _M_get() == __eof;
-	bool __beof = __b._M_get() == __eof;
+	bool __thiseof = traits_type::eq_int_type(_M_get(), __eof);
+	bool __beof = traits_type::eq_int_type(__b._M_get(), __eof);
 	return (__thiseof && __beof || (!__thiseof && !__beof));
       }
 #endif
@@ -120,13 +124,14 @@ namespace std
       int_type 
       _M_get() const
       { 
-	int_type __ret = traits_type::eof();
+	const int_type __eof = traits_type::eof();
+	int_type __ret = __eof;
 	if (_M_sbuf)
 	  { 
-	    if (_M_c != static_cast<int_type>(-2))
+	    if (!traits_type::eq_int_type(_M_c, __eof))
 	      __ret = _M_c;
 	    else 
-	      if ((__ret = _M_sbuf->sgetc()) == traits_type::eof())
+	      if (traits_type::eq_int_type((__ret = _M_sbuf->sgetc()), __eof))
 		_M_sbuf = 0;
 	  }
 	return __ret;

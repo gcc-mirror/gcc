@@ -105,7 +105,7 @@ namespace std
       bool  
       operator!=(const fpos& __pos) const
       { return _M_off != __pos._M_off; }
-      
+
       streamoff 
       _M_position() const { return _M_off; }
 

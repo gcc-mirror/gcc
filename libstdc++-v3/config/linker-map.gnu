@@ -21,7 +21,7 @@
 ## USA.
 
 
-GLIBCPP_3.1 {
+GLIBCPP_3.2 {
 
   global:
 
@@ -97,7 +97,7 @@ GLIBCPP_3.1 {
 
 
 # Symbols in the support library (libsupc++) have their own tag.
-CXXABI_1 {
+CXXABI_1.2 {
 
   global:
     __cxa_*;
