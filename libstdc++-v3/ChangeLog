@@ -1,3 +1,11 @@
+2002-03-08  scott snyder  <snyder@fnal.gov>
+
+	libstdc++/5875
+	* include/bits/locale_facets.tcc (num_put::_M_convert_float):
+	Allow one more digit of precision.
+	* testsuite/27_io/ostream_inserter_arith.cc: Test that we can
+	write a double and read back in the same value.
+
 2002-03-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/std_limits.h: Move static const data members out of
