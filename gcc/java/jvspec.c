@@ -436,20 +436,14 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
       if (strcmp (argv[i], "-classpath") == 0
 	  || strcmp (argv[i], "-CLASSPATH") == 0)
 	{
-	  char* patharg
-	    = (char*) xmalloc (strlen (argv[i]) + strlen (argv[i+1]) + 3);
-	  sprintf (patharg, "-f%s=%s", argv[i]+1, argv[i+1]);
-	  arglist[j] = patharg;
+	  arglist[j] = concat ("-f", argv[i]+1, "=", argv[i+1], NULL);
 	  i++;
 	  continue;
 	}
 
       if (strcmp (argv[i], "-d") == 0)
 	{
-	  char *patharg = (char *) xmalloc (sizeof ("-foutput-class-dir=")
-					    + strlen (argv[i + 1]) + 1);
-	  sprintf (patharg, "-foutput-class-dir=%s", argv[i + 1]);
-	  arglist[j] = patharg;
+	  arglist[j] = concat ("-foutput-class-dir=", argv[i + 1], NULL);
 	  ++i;
 	  continue;
 	}

@@ -1,3 +1,7 @@
+2001-04-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* xref.c (GNU_xref_file): Use concat in lieu of xmalloc/sprintf.
+
 2001-04-23  Jason Merrill  <jason_merrill@redhat.com>
 
 	* except.c (build_throw): Wrap the initialization of the exception

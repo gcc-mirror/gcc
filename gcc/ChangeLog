@@ -1,3 +1,12 @@
+2001-04-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* collect2.c (main): Use concat in lieu of xmalloc/sprintf.
+	(write_c_file_stat): Likewise.
+
+	* dbxout.c (dbxout_init): Likewise.
+
+	* profile.c (output_func_start_profiler): Likewise.
+
 2001-04-22  Philipp Thomas  <pthomas@suse.de>
 
 	* ABOUT-GCC-NLS: Now that gettext 0.10.37 is out,

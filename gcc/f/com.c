@@ -694,10 +694,8 @@ ffecom_subscript_check_ (tree array, tree element, int dim, int total_dims,
     switch (total_dims)
       {
       case 0:
-	var = xmalloc (strlen (array_name) + 20);
-	sprintf (var, "%s[%s-substring]",
-		 array_name,
-		 dim ? "end" : "start");
+	var = concat (array_name, "[", (dim ? "end" : "start"),
+		      "-substring]", NULL);
 	len = strlen (var) + 1;
 	arg1 = build_string (len, var);
 	free (var);
@@ -740,13 +738,10 @@ ffecom_subscript_check_ (tree array, tree element, int dim, int total_dims,
 			      convert (TREE_TYPE (element),
 				       integer_one_node)));
 
-    proc = xmalloc ((len = strlen (input_filename)
-		     + IDENTIFIER_LENGTH (DECL_NAME (current_function_decl))
-		     + 2));
-
-    sprintf (&proc[0], "%s/%s",
-	     input_filename,
-	     IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
+    proc = concat (input_filename, "/",
+		   IDENTIFIER_POINTER (DECL_NAME (current_function_decl)),
+		   NULL);
+    len = strlen (proc) + 1;
     arg3 = build_string (len, proc);
 
     free (proc);
