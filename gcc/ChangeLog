@@ -1,3 +1,13 @@
+Wed Jul 18 12:05:29 2001  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* gthr-posix.h (__gthread_objc_mutex_trylock): Fixed return value
+	on error.  We can't blindly return the result of
+	pthread_mutex_trylock because it returns a positive number on
+	error, while we must return -1 on error.
+	(__gthread_objc_mutex_lock, __gthread_objc_mutex_unlock): Similar
+	fixes.  
+	Reported by Stephen Brandon <stephen@brandonitconsulting.co.uk>.
+	
 2001-07-17  H.J. Lu <hjl@gnu.org>
 	    Rainer Orth <ro@TechFak.Uni-Bielefeld.DE>
 
