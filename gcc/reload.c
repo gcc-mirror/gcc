@@ -1,5 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4073,7 +4073,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
 	       && (GET_CODE (XEXP (reg_equiv_mem[regno], 0)) == REG
 		   || (GET_CODE (XEXP (reg_equiv_mem[regno], 0)) == PLUS
 		       && GET_CODE (XEXP (XEXP (reg_equiv_mem[regno], 0), 0)) == REG
-		       && CONSTANT_P (XEXP (XEXP (reg_equiv_mem[regno], 0), 0)))))
+		       && CONSTANT_P (XEXP (XEXP (reg_equiv_mem[regno], 0), 1)))))
 	return 0;
 
       /* The only remaining case where we can avoid a reload is if this is a
