@@ -1,6 +1,6 @@
 // bit_vector and vector<bool> specialization -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -296,6 +296,24 @@ protected:
 #include <bits/stl_vector.h>
 namespace __gnu_norm
 {
+
+  /**
+   *  @brief  A specialization of vector for booleans which offers fixed time
+   *  access to individual elements in any order.
+   *
+   *  Note that vector<bool> does not actually meet the requirements for being
+   *  a container.  This is because the reference and pointer types are not
+   *  really references and pointers to bool.  See DR96 for details.  @see
+   *  vector for function documentation.
+   *
+   *  @ingroup Containers
+   *  @ingroup Sequences
+   *
+   *  In some terminology a %vector can be described as a dynamic C-style array,
+   *  it offers fast and efficient access to individual elements in any order
+   *  and saves the user from worrying about memory and size allocation.
+   *  Subscripting ( @c [] ) access is also provided as with C-style arrays.
+  */
 template <typename _Alloc> 
   class vector<bool, _Alloc> : public _Bvector_base<_Alloc> 
   {

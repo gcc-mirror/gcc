@@ -1,6 +1,6 @@
 // Streambuf iterators
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -46,6 +46,7 @@
 namespace std
 {
   // 24.5.3 Template class istreambuf_iterator
+  /// Provides input iterator semantics for streambufs.
   template<typename _CharT, typename _Traits>
     class istreambuf_iterator
     : public iterator<input_iterator_tag, _CharT, typename _Traits::off_type,
@@ -53,11 +54,14 @@ namespace std
     {
     public:
       // Types:
+      //@{
+      /// Public typedefs
       typedef _CharT                         		char_type;
       typedef _Traits                        		traits_type;
       typedef typename _Traits::int_type     		int_type;
       typedef basic_streambuf<_CharT, _Traits> 		streambuf_type;
       typedef basic_istream<_CharT, _Traits>         	istream_type;
+      //@}
 
     private:
       // 24.5.3 istreambuf_iterator 
@@ -71,16 +75,21 @@ namespace std
       int_type 			_M_c;
 
     public:
+      ///  Construct end of input stream iterator.
       istreambuf_iterator() throw() 
       : _M_sbuf(0), _M_c(traits_type::eof()) { }
       
+      ///  Construct start of input stream iterator.
       istreambuf_iterator(istream_type& __s) throw()
       : _M_sbuf(__s.rdbuf()), _M_c(traits_type::eof()) { }
 
+      ///  Construct start of streambuf iterator.
       istreambuf_iterator(streambuf_type* __s) throw()
       : _M_sbuf(__s), _M_c(traits_type::eof()) { }
        
-      // NB: The result of operator*() on an end of stream is undefined.
+      ///  Return the current character pointed to by iterator.  This returns
+      ///  streambuf.sgetc().  It cannot be assigned.  NB: The result of
+      ///  operator*() on an end of stream is undefined.
       char_type 
       operator*() const
       { 
@@ -93,7 +102,8 @@ namespace std
 #endif
 	return traits_type::to_char_type(_M_get()); 
       }
-	
+
+      /// Advance the iterator.  Calls streambuf.sbumpc().
       istreambuf_iterator& 
       operator++()
       { 
@@ -108,6 +118,7 @@ namespace std
 	return *this; 
       }
 
+      /// Advance the iterator.  Calls streambuf.sbumpc().
       istreambuf_iterator
       operator++(int)
       {
@@ -129,6 +140,7 @@ namespace std
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 110 istreambuf_iterator::equal not const
       // NB: there is also number 111 (NAD, Future) pending on this function.
+      /// Return true both iterators are end or both are not end.
       bool 
       equal(const istreambuf_iterator& __b) const
       {
@@ -174,28 +186,35 @@ namespace std
 	       const istreambuf_iterator<_CharT, _Traits>& __b)
     { return !__a.equal(__b); }
 
+  /// Provides output iterator semantics for streambufs.
   template<typename _CharT, typename _Traits>
     class ostreambuf_iterator
     : public iterator<output_iterator_tag, void, void, void, void>
     {
     public:
       // Types:
+      //@{
+      /// Public typedefs
       typedef _CharT                           char_type;
       typedef _Traits                          traits_type;
       typedef basic_streambuf<_CharT, _Traits> streambuf_type;
       typedef basic_ostream<_CharT, _Traits>   ostream_type;
+      //@}
 
     private:
       streambuf_type* 	_M_sbuf;
       bool 		_M_failed;
 
     public:
+      ///  Construct output iterator from ostream.
       ostreambuf_iterator(ostream_type& __s) throw ()
       : _M_sbuf(__s.rdbuf()), _M_failed(!_M_sbuf) { }
       
+      ///  Construct output iterator from streambuf.
       ostreambuf_iterator(streambuf_type* __s) throw ()
       : _M_sbuf(__s), _M_failed(!_M_sbuf) { }
 
+      ///  Write character to streambuf.  Calls streambuf.sputc().
       ostreambuf_iterator& 
       operator=(_CharT __c)
       {
@@ -205,18 +224,22 @@ namespace std
 	return *this;
       }
 
+      /// Return *this.
       ostreambuf_iterator& 
       operator*()
       { return *this; }
 
+      /// Return *this.
       ostreambuf_iterator& 
       operator++(int)
       { return *this; }
 
+      /// Return *this.
       ostreambuf_iterator& 
       operator++()
       { return *this; }
 
+      /// Return true if previous operator=() failed.
       bool 
       failed() const throw()
       { return _M_failed; }
