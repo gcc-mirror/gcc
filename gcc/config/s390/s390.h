@@ -299,6 +299,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 #define CC_REG_P(X)		(REG_P (X) && CC_REGNO_P (REGNO (X)))
 #define FRAME_REG_P(X)		(REG_P (X) && FRAME_REGNO_P (REGNO (X)))
 
+#define SIBCALL_REGNUM 1
 #define BASE_REGISTER 13
 #define RETURN_REGNUM 14
 #define CC_REGNUM 33

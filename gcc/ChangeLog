@@ -1,3 +1,32 @@
+2004-04-29  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_emit_epilogue): Parameter added.
+	(s390_emit_call): New function prototype added.
+	(s390_tls_get_offset): Function removed.
+	* config/s390/s390.c (s390_function_ok_for_sibcall,
+	s390_call_saved_register_used_p): New functions.
+	(TARGET_FUNCTION_OK_FOR_SIBCALL): Definition of target macro added.
+	(s390_tls_get_offset): Function merged into s390_emit_tls_call_insn.
+	(s390_emit_tls_call_insn): New function.
+	(legitimize_tls_address): Call s390_emit_tls_call_insn instead of
+	emit_call_insn.
+	(s390_emit_prologue): Use s390_emit_call instead of emit_call_insn.
+	(s390_emit_epilogue): Like s390_emit_prologue. Parameter for sibcalls 
+	added.
+	* config/s390/s390.h (SIBCALL_REGNUM): New macro representing the 
+	register number used to hold the target address for sibcalls.
+	* config/s390/s390.md ("sibcall", "sibcall_value", "sibcall_epilogue"):
+	New expanders.
+	("*sibcall_br", "*sibcall_brc", "*sibcall_brcl", "*sibcall_value_br", 
+	"*sibcall_value_brc", "*sibcall_value_brcl"): New insns.
+	("call_exp", "call_value_exp", "call_value_tls", "call_value_tls_exp"): 
+	Expanders removed.
+	("call", "call_value"): Call s390_emit_call to emit the call patterns.
+	("*bras", "*brasl", "*bras_r", "*brasl_r", "*bras_tls", "*brasl_tls", 
+	"*basr", "*basr_r", "*basr_tls"): Added constraint: !SIBLING_CALL_P.
+	("epilogue"): Changed the call to s390_emit_epilogue to use the
+	new parameter.
+
 2004-04-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* bb-reorder.c, c-opts.c, cfglayout.c, cgraph.c, cgraphunit.c,
