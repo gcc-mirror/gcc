@@ -608,7 +608,14 @@ shorten_branches (first)
 		  int inner_length;
 
 		  insn_addresses[inner_uid] = insn_current_address;
-		  inner_length = insn_current_length (inner_insn);
+
+		  /* insn_current_length returns 0 for insns with a
+		     non-varying length.  */
+		  if (! varying_length[inner_uid])
+		    inner_length = insn_lengths[inner_uid];
+		  else
+		    inner_length = insn_current_length (inner_insn);
+
 		  if (inner_length != insn_lengths[inner_uid])
 		    {
 		      insn_lengths[inner_uid] = inner_length;
