@@ -28,7 +28,26 @@ GLIBCPP_3.2 {
     # All but the last are terminated with a semicolon.
     extern "C++"
     {
-      std::[A-Za-k]*;
+      std::[A-Za]*;
+      std::ba[a-r]*;
+      std::basic_[a-r]*;
+      std::basic_streambuf*;
+      std::basic_stringbuf*;
+      std::basic_stringstream*;
+      std::basic_[t-z]*;
+      std::ba[t-z]*;
+      std::b[b-z]*;
+      std::c[a-n]*;
+      std::co[a-c]*;
+      std::codecvt_byname*;
+      std::codecvt::[A-Za-b]*;
+      std::codecvt::[A-Zd-z]*;
+      std::codecvt_c;
+      std::codecvt_w;
+      std::co[e-z]*;
+      std::c[p-z]*;
+      std::c_[a-z]*;	
+      std::[A-Zd-k]*;
       std::length_error*;
       std::logic_error*;
       std::locale::[A-Za-z]*;
@@ -45,18 +64,89 @@ GLIBCPP_3.2 {
       std::__timepunct*;
       std::__numeric_limits_base*;
       std::_S_bit_count;
-      std::_S_first_one;
-      std::__default_alloc_template*;
-      std::__malloc_alloc_template*
+      std::_S_first_one
     };
 
     # Names not in an 'extern' block are mangled names.
 
+    # std::string minus binary operator plus
+    _ZNKSs*;
+    _ZNKSb*;
+    _ZNSs[A-Za-z]*;
+    _ZNSs[0-9][A-Za-z]*;
+    _ZNSs[0-9][0-9][A-Za-z]*;
+    _ZNSs[0-9]_[A-Ra-z]*;
+    _ZNSs[0-9][0-9]_[A-Ra-z]*;
+    _ZNSs12_S_empty_repEv;
+    _ZNSs20_S_empty_rep_storageE;
+    _ZNSbIwSt11char_traitsIwESaIwEE20_S_empty_rep_storageE;
+    _ZNSs12_S_constructEjcRKSaIcE;
+    _ZNSs13_S_copy_chars*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[A-Ra-z]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[0-9][A-Ra-z]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[0-9][0-9][A-Ra-z]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[0-9]_[A-Ra-z]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[0-9][0-9]_[A-Ra-z]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE13_S_copy_chars*;
+    _ZNSbIwSt11char_traitsIwESaIwEE12_S_constructEjwRKS1_;
+    _ZNSbIwSt11char_traitsIwESaIwEE12_S_empty_repEv;
+    _ZSt24__uninitialized_copy_auxIN9*;
+    _ZSt26__uninitialized_fill_n_aux*;
+    _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_EPKS3_RKS6_;
+    _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_ES3_RKS6_;
+    _ZStplIwSt11char_traitsIwESaIwEESbIT_T0_T1_EPKS3_RKS6_;
+    _ZStplIwSt11char_traitsIwESaIwEESbIT_T0_T1_ES3_RKS6_;
+
     # std::locale destructors
     _ZNSt6localeD*;
 	 
+    # std::codecvt<char> members.
+    _ZNKSt7codecvtIcc11__mbstate_tE*;
+    # std::codecvt<char>::~codecvt
+    _ZNSt7codecvtIcc11__mbstate_tED*;
+    # std::codecvt<char>::codecvt(size_t), where size_t variable.
+    _ZNSt7codecvtIcc11__mbstate_tEC1Ej;
+    _ZNSt7codecvtIcc11__mbstate_tEC2Ej;
+    _ZNSt7codecvtIcc11__mbstate_tEC1Em;
+    _ZNSt7codecvtIcc11__mbstate_tEC2Em;
+    # std::codecvt<char>::id
+    _ZNSt7codecvtIcc11__mbstate_tE2idE;
+
+    # std::codecvt<wchar_t> members.
+    _ZNKSt7codecvtIwc11__mbstate_tE*;
+    # std::codecvt<wchar_t>::~codecvt
+    _ZNSt7codecvtIwc11__mbstate_tED*;
+    # std::codecvt<wchar_t>::codecvt(size_t), where size_t variable.
+    _ZNSt7codecvtIwc11__mbstate_tEC1Ej;
+    _ZNSt7codecvtIwc11__mbstate_tEC2Ej;
+    _ZNSt7codecvtIwc11__mbstate_tEC1Em;
+    _ZNSt7codecvtIwc11__mbstate_tEC2Em;
+    # std::codecvt<wchar_t>::id
+    _ZNSt7codecvtIwc11__mbstate_tE2idE;
+
+     # std::use_facet<codecvt>
+    _ZSt9use_facetISt7codecvtIcc11__mbstate_tEERKT_RKSt6locale;
+    _ZSt9use_facetISt7codecvtIwc11__mbstate_tEERKT_RKSt6locale;
+
     # std::has_facet*
     _ZSt9has_facet*;
+
+    # std::__default_alloc_template
+    _ZNSt24__default_alloc_templateILb1ELi0EE10deallocate*;
+    _ZNSt24__default_alloc_templateILb1ELi0EE8allocate*;
+    _ZNSt24__default_alloc_templateILb1ELi0EE12_S_free_listE;
+    _ZNSt24__default_alloc_templateILb1ELi0EE22_S_node_allocator_lockE;
+    _ZNSt24__default_alloc_templateILb1ELi0EE9_S_refillE*;
+
+    # std::__default_alloc_template to be removed in the future
+    _ZNSt24__default_alloc_templateILb1ELi0EE10reallocateEPv*;
+    _ZNSt24__default_alloc_templateILb1ELi0EE11_S_round_upE*;
+    _ZNSt24__default_alloc_templateILb1ELi0EE14_S_chunk_allocE*;
+    _ZNSt24__default_alloc_templateILb1ELi0EE17_S_freelist_indexE*;
+    _ZNSt24__default_alloc_templateILb1ELi0EE11_S_end_freeE;
+    _ZNSt24__default_alloc_templateILb1ELi0EE12_S_heap_sizeE;
+    _ZNSt24__default_alloc_templateILb1ELi0EE13_S_start_freeE;
+    _ZNSt24__default_alloc_templateILb1ELi0EE5_Lock*;
 
     # operator new(unsigned)
     _Znwj;
@@ -108,6 +198,55 @@ GLIBCPP_3.2 {
   local:
     *;
 };
+
+# Symbols added after GLIBCPP_3.2
+GLIBCPP_3.2.1 {
+
+  _ZNSt7codecvtIcc11__mbstate_tEC1EP15__locale_structj;
+  _ZNSt7codecvtIcc11__mbstate_tEC2EP15__locale_structj;
+  _ZNSt7codecvtIwc11__mbstate_tEC1EP15__locale_structj;
+  _ZNSt7codecvtIwc11__mbstate_tEC2EP15__locale_structj;
+
+  _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_ERKS6_S8_;
+  _ZStplIwSt11char_traitsIwESaIwEESbIT_T0_T1_ERKS6_S8_;
+
+  _ZNSt24__default_alloc_templateILb1ELi0EE12_S_force_newE;
+
+  # stub functions from libmath
+  sinf;
+  sinl;
+  sinhf;
+  sinhl;
+  cosf;
+  cosl;
+  coshf;
+  coshl;
+  tanf;
+  tanl;
+  tanhf;
+  tanhl;
+  atan2f;
+  atan2l;
+  expf;
+  expl;
+  hypotf;
+  hypotl;
+  hypot;
+  logf;
+  logl;
+  log10f;
+  log10l;
+  powf;
+  powl;
+  sqrtf;
+  sqrtl;
+  copysignf;
+  nan;
+  __signbit;
+  __signbitf;
+  __signbitl;
+
+} GLIBCPP_3.2;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.2 {

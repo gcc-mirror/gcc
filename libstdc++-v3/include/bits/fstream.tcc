@@ -477,13 +477,16 @@ namespace std
   // which are defined via explicit instantiations elsewhere.  
   // NB:  This syntax is a GNU extension.
   extern template class basic_filebuf<char>;
-  extern template class basic_filebuf<wchar_t>;
   extern template class basic_ifstream<char>;
-  extern template class basic_ifstream<wchar_t>;
   extern template class basic_ofstream<char>;
-  extern template class basic_ofstream<wchar_t>;
   extern template class basic_fstream<char>;
+
+#ifdef _GLIBCPP_USE_WCHAR_T
+  extern template class basic_filebuf<wchar_t>;
+  extern template class basic_ifstream<wchar_t>;
+  extern template class basic_ofstream<wchar_t>;
   extern template class basic_fstream<wchar_t>;
+#endif
 } // namespace std
 
 #endif 

@@ -1,3 +1,33 @@
+2002-11-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/linker-map.gnu: Export string operator+.
+	Export __default_alloc_template::_S_force_new.
+	* testsuite/abi_check.cc: Output tweaks.
+
+2002-11-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+        PR libstdc++/8172
+        * src/string-inst.cc: Add instantiation.
+	
+2002-11-04  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
+
+	PR libstdc++/8197
+	* config/link-map.gnu: Export math stubbs.
+
+2002-11-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/8318
+	* include/std/std_iostream.h: Tweak.
+	* include/std/std_iosfwd.h: Add _GLIBCPP_USE_WCHAR_T.
+	* include/std/std_iomanip.h: Same.
+	* include/bits/stringfwd.h: Same.
+	* include/bits/basic_string.tcc: Same.
+	* include/bits/sstream.tcc: Same.
+	* include/bits/fstream.tcc: Same.
+	* include/bits/basic_ios.tcc: Same.
+	* include/bits/streambuf.tcc: Same.
+	* include/bits/locale_facets.tcc: Same.
+
 2002-11-01  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/8348

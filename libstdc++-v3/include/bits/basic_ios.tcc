@@ -187,7 +187,10 @@ namespace std
   // which are defined via explicit instantiations elsewhere.  
   // NB:  This syntax is a GNU extension.
   extern template class basic_ios<char>;
+
+#ifdef _GLIBCPP_USE_WCHAR_T
   extern template class basic_ios<wchar_t>;
+#endif
 } // namespace std
 
 #endif 

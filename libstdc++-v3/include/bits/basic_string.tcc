@@ -959,6 +959,7 @@ namespace std
     basic_istream<char>& 
     getline(basic_istream<char>&, string&);
 
+#ifdef _GLIBCPP_USE_WCHAR_T
   extern template class basic_string<wchar_t>;
   extern template 
     basic_istream<wchar_t>& 
@@ -972,6 +973,7 @@ namespace std
   extern template 
     basic_istream<wchar_t>& 
     getline(basic_istream<wchar_t>&, wstring&);
+#endif
 } // namespace std
 
 #endif
