@@ -473,7 +473,7 @@ in the following sections.
 -mno-fp-ret-in-387  -msoft-float  -msvr3-shlib @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
 -mpreferred-stack-boundary=@var{num} @gol
--mmmx  -msse  -msse2  -m3dnow @gol
+-mmmx  -msse  -msse2 -mpni -m3dnow @gol
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
 -m96bit-long-double  -mregparm=@var{num}  -momit-leaf-frame-pointer @gol
@@ -7904,6 +7904,13 @@ code that expects temporaries to be 80bit.
 
 This is the default choice for x86-64 compiler.
 
+@item pni
+Use all SSE extensions enabled by @option{-msse2} as well as the new
+SSE extensions in Prescott New Intrunctions. @option{-mpni} also
+enables 2 builtin functions, @code{__builtin_ia32_monitor} and
+@code{__builtin_ia32_mwait}, for new intrunctions @code{monitor} and
+@code{mwait}. 
+
 @item sse,387
 Attempt to utilize both instruction sets at once.  This effectively double the
 amount of available registers and on chips with separate execution units for
@@ -8085,6 +8092,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mno-sse
 @item -msse2
 @itemx -mno-sse2
+@item -mpni
+@itemx -mno-pni
 @item -m3dnow
 @itemx -mno-3dnow
 @opindex mmmx

@@ -5315,6 +5315,31 @@ Generates the @code{movhps} machine instruction as a store to memory.
 Generates the @code{movlps} machine instruction as a store to memory.
 @end table
 
+The following built-in functions are available when @option{-mpni} is used.
+All of them generate the machine instruction that is part of the name.
+
+@example
+v2df __builtin_ia32_addsubpd (v2df, v2df)
+v2df __builtin_ia32_addsubps (v2df, v2df)
+v2df __builtin_ia32_haddpd (v2df, v2df)
+v2df __builtin_ia32_haddps (v2df, v2df)
+v2df __builtin_ia32_hsubpd (v2df, v2df)
+v2df __builtin_ia32_hsubps (v2df, v2df)
+v16qi __builtin_ia32_lddqu (char const *)
+void __builtin_ia32_monitor (void *, unsigned int, unsigned int)
+v2df __builtin_ia32_movddup (v2df)
+v4sf __builtin_ia32_movshdup (v4sf)
+v4sf __builtin_ia32_movsldup (v4sf)
+void __builtin_ia32_mwait (unsigned int, unsigned int)
+@end example
+
+The following built-in functions are available when @option{-mpni} is used.
+
+@table @code
+@item v2df __builtin_ia32_loadddup (double const *)
+Generates the @code{movddup} machine instruction as a load from memory.
+@end table
+
 The following built-in functions are available when @option{-m3dnow} is used.
 All of them generate the machine instruction that is part of the name.
 
