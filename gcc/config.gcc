@@ -2897,12 +2897,12 @@ rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	thread_file='aix'
 	;;
 rs6000-ibm-aix*)
-	tm_file="${tm_file} rs6000/aix.h
+	tm_file="${tm_file} rs6000/aix.h"
 	float_format=none
 	use_collect2=yes
 	;;
 rs6000-bull-bosx)
-	tm_file="${tm_file} rs6000/aix.h
+	tm_file="${tm_file} rs6000/aix.h"
 	float_format=none
 	use_collect2=yes
 	;;
