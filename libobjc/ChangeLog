@@ -1,3 +1,7 @@
+2001-05-22  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* sendmsg.c (__objc_forward): Delete strlen() declaration.
+
 2001-05-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* objc-features.texi: Move to ../gcc/objc.texi.
