@@ -50,14 +50,11 @@ OBJC_FLAGS_TO_PASS = \
 
 #
 # Define the names for selecting Objective-C in LANGUAGES.
-OBJC objc: cc1obj$(exeext) objc-runtime
-OBJECTIVE-C objective-c: cc1obj$(exeext) objc-runtime
+OBJC objc: cc1obj$(exeext)
+OBJECTIVE-C objective-c: cc1obj$(exeext)
 
 # Tell GNU make to ignore these if they exist.
 .PHONY: objective-c objc ObjC
-
-# The Objective C thread file
-OBJC_THREAD_FILE=thr-$(GCC_THREAD_FILE)
 
 # Language-specific object files for Objective C.
 OBJC_OBJS = objc-parse.o objc-act.o $(C_AND_OBJC_OBJS)
@@ -94,200 +91,6 @@ objc-act.o : $(srcdir)/objc/objc-act.c \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/objc \
 	-c $(srcdir)/objc/objc-act.c
 
-objc-runtime: objc-headers libobjc.a
-
-# copy objc header files into build directory
-objc-headers: stmp-fixinc
-	if [ -d include ]; then true; else mkdir include; fi
-	cd objc; \
-	if [ -f Makefile ]; then \
-	  $(MAKE) copy-headers \
-	  tooldir=$(tooldir) \
-	  AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
-	  GCC_FOR_TARGET="../xgcc -B../" \
-	  GCC_CFLAGS="$(GCC_CFLAGS)" incinstalldir=../include; \
-	fi
-	touch objc-headers
-
-# Objective C runtime library specific files.
-
-OBJC_O = objc/hash.o objc/sarray.o \
-	objc/class.o objc/sendmsg.o \
-	objc/init.o objc/archive.o \
-	objc/encoding.o objc/selector.o \
-	objc/objects.o objc/misc.o \
-	objc/NXConstStr.o objc/Object.o \
-	objc/Protocol.o objc/nil_method.o \
-	objc/thr.o objc/linking.o \
-	objc/gc.o \
-	objc/$(OBJC_THREAD_FILE).o
-
-objc/hash.o: $(srcdir)/objc/hash.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/hash.c -o $@
-objc/sarray.o: $(srcdir)/objc/sarray.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/sarray.c -o $@
-objc/class.o: $(srcdir)/objc/class.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/class.c -o $@
-objc/sendmsg.o: $(srcdir)/objc/sendmsg.c $(GCC_PASSES) objc/runtime-info.h
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) -Iobjc \
-	-c $(srcdir)/objc/sendmsg.c -o $@
-objc/init.o: $(srcdir)/objc/init.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/init.c -o $@
-objc/archive.o: $(srcdir)/objc/archive.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/archive.c -o $@
-objc/encoding.o: $(srcdir)/objc/encoding.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/encoding.c -o $@
-objc/selector.o: $(srcdir)/objc/selector.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/selector.c -o $@
-objc/objects.o: $(srcdir)/objc/objects.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/objects.c -o $@
-objc/misc.o: $(srcdir)/objc/misc.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/misc.c -o $@
-objc/NXConstStr.o: $(srcdir)/objc/NXConstStr.m $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-fgnu-runtime -c $(srcdir)/objc/NXConstStr.m -o $@
-objc/Object.o: $(srcdir)/objc/Object.m $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-fgnu-runtime -c $(srcdir)/objc/Object.m -o $@
-objc/Protocol.o: $(srcdir)/objc/Protocol.m $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-fgnu-runtime -c $(srcdir)/objc/Protocol.m -o $@
-objc/thr.o: $(srcdir)/objc/thr.h $(srcdir)/objc/thr.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/thr.c -o $@
-objc/$(OBJC_THREAD_FILE).o: $(srcdir)/objc/$(OBJC_THREAD_FILE).c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/$(OBJC_THREAD_FILE).c -o $@
-objc/nil_method.o: $(srcdir)/objc/nil_method.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/nil_method.c -o $@
-objc/linking.o: $(srcdir)/objc/linking.m $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-fgnu-runtime -c $(srcdir)/objc/linking.m -o $@
-objc/gc.o: $(srcdir)/objc/gc.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-fgnu-runtime -c $(srcdir)/objc/gc.c -o $@
-objc/libobjc_entry.o: $(srcdir)/objc/libobjc_entry.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/libobjc_entry.c -o $@
-
-
-
-objc/hash_gc.o: $(srcdir)/objc/hash.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/hash.c -o $@
-objc/sarray_gc.o: $(srcdir)/objc/sarray.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/sarray.c -o $@
-objc/class_gc.o: $(srcdir)/objc/class.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/class.c -o $@
-objc/sendmsg_gc.o: $(srcdir)/objc/sendmsg.c $(GCC_PASSES) objc/runtime-info.h
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) -Iobjc \
-	-c $(srcdir)/objc/sendmsg.c -o $@
-objc/init_gc.o: $(srcdir)/objc/init.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/init.c -o $@
-objc/archive_gc.o: $(srcdir)/objc/archive.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/archive.c -o $@
-objc/encoding_gc.o: $(srcdir)/objc/encoding.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/encoding.c -o $@
-objc/selector_gc.o: $(srcdir)/objc/selector.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/selector.c -o $@
-objc/objects_gc.o: $(srcdir)/objc/objects.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/objects.c -o $@
-objc/misc_gc.o: $(srcdir)/objc/misc.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/misc.c -o $@
-objc/NXConstStr_gc.o: $(srcdir)/objc/NXConstStr.m $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-fgnu-runtime -c $(srcdir)/objc/NXConstStr.m -o $@
-objc/Object_gc.o: $(srcdir)/objc/Object.m $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-fgnu-runtime -c $(srcdir)/objc/Object.m -o $@
-objc/Protocol_gc.o: $(srcdir)/objc/Protocol.m $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-fgnu-runtime -c $(srcdir)/objc/Protocol.m -o $@
-objc/thr_gc.o: $(srcdir)/objc/thr.h $(srcdir)/objc/thr.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/thr.c -o $@
-objc/$(OBJC_THREAD_FILE)_gc.o: $(srcdir)/objc/$(OBJC_THREAD_FILE).c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/$(OBJC_THREAD_FILE).c -o $@
-objc/nil_method_gc.o: $(srcdir)/objc/nil_method.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/nil_method.c -o $@
-objc/linking_gc.o: $(srcdir)/objc/linking.m $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-fgnu-runtime -c $(srcdir)/objc/linking.m -o $@
-objc/gc_gc.o: $(srcdir)/objc/gc.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-fgnu-runtime -c $(srcdir)/objc/gc.c -o $@
-objc/libobjc_entry_gc.o: $(srcdir)/objc/libobjc_entry.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/libobjc_entry.c -o $@
-
-
-$(OBJC_O): $(GCC_PASSES) cc1obj$(exeext)
-
-# Build the Objective C runtime library.
-libobjc.a: cc1obj$(exeext) specs stmp-int-hdrs libgcc2.ready \
- $(USE_COLLECT2) $(EXTRA_PARTS) objc/runtime-info.h $(OBJC_O)
-	-rm -f libobjc.a
-	$(AR) $(AR_FLAGS) libobjc.a $(OBJC_O)
-	-if $(RANLIB_TEST) ; then $(RANLIB) libobjc.a; else true; fi
-	-if [ "$(OBJC_BOEHM_GC)" != "" ]; then \
-	  make libobjc_gc.a GCC_CFLAGS="$(GCC_CFLAGS) -DOBJC_WITH_GC=1" \
-		OBJC_O=`echo $(OBJC_O) | sed 's/.o /_gc.o /g'`; \
-	fi
-
-# Build the garbage collected Objective C runtime library.
-libobjc_gc.a: cc1obj specs stmp-int-hdrs libgcc2.ready \
-	$(USE_COLLECT2) $(EXTRA_PARTS) $(OBJC_O)
-	-rm -f libobjc_gc.a
-	$(AR) $(AR_FLAGS) libobjc_gc.a $(OBJC_O)
-	-if $(RANLIB_TEST) ; then $(RANLIB) libobjc_gc.a; else true; fi
-
-libobjc_s.a: libobjc.a
-	mv libobjc.a libobjc_s.a
-
-# Create a relocatable DLL
-libobjc.dll: libobjc_s.a objc/libobjc_entry.o
-	$(GCC_FOR_TARGET) -mdll -Wl,--base-file -Wl,libobjc.base \
-		-o libobjc.dll libobjc_s.a \
-		objc/libobjc_entry.o -lkernel32
-	$(DLLTOOL) --dllname libobjc.dll --def $(srcdir)/objc/libobjc.def \
-		--base-file libobjc.base --output-exp libobjc.exp
-	$(GCC_FOR_TARGET) -mdll -Wl,--base-file libobjc.base libobjc.exp \
-		-o libobjc.dll libobjc_s.a \
-		objc/libobjc_entry.o -lkernel32
-	$(DLLTOOL) --dllname libobjc.dll --def $(srcdir)/objc/libobjc.def \
-		--base-file libobjc.base --output-exp libobjc.exp
-	$(GCC_FOR_TARGET) libobjc.exp -mdll \
-		-o libobjc.dll libobjc_s.a \
-		objc/libobjc_entry.o -lkernel32
-	$(DLLTOOL) --dllname libobjc.dll --def $(srcdir)/objc/libobjc.def \
-		--output-lib libobjc.a
-
-# Platform generated information needed by ObjC runtime
-objc/runtime-info.h: cc1obj$(exeext)
-	echo "" > tmp-runtime
-	echo "/* This file is automatically generated */" >$@
-	./cc1obj -print-objc-runtime-info tmp-runtime >>$@
-	rm -f tmp-runtime
 #
 # Build hooks:
 
@@ -303,32 +106,7 @@ objc.dvi:
 # Install hooks:
 # cc1obj is installed elsewhere as part of $(COMPILERS).
 
-objc.install-normal: installdirs
-	-if [ -f libobjc.a ] ; then \
-	  rm -f $(libsubdir)/libobjc.a; \
-	  $(INSTALL_DATA) libobjc.a $(libsubdir)/libobjc.a; \
-	  if $(RANLIB_TEST) ; then \
-	    (cd $(libsubdir); $(RANLIB) libobjc.a); else true; fi; \
-	  chmod a-x $(libsubdir)/libobjc.a; \
-	else true; fi
-	-if [ -f libobjc_gc.a ] ; then \
-	  rm -f $(libsubdir)/libobjc_gc.a; \
-	  $(INSTALL_DATA) libobjc_gc.a $(libsubdir)/libobjc_gc.a; \
-	  if $(RANLIB_TEST) ; then \
-	    (cd $(libsubdir); $(RANLIB) libobjc_gc.a); else true; fi; \
-	  chmod a-x $(libsubdir)/libobjc_gc.a; \
-	else true; fi
-	-if [ -f libobjc_s.a ] ; then \
-	  rm -f $(libsubdir)/libobjc_s.a; \
-	  $(INSTALL_DATA) libobjc_s.a $(libsubdir)/libobjc_s.a; \
-	  if $(RANLIB_TEST) ; then \
-	    (cd $(libsubdir); $(RANLIB) libobjc_s.a); else true; fi; \
-	  chmod a-x $(libsubdir)/libobjc_s.a; \
-	else true; fi
-	-if [ -f libobjc.dll ] ; then \
-	  rm -f $(bindir)/libobjc.dll; \
-	  $(INSTALL_DATA) libobjc.dll $(bindir)/libobjc.dll; \
-	else true; fi
+objc.install-normal:
 
 objc.install-common:
 
@@ -344,9 +122,6 @@ objc.uninstall:
 objc.mostlyclean:
 	-rm -f tmp-objc-prs.y
 	-rm -f objc/*$(objext) objc/xforward objc/fflags
-	-rm -f objc/runtime-info.h
-	-rm -f libobjc.a libobjc_gc.a libobjc_s.a libobjc.dll
-	-rm -f libobjc.base libobjc.exp
 objc.clean: objc.mostlyclean
 	-rm -rf objc-headers
 objc.distclean:
@@ -364,19 +139,15 @@ objc.maintainer-clean:
 objc.stage1: stage1-start
 	-mv objc/*$(objext) stage1/objc
 	-mv cc1obj$(exeext) stage1
-	-mv libobjc.a libobjc_gc.a stage1
 objc.stage2: stage2-start
 	-mv objc/*$(objext) stage2/objc
 	-mv cc1obj$(exeext) stage2
-	-mv libobjc.a libobjc_gc.a stage2
 objc.stage3: stage3-start
 	-mv objc/*$(objext) stage3/objc
 	-mv cc1obj$(exeext) stage3
-	-mv libobjc.a libobjc_gc.a stage3
 objc.stage4: stage4-start
 	-mv objc/*$(objext) stage4/objc
 	-mv cc1obj$(exeext) stage4
-	-mv libobjc.a libobjc_gc.a stage4
 
 #
 # Maintenance hooks:

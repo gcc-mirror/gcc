@@ -1,4 +1,4 @@
-#  GNU Objective C Runtime Makefile
+#  GNU Objective C frontend Makefile
 #  Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
 #
 #  This file is part of GNU CC.
@@ -17,20 +17,18 @@
 #  Foundation, 59 Temple Place - Suite 330,
 #  Boston, MA 02111-1307, USA.
 
-#  This makefile is run by the parent dir's makefile.
-#  thisdir1=`pwd`; \
-#  srcdir1=`cd $(srcdir); pwd`; \
-#  cd objc; \
-#  $(MAKE) $(MAKEFLAGS) -f $$srcdir1/objc/Makefile libobjc.a \
-#    srcdir=$$srcdir1 tooldir=$(tooldir) AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
-#    GCC_FOR_TARGET="$$thisdir1/xgcc -B$$thisdir1/" \
-#    GCC_CFLAGS="$(GCC_CFLAGS)" incinstalldir=$$thisdir1/include
-#    OBJC_THREAD_FILE="$(OBJC_THREAD_FILE)"
-#  Two targets are used by ../Makefile: `all' and `mostlyclean'.
+#  The Makefile built from this file lives in the objc language subdirectory.
+#  Its purpose is to provide support for:
+#
+#  1. recursion where necessary, and only then (building .o's), and
+#  2. building and debugging cc1objc from the language subdirectory.
+#
+#  The parent Makefile handles all other chores, with help from the language
+#  Makefile fragment.
+#
+#  The targets for external use are `all' and `mostlyclean'.
 
 SHELL=/bin/sh
-
-.SUFFIXES: .m
 
 OPTIMIZE= -O
 
@@ -56,48 +54,17 @@ all: all.indirect
 ####build overrides
 #
 
-OBJC_H = hash.h objc-list.h sarray.h objc.h objc-api.h \
-  NXConstStr.h Object.h Protocol.h encoding.h typedstream.h thr.h
-
 # Now figure out from those variables how to compile and link.
-all.indirect: Makefile compiler objc-runtime
+all.indirect: Makefile frontend
 
-compiler:
+frontend:
 	cd ..; $(MAKE) cc1obj$(exeext)
-
-objc-runtime:
-	cd ..; $(MAKE) libobjc.a
-
-# copy objc headers to installation include directory
-copy-headers: 
-	-rm -fr $(incinstalldir)/objc
-	-mkdir $(incinstalldir)/objc
-	for file in $(OBJC_H); do \
-	  realfile=$(srcdir)/$${file}; \
-	  cp $${realfile} $(incinstalldir)/objc; \
-	  chmod a+r $(incinstalldir)/objc/$${file}; \
-	done
 
 Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status
 
-doc: info dvi html
-info: objc-features.info
-dvi: objc-features.dvi
-html: objc-features_toc.html
-
-objc-features.info: $(srcdir)/objc-features.texi
-	makeinfo $(srcdir)/objc-features.texi
-
-objc-features.dvi: $(srcdir)/objc-features.texi
-	texi2dvi $(srcdir)/objc-features.texi
-
-objc-features_toc.html: objc-features.texi
-	texi2html -split_node $(srcdir)/objc-features.texi
-
 mostlyclean:
-	-rm -f *.o libobjc* xforward fflags *.aux *.cp *.dvi *.fn *.info \
-		*.ky *.log *.pg *.toc *.tp *.vr *.html
+	-rm -f *.o xforward fflags
 clean: mostlyclean
 distclean: mostlyclean
 extraclean: mostlyclean

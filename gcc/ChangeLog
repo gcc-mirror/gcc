@@ -229,6 +229,22 @@ Sun Sep 13 04:37:28 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 	the next pointer of the most recently deleted insn when we skip
 	over a NOTE.
 
+Sun Sep 13 08:13:39 1998  Ben Elliston  <bje@cygnus.com>
+
+	* objc/config-lang.in: Do not output the name of the selected
+	thread file when building the front-end.  The Makefile for the
+	runtime library will do this.
+
+	* objc/Make-lang.in: Do not build the runtime library or install
+	the Objective C header files.  The Makefile for the runtime
+	library will do this.
+
+	* objc/Makefile.in (all.indirect): Only build the front-end.
+	(compiler): Rename to `frontend'.
+	(obj-runtime): Remove target.
+	(copy-headers): Likewise.
+	(clean): No need to remove `libobjc.a' any longer.
+
 Sat Sep 12 11:37:19 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.h ({ASM,CPP}_CPU_SPEC): Add support for all machines
