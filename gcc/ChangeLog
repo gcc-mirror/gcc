@@ -1,5 +1,9 @@
 2003-01-09  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.h (PREDICATE_CODES): New.
+
+2003-01-09  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (*addsi3_upper): New.
 	(*iorsi3_shift): Likewise.
 	(two splitters): Likewise.
