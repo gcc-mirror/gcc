@@ -1,3 +1,10 @@
+2001-01-23  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* testsuite/lib/libstdc++.exp: Improve.  Add support for @xxx#
+	keyword capability.
+
+	* testsuite/README: Add comment.
+
 2001-01-21  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/html/configopts.html:  Update for current status.  Fix HTML.

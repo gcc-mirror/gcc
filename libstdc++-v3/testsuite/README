@@ -6,4 +6,20 @@ use the new style DejaGnu framework.  Eventually, we'll abandon
 what to do and what kind of behaviour are to be expected.  New
 testsuite should be written with the new style DejaGnu framework in mind.
 
+  The V3 testing framework supports additional keywords for the purpose
+of easing the job of writing testcases.  All V3-keywords are of the
+form @xxx@.  Currently supported keywords include:
+
+  @require@ <files>
+      The existence of <files> is essential for the test to complete
+      successfully.  For example, a testcase foo.C using bar.baz as
+      input file could say
+	    // @require@ bar.baz
+      The special variable % stands for the rootname, e.g. the
+      file-name without its `.C' extension.  Example of use (taken
+      verbatim from 27_io/filebuf.cc)
+	   // @require@ %-*.tst %-*.txt
+
+  @diff@ <first-list> <second-list>
+
 -- Gaby

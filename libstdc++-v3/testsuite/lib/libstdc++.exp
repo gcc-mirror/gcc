@@ -32,6 +32,9 @@
 ##    lib_env(LIBTOOL):
 ##    lib_env(SRC_DIR):
 ##    lib_env(BUILD_DIR):
+##    lib_env(static):
+##    lib_env(shared):
+##    lib_env(testcase_options):
 
 load_lib dg.exp
 
@@ -52,13 +55,8 @@ proc libstdc++-dg-init { args } {
     # Set proper environment variables for the framework.
     libstdc++-setup-flags ${src-dir} ${build-dir}
     
-    # FIXME: Is this necessary?  Isn't the framework supposed to
-    #        do this for us?
-    file delete -force $outdir/*.exe
-    file delete -force $outdir/*core*
-    
     # mkcheck.in used to output these information.  Maybe we should
-    # abandon that practice and define proper libstdc++_version and such.
+    # abandon that practice.
     set output [remote_exec host $lib_env(CXX) -v]
     if { [lindex $output 0] == 0 } {
 	set output [lindex $output 1]
@@ -72,12 +70,28 @@ proc libstdc++-dg-init { args } {
 }
 
 ## dg.exp callback.  Called from dg-test to run PROGRAM images.
-## Normally, we would have left this job to ${tool}_load 
-## (from standard.exp) but because we use surrogate to run programs,
-##  we have to do this ourseleves.
 proc libstdc++_load { prog } {
     global lib_env
-    return [remote_load target $lib_env(LIBTOOL) "--mode=execute $prog"]
+    set opts $lib_env(testcase_options)
+    set results [remote_load target $lib_env(LIBTOOL) "--mode=execute $prog"]
+
+    if { [lindex $results 0] == "pass" && [info exists opts(diff)] } {
+	# FIXME: We should first test for any mentioned output file here
+	#        before taking any other action.
+
+	set firsts [glob -nocomplain [lindex $opts(diff) 0]]
+	set seconds [glob -nocomplain [lindex $opts(diff) 1]]
+	foreach f $firsts s $seconds {
+	    if { [diff $f $s] == 0 } {
+		# FIXME: Well we should report a message.  But for the time
+		#        being, just pretend, there is nothing much to say.
+		#        Yes, that is silly, I know.  But we need, first, to
+		#        to have a working framework.
+		break
+	    }
+	}
+    }
+    return $results
 }
 
 ## Nothing particular to do.
@@ -108,6 +122,7 @@ proc libstdc++_runtest { testdirs } {
     global srcdir
     global outdir
 
+    set top-tests-dir [pwd]
     foreach d $testdirs {
 	set testfiles [glob -nocomplain $d/*.C $d/*.cc]
 	if { [llength $testfiles] == 0 } {
@@ -118,7 +133,8 @@ proc libstdc++_runtest { testdirs } {
 	# to keep libtool happy.
 	set td "$outdir/[dg-trim-dirname $srcdir $d]"
 	maybe-make-directory $td
-	maybe-make-directory $td/.lib
+	maybe-make-directory $td/.libs
+	cd $td;
 
 	foreach testfile $testfiles {
 	    # We're not supposed to test this file, just skip it.
@@ -130,6 +146,7 @@ proc libstdc++_runtest { testdirs } {
 	    libstdc++_do_test $testfile static
 	    libstdc++_do_test $testfile shared
 	}
+	cd ${top-tests-dir}
     }
 }
 
@@ -154,7 +171,8 @@ proc libstdc++-dg-test { testfile compile_type additional-options } {
     set lt $lib_env(LIBTOOL)
     set lt_args "--tag=CXX"
     
-    set output_file $outdir/[dg-trim-dirname $srcdir [file rootname $testfile]]
+    libstdc++-process-options $testfile
+    set output_file [file rootname [file tail $testfile]]
     switch $compile_type {
 	"preprocess" {
 	    set lt $lib_env(CXX)
@@ -213,8 +231,8 @@ proc libstdc++-setup-flags {src-dir build-dir} {
 	set lib_env(INCLUDES) [lindex $flags 5]
 	set lib_env(LDFLAGS) [lindex $flags 6]
 	
-	# This is really really fragile.  We should find away to
-	# tell which flags to use for static/libraries.
+	# This is really really fragile.  We should find a better away to
+	# tell the framework which flags to use for static/shared libraries.
 	set lib_env(static) "-static"
 	set lib_env(shared) ""
 
@@ -229,12 +247,54 @@ proc libstdc++-setup-flags {src-dir build-dir} {
 
 proc maybe-make-directory {dir} {
     if {![file isdirectory $dir]} {
-	verbose "Making directory $dir" 2
 	file mkdir $dir
     }
 }
 
 proc libstdc++_do_test { testfile lib } {
     global which_library; set which_library $lib
-    dg-test $testfile "" ""
+    dg-test -keep-output $testfile "" ""
+}
+
+## Process @xxx@ options.
+proc libstdc++-process-options { testfile } {
+    global lib_env
+
+    array set opts { diff {} output {} require {} }
+    set percent [file rootname [file tail $testfile]]
+    set option-pattern "@.*@.*"
+    set results [grep $testfile ${option-pattern}]
+
+    if ![string match "" $results] {
+	foreach o $results {
+	    regexp "@(.*)@(.*)" $o o key value
+	    regsub -all "%" $value "$percent" value
+
+	    # Not yet supported: keep-output, output, link-against
+	    switch $key {
+		"diff" -
+		"keep-output" -
+		"link-against" -
+		"output" -
+		"require" { }
+		default {
+		    perror "libstdc++: Invalid option-specification `$o'"
+		}
+	    }
+	    set opts($key) $value 
+	    unset key value
+	}
+    }
+    set lib_env(testcase_options) [array get opts]
+    
+    # copy any required data files.
+    if ![string match "" $opts(require)] {
+	set src [file dirname $testfile]
+	set dst [pwd]
+	foreach f $opts(require) {
+	    foreach t [glob -nocomplain "$src/$f"] {
+		file copy -force $t $dst
+	    }
+	}
+    }
 }
