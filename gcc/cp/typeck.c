@@ -5802,17 +5802,6 @@ build_modify_expr (lhs, modifycode, rhs)
 	}
     }
 
-  /* check to see if there is an assignment to `this' */
-  if (lhs == current_class_ptr)
-    {
-      if (flag_this_is_variable > 0
-	  && DECL_NAME (current_function_decl) != NULL_TREE
-	  && (DECL_NAME (current_function_decl)
-	      != constructor_name (current_class_type)))
-	warning ("assignment to `this' not in constructor or destructor");
-      current_function_just_assigned_this = 1;
-    }
-
   if (modifycode != INIT_EXPR)
     {
       /* Make modifycode now either a NOP_EXPR or an INIT_EXPR.  */
@@ -6716,10 +6705,7 @@ c_expand_return (retval)
     }
   else if (DECL_CONSTRUCTOR_P (current_function_decl))
     {
-      if (flag_this_is_variable)
-	error ("return from a constructor: use `this = ...' instead");
-      else
-	error ("returning a value from a constructor");
+      error ("returning a value from a constructor");
       retval = current_class_ptr;
     }
 

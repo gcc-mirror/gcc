@@ -7261,11 +7261,6 @@ tsubst_expr (t, args, complain, in_decl)
 
     case EXPR_STMT:
       prep_stmt (t);
-      /* If we're doing tsubst'ing, then we should not yet have done
-	 semantic analysisy, so we should not know that this statement
-	 assigns to the `this' pointer.  */
-      my_friendly_assert (EXPR_STMT_ASSIGNS_THIS (t) == 0,
-			  19990831);
       finish_expr_stmt (tsubst_expr (EXPR_STMT_EXPR (t),
 				     args, complain, in_decl));
       break;

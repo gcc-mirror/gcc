@@ -41,7 +41,6 @@
    parsing into this file; that will make implementing the new parser
    much easier since it will be able to make use of these routines.  */
 
-static void finish_expr_stmt_real PROTO((tree, int));
 static tree expand_cond PROTO((tree));
 static tree maybe_convert_cond PROTO((tree));
 
@@ -110,14 +109,11 @@ maybe_convert_cond (cond)
   return condition_conversion (cond);
 }
 
-/* Finish an expression-statement, whose EXPRESSION is as indicated.
-   If ASSIGNED_THIS is non-zero, then this statement just assigned to
-   the `this' pointer.  */
+/* Finish an expression-statement, whose EXPRESSION is as indicated.  */
 
-static void 
-finish_expr_stmt_real (expr, assigned_this)
+void 
+finish_expr_stmt (expr)
      tree expr;
-     int assigned_this;
 {
   if (expr != NULL_TREE)
     {
@@ -147,25 +143,11 @@ finish_expr_stmt_real (expr, assigned_this)
 	}
     }
 
-  /* If this statement assigned to the `this' pointer, record that
-     fact for finish_stmt.  */
-  if (assigned_this)
-    current_function_just_assigned_this = 1;
-
   finish_stmt ();
 
   /* This was an expression-statement, so we save the type of the
      expression.  */
   last_expr_type = expr ? TREE_TYPE (expr) : NULL_TREE;
-}
-
-/* Like finish_expr_stmt_real, but ASSIGNS_THIS is always zero.  */
-
-void
-finish_expr_stmt (expr)
-     tree expr;
-{
-  finish_expr_stmt_real (expr, /*assigns_this=*/0);
 }
 
 /* Begin an if-statement.  Returns a newly created IF_STMT if
@@ -176,6 +158,8 @@ begin_if_stmt ()
 {
   tree r;
 
+  do_pushlevel ();
+
   if (building_stmt_tree ())
     {
       r = build_min_nt (IF_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
@@ -183,8 +167,6 @@ begin_if_stmt ()
     }
   else
     r = NULL_TREE;
-
-  do_pushlevel ();
 
   return r;
 }
@@ -924,7 +906,9 @@ begin_compound_stmt (has_no_scope)
 
   /* If this is the outermost block of the function, declare the
      variables __FUNCTION__, __PRETTY_FUNCTION__, and so forth.  */
-  if (!current_function_name_declared && !processing_template_decl)
+  if (!current_function_name_declared 
+      && !processing_template_decl
+      && !has_no_scope)
     {
       declare_function_name ();
       current_function_name_declared = 1;
@@ -1163,21 +1147,69 @@ finish_named_return_value (return_id, init)
 void
 setup_vtbl_ptr ()
 {
-  if (base_init_expr == 0
-      && DECL_CONSTRUCTOR_P (current_function_decl))
+  my_friendly_assert (doing_semantic_analysis_p (), 19990919);
+
+  /* If we've already done this, there's no need to do it again.  */
+  if (vtbls_set_up_p)
+    return;
+
+  if (DECL_CONSTRUCTOR_P (current_function_decl))
     {
-      if (building_stmt_tree ())
+      if (processing_template_decl)
 	add_tree (build_min_nt
 		  (CTOR_INITIALIZER,
 		   current_member_init_list, current_base_init_list));
       else
-	emit_base_init (current_class_type);
+	finish_expr_stmt (emit_base_init (current_class_type));
+    }
+  else if (DECL_DESTRUCTOR_P (current_function_decl)
+	   && !processing_template_decl)
+    {
+      tree binfo = TYPE_BINFO (current_class_type);
+      tree if_stmt;
+      tree compound_stmt;
+
+      /* If the dtor is empty, and we know there is not possible way we
+	 could use any vtable entries, before they are possibly set by
+	 a base class dtor, we don't have to setup the vtables, as we
+	 know that any base class dtoring will set up any vtables it
+	 needs.  We avoid MI, because one base class dtor can do a
+	 virtual dispatch to an overridden function that would need to
+	 have a non-related vtable set up, we cannot avoid setting up
+	 vtables in that case.  We could change this to see if there is
+	 just one vtable.  */
+      if_stmt = begin_if_stmt ();
+
+      /* If it is not safe to avoid setting up the vtables, then
+	 someone will change the condition to be boolean_true_node.  
+         (Actually, for now, we do not have code to set the condition
+	 appropriate, so we just assume that we always need to
+	 initialize the vtables.)  */
+      finish_if_stmt_cond (boolean_true_node, if_stmt);
+      current_vcalls_possible_p = &IF_COND (if_stmt);
+      compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
+
+      /* Make all virtual function table pointers in non-virtual base
+	 classes point to CURRENT_CLASS_TYPE's virtual function
+	 tables.  */
+      expand_direct_vtbls_init (binfo, binfo, 1, 0, current_class_ptr);
+
+      if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
+	expand_indirect_vtbls_init (binfo, current_class_ref, 
+				    current_class_ptr);
+
+      finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
+      finish_then_clause (if_stmt);
+      finish_if_stmt ();
     }
 
   /* Always keep the BLOCK node associated with the outermost pair of
-     curley braces of a function.  These are needed for correct
+     curly braces of a function.  These are needed for correct
      operation of dwarfout.c.  */
   keep_next_level (1);
+
+  /* The virtual function tables are set up now.  */
+  vtbls_set_up_p = 1;
 }
 
 /* Begin a new scope.  */
@@ -2214,8 +2246,7 @@ expand_stmt (t)
 	  break;
 
 	case EXPR_STMT:
-	  finish_expr_stmt_real (EXPR_STMT_EXPR (t),
-				 EXPR_STMT_ASSIGNS_THIS (t));
+	  finish_expr_stmt (EXPR_STMT_EXPR (t));
 	  break;
 
 	case DECL_STMT:
@@ -2392,12 +2423,6 @@ expand_stmt (t)
 	    expand_start_bindings (2 * SCOPE_NULLIFIED_P (t));
 	  else if (SCOPE_END_P (t))
 	    expand_end_bindings (NULL_TREE, !SCOPE_NULLIFIED_P (t), 0);
-	  break;
-
-	case CTOR_INITIALIZER:
-	  current_member_init_list = TREE_OPERAND (t, 0);
-	  current_base_init_list = TREE_OPERAND (t, 1);
-	  setup_vtbl_ptr ();
 	  break;
 
 	case RETURN_INIT:

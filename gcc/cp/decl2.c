@@ -523,7 +523,6 @@ lang_f_options[] =
   {"squangle", &flag_do_squangling, 1},
   {"stats", &flag_detailed_statistics, 1},
   {"strict-prototype", &flag_strict_prototype, 1},
-  {"this-is-variable", &flag_this_is_variable, 1},
   {"vtable-gc", &flag_vtable_gc, 1},
   {"vtable-thunks", &flag_vtable_thunks, 1},
   {"weak", &flag_weak, 1},
@@ -619,12 +618,6 @@ lang_decode_option (argc, argv)
 	  flag_guiding_decls = 0;
 	  found = 1;
 	}
-      else if (!strcmp (p, "this-is-variable"))
-        {
-          flag_this_is_variable = 1;
-          found = 1;
-          cp_deprecated ("-fthis-is-variable");
-        }
       else if (!strcmp (p, "external-templates"))
         {
           flag_external_templates = 1;
@@ -1007,11 +1000,6 @@ grokclassfn (ctype, function, flags, quals)
       /* Right now we just make this a pointer.  But later
 	 we may wish to make it special.  */
       tree type = TREE_VALUE (arg_types);
-      int constp = 1;
-
-      if ((flag_this_is_variable > 0)
-	  && (flags == DTOR_FLAG || DECL_CONSTRUCTOR_P (function)))
-	constp = 0;
 
       parm = build_decl (PARM_DECL, this_identifier, type);
       /* Mark the artificial `this' parameter as "artificial".  */
@@ -1020,8 +1008,7 @@ grokclassfn (ctype, function, flags, quals)
       /* We can make this a register, so long as we don't
 	 accidentally complain if someone tries to take its address.  */
       DECL_REGISTER (parm) = 1;
-      if (constp)
-	TREE_READONLY (parm) = 1;
+      TREE_READONLY (parm) = 1;
       TREE_CHAIN (parm) = last_function_parms;
       last_function_parms = parm;
     }

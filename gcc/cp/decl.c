@@ -180,6 +180,7 @@ static void save_function_data PROTO((tree));
 static void check_function_type PROTO((tree));
 static void destroy_local_static PROTO((tree));
 static void destroy_local_var PROTO((tree));
+static void finish_destructor_body PROTO((void));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -370,13 +371,6 @@ extern int flag_huge_objects;
 extern int flag_conserve_space;
 
 /* C and C++ flags are in decl2.c.  */
-
-/* Set to 0 at beginning of a constructor, set to 1
-   if that function does an allocation before referencing its
-   instance variable.  */
-#define current_function_assigns_this cp_function_chain->assigns_this
-#define current_function_just_assigned_this \
-  cp_function_chain->just_assigned_this
 
 /* Flag used when debugging spew.c */
 
@@ -3060,6 +3054,15 @@ duplicate_decls (newdecl, olddecl)
 	     the declarations, but make the original one static.  */
 	  DECL_THIS_STATIC (olddecl) = 1;
 	  TREE_PUBLIC (olddecl) = 0;
+
+	  /* Make the olddeclaration consistent with the new one so that
+	     all remnants of the builtin-ness of this function will be
+	     banished.  */
+	  DECL_LANGUAGE (olddecl) = DECL_LANGUAGE (newdecl);
+	  DECL_RTL (olddecl) = DECL_RTL (newdecl);
+	  DECL_ASSEMBLER_NAME (olddecl) = DECL_ASSEMBLER_NAME (newdecl);
+	  SET_IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (newdecl),
+				       newdecl);
 	}
     }
   else if (TREE_CODE (olddecl) != TREE_CODE (newdecl))
@@ -12927,10 +12930,6 @@ start_function (declspecs, declarator, attrs, flags)
       *cp_function_chain = *DECL_SAVED_FUNCTION_DATA (decl1);
       current_binding_level = bl;
 
-      /* This function has not assigned to `this' yet.  */
-      current_function_assigns_this = 0;
-      current_function_just_assigned_this = 0;
-
       /* This function is being processed in whole-function mode; we
 	 already did semantic analysis.  */
       current_function->x_whole_function_mode_p = 1;
@@ -13298,6 +13297,121 @@ save_function_data (decl)
   f->x_expanding_p = 1;
 }
 
+/* At the end of every destructor we generate code to restore virtual
+   function tables to the values desired by base classes and to call
+   to base class destructors.  Do that now, for DECL.  */
+
+static void
+finish_destructor_body ()
+{
+  tree compound_stmt;
+  tree in_charge;
+  tree virtual_size;
+  tree exprstmt;
+
+  /* Create a block to contain all the extra code.  */
+  compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
+
+  /* Generate the code to call destructor on base class.  If this
+     destructor belongs to a class with virtual functions, then set
+     the virtual function table pointer to represent the type of our
+     base class.  */
+
+  /* This side-effect makes call to `build_delete' generate the code
+     we have to have at the end of this destructor.  `build_delete'
+     will set the flag again.  */
+  TYPE_HAS_DESTRUCTOR (current_class_type) = 0;
+
+  /* These are two cases where we cannot delegate deletion.  */
+  if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type)
+      || TYPE_GETS_REG_DELETE (current_class_type))
+    in_charge = integer_zero_node;
+  else
+    in_charge = current_in_charge_parm;
+
+  exprstmt = build_delete (current_class_type,
+			   current_class_ref, 
+			   in_charge,
+			   LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR|LOOKUP_NORMAL, 
+			   0);
+
+  if (exprstmt != error_mark_node
+      && (TREE_CODE (exprstmt) != NOP_EXPR
+	  || TREE_OPERAND (exprstmt, 0) != integer_zero_node
+	  || TYPE_USES_VIRTUAL_BASECLASSES (current_class_type)))
+    {
+      add_tree (build_min_nt (LABEL_STMT, dtor_label));
+      if (exprstmt != void_zero_node)
+	/* Don't call `expand_expr_stmt' if we're not going to do
+	   anything, since -Wall will give a diagnostic.  */
+	finish_expr_stmt (exprstmt);
+
+      /* Run destructor on all virtual baseclasses.  */
+      if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
+	{
+	  tree vbases = nreverse (copy_list (CLASSTYPE_VBASECLASSES (current_class_type)));
+	  tree if_stmt = begin_if_stmt ();
+	  finish_if_stmt_cond (build (BIT_AND_EXPR, integer_type_node,
+				      current_in_charge_parm, 
+				      integer_two_node),
+			       if_stmt);
+
+	  while (vbases)
+	    {
+	      if (TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (vbases)))
+		{
+		  tree vb = get_vbase
+		    (BINFO_TYPE (vbases),
+		     TYPE_BINFO (current_class_type));
+		  finish_expr_stmt
+		    (build_scoped_method_call
+		     (current_class_ref, vb, dtor_identifier,
+		      build_expr_list (NULL_TREE, integer_zero_node)));
+		}
+	      vbases = TREE_CHAIN (vbases);
+	    }
+
+	  finish_then_clause (if_stmt);
+	  finish_if_stmt ();
+	}
+    }
+  
+  virtual_size = c_sizeof (current_class_type);
+
+  /* At the end, call delete if that's what's requested.  */
+  
+  /* FDIS sez: At the point of definition of a virtual destructor
+     (including an implicit definition), non-placement operator delete
+     shall be looked up in the scope of the destructor's class and if
+     found shall be accessible and unambiguous.
+     
+     This is somewhat unclear, but I take it to mean that if the class
+     only defines placement deletes we don't do anything here.  So we
+     pass LOOKUP_SPECULATIVELY; delete_sanity will complain for us if
+     they ever try to delete one of these.  */
+  if (TYPE_GETS_REG_DELETE (current_class_type)
+      || TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
+    {
+      tree if_stmt;
+
+      exprstmt = build_op_delete_call
+	(DELETE_EXPR, current_class_ptr, virtual_size,
+	 LOOKUP_NORMAL | LOOKUP_SPECULATIVELY, NULL_TREE);
+
+      if_stmt = begin_if_stmt ();
+      finish_if_stmt_cond (build (BIT_AND_EXPR, integer_type_node,
+				  current_in_charge_parm,
+				  integer_one_node),
+			   if_stmt);
+      finish_expr_stmt (exprstmt);
+      finish_then_clause (if_stmt);
+      finish_if_stmt ();
+    }
+
+  /* Close the block we started above.  */
+  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
+}
+
 /* Finish up a function declaration and compile that function
    all the way to assembler language output.  The free the storage
    for the function definition.
@@ -13322,7 +13436,6 @@ finish_function (lineno, flags)
 {
   register tree fndecl = current_function_decl;
   tree fntype, ctype = NULL_TREE;
-  rtx fn_last_parm_insn, insns;
   /* Label to use if this function is supposed to return a value.  */
   tree no_return_label = NULL_TREE;
   int call_poplevel = (flags & 1) != 0;
@@ -13338,9 +13451,9 @@ finish_function (lineno, flags)
   nested = function_depth > 1;
   fntype = TREE_TYPE (fndecl);
 
-/*  TREE_READONLY (fndecl) = 1;
-    This caused &foo to be of type ptr-to-const-function
-    which then got a warning when stored in a ptr-to-function variable.  */
+  /*  TREE_READONLY (fndecl) = 1;
+      This caused &foo to be of type ptr-to-const-function
+      which then got a warning when stored in a ptr-to-function variable.  */
 
   /* This happens on strange parse errors.  */
   if (! current_function_parms_stored)
@@ -13353,6 +13466,8 @@ finish_function (lineno, flags)
     {
       if (DECL_CONSTRUCTOR_P (fndecl) && call_poplevel)
 	do_poplevel ();
+      else if (DECL_DESTRUCTOR_P (fndecl) && !processing_template_decl)
+	finish_destructor_body ();
 
       /* Finish dealing with exception specifiers.  */
       if (flag_exceptions && !processing_template_decl
@@ -13385,242 +13500,9 @@ finish_function (lineno, flags)
       do_pending_stack_adjust ();
 
       if (dtor_label)
-	{
-	  tree binfo = TYPE_BINFO (current_class_type);
-	  tree cond = integer_one_node;
-	  tree exprstmt;
-	  tree virtual_size;
-	  int ok_to_optimize_dtor = 0;
-	  int empty_dtor = get_last_insn () == last_dtor_insn;
-
-	  if (current_function_assigns_this)
-	    cond = build (NE_EXPR, boolean_type_node,
-			  current_class_ptr, integer_zero_node);
-	  else
-	    {
-	      int n_baseclasses = CLASSTYPE_N_BASECLASSES (current_class_type);
-
-	      /* If this destructor is empty, then we don't need to check
-		 whether `this' is NULL in some cases.  */
-	      if ((flag_this_is_variable & 1) == 0)
-		ok_to_optimize_dtor = 1;
-	      else if (empty_dtor)
-		ok_to_optimize_dtor
-		  = (n_baseclasses == 0
-		     || (n_baseclasses == 1
-			 && TYPE_HAS_DESTRUCTOR (TYPE_BINFO_BASETYPE (current_class_type, 0))));
-	    }
-
-	  /* These initializations might go inline.  Protect
-	     the binding level of the parms.  */
-	  do_pushlevel ();
-
-	  if (current_function_assigns_this)
-	    {
-	      current_function_assigns_this = 0;
-	      current_function_just_assigned_this = 0;
-	    }
-
-	  /* Generate the code to call destructor on base class.
-	     If this destructor belongs to a class with virtual
-	     functions, then set the virtual function table
-	     pointer to represent the type of our base class.  */
-
-	  /* This side-effect makes call to `build_delete' generate the
-	     code we have to have at the end of this destructor.
-	     `build_delete' will set the flag again.  */
-	  TYPE_HAS_DESTRUCTOR (current_class_type) = 0;
-
-	  /* These are two cases where we cannot delegate deletion.  */
-	  if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type)
-	      || TYPE_GETS_REG_DELETE (current_class_type))
-	    exprstmt = build_delete (current_class_type, current_class_ref, integer_zero_node,
-				     LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR|LOOKUP_NORMAL, 0);
-	  else
-	    exprstmt = build_delete (current_class_type,
-				     current_class_ref, 
-				     current_in_charge_parm,
-				     LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR|LOOKUP_NORMAL, 0);
-
-	  /* If we did not assign to this, then `this' is non-zero at
-	     the end of a destructor.  As a special optimization, don't
-	     emit test if this is an empty destructor.  If it does nothing,
-	     it does nothing.  If it calls a base destructor, the base
-	     destructor will perform the test.  */
-
-	  if (exprstmt != error_mark_node
-	      && (TREE_CODE (exprstmt) != NOP_EXPR
-		  || TREE_OPERAND (exprstmt, 0) != integer_zero_node
-		  || TYPE_USES_VIRTUAL_BASECLASSES (current_class_type)))
-	    {
-	      expand_label (dtor_label);
-	      if (cond != integer_one_node)
-		expand_start_cond (cond, 0);
-	      if (exprstmt != void_zero_node)
-		/* Don't call `expand_expr_stmt' if we're not going to do
-		   anything, since -Wall will give a diagnostic.  */
-		expand_expr_stmt (exprstmt);
-
-	      /* Run destructor on all virtual baseclasses.  */
-	      if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
-		{
-		  tree vbases = nreverse (copy_list (CLASSTYPE_VBASECLASSES (current_class_type)));
-		  expand_start_cond (build (BIT_AND_EXPR, integer_type_node,
-					    current_in_charge_parm, 
-					    integer_two_node), 0);
-		  while (vbases)
-		    {
-		      if (TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (vbases)))
-			{
-			  tree vb = get_vbase
-			    (BINFO_TYPE (vbases),
-			     TYPE_BINFO (current_class_type));
-			  expand_expr_stmt
-			    (build_scoped_method_call
-			     (current_class_ref, vb, dtor_identifier,
-			      build_expr_list (NULL_TREE, integer_zero_node)));
-			}
-		      vbases = TREE_CHAIN (vbases);
-		    }
-		  expand_end_cond ();
-		}
-
-	      do_pending_stack_adjust ();
-	      if (cond != integer_one_node)
-		expand_end_cond ();
-	    }
-
-	  virtual_size = c_sizeof (current_class_type);
-
-	  /* At the end, call delete if that's what's requested.  */
-
-	  /* FDIS sez: At the point of definition of a virtual destructor
-	       (including an implicit definition), non-placement operator
-	       delete shall be looked up in the scope of the destructor's
-	       class and if found shall be accessible and unambiguous.
-
-	     This is somewhat unclear, but I take it to mean that if the
-	     class only defines placement deletes we don't do anything here.
-	     So we pass LOOKUP_SPECULATIVELY; delete_sanity will complain
-	     for us if they ever try to delete one of these.  */
-
-	  if (TYPE_GETS_REG_DELETE (current_class_type)
-	      || TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
-	    exprstmt = build_op_delete_call
-	      (DELETE_EXPR, current_class_ptr, virtual_size,
-	       LOOKUP_NORMAL | LOOKUP_SPECULATIVELY, NULL_TREE);
-	  else
-	    exprstmt = NULL_TREE;
-
-	  if (exprstmt)
-	    {
-	      cond = build (BIT_AND_EXPR, integer_type_node,
-			    current_in_charge_parm, integer_one_node);
-	      expand_start_cond (cond, 0);
-	      expand_expr_stmt (exprstmt);
-	      expand_end_cond ();
-	    }
-
-	  /* End of destructor.  */
-	  do_poplevel ();
-
-	  /* Back to the top of destructor.  */
-	  /* Don't execute destructor code if `this' is NULL.  */
-
-	  start_sequence ();
-
-	  /* If the dtor is empty, and we know there is not possible way we
-	     could use any vtable entries, before they are possibly set by
-	     a base class dtor, we don't have to setup the vtables, as we
-	     know that any base class dtoring will set up any vtables it
-	     needs.  We avoid MI, because one base class dtor can do a
-	     virtual dispatch to an overridden function that would need to
-	     have a non-related vtable set up, we cannot avoid setting up
-	     vtables in that case.  We could change this to see if there is
-	     just one vtable.  */
-	  if (! empty_dtor || TYPE_USES_COMPLEX_INHERITANCE (current_class_type))
-	    {
-	      /* Make all virtual function table pointers in non-virtual base
-		 classes point to CURRENT_CLASS_TYPE's virtual function
-		 tables.  */
-	      expand_direct_vtbls_init (binfo, binfo, 1, 0, current_class_ptr);
-
-	      if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
-		expand_indirect_vtbls_init (binfo, current_class_ref, current_class_ptr);
-	    }
-	  
-	  if (! ok_to_optimize_dtor)
-	    {
-	      cond = build_binary_op (NE_EXPR,
-				      current_class_ptr, integer_zero_node);
-	      expand_start_cond (cond, 0);
-	    }
-
-	  insns = get_insns ();
-	  end_sequence ();
-
-	  fn_last_parm_insn = get_first_nonparm_insn ();
-	  if (fn_last_parm_insn == NULL_RTX)
-	    fn_last_parm_insn = get_last_insn ();
-	  else
-	    fn_last_parm_insn = previous_insn (fn_last_parm_insn);
-
-	  emit_insns_after (insns, fn_last_parm_insn);
-
-	  if (! ok_to_optimize_dtor)
-	    expand_end_cond ();
-	}
+	;
       else if (DECL_CONSTRUCTOR_P (fndecl))
 	{
-	  /* If the current function assigns to `this', then code to
-	     initialize members and base-classes will be generated
-	     directly after the assignment.  */
-	  if (!current_function_assigns_this)
-	    {
-	      start_sequence ();
-
-	      if (flag_this_is_variable > 0)
-		{
-		  /* Allow constructor for a type to get a new instance of
-		     the object using `build_new'.  */
-		  tree cond = NULL_TREE, thenclause = NULL_TREE;
-		  tree abstract_virtuals 
-		    = CLASSTYPE_ABSTRACT_VIRTUALS (current_class_type);
-		  CLASSTYPE_ABSTRACT_VIRTUALS (current_class_type) = NULL_TREE;
-
-		  cond = build_binary_op (EQ_EXPR,
-					  current_class_ptr, integer_zero_node);
-
-		  expand_start_cond (cond, 0);
-
-		  thenclause 
-		    = build_modify_expr (current_class_ptr, NOP_EXPR,
-					 build_new (NULL_TREE,
-						    current_class_type,
-
-						    void_type_node, 0));
-		  CLASSTYPE_ABSTRACT_VIRTUALS (current_class_type) 
-		    = abstract_virtuals;
-		  expand_expr_stmt (thenclause);
-		  expand_end_cond ();
-		}
-
-	      /* Emit insns from `emit_base_init' which sets up
-		 virtual function table pointer(s).  Don't do this for
-		 a function which assigns to `this' as we will emit
-		 the appropriate code right after the assignment.  */
-	      if (!current_function_assigns_this && base_init_expr)
-		{
-		  expand_expr_stmt (base_init_expr);
-		  base_init_expr = NULL_TREE;
-		}
-
-	      insns = get_insns ();
-	      end_sequence ();
-
-	      emit_insns_after (insns, last_parm_cleanup_insn);
-	    }
-
 	  /* This is where the body of the constructor begins.  All
 	     subobjects have been fully constructed at this point.  */
 	  end_protect_partials ();
@@ -13634,9 +13516,6 @@ finish_function (lineno, flags)
 
 	  /* c_expand_return knows to return 'this' from a constructor.  */
 	  c_expand_return (NULL_TREE);
-
-	  current_function_assigns_this = 0;
-	  current_function_just_assigned_this = 0;
 	}
       else if (DECL_MAIN_P (fndecl))
 	{
@@ -13648,13 +13527,9 @@ finish_function (lineno, flags)
 #endif
 	}
       else if (return_label != NULL_RTX
-	       && ((flag_this_is_variable <= 0
-		    && current_function_return_value == NULL_TREE
-		    && ! DECL_NAME (DECL_RESULT (current_function_decl)))
-		   || (flag_this_is_variable > 0
-		       && (TREE_CODE (TREE_TYPE (DECL_RESULT
-						 (current_function_decl)))
-			   == VOID_TYPE))))
+	       && flag_this_is_variable <= 0
+	       && current_function_return_value == NULL_TREE
+	       && ! DECL_NAME (DECL_RESULT (current_function_decl)))
 	no_return_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
 
       if (flag_exceptions)
@@ -14241,22 +14116,6 @@ cplus_expand_expr_stmt (exp)
 void
 finish_stmt ()
 {
-  if (!current_function_assigns_this
-      && current_function_just_assigned_this)
-    {
-      if (DECL_CONSTRUCTOR_P (current_function_decl) 
-	  && !building_stmt_tree ())
-	{
-	  /* Constructors must wait until we are out of control
-	     zones before calling base constructors.  */
-	  if (in_control_zone_p ())
-	    return;
-	  expand_expr_stmt (base_init_expr);
-	  check_base_init (current_class_type);
-	}
-      current_function_assigns_this = 1;
-    }
-
   /* Always assume this statement was not an expression statement.  If
      it actually was an expression statement, its our callers
      responsibility to fix this up.  */
@@ -14344,7 +14203,6 @@ mark_lang_function (p)
   ggc_mark_tree (p->x_dtor_label);
   ggc_mark_tree (p->x_base_init_list);
   ggc_mark_tree (p->x_member_init_list);
-  ggc_mark_tree (p->x_base_init_expr);
   ggc_mark_tree (p->x_current_class_ptr);
   ggc_mark_tree (p->x_current_class_ref);
   ggc_mark_tree (p->x_last_tree);

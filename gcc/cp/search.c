@@ -2609,12 +2609,12 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 	      init = build (MODIFY_EXPR, TREE_TYPE (nvtbl),
 			    nvtbl, vtbl);
 	      TREE_SIDE_EFFECTS (init) = 1;
-	      expand_expr_stmt (init);
+	      finish_expr_stmt (init);
 	      /* Update the vtable pointers as necessary.  */
 	      ref = build_vfield_ref
 		(build_indirect_ref (addr, NULL_PTR),
 		 DECL_CONTEXT (CLASSTYPE_VFIELD (BINFO_TYPE (binfo))));
-	      expand_expr_stmt
+	      finish_expr_stmt
 		(build_modify_expr (ref, NOP_EXPR, nvtbl));
 	    }
 	  assemble_external (vtbl);
@@ -2657,7 +2657,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 	    cp_build_qualified_type (TREE_TYPE (new_delta),
 				     CP_TYPE_QUALS (TREE_TYPE (new_delta))
 				     & ~TYPE_QUAL_CONST);
-	  expand_expr_stmt (build_modify_expr (new_delta, NOP_EXPR,
+	  finish_expr_stmt (build_modify_expr (new_delta, NOP_EXPR,
 					       old_delta));
 	}
       ++n;

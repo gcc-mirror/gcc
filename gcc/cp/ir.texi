@@ -660,7 +660,7 @@ list.  In particular, no @code{FIELD_DECL}, @code{LABEL_DECL}, or
 A class type is represented by either a @code{RECORD_TYPE} or a
 @code{UNION_TYPE}.  A class declared with the @code{union} tag is
 represented by a @code{UNION_TYPE}, while classes declared with either
-the @code{struct} or the @code{union} tag are represented by
+the @code{struct} or the @code{class} tag are represented by
 @code{RECORD_TYPE}s.  You can use the @code{CLASSTYPE_DECLARED_CLASS}
 macro to discern whether or not a particular type is a @code{class} as
 opposed to a @code{struct}.  This macro will be true only for classes
@@ -1010,7 +1010,6 @@ FIXME: Explain about constructor try-catch blocks.
 @tindex COMPOUND_STMT
 @findex COMPOUND_BODY
 @tindex CONTINUE_STMT
-@tindex CTOR_INITIALIZER
 @tindex DECL_STMT
 @findex DECL_STMT_DECL
 @tindex DO_STMT
@@ -1050,26 +1049,17 @@ FIXME: Explain about constructor try-catch blocks.
 @findex WHILE_COND
 
 A function that has a definition in the current translation unit will
-have a non-NULL @code{DECL_INITIAL}.  However, the @code{DECL_INITIAL}
-will simply be the @code{error_mark_node}.  (When tree structure is
-translated to RTL, @code{DECL_INITIAL} will contain a different value.)
+have a non-NULL @code{DECL_INITIAL}.  However, back-ends should not make
+use of the particular value given by @code{DECL_INITIAL}.
 
 The @code{DECL_SAVED_TREE} macro will give the complete body of the
 function.  This node will usually be a @code{COMPOUND_STMT} representing
 the outermost block of the function, but it may also be a
-@code{TRY_BLOCK}, @code{RETURN_INIT}, or @code{CTOR_INITIALIZER}, as
-described below.
+@code{TRY_BLOCK} or a @code{RETURN_INIT}.
 
 If the function has a function try-block, the @code{DECL_SAVED_TREE}
 will be a @code{TRY_BLOCK}.  The @code{TRY_STMTS} will then be either a
-@code{RETURN_INIT}, @code{CTOR_INITIALIZER}, or @code{COMPOUND_STMT}.
-
-If the function is a constructor, the @code{DECL_SAVED_TREE} may be a
-@code{CTOR_INITIALIZER} node, indicating how base classes and members
-should be initialized.  The @code{TREE_CHAIN} of the
-@code{CTOR_INITIALIZER} will be the @code{COMPOUND_STMT} representing
-the body of the constructor.  FIXME: Document how the base initializers
-and member initializers can be used.
+@code{RETURN_INIT}, or a @code{COMPOUND_STMT}.
 
 If the function uses the G++ ``named return value'' extension, meaning
 that the function has been defined like:
@@ -1079,10 +1069,8 @@ S f(int) return s @{...@}
 the @code{DECL_SAVED_TREE} will be a @code{RETURN_INIT}.  The
 @code{TREE_CHAIN} of the @code{RETURN_INIT} will be the
 @code{COMPOUND_STMT} representing the body of the function.  There is
-never a named returned value for a constructor, so there is never a
-situation in which a @code{RETURN_INIT} and a @code{CTOR_INITIALIZER}
-appear simultaneously.  FIXME: Document how the @code{RETURN_INIT} can
-be used.
+never a named returned value for a constructor.  FIXME: Document how the
+@code{RETURN_INIT} can be used.
 
 @subsection Statements
 
@@ -1115,7 +1103,34 @@ Many of the statements have substatements.  For example, a @code{while}
 loop will have a body, which is itself a statement.  If the substatement
 is @code{NULL_TREE}, it is considered equivalent to a statement
 consisting of a single @code{;}, i.e., an expression statement in which
-the expression has been omitted.
+the expression has been omitted.  A substatement may in fact be a list
+of statements, connected via their @code{TREE_CHAIN}s.  So, you should
+always process the statement tree by looping over substatements, like
+this:
+@example
+void process_stmt (stmt)
+     tree stmt;
+{
+  while (stmt)
+    {
+      switch (TREE_CODE (stmt))
+        {
+        case IF_STMT:
+          process_stmt (THEN_CLAUSE (stmt));
+          /* More processing here.  */
+          break;
+        
+        ...
+        }
+
+      stmt = TREE_CHAIN (stmt);
+    }
+}
+@end example
+In other words, while the @code{then} clause of an @code{if} statement
+in C++ can be only one statement (although that one statement may be a
+compound statement), the intermediate representation will sometimes use
+several statements chained together.
 
 @table @code
 @item ASM_STMT
