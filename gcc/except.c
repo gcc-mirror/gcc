@@ -1156,7 +1156,7 @@ call_get_eh_context ()
       TREE_PUBLIC (fn) = 1;
       DECL_ARTIFICIAL (fn) = 1;
       TREE_READONLY (fn) = 1;
-      make_decl_rtl (fn, NULL_PTR, 1);
+      make_decl_rtl (fn, NULL_PTR);
       assemble_external (fn);
 
       ggc_add_tree_root (&fn, 1);

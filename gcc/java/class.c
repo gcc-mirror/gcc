@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -855,7 +855,7 @@ build_utf8_ref (name)
   pushdecl (decl);
   rest_of_decl_compilation (decl, (char*) 0, global_bindings_p (), 0);
   utf8_decl_list = decl;
-  make_decl_rtl (decl, (char*) 0, 1);
+  make_decl_rtl (decl, (char*) 0);
   ref = build1 (ADDR_EXPR, utf8const_ptr_type, decl);
   IDENTIFIER_UTF8_REF (name) = ref;
   return ref;
@@ -891,7 +891,7 @@ build_class_ref (type)
 	      DECL_IGNORED_P (decl) = 1;
 	      DECL_ARTIFICIAL (decl) = 1;
 	      DECL_ASSEMBLER_NAME (decl) = mangle_class_field (type);
-	      make_decl_rtl (decl, NULL, 1);
+	      make_decl_rtl (decl, NULL);
 	      pushdecl_top_level (decl);
 	      if (is_compiled == 1)
 		DECL_EXTERNAL (decl) = 1;
@@ -943,7 +943,7 @@ build_class_ref (type)
 	      decl = build_decl (VAR_DECL, decl_name, class_type_node);
 	      TREE_STATIC (decl) = 1;
 	      TREE_PUBLIC (decl) = 1;
-	      make_decl_rtl (decl, NULL, 1);
+	      make_decl_rtl (decl, NULL);
 	      pushdecl_top_level (decl);
 	      if (is_compiled == 1)
 		DECL_EXTERNAL (decl) = 1;
@@ -974,7 +974,7 @@ build_static_field_ref (fdecl)
     {
       if (DECL_RTL (fdecl) == 0)
 	{
-	  make_decl_rtl (fdecl, NULL, 1);
+	  make_decl_rtl (fdecl, NULL);
 	  if (is_compiled == 1)
 	    DECL_EXTERNAL (fdecl) = 1;
 	}
@@ -1222,7 +1222,7 @@ get_dispatch_table (type, this_class_addr)
       else
 	{
 	  if (DECL_RTL (method) == 0)
-	    make_decl_rtl (method, NULL, 1);
+	    make_decl_rtl (method, NULL);
 	  method = build1 (ADDR_EXPR, nativecode_ptr_type_node, method);
 	}
       list = tree_cons (NULL_TREE /*DECL_VINDEX (method) + 2*/,
@@ -2122,7 +2122,7 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
   if (! METHOD_ABSTRACT (method_decl) 
       || (CLASS_INTERFACE (TYPE_NAME (this_class)) 
 	  && (DECL_CLINIT_P (method_decl))))
-    make_function_rtl (method_decl);
+    make_decl_rtl (method_decl, NULL);
   obstack_free (&temporary_obstack, asm_name);
 
   if (ID_INIT_P (method_name))
@@ -2219,7 +2219,7 @@ emit_register_classes ()
   /*  DECL_EXTERNAL (init_decl) = 1;*/
   TREE_PUBLIC (init_decl) = 1;
   pushlevel (0);
-  make_function_rtl (init_decl);
+  make_decl_rtl (init_decl, NULL);
   init_function_start (init_decl, input_filename, 0);
   expand_function_start (init_decl, 0);
 

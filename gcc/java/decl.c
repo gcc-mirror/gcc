@@ -1,6 +1,6 @@
 /* Process declarations and variables for the GNU compiler for the
    Java(TM) language.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -399,7 +399,7 @@ builtin_function (name, type, function_code, class, library_name)
   TREE_PUBLIC (decl) = 1;
   if (library_name)
     DECL_ASSEMBLER_NAME (decl) = get_identifier (library_name);
-  make_decl_rtl (decl, NULL_PTR, 1);
+  make_decl_rtl (decl, NULL_PTR);
   pushdecl (decl);
   DECL_BUILT_IN_CLASS (decl) = class;
   DECL_FUNCTION_CODE (decl) = function_code;
@@ -417,7 +417,7 @@ create_primitive_vtable (name)
   sprintf (buf, "_Jv_%sVTable", name);
   r = build_decl (VAR_DECL, get_identifier (buf), ptr_type_node);
   DECL_EXTERNAL (r) = 1;
-  make_decl_rtl (r, buf, 1);
+  make_decl_rtl (r, buf);
   return r;
 }
 

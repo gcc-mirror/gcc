@@ -515,83 +515,6 @@ exception_section ()
 #endif
 }
 
-/* Create the rtl to represent a function, for a function definition.
-   DECL is a FUNCTION_DECL node which describes which function.
-   The rtl is stored into DECL.  */
-
-void
-make_function_rtl (decl)
-     tree decl;
-{
-  const char *name;
-  const char *new_name;
-
-  if (DECL_RTL (decl) != 0)
-    {
-      /* ??? Another way to do this would be to do what halfpic.c does
-	 and maintain a hashed table of such critters.  */
-      /* ??? Another way to do this would be to pass a flag bit to
-	 ENCODE_SECTION_INFO saying whether this is a new decl or not.  */
-      /* Let the target reassign the RTL if it wants.
-	 This is necessary, for example, when one machine specific
-	 decl attribute overrides another.  */
-#ifdef REDO_SECTION_INFO_P
-      if (REDO_SECTION_INFO_P (decl))
-	ENCODE_SECTION_INFO (decl);
-#endif
-      return;
-    }
-
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  new_name = name;
-
-  /* Rename a nested function to avoid conflicts, unless it's a member of
-     a local class, in which case the class name is already unique.  */
-  if (decl_function_context (decl) != 0
-      && ! TYPE_P (DECL_CONTEXT (decl))
-      && DECL_INITIAL (decl) != 0
-      && DECL_RTL (decl) == 0)
-    {
-      char *label;
-      ASM_FORMAT_PRIVATE_NAME (label, name, var_labelno);
-      var_labelno++;
-      new_name = label;
-    }
-  /* When -fprefix-function-name is used, every function name is
-     prefixed.  Even static functions are prefixed because they
-     could be declared latter.  Note that a nested function name
-     is not prefixed.  */
-  else if (flag_prefix_function_name)
-    {
-      size_t name_len = IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (decl));
-      char *pname;
-
-      pname = alloca (name_len + CHKR_PREFIX_SIZE + 1);
-      memcpy (pname, CHKR_PREFIX, CHKR_PREFIX_SIZE);
-      memcpy (pname + CHKR_PREFIX_SIZE, name, name_len + 1);
-      new_name = pname;
-    }
-
-  if (name != new_name)
-    {
-      DECL_ASSEMBLER_NAME (decl) = get_identifier (new_name);
-      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-    }
-
-  DECL_RTL (decl)
-    = gen_rtx_MEM (DECL_MODE (decl),
-		   gen_rtx_SYMBOL_REF (Pmode, name));
-
-  /* Optionally set flags or add text to the name to record
-     information such as that it is a function name.  If the name
-     is changed, the macro ASM_OUTPUT_LABELREF will have to know
-     how to strip this information.  */
-#ifdef ENCODE_SECTION_INFO
-  ENCODE_SECTION_INFO (decl);
-#endif
-}
-
-
 /* Given NAME, a putative register name, discard any customary prefixes.  */
 
 static const char *
@@ -671,16 +594,15 @@ decode_reg_name (asmspec)
    or static or external function.
    ASMSPEC, if not 0, is the string which the user specified
    as the assembler symbol name.
-   TOP_LEVEL is nonzero if this is a file-scope variable.
 
    This is never called for PARM_DECL nodes.  */
 
 void
-make_decl_rtl (decl, asmspec, top_level)
+make_decl_rtl (decl, asmspec)
      tree decl;
      const char *asmspec;
-     int top_level;
 {
+  int top_level = (DECL_CONTEXT (decl) == NULL_TREE);
   const char *name = 0;
   const char *new_name = 0;
   int reg_number;
@@ -741,7 +663,7 @@ make_decl_rtl (decl, asmspec, top_level)
 	{
 	  int nregs;
 
-	  if (DECL_INITIAL (decl) != 0 && top_level)
+	  if (DECL_INITIAL (decl) != 0 && !TREE_STATIC (decl))
 	    {
 	      DECL_INITIAL (decl) = 0;
 	      error ("global register variable has initial value");
@@ -760,7 +682,7 @@ make_decl_rtl (decl, asmspec, top_level)
 	  REGNO (DECL_RTL (decl)) = reg_number;
 	  REG_USERVAR_P (DECL_RTL (decl)) = 1;
 
-	  if (top_level)
+	  if (TREE_STATIC (decl))
 	    {
 	      /* Make this register global, so not usable for anything
 		 else.  */
@@ -4890,7 +4812,7 @@ assemble_alias (decl, target)
 {
   const char *name;
 
-  make_decl_rtl (decl, (char *) 0, 1);
+  make_decl_rtl (decl, (char *) 0);
   name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
 
 #ifdef ASM_OUTPUT_DEF

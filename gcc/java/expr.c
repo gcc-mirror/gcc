@@ -1,5 +1,5 @@
 /* Process expressions for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1680,7 +1680,7 @@ build_known_method_ref (method, method_type, self_type, method_signature, arg_li
   tree func;
   if (is_compiled_class (self_type))
     {
-      make_decl_rtl (method, NULL, 1);
+      make_decl_rtl (method, NULL);
       func = build1 (ADDR_EXPR, method_ptr_type_node, method);
     }
   else
@@ -2000,7 +2000,7 @@ build_jni_stub (method)
   TREE_STATIC (meth_var) = 1;
   TREE_PUBLIC (meth_var) = 0;
   DECL_EXTERNAL (meth_var) = 0;
-  make_decl_rtl (meth_var, NULL, 0);
+  make_decl_rtl (meth_var, NULL);
   meth_var = pushdecl_top_level (meth_var);
 
   /* One strange way that the front ends are different is that they
@@ -2364,7 +2364,7 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    DECL_IGNORED_P (init_decl) = 1;
 	    TREE_READONLY (init_decl) = 1;
 	    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (init_decl)) = 1;
-	    make_decl_rtl (init_decl, NULL, 1);
+	    make_decl_rtl (init_decl, NULL);
 	    init = build1 (ADDR_EXPR, TREE_TYPE (exp), init_decl);
 	    r = expand_expr (init, target, tmode, modifier);
 	    return r;
@@ -2387,7 +2387,7 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    DECL_IGNORED_P (init_decl) = 1;
 	    TREE_READONLY (init_decl) = 1;
 	    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (init_decl)) = 1;
-	    make_decl_rtl (init_decl, NULL, 1);
+	    make_decl_rtl (init_decl, NULL);
 	    init = init_decl;
 	  }
 	expand_assignment (build (COMPONENT_REF, TREE_TYPE (data_fld),

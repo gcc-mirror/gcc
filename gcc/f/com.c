@@ -6460,7 +6460,7 @@ ffecom_init_zero_ (tree decl)
 
   if (incremental)
     {
-      make_decl_rtl (decl, NULL, TREE_PUBLIC (decl) ? 1 : 0);
+      make_decl_rtl (decl, NULL);
       assemble_variable (decl, TREE_PUBLIC (decl) ? 1 : 0, 0, 1);
     }
 
@@ -12266,7 +12266,7 @@ ffecom_lookup_label (ffelab label)
 	  TREE_STATIC (glabel) = 1;
 	  DECL_CONTEXT (glabel) = 0;
 	  DECL_INITIAL (glabel) = NULL;
-	  make_decl_rtl (glabel, NULL, 0);
+	  make_decl_rtl (glabel, NULL);
 	  expand_decl (glabel);
 
 	  ffecom_save_tree_forever (glabel);
@@ -13568,7 +13568,7 @@ builtin_function (const char *name, tree type, int function_code,
   TREE_PUBLIC (decl) = 1;
   if (library_name)
     DECL_ASSEMBLER_NAME (decl) = get_identifier (library_name);
-  make_decl_rtl (decl, NULL_PTR, 1);
+  make_decl_rtl (decl, NULL_PTR);
   pushdecl (decl);
   DECL_BUILT_IN_CLASS (decl) = class;
   DECL_FUNCTION_CODE (decl) = function_code;
@@ -14426,7 +14426,7 @@ start_function (tree name, tree type, int nested, int public)
 
   if (TREE_CODE (current_function_decl) != ERROR_MARK)
     {
-      make_function_rtl (current_function_decl);
+      make_decl_rtl (current_function_decl, NULL);
 
       restype = TREE_TYPE (TREE_TYPE (current_function_decl));
       DECL_RESULT (current_function_decl)

@@ -6671,7 +6671,7 @@ builtin_function (name, type, code, class, libname)
      function in the namespace.  */
   if (libname)
     DECL_ASSEMBLER_NAME (decl) = get_identifier (libname);
-  make_function_rtl (decl);
+  make_decl_rtl (decl, NULL);
 
   /* Warn if a function in the namespace for users
      is used without an occasion to consider it declared.  */
@@ -6709,7 +6709,7 @@ build_library_fn (name, type)
      tree type;
 {
   tree fn = build_library_fn_1 (name, ERROR_MARK, type);
-  make_function_rtl (fn);
+  make_decl_rtl (fn, NULL);
   return fn;
 }
 
@@ -6725,7 +6725,7 @@ build_cp_library_fn (name, operator_code, type)
   TREE_NOTHROW (fn) = TYPE_NOTHROW_P (type);
   DECL_CONTEXT (fn) = FROB_CONTEXT (current_namespace);
   set_mangled_name_for_decl (fn);
-  make_function_rtl (fn);
+  make_decl_rtl (fn, NULL);
   return fn;
 }
 
@@ -7612,7 +7612,7 @@ check_initializer (decl, init)
   else if (!DECL_EXTERNAL (decl) && TREE_CODE (type) == REFERENCE_TYPE)
     {
       if (TREE_STATIC (decl))
-	make_decl_rtl (decl, NULL_PTR, toplevel_bindings_p ());
+	make_decl_rtl (decl, NULL_PTR);
       grok_reference_init (decl, type, init);
       init = NULL_TREE;
     }
@@ -7739,7 +7739,7 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
   /* If we're deferring the variable, just make RTL.  Do not actually
      emit the variable.  */
   if (defer_p)
-    make_decl_rtl (decl, asmspec, toplev);
+    make_decl_rtl (decl, asmspec);
   /* If we're not deferring, go ahead and assemble the variable.  */
   else
     rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
@@ -8020,7 +8020,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 	 grokclassfn.  Lay this out fresh.  */
       DECL_RTL (TREE_TYPE (decl)) = NULL_RTX;
       DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
-      make_decl_rtl (decl, asmspec, 0);
+      make_decl_rtl (decl, asmspec);
     }
 
   /* Deduce size of array from initialization, if not already known.  */
@@ -13598,7 +13598,7 @@ start_function (declspecs, declarator, attrs, flags)
 
   /* We need to do this even if we aren't expanding yet so that
      assemble_external works.  */
-  make_function_rtl (decl1);
+  make_decl_rtl (decl1, NULL);
 
   /* Promote the value to int before returning it.  */
   if (C_PROMOTING_INTEGER_TYPE_P (restype))

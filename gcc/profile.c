@@ -1117,7 +1117,7 @@ output_func_start_profiler ()
   announce_function (fndecl);
   current_function_decl = fndecl;
   DECL_INITIAL (fndecl) = error_mark_node;
-  make_function_rtl (fndecl);
+  make_decl_rtl (fndecl, NULL);
   init_function_start (fndecl, input_filename, lineno);
   pushlevel (0);
   expand_function_start (fndecl, 0);

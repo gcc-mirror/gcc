@@ -1,3 +1,27 @@
+2001-01-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* output.h (make_function_rtl): Remove prototype.
+	(make_decl_rtl): Likewise.
+	* varasm.c (make_function_rtl): Remove.
+	(make_decl_rtl): Determine top-levelness from DECL_CONTEXT, rather
+	than from a third parameter.
+	* tree.h (make_decl_rtl): Remove last parameter.
+	* c-decl.c (builtin_function): Remove last argument in call to
+	make_decl_rtl; use make_function_rtl instead of make_decl_rtl.
+	(start_function): Likewise.
+	* except.c (call_get_eh_context): Likewise.
+	* expr.c (emit_block_move): Likewise.
+	(clear_storage): Likewise.
+	* profile.c (output_func_start_profiler): Likewise.
+	* toplev.c (rest_of_decl_compilation): Likewise.
+	* objc/objc-act.c (create_builtin_decl): Likewise.
+	(synth_module_prologue): Likewise.
+	(generate_static_reference): Likewise.
+	(build_selector_reference_decl): Likewise.
+	(build_class_reference_decl): Likewise.
+	(build_objc_string_decl): Likewise.
+	(build_protocol_reference): Likewise.
+
 2001-01-10  Richard Henderson  <rth@redhat.com>
 
 	* hwint.h: Revert yesterday's change.

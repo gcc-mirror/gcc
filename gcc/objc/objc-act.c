@@ -1230,7 +1230,7 @@ create_builtin_decl (code, type, name)
   if (code == VAR_DECL)
     {
       TREE_STATIC (decl) = 1;
-      make_decl_rtl (decl, 0, 1);
+      make_decl_rtl (decl, 0);
       pushdecl (decl);
     }
 
@@ -1308,7 +1308,7 @@ synth_module_prologue ()
       if (flag_traditional && TAG_MSGSEND[0] != '_')
 	DECL_BUILT_IN_NONANSI (umsg_decl) = 1;
 
-      make_decl_rtl (umsg_decl, NULL_PTR, 1);
+      make_decl_rtl (umsg_decl, NULL_PTR);
       pushdecl (umsg_decl);
     }
   else
@@ -1981,7 +1981,7 @@ generate_static_references ()
 
       type = build_array_type (build_pointer_type (void_type_node), 0);
       decl = build_decl (VAR_DECL, ident, type);
-      make_decl_rtl (decl, 0, 1);
+      make_decl_rtl (decl, 0);
       TREE_USED (decl) = 1;
       decls
 	= tree_cons (NULL_TREE, build_unary_op (ADDR_EXPR, decl, 1), decls);
@@ -2074,7 +2074,7 @@ build_selector_reference_decl ()
   DECL_ARTIFICIAL (decl) = 1;
   DECL_CONTEXT (decl) = 0;
 
-  make_decl_rtl (decl, 0, 1);
+  make_decl_rtl (decl, 0);
   pushdecl_top_level (decl);
 
   return decl;
@@ -2296,7 +2296,7 @@ build_class_reference_decl ()
   DECL_CONTEXT (decl) = 0;
   DECL_ARTIFICIAL (decl) = 1;
 
-  make_decl_rtl (decl, 0, 1);
+  make_decl_rtl (decl, 0);
   pushdecl_top_level (decl);
 
   return decl;
@@ -2439,7 +2439,7 @@ build_objc_string_decl (section)
   DECL_CONTEXT (decl) = 0;
   DECL_ARTIFICIAL (decl) = 1;
  
-  make_decl_rtl (decl, 0, 1);
+  make_decl_rtl (decl, 0);
   pushdecl_top_level (decl);
 
   return decl;
@@ -5333,7 +5333,7 @@ build_protocol_reference (p)
       TREE_USED (decl) = 1;
       DECL_ARTIFICIAL (decl) = 1;
 
-      make_decl_rtl (decl, 0, 1);
+      make_decl_rtl (decl, 0);
       pushdecl_top_level (decl);
    }
 

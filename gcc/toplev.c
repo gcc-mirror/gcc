@@ -2579,7 +2579,7 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
       || TREE_CODE (decl) == FUNCTION_DECL)
     {
       timevar_push (TV_VARCONST);
-      make_decl_rtl (decl, asmspec, top_level);
+      make_decl_rtl (decl, asmspec);
       /* Initialized extern variable exists to be replaced
 	 with its value, or represents something that will be
 	 output in another file.  */
@@ -2606,13 +2606,13 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
       if (decode_reg_name (asmspec) >= 0)
 	{
 	  DECL_RTL (decl) = 0;
-	  make_decl_rtl (decl, asmspec, top_level);
+	  make_decl_rtl (decl, asmspec);
 	}
       else
 	{
 	  error ("invalid register name `%s' for register variable", asmspec);
 	  DECL_REGISTER (decl) = 0;
-	  make_decl_rtl (decl, NULL, top_level);
+	  make_decl_rtl (decl, NULL);
 	}
     }
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
