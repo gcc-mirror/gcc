@@ -1,3 +1,13 @@
+2005-01-03  Richard Henderson  <rth@redhat.com>
+
+	PR target/19235
+	* config/i386/i386.md (movdi_2): Separate SSE1 and SSE2 alternatives.
+	(mov<MMXMODEI>_internal): Likewise.
+	(movdf_nointeger): Prefer Y while not preferring, but allowing, x.
+	Add V2SF case; use it for SSE1; don't use TI.
+	(movdf_integer): Likewise.
+	(mov<SSEMODEI>_internal, movti_internal): Force V4SF for SSE1.
+
 2005-01-03  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.c (vect_strip_conversions): New function.
