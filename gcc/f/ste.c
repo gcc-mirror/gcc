@@ -395,12 +395,11 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
 
   /* Do the initial assignment into the DO var.  */
 
-  expr = ffecom_modify (void_type_node, tvar, tstart);
-  expand_expr_stmt (expr);
+  tstart = ffecom_save_tree (tstart);
 
   expr = ffecom_2 (MINUS_EXPR, TREE_TYPE (tvar),
 		   tend,
-		   TREE_CONSTANT (tstart) ? tstart : tvar);
+		   tstart);
 
   if (!ffe_is_onetrip ())
     {
@@ -437,6 +436,9 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
   niters = ffecom_push_tempvar (TREE_TYPE (expr),
 				FFETARGET_charactersizeNONE, -1, FALSE);
   expr = ffecom_modify (void_type_node, niters, expr);
+  expand_expr_stmt (expr);
+
+  expr = ffecom_modify (void_type_node, tvar, tstart);
   expand_expr_stmt (expr);
 
   if (block == NULL)

@@ -13293,7 +13293,8 @@ ffecom_return_expr (ffebld expr)
 /* Do save_expr only if tree is not error_mark_node.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
-tree ffecom_save_tree (tree t)
+tree
+ffecom_save_tree (tree t)
 {
   return save_expr (t);
 }
