@@ -154,10 +154,6 @@ sh_fallback_frame_state (struct _Unwind_Context *context,
     = (long)&(sc->sc_fpscr) - new_cfa;
 #endif
 
-  /* The unwinder expects the PC to point to the following insn,
-     whereas the kernel returns the address of the actual
-     faulting insn.  */
-  sc->sc_pc += 2;
   fs->regs.reg[SH_DWARF_FRAME_PC].how = REG_SAVED_OFFSET;
   fs->regs.reg[SH_DWARF_FRAME_PC].loc.offset
     = (long)&(sc->sc_pc) - new_cfa;
