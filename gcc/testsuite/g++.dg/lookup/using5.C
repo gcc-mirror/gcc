@@ -13,5 +13,5 @@ template <typename> struct A
 
 template <typename T> struct B : A<T>
 {
-    using X::foo; { dg-error "not a class-name|expected|non-member" }
+    using X::foo; // { dg-error "not a class-name|nested-name-specifier|non-member" }
 };

@@ -1,3 +1,7 @@
+2003-05-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* g++.dg/lookup/using5.C: Fix testcase error.
+
 2003-05-01  Chris Demetriou  <cgd@broadcom.com>
 
 	* gcc.dg/special/mips-abi.exp (is_meabi_config): Remove,
