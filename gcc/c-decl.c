@@ -6338,7 +6338,7 @@ c_expand_body_1 (tree fndecl, int nested_p)
      to run global initializers, etc.  */
   if (DECL_NAME (fndecl)
       && MAIN_NAME_P (DECL_NAME (fndecl))
-      && DECL_CONTEXT (fndecl) == NULL_TREE)
+      && C_DECL_FILE_SCOPE (fndecl))
     expand_main_function ();
 
   /* Generate the RTL for this function.  */
