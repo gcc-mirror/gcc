@@ -1,3 +1,10 @@
+2003-12-01  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/natPlainSocketImplPosix.cc
+	bind(): Dont set SockedImpl.address field on succesful bind.
+	* gnu/java/net/natPlainSocketImplWin32.cc
+	bind(): Likewise.
+
 2003-11-30  Jeff Sturm <jsturm@one-point.com>
 
 	* java/net/InetAddress.java:

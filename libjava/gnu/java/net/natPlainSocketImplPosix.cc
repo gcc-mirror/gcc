@@ -117,7 +117,6 @@ gnu::java::net::PlainSocketImpl::bind (::java::net::InetAddress *host, jint lpor
   
   if (_Jv_bind (native_fd, ptr, len) == 0)
     {
-      address = host;
       socklen_t addrlen = sizeof(u);
 
       if (lport != 0)
