@@ -2216,6 +2216,12 @@ check_default_tmpl_args (decl, parms, is_primary, is_partial)
      in the template-parameter-list of the definition of a member of a
      class template.  */
 
+  if (TREE_CODE (DECL_REAL_CONTEXT (decl)) == FUNCTION_DECL)
+    /* You can't have a function template declaration in a local
+       scope, nor you can you define a member of a class template in a
+       local scope.  */
+    return;
+
   if (current_class_type
       && !TYPE_BEING_DEFINED (current_class_type)
       && DECL_LANG_SPECIFIC (decl)
@@ -5057,9 +5063,22 @@ instantiate_class_template (type)
 	}
     }
 
+  /* Create the typedef that indicates provides a way of referencing a
+     class name within the scope of that class.  */
+  build_self_reference ();
+
   /* Don't replace enum constants here.  */
   for (t = TYPE_FIELDS (pattern); t; t = TREE_CHAIN (t))
-    if (TREE_CODE (t) != CONST_DECL)
+    /* If this is the implicit self-reference typedef, skip it, as we
+       have handled it above.  Note that the usual tsubst machinery
+       doesn't work here, since the resulting declaration must have a
+       different name than the one it was given originally.  */
+    if (TREE_CODE (t) == TYPE_DECL 
+	&& TREE_TYPE (t) == pattern
+	&& DECL_NAME (t) == constructor_name (t)
+	&& DECL_ARTIFICIAL (t))
+      continue;
+    else if (TREE_CODE (t) != CONST_DECL)
       {
 	tree r;
 
@@ -5878,18 +5897,24 @@ tsubst_decl (t, args, type, in_decl)
       break;
 
     case VAR_DECL:
+    case TYPE_DECL:
       {
 	tree argvec;
 	tree gen_tmpl;
 	tree spec;
 	tree tmpl;
-	tree ctx = tsubst_aggr_type (DECL_CONTEXT (t), args, 
-				     /*complain=*/1,
-				     in_decl, /*entering_scope=*/1);
-	
-	/* Nobody should be tsubst'ing into non-template variables.  */
-	my_friendly_assert (DECL_LANG_SPECIFIC (t) 
-			    && DECL_TEMPLATE_INFO (t) != NULL_TREE, 0);
+	tree ctx;
+
+	if (!DECL_LANG_SPECIFIC (t) || !DECL_TEMPLATE_INFO (t))
+	  return t;
+
+	if (TYPE_P (DECL_CONTEXT (t)))
+	  ctx = tsubst_aggr_type (DECL_CONTEXT (t), args, 
+				  /*complain=*/1,
+				  in_decl, /*entering_scope=*/1);
+	else
+	  /* Subsequent calls to pushdecl will fill this in.  */
+	  ctx = NULL_TREE;
 
 	/* Check to see if we already have this specialization.  */
 	tmpl = DECL_TI_TEMPLATE (t);
@@ -5903,7 +5928,13 @@ tsubst_decl (t, args, type, in_decl)
 	    break;
 	  }
 
+	/* This declaration is going to have to be around for a while,
+	   so me make sure it is on a saveable obstack.  */
+	push_obstacks_nochange ();
+	saveable_allocation ();
 	r = copy_node (t);
+	pop_obstacks ();
+
 	TREE_TYPE (r) = type;
 	c_apply_type_quals_to_decl (CP_TYPE_QUALS (type), r);
 	DECL_CONTEXT (r) = ctx;
@@ -5916,10 +5947,16 @@ tsubst_decl (t, args, type, in_decl)
 	copy_lang_decl (r);
 	DECL_CLASS_CONTEXT (r) = DECL_CONTEXT (r);
 
+	/* Even if the original location is out of scope, the newly
+	   substituted one is not.  */
+	if (TREE_CODE (r) == VAR_DECL)
+	  DECL_DEAD_FOR_LOCAL (r) = 0;
+
 	/* A static data member declaration is always marked external
 	   when it is declared in-class, even if an initializer is
 	   present.  We mimic the non-template processing here.  */
-	DECL_EXTERNAL (r) = 1;
+	if (ctx)
+	  DECL_EXTERNAL (r) = 1;
 
 	DECL_TEMPLATE_INFO (r) = perm_tree_cons (tmpl, argvec, NULL_TREE);
 	SET_DECL_IMPLICIT_INSTANTIATION (r);
@@ -5929,18 +5966,6 @@ tsubst_decl (t, args, type, in_decl)
 	if (TREE_CODE (type) == VOID_TYPE)
 	  cp_error_at ("instantiation of `%D' as type void", r);
       }
-      break;
-
-    case TYPE_DECL:
-      if (t == TYPE_NAME (TREE_TYPE (t)))
-	r = TYPE_NAME (type);
-      else
-	{
-	  r = copy_node (t);
-	  TREE_TYPE (r) = type;
-	  DECL_CONTEXT (r) = current_class_type;
-	  TREE_CHAIN (r) = NULL_TREE;
-	}
       break;
 
     default:
@@ -6018,7 +6043,7 @@ tsubst_function_type (t, args, complain, in_decl)
   tree arg_types;
   tree fntype;
 
-  /* The TYPE_CONTEXT is not used for function/method types.  */
+  /* The TYPE_CONEXT is not used for function/method types.  */
   my_friendly_assert (TYPE_CONTEXT (t) == NULL_TREE, 0);
 
   /* Substitue the return type.  */
@@ -7099,19 +7124,22 @@ tsubst_expr (t, args, complain, in_decl)
     case DECL_STMT:
       {
 	int i = suspend_momentary ();
-	tree dcl, init;
+	tree decl, init;
 
 	lineno = STMT_LINENO (t);
 	emit_line_note (input_filename, lineno);
-	dcl = start_decl
-	  (tsubst (TREE_OPERAND (t, 0), args, complain, in_decl),
-	   tsubst (TREE_OPERAND (t, 1), args, complain, in_decl),
-	   TREE_OPERAND (t, 2) != 0, NULL_TREE, NULL_TREE);
-	init = tsubst_expr (TREE_OPERAND (t, 2), args, complain, in_decl);
-	cp_finish_decl
-	  (dcl, init, NULL_TREE, 1, /*init ? LOOKUP_ONLYCONVERTING :*/ 0);
+	decl = DECL_STMT_DECL (t);
+	init = DECL_INITIAL (decl);
+	decl = tsubst (decl, args, complain, in_decl);
+	init = tsubst_expr (init, args, complain, in_decl);
+	DECL_INITIAL (decl) = init;
+	maybe_push_decl (decl);
+	if (TREE_CODE (decl) == VAR_DECL)
+	  DECL_TEMPLATE_INSTANTIATED (decl) = 1;
+	start_decl_1 (decl);
+	cp_finish_decl (decl, init, NULL_TREE, 0, 0);
 	resume_momentary (i);
-	return dcl;
+	return decl;
       }
 
     case FOR_STMT:
