@@ -1223,20 +1223,23 @@ next_record_w (int done)
   switch (current_mode ())
     {
     case FORMATTED_DIRECT:
-    case UNFORMATTED_DIRECT:
       if (current_unit->bytes_left == 0)
 	break;
 
       length = current_unit->bytes_left;
-
       p = salloc_w (current_unit->s, &length);
+
       if (p == NULL)
 	goto io_error;
 
       memset (p, ' ', current_unit->bytes_left);
       if (sfree (current_unit->s) == FAILURE)
 	goto io_error;
+      break;
 
+    case UNFORMATTED_DIRECT:
+      if (sfree (current_unit->s) == FAILURE)
+        goto io_error;
       break;
 
     case UNFORMATTED_SEQUENTIAL:
@@ -1304,6 +1307,7 @@ next_record_w (int done)
 void
 next_record (int done)
 {
+  gfc_offset fp; /* file position */
 
   current_unit->read_bad = 0;
 
@@ -1314,8 +1318,12 @@ next_record (int done)
 
   current_unit->current_record = 0;
   if (current_unit->flags.access == ACCESS_DIRECT)
-    current_unit->last_record = file_position (current_unit->s) 
-                               / current_unit->recl;
+   {
+    fp = file_position (current_unit->s);
+    /* Calculate next record, rounding up partial records.  */
+    current_unit->last_record = (fp + curren_unit->recl - 1)
+				/ current_unit->recl;
+   }
   else
     current_unit->last_record++;
 
