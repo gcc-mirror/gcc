@@ -733,8 +733,8 @@ h8300-*-*)
 	;;
 hppa*64*-*-linux* | parisc*64*-*-linux*)
 	target_cpu_default="(MASK_PA_11 | MASK_PA_20)"
-	tm_file="pa/pa64-start.h ${tm_file} dbxelf.h elfos.h svr4.h linux.h pa/pa-linux.h \
-		 pa/pa64-regs.h pa/pa-64.h pa/pa64-linux.h"
+	tm_file="pa/pa64-start.h ${tm_file} dbxelf.h elfos.h svr4.h linux.h \
+		 pa/pa-linux.h pa/pa64-regs.h pa/pa-64.h pa/pa64-linux.h"
 	tmake_file=pa/t-linux64
 	gas=yes gnu_ld=yes
 	;;
@@ -867,7 +867,16 @@ hppa1.0-*-hpux10*)
 	;;
 hppa*64*-*-hpux11*)
 	xm_defines=POSIX
-	tm_file="pa/pa64-start.h ${tm_file} pa/pa64-regs.h pa/long_double.h pa/elf.h pa/pa-hpux.h pa/pa-hpux11.h pa/pa-64.h pa/pa64-hpux.h"
+	if test x$gas = xyes
+	then
+		tm_file="pa/pa64-start.h ${tm_file} dbxelf.h elfos.h  \
+			 pa/pa64-regs.h pa/long_double.h pa/pa-hpux.h \
+			 pa/pa-hpux11.h pa/pa-64.h pa/pa64-hpux.h"
+	else
+		tm_file="pa/pa64-start.h ${tm_file} dbxelf.h pa/elf.h \
+			 pa/pa64-regs.h pa/long_double.h pa/pa-hpux.h \
+			 pa/pa-hpux11.h pa/pa-64.h pa/pa64-hpux.h"
+	fi
 	tmake_file="pa/t-pa64 pa/t-pa-hpux"
 	xmake_file="pa/x-ada"
 	target_cpu_default="(MASK_PA_11|MASK_PA_20|MASK_GAS)"
