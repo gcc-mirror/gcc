@@ -294,8 +294,6 @@ type_stack_dup (size, offset)
 {
   tree type[4];
   int index;
-  if (size + offset > stack_pointer)
-    error ("stack underflow - dup* operation");
   for (index = 0;  index < size + offset; index++)
     {
       type[index] = stack_type_map[stack_pointer - 1];
@@ -923,12 +921,18 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	case OPCODE_new:
 	  PUSH_TYPE (get_class_constant (jcf, IMMEDIATE_u2));
 	  break;
-	case OPCODE_dup:     type_stack_dup (1, 0);  break;
-	case OPCODE_dup_x1:  type_stack_dup (1, 1);  break;
-	case OPCODE_dup_x2:  type_stack_dup (1, 2);  break;
-	case OPCODE_dup2:    type_stack_dup (2, 0);  break;
-	case OPCODE_dup2_x1: type_stack_dup (2, 1);  break;
-	case OPCODE_dup2_x2: type_stack_dup (2, 2);  break;
+	case OPCODE_dup:     wide = 1; index = 0;  goto dup;
+	case OPCODE_dup_x1:  wide = 1; index = 1;  goto dup;
+	case OPCODE_dup_x2:  wide = 1; index = 2;  goto dup;
+	case OPCODE_dup2:    wide = 2; index = 0;  goto dup;
+	case OPCODE_dup2_x1: wide = 2; index = 1;  goto dup;
+	case OPCODE_dup2_x2: wide = 2; index = 2;  goto dup;
+	dup:
+	  if (wide + index > stack_pointer)
+	    VERIFICATION_ERROR ("stack underflow - dup* operation");
+	  type_stack_dup (wide, index);
+	  wide = 0;
+	  break;
 	case OPCODE_pop:  index = 1;  goto pop;
 	case OPCODE_pop2: index = 2;  goto pop;
 	pop:
