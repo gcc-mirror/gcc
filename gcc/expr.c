@@ -2147,8 +2147,7 @@ move_block_from_reg (regno, x, nregs, size)
   /* If SIZE is that of a mode no bigger than a word, just use that
      mode's store operation.  */
   if (size <= UNITS_PER_WORD
-      && (mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0)) != BLKmode
-      && !FUNCTION_ARG_REG_LITTLE_ENDIAN)
+      && (mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0)) != BLKmode)
     {
       emit_move_insn (adjust_address (x, mode, 0), gen_rtx_REG (mode, regno));
       return;
@@ -2157,9 +2156,7 @@ move_block_from_reg (regno, x, nregs, size)
   /* Blocks smaller than a word on a BYTES_BIG_ENDIAN machine must be aligned
      to the left before storing to memory.  Note that the previous test
      doesn't handle all cases (e.g. SIZE == 3).  */
-  if (size < UNITS_PER_WORD
-      && BYTES_BIG_ENDIAN
-      && !FUNCTION_ARG_REG_LITTLE_ENDIAN)
+  if (size < UNITS_PER_WORD && BYTES_BIG_ENDIAN)
     {
       rtx tem = operand_subword (x, 0, 1, BLKmode);
       rtx shift;
@@ -2523,26 +2520,17 @@ copy_blkmode_from_reg (tgtblk, srcreg, type)
     }
 
   /* This code assumes srcreg is at least a full word.  If it isn't, copy it
-     into a new pseudo which is a full word.
+     into a new pseudo which is a full word.  */
 
-     If FUNCTION_ARG_REG_LITTLE_ENDIAN is set and convert_to_mode does a copy,
-     the wrong part of the register gets copied so we fake a type conversion
-     in place.  */
   if (GET_MODE (srcreg) != BLKmode
       && GET_MODE_SIZE (GET_MODE (srcreg)) < UNITS_PER_WORD)
-    {
-      if (FUNCTION_ARG_REG_LITTLE_ENDIAN)
-	srcreg = simplify_gen_subreg (word_mode, srcreg, GET_MODE (srcreg), 0);
-      else
-	srcreg = convert_to_mode (word_mode, srcreg, TREE_UNSIGNED (type));
-    }
+    srcreg = convert_to_mode (word_mode, srcreg, TREE_UNSIGNED (type));
 
   /* Structures whose size is not a multiple of a word are aligned
      to the least significant byte (to the right).  On a BYTES_BIG_ENDIAN
      machine, this means we must skip the empty high order bytes when
      calculating the bit offset.  */
   if (BYTES_BIG_ENDIAN
-      && !FUNCTION_ARG_REG_LITTLE_ENDIAN
       && bytes % UNITS_PER_WORD)
     big_endian_correction
       = (BITS_PER_WORD - ((bytes % UNITS_PER_WORD) * BITS_PER_UNIT));
