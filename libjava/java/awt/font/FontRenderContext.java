@@ -1,4 +1,4 @@
-/* DragSourceEvent.java --
+/* FontRenderContext.java
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,58 +36,80 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package java.awt.dnd;
+package java.awt.font;
 
-import java.awt.Point;
-import java.util.EventObject;
+import java.awt.geom.AffineTransform;
 
 /**
- * @since 1.2
+ * @author Michael Koch
  */
-public class DragSourceEvent extends EventObject
+public class FontRenderContext
 {
+  private AffineTransform affineTransform;
+  private boolean isAntiAliased;
+  private boolean usesFractionalMetrics;
+ 
   /**
-   * Compatible with JDK 1.2+
+   * Construct a new <code>FontRenderContext</code>.
    */
-  private static final long serialVersionUID = -763287114604032641L;
-  
-  private final boolean locationSpecified;
-  private final int x;
-  private final int y;
-
-  public DragSourceEvent(DragSourceContext context)
+  protected FontRenderContext()
   {
-    super(context);
-    locationSpecified = false;
-    x = 0;
-    y = 0;
+    // Do nothing here.
+  }
+ 
+  /**
+   * Construct a new <code>FontRenderContext</code>.
+   */
+  public FontRenderContext (AffineTransform tx, boolean isAntiAliased,
+                            boolean usesFractionalMetrics)
+  {
+    if (tx != null
+        && !tx.isIdentity ())
+      {
+        this.affineTransform = new AffineTransform (tx);
+      }
+    
+    this.isAntiAliased = isAntiAliased;
+    this.usesFractionalMetrics = usesFractionalMetrics;
   }
 
-  public DragSourceEvent(DragSourceContext context, int x, int y)
+  public boolean equals (Object obj)
   {
-    super(context);
-    locationSpecified = true;
-    this.x = x;
-    this.y = y;
+    if (! (obj instanceof FontRenderContext))
+      return false;
+
+    return equals ((FontRenderContext) obj);
   }
 
-  public DragSourceContext getDragSourceContext()
+  public boolean equals (FontRenderContext rhs)
   {
-    return (DragSourceContext) source;
+    return (affineTransform.equals (rhs.getTransform ())
+            && isAntiAliased == rhs.isAntiAliased ()
+            && usesFractionalMetrics == rhs.usesFractionalMetrics ());
   }
 
-  public Point getLocation()
+  public AffineTransform getTransform ()
   {
-    return locationSpecified ? new Point(x, y) : null;
+    return affineTransform;
   }
 
-  public int getX()
+  /**
+   * Returns the hash code of the font render context.
+   */
+  public int hashCode ()
   {
-    return x;
+    // FIXME: check what SUN does here.
+    return affineTransform == null ? 0 : affineTransform.hashCode ();
   }
 
-  public int getY()
+  public boolean isAntiAliased ()
   {
-    return y;
+    return isAntiAliased;
   }
-} // class DragSourceEvent
+
+  public boolean usesFractionalMetrics ()
+  {
+    return usesFractionalMetrics;
+  }
+}
+ 

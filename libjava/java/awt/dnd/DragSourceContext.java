@@ -92,7 +92,13 @@ public class DragSourceContext
     return null;
   }
 
-  public void addDragSourceListener(DragSourceListener l)
+  /**
+   * Adds a <code>DragSourceListener</code>.
+   *
+   * @exception TooManyListenersException If a <code>DragSourceListener</code>
+   * has already been added.
+   */
+  public void addDragSourceListener (DragSourceListener dsl)
     throws TooManyListenersException
   {
   }

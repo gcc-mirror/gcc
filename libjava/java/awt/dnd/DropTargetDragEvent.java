@@ -41,21 +41,56 @@ import java.util.List;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 
+/**
+ * @since 1.2
+ */
 public class DropTargetDragEvent extends DropTargetEvent
 {
+  /**
+   * Compatible with 1.2+
+   */
+  private static final long serialVersionUID = -8422265619058953682L;
+
   private final int dropAction;
   private final int srcActions;
   private final Point location;
 
   /**
-   * FIXME
+   * Initializes a <code>DropTargetDragEvent</code>.
    *
-   * @exception NullPointerException FIXME
+   * @exception IllegalArgumentException If dropAction is not one of DnDConstants,
+   * srcActions is not a bitwise mask of DnDConstants, or dtc is null.
+   * @exception NullPointerException If location is null.
    */
   public DropTargetDragEvent (DropTargetContext context, Point location,
                               int dropAction, int srcActions)
   {
     super (context);
+
+    if (location == null)
+      throw new NullPointerException ();
+
+    if (context == null)
+      throw new IllegalArgumentException ();
+
+    if (dropAction != DnDConstants.ACTION_NONE
+        && dropAction != DnDConstants.ACTION_COPY
+        && dropAction != DnDConstants.ACTION_MOVE
+        && dropAction != DnDConstants.ACTION_COPY_OR_MOVE
+        && dropAction != DnDConstants.ACTION_LINK
+        && dropAction != DnDConstants.ACTION_REFERENCE)
+      throw new IllegalArgumentException ();
+
+    int srcActionsMask = DnDConstants.ACTION_NONE
+                         | DnDConstants.ACTION_COPY
+                         | DnDConstants.ACTION_MOVE
+                         | DnDConstants.ACTION_COPY_OR_MOVE
+                         | DnDConstants.ACTION_LINK
+                         | DnDConstants.ACTION_REFERENCE;
+    
+    if (~(srcActions ^ srcActionsMask) != 0)
+      throw new IllegalArgumentException ();
+    
     this.dropAction = dropAction;
     this.srcActions = srcActions;
     this.location = location;
@@ -63,19 +98,17 @@ public class DropTargetDragEvent extends DropTargetEvent
 
   public void acceptDrag (int dragOperation)
   {
-    // FIXME: implement this
+    context.acceptDrag (dragOperation);
   }
 
   public DataFlavor[] getCurrentDataFlavors ()
   {
-    // FIXME: implement this
-    return null;
+    return context.getCurrentDataFlavors ();
   }
   
   public List getCurrentDataFlavorsAsList ()
   {
-    // FIXME: implement this
-    return null;
+    return context.getCurrentDataFlavorsAsList ();
   }
   
   public int getDropAction()
@@ -96,12 +129,11 @@ public class DropTargetDragEvent extends DropTargetEvent
 
   public boolean isDataFlavorSupported (DataFlavor df)
   {
-    // FIXME: implement this
-    return true;
+    return context.isDataFlavorSupported (df);
   }
 
   public void rejectDrag ()
   {
-    // FIXME: implement this
+    context.rejectDrag ();
   }
 } // class DropTargetDragEvent

@@ -1,4 +1,4 @@
-/* DragSourceEvent.java --
+/* LineMetrics.java -- Information about about a line display characteristics
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,58 +36,32 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package java.awt.dnd;
-
-import java.awt.Point;
-import java.util.EventObject;
+package java.awt.font;
 
 /**
- * @since 1.2
+ * @author Michael Koch
  */
-public class DragSourceEvent extends EventObject
+public abstract class LineMetrics
 {
-  /**
-   * Compatible with JDK 1.2+
-   */
-  private static final long serialVersionUID = -763287114604032641L;
+  public abstract float getAscent();
   
-  private final boolean locationSpecified;
-  private final int x;
-  private final int y;
-
-  public DragSourceEvent(DragSourceContext context)
-  {
-    super(context);
-    locationSpecified = false;
-    x = 0;
-    y = 0;
-  }
-
-  public DragSourceEvent(DragSourceContext context, int x, int y)
-  {
-    super(context);
-    locationSpecified = true;
-    this.x = x;
-    this.y = y;
-  }
-
-  public DragSourceContext getDragSourceContext()
-  {
-    return (DragSourceContext) source;
-  }
-
-  public Point getLocation()
-  {
-    return locationSpecified ? new Point(x, y) : null;
-  }
-
-  public int getX()
-  {
-    return x;
-  }
-
-  public int getY()
-  {
-    return y;
-  }
-} // class DragSourceEvent
+  public abstract int getBaselineIndex();
+  
+  public abstract float[] getBaselineOffsets();
+  
+  public abstract float getDescent();
+  
+  public abstract float getHeight();
+  
+  public abstract float getLeading();
+  
+  public abstract int getNumChars();
+  
+  public abstract float getStrikethroughOffset();
+  
+  public abstract float getStrikethroughThickness();
+  
+  public abstract float getUnderlineOffset();
+  
+  public abstract float getUnderlineThickness();
+}

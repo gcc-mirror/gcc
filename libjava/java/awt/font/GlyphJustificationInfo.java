@@ -1,5 +1,5 @@
-/* DragSourceEvent.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* GlyphJustificationInfo.java
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,58 +36,42 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package java.awt.dnd;
-
-import java.awt.Point;
-import java.util.EventObject;
+package java.awt.font;
 
 /**
- * @since 1.2
+ * @author Michael Koch
  */
-public class DragSourceEvent extends EventObject
+public final class GlyphJustificationInfo
 {
-  /**
-   * Compatible with JDK 1.2+
-   */
-  private static final long serialVersionUID = -763287114604032641L;
+  public static final int PRIORITY_KASHIDA = 0;
+  public static final int PRIORITY_WHITESPACE = 1;
+  public static final int PRIORITY_INTERCHAR = 2;
+  public static final int PRIORITY_NONE = 3;
   
-  private final boolean locationSpecified;
-  private final int x;
-  private final int y;
-
-  public DragSourceEvent(DragSourceContext context)
+  public final float weight;
+  public final int growPriority;
+  public final boolean growAbsorb;
+  public final float growLeftLimit;
+  public final float growRightLimit;
+  public final int shrinkPriority;
+  public final boolean shrinkAbsorb;
+  public final float shrinkLeftLimit;
+  public final float shrinkRightLimit;
+	
+  public GlyphJustificationInfo (float weight, boolean growAbsorb,
+                                 int growPriority, float growLeftLimit,
+                                 float growRightLimit, boolean shrinkAbsorb,
+                                 int shrinkPriority, float shrinkLeftLimit,
+                                 float shrinkRightLimit)
   {
-    super(context);
-    locationSpecified = false;
-    x = 0;
-    y = 0;
+    this.weight = weight;
+    this.growAbsorb = growAbsorb;
+    this.growPriority = growPriority;
+    this.growLeftLimit = growLeftLimit;
+    this.growRightLimit = growRightLimit;
+    this.shrinkAbsorb = shrinkAbsorb;
+    this.shrinkPriority = shrinkPriority;
+    this.shrinkLeftLimit = shrinkLeftLimit;
+    this.shrinkRightLimit = shrinkRightLimit;
   }
-
-  public DragSourceEvent(DragSourceContext context, int x, int y)
-  {
-    super(context);
-    locationSpecified = true;
-    this.x = x;
-    this.y = y;
-  }
-
-  public DragSourceContext getDragSourceContext()
-  {
-    return (DragSourceContext) source;
-  }
-
-  public Point getLocation()
-  {
-    return locationSpecified ? new Point(x, y) : null;
-  }
-
-  public int getX()
-  {
-    return x;
-  }
-
-  public int getY()
-  {
-    return y;
-  }
-} // class DragSourceEvent
+}

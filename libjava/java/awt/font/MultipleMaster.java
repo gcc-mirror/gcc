@@ -1,5 +1,5 @@
-/* DragSourceEvent.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* MultipleMaster.java
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,58 +36,26 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package java.awt.dnd;
+package java.awt.font;
 
-import java.awt.Point;
-import java.util.EventObject;
+import java.awt.Font;
 
 /**
- * @since 1.2
+ * @author Michael Koch
  */
-public class DragSourceEvent extends EventObject
+public interface MultipleMaster
 {
-  /**
-   * Compatible with JDK 1.2+
-   */
-  private static final long serialVersionUID = -763287114604032641L;
+  public Font deriveMMFont (float[] axes);
   
-  private final boolean locationSpecified;
-  private final int x;
-  private final int y;
-
-  public DragSourceEvent(DragSourceContext context)
-  {
-    super(context);
-    locationSpecified = false;
-    x = 0;
-    y = 0;
-  }
-
-  public DragSourceEvent(DragSourceContext context, int x, int y)
-  {
-    super(context);
-    locationSpecified = true;
-    this.x = x;
-    this.y = y;
-  }
-
-  public DragSourceContext getDragSourceContext()
-  {
-    return (DragSourceContext) source;
-  }
-
-  public Point getLocation()
-  {
-    return locationSpecified ? new Point(x, y) : null;
-  }
-
-  public int getX()
-  {
-    return x;
-  }
-
-  public int getY()
-  {
-    return y;
-  }
-} // class DragSourceEvent
+  public Font deriveMMFont (float[] glyphWidths, float avgStemWidth,
+                            float typicalCapHeight, float typicalXHeight,
+                            float italicAngle);
+  
+  public float[] getDesignAxisDefaults ();
+  
+  public String[] getDesignAxisNames ();
+  
+  public float[] getDesignAxisRanges ();
+  
+  public int getNumDesignAxes ();
+}

@@ -118,8 +118,7 @@ getJobName();
   *
   * @param job_name The name of the print job.
   */
-public abstract String
-setJobName(String job_name);
+public abstract void setJobName (String job_name);
 
 /*************************************************************************/
 
@@ -195,8 +194,7 @@ pageDialog(PageFormat page_format);
 /**
   * Prints the pages.
   */
-public abstract void
-print();
+public abstract void print () throws PrinterException;
 
 /**
   * Displays a dialog box to the user which allows the print job

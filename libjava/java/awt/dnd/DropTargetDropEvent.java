@@ -42,31 +42,75 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.util.List;
 
+/**
+ * @since 1.2
+ */
 public class DropTargetDropEvent extends DropTargetEvent
 {
+  /**
+   * Compatible with JDK 1.2+
+   */
+  private static final long serialVersionUID = -1721911170440459322L;
+
   private final int dropAction;
-  private final int srcActions;
+  private final int actions;
   private final Point location;
-  private final boolean isLocal;
+  private final boolean isLocalTx;
   
+  /**
+   * Initializes a <code>DropTargetDropEvent</code>. By default this constructor
+   * assumes that the target is not int same JVM.
+   *
+   * @exception IllegalArgumentException If dropAction is not one of DnDConstants,
+   * actions is not a bitwise mask of DnDConstants, or dtc is null.
+   * @exception NullPointerException If location is null.
+   */
   public DropTargetDropEvent (DropTargetContext dtc, Point location,
-                              int dropAction, int srcActions)
+                              int dropAction, int actions)
   {
-    super (dtc);
-    this.dropAction = dropAction;
-    this.srcActions = srcActions;
-    this.location = location;
-    this.isLocal = false;
+    this (dtc, location, dropAction, actions, false);
   }
 
+  /**
+   * Initializes a <code>DropTargetDropEvent</code>.
+   *
+   * @exception IllegalArgumentException If dropAction is not one of DnDConstants,
+   * actions is not a bitwise mask of DnDConstants, or dtc is null.
+   * @exception NullPointerException If location is null.
+   */
   public DropTargetDropEvent (DropTargetContext dtc, Point location,
-                              int dropAction, int srcActions, boolean isLocal)
+                              int dropAction, int actions, boolean isLocalTx)
   {
     super (dtc);
+
+    if (location == null)
+      throw new NullPointerException ();
+
+    if (dtc == null)
+      throw new IllegalArgumentException ();
+
+    if (dropAction != DnDConstants.ACTION_NONE
+        && dropAction != DnDConstants.ACTION_COPY
+        && dropAction != DnDConstants.ACTION_MOVE
+        && dropAction != DnDConstants.ACTION_COPY_OR_MOVE
+        && dropAction != DnDConstants.ACTION_LINK
+        && dropAction != DnDConstants.ACTION_REFERENCE)
+      throw new IllegalArgumentException ();
+
+    int actionsMask = DnDConstants.ACTION_NONE
+                      | DnDConstants.ACTION_COPY
+                      | DnDConstants.ACTION_MOVE
+                      | DnDConstants.ACTION_COPY_OR_MOVE
+                      | DnDConstants.ACTION_LINK
+                      | DnDConstants.ACTION_REFERENCE;
+    
+    if (~(actions ^ actionsMask) != 0)
+      throw new IllegalArgumentException ();
+    
     this.dropAction = dropAction;
-    this.srcActions = srcActions;
+    this.actions = actions;
     this.location = location;
-    this.isLocal = isLocal;
+    this.isLocalTx = isLocalTx;
   }
   
   public Point getLocation ()
@@ -76,48 +120,42 @@ public class DropTargetDropEvent extends DropTargetEvent
 
   public DataFlavor[] getCurrentDataFlavors ()
   {
-    // FIXME: implement this
-    return null;
+    return context.getCurrentDataFlavors ();
   }
 
   public List getCurrentDataFlavorsAsList ()
   {
-    // FIXME: implement this
-    return null;
+    return context.getCurrentDataFlavorsAsList ();
   }
 
   public boolean isDataFlavorSupported (DataFlavor flavor)
   {
-    // FIXME: implement this
-    return false;
+    return context.isDataFlavorSupported (flavor);
   }
 
   public int getSourceActions ()
   {
-    // FIXME: implement this
-    return 0;
+    return actions;
   }
 
   public int getDropAction ()
   {
-    // FIXME: implement this
-    return 0;
+    return dropAction;
   }
 
   public Transferable getTransferable ()
   {
-    // FIXME: implement this
-    return null;
+    return context.getTransferable ();
   }
 
   public void acceptDrop (int dropAction)
   {
-    // FIXME: implement this
+    context.acceptDrop (dropAction);
   }
 
   public void rejectDrop ()
   {
-    // FIXME: implement this
+    context.rejectDrop ();
   }
 
   public void dropComplete (boolean success)
@@ -127,6 +165,6 @@ public class DropTargetDropEvent extends DropTargetEvent
 
   public boolean isLocalTransfer()
   {
-    return isLocal;
+    return isLocalTx;
   }
 } // class DropTargetDropEvent
