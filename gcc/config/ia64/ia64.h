@@ -1464,6 +1464,10 @@ do {									\
 #define FUNCTION_PROLOGUE(FILE, SIZE) \
   ia64_function_prologue (FILE, SIZE)
 
+/* This macro notes the end of the prologue.  */
+
+#define FUNCTION_END_PROLOGUE(FILE)  ia64_output_end_prologue (FILE)
+
 /* Define this macro as a C expression that is nonzero if the return
    instruction or the function epilogue ignores the value of the stack pointer;
    in other words, if it is safe to delete an instruction to adjust the stack
