@@ -597,6 +597,7 @@ find_basic_blocks_1 (f)
 
   label_value_list = lvl;
   tail_recursion_label_list = trll;
+  clear_aux_for_blocks ();
 }
 
 
