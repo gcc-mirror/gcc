@@ -186,6 +186,9 @@ do									\
 	else								\
 	  fprintf (FILE, "\tmovl %s_real_mcount,%%eax\n", underscore);	\
 									\
+	fprintf (FILE, "\tcmpl $0,%%eax\n");				\
+	fprintf (FILE, "\tje 1f\n");					\
+									\
 	if (flag_omit_frame_pointer)					\
 	  abort ();							\
 	else								\
@@ -209,7 +212,7 @@ do									\
 	  }								\
 									\
 	fprintf (FILE, "\tcall *%%eax\n");				\
-	fprintf (FILE, "\taddl $12,%%esp\n");				\
+	fprintf (FILE, "\taddl $12,%%esp\n1:\n");			\
       }									\
   }									\
 while (0)
