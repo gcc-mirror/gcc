@@ -2649,25 +2649,20 @@ unsave_expr_now_r (expr)
   unsave_expr_1 (expr);
 
   code = TREE_CODE (expr);
-  if (code == CALL_EXPR 
-      && TREE_OPERAND (expr, 1)
-      && TREE_CODE (TREE_OPERAND (expr, 1)) == TREE_LIST)
-    {
-      tree exp = TREE_OPERAND (expr, 1);
-      while (exp)
-	{
-	  unsave_expr_now_r (TREE_VALUE (exp));
-	  exp = TREE_CHAIN (exp);
-	}
-    }
- 
   switch (TREE_CODE_CLASS (code))
     {
     case 'c':  /* a constant */
     case 't':  /* a type node */
-    case 'x':  /* something random, like an identifier or an ERROR_MARK.  */
     case 'd':  /* A decl node */
     case 'b':  /* A block node */
+      break;
+
+    case 'x':  /* miscellaneous: e.g., identifier, TREE_LIST or ERROR_MARK.  */
+      if (code == TREE_LIST)
+	{
+	  unsave_expr_now_r (TREE_VALUE (expr));
+	  unsave_expr_now_r (TREE_CHAIN (expr));
+	}
       break;
 
     case 'e':  /* an expression */
@@ -2724,8 +2719,10 @@ int
 unsafe_for_reeval (expr)
      tree expr;
 {
+  int unsafeness = 0;
   enum tree_code code;
-  register int i, tmp, unsafeness;
+  int i, tmp;
+  tree exp;
   int first_rtl;
 
   if (expr == NULL_TREE)
@@ -2733,7 +2730,6 @@ unsafe_for_reeval (expr)
 
   code = TREE_CODE (expr);
   first_rtl = first_rtl_op (code);
-  unsafeness = 0;
 
   switch (code)
     {
@@ -2741,20 +2737,18 @@ unsafe_for_reeval (expr)
     case RTL_EXPR:
       return 2;
 
-    case CALL_EXPR:
-      if (TREE_OPERAND (expr, 1)
-	  && TREE_CODE (TREE_OPERAND (expr, 1)) == TREE_LIST)
+    case TREE_LIST:
+      for (exp = expr; exp != 0; exp = TREE_CHAIN (exp))
 	{
-	  tree exp = TREE_OPERAND (expr, 1);
-	  while (exp)
-	    {
-	      tmp = unsafe_for_reeval (TREE_VALUE (exp));
-	      if (tmp > 1)
-		return tmp;
-	      exp = TREE_CHAIN (exp);
-	    }
+	  tmp = unsafe_for_reeval (TREE_VALUE (exp));
+	  unsafeness = MAX (tmp, unsafeness);
 	}
-      return 1;
+
+      return unsafeness;
+
+    case CALL_EXPR:
+      tmp = unsafe_for_reeval (TREE_OPERAND (expr, 1));
+      return MAX (tmp, 1);
 
     case TARGET_EXPR:
       unsafeness = 1;
@@ -2783,9 +2777,9 @@ unsafe_for_reeval (expr)
       for (i = first_rtl - 1; i >= 0; i--)
 	{
 	  tmp = unsafe_for_reeval (TREE_OPERAND (expr, i));
-	  if (tmp > unsafeness)
-	    unsafeness = tmp;
+	  unsafeness = MAX (tmp, unsafeness);
 	}
+
       return unsafeness;
 
     default:
