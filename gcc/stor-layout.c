@@ -702,23 +702,24 @@ layout_type (type)
       break;
 
     case OFFSET_TYPE:
-      TYPE_SIZE (type) = size_int (GET_MODE_BITSIZE (Pmode));
-      TYPE_MODE (type) = Pmode;
+      TYPE_SIZE (type) = size_int (POINTER_SIZE);
+      TYPE_MODE (type) = mode_for_size (POINTER_SIZE,
+					GET_MODE_CLASS (Pmode), 0);
       break;
 
     case FUNCTION_TYPE:
     case METHOD_TYPE:
-      TYPE_MODE (type) = mode_for_size (2 * GET_MODE_BITSIZE (Pmode),
-					MODE_INT, 0);
-      TYPE_SIZE (type) = size_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
+      TYPE_MODE (type) = mode_for_size (2 * POINTER_SIZE, MODE_INT, 0);
+      TYPE_SIZE (type) = size_int (2 * POINTER_SIZE);
       break;
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      TYPE_MODE (type) = Pmode;
-      TYPE_SIZE (type) = size_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
+      TYPE_MODE (type) = mode_for_size (POINTER_SIZE,
+					GET_MODE_CLASS (Pmode), 0);
+      TYPE_SIZE (type) = size_int (POINTER_SIZE);
       TREE_UNSIGNED (type) = 1;
-      TYPE_PRECISION (type) = GET_MODE_BITSIZE (TYPE_MODE (type));
+      TYPE_PRECISION (type) = POINTER_SIZE;
       break;
 
     case ARRAY_TYPE:
