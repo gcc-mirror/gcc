@@ -1,3 +1,16 @@
+2001-10-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* optimize.c (struct inline_data): Moved to ../tree-inline.c.
+	(INSNS_PER_STMT): Likewise.
+	(remap_decl, remap_block, copy_scopy_stmt, copy_body_r): Likewise.
+	(copy_body, initialize_inlined_parameters): Likewise.
+	(declare_return_variable, inlinable_function_p): Likewise.
+	(expand_call_inline, expand_calls_inline): Likewise.
+	(optimize_inline_calls, clone_body): Likewise.
+	* tree.c (walk_tree): Moved to ../tree-inline.c.
+	(walk_tree_without_duplicates): Likewise.
+	(copy_tree_r, remap_save_expr): Likewise.
+
 2001-10-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Make-lang.in (cp/decl.o, cp/tree.o): Depend on tree-inline.h.
