@@ -5494,19 +5494,21 @@ static void
 compute_section_prefix (unit_die)
      dw_die_ref unit_die;
 {
-  char *name, *p;
+  const char *base = lbasename (get_AT_string (unit_die, DW_AT_name));
+  char *name = (char *) alloca (strlen (base) + 64);
+  char *p;
   int i;
   unsigned char checksum[16];
   struct md5_ctx ctx;
+
+  /* Compute the checksum of the DIE, then append part of it as hex digits to
+     the name filename of the unit.  */
 
   md5_init_ctx (&ctx);
   die_checksum (unit_die, &ctx);
   md5_finish_ctx (&ctx, checksum);
 
-  p = (char *) lbasename (get_AT_string (unit_die, DW_AT_name));
-  name = (char *) alloca (strlen (p) + 64);
   sprintf (name, "%s.", p);
-
   clean_symbol_name (name);
 
   p = name + strlen (name);
@@ -5520,7 +5522,7 @@ compute_section_prefix (unit_die)
   comdat_symbol_number = 0;
 }
 
-/* Returns nonzero iff DIE represents a type, in the sense of TYPE_P.  */
+/* Returns nonzero if DIE represents a type, in the sense of TYPE_P.  */
 
 static int
 is_type_die (die)
@@ -11233,7 +11235,7 @@ gen_decl_die (decl, context_die)
 {
   tree origin;
 
-  if (DECL_IGNORED_P (decl))
+  if (DECL_P (decl) && DECL_IGNORED_P (decl))
     return;
 
   switch (TREE_CODE (decl))
@@ -11419,9 +11421,6 @@ dwarf2out_decl (decl)
 {
   dw_die_ref context_die = comp_unit_die;
 
-  if (DECL_IGNORED_P (decl))
-    return;
-
   switch (TREE_CODE (decl))
     {
     case ERROR_MARK:
@@ -11502,7 +11501,8 @@ dwarf2out_decl (decl)
              comparisons have.  */
 	  if ((get_AT_unsigned (comp_unit_die, DW_AT_language)
 	       == DW_LANG_C_plus_plus)
-	      && TREE_CODE (TREE_TYPE (decl)) == BOOLEAN_TYPE)
+	      && TREE_CODE (TREE_TYPE (decl)) == BOOLEAN_TYPE
+	      && ! DECL_IGNORED_P (decl))
 	    modified_type_die (TREE_TYPE (decl), 0, 0, NULL);
 
 	  return;
