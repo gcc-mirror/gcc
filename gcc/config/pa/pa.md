@@ -2604,19 +2604,12 @@
 
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
-	(high:HI (match_operand 1 "const_int_operand" "")))]
+	(plus:HI (match_operand:HI 1 "register_operand" "r")
+		 (match_operand 2 "const_int_operand" "J")))]
   ""
-  "ldil L'%G1,%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "4")])
-
-(define_insn ""
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(lo_sum:HI (match_operand:HI 1 "register_operand" "r")
-		   (match_operand 2 "const_int_operand" "")))]
-  ""
-  "ldo R'%G2(%1),%0"
-  [(set_attr "type" "move")
+  "ldo %2(%1),%0"
+  [(set_attr "type" "binary")
+   (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4")])
 
 (define_expand "movqi"
