@@ -58,7 +58,6 @@ package body Exp_Disp is
        Get_Prim_Op_Address     => RE_Get_Prim_Op_Address,
        Get_RC_Offset           => RE_Get_RC_Offset,
        Get_Remotely_Callable   => RE_Get_Remotely_Callable,
-       Get_TSD                 => RE_Get_TSD,
        Inherit_DT              => RE_Inherit_DT,
        Inherit_TSD             => RE_Inherit_TSD,
        Register_Tag            => RE_Register_Tag,
@@ -79,7 +78,6 @@ package body Exp_Disp is
        Get_Prim_Op_Address     => RE_CPP_Get_Prim_Op_Address,
        Get_RC_Offset           => RE_CPP_Get_RC_Offset,
        Get_Remotely_Callable   => RE_CPP_Get_Remotely_Callable,
-       Get_TSD                 => RE_CPP_Get_TSD,
        Inherit_DT              => RE_CPP_Inherit_DT,
        Inherit_TSD             => RE_CPP_Inherit_TSD,
        Register_Tag            => RE_CPP_Register_Tag,
@@ -100,7 +98,6 @@ package body Exp_Disp is
        Get_Prim_Op_Address     => False,
        Get_Remotely_Callable   => False,
        Get_RC_Offset           => False,
-       Get_TSD                 => False,
        Inherit_DT              => True,
        Inherit_TSD             => True,
        Register_Tag            => True,
@@ -121,7 +118,6 @@ package body Exp_Disp is
        Get_Prim_Op_Address     => 2,
        Get_RC_Offset           => 1,
        Get_Remotely_Callable   => 1,
-       Get_TSD                 => 1,
        Inherit_DT              => 3,
        Inherit_TSD             => 2,
        Register_Tag            => 1,
@@ -640,8 +636,8 @@ package body Exp_Disp is
       I_Depth         : Int;
       Generalized_Tag : Entity_Id;
       Size_Expr_Node  : Node_Id;
-      Old_Tag         : Node_Id;
-      Old_TSD         : Node_Id;
+      Old_Tag1        : Node_Id;
+      Old_Tag2        : Node_Id;
 
    begin
       if not RTE_Available (RE_Tag) then
@@ -834,24 +830,20 @@ package body Exp_Disp is
       if Typ = Etype (Typ)
         or else Is_CPP_Class (Etype (Typ))
       then
-         Old_Tag :=
+         Old_Tag1 :=
+           Unchecked_Convert_To (Generalized_Tag,
+             Make_Integer_Literal (Loc, 0));
+         Old_Tag2 :=
            Unchecked_Convert_To (Generalized_Tag,
              Make_Integer_Literal (Loc, 0));
 
-         Old_TSD :=
-           Unchecked_Convert_To (RTE (RE_Address),
-             Make_Integer_Literal (Loc, 0));
-
       else
-         Old_Tag :=
+         Old_Tag1 :=
            New_Reference_To
              (Node (First_Elmt (Access_Disp_Table (Etype (Typ)))), Loc);
-         Old_TSD :=
-           Make_DT_Access_Action (Typ,
-             Action => Get_TSD,
-             Args   => New_List (
-               New_Reference_To
-                 (Node (First_Elmt (Access_Disp_Table (Etype (Typ)))), Loc)));
+         Old_Tag2 :=
+           New_Reference_To
+             (Node (First_Elmt (Access_Disp_Table (Etype (Typ)))), Loc);
       end if;
 
       --  Generate: Inherit_DT (parent'tag, DT_Ptr, nb_prim of parent);
@@ -860,18 +852,18 @@ package body Exp_Disp is
         Make_DT_Access_Action (Typ,
           Action => Inherit_DT,
           Args   => New_List (
-            Node1 => Old_Tag,
+            Node1 => Old_Tag1,
             Node2 => New_Reference_To (DT_Ptr, Loc),
             Node3 => Make_Integer_Literal (Loc,
                        DT_Entry_Count (First_Tag_Component (Etype (Typ)))))));
 
-      --  Generate: Inherit_TSD (Get_TSD (parent), DT_Ptr);
+      --  Generate: Inherit_TSD (parent'tag, DT_Ptr);
 
       Append_To (Elab_Code,
         Make_DT_Access_Action (Typ,
           Action => Inherit_TSD,
           Args   => New_List (
-            Node1 => Old_TSD,
+            Node1 => Old_Tag2,
             Node2 => New_Reference_To (DT_Ptr, Loc))));
 
       --  Generate: Exname : constant String := full_qualified_name (typ);

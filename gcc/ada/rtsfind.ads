@@ -492,7 +492,6 @@ package Rtsfind is
      RE_Get_Prim_Op_Address,             -- Ada.Tags
      RE_Get_RC_Offset,                   -- Ada.Tags
      RE_Get_Remotely_Callable,           -- Ada.Tags
-     RE_Get_TSD,                         -- Ada.Tags
      RE_Inherit_DT,                      -- Ada.Tags
      RE_Inherit_TSD,                     -- Ada.Tags
      RE_Internal_Tag,                    -- Ada.Tags
@@ -539,7 +538,6 @@ package Rtsfind is
      RE_CPP_Get_Prim_Op_Address,         -- Interfaces.CPP
      RE_CPP_Get_RC_Offset,               -- Interfaces.CPP
      RE_CPP_Get_Remotely_Callable,       -- Interfaces.CPP
-     RE_CPP_Get_TSD,                     -- Interfaces.CPP
      RE_CPP_Inherit_DT,                  -- Interfaces.CPP
      RE_CPP_Inherit_TSD,                 -- Interfaces.CPP
      RE_CPP_Register_Tag,                -- Interfaces.CPP
@@ -1592,7 +1590,6 @@ package Rtsfind is
      RE_Get_Prim_Op_Address              => Ada_Tags,
      RE_Get_RC_Offset                    => Ada_Tags,
      RE_Get_Remotely_Callable            => Ada_Tags,
-     RE_Get_TSD                          => Ada_Tags,
      RE_Inherit_DT                       => Ada_Tags,
      RE_Inherit_TSD                      => Ada_Tags,
      RE_Internal_Tag                     => Ada_Tags,
@@ -1637,7 +1634,6 @@ package Rtsfind is
      RE_CPP_Get_Prim_Op_Address          => Interfaces_CPP,
      RE_CPP_Get_RC_Offset                => Interfaces_CPP,
      RE_CPP_Get_Remotely_Callable        => Interfaces_CPP,
-     RE_CPP_Get_TSD                      => Interfaces_CPP,
      RE_CPP_Inherit_DT                   => Interfaces_CPP,
      RE_CPP_Inherit_TSD                  => Interfaces_CPP,
      RE_CPP_Register_Tag                 => Interfaces_CPP,

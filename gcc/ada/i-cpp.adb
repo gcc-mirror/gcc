@@ -187,18 +187,6 @@ package body Interfaces.CPP is
       return True;
    end CPP_Get_Remotely_Callable;
 
-   -----------------
-   -- CPP_Get_TSD --
-   -----------------
-
-   function CPP_Get_TSD  (T : Vtable_Ptr) return Address is
-      use type System.Storage_Elements.Storage_Offset;
-      TSD_Ptr : constant Addr_Ptr :=
-                  To_Addr_Ptr (To_Address (T) - CPP_DT_Typeinfo_Ptr_Size);
-   begin
-      return TSD_Ptr.all;
-   end CPP_Get_TSD;
-
    --------------------
    -- CPP_Inherit_DT --
    --------------------
@@ -220,17 +208,15 @@ package body Interfaces.CPP is
    ---------------------
 
    procedure CPP_Inherit_TSD
-     (Old_TSD : Address;
+     (Old_Tag : Vtable_Ptr;
       New_Tag : Vtable_Ptr)
    is
-      Old_TSD_Ptr : constant Type_Specific_Data_Ptr :=
-                      To_Type_Specific_Data_Ptr (Old_TSD);
-
-      New_TSD_Ptr : constant Type_Specific_Data_Ptr :=
-                      TSD (New_Tag);
+      New_TSD_Ptr : constant Type_Specific_Data_Ptr := TSD (New_Tag);
+      Old_TSD_Ptr : Type_Specific_Data_Ptr;
 
    begin
-      if Old_TSD_Ptr /= null then
+      if Old_Tag /= null then
+         Old_TSD_Ptr        := TSD (Old_Tag);
          New_TSD_Ptr.Idepth := Old_TSD_Ptr.Idepth + 1;
          New_TSD_Ptr.Ancestor_Tags (1 .. New_TSD_Ptr.Idepth) :=
            Old_TSD_Ptr.Ancestor_Tags (0 .. Old_TSD_Ptr.Idepth);
@@ -391,8 +377,11 @@ package body Interfaces.CPP is
    ---------
 
    function TSD (T : Vtable_Ptr) return Type_Specific_Data_Ptr is
+      use type System.Storage_Elements.Storage_Offset;
+      TSD_Ptr : constant Addr_Ptr :=
+                  To_Addr_Ptr (To_Address (T) - CPP_DT_Typeinfo_Ptr_Size);
    begin
-      return To_Type_Specific_Data_Ptr (CPP_Get_TSD (T));
+      return To_Type_Specific_Data_Ptr (TSD_Ptr.all);
    end TSD;
 
 end Interfaces.CPP;
