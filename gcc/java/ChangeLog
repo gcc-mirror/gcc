@@ -1,5 +1,10 @@
 2001-01-21  Per Bothner  <per@bothner.com>
 
+	* verify.c (VERIFICATION_ERROR_WITH_INDEX):  New macro.
+	(verify_jvm_instructions):  Use it, for better error messages on loads.
+
+2001-01-21  Per Bothner  <per@bothner.com>
+
 	* verify.c (merge_type_state):  Stil may have to merge even if
 	LABEL_VERIFIED (label).
 
