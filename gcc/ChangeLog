@@ -1,3 +1,8 @@
+2002-06-28  Stephane Carrez  <Stephane.Carrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.c (register_indirect_p): For 68HC12 a constant
+	can be a valid address.
+
 2002-06-28  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c: Remove unusued variables from last
