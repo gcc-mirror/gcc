@@ -7454,15 +7454,6 @@ unit may not be bound to undefined symbols in another translation unit
 without user intervention.  For instance, under Microsoft Windows
 symbols must be explicitly imported from shared libraries (DLLs).
 
-@findex GIV_SORT_CRITERION
-@item GIV_SORT_CRITERION (@var{giv1}, @var{giv2})
-In some cases, the strength reduction optimization pass can produce better
-code if this is defined.  This macro controls the order that induction
-variables are combined.  This macro is particularly useful if the target has
-limited addressing modes.  For instance, the SH target has only positive
-offsets in addresses.  Thus sorting to put the smallest address first
-allows the most combinations to be found.
-
 @findex ISSUE_RATE
 @item ISSUE_RATE
 A C expression that returns how many instructions can be issued at the
