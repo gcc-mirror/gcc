@@ -1,5 +1,5 @@
 /* The implementation of class Object for Objective-C.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -260,12 +260,12 @@ extern int errno;
   return (*msg)(self, aSel, anObject1, anObject2);
 }
 
-- forward:(SEL)aSel :(arglist_t)argFrame
+- (retval_t)forward:(SEL)aSel :(arglist_t)argFrame
 {
-  return [self doesNotRecognize: aSel];
+  return (retval_t)[self doesNotRecognize: aSel];
 }
 
-- performv:(SEL)aSel :(arglist_t)argFrame
+- (retval_t)performv:(SEL)aSel :(arglist_t)argFrame
 {
   return objc_msg_sendv(self, aSel, argFrame);
 }
@@ -311,6 +311,10 @@ extern int errno;
                      object_get_class_name(self), sel_get_name(aSel)];
 }
 
+#ifdef __alpha__
+extern size_t strlen(const char*);
+#endif
+
 - error:(const char *)aString, ...
 {
 #define FMT "error: %s (%s)\n%s\n"
@@ -339,7 +343,6 @@ extern int errno;
   return self;
 }
 
-#ifndef __alpha__ /* TypedStream not supported on alpha yet.  */
 + (int)streamVersion: (TypedStream*)aStream
 {
   if (aStream->mode == OBJC_READONLY)
@@ -347,7 +350,6 @@ extern int errno;
   else
     return class_get_version (self);
 }
-#endif
 
 // These are used to write or read the instance variables 
 // declared in this particular part of the object.  Subclasses
@@ -355,21 +357,17 @@ extern int errno;
 // before doing their own archiving.  These methods are private, in
 // the sense that they should only be called from subclasses.
 
-#ifndef __alpha__
 - read: (TypedStream*)aStream
 {
   // [super read: aStream];  
   return self;
 }
-#endif
 
-#ifndef __alpha__
 - write: (TypedStream*)aStream
 {
   // [super write: aStream];
   return self;
 }
-#endif
 
 - awake
 {
