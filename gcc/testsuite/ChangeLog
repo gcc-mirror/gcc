@@ -1,3 +1,9 @@
+2003-09-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.dg/cpp/separate-1.c: Adjust line of error.  Test for correct
+	non-expansion of functional macro name without arguments at EOL.
+	* gcc.dg/cpp/spacing1.c: Revert 2003-08-04's change.  Likewise.
+
 2003-09-14  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/execute/20030914-[12].c: New tests.

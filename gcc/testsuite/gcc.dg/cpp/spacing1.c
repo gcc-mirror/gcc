@@ -14,14 +14,10 @@
    invocation is not defined: we might consider them to be in the same
    line as the initial token of the invocation, or as the final token
    of the invocation, or even anything in between.  We choose to make
-   it the final token, but we might as well collapse the invocation
-   and the rest of the line into the initial line, such that `g
-   ... bam baz' below were all in a single line in the preprocessor
-   output.  We used to do this at some point, but it disagreed with
-   the way we numbered lines with the integrated preprocessor, so we
-   had to pick one of them to change.
+   it the initial token, such that everything that is in a logical
+   line ends up in a single line after preprocessing.
 
-   Alexandre Oliva, Aug 5, 2003.  */
+   Alexandre Oliva, Sept 13, 2003.  */
 
 #define str(x) #x
 #define f(x) x
@@ -41,18 +37,18 @@
 B Q B Q A Q A:
 f
 bar
-g
+A
+bad
+g "1 2" bam baz
 
-
-
- "1 2"
- bam baz
 */
 
 glue (EMPTY 4, 4) EMPTY;
 A(Q) C(Q) D()Q D():
 f
 bar
+A
+bad
 f (g) str
 (
 1
@@ -64,6 +60,6 @@ f (g) str
    { dg-final { scan-file spacing1.i "B Q B Q A Q A:" } }
    { dg-final { scan-file-not spacing1.i "f\[^\n\]*bar" } }
    { dg-final { scan-file spacing1.i "(^|\n)bar" } }
-   { dg-final { scan-file spacing1.i "(^|\n)g($|\n)" } }
-   { dg-final { scan-file spacing1.i "(^|\n) \"1 2\"" } }
-   { dg-final { scan-file spacing1.i "(^|\n) bam baz" } } */
+   { dg-final { scan-file spacing1.i "(^|\n)A($|\n)" } }
+   { dg-final { scan-file spacing1.i "(^|\n)bad($|\n)" } }
+   { dg-final { scan-file spacing1.i "g \"1 2\" bam baz" } } */

@@ -8,5 +8,8 @@
 
 #define FOO()
 
-int FOO(
-	), bar; /* { dg-error "(parse|syntax) error" "error on this line" } */
+int FOO( /* { dg-error "(parse|syntax) error" "error on this line" } */
+	), bar;
+
+int baz FOO /* { dg-error "(parse|syntax) error" "error on this line" } */
+; /* { dg-warning "no type or storage class" "warning on this line" } */
