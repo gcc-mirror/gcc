@@ -249,14 +249,15 @@ struct JNINativeInterface
   _Jv_func reserved3;
 
   jint     (JNICALL *GetVersion)                   (JNIEnv *);
-  jclass   (JNICALL *DefineClass)                  (JNIEnv *, jobject,
-                                                    const jbyte *, jsize);
+  jclass   (JNICALL *DefineClass)                  (JNIEnv *, const char *,
+						    jobject, const jbyte *,
+						    jsize);
   jclass   (JNICALL *FindClass)                    (JNIEnv *, const char *);
 
   jmethodID (JNICALL *FromReflectedMethod)	   (JNIEnv *, jobject);
   jfieldID  (JNICALL *FromReflectedField)	   (JNIEnv *, jobject);
-  jobject   (JNICALL *ToReflectedMethod)	   (JNIEnv *, jclass, jmethodID,
-                                                    jboolean);
+  jobject   (JNICALL *ToReflectedMethod)	   (JNIEnv *, jclass,
+						    jmethodID, jboolean);
 
   jclass   (JNICALL *GetSuperclass)                (JNIEnv *, jclass);
   jboolean (JNICALL *IsAssignableFrom)             (JNIEnv *, jclass, jclass);
@@ -687,8 +688,9 @@ public:
   jint GetVersion ()
   { return p->GetVersion (this); }
 
-  jclass DefineClass (jobject obj0, const jbyte * val1, jsize val2)
-  { return p->DefineClass (this, obj0, val1, val2); }
+  jclass DefineClass (const char *name, jobject obj0, const jbyte * val1,
+		      jsize val2)
+  { return p->DefineClass (this, name, obj0, val1, val2); }
 
   jclass FindClass (const char * val0)
   { return p->FindClass (this, val0); }

@@ -1,3 +1,10 @@
+2002-12-02  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc: Added `name' argument.
+	* include/jni.h (struct JNINativeInterface) [DefineClass]: Added
+	`const char *' argument.
+	(class _Jv_JNIEnv) [DefineClass]: Likewise.
+
 2002-12-01  Tom Tromey  <tromey@redhat.com>
 
 	Bug compatibility, for PR libgcj/8738:
