@@ -1,3 +1,8 @@
+2003-07-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfgloopmanip.c (duplicate_loop_to_header_edge): Update irreducible
+	flag correctly.
+
 2003-07-24  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c: Search-and-replace change 'binding level' to
