@@ -228,6 +228,13 @@ get_attribute (JCF *jcf)
     }
   else
 #endif
+#ifdef HANDLE_SOURCEDEBUGEXTENSION_ATTRIBUTE
+  if (MATCH_ATTRIBUTE ("SourceDebugExtension")) /* JSR 45 */
+    {
+      HANDLE_SOURCEDEBUGEXTENSION_ATTRIBUTE (attribute_length);
+    }
+  else
+#endif
     {
 #ifdef PROCESS_OTHER_ATTRIBUTE
       PROCESS_OTHER_ATTRIBUTE(jcf, attribute_name, attribute_length);

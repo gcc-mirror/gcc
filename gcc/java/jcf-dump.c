@@ -342,6 +342,13 @@ utf8_equal_string (JCF *jcf, int index, const char * value)
 	fputc ('\n', out);						    \
 }
 
+#define HANDLE_SOURCEDEBUGEXTENSION_ATTRIBUTE(LENGTH) \
+{ int i, n = (LENGTH), c = 0;					  \
+  COMMON_HANDLE_ATTRIBUTE(jcf, attribute_name, attribute_length); \
+  fputc ('\n', out); \
+  for (i = 0;  i < n;  i++) { c = JCF_readu(jcf); fputc(c, out); } \
+  if (c != '\r' && c != '\n') fputc('\n', out); }
+
 #define PROCESS_OTHER_ATTRIBUTE(JCF, INDEX, LENGTH) \
 { COMMON_HANDLE_ATTRIBUTE(JCF, INDEX, LENGTH); \
   fputc ('\n', out); JCF_SKIP (JCF, LENGTH); }
