@@ -5685,6 +5685,9 @@ check_dbra_loop (loop_end, insn_count, loop_start)
       int num_nonfixed_reads = 0;
       /* 1 if the iteration var is used only to count iterations.  */
       int no_use_except_counting = 0;
+      /* 1 if the loop has no memory store, or it has a single memory store
+	 which is reversible.  */
+      int reversible_mem_store = 1;
 
       for (p = loop_start; p != loop_end; p = NEXT_INSN (p))
 	if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
@@ -5721,6 +5724,15 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	      }
 	}
 
+      /* If the loop has a single store, and the destination address is
+	 invariant, then we can't reverse the loop, because this address
+	 might then have the wrong value at loop exit.
+	 This would work if the source was invariant also, however, in that
+	 case, the insn should have been moved out of the loop.  */
+
+      if (num_mem_sets == 1)
+	reversible_mem_store = ! invariant_p (XEXP (loop_store_mems[0], 0));
+
       /* This code only acts for innermost loops.  Also it simplifies
 	 the memory address check by only reversing loops with
 	 zero or one memory access.
@@ -5730,6 +5742,7 @@ check_dbra_loop (loop_end, insn_count, loop_start)
       if (num_nonfixed_reads <= 1
 	  && !loop_has_call
 	  && !loop_has_volatile
+	  && reversible_mem_store
 	  && (no_use_except_counting
 	      || (bl->giv_count + bl->biv_count + num_mem_sets
 		  + num_movables + 2 == insn_count)))
