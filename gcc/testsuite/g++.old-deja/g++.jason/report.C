@@ -42,7 +42,7 @@ class X{
 };
 
 typedef int const * bart ();
-typedef bart const * const * bar2;
+typedef bart const * const * bar2; // ERROR - qualifiers
 
 bar2 baz (X::Y y)
 {
