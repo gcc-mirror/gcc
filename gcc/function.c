@@ -7654,14 +7654,38 @@ static void
 update_epilogue_consts (rtx dest, rtx x, void *data)
 {
   struct epi_info *p = (struct epi_info *) data;
+  rtx new;
 
   if (GET_CODE (dest) != REG || REGNO (dest) >= FIRST_PSEUDO_REGISTER)
     return;
-  else if (GET_CODE (x) == CLOBBER || ! rtx_equal_p (dest, SET_DEST (x))
-	   || GET_CODE (SET_SRC (x)) != CONST_INT)
+
+  /* If we are either clobbering a register or doing a partial set,
+     show we don't know the value.  */
+  else if (GET_CODE (x) == CLOBBER || ! rtx_equal_p (dest, SET_DEST (x)))
     p->const_equiv[REGNO (dest)] = 0;
-  else
+
+  /* If we are setting it to a constant, record that constant.  */
+  else if (GET_CODE (SET_SRC (x)) == CONST_INT)
     p->const_equiv[REGNO (dest)] = SET_SRC (x);
+
+  /* If this is a binary operation between a register we have been tracking
+     and a constant, see if we can compute a new constant value.  */
+  else if ((GET_RTX_CLASS (GET_CODE (SET_SRC (x))) == 'c'
+	    || GET_RTX_CLASS (GET_CODE (SET_SRC (x))) == '2')
+	   && GET_CODE (XEXP (SET_SRC (x), 0)) == REG
+	   && REGNO (XEXP (SET_SRC (x), 0)) < FIRST_PSEUDO_REGISTER
+	   && p->const_equiv[REGNO (XEXP (SET_SRC (x), 0))] != 0
+	   && GET_CODE (XEXP (SET_SRC (x), 1)) == CONST_INT
+	   && 0 != (new = simplify_binary_operation
+		    (GET_CODE (SET_SRC (x)), GET_MODE (dest),
+		     p->const_equiv[REGNO (XEXP (SET_SRC (x), 0))],
+		     XEXP (SET_SRC (x), 1)))
+	   && GET_CODE (new) == CONST_INT)
+    p->const_equiv[REGNO (dest)] = new;
+
+  /* Otherwise, we can't do anything with this value.  */
+  else
+    p->const_equiv[REGNO (dest)] = 0;
 }
 
 /* Emit an insn to do the load shown in p->equiv_reg_src, if needed.  */
