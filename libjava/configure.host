@@ -168,6 +168,7 @@ case "${host}" in
   *-*-darwin*)
 	enable_hash_synchronization_default=no
 	slow_pthread_self=
+	can_unwind_signal=no
 	;;
   *-*-freebsd*)
 	slow_pthread_self=
