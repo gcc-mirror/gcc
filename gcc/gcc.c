@@ -469,7 +469,8 @@ static struct compiler default_compilers[] =
    "%{E:cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d}\
-        -undef -D__GNUC__=%v1 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
+        -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
+	%{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
