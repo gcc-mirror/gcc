@@ -186,7 +186,7 @@ while (<BLOCKS>) {
      * $block.
      * $extra'\\u$start' - '\\u$end'.$since
      */
-    public final static UnicodeBlock $name
+    public static final UnicodeBlock $name
       = new UnicodeBlock('\\u$start', '\\u$end',
                          "$name");
 EOF

@@ -1,5 +1,10 @@
 2004-11-24  Michael Koch  <konqueror@gmx.de>
 
+	* java/lang/Character.java, scripts/unicode-blocks.pl:
+	Reorder "final static" to "static final".
+
+2004-11-24  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/ResourceBundle.java: Reformatted.
 	(tryBundle): Fixed javadoc.
 
