@@ -1,3 +1,9 @@
+2004-06-26  Jan Hubicka  <jh@suse.cz>
+
+	PR C++/14865
+	* decl2.c (maybe_emit_vtables):  Always import_export_vtable for the
+	reachability analysis.
+
 2004-06-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-mudflap.c (mflang_flush_calls): Fix thinkos resulting from
