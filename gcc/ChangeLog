@@ -1,3 +1,12 @@
+Sat Jun  2 12:23:51 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (all uses of ext_register_operand): Make sure they are
+	VOIDmode; replace all uses outside zero_extend.
+	(and?i splitters): Use ext_register_operands.
+	(test?i peep2): Remove ignored constraints.
+	* i386.c (ext_register_operand): Check that operand is
+	eighter pseudo or hard or 'Q' register.
+
 Sat Jun  2 06:53:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.h (struct record_layout_info_s): New field unpadded_align.
