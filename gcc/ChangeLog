@@ -1,3 +1,9 @@
+2004-10-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/17793
+	* gimplify.c (gimplify_addr_expr) <VIEW_CONVERT_EXPR>: Look
+	through the operand if it is a useless type conversion.
+
 2004-10-23  Ben Elliston  <bje@au.ibm.com>
 
 	* cfg.c (remove_edge): Use VEC_unordered_remove.
