@@ -16,17 +16,14 @@
 // Include I/O support for 'long long' and 'unsigned long long'.
 #undef _GLIBCXX_USE_LONG_LONG
 
+// Include support for 'long double'.
+#undef _GLIBCXX_USE_LONG_DOUBLE
+
 // Define if C99 math functions (like fpclassify) should be exposed.
 #undef _GLIBCXX_USE_C99_MATH
 
 // Define if C99 features such as lldiv_t, llabs, lldiv should be exposed.
 #undef _GLIBCXX_USE_C99
-
-// Include support for 'long double'.
-#undef _GLIBCXX_USE_LONG_DOUBLE
-
-// Include support for shadow headers, ie --enable-cshadow-headers.
-#undef _GLIBCXX_USE_SHADOW_HEADERS
 
 // Define if code specialized for wchar_t should be used.
 #undef _GLIBCXX_USE_WCHAR_T
@@ -36,18 +33,6 @@
 
 // Define to use concept checking code from the boost libraries.
 #undef _GLIBCXX_CONCEPT_CHECKS
-
-// Define if the atan2f function exists.
-#undef HAVE_ATAN2F 
-
-// Define if the atan2l function exists.
-#undef HAVE_ATAN2L
-
-// Define if the tanl function exists.
-#undef HAVE_TANL
-
-// Define if the copysignf function exists.
-#undef HAVE_COPYSIGNF
 
 // Define to use symbol versioning in the shared library.
 #undef _GLIBCXX_SYMVER
@@ -63,8 +48,26 @@
   #define _GLIBCXX_ASM_SYMVER(cur, old, version)
 #endif
 
+// Define if LFS support is available.
+#undef _GLIBCXX_USE_LFS
+
+// Define if NLS translations are to be used.
+#undef _GLIBCXX_USE_NLS
+
 // Define if gthr-default.h exists (meaning that threading support is enabled).
 #undef HAVE_GTHR_DEFAULT
+
+// Define if the atan2f function exists.
+#undef HAVE_ATAN2F 
+
+// Define if the atan2l function exists.
+#undef HAVE_ATAN2L
+
+// Define if the tanl function exists.
+#undef HAVE_TANL
+
+// Define if the copysignf function exists.
+#undef HAVE_COPYSIGNF
 
 // Define if getpagesize exists.
 #undef HAVE_GETPAGESIZE
@@ -156,9 +159,6 @@
 // Define if int64_t is available in <stdint.h>.
 #undef HAVE_INT64_T
 
-// Define if LFS support is available.
-#undef _GLIBCXX_USE_LFS
-
 // Define if LC_MESSAGES is available in <locale.h>.
 #undef HAVE_LC_MESSAGES
 
@@ -167,9 +167,6 @@
 
 // Define if modf is present in <math.h>
 #undef HAVE_MODF
-
-// Define if NLS translations are to be used.
-#undef _GLIBCXX_USE_NLS
 
 // @BOTTOM@
 //
