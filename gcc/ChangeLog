@@ -1,3 +1,9 @@
+2005-04-04  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.md (*truncdfsf2_i387_1): New pattern.
+
+	* fold-const.c (maybe_lvalue_p): Delete orphaned comment.
+
 2005-04-04  Ian Lance Taylor  <ian@airs.com>
 
 	* c-typeck.c (struct c_switch): Rename switch_stmt field to
