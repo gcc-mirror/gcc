@@ -1645,6 +1645,13 @@ mapcar (t, func)
     case TEMPLATE_TEMPLATE_PARM:
       return copy_template_template_parm (t);
 
+    case BIND_EXPR:
+      t = copy_node (t);
+      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
+      TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
+      TREE_OPERAND (t, 2) = NULL_TREE;
+      return t;
+
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (t))
 	return build_ptrmemfunc_type
