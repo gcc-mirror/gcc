@@ -124,6 +124,8 @@ extern int function_arg_pass_by_reference (const CUMULATIVE_ARGS *,
 
 extern bool mips_cannot_change_mode_class (enum machine_mode,
 					   enum machine_mode, enum reg_class);
+extern bool mips_dangerous_for_la25_p (rtx);
+extern enum reg_class mips_preferred_reload_class (rtx, enum reg_class);
 extern enum reg_class mips_secondary_reload_class (enum reg_class,
 						   enum machine_mode,
 						   rtx, int);

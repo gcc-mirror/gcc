@@ -2022,13 +2022,6 @@ extern enum reg_class mips_char_to_class[256];
   ((C) == 'G'								\
    && (VALUE) == CONST0_RTX (GET_MODE (VALUE)))
 
-/* True if OP is a constant that should not be moved into $25.
-   We need this because many versions of gas treat 'la $25,foo' as
-   part of a call sequence and allow a global 'foo' to be lazily bound.  */
-
-#define DANGEROUS_FOR_LA25_P(OP)					\
-  (!TARGET_EXPLICIT_RELOCS && global_got_operand (OP, VOIDmode))
-
 /* Letters in the range `Q' through `U' may be defined in a
    machine-dependent fashion to stand for arbitrary operand types.
    The machine description macro `EXTRA_CONSTRAINT' is passed the
@@ -2054,10 +2047,10 @@ extern enum reg_class mips_char_to_class[256];
 			     && call_insn_operand (OP, VOIDmode))	\
    : ((CODE) == 'T')	  ? (CONSTANT_P (OP)				\
 			     && move_operand (OP, VOIDmode)		\
-			     && DANGEROUS_FOR_LA25_P (OP))		\
+			     && mips_dangerous_for_la25_p (OP))		\
    : ((CODE) == 'U')	  ? (CONSTANT_P (OP)				\
 			     && move_operand (OP, VOIDmode)		\
-			     && !DANGEROUS_FOR_LA25_P (OP))		\
+			     && !mips_dangerous_for_la25_p (OP))	\
    : ((CODE) == 'W')	  ? (GET_CODE (OP) == MEM			\
 			     && memory_operand (OP, VOIDmode)		\
 			     && (!TARGET_MIPS16				\
@@ -2068,27 +2061,8 @@ extern enum reg_class mips_char_to_class[256];
 /* Say which of the above are memory constraints.  */
 #define EXTRA_MEMORY_CONSTRAINT(C, STR) ((C) == 'R' || (C) == 'W')
 
-/* Given an rtx X being reloaded into a reg required to be
-   in class CLASS, return the class of reg to actually use.
-   In general this is just CLASS; but on some machines
-   in some cases it is preferable to use a more restrictive class.  */
-
 #define PREFERRED_RELOAD_CLASS(X,CLASS)					\
-  ((CLASS) != ALL_REGS							\
-   ? (! TARGET_MIPS16							\
-      ? (CLASS)								\
-      : ((CLASS) != GR_REGS						\
-	 ? (CLASS)							\
-	 : M16_REGS))							\
-   : ((GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT			\
-       || GET_MODE_CLASS (GET_MODE (X)) == MODE_COMPLEX_FLOAT)		\
-      ? (TARGET_SOFT_FLOAT						\
-	 ? (TARGET_MIPS16 ? M16_REGS : GR_REGS)				\
-	 : FP_REGS)							\
-      : ((GET_MODE_CLASS (GET_MODE (X)) == MODE_INT			\
-	  || GET_MODE (X) == VOIDmode)					\
-	 ? (TARGET_MIPS16 ? M16_REGS : GR_REGS)				\
-	 : (CLASS))))
+  mips_preferred_reload_class (X, CLASS)
 
 /* Certain machines have the property that some registers cannot be
    copied to some other registers without using memory.  Define this
