@@ -415,3 +415,7 @@
 
 /* Define if you have the i library (-li).  */
 #undef HAVE_LIBI
+
+/* Define if mmap can get us zeroed pages from /dev/zero. */
+#undef HAVE_MMAP_ANYWHERE
+

@@ -1,3 +1,10 @@
+2000-01-16  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* aclocal.m4 (AC_FUNC_MMAP_ZERO): New macro.
+	* configure.in (AC_FUNC_MMAP_ZERO): Use instead of AC_FUNC_MMAP.
+	* ggc-page.c: Replace HAVE_MMAP with HAVE_MMAP_ZERO.
+	* configure, config.in: Rebuilt.
+
 2000-01-16  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* config/i386/i386.md: Add peephole to merge successive stack
