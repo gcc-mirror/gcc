@@ -4129,7 +4129,7 @@ strength_reduce (loop, insn_count, unroll_p, bct_p)
 			  || GET_CODE (next) == JUMP_INSN)
 			break;
 #ifdef HAVE_cc0
-		      if (INSN_P (next)
+		      if (! INSN_P (next)
 			  || ! sets_cc0_p (PATTERN (next)))
 #endif
 			dominator = next;

@@ -1,3 +1,7 @@
+Tue Apr 25 14:51:07 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* loop.c (strength_reduce): Fix typo in the last checkin.
+
 Tue Apr 25 07:33:12 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stor-layout.c (finalize_record_size): Simplify to use existing
