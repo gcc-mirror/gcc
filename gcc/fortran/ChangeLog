@@ -6,7 +6,10 @@
 
 	PR fortran/15140
 	* trans-decl.c (gfc_trans_deferred_vars): Remove bogus assertion.
-	
+
+	PR fortran/13792
+	* simplify.c (gfc_simplify_bound): Copy the bound expression.
+
 2004-07-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
  	PR fortran/15324
