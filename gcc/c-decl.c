@@ -2421,7 +2421,7 @@ c_init_decl_processing (void)
   input_location.line = 0;
 #endif
 
-  build_common_tree_nodes (flag_signed_char);
+  build_common_tree_nodes (flag_signed_char, false);
 
   c_common_nodes_and_builtins ();
 

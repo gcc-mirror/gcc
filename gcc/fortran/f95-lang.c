@@ -571,7 +571,7 @@ gfc_init_decl_processing (void)
   /* Build common tree nodes. char_type_node is unsigned because we
      only use it for actual characters, not for INTEGER(1). Also, we
      want double_type_node to actually have double precision.   */
-  build_common_tree_nodes (0);
+  build_common_tree_nodes (false, false);
   set_sizetype (long_unsigned_type_node);
   build_common_tree_nodes_2 (0);
 

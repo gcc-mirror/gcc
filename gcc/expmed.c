@@ -4564,13 +4564,7 @@ const_mult_add_overflow_p (rtx x, rtx mult, rtx add,
     {
       /* FIXME:It would be nice if we could step directly from this
 	 type to its sizetype equivalent.  */
-      mult_type = copy_node (type);
-      if (TYPE_CACHED_VALUES_P (mult_type))
-	{
-	  /* Clear any set of cached values it has. */
-	  TYPE_CACHED_VALUES_P (mult_type) = 0;
-	  TYPE_CACHED_VALUES (mult_type) = NULL_TREE;
-	}
+      mult_type = build_distinct_type_copy (type);
       TYPE_IS_SIZETYPE (mult_type) = 1;
     }
 

@@ -1,5 +1,10 @@
 2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp/decl.c (cxx_init_decl_processing): Adjust
+	build_common_tree_nodes call.
+
+2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
+
 	PR c++/16889
 	* (is_subobject_of_p): Resurrect & optimize.
 	(lookup_field_r): Use it.

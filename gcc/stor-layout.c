@@ -40,10 +40,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Set to one when set_sizetype has been called.  */
 static int sizetype_set;
 
-/* List of types created before set_sizetype has been called.  We do not
-   make this a GGC root since we want these nodes to be reclaimed.  */
-static tree early_type_list;
-
 /* Data type for the expressions representing sizes of data types.
    It is the first integer type laid out.  */
 tree sizetype_tab[(int) TYPE_KIND_LAST];
@@ -1812,11 +1808,6 @@ layout_type (tree type)
       && TREE_CODE (type) != QUAL_UNION_TYPE)
     finalize_type_size (type);
 
-  /* If this type is created before sizetype has been permanently set,
-     record it so set_sizetype can fix it up.  */
-  if (! sizetype_set)
-    early_type_list = tree_cons (NULL_TREE, type, early_type_list);
-
   /* If an alias set has been set for this aggregate when it was incomplete,
      force it into alias set 0.
      This is too conservative, but we cannot call record_component_aliases
@@ -1856,7 +1847,7 @@ make_unsigned_type (int precision)
    value to enable integer types to be created.  */
 
 void
-initialize_sizetypes (void)
+initialize_sizetypes (bool signed_p)
 {
   tree t = make_node (INTEGER_TYPE);
 
@@ -1864,9 +1855,9 @@ initialize_sizetypes (void)
   TYPE_ALIGN (t) = GET_MODE_ALIGNMENT (SImode);
   TYPE_USER_ALIGN (t) = 0;
   TYPE_IS_SIZETYPE (t) = 1;
+  TYPE_UNSIGNED (t) = !signed_p;
   TYPE_SIZE (t) = build_int_cst (t, GET_MODE_BITSIZE (SImode), 0);
   TYPE_SIZE_UNIT (t) = build_int_cst (t, GET_MODE_SIZE (SImode), 0);
-  TYPE_UNSIGNED (t) = 1;
   TYPE_PRECISION (t) = GET_MODE_BITSIZE (SImode);
   TYPE_MIN_VALUE (t) = build_int_cst (t, 0, 0);
 
@@ -1874,16 +1865,15 @@ initialize_sizetypes (void)
      larger than any size value we'd want to be storing.  */
   TYPE_MAX_VALUE (t) = build_int_cst (t, 1000, 0);
 
-  /* These two must be different nodes because of the caching done in
-     size_int_wide.  */
   sizetype = t;
-  bitsizetype = copy_node (t);
-  TYPE_CACHED_VALUES (bitsizetype) = NULL_TREE;
-  TYPE_CACHED_VALUES_P (bitsizetype) = 0;
+  bitsizetype = build_distinct_type_copy (t);
 }
 
-/* Set sizetype to TYPE, and initialize *sizetype accordingly.
-   Also update the type of any standard type's sizes made so far.  */
+/* Make sizetype a version of TYPE, and initialize *sizetype
+   accordingly.  We do this by overwriting the stub sizetype and
+   bitsizetype nodes created by initialize_sizetypes.  This makes sure
+   that (a) anything stubby about them no longer exists, (b) any
+   INTEGER_CSTs created with such a type, remain valid.  */
 
 void
 set_sizetype (tree type)
@@ -1895,67 +1885,52 @@ set_sizetype (tree type)
      precision.  */
   int precision = MIN (oprecision + BITS_PER_UNIT_LOG + 1,
 		       2 * HOST_BITS_PER_WIDE_INT);
-  unsigned int i;
   tree t;
 
   if (sizetype_set)
     abort ();
+  if (TYPE_UNSIGNED (type) != TYPE_UNSIGNED (sizetype))
+    abort ();
 
-  /* Make copies of nodes since we'll be setting TYPE_IS_SIZETYPE.  */
-  sizetype = copy_node (type);
-  TYPE_CACHED_VALUES (sizetype) = make_tree_vec (INTEGER_SHARE_LIMIT);
-  TYPE_CACHED_VALUES_P (sizetype) = 1;
-  TREE_TYPE (TYPE_CACHED_VALUES (sizetype)) = type;
-  TYPE_IS_SIZETYPE (sizetype) = 1;
-  bitsizetype = make_node (INTEGER_TYPE);
-  TYPE_NAME (bitsizetype) = TYPE_NAME (type);
-  TYPE_PRECISION (bitsizetype) = precision;
-  TYPE_IS_SIZETYPE (bitsizetype) = 1;
-
-  if (TYPE_UNSIGNED (type))
-    fixup_unsigned_type (bitsizetype);
-  else
-    fixup_signed_type (bitsizetype);
-
-  layout_type (bitsizetype);
-
+  t = build_distinct_type_copy (type);
+  /* We do want to use sizetype's cache, as we will be replacing that
+     type.  */
+  TYPE_CACHED_VALUES (t) = TYPE_CACHED_VALUES (sizetype);
+  TYPE_CACHED_VALUES_P (t) = TYPE_CACHED_VALUES_P (sizetype);
+  TREE_TYPE (TYPE_CACHED_VALUES (t)) = type;
+  TYPE_UID (t) = TYPE_UID (sizetype);
+  TYPE_IS_SIZETYPE (t) = 1;
+  
+  /* Replace our original stub sizetype.  */
+  memcpy (sizetype, t, tree_size (sizetype));
+  TYPE_MAIN_VARIANT (sizetype) = sizetype;
+  
+  t = make_node (INTEGER_TYPE);
+  TYPE_NAME (t) = get_identifier ("bit_size_type");
+  /* We do want to use bitsizetype's cache, as we will be replacing that
+     type.  */
+  TYPE_CACHED_VALUES (t) = TYPE_CACHED_VALUES (bitsizetype);
+  TYPE_CACHED_VALUES_P (t) = TYPE_CACHED_VALUES_P (bitsizetype);
+  TYPE_PRECISION (t) = precision;
+  TYPE_UID (t) = TYPE_UID (bitsizetype);
+  TYPE_IS_SIZETYPE (t) = 1;
+  /* Replace our original stub bitsizetype.  */
+  memcpy (bitsizetype, t, tree_size (bitsizetype));
+  
   if (TYPE_UNSIGNED (type))
     {
-      ssizetype = copy_node (make_signed_type (oprecision));
-      sbitsizetype = copy_node (make_signed_type (precision));
+      fixup_unsigned_type (bitsizetype);
+      ssizetype = build_distinct_type_copy (make_signed_type (oprecision));
+      TYPE_IS_SIZETYPE (ssizetype) = 1;
+      sbitsizetype = build_distinct_type_copy (make_signed_type (precision));
+      TYPE_IS_SIZETYPE (sbitsizetype) = 1;
     }
   else
     {
+      fixup_signed_type (bitsizetype);
       ssizetype = sizetype;
       sbitsizetype = bitsizetype;
     }
-
-  TYPE_NAME (bitsizetype) = get_identifier ("bit_size_type");
-
-  /* Show is a sizetype, is a main type, and has no pointers to it.  */
-  for (i = 0; i < ARRAY_SIZE (sizetype_tab); i++)
-    {
-      TYPE_IS_SIZETYPE (sizetype_tab[i]) = 1;
-      TYPE_MAIN_VARIANT (sizetype_tab[i]) = sizetype_tab[i];
-      TYPE_NEXT_VARIANT (sizetype_tab[i]) = 0;
-      TYPE_POINTER_TO (sizetype_tab[i]) = 0;
-      TYPE_REFERENCE_TO (sizetype_tab[i]) = 0;
-    }
-
-  /* Go down each of the types we already made and set the proper type
-     for the sizes in them.  */
-  for (t = early_type_list; t != 0; t = TREE_CHAIN (t))
-    {
-      if (TREE_CODE (TREE_VALUE (t)) != INTEGER_TYPE
-	  && TREE_CODE (TREE_VALUE (t)) != BOOLEAN_TYPE)
-	abort ();
-
-      TREE_TYPE (TYPE_SIZE (TREE_VALUE (t))) = bitsizetype;
-      TREE_TYPE (TYPE_SIZE_UNIT (TREE_VALUE (t))) = sizetype;
-    }
-
-  early_type_list = 0;
-  sizetype_set = 1;
 }
 
 /* TYPE is an integral type, i.e., an INTEGRAL_TYPE, ENUMERAL_TYPE,

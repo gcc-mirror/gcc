@@ -2770,7 +2770,7 @@ extern tree build_empty_stmt (void);
 
 extern tree make_signed_type (int);
 extern tree make_unsigned_type (int);
-extern void initialize_sizetypes (void);
+extern void initialize_sizetypes (bool);
 extern void set_sizetype (tree);
 extern void fixup_unsigned_type (tree);
 extern tree build_pointer_type_for_mode (tree, enum machine_mode, bool);
@@ -3499,7 +3499,7 @@ extern int real_onep (tree);
 extern int real_twop (tree);
 extern int real_minus_onep (tree);
 extern void init_ttree (void);
-extern void build_common_tree_nodes (int);
+extern void build_common_tree_nodes (bool, bool);
 extern void build_common_tree_nodes_2 (int);
 extern tree build_nonstandard_integer_type (unsigned HOST_WIDE_INT, int);
 extern tree build_range_type (tree, tree, tree);
