@@ -24,6 +24,11 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_AS_CAN_SUBTRACT_LABELS
 #define TARGET_AS_CAN_SUBTRACT_LABELS 1
 
+/* The GEM libraries for X_float are present, though not used by C.  */
+
+#undef TARGET_HAS_XFLOATING_LIBS
+#define TARGET_HAS_XFLOATING_LIBS 1
+
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #define CPP_PREDEFINES "\

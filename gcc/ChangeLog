@@ -1,3 +1,35 @@
+2000-01-23  Richard Henderson  <rth@cygnus.com>
+
+	* alpha/osf.h (TARGET_HAS_XFLOATING_LIBS): Define.
+	* alpha/osf5.h: New file.
+	* configure.in (alpha-*-osf5): Add it to tm_file.
+
+	* emit-rtl.c (operand_subword): Support TFmode on a 64-bit target.
+
+	* alpha-protos.h (alpha_emit_xfloating_arith): Declare.
+	(alpha_emit_xfloating_cvt, function_arg): Declare.
+	* alpha.c (alpha_emit_conditional_branch): Call
+	alpha_emit_xfloating_compare for TFmode compares.
+	(alpha_lookup_xfloating_lib_func): New.
+	(alpha_compute_xfloating_mode_arg): New.
+	(alpha_emit_xfloating_libcall): New.
+	(alpha_emit_xfloating_arith): New.
+	(alpha_emit_xfloating_compare): New.
+	(alpha_emit_xfloating_cvt): New.
+	(print_operand): Add default abort case.
+	(function_arg): Mind FUNCTION_ARG_PASS_BY_REFERENCE.
+	* alpha.h (TARGET_HAS_XFLOATING_LIBS): New.
+	(BIGGEST_ALIGNMENT): Increase to 128 bits.
+	(RETURN_IN_MEMORY): True for TF/TCmode.
+	(ALPHA_ARG_SIZE): TF/TCmode is passed indirect.
+	(FUNCTION_ARG): Move to function_arg.
+	(FUNCTION_ARG_PASS_BY_REFERENCE): New.
+	(ASM_OUTPUT_LONG_DOUBLE): New.
+	(ASM_OUTPUT_DOUBLE): Always output bits.
+	* alpha.md (addtf3, divtf3, multf3, subtf3, cmptf): New.
+	(fix_trunctfdi2, floatditf2, floatunsditf2): New.
+	(extenddftf2, trunctfdf2): New.
+
 2000-01-23  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config/sparc/sol2-sld-64.h (TRANSFER_FROM_TRAMPOLINE): Moved...

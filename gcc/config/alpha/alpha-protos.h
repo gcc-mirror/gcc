@@ -80,6 +80,8 @@ extern rtx alpha_emit_set_long_const PARAMS ((rtx, HOST_WIDE_INT,
 					     HOST_WIDE_INT));
 extern rtx alpha_emit_conditional_branch PARAMS ((enum rtx_code));
 extern rtx alpha_emit_conditional_move PARAMS ((rtx, enum machine_mode));
+extern void alpha_emit_xfloating_arith PARAMS ((enum rtx_code, rtx[]));
+extern void alpha_emit_xfloating_cvt PARAMS ((enum rtx_code, rtx[]));
 extern void alpha_expand_unaligned_load PARAMS ((rtx, rtx, HOST_WIDE_INT,
 						HOST_WIDE_INT, int));
 extern void alpha_expand_unaligned_store PARAMS ((rtx, rtx, HOST_WIDE_INT,
@@ -114,6 +116,8 @@ extern tree alpha_build_va_list PARAMS ((void));
 #ifdef RTX_CODE
 extern void alpha_va_start PARAMS ((int, tree, rtx));
 extern rtx alpha_va_arg PARAMS ((tree, tree));
+extern rtx function_arg PARAMS ((CUMULATIVE_ARGS, enum machine_mode,
+				 tree, int));
 #endif
 extern int vms_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
 extern void alpha_start_function PARAMS ((FILE *, const char *, tree));

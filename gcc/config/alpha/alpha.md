@@ -1842,6 +1842,13 @@
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
+(define_expand "addtf3"
+  [(use (match_operand 0 "register_operand" ""))
+   (use (match_operand 1 "general_operand" ""))
+   (use (match_operand 2 "general_operand" ""))]
+  "TARGET_HAS_XFLOATING_LIBS"
+  "alpha_emit_xfloating_arith (PLUS, operands); DONE;")
+
 ;; Define conversion operators between DFmode and SImode, using the cvtql
 ;; instruction.  To allow combine et al to do useful things, we keep the
 ;; operation as a unit until after reload, at which point we split the
@@ -1981,6 +1988,12 @@
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
+(define_expand "fix_trunctfdi2"
+  [(use (match_operand:DI 0 "register_operand" ""))
+   (use (match_operand:TF 1 "general_operand" ""))]
+  "TARGET_HAS_XFLOATING_LIBS"
+  "alpha_emit_xfloating_cvt (FIX, operands); DONE;")
+
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=&f")
 	(float:SF (match_operand:DI 1 "reg_no_subreg_operand" "f")))]
@@ -2012,6 +2025,18 @@
   "cvtq%-%+%& %1,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
+
+(define_expand "floatditf2"
+  [(use (match_operand:TF 0 "register_operand" ""))
+   (use (match_operand:DI 1 "general_operand" ""))]
+  "TARGET_HAS_XFLOATING_LIBS"
+  "alpha_emit_xfloating_cvt (FLOAT, operands); DONE;")
+
+(define_expand "floatunsditf2"
+  [(use (match_operand:TF 0 "register_operand" ""))
+   (use (match_operand:DI 1 "general_operand" ""))]
+  "TARGET_HAS_XFLOATING_LIBS"
+  "alpha_emit_xfloating_cvt (UNSIGNED_FLOAT, operands); DONE;")
 
 (define_expand "extendsfdf2"
   [(use (match_operand:DF 0 "register_operand" ""))
@@ -2047,6 +2072,12 @@
   [(set_attr "type" "fcpys,fld,fst")
    (set_attr "trap" "yes")])
 
+(define_expand "extenddftf2"
+  [(use (match_operand:TF 0 "register_operand" ""))
+   (use (match_operand:DF 1 "general_operand" ""))]
+  "TARGET_HAS_XFLOATING_LIBS"
+  "alpha_emit_xfloating_cvt (FLOAT_EXTEND, operands); DONE;")
+
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=&f")
 	(float_truncate:SF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
@@ -2062,6 +2093,12 @@
   "cvt%-%,%)%& %R1,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
+
+(define_expand "trunctfdf2"
+  [(use (match_operand:DF 0 "register_operand" ""))
+   (use (match_operand:TF 1 "general_operand" ""))]
+  "TARGET_HAS_XFLOATING_LIBS"
+  "alpha_emit_xfloating_cvt (FLOAT_TRUNCATE, operands); DONE;")
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=&f")
@@ -2129,6 +2166,13 @@
   [(set_attr "type" "fdiv")
    (set_attr "trap" "yes")])
 
+(define_expand "divtf3"
+  [(use (match_operand 0 "register_operand" ""))
+   (use (match_operand 1 "general_operand" ""))
+   (use (match_operand 2 "general_operand" ""))]
+  "TARGET_HAS_XFLOATING_LIBS"
+  "alpha_emit_xfloating_arith (DIV, operands); DONE;")
+
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=&f")
 	(mult:SF (match_operand:SF 1 "reg_or_fp0_operand" "%fG")
@@ -2185,6 +2229,13 @@
   "mul%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fmul")
    (set_attr "trap" "yes")])
+
+(define_expand "multf3"
+  [(use (match_operand 0 "register_operand" ""))
+   (use (match_operand 1 "general_operand" ""))
+   (use (match_operand 2 "general_operand" ""))]
+  "TARGET_HAS_XFLOATING_LIBS"
+  "alpha_emit_xfloating_arith (MULT, operands); DONE;")
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=&f")
@@ -2252,6 +2303,13 @@
   "sub%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
+
+(define_expand "subtf3"
+  [(use (match_operand 0 "register_operand" ""))
+   (use (match_operand 1 "general_operand" ""))
+   (use (match_operand 2 "general_operand" ""))]
+  "TARGET_HAS_XFLOATING_LIBS"
+  "alpha_emit_xfloating_arith (MINUS, operands); DONE;")
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=&f")
@@ -2956,6 +3014,18 @@
   [(set (cc0) (compare (match_operand:DF 0 "reg_or_fp0_operand" "")
 		       (match_operand:DF 1 "reg_or_fp0_operand" "")))]
   "TARGET_FP"
+  "
+{
+  alpha_compare.op0 = operands[0];
+  alpha_compare.op1 = operands[1];
+  alpha_compare.fp_p = 1;
+  DONE;
+}")
+
+(define_expand "cmptf"
+  [(set (cc0) (compare (match_operand:TF 0 "general_operand" "")
+		       (match_operand:TF 1 "general_operand" "")))]
+  "TARGET_HAS_XFLOATING_LIBS"
   "
 {
   alpha_compare.op0 = operands[0];

@@ -181,6 +181,9 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #ifndef TARGET_CAN_FAULT_IN_PROLOGUE
 #define TARGET_CAN_FAULT_IN_PROLOGUE 0
 #endif
+#ifndef TARGET_HAS_XFLOATING_LIBS
+#define TARGET_HAS_XFLOATING_LIBS 0
+#endif
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -511,7 +514,7 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
   (optimize > 0 && write_symbols != SDB_DEBUG ? 4 : 0)
 
 /* No data type wants to be aligned rounder than this.  */
-#define BIGGEST_ALIGNMENT 64
+#define BIGGEST_ALIGNMENT 128
 
 /* For atomic access to objects, must have at least 32-bit alignment
    unless the machine has byte operations.  */
@@ -1013,6 +1016,8 @@ extern int alpha_memory_latency;
 
 #define RETURN_IN_MEMORY(TYPE) \
   (TYPE_MODE (TYPE) == BLKmode \
+   || TYPE_MODE (TYPE) == TFmode \
+   || TYPE_MODE (TYPE) == TCmode \
    || (TREE_CODE (TYPE) == INTEGER_TYPE && TYPE_PRECISION (TYPE) > 64))
 
 /* 1 if N is a possible register number for a function value
@@ -1049,9 +1054,9 @@ extern int alpha_memory_latency;
    for the Alpha.  */
 
 #define ALPHA_ARG_SIZE(MODE, TYPE, NAMED)				\
-((MODE) != BLKmode							\
- ? (GET_MODE_SIZE (MODE) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD 	\
- : (int_size_in_bytes (TYPE) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
+  ((MODE) == TFmode || (MODE) == TCmode ? 1				\
+   : (((MODE) == BLKmode ? int_size_in_bytes (TYPE) : GET_MODE_SIZE (MODE)) \
+      + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
@@ -1080,14 +1085,16 @@ extern int alpha_memory_latency;
    and the rest are pushed.  */
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	\
-((CUM) < 6 && ! MUST_PASS_IN_STACK (MODE, TYPE)	\
- ? gen_rtx_REG ((MODE),				\
-		(CUM) + 16			\
-		+ ((TARGET_FPREGS		\
-		    && (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT  \
-			|| GET_MODE_CLASS (MODE) == MODE_FLOAT)) \
-		   * 32))			\
- : 0)
+  function_arg((CUM), (MODE), (TYPE), (NAMED))
+
+/* A C expression that indicates when an argument must be passed by
+   reference.  If nonzero for an argument, a copy of that argument is
+   made in memory and a pointer to the argument is passed instead of
+   the argument itself.  The pointer is passed in whatever way is
+   appropriate for passing a pointer to that type. */
+
+#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) \
+  ((MODE) == TFmode || (MODE) == TCmode)
 
 /* Specify the padding direction of arguments.
 
@@ -1132,7 +1139,6 @@ extern int alpha_memory_latency;
    class, but it isn't worth doing anything more efficient in this rare
    case.  */
    
-
 #define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
 { if ((CUM) < 6)							\
     {									\
@@ -2015,26 +2021,27 @@ literal_section ()						\
 #define CHECK_FLOAT_VALUE(MODE, D, OVERFLOW) \
   ((OVERFLOW) = check_float_value (MODE, &D, OVERFLOW))
 
+/* This is how to output an assembler line defining a `long double'
+   constant.  */
+
+#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)				\
+  do {									\
+    long t[4];								\
+    REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), t);			\
+    fprintf (FILE, "\t.quad 0x%lx%08lx,0x%lx%08lx\n",			\
+	     t[1] & 0xffffffff, t[0] & 0xffffffff,			\
+	     t[3] & 0xffffffff, t[2] & 0xffffffff);			\
+  } while (0)
+
 /* This is how to output an assembler line defining a `double' constant.  */
 
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
-  {									\
-    if (REAL_VALUE_ISINF (VALUE)					\
-        || REAL_VALUE_ISNAN (VALUE)					\
-	|| REAL_VALUE_MINUS_ZERO (VALUE))				\
-      {									\
-	long t[2];							\
-	REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);			\
-	fprintf (FILE, "\t.quad 0x%lx%08lx\n",				\
-		t[1] & 0xffffffff, t[0] & 0xffffffff);			\
-      }									\
-    else								\
-      {									\
-	char str[30];							\
-	REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", str);			\
-	fprintf (FILE, "\t.%c_floating %s\n", (TARGET_FLOAT_VAX)?'g':'t', str);			\
-      }									\
-  }
+  do {									\
+    long t[2];								\
+    REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);				\
+    fprintf (FILE, "\t.quad 0x%lx%08lx\n",				\
+	     t[1] & 0xffffffff, t[0] & 0xffffffff);			\
+  } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
 
@@ -2043,7 +2050,7 @@ literal_section ()						\
     long t;							\
     REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);			\
     fprintf (FILE, "\t.long 0x%lx\n", t & 0xffffffff);		\
-} while (0)
+  } while (0)
   
 /* This is how to output an assembler line defining an `int' constant.  */
 
