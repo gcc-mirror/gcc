@@ -914,7 +914,6 @@ dwarf2out_frame_debug (insn)
 	      assert (XEXP (src, 1) == stack_pointer_rtx);
 	      assert (GET_CODE (XEXP (src, 0)) == REG
 		      && REGNO (XEXP (src, 0)) == cfa_temp_reg);
-	      assert (cfa_store_reg == STACK_POINTER_REGNUM);
 	      cfa_store_reg = REGNO (dest);
 	      cfa_store_offset -= cfa_temp_value;
 	    }
@@ -1215,13 +1214,6 @@ output_call_frame_info (for_eh)
 
   /* Do we want to include a pointer to the exception table?  */
   int eh_ptr = for_eh && exception_table_p ();
-
-  /* Only output the info if it will be interesting.  */
-  for (i = 0; i < fde_table_in_use; ++i)
-    if (fde_table[i].dw_fde_cfi != NULL)
-      break;
-  if (i == fde_table_in_use)
-    return;
 
   fputc ('\n', asm_out_file);
   if (for_eh)
