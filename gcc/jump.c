@@ -699,6 +699,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && GET_CODE (PATTERN (temp2)) == SET
 	      && rtx_equal_p (SET_DEST (PATTERN (temp2)), temp1)
 	      && (GET_CODE (SET_SRC (PATTERN (temp2))) == REG
+		  || GET_CODE (SET_SRC (PATTERN (temp2))) == SUBREG
 		  || CONSTANT_P (SET_SRC (PATTERN (temp2))))
 	      && (REG_NOTES (temp2) == 0
 		  || ((REG_NOTE_KIND (REG_NOTES (temp2)) == REG_EQUAL
@@ -830,6 +831,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 #endif
 	      && GET_MODE_CLASS (GET_MODE (temp1)) == MODE_INT
 	      && (GET_CODE (temp2 = SET_SRC (PATTERN (temp))) == REG
+		  || GET_CODE (temp2) == SUBREG
 		  || GET_CODE (temp2) == CONST_INT)
 	      /* Allow either form, but prefer the former if both apply.  */
 	      && (((temp3 = reg_set_last (temp1, insn)) != 0
@@ -838,6 +840,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 			&& REGNO (temp3) >= FIRST_PSEUDO_REGISTER
 #endif
 			)
+		       || GET_CODE (temp3) == SUBREG
 		       || GET_CODE (temp3) == CONST_INT))
 		  /* Make the latter case look like  x = x; if (...) x = 0;  */
 		  || ((temp3 = temp1, BRANCH_COST >= 2)
