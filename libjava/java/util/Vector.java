@@ -178,7 +178,6 @@ public class Vector extends AbstractList
    */
   public synchronized void ensureCapacity(int minCapacity)
   {
-    modCount++;
     if (elementData.length >= minCapacity)
       return;
 
@@ -459,7 +458,7 @@ public class Vector extends AbstractList
   public synchronized void addElement(Object obj)
   {
     if (elementCount == elementData.length)
-      ensureCapacity(++elementCount);
+      ensureCapacity(elementCount + 1);
     modCount++;
     elementData[elementCount++] = obj;
   }

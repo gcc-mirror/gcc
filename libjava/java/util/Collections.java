@@ -43,7 +43,6 @@ import java.io.Serializable;
  */
 public class Collections
 {
-
   /**
    * This class is non-instantiable.
    */
@@ -58,7 +57,6 @@ public class Collections
    */
   public static final Set EMPTY_SET = new AbstractSet()
   {
-
     public int size()
     {
       return 0;
@@ -97,7 +95,6 @@ public class Collections
    */
   public static final List EMPTY_LIST = new AbstractList()
   {
-
     public int size()
     {
       return 0;
@@ -116,7 +113,6 @@ public class Collections
    */
   public static final Map EMPTY_MAP = new AbstractMap()
   {
-
     public Set entrySet()
     {
       return EMPTY_SET;
@@ -147,7 +143,6 @@ public class Collections
    */
   private static int search(List l, Object key, final Comparator c)
   {
-
     int pos = 0;
 
     // We use a linear search using an iterator if we can guess that the list
@@ -437,7 +432,6 @@ public class Collections
   // stated - I just would be amazed if it isn't...
   public static List nCopies(final int n, final Object o)
   {
-
     // Check for insane arguments
     if (n < 0)
       {
@@ -552,7 +546,6 @@ public class Collections
     // Iterate backwards over l
     while (i.hasPrevious())
       {
-
 	// Obtain a random position to swap with. nextIndex is used so that the
 	// range of the random number includes the current position.
 	int swap = r.nextInt(i.nextIndex());
@@ -579,10 +572,8 @@ public class Collections
   // It's not serializable because the spec is broken.
   public static Set singleton(final Object o)
   {
-
     return new AbstractSet()
     {
-
       public int size()
       {
 	return 1;
@@ -592,7 +583,6 @@ public class Collections
       {
 	return new Iterator()
 	{
-
 	  private boolean hasNext = true;
 
 	  public boolean hasNext()
@@ -632,10 +622,8 @@ public class Collections
   // It's not serializable because the spec is broken.
   public static List singletonList(final Object o)
   {
-
     return new AbstractList()
     {
-
       public int size()
       {
 	return 1;
@@ -666,7 +654,6 @@ public class Collections
   // It's not serializable because the spec is broken.
   public static Map singletonMap(final Object key, final Object value)
   {
-
     return new AbstractMap()
     {
       public Set entrySet()
@@ -811,7 +798,6 @@ public class Collections
   private static class UnmodifiableListIterator extends UnmodifiableIterator
     implements ListIterator
   {
-
     // This is stored both here and in the superclass, to avoid excessive
     // casting.
     private ListIterator li;
@@ -910,12 +896,15 @@ public class Collections
     {
       return c.toArray(a);
     }
+    public String toString()
+    {
+      return c.toString();
+    }
   }
 
   private static class UnmodifiableList extends UnmodifiableCollection
     implements List
   {
-
     // This is stored both here and in the superclass, to avoid excessive
     // casting.
     List l;
@@ -928,11 +917,11 @@ public class Collections
 
     public void add(int index, Object o)
     {
-      l.add(index, o);
+      throw new UnsupportedOperationException();
     }
     public boolean addAll(int index, Collection c)
     {
-      return l.addAll(index, c);
+      throw new UnsupportedOperationException();
     }
     public boolean equals(Object o)
     {
@@ -964,15 +953,11 @@ public class Collections
     }
     public Object remove(int index)
     {
-      return l.remove(index);
-    }
-    public boolean remove(Object o)
-    {
-      return l.remove(o);
+      throw new UnsupportedOperationException();
     }
     public Object set(int index, Object o)
     {
-      return l.set(index, o);
+      throw new UnsupportedOperationException();
     }
     public List subList(int fromIndex, int toIndex)
     {
@@ -1000,7 +985,6 @@ public class Collections
   private static class UnmodifiableSortedSet extends UnmodifiableSet
     implements SortedSet
   {
-
     // This is stored both here and in the superclass, to avoid excessive
     // casting.
     private SortedSet ss;
@@ -1039,7 +1023,6 @@ public class Collections
 
   private static class UnmodifiableMap implements Map, Serializable
   {
-
     Map m;
 
     public UnmodifiableMap(Map m)
@@ -1143,12 +1126,15 @@ public class Collections
     {
       return new UnmodifiableCollection(m.values());
     }
+    public String toString()
+    {
+      return m.toString();
+    }
   }
 
   private static class UnmodifiableSortedMap extends UnmodifiableMap
     implements SortedMap
   {
-
     // This is stored both here and in the superclass, to avoid excessive
     // casting.
     private SortedMap sm;
@@ -1226,7 +1212,6 @@ public class Collections
   private static class SynchronizedListIterator extends SynchronizedIterator
     implements ListIterator
   {
-
     // This is stored both here and in the superclass, to avoid excessive
     // casting.
     private ListIterator li;
@@ -1389,12 +1374,18 @@ public class Collections
 	return c.toArray(a);
       }
     }
+    public String toString()
+    {
+      synchronized(sync)
+      {
+	return c.toString();
+      }
+    }
   }
 
   private static class SynchronizedList extends SynchronizedCollection
     implements List
   {
-
     // This is stored both here and in the superclass, to avoid excessive
     // casting.
     List l;
@@ -1407,6 +1398,7 @@ public class Collections
     public SynchronizedList(List l)
     {
       super(l);
+      this.l = l;
     }
 
     public void add(int index, Object o)
@@ -1505,7 +1497,6 @@ public class Collections
   private static class SynchronizedSet extends SynchronizedCollection
     implements Set
   {
-
     public SynchronizedSet(Object sync, Set s)
     {
       super(sync, s);
@@ -1534,7 +1525,6 @@ public class Collections
   private static class SynchronizedSortedSet extends SynchronizedSet
     implements SortedSet
   {
-
     // This is stored both here and in the superclass, to avoid excessive
     // casting.
     private SortedSet ss;
@@ -1547,6 +1537,7 @@ public class Collections
     public SynchronizedSortedSet(SortedSet ss)
     {
       super(ss);
+      this.ss = ss;
     }
 
     public Comparator comparator()
@@ -1596,7 +1587,6 @@ public class Collections
 
   private static class SynchronizedMap implements Map, Serializable
   {
-
     Object sync;
     Map m;
 
@@ -1634,7 +1624,7 @@ public class Collections
     }
 
     // This is one of the ickiest cases of nesting I've ever seen. It just
-    // means "return an SynchronizedSet, except that the iterator() method
+    // means "return a SynchronizedSet, except that the iterator() method
     // returns an SynchronizedIterator whos next() method returns a
     // synchronized wrapper around its normal return value".
     public Set entrySet()
@@ -1772,12 +1762,18 @@ public class Collections
 	return new SynchronizedCollection(sync, m.values());
       }
     }
+    public String toString()
+    {
+      synchronized(sync)
+      {
+	return m.toString();
+      }
+    }
   }
 
   private static class SynchronizedSortedMap extends SynchronizedMap
     implements SortedMap
   {
-
     // This is stored both here and in the superclass, to avoid excessive
     // casting.
     private SortedMap sm;
@@ -1790,6 +1786,7 @@ public class Collections
     public SynchronizedSortedMap(SortedMap sm)
     {
       super(sm);
+      this.sm = sm;
     }
 
     public Comparator comparator()
