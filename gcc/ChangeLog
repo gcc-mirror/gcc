@@ -1,3 +1,7 @@
+2004-08-28  Andrew Pinski  <apinski@apple.com>
+
+	* tree-ssa-loop.c: Remove extra include of basic-block.h.
+
 2004-08-28  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-common.h: Update comments about ObjC/ObjC++ entry points.
