@@ -370,10 +370,10 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file
-sed -e '/size_t.*;/i\
+sed -e '/[ 	]size_t.*;/i\
 #ifndef _GCC_SIZE_T\
 #define _GCC_SIZE_T' \
-    -e '/size_t.*;/a\
+    -e '/[ 	]size_t.*;/a\
 #endif' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
