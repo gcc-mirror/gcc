@@ -1,3 +1,9 @@
+2003-01-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* test_summary (configflags): Only use the first match.  Remove
+	excess space.  Use sub instead of gsub where possible.  Use `none'
+	if no configure flags were given.
+
 2003-01-10  Loren J. Rittle  <ljrittle@acm.org>
 
 	* test_summary (configflags): awk portability.

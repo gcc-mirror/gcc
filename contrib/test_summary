@@ -88,25 +88,28 @@ if $forcemail || $anychange; then :; else mailto=nobody; fi &&
 cat ./config.status $files |
 $AWK '
 BEGIN {
-  lang="";
+  lang=""; configflags = "";
   address="gcc-testresults@gcc.gnu.org";
   version="gcc";
   print "cat <<'"'"'EOF'"'"' |";
 '${prepend_logs+"  system(\"cat $prepend_logs\"); "}'
 }
-$0 ~ /^[^ ]*\/configure / || $0 ~ /^# [^ ]*\/configure / {
+($0 ~ /^[^ ]*\/configure / || $0 ~ /^# [^ ]*\/configure /) &&
+configflags == "" {
     configflags = $0 " ";
-    gsub(/^# /, "", configflags);
+    sub(/^# /, "", configflags);
     srcdir = configflags;
-    gsub(/\/configure .*/, "", srcdir);
+    sub(/\/configure .*/, "", srcdir);
     printf "LAST_UPDATED: ";
     system("tail -1 " srcdir "/LAST_UPDATED");
     print "";
 
-    gsub(/^[^ ]*\/configure /, "configure flags: ", configflags);
-    gsub(/ --with-gcc-version-trigger=[^ ]* /, " ", configflags);
-    gsub(/ --norecursion /, " ", configflags);
-    gsub(/ $/, "", configflags);
+    sub(/^[^ ]*\/configure */, " ", configflags);
+    sub(/ --with-gcc-version-trigger=[^ ]* /, " ", configflags);
+    sub(/ --norecursion /, " ", configflags);
+    sub(/ $/, "", configflags);
+    sub(/^ *$/, " none", configflags);
+    configflags = "configure flags:" configflags;
 }
 /^Running target / { print ""; print; }
 /^Target / { if (host != "") next; else host = $3; }
