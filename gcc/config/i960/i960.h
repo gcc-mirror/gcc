@@ -498,13 +498,20 @@ extern unsigned int hard_regno_mode_ok[FIRST_PSEUDO_REGISTER];
    Zero means the frame pointer need not be set up (and parms
    may be accessed via the stack pointer) in functions that seem suitable.
    This is computed in `reload', in reload1.c.  */
+/* ??? It isn't clear to me why this is here.  Perhaps because of a bug (since
+   fixed) in the definition of INITIAL_FRAME_POINTER_OFFSET which would have
+   caused this to fail.  */
 #define FRAME_POINTER_REQUIRED (! leaf_function_p ())
 
 /* C statement to store the difference between the frame pointer
-   and the stack pointer values immediately after the function prologue.  */
+   and the stack pointer values immediately after the function prologue.
+
+   Since the stack grows upward on the i960, this must be a negative number.
+   This includes the 64 byte hardware register save area and the size of
+   the frame.  */
 
 #define INITIAL_FRAME_POINTER_OFFSET(VAR) \
-  do { (VAR) = compute_frame_size (get_frame_size ()); } while (0)
+  do { (VAR) = - (64 + compute_frame_size (get_frame_size ())); } while (0)
 
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM 14
