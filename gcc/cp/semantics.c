@@ -2526,10 +2526,6 @@ genrtl_start_function (fn)
       DECL_SAVED_FUNCTION_DATA (fn) = NULL;
     }
 
-  /* Tell the cross-reference machinery that we're defining this
-     function.  */
-  GNU_xref_function (fn, DECL_ARGUMENTS (fn));
-
   /* Keep track of how many functions we're presently expanding.  */
   ++function_depth;
 

@@ -932,10 +932,6 @@ extern int flag_no_gnu_keywords;
 
 extern int flag_operator_names;
 
-/* For cross referencing.  */
-
-extern int flag_gnu_xref;
-
 /* For environments where you can use GNU binutils (as, ld in particular).  */
 
 extern int flag_gnu_binutils;
@@ -4369,20 +4365,6 @@ extern tree build_functional_cast		PARAMS ((tree, tree));
 extern void check_for_new_type			PARAMS ((const char *, flagged_type_tree));
 extern tree add_exception_specifier             PARAMS ((tree, tree, int));
 extern tree merge_exception_specifiers          PARAMS ((tree, tree));
-
-/* in xref.c */
-extern void GNU_xref_begin			PARAMS ((const char *));
-extern void GNU_xref_end			PARAMS ((int));
-extern void GNU_xref_file			PARAMS ((const char *));
-extern void GNU_xref_start_scope		PARAMS ((HOST_WIDE_INT));
-extern void GNU_xref_end_scope			PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT, int, int));
-extern void GNU_xref_ref			PARAMS ((tree, const char *));
-extern void GNU_xref_decl			PARAMS ((tree, tree));
-extern void GNU_xref_call			PARAMS ((tree, const char *));
-extern void GNU_xref_function			PARAMS ((tree, tree));
-extern void GNU_xref_assign			PARAMS ((tree));
-extern void GNU_xref_hier			PARAMS ((tree, tree, int, int, int));
-extern void GNU_xref_member			PARAMS ((tree, tree));
 
 /* in mangle.c */
 extern void init_mangle                         PARAMS ((void));

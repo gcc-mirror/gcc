@@ -1,3 +1,14 @@
+2002-02-03  Jason Merrill  <jason@redhat.com>
+
+	* xref.c: Remove.
+	* Make-lang.in (CXX_OBJS): Remove cp/xref.o
+	(cp/xref.o): Remove dependencies.
+	* class.c (finish_struct_1, check_methods): Don't call xref fns.
+	(finish_struct_1): Likewise.
+	* friend.c (make_friend_class): Likewise.
+	* lex.c (cxx_init, cxx_finish, extract_interface_info): Likewise.
+	* spew.c (read_process_identifier): Likewise.
+
 2002-02-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/4872

@@ -102,7 +102,7 @@ CXX_C_OBJS = attribs.o c-common.o c-format.o c-pragma.o c-semantics.o c-lex.o \
 CXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
  cp/class.o cp/decl2.o cp/error.o cp/lex.o cp/parse.o cp/ptree.o cp/rtti.o \
  cp/spew.o cp/typeck.o cp/cvt.o cp/except.o cp/friend.o cp/init.o cp/method.o \
- cp/search.o cp/semantics.o cp/tree.o cp/xref.o cp/repo.o cp/dump.o \
+ cp/search.o cp/semantics.o cp/tree.o cp/repo.o cp/dump.o \
  cp/optimize.o cp/mangle.o cp/cp-lang.o
 
 # Use loose warnings for this front end.
@@ -280,7 +280,6 @@ cp/except.o: cp/except.c $(CXX_TREE_H) flags.h $(RTL_H) except.h toplev.h \
   cp/cfns.h $(EXPR_H) libfuncs.h cp/decl.h $(OBSTACK_H)
 cp/expr.o: cp/expr.c $(CXX_TREE_H) $(RTL_H) flags.h $(EXPR_H) toplev.h \
   except.h $(TM_P_H)
-cp/xref.o: cp/xref.c $(CXX_TREE_H) input.h toplev.h
 cp/pt.o: cp/pt.c $(CXX_TREE_H) cp/decl.h cp/parse.h cp/lex.h toplev.h \
   $(GGC_H) $(RTL_H) except.h tree-inline.h
 cp/error.o: cp/error.c $(CXX_TREE_H) toplev.h diagnostic.h flags.h real.h

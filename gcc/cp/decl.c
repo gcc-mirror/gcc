@@ -842,7 +842,6 @@ pushlevel (tag_transparent)
     newlevel = make_binding_level ();
 
   push_binding_level (newlevel, tag_transparent, keep_next_level_flag);
-  GNU_xref_start_scope ((size_t) newlevel);
   keep_next_level_flag = 0;
 }
 
@@ -1301,11 +1300,6 @@ poplevel (keep, reverse, functionbody)
      rather than the end.  This hack is no longer used.  */
   my_friendly_assert (keep == 0 || keep == 1, 0);
 
-  GNU_xref_end_scope ((size_t) current_binding_level,
-		      (size_t) current_binding_level->level_chain,
-		      current_binding_level->parm_flag,
-		      current_binding_level->keep);
-
   if (current_binding_level->keep == 1)
     keep = 1;
 
@@ -1726,11 +1720,6 @@ poplevel_class ()
        shadowed;
        shadowed = TREE_CHAIN (shadowed))
     pop_binding (TREE_PURPOSE (shadowed), TREE_TYPE (shadowed));
-
-  GNU_xref_end_scope ((size_t) class_binding_level,
-		      (size_t) class_binding_level->level_chain,
-		      class_binding_level->parm_flag,
-		      class_binding_level->keep);
 
   /* Now, pop out of the binding level which we created up in the
      `pushlevel_class' routine.  */
@@ -8130,7 +8119,6 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 	  set_identifier_type_value (DECL_NAME (decl), type);
 	  CLASSTYPE_GOT_SEMICOLON (type) = 1;
 	}
-      GNU_xref_decl (current_function_decl, decl);
 
       /* If we have installed this as the canonical typedef for this
 	 type, and that type has not been defined yet, delay emitting
@@ -8170,8 +8158,6 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
   /* Deduce size of array from initialization, if not already known.  */
   init = check_initializer (decl, init);
   maybe_deduce_size_from_array_init (decl, init);
-
-  GNU_xref_decl (current_function_decl, decl);
 
   /* Add this declaration to the statement-tree.  This needs to happen
      after the call to check_initializer so that the DECL_STMT for a
@@ -12914,7 +12900,8 @@ xref_tag_from_type (old, id, globalize)
 void
 xref_basetypes (code_type_node, name, ref, binfo)
      tree code_type_node;
-     tree name, ref;
+     tree name ATTRIBUTE_UNUSED;
+     tree ref;
      tree binfo;
 {
   /* In the declaration `A : X, Y, ... Z' we mark all the types
@@ -12984,8 +12971,6 @@ xref_basetypes (code_type_node, name, ref, binfo)
 		    TREE_VALUE (binfo));
 	  continue;
 	}
-
-      GNU_xref_hier (name, basetype, via_public, via_virtual, 0);
 
       /* This code replaces similar code in layout_basetypes.
          We put the complete_type first for implicit `typename'.  */
@@ -13127,7 +13112,6 @@ start_enum (name)
   if (current_class_type)
     TREE_ADDRESSABLE (b->tags) = 1;
 
-  GNU_xref_decl (current_function_decl, enumtype);
   return enumtype;
 }
 
@@ -13373,10 +13357,7 @@ build_enumerator (name, value, enumtype)
       things like `S::i' later.)  */
     finish_member_declaration (decl);
   else
-    {
-      pushdecl (decl);
-      GNU_xref_decl (current_function_decl, decl);
-    }
+    pushdecl (decl);
 
   /* Add this enumeration constant to the list for this type.  */
   TYPE_VALUES (enumtype) = tree_cons (name, decl, TYPE_VALUES (enumtype));
@@ -14418,11 +14399,6 @@ finish_method (decl)
       my_friendly_assert (TREE_CODE (link) != FUNCTION_DECL, 163);
       DECL_CONTEXT (link) = NULL_TREE;
     }
-
-  GNU_xref_end_scope ((size_t) current_binding_level,
-		      (size_t) current_binding_level->level_chain,
-		      current_binding_level->parm_flag,
-		      current_binding_level->keep);
 
   poplevel (0, 0, 0);
 

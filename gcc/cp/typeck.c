@@ -3013,10 +3013,6 @@ build_function_call_real (function, params, require_complete, flags)
       name = DECL_NAME (function);
       assembler_name = DECL_ASSEMBLER_NAME (function);
 
-      GNU_xref_call (current_function_decl,
-		     IDENTIFIER_POINTER (name ? name
-					 : TYPE_IDENTIFIER (DECL_CLASS_CONTEXT
-							    (function))));
       mark_used (function);
       fndecl = function;
 
@@ -5747,8 +5743,6 @@ build_modify_expr (lhs, modifycode, rhs)
 
   if (!lvalue_or_else (lhs, "assignment"))
     return error_mark_node;
-
-  GNU_xref_assign (lhs);
 
   /* Warn about modifying something that is `const'.  Don't warn if
      this is initialization.  */
