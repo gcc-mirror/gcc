@@ -531,8 +531,6 @@ expr_no_commas:
 primary:
 	IDENTIFIER
 		{
-		  tree context;
-
 		  $$ = lastiddecl;
 		  if (!$$ || $$ == error_mark_node)
 		    {
