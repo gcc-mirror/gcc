@@ -1,3 +1,9 @@
+Thu Jul  1 19:08:13 1999  Mark P. Mitchell  <mark@codesourcery.com>
+
+	* gcc/configure.in (mips-sgi-irix6*): Handle --with-gnu-ld.
+	* gcc/config/mips/t-iris6gld: New file.
+	* gcc/config/mips/iris6gld.h: Likewise.
+
 Fri Jul  2 13:23:39 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* c-decl.c (widest_integer_literal_type_node,

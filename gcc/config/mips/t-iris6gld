@@ -1,0 +1,10 @@
+# Suppress building libgcc1.a, since the MIPS compiler port is complete
+# and does not need anything from libgcc1.a.
+LIBGCC1 = 
+CROSS_LIBGCC1 = 
+
+# We don't multilib because we don't yet have 64-bit linker support in
+# GNU ld.
+
+CRTSTUFF_T_CFLAGS=-g1
+

@@ -2227,10 +2227,16 @@ changequote([,])dnl
 		tmake_file=m88k/t-sysv4
 		;;
 	mips-sgi-irix6*)		# SGI System V.4., IRIX 6
-		tm_file=mips/iris6.h
+		if test "x$gnu_ld" = xyes
+		then
+			tm_file="mips/iris6.h mips/iris6gld.h"
+			tmake_file=mips/t-iris6gld
+		else
+			tm_file=mips/iris6.h
+			tmake_file=mips/t-iris6
+		fi
 		xm_file=mips/xm-iris6.h
 		xmake_file=mips/x-iris6
-		tmake_file=mips/t-iris6
 # 		if test x$enable_threads = xyes; then
 #			thread_file='irix'
 #		fi
