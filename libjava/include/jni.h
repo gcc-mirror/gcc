@@ -34,7 +34,7 @@ typedef int    jbyte  __attribute__((__mode__(__QI__)));
 typedef int    jshort __attribute__((__mode__(__HI__)));
 typedef int    jint   __attribute__((__mode__(__SI__)));
 typedef int    jlong  __attribute__((__mode__(__DI__)));
-typedef bool   jboolean __attribute__((__mode__(__QI__)));
+typedef int    jboolean __attribute__((__mode__(__QI__)));
 typedef unsigned short jchar __attribute__((__mode__(__HI__)));
 typedef float  jfloat;
 typedef double jdouble;
@@ -62,8 +62,8 @@ typedef void *jmethodID;
 typedef const struct JNINativeInterface *JNIEnv;
 typedef const struct JNIInvokeInterface *JavaVM;
 
-#define JNI_TRUE 1
-#define JNI_TRUE 0
+#define JNI_TRUE  1
+#define JNI_FALSE 0
 
 #endif /* __cplusplus */
 
@@ -117,7 +117,11 @@ typedef union jvalue
   jobject  l;
 } jvalue;
 
-typedef void * (*_Jv_func)(...);
+#ifdef __cplusplus
+typedef void * (*_Jv_func) (...);
+#else
+typedef void * (*_Jv_func) ();
+#endif
 
 /* This structure is used when registering native methods.  */
 typedef struct
