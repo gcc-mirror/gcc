@@ -109,9 +109,3 @@ Boston, MA 02111-1307, USA.  */
 /* Switch into a generic section.  */
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
-
-/* collect2 support (Macros for initialization).  */
-
-/* Mips default configuration is COFF-only, and confuses collect2.  */
-#undef OBJECT_FORMAT_COFF
-#undef EXTENDED_COFF

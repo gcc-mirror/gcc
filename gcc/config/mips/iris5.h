@@ -23,9 +23,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define ABICALLS_ASM_OP "\t.option pic2"
 
-/* IRIX 5 doesn't use COFF, so disable special COFF handling in collect2.c.  */
-#undef OBJECT_FORMAT_COFF
-
 /* ??? This is correct, but not very useful, because there is no file that
    uses this macro.  */
 /* ??? The best way to handle global constructors under ELF is to use .init
