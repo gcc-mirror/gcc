@@ -1,3 +1,7 @@
+Thu Jan  7 23:39:47 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/compile/990107-1.c: New test
+
 Wed Jan  6 02:21:59 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990106-2.c: New test.
