@@ -1,3 +1,8 @@
+2002-02-10  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.c (reg_before_reload_operand): Don't accept a SUBREG operand.
+	* pa.h (PREDICATE_CODES): Adjust codes for reg_before_reload_operand.
+
 2002-02-09  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/sparc/freebsd.h(TARGET_DEFAULT): Add MASK_EPILOGUE setting and
