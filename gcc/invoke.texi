@@ -4851,19 +4851,19 @@ instructions available.
 
 @item -mshort-load-bytes
 @kindex -mshort-load-bytes
-This is a depreciated alias for @samp{-malignment-traps}.
+This is a deprecated alias for @samp{-malignment-traps}.
 
 @item -mno-short-load-bytes
 @kindex -mno-short-load-bytes
-This is a depreciated alias for @samp{-mno-alignment-traps}.
+This is a deprecated alias for @samp{-mno-alignment-traps}.
 
 @item -mshort-load-words
 @kindex -mshort-load-words
-This is a depreciated alias for @samp{-mno-alignment-traps}.
+This is a deprecated alias for @samp{-mno-alignment-traps}.
 
 @item -mno-short-load-words
 @kindex -mno-short-load-words
-This is a depreciated alias for @samp{-malignment-traps}.
+This is a deprecated alias for @samp{-malignment-traps}.
 
 @item -mbsd
 @kindex -mbsd

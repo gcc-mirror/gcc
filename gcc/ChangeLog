@@ -1,5 +1,7 @@
 2000-11-19  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* config.gcc, invoke.texi: Fix errors in spelling of "deprecated".
+
 	* alias.c (mems_in_disjoint_alias_sets_p): Do use alias sets in
 	stdarg and varargs functions.
 
