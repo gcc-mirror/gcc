@@ -1,3 +1,7 @@
+2003-05-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (hppa_expand_prologue): Remove blockage.
+
 2003-05-15  Wolfgang Bangerth <bangerth@dealii.org>
 
 	* doc/bugreport.texi: Remove most of the bug reporting
