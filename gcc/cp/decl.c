@@ -7581,7 +7581,7 @@ static tree
 obscure_complex_init (decl, init)
      tree decl, init;
 {
-  if (DECL_THREAD_LOCAL (decl))
+  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
     {
       error ("run-time initialization of thread-local storage");
       return NULL_TREE;

@@ -1,5 +1,10 @@
 2002-05-22  Richard Henderson  <rth@redhat.com>
 
+	* decl.c (obscure_complex_init): Check for VAR_DECL
+	before using DECL_THREAD_LOCAL.
+
+2002-05-22  Richard Henderson  <rth@redhat.com>
+
 	* decl.c (check_tag_decl): Handle RID_THREAD.
 	(obscure_complex_init): Reject run-time init of tls.
 	(grokvardecl, grokdeclarator): Handle RID_THREAD.

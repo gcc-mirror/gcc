@@ -5105,7 +5105,7 @@ default_section_type_flags (decl, name, reloc)
   if (decl && DECL_ONE_ONLY (decl))
     flags |= SECTION_LINKONCE;
 
-  if (decl && DECL_THREAD_LOCAL (decl))
+  if (decl && TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
     flags |= SECTION_TLS | SECTION_WRITE;
 
   if (strcmp (name, ".bss") == 0
