@@ -6,7 +6,7 @@ LIBUNWINDDEP = unwind.inc unwind-dw2-fde.h unwind-dw2-fde.c
 
 SHLIBUNWIND_SOVERSION = 7
 SHLIBUNWIND_SONAME = @shlib_so_name@.so.$(SHLIBUNWIND_SOVERSION)
-SHLIBUNWIND_NAME = @shlib_dir@@shlib_so_name@.so.$(SHLIBUNWIND_SOVERSION)
+SHLIBUNWIND_NAME = @shlib_base_name@.so.$(SHLIBUNWIND_SOVERSION)
 
 SHLIBUNWIND_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared \
 	-nodefaultlibs -Wl,-h,$(SHLIBUNWIND_SONAME) \

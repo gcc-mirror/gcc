@@ -1,10 +1,24 @@
+2004-12-04  Alan Modra  <amodra@bigpond.net.au>
+
+	* mklibgcc.in: Build shared libgcc and shared libunwind in gcc/.
+	Don't subst shlib_dir for SHLIB_LINK, SHLIBUNWIND_LINK,
+	SHLIB_INSTALL, and SHLIBUNWIND_INSTALL.
+	* config/i386/t-nwld (SHLIB_NAME): Use shlib_base_name in place of
+	shlib_dir and shlib_so_name.
+	* config/mips/t-slibgcc-irix (SHLIB_NAME): Likewise.
+	* config/t-libunwind-elf (SHLIB_NAME): Likewise.
+	* config/t-slibgcc-darwin (SHLIB_NAME): Likewise.
+	* config/t-slibgcc-elf-ver (SHLIB_NAME): Likewise.
+	* config/t-slibgcc-sld (SHLIB_NAME): Likewise.
+	(SHLIB_LINK): Don't use shlib_dir when creating symlink.
+
 2004-12-03  Roger Sayle  <roger@eyesopen.com>
 
 	* doc/tm.texi (TARGET_DELEGITIMIZE_ADDRESS): Document target hook.
 
 2004-12-03  Richard Henderson  <rth@redhat.com>
 
-	* alias.c (component_uses_parent_alias_set): Rename from 
+	* alias.c (component_uses_parent_alias_set): Rename from
 	can_address_p.  Return bool.  Reverse the sense of the result.
 	Reinstate the check for alias set zero.
 	(get_alias_set): Update to match.
@@ -190,11 +204,11 @@
 
 2004-12-01  Jeff Law  <law@redhat.com>
 
-        * tree-eh.c (save_eptr, save_filt): Now file scoped statics.
-        (honor_protect_cleanup_actions): Only create save_eptr and
-        save_filt if they do not already exist.
-        (lower_eh_constructs): Wipe all knowledge of save_eptr and
-        save_filt before returning.
+	* tree-eh.c (save_eptr, save_filt): Now file scoped statics.
+	(honor_protect_cleanup_actions): Only create save_eptr and
+	save_filt if they do not already exist.
+	(lower_eh_constructs): Wipe all knowledge of save_eptr and
+	save_filt before returning.
 
 2004-12-02  Kazu Hirata  <kazu@cs.umass.edu>
 

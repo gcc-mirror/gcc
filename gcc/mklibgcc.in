@@ -173,21 +173,21 @@ for ml in $MULTILIBS; do
     if [ -z "$SHLIB_MULTILIB" ]; then
       if [ "$dir" = . ]; then
 	libgcc_eh_a=$dir/libgcc_eh.a
-	libgcc_s_so_base=$dir/libgcc_s
+	libgcc_s_so_base=libgcc_s
 	libgcc_s_so=${libgcc_s_so_base}${SHLIB_EXT}
 	libgcc_s_soname=libgcc_s
 	if [ "$LIBUNWIND" ]; then
-	  libunwind_so_base=$dir/libunwind
+	  libunwind_so_base=libunwind
 	  libunwind_so=${libunwind_so_base}${SHLIB_EXT}
 	  libunwind_soname=libunwind
 	fi
       else
 	libgcc_eh_a=$dir/libgcc_eh.a
-	libgcc_s_so_base=$dir/libgcc_s_${suffix}
+	libgcc_s_so_base=libgcc_s_${suffix}
 	libgcc_s_so=${libgcc_s_so_base}${SHLIB_EXT}
 	libgcc_s_soname=libgcc_s_${suffix}
 	if [ "$LIBUNWIND" ]; then
-	  libunwind_so_base=$dir/libunwind_${suffix}
+	  libunwind_so_base=libunwind_${suffix}
 	  libunwind_so=${libunwind_so_base}${SHLIB_EXT}
 	fi
       fi
@@ -215,11 +215,11 @@ for ml in $MULTILIBS; do
 
     elif [ "$SHLIB_MULTILIB" = "$dir" ]; then
       libgcc_eh_a=$dir/libgcc_eh.a
-      libgcc_s_so_base=$dir/libgcc_s
+      libgcc_s_so_base=libgcc_s
       libgcc_s_so=${libgcc_s_so_base}${SHLIB_EXT}
       libgcc_s_soname=libgcc_s
       if [ "$LIBUNWIND" ]; then
-	libunwind_so_base=$dir/libunwind
+	libunwind_so_base=libunwind
 	libunwind_so=${libunwind_so_base}${SHLIB_EXT}
 	libunwind_soname=libunwind
       fi
@@ -774,7 +774,6 @@ EOF
 	       -e "s%@shlib_base_name@%$libgcc_s_so_base%g" \
 	       -e "s%@shlib_so_name@%$libgcc_s_soname%g" \
 	       -e "s%@shlib_map_file@%$mapfile%g" \
-	       -e "s%@shlib_dir@%$shlib_dir%g" \
 	       -e "s%@shlib_slibdir_qual@%$shlib_dir_qual%g"
     echo "all: $libgcc_s_so"
   fi
@@ -788,7 +787,6 @@ EOF
 		 -e "s%@shlib_objs@%\$(objects)%g" \
 		 -e "s%@shlib_base_name@%$libunwind_so_base%g" \
 		 -e "s%@shlib_so_name@%$libunwind_soname%g" \
-		 -e "s%@shlib_dir@%$shlib_dir%g" \
 		 -e "s%@shlib_slibdir_qual@%$shlib_dir_qual%g"
     echo "all: $libunwind_so"
   fi
@@ -870,13 +868,11 @@ for ml in $MULTILIBS; do
       echo "	$SHLIB_INSTALL" \
 	| sed -e "s%@shlib_base_name@%$shlib_base_name%g" \
 	      -e "s%@shlib_so_name@%$shlib_so_name%g" \
-	      -e "s%@shlib_dir@%$shlib_dir%g" \
 	      -e "s%@shlib_slibdir_qual@%$shlib_slibdir_qual%g"
       if [ "$LIBUNWIND" ]; then
 	echo "	$SHLIBUNWIND_INSTALL" \
 	   | sed -e "s%@shlib_base_name@%$shlibunwind_base_name%g" \
 		 -e "s%@shlib_so_name@%$shlibunwind_so_name%g" \
-		 -e "s%@shlib_dir@%$shlib_dir%g" \
 		 -e "s%@shlib_slibdir_qual@%$shlib_slibdir_qual%g"
 	libunwinddir='$(DESTDIR)$(slibdir)$(shlib_slibdir_qual)/$(shlib_dir)'
 	echo '	$(INSTALL_DATA)' ${dir}/libunwind.a ${libunwinddir}/
@@ -887,13 +883,11 @@ for ml in $MULTILIBS; do
       echo "	$SHLIB_INSTALL" \
 	| sed -e "s%@shlib_base_name@%$shlib_base_name%g" \
 	      -e "s%@shlib_so_name@%$shlib_base_name%g" \
-	      -e "s%@shlib_dir@%%g" \
 	      -e "s%@shlib_slibdir_qual@%%g"
       if [ "$LIBUNWIND" ]; then
 	echo "	$SHLIBUNWIND_INSTALL" \
 	   | sed -e "s%@shlib_base_name@%$shlibunwind_base_name%g" \
 		 -e "s%@shlib_so_name@%$shlibunwind_base_name%g" \
-		 -e "s%@shlib_dir@%%g" \
 		 -e "s%@shlib_slibdir_qual@%%g"
 	libunwinddir='$(DESTDIR)$(slibdir)'
 	echo '	$(INSTALL_DATA)' ${dir}/libunwind.a ${libunwinddir}/

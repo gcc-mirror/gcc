@@ -30,7 +30,7 @@ s-crt0: $(srcdir)/unwind-dw2-fde.h
 
 SHLIB_EXT = .nlm
 SHLIB_SONAME = @shlib_so_name@.nlm
-SHLIB_NAME = @shlib_dir@@shlib_so_name@.nlm
+SHLIB_NAME = @shlib_base_name@.nlm
 SHLIB_SLIBDIR_QUAL = @shlib_slibdir_qual@
 SHLIB_DEF = $(srcdir)/config/i386/netware-libgcc.def
 SHLIB_MAP = $(srcdir)/config/i386/netware-libgcc.exp
