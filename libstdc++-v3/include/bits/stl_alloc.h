@@ -258,8 +258,8 @@ public:
 
 # ifdef __USE_MALLOC
 
-typedef malloc_alloc alloc;
-typedef malloc_alloc single_client_alloc;
+typedef __mem_interface alloc;
+typedef __mem_interface single_client_alloc;
 
 # else
 

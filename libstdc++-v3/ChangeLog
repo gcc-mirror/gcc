@@ -1,3 +1,10 @@
+2001-11-15  <bjornw@planetarion.com>
+	    Loren J. Rittle  <ljrittle@acm.org>
+
+	libstc++/4219
+	* include/bits/stl_alloc.h (alloc): Update to use __mem_interface.
+	(single_client_alloc): Likewise.
+
 2001-11-08  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* configure.target: Add os_include_dir for mingw32* target.
