@@ -74,7 +74,7 @@ char *optabs[] =
   "fixtrunctab[(int) %A][(int) %B][0] = CODE_FOR_%(fix_trunc%F\%a%I\%b2%)",
   "fixtrunctab[(int) %A][(int) %B][1] = CODE_FOR_%(fixuns_trunc%F\%a%I\%b2%)",
   "floattab[(int) %B][(int) %A][0] = CODE_FOR_%(float%I\%a%F\%b2%)",
-  "floattab[(int) %B][(int) %A][1] = CODE_FOR_%(floatuns%I\%a%F\%b%)",
+  "floattab[(int) %B][(int) %A][1] = CODE_FOR_%(floatuns%I\%a%F\%b2%)",
   "add_optab->handlers[(int) %A].insn_code = CODE_FOR_%(add%a3%)",
   "sub_optab->handlers[(int) %A].insn_code = CODE_FOR_%(sub%a3%)",
   "smul_optab->handlers[(int) %A].insn_code = CODE_FOR_%(mul%a3%)",
@@ -120,6 +120,9 @@ char *optabs[] =
   "reload_in_optab[(int) %A] = CODE_FOR_%(reload_in%a%)",
   "reload_out_optab[(int) %A] = CODE_FOR_%(reload_out%a%)",
   "movstr_optab[(int) %A] = CODE_FOR_%(movstr%a%)" };
+
+/* Allow linking with print-rtl.c.  */
+char **insn_name_ptr;
 
 static void
 gen_insn (insn)
