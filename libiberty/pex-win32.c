@@ -136,15 +136,16 @@ int
 pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
      const char *program;
      char * const *argv;
-     const char *this_pname;
-     const char *temp_base;
+     const char *this_pname ATTRIBUTE_UNUSED;
+     const char *temp_base ATTRIBUTE_UNUSED;
      char **errmsg_fmt, **errmsg_arg;
      int flags;
 {
   int pid;
-  int pdes[2], org_stdin, org_stdout;
+  int pdes[2];
+  int org_stdin = -1;
+  int org_stdout = -1;
   int input_desc, output_desc;
-  int retries, sleep_interval;
 
   /* Pipe waiting from last process, to be used as input for the next one.
      Value is STDIN_FILE_NO if no pipe is waiting
@@ -227,7 +228,7 @@ int
 pwait (pid, status, flags)
      int pid;
      int *status;
-     int flags;
+     int flags ATTRIBUTE_UNUSED;
 {
   int termstat;
 
