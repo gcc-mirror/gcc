@@ -1015,6 +1015,7 @@ int GC_get_nprocs()
 	WARN("Couldn't read /proc/stat\n", 0);
 	return -1;
     }
+    close(f);
     for (i = 0; i < len - 100; ++i) {
         if (stat_buf[i] == '\n' && stat_buf[i+1] == 'c'
 	    && stat_buf[i+2] == 'p' && stat_buf[i+3] == 'u') {
@@ -1358,6 +1359,9 @@ void * GC_start_routine(void * arg)
 	GC_printf1("start_routine = 0x%lx\n", start);
 #   endif
     start_arg = si -> arg;
+#   ifdef DEBUG_THREADS
+        GC_printf1("sem_post from 0x%lx\n", my_pthread);
+#   endif
     sem_post(&(si -> registered));	/* Last action on si.	*/
     					/* OK to deallocate.	*/
     pthread_cleanup_push(GC_thread_exit_proc, 0);
@@ -1426,6 +1430,10 @@ WRAP_FUNC(pthread_create)(pthread_t *new_thread,
         while (0 != sem_wait(&(si -> registered))) {
 	    if (EINTR != errno) ABORT("sem_wait failed");
 	}
+#   ifdef DEBUG_THREADS
+        GC_printf1("sem_wait complete from thread 0x%X\n",
+		   pthread_self());
+#   endif
         sem_destroy(&(si -> registered));
 	LOCK();
 	GC_INTERNAL_FREE(si);
