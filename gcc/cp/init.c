@@ -1540,8 +1540,12 @@ build_offset_ref (type, name)
   if (TREE_CODE (type) == NAMESPACE_DECL)
     {
       t = lookup_namespace_name (type, name);
-      mark_used (t);
-      return convert_from_reference (t);
+      if (! type_unknown_p (t))
+	{
+	  mark_used (t);
+	  t = convert_from_reference (t);
+	}
+      return t;
     }
 
   if (type == NULL_TREE || ! is_aggr_type (type, 1))

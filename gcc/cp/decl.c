@@ -2159,6 +2159,26 @@ set_identifier_type_value (id, type)
   set_identifier_type_value_with_scope (id, type, inner_binding_level);
 }
 
+void
+set_identifier_local_value_with_scope (id, val, b)
+     tree id, val;
+     struct binding_level *b;
+{
+  tree oldlocal;
+  my_friendly_assert (! b->namespace_p, 980716);
+
+  oldlocal = IDENTIFIER_LOCAL_VALUE (id);
+  b->shadowed = tree_cons (id, oldlocal, b->shadowed);
+  IDENTIFIER_LOCAL_VALUE (id) = val;
+}
+
+void
+set_identifier_local_value (id, val)
+     tree id, val;
+{
+  set_identifier_local_value_with_scope (id, val, current_binding_level);
+}
+
 /* Return the type associated with id. */
 
 tree
@@ -2444,6 +2464,11 @@ decls_match (newdecl, olddecl)
       tree p1 = TYPE_ARG_TYPES (f1);
       tree p2 = TYPE_ARG_TYPES (f2);
 
+      if (DECL_REAL_CONTEXT (newdecl) != DECL_REAL_CONTEXT (olddecl)
+	  && ! (DECL_LANGUAGE (newdecl) == lang_c
+		&& DECL_LANGUAGE (olddecl) == lang_c))
+	return 0;
+
       /* When we parse a static member function definition,
 	 we put together a FUNCTION_DECL which thinks its type
 	 is METHOD_TYPE.  Change that to FUNCTION_TYPE, and
@@ -2646,12 +2671,30 @@ duplicate_decls (newdecl, olddecl)
     }
   else if (TREE_CODE (olddecl) != TREE_CODE (newdecl))
     {
+      if ((TREE_CODE (olddecl) == TYPE_DECL && DECL_ARTIFICIAL (olddecl)
+	   && TREE_CODE (newdecl) != TYPE_DECL
+	   && ! (TREE_CODE (newdecl) == TEMPLATE_DECL
+		 && TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL))
+	  || (TREE_CODE (newdecl) == TYPE_DECL && DECL_ARTIFICIAL (newdecl)
+	      && TREE_CODE (olddecl) != TYPE_DECL
+	      && ! (TREE_CODE (olddecl) == TEMPLATE_DECL
+		    && (TREE_CODE (DECL_TEMPLATE_RESULT (olddecl))
+			== TYPE_DECL))))
+	{
+	  /* We do nothing special here, because C++ does such nasty
+	     things with TYPE_DECLs.  Instead, just let the TYPE_DECL
+	     get shadowed, and know that if we need to find a TYPE_DECL
+	     for a given name, we can look in the IDENTIFIER_TYPE_VALUE
+	     slot of the identifier.  */
+	  return 0;
+	}
+
       if ((TREE_CODE (newdecl) == FUNCTION_DECL
 	   && DECL_FUNCTION_TEMPLATE_P (olddecl))
 	  || (TREE_CODE (olddecl) == FUNCTION_DECL
 	      && DECL_FUNCTION_TEMPLATE_P (newdecl)))
 	return 0;
-      
+
       cp_error ("`%#D' redeclared as different kind of symbol", newdecl);
       if (TREE_CODE (olddecl) == TREE_LIST)
 	olddecl = TREE_VALUE (olddecl);
@@ -3319,24 +3362,7 @@ pushdecl (x)
 	    }
 	  else if (TREE_CODE (t) != TREE_CODE (x))
 	    {
-	      if ((TREE_CODE (t) == TYPE_DECL && DECL_ARTIFICIAL (t)
-		   && TREE_CODE (x) != TYPE_DECL
-		   && ! (TREE_CODE (x) == TEMPLATE_DECL
-			 && TREE_CODE (DECL_TEMPLATE_RESULT (x)) == TYPE_DECL))
-		  || (TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)
-		      && TREE_CODE (t) != TYPE_DECL
-		      && ! (TREE_CODE (t) == TEMPLATE_DECL
-			    && (TREE_CODE (DECL_TEMPLATE_RESULT (t))
-				== TYPE_DECL))))
-		{
-		  /* We do nothing special here, because C++ does such nasty
-		     things with TYPE_DECLs.  Instead, just let the TYPE_DECL
-		     get shadowed, and know that if we need to find a TYPE_DECL
-		     for a given name, we can look in the IDENTIFIER_TYPE_VALUE
-		     slot of the identifier.  */
-		  ;
-		}
-	      else if (duplicate_decls (x, t))
+	      if (duplicate_decls (x, t))
 		return t;
 	    }
 	  else if (duplicate_decls (x, t))
@@ -3519,10 +3545,7 @@ pushdecl (x)
 	  if (TREE_CODE (x) != TYPE_DECL
 	      || t == NULL_TREE
 	      || ! DECL_ARTIFICIAL (x))
-	    {
-	      b->shadowed = tree_cons (name, oldlocal, b->shadowed);
-	      IDENTIFIER_LOCAL_VALUE (name) = x;
-	    }
+	    set_identifier_local_value_with_scope (name, x, b);
 
 	  /* If this is a TYPE_DECL, push it into the type value slot.  */
 	  if (TREE_CODE (x) == TYPE_DECL)
@@ -3851,12 +3874,11 @@ push_using_decl (scope, name)
    TREE_LIST otherwise.  */
 
 tree
-push_using_directive (used, ancestor)
+push_using_directive (used)
      tree used;
-     tree ancestor;
 {
   tree ud = current_binding_level->using_directives;
-  tree iter;
+  tree iter, ancestor;
   
   /* Check if we already have this. */
   if (purpose_member (used, ud) != NULL_TREE)
@@ -3864,8 +3886,9 @@ push_using_directive (used, ancestor)
 
   /* Recursively add all namespaces used. */
   for (iter = DECL_NAMESPACE_USING (used); iter; iter = TREE_CHAIN (iter))
-    push_using_directive (TREE_PURPOSE (iter), ancestor);
+    push_using_directive (TREE_PURPOSE (iter));
 
+  ancestor = namespace_ancestor (current_decl_namespace (), used);
   ud = current_binding_level->using_directives;
   ud = perm_tree_cons (used, ancestor, ud);
   current_binding_level->using_directives = ud;
@@ -4650,7 +4673,15 @@ lookup_namespace_name (namespace, name)
     return error_mark_node;
 
   if (BINDING_VALUE (val))
-    return BINDING_VALUE (val);
+    {
+      val = BINDING_VALUE (val);
+
+      /* If we have a single function from a using decl, pull it out.  */
+      if (TREE_CODE (val) == OVERLOAD && ! really_overloaded_fn (val))
+	val = OVL_FUNCTION (val);
+      return val;
+    }
+
   cp_error ("`%D' undeclared in namespace `%D'", name, namespace);
   return error_mark_node;
 }
@@ -4760,6 +4791,7 @@ select_decl (binding, flags)
   else if (val && LOOKUP_TYPES_ONLY (flags)  && TREE_CODE (val) != TYPE_DECL
 	   && (!looking_for_template || TREE_CODE (val) != TEMPLATE_DECL))
     val = NULL_TREE;
+
   return val;
 }
 
@@ -4812,9 +4844,7 @@ unqualified_namespace_lookup (name, flags)
       val = select_decl (b, flags);
       if (scope == global_namespace)
 	break;
-      scope = DECL_CONTEXT (scope);
-      if (scope == NULL_TREE)
-	scope = global_namespace;
+      scope = CP_DECL_CONTEXT (scope);
     }
   return val;
 }
@@ -4844,9 +4874,14 @@ qualify_lookup (val, flags)
 {
   if (val == NULL_TREE)
     return val;
-  if (LOOKUP_NAMESPACES_ONLY (flags) && TREE_CODE (val) != NAMESPACE_DECL)
-    return NULL_TREE;
-  if (LOOKUP_TYPES_ONLY (flags) && TREE_CODE (val) != TYPE_DECL)
+  if ((flags & LOOKUP_PREFER_NAMESPACES) && TREE_CODE (val) == NAMESPACE_DECL)
+    return val;
+  if ((flags & LOOKUP_PREFER_TYPES)
+      && (TREE_CODE (val) == TYPE_DECL
+	  || ((flags & LOOKUP_TEMPLATES_EXPECTED)
+	      && DECL_CLASS_TEMPLATE_P (val))))
+    return val;
+  if (flags & (LOOKUP_PREFER_NAMESPACES | LOOKUP_PREFER_TYPES))
     return NULL_TREE;
   return val;
 }
@@ -5061,6 +5096,10 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	val = TYPE_MAIN_DECL (IDENTIFIER_TYPE_VALUE (name));
       else if (TREE_TYPE (val) == error_mark_node)
 	val = error_mark_node;
+
+      /* If we have a single function from a using decl, pull it out.  */
+      if (TREE_CODE (val) == OVERLOAD && ! really_overloaded_fn (val))
+	val = OVL_FUNCTION (val);
     }
   else if (from_obj)
     val = from_obj;
@@ -5120,16 +5159,41 @@ lookup_name_current_level (name)
       struct binding_level *b = current_binding_level;
       while (1)
 	{
-	  for (t = b->names; t; t = TREE_CHAIN (t))
-	    if (DECL_NAME (t) == name || DECL_ASSEMBLER_NAME (t) == name)
-	      goto out;
+	  if (purpose_member (name, b->shadowed))
+	    return IDENTIFIER_LOCAL_VALUE (name);
 	  if (b->keep == 2)
 	    b = b->level_chain;
 	  else
 	    break;
 	}
-    out:
-      ;
+    }
+
+  return t;
+}
+
+/* Like lookup_name_current_level, but for types.  */
+
+tree
+lookup_type_current_level (name)
+     tree name;
+{
+  register tree t = NULL_TREE;
+
+  my_friendly_assert (! current_binding_level->namespace_p, 980716);
+
+  if (REAL_IDENTIFIER_TYPE_VALUE (name) != NULL_TREE
+      && REAL_IDENTIFIER_TYPE_VALUE (name) != global_type_node)
+    {
+      struct binding_level *b = current_binding_level;
+      while (1)
+	{
+	  if (purpose_member (name, b->type_shadowed))
+	    return REAL_IDENTIFIER_TYPE_VALUE (name);
+	  if (b->keep == 2)
+	    b = b->level_chain;
+	  else
+	    break;
+	}
     }
 
   return t;
@@ -7978,7 +8042,8 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
     {
       tree context = in_namespace ? in_namespace : current_namespace;
       decl = build_decl (VAR_DECL, declarator, complete_type (type));
-      if (context != global_namespace && namespace_bindings_p ())
+      if (context != global_namespace && namespace_bindings_p ()
+	  && current_lang_name != lang_name_c)
 	DECL_ASSEMBLER_NAME (decl) =  build_static_name (context,
 							 declarator);
     }
