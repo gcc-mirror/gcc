@@ -1,3 +1,9 @@
+2004-03-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/14114
+	* c-decl (pushdecl): Do not record a previous, not-in-scope,
+	external decl for restoration.
+
 2004-03-05  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
 
 	PR middle-end/14203
