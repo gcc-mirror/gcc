@@ -132,6 +132,10 @@ drectve_section (void)							\
 }
 void drectve_section (void);
 
+/* Older versions of gas don't handle 'r' as data.
+   Explicitly set data flag with 'd'.  */  
+#define READONLY_DATA_SECTION_ASM_OP "\t.section .rdata,\"dr\""
+
 /* Switch to SECTION (an `enum in_section').
 
    ??? This facility should be provided by GCC proper.
@@ -147,6 +151,7 @@ switch_to_section (enum in_section section, tree decl)		\
     {								\
       case in_text: text_section (); break;			\
       case in_data: data_section (); break;			\
+      case in_readonly_data: readonly_data_section (); break;	\
       case in_named: named_section (decl, NULL, 0); break;	\
       case in_drectve: drectve_section (); break;		\
       default: abort (); break;				\
