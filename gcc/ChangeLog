@@ -1,3 +1,8 @@
+Sat Jan 23 09:09:48 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stmt.c (expand_asm_operands): Don't use TREE_STRING_LENGTH for
+	constraints.
+
 Fri Jan 22 20:31:19 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* mips.md (movsi_usw): Use %z for operand 1 in "sw" case.
