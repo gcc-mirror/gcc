@@ -1434,6 +1434,8 @@ ia64*-*-hpux*)
 	fi
 	float_format=i386
 	;;
+ip2k-*-elf)		
+	;;
 m32r-*-elf*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
 	extra_parts="crtinit.o crtfini.o"
