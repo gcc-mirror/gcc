@@ -3473,22 +3473,16 @@ copy_insn_1 (orig)
 
   for (i = 0; i < GET_RTX_LENGTH (GET_CODE (copy)); i++)
     {
+      copy->fld[i] = orig->fld[i];
       switch (*format_ptr++)
 	{
 	case 'e':
-	  XEXP (copy, i) = XEXP (orig, i);
 	  if (XEXP (orig, i) != NULL)
 	    XEXP (copy, i) = copy_insn_1 (XEXP (orig, i));
 	  break;
 
-	case '0':
-	case 'u':
-	  XEXP (copy, i) = XEXP (orig, i);
-	  break;
-
 	case 'E':
 	case 'V':
-	  XVEC (copy, i) = XVEC (orig, i);
 	  if (XVEC (orig, i) == orig_asm_constraints_vector)
 	    XVEC (copy, i) = copy_asm_constraints_vector;
 	  else if (XVEC (orig, i) == orig_asm_operands_vector)
@@ -3510,20 +3504,13 @@ copy_insn_1 (orig)
 	  }
 
 	case 't':
-	  XTREE (copy, i) = XTREE (orig, i);
-	  break;
-
 	case 'w':
-	  XWINT (copy, i) = XWINT (orig, i);
-	  break;
-
 	case 'i':
-	  XINT (copy, i) = XINT (orig, i);
-	  break;
-
 	case 's':
 	case 'S':
-	  XSTR (copy, i) = XSTR (orig, i);
+	case 'u':
+	case '0':
+	  /* These are left unchanged.  */
 	  break;
 
 	default:

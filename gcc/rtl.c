@@ -418,21 +418,16 @@ copy_rtx (orig)
 
   for (i = 0; i < GET_RTX_LENGTH (GET_CODE (copy)); i++)
     {
+      copy->fld[i] = orig->fld[i];
       switch (*format_ptr++)
 	{
 	case 'e':
-	  XEXP (copy, i) = XEXP (orig, i);
 	  if (XEXP (orig, i) != NULL)
 	    XEXP (copy, i) = copy_rtx (XEXP (orig, i));
 	  break;
 
-	case 'u':
-	  XEXP (copy, i) = XEXP (orig, i);
-	  break;
-
 	case 'E':
 	case 'V':
-	  XVEC (copy, i) = XVEC (orig, i);
 	  if (XVEC (orig, i) != NULL)
 	    {
 	      XVEC (copy, i) = rtvec_alloc (XVECLEN (orig, i));
@@ -450,25 +445,13 @@ copy_rtx (orig)
 	  }
 
 	case 't':
-	  XTREE (copy, i) = XTREE (orig, i);
-	  break;
-
 	case 'w':
-	  XWINT (copy, i) = XWINT (orig, i);
-	  break;
-
 	case 'i':
-	  XINT (copy, i) = XINT (orig, i);
-	  break;
-
 	case 's':
 	case 'S':
-	  XSTR (copy, i) = XSTR (orig, i);
-	  break;
-
+	case 'u':
 	case '0':
-	  /* Copy this through the wide int field; that's safest. */
-	  X0WINT (copy, i) = X0WINT (orig, i);
+	  /* These are left unchanged.  */
 	  break;
 	  
 	default:
