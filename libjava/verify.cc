@@ -1254,8 +1254,11 @@ private:
 
   void note_branch_target (int pc, bool is_jsr_target = false)
   {
-    if (pc <= PC && ! (flags[pc] & FLAG_INSN_START))
-      verify_fail ("branch not to instruction start");
+    // Don't check `pc <= PC', because we've advanced PC after
+    // fetching the target and we haven't yet checked the next
+    // instruction.
+    if (pc < PC && ! (flags[pc] & FLAG_INSN_START))
+      verify_fail ("branch not to instruction start", start_PC);
     flags[pc] |= FLAG_BRANCH_TARGET;
     if (is_jsr_target)
       {
@@ -1395,6 +1398,9 @@ private:
     PC = 0;
     while (PC < current_method->code_length)
       {
+	// Set `start_PC' early so that error checking can have the
+	// correct value.
+	start_PC = PC;
 	flags[PC] |= FLAG_INSN_START;
 
 	// If the previous instruction was a jsr, then the next
@@ -1404,7 +1410,6 @@ private:
 	  note_branch_target (PC);
 	last_was_jsr = false;
 
-	start_PC = PC;
 	java_opcode opcode = (java_opcode) bytecode[PC++];
 	switch (opcode)
 	  {

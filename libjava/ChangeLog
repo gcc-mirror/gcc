@@ -1,3 +1,10 @@
+2001-12-07  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (_Jv_BytecodeVerifier::branch_prepass): Set start_PC
+	earlier, for error handling.
+	(_Jv_BytecodeVerifier::note_branch_target): Fixed branch target
+	check.
+
 2001-12-06  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (_Jv_BytecodeVerifier::FLAG_JSR_TARGET): Removed.
