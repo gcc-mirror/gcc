@@ -6767,7 +6767,10 @@ schedule_block (bb, rgn_n_insns)
 	      {
 		rtx next;
 
-		next = NEXT_INSN (insn);
+		/* Note that we havn't squirrled away the notes for 
+		   blocks other than the current.  So if this is a
+		   speculative insn, NEXT might otherwise be a note.  */
+		next = next_nonnote_insn (insn);
 		if (INSN_DEP_COUNT (insn) == 0
 		    && (SCHED_GROUP_P (next) == 0
 			|| GET_RTX_CLASS (GET_CODE (next)) != 'i'))

@@ -1,3 +1,8 @@
+Sat Sep  4 21:52:32 1999  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (schedule_block): Use next_nonnote_insn instead
+	of NEXT_INSN when examining speculative insns for SCHED_GROUP_P.
+
 Sat Sep  4 20:40:19 1999  Richard Henderson  <rth@cygnus.com>
 	                  Bernd Schmidt <bernds@cygnus.co.uk>
 	                  Mark Mitchell  <mark@codesourcery.com>
