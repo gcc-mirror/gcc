@@ -559,32 +559,41 @@ build_signature_table_constructor (sig_ty, rhs)
 	}
       else
 	{
-	  tree tag, delta, pfn, offset, index;
-	  tree tag_decl, delta_decl, pfn_decl, offset_decl, index_decl;
+	  tree tag, vb_off, delta, index, pfn, vt_off;
+	  tree tag_decl, vb_off_decl, delta_decl, index_decl;
+	  tree pfn_decl, vt_off_decl;
 
 	  if (rhs_method == sig_method)
 	    {
+	      /* default implementation */
 	      tag = build_unary_op (NEGATE_EXPR, integer_one_node, 0);
+	      vb_off = build_unary_op (NEGATE_EXPR, integer_one_node, 0);
 	      delta = integer_zero_node;
+	      index = integer_zero_node;
 	      pfn = build_unary_op (ADDR_EXPR, rhs_method, 0);
 	      TREE_TYPE (pfn) = ptr_type_node;
+	      TREE_ADDRESSABLE (rhs_method) = 1;
 	      offset_p = 0;	/* we can't offset the rhs sig table */
 	    }
 	  else if (DECL_VINDEX (rhs_method))
 	    {
+	      /* virtual member function */
 	      tag = integer_one_node;
+	      vb_off = build_unary_op (NEGATE_EXPR, integer_one_node, 0);
 	      delta = BINFO_OFFSET (get_binfo (DECL_CLASS_CONTEXT (rhs_method),
 					       rhstype, 1));
-	      pfn = null_pointer_node;
-	      offset = get_vfield_offset (get_binfo (DECL_CONTEXT (rhs_method),
-						     rhstype, 0));
 	      index = DECL_VINDEX (rhs_method);
+	      vt_off = get_vfield_offset (get_binfo (DECL_CONTEXT (rhs_method),
+						     rhstype, 0));
 	    }
 	  else
 	    {
+	      /* non-virtual member function */
 	      tag = integer_zero_node;
+	      vb_off = build_unary_op (NEGATE_EXPR, integer_one_node, 0);
 	      delta = BINFO_OFFSET (get_binfo (DECL_CLASS_CONTEXT (rhs_method),
 					       rhstype, 1));
+	      index = integer_zero_node;
 	      pfn = build_unary_op (ADDR_EXPR, rhs_method, 0);
 	      TREE_TYPE (pfn) = ptr_type_node;
 	      TREE_ADDRESSABLE (rhs_method) = 1;
@@ -594,21 +603,22 @@ build_signature_table_constructor (sig_ty, rhs)
 	     of a struct (i.e., anonymous union), we build the constructor
 	     by hand, without calling digest_init.  */
 	  tag_decl = TYPE_FIELDS (sigtable_entry_type);
-	  delta_decl = TREE_CHAIN (tag_decl);
-	  pfn_decl = TREE_CHAIN (delta_decl);
-	  offset_decl = TREE_CHAIN (pfn_decl);
-	  index_decl = TREE_CHAIN (offset_decl);
+	  vb_off_decl = TREE_CHAIN (tag_decl);
+	  delta_decl = TREE_CHAIN (vb_off_decl);
+	  index_decl = TREE_CHAIN (delta_decl);
+	  pfn_decl = TREE_CHAIN (index_decl);
+	  vt_off_decl = TREE_CHAIN (pfn_decl);
 	  
 	  tag = convert (TREE_TYPE (tag_decl), tag);
+	  vb_off = convert (TREE_TYPE (vb_off_decl), vb_off);
 	  delta = convert (TREE_TYPE (delta_decl), delta);
+	  index = convert (TREE_TYPE (index_decl), index);
 
 	  if (DECL_VINDEX (rhs_method))
 	    {
-	      offset = convert (TREE_TYPE (offset_decl), offset);
-	      index = convert (TREE_TYPE (index_decl), index);
+	      vt_off = convert (TREE_TYPE (vt_off_decl), vt_off);
 
-	      tbl_entry = tree_cons (offset_decl, offset,
-				     build_tree_list (index_decl, index));
+	      tbl_entry = build_tree_list (vt_off_decl, vt_off);
 	    }
 	  else
 	    {
@@ -616,8 +626,10 @@ build_signature_table_constructor (sig_ty, rhs)
 
 	      tbl_entry = build_tree_list (pfn_decl, pfn);
 	    }
+	  tbl_entry = tree_cons (delta_decl, delta,
+				 tree_cons (index_decl, index, tbl_entry));
 	  tbl_entry = tree_cons (tag_decl, tag,
-				 tree_cons (delta_decl, delta, tbl_entry));
+				 tree_cons (vb_off_decl, vb_off, tbl_entry));
 	  tbl_entry = build (CONSTRUCTOR, sigtable_entry_type,
 			     NULL_TREE, tbl_entry);
 
@@ -913,14 +925,14 @@ build_signature_method_call (basetype, instance, function, parms)
   tree tbl_entry = build_component_ref (build1 (INDIRECT_REF, basetype,
 						signature_tbl_ptr),
 					sig_field_name, basetype_path, 1);
-  tree tag, delta, pfn, offset, index, vfn;
+  tree tag, delta, pfn, vt_off, index, vfn;
   tree deflt_call = NULL_TREE, direct_call, virtual_call, result;
 
   tbl_entry = save_expr (tbl_entry);
   tag = build_component_ref (tbl_entry, tag_identifier, NULL_TREE, 1);
   delta = build_component_ref (tbl_entry, delta_identifier, NULL_TREE, 1);
   pfn = build_component_ref (tbl_entry, pfn_identifier, NULL_TREE, 1);
-  offset = build_component_ref (tbl_entry, offset_identifier, NULL_TREE, 1);
+  vt_off = build_component_ref (tbl_entry, vt_off_identifier, NULL_TREE, 1);
   index = build_component_ref (tbl_entry, index_identifier, NULL_TREE, 1);
   TREE_TYPE (pfn) = build_pointer_type (TREE_TYPE (function)); 
 
@@ -956,7 +968,7 @@ build_signature_method_call (basetype, instance, function, parms)
       vfld = build (PLUS_EXPR,
 		    build_pointer_type (build_pointer_type (vtbl_type_node)),
 		    convert (ptrdiff_type_node, object_ptr),
-		    convert (ptrdiff_type_node, offset));
+		    convert (ptrdiff_type_node, vt_off));
       vtbl = build_indirect_ref (build_indirect_ref (vfld, NULL_PTR),
 				 NULL_PTR);
       aref = build_array_ref (vtbl, index);
