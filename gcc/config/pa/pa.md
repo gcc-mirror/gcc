@@ -2039,11 +2039,13 @@
   [(set_attr "type" "load")
    (set_attr "length" "1")])
 
+;; Using nonmemory_operand works around a bug in reload.  For 2.4 fix
+;; reload and use register_operand instead.
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
 			  (const_int 2))
-		 (match_operand:SI 1 "register_operand" "r")))]
+		 (match_operand:SI 1 "nonmemory_operand" "r")))]
   ""
   "sh1add %2,%1,%0")
 
@@ -2051,7 +2053,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
 			  (const_int 4))
-		 (match_operand:SI 1 "register_operand" "r")))]
+		 (match_operand:SI 1 "nonmemory_operand" "r")))]
   ""
   "sh2add %2,%1,%0")
 
@@ -2059,7 +2061,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
 			  (const_int 8))
-		 (match_operand:SI 1 "register_operand" "r")))]
+		 (match_operand:SI 1 "nonmemory_operand" "r")))]
   ""
   "sh3add %2,%1,%0")
 
