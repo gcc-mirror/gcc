@@ -200,6 +200,7 @@ extern tree start_enum (tree);
 extern int  start_function (tree, tree, tree);
 extern tree start_decl (tree, tree, bool, tree);
 extern tree start_struct (enum tree_code, tree);
+extern void store_parm_decls_newstyle (tree, tree);
 extern void store_parm_decls (void);
 extern tree xref_tag (enum tree_code, tree);
 extern int c_expand_decl (tree);
