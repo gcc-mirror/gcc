@@ -307,9 +307,9 @@
   [(set_attr "type" "store")])
 
 (define_expand "reload_outqi"
-  [(set (match_operand:QI 0 "symbolic_memory_operand" "=m")
-	(match_operand:QI 1 "" "r"))
-   (match_operand:SI 2 "" "=&b")]
+  [(parallel [(set (match_operand:QI 0 "symbolic_memory_operand" "=m")
+		   (match_operand:QI 1 "" "r"))
+	      (clobber (match_operand:SI 2 "" "=&b"))])]
   ""
   "")
 
@@ -362,9 +362,9 @@
   [(set_attr "type" "store")])
 
 (define_expand "reload_outhi"
-  [(set (match_operand:HI 0 "symbolic_memory_operand" "=m")
-	(match_operand:HI 1 "" "r"))
-   (match_operand:SI 2 "" "=&b")]
+  [(parallel [(set (match_operand:HI 0 "symbolic_memory_operand" "=m")
+		   (match_operand:HI 1 "" "r"))
+	      (clobber (match_operand:SI 2 "" "=&b"))])]
   ""
   "")
 
