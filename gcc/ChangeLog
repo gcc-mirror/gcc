@@ -1,3 +1,7 @@
+2004-02-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/iris5gas.h (PREFERRED_DEBUGGING_TYPE): Define.
+
 2004-02-05  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("*tmqidi_ext"): New insn.

@@ -1,3 +1,8 @@
+2004-02-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in: Don't pass --with-stabs on IRIX 5 either.
+	* configure: Regenerate.
+
 2004-01-19  Paolo Carlini  <pcarlini@suse.de>
 
 	* MAINTAINERS: Update my email address.
