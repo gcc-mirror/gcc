@@ -130,10 +130,17 @@ text_specifies_location (text_info *text, location_t *locus)
     ;
 
   /* Extract the location information if any.  */
-  if (*p == '%' && *++p == 'H')
+  if (p[0] == '%' && p[1] == 'H')
     {
       *locus = *va_arg (*text->args_ptr, location_t *);
-      text->format_spec = p + 1;
+      text->format_spec = p + 2;
+      return true;
+    }
+  else if (p[0] == '%' && p[1] == 'J')
+    {
+      tree t = va_arg (*text->args_ptr, tree);
+      *locus = DECL_SOURCE_LOCATION (t);
+      text->format_spec = p + 2;
       return true;
     }
 

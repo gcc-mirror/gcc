@@ -2335,22 +2335,21 @@ expand_java_field_op (int is_static, int is_putting, int field_ref_index)
       if (FIELD_FINAL (field_decl))
 	{
 	  if (DECL_CONTEXT (field_decl) != current_class)
-            error ("%Hassignment to final field '%D' not in field's class",
-                   &DECL_SOURCE_LOCATION (field_decl), field_decl);
+            error ("%Jassignment to final field '%D' not in field's class",
+		   field_decl, field_decl);
 	  else if (FIELD_STATIC (field_decl))
 	    {
 	      if (!DECL_CLINIT_P (current_function_decl))
-		warning ("assignment to final static field `%s' not in "
-                         "class initializer",
-                         &DECL_SOURCE_LOCATION (field_decl), field_decl);
+		warning ("%Jassignment to final static field `%D' not in "
+                         "class initializer", field_decl, field_decl);
 	    }
 	  else
 	    {
 	      tree cfndecl_name = DECL_NAME (current_function_decl);
 	      if (! DECL_CONSTRUCTOR_P (current_function_decl)
 		  && !ID_FINIT_P (cfndecl_name))
-                warning ("%Hassignment to final field '%D' not in constructor",
-                         &DECL_SOURCE_LOCATION (field_decl),  field_decl);
+                warning ("%Jassignment to final field '%D' not in constructor",
+			 field_decl, field_decl);
 	    }
 	}
       expand_assignment (field_ref, new_value, 0);

@@ -966,8 +966,8 @@ fixup_gotos (struct nesting *thisblock, rtx stack_level,
 	      && INSN_UID (first_insn) > INSN_UID (f->before_jump)
 	      && ! DECL_ERROR_ISSUED (f->target))
 	    {
-	      error ("%Hlabel '%D' used before containing binding contour",
-                     &DECL_SOURCE_LOCATION (f->target), f->target);
+	      error ("%Jlabel '%D' used before containing binding contour",
+		     f->target, f->target);
 	      /* Prevent multiple errors for one label.  */
 	      DECL_ERROR_ISSUED (f->target) = 1;
 	    }
@@ -3631,7 +3631,7 @@ warn_about_unused_variables (tree vars)
 	  && ! TREE_USED (decl)
 	  && ! DECL_IN_SYSTEM_HEADER (decl)
 	  && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl))
-	warning ("%Hunused variable '%D'", &DECL_SOURCE_LOCATION (decl), decl);
+	warning ("%Junused variable '%D'", decl, decl);
 }
 
 /* Generate RTL code to terminate a binding contour.
@@ -3691,8 +3691,8 @@ expand_end_bindings (tree vars, int mark_ends, int dont_jump_in)
 	     that must be an error, because gotos without fixups
 	     come from outside all saved stack-levels.  */
 	  if (TREE_ADDRESSABLE (chain->label))
-	    error ("%Hlabel '%D' used before containing binding contour",
-                   &DECL_SOURCE_LOCATION (chain->label), chain->label);
+	    error ("%Jlabel '%D' used before containing binding contour",
+		   chain->label, chain->label);
 	}
     }
 

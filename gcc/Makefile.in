@@ -1471,7 +1471,7 @@ tree-dump.o: tree-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 tree-inline.o : tree-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(RTL_H) $(EXPR_H) flags.h $(PARAMS_H) input.h insn-config.h \
    $(INTEGRATE_H) $(VARRAY_H) $(HASHTAB_H) $(SPLAY_TREE_H) toplev.h \
-   langhooks.h $(C_COMMON_H) tree-inline.h cgraph.h
+   langhooks.h $(C_COMMON_H) tree-inline.h cgraph.h intl.h
 tree-optimize.o : tree-optimize.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) toplev.h langhooks.h cgraph.h $(TIMEVAR_H) function.h $(GGC_H)
 

@@ -1211,8 +1211,7 @@ get_dispatch_table (tree type, tree this_class_addr)
       if (METHOD_ABSTRACT (method))
 	{
 	  if (! abstract_p)
-	    warning ("%Habstract method in non-abstract class",
-                     &DECL_SOURCE_FILE (method));
+	    warning ("%Jabstract method in non-abstract class", method);
 
 	  if (TARGET_VTABLE_USES_DESCRIPTORS)
 	    for (j = 0; j < TARGET_VTABLE_USES_DESCRIPTORS; ++j)
@@ -1986,8 +1985,8 @@ layout_class_method (tree this_class, tree super_class,
 	  DECL_VINDEX (method_decl) = DECL_VINDEX (super_method);
 	  if (DECL_VINDEX (method_decl) == NULL_TREE 
 	      && !CLASS_FROM_SOURCE_P (this_class))
-	    error ("%Hnon-static method '%D' overrides static method",
-                   &DECL_SOURCE_LOCATION (method_decl), method_decl);
+	    error ("%Jnon-static method '%D' overrides static method",
+                   method_decl, method_decl);
 	}
       else if (! METHOD_FINAL (method_decl)
 	       && ! METHOD_PRIVATE (method_decl)

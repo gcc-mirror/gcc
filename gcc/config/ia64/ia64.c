@@ -1030,22 +1030,22 @@ ia64_handle_model_attribute (tree *node, tree name, tree args, int flags ATTRIBU
 	   == FUNCTION_DECL)
 	  && !TREE_STATIC (decl))
 	{
-	  error ("%Ha an address area attribute cannot be specified for "
-		 "local variables", &DECL_SOURCE_LOCATION (decl), decl);
+	  error ("%Jan address area attribute cannot be specified for "
+		 "local variables", decl, decl);
 	  *no_add_attrs = true;
 	}
       area = ia64_get_addr_area (decl);
       if (area != ADDR_AREA_NORMAL && addr_area != area)
 	{
-	  error ("%Ha address area of '%s' conflicts with previous "
-		 "declaration", &DECL_SOURCE_LOCATION (decl), decl);
+	  error ("%Jaddress area of '%s' conflicts with previous "
+		 "declaration", decl, decl);
 	  *no_add_attrs = true;
 	}
       break;
 
     case FUNCTION_DECL:
-      error ("%Ha address area attribute cannot be specified for functions",
-	     &DECL_SOURCE_LOCATION (decl), decl);
+      error ("%Jaddress area attribute cannot be specified for functions",
+	     decl, decl);
       *no_add_attrs = true;
       break;
 

@@ -1,3 +1,7 @@
+2003-09-20  Richard Henderson  <rth@redhat.com>
+
+	* decl.c, decl2.c, pt.c: Use %J in diagnostics.
+
 2003-09-20  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/157

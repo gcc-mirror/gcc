@@ -3358,8 +3358,7 @@ mcore_mark_dllimport (decl)
       && !DECL_VIRTUAL_P (decl)
       && DECL_INITIAL (decl))
     {
-      error ("%Hinitialized variable '%D' is marked dllimport",
-             &DECL_SOURCE_LOCATION (decl), decl);
+      error ("%Jinitialized variable '%D' is marked dllimport", decl, decl);
       return;
     }
   

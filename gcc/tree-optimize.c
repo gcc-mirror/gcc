@@ -183,16 +183,15 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
 	  && 0 < compare_tree_int (TYPE_SIZE_UNIT (ret_type),
 				   larger_than_size))
 	{
-          const location_t *locus = &DECL_SOURCE_LOCATION (fndecl);
 	  unsigned int size_as_int
 	    = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ret_type));
 
 	  if (compare_tree_int (TYPE_SIZE_UNIT (ret_type), size_as_int) == 0)
-	    warning ("%Hsize of return value of '%D' is %u bytes",
-                     locus, fndecl, size_as_int);
+	    warning ("%Jsize of return value of '%D' is %u bytes",
+                     fndecl, fndecl, size_as_int);
 	  else
-	    warning ("%Hsize of return value of '%D' is larger than %wd bytes",
-                     locus, fndecl, larger_than_size);
+	    warning ("%Jsize of return value of '%D' is larger than %wd bytes",
+                     fndecl, fndecl, larger_than_size);
 	}
     }
 

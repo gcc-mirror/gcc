@@ -60,6 +60,9 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   diag ("%H", loc);
   cdiag ("%H", loc);
   cxxdiag ("%H", loc);
+  diag ("%J", t1);
+  cdiag ("%J", t1);
+  cxxdiag ("%J", t1);
 
   cdiag ("%D%F%T", t1, t1, t1);
   cdiag ("%D%D%D%D", t1, t2, *t3, t4[5]);
@@ -83,12 +86,18 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   diag ("%H"); /* { dg-warning "format" "missing arg" } */
   cdiag ("%H"); /* { dg-warning "format" "missing arg" } */
   cxxdiag ("%H"); /* { dg-warning "format" "missing arg" } */
+  diag ("%J"); /* { dg-warning "format" "missing arg" } */
+  cdiag ("%J"); /* { dg-warning "format" "missing arg" } */
+  cxxdiag ("%J"); /* { dg-warning "format" "missing arg" } */
   diag ("%H", i); /* { dg-warning "format" "wrong arg" } */
   cdiag ("%H", i); /* { dg-warning "format" "wrong arg" } */
   cxxdiag ("%H", i); /* { dg-warning "format" "wrong arg" } */
   diag ("%H", p); /* { dg-warning "format" "wrong arg" } */
   cdiag ("%H", p); /* { dg-warning "format" "wrong arg" } */
   cxxdiag ("%H", p); /* { dg-warning "format" "wrong arg" } */
+  diag ("%J", loc); /* { dg-warning "format" "wrong arg" } */
+  cdiag ("%J", loc); /* { dg-warning "format" "wrong arg" } */
+  cxxdiag ("%J", loc); /* { dg-warning "format" "wrong arg" } */
   diag ("%#H", loc); /* { dg-warning "format" "bogus modifier" } */
   cdiag ("%#H", loc); /* { dg-warning "format" "bogus modifier" } */
   cxxdiag ("%#H", loc); /* { dg-warning "format" "bogus modifier" } */

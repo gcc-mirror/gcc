@@ -890,8 +890,7 @@ objc_check_decl (tree decl)
   if (TREE_CODE (type) == RECORD_TYPE
       && TREE_STATIC_TEMPLATE (type)
       && type != constant_string_type)
-    error ("%H'%D' cannot be statically allocated",
-           &DECL_SOURCE_LOCATION (decl), decl);
+    error ("%J'%D' cannot be statically allocated", decl, decl);
 }
 
 /* Implement static typing.  At this point, we know we have an interface.  */
@@ -2314,9 +2313,8 @@ objc_declare_class (tree ident_list)
       if ((decl = lookup_name (ident)))
 	{
 	  error ("`%s' redeclared as different kind of symbol",
-		  IDENTIFIER_POINTER (ident));
-	  error ("%Hprevious declaration of '%D'",
-                 &DECL_SOURCE_LOCATION (decl), decl);
+		 IDENTIFIER_POINTER (ident));
+	  error ("%Jprevious declaration of '%D'", decl, decl);
 	}
 
       if (! is_class_name (ident))
@@ -3414,9 +3412,7 @@ synth_forward_declarations (void)
 static void
 error_with_ivar (const char *message, tree decl, tree rawdecl)
 {
-  error ("%H%s `%s'", &DECL_SOURCE_LOCATION (decl),
-         message, gen_declaration (rawdecl, errbuf));
-
+  error ("%J%s `%s'", decl, message, gen_declaration (rawdecl, errbuf));
 }
 
 static void
@@ -5934,8 +5930,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
     {
       error ("`%s' redeclared as different kind of symbol",
 	     IDENTIFIER_POINTER (class_name));
-      error ("%Hprevious declaration of '%D'",
-             &DECL_SOURCE_LOCATION (decl), decl);
+      error ("%Jprevious declaration of '%D'", decl, decl);
     }
 
   if (code == CLASS_IMPLEMENTATION_TYPE)
@@ -6825,8 +6820,8 @@ static void
 warn_with_method (const char *message, int mtype, tree method)
 {
   /* Add a readable method name to the warning.  */
-  warning ("%H%s `%c%s'", &DECL_SOURCE_LOCATION (method),
-           message, mtype, gen_method_decl (method, errbuf));
+  warning ("%J%s `%c%s'", method, message, mtype,
+	   gen_method_decl (method, errbuf));
 }
 
 /* Return 1 if METHOD is consistent with PROTO.  */

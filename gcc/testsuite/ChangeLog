@@ -1,3 +1,7 @@
+2003-09-20  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/format/gcc_diag-1.c: Add tests for %J.
+
 2003-09-20  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-torture/execute/20030920-1.c: New test case.

@@ -516,11 +516,10 @@ layout_decl (tree decl, unsigned int known_align)
 	  int size_as_int = TREE_INT_CST_LOW (size);
 
 	  if (compare_tree_int (size, size_as_int) == 0)
-	    warning ("%Hsize of '%D' is %d bytes",
-                     &DECL_SOURCE_LOCATION (decl), decl, size_as_int);
+	    warning ("%Jsize of '%D' is %d bytes", decl, decl, size_as_int);
 	  else
-	    warning ("size of '%D' is larger than %d bytes",
-                     &DECL_SOURCE_LOCATION (decl), decl, larger_than_size);
+	    warning ("%Jsize of '%D' is larger than %d bytes",
+                     decl, decl, larger_than_size);
 	}
     }
 
@@ -885,11 +884,11 @@ place_field (record_layout_info rli, tree field)
 	  if (TYPE_ALIGN (type) > desired_align)
 	    {
 	      if (STRICT_ALIGNMENT)
-		warning ("%Hpacked attribute causes inefficient alignment "
-                         "for '%D'", &DECL_SOURCE_LOCATION (field), field);
+		warning ("%Jpacked attribute causes inefficient alignment "
+                         "for '%D'", field, field);
 	      else
-		warning ("%Hpacked attribute is unnecessary for '%D'",
-                         &DECL_SOURCE_LOCATION (field), field);
+		warning ("%Jpacked attribute is unnecessary for '%D'",
+			 field, field);
 	    }
 	}
       else
@@ -904,8 +903,7 @@ place_field (record_layout_info rli, tree field)
 	 Bump the cumulative size to multiple of field alignment.  */
 
       if (warn_padded)
-	warning ("%Hpadding struct to align '%D'",
-                 &DECL_SOURCE_LOCATION (field), field);
+	warning ("%Jpadding struct to align '%D'", field, field);
 
       /* If the alignment is still within offset_align, just align
 	 the bit position.  */

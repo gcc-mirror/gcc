@@ -38,6 +38,8 @@ Boston, MA 02111-1307, USA.  */
 #include "splay-tree.h"
 #include "langhooks.h"
 #include "cgraph.h"
+#include "intl.h"
+
 
 /* This should be eventually be generalized to other languages, but
    this would require a shared function-as-trees infrastructure.  */
@@ -896,9 +898,9 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
       if (alloca_call_p (node)
 	  && !lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)))
 	{
-	  inline_forbidden_reason = "%Hfunction '%F' can never be inlined "
-				    "because it uses alloca (override using "
-				    "the always_inline attribute)";
+	  inline_forbidden_reason
+	    = N_("%Jfunction '%F' can never be inlined because it uses "
+		 "alloca (override using the always_inline attribute)");
 	  return node;
 	}
       t = get_callee_fndecl (node);
@@ -909,8 +911,8 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
       /* We cannot inline functions that call setjmp.  */
       if (setjmp_call_p (t))
 	{
-	  inline_forbidden_reason = "%Hfunction '%F' can never be inlined"
-				    " because it uses setjmp";
+	  inline_forbidden_reason
+	    = N_("%Jfunction '%F' can never be inlined because it uses setjmp");
 	  return node;
 	}
 
@@ -921,8 +923,9 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
 	case BUILT_IN_VA_START:
 	case BUILT_IN_STDARG_START:
 	  {
-	    inline_forbidden_reason = "%Hfunction '%F' can never be inlined "
-				      "because it uses variable argument lists";
+	    inline_forbidden_reason
+	      = N_("%Jfunction '%F' can never be inlined because it "
+		   "uses variable argument lists");
 	    return node;
 	  }
 	case BUILT_IN_LONGJMP:
@@ -935,9 +938,9 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
 	    /* ??? Need front end help to identify "regular" non-local goto.  */
             if (DECL_BUILT_IN_CLASS (t) == BUILT_IN_NORMAL)
 	      {
-		inline_forbidden_reason = "%Hfunction '%F' can never be inlined "
-					  "because it uses setjmp-longjmp "
-					  "exception handling";
+		inline_forbidden_reason
+		  = N_("%Jfunction '%F' can never be inlined "
+		       "because it uses setjmp-longjmp exception handling");
 	        return node;
 	      }
 	  }
@@ -953,8 +956,9 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
       if (TREE_CODE (TREE_OPERAND (node, 0)) == FUNCTION_DECL
 	  && DECL_INITIAL (TREE_OPERAND (node, 0)))
 	{
-	  inline_forbidden_reason = "%Hfunction '%F' can never be inlined "
-				    "because it contains a nested function";
+	  inline_forbidden_reason
+	    = N_("%Jfunction '%F' can never be inlined "
+		 "because it contains a nested function");
 	  return node;
 	}
       break;
@@ -969,8 +973,9 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
 	 instantiations, which causes unexpected behavior.  */
       if (TREE_CODE (t) != LABEL_DECL)
 	{
-	  inline_forbidden_reason = "%Hfunction '%F' can never be inlined "
-				    "because it contains a nonlocal label";
+	  inline_forbidden_reason
+	    = N_("%Jfunction '%F' can never be inlined "
+		 "because it contains a computed goto");
 	  return node;
 	}
 
@@ -978,8 +983,9 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
          label.  */
       if (TREE_CODE (t) == LABEL_DECL && DECL_CONTEXT (t) != fn)
 	{
-	  inline_forbidden_reason = "%Hfunction '%F' can never be inlined "
-				    "because it contains a nonlocal goto";
+	  inline_forbidden_reason
+	    = N_("%Jfunction '%F' can never be inlined "
+		 "because it contains a nonlocal goto");
 	  return node;
 	}
 
@@ -1000,8 +1006,9 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
       for (t = TYPE_FIELDS (node); t; t = TREE_CHAIN (t))
 	if (variably_modified_type_p (TREE_TYPE (t)))
 	  {
-	    inline_forbidden_reason = "%Hfunction '%F' can never be inlined "
-				      "because it uses variable sized variables";
+	    inline_forbidden_reason
+	      = N_("%Jfunction '%F' can never be inlined "
+		   "because it uses variable sized variables");
 	    return node;
 	  }
 #endif
@@ -1089,8 +1096,7 @@ inlinable_function_p (tree fn)
 			 && !DECL_IN_SYSTEM_HEADER (fn));
 
       if (do_warning)
-	warning (inline_forbidden_reason,
-		 &DECL_SOURCE_LOCATION (fn), fn);
+	warning (inline_forbidden_reason, fn, fn);
 
       inlinable = false;
     }
@@ -1302,8 +1308,7 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
       if (warn_inline && DECL_INLINE (fn) && DECL_DECLARED_INLINE_P (fn)
 	  && !DECL_IN_SYSTEM_HEADER (fn))
 	{
-	  warning ("%Hinlining failed in call to '%F'",
-                   &DECL_SOURCE_LOCATION (fn), fn);
+	  warning ("%Jinlining failed in call to '%F'", fn, fn);
 	  warning ("called from here");
 	}
       return NULL_TREE;
