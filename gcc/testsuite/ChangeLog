@@ -1,4 +1,4 @@
-2004-02-28  Kazu Hirata  <kazu@cs.umass.edu>
+2004-02-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.dg/sibcall-3.c (recurser_void1): Make it an extern
 	function with __attribute__((noinline)).
