@@ -1,3 +1,12 @@
+2004-10-02  Frank Ch. Eigler  <fche@redhat.com>
+
+	* tree-mudflap.c (mf_build_check_statement_for): Reorganize to
+	take check-base and -limit arguments.
+	(mf_xform_derefs_1): Reorganize slightly to pass proper base/limit
+	check ranges for ARRAY_REF and COMPONENT_REF.
+	(execute_mudflap_fnction_ops, ..._decls): Limit unnecessary
+	instrumentation.
+
 2004-10-02  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-objc-common.c (c_tree_printer): Correct description of %E.
