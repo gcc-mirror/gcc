@@ -1,6 +1,14 @@
 #! /bin/sh
 
-machine=$1
+build=$1
+machine=$2
+
+if [ -z "$build" ]
+then
+       echo No build system name given
+       exit 1
+fi
+
 if [ -z "$machine" ]
 then
 	echo No machine name given
@@ -9,18 +17,30 @@ fi
 
 target=../fixinc.sh
 
-echo constructing ${target} for $machine
+echo constructing ${target} for $machine to run on $build
 fixincludes="${machine}"
 
+# Choose fix build method by build system
+case $build in
+	i?86-*-msdosdjgpp* )
+		MAKE="${MAKE} -f ${srcdir}/Makefile.DOS srcdir=${srcdir}"
+		;;
+
+	*-*-beos* )
+		MAKE="${MAKE} -f ${srcdir}/Makefile.BEOS srcdir=${srcdir}"
+		# Remove the following line to enable fixincludes
+		# (Makefile.BEOS is empty until Monday 12/4/00 :)
+		fixincludes=
+		;;
+
+	* )
+		MAKE="${MAKE} -f Makefile"
+		;;
+esac
+
+# Check for special fix rules for particular targets
 case $machine in
-	*-*-linux*)
-		:
-		;;
-
-	*-*-sysv4*)
-		fixincludes=fixinc.svr4
-		;;
-
+	*-*-sysv4* | \
 	i?86-*-sysv5* | \
 	i?86-*-udk*)
 		fixincludes=fixinc.svr4
@@ -43,16 +63,6 @@ case $machine in
 
 	i?86-sequent-ptx* | i?86-sequent-sysv[34]*)
 		fixincludes=fixinc.ptx
-		;;
-
-	i?86-*-msdosdjgpp* )
-		MAKE="${MAKE} -f ${srcdir}/Makefile.DOS srcdir=${srcdir}"
-		;;
-
-	*-*-beos* )
-		MAKE="${MAKE} -f ${srcdir}/Makefile.BEOS srcdir=${srcdir}"
-		# Remove the following line to enable fixincludes
-		fixincludes=
 		;;
 
 	alpha*-dec-vms* | \

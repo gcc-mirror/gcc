@@ -2035,8 +2035,8 @@ fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
 	$(FIXINCSRCDIR)/server.h $(FIXINCSRCDIR)/inclhack.def specs.ready
 	(MAKE="$(MAKE)"; srcdir=`cd $(srcdir)/fixinc && pwd` ; \
 	CC="$(CC)"; CFLAGS="$(CFLAGS)"; LDFLAGS="$(LDFLAGS)"; \
-	export MAKE srcdir CC CFLAGS LDFLAGS; \
-	cd ./fixinc && $(SHELL) $${srcdir}/mkfixinc.sh $(target))
+	export MAKE srcdir CC CFLAGS LDFLAGS; cd ./fixinc && \
+	$(SHELL) $${srcdir}/mkfixinc.sh $(canonical_build) $(target))
 
 # Build fixed copies of system files.
 stmp-fixinc: fixinc.sh gsyslimits.h
