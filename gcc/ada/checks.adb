@@ -1958,18 +1958,31 @@ package body Checks is
       Lo : out Uint;
       Hi : out Uint)
    is
-      Typ  : constant Entity_Id := Etype (N);
+      Typ : constant Entity_Id := Etype (N);
 
-      Lo_Left  : Uint;
+      Lo_Left : Uint;
+      Hi_Left : Uint;
+      --  Lo and Hi bounds of left operand
+
       Lo_Right : Uint;
-      Hi_Left  : Uint;
       Hi_Right : Uint;
-      Bound    : Node_Id;
-      Hbound   : Uint;
-      Lor      : Uint;
-      Hir      : Uint;
-      OK1      : Boolean;
-      Cindex   : Cache_Index;
+      --  Lo and Hi bounds of right (or only) operand
+
+      Bound : Node_Id;
+      --  Temp variable used to hold a bound node
+
+      Hbound : Uint;
+      --  High bound of base type of expression
+
+      Lor : Uint;
+      Hir : Uint;
+      --  Refined values for low and high bounds, after tightening
+
+      OK1 : Boolean;
+      --  Used in lower level calls to indicate if call succeeded
+
+      Cindex : Cache_Index;
+      --  Used to search cache
 
       function OK_Operands return Boolean;
       --  Used for binary operators. Determines the ranges of the left and
@@ -2042,7 +2055,11 @@ package body Checks is
 
       --  We use the actual bound unless it is dynamic, in which case
       --  use the corresponding base type bound if possible. If we can't
-      --  get a bound then
+      --  get a bound then we figure we can't determine the range (a
+      --  peculiar case, that perhaps cannot happen, but there is no
+      --  point in bombing in this optimization circuit.
+
+      --  First the low bound
 
       Bound := Type_Low_Bound (Typ);
 
@@ -2057,18 +2074,28 @@ package body Checks is
          return;
       end if;
 
+      --  Now the high bound
+
       Bound := Type_High_Bound (Typ);
 
-      if Compile_Time_Known_Value (Bound) then
-         Hi := Expr_Value (Bound);
+      --  We need the high bound of the base type later on, and this should
+      --  always be compile time known. Again, it is not clear that this
+      --  can ever be false, but no point in bombing.
 
-      elsif Compile_Time_Known_Value (Type_High_Bound (Base_Type (Typ))) then
+      if Compile_Time_Known_Value (Type_High_Bound (Base_Type (Typ))) then
          Hbound := Expr_Value (Type_High_Bound (Base_Type (Typ)));
          Hi := Hbound;
 
       else
          OK := False;
          return;
+      end if;
+
+      --  If we have a static subtype, then that may have a tighter bound
+      --  so use the upper bound of the subtype instead in this case.
+
+      if Compile_Time_Known_Value (Bound) then
+         Hi := Expr_Value (Bound);
       end if;
 
       --  We may be able to refine this value in certain situations. If

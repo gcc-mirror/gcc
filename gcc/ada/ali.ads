@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.3 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -615,6 +615,14 @@ package ALI is
 
       Entity : Name_Id;
       --  Name of entity
+
+      Rref_Line : Nat;
+      --  This field is set to the line number of a renaming reference if
+      --  one is present, or to zero if no renaming reference is present
+
+      Rref_Col : Nat;
+      --  This field is set to the column number of a renaming reference
+      --  if one is present, or to zero if no renaming reference is present.
 
       Tref : Tref_Kind;
       --  Indicates if a typeref is present, and if so what kind. Set to

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --              Copyright (C) 2001 Ada Core Technologies, Inc.              --
 --                                                                          --
@@ -622,7 +622,6 @@ package GNAT.Sockets is
 
    procedure Close_Socket (Socket : Socket_Type);
    --  Close a socket and more specifically a non-connected socket.
-   --  Fail silently.
 
    procedure Connect_Socket
      (Socket : Socket_Type;
@@ -718,7 +717,7 @@ package GNAT.Sockets is
    --  Shutdown a connected socket. If How is Shut_Read, further
    --  receives will be disallowed. If How is Shut_Write, further
    --  sends will be disallowed. If how is Shut_Read_Write, further
-   --  sends and receives will be disallowed. Fail silently.
+   --  sends and receives will be disallowed.
 
    type Stream_Access is access all Ada.Streams.Root_Stream_Type'Class;
    --  Same interface as Ada.Streams.Stream_IO

@@ -134,7 +134,7 @@ package body ALI is
       --  all lower case. This only happends for systems where file names are
       --  not case sensitive, and ensures that gnatbind works correctly on
       --  such systems, regardless of the case of the file name. Note that
-      --  a name can be terminated by a right typeref bracket.
+      --  a name can be terminated by a right typeref bracket or '='.
 
       function Get_Nat return Nat;
       --  Skip blanks, then scan out an unsigned integer value in Nat range
@@ -305,8 +305,11 @@ package body ALI is
          loop
             Name_Len := Name_Len + 1;
             Name_Buffer (Name_Len) := Getc;
-            exit when At_End_Of_Field;
-            exit when Nextc = ')' or else Nextc = '}' or else Nextc = '>';
+            exit when At_End_Of_Field
+              or else Nextc = ')'
+              or else Nextc = '}'
+              or else Nextc = '>'
+              or else Nextc = '=';
          end loop;
 
          --  Convert file name to all lower case if file names are not case
@@ -1305,7 +1308,28 @@ package body ALI is
                   XE.Lib    := (Getc = '*');
                   XE.Entity := Get_Name;
 
+                  --  Renaming reference is present
+
+                  if Nextc = '=' then
+                     P := P + 1;
+                     XE.Rref_Line := Get_Nat;
+
+                     if Getc /= ':' then
+                        Fatal_Error;
+                     end if;
+
+                     XE.Rref_Col := Get_Nat;
+
+                  --  No renaming reference present
+
+                  else
+                     XE.Rref_Line := 0;
+                     XE.Rref_Col  := 0;
+                  end if;
+
                   Skip_Space;
+
+                  --  See if type reference present
 
                   case Nextc is
                      when '<'    => XE.Tref := Tref_Derived;
@@ -1332,7 +1356,6 @@ package body ALI is
                         if Nextc = '|' then
                            XE.Tref_File_Num :=
                              Sdep_Id (N + Nat (First_Sdep_Entry) - 1);
-                           Current_File_Num := XE.Tref_File_Num;
                            P := P + 1;
                            N := Get_Nat;
 
@@ -1347,6 +1370,7 @@ package body ALI is
                      end if;
 
                      P := P + 1; -- skip closing bracket
+                     Skip_Space;
 
                   --  No typeref entry present
 
