@@ -1,3 +1,13 @@
+2004-11-10  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/18218
+	* configure.ac: Check for strtof.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* io/read.c (convert_real): Use strtof if available.
+	(convert_precision_real): Remove.
+	(read_f): Avoid poor exponentiation algorithm.
+
 2004-11-05  Andreas Schwab  <schwab@suse.de>
 
 	* configure.ac: Use AC_PROG_FC, FC and FCFLAGS instead of
