@@ -2705,12 +2705,12 @@ finish_file ()
   	 them to the beginning of the array, then get rid of the
   	 leftovers.  */
       n_new = VARRAY_ACTIVE_SIZE (unemitted_tinfo_decls) - n_old;
-      memmove (&VARRAY_TREE (unemitted_tinfo_decls, 0),
-  	       &VARRAY_TREE (unemitted_tinfo_decls, n_old),
-  	       n_new * sizeof (tree));
+      if (n_new)
+	memmove (&VARRAY_TREE (unemitted_tinfo_decls, 0),
+		 &VARRAY_TREE (unemitted_tinfo_decls, n_old),
+		 n_new * sizeof (tree));
       memset (&VARRAY_TREE (unemitted_tinfo_decls, n_new),
-  	      0,
-  	      n_old * sizeof (tree));
+  	      0, n_old * sizeof (tree));
       VARRAY_ACTIVE_SIZE (unemitted_tinfo_decls) = n_new;
 
       /* The list of objects with static storage duration is built up
