@@ -1,3 +1,7 @@
+2003-03-09  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* configure.in (gxx_include_dir): Fix typo.
+
 2003-02-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* MAINTAINERS: Copy from HEAD.
