@@ -2581,6 +2581,8 @@ distclean: clean $(INTL_DISTCLEAN) lang.distclean
 	-rm -f float.h
 	-rm -f site.exp site.bak testsuite/site.exp testsuite/site.bak
 	-rm -f testsuite/*.log testsuite/*.sum
+	-cd testsuite && rm -f x *.x *.x? *.exe *.rpo *.o *.s *.S *.c
+	-cd testsuite && rm -f *.out *.gcov *.bb *.bbg
 	-rm -rf ${QMTEST_DIR} stamp-qmtest
 	-rm -f intl/libintl.h libintl.h
 	-rm -f cxxmain.c
