@@ -1,3 +1,8 @@
+2000-08-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in [i*86-*-freebsd*] (TARGET, TARGETDIR): Set.
+	* configure: Rebuilt.
+
 2000-05-11  Scott Bambrough  <scottb@netwinder.org>
 
 	* libffi/src/arm/sysv.S (ffi_call_SYSV): Doubles are not saved to 
