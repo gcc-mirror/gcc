@@ -1,3 +1,7 @@
+2002-06-27  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/Wunknownprag.c: New tests.
+
 Tue Jun 25 21:50:38 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/execute/simd-2.c: New test.
