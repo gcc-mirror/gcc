@@ -1,3 +1,8 @@
+2003-01-28  Andreas Schwab  <schwab@suse.de>
+
+	* combine.c (force_to_mode): Add cast to fix warning when
+	STORE_FLAG_VALUE is negative.
+
 2003-01-27  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (cse.o): Depend on TARGET_H.

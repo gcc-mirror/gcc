@@ -7310,7 +7310,8 @@ force_to_mode (x, mode, mask, reg, just_select)
 	 which is equal to STORE_FLAG_VALUE.  */
       if ((mask & ~STORE_FLAG_VALUE) == 0 && XEXP (x, 1) == const0_rtx
 	  && exact_log2 (nonzero_bits (XEXP (x, 0), mode)) >= 0
-	  && nonzero_bits (XEXP (x, 0), mode) == STORE_FLAG_VALUE)
+	  && (nonzero_bits (XEXP (x, 0), mode)
+	      == (unsigned HOST_WIDE_INT) STORE_FLAG_VALUE))
 	return force_to_mode (XEXP (x, 0), mode, mask, reg, next_select);
 
       break;
