@@ -7,7 +7,7 @@ inline bool operator!=(const T& x, const T& y) {
 
 enum T {
   V1,
-};                           // ERROR -
+};                           //ERROR - comma at end of enumerator list
 
 struct X {
   T      t : 31;

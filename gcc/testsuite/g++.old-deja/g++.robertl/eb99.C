@@ -128,7 +128,7 @@ class Baz : public ref_counted {
 
 class Bar;
 
-void main() {
+int main() {
   ref_ptr<Baz> foo;
-  static_cast<Bar *> (foo)->DoSomething;
+  static_cast<Bar *> (foo)->DoSomething;  //ERROR - invalid cast
 }

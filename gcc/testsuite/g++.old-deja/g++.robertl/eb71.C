@@ -18,7 +18,7 @@ friend class   D;
 class   D {
 
   int                   ins( B*&);
-};
+};                    //WARNING - only private members
 
 int
 D::ins( B*& tempN)

@@ -13,5 +13,5 @@
 
     void f()
     {
-            extent(b);
+      extent(b);  // ERROR - no matching function
     }

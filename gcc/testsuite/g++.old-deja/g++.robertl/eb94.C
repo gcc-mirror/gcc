@@ -12,4 +12,4 @@ private:
 static int variable;                    // this is intentionally duplicated
 };
 
-myClass::variable = 0;
+myClass::variable = 0;                  //ERROR - no type
