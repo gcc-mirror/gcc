@@ -1,3 +1,8 @@
+Mon Nov 24 12:15:55 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (mark_addressable): Don't assume a FUNCTION_DECL
+	has DECL_LANG_SPECIFIC.
+
 Thu Dec 11 22:18:37 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (comdat_linkage): Also set DECL_COMDAT.
