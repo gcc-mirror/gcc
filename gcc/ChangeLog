@@ -5,6 +5,9 @@
 	* config/ia64/ia64.md (extendsfdf2): Split the nop case out
 	of existance.
 
+	* gensupport.c (process_rtx): Copy and post-process each member
+	of the define_insn rtvec individually.
+
 Mon  8 May 22:17:35 2000  Neil Booth  <NeilB@earthling.net>
 
 	* cpplex.c (spell_token): New function.
