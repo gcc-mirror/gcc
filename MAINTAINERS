@@ -150,6 +150,7 @@ diagnostic messages	Gabriel Dos Reis	gdr@integrable-solutions.net
 windows, cygwin, mingw	Christopher Faylor	cgf@redhat.com
 DJGPP			DJ Delorie		dj@delorie.com
 libiberty		DJ Delorie		dj@redhat.com
+libiberty		Ian Lance Taylor	ian@wasabisystems.com
 build machinery (*.in)	DJ Delorie		dj@redhat.com
 build machinery (*.in)	Nathanael Nerode	neroden@gcc.gnu.org
 build machinery (*.in)	Alexandre Oliva		aoliva@redhat.com
@@ -270,7 +271,6 @@ Richard Stallman				rms@gnu.org
 Graham Stott					graham.stott@btinternet.com
 Mike Stump					mrs@apple.com
 Jeff Sturm					jsturm@gcc.gnu.org
-Ian Taylor					ian@wasabisystems.com
 Michael Tiemann					tiemann@redhat.com
 Kresten Krab Thorup				krab@gcc.gnu.org
 Jonathan Wakely					redi@gcc.gnu.org
