@@ -1,3 +1,31 @@
+Sun Aug 30 22:17:41 1998  H.J. Lu  (hjl@gnu.org)
+
+	* Makefile.in (INTERFACE): New, set to 2.
+	(ARLIB): Set to libstdc++.a.$(VERSION)
+	(ARLINK, MARLINK): New macros.
+	(LIBS): Add $(ARLINK).
+	($(ARLINK), marlink): New targets.
+	(install): Don't check $(libsubdir). Handle versioned libraries.
+
+	* config/linux.ml (ARLIB, MARLINK, SHLIB, MSHLINK): New macros.
+	(LIBS): Add marlink $(ARLINK).
+
+	* config/aix.ml (ARLIB): Set to libstdc++-ar.a.$(VERSION)
+	(ARLINK): New macros.
+	(BUILD_LIBS): Add $(ARLINK).
+
+	* config/dec-osf.ml (LIBS): Add $(ARLINK).
+	* config/elf.ml (LIBS): Likewise.
+	* config/elfshlibm.ml (LIBS): Likewise.
+	* config/hpux.ml (LIBS): Likewise.
+	* config/iris5.ml (LIBS): Likewise.
+	* config/sol2shm.ml (LIBS): Likewise.
+	* config/sunos4.ml (LIBS): Likewise.
+
+	* configure.in: Use ${topsrcdir}/config.if to put
+	LIBSTDCXX_INTERFACE, CXX_INTERFACE, LIBC_INTERFACE in
+	${package_makefile_frag}.
+
 1998-08-25  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* stdexcept: Remove __HONOR_STD.
