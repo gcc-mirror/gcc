@@ -1,3 +1,11 @@
+Mon Jan 26 18:11:30 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* c-decl.c (grokdeclarator): Get parameter tags from
+	last_function_parm_tags.
+	* dwarfout.c (output_formal_types): Set TREE_ASM_WRITTEN before
+	traversing the parameter types.
+	(output_type): No early exit for FUNCTION_TYPE / METHOD_TYPE context.
+
 Mon Jan 26 01:44:12 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* h8300.c (print_operand): Handle CONST_DOUBLE for 'e', 'f', and
