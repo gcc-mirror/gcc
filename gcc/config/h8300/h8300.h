@@ -635,8 +635,9 @@ enum reg_class {
 #define STRUCT_VALUE 0
 
 /* Return true if X should be returned in memory.  */
-#define RETURN_IN_MEMORY(X) \
-  (TYPE_MODE (X) == BLKmode || GET_MODE_SIZE (TYPE_MODE (X)) > 4)
+#define RETURN_IN_MEMORY(X)					\
+  (TYPE_MODE (X) == BLKmode					\
+   || GET_MODE_SIZE (TYPE_MODE (X)) > (TARGET_H8300 ? 4 : 8))
 
 /* When defined, the compiler allows registers explicitly used in the
    rtl to be used as spill registers but prevents the compiler from
