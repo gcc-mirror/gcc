@@ -472,7 +472,10 @@ do {								\
 	fixed_regs[i] = call_used_regs[i] = 1; 	\
     }						\
   if (flag_pic)					\
-    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
+    {						\
+      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
+      fixed_regs[PIC_OFFSET_TABLE_REGNUM_SAVED] = 1;\
+    }						\
 }
 
 /* Allocate the call used registers first.  This should minimize
@@ -575,10 +578,9 @@ do {								\
 #define PIC_OFFSET_TABLE_REGNUM 19
 #define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED 1
 
-/* Initialize hppa_save_pic_table_rtx before RTL generation for
-   each function.  We used to do this in FINALIZE_PIC, but FINALIZE_PIC
-   isn't always called for static inline functions.  */
-#define INIT_EXPANDERS hppa_save_pic_table_rtx = 0;
+/* Register into which we save the PIC_OFFEST_TABLE_REGNUM so that it
+   can be restore across function calls.  */
+#define PIC_OFFSET_TABLE_REGNUM_SAVED 4
 
 /* SOM ABI says that objects larger than 64 bits are returned in memory.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
@@ -2151,8 +2153,6 @@ extern void output_global_address ();
 extern struct rtx_def *legitimize_pic_address ();
 extern struct rtx_def *gen_cmp_fp ();
 extern void hppa_encode_label ();
-
-extern struct rtx_def *hppa_save_pic_table_rtx;
 
 #if 0
 #define PREDICATE_CODES \
