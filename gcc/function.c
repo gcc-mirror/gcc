@@ -3957,11 +3957,11 @@ assign_parms (fndecl, second_time)
 	     as we make here would screw up life analysis for it.  */
 	  if (nominal_mode == passed_mode
 	      && ! did_conversion
-	      && GET_CODE (entry_parm) == MEM
-	      && entry_parm == stack_parm
+	      && stack_parm != 0
+	      && GET_CODE (stack_parm) == MEM
 	      && stack_offset.var == 0
 	      && reg_mentioned_p (virtual_incoming_args_rtx,
-				  XEXP (entry_parm, 0)))
+				  XEXP (stack_parm, 0)))
 	    {
 	      rtx linsn = get_last_insn ();
 	      rtx sinsn, set;
@@ -3991,7 +3991,7 @@ assign_parms (fndecl, second_time)
 		       && SET_DEST (set) == parmreg)
 	        REG_NOTES (linsn)
 		  = gen_rtx (EXPR_LIST, REG_EQUIV,
-			     entry_parm, REG_NOTES (linsn));
+			     stack_parm, REG_NOTES (linsn));
 	    }
 
 	  /* For pointer data type, suggest pointer register.  */
