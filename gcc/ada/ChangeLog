@@ -1,3 +1,8 @@
+2002-04-21  Florian Weimer  <fw@deneb.enyo.de>
+
+	* adaint.c (__gnat_tmp_name): Remove buffer overflow bug on
+        GNU/Linux.
+
 2002-04-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* trans.c (tree_transform): Add has_scope argument to
