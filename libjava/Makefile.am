@@ -93,17 +93,25 @@ JAVAC = $(GCJ_WITH_FLAGS) -C
 GCC_UNWIND_INCLUDE = @GCC_UNWIND_INCLUDE@
 
 WARNINGS = -Wextra -Wall
-## We need _GNU_SOURCE defined for some Linux builds.  It doesn't hurt
-## to always define it.
-AM_CXXFLAGS = -fno-rtti -fnon-call-exceptions $(THREADCXXFLAGS) \
-## Some systems don't allow `$' in identifiers by default, so we force it.
+## Some systems don't allow `$' in identifiers by default, so we force
+## it with -fdollars-in-identifiers.  -Wswitch-enum detects bugs in
+## the verifier implementation, and maybe other places.  We need
+## _GNU_SOURCE defined for some Linux builds.  It doesn't hurt to
+## always define it.  Some systems, including Linux, need
+## -D_FILE_OFFSET_BITS=64 to enable > 2GB file support.
+AM_CXXFLAGS = \
+	-fno-rtti \
+	-fnon-call-exceptions \
+	$(THREADCXXFLAGS) \
 	-fdollars-in-identifiers \
-## Detect bugs in the verifier implementation, and maybe other places.
 	-Wswitch-enum \
-## Some systems, including Linux, need this to enable > 2GB file support.
 	-D_FILE_OFFSET_BITS=64 \
-	@LIBGCJ_CXXFLAGS@ @X_CFLAGS@ $(WARNINGS) -D_GNU_SOURCE \
-	-DPREFIX="\"$(prefix)\"" -DLIBDIR="\"$(libdir)\"" \
+	@LIBGCJ_CXXFLAGS@ \
+	@X_CFLAGS@ \
+	$(WARNINGS) \
+	-D_GNU_SOURCE \
+	-DPREFIX="\"$(prefix)\"" \
+	-DLIBDIR="\"$(libdir)\"" \
 	-DBOOT_CLASS_PATH="\"$(jardir)/$(jar_DATA)\"" \
 	-DJAVA_EXT_DIRS="\"$(jardir)/ext\""
 if USING_GCC
