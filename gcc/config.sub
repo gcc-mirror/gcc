@@ -81,7 +81,8 @@ case $os in
 	-unicom* | -ibm* | -next | -hp | -isi* | -apollo | -altos* | \
 	-convergent* | -ncr* | -news | -32* | -3600* | -3100* | -hitachi* |\
 	-c[123]* | -convex* | -sun | -crds | -omron* | -dg | -ultra | -tti* | \
-	-harris | -dolphin | -highlevel | -gould | -cbm | -ns | -masscomp )
+	-harris | -dolphin | -highlevel | -gould | -cbm | -ns | -masscomp | \
+	-apple)
 		os=
 		basic_machine=$1
 		;;
@@ -196,6 +197,10 @@ case $basic_machine in
 	apollo68)
 		basic_machine=m68k-apollo
 		os=-sysv
+		;;
+	aux)
+		basic_machine=m68k-apple
+		os=-aux
 		;;
 	aux)
 		basic_machine=m68k-apple
@@ -661,7 +666,7 @@ case $os in
 	      | -lynxos* | -bosx* | -nextstep* | -cxux* | -aout* | -elf* \
 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
-	      | -cygwin32* | -pe* | -psos* | -moss*)
+	      | -cygwin32* | -pe* | -psos* | -moss* )
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-sunos5*)
@@ -884,6 +889,9 @@ case $basic_machine in
 				;;
 			-vxworks*)
 				vendor=wrs
+				;;
+			-aux*)
+				vendor=apple
 				;;
 			-aux*)
 				vendor=apple
