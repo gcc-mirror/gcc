@@ -74,10 +74,10 @@ F2CEXT = abort derf derfc ef1asc ef1cmc erf erfc exit getarg getenv iargc \
 	secnds second sleep srand stat symlnk time ttynam umask unlink \
 	vxtidt vxttim alarm
 
-# These dependencies can be satisfied in parallel.  They update stamp
-# files which the $(LIBG2C) target checks in the sub-make.  (Probably
-# only one stamp file is really needed.)
-all: i77 f77 u77 e77
+# These dependencies can be satisfied in parallel.  The [fiu]77
+# targets update stamp files which the $(LIBG2C) target checks in the
+# sub-make.  (Probably only one stamp file is really needed.)
+all: i77 f77 u77 s-libe77
 	$(MAKE) $(FLAGS_TO_PASS) $(LIBG2C)
 
 i77 f77 u77: g2c.h
@@ -181,5 +181,5 @@ maintainer-clean:
 rebuilt: ${srcdir}/configure
 
 .PHONY: rebuilt mostlyclean clean distclean maintainer-clean all \
-        i77 f77 u77 e77 check uninstall install-strip dist \
+        i77 f77 u77 check uninstall install-strip dist \
         installcheck installdirs
