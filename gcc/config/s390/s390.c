@@ -2268,11 +2268,10 @@ legitimize_pic_address (orig, reg)
              that was pulled out of the literal pool.  Force it back in.  */
 
 	  else if (GET_CODE (op0) == UNSPEC
-	           && GET_CODE (op1) == CONST_INT)
+	           && GET_CODE (op1) == CONST_INT
+	           && XINT (op0, 1) == 100)
             {
 	      if (XVECLEN (op0, 0) != 1)
-                abort ();
-              if (XINT (op0, 1) != 100)
                 abort ();
 
               new = force_const_mem (Pmode, orig);

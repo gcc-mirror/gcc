@@ -1,3 +1,9 @@
+2004-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/14533
+	* config/s390/s390.c (legitimize_pic_address): Don't abort on UNSPEC
+	other than 100.
+
 2004-03-13  Alan Modra  <amodra@bigpond.net.au>
 
 	PR debug/11983
