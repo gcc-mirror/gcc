@@ -1,3 +1,9 @@
+1998-09-03  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (import_export_vtable): Always make artificials comdat.
+	(import_export_decl): Likewise.
+	* pt.c (mark_decl_instantiated): Likewise.
+
 1998-09-03  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (finish_globally_qualified_member_call_expr):

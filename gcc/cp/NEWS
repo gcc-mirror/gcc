@@ -1,4 +1,4 @@
-*** Changes since EGCS 1.0:
+*** Changes in EGCS 1.1:
 
 * Namespaces are fully supported.  The library has not yet been converted 
   to use namespace std, however, and the old std-faking code is still on by
