@@ -577,6 +577,7 @@ enum update_life_extent
 #define CLEANUP_PRE_LOOP	16	/* Take care to preserve syntactic loop
 					   notes.  */
 #define CLEANUP_UPDATE_LIFE	32	/* Keep life information up to date.  */
+#define CLEANUP_THREADING	64	/* Do jump threading.  */
 /* Flags for loop discovery.  */
 
 #define LOOP_TREE		1	/* Build loop hierarchy tree.  */

@@ -42,6 +42,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "flags.h"
 #include "recog.h"
 #include "toplev.h"
+#include "cselib.h"
 
 #include "obstack.h"
 
@@ -82,6 +83,8 @@ static bool merge_blocks		PARAMS ((edge,basic_block,basic_block,
 static bool try_optimize_cfg		PARAMS ((int));
 static bool try_simplify_condjump	PARAMS ((basic_block));
 static bool try_forward_edges		PARAMS ((int, basic_block));
+static edge thread_jump			PARAMS ((int, edge, basic_block));
+static bool mark_effect			PARAMS ((rtx, bitmap));
 static void notice_new_block		PARAMS ((basic_block));
 static void update_forwarder_flag	PARAMS ((basic_block));
 
@@ -178,6 +181,154 @@ try_simplify_condjump (cbranch_block)
   return true;
 }
 
+/* Attempt to prove that operation is NOOP using CSElib or mark the effect
+   on register.  Used by jump threading.  */
+static bool
+mark_effect (exp, nonequal)
+  rtx exp;
+  regset nonequal;
+{
+  switch (GET_CODE (exp))
+    {
+      /* In case we do clobber the register, mark it as equal, as we know the
+         value is dead so it don't have to match.  */
+      case CLOBBER:
+	if (REG_P (XEXP (exp, 0)))
+	  CLEAR_REGNO_REG_SET (nonequal, REGNO (XEXP (exp, 0)));
+	return false;
+      case SET:
+	if (rtx_equal_for_cselib_p (SET_DEST (exp), SET_SRC (exp)))
+	  return false;
+	if (GET_CODE (SET_SRC (exp)) != REG)
+	  return true;
+	SET_REGNO_REG_SET (nonequal, REGNO (SET_SRC (exp)));
+	return false;
+      default:
+	return false;
+    }
+}
+/* Attempt to prove that the basic block B will have no side effects and
+   allways continues in the same edge if reached via E.  Return the edge
+   if exist, NULL otherwise.  */
+
+static edge
+thread_jump (mode, e, b)
+     int mode;
+     edge e;
+     basic_block b;
+{
+  rtx set1, set2, cond1, cond2, insn;
+  enum rtx_code code1, code2, reversed_code2;
+  bool reverse1 = false;
+  int i;
+  regset nonequal;
+  bool failed = false;
+
+  /* At the moment, we do handle only conditional jumps, but later we may
+     want to extend this code to tablejumps and others.  */
+  if (!e->src->succ->succ_next || e->src->succ->succ_next->succ_next)
+    return NULL;
+  if (!b->succ || !b->succ->succ_next || b->succ->succ_next->succ_next)
+    return NULL;
+
+  /* Second branch must end with onlyjump, as we will eliminate the jump.  */
+  if (!any_condjump_p (e->src->end) || !any_condjump_p (b->end)
+      || !onlyjump_p (b->end))
+    return NULL;
+
+  set1 = pc_set (e->src->end);
+  set2 = pc_set (b->end);
+  if (((e->flags & EDGE_FALLTHRU) != 0)
+      != (XEXP (SET_SRC (set1), 0) == pc_rtx))
+    reverse1 = true;
+
+  cond1 = XEXP (SET_SRC (set1), 0);
+  cond2 = XEXP (SET_SRC (set2), 0);
+  if (reverse1)
+    code1 = reversed_comparison_code (cond1, b->end);
+  else
+    code1 = GET_CODE (cond1);
+
+  code2 = GET_CODE (cond2);
+  reversed_code2 = reversed_comparison_code (cond2, b->end);
+
+  if (!comparison_dominates_p (code1, code2)
+      && !comparison_dominates_p (code1, reversed_code2))
+    return NULL;
+
+  /* Ensure that the comparison operators are equivalent.
+     ??? This is far too pesimistic.  We should allow swapped operands,
+     different CCmodes, or for example comparisons for interval, that
+     dominate even when operands are not equivalent.  */
+  if (!rtx_equal_p (XEXP (cond1, 0), XEXP (cond2, 0))
+      || !rtx_equal_p (XEXP (cond1, 1), XEXP (cond2, 1)))
+    return NULL;
+
+  /* Short circuit cases where block B contains some side effects, as we can't
+     safely bypass it.  */
+  for (insn = NEXT_INSN (b->head); insn != NEXT_INSN (b->end);
+       insn = NEXT_INSN (insn))
+    if (INSN_P (insn) && side_effects_p (PATTERN (insn)))
+      return NULL;
+
+  cselib_init ();
+
+  /* First process all values computed in the source basic block.  */
+  for (insn = NEXT_INSN (e->src->head); insn != NEXT_INSN (e->src->end);
+       insn = NEXT_INSN (insn))
+    if (INSN_P (insn))
+      cselib_process_insn (insn);
+
+  nonequal = BITMAP_XMALLOC();
+  CLEAR_REG_SET (nonequal);
+  /* Now assume that we've continued by the edge E to B and continue
+     processing as if it were same basic block.
+   
+     Our goal is to prove that whole block is an NOOP.  */
+  for (insn = NEXT_INSN (b->head); insn != b->end && !failed;
+       insn = NEXT_INSN (insn))
+  {
+    if (INSN_P (insn))
+      {
+        rtx pat = PATTERN (insn);
+
+        if (GET_CODE (pat) == PARALLEL)
+	  {
+	    for (i = 0; i < XVECLEN (pat, 0); i++)
+	      failed |= mark_effect (XVECEXP (pat, 0, i), nonequal);
+	  }
+	else
+	  failed |= mark_effect (pat, nonequal);
+      }
+    cselib_process_insn (insn);
+  }
+
+  /* Later we should clear nonequal of dead registers.  So far we don't
+     have life information in cfg_cleanup.  */
+  if (failed)
+    goto failed_exit;
+
+  /* In case liveness information is available, we need to prove equivalence
+     only of the live values.  */
+  if (mode & CLEANUP_UPDATE_LIFE)
+    AND_REG_SET (nonequal, b->global_live_at_end);
+
+  EXECUTE_IF_SET_IN_REG_SET (nonequal, 0, i, goto failed_exit;);
+
+  BITMAP_XFREE (nonequal);
+  cselib_finish ();
+  if ((comparison_dominates_p (code1, code2) != 0)
+      != (XEXP (SET_SRC (set2), 0) == pc_rtx))
+    return BRANCH_EDGE (b);
+  else
+    return FALLTHRU_EDGE (b);
+
+failed_exit:
+  BITMAP_XFREE (nonequal);
+  cselib_finish ();
+  return NULL;
+}
+
 /* Attempt to forward edges leaving basic block B.
    Return true if successful.  */
 
@@ -187,12 +338,13 @@ try_forward_edges (mode, b)
      int mode;
 {
   bool changed = false;
-  edge e, next;
+  edge e, next, threaded_edge;
 
   for (e = b->succ; e ; e = next)
     {
       basic_block target, first;
       int counter;
+      bool threaded = false;
 
       next = e->succ_next;
 
@@ -207,16 +359,32 @@ try_forward_edges (mode, b)
       target = first = e->dest;
       counter = 0;
 
-      /* Look for the real destination of the jump.
-         Avoid infinite loop in the infinite empty loop by counting
-         up to n_basic_blocks.  */
-      while (FORWARDER_BLOCK_P (target)
-	     && target->succ->dest != EXIT_BLOCK_PTR
-	     && counter < n_basic_blocks)
+      while (counter < n_basic_blocks)
 	{
-	  /* Bypass trivial infinite loops.  */
-	  if (target == target->succ->dest)
-	    counter = n_basic_blocks;
+	  basic_block new_target = NULL;
+	  bool new_target_threaded = false;
+
+	  if (FORWARDER_BLOCK_P (target)
+	      && target->succ->dest != EXIT_BLOCK_PTR)
+	    {
+	      /* Bypass trivial infinite loops.  */
+	      if (target == target->succ->dest)
+		counter = n_basic_blocks;
+	      new_target = target->succ->dest;
+	    }
+	  /* Allow to thread only over one edge at time to simplify updating
+	     of probabilities.  */
+	  else if ((mode & CLEANUP_THREADING) && !threaded)
+	    {
+	      threaded_edge = thread_jump (mode, e, target);
+	      if (threaded_edge)
+		{
+		  new_target = threaded_edge->dest;
+		  new_target_threaded = true;
+		}
+	    }
+	  if (!new_target)
+	    break;
 
 	  /* Avoid killing of loop pre-headers, as it is the place loop
 	     optimizer wants to hoist code to.
@@ -241,8 +409,10 @@ try_forward_edges (mode, b)
 	      if (GET_CODE (insn) == NOTE)
 		break;
 	    }
-	  target = target->succ->dest, counter++;
-	}
+	  counter++;
+	  target = new_target;
+	  threaded |= new_target_threaded;
+  	}
 
       if (counter >= n_basic_blocks)
 	{
@@ -257,37 +427,47 @@ try_forward_edges (mode, b)
 	  /* Save the values now, as the edge may get removed.  */
 	  gcov_type edge_count = e->count;
 	  int edge_probability = e->probability;
+	  int edge_frequency;
 
-	  if (redirect_edge_and_branch (e, target))
+	  if (threaded)
 	    {
-	      /* We successfully forwarded the edge.  Now update profile
-		 data: for each edge we traversed in the chain, remove
-		 the original edge's execution count.  */
-	      int edge_frequency = ((edge_probability * b->frequency
-				     + REG_BR_PROB_BASE / 2)
-				    / REG_BR_PROB_BASE);
-
-	      if (!FORWARDER_BLOCK_P (b) && forwarder_block_p (b))
-		BB_SET_FLAG (b, BB_FORWARDER_BLOCK);
-	      BB_SET_FLAG (b, BB_UPDATE_LIFE);
-
-	      do
-		{
-		  first->count -= edge_count;
-		  first->succ->count -= edge_count;
-		  first->frequency -= edge_frequency;
-		  first = first->succ->dest;
-		}
-	      while (first != target);
-
-	      changed = true;
+	      notice_new_block (redirect_edge_and_branch_force (e, target));
+	      if (rtl_dump_file)
+	        fprintf (rtl_dump_file, "Conditionals threaded.\n");
 	    }
-	  else
+	  else if (!redirect_edge_and_branch (e, target))
 	    {
 	      if (rtl_dump_file)
 		fprintf (rtl_dump_file, "Forwarding edge %i->%i to %i failed.\n",
 			 b->index, e->dest->index, target->index);
+	      continue;
 	    }
+	  /* We successfully forwarded the edge.  Now update profile
+	     data: for each edge we traversed in the chain, remove
+	     the original edge's execution count.  */
+	  edge_frequency = ((edge_probability * b->frequency
+			     + REG_BR_PROB_BASE / 2)
+			    / REG_BR_PROB_BASE);
+
+	  if (!FORWARDER_BLOCK_P (b) && forwarder_block_p (b))
+	    BB_SET_FLAG (b, BB_FORWARDER_BLOCK);
+	  BB_SET_FLAG (b, BB_UPDATE_LIFE);
+
+	  do
+	    {
+	      edge t;
+	      first->count -= edge_count;
+	      first->succ->count -= edge_count;
+	      first->frequency -= edge_frequency;
+	      if (first->succ->succ_next)
+		t = threaded_edge;
+	      else
+		t = first->succ;
+	      first = t->dest;
+	    }
+	  while (first != target);
+
+	  changed = true;
 	}
     }
 

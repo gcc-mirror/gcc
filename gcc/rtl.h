@@ -1788,8 +1788,6 @@ extern int true_regnum			PARAMS ((rtx));
 extern int redirect_jump_1		PARAMS ((rtx, rtx));
 extern int redirect_jump		PARAMS ((rtx, rtx, int));
 extern void rebuild_jump_labels		PARAMS ((rtx));
-extern void thread_jumps		PARAMS ((rtx, int, int));
-extern int rtx_equal_for_thread_p	PARAMS ((rtx, rtx, rtx));
 extern enum rtx_code reversed_comparison_code PARAMS ((rtx, rtx));
 extern enum rtx_code reversed_comparison_code_parts PARAMS ((enum rtx_code,
 							     rtx, rtx, rtx));
