@@ -887,10 +887,10 @@ finish_handler (blocks, handler)
 	}
     }
 
+  do_poplevel ();
+
   if (building_stmt_tree ())
     RECHAIN_STMTS (handler, HANDLER_BODY (handler));
-
-  do_poplevel ();
 }
 
 /* Begin a compound-statement.  If HAS_NO_SCOPE is non-zero, the

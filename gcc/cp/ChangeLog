@@ -1,3 +1,8 @@
+1999-10-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* semantics.c (finish_handler): End the scope of the handler
+	before attaching it to the statement-tree.
+
 1999-10-28  Ian Lance Taylor  <ian@zembu.com>
 
 	* rtti.c (build_dynamic_cast_1): Give a better error message for
