@@ -24,7 +24,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define NO_EXTERNAL_INDIRECT_ADDRESS
 
-#include "vax.h"
+#include "vax/vax.h"
 
 #undef LIB_SPEC
 #undef CPP_PREDEFINES
