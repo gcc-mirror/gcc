@@ -178,7 +178,8 @@ dnl new inlining code or the new system_header pragma will die on -Werror.
 dnl Leave it out by default and use maint-mode to use it.
 dnl
 dnl Define SECTION_FLAGS='-ffunction-sections -fdata-sections' if
-dnl compiler supports it.  
+dnl compiler supports it and the user has not requested debug mode.
+dnl
 dnl GLIBCPP_CHECK_COMPILER_FEATURES
 AC_DEFUN(GLIBCPP_CHECK_COMPILER_FEATURES, [
   # All these tests are for C++; save the language and the compiler flags.
