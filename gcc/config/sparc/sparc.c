@@ -6864,7 +6864,7 @@ ultra_cmove_results_ready_p (insn)
 
   /* If this got dispatched in the previous
      group, the results are not ready.  */
-  entry = (ultra_cur_hist - 1) % (ULTRA_NUM_HIST - 1);
+  entry = (ultra_cur_hist - 1) & (ULTRA_NUM_HIST - 1);
   up = &ultra_pipe_hist[entry];
   slot = 4;
   while (--slot >= 0)
@@ -6885,7 +6885,7 @@ ultra_fpmode_conflict_exists (fpmode)
   int hist_ent;
   int hist_lim;
 
-  hist_ent = (ultra_cur_hist - 1) % (ULTRA_NUM_HIST - 1);
+  hist_ent = (ultra_cur_hist - 1) & (ULTRA_NUM_HIST - 1);
   if (ultra_cycles_elapsed < 4)
     hist_lim = ultra_cycles_elapsed;
   else
@@ -6926,7 +6926,7 @@ ultra_fpmode_conflict_exists (fpmode)
 	    return 1;
 	}
       hist_lim--;
-      hist_ent = (hist_ent - 1) % (ULTRA_NUM_HIST - 1);
+      hist_ent = (hist_ent - 1) & (ULTRA_NUM_HIST - 1);
     }
 
   /* No conflicts, safe to dispatch.  */
@@ -7114,7 +7114,7 @@ ultra_schedule_insn (ip, ready, this, type)
 static void
 ultra_flush_pipeline ()
 {
-  ultra_cur_hist = (ultra_cur_hist + 1) % (ULTRA_NUM_HIST - 1);
+  ultra_cur_hist = (ultra_cur_hist + 1) & (ULTRA_NUM_HIST - 1);
   ultra_cycles_elapsed += 1;
   bzero ((char *) &ultra_pipe, sizeof ultra_pipe);
   ultra_pipe.free_slot_mask = 0xf;
