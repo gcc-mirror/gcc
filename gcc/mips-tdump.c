@@ -957,11 +957,7 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd)
 		    aux_base[index].isym, type_to_string (aux_base, index+1));
 	  }
 	else			/* global symbol */
-	  {
-	    used_ptr[index] = 1;
-	    printf ("      Type: %s\n",
-		    type_to_string (aux_base, index));
-	  }
+	  printf ("      Local symbol: %d\n", index);
 
 	if (want_scope)
 	  {
@@ -1161,7 +1157,7 @@ print_file_desc (fdp, number)
 	 width, "Line numbers",
 	 (ulong) fdp->cbLineOffset,
 	 (ulong) fdp->cline,
-	 (ulong) fdp->cline,
+	 (ulong) fdp->cbLine,
 	 (ulong) (fdp->cbLineOffset + sym_hdr.cbLineOffset));
 
   printf("    %-*s %11lu %11lu %11lu %11lu\n",
@@ -1294,14 +1290,15 @@ print_file_desc (fdp, number)
 	{
 	  int delta, count;
 	  long cur_line = proc_ptr->lnLow;
-	  uchar *line_ptr = ((uchar *)lines) + proc_ptr->cbLineOffset;
+	  uchar *line_ptr = (((uchar *)lines) + proc_ptr->cbLineOffset
+			     + fdp->cbLineOffset);
 	  uchar *line_end;
 
 	  if (pdi == fdp->cpd + fdp->ipdFirst - 1)	/* last procedure */
-	    line_end = ((uchar *)lines) + fdp->cbLine + fdp->ilineBase;
+	    line_end = ((uchar *)lines) + fdp->cbLine + fdp->cbLineOffset;
 	  else						/* not last proc. */
-	    line_end = ((uchar *)lines) + proc_desc[pdi+1].cbLineOffset;
-
+	    line_end = (((uchar *)lines) + proc_desc[pdi+1].cbLineOffset
+			+ fdp->cbLineOffset);
 
 	  printf ("\n\tThere are %lu bytes holding line numbers, starting at %lu.\n",
 		  (ulong) (line_end - line_ptr),
