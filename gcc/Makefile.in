@@ -1551,10 +1551,10 @@ install-common: native install-dir xgcc $(EXTRA_PARTS)
 	  rm -f $(libsubdir)/specs; \
 	  $(INSTALL_DATA) specs $(libsubdir)/specs; \
 	fi
-# Install the driver program as gcc-$(target)
+# Install the driver program as $(target)-gcc
 # and also as either gcc (if native) or $(tooldir)/bin/gcc.
 	-if [ -f gcc-cross ] ; then \
-	  $(INSTALL_PROGRAM) gcc-cross $(bindir)/gcc-$(target); \
+	  $(INSTALL_PROGRAM) gcc-cross $(bindir)/$(target)-gcc; \
 	  if [ -d $(tooldir)/bin/. ] ; then \
 	    rm -f $(tooldir)/bin/gcc; \
 	    $(INSTALL_PROGRAM) gcc-cross $(tooldir)/bin/gcc; \
@@ -1562,9 +1562,9 @@ install-common: native install-dir xgcc $(EXTRA_PARTS)
 	else \
 	  rm -f $(bindir)/gcc; \
 	  $(INSTALL_PROGRAM) xgcc $(bindir)/gcc; \
-	  rm -f $(bindir)/gcc-$(target)-1; \
-	  ln $(bindir)/gcc $(bindir)/gcc-$(target)-1; \
-	  mv $(bindir)/gcc-$(target)-1 $(bindir)/gcc-$(target); \
+	  rm -f $(bindir)/$(target)-gcc-1; \
+	  ln $(bindir)/gcc $(bindir)/$(target)-gcc-1; \
+	  mv $(bindir)/$(target)-gcc-1 $(bindir)/$(target)-gcc; \
 	fi
 # Install protoize if it was compiled.
 	-if [ -f protoize ]; \
