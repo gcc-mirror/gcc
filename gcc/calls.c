@@ -2099,27 +2099,19 @@ expand_call (exp, target, ignore)
 	 recursion call can be ignored if we indeed use the tail recursion
 	 call expansion.  */
       int save_pending_stack_adjust = pending_stack_adjust;
-      rtx last;
 
       /* Use a new sequence to hold any RTL we generate.  We do not even
 	 know if we will use this RTL yet.  The final decision can not be
 	 made until after RTL generation for the entire function is
 	 complete.  */
-      push_to_sequence (0);
+      start_sequence ();
 
       /* Emit the pending stack adjustments before we expand any arguments.  */
       do_pending_stack_adjust ();
 
-      optimize_tail_recursion (exp, get_last_insn ());
- 
-      last = get_last_insn ();
-      tail_recursion_insns = get_insns ();
+      if (optimize_tail_recursion (actparms, get_last_insn ()))
+        tail_recursion_insns = get_insns ();
       end_sequence ();
-
-      /* If the last insn on the tail recursion sequence is not a
-	 BARRIER, then tail recursion optimization failed.  */
-      if (last == NULL_RTX || GET_CODE (last) != BARRIER)
-	tail_recursion_insns = NULL_RTX;
 
       /* Restore the original pending stack adjustment for the sibling and
 	 normal call cases below.  */
