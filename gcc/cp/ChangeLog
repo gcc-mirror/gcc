@@ -1,3 +1,40 @@
+2003-11-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9849
+	* parser.c (cp_lexer_prev_token): New function.
+	(cp_parser_skip_to_closing_parenthesis): Add consume_paren
+	parameter.
+	(cp_parser_nested_name_specifier_opt): Add is_declaration
+	parameter.
+	(cp_parser_nested_name_specifier): Likewise.
+	(cp_parser_class_or_namespace_name): Likewise.
+	(cp_parser_class_name): Likewise.
+	(cp_parser_template_id): Likewise.
+	(cp_parser_template_name): Likewise.
+	(cp_parser_id_expression): Adjust calls to
+	cp_parser_nested_name_specifier_op, cp_parser_template_id,
+	cp_parser_class_name.
+	(cp_parser_unqualified_id): Likewise.
+	(cp_parser_postfix_expression): Likewise.
+	(cp_parser_pseudo_destructor_name): Likewise.
+	(cp_parser_cast_expression): Likewise.
+	(cp_parser_mem_initializer_id): Likewise.
+	(cp_parser_simple_type_specifier): Likewise.
+	(cp_parser_type_name): Likewise.
+	(cp_parser_elaborated_type_specifier): Likewise.
+	(cp_parser_qualified_namespace_specifier): Likewise.
+	(cp_parser_using_declaration): Likewise.
+	(cp_parser_using_directive): Likewise.
+	(cp_parser_ptr_operator): Likewise.
+	(cp_parser_declarator_id): Likewise.
+	(cp_parser_class_head): Likewise.
+	(cp_parser_base_specifier): Likewise.
+	(cp_parser_constructor_declarator_p): Likewise.
+	(cp_parser_direct_declarator): Fix typo in comment.
+	(cp_parser_parenthesized_expression_list): Adjust call to
+	cp_parser_skip_to_closing_parenthesis.
+	(cp_parser_selection_statement): Likewise.
+
 2003-11-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/12924

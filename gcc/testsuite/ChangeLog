@@ -1,3 +1,9 @@
+2003-11-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9849
+	* g++.dg/template/error4.C: New test.
+	* g++.dg/template/nested3.C: Adjust error markers.
+
 2003-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/cpp/assert4.c: Check more #system assertions.
