@@ -390,6 +390,10 @@ struct lang_hooks
      semantics in cases that it doesn't want to handle specially.  */
   tree (*expr_size) (tree);
 
+  /* Called from assign_temp to return the maximum size, if there is one,
+     for a type.  */
+  tree (*type_max_size) PARAMS ((tree));
+
   /* Update lang specific fields after duplicating function body.  */
   void (*update_decl_after_saving) (tree, void *);
 

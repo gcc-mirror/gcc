@@ -1,3 +1,9 @@
+2004-07-03  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+	
+	* langhooks-def.h (LANG_HOOKS_TYPE_MAX_SIZE): New langhook.
+	* langhooks.h (strct lang_hooks): New field type_max_size.
+	* function.c (assign_temp): Call it.
+
 2004-07-03  Steven Bosscher  <stevenb@suse.de>
 
 	* config/sh/sh.c (sh_use_dfa_interface): Add TARGET_SH1.

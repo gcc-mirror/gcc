@@ -914,6 +914,7 @@ assign_temp (tree type_or_decl, int keep, int memory_required,
   if (mode == BLKmode || memory_required)
     {
       HOST_WIDE_INT size = int_size_in_bytes (type);
+      tree size_tree;
       rtx tmp;
 
       /* Zero sized arrays are GNU C extension.  Set size to 1 to avoid
@@ -929,6 +930,13 @@ assign_temp (tree type_or_decl, int keep, int memory_required,
 	  && TYPE_ARRAY_MAX_SIZE (type) != NULL_TREE
 	  && host_integerp (TYPE_ARRAY_MAX_SIZE (type), 1))
 	size = tree_low_cst (TYPE_ARRAY_MAX_SIZE (type), 1);
+
+      /* If we still haven't been able to get a size, see if the language
+	 can compute a maximum size.  */
+      if (size == -1
+	  && (size_tree = lang_hooks.type_max_size (type)) != 0
+	  && host_integerp (size_tree, 1))
+	size = tree_low_cst (size_tree, 1);
 
       /* The size of the temporary may be too large to fit into an integer.  */
       /* ??? Not sure this should happen except for user silliness, so limit
