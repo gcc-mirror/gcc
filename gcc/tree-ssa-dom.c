@@ -962,7 +962,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 {
   tree last;
 
-  /* If we are at a leaf node in the dominator graph, see if we can thread
+  /* If we are at a leaf node in the dominator tree, see if we can thread
      the edge from BB through its successor.
 
      Do this before we remove entries from our equivalence tables.  */
