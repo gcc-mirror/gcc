@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-codes.h"
 #include "assert.h"
 #include "expr.h"
+#include "except.h"
 #include "function.h"
 #include "recog.h"
 #include <math.h>
