@@ -840,6 +840,7 @@ java/lang/System.java \
 java/lang/Thread.java \
 java/lang/ThreadDeath.java \
 java/lang/ThreadGroup.java \
+java/lang/ThreadLocal.java \
 java/lang/Throwable.java \
 java/lang/UnknownError.java \
 java/lang/UnsatisfiedLinkError.java \
