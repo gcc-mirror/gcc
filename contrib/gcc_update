@@ -71,6 +71,11 @@ gcc/config.in: gcc/cstamp-h.in
 gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
 # And then, language-specific files
 gcc/f/intdoc.texi: gcc/f/intdoc.in gcc/f/intdoc.c gcc/f/intrin.h gcc/f/intrin.def
+gcc/ada/treeprs.ads: gcc/ada/treeprs.adt gcc/ada/sinfo.ads gcc/ada/xtreeprs.adb
+gcc/ada/einfo.h: gcc/ada/einfo.ads gcc/ada/einfo.adb gcc/ada/xeinfo.adb
+gcc/ada/sinfo.h: gcc/ada/sinfo.ads gcc/ada/xsinfo.adb
+gcc/ada/nmake.adb: gcc/ada/sinfo.ads gcc/ada/nmake.adt gcc/ada/xnmake.adb
+gcc/ada/nmake.ads: gcc/ada/sinfo.ads gcc/ada/nmake.adt gcc/ada/xnmake.adb
 # And libraries, at last
 libchill/configure: libchill/configure.in
 libf2c/configure: libf2c/configure.in

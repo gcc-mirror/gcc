@@ -1,3 +1,7 @@
+2001-11-07  Laurent Guerby <guerby@acm.org>
+
+	* gcc_update (files_and_dependencies): Add Ada dependencies.
+
 2001-10-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* snapshot: Remove.
