@@ -739,6 +739,8 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
       /* Redirect the first edge out of BB to reach POST_DOM_BB.  */
       redirect_edge_and_branch (bb->succ, post_dom_bb);
       PENDING_STMT (bb->succ) = NULL;
+      bb->succ->probability = REG_BR_PROB_BASE;
+      bb->succ->count = bb->count;
 
       /* The edge is no longer associated with a conditional, so it does
 	 not have TRUE/FALSE flags.  */

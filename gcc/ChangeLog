@@ -1,3 +1,9 @@
+2004-09-10  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-dce.c (remove_dead_stmt): Update profile.
+	* tree-split_edge.c (tree_split_edge): Likewise.
+	(thread_jumps): Likewise.
+
 2004-09-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cgraphunit.c, predict.c, tree-ssa-loop-ivopts.c: Fix comment

@@ -3018,7 +3018,11 @@ tree_split_edge (edge edge_in)
     after_bb = edge_in->src;
 
   new_bb = create_empty_bb (after_bb);
+  new_bb->frequency = EDGE_FREQUENCY (edge_in);
+  new_bb->count = edge_in->count;
   new_edge = make_edge (new_bb, dest, EDGE_FALLTHRU);
+  new_edge->probability = REG_BR_PROB_BASE;
+  new_edge->count = edge_in->count;
 
   /* Find all the PHI arguments on the original edge, and change them to
      the new edge.  Do it before redirection, so that the argument does not
@@ -3852,6 +3856,8 @@ thread_jumps (void)
 	 forwardable.  */
       for (e = bb->succ; e; e = next)
 	{
+	  int freq;
+	  gcov_type count;
 	  next = e->succ_next;
 
 	  /* If the edge is abnormal or its destination is not
@@ -3859,6 +3865,9 @@ thread_jumps (void)
 	  if ((e->flags & EDGE_ABNORMAL)
 	      || !tree_forwarder_block_p (e->dest))
 	    continue;
+
+	  count = e->count;
+	  freq = EDGE_FREQUENCY (e);
 
 	  /* Now walk through as many forwarder block as possible to
 	     find the ultimate destination we want to thread our jump
@@ -3879,6 +3888,15 @@ thread_jumps (void)
 		break;
 
 	      bb_ann (dest)->forwardable = 0;
+	      dest->frequency -= freq;
+	      if (dest->frequency < 0)
+		dest->frequency = 0;
+	      dest->count -= count;
+	      if (dest->count < 0)
+		dest->count = 0;
+	      dest->succ->count -= count;
+	      if (dest->succ->count < 0)
+		dest->succ->count = 0;
 	    }
 
 	  /* Reset the forwardable marks to 1.  */
