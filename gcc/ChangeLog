@@ -1,3 +1,8 @@
+2002-09-26  David S. Miller  <davem@redhat.com>
+
+	* calls.c (emit_library_call_value_1): Passing args by reference
+	converts a CONST function into a PURE one.
+
 2002-09-26  Richard Henderson  <rth@redhat.com>
 
 	PR c/7160

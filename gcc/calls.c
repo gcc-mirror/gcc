@@ -3666,6 +3666,14 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 #endif
 	    ;
 
+	  /* If this was a CONST function, it is now PURE since
+	     it now reads memory.  */
+	  if (flags & ECF_CONST)
+	    {
+	      flags &= ~ECF_CONST;
+	      flags |= ECF_PURE;
+	    }
+
 	  if (GET_MODE (val) == MEM && ! must_copy)
 	    slot = val;
 	  else if (must_copy)
