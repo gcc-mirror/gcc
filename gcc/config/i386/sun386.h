@@ -97,7 +97,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Output before writable data.  */
 
-#undef DATA_SECTION_ASSM_OP
+#undef DATA_SECTION_ASM_OP
 #define DATA_SECTION_ASM_OP "\t.data"
 
 /* Define the syntax of labels and symbol definitions/declarations.  */
@@ -124,7 +124,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    This is suitable for output with `assemble_name'.  */
 
 #define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
-  sprintf ((BUF), ".%s%d", (PREFIX), (NUMBER))
+  sprintf ((BUF), "*.%s%d", (PREFIX), (NUMBER))
 
 /* This is how to output a reference to a user-level label named NAME.  */
 
