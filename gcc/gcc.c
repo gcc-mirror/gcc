@@ -2057,9 +2057,9 @@ process_command (argc, argv)
       temp = (char *) xmalloc (strlen (gcc_exec_prefix) + strlen (spec_version)
 			       + strlen (spec_machine) + 3);
       strcpy (temp, gcc_exec_prefix);
-      strcat (temp, spec_version);
-      strcat (temp, "/");
       strcat (temp, spec_machine);
+      strcat (temp, "/");
+      strcat (temp, spec_version);
       strcat (temp, "/");
       gcc_exec_prefix = temp;
     }
