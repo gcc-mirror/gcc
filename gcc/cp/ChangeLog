@@ -1,3 +1,7 @@
+Mon Mar  6 08:46:47 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* lang-specs.h (as): Don't call if -syntax-only.
+
 2000-03-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* expr.c (cplus_expand_expr, case STMT_EXPR): Don't set
