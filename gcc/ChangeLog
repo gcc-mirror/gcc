@@ -1,3 +1,17 @@
+2005-03-02  J"orn Rennecke <joern.rennecke@st.com>
+
+	* recog.c (verify_changes, confirm_change_group): New functions,
+	broken out of apply_change_group.
+	(apply_change_group): Use them.
+	* recog.h (verify_change, confirm_change_group): Declare.
+	* rtl.h (redirect_jump_2): Declare.
+	* jump.c (redirect_exp, invert_exp): Delete.
+	(invert_exp_1): Take second parameter.  Return value.  Changed caller.
+	(redirect_jump_2): New function, broken out of redirect_jump.
+	(redirect_jump): Use redirect_jump_1 and redirect_jump_2.
+	(invert_jump): Use invert_jump_1 and redirect_jump_2.
+	* ifcvt.c (dead_or_predicable): Use redirect_jump_2.
+
 2005-03-02  Geoffrey Keating  <geoffk@apple.com>
 
 	* varasm.c (named_section): Use xstrdup rather than doing it by

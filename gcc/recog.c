@@ -294,11 +294,11 @@ num_changes_pending (void)
   return num_changes;
 }
 
-/* Apply a group of changes previously issued with `validate_change'.
+/* Tentatively apply the changes numbered NUM and up.
    Return 1 if all changes are valid, zero otherwise.  */
 
 int
-apply_change_group (void)
+verify_changes (int num)
 {
   int i;
   rtx last_validated = NULL_RTX;
@@ -312,7 +312,7 @@ apply_change_group (void)
      we also require that the operands meet the constraints for
      the insn.  */
 
-  for (i = 0; i < num_changes; i++)
+  for (i = num; i < num_changes; i++)
     {
       rtx object = changes[i].object;
 
@@ -376,17 +376,38 @@ apply_change_group (void)
       last_validated = object;
     }
 
-  if (i == num_changes)
+  return (i == num_changes);
+}
+
+/* A group of changes has previously been issued with validate_change and
+   verified with verify_changes.  Update the BB_DIRTY flags of the affected
+   blocks, and clear num_changes.  */
+
+void
+confirm_change_group (void)
+{
+  int i;
+  basic_block bb;
+
+  for (i = 0; i < num_changes; i++)
+    if (changes[i].object
+	&& INSN_P (changes[i].object)
+	&& (bb = BLOCK_FOR_INSN (changes[i].object)))
+      bb->flags |= BB_DIRTY;
+
+  num_changes = 0;
+}
+
+/* Apply a group of changes previously issued with `validate_change'.
+   If all changes are valid, call confirm_change_group and return 1,
+   otherwise, call cancel_changes and return 0.  */
+
+int
+apply_change_group (void)
+{
+  if (verify_changes (0))
     {
-      basic_block bb;
-
-      for (i = 0; i < num_changes; i++)
-	if (changes[i].object
-	    && INSN_P (changes[i].object)
-	    && (bb = BLOCK_FOR_INSN (changes[i].object)))
-	  bb->flags |= BB_DIRTY;
-
-      num_changes = 0;
+      confirm_change_group ();
       return 1;
     }
   else
@@ -395,6 +416,7 @@ apply_change_group (void)
       return 0;
     }
 }
+
 
 /* Return the number of changes so far in the current group.  */
 

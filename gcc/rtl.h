@@ -1912,6 +1912,7 @@ extern int rtx_renumbered_equal_p (rtx, rtx);
 extern int true_regnum (rtx);
 extern unsigned int reg_or_subregno (rtx);
 extern int redirect_jump_1 (rtx, rtx);
+extern void redirect_jump_2 (rtx, rtx, rtx, int, int);
 extern int redirect_jump (rtx, rtx, int);
 extern void rebuild_jump_labels (rtx);
 extern enum rtx_code reversed_comparison_code (rtx, rtx);
