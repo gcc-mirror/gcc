@@ -357,6 +357,12 @@ build_target_expr_with_type (init, type)
 
   if (TREE_CODE (init) == TARGET_EXPR)
     return init;
+  else if (CLASS_TYPE_P (type) && !TYPE_HAS_TRIVIAL_INIT_REF (type)
+	   && TREE_CODE (init) != COND_EXPR)
+    /* We need to build up a copy constructor call.  COND_EXPR is a special
+       case because we already have copies on the arms and we don't want
+       another one here.  */
+    return force_rvalue (init);
 
   slot = build (VAR_DECL, type);
   DECL_ARTIFICIAL (slot) = 1;
