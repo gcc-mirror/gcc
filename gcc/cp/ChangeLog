@@ -1,5 +1,21 @@
 1998-10-16  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* typeck.c (build_indirect_ref): Complain about a pointer to data
+	member, too.
+	* typeck2.c (build_m_component_ref): Don't indirect a pointer to
+	data member.
+	* init.c (resolve_offset_ref): Don't undo the above.
+
+	* cp-tree.h (DECL_C_BIT_FIELD, SET_DECL_C_BIT_FIELD): New macros.
+	(struct lang_decl_flags): Add `bitfield'.
+	* class.c (finish_struct_1): Use DECL_C_BIT_FIELD instead of
+	DECL_BIT_FIELD.
+	* decl2.c (grokbitfield, grok_alignof): Likewise.
+	* init.c (build_offset_ref): Likewise.
+	* typeck.c (build_component_addr, expr_sizeof): Likewise.
+	* cvt.c (build_up_reference): Don't crash if taking the address
+	returns error_mark_node.
+
 	* decl.c (grokfndecl): Also check ctype when checking for ::main().
 
 1998-10-15  Jason Merrill  <jason@yorick.cygnus.com>

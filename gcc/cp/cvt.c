@@ -377,6 +377,9 @@ build_up_reference (type, arg, flags)
      address, transform all occurrences of the register, into a memory
      reference we could win better.  */
   rval = build_unary_op (ADDR_EXPR, arg, 1);
+  if (rval == error_mark_node)
+    return error_mark_node;
+
   if ((flags & LOOKUP_PROTECT)
       && TYPE_MAIN_VARIANT (argtype) != TYPE_MAIN_VARIANT (target_type)
       && IS_AGGR_TYPE (argtype)

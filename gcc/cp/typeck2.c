@@ -1393,8 +1393,7 @@ build_m_component_ref (datum, component)
     }
   else
     {
-      component = build_indirect_ref (component, NULL_PTR);
-      type = TREE_TYPE (component);
+      type = TREE_TYPE (TREE_TYPE (component));
       rettype = TREE_TYPE (type);
     }
 

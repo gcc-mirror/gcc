@@ -3541,12 +3541,10 @@ finish_struct_1 (t, warn_anon)
 	    }
 	}
 
-      /* We set DECL_BIT_FIELD tentatively in grokbitfield.
-	 If the type and width are valid, we'll keep it set.
-	 Otherwise, the flag is cleared.  */
-      if (DECL_BIT_FIELD (x))
+      /* We set DECL_C_BIT_FIELD in grokbitfield.
+	 If the type and width are valid, we'll also set DECL_BIT_FIELD.  */
+      if (DECL_C_BIT_FIELD (x))
 	{
-	  DECL_BIT_FIELD (x) = 0;
 	  /* Invalid bit-field size done by grokfield.  */
 	  /* Detect invalid bit-field type.  */
 	  if (DECL_INITIAL (x)
@@ -3844,13 +3842,13 @@ finish_struct_1 (t, warn_anon)
      C++: maybe we will support default field initialization some day...  */
 
   /* Delete all zero-width bit-fields from the front of the fieldlist */
-  while (fields && DECL_BIT_FIELD (fields)
+  while (fields && DECL_C_BIT_FIELD (fields)
 	 && DECL_INITIAL (fields))
     fields = TREE_CHAIN (fields);
   /* Delete all such fields from the rest of the fields.  */
   for (x = fields; x;)
     {
-      if (TREE_CHAIN (x) && DECL_BIT_FIELD (TREE_CHAIN (x))
+      if (TREE_CHAIN (x) && DECL_C_BIT_FIELD (TREE_CHAIN (x))
 	  && DECL_INITIAL (TREE_CHAIN (x)))
 	TREE_CHAIN (x) = TREE_CHAIN (TREE_CHAIN (x));
       else

@@ -1686,7 +1686,7 @@ build_offset_ref (type, name)
       return convert_from_reference (t);
     }
 
-  if (TREE_CODE (t) == FIELD_DECL && DECL_BIT_FIELD (t))
+  if (TREE_CODE (t) == FIELD_DECL && DECL_C_BIT_FIELD (t))
     {
       cp_error ("illegal pointer to bit field `%D'", t);
       return error_mark_node;
@@ -1740,7 +1740,8 @@ resolve_offset_ref (exp)
     }
 
   if ((TREE_CODE (member) == VAR_DECL
-       && ! TYPE_PTRMEMFUNC_P (TREE_TYPE (member)))
+       && ! TYPE_PTRMEMFUNC_P (TREE_TYPE (member))
+       && ! TYPE_PTRMEM_P (TREE_TYPE (member)))
       || TREE_CODE (TREE_TYPE (member)) == FUNCTION_TYPE
       || TREE_CODE (TREE_TYPE (member)) == METHOD_TYPE)
     {
@@ -1824,7 +1825,7 @@ resolve_offset_ref (exp)
        for the dereferenced pointer-to-member construct.  */
     addr = build_unary_op (ADDR_EXPR, base, 0);
 
-  if (TREE_CODE (TREE_TYPE (member)) == OFFSET_TYPE)
+  if (TYPE_PTRMEM_P (TREE_TYPE (member)))
     {
       if (addr == error_mark_node)
 	{
@@ -1832,10 +1833,9 @@ resolve_offset_ref (exp)
 	  return error_mark_node;
 	}
 
-      basetype = TYPE_OFFSET_BASETYPE (TREE_TYPE (member));
+      basetype = TYPE_OFFSET_BASETYPE (TREE_TYPE (TREE_TYPE (member)));
       addr = convert_pointer_to (basetype, addr);
-      member = cp_convert (ptrdiff_type_node,
-			   build_unary_op (ADDR_EXPR, member, 0));
+      member = cp_convert (ptrdiff_type_node, member);
       
       /* Pointer to data members are offset by one, so that a null
 	 pointer with a real value of 0 is distinguishable from an

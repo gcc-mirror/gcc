@@ -1046,7 +1046,7 @@ grok_alignof (expr)
     return build_min (ALIGNOF_EXPR, sizetype, expr);
 
   if (TREE_CODE (expr) == COMPONENT_REF
-      && DECL_BIT_FIELD (TREE_OPERAND (expr, 1)))
+      && DECL_C_BIT_FIELD (TREE_OPERAND (expr, 1)))
     error ("`__alignof__' applied to a bit-field");
 
   if (TREE_CODE (expr) == INDIRECT_REF)
@@ -1809,7 +1809,7 @@ grokbitfield (declarator, declspecs, width)
     {
       constant_expression_warning (width);
       DECL_INITIAL (value) = width;
-      DECL_BIT_FIELD (value) = 1;
+      SET_DECL_C_BIT_FIELD (value);
     }
 
   DECL_IN_AGGR_P (value) = 1;
