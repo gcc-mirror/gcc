@@ -1,3 +1,9 @@
+2003-09-21  Daniel Jacobowitz  <drow@mvista.com>
+
+	* configure.in: Pass a computed --program-transform-name
+	to subconfigures.
+	* configure: Regenerated.
+
 2003-09-20  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Don't pass down obsolete ENQUIRE variable.
