@@ -1,3 +1,13 @@
+Fri Mar  6 10:06:59 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * method.c: Include "system.h" to get stdlib.h, stdio.h,
+        ctype.h, string.h, etc.
+        (issue_nrepeats): Add default case in enumeration switch.
+        (check_btype): Likewise.
+        (process_overload_item): Likewise.
+	 
+        * Makefile.in (method.o): Depend on system.h.
+
 Wed Mar  4 22:26:53 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* lex.c (do_scoped_id): Fix parenthesizing.
