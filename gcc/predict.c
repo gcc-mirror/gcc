@@ -45,6 +45,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "recog.h"
 #include "expr.h"
 #include "predict.h"
+#include "real.h"
+
+/* real constants: 0, 1, 1-1/REG_BR_PROB_BASE, REG_BR_PROB_BASE, 0.5,
+                   REAL_BB_FREQ_MAX.  */
+static REAL_VALUE_TYPE real_zero, real_one, real_almost_one, real_br_prob_base,
+		       real_one_half, real_bb_freq_max;
 
 /* Random guesstimation given names.  */
 #define PROB_NEVER		(0)
@@ -620,7 +626,7 @@ expected_value_to_br_prob ()
 typedef struct block_info_def
 {
   /* Estimated frequency of execution of basic_block.  */
-  volatile double frequency;
+  REAL_VALUE_TYPE frequency;
 
   /* To keep queue of basic blocks to process.  */
   basic_block next;
@@ -637,11 +643,8 @@ typedef struct edge_info_def
 {
   /* In case edge is an loopback edge, the probability edge will be reached
      in case header is.  Estimated number of iterations of the loop can be
-     then computed as 1 / (1 - back_edge_prob).
-
-     Volatile is needed to avoid differences in the optimized and unoptimized
-     builds on machines where FP registers are wider than double.  */
-  volatile double back_edge_prob;
+     then computed as 1 / (1 - back_edge_prob).  */
+  REAL_VALUE_TYPE back_edge_prob;
   /* True if the edge is an loopback edge in the natural loop.  */
   int back_edge:1;
 } *edge_info;
@@ -683,10 +686,13 @@ propagate_freq (head)
 	}
     }
 
-  BLOCK_INFO (head)->frequency = 1;
+  memcpy (&BLOCK_INFO (head)->frequency, &real_one, sizeof (real_one));
   for (; bb; bb = nextbb)
     {
-      double cyclic_probability = 0, frequency = 0;
+      REAL_VALUE_TYPE cyclic_probability, frequency;
+
+      memcpy (&cyclic_probability, &real_zero, sizeof (real_zero));
+      memcpy (&frequency, &real_zero, sizeof (real_zero));
 
       nextbb = BLOCK_INFO (bb)->next;
       BLOCK_INFO (bb)->next = NULL;
@@ -702,16 +708,36 @@ propagate_freq (head)
 
 	  for (e = bb->pred; e; e = e->pred_next)
 	    if (EDGE_INFO (e)->back_edge)
-	      cyclic_probability += EDGE_INFO (e)->back_edge_prob;
+	      {
+		REAL_ARITHMETIC (cyclic_probability, PLUS_EXPR,
+				 cyclic_probability,
+				 EDGE_INFO (e)->back_edge_prob);
+	      }
 	    else if (!(e->flags & EDGE_DFS_BACK))
-	      frequency += (e->probability
-			    * BLOCK_INFO (e->src)->frequency /
-			    REG_BR_PROB_BASE);
+	      {
+		REAL_VALUE_TYPE tmp;
 
-	  if (cyclic_probability > 1.0 - 1.0 / REG_BR_PROB_BASE)
-	    cyclic_probability = 1.0 - 1.0 / REG_BR_PROB_BASE;
+		/*  frequency += (e->probability
+				  * BLOCK_INFO (e->src)->frequency /
+				  REG_BR_PROB_BASE);  */
 
-	  BLOCK_INFO (bb)->frequency = frequency / (1 - cyclic_probability);
+		REAL_VALUE_FROM_INT (tmp, e->probability, 0, DFmode);
+		REAL_ARITHMETIC (tmp, MULT_EXPR, tmp,
+				 BLOCK_INFO (e->src)->frequency);
+		REAL_ARITHMETIC (tmp, RDIV_EXPR, tmp, real_br_prob_base);
+		REAL_ARITHMETIC (frequency, PLUS_EXPR, frequency, tmp);
+	      }
+
+	  if (REAL_VALUES_LESS (real_almost_one, cyclic_probability))
+	    memcpy (&cyclic_probability, &real_almost_one, sizeof (real_zero));
+
+	  /* BLOCK_INFO (bb)->frequency = frequency / (1 - cyclic_probability)
+	   */
+
+	  REAL_ARITHMETIC (cyclic_probability, MINUS_EXPR, real_one,
+			   cyclic_probability);
+	  REAL_ARITHMETIC (BLOCK_INFO (bb)->frequency,
+			   RDIV_EXPR, frequency, cyclic_probability);
 	}
 
       BLOCK_INFO (bb)->tovisit = 0;
@@ -719,9 +745,19 @@ propagate_freq (head)
       /* Compute back edge frequencies.  */
       for (e = bb->succ; e; e = e->succ_next)
 	if (e->dest == head)
-	  EDGE_INFO (e)->back_edge_prob
-	    = ((e->probability * BLOCK_INFO (bb)->frequency)
-	       / REG_BR_PROB_BASE);
+	  {
+	    REAL_VALUE_TYPE tmp;
+
+	    /* EDGE_INFO (e)->back_edge_prob
+		  = ((e->probability * BLOCK_INFO (bb)->frequency)
+		     / REG_BR_PROB_BASE); */
+	    REAL_VALUE_FROM_INT (tmp, e->probability, 0, DFmode);
+	    REAL_ARITHMETIC (tmp, MULT_EXPR, tmp,
+			     BLOCK_INFO (bb)->frequency);
+	    REAL_ARITHMETIC (EDGE_INFO (e)->back_edge_prob,
+			     RDIV_EXPR, tmp, real_br_prob_base);
+
+	  }
 
       /* Propagate to successor blocks.  */
       for (e = bb->succ; e; e = e->succ_next)
@@ -863,7 +899,18 @@ estimate_bb_frequencies (loops)
      struct loops *loops;
 {
   int i;
-  double freq_max = 0;
+  REAL_VALUE_TYPE freq_max;
+
+  REAL_VALUE_FROM_INT (real_zero, 0, 0, DFmode);
+  REAL_VALUE_FROM_INT (real_one, 1, 0, DFmode);
+  REAL_VALUE_FROM_INT (real_br_prob_base, REG_BR_PROB_BASE, 0, DFmode);
+  REAL_VALUE_FROM_INT (real_bb_freq_max, BB_FREQ_MAX, 0, DFmode);
+  REAL_VALUE_FROM_INT (real_one_half, 2, 0, DFmode);
+
+  REAL_ARITHMETIC (real_one_half, RDIV_EXPR, real_one, real_one_half);
+
+  REAL_ARITHMETIC (real_almost_one, RDIV_EXPR, real_one, real_br_prob_base);
+  REAL_ARITHMETIC (real_almost_one, MINUS_EXPR, real_one, real_almost_one);
 
   mark_dfs_back_edges ();
   if (flag_branch_probabilities)
@@ -919,8 +966,14 @@ estimate_bb_frequencies (loops)
 
       BLOCK_INFO (bb)->tovisit = 0;
       for (e = bb->succ; e; e = e->succ_next)
-	EDGE_INFO (e)->back_edge_prob = ((double) e->probability
-					 / REG_BR_PROB_BASE);
+	{
+	
+	  REAL_VALUE_FROM_INT (EDGE_INFO (e)->back_edge_prob,
+			       e->probability, 0, DFmode);
+	  REAL_ARITHMETIC (EDGE_INFO (e)->back_edge_prob,
+			   RDIV_EXPR, EDGE_INFO (e)->back_edge_prob,
+			   real_br_prob_base);
+	}
     }
 
   /* First compute probabilities locally for each loop from innermost
@@ -935,14 +988,16 @@ estimate_bb_frequencies (loops)
   BLOCK_INFO (EXIT_BLOCK_PTR)->tovisit = 1;
   propagate_freq (ENTRY_BLOCK_PTR);
 
+  memcpy (&freq_max, &real_zero, sizeof (real_zero));
   for (i = 0; i < n_basic_blocks; i++)
-    if (BLOCK_INFO (BASIC_BLOCK (i))->frequency > freq_max)
-      freq_max = BLOCK_INFO (BASIC_BLOCK (i))->frequency;
+    if (REAL_VALUES_LESS (freq_max, BLOCK_INFO (BASIC_BLOCK (i))->frequency))
+      memcpy (&freq_max, &BLOCK_INFO (BASIC_BLOCK (i))->frequency,
+	      sizeof (freq_max));
 
   for (i = -2; i < n_basic_blocks; i++)
     {
       basic_block bb;
-      volatile double tmp;
+      REAL_VALUE_TYPE tmp;
 
       if (i == -2)
 	bb = ENTRY_BLOCK_PTR;
@@ -951,11 +1006,11 @@ estimate_bb_frequencies (loops)
       else
 	bb = BASIC_BLOCK (i);
 
-      /* ??? Prevent rounding differences due to optimization on x86.  */
-      tmp = BLOCK_INFO (bb)->frequency * BB_FREQ_MAX;
-      tmp /= freq_max;
-      tmp += 0.5;
-      bb->frequency = tmp;
+      REAL_ARITHMETIC (tmp, MULT_EXPR, BLOCK_INFO (bb)->frequency,
+		       real_bb_freq_max);
+      REAL_ARITHMETIC (tmp, RDIV_EXPR, tmp, freq_max);
+      REAL_ARITHMETIC (tmp, PLUS_EXPR, tmp, real_one_half);
+      bb->frequency = REAL_VALUE_UNSIGNED_FIX (tmp);
     }
 
   free_aux_for_blocks ();
