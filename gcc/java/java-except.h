@@ -71,3 +71,4 @@ extern void maybe_end_try PROTO ((int));
 
 extern int add_handler PROTO ((int, int, tree, tree));
 
+extern void expand_resume_after_catch PROTO ((void));
