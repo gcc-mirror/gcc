@@ -950,6 +950,7 @@ scan_loop (loop_start, end, nregs, unroll_p)
 		  m->done = 0;
 		  m->forces = 0;
 		  m->move_insn = 0;
+		  m->move_insn_first = 0;
 		  m->partial = 1;
 		  /* If the insn may not be executed on some cycles,
 		     we can't clear the whole reg; clear just high part.

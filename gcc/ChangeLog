@@ -1,3 +1,7 @@
+Wed Mar 25 10:30:32 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* loop.c (scan_loop): Initialize move_insn_first to zero.
+
 Wed Mar 25 01:06:49 1998  Joel Sherrill (joel@OARcorp.com)
 
 	* config/i386/go32-rtems.h: Defined TARGET_MEM_FUNCTIONS.
