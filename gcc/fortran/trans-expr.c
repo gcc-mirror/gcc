@@ -1365,7 +1365,49 @@ gfc_conv_array_constructor_expr (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Build a static initializer.  EXPR is the expression for the initial value.
+   The other parameters describe the variable of component being initialized.
+   EXPR may be null.  */
 
+tree
+gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
+		      bool array, bool pointer)
+{
+  gfc_se se;
+
+  if (!(expr || pointer))
+    return NULL_TREE;
+
+  if (array)
+    {
+      /* Arrays need special handling.  */
+      if (pointer)
+	return gfc_build_null_descriptor (type);
+      else
+	return gfc_conv_array_initializer (type, expr);
+    }
+  else if (pointer)
+    return fold_convert (type, null_pointer_node);
+  else
+    {
+      switch (ts->type)
+	{
+	case BT_DERIVED:
+	  gfc_init_se (&se, NULL);
+	  gfc_conv_structure (&se, expr, 1);
+	  return se.expr;
+
+	case BT_CHARACTER:
+	  return gfc_conv_string_init (ts->cl->backend_decl,expr);
+
+	default:
+	  gfc_init_se (&se, NULL);
+	  gfc_conv_constant (&se, expr);
+	  return se.expr;
+	}
+    }
+}
+  
 /* Build an expression for a constructor. If init is nonzero then
    this is part of a static variable initializer.  */
 
@@ -1396,28 +1438,8 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
       /* Evaluate the expression for this component.  */
       if (init)
 	{
-	  if (cm->dimension)
-	    {
-	      tree arraytype;
-	      arraytype = TREE_TYPE (cm->backend_decl);
-
-	      /* Arrays need special handling.  */
-	      if (cm->pointer)
-		cse.expr = gfc_build_null_descriptor (arraytype);
-	      else
-		cse.expr = gfc_conv_array_initializer (arraytype, c->expr);
-	    }
-	  else if (cm->pointer)
-	    {
-	      /* Pointer components may only be initialized to NULL.  */
-	      assert (c->expr->expr_type == EXPR_NULL);
-	      cse.expr = fold_convert (TREE_TYPE (cm->backend_decl), 
-				       null_pointer_node);
-	    }
-	  else if (cm->ts.type == BT_DERIVED)
-	    gfc_conv_structure (&cse, c->expr, 1);
-	  else
-	    gfc_conv_expr (&cse, c->expr);
+	  cse.expr = gfc_conv_initializer (c->expr, &cm->ts,
+	      TREE_TYPE (cm->backend_decl), cm->dimension, cm->pointer);
 	}
       else
 	{

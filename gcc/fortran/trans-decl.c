@@ -694,7 +694,6 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 {
   tree decl;
   tree length = NULL_TREE;
-  gfc_se se;
   int byref;
 
   assert (sym->attr.referenced);
@@ -802,26 +801,12 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       DECL_INITIAL (length) = build_int_2 (-2, -1);
     }
 
-  /* TODO: Initialization of pointer variables.  */
-  switch (sym->ts.type)
+  if (sym->ts.type == BT_CHARACTER)
     {
-    case BT_CHARACTER:
       /* Character variables need special handling.  */
       gfc_allocate_lang_decl (decl);
 
-      if (TREE_CODE (length) == INTEGER_CST)
-	{
-	  /* Static initializer for string scalars.
-	     Initialization of string arrays is handled elsewhere. */
-	  if (sym->value && sym->attr.dimension == 0)
-	    {
-	      assert (TREE_STATIC (decl));
-	      if (sym->attr.pointer)
-		gfc_todo_error ("initialization of character pointers");
-	      DECL_INITIAL (decl) = gfc_conv_string_init (length, sym->value);
-	    }
-	}
-      else
+      if (TREE_CODE (length) != INTEGER_CST)
 	{
 	  char name[GFC_MAX_MANGLED_SYMBOL_LEN + 2];
 
@@ -837,31 +822,16 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  gfc_finish_var_decl (length, sym);
 	  assert (!sym->value);
 	}
-      break;
-
-    case BT_DERIVED:
-      if (sym->value && ! (sym->attr.use_assoc || sym->attr.dimension))
-        {
-          gfc_init_se (&se, NULL);
-          gfc_conv_structure (&se, sym->value, 1);
-          DECL_INITIAL (decl) = se.expr;
-        }
-      break;
-
-    default:
-      /* Static initializers for SAVEd variables.  Arrays have already been
-         remembered.  Module variables are initialized when the module is
-         loaded.  */
-      if (sym->value && ! (sym->attr.use_assoc || sym->attr.dimension))
-	{
-	  assert (TREE_STATIC (decl));
-	  gfc_init_se (&se, NULL);
-	  gfc_conv_constant (&se, sym->value);
-	  DECL_INITIAL (decl) = se.expr;
-	}
-      break;
     }
   sym->backend_decl = decl;
+
+  if (TREE_STATIC (decl) && !sym->attr.use_assoc)
+    {
+      /* Add static initializer.  */
+      DECL_INITIAL (decl) = gfc_conv_initializer (sym->value, &sym->ts,
+	  TREE_TYPE (decl), sym->attr.dimension,
+	  sym->attr.pointer || sym->attr.allocatable);
+    }
 
   return decl;
 }
@@ -1784,7 +1754,6 @@ static void
 gfc_create_module_variable (gfc_symbol * sym)
 {
   tree decl;
-  gfc_se se;
 
   /* Only output symbols from this module.  */
   if (sym->ns != module_namespace)
@@ -1811,33 +1780,6 @@ gfc_create_module_variable (gfc_symbol * sym)
   sym->attr.referenced = 1;
   /* Create the decl.  */
   decl = gfc_get_symbol_decl (sym);
-
-  /* We want to allocate storage for this variable.  */
-  TREE_STATIC (decl) = 1;
-
-  if (sym->attr.dimension)
-    {
-      assert (sym->attr.pointer || sym->attr.allocatable
-	      || GFC_ARRAY_TYPE_P (TREE_TYPE (sym->backend_decl)));
-      if (sym->attr.pointer || sym->attr.allocatable)
-	gfc_trans_static_array_pointer (sym);
-      else
-	gfc_trans_auto_array_allocation (sym->backend_decl, sym, NULL_TREE);
-    }
-  else if (sym->ts.type == BT_DERIVED)
-    {
-      if (sym->value)
-	gfc_todo_error ("Initialization of derived type module variables");
-    }
-  else
-    {
-      if (sym->value)
-	{
-	  gfc_init_se (&se, NULL);
-	  gfc_conv_constant (&se, sym->value);
-	  DECL_INITIAL (decl) = se.expr;
-	}
-    }
 
   /* Create the variable.  */
   pushdecl (decl);
