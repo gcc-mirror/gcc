@@ -18,11 +18,12 @@ struct vtable mtable = {
 }; /* { dg-warning "missing initializer" "warning regression" { target *-*-* } {18} } */
    /* { dg-warning "initialization for `mtable._realloc'" "warning regression" { target *-*-* } {18} } */
 
+/* With designated initializers, we assume you meant to leave out the
+   initialization of any blank fields.  */
 struct vtable mtable2 = {
   ._malloc = malloc,
   ._realloc = realloc
-}; /* { dg-warning "missing initializer" "warning regression" { target *-*-* } {24} } */
-   /* { dg-warning "initialization for `mtable2._free'" "warning regression" { target *-*-* } {24} } */
+};
 
 struct vtable mtable3 = {
   ._free = free,
