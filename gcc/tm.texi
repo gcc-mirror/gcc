@@ -2787,13 +2787,16 @@ The value of the expression can also be a @code{parallel} RTX.  This is
 used when an argument is passed in multiple locations.  The mode of the
 of the @code{parallel} should be the mode of the entire argument.  The
 @code{parallel} holds any number of @code{expr_list} pairs; each one
-describes where part of the argument is passed.  In each @code{expr_list},
-the first operand can be either a @code{reg} RTX for the hard register
-in which to pass this part of the argument, or zero to pass the argument
-on the stack.  If this operand is a @code{reg}, then the mode indicates
-how large this part of the argument is.  The second operand of the
-@code{expr_list} is a @code{const_int} which gives the offset in bytes
-into the entire argument where this part starts.
+describes where part of the argument is passed.  In each
+@code{expr_list} the first operand must be a @code{reg} RTX for the hard
+register in which to pass this part of the argument, and the mode of the
+register RTX indicates how large this part of the argument is.  The
+second operand of the @code{expr_list} is a @code{const_int} which gives
+the offset in bytes into the entire argument of where this part starts.
+As a special exception the first @code{expr_list} in the @code{parallel} 
+RTX may have a first operand of zero.  This indicates that the bytes
+starting from the second operand of that @code{expr_list} are stored on
+the stack and not held in a register.
 
 @cindex @file{stdarg.h} and register arguments
 The usual way to make the ANSI library @file{stdarg.h} work on a machine
