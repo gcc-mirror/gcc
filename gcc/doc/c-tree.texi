@@ -2017,7 +2017,15 @@ always @code{a - a/b} where the division is as if computed by a
 These nodes represent array accesses.  The first operand is the array;
 the second is the index.  To calculate the address of the memory
 accessed, you must scale the index by the size of the type of the array
-elements.
+elements.  The type of these expressions must be the type of a component of
+the array.
+
+@item ARRAY_RANGE_REF
+These nodes represent access to a range (or ``slice'') of an array.  The
+operands are the same as that for @code{ARRAY_REF} and have the same
+meanings.  The type of these expressions must be an array whose component
+type is the same as that of the first operand.  The range of that array
+type determines the amount of data these expressions access.
 
 @item EXACT_DIV_EXPR
 Document.
