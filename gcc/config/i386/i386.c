@@ -49,9 +49,9 @@ char *singlemove_string ();
 char *output_move_const_single ();
 char *output_fp_cc0_set ();
 
-static char *hi_reg_name[] = HI_REGISTER_NAMES;
-static char *qi_reg_name[] = QI_REGISTER_NAMES;
-static char *qi_high_reg_name[] = QI_HIGH_REGISTER_NAMES;
+char *hi_reg_name[] = HI_REGISTER_NAMES;
+char *qi_reg_name[] = QI_REGISTER_NAMES;
+char *qi_high_reg_name[] = QI_HIGH_REGISTER_NAMES;
 
 /* Array of the smallest class containing reg number REGNO, indexed by
    REGNO.  Used by REGNO_REG_CLASS in i386.h. */
@@ -922,45 +922,6 @@ output_pic_addr_const (file, x, code)
     }
 }
 
-/* Print the name of a register based on its machine mode and number.
-   If CODE is 'w', pretend the mode is HImode.
-   If CODE is 'b', pretend the mode is QImode.
-   If CODE is 'k', pretend the mode is SImode.
-   If CODE is 'h', pretend the reg is the `high' byte register.
-   If CODE is 'y', print "st(0)" instead of "st", if the reg is stack op. */
-
-#define PRINT_REG(X, CODE, FILE) \
-  do { if (REGNO (X) == ARG_POINTER_REGNUM)		\
-	 abort ();					\
-       fprintf (FILE, "%s", RP);			\
-       switch ((CODE == 'w' ? 2 			\
-		: CODE == 'b' ? 1			\
-		: CODE == 'k' ? 4			\
-		: CODE == 'y' ? 3			\
-		: CODE == 'h' ? 0			\
-		: GET_MODE_SIZE (GET_MODE (X))))	\
-	 {						\
-	 case 3:					\
-	   if (STACK_TOP_P (X))				\
-	     {						\
-	       fputs ("st(0)", FILE);			\
-	       break;					\
-	     }						\
-	 case 4:					\
-	 case 8:					\
-	   if (!FP_REG_P (X)) fputs ("e", FILE);	\
-	 case 2:					\
-	   fputs (hi_reg_name[REGNO (X)], FILE);	\
-	   break;					\
-	 case 1:					\
-	   fputs (qi_reg_name[REGNO (X)], FILE);	\
-	   break;					\
-	 case 0:					\
-	   fputs (qi_high_reg_name[REGNO (X)], FILE);	\
-	   break;					\
-	 }						\
-     } while (0)
-
 /* Meaning of CODE:
    f -- float insn (print a CONST_DOUBLE as a float rather than in hex).
    D,L,W,B,Q,S -- print the opcode suffix for specified size of operand.
