@@ -1,3 +1,8 @@
+2005-03-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.in (RPATH_ENVVAR): Set to DYLD_LIBRARY_PATH on Darwin.
+	* configure: Regenerate.
+
 2005-03-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.def: Remove libstdcxx_incdir, libsubdir, gxx_include_dir,
