@@ -17,8 +17,8 @@
 // MAY BE REMOVED in a future standard revision.  You should use the
 // header <sstream> instead.
 
-#include <std/strstream>     /*    HACK HACK HACK   */
-#include <std/algorithm>     /*    DITTO            */
+#include <backward/strstream.h>
+#include <algorithm>
 #include <new>
 #include <stdlib.h>
 #include <string.h>
