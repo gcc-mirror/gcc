@@ -1828,13 +1828,11 @@ frv_asm_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
     fprintf (file, "\taddi %s,#%d,%s\n", name_arg0, (int) delta, name_arg0);
   else
     {
-      const char *name_add = reg_names[TEMP_REGNO];
-      fprintf (file, "\tsethi%s #hi(", parallel);
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
-      fprintf (file, "),%s\n", name_add);
-      fprintf (file, "\tsetlo #lo(");
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
-      fprintf (file, "),%s\n", name_add);
+      const char *const name_add = reg_names[TEMP_REGNO];
+      fprintf (file, "\tsethi%s #hi(" HOST_WIDE_INT_PRINT_DEC "),%s\n",
+	       parallel, delta, name_add);
+      fprintf (file, "\tsetlo #lo(" HOST_WIDE_INT_PRINT_DEC "),%s\n",
+	       delta, name_add);
       fprintf (file, "\tadd %s,%s,%s\n", name_add, name_arg0, name_arg0);
     }
 

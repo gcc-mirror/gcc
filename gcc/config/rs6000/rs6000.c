@@ -4226,15 +4226,9 @@ rs6000_va_start (valist, nextarg)
   n_fpr = current_function_args_info.fregno - FP_ARG_MIN_REG;
 
   if (TARGET_DEBUG_ARG)
-    {
-      fputs ("va_start: words = ", stderr);
-      fprintf (stderr, HOST_WIDE_INT_PRINT_DEC, words);
-      fputs (", n_gpr = ", stderr);
-      fprintf (stderr, HOST_WIDE_INT_PRINT_DEC, n_gpr);
-      fputs (", n_fpr = ", stderr);
-      fprintf (stderr, HOST_WIDE_INT_PRINT_DEC, n_fpr);
-      putc ('\n', stderr);
-    }
+    fprintf (stderr, "va_start: words = "HOST_WIDE_INT_PRINT_DEC", n_gpr = "
+	     HOST_WIDE_INT_PRINT_DEC", n_fpr = "HOST_WIDE_INT_PRINT_DEC"\n",
+	     words, n_gpr, n_fpr);
 
   t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr, build_int_2 (n_gpr, 0));
   TREE_SIDE_EFFECTS (t) = 1;
@@ -8824,10 +8818,8 @@ print_operand_address (file, x)
 		 reg_names[ REGNO (XEXP (x, 1)) ]);
     }
   else if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT)
-    {
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (XEXP (x, 1)));
-      fprintf (file, "(%s)", reg_names[ REGNO (XEXP (x, 0)) ]);
-    }
+    fprintf (file, HOST_WIDE_INT_PRINT_DEC "(%s)",
+	     INTVAL (XEXP (x, 1)), reg_names[ REGNO (XEXP (x, 0)) ]);
 #if TARGET_ELF
   else if (GET_CODE (x) == LO_SUM && GET_CODE (XEXP (x, 0)) == REG
            && CONSTANT_P (XEXP (x, 1)))

@@ -1360,9 +1360,8 @@ do {							\
 #define PUT_SDB_INT_VAL(a)				\
 do {							\
   extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t.val\t");		\
-  fprintf (asm_out_text_file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT)(a)); \
-  fprintf (asm_out_text_file, ";");			\
+  fprintf (asm_out_text_file, "\t.val\t" HOST_WIDE_INT_PRINT_DEC ";", \
+	   (HOST_WIDE_INT)(a));			        \
 } while (0)
 
 #define PUT_SDB_VAL(a)					\
@@ -1404,9 +1403,8 @@ do {							\
 #define PUT_SDB_SIZE(a)					\
 do {							\
   extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t.size\t");		\
-  fprintf (asm_out_text_file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT)(a)); \
-  fprintf (asm_out_text_file, ";");			\
+  fprintf (asm_out_text_file, "\t.size\t" HOST_WIDE_INT_PRINT_DEC ";", \
+	   (HOST_WIDE_INT)(a));			        \
 } while (0)
 
 #define PUT_SDB_DIM(a)					\

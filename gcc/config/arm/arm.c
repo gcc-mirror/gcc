@@ -9551,10 +9551,7 @@ arm_print_operand (stream, x, code)
 	    if (val == -1)
 	      arm_print_operand (stream, XEXP (x, 1), 0);
 	    else
-	      {
-		fputc ('#', stream);
-		fprintf (stream, HOST_WIDE_INT_PRINT_DEC, val);
-	      }
+	      fprintf (stream, "#" HOST_WIDE_INT_PRINT_DEC, val);
 	  }
       }
       return;

@@ -3461,9 +3461,8 @@ s390_assemble_integer (x, size, aligned_p)
   if (size == 8 && aligned_p
       && GET_CODE (x) == CONST_INT && INTVAL (x) < INT_MIN)
     {
-      fputs ("\t.quad\t", asm_out_file);
-      fprintf (asm_out_file, HOST_WIDE_INT_PRINT_HEX, INTVAL (x));
-      putc ('\n', asm_out_file);
+      fprintf (asm_out_file, "\t.quad\t" HOST_WIDE_INT_PRINT_HEX "\n",
+	       INTVAL (x));
       return true;
     }
   return default_assemble_integer (x, size, aligned_p);

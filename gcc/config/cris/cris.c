@@ -2736,17 +2736,13 @@ cris_asm_output_mi_thunk (stream, thunkdecl, delta, vcall_offset, funcdecl)
      tree funcdecl;
 {
   if (delta > 0)
-    {
-      fprintf (stream, "\tadd%s ", ADDITIVE_SIZE_MODIFIER (delta));
-      fprintf (stream, HOST_WIDE_INT_PRINT_DEC, delta);
-      fprintf (stream, ",$%s\n", reg_names[CRIS_FIRST_ARG_REG]);
-    }
+    fprintf (stream, "\tadd%s " HOST_WIDE_INT_PRINT_DEC ",$%s\n",
+	     ADDITIVE_SIZE_MODIFIER (delta), delta,
+	     reg_names[CRIS_FIRST_ARG_REG]);
   else if (delta < 0)
-    {
-      fprintf (stream, "\tsub%s ", ADDITIVE_SIZE_MODIFIER (-delta));
-      fprintf (stream, HOST_WIDE_INT_PRINT_DEC, -delta);
-      fprintf (stream, ",$%s\n", reg_names[CRIS_FIRST_ARG_REG]);
-    }
+    fprintf (stream, "\tsub%s " HOST_WIDE_INT_PRINT_DEC ",$%s\n",
+	     ADDITIVE_SIZE_MODIFIER (-delta), -delta,
+	     reg_names[CRIS_FIRST_ARG_REG]);
 
   if (flag_pic)
     {

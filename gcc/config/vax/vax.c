@@ -787,9 +787,7 @@ vax_output_mi_thunk (file, thunk, delta, vcall_offset, function)
      HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
      tree function;
 {
-  fprintf (file, "\t.word 0x0ffc\n");					
-  fprintf (file, "\taddl2 $");
-  fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
+  fprintf (file, "\t.word 0x0ffc\n\taddl2 $" HOST_WIDE_INT_PRINT_DEC, delta);
   asm_fprintf (file, ",4(%Rap)\n");
   fprintf (file, "\tjmp ");						
   assemble_name (file,  XSTR (XEXP (DECL_RTL (function), 0), 0));	
