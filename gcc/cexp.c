@@ -335,7 +335,7 @@ static const short yycheck[] = {     4,
     26,    27,    23,    24,    25,    26,    27,     0,     9
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/lib/bison.simple"
+#line 3 "/usr/share/misc/bison.simple"
 /* This file comes from bison-1.28.  */
 
 /* Skeleton output parser for bison,
@@ -549,7 +549,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #endif
 #endif
 
-#line 217 "/usr/lib/bison.simple"
+#line 217 "/usr/share/misc/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -1154,7 +1154,7 @@ case 40:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 543 "/usr/lib/bison.simple"
+#line 543 "/usr/share/misc/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2097,10 +2097,13 @@ initialize_random_junk ()
    * refer to them.
    */
   for (i = 'a'; i <= 'z'; i++) {
-    ++is_idchar[TOUPPER(i)];
-    ++is_idchar[i];
-    ++is_idstart[TOUPPER(i)];
-    ++is_idstart[i];
+    /* SKIP EBCIDIC holes, char must be a valid low case char */
+    if (ISLOWER(i)) {
+      ++is_idchar[TOUPPER(i)];
+      ++is_idchar[i];
+      ++is_idstart[TOUPPER(i)];
+      ++is_idstart[i];
+    }
   }
   for (i = '0'; i <= '9'; i++)
     ++is_idchar[i];
