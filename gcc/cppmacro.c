@@ -1580,10 +1580,13 @@ cpp_macro_definition (pfile, node)
       *buffer++ = ')';
     }
 
+  /* The Dwarf spec requires a space after the macro name, even if the
+     definition is the empty string.  */
+  *buffer++ = ' ';
+
   /* Expansion tokens.  */
   if (macro->count)
     {
-      *buffer++ = ' ';
       for (i = 0; i < macro->count; i++)
 	{
 	  cpp_token *token = &macro->expansion[i];
