@@ -1,3 +1,9 @@
+2003-01-22  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* config/s390/s390.md (floatdfdi2): Insn has type 'itof'.
+	* config/s390/2064.md (define_bypass): Correct 'Load' and
+	'Load-address' bypass values.
+	
 2003-01-22  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/t-ia64 (insn-attrtab.o-warn): Define as -Wno-error.
