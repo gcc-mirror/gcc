@@ -984,8 +984,8 @@
    (set (match_dup 0) (ior:QI (match_dup 0) (match_dup 3)))]
   "
 {
-   operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & ~0xffff);
-   operands[3] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & 0xffff);
+   operands[2] = GEN_INT (INTVAL (operands[1]) & ~0xffff);
+   operands[3] = GEN_INT (INTVAL (operands[1]) & 0xffff);
 }")
 
 (define_split
@@ -1000,8 +1000,8 @@
    (set (match_dup 0) (ior:QI (match_dup 0) (match_dup 3)))]
   "
 {
-   operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & ~0xffff);
-   operands[3] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & 0xffff);
+   operands[2] = GEN_INT (INTVAL (operands[1]) & ~0xffff);
+   operands[3] = GEN_INT (INTVAL (operands[1]) & 0xffff);
 }")
 
 (define_split
@@ -1022,8 +1022,8 @@
    operands[2] = gen_rtx (CONST_INT, VOIDmode,
 			  (((INTVAL (operands[1]) >> 16) & 0xffff)
 			   - 0x8000) ^ ~0x7fff);
-   operands[3] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & 0xffff);
-   operands[4] = gen_rtx (CONST_INT, VOIDmode, 16);
+   operands[3] = GEN_INT (INTVAL (operands[1]) & 0xffff);
+   operands[4] = GEN_INT (16);
 }")
 
 (define_split
@@ -1043,8 +1043,8 @@
    operands[2] = gen_rtx (CONST_INT, VOIDmode,
 			  (((INTVAL (operands[1]) >> 16) & 0xffff)
 			   - 0x8000) ^ ~0x7fff);
-   operands[3] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & 0xffff);
-   operands[4] = gen_rtx (CONST_INT, VOIDmode, 16);
+   operands[3] = GEN_INT (INTVAL (operands[1]) & 0xffff);
+   operands[4] = GEN_INT (16);
 }")
 
 (define_split
@@ -1063,10 +1063,9 @@
    /* Generate two's complement value of MSBs.  */
    int shift = c4x_shiftable_constant (operands[1]);
 
-   operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			  (((INTVAL (operands[1]) >> shift) & 0xffff)
+   operands[2] = GEN_INT ((((INTVAL (operands[1]) >> shift) & 0xffff)
 			   - 0x8000) ^ ~0x7fff);
-   operands[3] = gen_rtx (CONST_INT, VOIDmode, shift);
+   operands[3] = GEN_INT (shift);
 }")
 
 (define_split
@@ -1084,10 +1083,9 @@
    /* Generate two's complement value of MSBs.  */
    int shift = c4x_shiftable_constant (operands[1]);
 
-   operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			  (((INTVAL (operands[1]) >> shift) & 0xffff)
-			   - 0x8000) ^ ~0x7fff);
-   operands[3] = gen_rtx (CONST_INT, VOIDmode, shift);
+   operands[2] = GEN_INT ((((INTVAL (operands[1]) >> shift) & 0xffff)
+			    - 0x8000) ^ ~0x7fff);
+   operands[3] = GEN_INT (shift);
 }")
 
 (define_split

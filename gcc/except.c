@@ -3088,7 +3088,7 @@ expand_builtin_extract_return_addr (addr_tree)
 
   /* First mask out any unwanted bits.  */
 #ifdef MASK_RETURN_ADDR
-  expand_and (addr, MASK_RETURN_ADDR, addr);
+  expand_and (Pmode, addr, MASK_RETURN_ADDR, addr);
 #endif
 
   /* Then adjust to find the real return address.  */

@@ -6292,13 +6292,15 @@ sparc_initialize_trampoline (tramp, fnaddr, cxt)
 
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 8)),
 		  expand_binop (SImode, ior_optab,
-				expand_and (fnaddr, GEN_INT (0x3ff), NULL_RTX),
+				expand_and (SImode, fnaddr, GEN_INT (0x3ff),
+					    NULL_RTX),
 				GEN_INT (0x81c06000),
 				NULL_RTX, 1, OPTAB_DIRECT));
 
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 12)),
 		  expand_binop (SImode, ior_optab,
-				expand_and (cxt, GEN_INT (0x3ff), NULL_RTX),
+				expand_and (SImode, cxt, GEN_INT (0x3ff),
+					    NULL_RTX),
 				GEN_INT (0x8410a000),
 				NULL_RTX, 1, OPTAB_DIRECT));
 

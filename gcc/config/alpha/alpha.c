@@ -5503,12 +5503,13 @@ alpha_initialize_trampoline (tramp, fnaddr, cxt, fnofs, cxtofs, jmpofs)
 			   OPTAB_WIDEN);
       temp = expand_shift (RSHIFT_EXPR, Pmode, temp,
 		           build_int_2 (2, 0), NULL_RTX, 1);
-      temp = expand_and (gen_lowpart (SImode, temp), GEN_INT (0x3fff), 0);
+      temp = expand_and (SImode, gen_lowpart (SImode, temp),
+			 GEN_INT (0x3fff), 0);
 
       /* Merge in the hint.  */
       addr = memory_address (SImode, plus_constant (tramp, jmpofs));
       temp1 = force_reg (SImode, gen_rtx_MEM (SImode, addr));
-      temp1 = expand_and (temp1, GEN_INT (0xffffc000), NULL_RTX);
+      temp1 = expand_and (SImode, temp1, GEN_INT (0xffffc000), NULL_RTX);
       temp1 = expand_binop (SImode, ior_optab, temp1, temp, temp1, 1,
 			    OPTAB_WIDEN);
       emit_move_insn (gen_rtx_MEM (SImode, addr), temp1);

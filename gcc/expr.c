@@ -5143,18 +5143,16 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode, unsignedp, type,
 	      tree count;
 	      enum machine_mode tmode;
 
-	      if (unsignedp)
-		return expand_and (temp,
-				   GEN_INT
-				   (trunc_int_for_mode
-				    (width_mask,
-				     GET_MODE (temp) == VOIDmode
-				     ? value_mode
-				     : GET_MODE (temp))), NULL_RTX);
-
 	      tmode = GET_MODE (temp);
 	      if (tmode == VOIDmode)
 		tmode = value_mode;
+
+	      if (unsignedp)
+		return expand_and (tmode, temp,
+				   GEN_INT (trunc_int_for_mode (width_mask,
+								tmode)),
+				   NULL_RTX);
+
 	      count = build_int_2 (GET_MODE_BITSIZE (tmode) - bitsize, 0);
 	      temp = expand_shift (LSHIFT_EXPR, tmode, temp, count, 0, 0);
 	      return expand_shift (RSHIFT_EXPR, tmode, temp, count, 0, 0);
@@ -6785,16 +6783,16 @@ expand_expr (exp, target, tmode, modifier)
 		  {
 		    HOST_WIDE_INT bitsize
 		      = TREE_INT_CST_LOW (DECL_SIZE (TREE_PURPOSE (elt)));
+		    enum machine_mode imode
+		      = TYPE_MODE (TREE_TYPE (TREE_PURPOSE (elt)));
 
 		    if (TREE_UNSIGNED (TREE_TYPE (TREE_PURPOSE (elt))))
 		      {
 			op1 = GEN_INT (((HOST_WIDE_INT) 1 << bitsize) - 1);
-			op0 = expand_and (op0, op1, target);
+			op0 = expand_and (imode, op0, op1, target);
 		      }
 		    else
 		      {
-			enum machine_mode imode
-			  = TYPE_MODE (TREE_TYPE (TREE_PURPOSE (elt)));
 			tree count
 			  = build_int_2 (GET_MODE_BITSIZE (imode) - bitsize,
 					 0);
@@ -10222,7 +10220,7 @@ do_store_flag (exp, target, mode, only_cheap)
 
       /* Put the AND last so it can combine with more things.  */
       if (bitnum != TYPE_PRECISION (type) - 1)
-	op0 = expand_and (op0, const1_rtx, subtarget);
+	op0 = expand_and (mode, op0, const1_rtx, subtarget);
 
       return op0;
     }
