@@ -1872,6 +1872,23 @@ fix = {
 };
 
 
+/* The /usr/include/sys/ucontext.h on ia64-*linux-gnu systems defines
+ * an _SC_GR0_OFFSET macro using an idiom that isn't a compile time
+ * constant on recent versions of g++.
+ */
+fix = {
+    hackname = linux_ia64_ucontext;
+    files = "sys/ucontext.h";
+    mach = "ia64-*-linux*";
+    select = '\(\(\(char \*\) &\(\(struct sigcontext \*\) 0\)'
+             '->sc_gr\[0\]\) - \(char \*\) 0\)';
+    c_fix = format;
+    c_fix_arg = "__builtin_offsetof \(struct sigcontext, sc_gr[0]\)";
+    test_text = "# define _SC_GR0_OFFSET\t\\\\\n"
+	"\t(((char *) &((struct sigcontext *) 0)->sc_gr[0]) - (char *) 0)\n";
+};
+
+
 /*
  * Apparently some SVR4 systems typedef longlong_t to long ?
  */
