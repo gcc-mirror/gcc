@@ -1,5 +1,20 @@
 2003-01-24  Tom Tromey  <tromey@redhat.com>
 
+	* defineclass.cc (handleMethodsEnd): Precompute code for static
+	method.
+	(handleCodeAttribute): Likewise.
+	* resolve.cc (ncode): Use run_class for unsynchronized static
+	methods.
+	* include/java-interp.h (class _Jv_InterpMethod): Declare
+	run_class.
+	* interpret.cc (run_synch_class): Initialize class.
+	(run) [insn_invokestatic]: Don't initialize class.
+	[insn_anewarray]: Likewise.
+	[insn_multianewarray]: Likewise.
+	(run_class): New function.
+
+2003-01-24  Tom Tromey  <tromey@redhat.com>
+
 	* java/lang/ClassLoader.java (findLoadedClass): Removed erroneous
 	comment.
 

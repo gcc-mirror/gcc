@@ -1,6 +1,6 @@
 // java-interp.h - Header file for the bytecode interpreter.  -*- c++ -*-
 
-/* Copyright (C) 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -132,6 +132,7 @@ class _Jv_InterpMethod : public _Jv_MethodBase
 
   static void run_normal (ffi_cif*, void*, ffi_raw*, void*);
   static void run_synch_object (ffi_cif*, void*, ffi_raw*, void*);
+  static void run_class (ffi_cif*, void*, ffi_raw*, void*);
   static void run_synch_class (ffi_cif*, void*, ffi_raw*, void*);
 
   void run (void*, ffi_raw *);
