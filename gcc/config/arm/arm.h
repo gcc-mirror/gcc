@@ -696,9 +696,6 @@ extern int arm_is_6_or_7;
    This is always true, even when in little-endian mode.  */
 #define FLOAT_WORDS_BIG_ENDIAN 1
 
-/* Number of bits in an addressable storage unit */
-#define BITS_PER_UNIT  8
-
 #define BITS_PER_WORD  32
 
 #define UNITS_PER_WORD	4

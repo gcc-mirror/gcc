@@ -241,9 +241,6 @@ extern const struct processor_costs *m68hc11_cost;
 /* Define this if most significant word of a multiword number is numbered.  */
 #define WORDS_BIG_ENDIAN 	1
 
-/* Number of bits in an addressible storage unit */
-#define BITS_PER_UNIT		8
-
 /* Number of bits in a word */
 #define BITS_PER_WORD		16
 

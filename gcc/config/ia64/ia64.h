@@ -244,8 +244,6 @@ extern const char *ia64_fixed_range_string;
 #define LIBGCC2_WORDS_BIG_ENDIAN 0
 #endif
 
-#define BITS_PER_UNIT 8
-
 #define BITS_PER_WORD 64
 
 #define UNITS_PER_WORD 8

@@ -235,9 +235,6 @@ extern unsigned xtensa_current_frame_size;
 /* Define this if most significant word of a multiword number is the lowest. */
 #define WORDS_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
 
-/* Number of bits in an addressable storage unit */
-#define BITS_PER_UNIT 8
-
 /* Width in bits of a "word", which is the contents of a machine register.  */
 #define BITS_PER_WORD 32
 #define MAX_BITS_PER_WORD 32

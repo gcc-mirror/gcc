@@ -397,9 +397,6 @@ extern int target_flags;
    numbered.  */
 #define WORDS_BIG_ENDIAN 0
 
-/* Number of bits in an addressable storage unit.  */
-#define BITS_PER_UNIT 8
-
 /* Bitfields cannot cross word boundaries.  */
 #define BITFIELD_NBYTES_LIMITED 1
 
