@@ -1,3 +1,8 @@
+2004-10-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c (cleanup_tree_cfg): Speed up by calling
+	delete_unrechable_blocks() only when necessary.
+
 2004-10-02  P.J. Darcy  <darcypj@us.ibm.com>
 
 	* gthr-tpf.h (__gthread_recursive_mutex_t): New type.

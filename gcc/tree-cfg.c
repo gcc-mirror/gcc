@@ -718,19 +718,29 @@ cleanup_tree_cfg (void)
   timevar_push (TV_TREE_CLEANUP_CFG);
 
   retval = cleanup_control_flow ();
+  retval |= delete_unreachable_blocks ();
 
-  /* These two transformations can cascade, so we iterate on them until
-     nothing changes.  */
+  /* thread_jumps() sometimes leaves further transformation
+     opportunities for itself, so iterate on it until nothing
+     changes.  */
   while (something_changed)
     {
-      something_changed = delete_unreachable_blocks ();
-      something_changed |= thread_jumps ();
+      something_changed = thread_jumps ();
+
+      /* delete_unreachable_blocks() does its job only when
+	 thread_jumps() produces more unreachable blocks.  */
+      if (something_changed)
+	delete_unreachable_blocks ();
+
       retval |= something_changed;
     }
 
 #ifdef ENABLE_CHECKING
   if (retval)
-    gcc_assert (!cleanup_control_flow ());
+    {
+      gcc_assert (!cleanup_control_flow ());
+      gcc_assert (!delete_unreachable_blocks ());
+    }
 #endif
 
   /* Merging the blocks creates no new opportunities for the other
