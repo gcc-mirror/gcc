@@ -1,8 +1,15 @@
-2003-08-06  Peter Barada <peter@baradas.org>
+2003-08-20  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 8180
+	* configure.in: When testing with_libs and with_headers, treat
+	'no' as unset.  Based on a patch by Dan Kegel <dank@kegel.com>.
+	* configure: Regenerate.
+	
+2003-08-20  Peter Barada <peter@baradas.org>
 
 	* longlong.h (umul_ppmm): Add ColdFire support.
 
-2003-08-06  Peter Barada <peter@baradas.org>
+2003-08-20  Peter Barada <peter@baradas.org>
             Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k-none.h: Introduce new ColdFire archs.

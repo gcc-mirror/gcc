@@ -253,7 +253,8 @@ esac
 
 # If both --with-headers and --with-libs are specified, default to
 # --without-newlib.
-if test x"${with_headers}" != x && test x"${with_libs}" != x ; then
+if test x"${with_headers}" != x && test x"${with_headers} != xno \
+   && test x"${with_libs}" != x && test x"${with_libs} != xno ; then
   if test x"${with_newlib}" = x ; then
     with_newlib=no
   fi
@@ -937,7 +938,7 @@ copy_dirs=
 
 # Handle --with-headers=XXX.  If the value is not "yes", the contents of
 # the named directory are copied to $(tooldir)/sys-include.
-if test x"${with_headers}" != x ; then
+if test x"${with_headers}" != x && test x"${with_headers}" != xno ; then
   if test x${is_cross_compiler} = xno ; then
     echo 1>&2 '***' --with-headers is only supported when cross compiling
     exit 1
@@ -954,7 +955,7 @@ fi
 # Handle --with-libs=XXX.  If the value is not "yes", the contents of
 # the name directories are copied to $(tooldir)/lib.  Multiple directories
 # are permitted.
-if test x"${with_libs}" != x ; then
+if test x"${with_libs}" != x && test x"${with_libs}" != xno ; then
   if test x${is_cross_compiler} = xno ; then
     echo 1>&2 '***' --with-libs is only supported when cross compiling
     exit 1
