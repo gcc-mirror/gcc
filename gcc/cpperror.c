@@ -50,34 +50,31 @@ print_containing_files (pfile, ip)
     return;
 
   /* Find the other, outer source files.  */
-  for (ip = CPP_PREV_BUFFER (ip);
-       ip != CPP_NULL_BUFFER (pfile);
-       ip = CPP_PREV_BUFFER (ip))
-    if (ip->fname != NULL)
-      {
-	long line;
-	cpp_buf_line_and_col (ip, &line, NULL);
-	if (first)
-	  {
-	    first = 0;
-	    fprintf (stderr,  _("In file included from %s:%ld"),
-		     ip->nominal_fname, line);
-	  }
-	else
-	  /* Translators note: this message is used in conjunction
-	     with "In file included from %s:%ld" and some other
-	     tricks.  We want something like this:
-
-	     In file included from sys/select.h:123,
-	                      from sys/types.h:234,
-			      from userfile.c:31:
-	     bits/select.h:45: <error message here>
-
-	     The trailing comma is at the beginning of this message,
-	     and the trailing colon is not translated.  */
-	  fprintf (stderr, _(",\n                 from %s:%ld"),
+  for (ip = CPP_PREV_BUFFER (ip); ip != NULL; ip = CPP_PREV_BUFFER (ip))
+    {
+      long line;
+      cpp_buf_line_and_col (ip, &line, NULL);
+      if (first)
+	{
+	  first = 0;
+	  fprintf (stderr,  _("In file included from %s:%ld"),
 		   ip->nominal_fname, line);
-      }
+	}
+      else
+	/* Translators note: this message is used in conjunction
+	   with "In file included from %s:%ld" and some other
+	   tricks.  We want something like this:
+
+	   In file included from sys/select.h:123,
+	                    from sys/types.h:234,
+	                    from userfile.c:31:
+	   bits/select.h:45: <error message here>
+
+	   The trailing comma is at the beginning of this message,
+	   and the trailing colon is not translated.  */
+	fprintf (stderr, _(",\n                 from %s:%ld"),
+		 ip->nominal_fname, line);
+    }
   if (first == 0)
     fputs (":\n", stderr);
 

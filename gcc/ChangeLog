@@ -1,3 +1,42 @@
+2000-03-08  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.h (parse_underflow_t, CPP_NULL_BUFFER): Delete.
+	(struct cpp_buffer): Remove fname and underflow fields.
+	(struct cpp_reader): Remove get_token field.
+	(struct include_hash): Rename to struct ihash.  Add typedef to
+	IHASH.
+	(struct if_stack): Remove fname field.
+	(IF_STACK_FRAME): Rename to IF_STACK.
+
+	* cpperror.c (print_containing_files): Trust that there are no
+	macro buffers below the top file buffer.
+	* cppfiles.c: Replace all references to 'struct include_hash'
+	with 'IHASH'.  Rename initialize_input_buffer to
+	init_input_buffer.  Don't set or reference cpp_buffer->fname,
+	use buffer->ihash->name instead.
+	* cpphash.c (special_symbol): Use cpp_file_buffer.  Use NULL
+	not CPP_NULL_BUFFER.
+	* cppinit.c: Use NULL not CPP_NULL_BUFFER, IF_STACK not
+	IF_STACK_FRAME, IHASH not struct include_hash.
+	* cpplib.c: Rename eval_if_expression to eval_if_expr.  Remove
+	null_underflow.  Use IF_STACK not IF_STACK_FRAME, IHASH not
+	struct include_hash, NULL not CPP_NULL_BUFFER.  Remove all
+	references to cpp_buffer->fname (delete entirely, or use
+	->ihash->name instead) and IF_STACK->fname.
+	(cpp_push_buffer): Don't set new->underflow.
+	(do_include): Use cpp_file_buffer.
+
+	* cpphash.c (collect_formal_parameters): Remove duplicate
+	increment of argslen.  Pedwarn in C99 mode if __VA_ARGS__ is
+	used as a macro argument name.  Don't append "..." to namebuf
+	for varargs macros.  After we're done scanning, go through
+	namebuf and make it NUL separated, not comma separated.
+	(_cpp_compare_defs): Remove register tag from variables.
+	Expect defn->argnames to be NUL separated.
+	(_cpp_dump_definition): Expect defn->argnames to be NUL
+	separated and in forward order.
+	* cpphash.h: Update documentation of argnames field.
+
 2000-03-08  Richard Henderson  <rth@cygnus.com>
 
 	* builtins.c (expand_builtin_strlen): Be prepared for strlensi

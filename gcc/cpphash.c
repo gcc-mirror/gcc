@@ -548,7 +548,7 @@ collect_formal_parameters (pfile)
 {
   struct arglist *result = 0;
   struct arg *argv = 0;
-  U_CHAR *namebuf = xstrdup ("");
+  U_CHAR *namebuf = (U_CHAR *) xstrdup ("");
 
   U_CHAR *name, *tok;
   size_t argslen = 1;
@@ -587,6 +587,10 @@ collect_formal_parameters (pfile)
 	      cpp_error (pfile, "duplicate macro argument name `%s'", tok);
 	      continue;
 	    }
+	  if (CPP_PEDANTIC (pfile) && CPP_OPTIONS (pfile)->c99
+	      && strncmp (tok, "__VA_ARGS__", sizeof "__VA_ARGS__" - 1))
+	    cpp_pedwarn (pfile,
+	"C99 does not permit use of `__VA_ARGS__' as a macro argument name");
 	  namebuf = xrealloc (namebuf, argslen + len + 1);
 	  name = &namebuf[argslen - 1];
 	  argslen += len + 1;
@@ -637,8 +641,6 @@ collect_formal_parameters (pfile)
       name = &namebuf[argslen - 1];
       argslen += len;
       memcpy (name, "__VA_ARGS__", len);
-
-      argslen += len + 1;
       argv[argc].len = len;
     }
   else
@@ -646,9 +648,6 @@ collect_formal_parameters (pfile)
       cpp_pedwarn (pfile, "ISO C does not permit named varargs macros");
 
   argv[argc].rest_arg = 1;
-  namebuf = xrealloc (namebuf, argslen + 3);
-  memcpy (&namebuf[argslen - 1], "...", 4);
-  argslen += 3;
   
   token = get_directive_token (pfile);
   if (token != CPP_RPAREN)
@@ -664,6 +663,7 @@ collect_formal_parameters (pfile)
     {
       argv[i].name = namebuf + len;
       len += argv[i].len + 1;
+      namebuf[len - 1] = '\0';
     }
 
   CPP_SET_WRITTEN (pfile, old_written);
@@ -834,16 +834,10 @@ special_symbol (hp, pfile)
     case T_FILE:
     case T_BASE_FILE:
       {
-	ip = CPP_BUFFER (pfile);
+	ip = cpp_file_buffer (pfile);
 	if (hp->type == T_BASE_FILE)
 	  {
-	    while (CPP_PREV_BUFFER (ip) != CPP_NULL_BUFFER (pfile))
-	      ip = CPP_PREV_BUFFER (ip);
-	  }
-	else
-	  {
-	    ip = CPP_BUFFER (pfile);
-	    while (!ip->nominal_fname && ip != CPP_NULL_BUFFER (pfile))
+	    while (CPP_PREV_BUFFER (ip) != NULL)
 	      ip = CPP_PREV_BUFFER (ip);
 	  }
 
@@ -858,11 +852,10 @@ special_symbol (hp, pfile)
 
     case T_INCLUDE_LEVEL:
       {
-	int true_indepth = 0;
-	ip = CPP_BUFFER (pfile);
-	for (; ip != CPP_NULL_BUFFER (pfile); ip = CPP_PREV_BUFFER (ip))
-	  if (ip->fname != NULL)
-	    true_indepth++;
+	int true_indepth = 1;
+	ip = cpp_file_buffer (pfile);
+	while ((ip = CPP_PREV_BUFFER (ip)) != NULL)
+	  true_indepth++;
 
 	CPP_RESERVE (pfile, 10);
 	sprintf (CPP_PWRITTEN (pfile), "%d", true_indepth);
@@ -895,9 +888,7 @@ special_symbol (hp, pfile)
     case T_STDC:
       CPP_RESERVE (pfile, 2);
 #ifdef STDC_0_IN_SYSTEM_HEADERS
-      ip = CPP_BUFFER (pfile);
-      while (!ip->nominal_fname && ip != CPP_NULL_BUFFER (pfile))
-	ip = CPP_PREV_BUFFER (ip);
+      ip = cpp_file_buffer (pfile);
       if (ip->system_header_p
 	  && !cpp_defined (pfile, (const U_CHAR *) "__STRICT_ANSI__", 15))
 	CPP_PUTC_Q (pfile, '0');
@@ -1488,17 +1479,29 @@ _cpp_compare_defs (pfile, d1, d2)
      cpp_reader *pfile;
      DEFINITION *d1, *d2;
 {
-  register struct reflist *a1, *a2;
-  register U_CHAR *p1 = d1->expansion;
-  register U_CHAR *p2 = d2->expansion;
+  struct reflist *a1, *a2;
+  U_CHAR *p1 = d1->expansion;
+  U_CHAR *p2 = d2->expansion;
   int first = 1;
 
   if (d1->nargs != d2->nargs)
     return 1;
   if (CPP_PEDANTIC (pfile)
-      && d1->argnames && d2->argnames
-      && strcmp ((char *) d1->argnames, (char *) d2->argnames))
-    return 1;
+      && d1->argnames && d2->argnames)
+    {
+      U_CHAR *arg1 = d1->argnames;
+      U_CHAR *arg2 = d2->argnames;
+      size_t len;
+      int i = d1->nargs;
+      while (i--)
+	{
+	  len = strlen (arg1);
+	  if (strcmp (arg1, arg2))
+	    return 1;
+	  arg1 += len;
+	  arg2 += len;
+	}
+    }
   for (a1 = d1->pattern, a2 = d2->pattern; a1 && a2;
        a1 = a1->next, a2 = a2->next)
     {
@@ -1602,7 +1605,6 @@ _cpp_dump_definition (pfile, sym, len, defn)
   else
     {
       struct reflist *r;
-      unsigned char *argnames = (unsigned char *) xstrdup (defn->argnames);
       unsigned char **argv = (unsigned char **) alloca (defn->nargs *
 							sizeof(char *));
       int *argl = (int *) alloca (defn->nargs * sizeof(int));
@@ -1610,18 +1612,12 @@ _cpp_dump_definition (pfile, sym, len, defn)
       int i;
 
       /* First extract the argument list. */
-      x = argnames;
-      i = defn->nargs;
-      while (i--)
+      x = defn->argnames;
+      for (i = 0; i < defn->nargs; i++)
 	{
 	  argv[i] = x;
-	  while (*x != ',' && *x != '\0') x++;
-	  argl[i] = x - argv[i];
-	  if (*x == ',')
-	    {
-	      *x = '\0';
-	      x += 2;  /* skip the space after the comma */
-	    }
+	  argl[i] = strlen (x);
+	  x += argl[i] + 1;
 	}
       
       /* Now print out the argument list. */
@@ -1629,15 +1625,15 @@ _cpp_dump_definition (pfile, sym, len, defn)
       for (i = 0; i < defn->nargs; i++)
 	{
 	  CPP_RESERVE (pfile, argl[i] + 2);
-	  CPP_PUTS_Q (pfile, argv[i], argl[i]);
+	  if (!(i == defn->nargs-1 && defn->rest_args
+		&& !strcmp (argv[i], "__VA_ARGS__")))
+	    CPP_PUTS_Q (pfile, argv[i], argl[i]);
 	  if (i < defn->nargs-1)
 	    CPP_PUTS_Q (pfile, ", ", 2);
 	}
-
       if (defn->rest_args)
-	CPP_PUTS (pfile, "...) ", 5);
-      else
-	CPP_PUTS (pfile, ") ", 2);
+	CPP_PUTS (pfile, "...", 3);
+      CPP_PUTS (pfile, ") ", 2);
 
       /* Now the definition. */
       x = defn->expansion;
