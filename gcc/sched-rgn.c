@@ -2277,10 +2277,10 @@ add_branch_dependences (head, tail)
 {
   rtx insn, last;
 
-  /* For all branches, calls, uses, clobbers, and cc0 setters, force them
-     to remain in order at the end of the block by adding dependencies and
-     giving the last a high priority.  There may be notes present, and
-     prev_head may also be a note.
+  /* For all branches, calls, uses, clobbers, cc0 setters, and instructions
+     that can throw exceptions, force them to remain in order at the end of
+     the block by adding dependencies and giving the last a high priority.
+     There may be notes present, and prev_head may also be a note.
 
      Branches must obviously remain at the end.  Calls should remain at the
      end since moving them results in worse register allocation.  Uses remain
@@ -2293,6 +2293,7 @@ add_branch_dependences (head, tail)
 	 || (GET_CODE (insn) == INSN
 	     && (GET_CODE (PATTERN (insn)) == USE
 		 || GET_CODE (PATTERN (insn)) == CLOBBER
+		 || can_throw_internal (insn)
 #ifdef HAVE_cc0
 		 || sets_cc0_p (PATTERN (insn))
 #endif

@@ -1,3 +1,8 @@
+2002-03-10  Richard Henderson  <rth@redhat.com>
+
+	* sched-rgn.c (add_branch_dependences): Don't allow insns that throw
+	to move away from the end of the block.
+
 2002-03-10  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	PR preprocessor/5899
