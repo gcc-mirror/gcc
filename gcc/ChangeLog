@@ -1,3 +1,9 @@
+2001-10-26  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (get_shift_alg): Clean up.  Return the
+	algorithm through the shift_info structure.
+	(emit_a_shift): Update the use of get_shift_alg.
+
 2001-10-27  Daniel Berlin  <dan@cgsoftware.com>
 
         * sched-rgn.c: Remove bitset typedef.
