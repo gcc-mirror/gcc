@@ -1,5 +1,5 @@
 /* ToolBarUI.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,23 +37,23 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
+
 /**
- * ToolBarUI
- * @author	Andrew Selkirk
- * @version	1.0
+ * An abstract base class for delegates that implement the pluggable
+ * look and feel for a <code>JToolBar</code>.
+ *
+ * @see javax.swing.JToolBar
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class ToolBarUI extends ComponentUI {
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor ToolBarUI
-	 */
-	public ToolBarUI() {
-		// TODO
-	} // ToolBarUI()
-
-
-} // ToolBarUI
+public abstract class ToolBarUI
+  extends ComponentUI
+{
+  /**
+   * Constructs a new <code>ToolBarUI</code>.
+   */
+  public ToolBarUI()
+  {
+  }
+}

@@ -1,5 +1,5 @@
 /* ViewportUI.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,22 @@ exception statement from your version. */
 package javax.swing.plaf;
 
 
-public class ViewportUI extends ComponentUI
+/**
+ * An abstract base class for delegates that implement the pluggable
+ * look and feel for a <code>JViewport</code>.
+ *
+ * @see javax.swing.JViewport
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
+ */
+public abstract class ViewportUI
+  extends ComponentUI
 {
+  /**
+   * Constructs a new <code>ViewportUI</code>.
+   */
+  public ViewportUI()
+  {
+  }
 }

@@ -1,5 +1,5 @@
 /* TableHeaderUI.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,23 +37,23 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
+
 /**
- * TableHeaderUI
- * @author	Andrew Selkirk
- * @version	1.0
+ * An abstract base class for delegates that implement the pluggable
+ * look and feel for a <code>JTableHeader</code>.
+ *
+ * @see javax.swing.table.JTableHeader
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class TableHeaderUI extends ComponentUI {
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor TableHeaderUI
-	 */
-	public TableHeaderUI() {
-		// TODO
-	} // TableHeaderUI()
-
-
-} // TableHeaderUI
+public abstract class TableHeaderUI
+  extends ComponentUI
+{
+  /**
+   * Constructs a new <code>TableHeaderUI</code>.
+   */
+  public TableHeaderUI()
+  {
+  }
+}

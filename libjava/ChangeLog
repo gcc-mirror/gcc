@@ -1,5 +1,45 @@
 2003-06-25  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/plaf/ActionMapUIResource.java,
+	javax/swing/plaf/BorderUIResource.java,
+	javax/swing/plaf/ButtonUI.java,
+	javax/swing/plaf/ColorChooserUI.java,
+	javax/swing/plaf/ColorUIResource.java,
+	javax/swing/plaf/ComboBoxUI.java,
+	javax/swing/plaf/ComponentInputMapUIResource.java,
+	javax/swing/plaf/ComponentUI.java,
+	javax/swing/plaf/DesktopIconUI.java,
+	javax/swing/plaf/DesktopPaneUI.java,
+	javax/swing/plaf/DimensionUIResource.java,
+	javax/swing/plaf/FileChooserUI.java,
+	javax/swing/plaf/FontUIResource.java,
+	javax/swing/plaf/IconUIResource.java,
+	javax/swing/plaf/InputMapUIResource.java,
+	javax/swing/plaf/InsetsUIResource.java,
+	javax/swing/plaf/InternalFrameUI.java,
+	javax/swing/plaf/LabelUI.java,
+	javax/swing/plaf/ListUI.java,
+	javax/swing/plaf/MenuBarUI.java,
+	javax/swing/plaf/MenuItemUI.java,
+	javax/swing/plaf/OptionPaneUI.java,
+	javax/swing/plaf/PanelUI.java,
+	javax/swing/plaf/ProgressBarUI.java,
+	javax/swing/plaf/RootPaneUI.java,
+	javax/swing/plaf/ScrollBarUI.java,
+	javax/swing/plaf/ScrollPaneUI.java,
+	javax/swing/plaf/SeparatorUI.java,
+	javax/swing/plaf/SliderUI.java,
+	javax/swing/plaf/TableHeaderUI.java,
+	javax/swing/plaf/TableUI.java,
+	javax/swing/plaf/ToolBarUI.java,
+	javax/swing/plaf/ToolTipUI.java,
+	javax/swing/plaf/ViewportUI.java:
+	New versions from classpath.
+	* javax/swing/plaf/SpinnerUI.java: 
+	New file from classpath
+
+2003-06-25  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/image/ColorModel.java:
 	New version from classpath.
 
