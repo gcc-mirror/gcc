@@ -1,3 +1,7 @@
+2004-02-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/i386/i386.md: Fix formatting.
+
 2004-02-29  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.ac: Add some comments delineating sections of code.
