@@ -1,3 +1,15 @@
+2004-10-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/16614 continued.
+	* include/ext/mt_allocator.h
+	(__per_type_pool_policy::_S_get_pool): Use saner defaults based on
+	specific type characteristics.
+	(__pool_base): Add constructor that takes a _Tune argument.
+	(__pool): Same.
+	* testsuite/ext/mt_allocator/tune-2.cc: Adjust default.
+	* testsuite/ext/mt_allocator/tune-4.cc: Same.
+	* testsuite/ext/mt_allocator/tune-3.cc: Same.
+
 2004-10-11  Joachim Kuebart  <kuebart@mathematik.uni-ulm.de>
 	    Paolo Carlini  <pcarlini@suse.de>
 
