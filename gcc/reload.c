@@ -2673,8 +2673,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    substed_operand[i] = recog_operand[i]
 	      = reg_equiv_mem[regno];
 #endif
-	  if (reg_equiv_address[regno] != 0
-	      && (set == 0 || &SET_DEST (set) != recog_operand_loc[i]))
+	  if (reg_equiv_address[regno] != 0)
 	    {
 	      /* If reg_equiv_address is not a constant address, copy it,
 		 since it may be shared.  */
