@@ -113,11 +113,23 @@ BUILD_SUBDIR = @build_subdir@
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the build system.
 BUILD_CONFIGARGS = @build_configargs@
+
 # This is the list of variables to export in the environment when
-# configuring subdirectories for the build system.  It must also be
-# exported whenever recursing into a build directory in case that
-# directory's Makefile re-runs configure.
+# configuring any subdirectory.  It must also be exported whenever
+# recursing into a build directory in case that directory's Makefile
+# re-runs configure.
+BASE_EXPORTS = \
+	FLEX="$(FLEX)"; export FLEX; \
+	LEX="$(LEX)"; export LEX; \
+	BISON="$(BISON)"; export BISON; \
+	YACC="$(YACC)"; export YACC; \
+	M4="$(M4)"; export M4; \
+	MAKEINFO="$(MAKEINFO)"; export MAKEINFO;
+
+# This is the list of variables to export in the environment when
+# configuring subdirectories for the build system.
 BUILD_EXPORTS = \
+	$(BASE_EXPORTS) \
 	AR="$(AR_FOR_BUILD)"; export AR; \
 	AS="$(AS_FOR_BUILD)"; export AS; \
 	CC="$(CC_FOR_BUILD)"; export CC; \
@@ -140,10 +152,9 @@ SUBDIRS = @configdirs@
 # directories built for the host system.
 HOST_CONFIGARGS = @host_configargs@
 # This is the list of variables to export in the environment when
-# configuring subdirectories for the host system.  It must also be
-# exported whenever recursing into a host directory in case that
-# directory's Makefile re-runs configure.
+# configuring subdirectories for the host system.
 HOST_EXPORTS = \
+	$(BASE_EXPORTS) \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
@@ -179,10 +190,9 @@ TARGET_SUBDIR = @target_subdir@
 # directories built for the target.
 TARGET_CONFIGARGS = @target_configargs@
 # This is the list of variables to export in the environment when
-# configuring subdirectories for the host system.  It must also be
-# exported whenever recursing into a host directory in case that
-# directory's Makefile re-runs configure.
+# configuring subdirectories for the host system.
 BASE_TARGET_EXPORTS = \
+	$(BASE_EXPORTS) \
 	AR="$(AR_FOR_TARGET)"; export AR; \
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
@@ -233,47 +243,55 @@ CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
 
 CXX_FOR_BUILD = $(CXX)
 
+# Path to the build directory for a Canadian cross, empty otherwise.
+BUILD_DIR_PREFIX = @BUILD_DIR_PREFIX@
+
 # Special variables passed down in EXTRA_GCC_FLAGS.  They are defined
 # here so that they can be overridden by Makefile fragments.
 BUILD_PREFIX = @BUILD_PREFIX@
 BUILD_PREFIX_1 = @BUILD_PREFIX_1@
 
-BISON=@BISON@
-USUAL_BISON = `if [ -f $$r/bison/bison ] ; then \
-	    echo $$r/bison/bison -L $$s/bison/ ; \
+CONFIGURED_BISON = @CONFIGURED_BISON@
+BISON = `if [ -f $$r/$(BUILD_DIR_PREFIX)/bison/bison ] ; then \
+	    echo $$r/$(BUILD_DIR_PREFIX)/bison/bison -L $$s/bison/ ; \
 	 else \
-	    echo bison ; \
+	    echo ${CONFIGURED_BISON} ; \
 	 fi`
 
-DEFAULT_YACC = @DEFAULT_YACC@
-YACC=@YACC@
-USUAL_YACC = `if [ -f $$r/bison/bison ] ; then \
-	    echo $$r/bison/bison -y -L $$s/bison/ ; \
-	elif [ -f $$r/byacc/byacc ] ; then \
-	    echo $$r/byacc/byacc ; \
+CONFIGURED_YACC = @CONFIGURED_YACC@
+YACC = `if [ -f $$s/$(BUILD_DIR_PREFIX)/bison/bison ] ; then \
+	    echo $$r/$(BUILD_DIR_PREFIX)/bison/bison -y -L $$s/bison/ ; \
+	elif [ -f $$s/$(BUILD_DIR_PREFIX)/byacc/byacc ] ; then \
+	    echo $$r/$(BUILD_DIR_PREFIX)/byacc/byacc ; \
 	else \
-	    echo ${DEFAULT_YACC} ; \
+	    echo ${CONFIGURED_YACC} ; \
 	fi`
 
-DEFAULT_LEX = @DEFAULT_LEX@
-LEX=@LEX@
-USUAL_LEX = `if [ -f $$r/flex/flex ] ; \
-	then echo $$r/flex/flex ; \
-	else echo ${DEFAULT_LEX} ; fi`
+CONFIGURED_FLEX = @CONFIGURED_FLEX@
+FLEX = `if [ -f $$r/$(BUILD_DIR_PREFIX)/flex/flex ] ; \
+	then echo $$r/$(BUILD_DIR_PREFIX)/flex/flex ; \
+	else echo ${CONFIGURED_FLEX} ; fi`
 
-DEFAULT_M4 = @DEFAULT_M4@
-M4 = `if [ -f $$r/m4/m4 ] ; \
-	then echo $$r/m4/m4 ; \
-	else echo ${DEFAULT_M4} ; fi`
+CONFIGURED_LEX = @CONFIGURED_LEX@
+LEX = `if [ -f $$r/$(BUILD_DIR_PREFIX)/flex/flex ] ; \
+	then echo $$r/$(BUILD_DIR_PREFIX)/flex/flex ; \
+	else echo ${CONFIGURED_LEX} ; fi`
+
+CONFIGURED_M4 = @CONFIGURED_M4@
+M4 = `if [ -f $$r/$(BUILD_DIR_PREFIX)/m4/m4 ] ; \
+	then echo $$r/$(BUILD_DIR_PREFIX)/m4/m4 ; \
+	else echo ${CONFIGURED_M4} ; fi`
 
 # For an installed makeinfo, we require it to be from texinfo 4.2 or
-# higher, else we use the "missing" dummy.
-MAKEINFO=@MAKEINFO@
-USUAL_MAKEINFO = `if [ -f $$r/texinfo/makeinfo/makeinfo ] ; \
-	then echo $$r/texinfo/makeinfo/makeinfo ; \
-	else if (makeinfo --version \
+# higher, else we use the "missing" dummy.  We also pass the subdirectory
+# makeinfo even if only the Makefile is there, because Texinfo builds its
+# manual when made, and it requires its own version.
+CONFIGURED_MAKEINFO = @CONFIGURED_MAKEINFO@
+MAKEINFO = `if [ -f $$r/$(BUILD_DIR_PREFIX)/texinfo/makeinfo/Makefile ] ; \
+	then echo $$r/$(BUILD_DIR_PREFIX)/texinfo/makeinfo/makeinfo ; \
+	else if (${CONFIGURED_MAKEINFO} --version \
 	  | egrep 'texinfo[^0-9]*([1-3][0-9]|4\.[2-9]|[5-9])') >/dev/null 2>&1; \
-        then echo makeinfo; else echo $$s/missing makeinfo; fi; fi`
+        then echo ${CONFIGURED_MAKEINFO}; else echo $$s/missing makeinfo; fi; fi`
 
 # This just becomes part of the MAKEINFO definition passed down to
 # sub-makes.  It lets flags be given on the command line while still
@@ -577,8 +595,13 @@ configure-target: [+
 
 # The target built for a native non-bootstrap build.
 .PHONY: all
-all: @all_build_modules@ all-host all-target
+all: all-build all-host all-target
 
+.PHONY: all-build
+all-build: [+
+  FOR build_modules +] \
+    maybe-all-build-[+module+][+
+  ENDFOR build_modules +]
 .PHONY: all-host
 all-host: maybe-all-gcc [+
   FOR host_modules +] \
@@ -1641,6 +1664,12 @@ profiledbootstrap: all-bootstrap configure-gcc
 # or find a substitute somewhere (perhaps installed).  Soft dependencies
 # are specified by depending on a 'maybe-' target.  If you're not sure,
 # it's safer to use a soft dependency.
+
+# Build modules
+all-build-bison: maybe-all-build-texinfo
+all-build-flex: maybe-all-build-texinfo
+all-build-libiberty: maybe-all-build-texinfo
+all-build-m4: maybe-all-build-libiberty maybe-all-build-texinfo
 
 # Host modules specific to gcc.
 # GCC needs to identify certain tools.

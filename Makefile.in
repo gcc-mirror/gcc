@@ -110,11 +110,23 @@ BUILD_SUBDIR = @build_subdir@
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the build system.
 BUILD_CONFIGARGS = @build_configargs@
+
 # This is the list of variables to export in the environment when
-# configuring subdirectories for the build system.  It must also be
-# exported whenever recursing into a build directory in case that
-# directory's Makefile re-runs configure.
+# configuring any subdirectory.  It must also be exported whenever
+# recursing into a build directory in case that directory's Makefile
+# re-runs configure.
+BASE_EXPORTS = \
+	FLEX="$(FLEX)"; export FLEX; \
+	LEX="$(LEX)"; export LEX; \
+	BISON="$(BISON)"; export BISON; \
+	YACC="$(YACC)"; export YACC; \
+	M4="$(M4)"; export M4; \
+	MAKEINFO="$(MAKEINFO)"; export MAKEINFO;
+
+# This is the list of variables to export in the environment when
+# configuring subdirectories for the build system.
 BUILD_EXPORTS = \
+	$(BASE_EXPORTS) \
 	AR="$(AR_FOR_BUILD)"; export AR; \
 	AS="$(AS_FOR_BUILD)"; export AS; \
 	CC="$(CC_FOR_BUILD)"; export CC; \
@@ -137,10 +149,9 @@ SUBDIRS = @configdirs@
 # directories built for the host system.
 HOST_CONFIGARGS = @host_configargs@
 # This is the list of variables to export in the environment when
-# configuring subdirectories for the host system.  It must also be
-# exported whenever recursing into a host directory in case that
-# directory's Makefile re-runs configure.
+# configuring subdirectories for the host system.
 HOST_EXPORTS = \
+	$(BASE_EXPORTS) \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
@@ -176,10 +187,9 @@ TARGET_SUBDIR = @target_subdir@
 # directories built for the target.
 TARGET_CONFIGARGS = @target_configargs@
 # This is the list of variables to export in the environment when
-# configuring subdirectories for the host system.  It must also be
-# exported whenever recursing into a host directory in case that
-# directory's Makefile re-runs configure.
+# configuring subdirectories for the host system.
 BASE_TARGET_EXPORTS = \
+	$(BASE_EXPORTS) \
 	AR="$(AR_FOR_TARGET)"; export AR; \
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
@@ -230,47 +240,55 @@ CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
 
 CXX_FOR_BUILD = $(CXX)
 
+# Path to the build directory for a Canadian cross, empty otherwise.
+BUILD_DIR_PREFIX = @BUILD_DIR_PREFIX@
+
 # Special variables passed down in EXTRA_GCC_FLAGS.  They are defined
 # here so that they can be overridden by Makefile fragments.
 BUILD_PREFIX = @BUILD_PREFIX@
 BUILD_PREFIX_1 = @BUILD_PREFIX_1@
 
-BISON=@BISON@
-USUAL_BISON = `if [ -f $$r/bison/bison ] ; then \
-	    echo $$r/bison/bison -L $$s/bison/ ; \
+CONFIGURED_BISON = @CONFIGURED_BISON@
+BISON = `if [ -f $$r/$(BUILD_DIR_PREFIX)/bison/bison ] ; then \
+	    echo $$r/$(BUILD_DIR_PREFIX)/bison/bison -L $$s/bison/ ; \
 	 else \
-	    echo bison ; \
+	    echo ${CONFIGURED_BISON} ; \
 	 fi`
 
-DEFAULT_YACC = @DEFAULT_YACC@
-YACC=@YACC@
-USUAL_YACC = `if [ -f $$r/bison/bison ] ; then \
-	    echo $$r/bison/bison -y -L $$s/bison/ ; \
-	elif [ -f $$r/byacc/byacc ] ; then \
-	    echo $$r/byacc/byacc ; \
+CONFIGURED_YACC = @CONFIGURED_YACC@
+YACC = `if [ -f $$s/$(BUILD_DIR_PREFIX)/bison/bison ] ; then \
+	    echo $$r/$(BUILD_DIR_PREFIX)/bison/bison -y -L $$s/bison/ ; \
+	elif [ -f $$s/$(BUILD_DIR_PREFIX)/byacc/byacc ] ; then \
+	    echo $$r/$(BUILD_DIR_PREFIX)/byacc/byacc ; \
 	else \
-	    echo ${DEFAULT_YACC} ; \
+	    echo ${CONFIGURED_YACC} ; \
 	fi`
 
-DEFAULT_LEX = @DEFAULT_LEX@
-LEX=@LEX@
-USUAL_LEX = `if [ -f $$r/flex/flex ] ; \
-	then echo $$r/flex/flex ; \
-	else echo ${DEFAULT_LEX} ; fi`
+CONFIGURED_FLEX = @CONFIGURED_FLEX@
+FLEX = `if [ -f $$r/$(BUILD_DIR_PREFIX)/flex/flex ] ; \
+	then echo $$r/$(BUILD_DIR_PREFIX)/flex/flex ; \
+	else echo ${CONFIGURED_FLEX} ; fi`
 
-DEFAULT_M4 = @DEFAULT_M4@
-M4 = `if [ -f $$r/m4/m4 ] ; \
-	then echo $$r/m4/m4 ; \
-	else echo ${DEFAULT_M4} ; fi`
+CONFIGURED_LEX = @CONFIGURED_LEX@
+LEX = `if [ -f $$r/$(BUILD_DIR_PREFIX)/flex/flex ] ; \
+	then echo $$r/$(BUILD_DIR_PREFIX)/flex/flex ; \
+	else echo ${CONFIGURED_LEX} ; fi`
+
+CONFIGURED_M4 = @CONFIGURED_M4@
+M4 = `if [ -f $$r/$(BUILD_DIR_PREFIX)/m4/m4 ] ; \
+	then echo $$r/$(BUILD_DIR_PREFIX)/m4/m4 ; \
+	else echo ${CONFIGURED_M4} ; fi`
 
 # For an installed makeinfo, we require it to be from texinfo 4.2 or
-# higher, else we use the "missing" dummy.
-MAKEINFO=@MAKEINFO@
-USUAL_MAKEINFO = `if [ -f $$r/texinfo/makeinfo/makeinfo ] ; \
-	then echo $$r/texinfo/makeinfo/makeinfo ; \
-	else if (makeinfo --version \
+# higher, else we use the "missing" dummy.  We also pass the subdirectory
+# makeinfo even if only the Makefile is there, because Texinfo builds its
+# manual when made, and it requires its own version.
+CONFIGURED_MAKEINFO = @CONFIGURED_MAKEINFO@
+MAKEINFO = `if [ -f $$r/$(BUILD_DIR_PREFIX)/texinfo/makeinfo/Makefile ] ; \
+	then echo $$r/$(BUILD_DIR_PREFIX)/texinfo/makeinfo/makeinfo ; \
+	else if (${CONFIGURED_MAKEINFO} --version \
 	  | egrep 'texinfo[^0-9]*([1-3][0-9]|4\.[2-9]|[5-9])') >/dev/null 2>&1; \
-        then echo makeinfo; else echo $$s/missing makeinfo; fi; fi`
+        then echo ${CONFIGURED_MAKEINFO}; else echo $$s/missing makeinfo; fi; fi`
 
 # This just becomes part of the MAKEINFO definition passed down to
 # sub-makes.  It lets flags be given on the command line while still
@@ -506,6 +524,7 @@ BASE_FLAGS_TO_PASS = \
 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
 	"CXX_FOR_BUILD=$(CXX_FOR_BUILD)" \
 	"EXPECT=$(EXPECT)" \
+	"FLEX=$(FLEX)" \
 	"INSTALL=$(INSTALL)" \
 	"INSTALL_DATA=$(INSTALL_DATA)" \
 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
@@ -713,8 +732,17 @@ configure-target:  \
 
 # The target built for a native non-bootstrap build.
 .PHONY: all
-all: @all_build_modules@ all-host all-target
+all: all-build all-host all-target
 
+.PHONY: all-build
+all-build:  \
+    maybe-all-build-libiberty \
+    maybe-all-build-libbanshee \
+    maybe-all-build-bison \
+    maybe-all-build-byacc \
+    maybe-all-build-flex \
+    maybe-all-build-m4 \
+    maybe-all-build-texinfo
 .PHONY: all-host
 all-host: maybe-all-gcc  \
     maybe-all-ash \
@@ -2158,6 +2186,321 @@ all-build-libbanshee: configure-build-libbanshee
 	$(BUILD_EXPORTS) \
 	(cd $(BUILD_SUBDIR)/libbanshee && $(MAKE)  all)
 @endif build-libbanshee
+
+.PHONY: configure-build-bison maybe-configure-build-bison
+maybe-configure-build-bison:
+@if build-bison
+maybe-configure-build-bison: configure-build-bison
+configure-build-bison:
+	@test ! -f $(BUILD_SUBDIR)/bison/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/bison ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(BUILD_EXPORTS) \
+	echo Configuring in $(BUILD_SUBDIR)/bison; \
+	cd "$(BUILD_SUBDIR)/bison" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) \
+	    topdir=$(srcdir) ;; \
+	  *) \
+	    case "$(BUILD_SUBDIR)" in \
+	      .) topdir="../$(srcdir)" ;; \
+	      *) topdir="../../$(srcdir)" ;; \
+	    esac ;; \
+	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
+	    if $(SHELL) $$s/symlink-tree $${topdir}/bison "no-such-file" ; then \
+	      if [ -f Makefile ]; then \
+	        if $(MAKE) distclean; then \
+	          true; \
+	        else \
+	          exit 1; \
+	        fi; \
+	      else \
+	        true; \
+	      fi; \
+	    else \
+	      exit 1; \
+	    fi; \
+	  else \
+	    true; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
+	  srcdiroption="--srcdir=$${topdir}/bison"; \
+	  libsrcdir="$$s/bison"; \
+	fi; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(BUILD_CONFIGARGS) $${srcdiroption} \
+	  --with-build-subdir="$(BUILD_SUBDIR)"  \
+	  || exit 1
+@endif build-bison
+
+.PHONY: all-build-bison maybe-all-build-bison
+maybe-all-build-bison:
+@if build-bison
+maybe-all-build-bison: all-build-bison
+all-build-bison: configure-build-bison
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(BUILD_EXPORTS) \
+	(cd $(BUILD_SUBDIR)/bison && $(MAKE)  all)
+@endif build-bison
+
+.PHONY: configure-build-byacc maybe-configure-build-byacc
+maybe-configure-build-byacc:
+@if build-byacc
+maybe-configure-build-byacc: configure-build-byacc
+configure-build-byacc:
+	@test ! -f $(BUILD_SUBDIR)/byacc/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/byacc ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(BUILD_EXPORTS) \
+	echo Configuring in $(BUILD_SUBDIR)/byacc; \
+	cd "$(BUILD_SUBDIR)/byacc" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) \
+	    topdir=$(srcdir) ;; \
+	  *) \
+	    case "$(BUILD_SUBDIR)" in \
+	      .) topdir="../$(srcdir)" ;; \
+	      *) topdir="../../$(srcdir)" ;; \
+	    esac ;; \
+	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
+	    if $(SHELL) $$s/symlink-tree $${topdir}/byacc "no-such-file" ; then \
+	      if [ -f Makefile ]; then \
+	        if $(MAKE) distclean; then \
+	          true; \
+	        else \
+	          exit 1; \
+	        fi; \
+	      else \
+	        true; \
+	      fi; \
+	    else \
+	      exit 1; \
+	    fi; \
+	  else \
+	    true; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
+	  srcdiroption="--srcdir=$${topdir}/byacc"; \
+	  libsrcdir="$$s/byacc"; \
+	fi; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(BUILD_CONFIGARGS) $${srcdiroption} \
+	  --with-build-subdir="$(BUILD_SUBDIR)"  \
+	  || exit 1
+@endif build-byacc
+
+.PHONY: all-build-byacc maybe-all-build-byacc
+maybe-all-build-byacc:
+@if build-byacc
+maybe-all-build-byacc: all-build-byacc
+all-build-byacc: configure-build-byacc
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(BUILD_EXPORTS) \
+	(cd $(BUILD_SUBDIR)/byacc && $(MAKE)  all)
+@endif build-byacc
+
+.PHONY: configure-build-flex maybe-configure-build-flex
+maybe-configure-build-flex:
+@if build-flex
+maybe-configure-build-flex: configure-build-flex
+configure-build-flex:
+	@test ! -f $(BUILD_SUBDIR)/flex/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/flex ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(BUILD_EXPORTS) \
+	echo Configuring in $(BUILD_SUBDIR)/flex; \
+	cd "$(BUILD_SUBDIR)/flex" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) \
+	    topdir=$(srcdir) ;; \
+	  *) \
+	    case "$(BUILD_SUBDIR)" in \
+	      .) topdir="../$(srcdir)" ;; \
+	      *) topdir="../../$(srcdir)" ;; \
+	    esac ;; \
+	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
+	    if $(SHELL) $$s/symlink-tree $${topdir}/flex "no-such-file" ; then \
+	      if [ -f Makefile ]; then \
+	        if $(MAKE) distclean; then \
+	          true; \
+	        else \
+	          exit 1; \
+	        fi; \
+	      else \
+	        true; \
+	      fi; \
+	    else \
+	      exit 1; \
+	    fi; \
+	  else \
+	    true; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
+	  srcdiroption="--srcdir=$${topdir}/flex"; \
+	  libsrcdir="$$s/flex"; \
+	fi; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(BUILD_CONFIGARGS) $${srcdiroption} \
+	  --with-build-subdir="$(BUILD_SUBDIR)"  \
+	  || exit 1
+@endif build-flex
+
+.PHONY: all-build-flex maybe-all-build-flex
+maybe-all-build-flex:
+@if build-flex
+maybe-all-build-flex: all-build-flex
+all-build-flex: configure-build-flex
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(BUILD_EXPORTS) \
+	(cd $(BUILD_SUBDIR)/flex && $(MAKE)  all)
+@endif build-flex
+
+.PHONY: configure-build-m4 maybe-configure-build-m4
+maybe-configure-build-m4:
+@if build-m4
+maybe-configure-build-m4: configure-build-m4
+configure-build-m4:
+	@test ! -f $(BUILD_SUBDIR)/m4/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/m4 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(BUILD_EXPORTS) \
+	echo Configuring in $(BUILD_SUBDIR)/m4; \
+	cd "$(BUILD_SUBDIR)/m4" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) \
+	    topdir=$(srcdir) ;; \
+	  *) \
+	    case "$(BUILD_SUBDIR)" in \
+	      .) topdir="../$(srcdir)" ;; \
+	      *) topdir="../../$(srcdir)" ;; \
+	    esac ;; \
+	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
+	    if $(SHELL) $$s/symlink-tree $${topdir}/m4 "no-such-file" ; then \
+	      if [ -f Makefile ]; then \
+	        if $(MAKE) distclean; then \
+	          true; \
+	        else \
+	          exit 1; \
+	        fi; \
+	      else \
+	        true; \
+	      fi; \
+	    else \
+	      exit 1; \
+	    fi; \
+	  else \
+	    true; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
+	  srcdiroption="--srcdir=$${topdir}/m4"; \
+	  libsrcdir="$$s/m4"; \
+	fi; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(BUILD_CONFIGARGS) $${srcdiroption} \
+	  --with-build-subdir="$(BUILD_SUBDIR)"  \
+	  || exit 1
+@endif build-m4
+
+.PHONY: all-build-m4 maybe-all-build-m4
+maybe-all-build-m4:
+@if build-m4
+maybe-all-build-m4: all-build-m4
+all-build-m4: configure-build-m4
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(BUILD_EXPORTS) \
+	(cd $(BUILD_SUBDIR)/m4 && $(MAKE)  all)
+@endif build-m4
+
+.PHONY: configure-build-texinfo maybe-configure-build-texinfo
+maybe-configure-build-texinfo:
+@if build-texinfo
+maybe-configure-build-texinfo: configure-build-texinfo
+configure-build-texinfo:
+	@test ! -f $(BUILD_SUBDIR)/texinfo/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/texinfo ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(BUILD_EXPORTS) \
+	echo Configuring in $(BUILD_SUBDIR)/texinfo; \
+	cd "$(BUILD_SUBDIR)/texinfo" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) \
+	    topdir=$(srcdir) ;; \
+	  *) \
+	    case "$(BUILD_SUBDIR)" in \
+	      .) topdir="../$(srcdir)" ;; \
+	      *) topdir="../../$(srcdir)" ;; \
+	    esac ;; \
+	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
+	    if $(SHELL) $$s/symlink-tree $${topdir}/texinfo "no-such-file" ; then \
+	      if [ -f Makefile ]; then \
+	        if $(MAKE) distclean; then \
+	          true; \
+	        else \
+	          exit 1; \
+	        fi; \
+	      else \
+	        true; \
+	      fi; \
+	    else \
+	      exit 1; \
+	    fi; \
+	  else \
+	    true; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
+	  srcdiroption="--srcdir=$${topdir}/texinfo"; \
+	  libsrcdir="$$s/texinfo"; \
+	fi; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(BUILD_CONFIGARGS) $${srcdiroption} \
+	  --with-build-subdir="$(BUILD_SUBDIR)"  \
+	  || exit 1
+@endif build-texinfo
+
+.PHONY: all-build-texinfo maybe-all-build-texinfo
+maybe-all-build-texinfo:
+@if build-texinfo
+maybe-all-build-texinfo: all-build-texinfo
+all-build-texinfo: configure-build-texinfo
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(BUILD_EXPORTS) \
+	(cd $(BUILD_SUBDIR)/texinfo && $(MAKE)  all)
+@endif build-texinfo
 
 
 # --------------------------------------
@@ -28841,6 +29184,12 @@ profiledbootstrap: all-bootstrap configure-gcc
 # or find a substitute somewhere (perhaps installed).  Soft dependencies
 # are specified by depending on a 'maybe-' target.  If you're not sure,
 # it's safer to use a soft dependency.
+
+# Build modules
+all-build-bison: maybe-all-build-texinfo
+all-build-flex: maybe-all-build-texinfo
+all-build-libiberty: maybe-all-build-texinfo
+all-build-m4: maybe-all-build-libiberty maybe-all-build-texinfo
 
 # Host modules specific to gcc.
 # GCC needs to identify certain tools.

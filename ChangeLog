@@ -1,3 +1,27 @@
+2004-07-01  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.def (build_modules): Add bison, byacc, flex,
+	m4, texinfo.
+	(flags_to_pass): Add FLEX.
+	* Makefile.tpl (BUILD_DIR_PREFIX, BASE_EXPORTS): New.
+	(BUILD_EXPORTS, HOST_EXPORTS, BASE_TARGET_EXPORTS): Include it.
+	(DEFAULT_YACC, USUAL_YACC, DEFAULT_LEX, USUAL_LEX, DEFAULT_M4,
+	DEFAULT_MAKEINFO): Remove.
+	(CONFIGURED_YACC, CONFIGURED_FLEX, CONFIGURED_BISON,
+	CONFIGURED_LEX, CONFIGURED_M4, CONFIGURED_MAKEINFO): Substitute.
+	(YACC, FLEX, BISON, LEX, M4, MAKEINFO): Define to look into
+	objdir or else use configured tool.
+	(all-build): New.
+	(all): Depend on it.
+	(Build module dependencies): Add.
+	* Makefile.in: Regenerate.
+	* configure.in: Better support for multiple build modules,
+	matching what is done for host/target modules.  Do not look
+	for "plausible" locations of build tools if Canadian cross.
+	Use autoconf's AC_PROG_CC to find a C compiler.  Define
+	BUILD_DIR_PREFIX.  Look for flex, makeinfo and m4.
+	* configure: Regenerate.
+	
 2004-06-22  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.tpl (HOST_EXPORTS): Fix pasto.
