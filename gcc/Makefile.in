@@ -2172,8 +2172,8 @@ xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos$(build_
 
 # This is nominally a 'build' program, but it's run only when host==build,
 # so we can (indeed, must) use $(LIBDEPS) and $(LIBS).
-fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(LIBDEPS) \
-	    libcpp.a
+fix-header$(build_exeext): fix-header.o scan-decls.o scan.o xsys-protos.h \
+           $(LIBDEPS) libcpp.a
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ fix-header.o \
 	   scan-decls.o scan.o libcpp.a $(LIBS)
 
@@ -2188,7 +2188,7 @@ scan-decls.o: scan-decls.c scan.h cpplib.h $(HCONFIG_H) system.h
 # The idea is to make sure fix-header gets built,
 # but not rerun fixproto after each stage
 # just because fix-header's mtime has changed.
-fixhdr.ready: fix-header
+fixhdr.ready: fix-header$(build_exeext)
 	-if [ -f fixhdr.ready ] ; then \
 		true; \
 	else \
@@ -2310,7 +2310,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	-rm -f specs float.h-* enquire SYSCALLS.c.X SYSCALLS.c
 	-rm -f collect collect2 mips-tfile mips-tdump
 # Delete files generated for fixproto
-	-rm -rf fix-header xsys-protos.h deduced.h tmp-deduced.h \
+	-rm -rf fix-header$(build_exeext) xsys-protos.h deduced.h tmp-deduced.h \
 	  gen-protos$(build_exeext) fixproto.list fixtmp.* fixhdr.ready
 # Delete files generated for fixincl
 	-rm -rf fixincl fixinc.sh specs.ready

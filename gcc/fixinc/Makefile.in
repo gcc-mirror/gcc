@@ -22,6 +22,8 @@
 # The makefile built from this file lives in the fixinc subdirectory.
 # Its purpose is to build the any-platforms fixinc.sh script.
 
+SHELL=/bin/sh
+
 FL_LIST = $(CFLAGS) $(CPPFLAGS) $(WARN_CFLAGS)
 FIXINC_DEFS = -DIN_GCC -DHAVE_CONFIG_H $(FL_LIST) $(INCLUDES)
 
