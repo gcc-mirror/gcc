@@ -313,6 +313,7 @@ USE_COLLECT2 = @will_use_collect2@
 MAYBE_USE_COLLECT2 = @maybe_use_collect2@
 # It is convenient for configure to add the assignment at the beginning,
 # so don't override it here.
+USE_COLLECT2 = ld
 
 # List of extra C and assembler files to add to libgcc1.a.
 # Assembler files should have names ending in `.asm'.
@@ -1169,11 +1170,11 @@ ld: collect2
 	ln collect2$(exeext) ld$(exeext) > /dev/null 2>&1 \
 	   || cp collect2$(exeext) ld$(exeext)
 
-collect2 : collect2.o cplus-dem.o underscore.o version.o \
+collect2: collect2.o tlink.o hash.o cplus-dem.o underscore.o version.o \
 	choose-temp.o $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
 	-rm -f collect2$(exeext)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ collect2.o \
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ collect2.o tlink.o hash.o \
 	  cplus-dem.o underscore.o version.o choose-temp.o $(LIBS)
 
 collect2.o : collect2.c $(CONFIG_H) gstab.h obstack.h demangle.h
@@ -1181,6 +1182,8 @@ collect2.o : collect2.c $(CONFIG_H) gstab.h obstack.h demangle.h
 	-DTARGET_MACHINE=\"$(target_alias)\" $(MAYBE_USE_COLLECT2) \
 	-c `echo $(srcdir)/collect2.c | sed 's,^\./,,'`
 
+tlink.o: tlink.c demangle.h hash.h $(CONFIG_H)
+hash.o: hash.c hash.h
 cplus-dem.o: cplus-dem.c demangle.h
 
 underscore.c: stamp-under ; @true

@@ -1368,17 +1368,20 @@ main (argc, argv)
       fprintf (stderr, "\n");
     }
 
-  /* Load the program, searching all libraries.  */
+  /* Load the program, searching all libraries and attempting to provide
+     undefined symbols from repository information.  */
 
-  collect_execute ("ld", ld1_argv, ldout);
-  do_wait ("ld");
-  dump_file (ldout);
-  unlink (ldout);
+  do_tlink (ld1_argv, object_lst);
 
   /* If -r or they'll be run via some other method, don't build the
      constructor or destructor list, just return now.  */
   if (rflag || ! do_collecting)
-    return 0;
+    {
+      /* But make sure we delete the export file we may have created.  */
+      if (export_file != 0 && export_file[0])
+	maybe_unlink (export_file);
+      return 0;
+    }
 
   /* Examine the namelist with nm and search it for static constructors
      and destructors to call.

@@ -1,3 +1,19 @@
+Mon Aug 11 14:15:02 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Integrate tlink patch from jason@cygnus.com
+	* gcc.c (SWITCH_TAKES_ARG): Add 'V', 'B' and 'b'.
+  	(process_command): Increment n_switches for them.  Don't discard
+ 	their args.  Validate them.
+	(main): Escape " marks when creating COLLECT_GCC_OPTIONS.
+	From Rohan Lenard.
+	(process_command): Set include_prefixes from COMPILER_PATH.
+	(main): Set COLLECT_GCC_OPTIONS sooner.
+	* confiugre.in: Link ../ld/ld.new to collect-ld rather than real-ld.
+	* tlink.c, hash.c, hash.h: New files.
+	* Makefile.in (USE_COLLECT2): Always use collect2.
+	(collect2): Depend on and link in hash.o and tlink.o.
+	(tlink.o, hash.o): Add dependencies.
+
 Mon Aug 11 10:04:49 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Integrate alias analysis changes from jfc@mit.edu
