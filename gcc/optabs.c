@@ -1043,7 +1043,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  abort ();
 	}
 
-      seq = gen_sequence ();
+      seq = get_insns ();
       end_sequence ();
 
       if (binoptab->code != UNKNOWN)
