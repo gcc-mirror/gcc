@@ -1057,3 +1057,6 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/xstrerror.c $(OUTPUT_OPTION)
 
+# Don't export variables to the environment, in order to not confuse
+# configure.
+.NOEXPORT:

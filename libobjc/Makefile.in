@@ -348,3 +348,7 @@ maintainer-clean realclean: distclean
 
 .PHONY: mostlyclean clean distclean maintainer-clean all check uninstall \
 	install-strip dist installcheck installdirs 
+
+# Don't export variables to the environment, in order to not confuse
+# configure.
+.NOEXPORT:

@@ -269,3 +269,7 @@ config.status: $(srcdir)/configure
 
 $(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac
 	cd $(srcdir) && autoconf
+
+# Don't export variables to the environment, in order to not confuse
+# configure.
+.NOEXPORT:

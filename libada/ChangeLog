@@ -1,3 +1,7 @@
+2004-05-25  Daniel Jacobowitz  <drow@false.org>
+
+	* Makefile.in: Add .NOEXPORT.
+
 2004-04-26  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* Makefile.in: Put back merge of some targets to avoid code duplication.

@@ -1,3 +1,7 @@
+2004-05-25  Daniel Jacobowitz  <drow@false.org>
+
+	* Makefile.in: Add .NOEXPORT.
+
 2004-04-29  Douglas B Rupp  <rupp@gnat.com>
 
 	* mkstemps.c (mkstemps) [VMS]: Remove special open option. Update
