@@ -160,7 +160,7 @@ An RTX code for other three input operations.  Currently only
 
 @item i
 An RTX code for an entire instruction:  @code{INSN}, @code{JUMP_INSN}, and
-@code{CALL_INSN}. @xref{Insns}.
+@code{CALL_INSN}.  @xref{Insns}.
 
 @item m
 An RTX code for something that matches in insns, such as
@@ -1345,8 +1345,8 @@ by incrementing it, but there is no need to mention this in the RTL.
 @item (mem:@var{m} @var{addr} @var{alias})
 This RTX represents a reference to main memory at an address
 represented by the expression @var{addr}.  @var{m} specifies how large
-a unit of memory is accessed. @var{alias} specifies an alias set for the
-reference. In general two items are in different alias sets if they cannot
+a unit of memory is accessed.  @var{alias} specifies an alias set for the
+reference.  In general two items are in different alias sets if they cannot
 reference the same memory address.
 
 @findex addressof
@@ -1432,7 +1432,7 @@ However, they can pretend to do so when only the sign of the result will
 be used, which is the case when the result is stored in the condition
 code.  And that is the @emph{only} way this kind of expression may
 validly be used: as a value to be stored in the condition codes, either
-@code{(cc0)} or a register. @xref{Comparisons}.
+@code{(cc0)} or a register.  @xref{Comparisons}.
 
 The mode @var{m} is not related to the modes of @var{x} and @var{y}, but
 instead is the mode of the condition code value.  If @code{(cc0)} is

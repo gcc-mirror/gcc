@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.33 2001/06/23 23:41:59 jsm28 Exp $
+@comment $Id: install.texi,v 1.34 2001/06/25 00:21:28 jsm28 Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -105,8 +105,8 @@ This document describes the generic installation procedure for GCC as well
 as detailing some target specific installation instructions. 
 
 GCC includes several components that previously were separate distributions 
-with their own installation instructions. This document supersedes all 
-package specific installation instructions. We provide the component 
+with their own installation instructions.  This document supersedes all 
+package specific installation instructions.  We provide the component 
 specific installation information in the source distribution for historical 
 reference purposes only. 
 
@@ -147,7 +147,7 @@ The installation procedure itself is broken into five steps.
 @end ifnotinfo
 
 Please note that GCC does not support @samp{make uninstall} and probably
-won't do so in the near future as this would open a can of worms. Instead, 
+won't do so in the near future as this would open a can of worms.  Instead, 
 we suggest that you install GCC into a directory of its own and simply
 remove that directory when you do not need that specific version of GCC
 any longer. 
@@ -193,7 +193,7 @@ are also included in the full distribution.
 If you choose to download specific components, you must download the core
 gcc distribution plus any language specific distributions you wish to
 use.  The core distribution includes the C language front end as well as the
-shared components. Each language has a tarball which includes the language
+shared components.  Each language has a tarball which includes the language
 front end as well as the language runtime (when appropriate).
 
 Unpack the core distribution as well as any language specific
@@ -401,7 +401,7 @@ argument, only @option{--enable-shared} does.
 
 @item @anchor{with-gnu-as}--with-gnu-as
 Specify that the compiler should assume that the
-assembler it finds is the GNU assembler. However, this does not modify
+assembler it finds is the GNU assembler.  However, this does not modify
 the rules to find an assembler and will result in confusion if found
 assembler is not actually the GNU assembler.  (Confusion will also
 result if the compiler finds the GNU assembler but has not been
@@ -434,14 +434,14 @@ Check the
 @file{@var{exec_prefix}/lib/gcc-lib/@var{target}/@var{version}}
 directory, where @var{exec_prefix} defaults to @var{prefix} which
 defaults to @file{/usr/local} unless overridden by the
-@option{--prefix=/pathname} switch described above. @var{target} is the
+@option{--prefix=/pathname} switch described above.  @var{target} is the
 target system triple, such as @var{sparc-sun-solaris2.7}, and
 @var{version} denotes the GCC version, such as 2.95.2.
 @item
 Check operating system specific directories (e.g. @file{/usr/ccs/bin} on
 Sun Solaris).
 @end itemize
-Note that these rules do not check for the value of @env{PATH}. You may
+Note that these rules do not check for the value of @env{PATH}.  You may
 want to use @option{--with-as} if no assembler is installed in the
 directories listed above, or if you have multiple assemblers installed
 and want to choose one that is not found by the above rules.
@@ -545,7 +545,7 @@ Microsoft Win32 API thread support.
 Specify which cpu variant the
 compiler should generate code for by default.  This is currently
 only supported on the some ports, specifically arm, powerpc, and
-SPARC. If configure does not recognize the model name (e.g. arm700,
+SPARC.  If configure does not recognize the model name (e.g. arm700,
 603e, or ultrasparc) you provide, please check the configure script
 for a complete list of supported models.
 
@@ -564,10 +564,10 @@ in @file{@var{prefix}/@var{dirname}/cpp}, in addition to @var{bindir}.
 @item --enable-maintainer-mode
 The build rules that
 regenerate the GCC master message catalog @file{gcc.pot} are normally
-disabled. This is because it can only be rebuilt if the complete source
-tree is present. If you have changed the sources and want to rebuild the
+disabled.  This is because it can only be rebuilt if the complete source
+tree is present.  If you have changed the sources and want to rebuild the
 catalog, configuring with @option{--enable-maintainer-mode} will enable
-this. Note that you need a recent version of the @code{gettext} tools
+this.  Note that you need a recent version of the @code{gettext} tools
 to do so.
 
 @item --enable-version-specific-runtime-libs
@@ -578,12 +578,12 @@ addition, libstdc++'s include files will be installed in
 @file{@var{libsubdir}/include/g++} unless you overruled it by using
 @option{--with-gxx-include-dir=@var{dirname}}.  Using this option is
 particularly useful if you intend to use several versions of GCC in
-parallel. This is currently supported by @samp{libf2c} and
+parallel.  This is currently supported by @samp{libf2c} and
 @samp{libstdc++}.
 
 @item --enable-languages=@var{lang1},@var{lang2},@dots{}
 Specify that only a particular subset of compilers and
-their runtime libraries should be built. For a list of valid values for
+their runtime libraries should be built.  For a list of valid values for
 @var{langN} you can issue the following command in the
 @file{gcc} directory of your GCC source tree:@* @samp{grep language=
 */config-lang.in}@* Currently, you can use any of the following:
@@ -624,10 +624,10 @@ to look up installations paths in the registry using the following key:
 @end smallexample
 
 @var{KEY} defaults to GCC version number, and can be overridden by the
-@option{--enable-win32-registry=@var{KEY}} option. Vendors and distributors
+@option{--enable-win32-registry=@var{KEY}} option.  Vendors and distributors
 who use custom installers are encouraged to provide a different key,
 perhaps one comprised of vendor name and GCC version number, to
-avoid conflict with existing installations. This feature is enabled
+avoid conflict with existing installations.  This feature is enabled
 by default, and can be disabled by @option{--disable-win32-registry}
 option.  This option has no effect on the other hosts.
 
@@ -654,8 +654,8 @@ checks @samp{rtl} and @samp{gcac} are very expensive.
 @itemx --disable-nls
 The @option{--enable-nls} option enables Native Language Support (NLS),
 which lets GCC output diagnostics in languages other than American
-English. Native Language Support is enabled by default if not doing a
-canadian cross build. The @option{--disable-nls} option disables NLS.
+English.  Native Language Support is enabled by default if not doing a
+canadian cross build.  The @option{--disable-nls} option disables NLS.
 
 @item --with-included-gettext
 If NLS is enabled, the @option{--with-included-gettext} option causes the build
@@ -819,7 +819,7 @@ bootstrap4} to increase the number of stages of bootstrap.
 
 If you used the flag @option{--enable-languages=@dots{}} to restrict
 the compilers to be built, only those you've actually enabled will be
-built. This will of course only build those runtime libraries, for
+built.  This will of course only build those runtime libraries, for
 which the particular compiler has been built.  Please note,
 that re-defining LANGUAGES when calling @samp{make bootstrap}
 @strong{does not} work anymore!
@@ -907,7 +907,7 @@ the number of processors in your machine.
 to current development versions of GCC and GCC 3.0 or later. 
 GCC 2.95.x does not come with a testsuite.}
 
-Before you install GCC, you might wish to run the testsuite. This
+Before you install GCC, you might wish to run the testsuite.  This
 step is optional and may require you to download additional software.
 
 First, you must have @uref{download.html,,downloaded the testsuites}. 
@@ -959,7 +959,7 @@ compilers as well as the C++ and Java runtime libraries.
 
 As a first possibility to cut down the number of tests that are run it is
 possible to use @samp{make check-gcc} or @samp{make check-g++}
-in the gcc subdirectory of the object directory. To further cut down the
+in the gcc subdirectory of the object directory.  To further cut down the
 tests the following is possible:
 
 @example
@@ -985,9 +985,9 @@ output of @samp{make check} into a file and look at the
 @section How to interpret test results
 
 After the testsuite has run you'll find various @file{*.sum} and @file{*.log}
-files in the testsuite subdirectories. The @file{*.log} files contain a
+files in the testsuite subdirectories.  The @file{*.log} files contain a
 detailed log of the compiler invocations and the corresponding
-results, the @file{*.sum} files summarize the results. These summaries list
+results, the @file{*.sum} files summarize the results.  These summaries list
 all the tests that have been run with a corresponding status code:
 
 @itemize @bullet
@@ -1016,7 +1016,7 @@ problem in future releases.
 @section Submitting test results
 
 If you want to report the results to the GCC project, use the
-@file{contrib/test_summary} shell script. Start it in the @var{objdir} with
+@file{contrib/test_summary} shell script.  Start it in the @var{objdir} with
 
 @example
     @var{srcdir}/contrib/test_summary -p your_commentary.txt \
@@ -1024,14 +1024,14 @@ If you want to report the results to the GCC project, use the
 @end example
 
 This script uses the @command{Mail} program to send the results, so
-make sure it is in your @env{PATH}. The file @file{your_commentary.txt} is
+make sure it is in your @env{PATH}.  The file @file{your_commentary.txt} is
 prepended to the testsuite summary and should contain any special
-remarks you have on your results or your build environment. Please
+remarks you have on your results or your build environment.  Please
 do not edit the testsuite result block or the subject line, as these
 messages are automatically parsed and presented at the 
 @uref{http://gcc.gnu.org/testresults/,,GCC testresults} web
 page.  Here you can also gather information on how specific tests
-behave on different platforms and compare them with your results. A
+behave on different platforms and compare them with your results.  A
 few failing testcases are possible even on released versions and you
 should look here first if you think your results are unreasonable.
 
@@ -1110,7 +1110,7 @@ recent version of GCC.
 @cindex Binaries
 @cindex Installing GCC: Binaries
 
-We are often asked about pre-compiled versions of GCC. While we cannot
+We are often asked about pre-compiled versions of GCC.  While we cannot
 provide these for all platforms, below you'll find links to binaries for
 various platforms where creating them by yourself is not easy due to various
 reasons.
@@ -1172,9 +1172,9 @@ In addition to those specific offerings, you can get a binary
 distribution CD-ROM from the
 @uref{http://www.fsf.org/order/order.html,,Free Software Foundation}. 
 It contains binaries for a number of platforms, and
-includes not only GCC, but other stuff as well. The current CD does
+includes not only GCC, but other stuff as well.  The current CD does
 not contain the latest version of GCC, but it should allow
-bootstrapping the compiler. An updated version of that disk is in the
+bootstrapping the compiler.  An updated version of that disk is in the
 works.
 
 @html
@@ -1411,7 +1411,7 @@ MIL-STD-1750A processors.
 
 The MIL-STD-1750A cross configuration produces output for
 @code{as1750}, an assembler/linker available under the GNU Public
-License for the 1750A. @code{as1750} can be obtained at
+License for the 1750A.  @code{as1750} can be obtained at
 @uref{ftp://ftp.fta-berlin.de/pub/crossgcc/1750gals/}.
 A similarly licensed simulator for
 the 1750A is available from same address.
@@ -1902,7 +1902,7 @@ glibc 2.2.4 whether patches for GCC 3.0 are needed.  You can use glibc
 @heading @anchor{ix86-*-linux*oldld}i?86-*-linux*oldld
 Use this configuration to generate @file{a.out} binaries on Linux-based
 GNU systems if you do not have gas/binutils version 2.5.2 or later
-installed. This is an obsolete configuration.
+installed.  This is an obsolete configuration.
 
 @html
 </p>
@@ -1910,7 +1910,7 @@ installed. This is an obsolete configuration.
 @end html
 @heading @anchor{ix86-*-linux*aout}i?86-*-linux*aout
 Use this configuration to generate @file{a.out} binaries on Linux-based
-GNU systems. This configuration is being superseded. You must use
+GNU systems.  This configuration is being superseded.  You must use
 gas/binutils version 2.5.2 or later.
 
 @html
@@ -1965,7 +1965,7 @@ native compiler.}
 
 Use of the @option{-march-pentiumpro} flag can result in
 unrecognized opcodes when using the native assembler on OS versions before
-5.0.6. (Support for P6 opcodes was added to the native ELF assembler in
+5.0.6.  (Support for P6 opcodes was added to the native ELF assembler in
 that version.)  While it's rather rare to see these emitted by GCC yet, 
 errors of the basic form:
 
@@ -2322,11 +2322,11 @@ bootstrap.  Binaries are available from the OSU-CIS archive, at
 <hr>
 @end html
 @heading @anchor{m68k-bull-sysv}m68k-bull-sysv
-Bull DPX/2 series 200 and 300 with BOS-2.00.45 up to BOS-2.01. GCC works
-either with native assembler or GNU assembler. You can use
+Bull DPX/2 series 200 and 300 with BOS-2.00.45 up to BOS-2.01.  GCC works
+either with native assembler or GNU assembler.  You can use
 GNU assembler with native coff generation by providing @option{--with-gnu-as} to
 the configure script or use GNU assembler with dbx-in-coff encapsulation
-by providing @samp{--with-gnu-as --stabs}. For any problem with native
+by providing @samp{--with-gnu-as --stabs}.  For any problem with native
 assembler or for availability of the DPX/2 port of GAS, contact
 @email{F.Pierresteguy@@frcl.bull.fr}.
 
@@ -2710,7 +2710,7 @@ and use the @option{--with-gnu-as} configure option when configuring gcc.
 GNU as is distributed as part of the binutils package.
 
 You must use GAS on these platforms, as the native assembler can not handle 
-the code for exception handling support. Either of these messages indicates 
+the code for exception handling support.  Either of these messages indicates 
 that you are using the MIPS assembler when instead you should be using GAS:
 
 @samp{  as0: Error: ./libgcc2.c, line 1:Badly delimited numeric literal
@@ -2780,10 +2780,10 @@ with O32 ABI only support by configuring it for the mips-sgi-irix5
 target.  See the link below for details.
 
 GCC does not correctly pass/return structures which are
-smaller than 16 bytes and which are not 8 bytes. The problem is very
-involved and difficult to fix. It affects a number of other targets also,
+smaller than 16 bytes and which are not 8 bytes.  The problem is very
+involved and difficult to fix.  It affects a number of other targets also,
 but IRIX 6 is affected the most, because it is a 64 bit target, and 4 byte
-structures are common. The exact problem is that structures are being padded
+structures are common.  The exact problem is that structures are being padded
 at the wrong end, e.g. a 4 byte structure is loaded into the lower 4 bytes
 of the register when it should be loaded into the upper 4 bytes of the
 register.
@@ -2791,7 +2791,7 @@ register.
 GCC is consistent with itself, but not consistent with the SGI C compiler
 (and the SGI supplied runtime libraries), so the only failures that can
 happen are when there are library functions that take/return such
-structures. There are very few such library functions. I can only recall
+structures.  There are very few such library functions.  I can only recall
 seeing two of them: inet_ntoa, and semctl.
 
 See @uref{http://freeware.sgi.com/,,http://freeware.sgi.com/} for more
@@ -2860,7 +2860,7 @@ switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 
 You will need 
 @uref{ftp://ftp.varesearch.com/pub/support/hjl/binutils,,binutils-2.9.4.0.8} 
-or newer for a working GCC. It is strongly recommended to recompile binutils
+or newer for a working GCC.  It is strongly recommended to recompile binutils
 if you initially built it with gcc-2.7.2.x.
 
 You can specify a default version for the @option{-mcpu=@var{cpu_type}}
@@ -2955,7 +2955,7 @@ can be safely ignored; the stage 3 compiler is correct.
 @end html
 @heading @anchor{*-*-solaris*}*-*-solaris*
 
-Starting with Solaris, Sun does not ship a C compiler any more. To
+Starting with Solaris, Sun does not ship a C compiler any more.  To
 bootstrap and install GCC you first have to install a pre-built
 compiler, see our @uref{binaries.html,,binaries page} for
 details.
@@ -3026,13 +3026,13 @@ For example, the linker may hang indefinitely.  The fix is to remove
 @file{/usr/ucb} from your @code{PATH}.
 
 All releases of GNU binutils prior to 2.11.1 have known bugs on this
-platform. We recommend the use of GNU binutils 2.11.1 or the vendor
+platform.  We recommend the use of GNU binutils 2.11.1 or the vendor
 tools (Sun as, Sun ld).
 
 Unfortunately, C++ shared libraries, including libstdc++, won't work
 properly if assembled with Sun as: the linker will complain about
 relocations in read-only sections, in the definition of virtual
-tables. Also, Sun as fails to process long symbols resulting from
+tables.  Also, Sun as fails to process long symbols resulting from
 mangling template-heavy C++ function names.
 
 @html
