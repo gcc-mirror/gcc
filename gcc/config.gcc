@@ -655,7 +655,6 @@ arm-*-pe*)
 arm*-*-kaos*)
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h kaos.h arm/kaos-arm.h"
 	tmake_file=arm/t-arm-elf
-	use_fixproto=yes
 	;;
 avr-*-*)
 	tm_file="avr/avr.h dbxelf.h"
@@ -684,7 +683,7 @@ cris-*-elf | cris-*-none)
 	;;
 cris-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} linux.h cris/linux.h"
-	tmake_file="cris/t-cris t-slibgcc-elf-ver cris/t-linux"
+	tmake_file="cris/t-cris t-slibgcc-elf-ver t-linux"
 	;;
 d30v-*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
@@ -1145,7 +1144,6 @@ i[34567]86-*-interix*)
 i[34567]86-*-kaos*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h kaos.h i386/kaos-i386.h"
 	tmake_file="i386/t-i386elf t-svr4"
-	use_fixproto=yes
 	;;
 i860-*-sysv4*)
         tm_file="${tm_file} elfos.h svr4.h i860/sysv4.h"
@@ -1711,12 +1709,10 @@ powerpcle-*-eabi*)
 powerpc-*-kaos*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h kaos.h rs6000/kaos-ppc.h"
 	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
-	use_fixproto=yes
 	;;
 powerpcle-*-kaos*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/sysv4le.h kaos.h rs6000/kaos-ppc.h"
 	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
-	use_fixproto=yes
 	;;
 rs6000-ibm-aix4.[12]* | powerpc-ibm-aix4.[12]*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix41.h rs6000/xcoff.h"
@@ -2052,7 +2048,6 @@ strongarm-*-kaos*)
 	out_file=arm/arm.c
 	md_file=arm/arm.md
 	extra_modes=arm/arm-modes.def
-	use_fixproto=yes
 	;;
 v850e1-*-*)
 	target_cpu_default="TARGET_CPU_v850e1"

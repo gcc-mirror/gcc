@@ -1,3 +1,8 @@
+2003-09-30  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc (arm*-*-kaos*, i[34567]86-*-kaos*, powerpc-*-kaos*,
+	powerpcle-*-kaos*, strongarm-*-kaos*): Disable fixproto.
+
 2003-09-30  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/ieee754-sf.S: Tidy formatting.
