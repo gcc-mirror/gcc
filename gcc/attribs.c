@@ -75,6 +75,8 @@ static tree handle_weak_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
 static tree handle_alias_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
+static tree handle_visibility_attribute	PARAMS ((tree *, tree, tree, int,
+						 bool *));
 static tree handle_no_instrument_function_attribute PARAMS ((tree *, tree,
 							     tree, int,
 							     bool *));
@@ -148,6 +150,8 @@ static const struct attribute_spec c_common_attribute_table[] =
 			      handle_deprecated_attribute },
   { "vector_size",	      1, 1, false, true, false,
 			      handle_vector_size_attribute },
+  { "visibility",	      1, 1, true,  false, false,
+			      handle_visibility_attribute },
   { NULL,                     0, 0, false, false, false, NULL }
 };
 
@@ -1056,6 +1060,50 @@ handle_alias_attribute (node, name, args, flags, no_add_attrs)
     {
       warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle an "visibility" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_visibility_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  tree decl = *node;
+
+  if (decl_function_context (decl) != 0 || ! TREE_PUBLIC (decl))
+    {
+      warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else
+    {
+      tree id;
+
+      id = TREE_VALUE (args);
+      if (TREE_CODE (id) != STRING_CST)
+	{
+	  error ("visibility arg not a string");
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+      if (strcmp (TREE_STRING_POINTER (id), "hidden")
+	  && strcmp (TREE_STRING_POINTER (id), "protected")
+	  && strcmp (TREE_STRING_POINTER (id), "internal"))
+	{
+	  error ("visibility arg must be one of \"hidden\", \"protected\" or \"internal\"");
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      assemble_visibility (decl, TREE_STRING_POINTER (id));
     }
 
   return NULL_TREE;

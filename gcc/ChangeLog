@@ -1,5 +1,22 @@
 2002-02-26  Jakub Jelinek  <jakub@redhat.com>
 
+	* attribs.c (c_common_attribute_table): Add visibility.
+	(handle_visibility_attribute): New function.
+	* varasm.c (assemble_visibility): New function.
+	* output.h (assemble_visibility): Add prototype.
+	* tree.h (MODULE_LOCAL_P): Define.
+	* crtstuff.c (__dso_handle): Use visibility attribute.
+	* config/i386/i386.h (ENCODE_SECTION_INFO): Set SYMBOL_REF_FLAG
+	for MODULE_LOCAL_P symbols too.
+	* config/ia64/ia64.c (ia64_encode_section_info): Handle
+	MODULE_LOCAL_P symbols the same way as local symbols.
+	Add SDATA_NAME_FLAG_CHAR even if decl was explicitely forced
+	into .sdata/.sbss by the user.
+	* doc/extend.texi (Function Attributes): Document visibility
+	attribute.
+
+2002-02-26  Jakub Jelinek  <jakub@redhat.com>
+
 	PR debug/5770
 	* dwarf2out.c (rtl_for_decl_location): Return CONST_STRING for
 	STRING_CST initializer spanning the whole variable without

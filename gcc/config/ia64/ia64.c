@@ -6897,13 +6897,14 @@ ia64_encode_section_info (decl)
      statically allocated, but the space is allocated somewhere else.  Such
      decls can not be own data.  */
   if (! TARGET_NO_SDATA
-      && TREE_STATIC (decl) && ! DECL_EXTERNAL (decl)
-      && ! (DECL_ONE_ONLY (decl) || DECL_WEAK (decl))
-      && ! (TREE_PUBLIC (decl)
-	    && (flag_pic
-		|| (DECL_COMMON (decl)
-		    && (DECL_INITIAL (decl) == 0
-			|| DECL_INITIAL (decl) == error_mark_node))))
+      && ((TREE_STATIC (decl) && ! DECL_EXTERNAL (decl)
+	   && ! (DECL_ONE_ONLY (decl) || DECL_WEAK (decl))
+	   && ! (TREE_PUBLIC (decl)
+		 && (flag_pic
+		     || (DECL_COMMON (decl)
+			 && (DECL_INITIAL (decl) == 0
+			     || DECL_INITIAL (decl) == error_mark_node)))))
+	  || MODULE_LOCAL_P (decl))
       /* Either the variable must be declared without a section attribute,
 	 or the section must be sdata or sbss.  */
       && (DECL_SECTION_NAME (decl) == 0
@@ -6923,9 +6924,12 @@ ia64_encode_section_info (decl)
 	;
 
       /* If this is an incomplete type with size 0, then we can't put it in
-	 sdata because it might be too big when completed.  */
-      else if (size > 0
-	       && size <= (HOST_WIDE_INT) ia64_section_threshold
+	 sdata because it might be too big when completed.
+	 Objects bigger than threshold should have SDATA_NAME_FLAG_CHAR
+	 added if they are in .sdata or .sbss explicitely.  */
+      else if (((size > 0
+		 && size <= (HOST_WIDE_INT) ia64_section_threshold)
+		|| DECL_SECTION_NAME (decl))
 	       && symbol_str[0] != SDATA_NAME_FLAG_CHAR)
 	{
 	  size_t len = strlen (symbol_str);
