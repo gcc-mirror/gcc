@@ -5888,7 +5888,8 @@
   "sub%?s\\t%0, %1, #0"
 [(set_attr "conds" "set")])
 
-; Peepholes to spot possible load- and store-multiples.
+; Peepholes to spot possible load- and store-multiples, if the ordering is
+; reversed, check that the memory references aren't volatile.
 
 (define_peephole
   [(set (match_operand:SI 0 "s_register_operand" "=r")

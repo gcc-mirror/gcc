@@ -1,3 +1,8 @@
+Mon Oct 12 10:50:44 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/thumb.c (thumb_override_options): Add warning about
+	PIC code not being supported just yet.
+
 Sun Oct 11 16:49:15 EDT 1998  John Wehle  (john@feith.com)
 
 	* flow.c: Update comment.

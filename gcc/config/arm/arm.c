@@ -222,11 +222,14 @@ arm_override_options ()
   int arm_thumb_aware = 0;
   int flags = 0;
   unsigned i;
-  struct arm_cpu_select *ptr;
-  static struct cpu_default {
-    int cpu;
-    char *name;
-  } cpu_defaults[] = {
+  struct arm_cpu_select * ptr;
+  static struct cpu_default
+  {
+    int    cpu;
+    char * name;
+  }
+  cpu_defaults[] =
+  {
     { TARGET_CPU_arm2, "arm2" },
     { TARGET_CPU_arm6, "arm6" },
     { TARGET_CPU_arm610, "arm610" },
@@ -3642,7 +3645,7 @@ find_barrier (from, max_count)
       
       /* Walk back to be just before any jump.  */
       while (GET_CODE (from) == JUMP_INSN
-             || GET_CODE (from) == NOTE
+	     || GET_CODE (from) == NOTE
 	     || GET_CODE (from) == CODE_LABEL)
 	from = PREV_INSN (from);
       
@@ -4857,7 +4860,7 @@ output_return_instruction (operand, really_return, reverse)
   else if (really_return)
     {
       if (TARGET_THUMB_INTERWORK)
-	sprintf (instr, "bx%%?%%%s\t%%|lr", reverse ? "D" : "d");
+	sprintf (instr, "bx%%?%%%s0\t%%|lr", reverse ? "D" : "d");
       else
 	sprintf (instr, "mov%%?%%%s0%s\t%%|pc, %%|lr",
 		 reverse ? "D" : "d", TARGET_APCS_32 ? "" : "s");
@@ -5156,10 +5159,10 @@ output_func_epilogue (f, frame_size)
 	  /* And finally, go home */
 	  if (TARGET_THUMB_INTERWORK)
 	    fprintf (f, "\tbx\t%slr\n", REGISTER_PREFIX);
+	  else if (TARGET_APCS_32)
+	    fprintf (f, "\tmov\t%spc, %slr\n", REGISTER_PREFIX, REGISTER_PREFIX );
 	  else
-	    fprintf (f, (TARGET_APCS_32 ? "\tmov\t%spc, %slr\n"
-			 : "\tmovs\t%spc, %slr\n"),
-		     REGISTER_PREFIX, REGISTER_PREFIX, f);
+	    fprintf (f, "\tmovs\t%spc, %slr\n", REGISTER_PREFIX, REGISTER_PREFIX );
 	}
     }
 
