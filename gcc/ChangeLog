@@ -1,3 +1,7 @@
+1998-12-13  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* protoize.c (fputs): Wrap extern declaration in #ifndef fputs.
+
 Sun Dec 13 00:24:14 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (compute_use_by_pseudos): Allow reg_renumber[regno] < 0

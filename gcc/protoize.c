@@ -142,7 +142,9 @@ extern int close ();
 extern int fflush ();
 extern int atoi ();
 extern int puts ();
+#ifndef fputs	/* This may have been #defined by "system.h".  */
 extern int fputs ();
+#endif
 extern int fputc ();
 extern int unlink ();
 extern int access ();
