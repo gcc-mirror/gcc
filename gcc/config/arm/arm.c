@@ -1,7 +1,7 @@
 /* Output routines for GCC for ARM/RISCiX.
    Copyright (C) 1991, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
-   	      and Martin Simmons (@harleqn.co.uk).
+   and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
 
 This file is part of GNU CC.
@@ -1302,10 +1302,12 @@ arm_finalize_pic ()
   l1 = gen_label_rtx ();
 
   global_offset_table = gen_rtx (SYMBOL_REF, Pmode, "_GLOBAL_OFFSET_TABLE_");
+  /* The PC contains 'dot'+8, but the label L1 is on the next
+     instruction, so the offset is only 'dot'+4.  */
   pic_tmp = gen_rtx (CONST, VOIDmode, 
 		     gen_rtx (PLUS, Pmode, 
 			      gen_rtx (LABEL_REF, VOIDmode, l1),
-			      GEN_INT (8)));
+			      GEN_INT (4)));
   pic_tmp2 = gen_rtx (CONST, VOIDmode,
 		      gen_rtx (PLUS, Pmode,
 			       global_offset_table,
