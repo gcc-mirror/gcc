@@ -2346,7 +2346,8 @@ subst_constants (loc, insn, map)
 	src = SET_SRC (x);
 
 	while (GET_CODE (*dest_loc) == ZERO_EXTRACT
-	       || GET_CODE (*dest_loc) == SIGN_EXTRACT
+	       /* By convention, we always use ZERO_EXTRACT in the dest.  */
+/*	       || GET_CODE (*dest_loc) == SIGN_EXTRACT */
 	       || GET_CODE (*dest_loc) == SUBREG
 	       || GET_CODE (*dest_loc) == STRICT_LOW_PART)
 	  {
@@ -2357,6 +2358,10 @@ subst_constants (loc, insn, map)
 	      }
 	    dest_loc = &XEXP (*dest_loc, 0);
 	  }
+
+	/* Do substitute in the address of a destination in memory.  */
+	if (GET_CODE (*dest_loc) == MEM)
+	  subst_constants (&XEXP (*dest_loc, 0), insn, map);
 
 	/* Check for the case of DEST a SUBREG, both it and the underlying
 	   register are less than one word, and the SUBREG has the wider mode.
