@@ -98,6 +98,7 @@ static void path_include		PARAMS ((cpp_reader *,
 						 char *, int));
 static void init_library		PARAMS ((void));
 static void init_builtins		PARAMS ((cpp_reader *));
+static void mark_named_operators	PARAMS ((cpp_reader *));
 static void append_include_chain	PARAMS ((cpp_reader *,
 						 char *, int, int));
 static struct search_path * remove_dup_dir	PARAMS ((cpp_reader *,
@@ -664,6 +665,23 @@ static const struct builtin operator_array[] =
 };
 #undef B
 
+/* Mark the C++ named operators in the hash table.  */
+static void
+mark_named_operators (pfile)
+     cpp_reader *pfile;
+{
+  const struct builtin *b;
+
+  for (b = operator_array;
+       b < (operator_array + ARRAY_SIZE (operator_array));
+       b++)
+    {
+      cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
+      hp->flags |= NODE_OPERATOR;
+      hp->value.operator = b->value;
+    }
+}
+
 /* Subroutine of cpp_read_main_file; reads the builtins table above and
    enters them, and language-specific macros, into the hash table.  */
 static void
@@ -681,16 +699,6 @@ init_builtins (pfile)
       hp->flags |= NODE_BUILTIN | NODE_WARN;
       hp->value.builtin = b->value;
     }
-
-  if (CPP_OPTION (pfile, cplusplus) && CPP_OPTION (pfile, operator_names))
-    for (b = operator_array;
-	 b < (operator_array + ARRAY_SIZE (operator_array));
-	 b++)
-      {
-	cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
-	hp->flags |= NODE_OPERATOR;
-	hp->value.operator = b->value;
-      }
 
   if (CPP_OPTION (pfile, cplusplus))
     _cpp_define_builtin (pfile, "__cplusplus 1");
@@ -976,6 +984,10 @@ void
 cpp_finish_options (pfile)
      cpp_reader *pfile;
 {
+  /* Mark named operators before handling command line macros.  */
+  if (CPP_OPTION (pfile, cplusplus) && CPP_OPTION (pfile, operator_names))
+    mark_named_operators (pfile);
+
   /* Install builtins and process command line macros etc. in the order
      they appeared, but only if not already preprocessed.  */
   if (! CPP_OPTION (pfile, preprocessed))
