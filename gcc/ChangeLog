@@ -1,7 +1,7 @@
 Fri Aug 15 12:49:56 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Change the version string to look like:
-	egcs-3.0.0 970814 (gcc2-970802 experimental).
+	egcs-2.90.00 970814 (gcc2-970802 experimental).
 
 	* gcc.c: Take out experimental snapshot warning message.
 
