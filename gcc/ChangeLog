@@ -1,4 +1,5 @@
-2003-03-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+2003-03-17  Dave Love  <fx@gnu.org>
+	    Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/alpha/osf.h (TARGET_OS_CPP_BUILTINS): Define __digital__,
 	__arch64__ to match Compaq cc.
