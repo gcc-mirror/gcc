@@ -1,4 +1,11 @@
+2003-03-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9970
+	* decl.c (duplicate_decls): Only copy DECL_THUNKS for virtual
+	functions.
+
 2003-03-07  Matt Austern  <austern@apple.com>
+
  	* cp-tree.h (struct lang_type_class): add field for key method
  	(cp_global_trees): rename dynamic_classes to keyed_classes
  	(key_method): add definition

@@ -1,3 +1,8 @@
+2003-03-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9970
+	* g++.dg/lookup/friend1.C: New test.
+
 2003-03-08  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.c-torture/execute/20020720-1.x: Add xfail for cris-*-*.
