@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision$
+ *                            $Revision: 1.3 $
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -521,10 +521,15 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
    will want to import these).  We use the same names as the routines used
    by AdaMagic for compatibility.  */
 
-char *rts_get_hInstance     (void) { return (GetModuleHandleA (0)); }
-char *rts_get_hPrevInstance (void) { return (0); }
-char *rts_get_lpCommandLine (void) { return (GetCommandLineA ()); }
-int   rts_get_nShowCmd      (void) { return (1); }
+char *rts_get_hInstance     PARAMS ((void));
+char *rts_get_hPrevInstance PARAMS ((void));
+char *rts_get_lpCommandLine PARAMS ((void));
+int   rts_get_nShowCmd      PARAMS ((void));
+
+char *rts_get_hInstance     () { return (GetModuleHandleA (0)); }
+char *rts_get_hPrevInstance () { return (0); }
+char *rts_get_lpCommandLine () { return (GetCommandLineA ()); }
+int   rts_get_nShowCmd      () { return (1); }
 
 #endif /* WINNT */
 #ifdef VMS
@@ -551,10 +556,10 @@ get_gmtoff ()
 
 #if defined (_AIX) || defined (__EMX__)
 #define Lock_Task system__soft_links__lock_task
-extern void (*Lock_Task) (void);
+extern void (*Lock_Task) PARAMS ((void));
 
 #define Unlock_Task system__soft_links__unlock_task
-extern void (*Unlock_Task) (void);
+extern void (*Unlock_Task) PARAMS ((void));
 
 /* Provide reentrant version of localtime on Aix and OS/2. Note that AiX does
    provide localtime_r, but in the library libc_r which doesn't get included

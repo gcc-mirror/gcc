@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                            $Revision: 1.17 $
+ *                            $Revision: 1.1 $
  *                                                                          *
  *           Copyright (C) 1992-2001 Free Software Foundation, Inc.         *
  *                                                                          *
@@ -29,8 +29,8 @@
 /* This is the contribution to the `default_compilers' array in gcc.c for
    GNAT.  */
 
-  {".ads", "@ada"},
-  {".adb", "@ada"},
+  {".ads", "@ada", 0},
+  {".adb", "@ada", 0},
   {"@ada",
    "gnat1 %{^I*} %{k8:-gnatk8} %{w:-gnatws} %1 %{!Q:-quiet} %{nostdinc*}\
     -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
@@ -40,4 +40,4 @@
     %i %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
     %{!S:%{!gnatc:%{!gnatz:%{!gnats:as %a %Y %{c:%W{o*}%{!o*:-o %w%b%O}}\
 				    %{!c:%e-c or -S required for Ada}\
-				    %{!pipe:%g.s} %A\n}}}} "},
+				    %{!pipe:%g.s} %A\n}}}} ", 0},

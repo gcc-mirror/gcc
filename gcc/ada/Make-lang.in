@@ -48,7 +48,7 @@ shext  =
 # Extra flags to pass to recursive makes.
 BOOT_ADAFLAGS= $(ADAFLAGS)
 ADAFLAGS= -W -Wall -gnatpg -gnata
-GNATLIBFLAGS= -gnatpg
+GNATLIBFLAGS= -W -Wall -gnatpg
 GNATLIBCFLAGS= -g -O2
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
 ADA_RTL_OBJ_DIR = $(libsubdir)/adalib

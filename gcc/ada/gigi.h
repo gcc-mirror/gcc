@@ -433,7 +433,7 @@ extern tree pushdecl			PARAMS ((tree));
 
 /* Create the predefined scalar types such as `integer_type_node' needed 
    in the gcc back-end and initialize the global binding level.  */
-extern void init_decl_processing	PARAMS ((void));
+extern void gnat_init_decl_processing	PARAMS ((void));
 extern void init_gigi_decls		PARAMS ((tree, tree));
 
 /* Return an integer type with the number of bits of precision given by  
