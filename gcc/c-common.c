@@ -4699,6 +4699,7 @@ handle_mode_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
 	      TYPE_MAX_VALUE (type) = TYPE_MAX_VALUE (typefm);
 	      TYPE_SIZE (type) = TYPE_SIZE (typefm);
 	      TYPE_SIZE_UNIT (type) = TYPE_SIZE_UNIT (typefm);
+	      TYPE_MODE (type) = TYPE_MODE (typefm);
 	      if (!TYPE_USER_ALIGN (type))
 		TYPE_ALIGN (type) = TYPE_ALIGN (typefm);
 

@@ -1,3 +1,8 @@
+2005-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (handle_mode_attribute): For ENUMERAL_TYPE, also copy
+	TYPE_MODE.
+
 2005-01-06  Richard Sandiford  <rsandifo@redhat.com>
 
         PR rtl-opt/13299
