@@ -1,3 +1,8 @@
+2004-02-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* configure.ac (gcc_cv_as_powerpc_mfcrf): Correct test for mfcr.
+	* configure: Regenerate.
+
 2004-02-05  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* doc/install.texi: Update description of --gxx-include-dir to
