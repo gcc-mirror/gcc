@@ -2,6 +2,8 @@
 
 	* MAINTAINERS: Remove obsolete entries.
 
+	* MAINTAINERS (Write After Approval): Add Michael Matz.
+
 2005-01-19  Neil Booth  <neil@daikokuya.co.uk>
 
 	* MAINTAINERS: Remove self as cpplib maintainer.
