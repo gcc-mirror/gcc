@@ -7867,6 +7867,8 @@ ffecom_start_progunit_ ()
 		  0,		/* nested/inline */
 		  !altentries);	/* TREE_PUBLIC */
 
+  TREE_USED (current_function_decl) = 1;	/* Avoid spurious warning if altentries. */
+
   if (!altentries
       && ((g = ffesymbol_global (fn)) != NULL)
       && ((ffeglobal_type (g) == gt)

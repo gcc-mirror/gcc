@@ -1,3 +1,13 @@
+Tue Apr 14 14:40:40 1998  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_start_progunit_): Mark function decl
+	as used, to avoid spurious warning (-Wunused) for ENTRY.
+
+Tue Apr 14 14:19:34 1998  Craig Burley  <burley@gnu.org>
+
+	* sta.c (ffesta_second_): Check for CASE DEFAULT
+	as well as CASE, or it won't be recognized.
+
 Mon Mar 23 11:58:43 1998  Craig Burley  <burley@gnu.org>
 
 	* bugs.texi: Various updates.
