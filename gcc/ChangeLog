@@ -1,3 +1,7 @@
+Tue Jun 13 14:05:35 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (gensupport.o): Remove bogus $(HOST_PREFIX) reference.
+
 2000-06-13  Philipp Thomas  <pthomas@suse.de>
 
 	* configure.in(ALL_LINGUAS): Changed en_UK to en_GB.
