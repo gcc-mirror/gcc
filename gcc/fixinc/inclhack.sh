@@ -2504,8 +2504,8 @@ typedef __regmatch_t	regmatch_t;
       -e 's@ va_list)@ __gnuc_va_list)@' \
       -e 's@ _BSD_VA_LIST_))@ __gnuc_va_list))@' \
       -e 's@ _VA_LIST_));@ __gnuc_va_list));@' \
-      -e 's@ va_list@ __va_list__@' \
-      -e 's@\*va_list@*__va_list__@' \
+      -e 's@ va_list@ __not_va_list__@' \
+      -e 's@\*va_list@*__not_va_list__@' \
       -e 's@ __va_list)@ __gnuc_va_list)@' \
       -e 's@GNUC_VA_LIST@GNUC_Va_LIST@' \
       -e 's@_NEED___VA_LIST@_NEED___Va_LIST@' \
