@@ -74,17 +74,8 @@ static const char *h8300_strip_name_encoding PARAMS ((const char *));
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
 
-/* True if the current function is an interrupt handler
-   (either via #pragma or an attribute specification).  */
-static int interrupt_handler;
-
-/* True if the current function is an OS Task
-   (via an attribute specification).  */
-static int os_task;
-
-/* True if the current function is a monitor
-   (via an attribute specification).  */
-static int monitor;
+/* True if a #pragma interrupt has been seen for the current function.  */
+static int pragma_interrupt;
 
 /* True if a #pragma saveall has been seen for the current function.  */
 static int pragma_saveall;
@@ -383,10 +374,11 @@ byte_reg (x, b)
        /* Save the frame pointer if it was used.  */			\
        || (regno == FRAME_POINTER_REGNUM && regs_ever_live[regno])	\
        /* Save any register used in an interrupt handler.  */		\
-       || (interrupt_handler && regs_ever_live[regno])			\
+       || (h8300_current_function_interrupt_function_p ()		\
+	   && regs_ever_live[regno])					\
        /* Save call clobbered registers in non-leaf interrupt		\
 	  handlers.  */							\
-       || (interrupt_handler						\
+       || (h8300_current_function_interrupt_function_p ()		\
 	   && call_used_regs[regno]					\
 	   && !current_function_is_leaf)))
 
@@ -408,7 +400,7 @@ dosize (file, sign, size)
      subs since this shouldn't happen often.  */
   if ((TARGET_H8300 && size <= 4)
       || ((TARGET_H8300H || TARGET_H8300S) && size <= 8)
-      || (TARGET_H8300 && interrupt_handler)
+      || (TARGET_H8300 && h8300_current_function_interrupt_function_p ())
       || (TARGET_H8300 && current_function_needs_context
 	  && sign < 0))
     {
@@ -530,17 +522,11 @@ h8300_output_function_prologue (file, size)
   int saved_regs;
   int n_regs;
 
-  /* Note a function with the interrupt attribute and set interrupt_handler
-     accordingly.  */
-  if (h8300_interrupt_function_p (current_function_decl))
-    interrupt_handler = 1;
-
   /* If the current function has the OS_Task attribute set, then
      we have a naked prologue.  */
   if (h8300_os_task_function_p (current_function_decl))
     {
       fprintf (file, ";OS_Task prologue\n");
-      os_task = 1;
       return;
     }
 
@@ -550,8 +536,6 @@ h8300_output_function_prologue (file, size)
 	 like interrupt functions, except the prologue must
 	 mask interrupts.  */
       fprintf (file, ";monitor prologue\n");
-      interrupt_handler = 1;
-      monitor = 1;
       if (TARGET_H8300)
 	{
 	  fprintf (file, "\tsubs\t#2,sp\n");
@@ -657,7 +641,7 @@ h8300_output_function_epilogue (file, size)
   int saved_regs;
   int n_regs;
 
-  if (os_task)
+  if (h8300_os_task_function_p (current_function_decl))
     {
       /* OS_Task epilogues are nearly naked -- they just have an
 	 rts instruction.  */
@@ -668,7 +652,7 @@ h8300_output_function_epilogue (file, size)
 
   /* Monitor epilogues are the same as interrupt function epilogues.
      Just make a note that we're in a monitor epilogue.  */
-  if (monitor)
+  if (h8300_monitor_function_p (current_function_decl))
     fprintf (file, ";monitor epilogue\n");
 
   /* If the last insn was a BARRIER, we don't have to write any code.  */
@@ -733,16 +717,23 @@ h8300_output_function_epilogue (file, size)
   if (frame_pointer_needed)
     pop (file, FRAME_POINTER_REGNUM);
 
-  if (interrupt_handler)
+  if (h8300_current_function_interrupt_function_p ())
     fprintf (file, "\trte\n");
   else
     fprintf (file, "\trts\n");
 
  out:
-  interrupt_handler = 0;
-  os_task = 0;
-  monitor = 0;
   pragma_saveall = 0;
+}
+
+/* Return nonzero if the current function is an interrupt
+   function.  */
+
+int
+h8300_current_function_interrupt_function_p ()
+{
+  return (h8300_interrupt_function_p (current_function_decl)
+	  || h8300_monitor_function_p (current_function_decl));
 }
 
 /* Output assembly code for the start of the file.  */
@@ -1078,7 +1069,7 @@ void
 h8300_pr_interrupt (pfile)
      struct cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
-  interrupt_handler = 1;
+  pragma_interrupt = 1;
 }
 
 void
@@ -3878,9 +3869,11 @@ h8300_insert_attributes (node, attributes)
      tree node;
      tree *attributes;
 {
-  if (!interrupt_handler
+  if (!pragma_interrupt
       || TREE_CODE (node) != FUNCTION_DECL)
     return;
+
+  pragma_interrupt = 0;
 
   /* Add an 'interrupt_handler' attribute.  */
   *attributes = tree_cons (get_identifier ("interrupt_handler"),
