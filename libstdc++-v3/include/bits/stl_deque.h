@@ -385,10 +385,10 @@ protected:
   _M_deallocate_map(_Tp** __p, size_t __n) 
     { _M_map_allocator.deallocate(__p, __n); }
 
-  _Tp**                _M_map;
-  size_t               _M_map_size;
   allocator_type       _M_node_allocator;
   _Map_allocator_type  _M_map_allocator;
+  _Tp**                _M_map;
+  size_t               _M_map_size;
 };
 
 /// @if maint Specialization for instanceless allocators.  @endif
