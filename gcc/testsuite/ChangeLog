@@ -1,3 +1,8 @@
+2004-10-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/conversion/dr195.C: New.
+	* g++.old-deja/g++.mike/p10148.C: Remove ill-formed cast.
+
 2004-10-20  Ben Elliston  <bje@au.ibm.com>
 	    Devang Patel  <dpatel@apple.com>
 

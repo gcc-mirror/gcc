@@ -1,3 +1,11 @@
+2004-10-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* typeck.c (composite_pointer_type): Add comment about DR 195
+	(build_reinterpret_cast_1): Add for_reinterpret_cast_p parameter.
+	Allow function pointer conversions that DR195 suggests.
+	(build_reinterpret_cast, build_c_cast): Update
+	build_reinterpret_cast_1 calls. 
+
 2004-10-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* call.c, typeck.c: Fix comment typos.
