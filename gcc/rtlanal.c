@@ -1259,6 +1259,71 @@ remove_note (insn, note)
   abort ();
 }
 
+/* Nonzero if X contains any volatile instructions.  These are instructions
+   which may cause unpredictable machine state instructions, and thus no
+   instructions should be moved or combined across them.  This includes
+   only volatile asms and UNSPEC_VOLATILE instructions.  */
+
+int
+volatile_insn_p (x)
+     rtx x;
+{
+  register RTX_CODE code;
+
+  code = GET_CODE (x);
+  switch (code)
+    {
+    case LABEL_REF:
+    case SYMBOL_REF:
+    case CONST_INT:
+    case CONST:
+    case CONST_DOUBLE:
+    case CC0:
+    case PC:
+    case REG:
+    case SCRATCH:
+    case CLOBBER:
+    case ASM_INPUT:
+    case ADDR_VEC:
+    case ADDR_DIFF_VEC:
+    case CALL:
+    case MEM:
+      return 0;
+
+    case UNSPEC_VOLATILE:
+ /* case TRAP_IF: This isn't clear yet.  */
+      return 1;
+
+    case ASM_OPERANDS:
+      if (MEM_VOLATILE_P (x))
+	return 1;
+    }
+
+  /* Recursively scan the operands of this expression.  */
+
+  {
+    register char *fmt = GET_RTX_FORMAT (code);
+    register int i;
+    
+    for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+      {
+	if (fmt[i] == 'e')
+	  {
+	    if (volatile_refs_p (XEXP (x, i)))
+	      return 1;
+	  }
+	if (fmt[i] == 'E')
+	  {
+	    register int j;
+	    for (j = 0; j < XVECLEN (x, i); j++)
+	      if (volatile_refs_p (XVECEXP (x, i, j)))
+		return 1;
+	  }
+      }
+  }
+  return 0;
+}
+
 /* Nonzero if X contains any volatile memory references
    UNSPEC_VOLATILE operations or volatile ASM_OPERANDS expressions.  */
 
