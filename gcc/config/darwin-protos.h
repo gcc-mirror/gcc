@@ -59,6 +59,9 @@ extern void darwin_encode_section_info PARAMS ((tree));
 
 extern void machopic_finish PARAMS ((FILE *));
 
+extern void darwin_exception_section PARAMS ((void));
+extern void darwin_eh_frame_section PARAMS ((void));
+
 #ifdef GCC_C_PRAGMA_H
 extern void darwin_pragma_ignore PARAMS ((cpp_reader *));
 extern void darwin_pragma_options PARAMS ((cpp_reader *));
