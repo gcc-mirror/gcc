@@ -2508,7 +2508,8 @@ GNU systems.  This configuration is being superseded.
 @end html
 @heading @anchor{ix86-*-linux*}i?86-*-linux*
 
-You will need binutils 2.9.1.0.15 or newer for exception handling to work.
+As of GCC 3.3, binutils 2.13.1 or later is required for this platform.
+See @uref{http://gcc.gnu.org/PR10877,,bug 10877} for more information.
 
 If you receive Signal 11 errors when building on GNU/Linux, then it is
 possible you have a hardware problem.  Further information on this can be
