@@ -262,8 +262,8 @@ static bool mips_matching_cpu_name_p		PARAMS ((const char *,
 static const struct mips_cpu_info *mips_parse_cpu   PARAMS ((const char *,
 							      const char *));
 static const struct mips_cpu_info *mips_cpu_info_from_isa PARAMS ((int));
-static void copy_file_data			PARAMS ((FILE *, FILE *));
 #ifdef TARGET_IRIX6
+static void copy_file_data			PARAMS ((FILE *, FILE *));
 static void iris6_asm_named_section_1		PARAMS ((const char *,
 							 unsigned int,
 							 unsigned int));
@@ -447,12 +447,6 @@ int sym_lineno = 0;
 /* Nonzero if inside of a function, because the stupid MIPS asm can't
    handle .files inside of functions.  */
 int inside_function = 0;
-
-/* Files to separate the text and the data output, so that all of the data
-   can be emitted before the text, which will mean that the assembler will
-   generate smaller code, based on the global pointer.  */
-FILE *asm_out_data_file;
-FILE *asm_out_text_file;
 
 /* Linked list of all externals that are to be emitted when optimizing
    for the global pointer if they haven't been declared by the end of
@@ -5411,6 +5405,16 @@ override_options ()
   else
     mips_abicalls = MIPS_ABICALLS_NO;
 
+  /* The MIPS and SGI o32 assemblers expect small-data variables to
+     be declared before they are used.  Although we once had code to
+     do this, it was very invasive and fragile.  It no longer seems
+     worth the effort.  */
+  if (!TARGET_EXPLICIT_RELOCS && !TARGET_GAS)
+    {
+      mips_section_threshold = 0;
+      target_flags &= ~MASK_GPOPT;
+    }
+
   /* -membedded-pic is a form of PIC code suitable for embedded
      systems.  All calls are made using PC relative addressing, and
      all data is addressed using the $gp register.  This requires gas,
@@ -6536,17 +6540,6 @@ mips_asm_file_start (stream)
   if (TARGET_MIPS16)
     fprintf (stream, "\t.set\tmips16\n");
 
-  /* This code exists so that we can put all externs before all symbol
-     references.  This is necessary for the MIPS assembler's global pointer
-     optimizations to work.  */
-  if (TARGET_FILE_SWITCHING)
-    {
-      asm_out_data_file = stream;
-      asm_out_text_file = tmpfile ();
-    }
-  else
-    asm_out_data_file = asm_out_text_file = stream;
-
   if (flag_verbose_asm)
     fprintf (stream, "\n%s -G value = %d, Arch = %s, ISA = %d\n",
 	     ASM_COMMENT_START,
@@ -6589,33 +6582,6 @@ mips_file_end ()
 	    }
 	}
     }
-
-  if (TARGET_FILE_SWITCHING)
-    {
-      fputs ("\n\t.text\n", asm_out_file);
-      copy_file_data (asm_out_file, asm_out_text_file);
-    }
-}
-
-static void
-copy_file_data (to, from)
-     FILE *to, *from;
-{
-  char buffer[8192];
-  size_t len;
-  rewind (from);
-  if (ferror (from))
-    fatal_error ("can't rewind temp file: %m");
-
-  while ((len = fread (buffer, 1, sizeof (buffer), from)) > 0)
-    if (fwrite (buffer, 1, len, to) != len)
-      fatal_error ("can't write to output file: %m");
-
-  if (ferror (from))
-    fatal_error ("can't read from temp file: %m");
-
-  if (fclose (from))
-    fatal_error ("can't close temp file: %m");
 }
 
 /* Emit either a label, .comm, or .lcomm directive, and mark that the symbol
@@ -7849,15 +7815,6 @@ mips_output_function_epilogue (file, size)
   for (string = mips16_strings; string != 0; string = XEXP (string, 1))
     SYMBOL_REF_FLAG (XEXP (string, 0)) = 0;
   free_EXPR_LIST_list (&mips16_strings);
-
-  /* Restore the output file if optimizing the GP (optimizing the GP causes
-     the text to be diverted to a tempfile, so that data decls come before
-     references to the data).  */
-  if (TARGET_FILE_SWITCHING)
-    {
-      asm_out_file = asm_out_data_file;
-      data_section ();
-    }
 }
 
 /* Expand the epilogue into a bunch of separate insns.  SIBCALL_P is true
@@ -10623,8 +10580,6 @@ iris6_asm_named_section (name, flags)
      const char *name;
      unsigned int flags;
 {
-  if (TARGET_FILE_SWITCHING && (flags & SECTION_CODE))
-    asm_out_file = asm_out_text_file;
   iris6_asm_named_section_1 (name, flags, 0);
 }
 
@@ -10691,8 +10646,8 @@ iris6_asm_output_align (file, log)
 }
 
 /* The Iris assembler does not record alignment from .align directives,
-   but takes it from the first .section directive seen.  Play yet more
-   file switching games so that we can emit a .section directive at the
+   but takes it from the first .section directive seen.  Play file
+   switching games so that we can emit a .section directive at the
    beginning of the file with the proper alignment attached.  */
 
 void
@@ -10704,9 +10659,6 @@ iris6_asm_file_start (stream)
   iris_orig_asm_out_file = asm_out_file;
   stream = tmpfile ();
   asm_out_file = stream;
-  asm_out_data_file = stream;
-  if (! TARGET_FILE_SWITCHING)
-    asm_out_text_file = stream;
 
   iris_section_align_htab = htab_create (31, iris_section_align_entry_hash,
 					 iris_section_align_entry_eq, NULL);
@@ -10722,6 +10674,27 @@ iris6_section_align_1 (slot, data)
 
   iris6_asm_named_section_1 (entry->name, entry->flags, 1 << entry->log);
   return 1;
+}
+
+static void
+copy_file_data (to, from)
+     FILE *to, *from;
+{
+  char buffer[8192];
+  size_t len;
+  rewind (from);
+  if (ferror (from))
+    fatal_error ("can't rewind temp file: %m");
+
+  while ((len = fread (buffer, 1, sizeof (buffer), from)) > 0)
+    if (fwrite (buffer, 1, len, to) != len)
+      fatal_error ("can't write to output file: %m");
+
+  if (ferror (from))
+    fatal_error ("can't read from temp file: %m");
+
+  if (fclose (from))
+    fatal_error ("can't close temp file: %m");
 }
 
 static void
