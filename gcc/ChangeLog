@@ -1,3 +1,14 @@
+2000-04-11  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (struct propagate_block_info): Add new_dead, new_live.
+	(propagate_block): Initialize them.  Use them in parallel instead
+	of one tmp variable, ie revert much of the 0408 and 0407 functional
+	changes, but keep the structural changes.
+	(mark_set_regs): Take new_dead from propagate_block_info instead.
+	(mark_set_1, mark_set_reg): Likewise.
+	(mark_used_regs): Likewise with new_live.
+	(mark_used_reg): Likewise.  Revert 0408 change.
+
 2000-04-11  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.h: (INCOMING_RETURN_ADDR_RTX): Remove Dwarf2
