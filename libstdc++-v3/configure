@@ -22233,12 +22233,10 @@ echo "$ac_t""$enable_symvers" 1>&6
 
 
 # Propagate the target-specific source directories through the build chain.
-# (Nothing currently uses cpu_include_dir directly; only ATOMICITYH and
-# CPULIMITSH [might] use it, and they only get used here.)
+# (Nothing currently uses cpu_include_dir directly; only ATOMICITYH 
+# uses it, and they only get used here.)
 OS_INC_SRCDIR=config/${os_include_dir}
 ATOMICITY_INC_SRCDIR=config/${ATOMICITYH}
-CPU_LIMITS_INC_SRCDIR=config/${CPULIMITSH}
-
 
 
 
@@ -22317,7 +22315,7 @@ glibcpp_prefixdir=${prefix}
 
 # Process the option --with-gxx-include-dir=<path to include-files directory>
 echo $ac_n "checking for --with-gxx-include-dir""... $ac_c" 1>&6
-echo "configure:22321: checking for --with-gxx-include-dir" >&5
+echo "configure:22319: checking for --with-gxx-include-dir" >&5
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
 if test "${with_gxx_include_dir+set}" = set; then
   withval="$with_gxx_include_dir"
@@ -22341,7 +22339,7 @@ echo "$ac_t""$gxx_include_dir" 1>&6
 
 # Process the option "--enable-version-specific-runtime-libs"
 echo $ac_n "checking for --enable-version-specific-runtime-libs""... $ac_c" 1>&6
-echo "configure:22345: checking for --enable-version-specific-runtime-libs" >&5
+echo "configure:22343: checking for --enable-version-specific-runtime-libs" >&5
 # Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
 if test "${enable_version_specific_runtime_libs+set}" = set; then
   enableval="$enable_version_specific_runtime_libs"
@@ -22387,7 +22385,7 @@ if test x"$glibcpp_toolexecdir" = x"no"; then
 fi
 
 echo $ac_n "checking for install location""... $ac_c" 1>&6
-echo "configure:22391: checking for install location" >&5
+echo "configure:22389: checking for install location" >&5
 echo "$ac_t""$gxx_include_dir" 1>&6
 
 
@@ -22673,7 +22671,6 @@ s%@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@%$GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE%g
 s%@GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE@%$GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE%g
 s%@OS_INC_SRCDIR@%$OS_INC_SRCDIR%g
 s%@ATOMICITY_INC_SRCDIR@%$ATOMICITY_INC_SRCDIR%g
-s%@CPU_LIMITS_INC_SRCDIR@%$CPU_LIMITS_INC_SRCDIR%g
 s%@GLIBCPP_IS_CROSS_COMPILING@%$GLIBCPP_IS_CROSS_COMPILING%g
 s%@CANADIAN_TRUE@%$CANADIAN_TRUE%g
 s%@CANADIAN_FALSE@%$CANADIAN_FALSE%g

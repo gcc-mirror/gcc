@@ -1,6 +1,6 @@
 // Specific definitions for BSD  -*- C++ -*-
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,5 @@
 
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
-
-#define __glibcpp_long_double_bits __glibcpp_double_bits
 
 #endif

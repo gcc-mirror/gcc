@@ -74,7 +74,6 @@ CCODECVT_H = @CCODECVT_H@
 CLOCALE_H = @CLOCALE_H@
 CMESSAGES_H = @CMESSAGES_H@
 CPP = @CPP@
-CPU_LIMITS_INC_SRCDIR = @CPU_LIMITS_INC_SRCDIR@
 CSTDIO_H = @CSTDIO_H@
 CXXCPP = @CXXCPP@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
@@ -414,8 +413,7 @@ target_headers = \
 	${target_srcdir}/ctype_inline.h \
 	${target_srcdir}/ctype_noninline.h \
 	${target_srcdir}/os_defines.h \
-	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h \
-	${glibcpp_srcdir}/@CPU_LIMITS_INC_SRCDIR@/cpu_limits.h 
+	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h 
 
 # These target_headers_extra files are all built with ad hoc naming rules.
 target_headers_extra = \

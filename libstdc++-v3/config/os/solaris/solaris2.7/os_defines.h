@@ -39,9 +39,5 @@
 #define __off64_t   off64_t
 #define __ssize_t   ssize_t
 
-#if defined(__sparcv9) || defined(__arch64__)
-#define __glibcpp_long_bits 64
-#endif
-
 #endif
 

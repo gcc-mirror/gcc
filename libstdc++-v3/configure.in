@@ -354,14 +354,12 @@ fi
 GLIBCPP_ENABLE_SYMVERS([yes])
 
 # Propagate the target-specific source directories through the build chain.
-# (Nothing currently uses cpu_include_dir directly; only ATOMICITYH and
-# CPULIMITSH [might] use it, and they only get used here.)
+# (Nothing currently uses cpu_include_dir directly; only ATOMICITYH 
+# uses it, and they only get used here.)
 OS_INC_SRCDIR=config/${os_include_dir}
 ATOMICITY_INC_SRCDIR=config/${ATOMICITYH}
-CPU_LIMITS_INC_SRCDIR=config/${CPULIMITSH}
 AC_SUBST(OS_INC_SRCDIR)
 AC_SUBST(ATOMICITY_INC_SRCDIR)
-AC_SUBST(CPU_LIMITS_INC_SRCDIR)
 
 # Set up cross-compile flags
 AC_SUBST(GLIBCPP_IS_CROSS_COMPILING)  dnl Unused so far.
