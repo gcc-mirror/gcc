@@ -1,4 +1,10 @@
 2005-03-04  Devang Patel  <dpatel@apple.com>
+	
+	PR tree-optimization/18815
+	* tree-if-conv.c (combine_blocks): Adjust loop header edges for
+	loops with zero exit edges.
+
+2005-03-04  Devang Patel  <dpatel@apple.com>
 
 	* doc/invoke.texi: Remove reference to webpage that does not exist.
 	
