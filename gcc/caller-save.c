@@ -512,7 +512,14 @@ mark_referenced_regs (x)
       x = SET_DEST (x);
       code = GET_CODE (x);
       if (code == REG || code == PC || code == CC0
-	  || (code == SUBREG && GET_CODE (SUBREG_REG (x)) == REG))
+	  || (code == SUBREG && GET_CODE (SUBREG_REG (x)) == REG
+	      /* If we're setting only part of a multi-word register,
+		 we shall mark it as referenced, because the words
+		 that are not being set should be restored.  */
+	      && ((GET_MODE_SIZE (GET_MODE (x))
+		   >= GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+		  || (GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
+		      <= UNITS_PER_WORD))))
 	return;
     }
   if (code == MEM || code == SUBREG)
