@@ -1,5 +1,7 @@
 Wed Dec  5 16:03:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* varasm.c (output_constant, case ERROR_MARK): New case.
+
 	* attribs.c (handle_no_check_memory_usage_atribute): Deleted.
 	(c_com): Delete its reference.
 	* builtins.c: Delete memory checking code.
