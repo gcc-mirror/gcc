@@ -1,5 +1,9 @@
 2000-09-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/20000904-1.c: New test.
+
+2000-09-04  Jakub Jelinek  <jakub@redhat.com>
+
 	* gcc.dg/cpp/paste8.c: New test.
 
 2000-09-01  Alexandre Oliva  <aoliva@redhat.com>
