@@ -521,14 +521,14 @@ package body Sem_Elim is
                         if Get_Physical_Line_Number (P) =
                            Physical_Line_Number (N)
                         then
-                           while Sloc_Trace (Idx) /= '['
-                               and then Idx <= Last
+                           while Idx <= Last and then
+                              Sloc_Trace (Idx) /= '['
                            loop
                               Idx := Idx + 1;
                            end loop;
 
-                           if Sloc_Trace (Idx) = '['
-                             and then Idx < Last
+                           if Idx <= Last and then
+                             Sloc_Trace (Idx) = '['
                            then
                               Idx := Idx + 1;
                               Idx := Skip_Spaces;
