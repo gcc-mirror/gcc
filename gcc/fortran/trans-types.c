@@ -848,19 +848,32 @@ gfc_get_desc_dim_type (void)
   return type;
 }
 
-static tree
-gfc_get_dtype (tree type, int rank)
+
+/* Return the DTYPE for an array.  This desribes the type and type parameters
+   of the array.  */
+/* TODO: Only call this when the value is actually used, and make all the
+   unknown cases abort.  */
+
+tree
+gfc_get_dtype (tree type)
 {
   tree size;
   int n;
   HOST_WIDE_INT i;
   tree tmp;
   tree dtype;
+  tree etype;
+  int rank;
 
-  if (GFC_DESCRIPTOR_TYPE_P (type) || GFC_ARRAY_TYPE_P (type))
-    return (GFC_TYPE_ARRAY_DTYPE (type));
+  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type) || GFC_ARRAY_TYPE_P (type));
 
-  switch (TREE_CODE (type))
+  if (GFC_TYPE_ARRAY_DTYPE (type))
+    return GFC_TYPE_ARRAY_DTYPE (type);
+
+  rank = GFC_TYPE_ARRAY_RANK (type);
+  etype = gfc_get_element_type (type);
+
+  switch (TREE_CODE (etype))
     {
     case INTEGER_TYPE:
       n = GFC_DTYPE_INTEGER;
@@ -878,7 +891,7 @@ gfc_get_dtype (tree type, int rank)
       n = GFC_DTYPE_COMPLEX;
       break;
 
-    /* Arrays have already been dealt with.  */
+    /* We will never have arrays of arrays.  */
     case RECORD_TYPE:
       n = GFC_DTYPE_DERIVED;
       break;
@@ -894,7 +907,7 @@ gfc_get_dtype (tree type, int rank)
     }
 
   gcc_assert (rank <= GFC_DTYPE_RANK_MASK);
-  size = TYPE_SIZE_UNIT (type);
+  size = TYPE_SIZE_UNIT (etype);
 
   i = rank | (n << GFC_DTYPE_TYPE_SHIFT);
   if (size && INTEGER_CST_P (size))
@@ -917,6 +930,7 @@ gfc_get_dtype (tree type, int rank)
   /* TODO: Check this is actually true, particularly when repacking
      assumed size parameters.  */
 
+  GFC_TYPE_ARRAY_DTYPE (type) = dtype;
   return dtype;
 }
 
@@ -1027,8 +1041,8 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, int packed)
   else
     GFC_TYPE_ARRAY_SIZE (type) = NULL_TREE;
 
-  GFC_TYPE_ARRAY_DTYPE (type) = gfc_get_dtype (etype, as->rank);
   GFC_TYPE_ARRAY_RANK (type) = as->rank;
+  GFC_TYPE_ARRAY_DTYPE (type) = NULL_TREE;
   range = build_range_type (gfc_array_index_type, gfc_index_zero_node,
 			    NULL_TREE);
   /* TODO: use main type if it is unbounded.  */
@@ -1091,7 +1105,7 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
   TYPE_LANG_SPECIFIC (fat_type) = (struct lang_type *)
     ggc_alloc_cleared (sizeof (struct lang_type));
   GFC_TYPE_ARRAY_RANK (fat_type) = dimen;
-  GFC_TYPE_ARRAY_DTYPE (fat_type) = gfc_get_dtype (etype, dimen);
+  GFC_TYPE_ARRAY_DTYPE (fat_type) = NULL_TREE;
 
   tmp = TYPE_NAME (etype);
   if (tmp && TREE_CODE (tmp) == TYPE_DECL)
@@ -1369,15 +1383,12 @@ gfc_get_derived_type (gfc_symbol * derived)
       if (c->ts.type == BT_DERIVED && c->pointer)
         {
           if (c->ts.derived->backend_decl)
-            field_type = c->ts.derived->backend_decl;
+	    /* We already saw this derived type so use the exiting type.
+	       It doesn't matter if it is incomplete.  */
+	    field_type = c->ts.derived->backend_decl;
           else
-            {
-              /* Build the type node.  */
-              field_type = make_node (RECORD_TYPE);
-              TYPE_NAME (field_type) = get_identifier (c->ts.derived->name);
-              TYPE_PACKED (field_type) = gfc_option.flag_pack_derived;
-              c->ts.derived->backend_decl = field_type;
-            }
+	    /* Recurse into the type.  */
+	    field_type = gfc_get_derived_type (c->ts.derived);
         }
       else
 	{

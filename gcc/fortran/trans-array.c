@@ -569,8 +569,7 @@ gfc_trans_allocate_temp_array (gfc_loopinfo * loop, gfc_ss_info * info,
 
   /* Fill in the array dtype.  */
   tmp = gfc_conv_descriptor_dtype (desc);
-  gfc_add_modify_expr (&loop->pre, tmp,
-		       GFC_TYPE_ARRAY_DTYPE (TREE_TYPE (desc)));
+  gfc_add_modify_expr (&loop->pre, tmp, gfc_get_dtype (TREE_TYPE (desc)));
 
   /*
      Fill in the bounds and stride.  This is a packed array, so:
@@ -2658,8 +2657,7 @@ gfc_array_init_size (tree descriptor, int rank, tree * poffset,
 
   /* Set the dtype.  */
   tmp = gfc_conv_descriptor_dtype (descriptor);
-  gfc_add_modify_expr (pblock, tmp,
-                       GFC_TYPE_ARRAY_DTYPE (TREE_TYPE (descriptor)));
+  gfc_add_modify_expr (pblock, tmp, gfc_get_dtype (TREE_TYPE (descriptor)));
 
   for (n = 0; n < rank; n++)
     {
@@ -3771,7 +3769,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       /* Set the dtype.  */
       tmp = gfc_conv_descriptor_dtype (parm);
-      gfc_add_modify_expr (&loop.pre, tmp, GFC_TYPE_ARRAY_DTYPE (parmtype));
+      gfc_add_modify_expr (&loop.pre, tmp, gfc_get_dtype (parmtype));
 
       if (se->direct_byref)
 	base = gfc_index_zero_node;
