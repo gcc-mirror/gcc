@@ -1,3 +1,5 @@
+// Build don't link:
+
 struct X {
     enum {
        a = 0,

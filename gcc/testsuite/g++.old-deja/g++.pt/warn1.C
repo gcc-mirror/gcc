@@ -1,24 +1,27 @@
-    template <class T>
-    struct S
-    {
-      struct R 
-      {
-	R();
-	~R();
-      };
+// Build don't link:
+// Special g++ Options: -Wunused
 
-      void foo()
-      {
-	R r;
-	int i;
-      }
+template <class T>
+struct S
+{
+  struct R 
+  {
+    R();
+    ~R();
+  };
 
-      S();
-      ~S();
-    };
+  void foo()
+  {
+    R r;			// no warning
+    int i;			// WARNING - unused
+  }
 
-    void f()
-    {
-      S<int> si;
-      si.foo();
-    }
+  S();
+  ~S();
+};
+
+void f()
+{
+  S<int> si;
+  si.foo();
+}
