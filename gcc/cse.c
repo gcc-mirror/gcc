@@ -2240,7 +2240,7 @@ set_nonvarying_address_components (addr, size, pbase, pstart, pend)
      HOST_WIDE_INT *pstart, *pend;
 {
   rtx base;
-  int start, end;
+  HOST_WIDE_INT start, end;
 
   base = addr;
   start = 0;
@@ -2267,20 +2267,58 @@ set_nonvarying_address_components (addr, size, pbase, pstart, pend)
       base = qty_const[reg_qty[REGNO (XEXP (base, 0))]];
     }
 
-  /* By definition, operand1 of a LO_SUM is the associated constant
-     address.  Use the associated constant address as the base instead.  */
-  if (GET_CODE (base) == LO_SUM)
-    base = XEXP (base, 1);
+  /* Handle everything that we can find inside an address that has been
+     viewed as constant.  */
 
-  /* Strip off CONST.  */
-  if (GET_CODE (base) == CONST)
-    base = XEXP (base, 0);
-
-  if (GET_CODE (base) == PLUS
-      && GET_CODE (XEXP (base, 1)) == CONST_INT)
+  while (1)
     {
-      start += INTVAL (XEXP (base, 1));
-      base = XEXP (base, 0);
+      /* If no part of this switch does a "continue", the code outside
+	 will exit this loop.  */
+
+      switch (GET_CODE (base))
+	{
+	case LO_SUM:
+	  /* By definition, operand1 of a LO_SUM is the associated constant
+	     address.  Use the associated constant address as the base
+	     instead.  */
+	  base = XEXP (base, 1);
+	  continue;
+
+	case CONST:
+	  /* Strip off CONST.  */
+	  base = XEXP (base, 0);
+	  continue;
+
+	case PLUS:
+	  if (GET_CODE (XEXP (base, 1)) == CONST_INT)
+	    {
+	      start += INTVAL (XEXP (base, 1));
+	      base = XEXP (base, 0);
+	      continue;
+	    }
+	  break;
+
+	case AND:
+	  /* Handle the case of an AND which is the negative of a power of
+	     two.  This is used to represent unaligned memory operations.  */
+	  if (GET_CODE (XEXP (base, 1)) == CONST_INT
+	      && exact_log2 (- INTVAL (XEXP (base, 1))) > 0)
+	    {
+	      set_nonvarying_address_components (XEXP (base, 0), size,
+						 pbase, pstart, pend);
+
+	      /* Assume the worst misalignment.  START is affected, but not
+		 END, so compensate but adjusting SIZE.  Don't lose any
+		 constant we already had.  */
+
+	      size = *pend - *pstart - INTVAL (XEXP (base, 1)) - 1;
+	      start += *pstart - INTVAL (XEXP (base, 1)) - 1;
+	      base = *pbase;
+	    }
+	  break;
+	}
+
+      break;
     }
 
   end = start + size;
