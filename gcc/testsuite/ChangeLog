@@ -1,3 +1,7 @@
+2000-06-30  David Billinghurst  <David Billinghurst@riotinto.com.au>
+
+	*  g77.f-torture/compile/20000630-1.x: Fix typo
+
 2000-07-05  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/cpp/ident.c: Don't expect #ident strings in the

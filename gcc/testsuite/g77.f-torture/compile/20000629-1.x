@@ -1,3 +1,3 @@
-set torture_execute_xfail "*-*-*"
+set torture_compile_xfail "*-*-*"
 
 return 0
