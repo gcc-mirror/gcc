@@ -1,4 +1,4 @@
-2004-02-20  Benjamin Kosnik  <bkoz@redhat.com>
+2004-02-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/malloc_allocator.h: Add operators ==, !=.
 	* include/ext/new_allocator.h: Add operators ==, !=.
