@@ -1,3 +1,7 @@
+Mon Jun 22 23:12:05 1998  H.J. Lu  (hjl@gnu.org)
+
+	* Make-lang.in (G77STAGESTUFF): Add g77.c.
+
 Fri Jun 19 07:54:40 1998  H.J. Lu  (hjl@gnu.org)
 
 	* g77spec.c (lang_specific_driver): Check n_infiles before
