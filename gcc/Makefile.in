@@ -254,6 +254,7 @@ INSTALL_SCRIPT = @INSTALL@
 MAKEINFO = @MAKEINFO@
 MAKEINFOFLAGS = --no-split
 TEXI2DVI = texi2dvi
+TEXI2HTML = $(MAKEINFO) --html
 TEXI2POD = perl $(srcdir)/../contrib/texi2pod.pl
 POD2MAN = pod2man --center="GNU" --release="gcc-$(version)"
 # Some versions of `touch' (such as the version on Solaris 2.8)
@@ -486,6 +487,9 @@ man1dir = $(mandir)/man1
 man7dir = $(mandir)/man7
 # Dir for temp files.
 tmpdir = /tmp
+
+# Directory in which to put HTML
+htmldir = $(objdir)/HTML/gcc-$(version)
 
 # Whether we were configured with NLS.
 USE_NLS = @USE_NLS@
@@ -2967,6 +2971,11 @@ doc/gcc.dvi: $(TEXI_GCC_FILES)
 doc/gccint.dvi: $(TEXI_GCCINT_FILES)
 doc/cppinternals.dvi: $(TEXI_CPPINT_FILES)
 
+$(htmldir)/cpp/index.html: $(TEXI_CPP_FILES)
+$(htmldir)/gcc/index.html: $(TEXI_GCC_FILES)
+$(htmldir)/gccint/index.html: $(TEXI_GCCINT_FILES)
+$(htmldir)/cppinternals/index.html: $(TEXI_CPPINT_FILES)
+
 dvi:: doc/gcc.dvi doc/gccint.dvi doc/gccinstall.dvi doc/cpp.dvi \
       doc/cppinternals.dvi
 
@@ -2976,6 +2985,21 @@ doc/%.dvi: %.texi
 # Duplicate entry to handle renaming of gccinstall.dvi
 doc/gccinstall.dvi: $(TEXI_GCCINSTALL_FILES)
 	$(TEXI2DVI) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+
+html:: $(htmldir)/cpp/index.html $(htmldir)/gcc/index.html \
+       $(htmldir)/gccinstall/index.html $(htmldir)/gccint/index.html \
+       $(htmldir)/cppinternals/index.html
+
+$(htmldir)/%/index.html: %.texi
+	$(mkinstalldirs) $(@D)
+	rm -f $(@D)/*
+	$(TEXI2HTML) -I $(abs_docdir) -I $(abs_docdir)/include -o $(@D) $<
+
+# Duplicate entry to handle renaming of gccinstall
+$(htmldir)/gccinstall/index.html: $(TEXI_GCCINSTALL_FILES)
+	$(mkinstalldirs) $(@D)
+	echo rm -f $(@D)/*
+	$(TEXI2HTML) -I $(abs_docdir) -I $(abs_docdir)/include -o $(@D) $<
 
 MANFILES = doc/gcov.1 doc/cpp.1 doc/gcc.1 doc/gfdl.7 doc/gpl.7 doc/fsf-funding.7
 
