@@ -6150,7 +6150,16 @@ output_init_element (value, type, field, pending)
 	    = TREE_INT_CST_HIGH (tem);
 	}
       else if (TREE_CODE (constructor_type) == RECORD_TYPE)
-	constructor_unfilled_fields = TREE_CHAIN (constructor_unfilled_fields);
+	{
+	  constructor_unfilled_fields =
+	    TREE_CHAIN (constructor_unfilled_fields);
+	  /* Skip any nameless bit fields.  */
+	  while (constructor_unfilled_fields != 0
+		 && DECL_C_BIT_FIELD (constructor_unfilled_fields)
+		 && DECL_NAME (constructor_unfilled_fields) == 0)
+	    constructor_unfilled_fields =
+	      TREE_CHAIN (constructor_unfilled_fields);
+	}
       else if (TREE_CODE (constructor_type) == UNION_TYPE)
 	constructor_unfilled_fields = 0;
 
@@ -6485,6 +6494,12 @@ process_init_element (value)
 		= TREE_INT_CST_HIGH (temp);
 
 	      constructor_unfilled_fields = TREE_CHAIN (constructor_fields);
+	      /* Skip any nameless bit fields.  */
+	      while (constructor_unfilled_fields != 0
+		     && DECL_C_BIT_FIELD (constructor_unfilled_fields)
+		     && DECL_NAME (constructor_unfilled_fields) == 0)
+		constructor_unfilled_fields =
+		  TREE_CHAIN (constructor_unfilled_fields);
 	    }
 
 	  constructor_fields = TREE_CHAIN (constructor_fields);
