@@ -1,3 +1,8 @@
+2002-06-10  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* configure.host: Disable hash synchronization and slow_pthread_self
+	for cygwin.
+
 2002-06-06  Adam Megacz <adam@xwt.org>
 
         * java/io/natFileDescriptorWin32.cc (open): Disable Win32 file
