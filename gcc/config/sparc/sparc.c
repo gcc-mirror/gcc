@@ -2825,9 +2825,11 @@ mem_min_alignment (mem, desired)
 	{
 	  /* Check if the compiler has recorded some information
 	     about the alignment of the base REG.  If reload has
-	     completed, we already matched with proper alignments.  */
+	     completed, we already matched with proper alignments.
+	     If not running global_alloc, reload might give us
+	     unaligned pointer to local stack though.  */
 	  if (((cfun != 0 && REGNO_POINTER_ALIGN (regno) >= desired)
-	       || reload_completed)
+	       || (optimize && reload_completed))
 	      && ((INTVAL (offset) & (desired - 1)) == 0))
 	    return 1;
 	}
