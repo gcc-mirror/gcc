@@ -1,3 +1,9 @@
+2003-10-18  Nicolas Pitre <nico@cam.org>
+
+	* config/arm/arm.c (arm_override_options): Use arm_tune_xscale for
+	XScale optimizations not arm_arch_xscale.
+	* config/arm/arm.h (CONSTANT_ALIGNMENT_FACTOR, MOVE_RATIO): Likewise.
+
 2003-10-18  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (shift_count_operand): Add prototype.
