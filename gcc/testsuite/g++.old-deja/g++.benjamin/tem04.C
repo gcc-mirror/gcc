@@ -168,8 +168,13 @@ template <class T20, int base::* b3> class Xtwentyfour {// ERROR - .*
 };
 
 
-
-
+// 25
+// non-type template parms that use push_class_level
+template <class T22> void f1() {// ERROR - .*
+  struct foo { 
+    enum T22 { un, du, toi }; // ERROR - .*
+  };
+}
 
 
 
