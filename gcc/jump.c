@@ -201,7 +201,8 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
   if (flag_exceptions && cross_jump)
     init_insn_eh_region (f, max_uid);
 
-  delete_barrier_successors (f);
+  if (! mark_labels_only)
+    delete_barrier_successors (f);
 
   /* Leave some extra room for labels and duplicate exit test insns
      we make.  */
@@ -2181,6 +2182,7 @@ init_label_info (f)
 /* Delete insns following barriers, up to next label. 
 
    Also delete no-op jumps created by gcse.  */
+
 static void
 delete_barrier_successors (f)
      rtx f;
@@ -2205,6 +2207,7 @@ delete_barrier_successors (f)
 	    }
 	  /* INSN is now the code_label.  */
 	}
+
       /* Also remove (set (pc) (pc)) insns which can be created by
 	 gcse.  We eliminate such insns now to avoid having them
 	 cause problems later.  */
