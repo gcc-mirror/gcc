@@ -30,6 +30,12 @@
 /* Define if your assembler supports .balign and .p2align.  */
 #undef HAVE_GAS_BALIGN_AND_P2ALIGN
 
+/* Define if your assembler supports offsetable %lo().  */
+#undef HAVE_AS_OFFSETABLE_LO10
+
+/* Define if your assembler supports .register.  */
+#undef HAVE_AS_REGISTER_PSEUDO_OP
+
 /* Define if your assembler supports .subsection and .subsection -1 starts
    emitting at the beginning of your section */
 #undef HAVE_GAS_SUBSECTION_ORDERING
