@@ -3015,6 +3015,18 @@ output_epilog (file, size)
   SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
 }
 
+int
+vms_valid_decl_attribute_p (decl, attributes, identifier, args)
+     tree decl;
+     tree attributes;
+     tree identifier;
+     tree args;
+{
+  if (is_attribute_p ("overlaid", identifier))
+    return (args == NULL_TREE);
+  return 0;
+}
+
 #else /* !OPEN_VMS */
 
 static int
@@ -3045,18 +3057,6 @@ alpha_does_function_need_gp ()
 	  return 1;
       }
 
-  return 0;
-}
-
-int
-vms_valid_decl_attribute_p (decl, attributes, identifier, args)
-     tree decl;
-     tree attributes;
-     tree identifier;
-     tree args;
-{
-  if (is_attribute_p ("overlaid", identifier))
-    return (args == NULL_TREE);
   return 0;
 }
 
