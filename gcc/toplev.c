@@ -403,6 +403,11 @@ int flag_no_function_cse = 0;
 
 int flag_omit_frame_pointer = 0;
 
+/* Nonzero means place each function into its own section on those platforms
+   which support arbitrary section names and unlimited numbers of sections.  */
+
+int flag_function_sections = 0;
+
 /* Nonzero to inhibit use of define_optimization peephole opts.  */
 
 int flag_no_peephole = 0;
@@ -564,6 +569,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"fast-math", &flag_fast_math, 1},
   {"common", &flag_no_common, 0},
   {"inhibit-size-directive", &flag_inhibit_size_directive, 1},
+  {"function-sections", &flag_function_sections, 1},
   {"verbose-asm", &flag_verbose_asm, 1},
   {"gnu-linker", &flag_gnu_linker, 1},
   {"pack-struct", &flag_pack_struct, 1},
@@ -2186,6 +2192,24 @@ compile_file (name)
 #ifdef ASM_IDENTIFY_LANGUAGE
   ASM_IDENTIFY_LANGUAGE (asm_out_file);
 #endif
+
+#ifndef ASM_OUTPUT_SECTION_NAME
+  if (flag_function_sections)
+    {
+      warning ("-ffunction-sections not supported for this target.");
+      flag_function_sections = 0;
+    }
+#endif
+
+  if (flag_function_sections
+      && (profile_flag || profile_block_flag))
+    {
+      warning ("-ffunction-sections disabled; it makes profiling impossible.");
+      flag_function_sections = 0;
+    }
+
+  if (flag_function_sections && write_symbols != NO_DEBUG)
+    warning ("-ffunction-sections may affect debugging on some targets.");
 
   if (output_bytecode)
     {

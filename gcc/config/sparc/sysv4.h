@@ -185,7 +185,8 @@ do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
 #define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
 do {									\
   if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)			\
-    fprintf (FILE, ".section\t\"%s\",#alloc,#execinstr\n", (NAME));	\
+    fprintf (FILE, ".section\t\"%s%s\",#alloc,#execinstr\n",		\
+	     flag_function_sections ? ".text%" : "", (NAME));		\
   else if ((DECL) && TREE_READONLY (DECL))				\
     fprintf (FILE, ".section\t\"%s\",#alloc\n", (NAME));		\
   else									\

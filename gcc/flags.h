@@ -325,6 +325,11 @@ extern int flag_no_common;
    needed for crtstuff.c on other systems.  */
 extern int flag_inhibit_size_directive;
 
+/* Nonzero means place each function into its own section on those platforms
+   which support arbitrary section names and unlimited numbers of sections.  */
+
+extern int flag_function_sections;
+
 /* -fverbose-asm causes extra commentary information to be produced in
    the generated assembly code (to make it more readable).  This option
    is generally only of use to those who actually need to read the
