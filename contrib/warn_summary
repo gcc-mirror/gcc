@@ -78,7 +78,7 @@ stageNfilter()
       $AWK "/^Bootstrapping the compiler|^Building the C and C\+\+ compiler/{t=1} ; /stage$stageN/{t=0} ; {if(t==1)print}"
     else
       stageNminus1=`expr $stageN - 1`
-      $AWK "/stage$stageNminus1/{t=1} ; /stage$stageN/{t=0} ; {if(t==1)print}"
+      $AWK "/stage${stageNminus1}\//{t=1} ; /stage$stageN/{t=0} ; {if(t==1)print}"
     fi
   fi
 }
