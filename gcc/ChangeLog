@@ -1,3 +1,8 @@
+Sat May 23 23:23:35 1998   Robert Lipe  <robertl@dgii.com>
+
+	* test_summary: Display section breaks for each entry
+	in a multilibbed target's output.
+
 1998-05-23  Richard Henderson  <rth@cygnus.com>
 
 	* expr.c (expand_expr): For {BITFIELD,COMPONENT,ARRAY}_REF, if the
