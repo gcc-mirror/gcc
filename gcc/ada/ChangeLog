@@ -1,5 +1,10 @@
 2004-10-04  Ed Schonberg  <schonberg@gnat.com>
 
+	* sem_ch3.adb (Build_Derived_Record_Type): Set First/Last entity of
+	class_wide type after component list has been inherited.
+
+2004-10-04  Ed Schonberg  <schonberg@gnat.com>
+
 	* sem_ch12.adb (Check_Generic_Actuals): New predicate
 	Denotes_Previous_Actual, to handle properly the case of a private
 	actual that is also the component type of a subsequent array actual.
