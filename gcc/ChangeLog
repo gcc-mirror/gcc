@@ -1,5 +1,15 @@
 2004-07-30  Diego Novillo  <dnovillo@redhat.com>
 
+	* tree-ssa-alias.c (compute_points_to_and_addr_escape): If a
+	pointer escapes through a function call, assume that the
+	callee will dereference it.
+	(add_pointed_to_var): Assume that VALUE is always an
+	ADDR_EXPR.
+	(collect_points_to_info_r): Only call add_pointed_to_var if
+	the value is an ADDR_EXPR.
+
+2004-07-30  Diego Novillo  <dnovillo@redhat.com>
+
 	* tree-ssa-alias.c (create_alias_map_for): Do not get the
 	alias set of the inner type of ARRAY_TYPEs.
 
