@@ -4260,6 +4260,43 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 
   return tem;
 }
+
+/* Like emit_store_flag, but always succeeds.  */
+
+rtx
+emit_store_flag_force (target, code, op0, op1, mode, unsignedp, normalizep)
+     rtx target;
+     enum rtx_code code;
+     rtx op0, op1;
+     enum machine_mode mode;
+     int unsignedp;
+     int normalizep;
+{
+  rtx tem, label;
+
+  /* First see if emit_store_flag can do the job.  */
+  tem = emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep);
+  if (tem != 0)
+    return tem;
+
+  if (normalizep == 0)
+    normalizep = 1;
+
+  /* If this failed, we have to do this with set/compare/jump/set code.  */
+
+  if (GET_CODE (target) != REG
+      || reg_mentioned_p (target, op0) || reg_mentioned_p (target, op1))
+    target = gen_reg_rtx (GET_MODE (target));
+
+  emit_move_insn (target, const0_rtx);
+  tem = compare_from_rtx (op0, op1, code, unsignedp, mode, NULL_RTX, 0);
+  if (GET_CODE (tem) == CONST_INT)
+    return tem;
+
+  label = gen_label_rtx ();
+  if (bcc_gen_fctn[(int) code] == 0)
+    abort ();
+
   emit_jump_insn ((*bcc_gen_fctn[(int) code]) (label));
   emit_move_insn (target, const1_rtx);
   emit_label (label);
