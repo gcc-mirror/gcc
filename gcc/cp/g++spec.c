@@ -38,10 +38,11 @@ Boston, MA 02111-1307, USA.  */
 extern char *xmalloc PROTO((size_t));
 
 void
-lang_specific_driver (fn, in_argc, in_argv)
+lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
      void (*fn)();
      int *in_argc;
      char ***in_argv;
+     int *in_added_libraries;
 {
   int i, j;
 
@@ -88,12 +89,15 @@ lang_specific_driver (fn, in_argc, in_argv)
   /* The argument list.  */
   char **argv;
 
+  /* The number of libraries added in.  */
+  int added_libraries;
+
   /* The total number of arguments with the new stuff.  */
   int num_args = 1;
 
   argc = *in_argc;
   argv = *in_argv;
-
+  added_libraries = *in_added_libraries;
 
   args = (int *) xmalloc (argc * sizeof (int));
   bzero ((char *) args, argc * sizeof (int));
@@ -231,11 +235,17 @@ lang_specific_driver (fn, in_argc, in_argv)
 
   /* Add `-lstdc++' if we haven't already done so.  */
   if (library)
-    arglist[j++] = "-lstdc++";
+    {
+      arglist[j++] = "-lstdc++";
+      added_libraries++;
+    }
   if (saw_math)
     arglist[j++] = saw_math;
   else if (library)
-    arglist[j++] = MATH_LIBRARY;
+    {
+      arglist[j++] = MATH_LIBRARY;
+      added_libraries++;
+    }
   if (saw_libc)
     arglist[j++] = saw_libc;
 
@@ -243,4 +253,5 @@ lang_specific_driver (fn, in_argc, in_argv)
 
   *in_argc = j;
   *in_argv = arglist;
+  *in_added_libraries = added_libraries;
 }
