@@ -1,3 +1,14 @@
+2003-11-11  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* jni.cc (JNI_CreateJavaVM): Remove JNIEXPORT.
+	(JNI_GetCreatedJavaVMs): Likewise.
+	(JNI_GetDefaultJavaVMInitArgs): Likewise.
+	* include/jni.h (JNIIMPEXP): Remove definition
+	and replace with...
+	(__GCJ_JNIIMPEXP__): New macro, applicable only to libgcj
+	symbols,
+	(__GCJ_DLL__): New macro, controlling __GCJ_JNIIMPEXP__.
+
 2003-11-11  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* Makefile.am: Add GdkPixbufDecoder.java and

@@ -2377,7 +2377,7 @@ static jint
   return 0;
 }
 
-JNIEXPORT jint JNICALL
+jint JNICALL
 JNI_GetDefaultJavaVMInitArgs (void *args)
 {
   jint version = * (jint *) args;
@@ -2394,7 +2394,7 @@ JNI_GetDefaultJavaVMInitArgs (void *args)
   return 0;
 }
 
-JNIEXPORT jint JNICALL
+jint JNICALL
 JNI_CreateJavaVM (JavaVM **vm, void **penv, void *args)
 {
   JvAssert (! the_vm);
@@ -2459,7 +2459,7 @@ JNI_CreateJavaVM (JavaVM **vm, void **penv, void *args)
   return 0;
 }
 
-JNIEXPORT jint JNICALL
+jint JNICALL
 JNI_GetCreatedJavaVMs (JavaVM **vm_buffer, jsize buf_len, jsize *n_vms)
 {
   if (buf_len <= 0)
