@@ -5334,6 +5334,14 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 				   (context ? INDEX_REG_CLASS : BASE_REG_CLASS),
 				    GET_MODE (x), GET_MODE (x), 0, 0,
 				    opnum, RELOAD_OTHER);
+
+		  /* If we created a new MEM based on reg_equiv_mem[REGNO], then
+		     LOC above is part of the new MEM, not the MEM in INSN.
+
+		     We must also replace the address of the MEM in INSN.  */
+		  if (&XEXP (x_orig, 0) != loc)
+		    push_replacement (&XEXP (x_orig, 0), reloadnum, VOIDmode);
+
 		}
 	      else
 		{
