@@ -111,6 +111,39 @@ struct tree_opt_pass pass_loop_init =
   0					/* todo_flags_finish */
 };
 
+/* Loop invariant motion pass.  */
+
+static void
+tree_ssa_loop_im (void)
+{
+  if (!current_loops)
+    return;
+
+  tree_ssa_lim (current_loops);
+}
+
+static bool
+gate_tree_ssa_loop_im (void)
+{
+  return flag_tree_lim != 0;
+}
+
+struct tree_opt_pass pass_lim = 
+{
+  "lim",				/* name */
+  gate_tree_ssa_loop_im,		/* gate */
+  tree_ssa_loop_im,			/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_LIM,				/* tv_id */
+  PROP_cfg,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func                	/* todo_flags_finish */
+};
+
 /* Loop optimizer finalization.  */
 
 static void

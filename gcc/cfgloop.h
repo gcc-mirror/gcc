@@ -256,6 +256,7 @@ extern bool flow_loop_outside_edge_p (const struct loop *, edge);
 extern bool flow_loop_nested_p	(const struct loop *, const struct loop *);
 extern bool flow_bb_inside_loop_p (const struct loop *, const basic_block);
 extern struct loop * find_common_loop (struct loop *, struct loop *);
+struct loop *superloop_at_depth (struct loop *, unsigned);
 extern int num_loop_insns (struct loop *);
 extern int average_num_loop_insns (struct loop *);
 extern unsigned get_loop_level (const struct loop *);

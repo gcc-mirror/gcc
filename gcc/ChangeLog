@@ -1,3 +1,29 @@
+2004-07-09  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* tree-ssa-loop-im.c: New file.
+	* Makefile.in (tree-ssa-loop-im.o): Add.
+	* cfgloop.c (superloop_at_depth): New function.
+	* cfgloop.h (superloop_at_depth): Declare.
+	* common.opt (ftree-lim): New flag.
+	* expr.c (array_ref_up_bound): New function.
+	* params.def (PARAM_LIM_EXPENSIVE): New parameter.
+	* timevar.def (TV_LIM): New timevar.
+	* tree-dfa.c (compute_immediate_uses): Respect TDFA_USE flags when
+	computing immediate uses of a phi node.
+	* tree-flow.h (struct tree_ann_common_d): Add aux field.
+	(loop_commit_inserts, for_each_index, tree_ssa_lim): Declare.
+	* tree-optimize.c (init_tree_optimization_passes): Add pass_lim.
+	* tree-pass.h (pass_lim): Declare.
+	* tree-ssa-loop.c (tree_ssa_loop_im, gate_tree_ssa_loop_im): New
+	functions.
+	(pass_lim): New pass structure.
+	* tree-eh.c (tree_could_trap_p): Handle ARRAY_REFs correctly.
+	* tree.c (in_array_bounds_p): New function.
+	* tree.h (TREE_THIS_NOTRAP): Define also for ARRAY_REFs.
+	(in_array_bounds_p, array_ref_up_bound): Declare.
+	* doc/invoke.texi (-ftree-lim, --param lim-expensive): Document.
+	* doc/passes.texi (tree-ssa-loop-im.c): Document.
+
 2004-07-09  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (expand_builtin_stpcpy): Don't modify len.

@@ -312,6 +312,13 @@ DEFPARAM(PARAM_MAX_CSE_PATH_LENGTH,
 	 "The maximum length of path considered in cse",
 	 10)
 
+/* The cost of expression in loop invariant motion that is considered
+   expensive.  */
+DEFPARAM(PARAM_LIM_EXPENSIVE,
+	 "lim-expensive",
+	 "The minimum cost of an expensive expression in the loop invariant motion",
+	 20)
+
 /* The product of the next two is used to decide whether or not to
    use .GLOBAL_VAR.  See tree-dfa.c.  */
 DEFPARAM(PARAM_GLOBAL_VAR_THRESHOLD,

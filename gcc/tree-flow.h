@@ -83,6 +83,10 @@ struct tree_ann_common_d GTY(())
   /* Annotation type.  */
   enum tree_ann_type type;
 
+ /* Auxiliary info specific to a pass.  At all times, this
+    should either point to valid data or be NULL.  */
+  PTR GTY ((skip (""))) aux;
+
   /* The value handle for this expression.  Used by GVN-PRE.  */
   tree GTY((skip)) value_handle;
 };
@@ -636,6 +640,8 @@ struct tree_niter_desc
 
 /* In tree-ssa-loop*.c  */
 
+void tree_ssa_lim (struct loops *);
+
 void number_of_iterations_cond (tree, tree, tree, enum tree_code, tree, tree,
 				struct tree_niter_desc *);
 bool number_of_iterations_exit (struct loop *, edge,
@@ -645,6 +651,8 @@ tree find_loop_niter_by_eval (struct loop *, edge *);
 void estimate_numbers_of_iterations (struct loops *);
 tree can_count_iv_in_wider_type (struct loop *, tree, tree, tree, tree);
 void free_numbers_of_iterations_estimates (struct loops *);
+void loop_commit_inserts (void);
+bool for_each_index (tree *, bool (*) (tree, tree *, void *), void *);
 
 /* In tree-flow-inline.h  */
 static inline int phi_arg_from_edge (tree, edge);

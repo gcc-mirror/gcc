@@ -844,6 +844,10 @@ ftree-fre
 Common Report Var(flag_tree_fre)
 Enable Full Redundancy Elimination (FRE) on trees
 
+ftree-lim
+Common Report Var(flag_tree_lim) Init(1)
+Enable loop invariant motion on trees
+
 ftree-loop-optimize
 Common Report Var(flag_tree_loop_optimize) Init(1)
 Enable loop optimizations on tree level
