@@ -1,3 +1,10 @@
+1998-05-20  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokfndecl): Handle definition of specialization in
+	friend declaration.
+
+	* error.c (dump_decl): Fix LOOKUP_EXPR handling.
+
 1998-05-20  Mark Mitchell  <mmitchell@usa.net>
 
 	* class.c (delete_duplicate_fields_1): Use DECL_DECLARES_TYPE_P

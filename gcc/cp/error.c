@@ -872,7 +872,7 @@ dump_decl (t, v)
       break;
 
     case LOOKUP_EXPR:
-      OB_PUTID (TREE_OPERAND (t, 0));
+      dump_decl (TREE_OPERAND (t, 0), v);
       break;
 
     case LABEL_DECL:

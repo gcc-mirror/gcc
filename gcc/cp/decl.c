@@ -7625,16 +7625,23 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	break;
       }
 
-  if (friendp && 
-      TREE_CODE (orig_declarator) == TEMPLATE_ID_EXPR)
+  if (friendp
+      && TREE_CODE (orig_declarator) == TEMPLATE_ID_EXPR)
     {
-      /* A friend declaration of the form friend void f<>().  Record
-	 the information in the TEMPLATE_ID_EXPR.  */
-      SET_DECL_IMPLICIT_INSTANTIATION (decl);
-      DECL_TEMPLATE_INFO (decl) 
-	= perm_tree_cons (TREE_OPERAND (orig_declarator, 0),
-			  TREE_OPERAND (orig_declarator, 1),
-			  NULL_TREE);
+      if (funcdef_flag)
+	cp_error
+	  ("defining explicit specialization `%D' in friend declaration",
+	   orig_declarator);
+      else
+	{
+	  /* A friend declaration of the form friend void f<>().  Record
+	     the information in the TEMPLATE_ID_EXPR.  */
+	  SET_DECL_IMPLICIT_INSTANTIATION (decl);
+	  DECL_TEMPLATE_INFO (decl)
+	    = perm_tree_cons (TREE_OPERAND (orig_declarator, 0),
+			      TREE_OPERAND (orig_declarator, 1),
+			      NULL_TREE);
+	}
     }
 
   /* Caller will do the rest of this.  */
