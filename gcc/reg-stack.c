@@ -251,6 +251,7 @@ static rtx emit_pop_insn (rtx, stack, rtx, enum emit_where);
 static void emit_swap_insn (rtx, stack, rtx);
 static void swap_to_top(rtx, stack, rtx, rtx);
 static bool move_for_stack_reg (rtx, stack, rtx);
+static bool move_nan_for_stack_reg (rtx, stack, rtx);
 static int swap_rtx_condition_1 (rtx);
 static int swap_rtx_condition (rtx);
 static void compare_for_stack_reg (rtx, stack, rtx);
@@ -1055,9 +1056,13 @@ move_for_stack_reg (rtx insn, stack regstack, rtx pat)
 	    if (regstack->reg[i] == REGNO (src))
 	      break;
 
-	  /* The source must be live, and the dest must be dead.  */
-	  gcc_assert (i >= 0);
+	  /* The destination must be dead, or life analysis is borked.  */
 	  gcc_assert (get_hard_regnum (regstack, dest) < FIRST_STACK_REG);
+
+	  /* If the source is not live, this is yet another case of
+	     uninitialized variables.  Load up a NaN instead.  */
+	  if (i < 0)
+	    return move_nan_for_stack_reg (insn, regstack, dest);
 
 	  /* It is possible that the dest is unused after this insn.
 	     If so, just pop the src.  */
@@ -1158,6 +1163,22 @@ move_for_stack_reg (rtx insn, stack regstack, rtx pat)
     }
 
   return control_flow_insn_deleted;
+}
+
+/* A helper function which replaces INSN with a pattern that loads up
+   a NaN into DEST, then invokes move_for_stack_reg.  */
+
+static bool
+move_nan_for_stack_reg (rtx insn, stack regstack, rtx dest)
+{
+  rtx pat;
+
+  dest = FP_MODE_REG (REGNO (dest), SFmode);
+  pat = gen_rtx_SET (VOIDmode, dest, not_a_num);
+  PATTERN (insn) = pat;
+  INSN_CODE (insn) = -1;
+
+  return move_for_stack_reg (insn, regstack, pat);
 }
 
 /* Swap the condition on a branch, if there is one.  Return true if we
@@ -1430,23 +1451,19 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 		   all other clobbers, this must be due to a function
 		   returning without a value.  Load up a NaN.  */
 
-		if (! note
-		    && get_hard_regnum (regstack, *dest) == -1)
+		if (!note)
 		  {
-		    pat = gen_rtx_SET (VOIDmode,
-				       FP_MODE_REG (REGNO (*dest), SFmode),
-				       not_a_num);
-		    PATTERN (insn) = pat;
-		    control_flow_insn_deleted |= move_for_stack_reg (insn, regstack, pat);
-		  }
-		if (! note && COMPLEX_MODE_P (GET_MODE (*dest))
-		    && get_hard_regnum (regstack, FP_MODE_REG (REGNO (*dest), DFmode)) == -1)
-		  {
-		    pat = gen_rtx_SET (VOIDmode,
-				       FP_MODE_REG (REGNO (*dest) + 1, SFmode),
-				       not_a_num);
-		    PATTERN (insn) = pat;
-		    control_flow_insn_deleted |= move_for_stack_reg (insn, regstack, pat);
+		    rtx t = *dest;
+		    if (get_hard_regnum (regstack, t) == -1)
+		      control_flow_insn_deleted
+			|= move_nan_for_stack_reg (insn, regstack, t);
+		    if (COMPLEX_MODE_P (GET_MODE (t)))
+		      {
+			t = FP_MODE_REG (REGNO (t) + 1, DFmode);
+			if (get_hard_regnum (regstack, t) == -1)
+			  control_flow_insn_deleted
+			    |= move_nan_for_stack_reg (insn, regstack, t);
+		      }
 		  }
 	      }
 	  }
@@ -2921,13 +2938,9 @@ convert_regs_1 (FILE *file, basic_block block)
 	  rtx set;
 
 	  if (file)
-	    {
-	      fprintf (file, "Emitting insn initializing reg %d\n",
-		       reg);
-	    }
+	    fprintf (file, "Emitting insn initializing reg %d\n", reg);
 
-	  set = gen_rtx_SET (VOIDmode, FP_MODE_REG (reg, SFmode),
-			     not_a_num);
+	  set = gen_rtx_SET (VOIDmode, FP_MODE_REG (reg, SFmode), not_a_num);
 	  insn = emit_insn_after (set, insn);
 	  control_flow_insn_deleted |= subst_stack_regs (insn, &regstack);
 	}
