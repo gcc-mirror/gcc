@@ -577,6 +577,15 @@ is_ctor_dtor (s)
   const char *orig_s = s;
 
   static const struct names special[] = {
+#ifndef NO_DOLLAR_IN_LABEL
+    { "GLOBAL__I$", sizeof ("GLOBAL__I$")-1, 1, 0 },
+    { "GLOBAL__D$", sizeof ("GLOBAL__D$")-1, 2, 0 },
+#else
+#ifndef NO_DOT_IN_LABEL
+    { "GLOBAL__I.", sizeof ("GLOBAL__I.")-1, 1, 0 },
+    { "GLOBAL__D.", sizeof ("GLOBAL__D.")-1, 2, 0 },
+#endif /* NO_DOT_IN_LABEL */
+#endif /* NO_DOLLAR_IN_LABEL */
     { "GLOBAL__I_", sizeof ("GLOBAL__I_")-1, 1, 0 },
     { "GLOBAL__D_", sizeof ("GLOBAL__D_")-1, 2, 0 },
     { "GLOBAL__F_", sizeof ("GLOBAL__F_")-1, 5, 0 },
