@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.31 2001/06/21 15:25:54 shebs Exp $
+@comment $Id: install.texi,v 1.32 2001/06/21 19:00:08 pme Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -403,9 +403,25 @@ argument, only @option{--enable-shared} does.
 Specify that the compiler should assume that the
 assembler it finds is the GNU assembler. However, this does not modify
 the rules to find an assembler and will result in confusion if found
-assembler is not actually the GNU assembler.  If you have more than one
+assembler is not actually the GNU assembler.  (Confusion will also
+result if the compiler finds the GNU assembler but has not been
+configured with @option{--with-gnu-as}.)  If you have more than one
 assembler installed on your system, you may want to use this option in
 connection with @option{--with-as=@file{/path/to/gas}}.
+
+The systems where it makes a difference whether you use the GNU assembler are
+@samp{hppa1.0-@var{any}-@var{any}}, @samp{hppa1.1-@var{any}-@var{any}},
+@samp{i386-@var{any}-sysv}, @samp{i386-@var{any}-isc},
+@samp{i860-@var{any}-bsd}, @samp{m68k-bull-sysv},
+@samp{m68k-hp-hpux}, @samp{m68k-sony-bsd},
+@samp{m68k-altos-sysv}, @samp{m68000-hp-hpux},
+@samp{m68000-att-sysv}, @samp{@var{any}-lynx-lynxos},
+and @samp{mips-@var{any}}.
+On any other system, @option{--with-gnu-as} has no effect.
+
+On the systems listed above (except for the HP-PA, for ISC on the
+386, and for @samp{mips-sgi-irix5.*}), if you use the GNU assembler,
+you should also use the GNU linker (and specify @option{--with-gnu-ld}).
 
 @item --with-as=@file{/path/to/as}
 Specify that the
@@ -443,6 +459,31 @@ Same as
 Specify that stabs debugging
 information should be used instead of whatever format the host normally
 uses.  Normally GCC uses the same debug format as the host system.
+
+On MIPS based systems and on Alphas, you must specify whether you want
+GCC to create the normal ECOFF debugging format, or to use BSD-style
+stabs passed through the ECOFF symbol table.  The normal ECOFF debug
+format cannot fully handle languages other than C.  BSD stabs format can
+handle other languages, but it only works with the GNU debugger GDB.
+
+Normally, GCC uses the ECOFF debugging format by default; if you
+prefer BSD stabs, specify @option{--with-stabs} when you configure GCC.
+
+No matter which default you choose when you configure GCC, the user
+can use the @option{-gcoff} and @option{-gstabs+} options to specify explicitly
+the debug format for a particular compilation.
+
+@option{--with-stabs} is meaningful on the ISC system on the 386, also, if
+@option{--with-gas} is used.  It selects use of stabs debugging
+information embedded in COFF output.  This kind of debugging information
+supports C++ well; ordinary COFF debugging information does not.
+
+@option{--with-stabs} is also meaningful on 386 systems running SVR4.  It
+selects use of stabs debugging information embedded in ELF output.  The
+C++ compiler currently (2.6.0) does not support the DWARF debugging
+information normally used on 386 SVR4 platforms; stabs provide a
+workable alternative.  This requires gas and gdb, as the normal SVR4
+tools can not generate or interpret stabs.
 
 @item --enable-multilib
 Specify that multiple target
