@@ -1,3 +1,9 @@
+2000-01-13  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* stor-layout.c (layout_type): Use FORCE_STRUCT_BLK.
+	* tm.texi (FORCE_STRUCT_BLK): Document.
+	* config/c4x/c4x.h (FORCE_STRUCT_BLK): New macro.
+
 Wed Jan 12 23:12:47 2000  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/ns32k/ns32k.md: Revert Jan 9 change.

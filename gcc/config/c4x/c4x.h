@@ -352,6 +352,10 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
 #define TARGET_FLOAT_FORMAT	C4X_FLOAT_FORMAT
 #define MAX_FIXED_MODE_SIZE	64 /* HImode.  */
 
+/* If a structure has a floating point field then force structure
+   to have BLKMODE.  */
+#define STRUCT_FORCE_BLK(FIELD) (TREE_CODE (TREE_TYPE (FIELD)) == REAL_TYPE)
+
 /* Number of bits in the high and low parts of a two stage
    load of an immediate constant.  */
 #define BITS_PER_HIGH 16

@@ -413,6 +413,15 @@ if any, in all upper-case letters.  For example, it might be @samp{GCC}
 or @samp{BINUTILS}.  If the package is part of the a vendor-supplied
 operating system, code the component name as @samp{0}.
 
+@findex STRUCT_FORCE_BLK
+@item STRUCT_FORCE_BLK (@var{field})
+Return 1 if a structure containing @var{field} should be accessed using
+@code{BLKMODE}.
+
+Normally, this is not needed.  See the file @file{c4x.h} for an example
+of how to use this macro to prevent a structure having a floating point
+field from being accessed in an integer mode.
+
 
 For example, here is the definition used for VAX/VMS:
 
