@@ -2771,6 +2771,14 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
       warned = 2;
     }
 
+  if (!warned && !in_system_header && (declspecs->const_p
+				       || declspecs->volatile_p
+				       || declspecs->restrict_p))
+    {
+      warning ("useless type qualifier in empty declaration");
+      warned = 2;
+    }
+
   if (!warned && !in_system_header && declspecs->specbits)
     {
       warning ("useless keyword or type name in empty declaration");
@@ -2784,6 +2792,32 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
     }
 }
 
+
+/* Return the qualifiers from SPECS as a bitwise OR of TYPE_QUAL_*
+   bits.  SPECS represents declaration specifiers that the grammar
+   only permits to contain type qualifiers and attributes.  */
+
+int
+quals_from_declspecs (const struct c_declspecs *specs)
+{
+  int quals = ((specs->const_p ? TYPE_QUAL_CONST : 0)
+	       | (specs->volatile_p ? TYPE_QUAL_VOLATILE : 0)
+	       | (specs->restrict_p ? TYPE_QUAL_RESTRICT : 0));
+  gcc_assert (!specs->type
+	      && !specs->decl_attr
+	      && !specs->specbits
+	      && specs->storage_class == csc_none
+	      && !specs->typedef_p
+	      && !specs->typedef_signed_p
+	      && !specs->deprecated_p
+	      && !specs->explicit_int_p
+	      && !specs->explicit_char_p
+	      && !specs->long_long_p
+	      && !specs->inline_p
+	      && !specs->thread_p);
+  return quals;
+}
+
 /* Construct an array declarator.  EXPR is the expression inside [], or
    NULL_TREE.  QUALS are the type qualifiers inside the [] (to be applied
    to the pointer to which a parameter array is converted).  STATIC_P is
@@ -2802,7 +2836,16 @@ build_array_declarator (tree expr, struct c_declspecs *quals, bool static_p,
   declarator->kind = cdk_array;
   declarator->declarator = 0;
   declarator->u.array.dimen = expr;
-  declarator->u.array.quals = quals;
+  if (quals)
+    {
+      declarator->u.array.attrs = quals->attrs;
+      declarator->u.array.quals = quals_from_declspecs (quals);
+    }
+  else
+    {
+      declarator->u.array.attrs = NULL_TREE;
+      declarator->u.array.quals = 0;
+    }
   declarator->u.array.static_p = static_p;
   declarator->u.array.vla_unspec_p = vla_unspec_p;
   if (pedantic && !flag_isoc99)
@@ -2830,7 +2873,8 @@ set_array_declarator_inner (struct c_declarator *decl,
 			    struct c_declarator *inner, bool abstract_p)
 {
   decl->declarator = inner;
-  if (abstract_p && (decl->u.array.quals != NULL
+  if (abstract_p && (decl->u.array.quals != TYPE_UNQUALIFIED
+		     || decl->u.array.attrs != NULL_TREE
 		     || decl->u.array.static_p))
     error ("static or type qualifiers in abstract declarator");
   return decl;
@@ -3644,7 +3688,8 @@ grokdeclarator (const struct c_declarator *declarator,
   bool funcdef_syntax = false;
   int size_varies = 0;
   tree decl_attr = NULL_TREE;
-  struct c_declspecs *array_ptr_quals = 0;
+  int array_ptr_quals = TYPE_UNQUALIFIED;
+  tree array_ptr_attrs = NULL_TREE;
   int array_parm_static = 0;
   tree returned_attrs = NULL_TREE;
   bool bitfield = width != NULL;
@@ -3897,11 +3942,9 @@ grokdeclarator (const struct c_declarator *declarator,
      duplicate qualifiers should be diagnosed in this case, but it
      seems most appropriate to do so).  */
   element_type = strip_array_types (type);
-  constp = !! (specbits & 1 << (int) RID_CONST) + TYPE_READONLY (element_type);
-  restrictp
-    = !! (specbits & 1 << (int) RID_RESTRICT) + TYPE_RESTRICT (element_type);
-  volatilep
-    = !! (specbits & 1 << (int) RID_VOLATILE) + TYPE_VOLATILE (element_type);
+  constp = declspecs->const_p + TYPE_READONLY (element_type);
+  restrictp = declspecs->restrict_p + TYPE_RESTRICT (element_type);
+  volatilep = declspecs->volatile_p + TYPE_VOLATILE (element_type);
   if (pedantic && !flag_isoc99)
     {
       if (constp > 1)
@@ -4021,13 +4064,16 @@ grokdeclarator (const struct c_declarator *declarator,
 	 array or function or pointer, and DECLARATOR has had its
 	 outermost layer removed.  */
 
-      if (array_ptr_quals != NULL || array_parm_static)
+      if (array_ptr_quals != TYPE_UNQUALIFIED
+	  || array_ptr_attrs != NULL_TREE
+	  || array_parm_static)
 	{
 	  /* Only the innermost declarator (making a parameter be of
 	     array type which is converted to pointer type)
 	     may have static or type qualifiers.  */
 	  error ("static or type qualifiers in non-parameter array declarator");
-	  array_ptr_quals = NULL;
+	  array_ptr_quals = TYPE_UNQUALIFIED;
+	  array_ptr_attrs = NULL_TREE;
 	  array_parm_static = 0;
 	}
 
@@ -4062,6 +4108,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	    tree index_type = c_common_signed_type (sizetype);
 
 	    array_ptr_quals = declarator->u.array.quals;
+	    array_ptr_attrs = declarator->u.array.attrs;
 	    array_parm_static = declarator->u.array.static_p;
 	    
 	    declarator = declarator->declarator;
@@ -4214,10 +4261,13 @@ grokdeclarator (const struct c_declarator *declarator,
 	      layout_type (type);
 
 	    if (decl_context != PARM
-		&& (array_ptr_quals != NULL || array_parm_static))
+		&& (array_ptr_quals != TYPE_UNQUALIFIED
+		    || array_ptr_attrs != NULL_TREE
+		    || array_parm_static))
 	      {
 		error ("static or type qualifiers in non-parameter array declarator");
-		array_ptr_quals = NULL;
+		array_ptr_quals = TYPE_UNQUALIFIED;
+		array_ptr_attrs = NULL_TREE;
 		array_parm_static = 0;
 	      }
 	    break;
@@ -4306,31 +4356,13 @@ grokdeclarator (const struct c_declarator *declarator,
 	      pedwarn ("ISO C forbids qualified function types");
 	    if (type_quals)
 	      type = c_build_qualified_type (type, type_quals);
-	    type_quals = TYPE_UNQUALIFIED;
 	    size_varies = 0;
-	    
+
 	    type = build_pointer_type (type);
 	    
 	    /* Process type qualifiers (such as const or volatile)
 	       that were given inside the `*'.  */
-	    if (declarator->u.pointer_quals)
-	      {
-		int pbits = declarator->u.pointer_quals->specbits;
-
-		/* The grammar should only permit qualifiers here.  */
-		gcc_assert (!declarator->u.pointer_quals->type
-			    && !(pbits & ~((1 << (int) RID_CONST)
-					   | (1 << (int) RID_VOLATILE)
-					   | (1 << (int) RID_RESTRICT))));
-
-		constp = !!(pbits & (1 << (int) RID_CONST));
-		volatilep = !!(pbits & (1 << (int) RID_VOLATILE));
-		restrictp = !!(pbits & (1 << (int) RID_RESTRICT));
-
-		type_quals = ((constp ? TYPE_QUAL_CONST : 0)
-			      | (restrictp ? TYPE_QUAL_RESTRICT : 0)
-			      | (volatilep ? TYPE_QUAL_VOLATILE : 0));
-	      }
+	    type_quals = declarator->u.pointer_quals;
 
 	    declarator = declarator->declarator;
 	    break;
@@ -4445,29 +4477,12 @@ grokdeclarator (const struct c_declarator *declarator,
 	    if (type_quals)
 	      type = c_build_qualified_type (type, type_quals);
 	    type = build_pointer_type (type);
-	    type_quals = TYPE_UNQUALIFIED;
-	    if (array_ptr_quals)
-	      {
-		int apqbits = array_ptr_quals->specbits;
+	    type_quals = array_ptr_quals;
 
-		/* We don't yet implement attributes in this context.  */
-		if (array_ptr_quals->attrs != NULL_TREE)
-		  warning ("attributes in parameter array declarator ignored");
+	    /* We don't yet implement attributes in this context.  */
+	    if (array_ptr_attrs != NULL_TREE)
+	      warning ("attributes in parameter array declarator ignored");
 
-		/* The grammar should only permit qualifiers here.  */
-		gcc_assert (!array_ptr_quals->type
-			    && !(apqbits & ~((1 << (int) RID_CONST)
-					     | (1 << (int) RID_VOLATILE)
-					     | (1 << (int) RID_RESTRICT))));
-
-		constp = !!(apqbits & (1 << (int) RID_CONST));
-		volatilep = !!(apqbits & (1 << (int) RID_VOLATILE));
-		restrictp = !!(apqbits & (1 << (int) RID_RESTRICT));
-
-		type_quals = ((constp ? TYPE_QUAL_CONST : 0)
-			      | (restrictp ? TYPE_QUAL_RESTRICT : 0)
-			      | (volatilep ? TYPE_QUAL_VOLATILE : 0));
-	      }
 	    size_varies = 0;
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE)
@@ -6724,18 +6739,19 @@ make_pointer_declarator (struct c_declspecs *type_quals_attrs,
 			 struct c_declarator *target)
 {
   tree attrs;
+  int quals = 0;
   struct c_declarator *itarget = target;
   struct c_declarator *ret = XOBNEW (&parser_obstack, struct c_declarator);
   if (type_quals_attrs)
     {
       attrs = type_quals_attrs->attrs;
-      type_quals_attrs->attrs = NULL_TREE;
+      quals = quals_from_declspecs (type_quals_attrs);
       if (attrs != NULL_TREE)
 	itarget = build_attrs_declarator (attrs, target);
     }
   ret->kind = cdk_pointer;
   ret->declarator = itarget;
-  ret->u.pointer_quals = type_quals_attrs;
+  ret->u.pointer_quals = quals;
   return ret;
 }
 
@@ -6760,6 +6776,9 @@ build_null_declspecs (void)
   ret->long_long_p = false;
   ret->inline_p = false;
   ret->thread_p = false;
+  ret->const_p = false;
+  ret->volatile_p = false;
+  ret->restrict_p = false;
   return ret;
 }
 
@@ -6770,14 +6789,30 @@ struct c_declspecs *
 declspecs_add_qual (struct c_declspecs *specs, tree qual)
 {
   enum rid i;
+  bool dupe = false;
   specs->non_sc_seen_p = true;
   gcc_assert (TREE_CODE (qual) == IDENTIFIER_NODE
 	      && C_IS_RESERVED_WORD (qual));
   i = C_RID_CODE (qual);
-  gcc_assert (i == RID_CONST || i == RID_VOLATILE || i == RID_RESTRICT);
-  if ((specs->specbits & (1 << (int) i)) && pedantic && !flag_isoc99)
+  switch (i)
+    {
+    case RID_CONST:
+      dupe = specs->const_p;
+      specs->const_p = true;
+      break;
+    case RID_VOLATILE:
+      dupe = specs->volatile_p;
+      specs->volatile_p = true;
+      break;
+    case RID_RESTRICT:
+      dupe = specs->restrict_p;
+      specs->restrict_p = true;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  if (dupe && pedantic && !flag_isoc99)
     pedwarn ("duplicate %qs", IDENTIFIER_POINTER (qual));
-  specs->specbits |= 1 << (int) i;
   return specs;
 }
 

@@ -180,6 +180,12 @@ struct c_declspecs {
   BOOL_BITFIELD inline_p : 1;
   /* Whether "__thread" was specified.  */
   BOOL_BITFIELD thread_p : 1;
+  /* Whether "const" was specified.  */
+  BOOL_BITFIELD const_p : 1;
+  /* Whether "volatile" was specified.  */
+  BOOL_BITFIELD volatile_p : 1;
+  /* Whether "restrict" was specified.  */
+  BOOL_BITFIELD restrict_p : 1;
 };
 
 /* The various kinds of declarators in C.  */
@@ -225,15 +231,17 @@ struct c_declarator {
     struct {
       /* The array dimension, or NULL for [] and [*].  */
       tree dimen;
-      /* The qualifiers (and attributes, currently ignored) inside [].  */
-      struct c_declspecs *quals;
+      /* The qualifiers inside [].  */
+      int quals;
+      /* The attributes (currently ignored) inside [].  */
+      tree attrs;
       /* Whether [static] was used.  */
       BOOL_BITFIELD static_p : 1;
       /* Whether [*] was used.  */
       BOOL_BITFIELD vla_unspec_p : 1;
     } array;
     /* For pointers, the qualifiers on the pointer type.  */
-    struct c_declspecs *pointer_quals;
+    int pointer_quals;
     /* For attributes.  */
     tree attrs;
   } u;
@@ -297,6 +305,7 @@ extern void c_expand_body (tree);
 extern void c_init_decl_processing (void);
 extern void c_dup_lang_specific_decl (tree);
 extern void c_print_identifier (FILE *, tree, int);
+extern int quals_from_declspecs (const struct c_declspecs *);
 extern struct c_declarator *build_array_declarator (tree, struct c_declspecs *,
 						    bool, bool);
 extern tree build_enumerator (tree, tree);
