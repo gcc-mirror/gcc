@@ -160,6 +160,8 @@ static const struct mcu_type_s avr_mcu_types[] = {
   { NULL, 0 }
 };
 
+int avr_case_values_threshold = 30000;
+
 void
 avr_override_options ()
 {
@@ -188,6 +190,9 @@ avr_override_options ()
       case AVR4: avr_enhanced_p = 1; avr_mega_p = 0; break;
       case AVR5: avr_enhanced_p = 1; avr_mega_p = 1; break;
     }
+
+  if (optimize && !TARGET_NO_TABLEJUMP)
+    avr_case_values_threshold = (!AVR_MEGA || TARGET_CALL_PROLOGUES) ? 8 : 17;
 }
 
 

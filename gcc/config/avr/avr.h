@@ -51,6 +51,7 @@ extern int target_flags;
 #define MASK_ORDER_1		0x00001000
 #define MASK_INSN_SIZE_DUMP	0x00002000
 #define MASK_ORDER_2		0x00004000
+#define MASK_NO_TABLEJUMP	0x00008000
 #define MASK_INT8		0x00010000
 #define MASK_NO_INTERRUPTS	0x00020000
 #define MASK_CALL_PROLOGUES	0x00040000
@@ -63,6 +64,7 @@ extern int target_flags;
 #define TARGET_INSN_SIZE_DUMP	(target_flags & MASK_INSN_SIZE_DUMP)
 #define TARGET_CALL_PROLOGUES	(target_flags & MASK_CALL_PROLOGUES)
 #define TARGET_TINY_STACK	(target_flags & MASK_TINY_STACK)
+#define TARGET_NO_TABLEJUMP	(target_flags & MASK_NO_TABLEJUMP)
 
 /* Dump each assembler insn's rtl into the output file.
    This is for debugging the compiler itself.  */
@@ -102,6 +104,8 @@ extern int target_flags;
     N_("Use subroutines for function prologue/epilogue") },		\
   { "tiny-stack", MASK_TINY_STACK,					\
     N_("Change only the low 8 bits of the stack pointer") },		\
+  { "no-tablejump", MASK_NO_TABLEJUMP,					\
+    N_("Do not generate tablejump insns") },				\
   { "rtl", MASK_RTL_DUMP, NULL },					\
   { "size", MASK_INSN_SIZE_DUMP,					\
     N_("Output instruction sizes to the asm file") },			\
@@ -2001,7 +2005,10 @@ progmem_section (void)							      \
   if (in_section != in_progmem)						      \
     {									      \
       fprintf (asm_out_file,						      \
-	       ".section .progmem.gcc_sw_table, \"a\", @progbits\n");	      \
+	       "\t.section .progmem.gcc_sw_table, \"%s\", @progbits\n",	      \
+	       AVR_MEGA ? "a" : "ax"); 					      \
+      /* Should already be aligned, this is just to be safe if it isn't.  */  \
+      fprintf (asm_out_file, "\t.p2align 1\n");				      \
       in_section = in_progmem;						      \
     }									      \
 }
@@ -2042,7 +2049,7 @@ progmem_section (void)							      \
    Do not define this macro if you put all constants in the read-only
    data section.  */
 
-#define JUMP_TABLES_IN_TEXT_SECTION 1
+#define JUMP_TABLES_IN_TEXT_SECTION 0
 /* Define this macro if jump tables (for `tablejump' insns) should be
    output in the text section, along with the assembler instructions.
    Otherwise, the readonly data section is used.
@@ -2705,8 +2712,13 @@ sprintf (STRING, "*.%s%d", PREFIX, NUM)
    pop hard register number REGNO off of the stack.  The code need
    not be optimal, since this macro is used only when profiling.  */
 
-#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)				      \
-  fprintf (STREAM, "\t.word pm(.L%d)\n", VALUE);
+#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)		\
+do {							\
+  if (AVR_MEGA)						\
+    fprintf (STREAM, "\t.word pm(.L%d)\n", VALUE);	\
+  else							\
+    fprintf (STREAM, "\trjmp .L%d\n", VALUE);		\
+} while (0)
 /* This macro should be provided on machines where the addresses in a
    dispatch table are absolute.
 
@@ -2761,7 +2773,9 @@ fprintf (STREAM, "\t.skip %d,0\n", n)
 /* An alias for a machine mode name.  This is the machine mode that
    elements of a jump-table should have.  */
 
-#define CASE_VALUES_THRESHOLD 17
+extern int avr_case_values_threshold;
+
+#define CASE_VALUES_THRESHOLD avr_case_values_threshold
 /* `CASE_VALUES_THRESHOLD'
    Define this to be the smallest number of different values for
    which it is best to use a jump-table instead of a tree of

@@ -1852,41 +1852,53 @@
 (define_expand "tablejump"
   [(parallel [(set (pc) (match_operand:HI 0 "register_operand" ""))
 	      (use (label_ref (match_operand 1 "" "")))])]
-  "optimize"
+  "0 && optimize"
   "")
+
+;; Note: the (mem:HI (...)) memory references here are special - actually
+;; the data is read from a word address in program memory (r31:r30 is the
+;; index in the table, not multiplied by 2 - see the "casesi" pattern).
+
+;; Table made from "rjmp" instructions for <=8K devices.
+(define_insn "*tablejump_rjmp"
+   [(set (pc) (mem:HI
+	       (plus:HI (match_operand:HI 0 "register_operand" "=&z")
+			(label_ref (match_operand 2 "" "")))))
+    (use (label_ref (match_operand 1 "" "")))]
+  "!AVR_MEGA"
+  "subi r30,pm_lo8(-(%2))
+	sbci r31,pm_hi8(-(%2))
+	ijmp"
+  [(set_attr "length" "3")
+   (set_attr "cc" "clobber")])
 
 ;; Not a prologue, but similar idea - move the common piece of code to libgcc.
 (define_insn "*tablejump_lib"
    [(set (pc) (mem:HI (plus:HI (match_operand:HI 0 "register_operand" "=&z")
 			       (label_ref (match_operand 2 "" "")))))
     (use (label_ref (match_operand 1 "" "")))]
-  "TARGET_CALL_PROLOGUES"
-  "*{
-  output_asm_insn (AS2 (subi,r30,lo8(-(%2))) CR_TAB
-	           AS2 (sbci,r31,hi8(-(%2))), operands);
-  return (AVR_MEGA
-          ? AS1 (jmp,__tablejump__)
-          : AS1 (rjmp,__tablejump__));
-  }"
-  [(set_attr "cc" "clobber")
-   (set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
-				      (const_int 3)
-				      (const_int 4)))])
-
+  "AVR_MEGA && TARGET_CALL_PROLOGUES"
+  "subi r30,pm_lo8(-(%2))
+	sbci r31,pm_hi8(-(%2))
+	jmp __tablejump2__"
+  [(set_attr "length" "4")
+   (set_attr "cc" "clobber")])
 
 (define_insn "*tablejump_enh"
    [(set (pc) (mem:HI
 	       (plus:HI (match_operand:HI 0 "register_operand" "=&z")
 			(label_ref (match_operand 2 "" "")))))
     (use (label_ref (match_operand 1 "" "")))]
-  "AVR_ENHANCED"
-  "subi r30,lo8(-(%2))
-	sbci r31,hi8(-(%2))
+  "AVR_MEGA && AVR_ENHANCED"
+  "subi r30,pm_lo8(-(%2))
+	sbci r31,pm_hi8(-(%2))
+	lsl r30
+	rol r31
 	lpm __tmp_reg__,Z+
 	lpm r31,Z
 	mov r30,__tmp_reg__
 	ijmp"
-  [(set_attr "length" "6")
+  [(set_attr "length" "8")
    (set_attr "cc" "clobber")])
 
 (define_insn "*tablejump"
@@ -1894,16 +1906,18 @@
 	       (plus:HI (match_operand:HI 0 "register_operand" "=&z")
 			(label_ref (match_operand 2 "" "")))))
     (use (label_ref (match_operand 1 "" "")))]
-  ""
-  "subi r30,lo8(-(%2))
-	sbci r31,hi8(-(%2))
+  "AVR_MEGA"
+  "subi r30,pm_lo8(-(%2))
+	sbci r31,pm_hi8(-(%2))
+	lsl r30
+	rol r31
 	lpm
+	inc r30
 	push r0
-	adiw r30,1
 	lpm
 	push r0
 	ret"
-  [(set_attr "length" "8")
+  [(set_attr "length" "10")
    (set_attr "cc" "clobber")])
 
 (define_expand "casesi"
@@ -1920,9 +1934,9 @@
 			   (const_int 0))
 		      (label_ref (match_operand 4 "" ""))
 		      (pc)))
-   (set (match_dup 6)
-	(plus:HI (match_dup 6)
-		 (match_dup 6)))
+;;   (set (match_dup 6)
+;;	(plus:HI (match_dup 6)
+;;		 (match_dup 6)))
 ;;   (set (match_dup 6)
 ;;	(plus:HI (match_dup 6) (label_ref (match_operand:HI 3 "" ""))))
 		 
@@ -1930,7 +1944,7 @@
 			 (plus:HI (match_dup 6)
 				  (label_ref (match_operand:HI 3 "" "")))))
 	      (use (label_ref (match_dup 3)))])]
-  "!optimize"
+  ""
   "
 {
   operands[6] = gen_reg_rtx (HImode);

@@ -691,9 +691,11 @@ _cleanup:
 #endif /* defined (L_cleanup) */
 
 #ifdef L_tablejump
-	.global __tablejump__
-	.func	__tablejump__
-__tablejump__:
+	.global __tablejump2__
+	.func	__tablejump2__
+__tablejump2__:
+	lsl	r30
+	rol	r31
 #if defined (__AVR_ENHANCED__)
 	lpm	__tmp_reg__, Z+
 	lpm	r31, Z
@@ -702,7 +704,7 @@ __tablejump__:
 #else
 	lpm
 	push	r0
-	adiw	r30, 1
+	inc	r30	; table is word aligned, no carry to high byte
 	lpm
 	push	r0
 	ret
