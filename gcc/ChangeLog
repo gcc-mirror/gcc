@@ -1,3 +1,11 @@
+2003-07-06  Matthias Klose  <doko@debian.org>
+
+	Backport from mainline:
+
+	2003-07-04  Zack Weinberg  <zack@codesourcery.com>
+
+	* doc/extend.texi: Delete entire section on multiline strings.
+
 2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
 
 	* Makefile.in: Replace PWD with PWD_COMMAND.

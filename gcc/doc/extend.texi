@@ -439,7 +439,6 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Empty Structures::    Structures with no members.
 * Variadic Macros::	Macros with a variable number of arguments.
 * Escaped Newlines::    Slightly looser rules for escaped newlines.
-* Multi-line Strings::  String literals with embedded newlines.
 * Subscripting::        Any array can be subscripted, even if not an lvalue.
 * Pointer Arith::       Arithmetic on @code{void}-pointers and function pointers.
 * Initializers::        Non-constant initializers.
@@ -1533,22 +1532,9 @@ spaces, horizontal and vertical tabs, and form feeds between the
 backslash and the subsequent newline.  The preprocessor issues a
 warning, but treats it as a valid escaped newline and combines the two
 lines to form a single logical line.  This works within comments and
-tokens, including multi-line strings, as well as between tokens.
-Comments are @emph{not} treated as whitespace for the purposes of this
-relaxation, since they have not yet been replaced with spaces.
-
-@node Multi-line Strings
-@section String Literals with Embedded Newlines
-@cindex multi-line string literals
-
-As an extension, GNU CPP permits string literals to cross multiple lines
-without escaping the embedded newlines.  Each embedded newline is
-replaced with a single @samp{\n} character in the resulting string
-literal, regardless of what form the newline took originally.
-
-CPP currently allows such strings in directives as well (other than the
-@samp{#include} family).  This is deprecated and will eventually be
-removed.
+tokens, as well as between tokens.  Comments are @emph{not} treated as
+whitespace for the purposes of this relaxation, since they have not
+yet been replaced with spaces.
 
 @node Subscripting
 @section Non-Lvalue Arrays May Have Subscripts
