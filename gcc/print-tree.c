@@ -1,5 +1,5 @@
 /* Prints out tree in human readable form - GNU C-compiler
-   Copyright (C) 1990, 1991, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -109,38 +109,18 @@ print_node_brief (file, prefix, node, indent)
       if (TREE_CONSTANT_OVERFLOW (node))
 	fprintf (file, " overflow");
 
+      fprintf (file, " ");
       if (TREE_INT_CST_HIGH (node) == 0)
-	fprintf (file,
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-		 " %1u",
-#else
-		 " %1lu",
-#endif
-		 TREE_INT_CST_LOW (node));
+	fprintf (file, HOST_WIDE_INT_PRINT_UNSIGNED, TREE_INT_CST_LOW (node));
       else if (TREE_INT_CST_HIGH (node) == -1
 	       && TREE_INT_CST_LOW (node) != 0)
-	fprintf (file,
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-		 " -%1u",
-#else
-		 " -%1lu",
-#endif
+	{
+	  fprintf (file, "-");
+	  fprintf (file, HOST_WIDE_INT_PRINT_UNSIGNED,
 		 -TREE_INT_CST_LOW (node));
+	}
       else
-	fprintf (file,
-#if HOST_BITS_PER_WIDE_INT == 64
-#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
-		 " 0x%lx%016lx",
-#else
-		 " 0x%x%016x",
-#endif
-#else
-#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
-		 " 0x%lx%08lx",
-#else
-		 " 0x%x%08x",
-#endif
-#endif
+	fprintf (file, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
 		 TREE_INT_CST_HIGH (node), TREE_INT_CST_LOW (node));
     }
   if (TREE_CODE (node) == REAL_CST)
@@ -622,38 +602,19 @@ print_node (file, prefix, node, indent)
 	  if (TREE_CONSTANT_OVERFLOW (node))
 	    fprintf (file, " overflow");
 
+	  fprintf (file, " ");
 	  if (TREE_INT_CST_HIGH (node) == 0)
-	    fprintf (file,
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-		     " %1u",
-#else
-		     " %1lu",
-#endif
+	    fprintf (file, HOST_WIDE_INT_PRINT_UNSIGNED,
 		     TREE_INT_CST_LOW (node));
 	  else if (TREE_INT_CST_HIGH (node) == -1
 		   && TREE_INT_CST_LOW (node) != 0)
-	    fprintf (file,
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-		     " -%1u",
-#else
-		     " -%1lu",
-#endif
-		     -TREE_INT_CST_LOW (node));
+	    {
+	      fprintf (file, "-");
+	      fprintf (file, HOST_WIDE_INT_PRINT_UNSIGNED,
+		       -TREE_INT_CST_LOW (node));
+	    }
 	  else
-	    fprintf (file,
-#if HOST_BITS_PER_WIDE_INT == 64
-#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
-		     " 0x%lx%016lx",
-#else
-		     " 0x%x%016x",
-#endif
-#else
-#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
-		     " 0x%lx%08lx",
-#else
-		     " 0x%x%08x",
-#endif
-#endif
+	    fprintf (file, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
 		     TREE_INT_CST_HIGH (node), TREE_INT_CST_LOW (node));
 	  break;
 
