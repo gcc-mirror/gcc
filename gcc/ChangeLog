@@ -1,3 +1,32 @@
+1999-11-24  Jason Merrill  <jason@casey.cygnus.com>
+
+	* dwarf2out.c (free_AT, free_die): New fns.
+	(remove_children): Call them.
+	(output_line_info): Disable removal of duplicate notes.
+
+	Generate minimal debug info for types with TYPE_DECL_SUPPRESS_INFO set.
+	* dwarf2out.c (gen_struct_or_union_type_die): TYPE_DECL_SUPPRESS_INFO
+	means pretend the type isn't defined.
+	Don't defer emitting types.
+	(gen_type_die_for_member): New fn.
+	(gen_decl_die): Call it.
+	(splice_child_die): New fn.
+	(gen_member_die): Call it rather than generate duplicate dies.
+
+	Defer emitting information for the abstract instance of an inline
+	until we either inline it or emit an out-of-line copy.
+	* dwarf2out.c (decl_ultimate_origin): Ignore DECL_ABSTRACT_ORIGIN
+	from output_inline_function if DECL_ABSTRACT is also set.
+	(block_ultimate_origin): Likewise.
+	(gen_abstract_function): New fn.
+	(gen_decl_die, gen_inlined_subroutine_die): Call it.
+	(gen_subprogram_die):  An abstract instance is not a declaration
+	just because it doesn't match current_function_decl.  Don't abort
+	because DECL_DEFER_OUTPUT isn't set.  Do abort if a declaration
+	has an abstract origin.
+	* toplev.c (rest_of_compilation): Don't emit dwarf2 info for the
+	abstract instance here.
+
 Wed Nov 24 18:39:18 1999  Andrew Haley  <aph@cygnus.com>
 
 	* config/sh/sh.h (SECONDARY_OUTPUT_RELOAD_CLASS): Add the case
