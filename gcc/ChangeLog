@@ -1,3 +1,10 @@
+2004-07-22  Paolo Bonzini  <bonzini@gnu.org>
+                                                                                
+        * config/i386/i386.c (function_arg): Always treat 8-
+        and 16-byte wide vectors the same, even if MMX/SSE
+        are disabled.
+        (contains_128bit_aligned_vector_p): Add comment.
+
 2004-07-26  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* ra.h (enum node_type): Rename to:
