@@ -1,5 +1,8 @@
 #!/bin/sh -x
 
+# Generate HTML documentation from GCC Texinfo docs.
+# This version is for GCC 3.1 and later versions.
+
 # Run this from /tmp.
 CVSROOT=/cvs/gcc
 export CVSROOT
@@ -88,25 +91,26 @@ find $CVSROOT/gcc -name \*.texi,v -print | fgrep -v -f/home/gccadmin/scripts/doc
 
 
 # Checkout all the texi files.
-cvs -Q co -r$RELEASE `cat FILES` gcc/gcc/doc/install.texi2html gcc/gcc/texinfo.tex gcc/gcc/doc/texinfo.tex gcc/gcc/doc/include/texinfo.tex
+cvs -Q co -r$RELEASE `cat FILES` gcc/gcc/doc/install.texi2html gcc/gcc/doc/include/texinfo.tex
 
-# Find the directory to pass to -I; this is the one with texinfo.tex
+# The directory to pass to -I; this is the one with texinfo.tex
 # and fdl.texi.
-texitexloc=`find . -name texinfo.tex`
-includedir=${texitexloc%/*}
+includedir=gcc/gcc/doc/include
+
+MANUALS="cpp chill cppinternals gcc gccint gcj g77 gnat-style libiberty porting"
 
 # Now convert the relevant files from texi to HTML and PostScript.
-for file in cpp chill cppinternals gcc gcj g77 gnat-style libiberty \
-    objc-features porting; do
+for file in $MANUALS; do
   filename=`find . -name ${file}.texi`
   if [ "${filename}" ]; then
-    /usr/local/bin/texi2html -glossary -menu -split_chapter -I ${includedir} ${filename}
+    makeinfo --html -I ${includedir} -I `dirname ${filename}` ${filename}
     texi2dvi -I ${includedir} ${filename} </dev/null && dvips -o ${file}.ps ${file}.dvi
+    mkdir -p $DOCSDIR/$file
   fi
 done
 
 # Then build a gzipped copy of each of the resulting .html and .ps files
-for file in *.html *.ps; do
+for file in */*.html *.ps; do
   cat $file | gzip --best > $file.gz
 done
 
@@ -115,28 +119,30 @@ done
 today=`date +%d`
 if test $today = 15; then
   find $DOCSDIR -type f -maxdepth 1 -print | grep -v index.html | xargs rm
+  for m in $MANUALS; do
+    rm $DOCSDIR/$m/*.html
+  done
 fi
 
 # And copy the resulting html files to the web server
-for file in *.html *.ps; do
+for file in */*.html *.ps; do
   cat $DOCSDIR/$file | 
-    sed -e '/^<!-- Created on/d' \
-        -e '/^by <I>GCC Administrator<\/I> on/d' \
+    sed -e '/^<meta name=generator/d' \
         -e '/^%DVIPSSource:/d' > file1
   cat $file |
-    sed -e '/^<!-- Created on/d' \
-        -e '/^by <I>GCC Administrator<\/I> on/d' \
+    sed -e '/^<meta name=generator/d' \
         -e '/^%DVIPSSource:/d' > file2
   if cmp -s file1 file2; then
     :
   else
-    cp $file ${file}.gz $DOCSDIR
+    cp $file $DOCSDIR/$file
+    cp $file.gz $DOCSDIR/$file.gz
   fi
 done
 
-news_file=`grep "News About GNU Fortran" $DOCSDIR/g77_toc.html | sed -e '/HREF=.*[^.]/  s#^.*HREF="##g' | sed -e 's%#SEC.*%%g'`
-bugs_file=`grep "Known Causes of Trouble with GNU Fortran" $DOCSDIR/g77_toc.html | sed -e '/HREF=.*[^.]/  s#^.*HREF="##g' | sed -e 's%#SEC.*%%g'`
-contrib_file=`grep "Contributors to GCC" $DOCSDIR/gcc_toc.html | sed -e '/HREF=.*[^.]/  s#^.*HREF="##g' | sed -e 's%#SEC.*%%g'`
+news_file=g77/News.html
+bugs_file=g77/Trouble.html
+contrib_file=gcc/Contributors.html
 
 cd $DOCSDIR
 
