@@ -1,3 +1,0 @@
-#ifndef _CPP_QUEUE
-#include <bits/std_queue.h>
-#endif

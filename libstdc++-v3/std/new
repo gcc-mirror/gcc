@@ -1,3 +1,0 @@
-#ifndef _CPP_NEW
-#include <bits/std_new.h>
-#endif

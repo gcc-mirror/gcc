@@ -1,3 +1,0 @@
-// This one should not have include guards.
-#include <bits/std_cassert.h>
-

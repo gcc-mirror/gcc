@@ -1,3 +1,0 @@
-#ifndef _CPP_CTIME
-#include <bits/std_ctime.h>
-#endif

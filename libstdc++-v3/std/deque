@@ -1,3 +1,0 @@
-#ifndef _CPP_DEQUE
-#include <bits/std_deque.h>
-#endif

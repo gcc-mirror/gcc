@@ -1,3 +1,0 @@
-#ifndef _CPP_LIST
-#include <bits/std_list.h>
-#endif

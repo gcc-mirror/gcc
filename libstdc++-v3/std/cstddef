@@ -1,3 +1,0 @@
-#ifndef _CPP_CSTDDEF
-#include <bits/std_cstddef.h>
-#endif

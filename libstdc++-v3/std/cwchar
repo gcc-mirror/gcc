@@ -1,3 +1,0 @@
-#ifndef _CPP_CWCHAR
-#include <bits/std_cwchar.h>
-#endif

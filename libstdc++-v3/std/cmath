@@ -1,3 +1,0 @@
-#ifndef _CPP_CMATH
-#include <bits/std_cmath.h>
-#endif

@@ -1,3 +1,0 @@
-#ifndef _CPP_CWCTYPE
-#include <bits/std_cwctype.h>
-#endif
