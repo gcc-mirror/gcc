@@ -1,3 +1,12 @@
+2004-12-01  David Edelsohn  <edelsohn@gnu.org>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR target/17107
+	* config/rs6000/rs6000.md (sge): Enable for non-TARGET_POWER.
+	(sgt): Same.
+	(sle): Same.
+	(slt): Same.
+
 2004-12-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR middle-end/18667
