@@ -2464,6 +2464,11 @@ decls_match (newdecl, olddecl)
       tree p1 = TYPE_ARG_TYPES (f1);
       tree p2 = TYPE_ARG_TYPES (f2);
 
+      if (DECL_REAL_CONTEXT (newdecl) != DECL_REAL_CONTEXT (olddecl)
+	  && ! (DECL_LANGUAGE (newdecl) == lang_c
+		&& DECL_LANGUAGE (olddecl) == lang_c))
+	return 0;
+
       /* When we parse a static member function definition,
 	 we put together a FUNCTION_DECL which thinks its type
 	 is METHOD_TYPE.  Change that to FUNCTION_TYPE, and

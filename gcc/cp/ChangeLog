@@ -1,5 +1,11 @@
 1998-07-17  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* pt.c (tsubst, case FUNCTION_DECL): Fix getting complete args for
+	a member template specialization.
+
+	* tree.c (ovl_member): Use decls_match to compare functions.
+	* decl.c (decls_match): Check the context of a function.
+
 	* parse.y (primary): Use notype_unqualified_id instead of IDENTIFIER
 	in Koenig lookup support rules.
 	* semantics.c (finish_call_expr): Handle the new cases.
