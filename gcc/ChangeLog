@@ -1,3 +1,7 @@
+2003-04-23  Olivier Hainque  <hainque@act-europe.fr>
+
+	* config/pa/pa.md (extv, extzv): FAIL if the bitfield length is zero.
+
 2003-04-23  James A Morrison  <ja2morri@uwaterloo.ca>
         
 	* invoke.texi: Eliminate extra white-space caused by @gccoptlist{
