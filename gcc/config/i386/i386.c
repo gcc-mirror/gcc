@@ -2173,7 +2173,7 @@ ix86_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
     {
       mem = gen_rtx_MEM (Pmode,
 			 plus_constant (save_area, i * UNITS_PER_WORD));
-      MEM_ALIAS_SET (mem) = set;
+      set_mem_alias_set (mem, set);
       emit_move_insn (mem, gen_rtx_REG (Pmode,
 					x86_64_int_parameter_registers[i]));
     }
@@ -2214,7 +2214,7 @@ ix86_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       emit_insn (gen_rtx_SET(VOIDmode, tmp_reg,
 			     plus_constant (save_area, 8 * REGPARM_MAX + 127)));
       mem = gen_rtx_MEM (BLKmode, plus_constant (tmp_reg, -127));
-      MEM_ALIAS_SET (mem) = set;
+      set_mem_alias_set(mem, set);
 
       /* And finally do the dirty job!  */
       emit_insn (gen_sse_prologue_save (mem, nsse_reg, GEN_INT (next_cum.sse_regno),
@@ -2426,7 +2426,7 @@ ix86_va_arg (valist, type)
 	  rtx mem;
 
 	  mem = assign_temp (type, 0, 1, 0);
-	  MEM_ALIAS_SET (mem) = get_varargs_alias_set ();
+	  set_mem_alias_set (mem, get_varargs_alias_set ());
 	  addr_rtx = XEXP (mem, 0);
 	  for (i = 0; i < XVECLEN (container, 0); i++)
 	    {
@@ -2449,7 +2449,7 @@ ix86_va_arg (valist, type)
 		  src_offset = REGNO (reg) * 8;
 		}
 	      src_mem = gen_rtx_MEM (mode, src_addr);
-	      MEM_ALIAS_SET (src_mem) = get_varargs_alias_set ();
+	      set_mem_alias_set (src_mem, get_varargs_alias_set ());
 	      src_mem = adjust_address (src_mem, mode, src_offset);
 	      dest_mem = adjust_address (mem, mode, INTVAL (XEXP (slot, 1)));
 	      PUT_MODE (dest_mem, mode);
@@ -2513,7 +2513,7 @@ ix86_va_arg (valist, type)
     {
       abort ();
       r = gen_rtx_MEM (Pmode, addr_rtx);
-      MEM_ALIAS_SET (r) = get_varargs_alias_set ();
+      set_mem_alias_set (r, get_varargs_alias_set ());
       emit_move_insn (addr_rtx, r);
     }
 
