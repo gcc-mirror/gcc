@@ -11634,7 +11634,7 @@ cp_parser_class_head (cp_parser* parser,
   nested_name_specifier 
     = cp_parser_nested_name_specifier_opt (parser,
 					   /*typename_keyword_p=*/false,
-					   /*check_dependency_p=*/true,
+					   /*check_dependency_p=*/false,
 					   /*type_p=*/false);
   /* If there was a nested-name-specifier, then there *must* be an
      identifier.  */

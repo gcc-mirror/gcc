@@ -1,4 +1,9 @@
 2003-06-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10749
+	* g++.dg/template/memclass2.C: New test.
+
+2003-06-20  Mark Mitchell  <mark@codesourcery.com>
             Eric Botcazou  <ebotcazou@libertysurf.fr>
 	
 	* lib/gcc-dg.exp (dg-xfail-if): Do not process conditional xfail
