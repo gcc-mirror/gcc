@@ -1439,13 +1439,16 @@ Constant integer 1
 A floating point constant 0.0
 @end table
 
-@item IBM RS6000---@file{rs6000.h}
+@item PowerPC and IBM RS6000---@file{rs6000.h}
 @table @code
 @item b
 Address base register
 
 @item f
 Floating point register
+
+@item v
+Vector register
 
 @item h
 @samp{MQ}, @samp{CTR}, or @samp{LINK} register
