@@ -334,7 +334,7 @@
 
 (define_insn "cirrus_truncsfsi2"
   [(set (match_operand:SI         0 "s_register_operand" "=r")
-	(fix:SI (match_operand:SF 1 "cirrus_fp_register"  "v")))
+	(fix:SI (fix:SF (match_operand:SF 1 "cirrus_fp_register"  "v"))))
    (clobber (match_scratch:DF     2                      "=v"))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cftruncs32%?\\t%Y2, %V1\;cfmvr64l%?\\t%0, %Z2"
@@ -344,7 +344,7 @@
 
 (define_insn "cirrus_truncdfsi2"
   [(set (match_operand:SI         0 "s_register_operand" "=r")
-	(fix:SI (match_operand:DF 1 "cirrus_fp_register"  "v")))
+	(fix:SI (fix:DF (match_operand:DF 1 "cirrus_fp_register"  "v"))))
    (clobber (match_scratch:DF     2                      "=v"))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cftruncd32%?\\t%Y2, %V1\;cfmvr64l%?\\t%0, %Z2"
