@@ -84,12 +84,6 @@ void _cpp_lex_line PARAMS ((cpp_reader *, cpp_toklist *));
 
 static void _cpp_output_list PARAMS ((cpp_reader *, cpp_toklist *));
 
-unsigned int spell_string PARAMS ((unsigned char *, cpp_toklist *,
-				   cpp_token *token));
-unsigned int spell_comment PARAMS ((unsigned char *, cpp_toklist *,
-				    cpp_token *token));
-unsigned int spell_name PARAMS ((unsigned char *, cpp_toklist *,
-				 cpp_token *token));
 static unsigned char * spell_token PARAMS ((cpp_reader *, cpp_token *,
 					    cpp_toklist *, unsigned char *,
 					    int));
@@ -120,13 +114,17 @@ typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
 #define IMMED_TOKEN() (!(cur_token->flags & PREV_WHITESPACE))
 #define PREV_TOKEN_TYPE (cur_token[-1].type)
 
-#define SPELL_TEXT     0
-#define SPELL_HANDLER  1
-#define SPELL_CHAR     2
-#define SPELL_NONE     3
+/* Order here matters.  Those beyond SPELL_NONE store their spelling
+   in the token list, and it's length in the token->val.name.len.  */
+#define SPELL_OPERATOR 0
+#define SPELL_CHAR     1
+#define SPELL_NONE     2
+#define SPELL_IDENT    3
+#define SPELL_STRING   4
 
-#define T(e, s) {SPELL_TEXT, s},
-#define H(e, s) {SPELL_HANDLER, (PTR) s},
+#define T(e, s) {SPELL_OPERATOR, s},
+#define I(e, s) {SPELL_IDENT, s},
+#define S(e, s) {SPELL_STRING, s},
 #define C(e, s) {SPELL_CHAR, s},
 #define N(e, s) {SPELL_NONE, s},
 
@@ -137,7 +135,8 @@ static const struct token_spelling
 } token_spellings [N_TTYPES + 1] = {TTYPE_TABLE {0, 0} };
 
 #undef T
-#undef H
+#undef I
+#undef S
 #undef C
 #undef N
 
@@ -147,10 +146,10 @@ static const struct token_spelling
 #define BACKUP_DIGRAPH(ttype) do { \
   BACKUP_TOKEN(ttype); cur_token->flags |= DIGRAPH;} while (0)
 
-/* If there is this many bytes in a buffer, you have enough room to
-   spell the token, including preceding whitespace.  */
-#define TOKEN_LEN(token) (5 + (token_spellings[token->type].type == \
-			       SPELL_HANDLER ? token->val.name.len: 0))
+/* An upper bound on the number of bytes needed to spell a token,
+   including preceding whitespace.  */
+#define TOKEN_LEN(token) (5 + (token_spellings[token->type].type > \
+		               SPELL_NONE ? token->val.name.len: 0))
 
 #endif
 
@@ -2760,9 +2759,11 @@ parse_string2 (pfile, list, name, terminator)
 			 : "null character preserved"));
 }
 
-/* The character C helps us distinguish comment types: '*' = C style,
-   '-' = Chill-style and '/' = C++ style.  For code simplicity, the
-   stored comment includes any C-style comment terminator.  */
+/* The character TYPE helps us distinguish comment types: '*' = C
+   style, '-' = Chill-style and '/' = C++ style.  For code simplicity,
+   the stored comment includes the comment start and any terminator.  */
+
+#define COMMENT_START_LEN 2
 static void
 save_comment (list, from, len, tok_no, type)
      cpp_toklist *list;
@@ -2772,6 +2773,9 @@ save_comment (list, from, len, tok_no, type)
      unsigned int type;
 {
   cpp_token *comment;
+  unsigned char *buffer;
+  
+  len += COMMENT_START_LEN;
 
   if (list->comments_used == list->comments_cap)
     expand_comment_space (list);
@@ -2780,12 +2784,24 @@ save_comment (list, from, len, tok_no, type)
     expand_name_space (list, len);
 
   comment = &list->comments[list->comments_used++];
-  comment->type = type;
+  comment->type = CPP_COMMENT;
   comment->aux = tok_no;
   comment->val.name.len = len;
   comment->val.name.offset = list->name_used;
 
-  memcpy (list->namebuf + list->name_used, from, len);
+  buffer = list->namebuf + list->name_used;
+  if (type == '*')
+    {
+      *buffer++ = '/';
+      *buffer++ = '*';
+    }
+  else
+    {
+      *buffer++ = type;
+      *buffer++ = type;
+    }
+
+  memcpy (buffer, from, len - COMMENT_START_LEN);
   list->name_used += len;
 }
 
@@ -2956,8 +2972,7 @@ _cpp_lex_line (pfile, list)
 					     "multi-line comment");
 		      if (!CPP_OPTION (pfile, discard_comments))
 			save_comment (list, cur, buffer->cur - cur,
-				      cur_token - 1 - list->tokens, c == '/'
-				      ? CPP_CPP_COMMENT: CPP_CHILL_COMMENT);
+				      cur_token - 1 - list->tokens, c);
 		      cur = buffer->cur;
 
 		      /* Back-up to first '-' or '/'.  */
@@ -2988,7 +3003,7 @@ _cpp_lex_line (pfile, list)
 				 "comment end '*/' split across lines");
 		  if (!CPP_OPTION (pfile, discard_comments))
 		    save_comment (list, cur, buffer->cur - cur,
-				 cur_token - 1 - list->tokens, CPP_C_COMMENT);
+				 cur_token - 1 - list->tokens, c);
 		  cur = buffer->cur;
 
 		  cur_token -= 2;
@@ -3278,79 +3293,6 @@ _cpp_lex_line (pfile, list)
 			 "invalid preprocessing directive");
 }
 
-/* Token spelling functions.  Used for output of a preprocessed file,
-   stringizing and token pasting.  They all assume sufficient buffer
-   is allocated, and return exactly how much they used.  */
-
-/* Needs buffer of 3 + len.  */
-unsigned int
-spell_string (buffer, list, token)
-     unsigned char *buffer;
-     cpp_toklist *list;
-     cpp_token *token;
-{
-  unsigned char c, *orig_buff = buffer;
-  size_t len;
-
-  if (token->type == CPP_WSTRING || token->type == CPP_WCHAR)
-    *buffer++ = 'L';
-  c = token->type == CPP_STRING || token->type == CPP_WSTRING ? '"': '\'';
-  *buffer++ = c;
-
-  len = token->val.name.len;
-  memcpy (buffer, list->namebuf + token->val.name.offset, len);
-  buffer += len;
-  *buffer++ = c;
-  return buffer - orig_buff;
-}
-
-/* Needs buffer of len + 2.  */
-unsigned int
-spell_comment (buffer, list, token)
-     unsigned char *buffer;
-     cpp_toklist *list;
-     cpp_token *token;
-{
-  size_t len;
-
-  if (token->type == CPP_C_COMMENT)
-    {
-      *buffer++ = '/';
-      *buffer++ = '*';
-    }
-  else if (token->type == CPP_CPP_COMMENT)
-    {
-      *buffer++ = '/';
-      *buffer++ = '/';
-    }
-  else 
-    {
-      *buffer++ = '-';
-      *buffer++ = '-';
-    }
-
-  len = token->val.name.len;
-  memcpy (buffer, list->namebuf + token->val.name.offset, len);
-
-  return len + 2;
-}
-
-/* Needs buffer of len.  */
-unsigned int
-spell_name (buffer, list, token)
-     unsigned char *buffer;
-     cpp_toklist *list;
-     cpp_token *token;
-{
-  size_t len;
-
-  len = token->val.name.len;
-  memcpy (buffer, list->namebuf + token->val.name.offset, len);
-  buffer += len;
-
-  return len;
-}
-
 /* Write the spelling of a token TOKEN to BUFFER.  The buffer must
    already contain the enough space to hold the token's spelling.  If
    WHITESPACE is true, and the token was preceded by whitespace,
@@ -3373,7 +3315,7 @@ spell_token (pfile, token, list, buffer, whitespace)
 
   switch (token_spellings[token->type].type)
     {
-    case SPELL_TEXT:
+    case SPELL_OPERATOR:
       {
 	const unsigned char *spelling;
 	unsigned char c;
@@ -3388,12 +3330,26 @@ spell_token (pfile, token, list, buffer, whitespace)
       }
       break;
 
-    case SPELL_HANDLER:
-      {
-	speller s;
+    case SPELL_IDENT:
+      memcpy (buffer, list->namebuf + token->val.name.offset,
+	      token->val.name.len);
+      buffer += token->val.name.len;
+      break;
 
-	s = (speller) token_spellings[token->type].speller;
-	buffer += s (buffer, list, token);
+    case SPELL_STRING:
+      {
+	unsigned char c;
+
+	if (token->type == CPP_WSTRING || token->type == CPP_WCHAR)
+	  *buffer++ = 'L';
+	c = '\'';
+	if (token->type == CPP_STRING || token->type == CPP_WSTRING)
+	  c = '"';
+	*buffer++ = c;
+	memcpy (buffer, list->namebuf + token->val.name.offset,
+		token->val.name.len);
+	buffer += token->val.name.len;
+	*buffer++ = c;
       }
       break;
 
@@ -3448,29 +3404,30 @@ _cpp_output_list (pfile, list)
      cpp_reader *pfile;
      cpp_toklist *list;
 {
-  unsigned int comment_no = 0;
-  cpp_token *token, *comment_token = 0;
+  cpp_token *token, *comment, *comment_before = 0;
 
   if (list->comments_used > 0)
-    comment_token = list->tokens + list->comments[0].aux;
+    {
+      comment = &list->comments[0];
+      comment_before = &list->tokens[comment->aux];
+    }
 
   token = &list->tokens[0];
   do
     {
       /* Output comments if -C.  */
-      if (token == comment_token)
+      while (token == comment_before)
 	{
-	  cpp_token *comment = &list->comments[comment_no];
-	  do
-	    {
-	      CPP_RESERVE (pfile, TOKEN_LEN (comment));
-	      pfile->limit += spell_comment (pfile->limit, list, comment);
-	      comment_no++, comment++;
-	      if (comment_no == list->comments_used)
-		break;
-	      comment_token = comment->aux + list->tokens;
-	    }
-	  while (comment_token == token);
+	  /* Make space for the comment, and copy it out.  */
+	  CPP_RESERVE (pfile, TOKEN_LEN (comment));
+	  pfile->limit = spell_token (pfile, comment, list, pfile->limit, 0);
+
+	  /* Stop if no comments left, or no more comments appear
+             before the current token.  */
+	  comment++;
+	  if (comment == list->comments + list->comments_used)
+	    break;
+	  comment_before = &list->tokens[comment->aux];
 	}
 
       CPP_RESERVE (pfile, TOKEN_LEN (token));

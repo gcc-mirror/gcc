@@ -1,3 +1,18 @@
+Wed 10 May 09:36:47 2000  Neil Booth  <NeilB@earthling.net>
+
+	* cpplex.c (spell_token): New function.
+	(spell_string, spell_comment, spell_name): fold into
+	spell_token.	
+	(I, S): Add macros.
+	(E, H): Remove macros.
+	(save_comment): Save comment opening characters too.
+	(_cpp_lex_file): Update to use spell_token.  Tidy up comment
+	handling.
+	* cpplib.h (I, S): Add macros.
+	(E, H): Remove macros.
+	(TTYPE_TABLE): Update entries for new speller.
+	(SYNTAX_ASSERT): Remove.
+
 Wed 10 May 09:08:30 2000  Neil Booth  <NeilB@earthling.net>
 
         * cpplex.c (_cpp_lex_line): Maintain PREV_WHITESPACE flag
