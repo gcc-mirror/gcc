@@ -1,3 +1,8 @@
+2002-04-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (register_dtor_fn): Pass the address of dso_handle, not
+	dso_handle itself, to __cxa_atexit.
+
 2002-04-15  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* error.c (cxx_print_error_function): Adjust call to macros.
