@@ -1,4 +1,4 @@
-/* Copyright (C) 1993, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1993, 1997, 1998 Free Software Foundation, Inc.
    This file is part of the GNU IO Library.
 
    This library is free software; you can redistribute it and/or
@@ -189,7 +189,7 @@ _IO_str_underflow (fp)
       fp->_IO_write_ptr = fp->_IO_write_end;
     }
   if (fp->_IO_read_ptr < fp->_IO_read_end)
-    return *fp->_IO_read_ptr;
+    return *((unsigned char *) fp->_IO_read_ptr);
   else
     return EOF;
 }
