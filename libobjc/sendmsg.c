@@ -230,7 +230,7 @@ __objc_init_dispatch_tables()
    dispatch table needs to be installed; thus it is called once
    for each class, namely when the very first message is sent to it. */
 static void
-__objc_init_install_dtable(id receiver, SEL op)
+__objc_init_install_dtable(id receiver, SEL op __attribute__ ((__unused__)))
 {
   /* This may happen, if the programmer has taken the address of a 
      method before the dtable was initialized... too bad for him! */

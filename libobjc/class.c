@@ -163,7 +163,7 @@ static objc_mutex_t __class_table_lock = NULL;
 
 /* Setup the table.  */
 static void
-class_table_setup ()
+class_table_setup (void)
 {
   /* Start - nothing in the table.  */
   memset (class_table_array, 0, sizeof(class_node_ptr) * CLASS_TABLE_SIZE);

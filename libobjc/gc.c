@@ -446,13 +446,13 @@ class_ivar_set_gcinvisible (Class class, const char* ivarname,
 #else /* !OBJC_WITH_GC */
 
 void
-__objc_generate_gc_type_description (Class class)
+__objc_generate_gc_type_description (Class class __attribute__ ((__unused__)))
 {
 }
 
-void class_ivar_set_gcinvisible (Class class,
-				 const char* ivarname,
-				 BOOL gc_invisible)
+void class_ivar_set_gcinvisible (Class class __attribute__ ((__unused__)),
+				 const char* ivarname __attribute__ ((__unused__)),
+				 BOOL gc_invisible __attribute__ ((__unused__)))
 {
 }
 

@@ -53,7 +53,7 @@ struct objc_method_description_list {
 
 - (BOOL) conformsTo: (Protocol *)aProtocolObject
 {
-  int i;
+  size_t i;
   struct objc_protocol_list* proto_list;
 
   if (!strcmp(aProtocolObject->protocol_name, self->protocol_name))
@@ -88,9 +88,10 @@ struct objc_method_description_list {
 
   for (proto_list = protocol_list; proto_list; proto_list = proto_list->next)
     {
-      for (i=0; i < proto_list->count; i++)
+      size_t j;
+      for (j=0; j < proto_list->count; j++)
 	{
-	  if ((result = [proto_list->list[i]
+	  if ((result = [proto_list->list[j]
 			 descriptionForInstanceMethod: aSel]))
 	    return result;
 	}
@@ -114,9 +115,10 @@ struct objc_method_description_list {
 
   for (proto_list = protocol_list; proto_list; proto_list = proto_list->next)
     {
-      for (i=0; i < proto_list->count; i++)
+      size_t j;
+      for (j=0; j < proto_list->count; j++)
 	{
-	  if ((result = [proto_list->list[i]
+	  if ((result = [proto_list->list[j]
 			 descriptionForClassMethod: aSel]))
 	    return result;
 	}
