@@ -1,3 +1,7 @@
+1998-12-04  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.pt/spec20.C: Re-insert non-bogus ERROR marks.
+
 1998-12-03  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.pt/overload8.C: New test.
