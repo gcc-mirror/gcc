@@ -4240,11 +4240,9 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	    constant = pos, var = integer_zero_node;
 
 	  *pbitpos += TREE_INT_CST_LOW (constant);
-
-	  if (var)
-	    offset = size_binop (PLUS_EXPR, offset,
-				 size_binop (EXACT_DIV_EXPR, var,
-					     size_int (BITS_PER_UNIT)));
+	  offset = size_binop (PLUS_EXPR, offset,
+			       size_binop (EXACT_DIV_EXPR, var,
+					   size_int (BITS_PER_UNIT)));
 	}
 
       else if (TREE_CODE (exp) == ARRAY_REF)
@@ -4294,20 +4292,6 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
       if (TREE_THIS_VOLATILE (exp))
 	*pvolatilep = 1;
       exp = TREE_OPERAND (exp, 0);
-    }
-
-  /* If this was a bit-field, see if there is a mode that allows direct
-     access in case EXP is in memory.  */
-  if (mode == VOIDmode && *pbitsize != 0 && *pbitpos % *pbitsize == 0)
-    {
-      mode = mode_for_size (*pbitsize,
-			    (TYPE_MODE (TREE_TYPE (orig_exp)) == BLKmode
-			     ? MODE_INT
-			     : GET_MODE_CLASS (TYPE_MODE
-					       (TREE_TYPE (orig_exp)))),
-			    0);
-      if (mode == BLKmode)
-	mode = VOIDmode;
     }
 
   if (integer_zerop (offset))
