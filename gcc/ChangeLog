@@ -1,5 +1,10 @@
 2002-12-31  Jerry Quinn  <jlquinn@optonline.net>
 
+	* gcc/doc/invoke.texi (Optimization Options): Clean up -O flag
+	descriptions.
+
+2002-12-31  Jerry Quinn  <jlquinn@optonline.net>
+
 	* gcc/doc/invoke.texi (Optimization Options): List the options
 	enabled by each -O flag.
 
