@@ -1,3 +1,9 @@
+Fri Sep 24 17:10:56 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* combine.c (simplify_comparison): Cope with downshifting a 32 bit
+	constant on a 64 bit host.  Patch supplied by Geoffrey Keating
+	<geoffk@cygnus.com>.
+
 Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* builtins.c (expand_builtin): Use MD_EXPAND_BUILTIN if defined.
