@@ -413,7 +413,7 @@ unop:     '&'
 	| '+'
 		{ $$ = CONVERT_EXPR;
 ifc
-  if (warn_traditional)
+  if (warn_traditional && !in_system_header)
     warning ("traditional C rejects the unary plus operator");
 end ifc
 		}

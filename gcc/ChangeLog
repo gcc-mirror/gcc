@@ -1,3 +1,7 @@
+2000-08-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-parse.in (unop +): Restrict -Wtraditional warnings to user code.
+
 2000-08-22  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* vax.h (ASM_SPEC): Pass `-J' to assembler.
