@@ -2399,6 +2399,18 @@ ia64_expand_epilogue (sibcall_p)
  
   if (! sibcall_p)
     emit_jump_insn (gen_return_internal (gen_rtx_REG (DImode, BR_REG (0))));
+  else
+    /* We must emit an alloc to force the input registers to become output
+       registers.  Otherwise, if the callee tries to pass its parameters
+       through to another call without an intervening alloc, then these
+       values get lost.  */
+    /* ??? We don't need to preserve all input registers.  We only need to
+       preserve those input registers used as arguments to the sibling call.
+       It is unclear how to compute that number here.  */
+    emit_insn (gen_alloc (gen_rtx_REG (DImode, GR_REG (2)),
+			  GEN_INT (0), GEN_INT (0),
+			  GEN_INT (current_frame_info.n_input_regs),
+			  GEN_INT (0)));
 }
 
 /* Return 1 if br.ret can do all the work required to return from a
@@ -3818,6 +3830,11 @@ struct reg_write_state rws_sum[NUM_REGS];
    stop bit is emitted.  */
 struct reg_write_state rws_insn[NUM_REGS];
 
+/* Indicates whether this is the first instruction after a stop bit,
+   in which case we don't need another stop bit.  Without this, we hit
+   the abort in ia64_variable_issue when scheduling an alloc.  */
+static int first_instruction;
+
 /* Misc flags needed to compute RAW/WAW dependencies while we are traversing
    RTL for one instruction.  */
 struct reg_flags
@@ -4379,14 +4396,18 @@ rtx_needs_barrier (x, flags, pred)
       switch (XINT (x, 1))
 	{
 	case 0: /* alloc */
-	  /* Alloc must always be the first instruction.  Currently, we
-	     only emit it at the function start, so we don't need to worry
-	     about emitting a stop bit before it.  */
-	  need_barrier = rws_access_regno (AR_PFS_REGNUM, flags, pred);
+	  /* Alloc must always be the first instruction of a group.
+	     We force this by always returning true.  */
+	  /* ??? We might get better scheduling if we explicitly check for
+	     input/local/output register dependencies, and modify the
+	     scheduler so that alloc is always reordered to the start of
+	     the current group.  We could then eliminate all of the
+	     first_instruction code.  */
+	  rws_access_regno (AR_PFS_REGNUM, flags, pred);
 
 	  new_flags.is_write = 1;
-	  need_barrier |= rws_access_regno (REG_AR_CFM, new_flags, pred);
-	  return need_barrier;
+	  rws_access_regno (REG_AR_CFM, new_flags, pred);
+	  return 1;
 
 	case 1: /* blockage */
 	case 2: /* insn group barrier */
@@ -4455,10 +4476,8 @@ static void
 init_insn_group_barriers ()
 {
   memset (rws_sum, 0, sizeof (rws_sum));
+  first_instruction = 1;
 }
-
-/* Cumulative info for the current instruction group.  */
-struct reg_write_state rws_sum[NUM_REGS];
 
 /* Given the current state, recorded by previous calls to this function,
    determine whether a group barrier (a stop bit) is necessary before INSN.
@@ -4537,12 +4556,18 @@ group_barrier_needed_p (insn)
 	 asm.  */
       if (! need_barrier)
 	need_barrier = rws_access_regno (REG_VOLATILE, flags, 0);
-
       break;
 
     default:
       abort ();
     }
+
+  if (first_instruction)
+    {
+      need_barrier = 0;
+      first_instruction = 0;
+    }
+
   return need_barrier;
 }
 
@@ -4553,10 +4578,17 @@ safe_group_barrier_needed_p (insn)
      rtx insn;
 {
   struct reg_write_state rws_saved[NUM_REGS];
+  int saved_first_instruction;
   int t;
+
   memcpy (rws_saved, rws_sum, NUM_REGS * sizeof *rws_saved);
+  saved_first_instruction = first_instruction;
+
   t = group_barrier_needed_p (insn);
+
   memcpy (rws_sum, rws_saved, NUM_REGS * sizeof *rws_saved);
+  first_instruction = saved_first_instruction;
+
   return t;
 }
 
