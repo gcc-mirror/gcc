@@ -1,6 +1,6 @@
 /* Definitions for Bull dpx/2 200 and 300 with gas
    using dbx-in-coff encapsulation.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -22,8 +22,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "m68k/dpx2g.h"
 
 /* Use STABS debugging information inside COFF.  */
-#undef SDB_DEBUGGING_INFO
 #ifndef DBX_DEBUGGING_INFO
 #define DBX_DEBUGGING_INFO
 #endif
 
+/* Let sbd debugging be the default.  */
+#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
