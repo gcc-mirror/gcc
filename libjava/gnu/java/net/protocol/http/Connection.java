@@ -45,6 +45,7 @@ import java.io.DataInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
@@ -200,7 +201,8 @@ public final class Connection extends HttpURLConnection
   void sendRequest() throws IOException
   {
     // Create PrintWriter for easier sending of headers.
-    PrintWriter outputWriter = new PrintWriter(outputStream);
+    PrintWriter outputWriter =
+      new PrintWriter(new OutputStreamWriter(outputStream, "8859_1")); 
     
     // Send request including any request properties that were set.
     outputWriter.print (getRequestMethod() + " " + url.getFile()
@@ -215,7 +217,7 @@ public final class Connection extends HttpURLConnection
     
     if (getRequestProperty ("user-agent") == null)
       setRequestProperty ("user-agent", "gnu-libgcj/"
-                          + System.getProperty ("classpath.version"));
+                          + System.getProperty ("java.vm.version"));
     
     if (getRequestProperty ("accept") == null)
       setRequestProperty ("accept", "*/*");

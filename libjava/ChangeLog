@@ -1,3 +1,9 @@
+2003-12-31  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/protocol/http/Connection.java
+	(sendRequest): Dont encode output in default character encoding,
+	add correct version number to HTTP user agent string.
+
 2003-12-31  Guilhem Lavaux  <guilhem@kaffe.org>
 
 	* java/io/ObjectOutputStream.java
