@@ -75,7 +75,6 @@ pop_stack_level (stack)
 #define search_level stack_level
 static struct search_level *search_stack;
 
-static tree get_abstract_virtuals_1 PROTO((tree, int, tree));
 static tree next_baselink PROTO((tree));
 static tree get_vbase_1 PROTO((tree, tree, unsigned int *));
 static tree convert_pointer_to_vbase PROTO((tree, tree));
@@ -152,6 +151,8 @@ static int friend_accessible_p PROTO ((tree, tree, tree, tree));
 static void setup_class_bindings PROTO ((tree, int));
 static int template_self_reference_p PROTO ((tree, tree));
 static void fixup_all_virtual_upcast_offsets PROTO ((tree, tree));
+static tree dfs_mark_primary_bases PROTO((tree, void *));
+static tree dfs_unmark_primary_bases PROTO((tree, void *));
 
 /* Allocate a level of searching.  */
 
@@ -2103,46 +2104,100 @@ get_matching_virtual (binfo, fndecl, dtorp)
     }
 }
 
-/* Return the list of virtual functions which are abstract in type
-   TYPE that come from non virtual base classes.  See
-   expand_direct_vtbls_init for the style of search we do.  */
+/* Called via dfs_walk from mark_nonprimary_bases.  */
 
 static tree
-get_abstract_virtuals_1 (binfo, do_self, abstract_virtuals)
+dfs_mark_primary_bases (binfo, data)
      tree binfo;
-     int do_self;
-     tree abstract_virtuals;
+     void *data ATTRIBUTE_UNUSED;
 {
-  tree binfos = BINFO_BASETYPES (binfo);
-  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+  if (CLASSTYPE_HAS_PRIMARY_BASE_P (BINFO_TYPE (binfo)))
+    {
+      int i;
 
-  for (i = 0; i < n_baselinks; i++)
-    {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-      int is_not_base_vtable
-	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
-      if (! TREE_VIA_VIRTUAL (base_binfo))
-	abstract_virtuals
-	  = get_abstract_virtuals_1 (base_binfo, is_not_base_vtable,
-				     abstract_virtuals);
+      i = CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+      SET_BINFO_PRIMARY_MARKED_P (BINFO_BASETYPE (binfo, i));
     }
-  /* Should we use something besides CLASSTYPE_VFIELDS? */
-  if (do_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
+
+  SET_BINFO_MARKED (binfo);
+
+  return NULL_TREE;
+}
+
+/* Set BINFO_PRIMARY_MARKED_P for all binfos in the hierarchy
+   dominated by TYPE that are primary bases.  (In addition,
+   BINFO_MARKED is set for all classes in the hierarchy; callers
+   should clear BINFO_MARKED.)  */
+
+void
+mark_primary_bases (type)
+     tree type;
+{
+  dfs_walk (TYPE_BINFO (type), 
+	    dfs_mark_primary_bases,
+	    unmarkedp,
+	    NULL);
+}
+
+/* Called from unmark_primary_bases via dfs_walk.  */
+
+static tree
+dfs_unmark_primary_bases (binfo, data)
+     tree binfo;
+     void *data ATTRIBUTE_UNUSED;
+{
+  CLEAR_BINFO_PRIMARY_MARKED_P (binfo);
+  return NULL_TREE;
+}
+
+/* Clear BINFO_PRIMARY_MARKED_P for all binfo in the hierarchy
+   dominated by TYPE.  */
+
+void
+unmark_primary_bases (type)
+     tree type;
+{
+  dfs_walk (TYPE_BINFO (type), dfs_unmark_primary_bases, NULL, NULL);
+}
+
+/* Called via dfs_walk from dfs_get_pure_virtuals.  */
+
+static tree
+dfs_get_pure_virtuals (binfo, data)
+     tree binfo;
+     void *data;
+{
+  /* We're not interested in primary base classes; the derived class
+     of which they are a primary base will contain the information we
+     need.  */
+  if (!BINFO_PRIMARY_MARKED_P (binfo))
     {
+      tree type = (tree) data;
+      tree shared_binfo;
       tree virtuals;
+      
+      /* If this is a virtual base class, then use the shared binfo
+	 since that is the only place where BINFO_VIRTUALS is valid;
+	 the various copies in the main hierarchy are not updated when
+	 vtables are created.  */
+      shared_binfo = (TREE_VIA_VIRTUAL (binfo) 
+		      ? BINFO_FOR_VBASE (BINFO_TYPE (binfo), type)
+		      : binfo);
 
-      virtuals = skip_rtti_stuff (binfo, BINFO_TYPE (binfo), NULL);
-
-      while (virtuals)
-	{
-	  tree base_fndecl = TREE_VALUE (virtuals);
-	  if (DECL_PURE_VIRTUAL_P (base_fndecl))
-	    abstract_virtuals = tree_cons (NULL_TREE, base_fndecl, 
-					   abstract_virtuals);
-	  virtuals = TREE_CHAIN (virtuals);
-	}
+      for (virtuals = skip_rtti_stuff (shared_binfo, 
+				       BINFO_TYPE (shared_binfo), 
+				       NULL);
+	   virtuals;
+	   virtuals = TREE_CHAIN (virtuals))
+	if (DECL_PURE_VIRTUAL_P (TREE_VALUE (virtuals)))
+	  CLASSTYPE_PURE_VIRTUALS (type) 
+	    = tree_cons (NULL_TREE, TREE_VALUE (virtuals),
+			 CLASSTYPE_PURE_VIRTUALS (type));
     }
-  return abstract_virtuals;
+
+  CLEAR_BINFO_MARKED (binfo);
+
+  return NULL_TREE;
 }
 
 /* Set CLASSTYPE_PURE_VIRTUALS for TYPE.  */
@@ -2152,31 +2207,36 @@ get_pure_virtuals (type)
      tree type;
 {
   tree vbases;
-  tree abstract_virtuals = NULL;
 
-  /* First get all from non-virtual bases.  */
-  abstract_virtuals
-    = get_abstract_virtuals_1 (TYPE_BINFO (type), 1, abstract_virtuals);
-					       
+  /* Clear the CLASSTYPE_PURE_VIRTUALS list; whatever is already there
+     is going to be overridden.  */
+  CLASSTYPE_PURE_VIRTUALS (type) = NULL_TREE;
+  /* Find all the primary bases.  */
+  mark_primary_bases (type);
+  /* Now, run through all the bases which are not primary bases, and
+     collect the pure virtual functions.  We look at the vtable in
+     each class to determine what pure virtual functions are present.
+     (A primary base is not interesting because the derived class of
+     which it is a primary base will contain vtable entries for the
+     pure virtuals in the base class.  */
+  dfs_walk (TYPE_BINFO (type), dfs_get_pure_virtuals, markedp, type);
+  /* Now, clear the BINFO_PRIMARY_MARKED_P bit.  */
+  unmark_primary_bases (type);
+  /* Put the pure virtuals in dfs order.  */
+  CLASSTYPE_PURE_VIRTUALS (type) = nreverse (CLASSTYPE_PURE_VIRTUALS (type));
+
   for (vbases = CLASSTYPE_VBASECLASSES (type); vbases; vbases = TREE_CHAIN (vbases))
     {
-      tree virtuals;
-
-      virtuals = skip_rtti_stuff (vbases, BINFO_TYPE (vbases), NULL);
+      tree virtuals = skip_rtti_stuff (vbases, BINFO_TYPE (vbases), NULL);
 
       while (virtuals)
 	{
 	  tree base_fndecl = TREE_VALUE (virtuals);
 	  if (DECL_NEEDS_FINAL_OVERRIDER_P (base_fndecl))
 	    cp_error ("`%#D' needs a final overrider", base_fndecl);
-	  else if (DECL_PURE_VIRTUAL_P (base_fndecl))
-	    abstract_virtuals = tree_cons (NULL_TREE, base_fndecl, 
-					   abstract_virtuals);
 	  virtuals = TREE_CHAIN (virtuals);
 	}
     }
-
-  CLASSTYPE_PURE_VIRTUALS (type) = nreverse (abstract_virtuals);
 }
 
 static tree

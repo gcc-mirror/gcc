@@ -1420,8 +1420,7 @@ struct lang_type
 
 /* Number of direct baseclasses of NODE.  */
 #define CLASSTYPE_N_BASECLASSES(NODE) \
-  (TYPE_BINFO_BASETYPES (NODE) ? \
-   TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES(NODE)) : 0)
+  (BINFO_N_BASETYPES (TYPE_BINFO (NODE)))
 
 /* Used for keeping search-specific information.  Any search routine
    which uses this must define what exactly this slot is used for.  */
@@ -1562,6 +1561,16 @@ struct lang_type
 #define BINFO_PUSHDECLS_MARKED(NODE) BINFO_VTABLE_PATH_MARKED (NODE)
 #define SET_BINFO_PUSHDECLS_MARKED(NODE) SET_BINFO_VTABLE_PATH_MARKED (NODE)
 #define CLEAR_BINFO_PUSHDECLS_MARKED(NODE) CLEAR_BINFO_VTABLE_PATH_MARKED (NODE)
+
+/* Nonzero if this BINFO has been marked as a primary base class.  */
+#define BINFO_PRIMARY_MARKED_P(NODE) BINFO_VTABLE_PATH_MARKED (NODE)
+
+/* Mark NODE as a primary base class.  */
+#define SET_BINFO_PRIMARY_MARKED_P(NODE) SET_BINFO_VTABLE_PATH_MARKED (NODE)
+
+/* Clear the primary base class mark.  */
+#define CLEAR_BINFO_PRIMARY_MARKED_P(NODE) \
+  CLEAR_BINFO_VTABLE_PATH_MARKED (NODE)
 
 /* Used by various search routines.  */
 #define IDENTIFIER_MARKED(NODE) TREE_LANG_FLAG_0 (NODE)
@@ -2533,7 +2542,7 @@ extern int flag_new_for_scope;
    to `struct S {}; typedef struct S S;' in C.  This macro will hold
    for the typedef indicated in this example.  Note that in C++, there
    is a second implicit typedef for each class, in the scope of `S'
-   itself, so that you can `S::S'.  This macro does *not* hold for
+   itself, so that you can say `S::S'.  This macro does *not* hold for
    those typedefs.  */
 #define DECL_IMPLICIT_TYPEDEF_P(NODE) \
   (TREE_CODE ((NODE)) == TYPE_DECL && DECL_LANG_FLAG_2 ((NODE)))
@@ -3900,6 +3909,8 @@ extern tree dfs_walk                            PROTO((tree,
 						       void *));
 extern tree dfs_unmark                          PROTO((tree, void *));
 extern tree markedp                             PROTO((tree, void *));
+extern void mark_primary_bases                  PROTO((tree));
+extern void unmark_primary_bases                PROTO((tree));
 
 /* in semantics.c */
 extern void finish_expr_stmt                    PROTO((tree));
