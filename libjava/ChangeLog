@@ -1,3 +1,12 @@
+2000-03-24  Warren Levy  <warrenl@cygnus.com>
+
+	* java/awt/Font.java(isBold): Fix syntax error.
+	(isItalic): ditto.
+	* java/awt/Frame.java(postEvent): ditto.
+	* java/awt/Menu.java(postEvent): ditto.
+	* java/awt/MenuBar.java(postEvent): ditto.
+	* java/awt/Toolkit.java(init): Included a stub.
+
 2000-03-21  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/awt/Event.java: Add all the event type constants.
