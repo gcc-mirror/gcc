@@ -1,3 +1,8 @@
+2004-06-27  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/14963
+	* c-decl.c (start_decl): Check for null types.
+
 2004-06-27  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_legitimate_offset_address_p):

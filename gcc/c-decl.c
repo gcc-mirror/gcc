@@ -2715,7 +2715,7 @@ start_decl (tree declarator, tree declspecs, int initialized, tree attributes)
 	  for (; args; args = TREE_CHAIN (args))
 	    {
 	      tree type = TREE_TYPE (args);
-	      if (INTEGRAL_TYPE_P (type)
+	      if (type && INTEGRAL_TYPE_P (type)
 		  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
 		DECL_ARG_TYPE (args) = integer_type_node;
 	    }
