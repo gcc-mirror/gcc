@@ -920,8 +920,11 @@ make_decl_rtl (decl, asmspec)
       name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
     }
 
-  x = gen_rtx_MEM (DECL_MODE (decl), gen_rtx_SYMBOL_REF (Pmode, name));
-  SYMBOL_REF_WEAK (XEXP (x, 0)) = DECL_WEAK (decl);
+  x = gen_rtx_SYMBOL_REF (Pmode, name);
+  SYMBOL_REF_WEAK (x) = DECL_WEAK (decl);
+  SYMBOL_REF_DECL (x) = decl;
+  
+  x = gen_rtx_MEM (DECL_MODE (decl), x);
   if (TREE_CODE (decl) != FUNCTION_DECL)
     set_mem_attributes (x, decl, 1);
   SET_DECL_RTL (decl, x);
@@ -1765,6 +1768,7 @@ assemble_static_space (size)
   namestring = ggc_strdup (name);
 
   x = gen_rtx_SYMBOL_REF (Pmode, namestring);
+  SYMBOL_REF_FLAGS (x) = SYMBOL_FLAG_LOCAL;
 
 #ifdef ASM_OUTPUT_ALIGNED_DECL_LOCAL
   ASM_OUTPUT_ALIGNED_DECL_LOCAL (asm_out_file, NULL_TREE, name, size,
@@ -1799,6 +1803,7 @@ assemble_trampoline_template ()
   char label[256];
   const char *name;
   int align;
+  rtx symbol;
 
   /* By default, put trampoline templates in read-only data section.  */
 
@@ -1821,7 +1826,10 @@ assemble_trampoline_template ()
   /* Record the rtl to refer to it.  */
   ASM_GENERATE_INTERNAL_LABEL (label, "LTRAMP", 0);
   name = ggc_strdup (label);
-  return gen_rtx_SYMBOL_REF (Pmode, name);
+  symbol = gen_rtx_SYMBOL_REF (Pmode, name);
+  SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
+
+  return symbol;
 }
 #endif
 
@@ -2650,6 +2658,8 @@ output_constant_def (exp, defer)
 
   if (desc == 0)
     {
+      rtx symbol;
+
       /* No constant equal to EXP is known to have been output.
 	 Make a constant descriptor to enter EXP in the hash table.
 	 Assign the label number and record it in the descriptor for
@@ -2666,9 +2676,10 @@ output_constant_def (exp, defer)
       const_hash_table[hash] = desc;
 
       /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
-      rtl = desc->rtl
-	= gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)),
-		       gen_rtx_SYMBOL_REF (Pmode, desc->label));
+      symbol = gen_rtx_SYMBOL_REF (Pmode, desc->label);
+      SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
+
+      rtl = desc->rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)), symbol);
 
       set_mem_attributes (rtl, exp, 1);
       set_mem_alias_set (rtl, 0);
@@ -3173,7 +3184,7 @@ force_const_mem (mode, x)
   int hash;
   struct constant_descriptor_rtx *desc;
   char label[256];
-  rtx def;
+  rtx def, symbol;
   struct pool_constant *pool;
   unsigned int align;
 
@@ -3234,19 +3245,21 @@ force_const_mem (mode, x)
 
   /* Construct the SYMBOL_REF and the MEM.  */
 
-  pool->desc->rtl = def
-    = gen_rtx_MEM (mode, gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label)));
-  set_mem_alias_set (def, const_alias_set);
+  symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label));
+  SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
+
+  pool->desc->rtl = def = gen_rtx_MEM (mode, symbol);
   set_mem_attributes (def, (*lang_hooks.types.type_for_mode) (mode, 0), 1);
   RTX_UNCHANGING_P (def) = 1;
 
   /* Add label to symbol hash table.  */
-  hash = SYMHASH (XSTR (XEXP (def, 0), 0));
+  hash = SYMHASH (XSTR (symbol, 0));
   pool->next_sym = const_rtx_sym_hash_table[hash];
   const_rtx_sym_hash_table[hash] = pool;
 
   /* Mark the symbol_ref as belonging to this constants pool.  */
-  CONSTANT_POOL_ADDRESS_P (XEXP (def, 0)) = 1;
+  CONSTANT_POOL_ADDRESS_P (symbol) = 1;
+  SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
   current_function_uses_const_pool = 1;
 
   return def;
@@ -5368,6 +5381,40 @@ default_elf_select_rtx_section (mode, x, align)
       }
 
   mergeable_constant_section (mode, align, 0);
+}
+
+/* Set the generally applicable flags on the SYMBOL_REF for EXP.  */
+
+void
+default_encode_section_info (decl, first)
+     tree decl;
+     int first ATTRIBUTE_UNUSED;
+{
+  rtx rtl, symbol;
+  int flags;
+
+  rtl = DECL_P (decl) ? DECL_RTL (decl) : TREE_CST_RTL (decl);
+
+  /* Careful not to prod global register variables.  */
+  if (GET_CODE (rtl) != MEM)
+    return;
+  symbol = XEXP (rtl, 0);
+  if (GET_CODE (symbol) != SYMBOL_REF)
+    return;
+
+  flags = 0;
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    flags |= SYMBOL_FLAG_FUNCTION;
+  if ((*targetm.binds_local_p) (decl))
+    flags |= SYMBOL_FLAG_LOCAL;
+  if ((*targetm.in_small_data_p) (decl))
+    flags |= SYMBOL_FLAG_SMALL;
+  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
+    flags |= decl_tls_model (decl) << SYMBOL_FLAG_TLS_SHIFT;
+  if (DECL_P (decl) && DECL_EXTERNAL (decl))
+    flags |= SYMBOL_FLAG_EXTERNAL;
+
+  SYMBOL_REF_FLAGS (symbol) = flags;
 }
 
 /* By default, we do nothing for encode_section_info, so we need not

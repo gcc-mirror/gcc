@@ -239,9 +239,22 @@ print_rtx (in_rtx)
 	  {
 	    if (REGNO (in_rtx) != ORIGINAL_REGNO (in_rtx))
 	      fprintf (outfile, " [%d]", ORIGINAL_REGNO (in_rtx));
-	    break;
 	  }
-	if (i == 4 && GET_CODE (in_rtx) == NOTE)
+#ifndef GENERATOR_FILE
+	else if (i == 1 && GET_CODE (in_rtx) == SYMBOL_REF)
+	  {
+	    int flags = SYMBOL_REF_FLAGS (in_rtx);
+	    if (flags)
+	      fprintf (outfile, " [flags 0x%x]", flags);
+	  }
+	else if (i == 2 && GET_CODE (in_rtx) == SYMBOL_REF)
+	  {
+	    tree decl = SYMBOL_REF_DECL (in_rtx);
+	    if (decl)
+	      print_node_brief (outfile, "", decl, 0);
+	  }
+#endif
+	else if (i == 4 && GET_CODE (in_rtx) == NOTE)
 	  {
 	    switch (NOTE_LINE_NUMBER (in_rtx))
 	      {

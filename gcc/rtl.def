@@ -860,11 +860,11 @@ DEF_RTL_EXPR(MEM, "mem", "e0", 'o')
    LABEL_NEXTREF and CONTAINING_INSN.  */
 DEF_RTL_EXPR(LABEL_REF, "label_ref", "u00", 'o')
 
-/* Reference to a named label: the string that is the first operand,
-   with `_' added implicitly in front.
-   Exception: if the first character explicitly given is `*',
-   to give it to the assembler, remove the `*' and do not add `_'.  */
-DEF_RTL_EXPR(SYMBOL_REF, "symbol_ref", "s", 'o')
+/* Reference to a named label: 
+   Operand 0: label name
+   Operand 1: flags (see SYMBOL_FLAG_* in rtl.h)
+   Operand 2: tree decl from which this symbol is derived, or null.  */
+DEF_RTL_EXPR(SYMBOL_REF, "symbol_ref", "s00", 'o')
 
 /* The condition code register is represented, in our imagination,
    as a register holding a value that can be compared to zero.

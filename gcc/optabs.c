@@ -5381,6 +5381,8 @@ rtx
 init_one_libfunc (name)
      const char *name;
 {
+  rtx symbol;
+
   /* Create a FUNCTION_DECL that can be passed to
      targetm.encode_section_info.  */
   /* ??? We don't have any type information except for this is
@@ -5391,8 +5393,13 @@ init_one_libfunc (name)
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
 
-  /* Return the symbol_ref from the mem rtx.  */
-  return XEXP (DECL_RTL (decl), 0);
+  symbol = XEXP (DECL_RTL (decl), 0);
+
+  /* Zap the nonsensical SYMBOL_REF_DECL for this.  What we're left with
+     are the flags assigned by targetm.encode_section_info.  */
+  SYMBOL_REF_DECL (symbol) = 0;
+
+  return symbol;
 }
 
 /* Call this once to initialize the contents of the optabs
