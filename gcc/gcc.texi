@@ -184,8 +184,6 @@ instead of in the original English.
 @end titlepage
 @page
 
-@ifnottex
-
 @node Top, G++ and GCC,, (DIR)
 @top Introduction
 @cindex introduction
@@ -209,7 +207,6 @@ as well as its new features and incompatibilities, and how to report
 bugs.  It corresponds to GCC version 2.96.
 @end ifclear
 
-@end ifnottex
 @menu
 @ifset USING
 * G++ and GCC::     You can compile C or C++ programs.
