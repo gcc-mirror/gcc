@@ -1386,11 +1386,10 @@ struct tree_type
 #define DECL_ORIGIN(NODE) \
   (DECL_ABSTRACT_ORIGIN (NODE) ? DECL_ABSTRACT_ORIGIN (NODE) : NODE)
 
-/* Nonzero for any sort of ..._DECL node means this decl node represents
-   an inline instance of some original (abstract) decl from an inline function;
-   suppress any warnings about shadowing some other variable.
-   FUNCTION_DECL nodes can also have their abstract origin set to themselves
-   (see save_for_inline_copying).  */
+/* Nonzero for any sort of ..._DECL node means this decl node represents an
+   inline instance of some original (abstract) decl from an inline function;
+   suppress any warnings about shadowing some other variable.  FUNCTION_DECL
+   nodes can also have their abstract origin set to themselves. */
 #define DECL_FROM_INLINE(NODE) (DECL_ABSTRACT_ORIGIN (NODE) != (tree) 0 \
 				&& DECL_ABSTRACT_ORIGIN (NODE) != (NODE))
 
@@ -2789,8 +2788,7 @@ extern int global_bindings_p		PARAMS ((void));
 extern void insert_block		PARAMS ((tree));
 
 /* In integrate.c */
-extern void save_for_inline_nocopy	PARAMS ((tree));
-extern void save_for_inline_copying	PARAMS ((tree));
+extern void save_for_inline		PARAMS ((tree));
 extern void set_decl_abstract_flags	PARAMS ((tree, int));
 extern void output_inline_function	PARAMS ((tree));
 extern void set_decl_origin_self	PARAMS ((tree));

@@ -444,6 +444,7 @@ struct function
 
   /* For integrate.c.  */
   int inlinable;
+  int no_debugging_symbols;
   /* This is in fact an rtvec.  */
   void *original_arg_vector;
   tree original_decl_initial;
