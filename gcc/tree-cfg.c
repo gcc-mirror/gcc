@@ -119,7 +119,6 @@ static void split_critical_edges (void);
 static inline bool stmt_starts_bb_p (tree, tree);
 static int tree_verify_flow_info (void);
 static void tree_make_forwarder_block (edge);
-static bool thread_jumps (void);
 static bool tree_forwarder_block_p (basic_block);
 static void tree_cfg2vcg (FILE *);
 
@@ -133,6 +132,7 @@ static edge find_taken_edge_cond_expr (basic_block, tree);
 static edge find_taken_edge_switch_expr (basic_block, tree);
 static tree find_case_label_for_value (tree, tree);
 static bool phi_alternatives_equal (basic_block, edge, edge);
+static bool cleanup_forwarder_blocks (void);
 
 
 /*---------------------------------------------------------------------------
@@ -900,11 +900,12 @@ cleanup_tree_cfg (void)
   retval = cleanup_control_flow ();
   retval |= delete_unreachable_blocks ();
 
-  /* thread_jumps can redirect edges out of SWITCH_EXPRs, which can get
-     expensive.  So we want to enable recording of edge to CASE_LABEL_EXPR
-     mappings around the call to thread_jumps.  */
+  /* cleanup_forwarder_blocks can redirect edges out of SWITCH_EXPRs,
+     which can get expensive.  So we want to enable recording of edge
+     to CASE_LABEL_EXPR mappings around the call to
+     cleanup_forwarder_blocks.  */
   start_recording_case_labels ();
-  retval |= thread_jumps ();
+  retval |= cleanup_forwarder_blocks ();
   end_recording_case_labels ();
 
 #ifdef ENABLE_CHECKING
@@ -912,7 +913,7 @@ cleanup_tree_cfg (void)
     {
       gcc_assert (!cleanup_control_flow ());
       gcc_assert (!delete_unreachable_blocks ());
-      gcc_assert (!thread_jumps ());
+      gcc_assert (!cleanup_forwarder_blocks ());
     }
 #endif
 
@@ -3891,6 +3892,8 @@ tree_forwarder_block_p (basic_block bb)
       || phi_nodes (bb)
       /* BB may not be a predecessor of EXIT_BLOCK_PTR.  */
       || EDGE_SUCC (bb, 0)->dest == EXIT_BLOCK_PTR
+      /* Nor should this be an infinite loop.  */
+      || EDGE_SUCC (bb, 0)->dest == bb
       /* BB may not have an abnormal outgoing edge.  */
       || (EDGE_SUCC (bb, 0)->flags & EDGE_ABNORMAL))
     return false; 
@@ -3923,281 +3926,181 @@ tree_forwarder_block_p (basic_block bb)
   return true;
 }
 
-/* Thread jumps from BB.  */
+/* Return true if BB has at least one abnormal incoming edge.  */
+
+static inline bool
+has_abnormal_incoming_edge_p (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (e->flags & EDGE_ABNORMAL)
+      return true;
+
+  return false;
+}
+
+/* Removes forwarder block BB.  Returns false if this failed.  If new
+   forwarder block is created due to redirection of edges, it is
+   stored to worklist.  */
 
 static bool
-thread_jumps_from_bb (basic_block bb)
+remove_forwarder_block (basic_block bb, basic_block **worklist)
 {
+  edge succ = EDGE_SUCC (bb, 0), e, s;
+  basic_block dest = succ->dest;
+  tree label;
+  tree phi;
   edge_iterator ei;
-  edge e;
-  bool retval = false;
+  block_stmt_iterator bsi, bsi_to;
+  bool seen_abnormal_edge = false;
 
-  /* Examine each of our block's successors to see if it is
-     forwardable.  */
-  for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
+  /* We check for infinite loops already in tree_forwarder_block_p.
+     However it may happen that the infinite loop is created
+     afterwards due to removal of forwarders.  */
+  if (dest == bb)
+    return false;
+
+  /* If the destination block consists of an nonlocal label, do not merge
+     it.  */
+  label = first_stmt (bb);
+  if (label
+      && TREE_CODE (label) == LABEL_EXPR
+      && DECL_NONLOCAL (LABEL_EXPR_LABEL (label)))
+    return false;
+
+  /* If there is an abnormal edge to basic block BB, but not into
+     dest, problems might occur during removal of the phi node at out
+     of ssa due to overlapping live ranges of registers.
+
+     If there is an abnormal edge in DEST, the problems would occur
+     anyway since cleanup_dead_labels would then merge the labels for
+     two different eh regions, and rest of exception handling code
+     does not like it.
+     
+     So if there is an abnormal edge to BB, proceed only if there is
+     no abnormal edge to DEST and there are no phi nodes in DEST.  */
+  if (has_abnormal_incoming_edge_p (bb))
     {
-      int freq;
-      gcov_type count;
-      edge last, old;
-      basic_block dest, tmp, curr, old_dest;
-      tree phi;
+      seen_abnormal_edge = true;
 
-      /* If the edge is abnormal or its destination is not
-	 forwardable, then there's nothing to do.  */
-      if ((e->flags & EDGE_ABNORMAL)
-	  || !bb_ann (e->dest)->forwardable)
+      if (has_abnormal_incoming_edge_p (dest)
+	  || phi_nodes (dest) != NULL_TREE)
+	return false;
+    }
+
+  /* If there are phi nodes in DEST, and some of the blocks that are
+     predecessors of BB are also predecessors of DEST, check that the
+     phi node arguments match.  */
+  if (phi_nodes (dest))
+    {
+      FOR_EACH_EDGE (e, ei, bb->preds)
 	{
-	  ei_next (&ei);
-	  continue;
-	}
+	  s = find_edge (e->src, dest);
+	  if (!s)
+	    continue;
 
-      /* Now walk through as many forwarder blocks as possible to find
-	 the ultimate destination we want to thread our jump to.  */
-      last = EDGE_SUCC (e->dest, 0);
-      bb_ann (e->dest)->forwardable = 0;
-      for (dest = EDGE_SUCC (e->dest, 0)->dest;
-	   bb_ann (dest)->forwardable;
-	   last = EDGE_SUCC (dest, 0),
-	     dest = EDGE_SUCC (dest, 0)->dest)
-	bb_ann (dest)->forwardable = 0;
-
-      /* Reset the forwardable marks to 1.  */
-      for (tmp = e->dest;
-	   tmp != dest;
-	   tmp = EDGE_SUCC (tmp, 0)->dest)
-	bb_ann (tmp)->forwardable = 1;
-
-      if (dest == e->dest)
-	{
-	  ei_next (&ei);
-	  continue;
-	}
-
-      old = find_edge (bb, dest);
-      if (old)
-	{
-	  /* If there already is an edge, check whether the values in
-	     phi nodes differ.  */
-	  if (!phi_alternatives_equal (dest, last, old))
-	    {
-	      /* The previous block is forwarder.  Redirect our jump
-		 to that target instead since we know it has no PHI
-		 nodes that will need updating.  */
-	      dest = last->src;
-
-	      /* That might mean that no forwarding at all is
-		 possible.  */
-	      if (dest == e->dest)
-		{
-		  ei_next (&ei);
-		  continue;
-		}
-
-	      old = find_edge (bb, dest);
-	    }
-	}
-
-      /* Perform the redirection.  */
-      retval = true;
-      count = e->count;
-      freq = EDGE_FREQUENCY (e);
-      old_dest = e->dest;
-      e = redirect_edge_and_branch (e, dest);
-
-      /* Update the profile.  */
-      if (profile_status != PROFILE_ABSENT)
-	for (curr = old_dest;
-	     curr != dest;
-	     curr = EDGE_SUCC (curr, 0)->dest)
-	  {
-	    curr->frequency -= freq;
-	    if (curr->frequency < 0)
-	      curr->frequency = 0;
-	    curr->count -= count;
-	    if (curr->count < 0)
-	      curr->count = 0;
-	    EDGE_SUCC (curr, 0)->count -= count;
-	    if (EDGE_SUCC (curr, 0)->count < 0)
-	      EDGE_SUCC (curr, 0)->count = 0;
-	  }
-
-      if (!old)
-	{
-	  /* Update PHI nodes.  We know that the new argument should
-	     have the same value as the argument associated with LAST.
-	     Otherwise we would have changed our target block
-	     above.  */
-	  int arg = last->dest_idx;
-
-	  for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
-	    {
-	      tree def = PHI_ARG_DEF (phi, arg);
-	      gcc_assert (def != NULL_TREE);
-	      add_phi_arg (phi, def, e);
-	    }
-	}
-
-      /* Remove the unreachable blocks (observe that if all blocks
-	 were reachable before, only those in the path we threaded
-	 over and did not have any predecessor outside of the path
-	 become unreachable).  */
-      for (; old_dest != dest; old_dest = tmp)
-	{
-	  tmp = EDGE_SUCC (old_dest, 0)->dest;
-
-	  if (EDGE_COUNT (old_dest->preds) > 0)
-	    break;
-
-	  delete_basic_block (old_dest);
-	}
-
-      /* Update the dominators.  */
-      if (dom_info_available_p (CDI_DOMINATORS))
-	{
-	  /* If the dominator of the destination was in the
-	     path, set its dominator to the start of the
-	     redirected edge.  */
-	  if (get_immediate_dominator (CDI_DOMINATORS, old_dest) == NULL)
-	    set_immediate_dominator (CDI_DOMINATORS, old_dest, bb);
-
-	  /* Now proceed like if we forwarded just over one edge at a
-	     time.  Algorithm for forwarding edge S --> A over
-	     edge A --> B then is
-
-	     if (idom (B) == A
-	         && !dominated_by (S, B))
-	       idom (B) = idom (A);
-	     recount_idom (A);  */
-
-	  for (; old_dest != dest; old_dest = tmp)
-	    {
-	      basic_block dom;
-
-	      tmp = EDGE_SUCC (old_dest, 0)->dest;
-
-	      if (get_immediate_dominator (CDI_DOMINATORS, tmp) == old_dest
-		  && !dominated_by_p (CDI_DOMINATORS, bb, tmp))
-		{
-		  dom = get_immediate_dominator (CDI_DOMINATORS, old_dest);
-		  set_immediate_dominator (CDI_DOMINATORS, tmp, dom);
-		}
-
-	      dom = recount_dominator (CDI_DOMINATORS, old_dest);
-	      set_immediate_dominator (CDI_DOMINATORS, old_dest, dom);
-	    }
+	  if (!phi_alternatives_equal (dest, succ, s))
+	    return false;
 	}
     }
 
-  return retval;
+  /* Redirect the edges.  */
+  for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
+    {
+      if (e->flags & EDGE_ABNORMAL)
+	{
+	  /* If there is an abnormal edge, redirect it anyway, and
+	     move the labels to the new block to make it legal.  */
+	  s = redirect_edge_succ_nodup (e, dest);
+	}
+      else
+	s = redirect_edge_and_branch (e, dest);
+
+      if (s == e)
+	{
+	  /* Create arguments for the phi nodes, since the edge was not
+	     here before.  */
+	  for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
+	    add_phi_arg (phi, PHI_ARG_DEF (phi, succ->dest_idx), s);
+	}
+      else
+	{
+	  /* The source basic block might become a forwarder.  We know
+	     that it was not a forwarder before, since it used to have
+	     at least two outgoing edges, so we may just add it to
+	     worklist.  */
+	  if (tree_forwarder_block_p (s->src))
+	    *(*worklist)++ = s->src;
+	}
+    }
+
+  if (seen_abnormal_edge)
+    {
+      /* Move the labels to the new block, so that the redirection of
+	 the abnormal edges works.  */
+
+      bsi_to = bsi_start (dest);
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); )
+	{
+	  label = bsi_stmt (bsi);
+	  gcc_assert (TREE_CODE (label) == LABEL_EXPR);
+	  bsi_remove (&bsi);
+	  bsi_insert_before (&bsi_to, label, BSI_CONTINUE_LINKING);
+	}
+    }
+
+  /* Update the dominators.  */
+  if (dom_info_available_p (CDI_DOMINATORS))
+    {
+      basic_block dom, dombb, domdest;
+
+      dombb = get_immediate_dominator (CDI_DOMINATORS, bb);
+      domdest = get_immediate_dominator (CDI_DOMINATORS, dest);
+      if (domdest == bb)
+	{
+	  /* Shortcut to avoid calling (relatively expensive)
+	     nearest_common_dominator unless necessary.  */
+	  dom = dombb;
+	}
+      else
+	dom = nearest_common_dominator (CDI_DOMINATORS, domdest, dombb);
+
+      set_immediate_dominator (CDI_DOMINATORS, dest, dom);
+    }
+
+  /* And kill the forwarder block.  */
+  delete_basic_block (bb);
+
+  return true;
 }
 
-
-/* Thread jumps over empty statements.
-
-   This code should _not_ thread over obviously equivalent conditions
-   as that requires nontrivial updates to the SSA graph.
-
-   As a precondition, we require that all basic blocks be reachable.
-   That is, there should be no opportunities left for
-   delete_unreachable_blocks.  */
+/* Removes forwarder blocks.  */
 
 static bool
-thread_jumps (void)
+cleanup_forwarder_blocks (void)
 {
   basic_block bb;
-  bool retval = false;
+  bool changed = false;
   basic_block *worklist = xmalloc (sizeof (basic_block) * n_basic_blocks);
   basic_block *current = worklist;
 
   FOR_EACH_BB (bb)
     {
-      bb_ann (bb)->forwardable = tree_forwarder_block_p (bb);
-      bb->flags &= ~BB_VISITED;
+      if (tree_forwarder_block_p (bb))
+	*current++ = bb;
     }
 
-  /* We pretend to have ENTRY_BLOCK_PTR in WORKLIST.  This way,
-     ENTRY_BLOCK_PTR will never be entered into WORKLIST.  */
-  ENTRY_BLOCK_PTR->flags |= BB_VISITED;
-
-  /* Initialize WORKLIST by putting non-forwarder blocks that
-     immediately precede forwarder blocks because those are the ones
-     that we know we can thread jumps from.  We use BB_VISITED to
-     indicate whether a given basic block is in WORKLIST or not,
-     thereby avoiding duplicates in WORKLIST.  */
-  FOR_EACH_BB (bb)
-    {
-      edge_iterator ei;
-      edge e;
-
-      /* We are not interested in finding non-forwarder blocks
-	 directly.  We want to find non-forwarder blocks as
-	 predecessors of a forwarder block.  */
-      if (!bb_ann (bb)->forwardable)
-	continue;
-
-      /* Now we know BB is a forwarder block.  Visit each of its
-	 incoming edges and add to WORKLIST all non-forwarder blocks
-	 among BB's predecessors.  */
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	{
-	  /* We don't want to put a duplicate into WORKLIST.  */
-	  if ((e->src->flags & BB_VISITED) == 0
-	      /* We are not interested in threading jumps from a forwarder
-		 block.  */
-	      && !bb_ann (e->src)->forwardable)
-	    {
-	      e->src->flags |= BB_VISITED;
-	      *current++ = e->src;
-	    }
-	}
-    }
-
-  /* Now let's drain WORKLIST.  */
-  while (worklist != current)
+  while (current != worklist)
     {
       bb = *--current;
-
-      /* BB is no longer in WORKLIST, so clear BB_VISITED.  */
-      bb->flags &= ~BB_VISITED;
-
-      if (thread_jumps_from_bb (bb))
-	{
-	  retval = true;
-
-	  if (tree_forwarder_block_p (bb))
-	    {
-	      edge_iterator ej;
-	      edge f;
-
-	      bb_ann (bb)->forwardable = true;
-
-	      /* Attempts to thread through BB may have been blocked
-		 because BB was not a forwarder block before.  Now
-		 that BB is a forwarder block, we should revisit BB's
-		 predecessors.  */
-	      FOR_EACH_EDGE (f, ej, bb->preds)
-		{
-		  /* We don't want to put a duplicate into WORKLIST.  */
-		  if ((f->src->flags & BB_VISITED) == 0
-		      /* We are not interested in threading jumps from a
-			 forwarder block.  */
-		      && !bb_ann (f->src)->forwardable)
-		    {
-		      f->src->flags |= BB_VISITED;
-		      *current++ = f->src;
-		    }
-		}
-	    }
-	}
+      changed |= remove_forwarder_block (bb, &current);
     }
 
-  ENTRY_BLOCK_PTR->flags &= ~BB_VISITED;
-
   free (worklist);
-
-  return retval;
+  return changed;
 }
-
 
 /* Return a non-special label in the head of basic block BLOCK.
    Create one if it doesn't exist.  */
