@@ -1219,18 +1219,24 @@ easy_vector_constant (op)
 	 with CONST0_RTX for the current mode, but let's be safe
 	 instead.  */
 
-      if (GET_CODE (elt) == CONST_INT && INTVAL (elt) != 0)
-	return 0;
-
-      if (GET_CODE (elt) == CONST_DOUBLE
-	       && (CONST_DOUBLE_LOW (elt) != 0
-		   || CONST_DOUBLE_HIGH (elt) != 0))
-	return 0;
+      switch (GET_CODE (elt))
+	{
+	case CONST_INT:
+	  if (INTVAL (elt) != 0)
+	    return 0;
+	  break;
+	case CONST_DOUBLE:
+	  if (CONST_DOUBLE_LOW (elt) != 0 || CONST_DOUBLE_HIGH (elt) != 0)
+	    return 0;
+	  break;
+	default:
+	  return 0;
+	}
     }
 
   /* We could probably generate a few other constants trivially, but
      gcc doesn't generate them yet.  FIXME later.  */
-  return 0;
+  return 1;
 }
 
 /* Return 1 if the operand is the constant 0.  This works for scalars

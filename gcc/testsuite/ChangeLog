@@ -1,3 +1,7 @@
+2002-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/altivec-5.c: New test.
+
 2002-04-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/lib/chill.exp: Remove.
