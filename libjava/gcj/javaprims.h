@@ -1,6 +1,6 @@
 // javaprims.h - Main external header file for libgcj.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -193,6 +193,7 @@ extern "Java"
       class SecurityManager;
       class Short;
       class StackOverflowError;
+      class StrictMath;
       class String;
       class String$CaseInsensitiveComparator;
       class StringBuffer;

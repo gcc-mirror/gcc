@@ -1,3 +1,11 @@
+2002-02-14  Eric Blake  <ebb9@email.byu.edu>
+
+	* gcj/javaprims.h (java::lang): Add java::lang::StrictMath.
+	* Makefile.am (core_java_source_files): Add
+	java/lang/StrictMath.java.
+	* java/lang/Math.java: Merge with Classpath.
+	* java/lang/StrictMath.java: New file - merge with Classpath.
+
 2002-02-14  Mark Wielaard  <mark@klomp.org>
 
 	* java/math/BigInteger.java: import gnu.java.math.MPN not the whole

@@ -1102,6 +1102,7 @@ java/lang/SecurityException.java \
 java/lang/SecurityManager.java \
 java/lang/Short.java \
 java/lang/StackOverflowError.java \
+java/lang/StrictMath.java \
 java/lang/String.java \
 java/lang/StringBuffer.java \
 java/lang/StringIndexOutOfBoundsException.java \
