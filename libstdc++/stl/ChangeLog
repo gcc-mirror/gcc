@@ -1,3 +1,9 @@
+1999-06-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* stl_algo.h (transform): Rename __opr to __oper, as __opr is used 
+	internally by egcs.
+	Reported by Harri Porten <porten@tu-harburg.de>
+
 1999-05-17  Mark Kettenis  <kettenis@gnu.org>
 
 	* stl_config.h: Only define __STL_PTHREADS with GLIBC >= 2 for

@@ -446,9 +446,9 @@ _ForwardIter2 swap_ranges(_ForwardIter1 __first1, _ForwardIter1 __last1,
 
 template <class _InputIter, class _OutputIter, class _UnaryOperation>
 _OutputIter transform(_InputIter __first, _InputIter __last,
-                      _OutputIter __result, _UnaryOperation __opr) {
+                      _OutputIter __result, _UnaryOperation __oper) {
   for ( ; __first != __last; ++__first, ++__result)
-    *__result = __opr(*__first);
+    *__result = __oper(*__first);
   return __result;
 }
 
