@@ -1,5 +1,5 @@
 /* java.lang.Math -- common mathematical functions, native allowed
-   Copyright (C) 1998, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -521,7 +521,7 @@ public final class Math
    * double to <code>x / y</code> (ties go to the even n); for a zero
    * remainder, the sign is that of <code>x</code>. If either argument is NaN,
    * the first argument is infinite, or the second argument is zero, the result
-   * is NaN; if x is finite but y is infinte, the result is x. This is
+   * is NaN; if x is finite but y is infinite, the result is x. This is
    * accurate within the limits of doubles.
    *
    * @param x the dividend (the top half)

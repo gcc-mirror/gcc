@@ -1,5 +1,5 @@
 /* InheritableThreadLocal -- a ThreadLocal which inherits values across threads
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,9 +37,11 @@ exception statement from your version. */
 
 package java.lang;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
@@ -67,7 +69,8 @@ public class InheritableThreadLocal extends ThreadLocal
    * List can be collected, too. Maps to a list in case the user overrides
    * equals.
    */
-  private static final WeakHashMap threadMap = new WeakHashMap();
+  private static final Map threadMap
+	  = Collections.synchronizedMap(new WeakHashMap());
 
   /**
    * Creates a new InheritableThreadLocal that has no values associated
@@ -77,7 +80,7 @@ public class InheritableThreadLocal extends ThreadLocal
   {
     Thread currentThread = Thread.currentThread();
     // Note that we don't have to synchronize, as only this thread will
-    // ever modify the returned heritage.
+    // ever modify the returned heritage and threadMap is a synchronizedMap.
     List heritage = (List) threadMap.get(currentThread);
     if (heritage == null)
       {
@@ -114,7 +117,7 @@ public class InheritableThreadLocal extends ThreadLocal
     // The currentThread is the parent of the new thread.
     Thread parentThread = Thread.currentThread();
     // Note that we don't have to synchronize, as only this thread will
-    // ever modify the returned heritage.
+    // ever modify the returned heritage and threadMap is a synchronizedMap. 
     ArrayList heritage = (ArrayList) threadMap.get(parentThread);
     if (heritage != null)
       {

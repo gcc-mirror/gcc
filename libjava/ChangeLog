@@ -1,3 +1,20 @@
+2003-08-26  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/StrictMath.java: Typo fix.
+	* java/lang/Math.java: Typo fix.
+
+2003-08-26  Stephen Crawley  <crawley@dstc.edu.au>
+
+	* java/lang/ThreadGroup.java (removeThread): null the 'group' field
+	of the removed Thread.
+
+2003-08-26  Mark Wielaard  <mark@klomp.org>
+
+	Reported by David Holmes <dholmes@dltech.com.au>.
+	* java/lang/InheritableThreadLocal.java (threadMap): Wrap inside
+	Collections.synchronizedMap.
+	* java/lang/ThreadLocal.java (valueMap): Likewise.
+
 2003-08-26  Mark Wielaard  <mark@klomp.org>
 
 	* java/security/acl/Acl.java: Fix broken p tag.

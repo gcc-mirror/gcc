@@ -718,6 +718,7 @@ public class ThreadGroup
     if (groups == null)
       return;
     threads.remove(t);
+    t.group = null;
     // Daemon groups are automatically destroyed when all their threads die.
     if (daemon_flag && groups.size() == 0 && threads.size() == 0)
       {
