@@ -1,3 +1,8 @@
+2002-05-13  Andris Pavenis  <pavenis@lanet.lv>
+
+	* cppfiles.c (open_file): Change mode (DJGPP only) of redirected
+	input to O_BINARY.
+
 2002-05-13  Jeffrey A Law  (law@redhat.com)
 
 	* i386.c (ia32_multipass_dfa_lookahead): Prototype.
