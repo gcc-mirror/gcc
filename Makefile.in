@@ -785,6 +785,7 @@ ALL_TARGET_MODULES = \
 	all-target-gperf \
 	all-target-examples \
 	all-target-libstub \
+	all-target-libffi \
 	all-target-libjava \
 	all-target-zlib \
 	all-target-boehm-gc \
@@ -809,6 +810,7 @@ CONFIGURE_TARGET_MODULES = \
 	configure-target-gperf \
 	configure-target-examples \
 	configure-target-libstub \
+	configure-target-libffi \
 	configure-target-libjava \
 	configure-target-zlib \
 	configure-target-boehm-gc \
@@ -828,6 +830,7 @@ CHECK_TARGET_MODULES = \
 	check-target-libobjc \
 	check-target-winsup \
 	check-target-libiberty \
+	check-target-libffi \
 	check-target-libjava \
 	check-target-zlib \
 	check-target-boehm-gc \
@@ -939,6 +942,7 @@ CLEAN_TARGET_MODULES = \
 	clean-target-gperf \
 	clean-target-examples \
 	clean-target-libstub \
+	clean-target-libffi \
 	clean-target-libjava \
 	clean-target-zlib \
 	clean-target-boehm-gc \
@@ -1634,8 +1638,10 @@ all-target-libio: configure-target-libio all-gas all-ld all-gcc all-target-libib
 check-target-libio: all-target-libstdc++
 all-libgui: all-tcl all-tk all-itcl
 all-libiberty:
-configure-target-libjava: $(ALL_GCC) configure-target-zlib configure-target-boehm-gc configure-target-qthreads configure-target-newlib
-all-target-libjava: configure-target-libjava all-gcc all-zip all-target-newlib all-target-zlib all-target-boehm-gc all-target-qthreads
+configure-target-libffi: $(ALL_GCC) 
+configure-target-libjava: $(ALL_GCC) configure-target-zlib configure-target-boehm-gc configure-target-qthreads configure-target-newlib configure-target-libffi
+all-target-libffi: configure-target-libffi
+all-target-libjava: configure-target-libjava all-gcc all-zip all-target-newlib all-target-zlib all-target-boehm-gc all-target-qthreads all-target-libffi
 configure-target-librx: $(ALL_GCC) configure-target-newlib
 all-target-librx: configure-target-librx
 configure-target-libstdc++: $(ALL_GCC)

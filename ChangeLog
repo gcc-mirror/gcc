@@ -1,3 +1,8 @@
+2000-05-16  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* configure.in, Makefile.in: Merge all libffi-related
+	configury stuff from the libgcj tree.
+
 2000-05-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure.in: Special case powerpc*-*-aix* target_makefile_frag.
