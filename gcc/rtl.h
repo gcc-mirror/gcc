@@ -1452,6 +1452,7 @@ extern rtx emit_copy_of_insn_after (rtx, rtx);
 extern void set_reg_attrs_from_mem (rtx, rtx);
 extern void set_mem_attrs_from_reg (rtx, rtx);
 extern void set_reg_attrs_for_parm (rtx, rtx);
+extern int mem_expr_equal_p (tree, tree);
 
 /* In rtl.c */
 extern rtx rtx_alloc (RTX_CODE);

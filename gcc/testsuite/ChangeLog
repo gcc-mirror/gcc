@@ -1,6 +1,6 @@
-2004-03-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+2004-03-05  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* gcc.c-torture/compile/20040304-1.c: New test.
+	* gcc.dg/20040305-1.c: New test.
 
 2004-03-03  Zack Weinberg  <zack@codesourcery.com>
 

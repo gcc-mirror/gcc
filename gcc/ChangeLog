@@ -1,3 +1,10 @@
+2004-03-05  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* rtl.h (mem_expr_equal_p): Function prototype added.
+	* cfgcleanup.c (merge_memattrs): New function.
+	(flow_find_cross_jump): Call merge_memattrs for matching insns.
+	* emit-rtl.c (mem_expr_equal_p): New function.
+
 2004-03-05  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (function_arg): Handle 16-byte aligned args.

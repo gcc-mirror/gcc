@@ -1520,6 +1520,40 @@ component_ref_for_mem_expr (tree ref)
 		  TREE_OPERAND (ref, 1));
 }
 
+/* Returns 1 if both MEM_EXPR can be considered equal
+   and 0 otherwise.  */
+
+int
+mem_expr_equal_p (tree expr1, tree expr2)
+{
+  if (expr1 == expr2)
+    return 1;
+
+  if (! expr1 || ! expr2)
+    return 0;
+
+  if (TREE_CODE (expr1) != TREE_CODE (expr2))
+    return 0;
+
+  if (TREE_CODE (expr1) == COMPONENT_REF)
+    return 
+      mem_expr_equal_p (TREE_OPERAND (expr1, 0),
+			TREE_OPERAND (expr2, 0))
+      && mem_expr_equal_p (TREE_OPERAND (expr1, 1), /* field decl */
+			   TREE_OPERAND (expr2, 1));
+  
+  if (TREE_CODE (expr1) == INDIRECT_REF)
+    return mem_expr_equal_p (TREE_OPERAND (expr1, 0),
+			     TREE_OPERAND (expr2, 0));
+  
+  /* Decls with different pointers can't be equal.  */
+  if (DECL_P (expr1))
+    return 0;
+
+  abort(); /* ARRAY_REFs, ARRAY_RANGE_REFs and BIT_FIELD_REFs should already
+	      have been resolved here.  */
+}
+
 /* Given REF, a MEM, and T, either the type of X or the expression
    corresponding to REF, set the memory attributes.  OBJECTP is nonzero
    if we are making a new object of this type.  BITPOS is nonzero if
