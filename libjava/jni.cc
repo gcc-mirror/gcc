@@ -2134,8 +2134,7 @@ _Jv_JNI_AttachCurrentThread (JavaVM *, jstring name, void **penv, void *args)
 
   env->locals->marker = MARK_SYSTEM;
   env->locals->size = FRAME_SIZE;
-  env->locals->next = env->locals;
-  env->locals = NULL;
+  env->locals->next = NULL;
 
   for (int i = 0; i < env->locals->size; ++i)
     env->locals->vec[i] = NULL;
