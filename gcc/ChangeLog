@@ -1,3 +1,18 @@
+2000-05-27  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.md (movsi): Constify 'name'.
+
+	* regclass.c [CLASS_CANNOT_CHANGE_SIZE]
+	(class_can_change_size): New variable.
+	(reg_changes_size): New variable.
+	(init_reg_sets_1): Initialise class_can_change_size.
+	(record_operand_costs): Remove subreg_changes_size.
+	Don't pass it around.  Instead update reg_changes_size.
+	(regclass): Initialise and free reg_changes_size.  If a register
+	changes size, don't preference it to a class that contains
+	registers that can't change size.
+	(record_reg_classes): Don't look at subreg_changes_size.
+
 2000-05-27  Richard Henderson  <rth@cygnus.com>
 
 	* print-rtl.c (reg_names): Remove const.
