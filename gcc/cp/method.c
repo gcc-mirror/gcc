@@ -587,7 +587,7 @@ do_build_assign_ref (tree fndecl)
   tree parm = TREE_CHAIN (DECL_ARGUMENTS (fndecl));
   tree compound_stmt;
 
-  compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
+  compound_stmt = begin_compound_stmt (/*has_no_scope=*/false);
   parm = convert_from_reference (parm);
 
   if (TYPE_HAS_TRIVIAL_ASSIGN_REF (current_class_type)
@@ -680,7 +680,7 @@ do_build_assign_ref (tree fndecl)
 	}
     }
   finish_return_stmt (current_class_ref);
-  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
+  finish_compound_stmt (compound_stmt);
 }
 
 void
@@ -744,8 +744,8 @@ synthesize_method (tree fndecl)
   if (need_body)
     {
       tree compound_stmt;
-      compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
-      finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
+      compound_stmt = begin_compound_stmt (/*has_no_scope=*/false);
+      finish_compound_stmt (compound_stmt);
     }
 
   finish_function_body (stmt);

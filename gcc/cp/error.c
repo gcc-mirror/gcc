@@ -1491,20 +1491,9 @@ dump_expr (tree t, int flags)
 
     case COMPOUND_EXPR:
       pp_left_paren (cxx_pp);
-      /* Within templates, a COMPOUND_EXPR has only one operand,
-         containing a TREE_LIST of the two operands.  */
-      if (TREE_CODE (TREE_OPERAND (t, 0)) == TREE_LIST)
-      {
-        if (TREE_OPERAND (t, 1))
-          abort();
-        dump_expr_list (TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
-      }
-      else
-      {
-        dump_expr (TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
-        pp_separate_with_comma (cxx_pp);
-        dump_expr (TREE_OPERAND (t, 1), flags | TFF_EXPR_IN_PARENS);
-      }
+      dump_expr (TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
+      pp_separate_with_comma (cxx_pp);
+      dump_expr (TREE_OPERAND (t, 1), flags | TFF_EXPR_IN_PARENS);
       pp_right_paren (cxx_pp);
       break;
 

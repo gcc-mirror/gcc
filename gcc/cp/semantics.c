@@ -985,12 +985,12 @@ finish_handler (tree handler)
   RECHAIN_STMTS (handler, HANDLER_BODY (handler));
 }
 
-/* Begin a compound-statement.  If HAS_NO_SCOPE is nonzero, the
+/* Begin a compound-statement.  If HAS_NO_SCOPE is true, the
    compound-statement does not define a scope.  Returns a new
-   COMPOUND_STMT if appropriate.  */
+   COMPOUND_STMT.  */
 
 tree
-begin_compound_stmt (int has_no_scope)
+begin_compound_stmt (bool has_no_scope)
 {
   tree r; 
   int is_try = 0;
@@ -1018,20 +1018,18 @@ begin_compound_stmt (int has_no_scope)
   return r;
 }
 
-/* Finish a compound-statement, which may be given by COMPOUND_STMT.
-   If HAS_NO_SCOPE is nonzero, the compound statement does not define
-   a scope.  */
+/* Finish a compound-statement, which is given by COMPOUND_STMT. */
 
 tree
-finish_compound_stmt (int has_no_scope, tree compound_stmt)
+finish_compound_stmt (tree compound_stmt)
 {
   tree r;
   tree t;
 
-  if (!has_no_scope)
-    r = do_poplevel ();
-  else
+  if (COMPOUND_STMT_NO_SCOPE (compound_stmt))
     r = NULL_TREE;
+  else
+    r = do_poplevel ();
 
   RECHAIN_STMTS (compound_stmt, COMPOUND_BODY (compound_stmt));
 
