@@ -68,6 +68,7 @@ static void dump_compound_expr (dump_info_p, tree);
 static bool java_decl_ok_for_sibcall (tree);
 static int java_estimate_num_insns (tree);
 static int java_start_inlining (tree);
+static tree java_get_callee_fndecl (tree);
 
 #ifndef TARGET_OBJECT_SUFFIX
 # define TARGET_OBJECT_SUFFIX ".o"
@@ -262,6 +263,9 @@ struct language_function GTY(())
 
 #undef LANG_HOOKS_DECL_OK_FOR_SIBCALL
 #define LANG_HOOKS_DECL_OK_FOR_SIBCALL java_decl_ok_for_sibcall
+
+#undef LANG_HOOKS_GET_CALLEE_FNDECL
+#define LANG_HOOKS_GET_CALLEE_FNDECL java_get_callee_fndecl
 
 #undef LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
 #define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION java_expand_body
@@ -1203,6 +1207,47 @@ java_start_inlining (tree fn)
      for debug output until it is expanded.  Prevent inlining functions
      that are not yet expanded.  */
   return TREE_ASM_WRITTEN (fn) ? 1 : 0;
+}
+
+/* Given a call_expr, try to figure out what its target might be.  In
+   the case of an indirection via the atable, search for the decl.  If
+   the decl is external, we return NULL.  If we don't, the optimizer
+   will replace the indirection with a direct call, which undoes the
+   purpose of the atable indirection.  */
+static tree
+java_get_callee_fndecl (tree call_expr)
+{
+  tree method, table, element;
+
+  HOST_WIDE_INT index;
+
+  if (TREE_CODE (call_expr) != CALL_EXPR)
+    return NULL;
+  method = TREE_OPERAND (call_expr, 0);
+  STRIP_NOPS (method);
+  if (TREE_CODE (method) != ARRAY_REF)
+    return NULL;
+  table = TREE_OPERAND (method, 0);
+  if (table != atable_decl)
+    return NULL;
+  index = TREE_INT_CST_LOW (TREE_OPERAND (method, 1));
+
+  /* FIXME: Replace this for loop with a hash table lookup.  */
+  for (element = atable_methods; element; element = TREE_CHAIN (element))
+    {
+      if (index == 1)
+	{
+	  tree purpose = TREE_PURPOSE (element);
+	  if (TREE_CODE (purpose) == FUNCTION_DECL
+	      && ! DECL_EXTERNAL (purpose))
+	    return purpose;
+	  else
+	    return NULL;
+	}
+      --index;
+    }
+  
+  return NULL;
 }
 
 #include "gt-java-lang.h"

@@ -131,6 +131,12 @@ struct _Jv_AddressTable
   void *addresses[];
 };
 
+struct _Jv_CatchClass
+{
+  java::lang::Class **address;
+  _Jv_Utf8Const *classname;
+};
+
 #define JV_PRIMITIVE_VTABLE ((_Jv_VTable *) -1)
 
 #define JV_CLASS(Obj) ((jclass) (*(_Jv_VTable **) Obj)->clas)
@@ -336,6 +342,7 @@ private:
   friend void _Jv_LayoutVTableMethods (jclass klass);
   friend void _Jv_SetVTableEntries (jclass, _Jv_VTable *, jboolean *);
   friend void _Jv_MakeVTable (jclass);
+  friend void _Jv_linkExceptionClassTable (jclass);
 
   friend jboolean _Jv_CheckAccess (jclass self_klass, jclass other_klass,
 				   jint flags);
@@ -365,6 +372,8 @@ private:
   friend void _Jv_PrepareClass (jclass);
   friend void _Jv_PrepareMissingMethods (jclass base, jclass iface_class);
 
+  friend void _Jv_Defer_Resolution (void *cl, _Jv_Method *meth, void **);
+  
   friend class _Jv_ClassReader;	
   friend class _Jv_InterpClass;
   friend class _Jv_InterpMethod;
@@ -414,6 +423,7 @@ private:
   _Jv_MethodSymbol *otable_syms;
   _Jv_AddressTable *atable;
   _Jv_MethodSymbol *atable_syms;
+  _Jv_CatchClass *catch_classes;
   // Interfaces implemented by this class.
   jclass *interfaces;
   // The class loader for this class.

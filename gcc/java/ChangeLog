@@ -1,3 +1,28 @@
+2003-10-22  Andrew Haley  <aph@redhat.com>
+
+	* lang.c (LANG_HOOKS_GET_CALLEE_FNDECL): New.
+	(java_get_callee_fndecl): New.
+
+	* jcf-parse.c (java_parse_file): Call emit_catch_table().
+
+	* java-tree.h (ctable_decl): New.
+	(catch_classes):  New.
+	(java_tree_index): Add JTI_CTABLE_DECL, JTI_CATCH_CLASSES.
+
+	* decl.c (java_init_decl_processing): Add catch_class_type.
+	Add ctable_decl.
+	Add catch_classes field.
+
+	* class.c (build_indirect_class_ref): Break out from
+	build_class_ref.
+	(make_field_value): Check flag_indirect_dispatch.
+	(make_class_data): Ditto.
+	Tidy uses of PUSH_FIELD_VALUE.
+	Add field catch_classes.
+	(make_catch_class_record): New.
+
+	* java-tree.h (PUSH_FIELD_VALUE): Tidy.
+
 2003-10-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* jcf-write.c: Follow spelling conventions.

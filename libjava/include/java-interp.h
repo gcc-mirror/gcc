@@ -88,6 +88,12 @@ protected:
   // Size of raw arguments.
   _Jv_ushort args_raw_size;
 
+  // Chain of addresses to fill in.  See _Jv_Defer_Resolution.
+  void *deferred;
+
+  friend void _Jv_Defer_Resolution (void *cl, _Jv_Method *meth, void **);
+  friend void _Jv_PrepareClass(jclass);
+
 public:
   _Jv_Method *get_method ()
   {
@@ -167,7 +173,32 @@ class _Jv_InterpClass : public java::lang::Class
 #endif
 
   friend _Jv_MethodBase ** _Jv_GetFirstMethod (_Jv_InterpClass *klass);
+  friend void _Jv_Defer_Resolution (void *cl, _Jv_Method *meth, void **);
 };
+
+// We have an interpreted class CL and we're trying to find the
+// address of the ncode of a method METH.  That interpreted class
+// hasn't yet been prepared, so we defer fixups until they are ready.
+// To do this, we create a chain of fixups that will be resolved by
+// _Jv_PrepareClass.
+extern inline void 
+_Jv_Defer_Resolution (void *cl, _Jv_Method *meth, void **address)
+{
+  int i;
+  _Jv_InterpClass *self = (_Jv_InterpClass *)cl;
+  for (i = 0; i < self->method_count; i++)
+    {
+      _Jv_Method *m = &self->methods[i];
+      if (m == meth)
+	{
+	  _Jv_MethodBase *imeth = self->interpreted_methods[i];
+	  *address = imeth->deferred;
+	  imeth->deferred = address;
+	  return;
+	}
+    }
+  return;
+}    
 
 extern inline _Jv_MethodBase **
 _Jv_GetFirstMethod (_Jv_InterpClass *klass)

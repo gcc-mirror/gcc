@@ -313,46 +313,52 @@ prepare_eh_table_type (tree type)
 {
   tree exp;
 
-  /* The "type" (metch_info) in a (Java) exception table is one:
+  /* The "type" (match_info) in a (Java) exception table is a pointer to:
    * a) NULL - meaning match any type in a try-finally.
-   * b) a pointer to a (compiled) class (low-order bit 0).
-   * c) a pointer to the Utf8Const name of the class, plus one
-   * (which yields a value with low-order bit 1). */
+   * b) a pointer to a pointer to a class.
+   * c) a pointer to a pointer to a utf8_ref.  The pointer is
+   * rewritten to point to the appropriate class.  */
 
   if (type == NULL_TREE)
     exp = NULL_TREE;
-  else if (is_compiled_class (type))
-    exp = build_class_ref (type);
-  else
+  else if (is_compiled_class (type) && !flag_indirect_dispatch)
     {
-      tree ctype = make_node (RECORD_TYPE);
-      tree field = NULL_TREE;
-      tree cinit, decl;
-      tree utf8_ref = build_utf8_ref (DECL_NAME (TYPE_NAME (type)));
       char buf[64];
+      tree decl;
       sprintf (buf, "%s_ref", 
-	       IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (utf8_ref, 0))));
-      PUSH_FIELD (ctype, field, "dummy", ptr_type_node);
-      PUSH_FIELD (ctype, field, "utf8",  utf8const_ptr_type);
-      FINISH_RECORD (ctype);
-      START_RECORD_CONSTRUCTOR (cinit, ctype);
-      PUSH_FIELD_VALUE (cinit, "dummy", 
-			convert (ptr_type_node, integer_minus_one_node));
-      PUSH_FIELD_VALUE (cinit, "utf8", utf8_ref);
-      FINISH_RECORD_CONSTRUCTOR (cinit);
-      TREE_CONSTANT (cinit) = 1;
-      decl = build_decl (VAR_DECL, get_identifier (buf), ctype);
+	       IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
+      decl = build_decl (VAR_DECL, get_identifier (buf), ptr_type_node);
       TREE_STATIC (decl) = 1;
       DECL_ARTIFICIAL (decl) = 1;
       DECL_IGNORED_P (decl) = 1;
       TREE_READONLY (decl) = 1;
       TREE_THIS_VOLATILE (decl) = 0;
-      DECL_INITIAL (decl) = cinit;
+      DECL_INITIAL (decl) = build_class_ref (type);
       layout_decl (decl, 0);
       pushdecl (decl);
       rest_of_decl_compilation (decl, (char*) 0, global_bindings_p (), 0);
       make_decl_rtl (decl, (char*) 0);
-      exp = build1 (ADDR_EXPR, build_pointer_type (ctype), decl);
+      exp = build1 (ADDR_EXPR, ptr_type_node, decl);
+    }
+  else
+    {
+      tree decl;
+      tree utf8_ref = build_utf8_ref (DECL_NAME (TYPE_NAME (type)));
+      char buf[64];
+      sprintf (buf, "%s_ref", 
+	       IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (utf8_ref, 0))));
+      decl = build_decl (VAR_DECL, get_identifier (buf), utf8const_ptr_type);
+      TREE_STATIC (decl) = 1;
+      DECL_ARTIFICIAL (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
+      TREE_READONLY (decl) = 1;
+      TREE_THIS_VOLATILE (decl) = 0;
+      layout_decl (decl, 0);
+      pushdecl (decl);
+      rest_of_decl_compilation (decl, (char*) 0, global_bindings_p (), 0);
+      make_decl_rtl (decl, (char*) 0);
+      exp = build1 (ADDR_EXPR, build_pointer_type (utf8const_ptr_type), decl);
+      catch_classes = tree_cons (NULL, make_catch_class_record (exp, utf8_ref), catch_classes);
     }
   return exp;
 }

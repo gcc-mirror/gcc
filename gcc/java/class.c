@@ -808,6 +808,20 @@ build_utf8_ref (tree name)
   return ref;
 }
 
+/* Like build_class_ref, but instead of a direct reference generate a
+   pointer into the constant pool.  */
+
+static tree
+build_indirect_class_ref (tree type)
+{
+  int index;
+  tree cl;
+  index = alloc_class_constant (type);
+  cl = build_ref_from_constant_pool (index); 
+  TREE_TYPE (cl) = promote_type (class_ptr_type);
+  return cl;
+}
+
 /* Build a reference to the class TYPE.
    Also handles primitive types and array types. */
 
@@ -820,6 +834,12 @@ build_class_ref (tree type)
       tree ref, decl_name, decl;
       if (TREE_CODE (type) == POINTER_TYPE)
 	type = TREE_TYPE (type);
+
+      if  (flag_indirect_dispatch 
+	   && type != current_class
+	   && TREE_CODE (type) == RECORD_TYPE)
+	return build_indirect_class_ref (type);
+
       if (TREE_CODE (type) == RECORD_TYPE)
 	{
 	  if (TYPE_SIZE (type) == error_mark_node)
@@ -902,14 +922,7 @@ build_class_ref (tree type)
       return ref;
     }
   else
-    {
-      int index;
-      tree cl;
-      index = alloc_class_constant (type);
-      cl = build_ref_from_constant_pool (index); 
-      TREE_TYPE (cl) = promote_type (class_ptr_type);
-      return cl;
-    }
+    return build_indirect_class_ref (type);
 }
 
 tree
@@ -1061,7 +1074,7 @@ make_field_value (tree fdecl)
   tree finit;
   int flags;
   tree type = TREE_TYPE (fdecl);
-  int resolved = is_compiled_class (type);
+  int resolved = is_compiled_class (type) && ! flag_indirect_dispatch;
 
   START_RECORD_CONSTRUCTOR (finit, field_type_node);
   PUSH_FIELD_VALUE (finit, "name", build_utf8_ref (DECL_NAME (fdecl)));
@@ -1422,7 +1435,8 @@ make_class_data (tree type)
   super = CLASSTYPE_SUPER (type);
   if (super == NULL_TREE)
     super = null_pointer_node;
-  else if (assume_compiled (IDENTIFIER_POINTER (DECL_NAME (type_decl)))
+  else if (! flag_indirect_dispatch
+	   && assume_compiled (IDENTIFIER_POINTER (DECL_NAME (type_decl)))
 	   && assume_compiled (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (super)))))
     super = build_class_ref (super);
   else
@@ -1492,7 +1506,7 @@ make_class_data (tree type)
   PUSH_FIELD_VALUE (cons, "method_count",  build_int_2 (method_count, 0));
 
   if (flag_indirect_dispatch)
-    PUSH_FIELD_VALUE (cons, "vtable_method_count", integer_minus_one_node)
+    PUSH_FIELD_VALUE (cons, "vtable_method_count", integer_minus_one_node);
   else
     PUSH_FIELD_VALUE (cons, "vtable_method_count", TYPE_NVIRTUALS (type));
     
@@ -1505,7 +1519,7 @@ make_class_data (tree type)
 		    build_int_2 (static_field_count, 0));
 
   if (flag_indirect_dispatch)
-    PUSH_FIELD_VALUE (cons, "vtable", null_pointer_node)
+    PUSH_FIELD_VALUE (cons, "vtable", null_pointer_node);
   else
     PUSH_FIELD_VALUE (cons, "vtable",
 		      dtable_decl == NULL_TREE ? null_pointer_node
@@ -1540,7 +1554,9 @@ make_class_data (tree type)
 				atable_syms_decl));
       TREE_CONSTANT (atable_decl) = 1;
     }
-
+ 
+  PUSH_FIELD_VALUE (cons, "catch_classes",
+		    build1 (ADDR_EXPR, ptr_type_node, ctable_decl)); 
   PUSH_FIELD_VALUE (cons, "interfaces", interfaces);
   PUSH_FIELD_VALUE (cons, "loader", null_pointer_node);
   PUSH_FIELD_VALUE (cons, "interface_count", build_int_2 (interface_len, 0));
@@ -2209,6 +2225,47 @@ emit_symbol_table (tree name, tree the_table, tree decl_list, tree the_syms_decl
 
   return the_table;
 }
+
+/* make an entry for the catch_classes list.  */
+tree
+make_catch_class_record (tree catch_class, tree classname)
+{
+  tree entry;
+  tree type = TREE_TYPE (TREE_TYPE (ctable_decl));
+  START_RECORD_CONSTRUCTOR (entry, type);
+  PUSH_FIELD_VALUE (entry, "address", catch_class);
+  PUSH_FIELD_VALUE (entry, "classname", classname);
+  FINISH_RECORD_CONSTRUCTOR (entry);
+  return entry;
+}
+
+
+/* Generate the list of Throwable classes that are caught by exception
+   handlers in this compilation.  */
+void 
+emit_catch_table (void)
+{
+  tree table, table_size, array_type;
+  catch_classes 
+    = tree_cons (NULL, 
+		 make_catch_class_record (null_pointer_node, null_pointer_node),
+		 catch_classes);
+  catch_classes = nreverse (catch_classes);
+  catch_classes 
+    = tree_cons (NULL, 
+		 make_catch_class_record (null_pointer_node, null_pointer_node),
+		 catch_classes);
+  table_size = build_index_type (build_int_2 (list_length (catch_classes), 0));
+  array_type 
+    = build_array_type (TREE_TYPE (TREE_TYPE (ctable_decl)), table_size);
+  table = build_decl (VAR_DECL, DECL_NAME (ctable_decl), array_type);
+  DECL_INITIAL (table) = build_constructor (array_type, catch_classes);
+  TREE_STATIC (table) = 1;
+  TREE_READONLY (table) = 1;  
+  rest_of_decl_compilation (table, NULL, 1, 0);
+  ctable_decl = table;
+}
+ 
 
 void
 init_class_processing (void)
