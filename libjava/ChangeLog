@@ -1,3 +1,34 @@
+2002-11-29  Michael Koch <konqueror@gmx.de>
+
+	* gnu/java/nio/ByteBufferImpl.java
+	(ByteBufferImpl): Moved position() after limit.
+	(nio_*): Use native implementation.
+	* gnu/java/nio/CharBufferImpl.java:
+	Reformated.
+	(endian): New member variable string endianess of buffer.
+	(CharBufferImpl): Moved position() after limit.
+	(nio_*): Use native implementation.
+	(subSequence): Implemented.
+	* gnu/java/nio/DoubleBufferImpl.java
+	(DoubleBufferImpl): Moved position() after limit.
+	(nio_*): Use native implementation.
+	* gnu/java/nio/FloatBufferImpl.java
+	Reformated.
+	(FloatBufferImpl): Moved position() after limit.
+	(nio_*): Use native implementation.
+	* gnu/java/nio/IntBufferImpl.java
+	Added needed imports, Reformated.
+	(IntBufferImpl): Moved position() after limit.
+	(nio_*): Use native implementation.
+	* gnu/java/nio/LongBufferImpl.java
+	Reformated.
+	(LongBufferImpl): Moved position() after limit.
+	(nio_*): Use native implementation.
+	* gnu/java/nio/ShortBufferImpl.java
+	Reformated.
+	(ShortBufferImpl): Moved position() after limit.
+	(nio_*): Use native implementation.
+
 2002-11-27  Julian Dolby  <dolby@us.ibm.com>
 
 	* java/util/Locale.java (toString): Improve efficiency if country
