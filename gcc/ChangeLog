@@ -1,3 +1,7 @@
+Sat May 22 01:27:49 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* expr.h (lang_expand_constant): Guard with #ifdef TREE_CODE.
+
 Thu May 20 10:00:42 1999   Stephen L Moshier  <moshier@world.std.com>
 
          * Makefile.in (GCC_FOR_TARGET): Add -I$(build_tooldir)/include.
