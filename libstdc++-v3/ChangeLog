@@ -1,3 +1,13 @@
+2004-08-22  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_put<>::do_put(bool)): Cast
+	to a signed type, long according to the resolution of DR 359.
+	* testsuite/22_locale/num_put/put/char/9.cc: New.
+	* testsuite/22_locale/num_put/put/wchar_t/9.cc: New.
+
+	* include/bits/locale_facets.tcc (num_put<>::do_put(const void*)):
+	Simplify a bit: no need to clear showpos.
+
 2004-08-21  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/char_traits.h (struct _Char_traits_match): Remove,
