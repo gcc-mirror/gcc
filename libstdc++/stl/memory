@@ -90,9 +90,9 @@ public:
   auto_ptr(auto_ptr_ref<_Tp> __ref) __STL_NOTHROW
     : _M_ptr(__ref._M_ptr) {}
   template <class _Tp1> operator auto_ptr_ref<_Tp1>() __STL_NOTHROW 
-    { return auto_ptr_ref<_Tp>(this.release()); }
+    { return auto_ptr_ref<_Tp>(this->release()); }
   template <class _Tp1> operator auto_ptr<_Tp1>() __STL_NOTHROW
-    { return auto_ptr<_Tp1>(this->release()) }
+    { return auto_ptr<_Tp1>(this->release()); }
 
 #endif /* __SGI_STL_USE_AUTO_PTR_CONVERSIONS */
 };

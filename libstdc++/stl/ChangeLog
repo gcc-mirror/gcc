@@ -1,3 +1,9 @@
+1998-10-11  Mark Mitchell  <mark@markmitchell.com>
+
+	* memory (auto_ptr::operator auto_ptr_ref<_Tp1>): Fix typo.
+	(auto_ptr::operator auto_ptr<_Tp1>): Add missing 
+	semicolon.
+	
 1998-09-03  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* stl_config.h: Define __STL_HAS_WCHAR_T,
