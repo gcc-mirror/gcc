@@ -635,6 +635,10 @@ extern char leaf_reg_backmap[];
   (((CLASS1) == FP_REGS && (CLASS2) == GENERAL_REGS)	\
    || ((CLASS1) == GENERAL_REGS && (CLASS2) == FP_REGS))
 
+/* Return the stack location to use for secondary memory needed reloads.  */
+#define SECONDARY_MEMORY_NEEDED_RTX(MODE) \
+  gen_rtx (MEM, MODE, gen_rtx (PLUS, Pmode, frame_pointer_rtx, GEN_INT (-8)))
+
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 /* On SPARC, this is the size of MODE in words.  */
