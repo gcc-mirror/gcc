@@ -1729,7 +1729,7 @@ build_class_init (clas, expr)
 	  MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (ite->init_test_decl);
 	  LOCAL_CLASS_INITIALIZATION_FLAG (ite->init_test_decl) = 1;
 	  DECL_CONTEXT (ite->init_test_decl) = current_function_decl;
-
+	  DECL_FUNCTION_INIT_TEST_CLASS (ite->init_test_decl) = clas;
 	  /* Tell the check-init code to ignore this decl when not
              optimizing class initialization. */
 	  if (!STATIC_CLASS_INIT_OPT_P ())

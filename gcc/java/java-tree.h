@@ -726,14 +726,17 @@ struct lang_identifier
    class has been initialized in this function, and FALSE otherwise.  */
 #define DECL_FUNCTION_INIT_TEST_TABLE(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->init_test_table)
+/* If LOCAL_CLASS_INITIALIZATION_FLAG_P(decl), give class it initializes. */
+#define DECL_FUNCTION_INIT_TEST_CLASS(DECL) \
+  (((struct lang_decl_var*)DECL_LANG_SPECIFIC(DECL))->slot_chain)
 /* For each static function decl, itc contains a hash table whose
    entries are keyed on class named that are definitively initialized
    in DECL.  */
 #define DECL_FUNCTION_INITIALIZED_CLASS_TABLE(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->ict)
-/* For each static function call, smic contains contains a hash table
-   whose entries are keyed on the compound statement that encapsulate
-   the invocation.  */
+/* A list of all the static method calls in the method DECL (if optimizing).
+   Actually each TREE_VALUE points to a COMPONT_EXPR that wraps the
+   invoation so we can later patch it. */
 #define DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->smic)
 /* The Number of Artificial Parameters (NAP) DECL contains. this$<n>
@@ -888,7 +891,7 @@ struct lang_decl
   struct hash_table init_test_table;
 				/* Class initialization test variables  */
   struct hash_table ict;	/* Initialized (static) Class Table */
-  struct hash_table smic;	/* Static method invocation compound */
+  tree smic;			/* Static method invocation compound */
   tree inner_access;		/* The identifier of the access method
 				   used for invocation from inner classes */
   int nap;			/* Number of artificial parameters */
@@ -1604,8 +1607,7 @@ extern tree *type_map;
 
 /* True when we can perform static class initialization optimization */
 #define STATIC_CLASS_INIT_OPT_P() \
-  0 /* ??? Temporarily turn off this optimization -PB */
-/*  (flag_optimize_sci && (optimize >= 2) && ! flag_emit_class_files)*/
+  (flag_optimize_sci && (optimize >= 2) && ! flag_emit_class_files)
 
 extern int java_error_count;
 

@@ -96,7 +96,7 @@ static tree wfl;
 #define INTERSECT(DST, SRC1, SRC2) \
   INTERSECTN (DST, SRC1, SRC2, num_current_words)
 
-#define WORD_SIZE  ((unsigned int)(sizeof(word) * 8))
+#define WORD_SIZE  ((unsigned int)(sizeof(word) * BITS_PER_UNIT))
 
 static void check_bool_init PARAMS ((tree, words, words, words));
 static void check_init PARAMS ((tree, words));
@@ -595,6 +595,24 @@ check_init (exp, before)
 	      SET_UNASSIGNED (tmp, i);
 	    }
 	  check_init (BLOCK_EXPR_BODY (exp), tmp);
+
+	  /* Re-set DECL_BIT_INDEX since it is also DECL_POINTER_ALIAS_SET. */
+	  for (decl = BLOCK_EXPR_DECLS (exp);
+	       decl != NULL_TREE;  decl = TREE_CHAIN (decl))
+	    {
+	      if (LOCAL_CLASS_INITIALIZATION_FLAG_P (decl))
+		{
+		  int index = DECL_BIT_INDEX (decl);
+		  tree fndecl = DECL_CONTEXT (decl);
+		  if (fndecl && METHOD_STATIC (fndecl)
+		      && (DECL_INITIAL (decl) == boolean_true_node
+			  || (index >= 0 && ASSIGNED_P (tmp, index))))
+		    hash_lookup (&DECL_FUNCTION_INITIALIZED_CLASS_TABLE (fndecl),
+				 DECL_FUNCTION_INIT_TEST_CLASS(decl), TRUE, NULL);  
+		}
+	      DECL_BIT_INDEX (decl) = -1;
+	    }
+
 	  num_current_locals = start_current_locals;
 	  start_current_locals = save_start_current_locals;
 	  if (tmp != before)
@@ -602,13 +620,6 @@ check_init (exp, before)
 	      num_current_words = save_num_current_words;
 	      COPY (before, tmp);
 	      FREE_WORDS (tmp);
-	    }
-
-	  /* Re-set DECL_BIT_INDEX since it is also DECL_POINTER_ALIAS_SET. */
-	  for (decl = BLOCK_EXPR_DECLS (exp);
-	       decl != NULL_TREE;  decl = TREE_CHAIN (decl))
-	    {
-	      DECL_BIT_INDEX (decl) = -1;
 	    }
 	}
       break;

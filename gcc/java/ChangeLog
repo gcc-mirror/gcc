@@ -1,3 +1,30 @@
+2001-12-05  Per Bothner  <per@bothner.com>
+
+	Restore support for static class initialization optimization.
+	* java-tree.h (STATIC_CLASS_INIT_OPT_P): Re-enable.
+	* check-init.c (check_int):  At end of BLOCK handle initialization
+	blocks, which used to be done in java_complete_expand_method but did
+	not handle the case where check_for_initialization might allocate
+	more than a word of bits.
+	* decl.c (lang_make_tree):  The smic field is now a tree.
+	* expr.c (build_class_init):  Set DECL_FUNCTION_INIT_TEST_CLASS field.
+	* java-tree.h (DECL_FUNCTION_INIT_TEST_TABLE):  New macro.
+
+	* parse.y (emit_test_initialization):  Combine hash_lookup calls.
+
+	* java-tree.h (DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND):
+	Change from a hash table to a list.
+	(struct_lang_decl):  Change field 'smic' to match.
+	* class.c (add_method_1):  Initialize
+	DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND to null list.
+	* parse.y (adjust_init_test_initialization):  Removed - inlined into -
+	(java_expand_method_bodies): -here, since 'smic' is now a list.
+	(patch_invoke):  Add to 'smic' list, instead of hash_lookup.
+
+	* check-init.c (WORD_SIZE):  Use BITS_PER_UNIT.
+
+	* class.c (java_hash_compare_tree_node):  Fix casts.
+
 2001-12-04  Per Bothner  <per@bothner.com>
 
 	* check-init.c:   Handle definite unassignment to finals in addition
