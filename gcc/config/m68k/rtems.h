@@ -27,8 +27,4 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-Dmc68000 -Drtems -D__rtems__ \
    -Asystem(rtems) -Acpu(mc68000) -Acpu(m68k) -Amachine(m68k)"
 
-#undef  SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-  { "rtems", 0 },
-
 /* end of m68k/rtems.h */
