@@ -2964,6 +2964,7 @@ build_function_call_real (function, params, require_complete, flags)
   tree result;
   tree name = NULL_TREE, assembler_name = NULL_TREE;
   int is_method;
+  tree original = function;
 
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Strip such NOP_EXPRs, since FUNCTION is used in non-lvalue context.  */
@@ -2990,7 +2991,7 @@ build_function_call_real (function, params, require_complete, flags)
       /* Differs from default_conversion by not setting TREE_ADDRESSABLE
 	 (because calling an inline function does not mean the function
 	 needs to be separately compiled).  */
-
+      
       if (DECL_INLINE (function))
 	function = inline_conversion (function);
       else
@@ -3011,7 +3012,7 @@ build_function_call_real (function, params, require_complete, flags)
   if (TYPE_PTRMEMFUNC_P (fntype))
     {
       error ("must use .* or ->* to call pointer-to-member function in `%E (...)'",
-		function);
+		original);
       return error_mark_node;
     }
 
@@ -3023,7 +3024,7 @@ build_function_call_real (function, params, require_complete, flags)
 	|| is_method
 	|| TREE_CODE (function) == TEMPLATE_ID_EXPR))
     {
-      error ("`%E' cannot be used as a function", function);
+      error ("`%E' cannot be used as a function", original);
       return error_mark_node;
     }
 
