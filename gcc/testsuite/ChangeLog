@@ -1,3 +1,9 @@
+2002-12-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.dg/special/conpr-2.C: Expect failure on solaris2.
+	* g++.dg/special/ecos.exp (conpr-3.C): Likewise.
+	* g++.dg/special/initp1.C: Likewise.
+
 2002-12-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/template/varmod1.C: Fix typo.
