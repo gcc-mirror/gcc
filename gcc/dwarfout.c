@@ -3661,6 +3661,8 @@ output_compile_unit_die (arg)
     language_attribute (LANG_ADA83);
   else if (strcmp (language_string, "GNU F77") == 0)
     language_attribute (LANG_FORTRAN77);
+  else if (strcmp (language_string, "GNU Pascal") == 0)
+    language_attribute (LANG_PASCAL83);
   else if (flag_traditional)
     language_attribute (LANG_C);
   else
