@@ -1,5 +1,10 @@
 2003-01-22  Tom Tromey  <tromey@redhat.com>
 
+	* expr.c (build_invokeinterface): Abort if method's context is not
+	an interface.
+
+2003-01-22  Tom Tromey  <tromey@redhat.com>
+
 	* gcj.texi (Input and output files): Mention non-class entries.
 	* decl.c (java_init_decl_processing): Call
 	init_resource_processing.
