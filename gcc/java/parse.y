@@ -116,7 +116,6 @@ static tree resolve_class PARAMS ((tree, tree, tree, tree));
 static void declare_local_variables PARAMS ((int, tree, tree));
 static void source_start_java_method PARAMS ((tree));
 static void source_end_java_method PARAMS ((void));
-static void expand_start_java_method PARAMS ((tree));
 static tree find_name_in_single_imports PARAMS ((tree));
 static void check_abstract_method_header PARAMS ((tree));
 static tree lookup_java_interface_method2 PARAMS ((tree, tree));
@@ -153,7 +152,6 @@ static int  unresolved_type_p PARAMS ((tree, tree *));
 static void create_jdep_list PARAMS ((struct parser_ctxt *));
 static tree build_expr_block PARAMS ((tree, tree));
 static tree enter_block PARAMS ((void));
-static tree enter_a_block PARAMS ((tree));
 static tree exit_block PARAMS ((void));
 static tree lookup_name_in_blocks PARAMS ((tree));
 static void maybe_absorb_scoping_blocks PARAMS ((void));
@@ -7108,46 +7106,6 @@ end_artificial_method_body (mdecl)
   exit_block ();
 }
 
-/* Called during expansion. Push decls formerly built from argument
-   list so they're usable during expansion. */
-
-static void
-expand_start_java_method (fndecl)
-     tree fndecl;
-{
-  tree tem, *ptr;
-
-  current_function_decl = fndecl;
-
-  if (! quiet_flag)
-    fprintf (stderr, " [%s.", lang_printable_name (DECL_CONTEXT (fndecl), 0));
-  announce_function (fndecl);
-  if (! quiet_flag)
-    fprintf (stderr, "]");
-
-  pushlevel (1);		/* Prepare for a parameter push */
-  ptr = &DECL_ARGUMENTS (fndecl);
-  tem  = BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (current_function_decl));
-  while (tem)
-    {
-      tree next = TREE_CHAIN (tem);
-      tree type = TREE_TYPE (tem);
-      if (PROMOTE_PROTOTYPES
-	  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
-	  && INTEGRAL_TYPE_P (type))
-	type = integer_type_node;
-      DECL_ARG_TYPE (tem) = type;
-      layout_decl (tem, 0);
-      pushdecl (tem);
-      *ptr = tem;
-      ptr = &TREE_CHAIN (tem);
-      tem = next;
-    }
-  *ptr = NULL_TREE;
-  pushdecl_force_head (DECL_ARGUMENTS (fndecl));
-  lineno = DECL_SOURCE_LINE_FIRST (fndecl);
-}
-
 /* Terminate a function and expand its body.  */
 
 static void
@@ -7728,7 +7686,39 @@ java_complete_expand_method (mdecl)
       tree fbody = DECL_FUNCTION_BODY (mdecl);
       tree block_body = BLOCK_EXPR_BODY (fbody);
       tree exception_copy = NULL_TREE;
-      expand_start_java_method (mdecl);
+      tree tem, *ptr;
+
+      current_function_decl = mdecl;
+
+      if (! quiet_flag)
+	fprintf (stderr, " [%s.",
+		 lang_printable_name (DECL_CONTEXT (mdecl), 0));
+      announce_function (mdecl);
+      if (! quiet_flag)
+	fprintf (stderr, "]");
+
+      pushlevel (1);		/* Prepare for a parameter push */
+      ptr = &DECL_ARGUMENTS (mdecl);
+      tem  = BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (current_function_decl));
+      while (tem)
+	{
+	  tree next = TREE_CHAIN (tem);
+	  tree type = TREE_TYPE (tem);
+	  if (PROMOTE_PROTOTYPES
+	      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
+	      && INTEGRAL_TYPE_P (type))
+	    type = integer_type_node;
+	  DECL_ARG_TYPE (tem) = type;
+	  layout_decl (tem, 0);
+	  pushdecl (tem);
+	  *ptr = tem;
+	  ptr = &TREE_CHAIN (tem);
+	  tem = next;
+	}
+      *ptr = NULL_TREE;
+      pushdecl_force_head (DECL_ARGUMENTS (mdecl));
+      lineno = DECL_SOURCE_LINE_FIRST (mdecl);
+
       build_result_decl (mdecl);
 
       current_this 
@@ -11889,18 +11879,13 @@ build_expr_block (body, decls)
 static tree
 enter_block ()
 {
-  return (enter_a_block (build_expr_block (NULL_TREE, NULL_TREE)));
-}
+  tree b = build_expr_block (NULL_TREE, NULL_TREE);
 
-/* Link block B supercontext to the previous block. The current
-   function DECL is used as supercontext when enter_a_block is called
-   for the first time for a given function. The current function body
-   (DECL_FUNCTION_BODY) is set to be block B.  */
+  /* Link block B supercontext to the previous block. The current
+     function DECL is used as supercontext when enter_a_block is called
+     for the first time for a given function. The current function body
+     (DECL_FUNCTION_BODY) is set to be block B.  */
 
-static tree
-enter_a_block (b)
-     tree b;
-{
   tree fndecl = current_function_decl; 
 
   if (!fndecl) {
