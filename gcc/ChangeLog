@@ -1,3 +1,8 @@
+Tue Jun  8 13:06:15 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* configure.in (rs6000-ibm-aix4.[12]*): Change rx6000 to rs6000.
+	* configure: Regenerate.
+	
 Tue Jun  8 05:47:48 1999  Richard Earnshaw (rearnsha@arm.com)
 
 	* optabs.c (expand_cmplxdiv_wide): Use expand_abs to get the absolute
