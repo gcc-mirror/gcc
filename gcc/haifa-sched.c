@@ -7019,10 +7019,15 @@ schedule_insns (dump_file)
 			  (reload_completed ? PROP_DEATH_NOTES
 			   : PROP_DEATH_NOTES | PROP_REG_INFO));
 
+#ifndef HAVE_conditional_execution
+	/* ??? REG_DEAD notes only exist for unconditional deaths.  We need
+	   a count of the conditional plus unconditional deaths for this to
+	   work out.  */
 	/* In the single block case, the count of registers that died should
 	   not have changed during the schedule.  */
 	if (count_or_remove_death_notes (blocks, 0) != deaths_in_region[rgn])
-          abort (); 
+          abort ();
+#endif
       }
 
   if (any_large_regions)
