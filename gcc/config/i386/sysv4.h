@@ -39,9 +39,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_PREDEFINES \
   "-Di386 -Dunix -D__svr4__ -Asystem(unix) -Asystem(svr4) -Acpu(i386) -Amachine(i386)"
 
-/* If the host and target formats match, output the floats as hex.  */
-#if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-#if defined (HOST_WORDS_BIG_ENDIAN) == WORDS_BIG_ENDIAN
 /* This is how to output assembly code to define a `float' constant.
    We always have to use a .long pseudo-op to do this because the native
    SVR4 ELF assembler is buggy and it generates incorrect values when we
@@ -51,7 +48,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
 do { long value;							\
      REAL_VALUE_TO_TARGET_SINGLE ((VALUE), value);			\
-     fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value);			\
+     if (sizeof (int) == sizeof (long))					\
+         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value);		\
+     else								\
+         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, value);		\
    } while (0)
 
 /* This is how to output assembly code to define a `double' constant.
@@ -63,11 +63,36 @@ do { long value;							\
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
 do { long value[2];							\
      REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), value);			\
-     fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value[0]);			\
-     fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value[1]);			\
+     if (sizeof (int) == sizeof (long))					\
+       {								\
+         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value[0]);		\
+         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value[1]);		\
+       }								\
+     else								\
+       {								\
+         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, value[0]);		\
+         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, value[1]);		\
+       }								\
    } while (0)
-#endif /* word order matches */
-#endif /* HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT */
+
+
+#undef ASM_OUTPUT_LONG_DOUBLE
+#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)				\
+do { long value[3];							\
+     REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), value);			\
+     if (sizeof (int) == sizeof (long))					\
+       {								\
+         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value[0]);		\
+         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value[1]);		\
+         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value[2]);		\
+       }								\
+     else								\
+       {								\
+         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, value[0]);		\
+         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, value[1]);		\
+         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, value[2]);		\
+       }								\
+   } while (0)
 
 /* Output at beginning of assembler file.  */
 /* The .file command should always begin the output.  */

@@ -756,47 +756,57 @@ while (0)
    Use "word" pseudos to avoid printing NaNs, infinity, etc.  */
 
 /* This is how to output an assembler line defining a `double' constant.  */
-
 #undef	ASM_OUTPUT_DOUBLE
-
-#ifndef	CROSS_COMPILE
 #define	ASM_OUTPUT_DOUBLE(STREAM, VALUE)				\
 do									\
   {									\
     long value_long[2];							\
+    char dstr[30];							\
     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, value_long);			\
-									\
-    fprintf (STREAM, "\t.long\t0x%08lx\t\t# %.20g\n\t.long\t0x%08lx\n",	\
-	   value_long[0], VALUE, value_long[1]);			\
+    REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);			\
+    if (sizeof (int) == sizeof (long))					\
+      fprintf (STREAM, "\t.long\t0x%08x\t\t# %s\n\t.long\t0x%08x\n",	\
+	   value_long[0], dstr, value_long[1]);				\
+     else								\
+      fprintf (STREAM, "\t.long\t0x%08lx\t\t# %s\n\t.long\t0x%08lx\n",	\
+	   value_long[0], dstr, value_long[1]);				\
   }									\
 while (0)
 
-#else
-#define	ASM_OUTPUT_DOUBLE(STREAM, VALUE)				\
-  fprintf (STREAM, "\t.double\t%.20g\n", VALUE)
-#endif
-
 /* This is how to output an assembler line defining a `float' constant.  */
-
 #undef	ASM_OUTPUT_FLOAT
-
-#ifndef	CROSS_COMPILE
 #define	ASM_OUTPUT_FLOAT(STREAM, VALUE)					\
 do									\
   {									\
     long value_long;							\
+    char dstr[30];							\
     REAL_VALUE_TO_TARGET_SINGLE (VALUE, value_long);			\
-									\
-    fprintf (STREAM, "\t.long\t0x%08lx\t\t# %.12g (float)\n",		\
-	   value_long, VALUE);						\
+    REAL_VALUE_TO_DECIMAL (VALUE, "%.12g", dstr);			\
+    if (sizeof (int) == sizeof (long))					\
+      fprintf (STREAM, "\t.long\t0x%08x\t\t# %s (float)\n",		\
+	   value_long, dstr);						\
+    else								\
+      fprintf (STREAM, "\t.long\t0x%08lx\t\t# %s (float)\n",		\
+	   value_long, dstr);						\
   }									\
 while (0)
 
-#else
-#define	ASM_OUTPUT_FLOAT(STREAM, VALUE)					\
-  fprintf (STREAM, "\t.float\t%.12g\n", VALUE)
-#endif
-
+/* This is how to output an assembler line for a `long double' constant.  */
+#undef ASM_OUTPUT_LONG_DOUBLE
+#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
+do { long l[3];								\
+     char dstr[30];							\
+     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
+     REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);			\
+     if (sizeof (int) == sizeof (long))					\
+      fprintf (FILE,							\
+      "\t.long\t0x%08x\t\t# %s\n\t.long\t0x%08x\n\t.long\t0x%08x\n",	\
+      l[0], dstr, l[1], l[2]); 						\
+     else								\
+      fprintf (FILE,							\
+      "\t.long\t0x%08lx\t\t# %s\n\t.long\t0x%08lx\n\t.long\t0x%08lx\n",	\
+      l[0], dstr, l[1], l[2]); 						\
+   } while (0)
 
 /* Generate calls to memcpy, etc., not bcopy, etc. */
 #define TARGET_MEM_FUNCTIONS
