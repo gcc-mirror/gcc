@@ -303,8 +303,8 @@ clean: mostlyclean
 	rm -f *.a required-list tmpmulti.out
 	@$(MULTICLEAN) multi-clean DO=clean
 distclean: clean
-	rm -f *~ Makefile config.status alloca-conf.h xhost-mkfrag TAGS multilib.out
 	@$(MULTICLEAN) multi-clean DO=distclean
+	rm -f *~ Makefile config.status alloca-conf.h xhost-mkfrag TAGS multilib.out
 maintainer-clean realclean: distclean
 
 force:
