@@ -17,9 +17,10 @@
    abort (), 0)
 
 #else
-void __eprintf ();		/* Defined in libgcc.a */
 
 #ifdef __STDC__
+
+extern void __eprintf (char *, char *, int, char *); /* Defined in libgcc.a */
 
 #define assert(expression)  \
   ((void) ((expression) ? 0 : __assert (#expression, __FILE__, __LINE__)))
@@ -29,6 +30,8 @@ void __eprintf ();		/* Defined in libgcc.a */
 	      file, line, expression), 0)
 
 #else /* no __STDC__; i.e. -traditional.  */
+
+extern void __eprintf (); /* Defined in libgcc.a */
 
 #define assert(expression)  \
   ((void) ((expression) ? 0 : __assert (expression, __FILE__, __LINE__)))
