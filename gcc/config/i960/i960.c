@@ -493,7 +493,9 @@ i960_address_cost (x)
       if (GET_CODE (base) == PLUS || GET_CODE (base) == MULT)
 	return 6;
 
-      abort ();
+      /* This is an invalid address.  The return value doesn't matter, but
+	 for convenience we make this more expensive than anything else.  */
+      return 12;
     }
   if (GET_CODE (x) == MULT)
     return 6;
