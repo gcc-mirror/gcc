@@ -1,3 +1,11 @@
+Mon Oct 25 23:10:45 1999  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in (CPP_CROSS_NAME): New variable.
+	(install-cpp): Use it instead of CPP_INSTALL_NAME for the cross
+	xcpp.
+	(uninstall-cpp): Use CPP_INSTALL_NAME and CPP_CROSS_NAME for the
+	names of the files to be uninstalled.
+
 Mon Oct 25 23:03:09 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (add_dependence): Update the true dependency
