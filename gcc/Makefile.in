@@ -1123,7 +1123,7 @@ config.status: $(srcdir)/configure $(srcdir)/config.gcc version.c
 all.internal: start.encap rest.encap doc
 # This is what to compile if making a cross-compiler.
 all.cross: native gcc-cross cpp$(exeext) specs \
-	$(LIBGCC) $(EXTRA_PARTS) lang.all.cross doc
+	$(LIBGCC) $(EXTRA_PARTS) lang.all.cross doc @GENINSRC@ srcextra
 # This is what must be made before installing GCC and converting libraries.
 start.encap: native xgcc$(exeext) cpp$(exeext) specs \
 	xlimits.h lang.start.encap @GENINSRC@ srcextra
