@@ -1306,7 +1306,7 @@ default_conversion (exp)
   if (INTEGRAL_CODE_P (code))
     {
       tree t = type_promotes_to (type);
-      if (t != TYPE_MAIN_VARIANT (type))
+      if (t != type)
 	return convert (t, exp);
     }
   if (flag_traditional
