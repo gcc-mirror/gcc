@@ -775,7 +775,8 @@ force_reg (mode, x)
      if INSN set something else (such as a SUBREG of TEMP).  */
   if (CONSTANT_P (x)
       && (set = single_set (insn)) != 0
-      && SET_DEST (set) == temp)
+      && SET_DEST (set) == temp
+      && ! rtx_equal_p (x, SET_SRC (set)))
     set_unique_reg_note (insn, REG_EQUAL, x);
 
   return temp;
