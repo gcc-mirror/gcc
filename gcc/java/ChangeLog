@@ -1,3 +1,11 @@
+2001-02-05  Jeff Sturm  <jeff.sturm@commerceone.com>
+	    Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* typeck.c (build_prim_array_type): Added leading comment.
+	(build_java_array_type): Moved locals out of
+	block. Always create the `data' field, fixed alignment to match
+	C++.
+
 2001-02-04  Tom Tromey  <tromey@redhat.com>
 
 	* expr.c (java_lang_expand_expr): Don't bother recomputing

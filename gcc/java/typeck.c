@@ -359,6 +359,11 @@ java_array_type_length (array_type)
   return -1;
 }
 
+/* An array of unknown length will be ultimately given an length of
+   -2, so that we can still have `length' producing a negative value
+   even if found. This was part of an optimization amaing at removing
+   `length' from static arrays. We could restore it, FIXME.  */
+
 tree
 build_prim_array_type (element_type, length)
      tree element_type;
@@ -378,7 +383,7 @@ build_java_array_type (element_type, length)
      tree element_type;
      HOST_WIDE_INT length;
 {
-  tree sig, t, fld;
+  tree sig, t, fld, atype, arfld;
   char buf[12];
   tree elsig = build_java_signature (element_type);
   tree el_name = element_type;
@@ -416,39 +421,11 @@ build_java_array_type (element_type, length)
   FIELD_PUBLIC (fld) = 1;
   FIELD_FINAL (fld) = 1;
 
-  if (length >= 0)
-    {
-      tree atype = build_prim_array_type (element_type, length);
-      tree arfld = build_decl (FIELD_DECL, get_identifier ("data"), atype);
-      
-      DECL_CONTEXT (arfld) = t;
-      TREE_CHAIN (fld) = arfld;
-
-      /* We need to force the data field to begin at an alignment at
-       least equal to the biggest alignment in an object type node
-       in order to be compatible with the way that JArray is defined
-       in CNI.  However, we can't exceed BIGGEST_FIELD_ALIGNMENT. */
-      {
-      unsigned desired_align = TYPE_ALIGN (object_type_node);
-      desired_align = MAX (desired_align, TYPE_ALIGN (element_type));
-#ifdef BIGGEST_FIELD_ALIGNMENT
-      desired_align = MIN (desired_align, 
-                           (unsigned) BIGGEST_FIELD_ALIGNMENT);
-#endif
-#ifdef ADJUST_FIELD_ALIGN
-      desired_align = ADJUST_FIELD_ALIGN (fld, desired_align);
-#endif
-      DECL_ALIGN (arfld) = desired_align;
-      }
-    }
-  else
-    {
-      unsigned desired_align = TYPE_ALIGN (element_type);
-#ifdef BIGGEST_FIELD_ALIGNMENT
-      desired_align = MIN (desired_align, (unsigned) BIGGEST_FIELD_ALIGNMENT);
-#endif
-      TYPE_ALIGN (t) = desired_align;
-    }
+  atype = build_prim_array_type (element_type, length);
+  arfld = build_decl (FIELD_DECL, get_identifier ("data"), atype);
+  DECL_CONTEXT (arfld) = t;
+  TREE_CHAIN (fld) = arfld;
+  DECL_ALIGN (arfld) = TYPE_ALIGN (element_type);
 
   /* We could layout_class, but that loads java.lang.Object prematurely.
    * This is called by the parser, and it is a bad idea to do load_class
