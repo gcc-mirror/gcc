@@ -51,6 +51,9 @@ Boston, MA 02111-1307, USA.  */
 /* if not compiled with GNU C, use the C alloca and use only int bitfields. */
 #ifndef __GNUC__
 #define	USE_C_ALLOCA
+#ifdef __STDC__
+extern void *alloca ();
+#else
 extern char *alloca ();
 #undef ONLY_INT_FIELDS
 #define ONLY_INT_FIELDS

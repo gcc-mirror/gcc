@@ -36,7 +36,11 @@ Boston, MA 02111-1307, USA.  */
 /* do not use alloca from -lPW with cc, because function epilogues use %sp */
 #ifndef __GNUC__
 #define USE_C_ALLOCA
+#ifdef __STDC__
+extern void *alloca ();
+#else
 extern char *alloca ();
+#endif
 #endif
 
 /* Override part of the obstack macros.  */
