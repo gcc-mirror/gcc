@@ -5081,14 +5081,8 @@ legitimate_pic_address_disp_p (disp)
 	return false;
       return initial_exec_symbolic_operand (XVECEXP (disp, 0, 0), Pmode);
     case UNSPEC_NTPOFF:
-      /* ??? Could support offset here.  */
-      if (saw_plus)
-	return false;
       return local_exec_symbolic_operand (XVECEXP (disp, 0, 0), Pmode);
     case UNSPEC_DTPOFF:
-      /* ??? Could support offset here.  */
-      if (saw_plus)
-	return false;
       return local_dynamic_symbolic_operand (XVECEXP (disp, 0, 0), Pmode);
     }
 
