@@ -1,5 +1,5 @@
 /* Dead-code elimination pass for the GNU compiler.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    Written by Jeffrey D. Oldham <oldham@codesourcery.com>.
 
 This file is part of GNU CC.
@@ -36,7 +36,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    The last step can require adding labels, deleting insns, and
    modifying basic block structures.  Some conditional jumps may be
    converted to unconditional jumps so the control-flow graph may be
-   out-of-date.  
+   out-of-date.
 
    Edges from some infinite loops to the exit block can be added to
    the control-flow graph, but will be removed after this pass is
@@ -245,9 +245,9 @@ find_control_dependence (el, edge_index, pdom, cdbte)
 
   if (INDEX_EDGE_PRED_BB (el, edge_index) == EXIT_BLOCK_PTR)
     abort ();
-  ending_block = 
-    (INDEX_EDGE_PRED_BB (el, edge_index) == ENTRY_BLOCK_PTR) 
-    ? BASIC_BLOCK (0) 
+  ending_block =
+    (INDEX_EDGE_PRED_BB (el, edge_index) == ENTRY_BLOCK_PTR)
+    ? BASIC_BLOCK (0)
     : find_pdom (pdom, INDEX_EDGE_PRED_BB (el, edge_index));
 
   for (current_block = INDEX_EDGE_SUCC_BB (el, edge_index);
@@ -303,7 +303,7 @@ inherently_necessary_register_1 (current_rtx, data)
     {
     case CLOBBER:
       /* Do not traverse the rest of the clobber.  */
-      return -1;		
+      return -1;
       break;
     case PC:
       return 0;
@@ -333,11 +333,11 @@ inherently_necessary_register (current_rtx)
 
 /* Called via note_stores for each store in an insn.  Note whether
    or not a particular store is inherently necessary.  Store a
-   nonzero value in inherently_necessary_p if such a storeis found.  */
-   
+   nonzero value in inherently_necessary_p if such a store is found.  */
+
 static void
 note_inherently_necessary_set (dest, set, data)
-     rtx set;
+     rtx set ATTRIBUTE_UNUSED;
      rtx dest;
      void *data;
 {
@@ -364,14 +364,13 @@ static int
 find_inherently_necessary (x)
      rtx x;
 {
-  rtx pattern;
   if (x == NULL_RTX)
     return 0;
   else if (inherently_necessary_register (x))
     return !0;
   else
     switch (GET_CODE (x))
-      {  
+      {
       case CALL_INSN:
 	return !0;
       case CODE_LABEL:
@@ -642,7 +641,7 @@ ssa_eliminate_dead_code ()
 	  {
 	    rtx lbl = find_block_label (BASIC_BLOCK (pdom_block_number));
 	    rtx new_jump = emit_jump_insn_before (gen_jump (lbl), insn);
-	    
+
 	    /* Let jump know that label is in use.  */
 	    JUMP_LABEL (new_jump) = lbl;
 	    ++LABEL_NUSES (lbl);
@@ -667,7 +666,7 @@ ssa_eliminate_dead_code ()
     else if (!JUMP_P (insn))
       delete_insn_bb (insn);
   });
-  
+
   /* Remove fake edges from the CFG.  */
   remove_fake_edges ();
 
