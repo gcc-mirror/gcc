@@ -1725,6 +1725,7 @@ all-textutils:
 all-time:
 all-tix: all-tcl all-tk
 all-wdiff:
+configure-target-rda: $(ALL_GCC_C)
 configure-target-winsup: $(ALL_GCC_C)
 all-target-winsup: all-target-libiberty all-target-libtermcap
 all-uudecode: all-libiberty

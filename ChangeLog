@@ -1,3 +1,7 @@
+2002-12-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (configure-target-rda): Depend on ALL_GCC_C.
+
 2002-12-09  Svein E. Seldal  <Svein.Seldal@solidas.com>
 
 	* config.sub: Import from master repository
