@@ -6354,6 +6354,11 @@ init_decl_processing ()
       flag_inline_trees = 1;
       flag_no_inline = 1;
     }
+  if (flag_inline_functions)
+    {
+      flag_inline_trees = 2;
+      flag_inline_functions = 0;
+    }
 
   /* Initially, C.  */
   current_lang_name = lang_name_c;
@@ -6534,10 +6539,6 @@ init_decl_processing ()
 
   if (flag_exceptions)
     init_exception_processing ();
-  if (flag_no_inline)
-    {
-      flag_inline_functions = 0;
-    }
 
   if (! supports_one_only ())
     flag_weak = 0;
@@ -8821,8 +8822,13 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       DECL_NOT_REALLY_EXTERN (decl) = 1;
     }
 
+  /* If the declaration was declared inline, mark it as such.  */
   if (inlinep)
-    DECL_DECLARED_INLINE_P (decl) = DECL_INLINE (decl) = 1;
+    DECL_DECLARED_INLINE_P (decl) = 1;
+  /* We inline functions that are explicitly declared inline, or, when
+     the user explicitly asks us to, all functions.  */
+  if (DECL_DECLARED_INLINE_P (decl) || flag_inline_trees == 2)
+    DECL_INLINE (decl) = 1;
 
   DECL_EXTERNAL (decl) = 1;
   if (quals != NULL_TREE && TREE_CODE (type) == FUNCTION_TYPE)
@@ -13749,7 +13755,11 @@ save_function_data (decl)
   /* If we've already decided that we cannot inline this function, we
      must remember that fact when we actually go to expand the
      function.  */
-  f->cannot_inline = current_function_cannot_inline;
+  if (current_function_cannot_inline)
+    {
+      f->cannot_inline = current_function_cannot_inline;
+      DECL_INLINE (decl) = 0;
+    }
 }
 
 /* At the end of every constructor we generate to code to return

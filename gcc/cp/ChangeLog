@@ -1,3 +1,14 @@
+2001-05-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (flag_inline_trees): Update documentation.
+	* decl.c (init_decl_processing): Adjust handling of
+	flag_inline_functions and flag_inline_trees to support -O3.
+	(grokfndecl): Set DECL_INLINE on all functions if that's what
+	the user requested.
+	(save_function_data): Clear DECL_INLINE in
+	current_function_cannot_inline is non-NULL.
+	* decl2.c (flag_inline_trees): Update documentation.
+
 2001-05-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* dump.c (cp_dump_tree, USING_STMT case): New case.
