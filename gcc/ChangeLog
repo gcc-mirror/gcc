@@ -1,3 +1,8 @@
+2001-02-21  DJ Delorie  <dj@redhat.com>
+
+	* config/i960/i960.h (FRAME_POINTER_REQUIRED): Revert removal of
+	check for current_function_has_nonlocal_goto from 1999-11-12.
+
 Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* diagnostic.c (trim_filename): No longer static.
