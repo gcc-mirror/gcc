@@ -1951,6 +1951,97 @@ find_addr_reg (addr)
     return addr;
   abort ();
 }
+
+/* Output assembler code to perform a 32 bit 3 operand add.  */
+
+char *
+output_addsi3 (operands)
+     rtx *operands;
+{
+  if (! operands_match_p (operands[0], operands[1]))
+    {
+      if (!ADDRESS_REG_P (operands[1]))
+	{
+	  rtx tmp = operands[1];
+
+	  operands[1] = operands[2];
+	  operands[2] = tmp;
+	}
+
+      /* These insns can result from reloads to access
+	 stack slots over 64k from the frame pointer.  */
+      if (GET_CODE (operands[2]) == CONST_INT
+	  && INTVAL (operands[2]) + 0x8000 >= (unsigned) 0x10000)
+        return "move%.l %2,%0\\;add%.l %1,%0";
+#ifdef SGS
+      if (GET_CODE (operands[2]) == REG)
+	return "lea 0(%1,%2.l),%0";
+      else
+	return "lea %c2(%1),%0";
+#else /* not SGS */
+#ifdef MOTOROLA
+      if (GET_CODE (operands[2]) == REG)
+	return "lea (%1,%2.l),%0";
+      else
+	return "lea (%c2,%1),%0";
+#else /* not MOTOROLA (MIT syntax) */
+      if (GET_CODE (operands[2]) == REG)
+	return "lea %1@(0,%2:l),%0";
+      else
+	return "lea %1@(%c2),%0";
+#endif /* not MOTOROLA */
+#endif /* not SGS */
+    }
+  if (GET_CODE (operands[2]) == CONST_INT)
+    {
+#ifndef NO_ADDSUB_Q
+      if (INTVAL (operands[2]) > 0
+	  && INTVAL (operands[2]) <= 8)
+	return "addq%.l %2,%0";
+      if (INTVAL (operands[2]) < 0
+	  && INTVAL (operands[2]) >= -8)
+        {
+	  operands[2] = gen_rtx (CONST_INT, VOIDmode,
+			         - INTVAL (operands[2]));
+	  return "subq%.l %2,%0";
+	}
+      /* On the CPU32 it is faster to use two addql instructions to
+	 add a small integer (8 < N <= 16) to a register.
+	 Likewise for subql. */
+      if (TARGET_CPU32 && REG_P (operands[0]))
+	{
+	  if (INTVAL (operands[2]) > 8
+	      && INTVAL (operands[2]) <= 16)
+	    {
+	      operands[2] = gen_rtx (CONST_INT, VOIDmode, 
+				      INTVAL (operands[2]) - 8);
+	      return "addq%.l %#8,%0\\;addq%.l %2,%0";
+	    }
+	  if (INTVAL (operands[2]) < -8
+	      && INTVAL (operands[2]) >= -16)
+	    {
+	      operands[2] = gen_rtx (CONST_INT, VOIDmode,
+				      - INTVAL (operands[2]) - 8);
+	      return "subq%.l %#8,%0\\;subq%.l %2,%0";
+	    }
+	}
+#endif
+      if (ADDRESS_REG_P (operands[0])
+	  && INTVAL (operands[2]) >= -0x8000
+	  && INTVAL (operands[2]) < 0x8000)
+	{
+	  if (TARGET_68040)
+	    return "add%.w %2,%0";
+	  else
+#ifdef MOTOROLA  
+	    return "lea (%c2,%0),%0";
+#else
+	    return "lea %0@(%c2),%0";
+#endif
+	}
+    }
+  return "add%.l %2,%0";
+}
 
 /* Store in cc_status the expressions that the condition codes will
    describe after execution of an instruction whose pattern is EXP.
