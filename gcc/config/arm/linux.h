@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #undef COMMENT_BEGIN
  
 /* We default to ARM3.  */
-#define TARGET_CPU_DEFAULT TARGET_CPU_arm3
+#define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm3
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
