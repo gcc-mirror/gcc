@@ -4216,8 +4216,6 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		   p != next->insn;
 		   p = next_insn_in_loop (p, scan_start, end, loop_top))
 		{
-		  rtx note;
-    
 		  if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
 		    continue;
 		  if (reg_mentioned_p (old_reg, PATTERN (p)))

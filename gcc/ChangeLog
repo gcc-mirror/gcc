@@ -1,3 +1,29 @@
+Fri Mar 19 15:28:38 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cccp.c (create_definition): Cast to U_CHAR* when assigning to one.
+
+	* cppfiles.c (read_and_prescan): Likewise.
+	Start a #define in column 0.
+
+	* cpplib.c (cpp_define): Cast to U_CHAR* when assigning to one.
+	(cpp_push_buffer): Likewise for cpp_buffer*.
+	(do_include): Change the type of `fbeg' and `fend' to unsigned char*.
+	(do_endif): Cast to char* when assigning to one.
+	(do_assert): Likewise.
+	(do_unassert): Likewise.
+	(cpp_read_check_assertion): Change the type of `name' to U_CHAR*.
+	Don't do unnecessary cast to char* anymore.
+
+	* genrecog.c (make_insn_sequence): Cast to char** when assigning
+	to one.  Cast the first argument of bzero to PTR.
+
+	* loop.c (strength_reduce): Remove unused variable `note'.
+
+	* reload1.c (new_insn_chain): Cast to struct insn_chain* when
+ 	assigning to one.
+
+	* rtl.c (copy_rtx): Use memcpy instead of bcopy.
+
 Fri Mar 19 11:19:31 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* calls.c (initialize_argument_information): Mark parameters

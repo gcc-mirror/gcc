@@ -509,7 +509,8 @@ new_insn_chain ()
 
   if (unused_insn_chains == 0)
     {
-      c = obstack_alloc (&reload_obstack, sizeof (struct insn_chain));
+      c = (struct insn_chain *)
+	obstack_alloc (&reload_obstack, sizeof (struct insn_chain));
       c->live_before = OBSTACK_ALLOC_REG_SET (&reload_obstack);
       c->live_after = OBSTACK_ALLOC_REG_SET (&reload_obstack);
     }

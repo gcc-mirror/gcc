@@ -814,7 +814,7 @@ read_and_prescan (pfile, fp, desc, len)
      int desc;
      size_t len;
 {
-  U_CHAR *buf = xmalloc (len);
+  U_CHAR *buf = (U_CHAR *) xmalloc (len);
   U_CHAR *ip, *op, *line_base;
   U_CHAR *ibase;
   unsigned int line, deferred_newlines;
@@ -829,11 +829,11 @@ read_and_prescan (pfile, fp, desc, len)
   /* Table of characters that can't be handled in the inner loop.
      Keep these contiguous to optimize the performance of the code generated
      for the switch that uses them.  */
-  #define SPECCASE_EMPTY     0
-  #define SPECCASE_NUL       1
-  #define SPECCASE_CR        2
-  #define SPECCASE_BACKSLASH 3
-  #define SPECCASE_QUESTION  4
+#define SPECCASE_EMPTY     0
+#define SPECCASE_NUL       1
+#define SPECCASE_CR        2
+#define SPECCASE_BACKSLASH 3
+#define SPECCASE_QUESTION  4
   U_CHAR speccase[256];
 
   offset = 0;

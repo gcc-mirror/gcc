@@ -325,7 +325,7 @@ copy_rtx (orig)
      all fields need copying, and then clear the fields that should
      not be copied.  That is the sensible default behavior, and forces
      us to explicitly document why we are *not* copying a flag.  */
-  bcopy (orig, copy, sizeof (struct rtx_def) - sizeof (rtunion));
+  memcpy (copy, orig, sizeof (struct rtx_def) - sizeof (rtunion));
 
   /* We do not copy the USED flag, which is used as a mark bit during
      walks over the RTL.  */
