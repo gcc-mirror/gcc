@@ -1,3 +1,8 @@
+2001-10-22  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* unwind-dw2-fde.c (fde_unencoded_compare): Derefer pc_begin
+	fields when comparing.
+
 2001-10-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* arm.h (HOST_INT, HOST_UINT): Delete.  Remove all uses.
