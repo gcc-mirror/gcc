@@ -1625,7 +1625,7 @@ generate_bytecode_insns (exp, target, state)
 
 	/* COND_EXPR can be used in a binop. The stack must be adjusted. */
 	if (TREE_TYPE (exp) != void_type_node)
-	  NOTE_POP (TYPE_PRECISION (TREE_TYPE (exp)) > 32 ? 2 : 1);
+	  NOTE_POP (TYPE_IS_WIDE (TREE_TYPE (exp)) ? 2 : 1);
       }
       break;
     case CASE_EXPR:
