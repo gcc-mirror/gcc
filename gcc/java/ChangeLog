@@ -1,5 +1,10 @@
 2004-06-26  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* parse.y (qualify_and_find): Pass type decl, not identifier, to 
+	load_class.
+
+2004-06-26  Bryce McKinlay  <mckinlay@redhat.com>
+
 	PR java/15734
 	* expr.c (expand_java_field_op): Ensure that target class for static
 	field access has been loaded.

@@ -5891,7 +5891,7 @@ qualify_and_find (tree class_type, tree package, tree name)
   if ((new_class_decl = IDENTIFIER_CLASS_VALUE (new_qualified)))
     {
       if (!CLASS_LOADED_P (TREE_TYPE (new_class_decl)))
-	load_class (new_qualified, 0);
+	load_class (TREE_TYPE (new_class_decl), 0);
       TYPE_NAME (class_type) = new_qualified;
       return IDENTIFIER_CLASS_VALUE (new_qualified);
     }
