@@ -66,7 +66,6 @@ static int read_line_number		PARAMS ((cpp_reader *, int *));
 static U_CHAR *detect_if_not_defined	PARAMS ((cpp_reader *));
 static int consider_directive_while_skipping
 					PARAMS ((cpp_reader *, IF_STACK *));
-static int get_macro_name		PARAMS ((cpp_reader *));
 
 /* Values for the flags field of the table below.  KANDR and COND
    directives come from traditional (K&R) C.  The difference is, if we
@@ -310,36 +309,6 @@ pass_thru_directive (buf, len, pfile, keyword)
   CPP_PUTS_Q (pfile, buf, len);
 }
 
-/* Subroutine of do_define: determine the name of the macro to be
-   defined.  */
-
-static int
-get_macro_name (pfile)
-     cpp_reader *pfile;
-{
-  long here, len;
-
-  here = CPP_WRITTEN (pfile);
-  if (_cpp_get_directive_token (pfile) != CPP_NAME)
-    {
-      cpp_error (pfile, "`#define' must be followed by an identifier");
-      goto invalid;
-    }
-
-  len = CPP_WRITTEN (pfile) - here;
-  if (len == 7 && !strncmp (pfile->token_buffer + here, "defined", 7))
-    {
-      cpp_error (pfile, "`defined' is not a legal macro name");
-      goto invalid;
-    }
-
-  return len;
-
- invalid:
-  _cpp_skip_rest_of_line (pfile);
-  return 0;
-}
-
 /* Process a #define command.  */
 
 static int
@@ -348,47 +317,60 @@ do_define (pfile)
 {
   HASHNODE **slot;
   DEFINITION *def = 0;
-  long here;
   unsigned long hash;
   int len;
   int funlike = 0, empty = 0;
   U_CHAR *sym;
-  enum cpp_ttype token;
+  cpp_toklist *list = &pfile->directbuf;
 
   pfile->no_macro_expand++;
   pfile->parsing_define_directive++;
   CPP_OPTION (pfile, discard_comments)++;
 
-  here = CPP_WRITTEN (pfile);
-  len = get_macro_name (pfile);
-  if (len == 0)
-    goto out;
+  _cpp_scan_line (pfile, list);
 
-  /* Copy out the name so we can pop the token buffer.  */
-  len = CPP_WRITTEN (pfile) - here;
-  sym = (U_CHAR *) alloca (len + 1);
-  memcpy (sym, pfile->token_buffer + here, len);
-  sym[len] = '\0';
+  /* First token on the line must be a NAME.  There must be at least
+     one token (the VSPACE at the end).  */
+  if (list->tokens[0].type != CPP_NAME)
+    {
+      cpp_error_with_line (pfile, list->line, list->tokens[0].col,
+			   "#define must be followed by an identifier");
+      goto out;
+    }
+
+  sym = list->namebuf + list->tokens[0].val.name.offset;
+  len = list->tokens[0].val.name.len;
+
+  /* That NAME is not allowed to be "defined".  (Not clear if the
+     standard requires this.)  */
+  if (len == 7 && !strncmp (sym, "defined", 7))
+    {
+      cpp_error_with_line (pfile, list->line, list->tokens[0].col,
+			   "\"defined\" is not a legal macro name");
+      goto out;
+    }
+
+
+  if (list->tokens_used == 2 && list->tokens[1].type == CPP_VSPACE)
+    empty = 0;  /* Empty definition of object-like macro.  */
 
   /* If the next character, with no intervening whitespace, is '(',
-     then this is a function-like macro.
-     XXX Layering violation.  */
-  CPP_SET_MARK (pfile);
-  token = _cpp_get_directive_token (pfile);
-  if (token == CPP_VSPACE)
-    empty = 0;  /* Empty definition of object like macro.  */
-  else if (token == CPP_OPEN_PAREN && ADJACENT_TO_MARK (pfile))
-    funlike = 1;
-  else if (ADJACENT_TO_MARK (pfile))
-    /* If this is an object-like macro, C99 requires white space after
-       the name.  */
-    cpp_pedwarn (pfile, "missing white space after `#define %.*s'", len, sym);
-  CPP_GOTO_MARK (pfile);
-  CPP_SET_WRITTEN (pfile, here);
+     then this is a function-like macro.  Otherwise it is an object-
+     like macro, and C99 requires whitespace after the name
+     (6.10.3 para 3).  */
+  else if (!(list->tokens[1].flags & HSPACE_BEFORE))
+    {
+      if (list->tokens[1].type == CPP_OPEN_PAREN)
+	funlike = 1;
+      else
+	cpp_pedwarn (pfile,
+		     "The C standard requires whitespace after #define %.*s",
+		     len, sym);
+    }
 
   if (! empty)
     {
-      def = _cpp_create_definition (pfile, funlike);
+      def = _cpp_create_definition (pfile, list, funlike);
       if (def == 0)
 	goto out;
     }

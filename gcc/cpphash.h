@@ -272,7 +272,8 @@ extern HASHNODE **_cpp_lookup_slot	PARAMS ((cpp_reader *,
 						 enum insert_option,
 						 unsigned long *));
 extern void _cpp_free_definition	PARAMS ((DEFINITION *));
-extern DEFINITION *_cpp_create_definition PARAMS ((cpp_reader *, int));
+extern DEFINITION *_cpp_create_definition PARAMS ((cpp_reader *,
+						   cpp_toklist *, int));
 extern void _cpp_dump_definition	PARAMS ((cpp_reader *, const U_CHAR *,
 						 long, DEFINITION *));
 extern int _cpp_compare_defs		PARAMS ((cpp_reader *, DEFINITION *,
