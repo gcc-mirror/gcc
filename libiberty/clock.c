@@ -67,7 +67,7 @@ number of seconds used.
 /* FIXME: should be able to declare as clock_t. */
 
 long
-clock ()
+clock (void)
 {
 #ifdef HAVE_GETRUSAGE
   struct rusage rusage;

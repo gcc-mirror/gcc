@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #include "libiberty.h"
-extern char *choose_tmpdir PARAMS ((void));
+extern char *choose_tmpdir (void);
 
 /* Name of temporary file.
    mktemp requires 6 trailing X's.  */
@@ -54,7 +54,7 @@ not recommended.
 */
 
 char *
-choose_temp_base ()
+choose_temp_base (void)
 {
   const char *base = choose_tmpdir ();
   char *temp_filename;

@@ -10,9 +10,7 @@ Copies @var{length} bytes from memory region @var{in} to region
 */
 
 void
-bcopy (src, dest, len)
-  register char *src, *dest;
-  int len;
+bcopy (register char *src, register char *dest, int len)
 {
   if (dest < src)
     while (len--)

@@ -29,25 +29,9 @@ Boston, MA 02111-1307, USA.  */
 
 /*  Routines imported from standard C runtime libraries. */
 
-#ifdef ANSI_PROTOTYPES
-
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
-
-#else	/* !ANSI_PROTOTYPES */
-
-#if !defined _WIN32 || defined __GNUC__
-extern char *memcpy ();		/* Copy memory region */
-extern int strlen ();		/* Count length of string */
-extern char *malloc ();		/* Standard memory allocater */
-extern char *realloc ();	/* Standard memory reallocator */
-extern void free ();		/* Free malloc'd memory */
-extern char *strdup ();		/* Duplicate a string */
-#endif
-
-#endif	/* ANSI_PROTOTYPES */
-
 
 #ifndef NULL
 #define NULL 0
@@ -75,8 +59,7 @@ argument vector.
 */
 
 char **
-dupargv (argv)
-     char **argv;
+dupargv (char **argv)
 {
   int argc;
   char **copy;
@@ -119,8 +102,7 @@ itself.
 
 */
 
-void freeargv (vector)
-char **vector;
+void freeargv (char **vector)
 {
   register char **scan;
 
@@ -174,8 +156,7 @@ returned, as appropriate.
 
 */
 
-char **buildargv (input)
-     const char *input;
+char **buildargv (const char *input)
 {
   char *arg;
   char *copybuf;
@@ -325,7 +306,8 @@ static const char *const tests[] =
   NULL
 };
 
-int main ()
+int
+main (void)
 {
   char **argv;
   const char *const *test;

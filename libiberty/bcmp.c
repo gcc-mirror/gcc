@@ -17,9 +17,7 @@ result mean @var{x} sorts before @var{y}).
 
 
 int
-bcmp (from, to, count)
-  char *from, *to;
-  int count;
+bcmp (char *from, char *to, int count)
 {
   int rtnval = 0;
 
