@@ -1,3 +1,9 @@
+1999-07-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (reference_binding): Tweak.
+	(mayble_handle_implicit_object): Use direct_reference_binding to
+	create the right implicit conversion sequence.
+
 1999-07-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (convert_nontype_argument): Don't call decl_constant_value
