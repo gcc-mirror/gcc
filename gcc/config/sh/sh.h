@@ -2122,20 +2122,12 @@ extern int rtx_equal_function_value_matters;
 extern struct rtx_def *fpscr_rtx;
 
 
-/* Instructions with unfilled delay slots take up an extra two bytes for
-   the nop in the delay slot.  */
+/* Instructions with unfilled delay slots take up an
+   extra two bytes for the nop in the delay slot.
+   sh-dsp parallel processing insns are four bytes long.  */
 
 #define ADJUST_INSN_LENGTH(X, LENGTH)				\
-  if (((GET_CODE (X) == INSN					\
-	&& GET_CODE (PATTERN (X)) != USE			\
-	&& GET_CODE (PATTERN (X)) != CLOBBER)			\
-       || GET_CODE (X) == CALL_INSN				\
-       || (GET_CODE (X) == JUMP_INSN				\
-	   && GET_CODE (PATTERN (X)) != ADDR_DIFF_VEC		\
-	   && GET_CODE (PATTERN (X)) != ADDR_VEC))		\
-      && GET_CODE (PATTERN (NEXT_INSN (PREV_INSN (X)))) != SEQUENCE \
-      && get_attr_needs_delay_slot (X) == NEEDS_DELAY_SLOT_YES)	\
-    (LENGTH) += 2;
+  (LENGTH) += sh_insn_length_adjustment (X);
 
 /* Define the codes that are matched by predicates in sh.c.  */
 #define PREDICATE_CODES \

@@ -90,6 +90,7 @@ extern void expand_sf_binop PARAMS ((rtx (*)(rtx, rtx, rtx, rtx), rtx *));
 extern void expand_df_unop PARAMS ((rtx (*)(rtx, rtx, rtx), rtx *));
 extern void expand_df_binop PARAMS ((rtx (*)(rtx, rtx, rtx, rtx), rtx *));
 extern void expand_fp_branch PARAMS ((rtx (*)(void), rtx (*)(void)));
+extern int sh_insn_length_adjustment PARAMS ((rtx));
 #ifdef TREE_CODE
 extern void sh_va_start PARAMS ((int, tree, rtx));
 extern rtx sh_va_arg PARAMS ((tree, tree));

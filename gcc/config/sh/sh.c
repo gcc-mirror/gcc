@@ -5127,3 +5127,79 @@ fpscr_set_from_mem (mode, regs_live)
   REG_NOTES (i) = gen_rtx_EXPR_LIST (REG_DEAD, addr_reg, REG_NOTES (i));
   REG_NOTES (i) = gen_rtx_EXPR_LIST (REG_INC, addr_reg, REG_NOTES (i));
 }
+
+/* Is the given character a logical line separator for the assembler?  */
+#ifndef IS_ASM_LOGICAL_LINE_SEPARATOR
+#define IS_ASM_LOGICAL_LINE_SEPARATOR(C) ((C) == ';')
+#endif
+
+int
+sh_insn_length_adjustment (insn)
+     rtx insn;
+{
+  /* Instructions with unfilled delay slots take up an extra two bytes for
+     the nop in the delay slot.  */
+  if (((GET_CODE (insn) == INSN
+        && GET_CODE (PATTERN (insn)) != USE
+        && GET_CODE (PATTERN (insn)) != CLOBBER)
+       || GET_CODE (insn) == CALL_INSN
+       || (GET_CODE (insn) == JUMP_INSN
+	   && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
+	   && GET_CODE (PATTERN (insn)) != ADDR_VEC))
+      && GET_CODE (PATTERN (NEXT_INSN (PREV_INSN (insn)))) != SEQUENCE
+      && get_attr_needs_delay_slot (insn) == NEEDS_DELAY_SLOT_YES)
+    return 2;
+
+  /* sh-dsp parallel processing insn take four bytes instead of two.  */
+     
+  if (GET_CODE (insn) == INSN)
+    {
+      int sum = 0;
+      rtx body = PATTERN (insn);
+      char *template, c;
+      int maybe_label = 1;
+
+      if (GET_CODE (body) == ASM_INPUT)
+	template = XSTR (body, 0);
+      else if (asm_noperands (body) >= 0)
+	template
+	  = decode_asm_operands (body, NULL_PTR, NULL_PTR, NULL_PTR, NULL_PTR);
+      else
+	return 0;
+      do
+	{
+	  int ppi_adjust = 0;
+
+	  do
+	    c = *template++;
+	  while (c == ' ' || c == '\t');
+	  /* all sh-dsp parallel-processing insns start with p.
+	     The only non-ppi sh insn starting with p is pref.
+	     The only ppi starting with pr is prnd.  */
+	  if ((c == 'p' || c == 'P') && strncasecmp ("re", template, 2))
+	    ppi_adjust = 2;
+	  /* The repeat pseudo-insn expands two three insns, a total of
+	     six bytes in size.  */
+	  else if ((c == 'r' || c == 'R')
+		   && ! strncasecmp ("epeat", template, 5))
+	    ppi_adjust = 4;
+	  while (c && c != '\n' && ! IS_ASM_LOGICAL_LINE_SEPARATOR (c))
+	    {
+	      /* If this is a label, it is obviously not a ppi insn.  */
+	      if (c == ':' && maybe_label)
+		{
+		  ppi_adjust = 0;
+		  break;
+		}
+	      else if (c == '\'' || c == '"')
+		maybe_label = 0;
+	      c = *template++;
+	    }
+	  sum += ppi_adjust;
+	  maybe_label = c != ':';
+	}
+      while (c);
+      return sum;
+    }
+  return 0;
+}
