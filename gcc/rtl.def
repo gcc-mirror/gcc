@@ -540,6 +540,12 @@ DEF_RTL_EXPR(SUBREG, "subreg", "ei", 'x')
 
 DEF_RTL_EXPR(STRICT_LOW_PART, "strict_low_part", "e", 'x')
 
+/* (CONCAT a b) represents the virtual concatenation of a and b
+   to make a value that has as many bits as a and b put together.
+   This is used for complex values.  Normally it appears only
+   in DECL_RTLs and during RTL generation, but not in the insn chain.  */
+DEF_RTL_EXPR(CONCAT, "concat", "ee", 'o')
+
 /* A memory location; operand is the address.
    Can be nested inside a VOLATILE.  */
 DEF_RTL_EXPR(MEM, "mem", "e", 'o')
