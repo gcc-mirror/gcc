@@ -1064,8 +1064,10 @@ yyparse ()
 
   for (ctxp = ctxp_for_generation;  ctxp;  ctxp = ctxp->next)
     {
+      input_filename = ctxp->filename;
       parse_source_file_2 ();
     }
+  input_filename = main_input_filename;
 
   java_expand_classes ();
   if (!java_report_errors () && !flag_syntax_only)

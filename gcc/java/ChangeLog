@@ -1,8 +1,11 @@
 2001-03-15  Per Bothner  <per@bothner.com>
 
+	* jcf-parse.c (yyparse):  Set/reset input_filename for source file.
+	* parse.y (java_expand_classes):  Likewise.
+	
 	* parse.y (expand_start_java_method):  Was only called once and had a
 	misleading name, so inline in caller java_complete_expand_method.
-	(enter_a_block):  Likewise inline in enter_blck and remove.
+	(enter_a_block):  Likewise inline in enter_block and remove.
 
 	Remove junk from when gcc/java was created (by copying from C/C++).
 	* decl.c (keep_next_level_flag, keep_next_if_subblocks):  Remove.

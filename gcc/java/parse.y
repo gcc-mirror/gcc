@@ -8621,10 +8621,12 @@ java_expand_classes ()
   for (; ctxp_for_generation; ctxp_for_generation = ctxp_for_generation->next)
     {
       ctxp = ctxp_for_generation;
+      input_filename = ctxp->filename;
       lang_init_source (2);	       /* Error msgs have method prototypes */
       java_complete_expand_classes (); /* Complete and expand classes */
       java_parse_abort_on_error ();
     }
+  input_filename = main_input_filename;
 
   /* Find anonymous classes and expand their constructor, now they
      have been fixed. */
