@@ -8060,8 +8060,7 @@ ix86_expand_int_movcc (operands)
 	       */
 	      tmp = expand_simple_binop (mode, AND,
 					 tmp,
-					 GEN_INT (trunc_int_for_mode
-						  (cf - ct, mode)),
+					 gen_int_mode (cf - ct, mode),
 					 tmp, 1, OPTAB_DIRECT);
 	      if (ct)
 	       	tmp = expand_simple_binop (mode, PLUS,
@@ -8211,8 +8210,7 @@ ix86_expand_int_movcc (operands)
 				     out, 1, OPTAB_DIRECT);
 	  out = expand_simple_binop (mode, AND,
 				     out,
-				     GEN_INT (trunc_int_for_mode
-					      (cf - ct, mode)),
+				     gen_int_mode (cf - ct, mode),
 				     out, 1, OPTAB_DIRECT);
 	  out = expand_simple_binop (mode, PLUS,
 				     out, GEN_INT (ct),
@@ -8559,7 +8557,7 @@ ix86_split_to_parts (operand, parts, mode)
 		case XFmode:
 		case TFmode:
 		  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
-		  parts[2] = GEN_INT (trunc_int_for_mode (l[2], SImode));
+		  parts[2] = gen_int_mode (l[2], SImode);
 		  break;
 		case DFmode:
 		  REAL_VALUE_TO_TARGET_DOUBLE (r, l);
@@ -8567,8 +8565,8 @@ ix86_split_to_parts (operand, parts, mode)
 		default:
 		  abort ();
 		}
-	      parts[1] = GEN_INT (trunc_int_for_mode (l[1], SImode));
-	      parts[0] = GEN_INT (trunc_int_for_mode (l[0], SImode));
+	      parts[1] = gen_int_mode (l[1], SImode);
+	      parts[0] = gen_int_mode (l[0], SImode);
 	    }
 	  else
 	    abort ();
@@ -8603,13 +8601,13 @@ ix86_split_to_parts (operand, parts, mode)
 	      /* Do not use shift by 32 to avoid warning on 32bit systems.  */
 	      if (HOST_BITS_PER_WIDE_INT >= 64)
 	        parts[0]
-		  = GEN_INT (trunc_int_for_mode
+		  = gen_int_mode
 		      ((l[0] & (((HOST_WIDE_INT) 2 << 31) - 1))
 		       + ((((HOST_WIDE_INT) l[1]) << 31) << 1),
-		       DImode));
+		       DImode);
 	      else
 	        parts[0] = immed_double_const (l[0], l[1], DImode);
-	      parts[1] = GEN_INT (trunc_int_for_mode (l[2], SImode));
+	      parts[1] = gen_int_mode (l[2], SImode);
 	    }
 	  else
 	    abort ();
@@ -9632,8 +9630,7 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx)
   emit_insn (gen_one_cmplsi2 (scratch, scratch));
   emit_insn (gen_andsi3 (tmpreg, tmpreg, scratch));
   emit_insn (gen_andsi3 (tmpreg, tmpreg,
-			 GEN_INT (trunc_int_for_mode
-				  (0x80808080, SImode))));
+			 gen_int_mode (0x80808080, SImode)));
   emit_cmp_and_jump_insns (tmpreg, const0_rtx, EQ, 0, SImode, 1,
 			   align_4_label);
 
@@ -10752,10 +10749,10 @@ x86_initialize_trampoline (tramp, fnaddr, cxt)
 			       plus_constant (tramp, 10),
 			       NULL_RTX, 1, OPTAB_DIRECT);
       emit_move_insn (gen_rtx_MEM (QImode, tramp),
-		      GEN_INT (trunc_int_for_mode (0xb9, QImode)));
+		      gen_int_mode (0xb9, QImode));
       emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 1)), cxt);
       emit_move_insn (gen_rtx_MEM (QImode, plus_constant (tramp, 5)),
-		      GEN_INT (trunc_int_for_mode (0xe9, QImode)));
+		      gen_int_mode (0xe9, QImode));
       emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 6)), disp);
     }
   else
@@ -10768,7 +10765,7 @@ x86_initialize_trampoline (tramp, fnaddr, cxt)
 	{
 	  fnaddr = copy_to_mode_reg (DImode, fnaddr);
 	  emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, offset)),
-			  GEN_INT (trunc_int_for_mode (0xbb41, HImode)));
+			  gen_int_mode (0xbb41, HImode));
 	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, offset + 2)),
 			  gen_lowpart (SImode, fnaddr));
 	  offset += 6;
@@ -10776,22 +10773,22 @@ x86_initialize_trampoline (tramp, fnaddr, cxt)
       else
 	{
 	  emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, offset)),
-			  GEN_INT (trunc_int_for_mode (0xbb49, HImode)));
+			  gen_int_mode (0xbb49, HImode));
 	  emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, offset + 2)),
 			  fnaddr);
 	  offset += 10;
 	}
       /* Load static chain using movabs to r10.  */
       emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, offset)),
-		      GEN_INT (trunc_int_for_mode (0xba49, HImode)));
+		      gen_int_mode (0xba49, HImode));
       emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, offset + 2)),
 		      cxt);
       offset += 10;
       /* Jump to the r11 */
       emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, offset)),
-		      GEN_INT (trunc_int_for_mode (0xff49, HImode)));
+		      gen_int_mode (0xff49, HImode));
       emit_move_insn (gen_rtx_MEM (QImode, plus_constant (tramp, offset+2)),
-		      GEN_INT (trunc_int_for_mode (0xe3, QImode)));
+		      gen_int_mode (0xe3, QImode));
       offset += 3;
       if (offset > TRAMPOLINE_SIZE)
 	abort ();
