@@ -1,3 +1,7 @@
+Wed Sep 30 15:53:17 1998  Klaus Espenlaub  <kespenla@student.informatik.uni-ulm.de>
+
+	* rs6000.h (ASM_OUTPUT_CONSTRUCTOR, ASM_OUTPUT_DESTRUCTOR): Delete.
+
 Wed Sep 30 14:27:49 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* function.c (assign_parms): Undo change of June 9.
