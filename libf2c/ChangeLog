@@ -1,6 +1,22 @@
+1999-02-26  Craig Burley  <craig@jcb-sc.com>
+
+	* libU77/Version.c: Bump version.
+
+1999-02-20  Craig Burley  <craig@jcb-sc.com>
+
+	From Krister Walfridsson <cato@df.lth.se>:
+	* libU77/lstat_.c (G77_lstat_0): Kill spurious setting
+	of element 6 to zero, as it undid the previous setting.
+
 1999-02-14  Craig Burley  <craig@jcb-sc.com>
 
 	* libI77/Version.c: Bump ("update" below) to date of last change.
+
+1999-01-15  Dave Love  <fx@gnu.org>
+
+	* libU77/datetime_.c (G77_date_and_time_0): Return milliseconds as
+	such, not as microseconds.
+	(s_copy): Declare.
 
 1998-10-21  Dave Love  <fx@gnu.org>
 

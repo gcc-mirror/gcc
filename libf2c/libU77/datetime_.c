@@ -32,6 +32,12 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include "f2c.h"
 
+#ifdef KR_headers
+VOID s_copy ();
+#else
+void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
+#endif
+
 int G77_date_and_time_0 (char *date, char *fftime, char *zone,
 			 integer *values, ftnlen date_len,
 			 ftnlen fftime_len, ftnlen zone_len)
@@ -58,7 +64,7 @@ int G77_date_and_time_0 (char *date, char *fftime, char *zone,
     struct timeval tp;
     struct timezone tzp;
     if (! gettimeofday (&tp, &tzp))
-      vals[7] = tp.tv_usec;
+      vals[7] = tp.tv_usec/1000;
   }
 #endif
   if (values)			/* null pointer for missing optional */

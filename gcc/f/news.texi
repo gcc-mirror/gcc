@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1999-02-14
+@c 1999-02-26
 
 @ifclear NEWSONLY
 @node News
@@ -57,6 +57,22 @@ to help clarify how they differ from other versions,
 though this can make getting a complete picture
 of what a particular @code{egcs} version contains
 somewhat more difficult.
+
+@heading In 0.5.24 and @code{egcs} 1.1.2 (versus 0.5.23 and 1.1.1):
+@itemize @bullet
+@item
+Fix the @samp{Date_and_Time} intrinsic (in @code{libg2c})
+to return the milliseconds value properly
+in @var{Values}(8).
+
+@item
+Fix the @samp{LStat} intrinsic (in @code{libg2c})
+to return device-ID information properly
+in @var{SArray}(7).
+
+@item
+Improve documentation.
+@end itemize
 
 @heading In 0.5.24 and @code{egcs} 1.1.1 (versus 0.5.23 and 1.1):
 @itemize @bullet
