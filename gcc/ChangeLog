@@ -1,4 +1,4 @@
-2003-03-18  Ulrich Weigand  <uweigand@de.ibm.com>
+2003-03-19  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_preferred_reload_class): Do not
 	force constants to the pool unless necessary.
