@@ -1,3 +1,15 @@
+1999-11-02  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Don't create boehm-config.h.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libgcjgc_la_SOURCES): Reference gcconfig.h, not
+	config.h.
+	($(all_objs)): Depend on gcconfig.h.
+	* gc_priv.h: Reference GCCONFIG_H, not CONFIG_H.
+	* gcconfig.h: Define GCCONFIG_H, not CONFIG_H.
+	* config.h: Removed.
+
 1999-11-01  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.

@@ -195,12 +195,6 @@ AC_DEFINE(NO_SIGNALS)
 AC_DEFINE(NO_DEBUGGING)
 AC_DEFINE(JAVA_FINALIZATION)
 
-dnl Create boehm-config.h so that libjava can find it.
-dnl It is required to use gc_priv.h, which is required to write
-dnl a new marking function.  So config.h in this package is
-dnl poorly named.
-AC_LINK_FILES(config.h, boehm-config.h)
-
 dnl This is something of a hack.  When cross-compiling we turn off
 dnl some functionality.  We also enable the "small" configuration.
 dnl These is only correct when targetting an embedded system.  FIXME.
