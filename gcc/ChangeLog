@@ -1,3 +1,11 @@
+2000-01-27 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* c4x.h (PREFERRED_RELOAD_CLASS): Change to restrict the reloading
+	of framepointer + constant to ADDR_REGS class.
+	* c4x.md (addqi3, addqi3_noclobber_reload): Update.
+	* c4x.c (std_or_reg_operand): New function.
+	* c4x-protos.h (std_or_reg_operand): Prototype it.
+
 2000-01-29 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* t-c4x: Change qi,qf,di,df into si,sf,hi,hf to generate same

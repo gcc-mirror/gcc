@@ -815,7 +815,17 @@ enum reg_class
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
      (IS_INDEX_REGNO(REGNO) || IS_INDEX_REGNO((unsigned)reg_renumber[REGNO]))
 
-#define PREFERRED_RELOAD_CLASS(X, CLASS) (CLASS)
+/* If we have to generate framepointer + constant prefer an ADDR_REGS
+   register. This avoids using EXT_REGS in addqi3_noclobber_reload.  */
+
+#define PREFERRED_RELOAD_CLASS(X, CLASS)			\
+     (GET_CODE (X) == PLUS					\
+      && GET_MODE (X) == Pmode					\
+      && GET_CODE (XEXP ((X), 0)) == REG			\
+      && GET_MODE (XEXP ((X), 0)) == Pmode			\
+      && REGNO (XEXP ((X), 0)) == FRAME_POINTER_REGNUM		\
+      && GET_CODE (XEXP ((X), 1)) == CONST_INT			\
+	? ADDR_REGS : (CLASS))
 
 #define LIMIT_RELOAD_CLASS(X, CLASS) (CLASS)
 
@@ -2608,6 +2618,7 @@ if (final_sequence != NULL_RTX)		\
   {"ext_low_reg_operand", {REG, SUBREG}},			\
   {"ext_reg_operand", {REG, SUBREG}},				\
   {"std_reg_operand", {REG, SUBREG}},				\
+  {"std_or_reg_operand", {REG, SUBREG}},			\
   {"addr_reg_operand", {REG, SUBREG}},				\
   {"index_reg_operand", {REG, SUBREG}},				\
   {"dp_reg_operand", {REG}},					\

@@ -2970,6 +2970,18 @@ std_reg_operand (op, mode)
 }
 
 
+/* Standard precision or normal register.  */
+
+int
+std_or_reg_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (reload_in_progress)
+    return std_reg_operand (op, mode);
+  return reg_operand (op, mode);
+}
+
 /* Address register.  */
 
 int
