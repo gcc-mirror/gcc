@@ -76,15 +76,21 @@ namespace __gnu_norm
     _List_node_base* _M_next;   ///< Self-explanatory
     _List_node_base* _M_prev;   ///< Self-explanatory
 
-    static void swap(_List_node_base& __x,
-                     _List_node_base& __y);
+    static void
+    swap(_List_node_base& __x, _List_node_base& __y);
 
-    void transfer(_List_node_base * const __first,
-                  _List_node_base * const __last);
+    void
+    transfer(_List_node_base * const __first,
+	     _List_node_base * const __last);
 
-    void reverse();
-    void hook(_List_node_base * const __position);
-    void unhook();
+    void
+    reverse();
+
+    void
+    hook(_List_node_base * const __position);
+    
+    void
+    unhook();
   };
   
   /// @if maint An actual node in the %list.  @endif
@@ -286,6 +292,7 @@ namespace __gnu_norm
       // allocator_type and _Node_Alloc_type. The conversion is
       // required by table 32 in [20.1.5].
       typedef typename _Alloc::template rebind<_List_node<_Tp> >::other
+
       _Node_Alloc_type;
 
       _List_node_base _M_node;

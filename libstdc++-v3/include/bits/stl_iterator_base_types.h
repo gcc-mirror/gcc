@@ -124,7 +124,8 @@ namespace std
    *  provide tighter, more correct semantics.
   */
   template<typename _Iterator>
-    struct iterator_traits {
+    struct iterator_traits
+    {
       typedef typename _Iterator::iterator_category iterator_category;
       typedef typename _Iterator::value_type        value_type;
       typedef typename _Iterator::difference_type   difference_type;
@@ -133,7 +134,8 @@ namespace std
     };
 
   template<typename _Tp>
-    struct iterator_traits<_Tp*> {
+    struct iterator_traits<_Tp*>
+    {
       typedef random_access_iterator_tag iterator_category;
       typedef _Tp                         value_type;
       typedef ptrdiff_t                   difference_type;
@@ -142,7 +144,8 @@ namespace std
     };
 
   template<typename _Tp>
-    struct iterator_traits<const _Tp*> {
+    struct iterator_traits<const _Tp*>
+    {
       typedef random_access_iterator_tag iterator_category;
       typedef _Tp                         value_type;
       typedef ptrdiff_t                   difference_type;

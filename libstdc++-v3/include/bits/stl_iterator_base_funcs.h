@@ -137,9 +137,11 @@ namespace std
       __glibcxx_function_requires(_BidirectionalIteratorConcept<
 				  _BidirectionalIterator>)
       if (__n > 0)
-        while (__n--) ++__i;
+        while (__n--)
+	  ++__i;
       else
-        while (__n++) --__i;
+        while (__n++)
+	  --__i;
     }
   
   template<typename _RandomAccessIterator, typename _Distance>

@@ -336,7 +336,7 @@ namespace __gnu_norm
 	iterator __i = lower_bound(__k);
 	// __i->first is greater than or equivalent to __k.
 	if (__i == end() || key_comp()(__k, (*__i).first))
-        __i = insert(__i, value_type(__k, mapped_type()));
+          __i = insert(__i, value_type(__k, mapped_type()));
 	return (*__i).second;
       }
       
