@@ -46,7 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "cpplib.h"
 #include "toplev.h"
-#include "c4x-protos.h"
+#include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
 

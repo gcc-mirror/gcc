@@ -1,3 +1,12 @@
+2002-09-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c4x-c.c, c4x.c, darwin.c, i370-c.c, m32r.c: Include tm_p.h
+	instead of the *-protos.h file directly.
+	* t-c4x, t-i370, t-v850: Depend on $(TM_P_H).
+	* darwin.c (machopic_output_stub): Move prototype ...
+	* darwin-protos.h (machopic_output_stub): ... here.
+	* rs6000-protos.h (machopic_output_stub): Don't declare.
+
 2002-09-16  Richard Henderson  <rth@redhat.com>
 
 	* c-common.c (builtin_define_float_constants): Emit __FOO_DENORM_MIN__.

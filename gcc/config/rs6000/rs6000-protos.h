@@ -190,8 +190,6 @@ extern void debug_stack_info PARAMS ((rs6000_stack_t *));
 extern const char *output_isel PARAMS ((rtx *));
 extern int vrsave_operation PARAMS ((rtx, enum machine_mode));
 
-extern void machopic_output_stub PARAMS ((FILE *, const char *, const char *));
-
 /* Declare functions in rs6000-c.c */
 
 #ifdef GCC_CPPLIB_H

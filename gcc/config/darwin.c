@@ -38,9 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "ggc.h"
 #include "langhooks.h"
-#include "darwin-protos.h"
-
-extern void machopic_output_stub PARAMS ((FILE *, const char *, const char *));
+#include "tm_p.h"
 
 static int machopic_data_defined_p PARAMS ((const char *));
 static void update_non_lazy_ptrs PARAMS ((const char *));
