@@ -1,3 +1,7 @@
+2003-11-05  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/cond-lvalue-1.c: New test.
+
 2003-11-05  Gernot Hillier  <gernot.hillier@siemens.com>
 
 	* g++.old-deja/g++.pt/asm1.C: Enable for e.g. x86_64-*-linux-gnu.

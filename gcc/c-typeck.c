@@ -2588,8 +2588,7 @@ pedantic_lvalue_warning (enum tree_code code)
   switch (code)
     {
     case COND_EXPR:
-      if (pedantic)
-	pedwarn ("ISO C forbids use of conditional expressions as lvalues");
+      pedwarn ("use of conditional expressions as lvalues is deprecated");
       break;
     case COMPOUND_EXPR:
       if (pedantic)
