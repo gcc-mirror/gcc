@@ -9535,7 +9535,7 @@ ffecom_tree_canonize_ptr_ (tree *decl, tree *offset,
 
     case PARM_DECL:
       *decl = t;
-      *offset =  bitsize_int (0L, 0L);
+      *offset = bitsize_int (0L, 0L);
       break;
 
     case ADDR_EXPR:
@@ -9543,7 +9543,7 @@ ffecom_tree_canonize_ptr_ (tree *decl, tree *offset,
 	{
 	  /* A reference to COMMON.  */
 	  *decl = TREE_OPERAND (t, 0);
-	  *offset =  bitsize_int (0L, 0L);
+	  *offset = bitsize_int (0L, 0L);
 	  break;
 	}
       /* Fall through.  */
