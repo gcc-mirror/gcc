@@ -1230,6 +1230,14 @@ typedef struct cp_parser GTY(())
      direct-declarator.  */
   bool in_declarator_p;
 
+  /* TRUE if we are presently parsing the body of an
+     iteration-statement.  */
+  bool in_iteration_statement_p;
+
+  /* TRUE if we are presently parsing the body of a switch
+     statement.  */
+  bool in_switch_statement_p;
+
   /* If non-NULL, then we are parsing a construct where new type
      definitions are not permitted.  The string stored here will be
      issued as an error message if a type is defined.  */
@@ -2117,6 +2125,12 @@ cp_parser_new (void)
 
   /* We are not processing a declarator.  */
   parser->in_declarator_p = false;
+
+  /* We are not in an iteration statement.  */
+  parser->in_iteration_statement_p = false;
+
+  /* We are not in a switch statement.  */
+  parser->in_switch_statement_p = false;
 
   /* The unparsed function queue is empty.  */
   parser->unparsed_functions_queues = build_tree_list (NULL_TREE, NULL_TREE);
@@ -5228,7 +5242,7 @@ static tree
 cp_parser_labeled_statement (cp_parser* parser, bool in_statement_expr_p)
 {
   cp_token *token;
-  tree statement = NULL_TREE;
+  tree statement = error_mark_node;
 
   /* The next token should be an identifier.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -5251,16 +5265,20 @@ cp_parser_labeled_statement (cp_parser* parser, bool in_statement_expr_p)
 	expr = cp_parser_constant_expression (parser, 
 					      /*allow_non_constant_p=*/false,
 					      NULL);
-	/* Create the label.  */
-	statement = finish_case_label (expr, NULL_TREE);
+	if (!parser->in_switch_statement_p)
+	  error ("case label `%E' not within a switch statement", expr);
+	else
+	  statement = finish_case_label (expr, NULL_TREE);
       }
       break;
 
     case RID_DEFAULT:
       /* Consume the `default' token.  */
       cp_lexer_consume_token (parser->lexer);
-      /* Create the label.  */
-      statement = finish_case_label (NULL_TREE, NULL_TREE);
+      if (!parser->in_switch_statement_p)
+	error ("case label not within a switch statement");
+      else
+	statement = finish_case_label (NULL_TREE, NULL_TREE);
       break;
 
     default:
@@ -5443,12 +5461,16 @@ cp_parser_selection_statement (cp_parser* parser)
 	else
 	  {
 	    tree body;
+	    bool in_switch_statement_p;
 
 	    /* Add the condition.  */
 	    finish_switch_cond (condition, statement);
 
 	    /* Parse the body of the switch-statement.  */
+	    in_switch_statement_p = parser->in_switch_statement_p;
+	    parser->in_switch_statement_p = true;
 	    body = cp_parser_implicitly_scoped_statement (parser);
+	    parser->in_switch_statement_p = in_switch_statement_p;
 
 	    /* Now we're all done with the switch-statement.  */
 	    finish_switch_stmt (statement);
@@ -5564,11 +5586,17 @@ cp_parser_iteration_statement (cp_parser* parser)
   cp_token *token;
   enum rid keyword;
   tree statement;
+  bool in_iteration_statement_p;
+
 
   /* Peek at the next token.  */
   token = cp_parser_require (parser, CPP_KEYWORD, "iteration-statement");
   if (!token)
     return error_mark_node;
+
+  /* Remember whether or not we are already within an iteration
+     statement.  */ 
+  in_iteration_statement_p = parser->in_iteration_statement_p;
 
   /* See what kind of keyword it is.  */
   keyword = token->keyword;
@@ -5588,7 +5616,9 @@ cp_parser_iteration_statement (cp_parser* parser)
 	/* Look for the `)'.  */
 	cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
 	/* Parse the dependent statement.  */
+	parser->in_iteration_statement_p = true;
 	cp_parser_already_scoped_statement (parser);
+	parser->in_iteration_statement_p = in_iteration_statement_p;
 	/* We're done with the while-statement.  */
 	finish_while_stmt (statement);
       }
@@ -5601,7 +5631,9 @@ cp_parser_iteration_statement (cp_parser* parser)
 	/* Begin the do-statement.  */
 	statement = begin_do_stmt ();
 	/* Parse the body of the do-statement.  */
+	parser->in_iteration_statement_p = true;
 	cp_parser_implicitly_scoped_statement (parser);
+	parser->in_iteration_statement_p = in_iteration_statement_p;
 	finish_do_body (statement);
 	/* Look for the `while' keyword.  */
 	cp_parser_require_keyword (parser, RID_WHILE, "`while'");
@@ -5646,7 +5678,9 @@ cp_parser_iteration_statement (cp_parser* parser)
 	cp_parser_require (parser, CPP_CLOSE_PAREN, "`;'");
 
 	/* Parse the body of the for-statement.  */
+	parser->in_iteration_statement_p = true;
 	cp_parser_already_scoped_statement (parser);
+	parser->in_iteration_statement_p = in_iteration_statement_p;
 
 	/* We're done with the for-statement.  */
 	finish_for_stmt (statement);
@@ -5727,12 +5761,25 @@ cp_parser_jump_statement (cp_parser* parser)
   switch (keyword)
     {
     case RID_BREAK:
-      statement = finish_break_stmt ();
+      if (!parser->in_switch_statement_p
+	  && !parser->in_iteration_statement_p)
+	{
+	  error ("break statement not within loop or switch");
+	  statement = error_mark_node;
+	}
+      else
+	statement = finish_break_stmt ();
       cp_parser_require (parser, CPP_SEMICOLON, "`;'");
       break;
 
     case RID_CONTINUE:
-      statement = finish_continue_stmt ();
+      if (!parser->in_iteration_statement_p)
+	{
+	  error ("continue statement not within a loop");
+	  statement = error_mark_node;
+	}
+      else
+	statement = finish_continue_stmt ();
       cp_parser_require (parser, CPP_SEMICOLON, "`;'");
       break;
 
