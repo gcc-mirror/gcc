@@ -1,5 +1,5 @@
 /* PublicKey.java -- "Super-interface" for all public keys
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -34,6 +34,6 @@ package java.security;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public interface PublicKey
+public interface PublicKey extends Key
 {
 }
