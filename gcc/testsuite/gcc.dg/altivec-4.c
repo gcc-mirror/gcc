@@ -1,6 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* } } */
 /* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
-/* { dg-options "-maltivec -O0 -Wall" } */
+/* { dg-options "-mcpu=7400 -maltivec -O0 -Wall" } */
 
 #define vector __attribute__((vector_size(16)))
 

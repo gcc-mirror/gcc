@@ -1,5 +1,5 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-options "-maltivec -mabi=altivec -g" } */
+/* { dg-options "-mcpu=7400 -maltivec -mabi=altivec -g" } */
 
 /* PR9564 */
 

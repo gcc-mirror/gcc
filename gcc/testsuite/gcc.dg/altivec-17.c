@@ -3,7 +3,7 @@
 
 /* { dg-do compile { target powerpc*-*-* } } */
 /* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
-/* { dg-options "-maltivec -mabi=altivec" } */
+/* { dg-options "-mcpu=7400 -maltivec -mabi=altivec" } */
 
 typedef unsigned int ui;
 typedef signed char sc;

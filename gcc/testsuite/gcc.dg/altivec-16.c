@@ -2,7 +2,7 @@
 /* Author:  Ziemowit Laski  <zlaski@apple.com>.  */
 /* { dg-do compile { target powerpc*-*-* } } */
 /* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
-/* { dg-options "-save-temps -maltivec" } */
+/* { dg-options "-save-temps -mcpu=7400 -maltivec" } */
 
 #include <altivec.h>
 

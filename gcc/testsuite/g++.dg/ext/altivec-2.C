@@ -1,6 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* } } */
 /* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
-/* { dg-options "-maltivec -Wall" } */
+/* { dg-options "-mcpu=7400 -maltivec -Wall" } */
 
 /* This test checks if AltiVec builtins accept const-qualified
    arguments.  */

@@ -1,7 +1,7 @@
 /* Test handling of literal constant for dss operation.  */
 /* { dg-do compile { target powerpc*-*-* } } */
 /* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
-/* { dg-options "-maltivec" } */
+/* { dg-options "-mcpu=7400 -maltivec" } */
 
 #include <altivec.h>
 

@@ -1,6 +1,6 @@
 /* { dg-do run { target powerpc*-*-* } } */
 /* { dg-xfail-if "" { "powerpc-*-eabispe*" "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
-/* { dg-options "-maltivec" } */
+/* { dg-options "-mcpu=7400 -maltivec" } */
 
 #include "altivec_check.h"
 
