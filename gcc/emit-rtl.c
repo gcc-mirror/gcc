@@ -1316,8 +1316,7 @@ gen_complex_constant_part (mode, x, imagpart_p)
   tree decl, part;
 
   if (GET_CODE (x) == MEM
-      && GET_CODE (XEXP (x, 0)) == SYMBOL_REF
-      && TREE_CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
+      && GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
     {
       decl = SYMBOL_REF_DECL (XEXP (x, 0));
       if (decl != NULL_TREE && TREE_CODE (decl) == COMPLEX_CST)
