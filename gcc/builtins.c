@@ -1381,6 +1381,8 @@ expand_builtin_strlen (exp, target, mode)
       /* Mark the beginning of the strlen sequence so we can emit the
 	 source operand later.  */
       before_strlen = get_last_insn();
+      if (before_strlen == NULL_RTX)
+	before_strlen = emit_note (0, NOTE_INSN_DELETED);
 
       /* Check the string is readable and has an end.  */
       if (current_function_check_memory_usage)
