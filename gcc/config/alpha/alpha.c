@@ -4327,8 +4327,10 @@ alphaev5_insn_pipe (insn)
 
     case TYPE_FMUL:
       return EV5_FM;
+
+    default:
+      abort();
     }
-  abort();
 }
 
 /* IN_USE is a mask of the slots currently filled within the
@@ -4347,13 +4349,14 @@ alphaev5_next_group (insn, pin_use, plen)
 
   len = in_use = 0;
 
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
-    goto next;
+  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i'
+      || GET_CODE (PATTERN (insn)) == CLOBBER
+      || GET_CODE (PATTERN (insn)) == USE)
+    goto next_and_done;
 
-  do
+  while (1)
     {
       enum alphaev5_pipe pipe;
-      rtx prev;
 
       pipe = alphaev5_insn_pipe (insn);
       switch (pipe)
@@ -4370,7 +4373,7 @@ alphaev5_next_group (insn, pin_use, plen)
 	    len = -1;
 	  else
 	    len = get_attr_length (insn);
-	  goto next;
+	  goto next_and_done;
 
 	/* ??? Most of the places below, we would like to abort, as 
 	   it would indicate an error either in Haifa, or in the 
@@ -4439,28 +4442,29 @@ alphaev5_next_group (insn, pin_use, plen)
       /* ??? If this is predicted not-taken, slotting continues, except
 	 that no more IBR, FBR, or JSR insns may be slotted.  */
       if (GET_CODE (insn) == JUMP_INSN)
-	goto next;
+	goto next_and_done;
 
+    next:
       insn = next_nonnote_insn (insn);
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (!insn || GET_RTX_CLASS (GET_CODE (insn)) != 'i')
 	goto done;
 
       /* Let Haifa tell us where it thinks insn group boundaries are.  */
       if (GET_MODE (insn) == TImode)
 	goto done;
 
+      if (GET_CODE (insn) == CLOBBER || GET_CODE (insn) == USE)
+	goto next;
     }
-  while (insn);
+
+ next_and_done:
+  insn = next_nonnote_insn (insn);
 
  done:
   *plen = len;
   *pin_use = in_use;
   return insn;
-
- next:
-  insn = next_nonnote_insn (insn);
-  goto done;
 }
 
 static void
