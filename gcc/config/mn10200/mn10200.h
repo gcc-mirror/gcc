@@ -878,8 +878,8 @@ do { char dstr[30];					\
    uninitialized but not common symbol.
    Try to use asm_output_bss to implement this macro.  */
 
-#define ASM_OUTPUT_BSS(FILE, DECL, NAME, SIZE, ROUNDED) \
-  asm_output_bss ((FILE), (DECL), (NAME), (SIZE), (ROUNDED))
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
+  asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */

@@ -1,3 +1,12 @@
+Tue Nov  4 13:13:12 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10200.h (ASM_OUTPUT_BSS): Delete.
+	(ASM_OUTPUT_ALIGNED_BSS): New macro
+	* mn10300.h (ASM_OUTPUT_BSS): Delete.
+	(ASM_OUTPUT_ALIGNED_BSS): New macro.
+	* v850.h (ASM_OUTPUT_BSS): Delete.
+	(ASM_OUTPUT_ALIGNED_BSS): New macro.
+
 Tue Nov  4 00:55:48 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
  
 	* profile.c (branch_prob): Insert an insn after a NOTE_INSN_SETJMP.
