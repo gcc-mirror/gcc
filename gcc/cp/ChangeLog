@@ -1,3 +1,12 @@
+Tue Feb 21 18:43:48 1995  Douglas Rupp  (drupp@cs.washington.edu)
+
+	* Make-lang.in, config-lang.in: ($exeext): New macro.
+	* Make-lang.in: Try a "cp" if "ln" fails.
+	* cp-tree.h (decl_attributes): Added argument.
+	* decl2.c (cplus_decl_attribute): Add arg to decl_attributes.
+	* cp/g++.c: Added #ifdefs for sys/file.h and process.h for NT.
+	Modified spawnvp to have to correct number of arguments for OS/2, NT.
+
 Thu Feb  2 15:07:58 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
         * class.c (build_vbase_path): Bash types to make the backend happy.
