@@ -1,3 +1,11 @@
+2005-03-21  Paolo Bonzini  <bonzini@gnu.org>
+
+	* rtl.h (struct rtx_hooks): Add gen_lowpart_no_emit.
+	* rtlhooks.c (gen_lowpart_no_emit_general): New.
+	* rtlhooks-def.h (gen_lowpart_no_emit_general): Declare.
+	(RTL_HOOKS_GEN_LOWPART_NO_EMIT): New.
+	* simplify-rtx.c (simplify_binary_operation_1): Use it.
+
 2005-03-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* builtins.c (fold_builtin_1): Take decomposed arguments of

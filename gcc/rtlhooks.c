@@ -79,6 +79,19 @@ gen_lowpart_general (enum machine_mode mode, rtx x)
     }
 }
 
+/* Similar to gen_lowpart, but cannot emit any instruction via
+   copy_to_reg or force_reg.  Mainly used in simplify-rtx.c.  */
+rtx
+gen_lowpart_no_emit_general (enum machine_mode mode, rtx x)
+{
+  rtx result = gen_lowpart_common (mode, x);
+  if (result)
+    return result;
+  if (mode != GET_MODE (x) && GET_MODE (x) != VOIDmode)
+    return gen_lowpart_SUBREG (mode, x);
+  return x;
+}
+
 rtx
 reg_num_sign_bit_copies_general (rtx x ATTRIBUTE_UNUSED,
 				 enum machine_mode mode ATTRIBUTE_UNUSED,

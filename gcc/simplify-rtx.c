@@ -1704,15 +1704,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  : const0_rtx;
 	  /* x/1 is x.  */
 	  if (trueop1 == const1_rtx)
-	    {
-	      /* Handle narrowing UDIV.  */
-	      rtx x = gen_lowpart_common (mode, op0);
-	      if (x)
-		return x;
-	      if (mode != GET_MODE (op0) && GET_MODE (op0) != VOIDmode)
-		return gen_lowpart_SUBREG (mode, op0);
-	      return op0;
-	    }
+	    return rtl_hooks.gen_lowpart_no_emit (mode, op0);
 	  /* Convert divide by power of two into shift.  */
 	  if (GET_CODE (trueop1) == CONST_INT
 	      && (val = exact_log2 (INTVAL (trueop1))) > 0)
@@ -1768,22 +1760,11 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	      : const0_rtx;
 	  /* x/1 is x.  */
 	  if (trueop1 == const1_rtx)
-	    {
-	      /* Handle narrowing DIV.  */
-	      rtx x = gen_lowpart_common (mode, op0);
-	      if (x)
-		return x;
-	      if (mode != GET_MODE (op0) && GET_MODE (op0) != VOIDmode)
-		return gen_lowpart_SUBREG (mode, op0);
-	      return op0;
-	    }
+	    return rtl_hooks.gen_lowpart_no_emit (mode, op0);
 	  /* x/-1 is -x.  */
 	  if (trueop1 == constm1_rtx)
 	    {
-	      rtx x = gen_lowpart_common (mode, op0);
-	      if (!x)
-		x = (mode != GET_MODE (op0) && GET_MODE (op0) != VOIDmode)
-		  ? gen_lowpart_SUBREG (mode, op0) : op0;
+	      rtx x = rtl_hooks.gen_lowpart_no_emit (mode, op0);
 	      return simplify_gen_unary (NEG, mode, x, mode);
 	    }
 	}
