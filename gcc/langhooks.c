@@ -273,8 +273,7 @@ lhd_expand_expr (tree t ATTRIBUTE_UNUSED, rtx r ATTRIBUTE_UNUSED,
   abort ();
 }
 
-/* This is the default expand_decl function.  */
-/* The default language-specific function for expanding a DECL_STMT.  After
+/* The default language-specific function for expanding a decl.  After
    the language-independent cases are handled, this function will be
    called.  If this function is not defined, it is assumed that
    declarations other than those for variables and labels do not require
