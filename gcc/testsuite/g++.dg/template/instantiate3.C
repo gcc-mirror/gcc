@@ -10,7 +10,7 @@ template <class TYPE>
 struct ACE_Cleanup_Adapter
 {
   TYPE &object ()
-  { return object_; }	// { dg-error "not declared|reported" }
+  { return object_; }	// { dg-error "invalid" }
   TYPE object_;		// { dg-error "incomplete type" }
 };
 

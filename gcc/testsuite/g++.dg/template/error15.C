@@ -11,14 +11,14 @@ protected:
     
   A<T> a; // { dg-error "" }
     
-  void f(const A<T> * a1 = &a);
+  void f(const A<T> * a1 = &a); // { dg-error "this location" }
     
   void g(void);
 };
 
 template <class T>
 void B<T>::g(void) {
-  f(); // { dg-error "" }
+  f();
 }
 
-template class B<long>; // { dg-error "" }
+template class B<long>;
