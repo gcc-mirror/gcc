@@ -75,6 +75,12 @@ extern int target_flags;
 /* Define this if most significant word of a multiword number is the lowest
    numbered.  */
 /* For the i860 this goes with BYTES_BIG_ENDIAN.  */
+/* NOTE: GCC probably cannot support a big-endian i860
+   because GCC fundamentally assumes that the order of words
+   in memory as the same as the order in registers.
+   That's not true for the big-endian i860.
+   The big-endian i860 isn't important enough to
+   justify the trouble of changing this assumption.  */
 #define WORDS_BIG_ENDIAN 0
 
 /* number of bits in an addressable storage unit */
