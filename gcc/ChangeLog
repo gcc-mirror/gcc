@@ -1,3 +1,7 @@
+2003-06-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/rtl.texi: Fix the @findex for pre_modify.
+
 2003-06-22  Andreas Jaeger  <aj@suse.de>
 
 	* caller-save.c: Convert to ISO C90.
