@@ -29,7 +29,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_GTHR_H
 #define GCC_GTHR_H
 
+#ifndef HIDE_EXPORTS
 #pragma GCC visibility push(default)
+#endif
 
 /* If this file is compiled with threads support, it must
        #define __GTHREADS 1
@@ -116,6 +118,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "gthr-single.h"
 #endif
 
+#ifndef HIDE_EXPORTS
 #pragma GCC visibility pop
+#endif
 
 #endif /* ! GCC_GTHR_H */

@@ -316,8 +316,8 @@ extern const char *darwin_fix_and_continue_switch;
 #define REAL_LIBGCC_SPEC \
    "%{static|static-libgcc:-lgcc -lgcc_eh}\
     %{!static:%{!static-libgcc:\
-      %{!Zdynamiclib:%{!shared-libgcc:-lgcc  -lgcc_eh}\
-      %{shared-libgcc:-lgcc_s -lgcc} } %{Zdynamiclib:-lgcc_s}}}"
+      %{!Zdynamiclib:%{!shared-libgcc:-lgcc -lgcc_eh}\
+      %{shared-libgcc:-lgcc_s -lgcc}} %{Zdynamiclib:-lgcc_s -lgcc}}}"
 
 /* We specify crt0.o as -lcrt0.o so that ld will search the library path.  */
 

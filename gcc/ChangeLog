@@ -1,3 +1,29 @@
+2004-11-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* gthr-gnat.c, gthr-gnat.h, gthr.h, libgcc2.h, unwind-dw2-fde.h
+	* unwind.h: Surround all visibility pragmas with #ifndef HIDE_EXPORTS.
+
+	* mklibgcc.in: Drastic restructure for comprehensibility.
+	Remove the old hidden-directive hack.
+	Eliminate support for .txt files in LIB2ADD etc (never used).
+	Eliminate support for assembly source files in LIB2ADDEH* and
+	LIBUNWIND (also never used).
+	Build up dependency lists for libraries incrementally.
+	If we have SHLIB_LINK, compile each file twice, once for the
+	static and once for the shared library; also probe for
+	-fvisibility=hidden in the generated libgcc.mk.  If found,
+	pass that and -DHIDE_EXPORTS to the compilation of every C
+	source file going into the static library.  If found, generate
+	hidden-directive lists for every assembly source file going
+	into the static library, but incorporate them with -include
+	instead of ld -r.
+	Write comments into generated libgcc.mk to facilitate debugging.
+	* Makefile.in: Pass ASM_HIDDEN_OP to mklibgcc.
+	* config/t-slibgcc-darwin: Define ASM_HIDDEN_OP.
+
+	* config/darwin.h (REAL_LIBGCC_SPEC): Put -lgcc back in
+	-Zdynamiclib case.
+
 2004-11-29  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (get_inner_reference): Handle REAL/IMAGPART_EXPR.

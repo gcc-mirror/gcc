@@ -30,7 +30,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_LIBGCC2_H
 #define GCC_LIBGCC2_H
 
+#ifndef HIDE_EXPORTS
 #pragma GCC visibility push(default)
+#endif
 
 extern int __gcc_bcmp (const unsigned char *, const unsigned char *, size_t);
 extern void __clear_cache (char *, char *);
@@ -324,6 +326,8 @@ extern int __parityDI2 (UDWtype);
 
 extern void __enable_execute_stack (void *);
 
+#ifndef HIDE_EXPORTS
 #pragma GCC visibility pop
+#endif
 
 #endif /* ! GCC_LIBGCC2_H */
