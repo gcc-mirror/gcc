@@ -638,7 +638,8 @@ void GC_init_inner()
 #   if (defined(NETBSD) || defined(OPENBSD)) && defined(__ELF__)
 	GC_init_netbsd_elf();
 #   endif
-#   if defined(GC_PTHREADS) || defined(GC_SOLARIS_THREADS)
+#   if defined(GC_PTHREADS) || defined(GC_SOLARIS_THREADS) \
+       || defined(GC_WIN32_THREADS)
         GC_thr_init();
 #   endif
 #   ifdef GC_SOLARIS_THREADS
@@ -1002,6 +1003,9 @@ GC_warn_proc GC_current_warn_proc = GC_default_warn_proc;
 {
     GC_warn_proc result;
 
+#   ifdef GC_WIN32_THREADS
+      GC_ASSERT(GC_is_initialized);
+#   endif
     LOCK();
     result = GC_current_warn_proc;
     GC_current_warn_proc = p;

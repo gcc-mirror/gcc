@@ -137,8 +137,8 @@ case "$THREADS" in
     ;;
  win32)
     AC_DEFINE(GC_WIN32_THREADS)
-    dnl Wine getenv may not return NULL for missing entry
-    AC_DEFINE(NO_GETENV)
+    dnl Old wine getenv may not return NULL for missing entry.
+    dnl Define EMPTY_GETENV_RESULTS here to work around the bug.
     ;;
  dgux386)
     THREADS=dgux386
