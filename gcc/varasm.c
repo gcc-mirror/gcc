@@ -2516,9 +2516,13 @@ output_constant_def_contents (exp, reloc, labelno)
   if (align > BITS_PER_UNIT)
     {
       if (!output_bytecode)
-	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+	{
+	  ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+	}
       else
-	BC_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+	{
+	  BC_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+	}
     }
 
   /* Output the label itself.  */
@@ -3613,6 +3617,8 @@ output_constructor (exp, size)
 }
 
 
+#ifdef HANDLE_SYSV_PRAGMA
+
 /* Output asm to handle ``#pragma weak'' */
 void
 handle_pragma_weak (what, asm_out_file, name, value)
@@ -3650,3 +3656,5 @@ handle_pragma_weak (what, asm_out_file, name, value)
   else if (! (what == ps_done || what == ps_start))
     warning ("malformed `#pragma weak'");
 }
+
+#endif /* HANDLE_SYSV_PRAGMA */
