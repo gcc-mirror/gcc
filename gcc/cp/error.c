@@ -2551,6 +2551,7 @@ locate_error (const char *msgid, va_list ap)
 	    {
 	      /* Just ignore these possibilities.  */
 	    case '%':						break;
+	    case 'P':
 	    case 'd':	(void) va_arg (ap, int);		break;
 	    case 's':	(void) va_arg (ap, char *);		break;
 	    case 'L':	(void) va_arg (ap, enum languages);	break;
@@ -2564,7 +2565,6 @@ locate_error (const char *msgid, va_list ap)
 	    case 'D':
 	    case 'E':
 	    case 'F':
-	    case 'P':
 	    case 'T':
 	    case 'V':
 	      t = va_arg (ap, tree);
