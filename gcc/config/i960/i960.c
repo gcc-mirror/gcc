@@ -560,15 +560,170 @@ emit_move_sequence (operands, mode)
      rtx *operands;
      enum machine_mode mode;
 {
-  register rtx operand0 = operands[0];
-  register rtx operand1 = operands[1];
-
   /* We can only store registers to memory.  */
 
-  if (GET_CODE (operand0) == MEM && GET_CODE (operand1) != REG)
-    operands[1] = force_reg (mode, operand1);
+  if (GET_CODE (operands[0]) == MEM && GET_CODE (operands[1]) != REG)
+    operands[1] = force_reg (mode, operands[1]);
+
+  /* Storing multi-word values in unaligned hard registers to memory may
+     require a scratch since we have to store them a register at a time and
+     adding 4 to the memory address may not yield a valid insn.  */
+  /* ??? We don't always need the scratch, but that would complicate things.
+     Maybe later.  */
+  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
+      && GET_CODE (operands[0]) == MEM
+      && GET_CODE (operands[1]) == REG
+      && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
+      && ! HARD_REGNO_MODE_OK (REGNO (operands[1]), mode))
+    {
+      emit_insn (gen_rtx (PARALLEL, VOIDmode,
+			  gen_rtvec (2,
+				     gen_rtx (SET, VOIDmode,
+					      operands[0], operands[1]),
+				     gen_rtx (CLOBBER, VOIDmode,
+					      gen_rtx (SCRATCH, Pmode)))));
+      return 1;
+    }
 
   return 0;
+}
+
+/* Output assembler to move a double word value.  */
+
+char *
+i960_output_move_double (dst, src)
+     rtx dst, src;
+{
+  rtx operands[5];
+
+  if (GET_CODE (dst) == REG
+      && GET_CODE (src) == REG)
+    {
+      if ((REGNO (src) & 1)
+	  || (REGNO (dst) & 1))
+	{
+	  /* We normally copy the low-numbered register first.  However, if
+	     the second source register is the same as the first destination
+	     register, we must copy in the opposite order.  */
+	  if (REGNO (src) + 1 == REGNO (dst))
+	    return "mov	%D1,%D0\n\tmov	%1,%0";
+	  else
+	    return "mov	%1,%0\n\tmov	%D1,%D0";
+	}
+      else
+	return "movl	%1,%0";
+    }
+  else if (GET_CODE (dst) == REG
+	   && GET_CODE (src) == CONST_INT
+	   && CONST_OK_FOR_LETTER_P (INTVAL (src), 'I'))
+    {
+      if (REGNO (dst) & 1)
+	return "mov	%1,%0\n\tmov	0,%D0";
+      else
+	return "movl	%1,%0";
+    }
+  else if (GET_CODE (dst) == REG
+	   && GET_CODE (src) == MEM)
+    {
+      if (REGNO (dst) & 1)
+	{
+	  /* One can optimize a few cases here, but you have to be
+	     careful of clobbering registers used in the address and
+	     edge conditions.  */
+	  operands[0] = dst;
+	  operands[1] = src;
+	  operands[2] = gen_rtx (REG, Pmode, REGNO (dst) + 1);
+	  operands[3] = gen_rtx (MEM, word_mode, operands[2]);
+	  operands[4] = adj_offsettable_operand (operands[3], UNITS_PER_WORD);
+	  output_asm_insn ("lda	%1,%2\n\tld	%3,%0\n\tld	%4,%D0", operands);
+	  return "";
+	}
+      else
+	return "ldl	%1,%0";
+    }
+  else if (GET_CODE (dst) == MEM
+	   && GET_CODE (src) == REG)
+    {
+      if (REGNO (src) & 1)
+	{
+	  /* This is handled by emit_move_sequence so we shouldn't get here.  */
+	  abort ();
+	}
+      return "stl	%1,%0";
+    }
+  else
+    abort ();
+}
+
+/* Output assembler to move a quad word value.  */
+
+char *
+i960_output_move_quad (dst, src)
+     rtx dst, src;
+{
+  rtx operands[7];
+
+  if (GET_CODE (dst) == REG
+      && GET_CODE (src) == REG)
+    {
+      if ((REGNO (src) & 3)
+	  || (REGNO (dst) & 3))
+	{
+	  /* We normally copy starting with the low numbered register.
+	     However, if there is an overlap such that the first dest reg
+	     is <= the last source reg but not < the first source reg, we
+	     must copy in the opposite order.  */
+	  if (REGNO (dst) <= REGNO (src) + 3
+	      && REGNO (dst) >= REGNO (src))
+	    return "mov	%F1,%F0\n\tmov	%E1,%E0\n\tmov	%D1,%D0\n\tmov	%1,%0";
+	  else
+	    return "mov	%1,%0\n\tmov	%D1,%D0\n\tmov	%E1,%E0\n\tmov	%F1,%F0";
+	}
+      else
+	return "movq	%1,%0";
+    }
+  else if (GET_CODE (dst) == REG
+	   && GET_CODE (src) == CONST_INT
+	   && CONST_OK_FOR_LETTER_P (INTVAL (src), 'I'))
+    {
+      if (REGNO (dst) & 3)
+	return "mov	%1,%0\n\tmov	0,%D0\n\tmov	0,%E0\n\tmov	0,%F0";
+      else
+	return "movq	%1,%0";
+    }
+  else if (GET_CODE (dst) == REG
+	   && GET_CODE (src) == MEM)
+    {
+      if (REGNO (dst) & 3)
+	{
+	  /* One can optimize a few cases here, but you have to be
+	     careful of clobbering registers used in the address and
+	     edge conditions.  */
+	  operands[0] = dst;
+	  operands[1] = src;
+	  operands[2] = gen_rtx (REG, Pmode, REGNO (dst) + 3);
+	  operands[3] = gen_rtx (MEM, word_mode, operands[2]);
+	  operands[4] = adj_offsettable_operand (operands[3], UNITS_PER_WORD);
+	  operands[5] = adj_offsettable_operand (operands[4], UNITS_PER_WORD);
+	  operands[6] = adj_offsettable_operand (operands[5], UNITS_PER_WORD);
+	  output_asm_insn ("lda	%1,%2\n\tld	%3,%0\n\tld	%4,%D0\n\tld	%5,%E0\n\tld	%6,%F0", operands);
+	  return "";
+	}
+      else
+	return "ldq	%1,%0";
+    }
+  else if (GET_CODE (dst) == MEM
+	   && GET_CODE (src) == REG)
+    {
+      if (REGNO (src) & 3)
+	{
+	  /* This is handled by emit_move_sequence so we shouldn't get here.  */
+	  abort ();
+	}
+      return "stq	%1,%0";
+    }
+  else
+    abort ();
 }
 
 /* Emit insns to load a constant to non-floating point registers.
@@ -1453,8 +1608,18 @@ i960_print_operand (file, x, code)
       switch (code)
 	{
 	case 'D':
-	  /* Second reg of a double.  */
+	  /* Second reg of a double or quad.  */
 	  fprintf (file, "%s", reg_names[REGNO (x)+1]);
+	  break;
+
+	case 'E':
+	  /* Third reg of a quad.  */
+	  fprintf (file, "%s", reg_names[REGNO (x)+2]);
+	  break;
+
+	case 'F':
+	  /* Fourth reg of a quad.  */
+	  fprintf (file, "%s", reg_names[REGNO (x)+3]);
 	  break;
 
 	case 0:
