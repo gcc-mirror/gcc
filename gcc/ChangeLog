@@ -1,3 +1,14 @@
+2003-12-04  Stuart Hastings  <stuart@apple.com>
+
+        * rs6000.c (output_call, macho_branch_islands,
+        add_compiler_branch_island, no_previous_def, get_previous_label)
+        Revisions of xx_stub functions for branch islands,
+        add -fPIC support for Darwin.
+        * rs6000-protos.h (output_call) Prototype.
+        * rs6000.md Use output_call.
+        * invoke.texi Explain Darwin semantics of -longcall.
+        * testsuite/gcc.dg/darwin-abi-1.c Revise testcase for -longcall/jbsr.
+
 2003-12-04  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.md (addqi3_carry): Use q not r constraints.

@@ -7784,6 +7784,10 @@ generate slower code.  As of this writing, the AIX linker can do this,
 as can the GNU linker for PowerPC/64.  It is planned to add this feature
 to the GNU linker for 32-bit PowerPC systems as well.
 
+On Mach-O (Darwin) systems, this option directs the compiler emit to
+the glue for every direct call, and the Darwin linker decides whether
+to use or discard it.
+
 In the future, we may cause GCC to ignore all longcall specifications
 when the linker is known to generate glue.
 
