@@ -1,3 +1,8 @@
+2003-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/9465
+	* tradcpp.c (fixup_newlines): Use memchr instead of strchr.
+
 2003-01-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (pa_output_function_prologue, pa_output_function_epilogue): Move

@@ -1,5 +1,5 @@
 /* C Compatible Compiler Preprocessor (CCCP)
-Copyright (C) 1986, 1987, 1989, 2000, 2001 Free Software Foundation, Inc.
+Copyright (C) 1986, 1987, 1989, 2000, 2001, 2003 Free Software Foundation, Inc.
                     Written by Paul Rubin, June 1986
 		    Adapted to ANSI C, Richard Stallman, Jan 1987
 		    Dusted off, polished, and adapted for use as traditional
@@ -2604,10 +2604,8 @@ fixup_newlines (fp)
     return;
 
   end = fp->buf + fp->length;
-  *end = '\r';
-  p = (U_CHAR *) strchr ((const char *) fp->buf, '\r');
-  *end = '\0';
-  if (p == end)
+  p = (U_CHAR *) memchr ((const char *) fp->buf, '\r', fp->length);
+  if (p == NULL)
     return;
 
   if (p > fp->buf && p[-1] == '\n')
