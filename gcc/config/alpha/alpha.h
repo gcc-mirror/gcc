@@ -794,7 +794,14 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    However, if NO registers need to be saved, don't allocate any space.
    This is not only because we won't need the space, but because AP includes
    the current_pretend_args_size and we don't want to mess up any
-   ap-relative addresses already made.  */
+   ap-relative addresses already made.
+
+   If we are not to use the floating-point registers, save the integer
+   registers where we would put the floating-point registers.  This is
+   not the most efficient way to implement varargs with just one register
+   class, but it isn't worth doing anything more efficient in this rare
+   case.  */
+   
 
 #define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
 { if ((CUM) < 6)							\
@@ -808,7 +815,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 				     ((CUM) + 6)* UNITS_PER_WORD)),	\
 	     6 - (CUM), (6 - (CUM)) * UNITS_PER_WORD);			\
 	  move_block_from_reg						\
-	    (16 + 32 + CUM,						\
+	    (16 + (TARGET_FPREGS ? 32 : 0) + CUM,			\
 	     gen_rtx (MEM, BLKmode,					\
 		      plus_constant (virtual_incoming_args_rtx,		\
 				     (CUM) * UNITS_PER_WORD)),		\
