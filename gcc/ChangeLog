@@ -1,3 +1,14 @@
+Tue Sep 23 12:34:51 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (make_range): Correctly handle cases of converting
+	from unsigned to signed type.
+
+Tue Sep 23 12:34:51 1997  Bernd Schmidt  <crux@pool.informatik.rwth-aachen.de>
+
+	* fold-const.c (merge_ranges): Make sure that if one range is subset
+	of another, it will always be the second range.  Correct (+,-) case to
+	account for this.
+
 Tue Sep 23 01:15:50 1997  David S. Miller  <davem@tanya.rutgers.edu>
 
 	* expmed.c (expand_divmod): If compute_mode is not the same as
