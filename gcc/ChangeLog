@@ -1,3 +1,8 @@
+2003-04-08  Kevin Buettner  <kevinb@redhat.com>
+
+	* dwarf2out.c (DWARF_ARANGES_HEADER_SIZE, DWARF_ARANGES_PAD_SIZE):
+	Take into account DWARF_INITIAL_LENGTH_SIZE.
+
 2003-04-08  Hans-Peter Nilsson  <hp@axis.com>
 
 	* reorg.c (fill_slots_from_thread): When considering changing the
