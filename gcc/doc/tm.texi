@@ -6643,7 +6643,7 @@ If defined, a C statement that will write a function that can be
 automatically called when a shared library is loaded.  The function
 should call @var{func}, which takes no arguments.  If not defined, and
 the object format requires an explicit initialization function, then a
-function called @var{_GLOBAL__DI} will be generated.
+function called @code{_GLOBAL__DI} will be generated.
 
 This function and the following one are used by collect2 when linking a
 shared library that needs constructors or destructors, or has DWARF2 
@@ -6654,7 +6654,7 @@ If defined, a C statement that will write a function that can be
 automatically called when a shared library is unloaded.  The function
 should call @var{func}, which takes no arguments.  If not defined, and
 the object format requires an explicit finalization function, then a
-function called @var{_GLOBAL__DD} will be generated.
+function called @code{_GLOBAL__DD} will be generated.
 
 @item INVOKE__main
 @findex INVOKE__main

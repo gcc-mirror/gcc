@@ -1,3 +1,10 @@
+2001-12-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* netbsd.h (COLLECT_SHARED_INIT_FUNC)
+	(COLLECT_SHARD_FINI_FUNC): Remove redundant semicolon.
+	* doc/tm.texi (COLLECT_SHARED_INIT_FUNC)
+	(COLLECT_SHARD_FINI_FUNC): Use @code where appropriate.
+
 2001-12-13  Richard Henderson  <rth@redhat.com>
 
 	* regrename.c (kill_value_regno): Simplify chain removal.

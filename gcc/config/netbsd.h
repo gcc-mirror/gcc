@@ -67,13 +67,13 @@
   do {									\
     fprintf ((STREAM), "void __init() __asm__ (\".init\");");		\
     fprintf ((STREAM), "void __init() {\n\t%s();\n}\n", (FUNC));	\
-  } while (0);
+  } while (0)
 
 #define COLLECT_SHARED_FINI_FUNC(STREAM,FUNC)				\
   do {									\
     fprintf ((STREAM), "void __fini() __asm__ (\".fini\");");		\
     fprintf ((STREAM), "void __fini() {\n\t%s();\n}\n", (FUNC));	\
-  } while (0);
+  } while (0)
 
 /* This defines which switch letters take arguments. */
 #undef SWITCH_TAKES_ARG
