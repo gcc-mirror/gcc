@@ -1,5 +1,11 @@
 Thu Mar 12 07:18:48 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.h (STRICT_ARGUMENT_NAMING): Provide default value of 0.
+	* calls.c (expand_call): Use value of STRICT_ARGUMENT_NAMING.
+	* function.c (assign_parm): Likewise.
+	* mips/abi64.h (STRICT_ARGUMENT_NAMING): Return 0 for ABI_32.
+	* sparc.h (STRICT_ARGUMENT_NAMING): Only nonzero for V9.
+
 	* calls.c (expand_call, expand_library_call{,_value}, store_one_arg):
 	Rework handling of REG_PARM_STACK_SPACE to treat return value of
 	zero as if macro not defined; add new arg to emit_push_insn.
