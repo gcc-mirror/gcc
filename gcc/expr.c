@@ -102,6 +102,13 @@ static void do_jump_by_parts_equality ();
 static void do_jump_by_parts_equality_rtx ();
 static void do_jump_by_parts_greater ();
 
+/* Record for each mode whether we can move a register directly to or
+   from an object of that mode in memory.  If we can't, we won't try
+   to use that mode directly when accessing a field of that mode.  */
+
+static char direct_load[NUM_MACHINE_MODES];
+static char direct_store[NUM_MACHINE_MODES];
+
 /* MOVE_RATIO is the number of move instructions that is better than
    a block move.  */
 
@@ -121,6 +128,52 @@ static void do_jump_by_parts_greater ();
 #define SLOW_UNALIGNED_ACCESS 0
 #endif
 
+/* This is run once per compilation to set up which modes can be used
+   directly in memory.  */
+
+void
+init_expr_once ()
+{
+  rtx insn, pat;
+  enum machine_mode mode;
+  rtx mem = gen_rtx (MEM, VOIDmode, stack_pointer_rtx);
+
+  start_sequence ();
+  insn = emit_insn (gen_rtx (SET, 0, 0));
+  pat = PATTERN (insn);
+
+  for (mode = VOIDmode; (int) mode < NUM_MACHINE_MODES;
+       mode = (enum machine_mode) ((int) mode + 1))
+    {
+      int regno;
+      rtx reg;
+      int num_clobbers;
+
+      direct_load[(int) mode] = direct_store[(int) mode] = 0;
+      PUT_MODE (mem, mode);
+
+      /* Find a register that can be used in this mode, if any.  */
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	if (HARD_REGNO_MODE_OK (regno, mode))
+	  break;
+
+      if (regno == FIRST_PSEUDO_REGISTER)
+	continue;
+
+      reg = gen_rtx (REG, mode, regno);
+
+      SET_SRC (pat) = mem;
+      SET_DEST (pat) = reg;
+      direct_load[(int) mode] = (recog (pat, insn, &num_clobbers)) >= 0;
+
+      SET_SRC (pat) = reg;
+      SET_DEST (pat) = mem;
+      direct_store[(int) mode] = (recog (pat, insn, &num_clobbers)) >= 0;
+    }
+
+  end_sequence ();
+}
+      
 /* This is run at the start of compiling a function.  */
 
 void
@@ -635,6 +688,7 @@ convert_move (to, from, unsignedp)
 				GET_MODE_BITSIZE (from_mode))
       && ((GET_CODE (from) == MEM
 	   && ! MEM_VOLATILE_P (from)
+	   && direct_load[(int) to_mode]
 	   && ! mode_dependent_address_p (XEXP (from, 0)))
 	  || GET_CODE (from) == REG
 	  || GET_CODE (from) == SUBREG))
@@ -811,6 +865,7 @@ convert_to_mode (mode, x, unsignedp)
 	  && (GET_CODE (x) == CONST_DOUBLE
 	      || (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (GET_MODE (x))
 		  && ((GET_CODE (x) == MEM && ! MEM_VOLATILE_P (x))
+		      && direct_load[(int) mode]
 		      || GET_CODE (x) == REG)))))
     return gen_lowpart (mode, x);
 
@@ -2496,7 +2551,9 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
      is a bit field, we cannot use addressing to access it.
      Use bit-field techniques or SUBREG to store in it.  */
 
-  if (mode == VOIDmode || GET_CODE (target) == REG
+  if (mode == VOIDmode
+      || (mode != BLKmode && ! direct_store[(int) mode])
+      || GET_CODE (target) == REG
       || GET_CODE (target) == SUBREG)
     {
       rtx temp = expand_expr (exp, 0, VOIDmode, 0);
@@ -3587,6 +3644,7 @@ expand_expr (exp, target, tmode, modifier)
 	  }
 
 	if (mode1 == VOIDmode
+	    || (mode1 != BLKmode && ! direct_load[(int) mode1])
 	    || GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
 	  {
 	    /* In cases where an aligned union has an unaligned object
