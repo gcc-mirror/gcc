@@ -6,8 +6,8 @@
         k=1
         n=2
         ind=k-n+2
-	if (ind /= 1) call exit(1)
-	if (ab(ind) /= 1) call exit(1)
-	if (k-n+2 /= 1) call exit(1)
-	if (ab(k-n+2) /= 1) call exit(1)
+	if (ind /= 1) call abort
+	if (ab(ind) /= 1) call abort
+	if (k-n+2 /= 1) call abort
+	if (ab(k-n+2) /= 1) call abort
         END

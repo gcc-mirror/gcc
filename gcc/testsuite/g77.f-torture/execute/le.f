@@ -8,22 +8,22 @@
       n = 5
 
       t = (n > foo)
-      if (t .neqv. .true.) call exit(1)
+      if (t .neqv. .true.) call abort
       t = (n >= foo)
-      if (t .neqv. .true.) call exit(1)
+      if (t .neqv. .true.) call abort
       t = (n < foo)
-      if (t .neqv. .false.) call exit(1)
+      if (t .neqv. .false.) call abort
       t = (n <= 5)
-      if (t .neqv. .true.) call exit(1)
+      if (t .neqv. .true.) call abort
       t = (n >= 5 )
-      if (t .neqv. .true.) call exit(1)
+      if (t .neqv. .true.) call abort
       t = (n == 5)
-      if (t .neqv. .true.) call exit(1)
+      if (t .neqv. .true.) call abort
       t = (n /= 5)
-      if (t .neqv. .false.) call exit(1)
+      if (t .neqv. .false.) call abort
       t = (n /= foo)
-      if (t .neqv. .true.) call exit(1)
+      if (t .neqv. .true.) call abort
       t = (n == foo)
-      if (t .neqv. .false.) call exit(1)
+      if (t .neqv. .false.) call abort
 
       end
