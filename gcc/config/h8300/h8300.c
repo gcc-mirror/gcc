@@ -2675,6 +2675,20 @@ compute_logical_op_cc (enum machine_mode mode, rtx *operands)
   return cc;
 }
 
+/* Expand a conditional branch.  */
+
+void
+h8300_expand_branch (enum rtx_code code, rtx label)
+{
+  rtx tmp;
+
+  tmp = gen_rtx_fmt_ee (code, VOIDmode, cc0_rtx, const0_rtx);
+  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
+			      gen_rtx_LABEL_REF (VOIDmode, label),
+			      pc_rtx);
+  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
+}
+
 /* Shifts.
 
    We devote a fair bit of code to getting efficient shifts since we

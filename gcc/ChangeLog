@@ -1,5 +1,13 @@
 2004-02-18  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300-protos.h: Add a prototype for
+	h8300_expand_branch.
+	* config/h8300/h8300.c (h8300_expand_branch): New.
+	* config/h8300/h8300.md (ble, bleu, bge, bgeu, blt, bltu, bgt,
+	bgtu, beq, bne): Call h8300_expand_branch().
+
+2004-02-18  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300-protos.h: Add prototypes for
 	h8300_hard_regno_nregs and h8300_hard_regno_mode_ok.
 	* config/h8300/h8300.c (h8300_hard_regno_nregs): New.
