@@ -76,7 +76,7 @@ gen : $(SH_TARGET) fixincl.x
 
 $(FIOBJ): $(HDR)
 
-fixincl: $(FIOBJ) fixfixes fixtests
+fixincl: $(FIOBJ)
 	@echo $(CC) -o $@ $(FIOBJ) $(LIBERTY) $(LIB) ; \
 	if $(CC) -o $@ $(FIOBJ) $(LIBERTY) $(LIB) ; then : ; else \
 	rm -f $@ ; (echo "#! /bin/sh" ; echo exit 1 ) > $@ ; \
@@ -94,7 +94,7 @@ gnu-regex.o: gnu-regex.c
 	-$(CC) $(CFLAGS) $(FIXINC_DEFS) $(INCLUDES) -DREGEX_MALLOC \
 		-c $(srcdir)/gnu-regex.c
 
-fixincl.o : fixincl.x fixincl.c
+fixincl.o : fixincl.x fixincl.c fixfixes.c fixtests.c
 server.o : server.c server.h
 procopen.o : procopen.c server.h
 

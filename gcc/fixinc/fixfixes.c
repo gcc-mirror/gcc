@@ -73,7 +73,11 @@ typedef struct {
 
 #define FIXUP_TABLE \
   _FT_( "no_double_slash",  double_slash_fix ) \
-  _FT_( "else_endif_label", else_endif_label_fix )
+  _FT_( "else_endif_label", else_endif_label_fix ) \
+  _FT_( "IO_use",	    IO_use_fix ) \
+  _FT_( "CTRL_use",	    CTRL_use_fix) \
+  _FT_( "IO_defn",	    IO_defn_fix ) \
+  _FT_( "CTRL_defn",	    CTRL_defn_fix )
 
 
 #define FIX_PROC_HEAD( fix ) \
@@ -353,6 +357,196 @@ FIX_PROC_HEAD( else_endif_label_fix )
 
   return;
 }
+
+/* Scan the input file for all occurrences of text like this:
+
+   #define TIOCCONS _IO(T, 12)
+
+   and change them to read like this:
+
+   #define TIOCCONS _IO('T', 12)
+
+   which is the required syntax per the C standard.  (The definition of
+   _IO also has to be tweaked - see below.)  'IO' is actually whatever you
+   provide in the STR argument.  */
+void
+fix_char_macro_uses (text, str)
+     const char *text;
+     const char *str;
+{
+  /* This regexp looks for a traditional-syntax #define (# in column 1)
+     of an object-like macro.  */
+  static const char pat[] =
+    "^#[ \t]*define[ \t]+[A-Za-z][A-Za-z0-9]*[ \t]+";
+  static regex_t re;
+
+  regmatch_t rm[1];
+  const char *p, *limit;
+  size_t len = strlen (str);
+
+  compile_re (pat, &re, 1, "macro pattern", "fix_char_macro_uses");
+
+  for (p = text;
+       regexec (&re, p, 1, rm, 0) == 0;
+       p = limit + 1)
+    {
+      /* p + rm[0].rm_eo is the first character of the macro replacement.
+	 Find the end of the macro replacement, and the STR we were
+	 sent to look for within the replacement.  */
+      p += rm[0].rm_eo;
+      limit = p - 1;
+      do
+	{
+	  limit = strchr (limit + 1, '\n');
+	  if (!limit)
+	    goto done;
+	}
+      while (limit[-1] == '\\');
+
+      do
+	{
+	  if (*p == str[0] && !strncmp (p+1, str+1, len-1))
+	    goto found;
+	}
+      while (++p < limit - len);
+      /* Hit end of line.  */
+      continue;
+
+    found:
+      /* Found STR on this line.  If the macro needs fixing,
+	 the next few chars will be whitespace or uppercase,
+	 then an open paren, then a single letter.  */
+      while ((isspace (*p) || isupper (*p)) && p < limit) p++;
+      if (*p++ != '(')
+	continue;
+      if (!isalpha (*p))
+	continue;
+      if (isalnum (p[1]) || p[1] == '_')
+	continue;
+
+      /* Splat all preceding text into the output buffer,
+	 quote the character at p, then proceed.  */
+      fwrite (text, 1, p - text, stdout);
+      putchar ('\'');
+      putchar (*p);
+      putchar ('\'');
+      text = p + 1;
+    }
+ done:
+  fputs (text, stdout);
+}
+
+/* Scan the input file for all occurrences of text like this:
+
+   #define _IO(x, y) ('x'<<16+y)
+
+   and change them to read like this:
+
+   #define _IO(x, y) (x<<16+y)
+
+   which is the required syntax per the C standard.  (The uses of _IO
+   also have to be tweaked - see above.)  'IO' is actually whatever
+   you provide in the STR argument.  */
+void
+fix_char_macro_defines (text, str)
+     const char *text;
+     const char *str;
+{
+  /* This regexp looks for any traditional-syntax #define (# in column 1).  */
+  static const char pat[] =
+    "^#[ \t]*define[ \t]+";
+  static regex_t re;
+
+  regmatch_t rm[1];
+  const char *p, *limit;
+  size_t len = strlen (str);
+  char arg;
+
+  compile_re (pat, &re, 1, "macro pattern", "fix_char_macro_defines");
+
+  for (p = text;
+       regexec (&re, p, 1, rm, 0) == 0;
+       p = limit + 1)
+    {
+      /* p + rm[0].rm_eo is the first character of the macro name.
+	 Find the end of the macro replacement, and the STR we were
+	 sent to look for within the name.  */
+      p += rm[0].rm_eo;
+      limit = p - 1;
+      do
+	{
+	  limit = strchr (limit + 1, '\n');
+	  if (!limit)
+	    goto done;
+	}
+      while (limit[-1] == '\\');
+
+      do
+	{
+	  if (*p == str[0] && !strncmp (p+1, str+1, len-1))
+	    goto found;
+	}
+      while (isalpha (*p) || isalnum (*p) || *p == '_');
+      /* Hit end of macro name without finding the string.  */
+      continue;
+
+    found:
+      /* Found STR in this macro name.  If the macro needs fixing,
+	 there may be a few uppercase letters, then there will be an
+	 open paren with _no_ intervening whitespace, and then a
+	 single letter.  */
+      while (isupper (*p) && p < limit) p++;
+      if (*p++ != '(')
+	continue;
+      if (!isalpha (*p))
+	continue;
+      if (isalnum (p[1]) || p[1] == '_')
+	continue;
+
+      /* The character at P is the one to look for in the following
+	 text.  */
+      arg = *p;
+      p += 2;
+
+      while (p < limit)
+	{
+	  if (p[-1] == '\'' && p[0] == arg && p[1] == '\'')
+	    {
+	      /* Remove the quotes from this use of ARG.  */
+	      p--;
+	      fwrite (text, 1, p - text, stdout);
+	      putchar (arg);
+	      p += 3;
+	      text = p;
+	    }
+	  else
+	    p++;
+	}
+    }
+ done:
+  fputs (text, stdout);
+}
+
+/* The various prefixes on these macros are handled automatically
+   because the fixers don't care where they start matching.  */
+FIX_PROC_HEAD( IO_use_fix )
+{
+  fix_char_macro_uses (text, "IO");
+}
+FIX_PROC_HEAD( CTRL_use_fix )
+{
+  fix_char_macro_uses (text, "CTRL");
+}
+
+FIX_PROC_HEAD( IO_defn_fix )
+{
+  fix_char_macro_defines (text, "IO");
+}
+FIX_PROC_HEAD( CTRL_defn_fix )
+{
+  fix_char_macro_defines (text, "CTRL");
+}
+
 
 /* = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
