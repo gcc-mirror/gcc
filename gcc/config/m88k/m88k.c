@@ -46,7 +46,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.2.6.9 04 Jul 1992 13:17:36";
+static char out_sccs_id[] = "@(#)m88k.c	2.2.7.2 08/31/92 13:26:22";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -1424,6 +1424,7 @@ output_ascii (file, opcode, max, p, size)
      int size;
 {
   int i;
+  int in_escape = 0;
 
   register int num = 0;
 
@@ -1437,29 +1438,45 @@ output_ascii (file, opcode, max, p, size)
 	  fprintf (file, "\"\n\t%s\t \"", opcode);
 	  num = 0;
 	}
-
+	  
       if (c == '\"' || c == '\\')
 	{
+	escape:
 	  putc ('\\', file);
-	  num++;
+	  putc (c, file);
+	  num += 2;
+	  in_escape = 0;
 	}
-
-      if (c >= ' ' && c < 0177)
+      else if (in_escape && c >= '0' && c <= '9')
+	{
+	  /* If a digit follows an octal-escape, the Vax assembler fails
+	     to stop reading the escape after three digits.  Continue to
+	     output the values as an octal-escape until a non-digit is
+	     found.  */
+	  fprintf (file, "\\%03o", c);
+	  num += 4;
+	}
+      else if (c >= ' ' && c < 0177)
 	{
 	  putc (c, file);
 	  num++;
+	  in_escape = 0;
 	}
       else
 	{
+	  switch (c)
+	    {
+	    case '\t': c = 't'; goto escape;
+	    case '\f': c = 'f'; goto escape;
+	    case '\v': c = 'v'; goto escape;
+	    case '\b': c = 'b'; goto escape;
+	    case '\r': c = 'r'; goto escape;
+	    case '\n': c = 'n'; goto escape;
+	    }
+
 	  fprintf (file, "\\%03o", c);
 	  num += 4;
-	  /* After an octal-escape, if a digit follows,
-	     terminate one string constant and start another.
-	     The Vax assembler fails to stop reading the escape
-	     after three digits, so this is the only way we
-	     can get it to parse the data properly.  */
-	  if (i < size - 1 && p[i + 1] >= '0' && p[i + 1] <= '9')
-	    num = max + 1;	/* next pass will start a new string */
+	  in_escape = 1;
 	}
     }
   fprintf (file, "\"\n");
