@@ -1,4 +1,6 @@
 /* { dg-do link } */
+/* { dg-require-weak "" } */
+/* { dg-require-alias "" } */
 
 #include <stdlib.h>
 

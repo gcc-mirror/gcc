@@ -1,5 +1,5 @@
 // { dg-do run  }
-// { dg-gpp-additional-sources " ctor1-aux.cc" }
+// { dg-additional-sources " ctor1-aux.cc" }
 
 // Origin: Mark Mitchell <mark@codesourcery.com>
 

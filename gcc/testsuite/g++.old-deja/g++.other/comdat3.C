@@ -1,5 +1,5 @@
 // { dg-do run  }
-// { dg-gpp-additional-sources " comdat3-aux.cc" }
+// { dg-additional-sources " comdat3-aux.cc" }
 // Test that duplicate elimination of implicit instantiations of static
 // data members works properly.
 

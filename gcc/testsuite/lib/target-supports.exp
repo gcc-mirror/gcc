@@ -1,4 +1,4 @@
-#   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+#   Copyright (C) 1999, 2001, 2003 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -67,24 +67,28 @@ proc check_weak_available { } {
 ###############################
 
 # Determine if the target toolchain supports the alias attribute.
-# Parameter is the pathname of a file that can be used to test the alias support.
-# Returns yes if it does.
-# Returns no if it does not.
-# Returns dontknow if something went wrong
-# For an example of the use of this function, see gcc.dg/special/ecos.exp
 
-proc check_alias_available { testfile } {
+# Returns 2 if the target supports aliases.  Returns 1 if the target
+# only supports weak aliased.  Returns 0 if the target does not
+# support aliases at all.  Returns -1 if support for aliases could not
+# be determined.
+
+proc check_alias_available { } {
     global alias_available_saved
     
     if [info exists alias_available_saved] {
         verbose "check_alias_available  returning saved $alias_available_saved" 2
     } else {
-        verbose "check_alias_available  compiling testfile $testfile" 2
-	set lines [gcc_target_compile $testfile "tmp.o" object ""]
-	
+        verbose "check_alias_available  compiling testfile" 2
+	set f [open "tmp.c" "w"]
+	puts $f "void f() __attribute__((alias(\"g\")));"
+	close $f
+	set lines [gcc_target_compile "tmp.c" "tmp.o" object ""]
+	file delete "tmp.c"
+
 	if [string match "" $lines] then {
 	    # No error messages, everything is OK.
-	    set alias_available_saved yes
+	    set alias_available_saved 2
 	} else {
 	    if [regexp "alias definitions not supported" $lines] {
 		verbose "check_alias_available  target does not support aliases" 2
@@ -93,16 +97,16 @@ proc check_alias_available { testfile } {
 
 		if { $objformat == "elf" } {
 		    verbose "check_alias_available  but target uses ELF format, so it ought to" 2
-		    set alias_available_saved dontknow
+		    set alias_available_saved -1
 		} else {
-		    set alias_available_saved no
+		    set alias_available_saved 0
 		}
 	    } else {
 		if [regexp "only weak aliases are supported" $lines] {
 		verbose "check_alias_available  target supports only weak aliases" 2
-		set alias_available_saved no
+		set alias_available_saved 1
 		} else {
-		    set alias_available_saved dontknow
+		    set alias_available_saved -1
 		}
 	    }
 	}
@@ -111,4 +115,22 @@ proc check_alias_available { testfile } {
     }
 
     return $alias_available_saved
+}
+
+# Returns true if --gc-sections is supported on the target.
+
+proc check_gc_sections_available { } {
+    global gc_sections_available_saved
+
+    if {![info exists alias_available_saved]} {
+	# Check if the ld used by gcc supports --gc-sections.
+	set gcc_ld [lindex [gcc_target_compile "-print-prog-name=ld" "" "none" ""] 0]
+	set ld_output [remote_exec host "$gcc_ld" "--help"]
+	if { [ string first "--gc-sections" $ld_output ] >= 0 } {
+	    set gc_sections_available_saved 1
+	} else {
+	    set gc_sections_available_saved 0
+	}
+    }
+    return $gc_sections_available_saved
 }

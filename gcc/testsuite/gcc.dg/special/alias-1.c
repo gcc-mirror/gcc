@@ -1,4 +1,5 @@
 /* { dg-do link } */
+/* { dg-require-alias "" } */
 
 #include <stdlib.h>
 

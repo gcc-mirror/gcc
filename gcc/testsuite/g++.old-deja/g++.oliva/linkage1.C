@@ -1,5 +1,5 @@
 // { dg-do link }
-// { dg-gpp-additional-sources " linkage1-main.cc" }
+// { dg-additional-sources " linkage1-main.cc" }
 
 // Copyright 2002 Free Software Foundation
 

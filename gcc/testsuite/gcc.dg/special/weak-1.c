@@ -1,4 +1,6 @@
 /* { dg-do run } */
+/* { dg-require-weak "" } */
+/* { dg-additional-sources weak-1a.c } */
 
 #include <stdlib.h>
 
