@@ -1,6 +1,6 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -282,7 +282,8 @@ namespace std
        *  @brief  Returns true if the external file is open.
       */
       bool
-      is_open() const throw() { return _M_file.is_open(); }
+      is_open() const throw()
+      { return _M_file.is_open(); }
 
       /**
        *  @brief  Opens an external file.
@@ -569,7 +570,14 @@ namespace std
        *  @return  @c rdbuf()->is_open()
       */
       bool
-      is_open() { return _M_filebuf.is_open(); }
+      is_open()
+      { return _M_filebuf.is_open(); }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 365. Lack of const-qualification in clause 27
+      bool
+      is_open() const
+      { return _M_filebuf.is_open(); }
 
       /**
        *  @brief  Opens an external file.
@@ -693,7 +701,14 @@ namespace std
        *  @return  @c rdbuf()->is_open()
       */
       bool
-      is_open() { return _M_filebuf.is_open(); }
+      is_open()
+      { return _M_filebuf.is_open(); }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 365. Lack of const-qualification in clause 27
+      bool
+      is_open() const
+      { return _M_filebuf.is_open(); }
 
       /**
        *  @brief  Opens an external file.
@@ -817,7 +832,14 @@ namespace std
        *  @return  @c rdbuf()->is_open()
       */
       bool
-      is_open() { return _M_filebuf.is_open(); }
+      is_open()
+      { return _M_filebuf.is_open(); }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 365. Lack of const-qualification in clause 27
+      bool
+      is_open() const
+      { return _M_filebuf.is_open(); }
 
       /**
        *  @brief  Opens an external file.

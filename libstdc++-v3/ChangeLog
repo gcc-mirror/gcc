@@ -1,3 +1,10 @@
+2004-08-13  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/std_fstream.h (class basic_ifstream,
+	class basic_ofstream, class basic_fstream): Add const overloads
+	of is_open, as per DR 365 [WP].
+	* docs/html/ext/howto.html: Add an entry for DR 365.
+
 2004-08-12  Paolo Carlini  <pcarlini@suse.de>
 
 	* configure.ac: Specify version 1.8.5 in AM_INIT_AUTOMAKE.
