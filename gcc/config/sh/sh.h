@@ -266,7 +266,7 @@ do {									\
    else									\
     flag_omit_frame_pointer = 0;					\
 									\
-  if (! TARGET_PREFERGOT)						\
+  if (flag_pic && ! TARGET_PREFERGOT)					\
     flag_no_function_cse = 1;						\
 									\
   /* Never run scheduling before reload, since that can			\
