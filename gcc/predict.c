@@ -897,20 +897,6 @@ estimate_bb_frequencies (loops)
 	    for (e = BASIC_BLOCK (i)->succ; e; e = e->succ_next)
 	      e->probability = (REG_BR_PROB_BASE + nedges / 2) / nedges;
 	}
-      else
-	{
-	  probability = INTVAL (XEXP (find_reg_note (last_insn,
-						     REG_BR_PROB, 0), 0));
-	  fallthru = BASIC_BLOCK (i)->succ;
-	  if (!fallthru->flags & EDGE_FALLTHRU)
-	    fallthru = fallthru->succ_next;
-	  branch = BASIC_BLOCK (i)->succ;
-	  if (branch->flags & EDGE_FALLTHRU)
-	    branch = branch->succ_next;
-
-	  branch->probability = probability;
-	  fallthru->probability = REG_BR_PROB_BASE - probability;
-	}
     }
 
   ENTRY_BLOCK_PTR->succ->probability = REG_BR_PROB_BASE;

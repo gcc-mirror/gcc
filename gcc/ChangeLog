@@ -1,3 +1,8 @@
+Wed Mar  6 11:28:19 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (estimate_bb_frequencies): Do not reload the
+	frequencies from notes.
+
 Wed Mar  6 10:59:39 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgrtl.c (delete_insn_and_edges, delete_insn_chain_and_edges): New.
