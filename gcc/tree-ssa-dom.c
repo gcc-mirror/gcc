@@ -700,7 +700,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
   /* Each PHI creates a temporary equivalence, record them.  */
   for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
     {
-      tree src = PHI_ARG_DEF (phi, phi_arg_from_edge (phi, e));
+      tree src = PHI_ARG_DEF_FROM_EDGE (phi, e);
       tree dst = PHI_RESULT (phi);
       record_const_or_copy (dst, src, &bd->const_and_copies);
       register_new_def (dst, &bd->block_defs);
@@ -761,7 +761,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	      if (TREE_CODE (USE_OP (uses, i)) == SSA_NAME)
 		tmp = get_value_for (USE_OP (uses, i), const_and_copies);
 	      if (tmp)
-		*USE_OP_PTR (uses, i) = tmp;
+		SET_USE_OP (uses, i, tmp);
 	    }
 
 	  /* Similarly for virtual uses.  */
@@ -773,7 +773,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	      if (TREE_CODE (VUSE_OP (vuses, i)) == SSA_NAME)
 		tmp = get_value_for (VUSE_OP (vuses, i), const_and_copies);
 	      if (tmp)
-		VUSE_OP (vuses, i) = tmp;
+		SET_VUSE_OP (vuses, i, tmp);
 	    }
 
 	  /* Try to lookup the new expression.  */
@@ -781,10 +781,10 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 
 	  /* Restore the statement's original uses/defs.  */
 	  for (i = 0; i < NUM_USES (uses); i++)
-	    *USE_OP_PTR (uses, i) = uses_copy[i];
+	    SET_USE_OP (uses, i, uses_copy[i]);
 
 	  for (i = 0; i < NUM_VUSES (vuses); i++)
-	    VUSE_OP (vuses, i) = vuses_copy[i];
+	    SET_VUSE_OP (vuses, i, vuses_copy[i]);
 
 	  free (uses_copy);
 	  free (vuses_copy);
@@ -2386,7 +2386,7 @@ eliminate_redundant_computations (struct dom_walk_data *walk_data,
 	      && is_gimple_min_invariant (cached_lhs)))
 	retval = true;
 
-      propagate_value (expr_p, cached_lhs);
+      propagate_tree_value (expr_p, cached_lhs);
       ann->modified = 1;
     }
   return retval;

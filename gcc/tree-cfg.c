@@ -3747,7 +3747,7 @@ tree_make_forwarder_block (edge fallthru)
       var = PHI_RESULT (phi);
       new_phi = create_phi_node (var, bb);
       SSA_NAME_DEF_STMT (var) = new_phi;
-      PHI_RESULT (phi) = make_ssa_name (SSA_NAME_VAR (var), phi);
+      SET_PHI_RESULT (phi, make_ssa_name (SSA_NAME_VAR (var), phi));
       add_phi_arg (&new_phi, PHI_RESULT (phi), fallthru);
     }
 

@@ -54,31 +54,33 @@ Boston, MA 02111-1307, USA.  */
    replacements of one SSA_NAME with a different SSA_NAME to use the
    APIs defined in this file.  */
 
-/* Given two SSA_NAMEs, replace the one pointed to by OP_P with VAR.
 
-   If *OP_P is a pointer, copy the memory tag used originally by *OP_P into
+/* Given two SSA_NAMEs, replace the annotations for the one referred to by OP 
+   with VAR's annmoptations.
+
+   If OP is a pointer, copy the memory tag used originally by OP into
    VAR.  This is needed in cases where VAR had never been dereferenced in the
    program.
 
    If FOR_PROPAGATION is true, then perform additional checks to ensure
-   that const/copy propagation of var for *OP_P is valid.  */
+   that const/copy propagation of var for OP is valid.  */
    
 static void
-replace_ssa_names (tree *op_p,
+replace_ssa_names_ann (tree op,
 		   tree var,
 		   bool for_propagation ATTRIBUTE_UNUSED)
 {
 #if defined ENABLE_CHECKING
-  if (for_propagation && !may_propagate_copy (*op_p, var))
+  if (for_propagation && !may_propagate_copy (op, var))
     abort ();
 #endif
 
   /* If VAR doesn't have a memory tag, copy the one from the original
      operand.  Also copy the dereferenced flags.  */
-  if (POINTER_TYPE_P (TREE_TYPE (*op_p)))
+  if (POINTER_TYPE_P (TREE_TYPE (op)))
     {
       var_ann_t new_ann = var_ann (SSA_NAME_VAR (var));
-      var_ann_t orig_ann = var_ann (SSA_NAME_VAR (*op_p));
+      var_ann_t orig_ann = var_ann (SSA_NAME_VAR (op));
 
       if (new_ann->type_mem_tag == NULL_TREE)
 	new_ann->type_mem_tag = orig_ann->type_mem_tag;
@@ -88,26 +90,25 @@ replace_ssa_names (tree *op_p,
 	abort ();
     }
 
-  *op_p = var;
-}
+}   
+
 
 /* Common code for propagate_value and replace_exp.
 
-   Replace *OP_P with VAL.  FOR_PROPAGATION indicates if the replacement
-   is done to propagate a value or not.  */
+   Replace use operand OP_P with VAL.  FOR_PROPAGATION indicates if the 
+   replacement is done to propagate a value or not.  */
 
 static void
-replace_exp_1 (tree *op_p, tree val, bool for_propagation)
+replace_exp_1 (use_operand_p op_p, tree val, bool for_propagation)
 {
   if (TREE_CODE (val) == SSA_NAME)
     {
-      if (TREE_CODE (*op_p) == SSA_NAME)
-	replace_ssa_names (op_p, val, for_propagation);
-      else
-	*op_p = val;
+      if (TREE_CODE (USE_FROM_PTR (op_p)) == SSA_NAME)
+	replace_ssa_names_ann (USE_FROM_PTR (op_p), val, for_propagation);
+      SET_USE (op_p, val);
     }
   else
-    *op_p = lhd_unsave_expr_now (val);
+    SET_USE (op_p, lhd_unsave_expr_now (val));
 }
 
 /* Propagate the value VAL (assumed to be a constant or another SSA_NAME)
@@ -117,9 +118,30 @@ replace_exp_1 (tree *op_p, tree val, bool for_propagation)
    checks to ensure validity of the const/copy propagation.  */
 
 void
-propagate_value (tree *op_p, tree val)
+propagate_value (use_operand_p op_p, tree val)
 {
   replace_exp_1 (op_p, val, true);
+}
+
+/* Propagate the value VAL (assumed to be a constant or another SSA_NAME)
+   into the tree pointed by OP_P.
+
+   Use this version for const/copy propagation when SSA operands are not 
+   available.  It will perform the additional checks to ensure validity of 
+   the const/copy propagation, but will not update any operand information.
+   Be sure to mark the stmt as modified.  */
+
+void
+propagate_tree_value (tree *op_p, tree val)
+{
+  if (TREE_CODE (val) == SSA_NAME)
+    {
+      if (TREE_CODE (*op_p) == SSA_NAME)
+	replace_ssa_names_ann (*op_p, val, true);
+      *op_p = val;
+    }
+  else
+    *op_p = lhd_unsave_expr_now (val);
 }
 
 /* Replace *OP_P with value VAL (assumed to be a constant or another SSA_NAME).
@@ -129,7 +151,7 @@ propagate_value (tree *op_p, tree val)
    in specific blocks taking into account actions of PHI nodes.  */
 
 void
-replace_exp (tree *op_p, tree val)
+replace_exp (use_operand_p op_p, tree val)
 {
   replace_exp_1 (op_p, val, false);
 }
@@ -138,15 +160,16 @@ replace_exp (tree *op_p, tree val)
    CONST_AND_COPIES.  */
 
 static bool
-cprop_operand (stmt_ann_t ann, tree *op_p, varray_type const_and_copies)
+cprop_operand (stmt_ann_t ann, use_operand_p op_p, varray_type const_and_copies)
 {
   bool may_have_exposed_new_symbols = false;
   tree val;
+  tree op = USE_FROM_PTR (op_p);
 
   /* If the operand has a known constant value or it is known to be a
      copy of some other variable, use the value or copy stored in
      CONST_AND_COPIES.  */
-  val = VARRAY_TREE (const_and_copies, SSA_NAME_VERSION (*op_p));
+  val = VARRAY_TREE (const_and_copies, SSA_NAME_VERSION (op));
   if (val)
     {
       tree op_type, val_type;
@@ -156,13 +179,13 @@ cprop_operand (stmt_ann_t ann, tree *op_p, varray_type const_and_copies)
 	 the renamed virtual operand if we later modify this
 	 statement.  Also only allow the new value to be an SSA_NAME
 	 for propagation into virtual operands.  */
-      if (!is_gimple_reg (*op_p)
-	  && (get_virtual_var (val) != get_virtual_var (*op_p)
+      if (!is_gimple_reg (op)
+	  && (get_virtual_var (val) != get_virtual_var (op)
 	      || TREE_CODE (val) != SSA_NAME))
 	return false;
 
       /* Get the toplevel type of each operand.  */
-      op_type = TREE_TYPE (*op_p);
+      op_type = TREE_TYPE (op);
       val_type = TREE_TYPE (val);
 
       /* While both types are pointers, get the type of the object
@@ -180,7 +203,7 @@ cprop_operand (stmt_ann_t ann, tree *op_p, varray_type const_and_copies)
      if (!lang_hooks.types_compatible_p (op_type, val_type)
            && TREE_CODE (val) != SSA_NAME)
 	{
-	  val = fold_convert (TREE_TYPE (*op_p), val);
+	  val = fold_convert (TREE_TYPE (op), val);
 	  if (!is_gimple_min_invariant (val)
 	      && TREE_CODE (val) != SSA_NAME)
 	    return false;
@@ -190,14 +213,14 @@ cprop_operand (stmt_ann_t ann, tree *op_p, varray_type const_and_copies)
 	 to their interaction with exception handling and some GCC
 	 extensions.  */
       if (TREE_CODE (val) == SSA_NAME
-	  && !may_propagate_copy (*op_p, val))
+	  && !may_propagate_copy (op, val))
 	return false;
 
       /* Dump details.  */
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "  Replaced '");
-	  print_generic_expr (dump_file, *op_p, dump_flags);
+	  print_generic_expr (dump_file, op, dump_flags);
 	  fprintf (dump_file, "' with %s '",
 		   (TREE_CODE (val) != SSA_NAME ? "constant" : "variable"));
 	  print_generic_expr (dump_file, val, dump_flags);
@@ -207,7 +230,7 @@ cprop_operand (stmt_ann_t ann, tree *op_p, varray_type const_and_copies)
       /* If VAL is an ADDR_EXPR or a constant of pointer type, note
 	 that we may have exposed a new symbol for SSA renaming.  */
       if (TREE_CODE (val) == ADDR_EXPR
-	  || (POINTER_TYPE_P (TREE_TYPE (*op_p))
+	  || (POINTER_TYPE_P (TREE_TYPE (op))
 	      && is_gimple_min_invariant (val)))
 	may_have_exposed_new_symbols = true;
 
@@ -241,8 +264,8 @@ cprop_into_stmt (tree stmt, varray_type const_and_copies)
   num_uses = NUM_USES (uses);
   for (i = 0; i < num_uses; i++)
     {
-      tree *op_p = USE_OP_PTR (uses, i);
-      if (TREE_CODE (*op_p) == SSA_NAME)
+      use_operand_p op_p = USE_OP_PTR (uses, i);
+      if (TREE_CODE (USE_FROM_PTR (op_p)) == SSA_NAME)
 	may_have_exposed_new_symbols
 	  |= cprop_operand (ann, op_p, const_and_copies);
     }
@@ -251,8 +274,8 @@ cprop_into_stmt (tree stmt, varray_type const_and_copies)
   num_vuses = NUM_VUSES (vuses);
   for (i = 0; i < num_vuses; i++)
     {
-      tree *op_p = VUSE_OP_PTR (vuses, i);
-      if (TREE_CODE (*op_p) == SSA_NAME)
+      use_operand_p op_p = VUSE_OP_PTR (vuses, i);
+      if (TREE_CODE (USE_FROM_PTR (op_p)) == SSA_NAME)
 	may_have_exposed_new_symbols
 	  |= cprop_operand (ann, op_p, const_and_copies);
     }
@@ -261,8 +284,8 @@ cprop_into_stmt (tree stmt, varray_type const_and_copies)
   num_v_may_defs = NUM_V_MAY_DEFS (v_may_defs);
   for (i = 0; i < num_v_may_defs; i++)
     {
-      tree *op_p = V_MAY_DEF_OP_PTR (v_may_defs, i);
-      if (TREE_CODE (*op_p) == SSA_NAME)
+      use_operand_p op_p = V_MAY_DEF_OP_PTR (v_may_defs, i);
+      if (TREE_CODE (USE_FROM_PTR (op_p)) == SSA_NAME)
 	may_have_exposed_new_symbols
 	  |= cprop_operand (ann, op_p, const_and_copies);
     }
@@ -317,7 +340,8 @@ cprop_into_successor_phis (basic_block bb,
 	{
 	  int i;
 	  tree new;
-	  tree *orig_p;
+	  use_operand_p orig_p;
+	  tree orig;
 
 	  /* If the hint is valid (!= phi_num_args), see if it points
 	     us to the desired phi alternative.  */
@@ -343,22 +367,23 @@ cprop_into_successor_phis (basic_block bb,
 
 	  /* The alternative may be associated with a constant, so verify
 	     it is an SSA_NAME before doing anything with it.  */
-	  orig_p = &PHI_ARG_DEF (phi, hint);
-	  if (TREE_CODE (*orig_p) != SSA_NAME)
+	  orig_p = PHI_ARG_DEF_PTR (phi, hint);
+	  orig = USE_FROM_PTR (orig_p);
+	  if (TREE_CODE (orig) != SSA_NAME)
 	    continue;
 
 	  /* If the alternative is known to have a nonzero value, record
 	     that fact in the PHI node itself for future use.  */
-	  if (bitmap_bit_p (nonzero_vars, SSA_NAME_VERSION (*orig_p)))
+	  if (bitmap_bit_p (nonzero_vars, SSA_NAME_VERSION (orig)))
 	    PHI_ARG_NONZERO (phi, hint) = true;
 
 	  /* If we have *ORIG_P in our constant/copy table, then replace
 	     ORIG_P with its value in our constant/copy table.  */
-	  new = VARRAY_TREE (const_and_copies, SSA_NAME_VERSION (*orig_p));
+	  new = VARRAY_TREE (const_and_copies, SSA_NAME_VERSION (orig));
 	  if (new
 	      && (TREE_CODE (new) == SSA_NAME
 		  || is_gimple_min_invariant (new))
-	      && may_propagate_copy (*orig_p, new))
+	      && may_propagate_copy (orig, new))
 	    propagate_value (orig_p, new);
 	}
     }

@@ -1,3 +1,74 @@
+2004-06-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-cfg.c (tree_make_forwarder_block):  Use SET_PHI_RESULT.
+	* tree-flow-inline.h (get_use_op_ptr):  Return a use_operand_p.
+	(get_use_from_ptr, get_def_from_ptr):  New.  Return operand pointers.
+	(get_def_op_ptr):  Return a def_operand_p instead of a 'tree *'.
+	(get_v_may_def_result_ptr):  Return a def_operand_p.
+	(get_v_may_def_op_ptr, get_vuse_op_ptr):   Return a use_operand_p.
+	(get_v_must_def_op_ptr):  Return a def_operand_p.
+	(get_phi_result_ptr):  New.  Return a pointer to the result of a PHI.
+	(get_phi_arg_def_ptr):  New.  Return a pointer to an argument of a PHI.
+	(phi_element_for_edge):  Remove.
+	* tree-flow.h (propagate_value, replace_exp):  Change prototype.
+	(propagate_tree_value):  Add new prototype.
+	(phi_element_for_edge):  Remove prototype.
+	* tree-into-ssa.c (mark_def_sites):  Use new operand types.
+	(prepare_operand_for_rename):  Split into two functions.
+	(prepare_use_operand_for_rename):  Prepare use operands.
+	(prepare_def_operand_for_rename):  Prepare def operands.
+	(rewrite_stmt):  Use new operand types.
+	(rewrite_operand):  Use new operand types, change parameter type.
+	* tree-outof-ssa.c (replace_variable):  Split into two functions.
+	(replace_use_variable):  Rewrite uses.
+	(replace_def_variable):  Rewrite defs.
+	(rewrite_trees, rewrite_vars_out_of_ssa):  Use new operand types.
+	* tree-phinodes.c (make_phi_node, resize_phi_node):  Use new types.
+	(add_phi_arg, remove_phi_arg_num):  Use new operand types.
+	* tree-ssa-ccp.c (substitute_and_fold):  Use new operand types.
+	(ccp_fold, replace_uses_in):  Use new operand types.
+	* tree-ssa-copy.c (replace_ssa_names):  Rename to replace_ssa_names_ann
+	and no longer set the value, change parameter type.
+	(replace_exp_1):  Use new operand types.
+	(propagate_value):  Change parameter type, use new operand types.
+	(propagate_tree_value):  Propagate_value without SSA operands.
+	(replace_exp, cprop_operand, cprop_into_stmt):  Use new operand types.
+	(cprop_into_successor_phis):  Use new operand types.
+	* tree-ssa-dom.c (thread_across_edge):  Use new operand types.
+	(eliminate_redundant_computations):  Use new operand types.
+	* tree-ssa-dse.c (fix_phi_uses):  Use new operand_types.
+	(fix_stmt_v_may_defs):  Use new operand_types.
+	* tree-ssa-live.c (create_ssa_var_map):  Use new operand_types.
+	(build_tree_conflict_graph):  Use new operand_types.
+	* tree-ssa-loop.c (duplicate_blocks):  Use PHI_ARG_DEF_FROM_EDGE.
+	* tree-ssa-operands.c (struct freelist_d):  Remove.
+	(check_optype_freelist, add_optype_freelist):  Remove.
+	(allocate_def_optype, allocate_use_optype, allocate_v_may_def_optype,
+	allocate_vuse_optype, allocate_v_must_def_optype):  Call ggc_alloc.
+	(free_uses, free_defs, free_vuses, free_v_may_defs, free_v_must_defs):
+	Call ggc_free instead of add_optype_freelist.
+	(init_ssa_operands, fini_ssa_operands):  Remove free list code.
+	(finalize_ssa_defs, finalize_ssa_uses):  Set new use/def operands.
+	* tree-ssa-operands.h (struct def_optype_d):  Change underlying type.
+	(struct use_optype_d):  Change underlying type.
+	(def_operand_p, use_operand_p):  New types for pointers to operands.
+	(USE_OP, DEF_OP, V_MAY_DEF_RESULT, V_MAY_DEF_OP, VUSE_OP, 
+	V_MUST_DEF_OP):  Use new pointer type instead of dereferencing directly.
+	(USE_FROM_PTR, DEF_FROM_PTR):  New macros to "dereference" operand 
+	pointer types.
+	(SET_USE, SET_DEF):  New macros to set operands from their pointer.
+	(SET_USE_OP, SET_DEF_OP, SET_V_MAY_DEF_RESULT, SET_V_MAY_DEF_OP,
+	SET_VUSE_OP, SET_V_MUST_DEF_OP): New SET routines for operands.
+	(PHI_RESULT_PTR, PHI_RESULT, SET_PHI_RESULT):  Macros to manage the
+	PHI result as an operand.
+	(PHI_ARG_DEF_PTR, PHI_ARG_DEF, SET_PHI_ARG_DEF, PHI_ARG_DEF_FROM_EDGE,
+	PHI_ARG_DEF_PTR_FROM_EDGE):  Macros to manage the PHI arguments.
+	* tree-ssa-pre.c (eliminate):  Call propagate_tree_value.
+	* tree-tailcall.c (independent_of_stmt_p, propagate_through_phis):  Use
+	PHI_ARG_DEF_FROM_EDGE.
+	* tree.h (PHI_RESULT):  Renamed to PHI_RESULT_TREE.
+	(PHI_ARG_DEF):  Renamed to PHI_ARG_DEF_TREE.
+
 2004-06-17  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR tree-optimization/15991

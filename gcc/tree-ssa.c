@@ -779,7 +779,7 @@ replace_immediate_uses (tree var, tree repl)
 	  for (j = 0; j < PHI_NUM_ARGS (stmt); j++)
 	    if (PHI_ARG_DEF (stmt, j) == var)
 	      {
-		PHI_ARG_DEF (stmt, j) = repl;
+		SET_PHI_ARG_DEF (stmt, j, repl);
 		if (TREE_CODE (repl) == SSA_NAME
 		    && PHI_ARG_EDGE (stmt, j)->flags & EDGE_ABNORMAL)
 		  SSA_NAME_OCCURS_IN_ABNORMAL_PHI (repl) = 1;

@@ -580,14 +580,14 @@ extern void dump_dominator_optimization_stats (FILE *);
 extern void debug_dominator_optimization_stats (void);
 
 /* In tree-ssa-copy.c  */
-extern void propagate_value (tree *, tree);
-extern void replace_exp (tree *, tree);
+extern void propagate_value (use_operand_p, tree);
+extern void propagate_tree_value (tree *, tree);
+extern void replace_exp (use_operand_p, tree);
 extern bool cprop_into_stmt (tree, varray_type);
 extern void cprop_into_successor_phis (basic_block, varray_type, bitmap);
 
 /* In tree-flow-inline.h  */
 static inline int phi_arg_from_edge (tree, edge);
-static inline struct phi_arg_d *phi_element_for_edge (tree, edge);
 static inline bool may_propagate_copy (tree, tree);
 static inline bool is_call_clobbered (tree);
 static inline void mark_call_clobbered (tree);

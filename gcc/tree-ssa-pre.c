@@ -1907,7 +1907,7 @@ eliminate (void)
 		      print_generic_stmt (dump_file, stmt, 0);
 		    }
 		  pre_stats.eliminations++;
-                  propagate_value (&TREE_OPERAND (stmt, 1), sprime);
+                  propagate_tree_value (&TREE_OPERAND (stmt, 1), sprime);
                   modify_stmt (stmt);
                 }
             }

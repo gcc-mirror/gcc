@@ -132,7 +132,7 @@ fix_phi_uses (tree phi, tree stmt)
 	 them with the appropriate V_MAY_DEF_OP.  */
       for (j = 0; j < PHI_NUM_ARGS (phi); j++)
 	if (v_may_def == PHI_ARG_DEF (phi, j))
-	  PHI_ARG_DEF (phi, j) = V_MAY_DEF_OP (v_may_defs, i);
+	  SET_PHI_ARG_DEF (phi, j, V_MAY_DEF_OP (v_may_defs, i));
     }
 }
 
@@ -164,8 +164,7 @@ fix_stmt_v_may_defs (tree stmt1, tree stmt2)
 	  if (v_may_def1 == V_MAY_DEF_RESULT (v_may_defs2, j))
 	    {
 	      /* Update.  */
-	      *V_MAY_DEF_OP_PTR (v_may_defs1, i) = 
-	                        V_MAY_DEF_OP (v_may_defs2, j);
+	      SET_V_MAY_DEF_OP (v_may_defs1, i, V_MAY_DEF_OP (v_may_defs2, j));
 	      break;
 	    }
 	}

@@ -88,55 +88,7 @@ static void add_call_clobber_ops (tree, voperands_t);
 static void add_call_read_ops (tree, voperands_t);
 static void add_stmt_operand (tree *, tree, int, voperands_t);
 
-
-struct freelist_d GTY((chain_next ("%h.next")))
-{
-   struct freelist_d *next;
-};
-
-#define NUM_FREE	5
-static GTY ((length ("NUM_FREE"))) struct freelist_d optype_freelist[NUM_FREE] = { {0}, {0}, {0}, {0}, {0} };
-
-
-static inline void *
-check_optype_freelist (size_t num ATTRIBUTE_UNUSED)
-{
-  return NULL;
-#if 0
-  void *vec = NULL;
-
-  if (num <= NUM_FREE && optype_freelist[num - 1].next)
-    {
-      vec = (void *)optype_freelist[num - 1].next;
-      optype_freelist[num - 1].next = optype_freelist[num - 1].next->next;
-    }
-  return vec;
-#endif
-}
 /* Return a vector of contiguous memory of a specified size.  */
-
-
-static inline void
-add_optype_freelist (void *vec ATTRIBUTE_UNUSED, size_t size ATTRIBUTE_UNUSED)
-{
-#if 0
-  struct freelist_d *ptr;
-#ifdef ENABLE_CHECKING
-  if (size == 0)
-    abort ();
-#endif
-
-  /* if its bigger than one of our lists, simply let it go and let GC 
-     collect it.  */
-  if (size > NUM_FREE)
-    return;
-
-  ptr = vec;
-  ptr->next = optype_freelist[size - 1].next;;
-  optype_freelist[size - 1].next = ptr;
-#endif
-}
-
 
 static inline def_optype
 allocate_def_optype (unsigned num)
@@ -144,9 +96,7 @@ allocate_def_optype (unsigned num)
   def_optype def_ops;
   unsigned size;
   size = sizeof (struct def_optype_d) + sizeof (tree *) * (num - 1);
-  def_ops = check_optype_freelist (num);
-  if (!def_ops)
-    def_ops =  ggc_alloc (size);
+  def_ops =  ggc_alloc (size);
   def_ops->num_defs = num;
   return def_ops;
 }
@@ -157,9 +107,7 @@ allocate_use_optype (unsigned num)
   use_optype use_ops;
   unsigned size;
   size = sizeof (struct use_optype_d) + sizeof (tree *) * (num - 1);
-  use_ops = check_optype_freelist (num);
-  if (!use_ops)
-    use_ops =  ggc_alloc (size);
+  use_ops =  ggc_alloc (size);
   use_ops->num_uses = num;
   return use_ops;
 }
@@ -170,9 +118,7 @@ allocate_v_may_def_optype (unsigned num)
   v_may_def_optype v_may_def_ops;
   unsigned size;
   size = sizeof (struct v_may_def_optype_d) + sizeof (tree) * ((num * 2) - 1);
-  v_may_def_ops = check_optype_freelist (num * 2);
-  if (!v_may_def_ops)
-    v_may_def_ops =  ggc_alloc (size);
+  v_may_def_ops =  ggc_alloc (size);
   v_may_def_ops->num_v_may_defs = num;
   return v_may_def_ops;
 }
@@ -183,9 +129,7 @@ allocate_vuse_optype (unsigned num)
   vuse_optype vuse_ops;
   unsigned size;
   size = sizeof (struct vuse_optype_d) + sizeof (tree) * (num - 1);
-  vuse_ops = check_optype_freelist (num);
-  if (!vuse_ops)
-    vuse_ops =  ggc_alloc (size);
+  vuse_ops =  ggc_alloc (size);
   vuse_ops->num_vuses = num;
   return vuse_ops;
 }
@@ -196,9 +140,7 @@ allocate_v_must_def_optype (unsigned num)
   v_must_def_optype v_must_def_ops;
   unsigned size;
   size = sizeof (struct v_must_def_optype_d) + sizeof (tree *) * (num - 1);
-  v_must_def_ops = check_optype_freelist (num);
-  if (!v_must_def_ops)
-    v_must_def_ops =  ggc_alloc (size);
+  v_must_def_ops =  ggc_alloc (size);
   v_must_def_ops->num_v_must_defs = num;
   return v_must_def_ops;
 }
@@ -209,7 +151,7 @@ free_uses (use_optype *uses, bool dealloc)
   if (*uses)
     {
       if (dealloc)
-	add_optype_freelist (*uses, (*uses)->num_uses);
+	ggc_free (*uses);
       *uses = NULL;
     }
 }
@@ -220,7 +162,7 @@ free_defs (def_optype *defs, bool dealloc)
   if (*defs)
     {
       if (dealloc)
-	add_optype_freelist (*defs, (*defs)->num_defs);
+	ggc_free (*defs);
       *defs = NULL;
     }
 }
@@ -231,7 +173,7 @@ free_vuses (vuse_optype *vuses, bool dealloc)
   if (*vuses)
     {
       if (dealloc)
-	add_optype_freelist (*vuses, (*vuses)->num_vuses);
+	ggc_free (*vuses);
       *vuses = NULL;
     }
 }
@@ -242,7 +184,7 @@ free_v_may_defs (v_may_def_optype *v_may_defs, bool dealloc)
   if (*v_may_defs)
     {
       if (dealloc)
-	add_optype_freelist (*v_may_defs, (*v_may_defs)->num_v_may_defs);
+	ggc_free (*v_may_defs);
       *v_may_defs = NULL;
     }
 }
@@ -253,7 +195,7 @@ free_v_must_defs (v_must_def_optype *v_must_defs, bool dealloc)
   if (*v_must_defs)
     {
       if (dealloc)
-	add_optype_freelist (*v_must_defs, (*v_must_defs)->num_v_must_defs);
+	ggc_free (*v_must_defs);
       *v_must_defs = NULL;
     }
 }
@@ -291,24 +233,16 @@ remove_v_must_defs (tree stmt)
 void
 init_ssa_operands (void)
 {
-  int x;
-
   VARRAY_TREE_PTR_INIT (build_defs, 5, "build defs");
   VARRAY_TREE_PTR_INIT (build_uses, 10, "build uses");
   VARRAY_TREE_INIT (build_v_may_defs, 10, "build v_may_defs");
   VARRAY_TREE_INIT (build_vuses, 10, "build vuses");
   VARRAY_TREE_INIT (build_v_must_defs, 10, "build v_must_defs");
-
-  for (x = 0; x < NUM_FREE; x++)
-    optype_freelist[x].next = NULL;
 }
 
 void
 fini_ssa_operands (void)
 {
-  int x;
-  for (x = 0; x < NUM_FREE; x++)
-    optype_freelist[x].next = NULL;
 }
 
 static void
@@ -330,7 +264,7 @@ finalize_ssa_defs (tree stmt)
 
   def_ops = allocate_def_optype (num);
   for (x = 0; x < num ; x++)
-    def_ops->defs[x] = VARRAY_TREE_PTR (build_defs, x);
+    def_ops->defs[x].def = VARRAY_TREE_PTR (build_defs, x);
   VARRAY_POP_ALL (build_defs);
 
   ann = stmt_ann (stmt);
@@ -363,7 +297,7 @@ finalize_ssa_uses (tree stmt)
 
   use_ops = allocate_use_optype (num);
   for (x = 0; x < num ; x++)
-    use_ops->uses[x] = VARRAY_TREE_PTR (build_uses, x);
+    use_ops->uses[x].use = VARRAY_TREE_PTR (build_uses, x);
   VARRAY_POP_ALL (build_uses);
 
   ann = stmt_ann (stmt);

@@ -225,7 +225,7 @@ duplicate_blocks (varray_type bbs_to_duplicate)
 
 	  for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
 	    {
-	      tree def = phi_element_for_edge (phi, e)->def;
+	      tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
 	      add_phi_arg (&phi, def, e1);
 	    }
 	}
