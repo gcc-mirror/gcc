@@ -1102,7 +1102,7 @@ output_deps (pfile)
     deps_phony_targets (pfile->deps, deps_stream);
 
   /* Don't close stdout.  */
-  if (CPP_OPTION (pfile, deps_file))
+  if (deps_stream != stdout)
     {
       if (ferror (deps_stream) || fclose (deps_stream) != 0)
 	cpp_fatal (pfile, "I/O error on output");
@@ -1875,16 +1875,16 @@ init_dependency_output (pfile)
       else
 	output_file = spec;
 
+      /* Command line -MF overrides environment variables and default.  */
+      if (CPP_OPTION (pfile, deps_file) == 0)
+	CPP_OPTION (pfile, deps_file) = output_file;
+
       CPP_OPTION (pfile, print_deps_append) = 1;
     }
-  else
+  else if (CPP_OPTION (pfile, deps_file) == 0)
     /* If -M or -MM was seen, default output to wherever was specified
        with -o.  out_fname is non-NULL here.  */
-    output_file = CPP_OPTION (pfile, out_fname);
-
-  /* Command line -MF overrides environment variables and default.  */
-  if (CPP_OPTION (pfile, deps_file) == 0)
-    CPP_OPTION (pfile, deps_file) = output_file;
+    CPP_OPTION (pfile, deps_file) = CPP_OPTION (pfile, out_fname);
 
   /* When doing dependencies, we should suppress all output, including
      -dM, -dI etc.  */

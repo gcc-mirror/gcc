@@ -1,3 +1,8 @@
+2002-02-23  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppinit.c (output_deps): Correct test for stdout output.
+	(init_dependency_output): Cure warning.
+
 Sat Feb 23 08:42:47 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (store_expr): When converting expression to promoted
