@@ -1954,10 +1954,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser)
 		     template (which will have an empty TYPE_FIELDs),
 		     to the main version.  */
 		  if (CLASSTYPE_USE_TEMPLATE (base_type))
-		    base_type = (TREE_TYPE
-				 (DECL_TEMPLATE_RESULT 
-				  (DECL_PRIMARY_TEMPLATE
-				   (CLASSTYPE_TI_TEMPLATE (base_type)))));
+		    base_type = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (base_type);
 		  for (field = TYPE_FIELDS (base_type);
 		       field;
 		       field = TREE_CHAIN (field))
@@ -4526,6 +4523,7 @@ cp_parser_unary_operator (cp_token* token)
 
 /* Parse a new-expression.
 
+   new-expression:
      :: [opt] new new-placement [opt] new-type-id new-initializer [opt]
      :: [opt] new new-placement [opt] ( type-id ) new-initializer [opt]
 

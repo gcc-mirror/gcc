@@ -1,3 +1,9 @@
+2003-02-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/5333
+	* g++.dg/parse/fused-params1.C: Adjust error messages.
+	* g++.dg/template/nested3.C: New test.
+	
 2003-02-24  Alan Modra  <amodra@bigpond.net.au>
 
 	* g++.dg/abi/param1.C: New test.

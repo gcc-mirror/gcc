@@ -5151,7 +5151,9 @@ instantiate_class_template (type)
   if (type == error_mark_node)
     return error_mark_node;
 
-  if (TYPE_BEING_DEFINED (type) || COMPLETE_TYPE_P (type))
+  if (TYPE_BEING_DEFINED (type) 
+      || COMPLETE_TYPE_P (type)
+      || dependent_type_p (type))
     return type;
 
   /* Figure out which template is being instantiated.  */
@@ -11526,6 +11528,10 @@ resolve_typename_type (tree type, bool only_current_p)
      to look inside it.  */
   if (only_current_p && !currently_open_class (scope))
     return error_mark_node;
+  /* If SCOPE is a partial instantiation, it will not have a valid
+     TYPE_FIELDS list, so use the original template.  */
+  if (CLASSTYPE_USE_TEMPLATE (scope))
+    scope = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (scope);
   /* Enter the SCOPE so that name lookup will be resolved as if we
      were in the class definition.  In particular, SCOPE will no
      longer be considered a dependent type.  */
