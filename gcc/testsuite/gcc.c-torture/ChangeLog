@@ -1,3 +1,8 @@
+2000-04-19  Greg McGary  <gkm@gnu.org>
+
+	* execute/20000419-1.c: New test for arg clobbering with
+	sibling-call optimizations.
+
 Wed Apr 12 22:54:02 2000  Hans-Peter Nilsson  <hp@axis.com>
 
 	* execute/20000412-6.c: New test.
