@@ -3965,7 +3965,10 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       if (TREE_CODE (template_type) == ENUMERAL_TYPE)
 	{
 	  if (!is_partial_instantiation)
-	    t = start_enum (TYPE_IDENTIFIER (template_type));
+	    {
+	      set_current_access_from_decl (TYPE_NAME (template_type));
+	      t = start_enum (TYPE_IDENTIFIER (template_type));
+	    }
 	  else
 	    /* We don't want to call start_enum for this type, since
 	       the values for the enumeration constants may involve
@@ -9941,6 +9944,8 @@ tsubst_enum (tag, newtag, args)
     }
 
   finish_enum (newtag);
+  DECL_SOURCE_LINE (TYPE_NAME (newtag)) = DECL_SOURCE_LINE (TYPE_NAME (tag));
+  DECL_SOURCE_FILE (TYPE_NAME (newtag)) = DECL_SOURCE_FILE (TYPE_NAME (tag));
 }
 
 /* DECL is a FUNCTION_DECL that is a template specialization.  Return

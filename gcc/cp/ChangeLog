@@ -1,3 +1,10 @@
+2000-10-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (lookup_template_class): Set current access for enum.
+	(tsubst_enum): Set file & line for enum decl.
+	
+	* spew.c (yylex): Remove unused variable.
+
 2000-10-05  Richard Henderson  <rth@cygnus.com>
 
 	* semantics.c (genrtl_finish_function): Don't init or check
