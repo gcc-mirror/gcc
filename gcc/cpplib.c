@@ -3929,6 +3929,10 @@ do_warning (pfile, keyword, buf, limit)
   bcopy (buf, copy, length);
   copy[length] = 0;
   SKIP_WHITE_SPACE (copy);
+
+  if (CPP_PEDANTIC (pfile) && !CPP_BUFFER (pfile)->system_header_p)
+    cpp_pedwarn ("ANSI C does not allow `#warning'");
+
   /* Use `pedwarn' not `warning', because #warning isn't in the C Standard;
      if -pedantic-errors is given, #warning should cause an error.  */
   cpp_pedwarn (pfile, "#warning %s", copy);
