@@ -2815,7 +2815,12 @@ __enable_execute_stack ()
 #define SYMBOL__MAIN __main
 #endif
 
-#if !defined (INIT_SECTION_ASM_OP) || !defined (OBJECT_FORMAT_ELF)
+#ifdef INIT_SECTION_ASM_OP
+#undef HAS_INIT_SECTION
+#define HAS_INIT_SECTION
+#endif
+
+#if !defined (HAS_INIT_SECTION) || !defined (OBJECT_FORMAT_ELF)
 /* Run all the global destructors on exit from the program.  */
 
 void
@@ -2831,7 +2836,7 @@ __do_global_dtors ()
 }
 #endif
 
-#ifndef INIT_SECTION_ASM_OP
+#ifndef HAS_INIT_SECTION
 /* Run all the global constructors on entry to the program.  */
 
 #ifndef ON_EXIT
@@ -2851,9 +2856,9 @@ __do_global_ctors ()
   DO_GLOBAL_CTORS_BODY;
   ON_EXIT (__do_global_dtors, 0);
 }
-#endif /* no INIT_SECTION_ASM_OP */
+#endif /* no HAS_INIT_SECTION */
 
-#if !defined (INIT_SECTION_ASM_OP) || defined (INVOKE__main)
+#if !defined (HAS_INIT_SECTION) || defined (INVOKE__main)
 /* Subroutine called automatically by `main'.
    Compiling a global function named `main'
    produces an automatic call to this function at the beginning.
@@ -2873,7 +2878,7 @@ SYMBOL__MAIN ()
       __do_global_ctors ();
     }
 }
-#endif /* no INIT_SECTION_ASM_OP or INVOKE__main */
+#endif /* no HAS_INIT_SECTION or INVOKE__main */
 
 #endif /* L__main */
 

@@ -49,7 +49,7 @@ Boston, MA 02111-1307, USA.  */
 %{mabi=32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 %{mabi=n32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 %{mabi=64: -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-%{!mabi=32:%{!mabi=n32: %{!mabi=64: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}"
+%{!mabi*: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}"
 
 /* We must make -mips3 do what -mlong64 used to do.  */
 /* ??? If no mipsX option given, but a mabi=X option is, then should set
@@ -67,26 +67,26 @@ Boston, MA 02111-1307, USA.  */
 %{mips2: -D_MIPS_ISA=_MIPS_ISA_MIPS2} \
 %{mips3: -D_MIPS_ISA=_MIPS_ISA_MIPS3} \
 %{mips4: -D_MIPS_ISA=_MIPS_ISA_MIPS4} \
-%{!mips1: %{!mips2: %{!mips3: %{!mips4: -D_MIPS_ISA=_MIPS_ISA_MIPS3}}}} \
+%{!mips*: -D_MIPS_ISA=_MIPS_ISA_MIPS3} \
 %{mabi=32: -D_MIPS_SIM=_MIPS_SIM_ABI32}	\
 %{mabi=n32: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32} \
 %{mabi=64: -D_ABI64=3 -D_MIPS_SIM=_ABI64} \
-%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32}}}	\
+%{!mabi*: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32} \
 %{!mint64: -D_MIPS_SZINT=32}%{mint64: -D_MIPS_SZINT=64} \
 %{mabi=32: -D_MIPS_SZLONG=32} \
 %{mabi=n32: -D_MIPS_SZLONG=32} \
 %{mabi=64: -D_MIPS_SZLONG=64} \
-%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D_MIPS_SZLONG=32}}} \
+%{!mabi*: -D_MIPS_SZLONG=32} \
 %{mabi=32: -D_MIPS_SZPTR=32} \
 %{mabi=n32: -D_MIPS_SZPTR=32} \
 %{mabi=64: -D_MIPS_SZPTR=64} \
-%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D_MIPS_SZPTR=32}}} \
+%{!mabi*: -D_MIPS_SZPTR=32} \
 %{!mips1:%{!mips2: -D_COMPILER_VERSION=601}}		\
-%{!mips1:%{!mips2:%{!mips3:%{!mips4: -U__mips -D__mips=3}}}} \
+%{!mips*: -U__mips -D__mips=3} \
 %{mabi=32: -U__mips64} \
 %{mabi=n32: -D__mips64} \
 %{mabi=64: -D__mips64} \
-%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D__mips64}}}"
+%{!mabi*: -D__mips64}"
 
 /* Irix 6 uses DWARF.  */
 #define DWARF_DEBUGGING_INFO
@@ -190,10 +190,10 @@ Boston, MA 02111-1307, USA.  */
 /* Stuff for constructors.  Start here.  */
 
 /* The assembler now accepts .section pseudo-ops, but it does not allow
-   one to change the section in the middle of a function.  crtstuff relies
-   on this hack, and thus crtstuff won't work here.  So, we do init and
-   fini sections exactly the same way as they are done for Irix 5, and
-   we ifdef out the ASM_OUTPUT_{CON,DE}STRUCTOR macros below.  */
+   one to change the section in the middle of a function, so we can't use
+   the INIT_SECTION_ASM_OP code in crtstuff.  But we can build up the ctor
+   and dtor lists this way, so we use -init and -fini to invoke the
+   do_global_* functions instead of running collect2.  */
 
 #define CONST_SECTION_ASM_OP_32	"\t.rdata"
 #define CONST_SECTION_ASM_OP_64	".section\t.rodata"
@@ -269,8 +269,6 @@ dtors_section ()							\
     }									\
 }
 
-#if 0
-
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
@@ -290,8 +288,6 @@ dtors_section ()							\
     assemble_name (FILE, NAME);              				\
     fprintf (FILE, "\n");						\
   } while (0)
-
-#endif
 
 /* A C statement to output something to the assembler file to switch to section
    NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
@@ -350,38 +346,70 @@ while (0)
 /* ??? If no mabi=X option give, but a mipsX option is, then should depend
    on the mipsX option.  */
 #undef STARTFILE_SPEC
-#undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
-  "%{mabi=32:%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s libprof1.a%s}%{!p:crt1.o%s}}} \
-   %{mabi=n32:%{pg:/usr/lib32/mips3/gcrt1.o%s}%{!pg:%{p:/usr/lib32/mips3/mcrt1.o%s /usr/lib32/mips3/libprof1.a%s}%{!p:/usr/lib32/mips3/crt1.o%s}} -L/usr/lib32/mips3} \
-   %{mabi=64:%{pg:/usr/lib64/gcrt1.o}%{!pg:%{p:/usr/lib64/mcrt1.o /usr/lib64/libprof1.a}%{!p:/usr/lib64/crt1.o}}} \
-   %{!mabi=32:%{!mabi=n32:%{!mabi=64:%{pg:/usr/lib32/mips3/gcrt1.o%s}%{!pg:%{p:/usr/lib32/mips3/mcrt1.o%s /usr/lib32/mips3/libprof1.a%s}%{!p:/usr/lib32/mips3/crt1.o%s}} -L/usr/lib32/mips3}}}"
+  "%{!shared: \
+     %{mabi=32:%{pg:gcrt1.o%s} \
+       %{!pg:%{p:mcrt1.o%s libprof1.a%s}%{!p:crt1.o%s}}} \
+     %{mabi=n32: \
+       %{mips4:%{pg:/usr/lib32/mips4/gcrt1.o%s} \
+         %{!pg:%{p:/usr/lib32/mips4/mcrt1.o%s /usr/lib32/mips4/libprof1.a%s} \
+           %{!p:/usr/lib32/mips4/crt1.o%s}}} \
+       %{!mips4:%{pg:/usr/lib32/mips3/gcrt1.o%s} \
+         %{!pg:%{p:/usr/lib32/mips3/mcrt1.o%s /usr/lib32/mips3/libprof1.a%s} \
+           %{!p:/usr/lib32/mips3/crt1.o%s}}}} \
+     %{mabi=64: \
+       %{mips4:%{pg:/usr/lib64/mips4/gcrt1.o} \
+         %{!pg:%{p:/usr/lib64/mips4/mcrt1.o /usr/lib64/mips4/libprof1.a} \
+           %{!p:/usr/lib64/mips4/crt1.o}}} \
+       %{!mips4:%{pg:/usr/lib64/mips3/gcrt1.o} \
+         %{!pg:%{p:/usr/lib64/mips3/mcrt1.o /usr/lib64/mips3/libprof1.a} \
+           %{!p:/usr/lib64/mips3/crt1.o}}}} \
+     %{!mabi*: \
+       %{mips4:%{pg:/usr/lib32/mips4/gcrt1.o%s} \
+         %{!pg:%{p:/usr/lib32/mips4/mcrt1.o%s /usr/lib32/mips4/libprof1.a%s} \
+           %{!p:/usr/lib32/mips4/crt1.o%s}}} \
+       %{!mips4:%{pg:/usr/lib32/mips3/gcrt1.o%s} \
+         %{!pg:%{p:/usr/lib32/mips3/mcrt1.o%s /usr/lib32/mips3/libprof1.a%s} \
+           %{!p:/usr/lib32/mips3/crt1.o%s}}}}} \
+   %{mabi=n32: %{mips4:-L/usr/lib32/mips4} %{!mips4:-L/usr/lib32/mips3} \
+     -L/usr/lib32} \
+   %{mabi=64: %{mips4:-L/usr/lib64/mips4} %{!mips4:-L/usr/lib64/mips3} \
+     -L/usr/lib64} \
+   %{!mabi*: %{mips4:-L/usr/lib32/mips4} %{!mips4:-L/usr/lib32/mips3} \
+     -L/usr/lib32} \
+   crtbegin.o%s"
 
 #undef LIB_SPEC
-#define LIB_SPEC "%{p:libprof1.a%s}%{pg:libprof1.a%s} -lc"
+#define LIB_SPEC "\
+%{!shared: \
+  -dont_warn_unused %{p:libprof1.a%s}%{pg:libprof1.a%s} -lc -warn_unused}"
+
+/* Avoid getting two warnings for libgcc.a everytime we link.  */
+#undef LIBGCC_SPEC
+#define LIBGCC_SPEC "-dont_warn_unused -lgcc -warn_unused"
 
 /* ??? If no mabi=X option give, but a mipsX option is, then should depend
    on the mipsX option.  */
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{mabi=32:crtn.o%s}%{mabi=n32:/usr/lib32/mips3/crtn.o%s}\
-   %{mabi=64:/usr/lib64/crtn.o}\
-   %{!mabi=32:%{!mabi=n32:%{!mabi=64:/usr/lib32/mips3/crtn.o%s}}}"
+  "crtend.o%s \
+   %{!shared: \
+     %{mabi=32:crtn.o%s}\
+     %{mabi=n32:%{mips4:/usr/lib32/mips4/crtn.o%s}\
+       %{!mips4:/usr/lib32/mips3/crtn.o%s}}\
+     %{mabi=64:%{mips4:/usr/lib64/mips4/crtn.o%s}\
+       %{!mips4:/usr/lib64/mips3/crtn.o%s}}\
+     %{!mabi*:%{mips4:/usr/lib32/mips4/crtn.o%s}\
+       %{!mips4:/usr/lib32/mips3/crtn.o%s}}}"
 
 /* ??? If no mabi=X option give, but a mipsX option is, then should depend
    on the mipsX option.  */
-/* ??? We use the -woff 84 option to disable the warning about linking
-   with libraries that are unnecessary.  This message is currently more of
-   a hassle than a benefit, because we get two warnings for libgcc.a everytime
-   we link.  If we added the proper -dont_warn_unused/-warn_unused options
-   around libgcc.a, then we can take out the -woff 84 option.  */
 #undef LINK_SPEC
 #define LINK_SPEC "\
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} \
 %{bestGnum} %{shared} %{non_shared} \
 %{call_shared} %{no_archive} %{exact_version} \
 %{!shared: %{!non_shared: %{!call_shared: -call_shared -no_unresolved}}} \
-%{rpath} \
--_SYSTYPE_SVR4 -woff 84 \
-%{mabi=32: -32}%{mabi=n32: -n32}%{mabi=64: -64} \
-%{!mabi=32:%{!mabi=n32:%{!mabi=64: -n32}}}"
+%{rpath} -init __do_global_ctors -fini __do_global_dtors \
+%{shared:-hidden_symbol __do_global_ctors,__do_global_dtors} \
+-_SYSTYPE_SVR4 %{mabi=32: -32}%{mabi=n32: -n32}%{mabi=64: -64} %{!mabi*: -n32}"

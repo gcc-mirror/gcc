@@ -186,6 +186,21 @@ __do_global_ctors_aux ()	/* prologue goes in .init section */
 }
 
 #endif /* OBJECT_FORMAT_ELF */
+
+#else /* defined(INIT_SECTION_ASM_OP) */
+
+/* This case is used by the Irix 6 port, which supports named sections but
+   not an SVR4-style .fini section.  __do_global_dtors can be non-static
+   in this case because the -fini switch to ld binds strongly.  */
+static func_ptr __DTOR_LIST__[];
+void
+__do_global_dtors ()
+{
+  func_ptr *p;
+  for (p = __DTOR_LIST__ + 1; *p; p++)
+    (*p) ();
+}
+
 #endif /* defined(INIT_SECTION_ASM_OP) */
 
 /* Force cc1 to switch to .data section.  */
@@ -296,6 +311,20 @@ __do_global_ctors_aux ()	/* prologue goes in .text section */
 }				/* epilogue and body go in .init section */
 
 #endif /* OBJECT_FORMAT_ELF */
+
+#else /* defined(INIT_SECTION_ASM_OP) */
+
+/* This case is used by the Irix 6 port, which supports named sections but
+   not an SVR4-style .init section.  __do_global_ctors can be non-static
+   in this case because the -init switch to ld binds strongly.  */
+static func_ptr __CTOR_END__[];
+void
+__do_global_ctors ()
+{
+  func_ptr *p;
+  for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)
+    (*p) ();
+}
 
 #endif /* defined(INIT_SECTION_ASM_OP) */
 
