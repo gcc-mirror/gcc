@@ -1,3 +1,8 @@
+Tue Sep 16 14:06:56 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (store_parm_decls): last_parm_cleanup_insn is the insn
+ 	after the exception spec.
+
 Mon Sep 15 11:52:13 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (null_ptr_cst_p): Integer type, not integral type.
