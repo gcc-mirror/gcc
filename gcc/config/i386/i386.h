@@ -913,7 +913,7 @@ enum reg_class
 do									\
   {									\
     static int num_func = 0;						\
-    rtx xops[9];							\
+    rtx xops[8];							\
     char block_table[80], false_label[80];				\
 									\
     ASM_GENERATE_INTERNAL_LABEL (block_table, "LPBX", 0);		\
@@ -927,7 +927,6 @@ do									\
     xops[5] = stack_pointer_rtx;					\
     xops[6] = GEN_INT (4);						\
     xops[7] = gen_rtx (REG, Pmode, 0);	/* eax */			\
-    xops[8] = gen_rtx (MEM, SImode, stack_pointer_rtx);			\
 									\
     CONSTANT_POOL_ADDRESS_P (xops[1]) = TRUE;				\
     CONSTANT_POOL_ADDRESS_P (xops[2]) = TRUE;				\
@@ -939,9 +938,8 @@ do									\
       output_asm_insn (AS1(push%L1,%1), xops);				\
     else								\
       {									\
-	output_asm_insn (AS1 (push%L7,%7), xops);			\
 	output_asm_insn (AS2 (lea%L7,%a1,%7), xops);			\
-	output_asm_insn (AS2 (xchg%L7,%8,%7), xops);			\
+	output_asm_insn (AS1 (push%L7,%7), xops);			\
       }									\
 									\
     output_asm_insn (AS1(call,%P3), xops);				\
