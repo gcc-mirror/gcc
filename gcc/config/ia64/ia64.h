@@ -2351,7 +2351,8 @@ do {									\
 { "ar_pfs_reg_operand", {REG}},						\
 { "general_tfmode_operand", {SUBREG, REG, CONST_DOUBLE, MEM}},		\
 { "destination_tfmode_operand", {SUBREG, REG, MEM}},			\
-{ "tfreg_or_fp01_operand", {REG, CONST_DOUBLE}},
+{ "tfreg_or_fp01_operand", {REG, CONST_DOUBLE}},			\
+{ "basereg_operand", {SUBREG, REG}},
 
 /* An alias for a machine mode name.  This is the machine mode that elements of
    a jump-table should have.  */
