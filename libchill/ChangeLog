@@ -1,3 +1,7 @@
+Tue Sep  8 10:41:38 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* rts.h: Update with missing code.
+
 Sun Sep  6 01:30:40 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* allgmem.c: Do not include config.h anymore.
