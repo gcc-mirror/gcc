@@ -5,7 +5,7 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                             (HP-UX Version)                              --
+--                               (NT Version)                               --
 --                                                                          --
 --          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -86,7 +86,7 @@ pragma Pure (System);
    --  Other System-Dependent Declarations
 
    type Bit_Order is (High_Order_First, Low_Order_First);
-   Default_Bit_Order : constant Bit_Order := High_Order_First;
+   Default_Bit_Order : constant Bit_Order := Low_Order_First;
 
    --  Priority-related Declarations (RM D.1)
 
@@ -128,7 +128,7 @@ private
    Machine_Overflows         : constant Boolean := False;
    Machine_Rounds            : constant Boolean := True;
    OpenVMS                   : constant Boolean := False;
-   Signed_Zeros              : constant Boolean := False;
+   Signed_Zeros              : constant Boolean := True;
    Stack_Check_Default       : constant Boolean := False;
    Stack_Check_Probes        : constant Boolean := False;
    Support_64_Bit_Divides    : constant Boolean := True;
@@ -147,7 +147,7 @@ private
    High_Integrity_Mode       : constant Boolean := False;
    Long_Shifts_Inlined       : constant Boolean := False;
 
-   --------------------------
+   ---------------------------
    -- Underlying Priorities --
    ---------------------------
 
@@ -160,67 +160,49 @@ private
    --  for mapping from Ada priorities to system priorities. In some
    --  cases a 1-1 mapping is not the convenient or optimal choice.
 
-   --  For HP/UX DCE Threads, we use the full range of 31 priorities
-   --  in the Ada model, but map them by compression onto the more limited
-   --  range of priorities available in HP/UX.
-   --  For POSIX Threads, this table is ignored.
+   type Priorities_Mapping is array (Any_Priority) of Integer;
+   pragma Suppress_Initialization (Priorities_Mapping);
+   --  Suppress initialization in case gnat.adc specifies Normalize_Scalars
+
+   --  On NT, the default mapping preserves the standard 31 priorities
+   --  of the Ada model, but maps them using compression onto the 7
+   --  priority levels available in NT.
 
    --  To replace the default values of the Underlying_Priorities mapping,
    --  copy this source file into your build directory, edit the file to
    --  reflect your desired behavior, and recompile with the command:
 
-   --     $ gcc -c -O2 -gnatpgn system.ads
+   --     $ gcc -c -O3 -gnatpgn system.ads
 
    --  then recompile the run-time parts that depend on this package:
 
-   --     $ gnatmake -a -gnatn -O2 <your application>
+   --     $ gnatmake -a -gnatn -O3 <your application>
 
    --  then force rebuilding your application if you need different options:
 
    --     $ gnatmake -f <your options> <your application>
 
-   type Priorities_Mapping is array (Any_Priority) of Integer;
-   pragma Suppress_Initialization (Priorities_Mapping);
-   --  Suppress initialization in case gnat.adc specifies Normalize_Scalars
-
    Underlying_Priorities : constant Priorities_Mapping :=
 
-     (Priority'First => 16,
+     (Priority'First .. 1        => -15,
 
-      1  => 17,
-      2  => 18,
-      3  => 18,
-      4  => 18,
-      5  => 18,
-      6  => 19,
-      7  => 19,
-      8  => 19,
-      9  => 20,
-      10 => 20,
-      11 => 21,
-      12 => 21,
-      13 => 22,
-      14 => 23,
+      2 .. Default_Priority - 2  => -2,
 
-      Default_Priority   => 24,
+      Default_Priority - 1       => -1,
 
-      16 => 25,
-      17 => 25,
-      18 => 25,
-      19 => 26,
-      20 => 26,
-      21 => 26,
-      22 => 27,
-      23 => 27,
-      24 => 27,
-      25 => 28,
-      26 => 28,
-      27 => 29,
-      28 => 29,
-      29 => 30,
+      Default_Priority           => 0,
 
-      Priority'Last      => 30,
+      Default_Priority + 1 .. 19 => 1,
 
-      Interrupt_Priority => 31);
+      20 .. Priority'Last        => 2,
+
+      Interrupt_Priority         => 15);
+
+   pragma Linker_Options ("-Wl,--stack=0x2000000");
+   --  This is used to change the default stack (32 MB) size for non tasking
+   --  programs. We change this value for GNAT on Windows here because the
+   --  binutils on this platform have switched to a too low value for Ada
+   --  programs. Note that we also set the stack size for tasking programs in
+   --  System.Task_Primitives.Operations.
 
 end System;

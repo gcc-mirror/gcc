@@ -5,9 +5,9 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                               (NT Version)                               --
+--                           (SGI Irix, o32 ABI)                            --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -86,7 +86,7 @@ pragma Pure (System);
    --  Other System-Dependent Declarations
 
    type Bit_Order is (High_Order_First, Low_Order_First);
-   Default_Bit_Order : constant Bit_Order := Low_Order_First;
+   Default_Bit_Order : constant Bit_Order := High_Order_First;
 
    --  Priority-related Declarations (RM D.1)
 
@@ -119,7 +119,7 @@ private
    Backend_Overflow_Checks   : constant Boolean := False;
    Command_Line_Args         : constant Boolean := True;
    Configurable_Run_Time     : constant Boolean := False;
-   Denorm                    : constant Boolean := True;
+   Denorm                    : constant Boolean := False;
    Duration_32_Bits          : constant Boolean := False;
    Exit_Status_Supported     : constant Boolean := True;
    Fractional_Fixed_Ops      : constant Boolean := False;
@@ -130,7 +130,7 @@ private
    OpenVMS                   : constant Boolean := False;
    Signed_Zeros              : constant Boolean := True;
    Stack_Check_Default       : constant Boolean := False;
-   Stack_Check_Probes        : constant Boolean := False;
+   Stack_Check_Probes        : constant Boolean := True;
    Support_64_Bit_Divides    : constant Boolean := True;
    Support_Aggregates        : constant Boolean := True;
    Support_Composite_Assign  : constant Boolean := True;
@@ -138,71 +138,16 @@ private
    Support_Long_Shifts       : constant Boolean := True;
    Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := False;
-   ZCX_By_Default            : constant Boolean := False;
-   GCC_ZCX_Support           : constant Boolean := False;
+   ZCX_By_Default            : constant Boolean := True;
+   GCC_ZCX_Support           : constant Boolean := True;
    Front_End_ZCX_Support     : constant Boolean := False;
 
    --  Obsolete entries, to be removed eventually (bootstrap issues!)
 
    High_Integrity_Mode       : constant Boolean := False;
-   Long_Shifts_Inlined       : constant Boolean := False;
+   Long_Shifts_Inlined       : constant Boolean := True;
 
-   ---------------------------
-   -- Underlying Priorities --
-   ---------------------------
-
-   --  Important note: this section of the file must come AFTER the
-   --  definition of the system implementation parameters to ensure
-   --  that the value of these parameters is available for analysis
-   --  of the declarations here (using Rtsfind at compile time).
-
-   --  The underlying priorities table provides a generalized mechanism
-   --  for mapping from Ada priorities to system priorities. In some
-   --  cases a 1-1 mapping is not the convenient or optimal choice.
-
-   type Priorities_Mapping is array (Any_Priority) of Integer;
-   pragma Suppress_Initialization (Priorities_Mapping);
-   --  Suppress initialization in case gnat.adc specifies Normalize_Scalars
-
-   --  On NT, the default mapping preserves the standard 31 priorities
-   --  of the Ada model, but maps them using compression onto the 7
-   --  priority levels available in NT.
-
-   --  To replace the default values of the Underlying_Priorities mapping,
-   --  copy this source file into your build directory, edit the file to
-   --  reflect your desired behavior, and recompile with the command:
-
-   --     $ gcc -c -O3 -gnatpgn system.ads
-
-   --  then recompile the run-time parts that depend on this package:
-
-   --     $ gnatmake -a -gnatn -O3 <your application>
-
-   --  then force rebuilding your application if you need different options:
-
-   --     $ gnatmake -f <your options> <your application>
-
-   Underlying_Priorities : constant Priorities_Mapping :=
-
-     (Priority'First .. 1        => -15,
-
-      2 .. Default_Priority - 2  => -2,
-
-      Default_Priority - 1       => -1,
-
-      Default_Priority           => 0,
-
-      Default_Priority + 1 .. 19 => 1,
-
-      20 .. Priority'Last        => 2,
-
-      Interrupt_Priority         => 15);
-
-   pragma Linker_Options ("-Wl,--stack=0x2000000");
-   --  This is used to change the default stack (32 MB) size for non tasking
-   --  programs. We change this value for GNAT on Windows here because the
-   --  binutils on this platform have switched to a too low value for Ada
-   --  programs. Note that we also set the stack size for tasking programs in
-   --  System.Task_Primitives.Operations.
+   --  Note: Denorm is False because denormals are not supported on the
+   --  R10000, and we want the code to be valid for this processor.
 
 end System;

@@ -5,7 +5,7 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                           (SGI Irix, n32 ABI)                            --
+--                             (HP-UX Version)                              --
 --                                                                          --
 --          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -66,7 +66,7 @@ pragma Pure (System);
    Null_Address : constant Address;
 
    Storage_Unit : constant := 8;
-   Word_Size    : constant := 64;
+   Word_Size    : constant := 32;
    Memory_Size  : constant := 2 ** 32;
 
    --  Address comparison
@@ -119,7 +119,7 @@ private
    Backend_Overflow_Checks   : constant Boolean := False;
    Command_Line_Args         : constant Boolean := True;
    Configurable_Run_Time     : constant Boolean := False;
-   Denorm                    : constant Boolean := False;
+   Denorm                    : constant Boolean := True;
    Duration_32_Bits          : constant Boolean := False;
    Exit_Status_Supported     : constant Boolean := True;
    Fractional_Fixed_Ops      : constant Boolean := False;
@@ -128,9 +128,9 @@ private
    Machine_Overflows         : constant Boolean := False;
    Machine_Rounds            : constant Boolean := True;
    OpenVMS                   : constant Boolean := False;
-   Signed_Zeros              : constant Boolean := True;
+   Signed_Zeros              : constant Boolean := False;
    Stack_Check_Default       : constant Boolean := False;
-   Stack_Check_Probes        : constant Boolean := True;
+   Stack_Check_Probes        : constant Boolean := False;
    Support_64_Bit_Divides    : constant Boolean := True;
    Support_Aggregates        : constant Boolean := True;
    Support_Composite_Assign  : constant Boolean := True;
@@ -138,16 +138,89 @@ private
    Support_Long_Shifts       : constant Boolean := True;
    Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := False;
-   ZCX_By_Default            : constant Boolean := False;
-   GCC_ZCX_Support           : constant Boolean := False;
+   ZCX_By_Default            : constant Boolean := True;
+   GCC_ZCX_Support           : constant Boolean := True;
    Front_End_ZCX_Support     : constant Boolean := False;
 
    --  Obsolete entries, to be removed eventually (bootstrap issues!)
 
    High_Integrity_Mode       : constant Boolean := False;
-   Long_Shifts_Inlined       : constant Boolean := True;
+   Long_Shifts_Inlined       : constant Boolean := False;
 
-   --  Note: Denorm is False because denormals are not supported on the
-   --  R10000, and we want the code to be valid for this processor.
+   --------------------------
+   -- Underlying Priorities --
+   ---------------------------
+
+   --  Important note: this section of the file must come AFTER the
+   --  definition of the system implementation parameters to ensure
+   --  that the value of these parameters is available for analysis
+   --  of the declarations here (using Rtsfind at compile time).
+
+   --  The underlying priorities table provides a generalized mechanism
+   --  for mapping from Ada priorities to system priorities. In some
+   --  cases a 1-1 mapping is not the convenient or optimal choice.
+
+   --  For HP/UX DCE Threads, we use the full range of 31 priorities
+   --  in the Ada model, but map them by compression onto the more limited
+   --  range of priorities available in HP/UX.
+   --  For POSIX Threads, this table is ignored.
+
+   --  To replace the default values of the Underlying_Priorities mapping,
+   --  copy this source file into your build directory, edit the file to
+   --  reflect your desired behavior, and recompile with the command:
+
+   --     $ gcc -c -O2 -gnatpgn system.ads
+
+   --  then recompile the run-time parts that depend on this package:
+
+   --     $ gnatmake -a -gnatn -O2 <your application>
+
+   --  then force rebuilding your application if you need different options:
+
+   --     $ gnatmake -f <your options> <your application>
+
+   type Priorities_Mapping is array (Any_Priority) of Integer;
+   pragma Suppress_Initialization (Priorities_Mapping);
+   --  Suppress initialization in case gnat.adc specifies Normalize_Scalars
+
+   Underlying_Priorities : constant Priorities_Mapping :=
+
+     (Priority'First => 16,
+
+      1  => 17,
+      2  => 18,
+      3  => 18,
+      4  => 18,
+      5  => 18,
+      6  => 19,
+      7  => 19,
+      8  => 19,
+      9  => 20,
+      10 => 20,
+      11 => 21,
+      12 => 21,
+      13 => 22,
+      14 => 23,
+
+      Default_Priority   => 24,
+
+      16 => 25,
+      17 => 25,
+      18 => 25,
+      19 => 26,
+      20 => 26,
+      21 => 26,
+      22 => 27,
+      23 => 27,
+      24 => 27,
+      25 => 28,
+      26 => 28,
+      27 => 29,
+      28 => 29,
+      29 => 30,
+
+      Priority'Last      => 30,
+
+      Interrupt_Priority => 31);
 
 end System;
