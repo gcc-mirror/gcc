@@ -1,3 +1,8 @@
+2003-02-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
+
+	* gcc.dg/decl-2.c: New test.
+
 2003-02-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/20020430-1.c: Fix dg command typos.
