@@ -694,6 +694,12 @@ case "${target}" in
     ;;
   *-*-rtems*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
+    case ${target} in
+	h8300*-*-* | h8500-*-*)
+	  noconfigdirs="$noconfigdirs target-libf2c"
+          ;;
+        *) ;;
+    esac
     ;;
   *-*-vxworks*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
@@ -844,6 +850,12 @@ case "${target}" in
     ;;
   i[34567]86-*-freebsd*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  s390*-*-linux*)
+    # The libffi port is not yet in the GCC tree
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
+    # linux has rx in libc
+    skipdirs="$skipdirs target-librx"
     ;;
   *-*-linux*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
@@ -1022,11 +1034,13 @@ case "${target}" in
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
     fi
+    noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   sparc64-*-elf*)
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
     fi
+    noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   sparclite-*-*)
     if [ x${is_cross_compiler} != xno ] ; then
