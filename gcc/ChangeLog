@@ -1,3 +1,28 @@
+2000-08-09  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* configure.in (--enable-c-cpplib): Uncomment.  Use AC_DEFINE
+	instead of extra_c_flags.
+	(--enable-c-mbchar): Use AC_DEFINE instead of extra_c_flags.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+	* cpperror.c (cpp_type2name): New function.
+	* cpplex.c (lex_line): If we issued an error for an invalid
+	preprocessing directive, discard that logical line.
+	* cpplib.c (do_line): Call a hook function if the current file
+	is renamed by #line.
+	(do_ident): Pass the contents of the string, not the entire
+	token, to the callback function.
+	* cpplib.h (CPP_LAST_PUNCTUATOR): New #define.
+	(cb.rename_file): New hook function.
+	(cb.ident): Adjust prototype.
+	(cpp_type2name): Prototype.
+	* cppmacro.c (dump_macro_args): Correct precedence lossage.
+
+	* cppmain.c (cb_ident): Update for changed interface.
+	(cb_rename_file): New function.
+	(main): Set rename callback.
+
 2000-08-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* caller-save.c (mark_referenced_regs): Mark partially-overwritten

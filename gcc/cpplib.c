@@ -477,7 +477,7 @@ do_line (pfile)
   /* C99 raised the minimum limit on #line numbers.  */
   unsigned int cap = CPP_OPTION (pfile, c99) ? 2147483647 : 32767;
   int action_number = 0;
-  int enter = 0, leave = 0;
+  int enter = 0, leave = 0, rename = 0;
   enum cpp_ttype type;
   const U_CHAR *str;
   char *fname;
@@ -492,7 +492,7 @@ do_line (pfile)
   if (type != CPP_NUMBER || strtoul_for_line (str, len, &new_lineno))
     {
       cpp_error (pfile, "token after #line is not a positive integer");
-      goto done;
+      return;
     }      
 
   if (CPP_PEDANTIC (pfile) && (new_lineno == 0 || new_lineno > cap))
@@ -511,7 +511,7 @@ do_line (pfile)
     {
       cpp_error (pfile, "second token after #line is not a string");
       ip->lineno = old_lineno;  /* malformed #line should have no effect */
-      goto done;
+      return;
     }
 
   fname = alloca (len + 1);
@@ -520,6 +520,7 @@ do_line (pfile)
     
   if (strcmp (fname, ip->nominal_fname))
     {
+      rename = 1;
       if (!strcmp (fname, ip->inc->name))
 	ip->nominal_fname = ip->inc->name;
       else
@@ -527,7 +528,7 @@ do_line (pfile)
     }
 
   if (read_line_number (pfile, &action_number) == 0)
-    return;
+    goto done;
 
   if (CPP_PEDANTIC (pfile))
     cpp_pedwarn (pfile, "garbage at end of #line");
@@ -555,13 +556,13 @@ do_line (pfile)
       read_line_number (pfile, &action_number);
     }
 
+ done:
   if (enter && pfile->cb.enter_file)
     (*pfile->cb.enter_file) (pfile);
   if (leave && pfile->cb.leave_file)
     (*pfile->cb.leave_file) (pfile);
-
- done:
-  return;
+  if (rename && pfile->cb.rename_file)
+    (*pfile->cb.rename_file) (pfile);
 }
 
 /*
@@ -610,7 +611,7 @@ do_ident (pfile)
   if (str->type == CPP_STRING && _cpp_get_token (pfile)->type == CPP_EOF)
     {
       if (pfile->cb.ident)
-	(*pfile->cb.ident) (pfile, str);
+	(*pfile->cb.ident) (pfile, str->val.str.text, str->val.str.len);
       return;
     }
 

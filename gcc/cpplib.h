@@ -48,6 +48,7 @@ typedef struct cpp_hashnode cpp_hashnode;
 /* Positions in the table.  */
 #define CPP_LAST_EQ CPP_MAX
 #define CPP_FIRST_DIGRAPH CPP_HASH
+#define CPP_LAST_PUNCTUATOR CPP_DOT_STAR
 
 #define TTYPE_TABLE				\
   OP(CPP_EQ = 0,	"=")			\
@@ -522,12 +523,13 @@ struct cpp_reader
   struct {
     void (*enter_file) PARAMS ((cpp_reader *));
     void (*leave_file) PARAMS ((cpp_reader *));
+    void (*rename_file) PARAMS ((cpp_reader *));
     void (*include) PARAMS ((cpp_reader *, const unsigned char *,
 			     const unsigned char *, unsigned int, int));
     void (*define) PARAMS ((cpp_reader *, cpp_hashnode *));
     void (*undef) PARAMS ((cpp_reader *, cpp_hashnode *));
     void (*poison) PARAMS ((cpp_reader *));
-    void (*ident) PARAMS ((cpp_reader *, const cpp_token *));
+    void (*ident) PARAMS ((cpp_reader *, const unsigned char *, unsigned int));
     void (*def_pragma) PARAMS ((cpp_reader *));
   } cb;
 
@@ -692,6 +694,8 @@ extern void cpp_pedwarn_with_file_and_line PARAMS ((cpp_reader *, const char *, 
   ATTRIBUTE_PRINTF_5;
 extern void cpp_error_from_errno PARAMS ((cpp_reader *, const char *));
 extern void cpp_notice_from_errno PARAMS ((cpp_reader *, const char *));
+
+extern const char *cpp_type2name PARAMS ((enum cpp_ttype));
 
 /* In cpplex.c */
 extern cpp_buffer *cpp_push_buffer	PARAMS ((cpp_reader *,
