@@ -3636,30 +3636,14 @@ tree_transform (Node_Id gnat_node)
 		  if (Present (Renamed_Object (gnat_ex_id)))
 		    gnat_ex_id = Renamed_Object (gnat_ex_id);
 
-		  /* ??? Note that we have to use gnat_to_gnu_entity here
-		     since the type of the exception will be wrong in the
-		     VMS case and that's exactly what this test is for.  */
 		  gnu_expr = gnat_to_gnu_entity (gnat_ex_id, NULL_TREE, 0);
 
-		  /* If this was a VMS exception, check import_code
-		     against the value of the exception.  */
-		  if (TREE_CODE (TREE_TYPE (gnu_expr)) == INTEGER_TYPE)
-		    this_choice
-		      = build_binary_op
-			(EQ_EXPR, integer_type_node,
-			 build_component_ref
-			 (build_unary_op
-			  (INDIRECT_REF, NULL_TREE,
-			   TREE_VALUE (gnu_except_ptr_stack)),
-			  get_identifier ("import_code"), NULL_TREE, 0),
-			 gnu_expr);
-		  else
-		    this_choice
-		      = build_binary_op
-			(EQ_EXPR, integer_type_node,
-			 TREE_VALUE (gnu_except_ptr_stack),
-			 convert
-			 (TREE_TYPE (TREE_VALUE (gnu_except_ptr_stack)),
+		  this_choice
+		    = build_binary_op
+		      (EQ_EXPR, integer_type_node,
+		       TREE_VALUE (gnu_except_ptr_stack),
+		       convert
+		         (TREE_TYPE (TREE_VALUE (gnu_except_ptr_stack)),
 			  build_unary_op (ADDR_EXPR, NULL_TREE, gnu_expr)));
 
 		  /* If this is the distinguished exception "Non_Ada_Error"
@@ -3742,6 +3726,9 @@ tree_transform (Node_Id gnat_node)
 
  		  gnu_etype
 		    = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_expr);
+
+		  /* The Non_Ada_Error case for VMS exceptions is handled
+		     by the personality routine.  */
  		}
  	      else
  		gigi_abort (337);

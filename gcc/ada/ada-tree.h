@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2004 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -34,32 +34,32 @@ enum gnat_tree_code {
 #undef DEFTREECODE
 
 /* A tree to hold a loop ID.  */
-struct tree_loop_id GTY(()) 
+struct tree_loop_id GTY(())
 {
   struct tree_common common;
   struct nesting *loop_id;
 };
 
 /* The language-specific tree.  */
-union lang_tree_node 
+union lang_tree_node
   GTY((desc ("TREE_CODE (&%h.generic) == GNAT_LOOP_ID"),
        chain_next ("(union lang_tree_node *)TREE_CHAIN (&%h.generic)")))
 {
-  union tree_node GTY ((tag ("0"), 
-			desc ("tree_node_structure (&%h)"))) 
+  union tree_node GTY ((tag ("0"),
+			desc ("tree_node_structure (&%h)")))
     generic;
   struct tree_loop_id GTY ((tag ("1"))) loop_id;
 };
 
 /* Ada uses the lang_decl and lang_type fields to hold more trees.  */
-struct lang_decl GTY(()) 
+struct lang_decl GTY(())
 {
-  union lang_tree_node 
+  union lang_tree_node
     GTY((desc ("TREE_CODE (&%h.generic) == GNAT_LOOP_ID"))) t;
 };
 struct lang_type GTY(())
 {
-  union lang_tree_node 
+  union lang_tree_node
     GTY((desc ("TREE_CODE (&%h.generic) == GNAT_LOOP_ID"))) t;
 };
 
