@@ -2749,30 +2749,24 @@ int
 pod_type_p (t)
      tree t;
 {
-  tree f;
-
   while (TREE_CODE (t) == ARRAY_TYPE)
     t = TREE_TYPE (t);
 
-  if (! IS_AGGR_TYPE (t))
+  if (INTEGRAL_TYPE_P (t))
+    return 1;  /* integral, character or enumeral type */
+  if (FLOAT_TYPE_P (t))
     return 1;
-
-  if (CLASSTYPE_NON_AGGREGATE (t)
-      || TYPE_HAS_COMPLEX_ASSIGN_REF (t)
-      || TYPE_HAS_DESTRUCTOR (t))
+  if (TYPE_PTR_P (t))
+    return 1; /* pointer to non-member */
+  if (TYPE_PTRMEM_P (t))
+    return 1; /* pointer to member object */
+  if (TYPE_PTRMEMFUNC_P (t))
+    return 1; /* pointer to member function */
+  
+  if (! CLASS_TYPE_P (t))
+    return 0; /* other non-class type (reference or function) */
+  if (CLASSTYPE_NON_POD_P (t))
     return 0;
-
-  for (f = TYPE_FIELDS (t); f; f = TREE_CHAIN (f))
-    {
-      if (TREE_CODE (f) != FIELD_DECL)
-	continue;
-
-      if (TREE_CODE (TREE_TYPE (f)) == REFERENCE_TYPE
-	  || TYPE_PTRMEMFUNC_P (TREE_TYPE (f))
-	  || TYPE_PTRMEM_P (TREE_TYPE (f)))
-	return 0;
-    }
-
   return 1;
 }
 

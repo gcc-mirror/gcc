@@ -3297,6 +3297,7 @@ finish_struct_1 (t)
   int no_const_asn_ref;
   int has_mutable = 0;
   int n_fields = 0;
+  int non_pod_class = 0;
 
   /* The index of the first base class which has virtual
      functions.  Only applied to non-virtual baseclasses.  */
@@ -3431,6 +3432,7 @@ finish_struct_1 (t)
   last_x = NULL_TREE;
   for (x = fields; x; x = TREE_CHAIN (x))
     {
+      tree type = TREE_TYPE (x);
       GNU_xref_member (current_class_name, x);
 
       if (TREE_CODE (x) == FIELD_DECL)
@@ -3472,21 +3474,24 @@ finish_struct_1 (t)
 
       /* Perform error checking that did not get done in
 	 grokdeclarator.  */
-      if (TREE_CODE (TREE_TYPE (x)) == FUNCTION_TYPE)
+      if (TREE_CODE (type) == FUNCTION_TYPE)
 	{
 	  cp_error_at ("field `%D' invalidly declared function type",
 		       x);
-	  TREE_TYPE (x) = build_pointer_type (TREE_TYPE (x));
+	  type = build_pointer_type (type);
+	  TREE_TYPE (x) = type;
 	}
-      else if (TREE_CODE (TREE_TYPE (x)) == METHOD_TYPE)
+      else if (TREE_CODE (type) == METHOD_TYPE)
 	{
 	  cp_error_at ("field `%D' invalidly declared method type", x);
-	  TREE_TYPE (x) = build_pointer_type (TREE_TYPE (x));
+	  type = build_pointer_type (type);
+	  TREE_TYPE (x) = type;
 	}
-      else if (TREE_CODE (TREE_TYPE (x)) == OFFSET_TYPE)
+      else if (TREE_CODE (type) == OFFSET_TYPE)
 	{
 	  cp_error_at ("field `%D' invalidly declared offset type", x);
-	  TREE_TYPE (x) = build_pointer_type (TREE_TYPE (x));
+	  type = build_pointer_type (type);
+	  TREE_TYPE (x) = type;
 	}
 
 #if 0
@@ -3494,7 +3499,7 @@ finish_struct_1 (t)
 	cant_have_default_ctor = 1;
 #endif
 
-      if (TREE_TYPE (x) == error_mark_node)
+      if (type == error_mark_node)
 	continue;
 	  
       DECL_SAVED_INSNS (x) = NULL_RTX;
@@ -3522,8 +3527,10 @@ finish_struct_1 (t)
 
       /* If this is of reference type, check if it needs an init.
 	 Also do a little ANSI jig if necessary.  */
-      if (TREE_CODE (TREE_TYPE (x)) == REFERENCE_TYPE)
+      if (TREE_CODE (type) == REFERENCE_TYPE)
  	{
+          non_pod_class = 1;
+          
 	  if (DECL_INITIAL (x) == NULL_TREE)
 	    ref_sans_init = 1;
 
@@ -3543,14 +3550,21 @@ finish_struct_1 (t)
 	    }
 	}
 
-      if (TREE_CODE (TREE_TYPE (x)) == POINTER_TYPE)
+      while (TREE_CODE (type) == ARRAY_TYPE)
+        type = TREE_TYPE (type);
+      
+      if (TREE_CODE (type) == POINTER_TYPE)
 	has_pointers = 1;
 
-      if (DECL_MUTABLE_P (x) || TYPE_HAS_MUTABLE_P (TREE_TYPE (x)))
+      if (DECL_MUTABLE_P (x) || TYPE_HAS_MUTABLE_P (type))
         has_mutable = 1;
 
+      if (! pod_type_p (type) || TYPE_PTRMEM_P (type)
+          || TYPE_PTRMEMFUNC_P (type))
+        non_pod_class = 1;
+
       /* If any field is const, the structure type is pseudo-const.  */
-      if (CP_TYPE_CONST_P (TREE_TYPE (x)))
+      if (CP_TYPE_CONST_P (type))
 	{
 	  C_TYPE_FIELDS_READONLY (t) = 1;
 	  if (DECL_INITIAL (x) == NULL_TREE)
@@ -3576,14 +3590,11 @@ finish_struct_1 (t)
 	{
 	  /* A field that is pseudo-const makes the structure
 	     likewise.  */
-	  tree t1 = TREE_TYPE (x);
-	  while (TREE_CODE (t1) == ARRAY_TYPE)
-	    t1 = TREE_TYPE (t1);
-	  if (IS_AGGR_TYPE (t1))
+	  if (IS_AGGR_TYPE (type))
 	    {
-	      if (C_TYPE_FIELDS_READONLY (t1))
+	      if (C_TYPE_FIELDS_READONLY (type))
 		C_TYPE_FIELDS_READONLY (t) = 1;
-	      if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (t1))
+	      if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (type))
 		const_sans_init = 1;
 	    }
 	}
@@ -3593,7 +3604,10 @@ finish_struct_1 (t)
       if (DECL_C_BIT_FIELD (x))
 	{
 	  /* Invalid bit-field size done by grokfield.  */
-	  /* Detect invalid bit-field type.  */
+	  /* Detect invalid bit-field type. Simply checking if TYPE is
+             integral is insufficient, as that is the array core of the
+             field type. If TREE_TYPE (x) is integral, then TYPE must be
+             the same.  */
 	  if (DECL_INITIAL (x)
 	      && ! INTEGRAL_TYPE_P (TREE_TYPE (x)))
 	    {
@@ -3643,20 +3657,20 @@ finish_struct_1 (t)
 			 TYPE_PRECISION (long_long_unsigned_type_node));
 		  cp_error_at ("  in declaration of `%D'", x);
 		}
-	      else if (width > TYPE_PRECISION (TREE_TYPE (x))
-		       && TREE_CODE (TREE_TYPE (x)) != ENUMERAL_TYPE
-		       && TREE_CODE (TREE_TYPE (x)) != BOOLEAN_TYPE)
+	      else if (width > TYPE_PRECISION (type)
+		       && TREE_CODE (type) != ENUMERAL_TYPE
+		       && TREE_CODE (type) != BOOLEAN_TYPE)
 		{
 		  cp_warning_at ("width of `%D' exceeds its type", x);
 		}
-	      else if (TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE
-		       && ((min_precision (TYPE_MIN_VALUE (TREE_TYPE (x)),
-					   TREE_UNSIGNED (TREE_TYPE (x))) > width)
-			   || (min_precision (TYPE_MAX_VALUE (TREE_TYPE (x)),
-					      TREE_UNSIGNED (TREE_TYPE (x))) > width)))
+	      else if (TREE_CODE (type) == ENUMERAL_TYPE
+		       && ((min_precision (TYPE_MIN_VALUE (type),
+					   TREE_UNSIGNED (type)) > width)
+			   || (min_precision (TYPE_MAX_VALUE (type),
+					      TREE_UNSIGNED (type)) > width)))
 		{
 		  cp_warning_at ("`%D' is too small to hold all values of `%#T'",
-				 x, TREE_TYPE (x));
+				 x, type);
 		}
 
 	      if (DECL_INITIAL (x))
@@ -3674,22 +3688,17 @@ finish_struct_1 (t)
 #ifdef PCC_BITFIELD_TYPE_MATTERS
 		      if (PCC_BITFIELD_TYPE_MATTERS)
 			DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
-					      TYPE_ALIGN (TREE_TYPE (x)));
+					      TYPE_ALIGN (type));
 #endif
 		    }
 		}
 	    }
 	  else
 	    /* Non-bit-fields are aligned for their type.  */
-	    DECL_ALIGN (x) = MAX (DECL_ALIGN (x), TYPE_ALIGN (TREE_TYPE (x)));
+	    DECL_ALIGN (x) = MAX (DECL_ALIGN (x), TYPE_ALIGN (type));
 	}
       else
 	{
-	  tree type = TREE_TYPE (x);
-
-	  while (TREE_CODE (type) == ARRAY_TYPE)
-	    type = TREE_TYPE (type);
-
 	  if (CLASS_TYPE_P (type) && ! ANON_AGGR_TYPE_P (type))
 	    {
 	      /* Never let anything with uninheritable virtuals
@@ -3792,6 +3801,9 @@ finish_struct_1 (t)
   if (! IS_SIGNATURE (t))
     CLASSTYPE_NON_AGGREGATE (t)
       = ! aggregate || has_virtual || TYPE_HAS_CONSTRUCTOR (t);
+  CLASSTYPE_NON_POD_P (t)
+      = non_pod_class || CLASSTYPE_NON_AGGREGATE (t)
+        || TYPE_HAS_DESTRUCTOR (t) || TYPE_HAS_ASSIGN_REF (t);
   TYPE_HAS_REAL_ASSIGN_REF (t) |= TYPE_HAS_ASSIGN_REF (t);
   TYPE_HAS_COMPLEX_ASSIGN_REF (t)
     |= TYPE_HAS_ASSIGN_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t);

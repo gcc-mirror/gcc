@@ -3752,21 +3752,25 @@ convert_like (convs, expr)
 }
 
 /* ARG is being passed to a varargs function.  Perform any conversions
-   required.  Return the converted value.  */
+   required.  Array/function to pointer decay must have already happened.
+   Return the converted value.  */
 
 tree
 convert_arg_to_ellipsis (arg)
      tree arg;
 {
+  if (! pod_type_p (TREE_TYPE (arg)))
+    {
+      /* Undefined behaviour [expr.call] 5.2.2/7.  */
+      cp_warning ("cannot pass objects of non-POD type `%#T' through `...'",
+		  TREE_TYPE (arg));
+    }
+
   if (TREE_CODE (TREE_TYPE (arg)) == REAL_TYPE
       && (TYPE_PRECISION (TREE_TYPE (arg))
 	  < TYPE_PRECISION (double_type_node)))
     /* Convert `float' to `double'.  */
     arg = cp_convert (double_type_node, arg);
-  else if (IS_AGGR_TYPE (TREE_TYPE (arg))
-	   && ! TYPE_HAS_TRIVIAL_INIT_REF (TREE_TYPE (arg)))
-    cp_warning ("cannot pass objects of type `%T' through `...'",
-		TREE_TYPE (arg));
   else
     /* Convert `short' and `char' to full-size `int'.  */
     arg = default_conversion (arg);
