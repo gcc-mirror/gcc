@@ -1740,7 +1740,7 @@ static const format_flag_spec *get_flag_spec	PARAMS ((const format_flag_spec *,
 
 static void check_format_types	PARAMS ((int *, format_wanted_type *));
 static int is_valid_printf_arglist PARAMS ((tree));
-static rtx c_expand_builtin (tree, rtx, enum machine_mode, enum expand_modifier);
+static rtx c_expand_builtin PARAMS ((tree, rtx, enum machine_mode, enum expand_modifier));
 static rtx c_expand_builtin_printf PARAMS ((tree, rtx, enum machine_mode,
 					    enum expand_modifier, int));
 
