@@ -1,3 +1,9 @@
+Wed Jul 14 23:45:48 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* c-typeck.c (output_init_element, process_init_element):
+	When advancing constructor_unfilled_fields for a RECORD_TYPE,
+	check for nameless bit fields.
+
 Wed Jul 14 01:57:39 1999  Richard Henderson  <rth@cygnus.com>
 
 	* regclass.c (scan_one_insn): Notice subregs that change the
