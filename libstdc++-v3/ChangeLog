@@ -1,3 +1,7 @@
+2003-08-19  Petur Runolfsson  <peturr02@ru.is>
+
+        * include/ext/ropeimpl.h: #include <ostream> instead of <iostream>
+	
 2003-08-17  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure.ac:  GCC_NO_EXECUTABLES was supposed to be commented
