@@ -4,6 +4,10 @@
 
 1998-06-04  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
+	Suggested by Brendan Kehoe
+	* decl2.c (do_toplevel_using_decl): When decl is a TYPE_DECL,
+	treat it as using ::decl.
+
 	* decl2.c (arg_assoc_type): Process unknown_type_node and OFFSET_TYPE.
 
 	* tree.c (mapcar): Support NEW_EXPR.

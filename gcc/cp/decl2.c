@@ -4395,7 +4395,8 @@ do_toplevel_using_decl (decl)
       scope = TREE_OPERAND (decl, 0);
       name = TREE_OPERAND (decl, 1);
     }
-  else if (TREE_CODE (decl) == IDENTIFIER_NODE)
+  else if (TREE_CODE (decl) == IDENTIFIER_NODE
+           || TREE_CODE (decl) == TYPE_DECL)
     {
       scope = global_namespace;
       name = decl;
