@@ -446,6 +446,18 @@ global_alloc (file)
     if (regs_ever_live[i])
       local_reg_n_refs[i] = 0;
 
+  /* Likewise for regs used in a SCRATCH.  */
+  for (i = 0; i < scratch_list_length; i++)
+    if (scratch_list[i])
+      {
+	int regno = REGNO (scratch_list[i]);
+	int lim = regno + HARD_REGNO_NREGS (regno, GET_MODE (scratch_list[i]));
+	int j;
+
+	for (j = regno; j < lim; j++)
+	  local_reg_n_refs[j] = 0;
+      }
+	
   /* Allocate the space for the conflict and preference tables and
      initialize them.  */
 
