@@ -1,5 +1,9 @@
 Mon Oct 11 23:35:19 1999  Jeffrey A Law  (law@cygnus.com)
 
+	Mon Oct  4 08:54:12 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+	* cppinit.c (is_idchar initializer): Loosen tests to accept
+	gcc 2.>6 and >2.
+
 	Tue Jun 29 01:37:53 1999  Jeffrey A Law  (law@cygnus.com)
 	* pa.h (CPP_SPEC): Conditionally add -D__STDC_EXT__ to the cpp
 	command line.
