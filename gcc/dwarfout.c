@@ -5190,8 +5190,18 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 	 really need to output these (non-fundamental) types because other
 	 DIEs may contain references to them.  */
 
+      /* Also ignore language dependent types here, because they are probably
+	 also built-in types.  If we didn't ignore them, then we would get
+	 references to undefined labels because output_type doesn't support
+	 them.   So, for now, we need to ignore them to avoid assembler
+	 errors.  */
+
+      /* ??? This code is different than the equivalent code in dwarf2out.c.
+	 The dwarf2out.c code is probably more correct.  */
+
       if (DECL_SOURCE_LINE (decl) == 0
-	  && type_is_fundamental (TREE_TYPE (decl)))
+	  && (type_is_fundamental (TREE_TYPE (decl))
+	      || TREE_CODE (TREE_TYPE (decl)) == LANG_TYPE))
 	return;
 
       /* If we are in terse mode, don't generate any DIEs to represent

@@ -1,3 +1,8 @@
+1998-05-19  Jim Wilson  <wilson@cygnus.com>
+
+	* dwarfout.c (dwarfout_file_scope_decl, case TYPE_DECL): Ignore
+	LANG_TYPE trees with DECL_SOURCE_LINE of 0.
+
 Tue May 19 15:07:54 1998  Todd Vierling  <tv@netbsd.org>
 
 	* arm/netbsd.h: Ensure DWARF2_UNWIND_INFO is undefined.
