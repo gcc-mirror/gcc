@@ -371,12 +371,14 @@ get_tinfo_fn (type)
 
   /* We set DECL_CONTEXT for the benefit of backend stuff that wants to
      know what type this artificial function is associated with.  dllexport
-     handling, for instance.  This is a kludge, and the DECL_NO_STATIC_CHAIN
-     bit is necessary to keep local classes from breaking.  */
+     handling, for instance.  This is a kludge, and the
+     DECL_NO_STATIC_CHAIN bit is necessary to keep local classes from
+     breaking.  The DECL_IGNORED_P bit keeps dwarf2 from breaking.  */
   if (IS_AGGR_TYPE (type))
     {
       DECL_CONTEXT (d) = type;
       DECL_NO_STATIC_CHAIN (d) = 1;
+      DECL_IGNORED_P (d) = 1;
     }
 
   pushdecl_top_level (d);
