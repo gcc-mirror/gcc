@@ -1,3 +1,23 @@
+2004-08-04  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+	    Jeff Law  <law@redhat.com>
+
+	* tree-cfg.c (tree_duplicate_bb): Mark duplicated definitions.
+	* tree-flow.h (rewrite_ssa_into_ssa): Declaration changed.
+	* tree-into-ssa.c (rewrite_ssa_into_ssa): Use new interface to
+	manipulate the duplicated ssa names.
+	* tree-ssanames.c (ssa_names_to_rewrite): New variable.
+	(marked_for_rewrite_p, any_marked_for_rewrite_p, mark_for_rewrite,
+	unmark_all_for_rewrite, marked_ssa_names, release_ssa_name_force):
+	New functions.
+	(release_ssa_name): Do not release ssa names that may have multiple
+	definitions.
+	* tree.h (release_ssa_name_force, mark_for_rewrite,
+	unmark_all_for_rewrite, marked_for_rewrite_p, any_marked_for_rewrite_p,
+	marked_ssa_names): Declare.
+	* tree-ssa-loop-ch.c (mark_defs_for_rewrite): Remove.
+	(duplicate_blocks): Remove call to mark_defs_for_rewrite.
+	Update call to rewrite_ssa_into_ssa.
+
 2004-08-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* defaults.h (TARGET_DECLSPEC): New macro.
