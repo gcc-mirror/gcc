@@ -28,9 +28,29 @@ proc libstdc++-v3-init { args } {
     global cxxflags
     global objdir
     global gluefile wrap_flags
+    global ld_library_path
 
     set blddir   [lookfor_file $outdir libstdc++-v3]
 
+   # By default, we assume we want to run program images.
+    global dg-do-what-default
+    set dg-do-what-default run
+
+    # Copy any required data files.
+    foreach tst [glob -nocomplain "$srcdir/*/*.tst"] {
+	file copy -force $tst $outdir
+    }
+    foreach txt [glob -nocomplain "$srcdir/*/*.txt"] {
+	file copy -force $txt $outdir
+    }
+
+    # set LD_LIBRARY_PATH so that libgcc_s, libstdc++ binaries can be found.
+    set ld_library_path "."
+    append ld_library_path ":${blddir}/../../gcc"
+    append ld_library_path ":${blddir}/src/.libs"
+
+    # Do a bunch of handstands and backflips for cross compiling and
+    # finding simulators...
     if [is_remote host] {
         set header [remote_download host ${srcdir}/debug_assert.h]
         if { $header == "" } {
@@ -54,18 +74,6 @@ proc libstdc++-v3-init { args } {
         }
     }
 
-    # By default, we assume we want to run program images.
-    global dg-do-what-default
-    set dg-do-what-default run
-
-    # Copy any required data files.
-    foreach tst [glob -nocomplain "$srcdir/*/*.tst"] {
-	file copy -force $tst $outdir
-    }
-    foreach txt [glob -nocomplain "$srcdir/*/*.txt"] {
-	file copy -force $txt $outdir
-    }
-
     if { [target_info needs_status_wrapper]!="" && ![info exists gluefile] } {
       set gluefile ${objdir}/testglue.o;
       set result [build_wrapper $gluefile];
@@ -76,7 +84,6 @@ proc libstdc++-v3-init { args } {
           unset gluefile
       }
     }
-
 }
 
 proc libstdc++-v3-dg-test { prog do_what extra_tool_flags } {
@@ -143,28 +150,20 @@ proc libstdc++-v3_target_compile { source dest type options } {
     set cxx_final [concat $cxx_final $cxxflags]
     set cxx_final [concat $cxx_final $includes]
 
-    # XXX 
-    set cxx_final [concat $cxx_final -static]
-
     lappend options "compiler=$cxx_final";
 
     return [target_compile $source $dest $type $options]
 }
 
-
-proc libstdc++-v3_exit { args } {
-    global gluefile;
-
-    if [info exists gluefile] {
-	file_on_build delete $gluefile;
-	unset gluefile;
-    }
+# On IRIX 6, we have to set variables akin to LD_LIBRARY_PATH, but
+# called LD_LIBRARYN32_PATH (for the N32 ABI) and LD_LIBRARY64_PATH
+# (for the 64-bit ABI).  The right way to do this would be to modify
+# unix.exp -- but that's not an option since it's part of DejaGNU
+# proper, so we do it here, by trickery.  We really only need to do 
+# this on IRIX, but it shouldn't hurt to do it anywhere else.
+proc libstdc++-v3_set_ld_library_path { name element op } {
+  setenv LD_LIBRARYN32_PATH [getenv LD_LIBRARY_PATH]
+  setenv LD_LIBRARY64_PATH [getenv LD_LIBRARY_PATH]
 }
 
-proc libstdc++-v3-finish { } {
-    # do hacks to remove any check-DEJAGNU errors
-set exit_status 0
-set status 0
-#return 0
-}
-
+trace variable env(LD_LIBRARY_PATH) w libstdc++-v3_set_ld_library_path
