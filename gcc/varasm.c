@@ -1643,7 +1643,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 		 * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
 
 #if !defined(ASM_OUTPUT_ALIGNED_COMMON) && !defined(ASM_OUTPUT_ALIGNED_DECL_COMMON) && !defined(ASM_OUTPUT_ALIGNED_BSS)
-      if ((unsigned HOST_WIDE_INT) DECL_ALIGN (decl) / BITS_PER_UNIT > rounded)
+      if ((unsigned HOST_WIDE_INT) DECL_ALIGN_UNIT (decl) > rounded)
 	warning ("%Jrequested alignment for '%D' is greater than "
                  "implemented alignment of %d", decl, decl, rounded);
 #endif
@@ -1671,10 +1671,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 
   /* Output the alignment of this data.  */
   if (align > BITS_PER_UNIT)
-    {
-      ASM_OUTPUT_ALIGN (asm_out_file,
-			floor_log2 (DECL_ALIGN (decl) / BITS_PER_UNIT));
-    }
+    ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (DECL_ALIGN_UNIT (decl)));
 
   /* Do any machine/system dependent processing of the object.  */
 #ifdef ASM_DECLARE_OBJECT_NAME
@@ -2659,7 +2656,7 @@ output_constant_def_contents (rtx symbol)
   int reloc = compute_reloc_for_constant (exp);
 
   /* Align the location counter as required by EXP's data type.  */
-  int align = TYPE_ALIGN (TREE_TYPE (exp));
+  unsigned int align = TYPE_ALIGN (TREE_TYPE (exp));
 #ifdef CONSTANT_ALIGNMENT
   align = CONSTANT_ALIGNMENT (exp, align);
 #endif

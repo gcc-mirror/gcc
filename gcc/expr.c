@@ -5487,7 +5487,7 @@ array_ref_element_size (tree exp)
       if (TREE_TYPE (aligned_size) != sizetype)
 	aligned_size = fold_convert (sizetype, aligned_size);
       return size_binop (MULT_EXPR, aligned_size,
-		         size_int (TYPE_ALIGN (elmt_type) / BITS_PER_UNIT));
+		         size_int (TYPE_ALIGN_UNIT (elmt_type)));
     }
 
   /* Otherwise, take the size from that of the element type.  Substitute
@@ -6006,9 +6006,9 @@ highest_pow2_factor_for_target (tree target, tree exp)
 
   factor = highest_pow2_factor (exp);
   if (TREE_CODE (target) == COMPONENT_REF)
-    target_align = DECL_ALIGN (TREE_OPERAND (target, 1)) / BITS_PER_UNIT;
+    target_align = DECL_ALIGN_UNIT (TREE_OPERAND (target, 1));
   else
-    target_align = TYPE_ALIGN (TREE_TYPE (target)) / BITS_PER_UNIT;
+    target_align = TYPE_ALIGN_UNIT (TREE_TYPE (target));
   return MAX (factor, target_align);
 }
 
