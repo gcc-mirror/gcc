@@ -1,3 +1,8 @@
+2004-09-26  Matt Austern  <austern@apple.com>
+
+	* ggc-page.c (GGC_QUIRE_SIZE): Bump up from 16 to 256 if we're
+	using mmap.
+	
 2004-09-26  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* bitmap.h (EXECUTE_IF_SET_IN_BITMAP, EXECUTE_IF_AND_COMPL_IN_BITMAP,
