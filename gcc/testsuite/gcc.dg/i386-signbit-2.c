@@ -1,6 +1,6 @@
 /* PR optimization/8746 */
 /* { dg-do run { target i?86-*-* } } */
-/* { dg-forbid-option "-m64" } */
+/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
 /* { dg-options "-O1 -mtune=i586" } */
 
 extern void abort (void);

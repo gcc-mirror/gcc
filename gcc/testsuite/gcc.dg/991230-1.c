@@ -1,5 +1,5 @@
 /* { dg-do run { target i?86-*-* } } */
-/* { dg-forbid-option "-m64" } */
+/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
 /* { dg-options "-O -ffast-math -mtune=i486" } */
 
 /* Test that floating point greater-than tests are compiled correctly with

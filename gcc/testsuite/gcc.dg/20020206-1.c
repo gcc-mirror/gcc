@@ -5,7 +5,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fprefetch-loop-arrays -w" } */
 /* { dg-options "-O2 -fprefetch-loop-arrays -mtune=pentium3 -w" { target i?86-*-* } } */
-/* { dg-forbid-option "-m64" { target i?86-*-* } } */
+/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
 
 struct reload
 {

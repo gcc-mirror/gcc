@@ -2,7 +2,7 @@
    This testcase was miscompiled because sse_mov?fcc_const0*
    patterns were missing earlyclobber.  */
 /* { dg-do run { target i386-*-* } } */
-/* { dg-forbid-option "-m64" } */
+/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
 /* { dg-options "-march=pentium3 -msse -ffast-math -O2" } */
 
 #include "i386-cpuid.h"

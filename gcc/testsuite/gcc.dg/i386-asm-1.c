@@ -1,6 +1,6 @@
 /* PR inline-asm/11676 */
 /* { dg-do run { target i?86-*-* } } */
-/* { dg-forbid-option "-m64" } */
+/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
 /* { dg-options "-O2" } */
 
 extern void abort (void);
