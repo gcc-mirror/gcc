@@ -472,17 +472,8 @@ toc_section ()						\
 /* This is how we tell the assembler that two symbols have the same value.  */
 #define SET_ASM_OP "\t.set "
 
-/* Used by definition of ASM_OUTPUT_DOUBLE_INT */
-#define DOUBLE_INT_ASM_OP "\t.llong "
-
-/* These are various definitions for DWARF output.  They could just
-   use '.long' or '.word', but that aligns to a 4-byte boundary which
-   is not what is required.  So we define a million macros...  */
-
-#define UNALIGNED_SHORT_ASM_OP		"\t.vbyte\t2,"
-#define UNALIGNED_INT_ASM_OP		"\t.vbyte\t4,"
-/* Only define if alignment greater than 4.  */
-#define UNALIGNED_DOUBLE_INT_ASM_OP	(TARGET_64BIT ? "\t.vbyte\t8," : NULL)
+/* Used by rs6000_assemble_integer, among others.  */
+#define DOUBLE_INT_ASM_OP "\t.llong\t"
 
 /* Output before instructions.  */
 #define TEXT_SECTION_ASM_OP "\t.csect .text[PR]"

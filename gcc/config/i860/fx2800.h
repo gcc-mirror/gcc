@@ -339,9 +339,12 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_FILE_END(FILE)					\
 do {				 				\
      if (current_function_original_name != NULL) {		\
+       const char *long_op = integer_asm_op (4, FALSE);		\
        tdesc_section();						\
-       fprintf ((FILE), "%s __ETEXT\n", ASM_LONG);		\
-       fprintf ((FILE), "%s 0\n", ASM_LONG);			\
+       fprintf ((FILE), "%s __ETEXT\n", long_op);		\
+       fprintf ((FILE), "%s 0\n", long_op);			\
+       fputs ("\t.long\t__ETEXT\n", (FILE));			\
+       fputs ("\t.long\t0\n", (FILE));				\
        text_section();						\
        fputs("__ETEXT:\n", (FILE));				\
      }								\

@@ -68,7 +68,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define NM_FLAGS	"-p"
 
-#define ASM_LONG	".word\t"
 #define ASM_GLOBAL	".rdata\n\t\t.globl\t"
 
 #include "mips/mips.h"

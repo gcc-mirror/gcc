@@ -1049,7 +1049,6 @@ struct pj_args
   fprintf (FILE,"\t! %s\n", TARGET_LITTLE_ENDIAN ? ".little" : ".big");      \
   fprintf (FILE,"\t.align 4\n");
 
-#define ASM_LONG ".long"
 #define ASM_APP_ON              ""
 #define ASM_APP_OFF             ""
 #define FILE_ASM_OP             "\t.file\n"
@@ -1200,24 +1199,6 @@ do { char dstr[30];                                     \
      REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);    \
      fprintf ((FILE), "\t.float %s\n", dstr);           \
    } while (0)
-
-#define ASM_OUTPUT_INT(STREAM, EXP)             \
-  (fprintf ((STREAM), "\t.long\t"),             \
-   output_addr_const ((STREAM), (EXP)),         \
-   fputc ('\n', (STREAM)))
-
-#define ASM_OUTPUT_SHORT(STREAM, EXP)   \
-  (fprintf ((STREAM), "\t.short\t"),    \
-   output_addr_const ((STREAM), (EXP)), \
-   fputc ('\n', (STREAM)))
-
-#define ASM_OUTPUT_CHAR(STREAM, EXP)            \
-  (fprintf ((STREAM), "\t.byte\t"),             \
-   output_addr_const ((STREAM), (EXP)),         \
-   fputc ('\n', (STREAM)))
-
-#define ASM_OUTPUT_BYTE(STREAM, VALUE)          \
-  fprintf ((STREAM), "\t.byte\t%d\n", (VALUE))  
 
 /* This is how to output an assembler line
    that says to advance the location counter by SIZE bytes.  */

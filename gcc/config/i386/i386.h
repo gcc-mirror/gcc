@@ -2912,42 +2912,6 @@ do { long l;						\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
   sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
 
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fputs (ASM_LONG, FILE),			\
-  output_addr_const (FILE,(VALUE)),		\
-  putc('\n',FILE))
-
-#define ASM_OUTPUT_DOUBLE_INT(FILE,VALUE)  \
-( fprintf (FILE, "%s\t", ASM_QUAD),		\
-  output_addr_const (FILE,(VALUE)),		\
-  putc('\n',FILE))
-
-/* Likewise for `char' and `short' constants.  */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fputs (ASM_SHORT, FILE),			\
-  output_addr_const (FILE,(VALUE)),		\
-  putc('\n',FILE))
-
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fputs (ASM_BYTE_OP, FILE),			\
-  output_addr_const (FILE, (VALUE)),		\
-  putc ('\n', FILE))
-
-/* Given that x86 natively supports unaligned data, it's reasonable to
-   assume that all x86 assemblers don't auto-align data.  Thus the 
-   unaligned output macros required by dwarf2 frame unwind information
-   degenerate to the macros used above.  */
-#define UNALIGNED_SHORT_ASM_OP		ASM_SHORT
-#define UNALIGNED_INT_ASM_OP		ASM_LONG
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  asm_fprintf ((FILE), "%s0x%x\n", ASM_BYTE_OP, (int) (VALUE))
-
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
 

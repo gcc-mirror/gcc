@@ -156,7 +156,3 @@ Boston, MA 02111-1307, USA.  */
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX "."
-
-/* Override defaults.h and insist that Solaris/Intel doesn't have
-   an eight byte data output directive.  */
-#define UNALIGNED_DOUBLE_INT_ASM_OP NULL

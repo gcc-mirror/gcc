@@ -206,24 +206,6 @@ do {							\
 	   l, ASM_COMMENT_START, dstr);			\
 } while (0)
 
-#define ASM_OUTPUT_INT(STREAM,VALUE)		\
-  (fprintf ((STREAM), "\tDCD\t"),		\
-   output_addr_const ((STREAM), (VALUE)),	\
-   fputc ('\n', (STREAM)))
-
-#define ASM_OUTPUT_SHORT(STREAM,VALUE)		\
-  (fprintf ((STREAM), "\tDCW\t"),		\
-   output_addr_const ((STREAM), (VALUE)),	\
-   fputc ('\n', (STREAM)))
-
-#define ASM_OUTPUT_CHAR(STREAM,VALUE)		\
-  (fprintf ((STREAM), "\tDCB\t"),		\
-   output_addr_const ((STREAM), (VALUE)),	\
-   fputc ('\n', (STREAM)))
-
-#define ASM_OUTPUT_BYTE(STREAM,VALUE)		\
-  fprintf ((STREAM), "\tDCB\t%d\n", (VALUE))
-
 #define ASM_OUTPUT_ASCII(STREAM,PTR,LEN)		\
 {							\
   int i;						\

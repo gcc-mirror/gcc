@@ -353,14 +353,6 @@ do {									\
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*.L%s%ld", PREFIX, (long)(NUM))
 
-/* Define the names of various pseudo-ops used by the Sparc/svr4 assembler.
-   ??? If ints are 64 bits then UNALIGNED_INT_ASM_OP (defined elsewhere) is
-   misnamed.  These should all refer to explicit sizes (half/word/xword?),
-   anything other than short/int/long/etc.  */
-
-#undef  UNALIGNED_DOUBLE_INT_ASM_OP
-#define UNALIGNED_DOUBLE_INT_ASM_OP	"\t.uaxword\t"
-
 /* DWARF bits.  */
 
 /* Follow Irix 6 and not the Dwarf2 draft in using 64-bit offsets. 

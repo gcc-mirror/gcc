@@ -1154,9 +1154,9 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
   /* Restore r10 and load the static chain register.  */		\
   fprintf (FILE, "\tld.d\t %s,%s,24\n", reg_names[10], reg_names[10]);	\
   /* Storage: r10 save area, static chain, function address.  */	\
-  ASM_OUTPUT_INT (FILE, const0_rtx);					\
-  ASM_OUTPUT_INT (FILE, const0_rtx);					\
-  ASM_OUTPUT_INT (FILE, const0_rtx);					\
+  assemble_aligned_integer (UNITS_PER_WORD, const0_rtx);		\
+  assemble_aligned_integer (UNITS_PER_WORD, const0_rtx);		\
+  assemble_aligned_integer (UNITS_PER_WORD, const0_rtx);		\
 }
 
 /* Length in units of the trampoline for entering a nested function.
@@ -1687,9 +1687,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define BSS_ASM_OP		"\tbss\t"
 #define FLOAT_ASM_OP		"\tfloat\t"
 #define DOUBLE_ASM_OP		"\tdouble\t"
-#define ASM_LONG		"\tword\t"
-#define SHORT_ASM_OP		"\thalf\t"
-#define CHAR_ASM_OP		"\tbyte\t"
 #define ASCII_DATA_ASM_OP	"\tstring\t"
 
 /* These are particular to the global pool optimization.  */
@@ -1715,8 +1712,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 /* These are specific to version 03.00 assembler syntax.  */
 #define INTERNAL_ASM_OP		"\tlocal\t"
 #define VERSION_ASM_OP		"\tversion\t"
-#define UNALIGNED_SHORT_ASM_OP	"\tuahalf\t"
-#define UNALIGNED_INT_ASM_OP	"\tuaword\t"
 #define PUSHSECTION_ASM_OP	"\tsection\t"
 #define POPSECTION_ASM_OP	"\tprevious"
 
@@ -2035,7 +2030,8 @@ do {									 \
   do {									\
     union { REAL_VALUE_TYPE d; long l[2]; } x;				\
     x.d = (VALUE);							\
-    fprintf (FILE, "%s0x%.8lx, 0x%.8lx\n", ASM_LONG,			\
+    fprintf (FILE, "%s0x%.8lx, 0x%.8lx\n",				\
+	     integer_asm_op (4, TRUE),					\
 	     (long) x.l[0], (long) x.l[1]);				\
   } while (0)
 
@@ -2044,32 +2040,10 @@ do {									 \
   do {									\
     int i;								\
     FLOAT_TO_INT_INTERNAL (VALUE, i);					\
-    fprintf (FILE, "%s0x%.8x\n", ASM_LONG, i);			\
+    assemble_aligned_integer (4, GEN_INT (i));				\
   } while (0)
 
-/* Likewise for `int', `short', and `char' constants.  */
-#define ASM_OUTPUT_INT(FILE,VALUE)					\
-( fprintf (FILE, "%s", ASM_LONG),					\
-  output_addr_const (FILE, (VALUE)),					\
-  fprintf (FILE, "\n"))
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE)					\
-( fprintf (FILE, "%s", SHORT_ASM_OP),					\
-  output_addr_const (FILE, (VALUE)),					\
-  fprintf (FILE, "\n"))
-
-#define ASM_OUTPUT_CHAR(FILE,VALUE)					\
-( fprintf (FILE, "%s", CHAR_ASM_OP),					\
-  output_addr_const (FILE, (VALUE)),					\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "%s0x%x\n", CHAR_ASM_OP, (int)(VALUE))
-
 /* The single-byte pseudo-op is the default.  Override svr[34].h.  */
-#undef	ASM_BYTE_OP
-#define ASM_BYTE_OP "\tbyte\t"
 #undef	ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii (FILE, ASCII_DATA_ASM_OP, 48, P, SIZE)

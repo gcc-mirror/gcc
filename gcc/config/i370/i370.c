@@ -99,6 +99,9 @@ static FILE *assembler_source = 0;
 
 static label_node_t * mvs_get_label PARAMS ((int));
 static void i370_label_scan PARAMS ((void));
+#ifdef TARGET_HLASM
+static bool i370_hlasm_assemble_integer PARAMS ((rtx, unsigned int, int));
+#endif
 static void i370_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void i370_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 #ifdef LONGEXTERNAL
@@ -288,6 +291,17 @@ static const unsigned char ebcasc[256] =
 };
 
 /* Initialize the GCC target structure.  */
+#ifdef TARGET_HLASM
+#undef TARGET_ASM_BYTE_OP
+#define TARGET_ASM_BYTE_OP NULL
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP NULL
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP NULL
+#undef TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER i370_hlasm_assemble_integer
+#endif
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE i370_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
@@ -1176,6 +1190,54 @@ unsigned_jump_follows_p (insn)
     }
 }
 
+#ifdef TARGET_HLASM
+
+/* Target hook for assembling integer objects.  This version handles all
+   objects when TARGET_HLASM is defined.  */
+
+static bool
+i370_hlasm_assemble_integer (x, size, aligned_p)
+     rtx x;
+     unsigned int size;
+     int aligned_p;
+{
+  const char *int_format = NULL;
+
+  if (aligned_p)
+    switch (size)
+      {
+      case 1:
+	int_format = "\tDC\tX'%02X'\n";
+	break;
+
+      case 2:
+	int_format = "\tDC\tX'%04X'\n";
+	break;
+
+      case 4:
+	if (GET_CODE (x) == CONST_INT)
+	  {
+	    fputs ("\tDC\tF'", asm_out_file);
+	    output_addr_const (asm_out_file, x);
+	    fputs ("'\n", asm_out_file);
+	  }
+	else
+	  {
+	    fputs ("\tDC\tA(", asm_out_file);
+	    output_addr_const (asm_out_file, x);
+	    fputs (")\n", asm_out_file);
+	  }
+	return true;
+      }
+
+  if (int_format && GET_CODE (x) == CONST_INT)
+    {
+      fprintf (asm_out_file, int_format, INTVAL (x));
+      return true;
+    }
+  return default_assemble_integer (x, size, aligned_p);
+}
+
 /* Generate the assembly code for function entry.  FILE is a stdio
    stream to output the code to.  SIZE is an int: how many units of
    temporary storage to allocate.
@@ -1184,8 +1246,6 @@ unsigned_jump_follows_p (insn)
    save; `regs_ever_live[I]' is nonzero if register number I is ever
    used in the function.  This function is responsible for knowing
    which registers should not be saved even if used.  */
-
-#ifdef TARGET_HLASM
 
 static void
 i370_output_function_prologue (f, l)

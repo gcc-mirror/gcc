@@ -10,9 +10,6 @@
 /* Various pseudo-ops for which the Intel assembler uses non-standard
    definitions.  */
 
-#undef ASM_BYTE_OP
-#define ASM_BYTE_OP "\tdata1\t"
-
 #undef STRING_ASM_OP
 #define STRING_ASM_OP "\tstringz\t"
 

@@ -61,7 +61,7 @@ int switch_table_difference_label_flag;
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
 {								\
   register size_t sp = 0, limit = (LEN);			\
-  fprintf ((FILE), "%s", BYTE_ASM_OP);				\
+  fputs (integer_asm_op (1, TRUE), (FILE));			\
   do {								\
     int ch = (PTR)[sp];						\
     if (ch > ' ' && ! (ch & 0x80) && ch != '\\')		\
@@ -76,7 +76,7 @@ int switch_table_difference_label_flag;
       {								\
 	if ((sp % 10) == 0)					\
 	  {							\
-	    fprintf ((FILE), "\n%s", BYTE_ASM_OP);		\
+	    fprintf ((FILE), "\n%s", integer_asm_op (1, TRUE));	\
 	  }							\
 	else							\
 	  {							\

@@ -2003,4 +2003,9 @@ xstormy16_handle_interrupt_attribute (node, name, args, flags, no_add_attrs)
   return NULL_TREE;
 }
 
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
+
 struct gcc_target targetm = TARGET_INITIALIZER;

@@ -151,6 +151,13 @@ static void dsp16xx_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void dsp16xx_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_BYTE_OP
+#define TARGET_ASM_BYTE_OP "\tint\t"
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP NULL
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP NULL
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE dsp16xx_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
@@ -2279,20 +2286,6 @@ asm_output_float (file, fp_const)
 #else
   fatal_error ("inline float constants not supported on this host");
 #endif
-}
-
-void
-asm_output_long (file, value)
-     FILE *file;
-     long value;
-{
-      fputs ("\tint ", file);
-#ifdef WORDS_BIG_ENDIAN
-      fprintf (file, "0x%-4.4lx, 0x%-4.4lx", (value >> 16) & 0xffff, (value & 0xffff));
-#else
-      fprintf (file, "0x%-4.4lx, 0x%-4.4lx", (value & 0xffff), (value >> 16) & 0xffff);
-#endif
-      fputs ("\n", file);
 }
 
 int

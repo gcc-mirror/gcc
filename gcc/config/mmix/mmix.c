@@ -87,6 +87,7 @@ static void mmix_output_shifted_value PARAMS ((FILE *, HOST_WIDEST_INT));
 static void mmix_output_condition PARAMS ((FILE *, rtx, int));
 static HOST_WIDEST_INT mmix_intval PARAMS ((rtx));
 static void mmix_output_octa PARAMS ((FILE *, HOST_WIDEST_INT, int));
+static bool mmix_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void mmix_init_machine_status PARAMS ((struct function *));
 
 extern void mmix_target_asm_function_prologue
@@ -99,6 +100,17 @@ extern void mmix_target_asm_function_epilogue
    for a general description.  */
 
 /* Node: Function Entry */
+
+#undef TARGET_ASM_BYTE_OP
+#define TARGET_ASM_BYTE_OP NULL
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP NULL
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP NULL
+#undef TARGET_ASM_ALIGNED_DI_OP
+#define TARGET_ASM_ALIGNED_DI_OP NULL
+#undef TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER mmix_assemble_integer
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE mmix_target_asm_function_prologue
@@ -1911,31 +1923,45 @@ mmix_asm_output_float (stream, valuep)
 			       + 1)));
 }
 
-/* ASM_OUTPUT_DOUBLE_INT.  */
+/* Target hook for assembling integer objects.  Use mmix_print_operand
+   for WYDE and TETRA.  Use mmix_output_octa to output 8-byte
+   CONST_DOUBLEs.  */
 
-void
-mmix_asm_output_double_int (stream, value, do_begin_end)
-     FILE * stream;
-     rtx value;
-     int do_begin_end;
+static bool
+mmix_assemble_integer (x, size, aligned_p)
+     rtx x;
+     unsigned int size;
+     int aligned_p;
 {
-  if (do_begin_end)
-    fprintf (stream, "\tOCTA ");
+  if (aligned_p)
+    switch (size)
+      {
+      case 1:
+	fputs ("\tBYTE\t", asm_out_file);
+	mmix_print_operand (asm_out_file, x, 'B');
+	fputc ('\n', asm_out_file);
+	return true;
 
-  if (GET_CODE (value) == CONST_DOUBLE)
-    {
-      /* Get the bit representation of this number.  */
-      HOST_WIDE_INT wval = mmix_intval (value);
-      mmix_output_octa (stream, wval, 0);
-    }
-  else
-    /* FIXME: We scrap the '@' symbol-modifier since it's not used
-       anymore; we used to jump through lots of hoops, attempting to get
-       mmixal-compatible symbols; defined before use (still failed).  */
-    output_addr_const (stream, value);
+      case 2:
+	fputs ("\tWYDE\t", asm_out_file);
+	mmix_print_operand (asm_out_file, x, 'W');
+	fputc ('\n', asm_out_file);
+	return true;
 
-  if (do_begin_end)
-    fprintf (stream, "\n");
+      case 4:
+	fputs ("\tTETRA\t", asm_out_file);
+	mmix_print_operand (asm_out_file, x, 'L');
+	fputc ('\n', asm_out_file);
+	return true;
+
+      case 8:
+	if (GET_CODE (x) == CONST_DOUBLE)
+	  mmix_output_octa (asm_out_file, mmix_intval (x), 0);
+	else
+	  assemble_integer_with_op ("\tOCTA\t", x);
+	return true;
+      }
+  return default_assemble_integer (x, size, aligned_p);
 }
 
 /* ASM_OUTPUT_ASCII.  */
@@ -2301,7 +2327,7 @@ mmix_print_operand (stream, x, code)
 
     case CONST_DOUBLE:
       /* Do somewhat as CONST_INT.  */
-      mmix_asm_output_double_int (stream, modified_x, 0);
+      mmix_output_octa (stream, mmix_intval (modified_x), 0);
       return;
 
     case CONST:

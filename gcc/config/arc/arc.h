@@ -863,10 +863,10 @@ arc_eligible_for_epilogue_delay (TRIAL, SLOTS_FILLED)
 */
 #define TRAMPOLINE_TEMPLATE(FILE) \
 do { \
-  ASM_OUTPUT_INT (FILE, GEN_INT (0x631f7c00)); \
-  ASM_OUTPUT_INT (FILE, const0_rtx); \
-  ASM_OUTPUT_INT (FILE, GEN_INT (0x381f0000)); \
-  ASM_OUTPUT_INT (FILE, const0_rtx); \
+  assemble_aligned_integer (UNITS_PER_WORD, GEN_INT (0x631f7c00)); \
+  assemble_aligned_integer (UNITS_PER_WORD, const0_rtx); \
+  assemble_aligned_integer (UNITS_PER_WORD, GEN_INT (0x381f0000)); \
+  assemble_aligned_integer (UNITS_PER_WORD, const0_rtx); \
 } while (0)
 
 /* Length in units of the trampoline for entering a nested function.  */
@@ -1238,36 +1238,6 @@ do {							\
    no longer contain unusual constructs.  */
 #define ASM_APP_OFF ""
 
-/* This is how to output an assembler line defining a `char' constant.  */
-#define ASM_OUTPUT_CHAR(FILE, VALUE) \
-( fprintf (FILE, "\t.byte\t"),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line defining a `short' constant.  */
-#define ASM_OUTPUT_SHORT(FILE, VALUE) \
-( fprintf (FILE, "\t.hword\t"),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line defining an `int' constant.
-   We also handle symbol output here.  Code addresses must be right shifted
-   by 2 because that's how the jump instruction wants them.  */
-#define ASM_OUTPUT_INT(FILE, VALUE) \
-do {									\
-  fprintf (FILE, "\t.word\t");						\
-  if ((GET_CODE (VALUE) == SYMBOL_REF && SYMBOL_REF_FLAG (VALUE))	\
-      || GET_CODE (VALUE) == LABEL_REF)					\
-    {									\
-      fprintf (FILE, "%%st(");						\
-      output_addr_const (FILE, (VALUE));				\
-      fprintf (FILE, ")");						\
-    }									\
-  else									\
-    output_addr_const (FILE, (VALUE));					\
-  fprintf (FILE, "\n");							\
-} while (0)
-
 /* This is how to output an assembler line defining a `float' constant.  */
 #define ASM_OUTPUT_FLOAT(FILE, VALUE) \
 {							\
@@ -1289,11 +1259,6 @@ do {									\
   fprintf (FILE, "\t.word\t0x%lx %s %s\n\t.word\t0x%lx\n", \
 	   t[0], ASM_COMMENT_START, str, t[1]);		\
 }
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-#define ASM_BYTE_OP	"\t.byte\t"
-#define ASM_OUTPUT_BYTE(FILE, VALUE)  \
-  fprintf (FILE, "%s0x%x\n", ASM_BYTE_OP, (VALUE))
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */

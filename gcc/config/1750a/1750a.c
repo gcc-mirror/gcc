@@ -47,10 +47,20 @@ const char *const sectname[4] =
 {"Init", "Normal", "Konst", "Static"};
 
 static int which_bit PARAMS ((int));
+static bool assemble_integer_1750a PARAMS ((rtx, unsigned int, int));
 static void output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_BYTE_OP
+#define TARGET_ASM_BYTE_OP "\tdata\t"
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\tdatal\t"
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP NULL
+#undef TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER assemble_integer_1750a
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
@@ -805,6 +815,25 @@ print_operand_address (file, addr)
       break;
     }
   addr_inc = 0;
+}
+
+/* Target hook for assembling integer objects.  The 1750a version needs to
+   keep track of how many bytes have been written.  */
+
+static bool
+assemble_integer_1750a (x, size, aligned_p)
+     rtx x;
+     unsigned int size;
+     int aligned_p;
+{
+  if (default_assemble_integer (x, size, aligned_p))
+    {
+      if (label_pending)
+	label_pending = 0;
+      datalbl[datalbl_ndx].size += size;
+      return true;
+    }
+  return false;
 }
 
 

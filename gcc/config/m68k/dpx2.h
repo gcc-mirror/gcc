@@ -31,6 +31,9 @@ Boston, MA 02111-1307, USA.  */
 #undef SELECT_RTX_SECTION
 #include "svr3.h"
 
+#undef INT_OP_GROUP
+#define INT_OP_GROUP INT_OP_DC
+
 /* We use collect2 instead of ctors_section constructors.  */
 #undef INIT_SECTION_ASM_OP
 #undef FINI_SECTION_ASM_OP
@@ -118,13 +121,6 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_SOURCE_FILENAME
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, NA)	\
   do { fprintf ((FILE), "\t.file\t'%s'\n", (NA)); } while (0)
-
-/* Assembler pseudos to introduce constants of various size.  */
-
-#undef ASM_BYTE_OP
-#define ASM_BYTE_OP "\tdc.b\t"
-#undef ASM_LONG
-#define ASM_LONG "\tdc.l"
 
 /* 
  * we don't seem to support any of:
@@ -309,31 +305,6 @@ do { long l;						\
      else						\
        fprintf (FILE, "\tdc.l $%lx\n", l);		\
    } while (0)
-
-/* This is how to output an assembler line defining an `int' constant.  */
-#undef ASM_OUTPUT_INT 
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\tdc.l "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* Likewise for `char' and `short' constants.  */
-#undef ASM_OUTPUT_SHORT
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\tdc.w "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-#undef ASM_OUTPUT_CHAR
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "\tdc.b "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-#undef ASM_OUTPUT_BYTE
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\tdc.b $%x\n", (int)(VALUE))
 
 /* This is how to output an element of a case-vector that is absolute.
    (The 68000 does not use such vectors,

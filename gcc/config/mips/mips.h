@@ -4396,69 +4396,6 @@ do {							\
   mips_output_float (STREAM, VALUE)
 
 
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#define ASM_OUTPUT_INT(STREAM,VALUE)					\
-do {									\
-  fprintf (STREAM, "\t.word\t");					\
-  output_addr_const (STREAM, (VALUE));					\
-  fprintf (STREAM, "\n");						\
-} while (0)
-
-/* Likewise for 64 bit, `char' and `short' constants.
-
-   FIXME: operand_subword can't handle some complex constant expressions
-   that output_addr_const can (for example it does not call
-   simplify_subtraction).  Since GAS can handle dword, even for mipsII,
-   rely on that to avoid operand_subword for most of the cases where this
-   matters.  Try gcc.c-torture/compile/930326-1.c with -mips2 -mlong64,
-   or the same case with the type of 'i' changed to long long.
-
-*/
-
-#define ASM_OUTPUT_DOUBLE_INT(STREAM,VALUE)				\
-do {									\
-  if (TARGET_64BIT || TARGET_GAS)					\
-    {									\
-      fprintf (STREAM, "\t.dword\t");					\
-      if (HOST_BITS_PER_WIDE_INT < 64 || GET_CODE (VALUE) != CONST_INT)	\
-	/* We can't use 'X' for negative numbers, because then we won't	\
-	   get the right value for the upper 32 bits.  */		\
-        output_addr_const (STREAM, VALUE);				\
-      else								\
-	/* We must use 'X', because otherwise LONG_MIN will print as	\
-	   a number that the Irix 6 assembler won't accept.  */		\
-        print_operand (STREAM, VALUE, 'X');				\
-      fprintf (STREAM, "\n");						\
-    }									\
-  else									\
-    {									\
-      assemble_integer (operand_subword ((VALUE), 0, 0, DImode),	\
-			UNITS_PER_WORD, BITS_PER_WORD, 1);		\
-      assemble_integer (operand_subword ((VALUE), 1, 0, DImode),	\
-			UNITS_PER_WORD, BITS_PER_WORD, 1);		\
-    }									\
-} while (0)
-
-#define ASM_OUTPUT_SHORT(STREAM,VALUE)					\
-{									\
-  fprintf (STREAM, "\t.half\t");					\
-  output_addr_const (STREAM, (VALUE));					\
-  fprintf (STREAM, "\n");						\
-}
-
-#define ASM_OUTPUT_CHAR(STREAM,VALUE)					\
-{									\
-  fprintf (STREAM, "\t.byte\t");					\
-  output_addr_const (STREAM, (VALUE));					\
-  fprintf (STREAM, "\n");						\
-}
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#define ASM_OUTPUT_BYTE(STREAM,VALUE)					\
-  fprintf (STREAM, "\t.byte\t0x%x\n", (int)(VALUE))
-
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)				\

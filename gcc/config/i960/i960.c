@@ -93,6 +93,9 @@ static int ret_label = 0;
  || current_function_varargs)
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE i960_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE

@@ -76,6 +76,17 @@ static void m88k_svr3_asm_out_destructor PARAMS ((rtx, int));
 static int m88k_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_BYTE_OP
+#define TARGET_ASM_BYTE_OP "\tbyte\t"
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\thalf\t"
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP "\tword\t"
+#undef TARGET_ASM_UNALIGNED_HI_OP
+#define TARGET_ASM_UNALIGNED_HI_OP "\tuahalf\t"
+#undef TARGET_ASM_UNALIGNED_SI_OP
+#define TARGET_ASM_UNALIGNED_SI_OP "\tuaword\t"
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE m88k_output_function_prologue
 #undef TARGET_ASM_FUNCTION_END_PROLOGUE
@@ -2364,7 +2375,8 @@ output_tdesc (file, offset)
 
   tdesc_section ();
 
-  fprintf (file, "%s%d,%d", ASM_LONG, /* 8:0,22:(20 or 16),2:2 */
+  /* 8:0,22:(20 or 16),2:2 */
+  fprintf (file, "%s%d,%d", integer_asm_op (4, TRUE),
 	   (((xmask != 0) ? 20 : 16) << 2) | 2,
 	   flag_pic ? 2 : 1);
 

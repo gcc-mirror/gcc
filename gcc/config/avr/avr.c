@@ -61,6 +61,7 @@ void          debug_hard_reg_set   PARAMS ((HARD_REG_SET set));
 static tree   avr_handle_progmem_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static tree   avr_handle_fndecl_attribute PARAMS ((tree *, tree, tree, int, bool *));
 const struct attribute_spec avr_attribute_table[];
+static bool   avr_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void   avr_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void   avr_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
@@ -174,6 +175,11 @@ static const struct mcu_type_s avr_mcu_types[] = {
 int avr_case_values_threshold = 30000;
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
+#undef TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER avr_assemble_integer
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE avr_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
@@ -4458,49 +4464,25 @@ _reg_unused_after (insn, reg)
   return 1;
 }
 
-/* Output rtx VALUE as .byte to file FILE */
+/* Target hook for assembling integer objects.  The AVR version needs
+   special handling for references to certain labels.  */
 
-void
-asm_output_char (file, value)
-     FILE *file;
-     rtx value;
+static bool
+avr_assemble_integer (x, size, aligned_p)
+     rtx x;
+     unsigned int size;
+     int aligned_p;
 {
-  fprintf (file, "\t.byte ");
-  output_addr_const (file, value);
-  fprintf (file, "\n");
-}
-
-
-/* Output VALUE as .byte to file FILE */
-
-void
-asm_output_byte (file, value)
-     FILE *file;
-     int value;
-{
-  fprintf (file, "\t.byte 0x%x\n", value & 0xff);
-}
-
-
-/* Output rtx VALUE as .word to file FILE */
-
-void
-asm_output_short (file, value)
-     FILE *file;
-     rtx value;
-{
-  if (SYMBOL_REF_FLAG (value) || GET_CODE (value) == LABEL_REF)
+  if (size == POINTER_SIZE / BITS_PER_UNIT && aligned_p
+      && ((GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_FLAG (x))
+	  || GET_CODE (x) == LABEL_REF))
     {
-      fprintf (file, "\t.word pm(");
-      output_addr_const (file, (value));
-      fprintf (file, ")\n");
+      fputs ("\t.word\tpm(", asm_out_file);
+      output_addr_const (asm_out_file, x);
+      fputs (")\n", asm_out_file);
+      return true;
     }
-  else
-    {
-      fprintf (file, "\t.word ");
-      output_addr_const (file, (value));
-      fprintf (file, "\n");
-    }
+  return default_assemble_integer (x, size, aligned_p);
 }
 
 

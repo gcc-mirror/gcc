@@ -1751,43 +1751,6 @@ while (0)
        fprintf (FILE, "\t.word 0x%lx\n", l);				\
      } while (0)
 
-/* This is how to output an assembler line defining an `int' constant. 
-
-   This is made more complicated by the fact that functions must be
-   prefixed by a P% as well as code label references for the exception
-   table -- otherwise the linker chokes.  */
-
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-{ fputs ("\t.word ", FILE);			\
-  if (function_label_operand (VALUE, VOIDmode))	\
-    fputs ("P%", FILE);				\
-  output_addr_const (FILE, (VALUE));		\
-  fputs ("\n", FILE);}
-
-/* Likewise for `short' and `char' constants.  */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fputs ("\t.half ", FILE),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fputs ("\n", FILE))
-
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fputs ("\t.byte ", FILE),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fputs ("\n", FILE))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t.byte 0x%x\n", (int)(VALUE))
-
-/* C string constants giving the pseudo-op to use for a sequence of
-   2, 4, and 8 byte unaligned constants.  dwarf2out.c needs these.  */
-
-#define UNALIGNED_SHORT_ASM_OP		(TARGET_GAS ? "\t.half " : NULL)
-#define UNALIGNED_INT_ASM_OP		(TARGET_GAS ? "\t.word " : NULL)
-#define UNALIGNED_DOUBLE_INT_ASM_OP	(TARGET_GAS ? "\t.dword " : NULL)
-
 #define ASM_GLOBALIZE_LABEL(FILE, NAME)					\
   do {									\
     /* We only handle DATA objects here, functions are globalized in	\

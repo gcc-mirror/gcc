@@ -114,8 +114,3 @@ crtbegin.o%s \
 
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-
-/* Define the names of various pseudo-ops used by the Sparc/svr4 assembler.  */
-
-#undef UNALIGNED_DOUBLE_INT_ASM_OP
-#define UNALIGNED_DOUBLE_INT_ASM_OP	"\t.uaxword\t"

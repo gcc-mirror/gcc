@@ -187,7 +187,8 @@ half_pic_finish (stream)
       if (p->pointer_p)
 	{
 	  ASM_OUTPUT_LABEL (stream, p->ref_name);
-	  ASM_OUTPUT_INT (stream, gen_rtx_SYMBOL_REF (Pmode, p->real_name));
+	  assemble_aligned_integer (POINTER_SIZE / BITS_PER_UNIT,
+				    gen_rtx_SYMBOL_REF (Pmode, p->real_name));
 	}
     }
 }

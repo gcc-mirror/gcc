@@ -1845,7 +1845,7 @@ literal_section ()						\
       if (firsttime)						\
 	{							\
 	  firsttime = 0;				        \
-	  ASM_OUTPUT_DOUBLE_INT (asm_out_file, const0_rtx);	\
+	  assemble_aligned_integer (8, const0_rtx);		\
 	}							\
 								\
       in_section = readonly_data;				\
@@ -1978,32 +1978,6 @@ do {						\
     fprintf (FILE, "\t.long 0x%lx\n", t & 0xffffffff);		\
   } while (0)
   
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#define ASM_OUTPUT_INT(FILE,VALUE)  		\
-( fprintf (FILE, "\t.long "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line defining a `long' constant.  */
-
-#define ASM_OUTPUT_DOUBLE_INT(FILE,VALUE)	\
-( fprintf (FILE, "\t.quad "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* Likewise for `char' and `short' constants.  */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-  fprintf (FILE, "\t.word %d\n",		\
-    (int)(GET_CODE (VALUE) == CONST_INT		\
-     ? INTVAL (VALUE) & 0xffff : (abort (), 0)))
-
-#define ASM_OUTPUT_CHAR(FILE,VALUE)		\
-  fprintf (FILE, "\t.byte %d\n",		\
-    (int)(GET_CODE (VALUE) == CONST_INT		\
-     ? INTVAL (VALUE) & 0xff : (abort (), 0)))
-
 /* We use the default ASCII-output routine, except that we don't write more
    than 50 characters since the assembler doesn't support very long lines.  */
 
@@ -2048,11 +2022,6 @@ do {						\
   }									      \
   while (0)
 
-/* To get unaligned data, we have to turn off auto alignment.  */
-#define UNALIGNED_SHORT_ASM_OP		"\t.align 0\n\t.word\t"
-#define UNALIGNED_INT_ASM_OP		"\t.align 0\n\t.long\t"
-#define UNALIGNED_DOUBLE_INT_ASM_OP	"\t.align 0\n\t.quad\t"
-
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
 
@@ -2068,11 +2037,6 @@ do {						\
   fprintf (FILE, "\tld%s $%s%d,0($30)\n\taddq $30,8,$30\n",		\
 	  (REGNO) > 32 ? "t" : "q", (REGNO) > 32 ? "f" : "",		\
 	  (REGNO) & 31);
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t.byte 0x%x\n", (int) ((VALUE) & 0xff))
 
 /* This is how to output an element of a case-vector that is absolute.
    (Alpha does not use such vectors, but we must define this macro anyway.)  */

@@ -1,3 +1,210 @@
+2001-12-17  Richard Sandiford  <rsandifo@redhat.com>
+
+	* target.h (asm_out.byte_op, asm_out.aligned_op, asm_out.unaligned_op,
+	asm_out.integer): New fields.
+	* target-def.h (TARGET_ASM_BYTE_OP, TARGET_ASM_ALIGNED_[HSDT]I_OP,
+	TARGET_ASM_UNALIGNED_[HSDT]I_OP, TARGET_ASM_INTEGER): New initialisers.
+	(TARGET_ASM_ALIGNED_INT_OP, TARGET_ASM_UNALIGNED_INT_OP): Collect
+	the individual initialisers together.
+	(TARGET_ASM_OUT): Add the new initialisers.
+	* output.h (assemble_integer): Return bool.
+	(integer_asm_op): Declare.
+	(default_assemble_integer): Declare.
+	(assemble_aligned_integer): New interface to assemble_integer.
+	* varasm.c (integer_asm_op): New function to select pseudo-op.
+	(default_assemble_integer): Default implementation of asm_out.integer.
+	(assemble_integer): Use the new target hook.  Split objects into
+	words or bytes if the target hook fails.  Return bool.
+	* doc/tm.texi (ASM_OUTPUT_CHAR, ASM_OUTPUT_BYTE, ASM_OUTPUT_SHORT,
+	ASM_OUTPUT_INT, ASM_OUTPUT_DOUBLE_INT, ASM_OUTPUT_QUADRUPLE_INT,
+	UNALIGNED_SHORT_ASM_OP,	UNALIGNED_INT_ASM_OP,
+	UNALIGNED_DOUBLE_INT_ASM_OP): Undocument.
+	Document new target hooks.
+
+	* defaults.h (ASM_OUTPUT_ADDR_VEC_ELT): Use integer_asm_op.
+	* dwarf2asm.c (unaligned_integer_asm_op): Remove.
+	(dw2_assemble_integer): New.
+	(dw2_asm_output_data, dw2_asm_output_delta, dw2_asm_output_offset,
+	dw2_asm_output_pcrel, dw2_asm_output_addr, dw2_asm_output_addr_rtx,
+	dw2_asm_output_encoded_addr_rtx): Use it.
+	(dw2_asm_output_nstring): Use assemble_integer for the null terminator.
+	(dw2_asm_output_data_uleb128, dw2_asm_output_data_sleb128): Use
+	integer_asm_op to get the byte pseudo-op.  Use assemble_integer
+        if it returns NULL.
+	* dwarf2asm.h (dw2_assemble_integer): Declare.
+	* dwarfout.c: Include dwarf2asm.h.  Use dwarf2 functions for the
+	default	implementation of most macros.
+	(output_unsigned_leb128): Use dw2_asm_output_data.
+	(output_signed_leb128, dwarfout_source_line): Likewise.
+	(output_reg_number): Use dw2_assemble_integer.
+	(generate_macinfo_entry): Separate the type and offset arguments.
+	Use assemble_integer to write the value.
+	(dwarfout_start_source_file): Update generate_macinfo_entry usage.
+	(dwarfout_end_source_file, dwarfout_define, dwarfout_undef): Likewise.
+	* final.c (output_addr_const): Don't put brackets round a subtracted
+	symbol value or ".".
+	* halfpic.c (half_pic_finish): Use assemble_aligned_integer.
+
+	* config/1750a/1750a.c (assemble_integer_1750a): New,
+	* config/alpha/alpha.h (literal_section): Avoid ASM_OUTPUT_INT.
+	* config/arc/arc.c (arc_assemble_integer): New.
+	* config/arc/arc.h (TRAMPOLINE_TEMPLATE): Avoid ASM_OUTPUT_INT.
+	* config/arm/arm.c (arm_poke_function_name): Likewise.
+	(arm_assemble_integer): New, extracted from...
+	* config/arm/arm.h (OUTPUT_INT_ADDR_CONST): ...here, now removed.
+	(ARM_TRAMPOLINE_TEMPLATE, ARM_FUNCTION_PROFILER): Avoid ASM_OUTPUT_INT.
+	(ARM_FUNCTION_PROFILER): Likewise.
+	* config/avr/avr-protos.h (asm_output_byte): Remove.
+	(asm_output_char, asm_output_short): Remove.
+	* config/avr/avr.c (avr_assemble_integer): New.
+	(asm_output_byte, asm_output_char, asm_output_short): Remove.
+	* config/clipper/clipper.h (ASM_LONG): Remove.
+	* config/dsp16xx/dsp16xx-protos.h (asm_output_long): Remove.
+	* config/dsp16xx/dsp16xx.c (asm_output_long): Remove.
+	* config/elxsi/elxsi.c (elxsi_assemble_integer): New.
+	* config/i370/i370.c (i370_hlasm_assemble_integer): New.
+	* config/i370/i370.h (TRAMPOLINE_TEMPLATE): Avoid ASM_OUTPUT_SHORT.
+	(ASM_BYTE, ASM_SHORT, ASM_LONG): Delete.
+	* config/i386/att.h, (ASM_OUTPUT_ASCII): Avoid ASM_BYTE_OP.
+	* config/i386/linux.h (ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): Use
+	ASM_LONG instead of UNALIGNED_INT_ASM_OP.
+	* config/i386/sco5.h (ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): Likewise.
+	(ASM_OUTPUT_ASCII): Avoid ASM_BYTE_OP.
+	* config/i386/sysv4.h (ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): Use
+	ASM_LONG instead of UNALIGNED_INT_ASM_OP.
+	* config/i860/fx2800.h (ASM_FILE_END): Avoid ASM_LONG.
+	* config/i860/i860.c (i860_output_function_epilogue): Likewise.
+	* config/i860/i860.h (TRAMPOLINE_TEMPLATE): Avoid ASM_OUTPUT_INT.
+	(ASM_SHORT, ASM_LONG): Undefine.
+	* config/i860/paragon.h (ASM_OUTPUT_ASCII): Avoid ASM_BYTE_OP.
+	* config/i860/sysv3.h (ASM_OUTPUT_ASCII): Likewise.
+	* config/i960/i960.h (TRAMPOLINE_TEMPLATE): Avoid ASM_OUTPUT_INT.
+	* config/ia64/ia64.c (ia64_assemble_integer): New.
+	* config/ia64/ia64.h (ASM_OUTPUT_DWARF_OFFSET): Use integer_asm_op.
+	(ASM_OUTPUT_DWARF_PCREL): Likewise.
+	* config/m68hc11/m68hc11.h (ASM_OUTPUT_DOUBLE, ASM_OUTPUT_FLOAT,
+	ASM_OUTPUT_ADDR_DIFF_ELT, ASM_OUTPUT_ADDR_VEC_ELT): Avoid ASM_LONG.
+	(ASM_SHORT, ASM_LONG): Remove.
+	* config/m68k/m68k.h (INT_OP_GROUP): New macro.
+	(INT_OP_STANDARD, INT_OP_DOT_WORD, INT_OP_NO_DOT, INT_OP_DC): New
+	macros, the allowed values for INT_OP_GROUP.
+	* config/m68k/amix.h (ASM_OUTPUT_ASCII): Avoid ASM_BYTE_OP
+	* config/m68k/atari.h (ASM_OUTPUT_ASCII): Likewise
+	* config/m68k/m68kelf.h (ASM_OUTPUT_ASCII): Likewise
+	* config/m68k/auxas.h (BYTE_ASM_OP, WORD_ASM_OP, LONG_ASM_OP): Remove.
+	(INT_OP_GROUP): Define to INT_OP_NO_DOT.
+	* config/m68k/dpx2.h (ASM_LONG): Undefine.
+	(INT_OP_GROUP): Define to INT_OP_DC.
+	* config/m68k/dpx2g.h (ASM_LONG): Undefine.
+	* config/m68k/hp320.h (INT_OP_GROUP): Define to INT_OP_NO_DOT.
+	* config/m68k/lynx.h (ASM_LONG): Undefine.
+	* config/m68k/dpx2g.h (ASM_LONG): Undefine.
+	* config/m68k/m68kelf.h (ASM_OUTPUT_ASCII): Avoid ASM_BYTE_OP.
+	* config/m68k/m68kv4.h (ASM_OUTPUT_ASCII): Likewise.
+	(TRAMPOLINE_TEMPLATE): Avoid ASM_OUTPUT_*.
+	* config/m68k/mot3300.h (INT_OP_GROUP): Define to INT_OP_STANDARD
+	for GAS and INT_OP_NO_DOT otherwise.
+	(ASM_CHAR, ASM_BYTE, ASM_SHORT, ASM_LONG): Remove.
+	(ASM_OUTPUT_LONG_DOUBLE, ASM_OUTPUT_DOUBLE, ASM_OUTPUT_FLOAT,
+	ASM_OUTPUT_ADDR_VEC_ELT, ASM_OUTPUT_ADDR_DIFF_ELT): Avoid ASM_LONG.
+	(ASM_OUTPUT_ASCII): Avoid ASM_BYTE_OP.
+	* config/m68k/sgs.h (BYTE_ASM_OP, WORD_ASM_OP, LONG_ASM_OP): Remove.
+	(INT_OP_GROUP): Define to INT_OP_STANDARD.
+	(ASM_OUTPUT_LONG_DOUBLE, ASM_OUTPUT_DOUBLE, ASM_OUTPUT_FLOAT,
+	ASM_OUTPUT_ADDR_VEC_ELT, ASM_OUTPUT_ADDR_DIFF_ELT): Avoid LONG_ASM_OP.
+	(ASM_OUTPUT_ASCII): Avoid BYTE_ASM_OP.
+	* config/m68k/tower-as.h (ASM_LONG): Remove.
+	(INT_OP_GROUP): Define to INT_OP_NO_DOT.
+	* config/m88k/m88k.c (output_tdesc): Avoid ASM_LONG.
+	* config/m88k/m88k.h (TRAMPOLINE_TEMPLATE): Avoid ASM_OUTPUT_INT.
+	(ASM_OUTPUT_DOUBLE, ASM_OUTPUT_FLOAT): Avoid ASM_LONG.
+	* config/mips/iris5.h (TARGET_IRIX5): Define.
+	* config/mips/mips.c (mips_assemble_integer): New.
+	* config/mips/sni-svr4.h (ASM_LONG): Undefine.
+	* config/mmix/mmix-protos.h (mmix_asm_output_double_int): Remove.
+	* config/mmix/mmix.c (mmix_assemble_integer): New.
+	(mmix_asm_output_double_int): Remove.
+	(mmix_print_operand): Call mmix_output_octa directly.
+	* config/mmix/mmix.h (ASM_LONG): Remove.
+	* config/ns32k/ns32k.h (TRAMPOLINE_TEMPLATE): Avoid ASM_OUTPUT_INT.
+	* config/pa/pa.c (pa_assemble_integer): New.
+	(pa_override_options): Only use aligned DI ops on 64-bit targets.
+	Only use the unaligned ops if TARGET_GAS.
+	* config/pdp11/pdp11.c (pdp11_assemble_integer): New.
+	* config/pdp11/pdp11.h (TRAMPOLINE_TEMPLATE): Avoid ASM_OUTPUT_SHORT.
+	* config/pj/pj.h (ASM_LONG): Undefine.
+	* config/rs6000/linux64.h (RELOCATABLE_NEEDS_FIXUP): Undefine.
+	* config/rs6000/rs6000.c (rs6000_assemble_integer): New, mostly
+	extracted from ASM_OUTPUT_INT in sysv4.h.  Use in_text_section()
+	and in_toc_section() rather than the in_section variable.
+	(rs6000_override_options): Only use DI ops when TARGET_POWERPC64.
+	* config/rs6000/sysv4.h (TOC_SECTION_FUNCTION): Add in_toc_section().
+	(RELOCATABLE_NEEDS_FIXUP): Define.
+	* config/rs6000/xcoff.h (DOUBLE_INT_ASM_OP): Change space to tab.
+	* config/s390/linux.h (ASM_SHORT, ASM_LONG, ASM_QUAD): Remove.
+	(ASM_OUTPUT_ADDR_VEC_ELT, ASM_OUTPUT_ADDR_DIFF_ELT): Use integer_asm_op
+	to get the word directive.
+	(ASM_OUTPUT_ASCII): Avoid ASM_BYTE_OP.
+	* config/s390/s390.c (s390_assemble_integer): New.
+	* config/s390/s390.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY): Use
+	integer_asm_op to get the word directive.
+	* config/sparc/sol2.h (ASM_SHORT, ASM_LONG): Remove.
+	* config/sparc/sparc-protos.h (output_double_int): Remove.
+	* config/sparc/sparc.c (output_double_int): Move to...
+	(sparc_assemble_integer): ...this new function.
+	(sparc_override_options): Only use .uaxword if TARGET_ARCH64.
+	* config/sparc/sparc.h (ASM_SHORT, ASM_LONG, ASM_LONGLONG): Remove.
+	* config/sparc/sysv4.h (ASM_LONG): Remove.
+	(ASM_OUTPUT_LONG_DOUBLE, ASM_OUTPUT_DOUBLE, ASM_OUTPUT_FLOAT): Avoid
+	ASM_LONG.
+	* config/vax/vax.h (TRAMPOLINE_TEMPLATE): Use assemble_aligned_integer.
+	* config/we32k/we32k.h (TRAMPOLINE_TEMPLATE): Likewise.
+
+	* config/1750a/1750a.c, config/a29k/a29k.c, config/alpha/alpha.c,
+	config/arc/arc.c, config/arm/arm.c, config/avr/avr.c, config/c4x/c4x.c,
+	config/clipper/clipper.c, config/convex/convex.c, config/cris/cris.c,
+	config/d30v/d30v.c, config/dsp16xx/dsp16xx.c, config/elxsi/elxsi.c,
+	config/fr30/fr30.c, config/h8300/h8300.c, config/i370/i370.c,
+	config/i386/i386.c, config/i860/i860.c, config/i960/i960.c,
+	config/ia64/ia64.c, config/m32r/m32r.c, config/m68hc11/m68hc11.c,
+	config/m68k/m68k.c, config/m88k/m88k.c, config/mips/mips.c,
+	config/mmix/mmix.c, config/mn10200/mn10200.c, config/mn10300/mn10300.c,
+	config/ns32k/ns32k.c, config/pa/pa.c, config/pdp11/pdp11.c,
+	config/sh/sh.c, config/sparc/sparc.c, config/stormy16/stormy16.c,
+	config/v850/v850.c, config/vax/vax.c, config/we32k/we32k.c
+	(TARGET_ASM_BYTE_OP, TARGET_ASM_ALIGNED_HI_OP,
+	TARGET_ASM_ALIGNED_SI_OP, TARGET_ASM_ALIGNED_DI_OP,
+	TARGET_ASM_UNALIGNED_HI_OP, TARGET_ASM_UNALIGNED_SI_OP,
+	TARGET_ASM_UNALIGNED_DI_OP, TARGET_ASM_INTEGER): Redefine as
+	appropriate.
+	
+	* config/defaults.h, config/darwin.h, config/elfos.h, config/svr3.h,
+	config/1750a/1750a.h, config/a29k/a29k.h, config/alpha/alpha.h,
+	config/arc/arc.h, config/arm/arm.h, config/avr/avr.h, config/c4x/c4x.h,
+	config/clipper/clipper.h, config/convex/convex.h, config/cris/cris.h,
+	config/d30v/d30v.h, config/dsp16xx/dsp16xx.h, config/elxsi/elxsi.h,
+	config/fr30/fr30.h, config/h8300/h8300.h, config/i370/i370.h,
+	config/i386/bsd.h, config/i386/djgpp.h, config/i386/i386.h,
+	config/i386/sco5.h, config/i386/sol2.h, config/i386/sun386.h,
+	config/i860/i860.h, config/i960/i960.h, config/ia64/ia64.h,
+	config/m32r/m32r.h, config/m68hc11/m68hc11.h, config/m68k/auxas.h,
+	config/m68k/dpx2.h, config/m68k/hp320.h, config/m68k/m68k.h,
+	config/m68k/mot3300.h, config/m68k/sgs.h, config/m68k/tower-as.h,
+	config/m88k/m88k.h, config/mcore/mcore-elf.h, config/mcore/mcore.h,
+	config/mips/iris5.h, config/mips/iris6.h, config/mips/mips.h,
+	config/mmix/mmix.h, config/mn10200/mn10200.h, config/mn10300/mn10300.h
+	config/ns32k/encore.h, config/ns32k/ns32k.h, config/pa/pa-64.h,
+	config/pa/pa.h, config/pdp11/pdp11.h, config/pj/pj.h,
+	config/romp/romp.h, config/rs6000/linux64.h, config/rs6000/rs6000.h,
+	config/rs6000/sysv4.h, config/rs6000/xcoff.h, config/s390/linux.h,
+	config/sh/sh.h, config/sparc/linux64.h, config/sparc/sol2.h,
+	config/sparc/sp64-elf.h, config/sparc/sparc.h, config/sparc/sysv4.h,
+	config/stormy16/stormy16.h, config/v850/v850.h, config/vax/vax.h,
+	config/we32k/we32k.h (ASM_OUTPUT_CHAR, ASM_OUTPUT_BYTE, ASM_BYTE_OP,
+	ASM_BYTE, ASM_OUTPUT_SHORT, ASM_OUTPUT_INT, ASM_OUTPUT_DOUBLE_INT,
+	UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP,
+	UNALIGNED_DOUBLE_INT_ASM_OP): Undefine, where defined.
+
 2001-12-17  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Define.

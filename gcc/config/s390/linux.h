@@ -76,9 +76,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Assembler pseudos to introduce constants of various size.  */
 
-#define ASM_SHORT "\t.word"
-#define ASM_LONG "\t.long"
-#define ASM_QUAD "\t.quad"
 #define ASM_DOUBLE "\t.double"
 
 
@@ -130,44 +127,6 @@ Boston, MA 02111-1307, USA.  */
   sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
 
 
-#define ASM_OUTPUT_DOUBLE_INT(FILE, VALUE)      			\
-do { fprintf ((FILE), "%s\t", ASM_QUAD);          			\
-  /* Work around bug in some GNU as versions */				\
-  if (GET_CODE (VALUE) == CONST_INT && INTVAL (VALUE) < INT_MIN)	\
-    fprintf ((FILE), HOST_WIDE_INT_PRINT_HEX, INTVAL (x));		\
-  else									\
-    output_addr_const ((FILE), (VALUE));            			\
-  putc ('\n', (FILE));                             			\
- } while (0)
-
-
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#undef ASM_OUTPUT_INT
-#define ASM_OUTPUT_INT(FILE, VALUE)             \
-do { fprintf (FILE, "%s\t", ASM_LONG);          \
-  output_addr_const (FILE, (VALUE));            \
-  putc ('\n',FILE);                             \
- } while (0)
-
-/* Likewise for `char' and `short' constants. 
-   is this supposed to do align too?? */
-
-#define ASM_OUTPUT_SHORT(FILE, VALUE)           \
-( fprintf (FILE, "%s\t", ASM_SHORT),            \
-  output_addr_const (FILE, (VALUE)),            \
-  putc ('\n',FILE))
-
-#define ASM_OUTPUT_CHAR(FILE, VALUE)            \
-( fprintf (FILE, "\t%s\t", ASM_BYTE_OP),        \
-  output_addr_const (FILE, (VALUE)),            \
-  putc ('\n', FILE))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#define ASM_OUTPUT_BYTE(FILE, VALUE)  \
-  fprintf ((FILE), "\t%s\t0x%x\n", ASM_BYTE_OP, (int)(VALUE))
-
      /* internal macro to output long */
 #define _ASM_OUTPUT_LONG(FILE, VALUE)                                   \
       fprintf (FILE, "\t.long\t0x%lX\n", VALUE);
@@ -176,13 +135,13 @@ do { fprintf (FILE, "%s\t", ASM_LONG);          \
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  			\
-  fprintf (FILE, "%s\t%s%d\n", TARGET_64BIT?ASM_QUAD:ASM_LONG, 	\
+  fprintf (FILE, "%s%s%d\n", integer_asm_op (UNITS_PER_WORD, TRUE), \
 	   LPREFIX, VALUE)
 
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) 		\
-  fprintf (FILE, "%s\t%s%d-%s%d\n", TARGET_64BIT?ASM_QUAD:ASM_LONG, 	\
+  fprintf (FILE, "%s%s%d-%s%d\n", integer_asm_op (UNITS_PER_WORD, TRUE), \
 	   LPREFIX, VALUE, LPREFIX, REL)
 
 

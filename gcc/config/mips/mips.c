@@ -118,6 +118,7 @@ static void abort_with_insn			PARAMS ((rtx, const char *))
   ATTRIBUTE_NORETURN;
 static int symbolic_expression_p                PARAMS ((rtx));
 static void mips_add_gc_roots                   PARAMS ((void));
+static bool mips_assemble_integer	  PARAMS ((rtx, unsigned int, int));
 static void mips_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void mips_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static enum processor_type mips_parse_cpu       PARAMS ((const char *));
@@ -456,6 +457,20 @@ enum reg_class mips_char_to_class[256] =
 };
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
+#undef TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER mips_assemble_integer
+
+#if TARGET_IRIX5 && !TARGET_IRIX6
+#undef TARGET_ASM_UNALIGNED_HI_OP
+#define TARGET_ASM_UNALIGNED_HI_OP "\t.align 0\n\t.half\t"
+#undef TARGET_ASM_UNALIGNED_SI_OP
+#define TARGET_ASM_UNALIGNED_SI_OP "\t.align 0\n\t.word\t"
+#endif
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE mips_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
@@ -5788,7 +5803,29 @@ print_operand_address (file, addr)
 	break;
     }
 }
+
+/* Target hook for assembling integer objects.  It appears that the Irix
+   6 assembler can't handle 64-bit decimal integers, so avoid printing
+   such an integer here.  */
 
+static bool
+mips_assemble_integer (x, size, aligned_p)
+     rtx x;
+     unsigned int size;
+     int aligned_p;
+{
+  if ((TARGET_64BIT || TARGET_GAS) && size == 8 && aligned_p)
+    {
+      fputs ("\t.dword\t", asm_out_file);
+      if (HOST_BITS_PER_WIDE_INT < 64 || GET_CODE (x) != CONST_INT)
+	output_addr_const (asm_out_file, x);
+      else
+	print_operand (asm_out_file, x, 'X');
+      fputc ('\n', asm_out_file);
+      return true;
+    }
+  return default_assemble_integer (x, size, aligned_p);
+}
 
 /* If optimizing for the global pointer, keep track of all of the externs, so
    that at the end of the file, we can emit the appropriate .extern

@@ -504,14 +504,14 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
      movl $STATIC,r0   (store the functions static chain)
      jmp  *$FUNCTION   (jump to function code at address FUNCTION)  */
 
-#define TRAMPOLINE_TEMPLATE(FILE)			\
-{							\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);			\
-  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x8fd0));		\
-  ASM_OUTPUT_INT (FILE, const0_rtx);			\
-  ASM_OUTPUT_BYTE  (FILE, 0x50 + STATIC_CHAIN_REGNUM);	\
-  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x9f17));		\
-  ASM_OUTPUT_INT (FILE, const0_rtx);			\
+#define TRAMPOLINE_TEMPLATE(FILE)					\
+{									\
+  assemble_aligned_integer (2, const0_rtx);				\
+  assemble_aligned_integer (2, GEN_INT (0x8fd0));			\
+  assemble_aligned_integer (4, const0_rtx);				\
+  assemble_aligned_integer (1, GEN_INT (0x50 + STATIC_CHAIN_REGNUM));	\
+  assemble_aligned_integer (2, GEN_INT (0x9f17));			\
+  assemble_aligned_integer (4, const0_rtx);				\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */
@@ -1122,30 +1122,6 @@ do { char dstr[30];							\
   do { char dstr[30];						\
        REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", dstr);		\
        fprintf (FILE, "\t.float 0f%s\n", dstr); } while (0);
-
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\t.long "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* Likewise for `char' and `short' constants.  */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\t.word "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "\t.byte "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */

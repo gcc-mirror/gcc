@@ -1888,19 +1888,6 @@ const_section ()							\
                l[0], str, l[1]);				\
   } while (0);
 
-#define ASM_OUTPUT_CHAR(FILE, VALUE)			\
-  do {							\
-    fprintf (FILE, "\t.word\t");			\
-     output_addr_const (FILE, VALUE);			\
-     if (GET_CODE (VALUE) != SYMBOL_REF)		\
-       fprintf (FILE, " ; 0%08xh\n", INTVAL (VALUE));	\
-     else						\
-       fputc ('\n', FILE);				\
-  } while (0);
-
-#define ASM_OUTPUT_BYTE(FILE, VALUE)  \
-  fprintf (FILE, "\t.word\t0%xh\n", (VALUE))
-
 #define ASM_OUTPUT_ASCII(FILE, PTR, LEN) c4x_output_ascii (FILE, PTR, LEN)
 
 /* Output and Generation of Labels.  */

@@ -139,6 +139,7 @@ static rtx ia64_expand_lock_test_and_set PARAMS ((enum machine_mode,
 						  tree, rtx));
 static rtx ia64_expand_lock_release PARAMS ((enum machine_mode, tree, rtx));
 const struct attribute_spec ia64_attribute_table[];
+static bool ia64_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void ia64_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void ia64_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void ia64_output_function_end_prologue PARAMS ((FILE *));
@@ -164,6 +165,23 @@ static rtx ia64_cycle_display PARAMS ((int, rtx));
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN ia64_expand_builtin
+
+#undef TARGET_ASM_BYTE_OP
+#define TARGET_ASM_BYTE_OP "\tdata1\t"
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\tdata2\t"
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP "\tdata4\t"
+#undef TARGET_ASM_ALIGNED_DI_OP
+#define TARGET_ASM_ALIGNED_DI_OP "\tdata8\t"
+#undef TARGET_ASM_UNALIGNED_HI_OP
+#define TARGET_ASM_UNALIGNED_HI_OP "\tdata2.ua\t"
+#undef TARGET_ASM_UNALIGNED_SI_OP
+#define TARGET_ASM_UNALIGNED_SI_OP "\tdata4.ua\t"
+#undef TARGET_ASM_UNALIGNED_DI_OP
+#define TARGET_ASM_UNALIGNED_DI_OP "\tdata8.ua\t"
+#undef TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER ia64_assemble_integer
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE ia64_output_function_prologue
@@ -2587,6 +2605,28 @@ ia64_hard_regno_rename_ok (from, to)
     return 0;
 
   return 1;
+}
+
+/* Target hook for assembling integer objects.  Handle word-sized
+   aligned objects and detect the cases when @fptr is needed.  */
+
+static bool
+ia64_assemble_integer (x, size, aligned_p)
+     rtx x;
+     unsigned int size;
+     int aligned_p;
+{
+  if (size == UNITS_PER_WORD && aligned_p
+      && !(TARGET_NO_PIC || TARGET_AUTO_PIC)
+      && GET_CODE (x) == SYMBOL_REF
+      && SYMBOL_REF_FLAG (x))
+    {
+      fputs ("\tdata8\t@fptr(", asm_out_file);
+      output_addr_const (asm_out_file, x);
+      fputs (")\n", asm_out_file);
+      return true;
+    }
+  return default_assemble_integer (x, size, aligned_p);
 }
 
 /* Emit the function prologue.  */

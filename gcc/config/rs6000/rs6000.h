@@ -2727,50 +2727,6 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
     fprintf (FILE, "\t.long 0x%lx\n", t & 0xffffffff);	\
   }
 
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#define ASM_OUTPUT_DOUBLE_INT(FILE,VALUE)				\
-do {									\
-  if (TARGET_32BIT)							\
-    {									\
-      assemble_integer (operand_subword ((VALUE), 0, 0, DImode),	\
-                        UNITS_PER_WORD, BITS_PER_WORD, 1);		\
-      assemble_integer (operand_subword ((VALUE), 1, 0, DImode),	\
-                        UNITS_PER_WORD, BITS_PER_WORD, 1);		\
-    }									\
-  else									\
-    {									\
-      fprintf (FILE, "%s", DOUBLE_INT_ASM_OP);				\
-      output_addr_const (FILE, (VALUE));				\
-      putc ('\n', FILE);						\
-    }									\
-} while (0)
-
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fputs ("\t.long ", FILE),			\
-  output_addr_const (FILE, (VALUE)),		\
-  putc ('\n', FILE))
-
-/* Likewise for `char' and `short' constants.  */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fputs ("\t.short ", FILE),			\
-  output_addr_const (FILE, (VALUE)),		\
-  putc ('\n', FILE))
-
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fputs ("\t.byte ", FILE),			\
-  output_addr_const (FILE, (VALUE)),		\
-  putc ('\n', FILE))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t.byte 0x%x\n", (int)(VALUE))
-
-/* This is used by the definition of ASM_OUTPUT_ADDR_ELT in defaults.h.  */
-#define ASM_LONG (TARGET_32BIT ? ".long" : DOUBLE_INT_ASM_OP)
-
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \

@@ -53,11 +53,21 @@ int current_first_parm_offset;
 /* rtx cc0_reg_rtx; - no longer needed? */
 
 static rtx find_addr_reg PARAMS ((rtx)); 
-static const char *singlemove_string PARAMS ((rtx *)); 
+static const char *singlemove_string PARAMS ((rtx *));
+static bool pdp11_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void pdp11_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void pdp11_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_BYTE_OP
+#define TARGET_ASM_BYTE_OP NULL
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP NULL
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP NULL
+#undef TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER pdp11_assemble_integer
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE pdp11_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
@@ -943,6 +953,34 @@ print_operand_address (file, addr)
       output_addr_const_pdp11 (file, addr);
     }
 }
+
+/* Target hook to assemble integer objects.  We need to use the
+   pdp-specific version of output_addr_const.  */
+
+static bool
+pdp11_assemble_integer (x, size, aligned_p)
+     rtx x;
+     unsigned int size;
+     int aligned_p;
+{
+  if (aligned_p)
+    switch (size)
+      {
+      case 1:
+	fprintf (asm_out_file, "\t.byte\t");
+	output_addr_const_pdp11 (asm_out_file, x);
+	fprintf (asm_out_file, " /* char */\n");
+	return true;
+
+      case 2:
+	fprintf (asm_out_file, TARGET_UNIX_ASM ? "\t" : "\t.word\t");
+	output_addr_const_pdp11 (asm_out_file, x);
+	fprintf (asm_out_file, " /* short */\n");
+	return true;
+      }
+  return default_assemble_integer (x, size, aligned_p);
+}
+
 
 /* register move costs, indexed by regs */
 

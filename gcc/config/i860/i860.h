@@ -614,11 +614,11 @@ struct cumulative_args { int ints, floats; };
      or #BOTTOM_OF_STATIC,r29,r29  */
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
-  ASM_OUTPUT_INT (FILE, GEN_INT (0xec1f0000));	\
-  ASM_OUTPUT_INT (FILE, GEN_INT (0xe7ff0000));	\
-  ASM_OUTPUT_INT (FILE, GEN_INT (0xec1d0000));	\
-  ASM_OUTPUT_INT (FILE, GEN_INT (0x4000f800));	\
-  ASM_OUTPUT_INT (FILE, GEN_INT (0xe7bd0000));	\
+  assemble_aligned_integer (UNITS_PER_WORD, GEN_INT (0xec1f0000));	\
+  assemble_aligned_integer (UNITS_PER_WORD, GEN_INT (0xe7ff0000));	\
+  assemble_aligned_integer (UNITS_PER_WORD, GEN_INT (0xec1d0000));	\
+  assemble_aligned_integer (UNITS_PER_WORD, GEN_INT (0x4000f800));	\
+  assemble_aligned_integer (UNITS_PER_WORD, GEN_INT (0xe7bd0000));	\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */
@@ -975,9 +975,6 @@ struct cumulative_args { int ints, floats; };
 
 /* Assembler pseudos to introduce constants of various size.  */
 
-#define ASM_BYTE_OP "\t.byte\t"
-#define ASM_SHORT "\t.short"
-#define ASM_LONG "\t.long"
 #define ASM_DOUBLE "\t.double"
 
 /* Output at beginning of assembler file.  */
@@ -1084,30 +1081,6 @@ do { ASM_OUTPUT_ALIGN ((FILE), 2);					\
 
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
   fprintf (FILE, "\t.float %.12e\n", (VALUE))
-
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\t.long "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* Likewise for `char' and `short' constants.  */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\t.short "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "\t.byte "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
 
 /* This is how to output code to push a register on the stack.
    It need not be very fast code.  */

@@ -1470,25 +1470,6 @@ extern int a29k_debug_reg_map[];
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)		\
   fprintf (FILE, "\t.float %.20e\n", (VALUE))
 
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\t.word "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* Likewise for `char' and `short' constants.  */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\t.hword "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "\t.byte "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
 
@@ -1504,11 +1485,6 @@ extern int a29k_debug_reg_map[];
   fprintf (FILE, "\tload 0,0,%s,%s\n\tadd %s,%s,4\n",			\
            reg_names[REGNO], reg_names[R_MSP], reg_names[R_MSP],	\
 	   reg_names[R_MSP]);
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
 
 /* This is how to output an element of a case-vector that is absolute.  */
 

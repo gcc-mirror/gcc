@@ -2652,10 +2652,6 @@ do {									\
 
 /* ??? Try to make the style consistent here (_OP?).  */
 
-#define ASM_LONGLONG	".xword"
-#define ASM_LONG	".word"
-#define ASM_SHORT	".half"
-#define ASM_BYTE_OP	"\t.byte\t"
 #define ASM_FLOAT	".single"
 #define ASM_DOUBLE	".double"
 #define ASM_LONGDOUBLE	".xxx"		/* ??? Not known (or used yet).  */
@@ -2732,7 +2728,8 @@ do {									\
     char str[30];						\
     REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);			\
     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);		\
-    fprintf (FILE, "\t%s\t0x%lx %s ~%s\n", ASM_LONG, t,		\
+    fprintf (FILE, "\t%s\t0x%lx %s ~%s\n",			\
+	     integer_asm_op (4, TRUE), t,			\
 	     ASM_COMMENT_START, str);				\
   }								\
 
@@ -2745,11 +2742,12 @@ do {									\
   {								\
     long t[2];							\
     char str[30];						\
+    const char *long_op = integer_asm_op (4, TRUE);		\
     REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);			\
     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);		\
-    fprintf (FILE, "\t%s\t0x%lx %s ~%s\n", ASM_LONG, t[0],	\
+    fprintf (FILE, "\t%s\t0x%lx %s ~%s\n", long_op, t[0],	\
 	     ASM_COMMENT_START, str);				\
-    fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t[1]);		\
+    fprintf (FILE, "\t%s\t0x%lx\n", long_op, t[1]);		\
   }
 
 /* This is how to output an assembler line defining a `long double'
@@ -2759,42 +2757,15 @@ do {									\
   {								\
     long t[4];							\
     char str[30];						\
+    const char *long_op = integer_asm_op (4, TRUE);		\
     REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), t);		\
     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);		\
-    fprintf (FILE, "\t%s\t0x%lx %s ~%s\n", ASM_LONG, t[0],	\
+    fprintf (FILE, "\t%s\t0x%lx %s ~%s\n", long_op, t[0],	\
 	     ASM_COMMENT_START, str);				\
-    fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t[1]);		\
-    fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t[2]);		\
-    fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t[3]);		\
+    fprintf (FILE, "\t%s\t0x%lx\n", long_op, t[1]);		\
+    fprintf (FILE, "\t%s\t0x%lx\n", long_op, t[2]);		\
+    fprintf (FILE, "\t%s\t0x%lx\n", long_op, t[3]);		\
   }
-
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\t%s\t", ASM_LONG),		\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line defining a DImode constant.  */
-#define ASM_OUTPUT_DOUBLE_INT(FILE,VALUE)  \
-  output_double_int (FILE, VALUE)
-
-/* Likewise for `char' and `short' constants.  */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\t%s\t", ASM_SHORT),		\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "%s", ASM_BYTE_OP),	\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "%s0x%x\n", ASM_BYTE_OP, (int)(VALUE))
 
 /* This is how we hook in and defer the case-vector until the end of
    the function.  */

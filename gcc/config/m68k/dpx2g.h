@@ -15,7 +15,4 @@
 /* GAS does not understand .ident so don't output anything for #ident.  */
 #undef ASM_OUTPUT_IDENT
 
-#undef ASM_LONG
-#define ASM_LONG "\t.long"
-
 /* end of dpx2g.h */

@@ -133,7 +133,7 @@ Boston, MA 02111-1307, USA.  */
 	          fprintf ((FILE), "\"\n");			\
 	          bytes_in_chunk = 0;				\
 	        }						\
-	      fprintf ((FILE), "%s%d\n", ASM_BYTE_OP, ch);	\
+	      assemble_aligned_integer (1, GEN_INT (ch));	\
 	    }							\
           else							\
 	    {							\

@@ -122,7 +122,6 @@ extern void mmix_canonicalize_comparison PARAMS ((RTX_CODE *, rtx *, rtx *));
 extern int mmix_rtx_cost_recalculated
   PARAMS ((rtx, RTX_CODE, RTX_CODE, int *));
 extern int mmix_address_cost PARAMS ((rtx));
-extern void mmix_asm_output_double_int PARAMS ((FILE *, rtx, int));
 extern void mmix_print_operand PARAMS ((FILE *, rtx, int));
 extern void mmix_print_operand_address PARAMS ((FILE *, rtx));
 extern int mmix_valid_comparison PARAMS ((RTX_CODE, enum machine_mode, rtx));

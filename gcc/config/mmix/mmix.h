@@ -972,42 +972,6 @@ const_section ()						\
 #define ASM_OUTPUT_FLOAT(STREAM, VALUE) \
  mmix_asm_output_float (STREAM, &VALUE)
 
-#define ASM_OUTPUT_DOUBLE_INT(STREAM, EXP) \
- mmix_asm_output_double_int (STREAM, EXP, 1)
-
-#define ASM_OUTPUT_INT(STREAM, EXP)		\
- do {						\
-  fprintf (STREAM, "\tTETRA ");			\
-  mmix_print_operand (STREAM, EXP, 'L');	\
-  fprintf (STREAM, "\n");			\
- } while (0)
-
-#define ASM_OUTPUT_SHORT(STREAM, EXP) \
- do {						\
-  fprintf (STREAM, "\tWYDE ");			\
-  mmix_print_operand (STREAM, EXP, 'W');	\
-  fprintf (STREAM, "\n");			\
- } while (0)
-
-#define ASM_OUTPUT_CHAR(STREAM, EXP) \
- do {						\
-  fprintf (STREAM, "\tBYTE ");			\
-  mmix_print_operand (STREAM, EXP, 'B');	\
-  fprintf (STREAM, "\n");			\
- } while (0)
-
-#define ASM_OUTPUT_BYTE(STREAM, VALUE) \
- fprintf (STREAM, "\tBYTE %d\n", (int) (VALUE) & 255)
-
-#define ASM_BYTE_OP "\tBYTE\t"
-
-/* We need these for DWARF2 EH data.  If we don't define them, the
-   ordinary BYTE, WYDE, TETRA and OCTA will be used, and those are
-   aligning.  */
-#define UNALIGNED_SHORT_ASM_OP "\t.2byte\t"
-#define UNALIGNED_INT_ASM_OP "\t.4byte\t"
-#define UNALIGNED_DOUBLE_INT_ASM_OP "\t.8byte\t"
-
 #define ASM_OUTPUT_ASCII(STREAM, PTR, LEN) \
  mmix_asm_output_ascii (STREAM, PTR, LEN)
 
@@ -1149,12 +1113,6 @@ const_section ()						\
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE) \
  mmix_asm_output_addr_vec_elt (STREAM, VALUE)
 
-
-/* FIXME: Add to docs; It is not mentioned at all that
-   ASM_OUTPUT_ADDR_VEC_ELT is used if relative elements are
-   used, and that the default expects an undocumented macro
-   "ASM_LONG".  */
-#define ASM_LONG "OCTA"
 
 /* Node: Exception Region Output */
 /* (empty) */

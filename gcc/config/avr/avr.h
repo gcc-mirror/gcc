@@ -2025,39 +2025,6 @@ progmem_section (void)							      \
    definitions.  */
 
 
-#define ASM_OUTPUT_INT(FILE, VALUE)			\
- ( fprintf (FILE, "\t.long "),				\
-   output_addr_const (FILE, (VALUE)),			\
-   fputs ("\n", FILE))
-
- /* Likewise for `short' and `char' constants.   */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE) asm_output_short(FILE,VALUE)
-#define ASM_OUTPUT_CHAR(FILE,VALUE) asm_output_char(FILE,VALUE)
-
-/* `ASM_OUTPUT_QUADRUPLE_INT (STREAM, EXP)'
-   A C statement to output to the stdio stream STREAM an assembler
-   instruction to assemble an integer of 16, 8, 4, 2 or 1 bytes,
-   respectively, whose value is VALUE.  The argument EXP will be an
-   RTL expression which represents a constant value.  Use
-   `output_addr_const (STREAM, EXP)' to output this value as an
-   assembler expression.
-
-   For sizes larger than `UNITS_PER_WORD', if the action of a macro
-   would be identical to repeatedly calling the macro corresponding to
-   a size of `UNITS_PER_WORD', once for each word, you need not define
-   the macro.  */
-
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE) asm_output_byte (FILE,VALUE)
-/* A C statement to output to the stdio stream STREAM an assembler
-   instruction to assemble a single byte containing the number VALUE.  */
-
-#define ASM_BYTE_OP "\t.byte "
-/* A C string constant giving the pseudo-op to use for a sequence of
-   single-byte constants.  If this macro is not defined, the default
-   is `"\t.byte\t"'.  */
-
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)	 gas_output_ascii (FILE,P,SIZE)
 /* `ASM_OUTPUT_ASCII (STREAM, PTR, LEN)'
    output_ascii (FILE, P, SIZE)

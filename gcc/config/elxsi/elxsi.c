@@ -42,16 +42,50 @@ static const char *const cmp_tab[] = {
     "gt", "gt", "eq", "eq", "ge", "ge", "lt", "lt", "ne", "ne",
     "le", "le" };
 
+static bool elxsi_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void elxsi_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void elxsi_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_BYTE_OP
+#define TARGET_ASM_BYTE_OP NULL
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP NULL
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP NULL
+#undef TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER elxsi_assemble_integer
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE elxsi_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE elxsi_output_function_epilogue
 
 struct gcc_target targetm = TARGET_INITIALIZER;
+
+/* Target hook for assembling integer objects.  The ELXSI assembler
+   syntax uses a suffix to indicate the size of data, so we can't use
+   the usual string hooks.  */
+
+static bool
+elxsi_assemble_integer (x, size, aligned_p)
+     rtx x;
+     unsigned int size;
+     int aligned_p;
+{
+  if (aligned_p)
+    switch (size)
+      {
+      case 1:
+      case 2:
+      case 4:
+	fputs ("\t.data\t", asm_out_file);
+	output_addr_const (asm_out_file, x);
+	fprintf (asm_out_file, "{%d}\n", size * BITS_PER_UNIT);
+	return true;
+      }
+  return default_assemble_integer (x, size, aligned_p);
+}
 
 /* Generate the assembly code for function entry.  FILE is a stdio
    stream to output the code to.  SIZE is an int: how many units of

@@ -46,8 +46,16 @@ Boston, MA 02111-1307, USA.  */
 #include "debug.h"
 
 
+static bool s390_assemble_integer PARAMS ((rtx, unsigned int, int));
 static int s390_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int s390_adjust_priority PARAMS ((rtx, int));
+
+#undef  TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
+#undef  TARGET_ASM_ALIGNED_DI_OP
+#define TARGET_ASM_ALIGNED_DI_OP "\t.quad\t"
+#undef  TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER s390_assemble_integer
 
 #undef  TARGET_ASM_FUNCTION_PROLOGUE 
 #define TARGET_ASM_FUNCTION_PROLOGUE s390_function_prologue
@@ -1950,6 +1958,28 @@ print_operand (file, x, code)
       break;
     }
 }
+
+/* Target hook for assembling integer objects.  We need to define it
+   here to work a round a bug in some versions of GAS, which couldn't
+   handle values smaller than INT_MIN when printed in decimal.  */
+
+static bool
+s390_assemble_integer (x, size, aligned_p)
+     rtx x;
+     unsigned int size;
+     int aligned_p;
+{
+  if (size == 8 && aligned_p
+      && GET_CODE (x) == CONST_INT && INTVAL (x) < INT_MIN)
+    {
+      fputs ("\t.quad\t", asm_out_file);
+      fprintf (asm_out_file, HOST_WIDE_INT_PRINT_HEX, INTVAL (x));
+      putc ('\n', asm_out_file);
+      return true;
+    }
+  return default_assemble_integer (x, size, aligned_p);
+}
+
 
 #define DEBUG_SCHED 0
 

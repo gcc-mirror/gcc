@@ -135,6 +135,7 @@ static void toc_hash_mark_table PARAMS ((void *));
 static int constant_pool_expr_1 PARAMS ((rtx, int *, int *));
 static void rs6000_free_machine_status PARAMS ((struct function *));
 static void rs6000_init_machine_status PARAMS ((struct function *));
+static bool rs6000_assemble_integer PARAMS ((rtx, unsigned int, int));
 static int rs6000_ra_ever_killed PARAMS ((void));
 static tree rs6000_handle_longcall_attribute PARAMS ((tree *, tree, tree, int, bool *));
 const struct attribute_spec rs6000_attribute_table[];
@@ -221,6 +222,35 @@ static const char alt_reg_names[][8] =
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE rs6000_attribute_table
+
+#undef TARGET_ASM_ALIGNED_DI_OP
+#define TARGET_ASM_ALIGNED_DI_OP DOUBLE_INT_ASM_OP
+
+/* Default unaligned ops are only provided for ELF.  Find the ops needed
+   for non-ELF systems.  */
+#ifndef OBJECT_FORMAT_ELF
+#ifdef OBJECT_FORMAT_COFF
+/* For ECOFF.  rs6000_assemble_integer will handle unaligned DIs on
+   64-bit targets.  */
+#undef TARGET_ASM_UNALIGNED_HI_OP
+#define TARGET_ASM_UNALIGNED_HI_OP "\t.vbyte\t2,"
+#undef TARGET_ASM_UNALIGNED_SI_OP
+#define TARGET_ASM_UNALIGNED_SI_OP "\t.vbyte\t4,"
+#undef TARGET_ASM_UNALIGNED_DI_OP
+#define TARGET_ASM_UNALIGNED_DI_OP "\t.vbyte\t8,"
+#else
+/* For Darwin.  */
+#undef TARGET_ASM_UNALIGNED_HI_OP
+#define TARGET_ASM_UNALIGNED_HI_OP "\t.short\t"
+#undef TARGET_ASM_UNALIGNED_SI_OP
+#define TARGET_ASM_UNALIGNED_SI_OP "\t.long\t"
+#endif
+#endif
+
+/* This hook deals with fixups for relocatable code and DI-mode objects
+   in 64-bit code.  */
+#undef TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER rs6000_assemble_integer
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE rs6000_output_function_prologue
@@ -531,6 +561,14 @@ rs6000_override_options (default_cpu)
 
   if (TARGET_TOC) 
     ASM_GENERATE_INTERNAL_LABEL (toc_label_name, "LCTOC", 1);
+
+  /* We can only guarantee the availability of DI pseudo-ops when
+     assembling for 64-bit targets.  */
+  if (!TARGET_POWERPC64)
+    {
+      targetm.asm_out.aligned_op.di = NULL;
+      targetm.asm_out.unaligned_op.di = NULL;
+    }
 
   /* Arrange to save and restore machine status around nested functions.  */
   init_machine_status = rs6000_init_machine_status;
@@ -6017,6 +6055,70 @@ print_operand_address (file, x)
     }
   else
     abort ();
+}
+
+/* Target hook for assembling integer objects.  The powerpc version has
+   to handle fixup entries for relocatable code if RELOCATABLE_NEEDS_FIXUP
+   is defined.  It also needs to handle DI-mode objects on 64-bit
+   targets.  */
+
+static bool
+rs6000_assemble_integer (x, size, aligned_p)
+     rtx x;
+     unsigned int size;
+     int aligned_p;
+{
+#ifdef RELOCATABLE_NEEDS_FIXUP
+  /* Special handling for SI values.  */
+  if (size == 4 && aligned_p)
+    {
+      extern int in_toc_section PARAMS ((void));
+      static int recurse = 0;
+      
+      /* For -mrelocatable, we mark all addresses that need to be fixed up
+	 in the .fixup section.  */
+      if (TARGET_RELOCATABLE
+	  && !in_toc_section ()
+	  && !in_text_section ()
+	  && !recurse
+	  && GET_CODE (x) != CONST_INT
+	  && GET_CODE (x) != CONST_DOUBLE
+	  && CONSTANT_P (x))
+	{
+	  char buf[256];
+
+	  recurse = 1;
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCP", fixuplabelno);
+	  fixuplabelno++;
+	  ASM_OUTPUT_LABEL (asm_out_file, buf);
+	  fprintf (asm_out_file, "\t.long\t(");
+	  output_addr_const (asm_out_file, x);
+	  fprintf (asm_out_file, ")@fixup\n");
+	  fprintf (asm_out_file, "\t.section\t\".fixup\",\"aw\"\n");
+	  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+	  fprintf (asm_out_file, "\t.long\t");
+	  assemble_name (asm_out_file, buf);
+	  fprintf (asm_out_file, "\n\t.previous\n");
+	  recurse = 0;
+	  return true;
+	}
+      /* Remove initial .'s to turn a -mcall-aixdesc function
+	 address into the address of the descriptor, not the function
+	 itself.  */
+      else if (GET_CODE (x) == SYMBOL_REF
+	       && XSTR (x, 0)[0] == '.'
+	       && DEFAULT_ABI == ABI_AIX)
+	{
+	  const char *name = XSTR (x, 0);
+	  while (*name == '.')
+	    name++;
+
+	  fprintf (asm_out_file, "\t.long\t%s\n", name);
+	  return true;
+	}
+    }
+#endif /* RELOCATABLE_NEEDS_FIXUP */
+  return default_assemble_integer (x, size, aligned_p);
 }
 
 enum rtx_code

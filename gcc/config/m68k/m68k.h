@@ -25,6 +25,16 @@ Boston, MA 02111-1307, USA.  */
    many of the definitions that relate to assembler syntax.  */
 
 
+/* Classify the groups of pseudo-ops used to assemble QI, HI and SI
+   quantities.  */
+#define INT_OP_STANDARD	0	/* .byte, .short, .long */
+#define INT_OP_DOT_WORD	1	/* .byte, .word, .long */
+#define INT_OP_NO_DOT   2	/* byte, short, long */
+#define INT_OP_DC	3	/* dc.b, dc.w, dc.l */
+
+/* Set the default */
+#define INT_OP_GROUP INT_OP_DOT_WORD
+
 /* Names to predefine in the preprocessor for this target machine.  */
 
 /* See sun3.h, sun2.h, isi.h for different CPP_PREDEFINES.  */
@@ -1815,30 +1825,6 @@ do { long l;						\
      REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
      fprintf (FILE, "\t.long 0x%lx\n", l);		\
    } while (0)
-
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\t.long "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* Likewise for `char' and `short' constants.  */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\t.word "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "\t.byte "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t.byte 0x%x\n", (int)(VALUE))
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */

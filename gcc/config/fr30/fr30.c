@@ -141,6 +141,10 @@ static rtx fr30_pass_by_value PARAMS ((tree, tree));
 #endif
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

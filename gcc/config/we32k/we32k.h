@@ -439,15 +439,15 @@ enum reg_class { NO_REGS, GENERAL_REGS,
      mov #STATIC,%r8
      jmp #FUNCTION */
 
-#define TRAMPOLINE_TEMPLATE(FILE)		\
-{						\
-  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x844f));	\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);		\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);		\
-  ASM_OUTPUT_CHAR  (FILE, GEN_INT (0x48));	\
-  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x247f));	\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);		\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);		\
+#define TRAMPOLINE_TEMPLATE(FILE)			\
+{							\
+  assemble_aligned_integer (2, GEN_INT (0x844f));	\
+  assemble_aligned_integer (2, const0_rtx);		\
+  assemble_aligned_integer (2, const0_rtx);		\
+  assemble_aligned_integer (1, GEN_INT (0x48));		\
+  assemble_aligned_integer (2, GEN_INT (0x247f));	\
+  assemble_aligned_integer (2, const0_rtx);		\
+  assemble_aligned_integer (2, const0_rtx);		\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */
@@ -755,10 +755,6 @@ enum reg_class { NO_REGS, GENERAL_REGS,
     ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM);	\
   } while (0)
 
-/* Assembler pseudo to introduce byte constants.  */
-
-#define ASM_BYTE_OP "\t.byte\t"
-
 /* This is how to output an assembler line defining a `double' constant.  */
 
 /* This is how to output an assembler line defining a `float' constant.  */
@@ -789,30 +785,6 @@ do { union { float f; long l;} tem;				\
    } while (0)
 
 #endif /* not CROSS_COMPILE */
-
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\t.word "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* Likewise for `char' and `short' constants.  */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\t.half "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "\t.byte "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
 
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)  \
 do {							\

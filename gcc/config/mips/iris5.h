@@ -19,6 +19,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#define TARGET_IRIX5 1
+
 #ifndef TARGET_DEFAULT
 #define	TARGET_DEFAULT	MASK_ABICALLS
 #endif
@@ -154,10 +156,6 @@ do {						\
   assemble_name (FILE, NAME);			\
   fputs (" .text\n", FILE);			\
 } while (0)
-
-/* To get unaligned data, we have to turn off auto alignment.  */
-#define UNALIGNED_SHORT_ASM_OP		"\t.align 0\n\t.half\t"
-#define UNALIGNED_INT_ASM_OP		"\t.align 0\n\t.word\t"
 
 /* Also do this for libcalls.  */
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)	\

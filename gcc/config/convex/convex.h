@@ -1267,48 +1267,6 @@ enum reg_class {
 #define ASM_OUTPUT_FLOAT(FILE,VALUE) \
   outfloat (FILE, VALUE, "%.9e", "\tds.s ", "\n")
 
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-{									\
-  fprintf (FILE, "\tds.w ");						\
-  output_addr_const (FILE, simplify_for_convex (VALUE));		\
-  fprintf (FILE, "\n");							\
-}
-
-/* Likewise for a `long long int' constant.  */
-
-#define ASM_OUTPUT_DOUBLE_INT(FILE,VALUE)  \
-{									\
-  if (GET_CODE (VALUE) == CONST_DOUBLE)					\
-    fprintf (FILE, "\tds.w %d,%d\n",					\
-	     const_double_high_int (VALUE), const_double_low_int (VALUE)); \
-  else if (GET_CODE (VALUE) == CONST_INT)				\
-    {									\
-      int val = INTVAL (VALUE);						\
-      fprintf (FILE, "\tds.w %d,%d\n", val < 0 ? -1 : 0, val);		\
-    }									\
-  else									\
-    abort ();								\
-}
-
-/* Likewise for `char' and `short' constants.  */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\tds.h "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "\tds.b "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\tds.b %#x\n", (int)(VALUE))
-
 /* This is how to output a string */
 
 #define ASM_OUTPUT_ASCII(FILE,STR,SIZE) do {				\
