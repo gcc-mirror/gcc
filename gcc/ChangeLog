@@ -1,3 +1,9 @@
+2004-01-27  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (save_stack_nonlocal): Use Pmode instead
+	of computing wmode.
+	(restore_stack_nonlocal): Same.
+
 2004-01-27  Devang Patel <dpatel@apple.com>
 	
 	* Makefile.in (dwarf2out.o): Depend on input.h
