@@ -744,12 +744,12 @@ find_base_value (src)
 	return new_reg_base_value[regno];
 
       /* If a pseudo has a known base value, return it.  Do not do this
-	 for hard regs since it can result in a circular dependency
-	 chain for registers which have values at function entry.
+	 for non-fixed hard regs since it can result in a circular
+	 dependency chain for registers which have values at function entry.
 
 	 The test above is not sufficient because the scheduler may move
 	 a copy out of an arg reg past the NOTE_INSN_FUNCTION_BEGIN.  */
-      if (regno >= FIRST_PSEUDO_REGISTER
+      if ((regno >= FIRST_PSEUDO_REGISTER || fixed_regs[regno])
 	  && regno < reg_base_value_size
 	  && reg_base_value[regno])
 	return reg_base_value[regno];
