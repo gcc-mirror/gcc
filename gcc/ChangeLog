@@ -1,3 +1,7 @@
+Sun Mar 28 01:15:04 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sun Mar 28 00:44:27 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* sdbout.c (sdbout_symbol): Do not call build_pointer_type, build
