@@ -1,28 +1,38 @@
-/* -*-c-*-
- * This file contains declarations used by the run-time system.
- *
- *  Most of these declarations are defined by virtue of data 
- *  structures produced by the compiler.
- *
- * Copyright (C) 1991 Threaded Technologies Inc.
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published
- * by the Free Software Foundation; either version 1, or any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- * 
- * You should receive a copy of the GNU General Public License 
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/ObjC.h,v 0.10 1991/12/31 20:16:08 dennisg Exp dennisg $
+/* -*-c-*- */
+
+/* Copyright (C) 1989, 1992 Free Software Foundation, Inc.
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+
+/* As a special exception, if you link this library with files
+   compiled with GCC to produce an executable, this does not cause
+   the resulting executable to be covered by the GNU General Public License.
+   This exception does not however invalidate any other reasons why
+   the executable file might be covered by the GNU General Public License.  */
+
+/* 
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/objc.h,v 0.11 1992/04/13 11:40:53 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/12/31 20:16:08 $
-  $Log: ObjC.h,v $
+  $Date: 1992/04/13 11:40:53 $
+  $Log: objc.h,v $
+ * Revision 0.11  1992/04/13  11:40:53  dennisg
+ * Check in after array version of run-time works.
+ * Expect more changes as hash version and other changes are made.
+ *
  * Revision 0.10  1991/12/31  20:16:08  dennisg
  * Deleted index variable stuff.  Index variables are a hack to the language.
  * Cleaned up some documentation.
@@ -154,7 +164,8 @@ typedef id  ( *IMP )( id, SEL, ... );
                                                   first message sent to a
                                                   class.  It isn't guaranteed
                                                   to be sent only once. */
-
+#define CLS_RTI           0x8L                  /* The class has been initialized
+						   within the run time library. */
 
                                                 /* Set this variable to !0 to
                                                   have the messager print
