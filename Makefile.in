@@ -29437,7 +29437,6 @@ configure-gdb: maybe-configure-sim
 all-gdb: maybe-all-libiberty
 all-gdb: maybe-all-opcodes
 all-gdb: maybe-all-bfd
-all-gdb: maybe-all-mmalloc
 all-gdb: maybe-all-readline
 all-gdb: maybe-all-bison
 all-gdb: maybe-all-byacc
