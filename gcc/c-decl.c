@@ -4855,10 +4855,13 @@ get_parm_info (bool ellipsis)
 
 	case CONST_DECL:
 	case TYPE_DECL:
+	case FUNCTION_DECL:
 	  /* CONST_DECLs appear here when we have an embedded enum,
 	     and TYPE_DECLs appear here when we have an embedded struct
 	     or union.  No warnings for this - we already warned about the
-	     type itself.  */
+	     type itself.  FUNCTION_DECLs appear when there is an implicit
+	     function declaration in the parameter list.  */
+
 	  TREE_CHAIN (decl) = others;
 	  others = decl;
 	  /* fall through */
@@ -4875,7 +4878,6 @@ get_parm_info (bool ellipsis)
 
 	  /* Other things that might be encountered.  */
 	case LABEL_DECL:
-	case FUNCTION_DECL:
 	case VAR_DECL:
 	default:
 	  gcc_unreachable ();
