@@ -13068,7 +13068,10 @@ ffecom_prepare_expr_ (ffebld expr, ffebld dest UNUSED)
 
 	      s = ffebld_symter (ffebld_left (expr));
 	      if (ffesymbol_where (s) == FFEINFO_whereCONSTANT
-		  || ! ffesymbol_is_f2c (s))
+		  || (ffesymbol_where (s) != FFEINFO_whereINTRINSIC
+		      && ! ffesymbol_is_f2c (s))
+		  || (ffesymbol_where (s) == FFEINFO_whereINTRINSIC
+		      && ! ffe_is_f2c_library ()))
 		break;
 	    }
 	  else if (ffebld_op (expr) == FFEBLD_opPOWER)
