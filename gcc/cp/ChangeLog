@@ -1,5 +1,10 @@
 2004-08-11  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/16717
+	* semantics.c (expand_body): Do not update static_ctors and
+	static_dtors here.
+	(expand_or_defer_fn): Do it here, instead.
+
 	PR c++/16853
 	* call.c (standard_conversion): Do not accept conversions between
 	pointers to members if the class types are unrelated.
