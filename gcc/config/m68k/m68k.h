@@ -2089,6 +2089,7 @@ extern char *output_move_const_single ();
 extern char *output_move_const_double ();
 extern char *output_btst ();
 extern char *output_scc_di ();
+extern char *output_addsi3 ();
 
 /* Variables in m68k.c */
 extern char *m68k_align_loops_string;
