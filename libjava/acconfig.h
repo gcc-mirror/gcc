@@ -131,3 +131,6 @@
 
 /* Define if libltdl is in use.  */
 #undef USE_LTDL
+
+/* Define if g++ has a bug preventing us from inlining math routines.  */
+#undef __NO_MATH_INLINES
