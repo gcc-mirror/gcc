@@ -1,3 +1,8 @@
+1999-07-07  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Makefile.in (needed-list): Only include stuff we actually need
+	for libstdc++.
+
 1999-06-21  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* configure.in (checkfuncs): Add gettimeofday.
