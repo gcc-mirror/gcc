@@ -1,3 +1,9 @@
+2002-04-04  Loren J. Rittle  <ljrittle@acm.org>
+
+	* include/private/gcconfig.h: Add support for an unmapped
+	memory hole between the end of the initialized data segment
+	and the start of the BSS on FreeBSD/i386.
+
 2002-04-01  Loren J. Rittle  <ljrittle@acm.org>
 
 	* include/private/gcconfig.h: Add unified test for FreeBSD.
