@@ -1,3 +1,10 @@
+2004-04-30  Uros Bizjak  <uros@kss-loka.si>
+
+        * reg-stack.c (subst_stack_regs_pat): <UNSPEC_SIN, UNSPEC_COS,
+        UNSPEC_FRNDINT, UNSPEC_F2XM1>: abort() if src1 dies.
+        <UNSPEC_SINCOS_COS, UNSPEC_TAN_ONE, UNSPEC_XTRACT_FRACT>: Same.
+        <UNSPEC_SINCOS_SIN, UNSPEC_TAN_TAN, UNSPEC_XTRACT_EXP>: Same.
+
 2004-04-29  Richard Guenther  <richard.guenther@uni-tuebingen.de>
 
 	* commom.opt (Wfatal-errors): Add it.

@@ -1733,17 +1733,14 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 
 		emit_swap_insn (insn, regstack, *src1);
 
+		/* Input should never die, it is
+		   replaced with output.  */
 		src1_note = find_regno_note (insn, REG_DEAD, REGNO (*src1));
+		if (src1_note)
+		  abort();
 
 		if (STACK_REG_P (*dest))
 		  replace_reg (dest, FIRST_STACK_REG);
-
-		if (src1_note)
-		  {
-		    replace_reg (&XEXP (src1_note, 0), FIRST_STACK_REG);
-		    regstack->top--;
-		    CLEAR_HARD_REG_BIT (regstack->reg_set, REGNO (*src1));
-		  }
 
 		replace_reg (src1, FIRST_STACK_REG);
 		break;
@@ -1849,7 +1846,11 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 
 		emit_swap_insn (insn, regstack, *src1);
 
+		/* Input should never die, it is
+		   replaced with output.  */
 		src1_note = find_regno_note (insn, REG_DEAD, REGNO (*src1));
+		if (src1_note)
+		  abort();
 
 		/* Push the result back onto stack. Empty stack slot
 		   will be filled in second part of insn. */
@@ -1859,12 +1860,6 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 		  replace_reg (dest, FIRST_STACK_REG);
 		}
 
-		if (src1_note)
-		  {
-		    replace_reg (&XEXP (src1_note, 0), FIRST_STACK_REG);
-		    regstack->top--;
-		    CLEAR_HARD_REG_BIT (regstack->reg_set, REGNO (*src1));
-		  }
 		replace_reg (src1, FIRST_STACK_REG);
 		break;
 
@@ -1878,7 +1873,11 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 
 		emit_swap_insn (insn, regstack, *src1);
 
+		/* Input should never die, it is
+		   replaced with output.  */
 		src1_note = find_regno_note (insn, REG_DEAD, REGNO (*src1));
+		if (src1_note)
+		  abort();
 
 		/* Push the result back onto stack. Fill empty slot from
 		   first part of insn and fix top of stack pointer.  */
@@ -1889,13 +1888,6 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 
 		  regstack->top++;
 		}
-
-		if (src1_note)
-		  {
-		    replace_reg (&XEXP (src1_note, 0), FIRST_STACK_REG);
-		    regstack->top--;
-		    CLEAR_HARD_REG_BIT (regstack->reg_set, REGNO (*src1));
-		  }
 
 		replace_reg (src1, FIRST_STACK_REG);
 		break;
