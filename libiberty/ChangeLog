@@ -1,3 +1,13 @@
+2000-06-05  Alex Samuel  <samuel@codesourcery.com>
+
+	* cp-demangle.c (demangle_prefix): Cast argument to isdigit to
+	unsigned char.
+	(demangle_unqualified_name): Likewise.
+	(demangle_number_literally): Likewise.
+	(demangle_type): Likewise.
+	(demangle_substitution): Likewise.
+	(is_mangled_char): Likewise, for isalnum.
+
 2000-06-04  Alex Samuel  <samuel@codesourcery.com>
 
 	* Makefile.in (CFILES): Add cp-demangle.c and dyn-string.c.
