@@ -1,9 +1,20 @@
-int buf[20];
+extern int strcmp(const char *, const char *);
+extern char *strcpy(char *, const char *);
+extern void abort(void);
+extern void exit(int);
+
+void *buf[20];
+
+void __attribute__((noinline))
+sub2 (void)
+{
+  __builtin_longjmp (buf, 1);
+}
 
 int
 main ()
 {
-  char *p = (char *) alloca (20);
+  char *p = (char *) __builtin_alloca (20);
 
   strcpy (p, "test");
 
@@ -16,7 +27,7 @@ main ()
     }
 
   {
-    int *q = (int *) alloca (p[2] * sizeof (int));
+    int *q = (int *) __builtin_alloca (p[2] * sizeof (int));
     int i;
     
     for (i = 0; i < p[2]; i++)
@@ -25,9 +36,4 @@ main ()
     while (1)
       sub2 ();
   }
-}
-
-sub2 ()
-{
-  __builtin_longjmp (buf, 1);
 }
