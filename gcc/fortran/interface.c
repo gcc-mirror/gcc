@@ -1096,7 +1096,8 @@ compare_parameter (gfc_symbol * formal, gfc_expr * actual,
       return compare_interfaces (formal, actual->symtree->n.sym, 0);
     }
 
-  if (!gfc_compare_types (&formal->ts, &actual->ts))
+  if (actual->expr_type != EXPR_NULL
+      && !gfc_compare_types (&formal->ts, &actual->ts))
     return 0;
 
   if (symbol_rank (formal) == actual->rank)
@@ -1235,7 +1236,8 @@ compare_actual_formal (gfc_actual_arglist ** ap,
 	  return 0;
 	}
 
-      if (compare_pointer (f->sym, a->expr) == 0)
+      if (a->expr->expr_type != EXPR_NULL
+	  && compare_pointer (f->sym, a->expr) == 0)
 	{
 	  if (where)
 	    gfc_error ("Actual argument for '%s' must be a pointer at %L",
@@ -1290,6 +1292,11 @@ compare_actual_formal (gfc_actual_arglist ** ap,
 
   if (*ap == NULL && n > 0)
     *ap = new[0];
+
+  /* Note the types of omitted optional arguments.  */
+  for (a = actual, f = formal; a; a = a->next, f = f->next)
+    if (a->expr == NULL && a->label == NULL)
+      a->missing_arg_type = f->sym->ts.type;
 
   return 1;
 }

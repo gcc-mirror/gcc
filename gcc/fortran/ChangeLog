@@ -1,4 +1,12 @@
-2004-05-03  Paul Brook  <paul@codesourcery.com>
+2004-06-03  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.h (gfc_actual_arglist): New field missing_arg_type.
+	* interface.c (compare_actual_formal): Keep type of omitted
+	optional arguments.
+	* trans-expr.c (gfc_conv_function_call): Add string length
+	argument for omitted string argument.
+
+2004-06-03  Paul Brook  <paul@codesourcery.com>
 
 	* trans.c (gfc_finish_block, gfc_add_expr_to_block): Build statement
 	lists instead of compound expr chains.
