@@ -1288,9 +1288,6 @@ struct bb
   char *flags;
 };
 
-#ifdef BLOCK_PROFILER_CODE
-BLOCK_PROFILER_CODE
-#else
 #ifndef inhibit_libc
 
 /* Simple minded basic block profiling output dumper for
@@ -1491,7 +1488,6 @@ __bb_fork_func (void)
 }
 
 #endif /* not inhibit_libc */
-#endif /* not BLOCK_PROFILER_CODE */
 #endif /* L_bb */
 
 #ifdef L_clear_cache

@@ -2468,73 +2468,6 @@ output_function_profiler (file, labelno, name, savep)
       fprintf (file, "\taddu\t %s,%s,64\n", reg_names[31], reg_names[31]);
     }
 }
-
-/* Output assembler code to FILE to initialize basic-block profiling for
-   the current module.  LABELNO is unique to each instance.  */
-
-void
-output_function_block_profiler (file, labelno)
-     FILE *file;
-     int labelno;
-{
-  char block[256];
-  char label[256];
-
-  /* Remember to update FUNCTION_BLOCK_PROFILER_LENGTH.  */
-
-  ASM_GENERATE_INTERNAL_LABEL (block, "LPBX", 0);
-  ASM_GENERATE_INTERNAL_LABEL (label, "LPY", labelno);
-
-  /* @@ Need to deal with PIC.  I'm not sure what the requirements are on
-     register usage, so I used r26/r27 to be safe.  */
-  fprintf (file, "\tor.u\t %s,%s,%shi16(%s)\n", reg_names[27], reg_names[0],
-		 m88k_pound_sign, &block[1]);
-  fprintf (file, "\tld\t %s,%s,%slo16(%s)\n", reg_names[26], reg_names[27],
-		 m88k_pound_sign, &block[1]);
-  fprintf (file, "\tbcnd\t %sne0,%s,%s\n",
-		 m88k_pound_sign, reg_names[26], &label[1]);
-  fprintf (file, "\tsubu\t %s,%s,64\n", reg_names[31], reg_names[31]);
-  fprintf (file, "\tst.d\t %s,%s,32\n", reg_names[2], reg_names[31]);
-  fprintf (file, "\tst.d\t %s,%s,40\n", reg_names[4], reg_names[31]);
-  fprintf (file, "\tst.d\t %s,%s,48\n", reg_names[6], reg_names[31]);
-  fprintf (file, "\tst.d\t %s,%s,56\n", reg_names[8], reg_names[31]);
-  fputs ("\tbsr.n\t ", file);
-  ASM_OUTPUT_LABELREF (file, "__bb_init_func");
-  putc ('\n', file);
-  fprintf (file, "\tor\t %s,%s,%slo16(%s)\n", reg_names[2], reg_names[27],
-		 m88k_pound_sign, &block[1]);
-  fprintf (file, "\tld.d\t %s,%s,32\n", reg_names[2], reg_names[31]);
-  fprintf (file, "\tld.d\t %s,%s,40\n", reg_names[4], reg_names[31]);
-  fprintf (file, "\tld.d\t %s,%s,48\n", reg_names[6], reg_names[31]);
-  fprintf (file, "\tld.d\t %s,%s,56\n", reg_names[8], reg_names[31]);
-  fprintf (file, "\taddu\t %s,%s,64\n", reg_names[31], reg_names[31]);
-  ASM_OUTPUT_INTERNAL_LABEL (file, "LPY", labelno);
-}
-
-/* Output assembler code to FILE to increment the count associated with
-   the basic block number BLOCKNO.  */
-
-void
-output_block_profiler (file, blockno)
-     FILE *file;
-     int blockno;
-{
-  char block[256];
-
-  /* Remember to update BLOCK_PROFILER_LENGTH.  */
-
-  ASM_GENERATE_INTERNAL_LABEL (block, "LPBX", 2);
-
-  /* @@ Need to deal with PIC.  I'm not sure what the requirements are on
-     register usage, so I used r26/r27 to be safe.  */
-  fprintf (file, "\tor.u\t %s,%s,%shi16(%s+%d)\n", reg_names[27], reg_names[0],
-	   m88k_pound_sign, &block[1], 4 * blockno);
-  fprintf (file, "\tld\t %s,%s,%slo16(%s+%d)\n", reg_names[26], reg_names[27],
-	   m88k_pound_sign, &block[1], 4 * blockno);
-  fprintf (file, "\taddu\t %s,%s,1\n", reg_names[26], reg_names[26]);
-  fprintf (file, "\tst\t %s,%s,%slo16(%s+%d)\n", reg_names[26], reg_names[27],
-	   m88k_pound_sign, &block[1], 4 * blockno);
-}
 
 /* Determine whether a function argument is passed in a register, and
    which register.

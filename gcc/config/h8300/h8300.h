@@ -693,33 +693,6 @@ struct cum_arg
   fprintf (FILE, "\t%s\t#LP%d,%s\n\tjsr @mcount\n", \
 	   h8_mov_op, (LABELNO), h8_reg_names[0]);
 
-/* Output assembler code to FILE to initialize this source file's
-   basic block profiling info, if that has not already been done.  */
-/* ??? @LPBX0 is moved into r0 twice.  */
-
-#define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)  \
-  fprintf (FILE, "\t%s\t%s\n\t%s\t@LPBX0,%s\n\tbne LPI%d\n\t%s\t@LPBX0,%s\n\t%s\t%s\n\tjsr\t@__bb_init_func\nLPI%d:\t%s\t%s\n", \
-	   h8_push_op, h8_reg_names[0],		\
-	   h8_mov_op, h8_reg_names[0],		\
-	   (LABELNO),				\
-	   h8_mov_op, h8_reg_names[0],		\
-	   h8_push_op, h8_reg_names[0],		\
-	   (LABELNO),				\
-	   h8_pop_op, h8_reg_names[0]);
-
-/* Output assembler code to FILE to increment the entry-count for
-   the BLOCKNO'th basic block in this source file.  This is a real pain in the
-   sphincter on a VAX, since we do not want to change any of the bits in the
-   processor status word.  The way it is done here, it is pushed onto the stack
-   before any flags have changed, and then the stack is fixed up to account for
-   the fact that the instruction to restore the flags only reads a word.
-   It may seem a bit clumsy, but at least it works.  */
-/* ??? This one needs work.  */
-
-#define BLOCK_PROFILER(FILE, BLOCKNO)	\
-  fprintf (FILE, "\tmovpsl -(sp)\n\tmovw (sp),2(sp)\n\taddl2 $2,sp\n\taddl2 $1,LPBX2+%d\n\tbicpsw $255\n\tbispsw (sp)+\n", \
-	   4 * BLOCKNO)
-
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.

@@ -402,19 +402,6 @@ enum reg_class { NO_REGS, GENERAL_REGS,
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
   fprintf (FILE, "\tmovw &.LP%d,%%r0\n\tjsb _mcount\n", (LABELNO))
 
-/* Output assembler code to FILE to initialize this source file's
-   basic block profiling info, if that has not already been done.  */
-
-#define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)  \
-  fprintf (FILE, "\tcmpw .LPBX0,&0\n\tjne .LPI%d\n\tpushw &.LPBX0\n\tcall &1,__bb_init_func\n.LPI%d:\n",  \
-	   LABELNO, LABELNO);
-
-/* Output assembler code to FILE to increment the entry-count for
-   the BLOCKNO'th basic block in this source file.  */
-
-#define BLOCK_PROFILER(FILE, BLOCKNO)	\
-  fprintf (FILE, "\taddw2 &1,.LPBX2+%d\n", 4 * BLOCKNO)
-
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.

@@ -33,9 +33,6 @@ extern HOST_WIDE_INT ix86_initial_elimination_offset PARAMS((int, int));
 extern void ix86_expand_prologue PARAMS ((void));
 extern void ix86_expand_epilogue PARAMS ((int));
 
-extern void ix86_output_function_block_profiler PARAMS ((FILE *, int));
-extern void ix86_output_block_profiler PARAMS ((FILE *, int));
-
 extern void ix86_output_addr_vec_elt PARAMS ((FILE *, int));
 extern void ix86_output_addr_diff_elt PARAMS ((FILE *, int, int));
 

@@ -1055,22 +1055,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 /* Maximum length in instructions of the code output by FUNCTION_PROFILER.  */
 #define FUNCTION_PROFILER_LENGTH (5+3+1+5)
 
-/* Output assembler code to FILE to initialize basic-block profiling for
-   the current module.  LABELNO is unique to each instance.  */
-#define FUNCTION_BLOCK_PROFILER(FILE, LABELNO) \
-  output_function_block_profiler (FILE, LABELNO)
-
-/* Maximum length in instructions of the code output by
-   FUNCTION_BLOCK_PROFILER.  */
-#define FUNCTION_BLOCK_PROFILER_LENGTH (3+5+2+5)
-
-/* Output assembler code to FILE to increment the count associated with
-   the basic block number BLOCKNO.  */
-#define BLOCK_PROFILER(FILE, BLOCKNO) output_block_profiler (FILE, BLOCKNO)
-
-/* Maximum length in instructions of the code output by BLOCK_PROFILER.  */
-#define BLOCK_PROFILER_LENGTH 4
-
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.

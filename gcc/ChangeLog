@@ -1,3 +1,29 @@
+2002-05-21  Richard Henderson  <rth@redhat.com>
+
+	* system.h (BLOCK_PROFILER, BLOCK_PROFILER_CODE,
+	FUNCTION_BLOCK_PROFILER, FUNCTION_BLOCK_PROFILER_EXIT,
+	MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE): Poison.
+
+	* toplev.c (display_help): Kill -a -ax help.
+
+	* config/1750a/1750a.h, config/alpha/alpha.h, 
+	config/clipper/clipper.h, config/dsp16xx/dsp16xx.h,
+	config/h8300/h8300.h, config/i960/i960.h, config/m68k/tower-as.h,
+	config/m88k/m88k.h, config/vax/vax.h, config/we32k/we32k.h:
+	(FUNCTION_BLOCK_PROFILER, BLOCK_PROFILER): Kill.
+
+	* libgcc2.c [L_bb] (BLOCK_PROFILER_CODE): Kill.
+	* config/m68k/sun3.h (BLOCK_PROFILER_CODE): Kill.
+
+	* config/i386/i386-protos.h (ix86_output_block_profiler): Kill.
+	(ix86_output_function_block_profiler): Kill.
+	* config/m68hc11/m68hc11.c (m68hc11_block_profiler): Kill.
+	(m68hc11_function_block_profiler): Kill.
+	* config/m68hc11/m68hc11-protos.h: Update.
+	* config/m88k/m88k.c (output_block_profiler): Kill.
+	(output_function_block_profiler): Kill.
+	* config/m88k/m88k-protos.h: Update.
+
 2002-05-21  NIIBE Yutaka  <gniibe@m17n.org>
 
 	* reload1.c (do_output_reload): Run delete_output_reload
