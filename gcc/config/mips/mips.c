@@ -7087,19 +7087,34 @@ mips_valid_pointer_mode (enum machine_mode mode)
 
    then compiled with -mabi=64 and -mint64. We have no
    32-bit type at that point and so the default case
-   always fails.  Instead of special casing everything
-   it's easier to accept SImode in this function and
-   then punt to the default which will work for all
-   of the cases where we deal with TARGET_64BIT, etc.  */
+   always fails.  */
+
 static bool
 mips_scalar_mode_supported_p (enum machine_mode mode)
 {
-  /* We can always handle SImode.  */
-  if (mode == SImode)
-    return true;
-  else
-    return default_scalar_mode_supported_p (mode);
+  switch (mode)
+    {
+    case QImode:
+    case HImode:
+    case SImode:
+    case DImode:
+      return true;
 
+      /* Handled via optabs.c.  */
+    case TImode:
+      return TARGET_64BIT;
+
+    case SFmode:
+    case DFmode:
+      return true;
+
+      /* LONG_DOUBLE_TYPE_SIZE is 128 for TARGET_NEWABI only.  */
+    case TFmode:
+      return TARGET_NEWABI;
+
+    default:
+      return false;
+    }
 }
 
 
