@@ -4236,6 +4236,24 @@ then
 	cross_overrides="${topdir}/cross-make"
 fi
 
+# If this is a cross-compiler that does not
+# have its own set of headers then define
+# inhibit_libc
+
+# If this is using newlib, then define inhibit_libc in
+# LIBGCC2_CFLAGS.  This will cause __eprintf to be left out of
+# libgcc.a, but that's OK because newlib should have its own version of
+# assert.h.
+inhibit_libc=
+if [test x$host != x$target] && [test x$with_headers = x]; then
+       inhibit_libc=-Dinhibit_libc
+else
+       if [test x$with_newlib = xyes]; then
+               inhibit_libc=-Dinhibit_libc
+       fi
+fi
+AC_SUBST(inhibit_libc)
+
 # When building gcc with a cross-compiler, we need to fix a few things.
 # This must come after cross-make as we want all.build to override
 # all.cross.
@@ -4855,16 +4873,6 @@ AC_SUBST(build_canonical)
 AC_SUBST(host_canonical)
 AC_SUBST(target_subdir)
 	
-# If this is using newlib, then define inhibit_libc in
-# LIBGCC2_CFLAGS.  This will cause __eprintf to be left out of
-# libgcc.a, but that's OK because newib should have its own version of
-# assert.h.
-inhibit_libc=
-if test x$with_newlib = xyes; then
-	inhibit_libc=-Dinhibit_libc
-fi
-AC_SUBST(inhibit_libc)
-
 # If $(exec_prefix) exists and is not the same as $(prefix), then compute an
 # absolute path for gcc_tooldir based on inserting the number of up-directory
 # movements required to get from $(exec_prefix) to $(prefix) into the basic

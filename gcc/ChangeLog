@@ -1,3 +1,9 @@
+2000-05-24  Eric Christopher <echristo@cygnus.com>
+
+	* configure.in: Redefine inhibit_libc conditions.
+	* libgcc2.c: Remove inhibit_libc conditional define.
+	* configure: Regenerate.
+
 2000-05-24  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* configure.in:  For --enable-languages=LIST, check for empty LIST.
