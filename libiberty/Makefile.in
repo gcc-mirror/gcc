@@ -280,6 +280,7 @@ objalloc.o: config.h $(INCDIR)/objalloc.h
 obstack.o: config.h $(INCDIR)/obstack.h
 partition.o: config.h $(INCDIR)/partition.h
 pexecute.o: config.h $(INCDIR)/libiberty.h
+rename.o: config.h
 setenv.o: config.h
 sort.o: config.h $(INCDIR)/sort.h $(INCDIR)/ansidecl.h
 spaces.o: $(INCDIR)/libiberty.h
@@ -295,4 +296,5 @@ xmalloc.o: config.h $(INCDIR)/libiberty.h
 xmemdup.o: config.h $(INCDIR)/libiberty.h
 xstrdup.o: config.h $(INCDIR)/libiberty.h
 xstrerror.o: config.h $(INCDIR)/libiberty.h
+waitpid.o: config.h
 hashtab.o: config.h $(INCDIR)/libiberty.h $(INCDIR)/hashtab.h $(INCDIR)/ansidecl.h
