@@ -1,3 +1,23 @@
+
+2003-06-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+        * pa.c (update_total_code_bytes): New function.
+	(last_address): Number of bytes output for a function and its
+	associated thunks.
+	(compute_frame_size): Use BITS_PER_UNIT.
+	(pa_output_function_epilogue): Compute last_address.  Use
+	update_total_code_bytes.
+	(output_lbranch): Handle long branch on portable runtime.
+	(attr_length_millicode_call, attr_length_call,
+	attr_length_indirect_call): Only use total_code_bytes for calls in
+	the text section.
+	(output_call): Only use an indirect call sequence when the target is
+	not local.
+	(pa_asm_output_mi_thunk): Handle updating of total_code_bytes.  Improve
+	test to determine when an IA-relative branch can be used.  Add various
+	long branch sequences.  Avoid using an indirect branch on all ports
+	except SOM.
+
 2003-06-29  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* expr.c (clear_by_pieces): Fix prototype.
