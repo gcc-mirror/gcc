@@ -1,3 +1,10 @@
+2002-05-04  David Billinghurst  <David.Billinghurst@riotinto.com>
+
+	* testsuite/lib/libjava.exp (test_libjava_from_source):
+	Append .exe to executable names.  If no suffix is present,
+	then ".exe" is added by default on win32.  Harmless
+	elsewhere so always do it.
+
 2002-05-03  David Billinghurst  <David.Billinghurst@riotinto.com>
 	    Tom Tromey  <tromey@redhat.com>
 
