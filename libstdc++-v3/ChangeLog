@@ -1,3 +1,7 @@
+2000-05-22  Benjamin Kosnik  <bkoz@purist.redhat.soma.com>
+
+	* docs/17_intro/libstdc++-assign.txt: Change Cygnus to FSF.
+
 2000-05-22  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* mkcheck.in:  Tweak for Solaris 8.  Additional minor output comment.
