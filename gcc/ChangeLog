@@ -1,3 +1,8 @@
+2003-05-13  Michael Eager <eager@mvista.com>
+
+	* Makefile.in: Initialize program_transform_cross_name from
+	@program_transform_name@ instead of target_alias.
+
 2003-05-12  Janis Johnson  <janis187@us.ibm.com>
 	    Alan Modra  <amodra@bigpond.net.au>
 	    Jakub Jelinek  <jakub@redhat.com>

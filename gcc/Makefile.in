@@ -66,7 +66,7 @@ target_alias=@target_alias@
 
 # Sed command to transform gcc to installed name.
 program_transform_name = @program_transform_name@
-program_transform_cross_name = s,^,$(target_alias)-,
+program_transform_cross_name = @program_transform_name@
 
 # -----------------------------
 # Directories used during build
