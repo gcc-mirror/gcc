@@ -1,5 +1,5 @@
 /* PR target/10072 */
-/* Originator: Peter van Hoof <p.van-hoof@qub.ac.uk>
+/* Originator: Peter van Hoof <p.van-hoof@qub.ac.uk> */
 /* { dg-do compile } */
 /* { dg-options "-O1 -mcpu=ultrasparc -ffast-math" { target sparc-*-* } } */
 
