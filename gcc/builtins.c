@@ -2595,6 +2595,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     {
     case BUILT_IN_ABS:
     case BUILT_IN_LABS:
+    case BUILT_IN_LLABS:
     case BUILT_IN_FABS:
       /* build_function_call changes these into ABS_EXPR.  */
       abort ();
