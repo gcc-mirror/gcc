@@ -187,13 +187,13 @@ STATIC func_ptr __DTOR_LIST__[1]
   = { (func_ptr) (-1) };
 #endif /* __DTOR_LIST__ alternatives */
 
-#ifdef EH_FRAME_SECTION_NAME
+#ifdef USE_EH_FRAME_REGISTRY
 /* Stick a label at the beginning of the frame unwind info so we can register
    and deregister it with the exception handling library code.  */
 STATIC char __EH_FRAME_BEGIN__[]
      __attribute__((section(EH_FRAME_SECTION_NAME), aligned(4)))
      = { };
-#endif /* EH_FRAME_SECTION_NAME */
+#endif /* USE_EH_FRAME_REGISTRY */
 
 #ifdef JCR_SECTION_NAME
 /* Stick a label at the beginning of the java class registration info
