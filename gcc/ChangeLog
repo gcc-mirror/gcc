@@ -1,5 +1,7 @@
 2001-03-12  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* version.c: Bump.
+
 	* final.c (alter_subreg): Use plus_constant_for_output to match
 	what offsettable_address_p does.
 
