@@ -8,9 +8,9 @@
 	(is_pic): Delete.
 	* config/arm/arm-protos.h (arm_finalize_pic): Update prototype.
 	(is_pic): Delete declaration.
-	* config/arm/arm.h (FINALIZE_PIC): Update call to above.
+	* config/arm/arm.h (FINALIZE_PIC): Update call to arm_finalize_pic.
 	(OUTPUT_INT_ADDR_CONST): Remove special handling of PIC address.
-	* config/arm/arm.md (builtin_setjmp_receiver): Likewise.
+	* config/arm/arm.md (builtin_setjmp_receiver): New.
 
 2001-01-15  Richard Earnshaw  <rearnsha@arm.com>
 
