@@ -157,9 +157,9 @@ if test ! -f stamp-sanity-compiler; then
   AC_MSG_CHECKING([for g++ that will successfully compile libstdc++-v3])
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
-  AC_EGREP_CPP(ok, [
-  #if __GNUC__ >= 3
-    ok
+  AC_TRY_COMPILE(, [
+  #if __GNUC__ < 3
+    not_ok
   #endif
   ], gpp_satisfactory=yes, AC_MSG_ERROR([please upgrade to GCC 3.0 or above]))
   AC_LANG_RESTORE
