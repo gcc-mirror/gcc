@@ -1,3 +1,14 @@
+2003-10-18  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/protocol/file/Connection.java,
+	gnu/java/net/protocol/file/Handler.java,
+	gnu/java/net/protocol/http/Connection.java,
+	gnu/java/net/protocol/http/Handler.java,
+	gnu/java/net/protocol/jar/Connection.java,
+	gnu/java/net/protocol/jar/Handler.java:
+	Merged copyright text from classpath to make
+	it possible to merge the classes.
+
 2003-10-18  Mark Wielaard  <mark@klomp.org>
 
 	Reported by M.Negovanovic
