@@ -265,7 +265,6 @@ extern struct loops *current_loops;
 
 /* Loop recognition.  */
 extern int flow_loops_find (struct loops *, int flags);
-extern int flow_loops_update (struct loops *, int flags);
 extern void flow_loops_free (struct loops *);
 extern void flow_loops_dump (const struct loops *, FILE *,
 			     void (*)(const struct loop *, FILE *, int), int);
