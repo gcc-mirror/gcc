@@ -617,14 +617,25 @@ copy_src_to_dest (insn, src, dest, loop_depth)
       && GET_CODE (dest) == REG
       && REG_LIVE_LENGTH (REGNO (dest)) > 0
       && (set = single_set (insn)) != NULL_RTX
-      && !reg_mentioned_p (dest, SET_SRC (set))
-      && validate_replace_rtx (src, dest, insn))
+      && !reg_mentioned_p (dest, SET_SRC (set)))
     {
+      int old_num_regs = reg_rtx_no;
+
       /* Generate the src->dest move.  */
       start_sequence ();
       emit_move_insn (dest, src);
       seq = gen_sequence ();
       end_sequence ();
+      /* If this sequence uses new registers, we may not use it.  */
+      if (old_num_regs != reg_rtx_no
+	  || ! validate_replace_rtx (src, dest, insn))
+	{
+	  /* We have to restore reg_rtx_no to its old value, lest
+	     recompute_reg_usage will try to compute the usage of the
+	     new regs, yet reg_n_info is not valid for them.  */
+	  reg_rtx_no = old_num_regs;
+	  return;
+	}
       emit_insn_before (seq, insn);
       move_insn = PREV_INSN (insn);
       p_move_notes = &REG_NOTES (move_insn);

@@ -1,3 +1,8 @@
+Wed Sep 16 14:47:43 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* regmove.c (copy_src_to_dest): Don't copy if that requires
+	(a) new register(s).
+
 Wed Sep 16 01:29:12 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 	* global.c (reg_allocno): Now static.
