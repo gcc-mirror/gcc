@@ -2491,6 +2491,13 @@ for machine in $build $host $target; do
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
+		if [ x$enable_threads = x ]; then
+		    enable_threads=$have_pthread_h
+		fi
+ 		if [ x$enable_threads = xyes ]; then
+			thread_file='dce'
+			tmake_file="${tmake_file} pa/t-dce-thr"
+		fi
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
