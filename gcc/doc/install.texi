@@ -1329,7 +1329,9 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#mips-mips-riscos*,,mips-mips-riscos*}
 @item
-@uref{#mips*-sgi-irix[45],,mips*-sgi-irix[45]}
+@uref{#mips*-sgi-irix4,,mips*-sgi-irix4}
+@item
+@uref{#mips*-sgi-irix5,,mips*-sgi-irix5}
 @item
 @uref{#mips*-sgi-irix6,,mips*-sgi-irix6}
 @item
@@ -2658,37 +2660,13 @@ avoiding a linker bug.
 </p>
 <hr>
 @end html
-@heading @anchor{mips*-sgi-irix[45]}mips*-sgi-irix[45]
+@heading @anchor{mips*-sgi-irix4*}mips*-sgi-irix4*
 
 In order to compile GCC on an SGI running IRIX 4, the ``c.hdr.lib''
 option must be installed from the CD-ROM supplied from Silicon Graphics.
 This is found on the 2nd CD in release 4.0.1.
 
-In order to compile GCC on an SGI running IRIX 5, the ``compiler_dev.hdr''
-subsystem must be installed from the IDO CD-ROM supplied by Silicon
-Graphics.
-
-@code{make compare} may fail on version 5 of IRIX unless you add
-@option{-save-temps} to @code{CFLAGS}.  On these systems, the name of the
-assembler input file is stored in the object file, and that makes
-comparison fail if it differs between the @code{stage1} and
-@code{stage2} compilations.  The option @option{-save-temps} forces a
-fixed name to be used for the assembler input file, instead of a
-randomly chosen name in @file{/tmp}.  Do not add @option{-save-temps}
-unless the comparisons fail without that option.  If you do you
-@option{-save-temps}, you will have to manually delete the @samp{.i} and
-@samp{.s} files after each series of compilations.
-
-The MIPS C compiler needs to be told to increase its table size
-for switch statements with the @option{-Wf,-XNg1500} option in
-order to compile @file{cp/parse.c}.  If you use the @option{-O2}
-optimization option, you also need to use @option{-Olimit 3000}.
-Both of these options are automatically generated in the
-@file{Makefile} that the shell script @file{configure} builds.
-If you override the @code{CC} make variable and use the MIPS
-compilers, you may need to add @samp{-Wf,-XNg1500 -Olimit 3000}.
-
-On Irix version 4.0.5F, and perhaps on some other versions as well,
+On IRIX version 4.0.5F, and perhaps on some other versions as well,
 there is an assembler bug that reorders instructions incorrectly.  To
 work around it, specify the target configuration
 @samp{mips-sgi-irix4loser}.  This configuration inhibits assembler
@@ -2704,43 +2682,68 @@ is due to erroneous assembler reordering.  Even if a problem does not go
 away with @option{-noasmopt}, it may still be due to assembler
 reordering---perhaps GCC itself was miscompiled as a result.
 
-To enable debugging under Irix 5, you must use GNU as 2.5 or later,
-and use the @option{--with-gnu-as} configure option when configuring gcc.
-GNU as is distributed as part of the binutils package.
-
-You must use GAS on these platforms, as the native assembler can not handle
-the code for exception handling support.  Either of these messages indicates
-that you are using the MIPS assembler when instead you should be using GAS:
-
-@samp{  as0: Error: ./libgcc2.c, line 1:Badly delimited numeric literal
-  .4byte $LECIE1-$LSCIE1
-  as0: Error: ./libgcc2.c, line 1:malformed statement}
-
-or:
-
-@samp{  as0: Error: /src/bld-gcc/gcc/libgcc2.c, line 1:undefined symbol in expression
-  .word $LECIE1-$LSCIE1}
-
-These systems don't have ranlib, which various components in GCC need; you
-should be able to avoid this problem by installing GNU binutils, which includes
-a functional ranlib for this system.
-
-You may get the following warning on irix4 platforms, it can be safely
+You may get the following warning on IRIX 4 platforms, it can be safely
 ignored.
 @example
   warning: foo.o does not have gp tables for all its sections.
 @end example
 
-When building GCC, the build process loops rebuilding @command{cc1} over and
-over again.  This happens on mips-sgi-irix5.2, and possibly other platforms.@*
-It has been reported that this is a known bug in the @command{make} shipped with
-IRIX 5.2.  We recommend you use GNU @command{make} instead of the vendor supplied
-@command{make} program; however, you may have success with @command{smake} on IRIX 5.2 if
-you do not have GNU @command{make} available.
+@html
+</p>
+<hr>
+@end html
+@heading @anchor{mips*-sgi-irix5*}mips*-sgi-irix5*
 
-See @uref{http://freeware.sgi.com/,,http://freeware.sgi.com/} for more
-information about using GCC on IRIX platforms.
+In order to compile GCC on an SGI running IRIX 5, the ``compiler_dev.hdr''
+subsystem must be installed from the IDO CD-ROM supplied by Silicon
+Graphics.  It is also available for download from
+@uref{http://www.sgi.com/developers/devtools/apis/ido.html,,http://www.sgi.com/developers/devtools/apis/ido.html}.
 
+@code{make compare} may fail on version 5 of IRIX unless you add
+@option{-save-temps} to @code{CFLAGS}.  On these systems, the name of the
+assembler input file is stored in the object file, and that makes
+comparison fail if it differs between the @code{stage1} and
+@code{stage2} compilations.  The option @option{-save-temps} forces a
+fixed name to be used for the assembler input file, instead of a
+randomly chosen name in @file{/tmp}.  Do not add @option{-save-temps}
+unless the comparisons fail without that option.  If you do you
+@option{-save-temps}, you will have to manually delete the @samp{.i} and
+@samp{.s} files after each series of compilations.
+
+If you use the MIPS C compiler to bootstrap, it may be necessary
+to increase its table size for switch statements with the
+@option{-Wf,-XNg1500} option.  If you use the @option{-O2}
+optimization option, you also need to use @option{-Olimit 3000}.
+
+To enable debugging under IRIX 5, you must use GNU @command{as} 2.5 or later,
+and use the @option{--with-gnu-as} configure option when configuring GCC.
+GNU @command{as} is distributed as part of the binutils package.
+
+You must use GNU @command{as} on these platforms, as the native
+assembler can not handle the code for exception handling support. Either
+of these messages indicates that you are using the MIPS assembler when
+instead you should be using GNU @command{as}:
+
+@example
+  as0: Error: ./libgcc2.c, line 1:Badly delimited numeric literal
+  .4byte $LECIE1-$LSCIE1
+  as0: Error: ./libgcc2.c, line 1:malformed statement
+@end example
+
+or:
+
+@example
+  as0: Error: ./libgcc2.c, line 1:undefined symbol in expression
+  .word $LECIE1-$LSCIE1
+@end example
+
+When building GCC, the build process loops rebuilding @command{cc1} over
+and over again.  This happens on @samp{mips-sgi-irix5.2}, and possibly
+other platforms.  It has been reported that this is a known bug in the
+@command{make} shipped with IRIX 5.2.  We recommend you use GNU
+@command{make} instead of the vendor supplied @command{make} program;
+however, you may have success with @command{smake} on IRIX 5.2 if you do
+not have GNU @command{make} available.
 
 @html
 </p>
@@ -2748,35 +2751,45 @@ information about using GCC on IRIX platforms.
 @end html
 @heading @anchor{mips*-sgi-irix6}mips*-sgi-irix6
 
-You must @emph{not} use GAS on irix6 platforms; doing so will only
-cause problems.
-
-These systems don't have @command{ranlib}, which various components in GCC need; you
-should be able to avoid this problem by making a dummy script called @command{ranlib}
-which just exits with zero status and placing it in your path.
-
-If you are using Irix @command{cc} as your bootstrap compiler, you must
+If you are using IRIX @command{cc} as your bootstrap compiler, you must
 ensure that the N32 ABI is in use.  To test this, compile a simple C
 file with @command{cc} and then run @command{file} on the
 resulting object file.  The output should look like:
 
 @example
-@code{    test.o: ELF N32 MSB @dots{}}
+test.o: ELF N32 MSB @dots{}
 @end example
 
 If you see:
+
 @example
-@code{    test.o: ELF 32-bit MSB}
+test.o: ELF 32-bit MSB @dots{}
 @end example
 
-then your version of @command{cc} uses the O32 ABI default.  You
+or
+
+@example
+test.o: ELF 64-bit MSB @dots{}
+@end example
+
+then your version of @command{cc} uses the O32 or N64 ABI by default.  You
 should set the environment variable @env{CC} to @samp{cc -n32}
 before configuring GCC@.
 
+GCC on IRIX 6 is usually built to support both the N32 and N64 ABIs.  If
+you build GCC on a system that doesn't have the N64 libraries installed,
+you need to configure with @option{--disable-multilib} so GCC doesn't
+try to use them.  Look for @file{/usr/lib64/libc.so.1} to see if you
+have the 64-bit libraries installed.
+
+You must @emph{not} use GNU @command{as} (which isn't built anyway as of
+binutils 2.11.2) on IRIX 6 platforms; doing so will only cause problems.
+
 GCC does not currently support generating O32 ABI binaries in the
-mips-sgi-irix6 configurations.  It used to be possible to create a GCC
-with O32 ABI only support by configuring it for the mips-sgi-irix5
-target.  See the link below for details.
+@samp{mips-sgi-irix6} configurations.  It used to be possible to create a GCC
+with O32 ABI only support by configuring it for the @samp{mips-sgi-irix5}
+target, which doesn't currently (2001-06-13) work itself.  It is
+expected that O32 ABI support will be available again in a future release.
 
 GCC does not correctly pass/return structures which are
 smaller than 16 bytes and which are not 8 bytes.  The problem is very
@@ -2790,12 +2803,12 @@ register.
 GCC is consistent with itself, but not consistent with the SGI C compiler
 (and the SGI supplied runtime libraries), so the only failures that can
 happen are when there are library functions that take/return such
-structures.  There are very few such library functions.  I can only recall
-seeing two of them: inet_ntoa, and semctl.
+structures. There are very few such library functions.  Currently this
+is known to affect @code{inet_ntoa}, @code{inet_lnaof},
+@code{inet_netof}, @code{inet_makeaddr}, and @code{semctl}.
 
 See @uref{http://freeware.sgi.com/,,http://freeware.sgi.com/} for more
 information about using GCC on IRIX platforms.
-
 
 @html
 </p>
