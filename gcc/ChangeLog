@@ -1,3 +1,8 @@
+Fri Apr 17 14:30:37 1998  John Carr <jfc@mit.edu>
+
+	* emit-rtl.c (operand_subword_force): If a register can not be
+	accessed by words, copy it to a pseudo register.
+
 Fri Apr 17 14:30:37 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* rs6000/vxppc.h (CPP_SPEC): Add support for mrelocatable*.
