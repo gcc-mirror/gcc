@@ -3480,6 +3480,24 @@
   else
     op = XEXP (operands[0], 0);
 
+  if (flag_pic)
+    {
+      if (!hppa_save_pic_table_rtx)
+	hppa_save_pic_table_rtx = gen_reg_rtx (Pmode);
+
+      /* We must save and restore the PIC register around every call
+	 since we don't have flow information to determine if this save
+	 is redundant with a previous save.  The old code assumed once
+	 the register was saved it never needs to be saved again, but
+	 the save could have been on a path which doesn't always
+	 execute; a call site physically later in the program would
+	 then attempt a restore from an uninitialized register!  */
+      emit_insn (gen_rtx (SET, VOIDmode,
+			  hppa_save_pic_table_rtx,
+			  pic_offset_table_rtx));
+
+    }
+
   /* Use two different patterns for calls to explicitly named functions
      and calls through function pointers.  This is necessary as these two
      types of calls use different calling conventions, and CSE might try
@@ -3494,21 +3512,6 @@
   if (flag_pic)
     {
       use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), pic_offset_table_rtx);
-
-      if (!hppa_save_pic_table_rtx)
-	hppa_save_pic_table_rtx = gen_reg_rtx (Pmode);
-
-      /* We must save and restore the PIC register around every call
-	 since we don't have flow information to determine if this save
-	 is redundant with a previous save.  The old code assumed once
-	 the register was saved it never needs to be saved again, but
-	 the save could have been on a path which doesn't always
-	 execute; a call site physically later in the program would
-	 then attempt a restore from an uninitialized register!  */
-      emit_insn_before (gen_rtx (SET, VOIDmode,
-				 hppa_save_pic_table_rtx,
-				 pic_offset_table_rtx),
-			call_insn);
 
       emit_insn (gen_rtx (SET, VOIDmode, pic_offset_table_rtx,
 			  hppa_save_pic_table_rtx));
@@ -3579,6 +3582,24 @@
   else
     op = XEXP (operands[1], 0);
 
+  if (flag_pic)
+    {
+      if (!hppa_save_pic_table_rtx)
+	hppa_save_pic_table_rtx = gen_reg_rtx (Pmode);
+
+      /* We must save and restore the PIC register around every call
+	 since we don't have flow information to determine if this save
+	 is redundant with a previous save.  The old code assumed once
+	 the register was saved it never needs to be saved again, but
+	 the save could have been on a path which doesn't always
+	 execute; a call site physically later in the program would
+	 then attempt a restore from an uninitialized register!  */
+      emit_insn (gen_rtx (SET, VOIDmode,
+			  hppa_save_pic_table_rtx,
+			  pic_offset_table_rtx));
+
+    }
+
   /* Use two different patterns for calls to explicitly named functions
      and calls through function pointers.  This is necessary as these two
      types of calls use different calling conventions, and CSE might try
@@ -3596,21 +3617,6 @@
   if (flag_pic)
     {
       use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), pic_offset_table_rtx);
-
-      if (!hppa_save_pic_table_rtx)
-	hppa_save_pic_table_rtx = gen_reg_rtx (Pmode);
-
-      /* We must save and restore the PIC register around every call
-	 since we don't have flow information to determine if this save
-	 is redundant with a previous save.  The old code assumed once
-	 the register was saved it never needs to be saved again, but
-	 the save could have been on a path which doesn't always
-	 execute; a call site physically later in the program would
-	 then attempt a restore from an uninitialized register!  */
-      emit_insn_before (gen_rtx (SET, VOIDmode,
-				 hppa_save_pic_table_rtx,
-				 pic_offset_table_rtx),
-			call_insn);
 
       emit_insn (gen_rtx (SET, VOIDmode, pic_offset_table_rtx,
 			  hppa_save_pic_table_rtx));
