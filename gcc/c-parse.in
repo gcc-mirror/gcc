@@ -2172,6 +2172,7 @@ compstmt_primary_start:
 
 compstmt: compstmt_start compstmt_nostart
 		{ RECHAIN_STMTS ($1, COMPOUND_BODY ($1)); 
+		  last_expr_type = NULL_TREE;
                   $$ = $1; }
 	;
 

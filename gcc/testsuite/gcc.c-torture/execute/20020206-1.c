@@ -1,6 +1,3 @@
-/* This testcase ICEd because c_expand_expr did not mark statement expression
-   return value as one which shouldn't be ignored.  */
-
 struct A {
   unsigned int a, b, c;
 };
@@ -23,7 +20,7 @@ int main ()
 {
   struct A d;
 
-  d = ({ { bar (); } });
+  d = ({ ({ bar (); }); });
   baz (&d);
   exit (0);
 }

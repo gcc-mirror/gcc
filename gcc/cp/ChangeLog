@@ -1,3 +1,10 @@
+2002-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* parse.y (primary, primary_no_id): Use compstmt_or_stmtexpr
+	instead of compstmt.
+	(compstmt_or_stmtexpr): Renamed from compstmt.
+	(compstmt): In addition to compstmt_or_stmtexpr clear last_expr_type.
+
 2002-02-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Rename instantiate_type_flags to tsubst_flags_t & expand use.

@@ -1592,7 +1592,7 @@ primary:
 		    pedwarn ("ISO C++ forbids braced-groups within expressions");  
 		  $<ttype>$ = begin_stmt_expr (); 
 		}
-	  compstmt ')'
+	  compstmt_or_stmtexpr ')'
                { $$ = finish_stmt_expr ($<ttype>2); }
         /* Koenig lookup support
            We could store lastiddecl in $1 to avoid another lookup,
@@ -1717,7 +1717,7 @@ primary_no_id:
 		      YYERROR;
 		    }
 		  $<ttype>$ = expand_start_stmt_expr (); }
-	  compstmt ')'
+	  compstmt_or_stmtexpr ')'
 		{ if (pedantic)
 		    pedwarn ("ISO C++ forbids braced-groups within expressions");
 		  $$ = expand_end_stmt_expr ($<ttype>2); }
@@ -3324,12 +3324,17 @@ label_decl:
 		}
 	;
 
-compstmt:
+compstmt_or_stmtexpr:
 	  save_lineno '{'
                 { $<ttype>$ = begin_compound_stmt (0); }
 	  compstmtend 
                 { STMT_LINENO ($<ttype>3) = $1;
 		  finish_compound_stmt (0, $<ttype>3); }
+	;
+
+compstmt:
+	  compstmt_or_stmtexpr
+		{ last_expr_type = NULL_TREE; }
 	;
 
 simple_if:

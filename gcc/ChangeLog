@@ -1,3 +1,8 @@
+2002-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (c_expand_expr): Revert 2002-02-06 patch.
+	* c-parse.in (compstmt): Clear last_expr_type.
+
 2002-02-07  Richard Henderson  <rth@redhat.com>
 
 	* loop.c (strength_reduce): Sink final_value when not
