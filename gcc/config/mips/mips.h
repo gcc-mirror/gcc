@@ -2389,13 +2389,9 @@ while (0)
 /* Define this if zero-extension is slow (more than one real instruction).  */
 #define SLOW_ZERO_EXTEND
 
-/* Define if shifts truncate the shift count
-   which implies one can omit a sign-extension or zero-extension
-   of a shift count.
-
-   Only 5 bits are used in SLLV and SRLV */
-
-#define SHIFT_COUNT_TRUNCATED
+/* Define this to be nonzero if shift instructions ignore all but the low-order
+   few bits. */
+#define SHIFT_COUNT_TRUNCATED 1
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */

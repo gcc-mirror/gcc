@@ -621,7 +621,7 @@ enum reg_class {NO_REGS,GENERAL_REGS,FPP_REG,ALL_REGS,LIM_REG_CLASSES};
 /* any bits higher than the low 4 are ignored in the shift count */
 /* so don't bother zero extending or sign extending them         */
 
-#define SHIFT_COUNT_TRUNCATED
+#define SHIFT_COUNT_TRUNCATED 1
 
 /* we don't need to officially convert from one fixed type to another */
 /* in order to use it as that type. We can just assume it's the same  */

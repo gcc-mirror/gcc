@@ -1341,9 +1341,9 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
    but a CALL with constant address is cheap.  */
 #define NO_FUNCTION_CSE
 
-/* Define this if shift instructions ignore all but the low-order
+/* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits. */
-#define SHIFT_COUNT_TRUNCATED
+#define SHIFT_COUNT_TRUNCATED 1
 
 /* Use atexit for static constructors/destructors, instead of defining
    our own exit function.  */

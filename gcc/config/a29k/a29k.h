@@ -1276,9 +1276,9 @@ extern char *a29k_function_name;
    but a CALL with constant address is cheap.  */
 #define NO_FUNCTION_CSE
 
-/* Define this if shift instructions ignore all but the low-order
+/* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits. */
-#define SHIFT_COUNT_TRUNCATED
+#define SHIFT_COUNT_TRUNCATED 1
 
 /* Compute the cost of computing a constant rtl expression RTX
    whose rtx-code is CODE.  The body of this macro is a portion
