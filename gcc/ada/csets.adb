@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1159,8 +1159,7 @@ package body Csets is
       Identifier_Char ('[') := True;
 
       --  Add entry for ESC if wide characters in use with a wide character
-      --  encoding method active that uses the ESC code for encoding. Also
-      --  add entry for left bracket to capture use of brackets notation.
+      --  encoding method active that uses the ESC code for encoding.
 
       if Identifier_Character_Set = 'w'
         and then Wide_Character_Encoding_Method in WC_ESC_Encoding_Method

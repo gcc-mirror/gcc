@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2001-2004 Free Software Foundation, Inc.         --
+--           Copyright (C) 2001-2005 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -172,7 +172,7 @@ procedure Gnatname is
          Output.Write_Str ("GNATNAME ");
          Output.Write_Line (Gnatvsn.Gnat_Version_String);
          Output.Write_Line
-           ("Copyright 2001-2004 Free Software Foundation, Inc.");
+           ("Copyright 2001-2005 Free Software Foundation, Inc.");
       end if;
    end Output_Version;
 
@@ -231,7 +231,6 @@ procedure Gnatname is
             when 'v' =>
                if Opt.Verbose_Mode then
                   Very_Verbose := True;
-
                else
                   Opt.Verbose_Mode := True;
                end if;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -179,7 +179,7 @@ begin
          Write_Str ("GNAT ");
          Write_Str (Gnat_Version_String);
          Write_Eol;
-         Write_Str ("Copyright 1992-2004 Free Software Foundation, Inc.");
+         Write_Str ("Copyright 1992-2005 Free Software Foundation, Inc.");
          Write_Eol;
       end if;
 
@@ -247,9 +247,9 @@ begin
          Suppress_Options (Overflow_Check) := True;
       end if;
 
-      --  Check we have exactly one source file, this happens only in
-      --  the case where the driver is called directly, it cannot happen
-      --  when gnat1 is invoked from gcc in the normal case.
+      --  Check we have exactly one source file, this happens only in the case
+      --  where the driver is called directly, it cannot happen when gnat1 is
+      --  invoked from gcc in the normal case.
 
       if Osint.Number_Of_Files /= 1 then
          Usage;
@@ -280,27 +280,33 @@ begin
            or else Nkind (Original_Node (Unit (Main_Unit_Node)))
                            in N_Generic_Instantiation)
       then
-         declare
+         Bad_Body : declare
             Sname   : Unit_Name_Type := Unit_Name (Main_Unit);
             Src_Ind : Source_File_Index;
             Fname   : File_Name_Type;
 
-            procedure Bad_Body (Msg : String);
+            procedure Bad_Body_Error (Msg : String);
             --  Issue message for bad body found
 
-            procedure Bad_Body (Msg : String) is
+            --------------------
+            -- Bad_Body_Error --
+            --------------------
+
+            procedure Bad_Body_Error (Msg : String) is
             begin
                Error_Msg_N (Msg, Main_Unit_Node);
                Error_Msg_Name_1 := Fname;
                Error_Msg_N
                  ("remove incorrect body in file{!", Main_Unit_Node);
-            end Bad_Body;
+            end Bad_Body_Error;
+
+         --  Start of processing for Bad_Body
 
          begin
             Sname := Unit_Name (Main_Unit);
 
-            --  If we do not already have a body name, then get the body
-            --  name (but how can we have a body name here ???)
+            --  If we do not already have a body name, then get the body name
+            --  (but how can we have a body name here ???)
 
             if not Is_Body_Name (Sname) then
                Sname := Get_Body_Name (Sname);
@@ -311,18 +317,18 @@ begin
 
             --  Case where body is present and it is not a subunit. Exclude
             --  the subunit case, because it has nothing to do with the
-            --  package we are compiling. It is illegal for a child unit
-            --  and a subunit with the same expanded name (RM 10.2(9)) to
-            --  appear together in a partition, but there is nothing to
-            --  stop a compilation environment from having both, and the
-            --  test here simply allows that. If there is an attempt to
-            --  include both in a partition, this is diagnosed at bind time.
-            --  In Ada 83 mode this is not a warning case.
+            --  package we are compiling. It is illegal for a child unit and a
+            --  subunit with the same expanded name (RM 10.2(9)) to appear
+            --  together in a partition, but there is nothing to stop a
+            --  compilation environment from having both, and the test here
+            --  simply allows that. If there is an attempt to include both in
+            --  a partition, this is diagnosed at bind time. In Ada 83 mode
+            --  this is not a warning case.
 
-            --  Note: if weird file names are being used, we can have a
-            --  situation where the file name that supposedly contains a
-            --  body, in fact contains a spec, or we can't tell what it
-            --  contains. Skip the error message in these cases.
+            --  Note: if weird file names are being used, we can have
+            --  situation where the file name that supposedly contains body,
+            --  in fact contains a spec, or we can't tell what it contains.
+            --  Skip the error message in these cases.
 
             if Src_Ind /= No_Source_File
               and then Get_Expected_Unit_Type (Fname) = Expect_Body
@@ -330,12 +336,12 @@ begin
             then
                Error_Msg_Name_1 := Sname;
 
-               --  Ada 83 case of a package body being ignored. This is not
-               --  an error as far as the Ada 83 RM is concerned, but it is
+               --  Ada 83 case of a package body being ignored. This is not an
+               --  error as far as the Ada 83 RM is concerned, but it is
                --  almost certainly not what is wanted so output a warning.
                --  Give this message only if there were no errors, since
-               --  otherwise it may be incorrect (we may have misinterpreted
-               --  a junk spec as not needing a body when it really does).
+               --  otherwise it may be incorrect (we may have misinterpreted a
+               --  junk spec as not needing a body when it really does).
 
                if Main_Kind = N_Package_Declaration
                  and then Ada_Version = Ada_83
@@ -358,33 +364,35 @@ begin
                   if Nkind (Original_Node (Unit (Main_Unit_Node)))
                       in N_Generic_Instantiation
                   then
-                     Bad_Body
+                     Bad_Body_Error
                        ("generic instantiation for % does not allow a body");
 
                   --  A library unit that is a renaming never allows a body
 
                   elsif Main_Kind in N_Renaming_Declaration then
-                     Bad_Body
+                     Bad_Body_Error
                        ("renaming declaration for % does not allow a body!");
 
-                  --  Remaining cases are packages and generic packages.
-                  --  Here we only do the test if there are no previous
-                  --  errors, because if there are errors, they may lead
-                  --  us to incorrectly believe that a package does not
-                  --  allow a body when in fact it does.
+                  --  Remaining cases are packages and generic packages. Here
+                  --  we only do the test if there are no previous errors,
+                  --  because if there are errors, they may lead us to
+                  --  incorrectly believe that a package does not allow a body
+                  --  when in fact it does.
 
                   elsif not Compilation_Errors then
                      if Main_Kind = N_Package_Declaration then
-                        Bad_Body ("package % does not allow a body!");
+                        Bad_Body_Error
+                          ("package % does not allow a body!");
 
                      elsif Main_Kind = N_Generic_Package_Declaration then
-                        Bad_Body ("generic package % does not allow a body!");
+                        Bad_Body_Error
+                          ("generic package % does not allow a body!");
                      end if;
                   end if;
 
                end if;
             end if;
-         end;
+         end Bad_Body;
       end if;
 
       --  Exit if compilation errors detected
@@ -405,9 +413,9 @@ begin
          Exit_Program (E_Errors);
       end if;
 
-      --  Set Generate_Code on main unit and its spec. We do this even if
-      --  are not generating code, since Lib-Writ uses this to determine
-      --  which units get written in the ali file.
+      --  Set Generate_Code on main unit and its spec. We do this even if are
+      --  not generating code, since Lib-Writ uses this to determine which
+      --  units get written in the ali file.
 
       Set_Generate_Code (Main_Unit);
 
@@ -437,15 +445,15 @@ begin
       --  be generated (i.e. no -gnatc or -gnats switch was used). Check if
       --  we can in fact satisfy this request.
 
-      --  Cannot generate code if someone has turned off code generation
-      --  for any reason at all. We will try to figure out a reason below.
+      --  Cannot generate code if someone has turned off code generation for
+      --  any reason at all. We will try to figure out a reason below.
 
       elsif Operating_Mode /= Generate_Code then
          Back_End_Mode := Skip;
 
-      --  We can generate code for a subprogram body unless there were
-      --  missing subunits. Note that we always generate code for all
-      --  generic units (a change from some previous versions of GNAT).
+      --  We can generate code for a subprogram body unless there were missing
+      --  subunits. Note that we always generate code for all generic units (a
+      --  change from some previous versions of GNAT).
 
       elsif Main_Kind = N_Subprogram_Body
         and then not Subunits_Missing
@@ -507,17 +515,17 @@ begin
          Back_End_Mode := Skip;
       end if;
 
-      --  At this stage Call_Back_End is set to indicate if the backend
-      --  should be called to generate code. If it is not set, then code
-      --  generation has been turned off, even though code was requested
-      --  by the original command. This is not an error from the user
-      --  point of view, but it is an error from the point of view of
-      --  the gcc driver, so we must exit with an error status.
+      --  At this stage Call_Back_End is set to indicate if the backend should
+      --  be called to generate code. If it is not set, then code generation
+      --  has been turned off, even though code was requested by the original
+      --  command. This is not an error from the user point of view, but it is
+      --  an error from the point of view of the gcc driver, so we must exit
+      --  with an error status.
 
-      --  We generate an informative message (from the gcc point of view,
-      --  it is an error message, but from the users point of view this
-      --  is not an error, just a consequence of compiling something that
-      --  cannot generate code).
+      --  We generate an informative message (from the gcc point of view, it
+      --  is an error message, but from the users point of view this is not an
+      --  error, just a consequence of compiling something that cannot
+      --  generate code).
 
       if Back_End_Mode = Skip then
          Write_Str ("cannot generate code for ");
@@ -603,9 +611,9 @@ begin
          return;
       end if;
 
-      --  Ensure that we properly register a dependency on system.ads,
-      --  since even if we do not semantically depend on this, Targparm
-      --  has read system parameters from the system.ads file.
+      --  Ensure that we properly register a dependency on system.ads, since
+      --  even if we do not semantically depend on this, Targparm has read
+      --  system parameters from the system.ads file.
 
       Lib.Writ.Ensure_System_Dependency;
 
@@ -631,22 +639,22 @@ begin
 
       Back_End.Call_Back_End (Back_End_Mode);
 
-      --  Once the backend is complete, we unlock the names table. This
-      --  call allows a few extra entries, needed for example for the file
-      --  name for the library file output.
+      --  Once the backend is complete, we unlock the names table. This call
+      --  allows a few extra entries, needed for example for the file name for
+      --  the library file output.
 
       Namet.Unlock;
 
-      --  Validate unchecked conversions (using the values for size
-      --  and alignment annotated by the backend where possible).
+      --  Validate unchecked conversions (using the values for size and
+      --  alignment annotated by the backend where possible).
 
       Sem_Ch13.Validate_Unchecked_Conversions;
 
-      --  Now we complete output of errors, rep info and the tree info.
-      --  These are delayed till now, since it is perfectly possible for
-      --  gigi to generate errors, modify the tree (in particular by setting
-      --  flags indicating that elaboration is required, and also to back
-      --  annotate representation information for List_Rep_Info.
+      --  Now we complete output of errors, rep info and the tree info. These
+      --  are delayed till now, since it is perfectly possible for gigi to
+      --  generate errors, modify the tree (in particular by setting flags
+      --  indicating that elaboration is required, and also to back annotate
+      --  representation information for List_Rep_Info.
 
       Errout.Finalize;
       List_Rep_Info;
@@ -662,11 +670,11 @@ begin
 
       Write_ALI (Object => (Back_End_Mode = Generate_Object));
 
-      --  Generate the ASIS tree after writing the ALI file, since in
-      --  ASIS mode, Write_ALI may in fact result in further tree
-      --  decoration from the original tree file. Note that we dump
-      --  the tree just before generating it, so that the dump will
-      --  exactly reflect what is written out.
+      --  Generate the ASIS tree after writing the ALI file, since in ASIS
+      --  mode, Write_ALI may in fact result in further tree decoration from
+      --  the original tree file. Note that we dump the tree just before
+      --  generating it, so that the dump will exactly reflect what is written
+      --  out.
 
       Treepr.Tree_Dump;
       Tree_Gen;
@@ -689,8 +697,8 @@ begin
 
       when Storage_Error =>
 
-         --  Assume this is a bug. If it is real, the message will in
-         --  any case say Storage_Error, giving a strong hint!
+         --  Assume this is a bug. If it is real, the message will in any case
+         --  say Storage_Error, giving a strong hint!
 
          Comperr.Compiler_Abort ("Storage_Error");
    end;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1997-2004, Ada Core Technologies, Inc.           --
+--           Copyright (C) 1997-2005, Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,9 +37,9 @@
 --        The running my_prog will produce a file named gmem.out that will be
 --        parsed by gnatmem.
 
---      - Record a reference to the allocated memory on each allocation call.
+--      - Record a reference to the allocated memory on each allocation call
 
---      - Suppress this reference on deallocation.
+--      - Suppress this reference on deallocation
 
 --      - At the end of the program, remaining references are potential leaks.
 --        sort them out the best possible way in order to locate the root of
@@ -89,7 +89,7 @@ procedure Gnatmem is
    --  These need comments, and should be on separate lines ???
 
    function Read_Next return Storage_Elmt;
-   --  Reads next dynamic storage operation from the log file.
+   --  Reads next dynamic storage operation from the log file
 
    function Mem_Image (X : Storage_Count) return String;
    --  X is a size in storage_element. Returns a value
@@ -233,7 +233,7 @@ procedure Gnatmem is
       New_Line;
       Put ("GNATMEM ");
       Put_Line (Gnat_Version_String);
-      Put_Line ("Copyright 1997-2004 Free Software Foundation, Inc.");
+      Put_Line ("Copyright 1997-2005 Free Software Foundation, Inc.");
       New_Line;
 
       Put_Line ("Usage: gnatmem switches [depth] exename");
