@@ -1419,6 +1419,9 @@ print_operand (file, x, code)
 	  else if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
 		   && TINY_DATA_NAME_P (XSTR (XEXP (x, 0), 0)))
 	    fprintf (file, ":16");
+	  else if ((code == 'R')
+		   && EIGHTBIT_CONSTANT_ADDRESS_P (XEXP (x, 0)))
+	    fprintf (file, ":8");
 	  break;
 
 	case CONST_INT:

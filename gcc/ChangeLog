@@ -1,3 +1,11 @@
+2000-07-26  Kazu Hirata  <kazu@hxi.com>
+
+	* h8300.c (print_operand): Print ":8" when the 'R' operand is
+	suitable for 8-bit absolute.
+	* h8300.h (EIGHTBIT_CONSTANT_ADDRESS_P): New.
+	(OK_FOR_U): Add a case for the 8-bit constant address on the
+	H8/300H.
+
 Wed Jul 26 19:26:21 2000  Hans-Peter Nilsson  <hp@axis.com>
 
 	* varasm.c (assemble_variable) [! defined(ASM_OUTPUT_ALIGNED_COMMON)
