@@ -1018,6 +1018,10 @@ struct tree_type
 #define BINFO_BASETYPES(NODE) TREE_VEC_ELT ((NODE), 4)
 #define TYPE_BINFO_BASETYPES(NODE) TREE_VEC_ELT (TYPE_BINFO (NODE), 4)
 
+/* The number of basetypes for NODE.  */
+#define BINFO_N_BASETYPES(NODE) \
+  (BINFO_BASETYPES (NODE) ? TREE_VEC_LENGTH (BINFO_BASETYPES (NODE)) : 0)
+
 /* Accessor macro to get to the Nth basetype of this basetype.  */
 #define BINFO_BASETYPE(NODE,N) TREE_VEC_ELT (BINFO_BASETYPES (NODE), (N))
 #define TYPE_BINFO_BASETYPE(NODE,N) BINFO_TYPE (TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (NODE)), (N)))
