@@ -48,7 +48,7 @@ bool cgraph_global_info_ready = false;
 
 static struct cgraph_edge *create_edge PARAMS ((struct cgraph_node *,
 						struct cgraph_node *));
-static void remove_edge PARAMS ((struct cgraph_node *, struct cgraph_node *));
+static void cgraph_remove_edge PARAMS ((struct cgraph_node *, struct cgraph_node *));
 static hashval_t hash_node PARAMS ((const PTR));
 static int eq_node PARAMS ((const PTR, const PTR));
 
@@ -95,6 +95,9 @@ cgraph_node (decl)
   node = xcalloc (sizeof (*node), 1);
   node->decl = decl;
   node->next = cgraph_nodes;
+  if (cgraph_nodes)
+    cgraph_nodes->previous = node;
+  node->previous = NULL;
   cgraph_nodes = node;
   cgraph_n_nodes++;
   *slot = node;
@@ -127,7 +130,7 @@ create_edge (caller, callee)
 /* Remove the edge from CALLER to CALLEE in the cgraph.  */
 
 static void
-remove_edge (caller, callee)
+cgraph_remove_edge (caller, callee)
      struct cgraph_node *caller, *callee;
 {
   struct cgraph_edge **edge, **edge2;
@@ -146,6 +149,37 @@ remove_edge (caller, callee)
   *edge2 = (*edge2)->next_callee;
 }
 
+/* Remove the node from cgraph.  */
+
+void
+cgraph_remove_node (node)
+     struct cgraph_node *node;
+{
+  while (node->callers)
+    cgraph_remove_edge (node->callers->caller, node);
+  while (node->callees)
+    cgraph_remove_edge (node, node->callees->callee);
+  while (node->nested)
+    cgraph_remove_node (node->nested);
+  if (node->origin)
+    {
+      struct cgraph_node **node2 = &node->origin->nested;
+
+      while (*node2 != node)
+	node2 = &(*node2)->next_nested;
+      *node2 = node->next_nested;
+    }
+  if (node->previous)
+    node->previous->next = node->next;
+  else
+    cgraph_nodes = node;
+  if (node->next)
+    node->next->previous = node->previous;
+  DECL_SAVED_TREE (node->decl) = NULL;
+  /* Do not free the structure itself so the walk over chain can continue.  */
+}
+
+
 /* Record call from CALLER to CALLEE  */
 
 struct cgraph_edge *
@@ -159,7 +193,7 @@ void
 cgraph_remove_call (caller, callee)
      tree caller, callee;
 {
-  remove_edge (cgraph_node (caller), cgraph_node (callee));
+  cgraph_remove_edge (cgraph_node (caller), cgraph_node (callee));
 }
 
 /* Return true when CALLER_DECL calls CALLEE_DECL.  */

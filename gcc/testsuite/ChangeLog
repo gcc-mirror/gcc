@@ -1,3 +1,7 @@
+Sat Mar  8 14:18:15 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/inline-3.c: New test.
+
 2003-03-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9809
@@ -22,6 +26,7 @@
 Fri Mar  7 17:41:07 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/i386-local2.c: Fix problems with certain versions of dejagnu.
+	* gcc.dg/inline-3.c:  New test.
 
 2003-03-06  Mark Mitchell  <mark@codesourcery.com>
 
