@@ -2053,14 +2053,8 @@
      a double if needed.  */
   if (GET_CODE (operands[1]) == CONST_DOUBLE)
     {
-      operands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]) & 0xff);
-    }
-  else if (GET_CODE (operands[1]) == CONST_INT)
-    {
-      /* And further, we know for all QI cases that only the
-	 low byte is significant, which we can always process
-	 in a single insn.  So mask it now.  */
-      operands[1] = GEN_INT (INTVAL (operands[1]) & 0xff);
+      operands[1] = GEN_INT (trunc_int_for_mode
+			     (CONST_DOUBLE_LOW (operands[1]), QImode));
     }
 
   /* Handle sets of MEM first.  */
@@ -2769,8 +2763,8 @@
 #else
   unsigned int low, high;
 
-  low = INTVAL (operands[1]) & 0xffffffff;
-  high = (INTVAL (operands[1]) >> 32) & 0xffffffff;
+  low = trunc_int_for_mode (INTVAL (operands[1]), SImode);
+  high = trunc_int_for_mode (INTVAL (operands[1]) >> 32, SImode);
   emit_insn (gen_movsi (gen_highpart (SImode, operands[0]), GEN_INT (high)));
 
   /* Slick... but this trick loses if this subreg constant part
@@ -6574,7 +6568,7 @@
    (set (match_dup 0) (and:SI (not:SI (match_dup 3)) (match_dup 1)))]
   "
 {
-  operands[4] = GEN_INT (~INTVAL (operands[2]) & 0xffffffff);
+  operands[4] = GEN_INT (~INTVAL (operands[2]));
 }")
 
 ;; Split DImode logical operations requiring two instructions.
@@ -6717,7 +6711,7 @@
    (set (match_dup 0) (ior:SI (not:SI (match_dup 3)) (match_dup 1)))]
   "
 {
-  operands[4] = GEN_INT (~INTVAL (operands[2]) & 0xffffffff);
+  operands[4] = GEN_INT (~INTVAL (operands[2]));
 }")
 
 (define_insn "*or_not_di_sp32"
@@ -6833,7 +6827,7 @@
    (set (match_dup 0) (not:SI (xor:SI (match_dup 3) (match_dup 1))))]
   "
 {
-  operands[4] = GEN_INT (~INTVAL (operands[2]) & 0xffffffff);
+  operands[4] = GEN_INT (~INTVAL (operands[2]));
 }")
 
 (define_split
@@ -6848,7 +6842,7 @@
    (set (match_dup 0) (xor:SI (match_dup 3) (match_dup 1)))]
   "
 {
-  operands[4] = GEN_INT (~INTVAL (operands[2]) & 0xffffffff);
+  operands[4] = GEN_INT (~INTVAL (operands[2]));
 }")
 
 ;; xnor patterns.  Note that (a ^ ~b) == (~a ^ b) == ~(a ^ b).

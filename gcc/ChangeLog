@@ -1,3 +1,23 @@
+2002-02-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sparc/sol2.h: Don't include sys/mman.h.
+	* config/sparc/sparc.c (arith_operand): Use SMALL_INT32.
+	(arith_4096_operand): Don't throw high bits away.
+	(const64_operand): Take sign extension of CONST_INTs into account.
+	(const64_high_operand, sparc_emit_set_const32): Likewise.
+	(GEN_HIGHINT64): Likewise.
+	(sparc_emit_set_const64_quick1): Likewise.
+	(const64_is_2insns): Likewise.
+	(print_operand): Use trunc_int_for_mode for sign extension.
+	* config/sparc/sparc.h (SMALL_INT32): Likewise.
+	* config/sparc/sparc.md (movqi): Sign-extend CONST_DOUBLE
+	chars.  Assume CONST_INT is already properly sign-extended.
+	(movdi split): Sign-extend each SImode part.
+	(andsi3 split): Don't mask high bits off, so that result
+	remains properly sign-extend.
+	(iorsi3 split): Likewise.
+	(xorsi3 split): Likewise.
+
 2002-02-22  Richard Sandiford  <rsandifo@redhat.com>
 
 	* fold-const.c (fold): Fix typo in comments.

@@ -243,7 +243,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* This declares mprotect (used in TRANSFER_FROM_TRAMPOLINE) for
    libgcc2.c.  */
-#ifdef L_trampoline
+/* We don't want to include this because sys/mman.h is not present on
+   some non-Solaris configurations that use sol2.h.  */
+#if 0 /* def L_trampoline */
 #include <sys/mman.h>
 #endif
 

@@ -1402,7 +1402,8 @@ extern const char leaf_reg_remap[];
    SMALL_INT is used throughout the port so we continue to use it.  */
 #define SMALL_INT(X) (SPARC_SIMM13_P (INTVAL (X)))
 /* 13 bit immediate, considering only the low 32 bits */
-#define SMALL_INT32(X) (SPARC_SIMM13_P ((int)INTVAL (X) & 0xffffffff))
+#define SMALL_INT32(X) (SPARC_SIMM13_P (trunc_int_for_mode \
+					(INTVAL (X), SImode)))
 #define SPARC_SETHI_P(X) \
 (((unsigned HOST_WIDE_INT) (X) & \
   (TARGET_ARCH64 ? ~(unsigned HOST_WIDE_INT) 0xfffffc00 : 0x3ff)) == 0)
