@@ -1,9 +1,7 @@
 /* Copyright (C) 2002  Free Software Foundation.
 
-   Test memcpy with various combinations of pointer alignments and lengths to
-   make sure any optimizations in the library are correct.
-
-   Written by Michael Meissner, March 9, 2002.  */
+   Test strcpy with various combinations of pointer alignments and lengths to
+   make sure any optimizations in the library are correct.  */
 
 #include <string.h>
 
@@ -19,8 +17,7 @@
 #define MAX_EXTRA (sizeof (long long))
 #endif
 
-#define MAX_LENGTH (MAX_OFFSET + MAX_COPY + MAX_EXTRA)
-
+#define MAX_LENGTH (MAX_OFFSET + MAX_COPY + 1 + MAX_EXTRA)
 
 /* Use a sequence length that is not divisible by two, to make it more
    likely to detect when words are mixed up.  */
@@ -48,8 +45,9 @@ main ()
 		c = 'A';
 	      u2.buf[i] = c;
 	    }
+	  u2.buf[off2 + len] = '\0';
 
-	  p = memcpy (u1.buf + off1, u2.buf + off2, len);
+	  p = strcpy (u1.buf + off1, u2.buf + off2);
 	  if (p != u1.buf + off1)
 	    abort ();
 
@@ -66,6 +64,8 @@ main ()
 		abort ();
 	    }
 
+	  if (*q++ != '\0')
+	    abort ();
 	  for (i = 0; i < MAX_EXTRA; i++, q++)
 	    if (*q != 'a')
 	      abort ();
