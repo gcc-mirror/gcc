@@ -1235,7 +1235,9 @@ add_method (type, fields, method)
 		}
 	    }
 
-	  if (DECL_CONV_FN_P (method))
+	  if (TREE_VEC_ELT (method_vec, i))
+	    /* We found a match.  */;
+	  else if (DECL_CONV_FN_P (method))
 	    {
 	      /* Type conversion operators have to come before
 		 ordinary methods; add_conversions depends on this to
@@ -3453,7 +3455,11 @@ finish_struct_1 (t, warn_anon)
       if (TREE_CODE (x) == FIELD_DECL)
 	{
 	  DECL_PACKED (x) |= TYPE_PACKED (t);
-	  empty = 0;
+
+	  if (DECL_C_BIT_FIELD (x) && integer_zerop (DECL_INITIAL (x)))
+	    /* A zero-width bitfield doesn't do the trick.  */;
+	  else
+	    empty = 0;
 	}
 
       if (TREE_CODE (x) == USING_DECL)
