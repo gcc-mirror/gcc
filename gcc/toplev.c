@@ -2561,10 +2561,13 @@ rest_of_compilation (decl)
     {
       /* Running another jump optimization pass before the second
 	 cse pass sometimes simplifies the RTL enough to allow
-	 the second CSE pass to do a better job.  */
-      TIMEVAR (cse2_time, reg_scan (insns, max_reg_num (), 0));
+	 the second CSE pass to do a better job.  Jump_optimize can change
+	 max_reg_num so we must rerun reg_scan afterwards.
+	 ??? Rework to not call reg_scan so often.  */
+      TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
       TIMEVAR (jump_time, jump_optimize (insns, 0, 0, 1));
 
+      TIMEVAR (cse2_time, reg_scan (insns, max_reg_num (), 0));
       TIMEVAR (cse2_time, tem = cse_main (insns, max_reg_num (),
 					  1, cse2_dump_file));
       if (tem)
