@@ -177,12 +177,6 @@ if test -n "${with_target_subdir}"; then
     # Of the functions in $checkfuncs, newlib only has strerror.
     AC_DEFINE_NOAUTOHEADER(HAVE_STRERROR)
 
-    case "${host}" in
-      *-*-cygwin*)
-	AC_DEFINE(HAVE_SYS_ERRLIST)
-	;;
-    esac
-
     setobjs=yes
 
   fi
@@ -195,6 +189,13 @@ else
 fi
 
 AC_SUBST(CHECK)
+
+case "${host}" in
+  *-*-cygwin*) 
+    AC_DEFINE(HAVE_SYS_ERRLIST)
+    AC_DEFINE(HAVE_SYS_NERR)
+    ;;
+esac
 
 if test -z "${setobjs}"; then
   case "${host}" in
