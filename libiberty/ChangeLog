@@ -1,3 +1,20 @@
+1998-10-23  Mark Mitchell  <mark@markmitchell.com>
+
+	* cplus-dem.c (work_stuff): Replace const_type and volatile_type
+	with type_quals.
+	(TYPE_UNQUALIFIED): New macro.
+	(TYPE_QUAL_CONST): Likewise.
+	(TYPE_QUAL_VOLATILE): Likewise.
+	(TYPE_QUAL_RESTRICT): Likewise.
+	(code_for_qualifier): New function.
+	(qualifier_string): Likewise.
+	(demangle_qualifier): Likewise.
+	(internal_cplus_demangle): Use them.
+	(demangle_signature): Likewise.
+	(demangle_template_value_parm): Likewise.
+	(do_type): Likewise.
+	(demangle_fund_type)): Likewise.
+	
 Thu Oct 22 19:58:43 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* splay-tree.c (splay_tree_foreach_helper): Make definition static
