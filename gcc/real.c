@@ -5173,7 +5173,7 @@ asctoeg (ss, y, oprec)
 	      && (c != '\0')
 	      && (c != '\n') && (c != '\r') && (c != ' ')
 	      && (c != ','))
-	    goto error;
+	    goto unexpected_char_error;
 	  --sp;
 	  while (*sp == '0')
 	    *sp-- = 'z';
@@ -5243,18 +5243,18 @@ asctoeg (ss, y, oprec)
       goto expnt;
     case '.':			/* decimal point */
       if (decflg)
-	goto error;
+	goto unexpected_char_error;
       ++decflg;
       break;
     case '-':
       nsign = 0xffff;
       if (sgnflg)
-	goto error;
+	goto unexpected_char_error;
       ++sgnflg;
       break;
     case '+':
       if (sgnflg)
-	goto error;
+	goto unexpected_char_error;
       ++sgnflg;
       break;
     case ',':
@@ -5267,7 +5267,7 @@ asctoeg (ss, y, oprec)
     case 'I':
       goto infinite;
     default:
-    error:
+    unexpected_char_error:
 #ifdef NANS
       einan (yy);
 #else

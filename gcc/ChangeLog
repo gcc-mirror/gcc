@@ -1,3 +1,7 @@
+2000-07-27  Rodney Brown  <RodneyBrown@pmsc.com>
+
+	* real.c (asctoeg): Rename `error' label to unexpected_char_error
+
 2000-07-26  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/vxarm.h (CPP_PREDEFINES): Remove definition of
