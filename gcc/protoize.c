@@ -111,9 +111,9 @@ extern char *version_string;
 
 extern char *getpwd ();
 
-static void usage PROTO ((void)) ATTRIBUTE_NORETURN;
-static void aux_info_corrupted PROTO ((void)) ATTRIBUTE_NORETURN;
-static void declare_source_confusing PROTO ((const char *)) ATTRIBUTE_NORETURN;
+static void usage PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void aux_info_corrupted PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void declare_source_confusing PARAMS ((const char *)) ATTRIBUTE_NORETURN;
 
 /* Aliases for pointers to void.
    These were made to facilitate compilation with old brain-dead DEC C
@@ -165,9 +165,21 @@ extern size_t   strlen ()
 
 /* Define a default place to find the SYSCALLS.X file.  */
 
-#ifndef STD_PROTO_DIR
-#define STD_PROTO_DIR "/usr/local/lib"
-#endif /* !defined (STD_PROTO_DIR) */
+#ifndef UNPROTOIZE
+
+#ifndef STANDARD_EXEC_PREFIX
+#define STANDARD_EXEC_PREFIX "/usr/local/lib/gcc-lib/"
+#endif /* !defined STANDARD_EXEC_PREFIX */
+
+static char *standard_exec_prefix = STANDARD_EXEC_PREFIX;
+static char *target_machine = DEFAULT_TARGET_MACHINE;
+static char *target_version = DEFAULT_TARGET_VERSION;
+
+#ifndef GET_ENV_PATH_LIST
+#define GET_ENV_PATH_LIST(VAR,NAME)	do { (VAR) = getenv (NAME); } while (0)
+#endif
+
+#endif /* !defined (UNPROTOIZE) */
 
 /* Suffix of aux_info files.  */
 
@@ -187,7 +199,7 @@ static const char syscalls_filename[] = "SYSCALLS.c";
 
 /* Default place to find the above file.  */
 
-static const char * const default_syscalls_dir = STD_PROTO_DIR;
+static char * default_syscalls_dir;
 
 /* Variable to hold the complete absolutized filename of the SYSCALLS.c.X
    file.  */
@@ -569,10 +581,10 @@ static char * saved_repl_write_ptr;
 static const char *shortpath ();
 
 /* Translate and output an error message.  */
-static void notice			PVPROTO ((const char *, ...))
+static void notice			PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1;
 static void
-notice VPROTO ((const char *msgid, ...))
+notice VPARAMS ((const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *msgid;
@@ -592,7 +604,7 @@ notice VPROTO ((const char *msgid, ...))
 
 char *
 xstrerror(e)
-  int e;
+     int e;
 {
 
 #ifdef HAVE_STRERROR
@@ -614,7 +626,7 @@ xstrerror(e)
 
 pointer_type
 xmalloc (byte_count)
-  size_t byte_count;
+     size_t byte_count;
 {
   register pointer_type rv = (pointer_type) malloc (byte_count);
   if (rv == NULL)
@@ -4458,16 +4470,27 @@ do_processing ()
   if (nondefault_syscalls_dir)
     {
       syscalls_absolute_filename
-        = (char *) xmalloc (strlen (nondefault_syscalls_dir)
-                            + sizeof (syscalls_filename) + 1);
+        = (char *) xmalloc (strlen (nondefault_syscalls_dir) + 1
+                            + sizeof (syscalls_filename));
       strcpy (syscalls_absolute_filename, nondefault_syscalls_dir);
     }
   else
     {
+      GET_ENV_PATH_LIST (default_syscalls_dir, "GCC_EXEC_PREFIX");
+      if (!default_syscalls_dir)
+	{
+	  default_syscalls_dir = standard_exec_prefix;
+	}
       syscalls_absolute_filename
-        = (char *) xmalloc (strlen (default_syscalls_dir)
-                            + sizeof (syscalls_filename) + 1);
+        = (char *) xmalloc (strlen (default_syscalls_dir) + 0
+			    + strlen (target_machine) + 1
+			    + strlen (target_version) + 1
+                            + sizeof (syscalls_filename));
       strcpy (syscalls_absolute_filename, default_syscalls_dir);
+      strcat (syscalls_absolute_filename, target_machine);
+      strcat (syscalls_absolute_filename, "/");
+      strcat (syscalls_absolute_filename, target_version);
+      strcat (syscalls_absolute_filename, "/");
     }
 
   syscalls_len = strlen (syscalls_absolute_filename);

@@ -1949,16 +1949,18 @@ cexp.o: $(srcdir)/cexp.c $(CONFIG_H) system.h
 $(srcdir)/cexp.c: $(srcdir)/cexp.y
 	cd $(srcdir); $(BISON) -o cexp.c cexp.y
 
+PREPROCESSOR_DEFINES = \
+  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
+  -DGPLUSPLUS_INCLUDE_DIR=\"$(gcc_gxx_include_dir)\" \
+  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
+  -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
+  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\"
 # We use $(libsubdir)/$(unlibsubdir) to match the
 # -iprefix argument which gcc will pass if GCC_EXEC_PREFIX is used.
 cccp.o: cccp.c $(CONFIG_H) intl.h pcp.h version.c config.status system.h \
            mbchar.h prefix.h Makefile.in
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gcc_gxx_include_dir)\" \
-	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
-	  -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
-	  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
+	  $(PREPROCESSOR_DEFINES) \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
 LIBCPP_OBJS =	cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o cppfiles.o \
@@ -1988,11 +1990,7 @@ cppfiles.o: cppfiles.c $(CONFIG_H) cpplib.h intl.h system.h
 cppinit.o:  cppinit.c $(CONFIG_H) cpplib.h intl.h system.h \
 		cpphash.h prefix.h output.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gcc_gxx_include_dir)\" \
-	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
-	  -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
-	  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
+	  $(PREPROCESSOR_DEFINES) \
 	  -c `echo $(srcdir)/cppinit.c | sed 's,^\./,,'`
 
 # Note for the stamp targets, we run the program `true' instead of
@@ -2011,23 +2009,13 @@ unprotoize$(exeext): unprotoize.o $(PROTO_OBJS) $(LIBDEPS)
 protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) system.h \
    Makefile
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-          -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gcc_gxx_include_dir)\" \
-	  -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
-	  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
-	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
-	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
+	  $(DRIVER_DEFINES) $(PREPROCESSOR_DEFINES) \
 	  $(srcdir)/protoize.c
 
 unprotoize.o: unprotoize.c protoize.c $(srcdir)/../include/getopt.h \
    $(CONFIG_H) system.h Makefile
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-          -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gcc_gxx_include_dir)\" \
-	  -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
-	  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
-	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
-	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
+	  $(DRIVER_DEFINES) $(PREPROCESSOR_DEFINES) \
 	  $(srcdir)/unprotoize.c
 
 # This info describes the target machine, so compile with GCC just built.
@@ -2045,22 +2033,26 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 	cp $(srcdir)/protoize.c tmp-proto.c
 	chmod u+w tmp-proto.c
 	./protoize -N -B ./ -x getopt.h -c "-B./ -Wall -Wwrite-strings \
-	  $(CFLAGS) $(INCLUDES) \
+	  $(GCC_CFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=0 \
 	  -DGPLUSPLUS_INCLUDE_DIR=0 \
 	  -DCROSS_INCLUDE_DIR=0 \
 	  -DTOOL_INCLUDE_DIR=0 \
-	  -DSTD_PROTO_DIR=0" tmp-proto.c
+	  -DSTANDARD_EXEC_PREFIX=0 \
+	  -DDEFAULT_TARGET_MACHINE=0 \
+	  -DDEFAULT_TARGET_VERSION=0" tmp-proto.c
 	@echo '**********' Expect 400 lines of differences.
 	-diff $(srcdir)/protoize.c tmp-proto.c > tmp-proto.diff
 	-wc -l tmp-proto.diff
 	./unprotoize -N -x getopt.h -c "-B./ -Wall -Wwrite-strings \
-	  $(CFLAGS) $(INCLUDES) \
+	  $(GCC_CFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=0 \
 	  -DGPLUSPLUS_INCLUDE_DIR=0 \
 	  -DCROSS_INCLUDE_DIR=0 \
 	  -DTOOL_INCLUDE_DIR=0 \
-	  -DSTD_PROTO_DIR=0" tmp-proto.c
+	  -DSTANDARD_EXEC_PREFIX=0 \
+	  -DDEFAULT_TARGET_MACHINE=0 \
+	  -DDEFAULT_TARGET_VERSION=0" tmp-proto.c
 	@echo Expect zero differences.
 	diff $(srcdir)/protoize.c tmp-proto.c | cat
 	-rm -f tmp-proto.[cs] tmp-proto$(objext)
