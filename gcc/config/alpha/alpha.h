@@ -1338,14 +1338,6 @@ do {									     \
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1
 
-/* This flag, if defined, says the same insns that convert to a signed fixnum
-   also convert validly to an unsigned one.
-
-   We actually lie a bit here as overflow conditions are different.  But
-   they aren't being checked anyway.  */
-
-#define FIXUNS_TRUNC_LIKE_FIX_TRUNC
-
 /* Max number of bytes we can move to or from memory
    in one reasonably fast instruction.  */
 
@@ -1654,6 +1646,7 @@ do {						\
   {"signed_comparison_operator", {EQ, NE, LE, LT, GE, GT}},		\
   {"alpha_fp_comparison_operator", {EQ, LE, LT, UNORDERED}},		\
   {"divmod_operator", {DIV, MOD, UDIV, UMOD}},				\
+  {"fix_operator", {FIX, UNSIGNED_FIX}},				\
   {"const0_operand", {CONST_INT, CONST_DOUBLE, CONST_VECTOR}},		\
   {"samegp_function_operand", {SYMBOL_REF}},				\
   {"direct_call_operand", {SYMBOL_REF}},				\

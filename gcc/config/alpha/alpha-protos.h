@@ -75,6 +75,7 @@ extern int alpha_swapped_comparison_operator (rtx, enum machine_mode);
 extern int signed_comparison_operator (rtx, enum machine_mode);
 extern int alpha_fp_comparison_operator (rtx, enum machine_mode);
 extern int divmod_operator (rtx, enum machine_mode);
+extern int fix_operator (rtx, enum machine_mode);
 extern int aligned_memory_operand (rtx, enum machine_mode);
 extern int unaligned_memory_operand (rtx, enum machine_mode);
 extern int reg_or_unaligned_mem_operand (rtx, enum machine_mode);

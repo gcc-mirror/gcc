@@ -2337,13 +2337,15 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 
 (define_insn_and_split "*fix_truncdfsi_ieee"
   [(set (match_operand:SI 0 "memory_operand" "=m")
-	(subreg:SI (fix:DI (match_operand:DF 1 "reg_or_0_operand" "fG")) 0))
+	(subreg:SI
+	  (match_operator:DI 4 "fix_operator" 
+	    [(match_operand:DF 1 "reg_or_0_operand" "fG")]) 0))
    (clobber (match_scratch:DI 2 "=&f"))
    (clobber (match_scratch:SI 3 "=&f"))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
   "#"
   "&& reload_completed"
-  [(set (match_dup 2) (fix:DI (match_dup 1)))
+  [(set (match_dup 2) (match_op_dup 4 [(match_dup 1)]))
    (set (match_dup 3) (unspec:SI [(match_dup 2)] UNSPEC_CVTQL))
    (set (match_dup 0) (match_dup 3))]
   ""
@@ -2352,22 +2354,25 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 
 (define_insn_and_split "*fix_truncdfsi_internal"
   [(set (match_operand:SI 0 "memory_operand" "=m")
-	(subreg:SI (fix:DI (match_operand:DF 1 "reg_or_0_operand" "fG")) 0))
+	(subreg:SI
+	  (match_operator:DI 3 "fix_operator" 
+	    [(match_operand:DF 1 "reg_or_0_operand" "fG")]) 0))
    (clobber (match_scratch:DI 2 "=f"))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
   "#"
   "&& reload_completed"
-  [(set (match_dup 2) (fix:DI (match_dup 1)))
-   (set (match_dup 3) (unspec:SI [(match_dup 2)] UNSPEC_CVTQL))
-   (set (match_dup 0) (match_dup 3))]
+  [(set (match_dup 2) (match_op_dup 3 [(match_dup 1)]))
+   (set (match_dup 4) (unspec:SI [(match_dup 2)] UNSPEC_CVTQL))
+   (set (match_dup 0) (match_dup 4))]
   ;; Due to REG_CANNOT_CHANGE_SIZE issues, we cannot simply use SUBREG.
-  "operands[3] = gen_rtx_REG (SImode, REGNO (operands[2]));"
+  "operands[4] = gen_rtx_REG (SImode, REGNO (operands[2]));"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn "*fix_truncdfdi_ieee"
   [(set (match_operand:DI 0 "reg_no_subreg_operand" "=&f")
-	(fix:DI (match_operand:DF 1 "reg_or_0_operand" "fG")))]
+	(match_operator:DI 2 "fix_operator" 
+	  [(match_operand:DF 1 "reg_or_0_operand" "fG")]))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
   "cvt%-q%/ %R1,%0"
   [(set_attr "type" "fadd")
@@ -2375,9 +2380,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
    (set_attr "round_suffix" "c")
    (set_attr "trap_suffix" "v_sv_svi")])
 
-(define_insn "fix_truncdfdi2"
+(define_insn "*fix_truncdfdi2"
   [(set (match_operand:DI 0 "reg_no_subreg_operand" "=f")
-	(fix:DI (match_operand:DF 1 "reg_or_0_operand" "fG")))]
+	(match_operator:DI 2 "fix_operator" 
+	  [(match_operand:DF 1 "reg_or_0_operand" "fG")]))]
   "TARGET_FP"
   "cvt%-q%/ %R1,%0"
   [(set_attr "type" "fadd")
@@ -2385,18 +2391,32 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
    (set_attr "round_suffix" "c")
    (set_attr "trap_suffix" "v_sv_svi")])
 
+(define_expand "fix_truncdfdi2"
+  [(set (match_operand:DI 0 "reg_no_subreg_operand" "")
+	(fix:DI (match_operand:DF 1 "reg_or_0_operand" "")))]
+  "TARGET_FP"
+  "")
+
+(define_expand "fixuns_truncdfdi2"
+  [(set (match_operand:DI 0 "reg_no_subreg_operand" "")
+	(unsigned_fix:DI (match_operand:DF 1 "reg_or_0_operand" "")))]
+  "TARGET_FP"
+  "")
+
 ;; Likewise between SFmode and SImode.
 
 (define_insn_and_split "*fix_truncsfsi_ieee"
   [(set (match_operand:SI 0 "memory_operand" "=m")
-	(subreg:SI (fix:DI (float_extend:DF
-		 (match_operand:SF 1 "reg_or_0_operand" "fG"))) 0))
+	(subreg:SI
+	  (match_operator:DI 4 "fix_operator" 
+	    [(float_extend:DF
+	       (match_operand:SF 1 "reg_or_0_operand" "fG"))]) 0))
    (clobber (match_scratch:DI 2 "=&f"))
    (clobber (match_scratch:SI 3 "=&f"))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
   "#"
   "&& reload_completed"
-  [(set (match_dup 2) (fix:DI (float_extend:DF (match_dup 1))))
+  [(set (match_dup 2) (match_op_dup 4 [(float_extend:DF (match_dup 1))]))
    (set (match_dup 3) (unspec:SI [(match_dup 2)] UNSPEC_CVTQL))
    (set (match_dup 0) (match_dup 3))]
   ""
@@ -2405,24 +2425,26 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 
 (define_insn_and_split "*fix_truncsfsi_internal"
   [(set (match_operand:SI 0 "memory_operand" "=m")
-	(subreg:SI (fix:DI (float_extend:DF
-		 (match_operand:SF 1 "reg_or_0_operand" "fG"))) 0))
+	(subreg:SI
+	  (match_operator:DI 3 "fix_operator" 
+	    [(float_extend:DF
+	       (match_operand:SF 1 "reg_or_0_operand" "fG"))]) 0))
    (clobber (match_scratch:DI 2 "=f"))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
   "#"
   "&& reload_completed"
-  [(set (match_dup 2) (fix:DI (float_extend:DF (match_dup 1))))
-   (set (match_dup 3) (unspec:SI [(match_dup 2)] UNSPEC_CVTQL))
-   (set (match_dup 0) (match_dup 3))]
+  [(set (match_dup 2) (match_op_dup 3 [(float_extend:DF (match_dup 1))]))
+   (set (match_dup 4) (unspec:SI [(match_dup 2)] UNSPEC_CVTQL))
+   (set (match_dup 0) (match_dup 4))]
   ;; Due to REG_CANNOT_CHANGE_SIZE issues, we cannot simply use SUBREG.
-  "operands[3] = gen_rtx_REG (SImode, REGNO (operands[2]));"
+  "operands[4] = gen_rtx_REG (SImode, REGNO (operands[2]));"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn "*fix_truncsfdi_ieee"
   [(set (match_operand:DI 0 "reg_no_subreg_operand" "=&f")
-	(fix:DI (float_extend:DF
-		 (match_operand:SF 1 "reg_or_0_operand" "fG"))))]
+	(match_operator:DI 2 "fix_operator" 
+	  [(float_extend:DF (match_operand:SF 1 "reg_or_0_operand" "fG"))]))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
   "cvt%-q%/ %R1,%0"
   [(set_attr "type" "fadd")
@@ -2430,10 +2452,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
    (set_attr "round_suffix" "c")
    (set_attr "trap_suffix" "v_sv_svi")])
 
-(define_insn "fix_truncsfdi2"
+(define_insn "*fix_truncsfdi2"
   [(set (match_operand:DI 0 "reg_no_subreg_operand" "=f")
-	(fix:DI (float_extend:DF
-		 (match_operand:SF 1 "reg_or_0_operand" "fG"))))]
+	(match_operator:DI 2 "fix_operator" 
+	  [(float_extend:DF (match_operand:SF 1 "reg_or_0_operand" "fG"))]))]
   "TARGET_FP"
   "cvt%-q%/ %R1,%0"
   [(set_attr "type" "fadd")
@@ -2441,11 +2463,30 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
    (set_attr "round_suffix" "c")
    (set_attr "trap_suffix" "v_sv_svi")])
 
+(define_expand "fix_truncsfdi2"
+  [(set (match_operand:DI 0 "reg_no_subreg_operand" "")
+	(fix:DI (float_extend:DF (match_operand:SF 1 "reg_or_0_operand" ""))))]
+  "TARGET_FP"
+  "")
+
+(define_expand "fixuns_truncsfdi2"
+  [(set (match_operand:DI 0 "reg_no_subreg_operand" "")
+	(unsigned_fix:DI
+	  (float_extend:DF (match_operand:SF 1 "reg_or_0_operand" ""))))]
+  "TARGET_FP"
+  "")
+
 (define_expand "fix_trunctfdi2"
   [(use (match_operand:DI 0 "register_operand" ""))
    (use (match_operand:TF 1 "general_operand" ""))]
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_cvt (FIX, operands); DONE;")
+
+(define_expand "fixuns_trunctfdi2"
+  [(use (match_operand:DI 0 "register_operand" ""))
+   (use (match_operand:TF 1 "general_operand" ""))]
+  "TARGET_HAS_XFLOATING_LIBS"
+  "alpha_emit_xfloating_cvt (UNSIGNED_FIX, operands); DONE;")
 
 (define_insn "*floatdisf_ieee"
   [(set (match_operand:SF 0 "register_operand" "=&f")

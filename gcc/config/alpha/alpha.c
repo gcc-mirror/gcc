@@ -1179,16 +1179,19 @@ alpha_fp_comparison_operator (rtx op, enum machine_mode mode)
 int
 divmod_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
-  switch (GET_CODE (op))
-    {
-    case DIV:  case MOD:  case UDIV:  case UMOD:
-      return 1;
+  enum rtx_code code = GET_CODE (op);
 
-    default:
-      break;
-    }
+  return (code == DIV || code == MOD || code == UDIV || code == UMOD);
+}
 
-  return 0;
+/* Return 1 if this is a float->int conversion operator.  */
+
+int
+fix_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  enum rtx_code code = GET_CODE (op);
+
+  return (code == FIX || code == UNSIGNED_FIX);
 }
 
 /* Return 1 if this memory address is a known aligned register plus
@@ -3774,11 +3777,15 @@ alpha_emit_xfloating_compare (enum rtx_code code, rtx op0, rtx op1)
 /* Emit an X_floating library function call for a conversion.  */
 
 void
-alpha_emit_xfloating_cvt (enum rtx_code code, rtx operands[])
+alpha_emit_xfloating_cvt (enum rtx_code orig_code, rtx operands[])
 {
   int noperands = 1, mode;
   rtx out_operands[2];
   const char *func;
+  enum rtx_code code = orig_code;
+
+  if (code == UNSIGNED_FIX)
+    code = FIX;
 
   func = alpha_lookup_xfloating_lib_func (code);
 
@@ -3801,7 +3808,8 @@ alpha_emit_xfloating_cvt (enum rtx_code code, rtx operands[])
     }
 
   alpha_emit_xfloating_libcall (func, operands[0], out_operands, noperands,
-				gen_rtx_fmt_e (code, GET_MODE (operands[0]),
+				gen_rtx_fmt_e (orig_code,
+					       GET_MODE (operands[0]),
 					       operands[1]));
 }
 
