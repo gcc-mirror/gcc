@@ -609,25 +609,6 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_set__Ljava_lang_String_2Ljava_lang_O
   (*env)->ReleaseStringUTFChars (env, jname, name);
 }
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_create
-  (JNIEnv *env, jobject obj, jstring jtypename)
-{
-  const char *typename;
-  gpointer widget;
-
-  typename = (*env)->GetStringUTFChars (env, jtypename, NULL);
-
-  gdk_threads_enter ();
-  gtk_button_get_type ();
-  widget = gtk_object_newv (gtk_type_from_name (typename),
-			    0, NULL);
-/*    widget = gtk_type_new (gtk_type_from_name (typename)); */
-  gdk_threads_leave ();
-
-  (*env)->ReleaseStringUTFChars (env, jtypename, typename);
-  NSA_SET_PTR (env, obj, widget);
-}
-
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectHooks
   (JNIEnv *env, jobject obj)
 {
@@ -638,14 +619,8 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectHooks
   gdk_threads_enter ();
   gtk_widget_realize (GTK_WIDGET (ptr));
   if(GTK_IS_BUTTON(ptr))
-    {
-      g_print("-- connecting a button --\n");
       connect_awt_hook (env, obj, 1, GTK_BUTTON(ptr)->event_window);
-    }
   else
-    {
   connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
-      g_print("Connection object %p with window %p (but ptr is %p)\n", obj, GTK_WIDGET(ptr)->window, ptr);
-    }
   gdk_threads_leave ();
 }
