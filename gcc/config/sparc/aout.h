@@ -48,10 +48,7 @@ do {									\
 #define DATA_SECTION_ASM_OP "\t.data"
 
 /* This is how to output a note to DBX telling it the line number
-   to which the following sequence of instructions corresponds.
-
-   This is needed for SunOS 4.0, and should not hurt for 3.2
-   versions either.  */
+   to which the following sequence of instructions corresponds.  */
 #define ASM_OUTPUT_SOURCE_LINE(file, line, counter)	\
   fprintf (file, ".stabn 68,0,%d,LM%d\nLM%d:\n",	\
 	   line, counter, counter)

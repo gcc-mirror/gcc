@@ -699,14 +699,9 @@ extern struct sparc_cpu_select sparc_select[];
 #define LONG_LONG_TYPE_SIZE	64
 #define FLOAT_TYPE_SIZE		32
 #define DOUBLE_TYPE_SIZE	64
-
-#if 0
-/* ??? This does not work in SunOS 4.x, so it is not enabled here.
-   Instead, it is enabled in sol2.h, because it does work under Solaris.  */
-/* Define for support of TFmode long double.
-   SPARC ABI says that long double is 4 words.  */
-#define LONG_DOUBLE_TYPE_SIZE 128
-#endif
+/* LONG_DOUBLE_TYPE_SIZE is defined per OS even though the
+   SPARC ABI says that it is 128-bit wide.  */
+/* #define LONG_DOUBLE_TYPE_SIZE	128 */
 
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */

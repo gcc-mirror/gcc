@@ -1784,10 +1784,6 @@ sh-*-*)
 	tm_file="${tm_file} dbxcoff.h sh/coff.h"
 	use_fixproto=yes
 	;;
-sparc-tti-*)
-	tm_file="${tm_file} sparc/pbd.h"
-	use_fixproto=yes
-	;;
 sparc-*-netbsdelf*)
 	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
 	;;
