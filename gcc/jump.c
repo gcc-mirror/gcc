@@ -1201,10 +1201,6 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		rtx cond0, cond1, aval, bval;
 		rtx target;
 
-		if (SMALL_REGISTER_CLASSES
-		    && FUNCTION_VALUE_REGNO_P (REGNO (temp3)))
-		  temp3 = temp1;
-
 		/* Copy the compared variables into cond0 and cond1, so that
 		   any side effects performed in or after the old comparison,
 		   will not affect our compare which will come later.  */
