@@ -287,7 +287,7 @@ resolve_contained_fntype (gfc_symbol * sym, gfc_namespace * ns)
 
 
 /* Add NEW_ARGS to the formal argument list of PROC, taking care not to
-   introduce duplicates.   */
+   introduce duplicates.  */
 
 static void
 merge_argument_lists (gfc_symbol *proc, gfc_formal_arglist *new_args)
@@ -343,7 +343,7 @@ resolve_entries (gfc_namespace * ns)
   if (ns->proc_name->attr.entry_master)
     return;
 
-  /* If this isn't a procedure something has gone horribly wrong.   */
+  /* If this isn't a procedure something has gone horribly wrong.  */
   gcc_assert (ns->proc_name->attr.flavor == FL_PROCEDURE);
   
   /* Remember the current namespace.  */
@@ -433,7 +433,7 @@ resolve_contained_functions (gfc_namespace * ns)
 
 
 /* Resolve all of the elements of a structure constructor and make sure that
-   the types are correct. */
+   the types are correct.  */
 
 static try
 resolve_structure_cons (gfc_expr * expr)
@@ -1581,7 +1581,7 @@ check_dimension (int i, gfc_array_ref * ar, gfc_array_spec * as)
 {
 
 /* Given start, end and stride values, calculate the minimum and
-   maximum referenced indexes. */
+   maximum referenced indexes.  */
 
   switch (ar->type)
     {
@@ -1609,7 +1609,7 @@ check_dimension (int i, gfc_array_ref * ar, gfc_array_spec * as)
 	goto bound;
 
       /* TODO: Possibly, we could warn about end[i] being out-of-bound although
-         it is legal (see 6.2.2.3.1). */
+         it is legal (see 6.2.2.3.1).  */
 
       break;
 
@@ -1982,7 +1982,7 @@ resolve_ref (gfc_expr * expr)
 
 
 /* Given an expression, determine its shape.  This is easier than it sounds.
-   Leaves the shape array NULL if it is not possible to determine the shape. */
+   Leaves the shape array NULL if it is not possible to determine the shape.  */
 
 static void
 expression_shape (gfc_expr * e)
@@ -2022,7 +2022,7 @@ expression_rank (gfc_expr * e)
     {
       if (e->expr_type == EXPR_ARRAY)
 	goto done;
-      /* Constructors can have a rank different from one via RESHAPE().   */
+      /* Constructors can have a rank different from one via RESHAPE().  */
 
       if (e->symtree == NULL)
 	{
@@ -3346,7 +3346,7 @@ gfc_resolve_assign_in_forall (gfc_code *code, int nvar, gfc_expr **var_expr)
       forall_index = var_expr[n]->symtree->n.sym;
 
       /* Check whether the assignment target is one of the FORALL index
-         variable. */
+         variable.  */
       if ((code->expr->expr_type == EXPR_VARIABLE)
           && (code->expr->symtree->n.sym == forall_index))
         gfc_error ("Assignment to a FORALL index variable at %L",
@@ -3461,7 +3461,7 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
   if (forall_save == 0)
     {
       /* Count the total number of FORALL index in the nested FORALL
-         construct in order to allocate the VAR_EXPR with proper size.   */
+         construct in order to allocate the VAR_EXPR with proper size.  */
       next = code;
       while ((next != NULL) && (next->op == EXEC_FORALL))
         {
@@ -3470,7 +3470,7 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
           next = next->block->next;
         }
 
-      /* allocate VAR_EXPR with NUMBER_OF_FORALL_INDEX elements.   */
+      /* Allocate VAR_EXPR with NUMBER_OF_FORALL_INDEX elements.  */
       var_expr = (gfc_expr **) gfc_getmem (total_var * sizeof (gfc_expr *));
     }
 
@@ -4071,7 +4071,7 @@ resolve_symbol (gfc_symbol * sym)
     gfc_error("Intrinsic at %L does not exist", &sym->declared_at);
 
   /* Resolve array specifier. Check as well some constraints
-     on COMMON blocks. */
+     on COMMON blocks.  */
 
   check_constant = sym->attr.in_common && !sym->attr.pointer;
   gfc_resolve_array_spec (sym->as, check_constant);

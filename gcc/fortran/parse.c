@@ -400,7 +400,7 @@ next_fixed (void)
 	  break;
 
           /* Comments have already been skipped by the time we get
-	     here so don't bother checking for them. */
+	     here so don't bother checking for them.  */
 
 	default:
 	  gfc_buffer_error (0);

@@ -132,7 +132,7 @@ static GTY(()) gfc_intrinsic_map_t gfc_intrinsic_map[] =
    elemental functions to manipulate reals.  */
 typedef struct
 {
-  tree arg;     /* Variable tree to view convert to integer.   */ 
+  tree arg;     /* Variable tree to view convert to integer.  */
   tree expn;    /* Variable tree to save exponent.  */
   tree frac;    /* Variable tree to save fraction.  */
   tree smask;   /* Constant tree of sign's mask.  */
@@ -165,7 +165,7 @@ gfc_conv_intrinsic_function_args (gfc_se * se, gfc_expr * expr)
 	continue;
 
       /* Evaluate the parameter.  This will substitute scalarized
-         references automatically. */
+         references automatically.  */
       gfc_init_se (&argse, se);
 
       if (actual->expr->ts.type == BT_CHARACTER)
@@ -2254,7 +2254,7 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 }
 
 
-/* Scan a string for any one of the characters in a set of characters.   */
+/* Scan a string for any one of the characters in a set of characters.  */
 
 static void
 gfc_conv_intrinsic_scan (gfc_se * se, gfc_expr * expr)

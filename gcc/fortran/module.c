@@ -1398,7 +1398,7 @@ static const mstring attr_bits[] =
     minit (NULL, -1)
 };
 
-/* Specialisation of mio_name. */
+/* Specialisation of mio_name.  */
 DECL_MIO_NAME(ab_attribute)
 DECL_MIO_NAME(ar_type)
 DECL_MIO_NAME(array_type)
@@ -2334,7 +2334,7 @@ static const mstring expr_types[] = {
 
 /* INTRINSIC_ASSIGN is missing because it is used as an index for
    generic operators, not in expressions.  INTRINSIC_USER is also
-   replaced by the correct function name by the time we see it. */
+   replaced by the correct function name by the time we see it.  */
 
 static const mstring intrinsics[] =
 {

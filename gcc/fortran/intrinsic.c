@@ -41,7 +41,7 @@ static gfc_namespace *gfc_intrinsic_namespace;
 int gfc_init_expr = 0;
 
 /* Pointers to a intrinsic function and its argument names being
-   checked. */
+   checked.  */
 
 char *gfc_current_intrinsic, *gfc_current_intrinsic_arg[MAX_INTRINSIC_ARGS];
 locus *gfc_current_intrinsic_where;
@@ -222,7 +222,7 @@ add_sym (const char *name, int elemental, int actual_ok ATTRIBUTE_UNUSED,
   va_list argp;
 
   /* First check that the intrinsic belongs to the selected standard.
-     If not, don't add it to the symbol list. */
+     If not, don't add it to the symbol list.  */
   if (!(gfc_option.allow_std & standard))
     return;
 
@@ -422,7 +422,7 @@ static void add_sym_2 (const char *name, int elemental, int actual_ok, bt type,
 
 
 /* Add the name of an intrinsic subroutine with two arguments to the list
-   of intrinsic names. */
+   of intrinsic names.  */
 
 static void add_sym_2s (const char *name, int elemental, int actual_ok, bt type,
 			int kind, int standard,
@@ -526,7 +526,7 @@ static void add_sym_3red (const char *name, int elemental,
 }
 
 /* Add the name of an intrinsic subroutine with three arguments to the list
-   of intrinsic names. */
+   of intrinsic names.  */
 
 static void add_sym_3s (const char *name, int elemental, int actual_ok, bt type,
 			int kind, int standard,
@@ -1688,7 +1688,7 @@ add_functions (void)
 
   make_generic ("scan", GFC_ISYM_SCAN, GFC_STD_F95);
 
-  /* Added for G77 compatibility garbage. */
+  /* Added for G77 compatibility garbage.  */
   add_sym_0 ("second", 0, 1, BT_REAL, 4,  GFC_STD_GNU,NULL, NULL, NULL);
 
   make_generic ("second", GFC_ISYM_SECOND, GFC_STD_GNU);
@@ -1903,7 +1903,7 @@ add_subroutines (void)
 	      gfc_check_cpu_time, NULL, gfc_resolve_cpu_time,
 	      tm, BT_REAL, dr, 0);
 
-  /* More G77 compatibility garbage. */
+  /* More G77 compatibility garbage.  */
   add_sym_1s ("second", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_second_sub, NULL, gfc_resolve_second_sub,
 	      tm, BT_REAL, dr, 0);
@@ -1913,7 +1913,7 @@ add_subroutines (void)
 	      dt, BT_CHARACTER, dc, 1, tm, BT_CHARACTER, dc, 1,
 	      zn, BT_CHARACTER, dc, 1, vl, BT_INTEGER, di, 1);
 
-  /* More G77 compatibility garbage. */
+  /* More G77 compatibility garbage.  */
   add_sym_2s ("etime", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
 	     gfc_check_etime_sub, NULL, gfc_resolve_etime_sub,
 	     vl, BT_REAL, 4, 0, tm, BT_REAL, 4, 0);
@@ -1953,7 +1953,7 @@ add_subroutines (void)
 	      st, BT_INTEGER, di, 1);
 
 
-  /* F2003 subroutine to get environment variables. */
+  /* F2003 subroutine to get environment variables.  */
 
   add_sym_5s ("get_environment_variable", 0, 1, BT_UNKNOWN, 0, GFC_STD_F2003,
 	     NULL, NULL, gfc_resolve_get_environment_variable,
@@ -1979,7 +1979,7 @@ add_subroutines (void)
 	     sz, BT_INTEGER, di, 1, pt, BT_INTEGER, di, 1,
 	     gt, BT_INTEGER, di, 1);
 
-  /* More G77 compatibility garbage. */
+  /* More G77 compatibility garbage.  */
   add_sym_1s ("srand", 0, 1, BT_UNKNOWN, di, GFC_STD_GNU,
              gfc_check_srand, NULL, gfc_resolve_srand,
              c, BT_INTEGER, 4, 0);
@@ -2138,7 +2138,7 @@ gfc_intrinsic_init_1 (void)
   add_conversions ();
 
   /* Set the pure flag.  All intrinsic functions are pure, and
-     intrinsic subroutines are pure if they are elemental. */
+     intrinsic subroutines are pure if they are elemental.  */
 
   for (i = 0; i < nfunc; i++)
     functions[i].pure = 1;
@@ -2304,7 +2304,7 @@ do_sort:
 
       actual = a;
     }
-  actual->next = NULL;		/* End the sorted argument list. */
+  actual->next = NULL;		/* End the sorted argument list.  */
 
   return SUCCESS;
 }
@@ -2831,7 +2831,7 @@ gfc_intrinsic_sub_interface (gfc_code * c, int error_flag)
     }
 
   /* The subroutine corresponds to an intrinsic.  Allow errors to be
-     seen at this point. */
+     seen at this point.  */
   gfc_suppress_error = 0;
 
   if (isym->resolve.s1 != NULL)

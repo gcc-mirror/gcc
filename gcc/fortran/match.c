@@ -2673,7 +2673,7 @@ match_case_selector (gfc_case ** cp)
 	goto need_expr;
 
       /* If we're not looking at a ':' now, make a range out of a single
-	 target.  Else get the upper bound for the case range. */
+	 target.  Else get the upper bound for the case range.  */
       if (gfc_match_char (':') != MATCH_YES)
 	c->high = c->low;
       else

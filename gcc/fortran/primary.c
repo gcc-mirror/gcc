@@ -374,7 +374,7 @@ match_real_constant (gfc_expr ** result, int signflag)
 	    {
 	      c = gfc_next_char ();
 	      if (c == '.')
-		goto done;	/* Operator named .e. or .d. */
+		goto done;	/* Operator named .e. or .d.  */
 	    }
 
 	  if (ISALPHA (c))
@@ -1654,7 +1654,7 @@ check_substring:
    dumped).  If we see a full part or section of an array, the
    expression is also an array.
 
-   We can have at most one full array reference. */
+   We can have at most one full array reference.  */
 
 symbol_attribute
 gfc_variable_attr (gfc_expr * expr, gfc_typespec * ts)

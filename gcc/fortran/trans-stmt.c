@@ -1899,7 +1899,7 @@ gfc_trans_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2, tree wheremask,
   type = gfc_typenode_for_spec (&expr1->ts);
 
   /* Allocate temporary for nested forall construct according to the
-     information in nested_forall_info and inner_size. */
+     information in nested_forall_info and inner_size.  */
   tmp1 = allocate_temp_for_forall_nest (nested_forall_info, type,
                                 inner_size, block, &ptemp1);
 
@@ -2348,7 +2348,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
     }
 
   /* Copy the mask into a temporary variable if required.
-     For now we assume a mask temporary is needed. */
+     For now we assume a mask temporary is needed.  */
   if (code->expr)
     {
       /* Allocate the mask temporary.  */
@@ -3025,7 +3025,7 @@ gfc_trans_where_2 (gfc_code * code, tree mask, tree pmask,
 
 /* As the WHERE or WHERE construct statement can be nested, we call
    gfc_trans_where_2 to do the translation, and pass the initial
-   NULL values for both the control mask and the pending control mask. */
+   NULL values for both the control mask and the pending control mask.  */
 
 tree
 gfc_trans_where (gfc_code * code)

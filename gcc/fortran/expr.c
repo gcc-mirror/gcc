@@ -583,7 +583,7 @@ gfc_build_conversion (gfc_expr * e)
    The exception is that the operands of an exponential don't have to
    have the same type.  If possible, the base is promoted to the type
    of the exponent.  For example, 1**2.3 becomes 1.0**2.3, but
-   1.0**2 stays as it is. */
+   1.0**2 stays as it is.  */
 
 void
 gfc_type_convert_binary (gfc_expr * e)

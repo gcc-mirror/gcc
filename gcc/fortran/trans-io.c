@@ -135,7 +135,7 @@ static GTY(()) tree iocall_set_nml_val_log;
 
 /* Variable for keeping track of what the last data transfer statement
    was.  Used for deciding which subroutine to call when the data
-   transfer is complete. */
+   transfer is complete.  */
 static enum { READ, WRITE, IOLENGTH } last_dt;
 
 #define ADD_FIELD(name, type)						\
@@ -166,7 +166,7 @@ gfc_build_io_library_fndecls (void)
 
   /* Build the st_parameter structure.  Information associated with I/O
      calls are transferred here.  This must match the one defined in the
-     library exactly. */
+     library exactly.  */
 
   ioparm_type = make_node (RECORD_TYPE);
   TYPE_NAME (ioparm_type) = get_identifier ("_gfc_ioparm");
@@ -857,7 +857,7 @@ get_new_var_expr(gfc_symbol * sym)
 
    Note that the first output field appears after the name of the
    variable, not of the field name.  This causes a little complication
-   documented below. */
+   documented below.  */
 
 static void
 transfer_namelist_element (stmtblock_t * block, gfc_typespec * ts, tree addr_expr, 
@@ -890,7 +890,7 @@ transfer_namelist_element (stmtblock_t * block, gfc_typespec * ts, tree addr_exp
              derived type variable.  All other fields are anonymous
              and appear with nulls in their string and string_length
              fields.  After the first use, we set string and
-             string_length to null. */
+             string_length to null.  */
           string = null_pointer_node;
           string_length = integer_zero_node;
         }
@@ -1190,7 +1190,7 @@ transfer_array_component (tree expr, gfc_component * cm)
       mpz_add_ui (ss->shape[n], ss->shape[n], 1);
     }
 
-  /* Once we got ss, we use scalarizer to create the loop. */
+  /* Once we got ss, we use scalarizer to create the loop.  */
 
   gfc_init_loopinfo (&loop);
   gfc_add_ss_to_loop (&loop, ss);
@@ -1212,7 +1212,7 @@ transfer_array_component (tree expr, gfc_component * cm)
   transfer_expr (&se, &cm->ts, tmp);
 
   /* We are done now with the loop body.  Wrap up the scalarizer and
-     return. */
+     return.  */
 
   gfc_add_block_to_block (&body, &se.pre);
   gfc_add_block_to_block (&body, &se.post);

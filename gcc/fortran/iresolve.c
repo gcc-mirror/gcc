@@ -1594,7 +1594,7 @@ gfc_resolve_get_command_argument (gfc_code * c)
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 
-/* Resolve the get_environment_variable intrinsic subroutine. */
+/* Resolve the get_environment_variable intrinsic subroutine.  */
 
 void
 gfc_resolve_get_environment_variable (gfc_code * code)

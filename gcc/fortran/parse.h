@@ -45,7 +45,7 @@ typedef struct gfc_state_data
   struct gfc_code *head, *tail;
   struct gfc_state_data *previous;
 
-  /* Block-specific state data. */
+  /* Block-specific state data.  */
   union
   {
     gfc_st_label *end_do_label;
