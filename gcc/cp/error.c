@@ -229,8 +229,18 @@ dump_type_real (t, v, canonical_name)
     case REAL_TYPE:
     case VOID_TYPE:
     case BOOLEAN_TYPE:
-      dump_readonly_or_volatile (t, after);
-      OB_PUTID (TYPE_IDENTIFIER (canonical_name ? TYPE_MAIN_VARIANT (t) : t));
+      {
+	tree type;
+	dump_readonly_or_volatile (t, after);
+	type = canonical_name ? TYPE_MAIN_VARIANT (t) : t;
+	if (TYPE_NAME (type) && TYPE_IDENTIFIER (type))
+	  OB_PUTID (TYPE_IDENTIFIER (type));
+	else
+	  /* Types like intQI_type_node and friends have no names.
+	     These don't come up in user error messages, but it's nice
+	     to be able to print them from the debugger.  */
+	  OB_PUTS ("{anonymous}");
+      }
       break;
 
     case TEMPLATE_TEMPLATE_PARM:
