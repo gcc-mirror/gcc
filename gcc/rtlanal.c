@@ -905,7 +905,7 @@ reg_set_last (x, insn)
 		|| ((GET_CODE (reg_set_last_value) == REG
 		     || GET_CODE (reg_set_last_value) == SUBREG)
 		    && ! reg_set_between_p (reg_set_last_value,
-					    NEXT_INSN (insn), orig_insn)))
+					    insn, orig_insn)))
 	      return reg_set_last_value;
 	    else
 	      return 0;
