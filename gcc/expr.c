@@ -5069,6 +5069,11 @@ check_max_integer_computation_mode (exp)
   enum tree_code code = TREE_CODE (exp);
   enum machine_mode mode;
 
+  /* We must allow conversions of constants to MAX_INTEGER_COMPUTATION_MODE.  */
+  if (code == NOP_EXPR
+      && TREE_CODE (TREE_OPERAND (exp, 0)) == INTEGER_CST)
+    return;
+
   /* First check the type of the overall operation.   We need only look at
      unary, binary and relational operations.  */
   if (TREE_CODE_CLASS (code) == '1'
@@ -5229,7 +5234,7 @@ expand_expr (exp, target, tmode, modifier)
     }
 
 #ifdef MAX_INTEGER_COMPUTATION_MODE
-  if (target)
+  if (target && TREE_CODE (exp) != INTEGER_CST)
     {
       enum machine_mode mode = GET_MODE (target);
 
@@ -5238,7 +5243,8 @@ expand_expr (exp, target, tmode, modifier)
 	fatal ("unsupported wide integer operation");
     }
 
-  if (GET_MODE_CLASS (tmode) == MODE_INT
+  if (TREE_CODE (exp) != INTEGER_CST
+      && GET_MODE_CLASS (tmode) == MODE_INT
       && tmode > MAX_INTEGER_COMPUTATION_MODE)
     fatal ("unsupported wide integer operation");
 
