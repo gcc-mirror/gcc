@@ -1,3 +1,8 @@
+2001-02-19  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* REAMDE, cpp.texi, gcc.texi: Update version number to 3.0.
+	* cpp.1, gcov.1, gcc.1: Regenerate.
+
 2001-02-19  Richard Henderson  <rth@redhat.com>
 
 	* ifcvt.c (dead_or_predicable): Don't move code if eh regions

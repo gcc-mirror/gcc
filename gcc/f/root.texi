@@ -2,9 +2,9 @@
 @c as compared to a release version.  When making a release
 @c (e.g. a release branch in the CVS repository for gcc),
 @c clear this and set the version information correctly.
-@set DEVELOPMENT
+@clear DEVELOPMENT
 @set version-g77 0.5.26
-@set version-gcc 2.97
+@set version-gcc 3.0
 
 @set email-general gcc@@gcc.gnu.org
 @set email-bugs gcc-bugs@@gcc.gnu.org or bug-gcc@@gnu.org
