@@ -1,3 +1,8 @@
+2004-08-29  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-ccp.c (ccp_visit_stmt): Remove #if 0 guards.
+	* tree-ssa-propagate.c: Fix documentation.
+
 2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (*mov[sd]f_on_*): Redefine using :SCALARF.

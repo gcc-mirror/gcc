@@ -50,7 +50,7 @@
    proceeds as follows:
 
    1- Initially, all edges of the CFG are marked not executable and
-      the CFG worklist seeded with all the statements in the entry
+      the CFG worklist is seeded with all the statements in the entry
       basic block (block 0).
 
    2- Every statement S is simulated with a call to the call-back
@@ -75,7 +75,7 @@
 
    3- PHI nodes are simulated with a call to SSA_PROP_VISIT_PHI.  The
       return value from SSA_PROP_VISIT_PHI has the same semantics as
-      described in #3.
+      described in #2.
 
    4- Three work lists are kept.  Statements are only added to these
       lists if they produce one of SSA_PROP_INTERESTING or
