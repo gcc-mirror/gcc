@@ -1,3 +1,7 @@
+Fri Nov 21 10:13:11 1997  Robert Lipe (robertl@dgii.com)
+
+	* i386/sco5.h (HAVE_ATEXIT): Revert last change.
+
 Thu Nov 20 16:11:50 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_emit_set_const_1): Handle narrow hosts better.
