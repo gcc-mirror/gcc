@@ -1,3 +1,7 @@
+2003-09-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/sol2.h (NO_IMPLICIT_EXTERN_C): Update comment.
+
 Wed Sep  3 16:55:25 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (c-objc-common.o): Kill gt-c-objc-common.h dependency.
