@@ -313,6 +313,11 @@ cond_exec_process_if_block (test_bb, then_bb, else_bb, join_bb)
   if (! test_expr)
     return FALSE;
 
+  /* If the conditional jump is more than just a conditional jump,
+     then we can not do conditional execution conversion on this block.  */
+  if (!onlyjump_p (test_bb->end))
+    return FALSE;
+
   /* Collect the bounds of where we're to search.  */
 
   then_start = then_bb->head;
@@ -1104,6 +1109,11 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
   jump = test_bb->end;
   cond = noce_get_condition (jump, &if_info.cond_earliest);
   if (! cond)
+    return FALSE;
+
+  /* If the conditional jump is more than just a conditional jump,
+     then we can not do if-conversion on this block.  */
+  if (! onlyjump_p (jump))
     return FALSE;
 
   /* We must be comparing objects whose modes imply the size.  */
