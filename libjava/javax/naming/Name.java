@@ -8,6 +8,7 @@ details.  */
 
 package javax.naming;
 
+import java.util.Enumeration;
 import java.io.Serializable;
 
 public interface Name extends Cloneable, Serializable

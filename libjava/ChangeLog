@@ -1,3 +1,25 @@
+2001-03-27  Joerg Brunsmann  <joerg_brunsmann@yahoo.de>
+
+	* javax/naming/InitialContext.java (init): Fix typo.
+	(composeName): Remove unnecessary semicolon.
+	(addToEnvironment): Remove unnecessary semicolon.
+	(addToEnvironment): Use put() instead of add().
+
+	* javax/naming/InitialContext.java (InitialContext): 
+	Make public.
+	(destroySubcontext): Method doesn't return a result.
+	* javax/naming/Context.java: Import java.util.Hashtable.
+	* javax/naming/Name.java: Import java.util.Enumeration.
+
+2001-03-27  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* Makefile.am (libffi_files): Use $(shell) wrapper instead of back
+	quotes.
+	(libgcj.la): Echo the list of object files one at a time, using a 
+	for loop.
+	(libgcjx.la): Likewise.
+	* Makefile.in: Rebuilt.
+
 2001-03-27  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Makefile.am (libffi_files): Use 'find' to pick up libffi libtool

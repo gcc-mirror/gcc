@@ -8,6 +8,8 @@ details.  */
 
 package javax.naming;
 
+import java.util.Hashtable;
+
 public interface Context
 {
   // Property with name of the inital context factory to use
