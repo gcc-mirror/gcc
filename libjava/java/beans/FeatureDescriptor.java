@@ -41,126 +41,175 @@ package java.beans;
 import java.util.*;
 
 /**
- ** FeatureDescriptor is the common superclass for all JavaBeans Descriptor classes.
- ** JavaBeans descriptors are abstract descriptors of properties,
- ** events, methods, beans, etc.<P>
- **
- ** <STRONG>Documentation Convention:</STRONG> for proper
- ** Internalization of Beans inside an RAD tool, sometimes there
- ** are two names for a property or method: a programmatic, or
- ** locale-independent name, which can be used anywhere, and a
- ** localized, display name, for ease of use.  In the
- ** documentation I will specify different String values as
- ** either <EM>programmatic</EM> or <EM>localized</EM> to
- ** make this distinction clear.
- **
- ** @author John Keiser
- ** @since JDK1.1
- ** @version 1.1.0, 31 May 1998
- **/
+ * FeatureDescriptor is the common superclass for all JavaBeans Descriptor
+ * classes. JavaBeans descriptors are abstract descriptors of properties,
+ * events, methods, beans, etc.<P>
+ *
+ * <STRONG>Documentation Convention:</STRONG> for proper
+ * Internalization of Beans inside an RAD tool, sometimes there
+ * are two names for a property or method: a programmatic, or
+ * locale-independent name, which can be used anywhere, and a
+ * localized, display name, for ease of use.  In the
+ * documentation I will specify different String values as
+ * either <EM>programmatic</EM> or <EM>localized</EM> to
+ * make this distinction clear.
+ *
+ * @author John Keiser
+ * @since 1.1
+ * @version 1.1.0, 31 May 1998
+ */
 
-public class FeatureDescriptor {
-	String name;
-	String displayName;
-	String shortDescription;
-	boolean expert;
-	boolean hidden;
+public class FeatureDescriptor
+{
+  String name;
+  String displayName;
+  String shortDescription;
+  boolean expert;
+  boolean hidden;
 
-	Hashtable valueHash;
+  Hashtable valueHash;
 
-	/** Instantiate this FeatureDescriptor with appropriate default values.**/
-	public FeatureDescriptor() {
-		valueHash = new Hashtable();
-	}
+  /**
+   * Instantiate this FeatureDescriptor with appropriate default values.
+   */
+  public FeatureDescriptor()
+  {
+    valueHash = new Hashtable();
+  }
 
-	/** Get the programmatic name of this feature. **/
-	public String getName() {
-		return name;
-	}
+  /**
+   * Get the programmatic name of this feature.
+   */
+  public String getName()
+  {
+    return name;
+  }
 
-	/** Set the programmatic name of this feature.
-	 ** @param name the new name for this feature.
-	 **/
-	public void setName(String name) {
-		this.name = name;
-	}
+  /**
+   * Set the programmatic name of this feature.
+   *
+   * @param name the new name for this feature.
+   */
+  public void setName(String name)
+  {
+    this.name = name;
+  }
 
-	/** Get the localized (display) name of this feature. **/
-	public String getDisplayName() {
-		return displayName;
-	}
+  /**
+   * Get the localized (display) name of this feature.
+   */
+  public String getDisplayName()
+  {
+    return displayName;
+  }
 
-	/** Set the localized (display) name of this feature.
-	 ** @param displayName the new display name for this feature.
-	 **/
-	public void setDisplayName(String displayName) {
-		this.displayName = displayName;
-	}
+  /**
+   * Set the localized (display) name of this feature.
+   *
+   * @param displayName the new display name for this feature.
+   */
+  public void setDisplayName(String displayName)
+  {
+    this.displayName = displayName;
+  }
 
-	/** Get the localized short description for this feature. **/
-	public String getShortDescription() {
-		return shortDescription;
-	}
+  /**
+   * Get the localized short description for this feature.
+   */
+  public String getShortDescription()
+  {
+    return shortDescription;
+  }
 
-	/** Set the localized short description for this feature.
-	 ** @param shortDescription the new short description for this feature.
-	 **/
-	public void setShortDescription(String shortDescription) {
-		this.shortDescription = shortDescription;
-	}
+  /**
+   * Set the localized short description for this feature.
+   *
+   * @param shortDescription the new short description for this feature.
+   */
+  public void setShortDescription(String shortDescription)
+  {
+    this.shortDescription = shortDescription;
+  }
 
-	/** Indicates whether this feature is for expert use only.
-	 ** @return true if for use by experts only, or false if anyone can use it.
-	 **/
-	public boolean isExpert() {
-		return expert;
-	}
+  /**
+   * Indicates whether this feature is for expert use only.
+   *
+   * @return true if for use by experts only,
+   * or false if anyone can use it.
+   */
+  public boolean isExpert()
+  {
+    return expert;
+  }
 
-	/** Set whether this feature is for expert use only.
-	 ** @param expert true if for use by experts only, or false if anyone can use it.
-	 **/
-	public void setExpert(boolean expert) {
-		this.expert = expert;
-	}
+  /**
+   * Set whether this feature is for expert use only.
+   *
+   * @param expert true if for use by experts only,
+   * or false if anyone can use it.
+   */
+  public void setExpert(boolean expert)
+  {
+    this.expert = expert;
+  }
 
-	/** Indicates whether this feature is for use by tools only.
-	 ** If it is for use by tools only, then it should not be displayed.
-	 ** @return true if tools only should use it, or false if anyone can see it.
-	 **/
-	public boolean isHidden() {
-		return hidden;
-	}
+  /**
+   * Indicates whether this feature is for use by tools only.
+   * If it is for use by tools only, then it should not be displayed.
+   *
+   * @return true if tools only should use it,
+   * or false if anyone can see it.
+   */
+  public boolean isHidden()
+  {
+    return hidden;
+  }
 
-	/** Set whether this feature is for use by tools only.
-	 ** If it is for use by tools only, then it should not be displayed.
-	 ** @param hidden true if tools only should use it, or false if anyone can see it.
-	 **/
-	public void setHidden(boolean hidden) {
-		this.hidden = hidden;
-	}
+  /**
+   * Set whether this feature is for use by tools only.
+   * If it is for use by tools only, then it should not be displayed.
+   *
+   * @param hidden true if tools only should use it,
+   * or false if anyone can see it.
+   */
+  public void setHidden(boolean hidden)
+  {
+    this.hidden = hidden;
+  }
 
 
-	/** Get an arbitrary value set with setValue().
-	 ** @param name the programmatic name of the key.
-	 ** @return the value associated with this name, or null if there is none.
-	 **/
-	public Object getValue(String name) {
-		return valueHash.get(name);
-	}
+  /**
+   * Get an arbitrary value set with setValue().
+   *
+   * @param name the programmatic name of the key.
+   *
+   * @return the value associated with this name,
+   * or null if there is none.
+   */
+  public Object getValue(String name)
+  {
+    return valueHash.get(name);
+  }
 
-	/** Set an arbitrary string-value pair with this feature.
-	 ** @param name the programmatic name of the key.
-	 ** @param value the value to associate with the name.
-	 **/
-	public void setValue(String name, Object value) {
-		valueHash.put(name, value);
-	}
+  /**
+   * Set an arbitrary string-value pair with this feature.
+   *
+   * @param name the programmatic name of the key.
+   * @param value the value to associate with the name.
+   */
+  public void setValue(String name, Object value)
+  {
+    valueHash.put(name, value);
+  }
 
-	/** Get a list of the programmatic key names set with setValue().
-	 ** @return an Enumerator over all the programmatic key names associated
-	 ** with this feature.
-	 **/
-	public Enumeration attributeNames() {
-		return valueHash.keys();
-	}
+  /**
+   * Get a list of the programmatic key names set with setValue().
+   *
+   * @return an Enumerator over all the programmatic key names associated
+   * with this feature.
+   */
+  public Enumeration attributeNames()
+  {
+    return valueHash.keys();
+  }
 }

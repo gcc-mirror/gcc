@@ -1,3 +1,10 @@
+2003-02-27  Michael Koch  <konqueror@gmx.de>
+
+	* java/beans/Beans.java,
+	java/beans/FeatureDescriptor.java
+	java/beans/PropertyEditorManager.java:
+	Reformated to GNU style.
+
 2003-02-25  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/MappedByteFileBuffer.java,
