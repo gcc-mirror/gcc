@@ -1,3 +1,13 @@
+2004-03-11  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (negate_expr_p) <RSHIFT_EXPR>: We can optimize
+	-((int)X>>C) where C is an integer constant one bit less than the
+	size of X into (unsigned)X>>C.  Similarly for unsigned->signed.
+	(negate_expr) <RSHIFT_EXPR>: Implement the above transformations.
+
+	* simplify-rtx.c (simplify_unary_operation): Also implement the
+	above transformations at the RTL level.
+
 2004-03-11  Alan Modra  <amodra@bigpond.net.au>
 
 	* real.c (encode_ibm_extended): Do round low word.

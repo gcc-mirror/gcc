@@ -920,6 +920,18 @@ negate_expr_p (tree t)
 	return negate_expr_p (TREE_VALUE (TREE_OPERAND (t, 1)));
       break;
 
+    case RSHIFT_EXPR:
+      /* Optimize -((int)x >> 31) into (unsigned)x >> 31.  */
+      if (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST)
+	{
+	  tree op1 = TREE_OPERAND (t, 1);
+	  if (TREE_INT_CST_HIGH (op1) == 0
+	      && (unsigned HOST_WIDE_INT) (TYPE_PRECISION (type) - 1)
+		 == TREE_INT_CST_LOW (op1))
+	    return true;
+	}
+      break;
+
     default:
       break;
     }
@@ -1062,6 +1074,25 @@ negate_expr (tree t)
 	  arg = negate_expr (TREE_VALUE (TREE_OPERAND (t, 1)));
 	  arglist = build_tree_list (NULL_TREE, arg);
 	  return build_function_call_expr (fndecl, arglist);
+	}
+      break;
+
+    case RSHIFT_EXPR:
+      /* Optimize -((int)x >> 31) into (unsigned)x >> 31.  */
+      if (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST)
+	{
+	  tree op1 = TREE_OPERAND (t, 1);
+	  if (TREE_INT_CST_HIGH (op1) == 0
+	      && (unsigned HOST_WIDE_INT) (TYPE_PRECISION (type) - 1)
+		 == TREE_INT_CST_LOW (op1))
+	    {
+	      tree ntype = TREE_UNSIGNED (type)
+			   ? (*lang_hooks.types.signed_type) (type)
+			   : (*lang_hooks.types.unsigned_type) (type);
+	      tree temp = fold_convert (ntype, TREE_OPERAND (t, 0));
+	      temp = fold (build2 (RSHIFT_EXPR, ntype, temp, op1));
+	      return fold_convert (type, temp);
+	    }
 	}
       break;
 
