@@ -56,6 +56,10 @@ extern int errno;
 extern int end_of_file;
 extern int current_class_depth;
 
+/* FSF LOCAL dje prefix attributes */
+extern tree strip_attrs		PROTO((tree));
+/* END FSF LOCAL */
+
 void yyerror ();
 
 /* Like YYERROR but do call yyerror.  */
