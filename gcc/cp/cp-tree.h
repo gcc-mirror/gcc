@@ -1585,9 +1585,10 @@ struct lang_decl_flags
   unsigned bitfield : 1;
   unsigned defined_in_class : 1;
   unsigned pending_inline_p : 1;
-  unsigned dummy : 5;
+  unsigned global_ctor_p : 1;
+  unsigned global_dtor_p : 1;
+  unsigned dummy : 3;
 
-  tree access;
   tree context;
 
   union {
@@ -1597,6 +1598,15 @@ struct lang_decl_flags
     /* In a NAMESPACE_DECL, this is NAMESPACE_LEVEL.  */
     struct binding_level *level;
   } u;
+
+  union {
+    /* This is DECL_ACCESS.  */
+    tree access;
+
+    /* In a namespace-scope FUNCTION_DECL, this is
+       GLOBAL_INIT_PRIORITY.  */
+    int init_priority;
+  } u2;
 };
 
 struct lang_decl
@@ -2347,7 +2357,22 @@ extern int flag_new_for_scope;
    For example, if a member that would normally be public in a
    derived class is made protected, then the derived class and the
    protected_access_node will appear in the DECL_ACCESS for the node.  */
-#define DECL_ACCESS(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.access)
+#define DECL_ACCESS(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.u2.access)
+
+/* Nonzero if the FUNCTION_DECL is a global constructor.  */
+#define DECL_GLOBAL_CTOR_P(NODE) \
+  (DECL_LANG_SPECIFIC ((NODE))->decl_flags.global_ctor_p)
+
+/* Nonzero if the FUNCTION_DECL is a global destructor.  */
+#define DECL_GLOBAL_DTOR_P(NODE) \
+  (DECL_LANG_SPECIFIC ((NODE))->decl_flags.global_dtor_p)
+
+/* If DECL_GLOBAL_CTOR_P or DECL_GLOBAL_DTOR_P holds, this macro
+   returns the initialization priority for the function.  Constructors
+   with lower numbers should be run first.  Destructors should be run
+   in the reverse order of constructors.  */
+#define GLOBAL_INIT_PRIORITY(NODE) \
+  (DECL_LANG_SPECIFIC ((NODE))->decl_flags.u2.init_priority)
 
 /* Accessor macros for C++ template decl nodes.  */
 

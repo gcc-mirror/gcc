@@ -625,6 +625,15 @@ dequeue_and_dump (di)
 	    dump_string (di, "operator");
 	  if (DECL_CONV_FN_P (t))
 	    dump_string (di, "conversion");
+	  if (DECL_GLOBAL_CTOR_P (t) || DECL_GLOBAL_DTOR_P (t))
+	    {
+	      if (DECL_GLOBAL_CTOR_P (t))
+		dump_string (di, "global init");
+	      if (DECL_GLOBAL_DTOR_P (t))
+		dump_string (di, "global fini");
+	      dump_int (di, "prio", GLOBAL_INIT_PRIORITY (t));
+	    }
+
 	  if (dump_children_p)
 	    dump_child ("body", DECL_SAVED_TREE (t));
 	}
