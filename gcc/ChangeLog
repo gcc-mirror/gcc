@@ -1,7 +1,8 @@
 2000-03-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* expr.c: Include intl.h.
-
+	* Makefile.in (expr.o): Depend on intl.h.
+	
 2000-03-18  Richard Henderson  <rth@cygnus.com>
 
 	* expr.c (emit_move_insn_1): Clarify cannot_inline message.
