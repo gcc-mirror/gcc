@@ -7,6 +7,12 @@ $! have the current compiler installed, otherwise some of the builtins will
 $! not be recognized.  Once you have built libgcc2.olb, you can merge this
 $! with gnu_cc:[000000]gcclib.olb
 $!
+$if f$extract(0,1,f$trnlnm("GNU_CC_VERSION")).nes."1" then goto compile
+$!
+$write sys$output "This must be compiled by gcc 2.0"
+$exit
+$!
+$compile:
 $lib/create libgcc2.olb
 $call compile_libgcc2 "L_muldi3"
 $call compile_libgcc2 "L_divdi3"
