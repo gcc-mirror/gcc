@@ -1,3 +1,9 @@
+2004-08-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-lex.c (narrowest_unsigned_type, narrowest_signed_type): Take
+	low/high pair. Do range checking directly.
+	(interpret_integer): Adjust.
+
 2004-08-04  Nick Clifton  <nickc@redhat.com>
 
 	* config/sh/sh.h (TARGET_SWITCHES): Add no-renesas to select the
@@ -108,7 +114,7 @@
 	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
 
 2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
-	    Tanguy Fautr√  <tfautre@pandora.be>
+	    Tanguy Fautr√É  <tfautre@pandora.be>
 
 	* config/i386/pmm_malloc.h: New file.
 
