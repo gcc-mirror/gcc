@@ -74,29 +74,12 @@
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 16
 
-/* Same as arm.h except r10 is call-saved, not fixed.  */
-#undef  FIXED_REGISTERS
-#define FIXED_REGISTERS \
-{			\
-  0,0,0,0,0,0,0,0,	\
-  0,0,0,1,0,1,0,1,	\
-  0,0,0,0,0,0,0,0,	\
-  1,1,1,		\
-  1,1,1,1,1,1,1,1,	\
-  1,1,1,1,1,1,1,1	\
-}
+/* r11 is fixed.  */
+#undef  SUBTARGET_CONDITIONAL_REGISTER_USAGE
+#define SUBTARGET_CONDITIONAL_REGISTER_USAGE \
+  fixed_regs [11] = 1; \
+  call_used_regs [11] = 1;
 
-/* Same as arm.h except r10 is call-saved, not fixed.  */
-#undef  CALL_USED_REGISTERS
-#define CALL_USED_REGISTERS \
-{			\
-  1,1,1,1,0,0,0,0,	\
-  0,0,0,1,1,1,1,1,	\
-  1,1,1,1,0,0,0,0,	\
-  1,1,1,		\
-  1,1,1,1,1,1,1,1,	\
-  1,1,1,1,1,1,1,1	\
-}
 
 /* Define this macro if in some cases global symbols from one translation
    unit may not be bound to undefined symbols in another translation unit

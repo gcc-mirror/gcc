@@ -1,3 +1,9 @@
+2003-03-13  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/pe.h (FIXED_REGISTERS): Remove definition.
+	(CALL_USED_REGISTERS): Remove definition.
+	(SUBTARGET_CONDITIONAL_REGISTER_USAGE): Define.
+
 2003-03-13  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_flag_pic): Delete.
