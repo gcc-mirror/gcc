@@ -1,3 +1,46 @@
+2003-06-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* dbxout.c (dbxout_source_line_counter): New global variable.
+	Mark it with GTY(()).
+	(dbxout_source_line): Increment dbxout_source_line_counter
+	and pass it to ASM_OUTPUT_SOURCE_LINE.
+	* sdbout.c (sdbout_source_line_counter): New global variable.
+	Mark it with GTY(()).
+	(unnamed_struct_number): Mark it with GTY(()).
+	(sdbout_source_line): Increment sdbout_source_line_counter
+	and pass it to ASM_OUTPUT_SOURCE_LINE.
+	* xcoffout.c (ASM_OUTPUT_SOURCE_LINE): Add third parameter
+	(xcoffout_source_line): Pass 0 as third argument to
+	ASM_OUTPUT_SOURCE_LINE.
+	(xcoffout_begin_prologue): Likewise.
+	* config/dbxout.h (ASM_OUTPUT_SOURCE_LINE): Add third parameter.
+	Use it instead of 'sym_lineno' but without incrementing it.
+	* config/dbxelf.h (ASM_OUTPUT_SOURCE_LINE): Likewise.
+	* config/lynx.h (ASM_OUTPUT_SOURCE_LINE): Likewise.
+	* config/ptx4.h (ASM_OUTPUT_SOURCE_LINE): Likewise.
+	* config/alpha/alpha.c (alpha_start_function): Pass 0 as third
+	argument to ASM_OUTPUT_SOURCE_LINE.
+	* config/alpha/alpha.h (ASM_OUTPUT_SOURCE_LINE): Add third parameter.
+	* config/arm/aout.h: Remove useless comment.
+	* config/avr/avr.h (ASM_OUTPUT_SOURCE_LINE): Add third parameter.
+	* config/i960/i960.h (ASM_OUTPUT_SOURCE_LINE): Likewise.
+	* config/m32r/m32r.h (ASM_OUTPUT_SOURCE_LINE): Add third parameter.
+	Use it instead of 'sym_lineno' but without incrementing it.
+	* config/m68k/hp320.h (ASM_OUTPUT_SOURCE_LINE): Add third parameter.
+	* config/mcore/mcore-pe.h (ASM_OUTPUT_SOURCE_LINE): Add third
+	parameter. Use it instead of 'sym_lineno' but without incrementing it.
+	* config/mips/mips.c (mips_output_function_prologue): Pass 0 as third
+	argument to ASM_OUTPUT_SOURCE_LINE.
+	* config/mips/mips.h (ASM_OUTPUT_SOURCE_LINE): Add third parameter.
+	* config/mmix/mmix.h (ASM_OUTPUT_SOURCE_LINE): Likewise.
+	* config/pa/som.h (ASM_OUTPUT_SOURCE_LINE): Add third parameter.
+	Use it instead of 'sym_lineno' but without incrementing it.
+	* config/rs6000/linux64.h (ASM_OUTPUT_SOURCE_LINE): Likewise.
+	* config/sh/elf.h (ASM_OUTPUT_SOURCE_LINE): Likewise.
+	* config/sparc/aout.h (ASM_OUTPUT_SOURCE_LINE): Likewise.
+	* config/sparc/pbd.h (ASM_OUTPUT_SOURCE_LINE): Likewise.
+	* doc/tm.texi (ASM_OUTPUT_SOURCE_LINE): Document third parameter.
+
 2003-06-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips-protos.h (mips_expand_block_move): Declare.

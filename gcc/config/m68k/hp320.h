@@ -276,7 +276,7 @@ do {					\
   fprintf (FILE, "\tspace %u\n", (int)(SIZE))
 
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, FILENAME)
-#define ASM_OUTPUT_SOURCE_LINE(FILE, LINENO)
+#define ASM_OUTPUT_SOURCE_LINE(FILE, LINENO, COUNTER)
 
 /* Output a float value (represented as a C double) as an immediate operand.
    This macro is a 68k-specific macro.  */

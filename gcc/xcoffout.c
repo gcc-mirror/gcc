@@ -78,7 +78,7 @@ const char *xcoff_lastfile;
 ((xcoff_inlining) ? (LINENO) : (LINENO) - xcoff_begin_function_line)
 
 /* Output source line numbers via ".line" rather than ".stabd".  */
-#define ASM_OUTPUT_SOURCE_LINE(FILE,LINENUM) 				   \
+#define ASM_OUTPUT_SOURCE_LINE(FILE,LINENUM,COUNTER)			   \
   do									   \
     {									   \
       if (xcoff_begin_function_line >= 0)				   \
@@ -323,7 +323,7 @@ xcoffout_source_line (line, filename)
 
   xcoffout_source_file (asm_out_file, filename, inline_p);
 
-  ASM_OUTPUT_SOURCE_LINE (asm_out_file, line);
+  ASM_OUTPUT_SOURCE_LINE (asm_out_file, line, 0);
 }
 
 /* Output the symbols defined in block number DO_BLOCK.
@@ -461,7 +461,7 @@ xcoffout_begin_prologue (line, file)
   xcoffout_block (DECL_INITIAL (current_function_decl), 0,
 		  DECL_ARGUMENTS (current_function_decl));
 
-  ASM_OUTPUT_SOURCE_LINE (asm_out_file, line);
+  ASM_OUTPUT_SOURCE_LINE (asm_out_file, line, 0);
 }
 
 /* Called at end of function (before epilogue).

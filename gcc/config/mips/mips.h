@@ -3704,7 +3704,7 @@ while (0)
 #endif
 
 #ifndef ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(STREAM, LINE)				\
+#define ASM_OUTPUT_SOURCE_LINE(STREAM, LINE, COUNTER)		\
   mips_output_lineno (STREAM, LINE)
 #endif
 

@@ -116,22 +116,20 @@ drectve_section ()						\
   while (0)
 
 #undef  ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(FILE, LINE)				  \
+#define ASM_OUTPUT_SOURCE_LINE(FILE, LINE, COUNTER)			  \
   {									  \
     if (write_symbols == DBX_DEBUG)					  \
       {									  \
-        static int sym_lineno = 1;					  \
         char buffer[256];						  \
 									  \
-        ASM_GENERATE_INTERNAL_LABEL (buffer, "LM", sym_lineno);		  \
+        ASM_GENERATE_INTERNAL_LABEL (buffer, "LM", COUNTER);		  \
         fprintf (FILE, ".stabn 68,0,%d,", LINE);			  \
         assemble_name (FILE, buffer);					  \
         putc ('-', FILE);						  \
         assemble_name (FILE,						  \
 		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0)); \
         putc ('\n', FILE);						  \
-        (*targetm.asm_out.internal_label) (FILE, "LM", sym_lineno);		  \
-        sym_lineno ++;							  \
+        (*targetm.asm_out.internal_label) (FILE, "LM", COUNTER);	  \
       }									  \
   }
 

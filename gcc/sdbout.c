@@ -51,6 +51,14 @@ AT&T C compiler.  From the example below I would conclude the following:
 
 static GTY(()) tree anonymous_types;
 
+/* Counter for sdbout_source_line.  */
+
+static GTY(()) int sdbout_source_line_counter;
+
+/* Counter to generate unique "names" for nameless struct members.  */
+
+static GTY(()) int unnamed_struct_number;
+
 #ifdef SDB_DEBUGGING_INFO
 
 #include "rtl.h"
@@ -88,9 +96,6 @@ static GTY(()) tree anonymous_types;
 
 int sdb_begin_function_line = -1;
 
-/* Counter to generate unique "names" for nameless struct members.  */
-
-static int unnamed_struct_number = 0;
 
 extern FILE *asm_out_file;
 
@@ -1527,6 +1532,9 @@ sdbout_end_block (unsigned int line, unsigned int n ATTRIBUTE_UNUSED)
   PUT_SDB_BLOCK_END (line - sdb_begin_function_line);
 }
 
+/* Output a line number symbol entry for source file FILENAME and line
+   number LINE.  */
+
 static void
 sdbout_source_line (line, filename)
      unsigned int line;
@@ -1536,7 +1544,8 @@ sdbout_source_line (line, filename)
   if ((int) line > sdb_begin_function_line)
     {
 #ifdef ASM_OUTPUT_SOURCE_LINE
-      ASM_OUTPUT_SOURCE_LINE (asm_out_file, line);
+      sdbout_source_line_counter += 1;
+      ASM_OUTPUT_SOURCE_LINE (asm_out_file, line, sdbout_source_line_counter);
 #else
       fprintf (asm_out_file, "\t.ln\t%d\n",
 	       ((sdb_begin_function_line > -1)

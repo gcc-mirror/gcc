@@ -1718,7 +1718,8 @@ progmem_section ()							      \
    time-saving assumptions that are valid for ordinary compiler
    output.  */
 
-#define ASM_OUTPUT_SOURCE_LINE(STREAM, LINE) fprintf (STREAM,"/* line: %d */\n",LINE)
+#define ASM_OUTPUT_SOURCE_LINE(STREAM, LINE, COUNTER) \
+  fprintf (STREAM,"/* line: %d */\n",LINE)
 /* A C statement to output DBX or SDB debugging information before
    code for line number LINE of the current source file to the stdio
    stream STREAM.

@@ -184,16 +184,14 @@ Boston, MA 02111-1307, USA.
    current function.  */
 
 #undef ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(file, line)				\
+#define ASM_OUTPUT_SOURCE_LINE(file, line, counter)			\
 do									\
   {									\
-    static int sym_lineno = 1;						\
     fprintf (file, ".stabn 68,0,%d,.LM%d-",				\
-	     line, sym_lineno);						\
+	     line, counter);						\
     assemble_name (file,						\
 		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));\
-    fprintf (file, "\n.LM%d:\n", sym_lineno);				\
-    sym_lineno += 1;							\
+    fprintf (file, "\n.LM%d:\n", counter);				\
   }									\
 while (0)
 

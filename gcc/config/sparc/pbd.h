@@ -140,10 +140,8 @@ Boston, MA 02111-1307, USA.  */
 /* This is needed for SunOS 4.0, and should not hurt for 3.2
    versions either.  */
 #undef ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(file, line)		\
-  { static int sym_lineno = 1;				\
-    fprintf (file, ".stabn 68,0,%d,.LM%d\n.LM%d:\n",	\
-	     line, sym_lineno, sym_lineno);		\
-    sym_lineno += 1; }
+#define ASM_OUTPUT_SOURCE_LINE(file, line, counter)	\
+  fprintf (file, ".stabn 68,0,%d,.LM%d\n.LM%d:\n",	\
+	   line, counter, counter)
 
 #define ASM_INT_OP "\t.long "

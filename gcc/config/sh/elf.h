@@ -91,16 +91,14 @@ Boston, MA 02111-1307, USA.  */
   sprintf ((STRING), "*%s%s%ld", LOCAL_LABEL_PREFIX, (PREFIX), (long)(NUM))
 
 #undef  ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(file, line)				\
+#define ASM_OUTPUT_SOURCE_LINE(file, line, counter)			\
 do									\
   {									\
-    static int sym_lineno = 1;						\
     asm_fprintf ((file), ".stabn 68,0,%d,%LLM%d-",			\
-	     (line), sym_lineno);					\
+	     (line), (counter));					\
     assemble_name ((file),						\
 		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));\
-    asm_fprintf ((file), "\n%LLM%d:\n", sym_lineno);			\
-    sym_lineno += 1;							\
+    asm_fprintf ((file), "\n%LLM%d:\n", (counter));			\
   }									\
 while (0)
 

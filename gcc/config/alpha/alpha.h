@@ -1778,7 +1778,7 @@ extern long alpha_auto_offset;
 #define DEBUGGER_ARG_OFFSET(OFFSET, X) (OFFSET + alpha_arg_offset)
 
 
-#define ASM_OUTPUT_SOURCE_LINE(STREAM, LINE)				\
+#define ASM_OUTPUT_SOURCE_LINE(STREAM, LINE, COUNTER)			\
   alpha_output_lineno (STREAM, LINE)
 
 #define ASM_OUTPUT_SOURCE_FILENAME(STREAM, NAME)			\

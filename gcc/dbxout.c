@@ -193,6 +193,10 @@ static GTY(()) int next_file_number;
 
 static GTY(()) int scope_labelno;
 
+/* A counter for dbxout_source_line.  */
+
+static GTY(()) int dbxout_source_line_counter;
+
 /* Nonzero if we have actually used any of the GDB extensions
    to the debugging format.  The idea is that we use them for the
    first time only if there's a strong reason, but once we have done that,
@@ -638,7 +642,8 @@ dbxout_source_line (lineno, filename)
   dbxout_source_file (asmfile, filename);
 
 #ifdef ASM_OUTPUT_SOURCE_LINE
-  ASM_OUTPUT_SOURCE_LINE (asmfile, lineno);
+  dbxout_source_line_counter += 1;
+  ASM_OUTPUT_SOURCE_LINE (asmfile, lineno, dbxout_source_line_counter);
 #else
   fprintf (asmfile, "%s%d,0,%d\n", ASM_STABD_OP, N_SLINE, lineno);
 #endif

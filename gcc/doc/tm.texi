@@ -6242,10 +6242,12 @@ the assembler source.  So you can use it to canonicalize the format
 of the filename using this macro.
 
 @findex ASM_OUTPUT_SOURCE_LINE
-@item ASM_OUTPUT_SOURCE_LINE (@var{stream}, @var{line})
+@item ASM_OUTPUT_SOURCE_LINE (@var{stream}, @var{line}, @var{counter})
 A C statement to output DBX or SDB debugging information before code
 for line number @var{line} of the current source file to the
-stdio stream @var{stream}.
+stdio stream @var{stream}. @var{counter} is the number of time the
+macro was invoked, including the current invocation; it is intended
+to generate unique labels in the assembly output.
 
 This macro need not be defined if the standard form of debugging
 information for the debugger in use is appropriate.
