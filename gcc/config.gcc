@@ -1273,6 +1273,7 @@ ia64*-*-hpux*)
 	cxx_target_objs="ia64-c.o"
 	;;
 ip2k-*-elf)
+	tm_file="elfos.h ${tm_file}"
 	;;
 m32r-*-elf*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"

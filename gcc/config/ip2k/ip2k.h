@@ -22,10 +22,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-/* Set up System V.4 (aka ELF) defaults.  */
-
-#include "elfos.h"
-#undef ASM_SPEC			/* But we have a GAS assembler.  */
+#undef ASM_SPEC	/* We have a GAS assembler.  */
 
 #define TARGET_CPU_CPP_BUILTINS()		\
   do						\

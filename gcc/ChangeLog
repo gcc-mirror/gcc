@@ -1,3 +1,8 @@
+2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc: Explicitly mention elfos.h in ip2k entry.
+	* config/ip2k/ip2k.h: Don't #include it here.
+
 2003-06-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* bitmap.c, builtins.c, c-incpath.c, cgraph.c, config/frv/frv.c,
