@@ -1,5 +1,10 @@
 2004-02-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	PR debug/11816
+	* dwarf2out.c (gen_decl_die): Handle anonymous struct members.
+
+2004-02-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* cfganal.c (flow_call_edges_add): Never split a libcall block.
 
 2004-02-06  Daniel Berlin  <dberlin@dberlin.org>
