@@ -1,9 +1,12 @@
+2003-06-05  Richard Henderson  <rth@redhat.com>
+
+	* recog.c (peephole2_optimize): Don't split block unless
+	can_throw_internal.
+
 2003-06-06  Kazu Hirata  <kazu@cs.umass.edu>
 
-	* config/h8300/h8300.c (get_shift_alg): Correct the syntax of
-	rotxl.
-	* config/h8300/h8300.md (*addsi3_lshiftrt_16_zexthi):
-	Likewise.
+	* config/h8300/h8300.c (get_shift_alg): Correct the syntax of rotxl.
+	* config/h8300/h8300.md (*addsi3_lshiftrt_16_zexthi): Likewise.
 
 2003-06-05  Kelley Cook  <kelleycook@wideopenwest.com>
 
