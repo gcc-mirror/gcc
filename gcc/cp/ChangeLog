@@ -1,3 +1,8 @@
+2000-03-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.c (mark_local_for_remap_p): Mark variables declared in
+	TARGET_EXPRs as well.
+
 2000-03-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* typeck.c (require_complete_type, complete_type,
