@@ -1,3 +1,10 @@
+2004-11-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR pch/14940
+	* config/pa/pa-host.c, config/pa/x-hpux, config/pa/x-linux: New files.
+	* config.host (hppa*-*-hpux*, hppa*-*-linux): Define out_host_hook_obj
+	and host_xmake_file using new host configuration files.
+
 2004-11-29  Roger Sayle  <roger@eyesopen.com>
 
 	* reg-stack.c (change_stack): Improve algorithm used to pop regs
