@@ -1,3 +1,13 @@
+2002-06-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Object.m (forward, read, write): Fix unused parameter warnings.
+	* encoding.c: Include <stdlib.h>.
+	(target_flags): Mark with attribute unused.
+	(atoi): Delete.
+	* runtime.h (__objc_selector_max_index): Change to unsigned int.
+	(__objc_generate_gc_type_description): Prototype.
+	* selector.c (__objc_selector_max_index): Change to unsigned int.
+
 Mon Jun 17 18:37:42 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* sendmsg.c (__objc_get_forward_imp): Fix warning by making sure

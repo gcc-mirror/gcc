@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tconfig.h"
 #include "objc-api.h"
 #include "encoding.h"
+#include <stdlib.h>
 
 #undef  MAX
 #define MAX(X, Y)                    \
@@ -79,19 +80,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* Some ROUND_TYPE_ALIGN macros use TARGET_foo, and consequently
    target_flags.  Define a dummy entry here to so we don't die.  */
-
-static int target_flags = 0;
-
-static inline int
-atoi (const char* str)
-{
-  int res = 0;
-
-  while (isdigit ((unsigned char)*str))
-    res *= 10, res += (*str++ - '0');
-
-  return res;
-}
+/* ??? FIXME: As of 2002-06-21, the attribute `unused' doesn't seem to
+   eliminate the warning.  */
+static int __attribute__ ((__unused__)) target_flags = 0;
 
 /*
   return the size of an object specified by type
