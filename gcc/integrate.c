@@ -650,7 +650,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
       arg = TREE_VALUE (actual);
       mode = TYPE_MODE (DECL_ARG_TYPE (formal));
 
-      if (mode != TYPE_MODE (TREE_TYPE (arg))
+      if (arg == error_mark_node
+	  || mode != TYPE_MODE (TREE_TYPE (arg))
 	  /* If they are block mode, the types should match exactly.
 	     They don't match exactly if TREE_TYPE (FORMAL) == ERROR_MARK_NODE,
 	     which could happen if the parameter has incomplete type.  */

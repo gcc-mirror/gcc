@@ -1,5 +1,10 @@
 2001-04-26  Jakub Jelinek  <jakub@redhat.com>
 
+	* integrate.c (expand_inline_function): Check for error_mark_node
+	in actual argument.
+
+2001-04-26  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/i386/i386.h (CC1_CPU_SPEC): Fix deprecation warnings for
 	-m386 and -m486.
 
