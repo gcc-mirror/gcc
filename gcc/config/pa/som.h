@@ -127,7 +127,7 @@ do {								\
       fputs ("\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE); \
     else if (TARGET_GAS)						\
       fprintf (FILE,							\
-	       "\t.SUBSPA .%s\n", name);				\
+	       "\t.SUBSPA .%.30s\n", name);				\
   }
     
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
@@ -270,23 +270,24 @@ do {  \
   if (DECL && TREE_CODE (DECL) == FUNCTION_DECL)		\
     {								\
       fputs ("\t.SPACE $TEXT$\n", FILE);			\
-      fprintf (FILE,						\
-	       "\t.SUBSPA %s%s%s,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY,SORT=24\n",\
-	       TARGET_GAS ? "" : "$", NAME, TARGET_GAS ? "" : "$"); \
+      if (TARGET_GAS)						\
+	fprintf (FILE,						\
+	       "\t.NSUBSPA %.31s,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY,SORT=24\n", NAME);\
+      else							\
+	fprintf (FILE,						\
+	       "\t.NSUBSPA $%.29s$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY,SORT=24\n", NAME);\
     }								\
-  else if (DECL && DECL_READONLY_SECTION (DECL, RELOC))		\
+  else if (!RELOC && DECL && DECL_READONLY_SECTION (DECL, RELOC))\
     {								\
       fputs ("\t.SPACE $TEXT$\n", FILE);			\
       fprintf (FILE,						\
-	       "\t.SUBSPA %s%s%s,QUAD=0,ALIGN=8,ACCESS=44,SORT=16\n", \
-	       TARGET_GAS ? "" : "$", NAME, TARGET_GAS ? "" : "$"); \
+	       "\t.NSUBSPA $LIT$,QUAD=0,ALIGN=8,ACCESS=44,SORT=16\n");\
     }								\
   else								\
     {								\
       fputs ("\t.SPACE $PRIVATE$\n", FILE);			\
       fprintf (FILE,						\
-	       "\t.SUBSPA %s%s%s,QUAD=1,ALIGN=8,ACCESS=31,SORT=16\n", \
-	       TARGET_GAS ? "" : "$", NAME, TARGET_GAS ? "" : "$"); \
+	       "\t.NSUBSPA $DATA$,QUAD=1,ALIGN=8,ACCESS=31,SORT=16\n");\
     }
 
 /* FIXME: HPUX ld generates incorrect GOT entries for "T" fixups
@@ -402,3 +403,8 @@ do {						\
   } while (0)
 #endif
 #endif
+
+/* SOM does not support the init_priority C++ attribute.  */
+#undef SUPPORTS_INIT_PRIORITY
+#define SUPPORTS_INIT_PRIORITY 0
+

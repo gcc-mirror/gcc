@@ -35,6 +35,8 @@ Boston, MA 02111-1307, USA.  */
  %{msnake:-D_PA_RISC1_1}\
  %{mpa-risc-1-1:-D_PA_RISC1_1}"
 
+#undef CPLUSPLUS_CPP_SPEC
+
 #undef	LIB_SPEC
 #define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} -lmilli"
 
