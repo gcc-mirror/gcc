@@ -2031,7 +2031,7 @@ operands_match_p (x, y)
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
-      int val;
+      int val, j;
       switch (fmt[i])
 	{
 	case 'w':
@@ -2055,6 +2055,19 @@ operands_match_p (x, y)
 	  break;
 
 	case '0':
+	  break;
+
+	case 'E':
+	  if (XVECLEN (x, i) != XVECLEN (y, i))
+	    return 0;
+	  for (j = XVECLEN (x, i) - 1; j >= 0; --j)
+	    {
+	      val = operands_match_p (XVECEXP (x, i, j), XVECEXP (y, i, j));
+	      if (val == 0)
+		return 0;
+	      if (val == 2)
+		success_2 = 1;
+	    }
 	  break;
 
 	  /* It is believed that rtx's at this level will never
