@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GNU CC.
@@ -1149,11 +1149,9 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
   fprintf (FILE, "\t.word L_%d\n", VALUE)
 
 /* This is how to output an element of a case-vector that is relative.
-   (the pdp does not use such vectors,
-   but we must define this macro anyway.)  */
+   Don't define this if it is not supported. */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
-  fprintf (FILE, "\tERROR @L%d-@L%d ! error should not be used\n", VALUE, REL)
+/* #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) */
 
 /* This is how to output an assembler line
    that says to advance the location counter
