@@ -1,3 +1,8 @@
+2001-01-15  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* configure.in, configure: Revert previous patch requiring perl
+	5.6.0.
+
 2001-01-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* toplev.c (flag_guess_branch_prob): New.
