@@ -414,7 +414,7 @@ init_alias_info (void)
 	{
 	  tree name = ssa_name (i);
 
-	  if (!POINTER_TYPE_P (TREE_TYPE (name)))
+	  if (!name || !POINTER_TYPE_P (TREE_TYPE (name)))
 	    continue;
 
 	  if (SSA_NAME_PTR_INFO (name))

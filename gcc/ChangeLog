@@ -1,5 +1,14 @@
 2004-09-18  Jan Hubicka  <jh@suse.cz>
 
+	* tree-into-ssa.c (rewrite_ssa_into_ssa):  Expect ssa_name to return
+	NULL.
+	* tree-ssa-alias.c (init_alias_info): Likewise.
+	* tree-ssa.c (verify_flow_sensitive_alias_info): Likewise.
+	(verify_ssa): Likewise.
+	* tree-ssanames.c (make_ssa_name): Clear out ssa_names arrays.
+
+2004-09-18  Jan Hubicka  <jh@suse.cz>
+
 	* i386.c (legitimize_pic_address): Fix splitting of PLUS with
 	huge offset.
 
