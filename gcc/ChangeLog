@@ -10,6 +10,7 @@
 
 2004-03-19  Denis Chertykov  <denisc@overta.ru>
 
+	PR target/11520
 	* config/avr/avr.md ("call_insn"): Handle explicit integer
 	specially.
 	(call_value_insn): Likewise.
