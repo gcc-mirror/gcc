@@ -2730,7 +2730,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      case 'p':
 		/* All necessary reloads for an address_operand
 		   were handled in find_reloads_address.  */
-		this_alternative[i] = (int) ALL_REGS;
+		this_alternative[i] = (int) BASE_REG_CLASS;
 		win = 1;
 		break;
 
