@@ -331,9 +331,6 @@ move_operand (op, mode)
     return 0;
 
   op = XEXP (op, 0);
-  if (GET_CODE (op) == LO_SUM)
-    return (register_operand (XEXP (op, 0), Pmode)
-	    && CONSTANT_P (XEXP (op, 1)));
 
   /* Since move_operand is only used for source operands, we can always
      allow scaled indexing!  */

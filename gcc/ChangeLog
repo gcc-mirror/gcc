@@ -1,3 +1,10 @@
+Fri Oct 15 17:02:09 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.c (move_operand): Rely on memory_address_p to determine the
+	validity of non-indexed memory addresses.
+	* pa.h (GO_IF_LEGITIMATE_ADDRESS): Allow LO_SUM with a symbolic
+	operand in DFmode and SFmode when generating PA2.0 code.
+
 Fri Oct 15 14:25:19 1999  Richard Henderson  <rth@cygnus.com>
 
 	* print-rtl.c (print_rtx): Limit last 'u' change to LABEL_REF.
