@@ -2331,6 +2331,10 @@ simplify_subreg (outermode, op, innermode, byte)
 			       % UNITS_PER_WORD));
 	}
 
+      /* Bail out in case resulting subreg would be incorrect.  */
+      if (final_offset % GET_MODE_SIZE (outermode)
+	  || final_offset >= GET_MODE_SIZE (innermostmode))
+	return NULL;
       /* Recurse for futher possible simplifications.  */
       new = simplify_subreg (outermode, SUBREG_REG (op),
 			     GET_MODE (SUBREG_REG (op)),

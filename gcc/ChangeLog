@@ -1,3 +1,7 @@
+Thu May 17 19:40:03 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* simplify-rtx.c  (simplify_subreg): Avoid creating of incorrect subregs.
+
 2001-05-17  Bernd Schmidt  <bernds@redhat.com>
 
 	* expr.c (protect_from_queue): Protect against subsequent calls to
