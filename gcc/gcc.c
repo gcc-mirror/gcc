@@ -2507,15 +2507,24 @@ process_command (argc, argv)
 			    1, 0, 0);
 
 		/* As a kludge, if the arg is "[foo/]stageN/", just add
-		   "[foo/]stageN/../include" to the include prefix.  */
+		   "[foo/]include" to the include prefix.  */
 		{
 		  int len = strlen (value);
 		  if ((len == 7 || (len > 7 && value[len - 8] == '/'))
 		      && strncmp (value + len - 7, "stage", 5) == 0
 		      && isdigit (value[len - 2])
 		      && value[len - 1] == '/')
-		    add_prefix (&include_prefix,
-				concat (value, "../include", ""), 1, 0, 0);
+		    {
+		      if (len == 7)
+			add_prefix (&include_prefix, "include", 1, 0, 0);
+		      else
+			{
+			  char *string = xmalloc (len + 1);
+			  strncpy (string, value, len-7);
+			  strcat (string, "include");
+			  add_prefix (&include_prefix, string, 1, 0, 0);
+			}
+		    }
 		}
 	      }
 	      break;
