@@ -334,7 +334,7 @@ case ${target} in
 *-*-darwin*)
   tm_file="${tm_file} darwin.h"
   tm_p_file="${tm_p_file} darwin-protos.h"
-  tmake_file="t-darwin"
+  tmake_file="t-darwin t-slibgcc-darwin"
   target_gtfiles="\$(srcdir)/config/darwin.c"
   c_target_objs="darwin-c.o"
   cxx_target_objs="darwin-c.o"
@@ -1506,7 +1506,7 @@ powerpc-*-beos*)
 	;;
 powerpc-*-darwin*)
 	tm_file="${tm_file} rs6000/darwin.h"
-	tmake_file="t-darwin t-slibgcc-darwin rs6000/t-darwin"
+	tmake_file="${tmake_file} rs6000/t-darwin"
 	extra_headers=altivec.h
 	;;
 powerpc*-*-freebsd*)
