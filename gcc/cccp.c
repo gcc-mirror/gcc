@@ -4746,6 +4746,24 @@ pcstring_used (hp)
   delete_macro (hp);
 }
 
+/* Write LEN bytes at PTR to descriptor DESC,
+   retrying if necessary, and treating any real error as fatal.  */
+
+static void
+safe_write (desc, ptr, len)
+     int desc;
+     char *ptr;
+     int len;
+{
+  while (len > 0) {
+    int written = write (fileno (stdout), ptr, len);
+    if (written < 0)
+      pfatal_with_name (out_fname);
+    ptr += written;
+    len -= written;
+  }
+}
+
 /* Write the output, interspersing precompiled strings in their */
  /* appropriate places. */
 static void
@@ -4756,6 +4774,7 @@ write_output ()
   int line_command_len = 80;
   char *line_command = xmalloc (line_command_len);
   int len;
+  int written;
 
   /* In each run through the loop, either cur_buf_loc == */
   /* next_string_loc, in which case we print a series of strings, or */
@@ -4776,10 +4795,8 @@ write_output ()
 	strcpy (quote_string (line_command + strlen (line_command),
 		              next_string->filename),
 		"\n");
-	if (write (fileno (stdout), line_command, strlen (line_command)) < 0)
-	  pfatal_with_name (out_fname);
-	if (write (fileno (stdout), next_string->contents, next_string->len) < 0)
-	  pfatal_with_name (out_fname);
+	safe_write (fileno (stdout), line_command, strlen (line_command));
+	safe_write (fileno (stdout), next_string->contents, next_string->len);
       }	      
       next_string = next_string->chain;
     }
@@ -4789,8 +4806,7 @@ write_output ()
 		- (cur_buf_loc - outbuf.buf))
 	     : outbuf.bufp - cur_buf_loc);
       
-      if (write (fileno (stdout), cur_buf_loc, len) < len)
-	pfatal_with_name (out_fname);
+      safe_write (fileno (stdout), cur_buf_loc, len);
       cur_buf_loc += len;
     }
   }
