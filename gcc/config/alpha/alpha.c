@@ -1359,7 +1359,7 @@ output_prolog (file, size)
       if (frame_size == 32768)
 	fprintf (file, "\tlda $15,16384($30)\n\tlda $15,16384($15)\n");
       else if (frame_size > 32768)
-	fprintf (file, "\tadd $30,$28,$15\n");
+	fprintf (file, "\taddq $30,$28,$15\n");
       else
 	fprintf (file, "\tlda $15,%d($30)\n", frame_size);
     }
