@@ -2639,6 +2639,8 @@ build_message_expr (mess)
       if (statically_allocated)
 	receiver = build_unary_op (ADDR_EXPR, receiver, 0);
 
+      /* Don't evaluate the receiver twice. */
+      receiver = save_expr (receiver);
       self_object = receiver;
     }
   else
