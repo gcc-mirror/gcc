@@ -30,17 +30,6 @@ dg-init
 # that are handled specially.
 set tests [lsort [find $srcdir/$subdir *.C]]
 
-proc g++-dg-prune { system text } {
-    regsub -all "(^|\n)\[^\n\]*: In (\[^\n\]*function|method|\[^\n\]*structor) \[^\n\]*" $text "" text
-    regsub -all "(^|\n)\[^\n\]*: In instantiation of \[^\n\]*" $text "" text
-    regsub -all "(^|\n)\[^\n\]*:   instantiated from \[^\n\]*" $text "" text
-    regsub -all "(^|\n)\[^\n\]*: At (top level|global scope):\[^\n\]*" $text "" text
-    regsub -all "(^|\n)\[^\n\]*file path prefix \[^\n\]* never used" $text "" text
-    regsub -all "(^|\n)\[^\n\]*linker input file unused since linking not done" $text "" text
-    regsub -all "(^|\n)collect: re(compiling|linking)\[^\n\]*" $text "" text
-    return $text
-}
-
 # Main loop.
 dg-runtest $tests "" $DEFAULT_CXXFLAGS
 

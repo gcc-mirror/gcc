@@ -348,6 +348,17 @@ proc dg-require-dll { args } {
     set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
 }
 
+# If this target does not support named sections skip this test.
+
+proc dg-require-named-sections { args } {
+   upvar name name
+
+   if { ![ check_named_sections_available ] } {
+       upvar dg-do-what dg-do-what
+       set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+   }
+}
+
 # Prune any messages matching ARGS[1] (a regexp) from test output.
 proc dg-prune-output { args } {
     global additional_prunes

@@ -1,4 +1,4 @@
-#   Copyright (C) 1997, 1999, 2000, 2001 Free Software Foundation, Inc.
+#   Copyright (C) 1997, 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,10 @@ proc prune_g++_output { text } {
     # Remove parts of warnings that refer to location of previous
     # definitions, etc as these confuse dejagnu
     regsub -all "(^|\n)\[^\n\]*: In function \[^\n\]*" $text "" text
+
+    # Ignore errata warning from IA64 assembler.
+    regsub -all "(^|\n)\[^\n\]*: Additional NOP may be necessary to workaround Itanium processor A/B step errata" $text "" text
+    regsub -all "(^|\n)\[^\n*\]*: Assembler messages:\[^\n\]*" $text "" text
 
     return $text
 }

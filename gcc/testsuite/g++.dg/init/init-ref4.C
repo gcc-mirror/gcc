@@ -1,9 +1,9 @@
 // Origin: dgregor@gcc.gnu.org
 // PR c++/11384
-// foo<int>::_S_something was not being emitted.
+// foo<int>::_S_something was not being emitted (as a weak definition).
 
-// { dg-do run { xfail *-*-aout *-*-coff *-*-hpux* *-*-hms } }
-// On targets that don't support weak symbols, we require an explicit
+// { dg-do run }
+// { dg-require-weak "" }
 
 template<typename T> 
   struct foo
@@ -19,4 +19,3 @@ int main()
   const int* p = &foo<int>::_S_something;
   return 0;
 }
-

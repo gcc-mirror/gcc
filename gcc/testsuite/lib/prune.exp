@@ -1,4 +1,4 @@
-#   Copyright (C) 1997, 1999, 2000, 2002 Free Software Foundation, Inc.
+#   Copyright (C) 1997, 1999, 2000, 2002, 2004 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,14 +19,21 @@
 proc prune_gcc_output { text } {
     #send_user "Before:$text\n"
 
-    regsub -all "(^|\n)\[^\n\]*: In ((static member )?function|member|method|(copy )?constructor|instantiation|program|subroutine|block-data) \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*: In ((static member )?function|member|method|(copy )?constructor|destructor|instantiation|program|subroutine|block-data) \[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*: At (top level|global scope):\[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*:   instantiated from \[^\n\]*" $text "" text
     regsub -all "(^|\n)collect2: ld returned \[^\n\]*" $text "" text
+    regsub -all "(^|\n)collect: re(compiling|linking)\[^\n\]*" $text "" text
     regsub -all "(^|\n)Please submit.*instructions\[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[0-9\]\[0-9\]* errors\." $text "" text
 
     # Ignore harmless -fpic warnings.
     regsub -all "(^|\n)\[^\n\]*: warning: -f(pic|PIC) ignored for target\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*: warning: -f(pic|PIC)( and -fpic are| is)? not supported\[^\n\]*" $text "" text
+
+    # Ignore errata warning from IA64 assembler.
+    regsub -all "(^|\n)\[^\n\]*: Additional NOP may be necessary to workaround Itanium processor A/B step errata" $text "" text
+    regsub -all "(^|\n)\[^\n*\]*: Assembler messages:\[^\n\]*" $text "" text
 
     # It would be nice to avoid passing anything to gcc that would cause it to
     # issue these messages (since ignoring them seems like a hack on our part),

@@ -1,3 +1,20 @@
+2004-04-09  Zack Weinberg  <zack@codesourcery.com>
+
+	* lib/target-supports.exp (check_named_sections_available): New.
+	* lib/gcc-dg.exp (dg-require-named-sections): New.
+	* lib/prune.exp (prune_gcc_output): Incorporate prunes from
+	old-deja.exp.  Also prune error-count message from HP linker.
+	* g++.old-deja/old-deja.exp (g++-dg-prune): Delete.
+
+	* g++.dg/init/init-ref4.C: Use dg-require-weak.
+	* g++.old-deja/g++.pt/static3.C: Likewise.
+	* g++.dg/parse/attr-ctor1.C: Use dg-require-named-sections.
+
+2004-04-09  Andreas Schwab  <schwab@suse.de>
+
+	* lib/prune.exp (prune_gcc_output): Ignore errata warning from
+	IA64 assembler.
+
 2004-04-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	Backport from mainline:
@@ -76,13 +93,13 @@
 	* g++.dg/init/placement3.C: New test.
 
 	* g++.dg/template/spec13.C: New test.
-	
+
 	* g++.dg/lookup/using11.C: New test.
-	
+
 	* g++.dg/lookup/koenig3.C: New test.
 
 	* g++.dg/template/operator2.C: New test.
-	
+
 	* g++.dg/expr/dtor3.C: New test.
 	* g++.old-deja/g++.brendan/crash15.C: Remove incorrect dg-error
 	marker.
@@ -157,7 +174,7 @@
 2004-03-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14476
-	* g++.dg/lookup/enum1.C: New test. 
+	* g++.dg/lookup/enum1.C: New test.
 
 2004-03-10  Mark Mitchell  <mark@codesourcery.com>
 

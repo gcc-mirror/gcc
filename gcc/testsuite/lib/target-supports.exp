@@ -211,3 +211,24 @@ proc check_profiling_available { test_what } {
     
     return $profiling_available_saved
 }
+
+# Return true if named sections are supported on this target.
+# This proc does not cache results, because the answer may vary
+# when cycling over subtarget options (e.g. irix o32/n32/n64) in
+# the same test run.
+proc check_named_sections_available { } {
+    global tool
+
+    verbose "check_named_sections_available  compiling testfile" 2
+    set f [open "tmp.c" "w"]
+    # Compile a small test program.
+    puts $f "int __attribute__ ((section(\"whatever\"))) foo;"
+    close $f
+    set lines [${tool}_target_compile "tmp.c" "tmp.o" object ""]
+    file delete "tmp.c"
+
+    # If we got no error messages, everything is OK.
+    set answer [string match "" $lines]
+    verbose "check_named_sections_available  returning $answer" 2
+    return $answer
+}
