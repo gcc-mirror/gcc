@@ -2,6 +2,8 @@
 
 	* optabs.c (emit_libcall_block): If target is a user variable,
 	copy to a temporary first.
+	* expr.c (convert_move): When generating a libcall, make a libcall
+	block.
 
 2000-09-15  Richard Henderson  <rth@cygnus.com>
 
