@@ -1,5 +1,6 @@
 /* Toolkit.java -- AWT Toolkit superclass
-   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -365,15 +366,46 @@ public abstract class Toolkit
 
   /**
    * Copies the current system colors into the specified array.  This is
-   * the interface used by the <code>SystemColors</code> class.
+   * the interface used by the <code>SystemColor</code> class.  Although
+   * this method fills in the array with some default colors a real Toolkit
+   * should override this method and provide real system colors for the
+   * native GUI platform.
    *
    * @param colors The array to copy the system colors into.
+   *               It must be at least 26 elements.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
+   *
+   * @see java.awt.SystemColor
    */
   protected void loadSystemColors(int systemColors[])
   {
-    // XXX Implement.
+    systemColors[SystemColor.DESKTOP]                 = 0xFF005C5C;
+    systemColors[SystemColor.ACTIVE_CAPTION]          = 0xFF000080;
+    systemColors[SystemColor.ACTIVE_CAPTION_TEXT]     = 0xFFFFFFFF;
+    systemColors[SystemColor.ACTIVE_CAPTION_BORDER]   = 0xFFC0C0C0;
+    systemColors[SystemColor.INACTIVE_CAPTION]        = 0xFF808080;
+    systemColors[SystemColor.INACTIVE_CAPTION_TEXT]   = 0xFFC0C0C0;
+    systemColors[SystemColor.INACTIVE_CAPTION_BORDER] = 0xFFC0C0C0;
+    systemColors[SystemColor.WINDOW]                  = 0xFFFFFFFF;
+    systemColors[SystemColor.WINDOW_BORDER]           = 0xFF000000;
+    systemColors[SystemColor.WINDOW_TEXT]             = 0xFF000000;
+    systemColors[SystemColor.MENU]                    = 0xFFC0C0C0;
+    systemColors[SystemColor.MENU_TEXT]               = 0xFF000000;
+    systemColors[SystemColor.TEXT]                    = 0xFFC0C0C0;
+    systemColors[SystemColor.TEXT_TEXT]               = 0xFF000000;
+    systemColors[SystemColor.TEXT_HIGHLIGHT]          = 0xFF000090;
+    systemColors[SystemColor.TEXT_HIGHLIGHT_TEXT]     = 0xFFFFFFFF;
+    systemColors[SystemColor.TEXT_INACTIVE_TEXT]      = 0xFF808080;
+    systemColors[SystemColor.CONTROL]                 = 0xFFC0C0C0;
+    systemColors[SystemColor.CONTROL_TEXT]            = 0xFF000000;
+    systemColors[SystemColor.CONTROL_HIGHLIGHT]       = 0xFFFFFFFF;
+    systemColors[SystemColor.CONTROL_LT_HIGHLIGHT]    = 0xFFE0E0E0;
+    systemColors[SystemColor.CONTROL_SHADOW]          = 0xFF808080;
+    systemColors[SystemColor.CONTROL_DK_SHADOW]       = 0xFF000000;
+    systemColors[SystemColor.SCROLLBAR]               = 0xFFE0E0E0;
+    systemColors[SystemColor.INFO]                    = 0xFFE0E000;
+    systemColors[SystemColor.INFO_TEXT]               = 0xFF000000;
   }
 
   /**
