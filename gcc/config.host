@@ -146,6 +146,8 @@ case ${host} in
     ;;
   i[34567]86-*-pe | i[34567]86-*-cygwin*)
     host_xm_file=i386/xm-cygwin.h
+    out_host_hook_obj=host-cygwin.o
+    host_xmake_file=i386/x-cygwin
     host_exeext=.exe
     ;;
   i[34567]86-*-mingw32*)
