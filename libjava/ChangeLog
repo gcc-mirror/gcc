@@ -1,3 +1,16 @@
+2000-05-05  Tom Tromey  <tromey@cygnus.com>
+
+	Fix for PR libgcj/220:
+	* Makefile.in: Rebuilt.
+	* Makefile.am (gij_LDFLAGS): Don't use libstdc++.
+	(jv_convert_LDFLAGS): Likewise.
+	(libgcj_la_LDFLAGS): Likewise.
+	(GCJLINK): New macro.
+	(jv_convert_LINK): Use it.
+	(gij_LINK): Likewise.
+	(libgcj_la_LINK): New macro.
+	(libgcjawt_la_LINK): Likewise.
+
 2000-05-04  Tom Tromey  <tromey@cygnus.com>
 
 	* gcj/field.h (JvFieldIsRef): Return false for gnu.gcj.RawData
