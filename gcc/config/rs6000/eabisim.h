@@ -34,6 +34,34 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES \
   "-DPPC -D__embedded__ -D__simulator__ -Asystem(embedded) -Asystem(simulator) -Acpu(powerpc) -Amachine(powerpc)"
 
+#undef CPP_SPEC
+#define CPP_SPEC "\
+%{posix: -D_POSIX_SOURCE} \
+%{mrelocatable: -D_RELOCATABLE} \
+%{mcall-sysv: -D_CALL_SYSV} %{mcall-aix: -D_CALL_AIX} %{!mcall-sysv: %{!mcall-aix: -D_CALL_SYSV}} \
+%{!mhard-float: -D_SOFT_FLOAT} \
+%{mlittle: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
+%{mlittle-endian: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
+%{!mlittle: %{!mlittle-endian: -D_BIG_ENDIAN -Amachine(bigendian)}} \
+%{!mcpu*: \
+  %{mpower: %{!mpower2: -D_ARCH_PWR}} \
+  %{mpower2: -D_ARCH_PWR2} \
+  %{mpowerpc*: -D_ARCH_PPC} \
+  %{mno-powerpc: %{!mpower: %{!mpower2: -D_ARCH_COM}}} \
+  %{!mno-powerpc: -D_ARCH_PPC}} \
+%{mcpu=common: -D_ARCH_COM} \
+%{mcpu=power: -D_ARCH_PWR} \
+%{mcpu=powerpc: -D_ARCH_PPC} \
+%{mcpu=rios: -D_ARCH_PWR} \
+%{mcpu=rios1: -D_ARCH_PWR} \
+%{mcpu=rios2: -D_ARCH_PWR2} \
+%{mcpu=rsc: -D_ARCH_PWR} \
+%{mcpu=rsc1: -D_ARCH_PWR} \
+%{mcpu=403: -D_ARCH_PPC} \
+%{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
+%{mcpu=603: -D_ARCH_PPC} \
+%{mcpu=604: -D_ARCH_PPC}"
+
 /* Use the simulator crt0 and libgloss/newlib libraries */
 #undef  STARTFILE_SPEC
 #define	STARTFILE_SPEC "sim-crt0.o%s"
