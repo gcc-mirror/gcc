@@ -80,6 +80,8 @@ extern void s390_output_symbolic_const (FILE *, rtx);
 extern void print_operand_address (FILE *, rtx);
 extern void print_operand (FILE *, rtx, int);
 extern void s390_output_constant_pool (rtx, rtx);
+extern void s390_output_pool_entry (FILE *, rtx, enum machine_mode, 
+				    unsigned int);
 extern void s390_trampoline_template (FILE *);
 extern void s390_initialize_trampoline (rtx, rtx, rtx);
 extern rtx s390_gen_rtx_const_DI (int, int);
