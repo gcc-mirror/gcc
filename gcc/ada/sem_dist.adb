@@ -441,8 +441,7 @@ package body Sem_Dist is
                         Make_Component_Definition (Loc,
                           Aliased_Present    => False,
                           Subtype_Indication =>
-                            New_Reference_To
-                              (Standard_Integer, Loc))),
+                            New_Reference_To (Standard_Integer, Loc))),
 
                     Make_Component_Declaration (Loc,
                       Defining_Identifier =>
@@ -452,8 +451,7 @@ package body Sem_Dist is
                         Make_Component_Definition (Loc,
                           Aliased_Present    => False,
                           Subtype_Indication =>
-                            New_Reference_To
-                              (RTE (RE_Unsigned_64), Loc))),
+                            New_Reference_To (RTE (RE_Unsigned_64), Loc))),
 
                     Make_Component_Declaration (Loc,
                       Defining_Identifier =>
@@ -463,8 +461,7 @@ package body Sem_Dist is
                         Make_Component_Definition (Loc,
                           Aliased_Present    => False,
                           Subtype_Indication =>
-                            New_Reference_To
-                              (Standard_Natural, Loc))),
+                            New_Reference_To (Standard_Natural, Loc))),
 
                     Make_Component_Declaration (Loc,
                       Defining_Identifier =>
@@ -474,8 +471,7 @@ package body Sem_Dist is
                         Make_Component_Definition (Loc,
                           Aliased_Present    => False,
                           Subtype_Indication =>
-                            New_Reference_To
-                              (Standard_Boolean, Loc)))))));
+                            New_Reference_To (Standard_Boolean, Loc)))))));
 
       Insert_After (N, New_Type_Decl);
       Set_Equivalent_Type (User_Type, Fat_Type);

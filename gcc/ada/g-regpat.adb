@@ -2997,9 +2997,9 @@ package body GNAT.Regpat is
       function Match_Whilem (IP : Pointer) return Boolean is
          pragma Unreferenced (IP);
 
-         Cc : Current_Curly_Access := Current_Curly;
-         N  : constant Natural     := Cc.Cur + 1;
-         Ln : Natural              := 0;
+         Cc : constant Current_Curly_Access := Current_Curly;
+         N  : constant Natural              := Cc.Cur + 1;
+         Ln : Natural                       := 0;
 
          Lastloc : constant Natural := Cc.Lastloc;
          --  Detection of 0-len.

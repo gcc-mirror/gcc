@@ -214,7 +214,7 @@ package body System.Stack_Checking is
 
       Full_Check :
       declare
-         My_Stack : Stack_Access := Set_Stack_Info (Cache'Access);
+         My_Stack : constant Stack_Access := Set_Stack_Info (Cache'Access);
          --  At this point Stack.all might already be invalid, so
          --  it is essential to use our local copy of Stack!
 

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2003, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2004, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -2487,3 +2487,11 @@ __gnat_lseek (int fd, long offset, int whence)
 {
   return (int) lseek (fd, offset, whence);
 }
+
+/* This function returns the version of GCC being used.  Here it's GCC 3.  */
+int
+get_gcc_version (void)
+{
+  return 3;
+}
+

@@ -55,17 +55,19 @@ package body Exp_Dist is
    --  The following model has been used to implement distributed objects:
    --  given a designated type D and a RACW type R, then a record of the
    --  form:
+
    --    type Stub is tagged record
    --       [...declaration similar to s-parint.ads RACW_Stub_Type...]
    --    end record;
+
    --  is built. This type has two properties:
-   --
+
    --    1) Since it has the same structure than RACW_Stub_Type, it can be
    --       converted to and from this type to make it suitable for
    --       System.Partition_Interface.Get_Unique_Remote_Pointer in order
    --       to avoid memory leaks when the same remote object arrive on the
    --       same partition by following different pathes
-   --
+
    --    2) It also has the same dispatching table as the designated type D,
    --       and thus can be used as an object designated by a value of type
    --       R on any partition other than the one on which the object has

@@ -654,7 +654,8 @@ package body Exp_Ch4 is
 
       Comp : RE_Id;
 
-      Stg_Unit_Is_Byte : constant Boolean := System_Storage_Unit = Byte'Size;
+      Byte_Addressable : constant Boolean := System_Storage_Unit = Byte'Size;
+      --  True for byte addressable target
 
       function Length_Less_Than_4 (Opnd : Node_Id) return Boolean;
       --  Returns True if the length of the given operand is known to be
@@ -707,7 +708,7 @@ package body Exp_Ch4 is
       --  addressing of array components.
 
       if not Is_Bit_Packed_Array (Typ1)
-        and then Stg_Unit_Is_Byte
+        and then Byte_Addressable
         and then not Java_VM
       then
          --  The call we generate is:

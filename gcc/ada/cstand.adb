@@ -559,6 +559,7 @@ package body CStand is
       --  Create type definition node for type String
 
       Tdef_Node := New_Node (N_Unconstrained_Array_Definition, Stloc);
+
       declare
          CompDef_Node : Node_Id;
       begin
@@ -567,6 +568,7 @@ package body CStand is
          Set_Subtype_Indication (CompDef_Node, Identifier_For (S_Character));
          Set_Component_Definition (Tdef_Node, CompDef_Node);
       end;
+
       Set_Subtype_Marks      (Tdef_Node, New_List);
       Append (Identifier_For (S_Positive), Subtype_Marks (Tdef_Node));
       Set_Type_Definition (Parent (Standard_String), Tdef_Node);

@@ -201,7 +201,7 @@ package body System.Task_Primitives.Operations is
    procedure Abort_Handler (signo : Signal) is
       pragma Unreferenced (signo);
 
-      Self_Id : Task_ID := Self;
+      Self_Id : constant Task_ID := Self;
       Result  : Interfaces.C.int;
       Old_Set : aliased sigset_t;
 

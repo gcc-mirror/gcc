@@ -951,9 +951,11 @@ package body Sprint is
 
          when N_Component_Definition =>
             Set_Debug_Sloc;
+
             if Aliased_Present (Node) then
                Write_Str_With_Col_Check ("aliased ");
             end if;
+
             Sprint_Node (Subtype_Indication (Node));
 
          when N_Component_Declaration =>
