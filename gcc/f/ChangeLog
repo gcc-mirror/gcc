@@ -1,3 +1,8 @@
+2002-05-09  Hassan Aurag  <aurag@cae.com>
+
+	* expr.c (ffeexpr_reduced_ugly2log_): Allow logicals-as-integers
+	under -fugly-logint as arguments of .and., .or., .xor.
+
 2002-05-07  Jan Hubicka  <jh@suse.cz>
 
 	* target.h (FFETARGET_32bit_longs): Undefine for x86-64.
