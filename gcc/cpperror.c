@@ -1,5 +1,6 @@
 /* Default error handlers for CPP Library.
-   Copyright (C) 1986, 87, 89, 92-95, 98, 99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-95, 98, 99, 2000
+   Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -22,13 +23,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  You are forbidden to forbid anyone else to use, share and improve
  what you give them.   Help stamp out software-hoarding!  */
 
-#ifndef EMACS
 #include "config.h"
 #include "system.h"
-#else
-#include <stdio.h>
-#endif /* not EMACS */
-
 #include "cpplib.h"
 #include "intl.h"
 

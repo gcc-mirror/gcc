@@ -1,5 +1,6 @@
 /* Part of CPP library.  (Macro handling.)
-   Copyright (C) 1986, 87, 89, 92-96, 98, 99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-96, 98, 99, 2000
+   Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -440,11 +441,6 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
 		  p += 1;
 		  while (p < limit && !(p[-2] == '*' && p[-1] == '/'))
 		    p++;
-#if 0
-		  /* Mark this as a concatenation-point,
-		     as if it had been ##.  */
-		  concat = p;
-#endif
 		}
 	      break;
 	    }
@@ -1003,18 +999,8 @@ macroexpand (pfile, hp)
   int xbuf_len;
   struct argdata *args = 0;
   long old_written = CPP_WRITTEN (pfile);
-#if 0
-  int start_line = instack[indepth].lineno;
-#endif
   int rest_args, rest_zero = 0;
   register int i;
-
-#if 0
-  /* This macro is being used inside a #if, which means it must be */
-  /* recorded as a precondition.  */
-  if (pcp_inside_if && pcp_outfile && defn->predefined)
-    dump_single_macro (hp, pcp_outfile);
-#endif
 
   cpp_buf_line_and_col (cpp_file_buffer (pfile), &start_line, &start_column);
 

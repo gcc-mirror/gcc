@@ -1,5 +1,17 @@
 2000-02-05  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* cpperror.c: Remove #ifdef EMACS block.
+	* cppmain.c: Likewise.
+	* cpphash.c: Remove #if 0 blocks.
+	* cppinit.c: Remove #if 0 blocks, and the -lint option.
+	* cpplib.c: Remove #if 0 blocks and code referencing
+	pcp_inside_if or for_lint.  Remove duplicate error message.
+	Fix error messages for #else after #else or #elif.  Reformat.
+	Remove archaic TODO list.
+	* cpplib.h: Remove pcp_inside_if and for_lint flags.
+
+2000-02-05  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* i386/osf1elf.h: Add missing backslash to multiline string.
 
 2000-02-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>

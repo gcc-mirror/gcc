@@ -1,5 +1,5 @@
 /* CPP main program, using CPP Library.
-   Copyright (C) 1995, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1997-1999, 2000 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
 This program is free software; you can redistribute it and/or modify it
@@ -20,15 +20,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  You are forbidden to forbid anyone else to use, share and improve
  what you give them.   Help stamp out software-hoarding!  */
 
-#ifndef EMACS
 #include "config.h"
 #include "system.h"
-#else
-#include <stdio.h>
-
-extern char *getenv ();
-#endif /* not EMACS */
-
 #include "cpplib.h"
 #include "intl.h"
 
