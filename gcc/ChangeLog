@@ -1,3 +1,7 @@
+2002-07-02  Alan Modra  <amodra@bigpond.net.au>
+
+	* README.Portability: Fix typos.
+
 2002-07-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/7177
