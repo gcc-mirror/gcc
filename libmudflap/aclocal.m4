@@ -653,7 +653,7 @@ irix5* | irix6*)
 # This must be Linux ELF.
 linux-gnu*)
   case $host_cpu in
-  alpha* | hppa* | i*86 | powerpc* | sparc* | ia64* | x86_64*)
+  alpha* | hppa* | i*86 | powerpc* | sparc* | ia64* | x86_64* | sh*)
     lt_cv_deplibs_check_method=pass_all ;;
     # NB 2003-06-03: According to Alexandre Oliva, x86_64 should not be
     # in this list.  However, it works around a libtool problem that
