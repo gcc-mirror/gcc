@@ -266,6 +266,7 @@ bool cgraph_varpool_assemble_pending_decls (void);
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
 
 bool cgraph_function_possibly_inlined_p (tree);
+void cgraph_unnest_node (struct cgraph_node *node);
 
 /* In cgraphunit.c  */
 bool cgraph_assemble_pending_functions (void);

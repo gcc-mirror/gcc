@@ -1,3 +1,9 @@
+2004-09-20  Jan Hubicka  <jh@suse.cz>
+
+	* utils.c (gnat_finalize): Remove.
+	(end_subprog_body): Directly call cgraph_finalize_function;
+	do not lower the nested functions.
+
 2004-09-20  Robert Dewar  <dewar@gnat.com>
 
 	PR ada/17540

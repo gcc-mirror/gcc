@@ -693,4 +693,17 @@ cgraph_clone_node (struct cgraph_node *n)
 
   return new;
 }
+
+/* NODE is no longer nested function; update cgraph accordingly.  */
+void
+cgraph_unnest_node (struct cgraph_node *node)
+{
+  struct cgraph_node **node2 = &node->origin->nested;
+  gcc_assert (node->origin);
+
+  while (*node2 != node)
+    node2 = &(*node2)->next_nested;
+  *node2 = node->next_nested;
+  node->origin = NULL;
+}
 #include "gt-cgraph.h"

@@ -5623,7 +5623,8 @@ cse_insn (rtx insn, rtx libcall_insn)
 
       /* If this SET is now setting PC to a label, we know it used to
 	 be a conditional or computed branch.  */
-      else if (dest == pc_rtx && GET_CODE (src) == LABEL_REF)
+      else if (dest == pc_rtx && GET_CODE (src) == LABEL_REF
+	       && !LABEL_REF_NONLOCAL_P (src))
 	{
 	  /* Now emit a BARRIER after the unconditional jump.  */
 	  if (NEXT_INSN (insn) == 0
