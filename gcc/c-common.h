@@ -740,12 +740,12 @@ extern int flag_enforce_eh_specs;
 /*  The version of the C++ ABI in use.  The following values are
     allowed:
 
-    -1: The version of the ABI believed most conformant with the 
-        C++ ABI specification.  This ABI may change as bugs are
-	discovered and fixed.  Therefore, -1 will not necessarily
-	indicate the same ABI in different versions of G++.
+    0: The version of the ABI believed most conformant with the 
+       C++ ABI specification.  This ABI may change as bugs are
+       discovered and fixed.  Therefore, 0 will not necessarily
+       indicate the same ABI in different versions of G++.
 
-    0: The version of the ABI first used in G++ 3.2.
+    1: The version of the ABI first used in G++ 3.2.
 
     Additional positive integers will be assigned as new versions of
     the ABI become the default version of the ABI.  */
