@@ -3940,16 +3940,16 @@ sched_analyze (head, tail)
 		   || (NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP
 		       && GET_CODE (PREV_INSN (insn)) != CALL_INSN)))
 	{
-	  rtx region;
+	  rtx rtx_region;
 
 	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
-	    region = GEN_INT (NOTE_EH_HANDLER (insn));
+	    rtx_region = GEN_INT (NOTE_EH_HANDLER (insn));
 	  else
-	    region = GEN_INT (0);
+	    rtx_region = GEN_INT (0);
 
 	  loop_notes = alloc_EXPR_LIST (REG_DEAD,
-					region,
+					rtx_region,
 					loop_notes);
 	  loop_notes = alloc_EXPR_LIST (REG_DEAD,
 					GEN_INT (NOTE_LINE_NUMBER (insn)),
