@@ -1,3 +1,7 @@
+2003-01-10  Loren J. Rittle  <ljrittle@acm.org>
+
+	* test_summary (configflags): awk portability.
+
 2003-01-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	* test_summary (configflags): Compute correctly with both

@@ -94,7 +94,7 @@ BEGIN {
   print "cat <<'"'"'EOF'"'"' |";
 '${prepend_logs+"  system(\"cat $prepend_logs\"); "}'
 }
-$0 ~ /^(|# )[^ ]*\/configure / {
+$0 ~ /^[^ ]*\/configure / || $0 ~ /^# [^ ]*\/configure / {
     configflags = $0 " ";
     gsub(/^# /, "", configflags);
     srcdir = configflags;
