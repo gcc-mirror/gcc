@@ -1,3 +1,7 @@
+2001-09-15  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/macro9.c: New test.
+
 2001-09-15  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.c-torture/execute/980223.c: Change type of addr from long 
