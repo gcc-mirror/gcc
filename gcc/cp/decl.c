@@ -10615,13 +10615,17 @@ grokdeclarator (tree declarator,
 	    register tree size;
 
 	    size = TREE_OPERAND (declarator, 1);
-
-	    /* VC++ spells a zero-sized array with [].  */
-	    if (size == NULL_TREE && decl_context == FIELD && !	staticp
-		&& ! RIDBIT_SETP (RID_TYPEDEF, specbits))
-	      size = integer_zero_node;
-
 	    declarator = TREE_OPERAND (declarator, 0);
+
+	    /* C99 spells a flexible array member [].  */
+	    if (size == NULL_TREE && decl_context == FIELD && !	staticp
+		&& ! RIDBIT_SETP (RID_TYPEDEF, specbits)
+		&& !(declarator &&
+		    (TREE_CODE (declarator) == CALL_EXPR
+		      || TREE_CODE (declarator) == INDIRECT_REF
+		      || TREE_CODE (declarator) == ADDR_EXPR
+		      || TREE_CODE (declarator) == ARRAY_REF)))
+	      size = integer_zero_node;
 
 	    type = create_array_type_for_decl (dname, type, size);
 

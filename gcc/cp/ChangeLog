@@ -1,3 +1,9 @@
+2003-07-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/11614
+	* decl.c (grokdeclarator): An array member is only a flexible
+	array member if the field itself is the array.
+
 2003-07-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10793
