@@ -2602,16 +2602,10 @@ parmlist_or_identifiers_1:
 	  parmlist_1
 	| identifiers ')'
 		{ tree t;
-		  for (t = $1; t; t = TREE_CHAIN (t))
-		    if (TREE_VALUE (t) == NULL_TREE)
-		      error ("`...' in old-style identifier list");
 		  $$ = tree_cons (NULL_TREE, NULL_TREE, $1);
 
 		  /* Make sure we have a parmlist after attributes.  */
-		  if ($<ttype>-1 != 0
-		      && (TREE_CODE ($$) != TREE_LIST
-			  || TREE_PURPOSE ($$) == 0
-			  || TREE_CODE (TREE_PURPOSE ($$)) != PARM_DECL))
+		  if ($<ttype>-1 != 0)
 		    YYERROR1;
 		}
 	;
