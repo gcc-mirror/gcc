@@ -138,6 +138,38 @@ get_kind (bt type, gfc_expr * k, const char *name, int default_kind)
 }
 
 
+/* Checks if X, which is assumed to represent a two's complement
+   integer of binary width BITSIZE, has the signbit set.  If so, makes 
+   X the corresponding negative number.  */
+
+static void
+twos_complement (mpz_t x, int bitsize)
+{
+  mpz_t mask;
+  char mask_s[bitsize + 1];
+
+  if (mpz_tstbit (x, bitsize - 1) == 1)
+    {
+      /* The mpz_init_set_{u|s}i functions take a long argument, but
+	 the widest integer the target supports might be wider, so we
+	 have to go via an intermediate string.  */
+      memset (mask_s, '1', bitsize);
+      mask_s[bitsize] = '\0';
+      mpz_init_set_str (mask, mask_s, 2);
+
+      /* We negate the number by hand, zeroing the high bits, and then
+	 have it negated by GMP.  */
+      mpz_com (x, x);
+      mpz_add_ui (x, x, 1);
+      mpz_and (x, x, mask);
+
+      mpz_neg (x, x);
+
+      mpz_clear (mask);
+    }
+}
+
+
 /********************** Simplification functions *****************************/
 
 gfc_expr *
@@ -1557,8 +1589,7 @@ gfc_expr *
 gfc_simplify_ishft (gfc_expr * e, gfc_expr * s)
 {
   gfc_expr *result;
-  int shift, ashift, isize, k;
-  long e_int;
+  int shift, ashift, isize, k, *bits, i;
 
   if (e->expr_type != EXPR_CONSTANT || s->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -1586,10 +1617,6 @@ gfc_simplify_ishft (gfc_expr * e, gfc_expr * s)
       return &gfc_bad_expr;
     }
 
-  e_int = mpz_get_si (e->value.integer);
-  if (e_int > INT_MAX || e_int < INT_MIN)
-    gfc_internal_error ("ISHFT: unable to extract integer");
-
   result = gfc_constant_result (e->ts.type, e->ts.kind, &e->where);
 
   if (shift == 0)
@@ -1597,13 +1624,43 @@ gfc_simplify_ishft (gfc_expr * e, gfc_expr * s)
       mpz_set (result->value.integer, e->value.integer);
       return range_check (result, "ISHFT");
     }
+  
+  bits = gfc_getmem (isize * sizeof (int));
+
+  for (i = 0; i < isize; i++)
+    bits[i] = mpz_tstbit (e->value.integer, i);
 
   if (shift > 0)
-    mpz_set_si (result->value.integer, e_int << shift);
-  else
-    mpz_set_si (result->value.integer, e_int >> ashift);
+    {
+      for (i = 0; i < shift; i++)
+	mpz_clrbit (result->value.integer, i);
 
-  return range_check (result, "ISHFT");
+      for (i = 0; i < isize - shift; i++)
+	{
+	  if (bits[i] == 0)
+	    mpz_clrbit (result->value.integer, i + shift);
+	  else
+	    mpz_setbit (result->value.integer, i + shift);
+	}
+    }
+  else
+    {
+      for (i = isize - 1; i >= isize - ashift; i--)
+	mpz_clrbit (result->value.integer, i);
+
+      for (i = isize - 1; i >= ashift; i--)
+	{
+	  if (bits[i] == 0)
+	    mpz_clrbit (result->value.integer, i - ashift);
+	  else
+	    mpz_setbit (result->value.integer, i - ashift);
+	}
+    }
+
+  twos_complement (result->value.integer, isize);
+
+  gfc_free (bits);
+  return result;
 }
 
 
@@ -1651,6 +1708,12 @@ gfc_simplify_ishftc (gfc_expr * e, gfc_expr * s, gfc_expr * sz)
 
   result = gfc_constant_result (e->ts.type, e->ts.kind, &e->where);
 
+  if (shift == 0)
+    {
+      mpz_set (result->value.integer, e->value.integer);
+      return result;
+    }
+
   bits = gfc_getmem (isize * sizeof (int));
 
   for (i = 0; i < isize; i++)
@@ -1658,20 +1721,13 @@ gfc_simplify_ishftc (gfc_expr * e, gfc_expr * s, gfc_expr * sz)
 
   delta = isize - ashift;
 
-  if (shift == 0)
-    {
-      mpz_set (result->value.integer, e->value.integer);
-      gfc_free (bits);
-      return range_check (result, "ISHFTC");
-    }
-
-  else if (shift > 0)
+  if (shift > 0)
     {
       for (i = 0; i < delta; i++)
 	{
 	  if (bits[i] == 0)
 	    mpz_clrbit (result->value.integer, i + shift);
-	  if (bits[i] == 1)
+	  else
 	    mpz_setbit (result->value.integer, i + shift);
 	}
 
@@ -1679,12 +1735,9 @@ gfc_simplify_ishftc (gfc_expr * e, gfc_expr * s, gfc_expr * sz)
 	{
 	  if (bits[i] == 0)
 	    mpz_clrbit (result->value.integer, i - delta);
-	  if (bits[i] == 1)
+	  else
 	    mpz_setbit (result->value.integer, i - delta);
 	}
-
-      gfc_free (bits);
-      return range_check (result, "ISHFTC");
     }
   else
     {
@@ -1692,7 +1745,7 @@ gfc_simplify_ishftc (gfc_expr * e, gfc_expr * s, gfc_expr * sz)
 	{
 	  if (bits[i] == 0)
 	    mpz_clrbit (result->value.integer, i + delta);
-	  if (bits[i] == 1)
+	  else
 	    mpz_setbit (result->value.integer, i + delta);
 	}
 
@@ -1700,13 +1753,15 @@ gfc_simplify_ishftc (gfc_expr * e, gfc_expr * s, gfc_expr * sz)
 	{
 	  if (bits[i] == 0)
 	    mpz_clrbit (result->value.integer, i + shift);
-	  if (bits[i] == 1)
+	  else
 	    mpz_setbit (result->value.integer, i + shift);
 	}
-
-      gfc_free (bits);
-      return range_check (result, "ISHFTC");
     }
+
+  twos_complement (result->value.integer, isize);
+
+  gfc_free (bits);
+  return result;
 }
 
 
