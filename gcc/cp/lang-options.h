@@ -42,8 +42,6 @@ Boston, MA 02111-1307, USA.  */
   "-fno-rtti",
   "-felide-constructors",
   "-fno-elide-constructors",
-  "-fembedded-cxx",
-  "-fno-embedded-cxx",
   "-fenum-int-equiv",
   "-fno-enum-int-equiv",
   "-fexternal-templates",

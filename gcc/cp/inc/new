@@ -1,16 +1,12 @@
 // The -*- C++ -*- dynamic memory management header.
-// Copyright (C) 1994, 1996, 1997 Free Software Foundation
+// Copyright (C) 1994, 1996 Free Software Foundation
 
 #ifndef __NEW__
 #define __NEW__
 
 #pragma interface "new"
 #include <stddef.h>
-
-#ifndef __EMBEDDED_CXX__
-// Exception Handling is forbidden in Embedded C++.  */
 #include <exception>
-#endif
 
 extern "C++" {
 
@@ -18,7 +14,6 @@ extern "C++" {
 namespace std {
 #endif
 
-#ifndef __EMBEDDED_CXX__
   class bad_alloc : public exception {
   public:
     virtual const char* what() const throw() { return "bad_alloc"; }
@@ -26,8 +21,6 @@ namespace std {
 
   struct nothrow_t {};
   extern const nothrow_t nothrow;
-#endif
-
   typedef void (*new_handler)();
   extern "C" new_handler set_new_handler (new_handler);
 
@@ -41,23 +34,15 @@ extern "C" void __default_new_handler (void);
 
 // replaceable signatures
 void *operator new (size_t);
-void *operator new[] (size_t);
-#ifndef __EMBEDDED_CXX__
 void *operator new (size_t, const nothrow_t&) throw();
+void *operator new[] (size_t);
 void *operator new[] (size_t, const nothrow_t&) throw();
 void operator delete (void *) throw();
 void operator delete[] (void *) throw();
-#endif
 
-#ifndef __EMBEDDED_CXX__
 // default placement versions of operator new
 inline void *operator new(size_t, void *place) throw() { return place; }
 inline void *operator new[](size_t, void *place) throw() { return place; }
-#else
-// default placement versions of operator new
-inline void *operator new(size_t, void *place) { return place; }
-inline void *operator new[](size_t, void *place) { return place; }
-#endif
 } // extern "C++"
 
 #endif

@@ -118,18 +118,6 @@ char *inline_text_firstobj;
 
 int end_of_file;
 
-/* If non-zero, we gave an error about namespaces not being allowed by
-   Embedded C++.  */
-static int embedded_namespace_error = 0;
-
-/* If non-zero, we gave an error about templates not being allowed by
-   Embedded C++.  */
-static int embedded_template_error = 0;
-
-/* If non-zero, we gave an error about exception handling not being allowed by
-   Embedded C++.  */
-static int embedded_eh_error = 0;
-
 /* Pending language change.
    Positive is push count, negative is pop count.  */
 int pending_lang_change = 0;
@@ -851,7 +839,6 @@ init_lex ()
       UNSET_RESERVED_WORD ("classof");
       UNSET_RESERVED_WORD ("headof");
     }
-
   if (! flag_handle_signatures || flag_no_gnu_keywords)
     {
       /* Easiest way to not recognize signature
@@ -3067,16 +3054,6 @@ identifier_typedecl_value (node)
   return NULL_TREE;
 }
 
-#ifdef __GNUC__
-__inline
-#endif
-void
-embedded_pedwarn (s)
-     char *s;
-{
-  pedwarn ("Embedded C++ prohibits use of %s", s);
-}
-
 int
 real_yylex ()
 {
@@ -3387,51 +3364,6 @@ real_yylex ()
 	    goto done;
 	  }
       }
-
-      if (flag_embedded_cxx)
-	{ 
-	  if (value == USING || value == NAMESPACE)
-	    {
-	      if (! embedded_namespace_error)
-		{
-		  embedded_namespace_error = 1;
-		  embedded_pedwarn ("namespaces");
-		}
-	      else
-		pedwarn ("further uses of namespaces with Embedded C++ enabled");
-	    }
-	  else if (value == TEMPLATE || value == TYPENAME)
-	    {
-	      if (! embedded_namespace_error)
-		{
-		  embedded_namespace_error = 1;
-		  embedded_pedwarn ("templates");
-		}
-	      else
-		pedwarn ("further uses of templates with Embedded C++ enabled");
-	    }
-	  else if (value == CATCH || value == THROW || value == TRY)
-	    {
-	      if (! embedded_eh_error)
-		{
-		  embedded_eh_error = 1;
-		  embedded_pedwarn ("exception handling");
-		}
-	      else
-		pedwarn ("further uses of exception handling with Embedded C++ enabled");
-	    }
-	  else if (value == DYNAMIC_CAST)
-	    embedded_pedwarn ("dynamic_cast");
-	  else if (value == STATIC_CAST)
-	    embedded_pedwarn ("static_cast");
-	  else if (value == REINTERPRET_CAST)
-	    embedded_pedwarn ("reinterpret_cast");
-	  else if (value == CONST_CAST)
-	    embedded_pedwarn ("const_cast");
-	  else if (value == TYPEID)
-	    embedded_pedwarn ("typeid");
-	}
-
       break;
 
     case '.':

@@ -8309,8 +8309,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
   if (RIDBIT_SETP (RID_MUTABLE, specbits))
     {
-      if (flag_embedded_cxx)
-	pedwarn ("Embedded C++ prohibits use of mutable");
       if (decl_context == PARM)
 	{
 	  error ("non-member `%s' cannot be declared `mutable'", name);

@@ -2442,9 +2442,7 @@ maybe_base_class_list:
 base_class_list:
 	  base_class
 	| base_class_list ',' see_typename base_class
-		{ if (flag_embedded_cxx)
-		    pedwarn ("Embedded C++ prohibits multiple inheritance");
-		  $$ = chainon ($$, $4); }
+		{ $$ = chainon ($$, $4); }
 	;
 
 base_class:

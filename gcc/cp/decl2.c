@@ -409,11 +409,6 @@ int flag_new_for_scope = 1;
 
 int flag_weak = 1;
 
-/* Nonzero if we want to adhere to the language rules of the Embedded C++
-   specification.  */
-
-int flag_embedded_cxx = 0;
-
 /* Maximum template instantiation depth. Must be at least 17 for ANSI
    compliance. */
 
@@ -474,8 +469,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"check-new", &flag_check_new, 1},
   {"repo", &flag_use_repository, 1},
   {"for-scope", &flag_new_for_scope, 2},
-  {"weak", &flag_weak, 1},
-  {"embedded-cxx", &flag_embedded_cxx, 1}
+  {"weak", &flag_weak, 1}
 };
 
 /* Decode the string P as a language-specific option.
@@ -557,17 +551,6 @@ lang_decode_option (p)
       else if (!strcmp (p, "no-guiding-decls"))
 	{
 	  flag_guiding_decls = 0;
-	  found = 1;
-	}
-      else if (!strcmp (p, "embedded-cxx"))
-	{
-	  flag_embedded_cxx = 1;
-	  flag_rtti = flag_exceptions = 0;
-	  found = 1;
-	}
-      else if (!strcmp (p, "no-embedded-cxx"))
-	{
-	  flag_embedded_cxx = 0;
 	  found = 1;
 	}
       else if (!strncmp (p, "template-depth-", 15))

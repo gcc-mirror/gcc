@@ -1829,11 +1829,6 @@ extern int flag_implicit_templates;
 
 extern int flag_weak;
 
-/* Nonzero if we want to adhere to the language rules of the Embedded C++
-   specification.  */
-
-extern int flag_embedded_cxx;
-
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
 extern int at_eof;

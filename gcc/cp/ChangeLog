@@ -42,10 +42,6 @@ Sun Nov  2 15:04:12 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 1997-10-31  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
-	* lex.c (embedded_pedwarn): Change its return type to void.
-
-1997-10-31  Brendan Kehoe  <brendan@lisa.cygnus.com>
-
 	* lex.c (FILE_NAME_NONDIRECTORY): Delete macro.
 	(file_name_nondirectory): New function, doing the same as the macro.
 	(set_typedecl_interface_info): Use it instead of the macro.
@@ -160,34 +156,6 @@ Wed Oct 15 00:35:28 1997  Mike Stump  <mrs@wrs.com>
 
 	* parse.y (unary_expr): Give a pedwarn if someone tries to use the
 	&&label GNU extension.
-
-	Compliance with the Embedded C++ language specification.
-	By default we generate warnings; use -pedantic-errors to turn them
-	into hard errors.
-	* decl2.c (flag_embedded_cxx): Define.
-	(struct lang_f_options): Add -fembedded-cxx.
-	(lang_decode_option): If -fembedded-cxx, set FLAG_EMBEDDED_CXX,
-	and clear FLAG_RTTI and FLAG_EXCEPTIONS.
-	* lang-options.h: Add -fembedded-cxx and -fno-embedded-cxx.
-	* lang-specs.h: If -fembedded-cxx, define __EMBEDDED_CXX__.
-	* cp-tree.h (flag_embedded_cxx): Add decl.
-	* parse.y (base_class_list): Give a pedwarn about inheritance if
-	FLAG_EMBEDDED_CXX.
-	(base_class): Likewise for the base_class_access_list case.
-
-	* lex.c (real_yylex): Give pedwarns if FLAG_EMBEDDED_CXX is true and
-	the token VALUE is any of TRY, CATCH, THROW, TEMPLATE, TYPENAME,
-	USING, or NAMESPACE.  Likewise for DYNAMIC_CAST, STATIC_CAST,
-	REINTERPRET_CAST, CONST_CAST, or TYPEID.
-	(embedded_{template,eh,namespace}_error): New global variables to
-	make us only give a warning/error about each once.
-	(embedded_pedwarn): New fn to do the actual pedwarn.
-	* decl.c (grokdeclarator): Give a pedwarn for using mutable.
-
-	* inc/new: Only make the EH stuff appear if !__EMBEDDED_CXX__.
-	(new, new[]) [__EMBEDDED_CXX__]: For placement versions, take out
-	the default throw.  This particular bit is under discussion with
-	the EC++ committee currently.
 
 Tue Oct 14 12:01:00 1997  Mark Mitchell  <mmitchell@usa.net>
 
