@@ -1631,6 +1631,7 @@
    (set_attr "mode"	"SF")
    (set_attr "length"	"2")])	;; mul.s + nop
 
+
 ;; ??? The R4000 (only) has a cpu bug.  If a double-word shift executes while
 ;; a multiply is in progress, it may give an incorrect result.  Avoid
 ;; this by keeping the mflo with the mult on the R4000.
@@ -1646,8 +1647,6 @@
 {
   if (GENERATE_MULT3)
     emit_insn (gen_mulsi3_mult3 (operands[0], operands[1], operands[2]));
-  else if (TARGET_MAD)
-    emit_insn (gen_mulsi3_r4650 (operands[0], operands[1], operands[2]));
   else if (mips_cpu != PROCESSOR_R4000 || TARGET_MIPS16)
     emit_insn (gen_mulsi3_internal (operands[0], operands[1], operands[2]));
   else
@@ -1656,14 +1655,21 @@
 }")
 
 (define_insn "mulsi3_mult3"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(mult:SI (match_operand:SI 1 "register_operand" "d")
-		 (match_operand:SI 2 "register_operand" "d")))
-   (clobber (match_scratch:SI 3 "=h"))
-   (clobber (match_scratch:SI 4 "=l"))
-   (clobber (match_scratch:SI 5 "=a"))]
+  [(set (match_operand:SI 0 "register_operand" "=d,?l")
+	(mult:SI (match_operand:SI 1 "register_operand" "d,d")
+		 (match_operand:SI 2 "register_operand" "d,d")))
+   (clobber (match_scratch:SI 3 "=h,h"))
+   (clobber (match_scratch:SI 4 "=l,X"))
+   (clobber (match_scratch:SI 5 "=a,a"))]
   "GENERATE_MULT3"
-  "mult\\t%0,%1,%2"
+  "*
+{
+  if (which_alternative == 1)
+    return \"mult\\t%1,%2\";
+  if (TARGET_MAD)
+    return \"mul\\t%0,%1,%2\";
+  return \"mult\\t%0,%1,%2\";
+}"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
    (set_attr "length"	"1")])
@@ -1703,18 +1709,69 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])		;; mult + mflo + delay
 
-(define_insn "mulsi3_r4650"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(mult:SI (match_operand:SI 1 "register_operand" "d")
-		 (match_operand:SI 2 "register_operand" "d")))
-   (clobber (match_scratch:SI 3 "=h"))
-   (clobber (match_scratch:SI 4 "=l"))
-   (clobber (match_scratch:SI 5 "=a"))]
-  "TARGET_MAD"
-  "mul\\t%0,%1,%2"
-  [(set_attr "type"	"imul")
+;; The all-d alternative is needed because the combiner will find this
+;; pattern and then register alloc/reload will move registers around to
+;; make them fit, and we don't want to trigger unnecessary loads to LO.
+;; For the moment, that seems to mostly disable the "macc" instruction
+;; though; some "?" marks may be needed.  Using "*d" helps, but causes
+;; stack spills in some cases.
+(define_insn "*mul_acc_si"
+  [(set (match_operand:SI 0 "register_operand" "=l,d,d")
+	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d,d,d")
+			  (match_operand:SI 2 "register_operand" "d,d,d"))
+		 (match_operand:SI 3 "register_operand" "0,l,d")))
+   (clobber (match_scratch:SI 4 "=h,h,h"))
+   (clobber (match_scratch:SI 5 "=X,3,l"))
+   (clobber (match_scratch:SI 6 "=a,a,a"))
+   (clobber (match_scratch:SI 7 "=X,X,d"))]
+  "GENERATE_MADD"
+  "*
+{
+  static char *const madd[] = { \"madd\\t%1,%2\",    \"madd\\t%0,%1,%2\" };
+  static char *const macc[] = { \"macc\\t$0,%1,%2\", \"macc\\t%0,%1,%2\" };
+  if (which_alternative == 2)
+    return \"#\";
+  return madd[which_alternative];
+}"
+  [(set_attr "type"	"imul,imul,multi")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"1")])
+   (set_attr "length"	"1,1,2")])
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "")
+			  (match_operand:SI 2 "register_operand" ""))
+		 (match_operand:SI 3 "register_operand" "")))
+   (clobber (match_scratch:SI 4 ""))
+   (clobber (match_scratch:SI 5 ""))
+   (clobber (match_scratch:SI 6 ""))
+   (clobber (match_scratch:SI 7 ""))]
+  "reload_completed && GP_REG_P (true_regnum (operands[0])) && GP_REG_P (true_regnum (operands[3]))"
+  [(parallel [(set (match_dup 7)
+		   (mult:SI (match_dup 1) (match_dup 2)))
+	      (clobber (match_dup 4))
+	      (clobber (match_dup 5))
+	      (clobber (match_dup 6))])
+   (set (match_dup 0) (plus:SI (match_dup 7) (match_dup 3)))]
+  "")
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(minus:SI (match_operand:SI 1 "register_operand" "")
+		  (mult:SI (match_operand:SI 2 "register_operand" "")
+			   (match_operand:SI 3 "register_operand" ""))))
+   (clobber (match_scratch:SI 4 ""))
+   (clobber (match_scratch:SI 5 ""))
+   (clobber (match_scratch:SI 6 ""))
+   (clobber (match_scratch:SI 7 ""))]
+  "reload_completed && GP_REG_P (true_regnum (operands[0])) && GP_REG_P (true_regnum (operands[1]))"
+  [(parallel [(set (match_dup 7)
+		   (mult:SI (match_dup 2) (match_dup 3)))
+	      (clobber (match_dup 4))
+	      (clobber (match_dup 5))
+	      (clobber (match_dup 6))])
+   (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 7)))]
+  "")
 
 (define_expand "muldi3"
   [(set (match_operand:DI 0 "register_operand" "=l")
@@ -1723,6 +1780,7 @@
    (clobber (match_scratch:DI 3 "=h"))
    (clobber (match_scratch:DI 4 "=a"))]
   "TARGET_64BIT"
+
   "
 {
   if (GENERATE_MULT3 || mips_cpu == PROCESSOR_R4000 || TARGET_MIPS16)
@@ -1789,49 +1847,15 @@
   ""
   "
 {
+  rtx dummy = gen_rtx (SIGN_EXTEND, DImode, const0_rtx);
   if (TARGET_64BIT)
-    emit_insn (gen_mulsidi3_64bit (operands[0], operands[1], operands[2]));
+    emit_insn (gen_mulsidi3_64bit (operands[0], operands[1], operands[2],
+				   dummy, dummy));
   else
-    emit_insn (gen_mulsidi3_internal (operands[0], operands[1], operands[2]));
+    emit_insn (gen_mulsidi3_internal (operands[0], operands[1], operands[2],
+				      dummy, dummy));
   DONE;
 }")
-
-(define_insn "mulsidi3_internal"
-  [(set (match_operand:DI 0 "register_operand" "=x")
-	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "d"))
-		 (sign_extend:DI (match_operand:SI 2 "register_operand" "d"))))
-   (clobber (match_scratch:SI 3 "=a"))]
-  "!TARGET_64BIT"
-  "mult\\t%1,%2"
-  [(set_attr "type"	"imul")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"1")])
-
-(define_insn "mulsidi3_64bit"
-  [(set (match_operand:DI 0 "register_operand" "=a")
-	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "d"))
-		 (sign_extend:DI (match_operand:SI 2 "register_operand" "d"))))
-   (clobber (match_scratch:DI 3 "=l"))
-   (clobber (match_scratch:DI 4 "=h"))]
-  "TARGET_64BIT"
-  "mult\\t%1,%2"
-  [(set_attr "type"	"imul")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"1")])
-
-(define_insn "smulsi3_highpart"
-  [(set (match_operand:SI 0 "register_operand" "=h")
-	(truncate:SI
-	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "d"))
-			       (sign_extend:DI (match_operand:SI 2 "register_operand" "d")))
-		      (const_int 32))))
-   (clobber (match_scratch:SI 3 "=l"))
-   (clobber (match_scratch:SI 4 "=a"))]
-  ""
-  "mult\\t%1,%2"
-  [(set_attr "type"	"imul")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"1")])
 
 (define_expand "umulsidi3"
   [(set (match_operand:DI 0 "register_operand" "=x")
@@ -1840,46 +1864,107 @@
   ""
   "
 {
+  rtx dummy = gen_rtx (ZERO_EXTEND, DImode, const0_rtx);
   if (TARGET_64BIT)
-    emit_insn (gen_umulsidi3_64bit (operands[0], operands[1], operands[2]));
+    emit_insn (gen_mulsidi3_64bit (operands[0], operands[1], operands[2],
+				   dummy, dummy));
   else
-    emit_insn (gen_umulsidi3_internal (operands[0], operands[1], operands[2]));
+    emit_insn (gen_mulsidi3_internal (operands[0], operands[1], operands[2],
+				      dummy, dummy));
   DONE;
 }")
 
-(define_insn "umulsidi3_internal"
+(define_insn "mulsidi3_internal"
   [(set (match_operand:DI 0 "register_operand" "=x")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "d"))
-		 (zero_extend:DI (match_operand:SI 2 "register_operand" "d"))))
-   (clobber (match_scratch:SI 3 "=a"))]
-  "!TARGET_64BIT"
-  "multu\\t%1,%2"
+	(mult:DI (match_operator:DI 3 "extend_operator"
+				    [(match_operand:SI 1 "register_operand" "d")])
+		 (match_operator:DI 4 "extend_operator"
+				    [(match_operand:SI 2 "register_operand" "d")])))
+   (clobber (match_scratch:SI 5 "=a"))]
+  "!TARGET_64BIT && GET_CODE (operands[3]) == GET_CODE (operands[4])"
+  "*
+{
+  if (GET_CODE (operands[3]) == SIGN_EXTEND)
+    return \"mult\\t%1,%2\";
+  return \"multu\\t%1,%2\";
+}"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
    (set_attr "length"	"1")])
 
-(define_insn "umulsidi3_64bit"
+(define_insn "mulsidi3_64bit"
   [(set (match_operand:DI 0 "register_operand" "=a")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "d"))
-		 (zero_extend:DI (match_operand:SI 2 "register_operand" "d"))))
-   (clobber (match_scratch:DI 3 "=l"))
-   (clobber (match_scratch:DI 4 "=h"))]
-  "TARGET_64BIT"
-  "multu\\t%1,%2"
+	(mult:DI (match_operator:DI 3 "extend_operator"
+				    [(match_operand:SI 1 "register_operand" "d")])
+		 (match_operator:DI 4 "extend_operator"
+				    [(match_operand:SI 2 "register_operand" "d")])))
+   (clobber (match_scratch:DI 5 "=l"))
+   (clobber (match_scratch:DI 6 "=h"))]
+  "TARGET_64BIT && GET_CODE (operands[3]) == GET_CODE (operands[4])"
+  "*
+{
+  if (GET_CODE (operands[3]) == SIGN_EXTEND)
+    return \"mult\\t%1,%2\";
+  return \"multu\\t%1,%2\";
+}"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
    (set_attr "length"	"1")])
 
-(define_insn "umulsi3_highpart"
+;; _highpart patterns
+(define_expand "smulsi3_highpart"
+  [(set (match_operand:SI 0 "register_operand" "=h")
+	(truncate:SI
+	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "d"))
+			       (sign_extend:DI (match_operand:SI 2 "register_operand" "d")))
+		      (const_int 32))))]
+  ""
+  "
+{
+  rtx dummy = gen_rtx (SIGN_EXTEND, DImode, const0_rtx);
+  rtx dummy2 = gen_rtx_LSHIFTRT (DImode, const0_rtx, const0_rtx);
+  rtx (*genfn)() = gen_xmulsi3_highpart_internal;
+  emit_insn ((*genfn) (operands[0], operands[1], operands[2], dummy,
+		       dummy, dummy2));
+  DONE;
+}")
+
+(define_expand "umulsi3_highpart"
   [(set (match_operand:SI 0 "register_operand" "=h")
 	(truncate:SI
 	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "d"))
 			       (zero_extend:DI (match_operand:SI 2 "register_operand" "d")))
-		      (const_int 32))))
-   (clobber (match_scratch:SI 3 "=l"))
-   (clobber (match_scratch:SI 4 "=a"))]
+		      (const_int 32))))]
   ""
-  "multu\\t%1,%2"
+  "
+{
+  rtx dummy = gen_rtx (ZERO_EXTEND, DImode, const0_rtx);
+  rtx dummy2 = gen_rtx_LSHIFTRT (DImode, const0_rtx, const0_rtx);
+  rtx (*genfn)() = gen_xmulsi3_highpart_internal;
+  emit_insn ((*genfn) (operands[0], operands[1], operands[2], dummy,
+		       dummy, dummy2));
+  DONE;
+}")
+
+(define_insn "xmulsi3_highpart_internal"
+  [(set (match_operand:SI 0 "register_operand" "=h")
+	(truncate:SI
+	 (match_operator:DI 5 "highpart_shift_operator"
+			    [(mult:DI (match_operator:DI 3 "extend_operator"
+							 [(match_operand:SI 1 "register_operand" "d")])
+				      (match_operator:DI 4 "extend_operator"
+							 [(match_operand:SI 2 "register_operand" "d")]))
+			     (const_int 32)])))
+   (clobber (match_scratch:SI 6 "=l"))
+   (clobber (match_scratch:SI 7 "=a"))]
+  "GET_CODE (operands[3]) == GET_CODE (operands[4])"
+  "*
+{
+  if (GET_CODE (operands[3]) == SIGN_EXTEND)
+    return \"mult\\t%1,%2\";
+  else
+    return \"multu\\t%1,%2\";
+}"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
    (set_attr "length"	"1")])
@@ -1922,86 +2007,49 @@
 		 (match_dup 0)))
    (clobber (match_scratch:SI 3 "=h"))
    (clobber (match_scratch:SI 4 "=a"))]
-  "TARGET_MAD || GENERATE_MADD"
+  "TARGET_MAD"
+  "mad\\t%1,%2"
+  [(set_attr "type"	"imul")
+   (set_attr "mode"	"SI")
+   (set_attr "length"   "1")])
+
+(define_insn "*mul_acc_di"
+  [(set (match_operand:DI 0 "register_operand" "+x")
+	(plus:DI (mult:DI (match_operator:DI 3 "extend_operator"
+			   [(match_operand:SI 1 "register_operand" "d")])
+			  (match_op_dup:DI 3
+			   [(match_operand:SI 2 "register_operand" "d")]))
+		 (match_dup 0)))
+   (clobber (match_scratch:SI 4 "=a"))]
+  "TARGET_MAD && ! TARGET_64BIT"
   "*
 {
-  if (TARGET_MAD)
+  if (GET_CODE (operands[3]) == SIGN_EXTEND)
     return \"mad\\t%1,%2\";
   else
-    return \"madd\\t%1,%2\";
+    return \"madu\\t%1,%2\";
 }"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
    (set_attr "length"   "1")])
 
-(define_insn "maddi"
-  [(set (match_operand:DI 0 "register_operand" "+x")
-	(plus:DI (mult:DI (sign_extend:DI
-			   (match_operand:SI 1 "register_operand" "d"))
-			  (sign_extend:DI
-			   (match_operand:SI 2 "register_operand" "d")))
-		 (match_dup 0)))
-   (clobber (match_scratch:SI 3 "=a"))]
-  "TARGET_MAD && ! TARGET_64BIT"
-  "mad\\t%1,%2"
-  [(set_attr "type"	"imul")
-   (set_attr "mode"	"SI")
-   (set_attr "length"   "1")])
-
-(define_insn "maddi_64bit"
+(define_insn "*mul_acc_64bit_di"
   [(set (match_operand:DI 0 "register_operand" "+a")
-	(plus:DI (mult:DI (sign_extend:DI
-			   (match_operand:SI 1 "register_operand" "d"))
-			  (sign_extend:DI
-			   (match_operand:SI 2 "register_operand" "d")))
+	(plus:DI (mult:DI (match_operator:DI 3 "extend_operator"
+			   [(match_operand:SI 1 "register_operand" "d")])
+			  (match_op_dup:DI 3
+			   [(match_operand:SI 2 "register_operand" "d")]))
 		 (match_dup 0)))
-   (clobber (match_scratch:DI 3 "=l"))
-   (clobber (match_scratch:DI 4 "=h"))]
+   (clobber (match_scratch:DI 4 "=l"))
+   (clobber (match_scratch:DI 5 "=h"))]
   "TARGET_MAD && TARGET_64BIT"
-  "mad\\t%1,%2"
-  [(set_attr "type"	"imul")
-   (set_attr "mode"	"SI")
-   (set_attr "length"   "1")])
-
-(define_insn "umaddi"
-  [(set (match_operand:DI 0 "register_operand" "+x")
-	(plus:DI (mult:DI (zero_extend:DI
-			   (match_operand:SI 1 "register_operand" "d"))
-			  (zero_extend:DI
-			   (match_operand:SI 2 "register_operand" "d")))
-		 (match_dup 0)))
-   (clobber (match_scratch:SI 3 "=a"))]
-  "TARGET_MAD && ! TARGET_64BIT"
-  "madu\\t%1,%2"
-  [(set_attr "type"	"imul")
-   (set_attr "mode"	"SI")
-   (set_attr "length"   "1")])
-
-(define_insn "umaddi_64bit"
-  [(set (match_operand:DI 0 "register_operand" "+a")
-	(plus:DI (mult:DI (zero_extend:DI
-			   (match_operand:SI 1 "register_operand" "d"))
-			  (zero_extend:DI
-			   (match_operand:SI 2 "register_operand" "d")))
-		 (match_dup 0)))
-   (clobber (match_scratch:DI 3 "=l"))
-   (clobber (match_scratch:DI 4 "=h"))]
-  "TARGET_MAD && TARGET_64BIT"
-  "madu\\t%1,%2"
-  [(set_attr "type"	"imul")
-   (set_attr "mode"	"SI")
-   (set_attr "length"   "1")])
-
-(define_insn "madd3"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d")
-			  (match_operand:SI 2 "register_operand" "d"))
-		 (match_operand:SI 3 "register_operand" "l")))
-   (clobber (match_scratch:SI 4 "=l"))
-   (clobber (match_scratch:SI 5 "=h"))
-   (clobber (match_scratch:SI 6 "=a"))]
-  "GENERATE_MADD"
-  "madd\\t%0,%1,%2"
+  "*
+{
+  if (GET_CODE (operands[3]) == SIGN_EXTEND)
+    return \"mad\\t%1,%2\";
+  else
+    return \"madu\\t%1,%2\";
+}"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
    (set_attr "length"   "1")])

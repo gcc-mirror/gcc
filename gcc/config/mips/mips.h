@@ -260,6 +260,8 @@ extern int		se_uns_arith_operand ();
 extern int		se_arith_operand ();
 extern int		se_nonmemory_operand ();
 extern int		se_nonimmediate_operand ();
+extern int              extend_operator ();
+extern int              highpart_shift_operator ();
 extern int		m16_uimm3_b ();
 extern int		m16_simm4_1 ();
 extern int		m16_nsimm4_1 ();
@@ -3641,7 +3643,10 @@ while (0)
 				  REG, SIGN_EXTEND }},			\
   {"se_nonimmediate_operand",   { SUBREG, REG, MEM, SIGN_EXTEND }},	\
   {"consttable_operand",	{ LABEL_REF, SYMBOL_REF, CONST_INT,	\
-				  CONST_DOUBLE, CONST }},
+				  CONST_DOUBLE, CONST }},		\
+  {"extend_operator",           { SIGN_EXTEND, ZERO_EXTEND }},          \
+  {"highpart_shift_operator",   { ASHIFTRT, LSHIFTRT, ROTATERT, ROTATE }},
+
 
 
 /* If defined, a C statement to be executed just prior to the

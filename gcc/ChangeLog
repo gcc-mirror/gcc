@@ -1,3 +1,30 @@
+Mon Jun  8 16:54:12 1998  Ken Raeburn   <raeburn@cygnus.com>
+                          Jeff Law      <law@cygnus.com>
+
+	* Revamped multiply support for MIPS chips.
+	* mips.c (extend_operator): New function.
+	(highpart_shift_operator): Likewise.
+	* mips.h: Declare new functions.
+	(PREDICATE_CODES): Add support for new predicates.
+	* mips.md (mulsi3 expander): Simplify.
+	(mulsi_mult3): Add another constraint alternative.  Support
+	3 operand multiply instructions as found on various mips
+	parts.
+	(mulsi3_r4650): Delete pattern, now handled by mulsi_mult3.
+	(mul_acc_si): New pattern and associated splitters.
+	(mulsidi3 expander): Rework to use mulsidi3_64bit and
+	mulsidi3_internal.
+	(umulsidi3): New expander.
+	(mulsidi3_internal): Accept either sign or zero extended
+	operands and generate code as appropriate appropriately.
+	(mulsidi3_64bit): Similarly.
+	(smulsi3_highpart): Turn into an expander and generate code
+	to match new patterns.
+	(umulsi3_highpart): Likewise.
+	(xmulsi3_highpart_internal): New pattern.
+	(maddi patterns): Delete.  Replace with:
+	(mul_acc_di, mul-acc_64bit_di): New patterns.
+
 Mon Jun  8 14:16:15 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* eh-common.h: Remove NEW_EH_MODEL compile time flag, and replace with
