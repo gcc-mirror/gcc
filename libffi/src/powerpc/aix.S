@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    aix.S - Copyright (c) 2002 Free Software Foundation, Inc.
    based on darwin.S by John Hornkvist
-   
+
    PowerPC Assembly glue.
 
    Permission is hereby granted, free of charge, to any person obtaining
@@ -121,7 +121,7 @@ ffi_call_AIX:
 	mr	r30,r6	/* rvalue, */
 	mr	r29,r7	/* function address, */
 	mr	r28,r8	/* our AP. */
-		
+
 	/* Call ffi_prep_args.  */
 	mr	r4,r1
 	li	r9,0
@@ -140,16 +140,16 @@ ffi_call_AIX:
 	mtctr	r12
 	lwz	r2,4(r29)
 	/* Load all those argument registers.  */
-        // We have set up a nice stack frame, just load it into registers.
-        lwz     r3, 20+(1*4)(r1)
-        lwz     r4, 20+(2*4)(r1)
-        lwz     r5, 20+(3*4)(r1)
-        lwz     r6, 20+(4*4)(r1)
-        nop
+	// We have set up a nice stack frame, just load it into registers.
+	lwz     r3, 20+(1*4)(r1)
+	lwz     r4, 20+(2*4)(r1)
+	lwz     r5, 20+(3*4)(r1)
+	lwz     r6, 20+(4*4)(r1)
+	nop
 	lwz     r7, 20+(5*4)(r1)
-        lwz     r8, 20+(6*4)(r1)
-        lwz     r9, 20+(7*4)(r1)
-        lwz     r10,20+(8*4)(r1)
+	lwz     r8, 20+(6*4)(r1)
+	lwz     r9, 20+(7*4)(r1)
+	lwz     r10,20+(8*4)(r1)
 
 L1:
 	/* Load all the FP registers.  */
@@ -165,17 +165,17 @@ L1:
 	lfd	f8,-16-(6*8)(r28)
 	nop
 	lfd     f9,-16-(5*8)(r28)
-        lfd     f10,-16-(4*8)(r28)
+	lfd     f10,-16-(4*8)(r28)
 	lfd     f11,-16-(3*8)(r28)
 	lfd     f12,-16-(2*8)(r28)
 	nop
 	lfd     f13,-16-(1*8)(r28)
 
-L2:	
+L2:
 	/* Make the call.  */
 	bctrl
 	lwz r2,20(r1)
-        
+
 	/* Now, deal with the return value.  */
 	mtcrf	0x01,r31
 
