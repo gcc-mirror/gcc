@@ -1,16 +1,17 @@
 # German translation of gcc messages.
 # Copyright © 2002, 2003 Free Software Foundation, Inc.
 # Karl Eichwalder <ke@suse.de>, 2002, 2003.
+# Roland Stigge <stigge@antcom.de>, 2003.
 # This file is distributed under the same license as the gcc package.
 #
 # Wer möchte an dieser Übersetzung arbeiten?  Bitte bei de@li.org melden!
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 3.3-b20021230\n"
+"Project-Id-Version: gcc 3.3.2\n"
 "POT-Creation-Date: 2003-10-24 13:20+0200\n"
-"PO-Revision-Date: 2003-01-06 20:10+0100\n"
-"Last-Translator: Karl Eichwalder <ke@suse.de>\n"
+"PO-Revision-Date: 2003-11-24 15:30+0100\n"
+"Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -29,12 +30,12 @@ msgstr "falsche Anzahl an Argumenten für das Attribut »%s« angegeben"
 #: attribs.c:210
 #, c-format
 msgid "`%s' attribute does not apply to types"
-msgstr ""
+msgstr "Attribut »%s« kann nicht auf Typen angewandt werden"
 
 #: attribs.c:247
 #, c-format
 msgid "`%s' attribute only applies to function types"
-msgstr ""
+msgstr "Attribut »%s« kann nur auf Funktionstypen angewandt werden"
 
 #: attribs.c:404 c-common.c:5275 c-common.c:5297 c-common.c:5319
 #: c-common.c:5350 c-common.c:5372 c-common.c:5397 c-common.c:5423
@@ -51,23 +52,23 @@ msgstr "Attribut »%s« wird ignoriert"
 
 #: builtins.c:285
 msgid "offset outside bounds of constant string"
-msgstr ""
+msgstr "Adressabstand ist außerhalb der Grenzen der konstanten Zeichenkette"
 
 #: builtins.c:765
 msgid "second arg to `__builtin_prefetch' must be a constant"
-msgstr ""
+msgstr "Zweites Argument für »__builtin_prefetch« muss eine Konstante sein"
 
 #: builtins.c:772
 msgid "invalid second arg to __builtin_prefetch; using zero"
-msgstr ""
+msgstr "Ungültiges zweites Argument für »__builtin_prefetch«; benutze Null"
 
 #: builtins.c:779
 msgid "third arg to `__builtin_prefetch' must be a constant"
-msgstr ""
+msgstr "Drittes Argument für »__builtin_prefetch« muss eine Konstante sein"
 
 #: builtins.c:786
 msgid "invalid third arg to __builtin_prefetch; using zero"
-msgstr ""
+msgstr "Ungültiges drittes Argument für »__builtin_prefetch«; benutze Null"
 
 #. ??? We used to try and build up a call to the out of line function,
 #. guessing about what registers needed saving etc.  This became much
@@ -78,41 +79,41 @@ msgstr ""
 #. weird and make the backend absorb the evil.
 #: builtins.c:2875
 msgid "__builtin_saveregs not supported by this target"
-msgstr ""
+msgstr "__builtin_saveregs wird von diesem Ziel nicht unterstützt"
 
 #: builtins.c:2917
 msgid "argument of `__builtin_args_info' must be constant"
-msgstr ""
+msgstr "Argument von »__builtin_args_info« muss konstant sein"
 
 #: builtins.c:2923
 msgid "argument of `__builtin_args_info' out of range"
-msgstr ""
+msgstr "Argument von »__builtin_args_info« außerhalb des Wertebereichs"
 
 #: builtins.c:2929
 msgid "missing argument in `__builtin_args_info'"
-msgstr ""
+msgstr "Fehlendes Argument in »__builtin_args_info«"
 
 #: builtins.c:2960
 msgid "`va_start' used in function with fixed args"
-msgstr ""
+msgstr "»va_start« in Funktion mit fester Parameterzahl verwendet"
 
 #: builtins.c:2979
 msgid "second parameter of `va_start' not last named argument"
-msgstr ""
+msgstr "Zweiter Parameter von »va_start« ist nicht letztgenanntes Argument"
 
 #. Evidently an out of date version of <stdarg.h>; can't validate
 #. va_start's second argument, but can still work as intended.
 #: builtins.c:2984
 msgid "`__builtin_next_arg' called without an argument"
-msgstr ""
+msgstr "»__builtin_next_arg« ohne Argument gerufen"
 
 #: builtins.c:3070
 msgid "too many arguments to function `va_start'"
-msgstr ""
+msgstr "Zu viele Argumente für »va_start«"
 
 #: builtins.c:3172
 msgid "first argument to `va_arg' not of type `va_list'"
-msgstr ""
+msgstr "Erstes Argument für »va_arg« nicht vom Typ »va_list«"
 
 #. Unfortunately, this is merely undefined, rather than a constraint
 #. violation, so we cannot make this an error.  If this call is never
@@ -120,685 +121,685 @@ msgstr ""
 #: builtins.c:3204
 #, c-format
 msgid "`%s' is promoted to `%s' when passed through `...'"
-msgstr ""
+msgstr "»%s« auf »%s« gesetzt beim Durchlaufen von »...«"
 
 #: builtins.c:3209
 #, c-format
 msgid "(so you should pass `%s' not `%s' to `va_arg')"
-msgstr ""
+msgstr "(Sie sollten also »%s« statt »%s« an »va_arg« übergeben)"
 
 #: builtins.c:3340
 msgid "invalid arg to `__builtin_frame_address'"
-msgstr ""
+msgstr "Ungültiges Argument für »__builtin_frame_address«"
 
 #: builtins.c:3342
 msgid "invalid arg to `__builtin_return_address'"
-msgstr ""
+msgstr "Ungültiges Argument für »__builtin_return_address«"
 
 #: builtins.c:3356
 msgid "unsupported arg to `__builtin_frame_address'"
-msgstr ""
+msgstr "Nicht unterstütztes Argument für »__builtin_frame_address«"
 
 #: builtins.c:3358
 msgid "unsupported arg to `__builtin_return_address'"
-msgstr ""
+msgstr "Nicht unterstütztes Argument für »__builtin_return_address«"
 
 #: builtins.c:3530
 msgid "second arg to `__builtin_expect' must be a constant"
-msgstr ""
+msgstr "Zweites Argument für »__builtin_expect« muss eine Konstante sein"
 
 #: builtins.c:4028
 msgid "__builtin_longjmp second argument must be 1"
-msgstr ""
+msgstr "Zweites Argument für __builtin_longjmp muss 1 sein"
 
 #. just do library call, if unknown builtin
 #: builtins.c:4092 c-common.c:4459
 #, c-format
 msgid "built-in function `%s' not currently supported"
-msgstr ""
+msgstr "Eingebaute Funktion »%s« gegenwärtig nicht unterstützt"
 
 #: builtins.c:4165
 msgid "target format does not support infinity"
-msgstr ""
+msgstr "Zielformat unterstützt nicht »unendlich«"
 
 #: c-common.c:1168
 #, c-format
 msgid "`%s' is not defined outside of function scope"
-msgstr ""
+msgstr "»%s« ist außerhalb des Funktionsgültigkeitsbereiches undefiniert"
 
 #: c-common.c:1189
 #, c-format
 msgid "string length `%d' is greater than the length `%d' ISO C%d compilers are required to support"
-msgstr ""
+msgstr "Zeichenkettenlänge »%d« ist größer als die Länge »%d«, die von ISO-C%d-Compilern unterstützt werden muss"
 
 #: c-common.c:1247
 msgid "concatenation of string literals with __FUNCTION__ is deprecated"
-msgstr ""
+msgstr "Verkettung von Zeichenkettenliteralen mit __FUNCTION__ ist veraltet"
 
 #: c-common.c:1343
 msgid "overflow in constant expression"
-msgstr ""
+msgstr "Überlauf in Konstanten-Ausdruck"
 
 #: c-common.c:1364
 msgid "integer overflow in expression"
-msgstr ""
+msgstr "Ganzzahlüberlauf in Ausdruck"
 
 #: c-common.c:1373
 msgid "floating point overflow in expression"
-msgstr ""
+msgstr "Fließkommaüberlauf in Ausdruck"
 
 #: c-common.c:1379
 msgid "vector overflow in expression"
-msgstr ""
+msgstr "Vektorüberlauf in Ausdruck"
 
 #. This detects cases like converting -129 or 256 to unsigned char.
 #: c-common.c:1402
 msgid "large integer implicitly truncated to unsigned type"
-msgstr ""
+msgstr "Große Ganzzahl implizit auf vorzeichenlosen Typen abgeschnitten"
 
 #: c-common.c:1404
 msgid "negative integer implicitly converted to unsigned type"
-msgstr ""
+msgstr "Negative Ganzzahl implizit in vorzeichenlosen Typen konvertiert"
 
 #: c-common.c:1452
 msgid "overflow in implicit constant conversion"
-msgstr ""
+msgstr "Überlauf in impliziter Konstantenkonvertierung"
 
 #: c-common.c:1600
 #, c-format
 msgid "operation on `%s' may be undefined"
-msgstr ""
+msgstr "Operation auf »%s« könnte undefiniert sein"
 
 #: c-common.c:1891
 msgid "expression statement has incomplete type"
-msgstr ""
+msgstr "Ausdrucksanweisung hat unvollständigen Typ"
 
 #: c-common.c:1924
 msgid "case label does not reduce to an integer constant"
-msgstr ""
+msgstr "case-Marke reduziert nicht auf Ganzzahlkonstante"
 
 #: c-common.c:2228
 msgid "invalid truth-value expression"
-msgstr ""
+msgstr "Ungültiger Wahrheitswert-Ausdruck"
 
 #: c-common.c:2279
 #, c-format
 msgid "invalid operands to binary %s"
-msgstr ""
+msgstr "Ungültige Operanden für binäres %s"
 
 #: c-common.c:2513
 msgid "comparison is always false due to limited range of data type"
-msgstr ""
+msgstr "Vergleich ist durch beschränkten Wertebereich des Datentyps stets »unwahr«"
 
 #: c-common.c:2515
 msgid "comparison is always true due to limited range of data type"
-msgstr ""
+msgstr "Vergleich ist durch beschränkten Wertebereich des Datentyps stets »wahr«"
 
 #: c-common.c:2585
 msgid "comparison of unsigned expression >= 0 is always true"
-msgstr ""
+msgstr "Vergleich eines vorzeichenlosen Ausdrucks >= 0 ist stets »wahr«"
 
 #: c-common.c:2594
 msgid "comparison of unsigned expression < 0 is always false"
-msgstr ""
+msgstr "Vergleich eines vorzeichenlosen Ausdrucks < 0 ist stets »unwahr«"
 
 #: c-common.c:2641
 msgid "pointer of type `void *' used in arithmetic"
-msgstr ""
+msgstr "Zeiger auf Typen »void *« in Arithmetik verwendet"
 
 #: c-common.c:2647
 msgid "pointer to a function used in arithmetic"
-msgstr ""
+msgstr "Zeiger auf Funktion in Arithmetik verwendet"
 
 #: c-common.c:2653
 msgid "pointer to member function used in arithmetic"
-msgstr ""
+msgstr "Zeiger auf member-Funktion in Arithmetik verwendet"
 
 #: c-common.c:2659
 msgid "pointer to a member used in arithmetic"
-msgstr ""
+msgstr "Zeiger auf member in Arithmetik verwendet"
 
 #: c-common.c:2746 f/com.c:14762
 msgid "struct type value used where scalar is required"
-msgstr ""
+msgstr "Wert eines struct-Typs anstelle des geforderten Skalars verwendet"
 
 #: c-common.c:2750 f/com.c:14766
 msgid "union type value used where scalar is required"
-msgstr ""
+msgstr "Wert eines union-Typs anstelle des geforderten Skalars verwendet"
 
 #: c-common.c:2754 f/com.c:14770
 msgid "array type value used where scalar is required"
-msgstr ""
+msgstr "Wert eines array-Typs anstelle des geforderten Skalars verwendet"
 
 #: c-common.c:2874 f/com.c:14903
 msgid "suggest parentheses around assignment used as truth value"
-msgstr ""
+msgstr "Schlage Klammern um Zuweisung, die als Wahrheitswert verwendet wird, vor"
 
 #: c-common.c:2918 c-common.c:2950
 msgid "invalid use of `restrict'"
-msgstr ""
+msgstr "Ungültige Verwendung von »restrict«"
 
 #: c-common.c:3064
 msgid "invalid application of `sizeof' to a function type"
-msgstr ""
+msgstr "Ungültige Anwendung von »sizeof« auf einen Funktionstypen"
 
 #: c-common.c:3074
 #, c-format
 msgid "invalid application of `%s' to a void type"
-msgstr ""
+msgstr "Ungültige Anwendung von »%s« auf einen void-Typen"
 
 #: c-common.c:3080
 #, c-format
 msgid "invalid application of `%s' to an incomplete type"
-msgstr ""
+msgstr "Ungültige Anwendung von »%s« auf einen unvollständigen Typen"
 
 #: c-common.c:3121
 msgid "`__alignof' applied to a bit-field"
-msgstr ""
+msgstr "»__alignof« auf Bitfeld angewandt"
 
 #: c-common.c:3618
 #, c-format
 msgid "cannot disable built-in function `%s'"
-msgstr ""
+msgstr "Kann eingebaute Funktion »%s« nicht abschalten"
 
 #: c-common.c:3787 c-typeck.c:1748
 #, c-format
 msgid "too few arguments to function `%s'"
-msgstr ""
+msgstr "Zu wenig Argumente für Funktion »%s«"
 
 #: c-common.c:3793 c-typeck.c:1601
 #, c-format
 msgid "too many arguments to function `%s'"
-msgstr ""
+msgstr "Zu viele Argumente für Funktion »%s«"
 
 #: c-common.c:3812
 #, c-format
 msgid "non-floating-point argument to function `%s'"
-msgstr ""
+msgstr "Nicht-Fließkomma-Argument für Funktion »%s«"
 
 #: c-common.c:4081
 msgid "pointers are not permitted as case values"
-msgstr ""
+msgstr "Zeiger sind nicht als case-Werte zugelassen"
 
 #: c-common.c:4087
 msgid "ISO C++ forbids range expressions in switch statements"
-msgstr ""
+msgstr "ISO C++ verbietet Wertebereichsausdrücke in switch-Anweisungen"
 
 #: c-common.c:4089
 msgid "ISO C forbids range expressions in switch statements"
-msgstr ""
+msgstr "ISO C verbietet Wertebereichsausdrücke in switch-Anweisungen"
 
 #: c-common.c:4119
 msgid "empty range specified"
-msgstr ""
+msgstr "Leerer Wertebereich angegeben"
 
 #: c-common.c:4170
 msgid "duplicate (or overlapping) case value"
-msgstr ""
+msgstr "Doppelte (oder sich überschneidende) case-Werte"
 
 #: c-common.c:4172
 msgid "this is the first entry overlapping that value"
-msgstr ""
+msgstr "Dies ist der erste Eintrag, der diesen Wert überschneidet"
 
 #: c-common.c:4176
 msgid "duplicate case value"
-msgstr ""
+msgstr "Doppelter case-Wert"
 
 #: c-common.c:4177
 msgid "previously used here"
-msgstr ""
+msgstr "bereits hier verwendet"
 
 #: c-common.c:4181
 msgid "multiple default labels in one switch"
-msgstr ""
+msgstr "Mehrere Standardmarken in einem »switch«"
 
 #: c-common.c:4182
 msgid "this is the first default label"
-msgstr ""
+msgstr "Dies ist die erste Standardmarke"
 
 #: c-common.c:4210
 msgid "ISO C++ forbids taking the address of a label"
-msgstr ""
+msgstr "ISO C++ verbietet die Adresse einer Marke"
 
 #: c-common.c:4212
 msgid "ISO C forbids taking the address of a label"
-msgstr ""
+msgstr "ISO C verbietet die Adresse einer Marke"
 
 #: c-common.c:5235
 #, c-format
 msgid "declaration of `%s' shadows %s"
-msgstr ""
+msgstr "Deklaration von »%s« verdeckt %s"
 
 #: c-common.c:5654
 #, c-format
 msgid "unknown machine mode `%s'"
-msgstr ""
+msgstr "Unbekannter Maschinenzustand »%s«"
 
 #: c-common.c:5657
 #, c-format
 msgid "no data type for mode `%s'"
-msgstr ""
+msgstr "Kein Datentyp für Zustand »%s«"
 
 #: c-common.c:5666 c-common.c:6316
 #, c-format
 msgid "unable to emulate '%s'"
-msgstr ""
+msgstr "»%s« kann nicht emuliert werden"
 
 #: c-common.c:5702
 msgid "section attribute cannot be specified for local variables"
-msgstr ""
+msgstr "Abschnitts-Attribut kann nicht für lokale Variablen angegeben werden"
 
 #: c-common.c:5713
 #, c-format
 msgid "section of `%s' conflicts with previous declaration"
-msgstr ""
+msgstr "Abschnitt von »%s« in Konflikt mit vorheriger Deklaration"
 
 #: c-common.c:5722
 #, c-format
 msgid "section attribute not allowed for `%s'"
-msgstr ""
+msgstr "Abschnitts-Attribute nicht erlaubt für »%s«"
 
 #: c-common.c:5729
 msgid "section attributes are not supported for this target"
-msgstr ""
+msgstr "Abschnitts-Attribute werden für dieses Ziel nicht unterstützt"
 
 #: c-common.c:5771
 msgid "requested alignment is not a constant"
-msgstr ""
+msgstr "Verlangte Ausrichtung ist keine Konstante"
 
 #: c-common.c:5776
 msgid "requested alignment is not a power of 2"
-msgstr ""
+msgstr "Verlangte Ausrichtung ist keine Zweierpotenz"
 
 #: c-common.c:5781
 msgid "requested alignment is too large"
-msgstr ""
+msgstr "Verlangte Ausrichtung ist zu groß"
 
 #: c-common.c:5808
 #, c-format
 msgid "alignment may not be specified for `%s'"
-msgstr ""
+msgstr "Für »%s« darf keine Ausrichtung angegeben werden"
 
 #: c-common.c:5853
 #, c-format
 msgid "`%s' defined both normally and as an alias"
-msgstr ""
+msgstr "»%s« sowohl normal als auch als Alias definiert"
 
 #: c-common.c:5863
 msgid "alias arg not a string"
-msgstr ""
+msgstr "Alias-Argument ist keine Zeichenkette"
 
 #: c-common.c:5910
 msgid "visibility arg not a string"
-msgstr ""
+msgstr "Sichtbarkeitsargument ist keine Zeichenkette"
 
 #: c-common.c:5919
 msgid "visibility arg must be one of \"default\", \"hidden\", \"protected\" or \"internal\""
-msgstr ""
+msgstr "Sichtbarkeitsargument muss »default«, »hidden«, »protected« oder »internal« sein"
 
 #: c-common.c:5953
 msgid "tls_model arg not a string"
-msgstr ""
+msgstr "Argument für tls_model ist keine Zeichenkette"
 
 #: c-common.c:5962
 msgid "tls_model arg must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\""
-msgstr ""
+msgstr "Argument für tls_model muss »local-exec«, »initial-exec«, »local-dynamic« oder »global-dynamic« sein"
 
 #: c-common.c:5987 c-common.c:6043
 #, c-format
 msgid "`%s' attribute applies only to functions"
-msgstr ""
+msgstr "Attribut »%s« kann nur auf Funktionen angewandt werden"
 
 #: c-common.c:5994 c-common.c:6050
 #, c-format
 msgid "can't set `%s' attribute after definition"
-msgstr ""
+msgstr "Kann Attribut »%s« nicht nach der Definition setzen"
 
 #: c-common.c:6114
 msgid "cleanup arg not an identifier"
-msgstr ""
+msgstr "Argument für cleanup ist kein Bezeichner"
 
 #: c-common.c:6121
 msgid "cleanup arg not a function"
-msgstr ""
+msgstr "Argument für cleanup ist keine Funktion"
 
 #: c-common.c:6183
 #, c-format
 msgid "`%s' attribute ignored for `%s'"
-msgstr ""
+msgstr "Attribut »%s« ignoriert für »%s«"
 
 #: c-common.c:6248
 #, c-format
 msgid "invalid vector type for attribute `%s'"
-msgstr ""
+msgstr "Ungültiger Vektortyp für Attribut »%s«"
 
 #: c-common.c:6272 c-common.c:6304
 msgid "no vector mode with the size and type specified could be found"
-msgstr ""
+msgstr "Vektorzustand mit der angegebenen Größe und dem angegebenen Typ konnte nicht gefunden werden"
 
 #: c-common.c:6403
 msgid "nonnull attribute without arguments on a non-prototype"
-msgstr ""
+msgstr "Nicht-Null-Attribut ohne Argumente für einen Nicht-Prototyp"
 
 #: c-common.c:6418
 #, c-format
 msgid "nonnull argument has invalid operand number (arg %lu)"
-msgstr ""
+msgstr "Nicht-Null-Argument hat ungültige Operandenzahl (Argument %lu)"
 
 #: c-common.c:6437
 #, c-format
 msgid "nonnull argument with out-of-range operand number (arg %lu, operand %lu)"
-msgstr ""
+msgstr "Nicht-Null-Argument mit Operandenzahl außerhalb des Wertebereiches (Argument %lu, Operand %lu)"
 
 #: c-common.c:6445
 #, c-format
 msgid "nonnull argument references non-pointer operand (arg %lu, operand %lu)"
-msgstr ""
+msgstr "Nicht-Null-Argument referenziert Nicht-Zeiger-Operanden (Argument %lu, Operand %lu)"
 
 #: c-common.c:6531
 #, c-format
 msgid "null argument where non-null required (arg %lu)"
-msgstr ""
+msgstr "Null-Argument, wo Nicht-Null erwartet (Argument %lu)"
 
 #: c-convert.c:80 c-typeck.c:988 c-typeck.c:4059 cp/typeck.c:1615
 #: cp/typeck.c:5939
 msgid "void value not ignored as it ought to be"
-msgstr ""
+msgstr "void-Wert nicht ignoriert wie es sein sollte"
 
 #: c-convert.c:112 java/typeck.c:150
 msgid "conversion to non-scalar type requested"
-msgstr ""
+msgstr "Konvertierung zu Nicht-Skalar-Typ verlangt"
 
 #: c-decl.c:340
 #, c-format
 msgid "array `%s' assumed to have one element"
-msgstr ""
+msgstr "Feld »%s« als einelementig betrachtet"
 
 #: c-decl.c:526
 #, c-format
 msgid "`struct %s' incomplete in scope ending here"
-msgstr ""
+msgstr "»struct %s« im Gültigkeitsbereich, der hier endet, unvollständig"
 
 #: c-decl.c:529
 #, c-format
 msgid "`union %s' incomplete in scope ending here"
-msgstr ""
+msgstr "»union %s« im Gültigkeitsbereich, der hier endet, unvollständig"
 
 #: c-decl.c:532
 #, c-format
 msgid "`enum %s' incomplete in scope ending here"
-msgstr ""
+msgstr "»enum %s« im Gültigkeitsbereich, der hier endet, unvollständig"
 
 #: c-decl.c:646 c-decl.c:771 java/decl.c:1403
 #, c-format
 msgid "label `%s' used but not defined"
-msgstr ""
+msgstr "Marke »%s« verwendet, aber nicht definiert"
 
 #: c-decl.c:652 c-decl.c:778 java/decl.c:1409
 #, c-format
 msgid "label `%s' defined but not used"
-msgstr ""
+msgstr "Marke »%s« definiert aber nicht verwendet"
 
 #: c-decl.c:893 cp/decl.c:3335
 #, c-format
 msgid "function `%s' redeclared as inline"
-msgstr ""
+msgstr "Funktion »%s« als inline redeklariert"
 
 #: c-decl.c:895 cp/decl.c:3337
 #, c-format
 msgid "previous declaration of function `%s' with attribute noinline"
-msgstr ""
+msgstr "Vorherige Deklaration der Funktion »%s« mit Attribut noinline"
 
 #: c-decl.c:902 cp/decl.c:3344
 #, c-format
 msgid "function `%s' redeclared with attribute noinline"
-msgstr ""
+msgstr "Funktion »%s« redeklariert mit Attribut noinline"
 
 #: c-decl.c:904 cp/decl.c:3346
 #, c-format
 msgid "previous declaration of function `%s' was inline"
-msgstr ""
+msgstr "Vorherige Deklaration der Funktion »%s« war inline"
 
 #: c-decl.c:933 c-decl.c:979
 #, c-format
 msgid "shadowing built-in function `%s'"
-msgstr ""
+msgstr "Eingebaute Funktion »%s« überdeckt"
 
 #: c-decl.c:935
 #, c-format
 msgid "shadowing library function `%s'"
-msgstr ""
+msgstr "Bibliotheksfunktion »%s« überdeckt"
 
 #: c-decl.c:941
 #, c-format
 msgid "library function `%s' declared as non-function"
-msgstr ""
+msgstr "Bibliotheksfunktion »%s« als Nicht-Funktion deklariert"
 
 #: c-decl.c:945 c-decl.c:948
 #, c-format
 msgid "built-in function `%s' declared as non-function"
-msgstr ""
+msgstr "Eingebaute Funktion »%s« als Nicht-Funktion deklariert"
 
 #: c-decl.c:952 objc/objc-act.c:2384 objc/objc-act.c:6154
 #, c-format
 msgid "`%s' redeclared as different kind of symbol"
-msgstr ""
+msgstr "»%s« redeklariert als andere Symbolart"
 
 #: c-decl.c:953 c-decl.c:1144 c-decl.c:1158 c-decl.c:1165 c-decl.c:1310
 #: objc/objc-act.c:2386 objc/objc-act.c:6156 objc/objc-act.c:6211
 #, c-format
 msgid "previous declaration of `%s'"
-msgstr ""
+msgstr "Vorherige Deklaration von »%s«"
 
 #. If types don't match for a built-in, throw away the built-in.
 #: c-decl.c:1048
 #, c-format
 msgid "conflicting types for built-in function `%s'"
-msgstr ""
+msgstr "In Konflikt stehende Typen für eingebaute Funktion »%s«"
 
 #: c-decl.c:1091 c-decl.c:1110
 #, c-format
 msgid "conflicting types for `%s'"
-msgstr ""
+msgstr "In Konflikt stehende Typen für »%s«"
 
 #: c-decl.c:1133
 msgid "a parameter list with an ellipsis can't match an empty parameter name list declaration"
-msgstr ""
+msgstr "Eine Parameterliste mit Auslassung passt nicht zu einer leeren Parameternamenslistendeklaration"
 
 #: c-decl.c:1139
 msgid "an argument type that has a default promotion can't match an empty parameter name list declaration"
-msgstr ""
+msgstr "Ein Argumenttyp mit Standard-promotion passt nicht zu leerer Parameternamenslistendeklaration"
 
 #: c-decl.c:1157
 #, c-format
 msgid "thread-local declaration of `%s' follows non thread-local declaration"
-msgstr ""
+msgstr "Thread-lokale Deklaration von »%s« folgt nicht-Thread-lokaler Deklaration"
 
 #: c-decl.c:1164
 #, c-format
 msgid "non thread-local declaration of `%s' follows thread-local declaration"
-msgstr ""
+msgstr "Nicht-Thread-lokale Deklaration von »%s« folgt Thread-lokaler Deklaration"
 
 #: c-decl.c:1175 c-decl.c:1198
 #, c-format
 msgid "redefinition of `%s'"
-msgstr ""
+msgstr "Redefinition von »%s«"
 
 #: c-decl.c:1178
 #, c-format
 msgid "redeclaration of `%s'"
-msgstr ""
+msgstr "Redeklaration von »%s«"
 
 #: c-decl.c:1181
 #, c-format
 msgid "conflicting declarations of `%s'"
-msgstr ""
+msgstr "In Konflikt stehende Deklarationen von »%s«"
 
 #: c-decl.c:1225
 #, c-format
 msgid "prototype for `%s' follows"
-msgstr ""
+msgstr "Prototyp für »%s« folgt"
 
 #: c-decl.c:1226 c-decl.c:1234 c-decl.c:1245
 msgid "non-prototype definition here"
-msgstr ""
+msgstr "Nicht-Prototyp-Definition hier"
 
 #: c-decl.c:1233
 #, c-format
 msgid "prototype for `%s' follows and number of arguments doesn't match"
-msgstr ""
+msgstr "Prototyp für »%s« folgt und Anzahl der Argumente passt nicht"
 
 #: c-decl.c:1243
 #, c-format
 msgid "prototype for `%s' follows and argument %d doesn't match"
-msgstr ""
+msgstr "Prototyp für »%s« folgt und Argument %d passt nicht"
 
 #: c-decl.c:1261
 #, c-format
 msgid "`%s' declared inline after being called"
-msgstr ""
+msgstr "»%s« als inline deklariert nachdem es aufgerufen wurde"
 
 #: c-decl.c:1267
 #, c-format
 msgid "`%s' declared inline after its definition"
-msgstr ""
+msgstr "»%s« nach der Definition als inline deklariert"
 
 #: c-decl.c:1274
 #, c-format
 msgid "static declaration for `%s' follows non-static"
-msgstr ""
+msgstr "Statische Deklaration für »%s« folgt Nicht-static"
 
 #: c-decl.c:1282
 #, c-format
 msgid "non-static declaration for `%s' follows static"
-msgstr ""
+msgstr "Nicht-static-Deklaration für »%s« folgt static"
 
 #: c-decl.c:1289
 #, c-format
 msgid "const declaration for `%s' follows non-const"
-msgstr ""
+msgstr "const-Deklaration für »%s« folgt Nicht-const"
 
 #: c-decl.c:1296
 #, c-format
 msgid "type qualifiers for `%s' conflict with previous decl"
-msgstr ""
+msgstr "Typ-Kennzeichner für »%s« stehen in Konflikt mit vorheriger Deklaration"
 
 #: c-decl.c:1309
 #, c-format
 msgid "redundant redeclaration of `%s' in same scope"
-msgstr ""
+msgstr "Redundante Redeklaration von »%s« im selben Gültigkeitsbereich"
 
 #: c-decl.c:1619 java/decl.c:1102
 #, c-format
 msgid "declaration of `%s' shadows a parameter"
-msgstr ""
+msgstr "Deklaration von »%s« überdeckt einen Parameter"
 
 #: c-decl.c:1622 java/decl.c:1105
 #, c-format
 msgid "declaration of `%s' shadows a symbol from the parameter list"
-msgstr ""
+msgstr "Deklaration von »%s« überdeckt ein Symbol aus der Parameterliste"
 
 #: c-decl.c:1643 cp/decl.c:4479
 msgid "a parameter"
-msgstr ""
+msgstr "Ein Parameter"
 
 #: c-decl.c:1645 cp/decl.c:4496
 msgid "a previous local"
-msgstr ""
+msgstr "Ein vorheriges »local«"
 
 #. XXX shadow warnings in outer-more namespaces
 #: c-decl.c:1649 cp/decl.c:4500
 msgid "a global declaration"
-msgstr ""
+msgstr "Eine globale Deklaration"
 
 #: c-decl.c:1693
 #, c-format
 msgid "nested extern declaration of `%s'"
-msgstr ""
+msgstr "Geschachtelte extern-Deklaration von »%s«"
 
 #: c-decl.c:1712 java/decl.c:1055
 #, c-format
 msgid "`%s' used prior to declaration"
-msgstr ""
+msgstr "»%s« bereits vor Deklaration benutzt"
 
 #: c-decl.c:1726 c-decl.c:1901
 #, c-format
 msgid "`%s' was declared implicitly `extern' and later `static'"
-msgstr ""
+msgstr "»%s« wurde implizit als »extern« und später als »static« deklariert"
 
 #: c-decl.c:1829 cp/decl.c:4336
 msgid "type mismatch with previous external decl"
-msgstr ""
+msgstr "Typen passen nicht zu vorheriger externer Deklaration"
 
 #: c-decl.c:1830
 #, c-format
 msgid "previous external decl of `%s'"
-msgstr ""
+msgstr "Vorherige externe Deklaration von »%s«"
 
 #: c-decl.c:1843
 msgid "type mismatch with previous implicit declaration"
-msgstr ""
+msgstr "Typen passen nicht zu vorheriger impliziter Deklaration"
 
 #: c-decl.c:1845
 #, c-format
 msgid "previous implicit declaration of `%s'"
-msgstr ""
+msgstr "Vorherige implizite Deklaration von »%s«"
 
 #: c-decl.c:1880
 #, c-format
 msgid "`%s' was previously implicitly declared to return `int'"
-msgstr ""
+msgstr "»%s« wurde bereits implizit deklariert, »int« zurückzugeben"
 
 #: c-decl.c:1905
 #, c-format
 msgid "`%s' was declared `extern' and later `static'"
-msgstr ""
+msgstr "»%s« wurde »extern« deklariert und später »static«"
 
 #: c-decl.c:1929
 #, c-format
 msgid "extern declaration of `%s' doesn't match global one"
-msgstr ""
+msgstr "extern-Deklaration von »%s« passt nicht zu globaler Deklaration"
 
 #: c-decl.c:1971
 #, c-format
 msgid "`%s' locally external but globally static"
-msgstr ""
+msgstr "»%s« ist lokal extern, aber global »static«"
 
 #: c-decl.c:2095
 #, c-format
 msgid "function `%s' was previously declared within a block"
-msgstr ""
+msgstr "Funktion »%s« wurde bereits innerhalb eines Blockes deklariert"
 
 #: c-decl.c:2115 c-decl.c:2117
 #, c-format
 msgid "implicit declaration of function `%s'"
-msgstr ""
+msgstr "Implizite Deklaration der Funktion »%s«"
 
 #: c-decl.c:2196
 #, c-format
 msgid "label %s referenced outside of any function"
-msgstr ""
+msgstr "Marke %s außerhalb einer Funktion referenziert"
 
 #: c-decl.c:2253
 #, c-format
 msgid "duplicate label declaration `%s'"
-msgstr ""
+msgstr "Doppelte Markendeklaration »%s«"
 
 #: c-decl.c:2256
 msgid "this is a previous declaration"
-msgstr ""
+msgstr "Dies ist eine vorherige Deklaration"
 
 #: c-decl.c:2679
 msgid "unnamed struct/union that defines no instances"
-msgstr ""
+msgstr "Unbenannte struct/union, die keine Instanzen definiert"
 
 #: c-decl.c:2698
 msgid "useless keyword or type name in empty declaration"
-msgstr ""
+msgstr "Nutzloses Schlüsselwort oder Typenname in leerer Deklaration"
 
 #: c-decl.c:2705
 msgid "two types specified in one empty declaration"
-msgstr ""
+msgstr "Zwei Typen in einer leeren Deklaration angegeben"
 
 #: c-decl.c:2710 c-parse.y:753 c-parse.y:755 parse.y:766 parse.y:1853
 #: objc-parse.y:799 objc-parse.y:801 objc-parse.y:3042
@@ -807,100 +808,99 @@ msgstr "leere Deklaration"
 
 #: c-decl.c:2740
 msgid "ISO C90 does not support `static' or type qualifiers in parameter array declarators"
-msgstr ""
+msgstr "ISO C90 unterstützt kein »static« oder Typkennzeichner in Parameterfelddeklaratoren"
 
 #: c-decl.c:2742
-#, fuzzy
 msgid "ISO C90 does not support `[*]' array declarators"
-msgstr "ISO C89 unterstützt nicht »long long«"
+msgstr "ISO C90 unterstützt nicht »[*]«-Felddeklaratoren"
 
 #: c-decl.c:2745
 msgid "GCC does not yet properly implement `[*]' array declarators"
-msgstr ""
+msgstr "GCC implementiert nocht keine richtigen »[*]«-Felddeklaratoren"
 
 #: c-decl.c:2764
 msgid "static or type qualifiers in abstract declarator"
-msgstr ""
+msgstr "static oder Typkennzeichner in abstraktem Deklarator"
 
 #: c-decl.c:2838
 #, c-format
 msgid "`%s' is usually a function"
-msgstr ""
+msgstr "»%s« ist üblicherweise eine Funktion"
 
 #: c-decl.c:2847
 #, c-format
 msgid "typedef `%s' is initialized (use __typeof__ instead)"
-msgstr ""
+msgstr "typedef »%s« ist initialisiert (benutzen Sie stattdessen __typeof__)"
 
 #: c-decl.c:2853
 #, c-format
 msgid "function `%s' is initialized like a variable"
-msgstr ""
+msgstr "Funktion »%s« ist wie eine Variable initialisiert"
 
 #. DECL_INITIAL in a PARM_DECL is really DECL_ARG_TYPE.
 #: c-decl.c:2860
 #, c-format
 msgid "parameter `%s' is initialized"
-msgstr ""
+msgstr "Parameter »%s« ist initialisiert"
 
 #: c-decl.c:2880 c-typeck.c:4895
 msgid "variable-sized object may not be initialized"
-msgstr ""
+msgstr "Objekt variabler Größe darf nicht initialisiert werden"
 
 #: c-decl.c:2886
 #, c-format
 msgid "variable `%s' has initializer but incomplete type"
-msgstr ""
+msgstr "Variable »%s« hat Initialisierung aber unvollständigen Typ"
 
 #: c-decl.c:2892
 #, c-format
 msgid "elements of array `%s' have incomplete type"
-msgstr ""
+msgstr "Elemente des Feldes »%s« haben unvollständigen Typ"
 
 #: c-decl.c:2905
 #, c-format
 msgid "declaration of `%s' has `extern' and is initialized"
-msgstr ""
+msgstr "Deklaration von »%s« hat »extern« und ist initialisiert"
 
 #: c-decl.c:2954 c-decl.c:5828 cp/decl.c:7760 cp/decl.c:14339
 #, c-format
 msgid "inline function `%s' given attribute noinline"
-msgstr ""
+msgstr "inline-Funktion »%s« wurde das Attribut »noinline« gegeben"
 
 #: c-decl.c:3028
 #, c-format
 msgid "initializer fails to determine size of `%s'"
-msgstr ""
+msgstr "Initialisierung scheitert an Größenbestimmung von »%s«"
 
 #: c-decl.c:3033
 #, c-format
 msgid "array size missing in `%s'"
-msgstr ""
+msgstr "Feldgröße in »%s« fehlt"
 
 #: c-decl.c:3049
 #, c-format
 msgid "zero or negative size array `%s'"
-msgstr ""
+msgstr "Feldgröße von »%s« ist null oder negativ"
 
 #: c-decl.c:3077
 #, c-format
 msgid "storage size of `%s' isn't known"
-msgstr ""
+msgstr "Speichergröße von »%s« unbekannt"
 
 #: c-decl.c:3087
 #, c-format
 msgid "storage size of `%s' isn't constant"
-msgstr ""
+msgstr "Speichergröße von »%s« unbekannt"
 
 #: c-decl.c:3147
 #, c-format
 msgid "ignoring asm-specifier for non-static local variable `%s'"
-msgstr ""
+msgstr "Ignoriere asm-Symbol für lokale Nicht-static Variable »%s«"
 
 #: c-decl.c:3247
 #, c-format
 msgid "ISO C forbids parameter `%s' shadowing typedef"
-msgstr ""
+msgstr "ISO C verbietet typedef verdeckenden Parameter »%s«"
 
 #: c-decl.c:3592 cp/decl.c:10880
 msgid "`long long long' is too long for GCC"
@@ -913,54 +913,54 @@ msgstr "ISO C90 unterstützt nicht »long long«"
 #: c-decl.c:3606 c-decl.c:3609 cp/decl.c:10885
 #, c-format
 msgid "duplicate `%s'"
-msgstr ""
+msgstr "Doppeltes »%s«"
 
 #: c-decl.c:3619 cp/decl.c:10892
 msgid "`__thread' before `extern'"
-msgstr ""
+msgstr "»__thread« vor »extern«"
 
 #: c-decl.c:3621 cp/decl.c:10894
 msgid "`__thread' before `static'"
-msgstr ""
+msgstr "»__thread« vor »static«"
 
 #: c-decl.c:3629 cp/decl.c:10921
 #, c-format
 msgid "two or more data types in declaration of `%s'"
-msgstr ""
+msgstr "Zwei oder mehr Datentypen in Deklaration von »%s«"
 
 #: c-decl.c:3649 cp/decl.c:10926
 #, c-format
 msgid "`%s' fails to be a typedef or built in type"
-msgstr ""
+msgstr "»%s« ist kein typedef oder eingebauter Typ"
 
 #: c-decl.c:3688
 #, c-format
 msgid "type defaults to `int' in declaration of `%s'"
-msgstr ""
+msgstr "»int« ist Standardtyp in Deklaration von »%s«"
 
 #: c-decl.c:3717
 #, c-format
 msgid "both long and short specified for `%s'"
-msgstr ""
+msgstr "Sowohl »long« als auch »short« für »%s« angegeben"
 
 #: c-decl.c:3721 cp/decl.c:11041
 #, c-format
 msgid "long or short specified with char for `%s'"
-msgstr ""
+msgstr "»long« oder »short« mit »char« für »%s« angegeben"
 
 #: c-decl.c:3728 cp/decl.c:11045
 #, c-format
 msgid "long or short specified with floating type for `%s'"
-msgstr ""
+msgstr "»long« oder »short« mit Fließkommatyp für »%s« angegeben"
 
 #: c-decl.c:3731
 msgid "the only valid combination is `long double'"
-msgstr ""
+msgstr "Die einzig gültige Kombination ist »long double«"
 
 #: c-decl.c:3737
 #, c-format
 msgid "both signed and unsigned specified for `%s'"
-msgstr ""
+msgstr "Sowohl »signed« als auch »unsigned« für »%s« angegeben"
 
 #: c-decl.c:3739 cp/decl.c:11034
 #, c-format
@@ -4907,7 +4907,7 @@ msgid ""
 "See %s for instructions.\n"
 msgstr ""
 "Bitte senden Sie einen vollständigen Fehlerbericht auf Englisch ein;\n"
-"bearbeiten Sie die Quellen zunächst mit eine Präprozessor, wenn es\n"
+"bearbeiten Sie die Quellen zunächst mit einem Präprozessor, wenn es\n"
 "dienlich ist.\n"
 "Fehler in der deutschen Übersetzung sind an de@li.org zu melden.\n"
 "\n"
