@@ -747,7 +747,9 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
 	value = word;
       else
 	value = gen_lowpart_common (word_mode,
-				    force_reg (GET_MODE (value), value));
+				    force_reg (GET_MODE (value) != VOIDmode
+					       ? GET_MODE (value)
+					       : word_mode, value));
     }
 
   while (bitsdone < bitsize)
