@@ -19,7 +19,7 @@ class B { B (int); };
 B::B (int i)
 {
   struct S {
-    int ar[1][i];  // { dg-error "variable-size|variably modified" }
+    int ar[1][i];  // { dg-error "array" }
   } s;
 
   s.ar[0][0] = 0;  // { dg-error "no member" }

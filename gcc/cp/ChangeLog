@@ -1,3 +1,24 @@
+2004-11-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18389
+	* decl.c (start_decl): Make sure to set *pop_scope_p.  Return
+	error_mark_node to indicate errors.
+
+	PR c++/18429
+	* parser.c (cp_parser_direct_declarator): Disallow non-constant
+	array bounds when not inside a function.
+
+	PR c++/18436
+	* pt.c (tsubst_copy_and_build): Do not do Koenig lookup when an
+	unqualified name resolves to a member function.
+
+	PR c++/18407
+	* pt.c (tsubst_copy_and_build): Handle qualified names used from a
+	derived class correctly.
+	
+	* decl2.c (import_export_decl): Fix typo in comment.
+	* tree.c (pod_type_p): Likewise.
+
 2004-11-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* typeck.c (cxx_mark_addressable): Add braces around the first if.
