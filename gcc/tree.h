@@ -931,7 +931,8 @@ struct tree_type
 #define DECL_IN_TEXT_SECTION(NODE) ((NODE)->decl.bit_field_flag)
 
 /* Used in VAR_DECLs to indicate that the variable is a vtable.
-   It is also used in FIELD_DECLs for vtable pointers.  */
+   Used in FIELD_DECLs for vtable pointers.
+   Used in FUNCTION_DECLs to indicate that the function is virtual.  */
 #define DECL_VIRTUAL_P(NODE) ((NODE)->decl.virtual_flag)
 
 /* Used to indicate that the linkage status of this DECL is not yet known,
