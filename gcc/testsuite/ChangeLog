@@ -1,3 +1,8 @@
+2003-07-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR optimization/10679
+	* g++.dg/opt/inline4.C: New test.
+
 2003-07-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
         PR optimization/11536

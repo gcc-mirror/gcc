@@ -1,3 +1,8 @@
+2003-07-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR optimization/10679
+	* tree-inline.c (inlinable_function_p): Honor MIN_INLINE_INSNS.
+	
 2003-07-22  Bob Wilson  <bob.wilson@acm.org>
 	
 	* unwind-c.c (PERSONALITY_FUNCTION): Delete duplicate define.
