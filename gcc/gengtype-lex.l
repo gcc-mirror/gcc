@@ -20,13 +20,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 %{
-#define malloc xmalloc
-#define realloc xrealloc
-
 #include "bconfig.h"
 #include "coretypes.h"
 #include "system.h"
-#include "system.h"
+
+#define malloc xmalloc
+#define realloc xrealloc
+
 #include "gengtype.h"
 #include "gengtype-yacc.h"
 
