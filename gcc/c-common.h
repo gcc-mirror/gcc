@@ -1,5 +1,5 @@
 /* Definitions for c-common.c.
-   Copyright (C) 1987, 93, 94, 95, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 93-95, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -73,51 +73,51 @@ extern tree c_global_trees[CTI_MAX];
 #define int_ftype_int			c_global_trees[CTI_INT_FTYPE_INT]
 #define ptr_ftype_sizetype		c_global_trees[CTI_PTR_FTYPE_SIZETYPE]
 
-extern void declare_function_name		PROTO((void));
-extern void decl_attributes			PROTO((tree, tree, tree));
-extern void init_function_format_info		PROTO((void));
-extern void check_function_format		PROTO((tree, tree, tree));
-extern void c_apply_type_quals_to_decl		PROTO((int, tree));
-extern int c_get_alias_set			PROTO((tree));
+extern void declare_function_name		PARAMS ((void));
+extern void decl_attributes			PARAMS ((tree, tree, tree));
+extern void init_function_format_info		PARAMS ((void));
+extern void check_function_format		PARAMS ((tree, tree, tree));
+extern void c_apply_type_quals_to_decl		PARAMS ((int, tree));
+extern int c_get_alias_set			PARAMS ((tree));
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
-extern void binary_op_error			PROTO((enum tree_code));
-extern void c_expand_expr_stmt			PROTO((tree));
-extern void c_expand_start_cond			PROTO((tree, int, int));
-extern void c_expand_start_else			PROTO((void));
-extern void c_expand_end_cond			PROTO((void));
+extern void binary_op_error			PARAMS ((enum tree_code));
+extern void c_expand_expr_stmt			PARAMS ((tree));
+extern void c_expand_start_cond			PARAMS ((tree, int, int));
+extern void c_expand_start_else			PARAMS ((void));
+extern void c_expand_end_cond			PARAMS ((void));
 /* Validate the expression after `case' and apply default promotions.  */
-extern tree check_case_value			PROTO((tree));
+extern tree check_case_value			PARAMS ((tree));
 /* Concatenate a list of STRING_CST nodes into one STRING_CST.  */
-extern tree combine_strings			PROTO((tree));
-extern void constant_expression_warning		PROTO((tree));
-extern tree convert_and_check			PROTO((tree, tree));
-extern void overflow_warning			PROTO((tree));
-extern void unsigned_conversion_warning		PROTO((tree, tree));
+extern tree combine_strings			PARAMS ((tree));
+extern void constant_expression_warning		PARAMS ((tree));
+extern tree convert_and_check			PARAMS ((tree, tree));
+extern void overflow_warning			PARAMS ((tree));
+extern void unsigned_conversion_warning		PARAMS ((tree, tree));
 /* Read the rest of the current #-directive line.  */
 #if USE_CPPLIB
-extern char *get_directive_line			PROTO((void));
+extern char *get_directive_line			PARAMS ((void));
 #define GET_DIRECTIVE_LINE() get_directive_line ()
 #else
-extern char *get_directive_line			PROTO((FILE *));
+extern char *get_directive_line			PARAMS ((FILE *));
 #define GET_DIRECTIVE_LINE() get_directive_line (finput)
 #endif
 
 /* Subroutine of build_binary_op, used for comparison operations.
    See if the operands have both been converted from subword integer types
    and, if so, perhaps change them both back to their original type.  */
-extern tree shorten_compare			PROTO((tree *, tree *, tree *, enum tree_code *));
+extern tree shorten_compare			PARAMS ((tree *, tree *, tree *, enum tree_code *));
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
    or validate its data type for an `if' or `while' statement or ?..: exp. */
-extern tree truthvalue_conversion		PROTO((tree));
-extern tree type_for_mode			PROTO((enum machine_mode, int));
-extern tree type_for_size			PROTO((unsigned, int));
+extern tree truthvalue_conversion		PARAMS ((tree));
+extern tree type_for_mode			PARAMS ((enum machine_mode, int));
+extern tree type_for_size			PARAMS ((unsigned, int));
 
 /* Build tree nodes and builtin functions common to both C and C++ language
    frontends.  */
-extern void c_common_nodes_and_builtins		PROTO((int, int, int));
+extern void c_common_nodes_and_builtins		PARAMS ((int, int, int));
 
-extern tree build_va_arg			PROTO((tree, tree));
+extern tree build_va_arg			PARAMS ((tree, tree));
 
 /* Nonzero if the type T promotes to itself.
    ANSI C states explicitly the list of types that promote;
@@ -130,5 +130,5 @@ extern tree build_va_arg			PROTO((tree, tree));
        || TYPE_MAIN_VARIANT (t) == short_integer_type_node	\
        || TYPE_MAIN_VARIANT (t) == short_unsigned_type_node))
 
-extern int self_promoting_args_p		PROTO((tree));
-extern tree simple_type_promotes_to		PROTO((tree));
+extern int self_promoting_args_p		PARAMS ((tree));
+extern tree simple_type_promotes_to		PARAMS ((tree));

@@ -1,5 +1,5 @@
 /* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
-   Copyright (C) 1992, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -58,8 +58,8 @@ static struct align_stack * alignment_stack = NULL;
    maximum_field_alignment.  Value is in bits. */
 static int  default_alignment;
 
-static int  push_alignment PROTO((int, tree));
-static int  pop_alignment  PROTO((tree));
+static int  push_alignment PARAMS ((int, tree));
+static int  pop_alignment  PARAMS ((tree));
 
 /* Push an alignment value onto the stack.  */
 static int

@@ -1,5 +1,5 @@
 /* Define constants for communication with c-parse.y.
-   Copyright (C) 1987, 1992, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1992, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -75,14 +75,14 @@ extern tree lastiddecl;
 
 extern char *token_buffer;	/* Pointer to token buffer.  */
 
-extern tree make_pointer_declarator PROTO((tree, tree));
-extern void reinit_parse_for_function PROTO((void));
-extern void position_after_white_space PROTO((void));
-extern int check_newline PROTO((void));
+extern tree make_pointer_declarator PARAMS ((tree, tree));
+extern void reinit_parse_for_function PARAMS ((void));
+extern void position_after_white_space PARAMS ((void));
+extern int check_newline PARAMS ((void));
 
-extern int yylex PROTO((void));
-extern void yyerror PROTO((const char *));
+extern int yylex PARAMS ((void));
+extern void yyerror PARAMS ((const char *));
 
-extern void forget_protocol_qualifiers PROTO((void));
-extern void remember_protocol_qualifiers PROTO((void));
-extern tree is_class_name PROTO((tree));
+extern void forget_protocol_qualifiers PARAMS ((void));
+extern void remember_protocol_qualifiers PARAMS ((void));
+extern tree is_class_name PARAMS ((tree));

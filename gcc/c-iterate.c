@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-98, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -94,16 +94,16 @@ static char *ixp_firstobj;
 /* During collect_iterators, a list of SAVE_EXPRs already scanned.  */
 static tree save_exprs;
 
-static void expand_stmt_with_iterators_1 PROTO((tree, tree));
-static tree collect_iterators		PROTO((tree, tree));
-static void iterator_loop_prologue	PROTO((tree, rtx *, rtx *));
-static void iterator_loop_epilogue	PROTO((tree, rtx *, rtx *));
-static int top_level_ixpansion_p	PROTO((void));
-static void isn_append			PROTO((struct iter_stack_node *,
-					       struct iter_stack_node *));
-static void istack_sublevel_to_current	PROTO((void));
-static void add_ixpansion		PROTO((tree, rtx, rtx, rtx, rtx));
-static void delete_ixpansion		PROTO((tree));
+static void expand_stmt_with_iterators_1 PARAMS ((tree, tree));
+static tree collect_iterators		PARAMS ((tree, tree));
+static void iterator_loop_prologue	PARAMS ((tree, rtx *, rtx *));
+static void iterator_loop_epilogue	PARAMS ((tree, rtx *, rtx *));
+static int top_level_ixpansion_p	PARAMS ((void));
+static void isn_append			PARAMS ((struct iter_stack_node *,
+						 struct iter_stack_node *));
+static void istack_sublevel_to_current	PARAMS ((void));
+static void add_ixpansion		PARAMS ((tree, rtx, rtx, rtx, rtx));
+static void delete_ixpansion		PARAMS ((tree));
 
 /* Initialize our obstack once per compilation.  */
 

@@ -1,5 +1,5 @@
 /* Declarations for objc-act.c.
-   Copyright (C) 1990 Free Software Foundation, Inc.
+   Copyright (C) 1990, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -23,52 +23,52 @@ Boston, MA 02111-1307, USA.  */
 
 /* used by yyparse */
 
-void finish_file				PROTO((void));
-tree start_class				PROTO((enum tree_code, tree, tree, tree));
-tree continue_class				PROTO((tree));
-void finish_class				PROTO((tree));
-void start_method_def				PROTO((tree));
-void continue_method_def			PROTO((void));
-void finish_method_def				PROTO((void));
-tree start_protocol				PROTO((enum tree_code, tree, tree));
-void finish_protocol				PROTO((tree));
-void add_objc_decls				PROTO((void));
+void finish_file				PARAMS ((void));
+tree start_class				PARAMS ((enum tree_code, tree, tree, tree));
+tree continue_class				PARAMS ((tree));
+void finish_class				PARAMS ((tree));
+void start_method_def				PARAMS ((tree));
+void continue_method_def			PARAMS ((void));
+void finish_method_def				PARAMS ((void));
+tree start_protocol				PARAMS ((enum tree_code, tree, tree));
+void finish_protocol				PARAMS ((tree));
+void add_objc_decls				PARAMS ((void));
 
-tree is_ivar					PROTO((tree, tree));
-int is_private					PROTO((tree));
-int is_public					PROTO((tree, tree));
-tree add_instance_variable			PROTO((tree, int, tree, tree, tree));
-tree add_class_method				PROTO((tree, tree));
-tree add_instance_method			PROTO((tree, tree));
-tree get_super_receiver				PROTO((void));
-tree get_class_ivars				PROTO((tree));
-tree get_class_reference			PROTO((tree));
-tree get_static_reference			PROTO((tree, tree));
-tree get_object_reference			PROTO((tree));
-tree build_message_expr				PROTO((tree));
-tree build_selector_expr			PROTO((tree));
-tree build_ivar_reference			PROTO((tree));
-tree build_keyword_decl				PROTO((tree, tree, tree));
-tree build_method_decl				PROTO((enum tree_code, tree, tree, tree));
-tree build_protocol_expr			PROTO((tree));
-tree build_objc_string_object			PROTO((tree));
+tree is_ivar					PARAMS ((tree, tree));
+int is_private					PARAMS ((tree));
+int is_public					PARAMS ((tree, tree));
+tree add_instance_variable			PARAMS ((tree, int, tree, tree, tree));
+tree add_class_method				PARAMS ((tree, tree));
+tree add_instance_method			PARAMS ((tree, tree));
+tree get_super_receiver				PARAMS ((void));
+tree get_class_ivars				PARAMS ((tree));
+tree get_class_reference			PARAMS ((tree));
+tree get_static_reference			PARAMS ((tree, tree));
+tree get_object_reference			PARAMS ((tree));
+tree build_message_expr				PARAMS ((tree));
+tree build_selector_expr			PARAMS ((tree));
+tree build_ivar_reference			PARAMS ((tree));
+tree build_keyword_decl				PARAMS ((tree, tree, tree));
+tree build_method_decl				PARAMS ((enum tree_code, tree, tree, tree));
+tree build_protocol_expr			PARAMS ((tree));
+tree build_objc_string_object			PARAMS ((tree));
 
 extern tree objc_ivar_chain;
 extern tree objc_method_context;
 
-void objc_declare_alias				PROTO((tree, tree));
-void objc_declare_class				PROTO((tree));
+void objc_declare_alias				PARAMS ((tree, tree));
+void objc_declare_class				PARAMS ((tree));
 
 extern int objc_receiver_context;
 
 /* the following routines are used to implement statically typed objects */
 
-int objc_comptypes				PROTO((tree, tree, int));
-void objc_check_decl				PROTO((tree));
+int objc_comptypes				PARAMS ((tree, tree, int));
+void objc_check_decl				PARAMS ((tree));
 
 /* NeXT extensions */
 
-tree build_encode_expr				PROTO((tree));
+tree build_encode_expr				PARAMS ((tree));
 
 /* Objective-C structures */
 

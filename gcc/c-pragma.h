@@ -1,5 +1,5 @@
 /* Pragma related interfaces.
-   Copyright (C) 1995, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -54,7 +54,7 @@ struct weak_syms
 /* Declared in varasm.c */
 extern struct weak_syms * weak_decls;
 
-extern int add_weak PROTO((char *, char *));
+extern int add_weak PARAMS ((char *, char *));
 #endif /* HANDLE_PRAGMA_WEAK */
 
 
@@ -92,10 +92,10 @@ enum pragma_state
 };
 
 /* Handle a C style pragma */
-extern int handle_pragma_token PROTO((const char *, tree));
+extern int handle_pragma_token PARAMS ((const char *, tree));
 
 #endif /* HANDLE_GENERIC_PRAGMAS */
 
-extern void init_pragma PROTO((void));
+extern void init_pragma PARAMS ((void));
 
 #endif /* _C_PRAGMA_H */

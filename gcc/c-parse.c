@@ -133,7 +133,7 @@ static int undeclared_variable_notice;
 /* Tell yyparse how to print a token's value, if yydebug is set.  */
 
 #define YYPRINT(FILE,YYCHAR,YYLVAL) yyprint(FILE,YYCHAR,YYLVAL)
-extern void yyprint			PROTO ((FILE *, int, YYSTYPE));
+extern void yyprint			PARAMS ((FILE *, int, YYSTYPE));
 
 /* Add GC roots for variables local to this file.  */
 void

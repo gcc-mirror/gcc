@@ -1,5 +1,22 @@
 2000-01-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* c-common.c: PROTO -> PARAMS.
+	* c-common.h: Likewise.
+	* c-decl.c: Likewise.
+	* c-iterate.c: Likewise.
+	* c-lang.c: Likewise.
+	* c-lex.c: Likewise.
+	* c-lex.h: Likewise.
+	* c-parse.in: Likewise.
+	* c-pragma.c: Likewise.
+	* c-pragma.h: Likewise.
+	* c-tree.h: Likewise.
+	* c-typeck.c: Likewise.
+	* objc/objc-act.c: Likewise.
+	* objc/objc-act.h: Likewise.
+
+2000-01-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* m88k-protos.h: New file.
 
 	* m88k.c: Include tm_p.h.  Add static prototypes.  Fix compile

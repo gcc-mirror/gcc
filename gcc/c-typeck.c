@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 88, 91-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -45,35 +45,35 @@ Boston, MA 02111-1307, USA.  */
    message within this initializer.  */
 static int missing_braces_mentioned;
 
-static tree qualify_type		PROTO((tree, tree));
-static int comp_target_types		PROTO((tree, tree));
-static int function_types_compatible_p	PROTO((tree, tree));
-static int type_lists_compatible_p	PROTO((tree, tree));
-static tree decl_constant_value		PROTO((tree));
-static tree lookup_field		PROTO((tree, tree, tree *));
-static tree convert_arguments		PROTO((tree, tree, tree, tree));
-static tree pointer_int_sum		PROTO((enum tree_code, tree, tree));
-static tree pointer_diff		PROTO((tree, tree));
-static tree unary_complex_lvalue	PROTO((enum tree_code, tree));
-static void pedantic_lvalue_warning	PROTO((enum tree_code));
-static tree internal_build_compound_expr PROTO((tree, int));
-static tree convert_for_assignment	PROTO((tree, tree, const char *, tree,
-					       tree, int));
-static void warn_for_assignment		PROTO((const char *, const char *,
-					       tree, int));
-static tree valid_compound_expr_initializer PROTO((tree, tree));
-static void push_string			PROTO((const char *));
-static void push_member_name		PROTO((tree));
-static void push_array_bounds		PROTO((int));
-static int spelling_length		PROTO((void));
-static char *print_spelling		PROTO((char *));
-static void warning_init		PROTO((const char *));
-static tree digest_init			PROTO((tree, tree, int, int));
-static void check_init_type_bitfields	PROTO((tree));
-static void output_init_element		PROTO((tree, tree, tree, int));
-static void output_pending_init_elements PROTO((int));
-static void add_pending_init		PROTO((tree, tree));
-static int pending_init_member		PROTO((tree));
+static tree qualify_type		PARAMS ((tree, tree));
+static int comp_target_types		PARAMS ((tree, tree));
+static int function_types_compatible_p	PARAMS ((tree, tree));
+static int type_lists_compatible_p	PARAMS ((tree, tree));
+static tree decl_constant_value		PARAMS ((tree));
+static tree lookup_field		PARAMS ((tree, tree, tree *));
+static tree convert_arguments		PARAMS ((tree, tree, tree, tree));
+static tree pointer_int_sum		PARAMS ((enum tree_code, tree, tree));
+static tree pointer_diff		PARAMS ((tree, tree));
+static tree unary_complex_lvalue	PARAMS ((enum tree_code, tree));
+static void pedantic_lvalue_warning	PARAMS ((enum tree_code));
+static tree internal_build_compound_expr PARAMS ((tree, int));
+static tree convert_for_assignment	PARAMS ((tree, tree, const char *,
+						 tree, tree, int));
+static void warn_for_assignment		PARAMS ((const char *, const char *,
+						 tree, int));
+static tree valid_compound_expr_initializer PARAMS ((tree, tree));
+static void push_string			PARAMS ((const char *));
+static void push_member_name		PARAMS ((tree));
+static void push_array_bounds		PARAMS ((int));
+static int spelling_length		PARAMS ((void));
+static char *print_spelling		PARAMS ((char *));
+static void warning_init		PARAMS ((const char *));
+static tree digest_init			PARAMS ((tree, tree, int, int));
+static void check_init_type_bitfields	PARAMS ((tree));
+static void output_init_element		PARAMS ((tree, tree, tree, int));
+static void output_pending_init_elements PARAMS ((int));
+static void add_pending_init		PARAMS ((tree, tree));
+static int pending_init_member		PARAMS ((tree));
 
 /* Do `exp = require_complete_type (exp);' to make sure exp
    does not have an incomplete type.  (That includes void types.)  */
