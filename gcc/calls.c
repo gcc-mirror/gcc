@@ -1920,9 +1920,17 @@ shift_returned_value (tree type, rtx *value)
 	       - BITS_PER_UNIT * int_size_in_bytes (type));
       if (shift > 0)
 	{
+	  /* Shift the value into the low part of the register.  */
 	  *value = expand_binop (GET_MODE (*value), lshr_optab, *value,
 				 GEN_INT (shift), 0, 1, OPTAB_WIDEN);
-	  *value = convert_to_mode (TYPE_MODE (type), *value, 0);
+
+	  /* Truncate it to the type's mode, or its integer equivalent.
+	     This is subject to TRULY_NOOP_TRUNCATION.  */
+	  *value = convert_to_mode (int_mode_for_mode (TYPE_MODE (type)),
+				    *value, 0);
+
+	  /* Now convert it to the final form.  */
+	  *value = gen_lowpart (TYPE_MODE (type), *value);
 	  return true;
 	}
     }

@@ -1,3 +1,8 @@
+2004-06-24  Richard Sandiford  <rsandifo@redhat.com>
+
+	* calls.c (shift_returned_value): Fix handling of non-integer
+	TYPE_MODEs.
+
 2004-06-24  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* c-decl.c (finish_function): Do not check for DEFAULT_MAIN_RETURN.
