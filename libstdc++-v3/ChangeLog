@@ -1,3 +1,7 @@
+2003-05-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	* configure.target (mips*): Use the generic atomicity.h by default.
+
 2003-05-05  Loren J. Rittle  <ljrittle@acm.org>
 	    (Inspired by an alternate patch from Danny Smith.)
 
