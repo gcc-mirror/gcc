@@ -1,3 +1,8 @@
+1999-04-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* search.c (is_subobject_of_p): Handle TEMPLATE_TYPE_PARMs and
+	such as base classes.
+
 1999-04-22  Brendan Kehoe  <brendan@cygnus.com>
 
 	* tree.c (build_exception_variant): Fix typo: use the chain of U,
