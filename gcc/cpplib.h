@@ -109,33 +109,31 @@ typedef struct cpp_name cpp_name;
   T(CPP_MAX,		">?")			\
   C(CPP_OTHER,		0)	/* stray punctuation */ \
 \
-  H(CPP_NAME,		spell_name)	/* word */	\
-  N(CPP_INT,		0)		/* 23 */	\
-  N(CPP_FLOAT,		0)		/* 3.14159 */	\
-  H(CPP_NUMBER,		spell_name)	/* 34_be+ta  */	\
-  H(CPP_CHAR,		spell_string)	/* 'char' */	\
-  H(CPP_WCHAR,		spell_string)	/* L'char' */	\
-  H(CPP_STRING,		spell_string)	/* "string" */	\
-  H(CPP_WSTRING,	spell_string)	/* L"string" */	\
+  I(CPP_NAME,		0)	/* word */	\
+  N(CPP_INT,		0)	/* 23 */	\
+  N(CPP_FLOAT,		0)	/* 3.14159 */	\
+  I(CPP_NUMBER,		0)	/* 34_be+ta  */	\
+  S(CPP_CHAR,		0)	/* 'char' */	\
+  S(CPP_WCHAR,		0)	/* L'char' */	\
+  S(CPP_STRING,		0)	/* "string" */	\
+  S(CPP_WSTRING,	0)	/* L"string" */	\
 \
-  H(CPP_C_COMMENT,	spell_comment)	/* Only if output comments.  */ \
-  H(CPP_CPP_COMMENT,	spell_comment)	/* Only if output comments.  */ \
-  H(CPP_CHILL_COMMENT,	spell_comment)	/* Only if output comments.  */ \
-  N(CPP_MACRO_ARG,      0)              /* Macro argument.  */          \
-  N(CPP_SUBLIST,        0)	        /* Sublist.  */                 \
-  T(CPP_VSPACE,		"\n")		/* End of line.  */		\
-  N(CPP_EOF,		0)		/* End of file.  */		\
-  N(CPP_HEADER_NAME,	0)		/* <stdio.h> in #include */	\
-  N(CPP_ASSERTION,	0)		/* (...) in #assert */		\
+  I(CPP_COMMENT,	0)	/* Only if output comments.  */ \
+  N(CPP_MACRO_ARG,      0)	/* Macro argument.  */          \
+  N(CPP_SUBLIST,        0)	/* Sublist.  */                 \
+  T(CPP_VSPACE,		"\n")	/* End of line.  */		\
+  N(CPP_EOF,		0)	/* End of file.  */		\
+  N(CPP_HEADER_NAME,	0)	/* <stdio.h> in #include */	\
+  N(CPP_ASSERTION,	0)	/* (...) in #assert */		\
 \
   /* Obsolete - will be removed when no code uses them still.  */	\
-  H(CPP_COMMENT,	0)		/* Only if output comments.  */ \
-  N(CPP_HSPACE,		0)		/* Horizontal white space.  */	\
-  N(CPP_DIRECTIVE,	0)		/* #define and the like */	\
-  N(CPP_MACRO,		0)		/* Like a NAME, but expanded.  */
+  N(CPP_HSPACE,		0)	/* Horizontal white space.  */	\
+  N(CPP_DIRECTIVE,	0)	/* #define and the like */	\
+  N(CPP_MACRO,		0)	/* Like a NAME, but expanded.  */
 
 #define T(e, s) e,
-#define H(e, s) e,
+#define I(e, s) e,
+#define S(e, s) e,
 #define C(e, s) e,
 #define N(e, s) e,
 enum cpp_ttype
@@ -144,7 +142,8 @@ enum cpp_ttype
   N_TTYPES
 };
 #undef T
-#undef H
+#undef I
+#undef S
 #undef C
 #undef N
 
