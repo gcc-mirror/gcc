@@ -1,3 +1,8 @@
+Thu Aug 12 23:51:04 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* global.c (prune_preferences): Move some invariants out of the
+	inner loop.
+
 Thu Aug 12 15:30:29 1999  Jesse Perry  (jap@unx.dec.com)
 
 	* configure.in (alpha*-dec-osf*): Add osf5.

@@ -864,7 +864,7 @@ prune_preferences ()
 
   for (i = max_allocno - 1; i >= 0; i--)
     {
-      HARD_REG_SET temp;
+      HARD_REG_SET temp, temp2;
 
       allocno = allocno_order[i];
       COPY_HARD_REG_SET (temp, hard_reg_conflicts[allocno]);
@@ -882,25 +882,27 @@ prune_preferences ()
       AND_COMPL_HARD_REG_SET (hard_reg_copy_preferences[allocno], temp);
       AND_COMPL_HARD_REG_SET (hard_reg_full_preferences[allocno], temp);
 
-      CLEAR_HARD_REG_SET (regs_someone_prefers[allocno]);
-
       /* Merge in the preferences of lower-priority registers (they have
 	 already been pruned).  If we also prefer some of those registers,
 	 don't exclude them unless we are of a smaller size (in which case
 	 we want to give the lower-priority allocno the first chance for
 	 these registers).  */
+      CLEAR_HARD_REG_SET (temp);
+      CLEAR_HARD_REG_SET (temp2);
       for (j = i + 1; j < max_allocno; j++)
 	if (CONFLICTP (allocno, allocno_order[j])
 	    || CONFLICTP (allocno_order[j], allocno))
 	  {
-	    COPY_HARD_REG_SET (temp,
-			       hard_reg_full_preferences[allocno_order[j]]);
 	    if (allocno_size[allocno_order[j]] <= allocno_size[allocno])
-	      AND_COMPL_HARD_REG_SET (temp,
-				      hard_reg_full_preferences[allocno]);
-			       
-	    IOR_HARD_REG_SET (regs_someone_prefers[allocno], temp);
+	      IOR_HARD_REG_SET (temp,
+				hard_reg_full_preferences[allocno_order[j]]);
+	    else
+	      IOR_HARD_REG_SET (temp2,
+				hard_reg_full_preferences[allocno_order[j]]);
 	  }
+      AND_COMPL_HARD_REG_SET (temp, hard_reg_full_preferences[allocno]);
+      IOR_HARD_REG_SET (temp, temp2);
+      COPY_HARD_REG_SET (regs_someone_prefers[allocno], temp);
     }
 }
 
