@@ -497,7 +497,7 @@ for ml in $MULTILIBS; do
   flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
   if [ $dir != . ]; then
     ldir='$(DESTDIR)$(libsubdir)'/$dir
-    echo "	if [ -d $ldir ]; then true; else '$mkinstalldirs' $ldir; chmod a+rx $ldir; fi;"
+    echo "	if [ -d $ldir ]; then true; else $mkinstalldirs $ldir; chmod a+rx $ldir; fi;"
   else
     ldir='$(DESTDIR)$(libsubdir)'
   fi
