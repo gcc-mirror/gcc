@@ -15,3 +15,6 @@ TARGET_LIBGCC2_CFLAGS = -Wa,-force_cpusubtype_ALL
 SHLIB_MAPFILES += $(srcdir)/config/rs6000/libgcc-ppc64.ver
 
 LIB2ADDEH += $(srcdir)/config/rs6000/darwin-fallback.c
+
+darwin-fpsave.o:	$(srcdir)/config/rs6000/darwin-asm.h
+darwin-tramp.o:		$(srcdir)/config/rs6000/darwin-asm.h

@@ -33,29 +33,7 @@
  *  executable file might be covered by the GNU General Public License.
  */ 
 
-/* Some 32/64 macros, donated from /usr/include/architecture/ppc . */
-
-#if defined(__ppc64__)
-#define MODE_CHOICE(x, y) y
-#else
-#define MODE_CHOICE(x, y) x
-#endif
-
-#define cmpg    MODE_CHOICE(cmpw, cmpd)
-#define lg      MODE_CHOICE(lwz, ld)
-#define stg     MODE_CHOICE(stw, std)
-#define lgx     MODE_CHOICE(lwzx, ldx)
-#define stgx    MODE_CHOICE(stwx, stdx)
-#define lgu     MODE_CHOICE(lwzu, ldu)
-#define stgu    MODE_CHOICE(stwu, stdu)
-#define lgux    MODE_CHOICE(lwzux, ldux)
-#define stgux   MODE_CHOICE(stwux, stdux)
-#define lgwa    MODE_CHOICE(lwz, lwa)
-
-#define g_long  MODE_CHOICE(long, quad)         /* usage is ".g_long" */
-
-#define GPR_BYTES       MODE_CHOICE(4,8)        /* size of a GPR in bytes */
-#define LOG2_GPR_BYTES  MODE_CHOICE(2,3)        /* log2(GPR_BYTES) */
+#include "darwin-asm.h"
 
 /* Set up trampolines.  */
 
