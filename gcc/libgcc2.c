@@ -35,6 +35,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "tconfig.h"
 #include "tsystem.h"
+#include "hwint.h"
 
 #include "machmode.h"
 
