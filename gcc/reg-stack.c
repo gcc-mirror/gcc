@@ -1779,6 +1779,8 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 		break;
 
 	      case UNSPEC_FSCALE_FRACT:
+	      case UNSPEC_FPREM_F:
+	      case UNSPEC_FPREM1_F:
 		/* These insns operate on the top two stack slots.
 		   first part of double input, double output insn.  */
 
@@ -1808,6 +1810,8 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 		break;
 
 	      case UNSPEC_FSCALE_EXP:
+	      case UNSPEC_FPREM_U:
+	      case UNSPEC_FPREM1_U:
 		/* These insns operate on the top two stack slots./
 		   second part of double input, double output insn.  */
 
