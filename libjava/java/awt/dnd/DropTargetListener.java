@@ -1,4 +1,4 @@
-/* DragSourceAdapter.java -- drag-and-drop listener adapter
+/* DropTargetListener.java -- listen to events during the drop
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,89 +38,52 @@ exception statement from your version. */
 
 package java.awt.dnd;
 
+import java.util.EventListener;
+
 /**
- * This class implements <code>DragSourceListener</code> and
- * <code>DragSourceMotionListener</code>, and implements all methods
- * with empty bodies.  This allows a listener interested in implementing only
- * a subset of these interfaces to extend this class and override only the
- * desired methods.
- *
- * @author Eric Blake <ebb9@email.byu.edu>
- * @see DragSourceEvent
- * @see DragSourceListener
- * @see DragSourceMotionListener
- * @since 1.4
+ * @author Michael Koch <konqueror@gmx.de>
+ * @since 1.2
  * @status updated to 1.4
  */
-public abstract class DragSourceAdapter
-  implements DragSourceListener, DragSourceMotionListener
+public interface DropTargetListener extends EventListener
 {
-  /**
-   * Default constructor.
-   */
-  public DragSourceAdapter()
-  {
-  }
-
   /**
    * Called when the cursor hotspot enters a drop site which will accept the
    * drag.
    *
-   * @param e the event
+   * @param e the drag source drag event
    */
-  public void dragEnter(DragSourceDragEvent e)
-  {
-  }
+  void dragEnter (DropTargetDragEvent e);
 
   /**
    * Called when the cursor hotspot moves inside of a drop site which will
    * accept the drag.
    *
-   * @param e the event
+   * @param e the drag source drag event
    */
-  public void dragOver(DragSourceDragEvent e)
-  {
-  }
-
-  /**
-   * Called whenever the mouse is moved during a drag-and-drop operation.
-   *
-   * @param e the event
-   */
-  public void dragMouseMoved(DragSourceDragEvent e)
-  {
-  }
+  void dragOver (DropTargetDragEvent e);
 
   /**
    * Called when the user modifies the drop gesture. This is often the case
    * when additional mouse or key events are received during the drag.
    *
-   * @param e the event
+   * @param e the drag source drag event
    */
-  public void dropActionChanged(DragSourceDragEvent e)
-  {
-  }
+  void dropActionChanged (DropTargetDragEvent e);
 
   /**
    * Called when the cursor hotspot moves outside of a drop site which will
    * accept the drag. This could also happen if the drop site is no longer
    * active, or no longer accepts the drag.
    *
-   * @param e the event
+   * @param e the drag source drag event
    */
-  public void dragExit(DragSourceEvent e)
-  {
-  }
+  void dragExit (DropTargetEvent e);
 
   /**
-   * Called when the drag and drop operation is complete. After this event,
-   * <code>getDropSuccess</code> of the event is valid, and
-   * <code>getDropAction</code> holds the action requested by the drop site.
-   * Furthermore, the <code>DragSourceContext</code> is invalidated.
+   * FIXME
    *
-   * @param e the event
+   * @param e the drag source drag event
    */
-  public void dragDropEnd(DragSourceDropEvent e)
-  {
-  }
-} // class DragSourceAdapter
+  void drop (DropTargetDropEvent e);
+} // interface DropTargetListener

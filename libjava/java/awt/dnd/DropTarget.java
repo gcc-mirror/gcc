@@ -36,5 +36,183 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.awt.dnd;
-/** STUB CLASS ONLY */
-public class DropTarget {}
+
+import java.awt.Point;
+import java.awt.Component;
+import java.awt.datatransfer.FlavorMap;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.TooManyListenersException;
+
+public class DropTarget
+{
+  protected static class DropTargetAutoScroller
+    implements ActionListener
+  {
+    protected DropTargetAutoScroller (Component c, Point p)
+    {
+    }
+
+    protected void updateLocation (Point newLocn)
+    {
+    }
+
+    protected void stop ()
+    {
+    }
+
+    public void actionPerformed (ActionEvent e)
+    {
+    }
+  }
+  
+  /**
+   * FIXME
+   *
+   * @exception HeadlessException FIXME
+   */
+  public DropTarget ()
+  {
+  }
+  
+  /**
+   * FIXME
+   *
+   * @exception HeadlessException FIXME
+   */
+  public DropTarget (Component c, DropTargetListener dtl)
+  {
+  }
+  
+  /**
+   * FIXME
+   *
+   * @exception HeadlessException FIXME
+   */
+  public DropTarget (Component c, int i, DropTargetListener dtl)
+  {
+  }
+  
+  /**
+   * FIXME
+   *
+   * @exception HeadlessException FIXME
+   */
+  public DropTarget (Component c, int i, DropTargetListener dtl, boolean b)
+  {
+  }
+  
+  /**
+   * FIXME
+   *
+   * @exception HeadlessException FIXME
+   */
+  public DropTarget (Component c, int i, DropTargetListener dtl, boolean b,
+		     FlavorMap fm)
+  {
+  }
+
+  public void setComponent (Component c)
+  {
+  }
+
+  public Component getComponent ()
+  {
+    return null;
+  }
+
+  public void setDefaultActions (int ops)
+  {
+  }
+
+  public int getDefaultActions ()
+  {
+    return 0;
+  }
+
+  public void setActive(boolean isActive)
+  {
+  }
+
+  public boolean isActive()
+  {
+    return false;
+  }
+
+  /**
+   * @exception TooManyListenersException FIXME
+   */
+  public void addDropTargetListener (DropTargetListener dtl)
+    throws TooManyListenersException
+  {
+  }
+
+  public void removeDropTargetListener(DropTargetListener dtl)
+  {
+  }
+
+  public void dragEnter(DropTargetDragEvent dtde)
+  {
+  }
+
+  public void dragOver(DropTargetDragEvent dtde)
+  {
+  }
+
+  public void dropActionChanged(DropTargetDragEvent dtde)
+  {
+  }
+
+  public void dragExit(DropTargetEvent dte)
+  {
+  }
+
+  public void drop(DropTargetDropEvent dtde)
+  {
+  }
+
+  public FlavorMap getFlavorMap()
+  {
+    return null;
+  }
+
+  public void setFlavorMap(FlavorMap fm)
+  {
+  }
+
+  public void addNotify(java.awt.peer.ComponentPeer peer)
+  {
+  }
+
+  public void removeNotify(java.awt.peer.ComponentPeer peer)
+  {
+  }
+
+  public DropTargetContext getDropTargetContext()
+  {
+    return null;
+  }
+
+  protected DropTargetContext createDropTargetContext()
+  {
+    return null;
+  }
+
+  protected DropTarget.DropTargetAutoScroller createDropTargetAutoScroller
+                                                       (Component c, Point p)
+  {
+    return null;
+  }
+
+  protected void initializeAutoscrolling(Point p)
+  {
+  }
+
+  protected void updateAutoscroll(Point dragCursorLocn)
+  {
+  }
+
+  protected void clearAutoscroll()
+  {
+  }
+} // class DropTarget

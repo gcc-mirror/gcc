@@ -1,5 +1,33 @@
 2002-10-03  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/dnd/Autoscroll.java:
+	New file, merge from Classpath.
+	* java/awt/dnd/DragSourceAdapter.java:
+	(dragExit): Fixed typos in argument type.
+	(dragDropEnd): Fixed typos in argument type.
+	* java/awt/dnd/DragSourceDropEvent.java:
+	New file, merge from Classpath.
+	* java/awt/dnd/DropTarget.java:
+	Added stubs, merge from Classpath.
+	* java/awt/dnd/DropTargetAdapter.java:
+	New file, merge from Classpath.
+	* java/awt/dnd/DropTargetContext.java:
+	New file, merge from Classpath.
+	* java/awt/dnd/DropTargetDragEvent.java:
+	New file, merge from Classpath.
+	* java/awt/dnd/DropTargetDropEvent.java:
+	New file, merge from Classpath.
+	* java/awt/dnd/DropTargetEvent.java:
+	New file, merge from Classpath.
+	* java/awt/dnd/DropTargetListener.java:
+	New file, merge from Classpath.
+	* java/awt/dnd/MouseDragGestureRecognizer.java:
+	New file, merge from Classpath.
+	* java/awt/dnd/peer/DropTargetContextPeer.java:
+	New file, merge from Classpath.
+
+2002-10-03  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/DatagramPacket.java
 	(setLength): Fixed typo and be HTML-aware.
 	* java/net/InetSocketAddress.java
