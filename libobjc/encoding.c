@@ -60,7 +60,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define DFmode          _C_DBL
 
-#define get_inner_array_type(TYPE)      objc_skip_typespec(TYPE)
+#define get_inner_array_type(TYPE)      ((TYPE) + 1)
 
 
 static inline int

@@ -14,7 +14,7 @@ This document is meant to describe some of the GNU Objective-C runtime
 features. It is not intended to teach you Objective-C, there are several
 resources on the Internet that present the language.  Questions and
 comments about this document to Ovidiu Predescu
-@code{<ovidiu@@aracnet.com>}.
+@code{<ovidiu@@cup.hp.com>}.
 
 @menu
 * Executing code before main::
@@ -317,7 +317,7 @@ argument types.
 Support for a new memory management policy has been added by using a
 powerful conservative garbage collector, known as the
 Boehm-Demers-Weiser conservative garbage collector. It is available from
-@w{@url{http://reality.sgi.com/employees/boehm_mti/gc.html}}.
+@w{@uref{http://reality.sgi.com/employees/boehm_mti/gc.html}}.
 
 To enable the support for it you have to configure the compiler using an
 additional argument, @w{@kbd{--enable-objc-gc}}. You need to have
