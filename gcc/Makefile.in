@@ -2213,7 +2213,7 @@ install-common: native installdirs $(EXTRA_PARTS) lang.install-common
 	fi
 	-rm -f $(libsubdir)/cpp$(exeext)
 	$(INSTALL_PROGRAM) cpp$(exeext) $(libsubdir)/cpp$(exeext)
-	# Install gcov if it was compiled.
+# Install gcov if it was compiled.
 	-if [ -f gcov$(exeext) ]; \
 	then \
 	    rm -f $(bindir)/gcov$(exeext); \
