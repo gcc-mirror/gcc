@@ -389,8 +389,10 @@ binary_op_error (code)
     case RSHIFT_EXPR:
       opname = ">>"; break;
     case TRUNC_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
       opname = "%"; break;
     case TRUNC_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
       opname = "/"; break;
     case BIT_AND_EXPR:
       opname = "&"; break;
@@ -402,6 +404,9 @@ binary_op_error (code)
       opname = "||"; break;
     case BIT_XOR_EXPR:
       opname = "^"; break;
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
+      opname = "rotate"; break;
     }
   error ("invalid operands to binary %s", opname);
 }

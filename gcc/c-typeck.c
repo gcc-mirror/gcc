@@ -1714,6 +1714,10 @@ check_format (info, params)
       /* Check the type of the "real" argument, if there's a type we want.  */
       if (i == fci->pointer_count && wanted_type != 0
 	  && wanted_type != cur_type
+	  /* If we want `void *', allow any pointer type.
+	     (Anything else would already have got a warning.)  */
+	  && ! (wanted_type == void_type_node
+		&& fci->pointer_count > 0)
 	  /* Don't warn about differences merely in signedness.  */
 	  && !(TREE_CODE (wanted_type) == INTEGER_TYPE
 	       && TREE_CODE (cur_type) == INTEGER_TYPE
@@ -1724,9 +1728,12 @@ check_format (info, params)
   
 	  this = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (wanted_type)));
 	  that = 0;
-	  if (TYPE_NAME (cur_type) != 0)
-	    if (DECL_NAME (TYPE_NAME (cur_type)) != 0)
-	      that = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (cur_type)));
+	  if (TYPE_NAME (cur_type) != 0
+	      && TREE_CODE (cur_type) != INTEGER_TYPE
+	      && !(TREE_CODE (cur_type) == POINTER_TYPE
+		   && TREE_CODE (TREE_TYPE (cur_type)) == INTEGER_TYPE)
+	      && DECL_NAME (TYPE_NAME (cur_type)) != 0)
+	    that = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (cur_type)));
 
 	  /* A nameless type can't possibly match what the format wants.
 	     So there will be a warning for it.
@@ -1949,8 +1956,6 @@ convert_arguments (typelist, values, name)
 	      if (warn_conversion)
 		{
 		  int formal_prec = TYPE_PRECISION (type);
-		  int actual_prec = TYPE_PRECISION (TREE_TYPE (val));
-		  int int_prec = TYPE_PRECISION (integer_type_node);
 
 		  if (TREE_CODE (type) != REAL_TYPE
 		      && TREE_CODE (TREE_TYPE (val)) == REAL_TYPE)
@@ -1962,7 +1967,7 @@ convert_arguments (typelist, values, name)
 			   && TREE_CODE (TREE_TYPE (val)) == REAL_TYPE)
 		    {
 		      /* Warn if any argument is passed as `float',
-			 since withtout a prototype it would be `double'.  */
+			 since without a prototype it would be `double'.  */
 		      if (formal_prec == TYPE_PRECISION (float_type_node))
 			warning ("floating argument passed as `float' rather than `double'");
 		    }
@@ -1975,7 +1980,7 @@ convert_arguments (typelist, values, name)
 		      tree would_have_been = default_conversion (val);
 		      tree type1 = TREE_TYPE (would_have_been);
 
-		      if (TYPE_PRECISION (type) != TYPE_PRECISION (type))
+		      if (formal_prec != TYPE_PRECISION (type))
 			warning ("prototype changes width used for integer argument");
 		      else if (TREE_UNSIGNED (type) == TREE_UNSIGNED (type1))
 			;
@@ -1983,6 +1988,12 @@ convert_arguments (typelist, values, name)
 			       && int_fits_type_p (val, type))
 			/* Change in signedness doesn't matter
 			   if a constant value is unaffected.  */
+			;
+		      else if (TREE_CODE (TREE_TYPE (val)) == ENUMERAL_TYPE
+			       && int_fits_type_p (TYPE_MIN_VALUE (TREE_TYPE (val)), type)
+			       && int_fits_type_p (TYPE_MAX_VALUE (TREE_TYPE (val)), type))
+			/* Change in signedness doesn't matter
+			   if an enum value is unaffected.  */
 			;
 		      else if (TREE_UNSIGNED (type))
 			warning ("argument passed as unsigned due to prototype");
@@ -2288,6 +2299,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
       break;
 
     case TRUNC_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	shorten = 1;
       break;
@@ -4334,13 +4346,15 @@ get_spelling (errtype)
       /* Avoid counting chars */
       static char message[] = "initialization of `%s'";
       register int needed = sizeof (message) + spelling_length () + 1;
+      char *temp;
 
       if (size < 0)
 	buffer = (char *) xmalloc (size = needed);
       if (needed > size)
 	buffer = (char *) xrealloc (buffer, size = needed);
 
-      sprintf (buffer, message, print_spelling (alloca (needed)));
+      temp = (char *) alloca (needed);
+      sprintf (buffer, message, print_spelling (temp));
       return buffer;
     }
 
@@ -4429,6 +4443,7 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
      tree node which has no TREE_TYPE.  */
   int raw_constructor
     = TREE_CODE (init) == CONSTRUCTOR && TREE_TYPE (init) == 0;
+  tree inside_init = init;
 
   /* By default, assume we use one element from a list.
      We correct this later in the sole case where it is not true.  */
@@ -4444,13 +4459,13 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
-    init = TREE_OPERAND (init, 0);
+    inside_init = TREE_OPERAND (init, 0);
 
   if (init && raw_constructor
-      && CONSTRUCTOR_ELTS (init) != 0
-      && TREE_CHAIN (CONSTRUCTOR_ELTS (init)) == 0)
+      && CONSTRUCTOR_ELTS (inside_init) != 0
+      && TREE_CHAIN (CONSTRUCTOR_ELTS (inside_init)) == 0)
     {
-      element = TREE_VALUE (CONSTRUCTOR_ELTS (init));
+      element = TREE_VALUE (CONSTRUCTOR_ELTS (inside_init));
       /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
       if (element && TREE_CODE (element) == NON_LVALUE_EXPR)
 	element = TREE_OPERAND (element, 0);
@@ -4467,10 +4482,10 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 	   || typ1 == unsigned_char_type_node
 	   || typ1 == unsigned_wchar_type_node
 	   || typ1 == signed_wchar_type_node)
-	  && ((init && TREE_CODE (init) == STRING_CST)
+	  && ((inside_init && TREE_CODE (inside_init) == STRING_CST)
 	      || (element && TREE_CODE (element) == STRING_CST)))
 	{
-	  tree string = element ? element : init;
+	  tree string = element ? element : inside_init;
 
 	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (string)))
 	       != char_type_node)
@@ -4510,44 +4525,45 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
      from an expression of the same type, optionally with braces.
      For an array, this is allowed only for a string constant.  */
 
-  if (init && (TREE_TYPE (init) == type
-	       || (code == ARRAY_TYPE && TREE_TYPE (init)
-		   && comptypes (TREE_TYPE (init), type))
+  if (inside_init && (TREE_TYPE (inside_init) == type
+	       || (code == ARRAY_TYPE && TREE_TYPE (inside_init)
+		   && comptypes (TREE_TYPE (inside_init), type))
 	       || (code == POINTER_TYPE
-		   && TREE_TYPE (init) != 0
-		   && (TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE
-		       || TREE_CODE (TREE_TYPE (init)) == FUNCTION_TYPE)
-		   && comptypes (TREE_TYPE (TREE_TYPE (init)),
+		   && TREE_TYPE (inside_init) != 0
+		   && (TREE_CODE (TREE_TYPE (inside_init)) == ARRAY_TYPE
+		       || TREE_CODE (TREE_TYPE (inside_init)) == FUNCTION_TYPE)
+		   && comptypes (TREE_TYPE (TREE_TYPE (inside_init)),
 				 TREE_TYPE (type)))))
     {
       if (code == POINTER_TYPE
-	  && (TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE
-	      || TREE_CODE (TREE_TYPE (init)) == FUNCTION_TYPE))
-	init = default_conversion (init);
-      else if (code == ARRAY_TYPE && TREE_CODE (init) != STRING_CST)
+	  && (TREE_CODE (TREE_TYPE (inside_init)) == ARRAY_TYPE
+	      || TREE_CODE (TREE_TYPE (inside_init)) == FUNCTION_TYPE))
+	inside_init = default_conversion (inside_init);
+      else if (code == ARRAY_TYPE && TREE_CODE (inside_init) != STRING_CST)
 	{
 	  error_init ("array%s initialized from non-constant array expression",
 		      " `%s'", ofwhat);
 	  return error_mark_node;
 	}
 
-      if (optimize && TREE_READONLY (init) && TREE_CODE (init) == VAR_DECL)
-	init = decl_constant_value (init);
+      if (optimize && TREE_READONLY (inside_init)
+	  && TREE_CODE (inside_init) == VAR_DECL)
+	inside_init = decl_constant_value (inside_init);
 
-      if (require_constant && ! TREE_CONSTANT (init))
+      if (require_constant && ! TREE_CONSTANT (inside_init))
 	{
 	  error_init ("initializer element%s is not constant",
 		      " for `%s'", ofwhat);
-	  init = error_mark_node;
+	  inside_init = error_mark_node;
 	}
-      else if (require_constant && initializer_constant_valid_p (init) == 0)
+      else if (require_constant && initializer_constant_valid_p (inside_init) == 0)
 	{
 	  error_init ("initializer element%s is not computable at load time",
 		      " for `%s'", ofwhat);
-	  init = error_mark_node;
+	  inside_init = error_mark_node;
 	}
 
-      return init;
+      return inside_init;
     }
 
   if (element && (TREE_TYPE (element) == type
@@ -4608,7 +4624,7 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 	  push_member_name (IDENTIFIER_POINTER (DECL_NAME (field)));
 
 	  if (raw_constructor)
-	    result = process_init_constructor (type, init, 0,
+	    result = process_init_constructor (type, inside_init, 0,
 					       require_constant,
 					       constructor_constant, 0);
 	  else if (tail != 0)
@@ -4640,11 +4656,11 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 		  " `%s'", ofwhat);
 	      return error_mark_node;
 	    }
-	  init = element;
+	  inside_init = element;
 	}
 
 #if 0  /* A non-raw constructor is an actual expression.  */
-      if (TREE_CODE (init) == CONSTRUCTOR)
+      if (TREE_CODE (inside_init) == CONSTRUCTOR)
 	{
 	  error_init ("initializer for scalar%s has extra braces",
 		      " `%s'", ofwhat);
@@ -4656,24 +4672,24 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 	({
 	  if (ofwhat)
 	    push_string (ofwhat);
-	  init = convert_for_assignment (type, default_conversion (init),
+	  inside_init = convert_for_assignment (type, default_conversion (init),
 					 &initialization_message, NULL_TREE, 0);
 	});
 
-      if (require_constant && ! TREE_CONSTANT (init))
+      if (require_constant && ! TREE_CONSTANT (inside_init))
 	{
 	  error_init ("initializer element%s is not constant",
 		      " for `%s'", ofwhat);
-	  init = error_mark_node;
+	  inside_init = error_mark_node;
 	}
-      else if (require_constant && initializer_constant_valid_p (init) == 0)
+      else if (require_constant && initializer_constant_valid_p (inside_init) == 0)
 	{
 	  error_init ("initializer element%s is not computable at load time",
 		      " for `%s'", ofwhat);
-	  init = error_mark_node;
+	  inside_init = error_mark_node;
 	}
 
-      return init;
+      return inside_init;
     }
 
   /* Come here only for records and arrays.  */
@@ -4688,7 +4704,8 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
   if (code == ARRAY_TYPE || code == RECORD_TYPE)
     {
       if (raw_constructor)
-	return process_init_constructor (type, init, 0, constructor_constant,
+	return process_init_constructor (type, inside_init,
+					 0, constructor_constant,
 					 constructor_constant, ofwhat);
       else if (tail != 0)
 	{
@@ -4700,7 +4717,7 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 	/* Traditionally one can say `char x[100] = 0;'.  */
 	return process_init_constructor (type,
 					 build_nt (CONSTRUCTOR, 0,
-						   tree_cons (0, init, 0)),
+						   tree_cons (0, inside_init, 0)),
 					 0, constructor_constant,
 					 constructor_constant, ofwhat);
     }
