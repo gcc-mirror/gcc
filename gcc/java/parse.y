@@ -971,10 +971,14 @@ formal_parameter:
 		  $$ = build_tree_list ($3, $2);
 		}
 |	type error
-		{yyerror ("Missing identifier"); RECOVER;}
+		{
+		  yyerror ("Missing identifier"); RECOVER;
+		  $$ = NULL_TREE;
+		}
 |	final type error
 		{
 		  yyerror ("Missing identifier"); RECOVER;
+		  $$ = NULL_TREE;
 		}
 ;
 

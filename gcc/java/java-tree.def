@@ -51,7 +51,7 @@ DEFTREECODE (TRY_EXPR, "try-catch-finally", 'e', 2)
 DEFTREECODE (CATCH_EXPR, "catch", '1', 1)
 
 /* Synchronized statement.
-   Operand 0 is the expression on which we whish to synchronize,
+   Operand 0 is the expression on which we wish to synchronize,
    Operand 1 is the synchronized expression block.  */
 DEFTREECODE (SYNCHRONIZED_EXPR, "synchronized", 'e', 2)
 
