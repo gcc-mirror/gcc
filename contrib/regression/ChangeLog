@@ -1,3 +1,8 @@
+2004-10-26  Geoffrey Keating  <geoffk@apple.com>
+
+	* btest-gcc.sh (TESTLOGS): Examine regressions in libstdc++,
+	libffi, and libjava.
+
 2004-05-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* btest-gcc.sh: Remove g77.sum from TESTLOGS.
