@@ -2578,7 +2578,6 @@ void
 c_init_decl_processing (void)
 {
   tree endlink;
-  tree ptr_ftype_void, ptr_ftype_ptr;
   location_t save_loc = input_location;
 
   /* Initialize reserved words for parser.  */
@@ -2616,10 +2615,9 @@ c_init_decl_processing (void)
 			boolean_type_node));
 
   endlink = void_list_node;
-  ptr_ftype_void = build_function_type (ptr_type_node, endlink);
-  ptr_ftype_ptr
-    = build_function_type (ptr_type_node,
-			   tree_cons (NULL_TREE, ptr_type_node, endlink));
+  build_function_type (ptr_type_node, endlink);
+  build_function_type (ptr_type_node,
+		       tree_cons (NULL_TREE, ptr_type_node, endlink));
 
   input_location = save_loc;
 
