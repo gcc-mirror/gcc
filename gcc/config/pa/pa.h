@@ -562,7 +562,7 @@ do {								\
 
 /* Value should be nonzero if functions must have frame pointers.
    All functions have frame pointers when optimizing for space
-   (for now).
+   (for now).  */
 #define FRAME_POINTER_REQUIRED \
   (current_function_calls_alloca || TARGET_SPACE)
 
