@@ -1708,9 +1708,12 @@ extern int flag_new_for_scope;
 
 #define ANON_UNION_P(NODE) (DECL_NAME (NODE) == 0)
 
-/* Nonzero if TYPE is an anonymous union type.  */
+/* Nonzero if TYPE is an anonymous union type.  We're careful
+   accessing TYPE_IDENTIFIER because some built-in types, like
+   pointer-to-member types, do not have TYPE_NAME.  */
 #define ANON_UNION_TYPE_P(TYPE) \
   (TREE_CODE (TYPE) == UNION_TYPE \
+   && TYPE_NAME (TYPE) \
    && ANON_AGGRNAME_P (TYPE_IDENTIFIER (TYPE)))
 
 #define UNKNOWN_TYPE LANG_TYPE

@@ -32,6 +32,8 @@ static void add_friends PROTO((tree, tree, tree));
 
 /* Friend data structures are described in cp-tree.h.  */
 
+/* Returns non-zero if SUPPLICANT is a friend of TYPE.  */
+
 int
 is_friend (type, supplicant)
      tree type, supplicant;

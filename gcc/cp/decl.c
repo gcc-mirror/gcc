@@ -5192,34 +5192,29 @@ make_typename_type (context, name)
 	  if (IS_AGGR_TYPE (context))
 	    t = lookup_field (context, name, 0, 0);
 	  else
-	    t = NULL_TREE;
-
-	  if (t == NULL_TREE || TREE_CODE (t) != TEMPLATE_DECL
-	      || TREE_CODE (DECL_RESULT (t)) != TYPE_DECL)
 	    {
 	      cp_error ("no class template named `%#T' in `%#T'",
 			name, context);
 	      return error_mark_node;
 	    }
 
-	  return lookup_template_class (t, TREE_OPERAND (fullname, 1),
-					NULL_TREE, context, 
-					/*entering_scope=*/0);
+	  if (t && DECL_CLASS_TEMPLATE_P (t))
+	    return lookup_template_class (t, TREE_OPERAND (fullname, 1),
+					  NULL_TREE, context, 
+					  /*entering_scope=*/0);
 	}
       else
 	{
 	  if (IS_AGGR_TYPE (context))
 	    t = lookup_field (context, name, 0, 1);
 	  else
-	    t = NULL_TREE;
-
-	  if (t == NULL_TREE)
 	    {
 	      cp_error ("no type named `%#T' in `%#T'", name, context);
 	      return error_mark_node;
 	    }
 
-	  return TREE_TYPE (t);
+	  if (t)
+	    return TREE_TYPE (t);
 	}
     }
   

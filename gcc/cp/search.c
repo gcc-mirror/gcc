@@ -110,17 +110,21 @@ static void dfs_get_vbase_types PROTO((tree));
 static void dfs_pushdecls PROTO((tree));
 static void dfs_compress_decls PROTO((tree));
 static void dfs_unuse_fields PROTO((tree));
-static tree add_conversions PROTO((tree));
+static tree add_conversions PROTO((tree, void *));
 static tree get_virtuals_named_this PROTO((tree));
-static tree get_virtual_destructor PROTO((tree));
-static int tree_has_any_destructor_p PROTO((tree));
+static tree get_virtual_destructor PROTO((tree, void *));
+static int tree_has_any_destructor_p PROTO((tree, void *));
 static int covariant_return_p PROTO((tree, tree));
 static struct search_level *push_search_level
 	PROTO((struct stack_level *, struct obstack *));
 static struct search_level *pop_search_level
 	PROTO((struct stack_level *));
 static tree breadth_first_search
-	PROTO((tree, tree (*) (tree), int (*) (tree)));
+	PROTO((tree, tree (*) (tree, void *), int (*) (tree, void *),
+	       void (*) (tree *, tree *, void *), void *));
+static int lookup_field_queue_p PROTO((tree, void *));
+static tree lookup_field_r PROTO((tree, void *));
+static void lookup_field_post PROTO((tree *, tree *, void *));
 
 static tree vbase_types;
 static tree vbase_decl_ptr_intermediate, vbase_decl_ptr;
@@ -673,7 +677,7 @@ compute_access (basetype_path, field)
     {
       /* Are we (or an enclosing scope) friends with the class that has
          FIELD? */
-      if (is_friend (context, previous_scope))
+      if (TYPE_P (context) && is_friend (context, previous_scope))
 	PUBLIC_RETURN;
 
       /* If it's private, it's private, you letch.  */
@@ -689,6 +693,7 @@ compute_access (basetype_path, field)
 	{
 	  if (current_class_type
 	      && (static_mem || DECL_CONSTRUCTOR_P (field))
+	      && TYPE_P (context)
 	      && ACCESSIBLY_DERIVED_FROM_P (context, current_class_type))
 	    PUBLIC_RETURN;
 	  else
@@ -750,7 +755,7 @@ compute_access (basetype_path, field)
 
   if (access == access_default_node)
     {
-      if (is_friend (context, previous_scope))
+      if (TYPE_P (context) && is_friend (context, previous_scope))
 	access = access_public_node;
       else if (TREE_PRIVATE (field))
 	access = access_private_node;
@@ -849,6 +854,270 @@ lookup_fnfields_here (type, name)
   return -1;
 }
 
+struct lookup_field_info {
+  /* The name of the field for which we're looking.  */
+  tree name;
+  /* If non-NULL, the current result of the lookup.  */
+  tree rval;
+  /* The path to RVAL.  */
+  tree rval_binfo;
+  /* If non-NULL, a list of the possible candidates.  */
+  tree ambiguous;
+  /* The access computed for RVAL.  */
+  tree access;
+  /* If non-zero, we must check access.  */
+  int protect;
+  /* If non-zero, we are looking for types, not data members.  */
+  int want_type;
+  /* If something went wrong, a message indicating what.  */
+  char *errstr;
+};
+
+/* Returns non-zero if BINFO is not hidden by the value found by the
+   lookup so far.  If BINFO is hidden, then there's no need to look in
+   it.  DATA is really a struct lookup_field_info.  Called from
+   lookup_field via breadth_first_search.  */
+
+static int
+lookup_field_queue_p (binfo, data)
+     tree binfo;
+     void *data;
+{
+  struct lookup_field_info *lfi = (struct lookup_field_info *) data;
+  
+  return !(lfi->rval_binfo && hides (lfi->rval_binfo, binfo));
+}
+
+/* DATA is really a struct lookup_field_info.  Look for a field with
+   the name indicated there in BINFO.  If this function returns a
+   non-NULL value it is the result of the lookup.  Called from
+   lookup_field via breadth_first_search.  */
+
+static tree
+lookup_field_r (binfo, data)
+     tree binfo;
+     void *data;
+{
+  struct lookup_field_info *lfi = (struct lookup_field_info *) data;
+  tree type = BINFO_TYPE (binfo);
+  tree nval;
+  int idx;
+
+  /* See if the field is present in TYPE.  */
+  nval = lookup_field_1 (type, lfi->name);
+  if (!nval)
+    idx = lookup_fnfields_here (type, lfi->name);
+
+  /* If the data member wasn't present, then there's nothing further
+     to do for this type.  */
+  if (!nval && idx < 0)
+    return NULL_TREE;
+
+  /* If the lookup already found a match, and the new value doesn't
+     hide the old one, we might have an ambiguity.  */
+  if (lfi->rval_binfo && !hides (binfo, lfi->rval_binfo))
+    {
+      if (nval && nval == lfi->rval && SHARED_MEMBER_P (nval))
+	/* The two things are really the same.  */
+	;
+      else if (hides (lfi->rval_binfo, binfo))
+	/* The previous value hides the new one.  */
+	;
+      else
+	{
+	  /* We have a real ambiguity.  We keep a chain of all the
+	     candidates.  */
+	  if (!lfi->ambiguous && lfi->rval)
+	    /* This is the first time we noticed an ambiguity.  Add
+	       what we previously thought was a reasonable candidate
+	       to the list.  */
+	    lfi->ambiguous = scratch_tree_cons (NULL_TREE, lfi->rval,
+						NULL_TREE);
+	  /* If NVAL is NULL here, that means that we found a
+	     function, not a data member.  Pick a representative
+	     function, from the overload set, for use in error
+	     messages. */
+	  if (!nval)
+	    nval = OVL_CURRENT (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC
+					      (type), idx));
+	      
+	  /* Add the new value.  */
+	  lfi->ambiguous = scratch_tree_cons (NULL_TREE, nval, 
+					      lfi->ambiguous);
+	  lfi->errstr = "request for member `%D' is ambiguous";
+	}
+    }
+  else
+    {
+      /* The new lookup is the best we've got so far.  Verify that
+	 it's the kind of thing we're looking for.  */
+      if (nval)
+	{
+	  if (lfi->want_type && TREE_CODE (nval) != TYPE_DECL)
+	    {
+	      nval = purpose_member (lfi->name, CLASSTYPE_TAGS (type));
+	      if (nval)
+		nval = TYPE_MAIN_DECL (TREE_VALUE (nval));
+	    }
+	  else if (!lfi->want_type && TREE_CODE (nval) == TYPE_DECL
+		   && lookup_fnfields_here (type, lfi->name) >= 0)
+	    /* The type declaration is actually hidden by the
+	       function declaration.  */
+	    nval = NULL_TREE;
+	}
+
+      if (nval)
+	{
+	  /* The lookup found a data member.  */
+	  lfi->rval = nval;
+	  if (lfi->protect)
+	    lfi->access = compute_access (binfo, nval);
+	  /* If the thing we're looking for is a virtual base class,
+	     then we know we've got what we want at this point;
+	     there's no way to get an ambiguity.  */
+	  if (VBASE_NAME_P (lfi->name))
+	    return nval;
+	}
+      else
+	/* The lookup found a function member.  This lookup hides
+	   whatever was there before, so even though we're not
+	   interested in this value we keep track of the way in
+	   which we found the function.  Subsequent lookups
+	   shouldn't find a data member if it is hidden by this
+	   function member.  */
+	lfi->rval = NULL_TREE;
+
+      lfi->rval_binfo = binfo;
+    }
+
+  return 0;
+}
+
+/* Check to see if the result of the field lookup (as indicated by
+   DATA, which is really a struct field_info) has any access other
+   than that we previously computed.  SEARCH_HEAD and SEARCH_TAIL
+   bound the path taken to find the result.  Called from lookup_field
+   via breadth_first_search.  */
+
+static void
+lookup_field_post (search_head, search_tail, data)
+     tree *search_head;
+     tree *search_tail;
+     void *data;
+{
+  struct lookup_field_info *lfi = (struct lookup_field_info *) data;
+  tree rval = lfi->rval;
+  tree own_access = access_default_node;
+  tree *tp;
+
+  /* If we didn't find anything, or we found ambiguous function
+     declarations, but no data members, just return.  */
+  if (!rval)
+    {
+      lfi->errstr = 0;
+      return;
+    }
+
+  /* If we've already hit a snag, we're done.  */
+  if (lfi->errstr)
+    return;
+
+  /* Check accessibility.  */
+  if (lfi->protect)
+    {
+      /* If is possible for one of the derived types on the path to
+	 have defined special access for this field.  Look for such
+	 declarations and report an error if a conflict is found.  */
+      if (DECL_LANG_SPECIFIC (rval) && DECL_ACCESS (rval))
+	for (tp = search_head; tp < search_tail; ++tp)
+	  {
+	    tree new_v = NULL_TREE;
+	
+	    if (lfi->access != access_default_node)
+	      new_v = compute_access (*tp, lfi->rval);
+	    if (lfi->access != access_default_node && new_v != lfi->access)
+	      {
+		lfi->errstr = "conflicting access to member `%D'";
+		lfi->access = access_default_node;
+		return; 
+	      }
+	    own_access = new_v;
+	    tp++;
+	  }
+  
+      /* Check to see that access to the member is allowed.  */
+      if (own_access == access_private_node)
+	lfi->errstr = "member `%D' declared private";
+      else if (own_access == access_protected_node)
+	lfi->errstr = "member `%D' declared protected";
+      else if (lfi->access == access_private_node)
+	lfi->errstr = TREE_PRIVATE (lfi->rval)
+	  ? "member `%D' is private"
+	  : "member `%D' is from private base class";
+      else if (lfi->access== access_protected_node)
+	lfi->errstr = TREE_PROTECTED (rval)
+	  ? "member `%D' is protected"
+	  : "member `%D' is from protected base class";
+    }
+
+  /* The implicit typename extension allows us to find type
+     declarations in dependent base clases.  It also handles
+     out-of-class definitions where the enclosing class is a
+     template.  For example:
+
+       template <class T> struct S { struct I { void f(); }; };
+       template <class T> void S<T>::I::f() {}
+
+     will come through here to handle `S<T>::I'.  The bottom line is
+     that while searching for the field, we will have happily
+     descended into dependent base classes, and we must now figure out
+     what to do about it.  */
+
+  /* If we're not in a template, or the search terminated in the
+     current class, then there's no problem.  */
+  if (!processing_template_decl 
+      || currently_open_class (BINFO_TYPE (lfi->rval_binfo)))
+    return;
+  
+  /* We need to return a member template class so we can define partial
+     specializations.  Is there a better way?  */
+  if (DECL_CLASS_TEMPLATE_P (rval))
+    return;
+
+  /* Walk the path to the base in which the search finally suceeded,
+     checking for dependent bases along the way.  */
+  for (tp = (currently_open_class (BINFO_TYPE (*search_head)))
+	 ? search_head + 1 : search_head; 
+       tp < search_tail; 
+       ++tp)
+    {
+      if (!uses_template_parms (BINFO_TYPE (*tp)))
+	continue;
+
+      if (TREE_CODE (rval) != TYPE_DECL)
+	{
+	  /* The thing we're looking for isn't a type, so the implicit
+	     typename extension doesn't apply, so we just pretend we
+	     didn't find anything.  */
+	  lfi->rval = NULL_TREE;
+	  return;
+	}
+
+      /* We've passed a dependent base on our way to finding the
+	 type.  So, create an implicit typename type.  The appropriate
+         context for the typename is *TP.  But, there's a small catch;
+         the base classes for a partial instantiation are not correct,
+	 because we don't tsubst into them when we do the partial
+	 instantiation.  So, we just use the context of the current
+	 class type.  */
+      lfi->rval = TYPE_STUB_DECL (build_typename_type 
+				  (BINFO_TYPE (*search_head), 
+				   lfi->name, lfi->name, 
+				   TREE_TYPE (rval)));
+      return;
+    }
+}
+
 /* Look for a field named NAME in an inheritance lattice dominated by
    XBASETYPE.  PROTECT is zero if we can avoid computing access
    information, otherwise it is 1.  WANT_TYPE is 1 when we should only
@@ -863,14 +1132,9 @@ lookup_field (xbasetype, name, protect, want_type)
      register tree xbasetype, name;
      int protect, want_type;
 {
-  int head = 0, tail = 0;
-  tree rval, rval_binfo = NULL_TREE, rval_binfo_h = NULL_TREE;
-  tree type = NULL_TREE, basetype_chain, basetype_path = NULL_TREE;
-  tree this_v = access_default_node;
-  tree entry, binfo, binfo_h;
-  tree own_access = access_default_node;
-  int vbase_name_p = VBASE_NAME_P (name);
-  tree ambiguous = NULL_TREE;
+  tree rval, rval_binfo = NULL_TREE;
+  tree type = NULL_TREE, basetype_path = NULL_TREE;
+  struct lookup_field_info lfi;
 
   /* rval_binfo is the binfo associated with the found member, note,
      this can be set with useful information, even when rval is not
@@ -887,6 +1151,8 @@ lookup_field (xbasetype, name, protect, want_type)
      found along any line.  (mrs)  */
 
   char *errstr = 0;
+
+  bzero (&lfi, sizeof (lfi));
 
 #if 0
   /* We cannot search for constructor/destructor names like this.  */
@@ -927,304 +1193,29 @@ lookup_field (xbasetype, name, protect, want_type)
   n_calls_lookup_field++;
 #endif /* GATHER_STATISTICS */
 
-  rval = lookup_field_1 (type, name);
+  lfi.name = name;
+  lfi.protect = protect;
+  lfi.want_type = want_type;
+  lfi.access = access_default_node;
+  breadth_first_search (basetype_path, &lookup_field_r, 
+			&lookup_field_queue_p, &lookup_field_post, &lfi);
+  rval = lfi.rval;
+  rval_binfo = lfi.rval_binfo;
+  if (rval_binfo)
+    type = BINFO_TYPE (rval_binfo);
+  errstr = lfi.errstr;
 
-  if (rval || lookup_fnfields_here (type, name) >= 0)
-    {
-      if (rval)
-	{
-	  if (want_type)
-	    {
-	      if (TREE_CODE (rval) != TYPE_DECL)
-		{
-		  rval = purpose_member (name, CLASSTYPE_TAGS (type));
-		  if (rval)
-		    rval = TYPE_MAIN_DECL (TREE_VALUE (rval));
-		}
-	    }
-	  else
-	    {
-	      if (TREE_CODE (rval) == TYPE_DECL
-		  && lookup_fnfields_here (type, name) >= 0)
-		rval = NULL_TREE;
-	    }
-	}
-
-      if (protect && rval)
-	{
-	  if (TREE_PRIVATE (rval) | TREE_PROTECTED (rval))
-	    this_v = compute_access (basetype_path, rval);
-	  if (TREE_CODE (rval) == CONST_DECL)
-	    {
-	      if (this_v == access_private_node)
-		errstr = "enum `%D' is a private value of class `%T'";
-	      else if (this_v == access_protected_node)
-		errstr = "enum `%D' is a protected value of class `%T'";
-	    }
-	  else
-	    {
-	      if (this_v == access_private_node)
-		errstr = "member `%D' is a private member of class `%T'";
-	      else if (this_v == access_protected_node)
-		errstr = "member `%D' is a protected member of class `%T'";
-	    }
-	}
-
-      rval_binfo = basetype_path;
-      goto out;
-    }
-
-  basetype_chain = build_expr_list (NULL_TREE, basetype_path);
-
-  /* The ambiguity check relies upon breadth first searching.  */
-
-  search_stack = push_search_level (search_stack, &search_obstack);
-  binfo = basetype_path;
-  binfo_h = binfo;
-
-  while (1)
-    {
-      tree binfos = BINFO_BASETYPES (binfo);
-      int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-      tree nval;
-      int idx = -1;
-
-      /* Process and/or queue base types.  */
-      for (i = 0; i < n_baselinks; i++)
-	{
-	  tree base_binfo = TREE_VEC_ELT (binfos, i);
-	  if (BINFO_FIELDS_MARKED (base_binfo) == 0)
-	    {
-	      tree btypes;
-
-	      SET_BINFO_FIELDS_MARKED (base_binfo);
-	      btypes = scratch_tree_cons (NULL_TREE, base_binfo, basetype_chain);
-	      if (TREE_VIA_VIRTUAL (base_binfo))
-		btypes = scratch_tree_cons (NULL_TREE,
-				    TYPE_BINFO (BINFO_TYPE (TREE_VEC_ELT (BINFO_BASETYPES (binfo_h), i))),
-				    btypes);
-	      else
-		btypes = scratch_tree_cons (NULL_TREE,
-				    TREE_VEC_ELT (BINFO_BASETYPES (binfo_h), i),
-				    btypes);
-	      obstack_ptr_grow (&search_obstack, btypes);
-	      tail += 1;
-	      if (tail >= search_stack->limit)
-		my_friendly_abort (98);
-	    }
-	}
-
-      /* Process head of queue, if one exists.  */
-      if (head >= tail)
-	break;
-
-      basetype_chain = search_stack->first[head++];
-      binfo_h = TREE_VALUE (basetype_chain);
-      basetype_chain = TREE_CHAIN (basetype_chain);
-      basetype_path = TREE_VALUE (basetype_chain);
-      if (TREE_CHAIN (basetype_chain))
-	my_friendly_assert
-	  ((BINFO_INHERITANCE_CHAIN (basetype_path)
-	    == TREE_VALUE (TREE_CHAIN (basetype_chain)))
-	   /* We only approximate base info for partial instantiations.  */ 
-	   || current_template_parms,
-	   980827);
-      else
-	my_friendly_assert (BINFO_INHERITANCE_CHAIN (basetype_path)
-			    == NULL_TREE, 980827);
-
-      binfo = basetype_path;
-      type = BINFO_TYPE (binfo);
-
-      /* See if we can find NAME in TYPE.  If RVAL is nonzero,
-	 and we do find NAME in TYPE, verify that such a second
-	 sighting is in fact valid.  */
-
-      nval = lookup_field_1 (type, name);
-
-      if (nval || (idx = lookup_fnfields_here (type, name)) >= 0)
-	{
-	  if (nval && nval == rval && SHARED_MEMBER_P (nval))
-	    {
-	      /* This is ok, the member found is the same [class.ambig] */
-	    }
-	  else if (rval_binfo && hides (rval_binfo_h, binfo_h))
-	    {
-	      /* This is ok, the member found is in rval_binfo, not
-		 here (binfo).  */
-	    }
-	  else if (rval_binfo==NULL_TREE || hides (binfo_h, rval_binfo_h))
-	    {
-	      /* This is ok, the member found is here (binfo), not in
-		 rval_binfo.  */
-	      if (nval)
-		{
-		  rval = nval;
-		  if (protect)
-		    this_v = compute_access (basetype_path, rval);
-		  /* These may look ambiguous, but they really are not.  */
-		  if (vbase_name_p)
-		    break;
-		}
-	      else
-		{
-		  /* Undo finding it before, as something else hides it.  */
-		  rval = NULL_TREE;
-		}
-	      rval_binfo = binfo;
-	      rval_binfo_h = binfo_h;
-	    }
-	  else
-	    {
-	      /* This is ambiguous. Remember it. */
-	      if (! ambiguous)
-	        {
-	          errstr = "request for member `%D' is ambiguous";
-	          protect += 2;
-	          if (rval)
-	            ambiguous = scratch_tree_cons (NULL_TREE, rval, ambiguous);
-	        }
-	      if (! nval)
-	        {
-	          nval = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), idx);
-	          nval = OVL_CURRENT (nval);
-	        }
-              ambiguous = scratch_tree_cons (NULL_TREE, nval, ambiguous);
-	    }
-	}
-    }
-  {
-    tree *tp = search_stack->first;
-    tree *search_tail = tp + tail;
-
-    if (rval_binfo)
-      {
-	type = BINFO_TYPE (rval_binfo);
-
-	if (rval)
-	  {
-	    if (want_type)
-	      {
-		if (TREE_CODE (rval) != TYPE_DECL)
-		  {
-		    rval = purpose_member (name, CLASSTYPE_TAGS (type));
-		    if (rval)
-		      rval = TYPE_MAIN_DECL (TREE_VALUE (rval));
-		  }
-	      }
-	    else
-	      {
-		if (TREE_CODE (rval) == TYPE_DECL
-		    && lookup_fnfields_here (type, name) >= 0)
-		  rval = NULL_TREE;
-	      }
-	  }
-      }
-
-    if (rval == NULL_TREE)
-      errstr = 0;
-
-    /* If this FIELD_DECL defines its own access level, deal with that.  */
-    if (rval && errstr == 0
-	&& (protect & 1)
-	&& DECL_LANG_SPECIFIC (rval)
-	&& DECL_ACCESS (rval))
-      {
-	while (tp < search_tail)
-	  {
-	    /* If is possible for one of the derived types on the path to
-	       have defined special access for this field.  Look for such
-	       declarations and report an error if a conflict is found.  */
-	    tree new_v = NULL_TREE;
-
-	    if (this_v != access_default_node)
-	      new_v = compute_access (TREE_VALUE (TREE_CHAIN (*tp)), rval);
-	    if (this_v != access_default_node && new_v != this_v)
-	      {
-		errstr = "conflicting access to member `%D'";
-		this_v = access_default_node;
-	      }
-	    own_access = new_v;
-	    CLEAR_BINFO_FIELDS_MARKED (TREE_VALUE (TREE_CHAIN (*tp)));
-	    tp += 1;
-	  }
-      }
-    else
-      {
-	while (tp < search_tail)
-	  {
-	    CLEAR_BINFO_FIELDS_MARKED (TREE_VALUE (TREE_CHAIN (*tp)));
-	    tp += 1;
-	  }
-      }
-  }
-  search_stack = pop_search_level (search_stack);
-
-  if (errstr == 0)
-    {
-      if (own_access == access_private_node)
-	errstr = "member `%D' declared private";
-      else if (own_access == access_protected_node)
-	errstr = "member `%D' declared protected";
-      else if (this_v == access_private_node)
-	errstr = TREE_PRIVATE (rval)
-	  ? "member `%D' is private"
-	    : "member `%D' is from private base class";
-      else if (this_v == access_protected_node)
-	errstr = TREE_PROTECTED (rval)
-	  ? "member `%D' is protected"
-	    : "member `%D' is from protected base class";
-    }
-
- out:
-  if (protect == 2)
-    {
-      /* If we are not interested in ambiguities, don't report them,
-	 just return NULL_TREE.  */
-      rval = NULL_TREE;
-      protect = 0;
-    }
+  /* If we are not interested in ambiguities, don't report them;
+     just return NULL_TREE.  */
+  if (!protect && lfi.ambiguous)
+    return NULL_TREE;
 
   if (errstr && protect)
     {
       cp_error (errstr, name, type);
-      if (ambiguous)
-        print_candidates (ambiguous);
+      if (lfi.ambiguous)
+        print_candidates (lfi.ambiguous);
       rval = error_mark_node;
-    }
-
-  /* Do implicit typename stuff.  This code also handles out-of-class
-     definitions of nested classes whose enclosing class is a
-     template.  For example:
-    
-       template <class T> struct S { struct I { void f(); }; };
-       template <class T> void S<T>::I::f() {}
-
-     will come through here to handle `S<T>::I'.  */
-  if (rval && processing_template_decl
-      && ! currently_open_class (BINFO_TYPE (rval_binfo))
-      && uses_template_parms (type))
-    {
-      /* We need to return a member template class so we can define partial
-	 specializations.  Is there a better way?  */
-      if (DECL_CLASS_TEMPLATE_P (rval))
-	return rval;
-
-      /* Don't return a non-type.  Actually, we ought to return something
-	 so lookup_name_real can give a warning.  */
-      if (TREE_CODE (rval) != TYPE_DECL)
-	return NULL_TREE;
-
-      binfo = rval_binfo;
-      for (; ; binfo = BINFO_INHERITANCE_CHAIN (binfo))
-	if (BINFO_INHERITANCE_CHAIN (binfo) == NULL_TREE
-	    || (BINFO_TYPE (BINFO_INHERITANCE_CHAIN (binfo))
-		== current_class_type))
-	  break;
-
-      entry = build_typename_type (BINFO_TYPE (binfo), name,  name, 
-				   TREE_TYPE (rval));
-      return TYPE_STUB_DECL (entry);
     }
 
   return rval;
@@ -1625,19 +1616,29 @@ lookup_member (xbasetype, name, protect, want_type)
 /* Search a multiple inheritance hierarchy by breadth-first search.
 
    BINFO is an aggregate type, possibly in a multiple-inheritance hierarchy.
-   TESTFN is a function, which, if true, means that our condition has been met,
-   and its return value should be returned.
+   TESTFN is a function, which, if true, means that our condition has
+   been met, and its return value should be returned.
    QFN, if non-NULL, is a predicate dictating whether the type should
-   even be queued.  */
+   even be queued.  
+   POSTFN, if non-NULL, is a function to call before returning.  It is
+   passed an array whose first element is the most derived type in the
+   chain, and whose last element is the least derived type. 
+   
+   All of the functions are also passed the DATA, which they may use
+   as they see fit.  */
 
 static tree
-breadth_first_search (binfo, testfn, qfn)
+breadth_first_search (binfo, testfn, qfn, postfn, data)
      tree binfo;
-     tree (*testfn) PROTO((tree));
-     int (*qfn) PROTO((tree));
+     tree (*testfn) PROTO((tree, void *));
+     int (*qfn) PROTO((tree, void *));
+     void (*postfn) PROTO((tree *, tree *, void *));
+     void *data;
 {
   int head = 0, tail = 0;
   tree rval = NULL_TREE;
+  tree *tp;
+  tree *search_tail;
 
   search_stack = push_search_level (search_stack, &search_obstack);
 
@@ -1645,19 +1646,32 @@ breadth_first_search (binfo, testfn, qfn)
   obstack_ptr_grow (&search_obstack, binfo);
   ++tail;
 
-  while (1)
+  while (head < tail)
     {
-      tree binfos = BINFO_BASETYPES (binfo);
-      int n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+      tree binfos;
+      int n_baselinks;
       int i;
 
-      /* Process and/or queue base types.  */
+      /* Pull the next type out of the queue.  */
+      binfo = search_stack->first[head++];
+
+      /* If this is the one we're looking for, we're done.  */
+      rval = (*testfn) (binfo, data);
+      if (rval)
+	break;
+
+      /* Queue up the base types.  */
+      binfos = BINFO_BASETYPES (binfo);
+      n_baselinks = binfos ? TREE_VEC_LENGTH (binfos): 0;
       for (i = 0; i < n_baselinks; i++)
 	{
 	  tree base_binfo = TREE_VEC_ELT (binfos, i);
 
+	  if (TREE_VIA_VIRTUAL (base_binfo))
+	    base_binfo = TYPE_BINFO (BINFO_TYPE (base_binfo));
+
 	  if (BINFO_MARKED (base_binfo) == 0
-	      && (qfn == 0 || (*qfn) (base_binfo)))
+	      && (qfn == 0 || (*qfn) (base_binfo, data)))
 	    {
 	      SET_BINFO_MARKED (base_binfo);
 	      obstack_ptr_grow (&search_obstack, base_binfo);
@@ -1666,26 +1680,19 @@ breadth_first_search (binfo, testfn, qfn)
 		my_friendly_abort (100);
 	    }
 	}
-      /* Process head of queue, if one exists.  */
-      if (head >= tail)
-	{
-	  rval = 0;
-	  break;
-	}
-
-      binfo = search_stack->first[head++];
-      if ((rval = (*testfn) (binfo)))
-	break;
     }
-  {
-    tree *tp = search_stack->first;
-    tree *search_tail = tp + tail;
-    while (tp < search_tail)
-      {
-	tree binfo = *tp++;
-	CLEAR_BINFO_MARKED (binfo);
-      }
-  }
+
+  tp = search_stack->first;
+  search_tail = tp + tail;
+  
+  if (postfn)
+    (*postfn) (tp, search_tail, data);
+  
+  while (tp < search_tail)
+    {
+      tree binfo = *tp++;
+      CLEAR_BINFO_MARKED (binfo);
+    }
 
   search_stack = pop_search_level (search_stack);
   return rval;
@@ -1723,8 +1730,9 @@ get_virtuals_named_this (binfo)
 }
 
 static tree
-get_virtual_destructor (binfo)
+get_virtual_destructor (binfo, data)
      tree binfo;
+     void *data;
 {
   tree type = BINFO_TYPE (binfo);
   if (TYPE_HAS_DESTRUCTOR (type)
@@ -1734,8 +1742,9 @@ get_virtual_destructor (binfo)
 }
 
 static int
-tree_has_any_destructor_p (binfo)
+tree_has_any_destructor_p (binfo, data)
      tree binfo;
+     void *data;
 {
   tree type = BINFO_TYPE (binfo);
   return TYPE_NEEDS_DESTRUCTOR (type);
@@ -1824,7 +1833,7 @@ get_matching_virtual (binfo, fndecl, dtorp)
     {
       return breadth_first_search (binfo,
 				   get_virtual_destructor,
-				   tree_has_any_destructor_p);
+				   tree_has_any_destructor_p, 0, 0);
     }
   else
     {
@@ -3310,13 +3319,14 @@ reinit_search_statistics ()
 
 #define scratch_tree_cons expr_tree_cons
 
-static tree conversions;
 static tree
-add_conversions (binfo)
+add_conversions (binfo, data)
      tree binfo;
+     void *data;
 {
   int i;
   tree method_vec = CLASSTYPE_METHOD_VEC (BINFO_TYPE (binfo));
+  tree *conversions = (tree *) data;
 
   for (i = 2; i < TREE_VEC_LENGTH (method_vec); ++i)
     {
@@ -3331,7 +3341,7 @@ add_conversions (binfo)
       /* Make sure we don't already have this conversion.  */
       if (! IDENTIFIER_MARKED (name))
 	{
-	  conversions = scratch_tree_cons (binfo, tmp, conversions);
+	  *conversions = scratch_tree_cons (binfo, tmp, *conversions);
 	  IDENTIFIER_MARKED (name) = 1;
 	}
     }
@@ -3343,11 +3353,11 @@ lookup_conversions (type)
      tree type;
 {
   tree t;
-
-  conversions = NULL_TREE;
+  tree conversions = NULL_TREE;
 
   if (TYPE_SIZE (type))
-    breadth_first_search (TYPE_BINFO (type), add_conversions, 0);
+    breadth_first_search (TYPE_BINFO (type), add_conversions,
+			  0, 0, &conversions);
 
   for (t = conversions; t; t = TREE_CHAIN (t))
     IDENTIFIER_MARKED (DECL_NAME (OVL_CURRENT (TREE_VALUE (t)))) = 0;
