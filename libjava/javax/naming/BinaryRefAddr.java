@@ -50,6 +50,7 @@ import java.util.Arrays;
  */
 public class BinaryRefAddr extends RefAddr
 {
+  static final long serialVersionUID = -3415254970957330361L;
 
   /**
    * The possibly null content of this RefAddr.

@@ -153,8 +153,8 @@ public abstract class Collator implements Comparator, Cloneable
    * @param str1 The first object to compare
    * @param str2 The second object to compare
    *
-   * @return A negative integer if str1 < str2, 0 if str1 == str2, or
-   * a positive integer if str1 > str2. 
+   * @return A negative integer if str1 &lt; str2, 0 if str1 == str2, or
+   * a positive integer if str1 &gt; str2. 
    */
   public abstract int compare (String source, String target);
 
@@ -167,8 +167,8 @@ public abstract class Collator implements Comparator, Cloneable
    * @param obj1 The first object to compare
    * @param obj2 The second object to compare
    *
-   * @return A negative integer if obj1 < obj2, 0 if obj1 == obj2, or
-   * a positive integer if obj1 > obj2. 
+   * @return A negative integer if obj1 &lt; obj2, 0 if obj1 == obj2, or
+   * a positive integer if obj1 &gt; obj2. 
    *
    * @exception ClassCastException If the arguments are not instances
    * of <code>String</code>. 

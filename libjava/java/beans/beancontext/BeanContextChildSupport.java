@@ -60,7 +60,11 @@ import java.io.Serializable;
  * @see java.beans.beancontext.BeanContextChild
  */
 
-public class BeanContextChildSupport implements BeanContextChild, BeanContextServicesListener, Serializable {
+public class BeanContextChildSupport
+  implements BeanContextChild, BeanContextServicesListener, Serializable
+{
+  static final long serialVersionUID = 6328947014421475877L;
+
 	/**
 	 * The peer on which to perform <code>set</code> actions.
 	 * This is here so that this class can be used as a peer.

@@ -62,6 +62,8 @@ import java.io.Serializable;
  */
 public interface Name extends Cloneable, Serializable
 {
+  static final long serialVersionUID = -3617482732056931635L;
+
   /**
    * Returns the number of components of this <code>Name</code>.
    * The returned number can be zero.
