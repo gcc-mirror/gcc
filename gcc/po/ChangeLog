@@ -1,3 +1,17 @@
+2004-01-24  Matthias Klose  <doko@debian.org>
+
+	* gcc.pot: Regenerated.
+	* be.po: Update to latest version.
+	* da.po: Likewise.
+	* de.po: Likewise.
+	* el.po: Likewise.
+	* es.po: Likewise.
+	* fr.po: Likewise.
+	* ja.po: Likewise.
+	* nl.po: Likewise.
+	* sv.po: Likewise.
+	* tr.po: Likewise.
+
 2003-10-16  Release Manager
 
 	* GCC 3.3.2 Released.
