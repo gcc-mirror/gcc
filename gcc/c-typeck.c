@@ -1709,8 +1709,10 @@ convert_arguments (typelist, values, name, fundecl)
 		      if (formal_prec == TYPE_PRECISION (float_type_node))
 			warn_for_assignment ("%s as `float' rather than `double' due to prototype", (char *) 0, name, parmnum + 1);
 		    }
-		  /* Detect integer changing in width or signedness.  */
-		  else if (INTEGRAL_TYPE_P (type)
+		  /* Detect integer changing in width or signedness.
+		     These warnings are only activated with
+		     -Wconversion, not with -Wtraditional.  */
+		  else if (warn_conversion && INTEGRAL_TYPE_P (type)
 			   && INTEGRAL_TYPE_P (TREE_TYPE (val)))
 		    {
 		      tree would_have_been = default_conversion (val);
@@ -1755,15 +1757,10 @@ convert_arguments (typelist, values, name, fundecl)
 		      else if (TYPE_PRECISION (TREE_TYPE (val)) < TYPE_PRECISION (type)
 			       && TREE_UNSIGNED (TREE_TYPE (val)))
 			;
-		      /* These warnings are only activated with
-                         -Wconversion, not with -Wtraditional.  */
-		      else if (warn_conversion)
-		        {
-			  if (TREE_UNSIGNED (type))
-			    warn_for_assignment ("%s as unsigned due to prototype", (char *) 0, name, parmnum + 1);
-			  else
-			    warn_for_assignment ("%s as signed due to prototype", (char *) 0, name, parmnum + 1);
-			}
+		      else if (TREE_UNSIGNED (type))
+			warn_for_assignment ("%s as unsigned due to prototype", (char *) 0, name, parmnum + 1);
+		      else
+			warn_for_assignment ("%s as signed due to prototype", (char *) 0, name, parmnum + 1);
 		    }
 		}
 

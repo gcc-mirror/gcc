@@ -1,3 +1,10 @@
+2001-04-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-typeck.c (convert_arguments): Don't check for width changes
+	with -Wtraditional.
+
+	* invoke.texi (-Wtraditional): Update documentation.
+
 2001-04-16  Zack Weinberg  <zackw@stanford.edu>
 
 	* toplev.c (output_lang_identify): Delete.
