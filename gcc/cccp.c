@@ -333,9 +333,6 @@ static enum {dump_none, dump_only, dump_names, dump_definitions}
    where they are defined.  */
 static int debug_output = 0;
 
-/* Holds local startup time.  */
-static struct tm *timebuf = NULL;
-
 /* Nonzero indicates special processing used by the pcp program.  The
    special effects of this mode are: 
      
@@ -3433,6 +3430,17 @@ handle_directive (ip, op)
   return 0;
 }
 
+static struct tm *
+timestamp ()
+{
+  static struct tm *timebuf;
+  if (!timebuf) {
+    time_t t = time (0);
+    timebuf = localtime (&t);
+  }
+  return timebuf;
+}
+
 static char *monthnames[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
 			     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 			    };
@@ -3451,6 +3459,7 @@ special_symbol (hp, op)
   int i, len;
   int true_indepth;
   FILE_BUF *ip = NULL;
+  struct tm *timebuf;
 
   int paren = 0;		/* For special `defined' keyword */
 
@@ -3536,6 +3545,7 @@ special_symbol (hp, op)
   case T_DATE:
   case T_TIME:
     buf = (char *) alloca (20);
+    timebuf = timestamp ();
     if (hp->type == T_DATE)
       sprintf (buf, "\"%s %2d %4d\"", monthnames[timebuf->tm_mon],
 	      timebuf->tm_mday, timebuf->tm_year + 1900);
@@ -8055,11 +8065,6 @@ initialize_builtins (inp, outp)
      FILE_BUF *inp;
      FILE_BUF *outp;
 {
-  time_t t;
-
-  t = time (0);
-  timebuf = localtime (&t);
-
   install ("__LINE__", -1, T_SPECLINE, 0, -1);
   install ("__DATE__", -1, T_DATE, 0, -1);
   install ("__FILE__", -1, T_FILE, 0, -1);
@@ -8082,6 +8087,7 @@ initialize_builtins (inp, outp)
     {
       char directive[2048];
       register struct directive *dp = &directive_table[0];
+      struct tm *timebuf = timestamp ();
 
       sprintf (directive, " __BASE_FILE__ \"%s\"\n",
 	       instack[0].nominal_fname);

@@ -1040,7 +1040,7 @@ rtx *global_const_equiv_map;
 /* Integrate the procedure defined by FNDECL.  Note that this function
    may wind up calling itself.  Since the static variables are not
    reentrant, we do not assign them until after the possibility
-   or recursion is eliminated.
+   of recursion is eliminated.
 
    If IGNORE is nonzero, do not produce a value.
    Otherwise store the value in TARGET if it is nonzero and that is convenient.
@@ -1557,6 +1557,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 
 	case CODE_LABEL:
 	  copy = emit_label (map->label_map[CODE_LABEL_NUMBER (insn)]);
+	  LABEL_NAME (copy) = LABEL_NAME (insn);
 	  map->const_age++;
 	  break;
 
