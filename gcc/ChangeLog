@@ -1,3 +1,7 @@
+2002-02-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.md (call_internal_reg_64bit): Remove unused variable.
+
 2002-02-04  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/arm.h (machine_function): Add uses_anonymous_args

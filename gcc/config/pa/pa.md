@@ -5877,8 +5877,6 @@
   "TARGET_64BIT"
   "*
 {
-  rtx xoperands[2];
-
   /* ??? Needs more work.  Length computation, split into multiple insns,
      do not use %r22 directly, expose delay slot.  */
   return \"ldd 16(%0),%%r2\;ldd 24(%0),%%r27\;bve,l (%%r2),%%r2\;nop\";
