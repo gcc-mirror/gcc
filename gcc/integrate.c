@@ -1463,7 +1463,7 @@ copy_insn_list (insns, map, static_chain_value)
 	    {
 #ifdef HAVE_cc0
 	      /* If the previous insn set cc0 for us, delete it.  */
-	      if (sets_cc0_p (PREV_INSN (copy)))
+	      if (only_sets_cc0_p (PREV_INSN (copy)))
 		delete_insn (PREV_INSN (copy));
 #endif
 

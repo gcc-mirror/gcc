@@ -1714,6 +1714,7 @@ extern rtx condjump_label		PARAMS ((rtx));
 extern int simplejump_p			PARAMS ((rtx));
 extern int returnjump_p			PARAMS ((rtx));
 extern int onlyjump_p			PARAMS ((rtx));
+extern int only_sets_cc0_p		PARAMS ((rtx));
 extern int sets_cc0_p			PARAMS ((rtx));
 extern int invert_jump_1		PARAMS ((rtx, rtx));
 extern int invert_jump			PARAMS ((rtx, rtx, int));

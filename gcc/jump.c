@@ -1265,6 +1265,23 @@ onlyjump_p (insn)
 
 #ifdef HAVE_cc0
 
+/* Return non-zero if X is an RTX that only sets the condition codes
+   and has no side effects.  */
+
+int
+only_sets_cc0_p (x)
+     rtx x;
+{
+
+  if (! x)
+    return 0;
+
+  if (INSN_P (x))
+    x = PATTERN (x);
+
+  return sets_cc0_p (x) == 1 && ! side_effects_p (x);
+}
+
 /* Return 1 if X is an RTX that does nothing but set the condition codes
    and CLOBBER or USE registers.
    Return -1 if X does explicitly set the condition codes,
@@ -1272,8 +1289,15 @@ onlyjump_p (insn)
 
 int
 sets_cc0_p (x)
-     rtx x ATTRIBUTE_UNUSED;
+     rtx x;
 {
+
+  if (! x)
+    return 0;
+
+  if (INSN_P (x))
+    x = PATTERN (x);
+
   if (GET_CODE (x) == SET && SET_DEST (x) == cc0_rtx)
     return 1;
   if (GET_CODE (x) == PARALLEL)

@@ -3008,7 +3008,7 @@ merge_blocks_nomove (a, b)
 #ifdef HAVE_cc0
       /* If this was a conditional jump, we need to also delete
 	 the insn that set cc0.  */
-      if (prev && sets_cc0_p (prev))
+      if (only_sets_cc0_p (prev))
 	{
 	  rtx tmp = prev;
 	  prev = prev_nonnote_insn (prev);
@@ -4213,7 +4213,7 @@ tidy_fallthru_edge (e, b, c)
 #ifdef HAVE_cc0
       /* If this was a conditional jump, we need to also delete
 	 the insn that set cc0.  */
-      if (any_condjump_p (q) && sets_cc0_p (PREV_INSN (q)))
+      if (any_condjump_p (q) && only_sets_cc0_p (PREV_INSN (q)))
 	q = PREV_INSN (q);
 #endif
 

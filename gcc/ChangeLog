@@ -1,3 +1,14 @@
+Wed Aug 15 15:22:52 EDT 2001  John Wehle  (john@feith.com)
+
+	* rtl.h (only_sets_cc0_p): New prototype.
+	* jump.c (sets_cc0_p): Handle INSN.
+	(only_sets_cc0_p): New function.
+	* flow.c (merge_blocks_nomove): Use only_sets_cc0_p.
+	(tidy_fallthru_edge): Likewise.
+	* integrate.c (copy_insn_list): Likewise.
+	* unroll.c (unroll_loop): Likewise.
+	(copy_loop_body): Likewise.
+
 2001-08-15  Jason Eckhardt  <jle@redhat.com>
 
 	* config/i960/i960.md (trap): Change "faulteq.t" to "faulte.t".
