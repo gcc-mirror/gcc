@@ -1,3 +1,9 @@
+2004-02-10  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/EmbeddedWindow.java
+	(setHandle): Use java.awt.Component.getPeer() instead of
+	java.awt.Component.peer directly.
+
 2004-02-10  David Jee  <djee@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkButtonPeer.java

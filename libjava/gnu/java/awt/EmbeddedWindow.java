@@ -108,8 +108,8 @@ public class EmbeddedWindow extends Frame
       throw new RuntimeException ("EmbeddedWindow is already embedded");
 
     this.handle = handle;
-    if (peer != null)
-      ((EmbeddedWindowPeer) peer).embed (this.handle);
+    if (getPeer() != null)
+      ((EmbeddedWindowPeer) getPeer()).embed (this.handle);
   }
 
   /**
