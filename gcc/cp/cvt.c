@@ -675,6 +675,9 @@ ocp_convert (type, expr, convtype, flags)
       || TREE_TYPE (e) == error_mark_node)
     return error_mark_node;
 
+  complete_type (type);
+  complete_type (TREE_TYPE (expr));
+
   if (TREE_READONLY_DECL_P (e))
     e = decl_constant_value (e);
 
@@ -742,10 +745,17 @@ ocp_convert (type, expr, convtype, flags)
 	}
       if (code == BOOLEAN_TYPE)
 	{
+	  tree fn = NULL_TREE;
+
 	  /* Common Ada/Pascal programmer's mistake.  We always warn
              about this since it is so bad.  */
 	  if (TREE_CODE (expr) == FUNCTION_DECL)
-	    cp_warning ("the address of `%D', will always be `true'", expr);
+	    fn = expr;
+	  else if (TREE_CODE (expr) == ADDR_EXPR 
+		   && TREE_CODE (TREE_OPERAND (expr, 0)) == FUNCTION_DECL)
+	    fn = TREE_OPERAND (expr, 0);
+	  if (fn)
+	    cp_warning ("the address of `%D', will always be `true'", fn);
 	  return truthvalue_conversion (e);
 	}
       return fold (convert_to_integer (type, e));

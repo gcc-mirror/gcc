@@ -1151,6 +1151,20 @@ implicit_conversion (to, from, expr, flags)
   tree conv;
   struct z_candidate *cand;
 
+  /* Resolve expressions like `A::p' that we thought might become
+     pointers-to-members.  */
+  if (expr && TREE_CODE (expr) == OFFSET_REF)
+    {
+      expr = resolve_offset_ref (expr);
+      from = TREE_TYPE (expr);
+    }
+
+  if (from == error_mark_node || to == error_mark_node
+      || expr == error_mark_node)
+    return NULL_TREE;
+
+  /* Make sure both the FROM and TO types are complete so that
+     user-defined conversions are available.  */
   complete_type (from);
   complete_type (to);
 

@@ -1272,6 +1272,7 @@ dump_expr (t, nop)
     case FUNCTION_DECL:
     case TEMPLATE_DECL:
     case NAMESPACE_DECL:
+    case OVERLOAD:
       dump_decl (t, -1);
       break;
 

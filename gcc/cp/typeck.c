@@ -4336,7 +4336,7 @@ condition_conversion (expr)
   tree t;
   if (processing_template_decl)
     return expr;
-  t = cp_convert (boolean_type_node, expr);
+  t = perform_implicit_conversion (boolean_type_node, expr);
   t = fold (build1 (CLEANUP_POINT_EXPR, boolean_type_node, t));
   return t;
 }

@@ -1,3 +1,13 @@
+1999-09-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (implicit_conversion): Robustify.  Handle OFFSET_REFs.
+	* cvt.c (ocp_convert): Complete the from and destination types.
+	Adjust warning about functions always being `true' in conditionals.
+	* decl.c (duplicate_decls): Don't play funny games with abort.
+	* error.c (dump_expr): Handle OVERLOADs.
+	* spew.c (probe_obstack): Remove.
+	* typeck.c (condition_conversion): Use perform_implicit_conversion.
+	
 1999-09-12  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* cp-tree.h (auto_function, define_function): Adjust prototypes.
