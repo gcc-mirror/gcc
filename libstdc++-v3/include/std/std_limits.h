@@ -150,17 +150,7 @@
 #define __glibcpp_u64_digits 64
 #define __glibcpp_u64_digits10 19
 
-#define __glibcpp_f32_min 1.17549435e-38F
-#define __glibcpp_f32_max 3.40282347e+38F
-#define __glibcpp_f32_digits 24
-#define __glibcpp_f32_digits10 6
-#define __glibcpp_f32_radix 2
-#define __glibcpp_f32_epsilon 1.19209290e-07F
 #define __glibcpp_f32_round_error 1.0F
-#define __glibcpp_f32_min_exponent -125
-#define __glibcpp_f32_min_exponent10 -37
-#define __glibcpp_f32_max_exponent 128
-#define __glibcpp_f32_max_exponent10 38
 #if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
 #  define __glibcpp_f32_infinity_bytes { 0x7f800000 }
 #  define __glibcpp_f32_has_infinity true
@@ -191,17 +181,7 @@
 #ifndef __glibcpp_f32_is_iec559
 #  define __glibcpp_f32_is_iec559 false
 #endif 
-#define __glibcpp_f64_min 2.2250738585072014e-308
-#define __glibcpp_f64_max 1.7976931348623157e+308
-#define __glibcpp_f64_digits 53
-#define __glibcpp_f64_digits10 15
-#define __glibcpp_f64_radix 2
-#define __glibcpp_f64_epsilon 2.2204460492503131e-16
 #define __glibcpp_f64_round_error 1.0
-#define __glibcpp_f64_min_exponent -1021
-#define __glibcpp_f64_min_exponent10 -307
-#define __glibcpp_f64_max_exponent 1024
-#define __glibcpp_f64_max_exponent10 308
 #if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
 #  if __TARGET_FLOAT_WORDS_ORDER__ == __GCC_BIG_ENDIAN__
 #    define __glibcpp_f64_infinity_bytes { 0x7ff00000, 0x0 }
@@ -239,17 +219,7 @@
 #ifndef __glibcpp_f64_is_iec559
 #  define __glibcpp_f64_is_iec559 false
 #endif 
-#define __glibcpp_f80_min 3.36210314311209350626e-4932L
-#define __glibcpp_f80_max 1.18973149535723176502e+4932L
-#define __glibcpp_f80_digits 64
-#define __glibcpp_f80_digits10 18
-#define __glibcpp_f80_radix 2
-#define __glibcpp_f80_epsilon 1.08420217248550443401e-19L
 #define __glibcpp_f80_round_error 1.0L
-#define __glibcpp_f80_min_exponent -16381
-#define __glibcpp_f80_min_exponent10 -4931
-#define __glibcpp_f80_max_exponent 16384
-#define __glibcpp_f80_max_exponent10 4932
 #if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
 #  if __TARGET_BYTES_ORDER__ == __GCC_BIG_ENDIAN__
 #    define __glibcpp_f80_infinity_bytes   \
@@ -295,17 +265,7 @@
 #ifndef __glibcpp_f80_is_iec559
 #  define __glibcpp_f80_is_iec559 false
 #endif 
-#define __glibcpp_f96_min 1.68105157155604675313e-4932L
-#define __glibcpp_f96_max 1.18973149535723176502e+4932L
-#define __glibcpp_f96_digits 64
-#define __glibcpp_f96_digits10 18
-#define __glibcpp_f96_radix 2
-#define __glibcpp_f96_epsilon 1.08420217248550443401e-19L
 #define __glibcpp_f96_round_error 1.0L
-#define __glibcpp_f96_min_exponent -16382
-#define __glibcpp_f96_min_exponent10 -4931
-#define __glibcpp_f96_max_exponent 16384
-#define __glibcpp_f96_max_exponent10 4932
 #if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
 #  if __TARGET_BYTES_ORDER__ == __GCC_BIG_ENDIAN__
 #    define __glibcpp_f96_infinity_bytes { 0x7ff0000, 0x0, 0x0 } 
@@ -340,17 +300,7 @@
 #  define __glibcpp_f96_denorm_min_bytes { }
 #  define __glibcpp_f96_has denorm_indeterminate
 #endif
-#define __glibcpp_f128_min 3.362103143112093506262677817321752603E-4932L
-#define __glibcpp_f128_max 1.189731495357231765085759326628007016E+4932L
-#define __glibcpp_f128_digits 113
-#define __glibcpp_f128_digits10 33
-#define __glibcpp_f128_radix 2
-#define __glibcpp_f128_epsilon 1.925929944387235853055977942584927319E-34L
 #define __glibcpp_f128_round_error 1.0L
-#define __glibcpp_f128_min_exponent -16381
-#define __glibcpp_f128_min_exponent10 -4931
-#define __glibcpp_f128_max_exponent 16384
-#define __glibcpp_f128_max_exponent10 4932
 #if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
 #  if __TARGET_FLOAT_WORDS_ORDER__ == __GCC_BIG_ENDIAN__
 #    define __glibcpp_f128_infinity_bytes { 0x7fff0000, 0x0, 0x0, 0x0 }
@@ -708,17 +658,7 @@
 //
 
 #if __FLOAT_BIT__ == 32
-#  define __glibcpp_float_min __glibcpp_f32_min
-#  define __glibcpp_float_max __glibcpp_f32_max
-#  define __glibcpp_float_digits __glibcpp_f32_digits
-#  define __glibcpp_float_digits10 __glibcpp_f32_digits10
-#  define __glibcpp_float_radix __glibcpp_f32_radix
-#  define __glibcpp_float_epsilon __glibcpp_f32_epsilon
 #  define __glibcpp_float_round_error __glibcpp_f32_round_error
-#  define __glibcpp_float_min_exponent __glibcpp_f32_min_exponent
-#  define __glibcpp_float_min_exponent10 __glibcpp_f32_min_exponent10
-#  define __glibcpp_float_max_exponent __glibcpp_f32_max_exponent
-#  define __glibcpp_float_max_exponent10 __glibcpp_f32_max_exponent10
 #  define __glibcpp_float_infinity_bytes __glibcpp_f32_infinity_bytes
 #  define __glibcpp_float_QNaN_bytes  __glibcpp_f32_QNaN_bytes
 #  define __glibcpp_float_SNaN_bytes  __glibcpp_f32_SNaN_bytes
@@ -729,17 +669,7 @@
 #  define __glibcpp_float_has_denorm __glibcpp_f32_has_denorm
 #  define __glibcpp_float_is_iec559 __glibcpp_f32_is_iec559
 #elif __FLOAT_BIT__ == 64
-#  define __glibcpp_float_min __glibcpp_f64_min
-#  define __glibcpp_float_max __glibcpp_f64_max
-#  define __glibcpp_float_digits __glibcpp_f64_digits
-#  define __glibcpp_float_digits10 __glibcpp_f64_digits10
-#  define __glibcpp_float_radix __glibcpp_f64_radix
-#  define __glibcpp_float_epsilon __glibcpp_f64_epsilon
 #  define __glibcpp_float_round_error __glibcpp_f64_round_error
-#  define __glibcpp_float_min_exponent __glibcpp_f64_min_exponent
-#  define __glibcpp_float_min_exponent10 __glibcpp_f64_min_exponent10
-#  define __glibcpp_float_max_exponent __glibcpp_f64_max_exponent
-#  define __glibcpp_float_max_exponent10 __glibcpp_f64_max_exponent10
 #  define __glibcpp_float_infinity_bytes __glibcpp_f64_infinity_bytes
 #  define __glibcpp_float_QNaN_bytes  __glibcpp_f64_QNaN_bytes
 #  define __glibcpp_float_SNaN_bytes  __glibcpp_f64_SNaN_bytes
@@ -750,17 +680,7 @@
 #  define __glibcpp_float_has_denorm __glibcpp_f64_has_denorm
 #  define __glibcpp_float_is_iec559 __glibcpp_f64_is_iec559
 #elif __FLOAT_BIT__ == 80
-#  define __glibcpp_float_min __glibcpp_f80_min
-#  define __glibcpp_float_max __glibcpp_f80_max
-#  define __glibcpp_float_digits __glibcpp_f80_digits
-#  define __glibcpp_float_digits10 __glibcpp_f80_digits10
-#  define __glibcpp_float_radix __glibcpp_f80_radix
-#  define __glibcpp_float_epsilon __glibcpp_f80_epsilon
 #  define __glibcpp_float_round_error __glibcpp_f80_round_error
-#  define __glibcpp_float_min_exponent __glibcpp_f80_min_exponent
-#  define __glibcpp_float_min_exponent10 __glibcpp_f80_min_exponent10
-#  define __glibcpp_float_max_exponent __glibcpp_f80_max_exponent
-#  define __glibcpp_float_max_exponent10 __glibcpp_f80_max_exponent10
 #  define __glibcpp_float_infinity_bytes __glibcpp_f80_infinity_bytes
 #  define __glibcpp_float_QNaN_bytes  __glibcpp_f80_QNaN_bytes
 #  define __glibcpp_float_SNaN_bytes  __glibcpp_f80_SNaN_bytes
@@ -827,17 +747,7 @@
 // double
 
 #if __DOUBLE_BIT__ == 32
-#  define __glibcpp_double_min __glibcpp_f32_min
-#  define __glibcpp_double_max __glibcpp_f32_max
-#  define __glibcpp_double_digits __glibcpp_f32_digits
-#  define __glibcpp_double_digits10 __glibcpp_f32_digits10
-#  define __glibcpp_double_radix __glibcpp_f32_radix
-#  define __glibcpp_double_epsilon __glibcpp_f32_epsilon
 #  define __glibcpp_double_round_error __glibcpp_f32_round_error
-#  define __glibcpp_double_min_exponent __glibcpp_f32_min_exponent
-#  define __glibcpp_double_min_exponent10 __glibcpp_f32_min_exponent10
-#  define __glibcpp_double_max_exponent __glibcpp_f32_max_exponent
-#  define __glibcpp_double_max_exponent10 __glibcpp_f32_max_exponent10
 #  define __glibcpp_double_infinity_bytes __glibcpp_f32_infinity_bytes
 #  define __glibcpp_double_QNaN_bytes __glibcpp_f32_QNaN_bytes
 #  define __glibcpp_double_SNaN_bytes __glibcpp_f32_SNaN_bytes
@@ -848,17 +758,7 @@
 #  define __glibcpp_double_has_denorm __glibcpp_f32_has_denorm
 #  define __glibcpp_double_is_iec559 __glibcpp_f32_is_iec559
 #elif __DOUBLE_BIT__ == 64
-#  define __glibcpp_double_min __glibcpp_f64_min
-#  define __glibcpp_double_max __glibcpp_f64_max
-#  define __glibcpp_double_digits __glibcpp_f64_digits
-#  define __glibcpp_double_digits10 __glibcpp_f64_digits10
-#  define __glibcpp_double_radix __glibcpp_f64_radix
-#  define __glibcpp_double_epsilon __glibcpp_f64_epsilon
 #  define __glibcpp_double_round_error __glibcpp_f64_round_error
-#  define __glibcpp_double_min_exponent __glibcpp_f64_min_exponent
-#  define __glibcpp_double_min_exponent10 __glibcpp_f64_min_exponent10
-#  define __glibcpp_double_max_exponent __glibcpp_f64_max_exponent
-#  define __glibcpp_double_max_exponent10 __glibcpp_f64_max_exponent10
 #  define __glibcpp_double_infinity_bytes __glibcpp_f64_infinity_bytes
 #  define __glibcpp_double_QNaN_bytes __glibcpp_f64_QNaN_bytes
 #  define __glibcpp_double_SNaN_bytes __glibcpp_f64_SNaN_bytes
@@ -869,17 +769,7 @@
 #  define __glibcpp_double_has_denorm __glibcpp_f64_has_denorm
 #  define __glibcpp_double_is_iec559 __glibcpp_f64_is_iec559
 #elif __DOUBLE_BIT__ == 80
-#  define __glibcpp_double_min __glibcpp_f80_min
-#  define __glibcpp_double_max __glibcpp_f80_max
-#  define __glibcpp_double_digits __glibcpp_f80_digits
-#  define __glibcpp_double_digits10 __glibcpp_f80_digits10
-#  define __glibcpp_double_radix __glibcpp_f80_radix
-#  define __glibcpp_double_epsilon __glibcpp_f80_epsilon
 #  define __glibcpp_double_round_error __glibcpp_f80_round_error
-#  define __glibcpp_double_min_exponent __glibcpp_f80_min_exponent
-#  define __glibcpp_double_min_exponent10 __glibcpp_f80_min_exponent10
-#  define __glibcpp_double_max_exponent __glibcpp_f80_max_exponent
-#  define __glibcpp_double_max_exponent10 __glibcpp_f80_max_exponent10
 #  define __glibcpp_double_infinity_bytes __glibcpp_f80_infinity_bytes
 #  define __glibcpp_double_QNaN_bytes __glibcpp_f80_QNaN_bytes
 #  define __glibcpp_double_SNaN_bytes __glibcpp_f80_SNaN_bytes
@@ -946,17 +836,7 @@
 // long double
 
 #if __LONG_DOUBLE_BIT__ == 32
-#  define __glibcpp_long_double_min __glibcpp_f32_min
-#  define __glibcpp_long_double_max __glibcpp_f32_max
-#  define __glibcpp_long_double_digits __glibcpp_f32_digits
-#  define __glibcpp_long_double_digits10 __glibcpp_f32_digits10
-#  define __glibcpp_long_double_radix __glibcpp_f32_radix
-#  define __glibcpp_long_double_epsilon __glibcpp_f32_epsilon
 #  define __glibcpp_long_double_round_error __glibcpp_f32_round_error
-#  define __glibcpp_long_double_min_exponent __glibcpp_f32_min_exponent
-#  define __glibcpp_long_double_min_exponent10 __glibcpp_f32_min_exponent10
-#  define __glibcpp_long_double_max_exponent __glibcpp_f32_max_exponent
-#  define __glibcpp_long_double_max_exponent10 __glibcpp_f32_max_exponent10
 #  define __glibcpp_long_double_infinity_bytes __glibcpp_f32_infinity_bytes
 #  define __glibcpp_long_double_QNaN_bytes __glibcpp_f32_QNaN_bytes
 #  define __glibcpp_long_double_SNaN_bytes __glibcpp_f32_SNaN_bytes
@@ -967,17 +847,7 @@
 #  define __glibcpp_long_double_has_denorm __glibcpp_f32_has_denorm
 #  define __glibcpp_long_double_is_iec559 __glibcpp_f32_is_iec559
 #elif __LONG_DOUBLE_BIT__ == 64
-#  define __glibcpp_long_double_min __glibcpp_f64_min
-#  define __glibcpp_long_double_max __glibcpp_f64_max
-#  define __glibcpp_long_double_digits __glibcpp_f64_digits
-#  define __glibcpp_long_double_digits10 __glibcpp_f64_digits10
-#  define __glibcpp_long_double_radix __glibcpp_f64_radix
-#  define __glibcpp_long_double_epsilon __glibcpp_f64_epsilon
 #  define __glibcpp_long_double_round_error __glibcpp_f64_round_error
-#  define __glibcpp_long_double_min_exponent __glibcpp_f64_min_exponent
-#  define __glibcpp_long_double_min_exponent10 __glibcpp_f64_min_exponent10
-#  define __glibcpp_long_double_max_exponent __glibcpp_f64_max_exponent
-#  define __glibcpp_long_double_max_exponent10 __glibcpp_f64_max_exponent10
 #  define __glibcpp_long_double_infinity_bytes __glibcpp_f64_infinity_bytes
 #  define __glibcpp_long_double_QNaN_bytes __glibcpp_f64_QNaN_bytes
 #  define __glibcpp_long_double_SNaN_bytes __glibcpp_f64_SNaN_bytes
@@ -988,17 +858,7 @@
 #  define __glibcpp_long_double_has_denorm __glibcpp_f64_has_denorm
 #  define __glibcpp_long_double_is_iec559 __glibcpp_f64_is_iec559
 #elif __LONG_DOUBLE_BIT__ == 80
-#  define __glibcpp_long_double_min __glibcpp_f80_min
-#  define __glibcpp_long_double_max __glibcpp_f80_max
-#  define __glibcpp_long_double_digits __glibcpp_f80_digits
-#  define __glibcpp_long_double_digits10 __glibcpp_f80_digits10
-#  define __glibcpp_long_double_radix __glibcpp_f80_radix
-#  define __glibcpp_long_double_epsilon __glibcpp_f80_epsilon
 #  define __glibcpp_long_double_round_error __glibcpp_f80_round_error
-#  define __glibcpp_long_double_min_exponent __glibcpp_f80_min_exponent
-#  define __glibcpp_long_double_min_exponent10 __glibcpp_f80_min_exponent10
-#  define __glibcpp_long_double_max_exponent __glibcpp_f80_max_exponent
-#  define __glibcpp_long_double_max_exponent10 __glibcpp_f80_max_exponent10
 #  define __glibcpp_long_double_infinity_bytes __glibcpp_f80_infinity_bytes
 #  define __glibcpp_long_double_QNaN_bytes __glibcpp_f80_QNaN_bytes
 #  define __glibcpp_long_double_SNaN_bytes __glibcpp_f80_SNaN_bytes
@@ -1009,17 +869,7 @@
 #  define __glibcpp_long_double_has_denorm __glibcpp_f80_has_denorm
 #  define __glibcpp_long_double_is_iec559 __glibcpp_f80_is_iec559
 #elif __LONG_DOUBLE_BIT__ == 96
-#  define __glibcpp_long_double_min __glibcpp_f96_min
-#  define __glibcpp_long_double_max __glibcpp_f96_max
-#  define __glibcpp_long_double_digits __glibcpp_f96_digits
-#  define __glibcpp_long_double_digits10 __glibcpp_f96_digits10
-#  define __glibcpp_long_double_radix __glibcpp_f96_radix
-#  define __glibcpp_long_double_epsilon __glibcpp_f96_epsilon
 #  define __glibcpp_long_double_round_error __glibcpp_f96_round_error
-#  define __glibcpp_long_double_min_exponent __glibcpp_f96_min_exponent
-#  define __glibcpp_long_double_min_exponent10 __glibcpp_f96_min_exponent10
-#  define __glibcpp_long_double_max_exponent __glibcpp_f96_max_exponent
-#  define __glibcpp_long_double_max_exponent10 __glibcpp_f96_max_exponent10
 #  define __glibcpp_long_double_infinity_bytes __glibcpp_f96_infinity_bytes
 #  define __glibcpp_long_double_QNaN_bytes __glibcpp_f96_QNaN_bytes
 #  define __glibcpp_long_double_SNaN_bytes __glibcpp_f96_SNaN_bytes
@@ -1030,17 +880,7 @@
 #  define __glibcpp_long_double_has_denorm __glibcpp_f96_has_denorm
 #  define __glibcpp_long_double_is_iec559 __glibcpp_f96_is_iec559
 #elif __LONG_DOUBLE_BIT__ == 128
-#  define __glibcpp_long_double_min __glibcpp_f128_min
-#  define __glibcpp_long_double_max __glibcpp_f128_max
-#  define __glibcpp_long_double_digits __glibcpp_f128_digits
-#  define __glibcpp_long_double_digits10 __glibcpp_f128_digits10
-#  define __glibcpp_long_double_radix __glibcpp_f128_radix
-#  define __glibcpp_long_double_epsilon __glibcpp_f128_epsilon
 #  define __glibcpp_long_double_round_error __glibcpp_f128_round_error
-#  define __glibcpp_long_double_min_exponent __glibcpp_f128_min_exponent
-#  define __glibcpp_long_double_min_exponent10 __glibcpp_f128_min_exponent10
-#  define __glibcpp_long_double_max_exponent __glibcpp_f128_max_exponent
-#  define __glibcpp_long_double_max_exponent10 __glibcpp_f128_max_exponent10
 #  define __glibcpp_long_double_infinity_bytes __glibcpp_f128_infinity_bytes
 #  define __glibcpp_long_double_QNaN_bytes __glibcpp_f128_QNaN_bytes
 #  define __glibcpp_long_double_SNaN_bytes __glibcpp_f128_SNaN_bytes
@@ -1970,25 +1810,25 @@ namespace std
       static const bool is_specialized = true;
 
       static float min() throw()
-      { return __glibcpp_float_min; }
+      { return __FLT_MIN__; }
       static float max() throw()
-      { return __glibcpp_float_max; }
+      { return __FLT_MAX__; }
 
-      static const int digits = __glibcpp_float_digits;
-      static const int digits10 = __glibcpp_float_digits10;
+      static const int digits = __FLT_MANT_DIG__;
+      static const int digits10 = __FLT_DIG__;
       static const bool is_signed = true;
       static const bool is_integer = false;
       static const bool is_exact = false;
-      static const int radix = __glibcpp_float_radix;
+      static const int radix = __FLT_RADIX__;
       static float epsilon() throw()
-      { return __glibcpp_float_epsilon; }
+      { return __FLT_EPSILON__; }
       static float round_error() throw()
       { return __glibcpp_float_round_error; }
 
-      static const int min_exponent = __glibcpp_float_min_exponent;
-      static const int min_exponent10 = __glibcpp_float_min_exponent10;
-      static const int max_exponent = __glibcpp_float_max_exponent;
-      static const int max_exponent10 = __glibcpp_float_max_exponent10;
+      static const int min_exponent = __FLT_MIN_EXP__;
+      static const int min_exponent10 = __FLT_MIN_10_EXP__;
+      static const int max_exponent = __FLT_MAX_EXP__;
+      static const int max_exponent10 = __FLT_MAX_10_EXP__;
 
       static const bool has_infinity = __glibcpp_float_has_infinity;
       static const bool has_quiet_NaN = __glibcpp_float_has_QNaN;
@@ -2014,16 +1854,7 @@ namespace std
       static const float_round_style round_style = __glibcpp_float_round_style;
     };
 
-#undef __glibcpp_float_min
-#undef __glibcpp_float_max
-#undef __glibcpp_float_digits
-#undef __glibcpp_float_digits10
-#undef __glibcpp_float_radix
 #undef __glibcpp_float_round_error
-#undef __glibcpp_float_min_exponent
-#undef __glibcpp_float_min_exponent10
-#undef __glibcpp_float_max_exponent
-#undef __glibcpp_float_max_exponent10
 #undef __glibcpp_float_has_infinity
 #undef __glibcpp_float_has_QNaN
 #undef __glibcpp_float_has_SNaN
@@ -2042,25 +1873,25 @@ namespace std
       static const bool is_specialized = true;
 
       static double min() throw()
-      { return __glibcpp_double_min; }
+      { return __DBL_MIN__; }
       static double max() throw()
-      { return __glibcpp_double_max; }
+      { return __DBL_MAX__; }
 
-      static const int digits = __glibcpp_double_digits;
-      static const int digits10 = __glibcpp_double_digits10;
+      static const int digits = __DBL_MANT_DIG__;
+      static const int digits10 = __DBL_DIG__;
       static const bool is_signed = true;
       static const bool is_integer = false;
       static const bool is_exact = false;
-      static const int radix = __glibcpp_double_radix;
+      static const int radix = __FLT_RADIX__;
       static double epsilon() throw()
-      { return __glibcpp_double_epsilon; }
+      { return __DBL_EPSILON__; }
       static double round_error() throw()
       { return __glibcpp_double_round_error; }
 
-      static const int min_exponent = __glibcpp_double_min_exponent;
-      static const int min_exponent10 = __glibcpp_double_min_exponent10;
-      static const int max_exponent = __glibcpp_double_max_exponent;
-      static const int max_exponent10 = __glibcpp_double_max_exponent10;
+      static const int min_exponent = __DBL_MIN_EXP__;
+      static const int min_exponent10 = __DBL_MIN_10_EXP__;
+      static const int max_exponent = __DBL_MAX_EXP__;
+      static const int max_exponent10 = __DBL_MAX_10_EXP__;
 
       static const bool has_infinity = __glibcpp_double_has_infinity;
       static const bool has_quiet_NaN = __glibcpp_double_has_QNaN;
@@ -2088,16 +1919,7 @@ namespace std
               __glibcpp_double_round_style;
     };
 
-#undef __glibcpp_double_min
-#undef __glibcpp_double_max
-#undef __glibcpp_double_digits
-#undef __glibcpp_double_digits10
-#undef __glibcpp_double_radix
 #undef __glibcpp_double_round_error
-#undef __glibcpp_double_min_exponent
-#undef __glibcpp_double_min_exponent10
-#undef __glibcpp_double_max_exponent
-#undef __glibcpp_double_max_exponent10
 #undef __glibcpp_double_has_infinity
 #undef __glibcpp_double_has_QNaN
 #undef __glibcpp_double_has_SNaN
@@ -2117,25 +1939,25 @@ namespace std
       static const bool is_specialized = true;
 
       static long double min() throw()
-      { return __glibcpp_long_double_min; }
+      { return __LDBL_MIN__; }
       static long double max() throw()
-      { return __glibcpp_long_double_max; }
+      { return __LDBL_MAX__; }
 
-      static const int digits = __glibcpp_long_double_digits;
-      static const int digits10 = __glibcpp_long_double_digits10;
+      static const int digits = __LDBL_MANT_DIG__;
+      static const int digits10 = __LDBL_DIG__;
       static const bool is_signed = true;
       static const bool is_integer = false;
       static const bool is_exact = false;
-      static const int radix = __glibcpp_long_double_radix;
+      static const int radix = __FLT_RADIX__;
       static long double epsilon() throw()
-      { return __glibcpp_long_double_epsilon; }
+      { return __LDBL_EPSILON__; }
       static long double round_error() throw()
       { return __glibcpp_long_double_round_error; }
 
-      static const int min_exponent = __glibcpp_long_double_min_exponent;
-      static const int min_exponent10 = __glibcpp_long_double_min_exponent10;
-      static const int max_exponent = __glibcpp_long_double_max_exponent;
-      static const int max_exponent10 = __glibcpp_long_double_max_exponent10;
+      static const int min_exponent = __LDBL_MIN_EXP__;
+      static const int min_exponent10 = __LDBL_MIN_10_EXP__;
+      static const int max_exponent = __LDBL_MAX_EXP__;
+      static const int max_exponent10 = __LDBL_MAX_10_EXP__;
 
       static const bool has_infinity = __glibcpp_long_double_has_infinity;
       static const bool has_quiet_NaN = __glibcpp_long_double_has_SNaN;
@@ -2179,16 +2001,7 @@ namespace std
         __glibcpp_long_double_round_style;
     };
 
-#undef __glibcpp_long_double_min
-#undef __glibcpp_long_double_max
-#undef __glibcpp_long_double_digits
-#undef __glibcpp_long_double_digits10
-#undef __glibcpp_long_double_radix
 #undef __glibcpp_long_double_round_error
-#undef __glibcpp_long_double_min_exponent
-#undef __glibcpp_long_double_min_exponent10
-#undef __glibcpp_long_double_max_exponent
-#undef __glibcpp_long_double_max_exponent10
 #undef __glibcpp_long_double_has_infinity
 #undef __glibcpp_long_double_has_QNaN
 #undef __glibcpp_long_double_has_SNaN

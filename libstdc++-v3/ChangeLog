@@ -1,3 +1,44 @@
+2002-09-03  Richard Henderson  <rth@redhat.com>
+
+	* include/std/std_limits.h (__glibcpp_f32_min, __glibcpp_f32_max,
+	__glibcpp_f32_digits, __glibcpp_f32_digits10, __glibcpp_f32_radix,
+	__glibcpp_f32_epsilon, __glibcpp_f32_min_exponent,
+	__glibcpp_f32_min_exponent10, __glibcpp_f32_max_exponent,
+	__glibcpp_f32_max_exponent10, __glibcpp_f64_min, __glibcpp_f64_max,
+	__glibcpp_f64_digits, __glibcpp_f64_digits10, __glibcpp_f64_radix,
+	__glibcpp_f64_min_exponent, __glibcpp_f64_min_exponent10,
+	__glibcpp_f64_max_exponent, __glibcpp_f64_max_exponent10,
+	__glibcpp_f80_min, __glibcpp_f80_max, __glibcpp_f80_digits,
+	__glibcpp_f80_digits10, __glibcpp_f80_radix, __glibcpp_f80_epsilon,
+	__glibcpp_f80_min_exponent, __glibcpp_f80_min_exponent10,
+	__glibcpp_f80_max_exponent, __glibcpp_f80_max_exponent10,
+	__glibcpp_f96_min, __glibcpp_f96_max, __glibcpp_f96_digits,
+	__glibcpp_f96_digits10, __glibcpp_f96_radix, __glibcpp_f96_epsilon,
+	__glibcpp_f96_min_exponent, __glibcpp_f96_min_exponent10,
+	__glibcpp_f96_max_exponent, __glibcpp_f96_max_exponent10,
+	__glibcpp_f128_min, __glibcpp_f128_max, __glibcpp_f128_digits,
+	__glibcpp_f128_digits10, __glibcpp_f128_radix, __glibcpp_f128_epsilon,
+	__glibcpp_f128_min_exponent, __glibcpp_f128_min_exponent10,
+	__glibcpp_f128_max_exponent, __glibcpp_f128_max_exponent10,
+	__glibcpp_float_min, __glibcpp_float_max, __glibcpp_float_digits,
+	__glibcpp_float_digits10, __glibcpp_float_radix,
+	__glibcpp_float_epsilon, __glibcpp_float_min_exponent,
+	__glibcpp_float_min_exponent10, __glibcpp_float_max_exponent,
+	__glibcpp_float_max_exponent10, __glibcpp_double_min,
+	__glibcpp_double_max, __glibcpp_double_digits,
+	__glibcpp_double_digits10, __glibcpp_double_radix,
+	__glibcpp_double_epsilon, __glibcpp_double_min_exponent,
+	__glibcpp_double_min_exponent10, __glibcpp_double_max_exponent,
+	__glibcpp_double_max_exponent10, __glibcpp_long_double_min,
+	__glibcpp_long_double_max, __glibcpp_long_double_digits,
+	__glibcpp_long_double_digits10, __glibcpp_long_double_radix,
+	__glibcpp_long_double_epsilon, __glibcpp_long_double_min_exponent,
+	__glibcpp_long_double_min_exponent10,
+	__glibcpp_long_double_max_exponent,
+	__glibcpp_long_double_max_exponent10): Remove macros.
+	(std::numeric_limits<float>, std::numeric_limits<double>,
+	std::numeric_limits<long double>): Use protected float.h macros.
+
 2002-09-01  Phil Edwards  <pme@gcc.gnu.org>
 
 	* testsuite/Makefile.am:  Use LD_RUN_PATH when linking abi_check.
