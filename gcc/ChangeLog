@@ -1,3 +1,7 @@
+2003-02-06  Richard Henderson  <rth@redhat.com>
+
+	* combine.c (nonzero_bits): Fix double break.
+
 2003-02-06  Eric Botcazou <ebotcazou@libertysurf.fr>
             Richard Henderson <rth@redhat.com>
 
