@@ -4693,7 +4693,8 @@ basic_induction_var (x, dest_reg, p, inc_val, mult_val)
  	arg = XEXP (x, 1);
       else if (XEXP (x, 1) == dest_reg
 	       || (GET_CODE (XEXP (x, 1)) == SUBREG
-		   && SUBREG_PROMOTED_VAR_P (XEXP (x, 1))))
+		   && SUBREG_PROMOTED_VAR_P (XEXP (x, 1))
+		   && SUBREG_REG (XEXP (x, 1)) == dest_reg))
 	arg = XEXP (x, 0);
       else
  	return 0;
