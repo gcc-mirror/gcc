@@ -721,6 +721,40 @@ force_reg (enum machine_mode mode, rtx x)
       && ! rtx_equal_p (x, SET_SRC (set)))
     set_unique_reg_note (insn, REG_EQUAL, x);
 
+  /* Let optimizers know that TEMP is a pointer, and if so, the
+     known alignment of that pointer.  */
+  {
+    unsigned align = 0;
+    if (GET_CODE (x) == SYMBOL_REF)
+      {
+        align = BITS_PER_UNIT;
+	if (SYMBOL_REF_DECL (x) && DECL_P (SYMBOL_REF_DECL (x)))
+	  align = DECL_ALIGN (SYMBOL_REF_DECL (x));
+      }
+    else if (GET_CODE (x) == LABEL_REF)
+      align = BITS_PER_UNIT;
+    else if (GET_CODE (x) == CONST
+	     && GET_CODE (XEXP (x, 0)) == PLUS
+	     && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
+	     && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
+      {
+	rtx s = XEXP (XEXP (x, 0), 0);
+	rtx c = XEXP (XEXP (x, 0), 1);
+	unsigned sa, ca;
+
+	sa = BITS_PER_UNIT;
+	if (SYMBOL_REF_DECL (s) && DECL_P (SYMBOL_REF_DECL (s)))
+	  sa = DECL_ALIGN (SYMBOL_REF_DECL (s));
+
+	ca = exact_log2 (INTVAL (c) & -INTVAL (c)) * BITS_PER_UNIT;
+
+	align = MIN (sa, ca);
+      }
+
+    if (align)
+      mark_reg_pointer (temp, align);
+  }
+
   return temp;
 }
 
