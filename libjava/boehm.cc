@@ -321,7 +321,14 @@ _Jv_AllocArray (jsize size)
 void *
 _Jv_AllocBytes (jsize size)
 {
-  return GC_GENERIC_MALLOC (size, PTRFREE);
+  void *r = GC_GENERIC_MALLOC (size, PTRFREE);
+  // We have to explicitly zero memory here, as the GC doesn't
+  // guarantee that PTRFREE allocations are zeroed.  Note that we
+  // don't have to do this for other allocation types because we set
+  // the `ok_init' flag in the type descriptor.
+  if (r != NULL)
+    memset (r, 0, size);
+  return r;
 }
 
 static void
