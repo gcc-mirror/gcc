@@ -2494,10 +2494,6 @@ int f() @{
 @}
 @end example
 
-This option is not enabled by default at any optimization level because
-it is new and has yet to be subjected to thorough testing.  You may
-of course enable it manually with @samp{-fstrict-aliasing}.
-
 @ifset INTERNALS
 Every language that wishes to perform language-specific alias analysis
 should define a function that computes, given an @code{tree}
