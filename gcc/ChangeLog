@@ -1,3 +1,7 @@
+1998-04-02  Vladimir N. Makarov  <vmakarov@cygnus.com>
+
+	* ginclude/va-i960.h (va_end): Change void * to void.
+
 Thu Apr  2 13:51:10 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * Makefile.in (choose-temp.o): Depend on system.h.
