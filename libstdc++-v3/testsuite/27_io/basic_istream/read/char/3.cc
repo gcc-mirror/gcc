@@ -33,7 +33,7 @@ void
 test09()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   istringstream iss("Juana Briones");
   char tab[13];

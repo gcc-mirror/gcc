@@ -56,9 +56,8 @@ namespace std {
 void test08()
 {
   // manufactured locale, grouping is turned on
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   unsigned int h4 = 0, h3 = 0, h2 = 0;
-  float f1 = 0.0;
   const std::string s1("1,22 205,19 22,123,22");
   const std::string s2("1,220 2050,19 202,123,22");
 

@@ -29,7 +29,7 @@ void test01()
   typedef money_base::part part;
   typedef money_base::pattern pattern;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   string str;
 
   locale loc_de = __gnu_test::try_named_locale("de_DE");

@@ -32,7 +32,7 @@
 // libstdc++/2830
 void test09()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::wstring blanks(3, L'\0');
   std::wstring foo = L"peace";
   foo += blanks;

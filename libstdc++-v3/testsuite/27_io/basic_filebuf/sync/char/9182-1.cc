@@ -51,7 +51,7 @@ protected:
 void test13()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   locale loc =  locale::classic();
   loc = locale(loc, new errorcvt);
@@ -65,7 +65,7 @@ void test13()
   fbuf1.close();
 }
 
-main() 
+int main() 
 {
   test13();
   return 0;

@@ -28,12 +28,10 @@
 // iterators, namely insert and erase.
 bool test02(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef std::wstring::size_type csize_type;
   typedef std::wstring::iterator siterator;
   typedef std::wstring::reverse_iterator sriterator;
-  csize_type npos = std::wstring::npos;
-  csize_type csz01, csz02;
   siterator it1;
   sriterator rit1;  
 

@@ -23,7 +23,7 @@
 
 typedef __gnu_test::copy_tracker  T;
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 // general single insert/erase + swap
 void

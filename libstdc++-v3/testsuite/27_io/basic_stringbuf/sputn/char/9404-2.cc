@@ -48,7 +48,7 @@ public:
 // libstdc++/9404
 void test04()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   bool over_expected;
   Derived_stringbuf dsbuf_01;

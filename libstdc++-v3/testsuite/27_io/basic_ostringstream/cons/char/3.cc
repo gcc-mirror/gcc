@@ -27,7 +27,7 @@
 void
 test03()
 {
-  bool test = false;
+  bool test __attribute__((unused)) = false;
 
   // Empty string sanity check.
   std::string str01;

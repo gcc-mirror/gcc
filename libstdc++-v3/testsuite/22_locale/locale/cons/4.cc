@@ -28,7 +28,7 @@
 // libstdc++/7811
 void test03()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 #ifdef _GLIBCXX_HAVE_SETENV 
   const char* LC_ALL_orig = getenv("LC_ALL");
   if (!setenv("LC_ALL", "it_IT", 1))

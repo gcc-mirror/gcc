@@ -27,15 +27,13 @@
 void test04()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // Check num_put works with other iterators besides streambuf
   // output iterators. (As long as output_iterator requirements are met.)
   typedef wstring::iterator iter_type;
   typedef char_traits<wchar_t> traits;
   typedef num_put<wchar_t, iter_type> num_put_type;
-  const ios_base::iostate goodbit = ios_base::goodbit;
-  const ios_base::iostate eofbit = ios_base::eofbit;
   const locale loc_c = locale::classic();
   const wstring str(L"1798 Lady Elgin");
   const wstring str2(L"0 true 0xbffff74c Mary Nisbet");

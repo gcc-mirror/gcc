@@ -27,7 +27,7 @@
 // libstdc++/10783
 void test03()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   typedef std::vector<int> V;
   VERIFY( sizeof(V::iterator) == sizeof(V::reverse_iterator) );

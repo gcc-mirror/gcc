@@ -25,7 +25,7 @@
 void test_02()
 {
   using namespace std;
-  bool test = true;  
+  bool test __attribute__((unused)) = true;  
   const char* name = "tmp_file1";
   const char* strlit = "0123456789";
   

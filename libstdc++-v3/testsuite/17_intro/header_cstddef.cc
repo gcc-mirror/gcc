@@ -1,6 +1,6 @@
 // 2001-02-06  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,7 @@ namespace gnu
 
   void test01()
   { 
-    std::size_t i = offsetof(struct test_type, i);
+    std::size_t i __attribute__((unused)) = offsetof(struct test_type, i);
 #ifndef offsetof
     #error "offsetof_must_be_a_macro"
 #endif

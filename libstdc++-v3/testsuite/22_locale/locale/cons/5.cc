@@ -28,7 +28,7 @@
 // More tests for locale("") == POSIX locale::name. 
 void test04()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   using namespace std;
 
 #ifdef _GLIBCXX_HAVE_SETENV

@@ -29,7 +29,7 @@
 // libstdc++/8230
 void test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   {
     std::vector<int>  array;
     const std::size_t size = array.max_size();

@@ -30,7 +30,7 @@
 void
 test04() 
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::string str_01;
   const std::string str_02("coltrane playing 'softly as a morning sunrise'");
   const std::string str_03("coltrane");
@@ -40,7 +40,7 @@ test04()
   std::ostringstream oss_01(std::ios_base::out);
   std::ostringstream oss_02(str_01, std::ios_base::out);
 
-  std::ios_base::iostate state1, state2, statefail;
+  std::ios_base::iostate statefail;
   statefail = std::ios_base::failbit;
 
   // template<_CharT, _Traits>

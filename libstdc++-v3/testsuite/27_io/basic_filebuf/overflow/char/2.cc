@@ -36,7 +36,7 @@ public:
 void test01()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef OverBuf::traits_type  traits_type;
 
   OverBuf fb;
@@ -46,7 +46,7 @@ void test01()
   fb.close();
 }
 
-main() 
+int main() 
 {
   test01();
   return 0;

@@ -28,7 +28,7 @@
 void
 test05()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::wstring str01 = L"londinium";
   std::wstring str02 = L"cydonia";
 

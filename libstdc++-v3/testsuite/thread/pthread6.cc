@@ -37,8 +37,8 @@ const int loops = 100000;
 
 const char* my_default = "Hallo Welt!";
 
-const int upper_limit = 2500;
-const int lower_limit = 1000;
+const std::size_t upper_limit = 2500;
+const std::size_t lower_limit = 1000;
 
 typedef char charT;
 

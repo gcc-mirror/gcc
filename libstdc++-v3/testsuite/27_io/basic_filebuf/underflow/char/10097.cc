@@ -48,7 +48,7 @@ public:
 void test16()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   const char* name = "tmp_fifo1";
   
@@ -97,7 +97,7 @@ void test16()
   fb.close();
 }
 
-main() 
+int main() 
 {
   test16();
   return 0;

@@ -33,7 +33,7 @@
 
 void test02() 
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   
   std::stringbuf 	strbuf01;
   std::ios		ios01(&strbuf01);

@@ -26,7 +26,7 @@
 
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   wchar_t c = L'a';
   const wchar_t cc = L'b';
   wchar_t* c1 = &c;

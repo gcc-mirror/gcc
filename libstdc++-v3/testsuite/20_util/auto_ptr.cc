@@ -1,4 +1,4 @@
-// Copyright (C) 2000, 2002 Free Software Foundation
+// Copyright (C) 2000, 2002, 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,8 +60,8 @@ struct reset_count_struct
 int
 test01()
 {
-  reset_count_struct reset;
-  bool test = true;
+  reset_count_struct __attribute__((unused)) reset;
+  bool test __attribute__((unused)) = true;
 
   std::auto_ptr<A> A_default;
   VERIFY( A_default.get() == 0 );
@@ -91,8 +91,8 @@ test01()
 int
 test02()
 {
-  reset_count_struct reset;
-  bool test = true;
+  reset_count_struct __attribute__((unused)) reset;
+  bool test __attribute__((unused)) = true;
 
   std::auto_ptr<A> A_from_A(new A);
   std::auto_ptr<B> B_from_B(new B);
@@ -115,8 +115,8 @@ test02()
 int
 test03()
 {
-  reset_count_struct reset;
-  bool test = true;
+  reset_count_struct __attribute__((unused)) reset;
+  bool test __attribute__((unused)) = true;
 
   std::auto_ptr<A> A_from_ptr_A;
   std::auto_ptr<A> A_from_ptr_B;
@@ -141,8 +141,8 @@ test03()
 int
 test04()
 {
-  reset_count_struct reset;
-  bool test = true;
+  reset_count_struct __attribute__((unused)) reset;
+  bool test __attribute__((unused)) = true;
 
   {/*lifetine scope*/
     std::auto_ptr<A> A_from_A(new A);
@@ -171,8 +171,8 @@ private:
 int 
 test05()
 {
-  bool test = true;
-  reset_count_struct reset;
+  bool test __attribute__((unused)) = true;
+  reset_count_struct __attribute__((unused)) reset;
 
   pimpl<A>();
   pimpl<B>();
@@ -190,8 +190,8 @@ test05()
 int
 test06()
 {
-  reset_count_struct reset;
-  bool test = true;
+  reset_count_struct __attribute__((unused)) reset;
+  bool test __attribute__((unused)) = true;
 
   std::auto_ptr<A> A_from_A(new A);
   std::auto_ptr<A> A_from_A_ptr(A_from_A.release());
@@ -231,8 +231,8 @@ static void drain(std::auto_ptr<T>)
 int
 test07()
 {
-  bool test = true;
-  reset_count_struct reset;
+  bool test __attribute__((unused)) = true;
+  reset_count_struct __attribute__((unused)) reset;
 
   drain(source<A>());
   // The resolution of core issue 84, now a DR, breaks this call.

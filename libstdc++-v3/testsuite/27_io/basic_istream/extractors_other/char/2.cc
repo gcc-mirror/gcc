@@ -30,7 +30,7 @@
 // filebufs.
 void test02() 
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef std::ios::traits_type ctraits_type;
   const char name_01[] = "istream_extractor_other-1.txt"; //read 
   const char name_02[] = "istream_extractor_other-2.txt"; //write

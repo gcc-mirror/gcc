@@ -28,20 +28,20 @@ const std::string str01("the nubians of plutonia");
 std::string str02;
 
 void 
-callb01(std::ios_base::event e,  std::ios_base& b, int i)
+callb01(std::ios_base::event,  std::ios_base&, int)
 { str02 += "the nubians"; }
 
 void 
-callb02(std::ios_base::event e,  std::ios_base& b, int i)
+callb02(std::ios_base::event,  std::ios_base&, int)
 { str02 += " of "; }
 
 void 
-callb03(std::ios_base::event e,  std::ios_base& b, int i)
+callb03(std::ios_base::event,  std::ios_base&, int)
 { str02 += "plutonia"; }
 
 void test01() 
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::locale loc("C");
   std::stringbuf 	strbuf01;
   std::ios		ios01(&strbuf01);

@@ -25,7 +25,7 @@
 
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   char c = 'a';
   const char cc = 'b';
   char* c1 = &c;

@@ -27,7 +27,7 @@
 // libstdc++/1972
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::string s("lack of sunlight, no water error");
 
   // 1
@@ -41,7 +41,7 @@ void test01()
 
 void test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::string s("lack of sunlight error");
   std::domain_error x(s);
   
@@ -57,7 +57,7 @@ public:
 
 void test03()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   try
     { throw fuzzy_logic(); }
   catch(const fuzzy_logic& obj)
@@ -78,7 +78,7 @@ void allocate_on_stack(void)
 }
 void test04()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const std::string s("CA ISO emergency once again:immediate power down");
   const char* strlit1 = "wish I lived in Palo Alto";
   const char* strlit2 = "...or Santa Barbara";

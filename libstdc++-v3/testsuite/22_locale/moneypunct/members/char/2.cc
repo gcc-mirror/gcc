@@ -30,7 +30,7 @@ void test02()
   typedef money_base::part part;
   typedef money_base::pattern pattern;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // basic construction
   locale loc_c = locale::classic();
@@ -42,7 +42,6 @@ void test02()
   const __money_true& monp_c_t = use_facet<__money_true>(loc_c); 
   const __money_false& monp_c_f = use_facet<__money_false>(loc_c); 
   const __money_true& monp_de_t = use_facet<__money_true>(loc_de); 
-  const __money_false& monp_de_f = use_facet<__money_false>(loc_de); 
 
   // quick sanity check for data.
   char q1 = monp_c_t.decimal_point();

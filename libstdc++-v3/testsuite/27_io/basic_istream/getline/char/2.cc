@@ -49,7 +49,7 @@ test05()
 "aaaaaaaaaaaaa\n"
 "aaaaaaaaaaaaaa\n";
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const std::streamsize it = 5;
   std::streamsize br = 0;
   char tmp[it];
@@ -89,7 +89,7 @@ test05()
 	  //
 	  // -> strlen(__s) < n - 1 
 	  // -> delimiter was seen -> gcount() > strlen(__s)
-          VERIFY(ifs.gcount() == std::strlen(tmp) + 1);
+          VERIFY(ifs.gcount() == static_cast<std::streamsize>(std::strlen(tmp) + 1) );
           continue;
         }
     }

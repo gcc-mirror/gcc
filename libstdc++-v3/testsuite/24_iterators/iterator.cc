@@ -589,7 +589,7 @@ test6642()
 }
 
 int
-main(int argc, char **argv)
+main()
 {
    int failures(0);
 

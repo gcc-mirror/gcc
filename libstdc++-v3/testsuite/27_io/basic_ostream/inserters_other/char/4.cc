@@ -101,7 +101,7 @@ private:
 
 void test(const std::string& str, std::streambuf& buf)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::ostringstream out;
   std::istream in(&buf);

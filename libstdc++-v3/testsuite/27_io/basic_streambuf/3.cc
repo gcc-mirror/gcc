@@ -118,7 +118,7 @@ class gnu_sbuf: public std::basic_streambuf<gnu_char_type, gnu_char_traits>
 
 void test07()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   
   try
     { gnu_sbuf obj; }

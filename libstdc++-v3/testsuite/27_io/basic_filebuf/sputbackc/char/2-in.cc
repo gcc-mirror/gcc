@@ -37,7 +37,7 @@ void test01()
   typedef std::filebuf::int_type 	int_type;
   typedef filebuf::traits_type 		traits_type;
 
-  bool 					test = true;
+  bool test __attribute__((unused)) = true;
   int_type 			c1, c2, c3;
 
   // int_type sputbackc(char_type c)
@@ -85,7 +85,7 @@ void test01()
   }
 }
 
-main() 
+int main() 
 {
   test01();
   return 0;

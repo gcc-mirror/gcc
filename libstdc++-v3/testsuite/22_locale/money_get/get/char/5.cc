@@ -27,14 +27,13 @@
 void test05()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // Check money_get works with other iterators besides streambuf
   // input iterators.
   typedef string::const_iterator iter_type;
   typedef money_get<char, iter_type> mon_get_type;
   const ios_base::iostate goodbit = ios_base::goodbit;
-  const ios_base::iostate eofbit = ios_base::eofbit;
   ios_base::iostate err = goodbit;
   const locale loc_c = locale::classic();
   const string str = "0.01Eleanor Roosevelt";

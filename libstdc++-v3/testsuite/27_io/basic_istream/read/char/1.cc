@@ -33,7 +33,7 @@ test01()
 {
   typedef std::ios::traits_type traits_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const std::string str_01;
   const std::string str_02("soul eyes: john coltrane quartet");
   std::string strtmp;

@@ -23,7 +23,7 @@
 
 typedef __gnu_test::copy_tracker  T;
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 // range and fill insert/erase + clear
 // missing: o  fill insert disguised as a range insert in all its variants

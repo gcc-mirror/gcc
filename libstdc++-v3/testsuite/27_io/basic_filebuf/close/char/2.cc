@@ -42,7 +42,7 @@ const char name_02[] = "filebuf_virtuals-2.txt"; // empty file, need to create
 
 void test_02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   int close_num;
 
   // read (ext)

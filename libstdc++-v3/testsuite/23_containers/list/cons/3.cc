@@ -21,7 +21,7 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 // A nontrivial type.
 template<typename T>
@@ -41,9 +41,9 @@ struct C {
 void
 test02D()
 {
-  const int LIST_SIZE = 5;
+  const std::size_t LIST_SIZE = 5;
   const int INIT_VALUE = 7;
-  int count = 0;
+  std::size_t count = 0;
   std::list<C> list0204(LIST_SIZE, INIT_VALUE);
   std::list<C>::iterator i = list0204.begin();
   for (; i != list0204.end(); ++i, ++count)

@@ -27,7 +27,7 @@
 void
 test03()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* title01 = "nine types of ambiguity";
   const char* title02 = "ultra";
   std::string str01 = title01;

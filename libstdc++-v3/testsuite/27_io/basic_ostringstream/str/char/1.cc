@@ -25,15 +25,13 @@
 
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::ostringstream os01;
   const std::string str00; 
   const std::string str01 = "123";
   std::string str02;
-  const int i01 = 123;
-  int a,b;
 
-  std::ios_base::iostate state1, state2, statefail, stateeof;
+  std::ios_base::iostate statefail, stateeof;
   statefail = std::ios_base::failbit;
   stateeof = std::ios_base::eofbit;
 

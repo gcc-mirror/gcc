@@ -47,7 +47,7 @@ public:
 void test08()
 {
   using std::locale;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   locale loc;
   testbuf ob;

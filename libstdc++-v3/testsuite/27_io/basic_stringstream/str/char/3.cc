@@ -26,7 +26,7 @@
 void
 test03()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   //
   // 1: Automatic formatting of a compound string

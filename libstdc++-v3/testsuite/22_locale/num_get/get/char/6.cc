@@ -28,7 +28,7 @@
 void test06()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   double d = 0.0;
 

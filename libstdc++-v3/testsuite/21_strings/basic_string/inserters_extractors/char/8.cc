@@ -34,7 +34,7 @@ void test08()
 {
   using namespace std;
 
-  bool 		test = true;
+  bool test __attribute__((unused)) = true;
   istringstream istrm("enero:2001");
   int 		year;
   char 		sep;

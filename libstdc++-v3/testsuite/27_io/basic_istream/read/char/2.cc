@@ -33,7 +33,7 @@
 void
 test04()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   const std::string str_00("Red_Garland_Qunitet-Soul_Junction");
   std::string strtmp;
@@ -41,14 +41,14 @@ test04()
 
   std::stringbuf isbuf_00(str_00, std::ios_base::in);
   std::istream is_00(&isbuf_00);
-  std::ios_base::iostate state1, state2, statefail, stateeof;
+  std::ios_base::iostate state1, statefail, stateeof;
   statefail = std::ios_base::failbit;
   stateeof = std::ios_base::eofbit;
 
   state1 = stateeof | statefail;
   VERIFY( is_00.gcount() == 0 );
   is_00.read(c_array, str_00.size() + 1);
-  VERIFY( is_00.gcount() == str_00.size() );
+  VERIFY( is_00.gcount() == static_cast<std::streamsize>(str_00.size()) );
   VERIFY( is_00.rdstate() == state1 );
 
   is_00.read(c_array, str_00.size());

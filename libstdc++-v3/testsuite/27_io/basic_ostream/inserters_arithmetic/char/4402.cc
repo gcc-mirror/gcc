@@ -31,7 +31,7 @@ using namespace std;
 void
 test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   // make sure we can output a very long float
   long double val = 1.2345678901234567890123456789e+1000L;
   int prec = numeric_limits<long double>::digits10;

@@ -50,7 +50,7 @@ std::stringstream ss_01(str_01);
 template<typename T>
 bool test12_aux(bool integer_type)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   
   int digits_overflow;
   if (integer_type)
@@ -62,7 +62,7 @@ bool test12_aux(bool integer_type)
   
   std::string st;
   std::string part = "1234567890123456789012345678901234567890";
-  for (int i = 0; i < digits_overflow / part.size() + 1; ++i)
+  for (std::size_t i = 0; i < digits_overflow / part.size() + 1; ++i)
     st += part;
   std::stringbuf sb(st);
   std::istream is(&sb);
@@ -74,7 +74,7 @@ bool test12_aux(bool integer_type)
 
 bool test12()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   VERIFY(test12_aux<short>(true));
   VERIFY(test12_aux<int>(true));
   VERIFY(test12_aux<long>(true));

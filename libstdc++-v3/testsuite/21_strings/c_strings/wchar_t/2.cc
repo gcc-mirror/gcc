@@ -32,12 +32,13 @@ void test02()
   const wchar_t* ccarray2 = L"san francisco sunny-day park inspectors";
   wchar_t carray[50];
   wcscpy(carray, ccarray1);
- 
-  wmemchr(ccarray1, L'/', 3);
-  wcschr(ccarray1, L'/');
-  wcspbrk(ccarray1, ccarray2);
-  wcsrchr(ccarray1, L'c');
-  wcsstr(carray, carray);
+  wchar_t* w;
+
+  w = wmemchr(ccarray1, L'/', 3);
+  w = wcschr(ccarray1, L'/');
+  w = wcspbrk(ccarray1, ccarray2);
+  w = wcsrchr(ccarray1, L'c');
+  w = wcsstr(carray, carray);
 }
 
 int main()

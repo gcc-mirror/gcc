@@ -46,7 +46,7 @@ public:
   bool
   check_pointers()
   { 
-    bool test = true;
+    bool test __attribute__((unused)) = true;
     VERIFY( this->eback() == NULL );
     VERIFY( this->gptr() == NULL );
     VERIFY( this->egptr() == NULL );
@@ -92,8 +92,13 @@ void test02()
   typedef testbuf::traits_type traits_type;
   typedef testbuf::int_type int_type;
 
-  bool test = true;
-  char* lit01 = "chicago underground trio/possible cube on delmark";
+  bool test __attribute__((unused)) = true;
+
+  const char* lit00 = "chicago underground trio/possible cube on delmark";
+  size_t i01 = traits_type::length(lit00);
+  char lit01[i01];
+  strcpy(lit01, lit00);
+
   testbuf buf01;
 
   // 27.5.2.1 basic_streambuf ctors
@@ -104,7 +109,7 @@ void test02()
   VERIFY( buf01.getloc() == std::locale() );
 
   // 27.5.2.2.5 Put area
-  size_t i01 = traits_type::length(lit01);
+
   char carray01[i01];
   std::memset(carray01, 0, i01);
   

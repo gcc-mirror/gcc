@@ -65,11 +65,8 @@ void test05()
   typedef std::filebuf::off_type 	off_type;
   typedef size_t 			size_type;
 
-  bool 					test = true;
+  bool test __attribute__((unused)) = true;
   std::filebuf 				f_tmp;
-  std::streamsize 			strmsz_1, strmsz_2;
-  std::streamoff  			strmof_1, strmof_2;
-  int 					i = 0, j = 0, k = 0;
 
   fb_01.open(name_01, std::ios_base::in);
   fb_02.open(name_02, std::ios_base::out | std::ios_base::trunc);
@@ -85,7 +82,7 @@ void test05()
   VERIFY( !fb_03.is_open() );
 }
 
-main() 
+int main() 
 {
   test03();
   test05();

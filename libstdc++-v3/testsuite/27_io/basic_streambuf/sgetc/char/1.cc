@@ -46,7 +46,7 @@ public:
   bool
   check_pointers()
   { 
-    bool test = true;
+    bool test __attribute__((unused)) = true;
     VERIFY( this->eback() == NULL );
     VERIFY( this->gptr() == NULL );
     VERIFY( this->egptr() == NULL );
@@ -92,8 +92,9 @@ void test01()
   typedef testbuf::traits_type traits_type;
   typedef testbuf::int_type int_type;
 
-  bool test = true;
-  char* lit01 = "chicago underground trio/possible cube on delmark";
+  bool test __attribute__((unused)) = true;
+  char lit01[52];
+  strcpy(lit01, "chicago underground trio/possible cube on delmark");
   testbuf buf01;
 
   // 27.5.2.3.1 get area

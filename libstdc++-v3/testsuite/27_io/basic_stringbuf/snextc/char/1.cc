@@ -32,10 +32,9 @@ std::stringbuf strb_03(str_03, std::ios_base::out);
 // test overloaded virtual functions
 void test04() 
 {
-  bool 			test = true;
+  bool test __attribute__((unused)) = true;
   std::string 		str_tmp;
   std::stringbuf 		strb_tmp;
-  std::streamsize 		strmsz_1, strmsz_2;
   std::streamoff  		strmof_1(-1), strmof_2;
   typedef std::stringbuf::int_type int_type;
   typedef std::stringbuf::traits_type traits_type;
@@ -47,10 +46,10 @@ void test04()
   strmof_2 = strb_02.in_avail();
   strmof_1 = strb_03.in_avail(); 
 
-  int_type c1 = strb_01.sbumpc();
-  int_type c2 = strb_02.sbumpc();
-  int_type c3 = strb_01.sbumpc();
-  int_type c4 = strb_02.sbumpc();
+  strb_01.sbumpc();
+  strb_02.sbumpc();
+  strb_01.sbumpc();
+  strb_02.sbumpc();
   int_type c5 = strb_03.sbumpc();
 
   // int_type sgetc()

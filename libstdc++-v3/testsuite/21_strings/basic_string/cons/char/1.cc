@@ -27,11 +27,11 @@
 
 void test01(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef std::string::size_type csize_type;
   typedef std::string::iterator citerator;
   csize_type npos = std::string::npos;
-  csize_type csz01, csz02;
+  csize_type csz01;
 
   const char str_lit01[] = "rodeo beach, marin";
   const std::string str01(str_lit01);

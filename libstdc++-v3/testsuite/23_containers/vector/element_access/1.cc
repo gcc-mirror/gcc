@@ -33,7 +33,7 @@ struct B { };
 // http://gcc.gnu.org/ml/libstdc++/2000-09/msg00002.html
 bool test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::vector< A<B> > vec01;
   std::vector< A<B> > vec02(5);
   typedef std::vector< A<B> >::size_type size_type;
@@ -41,7 +41,7 @@ bool test01()
 
   try
     { 
-      reference r01 = vec01.at(6); 
+      reference r01 __attribute__((unused)) = vec01.at(6); 
       VERIFY( false ); // Should not get here, as exception thrown.
     }
   catch(std::out_of_range& err)

@@ -27,7 +27,7 @@ void test01()
   std::streamoff soff;
 
   // No signed/unsigned warnings.
-  long l = ssize;
+  long l __attribute__((unused)) = ssize;
 
   // Wrapped in pos_type is EOF.
   soff = -1;

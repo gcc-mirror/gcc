@@ -36,7 +36,7 @@ using __gnu_test::destructor;
 
 typedef std::deque<counter>   gdeque;
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 // 23.2.1     required types
 //
@@ -169,10 +169,10 @@ copyConstructorCheck()
   typedef copy_tracker  T;
   typedef std::deque<T>     X;
 
-  const int copyBaseSize = 17;  // arbitrary
+  const std::size_t copyBaseSize = 17;  // arbitrary
 
   X a;
-  for (int i = 0; i < copyBaseSize; ++i)
+  for (std::size_t i = 0; i < copyBaseSize; ++i)
     a.push_back(i);
   copy_tracker::reset();
 
@@ -180,7 +180,7 @@ copyConstructorCheck()
   VERIFY(!a.empty());
   VERIFY(copyBaseSize == a.size());
   VERIFY(a.begin() != a.end());
-  VERIFY(copyBaseSize == std::distance(a.begin(), a.end()));
+  VERIFY( copyBaseSize == static_cast<std::size_t>(std::distance(a.begin(), a.end())) );
 
   // run test
   X u = a;
@@ -237,8 +237,8 @@ fillConstructorCheck2()
   typedef copy_tracker  T;
   typedef std::deque<T>   X;
 
-  const int f = 23;  
-  const int l = 111;
+  const std::size_t f = 23;  
+  const std::size_t l = 111;
 
   copy_tracker::reset();
 
@@ -455,7 +455,7 @@ test_default_ctor_exception_safety()
   try
   {
     X a(7);
-    VERIFY(("no exception thrown", false));
+    VERIFY( false );
   }
   catch (...)
   {
@@ -486,7 +486,7 @@ test_copy_ctor_exception_safety()
     try
     {
       X u(a);
-      VERIFY(("no exception thrown", false));
+      VERIFY(false);
     }
     catch (...)
     {

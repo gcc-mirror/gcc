@@ -32,7 +32,7 @@ void test13()
 {
   using namespace std;
   
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* name = "tmp_13";
 
   locale loc(__gnu_test::try_named_locale("se_NO.UTF-8"));
@@ -104,7 +104,7 @@ void test13()
   wchar_t wbuf[wlen + 10];
   wcin.read(wbuf, wlen + 10);
   streamsize n = wcin.gcount();
-  VERIFY( n == wlen );
+  VERIFY( n == static_cast<streamsize>(wlen) );
   VERIFY( !wmemcmp(wbuf, wstr, wlen) );
   VERIFY( wcin.eof() );
   VERIFY( wcin.fail() );

@@ -33,7 +33,7 @@ void test01()
   typedef iterator<output_iterator_tag, void, void, void, void> base_iterator;
   ostringstream osstream("this tag");
   test_iterator  r_it(osstream);
-  base_iterator* base = &r_it;
+  base_iterator* base __attribute__((unused)) = &r_it;
 
   // Check for required typedefs
   typedef test_iterator::value_type value_type;

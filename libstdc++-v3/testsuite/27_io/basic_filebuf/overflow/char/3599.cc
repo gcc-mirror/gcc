@@ -41,14 +41,14 @@ public:
  
 protected:
   int_type 
-  overflow(int_type c = traits_type::eof()) 
+  overflow(int_type c __attribute__((unused)) = traits_type::eof()) 
   { return traits_type::not_eof(0); }
 };
 
 void
 test07()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   testbuf ob;
   std::ostream out(&ob); 
 

@@ -39,7 +39,7 @@ test02()
 {
   using namespace std;
   istringstream in("80.21 56.89 12.3");
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   int i = 0;
   double x;
 

@@ -29,7 +29,7 @@ class MyTraits : public std::char_traits<char>
 public:
   static bool eq(char c1, char c2)
   {
-    bool test = true;
+    bool test __attribute__((unused)) = true;
     VERIFY( c1 != 'X' );
     VERIFY( c2 != 'X' );
     return std::char_traits<char>::eq(c1, c2);
@@ -52,13 +52,13 @@ public:
 // libstdc++/9538
 void test08()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   MyBuf mb;
   mb.sputbackc('a');  
 }
 
-main() 
+int main() 
 {
   test08();
   return 0;

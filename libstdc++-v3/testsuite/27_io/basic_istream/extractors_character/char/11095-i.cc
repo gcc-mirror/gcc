@@ -28,7 +28,7 @@
 // operator>>(basic_istream&, _CharT*)
 void test01() 
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const std::string str_01("Consoli ");
 
   std::stringbuf isbuf_01(str_01, std::ios_base::in);

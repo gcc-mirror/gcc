@@ -46,7 +46,7 @@ public:
 // libstdc++/9701 (partial)
 void test11()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   bool over_expected;
 
@@ -64,7 +64,7 @@ void test11()
   dfbuf_01.close();
 }
 
-main() 
+int main() 
 {
   test11();
   return 0;

@@ -1,6 +1,6 @@
 // 2000-01-01 bkoz
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,6 +26,6 @@
 int main(void)
 {
   // Make sure size_t is in namespace std
-  std::size_t i = std::strlen("tibet shop/san francisco (415) 982-0326");
+  std::size_t i __attribute__((unused)) = std::strlen("tibet shop/san francisco (415) 982-0326");
   return 0;
 }

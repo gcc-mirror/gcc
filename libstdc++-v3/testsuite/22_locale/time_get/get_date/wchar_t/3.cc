@@ -27,19 +27,18 @@
 void test03()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // Check time_get works with other iterators besides streambuf
   // input iterators.
   typedef wstring::const_iterator iter_type;
   typedef time_get<wchar_t, iter_type> time_get_type;
   const ios_base::iostate goodbit = ios_base::goodbit;
-  const ios_base::iostate eofbit = ios_base::eofbit;
   ios_base::iostate err = goodbit;
   const locale loc_c = locale::classic();
 
   // Create "C" time objects
-  const tm time_sanity = { 0, 0, 12, 26, 5, 97, 2 };
+  const tm time_sanity = { 0, 0, 12, 26, 5, 97, 2, 0, 0 };
   tm tm1;
 
   istringstream iss; 

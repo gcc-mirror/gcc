@@ -43,7 +43,7 @@ typedef surf facet_type;
 void test03()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   string name;
   locale global_orig;

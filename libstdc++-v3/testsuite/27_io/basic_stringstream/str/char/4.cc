@@ -26,7 +26,7 @@
 // libstdc++/8466
 void test04()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   const char* strlit00 = "orvieto";
   const std::string str00 = strlit00;

@@ -32,7 +32,7 @@
 void test13()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   streamsize sum = 0;
   ifstream ifs("istream_unformatted-1.tst");
       

@@ -28,13 +28,13 @@
 void 
 test01(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const size_t n1 = 5;
 
   // the other 22 member functions should be in here too...
   try {
     std::bitset<n1> five_bits;
-    bool unused = five_bits.test(n1);   // should throw
+    bool unused __attribute__((unused)) = five_bits.test(n1);   // should throw
     VERIFY( false );
   }
   catch(std::out_of_range& fail) {

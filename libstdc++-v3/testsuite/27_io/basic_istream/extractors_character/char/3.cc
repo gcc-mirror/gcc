@@ -26,7 +26,7 @@
 
 void test01() 
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::string str_01;
   const std::string str_02("coltrane playing 'softly as a morning sunrise'");
   const std::string str_03("coltrane");
@@ -44,7 +44,6 @@ void test01()
   int n = 20;
   char array1[n];
   typedef std::ios::traits_type ctraits_type;
-  ctraits_type::int_type i1, i2;
 
   // testing with width() control enabled.
   is_02.width(8);

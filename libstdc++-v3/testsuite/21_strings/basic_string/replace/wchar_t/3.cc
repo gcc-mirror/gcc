@@ -27,7 +27,7 @@
 void
 test03()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const wchar_t* title01 = L"nine types of ambiguity";
   const wchar_t* title02 = L"ultra";
   std::wstring str01 = title01;

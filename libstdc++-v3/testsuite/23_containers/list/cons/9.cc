@@ -21,7 +21,7 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 // Assignment operator
 //
@@ -36,8 +36,8 @@ void
 test07()
 {
   const int A[] = {701, 702, 703, 704, 705};
-  const int N = sizeof(A) / sizeof(int);
-  int count;
+  const std::size_t N = sizeof(A) / sizeof(int);
+  std::size_t count;
   std::list<int>::iterator i;
 
   std::list<int> list0701(A, A + N);

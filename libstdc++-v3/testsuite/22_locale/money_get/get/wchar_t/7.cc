@@ -30,7 +30,7 @@
 void test07()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   typedef istreambuf_iterator<wchar_t> InIt;
   InIt iend1, iend2, iend3;

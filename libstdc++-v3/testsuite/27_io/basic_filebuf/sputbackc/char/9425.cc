@@ -31,7 +31,7 @@ const char name_01[] = "filebuf_virtuals-1.txt"; // file with data in it
 void test09()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   filebuf fbuf;
   fbuf.open(name_01, ios_base::in);
@@ -41,7 +41,7 @@ void test09()
   VERIFY( r == filebuf::traits_type::eof() );
 }
 
-main() 
+int main() 
 {
   test09();
   return 0;

@@ -29,7 +29,7 @@
 void test01()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char name[] = "tmp_underflow-1.tst";
 
   const char cstr[] =
@@ -99,7 +99,7 @@ void test01()
   streamsize n = fb.sgetn(wbuf, wlen + 1);
   fb.close();
 
-  VERIFY( n == wlen );
+  VERIFY( n == static_cast<streamsize>(wlen) );
   VERIFY( !wmemcmp(wbuf, wstr, wlen) );
 }
 

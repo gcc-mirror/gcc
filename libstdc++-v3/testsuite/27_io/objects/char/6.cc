@@ -37,7 +37,7 @@ protected:
 
 void test06()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   try
     {

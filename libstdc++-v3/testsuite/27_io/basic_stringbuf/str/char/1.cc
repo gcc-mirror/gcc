@@ -32,7 +32,7 @@ std::stringbuf strb_03(str_03, std::ios_base::out);
 // test member functions
 void test03() 
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   //stringbuf::str()
   VERIFY( strb_01.str() == str_01 );
@@ -47,7 +47,7 @@ void test03()
   VERIFY( d1 ); // non-zero
   VERIFY( !d2 ); // zero, cuz ios_base::out
   VERIFY( d1 != d2 ); //these should be the same
-  VERIFY( str_01.length() == d1 );  
+  VERIFY( static_cast<std::streamsize>(str_01.length()) == d1 );  
   VERIFY( strb_01.str() == strb_03.str() ); //ditto
 
   // stringbuf::str(string&) and stringbuf::stringbuf(string&), where the
@@ -58,9 +58,9 @@ void test03()
   std::stringbuf strb_nulls (str_nulls);
   strb_normal.str(str_nulls);  // tried using 'strb_01' rather than declaring
                                // another variable, but then test04 broke!
-  VERIFY( strb_nulls.in_avail() == str_nulls.size()  );
-  VERIFY( strb_nulls.str().size() == 20              );
-  VERIFY( strb_normal.in_avail() == str_nulls.size() );
+  VERIFY( strb_nulls.in_avail() == static_cast<std::streamsize>(str_nulls.size())  );
+  VERIFY( strb_nulls.str().size() == 20 );
+  VERIFY( strb_normal.in_avail() == static_cast<std::streamsize>(str_nulls.size()) );
 }
 
 int main()

@@ -33,13 +33,13 @@
 // http://gcc.gnu.org/ml/gcc-bugs/2000-12/msg00413.html
 void test01() 
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   
   using namespace std;
 
-  long x1 = ios::xalloc();
-  long x2 = ios::xalloc();
-  long x3 = ios::xalloc();
+  ios::xalloc();
+  ios::xalloc();
+  ios::xalloc();
   long x4 = ios::xalloc();
 
   ostringstream out("the element of crime, lars von trier");

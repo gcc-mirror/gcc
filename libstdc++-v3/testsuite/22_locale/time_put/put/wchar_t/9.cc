@@ -27,7 +27,7 @@
 void test09()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // Check time_put works with other iterators besides streambuf
   // output iterators. (As long as output_iterator requirements are met.)

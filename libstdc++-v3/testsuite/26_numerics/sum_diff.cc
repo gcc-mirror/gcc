@@ -40,7 +40,7 @@ test01()
 }
 
 int
-main(int argc, char* argv[])
+main()
 {
     test01();
     return 0;

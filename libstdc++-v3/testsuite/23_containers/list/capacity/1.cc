@@ -21,7 +21,7 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 // This test verifies the following.
 //
@@ -60,7 +60,7 @@ test01()
 }
 
 int
-main(int argc, char* argv[])
+main()
 {
   test01();
   return 0;

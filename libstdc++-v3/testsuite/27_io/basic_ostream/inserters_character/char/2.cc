@@ -31,7 +31,7 @@
 void
 test02(void) 
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::string tmp;
   
   std::string str01 = "";

@@ -58,7 +58,7 @@ shift_arrays(size_t shift_step, size_t size) {
 template <size_t size>
   bool
   do_test() {
-    bool test = true;
+    bool test __attribute__((unused)) = true;
 
     std::bitset<size> shifted;
     std::bitset<size> correct;
@@ -89,7 +89,7 @@ template <size_t size>
 
 bool
 test01() {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   VERIFY( do_test<32>() );
   VERIFY( do_test<48>() );

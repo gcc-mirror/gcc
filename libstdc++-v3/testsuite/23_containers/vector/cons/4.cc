@@ -40,7 +40,7 @@ void
 test_default_ctor_exception_gurantee()
 {
   // setup
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
@@ -52,15 +52,14 @@ test_default_ctor_exception_gurantee()
   try
   {
     X a(7);
-    VERIFY(("no exception thrown", false));
+    VERIFY(false);
   }
   catch (...)
   {
   }
 
   // assert postconditions
-  VERIFY(("memory leak detected:",
-          allocation_tracker::allocationTotal() == allocation_tracker::deallocationTotal()));
+  VERIFY( allocation_tracker::allocationTotal() == allocation_tracker::deallocationTotal() );
 
   // teardown
 }
@@ -73,7 +72,7 @@ void
 test_copy_ctor_exception_gurantee()
 {
   // setup
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
@@ -87,7 +86,7 @@ test_copy_ctor_exception_gurantee()
     try
     {
       X u(a);
-      VERIFY(("no exception thrown", false));
+      VERIFY(false);
     }
     catch (...)
     {
@@ -112,7 +111,7 @@ void
 test_assignment_operator_1()
 {
   // setup
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
@@ -140,7 +139,7 @@ void
 test_assignment_operator_2()
 {
   // setup
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
@@ -170,7 +169,7 @@ void
 test_assignment_operator_3()
 {
   // setup
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
@@ -200,7 +199,7 @@ void
 test_assignment_operator_3_exception_guarantee()
 {
   // setup
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
@@ -218,7 +217,7 @@ test_assignment_operator_3_exception_guarantee()
     try
     {
       r = a;
-      VERIFY(("no exception thrown", false));
+      VERIFY(false);
     }
     catch (...)
     {
@@ -245,7 +244,7 @@ void
 test_fill_assign_1()
 {
   // setup
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
@@ -273,7 +272,7 @@ void
 test_fill_assign_2()
 {
   // setup
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
@@ -307,14 +306,13 @@ void
 test_fill_assign_3()
 {
   // setup
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
   allocation_tracker::resetCounts();
   {
     X a(7);
-    X::size_type old_size     = a.size();
     X::size_type old_capacity = a.capacity();
     X::size_type new_size     = old_capacity + 4;
     const T t;
@@ -343,7 +341,7 @@ void
 test_fill_assign_3_exception_guarantee()
 {
   // setup
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
@@ -365,7 +363,7 @@ test_fill_assign_3_exception_guarantee()
     try
     {
       a.assign(new_size, t);
-      VERIFY(("no exception thrown", false));
+      VERIFY(false);
     }
     catch (...)
     {
@@ -388,7 +386,7 @@ void
 test_fill_assign_4()
 {
   // setup
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
@@ -432,13 +430,12 @@ void
 test_range_assign_2()
 {
   // setup
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
   X a(7);
   X b(3);
-  X::size_type old_size = a.size();
 
   copy_tracker::reset();
   allocation_tracker::resetCounts();
@@ -463,14 +460,13 @@ void
 test_range_assign_3()
 {
   // setup
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
   X a(7);
   a.reserve(a.size() + 7);
   X b(a.size() + 3);
-  X::size_type old_size = a.size();
 
   copy_tracker::reset();
   allocation_tracker::resetCounts();
@@ -496,7 +492,7 @@ void
 test_range_assign_4()
 {
   // setup
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
@@ -504,7 +500,6 @@ test_range_assign_4()
   {
     X a(7);
     X b(a.capacity() + 7);
-    X::size_type old_size = a.size();
 
     copy_tracker::reset();
 
@@ -530,7 +525,7 @@ void
 test_range_assign_4_exception_guarantee()
 {
   // setup
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
@@ -538,7 +533,6 @@ test_range_assign_4_exception_guarantee()
   {
     X a(7);
     X b(a.capacity() + 7);
-    X::size_type old_size = a.size();
 
     copy_tracker::reset();
     copy_constructor::throw_on(3);
@@ -550,7 +544,7 @@ test_range_assign_4_exception_guarantee()
     try
     {
       a.assign(b.begin(), b.end());
-      VERIFY(("no exception thrown", false));
+      VERIFY(false);
     }
     catch (...)
     {

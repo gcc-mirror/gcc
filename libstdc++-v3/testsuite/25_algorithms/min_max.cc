@@ -24,7 +24,7 @@
 
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   const int& x = std::max(1, 2);
   const int& y = std::max(4, 3);
@@ -74,7 +74,7 @@ template int A<long double>::a;
 
 void test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   VERIFY( 2 == std::min(A<int>::a, 2) );
   VERIFY( 3 == std::min(A<int>::a, 4) );

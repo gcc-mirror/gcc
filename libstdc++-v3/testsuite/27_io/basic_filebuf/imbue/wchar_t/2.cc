@@ -27,7 +27,7 @@
 void test02()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char name_01[] = "filebuf_virtuals-1.txt"; // file with data in it
 
   locale loc;
@@ -47,7 +47,7 @@ void test02()
   VERIFY( ob.getloc() == loc );
 }
 
-main() 
+int main() 
 {
   test02();
   return 0;

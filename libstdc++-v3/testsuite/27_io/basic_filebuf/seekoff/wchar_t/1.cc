@@ -32,7 +32,7 @@ void test01()
   typedef wfilebuf::pos_type pos_type;
   typedef wfilebuf::int_type int_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char name[] = "tmp_seekoff-1.tst";
   const int_type eof = wfilebuf::traits_type::eof();
 
@@ -117,7 +117,7 @@ void test01()
 	}
       int_type c1 = fb.sbumpc();
       VERIFY( c1 != eof );
-      VERIFY( c1 == wstr[index % wlen] );
+      VERIFY( static_cast<wchar_t>(c1) == wstr[index % wlen] );
     }
 
   pos_type p3 = fb.pubseekoff(0, ios_base::cur);

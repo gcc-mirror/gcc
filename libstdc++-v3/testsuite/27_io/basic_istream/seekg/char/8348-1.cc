@@ -32,7 +32,7 @@
 void test06(void)
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   string num1("555");
 
   // seekg

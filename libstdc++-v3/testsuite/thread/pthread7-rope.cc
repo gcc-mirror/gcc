@@ -36,7 +36,7 @@ const int max_loop_count = 10000;
 
 __gnu_cxx::crope foo4;
 
-void* thread_main (void *)
+void* thread_main(void *) 
 {
   // To see a problem with gcc 3.3 and before, set a break point here.
   // Single step through c_str implementation, call sched_yield after
@@ -48,13 +48,16 @@ void* thread_main (void *)
 
   // Please note that the memory leak in the rope implementation with
   // this test case, existed before and after fixing this bug...
-
+  bool test __attribute__((unused)) = true;
   VERIFY( !std::strcmp (data4, "barbazbonglehellohellohello") );
+  return 0;
 }
 
 int
 main()
 {
+  bool test __attribute__((unused)) = true;
+
   pthread_t tid[max_thread_count];
 
 #if defined(__sun) && defined(__svr4__)

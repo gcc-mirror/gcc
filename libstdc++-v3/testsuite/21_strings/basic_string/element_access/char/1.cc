@@ -26,11 +26,10 @@
 
 bool test01(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef std::string::size_type csize_type;
   typedef std::string::const_reference cref;
   typedef std::string::reference ref;
-  csize_type npos = std::string::npos;
   csize_type csz01, csz02;
 
   const std::string str01("tamarindo, costa rica");
@@ -56,7 +55,7 @@ bool test01(void)
   cref cref3 = str01.at(csz01 - 1);
   VERIFY( cref3 == 'a' );
   try {
-    cref cref4 = str01.at(csz01);
+    str01.at(csz01);
     VERIFY( false ); // Should not get here, as exception thrown.
   }
   catch(std::out_of_range& fail) {
@@ -71,7 +70,7 @@ bool test01(void)
   ref ref3 = str02.at(csz02 - 1);
   VERIFY( ref3 == 'a' );
   try {
-    ref ref4 = str02.at(csz02);
+    str02.at(csz02);
     VERIFY( false ); // Should not get here, as exception thrown.
   }
   catch(std::out_of_range& fail) {

@@ -32,7 +32,7 @@
 
 void test02()
 {
-  bool 		test = true;
+  bool test __attribute__((unused)) = true;
   const std::string 	str_blank;
   std::string 	str_tmp;
   std::stringbuf 	strbuf;

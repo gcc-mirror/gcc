@@ -23,7 +23,7 @@
 
 typedef __gnu_test::copy_tracker  T;
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 
 // This test verifies the following.
@@ -79,7 +79,7 @@ test01()
   try
   {
     list0101.push_back(T(4, true));
-    VERIFY(("no exception thrown", false));
+    VERIFY(false);
   }
   catch (...)
   {

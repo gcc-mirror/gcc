@@ -24,8 +24,9 @@
 void test01()
 {
   using namespace std;
+  typedef char_traits<wchar_t> traits_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* c_lit = "black pearl jasmine tea";
   const wchar_t* w_lit = L"black pearl jasmine tea";
   int size = strlen(c_lit);
@@ -38,13 +39,13 @@ void test01()
   FILE* fin = fopen(name, "r");
   __gnu_cxx::stdio_sync_filebuf<wchar_t> wsbuf(fin);
 
-  VERIFY( wsbuf.sgetc() == w_lit[0] );
-  VERIFY( getwc(fin) == w_lit[0] );
-  VERIFY( wsbuf.sgetc() == w_lit[1] );
-  VERIFY( wsbuf.sbumpc() == w_lit[1] );
+  VERIFY( traits_type::to_char_type(wsbuf.sgetc()) == w_lit[0] );
+  VERIFY( traits_type::to_char_type(getwc(fin)) == w_lit[0] );
+  VERIFY( traits_type::to_char_type(wsbuf.sgetc()) == w_lit[1] );
+  VERIFY( traits_type::to_char_type(wsbuf.sbumpc()) == w_lit[1] );
   VERIFY( ungetwc(L'Z', fin) == L'Z' );
   VERIFY( wsbuf.sbumpc() == L'Z' );
-  VERIFY( getwc(fin) == w_lit[2] );
+  VERIFY( traits_type::to_char_type(getwc(fin)) == w_lit[2] );
   VERIFY( wsbuf.sputbackc(L'X') == L'X' );
   VERIFY( getwc(fin) == L'X' );
 
@@ -52,7 +53,7 @@ void test01()
   wmemset(buf, 0xdeadbeef, 5);
   VERIFY( wsbuf.sgetn(buf, 5) == 5 );
   VERIFY( !wmemcmp(buf, w_lit + 3, 5) );
-  VERIFY( getwc(fin) == w_lit[8] );
+  VERIFY( traits_type::to_char_type(getwc(fin)) == w_lit[8] );
 
   fclose(fin);
 }
@@ -60,7 +61,7 @@ void test01()
 // libstdc++/12048
 void test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* name = "cin_unget-1.txt";
 
   std::FILE* file = std::fopen(name, "r");
@@ -78,7 +79,7 @@ void test02()
 // libstdc++/12048
 void test03()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* name = "cin_unget-1.txt";
 
   std::FILE* file = std::fopen(name, "r");
@@ -96,7 +97,7 @@ void test03()
 // libstdc++/12048
 void test04()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* name = "cin_unget-1.txt";
 
   std::FILE* file = std::fopen(name, "r");
@@ -114,7 +115,7 @@ void test04()
 // libstdc++/12048
 void test05()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* name = "cin_unget-1.txt";
 
   std::FILE* file = std::fopen(name, "r");

@@ -26,7 +26,7 @@
 // http://gcc.gnu.org/ml/libstdc++/2002-06/msg00025.html
 void test04()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::string str01("portofino");
 

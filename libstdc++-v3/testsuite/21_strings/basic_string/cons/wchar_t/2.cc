@@ -25,7 +25,7 @@
 
 void test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // template<typename _InputIter>
   //   basic_string(_InputIter begin, _InputIter end, const allocator& a)

@@ -26,7 +26,7 @@
 
 int test01(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::string str1;
   std::string str2;
@@ -35,11 +35,11 @@ int test01(void)
   // 1:8-chars_8-chars_
   // 2:8-chars_8-chars_
   str1 = std::string("8-chars_") + "8-chars_";
-  const char* p1 = str1.c_str();
+  str1.c_str();
   // printf("1:%s\n", str1.c_str());
   str2 = str1 + "7-chars";
   // printf("2:%s\n", str1.c_str()); //str1 is gone
-  const char* p2 = str1.c_str();
+  str1.c_str();
   return 0;
 }
 

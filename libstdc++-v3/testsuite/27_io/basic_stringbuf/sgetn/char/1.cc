@@ -32,7 +32,7 @@ std::stringbuf strb_03(str_03, std::ios_base::out);
 // test overloaded virtual functions
 void test04() 
 {
-  bool 			test = true;
+  bool test __attribute__((unused)) = true;
   std::string 		str_tmp;
   std::stringbuf 		strb_tmp;
   std::streamsize 		strmsz_1, strmsz_2;
@@ -49,7 +49,7 @@ void test04()
 
   int_type c1 = strb_01.sbumpc();
   int_type c2 = strb_02.sbumpc();
-  int_type c3 = strb_01.sbumpc();
+  strb_01.sbumpc();
   int_type c4 = strb_02.sbumpc();
   int_type c5 = strb_03.sbumpc();
 
@@ -57,9 +57,9 @@ void test04()
   // if read_cur not avail, return uflow(), else return *read_cur  
   int_type c6 = strb_01.sgetc();
   int_type c7 = strb_02.sgetc();
-  int_type c8 = strb_01.sgetc();
-  int_type c9 = strb_02.sgetc();
-  c5 = strb_03.sgetc();
+  strb_01.sgetc();
+  strb_02.sgetc();
+   c5 = strb_03.sgetc();
 
   // int_type snextc()
   // calls sbumpc and if sbumpc != eof, return sgetc
@@ -74,8 +74,9 @@ void test04()
   strmsz_1 = strb_01.in_avail();
   strmsz_2 = strb_02.in_avail();
   test = strmsz_1 != strmsz_2;
-  VERIFY( strmsz_1 != str_01.length() );
-  VERIFY( strmsz_2 != str_02.length() ); //because now we've moved into string
+  VERIFY( strmsz_1 != static_cast<std::streamsize>(str_01.length()) );
+  // because now we've moved into string
+  VERIFY( strmsz_2 != static_cast<std::streamsize>(str_02.length()) ); 
   char carray1[11] = "";
   strmsz_1 = strb_01.sgetn(carray1, 10);
   char carray2[20] = "";

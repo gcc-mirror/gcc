@@ -27,7 +27,7 @@
 void
 test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   using namespace std;
 

@@ -27,7 +27,7 @@
 void test10()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // Check time_put works with other iterators besides streambuf
   // output iterators. (As long as output_iterator requirements are met.)
@@ -41,7 +41,6 @@ void test10()
   const wstring x(50, 'x'); // have to have allocated wstring!
   wstring res;
   const tm time_sanity = { 0, 0, 12, 26, 5, 97, 2 };
-  const wchar_t* date = L"%X, %A, the second of %B, %Y";
 
   wostringstream oss; 
   oss.imbue(locale(loc_c, new time_put_type));

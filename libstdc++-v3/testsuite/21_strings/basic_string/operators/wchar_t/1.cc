@@ -26,7 +26,7 @@
 
 int test01(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::wstring str1;
   std::wstring str2;
@@ -35,11 +35,11 @@ int test01(void)
   // 1:8-chars_8-chars_
   // 2:8-chars_8-chars_
   str1 = std::wstring(L"8-chars_") + L"8-chars_";
-  const wchar_t* p1 = str1.c_str();
+  str1.c_str();
   // wprintf("1:%s\n", str1.c_str());
   str2 = str1 + L"7-chars";
   // wprintf("2:%s\n", str1.c_str()); //str1 is gone
-  const wchar_t* p2 = str1.c_str();
+  str1.c_str();
   return 0;
 }
 

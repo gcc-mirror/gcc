@@ -28,7 +28,7 @@
 void test01()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   ostringstream oss1, oss2;
   const num_put<char>& np1 = use_facet<num_put<char> >(oss1.getloc());

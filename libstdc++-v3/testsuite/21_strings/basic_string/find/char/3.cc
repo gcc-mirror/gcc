@@ -25,7 +25,7 @@
 
 bool test03(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef std::string::size_type csize_type;
   csize_type npos = std::string::npos;
   csize_type csz01;

@@ -41,7 +41,7 @@ void test02()
   typedef ctype_base::mask 	mask;
   typedef vector<mask> 		vector_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   //  const int max = numeric_limits<char>::max();
   const int max = 255;

@@ -35,18 +35,11 @@
 
 void test03()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   typedef std::mbstate_t state_type;
-  state_type state01;
-  state_type state02;
-
   std::streamoff off01;
-  std::streamoff off02 = 997;
   
-  int i01 = 0;
-  int i02 = 999;
-
   // casts to const streamoff
   // (yes, I know this is weak code)
   const std::streampos pos01 = 0;

@@ -29,7 +29,7 @@ void
 test01()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const string name_c("C");
   const string str_unnamed("*");
   string str;
@@ -46,10 +46,6 @@ test01()
   VERIFY( has_facet<numpunct<char> >(loc_1) );
   VERIFY( has_facet<numpunct<char> >(loc_c) );
   
-  // extract facet
-  const numpunct<char>&	f_nump_1 = use_facet<numpunct<char> >(loc_1); 
-  const numpunct<char>&	f_nump_c = use_facet<numpunct<char> >(loc_c); 
-
   // attempt to re-synthesize classic locale
   locale		loc_2 = loc_1.combine<numpunct<char> >(loc_c);
   VERIFY( loc_2.name() == str_unnamed );

@@ -69,7 +69,7 @@ int use_standard_streams()
 
 void test05()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   int i = static_ob.i;
 
   VERIFY( std::cin.iword(i) == i + 1 );

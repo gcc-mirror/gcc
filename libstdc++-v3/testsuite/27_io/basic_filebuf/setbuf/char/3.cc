@@ -27,7 +27,7 @@ void test02()
 {
   using namespace std;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   char buf[512];
   const char* strlit = "how to tell a story and other essays: mark twain";
   const size_t strlitsize = std::strlen(strlit);
@@ -41,7 +41,7 @@ void test02()
   VERIFY( std::strncmp(strlit, buf, strlitsize) == 0 );
 }
 
-main() 
+int main() 
 {
   test02();
   return 0;

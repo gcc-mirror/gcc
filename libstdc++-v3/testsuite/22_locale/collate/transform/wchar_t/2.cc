@@ -32,7 +32,7 @@ void test02()
   using namespace std;
   typedef std::collate<wchar_t>::string_type string_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // basic construction
   locale loc_c = locale::classic();
@@ -45,14 +45,9 @@ void test02()
   VERIFY( loc_de != loc_fr );
 
   // cache the collate facets
-  const collate<wchar_t>& coll_c = use_facet<collate<wchar_t> >(loc_c); 
-  const collate<wchar_t>& coll_us = use_facet<collate<wchar_t> >(loc_us); 
-  const collate<wchar_t>& coll_fr = use_facet<collate<wchar_t> >(loc_fr); 
   const collate<wchar_t>& coll_de = use_facet<collate<wchar_t> >(loc_de); 
 
   // long hash(const charT*, const charT*) cosnt
-  const wchar_t* strlit1 = L"monkey picked tikuanyin oolong";
-  const wchar_t* strlit2 = L"imperial tea court green oolong";
   const wchar_t* strlit3 = L"Äuglein Augment"; // "C" == "Augment Äuglein"
   const wchar_t* strlit4 = L"Base baß Baß Bast"; // "C" == "Base baß Baß Bast"
 

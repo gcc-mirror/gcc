@@ -35,7 +35,7 @@ void write_rewind(std::iostream& stream)
 {
   for (int j = 0; j < times; j++) 
     {
-      bool test = true;
+      bool test __attribute__((unused)) = true;
       std::streampos begin = stream.tellg();
       
       for (int i = 0; i < times; ++i)
@@ -49,7 +49,7 @@ void write_rewind(std::iostream& stream)
 
 void check_contents(std::iostream& stream)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   stream.clear();
   stream.seekg(0, std::ios::beg);

@@ -29,7 +29,7 @@
 // but now s points inside the _Rep
 int test02(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::string str01;
   const char* title = "Everything was beautiful, and nothing hurt";

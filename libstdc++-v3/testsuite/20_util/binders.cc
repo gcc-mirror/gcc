@@ -1,6 +1,6 @@
 // 2001-06-11  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,8 +27,8 @@
 class Elem 
 { 
 public: 
-  void print(int i) const { } 
-  void modify(int i) { } 
+  void print(int) const { } 
+  void modify(int) { } 
 }; 
 
 // libstdc++/3113

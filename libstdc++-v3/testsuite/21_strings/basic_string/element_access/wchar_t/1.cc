@@ -26,11 +26,10 @@
 
 bool test01(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef std::wstring::size_type csize_type;
   typedef std::wstring::const_reference cref;
   typedef std::wstring::reference ref;
-  csize_type npos = std::wstring::npos;
   csize_type csz01, csz02;
 
   const std::wstring str01(L"tamarindo, costa rica");
@@ -56,7 +55,7 @@ bool test01(void)
   cref cref3 = str01.at(csz01 - 1);
   VERIFY( cref3 == L'a' );
   try {
-    cref cref4 = str01.at(csz01);
+    str01.at(csz01);
     VERIFY( false ); // Should not get here, as exception thrown.
   }
   catch(std::out_of_range& fail) {
@@ -71,7 +70,7 @@ bool test01(void)
   ref ref3 = str02.at(csz02 - 1);
   VERIFY( ref3 == L'a' );
   try {
-    ref ref4 = str02.at(csz02);
+    str02.at(csz02);
     VERIFY( false ); // Should not get here, as exception thrown.
   }
   catch(std::out_of_range& fail) {

@@ -25,7 +25,7 @@ void test01()
 {
   using namespace std;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* c_lit = "black pearl jasmine tea";
   int size = strlen(c_lit);
   const char* name = "stdiobuf-1.txt";
@@ -59,7 +59,7 @@ void test01()
 // libstdc++/12048
 void test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* name = "cin_unget-1.txt";
 
   std::FILE* file = std::fopen(name, "r");
@@ -77,7 +77,7 @@ void test02()
 // libstdc++/12048
 void test03()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* name = "cin_unget-1.txt";
 
   std::FILE* file = std::fopen(name, "r");
@@ -95,7 +95,7 @@ void test03()
 // libstdc++/12048
 void test04()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* name = "cin_unget-1.txt";
 
   std::FILE* file = std::fopen(name, "r");
@@ -113,7 +113,7 @@ void test04()
 // libstdc++/12048
 void test05()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* name = "cin_unget-1.txt";
 
   std::FILE* file = std::fopen(name, "r");

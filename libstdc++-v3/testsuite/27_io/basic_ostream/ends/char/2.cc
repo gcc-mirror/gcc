@@ -32,12 +32,12 @@ void test02()
   using namespace std;
   typedef ostringstream::int_type int_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   ostringstream osst_01;
   const string str_00("herbie_hancock");
   int_type len1 = str_00.size();
   osst_01 << str_00;
-  VERIFY( osst_01.str().size() == len1 );
+  VERIFY( static_cast<int_type>(osst_01.str().size()) == len1 );
 
   osst_01 << ends;
 

@@ -29,7 +29,7 @@ void test02()
   using namespace std;
   typedef istreambuf_iterator<wchar_t> iterator_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // basic construction
   locale loc_c = locale::classic();
@@ -41,31 +41,17 @@ void test02()
   VERIFY( loc_hk != loc_de );
   VERIFY( loc_de != loc_fr );
 
-  // cache the numpunct facets
-  const numpunct<wchar_t>& numpunct_c = use_facet<numpunct<wchar_t> >(loc_c); 
-  const numpunct<wchar_t>& numpunct_de = use_facet<numpunct<wchar_t> >(loc_de); 
-  const numpunct<wchar_t>& numpunct_hk = use_facet<numpunct<wchar_t> >(loc_hk); 
-
   // sanity check the data is correct.
   const wstring empty;
-  char c;
 
   bool b1 = true;
   bool b0 = false;
-  long l1 = 2147483647;
-  long l2 = -2147483647;
-  long l;
   unsigned long ul1 = 1294967294;
   unsigned long ul2 = 0;
   unsigned long ul;
   double d1 =  1.02345e+308;
   double d2 = 3.15e-308;
   double d;
-  long double ld1 = 6.630025e+4;
-  long double ld2 = 0.0;
-  long double ld;
-  void* v;
-  const void* cv = &ul2;
 
   // cache the num_get facet
   wistringstream iss;

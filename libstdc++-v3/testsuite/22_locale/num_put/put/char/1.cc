@@ -29,7 +29,7 @@ void test01()
   using namespace std;
   typedef ostreambuf_iterator<char> iterator_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // basic construction
   locale loc_c = locale::classic();
@@ -42,22 +42,16 @@ void test01()
   VERIFY( loc_de != loc_fr );
 
   // cache the numpunct facets
-  const numpunct<char>& numpunct_c = use_facet<numpunct<char> >(loc_c); 
   const numpunct<char>& numpunct_de = use_facet<numpunct<char> >(loc_de); 
-  const numpunct<char>& numpunct_hk = use_facet<numpunct<char> >(loc_hk); 
 
   // sanity check the data is correct.
   const string empty;
   string result1;
   string result2;
-  char c;
 
   bool b1 = true;
   bool b0 = false;
-  long l1 = 2147483647;
-  long l2 = -2147483647;
   unsigned long ul1 = 1294967294;
-  unsigned long ul2 = 0;
   double d1 =  1.7976931348623157e+308;
   double d2 = 2.2250738585072014e-308;
   long double ld1 = 1.7976931348623157e+308;
@@ -157,7 +151,6 @@ void test01()
 
 #ifdef _GLIBCXX_USE_LONG_LONG
   long long ll1 = 9223372036854775807LL;
-  long long ll2 = -9223372036854775807LL;
 
   oss.str(empty);
   oss.clear();

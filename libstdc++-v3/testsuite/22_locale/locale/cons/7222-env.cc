@@ -28,7 +28,7 @@
 // libstdc++/7222
 void test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::locale loc_1 = __gnu_test::try_named_locale("");
   std::locale loc_2 = __gnu_test::try_named_locale("");

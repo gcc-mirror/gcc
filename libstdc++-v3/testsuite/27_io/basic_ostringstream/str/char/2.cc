@@ -33,7 +33,7 @@ public:
 void
 test04()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   derived_oss yy;
   yy << "buena vista social club\n";
   VERIFY( yy.str() == std::string("buena vista social club\n") );

@@ -29,14 +29,14 @@
 void test09()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   stringbuf sbuf;
   stringbuf::int_type r = sbuf.sputbackc('a');
   VERIFY( r == stringbuf::traits_type::eof() );
 }
 
-main() 
+int main() 
 {
   test09();
   return 0;

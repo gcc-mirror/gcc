@@ -28,7 +28,7 @@
 // libstdc++/86: map & set iterator comparisons are not type-safe
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::map<unsigned int, int> mapByIndex;
   std::map<std::string, unsigned> mapByName;
   

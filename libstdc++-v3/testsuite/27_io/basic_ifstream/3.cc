@@ -117,7 +117,7 @@ struct gnu_char_traits
 
 void test07()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef std::basic_ifstream<gnu_char_type, gnu_char_traits> gnu_ifstr;
 
   try

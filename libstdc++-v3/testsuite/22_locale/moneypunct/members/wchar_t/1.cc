@@ -30,7 +30,7 @@ void test01()
   typedef money_base::part part;
   typedef money_base::pattern pattern;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // basic construction
   locale loc_c = locale::classic();

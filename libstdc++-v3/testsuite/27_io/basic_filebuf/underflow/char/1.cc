@@ -47,7 +47,7 @@ protected:
 void test01()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* name = "filebuf_virtuals-1.txt";
 
   string str;

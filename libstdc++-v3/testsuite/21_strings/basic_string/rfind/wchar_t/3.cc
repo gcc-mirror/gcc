@@ -24,7 +24,7 @@
 // 21.3.6.6 basic_string::find_last_not_of
 bool test03()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef std::wstring::size_type csize_type;
   std::wstring::size_type pos;
   csize_type npos = std::wstring::npos;

@@ -28,7 +28,7 @@
 void test01()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef codecvt<wchar_t, char, mbstate_t> 	w_codecvt;
 
   locale 		loc_c = locale::classic();

@@ -41,7 +41,7 @@ int main()
   typedef character<value_type, int_type>	char_type;
   typedef std::char_traits<char_type> 		traits_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // 1 char_type <-> value_type conversions
   value_type uc1 = 'c';
@@ -70,8 +70,8 @@ int main()
   str += c7;
   str += c8;
   str += c9;
-  string_type::size_type len = str.size();
-  const char_type* arr = str.c_str();
+  string_type::size_type len __attribute__((unused)) = str.size();
+  const char_type* arr __attribute__((unused)) = str.c_str();
 
   return 0;
 }

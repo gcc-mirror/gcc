@@ -34,7 +34,7 @@ protected:
 int main()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   locale loc = locale(locale::classic(), new Cvt);
   wfilebuf* fb = new wfilebuf;

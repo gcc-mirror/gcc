@@ -35,19 +35,12 @@ class gnu_ctype: public std::ctype<char_type> { };
 
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char_type strlit00[] = "manilla, cebu, tandag PHILIPPINES";
   const char_type strlit01[] = "MANILLA, CEBU, TANDAG PHILIPPINES";
   const char_type strlit02[] = "manilla, cebu, tandag philippines";
   const char_type c00 = 'S';
   const char_type c10 = 's';
-  const char_type c20 = '9';
-  const char_type c30 = ' ';
-  const char_type c40 = '!';
-  const char_type c50 = 'F';
-  const char_type c60 = 'f';
-  const char_type c70 = 'X';
-  const char_type c80 = 'x';
 
   gnu_ctype gctype;
   char_type c100;
@@ -66,7 +59,6 @@ void test01()
   int i09 = std::ctype_base::graph;
   int i10 = std::ctype_base::print;
   int i11 = std::ctype_base::cntrl;
-  int i12 = sizeof(std::ctype_base::mask);
   VERIFY ( i01 != i02);
   VERIFY ( i02 != i03);
   VERIFY ( i03 != i04);

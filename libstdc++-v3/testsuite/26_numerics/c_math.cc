@@ -44,7 +44,7 @@ test02()
 int
 test03()
 {
-  double powtest = std::pow(2., 0);
+  double powtest __attribute__((unused)) = std::pow(2., 0);
   return 0;
 }
 
@@ -52,7 +52,7 @@ test03()
 int
 test04()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   float x[2] = {1, 2};
   float y = 3.4;
   std::modf(y, &x[0]);

@@ -68,7 +68,7 @@ const int Size = 5;
 
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   for (int i = 0; i < 10; i++)
   {

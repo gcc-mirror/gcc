@@ -27,7 +27,7 @@ struct junk { char j[12]; };
 
 int main(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::pair<junk*,ptrdiff_t>  results = std::get_temporary_buffer<junk>(5);
 

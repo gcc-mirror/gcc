@@ -22,7 +22,7 @@
 #include <testsuite_hooks.h>
 #include <list>
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 int A[] = {1, 2, 3, 4, 5, 6, 7};
 int B[] = {2, 3, 4, 5, 6, 7, 1};
@@ -72,9 +72,9 @@ test03()
 }
 
 int
-main(int argc, char* argv[])
+main()
 {
-    test02();
-    test03();
-    return !test;
+  test02();
+  test03();
+  return 0;
 }

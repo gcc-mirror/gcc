@@ -337,7 +337,7 @@ namespace std
       typedef __gnu_test::pod_char	char_type;
       typedef __gnu_test::pod_int  	int_type;
       typedef long 			pos_type;
-      typedef unsigned long 		off_type;
+      typedef long 			off_type;
       typedef __gnu_test::state   	state_type;
       
       static void 

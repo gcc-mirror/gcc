@@ -37,24 +37,24 @@ namespace std
   template<>
     bool 
     ctype<podchar_type>::
-    do_is(mask __m, char_type __c) const { return true; }
+    do_is(mask, char_type) const { return true; }
 
   template<>
     const podchar_type*
     ctype<podchar_type>::
-    do_is(const char_type* __lo, const char_type* __hi, mask* __vec) const
+    do_is(const char_type* __lo, const char_type*, mask*) const
     { return __lo; }
 
   template<>
     const podchar_type*
     ctype<podchar_type>::
-    do_scan_is(mask __m, const char_type* __lo, const char_type* __hi) const
+    do_scan_is(mask, const char_type* __lo, const char_type*) const
     { return __lo; }
 
   template<>
     const podchar_type*
     ctype<podchar_type>::
-    do_scan_not(mask __m, const char_type* __lo, const char_type* __hi) const
+    do_scan_not(mask, const char_type* __lo, const char_type*) const
     { return __lo; }
 
   template<>
@@ -66,7 +66,7 @@ namespace std
   template<>
     const podchar_type*
     ctype<podchar_type>::
-    do_toupper(char_type* __lo, const char_type* __hi) const
+    do_toupper(char_type*, const char_type* __hi) const
     { return __hi; }
 
   template<>
@@ -78,7 +78,7 @@ namespace std
   template<>
     const podchar_type*
     ctype<podchar_type>::
-    do_tolower(char_type* __lo, const char_type* __hi) const
+    do_tolower(char_type*, const char_type* __hi) const
     { return __hi; }
 
   template<>
@@ -114,7 +114,7 @@ namespace std
     const podchar_type*
     ctype<podchar_type>::
     do_narrow(const podchar_type* __lo, const podchar_type* __hi, 
-	      char __dfault, char* __dest) const
+	      char, char* __dest) const
     {
       while (__lo < __hi)
 	{
@@ -130,7 +130,7 @@ namespace std
 
   template<>
     void
-    numpunct<podchar_type>::_M_initialize_numpunct(__c_locale __cloc)
+    numpunct<podchar_type>::_M_initialize_numpunct(__c_locale)
     {
       if (!_M_data)
 	_M_data = new __numpunct_cache<podchar_type>;

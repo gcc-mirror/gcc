@@ -115,7 +115,7 @@ struct gnu_char_traits
 
 void test07()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef std::basic_filebuf<gnu_char_type, gnu_char_traits> gnu_filebuf;
   
   try

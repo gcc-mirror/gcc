@@ -26,7 +26,7 @@
 void test01()
 {
   // POD types : resize, capacity, reserve
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::string str01;
   typedef std::string::size_type size_type_s;
 
@@ -37,7 +37,7 @@ void test01()
   VERIFY( sz02 >= 100 );
   str01.reserve();
   sz01 = str01.capacity();
-  VERIFY( sz01 >= 0 );
+  VERIFY( sz01 > 0 );
 
   sz01 = str01.size() + 5;
   str01.resize(sz01);
@@ -79,9 +79,7 @@ void test01()
     
   // trickster allocator issues involved with these:
   std::string str3 = "8-chars_8-chars_";
-  const char* p3 = str3.c_str();
   std::string str4 = str3 + "7-chars";
-  const char* p4 = str3.c_str();
   
   sz01 = str01.size();
   sz02 = str01.max_size();  

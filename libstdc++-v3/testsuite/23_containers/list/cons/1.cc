@@ -21,7 +21,7 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 // A nontrivial type.
 template<typename T>

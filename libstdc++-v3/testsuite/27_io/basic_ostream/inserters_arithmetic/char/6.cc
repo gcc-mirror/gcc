@@ -31,7 +31,7 @@ using namespace std;
 int
 test06()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   int prec = numeric_limits<double>::digits10 + 2;
   double oval = numeric_limits<double>::min();
 

@@ -38,7 +38,7 @@ template<typename R>
 int
 test_good(std::string str, R x, R y)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::complex<R> z;
   char ch;
   std::istringstream iss(str);
@@ -54,7 +54,7 @@ template<typename R>
 int
 test_fail(std::string str)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::complex<R> z;
   std::istringstream iss(str);
   iss >> z;
@@ -87,7 +87,7 @@ testall()
 void test01()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   
   complex<float> cf01(-1.1, -333.2);
   stringstream ss;
@@ -105,7 +105,7 @@ template class std::basic_string<char, gnu_char_traits, std::allocator<char> >;
 
 void test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // Construct locale with specialized facets.
   typedef gnu_sstream::__num_put_type numput_type;
@@ -117,7 +117,6 @@ void test02()
   VERIFY( std::has_facet<numget_type>(loc_2) );
 
   gnu_sstream sstr;
-  std::basic_ios<char, gnu_char_traits>* pios = &sstr;
   sstr.imbue(loc_2);
 
 

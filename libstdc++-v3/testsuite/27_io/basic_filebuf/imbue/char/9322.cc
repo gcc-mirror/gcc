@@ -28,7 +28,7 @@
 void test07()
 {
   using std::locale;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   locale loc;
   std::filebuf ob;
@@ -46,7 +46,7 @@ void test07()
   VERIFY( ob.getloc() == loc_de );
 }
 
-main() 
+int main() 
 {
   test07();
   return 0;

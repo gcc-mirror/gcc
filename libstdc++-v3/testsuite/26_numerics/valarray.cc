@@ -37,7 +37,7 @@ int main()
   // 02: algo
   using std::valarray;
   valarray<double> b, c;
-  double m = std::abs(b - c).max();
+  double m __attribute__((unused)) = std::abs(b - c).max();
 
   return 0;
 }

@@ -29,7 +29,7 @@
 // http://gcc.gnu.org/ml/gcc-patches/2001-08/msg01375.html
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef std::map<int, int>   Map;
   Map             M;
   Map::iterator   hint;

@@ -32,10 +32,9 @@ std::stringbuf strb_03(str_03, std::ios_base::out);
 // test overloaded virtual functions
 void test04() 
 {
-  bool 			test = true;
+  bool test __attribute__((unused)) = true;
   std::string 		str_tmp;
   std::stringbuf 		strb_tmp;
-  std::streamsize 		strmsz_1, strmsz_2;
   std::streamoff  		strmof_1(-1), strmof_2;
   typedef std::stringbuf::int_type int_type;
   typedef std::stringbuf::traits_type traits_type;
@@ -47,8 +46,8 @@ void test04()
   strmof_1 = strb_01.in_avail();
   strmof_2 = strb_02.in_avail();
   VERIFY( strmof_1 != strmof_2 );
-  VERIFY( strmof_1 == str_01.length() );
-  VERIFY( strmof_2 == str_02.length() );
+  VERIFY( strmof_1 == static_cast<std::streamoff>(str_01.length()) );
+  VERIFY( strmof_2 == static_cast<std::streamoff>(str_02.length()) );
   strmof_1 = strb_03.in_avail(); 
   // zero cuz write-only, or eof()? zero, from showmany
   VERIFY( strmof_1 == 0 ); 
