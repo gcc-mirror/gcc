@@ -1,3 +1,8 @@
+2001-05-10  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* dwarf2out.c (mem_loc_descriptor): Do not pass constant pool
+	contents for a SYMBOL_REF in case of floating point constants.
+
 2001-05-10  DJ Delorie  <dj@redhat.com>
 
 	* c-common.c (combine_strings): Widen strings in a
