@@ -1700,9 +1700,12 @@
   ""
   "nop")
 
+;; This had a wider constraint once, and it had trouble.
+;; If you are tempted to try `g', please don't--it's not worth
+;; the risk we will reopen the same bug.
 (define_insn "indirect_jump"
   [(set (pc) (match_operand:SI 0 "general_operand" "r"))]
-  "(GET_CODE (operands[0]) != MEM || offsettable_memref_p (operands[0]))"
+  ""
   "jmp (%0)")
 
 (define_insn "casesi"
