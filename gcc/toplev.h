@@ -7,6 +7,7 @@
 
 #ifdef __STDC__
 union tree_node;
+struct rtx_def;
 #endif
 
 extern int count_error			PROTO ((int));
