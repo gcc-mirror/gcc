@@ -1,3 +1,8 @@
+2003-03-06  Jason Merrill  <jason@redhat.com>
+
+	* tree-inline.c (inlinable_function_p): Revert earlier change
+	pending investigation.
+
 2003-03-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (a new peephole2): New.

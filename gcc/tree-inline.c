@@ -952,11 +952,6 @@ inlinable_function_p (fn, id)
   if (DECL_UNINLINABLE (fn))
     return 0;
 
-  /* Check this now so that we instantiate C++ templates before reading
-     DECL_NUM_STMTS.  */
-  if ((*lang_hooks.tree_inlining.cannot_inline_tree_fn) (&fn))
-    return 0;
-
   /* Assume it is not inlinable.  */
   inlinable = 0;
        
@@ -1036,6 +1031,9 @@ inlinable_function_p (fn, id)
 	    inlinable = 0;
 	}
     }
+
+  if (inlinable && (*lang_hooks.tree_inlining.cannot_inline_tree_fn) (&fn))
+    inlinable = 0;
 
   /* If we don't have the function body available, we can't inline
      it.  */
