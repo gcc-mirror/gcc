@@ -1118,14 +1118,11 @@ extern union tree_node *current_function_decl;
    && (reload_in_progress || reload_completed || ! symbolic_expression_p (X)))
 
 /* Include all constant integers and constant doubles, but not
-   floating-point, except for floating-point zero. 
+   floating-point, except for floating-point zero.  */
 
-   Also reject function labels as reload can not handle them correctly
-   right now.  (Fix this for 2.5).  */
 #define LEGITIMATE_CONSTANT_P(X)  		\
-  ((GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT	\
-    || (X) == CONST0_RTX (GET_MODE (X)))	\
-   && ! function_label_operand (X, VOIDmode))
+  (GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT	\
+    || (X) == CONST0_RTX (GET_MODE (X)))
 
 /* Subroutine for EXTRA_CONSTRAINT.  
 
