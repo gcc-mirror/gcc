@@ -1224,15 +1224,21 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
       if (GET_CODE (loc) == MEM && GET_CODE (XEXP (loc, 0)) == REG
 	  && REGNO (XEXP (loc, 0)) > LAST_VIRTUAL_REGISTER)
 	{
-	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (arg));
-	  rtx stack_slot = assign_stack_temp (mode, int_size_in_bytes (TREE_TYPE (arg)), 1);
+	  rtx stack_slot
+	    = assign_stack_temp (TYPE_MODE (TREE_TYPE (arg)),
+				 int_size_in_bytes (TREE_TYPE (arg)), 1);
 
 	  store_expr (arg, stack_slot, 0);
 
 	  arg_vals[i] = XEXP (stack_slot, 0);
 	}
       else if (GET_CODE (loc) != MEM)
-	arg_vals[i] = expand_expr (arg, NULL_RTX, mode, EXPAND_SUM);
+	/* The mode if LOC and ARG can differ if LOC was a variable
+	   that had its mode promoted via PROMOTED_MODE.  */
+	arg_vals[i] = convert_to_mode (GET_MODE (loc),
+				       expand_expr (arg, NULL_RTX, mode,
+						    EXPAND_SUM),
+				       TREE_UNSIGNED (TREE_TYPE (formal)));
       else
 	arg_vals[i] = 0;
 
@@ -1250,7 +1256,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 		      || GET_CODE (arg_vals[i]) == SUBREG
 		      || GET_CODE (arg_vals[i]) == MEM)
 		  && reg_overlap_mentioned_p (arg_vals[i], target))))
-	arg_vals[i] = copy_to_mode_reg (mode, arg_vals[i]);
+	arg_vals[i] = copy_to_mode_reg (GET_MODE (loc), arg_vals[i]);
     }
 	
   /* Allocate the structures we use to remap things.  */
