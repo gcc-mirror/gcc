@@ -1,5 +1,8 @@
 2003-02-28  Alexandre Oliva  <aoliva@redhat.com>
 
+	* gcc.c-torture/compile/20010327-1.c: Use __SIZE_TYPE__ instead of
+	unsigned long.
+
 	* gcc.c-torture/compile/simd-3.c: Do nothing if double is not
 	wider than float.
 
