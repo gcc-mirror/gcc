@@ -7,7 +7,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 configure options</TITLE>
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.6 2001/02/07 00:03:20 pme Exp $ -->
+<!-- $Id: configopts.html,v 1.7 2001/02/15 22:21:12 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -74,14 +74,20 @@ options</A></H1>
         (described next).
      </P>
 
- <DT><TT>--enable-clocale=MODEL  </TT>
- <DD><P>Select a target-specific underlying locale package. The
-        choices are 'gnu' to specify an X/Open (IEEE Std. 1003.1-200x)
-        model based on langinfo/iconv (from <A
-        HREF="http://sources.redhat.com/glibc/">glibc</A>, the GNU C
-        library), or 'generic' to use a generic &quot;C&quot;
-        abstraction which consists of &quot;C&quot; locale info.
-        The default is 'generic'.
+ <DT><TT>--enable-sjlj-exceptions </TT> 
+ <DD><P> Forces old, short-jump/long-jump exception handling model. If
+ at all possible, the new, frame unwinding exception handling routines
+ should be used instead, as they significantly reduce both runtime
+ memory usage and executable size.
+     </P>
+
+ <DT><TT>--enable-clocale=MODEL </TT> <DD><P>Select a target-specific
+ underlying locale package. The choices are 'gnu' to specify an X/Open
+ (IEEE Std. 1003.1-200x) model based on langinfo/iconv (from <A
+ HREF="http://sources.redhat.com/glibc/">glibc</A>, the GNU C
+ library), or 'generic' to use a generic &quot;C&quot; abstraction
+ which consists of &quot;C&quot; locale info.  The default is
+ 'generic'.
      </P>
 
  <DT><TT>--enable-long-long  </TT>
@@ -190,7 +196,7 @@ options</A></H1>
 
 <HR>
 <P CLASS="fineprint"><EM>
-$Id: configopts.html,v 1.6 2001/02/07 00:03:20 pme Exp $
+$Id: configopts.html,v 1.7 2001/02/15 22:21:12 pme Exp $
 </EM></P>
 
 
