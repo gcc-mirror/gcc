@@ -3145,6 +3145,13 @@ assign_parms (fndecl, second_time)
 	  stack_parm = 0;
       }
 
+      /* If parm was passed in memory, and we need to convert it on entry,
+	 don't store it back in that same slot.  */
+      if (entry_parm != 0
+	  && nominal_mode != BLKmode && nominal_mode != passed_mode)
+	stack_parm = 0;
+
+#if 0
       /* Now adjust STACK_PARM to the mode and precise location
 	 where this parameter should live during execution,
 	 if we discover that it must live in the stack during execution.
@@ -3174,6 +3181,7 @@ assign_parms (fndecl, second_time)
 	     mark it as such for cse and loop optimize.  */
 	  MEM_IN_STRUCT_P (stack_parm) = aggregate;
 	}
+#endif /* 0 */
 
       /* ENTRY_PARM is an RTX for the parameter as it arrives,
 	 in the mode in which it arrives.
