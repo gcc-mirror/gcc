@@ -222,4 +222,8 @@ public class ExemptionMechanism
   {
     return true;
   }
+
+  protected void finalize()
+  {
+  }
 }

@@ -43,7 +43,7 @@ import java.security.BasicPermission;
 /**
  * A permission used for accessing SSL classes.
  */
-public class SSLPermission extends BasicPermission
+public final class SSLPermission extends BasicPermission
 {
 
   // Constant.

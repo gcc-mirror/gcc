@@ -63,7 +63,7 @@ import java.util.StringTokenizer;
  * <i>PrincipalName</i> is a string representing the principal, or the
  * wildcard character.</p>
  */
-public class PrivateCredentialPermission extends Permission
+public final class PrivateCredentialPermission extends Permission
   implements Serializable
 {
   /**

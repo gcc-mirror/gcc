@@ -55,6 +55,11 @@ import java.util.StringTokenizer;
  */
 public class RMIClassLoader
 {
+  /**
+   * This class isn't intended to be instantiated.
+   */
+  private RMIClassLoader() {}
+
   private static class MyClassLoader extends URLClassLoader
   {
     // Package-private to avoid a trampoline constructor.

@@ -51,6 +51,11 @@ import javax.imageio.spi.ServiceRegistry;
 
 public final class ImageIO
 {
+  /**
+   * This class isn't intended to be instantiated.
+   */
+  private ImageIO() {}
+
   private static final class ReaderFormatFilter implements ServiceRegistry.Filter
   {
     private String formatName;

@@ -137,7 +137,7 @@ public abstract class DateFormat extends Format implements Cloneable
     public static final DateFormat.Field TIME_ZONE
 	= new Field("timezone", Calendar.ZONE_OFFSET);
  
-    public static final DateFormat.Field[] allFields =
+    static final DateFormat.Field[] allFields =
     {
       ERA, YEAR, MONTH, DAY_OF_MONTH, HOUR_OF_DAY1,
       HOUR_OF_DAY0, MINUTE, SECOND, MILLISECOND,

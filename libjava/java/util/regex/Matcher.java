@@ -45,7 +45,7 @@ import gnu.regexp.REMatch;
  *
  * @since 1.4
  */
-public class Matcher
+public final class Matcher
 {
   private Pattern pattern;
   private CharSequence input;

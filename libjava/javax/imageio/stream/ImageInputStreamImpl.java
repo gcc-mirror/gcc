@@ -58,7 +58,7 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
     // Do nothing here.
   }
 
-  protected void checkClosed()
+  protected final void checkClosed()
     throws IOException
   {
     if (closed)

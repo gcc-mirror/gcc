@@ -217,7 +217,9 @@ public class DocFlavor implements Cloneable, Serializable
   
   private static final long serialVersionUID = -4512080796965449721L;
   
-  public static final String hostEncoding = "US-ASCII";
+  // FIXME: Get the host encoding from somewhere. Note that the new String is to make
+  // sure the field won't be a compile time constant.
+  public static final String hostEncoding = new String("US-ASCII");
 
   private String mediaSubtype;
   private String mediaType;

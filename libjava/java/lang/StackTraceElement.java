@@ -51,7 +51,7 @@ import java.io.Serializable;
  * @since 1.4
  * @status updated to 1.4
  */
-public class StackTraceElement implements Serializable
+public final class StackTraceElement implements Serializable
 {
   /**
    * Compatible with JDK 1.4+.
