@@ -1,12 +1,13 @@
-Wed May 22 18:25:29 2002  J"orn Rennecke <joern.rennecke@superh.com>
-
-	* c-common.c (cb_register_builtins): Don't indent '#' of #define.
-
-Wed May 22 17:08:48 2002  J"orn Rennecke <joern.rennecke@superh.com>
+Wed May 22 18:39:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* t-sh (LIB2FUNCS_EXTRA): Now embed-bb.c.
 	(embed-bb.c): New rule.
+	* t-sh64 (LIB2FUNCS_EXTRA): Don't change.
 	* config/sh/embed_bb.c: Delete.
+
+Wed May 22 18:25:29 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* c-common.c (cb_register_builtins): Don't indent '#' of #define.
 
 2002-05-22  Kazu Hirata  <kazu@cs.umass.edu>
 
