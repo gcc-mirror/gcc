@@ -1,3 +1,8 @@
+2003-02-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/execute/20030209-1.c: Enable the test if
+	STACK_SIZE is not defined.
+
 2003-02-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9457
