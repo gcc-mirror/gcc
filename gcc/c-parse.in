@@ -1490,7 +1490,10 @@ component_declarator:
 enumlist:
 	  enumerator
 	| enumlist ',' enumerator
-		{ $$ = chainon ($3, $1); }
+		{ if ($1 == error_mark_node)
+		    $$ = $1;
+		  else
+		    $$ = chainon ($3, $1); }
 	| error
 		{ $$ = error_mark_node; }
 	;
