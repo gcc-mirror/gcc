@@ -340,6 +340,35 @@ resolve_scope_to_name (outer_type, inner_stuff)
   return tmp;
 }
 
+/* Returns nonzero iff the destructor name specified in NAME
+   (a BIT_NOT_EXPR) matches BASETYPE.  The operand of NAME can take many
+   forms...  */
+
+int
+check_dtor_name (basetype, name)
+     tree basetype, name;
+{
+  name = TREE_OPERAND (name, 0);
+
+  if (TREE_CODE (name) == TYPE_DECL)
+    name = TREE_TYPE (name);
+  else if (TREE_CODE_CLASS (TREE_CODE (name)) == 't')
+    /* OK */;
+  else if (TREE_CODE (name) == IDENTIFIER_NODE)
+    {
+      if (IS_AGGR_TYPE (basetype) && name == constructor_name (basetype))
+	name = basetype;
+      else
+	name = get_type_value (name);
+    }
+  else
+    my_friendly_abort (980605);
+
+  if (name && TYPE_MAIN_VARIANT (basetype) == TYPE_MAIN_VARIANT (name))
+    return 1;
+  return 0;
+}
+
 /* Build a method call of the form `EXP->SCOPES::NAME (PARMS)'.
    This is how virtual function calls are avoided.  */
 
@@ -386,31 +415,9 @@ build_scoped_method_call (exp, basetype, name, parms)
     binfo = NULL_TREE;
 
   /* Check the destructor call syntax.  */
-  if (TREE_CODE (name) == BIT_NOT_EXPR)
-    {
-      tmp = TREE_OPERAND (name, 0);
-
-      if (TREE_CODE (tmp) == TYPE_DECL)
-	tmp = TREE_TYPE (tmp);
-      else if (TREE_CODE_CLASS (TREE_CODE (tmp)) == 't')
-	/* OK */;
-      else if (TREE_CODE (tmp) == IDENTIFIER_NODE)
-	{
-	  if (IS_AGGR_TYPE (basetype) && tmp == constructor_name (basetype))
-	    tmp = basetype;
-	  else
-	    tmp = get_type_value (tmp);
-	}
-      else
-	my_friendly_abort (980605);
-      
-      if (! (tmp && TYPE_MAIN_VARIANT (basetype) == TYPE_MAIN_VARIANT (tmp)))
-	{
-	  cp_error ("qualified type `%T' does not match destructor name `~%T'",
-		    basetype, TREE_OPERAND (name, 0));
-	  return error_mark_node;
-	}
-    }
+  if (TREE_CODE (name) == BIT_NOT_EXPR && ! check_dtor_name (basetype, name))
+    cp_error ("qualified type `%T' does not match destructor name `~%T'",
+	      basetype, TREE_OPERAND (name, 0));
 
   /* Destructors can be "called" for simple types; see 5.2.4 and 12.4 Note
      that explicit ~int is caught in the parser; this deals with typedefs
@@ -645,36 +652,16 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
-      tree tmp;
-
-      tmp = name = TREE_OPERAND (name, 0);
-
       if (parms)
 	error ("destructors take no parameters");
       basetype = TREE_TYPE (instance);
       if (TREE_CODE (basetype) == REFERENCE_TYPE)
 	basetype = TREE_TYPE (basetype);
 
-      if (TREE_CODE (tmp) == TYPE_DECL)
-	tmp = TREE_TYPE (tmp);
-      else if (TREE_CODE_CLASS (TREE_CODE (tmp)) == 't')
-	/* OK */;
-      else if (TREE_CODE (tmp) == IDENTIFIER_NODE)
-	{
-	  if (IS_AGGR_TYPE (basetype) && tmp == constructor_name (basetype))
-	    tmp = basetype;
-	  else
-	    tmp = get_type_value (tmp);
-	}
-      else
-	my_friendly_abort (980605);
-
-      if (! (tmp && TYPE_MAIN_VARIANT (basetype) == TYPE_MAIN_VARIANT (tmp)))
-	{
-	  cp_error ("destructor name `~%T' does not match type `%T' of expression",
-		    name, basetype);
-	  return cp_convert (void_type_node, instance);
-	}
+      if (! check_dtor_name (basetype, name))
+	cp_error
+	  ("destructor name `~%T' does not match type `%T' of expression",
+	   TREE_OPERAND (name, 0), basetype);
 
       if (! TYPE_HAS_DESTRUCTOR (complete_type (basetype)))
 	return cp_convert (void_type_node, instance);

@@ -1521,7 +1521,6 @@ build_offset_ref (type, name)
 {
   tree decl, fnfields, fields, t = error_mark_node;
   tree basebinfo = NULL_TREE;
-  int dtor = 0;
   tree orig_name = name;
 
   /* class templates can come in as TEMPLATE_DECLs here.  */
@@ -1553,12 +1552,17 @@ build_offset_ref (type, name)
 
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
-      dtor = 1;
-      name = TREE_OPERAND (name, 0);
+      if (! check_dtor_name (type, name))
+	cp_error ("qualified type `%T' does not match destructor name `~%T'",
+		  type, TREE_OPERAND (name, 0));
+      name = dtor_identifier;
     }
-
-  if (name == constructor_name_full (type))
-    name = constructor_name (type);
+#if 0
+  /* I think this is wrong, but the draft is unclear.  --jason 6/15/98 */
+  else if (name == constructor_name_full (type)
+	   || name == constructor_name (type))
+    name = ctor_identifier;
+#endif
 
   if (TYPE_SIZE (complete_type (type)) == 0)
     {
@@ -1598,18 +1602,6 @@ build_offset_ref (type, name)
   else
     decl = current_class_ref;
 
-  if (constructor_name (BINFO_TYPE (basebinfo)) == name)
-    {
-      if (dtor)
-	name = dtor_identifier;
-      else
-	name = ctor_identifier;
-    }
-  else
-    if (dtor)
-      my_friendly_abort (999);
-
-    
   fnfields = lookup_fnfields (basebinfo, name, 1);
   fields = lookup_field (basebinfo, name, 0, 0);
 

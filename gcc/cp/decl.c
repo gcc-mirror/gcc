@@ -12599,7 +12599,8 @@ finish_function (lineno, call_poplevel, nested)
 		  expand_end_bindings (decls, decls != NULL_TREE, 0);
 		  poplevel (decls != NULL_TREE, 0, 0);
 		}
-	      c_expand_return (current_class_ptr);
+	      /* c_expand_return knows to return 'this' from a constructor.  */
+	      c_expand_return (NULL_TREE);
 	    }
 	  else if (TREE_CODE (TREE_TYPE (DECL_RESULT (current_function_decl))) != VOID_TYPE
 		   && return_label != NULL_RTX)
@@ -12666,7 +12667,8 @@ finish_function (lineno, call_poplevel, nested)
 	      poplevel (decls != NULL_TREE, 1, 0);
 	    }
 
-	  c_expand_return (current_class_ptr);
+	  /* c_expand_return knows to return 'this' from a constructor.  */
+	  c_expand_return (NULL_TREE);
 
 	  current_function_assigns_this = 0;
 	  current_function_just_assigned_this = 0;
