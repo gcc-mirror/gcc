@@ -182,20 +182,35 @@ date_and_time (char *__date,
 
   if (__date)
     {
+#if HAVE_SNPRINTF
       snprintf (date, DATE_LEN + 1, "%04d%02d%02d",
 		values[0], values[1], values[2]);
+#else
+      sprintf (date, "%04d%02d%02d",
+	       values[0], values[1], values[2]);
+#endif
     }
 
   if (__time)
     {
+#if HAVE_SNPRINTF
       snprintf (timec, TIME_LEN + 1, "%02d%02d%02d.%03d",
 		values[4], values[5], values[6], values[7]);
+#else
+      sprintf (timec, "%02d%02d%02d.%03d",
+	       values[4], values[5], values[6], values[7]);
+#endif
     }
 
   if (__zone)
     {
+#if HAVE_SNPRINTF
       snprintf (zone, ZONE_LEN + 1, "%+03d%02d",
 		values[3] / 60, abs (values[3] % 60));
+#else
+      sprintf (zone, "%+03d%02d",
+	       values[3] / 60, abs (values[3] % 60));
+#endif
     }
 #else /* if defined HAVE_NO_DATE_TIME  */
   /* We really have *nothing* to return, so return blanks and HUGE(0).  */

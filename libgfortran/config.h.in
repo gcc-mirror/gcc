@@ -135,6 +135,9 @@
 /* libm includes sinhf */
 #undef HAVE_SINHF
 
+/* Define to 1 if you have the `snprintf' function. */
+#undef HAVE_SNPRINTF
+
 /* libm includes sqrtf */
 #undef HAVE_SQRTF
 
@@ -233,6 +236,9 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
+
+/* Define to 1 if the target is ILP32. */
+#undef TARGET_ILP32
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME

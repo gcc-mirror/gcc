@@ -1,3 +1,21 @@
+2004-11-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/16135
+	* acinclude.m4 (LIBGFOR_TARGET_ILP32): New check.
+	* configure.ac: Include LIBGFOR_TARGET_ILP32.
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+	* libgfortran.h: Provide default definitions for C99 types
+	on ILP32 targets that don't have them.
+
+	PR target/17999
+	* configure.ac: Check for snprintf.
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+	* intrinsics/date_and_time.c (date_and_time): Do not
+	use snprinf if it is not available.
+	* io/write.c (output_float): Likewise.
+
 2004-11-20  Steven G. Kargl  <kargls@comcast.net>
 
 	* Makefile.am: Add intrinsics/{umask.c,unlink.c,exit.c}
