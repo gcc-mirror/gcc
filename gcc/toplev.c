@@ -3789,7 +3789,16 @@ rest_of_compilation (decl)
       if (gcse_dump)
 	open_dump_file (".gcse", IDENTIFIER_POINTER (DECL_NAME (decl)));
 
-      TIMEVAR (gcse_time, gcse_main (insns, rtl_dump_file));
+      TIMEVAR (gcse_time, tem = gcse_main (insns, rtl_dump_file));
+
+      /* If gcse altered any jumps, rerun jump optimizations to clean
+	 things up.  */
+      if (tem)
+	{
+	  TIMEVAR (jump_time, jump_optimize (insns, !JUMP_CROSS_JUMP,
+					     !JUMP_NOOP_MOVES,
+					     !JUMP_AFTER_REGSCAN));
+        }
 
       if (gcse_dump)
 	{

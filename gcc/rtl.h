@@ -1452,7 +1452,7 @@ extern rtx expand_mult_highpart		PROTO ((enum machine_mode, rtx,
 
 /* In gcse.c */
 #ifdef BUFSIZ
-extern void gcse_main			PROTO ((rtx, FILE *));
+extern int gcse_main			PROTO ((rtx, FILE *));
 #endif
 
 /* In global.c */

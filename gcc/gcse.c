@@ -188,7 +188,7 @@ yyy
 
    4) Perform global cse.
 
-   5) Perform another pass of copy/constant propagation [only if PRE].
+   5) Perform another pass of copy/constant propagation.
 
    Two passes of copy/constant propagation are done because the first one
    enables more GCSE and the second one helps to clean up the copies that
@@ -332,6 +332,15 @@ static int_list_ptr *s_succs;
 /* Element I is the number of predecessors/successors of basic block I.  */
 static int *num_preds;
 static int *num_succs;
+
+/* Note whether or not we should run jump optimization after gcse.  We
+   want to do this for two cases.
+
+    * If we changed any jumps via cprop.
+
+    * If we added any labels via edge splitting.  */
+
+static int run_jump_opt_after_gcse;
 
 /* Hash table of expressions.  */
 
@@ -648,7 +657,7 @@ static void add_label_notes	      PROTO ((rtx, rtx));
 /* Entry point for global common subexpression elimination.
    F is the first instruction in the function.  */
 
-void
+int
 gcse_main (f, file)
      rtx f;
      FILE *file;
@@ -661,10 +670,12 @@ gcse_main (f, file)
   /* Point to release obstack data from for each pass.  */
   char *gcse_obstack_bottom;
 
+  run_jump_opt_after_gcse = 0;
+
   /* It's impossible to construct a correct control flow graph in the
      presense of setjmp, so just punt to be safe.  */
   if (current_function_calls_setjmp)
-    return;
+    return 0;
    
   /* For calling dump_foo fns from gdb.  */
   debug_stderr = stderr;
@@ -677,7 +688,7 @@ gcse_main (f, file)
     {
       /* Free storage allocated by find_basic_blocks.  */
       free_basic_block_vars (0);
-      return;
+      return 0;
     }
 
   /* See what modes support reg/reg copy operations.  */
@@ -778,6 +789,7 @@ gcse_main (f, file)
   free_bb_mem ();
   /* Free storage allocated by find_basic_blocks.  */
   free_basic_block_vars (0);
+  return run_jump_opt_after_gcse;
 }
 
 /* Misc. utilities.  */
@@ -1800,7 +1812,8 @@ hash_scan_set (pat, insn, set_p)
 		    && REGNO (src) >= FIRST_PSEUDO_REGISTER
 		    && can_copy_p [GET_MODE (dest)])
 		   /* ??? CONST_INT:wip */
-		   || GET_CODE (src) == CONST_INT)
+		   || GET_CODE (src) == CONST_INT
+		   || GET_CODE (src) == CONST_DOUBLE)
 	       /* A copy is not available if its src or dest is subsequently
 		  modified.  Here we want to search from INSN+1 on, but
 		  oprs_available_p searches from INSN on.  */
@@ -3690,6 +3703,11 @@ static int
 try_replace_reg (from, to, insn)
      rtx from, to, insn;
 {
+  /* If this fails we could try to simplify the result of the
+     replacement and attempt to recognize the simplified insn.
+
+     But we need a general simplify_rtx that doesn't have pass
+     specific state variables.  I'm not aware of one at the moment.  */
   return validate_replace_src (from, to, insn);
 }
 
@@ -3723,8 +3741,10 @@ cprop_insn (insn)
   struct reg_use *reg_used;
   int changed = 0;
 
-  /* ??? For now only propagate into SETs.  */
-  if (GET_CODE (insn) != INSN
+  /* Only propagate into SETs.  Note that a conditional jump is a
+     SET with pc_rtx as the destination.  */
+  if ((GET_CODE (insn) != INSN
+       && GET_CODE (insn) != JUMP_INSN)
       || GET_CODE (PATTERN (insn)) != SET)
     return 0;
 
@@ -3760,9 +3780,12 @@ cprop_insn (insn)
 	abort ();
       src = SET_SRC (pat);
 
-      if (GET_CODE (src) == CONST_INT)
+      /* Constant propagation.  */
+      if (GET_CODE (src) == CONST_INT || GET_CODE (src) == CONST_DOUBLE)
 	{
-	  if (try_replace_reg (reg_used->reg_rtx, src, insn))
+	  /* Handle normal insns first.  */
+	  if (GET_CODE (insn) == INSN
+	      && try_replace_reg (reg_used->reg_rtx, src, insn))
 	    {
 	      changed = 1;
 	      const_prop_count++;
@@ -3770,12 +3793,89 @@ cprop_insn (insn)
 		{
 		  fprintf (gcse_file, "CONST-PROP: Replacing reg %d in insn %d with constant ",
 			   regno, INSN_UID (insn));
-		  fprintf (gcse_file, HOST_WIDE_INT_PRINT_DEC, INTVAL (src));
+		  print_rtl (gcse_file, src);
 		  fprintf (gcse_file, "\n");
 		}
 
 	      /* The original insn setting reg_used may or may not now be
 		 deletable.  We leave the deletion to flow.  */
+	    }
+
+	  /* Try to propagate a CONST_INT into a conditional jump.
+	     We're pretty specific about what we will handle in this
+	     code, we can extend this as necessary over time.
+
+	     Right now the insn in question must look like
+
+	     (set (pc) (if_then_else ...))
+
+	     Note this does not currently handle machines which use cc0.  */
+	  else if (GET_CODE (insn) == JUMP_INSN && condjump_p (insn))
+	    {
+	      /* We want a copy of the JUMP_INSN so we can modify it
+		 in-place as needed without effecting the original.  */
+	      rtx copy = copy_rtx (insn);
+	      rtx set = PATTERN (copy);
+	      rtx temp;
+
+	      /* Replace the register with the appropriate constant.  */
+	      replace_rtx (SET_SRC (set), reg_used->reg_rtx, src);
+
+	      temp = simplify_ternary_operation (GET_CODE (SET_SRC (set)),
+						 GET_MODE (SET_SRC (set)),
+						 GET_MODE (XEXP (SET_SRC (set), 0)),
+						 XEXP (SET_SRC (set), 0),
+						 XEXP (SET_SRC (set), 1),
+						 XEXP (SET_SRC (set), 2));
+
+	      /* If no simplification can be made, then try the next
+		 register.  */
+	      if (temp)
+		SET_SRC (set) = temp;
+	      else
+		continue;
+
+	      /* That may have changed the structure of TEMP, so
+		 force it to be rerecognized if it has not turned
+		 into a nop or unconditional jump.  */
+		
+	      INSN_CODE (copy) = -1;
+	      if ((SET_DEST (set) == pc_rtx
+		   && (SET_SRC (set) == pc_rtx
+		       || GET_CODE (SET_SRC (set)) == LABEL_REF))
+		  || recog (PATTERN (copy), copy, NULL) >= 0)
+		{
+		  /* This has either become an unconditional jump
+		     or a nop-jump.  We'd like to delete nop jumps
+		     here, but doing so confuses gcse.  So we just
+		     make the replacement and let later passes
+		     sort things out.  */
+		  PATTERN (insn) = set;
+		  INSN_CODE (insn) = -1;
+
+		  /* One less use of the label this insn used to jump to
+		     if we turned this into a NOP jump.  */
+		  if (SET_SRC (set) == pc_rtx && JUMP_LABEL (insn) != 0)
+		    --LABEL_NUSES (JUMP_LABEL (insn));
+
+		  /* If this has turned into an unconditional jump,
+		     then put a barrier after it so that the unreachable
+		     code will be deleted.  */
+		  if (GET_CODE (SET_SRC (set)) == LABEL_REF)
+		    emit_barrier_after (insn);
+
+		  run_jump_opt_after_gcse = 1;
+
+		  changed = 1;
+		  const_prop_count++;
+		  if (gcse_file != NULL)
+		    {
+		      fprintf (gcse_file, "CONST-PROP: Replacing reg %d in insn %d with constant ",
+			       regno, INSN_UID (insn));
+		      print_rtl (gcse_file, src);
+		      fprintf (gcse_file, "\n");
+		    }
+		}
 	    }
 	}
       else if (GET_CODE (src) == REG

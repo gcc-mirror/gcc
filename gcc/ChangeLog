@@ -1,3 +1,15 @@
+Wed Mar 10 20:28:29 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcse.c (run_jump_opt_after_gcse): New variable.
+	(gcse_main): Returns an integer.
+	(hash_scan_set): Record initializations from CONST_DOUBLEs too.
+	(try_replace_reg): Update some comments.
+	(cprop_insn): Allow propagation into some JUMP_INSNs too.
+	* rtl.h (gcse_main): Update prototype.
+	* toplev.c (rest_of_compilation): If gcse_main returns nonzero,
+	then run a jump optimization pass.
+	* jump.c (delete_barrier_successors): Delete nop jumps too.
+
 Wed Mar 10 19:04:31 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.c (fp_arith_reg_operand): Actually test if reg is suitable
