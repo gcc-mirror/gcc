@@ -1,3 +1,12 @@
+2004-04-14  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 14936
+	Backport from mainline:
+	2004-03-12  Matt Austern  <austern@apple.com>
+
+	* varasm.c (make_decl_one_only): Don't use DECL_COMMON if
+	we're compiling for a SUPPORTS_ONE_ONLY target.
+
 2004-04-09  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/ia64/hpux.h (MEMBER_TYPE_FORCES_BLK): Look only at
