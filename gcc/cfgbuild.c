@@ -50,7 +50,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static int count_basic_blocks (rtx);
 static void find_basic_blocks_1 (rtx);
-static void make_edges (rtx, basic_block, basic_block, int);
+static void make_edges (basic_block, basic_block, int);
 static void make_label_edge (sbitmap *, basic_block, rtx, int);
 static void find_bb_boundaries (basic_block);
 static void compute_outgoing_frequencies (basic_block);
@@ -223,7 +223,7 @@ rtl_make_eh_edge (sbitmap *edge_cache, basic_block src, rtx insn)
    the list of exception regions active at the end of the basic block.  */
 
 static void
-make_edges (rtx label_value_list, basic_block min, basic_block max, int update_p)
+make_edges (basic_block min, basic_block max, int update_p)
 {
   basic_block bb;
   sbitmap *edge_cache = NULL;
@@ -240,7 +240,7 @@ make_edges (rtx label_value_list, basic_block min, basic_block max, int update_p
   /* Heavy use of computed goto in machine-generated code can lead to
      nearly fully-connected CFGs.  In that case we spend a significant
      amount of time searching the edge lists for duplicates.  */
-  if (forced_labels || label_value_list || cfun->max_jumptable_ents > 100)
+  if (forced_labels || cfun->max_jumptable_ents > 100)
     {
       edge_cache = sbitmap_vector_alloc (last_basic_block, last_basic_block);
       sbitmap_vector_zero (edge_cache, last_basic_block);
@@ -326,13 +326,10 @@ make_edges (rtx label_value_list, basic_block min, basic_block max, int update_p
 	    }
 
 	  /* If this is a computed jump, then mark it as reaching
-	     everything on the label_value_list and forced_labels list.  */
+	     everything on the forced_labels list.  */
 	  else if (computed_jump_p (insn))
 	    {
 	      current_function_has_computed_jump = 1;
-
-	      for (x = label_value_list; x; x = XEXP (x, 1))
-		make_label_edge (edge_cache, bb, XEXP (x, 0), EDGE_ABNORMAL);
 
 	      for (x = forced_labels; x; x = XEXP (x, 1))
 		make_label_edge (edge_cache, bb, XEXP (x, 0), EDGE_ABNORMAL);
@@ -424,7 +421,6 @@ find_basic_blocks_1 (rtx f)
 {
   rtx insn, next;
   rtx bb_note = NULL_RTX;
-  rtx lvl = NULL_RTX;
   rtx head = NULL_RTX;
   rtx end = NULL_RTX;
   basic_block prev = ENTRY_BLOCK_PTR;
@@ -493,38 +489,6 @@ find_basic_blocks_1 (rtx f)
 	default:
 	  abort ();
 	}
-
-      if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
-	{
-	  rtx note;
-
-	  /* Make a list of all labels referred to other than by jumps.
-
-	     Make a special exception for labels followed by an ADDR*VEC,
-	     as this would be a part of the tablejump setup code.
-
-	     Make a special exception to registers loaded with label
-	     values just before jump insns that use them.  */
-
-	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-	    if (REG_NOTE_KIND (note) == REG_LABEL)
-	      {
-		rtx lab = XEXP (note, 0), next;
-
-		if ((next = next_nonnote_insn (lab)) != NULL
-			 && GET_CODE (next) == JUMP_INSN
-			 && (GET_CODE (PATTERN (next)) == ADDR_VEC
-			     || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
-		  ;
-		else if (GET_CODE (lab) == NOTE)
-		  ;
-		else if (GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
-			 && find_reg_note (NEXT_INSN (insn), REG_LABEL, lab))
-		  ;
-		else
-		  lvl = alloc_EXPR_LIST (0, XEXP (note, 0), lvl);
-	      }
-	}
     }
 
   if (head != NULL_RTX)
@@ -535,7 +499,6 @@ find_basic_blocks_1 (rtx f)
   if (last_basic_block != n_basic_blocks)
     abort ();
 
-  label_value_list = lvl;
   clear_aux_for_blocks ();
 }
 
@@ -584,7 +547,7 @@ find_basic_blocks (rtx f, int nregs ATTRIBUTE_UNUSED,
   find_basic_blocks_1 (f);
 
   /* Discover the edges of our cfg.  */
-  make_edges (label_value_list, ENTRY_BLOCK_PTR->next_bb, EXIT_BLOCK_PTR->prev_bb, 0);
+  make_edges (ENTRY_BLOCK_PTR->next_bb, EXIT_BLOCK_PTR->prev_bb, 0);
 
   /* Do very simple cleanup now, for the benefit of code that runs between
      here and cleanup_cfg, e.g. thread_prologue_and_epilogue_insns.  */
@@ -729,7 +692,7 @@ find_many_sub_basic_blocks (sbitmap blocks)
 
   /* Now re-scan and wire in all edges.  This expect simple (conditional)
      jumps at the end of each new basic blocks.  */
-  make_edges (NULL, min, max, 1);
+  make_edges (min, max, 1);
 
   /* Update branch probabilities.  Expect only (un)conditional jumps
      to be created with only the forward edges.  */
@@ -771,7 +734,7 @@ find_sub_basic_blocks (basic_block bb)
 
   /* Now re-scan and wire in all edges.  This expect simple (conditional)
      jumps at the end of each new basic blocks.  */
-  make_edges (NULL, min, max, 1);
+  make_edges (min, max, 1);
 
   /* Update branch probabilities.  Expect only (un)conditional jumps
      to be created with only the forward edges.  */
