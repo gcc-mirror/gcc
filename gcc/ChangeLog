@@ -1,3 +1,9 @@
+2004-02-06  Jan Hubicka  <jh@suse.cz>
+
+	* flow.c (update_life_info): Allocate reg_deaths when called from
+	scheudler.
+	(attempt_auto_inc):  Update life ranges accordingly.
+
 2004-02-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR debug/11816

@@ -627,6 +627,9 @@ update_life_info (sbitmap blocks, enum update_life_extent extent, int prop_flags
   tmp = INITIALIZE_REG_SET (tmp_head);
   ndead = 0;
 
+  if ((prop_flags & PROP_REG_INFO) && !reg_deaths)
+    reg_deaths = xcalloc (sizeof (*reg_deaths), max_regno);
+
   timevar_push ((extent == UPDATE_LIFE_LOCAL || blocks)
 		? TV_LIFE_UPDATE : TV_LIFE);
 
@@ -3376,15 +3379,15 @@ attempt_auto_inc (struct propagate_block_info *pbi, rtx inc, rtx insn,
       incr_reg = q;
       regno = REGNO (q);
 
+      if ((pbi->flags & PROP_REG_INFO)
+	  && !REGNO_REG_SET_P (pbi->reg_live, regno))
+	reg_deaths[regno] = pbi->insn_num;
+
       /* REGNO is now used in INCR which is below INSN, but
 	 it previously wasn't live here.  If we don't mark
 	 it as live, we'll put a REG_DEAD note for it
 	 on this insn, which is incorrect.  */
       SET_REGNO_REG_SET (pbi->reg_live, regno);
-
-      /* We shall not do the autoinc during final pass.  */
-      if (flags & PROP_REG_INFO)
-	abort ();
 
       /* If there are any calls between INSN and INCR, show
 	 that REGNO now crosses them.  */
@@ -3417,14 +3420,21 @@ attempt_auto_inc (struct propagate_block_info *pbi, rtx inc, rtx insn,
       /* If the original source was dead, it's dead now.  */
       rtx note;
 
-      /* We shall not do the autoinc during final pass.  */
-      if (flags & PROP_REG_INFO)
-	abort ();
       while ((note = find_reg_note (incr, REG_DEAD, NULL_RTX)) != NULL_RTX)
 	{
 	  remove_note (incr, note);
 	  if (XEXP (note, 0) != incr_reg)
-	    CLEAR_REGNO_REG_SET (pbi->reg_live, REGNO (XEXP (note, 0)));
+	    {
+	      unsigned int regno = REGNO (XEXP (note, 0));
+
+	      if ((pbi->flags & PROP_REG_INFO)
+		  && REGNO_REG_SET_P (pbi->reg_live, regno))
+		{
+		  REG_LIVE_LENGTH (regno) += pbi->insn_num - reg_deaths[regno];
+		  reg_deaths[regno] = 0;
+		}
+	      CLEAR_REGNO_REG_SET (pbi->reg_live, REGNO (XEXP (note, 0)));
+	    }
 	}
 
       PUT_CODE (incr, NOTE);
