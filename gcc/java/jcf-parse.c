@@ -82,7 +82,7 @@ static struct JCF main_jcf[1];
 /* Declarations of some functions used here.  */
 static tree give_name_to_class PARAMS ((JCF *jcf, int index));
 static void parse_zip_file_entries PARAMS ((void));
-static void process_zip_dir PARAMS ((void));
+static void process_zip_dir PARAMS ((FILE *));
 static void parse_source_file PARAMS ((tree, FILE *));
 static void jcf_parse_source PARAMS ((void));
 static int jcf_figure_file_type PARAMS ((JCF *));
@@ -965,7 +965,8 @@ parse_zip_file_entries (void)
 /* Read all the entries of the zip file, creates a class and a JCF. Sets the
    jcf up for further processing and link it to the created class.  */
 
-static void process_zip_dir()
+static void
+process_zip_dir (FILE *finput)
 {
   int i;
   ZipDirectory *zdir;
@@ -1070,7 +1071,8 @@ DEFUN(jcf_figure_file_type, (jcf),
     {
       localToFile = ALLOC (sizeof (struct ZipFileCache));
       memcpy (localToFile, SeenZipFiles, sizeof (struct ZipFileCache));
-      process_zip_dir ();	/* Register all the class defined there */
+      /* Register all the class defined there.  */
+      process_zip_dir (jcf->read_state);
       return JCF_ZIP;
     }
 
