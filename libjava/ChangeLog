@@ -1,5 +1,9 @@
 2004-11-06  Tom Tromey  <tromey@redhat.com>
 
+	* java/io/FilePermission.java: Reindented.
+
+2004-11-06  Tom Tromey  <tromey@redhat.com>
+
 	* java/io/ObjectOutputStream.java (currentObjectStreamClass): Now
 	package-private.
 	(setBlockDataMode): Likewise.
