@@ -3630,7 +3630,7 @@ assign_parms (fndecl, second_time)
 	      rtx tempreg = gen_reg_rtx (GET_MODE (entry_parm));
 
 	      emit_move_insn (tempreg, validize_mem (entry_parm));
-	      tempreg = gen_lowpart (nominal_mode, tempreg);
+	      tempreg = convert_to_mode (nominal_mode, tempreg, unsignedp);
 
 	      push_to_sequence (conversion_insns);
 	      expand_assignment (parm,
