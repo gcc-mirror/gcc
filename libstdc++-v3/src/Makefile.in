@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -168,16 +168,41 @@ INCLUDES = \
 
 
 sources = \
-	globals.cc limits.cc \
-	basic_file.cc complex_io.cc ios.cc strstream.cc \
-	cmath.cc bitset.cc \
-	functexcept.cc stdexcept.cc vterminate.cc \
-	c++locale.cc locale.cc localename.cc codecvt.cc \
-	collate.cc ctype.cc messages.cc monetary.cc numeric.cc time.cc \
-	concept-inst.cc locale-inst.cc misc-inst.cc stl-inst.cc \
-	string-inst.cc wstring-inst.cc valarray-inst.cc  ext-inst.cc \
-	fstream-inst.cc io-inst.cc istream-inst.cc ostream-inst.cc \
-	streambuf-inst.cc sstream-inst.cc
+	basic_file.cc \
+	bitset.cc \
+	c++locale.cc \
+	cmath.cc \
+	codecvt.cc \
+	collate.cc \
+	complex_io.cc \
+	concept-inst.cc \
+	ctype.cc \
+	ext-inst.cc \
+	fstream-inst.cc \
+	functexcept.cc \
+	globals.cc \
+	io-inst.cc \
+	ios.cc \
+	istream-inst.cc \
+	limits.cc \
+	locale-inst.cc \
+	locale.cc \
+	localename.cc \
+	messages.cc \
+	misc-inst.cc \
+	monetary.cc \
+	numeric.cc \
+	ostream-inst.cc \
+	sstream-inst.cc \
+	stdexcept.cc \
+	stl-inst.cc \
+	streambuf-inst.cc \
+	string-inst.cc \
+	strstream.cc \
+	time.cc \
+	valarray-inst.cc \
+	vterminate.cc \
+	wstring-inst.cc
 
 
 VPATH = $(top_srcdir)/src:$(top_srcdir)
@@ -255,13 +280,14 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-libstdc___la_OBJECTS =  globals.lo limits.lo basic_file.lo complex_io.lo \
-ios.lo strstream.lo cmath.lo bitset.lo functexcept.lo stdexcept.lo \
-vterminate.lo c++locale.lo locale.lo localename.lo codecvt.lo \
-collate.lo ctype.lo messages.lo monetary.lo numeric.lo time.lo \
-concept-inst.lo locale-inst.lo misc-inst.lo stl-inst.lo string-inst.lo \
-wstring-inst.lo valarray-inst.lo ext-inst.lo fstream-inst.lo io-inst.lo \
-istream-inst.lo ostream-inst.lo streambuf-inst.lo sstream-inst.lo
+libstdc___la_OBJECTS =  basic_file.lo bitset.lo c++locale.lo cmath.lo \
+codecvt.lo collate.lo complex_io.lo concept-inst.lo ctype.lo \
+ext-inst.lo fstream-inst.lo functexcept.lo globals.lo io-inst.lo ios.lo \
+istream-inst.lo limits.lo locale-inst.lo locale.lo localename.lo \
+messages.lo misc-inst.lo monetary.lo numeric.lo ostream-inst.lo \
+sstream-inst.lo stdexcept.lo stl-inst.lo streambuf-inst.lo \
+string-inst.lo strstream.lo time.lo valarray-inst.lo vterminate.lo \
+wstring-inst.lo
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -272,6 +298,17 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
+DEP_FILES =  .deps/basic_file.P .deps/bitset.P .deps/c++locale.P \
+.deps/cmath.P .deps/codecvt.P .deps/collate.P .deps/complex_io.P \
+.deps/concept-inst.P .deps/ctype.P .deps/ext-inst.P \
+.deps/fstream-inst.P .deps/functexcept.P .deps/globals.P \
+.deps/io-inst.P .deps/ios.P .deps/istream-inst.P .deps/limits.P \
+.deps/locale-inst.P .deps/locale.P .deps/localename.P .deps/messages.P \
+.deps/misc-inst.P .deps/monetary.P .deps/numeric.P .deps/ostream-inst.P \
+.deps/sstream-inst.P .deps/stdexcept.P .deps/stl-inst.P \
+.deps/streambuf-inst.P .deps/string-inst.P .deps/strstream.P \
+.deps/time.P .deps/valarray-inst.P .deps/vterminate.P \
+.deps/wstring-inst.P
 SOURCES = $(libstdc___la_SOURCES)
 OBJECTS = $(libstdc___la_OBJECTS)
 
@@ -279,9 +316,9 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .cc .lo .o .obj .s
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --cygnus src/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnits src/Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -311,9 +348,6 @@ uninstall-toolexeclibLTLIBRARIES:
 	  $(LIBTOOL)  --mode=uninstall rm -f $(DESTDIR)$(toolexeclibdir)/$$p; \
 	done
 
-.c.o:
-	$(COMPILE) -c $<
-
 # FIXME: We should only use cygpath when building on Windows,
 # and only if it is available.
 .c.obj:
@@ -335,9 +369,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 maintainer-clean-compile:
-
-.c.lo:
-	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
 
 .s.lo:
 	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
@@ -398,8 +429,13 @@ distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 subdir = src
 
 distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnits src/Makefile
 	@for file in $(DISTFILES); do \
-	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
+	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
 	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
@@ -408,16 +444,65 @@ distdir: $(DISTFILES)
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
+
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+
+-include $(DEP_FILES)
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+	-rm -rf .deps
+
+maintainer-clean-depend:
+
+%.o: %.c
+	@echo '$(COMPILE) -c $<'; \
+	$(COMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.c
+	@echo '$(LTCOMPILE) -c $<'; \
+	$(LTCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
+
+%.o: %.cc
+	@echo '$(CXXCOMPILE) -c $<'; \
+	$(CXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.cc
+	@echo '$(LTCXXCOMPILE) -c $<'; \
+	$(LTCXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
 info-am:
 info: info-am
 dvi-am:
 dvi: dvi-am
-check-am:
+check-am: all-am
 check: check-am
 installcheck-am:
 installcheck: installcheck-am
-install-info-am: 
-install-info: install-info-am
 install-exec-am: install-toolexeclibLTLIBRARIES
 install-exec: install-exec-am
 
@@ -447,27 +532,27 @@ distclean-generic:
 
 maintainer-clean-generic:
 mostlyclean-am:  mostlyclean-toolexeclibLTLIBRARIES mostlyclean-compile \
-		mostlyclean-libtool mostlyclean-tags \
+		mostlyclean-libtool mostlyclean-tags mostlyclean-depend \
 		mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
 clean-am:  clean-toolexeclibLTLIBRARIES clean-compile clean-libtool \
-		clean-tags clean-generic mostlyclean-am
+		clean-tags clean-depend clean-generic mostlyclean-am
 
 clean: clean-am
 
 distclean-am:  distclean-toolexeclibLTLIBRARIES distclean-compile \
-		distclean-libtool distclean-tags distclean-generic \
-		clean-am
+		distclean-libtool distclean-tags distclean-depend \
+		distclean-generic clean-am
 	-rm -f libtool
 
 distclean: distclean-am
 
 maintainer-clean-am:  maintainer-clean-toolexeclibLTLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
-		maintainer-clean-tags maintainer-clean-generic \
-		distclean-am
+		maintainer-clean-tags maintainer-clean-depend \
+		maintainer-clean-generic distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
@@ -480,12 +565,14 @@ uninstall-toolexeclibLTLIBRARIES install-toolexeclibLTLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile mostlyclean-libtool distclean-libtool \
 clean-libtool maintainer-clean-libtool tags mostlyclean-tags \
-distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
-dvi-am dvi check check-am installcheck-am installcheck install-info-am \
-install-info install-exec-am install-exec install-data-am install-data \
-install-am install uninstall-am uninstall all-redirect all-am all \
-installdirs mostlyclean-generic distclean-generic clean-generic \
-maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+distclean-tags clean-tags maintainer-clean-tags distdir \
+mostlyclean-depend distclean-depend clean-depend \
+maintainer-clean-depend info-am info dvi-am dvi check check-am \
+installcheck-am installcheck install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
 
 strstream.lo: strstream.cc
 	$(LTCXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -Wno-deprecated -c $<
