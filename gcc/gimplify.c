@@ -3061,7 +3061,7 @@ gimplify_addr_expr (tree *expr_p, tree *pre_p, tree *post_p)
 	 guarantees that the ADDR_EXPR and its operand will remain of the
 	 same type.  */
       if (tree_ssa_useless_type_conversion (TREE_OPERAND (op0, 0)))
-          op0 = TREE_OPERAND (op0, 0);
+	op0 = TREE_OPERAND (op0, 0);
 
       *expr_p = fold_convert (TREE_TYPE (expr),
 			      build_fold_addr_expr (TREE_OPERAND (op0, 0)));
