@@ -15,6 +15,10 @@
 	* value-prof.c (mod_subtract_transform): Remove local variable
 	value.
 
+	* builtins.c (fold_builtin_exponent): Take decomposed
+	arguments of CALL_EXPR.
+	(fold_builtin_1): Update a call to fold_builtin_exponent.
+
 2005-03-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-lex.c (c_lex_with_flags): Add parameter to call to 

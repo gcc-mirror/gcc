@@ -7089,13 +7089,11 @@ fold_builtin_powi (tree fndecl ATTRIBUTE_UNUSED, tree arglist, tree type)
    VALUE is the value which will be raised to a power.  */
 
 static tree
-fold_builtin_exponent (tree exp, const REAL_VALUE_TYPE *value)
+fold_builtin_exponent (tree fndecl, tree arglist,
+		       const REAL_VALUE_TYPE *value)
 {
-  tree arglist = TREE_OPERAND (exp, 1);
-
   if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     {
-      tree fndecl = get_callee_fndecl (exp);
       tree type = TREE_TYPE (TREE_TYPE (fndecl));
       tree arg = TREE_VALUE (arglist);
 
@@ -8106,12 +8104,12 @@ fold_builtin_1 (tree exp, bool ignore)
     case BUILT_IN_EXP:
     case BUILT_IN_EXPF:
     case BUILT_IN_EXPL:
-      return fold_builtin_exponent (exp, &dconste);
+      return fold_builtin_exponent (fndecl, arglist, &dconste);
 
     case BUILT_IN_EXP2:
     case BUILT_IN_EXP2F:
     case BUILT_IN_EXP2L:
-      return fold_builtin_exponent (exp, &dconst2);
+      return fold_builtin_exponent (fndecl, arglist, &dconst2);
 
     case BUILT_IN_EXP10:
     case BUILT_IN_EXP10F:
@@ -8119,7 +8117,7 @@ fold_builtin_1 (tree exp, bool ignore)
     case BUILT_IN_POW10:
     case BUILT_IN_POW10F:
     case BUILT_IN_POW10L:
-      return fold_builtin_exponent (exp, &dconst10);
+      return fold_builtin_exponent (fndecl, arglist, &dconst10);
 
     case BUILT_IN_LOG:
     case BUILT_IN_LOGF:
