@@ -126,26 +126,30 @@ FUNC_START(__eabi)
 	lwz	12,.Ltable(11)			/* get linker's idea of where .Laddr is */
 	lwz	10,.Linit(11)			/* address of init flag */
 	subf.	12,12,11			/* calculate difference */
-	mtlr	0				/* restore link register */
 	lwzx	9,10,12				/* done flag */
-
-#else /* !-mrelocatable */
-	addis	11,0,.LCTOC1@ha			/* load address of .LCTOC1 */
-	addi	11,11,.LCTOC1@l
-	lwz	10,.Linit(11)			/* init flag */
-#endif /* !-mrelocatable */
-
+	mtlr	0				/* restore link register */
 	cmplwi	2,9,0				/* init flag != 0? */
 	bnelr	2				/* return now, if we've been called already */
 	stwx	1,10,12				/* store a non-zero value in the done flag */
-	bne	0,.Lreloc			/* skip if we need to relocate */
+	bne-	0,.Lreloc			/* skip if we need to relocate */
+
+#else /* !-mrelocatable */
+	addis	10,0,.Linit_p@ha		/* init flag */
+	addis	11,0,.LCTOC1@ha			/* load address of .LCTOC1 */
+	lwz	9,.Linit_p@l(10)		/* init flag */
+	addi	11,11,.LCTOC1@l
+	cmplwi	2,9,0				/* init flag != 0? */
+	bnelr	2				/* return now, if we've been called already */
+	stw	1,.Linit_p@l(10)		/* store a non-zero value in the done flag */
+
+#endif /* !-mrelocatable */
 
 /* Only load up register 13 if there is a .sdata and/or .sbss section */
 
 	lwz	3,.Lsdas(11)			/* start of .sdata/.sbss section */
 	lwz	4,.Lsdae(11)			/* end of .sdata/.sbss section */
 	cmpw	1,3,4				/* .sdata/.sbss section non-empty? */
-	beq	1,.Lsda2l			/* skip loading r13 */
+	beq-	1,.Lsda2l			/* skip loading r13 */
 
 	lwz	13,.Lsda(11)			/* load r13 with _SDA_BASE address */
 
@@ -155,14 +159,14 @@ FUNC_START(__eabi)
 	lwz	3,.Lsda2s(11)			/* start of .sdata/.sbss section */
 	lwz	4,.Lsda2e(11)			/* end of .sdata/.sbss section */
 	cmpw	1,3,4				/* .sdata/.sbss section non-empty? */
-	beq	1,.Ldone			/* skip loading r2 */
+	beq+	1,.Ldone			/* skip loading r2 */
 
 	lwz	2,.Lsda2(11)			/* load r2 with _SDA2_BASE address */
 	b	FUNC_NAME(__do_global_ctors)	/* do any C++ global constructors (which returns to caller) */
 
-.Lreloc:
 
 #ifdef _RELOCATABLE
+.Lreloc:
 /* We need to relocate the .got2 pointers.  Don't load registers 2 or 13 */
 
 	lwz	3,.Lgot2s(11)			/* GOT pointers start */
