@@ -257,7 +257,7 @@ read_alias_file (fname, fname_len)
 
       /* Possibly not the whole line fits into the buffer.  Ignore
 	 the rest of the line.  */
-      if (strchr (buf, '\n') == NULL)
+      if (strchr ((char *)buf, '\n') == NULL)
 	{
 	  char altbuf[BUFSIZ];
 	  do

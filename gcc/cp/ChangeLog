@@ -1,3 +1,9 @@
+2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cp-tree.h: Don't prototype min_precision here.
+	(my_friendly_assert): Cast expression to void.
+	* semantics.c (do_poplevel): Initialize scope_stmts.
+
 2000-08-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DECL_NEEDED_P): Tweak.

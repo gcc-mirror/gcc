@@ -1,3 +1,17 @@
+2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* c-common.h: Prototype min_precision and c_build_qualified_type here...
+	* c-tree.h: ... not here.
+	* errors.h: Prototype fancy_abort.
+
+	* emit-rtl.c (gen_lowpart_common): Move variable 'c' into
+	HOST_BITS_PER_WIDE_INT == 64 ifdef block.
+	* regrename.c (regrename_optimize): Make control flow explicit.
+	(replace_reg_in_block): Initialize reg_use to 0.
+
+	* i386.c (legitimate_address_p): Rename error label to
+	report_error to avoid namespace clash.
+
 2000-08-02  Kazu Hirata  <kazu@hxi.com>
 
 	* fold-const.c: Fix formatting.

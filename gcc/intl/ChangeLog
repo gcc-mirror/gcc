@@ -1,4 +1,11 @@
+2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* dcgettext.c (find_msg): Initialize act before loop.
+	(guess_category_value): Add dummy uses of both parameters.
+	* localealias.c (read_alias_file): Cast arg of strchr to char *.
+
 2000-06-06  Philipp Thomas  <pthomas@suse.de>
+
 	* Makefile.in: Add -DIN_GCC to DEFS, add appropriate -I switches.
 	* dcgettext.c: Define _GNU_SOURCE before any system header is
 	included. Guard getcwd declaration with HAVE_DECL_GETCWD.

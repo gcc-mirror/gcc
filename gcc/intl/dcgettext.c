@@ -455,6 +455,7 @@ find_msg (domain_file, msgid)
   /* Now we try the default method:  binary search in the sorted
      array of messages.  */
   bottom = 0;
+  act = 0;
   top = domain->nstrings;
   while (bottom < top)
     {
@@ -547,6 +548,8 @@ guess_category_value (category, categoryname)
      const char *categoryname;
 {
   const char *retval;
+  (void) category;  /* shut up compiler */
+  (void) categoryname;  /* ditto */
 
   /* The highest priority value is the `LANGUAGE' environment
      variable.  This is a GNU extension.  */

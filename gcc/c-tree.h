@@ -151,16 +151,12 @@ extern void c_parse_init			PARAMS ((void));
 /* in c-aux-info.c */
 extern void gen_aux_info_record                 PARAMS ((tree, int, int, int));
 
-/* In c-common.c */
-extern unsigned int min_precision		PARAMS ((tree, int));
-
 /* in c-convert.c */
 extern tree convert                             PARAMS ((tree, tree));
 
 /* in c-decl.c */
 extern tree build_enumerator                    PARAMS ((tree, tree));
-/* Add qualifiers to a type, in the fashion for C.  */
-extern tree c_build_qualified_type              PARAMS ((tree, int));
+
 #define c_build_type_variant(TYPE, CONST_P, VOLATILE_P)		  \
   c_build_qualified_type (TYPE, 				  \
 			  ((CONST_P) ? TYPE_QUAL_CONST : 0) |	  \

@@ -260,6 +260,11 @@ extern tree truthvalue_conversion		PARAMS ((tree));
 extern tree type_for_mode			PARAMS ((enum machine_mode, int));
 extern tree type_for_size			PARAMS ((unsigned, int));
 
+extern unsigned int min_precision		PARAMS ((tree, int));
+
+/* Add qualifiers to a type, in the fashion for C.  */
+extern tree c_build_qualified_type              PARAMS ((tree, int));
+
 /* Build tree nodes and builtin functions common to both C and C++ language
    frontends.  */
 extern void c_common_nodes_and_builtins		PARAMS ((int, int, int));
