@@ -1506,9 +1506,20 @@ dump_expr (tree t, int flags)
 
     case COMPOUND_EXPR:
       print_left_paren (scratch_buffer);
-      dump_expr (TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
-      separate_with_comma (scratch_buffer);
-      dump_expr (TREE_OPERAND (t, 1), flags | TFF_EXPR_IN_PARENS);
+      /* Within templates, a COMPOUND_EXPR has only one operand,
+         containing a TREE_LIST of the two operands. */
+      if (TREE_CODE (TREE_OPERAND (t, 0)) == TREE_LIST)
+      {
+        if (TREE_OPERAND (t, 1))
+          abort();
+        dump_expr_list (TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
+      }
+      else
+      {
+        dump_expr (TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
+        separate_with_comma (scratch_buffer);
+        dump_expr (TREE_OPERAND (t, 1), flags | TFF_EXPR_IN_PARENS);
+      }
       print_right_paren (scratch_buffer);
       break;
 
@@ -1956,7 +1967,7 @@ dump_expr (tree t, int flags)
       if (TYPE_P (TREE_OPERAND (t, 0)))
 	dump_type (TREE_OPERAND (t, 0), flags);
       else
-	dump_unary_op ("*", t, flags | TFF_EXPR_IN_PARENS);
+        dump_expr (TREE_OPERAND (t, 0), flags);
       print_right_paren (scratch_buffer);
       break;
 
