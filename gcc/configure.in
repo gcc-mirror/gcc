@@ -2480,7 +2480,8 @@ for machine in $build $host $target; do
 		else
 			tm_file=sparc/sol2-sld.h
 		fi
-		xm_file="sparc/xm-sysv4.h sparc/xm-sol2.h"
+		xm_file="xm-siglist.h sparc/xm-sysv4.h sparc/xm-sol2.h"
+		xm_defines="USG POSIX"
 		tmake_file=sparc/t-sol2
 		xmake_file=sparc/x-sysv4
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
