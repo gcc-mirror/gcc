@@ -6134,7 +6134,8 @@ toc_hash_eq (h1, h2)
       return 1;
     }
   else if (GET_CODE (r1) == LABEL_REF)
-    return XINT (XEXP (r1, 0), 3) == XINT (XEXP (r2, 0), 3);
+    return (CODE_LABEL_NUMBER (XEXP (r1, 0)) 
+	    == CODE_LABEL_NUMBER (XEXP (r2, 0)));
   else
     return rtx_equal_p (r1, r2);
 }
