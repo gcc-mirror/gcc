@@ -399,9 +399,6 @@ extern int target_flags;
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD 4
 
-/* Width in bits of a pointer.  See also the macro `Pmode' defined below.  */
-#define POINTER_SIZE 32
-
 /* Width in bits of a long double.  Define to 96, and let
    ROUND_TYPE_ALIGN adjust the alignment for speed.  */
 #define	LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_64 ? 64 : 96)

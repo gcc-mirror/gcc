@@ -173,10 +173,6 @@ extern int target_flags;
    DImode or Dfmode ...*/
 #define MAX_FIXED_MODE_SIZE 64	
 
-/* Width in bits of a pointer.
-   See also the macro `Pmode' defined below.  */
-#define POINTER_SIZE 16
-
 /* Allocation boundary (in *bits*) for storing pointers in memory.  */
 #define POINTER_BOUNDARY 16
 

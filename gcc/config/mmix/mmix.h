@@ -254,7 +254,6 @@ extern int target_flags;
 #define WORDS_BIG_ENDIAN 1
 #define FLOAT_WORDS_BIG_ENDIAN 1
 #define UNITS_PER_WORD 8
-#define POINTER_SIZE 64
 
 /* FIXME: This macro is correlated to MAX_FIXED_MODE_SIZE in that
    e.g. this macro must not be 8 (default, UNITS_PER_WORD) when

@@ -201,10 +201,6 @@ extern int target_flags;
 #define UNITS_PER_WORD		(TARGET_H8300H || TARGET_H8300S ? 4 : 2)
 #define MIN_UNITS_PER_WORD	2
 
-/* Width in bits of a pointer.
-   See also the macro `Pmode' defined below.  */
-#define POINTER_SIZE (TARGET_H8300H || TARGET_H8300S ? 32 : 16)
-
 #define SHORT_TYPE_SIZE	16
 #define INT_TYPE_SIZE		(TARGET_INT32 ? 32 : 16)
 #define LONG_TYPE_SIZE		32

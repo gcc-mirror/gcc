@@ -951,7 +951,8 @@ smallest value that @code{UNITS_PER_WORD} can have at run-time.
 @item POINTER_SIZE
 Width of a pointer, in bits.  You must specify a value no wider than the
 width of @code{Pmode}.  If it is not equal to the width of @code{Pmode},
-you must define @code{POINTERS_EXTEND_UNSIGNED}.
+you must define @code{POINTERS_EXTEND_UNSIGNED}.  If you do not specify
+a value the default is @code{BITS_PER_WORD}.
 
 @findex POINTERS_EXTEND_UNSIGNED
 @item POINTERS_EXTEND_UNSIGNED

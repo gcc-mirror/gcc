@@ -317,10 +317,6 @@ extern int target_flags;
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD 1
 
-/* Width in bits of a pointer.
-   See also the macro `Pmode' defined below.  */
-#define POINTER_SIZE 16
-
 /* Allocation boundary (in *bits*) for storing pointers in memory.  */
 #define POINTER_BOUNDARY 16
 

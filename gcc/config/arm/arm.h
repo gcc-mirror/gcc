@@ -690,8 +690,6 @@ extern int arm_is_6_or_7;
 
 #define UNITS_PER_WORD	4
 
-#define POINTER_SIZE  32
-
 #define PARM_BOUNDARY  	32
 
 #define STACK_BOUNDARY  32

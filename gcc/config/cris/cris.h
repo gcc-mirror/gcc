@@ -477,8 +477,6 @@ extern int target_flags;
 
 #define UNITS_PER_WORD 4
 
-#define POINTER_SIZE 32
-
 /* A combination of defining PROMOTE_MODE, PROMOTE_FUNCTION_ARGS,
    PROMOTE_FOR_CALL_ONLY and *not* defining PROMOTE_PROTOTYPES gives the
    best code size and speed for gcc, ipps and products in gcc-2.7.2.  */

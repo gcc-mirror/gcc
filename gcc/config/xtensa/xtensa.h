@@ -250,7 +250,6 @@ extern unsigned xtensa_current_frame_size;
 #define FLOAT_TYPE_SIZE 32
 #define DOUBLE_TYPE_SIZE 64
 #define LONG_DOUBLE_TYPE_SIZE 64
-#define POINTER_SIZE 32
 
 /* Tell the preprocessor the maximum size of wchar_t.  */
 #ifndef MAX_WCHAR_TYPE_SIZE
