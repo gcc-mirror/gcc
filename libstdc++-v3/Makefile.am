@@ -26,17 +26,21 @@ MAINT_CHARSET = latin1
 
 SUBDIRS = libio libmath libsupc++ src
 
-
-# Use $(blddir) instead of $(top_builddir) for arguments to "mkcheck"
+# Use $${builddir} instead of $(top_builddir) for arguments to "mkcheck"
 # because then the paths will be full pathnames, not relative
 # pathnames. (-Wl,--rpath seems to like this better.)
-check:  $(top_builddir)/mkcheck
-	chmod +x  $(top_builddir)/mkcheck
-	$(top_builddir)/mkcheck 0 `pwd` $(top_srcdir)
+check: $(top_builddir)/mkcheck
+	-(chmod + $(top_builddir)/mkcheck; \
+	  srcdir=`cd $(top_srcdir); pwd`; builddir=`pwd`; \
+	  test -d testsuite || (mkdir testsuite; chmod u+w testsuite); \
+	  cd testsuite; $${builddir}/mkcheck 0 $${builddir} $${srcdir})
 
 check-install: $(top_builddir)/mkcheck
-	chmod +x  $(top_builddir)/mkcheck
-	$(top_builddir)/mkcheck 1 `pwd` $(top_srcdir) $(prefix)
+	-(chmod + $(top_builddir)/mkcheck; \
+	  srcdir=`cd $(top_srcdir); pwd`; builddir=`pwd`; \
+	  test -d testsuite || (mkdir testsuite; chmod u+w testsuite); \
+	  cd testsuite; \
+	  $${builddir}/mkcheck 1 $${builddir} $${srcdir} $(prefix))
 
 # Multilib support.
 MAKEOVERRIDES=

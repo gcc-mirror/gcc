@@ -19,6 +19,8 @@
 // USA.
 
 // 27.6.1.3 unformatted input functions
+// @require@ %-*.tst %-*.txt
+// @diff@ %-*.tst %-*.txt
 
 #include <cstring> // for strncmp,...
 #include <istream>
@@ -459,7 +461,7 @@ int
 test07()
 {
   bool test = true;
-  const char* tfn = "testsuite/istream_unformatted-3.txt";
+  const char* tfn = "istream_unformatted-3.txt";
   std::ifstream infile;
   infile.open(tfn);
   VERIFY( !(!infile) );

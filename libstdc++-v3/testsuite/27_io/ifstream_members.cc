@@ -17,13 +17,15 @@
 // USA.
 
 // 27.8.1.7 ifstream member functions
+// @require@ %-*.tst %-*.txt
+// @diff@ %-*.tst %-*.txt
 
 #include <istream>
 #include <fstream>
 #include <debug_assert.h>
 
-const char name_01[] = "testsuite/ifstream_members-1.tst";
-const char name_02[] = "testsuite/ifstream_members-1.txt";
+const char name_01[] = "ifstream_members-1.tst";
+const char name_02[] = "ifstream_members-1.txt";
 
 // http://gcc.gnu.org/ml/libstdc++/2000-06/msg00136.html
 bool test00()

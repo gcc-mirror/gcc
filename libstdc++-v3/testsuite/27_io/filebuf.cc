@@ -22,14 +22,17 @@
 // buffer_size length of 8092, so that overflow/underflow can be
 // simulated a bit more readily.
 
+// @require@ %-*.tst %-*.txt
+// @diff@ %-*.tst %*.txt
+
 #include <fstream>
 #include <debug_assert.h>
 
 const char carray_01[] = "santa cruz or sandiego?";
 const char carray_02[] = "memphis, new orleans, and savanah";
-const char name_01[] = "testsuite/filebuf-1.txt"; // file with data in it
-const char name_02[] = "testsuite/filebuf-2.txt"; // empty file, need to create
-const char name_03[] = "testsuite/filebuf-3.txt"; // empty file, need to create
+const char name_01[] = "filebuf-1.txt"; // file with data in it
+const char name_02[] = "filebuf-2.txt"; // empty file, need to create
+const char name_03[] = "filebuf-3.txt"; // empty file, need to create
 
 class derived_filebuf: public std::filebuf
 {

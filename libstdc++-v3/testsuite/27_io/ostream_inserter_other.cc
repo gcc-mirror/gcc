@@ -20,6 +20,8 @@
 // USA.
 
 // 27.6.2.5.4 basic_ostream character inserters
+// @require@ %-*.tst %-*.txt
+// @diff@ %-*.tst %-*.txt
 
 #include <ostream>
 #include <sstream>
@@ -27,10 +29,10 @@
 #include <debug_assert.h>
 
 const int size = 1000;
-const char name_01[] = "testsuite/ostream_inserter_other-1.tst";
-const char name_02[] = "testsuite/ostream_inserter_other-1.txt";
-const char name_03[] = "testsuite/ostream_inserter_other-2.tst";
-const char name_04[] = "testsuite/ostream_inserter_other-2.txt";
+const char name_01[] = "ostream_inserter_other-1.tst";
+const char name_02[] = "ostream_inserter_other-1.txt";
+const char name_03[] = "ostream_inserter_other-2.tst";
+const char name_04[] = "ostream_inserter_other-2.txt";
 
 
 // stringstream
@@ -101,8 +103,8 @@ test03(void)
 
   typedef ios::pos_type 	pos_type;
 
-  const char* TEST_IN = "testsuite/ostream_inserter_other_in";
-  const char* TEST_OUT = "testsuite/ostream_inserter_other_out";
+  const char* TEST_IN = "ostream_inserter_other_in";
+  const char* TEST_OUT = "ostream_inserter_other_out";
   pos_type i_read, i_wrote, rs, ws;
   double tf_size = BUFSIZ * 2.5;
   ofstream testfile(TEST_IN);

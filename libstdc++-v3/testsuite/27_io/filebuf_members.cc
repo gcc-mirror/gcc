@@ -17,6 +17,8 @@
 // USA.
 
 // 27.8.1.3 filebuf member functions
+// @require@ %-*.tst %-*.txt
+// @diff@ %-*.tst %-*.txt
 
 // various tests for filebuf::open() and filebuf::close() including
 // the non-portable functionality in the libstdc++-v3 IO library
@@ -37,8 +39,8 @@
 // thanks to "George T. Talbot" <george@moberg.com> for uncovering
 // this bug/situation. 
 
-const char name_01[] = "testsuite/filebuf_members-1.tst";
-const char name_02[] = "testsuite/filebuf_members-1.txt";
+const char name_01[] = "filebuf_members-1.tst";
+const char name_02[] = "filebuf_members-1.txt";
 
 int
 test_01()

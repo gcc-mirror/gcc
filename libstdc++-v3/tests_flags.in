@@ -98,7 +98,6 @@ esac
 
 # Compute include paths
 # INCLUDES == include path to new headers for use on gcc command-line
-top_srcdir=@top_srcdir@
 C_DIR="`basename  @C_INCLUDE_DIR@`"
 case ${query} in
     --installed-library)
@@ -121,7 +120,7 @@ case ${query} in
 esac
 
 # For built or installed libraries, we need to get right OS-specific bits.
-. ${top_srcdir}/configure.target
+. ${SRC_DIR}/configure.target
 
 # LIB_PATH == where to find the build libraries for libtool's use
 # CXX == the full pathname of the compiler

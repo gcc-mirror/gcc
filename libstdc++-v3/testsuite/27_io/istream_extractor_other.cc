@@ -19,6 +19,8 @@
 // USA.
 
 // 27.6.1.2.3 basic_istream::operator>>
+// @require@ %-*.tst %-*.txt
+// @diff@ %-*.tst %-*.txt
 
 #include <istream>
 #include <sstream>
@@ -154,8 +156,8 @@ bool test02() {
 
   bool test = true;
   typedef std::ios::traits_type ctraits_type;
-  const char name_01[] = "testsuite/istream_extractor_other-1.txt"; //read 
-  const char name_02[] = "testsuite/istream_extractor_other-2.txt"; //write
+  const char name_01[] = "istream_extractor_other-1.txt"; //read 
+  const char name_02[] = "istream_extractor_other-2.txt"; //write
 
   std::filebuf fbin, fbout;
   fbin.open(name_01, std::ios_base::in);

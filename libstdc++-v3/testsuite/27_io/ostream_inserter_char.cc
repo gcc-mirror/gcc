@@ -32,7 +32,7 @@ bool test01()
   bool test = true;
   std::string str01;
   const int size = 1000;
-  const char name_02[] = "testsuite/ostream_inserter_char-1.txt";
+  const char name_02[] = "ostream_inserter_char-1.txt";
 
   // initialize string
   for(int i=0 ; i < size; i++) {
