@@ -1,3 +1,7 @@
+2000-08-26  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* ir.texi (Expressions): Fix typo.
+
 2000-08-25  Greg McGary  <greg@mcgary.org>
 
 	* tree.c (init_tree): Use ARRAY_SIZE.
