@@ -2236,9 +2236,10 @@ build_new_1 (exp)
      tree exp;
 {
   tree placement, init;
-  tree type, true_type, size, rval;
+  tree type, true_type, size, rval, t;
   tree nelts = NULL_TREE;
-  tree alloc_expr, alloc_node = NULL_TREE;
+  tree alloc_call, alloc_expr, alloc_node;
+  tree cookie_expr, init_expr;
   int has_array = 0;
   enum tree_code code;
   int use_cookie, nothrow, check_new;
@@ -2280,11 +2281,9 @@ build_new_1 (exp)
   if (!complete_type_or_else (true_type, exp))
     return error_mark_node;
 
+  size = size_in_bytes (true_type);
   if (has_array)
-    size = fold (cp_build_binary_op (MULT_EXPR, size_in_bytes (true_type),
-				     nelts));
-  else
-    size = size_in_bytes (type);
+    size = fold (cp_build_binary_op (MULT_EXPR, size, nelts));
 
   if (TREE_CODE (true_type) == VOID_TYPE)
     {
@@ -2299,8 +2298,9 @@ build_new_1 (exp)
      new.  */
   if (!globally_qualified_p
       && IS_AGGR_TYPE (true_type)
-      && ((!has_array && TYPE_HAS_NEW_OPERATOR (true_type))
-	  || (has_array && TYPE_HAS_ARRAY_NEW_OPERATOR (true_type))))
+      && (has_array
+	  ? TYPE_HAS_ARRAY_NEW_OPERATOR (true_type)
+	  : TYPE_HAS_NEW_OPERATOR (true_type)))
     use_global_new = 0;
   else
     use_global_new = 1;
@@ -2330,9 +2330,6 @@ build_new_1 (exp)
       size = size_binop (PLUS_EXPR, size, cookie_size);
     }
 
-  if (has_array && init && pedantic)
-    cp_pedwarn ("initialization in array new");
-
   /* Allocate the object.  */
   
   if (! placement && TYPE_FOR_JAVA (true_type))
@@ -2346,11 +2343,10 @@ build_new_1 (exp)
       if (alloc_decl == NULL_TREE)
 	fatal("call to Java constructor, while `%s' undefined", alloc_name);
       class_addr = build1 (ADDR_EXPR, jclass_node, class_decl);
-      rval = build_function_call (alloc_decl,
-				  tree_cons (NULL_TREE, class_addr,
-					     build_tree_list (NULL_TREE,
-							      class_size)));
-      rval = cp_convert (build_pointer_type (true_type), rval);
+      alloc_call = (build_function_call
+		    (alloc_decl,
+		     tree_cons (NULL_TREE, class_addr,
+				build_tree_list (NULL_TREE, class_size))));
     }
   else
     {
@@ -2361,18 +2357,20 @@ build_new_1 (exp)
       fnname = ansi_opname (code);
 
       if (use_global_new)
-	rval = (build_new_function_call 
-		(lookup_function_nonclass (fnname, args),
-		 args));
+	alloc_call = (build_new_function_call 
+		      (lookup_function_nonclass (fnname, args),
+		       args));
       else
-	rval = build_method_call (build_dummy_object (true_type),
-				  fnname, args, NULL_TREE,
-				  LOOKUP_NORMAL);
-      rval = cp_convert (build_pointer_type (true_type), rval);
+	alloc_call = build_method_call (build_dummy_object (true_type),
+					fnname, args, NULL_TREE,
+					LOOKUP_NORMAL);
     }
 
-  if (rval == error_mark_node)
+  if (alloc_call == error_mark_node)
     return error_mark_node;
+
+  if (alloc_call == NULL_TREE)
+    abort ();
 
   /*        unless an allocation function is declared with an empty  excep-
      tion-specification  (_except.spec_),  throw(), it indicates failure to
@@ -2384,74 +2382,56 @@ build_new_1 (exp)
 
      So check for a null exception spec on the op new we just called.  */
 
-  nothrow = 0;
-  if (rval)
-    {
-      /* The CALL_EXPR.  */
-      tree t = TREE_OPERAND (rval, 0);
-      /* The function.  */
-      t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
-      nothrow = TYPE_NOTHROW_P (TREE_TYPE (t));
-    }
+  /* The ADDR_EXPR.  */
+  t = TREE_OPERAND (alloc_call, 0);
+  /* The function.  */
+  t = TREE_OPERAND (t, 0);
+  nothrow = TYPE_NOTHROW_P (TREE_TYPE (t));
   check_new = (flag_check_new || nothrow) && ! use_java_new;
 
-  if ((check_new || flag_exceptions) && rval)
-    {
-      alloc_expr = get_target_expr (rval);
-      alloc_node = rval = TREE_OPERAND (alloc_expr, 0);
-    }
-  else
-    alloc_expr = NULL_TREE;
+  alloc_expr = alloc_call;
 
-  /* if rval is NULL_TREE I don't have to allocate it, but are we
-     totally sure we have some extra bytes in that case for the
-     cookies? And how does that interact with the code below? (mrs) */
-  /* Finish up some magic for new'ed arrays */
-  if (use_cookie && rval != NULL_TREE)
+  if (use_cookie)
+    /* Adjust so we're pointing to the start of the object.  */
+    alloc_expr = build (PLUS_EXPR, TREE_TYPE (alloc_expr),
+			alloc_expr, cookie_size);
+  alloc_expr = convert (build_pointer_type (type), alloc_expr);
+
+  /* Now save the allocation expression so we only evaluate it once.  */
+  alloc_expr = get_target_expr (alloc_expr);
+  alloc_node = TREE_OPERAND (alloc_expr, 0);
+
+  /* Now initialize the cookie.  */
+  if (use_cookie)
     {
-      tree cookie, exp1;
-      rval = convert (string_type_node, rval); /* for ptr arithmetic */
-      rval = save_expr (cp_build_binary_op (PLUS_EXPR, rval, cookie_size));
+      tree cookie;
+
       /* Store the number of bytes allocated so that we can know how
 	 many elements to destroy later.  */
       if (flag_new_abi)
 	{
 	  /* Under the new ABI, we use the last sizeof (size_t) bytes
 	     to store the number of elements.  */
-	  cookie = build_indirect_ref (build (MINUS_EXPR,
-					      build_pointer_type (sizetype),
-					      rval,
-					      size_in_bytes (sizetype)),
-				       NULL_PTR);
-	  exp1 = build (MODIFY_EXPR, void_type_node, cookie, nelts);
+	  cookie = build (MINUS_EXPR, build_pointer_type (sizetype),
+			  alloc_node, size_in_bytes (sizetype));
+	  cookie = build_indirect_ref (cookie, NULL_PTR);
 	}
       else
 	{
-	  cookie 
-	    = build_indirect_ref (build (MINUS_EXPR,
-					 build_pointer_type (BI_header_type),
-					 rval, cookie_size), NULL_PTR);
-	  exp1 = build (MODIFY_EXPR, void_type_node,
-			build_component_ref (cookie, nelts_identifier,
-					     NULL_TREE, 0),
-			nelts);
+	  cookie = build (MINUS_EXPR, build_pointer_type (BI_header_type),
+			  alloc_node, cookie_size);
+	  cookie = build_indirect_ref (cookie, NULL_PTR);
+	  cookie = build_component_ref (cookie, nelts_identifier,
+					NULL_TREE, 0);
 	}
-
-      /* Build `(cookie = nelts, rval)' and use that as the complete
-	 expression.  */
-      rval = cp_convert (build_pointer_type (true_type), rval);
-      rval = build_compound_expr
-	(tree_cons (NULL_TREE, exp1,
-		    build_tree_list (NULL_TREE, rval)));
+      cookie_expr = build (MODIFY_EXPR, void_type_node, cookie, nelts);
+      TREE_SIDE_EFFECTS (cookie_expr) = 1;
     }
+  else
+    cookie_expr = NULL_TREE;
 
-  if (rval == error_mark_node)
-    return error_mark_node;
-
-  /* Don't call any constructors or do any initialization.  */
-  if (init == void_type_node)
-    goto done;
-
+  /* Now initialize the allocated object.  */
+  init_expr = NULL_TREE;
   if (TYPE_NEEDS_CONSTRUCTING (type) || init)
     {
       if (! TYPE_NEEDS_CONSTRUCTING (type)
@@ -2462,11 +2442,7 @@ build_new_1 (exp)
 	  tree deref;
 	  tree deref_type;
 
-	  /* At present RVAL is a temporary variable, created to hold
-	     the value from the call to `operator new'.  We transform
-	     it to (*RVAL = INIT, RVAL).  */
-	  rval = save_expr (rval);
-	  deref = build_indirect_ref (rval, NULL_PTR);
+	  deref = build_indirect_ref (alloc_node, NULL_PTR);
 
 	  /* Even for something like `new const int (10)' we must
 	     allow the expression to be non-const while we do the
@@ -2480,54 +2456,48 @@ build_new_1 (exp)
 	  TREE_READONLY (deref) = 0;
 
 	  if (TREE_CHAIN (init) != NULL_TREE)
-	    pedwarn ("initializer list being treated as compound expression");
+	    pedwarn
+	      ("initializer list being treated as compound expression");
 	  else if (TREE_CODE (init) == CONSTRUCTOR)
 	    {
-	      pedwarn ("initializer list appears where operand should be used");
+	      pedwarn
+		("initializer list appears where operand should be used");
 	      init = TREE_OPERAND (init, 1);
 	    }
 	  init = build_compound_expr (init);
 
 	  init = convert_for_initialization (deref, type, init, LOOKUP_NORMAL,
 					     "new", NULL_TREE, 0);
-	  rval = build (COMPOUND_EXPR, TREE_TYPE (rval),
-			build_modify_expr (deref, NOP_EXPR, init),
-			rval);
-	  TREE_NO_UNUSED_WARNING (rval) = 1;
-	  TREE_SIDE_EFFECTS (rval) = 1;
+	  init_expr = build_modify_expr (deref, NOP_EXPR, init);
 	}
       else if (! has_array)
 	{
-	  tree newrval;
 	  /* Constructors are never virtual. If it has an initialization, we
 	     need to complain if we aren't allowed to use the ctor that took
 	     that argument.  */
 	  int flags = LOOKUP_NORMAL|LOOKUP_NONVIRTUAL|LOOKUP_COMPLAIN;
 
-	  rval = save_expr (rval);
-	  newrval = rval;
+	  init_expr = build_indirect_ref (alloc_node, NULL_PTR);
 
-	  if (newrval && TREE_CODE (TREE_TYPE (newrval)) == POINTER_TYPE)
-	    newrval = build_indirect_ref (newrval, NULL_PTR);
-
-	  newrval = build_method_call (newrval, 
-				       complete_ctor_identifier,
-				       init, TYPE_BINFO (true_type), flags);
-
-	  if (newrval == NULL_TREE || newrval == error_mark_node)
-	    return error_mark_node;
-
-	  newrval = build (COMPOUND_EXPR, TREE_TYPE (rval), newrval, rval);
-	  rval = newrval;
-	  TREE_HAS_CONSTRUCTOR (rval) = 1;
+	  init_expr = build_method_call (init_expr, 
+					 complete_ctor_identifier,
+					 init, TYPE_BINFO (true_type), flags);
 	}
       else
-	rval = (build_vec_init
-		(NULL_TREE, 
-		 save_expr (rval),
-		 cp_build_binary_op (MINUS_EXPR, nelts, integer_one_node),
-		 init,
-		 /*from_array=*/0));
+	{
+	  if (init && pedantic)
+	    cp_pedwarn ("initialization in array new");
+
+	  init_expr = convert (build_pointer_type (true_type), alloc_node);
+	  init_expr = (build_vec_init
+		       (NULL_TREE, init_expr,
+			cp_build_binary_op (MINUS_EXPR, nelts,
+					    integer_one_node),
+			init, /*from_array=*/0));
+	}
+
+      if (init_expr == error_mark_node)
+	return error_mark_node;
 
       /* If any part of the object initialization terminates by throwing an
 	 exception and a suitable deallocation function can be found, the
@@ -2537,10 +2507,10 @@ build_new_1 (exp)
 	 unambiguous matching deallocation function can be found,
 	 propagating the exception does not cause the object's memory to be
 	 freed.  */
-      if (flag_exceptions && alloc_expr && ! use_java_new)
+      if (flag_exceptions && ! use_java_new)
 	{
 	  enum tree_code dcode = has_array ? VEC_DELETE_EXPR : DELETE_EXPR;
-	  tree cleanup, fn = NULL_TREE;
+	  tree cleanup;
 	  int flags = (LOOKUP_NORMAL 
 		       | (globally_qualified_p * LOOKUP_GLOBAL));
 
@@ -2549,21 +2519,31 @@ build_new_1 (exp)
              functions that we use for finding allocation functions.  */
 	  flags |= LOOKUP_SPECULATIVELY;
 
-	  /* We expect alloc_expr to look like a TARGET_EXPR around
-	     a NOP_EXPR around the CALL_EXPR we want.  */
-	  fn = TREE_OPERAND (alloc_expr, 1);
-	  fn = TREE_OPERAND (fn, 0);
-
-	  cleanup = build_op_delete_call (dcode, alloc_node, size, flags, fn);
+	  cleanup = build_op_delete_call (dcode, alloc_node, size, flags,
+					  alloc_call);
 
 	  /* Ack!  First we allocate the memory.  Then we set our sentry
 	     variable to true, and expand a cleanup that deletes the memory
-	     if sentry is true.  Then we run the constructor and store the
-	     returned pointer in buf.  Then we clear sentry and return buf.  */
+	     if sentry is true.  Then we run the constructor, and finally
+	     clear the sentry.
+
+	     It would be nice to be able to handle this without the sentry
+	     variable, perhaps with a TRY_CATCH_EXPR, but this doesn't
+	     work.  We allocate the space first, so if there are any
+	     temporaries with cleanups in the constructor args we need this
+	     EH region to extend until end of full-expression to preserve
+	     nesting.
+
+	     If the backend had some mechanism so that we could force the
+	     allocation to be expanded after all the other args to the
+	     constructor, that would fix the nesting problem and we could
+	     do away with this complexity.  But that would complicate other
+	     things; in particular, it would make it difficult to bail out
+	     if the allocation function returns null.  */
 
 	  if (cleanup)
 	    {
-	      tree end, sentry, begin, buf, t = TREE_TYPE (rval);
+	      tree end, sentry, begin;
 
 	      begin = get_target_expr (boolean_true_node);
 	      sentry = TREE_OPERAND (begin, 0);
@@ -2572,46 +2552,41 @@ build_new_1 (exp)
 		= build (COND_EXPR, void_type_node, sentry,
 			 cleanup, void_zero_node);
 
-	      rval = get_target_expr (rval);
-
 	      end = build (MODIFY_EXPR, TREE_TYPE (sentry),
 			   sentry, boolean_false_node);
 
-	      buf = TREE_OPERAND (rval, 0);
-
-	      rval = build (COMPOUND_EXPR, t, begin,
-			    build (COMPOUND_EXPR, t, rval,
-				   build (COMPOUND_EXPR, t, end, buf)));
+	      init_expr
+		= build (COMPOUND_EXPR, void_type_node, begin,
+			 build (COMPOUND_EXPR, void_type_node, init_expr,
+				end));
 	    }
 	}
     }
   else if (CP_TYPE_CONST_P (true_type))
     cp_error ("uninitialized const in `new' of `%#T'", true_type);
 
- done:
+  /* Now build up the return value in reverse order.  */
 
-  if (alloc_expr && rval == alloc_node)
-    {
-      rval = TREE_OPERAND (alloc_expr, 1);
-      alloc_expr = NULL_TREE;
-    }
+  rval = alloc_node;
 
-  if (check_new && alloc_expr)
+  if (init_expr)
+    rval = build (COMPOUND_EXPR, TREE_TYPE (rval), init_expr, rval);
+  if (cookie_expr)
+    rval = build (COMPOUND_EXPR, TREE_TYPE (rval), cookie_expr, rval);
+
+  if (rval == alloc_node)
+    /* If we didn't modify anything, strip the TARGET_EXPR and return the
+       (adjusted) call.  */
+    return TREE_OPERAND (alloc_expr, 1);
+
+  if (check_new)
     {
-      /* Did we modify the storage?  */
       tree ifexp = cp_build_binary_op (NE_EXPR, alloc_node,
 				       integer_zero_node);
       rval = build_conditional_expr (ifexp, rval, alloc_node);
     }
 
-  if (alloc_expr)
-    rval = build (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
-
-  if (rval && TREE_TYPE (rval) != build_pointer_type (type))
-    {
-      /* The type of new int [3][3] is not int *, but int [3] * */
-      rval = build_c_cast (build_pointer_type (type), rval);
-    }
+  rval = build (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
 
   return rval;
 }
