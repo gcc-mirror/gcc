@@ -40,11 +40,11 @@ do {									\
   _epath = _win32epath = getenv (NAME);					\
   /* if we have a posix path list, convert to win32 path list */	\
   if (_epath != NULL && *_epath != 0					\
-      && cygwin_posix_path_list_p (_epath))				\
+      && cygwin32_posix_path_list_p (_epath))				\
     {									\
       _win32epath = (char *) xmalloc					\
-	(cygwin_posix_to_win32_path_list_buf_size (_epath));		\
-      cygwin_posix_to_win32_path_list (_epath, _win32epath);		\
+	(cygwin32_posix_to_win32_path_list_buf_size (_epath));		\
+      cygwin32_posix_to_win32_path_list (_epath, _win32epath);		\
     }									\
   (VAR) = _win32epath;							\
 } while (0)
