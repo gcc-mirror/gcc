@@ -44,19 +44,22 @@ import java.util.Hashtable;
  * StateEditable interface
  * @author Andrew Selkirk
  */
-public interface StateEditable {
+public interface StateEditable
+{
 
-	/**
-	 * Restore State
-	 * @param state State
-	 */
-	public void restoreState(Hashtable state);
+  /**
+   * Upon receiving this message the receiver should extract any relevant
+   * state out of state
+   * 
+   * @param state State
+   */
+  public void restoreState(Hashtable state);
 
-	/**
-	 * Store State
-	 * @param state State
-	 */
-	public void storeState(Hashtable state);
-
-
+  /**
+   * Upon receiving this message the receiver should place any relevant state
+   * into state
+   * 
+   * @param state State
+   */
+  public void storeState(Hashtable state);
 } // StateEditable

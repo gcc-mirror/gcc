@@ -45,8 +45,10 @@ import javax.swing.*;
  * DefaultTreeCellRenderer
  * @author Andrew Selkirk
  */
-public class DefaultTreeCellRenderer extends JLabel implements TreeCellRenderer {
-
+public class DefaultTreeCellRenderer
+  extends JLabel
+  implements TreeCellRenderer
+{
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------
 	//-------------------------------------------------------------
