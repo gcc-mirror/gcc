@@ -1,5 +1,8 @@
 2004-01-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* configure.ac: Do not do internal checking or -Werror by default.
+	* configure: Regenerated.
+
 	* doc/include/gcc-common.texi (DEVELOPMENT): @clear it.
 	* version.c (version_string): Mark as prerelease.
 

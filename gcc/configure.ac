@@ -323,8 +323,8 @@ AC_SUBST(warn_cflags)
 # Change the default to "no" on release branches.
 AC_ARG_ENABLE(werror, 
 [  --enable-werror         enable -Werror in bootstrap stage2 and later], [],
-[enable_werror=yes])
-if test x$enable_werror = xyes ; then
+[enable_werror=no])
+if test x$enablec_werror = xyes ; then
   WERROR=-Werror
 fi
 AC_SUBST(WERROR)
@@ -335,7 +335,7 @@ AC_ARG_ENABLE(checking,
 			  enable expensive run-time checks.  With LIST,
 			  enable only specific categories of checks.
 			  Categories are: misc,tree,rtl,rtlflag,gc,gcac,fold;
-			  default is misc,tree,gc,rtlflag],
+			  default is no checking],
 [ac_checking=
 ac_tree_checking=
 ac_rtl_checking=
@@ -367,8 +367,8 @@ no)	;;
 	;;
 esac
 ], 
-# Enable some checks by default for development versions of GCC
-[ac_checking=1; ac_tree_checking=1; ac_gc_checking=1; ac_rtlflag_checking=1;])
+# By default, disable all checks for release versions of GCC.
+[ac_checking=; ac_tree_checking=; ac_gc_checking=; ac_rtlflag_checking=;])
 nocommon_flag=""
 if test x$ac_checking != x ; then
   AC_DEFINE(ENABLE_CHECKING, 1,

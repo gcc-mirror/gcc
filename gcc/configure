@@ -858,7 +858,7 @@ Optional Features:
 			  enable expensive run-time checks.  With LIST,
 			  enable only specific categories of checks.
 			  Categories are: misc,tree,rtl,rtlflag,gc,gcac,fold;
-			  default is misc,tree,gc,rtlflag
+			  default is no checking
   --enable-coverage=LEVEL
 			  enable compiler\'s code coverage collection.
 			  Use to measure compiler performance and locate
@@ -3736,7 +3736,7 @@ if test "${enable_werror+set}" = set; then
   enableval="$enable_werror"
 
 else
-  enable_werror=yes
+  enable_werror=no
 fi;
 if test x$enable_werror = xyes ; then
   WERROR=-Werror
@@ -3781,8 +3781,8 @@ echo "$as_me: error: unknown check category $check" >&2;}
 esac
 
 else
-  # Enable some checks by default for development versions of GCC
-ac_checking=1; ac_tree_checking=1; ac_gc_checking=1; ac_rtlflag_checking=1;
+  # By default, disable all checks for release versions of GCC.
+ac_checking=; ac_tree_checking=; ac_gc_checking=; ac_rtlflag_checking=;
 fi;
 nocommon_flag=""
 if test x$ac_checking != x ; then
