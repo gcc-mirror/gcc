@@ -1076,6 +1076,15 @@ legitimate_address_p (mode, addr, strict)
   else
     disp = addr;				/* displacement */
 
+  /* Allow arg pointer and stack pointer as index if there is not scaling */
+  if (base && indx && !scale
+      && (indx == arg_pointer_rtx || indx == stack_pointer_rtx))
+    {
+      rtx tmp = base;
+      base = indx;
+      indx = tmp;
+    }
+
   /* Validate base register */
   if (base)
     {
