@@ -1,5 +1,8 @@
 2004-06-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* configure.ac: Support --enable-shared=libobjc.
+	* configure: Regenerate.
+
 	PR libobjc/15901
 	* configure.ac: Do not disable shared by default.
 	* configure: Regenerate.

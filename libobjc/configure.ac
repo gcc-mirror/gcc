@@ -21,7 +21,7 @@
 #02111-1307, USA.
 
 AC_PREREQ(2.59)
-AC_INIT
+AC_INIT(package-unused, version-unused,, libobjc)
 AC_CONFIG_SRCDIR([objc/objc.h])
 
 # We need the following definitions because AC_PROG_LIBTOOL relies on them
