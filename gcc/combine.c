@@ -423,7 +423,8 @@ static rtx gen_rtx_combine PVPROTO((enum rtx_code code, enum machine_mode mode,
 				  ...));
 static rtx gen_binary		PROTO((enum rtx_code, enum machine_mode,
 				       rtx, rtx));
-static rtx gen_unary		PROTO((enum rtx_code, enum machine_mode, rtx));
+static rtx gen_unary		PROTO((enum rtx_code, enum machine_mode,
+				       enum machine_mode, rtx));
 static enum rtx_code simplify_comparison  PROTO((enum rtx_code, rtx *, rtx *));
 static int reversible_comparison_p  PROTO((rtx));
 static void update_table_tick	PROTO((rtx));
@@ -3015,12 +3016,12 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	  else if (GET_CODE (true) == CONST_INT
 		   && INTVAL (true) == - STORE_FLAG_VALUE
 		   && false == const0_rtx)
-	    x = gen_unary (NEG, mode,
+	    x = gen_unary (NEG, mode, mode,
 			   gen_binary (cond_code, mode, cond, cop1));
 	  else if (GET_CODE (false) == CONST_INT
 		   && INTVAL (false) == - STORE_FLAG_VALUE
 		   && true == const0_rtx)
-	    x = gen_unary (NEG, mode,
+	    x = gen_unary (NEG, mode, mode,
 			   gen_binary (reverse_condition (cond_code), 
 				       mode, cond, cop1));
 	  else
@@ -3271,7 +3272,7 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	 but this doesn't seem common enough to bother with.  */
       if (GET_CODE (XEXP (x, 0)) == ASHIFT
 	  && XEXP (XEXP (x, 0), 0) == const1_rtx)
-	return gen_rtx (ROTATE, mode, gen_unary (NOT, mode, const1_rtx),
+	return gen_rtx (ROTATE, mode, gen_unary (NOT, mode, mode, const1_rtx),
 			XEXP (XEXP (x, 0), 1));
 					    
       if (GET_CODE (XEXP (x, 0)) == SUBREG
@@ -3284,7 +3285,7 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	  enum machine_mode inner_mode = GET_MODE (SUBREG_REG (XEXP (x, 0)));
 
 	  x = gen_rtx (ROTATE, inner_mode,
-		       gen_unary (NOT, inner_mode, const1_rtx),
+		       gen_unary (NOT, inner_mode, inner_mode, const1_rtx),
 		       XEXP (SUBREG_REG (XEXP (x, 0)), 1));
 	  return gen_lowpart_for_combine (mode, x);
 	}
@@ -3433,8 +3434,8 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	   || GET_CODE (XEXP (x, 0)) == NEG)
 	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == FLOAT_EXTEND
 	  && GET_MODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == mode)
-	return gen_unary (GET_CODE (XEXP (x, 0)),
-			  mode, XEXP (XEXP (XEXP (x, 0), 0), 0));
+	return gen_unary (GET_CODE (XEXP (x, 0)), mode, mode,
+			  XEXP (XEXP (XEXP (x, 0), 0), 0));
       break;  
 
 #ifdef HAVE_cc0
@@ -3518,7 +3519,7 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	  && ((STORE_FLAG_VALUE == -1 && XEXP (x, 1) == const1_rtx)
 	      || (STORE_FLAG_VALUE == 1 && XEXP (x, 1) == constm1_rtx)))
 	return
-	  gen_unary (NEG, mode,
+	  gen_unary (NEG, mode, mode,
 		     gen_binary (reverse_condition (GET_CODE (XEXP (x, 0))),
 				 mode, XEXP (XEXP (x, 0), 0),
 				 XEXP (XEXP (x, 0), 1)));
@@ -3659,7 +3660,7 @@ simplify_rtx (x, op0_mode, last, in_dest)
 		       == GET_MODE_BITSIZE (mode)))
 	    {
 	      op0 = expand_compound_operation (op0);
-	      return gen_unary (NEG, mode,
+	      return gen_unary (NEG, mode, mode,
 				gen_lowpart_for_combine (mode, op0));
 	    }
 
@@ -3698,7 +3699,7 @@ simplify_rtx (x, op0_mode, last, in_dest)
 		   && nonzero_bits (op0, mode) == 1)
 	    {
 	      op0 = expand_compound_operation (op0);
-	      return gen_unary (NEG, mode,
+	      return gen_unary (NEG, mode, mode,
 				gen_lowpart_for_combine (mode, op0));
 	    }
 
@@ -3708,7 +3709,7 @@ simplify_rtx (x, op0_mode, last, in_dest)
 		       == GET_MODE_BITSIZE (mode)))
 	    {
 	      op0 = expand_compound_operation (op0);
-	      return gen_unary (NOT, mode,
+	      return gen_unary (NOT, mode, mode,
 				gen_lowpart_for_combine (mode, op0));
 	    }
 
@@ -3961,10 +3962,10 @@ simplify_if_then_else (x)
       {
       case GT:
       case GE:
-	return gen_unary (ABS, mode, true);
+	return gen_unary (ABS, mode, mode, true);
       case LT:
       case LE:
-	return gen_unary (NEG, mode, gen_unary (ABS, mode, true));
+	return gen_unary (NEG, mode, mode, gen_unary (ABS, mode, mode, true));
       }
 
   /* Look for MIN or MAX.  */
@@ -4103,7 +4104,7 @@ simplify_if_then_else (x)
 	  temp = gen_binary (op, m, gen_lowpart_for_combine (m, z), temp);
 
 	  if (extend_op != NIL)
-	    temp = gen_unary (extend_op, mode, temp);
+	    temp = gen_unary (extend_op, mode, m, temp);
 
 	  return temp;
 	}
@@ -4377,7 +4378,7 @@ simplify_set (x)
 
       term2 = gen_binary (AND, GET_MODE (src), XEXP (XEXP (src, 0), 0), true);
       term3 = gen_binary (AND, GET_MODE (src),
-			  gen_unary (NOT, GET_MODE (src),
+			  gen_unary (NOT, GET_MODE (src), GET_MODE (src),
 				     XEXP (XEXP (src, 0), 0)),
 			  false);
 
@@ -4420,12 +4421,14 @@ simplify_logical (x, last)
       if (GET_CODE (op0) == XOR
 	  && rtx_equal_p (XEXP (op0, 0), op1)
 	  && ! side_effects_p (op1))
-	x = gen_binary (AND, mode, gen_unary (NOT, mode, XEXP (op0, 1)), op1);
+	x = gen_binary (AND, mode,
+			gen_unary (NOT, mode, mode, XEXP (op0, 1)), op1);
 
       if (GET_CODE (op0) == XOR
 	  && rtx_equal_p (XEXP (op0, 1), op1)
 	  && ! side_effects_p (op1))
-	x = gen_binary (AND, mode, gen_unary (NOT, mode, XEXP (op0, 0)), op1);
+	x = gen_binary (AND, mode,
+			gen_unary (NOT, mode, mode, XEXP (op0, 0)), op1);
 
       /* Similarly for (~ (A ^ B)) & A.  */
       if (GET_CODE (op0) == NOT
@@ -4611,7 +4614,7 @@ simplify_logical (x, last)
 	    SUBST (XEXP (x, 1), op1);
 	  }
 	else if (num_negated == 1)
-	  return gen_unary (NOT, mode, gen_binary (XOR, mode, op0, op1));
+	  return gen_unary (NOT, mode, mode, gen_binary (XOR, mode, op0, op1));
       }
 
       /* Convert (xor (and A B) B) to (and (not A) B).  The latter may
@@ -4621,13 +4624,15 @@ simplify_logical (x, last)
       if (GET_CODE (op0) == AND
 	  && rtx_equal_p (XEXP (op0, 1), op1)
 	  && ! side_effects_p (op1))
-	return gen_binary (AND, mode, gen_unary (NOT, mode, XEXP (op0, 0)),
+	return gen_binary (AND, mode,
+			   gen_unary (NOT, mode, mode, XEXP (op0, 0)),
 			   op1);
 
       else if (GET_CODE (op0) == AND
 	       && rtx_equal_p (XEXP (op0, 0), op1)
 	       && ! side_effects_p (op1))
-	return gen_binary (AND, mode, gen_unary (NOT, mode, XEXP (op0, 1)),
+	return gen_binary (AND, mode,
+			   gen_unary (NOT, mode, mode, XEXP (op0, 1)),
 			   op1);
 
 #if STORE_FLAG_VALUE == 1
@@ -4892,6 +4897,7 @@ expand_field_assignment (x)
 		   gen_binary (IOR, compute_mode,
 			       gen_binary (AND, compute_mode,
 					   gen_unary (NOT, compute_mode,
+						      compute_mode,
 						      gen_binary (ASHIFT,
 								  compute_mode,
 								  mask, pos)),
@@ -5261,7 +5267,7 @@ extract_left_shift (x, count)
 
     case NEG:  case NOT:
       if ((tem = extract_left_shift (XEXP (x, 0), count)) != 0)
-	return gen_unary (code, mode, tem);
+	return gen_unary (code, mode, mode, tem);
 
       break;
 
@@ -6015,7 +6021,7 @@ force_to_mode (x, mode, mask, reg, just_select)
 				     force_to_mode (XEXP (x, 0), mode, mask,
 						    reg, next_select));
       if (op_mode != GET_MODE (x) || op0 != XEXP (x, 0))
-	x = gen_unary (code, op_mode, op0);
+	x = gen_unary (code, op_mode, op_mode, op0);
       break;
 
     case NE:
@@ -6070,8 +6076,8 @@ if_then_else_cond (x, ptrue, pfalse)
   if (GET_RTX_CLASS (code) == '1'
       && (cond0 = if_then_else_cond (XEXP (x, 0), &true0, &false0)) != 0)
     {
-      *ptrue = gen_unary (code, mode, true0);
-      *pfalse = gen_unary (code, mode, false0);
+      *ptrue = gen_unary (code, mode, GET_MODE (XEXP (x, 0)), true0);
+      *pfalse = gen_unary (code, mode, GET_MODE (XEXP (x, 0)), false0);
       return cond0;
     }
 
@@ -6127,7 +6133,7 @@ if_then_else_cond (x, ptrue, pfalse)
 	      *ptrue = gen_binary (MULT, mode, op0, const_true_rtx);
 	      *pfalse = gen_binary (MULT, mode, 
 				    (code == MINUS 
-				     ? gen_unary (NEG, mode, op1) : op1),
+				     ? gen_unary (NEG, mode, mode, op1) : op1),
 				    const_true_rtx);
 	      return cond0;
 	    }
@@ -6253,7 +6259,8 @@ known_cond (x, cond, reg, val)
       case GE:  case GT:  case EQ:
 	return XEXP (x, 0);
       case LT:  case LE:
-	return gen_unary (NEG, GET_MODE (XEXP (x, 0)), XEXP (x, 0));
+	return gen_unary (NEG, GET_MODE (XEXP (x, 0)), GET_MODE (XEXP (x, 0)),
+			  XEXP (x, 0));
       }
 
   /* The only other cases we handle are MIN, MAX, and comparisons if the
@@ -6536,7 +6543,7 @@ apply_distributive_law (x)
   if (code == XOR && inner_code == IOR)
     {
       inner_code = AND;
-      other = gen_unary (NOT, GET_MODE (x), other);
+      other = gen_unary (NOT, GET_MODE (x), GET_MODE (x), other);
     }
 
   /* We may be able to continuing distributing the result, so call
@@ -8105,7 +8112,7 @@ simplify_shift_const (x, code, result_mode, varop, count)
   /* If COMPLEMENT_P is set, we have to complement X before doing the outer
      operation.  */
   if (complement_p)
-    x = gen_unary (NOT, result_mode, x);
+    x = gen_unary (NOT, result_mode, result_mode, x);
 
   if (outer_op != NIL)
     {
@@ -8119,7 +8126,7 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	   equivalent to a constant.  This should be rare.  */
 	x = GEN_INT (outer_const);
       else if (GET_RTX_CLASS (outer_op) == '1')
-	x = gen_unary (outer_op, result_mode, x);
+	x = gen_unary (outer_op, result_mode, result_mode, x);
       else
 	x = gen_binary (outer_op, result_mode, x, GEN_INT (outer_const));
     }
@@ -8451,12 +8458,12 @@ gen_binary (code, mode, op0, op1)
 }
 
 static rtx
-gen_unary (code, mode, op0)
+gen_unary (code, mode, op0_mode, op0)
      enum rtx_code code;
-     enum machine_mode mode;
+     enum machine_mode mode, op0_mode;
      rtx op0;
 {
-  rtx result = simplify_unary_operation (code, mode, op0, mode);
+  rtx result = simplify_unary_operation (code, mode, op0, op0_mode);
 
   if (result)
     return result;
