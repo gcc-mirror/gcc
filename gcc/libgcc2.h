@@ -299,12 +299,6 @@ typedef union
   DWtype ll;
 } DWunion;
 
-#if (defined (L_udivmoddi4) || defined (L_muldi3) || defined (L_udiv_w_sdiv)\
-     || defined (L_divdi3) || defined (L_udivdi3) \
-     || defined (L_moddi3) || defined (L_umoddi3))
-
 #include "longlong.h"
-
-#endif /* udiv or mul */
 
 #endif /* __LIBGCC2_H__ */
