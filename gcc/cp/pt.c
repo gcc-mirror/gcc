@@ -5429,6 +5429,8 @@ instantiate_class_template (tree type)
 	      else if (uses_template_parms (friend_type))
 		new_friend_type = tsubst (friend_type, args,
 					  tf_error | tf_warning, NULL_TREE);
+	      else if (CLASSTYPE_USE_TEMPLATE (friend_type))
+		new_friend_type = friend_type;
 	      else 
 		{
 		  tree ns = decl_namespace_context (TYPE_MAIN_DECL (friend_type));
