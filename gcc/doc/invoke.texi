@@ -1271,7 +1271,7 @@ the version that conforms most closely to the C++ ABI specification.
 Therefore, the ABI obtained using version 0 will change as ABI bugs
 are fixed.
 
-The default is version 1.
+The default is version 2.
 
 @item -fno-access-control
 @opindex fno-access-control

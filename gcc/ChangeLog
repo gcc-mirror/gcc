@@ -1,3 +1,8 @@
+2004-02-17  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/14178
+	* doc/invoke.texi (fabi-version): The default is 2 now.
+
 2004-02-17  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* doc/install.texi: Update description of --gxx-include-dir to
