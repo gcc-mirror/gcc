@@ -322,7 +322,6 @@ static void field_op PROTO ((tree, int, struct jcf_partial *));
 static void maybe_wide PROTO ((int, int, struct jcf_partial *));
 static void emit_dup PROTO ((int, int, struct jcf_partial *));
 static void emit_pop PROTO ((int, struct jcf_partial *));
-static void emit_iinc PROTO ((tree, int, struct jcf_partial *));
 static void emit_load_or_store PROTO ((tree, int, struct jcf_partial *));
 static void emit_load PROTO ((tree, struct jcf_partial *));
 static void emit_store PROTO ((tree, struct jcf_partial *));
