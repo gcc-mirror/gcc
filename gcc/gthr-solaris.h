@@ -44,11 +44,16 @@ typedef struct {
   int once;
 } __gthread_once_t;
 typedef mutex_t __gthread_mutex_t;
-typedef mutex_t __gthread_recursive_mutex_t;
+
+typedef struct {
+  long depth;
+  thread_t owner;
+  mutex_t actual;
+} __gthread_recursive_mutex_t;
 
 #define __GTHREAD_ONCE_INIT { DEFAULTMUTEX, 0 }
 #define __GTHREAD_MUTEX_INIT DEFAULTMUTEX
-#define __GTHREAD_RECURSIVE_MUTEX_INIT RECURSIVE_ERRORCHECKMUTEX
+#define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION __gthread_recursive_mutex_init_function
 
 #if SUPPORTS_WEAK && GTHREAD_USE_WEAK
 
@@ -411,8 +416,8 @@ __gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
 {
   /* Solaris 2.5 contains thr_* routines no-op in libc, so test if we actually
      got a reasonable key value, and if not, fail.  */
-  *key = -1;
-  if (thr_keycreate (key, dtor) != 0 || *key == -1)
+  *key = (__gthread_key_t)-1;
+  if (thr_keycreate (key, dtor) != 0 || *key == (__gthread_key_t)-1)
     return -1;
   else
     return 0;
@@ -469,21 +474,62 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
 }
 
 static inline int
+__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
+{
+  mutex->depth = 0;
+  mutex->owner = (thread_t) 0;
+  return mutex_init (&mutex->actual, USYNC_THREAD, NULL);
+}
+
+static inline int
 __gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
 {
-  return __gthread_mutex_lock (mutex);
+  if (__gthread_active_p ())
+    {
+      thread_t me = thr_self ();
+
+      if (mutex->owner != me)
+	{
+	  mutex_lock (&mutex->actual);
+	  mutex->owner = me;
+	}
+
+      mutex->depth++;
+    }
+  return 0;
 }
 
 static inline int
 __gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
 {
-  return __gthread_mutex_trylock (mutex);
+  if (__gthread_active_p ())
+    {
+      thread_t me = thr_self ();
+
+      if (mutex->owner != me)
+	{
+	  if (mutex_trylock (&mutex->actual))
+	    return 1;
+	  mutex->owner = me;
+	}
+
+      mutex->depth++;
+    }
+  return 0;
 }
 
 static inline int
 __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
 {
-  return __gthread_mutex_unlock (mutex);
+  if (__gthread_active_p ())
+    {
+      if (--mutex->depth == 0)
+	{
+	   mutex->owner = (thread_t) 0;
+	   mutex_unlock (&mutex->actual);
+	}
+    }
+  return 0;
 }
 
 #endif /* _LIBOBJC */
