@@ -1,5 +1,14 @@
 2004-05-22  Steven G. Kargl  <kargls@comcast.net>
 
+	* check.c (gfc_check_system_clock): New function.
+	* intrinsic.c (add_sym_3s): New function.
+	(add_subroutines): Use it.
+	* intrinsic.h (gfc_check_system_clock, gfc_resolve_system_clock):
+	Add prototypes.
+	* iresolve.c (gfc_resolve_system_clock): New function.
+
+2004-05-22  Steven G. Kargl  <kargls@comcast.net>
+
 	* invoke.texi: Document -Wunderflow and spell check.
 	* lang.opt: Add Wunderflow.
 	* gfortran.h (gfc_option_t): Add warn_underflow option.

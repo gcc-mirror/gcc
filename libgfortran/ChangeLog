@@ -1,3 +1,9 @@
+2004-05-22  Steven G. Kargl  <kargls@comcast.net>
+
+	* intrinsics/system_clock: New file.
+	* Makefile.am: Add intrinsics/system_clock.c.
+	* Makefile.in: Regenerate.
+
 2004-05-21  Roger Sayle  <roger@eyesopen.com>
 
 	* io/format.c (parse_format_list): Allow the comma after a string

@@ -99,6 +99,7 @@ try gfc_check_x (gfc_expr *);
 
 /* Intrinsic subroutines.  */
 try gfc_check_cpu_time (gfc_expr *);
+try gfc_check_system_clock (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_date_and_time (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_mvbits (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
 		      gfc_expr *);
@@ -303,6 +304,7 @@ void gfc_resolve_verify (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 
 /* Intrinsic subroutine resolution.  */
 void gfc_resolve_cpu_time (gfc_code *);
+void gfc_resolve_system_clock(gfc_code *);
 void gfc_resolve_random_number (gfc_code *);
 
 
