@@ -121,7 +121,7 @@ Stephan Buys for contributing Doxygen notes for libstdc++.
 
 @item
 Paolo Carlini for libstdc++ work: lots of efficiency improvements to
-the string class, C++ streambufs and formatted I/O, hard detective work on
+the C++ strings, streambufs and formatted I/O, hard detective work on
 the frustrating localization issues, and keeping up with the problem reports.
 
 @item
@@ -692,7 +692,7 @@ Ken Rose for fixes to our delay slot filling code.
 Paul Rubin wrote most of the preprocessor.
 
 @item
-Petur Runolfsson for major performance improvements in C++ formatted I/O and
+P@'etur Run@'olfsson for major performance improvements in C++ formatted I/O and
 large file support in C++ filebuf.
 
 @item

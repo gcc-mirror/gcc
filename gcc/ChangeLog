@@ -1,3 +1,9 @@
+2004-01-26  Jeff Law  <law@redhat.com>
+ 
+	* doc/contrib.texi: Minor cleanup for Paolo Carlini's entry.  Add
+	acute accents for Petur Runolfsson's entry.
+ 
+
 2004-01-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	Backport from mainline:
