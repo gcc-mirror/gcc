@@ -1,3 +1,9 @@
+Tue Mar 16 15:15:41 1999  Per Bothner  <bothner@cygnus.com>
+
+	* parse.y (java_complete_lhs):  Call force_evaluation_order
+	after patch_newarray.
+	(patch_binop):  Don't call fold if there are side effects.
+
 1999-03-16  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (java_stabilize_reference): Use save_expr instead of
