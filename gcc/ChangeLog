@@ -1,3 +1,15 @@
+Tue Oct 19 11:41:12 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* c-pragma.h (PRAGMA_INSERT_ATTRIBUTES): Delete macro.
+	(insert_pack_attributes): Delete prototype.
+
+	* c-pragma.c (default_alignment): New static variable.
+	(push_alignment): Initialize to current effective alignment.
+	(pop_alignment): Use to set new alignment.
+	(insert_pack_attributes): Delete function.
+	(handle_pragma_token): Set default_alignment as well each time 
+	a #pragma pack(<n>) is encountered.
+
 Tue Oct 19 02:03:00 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* reg-stack.c (stack_result): Aggregates are not returned in

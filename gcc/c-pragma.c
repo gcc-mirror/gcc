@@ -51,6 +51,13 @@ typedef struct align_stack
 
 static struct align_stack * alignment_stack = NULL;
 
+/* If we have a "global" #pragma pack(<n>) if effect when the first
+   #pragma push(pack,<n>) is encountered, this stores the the value of 
+   maximum_field_alignment in effect.  When the final pop_alignment() 
+   happens, we restore the value to this, not to a value of 0 for
+   maximum_field_alignment.  Value is in bits. */
+static int  default_alignment;
+
 static int  push_alignment PROTO((int, tree));
 static int  pop_alignment  PROTO((tree));
 
@@ -94,6 +101,12 @@ Alignment must be a small power of two, not %d, in #pragma pack",
       entry->num_pushes = 1;
       entry->id         = id;
       entry->prev       = alignment_stack;
+      
+      /* The current value of maximum_field_alignment is not necessarily 
+	 0 since there may be a #pragma pack(<n>) in effect; remember it 
+	 so that we can restore it after the final #pragma pop(). */
+      if (alignment_stack == NULL)
+	default_alignment = maximum_field_alignment;
       
       alignment_stack = entry;
 
@@ -142,7 +155,7 @@ pop_alignment (id)
       entry = alignment_stack->prev;
 
       if (entry == NULL)
-	maximum_field_alignment = 0;
+	maximum_field_alignment = default_alignment;
       else
 	maximum_field_alignment = entry->alignment * 8;
 
@@ -152,67 +165,6 @@ pop_alignment (id)
     }
 
   return 1;
-}
-
-/* Generate 'packed' and 'aligned' attributes for decls whilst a
-   #pragma pack(push... is in effect.  */
-void
-insert_pack_attributes (node, attributes, prefix)
-     tree node;
-     tree * attributes;
-     tree * prefix;
-{
-  tree a;
-  int field_alignment;
-
-  /* If we are not packing, then there is nothing to do.  */
-  if (maximum_field_alignment == 0
-      || alignment_stack == NULL)
-    return;
-
-  /* We are only interested in fields.  */
-  if (TREE_CODE_CLASS (TREE_CODE (node)) != 'd'
-      || TREE_CODE (node) != FIELD_DECL)
-    return;
-  
-  field_alignment = TYPE_ALIGN (TREE_TYPE (node));
-  if (field_alignment <= 0 || field_alignment > maximum_field_alignment)
-    field_alignment = maximum_field_alignment;
-
-  /* Add a 'packed' attribute.  */
-  * attributes = tree_cons (get_identifier ("packed"), NULL, * attributes);
-  
-  /* If the alignment is > 8 then add an alignment attribute as well.  */
-  if (field_alignment > 8)
-    {
-      /* If the aligned attribute is already present then do not override it.  */
-      for (a = * attributes; a; a = TREE_CHAIN (a))
-	{
-	  tree name = TREE_PURPOSE (a);
-	  if (strcmp (IDENTIFIER_POINTER (name), "aligned") == 0)
-	    break;
-	}
-      
-      if (a == NULL)
-	for (a = * prefix; a; a = TREE_CHAIN (a))
-	  {
-	    tree name = TREE_PURPOSE (a);
-	    if (strcmp (IDENTIFIER_POINTER (name), "aligned") == 0)
-	      break;
-	  }
-  
-      if (a == NULL)
-	{
-	  * attributes = tree_cons
-	      (get_identifier ("aligned"),
-	       tree_cons (NULL,
-			  build_int_2 (field_alignment / 8, 0),
-			  NULL),
-	       * attributes);
-	}
-    }
-
-  return;
 }
 #endif /* HANDLE_PRAGMA_PACK_PUSH_POP */
 
@@ -267,6 +219,9 @@ handle_pragma_token (string, token)
 	  if (state == ps_right)
 	    {
 	      maximum_field_alignment = align * 8;
+#ifdef HANDLE_PRAGMA_PACK_PUSH_POP
+	      default_alignment = maximum_field_alignment;
+#endif
 	      ret_val = 1;
 	    }
 	  else

@@ -39,9 +39,6 @@ Boston, MA 02111-1307, USA.  */
 /* If we are supporting #pragma pack(push... then we automatically
    support #pragma pack(<n>)  */
 #define HANDLE_PRAGMA_PACK 1
-#define PRAGMA_INSERT_ATTRIBUTES(node, pattr, prefix_attr) \
-  insert_pack_attributes (node, pattr, prefix_attr)
-extern void insert_pack_attributes PROTO((tree, tree *, tree *));
 #endif /* HANDLE_PRAGMA_PACK_PUSH_POP */
 
 
