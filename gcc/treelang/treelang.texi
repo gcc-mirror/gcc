@@ -294,7 +294,7 @@ and @samp{GNU Compiler Collection (GCC) Internals}.
 
 To install treelang, follow the GCC installation instructions, 
 taking care to ensure you specify treelang in the configure step by adding
-treelang to the list of languages specified by @option{--enable-langauges}, 
+treelang to the list of languages specified by @option{--enable-languages}, 
 e.g.@: @samp{--enable-languages=all,treelang}.
 
 If you're generally curious about the future of
@@ -619,7 +619,7 @@ OR variable = expression OR function_call
 An expression can be a constant or a variable reference or a
 function_call.  Expressions can be combined as a sum of two expressions
 or the difference of two expressions, or an equality test of two
-expresions.  An assignment is also an expression.  Expresions and operator
+expressions.  An assignment is also an expression.  Expressions and operator
 precedence work as in C.
 
 @item
@@ -947,7 +947,7 @@ The files are:
 
 @item
 COPYING.  This is the copyright file, assuming you are going to use the
-GNU General Public Licence.  You probably need to use the GPL because if
+GNU General Public License.  You probably need to use the GPL because if
 you use the GCC back end your program and the back end are one program,
 and the back end is GPLed.
 
@@ -957,7 +957,7 @@ GCC tree, as the main GCC directory has this file.
 @item
 COPYING.LIB.  This is the copyright file for those parts of your program
 that are not to be covered by the GPL, but are instead to be covered by
-the LGPL (Library or Lesser GPL).  This licence may be appropriate for
+the LGPL (Library or Lesser GPL).  This license may be appropriate for
 the library routines associated with your compiler. These are the
 routines that are linked with the @emph{output} of the compiler.  Using
 the LGPL for these programs allows programs written using your compiler
@@ -1006,7 +1006,7 @@ directory.
 @item
 config-lang.in.  This file is read by the configuration progress and must
 be present. You specify the name of your language, the name(s) of the
-compiler(s) incouding preprocessors you are going to build, whether any,
+compiler(s) including preprocessors you are going to build, whether any,
 usually generated, files should be excluded from diffs (ie when making
 diff files to send in patches).  Whether the equate 'stagestuff' is used
 is unknown (???).
@@ -1167,7 +1167,7 @@ to mark it.
 Note that you can also call ggc_mark_tree to mark any of the back end
 internal 'tree' nodes. This routine will follow the branches of the
 trees and mark all the subordinate structures. This is useful for
-example when you have created a variable declaaration that will be used
+example when you have created a variable declaration that will be used
 across multiple functions, or for a function declaration (from a
 prototype) that may be used later on. See the next item for more on the
 tree nodes. 

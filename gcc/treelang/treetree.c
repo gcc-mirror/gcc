@@ -642,7 +642,7 @@ tree_code_get_integer_value (unsigned char* chars, unsigned int length)
 			     val & 0xffffffff, (val >> 32) & 0xffffffff);
 }
 
-/* Return the tree for an expresssion, type EXP_TYPE (see treetree.h)
+/* Return the tree for an expression, type EXP_TYPE (see treetree.h)
    with tree type TYPE and with operands1 OP1, OP2 (maybe), OP3 (maybe).  */
 tree
 tree_code_get_expression (unsigned int exp_type,
@@ -1004,7 +1004,7 @@ pushlevel (int ignore ATTRIBUTE_UNUSED)
 static tree
 poplevel (int keep, int reverse, int functionbody)
 {
-  /* Points to a BLOCK tree node. This is the BLOCK node construted for the
+  /* Points to a BLOCK tree node. This is the BLOCK node constructed for the
      binding level that we are about to exit and which is returned by this
      routine.  */
   tree block_node = NULL_TREE;
@@ -1014,7 +1014,7 @@ poplevel (int keep, int reverse, int functionbody)
 
   /* Reverse the list of *_DECL nodes if desired.  Note that the ..._DECL
      nodes chained through the `names' field of current_binding_level are in
-     reverse order except for PARM_DECL node, which are explicitely stored in
+     reverse order except for PARM_DECL node, which are explicitly stored in
      the right order.  */
   decl_chain = (reverse) ? nreverse (current_binding_level->names)
 			 : current_binding_level->names;
@@ -1103,7 +1103,7 @@ pushdecl (tree decl)
   TREE_CHAIN (decl) = current_binding_level->names;
   current_binding_level->names = decl;
 
-  /* For the declartion of a type, set its name if it is not already set. */
+  /* For the declaration of a type, set its name if it is not already set. */
 
   if (TREE_CODE (decl) == TYPE_DECL
       && TYPE_NAME (TREE_TYPE (decl)) == 0)
