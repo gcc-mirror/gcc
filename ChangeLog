@@ -1,3 +1,7 @@
+2001-01-22  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* configure.in: Enable libgcj for linux targets.
+
 2001-01-20  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
 	* MAINTAINERS (Write After Approval): Add myself.
