@@ -1,3 +1,8 @@
+2004-06-05  David S. Miller  <davem@nuts.davemloft.net>
+
+	* config/sparc/linux.h (TARGET_C99_FUNCTIONS): Set.
+	* config/sparc/linux64.h (TARGET_C99_FUNCTIONS): Likewise.
+
 2004-06-04  Eric Christopher  <echristo@redhat.com>
 
 	Backport from mainline:
