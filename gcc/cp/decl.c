@@ -13235,7 +13235,7 @@ grok_op_properties (decl, friendp)
 		       && DERIVED_FROM_P (t, current_class_type))
 		what = "a base class";
 
-	      if (what)
+	      if (what && warn_conversion)
 		warning ("conversion to %s%s will never use a type conversion operator",
 			 ref ? "a reference to " : "", what);
 	    }

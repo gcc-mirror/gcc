@@ -1,4 +1,5 @@
 // Build don't link:
+// Special Options: -Wconversion
 struct A { };
 struct B: public A {
   A a;

@@ -19,6 +19,8 @@
 // 8/3/2000 (nathan): The std allows you to define such an op, but
 // it will never be called. [class.conv.fct]. Make it an unconditional warning.
 
+// Special Options: -Wconversion
+
 struct struct0 {
 
   operator void ();		// WARNING - operator void

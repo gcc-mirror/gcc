@@ -1,3 +1,8 @@
+2003-06-21  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* g++.old-deja/g++.jason/conversion5.C: Adjust option.
+	* g++.old-deja/g++.bugs/900215_01.C: Likewise.
+
 2003-06-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10888
