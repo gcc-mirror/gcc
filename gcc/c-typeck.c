@@ -1715,7 +1715,7 @@ build_external_ref (tree id, int fun)
 {
   tree ref;
   tree decl = lookup_name (id);
-  tree objc_ivar = lookup_objc_ivar (id);
+  tree objc_ivar = objc_lookup_ivar (id);
 
   if (decl && decl != error_mark_node)
     {

@@ -1,3 +1,15 @@
+2004-09-01  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc-act.c (lookup_interface): Make function 'static' and add a
+	local prototype.
+	(objc_check_decl, get_class_reference, objc_declare_alias,
+	objc_declare_class, objc_is_object_ptr): Call objc_is_class_name()
+	instead of is_class_name().
+	(get_super_receiver, objc_clear_super_receiver): Call 
+	objc_get_current_scope() instead of get_current_scope().
+	(is_class_name): Rename to objc_is_class_name.
+	(lookup_objc_ivar): Rename to objc_lookup_ivar.
+
 2004-08-28  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc-act.c (objc_is_reserved_word): New function.
