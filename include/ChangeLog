@@ -1,3 +1,7 @@
+2004-03-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* hashtab.h, splay-tree.h: Use new shorter form of GTY markers.
+
 2004-02-24  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* dyn-string.h: Update copyright date.
