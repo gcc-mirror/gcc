@@ -2159,6 +2159,8 @@ implicitly_declare (tree functionid)
 {
   struct c_binding *b;
   tree decl = 0;
+  tree asmspec_tree;
+
   for (b = I_SYMBOL_BINDING (functionid); b; b = b->shadowed)
     {
       if (B_IN_SCOPE (b, external_scope))
@@ -2230,6 +2232,9 @@ implicitly_declare (tree functionid)
   TREE_PUBLIC (decl) = 1;
   C_DECL_IMPLICIT (decl) = 1;
   implicit_decl_warning (functionid, 0);
+  asmspec_tree = maybe_apply_renaming_pragma (decl, /*asmname=*/NULL);
+  if (asmspec_tree)
+    set_user_assembler_name (decl, TREE_STRING_POINTER (asmspec_tree));
 
   /* C89 says implicit declarations are in the innermost block.
      So we record the decl in the standard fashion.  */
@@ -3064,7 +3069,8 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
   const char *asmspec = 0;
 
   /* If a name was specified, get the string.  */
-  if (current_scope == file_scope)
+  if ((TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
+      && DECL_FILE_SCOPE_P (decl))
     asmspec_tree = maybe_apply_renaming_pragma (decl, asmspec_tree);
   if (asmspec_tree)
     asmspec = TREE_STRING_POINTER (asmspec_tree);
