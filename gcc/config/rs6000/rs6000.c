@@ -235,6 +235,7 @@ static bool legitimate_small_data_p (enum machine_mode, rtx);
 static bool legitimate_offset_address_p (enum machine_mode, rtx, int);
 static bool legitimate_indexed_address_p (rtx, int);
 static bool legitimate_indirect_address_p (rtx, int);
+static bool macho_lo_sum_memory_operand (rtx x, enum machine_mode mode);
 static bool legitimate_lo_sum_address_p (enum machine_mode, rtx, int);
 static struct machine_function * rs6000_init_machine_status (void);
 static bool rs6000_assemble_integer (rtx, unsigned int, int);
@@ -2145,6 +2146,7 @@ reg_or_mem_operand (rtx op, enum machine_mode mode)
 {
   return (gpc_reg_operand (op, mode)
 	  || memory_operand (op, mode)
+	  || macho_lo_sum_memory_operand (op, mode)
 	  || volatile_mem_operand (op, mode));
 }
 
@@ -2484,6 +2486,25 @@ static inline bool
 legitimate_indirect_address_p (rtx x, int strict)
 {
   return GET_CODE (x) == REG && INT_REG_OK_FOR_BASE_P (x, strict);
+}
+
+static bool
+macho_lo_sum_memory_operand (rtx x, enum machine_mode mode)
+{
+    if (!TARGET_MACHO || !flag_pic
+        || mode != SImode || GET_CODE(x) != MEM)
+      return false;
+    x = XEXP (x, 0);
+
+  if (GET_CODE (x) != LO_SUM)
+    return false;
+  if (GET_CODE (XEXP (x, 0)) != REG)
+    return false;
+  if (!INT_REG_OK_FOR_BASE_P (XEXP (x, 0), 0))
+    return false;
+  x = XEXP (x, 1);
+
+  return CONSTANT_P (x);
 }
 
 static bool
@@ -3211,12 +3232,12 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
       HOST_WIDE_INT ud1, ud2, ud3, ud4;
 
       ud1 = c1 & 0xffff;
-      ud2 = (c1 & 0xffff0000) >> 16;
+      ud2 = (unsigned HOST_WIDE_INT)(c1 & 0xffff0000) >> 16;
 #if HOST_BITS_PER_WIDE_INT >= 64
       c2 = c1 >> 32;
 #endif
       ud3 = c2 & 0xffff;
-      ud4 = (c2 & 0xffff0000) >> 16;
+      ud4 = (unsigned HOST_WIDE_INT)(c2 & 0xffff0000) >> 16;
 
       if ((ud4 == 0xffff && ud3 == 0xffff && ud2 == 0xffff && (ud1 & 0x8000)) 
 	  || (ud4 == 0 && ud3 == 0 && ud2 == 0 && ! (ud1 & 0x8000)))
