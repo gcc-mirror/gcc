@@ -4,10 +4,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "" } */
-/* { dg-options "-O0 -m64" { target sparc64-*-* } } */
-/* { dg-options "-O0 -m64" { target sparcv9-*-* } } */
-/* { dg-options "" { target sparc-*-solaris2.[0-6] } } */
-/* { dg-options "" { target sparc-*-solaris2.[0-6].* } } */
+/* { dg-options "-O0" { target sparc64-*-* sparcv9-*-* } } */
 
 short foo() {
   short i = (short)(1<<15);
