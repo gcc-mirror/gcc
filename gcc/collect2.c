@@ -39,13 +39,6 @@ Boston, MA 02111-1307, USA.  */
 #include <process.h>
 #endif
 
-#ifndef HAVE_STRERROR
-extern char *sys_errlist[];
-extern int sys_nerr;
-#else
-char *strerror();
-#endif
-
 /* Obstack allocation and deallocation routines.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -278,6 +271,7 @@ static struct path_prefix *libpaths[3] = {&cmdline_lib_dirs,
 static char *libexts[3] = {"a", "so", NULL};  /* possible library extentions */
 #endif
 
+static char *my_strerror	PROTO((int));
 static void handler		PROTO((int));
 static int is_ctor_dtor		PROTO((char *));
 static char *find_a_file	PROTO((struct path_prefix *, char *));
@@ -336,7 +330,7 @@ dup2 (oldfd, newfd)
 }
 #endif
 
-char *
+static char *
 my_strerror (e)
      int e;
 {

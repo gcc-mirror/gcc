@@ -138,16 +138,6 @@ static int hack_vms_include_specification ();
 
 extern char *version_string;
 extern char *update_path PROTO((char *, char *));
-#ifndef VMS
-#ifndef HAVE_STRERROR
-extern int sys_nerr;
-extern char *sys_errlist[];
-#else	/* HAVE_STRERROR */
-char *strerror ();
-#endif
-#else	/* VMS */
-char *strerror (int,...);
-#endif
 HOST_WIDE_INT parse_escape PROTO((char **, HOST_WIDE_INT));
 HOST_WIDE_INT parse_c_expression PROTO((char *, int));
 
@@ -1003,7 +993,7 @@ static int discard_comments PROTO((U_CHAR *, int, int));
 
 static int change_newlines PROTO((U_CHAR *, int));
 
-char *my_strerror PROTO((int));
+static char *my_strerror PROTO((int));
 void error PRINTF_PROTO_1((char *, ...));
 static void verror PROTO((char *, va_list));
 static void error_from_errno PROTO((char *));
@@ -8873,7 +8863,7 @@ change_newlines (start, length)
 /* my_strerror - return the descriptive text associated with an
    `errno' code.  */
 
-char *
+static char *
 my_strerror (errnum)
      int errnum;
 {

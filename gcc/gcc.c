@@ -122,13 +122,7 @@ static char dir_separator_str[] = {DIR_SEPARATOR, 0};
 #endif
 
 extern char *choose_temp_base PROTO((void));
-
-#ifndef HAVE_STRERROR
-extern int sys_nerr;
-extern char *sys_errlist[];
-#else
-extern char *strerror();
-#endif
+extern char *my_strerror PROTO((int));
 
 #ifndef HAVE_KILL
 #define kill(p,s) raise(s)

@@ -55,4 +55,13 @@
 
 /* Whether abort must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_ABORT
+
+/* Whether strerror must be declared even if <string.h> is included.  */
+#undef NEED_DECLARATION_STRERROR
+
+/* Whether getcwd must be declared even if <unistd.h> is included.  */
+#undef NEED_DECLARATION_GETCWD
+
+/* Whether getwd must be declared even if <unistd.h> is included.  */
+#undef NEED_DECLARATION_GETWD
 @TOP@

@@ -637,7 +637,7 @@ pfinish ()
 extern int execv ();
 extern int execvp ();
 #ifdef IN_GCC
-extern char * my_strerror();
+extern char * my_strerror			PROTO ((int));
 #endif
 
 int

@@ -93,13 +93,6 @@ Boston, MA 02111-1307, USA.  */
 #include "getopt.h"
 #undef getopt
 
-#ifndef HAVE_STRERROR
-extern int sys_nerr;
-extern char *sys_errlist[];
-#else
-extern char *strerror();
-#endif
-
 extern char *version_string;
 
 /* Systems which are compatible only with POSIX 1003.1-1988 (but *not*
@@ -123,6 +116,7 @@ extern char *version_string;
 extern char *getpwd ();
 
 extern char *choose_temp_base PROTO ((void));
+extern char * my_strerror PROTO ((int));
 
 extern int pexecute PROTO ((const char *, char * const *, const char *,
 			    const char *, char **, char **, int));
