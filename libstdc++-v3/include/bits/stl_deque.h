@@ -359,15 +359,15 @@ namespace _GLIBCXX_STD
       get_allocator() const
       { return *static_cast<const _Alloc*>(&this->_M_impl); }
 
-      typedef _Deque_iterator<_Tp,_Tp&,_Tp*>             iterator;
-      typedef _Deque_iterator<_Tp,const _Tp&,const _Tp*> const_iterator;
+      typedef _Deque_iterator<_Tp, _Tp&, _Tp*>             iterator;
+      typedef _Deque_iterator<_Tp, const _Tp&, const _Tp*> const_iterator;
 
       _Deque_base(const allocator_type& __a, size_t __num_elements)
-	: _M_impl(__a)
+      : _M_impl(__a)
       { _M_initialize_map(__num_elements); }
 
       _Deque_base(const allocator_type& __a)
-	: _M_impl(__a)
+      : _M_impl(__a)
       { }
 
       ~_Deque_base();
@@ -377,14 +377,15 @@ namespace _GLIBCXX_STD
       //standard container and at the same time makes use of the EBO
       //for empty allocators.
       struct _Deque_impl
-	: public _Alloc {
+      : public _Alloc
+      {
 	_Tp** _M_map;
 	size_t _M_map_size;
 	iterator _M_start;
 	iterator _M_finish;
 
 	_Deque_impl(const _Alloc& __a)
-	  : _Alloc(__a), _M_map(0), _M_map_size(0), _M_start(), _M_finish()
+	: _Alloc(__a), _M_map(0), _M_map_size(0), _M_start(), _M_finish()
 	{ }
       };
 
@@ -422,7 +423,8 @@ namespace _GLIBCXX_STD
   {
     if (this->_M_impl._M_map)
     {
-      _M_destroy_nodes(this->_M_impl._M_start._M_node, this->_M_impl._M_finish._M_node + 1);
+      _M_destroy_nodes(this->_M_impl._M_start._M_node,
+		       this->_M_impl._M_finish._M_node + 1);
       _M_deallocate_map(this->_M_impl._M_map, this->_M_impl._M_map_size);
     }
   }
@@ -452,7 +454,8 @@ namespace _GLIBCXX_STD
       // the beginning of _M_map, but for small maps it may be as far in as
       // _M_map+3.
 
-      _Tp** __nstart = this->_M_impl._M_map + (this->_M_impl._M_map_size - __num_nodes) / 2;
+      _Tp** __nstart = (this->_M_impl._M_map
+			+ (this->_M_impl._M_map_size - __num_nodes) / 2);
       _Tp** __nfinish = __nstart + __num_nodes;
 
       try
@@ -468,8 +471,9 @@ namespace _GLIBCXX_STD
       this->_M_impl._M_start._M_set_node(__nstart);
       this->_M_impl._M_finish._M_set_node(__nfinish - 1);
       this->_M_impl._M_start._M_cur = _M_impl._M_start._M_first;
-      this->_M_impl._M_finish._M_cur = this->_M_impl._M_finish._M_first + __num_elements
-	                 % __deque_buf_size(sizeof(_Tp));
+      this->_M_impl._M_finish._M_cur = (this->_M_impl._M_finish._M_first
+					+ __num_elements
+					% __deque_buf_size(sizeof(_Tp)));
     }
 
   template<typename _Tp, typename _Alloc>
@@ -668,7 +672,8 @@ namespace _GLIBCXX_STD
        */
       deque(const deque& __x)
       : _Base(__x.get_allocator(), __x.size())
-      { std::uninitialized_copy(__x.begin(), __x.end(), this->_M_impl._M_start); }
+      { std::uninitialized_copy(__x.begin(), __x.end(),
+				this->_M_impl._M_start); }
 
       /**
        *  @brief  Builds a %deque from a range.
@@ -1009,7 +1014,8 @@ namespace _GLIBCXX_STD
       void
       push_back(const value_type& __x)
       {
-	if (this->_M_impl._M_finish._M_cur != this->_M_impl._M_finish._M_last - 1)
+	if (this->_M_impl._M_finish._M_cur
+	    != this->_M_impl._M_finish._M_last - 1)
 	  {
 	    std::_Construct(this->_M_impl._M_finish._M_cur, __x);
 	    ++this->_M_impl._M_finish._M_cur;
@@ -1029,7 +1035,8 @@ namespace _GLIBCXX_STD
       void
       pop_front()
       {
-	if (this->_M_impl._M_start._M_cur != this->_M_impl._M_start._M_last - 1)
+	if (this->_M_impl._M_start._M_cur
+	    != this->_M_impl._M_start._M_last - 1)
 	  {
 	    std::_Destroy(this->_M_impl._M_start._M_cur);
 	    ++this->_M_impl._M_start._M_cur;
@@ -1049,7 +1056,8 @@ namespace _GLIBCXX_STD
       void
       pop_back()
       {
-	if (this->_M_impl._M_finish._M_cur != this->_M_impl._M_finish._M_first)
+	if (this->_M_impl._M_finish._M_cur
+	    != this->_M_impl._M_finish._M_first)
 	  {
 	    --this->_M_impl._M_finish._M_cur;
 	    std::_Destroy(this->_M_impl._M_finish._M_cur);
@@ -1418,7 +1426,8 @@ namespace _GLIBCXX_STD
       void
       _M_reserve_map_at_front (size_type __nodes_to_add = 1)
       {
-	if (__nodes_to_add > size_type(this->_M_impl._M_start._M_node - this->_M_impl._M_map))
+	if (__nodes_to_add > size_type(this->_M_impl._M_start._M_node
+				       - this->_M_impl._M_map))
 	  _M_reallocate_map(__nodes_to_add, true);
       }
 
