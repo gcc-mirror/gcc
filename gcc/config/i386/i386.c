@@ -6605,7 +6605,8 @@ ix86_expand_fp_movcc (operands)
       /* We may be called from the post-reload splitter.  */
       && (!REG_P (operands[0])
 	  || SSE_REG_P (operands[0])
-	  || REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER))
+	  || REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER)
+      && 0)
     {
       rtx op0 = ix86_compare_op0, op1 = ix86_compare_op1;
       code = GET_CODE (operands[1]);
@@ -6668,7 +6669,7 @@ ix86_expand_fp_movcc (operands)
 	{
 	  rtx tmp = operands[2];
 	  operands[2] = operands[3];
-	  operands[2] = tmp;
+	  operands[3] = tmp;
 	  operands[1] = gen_rtx_fmt_ee (reverse_condition_maybe_unordered
 					  (GET_CODE (operands[1])),
 					VOIDmode, ix86_compare_op0,
@@ -10400,13 +10401,13 @@ ix86_register_move_cost (mode, class1, class2)
      stall.  Count this as arbitarily high cost of 20.  */
   if (ix86_secondary_memory_needed (class1, class2, mode, 0))
     {
+      int add_cost = 0;
       if (CLASS_MAX_NREGS (class1, mode) > CLASS_MAX_NREGS (class2, mode))
-	return 10;
+	  add_cost = 20;
       return (MEMORY_MOVE_COST (mode, class1, 0)
-	      + MEMORY_MOVE_COST (mode, class2, 1));
+	      + MEMORY_MOVE_COST (mode, class2, 1) + add_cost);
     }
-  /* Moves between SSE/MMX and integer unit are expensive.
-     ??? We should make this cost CPU specific.  */
+  /* Moves between SSE/MMX and integer unit are expensive.  */
   if (MMX_CLASS_P (class1) != MMX_CLASS_P (class2)
       || SSE_CLASS_P (class1) != SSE_CLASS_P (class2))
     return ix86_cost->mmxsse_to_integer;
