@@ -610,11 +610,28 @@ bool operator==(const hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>& __ht1,
   for (size_t __n = 0; __n < __ht1._M_buckets.size(); ++__n) {
     _Node* __cur1 = __ht1._M_buckets[__n];
     _Node* __cur2 = __ht2._M_buckets[__n];
-    for ( ; __cur1 && __cur2 && __cur1->_M_val == __cur2->_M_val;
+    // Check same length of lists
+    for ( ; __cur1 && __cur2;
           __cur1 = __cur1->_M_next, __cur2 = __cur2->_M_next)
       {}
     if (__cur1 || __cur2)
       return false;
+    // Now check one's elements are in the other
+    for (__cur1 = __ht1._M_buckets[__n] ; __cur1; __cur1 = __cur1->_M_next)
+    {
+      bool _found__cur1 = false;
+      for (_Node* __cur2 = __ht2._M_buckets[__n];
+           __cur2; __cur2 = __cur2->_M_next)
+      {
+        if (__cur1->_M_val == __cur2->_M_val)
+        {
+          _found__cur1 = true;
+          break;
+        }
+      }
+      if (!_found__cur1)
+        return false;
+    }
   }
   return true;
 }  
