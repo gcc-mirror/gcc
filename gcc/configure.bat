@@ -3,6 +3,7 @@ echo Configuring GCC for go32
 rem This batch file assumes a unix-type "sed" program
 
 update config\xm-i386dos.h config.h
+update config\xm-i386dos.h hconfig.h
 update config\i386gas.h tm.h
 update config\i386.md md
 update config\i386.c aux-output.c
