@@ -369,14 +369,7 @@ extern jclass gdkColor;
 extern jmethodID gdkColorID;
 extern JNIEnv *gdk_env;
 
-void
-gdk_window_get_root_geometry (GdkWindow *window,
-			      gint      *x,
-			      gint      *y,
-			      gint      *width,
-			      gint      *height,
-			      gint      *border,
-			      gint      *depth);
+extern GtkWindowGroup *global_gtk_window_group;
 
 void awt_event_handler (GdkEvent *event);
 
@@ -385,8 +378,6 @@ void connect_awt_hook (JNIEnv *env, jobject peer_obj, int nwindows, ...);
 void set_visible (GtkWidget *widget, jboolean visible);
 void set_parent (GtkWidget *widget, GtkContainer *parent);
 GtkLayout *find_gtk_layout (GtkWidget *parent);
-void setup_window (JNIEnv *env, jobject obj, GtkWidget *window, jint width, 
-		   jint height, jboolean visible);
 
 jint keyevent_state_to_awt_mods (GdkEvent *event);
 

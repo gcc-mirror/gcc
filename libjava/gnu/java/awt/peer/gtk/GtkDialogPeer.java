@@ -54,11 +54,13 @@ public class GtkDialogPeer extends GtkWindowPeer
 
   void initializeInsets ()
   {
-    // Unfortunately, X does not provide a clean way to calculate the
-    // dimensions of a dialog's borders before it has been displayed.
-    // So we guess and then fix the dimensions upon receipt of the
-    // first configure event.
-    insets = new Insets (20, 6, 6, 6);
+    synchronized (latestInsets)
+      {
+	insets = new Insets (latestInsets.top,
+			     latestInsets.left,
+			     latestInsets.bottom,
+			     latestInsets.right);
+      }
   }
 
   void create ()

@@ -76,7 +76,13 @@ public class GtkFramePeer extends GtkWindowPeer
     // dimensions of a frame's borders before it has been displayed.
     // So we guess and then fix the dimensions upon receipt of the
     // first configure event.
-    insets = new Insets (20, 6, 6, 6);
+    synchronized (latestInsets)
+      {
+	insets = new Insets (latestInsets.top,
+			     latestInsets.left,
+			     latestInsets.bottom,
+			     latestInsets.right);
+      }
   }
 
   void create ()

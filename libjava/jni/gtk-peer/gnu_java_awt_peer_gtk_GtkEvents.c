@@ -813,7 +813,7 @@ generates_key_typed_event (GdkEvent *event, GtkWidget *source)
 void
 awt_event_handler (GdkEvent *event)
 {
-  jobject *obj_ptr;
+  jobject *event_obj_ptr;
   static guint32 button_click_time = 0;
   static GdkWindow *button_window = NULL;
   static guint button_number = -1;
@@ -865,12 +865,49 @@ awt_event_handler (GdkEvent *event)
 			   NULL,
 			   NULL,
 			   NULL,
-			   (guchar **)&obj_ptr))
+			   (guchar **)&event_obj_ptr))
     {
+      GtkWidget *event_widget;
+      GtkWidget *grab_widget;
+      jobject *grab_obj_ptr = NULL;
+      void *ptr;
+
+      /* Implement modality using GTK grabs. */
+      g_assert (global_gtk_window_group);
+      if (global_gtk_window_group->grabs)
+	{
+	  grab_widget = global_gtk_window_group->grabs->data;
+	  g_assert (grab_widget);
+
+	  gdk_property_get (grab_widget->window,
+			    gdk_atom_intern ("_GNU_GTKAWT_ADDR", FALSE),
+			    gdk_atom_intern ("CARDINAL", FALSE),
+			    0,
+			    sizeof (jobject),
+			    FALSE,
+			    NULL,
+			    NULL,
+			    NULL,
+			    (guchar **)&grab_obj_ptr);
+
+	  ptr = NSA_GET_PTR (gdk_env, *event_obj_ptr);
+	  event_widget = GTK_WIDGET(ptr);
+
+	  if (GTK_WIDGET_IS_SENSITIVE (event_widget) &&
+	      gtk_widget_is_ancestor (event_widget, grab_widget))
+	    {
+	      g_free (grab_obj_ptr);
+
+	      grab_obj_ptr = event_obj_ptr;
+	    }
+	}
+      else
+	grab_obj_ptr = event_obj_ptr;
+
       switch (event->type)
 	{
 	case GDK_BUTTON_PRESS:
-	  (*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr, postMouseEventID,
+	  (*gdk_env)->CallVoidMethod (gdk_env, *grab_obj_ptr, postMouseEventID,
 				      AWT_MOUSE_PRESSED, 
 				      (jlong)event->button.time,
 				    state_to_awt_mods (event->button.state) |
@@ -902,7 +939,8 @@ awt_event_handler (GdkEvent *event)
 	    /*	    if (--grab_counter == 0)
 	      gdk_pointer_ungrab (event->button.time);
 	    */
-	    (*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr, postMouseEventID,
+	    (*gdk_env)->CallVoidMethod (gdk_env, *grab_obj_ptr,
+					postMouseEventID,
 					AWT_MOUSE_RELEASED, 
 					(jlong)event->button.time,
 				    state_to_awt_mods (event->button.state) |
@@ -918,7 +956,8 @@ awt_event_handler (GdkEvent *event)
 		&& event->button.y >= 0
 		&& event->button.x <= width 
 		&& event->button.y <= height)
-	      (*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr, postMouseEventID,
+	      (*gdk_env)->CallVoidMethod (gdk_env, *grab_obj_ptr,
+					  postMouseEventID,
 					  AWT_MOUSE_CLICKED, 
 					  (jlong)event->button.time,
 				   state_to_awt_mods (event->button.state) |
@@ -930,7 +969,7 @@ awt_event_handler (GdkEvent *event)
 	  }
 	  break;
 	case GDK_MOTION_NOTIFY:
-	  (*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr, postMouseEventID,
+	  (*gdk_env)->CallVoidMethod (gdk_env, *grab_obj_ptr, postMouseEventID,
 				      AWT_MOUSE_MOVED,
 				      (jlong)event->motion.time,
 				      state_to_awt_mods (event->motion.state),
@@ -944,7 +983,8 @@ awt_event_handler (GdkEvent *event)
 				     | GDK_BUTTON4_MASK
 				     | GDK_BUTTON5_MASK))
 	    {
-	      (*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr, postMouseEventID,
+	      (*gdk_env)->CallVoidMethod (gdk_env, *grab_obj_ptr,
+					  postMouseEventID,
 					  AWT_MOUSE_DRAGGED,
 					  (jlong)event->motion.time,
 				      state_to_awt_mods (event->motion.state),
@@ -954,7 +994,7 @@ awt_event_handler (GdkEvent *event)
 	    }
 	  break;
 	case GDK_ENTER_NOTIFY:
-	  (*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr, postMouseEventID,
+	  (*gdk_env)->CallVoidMethod (gdk_env, *grab_obj_ptr, postMouseEventID,
 				      AWT_MOUSE_ENTERED, 
 				      (jlong)event->crossing.time,
 				    state_to_awt_mods (event->crossing.state), 
@@ -964,7 +1004,8 @@ awt_event_handler (GdkEvent *event)
 	  break;
 	case GDK_LEAVE_NOTIFY:
 	  if (event->crossing.mode == GDK_CROSSING_NORMAL)
-	    (*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr, postMouseEventID,
+	    (*gdk_env)->CallVoidMethod (gdk_env, *grab_obj_ptr,
+					postMouseEventID,
 					AWT_MOUSE_EXITED, 
 					(jlong)event->crossing.time,
 				    state_to_awt_mods (event->crossing.state),
@@ -1005,7 +1046,7 @@ awt_event_handler (GdkEvent *event)
 		bottom = r.height - h - y;
 		right = r.width - w - x;
 
-		(*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr,
+		(*gdk_env)->CallVoidMethod (gdk_env, *event_obj_ptr,
 					    postConfigureEventID,
 					    (jint) event->configure.x,
 					    (jint) event->configure.y,
@@ -1021,7 +1062,7 @@ awt_event_handler (GdkEvent *event)
 	  break;
 	case GDK_EXPOSE:
 	  {
-	    (*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr,
+	    (*gdk_env)->CallVoidMethod (gdk_env, *event_obj_ptr,
 					postExposeEventID,
 					(jint)event->expose.area.x,
 					(jint)event->expose.area.y,
@@ -1066,9 +1107,9 @@ awt_event_handler (GdkEvent *event)
 				  NULL,
 				  NULL,
 				  NULL,
-				  (guchar **)&obj_ptr);
+				  (guchar **)&grab_obj_ptr);
 
-		(*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr,
+		(*gdk_env)->CallVoidMethod (gdk_env, *grab_obj_ptr,
 					    postKeyEventID,
 					    (jint) AWT_KEY_PRESSED,
 					    (jlong) event->key.time,
@@ -1078,11 +1119,11 @@ awt_event_handler (GdkEvent *event)
                              keysym_to_awt_keylocation (event));
 
                 if (generates_key_typed_event (event, window->focus_widget))
-                  (*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr,
+                  (*gdk_env)->CallVoidMethod (gdk_env, *grab_obj_ptr,
                                               postKeyEventID,
                                               (jint) AWT_KEY_TYPED,
                                               (jlong) event->key.time,
-                                              state_to_awt_mods (event->key.state),
+                                          state_to_awt_mods (event->key.state),
                                               VK_UNDEFINED,
                                               keyevent_to_awt_keychar (event),
                                               AWT_KEY_LOCATION_UNKNOWN);
@@ -1121,9 +1162,9 @@ awt_event_handler (GdkEvent *event)
 				  NULL,
 				  NULL,
 				  NULL,
-				  (guchar **)&obj_ptr);
+				  (guchar **)&grab_obj_ptr);
 
-		(*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr,
+		(*gdk_env)->CallVoidMethod (gdk_env, *grab_obj_ptr,
 					    postKeyEventID,
 					    (jint) AWT_KEY_RELEASED,
 					    (jlong) event->key.time,
@@ -1135,7 +1176,7 @@ awt_event_handler (GdkEvent *event)
           }
           break;
 	case GDK_FOCUS_CHANGE:
-	  (*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr,
+	  (*gdk_env)->CallVoidMethod (gdk_env, *event_obj_ptr,
 				      postFocusEventID,
 				      (jint) (event->focus_change.in) ? 
 				      AWT_FOCUS_GAINED : AWT_FOCUS_LOST,
@@ -1144,7 +1185,7 @@ awt_event_handler (GdkEvent *event)
         default:
 	  break;
 	}
-      g_free (obj_ptr);
+      g_free (event_obj_ptr);
     }
 
   gtk_main_do_event (event);

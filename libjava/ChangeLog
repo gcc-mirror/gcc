@@ -1,5 +1,35 @@
 2003-10-08  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* gnu/java/awt/peer/gtk/GtkButtonPeer.java (handleEvent): Remove
+	modality check.
+	* gnu/java/awt/peer/gtk/GtkDialogPeer.java (initializeInsets):
+	Initialize insets to use latest insets.
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java: Likewise.
+	* gnu/java/awt/peer/gtk/GtkWindowPeer.java (latestInsets): New
+	field.
+	(postConfigureEvent): Update latestInsets field when insets
+	change.  Remove call to setSize.  Move validate call outside of
+	if blocks.
+	(setVisible): Call setBounds before showing window.
+	(nativeSetVisible): New native method.
+	* java/awt/Window.java (show): Show visible owned windows.
+	(hide): Hide visible owned windows.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
+	(awt_event_handler): Implement modality using GTK grabs.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c
+	(global_gtk_window_group): New global variable.
+	(gtkInit): Initialize global_gtk_window_group.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c (create):
+	Clamp width and height values to at least 1.  Add this window to
+	the global GTK window group.
+	(setVisible): Rename to nativeSetVisible.
+	(setup_window): Remove function.
+	(setSize): Clamp width and height values to at least 1.
+	(nativeSetBounds): Likewise.
+	(gdk_window_get_root_geometry): Remove function.
+	* jni/gtk-peer/gtkpeer.h: Remove gdk_window_get_root_geometry
+	and setup_window declarations.  Declare global_gtk_window_group.
+
 	* gnu/java/awt/peer/gtk/GtkButtonPeer.java,
 	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c
 	(gtkSetFont): Handle BOLD and ITALIC style specifiers.
