@@ -1571,15 +1571,8 @@ tSCC zHpux8_Bogus_InlinesList[] =
 tSCC zHpux8_Bogus_InlinesSelect0[] =
        "inline";
 
-/*
- *  content bypass pattern - skip fix if pattern found
- */
-tSCC zHpux8_Bogus_InlinesBypass0[] =
-       "The Santa Cruz Operation";
-
-#define    HPUX8_BOGUS_INLINES_TEST_CT  2
+#define    HPUX8_BOGUS_INLINES_TEST_CT  1
 tTestDesc aHpux8_Bogus_InlinesTests[] = {
-  { TT_NEGREP,   zHpux8_Bogus_InlinesBypass0, (regex_t*)NULL },
   { TT_EGREP,    zHpux8_Bogus_InlinesSelect0, (regex_t*)NULL }, };
 
 /*
@@ -4688,7 +4681,7 @@ extern char *\tsprintf();\\\n\
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          105
+#define REGEX_COUNT          104
 #define MACH_LIST_SIZE_LIMIT 279
 #define FIX_COUNT            118
 

@@ -908,7 +908,6 @@ fix = {
     hackname = hpux8_bogus_inlines;
     files    = math.h;
     select   = inline;
-    bypass   = 'The Santa Cruz Operation';
     sed = "s@inline int abs(int [a-z][a-z]*) {.*}@extern \"C\" int abs(int);@";
     sed = "s@inline double abs(double [a-z][a-z]*) {.*}@@";
     sed = "s@inline int sqr(int [a-z][a-z]*) {.*}@@";
