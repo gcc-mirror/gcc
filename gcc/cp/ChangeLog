@@ -1,3 +1,49 @@
+Mon Aug 12 00:09:18 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (end_template_decl): If we don't actually have parms, return.
+	* parse.y (template_header): Accept 'template <>'.
+
+	* errfn.c: Allow 5 args.
+
+Sun Aug 11 15:20:58 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (make_temp_vec): New fn.
+	* pt.c (push_template_decl): Handle partial specs.
+	(instantiate_class_template): Ditto.
+	(more_specialized): Use get_bindings.
+	(more_specialized_class): New fn.
+	(get_class_bindings): New fn.
+	(most_specialized_class): New fn.
+	(do_function_instantiation): List candidates for ambiguous case.
+	* decl.c (duplicate_decls): Lose reference to DECL_TEMPLATE_MEMBERS.
+	(shadow_tag): Call push_template_decl for partial specializations.
+	* parse.y: Ditto.
+	* cp-tree.h (DECL_TEMPLATE_SPECIALIZATIONS): Replaces
+ 	DECL_TEMPLATE_MEMBERS.
+	* call.c (print_z_candidates): Reduce duplication.
+
+Fri Aug  9 14:36:08 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (lang_decode_option): Allow -fansi-overloading.
+
+Thu Aug  8 17:04:18 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (get_bindings): New fn.
+	(most_specialized): Ditto.
+	(do_function_instantiation): Use them.
+	(add_maybe_template): New fn.
+	* cp-tree.h (DECL_MAYBE_TEMPLATE): New macro.
+	* call.c (build_new_op): Handle guiding decls.
+	(build_new_function_call): Ditto.
+	* decl2.c (finish_file): Ditto.
+
+	* decl2.c (mark_used): Do synthesis here.
+	* call.c (build_method_call): Not here.
+	(build_over_call): Or here.
+	* typeck.c (build_function_call_real): Or here.
+	* tree.c (bot_manip): Call mark_used on functions used in default
+ 	args.
+
 Thu Aug  8 17:48:16 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 
 	* decl2.c (import_export_vtable): Delete code that disabled vtable

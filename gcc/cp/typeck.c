@@ -2545,15 +2545,7 @@ build_function_call_real (function, params, require_complete, flags)
 	 needs to be separately compiled).  */
 
       if (DECL_INLINE (function))
-	{
-	  /* Is it a synthesized method that needs to be synthesized?  */
-	  if (DECL_ARTIFICIAL (function) && ! DECL_INITIAL (function)
-	      /* Kludge: don't synthesize for default args.  */
-	      && current_function_decl)
-	    synthesize_method (function);
-
-	  function = inline_conversion (function);
-	}
+	function = inline_conversion (function);
       else
 	function = build_addr_func (function);
     }

@@ -44,11 +44,12 @@ extern int   cp_line_of PROTO((tree));
 
 #define STRDUP(f) (ap = (char *) alloca (strlen (f) +1), strcpy (ap, (f)), ap)
 
-#define NARGS 4
-#define arglist a1, a2, a3, a4
-#define arglist_dcl HOST_WIDE_INT a1, a2, a3, a4;
-#define ARGSINIT args[0] = a1; args[1] = a2; args[2] = a3; args[3] = a4;
-#define ARGSLIST args[0], args[1], args[2], args[3]
+#define NARGS 5
+#define arglist a1, a2, a3, a4, a5
+#define arglist_dcl HOST_WIDE_INT a1, a2, a3, a4, a5;
+#define ARGSINIT \
+  args[0] = a1; args[1] = a2; args[2] = a3; args[3] = a4; args[4] = a5;
+#define ARGSLIST args[0], args[1], args[2], args[3], args[4]
 
 static void
 cp_thing (errfn, atarg1, format, arglist)

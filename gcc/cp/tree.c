@@ -1772,8 +1772,21 @@ bot_manip (t)
   if (TREE_CODE (t) != TREE_LIST && ! TREE_SIDE_EFFECTS (t))
     return t;
   else if (TREE_CODE (t) == TARGET_EXPR)
-    return build_cplus_new (TREE_TYPE (t),
-			    break_out_target_exprs (TREE_OPERAND (t, 1)));
+    {
+      if (TREE_CODE (TREE_OPERAND (t, 1)) == NEW_EXPR)
+	{
+	  mark_used (TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (t, 1), 0), 0));
+	  return build_cplus_new
+	    (TREE_TYPE (t), break_out_target_exprs (TREE_OPERAND (t, 1)));
+	}
+      t = copy_node (t);
+      TREE_OPERAND (t, 0) = build (VAR_DECL, TREE_TYPE (t));
+      layout_decl (TREE_OPERAND (t, 0), 0);
+      return t;
+    }
+  else if (TREE_CODE (t) == CALL_EXPR)
+    mark_used (TREE_OPERAND (TREE_OPERAND (t, 0), 0));
+
   return NULL_TREE;
 }
   
@@ -2077,4 +2090,18 @@ cp_tree_equal (t1, t2)
     }
 
   return -1;
+}
+
+/* Similar to make_tree_vec, but build on a temporary obstack.  */
+
+tree
+make_temp_vec (len)
+     int len;
+{
+  register tree node;
+  push_obstacks_nochange ();
+  resume_temporary_allocation ();
+  node = make_tree_vec (len);
+  pop_obstacks ();
+  return node;
 }

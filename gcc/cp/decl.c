@@ -2869,7 +2869,6 @@ duplicate_decls (newdecl, olddecl)
 
   if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
-      DECL_TEMPLATE_MEMBERS (newdecl) = DECL_TEMPLATE_MEMBERS (olddecl);
       DECL_TEMPLATE_INSTANTIATIONS (newdecl)
 	= DECL_TEMPLATE_INSTANTIATIONS (olddecl);
       if (DECL_CHAIN (newdecl) == NULL_TREE)
@@ -5646,7 +5645,11 @@ shadow_tag (declspecs)
 	    {
 	      if (CLASSTYPE_IMPLICIT_INSTANTIATION (value)
 		  && TYPE_SIZE (value) == NULL_TREE)
-		SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (value);
+		{
+		  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (value);
+		  if (current_template_parms)
+		    push_template_decl (TYPE_MAIN_DECL (value));
+		}
 	      else if (CLASSTYPE_TEMPLATE_INSTANTIATION (value))
 		cp_error ("specialization after instantiation of `%T'", value);
 	    }

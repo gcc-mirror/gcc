@@ -2468,12 +2468,6 @@ build_method_call (instance, name, parms, basetype_path, flags)
   function = DECL_MAIN_VARIANT (function);
   mark_used (function);
 
-  /* Is it a synthesized method that needs to be synthesized?  */
-  if (DECL_ARTIFICIAL (function) && ! DECL_INITIAL (function)
-      /* Kludge: don't synthesize for default args.  */
-      && current_function_decl)
-    synthesize_method (function);
-
   if (pedantic && DECL_THIS_INLINE (function) && ! DECL_ARTIFICIAL (function)
       && ! DECL_INITIAL (function) && ! DECL_PENDING_INLINE_INFO (function)
       && ! (DECL_TEMPLATE_INFO (function)
@@ -4157,48 +4151,27 @@ static void
 print_z_candidates (candidates)
      struct z_candidate *candidates;
 {
-  if (! candidates)
-    return;
-
-  if (TREE_CODE (candidates->fn) == IDENTIFIER_NODE)
-    {
-      if (candidates->fn == ansi_opname [COND_EXPR])
-	cp_error ("candidates are: %D(%T, %T, %T) <builtin>", candidates->fn,
-		  TREE_TYPE (TREE_VEC_ELT (candidates->convs, 0)),
-		  TREE_TYPE (TREE_VEC_ELT (candidates->convs, 1)),
-		  TREE_TYPE (TREE_VEC_ELT (candidates->convs, 2)));
-      else if (TREE_VEC_LENGTH (candidates->convs) == 2)
-	cp_error ("candidates are: %D(%T, %T) <builtin>", candidates->fn,
-		  TREE_TYPE (TREE_VEC_ELT (candidates->convs, 0)),
-		  TREE_TYPE (TREE_VEC_ELT (candidates->convs, 1)));
-      else
-	cp_error ("candidates are: %D(%T) <builtin>", candidates->fn,
-		  TREE_TYPE (TREE_VEC_ELT (candidates->convs, 0)));
-    }
-  else
-    cp_error_at ("candidates are: %D", candidates->fn);
-  candidates = candidates->next;
-
+  char *str = "candidates are:";
   for (; candidates; candidates = candidates->next)
     {
       if (TREE_CODE (candidates->fn) == IDENTIFIER_NODE)
 	{
 	  if (candidates->fn == ansi_opname [COND_EXPR])
-	    cp_error ("                %D(%T, %T, %T) <builtin>",
-		      candidates->fn,
+	    cp_error ("%s %D(%T, %T, %T) <builtin>", str, candidates->fn,
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 0)),
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 1)),
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 2)));
 	  else if (TREE_VEC_LENGTH (candidates->convs) == 2)
-	    cp_error ("                %D(%T, %T) <builtin>", candidates->fn,
+	    cp_error ("%s %D(%T, %T) <builtin>", str, candidates->fn,
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 0)),
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 1)));
 	  else
-	    cp_error ("                %D(%T) <builtin>", candidates->fn,
+	    cp_error ("%s %D(%T) <builtin>", str, candidates->fn,
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 0)));
 	}
       else
-	cp_error_at ("                %D", candidates->fn);
+	cp_error_at ("%s %+D", str, candidates->fn);
+      str = "               "; 
     }
 }
 
@@ -4334,6 +4307,7 @@ build_new_function_call (fn, args, obj)
   if (obj == NULL_TREE && TREE_CODE (fn) == TREE_LIST)
     {
       tree t;
+      tree templates = NULL_TREE;
 
       for (t = args; t; t = TREE_CHAIN (t))
 	if (TREE_VALUE (t) == error_mark_node)
@@ -4342,8 +4316,11 @@ build_new_function_call (fn, args, obj)
       for (t = TREE_VALUE (fn); t; t = DECL_CHAIN (t))
 	{
 	  if (TREE_CODE (t) == TEMPLATE_DECL)
-	    candidates = add_template_candidate
-	      (candidates, t, args, LOOKUP_NORMAL);
+	    {
+	      templates = decl_tree_cons (NULL_TREE, t, templates);
+	      candidates = add_template_candidate
+		(candidates, t, args, LOOKUP_NORMAL);
+	    }
 	  else
 	    candidates = add_function_candidate
 	      (candidates, t, args, LOOKUP_NORMAL);
@@ -4368,6 +4345,12 @@ build_new_function_call (fn, args, obj)
 	  print_z_candidates (candidates);
 	  return error_mark_node;
 	}
+
+      /* Pedantically, it is ill-formed to define a function that could
+	 also be a template instantiation, but we won't implement that
+	 until things settle down.  */
+      if (templates && ! cand->template && ! DECL_INITIAL (cand->fn))
+	add_maybe_template (cand->fn, templates);
 
       return build_over_call (cand->fn, cand->convs, args, LOOKUP_NORMAL);
     }
@@ -4482,6 +4465,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
   struct z_candidate *candidates = 0, *cand;
   tree fns, mem_arglist, arglist, fnname, *p;
   enum tree_code code2 = NOP_EXPR;
+  tree templates = NULL_TREE;
 
   if (arg1 == error_mark_node)
     return error_mark_node;
@@ -4602,7 +4586,11 @@ build_new_op (code, flags, arg1, arg2, arg3)
   for (; fns; fns = DECL_CHAIN (fns))
     {
       if (TREE_CODE (fns) == TEMPLATE_DECL)
-	candidates = add_template_candidate (candidates, fns, arglist, flags);
+	{
+	  templates = decl_tree_cons (NULL_TREE, fns, templates);
+	  candidates = add_template_candidate
+	    (candidates, fns, arglist, flags);
+	}
       else
 	candidates = add_function_candidate (candidates, fns, arglist, flags);
     }
@@ -4714,6 +4702,13 @@ build_new_op (code, flags, arg1, arg2, arg3)
 
       if (DECL_FUNCTION_MEMBER_P (cand->fn))
 	enforce_access (cand->basetype_path, cand->fn);
+
+      /* Pedantically, it is ill-formed to define a function that could
+	 also be a template instantiation, but we won't implement that
+	 until things settle down.  */
+      if (templates && ! cand->template && ! DECL_INITIAL (cand->fn)
+	  && TREE_CODE (TREE_TYPE (cand->fn)) != METHOD_TYPE)
+	add_maybe_template (cand->fn, templates);
 
       return build_over_call
 	(cand->fn, cand->convs,
@@ -4999,12 +4994,6 @@ build_over_call (fn, convs, args, flags)
   converted_args = nreverse (converted_args);
 
   mark_used (fn);
-  /* Is it a synthesized method that needs to be synthesized?  */
-  if (DECL_ARTIFICIAL (fn) && ! DECL_INITIAL (fn)
-      && DECL_CLASS_CONTEXT (fn)
-      /* Kludge: don't synthesize for default args.  */
-      && current_function_decl)
-    synthesize_method (fn);
 
   if (pedantic && DECL_THIS_INLINE (fn) && ! DECL_ARTIFICIAL (fn)
       && ! DECL_INITIAL (fn) && ! DECL_PENDING_INLINE_INFO (fn)
