@@ -1,3 +1,9 @@
+2003-04-16  Richard Henderson  <rth@redhat.com>
+
+	* rtl.h (MEM_ALIAS_SET): Update documentation.
+	* doc/rtl.texi (Special Accessors): New node.
+	(SYMBOL_REF_FLAG): Note relationship with SYMBOL_REF_FLAGS.
+
 2003-04-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* reload1.c (reload_cse_noop_set_p): Return false if mode of
