@@ -1,3 +1,14 @@
+1999-04-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (finish_static_data_member_decl): New function.
+	* decl2.c (finish_static_data_member_decl): Split out from ...
+	(grokfield): Here.
+	* pt.c (instantiate_class_template): Use it here instead of 
+	trying to fake it.
+	(tsubst_decl): Don't set DECL_ASSEMBLER_NAME;
+	finish_static_data_member_decl will do that.  Explicit set
+	DECL_EXTERNAL to match non-template processing.
+	
 1999-04-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (finish_class_definition): Add parameter.

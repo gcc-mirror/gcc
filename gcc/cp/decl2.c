@@ -1456,6 +1456,61 @@ check_classfn (ctype, function)
   return NULL_TREE;
 }
 
+/* We have just processed the DECL, which is a static data member.
+   Its initializer, if present, is INIT.  The ASMSPEC_TREE, if
+   present, is the assembly-language name for the data member.
+   NEED_POP and FLAGS are as for cp_finish_decl.  */
+
+void
+finish_static_data_member_decl (decl, init, asmspec_tree, need_pop, flags)
+     tree decl;
+     tree init;
+     tree asmspec_tree;
+     int need_pop;
+     int flags;
+{
+  char* asmspec = 0;
+
+  if (asmspec_tree)
+    asmspec = TREE_STRING_POINTER (asmspec_tree);
+
+  my_friendly_assert (TREE_PUBLIC (decl), 0);
+
+  /* We cannot call pushdecl here, because that would fill in the
+     decl of our TREE_CHAIN.  Instead, we modify cp_finish_decl to do
+     the right thing, namely, to put this decl out straight away.  */
+  /* current_class_type can be NULL_TREE in case of error.  */
+  if (!asmspec && current_class_type)
+    {
+      DECL_INITIAL (decl) = error_mark_node;
+      DECL_ASSEMBLER_NAME (decl)
+	= build_static_name (current_class_type, DECL_NAME (decl));
+    }
+  if (! processing_template_decl)
+    pending_statics = perm_tree_cons (NULL_TREE, decl, pending_statics);
+      
+  /* Static consts need not be initialized in the class definition.  */
+  if (init != NULL_TREE && TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
+    {
+      static int explanation = 0;
+	  
+      error ("initializer invalid for static member with constructor");
+      if (explanation++ == 0)
+	error ("(you really want to initialize it separately)");
+      init = 0;
+    }
+  /* Force the compiler to know when an uninitialized static const
+     member is being used.  */
+  if (CP_TYPE_CONST_P (TREE_TYPE (decl)) && init == 0)
+    TREE_USED (decl) = 1;
+  DECL_INITIAL (decl) = init;
+  DECL_IN_AGGR_P (decl) = 1;
+  DECL_CONTEXT (decl) = current_class_type;
+  DECL_CLASS_CONTEXT (decl) = current_class_type;
+
+  cp_finish_decl (decl, init, asmspec_tree, need_pop, flags);
+}
+
 /* Process the specs, declarator (NULL if omitted) and width (NULL if omitted)
    of a structure component, returning a FIELD_DECL node.
    QUALS is a list of type qualifiers for this decl (such as for declaring
@@ -1635,43 +1690,8 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 
   if (TREE_CODE (value) == VAR_DECL)
     {
-      my_friendly_assert (TREE_PUBLIC (value), 0);
-
-      /* We cannot call pushdecl here, because that would
-	 fill in the value of our TREE_CHAIN.  Instead, we
-	 modify cp_finish_decl to do the right thing, namely, to
-	 put this decl out straight away.  */
-      /* current_class_type can be NULL_TREE in case of error.  */
-      if (asmspec == 0 && current_class_type)
-	{
-	  TREE_PUBLIC (value) = 1;
-	  DECL_INITIAL (value) = error_mark_node;
-	  DECL_ASSEMBLER_NAME (value)
-	    = build_static_name (current_class_type, DECL_NAME (value));
-	}
-      if (! processing_template_decl)
-	pending_statics = perm_tree_cons (NULL_TREE, value, pending_statics);
-      
-      /* Static consts need not be initialized in the class definition.  */
-      if (init != NULL_TREE && TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (value)))
-	{
-	  static int explanation = 0;
-	  
-	  error ("initializer invalid for static member with constructor");
-	  if (explanation++ == 0)
-	    error ("(you really want to initialize it separately)");
-	  init = 0;
-	}
-      /* Force the compiler to know when an uninitialized static
-	 const member is being used.  */
-      if (CP_TYPE_CONST_P (TREE_TYPE (value)) && init == 0)
-	TREE_USED (value) = 1;
-      DECL_INITIAL (value) = init;
-      DECL_IN_AGGR_P (value) = 1;
-      DECL_CONTEXT (value) = current_class_type;
-      DECL_CLASS_CONTEXT (value) = current_class_type;
-
-      cp_finish_decl (value, init, asmspec_tree, 1, flags);
+      finish_static_data_member_decl (value, init, asmspec_tree, 
+				      /*need_pop=*/1, flags);
       return value;
     }
   if (TREE_CODE (value) == FIELD_DECL)

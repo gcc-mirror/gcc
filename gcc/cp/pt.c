@@ -4982,16 +4982,19 @@ instantiate_class_template (type)
 	r = tsubst (t, args, /*complain=*/1, NULL_TREE);
 	if (TREE_CODE (r) == VAR_DECL)
 	  {
-	    pending_statics = perm_tree_cons (NULL_TREE, r, pending_statics);
-	    /* Perhaps we should do more of grokfield here.  */
+	    tree init;
+
 	    if (DECL_DEFINED_IN_CLASS_P (r))
-	      /* Set up DECL_INITIAL, since tsubst doesn't.  */
-	      DECL_INITIAL (r) = tsubst_expr (DECL_INITIAL (t), args,
-					      /*complain=*/1, NULL_TREE);
-	    start_decl_1 (r);
-	    DECL_IN_AGGR_P (r) = 1;
-	    DECL_EXTERNAL (r) = 1;
-	    cp_finish_decl (r, DECL_INITIAL (r), NULL_TREE, 0, 0);
+	      init = tsubst_expr (DECL_INITIAL (t), args,
+				  /*complain=*/1, NULL_TREE);
+	    else
+	      init = NULL_TREE;
+
+	    finish_static_data_member_decl (r, init,
+					    /*asmspec_tree=*/NULL_TREE, 
+					    /*need_pop=*/0,
+					    /*flags=*/0);
+
 	    if (DECL_DEFINED_IN_CLASS_P (r))
 	      check_static_variable_definition (r, TREE_TYPE (r));
 	  }
@@ -5825,9 +5828,6 @@ tsubst_decl (t, args, type, in_decl)
 	TREE_TYPE (r) = type;
 	c_apply_type_quals_to_decl (CP_TYPE_QUALS (type), r);
 	DECL_CONTEXT (r) = ctx;
-	if (TREE_STATIC (r))
-	  DECL_ASSEMBLER_NAME (r)
-	    = build_static_name (DECL_CONTEXT (r), DECL_NAME (r));
 
 	/* Don't try to expand the initializer until someone tries to use
 	   this variable; otherwise we run into circular dependencies.  */
@@ -5836,6 +5836,11 @@ tsubst_decl (t, args, type, in_decl)
 	DECL_SIZE (r) = 0;
 	copy_lang_decl (r);
 	DECL_CLASS_CONTEXT (r) = DECL_CONTEXT (r);
+
+	/* A static data member declaration is always marked external
+	   when it is declared in-class, even if an initializer is
+	   present.  We mimic the non-template processing here.  */
+	DECL_EXTERNAL (r) = 1;
 
 	DECL_TEMPLATE_INFO (r) = perm_tree_cons (tmpl, argvec, NULL_TREE);
 	SET_DECL_IMPLICIT_INSTANTIATION (r);

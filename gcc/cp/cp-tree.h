@@ -2947,6 +2947,7 @@ extern void check_default_args			PROTO((tree));
 extern void mark_used				PROTO((tree));
 extern tree handle_class_head			PROTO((tree, tree, tree));
 extern tree lookup_arg_dependent                PROTO((tree, tree, tree));
+extern void finish_static_data_member_decl      PROTO((tree, tree, tree, int, int));
 
 /* in errfn.c */
 /* The cp_* functions aren't suitable for ATTRIBUTE_PRINTF. */
