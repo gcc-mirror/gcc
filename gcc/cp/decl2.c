@@ -3044,8 +3044,8 @@ finish_objects (method_type, initp, body)
   const char *fnname;
   tree fn;
 
-  /* Finish up. */
-  finish_compound_stmt(/*has_no_scope=*/0, body);
+  /* Finish up.  */
+  finish_compound_stmt (/*has_no_scope=*/0, body);
   fn = finish_function (0);
   expand_body (fn);
 
