@@ -156,8 +156,8 @@ __floatsixf (){ abort(); }
 #else	/* !EXTENDED_FLOAT_STUBS, rest of file */
 
 
-typedef SFtype __attribute__ ((mode (SF)));
-typedef DFtype __attribute__ ((mode (DF)));
+typedef float SFtype __attribute__ ((mode (SF)));
+typedef float DFtype __attribute__ ((mode (DF)));
 
 typedef int HItype __attribute__ ((mode (HI)));
 typedef int SItype __attribute__ ((mode (SI)));
@@ -999,8 +999,7 @@ multiply (FLO_type arg_a, FLO_type arg_b)
 #if defined(L_div_sf) || defined(L_div_df)
 static INLINE fp_number_type *
 _fpdiv_parts (fp_number_type * a,
-	      fp_number_type * b,
-	      fp_number_type * tmp)
+	      fp_number_type * b)
 {
   fractype bit;
   fractype numerator;
@@ -1092,13 +1091,12 @@ divide (FLO_type arg_a, FLO_type arg_b)
 {
   fp_number_type a;
   fp_number_type b;
-  fp_number_type tmp;
   fp_number_type *res;
 
   unpack_d ((FLO_union_type *) & arg_a, &a);
   unpack_d ((FLO_union_type *) & arg_b, &b);
 
-  res = _fpdiv_parts (&a, &b, &tmp);
+  res = _fpdiv_parts (&a, &b);
 
   return pack_d (res);
 }
@@ -1331,7 +1329,7 @@ si_to_float (SItype arg_a)
 	{
 	  /* Special case for minint, since there is no +ve integer
 	     representation for it */
-	  if (arg_a == 0x80000000)
+	  if (arg_a == (SItype) 0x80000000)
 	    {
 	      return -2147483648.0;
 	    }

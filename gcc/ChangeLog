@@ -1,3 +1,12 @@
+Fri Oct  9 22:08:05 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fp-bit.c (SFtype): Don't implicitly use int in declaration.
+	(DFtype): Likewise.
+	(_fpdiv_parts): Remove unused parameter `tmp', all callers changed.
+	(divide): Remove unused variable `tmp'.
+	(si_to_float): Cast numeric constant to (SItype) before comparing
+	it against one.
+
 Fri Oct  9 16:03:19 1998  Graham  <grahams@rcp.co.uk>
 
 	* flow.c (print_rtl_with_bb): Changed type of in_bb_p to match use.
