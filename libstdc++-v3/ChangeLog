@@ -1,3 +1,12 @@
+2001-11-16  Loren J. Rittle  <ljrittle@acm.org>
+
+	* docs/html/17_intro/howto.html (Thread-safety): Rename
+	section to ``The Standard C++ library and multithreading'' and
+	update information based on recent mailing list traffic.  Move
+	all discussion of __USE_MALLOC to...
+	* docs/html/23_containers/howto.html (Containers and multithreading):
+	...here and rework it based on recent mailing list traffic.
+
 2001-11-15  Loren J. Rittle  <ljrittle@acm.org>
 
 	* docs/html/faq/index.html (Is libstdc++-v3 thread-safe?): Clarify
