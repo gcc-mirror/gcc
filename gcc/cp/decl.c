@@ -5600,7 +5600,6 @@ init_decl_processing ()
   current_binding_level = NULL_BINDING_LEVEL;
   free_binding_level = NULL_BINDING_LEVEL;
 
-#ifndef __CYGWIN32__
   /* Because most segmentation signals can be traced back into user
      code, catch them and at least give the user a chance of working
      around compiler bugs.  */
@@ -5622,13 +5621,6 @@ init_decl_processing ()
 #ifdef SIGBUS
   signal (SIGBUS, signal_catch);
 #endif
-#else /* ndef __CYGWIN32__ */
-  /* Cygwin32 cannot handle catching signals other than
-     SIGABRT yet.  We hope this will cease to be the case soon. */
-#ifdef SIGABRT
-  signal (SIGABRT, signal_catch);
-#endif
-#endif /* ndef __CYGWIN32__ */
 
   gcc_obstack_init (&decl_obstack);
 
