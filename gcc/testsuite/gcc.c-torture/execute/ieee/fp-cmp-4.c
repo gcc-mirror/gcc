@@ -104,7 +104,7 @@ main()
     unsigned lg : 1;
   };
 
-  const struct try data[] =
+  static struct try const data[] =
   {
     { NAN, NAN, 1, 0, 0, 0, 0, 0 },
     { 0.0, NAN, 1, 0, 0, 0, 0, 0 },
