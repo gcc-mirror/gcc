@@ -1,0 +1,254 @@
+/* Copyright (C) 2003  Free Software Foundation.
+
+   Verify that the `const' function attribute is applied to various
+   builtins and that these functions are optimized away by the
+   compiler under the appropriate circumstances.
+
+   Written by Kaveh Ghazi, 2003-08-04.  */
+
+/* { dg-do link } */
+/* { dg-options "-ffast-math" } */
+
+/* These are helper macros to test combinations of functions.  We test
+   foo() != foo() with the same arguments, and expect the compiler to
+   optimize away these tests of const functions.  */
+
+/* Just test the __builtin_ functions.  */
+#define BUILTIN_TEST1(FN, TYPE) \
+extern void link_failure_builtin_##FN(void); \
+void test_builtin_##FN(TYPE x) \
+{ if (__builtin_##FN(x) != __builtin_##FN(x)) link_failure_builtin_##FN(); }
+
+/* Just test the __builtin_ functions.  */
+#define BUILTIN_TEST2(FN, TYPE) \
+extern void link_failure_builtin_##FN(void); \
+void test_builtin_##FN(TYPE x, TYPE y) \
+{ if (__builtin_##FN(x,y) != __builtin_##FN(x,y)) link_failure_builtin_##FN(); }
+
+/* Also test the regular (non-__builtin_) function.  */
+#define TEST1(FN, TYPE) \
+BUILTIN_TEST1(FN, TYPE) \
+extern void link_failure_##FN(void); \
+void test_##FN(TYPE x) { if (FN(x) != FN(x)) link_failure_##FN(); }
+
+/* Test the __builtin_ functions taking void arguments (with the "f"
+   and "l" variants).  */
+#define BUILTIN_FPTEST0(FN) \
+extern void link_failure_builtin_##FN(void); \
+extern void link_failure_builtin_##FN##f(void); \
+extern void link_failure_builtin_##FN##l(void); \
+void test_builtin_##FN(void) \
+{ if (__builtin_##FN() != __builtin_##FN()) link_failure_builtin_##FN(); } \
+void test_builtin_##FN##f(void) \
+{ if (__builtin_##FN##f() != __builtin_##FN##f()) link_failure_builtin_##FN##f(); } \
+void test_builtin_##FN##l(void) \
+{ if (__builtin_##FN##l() != __builtin_##FN##l()) link_failure_builtin_##FN##l(); }
+
+/* Test the __builtin_ functions taking one FP argument (with the "f"
+   and "l" variants).  */
+#define BUILTIN_FPTEST1(FN) \
+extern void link_failure_builtin_##FN(void); \
+extern void link_failure_builtin_##FN##f(void); \
+extern void link_failure_builtin_##FN##l(void); \
+void test_builtin_##FN(double d) \
+{ if (__builtin_##FN(d) != __builtin_##FN(d)) link_failure_builtin_##FN(); } \
+void test_builtin_##FN##f(float f) \
+{ if (__builtin_##FN##f(f) != __builtin_##FN##f(f)) link_failure_builtin_##FN##f(); } \
+void test_builtin_##FN##l(long double ld) \
+{ if (__builtin_##FN##l(ld) != __builtin_##FN##l(ld)) link_failure_builtin_##FN##l(); }
+
+/* Test the __builtin_ functions taking one argument of supplied type
+   (with the "f" and "l" variants).  */
+#define BUILTIN_FPTEST1ARG(FN, TYPE) \
+extern void link_failure_builtin_##FN(void); \
+extern void link_failure_builtin_##FN##f(void); \
+extern void link_failure_builtin_##FN##l(void); \
+void test_builtin_##FN(TYPE x) \
+{ if (__builtin_##FN(x) != __builtin_##FN(x)) link_failure_builtin_##FN(); } \
+void test_builtin_##FN##f(TYPE x) \
+{ if (__builtin_##FN##f(x) != __builtin_##FN##f(x)) link_failure_builtin_##FN##f(); } \
+void test_builtin_##FN##l(TYPE x) \
+{ if (__builtin_##FN##l(x) != __builtin_##FN##l(x)) link_failure_builtin_##FN##l(); }
+
+/* Test the __builtin_ functions taking two FP arguments (with the "f"
+   and "l" variants).  */
+#define BUILTIN_FPTEST2(FN) \
+extern void link_failure_builtin_##FN(void); \
+extern void link_failure_builtin_##FN##f(void); \
+extern void link_failure_builtin_##FN##l(void); \
+void test_builtin_##FN(double d1, double d2) \
+{ if (__builtin_##FN(d1,d2) != __builtin_##FN(d1,d2)) link_failure_builtin_##FN(); } \
+void test_builtin_##FN##f(float f1, float f2) \
+{ if (__builtin_##FN##f(f1,f2) != __builtin_##FN##f(f1,f2)) link_failure_builtin_##FN##f(); } \
+void test_builtin_##FN##l(long double ld1, long double ld2) \
+{ if (__builtin_##FN##l(ld1,ld2) != __builtin_##FN##l(ld1,ld2)) link_failure_builtin_##FN##l(); }
+
+/* Test the __builtin_ functions taking two arguments, one FP and one
+   supplied type (with the "f" and "l" variants).  */
+#define BUILTIN_FPTEST2ARG(FN, TYPE) \
+extern void link_failure_builtin_##FN(void); \
+extern void link_failure_builtin_##FN##f(void); \
+extern void link_failure_builtin_##FN##l(void); \
+void test_builtin_##FN(double d, TYPE x) \
+{ if (__builtin_##FN(d,x) != __builtin_##FN(d,x)) link_failure_builtin_##FN(); } \
+void test_builtin_##FN##f(float f, TYPE x) \
+{ if (__builtin_##FN##f(f,x) != __builtin_##FN##f(f,x)) link_failure_builtin_##FN##f(); } \
+void test_builtin_##FN##l(long double ld, TYPE x) \
+{ if (__builtin_##FN##l(ld,x) != __builtin_##FN##l(ld,x)) link_failure_builtin_##FN##l(); }
+
+/* Test the __builtin_ functions taking three FP arguments (with the
+   "f" and "l" variants).  */
+#define BUILTIN_FPTEST3(FN) \
+extern void link_failure_builtin_##FN(void); \
+extern void link_failure_builtin_##FN##f(void); \
+extern void link_failure_builtin_##FN##l(void); \
+void test_builtin_##FN(double d1, double d2, double d3) \
+{ if (__builtin_##FN(d1,d2,d3) != __builtin_##FN(d1,d2,d3)) link_failure_builtin_##FN(); } \
+void test_builtin_##FN##f(float f1, float f2, float f3) \
+{ if (__builtin_##FN##f(f1,f2,f3) != __builtin_##FN##f(f1,f2,f3)) link_failure_builtin_##FN##f(); } \
+void test_builtin_##FN##l(long double ld1, long double ld2, long double ld3) \
+{ if (__builtin_##FN##l(ld1,ld2,ld3) != __builtin_##FN##l(ld1,ld2,ld3)) link_failure_builtin_##FN##l(); }
+
+/* These macros additionally test the non-__builtin_ functions.  */
+
+/* Test the functions taking one FP argument (with the "f" and "l"
+   variants).  */
+#define FPTEST1(FN) \
+BUILTIN_FPTEST1(FN) \
+extern void link_failure_##FN(void); \
+extern void link_failure_##FN##f(void); \
+extern void link_failure_##FN##l(void); \
+void test_##FN(double d) \
+{ if (FN(d) != FN(d)) link_failure_##FN(); } \
+void test_##FN##f(float f) \
+{ if (FN##f(f) != FN##f(f)) link_failure_##FN##f(); } \
+void test_##FN##l(long double ld) \
+{ if (FN##l(ld) != FN##l(ld)) link_failure_##FN##l(); }
+
+/* Test the functions taking two FP arguments (with the "f" and "l"
+   variants).  */
+#define FPTEST2(FN) \
+BUILTIN_FPTEST2(FN) \
+extern void link_failure_##FN(void); \
+extern void link_failure_##FN##f(void); \
+extern void link_failure_##FN##l(void); \
+void test_##FN(double d1, double d2) \
+{ if (FN(d1,d2) != FN(d1,d2)) link_failure_##FN(); } \
+void test_##FN##f(float f1, float f2) \
+{ if (FN##f(f1,f2) != FN##f(f1,f2)) link_failure_##FN##f(); } \
+void test_##FN##l(long double ld1, long double ld2) \
+{ if (FN##l(ld1,ld2) != FN##l(ld1,ld2)) link_failure_##FN##l(); }
+
+/* Test the functions taking two arguments, one FP and one of supplied
+   type (with the "f" and "l" variants).  */
+#define FPTEST2ARG(FN, TYPE) \
+BUILTIN_FPTEST2ARG(FN, TYPE) \
+extern void link_failure_##FN(void); \
+extern void link_failure_##FN##f(void); \
+extern void link_failure_##FN##l(void); \
+void test_##FN(double d, TYPE x) \
+{ if (FN(d,x) != FN(d,x)) link_failure_##FN(); } \
+void test_##FN##f(float f, TYPE x) \
+{ if (FN##f(f,x) != FN##f(f,x)) link_failure_##FN##f(); } \
+void test_##FN##l(long double ld, TYPE x) \
+{ if (FN##l(ld,x) != FN##l(ld,x)) link_failure_##FN##l(); }
+
+/* Test the functions taking three FP arguments (with the "f" and "l"
+   variants).  */
+#define FPTEST3(FN) \
+BUILTIN_FPTEST3(FN) \
+extern void link_failure_##FN(void); \
+extern void link_failure_##FN##f(void); \
+extern void link_failure_##FN##l(void); \
+void test_##FN(double d1, double d2, double d3) \
+{ if (FN(d1,d2,d3) != FN(d1,d2,d3)) link_failure_##FN(); } \
+void test_##FN##f(float f1, float f2, float f3) \
+{ if (FN##f(f1,f2,f3) != FN##f(f1,f2,f3)) link_failure_##FN##f(); } \
+void test_##FN##l(long double ld1, long double ld2, long double ld3) \
+{ if (FN##l(ld1,ld2,ld3) != FN##l(ld1,ld2,ld3)) link_failure_##FN##l(); }
+
+
+/* Test the math builtins.  */
+FPTEST1            (acos)
+FPTEST1            (acosh)
+FPTEST1            (asin)
+FPTEST1            (asinh)
+FPTEST1            (atan)
+FPTEST2            (atan2)
+FPTEST1            (atanh)
+FPTEST1            (cbrt)
+FPTEST1            (ceil)
+FPTEST2            (copysign)
+FPTEST1            (cos)
+FPTEST1            (cosh)
+FPTEST2            (drem)
+FPTEST1            (exp)
+FPTEST1            (exp10)
+FPTEST1            (exp2)
+FPTEST1            (expm1)
+FPTEST1            (fabs)
+FPTEST2            (fdim)
+FPTEST1            (floor)
+FPTEST3            (fma)
+FPTEST2            (fmax)
+FPTEST2            (fmin)
+FPTEST2            (fmod)
+BUILTIN_FPTEST0    (huge_val)
+FPTEST2            (hypot)
+FPTEST1            (ilogb)
+BUILTIN_FPTEST0    (inf)
+FPTEST2ARG         (ldexp, int)
+FPTEST1            (llrint)
+FPTEST1            (llround)
+FPTEST1            (log)
+FPTEST1            (log10)
+FPTEST1            (log1p)
+FPTEST1            (log2)
+FPTEST1            (logb)
+FPTEST1            (lrint)
+FPTEST1            (lround)
+BUILTIN_FPTEST1ARG (nan, char *)
+BUILTIN_FPTEST1ARG (nans, char *)
+FPTEST1            (nearbyint)
+FPTEST2            (nextafter)
+FPTEST2            (nexttoward)
+FPTEST2            (pow)
+FPTEST1            (pow10)
+FPTEST2            (remainder)
+FPTEST1            (rint)
+FPTEST1            (round)
+FPTEST2            (scalb)
+FPTEST2ARG         (scalbln, int)
+FPTEST2ARG         (scalbn, int)
+FPTEST1            (sin)
+FPTEST1            (sinh)
+FPTEST1            (sqrt)
+FPTEST1            (tan)
+FPTEST1            (tanh)
+FPTEST1            (trunc)
+
+/* Various other const builtins.  */
+TEST1         (abs, int)
+BUILTIN_TEST1 (clz, int)
+BUILTIN_TEST1 (clzl, long)
+BUILTIN_TEST1 (clzll, long long)
+BUILTIN_TEST1 (ctz, int)
+BUILTIN_TEST1 (ctzl, long)
+BUILTIN_TEST1 (ctzll, long long)
+TEST1         (ffs, int)
+TEST1         (ffsl, long)
+TEST1         (ffsll, long long)
+TEST1         (imaxabs, int)
+TEST1         (labs, long)
+TEST1         (llabs, long long)
+BUILTIN_TEST1 (parity, int)
+BUILTIN_TEST1 (parityl, long)
+BUILTIN_TEST1 (parityll, long long)
+BUILTIN_TEST1 (popcount, int)
+BUILTIN_TEST1 (popcountl, long)
+BUILTIN_TEST1 (popcountll, long long)
+
+int main(void)
+{
+  return 0;
+}
