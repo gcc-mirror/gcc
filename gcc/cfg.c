@@ -64,8 +64,15 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "function.h"
 #include "except.h"
 #include "toplev.h"
-
+#include "tm_p.h"
 #include "obstack.h"
+
+
+/* Stubs in case we haven't got a return insn.  */
+#ifndef HAVE_return
+#define HAVE_return 0
+#define gen_return() NULL_RTX
+#endif
 
 /* The obstack on which the flow graph components are allocated.  */
 
@@ -1249,7 +1256,6 @@ force_nonfallthru_and_redirect (e, target)
   basic_block jump_block, new_bb = NULL;
   rtx note;
   edge new_edge;
-  rtx label;
 
   if (e->flags & EDGE_ABNORMAL)
     abort ();
@@ -1290,10 +1296,20 @@ force_nonfallthru_and_redirect (e, target)
   else
     jump_block = e->src;
   e->flags &= ~EDGE_FALLTHRU;
-  label = block_label (target);
-  emit_jump_insn_after (gen_jump (label), jump_block->end);
-  JUMP_LABEL (jump_block->end) = label;
-  LABEL_NUSES (label)++;
+  if (target == EXIT_BLOCK_PTR)
+    {
+      if (HAVE_return)
+	emit_jump_insn_after (gen_return (), jump_block->end);
+      else
+	abort ();
+    }
+  else
+    {
+      rtx label = block_label (target);
+      emit_jump_insn_after (gen_jump (label), jump_block->end);
+      JUMP_LABEL (jump_block->end) = label;
+      LABEL_NUSES (label)++;
+    }
   emit_barrier_after (jump_block->end);
   redirect_edge_succ_nodup (e, target);
 

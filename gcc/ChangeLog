@@ -1,5 +1,11 @@
 2001-09-19  Richard Henderson  <rth@redhat.com>
 
+	* cfg.c (force_nonfallthru_and_redirect): Handle redirecting
+	to the exit block.
+	* Makefile.in (cfg.o): Depend on TM_P_H.
+
+2001-09-19  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.c (local_symbol_p): Split out from ...
 	(local_symbolic_operand): ... here.
 	(small_symbolic_operand): Check mode.
