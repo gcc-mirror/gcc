@@ -9404,14 +9404,20 @@ use_crosses_set_p (x, from_cuid)
   if (code == REG)
     {
       register int regno = REGNO (x);
+      int endreg = regno + (regno < FIRST_PSEUDO_REGISTER
+			    ? HARD_REGNO_NREGS (regno, GET_MODE (x)) : 1);
+      
 #ifdef PUSH_ROUNDING
       /* Don't allow uses of the stack pointer to be moved,
 	 because we don't know whether the move crosses a push insn.  */
       if (regno == STACK_POINTER_REGNUM)
 	return 1;
 #endif
-      return (reg_last_set[regno]
-	      && INSN_CUID (reg_last_set[regno]) > from_cuid);
+      for (;regno < endreg; regno++)
+	if (reg_last_set[regno]
+	    && INSN_CUID (reg_last_set[regno]) > from_cuid)
+	  return 1;
+      return 0;
     }
 
   if (code == MEM && mem_last_set > from_cuid)
