@@ -74,6 +74,8 @@ namespace std
   // Definitions for static const data members of locale::id
   size_t locale::id::_S_highwater;  // init'd to 0 by linker
 
+  const char __num_base::_S_atoms[] = "0123456789eEabcdfxABCDFX";
+
   // Definitions for static const data members of locale::_Impl
   const locale::id* const
   locale::_Impl::_S_id_ctype[] =
@@ -353,7 +355,7 @@ namespace std
   void  
   locale::facet::
   _M_add_reference() throw()
-  { ++_M_references; }                     // XXX MT
+  { ++_M_references; }  // XXX MT
 
   void  
   locale::facet::
@@ -458,22 +460,6 @@ namespace std
   money_base::_S_default_pattern =  {{symbol, sign, none, value}};
 
   template<>
-    _Format_cache<char>::_Format_cache()
-    : _M_valid(true),
-    _M_decimal_point('.'), _M_thousands_sep(','),
-    _M_truename("true"), _M_falsename("false"), _M_use_grouping(false)
-    { }
-
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<>
-    _Format_cache<wchar_t>::_Format_cache()
-    : _M_valid(true),
-    _M_decimal_point(L'.'), _M_thousands_sep(L','),
-    _M_truename(L"true"), _M_falsename(L"false"), _M_use_grouping(false)
-    { }
-#endif
-
-  template<>
     const ctype<char>&
     use_facet<ctype<char> >(const locale& __loc)
     {
@@ -493,310 +479,9 @@ namespace std
     }
 #endif
 
-  template<>
-    void
-    num_get<char, istreambuf_iterator<char> >::
-    _M_extract(istreambuf_iterator<char> __beg, 
-	       istreambuf_iterator<char> __end, ios_base& __io, 
-	       ios_base::iostate& __err, char* __xtrc, int& __base, 
-	       bool __fp) const
-    {
-      typedef _Format_cache<char> __cache_type;	
-
-      // Prepare for possible failure
-      __xtrc[0] = '\0';
-
-      // Stage 1: determine a conversion specifier.
-      ios_base::fmtflags __basefield = __io.flags() & ios_base::basefield;
-      if (__basefield == ios_base::dec)
-        __base = 10;
-      else if (__basefield == ios_base::oct)
-        __base = 8;
-      else if (__basefield == ios_base::hex)
-        __base = 16;
-      else
-        __base = 0;
-      // As far as I can tell, bases other than 10 are not available for
-      // floating point types
-      if (__fp)
-        __base = 10;
-
-      // Stage 2: extract characters.
-      __cache_type const* __fmt = __cache_type::_S_get(__io);
-
-      // Fail quickly if !__valid
-      if (__beg == __end)
-        {
-          __err |= (ios_base::eofbit | ios_base::failbit);
-          return;
-        }
-
-      // Acceptable formats for numbers here are based on 22.2.3.1
-      string __grp;
-      int __sep_pos = 0;
-      int __pos = 0;
-      const char* __lits = __fmt->_S_literals;
-      char __c = *__beg;
-
-      // Check first for sign
-      bool __testsign = false;
-      if ((__c == __lits[__cache_type::_S_minus])
-	  || (__c == __lits[__cache_type::_S_plus]))
-        {
-          __testsign = true;
-          __xtrc[__pos++] = __c;
-          ++__beg;
-	  __c = * __beg;
-
-          // Whitespace may follow a sign
-          while ((__beg != __end) && (isspace(__c)))
-	    {
-	      ++__beg;
-	      __c = *__beg;
-	    }
-
-          // There had better be more to come...
-          if (__beg == __end)
-            {
-              __xtrc[__pos] = '\0';
-              __err |= (ios_base::eofbit | ios_base::failbit);
-              return;
-            }
-        }
-
-      // Now check if first character is a zero.
-      bool __testzero = false;    
-      if (__c == __lits[__cache_type::_S_digits])
-        {
-           __testzero = true;
-           ++__beg;
-	   __c = *__beg;
-
-           // We have to check for __beg == __end here. If so,
-           // a plain '0' (possibly with a sign) can be got rid of now
-           if (__beg == __end)
-             {
-               __xtrc[__pos++] = __lits[__cache_type::_S_digits];
-               __xtrc[__pos] = '\0';
-               __err |= ios_base::eofbit;
-               return;
-             }
-
-          // Figure out base for integer types only
-          // Based on Table 55 of 22.2.2.1.2
-          if (!__fp && __base != 10 && __base != 8)
-            {
-              // Here, __base == 0 or 16
-              if ((__c == __lits[__cache_type::_S_x])
-                 || (__c == __lits[__cache_type::_S_X]))
-                {
-                  ++__beg;
-		  __c = *__beg;
-                  __base = 16;
-                  __testzero = false; // "0x" is not a leading zero
-                }
-              else if (__base == 0)
-                __base = 8;
-            }
-
-          // Remove any more leading zeros
-          while (__beg != __end)
-            {
-              if (__c == __lits[__cache_type::_S_digits])
-                {
-                  ++__beg;
-		  __c = *__beg;
-                  __testzero = true;
-                }
-              else
-                break;
-            }
-        }
-      else if (__base == 0) // 1st character is not zero
-        __base = 10;
-
-      // We now seek "units", i.e. digits and thousands separators.
-      // We may need to know if anything is found here. A leading zero
-      // (removed by now) would count.
-      bool __testunits = __testzero;
-      while (__beg != __end)
-        {
-          const char* __p = strchr(__lits, __c);
-
-          // NB: strchr returns true for __c == 0x0
-          if (__p && __c
-	      &&((__p >= &__lits[__cache_type::_S_digits]
-		  && __p < &__lits[__cache_type::_S_digits + __base])
-		 || (__p >= &__lits[__cache_type::_S_udigits]
-		     && __p < &__lits[__cache_type::_S_udigits + __base])))
-	    {
-	      // Try first for acceptable digit; record it if found.
-	      __xtrc[__pos++] = __c;
-	      ++__sep_pos;
-	      __testunits = true;
-	      ++__beg;
-	      __c = *__beg;
-	    }
-          else if (__c == __fmt->_M_thousands_sep && __fmt->_M_use_grouping)
-	    {
-              // NB: Thousands separator at the beginning of a string
-              // is a no-no, as is two consecutive thousands
-              // separators.
-              if (__sep_pos)
-                {
-                  __grp += static_cast<char>(__sep_pos);
-                  __sep_pos = 0;
-		  ++__beg;
-		  __c = *__beg;
-                }
-              else
-		{
-		  __err |= ios_base::failbit;
-		  break;
-		}
-            }
-	  else
-	    // Not a valid input item.
-	    break;
-        }
-
-      // Digit grouping is checked. If _M_groupings() doesn't
-      // match, then get very very upset, and set failbit.
-      if (__fmt->_M_use_grouping && !__grp.empty())
-        {
-          // Add the ending grouping
-          __grp += static_cast<char>(__sep_pos);
-
-          if (!__verify_grouping(__fmt->_M_grouping, __grp))
-            {
-              __err |= ios_base::failbit;
-              __xtrc[__pos] = '\0';
-              if (__beg == __end)
-                __err |= ios_base::eofbit;
-              return;
-            }
-        }
-
-      // If there was nothing but zeros, put one in the output string
-      if (__testzero && (__pos == 0 || (__pos == 1 && __testsign)))
-        __xtrc[__pos++] = __lits[__cache_type::_S_digits];
-
-      // That's it for integer types. Remaining code is for floating point
-      if (__fp && __beg != __end)
-        {
-          // Check first for decimal point. There MUST be one if
-          // __testunits is false.
-          bool __testdec = false;    // Is there a decimal point
-                                     // with digits following it?
-          if (__c == __fmt->_M_decimal_point)
-            {
-              __xtrc[__pos++] = '.';
-              ++__beg;
-	      __c = *__beg;
-
-              // Now we get any digits after the decimal point
-              // There MUST be some if __testunits is false.
-              while (__beg != __end)
-                {
-                  const char* __p = strchr(__lits, __c);
-                  if ((__p >= &__lits[__cache_type::_S_digits]
-                        && __p < &__lits[__cache_type::_S_digits + __base])
-                       || (__p >= &__lits[__cache_type::_S_udigits]
-                           && __p < &__lits[__cache_type::_S_udigits + __base]))
-                    {
-                      __xtrc[__pos++] = __c;
-                      ++__beg;
-		      __c = *__beg;
-                      __testdec = true;
-                    }
-                  else
-                    break;
-                }
-            }
-          if (!__testunits && !__testdec) // Ill formed
-            {
-              __err |= ios_base::failbit;
-              __xtrc[__pos] = '\0';
-              if (__beg == __end)
-                __err |= ios_base::eofbit;
-              return;
-            }
-
-          // Now we may find an exponent
-          if (__beg != __end)
-            {
-              if ((__c == __lits[__cache_type::_S_ee])
-                   || (__c == __lits[__cache_type::_S_Ee]))
-                {
-                  __xtrc[__pos++] = __c;
-                  ++__beg;
-		  __c = *__beg;
-
-                  // Now there may be a sign
-                  if (__beg != __end)
-                    {
-                      if ((__c == __lits[__cache_type::_S_minus])
-                          || (__c == __lits[__cache_type::_S_plus]))
-                        {
-                          __xtrc[__pos++] = __c;
-                          ++__beg;
-			  __c = *__beg;
-                          // whitespace may follow a sign
-                          while ((__beg != __end) && (isspace(__c)))
-			    {
-			      ++__beg;
-			      __c = *__beg;
-			    }
-                        }
-                    }
-                  // And now there must be some digits
-                  if (__beg == __end)
-                    {
-                      __xtrc[__pos] = '\0';
-                      __err |= (ios_base::eofbit | ios_base::failbit);
-                      return;
-                    }
-                  while (__beg != __end)
-                    {
-                      const char* __p = strchr(__lits, __c);
-                      if ((__p >= &__lits[__cache_type::_S_digits]
-                            && __p < &__lits[__cache_type::_S_digits + __base])
-                           || (__p >= &__lits[__cache_type::_S_udigits]
-                               && __p < &__lits[__cache_type::_S_udigits + __base]))
-                        {
-                          __xtrc[__pos++] = __c;
-                          ++__beg;
-			  __c = *__beg;
-                        }
-                      else
-                        break;
-                    }
-                }
-            }
-          // Finally, that's it for floating point
-        }
-
-      // Finish up
-      __xtrc[__pos] = '\0';
-      if (__beg == __end)
-        __err |= ios_base::eofbit;
-    }
-
-  // The following code uses sprintf() to convert floating point
-  // values for insertion into a stream. The current implementation
-  // replicates the code in _S_pad_numeric() (in _S_output_float()) in
-  // order to prevent having to create a "wide" buffer in addition to
-  // the "narrow" buffer passed to sprintf(). An optimization would be
-  // to replace sprintf() with code that works directly on a wide
-  // buffer and then use _S_pad_numeric() to do the padding. It would
-  // be good to replace sprintf() anyway to avoid accidental buffer
-  // overruns and to gain back the efficiency that C++ provides by
-  // knowing up front the type of the values to insert. This
-  // implementation follows the C++ standard fairly directly as
-  // outlined in 22.2.2.2 [lib.locale.num.put]
   bool
-  __build_float_format(ios_base& __io, char* __fptr, char __modifier,
-		       streamsize __prec)
+  __num_base::_S_format_float(const ios_base& __io, char* __fptr, char __mod,
+			      streamsize __prec)
   {
     bool __incl_prec = false;
     ios_base::fmtflags __flags = __io.flags();
@@ -809,12 +494,12 @@ namespace std
     // As per [22.2.2.2.2.11]
     if (__flags & ios_base::fixed || __prec > 0)
       {
-        *__fptr++ = '.';
-        *__fptr++ = '*';
-        __incl_prec = true;
+	*__fptr++ = '.';
+	*__fptr++ = '*';
+	__incl_prec = true;
       }
-    if (__modifier)
-      *__fptr++ = __modifier;
+    if (__mod)
+      *__fptr++ = __mod;
     ios_base::fmtflags __fltfield = __flags & ios_base::floatfield;
     // [22.2.2.2.2] Table 58
     if (__fltfield == ios_base::fixed)
@@ -826,16 +511,43 @@ namespace std
     *__fptr = '\0';
     return __incl_prec;
   }
+  
+  void
+  __num_base::_S_format_int(const ios_base& __io, char* __fptr, char __mod, 
+			    char __modl)
+  {
+    ios_base::fmtflags __flags = __io.flags();
+    *__fptr++ = '%';
+    // [22.2.2.2.2] Table 60
+    if (__flags & ios_base::showpos)
+      *__fptr++ = '+';
+    if (__flags & ios_base::showbase)
+      *__fptr++ = '#';
+    *__fptr++ = 'l';
 
-  template<>
-  moneypunct_byname<char, false>::moneypunct_byname(const char* /*__s*/, 
-						    size_t __refs)
-  : moneypunct<char, false>(__refs) { }
+    // For long long types.
+    if (__modl)
+      *__fptr++ = __modl;
+
+    ios_base::fmtflags __bsefield = __flags & ios_base::basefield;
+    if (__bsefield == ios_base::hex)
+      *__fptr++ = (__flags & ios_base::uppercase) ? 'X' : 'x';
+    else if (__bsefield == ios_base::oct)
+      *__fptr++ = 'o';
+    else
+      *__fptr++ = __mod;
+    *__fptr = '\0';
+  }
   
   template<>
-  moneypunct_byname<char, true>::moneypunct_byname(const char* /*__s*/, 
-						   size_t __refs)
-  : moneypunct<char, true>(__refs) { }
+    moneypunct_byname<char, false>::moneypunct_byname(const char* /*__s*/, 
+						      size_t __refs)
+    : moneypunct<char, false>(__refs) { }
+  
+  template<>
+    moneypunct_byname<char, true>::moneypunct_byname(const char* /*__s*/, 
+						     size_t __refs)
+    : moneypunct<char, true>(__refs) { }
   
 #ifdef _GLIBCPP_USE_WCHAR_T  
   ctype<wchar_t>::__wmask_type

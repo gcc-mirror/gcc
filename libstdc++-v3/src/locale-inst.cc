@@ -56,7 +56,6 @@ namespace std
   template class moneypunct_byname<char, true>;
   template class money_get<char, ibuf_iterator>;
   template class money_put<char, obuf_iterator>;
-  template class _Format_cache<char>;
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class moneypunct<wchar_t, false>;
@@ -65,19 +64,91 @@ namespace std
   template class moneypunct_byname<wchar_t, true>;
   template class money_get<wchar_t, wibuf_iterator>;
   template class money_put<wchar_t, wobuf_iterator>;
-  template class _Format_cache<wchar_t>;
 #endif
 
   // numpunct, numpunct_byname, num_get, and num_put
   template class numpunct<char>;
   template class numpunct_byname<char>;
   template class num_get<char, ibuf_iterator>;
-  template class num_put<char, obuf_iterator>;
+  template class num_put<char, obuf_iterator>; 
+  template
+    obuf_iterator
+    num_put<char, obuf_iterator>::
+    _M_convert_int(obuf_iterator, ios_base&, char, char, char, long) const;
+
+  template
+    obuf_iterator
+    num_put<char, obuf_iterator>::
+    _M_convert_int(obuf_iterator, ios_base&, char, char, char, 
+		   unsigned long) const;
+
+#ifdef _GLIBCPP_USE_LONG_LONG
+  template
+    obuf_iterator
+    num_put<char, obuf_iterator>::
+    _M_convert_int(obuf_iterator, ios_base&, char, char, char, 
+		   long long) const;
+
+  template
+    obuf_iterator
+    num_put<char, obuf_iterator>::
+    _M_convert_int(obuf_iterator, ios_base&, char, char, char,
+		   unsigned long long) const;
+#endif
+
+  template
+    obuf_iterator
+    num_put<char, obuf_iterator>::
+    _M_convert_float(obuf_iterator, ios_base&, char, char, double) const;
+
+  template
+    obuf_iterator
+    num_put<char, obuf_iterator>::
+    _M_convert_float(obuf_iterator, ios_base&, char, char, 
+		    long double) const;
+
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class numpunct<wchar_t>;
   template class numpunct_byname<wchar_t>;
   template class num_get<wchar_t, wibuf_iterator>;
   template class num_put<wchar_t, wobuf_iterator>;
+
+  template
+    wobuf_iterator
+    num_put<wchar_t, wobuf_iterator>::
+    _M_convert_int(wobuf_iterator, ios_base&, wchar_t, char, char, long) const;
+
+  template
+    wobuf_iterator
+    num_put<wchar_t, wobuf_iterator>::
+    _M_convert_int(wobuf_iterator, ios_base&, wchar_t, char, char,
+		   unsigned long) const;
+
+#ifdef _GLIBCPP_USE_LONG_LONG
+  template
+    wobuf_iterator
+    num_put<wchar_t, wobuf_iterator>::
+    _M_convert_int(wobuf_iterator, ios_base&, wchar_t, char, char,
+		   long long) const;
+
+  template
+    wobuf_iterator
+    num_put<wchar_t, wobuf_iterator>::
+    _M_convert_int(wobuf_iterator, ios_base&, wchar_t, char, char,
+		   unsigned long long) const;
+#endif
+
+  template
+    wobuf_iterator
+    num_put<wchar_t, wobuf_iterator>::
+    _M_convert_float(wobuf_iterator, ios_base&, wchar_t, char, 
+		     double) const;
+
+  template
+    wobuf_iterator
+    num_put<wchar_t, wobuf_iterator>::
+    _M_convert_float(wobuf_iterator, ios_base&, wchar_t, char, 
+		     long double) const;
 #endif
 
   // time_get and time_put
@@ -246,8 +317,8 @@ namespace std
   typedef ostreambuf_iterator<char, char_traits<char> > ostreambuf_iter;
 
 #ifdef _GLIBCPP_USE_WCHAR_T
-  typedef istreambuf_iterator<wchar_t,char_traits<wchar_t> > wistreambuf_iter;
-  typedef ostreambuf_iterator<wchar_t,char_traits<wchar_t> > wostreambuf_iter;
+  typedef istreambuf_iterator<wchar_t, char_traits<wchar_t> > wistreambuf_iter;
+  typedef ostreambuf_iterator<wchar_t, char_traits<wchar_t> > wostreambuf_iter;
 #endif
 
   template 
@@ -255,36 +326,23 @@ namespace std
     locale::operator()(const string&, const string&) const;
 
   template
-    ostreambuf_iter
-    __pad<char, ostreambuf_iter, output_iterator_tag>
-    (ostreambuf_iter, char, int, output_iterator_tag);
-
-  template 
-    ostreambuf_iter
-    __pad_numeric<char, ostreambuf_iter>
-    (ostreambuf_iter, ios_base::fmtflags, char, int, char const*, char const*, 
-     char const*);
-
-  template
     char*
-    __group_digits<char>(char*, char, char const*, char const*, 
+    __add_grouping<char>(char*, char, char const*, char const*, 
 			 char const*, char const*);
 
   template
     bool
     __verify_grouping<char>(const basic_string<char>&, basic_string<char>&);
 
-  template 
-    ostreambuf_iter
-    __output_integer<char, ostreambuf_iter, unsigned long>
-    (ostreambuf_iter, ios_base &, char, bool, unsigned long);
-
-#ifdef _GLIBCPP_USE_LONG_LONG
   template
-    ostreambuf_iter
-    __output_integer<char, ostreambuf_iter, unsigned long long>
-    (ostreambuf_iter, ios_base &, char, bool, unsigned long long);
-#endif
+    void 
+    __pad<char>(ios_base&, char, char*, const char *, streamsize, 
+		streamsize);
+
+  template
+    void 
+    __pad<char, char_traits<char> >(ios_base&, char, char*, 
+				    const char *, streamsize, streamsize);
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   template 
@@ -294,36 +352,24 @@ namespace std
   typedef ostreambuf_iterator<wchar_t> wostreambuf_iter;
 
   template
-    wostreambuf_iter
-    __pad<wchar_t, wostreambuf_iter, output_iterator_tag>
-    (wostreambuf_iter, wchar_t, int, output_iterator_tag);
-
-  template 
-    wostreambuf_iter
-    __pad_numeric<wchar_t, wostreambuf_iter>
-    (wostreambuf_iter, ios_base::fmtflags, wchar_t __fill, int, wchar_t const*,
-     wchar_t const*, wchar_t const*);
-
-  template
     wchar_t*
-    __group_digits<wchar_t>(wchar_t*, wchar_t, char const*, char const*, 
+    __add_grouping<wchar_t>(wchar_t*, wchar_t, char const*, char const*, 
 			    wchar_t const*, wchar_t const*);
   template
     bool
     __verify_grouping<wchar_t>(const basic_string<wchar_t>&, 
 			       basic_string<wchar_t>&);
 
-  template 
-    wostreambuf_iter
-    __output_integer<wchar_t, wostreambuf_iter, unsigned long>
-    (wostreambuf_iter, ios_base &, wchar_t, bool, unsigned long);
-
-#ifdef _GLIBCPP_USE_LONG_LONG
   template
-    wostreambuf_iter
-    __output_integer<wchar_t, wostreambuf_iter, unsigned long long>
-    (wostreambuf_iter, ios_base &, wchar_t, bool, unsigned long long);
-#endif
+    void 
+    __pad<wchar_t>(ios_base&, wchar_t, wchar_t*, const wchar_t*, 
+		   streamsize, streamsize);
+
+  template
+    void 
+    __pad<wchar_t, char_traits<wchar_t> >(ios_base&, wchar_t, wchar_t*, 
+					  const wchar_t*, 
+					  streamsize, streamsize);
 #endif // _GLIBCPP_USE_WCHAR_T
 
   template 
@@ -342,4 +388,3 @@ namespace std
          __normal_iterator<locale::facet**, vector<locale::facet*> >,
          locale::facet* const&);
 } // namespace std
-

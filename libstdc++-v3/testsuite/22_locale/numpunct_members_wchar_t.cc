@@ -1,4 +1,4 @@
-// 2001-01-17 Benjamin Kosnik  <bkoz@redhat.com>
+// 2001-11-20 Benjamin Kosnik  <bkoz@redhat.com>
 
 // Copyright (C) 2001 Free Software Foundation
 //
@@ -43,44 +43,41 @@ void test01()
   VERIFY( loc_de != loc_fr );
 
   // cache the numpunct facets
-  const numpunct<char>& nump_c = use_facet<numpunct<char> >(loc_c); 
-  const numpunct<char>& nump_us = use_facet<numpunct<char> >(loc_us); 
-  const numpunct<char>& nump_fr = use_facet<numpunct<char> >(loc_fr); 
-  const numpunct<char>& nump_de = use_facet<numpunct<char> >(loc_de); 
+  const numpunct<wchar_t>& nump_c = use_facet<numpunct<wchar_t> >(loc_c); 
+  const numpunct<wchar_t>& nump_us = use_facet<numpunct<wchar_t> >(loc_us); 
+  const numpunct<wchar_t>& nump_fr = use_facet<numpunct<wchar_t> >(loc_fr); 
+  const numpunct<wchar_t>& nump_de = use_facet<numpunct<wchar_t> >(loc_de); 
 
   // sanity check the data is correct.
-  char dp1 = nump_c.decimal_point();
-  char th1 = nump_c.thousands_sep();
+  wchar_t dp1 = nump_c.decimal_point();
+  wchar_t th1 = nump_c.thousands_sep();
   string g1 = nump_c.grouping();
-  string t1 = nump_c.truename();
-  string f1 = nump_c.falsename();
+  wstring t1 = nump_c.truename();
+  wstring f1 = nump_c.falsename();
 
-  char dp2 = nump_us.decimal_point();
-  char th2 = nump_us.thousands_sep();
+  wchar_t dp2 = nump_us.decimal_point();
+  wchar_t th2 = nump_us.thousands_sep();
   string g2 = nump_us.grouping();
-  string t2 = nump_us.truename();
-  string f2 = nump_us.falsename();
+  wstring t2 = nump_us.truename();
+  wstring f2 = nump_us.falsename();
 
-  char dp3 = nump_fr.decimal_point();
-  char th3 = nump_fr.thousands_sep();
+  wchar_t dp3 = nump_fr.decimal_point();
+  wchar_t th3 = nump_fr.thousands_sep();
   string g3 = nump_fr.grouping();
-  string t3 = nump_fr.truename();
-  string f3 = nump_fr.falsename();
+  wstring t3 = nump_fr.truename();
+  wstring f3 = nump_fr.falsename();
 
-  char dp4 = nump_de.decimal_point();
-  char th4 = nump_de.thousands_sep();
+  wchar_t dp4 = nump_de.decimal_point();
+  wchar_t th4 = nump_de.thousands_sep();
   string g4 = nump_de.grouping();
-  string t4 = nump_de.truename();
-  string f4 = nump_de.falsename();
+  wstring t4 = nump_de.truename();
+  wstring f4 = nump_de.falsename();
 
   VERIFY( dp2 != dp3 );
   VERIFY( th2 != th3 );
 
   VERIFY( dp2 != dp4 );
   VERIFY( th2 != th4 );
-  // XXX This isn't actually supported right now.
-  // VERIFY( t2 != t3 );
-  // VERIFY( f2 != f3 );
 }
 
 int main()

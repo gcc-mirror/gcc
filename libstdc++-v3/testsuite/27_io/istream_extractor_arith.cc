@@ -387,7 +387,7 @@ bool test09()
 }
 
 bool test10() {
-  std::string str_01("0 00 000 +0 +  0 -   0");
+  std::string str_01("0 00 000 +0 +0 -0");
   std::stringbuf isbuf_01(str_01);
   std::istream is_01(&isbuf_01);
 
@@ -447,7 +447,7 @@ bool test10() {
   VERIFY( n == 33 );
   VERIFY( is_03.rdstate() == std::ios_base::eofbit );
 
-  std::string str_04("3. 4.5E+  2a5E-3 .6E1");
+  std::string str_04("3. 4.5E+2a5E-3 .6E1");
   std::stringbuf isbuf_04(str_04);
   std::istream is_04(&isbuf_04);
 
