@@ -1,3 +1,9 @@
+2002-08-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/invoke.texi (-a): Remove documentation.
+	(-fprofile-arcs): Remove reference to -a, -ax options.
+	* doc/gcov.texi (Gcov Data Files): Data might be merged.
+
 2002-08-14  Gabriel Dos Reis  <gdr@nerim.net>
 
 	Fix PR/7566
@@ -606,7 +612,7 @@ Sat Aug 10 19:59:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(end_branch_prob): Remove da file.
 
 	* Makefile.in (stage1_build): Pass empty COVERAGE_FLAGS.
-	* configure.in (coverage_flags) default to nothing.
+	* configure.in (coverage_flags): Default to nothing.
 	* configure: Rebuilt.
 
 2002-08-09  Neil Booth  <neil@daikokuya.co.uk>
