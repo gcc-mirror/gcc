@@ -1142,27 +1142,14 @@ expand_throw (exp)
 	  object = build_indirect_ref (exp, NULL_PTR);
 	  throw_type = build_eh_type (object);
 
-	  start_sequence ();
-	  object = build_reinterpret_cast (TREE_TYPE (exp), saved_throw_value);
-	  object = build_indirect_ref (object, NULL_PTR);
-	  cleanup = maybe_build_cleanup_and_delete (object);
-	  end_sequence ();
+       	  /* Build __tcf_ function. */
+	  cleanup = start_anon_func ();
+	  object = build_delete (TREE_TYPE (exp), saved_throw_value, 
+				 integer_three_node, LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0);
+	  expand_expr (object, const0_rtx, VOIDmode, 0);
+	  end_anon_func ();
+	  mark_addressable (cleanup);
 
-	  if (cleanup)
-	    {
-	      cleanup = start_anon_func ();
-
-	      expand_expr (maybe_build_cleanup_and_delete (object),
-			   const0_rtx, VOIDmode, 0);
-
-	      end_anon_func ();
-
-	      mark_addressable (cleanup);
-	    }
-	  else
-	    {
-	      cleanup = empty_fndecl;
-	    }
 	}
 
       if (cleanup == empty_fndecl)
