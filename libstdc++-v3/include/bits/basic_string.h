@@ -1005,24 +1005,6 @@ namespace std
  	return this->_M_ibegin() + __pos;
       }
 
-#ifdef _GLIBCXX_DEPRECATED
-      /**
-       *  @brief  Insert one default-constructed character.
-       *  @param p  Iterator referencing position in string to insert at.
-       *  @return  Iterator referencing newly inserted char.
-       *  @throw  std::length_error  If new length exceeds @c max_size().
-       *
-       *  Inserts a default-constructed character at position
-       *  referenced by @a p.  If adding character causes the length
-       *  to exceed max_size(), length_error is thrown.  If @a p is
-       *  beyond end of string, out_of_range is thrown.  The value of
-       *  the string doesn't change if an error is thrown.
-      */
-      iterator
-      insert(iterator __p)
-      { return this->insert(__p, _CharT()); }
-#endif /* _GLIBCXX_DEPRECATED */
-
       /**
        *  @brief  Remove characters.
        *  @param pos  Index of first character to remove (default 0).

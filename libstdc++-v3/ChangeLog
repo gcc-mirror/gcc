@@ -1,5 +1,10 @@
 2004-02-03  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/basic_string.h (insert(iterator)): Remove,
+	non-standard and already scheduled for removal.
+
+2004-02-03  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_iterator_base_funcs.h: Minor formatting
 	and indentation tweaks.
 	* include/bits/stl_iterator_base_types.h: Likewise.
