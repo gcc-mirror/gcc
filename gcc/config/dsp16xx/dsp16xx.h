@@ -142,10 +142,10 @@ extern char *output_block_move();
 #define STANDARD_EXEC_PREFIX  "/d1600/bin"
 
 /* Command line options to the AT&T assembler */
-#define ASM_SPEC  "%{V} %{v:%{!V:-V}} %{g*:-g}"
+#define ASM_SPEC  "%{v:-V} %{g*:-g}"
 
 /* Command line options for the AT&T linker */
-#define LINK_SPEC "%{V} %{v:%{!V:-V}} %{minit:-i}  \
+#define LINK_SPEC "%{v:-V} %{minit:-i}  \
 %{!ifile*:%{mmap1:-ifile m1_deflt.if%s}         \
           %{mmap2:-ifile m2_deflt.if%s}         \
           %{mmap3:-ifile m3_deflt.if%s}         \
