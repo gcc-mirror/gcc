@@ -122,7 +122,9 @@ namespace std {
       int 		_M_fileno;
       __c_file_type* 	_M_cfile;
 #endif
+#ifdef _GLIBCPP_USE_WCHAR_T
       __c_wfile_type	_M_wfile;
+#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
 
     public:
       __basic_file(__c_lock* __lock = 0);
