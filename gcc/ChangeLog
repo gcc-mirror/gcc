@@ -1,3 +1,7 @@
+2001-03-23  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* extend.texi: Document the "java_interface" attribute.
+	
 2001-03-22  Gordon Sadler  <gbsadler1@lcisp.com>
 
 	* Makefile.in (stage1_build): Pass CFLAGS to stage1_build.

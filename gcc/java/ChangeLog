@@ -1,3 +1,8 @@
+2001-03-21  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* gjavah.c (process_file): Mark interface definitions with 
+	"__attribute__ ((java_interface))".
+
 2001-03-22  Zack Weinberg  <zackw@stanford.edu>
 
 	* lang-specs.h: Add zero initializer for cpp_spec field to
