@@ -1,5 +1,5 @@
 /* InputStreamReader.java -- Reader than transforms bytes to chars
-   Copyright (C) 1998, 1999, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -231,10 +231,8 @@ public class InputStreamReader extends Reader
 	int wavail = wcount - wpos;
 	if (wavail <= 0)
 	  {
-	    // Nothing waiting, so refill our buffer.
-	    if (! refill ())
-	      return -1;
-	    wavail = wcount - wpos;
+	    // Nothing waiting, so refill their buffer.
+	    return refill(buf, offset, length);
 	  }
 
 	if (length > wavail)
@@ -262,24 +260,24 @@ public class InputStreamReader extends Reader
 	int wavail = wcount - wpos;
 	if (wavail <= 0)
 	  {
-	    // Nothing waiting, so refill our buffer.
-	    if (! refill ())
+	    // Nothing waiting, so refill our internal buffer.
+	    wpos = wcount = 0;
+	    if (work == null)
+	       work = new char[100];
+	    int count = refill(work, 0, work.length);
+	    if (count == -1)
 	      return -1;
+	    wcount += count;
 	  }
 
 	return work[wpos++];
       }
   }
 
-  // Read more bytes and convert them into the WORK buffer.
-  // Return false on EOF.
-  private boolean refill () throws IOException
+  // Read more bytes and convert them into the specified buffer.
+  // Returns the number of converted characters or -1 on EOF.
+  private int refill(char[] buf, int offset, int length) throws IOException
   {
-    wcount = wpos = 0;
-
-    if (work == null)
-      work = new char[100];
-
     for (;;)
       {
 	// We have knowledge of the internals of BufferedInputStream
@@ -290,17 +288,13 @@ public class InputStreamReader extends Reader
 	boolean r = in.pos < in.count || in.refill ();
 	in.reset ();
 	if (! r)
-	  return false;
+	  return -1;
 	converter.setInput(in.buf, in.pos, in.count);
-	int count = converter.read (work, wpos, work.length - wpos);
+	int count = converter.read(buf, offset, length);
 	in.skip(converter.inpos - in.pos);
 	if (count > 0)
-	  {
-	    wcount += count;
-	    return true;
-	  }
+	  return count;
       }
   }
-
 } // class InputStreamReader
 

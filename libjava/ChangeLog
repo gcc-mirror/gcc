@@ -1,3 +1,17 @@
+2004-01-29  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* java/io/BufferedReader.java (sbuf): New field.
+	(readLine): Use String.valueOf instead of new String() as per
+	Per Bothner's suggestion. Use instance sbuf field instead of a
+	local StringBuffer instance.
+	* java/io/InputStreamReader.java (read(char[],int,int)): Pass the
+	caller's buffer to refill().
+	(read(void)): Pass our internal work buffer to refill if our
+	input queue is empty.
+	(refill): Changed return type to int. Use the specified buffer
+	instead of our work buffer as per Bryce McKinlay's suggestion.
+	Return the number of characters read or -1 for EOF.
+
 2004-01-29  Scott Gilbertson  <scottg@mantatest.com>
 
 	* gnu/awt/xlib/XCanvasPeer.java (handleEvent): Implemented.
