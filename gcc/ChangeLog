@@ -1,3 +1,10 @@
+2004-09-02  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-decl.c (store_parm_decls_newstyle): Make static.
+	(store_parm_decls_from): New function.
+	* c-tree.h (store_parm_decls_newstyle): Remove prototype.
+	(store_parm_decls_from): New prototype.
+
 2004-09-02  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (expand_block_move): Use SImode and
