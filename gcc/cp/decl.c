@@ -3726,7 +3726,9 @@ pushdecl_class_level (x)
     {
       if (TYPE_BEING_DEFINED (current_class_type))
 	{
-	  /* Check for inconsistent use of this name in the class body.
+	  /* A name N used in a class S shall refer to the same declaration
+	     in its context and when re-evaluated in the completed scope of S.
+
 	     Types, enums, and static vars are checked here; other
 	     members are checked in finish_struct.  */
 	  tree icv = IDENTIFIER_CLASS_VALUE (name);
@@ -3738,9 +3740,9 @@ pushdecl_class_level (x)
 	      && !(DECL_DECLARES_TYPE_P (icv)
 		   && DECL_CONTEXT (icv) == current_class_type))
 	    {
-	      cp_error ("declaration of identifier `%D' as `%#D'", name, x);
-	      cp_error_at ("conflicts with previous use in class as `%#D'",
-			   icv);
+	      cp_pedwarn ("declaration of identifier `%D' as `%#D'", name, x);
+	      cp_pedwarn_at ("conflicts with previous use in class as `%#D'",
+			     icv);
 	    }
 	}
 
