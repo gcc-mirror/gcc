@@ -1,3 +1,9 @@
+2003-06-26  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/11054
+	* rtlanal.c (reg_overlap_mentioned_p): Handle ZERO_EXTRACT
+	and SIGN_EXTRACT.
+
 2003-06-25  Zack Weinberg  <zack@codesourcery.com>
 
 	PR bootstrap/3163
