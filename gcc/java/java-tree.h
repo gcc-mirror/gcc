@@ -1090,7 +1090,7 @@ extern HOST_WIDE_INT java_array_type_length PARAMS ((tree));
 extern int read_class PARAMS ((tree));
 extern void load_class PARAMS ((tree, int));
 
-extern tree build_call_or_builtin PARAMS ((tree, tree, tree));
+extern tree check_for_builtin PARAMS ((tree, tree));
 extern void initialize_builtins PARAMS ((void));
 
 extern tree lookup_name PARAMS ((tree));

@@ -1,3 +1,14 @@
+2002-02-20  Per Bothner  <per@bothner.com>
+
+	* builtins.c (check_for_builtin):  New function.
+	(build_call_or_builtin):  Remove.
+	* java-tree.h:  Update accordingly.
+	* expr.c (expand_invoke):  Use build + check_for_builtin instead
+	of build_call_or_builtin.
+	* parse.y (patch_invoke):  Likewise.  This avoids needlessly creating
+	a new CALL_EXPR node, which means we don't lose the CALL_USING_SUPER
+	flag (which had caused jcf-write to incorrectly emit invokevirtual).
+
 2002-02-17  Tom Tromey  <tromey@redhat.com>
 
 	* java-tree.h (TYPE_STRICTFP): New macro.

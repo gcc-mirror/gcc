@@ -324,42 +324,30 @@ initialize_builtins ()
 #include "builtins.def"
 }
 
-/* Generate a method call.  If the call matches a builtin, return the
+/* If the call matches a builtin, return the
    appropriate builtin expression instead.  */
 tree
-build_call_or_builtin (method, func, method_arguments)
-     tree method, func, method_arguments;
+check_for_builtin (method, call)
+     tree method;
+     tree call;
 {
-  tree method_class = DECL_NAME (TYPE_NAME (DECL_CONTEXT (method)));
-  tree method_name = DECL_NAME (method);
-  tree method_return_type = TREE_TYPE (TREE_TYPE (method));
-  tree call = NULL_TREE;
-
-  /* Only look if we're generating object code and optimizing.  */
-  if (! flag_emit_class_files && optimize)
+  if (! flag_emit_class_files && optimize && TREE_CODE (call) == CALL_EXPR)
     {
       int i;
+      tree method_arguments = TREE_OPERAND (call, 1);
+      tree method_class = DECL_NAME (TYPE_NAME (DECL_CONTEXT (method)));
+      tree method_name = DECL_NAME (method);
+      tree method_return_type = TREE_TYPE (TREE_TYPE (method));
 
       for (i = 0; java_builtins[i].creator != NULL; ++i)
 	{
 	  if (method_class == java_builtins[i].class_name.t
 	      && method_name == java_builtins[i].method_name.t)
 	    {
-	      call = (*java_builtins[i].creator) (method_return_type,
+	      return (*java_builtins[i].creator) (method_return_type,
 						  method_arguments);
-	      break;
 	    }
 	}
     }
-
-  if (call == NULL_TREE)
-    {
-      /* Either nothing matched, or the creator function decided not
-	 to inline.  In either case, emit a call.  */
-      call = build (CALL_EXPR, method_return_type, func, method_arguments,
-		    NULL_TREE);
-      TREE_SIDE_EFFECTS (call) = 1;
-    }
-
   return call;
 }

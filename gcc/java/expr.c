@@ -2112,7 +2112,9 @@ expand_invoke (opcode, method_ref_index, nargs)
     }
   func = build1 (NOP_EXPR, build_pointer_type (method_type), func);
 
-  call = build_call_or_builtin (method, func, arg_list);
+  call = build (CALL_EXPR, TREE_TYPE (method_type), func, arg_list, NULL_TREE);
+  TREE_SIDE_EFFECTS (call) = 1;
+  call = check_for_builtin (method, call);
 
   if (check != NULL_TREE)
     {
