@@ -899,7 +899,7 @@ changequote([,])dnl
 		tmake_file=i386/t-next
 		xmake_file=i386/x-next
 		extra_objs=nextstep.o
-		use_collect2=yes
+		extra_parts="crtbegin.o crtend.o"
  		if test x$enable_threads = xyes; then
 			thread_file='mach'
 		fi
@@ -1777,8 +1777,8 @@ changequote([,])dnl
 		tmake_file=m68k/t-next
 		xmake_file=m68k/x-next
 		extra_objs=nextstep.o
+		extra_parts="crtbegin.o crtend.o"
 		extra_headers=math-68881.h
-		use_collect2=yes
 		float_format=m68k
  		if test x$enable_threads = xyes; then
 			thread_file='mach'
