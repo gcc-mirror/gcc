@@ -975,7 +975,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	   : "r" ((USItype) (n1)),					\
 	     "r" ((USItype) (n0)),					\
 	     "rI" ((USItype) (d))					\
-	   : "%g1" __AND_CLOBBER_CC)
+	   : "g1" __AND_CLOBBER_CC)
 #define UDIV_TIME 37
 #define count_leading_zeros(count, x) \
   do {                                                                  \
@@ -1031,7 +1031,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "=r" ((USItype) (w0))					\
 	   : "%rI" ((USItype) (u)),					\
 	     "r" ((USItype) (v))						\
-	   : "%g1", "%g2" __AND_CLOBBER_CC)
+	   : "g1", "g2" __AND_CLOBBER_CC)
 #define UMUL_TIME 39		/* 39 instructions */
 /* It's quite necessary to add this much assembler for the sparc.
    The default udiv_qrnnd (in C) is more than 10 times slower!  */
@@ -1064,7 +1064,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "=&r" ((USItype) (r))					\
 	   : "r" ((USItype) (d)),					\
 	     "1" ((USItype) (n1)),					\
-	     "0" ((USItype) (n0)) : "%g1" __AND_CLOBBER_CC)
+	     "0" ((USItype) (n0)) : "g1" __AND_CLOBBER_CC)
 #define UDIV_TIME (3+7*32)	/* 7 instructions/iteration. 32 iterations. */
 #endif /* __sparclite__ */
 #endif /* __sparc_v8__ */
