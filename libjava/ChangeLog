@@ -1,3 +1,13 @@
+2003-10-17  Ralph Loader  <rcl@ihug.co.nz>
+
+	* prims.cc (_Jv_NewObjectArray): Make sure byte size doesn't
+	overflow a jint.
+	(_Jv_NewPrimArray): Check for overflowing a jint, replacing a
+	check for overflowing size_t, since the lower level functions
+	take a jint.
+	* testsuite/libjava.lang/newarray_overflow.java:  New file.
+	* testsuite/libjava.lang/newarray_overflow.out:  New file.
+	
 2003-10-15  Michael Koch  <konqueror@gmx.de>
 
 	* java/text/RuleBasedCollator.java

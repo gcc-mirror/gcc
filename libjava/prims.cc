@@ -70,8 +70,10 @@ details.  */
 // around for use if we run out of memory.
 static java::lang::OutOfMemoryError *no_memory;
 
-// Largest representable size_t.
-#define SIZE_T_MAX ((size_t) (~ (size_t) 0))
+// Number of bytes in largest array object we create.  This could be
+// increased to the largest size_t value, so long as the appropriate
+// functions are changed to take a size_t argument instead of jint.
+#define MAX_OBJECT_SIZE ((1<<31) - 1)
 
 static const char *no_properties[] = { NULL };
 
@@ -481,6 +483,11 @@ _Jv_NewObjectArray (jsize count, jclass elementClass, jobject init)
   // Ensure that elements pointer is properly aligned.
   jobjectArray obj = NULL;
   size_t size = (size_t) elements (obj);
+  // Check for overflow.
+  if (__builtin_expect ((size_t) count > 
+			(MAX_OBJECT_SIZE - 1 - size) / sizeof (jobject), false))
+    throw no_memory;
+
   size += count * sizeof (jobject);
 
   jclass klass = _Jv_GetArrayClass (elementClass,
@@ -516,7 +523,7 @@ _Jv_NewPrimArray (jclass eltype, jint count)
 
   // Check for overflow.
   if (__builtin_expect ((size_t) count > 
-			(SIZE_T_MAX - size) / elsize, false))
+			(MAX_OBJECT_SIZE - size) / elsize, false))
     throw no_memory;
 
   jclass klass = _Jv_GetArrayClass (eltype, 0);
