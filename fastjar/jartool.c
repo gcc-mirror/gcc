@@ -17,9 +17,13 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/* $Id: jartool.c,v 1.6 2001/07/04 18:33:53 tromey Exp $
+/* $Id: jartool.c,v 1.7 2001/08/27 23:09:37 tromey Exp $
 
    $Log: jartool.c,v $
+   Revision 1.7  2001/08/27 23:09:37  tromey
+   	* jartool.c (jarfile): Remove length limitation.
+   	(main): Use jt_strdup when initializing jarfile.
+
    Revision 1.6  2001/07/04 18:33:53  tromey
    	Modified from patch by Julian Hall <jules@acris.co.uk>:
    	* jartool.c (errno): Conditionally declare.
@@ -799,6 +803,7 @@ int add_to_jar(int fd, const char *new_dir, const char *file){
   
   if(stat_return == -1){
     perror(file);
+    return 1;
   } else if(S_ISDIR(statbuf.st_mode)){
     char *fullname;
     char *t_ptr;
