@@ -1,5 +1,10 @@
 2003-12-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/cleanup-10.c: New test.
+	* gcc.dg/cleanup-11.c: New test.
+
+2003-12-19  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/13239
 	* g++.dg/opt/expect1.C: New test.
 

@@ -1,5 +1,19 @@
 2003-12-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/ia64/unwind-ia64.c (ia64_copy_rbs): New function.
+	(unw_access_gr): Only call ia64_rse_rnat_addr if addr is above
+	regstk_top.
+	(uw_frame_state_for): Handle locations inside bundles.
+	(uw_init_context_1): Initialize context->rnat.
+	Set context->regstk_top to lowest rbs address which has nat collection
+	in context->rnat.
+	(uw_install_context): Fix rnat restoring.
+	Restore ar.rsc to previous state.
+	* config/ia64/linux.h (MD_FALLBACK_FRAME_STATE_FOR,
+	MD_HANDLE_UNWABI): Handle unwinding through SA_ONSTACK frames.
+
+2003-12-19  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/13239
 	* builtins.c (expand_builtin_expect_jump): Update
 	TREE_VALUE (arglist) if unsave_expr_now langhook

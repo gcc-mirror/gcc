@@ -184,7 +184,8 @@ struct _Unwind_Context
 {
   /* Initial frame info.  */
   unsigned long rnat;		/* rse nat collection */
-  unsigned long regstk_top;	/* bsp for first frame */
+  unsigned long regstk_top;	/* lowest address of rbs stored register
+				   which uses context->rnat collection */
 
   /* Current frame info.  */
   unsigned long bsp;		/* backing store pointer value
@@ -1492,6 +1493,80 @@ ia64_rse_skip_regs (unsigned long *addr, long num_regs)
 }
 
 
+/* Copy register backing store from SRC to DST, LEN words
+   (which include both saved registers and nat collections).
+   DST_RNAT is a partial nat collection for DST.  SRC and DST
+   don't have to be equal modulo 64 slots, so it cannot be
+   done with a simple memcpy as the nat collections will be
+   at different relative offsets and need to be combined together.  */
+static void
+ia64_copy_rbs (struct _Unwind_Context *info, unsigned long dst,
+               unsigned long src, long len, unsigned long dst_rnat)
+{
+  long count;
+  unsigned long src_rnat;
+  unsigned long shift1, shift2;
+
+  len <<= 3;
+  dst_rnat &= (1UL << ((dst >> 3) & 0x3f)) - 1;
+  src_rnat = src >= info->regstk_top
+	     ? info->rnat : *(unsigned long *) (src | 0x1f8);
+  src_rnat &= ~((1UL << ((src >> 3) & 0x3f)) - 1);
+  /* Just to make sure.  */
+  src_rnat &= ~(1UL << 63);
+  shift1 = ((dst - src) >> 3) & 0x3f;
+  if ((dst & 0x1f8) < (src & 0x1f8))
+    shift1--;
+  shift2 = 0x3f - shift1;
+  if ((dst & 0x1f8) >= (src & 0x1f8))
+    {
+      count = ~dst & 0x1f8;
+      goto first;
+    }
+  count = ~src & 0x1f8;
+  goto second;
+  while (len > 0)
+    {
+      src_rnat = src >= info->regstk_top
+		 ? info->rnat : *(unsigned long *) (src | 0x1f8);
+      /* Just to make sure.  */
+      src_rnat &= ~(1UL << 63);
+      count = shift2 << 3;
+first:
+      if (count > len)
+        count = len;
+      memcpy ((char *) dst, (char *) src, count);
+      dst += count;
+      src += count;
+      len -= count;
+      dst_rnat |= (src_rnat << shift1) & ~(1UL << 63);
+      if (len <= 0)
+        break;
+      *(long *) dst = dst_rnat;
+      dst += 8;
+      dst_rnat = 0;
+      count = shift1 << 3;
+second:
+      if (count > len)
+        count = len;
+      memcpy ((char *) dst, (char *) src, count);
+      dst += count;
+      src += count + 8;
+      len -= count + 8;
+      dst_rnat |= (src_rnat >> shift2);
+    }
+  if ((dst & 0x1f8) == 0x1f8)
+    {
+      *(long *) dst = dst_rnat;
+      dst += 8;
+      dst_rnat = 0;
+    }
+  /* Set info->regstk_top to lowest rbs address which will use
+     info->rnat collection.  */
+  info->regstk_top = dst & ~0x1ffUL;
+  info->rnat = dst_rnat;
+}
+
 /* Unwind accessors.  */
 
 static void
@@ -1551,9 +1626,10 @@ unw_access_gr (struct _Unwind_Context *info, int regnum,
 	      break;
 
 	    case UNW_NAT_REGSTK:
-	      nat_addr = ia64_rse_rnat_addr (addr);
-	      if ((unsigned long) nat_addr >= info->regstk_top)
+	      if ((unsigned long) addr >= info->regstk_top)
 		nat_addr = &info->rnat;
+	      else
+		nat_addr = ia64_rse_rnat_addr (addr);
 	      nat_mask = 1UL << ia64_rse_slot_num (addr);
 	      break;
 	    }
@@ -1563,9 +1639,10 @@ unw_access_gr (struct _Unwind_Context *info, int regnum,
     {
       /* Access a stacked register.  */
       addr = ia64_rse_skip_regs ((unsigned long *) info->bsp, regnum - 32);
-      nat_addr = ia64_rse_rnat_addr (addr);
-      if ((unsigned long) nat_addr >= info->regstk_top)
+      if ((unsigned long) addr >= info->regstk_top)
 	nat_addr = &info->rnat;
+      else
+	nat_addr = ia64_rse_rnat_addr (addr);
       nat_mask = 1UL << ia64_rse_slot_num (addr);
     }
 
@@ -1724,7 +1801,8 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
     }
 
   context->region_start = ent->start_offset + segment_base;
-  fs->when_target = (context->rp - context->region_start) / 16 * 3;
+  fs->when_target = ((context->rp & -16) - context->region_start) / 16 * 3
+		    + (context->rp & 15);
 
   unw = (unsigned long *) (ent->info_offset + segment_base);
   header = *unw;
@@ -1998,18 +2076,31 @@ uw_init_context_1 (struct _Unwind_Context *context, void *bsp)
   /* Set psp to the caller's stack pointer.  */
   void *psp = __builtin_dwarf_cfa () - 16;
   _Unwind_FrameState fs;
+  unsigned long rnat, tmp1, tmp2;
 
-  /* Flush the register stack to memory so that we can access it.  */
-  __builtin_ia64_flushrs ();
+  /* Flush the register stack to memory so that we can access it.
+     Get rse nat collection for the last incomplete rbs chunk of
+     registers at the same time.  For this RSE needs to be turned
+     into the mandatory only mode.  */
+  asm ("mov.m %1 = ar.rsc;;\n\t"
+       "and %2 = 0x1c, %1;;\n\t"
+       "mov.m ar.rsc = %2;;\n\t"
+       "flushrs;;\n\t"
+       "mov.m %0 = ar.rnat;;\n\t"
+       "mov.m ar.rsc = %1\n\t"
+       : "=r" (rnat), "=r" (tmp1), "=r" (tmp2));
 
   memset (context, 0, sizeof (struct _Unwind_Context));
-  context->bsp = context->regstk_top = (unsigned long) bsp;
+  context->bsp = (unsigned long) bsp;
+  /* Set context->regstk_top to lowest rbs address which will use
+     context->rnat collection.  */
+  context->regstk_top = context->bsp & ~0x1ffULL;
+  context->rnat = rnat;
   context->psp = (unsigned long) psp;
   context->rp = (unsigned long) rp;
   asm ("mov %0 = sp" : "=r" (context->sp));
   asm ("mov %0 = pr" : "=r" (context->pr));
   context->pri_unat_loc = &context->initial_unat;	/* ??? */
-  /* ??? Get rnat.  Don't we have to turn off the rse for that?  */
 
   if (uw_frame_state_for (context, &fs) != _URC_NO_REASON)
     abort ();
@@ -2049,6 +2140,9 @@ uw_install_context (struct _Unwind_Context *current __attribute__((unused)),
   target->bsp = (unsigned long)
     ia64_rse_skip_regs ((unsigned long *)target->bsp,
 			(*target->pfs_loc >> 7) & 0x7f);
+
+  if (target->bsp < target->regstk_top)
+    target->rnat = *ia64_rse_rnat_addr ((unsigned long *) target->bsp);
 
   /* Provide assembly with the offsets into the _Unwind_Context.  */
   asm volatile ("uc_rnat = %0"
@@ -2251,10 +2345,10 @@ uw_install_context (struct _Unwind_Context *current __attribute__((unused)),
 	"mov.m r25 = ar.rsc			\n\t"
 	"(p6) mov.m ar.fpsr = r30		\n\t"
 	";;					\n\t"
-	"and r25 = 0x1c, r25			\n\t"
+	"and r29 = 0x1c, r25			\n\t"
 	"mov b0 = r26				\n\t"
 	";;					\n\t"
-	"mov.m ar.rsc = r25			\n\t"
+	"mov.m ar.rsc = r29			\n\t"
 	";;					\n\t"
 	/* This must be done before setting AR.BSPSTORE, otherwise 
 	   AR.BSP will be initialized with a random displacement
@@ -2265,7 +2359,6 @@ uw_install_context (struct _Unwind_Context *current __attribute__((unused)),
 	";;					\n\t"
 	"mov.m ar.bspstore = r23		\n\t"
 	";;					\n\t"
-	"or r25 = 0x3, r25			\n\t"
 	"mov.m ar.rnat = r22			\n\t"
 	";;					\n\t"
 	"mov.m ar.rsc = r25			\n\t"
