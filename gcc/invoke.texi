@@ -104,8 +104,9 @@ in the following sections.
 @smallexample
 -fall-virtual  -fdollars-in-identifiers  -felide-constructors
 -fenum-int-equiv -fexternal-templates  -ffor-scope -fno-for-scope
--fhandle-signatures -fmemoize-lookups  -fno-default-inline -fno-gnu-keywords
--fnonnull-objects  -foperator-names  -fstrict-prototype -fthis-is-variable
+-fhandle-signatures -fmemoize-lookups  -fname-mangling-version-@var{n}
+-fno-default-inline -fno-gnu-keywords -fnonnull-objects -fguiding-decls
+-foperator-names  -fstrict-prototype -fthis-is-variable 
 -ftemplate-depth-@var{n} -nostdinc++ -traditional  +e@var{n}
 @end smallexample
 
@@ -925,10 +926,14 @@ Cause template instantiations to obey @samp{#pragma interface} and
 to the location of the template definition.  @xref{Template
 Instantiation}, for more information.
 
+This option is deprecated.
+
 @item -falt-external-templates
 Similar to -fexternal-templates, but template instances are emitted or
 not according to the place where they are first instantiated.
 @xref{Template Instantiation}, for more information.
+
+This option is deprecated.
 
 @item -ffor-scope
 @item -fno-for-scope
@@ -951,6 +956,18 @@ words as identifiers.  You can use the keywords @code{__classof__},
 @code{__headof__}, @code{__signature__}, @code{__sigof__}, and
 @code{__typeof__} instead.  @samp{-ansi} implies
 @samp{-fno-gnu-keywords}.
+
+@item -fguiding-decls
+Treat a function declaration with the same type as a potential function
+template instantiation as though it declares that instantiation, not a
+normal function.  If a definition is given for the function later in the
+translation unit (or another translation unit if the target supports
+weak symbols), that definition will be used; otherwise the template will
+be instantiated.  This behavior reflects the C++ language prior to
+September 1996, when guiding declarations were removed.
+
+This option implies @samp{-fname-mangling-version-0}, and will not work
+with other name mangling versions.
 
 @item -fno-implicit-templates
 Never emit code for templates which are instantiated implicitly (i.e. by
@@ -1028,6 +1045,17 @@ in C.  @samp{-pedantic} implies @samp{-fstrict-prototype} unless
 overridden with @samp{-fno-strict-prototype}.
 
 This flag no longer affects declarations with C++ linkage.
+
+@item -fname-mangling-version-@var{n}
+Control the way in which names are mangled.  Version 0 is compatible
+with versions of g++ before 2.8.  Version 1 is the default.  Version 1
+will allow correct mangling of function templates.  For example, 
+version 0 mangling does not mangle foo<int, double> and foo<int, char>
+given this declaration:
+
+@example
+template <class T, class U> void foo(T t);
+@end example
 
 @item -fno-nonnull-objects
 Don't assume that a reference is initialized to refer to a valid object.
