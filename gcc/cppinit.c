@@ -1290,18 +1290,18 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_h:
 	case OPT__help:
 	  print_help ();
-	  pfile->help_only = 1;
+	  CPP_OPTION (pfile, help_only) = 1;
 	  break;
 	case OPT_target__help:
           /* Print if any target specific options. cpplib has none, but
 	     make sure help_only gets set.  */
-	  pfile->help_only = 1;
+	  CPP_OPTION (pfile, help_only) = 1;
           break;
 
 	  /* --version inhibits compilation, -version doesn't. -v means
 	     verbose and -version.  Historical reasons, don't ask.  */
 	case OPT__version:
-	  pfile->help_only = 1;
+	  CPP_OPTION (pfile, help_only) = 1;
 	  goto version;
 	case OPT_v:
 	  CPP_OPTION (pfile, verbose) = 1;
