@@ -1,3 +1,9 @@
+Fri Aug 20 13:43:41 1999  Andrew Haley  <aph@cygnus.com>
+
+	* config/mips/mips.c (machine_dependent_reorg): Force a
+	barrier to output the local constant pool if a barrier hasn't
+	been found at a natural point in the instruction stream.  
+
 Mon Aug 30 22:04:36 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-parse.in (language_string): Constify.

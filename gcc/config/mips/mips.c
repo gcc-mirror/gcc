@@ -8372,7 +8372,7 @@ void
 machine_dependent_reorg (first)
      rtx first;
 {
-  int insns_len, max_internal_pool_size, pool_size, addr;
+  int insns_len, max_internal_pool_size, pool_size, addr, first_constant_ref;
   rtx insn;
   struct constant *constants;
 
@@ -8440,6 +8440,7 @@ machine_dependent_reorg (first)
 
   constants = NULL;
   addr = 0;
+  first_constant_ref = -1;
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
@@ -8498,6 +8499,9 @@ machine_dependent_reorg (first)
 					SET_DEST (PATTERN (insn)),
 					newsrc);
 	      INSN_CODE (insn) = -1;
+
+	      if (first_constant_ref < 0)
+		first_constant_ref = addr;
 	    }
 	}
 
@@ -8529,27 +8533,33 @@ machine_dependent_reorg (first)
 	  if (constants != NULL)
 	    dump_constants (constants, insn);
 	  constants = NULL;
+	  first_constant_ref = -1;
 	}
+      
+      if (constants != NULL
+	       && (NEXT_INSN (insn) == NULL 
+		   || (first_constant_ref >= 0 
+		       && (((addr - first_constant_ref)
+			    + 2 /* for alignment */
+			    + 2 /* for a short jump insn */
+			    + pool_size)
+			   >= 0x8000))))
+	{
+	  /* If we haven't had a barrier within 0x8000 bytes of a
+             constant reference or we are at the end of the function,
+             emit a barrier now. */
 
-      /* ??? If we don't find a barrier within 0x8000 bytes of
-         instructions and constants in CONSTANTS, we need to invent
-         one.  This seems sufficiently unlikely that I am not going to
-         worry about it.  */
-    }
-
-  if (constants != NULL)
-    {
-      rtx label, jump, barrier;
-
-      label = gen_label_rtx ();
-      jump = emit_jump_insn_after (gen_jump (label), get_last_insn ());
-      JUMP_LABEL (jump) = label;
-      LABEL_NUSES (label) = 1;
-      barrier = emit_barrier_after (jump);
-      emit_label_after (label, barrier);
-      dump_constants (constants, barrier);
-      constants = NULL;
-    }
+	  rtx label, jump, barrier;
+	      
+	  label = gen_label_rtx ();
+	  jump = emit_jump_insn_after (gen_jump (label), insn);
+	  JUMP_LABEL (jump) = label;
+	  LABEL_NUSES (label) = 1;
+	  barrier = emit_barrier_after (jump);
+	  emit_label_after (label, barrier);
+	  first_constant_ref = -1;
+	}
+     }
 
   /* ??? If we output all references to a constant in internal
      constants table, we don't need to output the constant in the real
