@@ -249,23 +249,6 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #ifndef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC      ""
 #endif
-
-#ifndef SUBTARGET_EXTRA_ASM_SPEC
-#define SUBTARGET_EXTRA_ASM_SPEC
-#endif
-
-#ifndef ASM_SPEC
-#define ASM_SPEC "\
-%{mbig-endian:-EB} \
-%{mcpu=*:-m%*} \
-%{march=*:-m%*} \
-%{mapcs-*:-mapcs-%*} \
-%{matpcs:-matpcs} \
-%{mapcs-float:-mfloat} \
-%{msoft-float:-mno-fpu} \
-%{mthumb-interwork:-mthumb-interwork} \
-" SUBTARGET_EXTRA_ASM_SPEC
-#endif
 
 /* Run-time Target Specification.  */
 #ifndef TARGET_VERSION
