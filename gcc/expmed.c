@@ -2852,6 +2852,27 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp, max_cost)
    This could optimize to a bfexts instruction.
    But C doesn't use these operations, so their optimizations are
    left for later.  */
+/* ??? For modulo, we don't actually need the highpart of the first product,
+   the low part will do nicely.  And for small divisors, the second multiply
+   can also be a low-part only multiply or even be completely left out.
+   E.g. to calculate the remainder of a division by 3 with a 32 bit
+   multiply, multiply with 0x55555556 and extract the upper two bits;
+   the result is exact for inputs up to 0x1fffffff.
+   The input range can be reduced by using cross-sum rules.
+   For odd divisors >= 3, the following table gives right shift counts
+   so that if an number is shifted by an integer multiple of the given
+   amount, the remainder stays the same:
+   2, 4, 3, 6, 10, 12, 4, 8, 18, 6, 11, 20, 18, 0, 5, 10, 12, 0, 12, 20,
+   14, 12, 23, 21, 8, 0, 20, 18, 0, 0, 6, 12, 0, 22, 0, 18, 20, 30, 0, 0,
+   0, 8, 0, 11, 12, 10, 36, 0, 30, 0, 0, 12, 0, 0, 0, 0, 44, 12, 24, 0,
+   20, 0, 7, 14, 0, 18, 36, 0, 0, 46, 60, 0, 42, 0, 15, 24, 20, 0, 0, 33,
+   0, 20, 0, 0, 18, 0, 60, 0, 0, 0, 0, 0, 40, 18, 0, 0, 12
+
+   Cross-sum rules for even numbers can be derived by leaving as many bits
+   to the right alone as the divisor has zeros to the right.
+   E.g. if x is an unsigned 32 bit number:
+   (x mod 12) == (((x & 1023) + ((x >> 8) & ~3)) * 0x15555558 >> 2 * 3) >> 28
+   */
 
 #define EXACT_POWER_OF_2_OR_ZERO_P(x) (((x) & ((x) - 1)) == 0)
 

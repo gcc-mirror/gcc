@@ -1,3 +1,11 @@
+Tue Dec  8 22:47:15 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (strength_reduce): If scan_start points to the loop exit
+	test, be wary of subversive use of gotos inside expression statements.
+	Don't set maybe_multiple for a backward jump that does not
+	include the label under consideration into its range.
+	* unroll.c (biv_total_increment): Make use of maybe_multiple field.
+
 Tue Dec  8 22:33:18 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* explow.c (plus_constant_wide): Don't immediately return with

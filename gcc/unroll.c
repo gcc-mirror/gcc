@@ -1196,7 +1196,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	PATTERN (insn) = remap_split_bivs (PATTERN (insn));
     }
 
-  /* For unroll_number - 1 times, make a copy of each instruction
+  /* For unroll_number times, make a copy of each instruction
      between copy_start and copy_end, and insert these new instructions
      before the end of the loop.  */
 
@@ -1295,7 +1295,10 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 /* ??? If the loop is known to be executed very many times, or the machine
    has a very cheap divide instruction, then preconditioning is a win even
    when the increment is not a power of 2.  Use RTX_COST to compute
-   whether divide is cheap.  */
+   whether divide is cheap.
+   ??? A divide by constant doesn't actually need a divide, look at
+   expand_divmod.  The reduced cost of this optimized modulo is not
+   reflected in RTX_COST.  */
 
 int
 precondition_loop_p (loop_start, loop_info,
@@ -2313,7 +2316,7 @@ biv_total_increment (bl, loop_start, loop_end)
   for (v = bl->biv; v; v = v->next_iv)
     {
       if (v->always_computable && v->mult_val == const1_rtx
-	  && ! back_branch_in_range_p (v->insn, loop_start, loop_end))
+	  && ! v->maybe_multiple)
 	result = fold_rtx_mult_add (result, const1_rtx, v->add_val, v->mode);
       else
 	return 0;
