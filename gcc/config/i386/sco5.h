@@ -134,9 +134,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define SCO_DEFAULT_ASM_COFF(FILE,NAME)					\
 do {									\
-    if (output_bytecode)						\
-      BC_OUTPUT_LABEL (FILE, NAME);					\
-    else								\
       ASM_OUTPUT_LABEL (FILE, NAME);					\
   } while (0)
 
@@ -322,7 +319,6 @@ do {									\
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE, STR, LENGTH)				\
 do {									\
-   if (TARGET_ELF) {							\
       register unsigned char *_ascii_bytes = (unsigned char *) (STR);	\
       register unsigned char *limit = _ascii_bytes + (LENGTH);		\
       register unsigned bytes_in_chunk = 0;				\
@@ -358,15 +354,7 @@ do {									\
 	}								\
       if (bytes_in_chunk > 0)						\
         fprintf ((FILE), "\n");						\
-  } else {								\
-   int i = 0; 								\
-   while (i < (LENGTH))							\
-    { if (i%10 == 0) { if (i!=0) fprintf ((FILE), "\n");		\
-		       fprintf ((FILE), "%s ", ASM_BYTE_OP); }		\
-      else fprintf ((FILE), ",");					\
-	fprintf ((FILE), "0x%x", ((STR)[i++] & 0377)) ;}		\
-      fprintf ((FILE), "\n"); }						\
-} while (0)
+} while (0) 
 
 #undef ASM_OUTPUT_CASE_LABEL
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,JUMPTABLE)		\
@@ -491,10 +479,16 @@ do {									\
 #undef ASM_OUTPUT_SECTION_NAME
 #define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
 do {									\
+  char *snam = NAME ;							\
+  if (strcmp(NAME, ".gcc_except_table") == 0) snam = ".gccexc" ;	\
   if (TARGET_ELF)							\
     fprintf (FILE, ".section\t%s,\"%s\",@progbits\n", NAME, 		\
 	   (DECL) && TREE_CODE (DECL) == FUNCTION_DECL ? "ax" : 	\
 	   (DECL) && TREE_READONLY (DECL) ? "a" : "aw");		\
+  else									\
+    fprintf (FILE, ".section\t%s,\"%s\"\n", snam,			\
+	(DECL) && TREE_CODE (DECL) == FUNCTION_DECL ? "x" : 		\
+	(DECL) && TREE_READONLY (DECL) ? "a" : "w");			\
 } while (0)
 
 #undef ASM_OUTPUT_SKIP
