@@ -2069,6 +2069,102 @@ range of 1 to 2047.
 
 @end table
 
+@item Blackfin family---@file{bfin.h}
+@table @code
+@item a
+P register
+
+@item d
+D register
+
+@item z
+A call clobbered P register.
+
+@item D
+Even-numbered D register
+
+@item W
+Odd-numbered D register
+
+@item e
+Accumulator register.
+
+@item A
+Even-numbered accumulator register.
+
+@item B
+Odd-numbered accumulator register.
+
+@item b
+I register
+
+@item B
+B register
+
+@item f
+M register
+
+@item c
+Registers used for circular buffering, i.e. I, B, or L registers.
+
+@item C
+The CC register.
+
+@item x
+Any D, P, B, M, I or L register.
+
+@item y
+Additional registers typically used only in prologues and epilogues: RETS,
+RETN, RETI, RETX, RETE, ASTAT, SEQSTAT and USP.
+
+@item w
+Any register except accumulators or CC.
+
+@item Ksh
+Signed 16 bit integer (in the range -32768 to 32767)
+
+@item Kuh
+Unsigned 16 bit integer (in the range 0 to 65535)
+
+@item Ks7
+Signed 7 bit integer (in the range -64 to 63)
+
+@item Ku7
+Unsigned 7 bit integer (in the range 0 to 127)
+
+@item Ku5
+Unsigned 5 bit integer (in the range 0 to 31)
+
+@item Ks4
+Signed 4 bit integer (in the range -8 to 7)
+
+@item Ks3
+Signed 3 bit integer (in the range -3 to 4)
+
+@item Ku3
+Unsigned 3 bit integer (in the range 0 to 7)
+
+@item P@var{n}
+Constant @var{n}, where @var{n} is a single-digit constant in the range 0 to 4.
+
+@item M1
+Constant 255.
+
+@item M2
+Constant 65535.
+
+@item J
+An integer constant with exactly a single bit set.
+
+@item L
+An integer constant with all bits set except exactly one.
+
+@item H
+
+@item Q
+Any SYMBOL_REF.
+@end table
+
 @item IP2K---@file{ip2k.h}
 @table @code
 @item a
