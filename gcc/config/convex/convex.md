@@ -1065,22 +1065,22 @@
   "TARGET_C2"
   "sqrt.s %0")
 
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(minus:SI (ffs:SI (match_operand:SI 1 "register_operand" "d"))
-		  (const_int 1)))]
-  ""
-  "tzc %1,%0\;le.w #32,%0\;jbrs.f .+6\;ld.w #-1,%0")
-
-(define_expand "ffssi2"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(minus:SI (ffs:SI (match_operand:SI 1 "register_operand" "d"))
-		  (const_int 1)))
-   (set (match_dup 0)
-	(plus:SI (match_dup 0)
-		 (const_int 1)))]
-  ""
-  "")
+;(define_insn ""
+;  [(set (match_operand:SI 0 "register_operand" "=d")
+;	(minus:SI (ffs:SI (match_operand:SI 1 "register_operand" "d"))
+;		  (const_int 1)))]
+;  ""
+;  "tzc %1,%0\;le.w #32,%0\;jbrs.f .+6\;ld.w #-1,%0")
+;
+;(define_expand "ffssi2"
+;  [(set (match_operand:SI 0 "register_operand" "=d")
+;	(minus:SI (ffs:SI (match_operand:SI 1 "register_operand" "d"))
+;		  (const_int 1)))
+;   (set (match_dup 0)
+;	(plus:SI (match_dup 0)
+;		 (const_int 1)))]
+;  ""
+;  "")
 
 (define_insn "abssf2"
   [(set (match_operand:SF 0 "register_operand" "=d")
