@@ -1,3 +1,8 @@
+2003-04-15  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (mark_used): Don't instantiate anything if
+	skip_evaluation.
+
 2003-04-14  Ziemowit Laski  <zlaski@apple.com>
 
 	* tree.c (build_cplus_array_type_1): Do not call
