@@ -1526,14 +1526,17 @@ move_by_pieces_1 (genfun, mode, data)
 
       to1 = (data->autinc_to
 	     ? gen_rtx (MEM, mode, data->to_addr)
-	     : change_address (data->to, mode,
-			       plus_constant (data->to_addr, data->offset)));
+	     : copy_rtx (change_address (data->to, mode,
+					 plus_constant (data->to_addr,
+							data->offset))));
       MEM_IN_STRUCT_P (to1) = data->to_struct;
+
       from1 =
 	(data->autinc_from
 	 ? gen_rtx (MEM, mode, data->from_addr)
-	 : change_address (data->from, mode,
-			   plus_constant (data->from_addr, data->offset)));
+	 : copy_rtx (change_address (data->from, mode,
+				     plus_constant (data->from_addr,
+						    data->offset))));
       MEM_IN_STRUCT_P (from1) = data->from_struct;
 
 #ifdef HAVE_PRE_DECREMENT
@@ -2036,8 +2039,9 @@ clear_by_pieces_1 (genfun, mode, data)
 
       to1 = (data->autinc_to
 	     ? gen_rtx (MEM, mode, data->to_addr)
-	     : change_address (data->to, mode,
-			       plus_constant (data->to_addr, data->offset)));
+	     : copy_rtx (change_address (data->to, mode,
+					 plus_constant (data->to_addr,
+							data->offset))));
       MEM_IN_STRUCT_P (to1) = data->to_struct;
 
 #ifdef HAVE_PRE_DECREMENT
@@ -2827,7 +2831,8 @@ expand_assignment (to, from, want_value, suggest_reg)
 		 structure we are storing into, and hence may be shared.
 		 We must make a new MEM before setting the volatile bit.  */
 	      if (offset == 0)
-		to_rtx = change_address (to_rtx, VOIDmode, XEXP (to_rtx, 0));
+		to_rtx = copy_rtx (to_rtx);
+
 	      MEM_VOLATILE_P (to_rtx) = 1;
 	    }
 #if 0  /* This was turned off because, when a field is volatile
@@ -3194,7 +3199,7 @@ store_expr (exp, target, want_value)
       if (!(target && GET_CODE (target) == REG
 	    && REGNO (target) < FIRST_PSEUDO_REGISTER)
 	  && !(GET_CODE (target) == MEM && MEM_VOLATILE_P (target))
-	  && temp != target
+	  && ! rtx_equal_p (temp, target)
 	  && (CONSTANT_P (temp) || want_value))
 	dont_return_target = 1;
     }
@@ -3212,7 +3217,7 @@ store_expr (exp, target, want_value)
   /* If value was not generated in the target, store it there.
      Convert the value to TARGET's type first if nec.  */
 
-  if (temp != target && TREE_CODE (exp) != ERROR_MARK)
+  if (! rtx_equal_p (temp, target) && TREE_CODE (exp) != ERROR_MARK)
     {
       target = protect_from_queue (target, 1);
       if (GET_MODE (temp) != GET_MODE (target)
@@ -3582,8 +3587,8 @@ store_constructor (exp, target, cleared)
 	  if (TREE_READONLY (field))
 	    {
 	      if (GET_CODE (to_rtx) == MEM)
-		to_rtx = change_address (to_rtx, GET_MODE (to_rtx),
-					 XEXP (to_rtx, 0));
+		to_rtx = copy_rtx (to_rtx);
+
 	      RTX_UNCHANGING_P (to_rtx) = 1;
 	    }
 
@@ -4146,8 +4151,10 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 
       /* Now build a reference to just the desired component.  */
 
-      to_rtx = change_address (target, mode,
-			       plus_constant (addr, (bitpos / BITS_PER_UNIT)));
+      to_rtx = copy_rtx (change_address (target, mode,
+					 plus_constant (addr,
+							(bitpos
+							 / BITS_PER_UNIT))));
       MEM_IN_STRUCT_P (to_rtx) = 1;
 
       return store_expr (exp, to_rtx, value_mode != VOIDmode);
@@ -5278,8 +5285,8 @@ expand_expr (exp, target, tmode, modifier)
 	  if (TREE_READONLY (exp))
 	    {
 	      if (GET_CODE (target) == MEM)
-		target = change_address (target, GET_MODE (target),
-					 XEXP (target, 0));
+		target = copy_rtx (target);
+
 	      RTX_UNCHANGING_P (target) = 1;
 	    }
 
