@@ -1,3 +1,11 @@
+2001-05-13  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rtl.h (SYMBOL_REF_WEAK): New macro.
+	* rtlanal.h (rtx_addr_can_trap): Use it, a weak SYMBOL_REF can trap.
+	* varasm.c (make_decl_rtl): Mark SYMBOL_REF weak if necessary.
+	* rtl.texi (SYMBOL_REF_WEAK): Document it.
+	* gcc.texi: Remove wrong description.
+
 2001-05-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (STAMP): New macro.
@@ -446,7 +454,7 @@ Mon May  7 09:30:14 2001  Jeffrey A Law  (law@cygnus.com)
 	* simplify-rtx.c (simplify_binary_operation): Simplify ~a + 1
 	into -a.
 
-2000-05-04  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+2001-05-04  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config/rs6000/rs6000.md (ashldi3 splits): Guard with
 	TARGET_POWERPC64.

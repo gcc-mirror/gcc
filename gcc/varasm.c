@@ -747,6 +747,7 @@ make_decl_rtl (decl, asmspec)
 
   SET_DECL_RTL (decl, gen_rtx_MEM (DECL_MODE (decl),
 				   gen_rtx_SYMBOL_REF (Pmode, name)));
+  SYMBOL_REF_WEAK (XEXP (DECL_RTL (decl), 0)) = DECL_WEAK (decl);
   if (TREE_CODE (decl) != FUNCTION_DECL)
     set_mem_attributes (DECL_RTL (decl), decl, 1);
 
