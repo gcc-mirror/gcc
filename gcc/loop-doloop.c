@@ -511,7 +511,7 @@ doloop_optimize (struct loop *loop)
       if (word_mode_size > GET_MODE_BITSIZE (mode))
 	{
 	  count = simplify_gen_unary (ZERO_EXTEND, word_mode,
-				      iterations, mode);
+				      count, mode);
 	  iterations = simplify_gen_unary (ZERO_EXTEND, word_mode,
 					   iterations, mode);
 	  iterations_max = simplify_gen_unary (ZERO_EXTEND, word_mode,
