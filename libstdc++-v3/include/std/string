@@ -1,6 +1,6 @@
-// -*- C++ -*- std header.
+// Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,11 +27,34 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file string
- *  This is a Standard C++ Library file.  You should @c #include this file
- *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
+//
+// ISO C++ 14882: 21  Strings library
+//
+
+/** @file std_string.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
  */
 
 #ifndef _CPP_STRING
-#include <bits/std_string.h>
+#define _CPP_STRING	1
+
+#pragma GCC system_header
+
+#include <bits/c++config.h>
+#include <bits/stringfwd.h>
+#include <bits/char_traits.h>
+#include <memory> 	// For allocator.
+#include <bits/type_traits.h>
+#include <iosfwd> 	// For operators >>, <<, and getline decls.
+#include <bits/stl_iterator.h>
+#include <bits/stl_function.h>  // For less
+#include <bits/basic_string.h>
+
+#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+# include <algorithm> // for find_if
+# include <bits/basic_string.tcc> 
 #endif
+
+#endif /* _CPP_STRING */
+

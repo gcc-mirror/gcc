@@ -43,9 +43,9 @@
 
 #include <bits/c++config.h>
 #include <bits/c++locale.h>     // Defines __c_locale, config-specific includes
-#include <bits/std_climits.h>	// For CHAR_BIT
-#include <bits/std_string.h> 	// For string
-#include <bits/std_cctype.h>	// For isspace, etc.
+#include <climits>	// For CHAR_BIT
+#include <cctype>	// For isspace, etc.
+#include <string> 	// For string
 #include <bits/functexcept.h>
 
 namespace std

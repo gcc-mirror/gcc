@@ -62,7 +62,7 @@
 // consequences.
 
 #include <bits/c++config.h>
-#include <bits/std_cerrno.h>
+#include <cerrno>
 #include <bits/stl_alloc.h>
 #ifndef __RESTRICT
 #  define __RESTRICT

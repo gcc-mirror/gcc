@@ -1,6 +1,6 @@
-// -*- C++ -*- std header.
+// Standard iostream objects -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,13 +27,39 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file iostream
- *  This is a Standard C++ Library file.  You should @c #include this file
- *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
+//
+// ISO C++ 14882: 27.3  Standard iostream objects
+//
+
+/** @file std_iostream.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
  */
 
 #ifndef _CPP_IOSTREAM
-#include <bits/std_iostream.h>
+#define _CPP_IOSTREAM	1
+
+#pragma GCC system_header
+
+#include <bits/c++config.h>
+#include <ostream>
+#include <istream>
+
+namespace std 
+{
+  extern istream cin;
+  extern ostream cout;
+  extern ostream cerr;
+  extern ostream clog;
+#ifdef _GLIBCPP_USE_WCHAR_T
+  extern wistream wcin;
+  extern wostream wcout;
+  extern wostream wcerr;
+  extern wostream wclog;
 #endif
 
+  // For construction of filebuffers for cout, cin, cerr, clog et. al.
+  static ios_base::Init __ioinit;
+} // namespace std
 
+#endif

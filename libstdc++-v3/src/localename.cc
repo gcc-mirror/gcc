@@ -25,11 +25,11 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <bits/std_clocale.h>
-#include <bits/std_locale.h>
-#include <bits/std_cstring.h>
-#include <bits/std_vector.h>
-#include <bits/std_stdexcept.h>
+#include <clocale>
+#include <cstring>
+#include <locale>
+#include <vector>
+#include <stdexcept>
 
 namespace std
 {

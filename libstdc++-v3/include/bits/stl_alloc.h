@@ -78,12 +78,11 @@
  *  or online at http://gcc.gnu.org/onlinedocs/libstdc++/ext/howto.html#3
 */
 
-
-#include <bits/functexcept.h>   // for __throw_bad_alloc
-#include <bits/std_cstddef.h>
-#include <bits/std_cstdlib.h>
-#include <bits/std_cstring.h>
-#include <bits/std_cassert.h>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
+#include <cassert>
+#include <bits/functexcept.h>   // For __throw_bad_alloc
 #include <bits/stl_threads.h>
 
 namespace std

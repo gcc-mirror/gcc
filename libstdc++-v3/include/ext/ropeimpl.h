@@ -45,8 +45,8 @@
  *  You should not attempt to use it directly.
  */
 
-#include <bits/std_cstdio.h>     
-#include <bits/std_iostream.h>
+#include <cstdio>     
+#include <iostream>
 #include <bits/functexcept.h>
 
 #include <ext/algorithm> // For copy_n and lexicographical_compare_3way

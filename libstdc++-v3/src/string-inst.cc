@@ -33,7 +33,7 @@
 // Written by Jason Merrill based upon the specification by Takanori Adachi
 // in ANSI X3J16/94-0013R2.  Rewritten by Nathan Myers.
 
-#include <bits/std_string.h>
+#include <string>
 
 // Instantiation configuration.
 #ifndef C

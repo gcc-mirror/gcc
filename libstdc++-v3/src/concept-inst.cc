@@ -39,15 +39,14 @@
 
 #ifdef _GLIBCPP_CONCEPT_CHECKS
 
-#include <bits/stl_alloc.h>
-#include <bits/std_vector.h>
-#include <bits/std_ostream.h>
+#include <memory>
+#include <vector>
+#include <ostream>
 
 #define _Instantiate(...) template void __function_requires< __VA_ARGS__ > ()
 
 namespace __gnu_cxx
 {
-
   template void __aux_require_boolean_expr<bool>(bool const&);
 
   _Instantiate(_BidirectionalIteratorConcept<
@@ -160,5 +159,3 @@ namespace __gnu_cxx
 #undef _Instantiate
 
 #endif
-
-

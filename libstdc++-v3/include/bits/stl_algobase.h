@@ -1,6 +1,6 @@
 // Bits and pieces used in algorithms -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -62,15 +62,14 @@
 #define __GLIBCPP_INTERNAL_ALGOBASE_H
 
 #include <bits/c++config.h>
+#include <cstring>
+#include <climits>
+#include <cstdlib>
+#include <cstddef>
+#include <new>
+#include <iosfwd>
 #include <bits/stl_pair.h>
 #include <bits/type_traits.h>
-#include <bits/std_cstring.h>
-#include <bits/std_climits.h>
-#include <bits/std_cstdlib.h>
-#include <bits/std_cstddef.h>
-#include <new>
-
-#include <bits/std_iosfwd.h>
 #include <bits/stl_iterator_base_types.h>
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_iterator.h>
@@ -78,7 +77,6 @@
 
 namespace std
 {
-
   // swap and iter_swap
 
   /**

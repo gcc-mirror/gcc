@@ -42,7 +42,7 @@
 #pragma GCC system_header
 
 #include <bits/c++io.h>
-#include <bits/std_cwchar.h> 	// For mbstate_t.
+#include <cwchar> 	// For mbstate_t.
 
 namespace std
 {
@@ -121,6 +121,3 @@ namespace std
 }  // namespace std
 
 #endif 
-
-
-

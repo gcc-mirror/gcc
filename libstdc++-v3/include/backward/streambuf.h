@@ -29,7 +29,7 @@
 #define _CPP_BACKWARD_STREAMBUF_H 1
 
 #include "backward_warning.h"
-#include <bits/std_streambuf.h>
+#include <streambuf>
 
 using std::streambuf;
 

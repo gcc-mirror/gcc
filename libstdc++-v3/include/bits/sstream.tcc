@@ -34,7 +34,7 @@
 #ifndef _CPP_BITS_SSTREAM_TCC
 #define _CPP_BITS_SSTREAM_TCC	1
 
-#include <bits/std_sstream.h>
+#include <sstream>
 
 namespace std
 {

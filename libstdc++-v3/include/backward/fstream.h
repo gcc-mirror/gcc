@@ -29,7 +29,7 @@
 #define _CPP_BACKWARD_FSTREAM_H 1
 
 #include "backward_warning.h"
-#include <bits/std_fstream.h>
+#include <fstream>
 
 using std::filebuf;
 using std::ifstream;

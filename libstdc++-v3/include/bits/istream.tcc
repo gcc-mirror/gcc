@@ -29,8 +29,8 @@
 // ISO C++ 14882: 27.6.2  Output streams
 //
 
-#include <bits/std_locale.h>
-#include <bits/std_ostream.h> // for flush()
+#include <locale>
+#include <ostream> // For flush()
 
 namespace std 
 {

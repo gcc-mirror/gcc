@@ -30,7 +30,7 @@
 
 #include "backward_warning.h"
 #include "iostream.h"
-#include <bits/std_iomanip.h>
+#include <iomanip>
 
 // These are from <ios> as per [27.4].
 using std::boolalpha;

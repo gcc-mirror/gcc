@@ -35,8 +35,8 @@
 #define _CPP_CWCHAR 1
 
 #include <bits/c++config.h>
-#include <bits/std_cstddef.h>
-#include <bits/std_ctime.h>
+#include <cstddef>
+#include <ctime>
 
 #if _GLIBCPP_HAVE_WCHAR_H
 #pragma GCC system_header

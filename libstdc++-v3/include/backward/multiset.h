@@ -58,7 +58,7 @@
 
 #include "backward_warning.h"
 #include "tree.h"
-#include <bits/std_set.h>
+#include <set>
 
 using std::multiset;
 

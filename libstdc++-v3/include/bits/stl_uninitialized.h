@@ -61,7 +61,7 @@
 #ifndef _CPP_BITS_STL_UNINITIALIZED_H
 #define _CPP_BITS_STL_UNINITIALIZED_H 1
 
-#include <bits/std_cstring.h>
+#include <cstring>
 
 namespace std
 {

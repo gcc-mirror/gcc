@@ -31,7 +31,7 @@
 // ISO C++ 14882:
 //
 
-#include <bits/std_valarray.h>
+#include <valarray>
 
 namespace std
 {

@@ -41,11 +41,11 @@
 
 #pragma GCC system_header
 
-#include <bits/std_ctime.h>	// For struct tm
-#include <bits/std_ios.h>	// For ios_base
+#include <ctime>	// For struct tm
 #ifdef _GLIBCPP_USE_WCHAR_T
-# include <bits/std_cwctype.h>	// For wctype_t
+# include <cwctype>	// For wctype_t
 #endif 
+#include <ios>	// For ios_base
 
 namespace std
 {

@@ -31,8 +31,8 @@
 // ISO C++ 14882: 19.1  Exception classes
 //
 
-#include <bits/std_string.h>
-#include <bits/std_stdexcept.h>
+#include <string>
+#include <stdexcept>
 
 namespace std 
 {

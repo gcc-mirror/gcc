@@ -32,16 +32,16 @@
 #ifndef _CPP_BITS_LOCFACETS_TCC
 #define _CPP_BITS_LOCFACETS_TCC 1
 
-#include <bits/std_cerrno.h>
-#include <bits/std_clocale.h>   // For localeconv
-#include <bits/std_cstdlib.h>   // For strof, strtold
-#include <bits/std_cmath.h>     // For ceil
-#include <bits/std_limits.h>    // For numeric_limits
-#include <bits/std_memory.h>    // For auto_ptr
+#include <cerrno>
+#include <clocale>   // For localeconv
+#include <cstdlib>   // For strof, strtold
+#include <cmath>     // For ceil
+#include <cctype>    // For isspace
+#include <limits>    // For numeric_limits
+#include <memory>    // For auto_ptr
 #include <bits/streambuf_iterator.h>     // For streambuf_iterators
-#include <bits/std_cctype.h>    // For isspace
 #include <typeinfo> 		// For bad_cast
-#include <bits/std_vector.h>	
+#include <vector>	
 
 namespace std
 {

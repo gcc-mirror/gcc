@@ -27,7 +27,7 @@
 
 // Written by Benjamin Kosnik <bkoz@cygnus.com>
 
-#include <bits/std_locale.h>
+#include <locale>
 
 namespace std 
 {

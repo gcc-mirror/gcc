@@ -58,7 +58,7 @@
 
 
 #include "backward_warning.h"
-#include <bits/std_vector.h>
+#include <vector>
 
 using std::bit_vector;
 
@@ -67,5 +67,3 @@ using std::bit_vector;
 // Local Variables:
 // mode:C++
 // End:
-
-

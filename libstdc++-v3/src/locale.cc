@@ -25,20 +25,20 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <bits/std_clocale.h>
-#include <bits/std_cstring.h>
-#include <bits/std_cassert.h>
-#include <bits/std_cctype.h>
-#include <bits/std_limits.h>
+#include <clocale>
+#include <cstring>
+#include <cassert>
+#include <cctype>
+#include <limits>
 #include <exception>
-#include <bits/std_stdexcept.h>
-#include <bits/std_locale.h>
-#include <bits/std_istream.h>
-#include <bits/std_ostream.h>
-#include <bits/std_vector.h>
-#include <bits/std_memory.h>      // for auto_ptr
+#include <stdexcept>
+#include <locale>
+#include <istream>
+#include <ostream>
+#include <vector>
+#include <memory>      // for auto_ptr
 #ifdef _GLIBCPP_USE_WCHAR_T  
-# include <bits/std_cwctype.h>     // for towupper, etc.
+# include <cwctype>     // for towupper, etc.
 #endif
 
 namespace std 

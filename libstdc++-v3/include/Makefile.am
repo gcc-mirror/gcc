@@ -64,35 +64,6 @@ bits_headers = \
 	${bits_srcdir}/slice.h \
 	${bits_srcdir}/slice_array.h \
 	${bits_srcdir}/sstream.tcc \
-	${bits_srcdir}/std_algorithm.h \
-	${bits_srcdir}/std_bitset.h \
-	${bits_srcdir}/std_complex.h \
-	${bits_srcdir}/std_deque.h \
-	${bits_srcdir}/std_fstream.h \
-	${bits_srcdir}/std_functional.h \
-	${bits_srcdir}/std_iomanip.h \
-	${bits_srcdir}/std_ios.h \
-	${bits_srcdir}/std_iosfwd.h \
-	${bits_srcdir}/std_iostream.h \
-	${bits_srcdir}/std_istream.h \
-	${bits_srcdir}/std_iterator.h \
-	${bits_srcdir}/std_limits.h \
-	${bits_srcdir}/std_list.h \
-	${bits_srcdir}/std_locale.h \
-	${bits_srcdir}/std_map.h \
-	${bits_srcdir}/std_memory.h \
-	${bits_srcdir}/std_numeric.h \
-	${bits_srcdir}/std_ostream.h \
-	${bits_srcdir}/std_queue.h \
-	${bits_srcdir}/std_set.h \
-	${bits_srcdir}/std_sstream.h \
-	${bits_srcdir}/std_stack.h \
-	${bits_srcdir}/std_stdexcept.h \
-	${bits_srcdir}/std_streambuf.h \
-	${bits_srcdir}/std_string.h \
-	${bits_srcdir}/std_utility.h \
-	${bits_srcdir}/std_valarray.h \
-	${bits_srcdir}/std_vector.h \
 	${bits_srcdir}/stl_algo.h \
 	${bits_srcdir}/stl_algobase.h \
 	${bits_srcdir}/stl_alloc.h \
@@ -188,26 +159,27 @@ ext_headers = \
 	${ext_srcdir}/stl_rope.h
 
 # This is the common subset of files that all three "C" header models use.
-c_base_srcdir = @C_INCLUDE_DIR@/bits
-c_base_builddir = ./bits
+c_base_srcdir = @C_INCLUDE_DIR@/
+c_base_builddir = ./
 c_base_headers = \
-	${c_base_srcdir}/std_cassert.h \
-	${c_base_srcdir}/std_cctype.h \
-	${c_base_srcdir}/std_cerrno.h \
-	${c_base_srcdir}/std_cfloat.h \
-	${c_base_srcdir}/std_climits.h \
-	${c_base_srcdir}/std_clocale.h \
-	${c_base_srcdir}/std_cmath.h \
-	${c_base_srcdir}/std_csetjmp.h \
-	${c_base_srcdir}/std_csignal.h \
-	${c_base_srcdir}/std_cstdarg.h \
-	${c_base_srcdir}/std_cstddef.h \
-	${c_base_srcdir}/std_cstdio.h \
-	${c_base_srcdir}/std_cstdlib.h \
-	${c_base_srcdir}/std_cstring.h \
-	${c_base_srcdir}/std_ctime.h \
-	${c_base_srcdir}/std_cwchar.h \
-	${c_base_srcdir}/std_cwctype.h \
+	${c_base_srcdir}/cassert \
+	${c_base_srcdir}/cctype \
+	${c_base_srcdir}/cerrno \
+	${c_base_srcdir}/cfloat \
+	${c_base_srcdir}/ciso646 \
+	${c_base_srcdir}/climits \
+	${c_base_srcdir}/clocale \
+	${c_base_srcdir}/cmath \
+	${c_base_srcdir}/csetjmp \
+	${c_base_srcdir}/csignal \
+	${c_base_srcdir}/cstdarg \
+	${c_base_srcdir}/cstddef \
+	${c_base_srcdir}/cstdio \
+	${c_base_srcdir}/cstdlib \
+	${c_base_srcdir}/cstring \
+	${c_base_srcdir}/ctime \
+	${c_base_srcdir}/cwchar \
+	${c_base_srcdir}/cwctype \
 	${c_base_srcdir}/cmath.tcc 
 
 std_srcdir = ${glibcpp_srcdir}/include/std
@@ -241,25 +213,7 @@ std_headers = \
 	${std_srcdir}/string \
 	${std_srcdir}/utility \
 	${std_srcdir}/valarray \
-	${std_srcdir}/vector \
-	${std_srcdir}/cassert \
-	${std_srcdir}/cctype \
-	${std_srcdir}/cerrno \
-	${std_srcdir}/cfloat \
-	${std_srcdir}/climits \
-	${std_srcdir}/clocale \
-	${std_srcdir}/ciso646 \
-	${std_srcdir}/cmath \
-	${std_srcdir}/csetjmp \
-	${std_srcdir}/csignal \
-	${std_srcdir}/cstdarg \
-	${std_srcdir}/cstddef \
-	${std_srcdir}/cstdio \
-	${std_srcdir}/cstdlib \
-	${std_srcdir}/cstring \
-	${std_srcdir}/ctime \
-	${std_srcdir}/cwchar \
-	${std_srcdir}/cwctype
+	${std_srcdir}/vector 
 
 target_srcdir = ${glibcpp_srcdir}/@OS_INC_SRCDIR@
 target_builddir = ./${target_alias}/bits

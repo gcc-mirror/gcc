@@ -29,7 +29,7 @@
 #define _CPP_BACKWARD_QUEUE_H 1
 
 #include "backward_warning.h"
-#include <bits/std_queue.h>
+#include <queue>
 
 using std::queue;
 using std::priority_queue;
