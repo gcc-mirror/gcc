@@ -246,14 +246,19 @@ extern int target_flags;
 #undef  TARGET_M32R
 #define TARGET_M32R             (! TARGET_M32RX && ! TARGET_M32R2)
 
-/* Big Endian Flag.  */
-#define BIG_ENDIAN_BIT 		(1 << 7)
-#define TARGET_BIG_ENDIAN       (target_flags & BIG_ENDIAN_BIT)
-
 /* Little Endian Flag.  */
-#define LITTLE_ENDIAN_BIT 	(1 <<  8)
-#ifndef TARGET_LITTLE_ENDIAN 	/* See little.h */
-#define TARGET_LITTLE_ENDIAN    (target_flags & LITTLE_ENDIAN_BIT)
+#define LITTLE_ENDIAN_BIT 	(1 << 7)
+#define TARGET_LITTLE_ENDIAN	(target_flags & LITTLE_ENDIAN_BIT)
+#define TARGET_BIG_ENDIAN       (! TARGET_LITTLE_ENDIAN)
+
+/* This defaults us to big-endian.  */
+#ifndef TARGET_ENDIAN_DEFAULT
+#define TARGET_ENDIAN_DEFAULT 0
+#endif
+
+/* This defaults us to m32r.  */
+#ifndef TARGET_CPU_DEFAULT
+#define TARGET_CPU_DEFAULT 0
 #endif
 
 /* Macro to define tables used to set the flags.
@@ -267,7 +272,7 @@ extern int target_flags;
 #endif
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 0
+#define TARGET_DEFAULT (TARGET_CPU_DEFAULT | TARGET_ENDIAN_DEFAULT)
 #endif
 
 #define TARGET_SWITCHES							\
