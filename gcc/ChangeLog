@@ -1,3 +1,13 @@
+Fri Apr 23 22:35:41 EDT 1999  John Wehle  (john@feith.com)
+
+	* acconfig.h (HAVE_GAS_FILDS_FISTS): Add.
+	* configure.in: Check assembler instructions.
+	* configure: Rebuild.
+	* config.in: Likewise.
+	* i386.md (floathisf2, floathidf2, floathixf2): New patterns.
+	* i386.c (print_operand): Use the proper suffix for a 387 HImode
+	operand.  Abort if a 387 operand has an unsupported size.
+
 Fri Apr 23 16:57:40 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_write_verstamp): Mark `file' unused.

@@ -8126,6 +8126,27 @@ EOF
 fi
 echo "$ac_t""$gcc_cv_as_subsections" 1>&6
 
+echo $ac_n "checking assembler instructions""... $ac_c" 1>&6
+echo "configure:8131: checking assembler instructions" >&5
+gcc_cv_as_instructions=
+if test x$gcc_cv_as != x; then
+	set "filds fists" "filds mem; fists mem"
+	while test $# -gt 0
+  	do
+		echo "$2" > conftest.s
+		if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+			gcc_cv_as_instructions=${gcc_cv_as_instructions}$1" "
+			cat >> confdefs.h <<EOF
+#define HAVE_GAS_`echo "$1" | tr 'a-z ' 'A-Z_'` 1
+EOF
+
+		fi
+		shift 2
+	done
+	rm -f conftest.s conftest.o
+fi
+echo "$ac_t""$gcc_cv_as_instructions" 1>&6
+
 # Figure out what language subdirectories are present.
 # Look if the user specified --enable-languages="..."; if not, use
 # the environment variable $LANGUAGES if defined. $LANGUAGES might
