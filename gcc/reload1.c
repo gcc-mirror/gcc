@@ -7600,7 +7600,7 @@ reload_cse_invalidate_regno (regno, mode, clobber)
       for (x = reg_values[i]; x; x = XEXP (x, 1))
 	{
 	  if (XEXP (x, 0) != 0
-	      && refers_to_regno_p (regno, endregno, XEXP (x, 0), NULL_RTX))
+	      && refers_to_regno_p (regno, endregno, XEXP (x, 0), NULL_PTR))
 	    {
 	      /* If this is the only entry on the list, clear
                  reg_values[i].  Otherwise, just clear this entry on
@@ -8186,7 +8186,7 @@ reload_cse_record_set (set, body)
      rtx set;
      rtx body;
 {
-  rtx dest, src;
+  rtx dest, src, x;
   int dreg, sreg;
   enum machine_mode dest_mode;
 
@@ -8195,6 +8195,23 @@ reload_cse_record_set (set, body)
   dreg = true_regnum (dest);
   sreg = true_regnum (src);
   dest_mode = GET_MODE (dest);
+
+  /* Some machines don't define AUTO_INC_DEC, but they still use push
+     instructions.  We need to catch that case here in order to
+     invalidate the stack pointer correctly.  Note that invalidating
+     the stack pointer is different from invalidating DEST.  */
+  x = dest;
+  while (GET_CODE (x) == SUBREG
+	 || GET_CODE (x) == ZERO_EXTRACT
+	 || GET_CODE (x) == SIGN_EXTRACT
+	 || GET_CODE (x) == STRICT_LOW_PART)
+    x = XEXP (x, 0);
+  if (push_operand (x, GET_MODE (x)))
+    {
+      reload_cse_invalidate_rtx (stack_pointer_rtx, NULL_RTX);
+      reload_cse_invalidate_rtx (dest, NULL_RTX);
+      return;
+    }
 
   /* We can only handle an assignment to a register, or a store of a
      register to a memory location.  For other cases, we just clobber
