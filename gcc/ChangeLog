@@ -1,3 +1,18 @@
+2003-02-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/clzsi2.c: Replace "GNU CC" with "GCC".
+	* config/h8300/crti.asm: Likewise.
+	* config/h8300/crtn.asm: Likewise.
+	* config/h8300/ctzsi2.c: Likewise.
+	* config/h8300/fixunssfsi.c: Likewise.
+	* config/h8300/h8300-protos.h: Likewise.
+	* config/h8300/h8300.c: Likewise.
+	* config/h8300/h8300.h: Likewise.
+	* config/h8300/h8300.md: Likewise.
+	* config/h8300/paritysi2.c: Likewise.
+	* config/h8300/popcountsi2.c: Likewise.
+	* config/h8300/rtems.h: Likewise.
+
 2003-02-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* doc/invoke.texi: Documentation for my previous commit.
