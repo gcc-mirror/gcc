@@ -634,17 +634,16 @@ extern void		sbss_section PARAMS ((void));
 /* Disable branchlikely for tx39 until compare rewrite.  They haven't
    been generated up to this point.  */
 #define ISA_HAS_BRANCHLIKELY	(mips_isa != 1                          \
-				 /* || TARGET_MIPS3900 */)
+				 && ! TARGET_MIPS16)
 
 /* ISA has the conditional move instructions introduced in mips4.  */
-#define ISA_HAS_CONDMOVE        (mips_isa == 4				\
-				 || mips_isa == 32                      \
-				 || mips_isa == 64)
+#define ISA_HAS_CONDMOVE        ((mips_isa == 4				\
+				  || mips_isa == 32                     \
+				  || mips_isa == 64)			\
+				 && ! TARGET_MIPS16)
 
 /* ISA has just the integer condition move instructions (movn,movz) */
 #define ISA_HAS_INT_CONDMOVE     0
-
-
 
 /* ISA has the mips4 FP condition code instructions: FP-compare to CC,
    branch on CC, and move (both FP and non-FP) on CC.  */
@@ -652,34 +651,34 @@ extern void		sbss_section PARAMS ((void));
                          	 || mips_isa == 32                      \
 				 || mips_isa == 64)
 
-
 /* This is a catch all for the other new mips4 instructions: indexed load and
    indexed prefetch instructions, the FP madd,msub,nmadd, and nmsub instructions,
    and the FP recip and recip sqrt instructions */
 #define ISA_HAS_FP4             (mips_isa == 4				\
-				)
+ 				 && ! TARGET_MIPS16)
 
 /* ISA has conditional trap instructions.  */
-#define ISA_HAS_COND_TRAP	(mips_isa >= 2 && ! TARGET_MIPS16)
+#define ISA_HAS_COND_TRAP	(mips_isa >= 2				\
+				 && ! TARGET_MIPS16)
 
 /* ISA has multiply-accumulate instructions, madd and msub.  */
-#define ISA_HAS_MADD_MSUB       (mips_isa == 32                         \
-                                || mips_isa == 64                       \
-                                )
+#define ISA_HAS_MADD_MSUB       ((mips_isa == 32			\
+				  || mips_isa == 64			\
+				  ) && ! TARGET_MIPS16)
 
 /* ISA has nmadd and nmsub instructions.  */
 #define ISA_HAS_NMADD_NMSUB	(mips_isa == 4				\
-				)
+				 && ! TARGET_MIPS16)
 
 /* ISA has count leading zeroes/ones instruction (not implemented).  */
-#define ISA_HAS_CLZ_CLO         (mips_isa == 32                         \
-                                || mips_isa == 64                       \
-                                )
+#define ISA_HAS_CLZ_CLO         ((mips_isa == 32			\
+                                  || mips_isa == 64			\
+                                 ) && ! TARGET_MIPS16)
 
 /* ISA has double-word count leading zeroes/ones instruction (not
    implemented).  */
-#define ISA_HAS_DCLZ_DCLO       (mips_isa == 64)
-
+#define ISA_HAS_DCLZ_DCLO       (mips_isa == 64				\
+				 && ! TARGET_MIPS16)
 
 /* CC1_SPEC causes -mips3 and -mips4 to set -mfp64 and -mgp64; -mips1 or
    -mips2 sets -mfp32 and -mgp32.  This can be overridden by an explicit
