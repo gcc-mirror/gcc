@@ -3784,11 +3784,18 @@ build_c_cast (type, expr)
 	  && TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE)
 	{
-	  if (TYPE_VOLATILE (TREE_TYPE (otype))
-	      && ! TYPE_VOLATILE (TREE_TYPE (type)))
+	  /* Go to the innermost object being pointed to.  */
+	  tree in_type = type;
+	  tree in_otype = otype;
+
+	  while (TREE_CODE (in_type) == POINTER_TYPE)
+	    in_type = TREE_TYPE (in_type);
+	  while (TREE_CODE (in_otype) == POINTER_TYPE)
+	    in_otype = TREE_TYPE (in_otype);
+	    
+	  if (TYPE_VOLATILE (in_otype) && ! TYPE_VOLATILE (in_type))
 	    pedwarn ("cast discards `volatile' from pointer target type");
-	  if (TYPE_READONLY (TREE_TYPE (otype))
-	      && ! TYPE_READONLY (TREE_TYPE (type)))
+	  if (TYPE_READONLY (in_otype) && ! TYPE_READONLY (in_type))
 	    pedwarn ("cast discards `const' from pointer target type");
 	}
 
