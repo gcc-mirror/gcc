@@ -72,8 +72,6 @@ tree decl_map;
 
 static tree pending_local_decls = NULL_TREE;
 
-tree throw_node [2];
-
 /* Push a local variable or stack slot into the decl_map,
    and assign it an rtl. */
 
@@ -727,18 +725,13 @@ init_decl_processing ()
 							       t),
 					  0, NOT_BUILT_IN,
 					  NULL_PTR);
-  throw_node[0] = builtin_function ("_Jv_Throw",
-				    build_function_type (ptr_type_node, t),
-				    0, NOT_BUILT_IN, NULL_PTR);
+  throw_node = builtin_function ((USING_SJLJ_EXCEPTIONS
+				  ? "_Jv_Throw" : "_Jv_Sjlj_Throw"),
+				 build_function_type (ptr_type_node, t),
+				 0, NOT_BUILT_IN, NULL_PTR);
   /* Mark throw_nodes as `noreturn' functions with side effects.  */
-  TREE_THIS_VOLATILE (throw_node[0]) = 1;
-  TREE_SIDE_EFFECTS (throw_node[0]) = 1;
-  t = tree_cons (NULL_TREE, ptr_type_node, endlink);
-  throw_node[1] = builtin_function ("_Jv_Sjlj_Throw",
-				    build_function_type (ptr_type_node, t),
-				    0, NOT_BUILT_IN, NULL_PTR);
-  TREE_THIS_VOLATILE (throw_node[1]) = 1;
-  TREE_SIDE_EFFECTS (throw_node[1]) = 1;
+  TREE_THIS_VOLATILE (throw_node) = 1;
+  TREE_SIDE_EFFECTS (throw_node) = 1;
   t = build_function_type (int_type_node, endlink);
   soft_monitorenter_node 
     = builtin_function ("_Jv_MonitorEnter", t, 0, NOT_BUILT_IN,
@@ -884,8 +877,6 @@ init_decl_processing ()
   /* Register nodes with the garbage collector.  */
   ggc_add_tree_root (java_global_trees, 
 		     sizeof (java_global_trees) / sizeof (tree));
-  ggc_add_tree_root (throw_node,
-		     sizeof (throw_node) / sizeof (tree));
   ggc_add_tree_root (predef_filenames,
 		     sizeof (predef_filenames) / sizeof (tree));
   ggc_add_tree_root (&decl_map, 1);

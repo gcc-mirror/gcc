@@ -1,5 +1,18 @@
 2001-03-28  Richard Henderson  <rth@redhat.com>
 
+	* java-tree.h (throw_node): Define as a single member of
+	java_global_trees instead of a separate array.
+	(JTI_THROW_NODE): New.
+	* decl.c (throw_node): Don't declare.
+	(init_decl_processing): Init a scalar throw_node.
+	Don't register it for gc.
+	* check-init.c (check_init): Reference scalar throw_node.
+	* expr.c (build_java_athrow): Likewise.
+	* jcf-write.c (generate_bytecode_insns): Likewise.
+	* parse.h (BUILD_THROW): Likewise.
+
+2001-03-28  Richard Henderson  <rth@redhat.com>
+
 	* decl.c (end_java_method): Do not save and restore
 	flag_non_call_exceptions.
 	* parse.y (source_end_java_method): Likewise.
