@@ -352,7 +352,22 @@ output_insn_data ()
 	  printf ("    0,\n");
 	  break;
 	case INSN_OUTPUT_FORMAT_SINGLE:
-	  printf ("    \"%s\",\n", d->template);
+	  {
+	    const char *p = d->template;
+	    char prev = 0;
+	    
+	    printf ("    \"");
+	    while (*p)
+	      {
+		if (*p == '\n' && prev != '\\')
+		  printf ("\\n\\\n");
+		else
+		  putchar (*p);
+		prev = *p;
+		++p;
+	      }
+	    printf ("\",\n");
+	  }
 	  break;
 	case INSN_OUTPUT_FORMAT_MULTI:
 	case INSN_OUTPUT_FORMAT_FUNCTION:
