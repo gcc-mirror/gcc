@@ -1879,6 +1879,7 @@ type_contains_placeholder_1 (tree type)
     case METHOD_TYPE:
     case FILE_TYPE:
     case FUNCTION_TYPE:
+    case VECTOR_TYPE:
       return false;
 
     case INTEGER_TYPE:
@@ -1888,7 +1889,6 @@ type_contains_placeholder_1 (tree type)
 	      || CONTAINS_PLACEHOLDER_P (TYPE_MAX_VALUE (type)));
 
     case ARRAY_TYPE:
-    case VECTOR_TYPE:
       /* We're already checked the component type (TREE_TYPE), so just check
 	 the index type.  */
       return type_contains_placeholder_p (TYPE_DOMAIN (type));
