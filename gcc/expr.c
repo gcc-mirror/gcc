@@ -1175,26 +1175,31 @@ emit_block_move (x, y, size, align)
 	 including more than one in the machine description unless
 	 the more limited one has some advantage.  */
 
+      rtx opalign = GEN_INT (align);
       enum machine_mode mode;
 
       for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
 	   mode = GET_MODE_WIDER_MODE (mode))
 	{
 	  enum insn_code code = movstr_optab[(int) mode];
-	  rtx opalign = GEN_INT (align);
 
 	  if (code != CODE_FOR_nothing
-	      && GET_MODE_BITSIZE (mode) < HOST_BITS_PER_WIDE_INT
+	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
 	      && (unsigned) INTVAL (size) <= GET_MODE_MASK (mode)
-	      && (*insn_operand_predicate[(int) code][0]) (x, Pmode)
-	      && (*insn_operand_predicate[(int) code][1]) (y, Pmode)
-	      && (*insn_operand_predicate[(int) code][3]) (opalign, VOIDmode))
+	      && (insn_operand_predicate[(int) code][0] == 0
+		  || (*insn_operand_predicate[(int) code][0]) (x, BLKmode))
+	      && (insn_operand_predicate[(int) code][1] == 0
+		  || (*insn_operand_predicate[(int) code][1]) (y, BLKmode))
+	      && (insn_operand_predicate[(int) code][3] == 0
+		  || (*insn_operand_predicate[(int) code][3]) (opalign,
+							       VOIDmode)))
 	    {
 	      rtx op2 = size;
 	      rtx last = get_last_insn ();
 	      rtx pat;
 
-	      if (! (*insn_operand_predicate[(int) code][2]) (op2, mode))
+	      if (insn_operand_predicate[(int) code][2] != 0
+		  && ! (*insn_operand_predicate[(int) code][2]) (op2, mode))
 		op2 = copy_to_mode_reg (mode, op2);
 
 	      pat = GEN_FCN ((int) code) (x, y, op2, opalign);
@@ -3662,7 +3667,9 @@ expand_expr (exp, target, tmode, modifier)
 	  }
 
 	if (mode1 == VOIDmode
-	    || (mode1 != BLKmode && ! direct_load[(int) mode1])
+	    || (mode1 != BLKmode && ! direct_load[(int) mode1]
+		&& modifier != EXPAND_CONST_ADDRESS
+		&& modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
 	    || GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
 	  {
 	    /* In cases where an aligned union has an unaligned object
