@@ -1193,15 +1193,16 @@ char *
 i960_output_call_insn (target, argsize_rtx, insn)
      register rtx target, argsize_rtx, insn;
 {
-  int non_indirect;
   int argsize = INTVAL (argsize_rtx);
   rtx nexti = next_real_insn (insn);
   rtx operands[1];
 
   operands[0] = target;
 
-  non_indirect = ((GET_CODE (target) == MEM)
-		  && (GET_CODE (XEXP (target, 0)) == SYMBOL_REF));
+  /* The code used to assume that calls to SYMBOL_REFs could not be more
+     than 24 bits away (b vs bx, callj vs callx).  This is not true.  This
+     feature is now implemented by relaxing in the GNU linker.  It can convert
+     bx to b if in range, and callx to calls/call/balx/bal as appropriate.  */
 
   /* Nexti could be zero if the called routine is volatile.  */
   if (optimize && (*epilogue_string == 0) && argsize == 0 && tail_call_ok 
@@ -1210,12 +1211,11 @@ i960_output_call_insn (target, argsize_rtx, insn)
       /* Delete following return insn.  */
       if (nexti && no_labels_between_p (insn, nexti))
 	delete_insn (nexti);
-      output_asm_insn (non_indirect ? "b	 %0" : "bx	 %0",
-		       operands);
+      output_asm_insn ("bx	%0", operands);
       return "# notreached";
     }
 
-  output_asm_insn (non_indirect ? "callj	%0" : "callx	%0", operands);
+  output_asm_insn ("callx	%0", operands);
   return "";
 }
 
