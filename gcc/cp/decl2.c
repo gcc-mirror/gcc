@@ -45,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "target.h"
 #include "c-common.h"
+#include "timevar.h"
 extern cpp_reader *parse_in;
 
 /* This structure contains information about the initializations
@@ -3647,9 +3648,11 @@ tree
 namespace_ancestor (ns1, ns2)
      tree ns1, ns2;
 {
+  timevar_push (TV_NAME_LOOKUP);
   if (is_namespace_ancestor (ns1, ns2))
-    return ns1;
-  return namespace_ancestor (CP_DECL_CONTEXT (ns1), ns2);
+    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, ns1);
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP,
+                          namespace_ancestor (CP_DECL_CONTEXT (ns1), ns2));
 }
 
 /* Insert used into the using list of user. Set indirect_flag if this
@@ -3662,9 +3665,10 @@ add_using_namespace (user, used, indirect)
      int indirect;
 {
   tree t;
+  timevar_push (TV_NAME_LOOKUP);
   /* Using oneself is a no-op.  */
   if (user == used)
-    return;
+    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, (void)0);
   my_friendly_assert (TREE_CODE (user) == NAMESPACE_DECL, 380);
   my_friendly_assert (TREE_CODE (used) == NAMESPACE_DECL, 380);
   /* Check if we already have this.  */
@@ -3674,7 +3678,7 @@ add_using_namespace (user, used, indirect)
       if (!indirect)
 	/* Promote to direct usage.  */
 	TREE_INDIRECT_USING (t) = 0;
-      return;
+      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, (void)0);
     }
 
   /* Add used to the user's using list.  */
@@ -3696,6 +3700,7 @@ add_using_namespace (user, used, indirect)
   /* Tell everyone using us about the new used namespaces.  */
   for (t = DECL_NAMESPACE_USERS (user); t; t = TREE_CHAIN (t))
     add_using_namespace (TREE_PURPOSE (t), used, 1);
+  timevar_pop (TV_NAME_LOOKUP);
 }
 
 /* Combines two sets of overloaded functions into an OVERLOAD chain, removing
@@ -3845,6 +3850,7 @@ lookup_using_namespace (name, val, usings, scope, flags, spacesp)
 {
   tree iter;
   tree val1;
+  timevar_push (TV_NAME_LOOKUP);
   /* Iterate over all used namespaces in current, searching for using
      directives of scope.  */
   for (iter = usings; iter; iter = TREE_CHAIN (iter))
@@ -3857,7 +3863,8 @@ lookup_using_namespace (name, val, usings, scope, flags, spacesp)
 	/* Resolve ambiguities.  */
 	val = ambiguous_decl (name, val, val1, flags);
       }
-  return BINDING_VALUE (val) != error_mark_node;
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP,
+                          BINDING_VALUE (val) != error_mark_node);
 }
 
 /* [namespace.qual]
@@ -3877,6 +3884,7 @@ qualified_lookup_using_namespace (name, scope, result, flags)
   /* ... and a list of namespace yet to see.  */
   tree todo = NULL_TREE;
   tree usings;
+  timevar_push (TV_NAME_LOOKUP);
   /* Look through namespace aliases.  */
   scope = ORIGINAL_NAMESPACE (scope);
   while (scope && (result != error_mark_node))
@@ -3900,7 +3908,7 @@ qualified_lookup_using_namespace (name, scope, result, flags)
       else
 	scope = NULL_TREE; /* If there never was a todo list.  */
     }
-  return result != error_mark_node;
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, result != error_mark_node);
 }
 
 /* [namespace.memdef]/2 */
@@ -3965,19 +3973,20 @@ static tree
 decl_namespace (decl)
      tree decl;
 {
+  timevar_push (TV_NAME_LOOKUP);
   if (TYPE_P (decl))
     decl = TYPE_STUB_DECL (decl);
   while (DECL_CONTEXT (decl))
     {
       decl = DECL_CONTEXT (decl);
       if (TREE_CODE (decl) == NAMESPACE_DECL)
-	return decl;
+	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, decl);
       if (TYPE_P (decl))
 	decl = TYPE_STUB_DECL (decl);
       my_friendly_assert (DECL_P (decl), 390);
     }
 
-  return global_namespace;
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, global_namespace);
 }
 
 /* Return the namespace where the current declaration is declared.  */
@@ -4379,6 +4388,7 @@ lookup_arg_dependent (name, fns, args)
   struct arg_lookup k;
   tree fn = NULL_TREE;
 
+  timevar_push (TV_NAME_LOOKUP);
   k.name = name;
   k.functions = fns;
   k.classes = NULL_TREE;
@@ -4393,7 +4403,7 @@ lookup_arg_dependent (name, fns, args)
     unqualified_namespace_lookup (name, 0, &k.namespaces);
 
   arg_assoc_args (&k, args);
-  return k.functions;
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, k.functions);
 }
 
 /* Process a namespace-alias declaration.  */

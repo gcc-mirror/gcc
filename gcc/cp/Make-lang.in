@@ -239,7 +239,8 @@ cp/decl.o: cp/decl.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h stack.h \
   cp/operators.def $(TM_P_H) tree-inline.h diagnostic.h c-pragma.h \
   debug.h gt-cp-decl.h gtype-cp.h timevar.h
 cp/decl2.o: cp/decl2.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h $(EXPR_H) \
-  output.h except.h toplev.h $(GGC_H) $(RTL_H) c-common.h gt-cp-decl2.h
+  output.h except.h toplev.h $(GGC_H) $(RTL_H) c-common.h gt-cp-decl2.h \
+  timevar.h
 cp/typeck2.o: cp/typeck2.c $(CXX_TREE_H) flags.h toplev.h output.h $(TM_P_H) \
    diagnostic.h
 cp/typeck.o: cp/typeck.c $(CXX_TREE_H) flags.h $(RTL_H) $(EXPR_H) toplev.h \

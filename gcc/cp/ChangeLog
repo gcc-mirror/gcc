@@ -1,3 +1,17 @@
+2003-02-13  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* Make-lang.in (cp/decl2.o): Add dependency on timevar.h
+	* decl2.c: Include "timevar.h".
+	(namespace_ancestor): Time name lookup.
+	(add_using_namespace): Likewise.
+	(lookup_using_namespace): Likewise.
+	(qualified_lookup_using_namespace): Likewise.
+	(decl_namespace): Likewise.
+	(lookup_arg_dependent): Likewise.
+	* lex.c (do_identifier): Likewise.
+	(do_scoped_id): Likewise.
+	* pt.c (lookup_template_class): Likewise.
+
 2003-02-12  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* decl.c (define_label): Don't forget to pop TV_NAME_LOOKUP.
