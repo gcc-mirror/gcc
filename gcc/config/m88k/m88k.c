@@ -406,8 +406,7 @@ legitimize_address (pic, orig, reg, scratch)
     {
       new = gen_rtx (MEM, GET_MODE (orig), new);
       RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (orig);
-      MEM_VOLATILE_P (new) = MEM_VOLATILE_P (orig);
-      MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (orig);
+      MEM_COPY_ATTRIBUTES (new, orig);
     }
   return new;
 }
@@ -603,8 +602,7 @@ block_move_loop (dest, dest_mem, src, src_mem, size, align)
 				gen_rtx (REG, Pmode, 3),
 				offset_rtx));
   RTX_UNCHANGING_P (value_rtx) = RTX_UNCHANGING_P (src_mem);
-  MEM_VOLATILE_P (value_rtx) = MEM_VOLATILE_P (src_mem);
-  MEM_IN_STRUCT_P (value_rtx) = MEM_IN_STRUCT_P (src_mem);
+  MEM_COPY_ATTRIBUTES (value_rtx, src_mem);
 
   emit_insn (gen_call_movstrsi_loop
 	     (gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (entry_name)),
@@ -660,8 +658,7 @@ block_move_no_loop (dest, dest_mem, src, src_mem, size, align)
 				gen_rtx (REG, Pmode, 3),
 				offset_rtx));
   RTX_UNCHANGING_P (value_rtx) = RTX_UNCHANGING_P (src_mem);
-  MEM_VOLATILE_P (value_rtx) = MEM_VOLATILE_P (src_mem);
-  MEM_IN_STRUCT_P (value_rtx) = MEM_IN_STRUCT_P (src_mem);
+  MEM_COPY_ATTRIBUTES (value_rtx, src_mem);
 
   value_reg = ((((most - (size - remainder)) / align) & 1) == 0
 	       ? (align == 8 ? 6 : 5) : 4);
@@ -733,8 +730,7 @@ block_move_sequence (dest, dest_mem, src, src_mem, size, align, offset)
 			  gen_rtx (PLUS, Pmode, src,
 				   GEN_INT (offset_ld)));
 	  RTX_UNCHANGING_P (srcp) = RTX_UNCHANGING_P (src_mem);
-	  MEM_VOLATILE_P (srcp) = MEM_VOLATILE_P (src_mem);
-	  MEM_IN_STRUCT_P (srcp) = MEM_IN_STRUCT_P (src_mem);
+	  MEM_COPY_ATTRIBUTES (srcp, src_mem);
 	  emit_insn (gen_rtx (SET, VOIDmode, temp[next], srcp));
 	  offset_ld += amount[next];
 	  active[next] = TRUE;
@@ -748,8 +744,7 @@ block_move_sequence (dest, dest_mem, src, src_mem, size, align, offset)
 			  gen_rtx (PLUS, Pmode, dest,
 				   GEN_INT (offset_st)));
 	  RTX_UNCHANGING_P (dstp) = RTX_UNCHANGING_P (dest_mem);
-	  MEM_VOLATILE_P (dstp) = MEM_VOLATILE_P (dest_mem);
-	  MEM_IN_STRUCT_P (dstp) = MEM_IN_STRUCT_P (dest_mem);
+	  MEM_COPY_ATTRIBUTES (dstp, dest_mem);
 	  emit_insn (gen_rtx (SET, VOIDmode, dstp, temp[phase]));
 	  offset_st += amount[phase];
 	}
@@ -2611,7 +2606,7 @@ m88k_builtin_saveregs (arglist)
 
   /* Allocate the va_list constructor */
   block = assign_stack_local (BLKmode, 3 * UNITS_PER_WORD, BITS_PER_WORD);
-  MEM_IN_STRUCT_P (block) = 1;
+  MEM_SET_IN_STRUCT_P (block, 1);
   RTX_UNCHANGING_P (block) = 1;
   RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
 
@@ -2627,7 +2622,7 @@ m88k_builtin_saveregs (arglist)
 
   /* Allocate the register space, and store it as the __va_reg member.  */
   addr = assign_stack_local (BLKmode, 8 * UNITS_PER_WORD, -1);
-  MEM_IN_STRUCT_P (addr) = 1;
+  MEM_SET_IN_STRUCT_P (addr, 1);
   RTX_UNCHANGING_P (addr) = 1;
   RTX_UNCHANGING_P (XEXP (addr, 0)) = 1;
   emit_move_insn (change_address (block, Pmode,

@@ -2846,7 +2846,7 @@ arm_naked_function_p (func)
 
 rtx
 arm_gen_load_multiple (base_regno, count, from, up, write_back, unchanging_p,
-		       in_struct_p)
+		       in_struct_p, scalar_p)
      int base_regno;
      int count;
      rtx from;
@@ -2854,6 +2854,7 @@ arm_gen_load_multiple (base_regno, count, from, up, write_back, unchanging_p,
      int write_back;
      int unchanging_p;
      int in_struct_p;
+     int scalar_p;
 {
   int i = 0, j;
   rtx result;
@@ -2876,7 +2877,7 @@ arm_gen_load_multiple (base_regno, count, from, up, write_back, unchanging_p,
       mem = gen_rtx (MEM, SImode, plus_constant (from, j * 4 * sign));
       RTX_UNCHANGING_P (mem) = unchanging_p;
       MEM_IN_STRUCT_P (mem) = in_struct_p;
-
+      MEM_SCALAR_P (mem) = scalar_p;
       XVECEXP (result, 0, i) = gen_rtx (SET, VOIDmode,
 					gen_rtx (REG, SImode, base_regno + j),
 					mem);
@@ -2890,7 +2891,7 @@ arm_gen_load_multiple (base_regno, count, from, up, write_back, unchanging_p,
 
 rtx
 arm_gen_store_multiple (base_regno, count, to, up, write_back, unchanging_p,
-			in_struct_p)
+			in_struct_p, scalar_p)
      int base_regno;
      int count;
      rtx to;
@@ -2898,6 +2899,7 @@ arm_gen_store_multiple (base_regno, count, to, up, write_back, unchanging_p,
      int write_back;
      int unchanging_p;
      int in_struct_p;
+     int scalar_p;
 {
   int i = 0, j;
   rtx result;
@@ -2920,6 +2922,7 @@ arm_gen_store_multiple (base_regno, count, to, up, write_back, unchanging_p,
       mem = gen_rtx (MEM, SImode, plus_constant (to, j * 4 * sign));
       RTX_UNCHANGING_P (mem) = unchanging_p;
       MEM_IN_STRUCT_P (mem) = in_struct_p;
+      MEM_SCALAR_P (mem) = scalar_p;
 
       XVECEXP (result, 0, i) = gen_rtx (SET, VOIDmode, mem,
 					gen_rtx (REG, SImode, base_regno + j));
@@ -2942,6 +2945,7 @@ arm_gen_movstrqi (operands)
   rtx part_bytes_reg = NULL;
   rtx mem;
   int dst_unchanging_p, dst_in_struct_p, src_unchanging_p, src_in_struct_p;
+  int dst_scalar_p, src_scalar_p;
 
   if (GET_CODE (operands[2]) != CONST_INT
       || GET_CODE (operands[3]) != CONST_INT
@@ -2954,8 +2958,10 @@ arm_gen_movstrqi (operands)
 
   dst_unchanging_p = RTX_UNCHANGING_P (operands[0]);
   dst_in_struct_p = MEM_IN_STRUCT_P (operands[0]);
+  dst_scalar_p = MEM_SCALAR_P (operands[0]);
   src_unchanging_p = RTX_UNCHANGING_P (operands[1]);
   src_in_struct_p = MEM_IN_STRUCT_P (operands[1]);
+  src_scalar_p = MEM_SCALAR_P (operands[1]);
 
   fin_dst = dst = copy_to_mode_reg (SImode, st_dst);
   fin_src = src = copy_to_mode_reg (SImode, st_src);
@@ -2971,30 +2977,35 @@ arm_gen_movstrqi (operands)
     {
       if (in_words_to_go > 4)
 	emit_insn (arm_gen_load_multiple (0, 4, src, TRUE, TRUE,
-					  src_unchanging_p, src_in_struct_p));
+					  src_unchanging_p,
+					  src_in_struct_p,
+					  src_scalar_p));
       else
 	emit_insn (arm_gen_load_multiple (0, in_words_to_go, src, TRUE, 
 					  FALSE, src_unchanging_p,
-					  src_in_struct_p));
+					  src_in_struct_p, src_scalar_p));
 
       if (out_words_to_go)
 	{
 	  if (out_words_to_go > 4)
 	    emit_insn (arm_gen_store_multiple (0, 4, dst, TRUE, TRUE,
 					       dst_unchanging_p,
-					       dst_in_struct_p));
+					       dst_in_struct_p,
+					       dst_scalar_p));
 	  else if (out_words_to_go != 1)
 	    emit_insn (arm_gen_store_multiple (0, out_words_to_go,
 					       dst, TRUE, 
 					       (last_bytes == 0
 						? FALSE : TRUE),
 					       dst_unchanging_p,
-					       dst_in_struct_p));
+					       dst_in_struct_p,
+					       dst_scalar_p));
 	  else
 	    {
 	      mem = gen_rtx (MEM, SImode, dst);
 	      RTX_UNCHANGING_P (mem) = dst_unchanging_p;
 	      MEM_IN_STRUCT_P (mem) = dst_in_struct_p;
+	      MEM_SCALAR_P (mem) = dst_scalar_p;
 	      emit_move_insn (mem, gen_rtx (REG, SImode, 0));
 	      if (last_bytes != 0)
 		emit_insn (gen_addsi3 (dst, dst, GEN_INT (4)));
@@ -3013,12 +3024,14 @@ arm_gen_movstrqi (operands)
     mem = gen_rtx (MEM, SImode, src);
     RTX_UNCHANGING_P (mem) = src_unchanging_p;
     MEM_IN_STRUCT_P (mem) = src_in_struct_p;
+    MEM_SCALAR_P (mem) = src_scalar_p;
     emit_move_insn (sreg = gen_reg_rtx (SImode), mem);
     emit_move_insn (fin_src = gen_reg_rtx (SImode), plus_constant (src, 4));
 
     mem = gen_rtx (MEM, SImode, dst);
     RTX_UNCHANGING_P (mem) = dst_unchanging_p;
     MEM_IN_STRUCT_P (mem) = dst_in_struct_p;
+    MEM_SCALAR_P (mem) = dst_scalar_p;
     emit_move_insn (mem, sreg);
     emit_move_insn (fin_dst = gen_reg_rtx (SImode), plus_constant (dst, 4));
     in_words_to_go--;
@@ -3035,6 +3048,7 @@ arm_gen_movstrqi (operands)
       mem = gen_rtx (MEM, SImode, src);
       RTX_UNCHANGING_P (mem) = src_unchanging_p;
       MEM_IN_STRUCT_P (mem) = src_in_struct_p;
+      MEM_SCALAR_P (mem) = src_scalar_p;
       part_bytes_reg = copy_to_mode_reg (SImode, mem);
     }
 
@@ -3055,6 +3069,7 @@ arm_gen_movstrqi (operands)
 	  mem = gen_rtx (MEM, QImode, plus_constant (dst, last_bytes - 1));
 	  RTX_UNCHANGING_P (mem) = dst_unchanging_p;
 	  MEM_IN_STRUCT_P (mem) = dst_in_struct_p;
+	  MEM_SCALAR_P (mem) = dst_scalar_p;
 	  emit_move_insn (mem, gen_rtx (SUBREG, QImode, part_bytes_reg, 0));
 	  if (--last_bytes)
 	    {
@@ -3075,6 +3090,7 @@ arm_gen_movstrqi (operands)
 	  mem = gen_rtx (MEM, QImode, dst);
 	  RTX_UNCHANGING_P (mem) = dst_unchanging_p;
 	  MEM_IN_STRUCT_P (mem) = dst_in_struct_p;
+	  MEM_SCALAR_P (mem) = dst_scalar_p;
 	  emit_move_insn (mem, gen_rtx (SUBREG, QImode, part_bytes_reg, 0));
 	  if (--last_bytes)
 	    {

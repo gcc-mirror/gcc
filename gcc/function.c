@@ -968,6 +968,8 @@ assign_stack_temp (mode, size, keep)
      set from before.  */
   RTX_UNCHANGING_P (p->slot) = 0;
   MEM_IN_STRUCT_P (p->slot) = 0;
+  MEM_SCALAR_P (p->slot) = 0;
+  MEM_ALIAS_SET (p->slot) = 0;
   return p->slot;
 }
 
@@ -1003,7 +1005,7 @@ assign_temp (type, keep, memory_required, dont_promote)
 	size = TREE_INT_CST_LOW (TYPE_ARRAY_MAX_SIZE (type));
 
       tmp = assign_stack_temp (mode, size, keep);
-      MEM_IN_STRUCT_P (tmp) = AGGREGATE_TYPE_P (type);
+      MEM_SET_IN_STRUCT_P (tmp, AGGREGATE_TYPE_P (type));
       return tmp;
     }
 
@@ -1561,7 +1563,8 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
      previously generated stack slot, then we need to copy the bit in
      case it was set for other reasons.  For instance, it is set for
      __builtin_va_alist.  */
-  MEM_IN_STRUCT_P (reg) = AGGREGATE_TYPE_P (type) | MEM_IN_STRUCT_P (new);
+  MEM_SET_IN_STRUCT_P (reg,
+		       AGGREGATE_TYPE_P (type) || MEM_IN_STRUCT_P (new));
   MEM_ALIAS_SET (reg) = get_alias_set (type);
 
   /* Now make sure that all refs to the variable, previously made
@@ -2025,8 +2028,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		  newmem = gen_rtx_MEM (wanted_mode,
 					plus_constant (XEXP (tem, 0), offset));
 		  RTX_UNCHANGING_P (newmem) = RTX_UNCHANGING_P (tem);
-		  MEM_VOLATILE_P (newmem) = MEM_VOLATILE_P (tem);
-		  MEM_IN_STRUCT_P (newmem) = MEM_IN_STRUCT_P (tem);
+		  MEM_COPY_ATTRIBUTES (newmem, tem);
 
 		  /* Make the change and see if the insn remains valid.  */
 		  INSN_CODE (insn) = -1;
@@ -2217,8 +2219,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		    newmem = gen_rtx_MEM (wanted_mode,
 					  plus_constant (XEXP (tem, 0), offset));
 		    RTX_UNCHANGING_P (newmem) = RTX_UNCHANGING_P (tem);
-		    MEM_VOLATILE_P (newmem) = MEM_VOLATILE_P (tem);
-		    MEM_IN_STRUCT_P (newmem) = MEM_IN_STRUCT_P (tem);
+		    MEM_COPY_ATTRIBUTES (newmem, tem);
 
 		    /* Make the change and see if the insn remains valid.  */
 		    INSN_CODE (insn) = -1;
@@ -2783,7 +2784,7 @@ gen_mem_addressof (reg, decl)
   PUT_CODE (reg, MEM);
   PUT_MODE (reg, DECL_MODE (decl));
   MEM_VOLATILE_P (reg) = TREE_SIDE_EFFECTS (decl);
-  MEM_IN_STRUCT_P (reg) = AGGREGATE_TYPE_P (type);
+  MEM_SET_IN_STRUCT_P (reg, AGGREGATE_TYPE_P (type));
   MEM_ALIAS_SET (reg) = get_alias_set (decl);
 
   if (TREE_USED (decl) || DECL_INITIAL (decl) != 0)
@@ -4114,7 +4115,7 @@ assign_parms (fndecl, second_time)
 	  /* If this is a memory ref that contains aggregate components,
 	     mark it as such for cse and loop optimize.  Likewise if it
 	     is readonly.  */
-	  MEM_IN_STRUCT_P (stack_parm) = aggregate;
+	  MEM_SET_IN_STRUCT_P (stack_parm, aggregate);
 	  RTX_UNCHANGING_P (stack_parm) = TREE_READONLY (parm);
 	  MEM_ALIAS_SET (stack_parm) = get_alias_set (parm);
 	}
@@ -4254,7 +4255,7 @@ assign_parms (fndecl, second_time)
 
 	  /* If this is a memory ref that contains aggregate components,
 	     mark it as such for cse and loop optimize.  */
-	  MEM_IN_STRUCT_P (stack_parm) = aggregate;
+	  MEM_SET_IN_STRUCT_P (stack_parm, aggregate);
 	}
 #endif /* 0 */
 
@@ -4311,7 +4312,7 @@ assign_parms (fndecl, second_time)
 
 		  /* If this is a memory ref that contains aggregate
 		     components, mark it as such for cse and loop optimize.  */
-		  MEM_IN_STRUCT_P (stack_parm) = aggregate;
+		  MEM_SET_IN_STRUCT_P (stack_parm, aggregate);
 		}
 
 	      else if (PARM_BOUNDARY % BITS_PER_WORD != 0)
@@ -4368,7 +4369,7 @@ assign_parms (fndecl, second_time)
 	    {
 	      DECL_RTL (parm)
 		= gen_rtx_MEM (TYPE_MODE (TREE_TYPE (passed_type)), parmreg);
-	      MEM_IN_STRUCT_P (DECL_RTL (parm)) = aggregate;
+	      MEM_SET_IN_STRUCT_P (DECL_RTL (parm), aggregate);
 	    }
 	  else
 	    DECL_RTL (parm) = parmreg;
@@ -4469,7 +4470,7 @@ assign_parms (fndecl, second_time)
 	      else
 		copy = assign_stack_temp (TYPE_MODE (type),
 					  int_size_in_bytes (type), 1);
-	      MEM_IN_STRUCT_P (copy) = AGGREGATE_TYPE_P (type);
+	      MEM_SET_IN_STRUCT_P (copy, AGGREGATE_TYPE_P (type));
 	      RTX_UNCHANGING_P (copy) = TREE_READONLY (parm);
 
 	      store_expr (parm, copy, 0);
@@ -4624,7 +4625,7 @@ assign_parms (fndecl, second_time)
 					  GET_MODE_SIZE (GET_MODE (entry_parm)), 0);
 		  /* If this is a memory ref that contains aggregate components,
 		     mark it as such for cse and loop optimize.  */
-		  MEM_IN_STRUCT_P (stack_parm) = aggregate;
+		  MEM_SET_IN_STRUCT_P (stack_parm, aggregate);
 		}
 
 	      if (promoted_mode != nominal_mode)
@@ -4666,7 +4667,8 @@ assign_parms (fndecl, second_time)
 	  DECL_RTL (result)
 	    = gen_rtx_MEM (DECL_MODE (result), DECL_RTL (parm));
 
-	  MEM_IN_STRUCT_P (DECL_RTL (result)) = AGGREGATE_TYPE_P (restype);
+	  MEM_SET_IN_STRUCT_P (DECL_RTL (result), 
+			       AGGREGATE_TYPE_P (restype));
 	}
 
       if (TREE_THIS_VOLATILE (parm))
@@ -5746,8 +5748,10 @@ expand_function_start (subr, parms_have_cleanups)
 	{
 	  DECL_RTL (DECL_RESULT (subr))
 	    = gen_rtx_MEM (DECL_MODE (DECL_RESULT (subr)), value_address);
-	  MEM_IN_STRUCT_P (DECL_RTL (DECL_RESULT (subr)))
-	    = AGGREGATE_TYPE_P (TREE_TYPE (DECL_RESULT (subr)));
+	  MEM_SET_IN_STRUCT_P (DECL_RTL (DECL_RESULT (subr)),
+			       AGGREGATE_TYPE_P (TREE_TYPE
+						 (DECL_RESULT
+						  (subr))));
 	}
     }
   else if (DECL_MODE (DECL_RESULT (subr)) == VOIDmode)

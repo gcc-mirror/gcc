@@ -3854,7 +3854,7 @@ sh_builtin_saveregs (arglist)
   bufsize = (n_intregs * UNITS_PER_WORD) + (n_floatregs * UNITS_PER_WORD);
 
   regbuf = assign_stack_local (BLKmode, bufsize, 0);
-  MEM_IN_STRUCT_P (regbuf) = 1;
+  MEM_SET_IN_STRUCT_P (regbuf, 1);
 
   /* Save int args.
      This is optimized to only save the regs that are necessary.  Explicitly

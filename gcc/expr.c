@@ -419,9 +419,8 @@ protect_from_queue (x, modify)
 	  register rtx y = XEXP (x, 0);
 	  register rtx new = gen_rtx_MEM (GET_MODE (x), QUEUED_VAR (y));
 
-	  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (x);
 	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (x);
-	  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (x);
+	  MEM_COPY_ATTRIBUTES (new, x);
 	  MEM_ALIAS_SET (new) = MEM_ALIAS_SET (x);
 
 	  if (QUEUED_INSN (y))
@@ -2021,7 +2020,7 @@ emit_group_store (orig_dst, src, ssize, align)
 	 mem_in_struct_p set; we might not.  */
 
       dst = copy_rtx (orig_dst);
-      MEM_IN_STRUCT_P (dst) = 1;
+      MEM_SET_IN_STRUCT_P (dst, 1);
     }
 
   /* Process the pieces.  */
@@ -2091,7 +2090,7 @@ copy_blkmode_from_reg(tgtblk,srcreg,type)
       if (tgtblk == 0)
 	{
 	  tgtblk = assign_stack_temp (BLKmode, bytes, 0);
-	  MEM_IN_STRUCT_P (tgtblk) = AGGREGATE_TYPE_P (type);
+	  MEM_SET_IN_STRUCT_P (tgtblk, AGGREGATE_TYPE_P (type));
 	  preserve_temp_slots (tgtblk);
 	}
       
@@ -4544,8 +4543,8 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 				      GET_MODE_SIZE (GET_MODE (target)), 0);
       rtx blk_object = copy_rtx (object);
 
-      MEM_IN_STRUCT_P (object) = 1;
-      MEM_IN_STRUCT_P (blk_object) = 1;
+      MEM_SET_IN_STRUCT_P (object, 1);
+      MEM_SET_IN_STRUCT_P (blk_object, 1);
       PUT_MODE (blk_object, BLKmode);
 
       if (bitsize != GET_MODE_BITSIZE (GET_MODE (target)))
@@ -4666,7 +4665,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 					 plus_constant (addr,
 							(bitpos
 							 / BITS_PER_UNIT))));
-      MEM_IN_STRUCT_P (to_rtx) = 1;
+      MEM_SET_IN_STRUCT_P (to_rtx, 1);
       MEM_ALIAS_SET (to_rtx) = alias_set;
 
       return store_expr (exp, to_rtx, value_mode != VOIDmode);
@@ -6149,26 +6148,7 @@ expand_expr (exp, target, tmode, modifier)
 	    || (TREE_CODE (exp1) == ADDR_EXPR
 		&& (exp2 = TREE_OPERAND (exp1, 0))
 		&& AGGREGATE_TYPE_P (TREE_TYPE (exp2))))
-	  MEM_IN_STRUCT_P (temp) = 1;
-
-	/* If the pointer is actually a REFERENCE_TYPE, this could be pointing
-	   into some aggregate too.  In theory we could fold this into the
-	   previous check and use rtx_addr_varies_p there too.
-
-	   However, this seems safer.  */
-	if (!MEM_IN_STRUCT_P (temp)
-	    && (TREE_CODE (TREE_TYPE (exp1)) == REFERENCE_TYPE
-	        /* This may have been an array reference to the first element
-		   that was optimized away from being an addition.  */
-	        || (TREE_CODE (exp1) == NOP_EXPR
-		    && ((TREE_CODE (TREE_TYPE (TREE_OPERAND (exp1, 0)))
-			 == REFERENCE_TYPE)
-		        || ((TREE_CODE (TREE_TYPE (TREE_OPERAND (exp1, 0)))
-			     == POINTER_TYPE)
-			    && (AGGREGATE_TYPE_P
-			        (TREE_TYPE (TREE_TYPE
-					    (TREE_OPERAND (exp1, 0))))))))))
-	  MEM_IN_STRUCT_P (temp) = ! rtx_addr_varies_p (temp);
+	  MEM_SET_IN_STRUCT_P (temp, 1);
 
 	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp) | flag_volatile;
 	MEM_ALIAS_SET (temp) = get_alias_set (exp);
@@ -6527,7 +6507,7 @@ expand_expr (exp, target, tmode, modifier)
 		emit_move_insn (new, op0);
 		op0 = copy_rtx (new);
 		PUT_MODE (op0, BLKmode);
-		MEM_IN_STRUCT_P (op0) = 1;
+		MEM_SET_IN_STRUCT_P (op0, 1);
 	      }
 
 	    return op0;
@@ -6554,7 +6534,7 @@ expand_expr (exp, target, tmode, modifier)
 	if (GET_CODE (XEXP (op0, 0)) == REG)
 	  mark_reg_pointer (XEXP (op0, 0), alignment);
 
-	MEM_IN_STRUCT_P (op0) = 1;
+	MEM_SET_IN_STRUCT_P (op0, 1);
 	MEM_VOLATILE_P (op0) |= volatilep;
 	if (mode == mode1 || mode1 == BLKmode || mode1 == tmode
 	    || modifier == EXPAND_CONST_ADDRESS
@@ -8573,7 +8553,7 @@ get_memory_rtx (exp)
       is_aggregate = AGGREGATE_TYPE_P (type);
     }
 
-  MEM_IN_STRUCT_P (mem) = is_aggregate;
+  MEM_SET_IN_STRUCT_P (mem, is_aggregate);
   return mem;
 }
 

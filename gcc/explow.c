@@ -606,9 +606,10 @@ stabilize (x)
       /* Mark returned memref with in_struct if it's in an array or
 	 structure.  Copy const and volatile from original memref.  */
 
-      MEM_IN_STRUCT_P (mem) = MEM_IN_STRUCT_P (x) || GET_CODE (addr) == PLUS;
       RTX_UNCHANGING_P (mem) = RTX_UNCHANGING_P (x);
-      MEM_VOLATILE_P (mem) = MEM_VOLATILE_P (x);
+      MEM_COPY_ATTRIBUTES (mem, x);
+      if (GET_CODE (addr) == PLUS)
+	MEM_SET_IN_STRUCT_P (mem, 1);
 
       /* Since the new MEM is just like the old X, it can alias only
 	 the things that X could.  */

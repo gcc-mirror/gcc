@@ -305,10 +305,24 @@ Stored in the @code{volatil} field and printed as @samp{/v}.
 @cindex @code{in_struct}, in @code{mem}
 @cindex @samp{/s} in RTL dump
 @item MEM_IN_STRUCT_P (@var{x})
-In @code{mem} expressions, nonzero for reference to an entire
-structure, union or array, or to a component of one.  Zero for
-references to a scalar variable or through a pointer to a scalar.
-Stored in the @code{in_struct} field and printed as @samp{/s}.
+In @code{mem} expressions, nonzero for reference to an entire structure,
+union or array, or to a component of one.  Zero for references to a
+scalar variable or through a pointer to a scalar.  Stored in the
+@code{in_struct} field and printed as @samp{/s}.  If both this flag and
+MEM_SCALAR_P are clear, then we don't know whether this MEM is in a
+structure or not.  Both flags should never be simultaneously set.
+
+@findex MEM_SCALAR_P
+@cindex @code{mem} and @samp{/f}
+@cindex @code{frame_related}, in@code{mem}
+@cindex @samp{/f} in RTL dump
+@item MEM_SCALAR_P (@var{x})
+In @code{mem} expressions, nonzero for reference to a scalar known not
+to be a member of a structure, union, or array.  Zero for such
+references and for indirections through pointers, even pointers pointing
+to scalar types.  If both this flag and MEM_STRUCT_P are clear, then we
+don't know whether this MEM is in a structure or not.  Both flags should
+never be simultaneously set.
 
 @findex MEM_ALIAS_SET
 @item MEM_ALIAS_SET (@var{x})

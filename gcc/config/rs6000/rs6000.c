@@ -1706,8 +1706,7 @@ expand_block_move_mem (mode, addr, orig_mem)
   rtx mem = gen_rtx_MEM (mode, addr);
 
   RTX_UNCHANGING_P (mem) = RTX_UNCHANGING_P (orig_mem);
-  MEM_VOLATILE_P (mem) = MEM_VOLATILE_P (orig_mem);
-  MEM_IN_STRUCT_P (mem) = MEM_IN_STRUCT_P (orig_mem);
+  MEM_COPY_ATTRIBUTES (mem, orig_mem);
 #ifdef MEM_UNALIGNED_P
   MEM_UNALIGNED_P (mem) = MEM_UNALIGNED_P (orig_mem);
 #endif

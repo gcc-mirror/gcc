@@ -88,6 +88,9 @@ static int alias_set_compare            PROTO((splay_tree_key,
 static int insert_subset_children       PROTO((splay_tree_node,
 					       void*));
 static alias_set_entry get_alias_set_entry PROTO((int));
+static rtx fixed_scalar_and_varying_struct_p PROTO((rtx, rtx, int (*)(rtx)));
+static int aliases_everything_p         PROTO((rtx));
+static int write_dependence_p           PROTO((rtx, rtx, int));
 
 /* Set up all info needed to perform alias analysis on memory references.  */
 
@@ -588,9 +591,8 @@ canon_rtx (x)
       if (addr != XEXP (x, 0))
 	{
 	  rtx new = gen_rtx_MEM (GET_MODE (x), addr);
-	  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (x);
 	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (x);
-	  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (x);
+	  MEM_COPY_ATTRIBUTES (new, x);
 	  MEM_ALIAS_SET (new) = MEM_ALIAS_SET (x);
 	  x = new;
 	}
@@ -1137,6 +1139,56 @@ read_dependence (mem, x)
   return MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem);
 }
 
+/* Returns MEM1 if and only if MEM1 is a scalar at a fixed address and
+   MEM2 is a reference to a structure at a varying address, or returns
+   MEM2 if vice versa.  Otherwise, returns NULL_RTX.  If a non-NULL
+   value is returned MEM1 and MEM2 can never alias.  VARIES_P is used
+   to decide whether or not an address may vary; it should return
+   nozero whenever variation is possible.  */
+
+rtx
+fixed_scalar_and_varying_struct_p (mem1, mem2, varies_p)
+     rtx mem1;
+     rtx mem2;
+     int (*varies_p) PROTO((rtx));
+{
+  rtx mem1_addr = XEXP (mem1, 0);
+  rtx mem2_addr = XEXP (mem2, 0);
+  
+  if (MEM_SCALAR_P (mem1) && MEM_IN_STRUCT_P (mem2) 
+      && !varies_p (mem1_addr) && varies_p (mem2_addr))
+    /* MEM1 is a scalar at a fixed address; MEM2 is a struct at a
+       varying address.  */
+    return mem1;
+
+  if (MEM_IN_STRUCT_P (mem1) && MEM_SCALAR_P (mem2) 
+      && varies_p (mem1_addr) && !varies_p (mem2_addr))
+    /* MEM2 is a scalar at a fixed address; MEM1 is a struct at a
+       varying address.  */
+    return mem2;
+
+  return NULL_RTX;
+}
+
+/* Returns nonzero if something about the mode or address format MEM1
+   indicates that it might well alias *anything*.  */
+
+int
+aliases_everything_p (mem)
+     rtx mem;
+{
+  if (GET_MODE (mem) == QImode)
+    /* ANSI C says that a `char*' can point to anything.  */
+    return 1;
+
+  if (GET_CODE (XEXP (mem, 0)) == AND)
+    /* If the address is an AND, its very hard to know at what it is
+       actually pointing.  */
+    return 1;
+    
+  return 0;
+}
+
 /* True dependence: X is read after store in MEM takes place.  */
 
 int
@@ -1177,40 +1229,33 @@ true_dependence (mem, mem_mode, x, varies)
 			    SIZE_FOR_MODE (x), x_addr, 0))
     return 0;
 
-  /* If both references are struct references, or both are not, nothing
-     is known about aliasing.
-
-     If either reference is QImode or BLKmode, ANSI C permits aliasing.
-
-     If both addresses are constant, or both are not, nothing is known
-     about aliasing.  */
-  if (MEM_IN_STRUCT_P (x) == MEM_IN_STRUCT_P (mem)
-      || mem_mode == QImode || mem_mode == BLKmode
-      || GET_MODE (x) == QImode || GET_MODE (x) == BLKmode
-      || GET_CODE (x_addr) == AND || GET_CODE (mem_addr) == AND
-      || varies (x_addr) == varies (mem_addr))
+  if (aliases_everything_p (x))
     return 1;
 
-  /* One memory reference is to a constant address, one is not.
-     One is to a structure, the other is not.
+  /* We cannot use aliases_everyting_p to test MEM, since we must look
+     at MEM_MODE, rather than GET_MODE (MEM).  */
+  if (mem_mode == QImode || GET_CODE (mem_addr) == AND)
+    return 1;
 
-     If either memory reference is a variable structure the other is a
-     fixed scalar and there is no aliasing.  */
-  if ((MEM_IN_STRUCT_P (mem) && varies (mem_addr))
-      || (MEM_IN_STRUCT_P (x) && varies (x_addr)))
-    return 0;
+  /* In true_dependence we also allow BLKmode to alias anything.  Why
+     don't we do this in anti_dependence and output_dependence?  */
+  if (mem_mode == BLKmode || GET_MODE (x) == BLKmode)
+    return 1;
 
-  return 1;
+  return !fixed_scalar_and_varying_struct_p (mem, x, varies);
 }
 
-/* Anti dependence: X is written after read in MEM takes place.  */
+/* Returns non-zero if a write to X might alias a previous read from
+   (or, if WRITEP is non-zero, a write to) MEM.  */
 
 int
-anti_dependence (mem, x)
+write_dependence_p (mem, x, writep)
      rtx mem;
      rtx x;
+     int writep;
 {
   rtx x_addr, mem_addr;
+  rtx fixed_scalar;
 
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
@@ -1218,7 +1263,7 @@ anti_dependence (mem, x)
   /* If MEM is an unchanging read, then it can't possibly conflict with
      the store to X, because there is at most one store to MEM, and it must
      have occurred somewhere before MEM.  */
-  if (RTX_UNCHANGING_P (mem))
+  if (!writep && RTX_UNCHANGING_P (mem))
     return 0;
 
   if (! base_alias_check (XEXP (x, 0), XEXP (mem, 0), GET_MODE (x),
@@ -1234,16 +1279,25 @@ anti_dependence (mem, x)
   x_addr = XEXP (x, 0);
   mem_addr = XEXP (mem, 0);
 
-  return (memrefs_conflict_p (SIZE_FOR_MODE (mem), mem_addr,
-			      SIZE_FOR_MODE (x), x_addr, 0)
-	  && ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem)
-		&& GET_MODE (mem) != QImode
-		&& GET_CODE (mem_addr) != AND
-		&& ! MEM_IN_STRUCT_P (x) && ! rtx_addr_varies_p (x))
-	  && ! (MEM_IN_STRUCT_P (x) && rtx_addr_varies_p (x)
-		&& GET_MODE (x) != QImode
-		&& GET_CODE (x_addr) != AND
-		&& ! MEM_IN_STRUCT_P (mem) && ! rtx_addr_varies_p (mem)));
+  if (!memrefs_conflict_p (SIZE_FOR_MODE (mem), mem_addr,
+			   SIZE_FOR_MODE (x), x_addr, 0))
+    return 0;
+
+  fixed_scalar 
+    = fixed_scalar_and_varying_struct_p (mem, x, rtx_addr_varies_p);
+  
+  return (!(fixed_scalar == mem && !aliases_everything_p (x))
+	  && !(fixed_scalar == x && !aliases_everything_p (mem)));
+}
+
+/* Anti dependence: X is written after read in MEM takes place.  */
+
+int
+anti_dependence (mem, x)
+     rtx mem;
+     rtx x;
+{
+  return write_dependence_p (mem, x, /*writep=*/0);
 }
 
 /* Output dependence: X is written after store in MEM takes place.  */
@@ -1253,29 +1307,7 @@ output_dependence (mem, x)
      register rtx mem;
      register rtx x;
 {
-  if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
-    return 1;
-
-  if (! base_alias_check (XEXP (x, 0), XEXP (mem, 0), GET_MODE (x),
-			  GET_MODE (mem)))
-    return 0;
-
-  x = canon_rtx (x);
-  mem = canon_rtx (mem);
-
-  if (DIFFERENT_ALIAS_SETS_P (x, mem))
-    return 0;
-
-  return (memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
-			      SIZE_FOR_MODE (x), XEXP (x, 0), 0)
-	  && ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem)
-		&& GET_MODE (mem) != QImode
-		&& GET_CODE (XEXP (mem, 0)) != AND
-		&& ! MEM_IN_STRUCT_P (x) && ! rtx_addr_varies_p (x))
-	  && ! (MEM_IN_STRUCT_P (x) && rtx_addr_varies_p (x)
-		&& GET_MODE (x) != QImode
-		&& GET_CODE (XEXP (x, 0)) != AND
-		&& ! MEM_IN_STRUCT_P (mem) && ! rtx_addr_varies_p (mem)));
+  return write_dependence_p (mem, x, /*writep=*/1);
 }
 
 

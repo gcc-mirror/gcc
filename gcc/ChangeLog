@@ -1,3 +1,81 @@
+Tue Jan 19 10:24:53 1999  Mark Mitchell  <mark@markmitchell.com>
+
+	* rtl.h (rtx_def): Update documentation.
+	(MEM_IN_STRUCT_P): Likewise.
+	(MEM_SCALAR_P): New macro.
+	(MEM_COPY_ATTRIBUTES): Likewise.
+	(MEM_SET_IN_STRUCT_P): Likewise.
+	* rtl.texi (MEM_SCALAR_P): Document.
+	* alias.c (canon_rtx): Use MEM_COPY_ATTRIBUTES.
+	(fixed_scalar_and_varying_struct_p): New function.  Use
+	MEM_SCALAR_P rather than !MEM_IN_STRUCT_P.
+	(aliases_everything_p): Likewise.
+	(true_dependence): Use them.
+	(write_dependence_p): New function, containing code common to
+	anti_dependence and output_dependence.
+	(anti_dependence): Use it.
+	(output_dependence): Likewise.
+	* calls.c (save_fixed_argument_area): Don't clear
+	MEM_IN_STRUCT_P. 
+	(expand_call): Use MEM_SET_IN_STRUCT_P.
+	(emit_library_call): Don't clear MEM_IN_STRUCT_P.
+	(emit_library_call_value): Likewise.
+	(store_one_arg): Use MEM_SET_IN_STRUCT_P.
+	* combine.c (simplify_rtx): Use MEM_COPY_ATTRIBUTES.
+	(make_extraction): Likewise.
+	(simplify_shift_const): Likewise.
+	(gen_lowpart_for_combine): Likewise.
+	* cse.c (gen_lowpart_if_possible): Use MEM_COPY_ATTRIBUTES.
+	* emit-rtl.c (operand_subword): Likewise.
+	(change_address): Likewise.
+	* explow.c (stabilize): Use MEM_COPY_ATTRIBUTES.
+	* expr.c (protect_from_queue): Use MEM_COPY_ATTRIBUTES.
+	(emit_group_store): Use MEM_SET_IN_STRUCT_P.
+	(copy_blkmode_from_reg): Likewise.
+	(store_field): Likewise.
+	(expand_expr): Remove bogus guesswork setting MEM_IN_STRUCT_P
+	heuristically.  Use MEM_SET_IN_STRUCT_P.
+	(get_memory_rtx): Likewise.
+	* final.c (alter_subreg): Use MEM_COPY_ATTRIBUTES.
+	* function.c (assign_stack_temp): Clear MEM_SCALAR_P and
+	MEM_ALIAS_SET on newly returned MEMs.
+	(assign_temp): Use MEM_SET_IN_STRUCT_P.
+	(put_reg_into_stack): Likewise.
+	(fixup_var_refs1): Use MEM_COPY_ATTRIBUTES.
+	(gen_mem_addressof): Use MEM_SET_IN_STRUCT_P.
+	(assign_parms): Likewise.
+	(expand_function): Likewise.
+	* integrate.c (expand_inline_function): Likewise.
+	(copy_rtx_and_substitute): Use MEM_COPY_ATTRIBUTES.
+	* loop.c (note_addr_stored): Remove check on MEM_IN_STRUCT_P.
+	* optabs.c (gen_move_insn): Use MEM_COPY_ATTRIBUTES.
+	* print-rtl.c (print_rtx): Print /f for frame_related.
+	* recog.c (validate_replace_rtx_1): Use MEM_COPY_ATTRIBUTES.
+	* reload1.c (reload): Copy MEM_SCALAR_P as well.
+	* stmt.c (expand_decl): Use MEM_SET_IN_STRUCT_P.
+	(expand_anon_union_decl): Use MEM_COPY_ATTRIBUTES.
+	* varasm.c (make_decl_rtl): Use MEM_SET_IN_STRUCT_P.
+	(output_constant_def): Likewise.
+	* a29k.c (a29k_set_memflags_1): Take scalar_p.
+	Set MEM_SCALAR_P.
+	(a29k_set_memflags): Use it.
+	* alpha.c (get_aligned_mem): Use MEM_COPY_ATTRIBUTES.
+	* c4x.c (c4x_scan_for_ld): Likewise.
+	* h8300.c (fix_bit_operand): Likewise.
+	* m88k.c (legitimize_address): Likewise.
+	(block_move_loop): Likewise.
+	(block_move_no_loop): Likewise.
+	(block_move_sequence): Likewise.
+	(m88k_builtin_saveregs): Use MEM_SET_IN_STRUCT_P.
+	* mips/abi64.h (SETUP_INCOMING_VARARGS): Likewise.
+	* rs6000.c (expand_block_move_insn): Use MEM_COPY_ATTRIBUTES.
+	* sh.c (sh_builtin_saveregs): Use MEM_SET_IN_STRUCT_P.
+	* arm.h (arm_gen_load_multiple): Take scalar_p.
+	(arm_store_load_multiple): Likewise.
+	* arm.c (arm_gen_load_multiple): Likewise.
+	(arm_gen_store_multiple): Likewise.
+	(arm_gen_movstrqi): Treat MEM_SCALAR_P like MEM_IN_STRUCT_P.
+	
 Tue Jan 19 12:30:37 EST 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* optabs.c (emit_libcall_block): Add a REG_EH_REGION reg note to all

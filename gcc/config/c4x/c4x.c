@@ -1898,9 +1898,8 @@ c4x_scan_for_ldp (newop, insn, operand0)
 					      op0));
 
 	  /* Use change_address?  */
-	  MEM_VOLATILE_P (*newop) = MEM_VOLATILE_P (operand);
 	  RTX_UNCHANGING_P (*newop) = RTX_UNCHANGING_P (operand);
-	  MEM_IN_STRUCT_P (*newop) = MEM_IN_STRUCT_P (operand);
+	  MEM_COPY_ATTRIBUTES (*newop, operand);
 	  break;
 
 	default:

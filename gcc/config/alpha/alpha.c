@@ -890,8 +890,7 @@ get_aligned_mem (ref, paligned_mem, pbitnum)
     offset += INTVAL (XEXP (base, 1)), base = XEXP (base, 0);
 
   *paligned_mem = gen_rtx_MEM (SImode, plus_constant (base, offset & ~3));
-  MEM_IN_STRUCT_P (*paligned_mem) = MEM_IN_STRUCT_P (ref);
-  MEM_VOLATILE_P (*paligned_mem) = MEM_VOLATILE_P (ref);
+  MEM_COPY_ATTRIBUTES (*paligned_mem, ref);
   RTX_UNCHANGING_P (*paligned_mem) = RTX_UNCHANGING_P (ref);
 
   /* Sadly, we cannot use alias sets here because we may overlap other

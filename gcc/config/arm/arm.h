@@ -2113,9 +2113,9 @@ int arm_valid_machine_decl_attribute (/* union tree_node *, union tree_node *,
 					 union tree_node *,
 					 union tree_node * */);
 struct rtx_def *arm_gen_load_multiple (/* int, int, struct rtx_def *, 
-					  int, int, int, int */);
+					  int, int, int, int, int */);
 struct rtx_def *arm_gen_store_multiple (/* int, int, struct rtx_def *,
-					   int, int, int, int */);
+					   int, int, int, int, int */);
 int arm_gen_movstrqi (/* struct rtx_def ** */);
 struct rtx_def *gen_rotated_half_load (/* struct rtx_def * */);
 enum machine_mode arm_select_cc_mode (/* enum rtx_code, struct rtx_def *,

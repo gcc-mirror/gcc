@@ -3458,8 +3458,7 @@ gen_move_insn (x, y)
 	    {
 	      x = gen_rtx_MEM (tmode, XEXP (x1, 0));
 	      RTX_UNCHANGING_P (x) = RTX_UNCHANGING_P (x1);
-	      MEM_IN_STRUCT_P (x) = MEM_IN_STRUCT_P (x1);
-	      MEM_VOLATILE_P (x) = MEM_VOLATILE_P (x1);
+	      MEM_COPY_ATTRIBUTES (x, x1);
 	      copy_replacements (x1, x);
 	    }
 
@@ -3468,8 +3467,7 @@ gen_move_insn (x, y)
 	    {
 	      y = gen_rtx_MEM (tmode, XEXP (y1, 0));
 	      RTX_UNCHANGING_P (y) = RTX_UNCHANGING_P (y1);
-	      MEM_IN_STRUCT_P (y) = MEM_IN_STRUCT_P (y1);
-	      MEM_VOLATILE_P (y) = MEM_VOLATILE_P (y1);
+	      MEM_COPY_ATTRIBUTES (y, y1);
 	      copy_replacements (y1, y);
 	    }
 	}
