@@ -1,3 +1,8 @@
+Tue Sep 21 05:29:17 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	* stmt.c (any_pending_cleanups): Don't crash when 
+	current_function->stmt is unset.
+
 Tue Sep 21 00:59:49 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* emit-rtl.c (init_emit_once): Initialize const_int_rtx before
