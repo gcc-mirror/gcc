@@ -1,3 +1,24 @@
+Fri Jul  3 02:33:35 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* sparc.c (sparc_operand, move_operand,	arith_operand,
+	arith11_operand, arith10_operand, arith_double_operand,
+	arith11_double_operand, arith10_double_operand, small_int,
+	uns_small_int): Recognize CONSTANT_P_RTX.
+	(output_sized_memop, output_move_with_extension,
+	output_load_address, output_size_for_block_move,
+	output_block_move, delay_operand): Remove, has not been
+	enabled or referenced for years.
+	* sparc.md (movstrsi, block_move_insn): Likewise.
+	* sparc.h (PREDICATE_CODES): Define.
+	* linux-aout.h (MACHINE_STATE_{SAVE,RESTORE}): Override with
+	version which uses getcc/setcc traps to save/restore condition
+	codes.
+	* linux64.h: Likewise.
+	* sunos4.h: Likewise.
+	* linux.h: Likewise.
+	* sol2.h: Likewise.
+	* sun4o3.h: Likewise.
+
 Fri Jul  3 02:28:05 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_initialize_trampoline): Hack around Pmode/ptr_mode
