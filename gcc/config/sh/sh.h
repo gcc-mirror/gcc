@@ -688,11 +688,15 @@ extern int current_function_anonymous_args;
 #define SETUP_INCOMING_VARARGS(ASF, MODE, TYPE, PAS, ST) \
   current_function_anonymous_args = 1;
 
-/* Call the function profiler with a given profile label.  */
+/* Call the function profiler with a given profile label.
+   We use two .aligns, so as to make sure that both the .long is aligned
+   on a 4 byte boundary, and that the .long is a fixed distance (2 bytes)
+   from the trapa instruction.  */
 
 #define FUNCTION_PROFILER(STREAM,LABELNO)			\
 {								\
-	fprintf(STREAM, "	trapa	#5\n");			\
+ 	fprintf(STREAM, "	.align	2\n");			\
+	fprintf(STREAM, "	trapa	#33\n");		\
  	fprintf(STREAM, "	.align	2\n");			\
 	fprintf(STREAM, "	.long	LP%d\n", (LABELNO));	\
 }
