@@ -56,7 +56,7 @@ Boston, MA 02111-1307, USA.  */
 /* Provide a CPP_SPEC appropriate for NetBSD.  */
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %(netbsd_cpp_spec)"
+#define CPP_SPEC "%(netbsd_cpp_spec)"
 
 
 /* Output assembler code to FILE to call the profiler.  */

@@ -42,7 +42,7 @@ Boston, MA 02111-1307, USA.  */
   -Asystem=winnt"
 
 #undef CPP_SPEC
-#define CPP_SPEC "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
+#define CPP_SPEC "-remap %{posix:-D_POSIX_SOURCE} \
   -include /usr/include/astwin32.h \
   -idirafter /usr/gnu/include/mingw32"
 

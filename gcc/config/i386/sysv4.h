@@ -142,4 +142,4 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu)"
+#define CPP_SPEC ""

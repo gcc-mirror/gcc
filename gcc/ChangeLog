@@ -1,3 +1,14 @@
+2002-06-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+config/i386:
+	* beos-elf.h, cygwin.h, djgpp.h, gas.h, gnu.h, i386-interix.h,
+	i386-interix3.h, i386elf.h, linux-aout.h, linux.h, linux64.h,
+	mingw32.h, netbsd-elf.h, netbsd.h, netbsd64.h, rtemself.h,
+	sco5.h, sol2.h, sysv3.h, sysv4.h, sysv5.h, uwin.h, vxi386.h,
+	win32.h	(CPP_SPEC): Remove cpp_cpu.
+	* i386.h (TARGET_CPU_CPP_BUILTINS): Use.
+	(CPP_CPU_DEFAULT_SPEC, CPP_CPU_SPEC): Die!
+
 2002-06-04  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/ia64/ia64.c (gen_thread_pointer): Fix variable name.

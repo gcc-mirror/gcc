@@ -76,7 +76,7 @@ Boston, MA 02111-1307, USA.  */
 -Asystem=beos"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %{!no-fPIC:%{!no-fpic:-D__PIC__ -D__pic__}}"
+#define CPP_SPEC "%{!no-fPIC:%{!no-fpic:-D__PIC__ -D__pic__}}"
 
 /* BeOS uses lots of multichars, so don't warn about them unless the
    user explicitly asks for the warnings with -Wmultichar.  Note that

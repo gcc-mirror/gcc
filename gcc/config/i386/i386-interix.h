@@ -66,7 +66,6 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_SPEC
 /* Write out the correct language type definition for the header files.  
    Unless we have assembler language, write out the symbols for C.
-   cpp_cpu is an Intel specific variant. See i386.h
    mieee is an Alpha specific variant.  Cross polination a bad idea.
    */
 #define CPP_SPEC "\
@@ -77,7 +76,6 @@ Boston, MA 02111-1307, USA.  */
 %{.C:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS -D__cplusplus} \
 %{.m:	-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C} \
 -remap \
-%(cpp_cpu) \
 %{posix:-D_POSIX_SOURCE} \
 -isystem %$INTERIX_ROOT/usr/include"
 
