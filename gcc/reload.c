@@ -2438,6 +2438,12 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 				 ind_levels,
 				 set != 0
 				 && &SET_DEST (set) == recog_operand_loc[i]);
+      else if (code == PLUS)
+	/* We can get a PLUS as an "operand" as a result of
+	   register elimination.  See eliminate_regs and gen_input_reload.  */
+	substed_operand[i] = recog_operand[i] = *recog_operand_loc[i]
+	  = find_reloads_toplev (recog_operand[i], i, address_type[i],
+				 ind_levels, 0);
       else if (code == REG)
 	{
 	  /* This is equivalent to calling find_reloads_toplev.
