@@ -1,3 +1,8 @@
+Mon Aug  9 16:21:53 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* genpeep.c (main): Make generated file include "function.h".
+	* arm.c (function_really_clobbers_lr): Delete INLINE_HEADER case.
+
 Mon Aug  9 10:08:50 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* Makefile.in: Update dependencies.

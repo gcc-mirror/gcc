@@ -5329,7 +5329,6 @@ function_really_clobbers_lr (first)
 	case NOTE:
 	case CODE_LABEL:
 	case JUMP_INSN:		/* Jump insns only change the PC (and conds) */
-	case INLINE_HEADER:
 	  break;
 
         case INSN:
