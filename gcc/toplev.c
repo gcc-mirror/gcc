@@ -2662,6 +2662,10 @@ rest_of_compilation (decl)
 
   timevar_push (TV_REST_OF_COMPILATION);
 
+  /* Now that we're out of the frontend, we shouldn't have any more
+     CONCATs anywhere.  */
+  generating_concat_p = 0;
+
   /* When processing delayed functions, prepare_function_start() won't
      have been run to re-initialize it.  */
   cse_not_expected = ! optimize;

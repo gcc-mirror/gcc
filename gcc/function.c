@@ -413,6 +413,7 @@ pop_function_context_from (context)
   /* Reset variables that have known state during rtx generation.  */
   rtx_equal_function_value_matters = 1;
   virtuals_instantiated = 0;
+  generating_concat_p = 1;
 }
 
 void
@@ -5919,6 +5920,9 @@ prepare_function_start ()
 
   /* Indicate that we have not instantiated virtual registers yet.  */
   virtuals_instantiated = 0;
+
+  /* Indicate that we want CONCATs now.  */
+  generating_concat_p = 1;
 
   /* Indicate we have no need of a frame pointer yet.  */
   frame_pointer_needed = 0;

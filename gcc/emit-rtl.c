@@ -539,8 +539,9 @@ gen_reg_rtx (mode)
   if (no_new_pseudos)
     abort ();
 
-  if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-      || GET_MODE_CLASS (mode) == MODE_COMPLEX_INT)
+  if (generating_concat_p
+      && (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
+	  || GET_MODE_CLASS (mode) == MODE_COMPLEX_INT))
     {
       /* For complex modes, don't make a single pseudo.
 	 Instead, make a CONCAT of two pseudos.
