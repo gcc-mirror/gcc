@@ -1,5 +1,18 @@
 Tue Nov 13 05:45:40 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* Makefile.in (explow.o): Now depends on ggc.h.
+	* explow.c (ggc.h): Include.
+	(set_stack_check_libfunc): Mark stack_check_libfunc as ggc root.
+
+	* Makefile.in (expr.o): Depends on insn-attr.h.
+	* expr.c (insn-attr.h): New include.
+	(force_operand): If INSN_SCHEDULING, deal with paradoxical SUBREG
+	of MEM.
+	(highest_pow2_factor, case INTEGER_CST): Handle negative values.
+	(expand_expr): Remove unneeded mark_temp_addr_taken calls and
+	clean up related usage in ADDR_EXPR.
+	(expand_expr_unaligned): Likewise.
+
 	* emit-rtl.c (change_address): Fix typo in alias setting.
 
 2001-11-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>

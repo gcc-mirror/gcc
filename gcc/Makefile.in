@@ -1418,7 +1418,7 @@ expmed.o : expmed.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h  \
    toplev.h $(TM_P_H)
 explow.o : explow.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
    hard-reg-set.h insn-config.h $(EXPR_H) $(OPTABS_H) $(RECOG_H) \
-   toplev.h function.h $(TM_P_H)
+   toplev.h function.h ggc.h $(TM_P_H)
 optabs.o : optabs.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h  \
    insn-config.h $(EXPR_H) $(OPTABS_H) libfuncs.h $(RECOG_H) reload.h \
    toplev.h $(GGC_H) real.h $(TM_P_H) except.h

@@ -32,6 +32,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "optabs.h"
 #include "hard-reg-set.h"
 #include "insn-config.h"
+#include "ggc.h"
 #include "recog.h"
 
 static rtx break_out_memory_refs	PARAMS ((rtx));
@@ -1416,6 +1417,7 @@ set_stack_check_libfunc (libfunc)
      rtx libfunc;
 {
   stack_check_libfunc = libfunc;
+  ggc_add_rtx_root (&stack_check_libfunc, 1);
 }
 
 /* Emit one stack probe at ADDRESS, an address within the stack.  */
