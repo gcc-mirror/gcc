@@ -4679,7 +4679,7 @@ error_init (format, local, ofwhat)
   char *buffer;
 
   if (ofwhat == 0)
-    ofwhat = print_spelling (alloca (spelling_length () + 1));
+    ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   buffer = (char *) alloca (strlen (local) + strlen (ofwhat) + 2);
 
   if (*ofwhat)
@@ -4705,7 +4705,7 @@ pedwarn_init (format, local, ofwhat)
   char *buffer;
 
   if (ofwhat == 0)
-    ofwhat = print_spelling (alloca (spelling_length () + 1));
+    ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   buffer = (char *) alloca (strlen (local) + strlen (ofwhat) + 2);
 
   if (*ofwhat)
