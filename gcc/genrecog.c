@@ -418,6 +418,7 @@ add_to_sequence (pattern, last, position)
       return new;
 
     case MATCH_DUP:
+    case MATCH_PAR_DUP:
       new->dupno = XINT (pattern, 0);
       new->code = UNKNOWN;
       new->enforce_mode = 0;
