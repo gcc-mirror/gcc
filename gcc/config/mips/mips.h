@@ -3315,7 +3315,7 @@ do {									\
 /* This is how to output a string.  */
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(STREAM, STRING, LEN)				\
-  mips_output_ascii (STREAM, STRING, LEN)
+  mips_output_ascii (STREAM, STRING, LEN, "\t.ascii\t")
 
 /* Output #ident as a in the read-only data section.  */
 #undef  ASM_OUTPUT_IDENT

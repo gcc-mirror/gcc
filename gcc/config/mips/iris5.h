@@ -193,13 +193,16 @@ Boston, MA 02111-1307, USA.  */
 #define MIPS_DEFAULT_GVALUE 0
 
 /* Some assemblers have a bug that causes backslash escaped chars in .ascii
-   to be misassembled, so we just completely avoid it.  */
+   to be misassembled, so avoid it by using .byte instead.  Write the original
+   string in a comment, partly to improve readability and partly for the sake
+   of scan-assembler-type tests.  */
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
 do {								\
   const unsigned char *s_ = (const unsigned char *)(PTR);	\
   unsigned len_ = (LEN);					\
   unsigned i_;							\
+  mips_output_ascii (FILE, (const char *) s_, len_, "\t# ");	\
   for (i_ = 0; i_ < len_; s_++, i_++)				\
     {								\
       if ((i_ % 8) == 0)					\

@@ -1,3 +1,11 @@
+2004-02-03  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/iris5.h (ASM_OUTPUT_ASCII): Use mips_output_ascii to
+	put the original string in a comment.
+	* config/mips/mips-protos.h (mips_output_ascii): Add prefix argument.
+	* config/mips/mips.c (mips_output_ascii): Likewise.
+	* config/mips/mips.h (ASM_OUTPUT_ASCII): Adjust accordingly.
+
 2004-02-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13975

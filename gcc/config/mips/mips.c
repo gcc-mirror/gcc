@@ -5790,17 +5790,20 @@ mips_output_lineno (FILE *stream, int line)
     }
 }
 
-/* Output an ASCII string, in a space-saving way.  */
+/* Output an ASCII string, in a space-saving way.  PREFIX is the string
+   that should be written before the opening quote, such as "\t.ascii\t"
+   for real string data or "\t# " for a comment.  */
 
 void
-mips_output_ascii (FILE *stream, const char *string_param, size_t len)
+mips_output_ascii (FILE *stream, const char *string_param, size_t len,
+		   const char *prefix)
 {
   size_t i;
   int cur_pos = 17;
   register const unsigned char *string =
     (const unsigned char *)string_param;
 
-  fprintf (stream, "\t.ascii\t\"");
+  fprintf (stream, "%s\"", prefix);
   for (i = 0; i < len; i++)
     {
       register int c = string[i];
@@ -5860,7 +5863,7 @@ mips_output_ascii (FILE *stream, const char *string_param, size_t len)
       if (cur_pos > 72 && i+1 < len)
 	{
 	  cur_pos = 17;
-	  fprintf (stream, "\"\n\t.ascii\t\"");
+	  fprintf (stream, "\"\n%s\"", prefix);
 	}
     }
   fprintf (stream, "\"\n");
