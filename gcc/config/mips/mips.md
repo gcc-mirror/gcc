@@ -29,10 +29,11 @@
 ;; UNSPEC values used in mips.md
 ;; Number	USE
 ;; 0		movsi_ul
-;; 1		movsi_us, get_fnaddr
+;; 1		movsi_usw, get_fnaddr
 ;; 2            reload_in*, reload_out* : sets delay on HILO register
 ;; 3		eh_set_return
 ;; 20		builtin_setjmp_setup
+;; 111		movdi_usd
 ;;
 ;; UNSPEC_VOLATILE values
 ;; 0		blockage
@@ -4918,7 +4919,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "movdi_usd"
   [(set (match_operand:BLK 0 "memory_operand" "=R,o")
-	(unspec:BLK [(match_operand:DI 1 "reg_or_0_operand" "dJ,dJ")] 1))]
+	(unspec:BLK [(match_operand:DI 1 "reg_or_0_operand" "dJ,dJ")] 111))]
   ""
   "*
 {
