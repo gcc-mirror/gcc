@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  TMS320C[34]x
-   Copyright (C) 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
+   2003 Free Software Foundation, Inc.
 
    Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
               and Herman Ten Brugge (Haj.Ten.Brugge@net.HCC.nl).
@@ -22,9 +22,9 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-#include "hwint.h"
-
 /* RUN-TIME TARGET SPECIFICATION.  */
+
+#include "hwint.h"
 
 #define C4x   1
 
@@ -93,23 +93,21 @@
 
 #define ASM_SPEC "\
 %{!mcpu=30:%{!mcpu=31:%{!mcpu=32:%{!mcpu=33:%{!mcpu=40:%{!mcpu=44:\
-%{!m30:%{!m40:-m40}}}}}}}} \
-%{mcpu=30:-m30} \
-%{mcpu=31:-m31} \
-%{mcpu=32:-m32} \
-%{mcpu=33:-m33} \
-%{mcpu=40:-m40} \
-%{mcpu=44:-m44} \
-%{m30:-m30} \
-%{m31:-m31} \
-%{m32:-m32} \
-%{m33:-m33} \
-%{m40:-m40} \
-%{m44:-m44} \
-%{mmemparm:-p} %{mregparm:-r} \
-%{!mmemparm:%{!mregparm:-r}} \
-%{mbig:-b} %{msmall:-s} \
-%{!msmall:%{!mbig:-b}}"
+%{!m30:%{!m31:%{!m32:%{!m33:%{!m40:%{!m44:-m40}}}}}}}}}}}} \
+%{mcpu=30} \
+%{mcpu=31} \
+%{mcpu=32} \
+%{mcpu=33} \
+%{mcpu=40} \
+%{mcpu=44} \
+%{m30} \
+%{m31} \
+%{m32} \
+%{m33} \
+%{m40} \
+%{m44} \
+%{mmemparm} %{mregparm} %{!mmemparm:%{!mregparm:-mregparm}} \
+%{mbig} %{msmall} %{!msmall:%{!mbig:-mbig}}"
 
 /* Define linker options.  */
 
@@ -153,7 +151,7 @@
 #define C30_FLAG            0x0100000 /* Emit C30 code.  */
 #define C31_FLAG            0x0200000 /* Emit C31 code.  */
 #define C32_FLAG            0x0400000 /* Emit C32 code.  */
-#define C33_FLAG            0x0400000 /* Emit C33 code.  */
+#define C33_FLAG            0x0800000 /* Emit C33 code.  */
 #define C40_FLAG            0x1000000 /* Emit C40 code.  */
 #define C44_FLAG            0x2000000 /* Emit C44 code.  */
 

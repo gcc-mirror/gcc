@@ -1,3 +1,7 @@
+2003-01-25  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h (ASM_SPEC): Fix for new gas format.
+
 2003-01-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* calls.c (fix_unsafe_tree): Prototype.
