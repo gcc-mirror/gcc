@@ -1,5 +1,9 @@
 2004-09-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
+	* decl.c (reshape_init): Remove unused variable.
+
+2004-09-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
 	PR c++/14179
 	* decl.c (reshape_init): Extract array handling into...
 	(reshape_init_array): New function. Use integers instead of trees

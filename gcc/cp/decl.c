@@ -8441,7 +8441,6 @@ reshape_init (tree type, tree *initp)
 	}
       else if ((TREE_CODE (type) == ARRAY_TYPE)|| (TREE_CODE (type) == VECTOR_TYPE))
 	{
-	  tree index;
 	  tree max_index;
 
 	  /* If the bound of the array is known, take no more initializers
