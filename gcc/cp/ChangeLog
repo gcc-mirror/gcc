@@ -1,3 +1,9 @@
+2003-02-24 Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* decl.c (add_binding): Time TV_NAME_LOOKUP.
+	(push_class_binding): Likewise.
+	(set_namespace_binding): Likewise.
+
 2003-02-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9602
