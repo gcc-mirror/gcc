@@ -2579,7 +2579,7 @@ compute_frame_size (size, fregs_live)
   fsize += current_function_outgoing_args_size;
   if (! leaf_function_p () || fsize)
     fsize += 32;
-  return (fsize + 63) & ~63;
+  return (fsize + STACK_BOUNDARY - 1) & ~(STACK_BOUNDARY - 1);
 }
 
 rtx hp_profile_label_rtx;
