@@ -618,21 +618,27 @@ int flag_data_sections = 0;
 
 int flag_no_peephole = 0;
 
-/* Nonzero allows GCC to violate some IEEE or ANSI rules regarding math
-   operations in the interest of optimization.  For example it allows
-   GCC to assume arguments to sqrt are nonnegative numbers, allowing
-   faster code for sqrt to be generated.  */
-
-int flag_fast_math = 0;
-
 /* Nonzero allows GCC to optimize sibling and tail recursive calls.  */
 
 int flag_optimize_sibling_calls = 0;
 
 /* Nonzero means the front end generally wants `errno' maintained by math
-   operations, like built-in SQRT, unless overridden by flag_fast_math.  */
+   operations, like built-in SQRT.  */
 
 int flag_errno_math = 1;
+
+/* Nonzero means that unsafe floating-point math optimizations are allowed
+   for the sake of speed.  IEEE compliance is not guaranteed, and operations
+   are allowed to assume that their arguments and results are "normal"
+   (e.g., nonnegative for SQRT).  */
+
+int flag_unsafe_math_optimizations = 0;
+
+/* Zero means that floating-point math operations cannot generate a
+   (user-visible) trap.  This is the case, for example, in nonstop
+   IEEE 754 arithmetic.  */
+
+int flag_trapping_math = 1;
 
 /* 0 means straightforward implementation of complex divide acceptable.
    1 means wide ranges of inputs must work for complex divide.
@@ -1094,8 +1100,6 @@ lang_independent_options f_options[] =
    "Reorder basic blocks to improve code placement" },
   {"rename-registers", &flag_rename_registers, 1,
    "Do the register renaming optimization pass"},
-  {"fast-math", &flag_fast_math, 1,
-   "Improve FP speed by violating ANSI & IEEE rules" },
   {"common", &flag_no_common, 0,
    "Do not put unitialised globals in the common section" },
   {"inhibit-size-directive", &flag_inhibit_size_directive, 1,
@@ -1154,6 +1158,10 @@ lang_independent_options f_options[] =
     "Enables guessing of branch probabilities" },
   {"math-errno", &flag_errno_math, 1,
    "Set errno after built-in math functions"},
+  {"trapping-math", &flag_trapping_math, 1,
+   "Floating-point operations can trap"},
+  {"unsafe-math-optimizations", &flag_unsafe_math_optimizations, 1,
+   "Allow math optimizations that may violate IEEE or ANSI standards"},
   {"bounded-pointers", &flag_bounded_pointers, 1,
    "Compile pointers as triples: value, base & end" },
   {"bounds-check", &flag_bounds_check, 1,
@@ -1479,6 +1487,26 @@ lang_independent_options W_options[] =
   {"missing-noreturn", &warn_missing_noreturn, 1,
    "Warn about functions which might be candidates for attribute noreturn"}
 };
+
+/* The following routines are useful in setting all the flags that
+   -ffast-math and -fno-fast-math imply.  */
+
+void
+set_fast_math_flags ()
+{
+  flag_trapping_math = 0;
+  flag_unsafe_math_optimizations = 1;
+  flag_errno_math = 0;
+}
+
+void
+set_no_fast_math_flags ()
+{
+  flag_trapping_math = 1;
+  flag_unsafe_math_optimizations = 0;
+  flag_errno_math = 1;
+}
+
 
 /* Output files for assembler code (real compiler output)
    and debugging dumps.  */
@@ -4092,8 +4120,12 @@ decode_f_option (arg)
 	}
     }
 
-  if ((option_value = skip_leading_substring (arg, "inline-limit-"))
-      || (option_value = skip_leading_substring (arg, "inline-limit=")))
+  if (!strcmp (arg, "fast-math"))
+    set_fast_math_flags();
+  else if (!strcmp (arg, "no-fast-math"))
+    set_no_fast_math_flags();
+  else if ((option_value = skip_leading_substring (arg, "inline-limit-"))
+	   || (option_value = skip_leading_substring (arg, "inline-limit=")))
     {
       int val = 
 	read_integral_parameter (option_value, arg - 2,

@@ -1430,10 +1430,10 @@ expand_builtin_mathfn (exp, target, subtarget)
       return 0;
     }
 
-  /* Check the results by default.  But if flag_fast_math is turned on,
-     then assume sqrt will always be called with valid arguments.  */
+  /* If errno must be maintained and if we are not allowing unsafe
+     math optimizations, check the result.  */
 
-  if (flag_errno_math && ! flag_fast_math)
+  if (flag_errno_math && ! flag_unsafe_math_optimizations)
     {
       rtx lab1;
 
@@ -3329,8 +3329,9 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
     case BUILT_IN_SIN:
     case BUILT_IN_COS:
-      /* Treat these like sqrt, but only if the user asks for them.  */
-      if (! flag_fast_math)
+      /* Treat these like sqrt only if unsafe math optimizations are allowed,
+	 because of possible accuracy problems.  */
+      if (! flag_unsafe_math_optimizations)
 	break;
     case BUILT_IN_FSQRT:
       target = expand_builtin_mathfn (exp, target, subtarget);

@@ -1143,7 +1143,7 @@ noce_try_minmax (if_info)
      to get the target to tell us...  */
   if (FLOAT_MODE_P (GET_MODE (if_info->x))
       && TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-      && ! flag_fast_math)
+      && ! flag_unsafe_math_optimizations)
     return FALSE;
 
   cond = noce_get_alt_condition (if_info, if_info->a, &earliest);
@@ -1397,10 +1397,10 @@ noce_operand_ok (op)
   if (side_effects_p (op))
     return FALSE;
 
-  /* ??? Unfortuantely may_trap_p can't look at flag_fast_math, due to
+  /* ??? Unfortuantely may_trap_p can't look at flag_trapping_math, due to
      being linked into the genfoo programs.  This is probably a mistake.
      With finite operands, most fp operations don't trap.  */
-  if (flag_fast_math && FLOAT_MODE_P (GET_MODE (op)))
+  if (!flag_trapping_math && FLOAT_MODE_P (GET_MODE (op)))
     switch (GET_CODE (op))
       {
       case DIV:

@@ -3620,7 +3620,8 @@ emit_conditional_move (target, code, op0, op1, cmode, op2, op3, mode,
   if (((CONSTANT_P (op2) && ! CONSTANT_P (op3))
        || (GET_CODE (op2) == CONST_INT && GET_CODE (op3) != CONST_INT))
       && (GET_MODE_CLASS (GET_MODE (op1)) != MODE_FLOAT
-	  || TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT || flag_fast_math))
+	  || TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT 
+	  || flag_unsafe_math_optimizations))
     {
       tem = op2;
       op2 = op3;

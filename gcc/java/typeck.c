@@ -132,7 +132,7 @@ convert (type, expr)
     return fold (convert_to_boolean (type, expr));
   if (code == INTEGER_TYPE)
     {
-      if (! flag_fast_math
+      if (! flag_unsafe_math_optimizations
 	  && ! flag_emit_class_files
 	  && TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
 	  && TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT)

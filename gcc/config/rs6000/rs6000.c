@@ -3238,9 +3238,10 @@ validate_condition_mode (code, mode)
 	  || code == UNGE || code == UNLE))
     abort();
   
-  /* These should never be generated except for fast_math.  */
+  /* These should never be generated except for 
+     flag_unsafe_math_optimizations.  */
   if (mode == CCFPmode
-      && ! flag_fast_math
+      && ! flag_unsafe_math_optimizations
       && (code == LE || code == GE
 	  || code == UNEQ || code == LTGT
 	  || code == UNGT || code == UNLT))
@@ -4454,9 +4455,9 @@ rs6000_generate_compare (code)
 					   rs6000_compare_op1)));
   
   /* Some kinds of FP comparisons need an OR operation;
-     except that for fast_math we don't bother.  */
+     except for flag_unsafe_math_optimizations we don't bother.  */
   if (rs6000_compare_fp_p
-      && ! flag_fast_math
+      && ! flag_unsafe_math_optimizations
       && (code == LE || code == GE
 	  || code == UNEQ || code == LTGT
 	  || code == UNGT || code == UNLT))

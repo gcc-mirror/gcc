@@ -164,4 +164,10 @@ struct lang_hooks
 /* Each front end provides its own.  */
 extern struct lang_hooks lang_hooks;
 
+/* These functions can be used by targets to set the flags originally
+   implied by -ffast-math and -fno-fast-math.  */
+
+extern void set_fast_math_flags         PARAMS ((void));
+extern void set_no_fast_math_flags      PARAMS ((void));
+
 #endif /* __GCC_TOPLEV_H */

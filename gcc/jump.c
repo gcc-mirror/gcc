@@ -1785,7 +1785,7 @@ reversed_comparison_code_parts (code, arg0, arg1, insn)
 	/* We don't have safe way to reverse these yet - we would need
 	   ordered compares that may not trap.  */
 	if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	    || flag_fast_math)
+	    || flag_unsafe_math_optimizations)
 	  return reverse_condition_maybe_unordered (code);
 	return UNKNOWN;
       default:
@@ -1794,7 +1794,7 @@ reversed_comparison_code_parts (code, arg0, arg1, insn)
 
   /* In case we give up IEEE compatibility, all comparisons are reversible.  */
   if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-      || flag_fast_math)
+      || flag_unsafe_math_optimizations)
     return reverse_condition (code);
 
   if (GET_MODE_CLASS (mode) == MODE_CC
@@ -4061,7 +4061,7 @@ rtx_equal_for_thread_p (x, y, yinsn)
      pessimistic, but this pass would only rarely do anything for FP
      anyway.  */
   if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-      && FLOAT_MODE_P (GET_MODE (x)) && ! flag_fast_math)
+      && FLOAT_MODE_P (GET_MODE (x)) && ! flag_unsafe_math_optimizations)
     return 0;
 
   /* For commutative operations, the RTX match if the operand match in any

@@ -3977,7 +3977,8 @@ fold_rtx (x, insn)
 		{
 		   /* Sadly two equal NaNs are not equivalent.  */
 		   if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-		       || ! FLOAT_MODE_P (mode_arg0) || flag_fast_math)
+		       || ! FLOAT_MODE_P (mode_arg0) 
+		       || flag_unsafe_math_optimizations)
 		      return ((code == EQ || code == LE || code == GE
 			       || code == LEU || code == GEU || code == UNEQ
 			       || code == UNLE || code == UNGE || code == ORDERED)

@@ -245,8 +245,9 @@ in the following sections.
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmove-all-movables @gol
 -fno-default-inline  -fno-defer-pop @gol
--fno-function-cse   -fno-guess-branch-probability
+-fno-function-cse   -fno-guess-branch-probability @gol
 -fno-inline  -fno-math-errno  -fno-peephole @gol
+-funsafe-math-optimizations -fno-trapping-math @gol
 -fomit-frame-pointer  -foptimize-register-move @gol
 -foptimize-sibling-calls  -freduce-all-givs @gol
 -fregmove  -frename-registers @gol
@@ -2934,11 +2935,10 @@ that alter the assembler output may be confused by the optimizations
 performed when this option is not used.
 
 @item -ffast-math
-This option allows GCC to violate some ISO or IEEE rules and/or
-specifications in the interest of optimizing code for speed.  For
-example, it allows the compiler to assume arguments to the @code{sqrt}
-function are non-negative numbers and that no floating-point values
-are NaNs.
+Sets @samp{-fno-math-errno}, @samp{-funsafe-math-optimizations},
+and @samp{-fno-trapping-math}.
+
+This option causes the preprocessor macro __FAST_MATH__ to be defined.
 
 This option causes the preprocessor macro __FAST_MATH__ to be defined.
 
@@ -2953,8 +2953,39 @@ with a single instruction, e.g., sqrt.  A program that relies on
 IEEE exceptions for math error handling may want to use this flag
 for speed while maintaining IEEE arithmetic compatibility.
 
+This option should never be turned on by any @samp{-O} option since
+it can result in incorrect output for programs which depend on
+an exact implementation of IEEE or ISO rules/specifications for
+math functions.
+
 The default is @samp{-fmath-errno}.  The @samp{-ffast-math} option
 sets @samp{-fno-math-errno}.
+
+@item -funsafe-math-optimizations
+Allow optimizations for floating-point arithmetic that (a) assume
+that arguments and results are valid and (b) may violate IEEE or
+ANSI standards.  
+
+This option should never be turned on by any @samp{-O} option since
+it can result in incorrect output for programs which depend on
+an exact implementation of IEEE or ISO rules/specifications for
+math functions.
+
+The default is @samp{-fno-unsafe-math-optimizations}.  The
+@samp{-ffast-math} option sets @samp{-funsafe-math-optimizations}.
+
+@item -fno-trapping-math
+Compile code assuming that floating-point operations cannot generate
+user-visible traps.  Setting this option may allow faster code
+if one relies on ``non-stop'' IEEE arithmetic, for example.
+
+This option should never be turned on by any @samp{-O} option since
+it can result in incorrect output for programs which depend on
+an exact implementation of IEEE or ISO rules/specifications for
+math functions.
+
+The default is @samp{-ftrapping-math}.  The @samp{-ffast-math}
+option sets @samp{-fno-trapping-math}.
 @end table
 
 @c following causes underfulls.. they don't look great, but we deal.
@@ -6594,7 +6625,7 @@ Some 387 emulators do not support the @code{sin}, @code{cos} and
 @code{sqrt} instructions for the 387.  Specify this option to avoid
 generating those instructions. This option is the default on FreeBSD.
 As of revision 2.6.1, these instructions are not generated unless you
-also use the @samp{-ffast-math} switch.
+also use the @samp{-funsafe-math-optimizations} switch.
 
 @item -malign-double
 @itemx -mno-align-double
