@@ -1,3 +1,9 @@
+2000-08-05  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* i386.h (FUNCTION_OK_FOR_SIBCALL):  Not OK if DECL's return
+	type is a float mode, cfun->decl's return type is not, and
+	TARGET_FLOAT_RETURNS_IN_80387.
+
 2000-08-04  Andreas Schwab  <schwab@suse.de>
 
 	* cppmain.c (cb_def_pragma): Skip the first two tokens from the
