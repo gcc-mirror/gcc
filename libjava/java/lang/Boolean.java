@@ -89,7 +89,10 @@ public final class Boolean extends Object implements Serializable
 
   public static Boolean valueOf(String str)
   {
-    /* This returns a Boolean (big B), not a boolean (little b). */
-    return str.equalsIgnoreCase("true") ? TRUE : FALSE;
+    if (str == null)
+      return FALSE;
+    else
+      /* This returns a Boolean (big B), not a boolean (little b). */
+      return str.equalsIgnoreCase("true") ? TRUE : FALSE;
   }
 }
