@@ -1683,10 +1683,8 @@ mmix_encode_section_info (decl)
 {
   /* Test for an external declaration, and do nothing if it is one.  */
   if ((TREE_CODE (decl) == VAR_DECL
-       && (DECL_EXTERNAL (decl) || TREE_PUBLIC (decl))
-       && ! TREE_STATIC (decl))
-      || (TREE_CODE (decl) == FUNCTION_DECL
-	  && (DECL_EXTERNAL (decl) || TREE_PUBLIC (decl))))
+       && (DECL_EXTERNAL (decl) || TREE_PUBLIC (decl)))
+      || (TREE_CODE (decl) == FUNCTION_DECL && TREE_PUBLIC (decl)))
     ;
   else if (DECL_P (decl))
     {
@@ -1697,8 +1695,8 @@ mmix_encode_section_info (decl)
 	 Note that this does not work for data that is declared extern and
 	 later defined as static.  If there's code in between, that code
 	 will refer to the extern declaration.  And vice versa.  Until we
-	 can get rid of mmixal, we have to assume that code is well-behaved
-	 or come up with a contorted scheme to work around bad code.  */
+	 can get rid of mmixal, we have to assume that code is
+	 well-behaved.  */
 
       const char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
       int len = strlen (str);
@@ -2043,11 +2041,11 @@ mmix_asm_output_labelref (stream, name)
      FILE *stream;
      const char *name;
 {
-  int is_extern = 0;
+  int is_extern = 1;
 
   for (; (*name == '@' || *name == '*'); name++)
     if (*name == '@')
-      is_extern = 1;
+      is_extern = 0;
 
   asm_fprintf (stream, "%s%U%s",
 	       is_extern && TARGET_TOPLEVEL_SYMBOLS ? ":" : "",
@@ -2111,6 +2109,16 @@ mmix_print_operand (stream, x, code)
   switch (code)
     {
       /* Unrelated codes are in alphabetic order.  */
+
+    case '+':
+      /* For conditional branches, output "P" for a probable branch.  */
+      if (TARGET_BRANCH_PREDICT)
+	{
+	  x = find_reg_note (current_output_insn, REG_BR_PROB, 0);
+	  if (x && INTVAL (XEXP (x, 0)) > REG_BR_PROB_BASE / 2)
+	    putc ('P', stream);
+	}
+      return;
 
     case 'B':
       if (GET_CODE (x) != CONST_INT)
@@ -2319,8 +2327,8 @@ int
 mmix_print_operand_punct_valid_p (code)
      int code ATTRIBUTE_UNUSED;
 {
-  /* None at the moment.  */
-  return 0;
+  /* A '+' is used for branch prediction, similar to other ports.  */
+  return code == '+';
 }
 
 /* PRINT_OPERAND_ADDRESS.  */

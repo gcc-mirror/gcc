@@ -1,3 +1,31 @@
+2002-01-01  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.md: Update FIXME to not mention
+	define_constants.
+	(MMIX_rJ_REGNUM): New define_constants constant.
+	("movqi", "movsi", "movdi", "*movdicc_real_foldable",
+	"*movdicc_real"): Adjust contraints formatting.
+	("*bCC_foldable"): Add %+ for P in output format and delete FIXME
+	for branch prediction.
+	("*bCC", "*bCC_inverted_foldable", "*bCC_inverted"): Add %+ in
+	output template.
+	("*call_real", "*call_value_real", "nonlocal_goto_receiver",
+	"*nonlocal_goto_receiver_expanded"): Use MMIX_rJ_REGNUM instead of
+	number.  Delete related FIXMEs.
+	* config/mmix/mmix.h (MMIX_INCOMING_RETURN_ADDRESS_REGNUM): Change
+	from number to MMIX_rJ_REGNUM.
+	(TARGET_MASK_BRANCH_PREDICT): New.
+	(TARGET_DEFAULT): Change to TARGET_MASK_BRANCH_PREDICT.
+	(TARGET_SWITCHES): Update comment.  Correct -mno-toplevel-symbols
+	value.  Add -mbranch-predict and -mno-branch-predict.
+	(TARGET_VERSION): Drop date.
+	(ADDITIONAL_REGISTER_NAMES): Use MMIX_rJ_REGNUM, not number.
+	* config/mmix/mmix.c (mmix_encode_section_info): Correct condition
+	for finding out global symbols.
+	(mmix_asm_output_labelref): Revert condition for global symbol.
+	(mmix_print_operand): <case '+'>: Emit P for a likely branch.
+	(mmix_print_operand_punct_valid_p): A '+' is valid.
+
 2001-12-31  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (mark_reg_gr_used_mask): Mind HARD_REGNO_NREGS.

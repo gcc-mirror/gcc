@@ -45,7 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #define MMIX_FRAME_POINTER_REGNUM 253
 #define MMIX_STACK_POINTER_REGNUM 254
 #define MMIX_LAST_GENERAL_REGISTER 255
-#define MMIX_INCOMING_RETURN_ADDRESS_REGNUM 259
+#define MMIX_INCOMING_RETURN_ADDRESS_REGNUM MMIX_rJ_REGNUM
 #define MMIX_HIMULT_REGNUM 258
 #define MMIX_REMAINDER_REGNUM 260
 #define MMIX_ARG_POINTER_REGNUM 261
@@ -156,6 +156,7 @@ extern int target_flags;
 #define TARGET_MASK_ZERO_EXTEND 8
 #define TARGET_MASK_KNUTH_DIVISION 16
 #define TARGET_MASK_TOPLEVEL_SYMBOLS 32
+#define TARGET_MASK_BRANCH_PREDICT 64
 
 /* FIXME: Get rid of this one.  */
 #define TARGET_LIBFUNC (target_flags & TARGET_MASK_LIBFUNCS)
@@ -164,11 +165,11 @@ extern int target_flags;
 #define TARGET_ZERO_EXTEND (target_flags & TARGET_MASK_ZERO_EXTEND)
 #define TARGET_KNUTH_DIVISION (target_flags & TARGET_MASK_KNUTH_DIVISION)
 #define TARGET_TOPLEVEL_SYMBOLS (target_flags & TARGET_MASK_TOPLEVEL_SYMBOLS)
+#define TARGET_BRANCH_PREDICT (target_flags & TARGET_MASK_BRANCH_PREDICT)
 
-#define TARGET_DEFAULT 0
+#define TARGET_DEFAULT TARGET_MASK_BRANCH_PREDICT
 
-/* FIXME: Provide a way to *load* the epsilon register.
-   Kill some of these; preferrably the -mint=* ones.  */
+/* FIXME: Provide a way to *load* the epsilon register.  */
 #define TARGET_SWITCHES							\
  {{"libfuncs",		TARGET_MASK_LIBFUNCS,				\
    N_("For intrinsics library: pass all parameters in registers")},	\
@@ -189,15 +190,19 @@ extern int target_flags;
   {"no-knuthdiv",	-TARGET_MASK_KNUTH_DIVISION, ""},		\
   {"toplevel-symbols",	TARGET_MASK_TOPLEVEL_SYMBOLS,			\
    N_("Prepend global symbols with \":\" (for use with PREFIX)")},	\
-  {"no-toplevel-symbols", 0,						\
+  {"no-toplevel-symbols", -TARGET_MASK_TOPLEVEL_SYMBOLS,		\
    N_("Do not provide a default start-address 0x100 of the program")},	\
   {"elf", 0,								\
    N_("Link to emit program in ELF format (rather than mmo)")},		\
+  {"branch-predict",	TARGET_MASK_BRANCH_PREDICT,			\
+   N_("Use P-mnemonics for branches statically predicted as taken")},	\
+  {"no-branch-predict",	-TARGET_MASK_BRANCH_PREDICT,			\
+   N_("Don't use P-mnemonics for branches")},				\
   {"",			TARGET_DEFAULT, ""}}
 
 /* Unfortunately, this must not reference anything in "mmix.c".  */
 #define TARGET_VERSION \
-  fprintf (stderr, " (MMIX) 2001-09-01")
+  fprintf (stderr, " (MMIX)")
 
 #define OVERRIDE_OPTIONS mmix_override_options ()
 
@@ -1074,7 +1079,7 @@ const_section ()						\
 
 #define ADDITIONAL_REGISTER_NAMES			\
  {{"sp", 254}, {":sp", 254}, {"rD", 256}, {"rE", 257},	\
-  {"rH", 258}, {"rJ", 259}}
+  {"rH", 258}, {"rJ", MMIX_rJ_REGNUM}}
 
 #define PRINT_OPERAND(STREAM, X, CODE) \
  mmix_print_operand (STREAM, X, CODE)
