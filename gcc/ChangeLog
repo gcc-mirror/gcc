@@ -1,3 +1,15 @@
+Wed Jul 29 22:18:14 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000/rs6000.md (absdi2 define_split): Swap operands of MINUS.
+	* rs6000/rs6000.c (mask64_operand): Use HOST_BITS_PER_WIDE_INT.
+	(print_operand, case 'B'): Don't fall through.
+	(print_operand, case 'S'): Correct mask begin/end computation.
+	Use HOST_BITS_PER_WIDE_INT.
+	* rs6000/rs6000.h (CPP_PREDEFINES): Define _LONG_LONG.
+	(CONDITIONAL_REGISTER_USAGE): GPR13 fixed if TARGET_64BIT.
+	* rs6000/aix41.h (CPP_PREDEFINES): Same.
+	* rs6000/aix43.h (CPP_PREDEFINES): Same.
+
 Wed Jul 29 11:47:10 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/thumb.md (extendqisi2_insn): Remove earlyclobber
