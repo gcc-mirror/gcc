@@ -31,6 +31,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "obstack.h"
 #include "expr.h"
 
+extern void (*interim_eh_hook)	PROTO((tree));
+
 /* holds the fndecl for __builtin_return_address () */
 tree builtin_return_address_fndecl;
 
@@ -231,8 +233,10 @@ do_unwind (throw_label)
   emit_move_insn (return_val_rtx, plus_constant(gen_rtx (LABEL_REF,
 							 Pmode,
 							 throw_label), -8));
+  /* We use three values, PC, type, and value */
   easy_expand_asm ("st %l0,[%fp]");
   easy_expand_asm ("st %l1,[%fp+4]");
+  easy_expand_asm ("st %l2,[%fp+8]");
   easy_expand_asm ("ret");
   easy_expand_asm ("restore");
   emit_barrier ();
@@ -488,10 +492,12 @@ struct exceptStack {
 
    ========================================================================= */
 
-/* holds the pc for doing "throw" */
+/* Holds the pc for doing "throw" */
 rtx saved_pc;
-/* holds the type of the thing being thrown. */
+/* Holds the type of the thing being thrown. */
 rtx saved_throw_type;
+/* Holds the value being thrown.  */
+rtx saved_throw_value;
 
 rtx throw_label;
 
@@ -749,6 +755,15 @@ new_except_stack (stack)
 }
 /* ========================================================================= */
 
+void
+lang_interim_eh (finalization)
+     tree finalization;
+{
+  if (finalization)
+    end_protect (finalization);
+  else
+    start_protect ();
+}
 
 /* sets up all the global eh stuff that needs to be initialized at the
    start of compilation.
@@ -771,6 +786,8 @@ init_exception_processing ()
   tree find_first_exception_match_fndecl;
   tree unwind_fndecl;
   tree temp, PFV;
+
+  interim_eh_hook = lang_interim_eh;
 
   /* void (*)() */
   PFV = build_pointer_type (build_function_type (void_type_node, void_list_node));
@@ -844,6 +861,7 @@ init_exception_processing ()
   throw_label = gen_label_rtx ();
   saved_pc = gen_rtx (REG, Pmode, 16);
   saved_throw_type = gen_rtx (REG, Pmode, 17);
+  saved_throw_value = gen_rtx (REG, Pmode, 18);
 
   new_eh_queue (&ehqueue);
   new_eh_queue (&eh_table_output_queue);
@@ -949,13 +967,17 @@ expand_start_all_catch ()
   label = gen_label_rtx ();
   /* The label for the exception handling block we will save.  */
   emit_label (label);
+  
   push_label_entry (&caught_return_label_stack, label);
 
   /* Remember where we started. */
   push_last_insn ();
 
+  emit_insn (gen_nop ());
+
   /* Will this help us not stomp on it? */
   emit_insn (gen_rtx (USE, VOIDmode, saved_throw_type));
+  emit_insn (gen_rtx (USE, VOIDmode, saved_throw_value));
 
   while (1)
     {
@@ -989,7 +1011,6 @@ expand_start_all_catch ()
   pop_rtl_from_perm ();
   emit_label (entry->end_label);
 
-
   enqueue_eh_entry (&eh_table_output_queue, copy_eh_entry (entry));
 
   /* After running the finalization, continue on out to the next
@@ -997,6 +1018,7 @@ expand_start_all_catch ()
   emit_move_insn (saved_pc, gen_rtx (LABEL_REF, Pmode, entry->end_label));
   /* Will this help us not stomp on it? */
   emit_insn (gen_rtx (USE, VOIDmode, saved_throw_type));
+  emit_insn (gen_rtx (USE, VOIDmode, saved_throw_value));
   emit_jump (throw_label);
   emit_label (entry->exception_handler_label);
   expand_expr (entry->finalization, const0_rtx, VOIDmode, 0);
@@ -1029,7 +1051,7 @@ expand_end_all_catch ()
 
   push_except_stmts (&exceptstack, catchstart, catchend);
   
-  /* Here was fall through into the continuation code.  */
+  /* Here we fall through into the continuation code.  */
 }
 
 
@@ -1046,6 +1068,7 @@ expand_leftover_cleanups ()
 
   /* Will this help us not stomp on it? */
   emit_insn (gen_rtx (USE, VOIDmode, saved_throw_type));
+  emit_insn (gen_rtx (USE, VOIDmode, saved_throw_value));
 
   while ((entry = dequeue_eh_entry (&ehqueue)) != 0)
     {
@@ -1082,6 +1105,7 @@ expand_leftover_cleanups ()
       emit_move_insn (saved_pc, gen_rtx (LABEL_REF, Pmode, entry.end_label));
       /* Will this help us not stomp on it? */
       emit_insn (gen_rtx (USE, VOIDmode, saved_throw_type));
+      emit_insn (gen_rtx (USE, VOIDmode, saved_throw_value));
       emit_jump (throw_label);
       emit_label (entry.exception_handler_label);
       expand_expr (entry.finalization, const0_rtx, VOIDmode, 0);
@@ -1099,22 +1123,52 @@ expand_start_catch_block (declspecs, declarator)
      tree declspecs, declarator;
 {
   rtx false_label_rtx;
+  rtx protect_label_rtx;
   tree type;
   tree decl;
+  tree init;
 
   if (! doing_eh (1))
     return;
 
+  /* Create a binding level for the parm.  */
+  expand_start_bindings (0);
+
   if (declspecs)
     {
-      decl = grokdeclarator (declarator, declspecs, PARM, 0, NULL_TREE);
+      tree init_type;
+      decl = grokdeclarator (declarator, declspecs, NORMAL, 1, NULL_TREE);
+
+      /* Figure out the type that the initializer is. */
+      init_type = TREE_TYPE (decl);
+      if (TREE_CODE (init_type) != REFERENCE_TYPE)
+	init_type = build_reference_type (init_type);
+
+      init = convert_from_reference (save_expr (make_tree (init_type, saved_throw_value)));
+      
+      /* Do we need the below two lines? */
+      /* Let `finish_decl' know that this initializer is ok.  */
+      DECL_INITIAL (decl) = init;
+      /* This needs to be preallocated under the try block,
+	 in a union of all catch variables. */
+      pushdecl (decl);
       type = TREE_TYPE (decl);
+
+      /* peel back references, so they match. */
+      if (TREE_CODE (type) == REFERENCE_TYPE)
+	type = TREE_TYPE (type);
     }
   else
     type = NULL_TREE;
 
   false_label_rtx = gen_label_rtx ();
   push_label_entry (&false_label_stack, false_label_rtx);
+
+  /* This is saved for the exception table.  */
+  push_rtl_perm ();
+  protect_label_rtx = gen_label_rtx ();
+  pop_rtl_from_perm ();
+  push_label_entry (&false_label_stack, protect_label_rtx);
 
   if (type)
     {
@@ -1143,11 +1197,16 @@ expand_start_catch_block (declspecs, declarator)
 
       /* if it returned FALSE, jump over the catch block, else fall into it */
       emit_jump_insn (gen_bne (false_label_rtx));
+      finish_decl (decl, init, NULL_TREE, 0);
     }
   else
     {
       /* Fall into the catch all section. */
     }
+
+  /* This is the starting of something to protect.  */
+  emit_label (protect_label_rtx);
+
   emit_line_note (input_filename, lineno);
 }
 
@@ -1159,11 +1218,45 @@ void expand_end_catch_block ()
 {
   if (doing_eh (1))
     {
+      rtx start_protect_label_rtx;
+      rtx end_protect_label_rtx;
+      tree decls;
+      struct ehEntry entry;
+
       /* label we jump to if we caught the exception */
       emit_jump (top_label_entry (&caught_return_label_stack));
 
+      /* Code to throw out to outer context, if we get an throw from within
+	 our catch handler. */
+      /* These are saved for the exception table.  */
+      push_rtl_perm ();
+      entry.exception_handler_label = gen_label_rtx ();
+      pop_rtl_from_perm ();
+      emit_label (entry.exception_handler_label);
+      emit_move_insn (saved_pc, gen_rtx (LABEL_REF,
+					 Pmode,
+					 top_label_entry (&caught_return_label_stack)));
+      emit_jump (throw_label);
+      /* No associated finalization.  */
+      entry.finalization = NULL_TREE;
+
+      /* Because we are reordered out of line, we have to protect this. */
+      /* label for the start of the protection region.  */
+      start_protect_label_rtx = pop_label_entry (&false_label_stack);
+
+      /* Cleanup the EH paramater.  */
+      expand_end_bindings (decls = getdecls (), decls != NULL_TREE, 0);
+      
       /* label we emit to jump to if this catch block didn't match. */
-      emit_label (pop_label_entry (&false_label_stack));
+      emit_label (end_protect_label_rtx = pop_label_entry (&false_label_stack));
+
+      /* Because we are reordered out of line, we have to protect this. */
+      entry.start_label = start_protect_label_rtx;
+      entry.end_label = end_protect_label_rtx;
+
+      /* These set up a call to throw the caught exception into the outer
+       context.  */
+      enqueue_eh_entry (&eh_table_output_queue, copy_eh_entry (&entry));
     }
 }
 
@@ -1300,34 +1393,45 @@ void
 expand_throw (exp)
      tree exp;
 {
-  tree raiseid = NULL_TREE;
-  rtx temp_size;
   rtx label;
   tree type;
 
   if (! doing_eh (1))
     return;
 
+  /* This is the label that represents where in the code we were, when
+     we got an exception.  This needs to be updated when we rethrow an
+     exception, so that the matching routine knows to search out.  */
   label = gen_label_rtx ();
   emit_label (label);
   emit_move_insn (saved_pc, gen_rtx (LABEL_REF, Pmode, label));
 
   if (exp)
     {
-      /* throw variable */
+      /* throw expression */
       /* First, decay it. */
       exp = default_conversion (exp);
       type = TREE_TYPE (exp);
+
+      {
+	char *typestring = build_overload_name (type, 1, 1);
+	tree throw_type = build1 (ADDR_EXPR, ptr_type_node, combine_strings (build_string (strlen (typestring)+1, typestring)));
+	rtx throw_type_rtx = expand_expr (throw_type, NULL_RTX, VOIDmode, 0);
+	rtx throw_value_rtx;
+
+	emit_move_insn (saved_throw_type, throw_type_rtx);
+	exp = convert_to_reference (build_reference_type (build_type_variant (TREE_TYPE (exp), 1, 0)), exp, CONV_STATIC, LOOKUP_COMPLAIN, NULL_TREE);
+	if (exp == error_mark_node)
+	  error ("  in thrown expression");
+	throw_value_rtx = expand_expr (build_unary_op (ADDR_EXPR, exp, 0), NULL_RTX, VOIDmode, 0);
+	emit_move_insn (saved_throw_value, throw_value_rtx);
+      }
     }
   else
-    type = void_type_node;
-
-  {
-    char *typestring = build_overload_name (type, 1, 1);
-    tree throw_type = build1 (ADDR_EXPR, ptr_type_node, combine_strings (build_string (strlen (typestring)+1, typestring)));
-    rtx throw_type_rtx = expand_expr (throw_type, NULL_RTX, VOIDmode, 0);
-    emit_move_insn (saved_throw_type, throw_type_rtx);
-  }
+    {
+      /* rethrow current exception */
+      /* This part is easy, as we dont' have to do anything else.  */
+    }
 
   emit_jump (throw_label);
 }

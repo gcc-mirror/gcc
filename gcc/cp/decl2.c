@@ -2322,6 +2322,8 @@ mark_vtable_entries (decl)
       if (DECL_ABSTRACT_VIRTUAL_P (fn))
 	{
 	  extern tree abort_fndecl;
+	  if (flag_vtable_thunks)
+	    fnaddr = TREE_VALUE (entries);
 	  TREE_OPERAND (fnaddr, 0) = abort_fndecl;
 	}
     }

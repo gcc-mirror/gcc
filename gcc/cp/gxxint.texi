@@ -1133,6 +1133,8 @@ This issue is currently under discussion in the core reflector
 @node  Exception Handling, Free Store, Copying Objects, Top
 @section Exception Handling
 
+Note, exception handling in g++ is still under development.  
+
 This section describes the mapping of C++ exceptions in the C++
 front-end, into the back-end exception handling framework.
 
@@ -1150,7 +1152,9 @@ building functions names.  Int's are "i", const char * is PCc, etc...
 
 Unfortunately, the standard allows standard type conversions on throw
 parameters so they can match catch handlers.  This means we need a
-mechanism to handle type conversion at run time, ICK.
+mechanism to handle type conversion at run time, ICK.  I read this part
+again, and it appears that we only have to be able to do a few of the
+conversions at run time, so we should be ok.
 
 In C++, all cleanups should be protected by exception regions.  The
 region starts just after the reason why the cleanup is created has
@@ -1176,6 +1180,52 @@ of the lifetime of the variable, the run the list down.  If the take a
 hit before the section finishes normally, they examine the list for
 actions to perform.  I hope they add this logic into the back-end, as it
 would be nice to get that alternative approach in C++.
+
+On an rs6000, xlC stores exception objects on that stack, under the try
+block.  When is unwinds down into a handler, the frame pointer is
+adjusted back to the normal value for the frame in which the handler
+resides, and the stack pointer is left unchanged from the time at which
+the object was throwed.  This is so that there is always someplace for
+the exception object, and nothing can overwrite it, once we start
+throwing.  The only bad part, is that the stack remains large.
+
+Flaws in g++'s exception handling.  The stack pointer is restored from
+stack, we want to match rs6000, and propagate the stack pointer from
+time of throw, down, to the catch place.
+
+Only exact type matching of throw types works (references work also),
+catch variables cannot be used.  Only works on a Sun sparc running SunOS
+4.1.x.  Unwinding to outer catch clauses works.  All temps and local
+variables are cleaned up in all unwinded scopes.  Completed parts of
+partially constructed objects are not cleaned up.  Don't expect
+exception handling to work right if you optimize, in fact the compiler
+will probably core dump.  You can only have one source file worth of
+exception handling code.  If two EH regions are the exact same size, the
+backend cannot tell which one is first.  It punts by picking the last
+one, if they tie.  This is usually right.  We really should stick in a
+nop, if they are the same size.
+
+If we fall off the end of a series of catch blocks, we return to the
+flow of control in a normal fasion.  But this is wrong, we should
+rethrow.
+
+When we invoke the copy constructor for an exception object because it
+is passed by value, and if we take a hit (exception) inside the copy
+constructor someplace, where do we go?  I have tentatively choosen to
+not catch throws by the outer block at the same unwind level, if one
+exists, but rather to allow the frame to unwind into the next series of
+handlers, if any.  If this is the wrong way to do it, we will need to
+protect the rest of the handler in some fashion.  Maybe just changing
+the handler's handler to protect the whole series of handlers is the
+right way to go.
+
+The EH object is copied like it should be, if it is passed by value,
+otherwise we get a reference directly to it.
+
+EH objects make it through unwinding, but are subject to being
+overwritten as they are still past the top of stack.
+
+Exceptions in catch handlers now go to outer block.
 
 @node Free Store, Concept Index, Exception Handling, Top
 @section Free Store
