@@ -1,5 +1,13 @@
 Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* diagnostic.c (trim_filename): No longer static.
+	* toplev.h (trim_filename): Declare.
+	* rtl.c (rtl_check_failed_bounds): Call internal_error.
+	(rtl_check_failed_type1, rtl_check_failed_type2): Likewise.
+	(rtl_check_failed_code1, rtl_check_failed_code2): Likewise.
+	(rtvec_check_failed_bounds): Likewise.
+	* tree.c (tree_check_failed, tree_class_check_failed): Likewise.
+
 	* convert.c (convert_to_integer): Don't do unsigned unless result or
 	both inputs are unsigned.
 
