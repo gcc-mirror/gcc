@@ -1,5 +1,7 @@
 2001-12-04  Alexandre Oliva  <aoliva@redhat.com>
 
+	* Makefile.in ($(LIBG2C)): Fix -rpath argument to libtool.
+
 	* Makefile.in (AR, RANLIB): Add, for substitutions.
 	(all-unilib, $(LIBG2C)): Depend on object lists, not
 	convenience libraries.
