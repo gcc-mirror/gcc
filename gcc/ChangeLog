@@ -1,3 +1,8 @@
+1998-12-11  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000/sysv4.h (ASM_OUTPUT_ALIGNED_LOCAL): Put small data in the
+	.sbss section, not .sdata.
+
 1998-12-11  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* cccp.c: Do not #include <sys/stat.h> here; this is already done
