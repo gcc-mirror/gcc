@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-98, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
