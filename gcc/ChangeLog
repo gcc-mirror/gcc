@@ -1,3 +1,8 @@
+2003-03-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*extzv_8_8): Use '?' to simplify the
+	pattern.
+
 2003-03-03  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/install.texi (Specific): Update entry for powerpc-darwin.
