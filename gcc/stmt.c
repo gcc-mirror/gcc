@@ -1710,6 +1710,9 @@ warn_if_unused_value (exp)
       /* For a binding, warn if no side effect within it.  */
       return warn_if_unused_value (TREE_OPERAND (exp, 1));
 
+    case SAVE_EXPR:
+      return warn_if_unused_value (TREE_OPERAND (exp, 1));
+
     case TRUTH_ORIF_EXPR:
     case TRUTH_ANDIF_EXPR:
       /* In && or ||, warn if 2nd operand has no side effect.  */
@@ -1744,7 +1747,8 @@ warn_if_unused_value (exp)
 	while (TREE_CODE (tem) == CONVERT_EXPR || TREE_CODE (tem) == NOP_EXPR)
 	  tem = TREE_OPERAND (tem, 0);
 
-	if (TREE_CODE (tem) == MODIFY_EXPR || TREE_CODE (tem) == INIT_EXPR)
+	if (TREE_CODE (tem) == MODIFY_EXPR || TREE_CODE (tem) == INIT_EXPR
+	    || TREE_CODE (tem) == CALL_EXPR)
 	  return 0;
       }
       goto warn;
