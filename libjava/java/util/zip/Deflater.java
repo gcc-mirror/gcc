@@ -48,7 +48,6 @@ import gnu.gcj.RawData;
  * and JCL book.
  * Believed complete and correct.
  */
-
 public class Deflater
 {
   /**
@@ -73,6 +72,10 @@ public class Deflater
    * The default strategy.
    */
   public static final int DEFAULT_STRATEGY = 0;
+  /**
+   * This strategy will only allow longer string repetitions.  It is
+   * useful for random data with a small character set.
+   */
   public static final int FILTERED = 1;
 
   /** 
