@@ -1,5 +1,10 @@
 2004-05-06  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/table/TableColumn.java:
+	Reformated.
+
+2004-05-06  Michael Koch  <konqueror@gmx.de>
+
 	* javax/imageio/spi/ImageReaderWriterSpi.java
 	(ImageReaderWriterSpi): Made it public.
 	* javax/imageio/stream/ImageInputStream.java:
