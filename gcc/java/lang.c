@@ -516,6 +516,13 @@ java_init (filename)
   if (flag_inline_functions)
     flag_inline_trees = 1;
 
+  /* Force minimum function alignment if g++ uses the least significant
+     bit of function pointers to store the virtual bit. This is required
+     to keep vtables compatible.  */
+  if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn
+      && force_align_functions_log < 1)
+    force_align_functions_log = 1;
+
   /* Open input file.  */
 
   if (filename == 0 || !strcmp (filename, "-"))

@@ -2114,6 +2114,33 @@ enum tls_model {
 
 extern enum tls_model flag_tls_default;
 
+/* A pointer-to-function member type looks like:
+
+     struct {
+       __P __pfn;
+       ptrdiff_t __delta;
+     };
+
+   If __pfn is NULL, it is a NULL pointer-to-member-function.
+
+   (Because the vtable is always the first thing in the object, we
+   don't need its offset.)  If the function is virtual, then PFN is
+   one plus twice the index into the vtable; otherwise, it is just a
+   pointer to the function.
+
+   Unfortunately, using the lowest bit of PFN doesn't work in
+   architectures that don't impose alignment requirements on function
+   addresses, or that use the lowest bit to tell one ISA from another,
+   for example.  For such architectures, we use the lowest bit of
+   DELTA instead of the lowest bit of the PFN, and DELTA will be
+   multiplied by 2.  */
+
+enum ptrmemfunc_vbit_where_t
+{
+  ptrmemfunc_vbit_in_pfn,
+  ptrmemfunc_vbit_in_delta
+};
+
 #define NULL_TREE (tree) NULL
 
 /* Approximate positive square root of a host double.  This is for
