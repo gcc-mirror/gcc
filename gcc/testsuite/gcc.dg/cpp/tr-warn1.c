@@ -24,7 +24,7 @@
  #assert baz(quux)	/* { dg-bogus "indented" "^ #ext"     } */
  # assert quux(weeble)	/* { dg-bogus "indented" "^ # ext"    } */
 
-/* { dg-warning "ISO C does not" "extension warning" { target *-*-* } 22 } */
-/* { dg-warning "ISO C does not" "extension warning" { target *-*-* } 23 } */
-/* { dg-warning "ISO C does not" "extension warning" { target *-*-* } 24 } */
-/* { dg-warning "ISO C does not" "extension warning" { target *-*-* } 25 } */
+/* { dg-warning "GCC extension" "extension warning" { target *-*-* } 22 } */
+/* { dg-warning "GCC extension" "extension warning" { target *-*-* } 23 } */
+/* { dg-warning "GCC extension" "extension warning" { target *-*-* } 24 } */
+/* { dg-warning "GCC extension" "extension warning" { target *-*-* } 25 } */

@@ -28,13 +28,14 @@
 #define foo(, X)		/* { dg-error "parameter name" } */
 #define foo(X, X)		/* { dg-error "duplicate" } */
 #define foo(X Y)		/* { dg-error "comma" } */
-#define foo(()			/* { dg-error "token may not appear" } */
+#define foo(()			/* { dg-error "may not appear" } */
 #define foo(..., X)		/* { dg-error "missing" } */
 #define foo \
 __VA_ARGS__			/* { dg-warning "__VA_ARGS__" } */
-#define foo(__VA_ARGS__)	/* { dg-warning "__VA_ARGS__" } */
-#define foo(...) __VA_ARGS__	/* OK.  */
+#define goo(__VA_ARGS__)	/* { dg-warning "__VA_ARGS__" } */
+#define hoo(...) __VA_ARGS__	/* OK.  */
 #define __VA_ARGS__		/* { dg-warning "__VA_ARGS__" } */
+__VA_ARGS__			/* { dg-warning "__VA_ARGS__" } */
 
 /* test # of supplied arguments.  */
 #define none()
@@ -43,12 +44,12 @@ __VA_ARGS__			/* { dg-warning "__VA_ARGS__" } */
 #define var0(...)
 #define var1(x, ...)
 none()				/* OK.  */
-none(ichi)			/* { dg-error "too many" } */
+none(ichi)			/* { dg-error "passed 1" } */
 one()				/* OK.  */
 one(ichi)			/* OK.  */
 one(ichi\
-, ni)				/* { dg-error "too many" } */
-two(ichi)			/* { dg-error "not enough" } */
+, ni)				/* { dg-error "passed 2" } */
+two(ichi)			/* { dg-error "requires 2" } */
 var0()				/* OK.  */
 var0(ichi)			/* OK.  */
 var1()				/* { dg-warning "rest arguments to be used" } */

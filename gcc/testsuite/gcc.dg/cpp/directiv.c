@@ -28,8 +28,8 @@ EMPTY #define bar
 /* Check that directives always start a line, even if in middle of
    macro expansion.  */
 #define func(x) x
-func (2				/* { dg-error "unterminated argument" }  */
-#define foobar			/* { dg-error "may not be used inside" } */
+func (2		/* { dg-error "unterminated" "" { target *-*-* } 32 } */
+#define foobar	/* { dg-error "directives may not" } */
 
 /* For tidiness, I think the directive should still be processed
    above.  Certainly, continuing to try to find the closing ')' can

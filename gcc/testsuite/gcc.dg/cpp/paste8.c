@@ -7,9 +7,9 @@ int foo(int, ...);
 a(1)
 a(1, 2, 3)
 #define b(x, y, z...) foo(x, ##y)
-b(1, 2, 3)				/* { dg-warning "pasting would not" } */
+b(1, 2, 3)			/* { dg-warning "valid preprocessing token" } */
 #define c(x, y, z...) foo(x, ##z)
 c(1, 2)
 c(1, 2, 3)
-#define d(x) foo(##x)			/* { dg-warning "nothing can be pasted" } */
-d(1)
+#define d(x) fo(##x)
+d(1)				/* { dg-warning "valid preprocessing token" } */

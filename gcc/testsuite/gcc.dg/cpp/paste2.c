@@ -56,8 +56,8 @@ int main ()
     err ("Operator >> pasting");
 
   /* The LHS should not attempt to expand twice, and thus becomes a
-     call to the function glue, but the RHS should fully expand.  */
-  if (glue (gl, ue) (12) != glue (xgl, ue) (1, 2))
+     call to the function glue.  */
+  if (glue (gl, ue) (12) != 12)
     err ("Recursive macros");
 
   /* Test placemarker pasting.  The glued lines should all appear
@@ -106,6 +106,8 @@ int main ()
       err ("Various operator pasting");
     if (strcmp (hh, "%:%:"))
       err ("Pasted digraph spelling");
+    /* glue3 here will only work if we paste left-to-right.  If a
+       future implementation does not do this, change the test.  */
     if ((glue (., 0) glue (=, =) .0) + (glue3 (1.0e, +, 1) == 10.0) != 2)
       err ("Pasted numbers");
   }

@@ -55,7 +55,7 @@
 
 #endif
 
-/* { dg-warning "ISO C does not" "extension warning" { target *-*-* } 27 } */
-/* { dg-warning "ISO C does not" "extension warning" { target *-*-* } 28 } */
-/* { dg-warning "ISO C does not" "extension warning" { target *-*-* } 29 } */
-/* { dg-warning "ISO C does not" "extension warning" { target *-*-* } 30 } */
+/* { dg-warning "GCC extension" "extension warning" { target *-*-* } 27 } */
+/* { dg-warning "GCC extension" "extension warning" { target *-*-* } 28 } */
+/* { dg-warning "GCC extension" "extension warning" { target *-*-* } 29 } */
+/* { dg-warning "GCC extension" "extension warning" { target *-*-* } 30 } */

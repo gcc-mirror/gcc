@@ -2,7 +2,7 @@
 /* { dg-options "-pedantic -std=c89" } */
 
 /* This is an extension and therefore gets a warning.  */
-#line 5 "cxx-comments-2.c" 3  /* { dg-warning "garbage at end" "#line extension" } */
+#line 5 "cxx-comments-2.c" 3  /* { dg-warning "extra tokens" "#line extension" } */
 
 /* A system header may contain C++ comments irrespective of mode.  */
 // C++ comment is not in C89  { dg-bogus "style comment" "bad warning" }
