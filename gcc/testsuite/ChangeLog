@@ -1,3 +1,10 @@
+2003-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20031023-1.c: New test.
+	* gcc.c-torture/compile/20031023-2.c: New test.
+	* gcc.c-torture/compile/20031023-3.c: New test.
+	* gcc.c-torture/compile/20031023-4.c: New test.
+
 2003-10-26  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10371
