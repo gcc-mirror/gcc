@@ -253,6 +253,7 @@ empty_parms ()
 %type <ttype> template_header template_parm_list template_parm
 %type <ttype> template_type_parm template_template_parm
 %type <code>  template_close_bracket
+%type <ttype> apparent_template_type
 %type <ttype> template_type template_arg_list template_arg_list_opt
 %type <ttype> template_arg
 %type <ttype> condition xcond paren_cond_or_null
@@ -907,6 +908,15 @@ template_type:
                 { $$ = $5; }
 	| self_template_type
 	;
+
+apparent_template_type:
+	  template_type
+	| identifier '<' template_arg_list_opt '>'
+	    .finish_template_type
+		{
+		  cp_error ("template class %T was not declared yet", $1);
+		  $$ = $5;
+		}
 
 self_template_type:
 	  SELFNAME  '<' template_arg_list_opt template_close_bracket
@@ -2197,9 +2207,9 @@ named_complex_class_head_sans_basetype:
 		  current_aggr = $1;
 		  $$ = handle_class_head ($1, NULL_TREE, $3);
 		}
-	| aggr template_type
+	| aggr apparent_template_type
 		{ current_aggr = $$; $$ = $2; }
-	| aggr nested_name_specifier template_type
+	| aggr nested_name_specifier apparent_template_type
 		{ current_aggr = $$; $$ = $3; }
 	;
 
