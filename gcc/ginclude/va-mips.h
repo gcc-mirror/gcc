@@ -47,17 +47,23 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #endif
 #define va_end(__AP)
 
-#ifdef lint	/* complains about constant in conditional context */
-#define va_arg(list, mode) ((mode *)(list += __va_rounded_size(mode)))[-1]
-
-#else		/* !lint */
 /* We cast to void * and then to TYPE * because this avoids
    a warning about increasing the alignment requirement.  */
+#ifdef __MIPSEB__
+/* For big-endian machines.  */
+#define va_arg(__AP, __type)					\
+  ((__AP = (char *) ((__alignof__ (__type) > 4			\
+		      ? ((int)__AP + 8 - 1) & -8		\
+		      : ((int)__AP + 4 - 1) & -4)		\
+		     + __va_rounded_size (__type))),		\
+   *(__type *) (void *) (__AP - __va_rounded_size (__type)))
+#else
+/* For little-endian machines.  */
 #define va_arg(__AP, __type)						    \
   ((__type *) (void *) (__AP = (char *) ((__alignof__(__type) > 4	    \
 					  ? ((int)__AP + 8 - 1) & -8	    \
 					  : ((int)__AP + 4 - 1) & -4)	    \
 					 + __va_rounded_size(__type))))[-1]
-#endif		/* lint */
+#endif
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
