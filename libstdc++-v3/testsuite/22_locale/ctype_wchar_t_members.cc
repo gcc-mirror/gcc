@@ -33,6 +33,7 @@
 // NB: Don't include any other headers in this file.
 #include <debug_assert.h>
 
+#if _GLIBCPP_USE_WCHAR_T
 class gnu_ctype: public std::ctype<wchar_t> {};
 
 void test01()
@@ -96,9 +97,12 @@ void test01()
   assert(test);
 #endif
 }
+#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
 
 int main() {
+#if _GLIBCPP_USE_WCHAR_T
   test01();
+#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
   return 0;
 }
 

@@ -25,6 +25,8 @@
 
 using namespace std;
 
+#ifdef _GLIBCPP_USE_WCHAR_T
+
 void
 initialize_state(__enc_traits& state)
 { state._M_init(); }
@@ -118,10 +120,13 @@ void test01()
   delete [] e_arr;
   delete [] i_arr;
 }
+#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
 
 int main ()
 {
+#if _GLIBCPP_USE_WCHAR_T
   test01();
+#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
 
   return 0;
 }

@@ -25,6 +25,8 @@
 #include <stdexcept>
 #include <debug_assert.h>
 
+#if _GLIBCPP_USE_WCHAR_T
+
 typedef std::codecvt<char, char, std::mbstate_t> 		c_codecvt;
 typedef std::codecvt_byname<char, char, std::mbstate_t> 	c_codecvt_byname;
 typedef std::codecvt<wchar_t, char, std::mbstate_t>		w_codecvt;
@@ -160,10 +162,13 @@ void test01()
   
 
 }
+#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
 
 int main ()
 {
+#if _GLIBCPP_USE_WCHAR_T
   test01();
+#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
 
   return 0;
 }
