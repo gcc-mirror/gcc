@@ -1,3 +1,7 @@
+Wed Feb 11 08:29:56 1998  Gavin Koch  <gavin@cygnus.com>
+
+	* mips/mips.md (movdi): These PLUS's need to be Pmode.
+
 Wed Feb 11 01:47:54 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (dwarf2out.o, emit-rtl.o, jump.o, cse.o, unroll.o,
