@@ -1,5 +1,5 @@
 /* Process.java - Represent spawned system process
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -107,7 +107,7 @@ public abstract class Process
    * immediately returns with the exit value of the subprocess.
    *
    * @return the subprocess exit value; 0 conventionally denotes success
-   * @throws InterruptedException if another thread interrups the blocked one
+   * @throws InterruptedException if another thread interrupts the blocked one
    */
   public abstract int waitFor() throws InterruptedException;
 
