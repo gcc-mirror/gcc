@@ -1,3 +1,8 @@
+2004-04-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* linkage.m4 (GLIBCXX_CHECK_MATH_SUPPORT): Check for libmx also.
+	* configure: Regenerate.
+
 2004-04-23  Daniel Jacobowitz  <drow@mvista.com>
 
 	PR libstdc++/15047, libstdc++/11610
