@@ -1,3 +1,8 @@
+2003-02-27  Roger Sayle  <roger@eyesopen.com>
+	    Zack Weinberg <zack@codesourcery.com>
+
+	* gcc.c (do_spec_1):  Treat %U like %u for unique associations.
+
 2003-02-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* reload1.c (sext_for_mode): Remove.
