@@ -1025,6 +1025,41 @@ convert_move (to, from, unsignedp)
 	}
     }
 
+  if (to_mode == PDImode)
+    {
+      if (from_mode != DImode)
+	from = convert_to_mode (DImode, from, unsignedp);
+
+#ifdef HAVE_truncdipdi2
+      if (HAVE_truncdipdi2)
+	{
+	  emit_unop_insn (CODE_FOR_truncdipdi2, to, from, UNKNOWN);
+	  return;
+	}
+#endif /* HAVE_truncdipdi2 */
+      abort ();
+    }
+
+  if (from_mode == PDImode)
+    {
+      if (to_mode != DImode)
+	{
+	  from = convert_to_mode (DImode, from, unsignedp);
+	  from_mode = DImode;
+	}
+      else
+	{
+#ifdef HAVE_extendpdidi2
+	  if (HAVE_extendpdidi2)
+	    {
+	      emit_unop_insn (CODE_FOR_extendpdidi2, to, from, UNKNOWN);
+	      return;
+	    }
+#endif /* HAVE_extendpdidi2 */
+	  abort ();
+	}
+    }
+
   /* Now follow all the conversions between integers
      no more than a word long.  */
 
