@@ -1,3 +1,7 @@
+2000-06-02  Anthony Williams  <anthony@anthonyw.cjb.net>
+
+	* testsuite/21_strings/replace.cc (test01): Qualify find with std::.
+
 2000-06-01  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* bits/std_cwctype.h: Clean.
