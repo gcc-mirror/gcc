@@ -1,3 +1,9 @@
+2004-04-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR/middle-end 14915
+	* builtins.c (expand_builtin_signbit): Test BYTES_BIG_ENDIAN, not
+	BITS_BIG_ENDIAN.
+
 2004-04-15  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* ra-debug.c (ra_print_rtx): Add break's to case legs.
