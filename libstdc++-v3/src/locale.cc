@@ -604,7 +604,7 @@ namespace std {
   bool
   ctype<wchar_t>::
   do_is(mask __m, char_type __c) const
-  { return static_cast<bool>(iswctype(_M_convert_to_wmask(__m), __c)); }
+  { return static_cast<bool>(iswctype(__c, _M_convert_to_wmask(__m))); }
   
   const wchar_t* 
   ctype<wchar_t>::

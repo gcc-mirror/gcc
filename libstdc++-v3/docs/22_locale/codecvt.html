@@ -372,7 +372,10 @@ codecvt usage.
 <H2>
 5.  Examples
 </H2>
-a. conversions involving string literals
+
+<UL>
+	<LI>
+	a. conversions involving string literals
 
 <pre>
   typedef codecvt_base::result			result;
@@ -412,14 +415,19 @@ a. conversions involving string literals
   VERIFY( efrom_next == e_lit + size );
   VERIFY( ito_next == i_arr + size );
 </pre>
+	<LI>
 	b. conversions involving std::string
+	<LI>
 	c. conversions involving std::filebuf and std::ostream
+</UL>
 
 More information can be found in the following testcases:
-codecvt_char_char.cc     
-codecvt_unicode_wchar_t.cc
-codecvt_unicode_char.cc  
-codecvt_wchar_t_char.cc
+<UL>
+<LI> testsuite/22_locale/codecvt_char_char.cc  
+<LI> testsuite/22_locale/codecvt_unicode_wchar_t.cc
+<LI> testsuite/22_locale/codecvt_unicode_char.cc  
+<LI> testsuite/22_locale/codecvt_wchar_t_char.cc
+</UL>
 
 <P>
 <H2>
@@ -427,7 +435,7 @@ codecvt_wchar_t_char.cc
 </H2>
 <UL>
 <LI>
-	a. things that are sketchy, or remain unimplemented
+	a. things that are sketchy, or remain unimplemented:
 		do_encoding, max_length and length member functions
 		are only weakly implemented. I have no idea how to do
 		this correctly, and in a generic manner.  Nathan?
