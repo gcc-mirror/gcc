@@ -3699,7 +3699,7 @@ extern void set_namespace_binding               PARAMS ((tree, tree, tree));
 extern tree lookup_namespace_name		PARAMS ((tree, tree));
 extern tree build_typename_type                 PARAMS ((tree, tree, tree, tree));
 extern tree make_typename_type			PARAMS ((tree, tree, tsubst_flags_t));
-extern tree make_unbound_class_template		PARAMS ((tree, tree, int));
+extern tree make_unbound_class_template		PARAMS ((tree, tree, tsubst_flags_t));
 extern tree lookup_name_nonclass		PARAMS ((tree));
 extern tree lookup_function_nonclass            PARAMS ((tree, tree));
 extern tree lookup_name				PARAMS ((tree, int));
