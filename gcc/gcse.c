@@ -165,7 +165,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "params.h"
 #include "cselib.h"
-
+#include "intl.h"
 #include "obstack.h"
 
 /* Propagate flow information through back edges and thus enable PRE's
@@ -703,7 +703,9 @@ static void local_cprop_find_used_regs (rtx *, void *);
 static bool do_local_cprop (rtx, rtx, int, rtx*);
 static bool adjust_libcall_notes (rtx, rtx, rtx, rtx*);
 static void local_cprop_pass (int);
+static bool is_too_expensive (const char *);
 
+
 /* Entry point for global common subexpression elimination.
    F is the first instruction in the function.  */
 
@@ -737,39 +739,10 @@ gcse_main (rtx f, FILE *file)
   if (file)
     dump_flow_info (file);
 
-  /* Return if there's nothing to do.  */
-  if (n_basic_blocks <= 1)
+  /* Return if there's nothing to do, or it is too expensive.  */
+  if (n_basic_blocks <= 1 || is_too_expensive (_("GCSE disabled")))
     return 0;
-
-  /* Trying to perform global optimizations on flow graphs which have
-     a high connectivity will take a long time and is unlikely to be
-     particularly useful.
-
-     In normal circumstances a cfg should have about twice as many edges
-     as blocks.  But we do not want to punish small functions which have
-     a couple switch statements.  So we require a relatively large number
-     of basic blocks and the ratio of edges to blocks to be high.  */
-  if (n_basic_blocks > 1000 && n_edges / n_basic_blocks >= 20)
-    {
-      if (warn_disabled_optimization)
-	warning ("GCSE disabled: %d > 1000 basic blocks and %d >= 20 edges/basic block",
-		 n_basic_blocks, n_edges / n_basic_blocks);
-      return 0;
-    }
-
-  /* If allocating memory for the cprop bitmap would take up too much
-     storage it's better just to disable the optimization.  */
-  if ((n_basic_blocks
-       * SBITMAP_SET_SIZE (max_gcse_regno)
-       * sizeof (SBITMAP_ELT_TYPE)) > MAX_GCSE_MEMORY)
-    {
-      if (warn_disabled_optimization)
-	warning ("GCSE disabled: %d basic blocks and %d registers",
-		 n_basic_blocks, max_gcse_regno);
-
-      return 0;
-    }
-
+  
   gcc_obstack_init (&gcse_obstack);
   bytes_used = 0;
 
@@ -5945,28 +5918,17 @@ delete_null_pointer_checks (rtx f ATTRIBUTE_UNUSED)
   basic_block bb;
   int reg;
   int regs_per_pass;
-  int max_reg;
+  int max_reg = max_reg_num ();
   struct null_pointer_info npi;
   int something_changed = 0;
 
-  /* If we have only a single block, then there's nothing to do.  */
-  if (n_basic_blocks <= 1)
-    return 0;
-
-  /* Trying to perform global optimizations on flow graphs which have
-     a high connectivity will take a long time and is unlikely to be
-     particularly useful.
-
-     In normal circumstances a cfg should have about twice as many edges
-     as blocks.  But we do not want to punish small functions which have
-     a couple switch statements.  So we require a relatively large number
-     of basic blocks and the ratio of edges to blocks to be high.  */
-  if (n_basic_blocks > 1000 && n_edges / n_basic_blocks >= 20)
+  /* If we have only a single block, or it is too expensive, give up.  */
+  if (n_basic_blocks <= 1
+      || is_too_expensive (_ ("NULL pointer checks disabled")))
     return 0;
 
   /* We need four bitmaps, each with a bit for each register in each
      basic block.  */
-  max_reg = max_reg_num ();
   regs_per_pass = get_bitmap_width (4, last_basic_block, max_reg);
 
   /* Allocate bitmaps to hold local and global properties.  */
@@ -7704,38 +7666,9 @@ bypass_jumps (FILE *file)
   if (file)
     dump_flow_info (file);
 
-  /* Return if there's nothing to do.  */
-  if (n_basic_blocks <= 1)
+  /* Return if there's nothing to do, or it is too expensive  */
+  if (n_basic_blocks <= 1 || is_too_expensive (_ ("jump bypassing disabled")))
     return 0;
-
-  /* Trying to perform global optimizations on flow graphs which have
-     a high connectivity will take a long time and is unlikely to be
-     particularly useful.
-
-     In normal circumstances a cfg should have about twice as many edges
-     as blocks.  But we do not want to punish small functions which have
-     a couple switch statements.  So we require a relatively large number
-     of basic blocks and the ratio of edges to blocks to be high.  */
-  if (n_basic_blocks > 1000 && n_edges / n_basic_blocks >= 20)
-    {
-      if (warn_disabled_optimization)
-        warning ("BYPASS disabled: %d > 1000 basic blocks and %d >= 20 edges/basic block",
-                 n_basic_blocks, n_edges / n_basic_blocks);
-      return 0;
-    }
-
-  /* If allocating memory for the cprop bitmap would take up too much
-     storage it's better just to disable the optimization.  */
-  if ((n_basic_blocks
-       * SBITMAP_SET_SIZE (max_gcse_regno)
-       * sizeof (SBITMAP_ELT_TYPE)) > MAX_GCSE_MEMORY)
-    {
-      if (warn_disabled_optimization)
-        warning ("GCSE disabled: %d basic blocks and %d registers",
-                 n_basic_blocks, max_gcse_regno);
-
-      return 0;
-    }
 
   gcc_obstack_init (&gcse_obstack);
   bytes_used = 0;
@@ -7775,6 +7708,46 @@ bypass_jumps (FILE *file)
   allocate_reg_info (max_reg_num (), FALSE, FALSE);
 
   return changed;
+}
+
+/* Return true if the graph is too expensive to optimize. PASS is the
+   optimization about to be performed.  */
+
+static bool
+is_too_expensive (const char *pass)
+{
+  /* Trying to perform global optimizations on flow graphs which have
+     a high connectivity will take a long time and is unlikely to be
+     particularly useful.
+     
+     In normal circumstances a cfg should have about twice as many
+     edges as blocks.  But we do not want to punish small functions
+     which have a couple switch statements.  Rather than simply
+     threshold the number of blocks, uses something with a more
+     graceful degradation.  */
+  if (n_edges > 20000 + n_basic_blocks * 4)
+    {
+      if (warn_disabled_optimization)
+	warning ("%s: %d basic blocks and %d edges/basic block",
+		 pass, n_basic_blocks, n_edges / n_basic_blocks);
+      
+      return true;
+    }
+
+  /* If allocating memory for the cprop bitmap would take up too much
+     storage it's better just to disable the optimization.  */
+  if ((n_basic_blocks
+       * SBITMAP_SET_SIZE (max_reg_num ())
+       * sizeof (SBITMAP_ELT_TYPE)) > MAX_GCSE_MEMORY)
+    {
+      if (warn_disabled_optimization)
+	warning ("%s: %d basic blocks and %d registers",
+		 pass, n_basic_blocks, max_reg_num ());
+
+      return true;
+    }
+
+  return false;
 }
 
 #include "gt-gcse.h"

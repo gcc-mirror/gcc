@@ -1,3 +1,8 @@
+2003-08-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcse.c (is_too_expensive): New function.
+	(gcse_main, delete_null_pointer_checks, bypass_jumps): Use it.
+
 2003-08-25  Zack Weinberg  <zack@codesourcery.com>
 
 	* config.gcc (hppa*-*-hpux11*, ia64*-*-hpux*): Remove
