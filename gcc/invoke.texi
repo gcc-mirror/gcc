@@ -1,4 +1,4 @@
-@c Copyright (C) 1988, 89, 92-98, 1999 Free Software Foundation, Inc.
+@c Copyright (C) 1988, 89, 92-99, 2000 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -360,6 +360,7 @@ in the following sections.
 -mreg-alloc=@var{list}  -mregparm=@var{num}
 -malign-jumps=@var{num}  -malign-loops=@var{num}
 -malign-functions=@var{num} -mpreferred-stack-boundary=@var{num}
+-mthreads
 
 @emph{HPPA Options}
 -march=@var{architecture type}
@@ -5945,6 +5946,14 @@ This extra alignment does consume extra stack space.  Code that is sensitive
 to stack space usage, such as embedded systems and operating system kernels,
 may want to reduce the preferred alignment to
 @samp{-mpreferred-stack-boundary=2}.
+
+@item -mthreads
+@kindex -mthreads
+Support thread-safe exception handling on @samp{Mingw32}. Code that relies 
+on thread-safe exception handling must compile and link all code with the 
+@samp{-mthreads} option. When compiling, @samp{-mthreads} defines 
+@samp{-D_MT}; when linking, it links in a special thread helper library 
+@samp{-lmingwthrd} which cleans up per thread exception handling data.
 @end table
 
 @node HPPA Options

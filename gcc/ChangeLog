@@ -1,3 +1,17 @@
+2000-01-04  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* gthr-win32.h (__gthread_active_p): Support Mingw MT runtime.
+	(__gthread_key_create): Likewise. 
+ 	(__gthread_key_dtor):  Likewise.
+	(__gthread_once): Fix logic.
+	(__gthread_key_delete): Cast away constness.
+
+	* i386/cygwin.h (SUBTARGET_SWITCHES): Add -mthreads option.
+	* invoke.texi: Document.
+	* i386/mingw32.h (CPP_SPEC): Use.
+	(LIBGCC_SPEC): Likewise.
+	* i386/crtdll.h (LIBGCC_SPEC): Likewise.
+
 2000-01-04  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000/sysv4.h (ASM_OUTPUT_DEF): Undefine.

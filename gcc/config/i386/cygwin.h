@@ -2,7 +2,7 @@
    hosting on Windows NT 3.x, using a Unix style C library and tools,
    as distinct from winnt.h, which is used to build GCC for use with a
    windows style library and tool set and uses the Microsoft tools.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995-2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -51,7 +51,8 @@ Boston, MA 02111-1307, USA. */
 { "console",		  -MASK_WINDOWS, "Create console application" }, \
 { "dll",		  MASK_DLL, "Generate code for a DLL" },     \
 { "nop-fun-dllimport",	  MASK_NOP_FUN_DLLIMPORT, "Ignore dllimport for functions" }, \
-{ "no-nop-fun-dllimport", -MASK_NOP_FUN_DLLIMPORT, "" },
+{ "no-nop-fun-dllimport", -MASK_NOP_FUN_DLLIMPORT, "" }, \
+{ "threads",		  0, "Use Mingw-specific thread support" },
 
 
 /* Support the __declspec keyword by turning them into attributes.

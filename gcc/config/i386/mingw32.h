@@ -2,7 +2,7 @@
    hosting on Windows32, using GNU tools and the Windows32 API Library,
    as distinct from winnt.h, which is used to build GCC for use with a
    windows style library and tool set and uses the Microsoft tools.
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997-2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -45,7 +45,8 @@ Boston, MA 02111-1307, USA. */
 #define STANDARD_INCLUDE_COMPONENT "MINGW32"
 
 #undef CPP_SPEC
-#define CPP_SPEC "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC \
+  "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE} %{mthreads:-D_MT}"
 
 /* For Windows applications, include more libraries, but always include
    kernel32.  */
@@ -55,7 +56,8 @@ Boston, MA 02111-1307, USA. */
 
 /* Include in the mingw32 libraries with libgcc */
 #undef LIBGCC_SPEC
-#define LIBGCC_SPEC "-lmingw32 -lgcc -lmoldname -lmsvcrt"
+#define LIBGCC_SPEC \
+  "%{mthreads:-lmingwthrd} -lmingw32 -lgcc -lmoldname -lmsvcrt"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{mdll:dllcrt2%O%s} %{!mdll:crt2%O%s} %{pg:gcrt2%O%s}"
