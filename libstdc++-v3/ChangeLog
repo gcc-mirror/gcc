@@ -1,3 +1,7 @@
+2003-03-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/linker-map.gnu: Remove string export restrictions.
+
 2003-03-24  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/21_strings/basic_string/find/char/1.cc: Remove

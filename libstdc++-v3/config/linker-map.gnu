@@ -28,16 +28,7 @@ GLIBCPP_3.4 {
     # All but the last are terminated with a semicolon.
     extern "C++"
     {
-      std::[A-Za]*;
-      std::ba[a-r]*;
-      std::basic_[a-r]*;
-      std::basic_streambuf*;
-      std::basic_stringbuf*;
-      std::basic_stringstream*;
-      std::basic_[t-z]*;
-      std::ba[t-z]*;
-      std::b[b-z]*;
-      std::[A-Zc-k]*;
+      std::[A-Za-k]*;
       std::length_error*;
       std::logic_error*;
       std::locale::[A-Za-e]*;
@@ -86,19 +77,6 @@ GLIBCPP_3.4 {
 
     # bool has_facet 
     _ZSt9has_facet*;
-
-    # std::string, std::wstring minus static data members
-    _ZNKS[sb]*;
-    _ZNS[sb]D*;
-    _ZNS[sb]C*;
-    _ZStplI[cw]St11char_traitsI[cw]ESaI[cw]EESbIT_T0_T1_EPKS3_RKS6_;
-    _ZStplI[cw]St11char_traitsI[cw]ESaI[cw]EESbIT_T0_T1_ES3_RKS6_;
-    _ZNS[sb]I[cw]St11char_traitsI[cw]ESaI[cw]EE[A-Ra-z]*;
-    _ZNS[sb]I[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9][A-Ra-z]*;
-    _ZNS[sb]I[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9][0-9][A-Ra-z]*;
-    _ZNS[sb]I[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9]_[A-Ra-z]*;
-    _ZNS[sb]I[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9][0-9]_[A-Ra-z]*;
-    _ZNS[sb]I[cw]St11char_traitsI[cw]ESaI[cw]EE20_S_empty_rep_storageE;
 
     # std::__pool_alloc
     _ZNSt12__pool_allocILb1ELi0EE10deallocateEPv[jm]*;
