@@ -14,6 +14,16 @@
 	* dwarf2out.c: Likewise.
 	* dwarf2out.h: Likewise.
 	* dwarfout.c: Likewise.
+	* except.c: Likewise.
+	* except.h: Likewise.
+	* emit-rtl.c: Likewise.
+	* et-forest.c: Likewise.
+	* et-forest.h: Likewise.
+	* except.c: Likewise.
+	* explow.c: Likewise.
+	* expmed.c: Likewise.
+	* expr.c: Likewise.
+	* expr.h: Likewise.
 
 2003-06-29  Kazu Hirata  <kazu@cs.umass.edu>
 
