@@ -325,12 +325,12 @@ namespace std
 	__found_grouping.reserve(32);
       int __sep_pos = 0;
       const char_type* __lit_zero = __lit + __num_base::_S_izero;
-      const char_type* __q;
       while (__beg != __end)
         {
 	  // According to 22.2.2.1.2, p8-9, first look for thousands_sep
 	  // and decimal_point.
 	  const char_type __c = *__beg;
+	  const char_type* __q = __traits_type::find(__lit_zero, 10, __c);
           if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 	    {
 	      if (!__found_dec && !__found_sci)
@@ -368,7 +368,7 @@ namespace std
 	      else
 		break;
 	    }
-          else if (__q = __traits_type::find(__lit_zero, 10, __c))
+          else if (__q != 0)
 	    {
 	      __xtrc += __num_base::_S_atoms_in[__q - __lit];
 	      __found_mantissa = true;
@@ -508,7 +508,6 @@ namespace std
 	bool __overflow = false;
 	_ValueT __result = 0;
 	const char_type* __lit_zero = __lit + __num_base::_S_izero;
-	const char_type* __q;
 	if (__negative)
 	  {
 	    const _ValueT __min = numeric_limits<_ValueT>::min() / __base;
@@ -517,6 +516,8 @@ namespace std
 		// According to 22.2.2.1.2, p8-9, first look for thousands_sep
 		// and decimal_point.
 		const char_type __c = *__beg;
+		const char_type* __q = __traits_type::find(__lit_zero, 
+							   __len, __c);
 		if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 		  {
 		    // NB: Thousands separator at the beginning of a string
@@ -534,7 +535,7 @@ namespace std
 		  }
 		else if (__c == __lc->_M_decimal_point)
 		  break;
-		else if (__q = __traits_type::find(__lit_zero, __len, __c))
+		else if (__q != 0)
 		  {
 		    int __digit = __q - __lit_zero;
 		    if (__digit > 15)
@@ -562,6 +563,8 @@ namespace std
 	    for (; __beg != __end; ++__beg)
 	      {
 		const char_type __c = *__beg;
+		const char_type* __q = __traits_type::find(__lit_zero, 
+							   __len, __c);
 		if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 		  {
 		    if (__sep_pos)
@@ -577,7 +580,7 @@ namespace std
 		  }
 		else if (__c == __lc->_M_decimal_point)
 		  break;
-		else if (__q = __traits_type::find(__lit_zero, __len, __c))
+		else if (__q != 0)
 		  {
 		    int __digit = __q - __lit_zero;
 		    if (__digit > 15)
@@ -1119,8 +1122,8 @@ namespace std
       // Replace decimal point.
       const _CharT __cdec = __ctype.widen('.');
       const _CharT __dec = __lc->_M_decimal_point;
-      const _CharT* __p;
-      if (__p = char_traits<_CharT>::find(__ws, __len, __cdec))
+      const _CharT* __p = char_traits<_CharT>::find(__ws, __len, __cdec);
+      if (__p)
 	__ws[__p - __ws] = __dec;
 
       // Add grouping, if necessary.
@@ -1294,7 +1297,6 @@ namespace std
 	__res.reserve(32);
 
 	const char_type* __lit_zero = __lit + money_base::_S_zero;
-	const char_type* __q;
 	const money_base::pattern __p = __lc->_M_neg_format;	
 	for (int __i = 0; __i < 4 && __testvalid; ++__i)
 	  {
@@ -1356,35 +1358,40 @@ namespace std
 		// Extract digits, remove and stash away the
 		// grouping of found thousands separators.
 		for (; __beg != __end; ++__beg)
-		  if (__q = __traits_type::find(__lit_zero, 10, *__beg))
-		    {
-		      __res += money_base::_S_atoms[__q - __lit];
-		      ++__n;
-		    }
-		  else if (*__beg == __lc->_M_decimal_point && !__testdecfound)
-		    {
-		      __last_pos = __n;
-		      __n = 0;
-		      __testdecfound = true;
-		    }
-		  else if (__lc->_M_use_grouping
-			   && *__beg == __lc->_M_thousands_sep
-			   && !__testdecfound)
-		    {
-		      if (__n)
-			{
-			  // Mark position for later analysis.
-			  __grouping_tmp += static_cast<char>(__n);
-			  __n = 0;
-			}
-		      else
-			{
-			  __testvalid = false;
-			  break;
-			}
-		    }
-		  else
-		    break;
+		  {
+		    const char_type* __q = __traits_type::find(__lit_zero, 
+							       10, *__beg);
+		    if (__q != 0)
+		      {
+			__res += money_base::_S_atoms[__q - __lit];
+			++__n;
+		      }
+		    else if (*__beg == __lc->_M_decimal_point 
+			     && !__testdecfound)
+		      {
+			__last_pos = __n;
+			__n = 0;
+			__testdecfound = true;
+		      }
+		    else if (__lc->_M_use_grouping
+			     && *__beg == __lc->_M_thousands_sep
+			     && !__testdecfound)
+		      {
+			if (__n)
+			  {
+			    // Mark position for later analysis.
+			    __grouping_tmp += static_cast<char>(__n);
+			    __n = 0;
+			  }
+			else
+			  {
+			    __testvalid = false;
+			    break;
+			  }
+		      }
+		    else
+		      break;
+		  }
 		if (__res.empty())
 		  __testvalid = false;
 		break;
