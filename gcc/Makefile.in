@@ -3136,7 +3136,7 @@ QMTEST_GPP_TESTS=gpp
 # The subdirectory of the OBJDIR that will be used to store the QMTest
 # test database configuration and that will be used for temporary
 # scratch space during QMTest's execution.
-QMTEST_DIR=${objdir}/qmtestsuite
+QMTEST_DIR=qmtestsuite
 
 # Create the QMTest database configuration.
 ${QMTEST_DIR} stamp-qmtest:
