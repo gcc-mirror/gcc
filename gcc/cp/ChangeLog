@@ -1,3 +1,8 @@
+Sun Sep  7 13:15:14 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (maybe_emit_vtables, write_out_vars, finish_file):
+	Avoid re-emitting variables in unit-at-a-time mode.
+
 2003-09-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11687

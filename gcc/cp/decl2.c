@@ -1634,7 +1634,9 @@ maybe_emit_vtables (tree ctype)
   /* If the vtables for this class have already been emitted there is
      nothing more to do.  */
   primary_vtbl = CLASSTYPE_VTABLES (ctype);
-  if (TREE_ASM_WRITTEN (primary_vtbl))
+  if (TREE_ASM_WRITTEN (primary_vtbl)
+      || (flag_unit_at_a_time
+	  && cgraph_varpool_node (primary_vtbl)->finalized))
     return false;
   /* Ignore dummy vtables made by get_vtable_decl.  */
   if (TREE_TYPE (primary_vtbl) == void_type_node)
@@ -2452,7 +2454,9 @@ write_out_vars (tree vars)
   tree v;
 
   for (v = vars; v; v = TREE_CHAIN (v))
-    if (! TREE_ASM_WRITTEN (TREE_VALUE (v)))
+    if (! TREE_ASM_WRITTEN (TREE_VALUE (v))
+        && (!flag_unit_at_a_time
+	    || !cgraph_varpool_node (TREE_VALUE (v))->finalized))
       rest_of_decl_compilation (TREE_VALUE (v), 0, 1, 1);
 }
 
@@ -2875,7 +2879,9 @@ finish_file ()
       for (i = 0; i < pending_statics_used; ++i) 
 	{
 	  tree decl = VARRAY_TREE (pending_statics, i);
-	  if (TREE_ASM_WRITTEN (decl))
+	  if (TREE_ASM_WRITTEN (decl)
+	      || (flag_unit_at_a_time
+		  && cgraph_varpool_node (decl)->finalized))
 	    continue;
 	  import_export_decl (decl);
 	  if (DECL_NOT_REALLY_EXTERN (decl) && ! DECL_IN_AGGR_P (decl))
