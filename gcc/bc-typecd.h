@@ -30,19 +30,19 @@ enum typecode
 };
 
 /* Determine if a given type is integer.  */
-#define TYPECODE_INTEGER_P(TYPECODE) ((TYPECODE) < SFcode)
+#define TYPECODE_INTEGER_P(TYPECODE) ((int) (TYPECODE) < (int) SFcode)
 
 /* Determine if a given type is unsigned.  */
 #define TYPECODE_UNSIGNED_P(TYPECODE) \
-  (TYPECODE_INTEGER_P(TYPECODE) && (TYPECODE) & 1)
+  (TYPECODE_INTEGER_P(TYPECODE) && (int) (TYPECODE) & 1)
 
 /* Determine if a given type is signed.  */
 #define TYPECODE_SIGNED_P(TYPECODE) \
-  (TYPECODE_INTEGER_P(TYPECODE) && !((TYPECODE) & 1))
+  (TYPECODE_INTEGER_P(TYPECODE) && !((int) (TYPECODE) & 1))
 
 /* Determine if a given type is floating.  */
 #define TYPECODE_FLOAT_P(TYPECODE) \
-  ((TYPECODE) < Pcode && !TYPECODE_INTEGER_P(TYPECODE))
+  ((int) (TYPECODE) < (int) Pcode && !TYPECODE_INTEGER_P(TYPECODE))
 
 /* Determine if the given type is arithmetic. */
 #define TYPECODE_ARITH_P(TYPECODE) \
