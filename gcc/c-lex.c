@@ -827,6 +827,10 @@ linenum:
 
   /* skip the rest of this line.  */
  skipline:
+#if !USE_CPPLIB
+  if (c != '\n' && c != EOF && nextchar >= 0)
+    c = nextchar, nextchar = -1;
+#endif
   while (c != '\n' && c != EOF)
     c = GETC();
   return c;
