@@ -2667,6 +2667,13 @@ do {                                                                    \
   case FLOAT:						\
   case FIX:						\
     return 19;
+
+#define PREFETCH_BLOCK \
+	((sparc_cpu == PROCESSOR_ULTRASPARC) ? 64 : 32)
+
+/* ??? UltraSPARC-III note: Can set this to 8 for ultra3.  */
+#define SIMULTANEOUS_PREFETCHES \
+	((sparc_cpu == PROCESSOR_ULTRASPARC) ? 2 : 3)
 
 /* Control the assembler format that we output.  */
 
