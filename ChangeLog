@@ -1,5 +1,7 @@
 2002-07-02  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Rearrange target Makefile fragment collection.
+
 	* Makefile.in: Don't try to build gdbtest, tgas, ispell, inet, or
 	cvs[src].
 	* configure.in: Ditto.
