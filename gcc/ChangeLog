@@ -1,3 +1,17 @@
+2002-06-10  Tim Josling  <tej@melbpc.org.au>
+ 
+         First steps to making treelang documentation compliant, based on
+	 instructions in sourcebuild.texi. Also add to gcc.c list of
+	 default languages.
+	
+	* doc/contrib.texi: Add self as contributor of treelang.
+
+	* doc/frontends.texi: Add mention of treelang.
+
+	* doc/invoke.texi (Overall Options): Add mention of treelang.
+
+	* doc/standards.texi:  Add mention of treelang.
+
 2002-06-09  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c: Include ggc.h

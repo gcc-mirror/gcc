@@ -4,16 +4,17 @@
 @c For copying conditions, see the file gcc.texi.
 
 @node G++ and GCC
-@chapter Compile C, C++, Objective-C, Ada, Fortran, or Java
+@chapter Compile C, C++, Objective-C, Ada, Fortran, Java, or treelang
 
 @cindex Objective-C
 @cindex Fortran
 @cindex Java
 @cindex Ada
+@cindex treelang
 Several versions of the compiler (C, C++, Objective-C, Ada, 
-Fortran, and Java) are integrated; this is why we use the name
+Fortran, Java and treelang) are integrated; this is why we use the name
 ``GNU Compiler Collection''.  GCC can compile programs written in any of these
-languages.  The Ada, Fortran, and Java compilers are described in
+languages.  The Ada, Fortran, Java and treelang compilers are described in
 separate manuals.
 
 @cindex GCC

@@ -232,6 +232,10 @@ sidetracks.
 J. Kean Johnston for OpenServer support.
 
 @item
+Tim Josling for the sample language treelang based originally on Richard
+Kenner's "``toy'' language".
+
+@item
 Klaus Kaempf for his ongoing work to make alpha-vms a viable target.
 
 @item

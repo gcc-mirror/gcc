@@ -814,6 +814,7 @@ assembler  assembler-with-cpp
 ada
 f77  f77-cpp-input  ratfor
 java
+treelang
 @end example
 
 @item -x none
