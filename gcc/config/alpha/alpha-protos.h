@@ -135,6 +135,9 @@ extern void alpha_setup_incoming_varargs (CUMULATIVE_ARGS, enum machine_mode,
 extern void alpha_va_start (tree, rtx);
 extern rtx alpha_va_arg (tree, tree);
 extern rtx function_arg (CUMULATIVE_ARGS, enum machine_mode, tree, int);
+extern rtx function_value (tree, tree, enum machine_mode);
+extern bool return_in_memory (tree, enum machine_mode);
+
 extern void alpha_start_function (FILE *, const char *, tree);
 extern void alpha_end_function (FILE *, const char *, tree);
 

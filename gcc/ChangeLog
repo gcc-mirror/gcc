@@ -1,4 +1,16 @@
-2003-06-13  Ulrich Weigand  <uweigand@de.ibm.com>
+2003-06-27  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (function_arg): Don't pass small aggregates
+	in floating point registers.  Validate that we don't receive complex
+	values here.  Use #elif.
+	(return_in_memory, function_value): New.
+	(alpha_va_arg): Handle complex values as two arguments.
+	* config/alpha/alpha.h (RETURN_IN_MEMORY): Use return_in_memory.
+	(FUNCTION_VALUE, LIBCALL_VALUE): Use function_value.
+	(SPLIT_COMPLEX_ARGS): New.
+	* config/alpha/alpha-protos.h: Update.
+
+2003-06-27  Ulrich Weigand  <uweigand@de.ibm.com>
 
         * ggc-page.c (inverse_table): Change type of mult to size_t.
         (compute_inverse): Compute inverse using size_t, not unsigned int.
