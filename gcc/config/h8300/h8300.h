@@ -461,13 +461,10 @@ enum reg_class {
    Return 1 if VALUE is in the range specified by C.  */
 
 #define CONST_OK_FOR_I(VALUE) ((VALUE) == 0)
-#define CONST_OK_FOR_J(VALUE) ((unsigned HOST_WIDE_INT) (VALUE) < 256)
-#define CONST_OK_FOR_K(VALUE) ((VALUE) == 1 || (VALUE) == 2)
 #define CONST_OK_FOR_L(VALUE)				\
   (TARGET_H8300H || TARGET_H8300S			\
    ? (VALUE) == 1 || (VALUE) == 2 || (VALUE) == 4	\
    : (VALUE) == 1 || (VALUE) == 2)
-#define CONST_OK_FOR_M(VALUE) ((VALUE) == 3 || (VALUE) == 4)
 #define CONST_OK_FOR_N(VALUE)				\
   (TARGET_H8300H || TARGET_H8300S			\
    ? (VALUE) == -1 || (VALUE) == -2 || (VALUE) == -4	\
@@ -475,10 +472,7 @@ enum reg_class {
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)		\
   ((C) == 'I' ? CONST_OK_FOR_I (VALUE) :	\
-   (C) == 'J' ? CONST_OK_FOR_J (VALUE) :	\
-   (C) == 'K' ? CONST_OK_FOR_K (VALUE) :	\
    (C) == 'L' ? CONST_OK_FOR_L (VALUE) :	\
-   (C) == 'M' ? CONST_OK_FOR_M (VALUE) :	\
    (C) == 'N' ? CONST_OK_FOR_N (VALUE) :	\
    0)
 
