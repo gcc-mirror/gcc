@@ -1,3 +1,9 @@
+2003-06-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11332
+	* typeck.c (build_static_cast): Avoid returning expressions with
+	reference type.
+
 2003-06-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* call.c (build_op_delete_call): Use strip_array_call. Correct
