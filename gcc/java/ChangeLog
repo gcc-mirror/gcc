@@ -1,5 +1,8 @@
 2001-03-19  Per Bothner  <per@bothner.com>
 
+	* jcf-parse.c (load_inner_classes):  Check CLASS_LOADED_P
+	before trying to load an inner class.
+
 	Fixes to process to command-line .class files in two passes.
 	* java-tree.h (JAVA_FILE_P, CLASS_FILE_P, ZIP_FILE_P):  New flags.
 	(CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P):  Rename to ..

@@ -728,7 +728,8 @@ load_inner_classes (cur_class)
     {
       tree name = DECL_NAME (TREE_PURPOSE (current));
       tree decl = IDENTIFIER_GLOBAL_VALUE (name);
-      if (decl && !CLASS_BEING_LAIDOUT (TREE_TYPE (decl)))
+      if (decl && ! CLASS_LOADED_P (TREE_TYPE (decl))
+	  && !CLASS_BEING_LAIDOUT (TREE_TYPE (decl)))
 	load_class (name, 1);
     }
 }
