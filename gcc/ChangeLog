@@ -1,3 +1,8 @@
+Sun Nov 14 12:41:57 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* cse.c (set_nonvarying_address_components): Delete unused function.
+	(refers_to_p): Likewise.
+
 Fri Nov 12 20:53:22 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* function.c (diddle_return_value): Set REG_FUNCTION_VALUE_P as
