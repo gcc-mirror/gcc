@@ -727,13 +727,18 @@ end ifobjc
 		  /* The statements have side effects, so the group does.  */
 		  TREE_SIDE_EFFECTS (rtl_exp) = 1;
 
-		  /* Make a BIND_EXPR for the BLOCK already made.  */
-		  $$ = build (BIND_EXPR, TREE_TYPE (rtl_exp),
-			      NULL_TREE, rtl_exp, $3);
-		  /* Remove the block from the tree at this point.
-		     It gets put back at the proper place
-		     when the BIND_EXPR is expanded.  */
-		  delete_block ($3);
+		  if (TREE_CODE ($3) == BLOCK)
+		    {
+		      /* Make a BIND_EXPR for the BLOCK already made.  */
+		      $$ = build (BIND_EXPR, TREE_TYPE (rtl_exp),
+				  NULL_TREE, rtl_exp, $3);
+		      /* Remove the block from the tree at this point.
+			 It gets put back at the proper place
+			 when the BIND_EXPR is expanded.  */
+		      delete_block ($3);
+		    }
+		  else
+		    $$ = $3;
 		}
 	| primary '(' exprlist ')'   %prec '.'
 		{ $$ = build_function_call ($1, $3); }
