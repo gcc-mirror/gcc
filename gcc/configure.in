@@ -957,6 +957,8 @@ use_libunwind_exceptions=$use_libunwind_default)
 if test x"$use_libunwind_exceptions" = xyes; then
    AC_DEFINE(USE_LIBUNWIND_EXCEPTIONS, 1,
 	[Define if gcc should use -lunwind.])
+   AC_CHECK_LIB(unwind, _Unwind_Resume, libunwind_has_eh_support=yes,
+	libunwind_has_eh_support=no)
 fi
 
 # --------------------------------------------------------
