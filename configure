@@ -87,7 +87,7 @@ srctrigger=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.46.6.11 $"
+version="$Revision: 1.50 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -1013,6 +1013,7 @@ else
   NM_FOR_TARGET='\$(USUAL_NM_FOR_TARGET)'
   NM_FOR_TARGET=${NM_FOR_TARGET}${extra_nmflags_for_target}
   RANLIB_FOR_TARGET='\$(USUAL_RANLIB_FOR_TARGET)'
+  RANLIB_FOR_TARGET=${RANLIB_FOR_TARGET}${extra_ranlibflags_for_target}
   WINDRES=windres
   WINDRES_FOR_TARGET='\$(USUAL_WINDRES_FOR_TARGET)'
   LEX='\$(USUAL_LEX)'
