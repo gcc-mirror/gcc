@@ -23,7 +23,7 @@
 	config/iq2000/iq2000.c, config/m32r/m32r.h, config/m68hc11/m68hc11.h,
 	config/m68k/m68k.h, config/mcore/mcore.h, config/mips/mips.h,
 	config/mmix/mmix.h, config/mn10300/mn10300.h, config/ns32k/ns32k.h,
-	config/pa/pa.h, config/pdp11/pdp11.h config/s390/s390.h,
+	config/pa/pa.h, config/pdp11/pdp11.h, config/s390/s390.h,
 	config/sh/sh.h, config/sparc/sparc.h, config/stormy16/stormy16.h,
 	config/v850/v850.h, config/vax/vax.h, config/xtensa/xtensa.h: Likewise.
 
