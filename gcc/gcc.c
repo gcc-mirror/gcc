@@ -594,44 +594,6 @@ static int n_compilers;
 
 static struct compiler default_compilers[] =
 {
-  {".F", "@f77-cpp-output"},
-  {"@f77-cpp-output",
-     /* For f77 we want -traditional to avoid errors with, for
-	instance, mismatched '.  Also, we avoid unpleasant surprises
-	with substitution of names not prefixed by `_ by' using %P
-	rather than %p (although this isn't consistent with SGI and
-	Sun f77, at least) so you test `__unix' rather than `unix'.
-	-D_LANGUAGE_FORTRAN is used by some compilers like SGI and
-	might as well be in there. */
-   "cpp -lang-c -P %{nostdinc*} %{C} %{v} %{A*} %{I*} %I\
-	%{C:%{!E:%eGNU C does not support -C without using -E}}\
-	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        -undef -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
-	%{!undef:%P} -D_LANGUAGE_FORTRAN %{trigraphs} \
-        %c %{O*:-D__OPTIMIZE__} -traditional %{ftraditional:-traditional}\
-        %{traditional-cpp:-traditional}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
-  	     "f771 %{!pipe:%g.i} \
-		   %{!Q:-quiet} -dumpbase %b.F %{d*} %{m*} %{a}\
-		   %{g*} %{O*} %{W*} %{w} %{pedantic*} \
-		   %{v:-version -fversion} %{f*}\
-		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-              %{!S:as %a \
-		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                      %{!pipe:%g.s} %A\n }"},
-  {".f", "@f77"},
-  {".for", "@f77"},
-  {"@f77","f771 %i \
-		   %{!Q:-quiet} -dumpbase %b.f %{d*} %{m*} %{a}\
-		   %{g*} %{O*} %{W*} %{w} %{pedantic*} \
-		   %{v:-version -fversion} %{f*}\
-		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-              %{!S:as %a \
-		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                      %{!pipe:%g.s} %A\n }"},
   {".c", "@c"},
   {"@c",
    "cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
@@ -702,51 +664,6 @@ static struct compiler default_compilers[] =
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %W{o*}"},
-  {".ch",   "@chill" },
-  {".chi",  "@chill" },
-  {"@chill",
-   "cpp -lang-chill %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
-	%{C:%{!E:%eGNU CHILL does not support -C without using -E}}\
-        -undef -D__GNUCHILL__=%v1 -D__GNUC_MINOR__=%v2\
-        %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
-        %{traditional-cpp:-traditional} %{!undef:%{!ansi:%p} %P} %{trigraphs}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-        %i %{!E:%g.i}%{E:%W{o*}} \n",
-   "%{!E:cc1chill %g.i %1 \
-		   %{!Q:-quiet} -dumpbase %b.ch %{d*} %{m*} %{a}\
-		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{itu} \
-		   %{v:-version} %{pg:-p} %{p} %{f*} %{I*} \
-		   %{aux-info*} %X \
-		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-              %{!S:as %a %Y \
-		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                      %{!pipe:%g.s} %A\n }}"},
-  {".cc", "@c++"},
-  {".cxx", "@c++"},
-  {".cpp", "@c++"},
-  {".c++", "@c++"},
-  {".C", "@c++"},
-  {"@c++",
-   "cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
-	%{C:%{!E:%eGNU C++ does not support -C without using -E}}\
-	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-	-undef -D__GNUC__=%v1 -D__GNUG__=%v1 -D__cplusplus -D__GNUC_MINOR__=%v2\
-	%{ansi:-trigraphs -$ -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
-        %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
-        %{traditional-cpp:-traditional} %{trigraphs}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.ii}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
-   "%{!M:%{!MM:%{!E:cc1plus %{!pipe:%g.ii} %1 %2\
-			    %{!Q:-quiet} -dumpbase %b.cc %{d*} %{m*} %{a}\
-			    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
-			    %{traditional} %{v:-version} %{pg:-p} %{p}\
-			    %{f*} %{+e*} %{aux-info*}\
-			    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}}|\n\
-              %{!S:as %a %Y\
-		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                      %{!pipe:%g.s} %A\n }}}}"},
   {".i", "@cpp-output"},
   {"@cpp-output",
    "%{!M:%{!MM:%{!E:cc1 %i %1 %{!Q:-quiet} %{d*} %{m*} %{a}\
@@ -758,17 +675,6 @@ static struct compiler default_compilers[] =
 		     %{!S:as %a %Y\
 			     %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
 			     %{!pipe:%g.s} %A\n }}}}"},
-  {".ii", "@c++-cpp-output"},
-  {"@c++-cpp-output",
-   "%{!M:%{!MM:%{!E:cc1plus %i %1 %2 %{!Q:-quiet} %{d*} %{m*} %{a}\
-			    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
-			    %{traditional} %{v:-version} %{pg:-p} %{p}\
-			    %{f*} %{+e*} %{aux-info*}\
-			    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-	            %{!S:as %a %Y\
-			    %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-			    %{!pipe:%g.s} %A\n }}}}"},
   {".s", "@assembler"},
   {"@assembler",
    "%{!M:%{!MM:%{!E:%{!S:as %a %Y\
@@ -787,18 +693,7 @@ static struct compiler default_compilers[] =
    "%{!M:%{!MM:%{!E:%{!S:as %a %Y\
                     %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
 		    %{!pipe:%g.s} %A\n }}}}"},
-  {".ads", "@ada"},
-  {".adb", "@ada"},
-  {"@ada",
-   "%{!M:%{!MM:%{!E:gnat1 %{I*} %{k8:-gnatk8} %{w:-gnatws} %{!Q:-quiet}\
-			  -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}\
-			  %{g*} %{O*} %{W*} %{w} %{p} %{pg:-p} %{f*}\
-			  %{d*}\
-			  %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-			  %i %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-		    %{!S:%{!gnatc:%{!gnats:as %a %Y\
-					      %{c:%W{o*}%{!o*:-o %w%b%O}}\
-					      %{!c:-o %d%w%u%O} %{!pipe:%g.s} %A\n}}}}}} "},
+#include "specs.h"
   /* Mark end of table */
   {0, 0}
 };
