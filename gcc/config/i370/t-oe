@@ -1,6 +1,0 @@
-#
-# Target is an i370 running OpenEdition
-#
-
-# Don't bother fixing up header files, they're weird
-STMP_FIXPROTO =

@@ -1,5 +1,0 @@
-# The native linker doesn't handle linking -fpic code with -fPIC code.  Ugh.
-# We cope by building both variants of libgcc.
-MULTILIB_OPTIONS = fpic/fPIC
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

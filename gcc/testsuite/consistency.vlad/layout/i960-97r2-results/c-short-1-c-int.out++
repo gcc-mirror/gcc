@@ -1,4 +1,0 @@
-++Class with int inhereting class with short:
-size=8,align=4
-offset-short=0,offset-int=4,
-align-short=2,align-int=4

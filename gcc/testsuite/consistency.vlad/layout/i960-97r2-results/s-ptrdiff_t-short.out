@@ -1,3 +1,0 @@
-+++Struct ptrdiff_t-short:
-size=8,align=4,offset-ptrdiff_t=0,offset-short=4,
-align-ptrdiff_t=4,align-short=2

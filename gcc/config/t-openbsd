@@ -1,5 +1,0 @@
-# Don't run fixproto
-STMP_FIXPROTO =
-
-# We don't need GCC's own include files.
-USER_H =

@@ -1,1 +1,0 @@
-LIB2ADDEH += $(srcdir)/config/ia64/fde-glibc.c

@@ -1,9 +1,0 @@
-GCC_3.0 {
-  # IA-64 symbols
-  __ia64_nonlocal_goto
-  __ia64_personality_v1
-  __ia64_restore_stack_nonlocal
-  __ia64_save_stack_nonlocal
-  __ia64_trampoline
-  __ia64_backtrace
-}

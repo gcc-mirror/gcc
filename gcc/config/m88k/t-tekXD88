@@ -1,5 +1,0 @@
-# Install the custom Tektronix XD88 link editor directives file.
-EXTRA_PARTS=crtbegin.o crtend.o gcc.ld
-
-gcc.ld: $(srcdir)/config/m88k/tekXD88.ld
-	rm -f gcc.ld; cp $(srcdir)/config/m88k/tekXD88.ld ./gcc.ld
