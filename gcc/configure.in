@@ -1101,6 +1101,23 @@ changequote([,])dnl
 		target_cpu_default="MASK_PA_11"
 		use_collect2=yes
 		;;
+		tm_file="${tm_file} pa/pa-mpeix.h"
+		xm_file=pa/xm-pampeix.h 
+		xmake_file=pa/x-pa-mpeix 
+		echo "You must use gas. Assuming it is already installed." 
+		install_headers_dir=install-headers-tar
+		fixincludes=Makefile.in
+		use_collect2=yes 
+		;; 
+	hppa*-*-mpeix*)
+		tm_file="${tm_file} pa/pa-mpeix.h"
+		xm_file=pa/xm-pampeix.h 
+		xmake_file=pa/x-pa-mpeix 
+		echo "You must use gas. Assuming it is already installed." 
+		install_headers_dir=install-headers-tar
+		fixincludes=Makefile.in
+		use_collect2=yes 
+		;; 
 	i370-*-mvs*)
 		;;
 changequote(,)dnl
