@@ -1,3 +1,11 @@
+2002-01-28  Geoffrey Keating  <geoffk@redhat.com>
+
+	* aclocal.m4: Replace with version copied from libstdc++-v3.
+	* configure.in: Update for changes to aclocal and Makefile.
+	* configure: Regenerate.
+	* Makefile.in: Correct install and uninstall for cross targets.
+	* libU77/configure: Regenerate.
+
 2002-01-20  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* Makefile.in: $(MULTISUBDIR) has an implied leading `/';

@@ -22,18 +22,12 @@
 AC_PREREQ(2.13)
 AC_INIT(libF77/Version.c)
 
-if test "${srcdir}" = "."  ; then
-  if test "${with_target_subdir}" != "." ; then
-    topsrcdir=${with_multisrctop}../..
-  else
-    topsrcdir=${with_multisrctop}..
-  fi
-else
-  topsrcdir=${srcdir}/..
-fi
-dnl This is needed for a multilibbed build in the source tree so
-dnl that install-sh and config.sub get found.
-AC_CONFIG_AUX_DIR($topsrcdir)
+AC_CANONICAL_SYSTEM
+target_alias=${target_alias-$target}
+AC_SUBST(target_alias)
+
+GLIBCPP_CONFIGURE(.)
+GLIBCPP_EXPORT_INSTALL_INFO
 
 # If the language specific compiler does not exist, but the "gcc" directory 
 # does, we do not build anything. Note, $r is set by the top-level Makefile.
@@ -65,29 +59,6 @@ fi
 
 dnl Checks for programs.
 
-dnl FIXME AC_PROG_CC wants CC to be able to link things, but it may
-dnl not be able to.
-define([AC_PROG_CC_WORKS],[])
-
-# We need AC_EXEEXT to keep automake happy in cygnus mode.  However,
-# at least currently, we never actually build a program, so we never
-# need to use $(EXEEXT).  Moreover, the test for EXEEXT normally
-# fails, because we are probably configuring with a cross compiler
-# which cant create executables.  So we include AC_EXEEXT to keep
-# automake happy, but we dont execute it, since we dont care about
-# the result.
-if false; then
-  # autoconf 2.50 runs AC_EXEEXT by default, and the macro expands
-  # to nothing, so nothing would remain between `then' and `fi' if it
-  # were not for the `:' below.
-  :
-  AC_EXEEXT
-fi
-
-# For g77 we'll set CC to point at the built gcc, but this will get it into
-# the makefiles
-
-AC_PROG_CC
 AM_PROG_LIBTOOL
 
 dnl These should be inherited in the recursive make, but ensure they are
@@ -135,19 +106,6 @@ test -f libF77/makefile && mv libF77/makefile  libF77/makefile.ori
 test -f libI77/makefile && mv libI77/makefile  libI77/makefile.ori
 test -f libU77/makefile && mv libU77/makefile  libU77/makefile.ori
 
-# Get the version trigger filename from the toplevel
-if [[ "${with_gcc_version_trigger+set}" = set ]]; then
-	gcc_version_trigger=$with_gcc_version_trigger
-	gcc_version=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/'`
-else
-	gcc_version_trigger=
-	gcc_version=UNKNOWN
-fi
-
-AC_SUBST(gcc_version)
-AC_SUBST(gcc_version_trigger)
-AC_CANONICAL_SYSTEM
-AC_SUBST(target_alias)
 AC_CONFIG_SUBDIRS(libU77 libI77 libF77)
 # Do Makefile first since g2c.h depends on it and shouldn't get an
 # earlier timestamp.  Of course, it does when the multilib gunk below
@@ -158,7 +116,7 @@ if test -n "$CONFIG_FILES"; then
   if test -n "${with_target_subdir}"; then
     # FIXME: We shouldn't need to set ac_file
     ac_file=Makefile
-    . ${topsrcdir}/config-ml.in
+    . ${toplevel_srcdir}/config-ml.in
     touch g2c.h   # to keep it more recent than Makefile
   fi
 fi],
@@ -168,8 +126,8 @@ target=${target}
 with_target_subdir=${with_target_subdir}
 with_multisubdir=${with_multisubdir}
 ac_configure_args="--enable-multilib ${ac_configure_args}"
+toplevel_srcdir=${toplevel_srcdir}
 CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
-topsrcdir=${topsrcdir}
 )
 
 
