@@ -751,6 +751,7 @@ main (argc, argv)
   FILE *outf;
   char *ld_file_name;
   char *c_file_name;
+  char *collect_name;
   char *collect_names;
   char *p;
   char **c_argv;
@@ -772,27 +773,47 @@ main (argc, argv)
   output_file = "a.out";
 
   /* We must check that we do not call ourselves in an infinite
-     recursion loop. We save the name used for us in the COLLECT_NAMES
-     environment variable, first getting the previous value.
+     recursion loop. We append the name used for us to the COLLECT_NAMES
+     environment variable.
 
      In practice, collect will rarely invoke itself.  This can happen now
      that we are no longer called gld.  A perfect example is when running
      gcc in a build directory that has been installed.  When looking for 
      ld's, we'll find our installed version and believe that's the real ld.  */
 
+  /* We must also append COLLECT_NAME to COLLECT_NAMES to watch for the
+     previous version of collect (the one that used COLLECT_NAME and only
+     handled two levels of recursion).  If we don't we may mutually recurse
+     forever.  This can happen (I think) when bootstrapping the old version
+     and a new one is installed (rare, but we should handle it).
+     ??? Hopefully references to COLLECT_NAME can be removed at some point.  */
+
+  collect_name = (char *) getenv ("COLLECT_NAME");
   collect_names = (char *) getenv ("COLLECT_NAMES");
 
   p = (char *) xmalloc (strlen ("COLLECT_NAMES=")
+			+ (collect_name ? strlen (collect_name) + 1 : 0)
 			+ (collect_names ? strlen (collect_names) + 1 : 0)
 			+ strlen (argv[0]) + 1);
+  strcpy (p, "COLLECT_NAMES=");
+  if (collect_name != 0)
+    sprintf (p + strlen (p), "%s%c", collect_name, PATH_SEPARATOR);
   if (collect_names != 0)
-    sprintf (p, "COLLECT_NAMES=%s%c%s",
-	     collect_names, PATH_SEPARATOR, argv[0]);
-  else
-    sprintf (p, "COLLECT_NAMES=%s", argv[0]);
+    sprintf (p + strlen (p), "%s%c", collect_names, PATH_SEPARATOR);
+  strcat (p, argv[0]);
   putenv (p);
 
   prefix_from_env ("COLLECT_NAMES", &our_file_names);
+
+  /* Set environment variable COLLECT_NAME to our name so the previous version
+     of collect won't find us.  If it does we'll mutually recurse forever.
+     This can happen when bootstrapping the new version and an old version is
+     installed.
+     ??? Hopefully this bit of code can be removed at some point.  */
+
+  p = xmalloc (strlen ("COLLECT_NAME=") + strlen (argv[0]) + 1);
+  sprintf (p, "COLLECT_NAME=%s", argv[0]);
+  putenv (p);
 
   p = (char *) getenv ("COLLECT_GCC_OPTIONS");
   if (p)
