@@ -53,8 +53,11 @@
 #undef PROCESSOR_DEFAULT64
 #define PROCESSOR_DEFAULT64 PROCESSOR_PPC630
 
-#undef	TARGET_RELOCATABLE
-#define	TARGET_RELOCATABLE (!TARGET_64BIT && (target_flags & MASK_RELOCATABLE))
+/* We don't need to generate entries in .fixup, except when
+   -mrelocatable or -mrelocatable-lib is given.  */
+#undef RELOCATABLE_NEEDS_FIXUP
+#define RELOCATABLE_NEEDS_FIXUP \
+  (target_flags & target_flags_explicit & MASK_RELOCATABLE)
 
 #undef	RS6000_ABI_NAME
 #define	RS6000_ABI_NAME (TARGET_64BIT ? "aixdesc" : "sysv")
@@ -188,6 +191,8 @@
 #define	TARGET_EABI		0
 #undef	TARGET_PROTOTYPE
 #define	TARGET_PROTOTYPE	0
+#undef RELOCATABLE_NEEDS_FIXUP
+#define RELOCATABLE_NEEDS_FIXUP 0
 
 #endif
 
@@ -211,9 +216,6 @@
 #define NO_PROFILE_COUNTERS TARGET_64BIT
 #define PROFILE_HOOK(LABEL) \
   do { if (TARGET_64BIT) output_profile_hook (LABEL); } while (0)
-
-/* We don't need to generate entries in .fixup.  */
-#undef RELOCATABLE_NEEDS_FIXUP
 
 /* PowerPC64 Linux word-aligns FP doubles when -malign-power is given.  */
 #undef  ADJUST_FIELD_ALIGN

@@ -1,3 +1,13 @@
+2004-12-02  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/16952
+	* config/rs6000/rs6000.c (rs6000_assemble_integer): Replace
+	#ifdef RELOCATABLE_NEEDS_FIXUP with if.
+	* config/rs6000/linux.h (RELOCATABLE_NEEDS_FIXUP): Define in terms
+	of target_flags_explicit.
+	* config/rs6000/linux64.h (RELOCATABLE_NEEDS_FIXUP): Ditto for biarch
+	case.  Define as 0 for non-biarch.
+
 2004-12-01  Richard Henderson  <rth@redhat.com>
 
         * expr.c (optimize_bitfield_assignment_op): Split out from ...
