@@ -1,3 +1,8 @@
+Thu Apr 27 12:47:00 2000  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* config/mn10300/mn10300.md (movhi): Simplify.  Prefer data
+	registers.
+
 Thu Apr 27 17:33:05 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* function.c (epilogue_done): Pass whole insn to record_insns.
