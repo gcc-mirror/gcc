@@ -927,6 +927,29 @@ emit_move_sequence (operands, mode, scratch_reg)
 	}
       if (symbolic_operand (operand1, mode))
 	{
+	  rtx const_part = NULL;
+
+	  /* Argh.  The assembler and linker can't handle arithmetic
+	     involving plabels.  We'll have to split up operand1 here
+	     if it's a function label involved in an arithmetic
+	     expression.  Luckily, this only happens with addition
+	     of constants to plabels, which simplifies the test.
+
+	     We add the constant back in just before returning to
+	     our caller.  */
+	  if (GET_CODE (operand1) == CONST
+	      && GET_CODE (XEXP (operand1, 0)) == PLUS
+	      && function_label_operand (XEXP (XEXP (operand1, 0), 0), Pmode))
+	    {
+	      /* Save away the constant part of the expression.  */
+	      const_part = XEXP (XEXP (operand1, 0), 1);
+	      if (GET_CODE (const_part) != CONST_INT)
+		abort ();
+
+	      /* Set operand1 to just the SYMBOL_REF.  */
+	      operand1 = XEXP (XEXP (operand1, 0), 0);
+	    }
+
 	  if (flag_pic)
 	    {
 	      rtx temp;
@@ -936,39 +959,30 @@ emit_move_sequence (operands, mode, scratch_reg)
 	      else
 		temp = gen_reg_rtx (Pmode);
 
-	      operands[1] = legitimize_pic_address (operand1, mode, temp);
-	      emit_insn (gen_rtx (SET, VOIDmode, operand0, operands[1]));
+	      /* If operand1 is a function label, then we've got to
+		 force it to memory, then load op0 from memory.  */
+	      if (function_label_operand (operand1, mode))
+		{
+		  operands[1] = force_const_mem (mode, operand1);
+		  emit_move_sequence (operands, mode, temp);
+		}
+	      else
+		{
+		  operands[1] = legitimize_pic_address (operand1, mode, temp);
+		  emit_insn (gen_rtx (SET, VOIDmode, operand0, operands[1]));
+		}
 	    }
 	  /* On the HPPA, references to data space are supposed to use dp,
 	     register 27, but showing it in the RTL inhibits various cse
 	     and loop optimizations.  */
 	  else
 	    {
-	      rtx temp, set, const_part = NULL;
+	      rtx temp, set;
 
 	      if (reload_in_progress || reload_completed)
 		temp = scratch_reg ? scratch_reg : operand0;
 	      else
 		temp = gen_reg_rtx (mode);
-
-	      /* Argh.  The assembler and linker can't handle arithmetic
-		 involving plabels.  We'll have to split up operand1 here
-		 if it's a function label involved in an arithmetic
-		 expression.  Luckily, this only happens with addition
-		 of constants to plabels, which simplifies the test.  */
-	     if (GET_CODE (operand1) == CONST
-		 && GET_CODE (XEXP (operand1, 0)) == PLUS
-		 && function_label_operand (XEXP (XEXP (operand1, 0), 0),
-					    Pmode))
-		{
-		  /* Save away the constant part of the expression.  */
-		  const_part = XEXP (XEXP (operand1, 0), 1);
-		  if (GET_CODE (const_part) != CONST_INT)
-		    abort ();
-
-		  /* Set operand1 to just the SYMBOL_REF.  */
-		  operand1 = XEXP (XEXP (operand1, 0), 0);
-		}
 
 	      if (ishighonly)
 		set = gen_rtx (SET, mode, operand0, temp);
@@ -982,11 +996,11 @@ emit_move_sequence (operands, mode, scratch_reg)
 				  gen_rtx (HIGH, mode, operand1)));
 	      emit_insn (set);
 
-	      /* Add back in the constant part if needed.  */
-	      if (const_part != NULL)
-		expand_inc (operand0, const_part);
-	      return 1;
 	    }
+
+	  /* Add back in the constant part if needed.  */
+	  if (const_part != NULL)
+	    expand_inc (operand0, const_part);
 	  return 1;
 	}
       else if (GET_CODE (operand1) != CONST_INT
