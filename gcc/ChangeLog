@@ -1,3 +1,8 @@
+2002-07-19  Alan Modra  <amodra@bigpond.net.au>
+
+	* prefix.c (update_path): Don't zap single `.' path components
+	unless followed by another `.' and fix typo last patch.
+
 2002-07-18  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppexp.c (cpp_num_mul): Remove unused parameter.

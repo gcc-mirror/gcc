@@ -284,7 +284,8 @@ update_path (path, key)
       p = strchr (p, '.');
       if (p == NULL)
 	break;
-      /* Get rid of a leading `./' and replace `/./' with `/'.  */
+      /* Get rid of a leading `./' and replace `/./' with `/', when
+	 such components are followed with another `.'.  */
       if (IS_DIR_SEPARATOR (p[1])
 	  && (p == result || IS_DIR_SEPARATOR (p[-1])))
 	{
@@ -292,9 +293,14 @@ update_path (path, key)
 	  /* Be careful about .//foo  */
 	  while (IS_DIR_SEPARATOR (*src))
 	    ++src;
-	  dest = p;
-	  while ((*dest++ = *src++) != 0)
-	    ;
+	  if (*src == '.')
+	    {
+	      dest = p;
+	      while ((*dest++ = *src++) != 0)
+		;
+	    }
+	  else
+	    ++p;
 	}
       /* Look for `/../'  */
       else if (p[1] == '.'
@@ -316,7 +322,7 @@ update_path (path, key)
 	      dest = p - 1;
 	      while (dest != result && IS_DIR_SEPARATOR (*dest))
 		--dest;
-	      while (dest != result && IS_DIR_SEPARATOR (dest[-1]))
+	      while (dest != result && !IS_DIR_SEPARATOR (dest[-1]))
 		--dest;
 	      /* Don't strip leading `/'.  */
 	      while (IS_DIR_SEPARATOR (*dest))
