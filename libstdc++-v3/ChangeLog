@@ -1,3 +1,7 @@
+2000-11-29  Loren J. Rittle  <ljrittle@acm.org>
+
+        * tests_flags.in: Correct typo.
+
 2000-11-29  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* tests_flags (SH_FLAGS, ST_FLAGS): Move them back to ...
