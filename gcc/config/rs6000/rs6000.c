@@ -6920,7 +6920,7 @@ rs6000_reverse_condition (mode, code)
 {
   /* Reversal of FP compares takes care -- an ordered compare
      becomes an unordered compare and vice versa.  */
-  if (mode == CCFPmode)
+  if (mode == CCFPmode && !flag_unsafe_math_optimizations)
     return reverse_condition_maybe_unordered (code);
   else
     return reverse_condition (code);
@@ -7073,7 +7073,14 @@ output_cbranch (op, label, reversed, insn)
      reverse_condition_maybe_unordered here always but this
      makes the resulting assembler clearer.  */
   if (really_reversed)
-    code = rs6000_reverse_condition (mode, code);
+    {
+      /* Reversal of FP compares takes care -- an ordered compare
+	 becomes an unordered compare and vice versa.  */
+      if (mode == CCFPmode)
+	code = reverse_condition_maybe_unordered (code);
+      else
+	code = reverse_condition (code);
+    }
 
   switch (code)
     {

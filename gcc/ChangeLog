@@ -1,3 +1,11 @@
+2002-10-21  Dale Johannesen  <dalej@apple.com>
+
+	PR target/7133
+	* config/rs6000/rs6000.c (rs6000_reverse_condition): Handle
+	unsafe math reversals correctly for RTL generation.
+	(output_cbranch):  Replace rs6000_reverse_condition call
+	by its former definition.
+
 Sun Oct 27 10:12:27 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* linux64.h (DEFAULT_PCC_STRUCT_RETURN):  Define.
