@@ -956,11 +956,14 @@ outgoing_edges_match (mode, bb1, bb2)
   edge fallthru1 = 0, fallthru2 = 0;
   edge e1, e2;
 
-  /* If BB1 has only one successor, we must be looking at an unconditional
-     jump.  Which, by the assumption above, means that we only need to check
-     that BB2 has one successor.  */
+  /* If BB1 has only one successor, we may be looking at either an
+     unconditional jump, or a fake edge to exit.  */
   if (bb1->succ && !bb1->succ->succ_next)
-    return (bb2->succ && !bb2->succ->succ_next);
+    {
+      if (! bb2->succ || bb2->succ->succ_next)
+	return false;
+      return insns_match_p (mode, bb1->end, bb2->end);
+    }
 
   /* Match conditional jumps - this may get tricky when fallthru and branch
      edges are crossed.  */
