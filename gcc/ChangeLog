@@ -13,6 +13,9 @@ Sat Jun 19 05:25:05 1999  Richard Earnshaw (rearnsha@arm.com)
 	(output_func_{prologue,epilogue}): Likewise.
 	(output_expand_prologue): Likewise.
 
+	* arm.c (arm_override_options): Remove warning about PIC code
+	not being supported.
+
 Fri Jun 18 15:44:18 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_expand_block_move): Use get_insns rather than

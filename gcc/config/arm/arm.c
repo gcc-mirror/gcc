@@ -486,13 +486,6 @@ arm_override_options ()
   if (flag_pic && ! TARGET_APCS_STACK)
     arm_pic_register = 10;
   
-  /* Well, I'm about to have a go, but pic is NOT going to be compatible
-     with APCS reentrancy, since that requires too much support in the
-     assembler and linker, and the ARMASM assembler seems to lack some
-     required directives.  */
-  if (flag_pic)
-    warning ("Position independent code not supported");
-  
   if (TARGET_APCS_FLOAT)
     warning ("Passing floating point arguments in fp regs not yet supported");
   
