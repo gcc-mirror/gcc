@@ -127,7 +127,7 @@ byte_reg (x, b)
    (interrupt_handler						\
     || pragma_saveall						\
     || (regno == FRAME_POINTER_REGNUM && regs_ever_live[regno])	\
-    || (regs_ever_live[regno] & !call_used_regs[regno])))
+    || (regs_ever_live[regno] && !call_used_regs[regno])))
 
 /* Output assembly language to FILE for the operation OP with operand size
    SIZE to adjust the stack pointer.  */
@@ -856,7 +856,7 @@ eq_operator (x, mode)
    with this attribute may be safely used in an interrupt vector.  */
 
 int
-handle_pragma (p_getc, p_ungetc, name)
+handle_pragma (p_getc, p_ungetc, pname)
      int (*  p_getc) PROTO ((void));
      void (* p_ungetc) PROTO ((int));
      char * pname;
@@ -1574,8 +1574,7 @@ initial_offset (from, to)
       int regno;
 
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	if ((regs_ever_live[regno]
-	     && (!call_used_regs[regno] || regno == FRAME_POINTER_REGNUM)))
+	if (WORD_REG_USED (regno))
 	  offset += UNITS_PER_WORD;
 
       /* See the comments for get_frame_size.  We need to round it up to

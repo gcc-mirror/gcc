@@ -1,3 +1,10 @@
+Fri Oct  2 11:52:35 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* h8300.c (WORD_REG_USED): Fix typo.
+	(initial_offset): Use WORD_REG_USED.
+
+	* h8300.c (handle_pragma): Fix typo.
+
 Fri Oct  2 10:51:35 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
 
 	* caller-save.c (insert_save_restore): Break this function up
