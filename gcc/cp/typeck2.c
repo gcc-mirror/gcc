@@ -140,6 +140,11 @@ abstract_virtuals_error (decl, type)
   if (!CLASS_TYPE_P (type) || !CLASSTYPE_PURE_VIRTUALS (type))
     return 0;
 
+  if (!TYPE_SIZE (type))
+    /* TYPE is being defined, and during that time
+       CLASSTYPE_PURE_VIRTUALS holds the inline friends.  */
+    return 0;
+
   u = CLASSTYPE_PURE_VIRTUALS (type);
   if (decl)
     {
