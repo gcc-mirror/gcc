@@ -1,3 +1,16 @@
+2004-01-12  Graydon Hoare  <graydon@redhat.com>
+
+	* gnu/java/awt/gtk/GdkGraphics2D.java
+	(static): Check GtkToolkit before initializing static state.
+	(Graphics2D): Don't construct transform with 0.5 unit offset.
+
+2003-11-06  Sascha Brawer  <brawer@dandelis.ch>
+
+	* gnu/java/awt/BitwiseXORComposite.java: Add.
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
+	(setXORMode): Switch to gnu.java.awt.BitwiseXORComposite.
+	(BitwiseXORComposite): Remove inner class.
+
 2004-01-11  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/lang/reflect/TypeSignature.java
