@@ -2046,5 +2046,7 @@ if_convert (life_data_ok)
 	       num_removed_blocks);
     }
 
+#ifdef ENABLE_CHECKING
   verify_flow_info ();
+#endif
 }
