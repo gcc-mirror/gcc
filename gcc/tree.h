@@ -1211,9 +1211,11 @@ union tree_node
    defined here and in rtl.h.  */
 
 #ifndef exact_log2
-#define exact_log2(N) exact_log2_wide ((HOST_WIDE_INT) (N))
-#define floor_log2(N) floor_log2_wide ((HOST_WIDE_INT) (N))
+#define exact_log2(N) exact_log2_wide ((unsigned HOST_WIDE_INT) (N))
+#define floor_log2(N) floor_log2_wide ((unsigned HOST_WIDE_INT) (N))
 #endif
+extern int exact_log2_wide             PROTO((unsigned HOST_WIDE_INT));
+extern int floor_log2_wide             PROTO((unsigned HOST_WIDE_INT));
 
 #if 0
 /* At present, don't prototype xrealloc, since all of the callers don't
@@ -1320,7 +1322,7 @@ extern int index_type_equal		PROTO((tree, tree));
    put the prototype here.  Rtl.h does declare the prototype if
    tree.h had been included.  */
 
-extern tree make_tree ();
+extern tree make_tree			PROTO((tree, struct rtx_def *));
 
 /* Return a type like TTYPE except that its TYPE_ATTRIBUTES
    is ATTRIBUTE.
@@ -1669,12 +1671,12 @@ extern int all_types_permanent;
      2: and any other information that might be interesting, such as function
         parameter types in C++.  */
 
-extern char *(*decl_printable_name) (/* tree decl, int verbosity */);
+extern char *(*decl_printable_name)		PROTO((tree, int));
 
 /* Pointer to function to finish handling an incomplete decl at the
    end of compilation.  */
 
-extern void (*incomplete_decl_finalize_hook) ();
+extern void (*incomplete_decl_finalize_hook)	PROTO((tree));
 
 /* In tree.c */
 extern char *perm_calloc			PROTO((int, long));
@@ -1892,6 +1894,215 @@ extern void end_temporary_allocation PROTO((void));
 
 /* Pop the obstack selection stack.  */
 extern void pop_obstacks PROTO((void));
+
+/* In tree.c */
+extern int really_constant_p		PROTO ((tree));
+extern void push_obstacks		PROTO ((struct obstack *,
+						struct obstack *));
+extern void pop_momentary_nofree	PROTO ((void));
+extern void preserve_momentary		PROTO ((void));
+extern void saveable_allocation		PROTO ((void));
+extern void temporary_allocation	PROTO ((void));
+extern void resume_temporary_allocation	PROTO ((void));
+extern tree get_file_function_name	PROTO ((int));
+extern void set_identifier_size		PROTO ((int));
+extern int int_fits_type_p		PROTO ((tree, tree));
+extern int tree_log2			PROTO ((tree));
+extern void preserve_initializer	PROTO ((void));
+extern void preserve_data		PROTO ((void));
+extern int object_permanent_p		PROTO ((tree));
+extern int type_precision		PROTO ((tree));
+extern int simple_cst_equal		PROTO ((tree, tree));
+extern int type_list_equal		PROTO ((tree, tree));
+extern int chain_member			PROTO ((tree, tree));
+extern int chain_member_purpose		PROTO ((tree, tree));
+extern int chain_member_value		PROTO ((tree, tree));
+extern tree listify			PROTO ((tree));
+extern tree type_hash_lookup		PROTO ((int, tree));
+extern void type_hash_add		PROTO ((int, tree));
+extern int type_hash_list		PROTO ((tree));
+extern int simple_cst_list_equal	PROTO ((tree, tree));
+extern void debug_obstack		PROTO ((char *));
+extern void rtl_in_current_obstack	PROTO ((void));
+extern void rtl_in_saveable_obstack	PROTO ((void));
+extern void init_tree_codes		PROTO ((void));
+extern void dump_tree_statistics	PROTO ((void));
+extern void print_obstack_statistics	PROTO ((char *, struct obstack *));
+#ifdef BUFSIZ
+extern void print_obstack_name		PROTO ((char *, FILE *, char *));
+#endif
+extern void expand_function_end		PROTO ((char *, int, int));
+extern void expand_function_start	PROTO ((tree, int));
+extern int real_onep			PROTO ((tree));
+extern int real_twop			PROTO ((tree));
+extern void start_identifier_warnings	PROTO ((void));
+extern void gcc_obstack_init		PROTO ((struct obstack *));
+extern void init_obstacks		PROTO ((void));
+extern void obfree			PROTO ((char *));
+
+/* In function.c */
+extern void setjmp_protect_args		PROTO ((void));
+extern void setjmp_protect		PROTO ((tree));
+extern void expand_main_function	PROTO ((void));
+extern void mark_varargs		PROTO ((void));
+extern void init_function_start		PROTO ((tree, char *, int));
+extern void assign_parms		PROTO ((tree, int));
+extern void put_var_into_stack		PROTO ((tree));
+extern void uninitialized_vars_warning	PROTO ((tree));
+extern void setjmp_args_warning		PROTO ((void));
+extern void mark_all_temps_used		PROTO ((void));
+extern void init_temp_slots		PROTO ((void));
+extern void combine_temp_slots		PROTO ((void));
+extern void free_temp_slots		PROTO ((void));
+extern void pop_temp_slots		PROTO ((void));
+extern void push_temp_slots		PROTO ((void));
+extern void preserve_temp_slots		PROTO ((struct rtx_def *));
+extern int aggregate_value_p		PROTO ((tree));
+extern tree reorder_blocks		PROTO ((tree *, tree,
+						struct rtx_def *));
+extern void free_temps_for_rtl_expr	PROTO ((tree));
+extern void instantiate_virtual_regs	PROTO ((tree, struct rtx_def *));
+extern int max_parm_reg_num		PROTO ((void));
+extern void bc_expand_function_start	PROTO ((tree, int));
+extern void bc_expand_function_end	PROTO ((void));
+extern void push_function_context	PROTO ((void));
+extern void pop_function_context	PROTO ((void));
+extern void push_function_context_to	PROTO ((tree));
+extern void pop_function_context_from	PROTO ((tree));
+
+/* In print-rtl.c */
+#ifdef BUFSIZ
+extern void print_rtl			PROTO ((FILE *, struct rtx_def *));
+#endif
+
+/* In print-tree.c */
+extern void debug_tree			PROTO ((tree));
+#ifdef BUFSIZ
+extern void print_node			PROTO ((FILE *, char *, tree, int));
+extern void print_node_brief		PROTO ((FILE *, char *, tree, int));
+extern void indent_to			PROTO ((FILE *, int));
+#endif
+
+/* In expr.c */
+extern void emit_queue				PROTO ((void));
+extern int apply_args_register_offset		PROTO ((int));
+extern char * bc_gen_constr_label		PROTO ((void));
+extern struct rtx_def *bc_allocate_variable_array PROTO ((tree));
+extern struct rtx_def *expand_builtin_return_addr
+	PROTO ((enum built_in_function, int, struct rtx_def *));
+extern void do_pending_stack_adjust		PROTO ((void));
+extern struct rtx_def *expand_assignment	PROTO ((tree, tree, int, int));
+extern struct rtx_def *store_expr		PROTO ((tree, struct rtx_def *,
+							int));
+
+/* In emit-rtl.c */
+extern void start_sequence_for_rtl_expr		PROTO ((tree));
+extern struct rtx_def *emit_line_note_after	PROTO ((char *, int,
+							struct rtx_def *));
+extern struct rtx_def *emit_line_note		PROTO ((char *, int));
+extern struct rtx_def *emit_line_note_force	PROTO ((char *, int));
+
+/* In c-typeck.c */
+extern int mark_addressable		PROTO ((tree));
+extern void incomplete_type_error	PROTO ((tree, tree));
+
+/* In c-lang.c */
+extern void print_lang_statistics	PROTO ((void));
+
+/* In c-common.c */
+extern tree truthvalue_conversion	PROTO ((tree));
+extern int min_precision		PROTO ((tree, int));
+extern void split_specs_attrs		PROTO ((tree, tree *, tree *));
+
+/* In c-decl.c */
+#ifdef BUFSIZ
+extern void print_lang_decl		PROTO ((FILE *, tree, int));
+extern void print_lang_type		PROTO ((FILE *, tree, int));
+extern void print_lang_identifier	PROTO ((FILE *, tree, int));
+#endif
+extern int global_bindings_p		PROTO ((void));
+extern void insert_block		PROTO ((tree));
+
+/* In integrate.c */
+extern void save_for_inline_nocopy	PROTO ((tree));
+extern void save_for_inline_copying	PROTO ((tree));
+extern void set_decl_abstract_flags	PROTO ((tree, int));
+extern void output_inline_function	PROTO ((tree));
+
+/* In c-lex.c */
+extern void set_yydebug			PROTO ((int));
+
+/* In stor-layout.c */
+extern void fixup_signed_type		PROTO ((tree));
+
+/* varasm.c */
+extern void make_decl_rtl		PROTO ((tree, char *, int));
+extern void make_decl_one_only		PROTO ((tree));
+extern void variable_section		PROTO ((tree, int));
+
+/* toplev.c */
+extern void print_time			PROTO ((char *, int));
+extern int get_run_time			PROTO ((void));
+extern void debug_start_source_file	PROTO ((char *));
+extern void debug_end_source_file	PROTO ((unsigned));
+extern void debug_define		PROTO ((unsigned, char *));
+extern void debug_undef			PROTO ((unsigned, char *));
+extern void rest_of_decl_compilation	PROTO ((tree, char *, int, int));
+extern void rest_of_type_compilation	PROTO ((tree, int));
+extern void rest_of_compilation		PROTO ((tree));
+extern void fatal			PVPROTO ((char *, ...));
+extern void fatal_io_error		PROTO ((char *));
+#if 0
+extern void warning			PVPROTO ((char *, ...));
+extern void error			PVPROTO ((char *, ...));
+#endif
+extern void pedwarn			PVPROTO ((char *, ...));
+extern void pedwarn_with_decl		PVPROTO ((tree, char *, ...));
+extern void pedwarn_with_file_and_line	PVPROTO ((char *, int, char *, ...));
+extern void warning_with_file_and_line	PVPROTO ((char *, int, char *, ...));
+extern void warning_with_decl		PVPROTO ((tree, char *, ...));
+extern void error_with_decl		PVPROTO ((tree, char *, ...));
+extern void error_with_file_and_line	PVPROTO ((char *, int, char *, ...));
+extern void sorry			PVPROTO ((char *s, ...));
+extern void default_print_error_function PROTO ((char *));
+extern void report_error_function	PROTO ((char *));
+extern void announce_function		PROTO ((tree));
+
+/* In fold-const.c */
+extern int div_and_round_double		PROTO ((enum tree_code, int,
+						HOST_WIDE_INT, HOST_WIDE_INT,
+						HOST_WIDE_INT, HOST_WIDE_INT,
+						HOST_WIDE_INT *,
+						HOST_WIDE_INT *,
+						HOST_WIDE_INT *,
+						HOST_WIDE_INT *));
+
+/* In stmt.c */
+extern void emit_nop			PROTO ((void));
+extern void expand_computed_goto	PROTO ((tree));
+extern struct rtx_def *label_rtx	PROTO ((tree));
+extern void expand_asm_operands		PROTO ((tree, tree, tree, tree, int,
+						char *, int));
+extern int any_pending_cleanups		PROTO ((int));
+extern void init_stmt			PROTO ((void));
+extern void init_stmt_for_function	PROTO ((void));
+extern void remember_end_note		PROTO ((tree));
+extern int drop_through_at_end_p	PROTO ((void));
+extern void expand_start_target_temps	PROTO ((void));
+extern void expand_end_target_temps	PROTO ((void));
+extern void expand_elseif		PROTO ((tree));
+extern void expand_decl			PROTO ((tree));
+extern int expand_decl_cleanup		PROTO ((tree, tree));
+extern void expand_anon_union_decl	PROTO ((tree, tree, tree));
+extern void move_cleanups_up		PROTO ((void));
+extern void expand_start_case_dummy	PROTO ((void));
+extern void expand_end_case_dummy	PROTO ((void));
+extern tree case_index_expr_type	PROTO ((void));
+extern HOST_WIDE_INT all_cases_count	PROTO ((tree, int *));
+extern void mark_seen_cases		PROTO ((tree, unsigned char *,
+						long, int));
+extern void check_for_full_enumeration_handling PROTO ((tree));
+extern void declare_nonlocal_label	PROTO ((tree));
 
 /* If KIND=='I', return a suitable global initializer (constructor) name.
    If KIND=='D', return a suitable global clean-up (destructor) name.  */
