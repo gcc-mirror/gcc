@@ -1401,7 +1401,7 @@ build_real_from_int_cst (type, i)
 
   set_float_handler (float_error);
 
-#if !defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
+#ifdef REAL_ARITHMETIC
   d = real_value_from_int_cst (type, i);
 #else
   d = REAL_VALUE_TRUNCATE (TYPE_MODE (type),
