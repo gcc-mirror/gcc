@@ -1200,7 +1200,7 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
   fprintf (out, " %d", i); \
   INT_temp = saw_wide ? IMMEDIATE_s2 : IMMEDIATE_s1; \
   saw_wide = 0; \
-  fprintf (out, " %d", i)
+  fprintf (out, " %d", INT_temp)
 
 #define SPECIAL_WIDE(OPERAND_TYPE) \
   saw_wide = 1;
