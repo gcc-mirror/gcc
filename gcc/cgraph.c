@@ -354,6 +354,7 @@ cgraph_remove_node (struct cgraph_node *node)
 	{
 	  DECL_SAVED_TREE (node->decl) = NULL;
 	  DECL_STRUCT_FUNCTION (node->decl) = NULL;
+          DECL_INITIAL (node->decl) = error_mark_node;
 	}
     }
   cgraph_n_nodes--;

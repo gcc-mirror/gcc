@@ -1,3 +1,11 @@
+2004-09-08  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_remove_node): Free DECL_INITIAL field of node.
+	* cgraphunit.c (verify_cgraph): Don't verify on syntax errors.
+	(cgraph_expand_function): Remove stale cgraph edges of currently
+	compiled function; fix non-unit-at-a-time code copying function
+	node for later reuse.
+
 2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* vec.c (vec_p_reserve, vec_o_reserve): Rename to ...
