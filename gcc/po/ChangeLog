@@ -1,3 +1,7 @@
+1999-12-31  Manfred Hollstein  <mhollstein@cygnus.com>
+
+	* POTFILES.in: Remove config/xm-siglist.h.
+
 Mon Nov 22 23:17:13 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* POTFILES.in: Add config/freebsd.h

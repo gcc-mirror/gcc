@@ -548,7 +548,6 @@ config/winnt/xm-winnt.h
 config/xm-alloca.h
 config/xm-gnu.h
 config/xm-lynx.h
-config/xm-siglist.h
 config/xm-std32.h
 convert.c
 convert.h
