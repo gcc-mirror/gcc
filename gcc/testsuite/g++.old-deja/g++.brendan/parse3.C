@@ -18,5 +18,5 @@ A A::operator+(const A in)
     if (high==0)
       return A();    // this works
     else
-      return (A());  // this works not !! -> why ?? // ERROR - 
-} // ERROR - 
+      return (A());  // this works not // gets bogus error - XFAIL *-*-* 
+} // gets bogus error - XFAIL *-*-* 

@@ -9,5 +9,5 @@ class A { };
 
 main()  {
   A a = a;
-  A b(b); // ERROR - 
+  A b(b); // gets bogus error - XFAIL *-*-*
 }
