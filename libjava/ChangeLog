@@ -1,3 +1,8 @@
+2002-05-02  Jerome Marc  <marcjero@yahoo.com>
+
+	* java/net/natPlainSocketImpl.cc: Include sys/ioctl.h and
+	sys/filio.h, if present.
+
 2002-04-30  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/BufferedReader.java (fill): Handle case where markPos
