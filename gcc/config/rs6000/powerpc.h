@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 PowerPC running AIX version 3.2.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@npac.syr.edu).
 
 This file is part of GNU CC.
@@ -27,6 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC "\
+%{posix: -D_POSIX_SOURCE} \
 %{!mcpu*: \
   %{mpower: %{!mpower2: -D_ARCH_PWR}} \
   %{mpower2: -D_ARCH_PWR2} \
