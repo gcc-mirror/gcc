@@ -1,3 +1,7 @@
+2004-07-12  Devang Patel  <dpatel@apple.com>
+
+	* doc/invoke.texi (Darwin Options): Document -gused and -gfull.
+	
 2004-07-12  Steve Ellcey  <sje@cup.hp.com>
 
 	* function.c (expand_function_start): Ensure r_save is in Pmode.

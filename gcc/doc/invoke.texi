@@ -422,7 +422,7 @@ in the following sections.
 -single_module  -static  -sub_library  -sub_umbrella @gol
 -twolevel_namespace  -umbrella  -undefined @gol
 -unexported_symbols_list  -weak_reference_mismatches @gol
--whatsloaded -F}
+-whatsloaded -F -gused -gfull}
 
 @emph{DEC Alpha Options}
 @gccoptlist{-mno-fp-regs  -msoft-float  -malpha-as  -mgas @gol
@@ -6902,6 +6902,16 @@ and @samp{"/Local/Library/Frameworks"}.  An example include looks like
 @code{#include <Framework/header.h>}, where @samp{Framework} denotes
 the name of the framework and header.h is found in the
 @samp{"PrivateHeaders"} or @samp{"Headers"} directory.
+
+@item -gused
+@opindex -gused
+Emit debugging information for symbols that are used. For STABS
+debugging format, this enables @option{-feliminate-unused-debug-symbols}.
+This is by default ON.
+
+@item -gfull
+@opindex -gfull
+Emit debugging information for all symbols and types.
 
 @item -all_load
 @opindex all_load
