@@ -144,7 +144,7 @@ Boston, MA 02111-1307, USA.  */
     %{!ibcs: \
       %{!static: \
         %{rdynamic:-export-dynamic} \
-        %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.1}} \
+        %{!dynamic-linker:-dynamic-linker /lib/ld-linux64.so.2}} \
         %{static:-static}}} \
 %{mlittle-endian:-EL} \
 "
