@@ -305,7 +305,7 @@ reg_to_stack (first, file)
 
   /* Count the basic blocks.  Also find maximum insn uid.  */
   {
-    register RTX_CODE prev_code = JUMP_INSN;
+    register RTX_CODE prev_code = BARRIER;
     register RTX_CODE code;
 
     max_uid = 0;
@@ -1176,7 +1176,7 @@ find_blocks (first)
 {
   register rtx insn;
   register int block;
-  register RTX_CODE prev_code = JUMP_INSN;
+  register RTX_CODE prev_code = BARRIER;
   register RTX_CODE code;
   rtx label_value_list = 0;
 
