@@ -2056,7 +2056,13 @@ write_expression (tree expr)
 
 	case CAST_EXPR:
 	  write_type (TREE_TYPE (expr));
-	  write_expression (TREE_VALUE (TREE_OPERAND (expr, 0)));
+	  /* There is no way to mangle a zero-operand cast like
+	     "T()".  */
+	  if (!TREE_OPERAND (expr, 0))
+	    sorry ("zero-operand casts cannot be mangled due to a defect "
+		   "in the C++ ABI");
+	  else
+	    write_expression (TREE_VALUE (TREE_OPERAND (expr, 0)));
 	  break;
 
 	case STATIC_CAST_EXPR:
