@@ -320,8 +320,8 @@ struct gcc_target
   /* True if MODE is valid for a pointer in __attribute__((mode("MODE"))).  */
   bool (* valid_pointer_mode) PARAMS ((enum machine_mode mode));
 
-  /* True if two vector types can be copied without an explicit cast.  */
-  bool (* vector_types_compatible) PARAMS ((tree, tree));
+  /* True if a vector is opaque.  */
+  bool (* vector_opaque_p) PARAMS ((tree));
 
   /* Compute a (partial) cost for rtx X.  Return true if the complete
      cost has been computed, and false if subexpressions should be

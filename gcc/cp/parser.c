@@ -34,6 +34,7 @@
 #include "diagnostic.h"
 #include "toplev.h"
 #include "output.h"
+#include "target.h"
 
 
 /* The lexer.  */
@@ -9503,7 +9504,7 @@ cp_parser_asm_definition (cp_parser* parser)
      declarator asm-specification [opt] attributes [opt] initializer [opt]
 
    The DECL_SPECIFIERS and PREFIX_ATTRIBUTES apply to this declarator.
-   Returns a reprsentation of the entity declared.  If MEMBER_P is TRUE,
+   Returns a representation of the entity declared.  If MEMBER_P is TRUE,
    then this declarator appears in a class scope.  The new DECL created
    by this declarator is returned.
 
@@ -9702,8 +9703,13 @@ cp_parser_init_declarator (cp_parser* parser,
 
   /* Parse the initializer.  */
   if (is_initialized)
-    initializer = cp_parser_initializer (parser, 
-					 &is_parenthesized_init);
+    {
+      if ((*targetm.vector_opaque_p) (TREE_TYPE (decl)))
+	cp_parser_error (parser, "opaque vector types cannot be initialized");
+
+      initializer = cp_parser_initializer (parser, 
+					   &is_parenthesized_init);
+    }
   else
     {
       initializer = NULL_TREE;

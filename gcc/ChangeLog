@@ -1,3 +1,37 @@
+003-02-20  Aldy Hernandez  <aldyh@redhat.com>
+
+        * doc/tm.texi: Document Rename TARGET_VECTOR_TYPES_COMPATIBLE to
+        TARGET_VECTOR_OPAQUE_P.  Document accordingly.
+
+        * testsuite/gcc.dg/20030218-1.c: Check that initialization of
+        opaque types fail.
+
+        * c-typeck.c (comptypes): Change call to vector_types_compatible
+        to vector_opaque_p.
+        (convert_for_assignment): Call vector_opaque_p instead of
+        vector_types_compatible.
+        (really_start_incremental_init): Disallow initialization of opaque
+        types.
+
+        * target-def.h: Remove TARGET_VECTOR_TYPES_COMPATIBLE.
+        Define TARGET_VECTOR_OPAQUE_P.
+        (TARGET_INITIALIZER): Same.
+
+        * target.h (struct gcc_target): Remove vector_types_compatible.
+        Add vector_opaque_p.
+
+        * config/rs6000/rs6000.c (rs6000_spe_vector_types_compatible):
+        Remove.
+        (is_ev64_opaque_type): Check for TARGET_SPE and make sure type is
+        a vector type.  Change return type to bool.
+        (TARGET_VECTOR_TYPES_COMPATIBLE): Remove.
+        (TARGET_VECTOR_OPAQUE_P): Define.
+
+        * cp/parser.c (cp_parser_init_declarator): Call vector_opaque_p
+        target hook.
+        Include target.h.
+        (cp_parser_init_declarator): Fix typo in function comments.
+
 Tue Feb 25 12:35:34 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (lcm.o):  Add dependency on function.h
