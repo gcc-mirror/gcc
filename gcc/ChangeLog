@@ -1,3 +1,7 @@
+2004-02-19  Jan Hubicka  <jh@suse.cz>
+
+	* genextract.c (main): Do not output the memset when not checking.
+
 2004-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (override_options): Don't imply 3DNow! for -m64
