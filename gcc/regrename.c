@@ -475,7 +475,9 @@ scan_rtx_address (insn, loc, class, action, mode)
     case PRE_DEC:
     case PRE_MODIFY:
 #ifndef AUTO_INC_DEC
-      class = NO_REGS;
+      /* If the target doesn't claim to handle autoinc, this must be
+	 something special, like a stack push.  Kill this chain.  */
+      action = terminate_all_read;
 #endif
       break;
 
