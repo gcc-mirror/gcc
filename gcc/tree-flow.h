@@ -495,6 +495,13 @@ extern void clear_special_calls (void);
 extern void verify_stmts (void);
 extern tree tree_block_label (basic_block bb);
 extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);
+extern bool tree_duplicate_sese_region (edge, edge, basic_block *, unsigned,
+					basic_block *);
+extern void add_phi_args_after_copy_bb (basic_block);
+extern void add_phi_args_after_copy (basic_block *, unsigned);
+extern void rewrite_to_new_ssa_names_bb (basic_block, struct htab *);
+extern void rewrite_to_new_ssa_names (basic_block *, unsigned, htab_t);
+extern void allocate_ssa_names (bitmap, struct htab **);
 extern bool tree_purge_dead_eh_edges (basic_block);
 extern bool tree_purge_all_dead_eh_edges (bitmap);
 extern tree gimplify_val (block_stmt_iterator *, tree, tree);

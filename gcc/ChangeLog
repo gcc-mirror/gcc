@@ -1,3 +1,23 @@
+2004-09-16  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* Makefile.in (tree-cfg.o): Add CFGLAYOUT_H dependency.
+	* basic-block.h (get_dominated_by_region): Declare.
+	* dominance.c (get_dominated_by_region): New function.
+	* tree-cfg.c: Include cfglayout.h.
+	(tree_duplicate_bb): Duplicate also phi nodes.
+	(struct ssa_name_map_entry): New type.
+	(add_phi_args_after_copy_bb, add_phi_args_after_copy,
+	ssa_name_map_entry_hash, ssa_name_map_entry_eq,
+	allocate_ssa_names, rewrite_to_new_ssa_names_def,
+	rewrite_to_new_ssa_names_use, rewrite_to_new_ssa_names_bb,
+	rewrite_to_new_ssa_names, tree_duplicate_sese_region): New functions.
+	* tree-flow.h (tree_duplicate_sese_region, add_phi_args_after_copy_bb,
+	add_phi_args_after_copy, rewrite_to_new_ssa_names_bb,
+	rewrite_to_new_ssa_names, allocate_ssa_names,
+	rewrite_into_loop_closed_ssa, verify_loop_closed_ssa): Declare.
+	* tree-ssa-loop-ch.c (duplicate_blocks): Removed.
+	(copy_loop_headers): Use tree_duplicate_sese_region.
+
 2004-09-16  Frank Ch. Eigler  <fche@redhat.com>
 
 	* profile.c (branch_prob): Restore support for USE_MAPPED_LOCATION.

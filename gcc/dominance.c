@@ -738,6 +738,32 @@ get_dominated_by (enum cdi_direction dir, basic_block bb, basic_block **bbs)
   return n;
 }
 
+/* Find all basic blocks that are immediately dominated (in direction DIR)
+   by some block between N_REGION ones stored in REGION, except for blocks
+   in the REGION itself.  The found blocks are stored to DOMS and their number
+   is returned.  */
+
+unsigned
+get_dominated_by_region (enum cdi_direction dir, basic_block *region,
+			 unsigned n_region, basic_block *doms)
+{
+  unsigned n_doms = 0, i;
+  basic_block dom;
+
+  for (i = 0; i < n_region; i++)
+    region[i]->rbi->duplicated = 1;
+  for (i = 0; i < n_region; i++)
+    for (dom = first_dom_son (dir, region[i]);
+	 dom;
+	 dom = next_dom_son (dir, dom))
+      if (!dom->rbi->duplicated)
+	doms[n_doms++] = dom;
+  for (i = 0; i < n_region; i++)
+    region[i]->rbi->duplicated = 0;
+
+  return n_doms;
+}
+
 /* Redirect all edges pointing to BB to TO.  */
 void
 redirect_immediate_dominators (enum cdi_direction dir, basic_block bb,

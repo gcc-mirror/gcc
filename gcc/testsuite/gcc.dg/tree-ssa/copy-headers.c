@@ -11,5 +11,5 @@ void bla (void)
     foo (i);
 }
 
-/* There should be a header scheduled for duplication.  */
-/* { dg-final { scan-tree-dump-times "Scheduled" 1 "ch"} } */
+/* There should be a header duplicated.  */
+/* { dg-final { scan-tree-dump-times "Duplicating header" 1 "ch"} } */
