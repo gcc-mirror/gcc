@@ -2150,7 +2150,7 @@ ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
 #  these -- there are no default locations.
 sdefault.adb: stamp-sdefault ; @true
 stamp-sdefault : $(srcdir)/../version.c $(srcdir)/../move-if-change \
- Makefile
+ ../Makefile
 	$(ECHO) "pragma Style_Checks (Off);" >tmp-sdefault.adb
 	$(ECHO) "package body Sdefault is" >>tmp-sdefault.adb
 	$(ECHO) "   S1 : aliased constant String := \"$(ADA_INCLUDE_DIR)/\";" >>tmp-sdefault.adb
