@@ -141,7 +141,7 @@ static tree obtain_incomplete_type PARAMS ((tree));
 static tree java_complete_lhs PARAMS ((tree));
 static tree java_complete_tree PARAMS ((tree));
 static tree maybe_generate_pre_expand_clinit PARAMS ((tree));
-static int analyze_clinit_body PARAMS ((tree));
+static int analyze_clinit_body PARAMS ((tree, tree));
 static int maybe_yank_clinit PARAMS ((tree));
 static void start_complete_expand_method PARAMS ((tree));
 static void java_complete_expand_method PARAMS ((tree));
@@ -7793,8 +7793,8 @@ maybe_generate_pre_expand_clinit (class_type)
    MODIFY_EXPR with a constant value.  */
 
 static int
-analyze_clinit_body (bbody)
-     tree bbody;
+analyze_clinit_body (this_class, bbody)
+     tree this_class, bbody;
 {
   while (bbody)
     switch (TREE_CODE (bbody))
@@ -7808,7 +7808,7 @@ analyze_clinit_body (bbody)
 	break;
 	
       case COMPOUND_EXPR:
-	if (analyze_clinit_body (TREE_OPERAND (bbody, 0)))
+	if (analyze_clinit_body (this_class, TREE_OPERAND (bbody, 0)))
 	  return 1;
 	bbody = TREE_OPERAND (bbody, 1);
 	break;
@@ -7819,8 +7819,16 @@ analyze_clinit_body (bbody)
 	if (TREE_CODE (TREE_OPERAND (bbody, 1)) == NEW_ARRAY_INIT
 	    && flag_emit_class_files)
 	  return 1;
-	/* Return 0 if the operand is constant, 1 otherwise.  */
-	return ! TREE_CONSTANT (TREE_OPERAND (bbody, 1));
+
+	/* There are a few cases where we're required to keep
+	   <clinit>:
+	   - If this is an assignment whose operand is not constant,
+	   - If this is an assignment to a non-initialized field,
+	   - If this field is not a member of the current class.
+	*/
+	return (! TREE_CONSTANT (TREE_OPERAND (bbody, 1))
+		|| ! DECL_INITIAL (TREE_OPERAND (bbody, 0))
+		|| DECL_CONTEXT (TREE_OPERAND (bbody, 0)) != this_class);
 
       default:
 	return 1;
@@ -7839,7 +7847,6 @@ maybe_yank_clinit (mdecl)
 {
   tree type, current;
   tree fbody, bbody;
-  int found = 0;
   
   if (!DECL_CLINIT_P (mdecl))
     return 0;
@@ -7855,7 +7862,7 @@ maybe_yank_clinit (mdecl)
     return 0;
   if (bbody && ! flag_emit_class_files && bbody != empty_stmt_node)
     return 0;
-  
+
   type = DECL_CONTEXT (mdecl);
   current = TYPE_FIELDS (type);
 
@@ -7864,13 +7871,12 @@ maybe_yank_clinit (mdecl)
     {
       tree f_init;
 
-      /* We're not interested in non static field */
+      /* We're not interested in non-static fields.  */
       if (!FIELD_STATIC (current))
 	continue;
 
-      /* nor in fields with initializers. */
+      /* Nor in fields without initializers. */
       f_init = DECL_INITIAL (current);
-
       if (f_init == NULL_TREE)
 	continue;
 
@@ -7880,20 +7886,15 @@ maybe_yank_clinit (mdecl)
 	 correctly. */
       if (! JSTRING_TYPE_P (TREE_TYPE (current))
 	  && ! JNUMERIC_TYPE_P (TREE_TYPE (current)))
-	break;
+	return 0;
 
       if (! FIELD_FINAL (current) || ! TREE_CONSTANT (f_init))
-	break;
+	return 0;
     }
 
   /* Now we analyze the method body and look for something that
      isn't a MODIFY_EXPR */
-  if (bbody == empty_stmt_node)
-    found = 0;
-  else
-    found = analyze_clinit_body (bbody);
-
-  if (current || found)
+  if (bbody != empty_stmt_node && analyze_clinit_body (type, bbody))
     return 0;
 
   /* Get rid of <clinit> in the class' list of methods */
