@@ -1,3 +1,8 @@
+Wed Nov  8 21:53:41 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* regmove.c (combine_stack_adjustments_for_blocks): Recognize pushes
+	formed using PRE_MODIFY too.
+
 2000-11-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-tree.texi (VAR_DECL): Describe representation of GCC's
