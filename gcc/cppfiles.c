@@ -48,7 +48,7 @@ static int find_include_file	PARAMS ((cpp_reader *, const char *,
 					struct file_name_list *,
 					IHASH **, int *));
 static int read_include_file	PARAMS ((cpp_reader *, int, IHASH *));
-
+static inline int open_include_file PARAMS ((cpp_reader *, const char *));
 
 #if 0
 static void hack_vms_include_specification PARAMS ((char *));
@@ -60,13 +60,6 @@ static void hack_vms_include_specification PARAMS ((char *));
 #ifndef INCLUDE_LEN_FUDGE
 #define INCLUDE_LEN_FUDGE 0
 #endif
-
-/* Open files in nonblocking mode, so we don't get stuck if someone
-   clever has asked cpp to process /dev/rmt0.  read_include_file
-   will check that we have a real file to work with.  Also take care
-   not to acquire a controlling terminal by mistake (this can't happen
-   on sane systems, but paranoia is a virtue).  */
-#define OMODES O_RDONLY|O_NONBLOCK|O_NOCTTY
 
 /* Calculate hash of an IHASH entry.  */
 static unsigned int
@@ -182,6 +175,29 @@ file_cleanup (pbuf, pfile)
   return 0;
 }
 
+/* Centralize calls to open(2) here.  This provides a hook for future
+   changes which might, e.g. look for and open a precompiled version
+   of the header.  It also means all the magic currently associated
+   with calling open is in one place, and if we ever need more, it'll
+   be in one place too.
+
+   Open files in nonblocking mode, so we don't get stuck if someone
+   clever has asked cpp to process /dev/rmt0.  read_include_file
+   will check that we have a real file to work with.  Also take care
+   not to acquire a controlling terminal by mistake (this can't happen
+   on sane systems, but paranoia is a virtue).
+
+   Use the three-argument form of open even though we aren't
+   specifying O_CREAT, to defend against broken system headers.  */
+
+static inline int
+open_include_file (pfile, filename)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     const char *filename;
+{
+  return open (filename, O_RDONLY|O_NONBLOCK|O_NOCTTY, 0666);
+}
+
 /* Search for include file FNAME in the include chain starting at
    SEARCH_START.  Return -2 if this file doesn't need to be included
    (because it was included already and it's marked idempotent),
@@ -216,13 +232,13 @@ find_include_file (pfile, fname, search_start, ihash, before)
 
       *before = 1;
       *ihash = ih;
-      return open (ih->name, OMODES);
+      return open_include_file (pfile, ih->name);
     }
 
   if (path == ABSOLUTE_PATH)
     {
       name = (char *) fname;
-      f = open (name, OMODES);
+      f = open_include_file (pfile, name);
     }
   else
     {
@@ -238,7 +254,7 @@ find_include_file (pfile, fname, search_start, ihash, before)
 	  if (CPP_OPTIONS (pfile)->remap)
 	    name = remap_filename (pfile, name, path);
 
-	  f = open (name, OMODES);
+	  f = open_include_file (pfile, name);
 #ifdef EACCES
 	  if (f == -1 && errno == EACCES)
 	    {
@@ -629,7 +645,7 @@ cpp_read_file (pfile, fname)
   if (*fname == '\0')
     f = 0;
   else
-    f = open (fname, OMODES);
+    f = open_include_file (pfile, fname);
 
   return read_include_file (pfile, f, ih);
 }
@@ -1193,7 +1209,7 @@ hack_vms_include_specification (fullname)
 
   if (check_filename_before_returning)
     {
-      f = open (fullname, OMODES);
+      f = open (fullname, O_RDONLY|O_NONBLOCK);
       if (f >= 0)
 	{
 	  /* The file name is OK as it is, so return it as is.  */

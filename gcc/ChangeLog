@@ -1,3 +1,8 @@
+2000-03-15  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppfiles.c (open_include_file): New function.
+	(find_include_file, cpp_read_file): Use it.
+
 2000-03-15  Jason Merrill  <jason@casey.cygnus.com>
 
 	* cpphash.c (dump_hash_helper): Take the slot, not the element.
