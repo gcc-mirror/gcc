@@ -1,5 +1,11 @@
 2003-05-13  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/natDirectByteBufferImpl.cc
+	(allocateImpl): jlong -> RawData*.
+	(freeImpl): Likewise.
+
+2003-05-13  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/channels/FileChannel.java
 	(MapMode.m): Made it package-private to match JDK 1.4.
 	* java/nio/charset/Charset.java
