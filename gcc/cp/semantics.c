@@ -2939,8 +2939,12 @@ expand_or_defer_fn (tree fn)
   if (DECL_DECLARED_INLINE_P (fn))
     import_export_decl (fn);
 
+  function_depth++;
+
   /* Expand or defer, at the whim of the compilation unit manager.  */
   cgraph_finalize_function (fn, function_depth > 1);
+
+  function_depth--;
 }
 
 /* Helper function for walk_tree, used by finish_function to override all
