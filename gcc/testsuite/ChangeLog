@@ -1,5 +1,12 @@
 2004-11-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	Friend class name lookup 3/n, PR c++/3332
+	* g++.dg/lookup/friend3.C: New test.
+	* g++.dg/lookup/friend4.C: Likewise.
+	* g++.dg/lookup/friend5.C: Likewise.
+
+2004-11-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	Friend class name lookup 2/n, PR c++/14513, c++/15410
 	* g++.dg/lookup/friend2.C: New test.
 	* g++.dg/template/friend31.C: Likewise.

@@ -1,5 +1,15 @@
 2004-11-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	Friend class name lookup 3/n, PR c++/3332
+	* name-lookup.c (push_inner_scope, pop_inner_scope): New functions.
+	(lookup_type_scope): Don't deal with name from user declaration
+	specially.
+	* name-lookup.h (push_inner_scope, pop_inner_scope): Add declarations.
+	* parser.c (cp_parser_class_specifier): Use push_inner_scope and
+	pop_inner_scope.
+
+2004-11-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	Friend class name lookup 2/n, PR c++/14513, c++/15410
 	* name-lookup.c (lookup_name_real): Simplify.
 	(lookup_type_scope): Add SCOPE parameter.  Handle friend class
