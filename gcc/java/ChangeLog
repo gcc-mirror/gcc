@@ -1,3 +1,11 @@
+2001-10-15  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* lang.c (langhooks.h): Included.
+	(LANG_HOOKS_INIT): Redefined.
+	(LANG_HOOKS_INIT_OPTIONS): Likewise.
+	(LANG_HOOKS_DECODE_OPTION): Likewise.
+	(struct lang_hooks lang_hooks): New initialization.
+
 2001-10-11  Per Bothner  <per@bothner.com>
 
 	* parse.y (patch_synchronized_statement):  Use a TRY_FINALLY_EXPR
@@ -14,7 +22,7 @@
 2001-10-09  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (patch_cast): Call patch_string on the first operand of
-	the incoming node, update it if necessary. Fixes java/4510.
+	the incoming node, update it if necessary. Fixes PR java/4510.
 
 2001-10-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
@@ -37,7 +45,7 @@
 2001-10-05  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (register_incomplete_type): Set JDEP_SUPER to be given
-	a NULL enclosing context if appropriate. Fixes java/4466.
+	a NULL enclosing context if appropriate. Fixes PR java/4466.
 
 2001-10-03  Alexandre Petit-Bianco  <apbianco@redhat.com>
 

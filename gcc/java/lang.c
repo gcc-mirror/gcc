@@ -34,6 +34,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-tree.h"
 #include "jcf.h"
 #include "toplev.h"
+#include "langhooks.h"
 #include "flags.h"
 #include "xref.h"
 #include "ggc.h"
@@ -195,12 +196,15 @@ static int dependency_tracking = 0;
 #define DEPEND_TARGET_SET 4
 #define DEPEND_FILE_ALREADY_SET 8
 
+#undef LANG_HOOKS_INIT
+#define LANG_HOOKS_INIT java_init
+#undef LANG_HOOKS_INIT_OPTIONS
+#define LANG_HOOKS_INIT_OPTIONS java_init_options
+#undef LANG_HOOKS_DECODE_OPTION
+#define LANG_HOOKS_DECODE_OPTION java_decode_option
+
 /* Each front end provides its own.  */
-struct lang_hooks lang_hooks = {java_init,
-				NULL, /* java_finish */
-				java_init_options,
-				java_decode_option,
-				NULL /* post_options */};
+struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 /* Process an option that can accept a `no-' form.
    Return 1 if option found, 0 otherwise.  */
