@@ -58,6 +58,8 @@ struct processor_costs {
   const int mult_init;		/* cost of starting a multiply */
   const int mult_bit;		/* cost of multiply per each bit set */
   const int divide;		/* cost of a divide/mod */
+  int movsx;			/* The cost of movsx operation.  */
+  int movzx;			/* The cost of movzx operation.  */
   const int large_insn;		/* insns larger than this cost more */
   const int move_ratio;		/* The threshold of number of scalar
 				   memory-to-memory move insns.  */
@@ -953,7 +955,8 @@ extern int ix86_arch;
     ((mode) == QImode || (mode) == HImode || (mode) == SImode	\
      || (mode) == DImode					\
      || (mode) == CQImode || (mode) == CHImode || (mode) == CSImode \
-     || (mode) == CDImode)
+     || (mode) == CDImode					\
+     || (TARGET_64BIT && ((mode) == TImode || (mode) == CTImode)))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
 
@@ -2427,6 +2430,10 @@ while (0)
   case CONST:							\
   case LABEL_REF:						\
   case SYMBOL_REF:						\
+    if (TARGET_64BIT && !x86_64_sign_extended_value (RTX))	\
+      return 3;							\
+    if (TARGET_64BIT && !x86_64_zero_extended_value (RTX))	\
+      return 2;							\
     return flag_pic && SYMBOLIC_CONST (RTX) ? 1 : 0;		\
 								\
   case CONST_DOUBLE:						\
@@ -2456,9 +2463,24 @@ while (0)
    assumptions are adequate for the target machine.  */
 
 #define RTX_COSTS(X,CODE,OUTER_CODE)					\
+  case ZERO_EXTEND:							\
+    /* The zero extensions is often completely free on x86_64, so make	\
+       it as cheap as possible.  */					\
+    if (TARGET_64BIT && GET_MODE (X) == DImode				\
+	&& GET_MODE (XEXP (X, 0)) == SImode)				\
+      {									\
+	total = 1; goto egress_rtx_costs;				\
+      } 								\
+    else								\
+      TOPLEVEL_COSTS_N_INSNS (TARGET_ZERO_EXTEND_WITH_AND ?		\
+			      ix86_cost->add : ix86_cost->movzx);	\
+    break;								\
+  case SIGN_EXTEND:							\
+    TOPLEVEL_COSTS_N_INSNS (ix86_cost->movsx);				\
+    break;								\
   case ASHIFT:								\
     if (GET_CODE (XEXP (X, 1)) == CONST_INT				\
-	&& GET_MODE (XEXP (X, 0)) == SImode)				\
+	&& (GET_MODE (XEXP (X, 0)) != DImode || TARGET_64BIT))		\
       {									\
 	HOST_WIDE_INT value = INTVAL (XEXP (X, 1));			\
 	if (value == 1)							\
@@ -2472,7 +2494,7 @@ while (0)
   case ASHIFTRT:							\
   case LSHIFTRT:							\
   case ROTATERT:							\
-    if (GET_MODE (XEXP (X, 0)) == DImode)				\
+    if (!TARGET_64BIT && GET_MODE (XEXP (X, 0)) == DImode)		\
       {									\
 	if (GET_CODE (XEXP (X, 1)) == CONST_INT)			\
 	  {								\
@@ -2562,7 +2584,7 @@ while (0)
   case IOR:								\
   case XOR:								\
   case MINUS:								\
-    if (GET_MODE (X) == DImode)						\
+    if (!TARGET_64BIT && GET_MODE (X) == DImode)			\
       return (COSTS_N_INSNS (ix86_cost->add) * 2			\
 	      + (rtx_cost (XEXP (X, 0), OUTER_CODE)			\
 	         << (GET_MODE (XEXP (X, 0)) != DImode))			\
@@ -2572,7 +2594,7 @@ while (0)
     /* fall through */							\
   case NEG:								\
   case NOT:								\
-    if (GET_MODE (X) == DImode)						\
+    if (!TARGET_64BIT && GET_MODE (X) == DImode)			\
       TOPLEVEL_COSTS_N_INSNS (ix86_cost->add * 2);			\
     TOPLEVEL_COSTS_N_INSNS (ix86_cost->add);				\
 									\
@@ -2961,7 +2983,7 @@ do { long l;						\
      */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-  fprintf (FILE, "%s%s%d\n", ASM_LONG, LPREFIX, VALUE)
+  fprintf (FILE, "%s%s%d\n", TARGET_64BIT ? ASM_QUAD : ASM_LONG, LPREFIX, VALUE)
 
 /* This is how to output an element of a case-vector that is relative.
    We don't use these on the 386 yet, because the ATT assembler can't do

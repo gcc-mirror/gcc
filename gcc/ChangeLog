@@ -1,3 +1,29 @@
+Wed Oct 17 00:01:02 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (split_ti): New function.
+	(ix86_split_to_parts): Support TImodes.
+	* i386.h (VALID_INT_MODE_P): Add TImode.
+	* i386.md (movdi splitter): Fix.
+	(movti): Support 64bit integer registers.
+	(movti_rex64): New function and splitter.
+
+	* i386.c (*_cost): Add movsx/movzx cost.
+	* i386.h (struct processor_costs): Add movsx/movzx fields.
+	(RTX_COSTS): Handle zero/sign extend + avoid believing that
+	64bit operations require split on 64bit machine.
+	(CONST_COST): Make large 64bit constants expensive on 64bit compilation.
+
+	* i386.c (ix86_setup_incomming_varargs): Fix mode of PLUS.
+	(ix86_expand_move): Avoid pushes of memory if size does not match;
+	move long constants to register.
+	(x86_initialize_trampoline): Fix mode.
+	* i386.h (ASM_OUTPUT_ADDR_VEC_ELT, ASM_OUTPUT_ADDR_DIFF_ELT):
+	Use ASM_QUAD on 64bit.
+	* i386.md (test pattern): Disallow impossible constants.
+	(tablejump PIC expander): Fix emitting of sum.
+	(movdicc_rex64): Rename to movdicc.
+	* linux64.h (LINK_SPEC): Add missing '%'.
+
 2001-10-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tree-inline.c (inlinable_function_p): Leave it up to the
