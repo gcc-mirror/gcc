@@ -525,7 +525,7 @@ static struct file_buf {
   struct if_stack *if_stack;
   /* Object to be freed at end of input at this level.  */
   U_CHAR *free_ptr;
-  /* True if this is a header file included using <FILENAME>.  */
+  /* True if this is a system header file; see is_system_include.  */
   char system_header_p;
 } instack[INPUT_STACK_MAX];
 
@@ -4124,6 +4124,12 @@ special_symbol (hp, op)
 
   case T_CONST:
     buf = hp->value.cpval;
+#ifdef STDC_0_IN_SYSTEM_HEADERS
+    if (ip->system_header_p
+	&& hp->length == 8 && bcmp (hp->name, "__STDC__", 8) == 0
+	&& !lookup ((U_CHAR *) "__STRICT_ANSI__", -1, -1))
+      buf = "0";
+#endif
     if (pcp_inside_if && pcp_outfile)
       /* Output a precondition for this macro use */
       fprintf (pcp_outfile, "#define %s %s\n", hp->name, buf);
