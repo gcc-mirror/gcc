@@ -1087,7 +1087,7 @@ do {									\
 	    && (TARGET_64BIT || !TARGET_PARTIAL_REG_STALL))	\
         || ((MODE1) == DImode && TARGET_64BIT))			\
        && ((MODE2) == HImode || (MODE2) == SImode		\
-	   || ((MODE1) == QImode				\
+	   || ((MODE2) == QImode				\
 	       && (TARGET_64BIT || !TARGET_PARTIAL_REG_STALL))	\
 	   || ((MODE2) == DImode && TARGET_64BIT))))
 
