@@ -10,6 +10,7 @@ package java.lang;
 import java.io.UnsupportedEncodingException;
 import java.io.Serializable;
 import java.lang.Comparable;
+import java.util.Comparator;
 
 /**
  * @author Per Bothner <bothner@cygnus.com>
@@ -17,7 +18,7 @@ import java.lang.Comparable;
  */
 /* Written using "Java Class Libraries", 2nd edition, plus online
  * API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Complete to 1.1, but see FIXMEs. Also see testsuite results.
+ * Status:  Complete to 1.3.
  */
 
 public final class String implements Serializable, Comparable
@@ -29,6 +30,14 @@ public final class String implements Serializable, Comparable
   // This is probably not necessary because this class is special cased already
   // but it will avoid showing up as a discrepancy when comparing SUIDs.
   private static final long serialVersionUID = -6849794470754667710L;
+
+  static Comparator CASE_INSENSITIVE_ORDER = new Comparator()
+    {
+      public int compare (Object o1, Object o2)
+      {
+        return ((String) o1).compareToIgnoreCase ((String) o2);
+      }
+    };
 
   public String ()
   {
@@ -182,6 +191,12 @@ public final class String implements Serializable, Comparable
   {
     return compareTo ((String)obj);
   }
+  
+  public int compareToIgnoreCase (String str)
+  {
+    return this.toUpperCase().toLowerCase().compareTo(
+     str.toUpperCase().toLowerCase());
+  }  
 
   public native boolean regionMatches (int toffset,
 				       String other, int ooffset, int len);

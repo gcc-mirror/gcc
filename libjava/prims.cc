@@ -888,7 +888,9 @@ JvRunMain (jclass klass, int argc, const char **argv)
   main_thread->start();
   _Jv_ThreadWait ();
 
-  java::lang::Runtime::getRuntime ()->exit (0);
+  int status = (int) java::lang::ThreadGroup::had_uncaught_exception;
+    
+  java::lang::Runtime::getRuntime ()->exit (status);
 }
 
 void
@@ -939,8 +941,10 @@ _Jv_RunMain (const char *name, int argc, const char **argv, bool is_jar)
       main_thread->start();
       _Jv_ThreadWait ();
     }
-  
-  java::lang::Runtime::getRuntime ()->exit (0);
+
+  int status = (int) java::lang::ThreadGroup::had_uncaught_exception;
+
+  java::lang::Runtime::getRuntime ()->exit (status);
 }
 
 
