@@ -5534,7 +5534,9 @@ expand_expr (exp, target, tmode, modifier)
 	  temp = 0;
 	else if (original_target
 		 && safe_from_p (original_target, TREE_OPERAND (exp, 0))
-		 && GET_MODE (original_target) == mode)
+		 && GET_MODE (original_target) == mode
+		 && ! (GET_CODE (original_target) == MEM
+		       && MEM_VOLATILE_P (original_target)))
 	  temp = original_target;
 	else if (mode == BLKmode)
 	  {
@@ -5590,8 +5592,7 @@ expand_expr (exp, target, tmode, modifier)
 	    optab boptab = (TREE_CODE (binary_op) == PLUS_EXPR ? add_optab
 			    : TREE_CODE (binary_op) == MINUS_EXPR ? sub_optab
 			    : TREE_CODE (binary_op) == BIT_IOR_EXPR ? ior_optab
-			    : TREE_CODE (binary_op) == BIT_XOR_EXPR ? xor_optab
-			    : and_optab);
+			    : xor_optab);
 
 	    /* If we had X ? A : A + 1, do this as A + (X == 0).
 
