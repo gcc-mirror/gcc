@@ -1,5 +1,20 @@
 2002-01-15  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/LayoutManager2.java: Merged with Classpath.
+	* java/awt/LayoutManager.java: Merged with Classpath.
+	* java/awt/GridLayout.java: Updated copyright and javadoc.
+	(getSize): Use `parent.ncomponents'.  Handle insets.
+	(layoutContainer): Use `parent.ncomponents'.  Handle case where
+	there are fewer children than columns.  Correctly compute size of
+	each cell in the grid.  Handle case where there isn't enough
+	space.
+	* java/awt/CardLayout.java (tab): Renamed from `map'.  Updated
+	all users.
+	(gotoComponent): Use parent.ncomponents.  Ensure child exists
+	before calling setVisible() on it.  Last item is `num - 1', not
+	`num'.
+	(layoutContainer): Hoist invariants out of loop.
+
 	Start of AWT merge with Classpath:
 	* Makefile.in: Rebuilt.
 	* Makefile.am (awt_java_source_files): Reference files in

@@ -1,12 +1,30 @@
 // CardLayout.java - Card-based layout engine
 
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2002  Free Software Foundation
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
+
 
 package java.awt;
 
@@ -19,20 +37,23 @@ import java.io.Serializable;
  * time.  This class includes methods for changing which card is
  * shown.
  *
- * @version 0.0
  * @author Tom Tromey <tromey@redhat.com>
- * @date December 2, 2000
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public class CardLayout implements LayoutManager2, Serializable
 {
-  /** Create a new CardLayout object with both gaps zero.  */
+  /**
+   * Initializes a new instance of <code>CardLayout</code> with horizontal
+   * and vertical gaps of 0.
+   */
   public CardLayout ()
   {
     this (0, 0);
   }
 
-  /** Create a new CardLayout object with the specified horizontal and
-   * vertical gaps.
+  /**
+   * Create a new <code>CardLayout</code> object with the specified
+   * horizontal and vertical gaps.
    * @param hgap The horizontal gap
    * @param vgap The vertical gap
    */
@@ -40,7 +61,7 @@ public class CardLayout implements LayoutManager2, Serializable
   {
     this.hgap = hgap;
     this.vgap = vgap;
-    this.map = new Hashtable ();
+    this.tab = new Hashtable ();
   }
 
   /** Add a new component to the layout.  The constraint must be a
@@ -48,21 +69,23 @@ public class CardLayout implements LayoutManager2, Serializable
    * later be used to refer to the particular component.
    * @param comp The component to add
    * @param constraints The name by which the component can later be called
-   * @exception IllegalArgumentException If `constraints' is not a string
+   * @exception IllegalArgumentException If `constraints' is not a
+   * <code>String</code>
    */
   public void addLayoutComponent (Component comp, Object constraints)
   {
     if (! (constraints instanceof String))
       throw new IllegalArgumentException ("Object " + constraints
 					  + " is not a string");
-    map.put (constraints, comp);
+    tab.put (constraints, comp);
   }
 
   /** Add a new component to the layout.  The name can be used later
    * to refer to the component.
    * @param name The name by which the component can later be called
    * @param comp The component to add
-   * @deprecated
+   * @deprecated This method is deprecated in favor of
+   * <code>addLayoutComponent(Component, Object)</code>.
    */
   public void addLayoutComponent (String name, Component comp)
   {
@@ -121,10 +144,12 @@ public class CardLayout implements LayoutManager2, Serializable
     gotoComponent (parent, LAST, null);
   }
 
-  /** Lay out the container's components based on the current
-   * settings.
-   * @param parent The parent container
-   */
+  /**
+   * Lays out the container.  This is done by resizing the child components
+   * to be the same size as the parent, less insets and gaps.
+   *
+   * @param parent The parent container.
+   */ 
   public void layoutContainer (Container parent)
   {
     int width = parent.width;
@@ -135,12 +160,13 @@ public class CardLayout implements LayoutManager2, Serializable
     int num = parent.ncomponents;
     Component[] comps = parent.component;
 
+    int x = ins.left + hgap;
+    int y = ins.top + vgap;
+    width = width - 2 * hgap - ins.left - ins.right;
+    height = height - 2 * vgap - ins.top - ins.bottom;
+
     for (int i = 0; i < num; ++i)
-      {
-	comps[i].setBounds (hgap + ins.left, vgap + ins.top,
-			    width - 2 * hgap - ins.left - ins.right,
-			    height - 2 * vgap - ins.top - ins.bottom);
-      }
+      comps[i].setBounds (x, y, width, height);
   }
 
   /** Get the maximum layout size of the container.
@@ -161,7 +187,9 @@ public class CardLayout implements LayoutManager2, Serializable
     return getSize (target, MIN);
   }
 
-  /** Cause the next component in the container to be displayed.
+  /** Cause the next component in the container to be displayed.  If
+   * this current card is the  last one in the deck, the first
+   * component is displayed.
    * @param parent The parent container
    */
   public void next (Container parent)
@@ -178,6 +206,8 @@ public class CardLayout implements LayoutManager2, Serializable
   }
 
   /** Cause the previous component in the container to be displayed.
+   * If this current card is the first one in the deck, the last
+   * component is displayed.
    * @param parent The parent container
    */
   public void previous (Container parent)
@@ -190,13 +220,13 @@ public class CardLayout implements LayoutManager2, Serializable
    */
   public void removeLayoutComponent (Component comp)
   {
-    Enumeration e = map.keys ();
+    Enumeration e = tab.keys ();
     while (e.hasMoreElements ())
       {
 	Object key = e.nextElement ();
-	if (map.get (key) == comp)
+	if (tab.get (key) == comp)
 	  {
-	    map.remove (key);
+	    tab.remove (key);
 	    break;
 	  }
       }
@@ -225,11 +255,16 @@ public class CardLayout implements LayoutManager2, Serializable
    */
   public void show (Container parent, String name)
   {
-    Object target = map.get (name);
+    Object target = tab.get (name);
     if (target != null)
       gotoComponent (parent, NONE, (Component) target);
   }
 
+  /**
+   * Returns a string representation of this layout manager.
+   *
+   * @return A string representation of this object.
+   */
   public String toString ()
   {
     return getClass ().getName () + "[" + hgap + "," + vgap + "]";
@@ -239,7 +274,7 @@ public class CardLayout implements LayoutManager2, Serializable
   private void gotoComponent (Container parent, int what,
 			      Component target)
   {
-    int num = parent.getComponentCount ();
+    int num = parent.ncomponents;
     // This is more efficient than calling getComponents().
     Component[] comps = parent.component;
     int choice = -1;
@@ -247,7 +282,7 @@ public class CardLayout implements LayoutManager2, Serializable
     if (what == FIRST)
       choice = 0;
     else if (what == LAST)
-      choice = num;
+      choice = num - 1;
     else if (what >= 0)
       choice = what;
 
@@ -275,12 +310,11 @@ public class CardLayout implements LayoutManager2, Serializable
 		if (choice < 0)
 		  choice = num - 1;
 	      }
-	    else
+	    else if (choice == i)
 	      {
 		// Do nothing if we're already looking at the right
 		// component.
-		if (choice == i)
-		  return;
+		return;
 	      }
 	    comps[i].setVisible (false);
 
@@ -289,7 +323,8 @@ public class CardLayout implements LayoutManager2, Serializable
 	  }
       }
 
-    comps[choice].setVisible (true);
+    if (choice >= 0 && choice < num)
+      comps[choice].setVisible (true);
   }
 
   // Compute the size according to WHAT.
@@ -326,12 +361,20 @@ public class CardLayout implements LayoutManager2, Serializable
     return new Dimension (w, h);
   }
 
-  // The gaps.
+  /**
+   * @serial Horizontal gap value.
+   */
   private int hgap;
+
+  /**
+   * @serial Vertical gap value.
+   */
   private int vgap;
 
-  // This hashtable maps a name to a component.
-  private Hashtable map;
+  /**
+   * @serial Table of named components.
+   */
+  private Hashtable tab;
 
   // These constants are used by the private gotoComponent method.
   private int FIRST = 0;
