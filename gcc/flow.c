@@ -981,7 +981,7 @@ make_edges (label_value_list, bb_eh_end)
 
 	 Also mark the CALL_INSN as reaching any nonlocal goto handler.  */
 
-      else if (code == CALL_INSN || asynchronous_exceptions)
+      if (code == CALL_INSN || asynchronous_exceptions)
 	{
 	  int is_call = (code == CALL_INSN ? EDGE_ABNORMAL_CALL : 0);
 	  handler_info *ptr;
