@@ -1,3 +1,11 @@
+Thu May 14 12:58:21 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* i960.h (hard_regno_mode_ok): Changed to function from array of
+ 	unsigned.
+	(HARD_REGNO_MODE_OK): Call function instead of testing bit.
+	* i960.c (hard_regno_mode_ok): Changed to function from array of
+ 	unsigned.
+
 Thu May 14 08:41:46 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload.c (remove_replacements): New function.

@@ -2067,40 +2067,57 @@ i960_alignment (size, align)
 }
 #endif
 
-/* Modes for condition codes.  */
-#define C_MODES		\
-  ((1 << (int) CCmode) | (1 << (int) CC_UNSmode) | (1<< (int) CC_CHKmode))
 
-/* Modes for single-word (and smaller) quantities.  */
-#define S_MODES						\
- (~C_MODES						\
-  & ~ ((1 << (int) DImode) | (1 << (int) TImode)	\
-       | (1 << (int) DFmode) | (1 << (int) XFmode)))
+int
+hard_regno_mode_ok (regno, mode)
+     int regno;
+     enum machine_mode mode;
+{
+  if (regno < 32)
+    {
+      switch (mode)
+	{
+	case CCmode: case CC_UNSmode: case CC_CHKmode:
+	  return 0;
 
-/* Modes for double-word (and smaller) quantities.  */
-#define D_MODES					\
-  (~C_MODES					\
-   & ~ ((1 << (int) TImode) | (1 << (int) XFmode)))
+	case DImode: case DFmode:
+	  return (regno & 1) == 0;
 
-/* Modes for quad-word quantities.  */
-#define T_MODES (~C_MODES)
+	case TImode: case XFmode:
+	  return (regno & 3) == 0;
 
-/* Modes for single-float quantities.  */
-#define SF_MODES ((1 << (int) SFmode))
+	default:
+	  return 1;
+	}
+    }
+  else if (regno >= 32 && regno < 36)
+    {
+      switch (mode)
+	{
+	case SFmode: case DFmode: case XFmode:
+	case SCmode: case DCmode:
+	  return 1;
 
-/* Modes for double-float quantities.  */
-#define DF_MODES (SF_MODES | (1 << (int) DFmode) | (1 << (int) SCmode))
+	default:
+	  return 0;
+	}
+    }
+  else if (regno == 36)
+    {
+      switch (mode)
+	{
+	case CCmode: case CC_UNSmode: case CC_CHKmode:
+	  return 1;
 
-/* Modes for quad-float quantities.  */
-#define XF_MODES (DF_MODES | (1 << (int) XFmode) | (1 << (int) DCmode))
+	default:
+	  return 0;
+	}
+    }
+  else if (regno == 37)
+    return 0;
 
-unsigned int hard_regno_mode_ok[FIRST_PSEUDO_REGISTER] = {
-  T_MODES, S_MODES, D_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
-  T_MODES, S_MODES, D_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
-  T_MODES, S_MODES, D_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
-  T_MODES, S_MODES, D_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
-
-  XF_MODES, XF_MODES, XF_MODES, XF_MODES, C_MODES};
+  abort ();
+}
 
 
 /* Return the minimum alignment of an expression rtx X in bytes.  This takes
