@@ -15,7 +15,7 @@
 SOURCEDIR=${SOURCEDIR-.}
 DESTDIR=${DESTDIR-HTML}
 
-MAKEINFO=makeinfo
+MAKEINFO=${MAKEINFO-makeinfo}
 
 if [ ! -d $DESTDIR ]; then
     mkdir -p $DESTDIR

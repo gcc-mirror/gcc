@@ -1,3 +1,7 @@
+2001-06-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi2html (MAKEINFO): Keep value if set already.
+
 2001-06-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcc.texi: Add trailing slash to URL.
