@@ -151,7 +151,7 @@ static struct alpha_rtx_cost_data const alpha_rtx_cost_data[PROCESSOR_MAX] =
     COSTS_N_INSNS (23),		/* int_mult_di */
     COSTS_N_INSNS (2),		/* int_shift */
     COSTS_N_INSNS (2),		/* int_cmov */
-    COSTS_N_INSNS (70),		/* int_div */
+    COSTS_N_INSNS (97),		/* int_div */
   },
   { /* EV5 */
     COSTS_N_INSNS (4),		/* fp_add */
@@ -162,7 +162,7 @@ static struct alpha_rtx_cost_data const alpha_rtx_cost_data[PROCESSOR_MAX] =
     COSTS_N_INSNS (12),		/* int_mult_di */
     COSTS_N_INSNS (1) + 1,	/* int_shift */
     COSTS_N_INSNS (1),		/* int_cmov */
-    COSTS_N_INSNS (45),		/* int_div */
+    COSTS_N_INSNS (83),		/* int_div */
   },
   { /* EV6 */
     COSTS_N_INSNS (4),		/* fp_add */
@@ -173,7 +173,7 @@ static struct alpha_rtx_cost_data const alpha_rtx_cost_data[PROCESSOR_MAX] =
     COSTS_N_INSNS (7),		/* int_mult_di */
     COSTS_N_INSNS (1),		/* int_shift */
     COSTS_N_INSNS (2),		/* int_cmov */
-    COSTS_N_INSNS (25),		/* int_div */
+    COSTS_N_INSNS (86),		/* int_div */
   },
 };
 
