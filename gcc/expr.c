@@ -2911,7 +2911,9 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode, punsignedp, pvolati
 /* Given an rtx VALUE that may contain additions and multiplications,
    return an equivalent value that just refers to a register or memory.
    This is done by generating instructions to perform the arithmetic
-   and returning a pseudo-register containing the value.  */
+   and returning a pseudo-register containing the value.
+
+   The returned value may be a REG, SUBREG, MEM or constant.  */
 
 rtx
 force_operand (value, target)
