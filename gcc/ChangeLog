@@ -1,3 +1,7 @@
+2003-01-02  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.md (movdf_internal2): Fix constraints.
+
 2003-01-03  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Configuration): Fix markup for reference to
@@ -114,7 +118,7 @@
 	(CPP_SPEC): Define __STATIC__ and __DYNAMIC__ depending on -dynamic.
 	(LINK_SPEC): Pass -dynamic to linker.
 	* config/rs6000/darwin.h: Reject conflicting -static and -dynamic.
-	
+
 2002-12-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (pushqi_h8300): Don't push the stack
@@ -376,7 +380,7 @@ Wed Dec 11 18:39:52 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config/darwin.h(LINK_SPEC): Add darwin specific linker options.
 	* doc/invoke.texi: Add new "Darwin Options" section.
-	
+
 2002-12-10  Jim Wilson  <wilson@redhat.com>
 
 	* rs6000.h (RETURN_IN_MEMORY): If ABI_V4, then TFmode is returned in
@@ -453,7 +457,7 @@ Mon Dec  9 21:33:38 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* stmt.c (expand_return): Ditto.
 	* expr.c (move_block_from_reg): Ditto.
 	(copy_blkmode_from_reg): Ditto.
-	* expmed.c (store_bit_field): Ditto. 
+	* expmed.c (store_bit_field): Ditto.
 
 2002-12-09  Svein E. Seldal  <Svein.Seldal@solidas.com>
 
@@ -714,7 +718,7 @@ Mon Dec  2 14:43:22 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* c-format.c (T_ST): Use size_type_node, not c_size_type_node.
 	* tree.h (TI_SIZE_TYPE): New enumeral.
 	(size_type_node): Likewise.
-	
+
 2002-11-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* cfg.c (dump_flow_info): Use max_reg_num () to determine the largest
