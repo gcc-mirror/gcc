@@ -1,3 +1,14 @@
+2003-04-17  Richard Henderson  <rth@redhat.com>
+
+	* varasm.c (default_encode_section_info): Don't set 
+	SYMBOL_FLAG_EXTERNAL if not TREE_PUBLIC.
+	* config/i370/i370.c (i370_encode_section_info): Remove.
+	* config/i370/i370.h (CONSTANT_ADDRESS_P): Use SYMBOL_REF_EXTERNAL_P.
+	(PRINT_OPERAND, PRINT_OPERAND_ADDRESS): Likewise.
+	* config/i370/i370.md (movsi): Likewise.
+
+	* config/i370/t-i370: Add missing backslash.
+
 2003-04-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/invoke.texi (inline-limit): Fix pasto.

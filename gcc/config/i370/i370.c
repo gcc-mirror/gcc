@@ -110,7 +110,6 @@ static void i370_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 #ifdef LONGEXTERNAL
 static int mvs_hash_alias PARAMS ((const char *));
 #endif
-static void i370_encode_section_info PARAMS ((tree, int));
 static void i370_internal_label PARAMS ((FILE *, const char *, unsigned long));
 static bool i370_rtx_costs PARAMS ((rtx, int, int, int *));
 
@@ -314,8 +313,6 @@ static const unsigned char ebcasc[256] =
 #define TARGET_ASM_FUNCTION_PROLOGUE i370_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE i370_output_function_epilogue
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO i370_encode_section_info
 #undef TARGET_ASM_INTERNAL_LABEL
 #define  TARGET_ASM_INTERNAL_LABEL i370_internal_label
 #undef TARGET_RTX_COSTS
@@ -1592,17 +1589,6 @@ i370_output_function_epilogue (file, l)
   mvs_free_label_list();
   for (i = function_base_page; i < mvs_page_num; i++)
     fprintf (file, "\tDC\tA(PG%d)\n", i);
-}
-
-/* Mark external references.  */
-
-static void
-i370_encode_section_info (decl, first)
-     tree decl;
-     int first ATTRIBUTE_UNUSED;
-{
-  if (DECL_EXTERNAL (decl) && TREE_PUBLIC (decl))
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
 }
 
 static void

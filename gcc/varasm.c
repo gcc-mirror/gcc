@@ -5371,7 +5371,10 @@ default_encode_section_info (decl, first)
     flags |= SYMBOL_FLAG_SMALL;
   if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
     flags |= decl_tls_model (decl) << SYMBOL_FLAG_TLS_SHIFT;
-  if (DECL_P (decl) && DECL_EXTERNAL (decl))
+  /* ??? Why is DECL_EXTERNAL ever set for non-PUBLIC names?  Without
+     being PUBLIC, the thing *must* be defined in this translation unit.
+     Prevent this buglet from being propagated into rtl code as well.  */
+  if (DECL_P (decl) && DECL_EXTERNAL (decl) && TREE_PUBLIC (decl))
     flags |= SYMBOL_FLAG_EXTERNAL;
 
   SYMBOL_REF_FLAGS (symbol) = flags;
