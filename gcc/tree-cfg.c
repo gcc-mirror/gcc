@@ -3127,13 +3127,18 @@ has_label_p (basic_block bb, tree label)
    properly noticed as such.  */
 
 static tree
-verify_expr (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-	     void *data ATTRIBUTE_UNUSED)
+verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 {
   tree t = *tp, x;
 
   if (TYPE_P (t))
     *walk_subtrees = 0;
+  
+  /* Check operand N for being valid GIMPLE and give error MSG if not.  */
+#define CHECK_OP(N, MSG) \
+  do { if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t, N))) != 'c'	\
+         && !is_gimple_val (TREE_OPERAND (t, N)))			\
+       { error (MSG); return TREE_OPERAND (t, N); }} while (0)
 
   switch (TREE_CODE (t))
     {
@@ -3151,12 +3156,18 @@ verify_expr (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 	  && is_gimple_reg (TREE_OPERAND (x, 0)))
 	{
 	  error ("GIMPLE register modified with BIT_FIELD_REF");
-	  return *tp;
+	  return t;
 	}
       break;
 
     case ADDR_EXPR:
-      for (x = TREE_OPERAND (t, 0); handled_component_p (x);
+      /* Skip any references (they will be checked when we recurse down the
+	 tree) and ensure that any variable used as a prefix is marked
+	 addressable.  */
+      for (x = TREE_OPERAND (t, 0);
+	   (handled_component_p (x)
+	    || TREE_CODE (x) == REALPART_EXPR
+	    || TREE_CODE (x) == IMAGPART_EXPR);
 	   x = TREE_OPERAND (x, 0))
 	;
 
@@ -3190,19 +3201,50 @@ verify_expr (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
     case BIT_NOT_EXPR:
     case NON_LVALUE_EXPR:
     case TRUTH_NOT_EXPR:
-      x = TREE_OPERAND (t, 0);
-      /* We check for constants explicitly since they are not considered
-	 gimple invariants if they overflowed.  */
-      if (TREE_CODE_CLASS (TREE_CODE (x)) != 'c'
-	  && !is_gimple_val (x))
-	{
-	  error ("Invalid operand to unary operator");
-	  return x;
-	}
+      CHECK_OP (0, "Invalid operand to unary operator");
       break;
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
+    case COMPONENT_REF:
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+    case BIT_FIELD_REF:
+    case VIEW_CONVERT_EXPR:
+      /* We have a nest of references.  Verify that each of the operands
+	 that determine where to reference is either a constant or a variable,
+	 verify that the base is valid, and then show we've already checked
+	 the subtrees.  */
+      while (TREE_CODE (t) == REALPART_EXPR || TREE_CODE (t) == IMAGPART_EXPR
+	     || handled_component_p (t))
+	{
+	  if (TREE_CODE (t) == COMPONENT_REF && TREE_OPERAND (t, 2))
+	    CHECK_OP (2, "Invalid COMPONENT_REF offset operator");
+	  else if (TREE_CODE (t) == ARRAY_REF
+		   || TREE_CODE (t) == ARRAY_RANGE_REF)
+	    {
+	      CHECK_OP (1, "Invalid array index.");
+	      if (TREE_OPERAND (t, 2))
+		CHECK_OP (2, "Invalid array lower bound.");
+	      if (TREE_OPERAND (t, 3))
+		CHECK_OP (3, "Invalid array stride.");
+	    }
+	  else if (TREE_CODE (t) == BIT_FIELD_REF)
+	    {
+	      CHECK_OP (1, "Invalid operand to BIT_FIELD_REF");
+	      CHECK_OP (2, "Invalid operand to BIT_FIELD_REF");
+	    }
+
+	  t = TREE_OPERAND (t, 0);
+	}
+
+      if (TREE_CODE_CLASS (TREE_CODE (t)) != 'c'
+	  && !is_gimple_lvalue (t))
+	{
+	  error ("Invalid reference prefix.");
+	  return t;
+	}
+      *walk_subtrees = 0;
       break;
 
     case LT_EXPR:
@@ -3265,6 +3307,8 @@ verify_expr (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
       break;
     }
   return NULL;
+
+#undef CHECK_OP
 }
 
 

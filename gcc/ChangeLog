@@ -1,3 +1,8 @@
+2004-06-25  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree-cfg.c (verify_expr): Add macro CHECK_OK.
+	Properly test for nest of handled_components in LHS context.
+
 2004-06-25  Devang Patel  <dpatel@apple.com>
 
 	* doc/tree-ssa.texi: Document info about MODIFY_EXPR's type
