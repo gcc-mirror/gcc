@@ -26,6 +26,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define GOOD_GAS
 #endif
 
+/* Don't assume anything about the header files. */
+#define NO_IMPLICIT_EXTERN_C
+
 /* This is tested by i386/gas.h.  */
 #define YES_UNDERSCORES
 
