@@ -1,3 +1,8 @@
+2003-07-07  Neil Booth  <neil@daikokuya.co.uk>
+
+	* opts.c (common_handle_option): Correct handling of the
+	-falign- switches that do and don't take an argument.
+
 2003-07-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (pushqi1_h8300hs): Revert my patch
