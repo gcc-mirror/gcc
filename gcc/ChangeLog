@@ -1,3 +1,33 @@
+2001-12-02  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc/Make-lang.in: Update copyright.
+	(OBJC_OBJS): Add objc-lang.o.
+	(objc-lang.o): New rule.
+	* objc/config-lang.in: Fix file description and update
+	copyright.
+	* objc/objc-act.c: Do not include langhooks.h and
+	langhooks-def.h
+	(lang_hooks): Move (along with LANG_HOOKS...) to objc-lang.c.
+	(objc_post_options): Move to objc-lang.c.
+	(objc_init_options): Move to objc-lang.c.
+	(objc_init): Make non-static.
+	(objc_decode_option): Make non-static.
+	(HASHFUNCTION): Remove macro.
+	(hash_func): New function.
+	(hash_enter): Replace HASHFUNCTION with hash_func.
+	(hash_lookup): Replace HASHFUNCTION with hash_func.
+	(maybe_objc_tree_codes): New function.
+	(init_objc): Move ObjC tree code initialization to
+	maybe_objc_tree_codes().
+	* objc/objc-act.h (GCC_OBJC_ACT_H): New include guard.
+	(objc_init): New public prototype.
+	(objc_decode_option): New public prototype.
+	(maybe_add_objc_tree_codes): New public prototype.
+	* objc/objc-lang.c: New file.
+	(lang_hooks): Moved from objc-act.c.
+	(objc_post_options): Moved from objc-act.c.
+	(objc_init_options): Moved from objc-act.c.
+
 2001-12-03  Geoff Keating  <geoffk@redhat.com>
 
 	* emit-rtl.c (gen_lowpart_common): Avoid unwanted sign-extension
