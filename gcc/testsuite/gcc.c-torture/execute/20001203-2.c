@@ -41,7 +41,7 @@ void * xmalloc (unsigned int z);
 void _obstack_newchunk (struct obstack *o, int i);
 void get_discrete_bounds (long long *lowp, long long *highp);
 
-extern void *memset(void *, int, unsigned int);
+extern void *memset(void *, int, __SIZE_TYPE__);
 
 struct type *
 create_array_type (struct type *result_type, struct type *element_type)
