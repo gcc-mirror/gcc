@@ -4088,11 +4088,7 @@ lookup_name_real (tree name, int prefer_type, int nonclass, bool block_p,
 
   /* Now lookup in namespace scopes.  */
   if (!val)
-    {
-      tree t = unqualified_namespace_lookup (name, flags);
-      if (t)
-	val = t;
-    }
+    val = unqualified_namespace_lookup (name, flags);
 
   if (val)
     {
@@ -4128,15 +4124,18 @@ lookup_name (tree name, int prefer_type)
 }
 
 /* Look up NAME for type used in elaborated name specifier in
-   the current scope (possibly more if cleanup or template parameter
-   scope is encounter).  Unlike lookup_name_real, we make sure that
-   NAME is actually declared in the desired scope, not from inheritance,
-   using declaration, nor using directive.  A TYPE_DECL best matching
-   the NAME is returned.  Catching error and issuing diagnostics are
-   caller's responsibility.  */
+   the scopes given by SCOPE.  SCOPE can be either TS_CURRENT or
+   TS_WITHIN_ENCLOSING_NON_CLASS (possibly more scope is checked if 
+   cleanup or template parameter scope is encountered).
+
+   Unlike lookup_name_real, we make sure that NAME is actually
+   declared in the desired scope, not from inheritance, using 
+   declaration, nor using directive.  A TYPE_DECL best matching
+   the NAME is returned.  Catching error and issuing diagnostics
+   are caller's responsibility.  */
 
 tree
-lookup_type_scope (tree name)
+lookup_type_scope (tree name, tag_scope scope)
 {
   cxx_binding *iter = NULL;
   tree val = NULL_TREE;
@@ -4149,19 +4148,22 @@ lookup_type_scope (tree name)
   for (; iter; iter = outer_binding (name, iter, /*class_p=*/ true))
     {
       /* Check if this is the kind of thing we're looking for.
-	 Make sure it doesn't come from base class.  For ITER->VALUE,
-	 we can simply use INHERITED_VALUE_BINDING_P.  For ITER->TYPE,
-	 we have to use our own check.
+	 If SCOPE is TS_CURRENT, also make sure it doesn't come from 
+	 base class.  For ITER->VALUE, we can simply use
+	 INHERITED_VALUE_BINDING_P.  For ITER->TYPE, we have to use 
+	 our own check.
 
 	 We check ITER->TYPE before ITER->VALUE in order to handle
 	   typedef struct C {} C;
 	 correctly.  */
 
       if (qualify_lookup (iter->type, LOOKUP_PREFER_TYPES)
-	  && (LOCAL_BINDING_P (iter)
+	  && (scope != ts_current
+	      || LOCAL_BINDING_P (iter)
 	      || DECL_CONTEXT (iter->type) == iter->scope->this_entity))
 	val = iter->type;
-      else if (!INHERITED_VALUE_BINDING_P (iter)
+      else if ((scope != ts_current
+		|| !INHERITED_VALUE_BINDING_P (iter))
 	       && qualify_lookup (iter->value, LOOKUP_PREFER_TYPES))
 	val = iter->value;
 
@@ -4177,16 +4179,21 @@ lookup_type_scope (tree name)
 
       if (iter)
 	{
-	  /* If this is the kind of thing we're looking for, we're done.  */
-	  if (qualify_lookup (iter->type, LOOKUP_PREFER_TYPES))
+	  /* If this is the kind of thing we're looking for, we're done.
+	     Ignore names found via using declaration.  See DR138 for
+	     current status.  */
+	  if (qualify_lookup (iter->type, LOOKUP_PREFER_TYPES)
+	      && (CP_DECL_CONTEXT (iter->type) == iter->scope->this_entity))
 	    val = iter->type;
-	  else if (qualify_lookup (iter->value, LOOKUP_PREFER_TYPES))
+	  else if (qualify_lookup (iter->value, LOOKUP_PREFER_TYPES)
+		   && (CP_DECL_CONTEXT (iter->value)
+		       == iter->scope->this_entity))
 	    val = iter->value;
 	}
 	
     }
 
-  /* Type found, check if it is in the current scope, ignoring cleanup
+  /* Type found, check if it is in the allowed scopes, ignoring cleanup
      and template parameter scopes.  */
   if (val)
     {
@@ -4197,6 +4204,9 @@ lookup_type_scope (tree name)
 	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, val);
 
 	  if (b->kind == sk_cleanup || b->kind == sk_template_parms)
+	    b = b->level_chain;
+	  else if (b->kind == sk_class
+		   && scope == ts_within_enclosing_non_class)
 	    b = b->level_chain;
 	  else
 	    break;

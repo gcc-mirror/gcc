@@ -125,6 +125,22 @@ typedef enum scope_kind {
 			"template <>", this scope is always empty.  */
 } scope_kind;
 
+/* The scope where the class/struct/union/enum tag applies.  */
+typedef enum tag_scope {
+  ts_current = 0,	/* Current scope only.  This is for the
+			     class-key identifier;
+			   case mentioned in [basic.lookup.elab]/2,
+			   or the class/enum definition
+			     class-key identifier { ... };  */
+  ts_global = 1,	/* All scopes.  This is the 3.4.1
+			   [basic.lookup.unqual] lookup mentioned
+			   in [basic.lookup.elab]/2.  */
+  ts_within_enclosing_non_class = 2	/* Search within enclosing non-class
+					   only, for friend class lookup
+					   according to [namespace.memdef]/3
+					   and [class.friend]/9.  */
+} tag_scope;
+
 typedef struct cp_class_binding GTY(())
 {
   cxx_binding base;
@@ -303,7 +319,7 @@ extern tree lookup_tag (enum tree_code, tree, cxx_scope *, int);
 extern tree lookup_tag_reverse (tree, tree);
 extern tree lookup_name	(tree, int);
 extern tree lookup_name_real (tree, int, int, bool, int, int);
-extern tree lookup_type_scope (tree);
+extern tree lookup_type_scope (tree, tag_scope);
 extern tree namespace_binding (tree, tree);
 extern void set_namespace_binding (tree, tree, tree);
 extern tree lookup_namespace_name (tree, tree);

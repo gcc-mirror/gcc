@@ -4576,7 +4576,7 @@ lookup_template_class (tree d1,
 	{
 	  found = xref_tag_from_type (TREE_TYPE (template),
 				      DECL_NAME (template),
-				      /*globalize=*/1);
+				      /*tag_scope=*/ts_global);
 	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, found);
 	}
       
@@ -5788,7 +5788,8 @@ instantiate_class_template (tree type)
 		     classes.  */
 		  push_nested_namespace (ns);
 		  friend_type = 
-		    xref_tag_from_type (friend_type, NULL_TREE, 1);
+		    xref_tag_from_type (friend_type, NULL_TREE, 
+					/*tag_scope=*/ts_global);
 		  pop_nested_namespace (ns);
 		}
 
