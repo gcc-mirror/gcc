@@ -772,6 +772,88 @@
 
 ;; Move instructions
 
+(define_expand "movqi"
+  [(set (match_operand:QI 0 "general_operand" "")
+	(match_operand:QI 1 "general_operand" ""))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, QImode))
+    DONE;
+}")
+
+(define_insn ""
+  [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,Q")
+	(match_operand:QI 1 "move_operand" "rI,K,Q,rJ"))]
+  "register_operand (operands[0], QImode)
+   || register_operand (operands[1], QImode)
+   || operands[1] == const0_rtx"
+  "@
+   mov %1,%0
+   sethi %%hi(%a1),%0
+   ldub %1,%0
+   stb %r1,%0"
+  [(set_attr "type" "move,move,load,store")
+   (set_attr "length" "*,1,*,1")])
+
+(define_insn ""
+  [(set (match_operand:QI 0 "register_operand" "=r")
+	(subreg:QI (lo_sum:SI (match_operand:QI 1 "register_operand" "r")
+			      (match_operand 2 "immediate_operand" "in")) 0))]
+  ""
+  "or %1,%%lo(%a2),%0"
+  [(set_attr "length" "1")])
+
+(define_insn ""
+  [(set (mem:QI (match_operand:SI 0 "symbolic_operand" ""))
+	(match_operand:QI 1 "reg_or_0_operand" "rJ"))
+   (clobber (match_scratch:SI 2 "=&r"))]
+  ""
+  "sethi %%hi(%a0),%2\;stb %r1,[%2+%%lo(%a0)]"
+  [(set_attr "type" "store")
+   (set_attr "length" "2")])
+
+(define_expand "movhi"
+  [(set (match_operand:HI 0 "general_operand" "")
+	(match_operand:HI 1 "general_operand" ""))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, HImode))
+    DONE;
+}")
+
+(define_insn ""
+  [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,Q")
+	(match_operand:HI 1 "move_operand" "rI,K,Q,rJ"))]
+  "register_operand (operands[0], HImode)
+   || register_operand (operands[1], HImode)
+   || operands[1] == const0_rtx"
+  "@
+   mov %1,%0
+   sethi %%hi(%a1),%0
+   lduh %1,%0
+   sth %r1,%0"
+  [(set_attr "type" "move,move,load,store")
+   (set_attr "length" "*,1,*,1")])
+
+(define_insn ""
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(lo_sum:HI (match_operand:HI 1 "register_operand" "r")
+		   (match_operand 2 "immediate_operand" "in")))]
+  ""
+  "or %1,%%lo(%a2),%0"
+  [(set_attr "length" "1")])
+
+(define_insn ""
+  [(set (mem:HI (match_operand:SI 0 "symbolic_operand" ""))
+	(match_operand:HI 1 "reg_or_0_operand" "rJ"))
+   (clobber (match_scratch:SI 2 "=&r"))]
+  ""
+  "sethi %%hi(%a0),%2\;sth %r1,[%2+%%lo(%a0)]"
+  [(set_attr "type" "store")
+   (set_attr "length" "2")])
+
 (define_expand "movsi"
   [(set (match_operand:SI 0 "general_operand" "")
 	(match_operand:SI 1 "general_operand" ""))]
@@ -883,23 +965,6 @@
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(lo_sum:DI (match_operand:DI 1 "register_operand" "0")
-		   (match_operand:DI 2 "immediate_operand" "in")))]
-  ""
-  "*
-{
-  /* Don't output a 64 bit constant, since we can't trust the assembler to
-     handle it correctly.  */
-  if (GET_CODE (operands[2]) == CONST_DOUBLE)
-    operands[2] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (operands[2]));
-  return \"or %R1,%%lo(%a2),%R0\";
-}"
-  ;; Need to set length for this arith insn because operand2
-  ;; is not an "arith_operand".
-  [(set_attr "length" "1")])
-
 ;; For PIC, symbol_refs are put inside unspec so that the optimizer won't
 ;; confuse them with real addresses.
 (define_insn ""
@@ -911,6 +976,8 @@
   ;; Need to set length for this arith insn because operand2
   ;; is not an "arith_operand".
   [(set_attr "length" "1")])
+
+;; ??? Can the next two be moved above the PIC stuff?
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -931,87 +998,51 @@
   [(set_attr "type" "store")
    (set_attr "length" "2")])
 
-(define_expand "movhi"
-  [(set (match_operand:HI 0 "general_operand" "")
-	(match_operand:HI 1 "general_operand" ""))]
+(define_expand "movdi"
+  [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "")
+	(match_operand:DI 1 "general_operand" ""))]
   ""
   "
 {
-  if (emit_move_sequence (operands, HImode))
+  if (emit_move_sequence (operands, DImode))
     DONE;
 }")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,Q")
-	(match_operand:HI 1 "move_operand" "rI,K,Q,rJ"))]
-  "register_operand (operands[0], HImode)
-   || register_operand (operands[1], HImode)
+  [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "=r,Q,r,r,?f,?f,?Q")
+	(match_operand:DI 1 "general_operand" "r,r,Q,i,f,Q,f"))]
+  "register_operand (operands[0], DImode)
+   || register_operand (operands[1], DImode)
    || operands[1] == const0_rtx"
-  "@
-   mov %1,%0
-   sethi %%hi(%a1),%0
-   lduh %1,%0
-   sth %r1,%0"
-  [(set_attr "type" "move,move,load,store")
-   (set_attr "length" "*,1,*,1")])
-
-(define_insn ""
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(lo_sum:HI (match_operand:HI 1 "register_operand" "r")
-		   (match_operand 2 "immediate_operand" "in")))]
-  ""
-  "or %1,%%lo(%a2),%0"
-  [(set_attr "length" "1")])
-
-(define_insn ""
-  [(set (mem:HI (match_operand:SI 0 "symbolic_operand" ""))
-	(match_operand:HI 1 "reg_or_0_operand" "rJ"))
-   (clobber (match_scratch:SI 2 "=&r"))]
-  ""
-  "sethi %%hi(%a0),%2\;sth %r1,[%2+%%lo(%a0)]"
-  [(set_attr "type" "store")
-   (set_attr "length" "2")])
-
-(define_expand "movqi"
-  [(set (match_operand:QI 0 "general_operand" "")
-	(match_operand:QI 1 "general_operand" ""))]
-  ""
-  "
+  "*
 {
-  if (emit_move_sequence (operands, QImode))
-    DONE;
-}")
+  if (FP_REG_P (operands[0]) || FP_REG_P (operands[1]))
+    return output_fp_move_double (operands);
+  return output_move_double (operands);
+}"
+  [(set_attr "type" "move,store,load,multi,fp,fpload,fpstore")
+   (set_attr "length" "2,3,3,3,2,3,3")])
 
 (define_insn ""
-  [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,Q")
-	(match_operand:QI 1 "move_operand" "rI,K,Q,rJ"))]
-  "register_operand (operands[0], QImode)
-   || register_operand (operands[1], QImode)
-   || operands[1] == const0_rtx"
-  "@
-   mov %1,%0
-   sethi %%hi(%a1),%0
-   ldub %1,%0
-   stb %r1,%0"
-  [(set_attr "type" "move,move,load,store")
-   (set_attr "length" "*,1,*,1")])
-
-(define_insn ""
-  [(set (match_operand:QI 0 "register_operand" "=r")
-	(subreg:QI (lo_sum:SI (match_operand:QI 1 "register_operand" "r")
-			      (match_operand 2 "immediate_operand" "in")) 0))]
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(lo_sum:DI (match_operand:DI 1 "register_operand" "0")
+		   (match_operand:DI 2 "immediate_operand" "in")))]
   ""
-  "or %1,%%lo(%a2),%0"
+  "*
+{
+  /* Don't output a 64 bit constant, since we can't trust the assembler to
+     handle it correctly.  */
+  if (GET_CODE (operands[2]) == CONST_DOUBLE)
+    operands[2] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (operands[2]));
+  return \"or %R1,%%lo(%a2),%R0\";
+}"
+  ;; Need to set length for this arith insn because operand2
+  ;; is not an "arith_operand".
   [(set_attr "length" "1")])
 
-(define_insn ""
-  [(set (mem:QI (match_operand:SI 0 "symbolic_operand" ""))
-	(match_operand:QI 1 "reg_or_0_operand" "rJ"))
-   (clobber (match_scratch:SI 2 "=&r"))]
-  ""
-  "sethi %%hi(%a0),%2\;stb %r1,[%2+%%lo(%a0)]"
-  [(set_attr "type" "store")
-   (set_attr "length" "2")])
+;; ??? There's no symbolic (set (mem:DI ...) ...).
+
+;; Block move insns.
 
 ;; ??? We get better code without it.  See output_block_move in sparc.c.
 
@@ -1062,91 +1093,78 @@
 
 ;; Floating point move insns
 
-;; This pattern forces (set (reg:TF ...) (const_double ...))
+;; This pattern forces (set (reg:SF ...) (const_double ...))
 ;; to be reloaded by putting the constant into memory.
-;; It must come before the more general movtf pattern.
+;; It must come before the more general movsf pattern.
 (define_insn ""
-  [(set (match_operand:TF 0 "general_operand" "=?r,f,o")
-	(match_operand:TF 1 "" "?E,m,G"))]
+  [(set (match_operand:SF 0 "general_operand" "=?r,f,m")
+	(match_operand:SF 1 "" "?E,m,G"))]
   "TARGET_FPU && GET_CODE (operands[1]) == CONST_DOUBLE"
   "*
 {
   switch (which_alternative)
     {
     case 0:
-      return output_move_quad (operands);
+      return singlemove_string (operands);
     case 1:
-      return output_fp_move_quad (operands);
+      return \"ld %1,%0\";
     case 2:
-      operands[1] = adj_offsettable_operand (operands[0], 4);
-      operands[2] = adj_offsettable_operand (operands[0], 8);
-      operands[3] = adj_offsettable_operand (operands[0], 12);
-      return \"st %%g0,%0\;st %%g0,%1\;st %%g0,%2\;st %%g0,%3\";
+      return \"st %%g0,%0\";
     }
 }"
   [(set_attr "type" "load,fpload,store")
-   (set_attr "length" "5,5,5")])
+   (set_attr "length" "2,1,1")])
 
-(define_expand "movtf"
-  [(set (match_operand:TF 0 "general_operand" "")
-	(match_operand:TF 1 "general_operand" ""))]
+(define_expand "movsf"
+  [(set (match_operand:SF 0 "general_operand" "")
+	(match_operand:SF 1 "general_operand" ""))]
   ""
   "
 {
-  if (emit_move_sequence (operands, TFmode))
+  if (emit_move_sequence (operands, SFmode))
     DONE;
 }")
 
 (define_insn ""
-  [(set (match_operand:TF 0 "reg_or_nonsymb_mem_operand" "=f,r,Q,Q,f,&r")
-	(match_operand:TF 1 "reg_or_nonsymb_mem_operand" "f,r,f,r,Q,Q"))]
+  [(set (match_operand:SF 0 "reg_or_nonsymb_mem_operand" "=f,r,f,r,Q,Q")
+	(match_operand:SF 1 "reg_or_nonsymb_mem_operand" "f,r,Q,Q,f,r"))]
   "TARGET_FPU
-   && (register_operand (operands[0], TFmode)
-       || register_operand (operands[1], TFmode))"
-  "*
-{
-  if (FP_REG_P (operands[0]) || FP_REG_P (operands[1]))
-    return output_fp_move_quad (operands);
-  return output_move_quad (operands);
-}"
-  [(set_attr "type" "fp,move,fpstore,store,fpload,load")
-   (set_attr "length" "4,4,5,5,5,5")])
+   && (register_operand (operands[0], SFmode)
+       || register_operand (operands[1], SFmode))"
+  "@
+   fmovs %1,%0
+   mov %1,%0
+   ld %1,%0
+   ld %1,%0
+   st %r1,%0
+   st %r1,%0"
+  [(set_attr "type" "fp,move,fpload,load,fpstore,store")])
 
 ;; Exactly the same as above, except that all `f' cases are deleted.
 ;; This is necessary to prevent reload from ever trying to use a `f' reg
 ;; when -mno-fpu.
 
 (define_insn ""
-  [(set (match_operand:TF 0 "reg_or_nonsymb_mem_operand" "=r,Q,&r")
-	(match_operand:TF 1 "reg_or_nonsymb_mem_operand" "r,r,Q"))]
+  [(set (match_operand:SF 0 "reg_or_nonsymb_mem_operand" "=r,r,Q")
+	(match_operand:SF 1 "reg_or_nonsymb_mem_operand" "r,Q,r"))]
   "! TARGET_FPU
-   && (register_operand (operands[0], TFmode)
-       || register_operand (operands[1], TFmode))"
-  "*
-{
-  if (FP_REG_P (operands[0]) || FP_REG_P (operands[1]))
-    return output_fp_move_quad (operands);
-  return output_move_quad (operands);
-}"
-  [(set_attr "type" "move,store,load")
-   (set_attr "length" "4,5,5")])
+   && (register_operand (operands[0], SFmode)
+       || register_operand (operands[1], SFmode))"
+  "@
+   mov %1,%0
+   ld %1,%0
+   st %r1,%0"
+  [(set_attr "type" "move,load,store")])
 
 (define_insn ""
-  [(set (mem:TF (match_operand:SI 0 "symbolic_operand" "i,i"))
-	(match_operand:TF 1 "reg_or_0_operand" "rf,G"))
-   (clobber (match_scratch:SI 2 "=&r,&r"))]
+  [(set (mem:SF (match_operand:SI 0 "symbolic_operand" "i"))
+	(match_operand:SF 1 "reg_or_0_operand" "rfG"))
+   (clobber (match_scratch:SI 2 "=&r"))]
   ""
-  "*
-{
-  output_asm_insn (\"sethi %%hi(%a0),%2\", operands);
-  if (which_alternative == 0)
-    return \"std %1,[%2+%%lo(%a0)]\;std %S1,[%2+%%lo(%a0+8)]\";
-  else
-    return \"st %%g0,[%2+%%lo(%a0)]\;st %%g0,[%2+%%lo(%a0+4)]\; st %%g0,[%2+%%lo(%a0+8)]\;st %%g0,[%2+%%lo(%a0+12)]\";
-}"
+  "sethi %%hi(%a0),%2\;st %r1,[%2+%%lo(%a0)]"
   [(set_attr "type" "store")
-   (set_attr "length" "5")])
-
+   (set_attr "length" "2")])
+
 ;; This pattern forces (set (reg:DF ...) (const_double ...))
 ;; to be reloaded by putting the constant into memory.
 ;; It must come before the more general movdf pattern.
@@ -1237,107 +1255,91 @@
 }"
   [(set_attr "type" "store")
    (set_attr "length" "3")])
-
-;; Double-word move insns.
 
-(define_expand "movdi"
-  [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "")
-	(match_operand:DI 1 "general_operand" ""))]
-  ""
-  "
-{
-  if (emit_move_sequence (operands, DImode))
-    DONE;
-}")
-
-(define_insn ""
-  [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "=r,Q,r,r,?f,?f,?Q")
-	(match_operand:DI 1 "general_operand" "r,r,Q,i,f,Q,f"))]
-  "register_operand (operands[0], DImode)
-   || register_operand (operands[1], DImode)
-   || operands[1] == const0_rtx"
-  "*
-{
-  if (FP_REG_P (operands[0]) || FP_REG_P (operands[1]))
-    return output_fp_move_double (operands);
-  return output_move_double (operands);
-}"
-  [(set_attr "type" "move,store,load,multi,fp,fpload,fpstore")
-   (set_attr "length" "2,3,3,3,2,3,3")])
-
-;; Floating-point move insns.
-
-;; This pattern forces (set (reg:SF ...) (const_double ...))
+;; This pattern forces (set (reg:TF ...) (const_double ...))
 ;; to be reloaded by putting the constant into memory.
-;; It must come before the more general movsf pattern.
+;; It must come before the more general movtf pattern.
 (define_insn ""
-  [(set (match_operand:SF 0 "general_operand" "=?r,f,m")
-	(match_operand:SF 1 "" "?E,m,G"))]
+  [(set (match_operand:TF 0 "general_operand" "=?r,f,o")
+	(match_operand:TF 1 "" "?E,m,G"))]
   "TARGET_FPU && GET_CODE (operands[1]) == CONST_DOUBLE"
   "*
 {
   switch (which_alternative)
     {
     case 0:
-      return singlemove_string (operands);
+      return output_move_quad (operands);
     case 1:
-      return \"ld %1,%0\";
+      return output_fp_move_quad (operands);
     case 2:
-      return \"st %%g0,%0\";
+      operands[1] = adj_offsettable_operand (operands[0], 4);
+      operands[2] = adj_offsettable_operand (operands[0], 8);
+      operands[3] = adj_offsettable_operand (operands[0], 12);
+      return \"st %%g0,%0\;st %%g0,%1\;st %%g0,%2\;st %%g0,%3\";
     }
 }"
   [(set_attr "type" "load,fpload,store")
-   (set_attr "length" "2,1,1")])
+   (set_attr "length" "5,5,5")])
 
-(define_expand "movsf"
-  [(set (match_operand:SF 0 "general_operand" "")
-	(match_operand:SF 1 "general_operand" ""))]
+(define_expand "movtf"
+  [(set (match_operand:TF 0 "general_operand" "")
+	(match_operand:TF 1 "general_operand" ""))]
   ""
   "
 {
-  if (emit_move_sequence (operands, SFmode))
+  if (emit_move_sequence (operands, TFmode))
     DONE;
 }")
 
 (define_insn ""
-  [(set (match_operand:SF 0 "reg_or_nonsymb_mem_operand" "=f,r,f,r,Q,Q")
-	(match_operand:SF 1 "reg_or_nonsymb_mem_operand" "f,r,Q,Q,f,r"))]
+  [(set (match_operand:TF 0 "reg_or_nonsymb_mem_operand" "=f,r,Q,Q,f,&r")
+	(match_operand:TF 1 "reg_or_nonsymb_mem_operand" "f,r,f,r,Q,Q"))]
   "TARGET_FPU
-   && (register_operand (operands[0], SFmode)
-       || register_operand (operands[1], SFmode))"
-  "@
-   fmovs %1,%0
-   mov %1,%0
-   ld %1,%0
-   ld %1,%0
-   st %r1,%0
-   st %r1,%0"
-  [(set_attr "type" "fp,move,fpload,load,fpstore,store")])
+   && (register_operand (operands[0], TFmode)
+       || register_operand (operands[1], TFmode))"
+  "*
+{
+  if (FP_REG_P (operands[0]) || FP_REG_P (operands[1]))
+    return output_fp_move_quad (operands);
+  return output_move_quad (operands);
+}"
+  [(set_attr "type" "fp,move,fpstore,store,fpload,load")
+   (set_attr "length" "4,4,5,5,5,5")])
 
 ;; Exactly the same as above, except that all `f' cases are deleted.
 ;; This is necessary to prevent reload from ever trying to use a `f' reg
 ;; when -mno-fpu.
 
 (define_insn ""
-  [(set (match_operand:SF 0 "reg_or_nonsymb_mem_operand" "=r,r,Q")
-	(match_operand:SF 1 "reg_or_nonsymb_mem_operand" "r,Q,r"))]
+  [(set (match_operand:TF 0 "reg_or_nonsymb_mem_operand" "=r,Q,&r")
+	(match_operand:TF 1 "reg_or_nonsymb_mem_operand" "r,r,Q"))]
   "! TARGET_FPU
-   && (register_operand (operands[0], SFmode)
-       || register_operand (operands[1], SFmode))"
-  "@
-   mov %1,%0
-   ld %1,%0
-   st %r1,%0"
-  [(set_attr "type" "move,load,store")])
+   && (register_operand (operands[0], TFmode)
+       || register_operand (operands[1], TFmode))"
+  "*
+{
+  if (FP_REG_P (operands[0]) || FP_REG_P (operands[1]))
+    return output_fp_move_quad (operands);
+  return output_move_quad (operands);
+}"
+  [(set_attr "type" "move,store,load")
+   (set_attr "length" "4,5,5")])
 
 (define_insn ""
-  [(set (mem:SF (match_operand:SI 0 "symbolic_operand" "i"))
-	(match_operand:SF 1 "reg_or_0_operand" "rfG"))
-   (clobber (match_scratch:SI 2 "=&r"))]
+  [(set (mem:TF (match_operand:SI 0 "symbolic_operand" "i,i"))
+	(match_operand:TF 1 "reg_or_0_operand" "rf,G"))
+   (clobber (match_scratch:SI 2 "=&r,&r"))]
   ""
-  "sethi %%hi(%a0),%2\;st %r1,[%2+%%lo(%a0)]"
+  "*
+{
+  output_asm_insn (\"sethi %%hi(%a0),%2\", operands);
+  if (which_alternative == 0)
+    return \"std %1,[%2+%%lo(%a0)]\;std %S1,[%2+%%lo(%a0+8)]\";
+  else
+    return \"st %%g0,[%2+%%lo(%a0)]\;st %%g0,[%2+%%lo(%a0+4)]\; st %%g0,[%2+%%lo(%a0+8)]\;st %%g0,[%2+%%lo(%a0+12)]\";
+}"
   [(set_attr "type" "store")
-   (set_attr "length" "2")])
+   (set_attr "length" "5")])
 
 ;;- zero extension instructions
 
@@ -1913,8 +1915,8 @@
   "TARGET_V8"
   "wr %%g0,%%g0,%%y\;nop\;nop\;nop\;udivcc %1,%2,%0"
   [(set_attr "length" "5")])
-
-;;- and instructions
+
+;;- Boolean instructions
 ;; We define DImode `and` so with DImode `not` we can get
 ;; DImode `andn`.  Other combinations are possible.
 

@@ -519,7 +519,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
    normally.  
    
    We put %f0/%f1 last among the float registers, so as to make it more
-   likely that a pseduo-register which dies in the float return register
+   likely that a pseudo-register which dies in the float return register
    will get allocated to the float return register, thus saving a move
    instruction at the end of the function.  */
 #define REG_ALLOC_ORDER \
@@ -886,10 +886,6 @@ do {									\
   ASM_OUTPUT_LABEL (FILE, NAME);					\
 } while (0)
 
-/* Two views of the size of the current frame.  */
-extern int actual_fsize;
-extern int apparent_fsize;
-
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.
    SIZE is an int: how many units of temporary storage to allocate.
@@ -978,7 +974,7 @@ extern union tree_node *current_function_decl;
 #define ELIGIBLE_FOR_EPILOGUE_DELAY(trial, slots_filled)	\
   (TARGET_FRW ? sparc_frw_eligible_for_epilogue_delay (trial, slots_filled) \
    : eligible_for_epilogue_delay (trial, slots_filled))
-
+
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.  */
 
@@ -1040,7 +1036,7 @@ extern union tree_node *current_function_decl;
   emit_insn (gen_iorsi3 (low_cxt, low_cxt, tem));			\
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 16)), low_cxt);\
 }
-
+
 /* Generate necessary RTL for __builtin_saveregs().
    ARGLIST is the argument list; see expr.c.  */
 extern struct rtx_def *sparc_builtin_saveregs ();
