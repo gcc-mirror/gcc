@@ -1,5 +1,6 @@
 # GCC build-, host- and target-specific configuration file.
-# Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003
+# Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -1801,6 +1802,24 @@ mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_GAS|MASK_ABICALLS"
 	tm_file="elfos.h ${tm_file} mips/netbsd.h"
 	tmake_file="${tmake_file}"
+	;;
+mips64*-*-linux*)
+	tm_file="dbxelf.h elfos.h svr4.h linux.h ${tm_file} mips/linux.h mips/linux64.h"
+	tmake_file="t-slibgcc-elf-ver t-linux mips/t-linux mips/t-linux64"
+
+	# This default ABI is a partial lie: t-linux64 overrides the
+	# DRIVER_SELF_SPEC that sets the default abi, in the spec file
+	# that is installed.  What GCC thinks of as the default must
+	# remain as ABI_32 such that the SONAMEs of the libgcc shared
+	# libraries remain compatible with those of mips-linux-gnu.
+	tm_defines="MIPS_ISA_DEFAULT=1 MIPS_ABI_DEFAULT=ABI_32"
+	target_cpu_default="MASK_ABICALLS|MASK_FLOAT64|MASK_64BIT"
+	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
+	gnu_ld=yes
+	gas=yes
+	if test x$enable_threads = xyes; then
+		thread_file='posix'
+	fi
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
         tm_file="dbxelf.h elfos.h svr4.h linux.h ${tm_file} mips/linux.h"

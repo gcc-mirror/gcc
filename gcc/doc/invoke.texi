@@ -491,7 +491,7 @@ in the following sections.
 -mrnames  -msoft-float @gol
 -m4650  -msingle-float  -mmad @gol
 -mstats  -EL  -EB  -G @var{num}  -nocpp @gol
--mabi=32  -mabi=n32  -mabi=64  -mabi=eabi @gol
+-mabi=32  -mabi=n32  -mabi=64  -mabi=eabi  -mabi-fake-default @gol
 -mfix7000  -mno-crt0 -mflush-func=@var{func} -mno-flush-func @gol
 -mbranch-likely -mno-branch-likely}
 
@@ -7464,6 +7464,37 @@ selects the one defined by MIPS@.  Both these ABIs have
 32-bit and 64-bit variants.  Normally, GCC will generate
 64-bit code when you select a 64-bit architecture, but you
 can use @option{-mgp32} to get 32-bit code instead.
+
+@item -mabi-fake-default
+@opindex mabi-fake-default
+You don't want to know what this option does.  No, really.  I mean
+it.  Move on to the next option.
+
+What?  You're still here?  Oh, well@enddots{}  Ok, here's the deal.  GCC
+wants the default set of options to get the root of the multilib tree,
+and the shared library SONAMEs without any multilib-indicating
+suffixes.  This is not convenience for @samp{mips64-linux-gnu}, since
+we want to default to the N32 ABI, while still being binary-compatible
+with @samp{mips-linux-gnu} if you stick to the O32 ABI@.  Being
+binary-compatible means shared libraries should have the same SONAMEs,
+and libraries should live in the same location.  Having O32 libraries
+in a sub-directory named say @file{o32} is not acceptable.
+
+So we trick GCC into believing that O32 is the default ABI, except
+that we override the default with some internal command-line
+processing magic.  Problem is, if we stopped at that, and you then
+created a multilib-aware package that used the output of @command{gcc
+-print-multi-lib} to decide which multilibs to build, and how, and
+you'd find yourself in an awkward situation when you found out that
+some of the options listed ended up mapping to the same multilib, and
+none of your libraries was actually built for the multilib that
+@option{-print-multi-lib} claims to be the default.  So we added this
+option that disables the default switcher, falling back to GCC's
+original notion of the default library.  Confused yet?
+
+For short: don't ever use this option, unless you find it in the list
+of additional options to be used when building for multilibs, in the
+output of @option{gcc -print-multi-lib}.
 
 @item -mmips-as
 @opindex mmips-as
