@@ -2020,7 +2020,8 @@ expand_call (exp, target, ignore)
   safe_for_reeval = 0;
   if (optimize >= 2
       && currently_expanding_call == 1
-      && stmt_loop_nest_empty ())
+      && stmt_loop_nest_empty ()
+      && ! any_pending_cleanups (1))
     {
       /* Verify that each argument is safe for re-evaluation.  */
       for (p = actparms; p; p = TREE_CHAIN (p))
@@ -2151,6 +2152,12 @@ expand_call (exp, target, ignore)
 	      || fndecl == NULL_TREE
 	      || ! FUNCTION_OK_FOR_SIBCALL (fndecl))
 	    continue;
+
+	  /* We know at this point that there are not currently any
+	     pending cleanups.  If, however, in the process of evaluating
+	     the arguments we were to create some, we'll need to be
+	     able to get rid of them.  */
+	  expand_start_target_temps ();
 
 	  /* State variables we need to save and restore between
 	     iterations.  */
@@ -2924,6 +2931,14 @@ expand_call (exp, target, ignore)
       for (i = 0; i < num_actuals; ++i)
 	if (args[i].aligned_regs)
 	  free (args[i].aligned_regs);
+
+      if (pass == 0)
+	{
+	  /* Undo the fake expand_start_target_temps we did earlier.  If
+	     there had been any cleanups created, we've already set
+	     sibcall_failure.  */
+	  expand_end_target_temps ();
+	}
 
       insns = get_insns ();
       end_sequence ();
