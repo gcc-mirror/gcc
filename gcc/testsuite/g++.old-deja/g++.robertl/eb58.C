@@ -10,5 +10,5 @@ private:
 
 main()
 {
-    A *list = new A[10](4);
+  A *list = new A[10](4); //ERROR -
 }
