@@ -1,5 +1,11 @@
 2004-08-13  Richard Henderson  <rth@redhat.com>
 
+	* dbxout.c (NO_DBX_FUNCTION_END): Default to zero.
+	(dbxout_function_end): Remove ifdefs for it.
+	(dbxout_begin_prologue): Protect N_BNSYM with it, and gdb extensions.
+
+2004-08-13  Richard Henderson  <rth@redhat.com>
+
 	* Makefile.in (insn-preds.o): Depend on TREE_H.
 	* genpreds.c (write_insn_preds_c): Include tree.h.
 	* config/alpha/alpha.c (reg_or_0_operand, reg_or_6bit_operand,

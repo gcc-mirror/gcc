@@ -146,6 +146,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define STABS_GCC_MARKER "gcc2_compiled."
 #endif
 
+#ifndef NO_DBX_FUNCTION_END
+#define NO_DBX_FUNCTION_END 0
+#endif
+
 enum typestatus {TYPE_UNSEEN, TYPE_XREF, TYPE_DEFINED};
 
 /* Structure recording information about a C data type.
@@ -464,9 +468,7 @@ dbxout_function_end (void)
      which may be undesirable, and is unnecessary if we do not have
      named sections.  */
   if (!use_gnu_debug_info_extensions
-#if defined(NO_DBX_FUNCTION_END)
       || NO_DBX_FUNCTION_END
-#endif
       || !targetm.have_named_sections)
     return;
 
@@ -761,7 +763,9 @@ dbxout_source_file (FILE *file, const char *filename)
 static void
 dbxout_begin_prologue (unsigned int lineno, const char *filename)
 {
-  if (!flag_debug_only_used_symbols)
+  if (use_gnu_debug_info_extensions
+      && !NO_DBX_FUNCTION_END
+      && !flag_debug_only_used_symbols)
     fprintf (asmfile, "%s%d,0,0\n", ASM_STABD_OP, N_BNSYM);
 
   dbxout_source_line (lineno, filename);
