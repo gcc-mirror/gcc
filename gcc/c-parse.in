@@ -27,10 +27,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 written by AT&T, but I have never seen it.  */
 
 ifobjc
-%expect 35
+%expect 40
 end ifobjc
 ifc
-%expect 27
+%expect 28
 
 /* These are the 23 conflicts you should get in parse.output;
    the state numbers may vary if minor changes in the grammar are made.
