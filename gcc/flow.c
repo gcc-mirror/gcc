@@ -1821,7 +1821,7 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
       regset_head diff_head;
       regset diff = INITIALIZE_REG_SET (diff_head);
       basic_block bb_true, bb_false;
-      int i;
+      unsigned i;
 
       /* Identify the successor blocks.  */
       bb_true = EDGE_SUCC (bb, 0)->dest;
