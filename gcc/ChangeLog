@@ -1,3 +1,8 @@
+2002-09-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/xcoff.h (HOT_TEXT_SECTION_NAME): Delete.
+	(UNLIKELY_EXECUTED_TEXT_SECTION_NAME): Delete.
+
 2002-09-05  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* real.c: Avoid parse error if FLOAT_WORDS_BIG_ENDIAN is
