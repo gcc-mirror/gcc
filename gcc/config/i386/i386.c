@@ -870,6 +870,7 @@ static tree ix86_handle_cdecl_attribute PARAMS ((tree *, tree, tree, int, bool *
 static tree ix86_handle_regparm_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static int ix86_value_regno PARAMS ((enum machine_mode));
 static bool ix86_ms_bitfield_layout_p PARAMS ((tree));
+static tree ix86_handle_struct_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static int extended_reg_mentioned_1 PARAMS ((rtx *, void *));
 
 #if defined (DO_GLOBAL_CTORS_BODY) && defined (HAS_INIT_SECTION)
@@ -1456,6 +1457,8 @@ const struct attribute_spec ix86_attribute_table[] =
   { "dllexport", 0, 0, false, false, false, ix86_handle_dll_attribute },
   { "shared",    0, 0, true,  false, false, ix86_handle_shared_attribute },
 #endif
+  { "ms_struct", 0, 0, false, false,  false, ix86_handle_struct_attribute },
+  { "gcc_struct", 0, 0, false, false,  false, ix86_handle_struct_attribute },
   { NULL,        0, 0, false, false, false, NULL }
 };
 
@@ -14531,11 +14534,52 @@ x86_order_regs_for_local_alloc ()
 #define TARGET_USE_MS_BITFIELD_LAYOUT 0
 #endif
 
+/* Handle a "ms_struct" or "gcc_struct" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+ix86_handle_struct_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  tree *type = NULL;
+  if (DECL_P (*node))
+    {
+      if (TREE_CODE (*node) == TYPE_DECL)
+	type = &TREE_TYPE (*node);
+    }
+  else
+    type = node;
+
+  if (!(type && (TREE_CODE (*type) == RECORD_TYPE
+		 || TREE_CODE (*type) == UNION_TYPE)))
+    {
+      warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  else if ((is_attribute_p ("ms_struct", name)
+	    && lookup_attribute ("gcc_struct", TYPE_ATTRIBUTES (*type)))
+	   || ((is_attribute_p ("gcc_struct", name)
+		&& lookup_attribute ("ms_struct", TYPE_ATTRIBUTES (*type)))))
+    {
+      warning ("`%s' incompatible attribute ignored",
+               IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 static bool
 ix86_ms_bitfield_layout_p (record_type)
-     tree record_type ATTRIBUTE_UNUSED;
+     tree record_type;
 {
-  return TARGET_USE_MS_BITFIELD_LAYOUT;
+  return (TARGET_USE_MS_BITFIELD_LAYOUT &&
+      !lookup_attribute ("gcc_struct", TYPE_ATTRIBUTES (record_type)))
+    || lookup_attribute ("ms_struct", TYPE_ATTRIBUTES (record_type));
 }
 
 /* Returns an expression indicating where the this parameter is

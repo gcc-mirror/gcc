@@ -3212,6 +3212,26 @@ Medium and large model objects may live anywhere in the 32-bit address space
 (the compiler will generate @code{seth/add3} instructions to load their
 addresses).
 
+@subsection i386 Variable Attributes
+
+Two attributes are currently defined for i386 configurations:
+@code{ms_struct} and @code{gcc_struct}
+
+@item ms_struct
+@itemx gcc_struct
+@cindex @code{ms_struct}
+@cindex @code{gcc_struct}
+
+If @code{packed} is used on a structure, or if bit-fields are used
+it may be that the Microsoft ABI packs them differently
+than GCC would normally pack them.  Particularly when moving packed
+data between functions compiled with GCC and the native Microsoft compiler
+(either via function call or as data in a file), it may be necessary to access
+either format.
+
+Currently @option{-m[no-]ms-bitfields} is provided for the Windows X86
+compilers to match the native Microsoft compiler.
+
 @end table
 
 To specify multiple attributes, separate them by commas within the
@@ -3471,6 +3491,26 @@ If you replaced @code{short_a} with @code{short} in the variable
 declaration, the above program would abort when compiled with
 @option{-fstrict-aliasing}, which is on by default at @option{-O2} or
 above in recent GCC versions.
+
+@subsection i386 Type Attributes
+
+Two attributes are currently defined for i386 configurations:
+@code{ms_struct} and @code{gcc_struct}
+
+@item ms_struct
+@itemx gcc_struct
+@cindex @code{ms_struct}
+@cindex @code{gcc_struct}
+
+If @code{packed} is used on a structure, or if bit-fields are used
+it may be that the Microsoft ABI packs them differently
+than GCC would normally pack them.  Particularly when moving packed
+data between functions compiled with GCC and the native Microsoft compiler
+(either via function call or as data in a file), it may be necessary to access
+either format.
+
+Currently @option{-m[no-]ms-bitfields} is provided for the Windows X86
+compilers to match the native Microsoft compiler.
 @end table
 
 To specify multiple attributes, separate them by commas within the

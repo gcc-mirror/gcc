@@ -1,3 +1,13 @@
+2003-01-08  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/i386/i386.c (ix86_attribute_table): Add new attributes
+	ms_struct and gcc_struct.
+	(ix86_handle_struct_attribute): New function.
+	(ix86_ms_bitfield_layout_p): Update to take new attributes
+	into account.
+	* doc/extend.texi: Document new attributes.
+	* testsuite/gcc.dg/bf-ms-attrib.c: New test.
+
 2003-01-08  Danny Smith  <dannysmith@users.sourceforge.net>
 
         PR optimization/8750
