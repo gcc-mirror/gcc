@@ -2,7 +2,7 @@
 /*
  *  server.c  Set up and handle communications with a server process.
  *
- *  Server Handling copyright 1992-1999 The Free Software Foundation
+ *  Server Handling copyright 1992-1999, 2001 The Free Software Foundation
  *
  *  Server Handling is free software.
  *  You may redistribute it and/or modify it under the terms of the
@@ -57,7 +57,7 @@
 # define volatile
 #endif
 
-STATIC volatile t_bool read_pipe_timeout;
+STATIC volatile enum t_bool read_pipe_timeout;
 STATIC pid_t server_master_pid = NOPROCESS;
 
 tSCC* def_args[] =
