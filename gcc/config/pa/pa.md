@@ -1347,9 +1347,9 @@
   if (GET_CODE (operands[2]) == CONST_INT)
     {
       if (INTVAL (operands[2]) >= 0)
-	return \"addi %R2,%R1,%R0\;addc %1,0,%0\";
+	return \"addi %2,%R1,%R0\;addc %1,0,%0\";
       else
-	return \"addi %R2,%R1,%R0\;subb %1,0,%0\";
+	return \"addi %2,%R1,%R0\;subb %1,0,%0\";
     }
   else
     return \"add %R2,%R1,%R0\;addc %2,%1,%0\";
