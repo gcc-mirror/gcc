@@ -1,13 +1,13 @@
-This is a collection of tests for the C and C++ frontends of EGCS. For
+This is a collection of tests for the C and C++ frontends of GCC. For
 further information please check README.gcc and README.g++, though the
 latter may not be up-to-date any more.
 
 The driver that runs this testsuite is called DejaGnu and you will
 need a current DejaGnu snapshot, which is available from
-ftp://egcs.cygnus.com/pub/egcs/infrastructure, for example.
+ftp://gcc.gnu.org/pub/gcc/infrastructure, for example.
 
 Most of these tests were originally developed and/or collected by
-Cygnus Solutions, but these days many are being added by the EGCS
+Cygnus Solutions, but these days many are being added by the GCC
 developers.
 
 These tests are included "as is". If any of them fails, do not report
@@ -17,7 +17,7 @@ gcc@gcc.gnu.org; additions and changes to should go to sent to
 gcc-patches@gcc.gnu.org.
 
 The entire testsuite is invoked by `make check` at the top level of
-the EGCS tree. `make check-g++` runs the C++ testsuite only.
+the GCC tree. `make check-g++` runs the C++ testsuite only.
 
 
 STRUCTURE OF THE TESTSUITE

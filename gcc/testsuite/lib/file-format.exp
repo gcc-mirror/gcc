@@ -15,7 +15,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
 # Please email any bugs, comments, and/or additions to this file to:
-# egcs-bugs@egcs.cygnus.com
+# gcc-bugs@gcc.gnu.org
 
 # This file defines a proc for determining the file format in use by the
 # target.  This is useful for tests that are only supported by certain file
