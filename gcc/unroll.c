@@ -3706,6 +3706,41 @@ loop_iterations (loop)
   if (initial_value == 0)
     return 0;
 
+  /* Some code transformations can result in code akin to
+
+	  tmp = i + 1;
+	  ...
+	  goto scan_start;
+	top:
+	  tmp = tmp + 1;
+	scan_start:
+	  i = tmp;
+	  if (i < n) goto top;
+
+     We'll have already detected this form of loop in scan_loop,
+     and set loop->top and loop->scan_start appropriately.
+
+     In this situation, we skip the increment the first time through
+     the loop, which results in an incorrect estimate of the number
+     of iterations.  Adjust the initial value to compensate.  */
+
+  if (loop->scan_start && loop->cont
+      && INSN_LUID (loop->scan_start) < INSN_LUID (loop->cont)
+      && INSN_LUID (bl->biv->insn) < INSN_LUID (loop->scan_start))
+    {
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+	         "Loop iterations: Basic induction var skips initial incr.\n");
+      if (GET_CODE (increment) != CONST_INT)
+	{
+	  if (loop_dump_stream)
+	    fprintf (loop_dump_stream,
+		     "Loop iterations: Can't adjust with non-constant incr.\n");
+	  return 0;
+	}
+      initial_value = plus_constant (initial_value, -INTVAL (increment));
+    }
+
   unsigned_p = 0;
   off_by_one = 0;
   switch (comparison_code)
