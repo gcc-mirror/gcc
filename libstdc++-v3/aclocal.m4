@@ -922,9 +922,10 @@ dnl
 dnl GLIBCPP_ENABLE_LONG_LONG
 AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
   define([GLIBCPP_ENABLE_LONG_LONG_DEFAULT], ifelse($1, yes, yes, no))dnl
+  AC_MSG_CHECKING([for enabled long long])
   AC_ARG_ENABLE(long-long,
   changequote(<<, >>)dnl
-  <<--enable-long_long      turns on 'long long' [default=>>GLIBCPP_ENABLE_LONG_LONG_DEFAULT],
+  <<--enable-long-long      turns on 'long long' [default=>>GLIBCPP_ENABLE_LONG_LONG_DEFAULT],
   changequote([, ])dnl
   [case "$enableval" in
    yes) enable_long_long=yes ;;
@@ -932,6 +933,7 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
    *)   AC_MSG_ERROR([Unknown argument to enable/disable long long]) ;;
    esac],
   enable_long_long=GLIBCPP_ENABLE_LONG_LONG_DEFAULT)dnl
+  AC_MSG_RESULT($enable_long_long)
   dnl Option parsed, now set things appropriately
   case "$enable_long_long" in
     yes)  AC_DEFINE(_GLIBCPP_USE_LONG_LONG)
@@ -944,29 +946,35 @@ dnl
 dnl Check for certain special build configurations.
 dnl
 dnl GLIBCPP_ENABLE_SHADOW
-dnl --enable-shadow-headers [does stuff].
-dnl --disable-shadow-headers [does not do stuff].
+dnl --enable-cshadow-headers [does stuff].
+dnl --disable-cshadow-headers [does not do stuff].
 dnl  +  This will eventually need to be on by default.
 dnl  +  Usage:  GLIBCPP_ENABLE_SHADOW[(DEFAULT)]
 dnl       Where DEFAULT is either `yes' or `no'.  If ommitted, it
 dnl       defaults to `no'.
 AC_DEFUN(GLIBCPP_ENABLE_SHADOW, [dnl
 define([GLIBCPP_ENABLE_SHADOW_DEFAULT], ifelse($1, yes, yes, no))dnl
-AC_ARG_ENABLE(shadow-headers,
+AC_MSG_CHECKING([for enabled cshadow headers])
+AC_ARG_ENABLE(cshadow-headers,
 changequote(<<, >>)dnl
-<<  --enable-shadow-headers construct "shadowed" C header files for
-                          g++ [default=>>GLIBCPP_ENABLE_SHADOW_DEFAULT],
+<<  --enable-cshadow-headers construct "shadowed" C header files for
+                           g++ [default=>>GLIBCPP_ENABLE_SHADOW_DEFAULT],
 changequote([, ])dnl
 [case "$enableval" in
- yes) enable_shadow_headers=yes ;;
- no)  enable_shadow_headers=no ;;
- *)   AC_MSG_ERROR([Unknown argument to enable/disable shadowed C headers]) ;;
+ yes) enable_cshadow_headers=yes 
+	;;
+ no)  enable_cshadow_headers=no 
+	;;
+ *)   AC_MSG_ERROR([Unknown argument to enable/disable shadowed C headers]) 
+	;;
  esac],
-enable_shadow_headers=GLIBCPP_ENABLE_SHADOW_DEFAULT)dnl
+enable_cshadow_headers=GLIBCPP_ENABLE_SHADOW_DEFAULT)dnl
+AC_MSG_RESULT($enable_cshadow_headers)
 dnl Option parsed, now set things appropriately
-case "$enable_shadow_headers" in
+case "$enable_cshadow_headers" in
     yes) 
-	SHADOW_INCLUDES="-I -am -the -walrus"
+	SHADOW_INCLUDES="-I$srcdir/shadow -I$blddir/cshadow"
+$srcdir/inclosure "-I $blddir/../../gcc/include/ -I /usr/include/ -G machine/ansi.h" | $srcdir/mkcshadow
 	;;
     no)   
 	SHADOW_INCLUDES=''
