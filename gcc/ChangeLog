@@ -1,3 +1,10 @@
+2004-12-16  Mark Dettinger  <dettinge@de.ibm.com>
+
+	* config/s390/s390.c (struct processor_costs): Two new fields:
+	madbr, maebr.
+	(s390_rtx_costs): Added handling of multipy and add in SFmode.
+	More precise values for cost of multiply and add.
+
 2004-12-15  Richard Henderson  <rth@redhat.com>
 
 	PR target/19028
