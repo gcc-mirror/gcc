@@ -46,6 +46,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.RemoteStub;
 import java.rmi.server.ObjID;
 import java.rmi.server.ServerRef;
+import java.rmi.server.RemoteServer;
 import java.rmi.server.RemoteRef;
 import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -85,7 +86,7 @@ UnicastServerRef()
 {
 }
 
-public UnicastServerRef(ObjID id, int port, RMIServerSocketFactory ssf) {
+public UnicastServerRef(ObjID id, int port, RMIServerSocketFactory ssf) throws RemoteException {
 	super(id);
 	manager = UnicastConnectionManager.getInstance(port, ssf);
 }
@@ -99,13 +100,21 @@ public RemoteStub exportObject(Remote obj) throws RemoteException {
 
 		// Find and install the stub
 		Class cls = obj.getClass();
-		stub = (RemoteStub)getHelperClass(cls, "_Stub");
+		Class expCls;
+		try {
+			// where ist the _Stub? (check superclasses also)
+			expCls = findStubSkelClass(cls); 
+		} catch (Exception ex) {
+			throw new RemoteException("can not find stubs for class: " + cls, ex);
+		}
+
+		stub = (RemoteStub)getHelperClass(expCls, "_Stub");
 		if (stub == null) {
 			throw new RemoteException("failed to export: " + cls);
 		}
 
 		// Find and install the skeleton (if there is one)
-		skel = (Skeleton)getHelperClass(cls, "_Skel");
+		skel = (Skeleton)getHelperClass(expCls, "_Skel");
 
 		// Build hash of methods which may be called.
 		buildMethodHash(obj.getClass(), true);
@@ -134,6 +143,38 @@ public boolean unexportObject(Remote obj, boolean force) {
     buildMethodHash(obj.getClass(), false);
     return UnicastServer.unexportObject(this, force);
 }
+
+/**
+*
+*  The Subs/Skels might not there for the actual class, but maybe 
+*  for one of the superclasses.
+*
+*/
+private Class findStubSkelClass(Class startCls) throws Exception {
+	Class cls = startCls;
+
+	while (true) {
+		try {
+			String stubClassname = cls.getName() + "_Stub";
+			ClassLoader cl = cls.getClassLoader();
+			Class scls = cl == null ? Class.forName(stubClassname)
+						: cl.loadClass(stubClassname);
+			return cls; // found it
+		} catch (ClassNotFoundException e) {
+			Class superCls = cls.getSuperclass();
+			if (superCls == null 
+				|| superCls == java.rmi.server.UnicastRemoteObject.class) 
+			{
+				throw new Exception("Neither " + startCls 
+					+ " nor one of their superclasses (like" + cls + ")" 
+					+ " has a _Stub");
+			}
+			cls = superCls;
+		}
+	}
+}
+
+
 
 private Object getHelperClass(Class cls, String type) {
 	try {   
@@ -176,8 +217,10 @@ private Object getHelperClass(Class cls, String type) {
 	return (null);
 }
 
+
+
 public String getClientHost() throws ServerNotActiveException {
-	throw new Error("Not implemented");
+	return RemoteServer.getClientHost();
 }
 
 private void buildMethodHash(Class cls, boolean build) {

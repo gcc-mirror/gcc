@@ -116,7 +116,7 @@ private Object invokeCommon(Remote obj, Method method, Object[] params, int opnu
 		dout = conn.getDataOutputStream();
 		dout.writeByte(MESSAGE_CALL);
 
-		out = conn.getObjectOutputStream();
+		out = conn.startObjectOutputStream(); // (re)start ObjectOutputStream
 		
 		objid.write(out);
 		out.writeInt(opnum);
@@ -146,19 +146,22 @@ private Object invokeCommon(Remote obj, Method method, Object[] params, int opnu
 			throw new RemoteException("Call not acked:" + returncode);
 		}
 
-		in = conn.getObjectInputStream();
+		in = conn.startObjectInputStream(); // (re)start ObjectInputStream
 		returncode = in.readUnsignedByte();
 		ack = UID.read(in);
 
 		Class cls = method.getReturnType();
-        if(cls == Void.TYPE){
-            returnval = null;
-            in.readObject();
-        }else
-            returnval = ((RMIObjectInputStream)in).readValue(cls);
 
+	if (returncode == RETURN_NACK) { 
+	    returnval = in.readObject();  // get Exception
+
+        } else if(cls == Void.TYPE) { 
+            returnval = null;
+            // in.readObject() // not required! returntype 'void' means no field is returned.
+        } else {
+            returnval = ((RMIObjectInputStream)in).readValue(cls); // get returnvalue
 	}
-	catch (IOException e3) {
+	} catch (IOException e3) {
 	    //for debug: e3.printStackTrace();
 		throw new RemoteException("call return failed: ", e3);
 	}
@@ -174,7 +177,8 @@ private Object invokeCommon(Remote obj, Method method, Object[] params, int opnu
 	manager.discardConnection(conn);
 
 	if (returncode != RETURN_ACK && returnval != null) {
-		throw (Exception)returnval;
+		if (returncode == RETURN_NACK) throw (Exception)returnval;
+		else throw new RemoteException("unexpected returncode: " + returncode);
 	}
 
 	return (returnval);
