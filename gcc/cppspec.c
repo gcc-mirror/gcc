@@ -51,10 +51,8 @@ static const char *const known_suffixes[] =
 
 /* Filter argc and argv before processing by the gcc driver proper.  */
 void
-lang_specific_driver (in_argc, in_argv, in_added_libraries)
-     int *in_argc;
-     const char *const **in_argv;
-     int *in_added_libraries ATTRIBUTE_UNUSED;
+lang_specific_driver (int *in_argc, const char *const **in_argv,
+		      int *in_added_libraries ATTRIBUTE_UNUSED)
 {
   int argc = *in_argc;
   const char *const *argv = *in_argv;
@@ -203,7 +201,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 }
 
 /* Called before linking.  Returns 0 on success and -1 on failure.  */
-int lang_specific_pre_link ()
+int lang_specific_pre_link (void)
 {
   return 0;  /* Not used for cpp.  */
 }

@@ -375,16 +375,16 @@ struct cpp_options
 struct cpp_callbacks
 {
   /* Called when a new line of preprocessed output is started.  */
-  void (*line_change) PARAMS ((cpp_reader *, const cpp_token *, int));
-  void (*file_change) PARAMS ((cpp_reader *, const struct line_map *));
-  void (*include) PARAMS ((cpp_reader *, unsigned int,
-			   const unsigned char *, const char *, int));
-  void (*define) PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
-  void (*undef) PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
-  void (*ident) PARAMS ((cpp_reader *, unsigned int, const cpp_string *));
-  void (*def_pragma) PARAMS ((cpp_reader *, unsigned int));
-  int (*valid_pch) PARAMS ((cpp_reader *, const char *, int));
-  void (*read_pch) PARAMS ((cpp_reader *, const char *, int, const char *));
+  void (*line_change) (cpp_reader *, const cpp_token *, int);
+  void (*file_change) (cpp_reader *, const struct line_map *);
+  void (*include) (cpp_reader *, unsigned int, const unsigned char *,
+		   const char *, int);
+  void (*define) (cpp_reader *, unsigned int, cpp_hashnode *);
+  void (*undef) (cpp_reader *, unsigned int, cpp_hashnode *);
+  void (*ident) (cpp_reader *, unsigned int, const cpp_string *);
+  void (*def_pragma) (cpp_reader *, unsigned int);
+  int (*valid_pch) (cpp_reader *, const char *, int);
+  void (*read_pch) (cpp_reader *, const char *, int, const char *);
 };
 
 /* Chain of directories to look for include files in.  */
@@ -494,91 +494,83 @@ struct cpp_hashnode GTY(())
    pointer.  Otherwise you should pass in an initialized hash table
    that cpplib will share; this technique is used by the C front
    ends.  */
-extern cpp_reader *cpp_create_reader PARAMS ((enum c_lang, struct ht *));
+extern cpp_reader *cpp_create_reader (enum c_lang, struct ht *);
 
 /* Call this to change the selected language standard (e.g. because of
    command line options).  */
-extern void cpp_set_lang PARAMS ((cpp_reader *, enum c_lang));
+extern void cpp_set_lang (cpp_reader *, enum c_lang);
 
 /* Add a dependency TARGET.  Quote it for "make" if QUOTE.  Can be
    called any number of times before cpp_read_main_file().  If no
    targets have been added before cpp_read_main_file(), then the
    default target is used.  */
-extern void cpp_add_dependency_target PARAMS ((cpp_reader *,
-					       const char * target,
-					       int quote));
+extern void cpp_add_dependency_target (cpp_reader *, const char *, int);
 
 /* Set the include paths.  */
-extern void cpp_set_include_chains PARAMS ((cpp_reader *, cpp_path *,
-					    cpp_path *, int));
+extern void cpp_set_include_chains (cpp_reader *, cpp_path *, cpp_path *, int);
 
 /* Call these to get pointers to the options and callback structures
    for a given reader.  These pointers are good until you call
    cpp_finish on that reader.  You can either edit the callbacks
    through the pointer returned from cpp_get_callbacks, or set them
    with cpp_set_callbacks.  */
-extern cpp_options *cpp_get_options PARAMS ((cpp_reader *));
-extern const struct line_maps *cpp_get_line_maps PARAMS ((cpp_reader *));
-extern cpp_callbacks *cpp_get_callbacks PARAMS ((cpp_reader *));
-extern void cpp_set_callbacks PARAMS ((cpp_reader *, cpp_callbacks *));
+extern cpp_options *cpp_get_options (cpp_reader *);
+extern const struct line_maps *cpp_get_line_maps (cpp_reader *);
+extern cpp_callbacks *cpp_get_callbacks (cpp_reader *);
+extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
 
 /* This function reads the file, but does not start preprocessing.  It
    returns the name of the original file; this is the same as the
    input file, except for preprocessed input.  This will generate at
    least one file change callback, and possibly a line change callback
    too.  If there was an error opening the file, it returns NULL.  */
-extern const char *cpp_read_main_file PARAMS ((cpp_reader *, const char *));
+extern const char *cpp_read_main_file (cpp_reader *, const char *);
 
 /* Set up built-ins like __FILE__.  */
-extern void cpp_init_builtins PARAMS ((cpp_reader *, int));
+extern void cpp_init_builtins (cpp_reader *, int);
 
 /* Call this to finish preprocessing.  If you requested dependency
    generation, pass an open stream to write the information to,
    otherwise NULL.  It is your responsibility to close the stream.
 
    Returns cpp_errors (pfile).  */
-extern int cpp_finish PARAMS ((cpp_reader *, FILE *deps_stream));
+extern int cpp_finish (cpp_reader *, FILE *deps_stream);
 
 /* Call this to release the handle at the end of preprocessing.  Any
    use of the handle after this function returns is invalid.  Returns
    cpp_errors (pfile).  */
-extern void cpp_destroy PARAMS ((cpp_reader *));
+extern void cpp_destroy (cpp_reader *);
 
 /* Error count.  */
-extern unsigned int cpp_errors PARAMS ((cpp_reader *));
+extern unsigned int cpp_errors (cpp_reader *);
 
-extern unsigned int cpp_token_len PARAMS ((const cpp_token *));
-extern unsigned char *cpp_token_as_text PARAMS ((cpp_reader *,
-						 const cpp_token *));
-extern unsigned char *cpp_spell_token PARAMS ((cpp_reader *, const cpp_token *,
-					       unsigned char *));
-extern void cpp_register_pragma PARAMS ((cpp_reader *,
-					 const char *, const char *,
-					 void (*) PARAMS ((cpp_reader *))));
-
-extern int cpp_avoid_paste PARAMS ((cpp_reader *, const cpp_token *,
-				    const cpp_token *));
-extern const cpp_token *cpp_get_token PARAMS ((cpp_reader *));
-extern const unsigned char *cpp_macro_definition PARAMS ((cpp_reader *,
-						  const cpp_hashnode *));
-extern void _cpp_backup_tokens PARAMS ((cpp_reader *, unsigned int));
+extern unsigned int cpp_token_len (const cpp_token *);
+extern unsigned char *cpp_token_as_text (cpp_reader *, const cpp_token *);
+extern unsigned char *cpp_spell_token (cpp_reader *, const cpp_token *,
+				       unsigned char *);
+extern void cpp_register_pragma (cpp_reader *, const char *, const char *,
+				 void (*) (cpp_reader *));
+extern int cpp_avoid_paste (cpp_reader *, const cpp_token *,
+			    const cpp_token *);
+extern const cpp_token *cpp_get_token (cpp_reader *);
+extern const unsigned char *cpp_macro_definition (cpp_reader *,
+						  const cpp_hashnode *);
+extern void _cpp_backup_tokens (cpp_reader *, unsigned int);
 
 /* Evaluate a CPP_CHAR or CPP_WCHAR token.  */
-extern cppchar_t
-cpp_interpret_charconst PARAMS ((cpp_reader *, const cpp_token *,
-				 unsigned int *, int *));
+extern cppchar_t cpp_interpret_charconst (cpp_reader *, const cpp_token *,
+					  unsigned int *, int *);
 
 /* Used to register macros and assertions, perhaps from the command line.
    The text is the same as the command line argument.  */
-extern void cpp_define PARAMS ((cpp_reader *, const char *));
-extern void cpp_assert PARAMS ((cpp_reader *, const char *));
-extern void cpp_undef  PARAMS ((cpp_reader *, const char *));
-extern void cpp_unassert PARAMS ((cpp_reader *, const char *));
+extern void cpp_define (cpp_reader *, const char *);
+extern void cpp_assert (cpp_reader *, const char *);
+extern void cpp_undef (cpp_reader *, const char *);
+extern void cpp_unassert (cpp_reader *, const char *);
 
-extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
-					    const unsigned char *, size_t,
-					    int, int));
-extern int cpp_defined PARAMS ((cpp_reader *, const unsigned char *, int));
+extern cpp_buffer *cpp_push_buffer (cpp_reader *, const unsigned char *,
+				    size_t, int, int);
+extern int cpp_defined (cpp_reader *, const unsigned char *, int);
 
 /* A preprocessing number.  Code assumes that any unused high bits of
    the double integer are set to zero.  */
@@ -619,15 +611,15 @@ struct cpp_num
 
 /* Classify a CPP_NUMBER token.  The return value is a combination of
    the flags from the above sets.  */
-extern unsigned cpp_classify_number PARAMS ((cpp_reader *, const cpp_token *));
+extern unsigned cpp_classify_number (cpp_reader *, const cpp_token *);
 
 /* Evaluate a token classified as category CPP_N_INTEGER.  */
-extern cpp_num cpp_interpret_integer PARAMS ((cpp_reader *, const cpp_token *,
-					      unsigned int type));
+extern cpp_num cpp_interpret_integer (cpp_reader *, const cpp_token *,
+				      unsigned int type);
 
 /* Sign extend a number, with PRECISION significant bits and all
    others assumed clear, to fill out a cpp_num structure.  */
-cpp_num cpp_num_sign_extend PARAMS ((cpp_num, size_t));
+cpp_num cpp_num_sign_extend (cpp_num, size_t);
 
 /* Diagnostic levels.  To get a diagnostic without associating a
    position in the translation unit with it, use cpp_error_with_line
@@ -657,72 +649,64 @@ cpp_num cpp_num_sign_extend PARAMS ((cpp_num, size_t));
    getting ridiculously oversized.  */
 
 /* Output a diagnostic of some kind.  */
-extern void cpp_error PARAMS ((cpp_reader *, int, const char *msgid, ...))
+extern void cpp_error (cpp_reader *, int, const char *msgid, ...)
   ATTRIBUTE_PRINTF_3;
 
-/* Output a diagnostic of severity LEVEL, with "MSG: " preceding the
+/* Output a diagnostic with "MSGID: " preceding the
    error string of errno.  No location is printed.  */
-extern void cpp_errno PARAMS ((cpp_reader *, int level, const char *msg));
+extern void cpp_errno (cpp_reader *, int, const char *msgid);
 
 /* Same as cpp_error, except additionally specifies a position as a
    (translation unit) physical line and physical column.  If the line is
    zero, then no location is printed.  */
-extern void cpp_error_with_line PARAMS ((cpp_reader *, int, unsigned, unsigned, const char *msgid, ...))
+extern void cpp_error_with_line (cpp_reader *, int, unsigned, unsigned, const char *msgid, ...)
   ATTRIBUTE_PRINTF_5;
 
 /* In cpplex.c */
-extern int cpp_ideq			PARAMS ((const cpp_token *,
-						 const char *));
-extern void cpp_output_line		PARAMS ((cpp_reader *, FILE *));
-extern void cpp_output_token		PARAMS ((const cpp_token *, FILE *));
-extern const char *cpp_type2name	PARAMS ((enum cpp_ttype));
+extern int cpp_ideq (const cpp_token *, const char *);
+extern void cpp_output_line (cpp_reader *, FILE *);
+extern void cpp_output_token (const cpp_token *, FILE *);
+extern const char *cpp_type2name (enum cpp_ttype);
 /* Returns the value of an escape sequence, truncated to the correct
    target precision.  PSTR points to the input pointer, which is just
    after the backslash.  LIMIT is how much text we have.  WIDE is true
    if the escape sequence is part of a wide character constant or
    string literal.  Handles all relevant diagnostics.  */
-extern cppchar_t cpp_parse_escape	PARAMS ((cpp_reader *,
-						 const unsigned char ** pstr,
-						 const unsigned char *limit,
-						 int wide));
+extern cppchar_t cpp_parse_escape (cpp_reader *, const unsigned char ** pstr,
+				   const unsigned char *limit, int wide);
 
 /* In cpphash.c */
 
 /* Lookup an identifier in the hashtable.  Puts the identifier in the
    table if it is not already there.  */
-extern cpp_hashnode *cpp_lookup		PARAMS ((cpp_reader *,
-						 const unsigned char *,
-						 unsigned int));
+extern cpp_hashnode *cpp_lookup (cpp_reader *, const unsigned char *,
+				 unsigned int);
 
-typedef int (*cpp_cb) PARAMS ((cpp_reader *, cpp_hashnode *, void *));
-extern void cpp_forall_identifiers	PARAMS ((cpp_reader *,
-						 cpp_cb, void *));
+typedef int (*cpp_cb) (cpp_reader *, cpp_hashnode *, void *);
+extern void cpp_forall_identifiers (cpp_reader *, cpp_cb, void *);
 
 /* In cppmacro.c */
-extern void cpp_scan_nooutput		PARAMS ((cpp_reader *));
-extern int  cpp_sys_macro_p		PARAMS ((cpp_reader *));
-extern unsigned char *cpp_quote_string	PARAMS ((unsigned char *,
-						 const unsigned char *,
-						 unsigned int));
+extern void cpp_scan_nooutput (cpp_reader *);
+extern int  cpp_sys_macro_p (cpp_reader *);
+extern unsigned char *cpp_quote_string (unsigned char *, const unsigned char *,
+					unsigned int);
 
 /* In cppfiles.c */
-extern int cpp_included	PARAMS ((cpp_reader *, const char *));
-extern void cpp_make_system_header PARAMS ((cpp_reader *, int, int));
-extern void cpp_simplify_path PARAMS ((char *));
-extern bool cpp_push_include PARAMS ((cpp_reader *, const char *));
-extern void cpp_change_file PARAMS ((cpp_reader *, enum lc_reason,
-				     const char *));
+extern int cpp_included (cpp_reader *, const char *);
+extern void cpp_make_system_header (cpp_reader *, int, int);
+extern void cpp_simplify_path (char *);
+extern bool cpp_push_include (cpp_reader *, const char *);
+extern void cpp_change_file (cpp_reader *, enum lc_reason, const char *);
 
 /* In cpppch.c */
 struct save_macro_data;
-extern int cpp_save_state PARAMS ((cpp_reader *, FILE *));
-extern int cpp_write_pch_deps PARAMS ((cpp_reader *, FILE *));
-extern int cpp_write_pch_state PARAMS ((cpp_reader *, FILE *));
-extern int cpp_valid_state PARAMS ((cpp_reader *, const char *, int));
-extern void cpp_prepare_state PARAMS ((cpp_reader *, 
-				       struct save_macro_data **));
-extern int cpp_read_state PARAMS ((cpp_reader *, const char *, FILE *,
-				   struct save_macro_data *));
+extern int cpp_save_state (cpp_reader *, FILE *);
+extern int cpp_write_pch_deps (cpp_reader *, FILE *);
+extern int cpp_write_pch_state (cpp_reader *, FILE *);
+extern int cpp_valid_state (cpp_reader *, const char *, int);
+extern void cpp_prepare_state (cpp_reader *, struct save_macro_data **);
+extern int cpp_read_state (cpp_reader *, const char *, FILE *,
+			   struct save_macro_data *);
 
 #ifdef __cplusplus
 }

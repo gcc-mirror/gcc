@@ -31,16 +31,14 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpphash.h"
 #include "intl.h"
 
-static void print_location PARAMS ((cpp_reader *, unsigned int, unsigned int));
+static void print_location (cpp_reader *, unsigned int, unsigned int);
 
 /* Print the logical file location (LINE, COL) in preparation for a
    diagnostic.  Outputs the #include chain if it has changed.  A line
    of zero suppresses the include stack, and outputs the program name
    instead.  */
 static void
-print_location (pfile, line, col)
-     cpp_reader *pfile;
-     unsigned int line, col;
+print_location (cpp_reader *pfile, unsigned int line, unsigned int col)
 {
   if (!pfile->buffer || line == 0)
     fprintf (stderr, "%s: ", progname);
@@ -72,10 +70,8 @@ print_location (pfile, line, col)
    the correct place by default.  Returns 0 if the error has been
    suppressed.  */
 int
-_cpp_begin_message (pfile, code, line, column)
-     cpp_reader *pfile;
-     int code;
-     unsigned int line, column;
+_cpp_begin_message (cpp_reader *pfile, int code, unsigned int line,
+		    unsigned int column)
 {
   int level = DL_EXTRACT (code);
 
@@ -177,10 +173,7 @@ cpp_error_with_line (cpp_reader *pfile, int level,
 }
 
 void
-cpp_errno (pfile, level, msgid)
-     cpp_reader *pfile;
-     int level;
-     const char *msgid;
+cpp_errno (cpp_reader *pfile, int level, const char *msgid)
 {
   if (msgid[0] == '\0')
     msgid = _("stdout");

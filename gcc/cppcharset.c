@@ -25,7 +25,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 
-static int ucn_valid_in_identifier PARAMS ((cpp_reader *, cppchar_t));
+static int ucn_valid_in_identifier (cpp_reader *, cppchar_t);
 
 /* [lex.charset]: The character designated by the universal character
    name \UNNNNNNNN is that character whose character short name in
@@ -52,10 +52,7 @@ static int ucn_valid_in_identifier PARAMS ((cpp_reader *, cppchar_t));
 */
 
 cppchar_t
-_cpp_valid_ucn (pfile, pstr, identifier_pos)
-     cpp_reader *pfile;
-     const uchar **pstr;
-     int identifier_pos;
+_cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr, int identifier_pos)
 {
   cppchar_t result, c;
   unsigned int length;
@@ -128,9 +125,7 @@ _cpp_valid_ucn (pfile, pstr, identifier_pos)
    identifier.  We assume C has already gone through the checks of
    _cpp_valid_ucn.  */
 static int
-ucn_valid_in_identifier (pfile, c)
-     cpp_reader *pfile;
-     cppchar_t c;
+ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c)
 {
   /* None of the valid chars are outside the Basic Multilingual Plane (the
      low 16 bits).  */

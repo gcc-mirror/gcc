@@ -86,31 +86,24 @@ struct include_file {
 #define NO_INCLUDE_PATH ((struct include_file *) -1)
 #define INCLUDE_PCH_P(F) (((F)->pch & 1) != 0)
 
-static struct file_name_map *read_name_map
-				PARAMS ((cpp_reader *, const char *));
-static char *read_filename_string PARAMS ((int, FILE *));
-static char *remap_filename 	PARAMS ((cpp_reader *, char *,
-					 struct cpp_path *));
-static struct cpp_path *search_from PARAMS ((cpp_reader *,
-						enum include_type));
-static struct include_file *
-	find_include_file PARAMS ((cpp_reader *, const char *, int,
-				   enum include_type));
-static struct include_file *open_file PARAMS ((cpp_reader *, const char *));
-static struct include_file *validate_pch PARAMS ((cpp_reader *,
-						  const char *,
-						  const char *));
-static struct include_file *open_file_pch PARAMS ((cpp_reader *, 
-						   const char *));
-static int read_include_file	PARAMS ((cpp_reader *, struct include_file *));
-static bool stack_include_file	PARAMS ((cpp_reader *, struct include_file *));
-static void purge_cache 	PARAMS ((struct include_file *));
-static void destroy_node	PARAMS ((splay_tree_value));
-static int report_missing_guard		PARAMS ((splay_tree_node, void *));
-static splay_tree_node find_or_create_entry PARAMS ((cpp_reader *,
-						     const char *));
-static void handle_missing_header PARAMS ((cpp_reader *, const char *, int));
-static int remove_component_p PARAMS ((const char *));
+static struct file_name_map *read_name_map (cpp_reader *, const char *);
+static char *read_filename_string (int, FILE *);
+static char *remap_filename (cpp_reader *, char *, struct cpp_path *);
+static struct cpp_path *search_from (cpp_reader *, enum include_type);
+static struct include_file *find_include_file (cpp_reader *, const char *,
+					       int, enum include_type);
+static struct include_file *open_file (cpp_reader *, const char *);
+static struct include_file *validate_pch (cpp_reader *, const char *,
+					  const char *);
+static struct include_file *open_file_pch (cpp_reader *, const char *);
+static int read_include_file (cpp_reader *, struct include_file *);
+static bool stack_include_file (cpp_reader *, struct include_file *);
+static void purge_cache (struct include_file *);
+static void destroy_node (splay_tree_value);
+static int report_missing_guard (splay_tree_node, void *);
+static splay_tree_node find_or_create_entry (cpp_reader *, const char *);
+static void handle_missing_header (cpp_reader *, const char *, int);
+static int remove_component_p (const char *);
 
 /* Set up the splay tree we use to store information about all the
    file names seen in this compilation.  We also have entries for each
@@ -125,8 +118,7 @@ static int remove_component_p PARAMS ((const char *));
    A node's value is a pointer to a struct include_file, and is never
    NULL.  */
 void
-_cpp_init_includes (pfile)
-     cpp_reader *pfile;
+_cpp_init_includes (cpp_reader *pfile)
 {
   pfile->all_include_files
     = splay_tree_new ((splay_tree_compare_fn) strcmp,
@@ -136,16 +128,14 @@ _cpp_init_includes (pfile)
 
 /* Tear down the splay tree.  */
 void
-_cpp_cleanup_includes (pfile)
-     cpp_reader *pfile;
+_cpp_cleanup_includes (cpp_reader *pfile)
 {
   splay_tree_delete (pfile->all_include_files);
 }
 
 /* Free a node.  The path string is automatically freed.  */
 static void
-destroy_node (v)
-     splay_tree_value v;
+destroy_node (splay_tree_value v)
 {
   struct include_file *f = (struct include_file *) v;
 
@@ -158,8 +148,7 @@ destroy_node (v)
 
 /* Mark a file to not be reread (e.g. #import, read failure).  */
 void
-_cpp_never_reread (file)
-     struct include_file *file;
+_cpp_never_reread (struct include_file *file)
 {
   file->cmacro = NEVER_REREAD;
 }
@@ -167,9 +156,7 @@ _cpp_never_reread (file)
 /* Lookup a filename, which is simplified after making a copy, and
    create an entry if none exists.  */
 static splay_tree_node
-find_or_create_entry (pfile, fname)
-     cpp_reader *pfile;
-     const char *fname;
+find_or_create_entry (cpp_reader *pfile, const char *fname)
 {
   splay_tree_node node;
   struct include_file *file;
@@ -197,9 +184,7 @@ find_or_create_entry (pfile, fname)
 
 /* Enter a file name in the splay tree, for the sake of cpp_included.  */
 void
-_cpp_fake_include (pfile, fname)
-     cpp_reader *pfile;
-     const char *fname;
+_cpp_fake_include (cpp_reader *pfile, const char *fname)
 {
   find_or_create_entry (pfile, fname);
 }
@@ -214,9 +199,7 @@ _cpp_fake_include (pfile, fname)
    Returns an include_file structure with an open file descriptor on
    success, or NULL on failure.  */
 static struct include_file *
-open_file (pfile, filename)
-     cpp_reader *pfile;
-     const char *filename;
+open_file (cpp_reader *pfile, const char *filename)
 {
   splay_tree_node nd = find_or_create_entry (pfile, filename);
   struct include_file *file = (struct include_file *) nd->value;
@@ -281,10 +264,7 @@ open_file (pfile, filename)
 }
 
 static struct include_file *
-validate_pch (pfile, filename, pchname)
-     cpp_reader *pfile;
-     const char *filename;
-     const char *pchname;
+validate_pch (cpp_reader *pfile, const char *filename, const char *pchname)
 {
   struct include_file * file;
   
@@ -316,9 +296,7 @@ validate_pch (pfile, filename, pchname)
 /* Like open_file, but also look for a precompiled header if (a) one exists
    and (b) it is valid.  */
 static struct include_file *
-open_file_pch (pfile, filename)
-     cpp_reader *pfile;
-     const char *filename;
+open_file_pch (cpp_reader *pfile, const char *filename)
 {
   if (filename[0] != '\0'
       && pfile->cb.valid_pch != NULL)
@@ -377,9 +355,7 @@ open_file_pch (pfile, filename)
    because of e.g. multiple-include guards.  Returns true if a buffer
    is stacked.  */
 static bool
-stack_include_file (pfile, inc)
-     cpp_reader *pfile;
-     struct include_file *inc;
+stack_include_file (cpp_reader *pfile, struct include_file *inc)
 {
   cpp_buffer *fp;
   int sysp;
@@ -462,9 +438,7 @@ stack_include_file (pfile, inc)
 
    FIXME: Flush file cache and try again if we run out of memory.  */
 static int
-read_include_file (pfile, inc)
-     cpp_reader *pfile;
-     struct include_file *inc;
+read_include_file (cpp_reader *pfile, struct include_file *inc)
 {
   ssize_t size, offset, count;
   uchar *buf;
@@ -555,8 +529,7 @@ read_include_file (pfile, inc)
 
 /* Drop INC's buffer from memory.  */
 static void
-purge_cache (inc)
-     struct include_file *inc;
+purge_cache (struct include_file *inc)
 {
   if (inc->buffer)
     {
@@ -568,9 +541,7 @@ purge_cache (inc)
 /* Return 1 if the file named by FNAME has been included before in
    any context, 0 otherwise.  */
 int
-cpp_included (pfile, fname)
-     cpp_reader *pfile;
-     const char *fname;
+cpp_included (cpp_reader *pfile, const char *fname)
 {
   struct cpp_path *path;
   char *name, *n;
@@ -608,11 +579,8 @@ cpp_included (pfile, fname)
    otherwise an include_file structure.  If this request originates
    from a directive of TYPE #include_next, set INCLUDE_NEXT to true.  */
 static struct include_file *
-find_include_file (pfile, fname, angle_brackets, type)
-     cpp_reader *pfile;
-     const char *fname;
-     int angle_brackets;
-     enum include_type type;
+find_include_file (cpp_reader *pfile, const char *fname, int angle_brackets,
+		   enum include_type type)
 {
   struct cpp_path *path;
   struct include_file *file;
@@ -676,9 +644,7 @@ find_include_file (pfile, fname, angle_brackets, type)
    see the details of a buffer.  This is an exported interface because
    fix-header needs it.  */
 void
-cpp_make_system_header (pfile, syshdr, externc)
-     cpp_reader *pfile;
-     int syshdr, externc;
+cpp_make_system_header (cpp_reader *pfile, int syshdr, int externc)
 {
   int flags = 0;
 
@@ -693,10 +659,8 @@ cpp_make_system_header (pfile, syshdr, externc)
    to achieve pseudo-file names like <built-in>.
    If REASON is LC_LEAVE, then NEW_NAME must be NULL.  */
 void
-cpp_change_file (pfile, reason, new_name)
-     cpp_reader *pfile;
-     enum lc_reason reason;
-     const char *new_name;
+cpp_change_file (cpp_reader *pfile, enum lc_reason reason,
+		 const char *new_name)
 {
   _cpp_do_file_change (pfile, reason, new_name, 1, 0);
 }
@@ -704,8 +668,7 @@ cpp_change_file (pfile, reason, new_name)
 /* Report on all files that might benefit from a multiple include guard.
    Triggered by -H.  */
 void
-_cpp_report_missing_guards (pfile)
-     cpp_reader *pfile;
+_cpp_report_missing_guards (cpp_reader *pfile)
 {
   int banner = 0;
   splay_tree_foreach (pfile->all_include_files, report_missing_guard, &banner);
@@ -713,9 +676,7 @@ _cpp_report_missing_guards (pfile)
 
 /* Callback function for splay_tree_foreach().  */
 static int
-report_missing_guard (n, b)
-     splay_tree_node n;
-     void *b;
+report_missing_guard (splay_tree_node n, void *b)
 {
   struct include_file *f = (struct include_file *) n->value;
   int *bannerp = (int *) b;
@@ -737,10 +698,8 @@ report_missing_guard (n, b)
    appropriate.  ANGLE_BRACKETS is nonzero if the file was bracketed
    like <..>.  */
 static void
-handle_missing_header (pfile, fname, angle_brackets)
-     cpp_reader *pfile;
-     const char *fname;
-     int angle_brackets;
+handle_missing_header (cpp_reader *pfile, const char *fname,
+		       int angle_brackets)
 {
   bool print_dep
     = CPP_OPTION (pfile, deps.style) > (angle_brackets || pfile->map->sysp);
@@ -761,11 +720,8 @@ handle_missing_header (pfile, fname, angle_brackets)
    including HEADER, and the command line -imacros and -include.
    Returns true if a buffer was stacked.  */
 bool
-_cpp_execute_include (pfile, fname, angle_brackets, type)
-     cpp_reader *pfile;
-     const char *fname;
-     int angle_brackets;
-     enum include_type type;
+_cpp_execute_include (cpp_reader *pfile, const char *fname, int angle_brackets,
+		      enum include_type type)
 {
   bool stacked = false;
   struct include_file *inc;
@@ -788,10 +744,8 @@ _cpp_execute_include (pfile, fname, angle_brackets, type)
    file.  If it cannot be located or dated, return -1, if it is newer
    newer, return 1, otherwise 0.  */
 int
-_cpp_compare_file_date (pfile, fname, angle_brackets)
-     cpp_reader *pfile;
-     const char *fname;
-     int angle_brackets;
+_cpp_compare_file_date (cpp_reader *pfile, const char *fname,
+			int angle_brackets)
 {
   struct include_file *inc;
 
@@ -813,9 +767,7 @@ _cpp_compare_file_date (pfile, fname, angle_brackets)
    FNAME is "", read standard input.  Return true if a buffer was
    stacked.  */
 bool
-_cpp_read_file (pfile, fname)
-     cpp_reader *pfile;
-     const char *fname;
+_cpp_read_file (cpp_reader *pfile, const char *fname)
 {
   /* This uses open_file, because we don't allow a PCH to be used as
      the toplevel compilation (that would prevent re-compiling an
@@ -834,9 +786,7 @@ _cpp_read_file (pfile, fname)
 /* Pushes the given file onto the buffer stack.  Returns nonzero if
    successful.  */
 bool
-cpp_push_include (pfile, filename)
-     cpp_reader *pfile;
-     const char *filename;
+cpp_push_include (cpp_reader *pfile, const char *filename)
 {
   /* Make the command line directive take up a line.  */
   pfile->line++;
@@ -846,9 +796,7 @@ cpp_push_include (pfile, filename)
 /* Do appropriate cleanup when a file INC's buffer is popped off the
    input stack.  */
 void
-_cpp_pop_file_buffer (pfile, inc)
-     cpp_reader *pfile;
-     struct include_file *inc;
+_cpp_pop_file_buffer (cpp_reader *pfile, struct include_file *inc)
 {
   /* Record the inclusion-preventing macro, which could be NULL
      meaning no controlling macro.  */
@@ -868,9 +816,7 @@ _cpp_pop_file_buffer (pfile, inc)
    If we're handling -include or -imacros, use the "" chain, but with
    the preprocessor's cwd prepended.  */
 static struct cpp_path *
-search_from (pfile, type)
-     cpp_reader *pfile;
-     enum include_type type;
+search_from (cpp_reader *pfile, enum include_type type)
 {
   cpp_buffer *buffer = pfile->buffer;
   unsigned int dlen;
@@ -933,9 +879,7 @@ struct file_name_map {
 /* Read a space delimited string of unlimited length from a stdio
    file F.  */
 static char *
-read_filename_string (ch, f)
-     int ch;
-     FILE *f;
+read_filename_string (int ch, FILE *f)
 {
   char *alloc, *set;
   int len;
@@ -970,9 +914,7 @@ struct file_name_map_list {
 
 /* Read the file name map file for DIRNAME.  */
 static struct file_name_map *
-read_name_map (pfile, dirname)
-     cpp_reader *pfile;
-     const char *dirname;
+read_name_map (cpp_reader *pfile, const char *dirname)
 {
   struct file_name_map_list *map_list_ptr;
   char *name;
@@ -1048,10 +990,7 @@ read_name_map (pfile, dirname)
 /* Remap an unsimplified path NAME based on the file_name_map (if any)
    for LOC.  */
 static char *
-remap_filename (pfile, name, loc)
-     cpp_reader *pfile;
-     char *name;
-     struct cpp_path *loc;
+remap_filename (cpp_reader *pfile, char *name, struct cpp_path *loc)
 {
   struct file_name_map *map;
   const char *from, *p;
@@ -1106,10 +1045,8 @@ remap_filename (pfile, name, loc)
 
    If BRACKET does not lie in the QUOTE chain, it is set to QUOTE.  */
 void
-cpp_set_include_chains (pfile, quote, bracket, quote_ignores_source_dir)
-     cpp_reader *pfile;
-     cpp_path *quote, *bracket;
-     int quote_ignores_source_dir;
+cpp_set_include_chains (cpp_reader *pfile, cpp_path *quote, cpp_path *bracket,
+			int quote_ignores_source_dir)
 {
   pfile->quote_include = quote;
   pfile->bracket_include = quote;
@@ -1132,8 +1069,7 @@ cpp_set_include_chains (pfile, quote, bracket, quote_ignores_source_dir)
    symlinks if we have it.  If not, we can still catch errors with
    stat ().  */
 static int
-remove_component_p (path)
-     const char *path;
+remove_component_p (const char *path)
 {
   struct stat s;
   int result;
@@ -1168,8 +1104,7 @@ remove_component_p (path)
    of the string.  Returns PATH.  errno is 0 if no error occurred;
    nonzero if an error occurred when using stat () or lstat ().  */
 void
-cpp_simplify_path (path)
-     char *path ATTRIBUTE_UNUSED;
+cpp_simplify_path (char *path ATTRIBUTE_UNUSED)
 {
 #ifndef VMS
   char *from, *to;
