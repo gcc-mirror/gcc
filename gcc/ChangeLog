@@ -1,3 +1,7 @@
+2001-11-05  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* cppexp.c (lex, parse_defined): Update warning about defined.
+
 2001-11-05  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_select_section): Handle

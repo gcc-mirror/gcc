@@ -219,6 +219,7 @@ parse_defined (pfile)
   cpp_hashnode *node = 0;
   const cpp_token *token;
   struct op op;
+  cpp_context *initial_context = pfile->context;
 
   /* Don't expand macros.  */
   pfile->state.prevent_expansion++;
@@ -259,6 +260,9 @@ parse_defined (pfile)
     op.op = CPP_ERROR;
   else
     {
+      if (pfile->context != initial_context)
+	cpp_warning (pfile, "this use of \"defined\" may not be portable");
+
       op.value = node->type == NT_MACRO;
       op.unsignedp = 0;
       op.op = CPP_NUMBER;
@@ -314,12 +318,7 @@ lex (pfile, skip_evaluation)
 
     case CPP_NAME:
       if (token->val.node == pfile->spec_nodes.n_defined)
-	{
-	  if (pfile->context->prev && CPP_PEDANTIC (pfile))
-	    cpp_pedwarn (pfile, "\"defined\" operator appears during macro expansion");
-
-	  return parse_defined (pfile);
-	}
+	return parse_defined (pfile);
       else if (CPP_OPTION (pfile, cplusplus)
 	       && (token->val.node == pfile->spec_nodes.n_true
 		   || token->val.node == pfile->spec_nodes.n_false))
