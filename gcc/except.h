@@ -19,9 +19,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
-#ifndef GET_CODE
-#define rtx int *
+#if !defined(NULL_RTX) && !defined(rtx)
+typedef struct rtx_def *_except_rtx;
+#define rtx _except_rtx
 #endif
 
 #ifdef TREE_CODE
@@ -388,3 +388,7 @@ rtx expand_builtin_dwarf_reg_size	PROTO((tree, rtx));
 int in_same_eh_region                   PROTO((rtx, rtx));
 void free_insn_eh_region                PROTO((void));
 void init_insn_eh_region                PROTO((rtx, int));
+
+#ifdef rtx
+#undef rtx
+#endif
