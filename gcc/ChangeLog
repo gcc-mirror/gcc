@@ -1,15 +1,22 @@
+2004-07-09  Andrew Pinski  <apinski@apple.com>
+
+	* objc/objc-act.c (build_module_descriptor): Mark UOBJC_MODULES_decl as
+	always referenced.
+	(synth_forward_declarations): Likewise for UOBJC_CLASS_decl and
+	UOBJC_METACLASS_decl.
+
 2004-07-09  James E Wilson  <wilson@specifixinc.com>
 
 	PR target/16364
 	* config/ia64/ia64.c (ia64_function_arg): For a single element HFA,
 	do return a parallel if hfa_mode == XFmode and mode == TImode.
 
-2004-07-09 Jan Beulich <jbeulich@novell.com>
+2004-07-09  Jan Beulich  <jbeulich@novell.com>
 
 	* c-typeck.c (build_unary_op): include VECTOR_TYPE in set of codes
 	permissible for unary plus.
 
-2004-07-09 Jan Beulich <jbeulich@novell.com>
+2004-07-09  Jan Beulich  <jbeulich@novell.com>
 
 	* builtin-types.def (BT_UINT): Rename from BT_UNSIGNED.
 	(BT_FN_UINT): Rename from BT_FN_UNSIGNED.
