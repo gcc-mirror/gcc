@@ -224,6 +224,7 @@ extern "C" void *_Jv_LookupInterfaceMethodIdx (jclass klass, jclass iface,
 extern "C" void _Jv_CheckArrayStore (jobject array, jobject obj);
 extern "C" void _Jv_RegisterClass (jclass klass);
 extern "C" void _Jv_RegisterClasses (jclass *classes);
+extern "C" void _Jv_RegisterResource (void *vptr);
 extern void _Jv_UnregisterClass (_Jv_Utf8Const*, java::lang::ClassLoader*);
 extern void _Jv_ResolveField (_Jv_Field *, java::lang::ClassLoader*);
 

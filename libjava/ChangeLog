@@ -1,3 +1,19 @@
+2001-09-06  Anthony Green  <green@redhat.com>
+
+	* include/jvm.h: Declare _Jv_RegisterResource.
+	* gnu/gcj/Core.java, gnu/gcj/natCore.cc,
+	gnu/gcj/protocol/core/Connection.java,
+	gnu/gcj/protocol/core/Handler.java,
+	gnu/gcj/protocol/core/CoreInputStream.java,
+	gnu/gcj/protocol/core/natCoreInputStream.cc: New files.
+	* java/net/URL.java (setURLStreamHandler): Use
+	gnu.gcj.protocol.core.Handler for the core protocol.
+	* gnu/gcj/runtime/VMClassLoader.java (init): Add "core:/" to the
+	end of java.class.path.
+	* Makefile.am (ordinary_java_source_files): Add new java files.
+	(nat_source_files): Add new native code files.
+	* Makefile.in: Rebuilt.
+
 2001-09-05  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/Properties.java: Re-merged from Classpath.

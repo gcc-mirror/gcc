@@ -339,6 +339,10 @@ public final class URL implements Serializable
     // If a non-default factory has been set, use it to find the protocol.
     if (factory != null)
       handler = factory.createURLStreamHandler(protocol);
+    else if (protocol.equals ("core"))
+      {
+ 	handler = new gnu.gcj.protocol.core.Handler ();
+      }
     else if (protocol.equals ("file"))
       {
 	// This is an interesting case.  It's tempting to think that we
