@@ -1163,6 +1163,8 @@ LSYM(Lchange_\register):
 #endif /* L_interwork_call_via_rX */
 #endif /* Arch supports thumb.  */
 
+#ifndef __symbian__
 #include "ieee754-df.S"
 #include "ieee754-sf.S"
 #include "bpabi.S"
+#endif /* __symbian__ */
