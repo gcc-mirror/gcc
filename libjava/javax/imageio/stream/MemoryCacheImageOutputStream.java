@@ -38,11 +38,35 @@ exception statement from your version. */
 
 package javax.imageio.stream;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
  * @author Michael Koch (konqueror@gmx.de)
  */
-public class MemoryCacheImageOutputStream
+public class MemoryCacheImageOutputStream extends ImageOutputStreamImpl
 {
+  private OutputStream stream;
+
+  public MemoryCacheImageOutputStream(OutputStream stream)
+  {
+    this.stream = stream;
+  }
+
+  public void close()
+    throws IOException
+  {
+    super.close();
+    stream.close();
+  }
+
+  public void flushBefore(long position)
+    throws IOException
+  {
+    // FIXME: Implement me.
+    throw new Error("not implemented");
+  }
+
   public boolean isCached()
   {
     return true;
@@ -56,5 +80,33 @@ public class MemoryCacheImageOutputStream
   public boolean isCachedMemory()
   {
     return true;
+  }
+
+  public int read()
+    throws IOException
+  {
+    // FIXME: Implement me.
+    throw new Error("not implemented");
+  }
+
+  public int read (byte[] data, int offset, int len)
+    throws IOException
+  {
+    // FIXME: Implement me.
+    throw new Error("not implemented");
+  }
+
+  public void write(byte[] data, int offset, int len)
+    throws IOException
+  {
+    // FIXME: Flush pending bits.
+    stream.write(data, offset, len);
+  }
+
+  public void write(int value)
+    throws IOException
+  {
+    // FIXME: Flush pending bits.
+    stream.write(value);
   }
 }

@@ -40,23 +40,28 @@ package javax.imageio.metadata;
 
 import javax.imageio.IIOException;
 
+import org.w3c.dom.Node;
+
 public class IIOInvalidTreeException extends IIOException
 {
-  protected /*Node*/ Object offendingNode;
+  private static final long serialVersionUID = -1314083172544132777L;
 
-  public IIOInvalidTreeException(String message, /*Node*/ Object offendingNode)
+  protected Node offendingNode;
+
+  public IIOInvalidTreeException(String message, Node offendingNode)
   {
     super(message);
     this.offendingNode = offendingNode;
   }
 
-  public IIOInvalidTreeException(String message, Throwable cause, /*Node*/ Object offendingNode)
+  public IIOInvalidTreeException(String message, Throwable cause,
+				 Node offendingNode)
   {
     super(message, cause);
     this.offendingNode = offendingNode;
   }
 
-  public /*Node*/ Object getOffendingNode()
+  public Node getOffendingNode()
   {
     return offendingNode;
   }

@@ -45,7 +45,7 @@ import java.io.InputStream;
 /**
  * @author Michael Koch (konqueror@gmx.de)
  */
-public class FileCacheImageInputStream
+public class FileCacheImageInputStream extends ImageInputStreamImpl
 {
   private InputStream stream;
   private File cacheDir;
@@ -89,5 +89,21 @@ public class FileCacheImageInputStream
   public boolean isCachedMemory()
   {
     return false;
+  }
+
+  public int read()
+    throws IOException
+  {
+    checkStreamClosed();
+    setBitOffset(0);
+    return stream.read();
+  }
+
+  public int read(byte[] data, int offset, int len)
+    throws IOException
+  {
+    checkStreamClosed();
+    setBitOffset(0);
+    return stream.read(data, offset, len);
   }
 }

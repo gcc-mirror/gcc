@@ -40,6 +40,7 @@ package javax.imageio;
 
 import java.awt.Dimension;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -59,9 +60,9 @@ public abstract class ImageWriter
   protected Locale locale;
   protected ImageWriterSpi originatingProvider;
   protected Object output;
-  protected List progressListeners;
-  protected List warningListeners;
-  protected List warningLocales;
+  protected List progressListeners = new ArrayList();
+  protected List warningListeners = new ArrayList();
+  protected List warningLocales = new ArrayList();
 
   protected ImageWriter(ImageWriterSpi originatingProvider)
   {
@@ -371,11 +372,11 @@ public abstract class ImageWriter
 
 	if (originatingProvider != null)
 	  types = originatingProvider.getOutputTypes();
-	
+        
 	if (types != null)
 	  for (int i = types.length - 1; i >= 0; --i)
-	    if (types[i].equals(output.getClass()))
-	      found = true;
+            if (types[i].isInstance(output))
+              found = true;
 
 	if (! found)
 	  throw new IllegalArgumentException("output type not available");

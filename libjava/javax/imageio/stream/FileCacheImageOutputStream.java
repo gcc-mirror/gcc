@@ -45,7 +45,7 @@ import java.io.OutputStream;
 /**
  * @author Michael Koch (konqueror@gmx.de)
  */
-public class FileCacheImageOutputStream
+public class FileCacheImageOutputStream extends ImageOutputStreamImpl
 {
   private OutputStream stream;
   private File cacheDir;
@@ -89,5 +89,35 @@ public class FileCacheImageOutputStream
   public boolean isCachedMemory()
   {
     return false;
+  }
+  
+  public int read()
+    throws IOException
+  {
+    // FIXME: Implement me.
+    throw new Error("not implemented");
+  }
+
+  public int read(byte[] data, int offset, int len)
+    throws IOException
+  {
+    // FIXME: Implement me.
+    throw new Error("not implemented");
+  }
+
+  public void write(byte[] data, int offset, int len)
+    throws IOException
+  {
+    checkStreamClosed();
+    // FIXME: Flush pending bits.
+    stream.write(data, offset, len);
+  }
+
+  public void write(int value)
+    throws IOException
+  {
+    checkStreamClosed();
+    // FIXME: Flush pending bits.
+    stream.write(value);
   }
 }

@@ -51,6 +51,7 @@ import javax.imageio.event.IIOReadUpdateListener;
 import javax.imageio.event.IIOReadWarningListener;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageReaderSpi;
+import javax.imageio.stream.ImageInputStream;
 
 public abstract class ImageReader
 {
@@ -62,7 +63,7 @@ public abstract class ImageReader
   protected Locale locale;
   protected int minIndex;
   protected ImageReaderSpi originatingProvider;
-  protected List progressListeners;
+  protected List progressListeners = new ArrayList();
   protected boolean seekForwardOnly;
   protected List updateListeners = new ArrayList();
   protected List warningListeners = new ArrayList();
@@ -155,6 +156,42 @@ public abstract class ImageReader
 
   public abstract Iterator getImageTypes(int imageIndex)
     throws IOException;
+
+  public void setInput(Object input,
+                       boolean seekForwardOnly,
+                       boolean ignoreMetadata)
+  {
+    Class[] okClasses = originatingProvider.getInputTypes();
+    if (okClasses == null)
+      {
+        if (!(input instanceof ImageInputStream))
+          throw new IllegalArgumentException();
+      }
+    else
+      {
+        boolean classOk = false;
+        for (int i = 0; i < okClasses.length; ++i)
+          if (okClasses[i].isInstance(input))
+            classOk = true;
+        if (!classOk)
+          throw new IllegalArgumentException();
+      }
+
+    this.input = input;
+    this.seekForwardOnly = seekForwardOnly;
+    this.ignoreMetadata = ignoreMetadata;
+    this.minIndex = 0;
+  }
+
+  public void setInput(Object in, boolean seekForwardOnly)
+  {
+    setInput(in, seekForwardOnly, false);
+  }
+
+  public void setInput(Object in)
+  {
+    setInput(in, false, false);
+  }
 
   public Object getInput()
   {
