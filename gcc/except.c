@@ -2607,7 +2607,8 @@ mark_eh_status (eh)
   mark_eh_queue (eh->x_ehqueue);
   ggc_mark_rtx (eh->x_catch_clauses);
 
-  lang_mark_false_label_stack (eh->x_false_label_stack);
+  if (lang_mark_false_label_stack)
+    (*lang_mark_false_label_stack) (eh->x_false_label_stack);
   mark_tree_label_node (eh->x_caught_return_label_stack);
 
   ggc_mark_tree (eh->x_protect_list);

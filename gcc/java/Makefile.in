@@ -181,7 +181,7 @@ JAVA_OBJS = parse.o class.o decl.o expr.o constants.o lang.o typeck.o \
 JAVA_OBJS_LITE = parse-scan.o jv-scan.o
 
 # Language-independent object files.
-BACKEND = ../toplev.o ../ggc-callbacks.o ../libbackend.a
+BACKEND = ../toplev.o ../libbackend.a
 
 compiler: ../jc1$(exeext) ../jv-scan$(exeext)
 ../jc1$(exeext): $(P) $(JAVA_OBJS) $(BACKEND) $(LIBDEPS)
@@ -317,7 +317,7 @@ mangle.o : mangle.c $(CONFIG_H) jcf.h $(JAVA_TREE_H) $(srcdir)/../system.h \
 parse-scan.o : $(CONFIG_H) $(srcdir)/../system.h $(srcdir)/../toplev.h \
   $(srcdir)/lex.c $(PARSE_H) $(srcdir)/lex.h
 typeck.o : typeck.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h convert.h \
-  $(srcdir)/../toplev.h $(srcdir)/../system.h
+  $(srcdir)/../toplev.h $(srcdir)/../system.h $(srcdir)/../ggc.h
 verify.o : verify.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h javaop.h java-opcodes.h \
   java-except.h $(srcdir)/../toplev.h $(srcdir)/../system.h
 xref.o : xref.c xref.h $(CONFIG_H) $(JAVA_TREE_H) $(srcdir)/../toplev.h \

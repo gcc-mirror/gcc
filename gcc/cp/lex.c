@@ -1616,8 +1616,8 @@ cp_make_lang_type (code)
     {
       struct lang_type *pi;
 
-      pi = (struct lang_type *) ggc_alloc (sizeof (struct lang_type));
-      bzero ((char *) pi, (int) sizeof (struct lang_type));
+      pi = ((struct lang_type *) 
+	    ggc_alloc_cleared (sizeof (struct lang_type)));
 
       TYPE_LANG_SPECIFIC (t) = pi;
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);

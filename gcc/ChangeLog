@@ -1,3 +1,18 @@
+2000-10-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-decl.c (c_expand_body): Don't generate RTL if flag_syntax_only.
+	(lang_mark_false_label_stack): Remove.
+	* c-lex.c (init_c_lex): Add file_info_tree as GC root.  Allocate
+	<top level> string in GC area.
+	(mark_splay_tree_node): New function.
+	(mark_splay_tree): Likewise.
+	* except.c (mark_eh_status): Only call lang_mark_false_label_stack
+	if it exists.
+	* ggc-callbacks.c (lang_mark_false_label_stack): Remove.
+	* ggc-common.c (lang_mark_false_label_stack): Change type.
+	* ggc.h (ggc_alloc_string): Add comment.
+	(ggc_strdup): New function.
+	
 Sat Sep 23 19:10:20 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.h (BRANCH_COST): Define as 0.

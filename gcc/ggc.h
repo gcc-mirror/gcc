@@ -142,7 +142,14 @@ void *ggc_alloc_cleared PARAMS ((size_t));
 
 #define ggc_alloc_tree(LENGTH) ((union tree_node *) ggc_alloc (LENGTH))
 
+/* Allocate a gc-able string.  If CONTENTS is null, then the memory will
+   be uninitialized.  If LENGTH is -1, then CONTENTS is assumed to be a
+   null-terminated string and the memory sized accordingly.  Otherwise,
+   the memory is filled with LENGTH bytes from CONTENTS.  */
 char *ggc_alloc_string PARAMS ((const char *contents, int length));
+
+/* Make a copy of S, in GC-able memory.  */
+#define ggc_strdup(S) ggc_alloc_string((S), -1)
 
 /* Invoke the collector.  This is really just a hint, but in the case of
    the simple collector, the only time it will happen.  */
@@ -161,10 +168,11 @@ int ggc_set_mark PARAMS ((const void *));
    the lang_specific hooks in the tree.  */
 void lang_mark_tree PARAMS ((union tree_node *));
 
-/* The FALSE_LABEL_STACK, declared in except.h, has
-   language-dependent semantics.  Each front-end should define this
-   function appropriately.  */
-void lang_mark_false_label_stack PARAMS ((struct label_node *));
+/* The FALSE_LABEL_STACK, declared in except.h, has language-dependent
+   semantics.  If a front-end needs to mark the false label stack, it
+   should set this pointer to a non-NULL value.  Otherwise, no marking
+   will be done.  */
+extern void (*lang_mark_false_label_stack) PARAMS ((struct label_node *));
 
 /* Mark functions for various structs scattered about.  */
 

@@ -15824,15 +15824,6 @@ lang_mark_tree (t)
     ggc_mark (TYPE_LANG_SPECIFIC (t));
 }
 
-void
-lang_mark_false_label_stack (l)
-     struct label_node *l;
-{
-  /* Fortran doesn't use false_label_stack.  It better be NULL.  */
-  if (l != NULL)
-    abort();
-}
-
 #endif /* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
 #if FFECOM_GCC_INCLUDE

@@ -829,14 +829,12 @@ struct lang_decl_var
 #define TYPE_JCF(T) (TYPE_LANG_SPECIFIC(T)->jcf)
 #define TYPE_CPOOL(T) (TYPE_LANG_SPECIFIC(T)->cpool)
 #define TYPE_CPOOL_DATA_REF(T) (TYPE_LANG_SPECIFIC(T)->cpool_data_ref)
-#define MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC(T)				\
-  if (TYPE_LANG_SPECIFIC ((T)) == NULL)					\
-    {									\
-      TYPE_LANG_SPECIFIC ((T)) = 					\
-	(struct lang_type *) xmalloc (sizeof (struct lang_type));	\
-									\
-      bzero ((char *) TYPE_LANG_SPECIFIC ((T)),				\
-	     sizeof (struct lang_type));				\
+#define MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC(T)				 \
+  if (TYPE_LANG_SPECIFIC ((T)) == NULL)					 \
+    {									 \
+      TYPE_LANG_SPECIFIC ((T)) = 					 \
+	((struct lang_type *) 						 \
+         ggc_alloc_cleared (sizeof (struct lang_type)));		 \
     }
 
 #define TYPE_FINIT_STMT_LIST(T)  (TYPE_LANG_SPECIFIC(T)->finit_stmt_list)

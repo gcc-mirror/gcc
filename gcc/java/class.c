@@ -655,8 +655,7 @@ add_method_1 (handle_class, access_flags, name, function_type)
   DECL_CONTEXT (fndecl) = handle_class;
 
   DECL_LANG_SPECIFIC (fndecl)
-    = (struct lang_decl *) permalloc (sizeof (struct lang_decl));
-  bzero ((PTR) DECL_LANG_SPECIFIC (fndecl), sizeof (struct lang_decl));
+    = (struct lang_decl *) ggc_alloc_cleared (sizeof (struct lang_decl));
 
   /* Initialize the static initializer test table.  */
   hash_table_init (&DECL_FUNCTION_INIT_TEST_TABLE (fndecl),
@@ -2121,4 +2120,5 @@ init_class_processing ()
 {
   registerClass_libfunc = gen_rtx (SYMBOL_REF, Pmode, "_Jv_RegisterClass");
   ggc_add_tree_root (&registered_class, 1);
+  ggc_add_rtx_root (&registerClass_libfunc, 1);
 }
