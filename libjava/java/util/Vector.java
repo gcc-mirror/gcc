@@ -413,10 +413,21 @@ public class Vector implements Cloneable, Serializable
   // {
   // }
 
-  // TODO12:
-  // public boolean remove(Object o)
-  // {
-  // }
+  public synchronized boolean remove(Object o)
+  {
+    for (int i = 0; i < elementCount; ++i)
+      {
+	if (o == null
+	    ? elementData[i] == null
+	    : o.equals (elementData[i]))
+	  {
+	    System.arraycopy (elementData, i, elementData, i + 1,
+			      elementCount - i - 1);
+	    return true;
+	  }
+      }
+    return false;
+  }
 
   // TODO12:
   // public Object remove(int index)
