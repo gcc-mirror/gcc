@@ -1,3 +1,7 @@
+2003-04-26  Neil Booth  <neil@daikokuya.co.uk>
+
+	* _cpp_lex_direct: Remove pointless code.
+
 2003-04-26 Stephane Carrez <stcarrez@nerim.fr>
 
 	* doc/extend.texi (Function Attributes): Document "near" and "far"
