@@ -1,3 +1,10 @@
+2002-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/6279
+	* expr.c (store_expr): Don't copy if DECL_RTL (exp) == target.
+
+	* expr.c (safe_from_p): Cleanup: use DECL_RTL_IF_SET.
+
 2002-04-15  Richard Henderson  <rth@redhat.com>
 
 	* config/mips/abi64.h (SUBTARGET_CONDITIONAL_REGISTER_USAGE): Set
