@@ -630,10 +630,12 @@ Lover12:
 #ifdef L_dvmd_lnx
 @ GNU/Linux division-by zero handler.  Used in place of L_dvmd_tls
 
-#include <asm/unistd.h>
-	
-#define SIGFPE	8			@ cant use <asm/signal.h> as it
-					@ contains too much C rubbish
+/* Constants taken from <asm/unistd.h> and <asm/signal.h> */
+#define SIGFPE	8
+#define __NR_SYSCALL_BASE	0x900000
+#define __NR_getpid			(__NR_SYSCALL_BASE+ 20)
+#define __NR_kill			(__NR_SYSCALL_BASE+ 37)
+
 	FUNC_START div0
 
 	stmfd	sp!, {r1, lr}

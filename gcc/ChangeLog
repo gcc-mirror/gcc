@@ -1,3 +1,8 @@
+2001-09-18  Philip Blundell  <philb@gnu.org>
+
+	* config/arm/lib1funcs.asm (L_dvmd_lnx): Don't rely on kernel
+	header files.
+
 2001-09-17  Jeff Sturm  <jsturm@one-point.com>
 
 	* except.c (dw2_build_landing_pads): New local
