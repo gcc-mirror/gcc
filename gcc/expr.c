@@ -977,6 +977,41 @@ convert_move (to, from, unsignedp)
     }
 
   /* Handle pointer conversion */			/* SPEE 900220 */
+  if (to_mode == PQImode)
+    {
+      if (from_mode != QImode)
+	from = convert_to_mode (QImode, from, unsignedp);
+
+#ifdef HAVE_truncqipqi2
+      if (HAVE_truncqipqi2)
+	{
+	  emit_unop_insn (CODE_FOR_truncqipqi2, to, from, UNKNOWN);
+	  return;
+	}
+#endif /* HAVE_truncqipqi2 */
+      abort ();
+    }
+
+  if (from_mode == PQImode)
+    {
+      if (to_mode != QImode)
+	{
+	  from = convert_to_mode (QImode, from, unsignedp);
+	  from_mode = QImode;
+	}
+      else
+	{
+#ifdef HAVE_extendpqiqi2
+	  if (HAVE_extendpqiqi2)
+	    {
+	      emit_unop_insn (CODE_FOR_extendpqiqi2, to, from, UNKNOWN);
+	      return;
+	    }
+#endif /* HAVE_extendpqiqi2 */
+	  abort ();
+	}
+    }
+
   if (to_mode == PSImode)
     {
       if (from_mode != SImode)
