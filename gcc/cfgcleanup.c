@@ -74,7 +74,6 @@ static int flow_find_cross_jump		PARAMS ((int, basic_block, basic_block,
 						 rtx *, rtx *));
 static bool insns_match_p		PARAMS ((int, rtx, rtx));
 
-bool delete_unreachable_blocks		PARAMS ((void));
 static bool label_is_jump_target_p	PARAMS ((rtx, rtx));
 static bool tail_recursion_label_p	PARAMS ((rtx));
 static void merge_blocks_move_predecessor_nojumps PARAMS ((basic_block,
