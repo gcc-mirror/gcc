@@ -1182,6 +1182,47 @@ emit_move_sequence (operands, mode, scratch_reg)
   return 0;
 }
 
+/* Examine EXP and return nonzero if it contains an ADDR_EXPR (meaning
+   it will need a link/runtime reloc.  */
+
+int
+reloc_needed (exp)
+     tree exp;
+{
+  int reloc = 0;
+
+  switch (TREE_CODE (exp))
+    {
+    case ADDR_EXPR:
+      return 1;
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      reloc = reloc_needed (TREE_OPERAND (exp, 0));
+      reloc |= reloc_needed (TREE_OPERAND (exp, 1));
+      break;
+
+    case NOP_EXPR:
+    case CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
+      reloc = reloc_needed (TREE_OPERAND (exp, 0));
+      break;
+
+    case CONSTRUCTOR:
+      {
+	register tree link;
+	for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
+	  if (TREE_VALUE (link) != 0)
+	    reloc |= reloc_needed (TREE_VALUE (link));
+      }
+      break;
+
+    case ERROR_MARK:
+      break;
+    }
+  return reloc;
+}
+
 /* Does operand (which is a symbolic_operand) live in text space? If
    so SYMBOL_REF_FLAG, which is set by ENCODE_SECTION_INFO, will be true.  */
 
