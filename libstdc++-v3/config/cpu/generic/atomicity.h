@@ -28,34 +28,24 @@
 // the GNU General Public License.
 
 #include <bits/atomicity.h>
-#include <bits/gthr.h>
+#include <bits/concurrence.h>
 
-#define _GLIBCXX_NEED_GENERIC_MUTEX
+namespace __gnu_internal
+{
+  __glibcxx_mutex_define_initialized(atomic_mutex);
+} // namespace __gnu_internal
 
 namespace __gnu_cxx
 {
-  extern __gthread_mutex_t _Atomic_add_mutex;
-
-#ifndef __GTHREAD_MUTEX_INIT
-  extern __gthread_once_t _Atomic_add_mutex_once;
-  extern void __gthread_atomic_add_mutex_once();
-#endif
-
   _Atomic_word
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val)
   {
-#ifndef __GTHREAD_MUTEX_INIT
-    __gthread_once(&__gnu_cxx::_Atomic_add_mutex_once,
-		   __gnu_cxx::__gthread_atomic_add_mutex_once);
-#endif
-
+    __glibcxx_mutex_lock(__gnu_internal::atomic_mutex);
     _Atomic_word __result;
-    __gthread_mutex_lock(&__gnu_cxx::_Atomic_add_mutex);
     __result = *__mem;
     *__mem += __val;
-
-    __gthread_mutex_unlock(&__gnu_cxx::_Atomic_add_mutex);
+    __glibcxx_mutex_unlock(__gnu_internal::atomic_mutex);
     return __result;
   }
 

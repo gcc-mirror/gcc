@@ -1,3 +1,24 @@
+2004-03-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/12658
+	* src/locale_init.cc (locale::locale): Lock critical regions with
+	external mutexes.
+	(locale::global): Same.	
+	* include/bits/concurrence.h (__glibcxx_mutex_define_initialized): 
+	Add in once bits for cases without __GTHREAD_MUTEX_INIT.
+	(__glibcxx_mutex_lock): Same.
+
+	* config/cpu/generic/atomicity.h: Remove
+	_GLIBCXX_NEED_GENERIC_MUTEX, use concurrence.h.
+	* src/misc-inst.cc: Move all locking bits out of this file.
+
+	* config/os/hpux/os_defines.h: Remove _GLIBCXX_INST_ATOMICITY_LOCK.
+	* src/misc-inst.cc: Same.
+	* config/cpu/hppa/atomicity.h: Same.
+
+	* config/linker-map.gnu: Remove types in the signature of atomic
+	exports, as they may vary.
+	
 2004-03-06  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc: Tweak the comment preceding

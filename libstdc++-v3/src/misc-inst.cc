@@ -73,24 +73,6 @@ namespace std
 
 namespace __gnu_cxx
 {
-#ifdef _GLIBCXX_INST_ATOMICITY_LOCK
-  template volatile int _Atomicity_lock<0>::_S_atomicity_lock;
-#endif
-
-#ifdef _GLIBCXX_NEED_GENERIC_MUTEX
-#ifdef __GTHREAD_MUTEX_INIT
-  __gthread_mutex_t _Atomic_add_mutex = __GTHREAD_MUTEX_INIT;
-#else
-  // generic atomicity.h without static initialization
-  __gthread_mutex_t _Atomic_add_mutex;
-  __gthread_once_t _Atomic_add_mutex_once = __GTHREAD_ONCE_INIT;
-  void __gthread_atomic_add_mutex_once()
-  {
-    __GTHREAD_MUTEX_INIT_FUNCTION (&_Atomic_add_mutex);
-  }
-#endif
-#endif // _GLIBCXX_NEED_GLOBAL_MUTEX
-
   template class stdio_sync_filebuf<char>;
 #ifdef _GLIBCXX_USE_WCHAR_T
   template class stdio_sync_filebuf<wchar_t>;

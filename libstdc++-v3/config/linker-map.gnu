@@ -216,8 +216,8 @@ GLIBCXX_3.4 {
 
     # __gnu_cxx::__atomic_add
     # __gnu_cxx::__exchange_and_add
-    _ZN9__gnu_cxx12__atomic_addEPVii;
-    _ZN9__gnu_cxx18__exchange_and_addEPVii;
+    _ZN9__gnu_cxx12__atomic_add*;
+    _ZN9__gnu_cxx18__exchange_and_add*;
 
   # DO NOT DELETE THIS LINE.  Port-specific symbols, if any, will be here.
 

@@ -43,11 +43,8 @@ namespace __gnu_cxx
   _Atomicity_lock<_Inst>::_S_atomicity_lock __attribute__ ((aligned (16))) = 1;
 
   // Because of the lack of weak support when using the hpux som
-  // linker, we explicitly instantiate the atomicity lock in
-  // src/misc-inst.cc when _GLIBCXX_INST_ATOMICITY_LOCK is defined.
-#ifndef _GLIBCXX_INST_ATOMICITY_LOCK
+  // linker, we explicitly instantiate the atomicity lock.
   template volatile int _Atomicity_lock<0>::_S_atomicity_lock;
-#endif
 
   int
   __attribute__ ((__unused__))
