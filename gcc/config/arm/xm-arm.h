@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Acorn RISC Machine.
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
               and Martin Simmons (@harleqn.co.uk).
 
@@ -28,11 +28,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define HOST_BITS_PER_SHORT 16
 #define HOST_BITS_PER_INT 32
 #define HOST_BITS_PER_LONG 32
-
-/* If compiled with GNU C, use the built-in alloca.  */
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#endif
 
 /* target machine dependencies.
    tm.h is a symbolic link to the actual target specific file.  */

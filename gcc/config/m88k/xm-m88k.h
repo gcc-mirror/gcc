@@ -1,6 +1,6 @@
 /* Configuration for GNU compiler.
    Motorola m88100 in an 88open OCS/BCS environment.
-   Copyright (C) 1988, 1989, 1990, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1989, 1990, 1991, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -54,10 +54,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Define HAVE_VPRINTF if it is available on host system.  */
 #define HAVE_VPRINTF
 
-/* If compiled with GNU C, use the built-in alloca */
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#else
+/* If not compiled with GNU C, use the C alloca */
+#ifndef __GNUC__
 #define USE_C_ALLOCA
 #endif
 

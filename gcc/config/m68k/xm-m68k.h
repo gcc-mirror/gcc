@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Motorola 68000 family.
-   Copyright (C) 1987 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -38,10 +38,3 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Arguments to use with `exit'.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
-
-/* If compiled with GNU C, use the built-in alloca */
-#ifdef __GNUC__
-/* Use an arg in this macro because that's what some other
-   system does--let's avoid conflict.  */
-#define alloca(x) __builtin_alloca(x)
-#endif

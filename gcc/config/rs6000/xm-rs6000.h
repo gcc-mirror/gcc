@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for IBM RS/6000.
-   Copyright (C) 1990 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1993 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu).
 
 This file is part of GNU CC.
@@ -41,15 +41,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define	FAILURE_EXIT_CODE	2
 #define	FATAL_EXIT_CODE		3
 
-/* If compiled with GNU C, use the built-in alloca.  */
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#else
-#define USE_C_ALLOCA
-#endif
-
-/* If not compiled with GNU C, use only int bitfields.  */
+/* If not compiled with GNU C, use the C alloca and use only int bitfields.  */
 #ifndef __GNUC__
+#define USE_C_ALLOCA
 #define	ONLY_INT_FIELDS
 #endif
 

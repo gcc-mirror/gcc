@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for MIPS Rx000 family
-   Copyright (C) 1989, 1990, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1990, 1991, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -60,12 +60,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 
 #ifndef MIPS_OVERRIDE_ALLOCA
-/* If compiled with GNU C, use the built-in alloca */
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-
-#else
+#ifndef __GNUC__
 #define USE_C_ALLOCA
+
 extern char * alloca ();
 
 /* for the emacs version of alloca */

@@ -24,11 +24,6 @@
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
 
-/* If compiled with GNU C, use the built-in alloca */
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#endif
-
 /* isinf isn't there, but finite is. */
 #define isinf(x) (!finite(x))
 

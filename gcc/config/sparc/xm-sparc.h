@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Sun Sparc.
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
 
 This file is part of GNU CC.
@@ -45,11 +45,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* If compiled with Sun CC, the use of alloca requires this #include.  */
 #ifndef __GNUC__
 #include "alloca.h"
-#endif
-
-/* If compiled with GNU C, use the built-in alloca.  */
-#ifdef __GNUC__
-/* Use an arg in this macro because that's what some other
-   system does--let's avoid conflict.  */
-#define alloca(x) __builtin_alloca(x)
 #endif

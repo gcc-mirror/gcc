@@ -15,7 +15,5 @@
 
 #ifndef __GNUC__
 #define USE_C_ALLOCA
-#else
-#define alloca __builtin_alloca
 #endif
 

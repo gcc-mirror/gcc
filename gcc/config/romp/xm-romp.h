@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for IBM RT PC.
-   Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -38,11 +38,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Arguments to use with `exit'.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
-
-/* If compiled with GNU C, use the built-in alloca */
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#endif
 
 /* If compiled with hc, use the built-in alloca and memcpy.
    These definitions assume hc version 2.  */
