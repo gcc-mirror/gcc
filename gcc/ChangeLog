@@ -1,3 +1,8 @@
+2002-02-07  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.md (casesi_internal_di): Calculate
+	the index into the target offset table correctly.
+
 2002-02-08  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (expand_expr): Mind EXPAND_INITIALIZER for truncation also.

@@ -9481,16 +9481,18 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
    (set_attr "mode"	"none")
    (set_attr "length"	"24")])
 
+;; This code assumes that the table index will never be >= 29 bits wide,
+;; which allows the 'sign extend' from SI to DI be a no-op.
 (define_insn "casesi_internal_di"
   [(set (pc)
 	(mem:DI (plus:DI (sign_extend:DI
 			  (mult:SI (match_operand:SI 0 "register_operand" "d")
-				  (const_int 4)))
+				  (const_int 8)))
 			 (label_ref (match_operand 1 "" "")))))
    (clobber (match_operand:DI 2 "register_operand" "=d"))
    (clobber (reg:DI 31))]
   "TARGET_EMBEDDED_PIC"
-  "%(bal\\t%S1\;sll\\t%2,%0,2\\n%~%S1:\;addu\\t%2,%2,$31%)\;\\
+  "%(bal\\t%S1\;sll\\t%2,%0,3\\n%~%S1:\;daddu\\t%2,%2,$31%)\;\\
 ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
