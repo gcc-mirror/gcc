@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 
-# 1999-07-19 bkoz 
-# Script to do automated testing and data collection for
-# various test files, and avoid doing this on every test file.
-# It attempts to collect some diagnostic info about size
-# and speed that should be useful in the future as the library gets
-# tuned for size and speed.
+# 2000-05-17 bkoz 
 
-# invocation == mkcheck [01] (path to build) (path to src) (path to install)
+# Script to do automated testing and data collection
+# for various test files, so that we don't have to do this by hand on
+# every test file.  It attempts to collect some diagnostic info about
+# size and speed that should be useful in the future as the library
+# gets tuned for size and speed. In addition, it tests static and
+# shared linkage.
+
+# Invocation 
+# mkcheck [01] (path to build) (path to src) (path to install)
 
 if [ $# != 3 ] && [ $# != 4 ]; then
     echo 'Usage: mkcheck 0 (path to build) (path to src)'
@@ -71,7 +74,7 @@ fi
 CXX_FLAG="-g -DDEBUG_ASSERT "
 
 # a specific flag to force the use of shared libraries, if any
-SH_FLAG=
+SH_FLAG=""
 
 # a specific flag to force the use of static libraries, if any
 ST_FLAG="-static"
@@ -136,13 +139,13 @@ cp $SRC_DIR/testsuite/27_io/*.tst $TEST_DIR
 # Emit useful info about compiler and platform
 echo "host: $(uname -mrsv)" >> $RESULTS_FILE
 echo "compiler: $($CXX --version)" >> $RESULTS_FILE
-echo "compiler flags: $CXX_FLAG $ST_FLAG" >> $RESULTS_FILE
+echo "compiler flags: $CXX_FLAG" >> $RESULTS_FILE
 echo "date: $(date +%Y%m%d)" >> $RESULTS_FILE
 echo "" >> $RESULTS_FILE
 
 echo "p == pass/fail execution test" >> $RESULTS_FILE
 echo "ctime == time to compile and link" >> $RESULTS_FILE
-echo "etime == time for executable to run (take with salt)" >> $RESULTS_FILE
+echo "etime == time for executable to run" >> $RESULTS_FILE
 echo "text == size of the executable text section" >> $RESULTS_FILE
 echo "data == size of the executable data section" >> $RESULTS_FILE
 echo "total == size of the executable" >> $RESULTS_FILE
@@ -158,13 +161,14 @@ echo "" >> $RESULTS_FILE
 #
 # 3: compile, link, execute, time
 #
-for NAME in `cat $TESTS_FILE`
-do
-    echo "$NAME"
-    PRE_NAME="$TEST_DIR/`basename $NAME`"
-    ST_NAME="`echo $PRE_NAME | sed 's/cc$/st-exe/'`"
-    SH_NAME="`echo $PRE_NAME | sed 's/cc$/sh-exe/'`"
-    CNAME="$SRC_DIR/testsuite/$NAME"
+# Abstract out the common code for compiling, linking, executing and printing.
+test_file()
+{
+    # NB: S_FLAG has to be last argument because it may be null, and
+    # error checking hasn't been invented yet.
+    FILENAME=$1
+    EXENAME=$2
+    S_FLAG=$3
 
     # This would be deliciously easy if GNU date's %s were always around.
     # There are three ways to do this:  1) use the builtin 'time' like we
@@ -174,8 +178,8 @@ do
     # eventually have to calculate time_t anyhow.  Or 3) just grab two
     # time_t's (no more overhead than grabbing two date(1)'s).
     COMP_TIME_START=$($TEST_DIR/printnow)
-    $CXX $CXX_FLAG $ST_FLAG $INC_PATH $LIB_PATH $CNAME \
-	 -o $ST_NAME 2>> $LOG_FILE
+    $CXX $CXX_FLAG $S_FLAG $INC_PATH $LIB_PATH $FILENAME \
+	 -o $EXENAME 2>> $LOG_FILE
     COMP_TIME_END=$($TEST_DIR/printnow)
 
     if [ $COMP_TIME_START -lt $COMP_TIME_END ]; then
@@ -184,41 +188,40 @@ do
 	C_TIME="0"
     fi
 
-    if [ -f $ST_NAME ]; then
+    if [ -f $EXENAME ]; then
         case @host_os@ in
           *solaris*)
             # These numbers seem to match up to text/data/total,
             # although their meanings seem to be different.  Very
             # important to not compare these numbers across platforms.
-            ST_TEXT="$(size $ST_NAME | awk '{print $1}')"
-            ST_DATA="$(size $ST_NAME | awk '{print $3}')"
-            ST_SIZE="$(size $ST_NAME | awk '{print $7}')"
+            TEXT="$(size $EXENAME | awk '{print $1}')"
+            DATA="$(size $EXENAME | awk '{print $3}')"
+            SIZE="$(size $EXENAME | awk '{print $7}')"
             ;;
           *)
-            ST_TEXT="$(size -A $ST_NAME | grep text | awk '{print $2}')"
-            ST_DATA="$(size -A $ST_NAME | grep data | awk '{print $2}')"
-            ST_SIZE="$(size -A $ST_NAME | grep otal | awk '{print $2}')"
+            TEXT="$(size -A $EXENAME | grep text | awk '{print $2}')"
+            DATA="$(size -A $EXENAME | grep data | awk '{print $2}')"
+            SIZE="$(size -A $EXENAME | grep otal | awk '{print $2}')"
             ;;
         esac
 
         # Actually run the executable and time it . . .
         TIMEFORMAT='timemark %R'
-        E_TIME_TEXT="$(exec 2>&1; time $ST_NAME)"
+        E_TIME_TEXT="$(exec 2>&1; time $EXENAME)"
 	E_ABNORMAL_TERMINATION=$?
         E_TIME="$(echo $E_TIME_TEXT | awk '{print $2}')"
         # joining those two commands does not work due to quoting problems:
-        #E_TIME="$(exec 2>&1; time $ST_NAME | awk '{print $2}')"
+        #E_TIME="$(exec 2>&1; time $EXENAME | awk '{print $2}')"
         # this will work as a fallback on certain systems...?
-        #E_TIME=$(exec 2>&1; time $ST_NAME | cut -d ' ' -f 2)
+        #E_TIME=$(exec 2>&1; time $EXENAME | cut -d ' ' -f 2)
  
        if [ "$E_ABNORMAL_TERMINATION" -ne 0 ]; then
-            ST_EXEC='-'
-            echo "st_fail" | awk '{printf("\t%s\n", $1)}'
+            RESULT='-'
 	    rm -f ./*core
 	    # sometimes you want to save all core files for review:
-	    #mv ./core $ST_NAME.core
+	    #mv ./core $EXENAME.core
 	    # sometimes the OS names core files as programname.core:
-	    #mv ./*core $ST_NAME.core
+	    #mv ./*core $EXENAME.core
 	else
 	    # XXX this should probably be a function? 
 
@@ -241,13 +244,13 @@ do
 	    DIFF_FILE="`echo $PRE_NAME | sed 's/cc$/diff/'`"
 	    # construct wildcard names,ie for $NAME=filebuf.cc, makes
 	    # "filebuf*.tst"
-	    ST_DATA_FILES="`echo $NAME | sed 's/\.cc/\*\.tst/g'`"
+	    DATA_FILES="`echo $NAME | sed 's/\.cc/\*\.tst/g'`"
 	    # make sure there is at least one, then go
 	    ST_E="`echo $NAME | sed 's/\.cc/\-1\.tst/g'`"
 	    if [ -f $ST_E ]; then
 		# list of actual files that match the wildcard above, ie
 		# "filebuf-1.tst"
-		ST_MATCH_LIST="`ls $ST_DATA_FILES`"
+		ST_MATCH_LIST="`ls $DATA_FILES`"
 		for i in $ST_MATCH_LIST
 		    do
 			# ST_OUT_FILE is generated in the build directory.
@@ -255,49 +258,70 @@ do
 			ST_OUT_FILE="`echo $PRE_NAME2 | sed 's/tst$/txt/'`"
 			diff $ST_OUT_FILE $i > $DIFF_FILE
 			if [ -s $DIFF_FILE ]; then
-			    ST_EXEC="-"
-			    echo "st_fail" | awk '{printf("\t%s\n", $1)}'
+			    RESULT="-"
 			    echo "$ST_OUT_FILE has some problems, dude"
 			else
-			    ST_EXEC="+"
-			    echo "st_pass" | awk '{printf("\t%s\n", $1)}'
+			    RESULT="+"
 			fi
 			rm $DIFF_FILE
 		    done
 		else
 		    # the file does no output, and didn't abnormally
 		    # terminate, so assume passed.
-		    ST_EXEC="+"
-		    echo "st_pass" | awk '{printf("\t%s\t", $1)}'
+		    RESULT="+"
 		fi
 	    fi
-	rm "$ST_NAME"
+	rm "$EXENAME"
 	# sometimes you want to save all failing exe files for review:
-	#if [ "$ST_EXEC" = "+" ]; then
-	#    rm "$ST_NAME"
+	#if [ "$RESULT" = "+" ]; then
+	#    rm "$EXENAME"
 	#fi
     else
         # the file did not compile. Write out compilation info to the log file.
-	echo "$CXX $CXX_FLAG $ST_FLAG $INC_PATH $LIB_PATH $CNAME -o $ST_NAME" \
+	echo "$CXX $CXX_FLAG $ST_FLAG $INC_PATH $LIB_PATH $CNAME -o $EXENAME" \
         2>> $LOG_FILE
 
-	ST_EXEC="-"
-	echo "st_fail" | awk '{printf("\t%s\t", $1)}'
-	ST_TEXT="0"
-	ST_DATA="0"
-	ST_SIZE="0"
+	RESULT="-"
+	TEXT="0"
+	DATA="0"
+	SIZE="0"
     fi
 
-    echo $ST_EXEC | awk '{printf ("%.1s ", $1)}'>>$RESULTS_FILE
+    echo $RESULT | awk '{printf("%s\t", $1)}'
+    echo $RESULT | awk '{printf ("%.1s ", $1)}'>>$RESULTS_FILE
     echo $C_TIME $E_TIME |awk '{printf("%d\t%.3f\t", $1, $2)}'>>$RESULTS_FILE
-    echo $ST_TEXT $ST_DATA | awk '{printf("%s\t%s\t", $1, $2)}'>>$RESULTS_FILE
-    echo $ST_SIZE | awk '{printf("%s\t", $1)}'>>$RESULTS_FILE
+    echo $TEXT $DATA | awk '{printf("%s\t%s\t", $1, $2)}'>>$RESULTS_FILE
+    echo $SIZE | awk '{printf("%s\t", $1)}'>>$RESULTS_FILE
     echo $NAME | awk '{printf("%s\n", $1)}'>>$RESULTS_FILE
+};    
+
+echo "detailed test information in $RESULTS_FILE"
+echo "------------------------------------------------------------------------"
+echo "static" | awk '{printf("%s\t", $1)}'
+echo "shared" | awk '{printf("%s\t", $1)}'
+echo "test" | awk '{printf("%s\n", $1)}'
+echo "------------------------------------------------------------------------"
+
+TEST_TIME_START=$($TEST_DIR/printnow)
+for NAME in `cat $TESTS_FILE`
+do
+    PRE_NAME="$TEST_DIR/`basename $NAME`"
+    ST_NAME="`echo $PRE_NAME | sed 's/cc$/st-exe/'`"
+    SH_NAME="`echo $PRE_NAME | sed 's/cc$/sh-exe/'`"
+    CNAME="$SRC_DIR/testsuite/$NAME"
+
+    test_file $CNAME $ST_NAME $ST_FLAG 
+    test_file $CNAME $SH_NAME $SH_FLAG 
+    echo "$NAME" | awk '{printf("%s\n", $1)}'
 
     echo "" >> $RESULTS_FILE
-    echo ""
 done
+TEST_TIME_END=$($TEST_DIR/printnow)
 
+
+#
+# 4: summary
+#
 # grep can count faster than we can...
 total_failures=$(egrep -c "^\-" $RESULTS_FILE)
 total_successes=$(egrep -c "^\+" $RESULTS_FILE)
@@ -308,6 +332,11 @@ fi
 sed -e "/^date:/a\\
 $resultstext" $RESULTS_FILE > ${RESULTS_FILE}.tmp
 mv ${RESULTS_FILE}.tmp $RESULTS_FILE
+
+if [ $TEST_TIME_START -lt $TEST_TIME_END ]; then
+    TEST_TIME=$[ $TEST_TIME_END - $TEST_TIME_START ]
+    echo "testrun == $TEST_TIME"
+fi
 
 exit 0
 
