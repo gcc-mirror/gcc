@@ -1924,18 +1924,20 @@ output_scc_insn (operands, insn)
    | (1 << (int) CCFPmode) | (1 << (int) CCFPEmode))
 
 /* Modes for single-word (and smaller) quantities.  */
-#define S_MODES						\
- (~C_MODES						\
-  & ~ ((1 << (int) DImode) | (1 << (int) TImode)	\
-      | (1 << (int) DFmode) | (1 << (int) TFmode)))
+#define S_MODES								\
+ ((1 << (int) QImode) | (1 << (int) HImode) | (1 << (int) SImode)	\
+  | (1 << (int) QFmode) | (1 << (int) HFmode) | (1 << (int) SFmode)	\
+  | (1 << (int) CQImode) | (1 << (int) CHImode))
 
 /* Modes for double-word (and smaller) quantities.  */
-#define D_MODES					\
-  (~C_MODES					\
-   & ~ ((1 << (int) TImode) | (1 << (int) TFmode)))
+#define D_MODES						\
+ (S_MODES | (1 << (int) DImode) | (1 << (int) DFmode)	\
+  | (1 << (int) CSImode) | (1 << (int) SCmode))
 
 /* Modes for quad-word quantities.  */
-#define T_MODES (~C_MODES)
+#define T_MODES						\
+ (D_MODES | (1 << (int) TImode) | (1 << (int) TFmode)	\
+  | (1 << (int) DCmode) | (1 << (int) CDImode))
 
 /* Modes for single-float quantities.  We must allow any single word or
    smaller quantity.  This is because the fix/float conversion instructions
