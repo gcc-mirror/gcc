@@ -1,3 +1,10 @@
+1999-04-26 10:50 -0700 Bruce Korb <ddsinc09@ix.netcom.com>
+
+	* fixinc/fixincl.c:  Improve the handling of child process exits
+	* fixinc/server.[ch]: Export the interface for shutting down
+	the server process
+	* fixinc/inclhack.tpl: Remove unnecessary character quote
+
 Mon Apr 26 10:41:42 EDT 1999  <amacleod@cygnus.com>
 
 	* alpha.md (builtin_setjmp_receiver): Use a label_ref instead of 
