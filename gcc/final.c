@@ -3673,7 +3673,11 @@ output_addr_const (file, x)
       break;
 
     case SYMBOL_REF:
+#ifdef ASM_OUTPUT_SYMBOL_REF
+      ASM_OUTPUT_SYMBOL_REF (file, x);
+#else
       assemble_name (file, XSTR (x, 0));
+#endif
       break;
 
     case LABEL_REF:

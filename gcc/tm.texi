@@ -5949,6 +5949,14 @@ The definition should be a C statement to output a word containing
 a reference to the label @var{label}.
 @end ignore
 
+@findex ASM_OUTPUT_SYMBOL_REF
+@item ASM_OUTPUT_SYMBOL_REF (@var{stream}, @var{sym})
+A C statement (sans semicolon) to output a reference to
+@code{SYMBOL_REF} @var{sym}.  If not defined, @code{assemble_output}
+will be used to output the name of the symbol.  This macro may be used
+to modify the way a symbol is referenced depending on information
+encoded by @code{ENCODE_SECTION_INFO}.
+
 @findex ASM_OUTPUT_INTERNAL_LABEL
 @item ASM_OUTPUT_INTERNAL_LABEL (@var{stream}, @var{prefix}, @var{num})
 A C statement to output to the stdio stream @var{stream} a label whose
