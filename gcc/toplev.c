@@ -3609,7 +3609,7 @@ rest_of_compilation (decl)
 
       /* CFG no longer kept up to date.  */
 
-      close_dump_file (DFI_jump2, print_rtl_with_bb, insns);
+      close_dump_file (DFI_jump2, print_rtl, insns);
       timevar_pop (TV_JUMP);
     }
 
@@ -3619,7 +3619,7 @@ rest_of_compilation (decl)
 
   MACHINE_DEPENDENT_REORG (insns);
 
-  close_dump_file (DFI_mach, print_rtl_with_bb, insns);
+  close_dump_file (DFI_mach, print_rtl, insns);
 
   ggc_collect ();
 #endif
@@ -3635,7 +3635,7 @@ rest_of_compilation (decl)
 
       dbr_schedule (insns, rtl_dump_file);
 
-      close_dump_file (DFI_dbr, print_rtl_with_bb, insns);
+      close_dump_file (DFI_dbr, print_rtl, insns);
       timevar_pop (TV_DBR_SCHED);
 
       ggc_collect ();
@@ -3656,7 +3656,7 @@ rest_of_compilation (decl)
 
   reg_to_stack (insns, rtl_dump_file);
 
-  close_dump_file (DFI_stack, print_rtl_with_bb, insns);
+  close_dump_file (DFI_stack, print_rtl, insns);
   timevar_pop (TV_REG_STACK);
 
   ggc_collect ();

@@ -1,3 +1,8 @@
+2000-01-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* toplev.c (rest_of_compilation): Don't print basic block information
+	when CFG isn't up to date.
+
 2001-01-02  Mark Elbrecht  <snowball3@bigfoot.com>
 
 	* config/i386/djgpp.h (DWARF2_DEBUGGING_INFO): Define.
