@@ -90,17 +90,12 @@ typedef struct
 
   /* A pointer to the variable argument-list for formatting.  */  
   va_list *format_args;
-
-  /* The number of times we have issued diagnostics.  */
-  int diagnostic_count[DK_LAST_DIAGNOSTIC_KIND];
 } output_state;
 
-/* The output buffer datatype.  This is best seen as an abstract datatype.  */
+/* The output buffer datatype.  This is best seen as an abstract datatype
+   whose fields should not be accessed directly by clients.  */
 struct output_buffer
 {
-  /* Internal data.  These fields should not be accessed directly by
-     front-ends.  */
-
   /* The current state of the buffer.  */
   output_state state;
 
@@ -152,7 +147,7 @@ struct output_buffer
 /* The amount of whitespace to be emitted when starting a new line.  */
 #define output_indentation(BUFFER) (BUFFER)->state.indent_skip
 
-/* A pointer to the formatted diagonstic message.  */
+/* A pointer to the formatted diagnostic message.  */
 #define output_message_text(BUFFER) \
    ((const char *) obstack_base (&(BUFFER)->obstack))
 
@@ -182,7 +177,7 @@ struct diagnostic_context
      purpose of message formatting.  */
   va_list *args_ptr;
 
-  /* The name of the source file involved in the diiagnostic.  */     
+  /* The name of the source file involved in the diagnostic.  */     
   const char *file;
 
   /* The line-location in the source file.  */
@@ -190,6 +185,9 @@ struct diagnostic_context
 
   /* Is this message a warning?  */
   int warn;
+
+  /* The number of times we have issued diagnostics.  */
+  int diagnostic_count[DK_LAST_DIAGNOSTIC_KIND];
 
   /* This function is called before any message is printed out.  It is
      responsible for preparing message prefix and such.  For example, it
@@ -251,17 +249,16 @@ struct diagnostic_context
 
 #define diagnostic_buffer (&global_dc->buffer)
 
-/* This diagnostic context is used by front-ends that directly output
+/* This diagnostic_context is used by front-ends that directly output
    diagnostic messages without going through `error', `warning',
    and similar functions.  */
 extern diagnostic_context *global_dc;
 
 /* The total count of a KIND of diagnostics meitted so far.  */
-#define diagnostic_kind_count(DC, DK) \
-   (DC)->buffer.state.diagnostic_count[(int) (DK)]
+#define diagnostic_kind_count(DC, DK) (DC)->diagnostic_count[(int) (DK)]
 
 /* The number of errors that have been issued so far.  Ideally, these
-   would take an output_buffer as an argument.  */
+   would take a diagnostic_context as an argument.  */
 #define errorcount diagnostic_kind_count (global_dc, DK_ERROR)
 /* Similarly, but for warnings.  */
 #define warningcount diagnostic_kind_count (global_dc, DK_WARNING)
