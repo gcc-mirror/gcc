@@ -113,6 +113,13 @@ extern int target_flags;
 #define MASK_5200	2048
 #define TARGET_5200 (target_flags & MASK_5200)
 
+/* Align ints to a word boundary.  This breaks compatibility with the 
+   published ABI's for structures containing ints, but produces faster
+   code on cpus with 32 bit busses (020, 030, 040, 060, CPU32+, coldfire).
+   It's required for coldfire cpus without a misalignment module.  */
+#define MASK_ALIGN_INT	4096
+#define TARGET_ALIGN_INT (target_flags & MASK_ALIGN_INT)
+
 /* Compile for a CPU32 */
 	/* A 68020 without bitfields is a good heuristic for a CPU32 */
 #define TARGET_CPU32	(TARGET_68020 && !TARGET_BITFIELD)
@@ -158,6 +165,8 @@ extern int target_flags;
     { "68302", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD)},	\
     { "68332", - (MASK_68060|MASK_68040|MASK_BITFIELD)},		\
     { "68332", MASK_68020},						\
+    { "align-int", MASK_ALIGN_INT },					\
+    { "no-align-int", -MASK_ALIGN_INT },				\
     SUBTARGET_SWITCHES							\
     { "", TARGET_DEFAULT}}
 /* TARGET_DEFAULT is defined in sun*.h and isi.h, etc.  */
@@ -257,8 +266,12 @@ extern int target_flags;
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 16
 
-/* No data type wants to be aligned rounder than this.  */
-#define BIGGEST_ALIGNMENT 16
+/* No data type wants to be aligned rounder than this. 
+   Most published ABIs say that ints should be aligned on 16 bit
+   boundries, but cpus with 32 bit busses get better performance
+   aligned on 32 bit boundries.  Coldfires without a misalignment
+   module require 32 bit alignment. */
+#define BIGGEST_ALIGNMENT (TARGET_ALIGN_INT ? 32 : 16)
 
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
