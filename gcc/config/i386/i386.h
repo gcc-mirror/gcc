@@ -378,8 +378,10 @@ extern int x86_prefetch_sse;
 #define TARGET_64BIT_DEFAULT 0
 #endif
 
-#define TARGET_DEFAULT MASK_OMIT_LEAF_FRAME_POINTER
-
+/* Once GDB has been enhanced to deal with functions without frame
+   pointers, we can change this to allow for elimination of
+   the frame pointer in leaf functions.  */
+#define TARGET_DEFAULT 0
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
    command options that have values.  Its definition is an

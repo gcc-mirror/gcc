@@ -1,3 +1,8 @@
+2002-06-20  Jeffrey Law  <law@redhat.com>
+
+	* i386.h (TARGET_DEFAULT): Do not turn on frame pointer
+	elimination in leaf functions by default yet.
+
 2002-06-20  Richard Sandiford  <rsandifo@redhat.com>
 
 	* combine.c (make_extraction): Reapply to the argument of an ASHIFT.
@@ -416,7 +421,7 @@ Tue Jun 18 20:53:32 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* doc/extend.texi (Function Attributes): Remove `,...' from @var.
 
-2002-06-17  Jeff Law <law@redha.com>
+2002-06-17  Jeff Law <law@redhat.com>
 
 	* libgcc2.c: Do not include symcat.h or machmode.h.
 
