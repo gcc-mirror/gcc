@@ -1,5 +1,5 @@
 # Top level makefile fragment for GNU Objective-C
-#   Copyright (C) 1997 Free Software Foundation, Inc.
+#   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -130,7 +130,7 @@ objc/sarray.o: $(srcdir)/objc/sarray.c $(GCC_PASSES)
 objc/class.o: $(srcdir)/objc/class.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/class.c -o $@
-objc/sendmsg.o: $(srcdir)/objc/sendmsg.c $(GCC_PASSES)
+objc/sendmsg.o: $(srcdir)/objc/sendmsg.c $(GCC_PASSES) objc/runtime-info.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) -Iobjc \
 	-c $(srcdir)/objc/sendmsg.c -o $@
 objc/init.o: $(srcdir)/objc/init.c $(GCC_PASSES)
@@ -277,19 +277,19 @@ objc.maintainer-clean:
 #
 # Stage hooks:
 
-objc.stage1:
+objc.stage1: stage1-start
 	-mv objc/*$(objext) stage1/objc
 	-mv cc1obj$(exeext) stage1
 	-mv libobjc.a stage1
-objc.stage2:
+objc.stage2: stage2-start
 	-mv objc/*$(objext) stage2/objc
 	-mv cc1obj$(exeext) stage2
 	-mv libobjc.a stage2
-objc.stage3:
+objc.stage3: stage3-start
 	-mv objc/*$(objext) stage3/objc
 	-mv cc1obj$(exeext) stage3
 	-mv libobjc.a stage3
-objc.stage4:
+objc.stage4: stage4-start
 	-mv objc/*$(objext) stage4/objc
 	-mv cc1obj$(exeext) stage4
 	-mv libobjc.a stage4
