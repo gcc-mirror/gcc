@@ -98,7 +98,7 @@ extern int frame_pointer_needed;
 #if TARGET_CPU_DEFAULT == TARGET_CPU_arm7m
 #define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_3M__"
 #else
-#if TARGET_CPU_DEFAULT == TARGET_CPU_arm7tdmi || TARGET_CPU_DEFAULT == TARGET_CPU_ARM9
+#if TARGET_CPU_DEFAULT == TARGET_CPU_arm7tdmi || TARGET_CPU_DEFAULT == TARGET_CPU_arm9
 #define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_4T__"
 #else
 #if TARGET_CPU_DEFAULT == TARGET_CPU_arm8 || TARGET_CPU_DEFAULT == TARGET_CPU_arm810 || TARGET_CPU_DEFAULT == TARGET_CPU_strongarm
@@ -2074,8 +2074,8 @@ do {									\
 /* Prototypes for arm.c -- actually, they aren't since the types aren't 
    fully defined yet.  */
 
-void arm_override_options (/* void */);
-int use_return_insn (/* int */);
+void arm_override_options PROTO ((void));
+int use_return_insn PROTO ((int));
 int const_ok_for_arm (/* HOST_WIDE_INT */);
 int const_ok_for_op (/* HOST_WIDE_INT, enum rtx_code, 
 			enum machine_mode */);
