@@ -211,6 +211,8 @@ in the following sections.
 @emph{SPARC Options}
 -mcpu=@var{cpu  type}
 -mtune=@var{cpu  type}
+-malign-jumps=@var{num}  -malign-loops=@var{num}
+-malign-functions=@var{num}
 -mapp-regs  -mbroken-saverestore  -mcypress  -mepilogue
 -mflat  -mfpu  -mfullany  -mhard-float  -mhard-quad-float
 -mimpure-text  -mint32  -mint64  -mlive-g0
@@ -3053,6 +3055,19 @@ Set the instruction scheduling parameters for machine type
 @samp{-mcpu=}@var{cpu_type} would.  The same values for
 @samp{-mcpu=}@var{cpu_type} are used for @samp{-tune=}@var{cpu_type}.
 
+@item -malign-loops=@var{num}
+Align loops to a 2 raised to a @var{num} byte boundary.  If
+@samp{-malign-loops} is not specified, the default is 2.
+
+@item -malign-jumps=@var{num}
+Align instructions that are only jumped to to a 2 raised to a @var{num}
+byte boundary.  If @samp{-malign-jumps} is not specified, the default is 2.
+
+@item -malign-functions=@var{num}
+Align the start of functions to a 2 raised to @var{num} byte boundary.
+If @samp{-malign-functions} is not specified, the default is 2 if compiling
+for 32 bit sparc, and 5 if compiling for 64 bit sparc.
+
 @end table
 
 These @samp{-m} switches are supported in addition to the above
@@ -4484,7 +4499,7 @@ byte boundary.  If @samp{-malign-jumps} is not specified, the default is
 
 @item -malign-functions=@var{num}
 Align the start of functions to a 2 raised to @var{num} byte boundary.
-If @samp{-malign-jumps} is not specified, the default is 2 if optimizing
+If @samp{-malign-functions} is not specified, the default is 2 if optimizing
 for a 386, and 4 if optimizing for a 486.
 @end table
 
