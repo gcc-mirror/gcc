@@ -714,9 +714,9 @@ fix = {
 fix = {
     hackname  = alpha_pthread_init;
     files     = pthread.h;
-    select    = ' \* @\(#\)\$' 'RCSfile: pthread\.h,v \$'
-                ' \$'  'Revision: 1\.1\.33\.21 \$ \(DEC\)'
-                ' \$'  'Date: 2000/08/15 15:30:13 \$';
+    select    = ' \* @\(#\).RCSfile: pthread\.h,v \$'
+                ' .Revision: 1\.1\.33\.21 \$ \(DEC\)'
+                ' .Date: 2000/08/15 15:30:13 \$';
     mach      = "alpha*-dec-osf*";
     sed       = "s@MVALID\\(.*\\)A}@MVALID\\1A, 0, 0, 0, 0, 0, 0 }@\n"
                 "s@MVALID\\(.*\\)_}@MVALID\\1_, 0, 0, 0, 0 }@\n"
@@ -725,9 +725,9 @@ fix = {
                 "s@WVALID\\(.*\\)A}@WVALID\\1A, 0, 0, 0, 0, 0, 0, 0, 0, 0 }@\n"
                 "s@WVALID\\(.*\\)_}@WVALID\\1_, 0, 0, 0, 0, 0, 0, 0 }@\n";
     test_text = "/*\n"
-                " * @(#)\\$"  "RCSfile: pthread.h,v \\$ \\$"
-                "Revision: 1.1.33.21 \\$ (DEC) \\$"
-                "Date: 2000/08/15 15:30:13 \\$\n"
+                " * @(#)_RCSfile: pthread.h,v \\$ "
+                "_Revision: 1.1.33.21 \\$ (DEC) "
+                "_Date: 2000/08/15 15:30:13 \\$\n"
                 " */\n"
 "#ifndef _PTHREAD_NOMETER_STATIC\n"
 "# define PTHREAD_MUTEX_INITIALIZER \\\n"

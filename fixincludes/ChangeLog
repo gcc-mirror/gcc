@@ -1,4 +1,11 @@
 2004-11-20  Roger Sayle  <roger@eyesopen.com>
+
+	* inclhack.def (alpha_pthread_init): Fix technical problems with
+	the last check-in caused by CVS variable substitution.
+	* fixincl.x: Likewise.
+	* tests/base/pthread.h: Likewise.
+
+2004-11-20  Roger Sayle  <roger@eyesopen.com>
 	    Bruce Korb  <bkorb@gnu.org>
 
 	* inclhack.def (alpha_pthread_init): New fix.
