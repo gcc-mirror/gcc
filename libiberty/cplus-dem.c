@@ -52,6 +52,8 @@ char * realloc ();
 
 #include "libiberty.h"
 
+static char *ada_demangle  PARAMS ((const char*, int));
+
 #define min(X,Y) (((X) < (Y)) ? (X) : (Y))
 
 /* A value at least one greater than the maximum number of characters
@@ -295,6 +297,18 @@ struct demangler_engine libiberty_demanglers[] =
     GNU_NEW_ABI_DEMANGLING_STYLE_STRING,
     gnu_new_abi_demangling,
     "GNU (g++) new-ABI-style demangling"
+  }
+  ,
+  {
+    JAVA_DEMANGLING_STYLE_STRING,
+    java_demangling,
+    "Java style demangling"
+  }
+  ,
+  {
+    GNAT_DEMANGLING_STYLE_STRING,
+    gnat_demangling,
+    "GNAT style demangling"
   }
   ,
   {
@@ -900,11 +914,145 @@ cplus_demangle (mangled, options)
   if (GNU_NEW_ABI_DEMANGLING)
     return cplus_demangle_new_abi (mangled);
 
+  if (GNAT_DEMANGLING)
+    return ada_demangle(mangled,options);
+
   ret = internal_cplus_demangle (work, mangled);
   squangle_mop_up (work);
   return (ret);
 }
 
+
+/* Assuming *OLD_VECT points to an array of *SIZE objects of size
+   ELEMENT_SIZE, grow it to contain at least MIN_SIZE objects,
+   updating *OLD_VECT and *SIZE as necessary. */
+static void
+DEFUN (grow_vect, (old_vect, size, min_size, element_size),
+       void** old_vect
+       AND size_t* size
+       AND size_t min_size
+       AND int element_size)
+{
+  if (*size < min_size) {
+    *size *= 2;
+    if (*size < min_size)
+      *size = min_size;
+    *old_vect = xrealloc (*old_vect, *size * element_size);
+  }
+}
+
+/* Demangle ada names:
+   1. Discard final __{DIGIT}+ or ${DIGIT}+
+   2. Convert other instances of embedded "__" to `.'.
+   3. Discard leading _ada_.
+   4. Remove everything after first ___ if it is followed by
+   'X'.
+   5. Put symbols that should be suppressed in <...> brackets.
+   The resulting string is valid until the next call of ada_demangle.
+*/
+static char *
+DEFUN (ada_demangle, (mangled, style, option),
+       const char* mangled
+       AND int option ATTRIBUTE_UNUSED)
+{
+  int i, j;
+  int len0;
+  const char* p;
+  char* demangled = NULL;
+  int at_start_name;
+  int changed;
+  char* demangling_buffer = NULL;
+  size_t demangling_buffer_size = 0;
+  
+  changed = 0;
+
+  if (strncmp (mangled, "_ada_", 5) == 0)
+    {
+      mangled += 5;
+      changed = 1;
+    }
+  
+  if (mangled[0] == '_' || mangled[0] == '<')
+    goto Suppress;
+  
+  p = strstr (mangled, "___");
+  if (p == NULL)
+    len0 = strlen (mangled);
+  else
+    {
+      if (p[3] == 'X')
+	{
+	  len0 = p - mangled;
+	  changed = 1;
+	}
+      else
+	goto Suppress;
+    }
+  
+  /* Make demangled big enough for possible expansion by operator name. */
+  grow_vect ((void**) &(demangling_buffer),
+	     &demangling_buffer_size,  2 * len0 + 1,
+	     sizeof (char));
+  demangled = demangling_buffer;
+  
+  if (isdigit (mangled[len0 - 1])) {
+    for (i = len0-2; i >= 0 && isdigit (mangled[i]); i -= 1)
+      ;
+    if (i > 1 && mangled[i] == '_' && mangled[i-1] == '_')
+      {
+	len0 = i - 1;
+	changed = 1;
+      }
+    else if (mangled[i] == '$')
+      {
+	len0 = i;
+	changed = 1;
+      }
+  }
+  
+  for (i = 0, j = 0; i < len0 && ! isalpha (mangled[i]); i += 1, j += 1)
+    demangled[j] = mangled[i];
+  
+  at_start_name = 1;
+  while (i < len0)
+    {
+      at_start_name = 0;
+      
+      if (i < len0-2 && mangled[i] == '_' && mangled[i+1] == '_')
+	{
+	  demangled[j] = '.';
+	  changed = at_start_name = 1;
+	  i += 2; j += 1;
+	}
+      else
+	{
+	  demangled[j] = mangled[i];
+	  i += 1;  j += 1;
+	}
+    }
+  demangled[j] = '\000';
+  
+  for (i = 0; demangled[i] != '\0'; i += 1)
+    if (isupper (demangled[i]) || demangled[i] == ' ')
+      goto Suppress;
+
+  if (! changed)
+    return NULL;
+  else
+    return demangled;
+  
+ Suppress:
+  grow_vect ((void**) &(demangling_buffer),
+	     &demangling_buffer_size,  strlen (mangled) + 3,
+	     sizeof (char));
+  demangled = demangling_buffer;
+  if (mangled[0] == '<')
+     strcpy (demangled, mangled);
+  else
+    sprintf (demangled, "<%s>", mangled);
+
+  return demangled;
+}
 
 /* This function performs most of what cplus_demangle use to do, but
    to be able to demangle a name with a B, K or n code, we need to

@@ -1,3 +1,8 @@
+2000-11-15  Kenneth Block <kenneth.block@compaq.com>
+
+	* cplus_dem.c: Add gnat demangler.  Add java to demangle style
+	list.
+
 2000-11-04  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* hashtab.c (htab_expand): Change to return int.  Use calloc or
