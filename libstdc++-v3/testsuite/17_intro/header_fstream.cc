@@ -21,7 +21,7 @@
 // 17.4.1.2 Headers, fstream
 
 #include <fstream>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 
 int main(void)

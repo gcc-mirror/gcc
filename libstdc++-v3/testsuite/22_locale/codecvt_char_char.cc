@@ -21,7 +21,7 @@
 // 22.2.1.5 - Template class codecvt [lib.locale.codecvt]
 
 #include <locale>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 // Required instantiation, degenerate conversion.
 // codecvt<char, char, mbstate_t>

@@ -28,7 +28,7 @@
 #include <sstream>
 #include <iostream>
 
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 // N.B. Once we have called sync_with_stdio(false), we can never go back.
 

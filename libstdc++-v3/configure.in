@@ -58,7 +58,7 @@ AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 GLIBCPP_CHECK_GNU_MAKE
 
-AM_CONFIG_HEADER(config.h)
+AM_CONFIG_HEADER(config.h testsuite/testsuite_hooks.h)
 
 # Check for c++ or library specific bits that don't require linking.
 GLIBCPP_CHECK_COMPILER_VERSION
@@ -221,6 +221,10 @@ else
 
   AC_FUNC_MMAP
 fi
+
+# Enable/configure some pieces which may require knowledge about the
+# compiler situation (native/cross), which we just finished discovering.
+GLIBCPP_CONFIGURE_TESTSUITE
 
 # Propagate the target-specific source directories through the build chain.
 OS_INC_SRCDIR=$os_include_dir/bits

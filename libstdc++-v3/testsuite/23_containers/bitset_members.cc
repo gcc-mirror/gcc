@@ -21,7 +21,7 @@
 // 23.3.5.2 bitset members
 
 #include <bitset>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 bool test01(void)
 {

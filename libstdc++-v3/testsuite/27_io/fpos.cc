@@ -31,7 +31,7 @@
 
 #include <cwchar> // for mbstate_t
 #include <ios>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 void test01()
 {

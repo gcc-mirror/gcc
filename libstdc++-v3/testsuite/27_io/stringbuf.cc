@@ -19,7 +19,7 @@
 // USA.
 
 #include <sstream>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 std::string str_01("mykonos. . . or what?");
 std::string str_02("paris, or sainte-maxime?");

@@ -19,7 +19,7 @@
 // 25.3.1 algorithms, sort()
 
 #include <algorithm>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 bool test = true;
 

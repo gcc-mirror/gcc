@@ -681,6 +681,9 @@
 /* Define if you have the <sys/machine.h> header file.  */
 #undef HAVE_SYS_MACHINE_H
 
+/* Define if you have the <sys/resource.h> header file.  */
+#undef HAVE_SYS_RESOURCE_H
+
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
 
@@ -701,6 +704,18 @@
 
 /* Define if sigsetjmp is available.   */
 #undef HAVE_SIGSETJMP
+
+/* Only used in build directory testsuite_hooks.h. */
+#undef HAVE_MEMLIMIT_DATA
+
+/* Only used in build directory testsuite_hooks.h. */
+#undef HAVE_MEMLIMIT_RSS
+
+/* Only used in build directory testsuite_hooks.h. */
+#undef HAVE_MEMLIMIT_VMEM
+
+/* Only used in build directory testsuite_hooks.h. */
+#undef HAVE_MEMLIMIT_AS
 
 //
 // Systems that have certain non-standard functions prefixed with an

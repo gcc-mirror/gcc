@@ -31,7 +31,7 @@
 
 #include <fstream>
 #include <iostream>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 class gnu_filebuf: public std::filebuf
 {

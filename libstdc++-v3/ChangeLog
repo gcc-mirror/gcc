@@ -1,3 +1,126 @@
+2001-08-06  Phil Edwards  <pme@sources.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CONFIGURE_TESTSUITE):  New macro, calls...
+	(GLIBCPP_CHECK_SETRLIMIT):  ...this new macro, which also uses...
+	(GLIBCPP_CHECK_SETRLIMIT_ancilliary):  ...this new macro.
+	* configure.in (AM_CONFIG_HEADER):  Also generate testsuite_hooks.h.
+	Call GLIBCPP_CONFIGURE_TESTSUITE.
+	* aclocal.m4:  Regenerate.
+	* config.h.in:  Regenerate.
+	* configure:  Regenerate.
+
+	* testsuite/lib/libstdc++-v3-dg.exp:  Download new header instead
+	of old header.
+
+	* testsuite_flags.in:  Add build dir's testsuite to INCLUDES.
+	* testsuite/debug_assert.h:  Removed; contents merged into...
+	* testsuite/testsuite_hooks.h.in:  ...here.  New file.
+	* testsuite/17_intro/header_ciso646.cc:  No longer include
+	debug_assert.h, include testsuite_hooks.h instead.
+	* testsuite/17_intro/header_fstream.cc:  Likewise.
+	* testsuite/17_intro/header_iomanip.cc:  Likewise.
+	* testsuite/17_intro/header_ios.cc:  Likewise.
+	* testsuite/17_intro/header_iosfwd.cc:  Likewise.
+	* testsuite/17_intro/header_iostream.cc:  Likewise.
+	* testsuite/17_intro/header_istream.cc:  Likewise.
+	* testsuite/17_intro/header_ostream.cc:  Likewise.
+	* testsuite/17_intro/header_sstream.cc:  Likewise.
+	* testsuite/17_intro/header_streambuf.cc:  Likewise.
+	* testsuite/18_support/numeric_limits.cc:  Likewise.
+	* testsuite/19_diagnostics/stdexceptions.cc:  Likewise.
+	* testsuite/20_util/allocator_members.cc:  Likewise.
+	* testsuite/20_util/auto_ptr.cc:  Likewise.
+	* testsuite/20_util/pairs.cc:  Likewise.
+	* testsuite/21_strings/append.cc:  Likewise.
+	* testsuite/21_strings/capacity.cc:  Likewise.
+	* testsuite/21_strings/char_traits_requirements.cc:  Likewise.
+	* testsuite/21_strings/compare.cc:  Likewise.
+	* testsuite/21_strings/ctor_copy_dtor.cc:  Likewise.  Also set up
+	call to (disabled) __set_testsuite_memlimit() wrapper.
+	* testsuite/21_strings/element_access.cc:  Likewise.
+	* testsuite/21_strings/find.cc:  Likewise.
+	* testsuite/21_strings/insert.cc:  Likewise.  Also set up call to
+	(disabled) __set_testsuite_memlimit() wrapper.
+	* testsuite/21_strings/inserters_extractors.cc:  Likewise.
+	* testsuite/21_strings/invariants.cc:  Likewise.
+	* testsuite/21_strings/nonmember.cc:  Likewise.
+	* testsuite/21_strings/operations.cc:  Likewise.
+	* testsuite/21_strings/replace.cc:  Likewise.
+	* testsuite/21_strings/rfind.cc:  Likewise.
+	* testsuite/21_strings/substr.cc:  Likewise.
+	* testsuite/22_locale/codecvt_char_char.cc:  Likewise.
+	* testsuite/22_locale/codecvt_unicode_char.cc:  Likewise.
+	* testsuite/22_locale/codecvt_unicode_wchar_t.cc:  Likewise.
+	* testsuite/22_locale/codecvt_wchar_t_char.cc:  Likewise.
+	* testsuite/22_locale/ctor_copy_dtor.cc:  Likewise.
+	* testsuite/22_locale/ctype_char_members.cc:  Likewise.
+	* testsuite/22_locale/ctype_wchar_t_members.cc:  Likewise.
+	* testsuite/22_locale/facet.cc:  Likewise.
+	* testsuite/22_locale/global_templates.cc:  Likewise.
+	* testsuite/22_locale/members.cc:  Likewise.
+	* testsuite/22_locale/numpunct_byname.cc:  Likewise.
+	* testsuite/22_locale/numpunct_char_members.cc:  Likewise.
+	* testsuite/22_locale/operators.cc:  Likewise.
+	* testsuite/22_locale/static_members.cc:  Likewise.
+	* testsuite/23_containers/bitset_ctor.cc:  Likewise.
+	* testsuite/23_containers/bitset_members.cc:  Likewise.
+	* testsuite/23_containers/bitset_shift.cc:  Likewise.
+	* testsuite/23_containers/vector_capacity.cc:  Likewise.
+	* testsuite/23_containers/vector_ctor.cc:  Likewise.
+	* testsuite/23_containers/vector_element_access.cc:  Likewise.
+	* testsuite/23_containers/vector_modifiers.cc:  Likewise.
+	* testsuite/24_iterators/istreambuf_iterator.cc:  Likewise.
+	* testsuite/24_iterators/iterator.cc:  Likewise.
+	* testsuite/24_iterators/ostreambuf_iterator.cc:  Likewise.
+	* testsuite/25_algorithms/binary_search.cc:  Likewise.
+	* testsuite/25_algorithms/copy.cc:  Likewise.
+	* testsuite/25_algorithms/heap.cc:  Likewise.
+	* testsuite/25_algorithms/lower_bound.cc:  Likewise.
+	* testsuite/25_algorithms/min_max.cc:  Likewise.
+	* testsuite/25_algorithms/partition.cc:  Likewise.
+	* testsuite/25_algorithms/rotate.cc:  Likewise.
+	* testsuite/25_algorithms/sort.cc:  Likewise.
+	* testsuite/26_numerics/c_math.cc:  Likewise.
+	* testsuite/26_numerics/complex_inserters_extractors.cc:  Likewise.
+	* testsuite/26_numerics/complex_value.cc:  Likewise.
+	* testsuite/27_io/filebuf.cc:  Likewise.
+	* testsuite/27_io/filebuf_members.cc:  Likewise.
+	* testsuite/27_io/filebuf_virtuals.cc:  Likewise.
+	* testsuite/27_io/fpos.cc:  Likewise.
+	* testsuite/27_io/fstream_members.cc:  Likewise.
+	* testsuite/27_io/ifstream_members.cc:  Likewise.
+	* testsuite/27_io/ios_base_callbacks.cc:  Likewise.
+	* testsuite/27_io/ios_base_members_static.cc:  Likewise.
+	* testsuite/27_io/ios_base_storage.cc:  Likewise.
+	* testsuite/27_io/ios_ctor.cc:  Likewise.
+	* testsuite/27_io/ios_init.cc:  Likewise.
+	* testsuite/27_io/ios_manip_basefield.cc:  Likewise.
+	* testsuite/27_io/ios_manip_fmtflags.cc:  Likewise.
+	* testsuite/27_io/ios_members.cc:  Likewise.
+	* testsuite/27_io/istream_extractor_arith.cc:  Likewise.
+	* testsuite/27_io/istream_extractor_char.cc:  Likewise.
+	* testsuite/27_io/istream_extractor_other.cc:  Likewise.
+	* testsuite/27_io/istream_manip.cc:  Likewise.
+	* testsuite/27_io/istream_seeks.cc:  Likewise.
+	* testsuite/27_io/istream_sentry.cc:  Likewise.
+	* testsuite/27_io/istream_unformatted.cc:  Likewise.
+	* testsuite/27_io/istringstream_members.cc:  Likewise.
+	* testsuite/27_io/narrow_stream_objects.cc:  Likewise.
+	* testsuite/27_io/ofstream_members.cc:  Likewise.
+	* testsuite/27_io/ostream_inserter_arith.cc:  Likewise.
+	* testsuite/27_io/ostream_inserter_char.cc:  Likewise.
+	* testsuite/27_io/ostream_inserter_other.cc:  Likewise.
+	* testsuite/27_io/ostream_manip.cc:  Likewise.
+	* testsuite/27_io/ostream_seeks.cc:  Likewise.
+	* testsuite/27_io/ostream_unformatted.cc:  Likewise.
+	* testsuite/27_io/ostringstream_members.cc:  Likewise.
+	* testsuite/27_io/streambuf.cc:  Likewise.
+	* testsuite/27_io/stringbuf.cc:  Likewise.
+	* testsuite/27_io/stringbuf_virtuals.cc:  Likewise.
+	* testsuite/27_io/stringstream.cc:  Likewise.
+	* testsuite/27_io/stringstream_members.cc:  Likewise.
+	* testsuite/27_io/wide_stream_objects.cc:  Likewise.
+
 2001-07-31  Loren J. Rittle  <ljrittle@acm.org>
 
         * src/gen-num-limits.cc:  Use __LONG_LONG_MAX__.

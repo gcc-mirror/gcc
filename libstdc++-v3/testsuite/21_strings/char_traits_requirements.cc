@@ -21,7 +21,7 @@
 // 21.1.1 Characher traits requirements
 
 #include <string>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 int test01(void)
 {
