@@ -1,6 +1,5 @@
-/* -*-c-*- */
-
-/* Copyright (C) 1989, 1992 Free Software Foundation, Inc.
+/* Basic data types for Objective C.
+   Copyright (C) 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -23,68 +22,19 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    the resulting executable to be covered by the GNU General Public License.
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
-
-/* 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/objc.h,v 0.11 1992/04/13 11:40:53 dennisg Exp dennisg $
-  $Author: dennisg $
-  $Date: 1992/04/13 11:40:53 $
-  $Log: objc.h,v $
- * Revision 0.11  1992/04/13  11:40:53  dennisg
- * Check in after array version of run-time works.
- * Expect more changes as hash version and other changes are made.
- *
- * Revision 0.10  1991/12/31  20:16:08  dennisg
- * Deleted index variable stuff.  Index variables are a hack to the language.
- * Cleaned up some documentation.
- *
- * Revision 0.9  1991/12/10  12:04:22  dennisg
- * Cleaned up file format for a distribution.
- *
- * Revision 0.8  1991/12/01  01:29:29  dennisg
- * modified to remove changes previously made to
- * implement posing.  posing just got easy.
- *
- * Revision 0.7  1991/11/29  22:00:10  dennisg
- * modified to implement set functions.
- *
- * Revision 0.6  1991/11/29  20:02:01  dennisg
- * fixed several const decls.  bozo.
- *
- * Revision 0.5  1991/11/29  00:24:14  dennisg
- * many changes including posing, things to make the compiler
- * happier, structure changes, and things to make it play better.
- *
- * Revision 0.4  1991/11/19  12:37:49  dennisg
- * changed typedef and struct decls.
- * the run-time was changed and those decls changed too.
- *
- * Revision 0.3  1991/11/16  15:57:35  dennisg
- * changed the defs for class structures for new implementation of run-time.
- * changed def of SEL back to its original type.
- *
- * Revision 0.2  1991/11/07  22:31:42  dennisg
- * added copyleft.
- *
- * Revision 0.1  1991/10/24  00:19:24  dennisg
- * Initial check in.  Preliminary development stage.
- *
-*/
  
 
-#ifndef _objc_INCLUDE_GNU
-#define _objc_INCLUDE_GNU
+#ifndef __objc_INCLUDE_GNU
+#define __objc_INCLUDE_GNU
 
-                                                /* If someone is using a c++
-                                                  compiler then adjust the 
-                                                  types in the file back 
-                                                  to C. */
+/* If someone is using a c++ compiler then adjust the types in the
+   file back to C.  */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include  <sys/types.h>
-#include  <record-inline.h>
-#include  <stdarg.h>
+#include  "record.h"
+#include  "gstdarg.h"
 
 
 #define nil (id)0                               /* id of Nil instance */
@@ -96,36 +46,26 @@ typedef char  BOOL;
 #define YES   (BOOL)1
 #define NO    (BOOL)0
 
-                                                /* Definition of a 
-                                                  selector.  Selectors are 
-                                                  really of type char*. The
-                                                  run-time hashes the 
-                                                  string's address to locate
-                                                  the method.  If the method
-                                                  isn't in the hash table then
-                                                  a search is made through the 
-                                                  class hierarchy using 
-                                                  strcmp() to locate the
-                                                  method. */
+/* Definition of a selector.  Selectors are really of type char*. The
+   run-time hashes the string's address to locate the method.  If the
+   method isn't in the hash table then a search is made through the
+   class hierarchy using strcmp to locate the method.  */
 #if 0
 typedef struct objc_selector*   SEL;
 #else
 typedef void* SEL;
 #endif
 
-                                                /* ObjC uses this typedef 
-                                                  for untyped instances. */
+/* ObjC uses this typedef for untyped instances.  */
+
 typedef struct objc_object {
-  struct objc_class*  isa;
+  struct objc_class*  class_pointer;
 } *id;
 
-                                                /* Prototype for method 
-                                                  functions. */
-typedef id  ( *IMP )( id, SEL, ... ); 
+/* Prototype for method functions. */
+typedef id  (*IMP)(id, SEL, ...); 
 
-                                                /* Filer types used to 
-                                                  describe Ivars and 
-                                                  Methods. */
+/* Filer types used to describe Ivars and Methods.  */
 #define _C_ID       '@'
 #define _C_CLASS    '#'
 #define _C_SEL      ':'
@@ -151,10 +91,8 @@ typedef id  ( *IMP )( id, SEL, ... );
 #define _C_STRUCT_B '{'
 #define _C_STRUCT_E '}'
 
-/*
- * These definitions are masks used with the "info" member variable in the
- * class and meta class structures. 
- */
+/* These definitions are masks used with the "info" member variable in
+   the lass and meta class structures.  */
 #define CLS_CLASS         0x1L                  /* The structure is of type
                                                   class (Class_t). */
 #define CLS_META          0x2L                  /* The structure is of type
@@ -167,10 +105,9 @@ typedef id  ( *IMP )( id, SEL, ... );
 #define CLS_RTI           0x8L                  /* The class has been initialized
 						   within the run time library. */
 
-                                                /* Set this variable to !0 to
-                                                  have the messager print
-                                                  messaging operations. */
-  extern BOOL objc_trace;
+/* Set this variable nonzero to print a line describing each
+   message that is sent.  */
+extern BOOL objc_trace;
 
 
 /*
@@ -182,11 +119,11 @@ typedef id  ( *IMP )( id, SEL, ... );
  * categories  defined in the module. 
  */
 typedef struct objc_symtab {
-  u_long    sel_ref_cnt;                        /* Unknown. */
+  unsigned long sel_ref_cnt;                     /* Unknown. */
   SEL       *refs;                              /* Unknown. */
-  u_short   cls_def_cnt;                        /* Number of classes compiled
+  unsigned short cls_def_cnt;                   /* Number of classes compiled
                                                   (defined) in the module. */
-  u_short   cat_def_cnt;                        /* Number of categories 
+  unsigned short cat_def_cnt;                   /* Number of categories 
                                                   compiled (defined) in the 
                                                   module. */
   void      *defs[1];                           /* Variable array of pointers.
@@ -206,8 +143,8 @@ typedef struct objc_symtab {
  * That array holds a pointer to each module structure of the executable. 
  */
 typedef struct objc_module {
-  u_long      version;                          /* Compiler revision. */
-  u_long      size;                             /* sizeof(Module). */
+  unsigned long version;                        /* Compiler revision. */
+  unsigned long size;                           /* sizeof(Module). */
   const char* name;                             /* Name of the file where the 
                                                   module was generated.   The 
                                                   name includes the path. */
@@ -266,9 +203,9 @@ typedef struct objc_method_list {
     SEL         method_name;                  /* This variable is the method's 
                                                 name.  It is a char*. 
                                                   The unique integer passed to 
-                                                objc_msgSend() is a char* too.  
+                                                objc_msgSend is a char* too.  
                                                 It is compared against 
-                                                method_name using strcmp(). */
+                                                method_name using strcmp. */
     const char* method_types;                 /* Description of the method's
                                                 parameter list.  Useful for
                                                 debuggers. */
@@ -289,11 +226,10 @@ typedef struct objc_method_list {
  * This structure is generated by the compiler in the executable and used by
  * the run-time during normal messaging operations.  Therefore some members
  * change type. The compiler generates "char* const" and places a string in
- * the following member variables:  isa and super_class. 
+ * the following member variables:  class_pointer and super_class. 
  */
 typedef struct objc_metaClass {     
-  struct objc_metaClass*  isa;                /* Pointer to Object meta
-                                                class. */
+  struct objc_metaClass*  class_pointer;      /* Pointer to Object meta class. */
   struct objc_metaClass*  super_class;        /* Pointer to meta class's
                                                 super class. NULL for 
                                                 Object. */
@@ -307,8 +243,7 @@ typedef struct objc_metaClass {
                                                 Object.  Should be ignored. */
   MethodList_t            methods;            /* Linked List of factory methods 
                                                 for the class. */
-  Record_t*               cache;              /* Pointer to factory method
-																								dispatch table. */
+  struct record **        cache;              /* Pointer to factory method dispatch table. */
 } MetaClass, *MetaClass_t;
 
 
@@ -323,7 +258,7 @@ typedef struct objc_metaClass {
  * the following member variables:  super_class. 
  */
 typedef struct objc_class {     
-  MetaClass_t         isa;                    /* Pointer to the class's
+  MetaClass_t         class_pointer;          /* Pointer to the class's
                                                 meta class. */
   struct objc_class*  super_class;            /* Pointer to the super 
                                                 class. NULL for class 
@@ -346,8 +281,7 @@ typedef struct objc_class {
   MethodList_t        methods;                /* Linked list of instance
                                                 methods defined for the 
                                                 class. */
-  Record_t*           cache;                  /* Pointer to instance method 
-																								dispatch table. */
+  struct record **    cache;                  /* Pointer to instance method dispatch table. */
 } Class, *Class_t;
 
 
@@ -375,7 +309,7 @@ typedef struct objc_category {
 /*
  * Structure used when a message is send to a class's super class.  The
  * compiler generates one of these structures and passes it to
- * objc_msgSuper(). 
+ * objc_msgSuper. 
  */
 typedef struct objc_super {
   id      receiver;                           /* Id of the object sending
@@ -384,33 +318,33 @@ typedef struct objc_super {
 } Super, *Super_t;
 
 /*
- * _alloc points to the function, called through class_createInstance(), used
+ * _alloc points to the function, called through class_createInstance, used
  * to allocate memory for new instances. 
  */
-extern id (*_alloc)(Class_t aClass);
+extern id (*_alloc)(Class_t);
 /*
- * _dealloc points to the function, called through object_dispose(), used to
+ * _dealloc points to the function, called through object_dispose, used to
  * free instances. 
  */
-extern id (*_dealloc)(id aObject);
+extern id (*_dealloc)(id);
 /*
- * _realloc points to the function, called through object_realloc(), used to
+ * _realloc points to the function, called through object_realloc, used to
  * reallocate memory for an object 
  */
-extern id (*_realloc)(id aObject, u_int newSize);
+extern id (*_realloc)(id, unsigned int);
 
 /*
- * _copy points to the function, called through object_copy(), used to create
+ * _copy points to the function, called through object_copy, used to create
  * an exact copy of an object. 
  */
-extern  id (*_copy)(id aObject);
+extern  id (*_copy)(id);
 
 /*
  * _error points to the function that the run-time system calls in response
  * to an error.  By default, it prints formatted error messages to the
- * standard error stream and calls abort() to produce a core file. 
+ * standard error stream and calls abort to produce a core file. 
  */
-extern void (*_error)(id aObject, const char* fmt, va_list ap);
+extern void (*_error)(id object, const char *fmt, va_list ap);
 
 
 #ifdef __cplusplus
@@ -418,4 +352,4 @@ extern void (*_error)(id aObject, const char* fmt, va_list ap);
 #endif
 
 
-#endif
+#endif /* not __objc_INCLUDE_GNU */
