@@ -24,6 +24,15 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Routines declared in gcov-io.h.  This file should be #included by
    another source file, after having #included gcov-io.h.  */
 
+#if !IN_GCOV
+static void gcov_write_block (unsigned);
+static unsigned char *gcov_write_bytes (unsigned);
+#endif
+static const unsigned char *gcov_read_bytes (unsigned);
+#if !IN_LIBGCOV
+static void gcov_allocate (unsigned);
+#endif
+
 /* Open a gcov file. NAME is the name of the file to open and MODE
    indicates whether a new file should be created, or an existing file
    opened for modification. If MODE is >= 0 an existing file will be
@@ -36,7 +45,6 @@ GCOV_LINKAGE int
 gcov_open (const char *name, int mode)
 {
   int result = 1;
-  size_t alloc = 1024;
 #if GCOV_LOCKED
   struct flock s_flock;
 
@@ -49,63 +57,32 @@ gcov_open (const char *name, int mode)
   
   if (gcov_var.file)
     abort ();
-  gcov_var.position = gcov_var.length = 0;
-  gcov_var.error = gcov_var.modified = 0;
+  gcov_var.start = 0;
+  gcov_var.offset = gcov_var.length = 0;
+  gcov_var.overread = -4u;
+  gcov_var.error = 0;
   if (mode >= 0)
     gcov_var.file = fopen (name, "r+b");
-  if (!gcov_var.file && mode <= 0)
+  if (gcov_var.file)
+    gcov_var.mode = 1;
+  else if (mode <= 0)
     {
       result = -1;
       gcov_var.file = fopen (name, "w+b");
+      if (gcov_var.file)
+	gcov_var.mode = -1;
     }
   if (!gcov_var.file)
     return 0;
 
+  setbuf (gcov_var.file, (char *)0);
+  
 #if GCOV_LOCKED
   while (fcntl (fileno (gcov_var.file), F_SETLKW, &s_flock)
 	 && errno == EINTR)
     continue;
 #endif
 
-  if (result >= 0)
-    {
-      if (fseek (gcov_var.file, 0, SEEK_END))
-	{
-	  fclose (gcov_var.file);
-	  gcov_var.file = 0;
-	  return 0;
-	}
-      gcov_var.length = ftell (gcov_var.file);
-      fseek (gcov_var.file, 0, SEEK_SET);
-      alloc += gcov_var.length;
-    }
-  if (alloc > gcov_var.alloc)
-    {
-      if (gcov_var.buffer)
-	free (gcov_var.buffer);
-      gcov_var.alloc = alloc;
-#if IN_LIBGCOV
-      gcov_var.buffer = malloc (gcov_var.alloc);
-      if (!gcov_var.buffer)
-	{
-	  fclose (gcov_var.file);
-	  gcov_var.file = 0;
-	  gcov_var.length = 0;
-	  gcov_var.alloc = 0;
-	  return 0;
-	}
-#else
-      gcov_var.buffer = xmalloc (gcov_var.alloc);
-#endif
-    }
-  if (result >= 0
-      && fread (gcov_var.buffer, gcov_var.length, 1, gcov_var.file) != 1)
-    {
-      fclose (gcov_var.file);
-      gcov_var.file = 0;
-      gcov_var.length = 0;
-      return 0;
-    }
   return result;
 }
 
@@ -115,15 +92,12 @@ gcov_open (const char *name, int mode)
 GCOV_LINKAGE int
 gcov_close ()
 {
-  int result = 0;
-  
   if (gcov_var.file)
     {
-      if (gcov_var.modified
-	  && (fseek (gcov_var.file, 0, SEEK_SET)
-	      || fwrite (gcov_var.buffer, gcov_var.length,
-			 1, gcov_var.file) != 1))
-	result = 1;
+#if !IN_GCOV
+      if (gcov_var.offset && gcov_var.mode < 0)
+	gcov_write_block (gcov_var.offset);
+#endif
       fclose (gcov_var.file);
       gcov_var.file = 0;
       gcov_var.length = 0;
@@ -133,47 +107,64 @@ gcov_close ()
   gcov_var.alloc = 0;
   gcov_var.buffer = 0;
 #endif
-  return result ? 1 : gcov_var.error;
+  gcov_var.mode = 0;
+  return gcov_var.error;
 }
 
+#if !IN_LIBGCOV
+static void
+gcov_allocate (unsigned length)
+{
+  size_t new_size = gcov_var.alloc;
+  
+  if (!new_size)
+    new_size = GCOV_BLOCK_SIZE;
+  new_size += length;
+  new_size *= 2;
+  
+  gcov_var.alloc = new_size;
+  gcov_var.buffer = xrealloc (gcov_var.buffer, new_size);
+}
+#endif
+
 #if !IN_GCOV
+/* Write out the current block, if needs be.  */
+
+static void
+gcov_write_block (unsigned size)
+{
+  if (fwrite (gcov_var.buffer, size, 1, gcov_var.file) != 1)
+    gcov_var.error = 1;
+  gcov_var.start += size;
+  gcov_var.offset -= size;
+}
+
 /* Allocate space to write BYTES bytes to the gcov file. Return a
    pointer to those bytes, or NULL on failure.  */
 
-GCOV_LINKAGE unsigned char *
+static unsigned char *
 gcov_write_bytes (unsigned bytes)
 {
   char unsigned *result;
 
-  if (gcov_var.position + bytes > gcov_var.alloc)
-    {
-      size_t new_size = (gcov_var.alloc + bytes) * 3 / 2;
-
-      if (!gcov_var.buffer)
-	return 0;
+  GCOV_CHECK_WRITING ();
 #if IN_LIBGCOV
-      result = realloc (gcov_var.buffer, new_size);
-      if (!result)
+  if (gcov_var.offset >= GCOV_BLOCK_SIZE)
+    {
+      gcov_write_block (GCOV_BLOCK_SIZE);
+      if (gcov_var.offset)
 	{
-	  free (gcov_var.buffer);
-	  gcov_var.buffer = 0;
-	  gcov_var.alloc = 0;
-	  gcov_var.position = gcov_var.length = 0;
-	  gcov_var.error = 1;
-	  return 0;
+	  GCOV_CHECK (gcov_var.offset == 4);
+	  memcpy (gcov_var.buffer, gcov_var.buffer + GCOV_BLOCK_SIZE, 4);
 	}
-#else
-      result = xrealloc (gcov_var.buffer, new_size);
-#endif
-      gcov_var.alloc = new_size;
-      gcov_var.buffer = result;
     }
+#else
+  if (gcov_var.offset + bytes > gcov_var.alloc)
+    gcov_allocate (gcov_var.offset + bytes);
+#endif
+  result = &gcov_var.buffer[gcov_var.offset];
+  gcov_var.offset += bytes;
   
-  result = &gcov_var.buffer[gcov_var.position];
-  gcov_var.position += bytes;
-  gcov_var.modified = 1;
-  if (gcov_var.position > gcov_var.length)
-    gcov_var.length = gcov_var.position;
   return result;
 }
 
@@ -186,8 +177,6 @@ gcov_write_unsigned (gcov_unsigned_t value)
   unsigned char *buffer = gcov_write_bytes (4);
   unsigned ix;
 
-  if (!buffer)
-    return;
   for (ix = 4; ix--; )
     {
       buffer[ix] = value;
@@ -209,8 +198,6 @@ gcov_write_counter (gcov_type value)
   unsigned char *buffer = gcov_write_bytes (8);
   unsigned ix;
 
-  if (!buffer)
-    return;
   for (ix = 8; ix--; )
     {
       buffer[ix] = value;
@@ -233,6 +220,8 @@ gcov_write_string (const char *string)
   unsigned pad = 0;
   unsigned rem = 0;
   unsigned char *buffer;
+  unsigned ix;
+  unsigned value;
 
   if (string)
     {
@@ -241,19 +230,15 @@ gcov_write_string (const char *string)
     }
   
   buffer = gcov_write_bytes (4 + length + rem);
-  if (buffer)
+
+  value = length;
+  for (ix = 4; ix--; )
     {
-      unsigned ix;
-      unsigned value = length;
-      
-      for (ix = 4; ix--; )
-	{
-	  buffer[ix] = value;
-	  value >>= 8;
-	}
-      memcpy (buffer + 4, string, length);
-      memcpy (buffer + 4 + length, &pad, rem);
+      buffer[ix] = value;
+      value >>= 8;
     }
+  memcpy (buffer + 4, string, length);
+  memcpy (buffer + 4 + length, &pad, rem);
 }
 #endif
 
@@ -264,12 +249,10 @@ gcov_write_string (const char *string)
 GCOV_LINKAGE gcov_position_t
 gcov_write_tag (gcov_unsigned_t tag)
 {
-  gcov_position_t result = gcov_var.position;
+  gcov_position_t result = gcov_var.start + gcov_var.offset;
   unsigned char *buffer = gcov_write_bytes (8);
   unsigned ix;
 
-  if (!buffer)
-    return 0;
   for (ix = 4; ix--; )
     {
       buffer[ix] = tag;
@@ -287,18 +270,24 @@ gcov_write_tag (gcov_unsigned_t tag)
 GCOV_LINKAGE void
 gcov_write_length (gcov_position_t position)
 {
-  if (position)
+  unsigned offset;
+  gcov_unsigned_t length;
+  unsigned char *buffer;
+  unsigned ix;
+
+  GCOV_CHECK_WRITING ();
+  GCOV_CHECK (position + 8 <= gcov_var.start + gcov_var.offset);
+  GCOV_CHECK (position >= gcov_var.start);
+  offset = position - gcov_var.start;
+  length = gcov_var.offset - offset - 8;
+  buffer = &gcov_var.buffer[offset + 4];
+  for (ix = 4; ix--; )
     {
-      gcov_unsigned_t length = gcov_var.position - position - 8;
-      unsigned char *buffer = &gcov_var.buffer[position + 4];
-      unsigned ix;
-      
-      for (ix = 4; ix--; )
-	{
-	  buffer[ix] = length;
-	  length >>= 8;
-	}
+      buffer[ix] = length;
+      length >>= 8;
     }
+  if (gcov_var.offset >= GCOV_BLOCK_SIZE)
+    gcov_write_block (gcov_var.offset);
 }
 
 #else /* IN_LIBGCOV */
@@ -311,8 +300,6 @@ gcov_write_tag_length (gcov_unsigned_t tag, gcov_unsigned_t length)
   unsigned char *buffer = gcov_write_bytes (8);
   unsigned ix;
 
-  if (!buffer)
-    return;
   for (ix = 4; ix--; )
     {
       buffer[ix] = tag;
@@ -353,19 +340,47 @@ gcov_write_summary (gcov_unsigned_t tag, const struct gcov_summary *summary)
 /* Return a pointer to read BYTES bytes from the gcov file. Returns
    NULL on failure (read past EOF). */
 
-GCOV_LINKAGE const unsigned char *
+static const unsigned char *
 gcov_read_bytes (unsigned bytes)
 {
   const unsigned char *result;
+  unsigned excess = gcov_var.length - gcov_var.offset;
   
-  if (gcov_var.position + bytes > gcov_var.length)
+  GCOV_CHECK_READING ();
+  if (excess < bytes)
     {
-      gcov_var.error = 1;
-      return 0;
+      gcov_var.start += gcov_var.offset;
+#if IN_LIBGCOV
+      if (excess)
+	{
+	  GCOV_CHECK (excess == 4);
+	  memcpy (gcov_var.buffer, gcov_var.buffer + gcov_var.offset, 4);
+	}
+#else
+      memmove (gcov_var.buffer, gcov_var.buffer + gcov_var.offset, excess);
+#endif
+      gcov_var.offset = 0;
+      gcov_var.length = excess;
+#if IN_LIBGCOV
+      GCOV_CHECK (!gcov_var.length || gcov_var.length == 4);
+      excess = GCOV_BLOCK_SIZE;
+#else
+      if (gcov_var.length + bytes > gcov_var.alloc)
+	gcov_allocate (gcov_var.length + bytes);
+      excess = gcov_var.alloc - gcov_var.length;
+#endif
+      excess = fread (gcov_var.buffer + gcov_var.offset,
+		      1, excess, gcov_var.file);
+      gcov_var.length += excess;
+      if (gcov_var.length < bytes)
+	{
+	  gcov_var.overread += bytes - gcov_var.length;
+	  gcov_var.length = 0;
+	  return 0;
+	}
     }
-  
-  result = &gcov_var.buffer[gcov_var.position];
-  gcov_var.position += bytes;
+  result = &gcov_var.buffer[gcov_var.offset];
+  gcov_var.offset += bytes;
   return result;
 }
 
@@ -451,6 +466,41 @@ gcov_read_summary (struct gcov_summary *summary)
       csum->sum_max = gcov_read_counter ();
     }
 }
+
+#if !IN_LIBGCOV
+/* Reset to a known position.  BASE should have been obtained from
+   gcov_position, LENGTH should be a record length.  */
+
+GCOV_LINKAGE void
+gcov_sync (gcov_position_t base, gcov_unsigned_t length)
+{
+  GCOV_CHECK_READING ();
+  base += length;
+  if (base - gcov_var.start <= gcov_var.length)
+    gcov_var.offset = base - gcov_var.start;
+  else
+    {
+      gcov_var.offset = gcov_var.length = 0;
+      fseek (gcov_var.file, base, SEEK_SET);
+      gcov_var.start = ftell (gcov_var.file);
+    }
+}
+#endif
+
+#if IN_LIBGCOV
+/* Move to the a set position in a gcov file.  BASE is zero to move to
+   the end, and non-zero to move to that position. */
+
+GCOV_LINKAGE void
+gcov_seek (gcov_position_t base)
+{
+  GCOV_CHECK_WRITING ();
+  if (gcov_var.offset)
+    gcov_write_block (gcov_var.offset);
+  fseek (gcov_var.file, base, base ? SEEK_SET : SEEK_END);
+  gcov_var.start = ftell (gcov_var.file);
+}
+#endif
 
 #if IN_GCOV > 0
 /* Return the modification time of the current gcov file.  */

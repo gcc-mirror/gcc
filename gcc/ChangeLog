@@ -1,5 +1,34 @@
 2003-05-14  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* gcov-io.h (gcov_write_bytes, gcov_read_bytes): Remove here.
+	(GCOV_TAG_*) Force type to gcov_unsigned_t.
+	(GCOV_CHECK, GCOV_CHECK_READING, GCOV_CHECK_WRITING): New.
+	(struct gcov_var): Remove modified. Add start, length, offset,
+	overread. Have buffer array for libgcov.
+	(gcov_sync, gcov_seek): Definitions moved to gcov-io.c.
+	(gcov_position, gcov_rewrite, gcov_is_eof): Adjust.
+	* gcov-io.c (gcov_open): Set mode, do not read anything.
+	(gcov_close): Write final block.
+	 (gcov_write_block, gcov_allocate): New.
+	(gcov_write_bytes): Make static. Write or allocate buffer.
+	(gcov_write_unsigned, gcov_write_counter): Buffer can never be
+	null.
+	(gcov_write_string): Adjust.
+	(gcov_write_tag)
+	(gcov_write_length): Adjust. Flush the block.
+	(gcov_write_tag_length): Buffer can never be null.
+	(gcov_read_bytes): Make static. Read in block.
+	(gcov_sync): Moved here. Adjust.
+	(gcov_seek): Moved here. Adjust.
+	* coverage.c (read_counts_file): Adjust.
+	* gcov-dump.c (print_prefix): Add position parameter.
+	(flag_dump_positions): New flag.
+	(options, main, print_usage): Add it.
+	(dump_file, tag_blocks, tag_arcs, tag_lines, tag_counters,
+	tag_summary): Adjust.
+	* gcov.c (read_graph_file, read_count_file): Adjust.
+	* libgcov.c (gcov_exit): Adjust.
+
 	* Makefile.in (LIBGCC_DEPS): Use $(srcdir) on gcov files
 	(libgcov.a): Depend on libgcc.a.
 	(gcov.o, gcov-dump.o): Add gcov-io.c.

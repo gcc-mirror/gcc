@@ -152,10 +152,10 @@ gcov_exit (void)
       const struct gcov_ctr_info *ci_ptr;
       struct gcov_ctr_summary *cs_ptr;
       struct gcov_ctr_summary *cs_obj, *cs_tobj, *cs_prg, *cs_tprg, *cs_all;
-      int error;
+      int error = 0;
       int merging;
       gcov_unsigned_t tag, length;
-      gcov_position_t summary_pos = ~(gcov_position_t)0;
+      gcov_position_t summary_pos = 0;
 
       /* Totals for this object file.  */
       memset (&this_object, 0, sizeof (this_object));
@@ -256,12 +256,14 @@ gcov_exit (void)
 	    }
 
 	  /* Check program & object summary */
-	  while (!gcov_is_eof ())
+	  while (1)
 	    {
 	      gcov_position_t base = gcov_position ();
 	      int is_program;
 	      
 	      tag = gcov_read_unsigned ();
+	      if (!tag)
+		break;
 	      length = gcov_read_unsigned ();
 	      is_program = tag == GCOV_TAG_PROGRAM_SUMMARY;
 	      if (length != GCOV_TAG_SUMMARY_LENGTH
@@ -269,24 +271,26 @@ gcov_exit (void)
 		goto read_mismatch;
 	      gcov_read_summary (is_program ? &program : &object);
 	      if ((error = gcov_is_error ()))
+		goto read_error;
+	      if (is_program && program.checksum == gcov_crc32)
 		{
-		read_error:;
-		  fprintf (stderr, error < 0 ?
-			   "profiling:%s:Overflow merging\n" :
-			   "profiling:%s:Error merging\n", gi_ptr->filename);
-		  goto read_fatal;
+		  summary_pos = base;
+		  goto rewrite;
 		}
-	      
-	      if (!is_program || program.checksum != gcov_crc32)
-		continue;
-	      summary_pos = base;
-	      break;
 	    }
+	  if (!gcov_is_eof ())
+	    {
+	    read_error:;
+	      fprintf (stderr, error < 0 ? "profiling:%s:Overflow merging\n"
+		       : "profiling:%s:Error merging\n", gi_ptr->filename);
+	      goto read_fatal;
+	    }
+	rewrite:;
 	  gcov_rewrite ();
 	}
       else
 	memset (&object, 0, sizeof (object));
-      if (!(summary_pos + 1))
+      if (!summary_pos)
 	memset (&program, 0, sizeof (program));
 
       /* Merge the summaries.  */
