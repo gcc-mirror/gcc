@@ -1,3 +1,13 @@
+Thu Jan 21 17:45:18 1999  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in ({rs6000|powerpc}-ibm-aix4.[12]*): Add missing `then'.
+
+	* cccp.c (xrealloc): Call malloc given a NULL old pointer.
+	* collect2.c, cppalloc.c, gcc.c, genattr.c, genattrtab.c: Likewise.
+	* gencodes.c, genconfig.c, genemit.c, genextract.c: Likewise.
+	* genflags.c, genopinit.c, genoutput.c, genpeep.c: Likewise.
+	* genrecog.c, mips-tfile.c, protoize.c: Likewise.
+
 Thu Jan 21 19:44:55 1999  Michael Meissner  <meissner@cygnus.com>
 
 	* configure.in ({rs6000|powerpc}-ibm-aix4.[12]*): If

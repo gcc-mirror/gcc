@@ -608,7 +608,11 @@ xrealloc (old_space, byte_count)
      pointer_type old_space;
      size_t byte_count;
 {
-  register pointer_type rv = (pointer_type) realloc (old_space, byte_count);
+  register pointer_type rv;
+  if (old_space)
+    rv = (pointer_type) realloc (old_space, byte_count);
+  else
+    rv = (pointer_type) malloc (byte_count);
   if (rv == NULL)
     {
       fprintf (stderr, "\n%s: virtual memory exceeded\n", pname);

@@ -5710,7 +5710,11 @@ xrealloc (ptr, size)
   PTR ptr;
   size_t size;
 {
-  register PTR result = (PTR) realloc (ptr, size);
+  register PTR result;
+  if (ptr)
+    result = (PTR) realloc (ptr, size);
+  else
+    result = (PTR) malloc (size);
   if (!result)
     fatal ("Virtual memory exhausted.");
 
