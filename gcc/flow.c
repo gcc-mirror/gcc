@@ -2030,10 +2030,10 @@ libcall_dead_p (x, needed, note, insn)
   return 1;
 }
 
-/* Return 1 if register REGNO was used before it was set.
-   In other words, if it is live at function entry.
-   Don't count global register variables or variables in registers
-   that can be used for function arg passing, though.  */
+/* Return 1 if register REGNO was used before it was set, i.e. if it is
+   live at function entry.  Don't count global register variables, variables
+   in registers that can be used for function arg passing, or variables in
+   fixed hard registers.  */
 
 int
 regno_uninitialized (regno)
@@ -2041,7 +2041,9 @@ regno_uninitialized (regno)
 {
   if (n_basic_blocks == 0
       || (regno < FIRST_PSEUDO_REGISTER
-	  && (global_regs[regno] || FUNCTION_ARG_REGNO_P (regno))))
+	  && (global_regs[regno]
+	      || fixed_regs[regno]
+	      || FUNCTION_ARG_REGNO_P (regno))))
     return 0;
 
   return REGNO_REG_SET_P (basic_block_live_at_start[0], regno);

@@ -1,3 +1,7 @@
+Tue Jul 21 08:55:09 1998  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (regno_uninitialized): Fixed regs are never uninitialized.
+
 Tue Jul 21 00:31:01 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c (do_spec): Call "error" not "warning".
