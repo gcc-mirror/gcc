@@ -1,3 +1,7 @@
+Tue Oct 12 17:09:38 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* collect2.c (main): Do prelimnary link on AIX if rflag.
+
 Tue Oct 12 09:45:19 1999  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
         * config/rs6000/eabi-ctors.c (__do_global_ctors): Run through
