@@ -1,3 +1,21 @@
+2003-10-22  Phil Edwards  <phil@codesourcery.com>
+
+	* config.gcc:  Update *-*-vxworks* generic hook and comments.
+	(arm-wrs-vxworks, i[4567]86-wrs-vxworks, mips-wrs-vxworks,
+	mips-wrs-windiss, sh-wrs-vxworks):  New stanzas.
+	* genmultilib:  Allow the MULTILIB_OSDIRNAMES to be mapped directly.
+	* config/svr4.h (SWITCH_TAKES_ARG):  Undefine it before redefining it.
+	* config/windiss.h:  New file.
+	* config/arm/t-vxworks:  New file.
+	* config/arm/vxworks.h:  New file.
+	* config/i386/t-vxworks:  New file.
+	* config/i386/vxworks.h:  New file.
+	* config/mips/t-vxworks:  New file.
+	* config/mips/vxworks.h:  New file.
+	* config/mips/windiss.h:  New file.
+	* config/sh/t-vxworks:  New file.
+	* config/sh/vxworks.h:  New file.
+
 2003-10-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (h8300_output_function_epilogue): Remove.

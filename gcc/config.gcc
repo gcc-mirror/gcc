@@ -506,8 +506,13 @@ case ${target} in
 *-*-vxworks*)
   tmake_file=t-vxworks
   tm_file="${tm_file} elfos.h svr4.h vxworks.h"
-  thread_file='vxworks'
+  case ${enable_threads} in
+    no) ;;
+    "" | yes | vxworks) thread_file='vxworks' ;;
+    *) echo 'Unknown thread configuration for VxWorks'; exit 1 ;;
+  esac
   use_collect2=yes
+  xm_defines=POSIX
   ;;
 esac
 
@@ -618,6 +623,10 @@ arm-*-coff* | armel-*-coff*)
 arm-semi-aof | armel-semi-aof)
 	tm_file="arm/semiaof.h arm/aof.h arm/arm.h"
 	tmake_file=arm/t-semi
+	;;
+arm-wrs-vxworks)
+	tm_file="dbxelf.h elfos.h svr4.h vxworks.h arm/elf.h arm/aout.h arm/arm.h arm/vxworks.h"
+	tmake_file="${tmake_file} arm/t-vxworks"
 	;;
 arm*-*-freebsd*|strongarm*-*-freebsd*)
 	tm_file="dbxelf.h elfos.h ${fbsd_tm_file} arm/elf.h arm/aout.h arm/freebsd.h arm/arm.h"
@@ -1102,6 +1111,10 @@ i386-*-vsta)			# Intel 80386's running VSTa kernel
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/vsta.h"
 	use_fixproto=yes
 	;;
+i[4567]86-wrs-vxworks)
+	tm_file="${tm_file} i386/sysv4.h i386/unix.h i386/vxworks.h"
+	tmake_file="${tmake_file} i386/t-vxworks"
+	;;
 i[34567]86-*-pe | i[34567]86-*-cygwin*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/cygwin.h"
 	xm_file=i386/xm-cygwin.h
@@ -1564,6 +1577,20 @@ mips*-*-rtems*)
 	tm_file="${tm_file} mips/elf.h mips/rtems.h rtems.h"
 	tmake_file="mips/t-elf t-rtems mips/t-rtems"
 	;;
+mips-wrs-vxworks)
+	# We want vxworks.h after mips/elf.h, which unfortunately means we
+	# have to redo the tm_file list from scratch.
+	tm_file="elfos.h mips/mips.h svr4.h mips/elf.h vxworks.h mips/vxworks.h"
+	tmake_file="${tmake_file} mips/t-vxworks"
+	target_cpu_default="MASK_GAS"
+	;;
+mips-wrs-windiss)	# Instruction-level simulator for VxWorks.
+	xm_defines=POSIX
+	tm_file="elfos.h mips/mips.h svr4.h mips/elf.h windiss.h mips/windiss.h"
+	tmake_file="${tmake_file} mips/t-elf"
+	target_cpu_default="MASK_GAS"
+	thread_file=
+	;;
 mipstx39-*-elf* | mipstx39el-*-elf*)
 	tm_file="${tm_file} mips/r3900.h mips/elf.h"
 	tmake_file=mips/t-r3900
@@ -1713,7 +1740,7 @@ powerpc-wrs-vxworks*)
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-ppccomm rs6000/t-vxworks"
 	extra_headers=ppc-asm.h
 	;;
-powerpc-wrs-windiss*)
+powerpc-wrs-windiss*)	# Instruction-level simulator for VxWorks.
 	tm_file="${tm_file} elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/windiss.h"
         tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
         thread_file=""
@@ -1899,6 +1926,10 @@ sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
 		tmake_file="${tmake_file} sh/t-netbsd"
 		;;
 	esac
+	;;
+sh-wrs-vxworks)
+	tmake_file="$tmake_file sh/t-sh sh/t-elf sh/t-vxworks"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/embed-elf.h sh/vxworks.h"
 	;;
 sh-*-*)
 	tm_file="${tm_file} dbxcoff.h sh/coff.h"

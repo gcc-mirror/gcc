@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.
    -z* options (for the linker).  Note however that there is no such
    thing as a -T option for svr4.  */
 
+#undef  SWITCH_TAKES_ARG
 #define SWITCH_TAKES_ARG(CHAR)		\
   (DEFAULT_SWITCH_TAKES_ARG (CHAR)	\
    || (CHAR) == 'h'			\
