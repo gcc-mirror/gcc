@@ -1,1 +1,1 @@
-CLIB=-lmld
+CLIB=-lmld -lexc
