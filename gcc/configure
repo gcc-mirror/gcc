@@ -3836,24 +3836,24 @@ for machine in $build $host $target; do
 		tm_file=sparc/bsd.h
 		;;
 	sparc-*-linux-gnuaout*)		# Sparc's running Linux, a.out
-		xm_file=sparc/xm-linux.h
+		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
 		tm_file=sparc/linux-aout.h
 		xmake_file=x-linux
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
 		;;
-	sparc-*-linux-gnulibc1*)		 # Sparc's running Linux
-		xm_file=sparc/xm-linux.h # with ELF format using the
-		xmake_file=x-linux	 # Linux C library 5.
+	sparc-*-linux-gnulibc1*)	# Sparc's running Linux, libc5
+		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
+		xmake_file=x-linux
 		tm_file=sparc/linux.h
 		tmake_file="t-linux t-linux-gnulibc1 sparc/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
 		;;
-	sparc-*-linux-gnu*)			 # Sparc's running Linux
-		xm_file=sparc/xm-linux.h # with ELF format using glibc 2
-		xmake_file=x-linux	 # aka the Linux C library 6.
+	sparc-*-linux-gnu*)		# Sparc's running Linux, libc6
+		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
+		xmake_file=x-linux
 		tm_file=sparc/linux.h
 		tmake_file="t-linux sparc/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -3939,6 +3939,14 @@ for machine in $build $host $target; do
 		tmake_file=sparc/t-sp64
 		tm_file=sparc/sp64-elf.h
 		extra_parts="crtbegin.o crtend.o"
+		;;
+	sparc64-*-linux*)		# 64-bit Sparc's running Linux
+		tmake_file=sparc/t-sp64
+		xm_file="sparc/xm-sp64.h sparc/xm-linux.h"
+		tm_file=sparc/linux64.h
+		xmake_file=x-linux
+		fixincludes=Makefile.in	# On Linux, the headers are ok already.
+		gnu_ld=yes
 		;;
 # This hasn't been upgraded to GCC 2.
 #	tahoe-harris-*)			# Harris tahoe, using COFF.
