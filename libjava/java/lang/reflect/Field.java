@@ -257,7 +257,7 @@ public final class Field extends AccessibleObject implements Member
 	Modifier.toString(mods, sbuf);
 	sbuf.append(' ');
       }
-    sbuf.append(getType());
+    sbuf.append(getType().getName());
     sbuf.append(' ');
     sbuf.append(getDeclaringClass().getName());
     sbuf.append('.');

@@ -1,3 +1,8 @@
+2000-09-11  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/reflect/Field.java (toString): Don't rely on
+	Class.toString.
+
 2000-09-08  Tom Tromey  <tromey@cygnus.com>
 
 	* gnu/gcj/convert/BytesToUnicode.java (getDefaultDecoder): Let
