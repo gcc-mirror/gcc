@@ -89,7 +89,7 @@ Boston, MA 02111-1307, USA.  */
 #define opf_is_def 	(1 << 0)
 
 /* Operand is the target of an assignment expression.  */
-#define opf_kill_def 	(1 << 2)
+#define opf_kill_def 	(1 << 1)
 
 /* No virtual operands should be created in the expression.  This is used
    when traversing ADDR_EXPR nodes which have different semantics than
@@ -97,7 +97,7 @@ Boston, MA 02111-1307, USA.  */
    need to consider are indices into arrays.  For instance, &a.b[i] should
    generate a USE of 'i' but it should not generate a VUSE for 'a' nor a
    VUSE for 'b'.  */
-#define opf_no_vops 	(1 << 1)
+#define opf_no_vops 	(1 << 2)
 
 /* Array for building all the def operands.  */
 static GTY (()) varray_type build_defs;
@@ -1273,6 +1273,8 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags)
   tree ptr = *pptr;
   stmt_ann_t ann = stmt_ann (stmt);
 
+  /* Stores into INDIRECT_REF operands are never killing definitions.  */
+  flags &= ~opf_kill_def;
 
   if (SSA_VAR_P (ptr))
     {
@@ -1456,20 +1458,31 @@ add_stmt_operand (tree *var_p, tree stmt, int flags)
 	    {
 	      if (v_ann->is_alias_tag)
 	        {
-		  /* Alias tagged vars get regular V_MAY_DEF  */
+		  /* Alias tagged vars get V_MAY_DEF to avoid breaking
+		     def-def chains with the other variables in their
+		     alias sets.  */
 		  if (s_ann)
 		    s_ann->makes_aliased_stores = 1;
 		  append_v_may_def (var);
 		}
-	      else if ((flags & opf_kill_def) 
-	                && v_ann->mem_tag_kind == NOT_A_TAG)
-	        /* V_MUST_DEF for non-aliased non-GIMPLE register 
-		   variable definitions. Avoid memory tags.  */
-	        append_v_must_def (var);
+	      else if (flags & opf_kill_def)
+		{
+#if defined ENABLE_CHECKING
+		  /* Only regular variables may get a V_MUST_DEF
+		     operand.  */
+		  if (v_ann->mem_tag_kind != NOT_A_TAG)
+		    abort ();
+#endif
+		  /* V_MUST_DEF for non-aliased, non-GIMPLE register 
+		    variable definitions.  */
+		  append_v_must_def (var);
+		}
 	      else
-	        /* Call-clobbered variables & memory tags get 
-		   V_MAY_DEF  */
-		append_v_may_def (var);
+		{
+		  /* Add a V_MAY_DEF for call-clobbered variables and
+		     memory tags.  */
+		  append_v_may_def (var);
+		}
 	    }
 	  else
 	    {
@@ -1506,6 +1519,8 @@ add_stmt_operand (tree *var_p, tree stmt, int flags)
 	    }
 	  else
 	    {
+	      /* Similarly, append a virtual uses for VAR itself, when
+		 it is an alias tag.  */
 	      if (v_ann->is_alias_tag)
 		append_vuse (var);
 
