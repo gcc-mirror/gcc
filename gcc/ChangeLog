@@ -1,5 +1,8 @@
 Tue Dec  8 01:14:46 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in (DEMANGLE_H): Change location to shared demangle.h.
+	* demangle.h: Deleted.
+
 	* reload1.c (current_function_decl): Declare.
 
 Tue Dec  8 11:58:51 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
