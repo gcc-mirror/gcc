@@ -4903,7 +4903,7 @@ expand_expr (exp, target, tmode, modifier)
 	      }
 	    else
 	      expand_expr (singleton,
-			   ignore ? const1_rtx : NULL_RTX, VOIDmode, 0);
+			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
 	    if (cleanups_this_call)
 	      {
 		sorry ("aggregate value in COND_EXPR");
