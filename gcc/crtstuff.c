@@ -157,7 +157,7 @@ typedef void (*func_ptr) (void);
 static char __EH_FRAME_BEGIN__[];
 static func_ptr __DTOR_LIST__[];
 static void
-__do_global_dtors_aux ()
+__do_global_dtors_aux (void)
 {
   static func_ptr *p = __DTOR_LIST__ + 1;
   static int completed = 0;
@@ -182,7 +182,7 @@ __do_global_dtors_aux ()
 /* Stick a call to __do_global_dtors_aux into the .fini section.  */
 
 static void __attribute__ ((__unused__))
-fini_dummy ()
+fini_dummy (void)
 {
   asm (FINI_SECTION_ASM_OP);
   __do_global_dtors_aux ();
@@ -198,7 +198,7 @@ fini_dummy ()
    call in another function.  */
 
 static void
-frame_dummy ()
+frame_dummy (void)
 {
   static struct object object;
   if (__register_frame_info)
@@ -206,7 +206,7 @@ frame_dummy ()
 }
 
 static void __attribute__ ((__unused__))
-init_dummy ()
+init_dummy (void)
 {
   asm (INIT_SECTION_ASM_OP);
   frame_dummy ();
@@ -227,7 +227,8 @@ init_dummy ()
    to switch to the .text section.  */
 
 static void __do_global_ctors_aux ();
-void __do_global_ctors ()
+void
+__do_global_ctors (void)
 {
 #ifdef INVOKE__main  /* If __main won't actually call __do_global_ctors
 			then it doesn't matter what's inside the function.
@@ -257,7 +258,7 @@ asm (INIT_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
    file-scope static-storage C++ objects within shared libraries.   */
 
 static void
-__do_global_ctors_aux ()	/* prologue goes in .init section */
+__do_global_ctors_aux (void)	/* prologue goes in .init section */
 {
 #ifdef FORCE_INIT_SECTION_ALIGN
   FORCE_INIT_SECTION_ALIGN;	/* Explicit align before switch to .text */
@@ -279,7 +280,7 @@ __do_global_ctors_aux ()	/* prologue goes in .init section */
 static char __EH_FRAME_BEGIN__[];
 static func_ptr __DTOR_LIST__[];
 void
-__do_global_dtors ()
+__do_global_dtors (void)
 {
   func_ptr *p;
   for (p = __DTOR_LIST__ + 1; *p; p++)
@@ -296,7 +297,7 @@ __do_global_dtors ()
    after libgcc.a, and hence can't call libgcc.a functions directly.  That
    can lead to unresolved function references.  */
 void
-__frame_dummy ()
+__frame_dummy (void)
 {
   static struct object object;
   if (__register_frame_info)
@@ -360,7 +361,7 @@ char __EH_FRAME_BEGIN__[] = { };
 
 static func_ptr __CTOR_END__[];
 static void
-__do_global_ctors_aux ()
+__do_global_ctors_aux (void)
 {
   func_ptr *p;
   for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)
@@ -370,7 +371,7 @@ __do_global_ctors_aux ()
 /* Stick a call to __do_global_ctors_aux into the .init section.  */
 
 static void __attribute__ ((__unused__))
-init_dummy ()
+init_dummy (void)
 {
   asm (INIT_SECTION_ASM_OP);
   __do_global_ctors_aux ();
@@ -419,7 +420,7 @@ init_dummy ()
    before we start to execute any of the user's code.  */
 
 static void
-__do_global_ctors_aux ()	/* prologue goes in .text section */
+__do_global_ctors_aux (void)	/* prologue goes in .text section */
 {
   asm (INIT_SECTION_ASM_OP);
   DO_GLOBAL_CTORS_BODY;
@@ -445,7 +446,7 @@ static func_ptr __CTOR_END__[];
 extern void __frame_dummy (void);
 #endif
 void
-__do_global_ctors ()
+__do_global_ctors (void)
 {
   func_ptr *p;
 #ifdef EH_FRAME_SECTION_ASM_OP
@@ -521,7 +522,7 @@ extern const struct section *
 static void __reg_frame_ctor () __attribute__ ((constructor));
 
 static void
-__reg_frame_ctor ()
+__reg_frame_ctor (void)
 {
   static struct object object;
   const struct section *eh_frame;
@@ -538,7 +539,8 @@ __reg_frame_ctor ()
 static void __dereg_frame_dtor () __attribute__ ((destructor));
 
 static
-void __dereg_frame_dtor ()
+void
+__dereg_frame_dtor (void)
 {
   const struct section *eh_frame;
 
