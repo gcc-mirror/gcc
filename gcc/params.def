@@ -89,6 +89,13 @@ DEFPARAM(PARAM_MAX_GCSE_PASSES,
 	"max-gcse-passes",
 	"The maximum number of passes to make when doing GCSE",
 	1)
+
+/* This parameter limits the number of insns in a loop that will be unrolled,
+   and by how much the loop is unrolled.  */
+DEFPARAM(PARAM_MAX_UNROLLED_INSNS,
+	 "max-unrolled-insns",
+	 "The maximum number of instructions to consider to unroll in a loop",
+	 100)
 /*
 Local variables:
 mode:c
