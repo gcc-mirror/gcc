@@ -1,6 +1,29 @@
+Sat Oct 18 13:47:15 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (restore_tree_status): Also free up temporary storage
+	when we finish a toplevel function.
+	(dump_tree_statistics): Print stats for backend obstacks.
+
 Sat Oct 18 12:47:31 1997  Doug Evans  <dje@canuck.cygnus.com>
 
 	* expr.c (use_group_regs): Don't call use_reg for MEMs.
+
+Sat Oct 18 09:49:46 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* libgcc2.c (__throw): Don't copy the return address.
+	* dwarf2out.c (expand_builtin_dwarf_reg_size): Ignore return address.
+
+	* except.c (exceptions_via_longjmp): Initialize to 2 (uninitialized).
+	* toplev.c (main): Initialize exceptions_via_longjmp.
+
+	* tree.c: Add extra_inline_obstacks.
+	(save_tree_status): Use it.
+	(restore_tree_status): If this is a toplevel inline obstack and we
+	didn't want to save anything on it, recycle it.
+	(print_inline_obstack_statistics): New fn.
+	* function.c (pop_function_context_from): Pass context to 
+	restore_tree_status.
+	* obstack.h (obstack_empty_p): New macro.
 
 Sat Oct 18 00:43:59 1997  Jeffrey A Law  (law@cygnus.com)
 

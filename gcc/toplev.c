@@ -4294,6 +4294,15 @@ main (argc, argv, envp)
   OVERRIDE_OPTIONS;
 #endif
 
+  if (exceptions_via_longjmp == 2)
+    {
+#ifdef DWARF2_UNWIND_INFO
+      exceptions_via_longjmp = ! DWARF2_UNWIND_INFO;
+#else
+      exceptions_via_longjmp = 1;
+#endif
+    }
+
   if (profile_block_flag == 3)
     {
       warning ("`-ax' and `-a' are conflicting options. `-a' ignored.");
