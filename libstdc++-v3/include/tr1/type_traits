@@ -1,6 +1,6 @@
 // TR1 type_traits -*- C++ -*-
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -144,10 +144,10 @@ namespace tr1
   // template<typename>
   //   struct is_member_function_pointer
   //   : public false_type { };
-  //   _DEFINE_SPEC(2, is_member_function_pointer, _Tp _Cp::*,
-  //	            is_function<_Tp>::value)
-
-  // Ugly, temporary workaround for member functions with up to 15 arguments.
+  // _DEFINE_SPEC(2, is_member_function_pointer, _Tp _Cp::*,
+  //	          is_function<_Tp>::value)
+  //
+  // Temporary workaround for member functions with up to 15 arguments:
   template<typename>
     struct __is_mfp_helper
     { static const bool __value = false; };
@@ -516,6 +516,10 @@ namespace tr1
   template<typename>
     struct has_virtual_destructor
     : public false_type { };
+
+  template<typename _Tp>
+    struct alignment_of
+    : public integral_constant<std::size_t, __alignof__(_Tp)> { };
   
   template<typename>
     struct rank
@@ -652,6 +656,77 @@ namespace tr1
     { typedef typename remove_reference<_Tp>::type*     type; };
 
   /// @brief  other transformations [4.8].
+  
+  // Due to c++/19163 and c++/17743, for the time being we cannot use
+  // the correct, neat implementation :-(
+  // 
+  // template<std::size_t _Len, std::size_t _Align>
+  //   struct aligned_storage
+  //   { typedef char type[_Len] __attribute__((aligned(_Align))); }
+  //
+  // Temporary workaround, useful for Align up to 32:
+  template<std::size_t, std::size_t>
+    struct aligned_storage { };
+
+  template<std::size_t _Len>
+    struct aligned_storage<_Len, 1>
+    {
+      union type
+      {
+	unsigned char __data[_Len];
+	char __align __attribute__((aligned(1)));
+      };
+    };
+
+  template<std::size_t _Len>
+    struct aligned_storage<_Len, 2>
+    {
+      union type
+      {
+	unsigned char __data[_Len];
+	char __align __attribute__((aligned(2)));
+      };
+    };
+
+  template<std::size_t _Len>
+    struct aligned_storage<_Len, 4>
+    {
+      union type
+      {
+	unsigned char __data[_Len];
+	char __align __attribute__((aligned(4)));
+      };
+    };
+
+  template<std::size_t _Len>
+    struct aligned_storage<_Len, 8>
+    {
+      union type
+      {
+	unsigned char __data[_Len];
+	char __align __attribute__((aligned(8)));
+      };
+    };
+
+  template<std::size_t _Len>
+    struct aligned_storage<_Len, 16>
+    {
+      union type
+      {
+	unsigned char __data[_Len];
+	char __align __attribute__((aligned(16)));
+      };
+    };
+  
+  template<std::size_t _Len>
+    struct aligned_storage<_Len, 32>
+    {
+      union type
+      {
+	unsigned char __data[_Len];
+	char __align __attribute__((aligned(32)));
+      };
+    };
 
 #undef _DEFINE_SPEC_0_HELPER
 #undef _DEFINE_SPEC_1_HELPER

@@ -1,3 +1,15 @@
+2005-01-11  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Implement alignment_of and aligned_storage.
+	* testsuite/tr1/4_metaprogramming/other_transformations/
+	aligned_storage/aligned_storage.cc: New.
+	* testsuite/tr1/4_metaprogramming/other_transformations/
+	aligned_storage/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	alignment_of/alignment_of.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	alignment_of/typedefs.cc: Likewise.
+
 2005-01-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* Makefile.in: Regenerate.
