@@ -1,3 +1,15 @@
+2004-06-17  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR tree-optimization/15991
+	* tree-cfg.c (tree_block_label): Export.
+	* tree-flow-inline.h (bsi_after_labels): New function.
+	* tree-flow.h (bsi_after_labels, tree_block_label): Declare.
+	* tree-ssa.c (propagate_into_addr): New function.
+	(replace_immediate_uses): Handle propagation of pointer constants.
+	(raise_value): Do not restrict propagation of pointer constants.
+	* tree-ssanames.c (duplicate_ssa_name): New function.
+	* tree.h (duplicate_ssa_name): Declare.
+
 2004-06-17  David Ayers  <d.ayers@inode.at>
  
 	* c-parse.in: Unify Objective-C token names.

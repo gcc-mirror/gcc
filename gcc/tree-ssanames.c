@@ -191,4 +191,29 @@ release_ssa_name (tree var)
     }
 }
 
+/* Creates a duplicate of a ssa name NAME defined in statement STMT.  */
+
+tree
+duplicate_ssa_name (tree name, tree stmt)
+{
+  tree new_name = make_ssa_name (SSA_NAME_VAR (name), stmt);
+  struct ptr_info_def *old_ptr_info = SSA_NAME_PTR_INFO (name);
+  struct ptr_info_def *new_ptr_info;
+
+  if (!old_ptr_info)
+    return new_name;
+
+  new_ptr_info = ggc_alloc (sizeof (struct ptr_info_def));
+  *new_ptr_info = *old_ptr_info;
+
+  if (old_ptr_info->pt_vars)
+    {
+      new_ptr_info->pt_vars = BITMAP_GGC_ALLOC ();
+      bitmap_copy (new_ptr_info->pt_vars, old_ptr_info->pt_vars);
+    }
+
+  SSA_NAME_PTR_INFO (new_name) = new_ptr_info;
+  return new_name;
+}
+
 #include "gt-tree-ssanames.h"
