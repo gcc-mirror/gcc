@@ -1,3 +1,13 @@
+2000-10-09  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (LANG_LIB2FUNCS): Remove.
+	(LIB2FUNCS): Remove _pure.
+	(LIB2ADD): Remove LANG_LIB2FUNCS.
+	(stage_a): Don't set LANG_LIB2FUNCS.
+	* libgcc2.c (__terminate): Mark noreturn.
+	(__pure_virtual): Remove.
+	* mklibgcc.in: Remove LIB2ADD .txt processing.
+
 2000-10-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (push_multi): Revert unintended change.
