@@ -221,7 +221,8 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_FEATURES, [
     # this is the suspicious part
     CXXFLAGS=''
   fi
-  if test x"$ac_fdsections" = x"yes" && test x"$enable_debug" = x"no"; then
+  if test x"$ac_fdsections" = x"yes" &&
+     test x"$enable_debug" = x"no"; then
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
   fi
   AC_MSG_RESULT($ac_fdsections)
@@ -288,7 +289,8 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
   fi
 
   # Set linker optimization flags.
-  if test x"$ac_cv_prog_gnu_ld" = x"yes" && test x"$enable_debug" = x"no"; then
+  if test x"$ac_cv_prog_gnu_ld" = x"yes" &&
+     test x"$enable_debug" = x"no"; then
     OPT_LDFLAGS='-Wl,-O1'
   fi
 
@@ -343,7 +345,7 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1, [
     GLIBCPP_CHECK_MATH_DECL_1(_$1)
     if test x$glibcpp_cv_func__$1_use = x"yes"; then
       AC_CHECK_FUNCS(_$1)    
-    fi	
+    fi
   fi
 ])
 
@@ -410,7 +412,7 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2, [
     GLIBCPP_CHECK_MATH_DECL_2(_$1)
     if test x$glibcpp_cv_func__$1_use = x"yes"; then
       AC_CHECK_FUNCS(_$1)    
-    fi	
+    fi
   fi
 ])
 
@@ -456,7 +458,7 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3, [
     GLIBCPP_CHECK_MATH_DECL_3(_$1)
     if test x$glibcpp_cv_func__$1_use = x"yes"; then
       AC_CHECK_FUNCS(_$1)    
-    fi	
+    fi
   fi
 ])
 
@@ -751,8 +753,8 @@ AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
   dnl Currently this includes copysignl and atan2l, which should be
   dnl cached from the GLIBCPP_CHECK_MATH_SUPPORT macro, above.
   USE_COMPLEX_LONG_DOUBLE=no
-  if test x$ac_cv_func_atan2l = x"yes" \
-     && test x$ac_cv_func_copysignl = x"yes"; then
+  if test x$ac_cv_func_atan2l = x"yes" &&
+     test x$ac_cv_func_copysignl = x"yes"; then
     USE_COMPLEX_LONG_DOUBLE=yes
     AC_REPLACE_MATHFUNCS(hypotl signbitl)
   fi
@@ -801,8 +803,9 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
   AC_CHECK_HEADER(wctype.h, ac_has_wctype_h=yes, ac_has_wctype_h=no)
   
   dnl Only continue checking if the ISO C99 headers exist and support is on.
-  if test x"$ac_has_wchar_h" = xyes && test x"$ac_has_wctype_h" = xyes \
-     && test x"$enable_c_mbchar" != xno; then
+  if test x"$ac_has_wchar_h" = xyes &&
+     test x"$ac_has_wctype_h" = xyes &&
+     test x"$enable_c_mbchar" != xno; then
       
     dnl Test wchar.h for WCHAR_MIN, WCHAR_MAX, which is needed before
     dnl numeric_limits can instantiate type_traits<wchar_t>
@@ -837,8 +840,9 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
     ac_wfuncs=no)
 
     AC_MSG_CHECKING([for ISO C99 wchar_t support])
-    if test x"$has_weof" = xyes && test x"$has_wchar_minmax" = xyes \
-       && test x"$ac_wfuncs" = xyes; then
+    if test x"$has_weof" = xyes &&
+       test x"$has_wchar_minmax" = xyes &&
+       test x"$ac_wfuncs" = xyes; then
       ac_isoC99_wchar_t=yes
     else
       ac_isoC99_wchar_t=no
@@ -861,8 +865,9 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
     LIBS="$ac_save_LIBS"
 
     AC_MSG_CHECKING([for XPG2 wchar_t support])
-    if test x"$ac_has_iconv_h" = xyes && test x"$ac_has_langinfo_h" = xyes \
-       && test x"$ac_XPG2funcs" = xyes; then
+    if test x"$ac_has_iconv_h" = xyes &&
+       test x"$ac_has_langinfo_h" = xyes &&
+       test x"$ac_XPG2funcs" = xyes; then
       ac_XPG2_wchar_t=yes
     else
       ac_XPG2_wchar_t=no
@@ -872,8 +877,8 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
     dnl At the moment, only enable wchar_t specializations if all the
     dnl above support is present.
     AC_MSG_CHECKING([for enabled wchar_t specializations])
-    if test x"$ac_isoC99_wchar_t" = xyes \
-    && test x"$ac_XPG2_wchar_t" = xyes; then
+    if test x"$ac_isoC99_wchar_t" = xyes &&
+       test x"$ac_XPG2_wchar_t" = xyes; then
       AC_DEFINE(_GLIBCPP_USE_WCHAR_T)
       AC_MSG_RESULT("yes")
     else
@@ -1224,7 +1229,7 @@ EOF
    rm -f conftest*])
    if test x$enable_sjlj_exceptions = xyes; then
      AC_DEFINE(_GLIBCPP_SJLJ_EXCEPTIONS, 1,
-	[Define if the compiler is configured for setjmp/longjmp exceptions.])
+        [Define if the compiler is configured for setjmp/longjmp exceptions.])
      ac_exception_model_name=sjlj
    elif test x$enable_sjlj_exceptions = xno; then
      ac_exception_model_name="call frame"
@@ -1295,7 +1300,7 @@ AC_DEFUN(GLIBCPP_ENABLE_C99, [dnl
 		  void foo(char* fmt, ...)
 		  {va_list args; va_start(args, fmt);
 	          vfscanf(stderr, "%i", args);}],
-	          [],, [ac_c99_stdio=no])	
+	          [],, [ac_c99_stdio=no])
   AC_TRY_COMPILE([#include <stdio.h>
 		  #include <stdarg.h>
 		  void foo(char* fmt, ...)
@@ -1357,9 +1362,10 @@ AC_DEFUN(GLIBCPP_ENABLE_C99, [dnl
   AC_MSG_RESULT($ac_c99_wchar)
 
   AC_MSG_CHECKING([for enabled ISO C99 support])
-  if test x"$ac_c99_math" = x"no" || test x"$ac_c99_stdio" = x"no" \
-      || test x"$ac_c99_stdlib" = x"no" \
-      || test x"$ac_c99_wchar" = x"no"; then
+  if test x"$ac_c99_math" = x"no" ||
+     test x"$ac_c99_stdio" = x"no" ||
+     test x"$ac_c99_stdlib" = x"no" ||
+     test x"$ac_c99_wchar" = x"no"; then
     enable_c99=no; 
   fi; 
   AC_MSG_RESULT($enable_c99)
@@ -1643,7 +1649,8 @@ fi
 # Calculate glibcpp_toolexecdir, glibcpp_toolexeclibdir
 # Install a library built with a cross compiler in tooldir, not libdir.
 if test x"$glibcpp_toolexecdir" = x"no"; then 
-  if test -n "$with_cross_host" && test x"$with_cross_host" != x"no"; then
+  if test -n "$with_cross_host" &&
+     test x"$with_cross_host" != x"no"; then
     glibcpp_toolexecdir='$(exec_prefix)/$(target_alias)'
     glibcpp_toolexeclibdir='$(toolexecdir)/lib$(MULTISUBDIR)'
   else
