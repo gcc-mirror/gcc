@@ -1,3 +1,7 @@
+2001-02-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* invoke.texi (-Woverloaded-virtual): Clarify documentation.
+
 2001-02-17  Richard Henderson  <rth@redhat.com>
 
 	* reload1.c (reload_cse_simplify_set): Respect LOAD_EXTEND_OP
