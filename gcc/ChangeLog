@@ -1,3 +1,8 @@
+2004-09-11  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* ggc-none.c: Include "bconfig.h" if -DGENERATOR_FILE,
+	"config.h" if not.
+
 2004-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssa-alias.c (collect_points_to_info_r): Handle

@@ -19,11 +19,16 @@
    Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    02111-1307, USA.  */
 
-/* This version is used by the gen* programs, where we don't really
-   need GC at all.  This prevents problems with pulling in all the
-   tree stuff.  */
+/* This version is used by the gen* programs and certain language-specific
+   targets (such as java), where we don't really need GC at all.
+   This prevents problems with pulling in all the tree stuff.  */
 
+#ifdef GENERATOR_FILE
 #include "bconfig.h"
+#else
+#include "config.h"
+#endif
+
 #include "system.h"
 #include "coretypes.h"
 #include "ggc.h"
