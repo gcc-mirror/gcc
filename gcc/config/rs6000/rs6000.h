@@ -2466,7 +2466,7 @@ do {									\
   {"easy_fp_constant", {CONST_DOUBLE}},				\
   {"reg_or_mem_operand", {SUBREG, MEM, REG}},			\
   {"lwa_operand", {SUBREG, MEM, REG}},				\
-  {"offsettable_mem_operand", {MEM}},				\
+  {"offsettable_addr_operand", {REG, SUBREG, PLUS}},		\
   {"fp_reg_or_mem_operand", {SUBREG, MEM, REG}},		\
   {"mem_or_easy_const_operand", {SUBREG, MEM, CONST_DOUBLE}},	\
   {"add_operand", {SUBREG, REG, CONST_INT}},			\
@@ -2503,7 +2503,8 @@ extern int reg_or_neg_short_operand ();
 extern int reg_or_u_short_operand ();
 extern int reg_or_cint_operand ();
 extern int easy_fp_constant ();
-extern int offsettable_mem_operand ();
+extern int volatile_mem_operand ();
+extern int offsettable_addr_operand ();
 extern int fp_reg_or_mem_operand ();
 extern int mem_or_easy_const_operand ();
 extern int add_operand ();
@@ -2526,6 +2527,7 @@ extern int function_arg_partial_nregs ();
 extern int function_arg_pass_by_reference ();
 extern void setup_incoming_varargs ();
 extern struct rtx_def *expand_builtin_saveregs ();
+extern struct rtx_def *rs6000_stack_temp ();
 extern int expand_block_move ();
 extern int load_multiple_operation ();
 extern int store_multiple_operation ();
@@ -2551,6 +2553,3 @@ extern void output_ascii ();
 extern void rs6000_gen_section_name ();
 extern void output_function_profiler ();
 extern int rs6000_adjust_cost ();
-
-/* Temporary used to convert int->float.  */
-extern struct rtx_def *float_conv_temp;
