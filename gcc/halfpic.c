@@ -47,6 +47,8 @@ extern void assemble_name ();
 extern void output_addr_const ();
 
 int flag_half_pic;		/* Global half-pic flag.  */
+int half_pic_number_ptrs;	/* # distinct pointers found */
+int half_pic_number_refs;	/* # half-pic references */
 
 /* Obstack to hold generated pic names.  */
 static struct obstack half_pic_obstack;
@@ -351,8 +353,10 @@ half_pic_ptr (operand)
       p->pointer_p = TRUE;
 
       half_pic_names = p;
+      half_pic_number_ptrs++;
     }
 
+  half_pic_number_refs++;
   return gen_rtx (SYMBOL_REF, Pmode, p->ref_name);
 }
 
