@@ -1520,6 +1520,19 @@ try_combine (i3, i2, i1)
 	  i2_code_number = recog_for_combine (&newi2pat, i2, &new_i2_notes);
 	  if (i2_code_number >= 0)
 	    insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+
+	  /* It is possible that both insns now set the destination of I3.
+	     If so, we must show an extra use of it and update
+	     reg_significant.  */
+
+	  if (insn_code_number >= 0 && GET_CODE (SET_DEST (newpat)) == REG
+	      && GET_CODE (SET_DEST (newi2pat)) == REG
+	      && REGNO (SET_DEST (newpat)) == REGNO (SET_DEST (newi2pat)))
+	    {
+	      reg_n_sets[REGNO (SET_DEST (newpat))]++;
+	      set_significant (SET_DEST (newi2pat), newi2pat);
+	      set_significant (SET_DEST (newpat), newpat);
+	    }
 	}
 
       /* If we can split it and use I2DEST, go ahead and see if that
