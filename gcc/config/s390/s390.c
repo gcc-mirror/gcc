@@ -1193,7 +1193,7 @@ general_s_operand (register rtx op, enum machine_mode mode,
 	   is true.  This prevents compares between two literal pool
 	   entries from being accepted.  */
 	if (!allow_immediate
-	    && addr.base && REGNO (addr.base) == BASE_REGISTER)
+	    && addr.base && REGNO (addr.base) == BASE_REGNUM)
 	  return 0;
 	return 1;
 
@@ -2155,9 +2155,9 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
     {
       /* Either base or index must be free to hold the base register.  */
       if (!base)
-        base = gen_rtx_REG (Pmode, BASE_REGISTER);
+        base = gen_rtx_REG (Pmode, BASE_REGNUM);
       else if (!indx)
-        indx = gen_rtx_REG (Pmode, BASE_REGISTER);
+        indx = gen_rtx_REG (Pmode, BASE_REGNUM);
       else
         return FALSE;
 
@@ -2180,11 +2180,11 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
 	    else
 	      return FALSE;
 
-	    base = gen_rtx_REG (Pmode, BASE_REGISTER);
+	    base = gen_rtx_REG (Pmode, BASE_REGNUM);
 	    break;
 
 	  case UNSPEC_LTREL_BASE:
-	    base = gen_rtx_REG (Pmode, BASE_REGISTER);
+	    base = gen_rtx_REG (Pmode, BASE_REGNUM);
 	    break;
 
 	  default:
@@ -2194,7 +2194,7 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
       if (GET_CODE (base) != REG || GET_MODE (base) != Pmode)
 	return FALSE;
 
-      if (REGNO (base) == BASE_REGISTER
+      if (REGNO (base) == BASE_REGNUM
 	  || REGNO (base) == STACK_POINTER_REGNUM
 	  || REGNO (base) == FRAME_POINTER_REGNUM
 	  || ((reload_completed || reload_in_progress)
@@ -2220,11 +2220,11 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
 	    else
 	      return FALSE;
 
-	    indx = gen_rtx_REG (Pmode, BASE_REGISTER);
+	    indx = gen_rtx_REG (Pmode, BASE_REGNUM);
 	    break;
 
 	  case UNSPEC_LTREL_BASE:
-	    indx = gen_rtx_REG (Pmode, BASE_REGISTER);
+	    indx = gen_rtx_REG (Pmode, BASE_REGNUM);
 	    break;
 
 	  default:
@@ -2234,7 +2234,7 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
       if (GET_CODE (indx) != REG || GET_MODE (indx) != Pmode)
 	return FALSE;
 
-      if (REGNO (indx) == BASE_REGISTER
+      if (REGNO (indx) == BASE_REGNUM
 	  || REGNO (indx) == STACK_POINTER_REGNUM
 	  || REGNO (indx) == FRAME_POINTER_REGNUM
 	  || ((reload_completed || reload_in_progress)
@@ -5268,15 +5268,15 @@ s390_optimize_prolog (bool base_used)
   /* Do a final recompute of the frame-related data.  */
 
   s390_frame_info (base_used, cfun->machine->save_return_addr_p);
-  regs_ever_live[BASE_REGISTER] = base_used;
+  regs_ever_live[BASE_REGNUM] = base_used;
   regs_ever_live[RETURN_REGNUM] = cfun->machine->save_return_addr_p;
   regs_ever_live[STACK_POINTER_REGNUM] = cfun->machine->frame_size > 0;
 
   /* If all special registers are in fact used, there's nothing we
      can do, so no point in walking the insn list.  */
 
-  if (cfun->machine->first_save_gpr <= BASE_REGISTER 
-      && cfun->machine->last_save_gpr >= BASE_REGISTER
+  if (cfun->machine->first_save_gpr <= BASE_REGNUM 
+      && cfun->machine->last_save_gpr >= BASE_REGNUM
       && (TARGET_CPU_ZARCH 
           || (cfun->machine->first_save_gpr <= RETURN_REGNUM 
               && cfun->machine->last_save_gpr >= RETURN_REGNUM)))
@@ -5306,7 +5306,7 @@ s390_optimize_prolog (bool base_used)
 
 	  if (GET_CODE (base) != REG || off < 0)
 	    continue;
-	  if (first > BASE_REGISTER || last < BASE_REGISTER)
+	  if (first > BASE_REGNUM || last < BASE_REGNUM)
 	    continue;
 
 	  if (cfun->machine->first_save_gpr != -1)
@@ -5323,13 +5323,13 @@ s390_optimize_prolog (bool base_used)
 
       if (GET_CODE (PATTERN (insn)) == SET
 	  && GET_CODE (SET_SRC (PATTERN (insn))) == REG
-	  && REGNO (SET_SRC (PATTERN (insn))) == BASE_REGISTER
+	  && REGNO (SET_SRC (PATTERN (insn))) == BASE_REGNUM
 	  && GET_CODE (SET_DEST (PATTERN (insn))) == MEM)
 	{
 	  set = PATTERN (insn);
 	  offset = const0_rtx;
 	  base = eliminate_constant_term (XEXP (SET_DEST (set), 0), &offset);
-	  off = INTVAL (offset) - BASE_REGISTER * UNITS_PER_WORD;
+	  off = INTVAL (offset) - BASE_REGNUM * UNITS_PER_WORD;
 
 	  if (GET_CODE (base) != REG || off < 0)
 	    continue;
@@ -5358,7 +5358,7 @@ s390_optimize_prolog (bool base_used)
 
 	  if (GET_CODE (base) != REG || off < 0)
 	    continue;
-	  if (first > BASE_REGISTER || last < BASE_REGISTER)
+	  if (first > BASE_REGNUM || last < BASE_REGNUM)
 	    continue;
 
 	  if (cfun->machine->first_restore_gpr != -1)
@@ -5375,13 +5375,13 @@ s390_optimize_prolog (bool base_used)
 
       if (GET_CODE (PATTERN (insn)) == SET
 	  && GET_CODE (SET_DEST (PATTERN (insn))) == REG
-	  && REGNO (SET_DEST (PATTERN (insn))) == BASE_REGISTER
+	  && REGNO (SET_DEST (PATTERN (insn))) == BASE_REGNUM
 	  && GET_CODE (SET_SRC (PATTERN (insn))) == MEM)
 	{
 	  set = PATTERN (insn);
 	  offset = const0_rtx;
 	  base = eliminate_constant_term (XEXP (SET_SRC (set), 0), &offset);
-	  off = INTVAL (offset) - BASE_REGISTER * UNITS_PER_WORD;
+	  off = INTVAL (offset) - BASE_REGNUM * UNITS_PER_WORD;
 
 	  if (GET_CODE (base) != REG || off < 0)
 	    continue;
@@ -5479,7 +5479,7 @@ s390_reorg (void)
       /* If we made it up to here, both conditions are satisfied.
 	 Finish up literal pool related changes.  */
       if ((pool_overflow || pool->size > 0)
-	   && REGNO (cfun->machine->base_reg) == BASE_REGISTER)
+	   && REGNO (cfun->machine->base_reg) == BASE_REGNUM)
 	base_used = true;
 
       if (pool_overflow)
@@ -5584,7 +5584,7 @@ s390_frame_info (int base_used, int return_addr_used)
     live_regs[PIC_OFFSET_TABLE_REGNUM] = 
     regs_ever_live[PIC_OFFSET_TABLE_REGNUM];
 
-  live_regs[BASE_REGISTER] = base_used;
+  live_regs[BASE_REGNUM] = base_used;
   live_regs[RETURN_REGNUM] = return_addr_used;
   live_regs[STACK_POINTER_REGNUM] = cfun->machine->frame_size > 0;
 
@@ -5842,7 +5842,7 @@ s390_emit_prologue (void)
   if (current_function_is_leaf && !regs_ever_live[5])
     cfun->machine->base_reg = gen_rtx_REG (Pmode, 5);
   else
-    cfun->machine->base_reg = gen_rtx_REG (Pmode, BASE_REGISTER);
+    cfun->machine->base_reg = gen_rtx_REG (Pmode, BASE_REGNUM);
 
   regs_ever_live[REGNO (cfun->machine->base_reg)] = 1;
 
@@ -5856,7 +5856,7 @@ s390_emit_prologue (void)
 
   /* We need to update regs_ever_live to avoid data-flow problems.  */
 
-  regs_ever_live[BASE_REGISTER] = 1;
+  regs_ever_live[BASE_REGNUM] = 1;
   regs_ever_live[RETURN_REGNUM] = !TARGET_CPU_ZARCH 
 				  || cfun->machine->save_return_addr_p;
   regs_ever_live[STACK_POINTER_REGNUM] = cfun->machine->frame_size > 0;
@@ -6167,7 +6167,7 @@ s390_emit_epilogue (bool sibcall)
 	     restored in any case.  */
 	  if (i == STACK_POINTER_REGNUM
               || i == RETURN_REGNUM
-              || i == BASE_REGISTER
+              || i == BASE_REGNUM
               || (flag_pic && i == (int)PIC_OFFSET_TABLE_REGNUM))
 	    continue;
 
@@ -6187,7 +6187,7 @@ s390_emit_epilogue (bool sibcall)
 	     this will do good for scheduling.  */
 
 	  if (cfun->machine->save_return_addr_p
-	      || (cfun->machine->first_restore_gpr < BASE_REGISTER
+	      || (cfun->machine->first_restore_gpr < BASE_REGNUM
 		  && cfun->machine->last_restore_gpr > RETURN_REGNUM))
 	    {
 	      int return_regnum = find_unused_clobbered_reg();
