@@ -48,14 +48,13 @@ extern java::lang::Class ClassLoaderClass;
 
 /////////// java.lang.ClassLoader native methods ////////////
 
-static gnu::gcj::runtime::VMClassLoader *redirect = 0;
-
-java::lang::ClassLoader*
-java::lang::ClassLoader::getVMClassLoader0 ()
+java::lang::ClassLoader *
+java::lang::ClassLoader::getSystemClassLoader (void)
 {
-  if (redirect == 0)
-    redirect = new gnu::gcj::runtime::VMClassLoader;
-  return redirect;
+  JvSynchronize sync (&ClassLoaderClass);
+  if (! system)
+    system = gnu::gcj::runtime::VMClassLoader::getVMClassLoader ();
+  return system;
 }
 
 void

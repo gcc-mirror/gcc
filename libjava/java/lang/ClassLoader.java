@@ -34,13 +34,7 @@ public abstract class ClassLoader {
     return parent;
   }
     
-  private static native ClassLoader getVMClassLoader0 ();
-
-  static public ClassLoader getSystemClassLoader () {
-    if (system == null)
-      system = getVMClassLoader0 ();
-    return system;
-  }
+  public static native ClassLoader getSystemClassLoader ();
 
   /**
    * Creates a <code>ClassLoader</code> with no parent.
