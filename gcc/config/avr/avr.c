@@ -151,15 +151,23 @@ static const struct mcu_type_s avr_mcu_types[] = {
   { "avr3",      AVR3 },
   { "atmega103", AVR3 },
   { "atmega603", AVR3 },
+  { "at43usb320", AVR3 },
+  { "at76c711",  AVR3 },
     /* Enhanced, <= 8K.  */
   { "avr4",      AVR4 },
+  { "atmega8",   AVR4 },
   { "atmega83",  AVR4 },
   { "atmega85",  AVR4 },
     /* Enhanced, > 8K.  */
   { "avr5",      AVR5 },
+  { "atmega16",  AVR5 },
   { "atmega161", AVR5 },
   { "atmega163", AVR5 },
   { "atmega32",  AVR5 },
+  { "atmega323", AVR5 },
+  { "atmega64",  AVR5 },
+  { "atmega128", AVR5 },
+  { "at43usb355", AVR5 },
   { "at94k",     AVR5 },
     /* Assembler only.  */
   { "avr1",      AVR1 },

@@ -2735,13 +2735,21 @@ extern int avr_case_values_threshold;
 %{mmcu=avr3:%(cpp_avr3)} \
 %{mmcu=atmega603:%(cpp_avr3) -D__AVR_ATmega603__} \
 %{mmcu=atmega103:%(cpp_avr3) -D__AVR_ATmega103__} \
+%{mmcu=at43usb320:%(cpp_avr3) -D__AVR_AT43USB320__} \
+%{mmcu=at76c711: %(cpp_avr3) -D__AVR_AT76C711__} \
 %{mmcu=avr4:%(cpp_avr4)} \
+%{mmcu=atmega8:  %(cpp_avr4) -D__AVR_ATmega8__} \
 %{mmcu=atmega83: %(cpp_avr4) -D__AVR_ATmega83__} \
 %{mmcu=atmega85: %(cpp_avr4) -D__AVR_ATmega85__} \
 %{mmcu=avr5:%(cpp_avr5)} \
+%{mmcu=atmega16: %(cpp_avr5) -D__AVR_ATmega16__} \
 %{mmcu=atmega161:%(cpp_avr5) -D__AVR_ATmega161__} \
 %{mmcu=atmega163:%(cpp_avr5) -D__AVR_ATmega163__} \
 %{mmcu=atmega32: %(cpp_avr5) -D__AVR_ATmega32__} \
+%{mmcu=atmega323:%(cpp_avr5) -D__AVR_ATmega323__} \
+%{mmcu=atmega64: %(cpp_avr5) -D__AVR_ATmega64__} \
+%{mmcu=atmega128:%(cpp_avr5) -D__AVR_ATmega128__} \
+%{mmcu=at43usb355:%(cpp_avr5) -D__AVR_AT43USB355__} \
 %{mmcu=at94k:    %(cpp_avr5) -D__AVR_AT94K__} \
 %{mmcu=avr1:%(cpp_avr1)} \
 %{mmcu=at90s1200:%(cpp_avr1) -D__AVR_AT90S1200__} \
@@ -2813,10 +2821,18 @@ extern int avr_case_values_threshold;
 %{!mmcu*:-m avr85xx} \
 %{mmcu=atmega603:-m avrmega603} \
 %{mmcu=atmega103:-m avrmega103} \
+%{mmcu=at43usb320:-m avr3} \
+%{mmcu=at76c711:-m avr3} \
+%{mmcu=atmega16:-m avrmega161} \
 %{mmcu=atmega161:-m avrmega161} \
 %{mmcu=atmega163:-m avrmega161} \
 %{mmcu=atmega32:-m avr5} \
+%{mmcu=atmega323:-m avr5} \
+%{mmcu=atmega64:-m avr5} \
+%{mmcu=atmega128:-m avr5} \
+%{mmcu=at43usb355:-m avr5} \
 %{mmcu=at94k:-m avr5} \
+%{mmcu=atmega8:-m avr4} \
 %{mmcu=atmega83:-m avr4} \
 %{mmcu=atmega85:-m avr4} \
 %{mmcu=at90s1200|mmcu=attiny1*:-m avr1200} \
@@ -2893,11 +2909,19 @@ extern int avr_case_values_threshold;
 %{mmcu=at90s8535:crts8535.o%s} \
 %{mmcu=atmega103|mmcu=avr3:crtm103.o%s} \
 %{mmcu=atmega603:crtm603.o%s} \
+%{mmcu=at43usb320:crt43320.o%s} \
+%{mmcu=at76c711:crt76711.o%s } \
+%{mmcu=atmega8:crtm8.o%s} \
 %{mmcu=atmega83|mmcu=avr4:crtm83.o%s} \
 %{mmcu=atmega85:crtm85.o%s} \
+%{mmcu=atmega16:crtm16.o%s} \
 %{mmcu=atmega161|mmcu=avr5:crtm161.o%s} \
 %{mmcu=atmega163:crtm163.o%s} \
 %{mmcu=atmega32:crtm32.o%s} \
+%{mmcu=atmega323:crtm323.o%s} \
+%{mmcu=atmega64:crtm64.o%s} \
+%{mmcu=atmega128:crtm128.o%s} \
+%{mmcu=at43usb355:crt43355.o%s} \
 %{mmcu=at94k:crtat94k.o%s}"
 
 #define CPP_AVR1_SPEC "-D__AVR_ARCH__=1 -D__AVR_ASM_ONLY__ "
