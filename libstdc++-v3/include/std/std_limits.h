@@ -233,11 +233,8 @@
 // bool-specific hooks:
 //     __glibcpp_bool_digits  __glibcpp_int_traps __glibcpp_long_traps
 
-// This is actually CHAR_BITS because the new ABI says a bool
-// is one (1) byte wide.
-
 #ifndef __glibcpp_bool_digits
-#define __glibcpp_bool_digits __glibcpp_char_bits
+#define __glibcpp_bool_digits 1
 #endif
 
 // char.
@@ -996,9 +993,9 @@ namespace std
       static bool denorm_min() throw()
       { return false; }
 
-      static const bool is_iec559 = true;
+      static const bool is_iec559 = false;
       static const bool is_bounded = true;
-      static const bool is_modulo = true;
+      static const bool is_modulo = false;
 
       // It is not clear what it means for a boolean type to trap.
       // This is a DR on the LWG issue list.  Here, I use integer
