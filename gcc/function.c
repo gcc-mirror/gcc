@@ -3848,7 +3848,9 @@ assign_parms (fndecl, second_time)
 
 	  /* For pointer data type, suggest pointer register.  */
 	  if (TREE_CODE (TREE_TYPE (parm)) == POINTER_TYPE)
-	    mark_reg_pointer (parmreg);
+	    mark_reg_pointer (parmreg,
+			      (TYPE_ALIGN (TREE_TYPE (TREE_TYPE (parm)))
+			       / BITS_PER_UNIT));
 	}
       else
 	{
