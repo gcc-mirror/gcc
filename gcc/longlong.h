@@ -488,7 +488,7 @@ UDItype __umulsidi3 (USItype, USItype);
 #if defined (__mc68020__) || defined(mc68020) \
 	|| defined(__mc68030__) || defined(mc68030) \
 	|| defined(__mc68040__) || defined(mc68040) \
-	|| defined(__mc68332__) || defined(mc68332) \
+	|| defined(__mcpu32__) || defined(mcpu32) \
 	|| defined(__NeXT__)
 #define umul_ppmm(w1, w0, u, v) \
   __asm__ ("mulu%.l %3,%1:%0"						\
