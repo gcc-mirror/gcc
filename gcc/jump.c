@@ -2705,17 +2705,6 @@ delete_computation (insn)
     }
 #endif
 
-#ifdef INSN_SCHEDULING
-  /* ?!? The schedulers do not keep REG_DEAD notes accurate after
-     reload has completed.  The schedulers need to be fixed.  Until
-     they are, we must not rely on the death notes here.  */
-  if (reload_completed && flag_schedule_insns_after_reload)
-    {
-      delete_insn (insn);
-      return;
-    }
-#endif
-
   for (note = REG_NOTES (insn); note; note = next)
     {
       next = XEXP (note, 1);
@@ -2745,6 +2734,7 @@ delete_insn (insn)
   register rtx prev = PREV_INSN (insn);
   register int was_code_label = (GET_CODE (insn) == CODE_LABEL);
   register int dont_really_delete = 0;
+  rtx note;
 
   while (next && INSN_DELETED_P (next))
     next = NEXT_INSN (next);
@@ -2863,6 +2853,13 @@ delete_insn (insn)
 	next = NEXT_INSN (next);
       return next;
     }
+
+  /* Likewise for an ordinary INSN / CALL_INSN with a REG_LABEL note.  */
+  if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
+    for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+      if (REG_NOTE_KIND (note) == REG_LABEL)
+	if (--LABEL_NUSES (XEXP (note, 0)) == 0)
+	  delete_insn (XEXP (note, 0));
 
   while (prev && (INSN_DELETED_P (prev) || GET_CODE (prev) == NOTE))
     prev = PREV_INSN (prev);
@@ -3327,6 +3324,7 @@ redirect_tablejump (jump, nlabel)
      rtx jump, nlabel;
 {
   register rtx olabel = JUMP_LABEL (jump);
+  rtx *notep, note, next;
 
   /* Add this jump to the jump_chain of NLABEL.  */
   if (jump_chain && INSN_UID (nlabel) < max_jump_chain
@@ -3334,6 +3332,22 @@ redirect_tablejump (jump, nlabel)
     {
       jump_chain[INSN_UID (jump)] = jump_chain[INSN_UID (nlabel)];
       jump_chain[INSN_UID (nlabel)] = jump;
+    }
+
+  for (notep = &REG_NOTES (jump), note = *notep; note; note = next)
+    {
+      next = XEXP (note, 1);
+
+      if (REG_NOTE_KIND (note) != REG_DEAD
+	  /* Verify that the REG_NOTE is legitimate.  */
+	  || GET_CODE (XEXP (note, 0)) != REG
+	  || ! reg_mentioned_p (XEXP (note, 0), PATTERN (jump)))
+	notep = &XEXP (note, 1);
+      else
+	{
+	  delete_prior_computation (note, jump);
+	  *notep = next;
+	}
     }
 
   PATTERN (jump) = gen_jump (nlabel);
