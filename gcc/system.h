@@ -210,6 +210,12 @@ extern char *getenv ();
 extern char *sbrk ();
 #endif
 
+/* HAVE_VOLATILE only refers to the stage1 compiler.  We also check
+   __STDC__ and assume gcc sets it and has volatile in stage >=2. */
+#if !defined(HAVE_VOLATILE) && !defined(__STDC__) && !defined(volatile)
+#define volatile
+#endif
+
 /* Redefine abort to report an internal error w/o coredump, and reporting the
    location of the error in the source file.  */
 #ifndef abort

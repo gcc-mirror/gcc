@@ -620,7 +620,6 @@ output_add_clobbers ()
   printf ("\n\nvoid\nadd_clobbers (pattern, insn_code_number)\n");
   printf ("     rtx pattern;\n     int insn_code_number;\n");
   printf ("{\n");
-  printf ("  int i;\n\n");
   printf ("  switch (insn_code_number)\n");
   printf ("    {\n");
 

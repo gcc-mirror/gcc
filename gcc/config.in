@@ -5,6 +5,9 @@
 /* Define if your cpp understands the stringify operator.  */
 #undef HAVE_CPP_STRINGIFY
 
+/* Define if your compiler understands volatile.  */
+#undef HAVE_VOLATILE
+
 /* Define if you have a working <inttypes.h> header file.  */
 #undef HAVE_INTTYPES_H
 
