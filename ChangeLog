@@ -1,3 +1,12 @@
+1998-06-19  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure (gcc_version): Add new variable describing the
+	particular gcc version we're building.
+	* Makefile.in (libsubdir): Add new macro for the directory
+	in which the compiler finds executables, libraries, etc.
+	(BASE_FLAGS_TO_PASS): Pass down gcc_version, target_alias
+	and libsubdir.
+
 Fri Jun 19 02:36:59 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
 
 	* Makefile.in (local-clean): remove *.log
