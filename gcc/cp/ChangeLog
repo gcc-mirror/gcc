@@ -1,3 +1,9 @@
+2004-08-22  Andrew Pinski  <apinski@apple.com>
+
+	PR c++/14029
+	* typeck.c (build_unary_op): Use &a.b if the foldded lowered
+	expression is not constant.
+
 2004-08-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17121
