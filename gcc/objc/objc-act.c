@@ -8435,25 +8435,49 @@ generate_objc_image_info (void)
   finish_var_decl (decl, initlist);
 }
 
-/* Look up ID as an instance variable.  */
+/* Look up ID as an instance variable.  OTHER contains the result of
+   the C or C++ lookup, which we may want to use instead.  */
 
 tree
-objc_lookup_ivar (tree id)
+objc_lookup_ivar (tree other, tree id)
 {
-  tree decl;
+  tree ivar;
 
-  if (objc_method_context && !strcmp (IDENTIFIER_POINTER (id), "super"))
+  /* If we are not inside of an ObjC method, ivar lookup makes no sense.  */
+  if (!objc_method_context)
+    return other;
+
+  if (!strcmp (IDENTIFIER_POINTER (id), "super"))
     /* We have a message to super.  */
     return get_super_receiver ();
-  else if (objc_method_context && (decl = is_ivar (objc_ivar_chain, id)))
+
+  /* In a class method, look up an instance variable only as a last
+     resort.  */
+  if (TREE_CODE (objc_method_context) == CLASS_METHOD_DECL
+      && other && other != error_mark_node)
+    return other;
+
+  /* Look up the ivar, but do not use it if it is not accessible.  */
+  ivar = is_ivar (objc_ivar_chain, id);
+
+  if (!ivar || is_private (ivar))
+    return other;
+
+  /* In an instance method, a local variable (or parameter) may hide the
+     instance variable.  */
+  if (TREE_CODE (objc_method_context) == INSTANCE_METHOD_DECL
+      && other && other != error_mark_node && !DECL_FILE_SCOPE_P (other))
     {
-      if (is_private (decl))
-	return 0;
-      else
-        return build_ivar_reference (id);
+      warning ("local declaration of %qs hides instance variable",
+	       IDENTIFIER_POINTER (id));
+
+      return other;
     }
-  else
-    return 0;
+
+  /* At this point, we are either in an instance method with no obscuring
+     local definitions, or in a class method with no alternate definitions
+     at all.  */
+  return build_ivar_reference (id);
 }
 
 #include "gt-objc-objc-act.h"
