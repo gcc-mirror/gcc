@@ -2148,6 +2148,7 @@ clean: mostlyclean bytecode.clean lang.clean
 	else if [ "x$(MULTILIB_OPTIONS)" != x ] ; then \
 	  rm -rf `echo $(MULTILIB_OPTIONS) | sed -e 's/\// /g'`; \
 	fi ; fi
+	-rm -fr stage1 stage2 stage3 stage4
 
 # Delete all files that users would normally create
 # while building and installing GCC.
@@ -2156,7 +2157,6 @@ distclean: clean bytecode.distclean lang.distclean
 	-rm -f config.status config.run config.cache config.bak
 	-rm -f Make-lang Make-hooks Make-host Make-target
 	-rm -f Makefile specs.h options.h *.oaux
-	-rm -fr stage1 stage2 stage3 stage4
 	-rm -f */stage1 */stage2 */stage3 */stage4 */include
 	-rm -f c-parse.output
 	-rm -f *.asm
