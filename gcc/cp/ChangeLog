@@ -1,3 +1,9 @@
+2005-03-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/20499
+	* parser.c (cp_parser_class_head): Return NULL_TREE when
+	encountering a redefinition.
+
 2005-03-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20465

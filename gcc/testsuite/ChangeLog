@@ -1,3 +1,8 @@
+2005-03-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/20499
+	* g++.dg/parse/error16.C: Tweak error markers.
+
 2005-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/20561
