@@ -31,6 +31,9 @@
 #   c_compatibility        if "C" compatibility headers are necessary,
 #                              defaults to no.
 #
+#   abi_baseline_triplet   directory name for ABI compat testing,
+#                              defaults to target (as per config.guess)
+#
 # It possibly modifies the following variables:
 #
 #   OPT_LDFLAGS            extra flags to pass when linking the library, of
@@ -54,6 +57,8 @@ else
     cpu_include_dir="cpu/generic"
 fi
 
+abi_baseline_triplet=${target}
+
 c_model=c_std
 c_compatibility=no
 
@@ -71,6 +76,7 @@ case "${target_cpu}" in
     cpu_include_dir="cpu/arm"
     ;;
   i486 | i586 | i686 | i786)
+    # add athlons here maybe
     cpu_include_dir="cpu/i486"
     CPULIMITSH="cpu/i386"
     ;;
