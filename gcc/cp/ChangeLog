@@ -1,3 +1,8 @@
+2001-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.c (cp_copy_res_decl_for_inlining): Adjust
+	DECL_ABSTRACT_ORIGIN for the return variable.
+
 2001-10-31  Zack Weinberg  <zack@codesourcery.com>
 
 	*  Make-lang.in: Replace $(INTL_TARGETS) with po-generated.
