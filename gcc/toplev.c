@@ -54,6 +54,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "basic-block.h"
 #include "intl.h"
+#include "ggc.h"
 
 #ifdef DWARF_DEBUGGING_INFO
 #include "dwarfout.h"
@@ -1350,6 +1351,8 @@ int stack_reg_time;
 int final_time;
 int symout_time;
 int dump_time;
+int gc_time;
+int all_time;
 
 /* Return time used so far, in microseconds.  */
 
@@ -1429,8 +1432,9 @@ print_time (str, total)
      int total;
 {
   fprintf (stderr,
-	   "time in %s: %d.%06d\n",
-	   str, total / 1000000, total % 1000000);
+	   "time in %s: %d.%06d (%.0f%%)\n",
+	   str, total / 1000000, total % 1000000,
+	   (double)total / (double)all_time * 100.0);
 }
 
 /* Count an error or warning.  Return 1 if the message should be printed.  */
@@ -3446,9 +3450,11 @@ compile_file (name)
 
   if (! quiet_flag)
     {
-      fprintf (stderr,"\n");
-      print_time ("parse", parse_time);
+      all_time = get_run_time ();
 
+      fprintf (stderr,"\n");
+
+      print_time ("parse", parse_time);
       print_time ("integration", integration_time);
       print_time ("jump", jump_time);
       print_time ("cse", cse_time);
@@ -3473,6 +3479,7 @@ compile_file (name)
       print_time ("varconst", varconst_time);
       print_time ("symout", symout_time);
       print_time ("dump", dump_time);
+      print_time ("gc", gc_time);
     }
 }
 
@@ -3772,7 +3779,7 @@ rest_of_compilation (decl)
   /* See if we have allocated stack slots that are not directly addressable.
      If so, scan all the insns and create explicit address computation
      for all references to such slots.  */
-/*   fixup_stack_slots (); */
+  /* fixup_stack_slots (); */
 
   /* Find all the EH handlers.  */
   find_exception_handler_labels ();

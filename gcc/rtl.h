@@ -102,13 +102,13 @@ typedef struct rtx_def
 {
 #ifdef ONLY_INT_FIELDS
 #ifdef CODE_FIELD_BUG
-  unsigned int code : 16;
+  unsigned int code : 15;
 #else
   unsigned short code;
 #endif
 #else
   /* The kind of expression this is.  */
-  enum rtx_code code : 16;
+  enum rtx_code code : 15;
 #endif
   /* The kind of value the expression has.  */
 #ifdef ONLY_INT_FIELDS
@@ -171,6 +171,10 @@ typedef struct rtx_def
      1 in a MEM if the MEM refers to a scalar, rather than a member of
      an aggregate.  */
   unsigned frame_related : 1;
+
+  /* Used by the garbage collector.  */
+  unsigned gc_mark : 1;
+
   /* The first element of the operands of this rtx.
      The number of operands and their types are controlled
      by the `code' field, according to rtl.def.  */
@@ -202,6 +206,7 @@ typedef struct rtx_def
 
 typedef struct rtvec_def{
   int num_elem;		/* number of elements */
+  int gc_mark;
   struct rtx_def *elem[1];
 } *rtvec;
 
