@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1998-09-01
+@c 1998-09-05
 
 @ifclear NEWSONLY
 @node News
@@ -57,6 +57,16 @@ to help clarify how they differ from other versions,
 though this can make getting a complete picture
 of what a particular @code{egcs} version contains
 somewhat more difficult.
+
+@heading In 0.5.24 and @code{egcs} 1.1.1 (versus 0.5.23 and 1.1):
+@itemize @bullet
+@item
+Fix @code{libg2c} so it no longer crashes with a spurious diagnostic
+upon doing any I/O following a direct formatted write.
+
+(This bug was introduced in 0.5.23 and @code{egcs} 1.1 in
+@code{g77}'s version of @code{libf2c}.)
+@end itemize
 
 @heading In @code{egcs} 1.1 (versus 0.5.24):
 @itemize @bullet
