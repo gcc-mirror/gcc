@@ -1,3 +1,19 @@
+2000-10-08  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (libgcc.mk): Pass SHLIB_EXT, not SHLIB_LIBS.
+	* configure.in (sparc*-*-solaris*): Use t-slibgcc{,-sld}.
+	* mklibgcc.in: Consider SHLIB_LINK the entire shlib build command.
+	Use SHLIB_EXT.
+
+	* config/t-linux (SHLIB_EXT): New.
+	(SHLIB_LINK): Use the entire build command, with substitutions.
+	(SHLIB_LIBS): Remove.
+	* config/alpha/t-osf4: Likewise.
+	* config/mips/t-iris6: Likewise.
+	* config/sparc/t-sol2: Likewise, but move shlib stuff...
+	* config/sparc/t-slibgcc-sld: ...here.
+	* config/sparc/t-slibgcc: New file.
+
 2000-10-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* tm.texi (INTMAX_TYPE, UINTMAX_TYPE): Define.
