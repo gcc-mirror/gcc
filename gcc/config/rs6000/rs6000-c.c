@@ -48,8 +48,7 @@
 } while (0)
 
 void
-rs6000_pragma_longcall (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+rs6000_pragma_longcall (cpp_reader *pfile ATTRIBUTE_UNUSED)
 {
   tree x, n;
 
@@ -80,8 +79,7 @@ rs6000_pragma_longcall (pfile)
 #define builtin_assert(TXT) cpp_assert (pfile, TXT)
 
 void
-rs6000_cpu_cpp_builtins (pfile)
-     cpp_reader *pfile;
+rs6000_cpu_cpp_builtins (cpp_reader *pfile)
 {
   if (TARGET_POWER2)
     builtin_define ("_ARCH_PWR2");

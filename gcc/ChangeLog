@@ -1,3 +1,9 @@
+2003-09-12  Dale Johannesen  <dale@apple.com>
+	* config/rs6000/rs6000-protos.h:  Use C90 prototypes.
+	* config/rs6000/rs6000-c.c:  Ditto. 
+	* config/rs6000/rs6000.c:  Ditto.
+	* config/rs6000/ sysv4.h:  Ditto.
+
 2003-09-12  Chris Lattner <sabre@nondot.org>
 
 	* loop.c: Move comments describing BIV's and GIV's to top of file
