@@ -1,3 +1,9 @@
+2004-07-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.md (nonlocal_goto): Remove disabled code.
+	(goto_handler_and_restore_v9): Delete disabled insn.
+	(goto_handler_and_restore_v9_sp64): Likewise.
+
 2004-07-05  Roger Sayle  <roger@eyesopen.com>
 
 	* calls.c (load_register_parameters): Call expand_shift instead
