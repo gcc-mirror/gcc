@@ -1,5 +1,10 @@
 2004-09-25  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* doc/trouble.texi: Remove obsolete information.  Update
+	information on how to regenerate fixincluded headers.
+
+2004-09-25  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	PR c/12951
 	* doc/invoke.texi: Document that
 	-Wno-error-implicit-function-declaration is not accepted.

@@ -22,7 +22,6 @@ where people's opinions differ as to what is best.
 * Cross-Compiler Problems::   Common problems of cross compiling with GCC.
 * Interoperation::      Problems using GCC with other compilers,
 			   and with certain linkers, assemblers and debuggers.
-* External Bugs::	Problems compiling certain programs.
 * Incompatibilities::   GCC is incompatible with traditional C.
 * Fixed Headers::       GCC uses corrected versions of system header files.
                            This is necessary, but doesn't always work smoothly.
@@ -52,12 +51,6 @@ The @code{fixproto} script will sometimes add prototypes for the
 @code{jmp_buf} type before that type is defined.  To work around this,
 edit the offending file and place the typedef in front of the
 prototypes.
-
-@item
-@opindex pedantic-errors
-When @option{-pedantic-errors} is specified, GCC will incorrectly give
-an error message when a function name is specified in an expression
-involving the comma operator.
 @end itemize
 
 @node Cross-Compiler Problems
@@ -67,29 +60,6 @@ You may run into problems with cross compilation on certain machines,
 for several reasons.
 
 @itemize @bullet
-@item
-Cross compilation can run into trouble for certain machines because
-some target machines' assemblers require floating point numbers to be
-written as @emph{integer} constants in certain contexts.
-
-The compiler writes these integer constants by examining the floating
-point value as an integer and printing that integer, because this is
-simple to write and independent of the details of the floating point
-representation.  But this does not work if the compiler is running on
-a different machine with an incompatible floating point format, or
-even a different byte-ordering.
-
-In addition, correct constant folding of floating point values
-requires representing them in the target machine's format.
-(The C standard does not quite require this, but in practice
-it is the only way to win.)
-
-It is now possible to overcome these problems by defining macros such
-as @code{REAL_VALUE_TYPE}.  But doing so is a substantial amount of
-work for each target machine.
-@xref{Cross-compilation,,Cross Compilation and Floating Point,
-gccint, GNU Compiler Collection (GCC) Internals}.
-
 @item
 At present, the program @file{mips-tfile} which adds debug
 support to object files on MIPS systems does not work in a cross
@@ -121,40 +91,9 @@ run.  Incompatible libraries are then detected at link time, rather than
 at run time.
 
 @item
-Older GDB versions sometimes fail to read the output of GCC version
-2.  If you have trouble, get GDB version 4.4 or later.
-
-@item
-@cindex DBX
-DBX rejects some files produced by GCC, though it accepts similar
-constructs in output from PCC@.  Until someone can supply a coherent
-description of what is valid DBX input and what is not, there is
-nothing that can be done about these problems.
-
-@item
-The GNU assembler (GAS) does not support PIC@.  To generate PIC code, you
-must use some other assembler, such as @file{/bin/as}.
-
-@item
 On some BSD systems, including some versions of Ultrix, use of profiling
 causes static variable destructors (currently used only in C++) not to
 be run.
-
-@ignore
-@cindex @code{vfork}, for the Sun-4
-@item
-There is a bug in @code{vfork} on the Sun-4 which causes the registers
-of the child process to clobber those of the parent.  Because of this,
-programs that call @code{vfork} are likely to lose when compiled
-optimized with GCC when the child code alters registers which contain
-C variables in the parent.  This affects variables which are live in the
-parent across the call to @code{vfork}.
-
-If you encounter this, you can work around the problem by declaring
-variables @code{volatile} in the function that calls @code{vfork}, until
-the problem goes away, or by not declaring them @code{register} and not
-using @option{-O} for those source files.
-@end ignore
 
 @item
 On some SGI systems, when you use @option{-lgl_s} as an option,
@@ -211,32 +150,6 @@ The solution is to not use the @file{libmalloc.a} library.  Use instead
 this problem.
 
 @item
-Sun forgot to include a static version of @file{libdl.a} with some
-versions of SunOS (mainly 4.1).  This results in undefined symbols when
-linking static binaries (that is, if you use @option{-static}).  If you
-see undefined symbols @code{_dlclose}, @code{_dlsym} or @code{_dlopen}
-when linking, compile and link against the file
-@file{mit/util/misc/dlsym.c} from the MIT version of X windows.
-
-@item
-The 128-bit long double format that the SPARC port supports currently
-works by using the architecturally defined quad-word floating point
-instructions.  Since there is no hardware that supports these
-instructions they must be emulated by the operating system.  Long
-doubles do not work in Sun OS versions 4.0.3 and earlier, because the
-kernel emulator uses an obsolete and incompatible format.  Long doubles
-do not work in Sun OS version 4.1.1 due to a problem in a Sun library.
-Long doubles do work on Sun OS versions 4.1.2 and higher, but GCC
-does not enable them by default.  Long doubles appear to work in Sun OS
-5.x (Solaris 2.x).
-
-@item
-On HP-UX version 9.01 on the HP PA, the HP compiler @code{cc} does not
-compile GCC correctly.  We do not yet know why.  However, GCC
-compiled on earlier HP-UX versions works properly on HP-UX 9.01 and can
-compile itself properly on 9.01.
-
-@item
 On the HP PA machine, ADB sometimes fails to work on functions compiled
 with GCC@.  Specifically, it fails to work on functions that use
 @code{alloca} or variable-size arrays.  This is because GCC doesn't
@@ -274,23 +187,6 @@ the form:
 @end smallexample
 
 These warnings are harmless and can be safely ignored.
-
-@item
-On the IBM RS/6000, compiling code of the form
-
-@smallexample
-extern int foo;
-
-@dots{} foo @dots{}
-
-static int foo;
-@end smallexample
-
-@noindent
-will cause the linker to report an undefined symbol @code{foo}.
-Although this behavior differs from most other systems, it is not a
-bug because redefining an @code{extern} variable as @code{static}
-is undefined in ISO C@.
 
 @item
 In extremely rare cases involving some very large functions you may
@@ -351,58 +247,6 @@ these options to produce code compatible with the Fortran compiler:
 
 @smallexample
 -fcall-saved-r2 -fcall-saved-r3 -fcall-saved-r4 -fcall-saved-r5
-@end smallexample
-
-@item
-On the Alpha, you may get assembler errors about invalid syntax as a
-result of floating point constants.  This is due to a bug in the C
-library functions @code{ecvt}, @code{fcvt} and @code{gcvt}.  Given valid
-floating point numbers, they sometimes print @samp{NaN}.
-@end itemize
-
-@node External Bugs
-@section Problems Compiling Certain Programs
-
-@c prevent bad page break with this line
-Certain programs have problems compiling.
-
-@itemize @bullet
-@item
-Parse errors may occur compiling X11 on a Decstation running Ultrix 4.2
-because of problems in DEC's versions of the X11 header files
-@file{X11/Xlib.h} and @file{X11/Xutil.h}.  People recommend adding
-@option{-I/usr/include/mit} to use the MIT versions of the header files,
-or fixing the header files by adding this:
-
-@smallexample
-#ifdef __STDC__
-#define NeedFunctionPrototypes 0
-#endif
-@end smallexample
-
-@item
-On various 386 Unix systems derived from System V, including SCO, ISC,
-and ESIX, you may get error messages about running out of virtual memory
-while compiling certain programs.
-
-You can prevent this problem by linking GCC with the GNU malloc
-(which thus replaces the malloc that comes with the system).  GNU malloc
-is available as a separate package, and also in the file
-@file{src/gmalloc.c} in the GNU Emacs 19 distribution.
-
-If you have installed GNU malloc as a separate library package, use this
-option when you relink GCC:
-
-@smallexample
-MALLOC=/usr/local/lib/libgmalloc.a
-@end smallexample
-
-Alternatively, if you have compiled @file{gmalloc.c} from Emacs 19, copy
-the object file to @file{gmalloc.o} and use this option when you relink
-GCC:
-
-@smallexample
-MALLOC=gmalloc.o
 @end smallexample
 @end itemize
 
@@ -662,8 +506,7 @@ incompatible with ISO C, and some depend on special features of other
 compilers.
 
 Installing GCC automatically creates and installs the fixed header
-files, by running a program called @code{fixincludes} (or for certain
-targets an alternative such as @code{fixinc.svr4}).  Normally, you
+files, by running a program called @code{fixincludes}.  Normally, you
 don't need to pay attention to this.  But there are cases where it
 doesn't do the right thing automatically.
 
@@ -671,35 +514,23 @@ doesn't do the right thing automatically.
 @item
 If you update the system's header files, such as by installing a new
 system version, the fixed header files of GCC are not automatically
-updated.  The easiest way to update them is to reinstall GCC@.  (If
-you want to be clever, look in the makefile and you can find a
-shortcut.)
+updated.  They can be updated using the @command{mkheaders} script
+installed in
+@file{@var{libexecdir}/gcc/@var{target}/@var{version}/install-tools/}.
 
 @item
-On some systems, in particular SunOS 4, header file directories contain
+On some systems, header file directories contain
 machine-specific symbolic links in certain places.  This makes it
 possible to share most of the header files among hosts running the
-same version of SunOS 4 on different machine models.
+same version of the system on different machine models.
 
 The programs that fix the header files do not understand this special
 way of using symbolic links; therefore, the directory of fixed header
 files is good only for the machine model used to build it.
 
-In SunOS 4, only programs that look inside the kernel will notice the
-difference between machine models.  Therefore, for most purposes, you
-need not be concerned about this.
-
 It is possible to make separate sets of fixed header files for the
 different machine models, and arrange a structure of symbolic links so
 as to use the proper set, but you'll have to do this by hand.
-
-@item
-On Lynxos, GCC by default does not fix the header files.  This is
-because bugs in the shell cause the @code{fixincludes} script to fail.
-
-This means you will encounter problems due to bugs in the system header
-files.  It may be no comfort that they aren't GCC's fault, but it
-does mean that there's nothing for us to do about them.
 @end itemize
 
 @node Standard Libraries
@@ -796,11 +627,9 @@ scripts adapt to various systems by searching all the system header
 files for the problem cases that we know about.
 
 If new system header files are installed, nothing automatically arranges
-to update the corrected header files.  You will have to reinstall GCC
-to fix the new header files.  More specifically, go to the build
-directory and delete the files @file{stmp-fixinc} and
-@file{stmp-headers}, and the subdirectory @code{include}; then do
-@samp{make install} again.
+to update the corrected header files.  They can be updated using the
+@command{mkheaders} script installed in
+@file{@var{libexecdir}/gcc/@var{target}/@var{version}/install-tools/}.
 
 @item
 @cindex floating point precision
