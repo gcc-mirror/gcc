@@ -38,8 +38,7 @@ exception statement from your version. */
 
 package java.io;
 
-import java.security.*;
-
+import java.security.Permission;
 
 public final class FilePermission extends Permission implements Serializable
 {
