@@ -35,8 +35,6 @@ extern int          mcore_dllimport_name_p       	PARAMS ((const char *));
 extern int          mcore_naked_function_p       	PARAMS ((void));
 
 #ifdef TREE_CODE
-extern void         mcore_encode_section_info    	PARAMS ((tree, int));
-
 #ifdef HAVE_MACHINE_MODES
 extern int          mcore_function_arg_partial_nregs	PARAMS ((CUMULATIVE_ARGS, enum machine_mode, tree, int));
 extern void         mcore_setup_incoming_varargs	PARAMS ((CUMULATIVE_ARGS, enum machine_mode, tree, int *));

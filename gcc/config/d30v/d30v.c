@@ -2632,12 +2632,7 @@ d30v_split_double (value, p_high, p_low)
 
 /* A C compound statement to output to stdio stream STREAM the assembler syntax
    for an instruction operand that is a memory reference whose address is X.  X
-   is an RTL expression.
-
-   On some machines, the syntax for a symbolic address depends on the section
-   that the address refers to.  On these machines, define the macro
-   `ENCODE_SECTION_INFO' to store the information into the `symbol_ref', and
-   then check for it here.  *Note Assembler Format::.  */
+   is an RTL expression.  */
 
 void
 d30v_print_operand_address (stream, x)
@@ -3101,64 +3096,7 @@ d30v_initialize_trampoline (addr, fnaddr, static_chain)
 
 /* A C compound statement with a conditional `goto LABEL;' executed if X (an
    RTX) is a legitimate memory address on the target machine for a memory
-   operand of mode MODE.
-
-   It usually pays to define several simpler macros to serve as subroutines for
-   this one.  Otherwise it may be too complicated to understand.
-
-   This macro must exist in two variants: a strict variant and a non-strict
-   one.  The strict variant is used in the reload pass.  It must be defined so
-   that any pseudo-register that has not been allocated a hard register is
-   considered a memory reference.  In contexts where some kind of register is
-   required, a pseudo-register with no hard register must be rejected.
-
-   The non-strict variant is used in other passes.  It must be defined to
-   accept all pseudo-registers in every context where some kind of register is
-   required.
-
-   Compiler source files that want to use the strict variant of this macro
-   define the macro `REG_OK_STRICT'.  You should use an `#ifdef REG_OK_STRICT'
-   conditional to define the strict variant in that case and the non-strict
-   variant otherwise.
-
-   Subroutines to check for acceptable registers for various purposes (one for
-   base registers, one for index registers, and so on) are typically among the
-   subroutines used to define `GO_IF_LEGITIMATE_ADDRESS'.  Then only these
-   subroutine macros need have two variants; the higher levels of macros may be
-   the same whether strict or not.
-
-   Normally, constant addresses which are the sum of a `symbol_ref' and an
-   integer are stored inside a `const' RTX to mark them as constant.
-   Therefore, there is no need to recognize such sums specifically as
-   legitimate addresses.  Normally you would simply recognize any `const' as
-   legitimate.
-
-   Usually `PRINT_OPERAND_ADDRESS' is not prepared to handle constant sums that
-   are not marked with `const'.  It assumes that a naked `plus' indicates
-   indexing.  If so, then you *must* reject such naked constant sums as
-   illegitimate addresses, so that none of them will be given to
-   `PRINT_OPERAND_ADDRESS'.
-
-   On some machines, whether a symbolic address is legitimate depends on the
-   section that the address refers to.  On these machines, define the macro
-   `ENCODE_SECTION_INFO' to store the information into the `symbol_ref', and
-   then check for it here.  When you see a `const', you will have to look
-   inside it to find the `symbol_ref' in order to determine the section.  *Note
-   Assembler Format::.
-
-   The best way to modify the name string is by adding text to the beginning,
-   with suitable punctuation to prevent any ambiguity.  Allocate the new name
-   in `saveable_obstack'.  You will have to modify `ASM_OUTPUT_LABELREF' to
-   remove and decode the added text and output the name accordingly, and define
-   `STRIP_NAME_ENCODING' to access the original name string.
-
-   You can check the information stored here into the `symbol_ref' in the
-   definitions of the macros `GO_IF_LEGITIMATE_ADDRESS' and
-   `PRINT_OPERAND_ADDRESS'.
-
-   Return 0 if the address is not legitimate, 1 if the address would fit
-   in a short instruction, or 2 if the address would fit in a long
-   instruction.  */
+   operand of mode MODE.  */
 
 #define XREGNO_OK_FOR_BASE_P(REGNO, STRICT_P)				\
 ((STRICT_P)								\

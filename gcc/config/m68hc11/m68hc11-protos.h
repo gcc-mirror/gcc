@@ -41,7 +41,6 @@ extern void m68hc11_function_arg_advance PARAMS((CUMULATIVE_ARGS*,
                                                  enum machine_mode,
                                                  tree,
                                                  int));
-extern void m68hc11_encode_section_info PARAMS((tree, int));
 #endif
 
 #ifdef RTX_CODE

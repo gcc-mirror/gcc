@@ -1046,29 +1046,6 @@ __transfer_from_trampoline ()		\
  || GET_CODE (X) == LABEL_REF						\
  || (GET_CODE (X) == CONST && symbolic_reference_mentioned_p (X)))
 
-/* Define this macro if references to a symbol must be treated
-   differently depending on something about the variable or
-   function named by the symbol (such as what section it is in).
-
-   On the ns32k, if using PIC, mark a SYMBOL_REF for a non-global
-   symbol or a code symbol. These symbols are referenced via pc
-   and not via sb. */
-
-#define ENCODE_SECTION_INFO(DECL, FIRST)				\
-do									\
-  {									\
-    extern int flag_pic;						\
-    if (flag_pic)							\
-      {									\
-	rtx rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'		\
-		   ? TREE_CST_RTL (DECL) : DECL_RTL (DECL));		\
-	SYMBOL_REF_FLAG (XEXP (rtl, 0))					\
-	  = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'			\
-	     || ! TREE_PUBLIC (DECL));					\
-      }									\
-  }									\
-while (0)
-
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.
    On the ns32k, only predecrement and postincrement address depend thus

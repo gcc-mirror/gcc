@@ -55,6 +55,7 @@ static void romp_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void romp_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void romp_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					     unsigned HOST_WIDE_INT));
+static void romp_encode_section_info PARAMS ((tree, int));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_FUNCTION_PROLOGUE
@@ -63,6 +64,8 @@ static void romp_select_rtx_section PARAMS ((enum machine_mode, rtx,
 #define TARGET_ASM_FUNCTION_EPILOGUE romp_output_function_epilogue
 #undef TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION romp_select_rtx_section
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO romp_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2082,4 +2085,17 @@ romp_select_rtx_section (mode, x, align)
      unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
 {
   data section ();
+}
+
+/* For no good reason, we do the same as the other RT compilers and load
+   the addresses of data areas for a function from our data area.  That means
+   that we need to mark such SYMBOL_REFs.  We do so here.  */
+
+static void
+romp_encode_section_info (decl, first)
+     tree decl;
+     int first ATTRIBUTE_UNUSED;
+{
+  if (TREE_CODE (TREE_TYPE (decl)) == FUNCTION_TYPE)
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
 }

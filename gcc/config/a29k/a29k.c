@@ -50,6 +50,7 @@ static void output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void a29k_asm_named_section PARAMS ((const char *, unsigned int));
 static int a29k_adjust_cost PARAMS ((rtx, rtx, rtx, int));
+static void a29k_encode_section_info PARAMS ((tree, int));
 
 #define min(A,B)	((A) < (B) ? (A) : (B))
 
@@ -108,6 +109,8 @@ int a29k_compare_fp_p;
 #define TARGET_ASM_FUNCTION_EPILOGUE output_function_epilogue
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST a29k_adjust_cost
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO a29k_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1610,4 +1613,19 @@ a29k_adjust_cost (insn, link, dep_insn, cost)
     return 0;	/* Anti or output dependence.  */
 
   return cost;
+}
+
+/* If we are referencing a function that is static or is known to be
+   in this file, make the SYMBOL_REF special.  We can use this to
+   indicate that we can branch to this function without emitting a
+   no-op after the call.  */
+
+static void
+a29k_encode_section_info (decl, first)
+     tree decl;
+     int first ATTRIBUTE_UNUSED;
+{
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && (TREE_ASM_WRITTEN (decl) || ! TREE_PUBLIC (decl)))
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
 }

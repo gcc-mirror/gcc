@@ -257,9 +257,8 @@ do {									\
 
 extern void i386_pe_encode_section_info PARAMS ((TREE, int));
 
-#undef ENCODE_SECTION_INFO
-#define ENCODE_SECTION_INFO(DECL, FIRST) \
-  i386_pe_encode_section_info (DECL, FIRST)
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO  i386_pe_encode_section_info
 
 /* Utility used only in this file.  */
 #define I386_PE_STRIP_ENCODING(SYM_NAME) \
@@ -269,7 +268,7 @@ extern void i386_pe_encode_section_info PARAMS ((TREE, int));
 
 /* This macro gets just the user-specified name
    out of the string in a SYMBOL_REF.  Discard
-   trailing @[NUM] encoded by ENCODE_SECTION_INFO.  */
+   trailing @[NUM] encoded by targetm.encode_section_info.  */
 #undef  STRIP_NAME_ENCODING
 #define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)				\
 do {									\

@@ -49,7 +49,6 @@ extern void cris_target_asm_named_section
 
 # ifdef TREE_CODE
 extern rtx cris_expand_builtin_va_arg PARAMS ((tree, tree));
-extern void cris_encode_section_info PARAMS ((tree, int));
 # endif
 #endif /* RTX_CODE */
 

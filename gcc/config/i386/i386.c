@@ -691,6 +691,8 @@ struct ix86_address
 
 static int ix86_decompose_address PARAMS ((rtx, struct ix86_address *));
 
+static void i386_encode_section_info PARAMS ((tree, int)) ATTRIBUTE_UNUSED;
+
 struct builtin_description;
 static rtx ix86_expand_sse_comi PARAMS ((const struct builtin_description *,
 					 tree, rtx));
@@ -2945,7 +2947,7 @@ local_symbolic_operand (op, mode)
      the compiler that assumes it can just stick the results of 
      ASM_GENERATE_INTERNAL_LABEL in a symbol_ref and have done.  */
   /* ??? This is a hack.  Should update the body of the compiler to
-     always create a DECL an invoke ENCODE_SECTION_INFO.  */
+     always create a DECL an invoke targetm.encode_section_info.  */
   if (strncmp (XSTR (op, 0), internal_label_prefix,
 	       internal_label_prefix_len) == 0)
     return 1;
@@ -5083,6 +5085,37 @@ legitimize_pic_address (orig, reg)
 	}
     }
   return new;
+}
+
+/* If using PIC, mark a SYMBOL_REF for a non-global symbol so that we
+   may access it directly in the GOT.  */
+
+static void
+i386_encode_section_info (decl, first)
+     tree decl;
+     int first ATTRIBUTE_UNUSED;
+{
+  if (flag_pic)
+    {
+      rtx rtl = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
+		 ? TREE_CST_RTL (decl) : DECL_RTL (decl));
+
+      if (GET_CODE (rtl) == MEM)
+	{
+	  if (TARGET_DEBUG_ADDR
+	      && TREE_CODE_CLASS (TREE_CODE (decl)) == 'd')
+	    {
+	      fprintf (stderr, "Encode %s, public = %d\n",
+		       IDENTIFIER_POINTER (DECL_NAME (decl)),
+		       TREE_PUBLIC (decl));
+	    }
+
+	  SYMBOL_REF_FLAG (XEXP (rtl, 0))
+	    = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
+	       || ! TREE_PUBLIC (decl)
+	       || MODULE_LOCAL_P (decl));
+	}
+    }
 }
 
 /* Try machine-dependent ways of modifying an illegitimate address

@@ -75,6 +75,7 @@ static int    m32r_variable_issue  PARAMS ((FILE *, int, rtx, int));
 static int    m32r_issue_rate	   PARAMS ((void));
 
 static void m32r_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT));
+static void m32r_encode_section_info PARAMS ((tree, int));
 
 
 /* Initialize the GCC target structure.  */
@@ -103,6 +104,9 @@ static void m32r_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT));
 #define TARGET_SCHED_INIT m32r_sched_init
 #undef TARGET_SCHED_REORDER
 #define TARGET_SCHED_REORDER m32r_sched_reorder
+
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO m32r_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -368,7 +372,7 @@ m32r_select_section (decl, reloc, align)
      large: prefixed with LARGE_FLAG_CHAR
 */
 
-void
+static void
 m32r_encode_section_info (decl, first)
      tree decl;
      int first;

@@ -53,8 +53,6 @@ extern struct rtx_def *c4x_function_arg PARAMS ((CUMULATIVE_ARGS *,
 						 enum machine_mode, tree,
 						 int));
 
-extern void c4x_encode_section_info PARAMS ((tree, int));
-
 #endif /* TREE_CODE */
 
 

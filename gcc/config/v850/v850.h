@@ -1414,15 +1414,6 @@ extern union tree_node * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_K
 
 #define EP_REGNUM 30	/* ep register number */
 
-#define ENCODE_SECTION_INFO(DECL, FIRST)			\
-  do								\
-    {								\
-      if ((FIRST) && TREE_CODE (DECL) == VAR_DECL		\
-          && (TREE_STATIC (DECL) || DECL_EXTERNAL (DECL)))	\
-	v850_encode_data_area (DECL);				\
-    }								\
-  while (0)
-
 #define ZDA_NAME_FLAG_CHAR '@'
 #define TDA_NAME_FLAG_CHAR '%'
 #define SDA_NAME_FLAG_CHAR '&'

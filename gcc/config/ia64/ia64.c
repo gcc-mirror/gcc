@@ -126,6 +126,7 @@ static void emit_insn_group_barriers PARAMS ((FILE *, rtx));
 static void emit_all_insn_group_barriers PARAMS ((FILE *, rtx));
 static void emit_predicate_relation_info PARAMS ((void));
 static bool ia64_in_small_data_p PARAMS ((tree));
+static void ia64_encode_section_info PARAMS ((tree, int));
 static void process_epilogue PARAMS ((void));
 static int process_set PARAMS ((FILE *, rtx));
 
@@ -208,6 +209,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P  ia64_in_small_data_p
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO ia64_encode_section_info
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST ia64_adjust_cost
@@ -6899,7 +6902,7 @@ ia64_in_small_data_p (exp)
   return false;
 }
 
-void
+static void
 ia64_encode_section_info (decl, first)
      tree decl;
      int first ATTRIBUTE_UNUSED;
@@ -6971,10 +6974,10 @@ ia64_encode_section_info (decl, first)
       XSTR (symbol, 0) = ggc_alloc_string (newstr, len);
     }
 
-  /* This decl is marked as being in small data/bss but it shouldn't be;
-     one likely explanation for this is that the decl has been moved into
-     a different section from the one it was in when ENCODE_SECTION_INFO
-     was first called.  Remove the '@'.  */
+  /* This decl is marked as being in small data/bss but it shouldn't
+     be; one likely explanation for this is that the decl has been
+     moved into a different section from the one it was in when
+     targetm.encode_section_info was first called.  Remove the '@'.  */
   else if (symbol_str[0] == SDATA_NAME_FLAG_CHAR)
     XSTR (symbol, 0) = ggc_strdup (symbol_str + 1);
 }

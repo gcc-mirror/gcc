@@ -907,9 +907,6 @@ typedef struct { int regs; int lib; int now_varargs; } CUMULATIVE_ARGS;
 
 #define READONLY_DATA_SECTION_ASM_OP	"\t.section\t.rodata"
 
-#define ENCODE_SECTION_INFO(DECL, FIRST) \
- mmix_encode_section_info (DECL, FIRST)
-
 #define STRIP_NAME_ENCODING(VAR, SYM_NAME) \
  (VAR) = mmix_strip_name_encoding (SYM_NAME)
 

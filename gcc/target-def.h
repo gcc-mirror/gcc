@@ -209,6 +209,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_CANNOT_MODIFY_JUMPS_P hook_void_bool_false
 #define TARGET_IN_SMALL_DATA_P hook_tree_bool_false
 
+#ifndef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO hook_tree_int_void
+#endif
+
 /* The whole shebang.  */
 #define TARGET_INITIALIZER			\
 {						\
@@ -228,7 +232,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_HAVE_NAMED_SECTIONS,			\
   TARGET_HAVE_CTORS_DTORS,			\
   TARGET_CANNOT_MODIFY_JUMPS_P,			\
-  TARGET_IN_SMALL_DATA_P			\
+  TARGET_IN_SMALL_DATA_P,			\
+  TARGET_ENCODE_SECTION_INFO			\
 }
 
 #include "hooks.h"

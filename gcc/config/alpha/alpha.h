@@ -1724,13 +1724,6 @@ do {									     \
 
 #define DATA_SECTION_ASM_OP "\t.data"
 
-/* Define this macro if references to a symbol must be treated differently
-   depending on something about the variable or function named by the symbol
-   (such as what section it is in).  */
-
-#define ENCODE_SECTION_INFO(DECL, FIRST)  \
-  alpha_encode_section_info (DECL, FIRST)
-
 #define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)	\
 do {						\
   (VAR) = (SYMBOL_NAME);			\

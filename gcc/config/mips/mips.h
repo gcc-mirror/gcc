@@ -3054,53 +3054,7 @@ typedef struct mips_args {
 
 /* A C compound statement with a conditional `goto LABEL;' executed
    if X (an RTX) is a legitimate memory address on the target
-   machine for a memory operand of mode MODE.
-
-   It usually pays to define several simpler macros to serve as
-   subroutines for this one.  Otherwise it may be too complicated
-   to understand.
-
-   This macro must exist in two variants: a strict variant and a
-   non-strict one.  The strict variant is used in the reload pass.
-   It must be defined so that any pseudo-register that has not been
-   allocated a hard register is considered a memory reference.  In
-   contexts where some kind of register is required, a
-   pseudo-register with no hard register must be rejected.
-
-   The non-strict variant is used in other passes.  It must be
-   defined to accept all pseudo-registers in every context where
-   some kind of register is required.
-
-   Compiler source files that want to use the strict variant of
-   this macro define the macro `REG_OK_STRICT'.  You should use an
-   `#ifdef REG_OK_STRICT' conditional to define the strict variant
-   in that case and the non-strict variant otherwise.
-
-   Typically among the subroutines used to define
-   `GO_IF_LEGITIMATE_ADDRESS' are subroutines to check for
-   acceptable registers for various purposes (one for base
-   registers, one for index registers, and so on).  Then only these
-   subroutine macros need have two variants; the higher levels of
-   macros may be the same whether strict or not.
-
-   Normally, constant addresses which are the sum of a `symbol_ref'
-   and an integer are stored inside a `const' RTX to mark them as
-   constant.  Therefore, there is no need to recognize such sums
-   specifically as legitimate addresses.  Normally you would simply
-   recognize any `const' as legitimate.
-
-   Usually `PRINT_OPERAND_ADDRESS' is not prepared to handle
-   constant sums that are not marked with  `const'.  It assumes
-   that a naked `plus' indicates indexing.  If so, then you *must*
-   reject such naked constant sums as illegitimate addresses, so
-   that none of them will be given to `PRINT_OPERAND_ADDRESS'.
-
-   On some machines, whether a symbolic address is legitimate
-   depends on the section that the address refers to.  On these
-   machines, define the macro `ENCODE_SECTION_INFO' to store the
-   information into the `symbol_ref', and then check for it here.
-   When you see a `const', you will have to look inside it to find
-   the `symbol_ref' in order to determine the section.  */
+   machine for a memory operand of mode MODE.  */
 
 #if 1
 #define GO_PRINTF(x)	fprintf(stderr, (x))
@@ -3305,143 +3259,6 @@ typedef struct mips_args {
    You may assume that ADDR is a valid address for the machine.  */
 
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL) {}
-
-
-/* Define this macro if references to a symbol must be treated
-   differently depending on something about the variable or
-   function named by the symbol (such as what section it is in).
-
-   The macro definition, if any, is executed immediately after the
-   rtl for DECL has been created and stored in `DECL_RTL (DECL)'.
-   The value of the rtl will be a `mem' whose address is a
-   `symbol_ref'.
-
-   The usual thing for this macro to do is to a flag in the
-   `symbol_ref' (such as `SYMBOL_REF_FLAG') or to store a modified
-   name string in the `symbol_ref' (if one bit is not enough
-   information).
-
-   The best way to modify the name string is by adding text to the
-   beginning, with suitable punctuation to prevent any ambiguity.
-   Allocate the new name in `saveable_obstack'.  You will have to
-   modify `ASM_OUTPUT_LABELREF' to remove and decode the added text
-   and output the name accordingly.
-
-   You can also check the information stored in the `symbol_ref' in
-   the definition of `GO_IF_LEGITIMATE_ADDRESS' or
-   `PRINT_OPERAND_ADDRESS'.
-
-   When optimizing for the $gp pointer, SYMBOL_REF_FLAG is set for all
-   small objects.
-
-   When generating embedded PIC code, SYMBOL_REF_FLAG is set for
-   symbols which are not in the .text section.
-
-   When generating mips16 code, SYMBOL_REF_FLAG is set for string
-   constants which are put in the .text section.  We also record the
-   total length of all such strings; this total is used to decide
-   whether we need to split the constant table, and need not be
-   precisely correct.
-
-   When not mips16 code nor embedded PIC, if a symbol is in a
-   gp addresable section, SYMBOL_REF_FLAG is set prevent gcc from
-   splitting the reference so that gas can generate a gp relative
-   reference.
-
-   When TARGET_EMBEDDED_DATA is set, we assume that all const
-   variables will be stored in ROM, which is too far from %gp to use
-   %gprel addressing.  Note that (1) we include "extern const"
-   variables in this, which mips_select_section doesn't, and (2) we
-   can't always tell if they're really const (they might be const C++
-   objects with non-const constructors), so we err on the side of
-   caution and won't use %gprel anyway (otherwise we'd have to defer
-   this decision to the linker/loader).  The handling of extern consts
-   is why the DECL_INITIAL macros differ from mips_select_section.
-
-   If you are changing this macro, you should look at
-   mips_select_section and see if it needs a similar change.  */
-
-#define ENCODE_SECTION_INFO(DECL, FIRST)				\
-do									\
-  {									\
-    if (TARGET_MIPS16)							\
-      {									\
-	if ((FIRST) && TREE_CODE (DECL) == STRING_CST			\
-	    && ! flag_writable_strings					\
-	    /* If this string is from a function, and the function will	\
-	       go in a gnu linkonce section, then we can't directly	\
-	       access the string.  This gets an assembler error		\
-	       "unsupported PC relative reference to different section".\
-	       If we modify SELECT_SECTION to put it in function_section\
-	       instead of text_section, it still fails because		\
-	       DECL_SECTION_NAME isn't set until assemble_start_function.\
-	       If we fix that, it still fails because strings are shared\
-	       among multiple functions, and we have cross section	\
-	       references again.  We force it to work by putting string	\
-	       addresses in the constant pool and indirecting.  */	\
-	    && (! current_function_decl					\
-		|| ! DECL_ONE_ONLY (current_function_decl)))		\
-	  {								\
-	    SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (DECL), 0)) = 1;	\
-	    mips_string_length += TREE_STRING_LENGTH (DECL);		\
-	  }								\
-      }									\
-									\
-    if (TARGET_EMBEDDED_DATA						\
-	&& (TREE_CODE (DECL) == VAR_DECL				\
-	    && TREE_READONLY (DECL) && !TREE_SIDE_EFFECTS (DECL))	\
-	    && (!DECL_INITIAL (DECL)					\
-		|| TREE_CONSTANT (DECL_INITIAL (DECL))))		\
-      {									\
-	SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 0;		\
-      }									\
-									\
-    else if (TARGET_EMBEDDED_PIC)					\
-      {									\
-        if (TREE_CODE (DECL) == VAR_DECL)				\
-	  SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
-        else if (TREE_CODE (DECL) == FUNCTION_DECL)			\
-	  SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 0;		\
-	else if (TREE_CODE (DECL) == STRING_CST				\
-		 && ! flag_writable_strings)				\
-	  SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (DECL), 0)) = 0;		\
-        else								\
-	  SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (DECL), 0)) = 1;		\
-      }									\
-									\
-    else if (TREE_CODE (DECL) == VAR_DECL				\
-             && DECL_SECTION_NAME (DECL) != NULL_TREE                   \
-             && (0 == strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (DECL)), \
-                              ".sdata")                                 \
-                || 0 == strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (DECL)),\
-                              ".sbss")))                                \
-      {									\
-        SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
-      }									\
-									\
-    /* We can not perform GP optimizations on variables which are in	\
-       specific sections, except for .sdata and .sbss which are		\
-       handled above.  */						\
-    else if (TARGET_GP_OPT && TREE_CODE (DECL) == VAR_DECL		\
-	     && DECL_SECTION_NAME (DECL) == NULL_TREE			\
-	     && ! (TARGET_MIPS16 && TREE_PUBLIC (DECL)			\
-		   && (DECL_COMMON (DECL)				\
-		       || DECL_ONE_ONLY (DECL)				\
-		       || DECL_WEAK (DECL))))				\
-      {									\
-	int size = int_size_in_bytes (TREE_TYPE (DECL));		\
-									\
-	if (size > 0 && size <= mips_section_threshold)			\
-	  SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
-      }									\
-									\
-    else if (HALF_PIC_P ())						\
-      {									\
-	if (FIRST)							\
-          HALF_PIC_ENCODE (DECL);					\
-      }									\
-  }									\
-while (0)
 
 /* This handles the magic '..CURRENT_FUNCTION' symbol, which means
    'the start of the function that this code is output in'.  */
@@ -4383,12 +4200,7 @@ while (0)
 
 /* A C compound statement to output to stdio stream STREAM the
    assembler syntax for an instruction operand that is a memory
-   reference whose address is ADDR.  ADDR is an RTL expression.
-
-   On some machines, the syntax for a symbolic address depends on
-   the section that the address refers to.  On these machines,
-   define the macro `ENCODE_SECTION_INFO' to store the information
-   into the `symbol_ref', and then check for it here.  */
+   reference whose address is ADDR.  ADDR is an RTL expression.  */
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 

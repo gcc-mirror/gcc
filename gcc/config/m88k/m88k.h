@@ -2350,36 +2350,6 @@ sdata_section ()							\
    the text section.  When we use a table of addresses, we explicitly
    change to the readonly data section.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 1
-
-/* Define this macro if references to a symbol must be treated differently
-   depending on something about the variable or function named by the
-   symbol (such as what section it is in).
-
-   The macro definition, if any, is executed immediately after the rtl for
-   DECL has been created and stored in `DECL_RTL (DECL)'.  The value of the
-   rtl will be a `mem' whose address is a `symbol_ref'.
-
-   For the m88k, determine if the item should go in the global pool.  */
-#define ENCODE_SECTION_INFO(DECL, FIRST)				\
-  do {									\
-    if (m88k_gp_threshold > 0)						\
-    {									\
-      if (TREE_CODE (DECL) == VAR_DECL)					\
-	{								\
-	  if (!TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL))	\
-	    {								\
-	      int size = int_size_in_bytes (TREE_TYPE (DECL));		\
-									\
-	      if (size > 0 && size <= m88k_gp_threshold)		\
-		SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;	\
-	    }								\
-	}								\
-      else if (TREE_CODE (DECL) == STRING_CST				\
-	       && flag_writable_strings					\
-	       && TREE_STRING_LENGTH (DECL) <= m88k_gp_threshold)	\
-	SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (DECL), 0)) = 1;		\
-    }									\
-  } while (0)
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.

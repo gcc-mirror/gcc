@@ -1,5 +1,70 @@
 2002-05-18  Richard Henderson  <rth@redhat.com>
 
+	* system.h (ENCODE_SECTION_INFO): Poison it.
+	* target-def.h (TARGET_ENCODE_SECTION_INFO): New.
+	* target.h (encode_section_info): New.
+	* varasm.c (make_decl_rtl, output_constant_def): Use it.
+	* hooks.c (hook_tree_int_void): New.
+	* hooks.h: Declare it.
+
+	* config/darwin.h, config/alpha/alpha-protos.h, config/alpha/alpha.c,
+	config/alpha/alpha.h, config/arm/pe.h, config/avr/avr-protos.h,
+	config/avr/avr.c, config/avr/avr.h, config/c4x/c4x-protos.h,
+	config/c4x/c4x.c, config/c4x/c4x.h, config/cris/cris-protos.h,
+	config/cris/cris.c, config/cris/cris.h, config/i386/cygwin.h,
+	config/i386/win32.h, config/ia64/ia64-protos.h, config/ia64/ia64.c,
+	config/ia64/ia64.h, config/m32r/m32r-protos.h, config/m32r/m32r.c,
+	config/m32r/m32r.h, config/m68hc11/m68hc11-protos.h,
+	config/m68hc11/m68hc11.c, config/m68hc11/m68hc11.h,
+	config/mcore/mcore-protos.h, config/mcore/mcore.c,
+	config/mcore/mcore.h, config/mmix/mmix-protos.h, config/mmix/mmix.c,
+	config/mmix/mmix.h, config/rs6000/rs6000-protos.h,
+	config/rs6000/sysv4.h, config/stormy16/stormy16-protos.h,
+	config/stormy16/stormy16.c, config/stormy16/stormy16.h:
+	Replace ENCODE_SECTION_INFO with TARGET_ENCODE_SECTION_INFO
+	referencing existing function.  Make function static.
+
+	* config/a29k/a29k.c, config/a29k/a29k.h, config/arc/arc.c,
+	config/arc/arc.h, config/arm/arm.c, config/arm/arm.h, 
+	config/h8300/h8300.c, config/h8300/h8300.h, config/i370/i370.c,
+	config/i370/i370.h, config/i386/i386-interix.h, config/i386/i386.c,
+	config/i386/i386.h, config/i386/interix.c, config/m88k/m88k.c,
+	config/m88k/m88k.h, config/mips/mips.c, config/mips/mips.h, 
+	config/ns32k/ns32k.c, config/ns32k/ns32k.h, config/pa/pa.c,
+	config/pa/pa.h, config/romp/romp.c, config/romp/romp.h,
+	config/rs6000/linux64.h, config/rs6000/xcoff.h, config/s390/s390.c,
+	config/s390/s390.h, config/sh/sh.c, config/sh/sh.h,
+	config/sparc/sparc.c, config/sparc/sparc.h, config/v850/v850.c, 
+	config/v850/v850.h, config/vax/vax.c, config/vax/vms.h,
+	config/xtensa/xtensa.c, config/xtensa/xtensa.h:
+	Move ENCODE_SECTION_INFO to out-of-line function and add
+	TARGET_ENCODE_SECTION_INFO.
+
+	* config/darwin.h (ASM_DECLARE_FUNCTION_NAME): Use hook, not macro.
+	(ASM_DECLARE_OBJECT_NAME, ASM_OUTPUT_ALIGNED_DECL_LOCAL): Likewise.
+
+	* config/arm/pe.h (EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS): Rename
+	from SUBTARGET_*
+	(switch_to_section): Replace in_rdata case with in_readonly_data.
+
+	* config/h8300/h8300.c (h8300_encode_label): Make static.
+	* config/h8300/h8300-protos.h: Update.
+
+	* config/rs6000/rs6000.c (rs6000_elf_encode_section_info): Rename
+	from rs6000_encode_section_info; make static.
+	(rs6000_xcoff_encode_section_info): New.
+
+	* config/v850/v850.c (v850_encode_data_area): Make static.
+	* config/v850/v850-protos.h: Update.
+
+	* config/vax/vax.c: Include flags.h.
+	(vms_select_section): Fix typo.
+
+	* doc/tm.texi (TARGET_ENCODE_SECTION_INFO): Update from previous
+	ENCODE_SECTION_INFO docs.
+
+2002-05-18  Richard Henderson  <rth@redhat.com>
+
 	* config/darwin.h (DARWIN_REGISTER_TARGET_PRAGMAS): Rename from
 	REGISTER_TARGET_PRAGMAS.
 	* config/rs6000/darwin.h (REGISTER_TARGET_PRAGMAS): Redefine.

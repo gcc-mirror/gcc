@@ -838,9 +838,7 @@ make_decl_rtl (decl, asmspec)
       /* Let the target reassign the RTL if it wants.
 	 This is necessary, for example, when one machine specific
 	 decl attribute overrides another.  */
-#ifdef ENCODE_SECTION_INFO
-      ENCODE_SECTION_INFO (decl, false);
-#endif
+      (* targetm.encode_section_info) (decl, false);
       return;
     }
 
@@ -964,9 +962,7 @@ make_decl_rtl (decl, asmspec)
      such as that it is a function name.
      If the name is changed, the macro ASM_OUTPUT_LABELREF
      will have to know how to strip this information.  */
-#ifdef ENCODE_SECTION_INFO
-  ENCODE_SECTION_INFO (decl, true);
-#endif
+  (* targetm.encode_section_info) (decl, true);
 }
 
 /* Make the rtl for variable VAR be volatile.
@@ -1501,7 +1497,8 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   if (TREE_ASM_WRITTEN (decl))
     return;
 
-  /* Make sure ENCODE_SECTION_INFO is invoked before we set ASM_WRITTEN.  */
+  /* Make sure targetm.encode_section_info is invoked before we set
+     ASM_WRITTEN.  */
   decl_rtl = DECL_RTL (decl);
 
   TREE_ASM_WRITTEN (decl) = 1;
@@ -3082,20 +3079,18 @@ output_constant_def (exp, defer)
   /* Optionally set flags or add text to the name to record information
      such as that it is a function name.  If the name is changed, the macro
      ASM_OUTPUT_LABELREF will have to know how to strip this information.  */
-#ifdef ENCODE_SECTION_INFO
   /* A previously-processed constant would already have section info
      encoded in it.  */
   if (! found)
     {
-      /* Take care not to invoke ENCODE_SECTION_INFO for constants
-	 which don't have a TREE_CST_RTL.  */
+      /* Take care not to invoke targetm.encode_section_info for
+	 constants which don't have a TREE_CST_RTL.  */
       if (TREE_CODE (exp) != INTEGER_CST)
-	ENCODE_SECTION_INFO (exp, true);
+	(*targetm.encode_section_info) (exp, true);
 
       desc->rtl = rtl;
       desc->label = XSTR (XEXP (desc->rtl, 0), 0);
     }
-#endif
 
 #ifdef CONSTANT_AFTER_FUNCTION_P
   if (current_function_decl != 0

@@ -107,6 +107,7 @@ static void i370_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 #ifdef LONGEXTERNAL
 static int mvs_hash_alias PARAMS ((const char *));
 #endif
+static void i370_encode_section_info PARAMS ((tree, int));
 
 /* ===================================================== */
 /* defines and functions specific to the HLASM assembler */
@@ -306,6 +307,8 @@ static const unsigned char ebcasc[256] =
 #define TARGET_ASM_FUNCTION_PROLOGUE i370_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE i370_output_function_epilogue
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO i370_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1554,3 +1557,15 @@ i370_output_function_epilogue (file, l)
   for (i = function_base_page; i < mvs_page_num; i++)
     fprintf (file, "\tDC\tA(PG%d)\n", i);
 }
+
+/* Mark external references.  */
+
+static void
+i370_encode_section_info (decl, first)
+     tree decl;
+     int first ATTRIBUTE_UNUSED;
+{
+  if (DECL_EXTERNAL (decl) && TREE_PUBLIC (decl))
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+}
+

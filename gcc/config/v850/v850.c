@@ -59,6 +59,8 @@ static tree v850_handle_interrupt_attribute PARAMS ((tree *, tree, tree, int, bo
 static tree v850_handle_data_area_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static void v850_insert_attributes   PARAMS ((tree, tree *));
 static void v850_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT));
+static void v850_encode_data_area    PARAMS ((tree));
+static void v850_encode_section_info PARAMS ((tree, int));
 
 /* True if the current function has anonymous arguments.  */
 int current_function_anonymous_args;
@@ -99,6 +101,9 @@ static int v850_interrupt_p = FALSE;
 
 #undef  TARGET_ASM_SELECT_SECTION
 #define TARGET_ASM_SELECT_SECTION  v850_select_section
+
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO v850_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2142,7 +2147,7 @@ v850_interrupt_function_p (func)
 }
 
 
-void
+static void
 v850_encode_data_area (decl)
      tree decl;
 {
@@ -2201,6 +2206,16 @@ v850_encode_data_area (decl)
     }
 
   XSTR (XEXP (DECL_RTL (decl), 0), 0) = ggc_alloc_string (newstr, len + 2);
+}
+
+static void
+v850_encode_section_info (decl, first)
+     tree decl;
+     int first;
+{
+  if (first && TREE_CODE (decl) == VAR_DECL
+      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
+    v850_encode_data_area (decl);
 }
 
 /* Return true if the given RTX is a register which can be restored

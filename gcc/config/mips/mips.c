@@ -152,7 +152,7 @@ static void mips_unique_section			PARAMS ((tree, int))
 	ATTRIBUTE_UNUSED;
 static void mips_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					     unsigned HOST_WIDE_INT));
-
+static void mips_encode_section_info		PARAMS ((tree, int));
 
 struct machine_function {
   /* Pseudo-reg holding the address of the current function when
@@ -579,9 +579,11 @@ enum reg_class mips_char_to_class[256] =
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST mips_adjust_cost
-
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE mips_issue_rate
+
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO mips_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5897,12 +5899,7 @@ print_operand (file, op, letter)
 
 /* A C compound statement to output to stdio stream STREAM the
    assembler syntax for an instruction operand that is a memory
-   reference whose address is ADDR.  ADDR is an RTL expression.
-
-   On some machines, the syntax for a symbolic address depends on
-   the section that the address refers to.  On these machines,
-   define the macro `ENCODE_SECTION_INFO' to store the information
-   into the `symbol_ref', and then check for it here.  */
+   reference whose address is ADDR.  ADDR is an RTL expression.  */
 
 void
 print_operand_address (file, addr)
@@ -7945,13 +7942,16 @@ mips_select_rtx_section (mode, x, align)
    any relocatable expression.
 
    Some of the logic used here needs to be replicated in
-   ENCODE_SECTION_INFO in mips.h so that references to these symbols
-   are done correctly.  Specifically, at least all symbols assigned
-   here to rom (.text and/or .rodata) must not be referenced via
-   ENCODE_SECTION_INFO with %gprel, as the rom might be too far away.
+   mips_encode_section_info so that references to these symbols are
+   done correctly.  Specifically, at least all symbols assigned here
+   to rom (.text and/or .rodata) must not be referenced via
+   mips_encode_section_info with %gprel, as the rom might be too far
+   away.
 
    If you need to make a change here, you probably should check
-   ENCODE_SECTION_INFO to see if it needs a similar change.  */
+   mips_encode_section_info to see if it needs a similar change.
+
+   ??? This would be fixed by implementing targetm.is_small_data_p.  */
 
 static void
 mips_select_section (decl, reloc, align)
@@ -8010,6 +8010,116 @@ mips_select_section (decl, reloc, align)
 	readonly_data_section ();
       else
 	data_section ();
+    }
+}
+
+/* When optimizing for the $gp pointer, SYMBOL_REF_FLAG is set for all
+   small objects.
+
+   When generating embedded PIC code, SYMBOL_REF_FLAG is set for
+   symbols which are not in the .text section.
+
+   When generating mips16 code, SYMBOL_REF_FLAG is set for string
+   constants which are put in the .text section.  We also record the
+   total length of all such strings; this total is used to decide
+   whether we need to split the constant table, and need not be
+   precisely correct.
+
+   When not mips16 code nor embedded PIC, if a symbol is in a
+   gp addresable section, SYMBOL_REF_FLAG is set prevent gcc from
+   splitting the reference so that gas can generate a gp relative
+   reference.
+
+   When TARGET_EMBEDDED_DATA is set, we assume that all const
+   variables will be stored in ROM, which is too far from %gp to use
+   %gprel addressing.  Note that (1) we include "extern const"
+   variables in this, which mips_select_section doesn't, and (2) we
+   can't always tell if they're really const (they might be const C++
+   objects with non-const constructors), so we err on the side of
+   caution and won't use %gprel anyway (otherwise we'd have to defer
+   this decision to the linker/loader).  The handling of extern consts
+   is why the DECL_INITIAL macros differ from mips_select_section.  */
+
+static void
+mips_encode_section_info (decl, first)
+     tree decl;
+     int first;
+{
+  if (TARGET_MIPS16)
+    {
+      if (first && TREE_CODE (decl) == STRING_CST
+	  && ! flag_writable_strings
+	  /* If this string is from a function, and the function will
+	     go in a gnu linkonce section, then we can't directly
+	     access the string.  This gets an assembler error
+	     "unsupported PC relative reference to different section".
+	     If we modify SELECT_SECTION to put it in function_section
+	     instead of text_section, it still fails because
+	     DECL_SECTION_NAME isn't set until assemble_start_function.
+	     If we fix that, it still fails because strings are shared
+	     among multiple functions, and we have cross section
+	     references again.  We force it to work by putting string
+	     addresses in the constant pool and indirecting.  */
+	  && (! current_function_decl
+	      || ! DECL_ONE_ONLY (current_function_decl)))
+	{
+	  SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (decl), 0)) = 1;
+	  mips_string_length += TREE_STRING_LENGTH (decl);
+	}
+    }
+
+  if (TARGET_EMBEDDED_DATA
+      && (TREE_CODE (decl) == VAR_DECL
+	  && TREE_READONLY (decl) && !TREE_SIDE_EFFECTS (decl))
+      && (!DECL_INITIAL (decl)
+	  || TREE_CONSTANT (DECL_INITIAL (decl))))
+    {
+      SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 0;
+    }
+
+  else if (TARGET_EMBEDDED_PIC)
+    {
+      if (TREE_CODE (decl) == VAR_DECL)
+	SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+      else if (TREE_CODE (decl) == FUNCTION_DECL)
+	SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 0;
+      else if (TREE_CODE (decl) == STRING_CST
+	       && ! flag_writable_strings)
+	SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (decl), 0)) = 0;
+      else
+	SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (decl), 0)) = 1;
+    }
+
+  else if (TREE_CODE (decl) == VAR_DECL
+	   && DECL_SECTION_NAME (decl) != NULL_TREE
+	   && (0 == strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+			    ".sdata")
+	       || 0 == strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+			       ".sbss")))
+    {
+      SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+    }
+
+  /* We can not perform GP optimizations on variables which are in
+       specific sections, except for .sdata and .sbss which are
+       handled above.  */
+  else if (TARGET_GP_OPT && TREE_CODE (decl) == VAR_DECL
+	   && DECL_SECTION_NAME (decl) == NULL_TREE
+	   && ! (TARGET_MIPS16 && TREE_PUBLIC (decl)
+		 && (DECL_COMMON (decl)
+		     || DECL_ONE_ONLY (decl)
+		     || DECL_WEAK (decl))))
+    {
+      int size = int_size_in_bytes (TREE_TYPE (decl));
+
+      if (size > 0 && size <= mips_section_threshold)
+	SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+    }
+
+  else if (HALF_PIC_P ())
+    {
+      if (first)
+	HALF_PIC_ENCODE (decl);
     }
 }
 

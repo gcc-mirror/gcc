@@ -168,6 +168,7 @@ static void rs6000_elf_select_section PARAMS ((tree, int,
 static void rs6000_elf_unique_section PARAMS ((tree, int));
 static void rs6000_elf_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						   unsigned HOST_WIDE_INT));
+static void rs6000_elf_encode_section_info PARAMS ((tree, int));
 #endif
 #ifdef OBJECT_FORMAT_COFF
 static void xcoff_asm_named_section PARAMS ((const char *, unsigned int));
@@ -177,6 +178,8 @@ static void rs6000_xcoff_unique_section PARAMS ((tree, int));
 static void rs6000_xcoff_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						     unsigned HOST_WIDE_INT));
 #endif
+static void rs6000_xcoff_encode_section_info PARAMS ((tree, int))
+     ATTRIBUTE_UNUSED;
 static int rs6000_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int rs6000_adjust_priority PARAMS ((rtx, int));
 static int rs6000_issue_rate PARAMS ((void));
@@ -11091,8 +11094,8 @@ rs6000_elf_unique_section (decl, reloc)
    the function descriptor name.  This saves a lot of overriding code
    to read the prefixes.  */
 
-void
-rs6000_encode_section_info (decl, first)
+static void
+rs6000_elf_encode_section_info (decl, first)
      tree decl;
      int first;
 {
@@ -11684,6 +11687,12 @@ rs6000_xcoff_unique_section (decl, reloc)
     }
 }
 
+/* Select section for constant in constant pool.
+
+   On RS/6000, all constants are in the private read-only data area.
+   However, if this is being placed in the TOC it must be output as a
+   toc entry.  */
+
 static void
 rs6000_xcoff_select_rtx_section (mode, x, align)
      enum machine_mode mode;
@@ -11696,3 +11705,16 @@ rs6000_xcoff_select_rtx_section (mode, x, align)
     read_only_private_data_section ();
 }
 #endif /* OBJECT_FORMAT_COFF */
+
+/* Note that this is also used for ELF64.  */
+
+static void
+rs6000_xcoff_encode_section_info (decl, first)
+     tree decl;
+     int first ATTRIBUTE_UNUSED;
+{
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && (TREE_ASM_WRITTEN (decl) || ! TREE_PUBLIC (decl))
+      && ! DECL_WEAK (decl))
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+}

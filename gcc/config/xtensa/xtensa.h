@@ -1257,14 +1257,6 @@ typedef struct xtensa_args {
       goto LABEL;							\
   } while (0)
 
-/* If we are referencing a function that is static, make the SYMBOL_REF
-   special so that we can generate direct calls to it even with -fpic.  */
-#define ENCODE_SECTION_INFO(DECL, FIRST)				\
-  do {									\
-    if (TREE_CODE (DECL) == FUNCTION_DECL && ! TREE_PUBLIC (DECL))	\
-      SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;			\
-  } while (0)
-
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE (SImode)

@@ -64,6 +64,7 @@ static int go_if_legitimate_address_internal PARAMS((rtx, enum machine_mode,
                                                      int));
 static int register_indirect_p PARAMS((rtx, enum machine_mode, int));
 static rtx m68hc11_expand_compare PARAMS((enum rtx_code, rtx, rtx));
+static int m68hc11_autoinc_compatible_p PARAMS ((rtx, rtx));
 static int must_parenthesize PARAMS ((rtx));
 static int m68hc11_shift_cost PARAMS ((enum machine_mode, rtx, int));
 static int m68hc11_auto_inc_p PARAMS ((rtx));
@@ -77,6 +78,7 @@ static void asm_print_register PARAMS ((FILE *, int));
 static void m68hc11_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void m68hc11_asm_out_constructor PARAMS ((rtx, int));
 static void m68hc11_asm_out_destructor PARAMS ((rtx, int));
+static void m68hc11_encode_section_info PARAMS((tree, int));
 
 rtx m68hc11_soft_tmp_reg;
 
@@ -218,6 +220,9 @@ static int nb_soft_regs;
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE m68hc11_output_function_epilogue
+
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO  m68hc11_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1225,16 +1230,14 @@ m68hc11_handle_fntype_attribute (node, name, args, flags, no_add_attrs)
   return NULL_TREE;
 }
 
-/* Define this macro if references to a symbol must be treated
-   differently depending on something about the variable or function
-   named by the symbol (such as what section it is in).
+/* We want to recognize trap handlers so that we handle calls to traps
+   in a special manner (by issuing the trap).  This information is stored
+   in SYMBOL_REF_FLAG.  */
 
-   For the 68HC11, we want to recognize trap handlers so that we
-   handle calls to traps in a special manner (by issuing the trap).
-   This information is stored in SYMBOL_REF_FLAG.  */
-void
-m68hc11_encode_section_info (decl)
+static void
+m68hc11_encode_section_info (decl, first)
      tree decl;
+     int first ATTRIBUTE_UNUSED;
 {
   tree func_attr;
   int trap_handler;

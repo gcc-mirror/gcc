@@ -65,6 +65,7 @@ static bool   avr_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void   avr_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void   avr_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void   avr_unique_section PARAMS ((tree, int));
+extern void   avr_encode_section_info PARAMS ((tree, int));
 
 /* Allocate registers from r25 to r8 for parameters for function calls */
 #define FIRST_CUM_REG 26
@@ -200,6 +201,8 @@ int avr_case_values_threshold = 30000;
 #define TARGET_ATTRIBUTE_TABLE avr_attribute_table
 #undef TARGET_ASM_UNIQUE_SECTION
 #define TARGET_ASM_UNIQUE_SECTION avr_unique_section
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO avr_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4749,10 +4752,10 @@ avr_progmem_p (decl)
   return 0;
 }
 
-/* Encode section information about tree DECL */
+/* Encode section information about tree DECL.  */
   
-void
-encode_section_info (decl, first)
+static void
+avr_encode_section_info (decl, first)
      tree decl;
      int first;
 {

@@ -1121,35 +1121,6 @@ extern const char *arc_text_section, *arc_data_section, *arc_rodata_section;
    This macro is irrelevant if there is no separate readonly data section.  */
 /*#define JUMP_TABLES_IN_TEXT_SECTION*/
 
-/* Define this macro if references to a symbol must be treated
-   differently depending on something about the variable or
-   function named by the symbol (such as what section it is in).
-
-   The macro definition, if any, is executed immediately after the
-   rtl for DECL or other node is created.
-   The value of the rtl will be a `mem' whose address is a
-   `symbol_ref'.
-
-   The usual thing for this macro to do is to store a flag in the
-   `symbol_ref' (such as `SYMBOL_REF_FLAG') or to store a modified
-   name string in the `symbol_ref' (if one bit is not enough
-   information).  */
-
-/* On the ARC, function addresses are not the same as normal addresses.
-   Branch to absolute address insns take an address that is right-shifted
-   by 2.  We encode the fact that we have a function here, and then emit a
-   special assembler op when outputting the address.  */
-#define ENCODE_SECTION_INFO(DECL, FIRST)		\
-do {							\
-  if (TREE_CODE (DECL) == FUNCTION_DECL)		\
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;	\
-} while (0)
-
-/* Decode SYM_NAME and store the real name part in VAR, sans
-   the characters that encode section info.  Define this macro if
-   ENCODE_SECTION_INFO alters the symbol's name string.  */
-/*#define STRIP_NAME_ENCODING(VAR, SYM_NAME)*/
-
 /* For DWARF.  Marginally different than default so output is "prettier"
    (and consistent with above).  */
 #define PUSHSECTION_ASM_OP "\t.section "
@@ -1324,12 +1295,7 @@ arc_print_operand (FILE, X, CODE)
 
 /* A C compound statement to output to stdio stream STREAM the
    assembler syntax for an instruction operand that is a memory
-   reference whose address is ADDR.  ADDR is an RTL expression.
-
-   On some machines, the syntax for a symbolic address depends on
-   the section that the address refers to.  On these machines,
-   define the macro `ENCODE_SECTION_INFO' to store the information
-   into the `symbol_ref', and then check for it here.  */
+   reference whose address is ADDR.  ADDR is an RTL expression.  */
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) \
 arc_print_operand_address (FILE, ADDR)
 

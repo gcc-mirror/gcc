@@ -322,7 +322,7 @@ readonly_data ()							\
    "imported", even library calls. They look a bit different, so
    here's this macro.
 
-   Also note not all libcall names are passed to ENCODE_SECTION_INFO
+   Also note not all libcall names are passed to pa_encode_section_info
    (__main for example).  To make sure all libcall names have section
    info recorded in them, we do it here.  We must also ensure that
    we don't import a libcall that has been previously exported since

@@ -204,14 +204,12 @@ arm_mark_dllimport (decl)
   XEXP (DECL_RTL (decl), 0) = newrtl;
 }
 
-/* Cover function to implement ENCODE_SECTION_INFO.  */
-
 void
 arm_pe_encode_section_info (decl, first)
      tree decl;
      int first ATTRIBUTE_UNUSED;
 {
-  /* This bit is copied from arm.h.  */
+  /* This bit is copied from arm_encode_section_info.  */
   if (optimize > 0 && TREE_CONSTANT (decl)
       && (!flag_writable_strings || TREE_CODE (decl) != STRING_CST))
     {

@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 
 const char *
 gen_stdcall_suffix (decl)
-  tree decl;
+     tree decl;
 {
   int total = 0;
   /* ??? This probably should use XSTR (XEXP (DECL_RTL (decl), 0), 0) instead
@@ -63,6 +63,26 @@ gen_stdcall_suffix (decl)
   newsym = xmalloc (strlen (asmname) + 10);
   sprintf (newsym, "%s@%d", asmname, total/BITS_PER_UNIT);
   return IDENTIFIER_POINTER (get_identifier (newsym));
+}
+
+void
+i386_interix_encode_section_info (decl, first)
+     tree decl;
+     int first;
+{
+  if (flag_pic)
+    {
+      rtx rtl = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
+		 ? TREE_CST_RTL (decl) : DECL_RTL (decl));
+      SYMBOL_REF_FLAG (XEXP (rtl, 0))
+	= (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
+	   || ! TREE_PUBLIC (decl));
+    }
+  if (first && TREE_CODE (decl) == FUNCTION_DECL)
+    if (lookup_attribute ("stdcall",
+			  TYPE_ATTRIBUTES (TREE_TYPE (decl))))
+      XEXP (DECL_RTL (decl), 0) =
+	gen_rtx (SYMBOL_REF, Pmode, gen_stdcall_suffix (decl));
 }
 
 #if 0	

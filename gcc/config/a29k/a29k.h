@@ -1333,16 +1333,6 @@ extern const char *a29k_function_name;
 
 #define DATA_SECTION_ASM_OP "\t.data"
 
-/* If we are referencing a function that is static or is known to be
-   in this file, make the SYMBOL_REF special.  We can use this to indicate
-   that we can branch to this function without emitting a no-op after the
-   call.  */
-
-#define ENCODE_SECTION_INFO(DECL, FIRST)  \
-  if (TREE_CODE (DECL) == FUNCTION_DECL			\
-      && (TREE_ASM_WRITTEN (DECL) || ! TREE_PUBLIC (DECL))) \
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
-
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
