@@ -1,5 +1,9 @@
 2004-11-23  Ralf Corsepius <ralf.corsepius@rtems.org>
 
+	* config.gcc (h8300-*-rtems*): Use h8300/t-rtems.
+
+2004-11-23  Ralf Corsepius <ralf.corsepius@rtems.org>
+
 	* config/arm/t-rtems: New.
 	* config.gcc: Reflect having added arm/t-rtems.
 
