@@ -1,5 +1,5 @@
 /* Loop optimization definitions for GNU C-Compiler
-   Copyright (C) 1991, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1995, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -184,9 +184,12 @@ void emit_unrolled_add PROTO((rtx, rtx, rtx));
 int back_branch_in_range_p PROTO((rtx, rtx, rtx));
 
 extern int *loop_unroll_factor;
-#ifdef HAIFA
-/* variables for interaction between unroll.c and loop.c, for
-   the insertion of branch-on-count instruction. */
-extern rtx *loop_start_value;
-#endif  /* HAIFA */
+
+#ifdef HAVE_decrement_and_branch_on_count
+extern rtx loop_iteration_var;
+extern rtx loop_initial_value;
+extern rtx loop_increment;
+extern rtx loop_final_value;
+extern enum rtx_code loop_comparison_code;
+#endif  /* HAVE_decrement_and_branch_on_count */
 

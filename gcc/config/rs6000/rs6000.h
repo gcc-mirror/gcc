@@ -389,7 +389,7 @@ extern int target_flags;
 
 #define TARGET_DEFAULT (MASK_POWER | MASK_MULTIPLE | MASK_STRING)
 
-/* Processor type.  */
+/* Processor type.  Order must match cpu attribute in MD file.  */
 enum processor_type
  {PROCESSOR_RIOS1,
   PROCESSOR_RIOS2,
@@ -398,6 +398,7 @@ enum processor_type
   PROCESSOR_PPC601,
   PROCESSOR_PPC603,
   PROCESSOR_PPC604,
+  PROCESSOR_PPC604e,
   PROCESSOR_PPC620};
 
 extern enum processor_type rs6000_cpu;

@@ -189,11 +189,11 @@ static int *splittable_regs_updates;
 /* Values describing the current loop's iteration variable.  These are set up
    by loop_iterations, and used by precondition_loop_p.  */
 
-static rtx loop_iteration_var;
-static rtx loop_initial_value;
-static rtx loop_increment;
-static rtx loop_final_value;
-static enum rtx_code loop_comparison_code;
+rtx loop_iteration_var;
+rtx loop_initial_value;
+rtx loop_increment;
+rtx loop_final_value;
+enum rtx_code loop_comparison_code;
 
 /* Forward declarations.  */
 
@@ -1127,13 +1127,6 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  /* Set unroll type to MODULO now.  */
 	  unroll_type = UNROLL_MODULO;
 	  loop_preconditioned = 1;
-
-#ifdef HAIFA
-	  /* Fix the initial value for the loop as needed.  */
-	  if (loop_n_iterations <= 0)
-	    loop_start_value [uid_loop_num [INSN_UID (loop_start)]]
-	      = initial_value;
-#endif
 	}
     }
 

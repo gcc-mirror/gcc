@@ -1,3 +1,30 @@
+Mon Oct  5 22:43:36 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* unroll.c (loop_iteration_var, loop_initial_value, loop_increment
+	loop_final_value, loop_comparison_code): No longer static.
+	(unroll_loop): Delete loop_start_value update.
+	* loop.h (loop_iteration_var, loop_initial_value, loop_increment,
+	loop_final_value, loop_comparison_code): Extern.
+	(loop_start_value): Delete extern.
+	* loop.c (loop_can_insert_bct, loop_increment, loop_start_value,
+	loop_comparison_value, loop_comparison_code): Delete.
+	(loop_optimize): Remove initialization for deleted variables.
+	(strength_reduce): Delete analyze_loop_iterations call.  Only call
+	insert_bct if flag_branch_count_on_reg set.
+	(analyze_loop_iterations): Delete.
+	(insert_bct): Remove iteration count calculation.  Move checks for
+	viable BCT optimization to here.  Obtain iteration count from
+	loop_iterations and correct for unrolling.  Check for enough
+	iteration to be beneficial.  Comment out runtime iteration count
+	case.
+	(insert_bct): Print iteration count in dump file.  Remove
+	loop_var_mode and use word_mode directly.
+
+	* rs6000.h (processor_type): Add PROCESSOR_PPC604e.
+	* rs6000.c (rs6000_override_options): Use it.
+	(optimization_options): Enable use of flag_branch_on_count_reg.
+	* rs6000.md (define_function_unit): Describe 604e.
+
 1998-10-05 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* loop.c (move_movables): Corrected threshold calculation for
