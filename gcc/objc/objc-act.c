@@ -5447,11 +5447,8 @@ build_ivar_reference (id)
 static void
 hash_init ()
 {
-  nst_method_hash_list = (hash *) xmalloc (SIZEHASHTABLE * sizeof (hash));
-  cls_method_hash_list = (hash *) xmalloc (SIZEHASHTABLE * sizeof (hash));
-
-  memset (nst_method_hash_list, 0, SIZEHASHTABLE * sizeof (hash));
-  memset (cls_method_hash_list, 0, SIZEHASHTABLE * sizeof (hash));
+  nst_method_hash_list = (hash *) xcalloc (SIZEHASHTABLE, sizeof (hash));
+  cls_method_hash_list = (hash *) xcalloc (SIZEHASHTABLE, sizeof (hash));
 }
 
 /* WARNING!!!!  hash_enter is called with a method, and will peek
