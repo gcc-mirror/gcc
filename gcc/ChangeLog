@@ -1,3 +1,29 @@
+2004-07-04  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c (bb_value_sets): phi_gen, tmp_gen, new_sets
+	now are bitmap_set_t's.
+	(bitmap_insert_into_set): No point in inserting the value if
+	it's invariant.
+	(bitmap_set_contains): New function.
+	(bitmap_set_replace_value): Add comment on why we do it 
+	this way.
+	(set_contains): Removed.
+	(bitmap_set_subtract_from_value_set): New name of
+	set_subtract now that it's arguments are two different
+	types of sets.
+	Update callers.
+	(bitmap_find_leader): Change algorithm used.
+	(find_or_generate_expression): Update use of functions for new
+	bitmap sets.
+	(create_expression_by_pieces): Ditto.
+	(insert_aux): Ditto.
+	(insert): Ditto.
+	(add_to_sets): Ditto.
+	(init_pre): Ditto.
+	(execute_pre): Ditto.
+	(compute_avail): Ditto.
+	Also ignore virtual phis.
+
 2004-07-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* combine.c (simplify_comparison): Fix comment typo.

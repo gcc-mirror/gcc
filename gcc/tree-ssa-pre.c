@@ -232,10 +232,7 @@ typedef struct bitmap_set
   bitmap values;
 } *bitmap_set_t;
 
-/* All of the following sets, except for TMP_GEN, are indexed.
-   TMP_GEN is only ever iterated over, we never check what values
-   exist in it.  */
-
+/* Sets that we need to keep track of.  */
 typedef struct bb_value_sets
 {
   /* The EXP_GEN set, which represents expressions/values generated in
@@ -244,11 +241,11 @@ typedef struct bb_value_sets
 
   /* The PHI_GEN set, which represents PHI results generated in a
      basic block.  */
-  value_set_t phi_gen;
+  bitmap_set_t phi_gen;
 
   /* The TMP_GEN set, which represents results/temporaries generated
      in a basic block. IE the LHS of an expression.  */
-  value_set_t tmp_gen;
+  bitmap_set_t tmp_gen;
 
   /* The AVAIL_OUT set, which represents which values are available in
      a given basic block.  */
@@ -261,7 +258,7 @@ typedef struct bb_value_sets
   /* The NEW_SETS set, which is used during insertion to augment the
      AVAIL_OUT set of blocks with the new insertions performed during
      the current iteration.  */
-  value_set_t new_sets;
+  bitmap_set_t new_sets;
 } *bb_value_sets_t;
 
 #define EXP_GEN(BB)	((bb_value_sets_t) ((BB)->aux))->exp_gen
@@ -501,7 +498,7 @@ set_new  (bool indexed)
   return ret;
 }
 
-/* Insert an expression, EXPR, into a bitmapped set.  */
+/* Insert an expression EXPR into a bitmapped set.  */
 
 static void
 bitmap_insert_into_set (bitmap_set_t set, tree expr)
@@ -514,8 +511,8 @@ bitmap_insert_into_set (bitmap_set_t set, tree expr)
   
   if (val == NULL)
     abort ();
-
-  bitmap_set_bit (set->values, VALUE_HANDLE_ID (val));
+  if (!is_gimple_min_invariant (val))
+    bitmap_set_bit (set->values, VALUE_HANDLE_ID (val));
   bitmap_set_bit (set->expressions, SSA_NAME_VERSION (expr));
 }
 
@@ -623,6 +620,17 @@ set_contains_value (value_set_t set, tree val)
   return value_exists_in_set_bitmap (set, val);
 }
 
+/* Return true if bitmapped set SET contains the expression EXPR.  */
+static bool
+bitmap_set_contains (bitmap_set_t set, tree expr)
+{
+  /* XXX: Bitmapped sets only contain SSA_NAME's for now.  */
+  if (TREE_CODE (expr) != SSA_NAME)
+    return false;
+  return bitmap_bit_p (set->expressions, SSA_NAME_VERSION (expr));
+}
+
+  
 /* Return true if bitmapped set SET contains the value VAL.  */
 
 static bool
@@ -644,6 +652,15 @@ bitmap_set_replace_value (bitmap_set_t set, tree lookfor, tree expr)
     return;
   if (!bitmap_set_contains_value (set, lookfor))
     return;
+  /* The number of expressions having a given value is usually
+     significantly less than the total number of expressions in SET.
+     Thus, rather than check, for each expression in SET, whether it
+     has the value LOOKFOR, we walk the reverse mapping that tells us
+     what expressions have a given value, and see if any of those
+     expressions are in our set.  For large testcases, this is about
+     5-10x faster than walking the bitmap.  If this is somehow a
+     significant lose for some cases, we can choose which set to walk
+     based on the set size.  */
   exprset = VALUE_HANDLE_EXPR_SET (lookfor);
   for (node = exprset->head; node; node = node->next)
     {
@@ -659,27 +676,11 @@ bitmap_set_replace_value (bitmap_set_t set, tree lookfor, tree expr)
     }
 }
 
-/* Return true if the set contains expression (not value) EXPR.  */
-
-static bool
-set_contains (value_set_t set, tree expr)
-{
-  value_set_node_t node;
-  
-  for (node = set->head;
-       node;
-       node = node->next)
-    {
-      if (operand_equal_p (node->expr, expr, 0))
-	return true;
-    }
-  return false;
-}
-
-/* Subtract set B from set A, and return the new set.  */
+/* Subtract bitmapped set B from value set A, and return the new set.  */
 
 static value_set_t
-set_subtract (value_set_t a, value_set_t b, bool indexed)
+bitmap_set_subtract_from_value_set (value_set_t a, bitmap_set_t b,
+				    bool indexed)
 {
   value_set_t ret = set_new (indexed);
   value_set_node_t node;
@@ -687,7 +688,7 @@ set_subtract (value_set_t a, value_set_t b, bool indexed)
        node;
        node = node->next)
     {
-      if (!set_contains (b, node->expr))
+      if (!bitmap_set_contains (b, node->expr))
 	insert_into_set (ret, node->expr);
     }
   return ret;
@@ -970,13 +971,29 @@ bitmap_find_leader (bitmap_set_t set, tree val)
     return val;
   if (bitmap_set_contains_value (set, val))
     {
-      int i;
-      EXECUTE_IF_SET_IN_BITMAP (set->expressions, 0, i,
-      {
-	if (get_value_handle (ssa_name (i)) == val)
-	  return ssa_name (i);
-      });
-      
+      /* Rather than walk the entire bitmap of expressions, and see
+	 whether any of them has the value we are looking for, we look
+	 at the reverse mapping, which tells us the set of expressions
+	 that have a given value (IE value->expressions with that
+	 value) and see if any of those expressions are in our set.
+	 The number of expressions per value is usually significantly
+	 less than the number of expressions in the set.  In fact, for
+	 large testcases, doing it this way is roughly 5-10x faster
+	 than walking the bitmap.
+	 If this is somehow a significant lose for some cases, we can
+	 choose which set to walk based on which set is smaller.  */	 
+      value_set_t exprset;
+      value_set_node_t node;
+      exprset = VALUE_HANDLE_EXPR_SET (val);
+      for (node = exprset->head; node; node = node->next)
+	{
+	  if (TREE_CODE (node->expr) == SSA_NAME)
+	    {
+	      if (bitmap_bit_p (set->expressions, 
+				SSA_NAME_VERSION (node->expr)))
+		return node->expr;
+	    }
+	}
     }
   return NULL;
 }
@@ -1178,10 +1195,12 @@ compute_antic_aux (basic_block block)
     }
 
   /* Generate ANTIC_OUT - TMP_GEN */
-  S = set_subtract (ANTIC_OUT, TMP_GEN (block), false);
+  S = bitmap_set_subtract_from_value_set (ANTIC_OUT, TMP_GEN (block), false);
 
   /* Start ANTIC_IN with EXP_GEN - TMP_GEN */
-  ANTIC_IN (block) = set_subtract (EXP_GEN (block),TMP_GEN (block), true);
+  ANTIC_IN (block) = bitmap_set_subtract_from_value_set (EXP_GEN (block), 
+							 TMP_GEN (block),
+							 true);
   
   /* Then union in the ANTIC_OUT - TMP_GEN values, to get ANTIC_OUT U
      EXP_GEN - TMP_GEN */
@@ -1267,7 +1286,7 @@ find_or_generate_expression (basic_block block, tree expr, tree stmts)
      the NEW_SETS for us already, having been propagated from our
      dominator.  */
   if (genop == NULL)
-    genop = find_leader (NEW_SETS (block), expr);
+    genop = bitmap_find_leader (NEW_SETS (block), expr);
   /* If it's still NULL, see if it is a complex expression, and if
      so, generate it recursively, otherwise, abort, because it's
      not really .  */
@@ -1355,7 +1374,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
     }
   v = get_value_handle (expr);
   vn_add (name, v, NULL);
-  insert_into_set (NEW_SETS (block), name);
+  bitmap_insert_into_set (NEW_SETS (block), name);
   bitmap_value_insert_into_set (AVAIL_OUT (block), name);
   if (dump_file && (dump_flags & TDF_DETAILS))
     {				    
@@ -1388,18 +1407,17 @@ insert_aux (basic_block block)
 
   if (block)
     {
-      value_set_node_t e;
       basic_block dom;
       dom = get_immediate_dominator (CDI_DOMINATORS, block);
       if (dom)
 	{
-	  e = NEW_SETS (dom)->head;
-	  while (e)
-	    {
-	      insert_into_set (NEW_SETS (block), e->expr);
-	      bitmap_value_replace_in_set (AVAIL_OUT (block), e->expr);
-	      e = e->next;
-	    }
+	  int i;
+	  bitmap_set_t newset = NEW_SETS (dom);
+	  EXECUTE_IF_SET_IN_BITMAP (newset->expressions, 0, i,
+          {
+	    bitmap_insert_into_set (NEW_SETS (block), ssa_name (i));
+	    bitmap_value_replace_in_set (AVAIL_OUT (block), ssa_name (i));
+	  });
 	  if (block->pred->pred_next)
 	    {
 	      value_set_node_t node;
@@ -1421,7 +1439,7 @@ insert_aux (basic_block block)
 		      tree eprime;
 
 		      val = get_value_handle (node->expr);
-		      if (set_contains_value (PHI_GEN (block), val))
+		      if (bitmap_set_contains_value (PHI_GEN (block), val))
 			continue; 
 		      if (bitmap_set_contains_value (AVAIL_OUT (dom), val))
 			{
@@ -1544,10 +1562,10 @@ insert_aux (basic_block block)
 			    }
 			  pre_stats.phis++;
 			  new_stuff = true;
-			  insert_into_set (NEW_SETS (block),
-					   PHI_RESULT (temp));
-			  insert_into_set (PHI_GEN (block),
-					   PHI_RESULT (temp));
+			  bitmap_insert_into_set (NEW_SETS (block),
+						  PHI_RESULT (temp));
+			  bitmap_insert_into_set (PHI_GEN (block),
+						  PHI_RESULT (temp));
 			}
 
 		      free (avail);
@@ -1576,7 +1594,7 @@ insert (void)
   int num_iterations = 0;
   
   FOR_ALL_BB (bb)
-    NEW_SETS (bb) = set_new (true);
+    NEW_SETS (bb) = bitmap_set_new ();
   
   while (new_stuff)
     {
@@ -1612,7 +1630,7 @@ is_undefined_value (tree expr)
    any). They are used when computing the hash value for EXPR.  */
 
 static inline void
-add_to_sets (tree var, tree expr, vuse_optype vuses, value_set_t s1,
+add_to_sets (tree var, tree expr, vuse_optype vuses, bitmap_set_t s1,
 	     bitmap_set_t s2)
 {
   tree val = vn_lookup_or_add (expr, vuses);
@@ -1624,7 +1642,7 @@ add_to_sets (tree var, tree expr, vuse_optype vuses, value_set_t s1,
   if (var != expr)
     vn_add (var, val, vuses);
 
-  insert_into_set (s1, var);
+  bitmap_insert_into_set (s1, var);
   bitmap_value_insert_into_set (s2, var);
 }
 
@@ -1702,7 +1720,7 @@ compute_avail (basic_block block)
 	      tree val;
 	      tree def = default_def (param);
 	      val = vn_lookup_or_add (def, NULL);
-	      insert_into_set (TMP_GEN (block), def);
+	      bitmap_insert_into_set (TMP_GEN (block), def);
 	      bitmap_value_insert_into_set (AVAIL_OUT (block), def);
 	    }
 	}
@@ -1721,8 +1739,11 @@ compute_avail (basic_block block)
 
       /* Generate values for PHI nodes.  */
       for (phi = phi_nodes (block); phi; phi = PHI_CHAIN (phi))
-	add_to_sets (PHI_RESULT (phi), PHI_RESULT (phi), NULL,
-		     PHI_GEN (block), AVAIL_OUT (block));
+	/* We have no need for virtual phis, as they don't represent
+	   actual computations.  */
+	if (is_gimple_reg (PHI_RESULT (phi)))
+	  add_to_sets (PHI_RESULT (phi), PHI_RESULT (phi), NULL,
+		       PHI_GEN (block), AVAIL_OUT (block));
 
       /* Now compute value numbers and populate value sets with all
 	 the expressions computed in BLOCK.  */
@@ -1894,8 +1915,8 @@ init_pre (void)
   FOR_ALL_BB (bb)
     {
       EXP_GEN (bb) = set_new (true);
-      PHI_GEN (bb) = set_new (true);
-      TMP_GEN (bb) = set_new (false);
+      PHI_GEN (bb) = bitmap_set_new ();
+      TMP_GEN (bb) = bitmap_set_new ();
       AVAIL_OUT (bb) = bitmap_set_new ();
     }
 }
@@ -1944,7 +1965,8 @@ execute_pre (bool do_fre)
       FOR_ALL_BB (bb)
 	{
 	  print_value_set (dump_file, EXP_GEN (bb), "exp_gen", bb->index);
-	  print_value_set (dump_file, TMP_GEN (bb), "tmp_gen", bb->index);
+	  bitmap_print_value_set (dump_file, TMP_GEN (bb), "tmp_gen", 
+				  bb->index);
 	  bitmap_print_value_set (dump_file, AVAIL_OUT (bb), "avail_out", 
 				  bb->index);
 	}
