@@ -1172,8 +1172,9 @@ dwarf2out_frame_debug (insn)
 	      assert (XEXP (src, 1) == stack_pointer_rtx);
 	      assert (GET_CODE (XEXP (src, 0)) == REG
 		      && REGNO (XEXP (src, 0)) == cfa_temp_reg);
+	      assert (cfa_reg == STACK_POINTER_REGNUM);
 	      cfa_store_reg = REGNO (dest);
-	      cfa_store_offset -= cfa_temp_value;
+	      cfa_store_offset = cfa_offset - cfa_temp_value;
 	    }
 	  break;
 
