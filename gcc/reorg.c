@@ -1742,12 +1742,13 @@ try_merge_delay_insns (insn, thread)
 	  && ! insn_sets_resource_p (trial, &set, 1)
 	  && ! insn_sets_resource_p (trial, &needed, 1)
 	  && (trial = try_split (pat, trial, 0)) != 0
+	  /* Update next_trial, in case try_split succeeded.  */
+	  && (next_trial = next_nonnote_insn (trial))
 	  && rtx_equal_p (PATTERN (next_to_match), PATTERN (trial))
 	  /* Have to test this condition if annul condition is different
 	     from (and less restrictive than) non-annulling one.  */
 	  && eligible_for_delay (delay_insn, slot_number - 1, trial, flags))
 	{
-	  next_trial = next_nonnote_insn (trial);
 
 	  if (! annul_p)
 	    {
