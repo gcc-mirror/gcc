@@ -1,3 +1,7 @@
+Fri Jun 15 18:05:22 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* explow.c (expr_size): If DECL and size specified, use it.
+
 2001-06-15  Zack Weinberg  <zackw@stanford.edu>
 
 	* doc/cpp.texi: Formatting corrections.
