@@ -62,6 +62,9 @@ struct eh_entry {
   int label_used;
   rtx false_label;
   rtx rethrow_label;
+  /* If non-zero, this entry is for a handler created when we left an
+     exception-region via goto.  */
+  unsigned goto_entry_p : 1;
 };
 #else
 struct label_node;
@@ -108,16 +111,10 @@ struct eh_status
   /* This stack is used to represent what the current eh region is
      for the catch blocks beings processed */
   struct eh_stack x_catchstack;
-  /* A queue used for tracking which exception regions have closed but
-     whose handlers have not yet been expanded. Regions are emitted in
-     groups in an attempt to improve paging performance.
-
+  /* A queue used for tracking which exception regions have closed.
      As we exit a region, we enqueue a new entry. The entries are then
-     dequeued during expand_leftover_cleanups and expand_start_all_catch,
-
-     We should redo things so that we either take RTL for the handler,
-     or we expand the handler expressed as a tree immediately at region
-     end time.  */
+     dequeued during expand_leftover_cleanups and
+     expand_start_all_catch.  */
   struct eh_queue x_ehqueue;
   /* Insns for all of the exception handlers for the current function.
      They are currently emitted by the frontend code.  */
@@ -270,10 +267,6 @@ int rethrow_used                                PROTO((int));
    optimized away.  */
 
 void update_rethrow_references			PROTO((void));
-
-/* Return the region number a this is the rethrow label for. */
-
-int eh_region_from_symbol                       PROTO((rtx));
 
 /* Get a pointer to the first handler in an exception region's list. */
 

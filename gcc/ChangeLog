@@ -1,3 +1,19 @@
+1999-11-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* except.h (struct eh_entry): Add goto_entry_p.
+	(eh_region_from_symbol): Remove prototype.
+	* except.c (find_func_region_from_symbol): New function.
+	(emit_cleanup_handler): Likewise.
+	(eh_region_from_symbol): Make it static.
+	(add_new_handler): Verify the argument.
+	(find_func_region): Update comment.
+	(expand_eh_region_end): Expand handlers here, rater than waiting
+	until expand_leftover_cleanups or start_all_catch.
+	(expand_leftover_cleanups): Don't expand here.
+	(expand_start_all_catch): Or here.
+	(expand_rethrow): Check the return value from find_func_region.
+	* function.c (expand_function_end): Emit the catch_clauses.
+	
 1999-11-18  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* integrate.c (expand_inline_function): Add necessary check for NULL.

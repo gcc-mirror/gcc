@@ -6436,6 +6436,9 @@ expand_function_end (filename, line, end_bindings)
 
     expand_leftover_cleanups ();
 
+    /* If there are any catch_clauses remaining, output them now.  */
+    emit_insns (catch_clauses);
+    catch_clauses = NULL_RTX;
     /* If the above emitted any code, may sure we jump around it.  */
     if (last != get_last_insn ())
       {
