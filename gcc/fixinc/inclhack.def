@@ -1221,11 +1221,14 @@ fix = {
     hackname  = hpux_maxint;
     files     = sys/param.h;
     files     = values.h;
-    select    = "^#[ \t]*define[ \t]*MAXINT[ \t]";
+    select    = "^#[ \t]*define[ \t]+MAXINT[ \t]";
+    bypass    = "^#[ \t]*ifndef[ \t]+MAXINT";
+    test =
+    "-n \"`egrep '#[ \t]*define[ \t]+MAXINT[ \t]' sys/param.h`\"";
 
     c_fix     = format;
     c_fix_arg = "#ifndef MAXINT\n%0\n#endif";
-    c_fix_arg = "^#[ \t]*define[ \t]*MAXINT[ \t].*";
+    c_fix_arg = "^#[ \t]*define[ \t]+MAXINT[ \t].*";
 
     test_text = '#define MAXINT 0x7FFFFFFF';
 };

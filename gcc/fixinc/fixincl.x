@@ -2140,10 +2140,24 @@ tSCC zHpux_MaxintList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zHpux_MaxintSelect0[] =
-       "^#[ \t]*define[ \t]*MAXINT[ \t]";
+       "^#[ \t]*define[ \t]+MAXINT[ \t]";
 
-#define    HPUX_MAXINT_TEST_CT  1
+/*
+ *  content bypass pattern - skip fix if pattern found
+ */
+tSCC zHpux_MaxintBypass0[] =
+       "^#[ \t]*ifndef[ \t]+MAXINT";
+
+/*
+ *  perform the 'test' shell command - do fix on success
+ */
+tSCC zHpux_MaxintTest0[] =
+       "-n \"`egrep '#[ \t]*define[ \t]+MAXINT[ \t]' sys/param.h`\"";
+
+#define    HPUX_MAXINT_TEST_CT  3
 static tTestDesc aHpux_MaxintTests[] = {
+  { TT_TEST,     zHpux_MaxintTest0,   0 /* unused */ },
+  { TT_NEGREP,   zHpux_MaxintBypass0, (regex_t*)NULL },
   { TT_EGREP,    zHpux_MaxintSelect0, (regex_t*)NULL }, };
 
 /*
@@ -2154,7 +2168,7 @@ static const char* apzHpux_MaxintPatch[] = {
     "#ifndef MAXINT\n\
 %0\n\
 #endif",
-    "^#[ \t]*define[ \t]*MAXINT[ \t].*",
+    "^#[ \t]*define[ \t]+MAXINT[ \t].*",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -5265,7 +5279,7 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          134
+#define REGEX_COUNT          135
 #define MACH_LIST_SIZE_LIMIT 279
 #define FIX_COUNT            130
 
