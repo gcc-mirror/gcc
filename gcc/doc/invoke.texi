@@ -367,22 +367,6 @@ in the following sections.
 -msoft-float  -msoft-quad-float  -msparclite  -mstack-bias @gol
 -msupersparc  -munaligned-doubles  -mv8}
 
-@emph{Convex Options}
-@gccoptlist{
--mc1  -mc2  -mc32  -mc34  -mc38 @gol
--margcount  -mnoargcount @gol
--mlong32  -mlong64 @gol
--mvolatile-cache  -mvolatile-nocache}
-
-@emph{AMD29K Options}
-@gccoptlist{
--m29000  -m29050  -mbw  -mnbw  -mdw  -mndw @gol
--mlarge  -mnormal  -msmall @gol
--mkernel-registers  -mno-reuse-arg-regs @gol
--mno-stack-check  -mno-storem-bug @gol
--mreuse-arg-regs  -msoft-float  -mstack-check @gol
--mstorem-bug  -muser-registers}
-
 @emph{ARM Options}
 @gccoptlist{
 -mapcs-frame  -mno-apcs-frame @gol
@@ -397,7 +381,6 @@ in the following sections.
 -mthumb-interwork  -mno-thumb-interwork @gol
 -mcpu=@var{name}  -march=@var{name}  -mfpe=@var{name}  @gol
 -mstructure-size-boundary=@var{n} @gol
--mbsd -mxopen  -mno-symrename @gol
 -mabort-on-noreturn @gol
 -mlong-calls  -mno-long-calls @gol
 -msingle-pic-base  -mno-single-pic-base @gol
@@ -565,10 +548,6 @@ in the following sections.
 @emph{DEC Alpha/VMS Options}
 @gccoptlist{
 -mvms-return-codes}
-
-@emph{Clipper Options}
-@gccoptlist{
--mc300  -mc400}
 
 @emph{H8/300 Options}
 @gccoptlist{
@@ -5252,8 +5231,6 @@ that macro, which enables you to change the defaults.
 * M68hc1x Options::
 * VAX Options::
 * SPARC Options::
-* Convex Options::
-* AMD29K Options::
 * ARM Options::
 * MN10200 Options::
 * MN10300 Options::
@@ -5268,7 +5245,6 @@ that macro, which enables you to change the defaults.
 * Intel 960 Options::
 * DEC Alpha Options::
 * DEC Alpha/VMS Options::
-* Clipper Options::
 * H8/300 Options::
 * SH Options::
 * System V Options::
@@ -5799,195 +5775,6 @@ when making stack frame references.
 Otherwise, assume no such offset is present.
 @end table
 
-@node Convex Options
-@subsection Convex Options
-@cindex Convex options
-
-These @samp{-m} options are defined for Convex:
-
-@table @gcctabopt
-@item -mc1
-@opindex mc1
-Generate output for C1.  The code will run on any Convex machine.
-The preprocessor symbol @code{__convex__c1__} is defined.
-
-@item -mc2
-@opindex mc2
-Generate output for C2.  Uses instructions not available on C1.
-Scheduling and other optimizations are chosen for max performance on C2.
-The preprocessor symbol @code{__convex_c2__} is defined.
-
-@item -mc32
-@opindex mc32
-Generate output for C32xx.  Uses instructions not available on C1.
-Scheduling and other optimizations are chosen for max performance on C32.
-The preprocessor symbol @code{__convex_c32__} is defined.
-
-@item -mc34
-@opindex mc34
-Generate output for C34xx.  Uses instructions not available on C1.
-Scheduling and other optimizations are chosen for max performance on C34.
-The preprocessor symbol @code{__convex_c34__} is defined.
-
-@item -mc38
-@opindex mc38
-Generate output for C38xx.  Uses instructions not available on C1.
-Scheduling and other optimizations are chosen for max performance on C38.
-The preprocessor symbol @code{__convex_c38__} is defined.
-
-@item -margcount
-@opindex margcount
-Generate code which puts an argument count in the word preceding each
-argument list.  This is compatible with regular CC, and a few programs
-may need the argument count word.  GDB and other source-level debuggers
-do not need it; this info is in the symbol table.
-
-@item -mnoargcount
-@opindex mnoargcount
-Omit the argument count word.  This is the default.
-
-@item -mvolatile-cache
-@opindex mvolatile-cache
-Allow volatile references to be cached.  This is the default.
-
-@item -mvolatile-nocache
-@opindex mvolatile-nocache
-Volatile references bypass the data cache, going all the way to memory.
-This is only needed for multi-processor code that does not use standard
-synchronization instructions.  Making non-volatile references to volatile
-locations will not necessarily work.
-
-@item -mlong32
-@opindex mlong32
-Type long is 32 bits, the same as type int.  This is the default.
-
-@item -mlong64
-@opindex mlong64
-Type long is 64 bits, the same as type long long.  This option is useless,
-because no library support exists for it.
-@end table
-
-@node AMD29K Options
-@subsection AMD29K Options
-@cindex AMD29K options
-
-These @samp{-m} options are defined for the AMD Am29000:
-
-@table @gcctabopt
-@item -mdw
-@opindex mdw
-@cindex DW bit (29k)
-Generate code that assumes the @code{DW} bit is set, i.e., that byte and
-halfword operations are directly supported by the hardware.  This is the
-default.
-
-@item -mndw
-@opindex mndw
-Generate code that assumes the @code{DW} bit is not set.
-
-@item -mbw
-@opindex mbw
-@cindex byte writes (29k)
-Generate code that assumes the system supports byte and halfword write
-operations.  This is the default.
-
-@item -mnbw
-@opindex mnbw
-Generate code that assumes the systems does not support byte and
-halfword write operations.  @option{-mnbw} implies @option{-mndw}.
-
-@item -msmall
-@opindex msmall
-@cindex memory model (29k)
-Use a small memory model that assumes that all function addresses are
-either within a single 256 KB segment or at an absolute address of less
-than 256k.  This allows the @code{call} instruction to be used instead
-of a @code{const}, @code{consth}, @code{calli} sequence.
-
-@item -mnormal
-@opindex mnormal
-Use the normal memory model: Generate @code{call} instructions only when
-calling functions in the same file and @code{calli} instructions
-otherwise.  This works if each file occupies less than 256 KB but allows
-the entire executable to be larger than 256 KB@.  This is the default.
-
-@item -mlarge
-@opindex mlarge
-Always use @code{calli} instructions.  Specify this option if you expect
-a single file to compile into more than 256 KB of code.
-
-@item -m29050
-@opindex m29050
-@cindex processor selection (29k)
-Generate code for the Am29050.
-
-@item -m29000
-@opindex m29000
-Generate code for the Am29000.  This is the default.
-
-@item -mkernel-registers
-@opindex mkernel-registers
-@cindex kernel and user registers (29k)
-Generate references to registers @code{gr64-gr95} instead of to
-registers @code{gr96-gr127}.  This option can be used when compiling
-kernel code that wants a set of global registers disjoint from that used
-by user-mode code.
-
-Note that when this option is used, register names in @samp{-f} flags
-must use the normal, user-mode, names.
-
-@item -muser-registers
-@opindex muser-registers
-Use the normal set of global registers, @code{gr96-gr127}.  This is the
-default.
-
-@item -mstack-check
-@itemx -mno-stack-check
-@opindex mstack-check
-@opindex mno-stack-check
-@cindex stack checks (29k)
-Insert (or do not insert) a call to @code{__msp_check} after each stack
-adjustment.  This is often used for kernel code.
-
-@item -mstorem-bug
-@itemx -mno-storem-bug
-@opindex mstorem-bug
-@opindex mno-storem-bug
-@cindex storem bug (29k)
-@option{-mstorem-bug} handles 29k processors which cannot handle the
-separation of a mtsrim insn and a storem instruction (most 29000 chips
-to date, but not the 29050).
-
-@item -mno-reuse-arg-regs
-@itemx -mreuse-arg-regs
-@opindex mno-reuse-arg-regs
-@opindex mreuse-arg-regs
-@option{-mno-reuse-arg-regs} tells the compiler to only use incoming argument
-registers for copying out arguments.  This helps detect calling a function
-with fewer arguments than it was declared with.
-
-@item -mno-impure-text
-@itemx -mimpure-text
-@opindex mno-impure-text
-@opindex mimpure-text
-@option{-mimpure-text}, used in addition to @option{-shared}, tells the compiler to
-not pass @option{-assert pure-text} to the linker when linking a shared object.
-
-@item -msoft-float
-@opindex msoft-float
-Generate output containing library calls for floating point.
-@strong{Warning:} the requisite libraries are not part of GCC@.
-Normally the facilities of the machine's usual C compiler are used, but
-this can't be done directly in cross-compilation.  You must make your
-own arrangements to provide suitable library functions for
-cross-compilation.
-
-@item -mno-multm
-@opindex mno-multm
-Do not generate multm or multmu instructions.  This is useful for some embedded
-systems which do not have trap handlers for these instructions.
-@end table
-
 @node ARM Options
 @subsection ARM Options
 @cindex ARM options
@@ -6151,25 +5938,6 @@ These are deprecated aliases for @option{-malignment-traps}.
 @opindex mno-short-load-bytes
 @opindex mshort-load-words
 This are deprecated aliases for @option{-mno-alignment-traps}.
-
-@item -mbsd
-@opindex mbsd
-This option only applies to RISC iX@.  Emulate the native BSD-mode
-compiler.  This is the default if @option{-ansi} is not specified.
-
-@item -mxopen
-@opindex mxopen
-This option only applies to RISC iX@.  Emulate the native X/Open-mode
-compiler.
-
-@item -mno-symrename
-@opindex mno-symrename
-This option only applies to RISC iX@.  Do not run the assembler
-post-processor, @samp{symrename}, after code has been assembled.
-Normally it is necessary to modify some of the standard symbols in
-preparation for linking with the RISC iX C library; this option
-suppresses this pass.  The post-processor is never run when the
-compiler is built for cross-compilation.
 
 @item -mcpu=@var{name}
 @opindex mcpu
@@ -6512,9 +6280,9 @@ underscore as prefix on each name.
 Include (or omit) additional debugging information (about registers used
 in each stack frame) as specified in the 88open Object Compatibility
 Standard, ``OCS''@.  This extra information allows debugging of code that
-has had the frame pointer eliminated.  The default for DG/UX, SVr4, and
-Delta 88 SVr3.2 is to include this information; other 88k configurations
-omit this information by default.
+has had the frame pointer eliminated.  The default for SVr4 and Delta 88
+SVr3.2 is to include this information; other 88k configurations omit this
+information by default.
 
 @item -mocs-frame-position
 @opindex mocs-frame-position
@@ -6522,7 +6290,7 @@ omit this information by default.
 When emitting COFF debugging information for automatic variables and
 parameters stored on the stack, use the offset from the canonical frame
 address, which is the stack pointer (register 31) on entry to the
-function.  The DG/UX, SVr4, Delta88 SVr3.2, and BCS configurations use
+function.  The SVr4 and Delta88 SVr3.2, and BCS configurations use
 @option{-mocs-frame-position}; other 88k configurations have the default
 @option{-mno-ocs-frame-position}.
 
@@ -6609,9 +6377,8 @@ that is used on System V release 4.
 SVr4.
 @end enumerate
 
-@option{-msvr4} is the default for the m88k-motorola-sysv4 and
-m88k-dg-dgux m88k configurations.  @option{-msvr3} is the default for all
-other m88k configurations.
+@option{-msvr4} is the default for the m88k-motorola-sysv4 configuration.
+@option{-msvr3} is the default for all other m88k configurations.
 
 @item -mversion-03.00
 @opindex mversion-03.00
@@ -8842,22 +8609,6 @@ These @samp{-m} options are defined for the DEC Alpha/VMS implementations:
 @opindex mvms-return-codes
 Return VMS condition codes from main.  The default is to return POSIX
 style condition (e.g.@ error) codes.
-@end table
-
-@node Clipper Options
-@subsection Clipper Options
-
-These @samp{-m} options are defined for the Clipper implementations:
-
-@table @gcctabopt
-@item -mc300
-@opindex mc300
-Produce code for a C300 Clipper processor.  This is the default.
-
-@item -mc400
-@opindex mc400
-Produce code for a C400 Clipper processor, i.e.@: use floating point
-registers f8--f15.
 @end table
 
 @node H8/300 Options

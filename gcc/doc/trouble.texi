@@ -338,47 +338,6 @@ you cannot successfully use @samp{$} in identifiers on the RS/6000 due
 to a restriction in the IBM assembler.  GAS supports these
 identifiers.
 
-@item
-@opindex mno-serialize-volatile
-There is an assembler bug in versions of DG/UX prior to 5.4.2.01 that
-occurs when the @samp{fldcr} instruction is used.  GCC uses
-@samp{fldcr} on the 88100 to serialize volatile memory references.  Use
-the option @option{-mno-serialize-volatile} if your version of the
-assembler has this bug.
-
-@item
-On VMS, GAS versions 1.38.1 and earlier may cause spurious warning
-messages from the linker.  These warning messages complain of mismatched
-psect attributes.  You can ignore them.
-
-@item
-On NewsOS version 3, if you include both of the files @file{stddef.h}
-and @file{sys/types.h}, you get an error because there are two typedefs
-of @code{size_t}.  You should change @file{sys/types.h} by adding these
-lines around the definition of @code{size_t}:
-
-@smallexample
-#ifndef _SIZE_T
-#define _SIZE_T
-@var{actual-typedef-here}
-#endif
-@end smallexample
-
-@cindex Alliant
-@item
-On the Alliant, the system's own convention for returning structures
-and unions is unusual, and is not compatible with GCC no matter
-what options are used.
-
-@cindex RT PC
-@cindex IBM RT PC
-@item
-@opindex mhc-struct-return
-On the IBM RT PC, the MetaWare HighC compiler (hc) uses a different
-convention for structure and union returning.  Use the option
-@option{-mhc-struct-return} to tell GCC to use a convention compatible
-with it.
-
 @cindex VAX calling convention
 @cindex Ultrix calling convention
 @item
@@ -395,42 +354,10 @@ these options to produce code compatible with the Fortran compiler:
 @end smallexample
 
 @item
-On the WE32k, you may find that programs compiled with GCC do not
-work with the standard shared C library.  You may need to link with
-the ordinary C compiler.  If you do so, you must specify the following
-options:
-
-@smallexample
--L/usr/local/lib/gcc-lib/we32k-att-sysv/2.8.1 -lgcc -lc_s
-@end smallexample
-
-The first specifies where to find the library @file{libgcc.a}
-specified with the @option{-lgcc} option.
-
-GCC does linking by invoking @command{ld}, just as @command{cc} does, and
-there is no reason why it @emph{should} matter which compilation program
-you use to invoke @command{ld}.  If someone tracks this problem down,
-it can probably be fixed easily.
-
-@item
 On the Alpha, you may get assembler errors about invalid syntax as a
 result of floating point constants.  This is due to a bug in the C
 library functions @code{ecvt}, @code{fcvt} and @code{gcvt}.  Given valid
 floating point numbers, they sometimes print @samp{NaN}.
-
-@item
-On Irix 4.0.5F (and perhaps in some other versions), an assembler bug
-sometimes reorders instructions incorrectly when optimization is turned
-on.  If you think this may be happening to you, try using the GNU
-assembler; GAS version 2.1 supports ECOFF on Irix.
-
-@opindex noasmopt
-Or use the @option{-noasmopt} option when you compile GCC with itself,
-and then again when you compile your program.  (This is a temporary
-kludge to turn off assembler optimization on Irix.)  If this proves to
-be what you need, edit the assembler spec in the file @file{specs} so
-that it unconditionally passes @option{-O0} to the assembler, and never
-passes @option{-O2} or @option{-O3}.
 @end itemize
 
 @node External Bugs
