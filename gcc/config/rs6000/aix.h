@@ -408,8 +408,12 @@ toc_section ()						\
   fputs (TARGET_32BIT ? "\t.long ." : "\t.llong .", FILE);	\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fputs (", TOC[tc0], 0\n", FILE);				\
-  fputs (TARGET_32BIT						\
-	 ? "\t.csect .text[PR]\n." : "\t.csect .text[PR],3\n.", FILE); \
+  in_section = no_section;					\
+  if (flag_function_sections)					\
+    named_section ((DECL), (char *) 0, 0);			\
+  else								\
+    text_section();						\
+  putc ('.', FILE);						\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fputs (":\n", FILE);						\
   if (write_symbols == XCOFF_DEBUG)				\
@@ -525,22 +529,42 @@ toc_section ()						\
   fprintf ((FILE), "\t.vbyte\t2,0x%x", (unsigned) (VALUE))
 
 #define ASM_OUTPUT_DWARF_OFFSET4(FILE, LABEL)	\
- ASM_OUTPUT_DWARF_ADDR_VAR (FILE, LABEL, 4)
+  ASM_OUTPUT_DWARF_ADDR_VAR (FILE, LABEL, 4)
 
 #define ASM_OUTPUT_DWARF_OFFSET(FILE, LABEL)			\
- ASM_OUTPUT_DWARF_ADDR_VAR (FILE, LABEL, DWARF_OFFSET_SIZE)
+  ASM_OUTPUT_DWARF_ADDR_VAR (FILE, LABEL, DWARF_OFFSET_SIZE)
 
 /* dwarf2out keys off this, but we don't have to have a real definition.  */
 #define UNALIGNED_INT_ASM_OP bite_me
 
-/* Output before instructions.
-   Text section for 64-bit target may contain 64-bit address jump table.  */
-#define TEXT_SECTION_ASM_OP (TARGET_32BIT \
-                             ? "\t.csect .text[PR]" : "\t.csect .text[PR],3")
+/* Output before instructions.  */
+#define TEXT_SECTION_ASM_OP "\t.csect .text[PR]"
 
 /* Output before writable data.
    Align entire section to BIGGEST_ALIGNMENT.  */
 #define DATA_SECTION_ASM_OP "\t.csect .data[RW],3"
+
+/* Define unique section name -- functions only.  */
+#define UNIQUE_SECTION(DECL,RELOC)			\
+  do {							\
+    int len;						\
+    const char *name;					\
+    char *string;					\
+							\
+    if (TREE_CODE (DECL) == FUNCTION_DECL) {		\
+      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL)); \
+      len = strlen (name) + 5;				\
+      string = alloca (len) + 1;			\
+      sprintf (string, ".%s[PR]", name);		\
+      DECL_SECTION_NAME (DECL) = build_string (len, string); \
+    }							\
+  } while (0)
+
+#define ASM_OUTPUT_SECTION_NAME(ASM_OUT_FILE,DECL,NAME,RELOC)	\
+  do { fputs ("\t.csect ", ASM_OUT_FILE);			\
+       fputs (TREE_STRING_POINTER (DECL_SECTION_NAME (DECL)), ASM_OUT_FILE); \
+       putc ('\n', ASM_OUT_FILE);				\
+  } while (0)
 
 /* __throw will restore its own return address to be the same as the
    return address of the function that the throw is being made to.

@@ -361,6 +361,19 @@ rs6000_override_options (default_cpu)
       flag_pic = 0;
     }
 
+  if (flag_function_sections && (write_symbols != NO_DEBUG)
+      && (DEFAULT_ABI == ABI_AIX))
+    {
+      warning ("-ffunction-sections disabled on AIX when debugging");
+      flag_function_sections = 0;
+    }
+
+  if (flag_data_sections && (DEFAULT_ABI == ABI_AIX))
+    {
+      warning ("-fdata-sections not supported on AIX");
+      flag_data_sections = 0;
+    }
+
   /* Set debug flags */
   if (rs6000_debug_name)
     {
