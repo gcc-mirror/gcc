@@ -1,3 +1,7 @@
+Sat Feb 14 11:23:09 PST 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Feb 14 05:08:21 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.md (movsfcc): Also validate operands[3] when compiling hard
