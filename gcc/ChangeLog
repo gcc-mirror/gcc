@@ -1,3 +1,8 @@
+2004-06-10  Jeff Law  <law@redhat.com>
+
+	* fold-const.c (fold_inf_compare): Avoid creating non-gimple
+	code when we are in gimple form.
+
 2004-06-10  Diego Novillo  <dnovillo@redhat.com>
 
 	* Makefile.in (tree-ssanames.o): Depend on TREE_FLOW_H.
