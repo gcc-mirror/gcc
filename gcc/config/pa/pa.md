@@ -5629,7 +5629,7 @@
   [(return)
    (clobber (reg:SI 1))
    (use (reg:SI 2))]
-  "flag_pic && current_function_calls_eh_return"
+  "!TARGET_NO_SPACE_REGS && flag_pic && current_function_calls_eh_return"
   "ldsid (%%sr0,%%r2),%%r1\;mtsp %%r1,%%sr0\;be%* 0(%%sr0,%%r2)"
   [(set_attr "type" "branch")
    (set_attr "length" "12")])
@@ -5665,8 +5665,10 @@
 
       /* EH returns bypass the normal return stub.  Thus, we must do an
 	 interspace branch to return from functions that call eh_return.
-	 This is only a problem for returns from shared code.  */
-      if (flag_pic && current_function_calls_eh_return)
+	 This is only a problem for returns from shared code on ports
+	 using space registers.  */
+      if (!TARGET_NO_SPACE_REGS
+	  && flag_pic && current_function_calls_eh_return)
 	x = gen_return_external_pic ();
       else
 	x = gen_return_internal ();
@@ -6997,7 +6999,8 @@
 
 ;;; EH does longjmp's from and within the data section.  Thus,
 ;;; an interspace branch is required for the longjmp implementation.
-;;; Registers r1 and r2 are used as scratch registers for the jump.
+;;; Registers r1 and r2 are used as scratch registers for the jump
+;;; when necessary.
 (define_expand "interspace_jump"
   [(parallel
      [(set (pc) (match_operand 0 "pmode_register_operand" "a"))
@@ -7011,6 +7014,22 @@
 (define_insn ""
   [(set (pc) (match_operand 0 "pmode_register_operand" "a"))
   (clobber (reg:SI 2))]
+  "TARGET_PA_20 && !TARGET_64BIT"
+  "bve%* (%0)"
+   [(set_attr "type" "branch")
+    (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (pc) (match_operand 0 "pmode_register_operand" "a"))
+  (clobber (reg:SI 2))]
+  "TARGET_NO_SPACE_REGS && !TARGET_64BIT"
+  "be%* 0(%%sr4,%0)"
+   [(set_attr "type" "branch")
+    (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (pc) (match_operand 0 "pmode_register_operand" "a"))
+  (clobber (reg:SI 2))]
   "!TARGET_64BIT"
   "ldsid (%%sr0,%0),%%r2\; mtsp %%r2,%%sr0\; be%* 0(%%sr0,%0)"
    [(set_attr "type" "branch")
@@ -7020,9 +7039,9 @@
   [(set (pc) (match_operand 0 "pmode_register_operand" "a"))
   (clobber (reg:DI 2))]
   "TARGET_64BIT"
-  "ldsid (%%sr0,%0),%%r2\; mtsp %%r2,%%sr0\; be%* 0(%%sr0,%0)"
+  "bve%* (%0)"
    [(set_attr "type" "branch")
-    (set_attr "length" "12")])
+    (set_attr "length" "4")])
 
 (define_expand "builtin_longjmp"
   [(unspec_volatile [(match_operand 0 "register_operand" "r")] 3)]

@@ -6532,10 +6532,13 @@ attr_length_call (insn, sibcall)
 	  if (TARGET_PA_20)
 	    return (length + 32);
 
+	  if (!TARGET_NO_SPACE_REGS)
+	    length += 8;
+
 	  if (!sibcall)
 	    length += 8;
 
-	  return (length + 40);
+	  return (length + 32);
 	}
     }
 }
@@ -6730,7 +6733,10 @@ output_call (insn, call_dest, sibcall)
 		  if (!sibcall && !TARGET_PA_20)
 		    {
 		      output_asm_insn ("{bl|b,l} .+8,%%r2", xoperands);
-		      output_asm_insn ("addi 16,%%r2,%%r2", xoperands);
+		      if (TARGET_NO_SPACE_REGS)
+			output_asm_insn ("addi 8,%%r2,%%r2", xoperands);
+		      else
+			output_asm_insn ("addi 16,%%r2,%%r2", xoperands);
 		    }
 		}
 
@@ -6752,14 +6758,23 @@ output_call (insn, call_dest, sibcall)
 		}
 	      else
 		{
-	          output_asm_insn ("ldsid (%%r1),%%r31\n\tmtsp %%r31,%%sr0",
-				   xoperands);
+		  if (!TARGET_NO_SPACE_REGS)
+		    output_asm_insn ("ldsid (%%r1),%%r31\n\tmtsp %%r31,%%sr0",
+				     xoperands);
 
 		  if (sibcall)
-		    output_asm_insn ("be 0(%%sr0,%%r1)", xoperands);
+		    {
+		      if (TARGET_NO_SPACE_REGS)
+			output_asm_insn ("be 0(%%sr4,%%r1)", xoperands);
+		      else
+			output_asm_insn ("be 0(%%sr0,%%r1)", xoperands);
+		    }
 		  else
 		    {
-		      output_asm_insn ("ble 0(%%sr0,%%r1)", xoperands);
+		      if (TARGET_NO_SPACE_REGS)
+			output_asm_insn ("ble 0(%%sr4,%%r1)", xoperands);
+		      else
+			output_asm_insn ("ble 0(%%sr0,%%r1)", xoperands);
 
 		      if (indirect_call)
 			output_asm_insn ("stw %%r31,-24(%%sp)", xoperands);
@@ -7026,7 +7041,7 @@ pa_asm_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
   pa_output_function_prologue (file, 0);
   if (VAL_14_BITS_P (delta))
     {
-      if (! TARGET_64BIT && ! TARGET_PORTABLE_RUNTIME && flag_pic)
+      if (!TARGET_64BIT && !TARGET_PORTABLE_RUNTIME && flag_pic)
 	{
 	  fprintf (file, "\taddil LT'%s,%%r19\n", lab);
 	  fprintf (file, "\tldw RT'%s(%%r1),%%r22\n", lab);
@@ -7035,8 +7050,14 @@ pa_asm_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
 	  fprintf (file, "\tdepi 0,31,2,%%r22\n");
 	  fprintf (file, "\tldw 4(%%sr0,%%r22),%%r19\n");
 	  fprintf (file, "\tldw 0(%%sr0,%%r22),%%r22\n");
-	  fprintf (file, "\tldsid (%%sr0,%%r22),%%r1\n\tmtsp %%r1,%%sr0\n");
-	  fprintf (file, "\tbe 0(%%sr0,%%r22)\n\tldo ");
+	  if (TARGET_NO_SPACE_REGS)
+	    fprintf (file, "\tbe 0(%%sr4,%%r22)\n\tldo ");
+	  else
+	    {
+	      fprintf (file, "\tldsid (%%sr0,%%r22),%%r1\n");
+	      fprintf (file, "\tmtsp %%r1,%%sr0\n");
+	      fprintf (file, "\tbe 0(%%sr0,%%r22)\n\tldo ");
+	    }
 	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
 	  fprintf (file, "(%%r26),%%r26\n");
 	}
@@ -7049,7 +7070,7 @@ pa_asm_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
     }
   else
     {
-      if (! TARGET_64BIT && ! TARGET_PORTABLE_RUNTIME && flag_pic)
+      if (!TARGET_64BIT && !TARGET_PORTABLE_RUNTIME && flag_pic)
 	{
 	  fprintf (file, "\taddil L'");
 	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
@@ -7063,8 +7084,14 @@ pa_asm_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
 	  fprintf (file, "\tdepi 0,31,2,%%r22\n");
 	  fprintf (file, "\tldw 4(%%sr0,%%r22),%%r19\n");
 	  fprintf (file, "\tldw 0(%%sr0,%%r22),%%r22\n");
-	  fprintf (file, "\tldsid (%%sr0,%%r22),%%r1\n\tmtsp %%r1,%%sr0\n");
-	  fprintf (file, "\tbe,n 0(%%sr0,%%r22)\n");
+	  if (TARGET_NO_SPACE_REGS)
+	    fprintf (file, "\tbe 0(%%sr4,%%r22)");
+	  else
+	    {
+	      fprintf (file, "\tldsid (%%sr0,%%r22),%%r1\n");
+	      fprintf (file, "\tmtsp %%r1,%%sr0\n");
+	      fprintf (file, "\tbe,n 0(%%sr0,%%r22)\n");
+	    }
 	}
       else
 	{
