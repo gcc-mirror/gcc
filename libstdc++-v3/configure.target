@@ -105,6 +105,9 @@ case "${target_os}" in
   solaris2.7* | solaris2.8*)
     os_include_dir="config/os/solaris/solaris2.7"
     ;;
+  hpux)
+    os_include_dir="config/os/hpux"
+    ;;
   *)
     os_include_dir="config/os/generic"
     ;;

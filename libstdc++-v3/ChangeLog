@@ -1,3 +1,11 @@
+Tue Dec  5 20:24:15 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.target (hpux): Set os_include_dir.
+	* config/os/hpux/bits/ctype_base.h: New file
+	* config/os/hpux/bits/ctype_inline.h: New file
+	* config/os/hpux/bits/ctype_noinline.h: New file
+	* config/os/hpux/bits/os_defines.h: New file
+
 2000-12-05  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* src/Makefile.am (libstdc++.INC): Revert for libjava builds.
