@@ -103,6 +103,7 @@ suggestions for improvement of GCC are welcome in any case.
 @section Where to Report Bugs
 @cindex bug report mailing lists
 @kindex gcc-bugs@@gcc.gnu.org or bug-gcc@@gnu.org
+
 Send bug reports for the GNU Compiler Collection to
 @email{gcc-bugs@@gcc.gnu.org}.  In accordance with the GNU-wide
 convention, in which bug reports for tool ``foo'' are sent

@@ -209,14 +209,15 @@ Unconditional branches are normally not interesting.
 
 @end table
 
-Gcov should be run with the current directory the same as that when you
-invoked the compiler. Otherwise it will not be able to locate the source
-files. Gcov produces files called @file{@var{mangledname}.gcov} in the
-current directory. These contain the coverage information of the source
-file they correspond to. One @file{.gcov} file is produced for each
-source file containing code, which was compiled to produce the data
-files. The @file{.gcov} files contain the ':' separated fields along
-with program source code. The format is
+@command{gcov} should be run with the current directory the same as that 
+when you invoked the compiler. Otherwise it will not be able to locate 
+the source files. @command{gcov} produces files called 
+@file{@var{mangledname}.gcov} in the current directory. These contain 
+the coverage information of the source file they correspond to. 
+One @file{.gcov} file is produced for each source file containing code, 
+which was compiled to produce the data files. The @file{.gcov} files 
+contain the ':' separated fields along with program source code. The 
+format is
 
 @smallexample
 @var{execution_count}:@var{line_number}:@var{source line text}
