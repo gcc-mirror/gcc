@@ -337,6 +337,7 @@ case $machine in
 	*) echo 'Please update *-*-freebsd* in gcc/config.gcc'; exit 1;;
 	esac
 	tmake_file=t-freebsd
+	xmake_file=none
 	xm_defines=POSIX
 	case x${enable_threads} in
 	xno) fbsd_tm_file="${fbsd_tm_file} freebsd-nthr.h";;
@@ -1531,7 +1532,7 @@ ia64*-*-aix*)
 	target_cpu_default="MASK_GNU_AS|MASK_GNU_LD"
 	;;
 ia64*-*-elf*)
-	tm_file=ia64/elf.h
+	tm_file="${tm_file} elfos.h ia64/sysv4.h ia64/elf.h"
 	tmake_file="ia64/t-ia64"
 	target_cpu_default="0"
 	if test x$gas = xyes
@@ -1542,6 +1543,12 @@ ia64*-*-elf*)
 	then
 		target_cpu_default="${target_cpu_default}|MASK_GNU_LD"
 	fi
+	float_format=i386
+	;;
+ia64*-*-freebsd*)
+	tm_file="${tm_file} ${fbsd_tm_file} elfos.h ia64/sysv4.h ia64/freebsd.h"
+	target_cpu_default="MASK_GNU_AS|MASK_GNU_LD"
+	tmake_file="${tmake_file} ia64/t-ia64"
 	float_format=i386
 	;;
 ia64*-*-linux*)
