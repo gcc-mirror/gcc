@@ -517,7 +517,6 @@ collect_insn_data (rtx pattern, int *palt, int *pmax)
     case MATCH_OPERATOR:
     case MATCH_SCRATCH:
     case MATCH_PARALLEL:
-    case MATCH_INSN:
       i = XINT (pattern, 0);
       if (i > *pmax)
 	*pmax = i;
@@ -600,7 +599,6 @@ alter_predicate_for_insn (rtx pattern, int alt, int max_op, int lineno)
     case MATCH_OPERATOR:
     case MATCH_SCRATCH:
     case MATCH_PARALLEL:
-    case MATCH_INSN:
       XINT (pattern, 0) += max_op;
       break;
 
