@@ -386,16 +386,13 @@ i386_return_pops_args (fundecl, funtype, size)
   if (TREE_CODE (funtype) == IDENTIFIER_NODE)
     return 0;
 
-  if (fundecl && TREE_CODE_CLASS (TREE_CODE (fundecl)) == 'd')
-    {
-      /* Cdecl functions override -mrtd, and never pop the stack */
-      if (lookup_attribute ("cdecl", TYPE_ATTRIBUTES (funtype)))
-	return 0;
+  /* Cdecl functions override -mrtd, and never pop the stack */
+  if (lookup_attribute ("cdecl", TYPE_ATTRIBUTES (funtype)))
+    return 0;
 
-      /* Stdcall functions will pop the stack if not variable args */
-      if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (funtype)))
-	rtd = 1;
-    }
+  /* Stdcall functions will pop the stack if not variable args */
+  if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (funtype)))
+    rtd = 1;
 
   if (rtd)
     {
