@@ -20,7 +20,7 @@
 .if n .sp
 .if t .sp 0.4
 ..
-.Id $Id: gcc.1,v 1.16 2000/09/11 06:10:30 ciceron Exp $
+.Id $Id: gcc.1,v 1.17 2000/09/13 19:34:05 ciceron Exp $
 .TH GCC 1 "\*(Dt" "GNU Tools" "GNU Tools"
 .SH NAME
 gcc, g++ \- GNU project C and C++ Compiler (gcc-2.96)
@@ -286,7 +286,6 @@ in the following sections.
 \-nostdinc
 \-P
 .RI \-U macro
-\-undef
 .TP
 .B Assembler Option
 .RI \-Wa, option
@@ -1100,9 +1099,6 @@ but do still search the other standard directories.
 (This option is used when building `\|\c
 .B libg++\c
 \&\|'.)
-.TP
-.B \-undef
-Do not predefine any nonstandard macros.  (Including architecture flags).
 .TP
 .B \-E
 Run only the C preprocessor.  Preprocess all the C source files
