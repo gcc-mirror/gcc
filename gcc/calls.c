@@ -555,9 +555,7 @@ expand_call (exp, target, ignore)
   int old_stack_arg_under_construction;
   int old_inhibit_defer_pop = inhibit_defer_pop;
   tree old_cleanups = cleanups_this_call;
-
   rtx use_insns = 0;
-
   register tree p;
   register int i, j;
 
@@ -569,12 +567,7 @@ expand_call (exp, target, ignore)
     {
       fndecl = TREE_OPERAND (p, 0);
       if (TREE_CODE (fndecl) != FUNCTION_DECL)
-	{
-	  /* May still be a `const' function if it is
-	     a call through a pointer-to-const.
-	     But we don't handle that.  */
-	  fndecl = 0;
-	}
+	fndecl = 0;
       else
 	{
 	  if (!flag_no_inline
@@ -601,6 +594,14 @@ expand_call (exp, target, ignore)
 	  if (TREE_THIS_VOLATILE (fndecl))
 	    is_volatile = 1;
 	}
+    }
+
+  /* If we don't have specific function to call, see if we have a 
+     constant or `noreturn' function from the type.  */
+  if (fndecl == 0)
+    {
+      is_const = TREE_READONLY (TREE_TYPE (TREE_TYPE (p)));
+      is_volatile = TREE_THIS_VOLATILE (TREE_TYPE (TREE_TYPE (p)));
     }
 
 #ifdef REG_PARM_STACK_SPACE
