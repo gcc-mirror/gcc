@@ -1633,13 +1633,18 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 		  && (args[i].locate.where_pad
 		      == (BYTES_BIG_ENDIAN ? upward : downward)))
 		{
-		  rtx ri = gen_rtx_REG (word_mode, REGNO (reg));
 		  rtx x;
 		  int shift = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
-		  x = expand_binop (word_mode, ashl_optab, ri,
-				    GEN_INT (shift), ri, 1, OPTAB_WIDEN);
-		  if (x != ri)
-		    emit_move_insn (ri, x);
+
+		  /* Assigning REG here rather than a temp makes CALL_FUSAGE
+		     report the whole reg as used.  Strictly speaking, the
+		     call only uses SIZE bytes at the msb end, but it doesn't
+		     seem worth generating rtl to say that.  */
+		  reg = gen_rtx_REG (word_mode, REGNO (reg));
+		  x = expand_binop (word_mode, ashl_optab, reg,
+				    GEN_INT (shift), reg, 1, OPTAB_WIDEN);
+		  if (x != reg)
+		    emit_move_insn (reg, x);
 		}
 #endif
 	    }
