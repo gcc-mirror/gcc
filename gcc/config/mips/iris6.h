@@ -98,9 +98,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{!shared:%{!ffast-math:%{!funsafe-math-optimizations: \
-     %{mabi=n32|mabi=64:irix-csr.o%s}}}} \
-   crtend.o%s irix-crtn.o%s \
+  "crtend.o%s irix-crtn.o%s \
    %{!shared: \
      %{mabi=32:crtn.o%s}\
      %{mabi=n32:%{mips4:/usr/lib32/mips4/crtn.o%s}\
