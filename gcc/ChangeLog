@@ -1,3 +1,7 @@
+2001-03-19  Brad Lucier  <lucier@math.purdue.edu>
+
+	* Makefile.in: Have splay-tree.o depend on $(GCONFIG_H).
+
 2001-03-16  Andrew Haley  <aph@cambridge.redhat.com>
 
         * config/ia64/libgcc-ia64.ver: Add __ia64_backtrace.
