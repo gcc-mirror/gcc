@@ -1,3 +1,14 @@
+2004-01-12  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	PR c++/4100
+	* g++.dg/parse/friend4.C: New test.
+
+2004-01-12  Scott Brumbaugh  <scottb.lists@verizon.net>
+
+	PR c++/4100
+	* g++.old-deja/g++.pt/niklas01a.C: Mark an error where a class
+	definition is called a friend.
+
 2004-01-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.dg/tls/diag-3.c: Tweak dg-error regexp.
