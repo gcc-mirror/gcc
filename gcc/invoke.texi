@@ -117,7 +117,7 @@ in the following sections.
 @smallexample
 -fsyntax-only  -pedantic  -pedantic-errors
 -w  -W  -Wall  -Waggregate-return  -Wbad-function-cast
--Wcast-align  -Wcast-qual  -Wchar-subscript  -Wcomment
+-Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment
 -Wconversion  -Werror  -Wformat
 -Wid-clash-@var{len}  -Wimplicit -Wimplicit-int 
 -Wimplicit-function-declaration  -Wimport
