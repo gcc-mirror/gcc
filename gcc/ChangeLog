@@ -1,3 +1,8 @@
+2004-09-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (print_operand): Use non-trapping completers for UNLE, UNLT,
+	UNGE, UNGT, UNEQ, UNORDERED and ORDERED comparisons.
+
 2004-09-26  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* builtins.c (expand_builtin_memcmp): Adjust MEM_SIZE to
