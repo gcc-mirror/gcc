@@ -1,3 +1,10 @@
+2004-04-21  James E Wilson  <wilson@specifixinc.com>
+
+	* Makefile.in (fixinc.sh): Don't set or export WARN_CFLAGS.  Fix
+	comment.
+	* fixinc/Makefile.in (FL_LIST): Don't mention WARN_CFLAGS.
+	(fixincl.o-warn): Delete.
+
 2004-04-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/rs6000/rs6000 (print_operand) ['z']:
