@@ -803,7 +803,7 @@ int zdepi_cint_p ();
 
 /* Return the stack location to use for secondary memory needed reloads.  */
 #define SECONDARY_MEMORY_NEEDED_RTX(MODE) \
-  gen_rtx (MEM, MODE, gen_rtx (PLUS, Pmode, stack_pointer_rtx, GEN_INT (-16)))
+  gen_rtx_MEM (MODE, gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (-16)))
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
@@ -909,18 +909,18 @@ int zdepi_cint_p ();
 
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), ((! TARGET_SOFT_FLOAT		     \
-				       && (TYPE_MODE (VALTYPE) == SFmode ||  \
-					   TYPE_MODE (VALTYPE) == DFmode)) ? \
-				      32 : 28))
+  gen_rtx_REG (TYPE_MODE (VALTYPE), ((! TARGET_SOFT_FLOAT		     \
+				      && (TYPE_MODE (VALTYPE) == SFmode ||  \
+					  TYPE_MODE (VALTYPE) == DFmode)) ? \
+				     32 : 28))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 #define LIBCALL_VALUE(MODE)	\
-  gen_rtx (REG, MODE,							\
-	   (! TARGET_SOFT_FLOAT						\
-	    && ((MODE) == SFmode || (MODE) == DFmode) ? 32 : 28))
+  gen_rtx_REG (MODE,							\
+	       (! TARGET_SOFT_FLOAT					\
+	        && ((MODE) == SFmode || (MODE) == DFmode) ? 32 : 28))
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.  */
@@ -1044,7 +1044,7 @@ struct hppa_args {int words, nargs_prototype, indirect; };
    ? (!TARGET_PORTABLE_RUNTIME || (TYPE) == 0				\
       || !FLOAT_MODE_P (MODE) || TARGET_SOFT_FLOAT			\
       || (CUM).nargs_prototype > 0)					\
-      ? gen_rtx (REG, (MODE),						\
+      ? gen_rtx_REG ((MODE),						\
 		 (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
 		  ? (((!(CUM).indirect 					\
 		       || TARGET_PORTABLE_RUNTIME)			\
@@ -1061,17 +1061,17 @@ struct hppa_args {int words, nargs_prototype, indirect; };
 							      (TYPE))))))\
    /* We are calling a non-prototyped function with floating point	\
       arguments using the portable conventions.  */			\
-   : gen_rtx (PARALLEL, (MODE),						\
+   : gen_rtx_PARALLEL ((MODE),						\
 	      gen_rtvec							\
 	      (2,							\
-	       gen_rtx (EXPR_LIST, VOIDmode,				\
-			gen_rtx (REG, (MODE),				\
+	       gen_rtx_EXPR_LIST (VOIDmode,				\
+			gen_rtx_REG ((MODE),				\
 				 (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1 \
 				  ? ((CUM).words ? 38 : 34)		\
 				  : (32 + 2 * (CUM).words))),		\
 			const0_rtx),					\
-	       gen_rtx (EXPR_LIST, VOIDmode,				\
-			gen_rtx (REG, (MODE),				\
+	       gen_rtx_EXPR_LIST (VOIDmode,				\
+			gen_rtx_REG ((MODE),				\
 				 (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1 \
 				  ? ((CUM).words ? 23 : 25)		\
 				  : (27 - (CUM).words -			\
@@ -1343,9 +1343,9 @@ extern union tree_node *current_function_decl;
   rtx start_addr, end_addr;						\
 									\
   start_addr = memory_address (Pmode, plus_constant ((TRAMP), 36));	\
-  emit_move_insn (gen_rtx (MEM, Pmode, start_addr), (FNADDR));		\
+  emit_move_insn (gen_rtx_MEM (Pmode, start_addr), (FNADDR));		\
   start_addr = memory_address (Pmode, plus_constant ((TRAMP), 40));	\
-  emit_move_insn (gen_rtx (MEM, Pmode, start_addr), (CXT));		\
+  emit_move_insn (gen_rtx_MEM (Pmode, start_addr), (CXT));		\
   /* fdc and fic only use registers for the address to flush,		\
      they do not accept integer displacements.  */ 			\
   start_addr = force_reg (SImode, (TRAMP));				\
