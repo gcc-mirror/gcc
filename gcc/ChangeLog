@@ -1,3 +1,8 @@
+Fri Oct 31 07:10:09 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* global.c (global_alloc): Free the conflict matrix after
+	reload has finished.
+
 Fri Oct 31 01:45:31 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* libgcc2.c (L_eh): Define __eh_pc.
