@@ -940,25 +940,6 @@ Mon Mar 16 15:50:20 EST 1998 Andrew MacLeod <amacleod@cygnus.com>
 	* config/sparc/sparc.md: Add calls to 'in_same_eh_region' in 4 
 	peepholes involving calls and unconditional branches. 
 
-Mon Mar 16 12:12:36 1998  Ken Raeburn  <raeburn@cygnus.com>
-
-	* reload.h (MEMORY_MOVE_COST): Define here if not already defined;
-	if HAVE_SECONDARY_RELOADS, factor in copying cost.
-	(memory_move_secondary_cost): Declare.
-	* regclass.c (MEMORY_MOVE_COST): Don't define default here.
-	(memory_move_secondary_cost) [HAVE_SECONDARY_RELOADS]: New
-	function.
-	(regclass, record_reg_classes, copy_cost, record_address_regs):
-	Pass register class and direction of move to MEMORY_MOVE_COST.
-	* reload1.c (MEMORY_MOVE_COST): Don't define default here.
-	(emit_reload_insns, reload_cse_simplify_set): Pass register class
-	and direction of move to MEMORY_MOVE_COST.
-	* 1750a.c, a29k.h, alpha.h, arc.h, arm.h, dsp16xx.h, i386.h,
-	m32r.h, m88k.h, rs6000.h (MEMORY_MOVE_COST): Add extra ignored
-	arguments to definition, even in comments.
-	* mips.h (MEMORY_MOVE_COST): Add extra arguments; add
-	memory_move_secondary_cost result to cpu-specific cost.
-
 Mon Mar 16 11:16:50 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* README.gnat: New file.
@@ -1651,11 +1632,6 @@ Fri Feb 27 11:02:47 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.
 
 	* config/m68k/m68k.md (movsf+1): Optimize moving a CONST_DOUBLE
 	zero.
-
-1998-02-26  Ken Raeburn  <raeburn@cygnus.com>
-
-	* regclass.c (init_reg_sets): Move init of move cost tables...
-	(init_reg_sets_1): ...to here.
 
 Thu Feb 26 00:13:21 1998  Ian Lance Taylor  <ian@cygnus.com>
 
