@@ -142,6 +142,11 @@ public abstract class HttpURLConnection extends URLConnection
    * a conditional GET.
    */
   public static final int HTTP_NOT_MODIFIED = 304;
+
+  /**
+   * The requested resource needs to be accessed through a proxy.
+   */
+  public static final int HTTP_USE_PROXY = 305;
   
   
   /* HTTP Client Error Response Codes */
@@ -250,7 +255,7 @@ public abstract class HttpURLConnection extends URLConnection
    * The server does not support the requested functionality.  
    * @since 1.3
    */
-  static final int HTTP_NOT_IMPLEMENTED = 501;
+  public static final int HTTP_NOT_IMPLEMENTED = 501;
 
   /**
    * The proxy encountered a bad response from the server it was proxy-ing for
@@ -459,31 +464,36 @@ public abstract class HttpURLConnection extends URLConnection
       connect();
       
     gotResponseVals = true;
-    // Response is the first header received from the connection.
-    String respField = getHeaderField(0);
-    
-    if (respField == null || ! respField.startsWith("HTTP/"))
-      {
-	// Set to default values on failure.
-        responseCode = -1;
-	responseMessage = null;
-	return;
-      }
 
-    int firstSpc, nextSpc;
-    firstSpc = respField.indexOf(' ');
-    nextSpc = respField.indexOf(' ', firstSpc + 1);
-    responseMessage = respField.substring(nextSpc + 1);
-    String codeStr = respField.substring(firstSpc + 1, nextSpc);
-    try
+    // If responseCode not yet explicitly set by subclass
+    if (responseCode == -1)
       {
-	responseCode = Integer.parseInt(codeStr);
-      }
-    catch (NumberFormatException e)
-      {
-	// Set to default values on failure.
-        responseCode = -1;
-	responseMessage = null;
+	// Response is the first header received from the connection.
+	String respField = getHeaderField(0);
+	
+	if (respField == null || ! respField.startsWith("HTTP/"))
+	  {
+	    // Set to default values on failure.
+	    responseCode = -1;
+	    responseMessage = null;
+	    return;
+	  }
+
+	int firstSpc, nextSpc;
+	firstSpc = respField.indexOf(' ');
+	nextSpc = respField.indexOf(' ', firstSpc + 1);
+	responseMessage = respField.substring(nextSpc + 1);
+	String codeStr = respField.substring(firstSpc + 1, nextSpc);
+	try
+	  {
+	    responseCode = Integer.parseInt(codeStr);
+	  }
+	catch (NumberFormatException e)
+	  {
+	    // Set to default values on failure.
+	    responseCode = -1;
+	    responseMessage = null;
+	  }
       }
   }
 

@@ -1,3 +1,11 @@
+2003-01-02  Mark Wielaard  <mark@klomp.org>
+
+	* java/net/HttpURLConnection.java (HTTP_NOT_IMPLEMENTED): Must be
+	public.
+	(HTTP_USE_PROXY): Add field.
+	(getResponseVals): Only set responseCode when not yet explicitly
+	set by subclass.
+
 2003-01-02  Artur Biesiadowski  <abies@pg.gda.pl>
 	    Mark Wielaard  <mark@klomp.org>
 
