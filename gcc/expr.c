@@ -3652,6 +3652,20 @@ store_expr (exp, target, want_value)
 
       convert_move (SUBREG_REG (target), temp,
 		    SUBREG_PROMOTED_UNSIGNED_P (target));
+
+      /* If we promoted a constant, change the mode back down to match
+	 target.  Otherwise, the caller might get confused by a result whose
+	 mode is larger than expected.  */
+
+      if (want_value && GET_MODE (temp) != GET_MODE (target)
+	  && GET_MODE (temp) != VOIDmode)
+	{
+	  temp = gen_rtx_SUBREG (GET_MODE (target), temp, 0);
+	  SUBREG_PROMOTED_VAR_P (temp) = 1;
+	  SUBREG_PROMOTED_UNSIGNED_P (temp)
+	    = SUBREG_PROMOTED_UNSIGNED_P (target);
+	}
+
       return want_value ? temp : NULL_RTX;
     }
   else

@@ -1,3 +1,8 @@
+1999-06-22  Jim Wilson  <wilson@cygnus.com>
+
+	* expr.c (store_expr): When target is a promoted subreg, return a
+	promoted subreg as a result.
+
 Tue Jun 22 17:14:58 1999  Michael Meissner  <meissner@cygnus.com>
 
 	* dwarf2out.c (dwarf2out_frame_debug_expr): Reformat to match GNU
