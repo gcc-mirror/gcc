@@ -1,3 +1,10 @@
+2002-06-28  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cpplib.c (_cpp_handle_directive): Move #define-specific
+	code to the #define handler...
+	(do_define): ...here.
+	(lex_macro_node): No longer a need to check for comments here.
+
 2002-06-28  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c (autoinc_mode): New function.
