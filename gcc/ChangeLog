@@ -1,3 +1,8 @@
+2002-03-13  Hartmut Penner  <hpenner@de.ibm.com>
+
+        * config/s390/s390.h (PROFILE_BEFORE_PROLOGUE): Emit profile code
+        before prologue, to avoid scheduling problems.
+
 2002-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.h (INITIAL_FRAME_POINTER_OFFSET): Remove.
