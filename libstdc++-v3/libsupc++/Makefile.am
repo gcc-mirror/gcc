@@ -100,7 +100,7 @@ libsupc__convenience_la_SOURCES = $(sources)
 glibcppinstalldir = @gxx_include_dir@
 glibcppinstall_HEADERS = $(headers)
 
-LIBSUPCXX_CXXFLAGS = -prefer-pic
+LIBSUPCXX_CXXFLAGS = $(LIBSUPCXX_PICFLAGS)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
