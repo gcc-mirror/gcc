@@ -1,3 +1,7 @@
+2001-11-15  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md: Fix insn length of bit insns.
+
 2001-11-15  Richard Hodson  <hodsonr@dionecorp.com>
 
 	* config/h8300/h8300.c (dosize): Avoid corrupting R3 in interrupt
