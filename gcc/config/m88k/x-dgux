@@ -1,8 +1,8 @@
 CC = /bin/gcc
 # Build libgcc.a, crtbegin.o, and crtend.o as bcs objects
-GCC_FOR_TARGET = PATH=/usr/sde/m88kbcs/usr/bin/:/usr/bin TARGET_BINARY_INTERFACE=m88kbcs ./xgcc -B./ -msvr3 -D_M88KBCS_TARGET
+GCC_FOR_TARGET = PATH=/usr/sde/m88kbcs/usr/bin/:/usr/bin TARGET_BINARY_INTERFACE=m88kbcs ./xgcc -B./ -msvr3 -D_M88KBCS_TARGET -mno-ocs-debug-info
 BISONFLAGS = -l
-X_CFLAGS = 
+X_CFLAGS = -O -mstandard -mlegend
 INSTALL_HEADERS = 
 STMP_FIXPROTO = 
 
