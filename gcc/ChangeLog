@@ -1,5 +1,10 @@
 2002-02-09  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/sh/sh.h (REGISTER_NATURAL_MODE): Save part-clobbered
+	registers in SImode.
+	(HARD_REGNO_CALL_PART_CLOBBERED) [TARGET_SHMEDIA32]: Set r18 as
+	part-clobbered.
+
 	* config/sh/sh.c (expand_prologue): Fix mis-applied 2001-11-09's
 	patch.
 	

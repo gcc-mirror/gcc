@@ -720,7 +720,9 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 #define REGISTER_NATURAL_MODE(REGNO) \
   (FP_REGISTER_P (REGNO) ? SFmode \
    : XD_REGISTER_P (REGNO) ? DFmode \
-   : TARGET_SHMEDIA ? DImode : SImode)
+   : TARGET_SHMEDIA && ! HARD_REGNO_CALL_PART_CLOBBERED ((REGNO), DImode) \
+   ? DImode \
+   : SImode)
 
 #define FIRST_PSEUDO_REGISTER 153
 
@@ -811,8 +813,9 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 #define HARD_REGNO_CALL_PART_CLOBBERED(REGNO,MODE) \
   (TARGET_SHMEDIA32 \
    && GET_MODE_SIZE (MODE) > 4 \
-   && (REGNO) >= FIRST_GENERAL_REG + 10 \
-   && (REGNO) <= FIRST_GENERAL_REG + 14)
+   && (((REGNO) >= FIRST_GENERAL_REG + 10 \
+        && (REGNO) <= FIRST_GENERAL_REG + 14) \
+       || (REGNO) == PR_MEDIA_REG))
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
