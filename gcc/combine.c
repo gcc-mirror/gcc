@@ -9149,6 +9149,8 @@ simplify_shift_const (x, code, result_mode, varop, input_count)
 		    break;
 
 		  count += first_count;
+		  if (count >= GET_MODE_BITSIZE (shift_mode))
+		    count = GET_MODE_BITSIZE (shift_mode) - 1;
 		  varop = XEXP (varop, 0);
 		  continue;
 		}
@@ -9201,6 +9203,9 @@ simplify_shift_const (x, code, result_mode, varop, input_count)
 		code = first_code, count = -signed_count;
 	      else
 		count = signed_count;
+
+	      if (count >= GET_MODE_BITSIZE (shift_mode))
+		count = GET_MODE_BITSIZE (shift_mode) - 1;
 
 	      varop = XEXP (varop, 0);
 	      continue;
