@@ -2451,8 +2451,7 @@ compile_file (name)
 
   /* Print the times.  */
 
-  if (! quiet_flag)
-    timevar_print (stderr);
+  timevar_print (stderr);
 }
 
 /* This is called from various places for FUNCTION_DECL, VAR_DECL,

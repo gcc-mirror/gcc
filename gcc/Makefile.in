@@ -1267,7 +1267,7 @@ builtins.o : builtins.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    $(RECOG_H) output.h typeclass.h hard-reg-set.h toplev.h hard-reg-set.h \
    except.h
 calls.o : calls.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h $(EXPR_H) \
-   insn-flags.h $(REGS_H) toplev.h output.h function.h
+   insn-flags.h $(REGS_H) toplev.h output.h function.h $(TIMEVAR_H)
 expmed.o : expmed.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h  \
    insn-flags.h insn-config.h insn-codes.h $(EXPR_H) $(RECOG_H) real.h toplev.h
 explow.o : explow.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
