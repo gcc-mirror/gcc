@@ -2087,6 +2087,11 @@ sjlj_mark_call_sites (lp_info)
 		if (REGNO (XEXP (XEXP (p, 0), 0)) >= FIRST_PSEUDO_REGISTER)
 		  abort ();
 
+		/* We only care about registers which can hold function
+		   arguments.  */
+		if (! FUNCTION_ARG_REGNO_P (REGNO (XEXP (XEXP (p, 0), 0))))
+		  continue;
+
 		SET_HARD_REG_BIT (parm_regs, REGNO (XEXP (XEXP (p, 0), 0)));
 		nparm_regs++;
 	      }
