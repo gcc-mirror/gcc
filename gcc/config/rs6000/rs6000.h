@@ -1869,6 +1869,12 @@ toc_section ()						\
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
   fprintf (FILE, "%s..%d:\n", PREFIX, NUM)
 
+/* This is how to output an internal label prefix.  rs6000.c uses this
+   when generating traceback tables.  */
+
+#define ASM_OUTPUT_INTERNAL_LABEL_PREFIX(FILE,PREFIX)	\
+  fprintf (FILE, "%s..", PREFIX)
+
 /* This is how to output a label for a jump table.  Arguments are the same as
    for ASM_OUTPUT_INTERNAL_LABEL, except the insn for the jump table is
    passed. */
@@ -1971,13 +1977,26 @@ toc_section ()						\
    (RS/6000 does not use such vectors, but we must define this macro
    anyway.)   */
 
-#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-  fprintf (FILE, "\t.long L..%d\n", VALUE)
+#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)		\
+  do { char buf[100];					\
+       fprintf (FILE, "\t.long ");			\
+       ASM_GENERATE_INTERNAL_LABEL (buf, "L", VALUE);	\
+       assemble_name (FILE, buf);			\
+       fprintf (FILE, "\n");				\
+     } while (0)
 
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)	\
-  fprintf (FILE, "\t.long L..%d-L..%d\n", VALUE, REL)
+  do { char buf[100];					\
+       fprintf (FILE, "\t.long ");			\
+       ASM_GENERATE_INTERNAL_LABEL (buf, "L", VALUE);	\
+       assemble_name (FILE, buf);			\
+       fprintf (FILE, "-");				\
+       ASM_GENERATE_INTERNAL_LABEL (buf, "L", REL);	\
+       assemble_name (FILE, buf);			\
+       fprintf (FILE, "\n");				\
+     } while (0)
 
 /* This is how to output an assembler line
    that says to advance the location counter
