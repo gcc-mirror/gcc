@@ -46,52 +46,52 @@ import javax.swing.JInternalFrame;
  */
 public class InternalFrameEvent extends AWTEvent
 {
-  private static final long serialVersionUID = 9195444901064686684L;
+  private static final long serialVersionUID = -5204823611874873183L;
 
   /**
    * Internal frame activated event
    */
-  public static int INTERNAL_FRAME_ACTIVATED = 25554;
+  public static final int INTERNAL_FRAME_ACTIVATED = 25554;
 
   /**
    * Internal frame closed event
    */
-  public static int INTERNAL_FRAME_CLOSED = 25551;
+  public static final int INTERNAL_FRAME_CLOSED = 25551;
 
   /**
    * Internal frame closing event
    */
-  public static int INTERNAL_FRAME_CLOSING = 25550;
+  public static final int INTERNAL_FRAME_CLOSING = 25550;
 
   /**
    * Internal frame deactivated event
    */
-  public static int INTERNAL_FRAME_DEACTIVATED = 25555;
+  public static final int INTERNAL_FRAME_DEACTIVATED = 25555;
 
   /**
    * Internal frame deiconifed event
    */
-  public static int INTERNAL_FRAME_DEICONIFIED = 25553;
+  public static final int INTERNAL_FRAME_DEICONIFIED = 25553;
 
   /**
    * Internal frame frame first event
    */
-  public static int INTERNAL_FRAME_FIRST = 25549;
+  public static final int INTERNAL_FRAME_FIRST = 25549;
 
   /**
    * Internal frame iconified event
    */
-  public static int INTERNAL_FRAME_ICONIFIED = 2552;
+  public static final int INTERNAL_FRAME_ICONIFIED = 2552;
 
   /**
    * Internal frame last event
    */
-  public static int INTERNAL_FRAME_LAST = 25555;
+  public static final int INTERNAL_FRAME_LAST = 25555;
 
   /**
    * Internal frame opened event
    */
-  public static int INTERNAL_FRAME_OPENED = 25550;
+  public static final int INTERNAL_FRAME_OPENED = 25550;
 
   /**
    * Creates a <code>JInternalFrameEvent</code> object.

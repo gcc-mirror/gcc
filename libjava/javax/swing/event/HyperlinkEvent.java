@@ -75,7 +75,7 @@ public class HyperlinkEvent extends EventObject
     }
   }
 
-  private static final long serialVersionUID = -8168964465779154277L;
+  private static final long serialVersionUID = -2054640811732867012L;
   
   private EventType type;
   private URL url;

@@ -46,13 +46,13 @@ import javax.swing.table.TableModel;
  */
 public class TableModelEvent extends EventObject
 {
-  private static final long serialVersionUID = -7037680193569691706L;
+  private static final long serialVersionUID = -7849342674552212824L;
   
-  public static int ALL_COLUMNS = -1;
-  public static int DELETE = -1;
-  public static int HEADER_ROW = -1;
-  public static int INSERT = 1;
-  public static int UPDATE = 0;
+  public static final int ALL_COLUMNS = -1;
+  public static final int DELETE = -1;
+  public static final int HEADER_ROW = -1;
+  public static final int INSERT = 1;
+  public static final int UPDATE = 0;
 
   protected int column = 0;
   protected int firstRow = 0;

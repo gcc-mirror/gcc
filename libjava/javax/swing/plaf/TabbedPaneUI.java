@@ -1,5 +1,5 @@
 /* TabbedPaneUI.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,24 +38,74 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
-import java.awt.*;
-import javax.swing.*;
+import java.awt.Rectangle;
+import javax.swing.JTabbedPane;
 
-public class TabbedPaneUI extends ComponentUI
+
+/**
+ * An abstract base class for delegates that implement the pluggable
+ * look and feel for a <code>JTabbedPane</code>.
+ *
+ * @see javax.swing.JTabbedPane
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
+ */
+public abstract class TabbedPaneUI
+  extends ComponentUI
 {
-    public Rectangle getTabBounds(JTabbedPane pane, int index)
-    {
-	return null;
-    }
+  /**
+   * Constructs a new <code>TabbedPaneUI</code>.
+   */
+  public TabbedPaneUI()
+  {
+  }
+  
+  
+  /**
+   * Determines which tab lies at a given position.
+   *
+   * @param pane the <code>JTabbedPane</code> for which this
+   *        delegate object provides the user interface.
+   *
+   * @param x the horizontal position, where zero is the left
+   *        edge of <code>pane</code>.
+   *
+   * @param y the vertical position, where zero is the top
+   *        edge of <code>pane</code>.
+   *
+   * @return the zero-based index of the tab, or -1 if no
+   *         tab is at the specified position.
+   */
+  public abstract int tabForCoordinate(JTabbedPane pane,
+                                       int x, int y);
+  
 
-    public int getTabRunCount(JTabbedPane pane)
-    {
-	return 0;
-    }
+  /**
+   * Calculates the bounding box of a tab.
+   *
+   * @param pane the <code>JTabbedPane</code> for which this
+   *        delegate object provides the user interface.
+   *
+   * @param index the index of the tab, which must be an integer
+   *        in the range <code>[0 .. pane.getTabCount() - 1]</code>.
+   *
+   * @return the bounding box of the <code>index</code>-th tab,
+   *         in the coordinate system of <code>pane</code>.
+   */
+  public abstract Rectangle getTabBounds(JTabbedPane pane, int index);
 
-    public int tabForCoordinate(JTabbedPane pane, int x, int y)
-    {
-	return 0;
-    }
+
+  /**
+   * Determines how many runs are used to display tabs.
+   *
+   * @param pane the <code>JTabbedPane</code> for which this
+   *        delegate object provides the user interface.
+   *
+   * @return the number of tab runs.
+   *
+   * @see javax.swing.JTabbedPane#getTabRunCount()
+   */
+  public abstract int getTabRunCount(JTabbedPane pane);
 }
                        

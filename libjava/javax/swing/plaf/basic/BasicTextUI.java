@@ -1,5 +1,5 @@
 /* BasicTextUI.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,10 +46,16 @@ import javax.swing.*;
 public class BasicTextUI extends TextUI
 {
     int gap = 3;
-    View view = new RootView();
+    View view = null; // was: new RootView();
     Color textColor, disabledTextColor, normalBackgroundColor;
     EditorKit kit = new DefaultEditorKit();
     
+    /* *****************************************************************
+     * This View is way too incomplete to be of any use. To avoid errors
+     * when compiling with the Sun JDK, it has been commented out.
+     *                            -- Sascha Brawer (brawer@dandelis.ch)
+     *
+     * (begin of commented out section)
     class RootView extends View
     {
 	RootView()
@@ -68,6 +74,8 @@ public class BasicTextUI extends TextUI
 		}
         }
     }
+    * (end of commented out section)
+    *************************************************************** */
 
     public BasicTextUI()
     {
@@ -128,6 +136,7 @@ public class BasicTextUI extends TextUI
 				  Position.Bias b, 
 				  int direction,
 				  Position.Bias[] biasRet)
+        throws BadLocationException
     {
 	return 0;
     }
@@ -138,11 +147,13 @@ public class BasicTextUI extends TextUI
     }
     
     public Rectangle modelToView(JTextComponent t, int pos)
+      throws BadLocationException
     {
 	return modelToView(t, pos, null);
     }
     
     public Rectangle modelToView(JTextComponent t, int pos, Position.Bias bias)
+      throws BadLocationException
     {
 	return null;
     }
