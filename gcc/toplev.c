@@ -24,11 +24,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    Error messages and low-level interface to malloc also handled here.  */
 
 #include "config.h"
-#include <sys/types.h>
+#include "gvarargs.h"
 #include <stdio.h>
 #include <signal.h>
 #include <setjmp.h>
-
+#include <sys/types.h>
 #include <sys/stat.h>
 
 #ifdef USG
@@ -900,9 +900,9 @@ fatal_insn_not_found (insn)
   if (!output_bytecode)
     {
       if (INSN_CODE (insn) < 0)
-	error ("internal error--unrecognizable insn:", 0);
+	error ("internal error--unrecognizable insn:");
       else
-	error ("internal error--insn does not satisfy its constraints:", 0);
+	error ("internal error--insn does not satisfy its constraints:");
       debug_rtx (insn);
     }
   if (asm_out_file)
@@ -1029,287 +1029,560 @@ report_error_function (file)
       last_error_tick = input_file_stack_tick;
     }
 }
+
+/* Print a message.  */
 
-/* Report an error at the current line number.
-   S is a string and ARGLIST are args for `printf'.  We use HOST_WIDE_INT
-   as the type for these args assuming it is wide enough to hold a
-   pointer.  This isn't terribly portable, but is the best we can do
-   without vprintf universally available.  */
-
-#define arglist a1, a2, a3
-#define arglist_dcl HOST_WIDE_INT a1, a2, a3;
-
-void
-error (s, arglist)
+static void
+vmessage (prefix, s, ap)
+     char *prefix;
      char *s;
-     arglist_dcl
+     va_list ap;
 {
-  error_with_file_and_line (input_filename, lineno, s, arglist);
+  if (prefix)
+    fprintf (stderr, "%s: ", prefix);
+
+#ifdef HAVE_VPRINTF
+  vfprintf (stderr, s, ap);
+#else
+  {
+    HOST_WIDE_INT v1 = va_arg(ap, HOST_WIDE_INT);
+    HOST_WIDE_INT v2 = va_arg(ap, HOST_WIDE_INT);
+    HOST_WIDE_INT v3 = va_arg(ap, HOST_WIDE_INT);
+    fprintf (stderr, s, v1, v2, v3);
+  }
+#endif
 }
 
-/* Report an error at line LINE of file FILE.
-   S and ARGLIST are a string and args for `printf'.  */
+/* Print a message relevant to line LINE of file FILE.  */
 
-void
-error_with_file_and_line (file, line, s, arglist)
+static void
+v_message_with_file_and_line (file, line, prefix, s, ap)
      char *file;
      int line;
+     char *prefix;
      char *s;
-     arglist_dcl
+     va_list ap;
 {
-  count_error (0);
-
-  report_error_function (file);
-
   if (file)
     fprintf (stderr, "%s:%d: ", file, line);
   else
     fprintf (stderr, "%s: ", progname);
-  fprintf (stderr, s, arglist);
 
-  fprintf (stderr, "\n");
+  vmessage (prefix, s, ap);
+  fputc ('\n', stderr);
+}
+
+/* Print a message relevant to the given DECL.  */
+
+static void
+v_message_with_decl (decl, prefix, s, ap)
+     tree decl;
+     char *prefix;
+     char *s;
+     va_list ap;
+{
+  char *n, *p, *junk;
+
+  fprintf (stderr, "%s:%d: ",
+	   DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
+
+  if (prefix)
+    fprintf (stderr, "%s: ", prefix);
+
+  /* Do magic to get around lack of varargs support for insertion
+     of arguments into existing list.  We know that the decl is first;
+     we ass_u_me that it will be printed with "%s".  */
+
+  for (p = s; *p; ++p)
+    {
+      if (*p == '%')
+	{
+	  if (*(p + 1) == '%')
+	    ++p;
+	  else
+	    break;
+	}
+    }
+
+  if (p > s)
+    fwrite (s, p - s, 1, stderr);
+
+  if (*p == '%')
+    {
+      char *n = (DECL_NAME (decl)
+		 ? (*decl_printable_name) (decl, &junk)
+		 : "((anonymous))");
+      fputs (n, stderr);
+      while (*p)
+	{
+	  ++p;
+	  if (isalpha (*(p - 1) & 0xFF))
+	    break;
+	}
+    }
+
+  if (*p)
+    vmessage ((char *)NULL, p, ap);
+
+  fputc ('\n', stderr);
+}
+
+/* Figure file and line of the given INSN.  */
+
+static void
+file_and_line_for_asm (insn, pfile, pline)
+     rtx insn;
+     char **pfile;
+     int *pline;
+{
+  rtx body = PATTERN (insn);
+  rtx asmop;
+
+  /* Find the (or one of the) ASM_OPERANDS in the insn.  */
+  if (GET_CODE (body) == SET && GET_CODE (SET_SRC (body)) == ASM_OPERANDS)
+    asmop = SET_SRC (body);
+  else if (GET_CODE (body) == ASM_OPERANDS)
+    asmop = body;
+  else if (GET_CODE (body) == PARALLEL
+	   && GET_CODE (XVECEXP (body, 0, 0)) == SET)
+    asmop = SET_SRC (XVECEXP (body, 0, 0));
+  else if (GET_CODE (body) == PARALLEL
+	   && GET_CODE (XVECEXP (body, 0, 0)) == ASM_OPERANDS)
+    asmop = XVECEXP (body, 0, 0);
+  else
+    asmop = NULL;
+
+  if (asmop)
+    {
+      *pfile = ASM_OPERANDS_SOURCE_FILE (asmop);
+      *pline = ASM_OPERANDS_SOURCE_LINE (asmop);
+    }
+  else
+    {
+      *pfile = input_filename;
+      *pline = lineno;
+    }
+}
+
+/* Report an error at line LINE of file FILE.  */
+
+static void
+v_error_with_file_and_line (file, line, s, ap)
+     char *file;
+     int line;
+     char *s;
+     va_list ap;
+{
+  count_error (0);
+  report_error_function (file);
+  v_message_with_file_and_line (file, line, (char *)NULL, s, ap);
+}
+
+void
+error_with_file_and_line (va_alist)
+     va_dcl
+     /* (char *file, int line, char *s, ...) */
+{
+  va_list ap;
+  char *file;
+  int line;
+  char *s;
+
+  va_start (ap);
+  file = va_arg (ap, char *);
+  line = va_arg (ap, int);
+  s = va_arg (ap, char *);
+  v_error_with_file_and_line (file, line, s, ap);
+  va_end (ap);
 }
 
 /* Report an error at the declaration DECL.
-   S and V are a string and an arg which uses %s to substitute
-   the declaration name.  */
+   S is a format string which uses %s to substitute the declaration
+   name; subsequent substitutions are a la printf.  */
 
-void
-error_with_decl (decl, s, v)
+static void
+v_error_with_decl (decl, s, ap)
      tree decl;
      char *s;
-     HOST_WIDE_INT v;
+     va_list ap;
 {
-  char *junk;
   count_error (0);
-
   report_error_function (DECL_SOURCE_FILE (decl));
+  v_message_with_decl (decl, (char *)NULL, s, ap);
+}
 
-  fprintf (stderr, "%s:%d: ",
-	   DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
+void
+error_with_decl (va_alist)
+     va_dcl
+     /* (tree decl, char *s, ...) */
+{
+  va_list ap;
+  tree decl;
+  char *s;
 
-  if (DECL_NAME (decl))
-    fprintf (stderr, s, (*decl_printable_name) (decl, &junk), v);
-  else
-    fprintf (stderr, s, "((anonymous))", v);
-  fprintf (stderr, "\n");
+  va_start (ap);
+  decl = va_arg (ap, tree);
+  s = va_arg (ap, char *);
+  v_error_with_decl (decl, s, ap);
+  va_end (ap);
 }
 
 /* Report an error at the line number of the insn INSN.
-   S and ARGLIST are a string and args for `printf'.
    This is used only when INSN is an `asm' with operands,
    and each ASM_OPERANDS records its own source file and line.  */
 
-void
-error_for_asm (insn, s, arglist)
+static void
+v_error_for_asm (insn, s, ap)
      rtx insn;
      char *s;
-     arglist_dcl
+     va_list ap;
 {
-  char *filename;
+  char *file;
   int line;
-  rtx body = PATTERN (insn);
-  rtx asmop;
 
-  /* Find the (or one of the) ASM_OPERANDS in the insn.  */
-  if (GET_CODE (body) == SET && GET_CODE (SET_SRC (body)) == ASM_OPERANDS)
-    asmop = SET_SRC (body);
-  else if (GET_CODE (body) == ASM_OPERANDS)
-    asmop = body;
-  else if (GET_CODE (body) == PARALLEL
-	   && GET_CODE (XVECEXP (body, 0, 0)) == SET)
-    asmop = SET_SRC (XVECEXP (body, 0, 0));
-  else if (GET_CODE (body) == PARALLEL
-	   && GET_CODE (XVECEXP (body, 0, 0)) == ASM_OPERANDS)
-    asmop = XVECEXP (body, 0, 0);
-
-  filename = ASM_OPERANDS_SOURCE_FILE (asmop);
-  line = ASM_OPERANDS_SOURCE_LINE (asmop);
-
-  error_with_file_and_line (filename, line, s, arglist);
+  count_error (0);
+  file_and_line_for_asm (insn, &file, &line);
+  report_error_function (file);
+  v_message_with_file_and_line (file, line, (char *)NULL, s, ap);
 }
 
 void
-fatal (s, arglist)
-     char *s;
-     arglist_dcl
+error_for_asm (va_alist)
+     va_dcl
+     /* (rtx insn, char *s, ...) */
 {
-  error (s, arglist);
+  va_list ap;
+  rtx insn;
+  char *s;
+
+  va_start (ap);
+  insn = va_arg (ap, rtx);
+  s = va_arg (ap, char *);
+  v_error_for_asm (insn, s, ap);
+  va_end (ap);
+}
+
+/* Report an error at the current line number.  */
+
+static void
+verror (s, ap)
+     char *s;
+     va_list ap;
+{
+  v_error_with_file_and_line (input_filename, lineno, s, ap);
+}
+
+void
+error (va_alist)
+     va_dcl
+     /* (char *s, ...) */
+{
+  va_list ap;
+  char *s;
+
+  va_start (ap);
+  s = va_arg (ap, char *);
+  verror (s, ap);
+  va_end (ap);
+}
+
+/* Report a fatal error at the current line number.  */
+
+static void
+vfatal (s, ap)
+     char *s;
+     va_list ap;
+{
+  verror (s, ap);
   exit (34);
 }
 
-/* Report a warning at line LINE.
-   S and ARGLIST are a string and args for `printf'.  */
-
 void
-warning_with_file_and_line (file, line, s, arglist)
+fatal (va_alist)
+     va_dcl
+     /* (char *s, ...) */
+{
+  va_list ap;
+  char *s;
+
+  va_start (ap);
+  s = va_arg (ap, char *);
+  vfatal (s, ap);
+  va_end (ap);
+}
+
+/* Report a warning at line LINE of file FILE.  */
+
+static void
+v_warning_with_file_and_line (file, line, s, ap)
      char *file;
      int line;
      char *s;
-     arglist_dcl
+     va_list ap;
 {
-  if (count_error (1) == 0)
-    return;
-
-  report_error_function (file);
-
-  if (file)
-    fprintf (stderr, "%s:%d: ", file, line);
-  else
-    fprintf (stderr, "%s: ", progname);
-
-  fprintf (stderr, "warning: ");
-  fprintf (stderr, s, arglist);
-  fprintf (stderr, "\n");
+  if (count_error (1))
+    {
+      report_error_function (file);
+      v_message_with_file_and_line (file, line, "warning", s, ap);
+    }
 }
 
-/* Report a warning at the current line number.
-   S and ARGLIST are a string and args for `printf'.  */
-
 void
-warning (s, arglist)
-     char *s;
-     arglist_dcl
+warning_with_file_and_line (va_alist)
+     va_dcl
+     /* (char *file, int line, char *s, ...) */
 {
-  warning_with_file_and_line (input_filename, lineno, s, arglist);
+  va_list ap;
+  char *file;
+  int line;
+  char *s;
+
+  va_start (ap);
+  file = va_arg (ap, char *);
+  line = va_arg (ap, int);
+  s = va_arg (ap, char *);
+  v_warning_with_file_and_line (file, line, s, ap);
+  va_end (ap);
 }
 
 /* Report a warning at the declaration DECL.
-   S is string which uses %s to substitute the declaration name.
-   V is a second parameter that S can refer to.  */
+   S is a format string which uses %s to substitute the declaration
+   name; subsequent substitutions are a la printf.  */
 
-void
-warning_with_decl (decl, s, v)
+static void
+v_warning_with_decl (decl, s, ap)
      tree decl;
      char *s;
-     HOST_WIDE_INT v;
+     va_list ap;
 {
-  char *junk;
+  if (count_error (1))
+    {
+      report_error_function (DECL_SOURCE_FILE (decl));
+      v_message_with_decl (decl, "warning", s, ap);
+    }
+}
 
-  if (count_error (1) == 0)
-    return;
+void
+warning_with_decl (va_alist)
+     va_dcl
+     /* (tree decl, char *s, ...) */
+{
+  va_list ap;
+  tree decl;
+  char *s;
 
-  report_error_function (DECL_SOURCE_FILE (decl));
-
-  fprintf (stderr, "%s:%d: ",
-	   DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
-
-  fprintf (stderr, "warning: ");
-  if (DECL_NAME (decl))
-    fprintf (stderr, s, (*decl_printable_name) (decl, &junk), v);
-  else
-    fprintf (stderr, s, "((anonymous))", v);
-  fprintf (stderr, "\n");
+  va_start (ap);
+  decl = va_arg (ap, tree);
+  s = va_arg (ap, char *);
+  v_warning_with_decl (decl, s, ap);
+  va_end (ap);
 }
 
 /* Report a warning at the line number of the insn INSN.
-   S and ARGLIST are a string and args for `printf'.
    This is used only when INSN is an `asm' with operands,
    and each ASM_OPERANDS records its own source file and line.  */
 
-void
-warning_for_asm (insn, s, arglist)
+static void
+v_warning_for_asm (insn, s, ap)
      rtx insn;
      char *s;
-     arglist_dcl
+     va_list ap;
 {
-  char *filename;
-  int line;
-  rtx body = PATTERN (insn);
-  rtx asmop;
+  if (count_error (1))
+    {
+      char *file;
+      int line;
 
-  /* Find the (or one of the) ASM_OPERANDS in the insn.  */
-  if (GET_CODE (body) == SET && GET_CODE (SET_SRC (body)) == ASM_OPERANDS)
-    asmop = SET_SRC (body);
-  else if (GET_CODE (body) == ASM_OPERANDS)
-    asmop = body;
-  else if (GET_CODE (body) == PARALLEL
-	   && GET_CODE (XVECEXP (body, 0, 0)) == SET)
-    asmop = SET_SRC (XVECEXP (body, 0, 0));
-  else if (GET_CODE (body) == PARALLEL
-	   && GET_CODE (XVECEXP (body, 0, 0)) == ASM_OPERANDS)
-    asmop = XVECEXP (body, 0, 0);
-
-  filename = ASM_OPERANDS_SOURCE_FILE (asmop);
-  line = ASM_OPERANDS_SOURCE_LINE (asmop);
-
-  warning_with_file_and_line (filename, line, s, arglist);
+      file_and_line_for_asm (insn, &file, &line);
+      report_error_function (file);
+      v_message_with_file_and_line (file, line, "warning", s, ap);
+    }
 }
-
+
+void
+warning_for_asm (va_alist)
+     va_dcl
+     /* (rtx insn, char *s, ...) */
+{
+  va_list ap;
+  rtx insn;
+  char *s;
+
+  va_start (ap);
+  insn = va_arg (ap, rtx);
+  s = va_arg (ap, char *);
+  v_warning_for_asm (insn, s, ap);
+  va_end (ap);
+}
+
+/* Report a warning at the current line number.  */
+
+static void
+vwarning (s, ap)
+     char *s;
+     va_list ap;
+{
+  v_warning_with_file_and_line (input_filename, lineno, s, ap);
+}
+
+void
+warning (va_alist)
+     va_dcl
+{
+  va_list ap;
+  char *s;
+
+  va_start (ap);
+  s = va_arg (ap, char *);
+  vwarning (s, ap);
+  va_end (ap);
+}
+
 /* These functions issue either warnings or errors depending on
    -pedantic-errors.  */
 
-void
-pedwarn (s, arglist)
+static void
+vpedwarn (s, ap)
      char *s;
-     arglist_dcl
+     va_list ap;
 {
   if (flag_pedantic_errors)
-    error (s, arglist);
+    verror (s, ap);
   else
-    warning (s, arglist);
+    vwarning (s, ap);
 }
 
 void
-pedwarn_with_decl (decl, s, v)
+pedwarn (va_alist)
+     va_dcl
+     /* (char *s, ...) */
+{
+  va_list ap;
+  char *s;
+
+  va_start (ap);
+  s = va_arg (ap, char *);
+  vpedwarn (s, ap);
+  va_end (ap);
+}
+
+static void
+v_pedwarn_with_decl (decl, s, ap)
      tree decl;
      char *s;
-     HOST_WIDE_INT v;
+     va_list ap;
 {
   if (flag_pedantic_errors)
-    error_with_decl (decl, s, v);
+    v_error_with_decl (decl, s, ap);
   else
-    warning_with_decl (decl, s, v);
+    v_warning_with_decl (decl, s, ap);
 }
 
 void
-pedwarn_with_file_and_line (file, line, s, arglist)
+pedwarn_with_decl (va_alist)
+     va_dcl
+     /* (tree decl, char *s, ...) */
+{
+  va_list ap;
+  tree decl;
+  char *s;
+
+  va_start (ap);
+  decl = va_arg (ap, tree);
+  s = va_arg (ap, char *);
+  v_pedwarn_with_decl (decl, s, ap);
+  va_end (ap);
+}
+
+static void
+v_pedwarn_with_file_and_line (file, line, s, ap)
      char *file;
      int line;
      char *s;
-     arglist_dcl
+     va_list ap;
 {
   if (flag_pedantic_errors)
-    error_with_file_and_line (file, line, s, arglist);
+    v_error_with_file_and_line (file, line, s, ap);
   else
-    warning_with_file_and_line (file, line, s, arglist);
+    v_warning_with_file_and_line (file, line, s, ap);
 }
 
-/* Apologize for not implementing some feature.
-   S and ARGLIST are a string and args for `printf'.  */
-
 void
-sorry (s, arglist)
+pedwarn_with_file_and_line (va_alist)
+     va_dcl
+     /* (char *file, int line, char *s, ...) */
+{
+  va_list ap;
+  char *file;
+  int line;
+  char *s;
+
+  va_start (ap);
+  file = va_arg (ap, char *);
+  line = va_arg (ap, int);
+  s = va_arg (ap, char *);
+  v_pedwarn_with_file_and_line (file, line, s, ap);
+  va_end (ap);
+}
+
+/* Apologize for not implementing some feature.  */
+
+static void
+vsorry (s, ap)
      char *s;
-     arglist_dcl
+     va_list ap;
 {
   sorrycount++;
   if (input_filename)
     fprintf (stderr, "%s:%d: ", input_filename, lineno);
   else
     fprintf (stderr, "%s: ", progname);
-
-  fprintf (stderr, "sorry, not implemented: ");
-  fprintf (stderr, s, arglist);
-  fprintf (stderr, "\n");
+  vmessage ("sorry, not implemented", s, ap);
+  fputc ('\n', stderr);
 }
 
-/* Apologize for not implementing some feature, then quit.
-   S and ARGLIST are a string and args for `printf'.  */
-
 void
-really_sorry (s, arglist)
-     char *s;
-     arglist_dcl
+sorry (va_alist)
+     va_dcl
+     /* (char *s, ...) */
 {
+  va_list ap;
+  char *s;
+
+  va_start (ap);
+  s = va_arg (ap, char *);
+  vsorry (s, ap);
+  va_end (ap);
+}
+
+/* Apologize for not implementing some feature, then quit.  */
+
+static void
+v_really_sorry (s, ap)
+     char *s;
+     va_list ap;
+{
+  sorrycount++;
   if (input_filename)
     fprintf (stderr, "%s:%d: ", input_filename, lineno);
   else
     fprintf (stderr, "%s: ", progname);
-
-  fprintf (stderr, "sorry, not implemented: ");
-  fprintf (stderr, s, arglist);
+  vmessage ("sorry, not implemented", s, ap);
   fatal (" (fatal)\n");
+}
+
+void
+really_sorry (va_alist)
+     va_dcl
+     /* (char *s, ...) */
+{
+  va_list ap;
+  char *s;
+
+  va_start (ap);
+  s = va_arg (ap, char *);
+  v_really_sorry (s, ap);
+  va_end (ap);
 }
 
 /* More 'friendly' abort that prints the line and file.
