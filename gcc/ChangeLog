@@ -5,6 +5,11 @@ Wed Dec  6 19:22:02 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-12-06  Rodney Brown  <RodneyBrown@mynd.com>
 
+	* c-lex.c (cb_indent): Decorate `str' argument, unused on HP-UX.
+	* collect2.c (scan_libraries): Remove unused `ch'.
+	(COFF specific stuff): Prototype ldgetname.  Declare and prototype
+	ldbtread and ldclose.
+
 	* config/alpha/osf.h: Standarize copyright statement.
 	* config/arc/arc.h: Likewise.
 	* config/arm/elf.h config/arm/coff.h config/arm/aout.h: Likewise.
