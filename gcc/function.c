@@ -5019,7 +5019,7 @@ pad_to_arg_alignment (offset_ptr, boundary, alignment_pad)
 
   int boundary_in_bytes = boundary / BITS_PER_UNIT;
   
-  if (boundary > PARM_BOUNDARY)
+  if (boundary > PARM_BOUNDARY && boundary > STACK_BOUNDARY)
     {
       save_var = offset_ptr->var;
       save_constant = offset_ptr->constant;
@@ -5041,7 +5041,7 @@ pad_to_arg_alignment (offset_ptr, boundary, alignment_pad)
 	      (ARGS_SIZE_TREE (*offset_ptr),
 	       boundary / BITS_PER_UNIT);
 	  offset_ptr->constant = 0; /*?*/
-          if (boundary > PARM_BOUNDARY)
+          if (boundary > PARM_BOUNDARY && boundary > STACK_BOUNDARY)
             alignment_pad->var = size_binop (MINUS_EXPR, offset_ptr->var, save_var);
 	}
       else
@@ -5052,7 +5052,7 @@ pad_to_arg_alignment (offset_ptr, boundary, alignment_pad)
 #else
 	    CEIL_ROUND (offset_ptr->constant, boundary_in_bytes);
 #endif
-          if (boundary > PARM_BOUNDARY)
+          if (boundary > PARM_BOUNDARY && boundary > STACK_BOUNDARY)
             alignment_pad->constant = offset_ptr->constant - save_constant;
         }
     }
