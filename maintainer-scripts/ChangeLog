@@ -1,3 +1,7 @@
+2004-05-16  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* crontab: Add GCC 3.5 snapshots, currenty run on Sundays.
+
 2004-05-13  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* update_web_docs: Also remove old .gz files from subdirectories
