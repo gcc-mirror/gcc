@@ -94,6 +94,24 @@ extern char **save_argv;
 extern char  *version_string;
 extern char  *language_string;
 
+/* Enumeration for all of the relational tests, so that we can build
+   arrays indexed by the test type, and not worry about the order
+   of EQ, NE, etc. */
+
+enum internal_test {
+    ITEST_EQ,
+    ITEST_NE,
+    ITEST_GT,
+    ITEST_GE,
+    ITEST_LT,
+    ITEST_LE,
+    ITEST_GTU,
+    ITEST_GEU,
+    ITEST_LTU,
+    ITEST_LEU,
+    ITEST_MAX
+  };
+
 /* Global variables for machine-dependent things.  */
 
 /* Threshold for data being put into the small data/bss area, instead
@@ -462,6 +480,16 @@ md_register_operand (op, mode)
 	  && MD_REG_P (REGNO (op)));
 }
 
+/* Return truth value of whether OP is the FP status register.  */
+
+int
+fpsw_register_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == REG && ST_REG_P (REGNO (op)));
+}
+
 /* Return truth value if a CONST_DOUBLE is ok to be a legitimate constant.  */
 
 int
@@ -658,6 +686,23 @@ fcmp_op (op, mode)
   return (classify_op (op, mode) & CLASS_FCMP_OP) != 0;
 }
 
+
+/* Return true if the operand is either the PC or a label_ref.  */
+
+int
+pc_or_label_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (op == pc_rtx)
+    return TRUE;
+
+  if (GET_CODE (op) == LABEL_REF)
+    return TRUE;
+
+  return FALSE;
+}
+
 
 /* Return an operand string if the given instruction's delay slot or
    wrap it in a .set noreorder section.  This is for filling delay
@@ -683,7 +728,7 @@ mips_fill_delay_slot (ret, type, operands, cur_insn)
   register rtx next_insn	= (cur_insn) ? NEXT_INSN (cur_insn) : (rtx)0;
   register int num_nops;
 
-  if (type == DELAY_LOAD)
+  if (type == DELAY_LOAD || type == DELAY_FCMP)
     num_nops = 1;
 
   else if (type == DELAY_HILO)
@@ -1436,6 +1481,210 @@ mips_address_cost (addr)
 }
 
 
+/* Make normal rtx_code into something we can index from an array */
+
+static enum internal_test
+map_test_to_internal_test (test_code)
+     enum rtx_code test_code;
+{
+  enum internal_test test = ITEST_MAX;
+
+  switch (test_code)
+    {
+    case EQ:  test = ITEST_EQ;  break;
+    case NE:  test = ITEST_NE;  break;
+    case GT:  test = ITEST_GT;  break;
+    case GE:  test = ITEST_GE;  break;
+    case LT:  test = ITEST_LT;  break;
+    case LE:  test = ITEST_LE;  break;
+    case GTU: test = ITEST_GTU; break;
+    case GEU: test = ITEST_GEU; break;
+    case LTU: test = ITEST_LTU; break;
+    case LEU: test = ITEST_LEU; break;
+    }
+
+  return test;
+}
+
+
+/* Generate the code to compare two integer values.  The return value is:
+   (reg:SI xx)		The pseudo register the comparison is in
+   (const_int 0)	The comparison is always false
+   (const_int 1)	The comparison is always true
+   (rtx)0	       	No register, generate a simple branch.  */
+
+rtx
+gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
+     enum rtx_code test_code;	/* relational test (EQ, etc) */
+     rtx result;		/* result to store comp. or 0 if branch */
+     rtx cmp0;			/* first operand to compare */
+     rtx cmp1;			/* second operand to compare */
+     int *p_invert;		/* NULL or ptr to hold whether branch needs */
+				/* to reserse it's test */
+{
+  struct cmp_info {
+    enum rtx_code test_code;	/* code to use in instruction (LT vs. LTU) */
+    int const_low;		/* low bound of constant we can accept */
+    int const_high;		/* high bound of constant we can accept */
+    int const_add;		/* constant to add (convert LE -> LT) */
+    int reverse_regs;		/* reverse registers in test */
+    int invert_const;		/* != 0 if invert value if cmp1 is constant */
+    int invert_reg;		/* != 0 if invert value if cmp1 is register */
+  };
+
+  static struct cmp_info info[ (int)ITEST_MAX ] = {
+
+    { XOR,	 0,  65535,  0,	 0,  0,	 0 },	/* EQ  */
+    { XOR,	 0,  65535,  0,	 0,  1,	 1 },	/* NE  */
+    { LT,   -32769,  32766,  1,	 1,  1,	 0 },	/* GT  */
+    { LT,   -32768,  32767,  0,	 0,  1,	 1 },	/* GE  */
+    { LT,   -32768,  32767,  0,	 0,  0,	 0 },	/* LT  */
+    { LT,   -32769,  32766,  1,	 1,  0,	 1 },	/* LE  */
+    { LTU,  -32769,  32766,  1,	 1,  1,	 0 },	/* GTU */
+    { LTU,  -32768,  32767,  0,	 0,  1,	 1 },	/* GEU */
+    { LTU,  -32768,  32767,  0,	 0,  0,	 0 },	/* LTU */
+    { LTU,  -32769,  32766,  1,	 1,  0,	 1 },	/* LEU */
+  };
+
+  enum internal_test test;
+  struct cmp_info *p_info;
+  int branch_p;
+  int eqne_p;
+  int invert;
+  rtx reg;
+  rtx reg2;
+
+  test = map_test_to_internal_test (test_code);
+  if (test == ITEST_MAX)
+    abort ();
+
+  p_info = &info[ (int)test ];
+  eqne_p = (p_info->test_code == XOR);
+
+  /* See if the test is always true or false.  */
+  if ((GET_CODE (cmp0) == REG || GET_CODE (cmp0) == SUBREG)
+      && GET_CODE (cmp1) == CONST_INT)
+    {
+      int value = INTVAL (cmp1);
+      rtx truth = (rtx)0;
+
+      if (test == ITEST_GEU && value == 0)
+	truth = const1_rtx;
+
+      else if (test == ITEST_LTU && value == 0)
+	truth = const0_rtx;
+
+      else if (!TARGET_INT64)
+	{
+	  if (test == ITEST_LTU && value == -1)
+	    truth = const1_rtx;
+
+	  else if (test == ITEST_GTU && value == -1)
+	    truth = const0_rtx;
+
+	  else if (test == ITEST_LEU && value == -1)
+	    truth = const1_rtx;
+
+	  else if (test == ITEST_GT && value == 0x7fffffff)
+	    truth = const0_rtx;
+
+	  else if (test == ITEST_LE && value == 0x7fffffff)
+	    truth = const1_rtx;
+
+	  else if (test == ITEST_LT && value == 0x80000000)
+	    truth = const0_rtx;
+
+	  else if (test == ITEST_GE && value == 0x80000000)
+	    truth = const1_rtx;
+	}
+
+      if (truth != (rtx)0)
+	{
+	  if (result != (rtx)0)
+	    emit_move_insn (result, truth);
+
+	  return truth;
+	}
+    }
+
+  /* Eliminate simple branches */
+  branch_p = (result == (rtx)0);
+  if (branch_p)
+    {
+      if (GET_CODE (cmp0) == REG || GET_CODE (cmp0) == SUBREG)
+	{
+	  /* Comparisons against zero are simple branches */
+	  if (GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) == 0)
+	    return (rtx)0;
+
+	  /* Test for beq/bne.  */
+	  if (eqne_p)
+	    return (rtx)0;
+	}
+
+      /* allocate a psuedo to calculate the value in.  */
+      result = gen_reg_rtx (SImode);
+    }
+
+  /* Make sure we can handle any constants given to us.  */
+  if (GET_CODE (cmp0) == CONST_INT)
+    cmp0 = force_reg (SImode, cmp0);
+
+  if (GET_CODE (cmp1) == CONST_INT)
+    {
+      int value = INTVAL (cmp1);
+      if (value < p_info->const_low || value > p_info->const_high)
+	cmp1 = force_reg (SImode, cmp1);
+    }
+
+  /* See if we need to invert the result.  */
+  invert = (GET_CODE (cmp1) == CONST_INT)
+		? p_info->invert_const
+		: p_info->invert_reg;
+
+  if (p_invert != (int *)0)
+    {
+      *p_invert = invert;
+      invert = FALSE;
+    }
+
+  /* Comparison to constants, may involve adding 1 to change a LT into LE.
+     Comparison between two registers, may involve switching operands.  */
+  if (GET_CODE (cmp1) == CONST_INT)
+    {
+      if (p_info->const_add != 0)
+	cmp1 = gen_rtx (CONST_INT, VOIDmode, INTVAL (cmp1) + p_info->const_add);
+    }
+  else if (p_info->reverse_regs)
+    {
+      rtx temp = cmp0;
+      cmp0 = cmp1;
+      cmp1 = temp;
+    }
+
+  reg = (invert || eqne_p) ? gen_reg_rtx (SImode) : result;
+  emit_move_insn (reg, gen_rtx (p_info->test_code, SImode, cmp0, cmp1));
+
+  if (test == ITEST_NE && GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) == 0)
+    {
+      emit_move_insn (result, gen_rtx (GTU, SImode, reg, const0_rtx));
+      invert = FALSE;
+    }
+
+  else if (eqne_p)
+    {
+      reg2 = (invert) ? gen_reg_rtx (SImode) : result;
+      emit_move_insn (reg2, gen_rtx (LTU, SImode, reg, const1_rtx));
+      reg = reg2;
+    }
+
+  if (invert)
+    emit_move_insn (result, gen_rtx (XOR, SImode, reg, const1_rtx));
+
+  return result;
+}
+
+
 /* Emit the common code for doing conditional branches.
    operand[0] is the label to jump to.
    The comparison operands are saved away by cmp{si,sf,df}.  */
@@ -1445,36 +1694,22 @@ gen_conditional_branch (operands, test_code)
      rtx operands[];
      enum rtx_code test_code;
 {
-  enum {
-    I_EQ,
-    I_NE,
-    I_GT,
-    I_GE,
-    I_LT,
-    I_LE,
-    I_GTU,
-    I_GEU,
-    I_LTU,
-    I_LEU,
-    I_MAX
-  } test = I_MAX;
-
-  static enum machine_mode mode_map[(int)CMP_MAX][(int)I_MAX] = {
+  static enum machine_mode mode_map[(int)CMP_MAX][(int)ITEST_MAX] = {
     {				/* CMP_SI */
-      CC_EQmode,		/* eq  */
-      CC_EQmode,		/* ne  */
-      CCmode,			/* gt  */
-      CCmode,			/* ge  */
-      CCmode,			/* lt  */
-      CCmode,			/* le  */
-      CCmode,			/* gtu */
-      CCmode,			/* geu */
-      CCmode,			/* ltu */
-      CCmode,			/* leu */
+      SImode,			/* eq  */
+      SImode,			/* ne  */
+      SImode,			/* gt  */
+      SImode,			/* ge  */
+      SImode,			/* lt  */
+      SImode,			/* le  */
+      SImode,			/* gtu */
+      SImode,			/* geu */
+      SImode,			/* ltu */
+      SImode,			/* leu */
     },
     {				/* CMP_SF */
       CC_FPmode,		/* eq  */
-      CC_FPmode,		/* ne  */
+      CC_REV_FPmode,		/* ne  */
       CC_FPmode,		/* gt  */
       CC_FPmode,		/* ge  */
       CC_FPmode,		/* lt  */
@@ -1486,7 +1721,7 @@ gen_conditional_branch (operands, test_code)
     },
     {				/* CMP_DF */
       CC_FPmode,		/* eq  */
-      CC_FPmode,		/* ne  */
+      CC_REV_FPmode,		/* ne  */
       CC_FPmode,		/* gt  */
       CC_FPmode,		/* ge  */
       CC_FPmode,		/* lt  */
@@ -1499,33 +1734,22 @@ gen_conditional_branch (operands, test_code)
   };
 
   enum machine_mode mode;
-  enum cmp_type type = branch_type;
-  rtx cmp0 = branch_cmp[0];
-  rtx cmp1 = branch_cmp[1];
-  rtx label = gen_rtx (LABEL_REF, VOIDmode, operands[0]);
+  enum cmp_type type	  = branch_type;
+  rtx cmp0		  = branch_cmp[0];
+  rtx cmp1		  = branch_cmp[1];
+  rtx label1		  = gen_rtx (LABEL_REF, VOIDmode, operands[0]);
+  rtx label2		  = pc_rtx;
+  rtx reg		  = (rtx)0;
+  int invert		  = 0;
+  enum internal_test test = map_test_to_internal_test (test_code);
 
-  /* Make normal rtx_code into something we can index from an array */
-  switch (test_code)
+  if (test == ITEST_MAX)
     {
-    case EQ:  test = I_EQ;  break;
-    case NE:  test = I_NE;  break;
-    case GT:  test = I_GT;  break;
-    case GE:  test = I_GE;  break;
-    case LT:  test = I_LT;  break;
-    case LE:  test = I_LE;  break;
-    case GTU: test = I_GTU; break;
-    case GEU: test = I_GEU; break;
-    case LTU: test = I_LTU; break;
-    case LEU: test = I_LEU; break;
-    }
-
-  if (test == I_MAX)
-    {
-      mode = CCmode;
+      mode = SImode;
       goto fail;
     }
 
-  /* Get the machine mode to use (CCmode, CC_EQmode, or CC_FPmode).  */
+  /* Get the machine mode to use (CCmode, CC_EQmode, CC_FPmode, or CC_REV_FPmode).  */
   mode = mode_map[(int)type][(int)test];
   if (mode == VOIDmode)
     goto fail;
@@ -1536,50 +1760,46 @@ gen_conditional_branch (operands, test_code)
       goto fail;
 
     case CMP_SI:
-      /* Change >, >=, <, <= tests against 0 to use CC_0mode, since we have
-	 special instructions to do these tests directly. */
-
-      if (mode == CCmode && GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) == 0)
+      reg = gen_int_relational (test_code, (rtx)0, cmp0, cmp1, &invert);
+      if (reg != (rtx)0)
 	{
-	  emit_insn (gen_rtx (SET, VOIDmode, cc0_rtx, cmp0));
-	  mode = CC_0mode;
+	  cmp0 = reg;
+	  cmp1 = const0_rtx;
+	  test_code = NE;
 	}
 
-      else if (mode == CCmode && GET_CODE (cmp0) == CONST_INT && INTVAL (cmp0) == 0)
-	{
-	  emit_insn (gen_rtx (SET, VOIDmode, cc0_rtx, cmp1));
-	  test_code = reverse_condition (test_code);
-	  mode = CC_0mode;
-	}
+      /* Make sure not non-zero constant if ==/!= */
+      else if (GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) != 0)
+	cmp1 = force_reg (SImode, cmp1);
 
-      else
-	{
-	  /* force args to register for equality comparisons. */
-	  if (mode == CC_EQmode && GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) != 0)
-	    cmp1 = force_reg (SImode, cmp1);
-
-	  emit_insn (gen_rtx (SET, VOIDmode,
-			      cc0_rtx,
-			      gen_rtx (COMPARE, mode, cmp0, cmp1)));
-	}
       break;
 
     case CMP_DF:
-      emit_insn (gen_cmpdf_internal (cmp0, cmp1));
-      break;
-
     case CMP_SF:
-      emit_insn (gen_cmpsf_internal (cmp0, cmp1));
+      {
+	rtx reg = gen_rtx (REG, mode, FPSW_REGNUM);
+	emit_insn (gen_rtx (SET, VOIDmode, reg, gen_rtx (test_code, mode, cmp0, cmp1)));
+	cmp0 = reg;
+	cmp1 = const0_rtx;
+	test_code = NE;
+      }
       break;
     }
   
   /* Generate the jump */
+  if (invert)
+    {
+      label2 = label1;
+      label1 = pc_rtx;
+    }
+
   emit_jump_insn (gen_rtx (SET, VOIDmode,
 			   pc_rtx,
 			   gen_rtx (IF_THEN_ELSE, VOIDmode,
-				    gen_rtx (test_code, mode, cc0_rtx, const0_rtx),
-				    label,
-				    pc_rtx)));
+				    gen_rtx (test_code, mode, cmp0, cmp1),
+				    label1,
+				    label2)));
+
   return;
 
 fail:
@@ -2728,9 +2948,9 @@ override_options ()
   mips_char_to_class['f'] = ((TARGET_HARD_FLOAT) ? FP_REGS : NO_REGS);
   mips_char_to_class['h'] = HI_REG;
   mips_char_to_class['l'] = LO_REG;
-  mips_char_to_class['s'] = ST_REGS;
   mips_char_to_class['x'] = MD_REGS;
   mips_char_to_class['y'] = GR_REGS;
+  mips_char_to_class['z'] = ST_REGS;
 
   /* Set up array to map GCC register number to debug register number.
      Ignore the special purpose register numbers.  */
@@ -2762,22 +2982,25 @@ override_options ()
 
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	{
-	  register int temp = FALSE;
+	  register int temp;
 
-	  if (GP_REG_P (regno))
+	  if (mode == CC_FPmode || mode == CC_REV_FPmode)
+	    temp = (regno == FPSW_REGNUM);
+
+	  else if (GP_REG_P (regno))
 	    temp = ((regno & 1) == 0 || (size <= UNITS_PER_WORD));
 
 	  else if (FP_REG_P (regno))
 	    temp = ((TARGET_FLOAT64 || ((regno & 1) == 0))
-		    && (TARGET_DEBUG_H_MODE
-			|| class == MODE_FLOAT
-			|| class == MODE_COMPLEX_FLOAT));
+		    && (class == MODE_FLOAT
+			|| class == MODE_COMPLEX_FLOAT
+			|| (TARGET_DEBUG_H_MODE && class == MODE_INT)));
 
 	  else if (MD_REG_P (regno))
 	    temp = (mode == SImode || (regno == MD_REG_FIRST && mode == DImode));
 
-	  else if (ST_REG_P (regno))
-	    temp = ((mode == SImode) || (class == MODE_CC));
+	  else
+	    temp = FALSE;
 
 	  mips_hard_regno_mode_ok[(int)mode][regno] = temp;
 	}
