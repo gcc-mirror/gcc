@@ -1,3 +1,9 @@
+Thu May  6 12:40:21 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi (Arbitrary Concatenation): Put this under
+	"Missing Features" instead of "Projects".
+	(Internals Documentation): Point to new "Front End" chapter.
+
 Thu May  6 08:23:52 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* bugs.texi, news.texi: Automatic arrays reportedly working
