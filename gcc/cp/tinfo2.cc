@@ -258,6 +258,18 @@ __throw_type_match_rtti (void *catch_type_r, void *throw_type_r, void *objptr)
   return new_objptr;
 }
 
+/* Called from __cp_pop_exception.  Is P the type_info node for a pointer
+   of some kind?  */
+
+bool
+__is_pointer (void *p)
+{
+  const type_info *t = reinterpret_cast <const type_info *>(p);
+  const __pointer_type_info *pt =
+    dynamic_cast <const __pointer_type_info *> (t);
+  return pt != 0;
+}
+
 extern "C" void
 __rtti_ptr (void *addr, const char *n, const type_info *ti)
 { new (addr) __pointer_type_info (n, *ti); }

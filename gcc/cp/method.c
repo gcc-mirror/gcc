@@ -1927,6 +1927,13 @@ emit_thunk (thunk_fndecl)
     c_expand_return (t);
 
     finish_function (lineno, 0, 0);
+
+    /* Don't let the backend defer this function.  */
+    if (DECL_DEFER_OUTPUT (thunk_fndecl))
+      {
+	output_inline_function (thunk_fndecl);
+	permanent_allocation (1);
+      }
 #endif /* ASM_OUTPUT_MI_THUNK */
   }
 

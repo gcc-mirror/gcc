@@ -101,7 +101,7 @@ static void dump_function_name PROTO((tree));
 static void dump_expr_list PROTO((tree));
 static void dump_global_iord PROTO((tree));
 static void dump_readonly_or_volatile PROTO((tree, enum pad));
-static void dump_char PROTO((char));
+static void dump_char PROTO((int));
 static char *aggr_variety PROTO((tree));
 static tree ident_fndecl PROTO((tree));
 
@@ -994,7 +994,7 @@ dump_function_name (t)
 
 static void
 dump_char (c)
-     char c;
+     int c;
 {
   switch (c)
     {

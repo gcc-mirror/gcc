@@ -39,6 +39,13 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "c-pragma.h"
 
+/* MULTIBYTE_CHARS support only works for native compilers.
+   ??? Ideally what we want is to model widechar support after
+   the current floating point support.  */
+#ifdef CROSS_COMPILE
+#undef MULTIBYTE_CHARS
+#endif
+
 #ifdef MULTIBYTE_CHARS
 #include <stdlib.h>
 #include <locale.h>
@@ -93,10 +100,16 @@ static void reinit_parse_for_expr PROTO((struct obstack *));
 
 /* Given a file name X, return the nondirectory portion.
    Keep in mind that X can be computed more than once.  */
-#ifndef FILE_NAME_NONDIRECTORY
-#define FILE_NAME_NONDIRECTORY(X)		\
- (rindex (X, '/') != 0 ? rindex (X, '/') + 1 : X)
-#endif
+char *
+file_name_nondirectory (x)
+     char *x;
+{
+  char *tmp = (char *) rindex (x, '/');
+  if (tmp)
+    return (char *) (tmp + 1);
+  else
+    return x;
+}
 
 /* This obstack is needed to hold text.  It is not safe to use
    TOKEN_BUFFER because `check_newline' calls `yylex'.  */
@@ -1142,7 +1155,7 @@ set_typedecl_interface_info (prev, vars)
   tree type = TREE_TYPE (vars);
 
   CLASSTYPE_INTERFACE_ONLY (type) = TREE_INT_CST_LOW (fileinfo)
-    = interface_strcmp (FILE_NAME_NONDIRECTORY (DECL_SOURCE_FILE (vars)));
+    = interface_strcmp (file_name_nondirectory (DECL_SOURCE_FILE (vars)));
 }
 
 static int
@@ -1796,7 +1809,6 @@ snarf_defarg ()
   int len;
   char *buf;
   tree arg;
-  struct pending_inline *t;
 
   reinit_parse_for_expr (&inline_text_obstack);
   len = obstack_object_size (&inline_text_obstack);
@@ -1882,8 +1894,6 @@ do_pending_defargs ()
       tree defarg_fn = TREE_VALUE (defarg_fns);
       if (defarg_parm == NULL_TREE)
 	{
-	  tree p;
-
 	  push_nested_class (TREE_PURPOSE (defarg_fns), 1);
 	  pushlevel (0);
 	  if (is_member_template (defarg_fn))
@@ -1892,6 +1902,7 @@ do_pending_defargs ()
 	  if (TREE_CODE (defarg_fn) == FUNCTION_DECL)
 	    {
 #if 0
+	      tree p;
 	      for (p = DECL_ARGUMENTS (defarg_fn); p; p = TREE_CHAIN (p))
 		pushdecl (copy_node (p));
 #endif
@@ -2449,7 +2460,7 @@ linenum:
 	    {
 	      while (ifiles->next)
 		ifiles = ifiles->next;
-	      ifiles->filename = FILE_NAME_NONDIRECTORY (input_filename);
+	      ifiles->filename = file_name_nondirectory (input_filename);
 	    }
 
 	  main_input_filename = input_filename;
@@ -3059,7 +3070,7 @@ identifier_typedecl_value (node)
 #ifdef __GNUC__
 __inline
 #endif
-int
+void
 embedded_pedwarn (s)
      char *s;
 {
@@ -4124,15 +4135,9 @@ real_yylex ()
 	    bzero (widep + (len * WCHAR_BYTES), WCHAR_BYTES);
 #else
 	    {
-	      union { long l; char c[sizeof (long)]; } u;
-	      int big_endian;
 	      char *wp, *cp;
 
-	      /* Determine whether host is little or big endian.  */
-	      u.l = 1;
-	      big_endian = u.c[sizeof (long) - 1];
-	      wp = widep + (big_endian ? WCHAR_BYTES - 1 : 0);
-
+	      wp = widep + (BYTES_BIG_ENDIAN ? WCHAR_BYTES - 1 : 0);
 	      bzero (widep, (p - token_buffer) * WCHAR_BYTES);
 	      for (cp = token_buffer + 1; cp < p; cp++)
 		*wp = *cp, wp += WCHAR_BYTES;
@@ -4674,7 +4679,7 @@ handle_cp_pragma (pname)
       tree fileinfo = IDENTIFIER_CLASS_VALUE (get_time_identifier (input_filename));
       char *main_filename = input_filename;
 
-      main_filename = FILE_NAME_NONDIRECTORY (main_filename);
+      main_filename = file_name_nondirectory (main_filename);
 
       token = real_yylex ();
       
@@ -4704,7 +4709,7 @@ handle_cp_pragma (pname)
 	    main_input_filename = input_filename;
 
 #ifdef AUTO_IMPLEMENT
-	  filename = FILE_NAME_NONDIRECTORY (main_input_filename);
+	  filename = file_name_nondirectory (main_input_filename);
 	  fi = get_time_identifier (filename);
 	  fi = IDENTIFIER_CLASS_VALUE (fi);
 	  TREE_INT_CST_LOW (fi) = 0;
@@ -4729,7 +4734,7 @@ handle_cp_pragma (pname)
       tree fileinfo = IDENTIFIER_CLASS_VALUE (get_time_identifier (input_filename));
       char *main_filename = main_input_filename ? main_input_filename : input_filename;
 
-      main_filename = FILE_NAME_NONDIRECTORY (main_filename);
+      main_filename = file_name_nondirectory (main_filename);
       token = real_yylex ();
       if (token != END_OF_LINE)
 	{

@@ -40,10 +40,9 @@ extern char *getpwd PROTO((void));
 
 #ifdef HAVE_STRING_H
 #include <string.h>
-#else
-extern char *index ();
-extern char *rindex ();
 #endif
+
+extern char *rindex ();
 
 /* The character(s) used to join a directory specification (obtained with
    getwd or equivalent) with a non-absolute file name.  */
