@@ -350,10 +350,16 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
    integer register to an FP register.  If we are trying to put a 
    non-zero floating-point constant into some register, use an integer
    register if the constant is SFmode and GENERAL_REGS is one of our options.
-   Otherwise, put the constant into memory.  */
+   Otherwise, put the constant into memory.
+
+   When reloading something smaller than a word, use a general reg
+   rather than an FP reg.  */
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS)  \
   ((CLASS) == ALL_REGS && GET_CODE (X) == CONST_INT ? GENERAL_REGS	\
+   : ((GET_MODE (X) == HImode || GET_MODE (X) == QImode)		\
+      && (CLASS) == ALL_REGS)						\
+   ? GENERAL_REGS							\
    : (GET_CODE (X) == CONST_DOUBLE					\
       && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT			\
       && ! CONST_DOUBLE_OK_FOR_LETTER_P (X, 'G'))			\
