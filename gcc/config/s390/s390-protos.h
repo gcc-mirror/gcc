@@ -34,7 +34,6 @@ extern int q_constraint PARAMS ((rtx));
 extern int const0_operand PARAMS ((rtx, enum machine_mode));
 extern int consttable_operand PARAMS ((rtx, enum machine_mode));
 extern int larl_operand PARAMS ((rtx, enum machine_mode));
-extern int fp_operand PARAMS ((rtx, enum machine_mode));
 extern int s_operand PARAMS ((rtx, enum machine_mode));
 extern int s_imm_operand PARAMS ((rtx, enum machine_mode));
 extern int bras_sym_operand PARAMS ((rtx, enum machine_mode));

@@ -45,6 +45,10 @@ extern int target_flags;
 #define TARGET_64BIT               (target_flags & 16)
 #define TARGET_MVCLE               (target_flags & 32)
 
+/* ??? Once this actually works, it could be made a runtime option.  */
+#define TARGET_IBM_FLOAT           0
+#define TARGET_IEEE_FLOAT          1
+
 #ifdef DEFAULT_TARGET_64BIT
 #define TARGET_DEFAULT             0x13
 #define TARGET_VERSION fprintf (stderr, " (zSeries)");
@@ -95,11 +99,6 @@ extern int target_flags;
         builtin_define ("__s390x__");			\
     }							\
   while (0)
-
-/* Defines for real.c.  */
-#define IEEE_FLOAT 1
-#define TARGET_IBM_FLOAT           0
-#define TARGET_IEEE_FLOAT          1 
 
 /* The amount of space used for outgoing arguments.  */
 
@@ -212,13 +211,8 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 #define STRICT_ALIGNMENT 0
 
 /* Define target floating point format.  */
-
-#undef TARGET_FLOAT_FORMAT
-#ifdef IEEE_FLOAT
-#define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
-#else
-#define TARGET_FLOAT_FORMAT IBM_FLOAT_FORMAT
-#endif
+#define TARGET_FLOAT_FORMAT \
+	(TARGET_IEEE_FLOAT? IEEE_FLOAT_FORMAT : IBM_FLOAT_FORMAT)
 
 /* Define if special allocation order desired.  */
 
@@ -230,13 +224,15 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 
 /* Standard register usage.  */
  
-#define INT_REGNO_P(N)   ( (int)(N) >= 0 && (N) < 16 )
-#ifdef IEEE_FLOAT
-#define FLOAT_REGNO_P(N) ( (N) >= 16 && (N) < 32 )
-#else
-#define FLOAT_REGNO_P(N) ( (N) >= 16 && (N) < 20 )
-#endif
-#define CC_REGNO_P(N)    ( (N) == 33 )
+#define GENERAL_REGNO_P(N)	((int)(N) >= 0 && (N) < 16)
+#define ADDR_REGNO_P(N)		((N) >= 1 && (N) < 16)
+#define FP_REGNO_P(N)		((N) >= 16 && (N) < (TARGET_IEEE_FLOAT? 32 : 20))
+#define CC_REGNO_P(N)		((N) == 33)
+
+#define GENERAL_REG_P(X)	(REG_P (X) && GENERAL_REGNO_P (REGNO (X)))
+#define ADDR_REG_P(X)		(REG_P (X) && ADDR_REGNO_P (REGNO (X)))
+#define FP_REG_P(X)		(REG_P (X) && FP_REGNO_P (REGNO (X)))
+#define CC_REG_P(X)		(REG_P (X) && CC_REGNO_P (REGNO (X)))
 
 /* Number of actual hardware registers.  The hardware registers are
    assigned numbers for the compiler from 0 to just below
@@ -364,9 +360,9 @@ do								\
    but can be less for certain modes in special long registers.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)                           \
-  (FLOAT_REGNO_P(REGNO)?                                        \
+  (FP_REGNO_P(REGNO)?                                           \
     (GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT ? 2 : 1) :      \
-   INT_REGNO_P(REGNO)?                                          \
+   GENERAL_REGNO_P(REGNO)?                                      \
     ((GET_MODE_SIZE(MODE)+UNITS_PER_WORD-1) / UNITS_PER_WORD) : \
    1)
 
@@ -376,11 +372,11 @@ do								\
    The floating point registers can hold DF, SF, DC and SC.  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE)                             \
-  (FLOAT_REGNO_P(REGNO)?                                            \
+  (FP_REGNO_P(REGNO)?                                               \
    ((MODE) == SImode || (MODE) == DImode ||                         \
     GET_MODE_CLASS(MODE) == MODE_FLOAT ||                           \
     GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT) :                   \
-   INT_REGNO_P(REGNO)?                                              \
+   GENERAL_REGNO_P(REGNO)?                                          \
     (HARD_REGNO_NREGS(REGNO, MODE) == 1 || !((REGNO) & 1)) :        \
    CC_REGNO_P(REGNO)?                                               \
      GET_MODE_CLASS (MODE) == MODE_CC :                             \
@@ -876,27 +872,6 @@ CUMULATIVE_ARGS;
     || (reg_renumber[REGNO] > 0 && reg_renumber[REGNO] < 16))
 
 #define REGNO_OK_FOR_BASE_P(REGNO) REGNO_OK_FOR_INDEX_P (REGNO)
-
-#define REGNO_OK_FOR_DATA_P(REGNO)                                      \
-  ((REGNO) < 16 || (unsigned) reg_renumber[REGNO] < 16)
-
-#define REGNO_OK_FOR_FP_P(REGNO)                                        \
-  FLOAT_REGNO_P (REGNO)
-
-/* Now macros that check whether X is a register and also,
-   strictly, whether it is in a specified class.  */
-
-/* 1 if X is a data register.  */
-
-#define DATA_REG_P(X) (REG_P (X) && REGNO_OK_FOR_DATA_P (REGNO (X)))
-
-/* 1 if X is an fp register.  */
-
-#define FP_REG_P(X) (REG_P (X) && REGNO_OK_FOR_FP_P (REGNO (X)))
-
-/* 1 if X is an address register.  */
-
-#define ADDRESS_REG_P(X) (REG_P (X) && REGNO_OK_FOR_BASE_P (REGNO (X)))
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 

@@ -68,15 +68,6 @@ Boston, MA 02111-1307, USA.  */
   while (0)
 
 
-/* Target specific compiler settings.  */
-
-/* ??? -fcaller-saves sometimes doesn't work.  Fix this! */
-#undef  CC1_SPEC
-#define CC1_SPEC "-fno-caller-saves"
-#undef  CC1PLUS_SPEC
-#define CC1PLUS_SPEC "-fno-caller-saves"
-
-
 /* Target specific assembler settings.  */
 
 #ifdef DEFAULT_TARGET_64BIT

@@ -1,3 +1,28 @@
+2002-10-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/linux.h (CC1_SPEC, CC1PLUS_SPEC): Remove.
+	* config/s390/s390.c (optimization_options): Disable -fcaller-saves.
+
+	* config/s390/s390-protos.h (fp_operand): Remove.
+	* config/s390/s390.c (fp_operand): Remove.
+	* config/s390/s390.md ("movdi"): Replace fp_operand by FP_REG_P.
+	("*movdi_lhi", "*movdi_lli", "*movdi_larl"): Likewise.
+	("movsi", "*movsi_lhi", "*movsi_lli"): Likewise.
+	(movdi_31, movdf_31 splitters): Likewise.
+	
+	* config/s390/s390.h (IEEE_FLOAT): Remove.
+	(TARGET_FLOAT_FORMAT): Define in terms of TARGET_IEEE_FLOAT.
+	(INT_REGNO_P): Rename to ...
+	(GENERAL_REGNO_P): ... this.
+	(FLOAT_REGNO_P): Rename to ...
+	(FP_REGNO_P): ... this.
+	(ADDR_REGNO_P): New macro.
+	(GENERAL_REG_P, ADDR_REG_P, FP_REG_P, CC_REG_P): New macros.
+	(REGNO_OK_FOR_DATA_P, REGNO_OK_FOR_FP_P): Remove.
+	(DATA_REG_P, FP_REG_P, ADDRESS_REG_P): Likewise.
+	(HARD_REGNO_NREGS): Adapt to macro renaming.
+	(HARD_REGNO_MODE_OK): Likewise.
+
 2002-10-23  David Edelsohn  <edelsohn@gnu.org>
 	    Geoff Keating  <geoffk@apple.com>
 
