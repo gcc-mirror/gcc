@@ -407,6 +407,8 @@ static int insn_cuid (rtx);
 static void record_promoted_value (rtx, rtx);
 static rtx reversed_comparison (rtx, enum machine_mode, rtx, rtx);
 static enum rtx_code combine_reversed_comparison_code (rtx);
+static int unmentioned_reg_p_1 (rtx *, void *);
+static bool unmentioned_reg_p (rtx, rtx);
 
 /* Substitute NEWVAL, an rtx expression, into INTO, a place in some
    insn.  The substitution can be undone by undo_all.  If INTO is already
@@ -719,6 +721,31 @@ combine_instructions (rtx f, unsigned int nregs)
 					   XEXP (nextlinks, 0),
 					   &new_direct_jump_p)) != 0)
 		    goto retry;
+
+	      /* Try this insn with each REG_EQUAL note it links back to.  */
+	      for (links = LOG_LINKS (insn); links; links = XEXP (links, 1))
+		{
+		  rtx set, note;
+		  rtx temp = XEXP (links, 0);
+		  if ((set = single_set (temp)) != 0
+		      && (note = find_reg_equal_equiv_note (temp)) != 0
+		      && GET_CODE (XEXP (note, 0)) != EXPR_LIST
+		      /* Avoid using a register that may already been marked
+			 dead by an earlier instruction.  */
+		      && ! unmentioned_reg_p (XEXP (note, 0), SET_SRC (set)))
+		    {
+		      /* Temporarily replace the set's source with the
+			 contents of the REG_EQUAL note.  The insn will
+			 be deleted or recognized by try_combine.  */
+		      rtx orig = SET_SRC (set);
+		      SET_SRC (set) = XEXP (note, 0);
+		      next = try_combine (insn, temp, NULL_RTX,
+					  &new_direct_jump_p);
+		      if (next)
+			goto retry;
+		      SET_SRC (set) = orig;
+		    }
+		}
 
 	      if (GET_CODE (insn) != NOTE)
 		record_dead_and_set_regs (insn);
@@ -12977,6 +13004,33 @@ distribute_links (rtx links)
 	    }
 	}
     }
+}
+
+/* Subroutine of unmentioned_reg_p and callback from for_each_rtx.
+   Check whether the expression pointer to by LOC is a register or
+   memory, and if so return 1 if it isn't mentioned in the rtx EXPR.
+   Otherwise return zero.  */
+
+static int
+unmentioned_reg_p_1 (rtx *loc, void *expr)
+{
+  rtx x = *loc;
+
+  if (x != NULL_RTX
+      && (GET_CODE (x) == REG || GET_CODE (x) == MEM)
+      && ! reg_mentioned_p (x, (rtx) expr))
+    return 1;
+  return 0;
+}
+
+/* Check for any register or memory mentioned in EQUIV that is not
+   mentioned in EXPR.  This is used to restrict EQUIV to "specializations"
+   of EXPR where some registers may have been replaced by constants.  */
+
+static bool
+unmentioned_reg_p (rtx equiv, rtx expr)
+{
+  return for_each_rtx (&equiv, unmentioned_reg_p_1, expr);
 }
 
 /* Compute INSN_CUID for INSN, which is an insn made by combine.  */
