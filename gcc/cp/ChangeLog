@@ -1,3 +1,8 @@
+1999-08-08  Martin v. Loewis  <martin@mira.isdn.cs.tu-berlin.de>
+
+	* decl2.c (set_decl_namespace): Do not complain about non-matching
+	decls if processing a template.
+
 1999-08-09  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* parse.y (function_try_block): Call end_protect_partials

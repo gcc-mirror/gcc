@@ -4491,6 +4491,12 @@ set_decl_namespace (decl, scope, friendp)
       /* Since decl is a function, old should contain a function decl. */
       if (!is_overloaded_fn (old))
 	goto complain;
+      if (processing_template_decl || processing_specialization)
+	/* We have not yet called push_template_decl to turn the
+	   FUNCTION_DECL into a TEMPLATE_DECL, so the declarations
+	   won't match.  But, we'll check later, when we construct the
+	   template.  */
+	return;
       for (; old; old = OVL_NEXT (old))
 	if (decls_match (decl, OVL_CURRENT (old)))
 	  return;
