@@ -4104,11 +4104,11 @@ output_toc (file, x, labelno)
   else
     abort ();
 
+  STRIP_NAME_ENCODING (real_name, name);
   if (TARGET_MINIMAL_TOC)
     fputs ("\t.long ", file);
   else
     {
-      STRIP_NAME_ENCODING (real_name, name);
       fprintf (file, "\t.tc %s", real_name);
 
       if (offset < 0)
