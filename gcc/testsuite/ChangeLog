@@ -1,3 +1,8 @@
+2004-02-07  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/13696
+	* g++.dg/opt/fold1.C: New test case.
+
 2003-02-06  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14033
