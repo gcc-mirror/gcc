@@ -140,7 +140,7 @@ tree error_mark_list;
 	tree ptm_desc_type_node;
 	tree base_desc_type_node;
 
-	tree class_type_node, record_type_node, union_type_node, enum_type_node;
+	tree class_type_node;
 	tree unknown_type_node;
 
    Array type `vtable_entry_type[]'
