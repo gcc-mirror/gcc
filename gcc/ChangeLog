@@ -1,3 +1,9 @@
+2004-06-17  Jan Hubicka  <jh@suse.cz>
+
+	* cfgbuild.c (make_edges): Do not use label_value_list.
+	(find_basic_blocks_1): Do not collect label_value_list.
+	(find_sub_basic_blocks): Update call of make_edges.
+
 2004-06-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-cfg.c (tree_make_forwarder_block):  Use SET_PHI_RESULT.
