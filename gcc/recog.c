@@ -700,15 +700,6 @@ validate_replace_src_group (rtx from, rtx to, rtx insn)
   d.insn = insn;
   note_uses (&PATTERN (insn), validate_replace_src_1, &d);
 }
-
-/* Same as validate_replace_src_group, but validate by seeing if
-   INSN is still valid.  */
-int
-validate_replace_src (rtx from, rtx to, rtx insn)
-{
-  validate_replace_src_group (from, to, insn);
-  return apply_change_group ();
-}
 
 #ifdef HAVE_cc0
 /* Return 1 if the insn using CC0 set by INSN does not contain

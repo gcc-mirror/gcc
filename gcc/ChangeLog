@@ -1,5 +1,10 @@
 2004-02-26  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* recog.c (validate_replace_src): Remove.
+	* recog.h: Remove the corresponding prototype.
+
+2004-02-26  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* calls.c: Don't reference FINAL_REG_PARM_STACK_SPACE or
 	MAYBE_REG_PARM_STACK_SPACE.
 	* function.c: Likewise.
