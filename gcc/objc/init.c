@@ -44,7 +44,7 @@ static void init_check_module_version(Module_t);
 static void __objc_init_protocols (struct objc_protocol_list* protos);
 
 /* Add protocol to class */
-static void __objc_class_add_protocols (Class_t, struct objc_protocol_list*);
+static void __objc_class_add_protocols (Class*, struct objc_protocol_list*);
 
 /* Is all categories/classes resolved? */
 BOOL __objc_dangling_categories = NO;
@@ -95,7 +95,7 @@ __objc_exec_class (Module_t module)
   DEBUG_PRINTF ("gathering selectors from module: %s\n", module->name);
   for (i = 0; i < symtab->cls_def_cnt; ++i)
     {
-      Class_t class = (Class_t) symtab->defs[i];
+      Class* class = (Class*) symtab->defs[i];
 
       /* Make sure we have what we think.  */
       assert (CLS_ISCLASS(class));
@@ -107,7 +107,7 @@ __objc_exec_class (Module_t module)
 
       /* Register all of the selectors in the class and meta class.  */
       __objc_register_selectors_from_class (class);
-      __objc_register_selectors_from_class ((Class_t) class->class_pointer);
+      __objc_register_selectors_from_class ((Class*) class->class_pointer);
 
       /* Install the fake dispatch tables */
       __objc_install_premature_dtable(class);
@@ -125,7 +125,7 @@ __objc_exec_class (Module_t module)
   for (i = 0; i < symtab->cat_def_cnt; ++i)
     {
       Category_t category = symtab->defs[i + symtab->cls_def_cnt];
-      Class_t class = objc_lookup_class (category->class_name);
+      Class* class = objc_lookup_class (category->class_name);
       
       /* If the class for the category exists then append its methods.  */
       if (class)
@@ -141,7 +141,7 @@ __objc_exec_class (Module_t module)
 
 	  /* Do class methods.  */
 	  if (category->class_methods)
-	    class_add_method_list ((Class_t) class->class_pointer, 
+	    class_add_method_list ((Class*) class->class_pointer, 
 				   category->class_methods);
 
 	  if (category->protocols)
@@ -166,7 +166,7 @@ __objc_exec_class (Module_t module)
        *cell && ((cell = &(*cell)->tail)))
     {
       Category_t category = (*cell)->head;
-      Class_t class = objc_lookup_class (category->class_name);
+      Class* class = objc_lookup_class (category->class_name);
       
       if (class)
 	{
@@ -179,7 +179,7 @@ __objc_exec_class (Module_t module)
 	    class_add_method_list (class, category->instance_methods);
 	  
 	  if (category->class_methods)
-	    class_add_method_list ((Class_t) class->class_pointer,
+	    class_add_method_list ((Class*) class->class_pointer,
 				   category->class_methods);
 	  
 	  if (category->protocols)
@@ -221,7 +221,7 @@ static void
 __objc_init_protocols (struct objc_protocol_list* protos)
 {
   int i;
-  Class_t proto_class;
+  Class* proto_class;
 
   if (! protos)
     return;
@@ -251,7 +251,7 @@ __objc_init_protocols (struct objc_protocol_list* protos)
     }
 }
 
-static void __objc_class_add_protocols (Class_t class,
+static void __objc_class_add_protocols (Class* class,
 					struct objc_protocol_list* protos)
 {
   /* Well... */

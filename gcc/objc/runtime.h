@@ -41,15 +41,15 @@ You should have received a copy of the GNU General Public License along with
 #include "objc/hash.h"		/* hash structures */
 #include "objc/list.h"		/* linear lists */
 
-extern void __objc_add_class_to_hash(Class_t); /* (objc-class.c) */
+extern void __objc_add_class_to_hash(Class*); /* (objc-class.c) */
 extern void __objc_init_selector_tables();     /* (objc-sel.c) */
 extern void __objc_init_class_tables();     /* (objc-class.c) */
 extern void __objc_init_dispatch_tables();     /* (objc-dispatch.c) */
-extern void __objc_install_premature_dtable(Class_t); /* (objc-dispatch.c) */
+extern void __objc_install_premature_dtable(Class*); /* (objc-dispatch.c) */
 extern void __objc_resolve_class_links(); /* (objc-class.c) */
-extern void __objc_register_selectors_from_class(Class_t); /* (objc-sel.c) */
-extern void __objc_update_dispatch_table_for_class (Class_t);/* (objc-msg.c) */
-extern void class_add_method_list(Class_t, MethodList_t);
+extern void __objc_register_selectors_from_class(Class*); /* (objc-sel.c) */
+extern void __objc_update_dispatch_table_for_class (Class*);/* (objc-msg.c) */
+extern void class_add_method_list(Class*, MethodList_t);
 
 /* True when class links has been resolved */     
 extern BOOL __objc_class_links_resolved;

@@ -44,16 +44,16 @@ struct sarray* __objc_uninstalled_dtable = 0;
 #endif
 
 /* Send +initialize to class */
-static void __objc_send_initialize(Class_t);
+static void __objc_send_initialize(Class*);
 
-static void __objc_install_dispatch_table_for_class (Class_t);
+static void __objc_install_dispatch_table_for_class (Class*);
 
 /* Forward declare some functions */
 #ifdef OBJC_SPARSE_LOOKUP
 static void __objc_init_install_dtable(id, SEL);
 #endif
 static id __objc_missing_method(id, SEL, ...);
-static Method_t search_for_method_in_hierarchy (Class_t class, SEL sel);
+static Method_t search_for_method_in_hierarchy (Class* class, SEL sel);
 static Method_t search_for_method_in_list(MethodList_t list, SEL op);
 id nil_method(id, SEL, ...);
 
@@ -65,7 +65,7 @@ nil_method(id receiver, SEL op, ...)
 
 /* Given a class and selector, return the selector's implementation.  */
 __inline__ IMP
-get_imp (Class_t class, SEL sel)
+get_imp (Class* class, SEL sel)
 {
 #ifdef OBJC_SPARSE_LOOKUP
   void* res = sarray_get (class->dtable, (size_t) sel);
@@ -165,16 +165,16 @@ static void __objc_init_install_dtable(id receiver, SEL op)
   else
     {
       /* receiver is a class object */
-      assert(CLS_ISCLASS((Class_t)receiver));
+      assert(CLS_ISCLASS((Class*)receiver));
       assert(CLS_ISMETA(receiver->class_pointer));
 
       /* Install real dtable for factory methods */
       __objc_install_dispatch_table_for_class (receiver->class_pointer);
       
       if(op != sel_get_uid ("initialize"))
-	__objc_send_initialize((Class_t)receiver);
+	__objc_send_initialize((Class*)receiver);
       else
-	CLS_SETINITIALIZED((Class_t)receiver);
+	CLS_SETINITIALIZED((Class*)receiver);
     }
 
 allready_initialized:
@@ -191,7 +191,7 @@ allready_initialized:
 
 /* Install dummy table for class which causes the first message to
    that class (or instances hereof) to be initialized properly */
-void __objc_install_premature_dtable(Class_t class)
+void __objc_install_premature_dtable(Class* class)
 {
 #ifdef OBJC_SPARSE_LOOKUP
   assert(__objc_uninstalled_dtable);
@@ -202,7 +202,7 @@ void __objc_install_premature_dtable(Class_t class)
 }   
 
 /* Send +initialize to class if not already done */
-static void __objc_send_initialize(Class_t class)
+static void __objc_send_initialize(Class* class)
 {
   Method_t m;
 
@@ -229,10 +229,10 @@ static void __objc_send_initialize(Class_t class)
 }  
 
 static void
-__objc_install_dispatch_table_for_class (Class_t class)
+__objc_install_dispatch_table_for_class (Class* class)
 {
 #ifdef OBJC_SPARSE_LOOKUP
-  Class_t super;
+  Class* super;
   MethodList_t mlist;
   int counter;
 
@@ -270,9 +270,9 @@ __objc_install_dispatch_table_for_class (Class_t class)
 #endif
 }
 
-void __objc_update_dispatch_table_for_class (Class_t class)
+void __objc_update_dispatch_table_for_class (Class* class)
 {
-  Class_t next;
+  Class* next;
 #ifdef OBJC_SPARSE_LOOKUP
   struct sarray* save;
 #else
@@ -313,7 +313,7 @@ void __objc_update_dispatch_table_for_class (Class_t class)
    methods installed rightaway, and their selectors are made into
    SEL's by the function __objc_register_selectors_from_class. */ 
 void
-class_add_method_list (Class_t class, MethodList_t list)
+class_add_method_list (Class* class, MethodList_t list)
 {
   int i;
 
@@ -348,13 +348,13 @@ class_add_method_list (Class_t class, MethodList_t list)
 
 
 Method_t
-class_get_instance_method(Class_t class, SEL op)
+class_get_instance_method(Class* class, SEL op)
 {
   return search_for_method_in_hierarchy(class, op);
 }
 
 Method_t
-class_get_class_method(MetaClass_t class, SEL op)
+class_get_class_method(MetaClass* class, SEL op)
 {
   return search_for_method_in_hierarchy(class, op);
 }
@@ -365,10 +365,10 @@ class_get_class_method(MetaClass_t class, SEL op)
    otherwise. */   
 
 static Method_t
-search_for_method_in_hierarchy (Class_t cls, SEL sel)
+search_for_method_in_hierarchy (Class* cls, SEL sel)
 {
   Method_t method = NULL;
-  Class_t class;
+  Class* class;
 
   if (! sel_is_mapped (sel))
     return NULL;
@@ -550,7 +550,7 @@ __objc_cache_insert(Cache_t cache, SEL op, IMP imp)
 }
 
 void* 
-__objc_cache_miss(Class_t class, SEL op) 
+__objc_cache_miss(Class* class, SEL op) 
 {
   Method_t m;
   Cache_t cache = class->cache;
