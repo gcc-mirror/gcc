@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.text;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -224,6 +225,7 @@ AttributedString(AttributedCharacterIterator aci, int begin_index,
   // Loop through and extract the attributes
   char c = aci.setIndex(begin_index);
 
+  ArrayList accum = new ArrayList();
   do
     { 
       sb.append(c);
@@ -272,16 +274,16 @@ AttributedString(AttributedCharacterIterator aci, int begin_index,
           Map new_map = new Hashtable();
           new_map.put(attrib, attrib_obj);
 
-          // Add it to the attribute list.  Yes this is a bad way to do things.
-          AttributeRange[] new_list = new AttributeRange[attribs.length + 1];
-          System.arraycopy(attribs, 0, new_list, 0, attribs.length);
-          attribs = new_list;
-          attribs[attribs.length - 1] = new AttributeRange(new_map, rs, rl);
+          // Add it to the attribute list.
+	  accum.add(new AttributeRange(new_map, rs, rl));
         }
 
       c = aci.next();
     }
   while(c != CharacterIterator.DONE);
+
+  attribs = new AttributeRange[accum.size()];
+  attribs = (AttributeRange[]) accum.toArray(attribs);
 
   sci = new StringCharacterIterator(sb.toString());
 }
