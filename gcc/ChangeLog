@@ -1,3 +1,9 @@
+2003-04-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10180
+	* tree-inline.c (expand_call_inline): Call push_srcloc when
+	encountering EXPR_WITH_FILE_LOCATION.  Honor warn_inline.
+
 2003-04-28  Mike Stump  <mrs@apple.com>
 
 	* gdbinit.in: Update to reflect new identifier structure.
