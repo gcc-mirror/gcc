@@ -3877,9 +3877,14 @@ add_using_namespace (user, used, indirect)
   /* Add user to the used's users list. */
   DECL_NAMESPACE_USERS (used)
     = perm_tree_cons (user, 0, DECL_NAMESPACE_USERS (used));
-		      
-  for (iter = DECL_NAMESPACE_USERS (user); iter; iter = TREE_CHAIN (iter))
+
+  /* Recursively add all namespaces used. */
+  for (iter = DECL_NAMESPACE_USING (used); iter; iter = TREE_CHAIN (iter))
     /* indirect usage */
+    add_using_namespace (user, TREE_PURPOSE (iter), 1);
+
+  /* Tell everyone using us about the new used namespaces. */
+  for (iter = DECL_NAMESPACE_USERS (user); iter; iter = TREE_CHAIN (iter))
     add_using_namespace (TREE_PURPOSE (iter), used, 1);
 }
 
@@ -4370,25 +4375,10 @@ do_namespace_alias (alias, namespace)
 
   namespace = ORIGINAL_NAMESPACE (namespace);
 
-  binding = binding_for_name (alias, current_namespace);
-  old = BINDING_VALUE (binding);
-  if (old)
-    {
-      if (TREE_CODE (old) == NAMESPACE_DECL
-          && DECL_NAMESPACE_ALIAS (old) == namespace)
-        /* Ok: redeclaration. */
-        return;
-      cp_error ("invalid namespace alias `%D'", alias);
-      cp_error_at ("`%D' previously declared here", old);
-    }
-  else
-    {
-      /* Build the alias. */
-      alias = build_lang_decl (NAMESPACE_DECL, alias, void_type_node);     
-      DECL_NAMESPACE_ALIAS (alias) = namespace;
-      DECL_CONTEXT (alias) = FROB_CONTEXT (current_namespace);
-      BINDING_VALUE (binding) = alias;
-    }
+  /* Build the alias. */
+  alias = build_lang_decl (NAMESPACE_DECL, alias, void_type_node);     
+  DECL_NAMESPACE_ALIAS (alias) = namespace;
+  pushdecl (alias);
 }
 
 /* Check a non-member using-declaration. Return the name and scope

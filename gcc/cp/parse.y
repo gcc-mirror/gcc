@@ -403,7 +403,16 @@ extdef:
 		{ push_namespace (NULL_TREE); }
 	  extdefs_opt '}'
 		{ pop_namespace (); }
-	| NAMESPACE identifier '=' 
+	| namespace_alias
+	| using_decl ';'
+		{ do_toplevel_using_decl ($1); }
+	| using_directive
+	| extension extdef
+		{ pedantic = $<itype>1; }
+	;
+
+namespace_alias:
+          NAMESPACE identifier '=' 
                 { begin_only_namespace_names (); }
           any_id ';'
 		{
@@ -412,11 +421,6 @@ extdef:
 		    $5 = lastiddecl;
 		  do_namespace_alias ($2, $5);
 		}
-	| using_decl ';'
-		{ do_toplevel_using_decl ($1); }
-	| using_directive
-	| extension extdef
-		{ pedantic = $<itype>1; }
 	;
 
 using_decl:
@@ -3288,6 +3292,7 @@ simple_stmt:
 	| using_directive
 	| namespace_using_decl
 	        { do_local_using_decl ($1); }
+	| namespace_alias
 	;
 
 function_try_block:
