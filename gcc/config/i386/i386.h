@@ -2994,7 +2994,8 @@ do {						\
   {"zero_extended_scalar_load_operand", {MEM}},				\
   {"vector_move_operand", {CONST_VECTOR, SUBREG, REG, MEM}},		\
   {"no_seg_address_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF, \
-			      LABEL_REF, SUBREG, REG, MEM, PLUS, MULT}},
+			      LABEL_REF, SUBREG, REG, MEM, PLUS, MULT}}, \
+  {"compare_operator", {COMPARE}},
 
 /* A list of predicates that do special things with modes, and so
    should not elicit warnings for VOIDmode match_operand.  */

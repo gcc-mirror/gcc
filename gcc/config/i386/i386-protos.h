@@ -93,6 +93,7 @@ extern int memory_displacement_operand (rtx, enum machine_mode);
 extern int cmpsi_operand (rtx, enum machine_mode);
 extern int long_memory_operand (rtx, enum machine_mode);
 extern int aligned_operand (rtx, enum machine_mode);
+extern int compare_operator (rtx, enum machine_mode);
 extern enum machine_mode ix86_cc_mode (enum rtx_code, rtx, rtx);
 
 extern int ix86_expand_movstr (rtx, rtx, rtx, rtx);

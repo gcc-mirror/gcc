@@ -4319,6 +4319,12 @@ aligned_operand (rtx op, enum machine_mode mode)
   /* Didn't find one -- this must be an aligned address.  */
   return 1;
 }
+
+int
+compare_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return GET_CODE (op) == COMPARE;
+}
 
 /* Initialize the table of extra 80387 mathematical constants.  */
 
