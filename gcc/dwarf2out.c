@@ -5687,29 +5687,38 @@ output_aranges ()
   fputc ('\n', asm_out_file);
   for (i = 0; i < arange_table_in_use; ++i)
     {
-      dw_die_ref a = arange_table[i];
+      dw_die_ref die = arange_table[i];
 
-      if (a->die_tag == DW_TAG_subprogram)
-	ASM_OUTPUT_DWARF_ADDR (asm_out_file, get_AT_low_pc (a));
+      if (die->die_tag == DW_TAG_subprogram)
+	ASM_OUTPUT_DWARF_ADDR (asm_out_file, get_AT_low_pc (die));
       else
 	{
-	  char *name = get_AT_string (a, DW_AT_MIPS_linkage_name);
-	  if (! name)
-	    name = get_AT_string (a, DW_AT_name);
+	  /* A static variable; extract the symbol from DW_AT_location.
+	     Note that this code isn't currently hit, as we only emit
+	     aranges for functions (jason 9/23/99).  */
 
-	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, name);
+	  dw_attr_ref a = get_AT (die, DW_AT_location);
+	  dw_loc_descr_ref loc;
+	  if (! a || a->dw_attr_val.val_class != dw_val_class_loc)
+	    abort ();
+
+	  loc = a->dw_attr_val.v.val_loc;
+	  if (loc->dw_loc_opc != DW_OP_addr)
+	    abort ();
+
+	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, loc->dw_loc_oprnd1.v.val_addr);
 	}
 
       if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s Address", ASM_COMMENT_START);
 
       fputc ('\n', asm_out_file);
-      if (a->die_tag == DW_TAG_subprogram)
-	ASM_OUTPUT_DWARF_ADDR_DELTA (asm_out_file, get_AT_hi_pc (a),
-				     get_AT_low_pc (a));
+      if (die->die_tag == DW_TAG_subprogram)
+	ASM_OUTPUT_DWARF_ADDR_DELTA (asm_out_file, get_AT_hi_pc (die),
+				     get_AT_low_pc (die));
       else
 	ASM_OUTPUT_DWARF_ADDR_DATA (asm_out_file,
-				    get_AT_unsigned (a, DW_AT_byte_size));
+				    get_AT_unsigned (die, DW_AT_byte_size));
 
       if (flag_debug_asm)
 	fprintf (asm_out_file, "%s Length", ASM_COMMENT_START);
@@ -7693,6 +7702,7 @@ add_name_and_src_coords_attributes (die, decl)
     {
       add_name_attribute (die, dwarf2_name (decl, 0));
       add_src_coords_attributes (die, decl);
+
       if ((TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
 	  && DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
 	add_AT_string (die, DW_AT_MIPS_linkage_name,
@@ -8664,7 +8674,7 @@ gen_variable_die (decl, context_die)
   else if (old_die && TREE_STATIC (decl)
  	   && get_AT_flag (old_die, DW_AT_declaration) == 1)
     {
-      /* ??? This is an instantiation of a C++ class level static.  */
+      /* This is a definition of a C++ class level static.  */
       add_AT_die_ref (var_die, DW_AT_specification, old_die);
       if (DECL_NAME (decl))
 	{
@@ -10175,6 +10185,8 @@ dwarf2out_finish ()
       output_pubnames ();
     }
 
+  /* We only put functions in the arange table, so don't write it out if
+     we don't have any.  */
   if (fde_table_in_use)
     {
       /* Output the address range information.  */
