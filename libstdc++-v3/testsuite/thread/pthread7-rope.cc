@@ -34,6 +34,7 @@
 const int max_thread_count = 4;
 const int max_loop_count = 10000;
 
+__gnu_cxx::crope foo2;
 __gnu_cxx::crope foo4;
 
 void* thread_main(void *) 
@@ -81,7 +82,6 @@ main()
 
   const char* data2;
   {
-    __gnu_cxx::crope foo2;
     foo2 += "bar2";
     foo2 += "baz2";
     foo2 += "bongle2";
@@ -108,7 +108,8 @@ main()
     }
 
   // Nothing says the data will be trashed at this point...
-  VERIFY( std::strcmp (data2, "bar2baz2bongle2") );
+  VERIFY( !std::strcmp (data, "barbazbongle") );
+  VERIFY( !std::strcmp (data2, "bar2baz2bongle2") );
 
   return 0;
 }
