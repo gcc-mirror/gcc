@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include <time.h>
 
-#ifdef HAVE_GETRUSAGE
+#if defined (HAVE_GETRUSAGE) && defined (HAVE_SYS_RESOURCE_H)
 #include <sys/time.h>
 #include <sys/resource.h>
 #endif
@@ -54,7 +54,7 @@ Boston, MA 02111-1307, USA.  */
 long
 get_run_time ()
 {
-#ifdef HAVE_GETRUSAGE
+#if defined (HAVE_GETRUSAGE) && defined (HAVE_SYS_RESOURCE_H)
   struct rusage rusage;
 
   getrusage (0, &rusage);
