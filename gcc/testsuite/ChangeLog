@@ -1,3 +1,7 @@
+Fri Dec 22 06:45:03 2000  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c-torture/execute/comp-goto-2.c: New test.
+
 Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* gcc.c-torture/execute/comp-goto-1.c (uint32, sint32):
