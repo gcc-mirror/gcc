@@ -650,7 +650,8 @@ avr_output_function_prologue (file, size)
   last_insn_address = 0;
   jump_tables_size = 0;
   prologue_size = 0;
-  fprintf (file, "/* prologue: frame size=%d */\n", size);
+  fprintf (file, "/* prologue: frame size=" HOST_WIDE_INT_PRINT_DEC " */\n",
+	   size);
 
   if (avr_naked_function_p (current_function_decl))
     {
@@ -683,8 +684,8 @@ avr_output_function_prologue (file, size)
   if (main_p)
     {
       fprintf (file, ("\t" 
-		      AS2 (ldi,r28,lo8(%s - %d)) CR_TAB
-		      AS2 (ldi,r29,hi8(%s - %d)) CR_TAB
+		      AS1 (ldi,r28) ",lo8(%s - " HOST_WIDE_INT_PRINT_DEC ")" CR_TAB
+		      AS1 (ldi,r29) ",hi8(%s - " HOST_WIDE_INT_PRINT_DEC ")" CR_TAB
 		      AS2 (out,__SP_H__,r29)     CR_TAB
 		      AS2 (out,__SP_L__,r28) "\n"),
 	       avr_init_stack, size, avr_init_stack, size);
@@ -694,8 +695,8 @@ avr_output_function_prologue (file, size)
   else if (minimize && (frame_pointer_needed || live_seq > 6)) 
     {
       fprintf (file, ("\t"
-		      AS2 (ldi, r26, lo8(%d)) CR_TAB
-		      AS2 (ldi, r27, hi8(%d)) CR_TAB), size, size);
+		      AS1 (ldi, r26) ",lo8(" HOST_WIDE_INT_PRINT_DEC ")" CR_TAB
+		      AS1 (ldi, r27) ",hi8(" HOST_WIDE_INT_PRINT_DEC ")" CR_TAB), size, size);
 
       fprintf (file, (AS2 (ldi, r30, pm_lo8(.L_%s_body)) CR_TAB
 		      AS2 (ldi, r31, pm_hi8(.L_%s_body)) CR_TAB)
@@ -789,7 +790,7 @@ avr_output_function_epilogue (file, size)
       function_size += get_attr_length (last);
     }
 
-  fprintf (file, "/* epilogue: frame size=%d */\n", size);
+  fprintf (file, "/* epilogue: frame size=" HOST_WIDE_INT_PRINT_DEC " */\n", size);
   epilogue_size = 0;
 
   if (avr_naked_function_p (current_function_decl))
@@ -1130,7 +1131,7 @@ print_operand (file, x, code)
 	fprintf (file, reg_names[true_regnum (x) + abcd]);
     }
   else if (GET_CODE (x) == CONST_INT)
-    fprintf (file, "%d", INTVAL (x) + abcd);
+    fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) + abcd);
   else if (GET_CODE (x) == MEM)
     {
       rtx addr = XEXP (x,0);
@@ -1495,7 +1496,7 @@ init_cumulative_args (cum, fntype, libname, fndecl)
      CUMULATIVE_ARGS *cum;
      tree fntype;
      rtx libname;
-     tree fndecl;
+     tree fndecl ATTRIBUTE_UNUSED;
 {
   cum->nregs = 18;
   cum->regno = FIRST_CUM_REG;
