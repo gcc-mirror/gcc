@@ -1366,7 +1366,6 @@ mips-sgi-irix6*o32)		# SGI System V.4., IRIX 6, O32 ABI
 	fi
 	tm_file="${tm_file} mips/iris6-o32.h"
 	tmake_file="${tmake_file} mips/t-iris mips/t-iris5-6"
-	xm_file=mips/xm-iris5.h
 	target_cpu_default="MASK_ABICALLS"
 	# mips-tfile doesn't work yet
 	# See comment in mips/iris5.h file.
@@ -1392,7 +1391,6 @@ mips-sgi-irix6*)		# SGI System V.4., IRIX 6
 	;;
 mips-sgi-irix5cross64)		# Irix5 host, Irix 6 target, cross64
 	tm_file="${tm_file} mips/iris5.h mips/iris6.h mips/cross64.h"
-	xm_file=mips/xm-iris5.h
 	tmake_file="mips/t-iris mips/t-cross64"
 	target_cpu_default="MASK_ABICALLS|MASK_FLOAT64|MASK_64BIT"
 	tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
@@ -1417,7 +1415,6 @@ mips-sgi-irix5*)		# SGI System V.4., IRIX 5
 		tmake_file=mips/t-iris5-as
 	fi
 	tmake_file="${tmake_file} mips/t-iris mips/t-iris5-6"
-	xm_file=mips/xm-iris5.h
 	target_cpu_default="MASK_ABICALLS"
 	# mips-tfile doesn't work yet
 	# See comment in mips/iris5.h file.
