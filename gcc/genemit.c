@@ -524,8 +524,9 @@ gen_expand (expand)
       rtx next = XVECEXP (expand, 1, i);
       if ((GET_CODE (next) == SET && GET_CODE (SET_DEST (next)) == PC)
 	  || (GET_CODE (next) == PARALLEL
-	      && GET_CODE (XVECEXP (next, 0, 0)) == SET
-	      && GET_CODE (SET_DEST (XVECEXP (next, 0, 0))) == PC)
+	      && ((GET_CODE (XVECEXP (next, 0, 0)) == SET
+		   && GET_CODE (SET_DEST (XVECEXP (next, 0, 0))) == PC)
+		  || GET_CODE (XVECEXP (next, 0, 0)) == RETURN))
 	  || GET_CODE (next) == RETURN)
 	printf ("  emit_jump_insn (");
       else if ((GET_CODE (next) == SET && GET_CODE (SET_SRC (next)) == CALL)
