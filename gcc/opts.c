@@ -33,6 +33,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "flags.h"
 #include "toplev.h"
 #include "params.h"
+#include "diagnostic.h"
 
 /* Value of the -G xx switch, and whether it was passed or not.  */
 unsigned HOST_WIDE_INT g_switch_value;
@@ -537,6 +538,14 @@ common_handle_option (size_t scode, const char *arg,
       align_loops = value;
       break;
 
+    case OPT_fbranch_target_load_optimize:
+      flag_branch_target_load_optimize = value;
+      break;
+
+    case OPT_fbranch_target_load_optimize2:
+      flag_branch_target_load_optimize2 = value;
+      break;
+
     case OPT_fcall_used_:
       fix_register (arg, 0, 1);
       break;
@@ -545,12 +554,212 @@ common_handle_option (size_t scode, const char *arg,
       fix_register (arg, 0, 0);
       break;
 
+    case OPT_fcaller_saves:
+      flag_caller_saves = value;
+      break;
+
+    case OPT_fcrossjumping:
+      flag_crossjumping = value;
+      break;
+
+    case OPT_fcse_follow_jumps:
+      flag_cse_follow_jumps = value;
+      break;
+
+    case OPT_fcse_skip_blocks:
+      flag_cse_skip_blocks = value;
+      break;
+
+    case OPT_fdefer_pop:
+      flag_defer_pop = value;
+      break;
+
+    case OPT_fdelayed_branch:
+      flag_delayed_branch = value;
+      break;
+
+    case OPT_fdelete_null_pointer_checks:
+      flag_delete_null_pointer_checks = value;
+      break;
+
+    case OPT_fdiagnostics_show_location_:
+      if (!strcmp (arg, "once"))
+	diagnostic_prefixing_rule (global_dc) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
+      else if (!strcmp (arg, "every-line"))
+	diagnostic_prefixing_rule (global_dc)
+	  = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+      else
+	return 0;
+      break;
+
+    case OPT_feliminate_dwarf2_dups:
+      flag_eliminate_dwarf2_dups = value;
+      break;
+
+    case OPT_feliminate_unused_debug_types:
+      flag_eliminate_unused_debug_types = value;
+      break;
+
+    case OPT_fexpensive_optimizations:
+      flag_expensive_optimizations = value;
+      break;
+
     case OPT_ffast_math:
       set_fast_math_flags (value);
       break;
 
     case OPT_ffixed_:
       fix_register (arg, 1, 1);
+      break;
+
+    case OPT_ffunction_cse:
+      flag_no_function_cse = !value;
+      break;
+
+    case OPT_ffloat_store:
+      flag_float_store = value;
+      break;
+
+    case OPT_fforce_addr:
+      flag_force_addr = value;
+      break;
+
+    case OPT_fforce_mem:
+      flag_force_mem = value;
+      break;
+
+    case OPT_fgcse:
+      flag_gcse = value;
+      break;
+
+    case OPT_fgcse_lm:
+      flag_gcse_lm = value;
+      break;
+
+    case OPT_fgcse_sm:
+      flag_gcse_sm = value;
+      break;
+
+    case OPT_fif_conversion:
+      flag_if_conversion = value;
+      break;
+
+    case OPT_fif_conversion2:
+      flag_if_conversion2 = value;
+      break;
+
+    case OPT_finline:
+      flag_no_inline = !value;
+      break;
+
+    case OPT_finline_functions:
+      flag_inline_functions = value;
+      break;
+
+    case OPT_fkeep_inline_functions:
+      flag_keep_inline_functions =value;
+      break;
+
+    case OPT_fkeep_static_consts:
+      flag_keep_static_consts = value;
+      break;
+
+    case OPT_floop_optimize:
+      flag_loop_optimize = value;
+      break;
+
+    case OPT_fmessage_length_:
+      output_set_maximum_length (&global_dc->buffer, value);
+      break;
+
+    case OPT_fmove_all_movables:
+      flag_move_all_movables = value;
+      break;
+
+    case OPT_fold_unroll_all_loops:
+      flag_old_unroll_all_loops = value;
+      break;
+
+    case OPT_fold_unroll_loops:
+      flag_old_unroll_loops = value;
+      break;
+
+    case OPT_fomit_frame_pointer:
+      flag_omit_frame_pointer = value;
+      break;
+
+    case OPT_foptimize_sibling_calls:
+      flag_optimize_sibling_calls = value;
+      break;
+
+    case OPT_fpeel_loops:
+      flag_peel_loops = value;
+      break;
+
+    case OPT_fpcc_struct_return:
+      flag_pcc_struct_return = value;
+      break;
+
+    case OPT_fpeephole:
+      flag_no_peephole = !value;
+      break;
+
+    case OPT_fprefetch_loop_arrays:
+      flag_prefetch_loop_arrays = value;
+      break;
+
+    case OPT_frandom_seed:
+      /* The real switch is -fno-random-seed.  */
+      if (value)
+	return 0;
+      flag_random_seed = NULL;
+      break;
+
+    case OPT_frandom_seed_:
+      flag_random_seed = arg;
+      break;
+
+    case OPT_freduce_all_givs:
+      flag_reduce_all_givs = value;
+      break;
+
+    case OPT_freg_struct_return:
+      flag_pcc_struct_return = !value;
+      break;
+
+    case OPT_frerun_cse_after_loop:
+      flag_rerun_cse_after_loop = value;
+      break;
+
+    case OPT_frerun_loop_opt:
+      flag_rerun_loop_opt = value;
+      break;
+
+    case OPT_fsched_verbose_:
+#ifdef INSN_SCHEDULING
+      fix_sched_param ("verbose", arg);
+      break;
+#else
+      return 0;
+#endif
+
+    case OPT_fschedule_insns:
+      flag_schedule_insns = value;
+      break;
+
+    case OPT_fschedule_insns2:
+      flag_schedule_insns_after_reload = value;
+      break;
+
+    case OPT_fshared_data:
+      flag_shared_data = value;
+      break;
+
+    case OPT_fstack_limit:
+      /* The real switch is -fno-stack-limit.  */
+      if (value)
+	return 0;
+      stack_limit_rtx = NULL_RTX;
       break;
 
     case OPT_fstack_limit_register_:
@@ -567,6 +776,18 @@ common_handle_option (size_t scode, const char *arg,
       stack_limit_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (arg));
       break;
 
+    case OPT_fstrength_reduce:
+      flag_strength_reduce = value;
+      break;
+
+    case OPT_fsyntax_only:
+      flag_syntax_only = value;
+      break;
+
+    case OPT_fthread_jumps:
+      flag_thread_jumps = value;
+      break;
+
     case OPT_ftls_model_:
       if (!strcmp (arg, "global-dynamic"))
 	flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC;
@@ -578,6 +799,30 @@ common_handle_option (size_t scode, const char *arg,
 	flag_tls_default = TLS_MODEL_LOCAL_EXEC;
       else
 	warning ("unknown tls-model \"%s\"", arg);
+      break;
+
+    case OPT_ftracer:
+      flag_tracer = value;
+      break;
+
+    case OPT_funit_at_a_time:
+      flag_unit_at_a_time = value;
+      break;
+
+    case OPT_funroll_all_loops:
+      flag_unroll_all_loops = value;
+      break;
+
+    case OPT_funroll_loops:
+      flag_unroll_loops = value;
+      break;
+
+    case OPT_funswitch_loops:
+      flag_unswitch_loops = value;
+      break;
+
+    case OPT_fwritable_strings:
+      flag_writable_strings = value;
       break;
 
     case OPT_g:

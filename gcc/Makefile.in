@@ -1482,7 +1482,8 @@ diagnostic.o : diagnostic.c diagnostic.h real.h diagnostic.def \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(TM_P_H) flags.h $(GGC_H) \
    input.h toplev.h intl.h langhooks.h $(LANGHOOKS_DEF_H)
 opts.o : opts.c opts.h options.h toplev.h $(CONFIG_H) $(SYSTEM_H) \
-	coretypes.h $(TREE_H) $(TM_H) $(LANGHOOKS_H) $(GGC_H) $(RTL_H) output.h
+	coretypes.h $(TREE_H) $(TM_H) $(LANGHOOKS_H) $(GGC_H) $(RTL_H) \
+	output.h diagnostic.h
 toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
    function.h flags.h xcoffout.h input.h $(INSN_ATTR_H) output.h diagnostic.h \
    debug.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h \

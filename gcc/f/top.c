@@ -573,6 +573,7 @@ ffe_handle_option (size_t scode, const char *arg, int value)
     case OPT_Wcomments:
     case OPT_Wimport:
     case OPT_Wtrigraphs:
+    case OPT_fpreprocessed:
       /* These are for cpp.  */
       break;
 

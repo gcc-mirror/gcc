@@ -151,11 +151,50 @@ Common RejectNegative Joined UInteger
 falign-loops=
 Common RejectNegative Joined UInteger
 
+fbranch-target-load-optimize
+Common
+
+fbranch-target-load-optimize2
+Common
+
 fcall-saved-
 Common Joined RejectNegative
 
 fcall-used-
 Common Joined RejectNegative
+
+fcaller-saves
+Common
+
+fcrossjumping
+Common
+
+fcse-follow-jumps
+Common
+
+fcse-skip-blocks
+Common
+
+fdefer-pop
+Common
+
+fdelayed-branch
+Common
+
+fdelete-null-pointer-checks
+Common
+
+fdiagnostics-show-location=
+Common Joined RejectNegative
+
+feliminate-dwarf2-dups
+Common
+
+feliminate-unused-debug-types
+Common
+
+fexpensive-optimizations
+Common
 
 ffast-math
 Common
@@ -163,14 +202,146 @@ Common
 ffixed-
 Common Joined RejectNegative
 
+ffloat-store
+Common
+
+fforce-addr
+Common
+
+fforce-mem
+Common
+
+ffunction-cse
+Common
+
+fgcse
+Common
+
+fgcse-lm
+Common
+
+fgcse-sm
+Common
+
+fif-conversion
+Common
+
+fif-conversion2
+Common
+
+finline
+Common
+
+finline-functions
+Common
+
+fkeep-inline-functions
+Common
+
+fkeep-static-consts
+Common
+
+floop-optimize
+Common
+
+fmessage-length=
+Common RejectNegative Joined UInteger
+
+fmove-all-movables
+Common
+
+fold-unroll-loops
+Common
+
+fold-unroll-all-loops
+Common
+
+fomit-frame-pointer
+Common
+
+foptimize-sibling-calls
+Common
+
+fpcc-struct-return
+Common
+
+fpeel-loops
+Common
+
+fpeephole
+Common
+
+fprefetch-loop-arrays
+Common
+
+frandom-seed
+Common
+
+frandom-seed=
+Common Joined RejectNegative
+
+freduce-all-givs
+Common
+
+freg-struct-return
+Common
+
+frerun-cse-after-loop
+Common
+
+frerun-loop-opt
+Common
+
+fsched-verbose=
+Common RejectNegative Joined
+
+fschedule-insns
+Common
+
+fschedule-insns2
+Common
+
+fshared-data
+Common
+
+fstack-limit
+Common
+
 fstack-limit-register=
 Common RejectNegative Joined
 
 fstack-limit-symbol=
 Common RejectNegative Joined
 
+fstrength-reduce
+Common
+
+fsyntax-only
+Common
+
+fthread-jumps
+Common
+
 ftls-model=
 Common Joined RejectNegative
+
+ftracer
+Common
+
+funit-at-a-time
+Common
+
+funroll-loops
+Common
+
+funroll-all-loops
+Common
+
+funswitch-loops
+Common
+
+fwritable-strings
+Common
 
 g
 Common JoinedOrMissing
