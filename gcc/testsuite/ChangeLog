@@ -1,3 +1,8 @@
+Tue May  5 19:20:13 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* lib/c-torture.exp (TORTURE_OPTIONS): Add -Os to options.
+	* lib/f-torture.exp (TORTURE_OPTIONS): Ditto.
+
 1998-04-29  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/compile/980419-1.f: Removed since doesn't compile.
