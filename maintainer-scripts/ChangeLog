@@ -1,3 +1,10 @@
+2003-05-28  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* snapshot-README: Refer to .bz2 files instead of .gz files.
+	Add a note on where to find the diff files.
+	Simplify the note on not using unannounced snapshots.
+	Remove documentation of the gcc_latest_snapshot tag.
+
 2003-05-27  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release (build_diffs): Add diagnostics in case we cannot
