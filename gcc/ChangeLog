@@ -1,3 +1,7 @@
+2003-06-13  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/install.texi (m32r-*-elf): Change company to Renesas.
+
 2003-06-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (output_call_mem): If the address references the link-register
