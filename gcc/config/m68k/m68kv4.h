@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for mc680x0 running System V.4
-   Copyright (C) 1991, 93, 94, 95, 96, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93, 94, 95, 96, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com) and
    Fred Fish (fnf@cygnus.com).
 
@@ -106,7 +106,7 @@ while (0)
 /* ??? svr4.h no longer defines this, and this is only used by m68k/amix.h.  */
 
 #undef BSS_ASM_OP
-#define BSS_ASM_OP	".lcomm"
+#define BSS_ASM_OP	"\t.lcomm\t"
 
 /* Register in which address to store a structure value is passed to a
    function.  The default in m68k.h is a1.  For m68k/SVR4 it is a0. */

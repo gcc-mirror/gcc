@@ -1,5 +1,5 @@
 /* Definitions for Motorola 680x0 running LynxOS.
-   Copyright (C) 1993, 94, 95, 96, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993, 94, 95, 96, 98, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_DESTRUCTOR
 #undef SELECT_RTX_SECTION
 
-#define BSS_SECTION_ASM_OP ".bss"
+#define BSS_SECTION_ASM_OP "\t.bss"
 
 #define ASM_LONG ".long"
 

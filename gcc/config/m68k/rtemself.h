@@ -54,12 +54,12 @@ Boston, MA 02111-1307, USA.  */
  *  information at startup.
  */
 #undef INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP    ".section\t.init"
+#define INIT_SECTION_ASM_OP    "\t.section\t.init"
 #undef FINI_SECTION_ASM_OP
-#define FINI_SECTION_ASM_OP    ".section\t.fini"
+#define FINI_SECTION_ASM_OP    "\t.section\t.fini"
 
 #undef EH_FRAME_SECTION_ASM_OP
-#define EH_FRAME_SECTION_ASM_OP        ".section\t.eh_frame"
+#define EH_FRAME_SECTION_ASM_OP        "\t.section\t.eh_frame"
 
 /* Do I need this? */
 #undef INVOKE__main

@@ -1,5 +1,5 @@
 /* Definitions for Motorola 680x0 running A/UX using /bin/as
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -45,28 +45,28 @@ Boston, MA 02111-1307, USA.  */
 #define DATA_SECTION_ASM_OP	"\tdata\t1"
 
 #undef BYTE_ASM_OP
-#define	BYTE_ASM_OP		"byte"
+#define	BYTE_ASM_OP		"\tbyte\t"
 
 #undef WORD_ASM_OP
-#define WORD_ASM_OP		"short"
+#define WORD_ASM_OP		"\tshort\t"
 
 #undef LONG_ASM_OP
-#define LONG_ASM_OP		"long"
+#define LONG_ASM_OP		"\tlong\t"
 
 #undef SPACE_ASM_OP
-#define SPACE_ASM_OP		"space"
+#define SPACE_ASM_OP		"\tspace\t"
 
 #undef ALIGN_ASM_OP
-#define ALIGN_ASM_OP		"align"
+#define ALIGN_ASM_OP		"\talign\t"
 
 #undef GLOBAL_ASM_OP
-#define GLOBAL_ASM_OP		"\tglobal"
+#define GLOBAL_ASM_OP		"\tglobal\t"
 
 #undef SWBEG_ASM_OP
-#define SWBEG_ASM_OP		"swbeg"
+#define SWBEG_ASM_OP		"\tswbeg\t"
 
 #undef SET_ASM_OP
-#define SET_ASM_OP		"set"
+#define SET_ASM_OP		"\tset\t"
 
 #undef ASM_PN_FORMAT
 #define ASM_PN_FORMAT		"%s%%%d"

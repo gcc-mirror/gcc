@@ -1,7 +1,7 @@
 /* m68kelf support, derived from m68kv4.h */
 
 /* Target definitions for GNU compiler for mc680x0 running System V.4
-   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 2000 Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@netcom.com) and Fred Fish (fnf@cygnus.com).
 
@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifndef SWBEG_ASM_OP
-#define SWBEG_ASM_OP ".swbeg"
+#define SWBEG_ASM_OP "\t.swbeg\t"
 #endif
 
 /* Here are four prefixes that are used by asm_fprintf to
@@ -134,7 +134,7 @@ Boston, MA 02111-1307, USA.  */
    than ".bss", so override the definition in svr4.h */
 
 #undef BSS_ASM_OP
-#define BSS_ASM_OP	".lcomm"
+#define BSS_ASM_OP	"\t.lcomm\t"
 
 /* Register in which address to store a structure value is passed to a
    function.  The default in m68k.h is a1.  For m68k/SVR4 it is a0. */
@@ -284,7 +284,7 @@ extern int switch_table_difference_label_flag;
    `-fno-common' is passed, otherwise `ASM_OUTPUT_COMMON' will be
    used.  */
 #ifndef BSS_SECTION_ASM_OP
-#define BSS_SECTION_ASM_OP	".section\t.bss"
+#define BSS_SECTION_ASM_OP	"\t.section\t.bss"
 #endif
 
 /* Like `ASM_OUTPUT_BSS' except takes the required alignment as a

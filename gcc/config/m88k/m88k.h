@@ -1697,49 +1697,49 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #undef	IDENT_ASM_OP
 
 /* These are used in varasm.c as well.  */
-#define TEXT_SECTION_ASM_OP	"text"
-#define DATA_SECTION_ASM_OP	"data"
+#define TEXT_SECTION_ASM_OP	"\ttext"
+#define DATA_SECTION_ASM_OP	"\tdata"
 
 /* Other sections.  */
 #define CONST_SECTION_ASM_OP (TARGET_SVR4			\
-			      ? "section\t .rodata,\"a\""	\
-			      : "section\t .rodata,\"x\"")
+			      ? "\tsection\t .rodata,\"a\""	\
+			      : "\tsection\t .rodata,\"x\"")
 #define TDESC_SECTION_ASM_OP (TARGET_SVR4			\
-			      ? "section\t .tdesc,\"a\""	\
-			      : "section\t .tdesc,\"x\"")
+			      ? "\tsection\t .tdesc,\"a\""	\
+			      : "\tsection\t .tdesc,\"x\"")
 
 /* These must be constant strings for crtstuff.c.  */
-#define CTORS_SECTION_ASM_OP	"section\t .ctors,\"d\""
-#define DTORS_SECTION_ASM_OP	"section\t .dtors,\"d\""
-#define INIT_SECTION_ASM_OP	"section\t .init,\"x\""
-#define FINI_SECTION_ASM_OP	"section\t .fini,\"x\""
+#define CTORS_SECTION_ASM_OP	"\tsection\t .ctors,\"d\""
+#define DTORS_SECTION_ASM_OP	"\tsection\t .dtors,\"d\""
+#define INIT_SECTION_ASM_OP	"\tsection\t .init,\"x\""
+#define FINI_SECTION_ASM_OP	"\tsection\t .fini,\"x\""
 
 /* These are pretty much common to all assemblers.  */
-#define IDENT_ASM_OP		"ident"
-#define FILE_ASM_OP		"file"
-#define SECTION_ASM_OP		"section"
-#define SET_ASM_OP		"def"
-#define GLOBAL_ASM_OP		"global"
-#define ALIGN_ASM_OP		"align"
-#define SKIP_ASM_OP		"zero"
-#define COMMON_ASM_OP		"comm"
-#define BSS_ASM_OP		"bss"
-#define FLOAT_ASM_OP		"float"
-#define DOUBLE_ASM_OP		"double"
-#define INT_ASM_OP		"word"
+#define IDENT_ASM_OP		"\tident\t"
+#define FILE_ASM_OP		"\tfile\t"
+#define SECTION_ASM_OP		"\tsection\t"
+#define SET_ASM_OP		"\tdef\t"
+#define GLOBAL_ASM_OP		"\tglobal\"
+#define ALIGN_ASM_OP		"\talign\t"
+#define SKIP_ASM_OP		"\tzero\t"
+#define COMMON_ASM_OP		"\tcomm\t"
+#define BSS_ASM_OP		"\tbss\t"
+#define FLOAT_ASM_OP		"\tfloat\t"
+#define DOUBLE_ASM_OP		"\tdouble\t"
+#define INT_ASM_OP		"\tword\t"
 #define ASM_LONG		INT_ASM_OP
-#define SHORT_ASM_OP		"half"
-#define CHAR_ASM_OP		"byte"
-#define ASCII_DATA_ASM_OP	"string"
+#define SHORT_ASM_OP		"\thalf\t"
+#define CHAR_ASM_OP		"\tbyte\t"
+#define ASCII_DATA_ASM_OP	"\tstring\t"
 
 /* These are particular to the global pool optimization.  */
-#define SBSS_ASM_OP		"sbss"
-#define SCOMM_ASM_OP		"scomm"
-#define SDATA_SECTION_ASM_OP	"sdata"
+#define SBSS_ASM_OP		"\tsbss\t"
+#define SCOMM_ASM_OP		"\tscomm\t"
+#define SDATA_SECTION_ASM_OP	"\tsdata"
 
 /* These are specific to PIC.  */
-#define TYPE_ASM_OP		"type"
-#define SIZE_ASM_OP		"size"
+#define TYPE_ASM_OP		"\ttype\t"
+#define SIZE_ASM_OP		"\tsize\t"
 #ifndef AS_BUG_POUND_TYPE /* Faulty assemblers require @ rather than #.  */
 #undef	TYPE_OPERAND_FMT
 #define TYPE_OPERAND_FMT	"#%s"
@@ -1753,15 +1753,15 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
        fputc ('\n', FILE); } while (0)
 
 /* These are specific to version 03.00 assembler syntax.  */
-#define INTERNAL_ASM_OP		"local"
-#define VERSION_ASM_OP		"version"
-#define UNALIGNED_SHORT_ASM_OP	"uahalf"
-#define UNALIGNED_INT_ASM_OP	"uaword"
-#define PUSHSECTION_ASM_OP	"section"
-#define POPSECTION_ASM_OP	"previous"
+#define INTERNAL_ASM_OP		"\tlocal\"
+#define VERSION_ASM_OP		"\tversion\t"
+#define UNALIGNED_SHORT_ASM_OP	"\tuahalf\t"
+#define UNALIGNED_INT_ASM_OP	"\tuaword\t"
+#define PUSHSECTION_ASM_OP	"\tsection\t"
+#define POPSECTION_ASM_OP	"\tprevious"
 
 /* These are specific to the version 04.00 assembler syntax.  */
-#define REQUIRES_88110_ASM_OP	"requires_88110"
+#define REQUIRES_88110_ASM_OP	"\trequires_88110"
 
 /* Output any initial stuff to the assembly file.  Always put out
    a file directive, even if not debugging.
@@ -2112,7 +2112,7 @@ do {									 \
 
 /* The single-byte pseudo-op is the default.  Override svr[34].h.  */
 #undef	ASM_BYTE_OP
-#define ASM_BYTE_OP "byte"
+#define ASM_BYTE_OP "\tbyte\t"
 #undef	ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii (FILE, ASCII_DATA_ASM_OP, 48, P, SIZE)

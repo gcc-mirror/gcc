@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  HP-UX 68000/68020 version.
-   Copyright (C) 1987, 88, 93, 94, 95, 96, 1997, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 93, 94, 95, 96, 1997, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -228,12 +228,12 @@ Boston, MA 02111-1307, USA.  */
 #define TEXT_SECTION_ASM_OP "text"
 #define DATA_SECTION_ASM_OP "data"
 #endif
-#define	ASCII_DATA_ASM_OP "byte"
+#define	ASCII_DATA_ASM_OP "\tbyte\t"
  
 /* This is the command to make the user-level label named NAME
    defined for reference from other files.  */
 
-#define GLOBAL_ASM_OP "global"
+#define GLOBAL_ASM_OP "\tglobal\t"
 
 /* This says how to output an assembler line
    to define a global common symbol.  */

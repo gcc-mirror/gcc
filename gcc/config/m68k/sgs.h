@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for m68k targets using
    assemblers derived from AT&T "SGS" releases.
-   Copyright (C) 1991, 1993, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1996, 2000 Free Software Foundation, Inc.
    Written by Fred Fish (fnf@cygnus.com)
 
 This file is part of GNU CC.
@@ -32,18 +32,18 @@ Boston, MA 02111-1307, USA.  */
 
 /* SGS specific assembler pseudo ops. */
 
-#define	BYTE_ASM_OP		".byte"
-#define WORD_ASM_OP		".short"
-#define LONG_ASM_OP		".long"
-#define SPACE_ASM_OP		".space"
-#define ALIGN_ASM_OP		".align"
+#define	BYTE_ASM_OP		"\t.byte "
+#define WORD_ASM_OP		"\t.short "
+#define LONG_ASM_OP		"\t.long "
+#define SPACE_ASM_OP		"\t.space "
+#define ALIGN_ASM_OP		"\t.align "
 #undef GLOBAL_ASM_OP
-#define GLOBAL_ASM_OP		".global"
-#define SWBEG_ASM_OP		".swbeg"
-#define SET_ASM_OP		".set"
+#define GLOBAL_ASM_OP		"\t.global "
+#define SWBEG_ASM_OP		"\t.swbeg "
+#define SET_ASM_OP		"\t.set "
 
-#define UNALIGNED_SHORT_ASM_OP	".short"	/* Used in dwarfout.c */
-#define UNALIGNED_INT_ASM_OP	".long"		/* Used in dwarfout.c */
+#define UNALIGNED_SHORT_ASM_OP	"\t.short "	/* Used in dwarfout.c */
+#define UNALIGNED_INT_ASM_OP	"\t.long "		/* Used in dwarfout.c */
 
 #define ASM_PN_FORMAT		"%s_%d"		/* Format for private names */
 

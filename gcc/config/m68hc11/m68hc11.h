@@ -1798,7 +1798,7 @@ do { long l;						\
 
 /* The prefix for immediate operands.  */
 #define IMMEDIATE_PREFIX "#"
-#define GLOBAL_ASM_OP   ".globl"
+#define GLOBAL_ASM_OP   "\t.globl\t"
 #define ASM_LONG        ".long"
 #define ASM_SHORT       ".word"
 
