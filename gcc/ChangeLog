@@ -1,3 +1,12 @@
+Mon Apr  7 15:56:30 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR opt/10024
+	Revert Zack's change
+	* cfglayout.c (cfg_layout_redirect_edge):
+	Redirect any branch edges unified with the fallthru one.
+	* cfgrtl.c (force_nonfallthru_and_redirect):  Do not special
+	case fallthru edges when called via cfglayout.c
+
 2003-04-07  James A Morrison <ja2morri@student.math.uwaterloo.ca>
 
 	* doc/extend.texi (Darwin Pragmas): Fix spelling of Mac OS.
