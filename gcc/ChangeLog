@@ -1,3 +1,7 @@
+2001-05-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpplib.c (run_directive): Set pfile->directive.
+
 2001-05-23  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* c-tree.texi: Reformat the manual as a single chapter now
