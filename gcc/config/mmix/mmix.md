@@ -582,7 +582,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 ;; FIXME: Perhaps with SECONDARY_MEMORY_NEEDED?
 (define_expand "truncdfsf2"
   [(set (match_operand:SF 0 "memory_operand" "")
-	(fix:SF (match_operand:DF 1 "register_operand" "")))]
+	(float_truncate:SF (match_operand:DF 1 "register_operand" "")))]
   ""
   "
 {
@@ -610,7 +610,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 
 (define_insn "*truncdfsf2_real"
   [(set (match_operand:SF 0 "memory_operand" "=m")
-	(fix:SF (match_operand:DF 1 "register_operand" "r")))]
+	(float_truncate:SF (match_operand:DF 1 "register_operand" "r")))]
   ""
   "STSF %1,%0")
 
@@ -1129,7 +1129,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
    (clobber (reg:DI MMIX_rJ_REGNUM))]
   ""
   "GETA $255,0f\;PUT rJ,$255\;LDOU $255,%a0\n\
-0: GET %1,rO\;CMPU %1,%1,$255\;BNP %1,1f\;POP 0,0\n1:")
+0:\;GET %1,rO\;CMPU %1,%1,$255\;BNP %1,1f\;POP 0,0\n1:")
 
 (define_insn "*Naddu"
   [(set (match_operand:DI 0 "register_operand" "=r")

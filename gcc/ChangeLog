@@ -1,5 +1,10 @@
 2002-03-17  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* config/mmix/mmix.md ("truncdfsf2"): Correct operator is
+	float_truncate, not fix.
+	("*truncdfsf2_real"): Ditto.
+	("*nonlocal_goto_receiver_expanded"): Fix output template formatting.
+
 	* config/mmix/mmix.h (WCHAR_TYPE, WCHAR_TYPE_SIZE): Don't define.
 
 2002-03-16  Alexandre Oliva  <aoliva@redhat.com>
