@@ -1,3 +1,14 @@
+2000-05-16  Nick Clifton  <nickc@cygnus.com>
+
+	* config/m32r/m32r.c (small_insn_p): Use INSN_P() to replace
+	GET_RTX_CLASS (GET_CODE ()) == 'i'.
+	(large_insn_p): Ditto.
+	(m32r_is_insn): New function: Return true if the insn contains
+	an executable instruction.
+	(m32r_adjust_insn): Use m32r_is_insn.
+	(m32r_sched_reorder): Use m32r_is_insn.
+	(m32r_sched_variable_issue): Use m32r_is_insn.
+
 2000-05-16  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* rs6000/rs6000.c (rs6000_select_section): Treat CONSTRUCTOR like
