@@ -287,7 +287,7 @@ lang.o : lang.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(srcdir)/../input.h \
   $(srcdir)/../toplev.h $(srcdir)/../system.h
 mangle.o : mangle.c $(CONFIG_H) jcf.h $(srcdir)/../system.h
 typeck.o : typeck.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h convert.h \
-  $(srcdir)/../toplev.h (srcdir)/../system.h
-verify.o : verify.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h java-op.h java-opcodes.h \
-  java-except.h $(srcdir)/../toplev.h (srcdir)/../system.h
+  $(srcdir)/../toplev.h $(srcdir)/../system.h
+verify.o : verify.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h javaop.h java-opcodes.h \
+  java-except.h $(srcdir)/../toplev.h $(srcdir)/../system.h
 
