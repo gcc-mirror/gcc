@@ -163,6 +163,24 @@ struct diagnostic_context;
 #define BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK(NODE) \
   TREE_CHECK(NODE,BOUND_TEMPLATE_TEMPLATE_PARM)
 
+#if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
+#define NON_THUNK_FUNCTION_CHECK(NODE) __extension__			\
+({  const tree __t = (NODE);						\
+    if (TREE_CODE (__t) != FUNCTION_DECL &&				\
+ 	TREE_CODE (__t) != TEMPLATE_DECL && __t->decl.lang_specific	\
+	&& __t->decl.lang_specific->decl_flags.thunk_p)			\
+      tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__, 0);	\
+    __t; })
+#define THUNK_FUNCTION_CHECK(NODE) __extension__			\
+({  const tree __t = (NODE);						\
+    if (TREE_CODE (__t) != FUNCTION_DECL || !__t->decl.lang_specific	\
+	|| !__t->decl.lang_specific->decl_flags.thunk_p)		\
+      tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__, 0); 	\
+     __t; })
+#else
+#define NON_THUNK_FUNCTION_CHECK(NODE) (NODE)
+#define THUNK_FUNCTION_CHECK(NODE) (NODE)
+#endif
 
 /* Language-dependent contents of an identifier.  */
 
@@ -1496,9 +1514,10 @@ struct lang_decl_flags GTY(())
  
   unsigned u2sel : 1;
   unsigned can_be_full : 1;
+  unsigned thunk_p : 1;
   unsigned this_thunk_p : 1;
   unsigned repo_available_p : 1;
-  unsigned dummy : 4;
+  unsigned dummy : 3;
 
   union lang_decl_u {
     /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
@@ -1540,15 +1559,8 @@ struct lang_decl GTY(())
 
 	unsigned u3sel : 1;
 	unsigned pending_inline_p : 1;
-	unsigned spare : 3;
+	unsigned spare : 22;
 	
-	/* In a FUNCTION_DECL for which THUNK_P holds this is the
-	   THUNK_FIXED_OFFSET.  The largest object that can be
-	   thunked is thus 262144, which is what is required [limits].
-	   We have to store a signed value as for regular thunks this
-	   is <= 0, and for covariant thunks it is >= 0.  */
-	signed fixed_offset : 19;
-
 	/* For a non-thunk function decl, this is a tree list of
   	   friendly classes. For a thunk function decl, it is the
   	   thunked to function decl.  */
@@ -1562,9 +1574,17 @@ struct lang_decl GTY(())
 	   will be chained on the return pointer thunk.  */
 	tree context;
 
-	/* In a FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
-	tree cloned_function;
-
+	union lang_decl_u5
+	{
+	  /* In a non-thunk FUNCTION_DECL or TEMPLATE_DECL, this is
+	     DECL_CLONED_FUNCTION.  */
+	  tree GTY ((tag ("0"))) cloned_function;
+	  
+	  /* In a FUNCTION_DECL for which THUNK_P holds this is the
+	     THUNK_FIXED_OFFSET.  */
+	  HOST_WIDE_INT GTY ((tag ("1"))) fixed_offset;
+	} GTY ((desc ("%0.decl_flags.thunk_p"))) u5;
+	
 	union lang_decl_u3
 	{
 	  struct sorted_fields_type * GTY ((tag ("0"), reorder ("resort_sorted_fields")))
@@ -1667,16 +1687,17 @@ struct lang_decl GTY(())
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a cloned constructor or
    destructor.  */
-#define DECL_CLONED_FUNCTION_P(NODE)		\
-  ((TREE_CODE (NODE) == FUNCTION_DECL 		\
-    || TREE_CODE (NODE) == TEMPLATE_DECL)	\
-   && DECL_LANG_SPECIFIC (NODE)			\
+#define DECL_CLONED_FUNCTION_P(NODE)			\
+  ((TREE_CODE (NODE) == FUNCTION_DECL			\
+    || TREE_CODE (NODE) == TEMPLATE_DECL)		\
+   && DECL_LANG_SPECIFIC (NODE)				\
+   && !DECL_LANG_SPECIFIC (NODE)->decl_flags.thunk_p	\
    && DECL_CLONED_FUNCTION (NODE) != NULL_TREE)
 
 /* If DECL_CLONED_FUNCTION_P holds, this is the function that was
    cloned.  */
 #define DECL_CLONED_FUNCTION(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->u.f.cloned_function)
+  (DECL_LANG_SPECIFIC (NON_THUNK_FUNCTION_CHECK(NODE))->u.f.u5.cloned_function)
 
 /* Perform an action for each clone of FN, if FN is a function with
    clones.  This macro should be used like:
@@ -1868,7 +1889,14 @@ struct lang_decl GTY(())
 /* Nonzero if NODE is a thunk, rather than an ordinary function.  */
 #define DECL_THUNK_P(NODE)			\
   (TREE_CODE (NODE) == FUNCTION_DECL		\
-   && DECL_LANG_FLAG_7 (NODE))
+   && DECL_LANG_SPECIFIC (NODE)			\
+   && DECL_LANG_SPECIFIC (NODE)->decl_flags.thunk_p)
+     
+/* Set DECL_THUNK_P for node.  */
+#define SET_DECL_THUNK_P(NODE, THIS_ADJUSTING)			\
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.thunk_p = 1,		\
+   DECL_LANG_SPECIFIC (NODE)->u.f.u3sel = 1,			\
+   DECL_LANG_SPECIFIC (NODE)->decl_flags.this_thunk_p = (THIS_ADJUSTING))
 
 /* Nonzero if NODE is a this pointer adjusting thunk.  */
 #define DECL_THIS_THUNK_P(NODE)			\
@@ -1889,12 +1917,6 @@ struct lang_decl GTY(())
 /* Nonzero if NODE is an `extern "C"' function.  */
 #define DECL_EXTERN_C_FUNCTION_P(NODE) \
   (DECL_NON_THUNK_FUNCTION_P (NODE) && DECL_EXTERN_C_P (NODE))
-
-/* Set DECL_THUNK_P for node.  */
-#define SET_DECL_THUNK_P(NODE, THIS_ADJUSTING)			\
-  (DECL_LANG_FLAG_7 (NODE) = 1, 				\
-   DECL_LANG_SPECIFIC (NODE)->u.f.u3sel = 1,			\
-   DECL_LANG_SPECIFIC (NODE)->decl_flags.this_thunk_p = (THIS_ADJUSTING))
 
 /* True iff DECL is an entity with vague linkage whose definition is
    available in this translation unit.  */
@@ -2818,7 +2840,7 @@ struct lang_decl GTY(())
 /* An integer indicating how many bytes should be subtracted from the
    this or result pointer when this function is called.  */
 #define THUNK_FIXED_OFFSET(DECL) \
-  (DECL_LANG_SPECIFIC (VAR_OR_FUNCTION_DECL_CHECK (DECL))->u.f.fixed_offset)
+  (DECL_LANG_SPECIFIC (THUNK_FUNCTION_CHECK (DECL))->u.f.u5.fixed_offset)
 
 /* A tree indicating how to perform the virtual adjustment. For a this
    adjusting thunk it is the number of bytes to be added to the vtable

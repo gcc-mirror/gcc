@@ -5402,8 +5402,9 @@ get_set_constructor_bytes (tree init, unsigned char *buffer, int wd_size)
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 
 /* Complain that the tree code of NODE does not match the expected 0
-   terminated list of trailing codes. FILE, LINE, and FUNCTION are of
-   the caller.  */
+   terminated list of trailing codes. The trailing code list can be
+   empty, for a more vague error message.  FILE, LINE, and FUNCTION
+   are of the caller.  */
 
 void
 tree_check_failed (const tree node, const char *file,
@@ -5418,22 +5419,27 @@ tree_check_failed (const tree node, const char *file,
   while ((code = va_arg (args, int)))
     length += 4 + strlen (tree_code_name[code]);
   va_end (args);
-  va_start (args, function);
-  buffer = alloca (length);
-  length = 0;
-  while ((code = va_arg (args, int)))
+  if (length)
     {
-      if (length)
+      va_start (args, function);
+      length += strlen ("expected ");
+      buffer = alloca (length);
+      length = 0;
+      while ((code = va_arg (args, int)))
 	{
-	  strcpy (buffer + length, " or ");
-	  length += 4;
+	  const char *prefix = length ? " or " : "expected ";
+	  
+	  strcpy (buffer + length, prefix);
+	  length += strlen (prefix);
+	  strcpy (buffer + length, tree_code_name[code]);
+	  length += strlen (tree_code_name[code]);
 	}
-      strcpy (buffer + length, tree_code_name[code]);
-      length += strlen (tree_code_name[code]);
+      va_end (args);
     }
-  va_end (args);
+  else
+    buffer = (char *)"unexpected node";
 
-  internal_error ("tree check: expected %s, have %s in %s, at %s:%d",
+  internal_error ("tree check: %s, have %s in %s, at %s:%d",
 		  buffer, tree_code_name[TREE_CODE (node)],
 		  function, trim_filename (file), line);
 }

@@ -1,3 +1,15 @@
+2004-11-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/18143
+	* cp-tree.h (NON_THUNK_FUNCTION_CHECK, THUNK_FUNCTION_CHECK): New.
+	(struct lang_decl_flags): Add thunk_p flag.
+	(struct lang_decl): Remove separate fixed_offset. Place
+	cloned_function and fixed_offset into union.
+	(DECL_CLONED_FUNCTION_P, DECL_CLONED_FUNCTION): Adjust.
+	(DECL_THUNK_P, SET_DECL_THUNK_P): Adjust.
+	(THUNK_FIXED_OFFSET): Adjust.
+	* method.c (make_thunk): Adjust.
+
 2004-11-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18369

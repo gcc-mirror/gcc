@@ -1,3 +1,8 @@
+2004-11-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.c (tree_check_failed): Emit general error if the list of
+	node types is empty.
+
 2004-11-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (function_arg_union_value): New 'slotno'
