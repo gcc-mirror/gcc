@@ -1,3 +1,7 @@
+2000-01-15  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* defaults.h (ASM_OUTPUT_ASCII): Use ISDIGIT.
+
 2000-01-14  Nathan Sidwell  <sidwell@codesourcery.com>
 
 	* config.in: Rebuilt for 2000-01-13 change to acconfig.h.
