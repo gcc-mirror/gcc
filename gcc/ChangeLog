@@ -1,3 +1,8 @@
+2003-02-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (sibcall_epilogue): Set the "conds" to "clob".
+	(epilogue_insns): Likewise.
+
 2003-02-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* doc/install.texi (hppa*-hp-hpux11*): Update installation notes.
