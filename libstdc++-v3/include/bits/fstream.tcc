@@ -429,7 +429,7 @@ namespace std
     {
       if (!this->is_open() && __s == 0 && __n == 0)
 	this->_M_buf_size = 1;
-      else if (__s && __n >= 1)
+      else if (__s && __n > 0)
 	{
 	  // This is implementation-defined behavior, and assumes that
 	  // an external char_type array of length __n exists and has
