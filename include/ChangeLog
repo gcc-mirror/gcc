@@ -1,4 +1,4 @@
-2004-09-13  Aaron W. LaFramboise <aaronavay62@aaronwl.com>
+2004-09-13  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* libiberty.h (basename): Prototype for __MINGW32__.
 
