@@ -2316,7 +2316,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
   /* Cache the last regno for the last pseudo we did an output reload
      for in case the next insn uses it.  */
-  static int last_output_reload_regno = -1;
+  int previous_last_output_reload_regno = last_output_reload_regno;
 
   this_insn = insn;
   this_insn_is_asm = 0;		/* Tentative.  */
@@ -2327,6 +2327,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   replace_reloads = replace;
   hard_regs_live_known = live_known;
   static_reload_reg_p = reload_reg_p;
+  last_output_reload_regno = -1;
 
   /* JUMP_INSNs and CALL_INSNs are not allowed to have any output reloads;
      neither are insns that SET cc0.  Insns that use CC0 are not allowed
@@ -3154,7 +3155,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		 make this case cheaper.  */
 	      if (GET_CODE (operand) == REG
 		  && REGNO (operand) >= FIRST_PSEUDO_REGISTER
-		  && REGNO (operand) == last_output_reload_regno)
+		  && REGNO (operand) == previous_last_output_reload_regno)
 		reject--;
 
 	      /* If this is a constant that is reloaded into the desired
@@ -3545,7 +3546,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	reload_earlyclobbers[n_earlyclobbers++] = recog_operand[i];
 
   /* Now record reloads for all the operands that need them.  */
-  last_output_reload_regno = -1;
   for (i = 0; i < noperands; i++)
     if (! goal_alternative_win[i])
       {
@@ -3611,7 +3611,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			     0, i, operand_type[i]);
 	    if (modified[i] != RELOAD_READ
 		&& GET_CODE (recog_operand[i]) == REG)
-	      last_output_reload_regno = REGNO (recog_operand[i]);
+	      previous_last_output_reload_regno = REGNO (recog_operand[i]);
 	  }
 	/* In a matching pair of operands, one must be input only
 	   and the other must be output only.
@@ -3630,7 +3630,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			     0, 0, i, RELOAD_OTHER);
 	    operand_reloadnum[goal_alternative_matched[i]] = output_reloadnum;
 	    if (GET_CODE (recog_operand[goal_alternative_matched[i]]) == REG)
-	      last_output_reload_regno
+	      previous_last_output_reload_regno
 		= REGNO (recog_operand[goal_alternative_matched[i]]);
 	  }
 	else if (modified[i] == RELOAD_WRITE
@@ -3647,7 +3647,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			     0, 0, i, RELOAD_OTHER);
 	    operand_reloadnum[i] = output_reloadnum;
 	    if (GET_CODE (recog_operand[i]) == REG)
-	      last_output_reload_regno = REGNO (recog_operand[i]);
+	      previous_last_output_reload_regno = REGNO (recog_operand[i]);
 	  }
 	else if (insn_code_number >= 0)
 	  abort ();
