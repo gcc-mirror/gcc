@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.74 $
+--                            $Revision$
 --                                                                          --
 --           Copyright (C) 1995-2001 Ada Core Technologies, Inc.            --
 --                                                                          --
@@ -813,6 +813,9 @@ package body GNAT.OS_Lib is
       Canonical_File_Addr : System.Address;
       Canonical_File_Len  : Integer;
 
+      Need_To_Check_Drive_Letter : Boolean := False;
+      --  Set to true if Name is an absolute path that starts with "//"
+
       function Strlen (S : System.Address) return Integer;
       pragma Import (C, Strlen, "strlen");
 
@@ -820,6 +823,13 @@ package body GNAT.OS_Lib is
       --  If Directory is not empty, return it, adding a directory separator
       --  if not already present, otherwise return current working directory
       --  with terminating directory separator.
+
+      function Final_Value (S : String) return String;
+      --  Make final adjustment to the returned string.
+      --  To compensate for non standard path name in Interix,
+      --  if S is "/x" or starts with "/x", where x is a capital
+      --  letter 'A' to 'Z', add an additional '/' at the beginning
+      --  so that the returned value starts with "//x".
 
       -------------------
       -- Get_Directory --
@@ -865,6 +875,35 @@ package body GNAT.OS_Lib is
 
       Reference_Dir : constant String := Get_Directory;
       --  Current directory name specified
+
+      function Final_Value (S : String) return String is
+      begin
+         --  Interix has the non standard notion of disk drive
+         --  indicated by two '/' followed by a capital letter
+         --  'A' .. 'Z'. One of the two '/' may have been removed
+         --  by Normalize_Pathname. It has to be added again.
+         --  For other OSes, this should not make no difference.
+
+         if Need_To_Check_Drive_Letter
+           and then S'Length >= 2
+           and then S (S'First) = '/'
+           and then S (S'First + 1) in 'A' .. 'Z'
+           and then (S'Length = 2 or else S (S'First + 2) = '/')
+         then
+            declare
+               Result : String (1 .. S'Length + 1);
+
+            begin
+               Result (1) := '/';
+               Result (2 .. Result'Last) := S;
+               return Result;
+            end;
+
+         else
+            return S;
+         end if;
+
+      end Final_Value;
 
    --  Start of processing for Normalize_Pathname
 
@@ -942,20 +981,26 @@ package body GNAT.OS_Lib is
             Last := Reference_Dir'Length;
          end if;
 
+         --  If name starts with "//", we may have a drive letter on Interix
+
+         if Last = 1 and then End_Path >= 3 then
+            Need_To_Check_Drive_Letter := (Path_Buffer (1 .. 2)) = "//";
+         end if;
+
          Start  := Last + 1;
          Finish := Last;
 
          --  If we have traversed the full pathname, return it
 
          if Start > End_Path then
-            return Path_Buffer (1 .. End_Path);
+            return Final_Value (Path_Buffer (1 .. End_Path));
          end if;
 
          --  Remove duplicate directory separators
 
          while Path_Buffer (Start) = Directory_Separator loop
             if Start = End_Path then
-               return Path_Buffer (1 .. End_Path - 1);
+               return Final_Value (Path_Buffer (1 .. End_Path - 1));
 
             else
                Path_Buffer (Start .. End_Path - 1) :=
@@ -1014,7 +1059,7 @@ package body GNAT.OS_Lib is
 
             else
                if Finish = End_Path then
-                  return Path_Buffer (1 .. Start - 1);
+                  return Final_Value (Path_Buffer (1 .. Start - 1));
 
                else
                   Path_Buffer (Start + 1 .. Start + End_Path - Finish - 1) :=
