@@ -1,3 +1,11 @@
+2000-04-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tinfo.cc (convert_to_base): New function.
+	(get_vbase_offset): Remove. Move into convert_to_base.
+	(__vmi_class_type_info::do_find_public_src): Adjust.
+	(__vmi_class_type_info::do_dyncast): Adjust.
+	(__vmi_class_type_info::do_upcast): Adjust.
+
 2000-04-06  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tinfo.cc (operator=): Use __builtin_strcmp.
@@ -27,6 +35,14 @@
 	circumstances.
 	* rtti.c (get_tinfo_decl): Adjust call to mark_inline_for_output.
 	* semantics.c (expand_body): Defer more functions.
+
+2000-04-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* vec.cc: New file.
+	* Make-lang.in (CXX_LIB2FUNCS): Add it.
+	(vec.o): Build it.
+	* inc/cxxabi.h (__cxa_vec_new, __cxa_vec_ctor, __cxa_vec_dtor,
+	__cxa_vec_delete): Declare.
 
 2000-04-06  Nathan Sidwell  <nathan@codesourcery.com>
 
