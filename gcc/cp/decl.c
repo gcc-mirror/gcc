@@ -6999,9 +6999,6 @@ grok_reference_init (decl, type, init)
 	{
 	  /* Initialize the declaration.  */
 	  tmp = build (INIT_EXPR, TREE_TYPE (decl), decl, tmp);
-	  /* Setting TREE_SIDE_EFFECTS prevents expand_expr from
-	     omitting this expression entirely.  */
-	  TREE_SIDE_EFFECTS (tmp) = 1;
 	  finish_expr_stmt (tmp);
 	}
       else
@@ -8028,12 +8025,9 @@ expand_static_init (decl, init)
 	  || (init && TREE_CODE (init) == TREE_LIST))
 	assignment = build_aggr_init (decl, init, 0);
       else if (init)
-	{
-	  /* The initialization we're doing here is just a bitwise
-	     copy.  */
-	  assignment = build (INIT_EXPR, TREE_TYPE (decl), decl, init);
-	  TREE_SIDE_EFFECTS (assignment) = 1;
-	}
+	/* The initialization we're doing here is just a bitwise
+	   copy.  */
+	assignment = build (INIT_EXPR, TREE_TYPE (decl), decl, init);
       else
 	assignment = NULL_TREE;
 

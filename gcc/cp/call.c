@@ -4066,7 +4066,6 @@ build_over_call (cand, args, flags)
 	  val = build (is_empty_class (DECL_CLASS_CONTEXT (fn))
 		       ? MODIFY_EXPR : INIT_EXPR, 
 		       DECL_CONTEXT (fn), to, arg);
-	  TREE_SIDE_EFFECTS (val) = 1;
 	  address = build_unary_op (ADDR_EXPR, val, 0);
 	  /* Avoid a warning about this expression, if the address is
 	     never used.  */
@@ -4084,7 +4083,6 @@ build_over_call (cand, args, flags)
       arg = build_indirect_ref (TREE_VALUE (TREE_CHAIN (converted_args)), 0);
 
       val = build (MODIFY_EXPR, TREE_TYPE (to), to, arg);
-      TREE_SIDE_EFFECTS (val) = 1;
       return val;
     }
 

@@ -149,7 +149,6 @@ perform_member_init (member, name, init, explicit)
   if (ANON_AGGR_TYPE_P (type))
     {
       init = build (INIT_EXPR, type, decl, TREE_VALUE (init));
-      TREE_SIDE_EFFECTS (init) = 1;
       finish_expr_stmt (init);
     }
   else if (TYPE_NEEDS_CONSTRUCTING (type)
@@ -1247,11 +1246,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, flags)
 	    expand_decl_init (exp);
 	}
       else
-	{
-	  tree t = build (INIT_EXPR, type, exp, init);
-	  TREE_SIDE_EFFECTS (t) = 1;
-	  finish_expr_stmt (t);
-	}
+	finish_expr_stmt (build (INIT_EXPR, type, exp, init));
       return;
     }
 
@@ -2271,7 +2266,6 @@ build_new_1 (exp)
 		    build_component_ref (cookie, nelts_identifier,
 					 NULL_TREE, 0),
 		    nelts);
-      TREE_SIDE_EFFECTS (exp1) = 1;
       rval = cp_convert (build_pointer_type (true_type), rval);
       rval = build_compound_expr
 	(tree_cons (NULL_TREE, exp1,
@@ -2424,7 +2418,6 @@ build_new_1 (exp)
 
 	      end = build (MODIFY_EXPR, TREE_TYPE (sentry),
 			   sentry, boolean_false_node);
-	      TREE_SIDE_EFFECTS (end) = 1;
 
 	      buf = TREE_OPERAND (rval, 0);
 
