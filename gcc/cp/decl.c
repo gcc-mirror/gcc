@@ -7341,7 +7341,7 @@ maybe_commonize_var (tree decl)
       /* Unfortunately, import_export_decl has not always been called
 	 before the function is processed, so we cannot simply check
 	 DECL_COMDAT.  */ 
-      && (DECL_COMDAT (decl)
+      && (DECL_COMDAT (DECL_CONTEXT (decl))
 	  || ((DECL_DECLARED_INLINE_P (DECL_CONTEXT (decl))
 	       || DECL_TEMPLATE_INSTANTIATION (DECL_CONTEXT (decl)))
 	      && TREE_PUBLIC (DECL_CONTEXT (decl)))))

@@ -1,5 +1,9 @@
 2003-04-27  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (maybe_commonize_var): Fix thinko in last patch.
+
+2003-04-27  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/10506
 	* method.c (use_thunk): Decrement immediate_size_expand.
 
