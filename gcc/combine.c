@@ -1562,8 +1562,8 @@ try_combine (i3, i2, i1)
 	  rtx newi3pat = PATTERN (XVECEXP (m_split, 0, 1));
 	  newi2pat = PATTERN (XVECEXP (m_split, 0, 0));
 
-	  i2set = single_set (XVECEXP (m_split, 0, 1));
-	  i3set = single_set (XVECEXP (m_split, 0, 0));
+	  i3set = single_set (XVECEXP (m_split, 0, 1));
+	  i2set = single_set (XVECEXP (m_split, 0, 0));
 
 	  /* In case we changed the mode of I2DEST, replace it in the
 	     pseudo-register table here.  We can't do it above in case this
