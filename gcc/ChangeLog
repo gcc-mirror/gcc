@@ -1,5 +1,10 @@
 2001-05-24  Mark Mitchell  <mark@codesourcery.com>
 
+	* c-typeck.c (digest_init): Issue error messages about 
+	invalid constants, not warnings.
+
+2001-05-24  Mark Mitchell  <mark@codesourcery.com>
+
 	* invoke.texi (-fno-builtin): Document that this is always on
 	in C++.
 
