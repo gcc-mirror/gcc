@@ -53,8 +53,8 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 
 # Build the libraries for both hard and soft floating point
 
-MULTILIB_OPTIONS = msoft-float/msingle-float EL/EB mips1/mips3
-MULTILIB_DIRNAMES = soft-float single el eb mips1 mips3
+MULTILIB_OPTIONS = msoft-float/msingle-float EL/EB
+MULTILIB_DIRNAMES = soft-float single el eb
 MULTILIB_MATCHES = msingle-float=m4650
 EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crti.o crtn.o
 
