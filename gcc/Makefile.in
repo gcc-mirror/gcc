@@ -1420,8 +1420,8 @@ xsys-protos.h: $(srcdir)/sys-protos.h deduced.h gen-protos Makefile
 scan-decls: scan-decls.o scan.o
 	$(HOST_CC) -o scan-decls scan-decls.o scan.o
 
-patch-header: patch-header.o scan.o xsys-protos.h obstack.o
-	$(HOST_CC) -o patch-header patch-header.o scan.o obstack.o
+patch-header: patch-header.o scan.o xsys-protos.h $(HOST_OBSTACK)
+	$(HOST_CC) -o patch-header patch-header.o scan.o $(HOST_OBSTACK)
 
 patch-header.o: xsys-protos.h
 
