@@ -1,3 +1,19 @@
+2003-02-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config.gcc (hppa*-*-linux*): Set MASK_NO_SPACE_REGS in
+	target_cpu_default.
+	* pa.c (attr_length_call): Add 8 to call length (long indirect PA 1.X)
+	if not MASK_NO_SPACE_REGS.
+	(output_call): Adjust return pointer, don't load new space register
+	into %sr0, and use %sr4 for call if TARGET_NO_SPACE_REGS is true.
+	(pa_asm_output_mi_thunk): Don't load new space register into %sr0 if
+	TARGET_NO_SPACE_REGS is true.
+	* pa.md (return_external_pic): Add TARGET_NO_SPACE_REGS to insn
+	conditions.
+	(epilogue): Always use return_internal if TARGET_NO_SPACE_REGS is true.
+	(interspace_jump): Add new pattern for when TARGET_NO_SPACE_REGS is
+	true.  Use bve when TARGET_64BIT is true.
+
 2003-02-06  Eric Botcazou <ebotcazou@libertysurf.fr>
             Richard Henderson <rth@redhat.com>
     
