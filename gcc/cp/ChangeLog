@@ -1,3 +1,22 @@
+2000-03-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h: Tweak documentation.
+	* class.c (build_vbase_pointer_fields): Layout the fields, too.
+	(avoid_overlap): Remove.
+	(get_binfo_offset_as_int): New function.
+	(dfs_serach_base_offsets): Likewise.
+	(layout_nonempty_base_or_field): Likewise.
+	(build_base_field): Layout fields here.  Avoid placing two objects
+	of the same type at the same address, under the new ABI.
+	(build_base_fields): Adjust accordingly.
+	(create_vtable_ptr): Return the new field, but don't attach it to
+	TYPE_FIELDS.
+	(remove_base_field): Remove.
+	(remove_base_fields): Remove.
+	(layout_basetypes): Adjust accordingly.
+	(layout_class_type): Call layout_field for each field, rather than
+	just making a wholesale call to layout_type.
+
 2000-03-14  Jeff Sturm  <jsturm@sigma6.com>
 
 	* except.c (expand_throw): Fix typo in _Jv_Sjlj_Throw.
