@@ -2787,7 +2787,17 @@ eliminate_regs (x, mem_mode, insn)
 	{
 	  if (GET_CODE (new) == MEM
 	      && (GET_MODE_SIZE (GET_MODE (x))
-		  <= GET_MODE_SIZE (GET_MODE (new))))
+		  <= GET_MODE_SIZE (GET_MODE (new)))
+#if defined(BYTES_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
+	      /* On these machines we will be reloading what is
+		 inside the SUBREG if it originally was a pseudo and
+		 the inner and outer modes are both a word or
+		 smaller.  So leave the SUBREG then.  */
+	      && ! (GET_CODE (SUBREG_REG (x)) == REG
+		    && GET_MODE_SIZE (GET_MODE (x)) <= UNITS_PER_WORD
+		    && GET_MODE_SIZE (GET_MODE (new)) <= UNITS_PER_WORD)
+#endif
+	      )
 	    {
 	      int offset = SUBREG_WORD (x) * UNITS_PER_WORD;
 	      enum machine_mode mode = GET_MODE (x);
