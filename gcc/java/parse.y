@@ -4514,16 +4514,6 @@ method_header (flags, type, mdecl, throws)
       DECL_FUNCTION_THROWS (meth) = throws;
     }
 
-  /* We set the DECL_NAME to ID so we can track the location where
-     the function was declared. This allow us to report
-     redefinition error accurately. When method are verified,
-     DECL_NAME is reinstalled properly (using the content of the
-     WFL node ID) (see check_method_redefinition). We don't do that
-     when Object is being defined. Constructor <init> names will be
-     reinstalled the same way. */
-  if (TREE_TYPE (GET_CPC ()) != object_type_node)
-    DECL_NAME (meth) = id;
-
   /* Set the flag if we correctly processed a constructor */
   if (constructor_ok)
     {
