@@ -1,5 +1,11 @@
 2003-10-06  Roger Sayle  <roger@eyesopen.com>
 
+	* config/i386/i386.c (ix86_expand_setcc): Annotate the floating
+	point comparison sequence with a REG_EQUAL note that describes
+	the comparison's semantics.
+
+2003-10-06  Roger Sayle  <roger@eyesopen.com>
+
 	* expr.c (expand_expr <COND_EXPR>): Handle the void type semantics
 	of COND_EXPR when expanding the "A op 0 ? FOO : A" optimizations.
 

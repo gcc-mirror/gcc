@@ -9334,7 +9334,7 @@ ix86_split_fp_branch (enum rtx_code code, rtx op1, rtx op2,
 int
 ix86_expand_setcc (enum rtx_code code, rtx dest)
 {
-  rtx ret, tmp, tmpreg;
+  rtx ret, tmp, tmpreg, equiv;
   rtx second_test, bypass_test;
 
   if (GET_MODE (ix86_compare_op0) == DImode
@@ -9372,6 +9372,12 @@ ix86_expand_setcc (enum rtx_code code, rtx dest)
       else
 	emit_insn (gen_iorqi3 (tmp, tmpreg, tmp2));
     }
+
+  /* Attach a REG_EQUAL note describing the comparison result.  */
+  equiv = simplify_gen_relational (code, QImode,
+				   GET_MODE (ix86_compare_op0),
+				   ix86_compare_op0, ix86_compare_op1);
+  set_unique_reg_note (get_last_insn (), REG_EQUAL, equiv);
 
   return 1; /* DONE */
 }
