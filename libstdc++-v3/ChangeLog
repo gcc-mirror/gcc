@@ -1,5 +1,10 @@
 2003-06-29  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/bits/stl_algo.h (LOTS): Fully qualify standard
+	functions with std::, thus avoiding Koenig lookup.
+
+2003-06-29  Paolo Carlini  <pcarlini@unitus.it>
+
 	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-1.cc:
 	Improve type correctness-wise.
 	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-2.cc:
