@@ -1,3 +1,24 @@
+2002-02-17  Tom Tromey  <tromey@redhat.com>
+
+	* java-tree.h (TYPE_STRICTFP): New macro.
+	(struct lang_type) [strictfp]: New field.
+	(CLASS_STRICTFP): New macro.
+	(METHOD_STRICTFP): New macro.
+	(struct lang_decl) [strictfp]: New field.
+	* parse.y (method_header): Disallow strictfp constructor or
+	abstract method.
+	(STRICT_TK): Move before MODIFIER_TK.
+	* parse.h (CLASS_MODIFIERS): Added ACC_STRICT.
+	(METHOD_MODIFIERS): Likewise.
+	(INTERFACE_MODIFIERS): Likewise.
+	* jcf-write.c (get_access_flags): Likewise.
+	* class.c (set_class_decl_access_flags): Recognize ACC_STRICT.
+	(add_method_1): Likewise.
+	(get_access_flags_from_decl): Likewise.
+	* jcf-dump.c (print_access_flags): Print in standard order.  Also,
+	recognize strictfp flag.
+	* jcf.h (ACC_STRICT): New define.
+
 2002-02-12  David Billinghurst <Davod.Billinghurst@riotinto.com>
 
 	* class.c(build_utf8_ref): Move declaration of decl_size

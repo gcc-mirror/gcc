@@ -482,8 +482,8 @@ static tree src_parse_roots[1];
 %token   PUBLIC_TK       PRIVATE_TK         PROTECTED_TK
 %token   STATIC_TK       FINAL_TK           SYNCHRONIZED_TK
 %token   VOLATILE_TK     TRANSIENT_TK       NATIVE_TK
-%token   PAD_TK          ABSTRACT_TK        MODIFIER_TK
-%token   STRICT_TK
+%token   PAD_TK          ABSTRACT_TK        STRICT_TK
+%token   MODIFIER_TK
 
 /* Keep those two in order, too */
 %token   DECR_TK INCR_TK
@@ -4543,7 +4543,8 @@ method_header (flags, type, mdecl, throws)
       ABSTRACT_CHECK (flags, ACC_STATIC, id, "Static");
       ABSTRACT_CHECK (flags, ACC_FINAL, id, "Final");
       ABSTRACT_CHECK (flags, ACC_NATIVE, id, "Native");
-      ABSTRACT_CHECK (flags, ACC_SYNCHRONIZED,id, "Synchronized");
+      ABSTRACT_CHECK (flags, ACC_SYNCHRONIZED, id, "Synchronized");
+      ABSTRACT_CHECK (flags, ACC_STRICT, id, "Strictfp");
       if (!CLASS_ABSTRACT (TYPE_NAME (this_class))
 	  && !CLASS_INTERFACE (TYPE_NAME (this_class)))
 	parse_error_context 
@@ -4569,6 +4570,7 @@ method_header (flags, type, mdecl, throws)
 	  JCONSTRUCTOR_CHECK (flags, ACC_FINAL, id, "final");
 	  JCONSTRUCTOR_CHECK (flags, ACC_NATIVE, id, "native");
 	  JCONSTRUCTOR_CHECK (flags, ACC_SYNCHRONIZED, id, "synchronized");
+	  JCONSTRUCTOR_CHECK (flags, ACC_STRICT, id, "strictfp");
 	}
       /* If we found error here, we don't consider it's OK to tread
 	 the method definition as a constructor, for the rest of this

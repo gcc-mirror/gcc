@@ -942,6 +942,7 @@ struct lang_decl
   unsigned int init_final : 1;	/* Nonzero all finals are initialized */
   unsigned int fixed_ctor : 1;
   unsigned int init_calls_this : 1;
+  unsigned int strictfp : 1;
 };
 
 /* init_test_table hash table entry structure.  */
@@ -990,6 +991,7 @@ struct lang_decl_var
 #define TYPE_IMPORT_DEMAND_LIST(T) (TYPE_LANG_SPECIFIC(T)->import_demand_list)
 #define TYPE_PRIVATE_INNER_CLASS(T) (TYPE_LANG_SPECIFIC(T)->pic)
 #define TYPE_PROTECTED_INNER_CLASS(T) (TYPE_LANG_SPECIFIC(T)->poic)
+#define TYPE_STRICTFP(T) (TYPE_LANG_SPECIFIC(T)->strictfp)
 
 struct lang_type
 {
@@ -1009,6 +1011,7 @@ struct lang_type
   tree import_demand_list;	/* Imported types, in the CU of this class */
   unsigned pic:1;		/* Private Inner Class. */
   unsigned poic:1;		/* Protected Inner Class. */
+  unsigned strictfp:1;		/* `strictfp' class.  */
 };
 
 #ifdef JAVA_USE_HANDLES
@@ -1249,6 +1252,7 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 #define METHOD_NATIVE(DECL) (DECL_LANG_SPECIFIC(DECL)->native)
 #define METHOD_ABSTRACT(DECL) DECL_LANG_FLAG_5 (DECL)
 #define METHOD_TRANSIENT(DECL) DECL_LANG_FLAG_6 (DECL)
+#define METHOD_STRICTFP(DECL) (DECL_LANG_SPECIFIC (DECL)->strictfp)
 
 #define JAVA_FILE_P(NODE) TREE_LANG_FLAG_2 (NODE)
 #define CLASS_FILE_P(NODE) TREE_LANG_FLAG_3 (NODE)
@@ -1291,6 +1295,7 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 #define CLASS_STATIC(DECL) DECL_LANG_FLAG_7 (DECL)
 #define CLASS_PRIVATE(DECL) (TYPE_PRIVATE_INNER_CLASS (TREE_TYPE (DECL)))
 #define CLASS_PROTECTED(DECL) (TYPE_PROTECTED_INNER_CLASS (TREE_TYPE (DECL)))
+#define CLASS_STRICTFP(DECL) (TYPE_STRICTFP (TREE_TYPE (DECL)))
 
 /* @deprecated marker flag on methods, fields and classes */
 

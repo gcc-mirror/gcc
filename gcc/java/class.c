@@ -425,6 +425,7 @@ set_class_decl_access_flags (access_flags, class_decl)
   if (access_flags & ACC_STATIC)    CLASS_STATIC (class_decl) = 1;
   if (access_flags & ACC_PRIVATE)   CLASS_PRIVATE (class_decl) = 1;
   if (access_flags & ACC_PROTECTED) CLASS_PROTECTED (class_decl) = 1;
+  if (access_flags & ACC_STRICT)    CLASS_STRICTFP (class_decl) = 1;
 }
 
 /* Return length of inheritance chain of CLAS, where java.lang.Object is 0,
@@ -719,6 +720,7 @@ add_method_1 (handle_class, access_flags, name, function_type)
   if (access_flags & ACC_SYNCHRONIZED) METHOD_SYNCHRONIZED (fndecl) = 1;
   if (access_flags & ACC_ABSTRACT) METHOD_ABSTRACT (fndecl) = 1;
   if (access_flags & ACC_TRANSIENT) METHOD_TRANSIENT (fndecl) = 1;
+  if (access_flags & ACC_STRICT) METHOD_STRICTFP (fndecl) = 1;
   return fndecl;
 }
 
@@ -1223,6 +1225,8 @@ get_access_flags_from_decl (decl)
 	access_flags |= ACC_PRIVATE;
       if (CLASS_PROTECTED (decl))
 	access_flags |= ACC_PROTECTED;
+      if (CLASS_STRICTFP (decl))
+	access_flags |= ACC_STRICT;
       return access_flags;
     }
   if (TREE_CODE (decl) == FUNCTION_DECL)
@@ -1245,6 +1249,8 @@ get_access_flags_from_decl (decl)
 	access_flags |= ACC_ABSTRACT;
       if (METHOD_TRANSIENT (decl))
 	access_flags |= ACC_TRANSIENT;
+      if (METHOD_STRICTFP (decl))
+	access_flags |= ACC_STRICT;
       return access_flags;
     }
   abort ();
