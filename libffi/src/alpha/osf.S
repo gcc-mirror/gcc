@@ -28,91 +28,155 @@
 #define LIBFFI_ASM	
 #include <ffi.h>
 
-#define callback $16
-#define ecifp	 $17
-#define bytes	 $18
-#define flags	 $19
-#define raddr    $20
-#define fn       $21
-
-#define flags_ofs	16
-#define raddr_ofs	24
-#define fn_ofs		32
-
-#define SIZEOF_FRAME	(6*8)
-
 	.text
-	.align	4
+
+/* ffi_call_osf (void *args, unsigned long bytes, unsigned flags,
+		 void *raddr, void (*fnaddr)());
+
+   Bit o trickiness here -- ARGS+BYTES is the base of the stack frame
+   for this function.  This has been allocated by ffi_call.  We also
+   deallocate some of the stack that has been alloca'd.  */
+
+	.align	3
 	.globl	ffi_call_osf
 	.ent	ffi_call_osf
-	
 ffi_call_osf:
-	lda	$30, -SIZEOF_FRAME($30)
-	stq	$26, 0($30)
-	stq	$15, 8($30)
-	stq	flags, flags_ofs($30)
-	stq	raddr, raddr_ofs($30)
-	stq	fn, fn_ofs($30)
-	mov	$30, $15
-	.frame	$15, SIZEOF_FRAME, $26, 0
-        .mask   0x4008000, -SIZEOF_FRAME
+	.frame	$15, 32, $26, 0
+	.mask   0x4008000, -32
+	addq	$16,$17,$1
+	mov	$16, $30
+	stq	$26, 0($1)
+	stq	$15, 8($1)
+	stq	$18, 16($1)
+	mov	$1, $15
 	.prologue 0
 
-	mov	callback, $27		# mov callback into place
-	subq	$30, bytes, $30		# allocate stack space
-	
-	# Call ffi_prep_args; ecif, bytes and flags are already in place.
-	mov	$30, $16		# push stack arg
-	jsr	$26, ($27), 0
+	stq	$19, 24($1)
+	mov	$20, $27
 
 	# Load up all of the (potential) argument registers.
+	ldq	$16, 0($30)
 	ldt	$f16, 0($30)
 	ldt	$f17, 8($30)
+	ldq	$17, 8($30)
 	ldt	$f18, 16($30)
+	ldq	$18, 16($30)
 	ldt	$f19, 24($30)
+	ldq	$19, 24($30)
 	ldt	$f20, 32($30)
+	ldq	$20, 32($30)
 	ldt	$f21, 40($30)
-	ldq	$16, 48($30)
-	ldq	$17, 56($30)
-	ldq	$18, 64($30)
-	ldq	$19, 72($30)
-	ldq	$20, 80($30)
-	ldq	$21, 88($30)
+	ldq	$21, 40($30)
 
-	# Get rid of the arg reg temp space and call the function.
-	ldq	$27, fn_ofs($15)
-	lda	$30, 12*8($30)
+	# Deallocate the register argument area.
+	lda	$30, 48($30)
+
 	jsr	$26, ($27), 0
+	ldgp	$29, 0($26)
 
 	# If the return value pointer is NULL, assume no return value.
-	ldq	raddr, raddr_ofs($15)
-	beq	raddr, $noretval
-
-	ldq	flags, flags_ofs($15)
-	cmpeq	flags, FFI_TYPE_INT, $1
-	bne	$1, $retint
-	cmpeq	flags, FFI_TYPE_FLOAT, $2
-	bne	$2, $retfloat
-	cmpeq	flags, FFI_TYPE_DOUBLE, $3
-	bne	$3, $retdouble
-	br	$retstruct
-	
-	.align 3
-$retint:
-	stq	$0, 0(raddr)
-	br	$noretval
-$retfloat:
-	sts	$f0, 0(raddr)
-	br	$noretval
-$retdouble:
-	stt	$f0, 0(raddr)
-
-$retstruct:
-$noretval:
-	mov	$15, $30
+	ldq	$19, 24($15)
+	ldq	$18, 16($15)
 	ldq	$26, 0($15)
+	beq	$19, $noretval
+
+	# Store the return value out in the proper type.
+	cmpeq	$18, FFI_TYPE_INT, $1
+	bne	$1, $retint
+	cmpeq	$18, FFI_TYPE_FLOAT, $2
+	bne	$2, $retfloat
+	cmpeq	$18, FFI_TYPE_DOUBLE, $3
+	bne	$3, $retdouble
+
+$noretval:
 	ldq	$15, 8($15)
-	lda	$30, SIZEOF_FRAME($30)
+	ret
+
+$retint:
+	stq	$0, 0($19)
+	nop
+	ldq	$15, 8($15)
+	ret
+
+$retfloat:
+	sts	$f0, 0($19)
+	nop
+	ldq	$15, 8($15)
+	ret
+
+$retdouble:
+	stt	$f0, 0($19)
+	nop
+	ldq	$15, 8($15)
 	ret
 
 	.end	ffi_call_osf
+
+/* ffi_closure_osf(...)
+
+   Receives the closure argument in $1.   */
+
+	.align	3
+	.globl	ffi_closure_osf
+	.ent	ffi_closure_osf
+ffi_closure_osf:
+	.frame	$30, 16*8, $26, 0
+	.mask	0x4000000, -14*8
+	ldgp	$29, 0($27)
+	subq	$30, 14*8, $30
+	stq	$26, 0($30)
+	.prologue 1
+
+	# Store all of the potential argument registers in va_list format.
+	stt	$f16, 4*8($30)
+	stt	$f17, 5*8($30)
+	stt	$f18, 6*8($30)
+	stt	$f19, 7*8($30)
+	stt	$f20, 8*8($30)
+	stt	$f21, 9*8($30)
+	stq	$16, 10*8($30)
+	stq	$17, 11*8($30)
+	stq	$18, 12*8($30)
+	stq	$19, 13*8($30)
+	stq	$20, 14*8($30)
+	stq	$21, 15*8($30)
+
+	# Call ffi_closure_osf_inner to do the bulk of the work.
+	mov	$1, $16
+	lda	$17, 2*8($30)
+	lda	$18, 10*8($30)
+	jsr	$26, ffi_closure_osf_inner
+	ldgp	$29, 0($26)
+	ldq	$26, 0($30)
+
+	# Load up the return value in the proper type.
+	cmpeq	$0, FFI_TYPE_INT, $1
+	bne	$1, $loadint
+	cmpeq	$0, FFI_TYPE_FLOAT, $2
+	bne	$2, $loadfloat
+	cmpeq	$18, FFI_TYPE_DOUBLE, $3
+	bne	$3, $loaddouble
+
+	addq	$30, 16*8, $30
+	ret
+
+	.align 3
+$loadint:
+	ldq	$0, 16($30)
+	nop
+	addq	$30, 16*8, $30
+	ret
+
+$loadfloat:
+	lds	$f0, 16($30)
+	nop
+	addq	$30, 16*8, $30
+	ret
+
+$loaddouble:
+	ldt	$f0, 16($30)
+	nop
+	addq	$30, 16*8, $30
+	ret
+
+	.end	ffi_closure_osf
