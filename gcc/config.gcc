@@ -1988,6 +1988,21 @@ strongarm-*-kaos*)
 	md_file=arm/arm.md
 	extra_modes=arm/arm-modes.def
 	;;
+v850e1-*-*)
+	target_cpu_default="TARGET_CPU_v850e1"
+	tm_file="dbxelf.h elfos.h svr4.h v850/v850.h"
+	tm_p_file=v850/v850-protos.h
+	tmake_file=v850/t-v850e
+	md_file=v850/v850.md
+	out_file=v850/v850.c
+	if test x$stabs = xyes
+	then
+		tm_file="${tm_file} dbx.h"
+	fi
+	use_collect2=no
+	c_target_objs="v850-c.o"
+	cxx_target_objs="v850-c.o"
+	;;
 v850e-*-*)
 	target_cpu_default="TARGET_CPU_v850e"
 	tm_file="dbxelf.h elfos.h svr4.h v850/v850.h"
@@ -2438,7 +2453,7 @@ esac
 	v850*-*-*)
 		supported_defaults=cpu
 		case "x$with_cpu" in
-		x | xv850e)
+		x | xv850e | xv850e1)
 			# OK
 			;;
 		*)
