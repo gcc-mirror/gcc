@@ -34,7 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #define ENTRY_INDEX(HASH, COUNT) (((HASH) >> 3) & ((COUNT) - 1))
 
 /* A free list of "binding_entry"s awaiting for re-use.  */
-static binding_entry GTY((deletable(""))) free_binding_entry;
+static GTY((deletable(""))) binding_entry free_binding_entry = NULL;
 
 /* Create a binding_entry object for (NAME, TYPE).  */
 static inline binding_entry
@@ -52,6 +52,7 @@ binding_entry_make (tree name, tree type)
 
   entry->name = name;
   entry->type = type;
+  entry->chain = NULL;
 
   return entry;
 }
@@ -72,7 +73,7 @@ struct binding_table_s GTY(())
   binding_entry * GTY((length ("%h.chain_count"))) chain;
 
   /* The number of chains in this table.  This is the length of the
-     the member "chaiin" considered as an array.  */
+     the member "chain" considered as an array.  */
   size_t chain_count;
 
   /* Number of "binding_entry"s in this table.  */
@@ -99,12 +100,15 @@ binding_table_free (binding_table table)
 
   for (i = 0; i < table->chain_count; ++i)
     {
-      while (table->chain[i] != NULL)
+      binding_entry temp = table->chain[i];
+      while (temp != NULL)
         {
-          binding_entry entry = table->chain[i];
-          table->chain[i] = entry->chain;
+          binding_entry entry = temp;
+          temp = entry->chain;
+          entry->chain = NULL; // just be sure
           binding_entry_free (entry);
         }
+      table->chain[i] = temp;
     }
   table->entry_count = 0;
 }
@@ -114,6 +118,7 @@ binding_table
 binding_table_new (size_t chain_count)
 {
   binding_table table = ggc_alloc (sizeof (struct binding_table_s));
+  table->chain = NULL;
   binding_table_construct (table, chain_count);
   return table;
 }
@@ -277,10 +282,11 @@ cxx_binding_make (tree value, tree type)
       free_bindings = binding->previous;
     }
   else
-    binding = ggc_alloc_cleared (sizeof (cxx_binding));
+    binding = ggc_alloc (sizeof (cxx_binding));
 
   binding->value = value;
   binding->type = type;
+  binding->previous = NULL;
 
   return binding;
 }

@@ -1,3 +1,14 @@
+2003-05-18 Andrew Pinski <pinskia@physics.uc.edu>
+
+	* name-lookup.c (free_binding_entry): fix where the GTY markers are.
+	(binding_entry_make): Make entry->chain NULL after getting an entry.
+	fix the spelling of chain in a comment.
+	(binding_table_free): speed up by having temporary variable.
+	(binding_table_new): set table->chain to be NULL after allocating
+	a table. 
+	(cxx_binding_make): use gcc_alloc instead of ggc_alloc_cleared and set
+	binding->previous to NULL after getting an binding for speed.
+	
 2003-05-18  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cp-tree.h (struct lang_type_class): Replace data member tags
