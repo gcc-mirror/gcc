@@ -3229,8 +3229,10 @@ lvalue_or_else (ref, msgid)
      char *msgid;
 {
   int win = lvalue_p (ref);
+
   if (! win)
     error (msgid);
+
   return win;
 }
 
@@ -3876,8 +3878,7 @@ build_modify_expr (lhs, modifycode, rhs)
       /* Handle (a, b) used as an "lvalue".  */
     case COMPOUND_EXPR:
       pedantic_lvalue_warning (COMPOUND_EXPR);
-      newrhs = build_modify_expr (TREE_OPERAND (lhs, 1),
-				  modifycode, rhs);
+      newrhs = build_modify_expr (TREE_OPERAND (lhs, 1), modifycode, rhs);
       if (TREE_CODE (newrhs) == ERROR_MARK)
 	return error_mark_node;
       return build (COMPOUND_EXPR, lhstype,
@@ -6734,8 +6735,24 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   /* Record the contents of OUTPUTS before it is modified.  */
   for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
     {
-      o[i] = TREE_VALUE (tail);
-      lvalue_or_else (o[i], "asm statement");
+      tree output = TREE_VALUE (tail);
+
+      /* We can remove conversions that just change the type, not the mode.  */
+      STRIP_NOPS (output);
+      o[i] = output;
+
+      /* Allow conversions as LHS here.  build_modify_expr as called below
+	 will do the right thing with them.  */
+      while (TREE_CODE (output) == NOP_EXPR
+	     || TREE_CODE (output) == CONVERT_EXPR
+	     || TREE_CODE (output) == FLOAT_EXPR
+	     || TREE_CODE (output) == FIX_TRUNC_EXPR
+	     || TREE_CODE (output) == FIX_FLOOR_EXPR
+	     || TREE_CODE (output) == FIX_ROUND_EXPR
+	     || TREE_CODE (output) == FIX_CEIL_EXPR)
+	output = TREE_OPERAND (output, 1);
+
+      lvalue_or_else (o[i], "invalid lvalue in asm statement");
     }
 
   /* Perform default conversions on array and function inputs.  */
