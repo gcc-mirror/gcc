@@ -596,8 +596,7 @@ static int one_cprop_pass	     PROTO ((int, int));
 static void alloc_pre_mem	     PROTO ((int, int));
 static void free_pre_mem	      PROTO ((void));
 static void compute_pre_data	  PROTO ((void));
-static int pre_expr_reaches_here_p    PROTO ((int, struct expr *,
-					      int, int));
+static int pre_expr_reaches_here_p    PROTO ((int, struct expr *, int));
 static void insert_insn_end_bb	PROTO ((struct expr *, int, int));
 static void pre_insert_copy_insn      PROTO ((struct expr *, rtx));
 static void pre_insert_copies	 PROTO ((void));
@@ -640,7 +639,8 @@ static void delete_null_pointer_checks_1 PROTO ((int_list_ptr *, int *,
 static rtx process_insert_insn	PROTO ((struct expr *));
 static int pre_edge_insert	PROTO ((struct edge_list *, struct expr **));
 static int expr_reaches_here_p_work	PROTO ((struct occr *, struct expr *, int, int, char *));
-static int pre_expr_reaches_here_p_work	PROTO ((int, struct expr *, int, int, char *));
+static int pre_expr_reaches_here_p_work	PROTO ((int, struct expr *,
+						int, char *));
 
 /* Entry point for global common subexpression elimination.
    F is the first instruction in the function.  */
@@ -4213,9 +4213,6 @@ compute_pre_data ()
    VISITED is a pointer to a working buffer for tracking which BB's have
    been visited.  It is NULL for the top-level call.
 
-   CHECK_PRE_COMP controls whether or not we check for a computation of
-   EXPR in OCCR_BB.
-
    We treat reaching expressions that go through blocks containing the same
    reaching expression as "not reaching".  E.g. if EXPR is generated in blocks
    2 and 3, INSN is in block 4, and 2->3->4, we treat the expression in block
@@ -4224,11 +4221,10 @@ compute_pre_data ()
    the closest such expression.  */
 
 static int
-pre_expr_reaches_here_p_work (occr_bb, expr, bb, check_pre_comp, visited)
+pre_expr_reaches_here_p_work (occr_bb, expr, bb, visited)
      int occr_bb;
      struct expr *expr;
      int bb;
-     int check_pre_comp;
      char *visited;
 {
   edge pred;
@@ -4244,8 +4240,7 @@ pre_expr_reaches_here_p_work (occr_bb, expr, bb, check_pre_comp, visited)
 	  /* Nothing to do.  */
 	}
       /* Does this predecessor generate this expression?  */
-      else if ((!check_pre_comp && occr_bb == pred_bb)
-	       || TEST_BIT (comp[pred_bb], expr->bitmap_index))
+      else if (TEST_BIT (comp[pred_bb], expr->bitmap_index))
 	{
 	  /* Is this the occurrence we're looking for?
 	     Note that there's only one generating occurrence per block
@@ -4261,8 +4256,7 @@ pre_expr_reaches_here_p_work (occr_bb, expr, bb, check_pre_comp, visited)
       else
 	{
 	  visited[pred_bb] = 1;
-	  if (pre_expr_reaches_here_p_work (occr_bb, expr, pred_bb,
-				            check_pre_comp, visited))
+	  if (pre_expr_reaches_here_p_work (occr_bb, expr, pred_bb, visited))
 	    return 1;
 	}
     }
@@ -4275,17 +4269,15 @@ pre_expr_reaches_here_p_work (occr_bb, expr, bb, check_pre_comp, visited)
    memory allocated for that function is returned. */
 
 static int
-pre_expr_reaches_here_p (occr_bb, expr, bb, check_pre_comp)
+pre_expr_reaches_here_p (occr_bb, expr, bb)
      int occr_bb;
      struct expr *expr;
      int bb;
-     int check_pre_comp;
 {
   int rval;
   char * visited = (char *) xcalloc (n_basic_blocks, 1);
 
-  rval = pre_expr_reaches_here_p_work(occr_bb, expr, bb, check_pre_comp, 
-				      visited);
+  rval = pre_expr_reaches_here_p_work(occr_bb, expr, bb, visited);
 
   free (visited);
 
@@ -4529,10 +4521,7 @@ pre_edge_insert (edge_list, index_map)
 
 		      /* Insert this expression on this edge if if it would
 			 reach the deleted occurence in BB.  */
-		      if (!TEST_BIT (inserted[e], j)
-			  && (bb == ENTRY_BLOCK 
-			      || pre_expr_reaches_here_p (bb, expr,
-						   BLOCK_NUM (occr->insn), 0)))
+		      if (!TEST_BIT (inserted[e], j))
 			{
 			  rtx insn;
 			  edge eg = INDEX_EDGE (edge_list, e);
@@ -4660,7 +4649,7 @@ pre_insert_copies ()
 		    continue;
 		  /* Or if the expression doesn't reach the deleted one.  */
 		  if (! pre_expr_reaches_here_p (BLOCK_NUM (avail->insn), expr,
-						 BLOCK_NUM (occr->insn),1))
+						 BLOCK_NUM (occr->insn)))
 		    continue;
 
 		  /* Copy the result of avail to reaching_reg.  */

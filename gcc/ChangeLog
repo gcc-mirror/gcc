@@ -1,3 +1,12 @@
+Sun Nov 14 23:11:05 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcse.c (pre_expr_reaches_here_p): Kill CHECK_PRE_COM argument.
+	All callers changed.
+	(pre_expr_reaches_here_p_work): Likewise.
+	(pre_edge_insert): No longer call pre_expr_reaches_here_p.
+	* lcm.c (compute_laterin): Fix initialization of LATER.
+	(compute_nearerout): Similarly for NEARER.
+
 Sun Nov 14 12:41:57 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* cse.c (set_nonvarying_address_components): Delete unused function.
