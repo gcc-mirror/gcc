@@ -180,16 +180,19 @@ darwin_rs6000_gt_pch_use_address (void *addr, size_t sz, int fd, size_t off)
   if (munmap (pch_address_space + sz, sizeof (pch_address_space) - sz) != 0)
     fatal_error ("couldn't unmap pch_address_space: %m\n");
 
-  mmap_result = mmap (addr, sz,
-		      PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED,
-		      fd, off);
+  if (ret)
+    {
+      mmap_result = mmap (addr, sz,
+			  PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED,
+			  fd, off);
 
-  /* The file might not be mmap-able.  */
-  ret = mmap_result == (void *) MAP_FAILED;
+      /* The file might not be mmap-able.  */
+      ret = mmap_result == (void *) MAP_FAILED;
 
-  /* Sanity check for broken MAP_FIXED.  */
-  if (ret && mmap_result != addr)
-    abort ();
+      /* Sanity check for broken MAP_FIXED.  */
+      if (!ret && mmap_result != addr)
+	abort ();
+    }
 
   return ret;
 }
