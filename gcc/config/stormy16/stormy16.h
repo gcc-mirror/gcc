@@ -146,6 +146,9 @@ Boston, MA 02111-1307, USA.  */
 
    Defined in svr4.h.  */
 #undef LIB_SPEC
+#if 0
+#define LIB_SPEC "-( -lc %{msim:-lsim}%{!msim:-leva_app -lnosys} -)"
+#endif
 #define LIB_SPEC "-( -lc %{msim:-lsim} -)"
 
 /* Another C string constant that tells the GNU CC driver program how and when
@@ -3620,7 +3623,7 @@ do {							\
 /* A C string constant describing how to begin a comment in the target
    assembler language.  The compiler assumes that the comment will end at the
    end of the line.  */
-/* #define ASM_COMMENT_START */
+#define ASM_COMMENT_START ";"
 
 /* A C string constant for text to be output before each `asm' statement or
    group of consecutive ones.  Normally this is `"#APP"', which is a comment

@@ -1,3 +1,10 @@
+2001-10-19  Catherine Moore  <clm@redhat.com>
+
+        * config/stormy16/stormy16.h (ASM_COMMENT_START): Define.
+
+	* config/stormy16/stormy16.c (stormy16_split_move):  Make
+	sure that REG_INC notes are present for auto_inc operands.
+
 2001-10-19  Andreas Jaeger  <aj@suse.de>
 
         * configure: Regenerated.
