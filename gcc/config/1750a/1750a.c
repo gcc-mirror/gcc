@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for MIL-STD-1750.
-   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by O.M.Kellogg, DASA (kellogg@space.otn.dasa.de)
 
 This file is part of GNU CC.
@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #define HAVE_cc0
 #include "conditions.h"
 #include "real.h"
+#include "regs.h"
 
 struct datalabel_array datalbl[DATALBL_ARRSIZ];
 int datalbl_ndx = -1;
@@ -189,7 +190,7 @@ movcnt_regno_adjust (op)
   else if (cntreg == srcreg + 1)
     sprintf (outstr, "xwr r%d,r%d\n\tmov r%d,r%d", op0r, op1r, op1r, op0r);
   else
-    sprintf (outstr, "xwr r%d,r%d\n\tmov r%d,%d\n\txwr r%d,r%d",
+    sprintf (outstr, "xwr r%d,r%d\n\tmov r%d,r%d\n\txwr r%d,r%d",
 	     op2r, cntreg_1750, op0r, op1r, op2r, cntreg_1750);
   return outstr;
 }
@@ -203,7 +204,8 @@ mod_regno_adjust (instr, op)
   char *r = (!strncmp (instr, "dvr", 3) ? "r" : "");
   int modregno_gcc = REGNO (op[3]), modregno_1750 = REGNO (op[0]) + 1;
 
-  if (modregno_gcc == modregno_1750)
+  if (modregno_gcc == modregno_1750 || (reg_renumber != NULL
+        && reg_renumber[modregno_gcc] == reg_renumber[modregno_1750]))
     sprintf (outstr, "%s r%%0,%s%%2", instr, r);
   else
     sprintf (outstr, "lr r%d,r%d\n\t%s r%%0,%s%%2\n\txwr r%d,r%d",
