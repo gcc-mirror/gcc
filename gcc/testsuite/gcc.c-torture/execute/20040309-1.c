@@ -1,24 +1,16 @@
-extern void abort ();
+/* PR middle-end/14470 */
+/* Origin: Lodewijk Voge <lvoge@cs.vu.nl> */
 
-int foo(unsigned short x)
-{
-  unsigned short y;
-  y = x > 32767 ? x - 32768 : 0;
-  return y;
-}
+extern void abort(void);
 
 int main()
 {
-  if (foo (0) != 0)
-    abort ();
-  if (foo (32767) != 0)
-    abort ();
-  if (foo (32768) != 0)
-    abort ();
-  if (foo (32769) != 1)
-    abort ();
-  if (foo (65535) != 32767)
-    abort ();
+  int t[1025] = { 1024 }, d;
+
+  d = 0;
+  d = t[d]++;
+  if (t[0] != 1025)
+    abort();
   return 0;
 }
 

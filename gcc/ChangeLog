@@ -1,3 +1,12 @@
+2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Backport:
+	2004-03-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+        PR middle-end/14470
+	* expr.c (store_expr): Call emit_queue before generating the move
+	from the temporary to the original target.  Protect the temporary
+	from emit_queue.	
+
 2004-03-10  James E Wilson  <wilson@specifixinc.com>
 
 	PR target/13877
