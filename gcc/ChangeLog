@@ -1,5 +1,17 @@
 2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+        * cppmain.c (struct printer): Remove no_line_dirs.
+        (options, cb): New.
+        (main, setup_callbacks, scan_buffer, printer_init, cb_define)
+        : Use options rather than CPP_OPTION.
+        (setup_callbacks): Use cb rather than pfile->cb.
+        (main): No need to check for a buffer.  Use cpp_errors.
+        (printer_init): Don't set no_line_dirs.
+        (maybe_print_line): Use options not no_line_dirs.
+        (cb_file_change): Don't call print_line if -P.
+
+2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
         * c-lex.c (init_c_lex): Use cpp_get_callbacks to set
         callbacks.
         * c-parse.in (finish_parse): Use cpp_errors.
