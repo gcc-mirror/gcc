@@ -1,3 +1,7 @@
+2002-04-14  Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
+
+	* config/arm/linux-elf.h (CPLUSPLUS_CPP_SPEC): Define.
+
 2002-04-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/alpha/linux.h (CPP_PREDEFINES): Fix typo.
@@ -8,7 +12,7 @@
 
 	* config/cris/linux.h (CRIS_CPP_SUBTARGET_SPEC): Fix typo.
 
-2002-04-13	Joel Sherrill <joel@OARcorp.com>
+2002-04-13  Joel Sherrill <joel@OARcorp.com>
 
 	* config/sparc/t-elf: Enable v8 multilibs.  Impacts
 	sparc-elf and sparc-rtems targets.
