@@ -10,8 +10,9 @@ class
 {
 public:
   func_type *Function;
-  const func_type* function(void) { return Function; } // ok constifying
-  volatile func_type* functionv(void); // WARNING - qualifier
+  // The following is DR 295 dependent
+  const func_type* function(void) { return Function; } // ERROR - constifying
+  volatile func_type* functionv(void); // ERROR - qualifier
 } action;
 
 void work(const char *source)
