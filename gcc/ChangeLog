@@ -1,5 +1,7 @@
 2004-02-29  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.ac: Add some comments delineating sections of code.
+
 	* doc/install.texi: Note that libada uses autoconf 2.57 also.
 
 	* doc/install.texi: Fix idiot typo in previous commit.

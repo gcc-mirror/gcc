@@ -1560,6 +1560,10 @@ case $use_collect2 in
     ;;
 esac
 
+# ---------------------------
+# Assembler & linker features
+# ---------------------------
+
 # Identify the assembler which will work hand-in-glove with the newly
 # built GCC, so that we can examine its features.  This is the assembler
 # which will be driven by the driver program.
@@ -2622,6 +2626,10 @@ if test x"$gcc_cv_ld_pie" = xyes; then
 fi
 AC_MSG_RESULT($gcc_cv_ld_pie)
 
+# --------
+# UNSORTED
+# --------
+
 if test x$with_sysroot = x && test x$host = x$target \
    && test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" ; then
   AC_DEFINE_UNQUOTED(PREFIX_INCLUDE_DIR, "$prefix/include",
@@ -2809,6 +2817,10 @@ else
 fi
 AC_SUBST(MAINT)dnl
 
+# --------------
+# Language hooks
+# --------------
+
 # Make empty files to contain the specs and options for each language.
 # Then add #include lines to for a compiler that has specs and/or options.
 
@@ -2924,6 +2936,10 @@ do
 	done
 	echo "lang.$t: $x" >> Make-hooks
 done
+
+# --------
+# UNSORTED
+# --------
 
 # Create .gdbinit.
 
