@@ -1,3 +1,8 @@
+2004-08-04  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): LABEL_REFs are zero
+	cost.
+
 2004-08-04  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (profile_staus): New global variable.
@@ -206,7 +211,7 @@
 	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
 
 2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
-	    Tanguy Fautr√É  <tfautre@pandora.be>
+	    Tanguy Fautr√  <tfautre@pandora.be>
 
 	* config/i386/pmm_malloc.h: New file.
 
