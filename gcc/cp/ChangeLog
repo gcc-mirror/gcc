@@ -1,5 +1,9 @@
 2000-10-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* call.c (standard_conversion): Use RVALUE_CONVs for all
+	expressions that satisfy lvalue_p, not just those that satisfy
+	real_lvalue_p.
+
 	* optimize.c (copy_body_r): Don't treat CALL_EXPRs specially.
 
 	* typeck.c (c_sizeof): Return an expression of `size_t' type, 
