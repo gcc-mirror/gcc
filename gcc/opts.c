@@ -574,6 +574,9 @@ decode_options (unsigned int argc, const char **argv)
       set_param_value ("max-inline-insns-auto", 5);
       set_param_value ("max-inline-insns-rtl", 10);
       flag_inline_functions = 1;
+
+      /* We want to crossjump as much as possible.  */
+      set_param_value ("min-crossjump-insns", 1);
     }
 
   /* Initialize whether `char' is signed.  */

@@ -1,3 +1,7 @@
+2004-10-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	* opts.c (decode_options): Lower the crossjump threshold for -Os.
+
 2004-10-29  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree.h (struct tree_ssa_name): Remove field 'equiv'.
