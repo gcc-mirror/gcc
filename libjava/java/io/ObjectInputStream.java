@@ -1482,125 +1482,260 @@ public class ObjectInputStream extends InputStream
 
   private native void callConstructor (Class clazz, Object obj);
 
+  /**
+   * This method writes a "boolean" value <code>val</code> in the specified field
+   * of the instance <code>obj</code> of the type <code>klass</code>.
+   *
+   * @param obj Instance to setup.
+   * @param klass Class type of the specified instance.
+   * @param field_name Name of the field in the specified class type.
+   * @param val The boolean value to write into the field.
+   * @throws InvalidClassException if the specified field has not the required type.
+   * @throws IOException if there is no field of that name in the specified class.
+   */
   private void setBooleanField (Object obj, Class klass, String field_name,
-				boolean val)
+				boolean val) throws IOException, InvalidClassException
   {
     try
       {
 	Field f = getField (klass, field_name);
 	f.setBoolean (obj, val);
       }
+    catch (IllegalArgumentException _)
+      {
+	throw new InvalidClassException("incompatible field type for " + klass.getName() + "." + field_name);
+      }
     catch (Exception _)
       {
       }    
   }
 
+  /**
+   * This method writes a "byte" value <code>val</code> in the specified field
+   * of the instance <code>obj</code> of the type <code>klass</code>.
+   *
+   * @param obj Instance to setup.
+   * @param klass Class type of the specified instance.
+   * @param field_name Name of the field in the specified class type.
+   * @param val The byte value to write into the field.
+   * @throws InvalidClassException if the specified field has not the required type.
+   * @throws IOException if there is no field of that name in the specified class.
+   */
   private void setByteField (Object obj, Class klass, String field_name,
-			     byte val)
+			     byte val) throws IOException, InvalidClassException
   {
     try
       {
 	Field f = getField (klass, field_name);
 	f.setByte (obj, val);
       }
+    catch (IllegalArgumentException _)
+      {
+	throw new InvalidClassException("incompatible field type for " + klass.getName() + "." + field_name);
+      }
     catch (Exception _)
       {
       }    
   }
 
+  /**
+   * This method writes a "character" value <code>val</code> in the specified field
+   * of the instance <code>obj</code> of the type <code>klass</code>.
+   *
+   * @param obj Instance to setup.
+   * @param klass Class type of the specified instance.
+   * @param field_name Name of the field in the specified class type.
+   * @param val The character value to write into the field.
+   * @throws InvalidClassException if the specified field has not the required type.
+   * @throws IOException if there is no field of that name in the specified class.
+   */
   private void setCharField (Object obj, Class klass, String field_name,
-			     char val)
+			     char val) throws IOException, InvalidClassException
   {
     try
       {
 	Field f = getField (klass, field_name);
 	f.setChar (obj, val);
       }
+    catch (IllegalArgumentException _)
+      {
+	throw new InvalidClassException("incompatible field type for " + klass.getName() + "." + field_name);
+      }
     catch (Exception _)
       {
       }    
   }
 
+  /**
+   * This method writes a "double" value <code>val</code> in the specified field
+   * of the instance <code>obj</code> of the type <code>klass</code>.
+   *
+   * @param obj Instance to setup.
+   * @param klass Class type of the specified instance.
+   * @param field_name Name of the field in the specified class type.
+   * @param val The double value to write into the field.
+   * @throws InvalidClassException if the specified field has not the required type.
+   * @throws IOException if there is no field of that name in the specified class.
+   */
   private void setDoubleField (Object obj, Class klass, String field_name,
-			       double val)
+			       double val) throws IOException, InvalidClassException
   {
     try
       {
 	Field f = getField (klass, field_name);
 	f.setDouble (obj, val);
       }
+    catch (IllegalArgumentException _)
+      {
+	throw new InvalidClassException("incompatible field type for " + klass.getName() + "." + field_name);
+      }
     catch (Exception _)
       {
       }    
   }
 
+  /**
+   * This method writes a "float" value <code>val</code> in the specified field
+   * of the instance <code>obj</code> of the type <code>klass</code>.
+   *
+   * @param obj Instance to setup.
+   * @param klass Class type of the specified instance.
+   * @param field_name Name of the field in the specified class type.
+   * @param val The float value to write into the field.
+   * @throws InvalidClassException if the specified field has not the required type.
+   * @throws IOException if there is no field of that name in the specified class.
+   */
   private void setFloatField (Object obj, Class klass, String field_name,
-			      float val)
+			      float val) throws IOException, InvalidClassException
   {
     try
       {
 	Field f = getField (klass, field_name);
 	f.setFloat (obj, val);
       }
+    catch (IllegalArgumentException _)
+      {
+	throw new InvalidClassException("incompatible field type for " + klass.getName() + "." + field_name);
+      }
     catch (Exception _)
       {
       }    
   }
 
+  /**
+   * This method writes an "integer" value <code>val</code> in the specified field
+   * of the instance <code>obj</code> of the type <code>klass</code>.
+   *
+   * @param obj Instance to setup.
+   * @param klass Class type of the specified instance.
+   * @param field_name Name of the field in the specified class type.
+   * @param val The integer value to write into the field.
+   * @throws InvalidClassException if the specified field has not the required type.
+   * @throws IOException if there is no field of that name in the specified class.
+   */
   private void setIntField (Object obj, Class klass, String field_name,
-			    int val)
+			    int val) throws IOException, InvalidClassException
   {
     try
       {
 	Field f = getField (klass, field_name);
 	f.setInt (obj, val);
       }
+    catch (IllegalArgumentException _)
+      {
+	throw new InvalidClassException("incompatible field type for " + klass.getName() + "." + field_name);
+      }
     catch (Exception _)
       {
       }    
   }
 
-
+  /**
+   * This method writes the long value <code>val</code> in the specified field
+   * of the instance <code>obj</code> of the type <code>klass</code>.
+   *
+   * @param obj Instance to setup.
+   * @param klass Class type of the specified instance.
+   * @param field_name Name of the field in the specified class type.
+   * @param val The long value to write into the field.
+   * @throws InvalidClassException if the specified field has not the required type.
+   * @throws IOException if there is no field of that name in the specified class.
+   */
   private void setLongField (Object obj, Class klass, String field_name,
-			     long val)
+			     long val) throws IOException, InvalidClassException
   {
     try
       {
 	Field f = getField (klass, field_name);
 	f.setLong (obj, val);
       }
+    catch (IllegalArgumentException _)
+      {
+	throw new InvalidClassException("incompatible field type for " + klass.getName() + "." + field_name);
+      }
     catch (Exception _)
       {
       }    
   }
 
-
+  /**
+   * This method writes a "short" value <code>val</code> in the specified field
+   * of the instance <code>obj</code> of the type <code>klass</code>.
+   *
+   * @param obj Instance to setup.
+   * @param klass Class type of the specified instance.
+   * @param field_name Name of the field in the specified class type.
+   * @param val The short value to write into the field.
+   * @throws InvalidClassException if the specified field has not the required type.
+   * @throws IOException if there is no field of that name in the specified class.
+   */
   private void setShortField (Object obj, Class klass, String field_name,
-			      short val)
+			      short val) throws IOException, InvalidClassException
   {
     try
       {
 	Field f = getField (klass, field_name);
 	f.setShort (obj, val);
       }
+    catch (IllegalArgumentException _)
+      {
+	throw new InvalidClassException("incompatible field type for " + klass.getName() + "." + field_name);
+      }
     catch (Exception _)
       {
       }    
   }
 
-
+  /**
+   * This method writes an "object" value <code>val</code> in the specified field
+   * of the instance <code>obj</code> of the type <code>klass</code>.
+   *
+   * @param obj Instance to setup.
+   * @param klass Class type of the specified instance.
+   * @param field_name Name of the field in the specified class type.
+   * @param val The "object" value to write into the field.
+   * @throws InvalidClassException if the specified field has not the required type.
+   * @throws IOException if there is no field of that name in the specified class.
+   */
   private void setObjectField (Object obj, Class klass, String field_name,
-			       String type_code, Object val)
+			       String type_code, Object val) throws IOException, InvalidClassException
   {
     try
       {
-	Field f = getField (klass, field_name);
-	// FIXME: We should check the type_code here
-	f.set (obj, val);
+ 	Field f = getField (klass, field_name);
+	ObjectStreamField of = new ObjectStreamField(field_name, f.getType());
+	
+	if (of.getTypeString() == null ||
+	    !of.getTypeString().equals(type_code))
+          throw new InvalidClassException("incompatible field type for " + klass.getName() + "." + field_name);
+ 	f.set (obj, val);
+      }
+    catch (InvalidClassException e)
+      {
+	throw e;
       }
     catch (Exception _)
-      {
-      }    
+      {}
   }
 
   private static final int BUFFER_SIZE = 1024;
