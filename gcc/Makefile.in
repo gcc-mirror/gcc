@@ -408,6 +408,9 @@ CRTSTUFF_T_CFLAGS =
 # Extra flags to use when compiling [m]crt0.o.
 CRT0STUFF_T_CFLAGS = 
 
+# "t" or nothing, for building multilibbed versions of, say, crtbegin.o.
+T =
+
 # End of variables for you to override.
 
 # Definition of `all' is here so that new rules inserted by sed
@@ -623,9 +626,6 @@ RTL_H = rtl.h rtl.def machmode.h machmode.def
 TREE_H = tree.h real.h tree.def machmode.h machmode.def
 BYTECODE_H = bytecode.h bc-emit.h bc-optab.h
 BASIC_BLOCK_H = basic-block.h bitmap.h
-
-# "t" or nothing, for building multilibbed versions of, say, crtbegin.o.
-T =
 #
 # Language makefile fragments.
 
@@ -2168,12 +2168,14 @@ install-common: native installdirs $(EXTRA_PARTS) lang.install-common
 	  if [ x"$$file" != x.. ]; then \
 	    rm -f $(libsubdir)/$$file; \
 	    $(INSTALL_DATA) $$file $(libsubdir)/$$file; \
+	    chmod a-x $(libsubdir)/$$file; \
 	  else true; fi; \
 	done
 # Don't mess with specs if it doesn't exist yet.
 	-if [ -f specs ] ; then \
 	  rm -f $(libsubdir)/specs; \
 	  $(INSTALL_DATA) specs $(libsubdir)/specs; \
+	  chmod a-x $(libsubdir)/specs; \
 	fi
 # Install protoize if it was compiled.
 	-if [ -f protoize$(exeext) ]; \
