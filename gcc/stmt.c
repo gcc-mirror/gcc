@@ -1621,6 +1621,12 @@ expand_expr_stmt (exp)
       else if (warn_unused)
 	warn_if_unused_value (exp);
     }
+
+  /* If EXP is of function type and we are expanding statements for
+     value, convert it to pointer-to-function.  */
+  if (expr_stmts_for_value && TREE_CODE (TREE_TYPE (exp)) == FUNCTION_TYPE)
+    exp = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (exp)), exp);
+
   last_expr_type = TREE_TYPE (exp);
   if (! flag_syntax_only)
     last_expr_value = expand_expr (exp,
