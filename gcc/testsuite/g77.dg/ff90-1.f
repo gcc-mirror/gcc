@@ -11,5 +11,5 @@ C { dg-options "-ff90" }
       end
       subroutine s(x)
       double precision x
-      if ( abs(z-2.0d0) .gt. 1.0e-5 ) call abort
+      if ( abs(x-2.0d0) .gt. 1.0e-5 ) call abort
       end
