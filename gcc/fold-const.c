@@ -3140,6 +3140,11 @@ make_range (exp, pin_p, plow, phigh)
 	    arg1 = TREE_OPERAND (exp, 1);
 	}
 
+      /* Set ORIG_TYPE as soon as TYPE is non-null so that we do not
+	 lose a cast by accident.  */
+      if (type != NULL_TREE && orig_type == NULL_TREE)
+	orig_type = type;
+
       switch (code)
 	{
 	case TRUTH_NOT_EXPR:
@@ -3258,8 +3263,6 @@ make_range (exp, pin_p, plow, phigh)
 	  continue;
 
 	case NOP_EXPR:  case NON_LVALUE_EXPR:  case CONVERT_EXPR:
-	  if (orig_type == NULL_TREE)
-	    orig_type = type;
 	  if (TYPE_PRECISION (type) > TYPE_PRECISION (orig_type))
 	    break;
 
