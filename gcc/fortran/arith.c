@@ -27,6 +27,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "flags.h"
 #include "gfortran.h"
 #include "arith.h"
 
@@ -157,6 +158,9 @@ gfc_arith_error (arith code)
     case ARITH_INCOMMENSURATE:
       p = "Array operands are incommensurate";
       break;
+    case ARITH_ASYMMETRIC:
+      p = "Integer outside symmetric range implied by Standard Fortran";
+      break;
     default:
       gfc_internal_error ("gfc_arith_error(): Bad error code");
     }
@@ -194,11 +198,20 @@ gfc_arith_init_1 (void)
       /* These are the numbers that are actually representable by the
          target.  For bases other than two, this needs to be changed.  */
       if (int_info->radix != 2)
-	gfc_internal_error ("Fix min_int, max_int calculation");
+        gfc_internal_error ("Fix min_int, max_int calculation");
+
+      /* See PRs 13490 and 17912, related to integer ranges.
+         The pedantic_min_int exists for range checking when a program
+         is compiled with -pedantic, and reflects the belief that
+         Standard Fortran requires integers to be symmetrical, i.e.
+         every negative integer must have a representable positive
+         absolute value, and vice versa. */
+         
+      mpz_init (int_info->pedantic_min_int);
+      mpz_neg (int_info->pedantic_min_int, int_info->huge);
 
       mpz_init (int_info->min_int);
-      mpz_neg (int_info->min_int, int_info->huge);
-      /* No -1 here, because the representation is symmetric.  */
+      mpz_sub_ui(int_info->min_int, int_info->pedantic_min_int, 1);
 
       mpz_init (int_info->max_int);
       mpz_add (int_info->max_int, int_info->huge, int_info->huge);
@@ -317,7 +330,8 @@ gfc_arith_done_1 (void)
 
 
 /* Given an integer and a kind, make sure that the integer lies within
-   the range of the kind.  Returns ARITH_OK or ARITH_OVERFLOW.  */
+   the range of the kind.  Returns ARITH_OK, ARITH_ASYMMETRIC or 
+   ARITH_OVERFLOW.  */
 
 static arith
 gfc_check_integer_range (mpz_t p, int kind)
@@ -327,6 +341,12 @@ gfc_check_integer_range (mpz_t p, int kind)
 
   i = gfc_validate_kind (BT_INTEGER, kind, false);
   result = ARITH_OK;
+
+  if (pedantic)
+    {
+      if (mpz_cmp (p, gfc_integer_kinds[i].pedantic_min_int) < 0)
+        result = ARITH_ASYMMETRIC;
+    }
 
   if (mpz_cmp (p, gfc_integer_kinds[i].min_int) < 0
       || mpz_cmp (p, gfc_integer_kinds[i].max_int) > 0)
@@ -529,7 +549,7 @@ gfc_range_check (gfc_expr * e)
     default:
       gfc_internal_error ("gfc_range_check(): Bad type");
     }
-
+    
   return rc;
 }
 
@@ -582,6 +602,12 @@ gfc_arith_uminus (gfc_expr * op1, gfc_expr ** resultp)
       rc = ARITH_OK;
       *resultp = result;
     }
+  else if (rc == ARITH_ASYMMETRIC)
+    {
+      gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
+      rc = ARITH_OK;
+      *resultp = result;
+    }
   else if (rc != ARITH_OK)
     gfc_free_expr (result);
   else
@@ -631,6 +657,12 @@ gfc_arith_plus (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
       rc = ARITH_OK;
       *resultp = result;
     }
+  else if (rc == ARITH_ASYMMETRIC)
+    {
+      gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
+      rc = ARITH_OK;
+      *resultp = result;
+    }
   else if (rc != ARITH_OK)
     gfc_free_expr (result);
   else
@@ -677,6 +709,12 @@ gfc_arith_minus (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
     {
       if (gfc_option.warn_underflow)
         gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
+      rc = ARITH_OK;
+      *resultp = result;
+    }
+  else if (rc == ARITH_ASYMMETRIC)
+    {
+      gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
       rc = ARITH_OK;
       *resultp = result;
     }
@@ -740,6 +778,12 @@ gfc_arith_times (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
     {
       if (gfc_option.warn_underflow)
         gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
+      rc = ARITH_OK;
+      *resultp = result;
+    }
+  else if (rc == ARITH_ASYMMETRIC)
+    {
+      gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
       rc = ARITH_OK;
       *resultp = result;
     }
@@ -836,6 +880,12 @@ gfc_arith_divide (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
     {
       if (gfc_option.warn_underflow)
         gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
+      rc = ARITH_OK;
+      *resultp = result;
+    }
+  else if (rc == ARITH_ASYMMETRIC)
+    {
+      gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
       rc = ARITH_OK;
       *resultp = result;
     }
@@ -1029,11 +1079,17 @@ gfc_arith_power (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
       rc = ARITH_OK;
       *resultp = result;
     }
+  else if (rc == ARITH_ASYMMETRIC)
+    {
+      gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
+      rc = ARITH_OK;
+      *resultp = result;
+    }
   else if (rc != ARITH_OK)
     gfc_free_expr (result);
   else
     *resultp = result;
-
+  
   return rc;
 }
 
@@ -1932,9 +1988,16 @@ gfc_int2int (gfc_expr * src, int kind)
   if ((rc = gfc_check_integer_range (result->value.integer, kind))
       != ARITH_OK)
     {
-      arith_error (rc, &src->ts, &result->ts, &src->where);
-      gfc_free_expr (result);
-      return NULL;
+      if (rc == ARITH_ASYMMETRIC)
+        {
+          gfc_warning ("%s at %L", gfc_arith_error (rc), &src->where);
+        }
+      else
+        {
+          arith_error (rc, &src->ts, &result->ts, &src->where);
+          gfc_free_expr (result);
+          return NULL;
+        }
     }
 
   return result;
