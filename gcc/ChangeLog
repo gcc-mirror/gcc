@@ -1,3 +1,11 @@
+2001-12-07  Craig Rodrigues  <rodrigc@gcc.gnu.org
+
+	PR c++/5041
+	* expr.c: Merge from mainline:
+	2001-09-20  DJ Delorie  <dj@redhat.com> 
+	* expr.c (store_constructor): Handle zero-length arrays and
+	flexible arrays correctly.
+
 2001-12-07  David O'Brien  <obrien@FreeBSD.org>
 
 	* elfos.h (_USING_ELFOS_H): Rename to USING_ELFOS_H, to match mainline.
@@ -118,8 +126,8 @@
 
 	PR other/4932
 	* config/i386/i386.c (print_operand):  Verify that the
-	  argument to %c is a constant and not a conditional which
-	  needs to be reversed.
+	argument to %c is a constant and not a conditional which
+	needs to be reversed.
 
 2001-11-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 

@@ -4574,7 +4574,9 @@ store_constructor (exp, target, align, cleared, size)
       int need_to_clear;
       tree domain = TYPE_DOMAIN (type);
       tree elttype = TREE_TYPE (type);
-      int const_bounds_p = (host_integerp (TYPE_MIN_VALUE (domain), 0)
+      int const_bounds_p = (TYPE_MIN_VALUE (domain)
+			    && TYPE_MAX_VALUE (domain)
+			    && host_integerp (TYPE_MIN_VALUE (domain), 0)
 			    && host_integerp (TYPE_MAX_VALUE (domain), 0));
       HOST_WIDE_INT minelt;
       HOST_WIDE_INT maxelt;
