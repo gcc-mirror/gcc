@@ -1,3 +1,8 @@
+2001-03-13  Andris Pavenis <pavenis@latnet.lv>
+
+        * config/djgpp/bits/ctype_noninline.h: Fix typo and remove
+	duplicate definitions of __dj_ctype_*
+
 2001-03-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* libsupc++/new: Remove pragma interface.
