@@ -40,87 +40,169 @@
 #endif
 #define ENTRY(x) .globl CNAME(x); .type CNAME(x),%function; CNAME(x):
 #endif
+
+#ifdef __ELF__
+#define LSYM(x) .x
+#else
+#define LSYM(x) x
+#endif
+
+/* We need a better way of testing for this, but for now, this is all 
+   we can do.  */
+@ This selects the minimum architecture level required.
+#define __ARM_ARCH__ 3
+
+#if defined(__ARM_ARCH_4__) || defined(__ARM_ARCH_4T__)
+# undef __ARM_ARCH__
+# define __ARM_ARCH__ 4
+#endif
+        
+#if defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_5T__) \
+	|| defined(__ARM_ARCH_5E__) || defined(__ARM_ARCH_5TE__) \
+	|| defined(__ARM_ARCH_5TEJ__)
+# undef __ARM_ARCH__
+# define __ARM_ARCH__ 5
+#endif
+
+#if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) \
+        || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) \
+        || defined(__ARM_ARCH_6ZK__)
+# undef __ARM_ARCH__
+# define __ARM_ARCH__ 6
+#endif
+
+#if __ARM_ARCH__ >= 5
+# define call_reg(x)	blx	x
+#elif defined (__ARM_ARCH_4T__)
+# define call_reg(x)	mov	lr, pc ; bx	x
+# if defined(__thumb__) || defined(__THUMB_INTERWORK__)
+#  define __INTERWORKING__
+# endif
+#else
+# define call_reg(x)	mov	lr, pc ; mov	pc, x
+#endif
+
+#if defined(__thumb__) && !defined(__THUMB_INTERWORK__)
+.macro	ARM_FUNC_START name
+	.text
+	.align 0
+	.thumb
+	.thumb_func
+	ENTRY(\name)
+	bx	pc
+	nop
+	.arm
+/* A hook to tell gdb that we've switched to ARM mode.  Also used to call
+   directly from other local arm routines.  */
+_L__\name:		
+.endm
+#else
+.macro	ARM_FUNC_START name
+	.text
+	.align 0
+	.arm
+	ENTRY(\name)
+.endm
+#endif
+
+.macro	RETLDM	regs=, cond=, dirn=ia
+#if defined (__INTERWORKING__)
+	.ifc "\regs",""
+	ldr\cond	lr, [sp], #4
+	.else
+	ldm\cond\dirn	sp!, {\regs, lr}
+	.endif
+	bx\cond	lr
+#else
+	.ifc "\regs",""
+	ldr\cond	pc, [sp], #4
+	.else
+	ldm\cond\dirn	sp!, {\regs, pc}
+	.endif
+#endif
+.endm
+
+
+	@ r0:   ffi_prep_args
+	@ r1:   &ecif
+	@ r2:   cif->bytes
+	@ r3:   fig->flags
+	@ sp+0: ecif.rvalue
+	@ sp+4: fn
+
+	@ This assumes we are using gas.
+ARM_FUNC_START ffi_call_SYSV
+	@ Save registers
+        stmfd	sp!, {r0-r3, fp, lr}
+	mov	fp, sp
+
+	@ Make room for all of the new args.
+	sub	sp, fp, r2
+
+	@ Place all of the ffi_prep_args in position
+	mov	ip, r0
+	mov	r0, sp
+	@     r1 already set
+
+	@ Call ffi_prep_args(stack, &ecif)
+	call_reg(ip)
+
+	@ move first 4 parameters in registers
+	ldmia	sp, {r0-r3}
+
+	@ and adjust stack
+	ldr	ip, [fp, #8]
+        cmp	ip, #16
+	movhs	ip, #16
+        add	sp, sp, ip
+
+	@ call (fn) (...)
+	ldr	ip, [fp, #28]
+	call_reg(ip)
 	
-.text
+	@ Remove the space we pushed for the args
+	mov	sp, fp
 
-	# a1:   ffi_prep_args
-	# a2:   &ecif
-	# a3:   cif->bytes
-	# a4:   fig->flags
-	# sp+0: ecif.rvalue
-	# sp+4: fn
+	@ Load r2 with the pointer to storage for the return value
+	ldr	r2, [sp, #24]
 
-	# This assumes we are using gas.
-ENTRY(ffi_call_SYSV)
-	# Save registers
-        stmfd sp!, {a1-a4, fp, lr}
-	mov   fp, sp
+	@ Load r3 with the return type code 
+	ldr	r3, [sp, #12]
 
-	# Make room for all of the new args.
-	sub   sp, fp, a3
+	@ If the return value pointer is NULL, assume no return value.
+	cmp	r2, #0
+	beq	LSYM(Lepilogue)
 
-	# Place all of the ffi_prep_args in position
-	mov   ip, a1
-	mov   a1, sp
-	#     a2 already set
-
-	# And call
-	mov   lr, pc
-	mov   pc, ip
-
-	# move first 4 parameters in registers
-	ldr   a1, [sp, #0]
-	ldr   a2, [sp, #4]
-	ldr   a3, [sp, #8]
-        ldr   a4, [sp, #12]
-
-	# and adjust stack
-	ldr   ip, [fp, #8]
-        cmp   ip, #16
-	movge ip, #16
-        add   sp, sp, ip
-
-	# call function
-	mov   lr, pc
-	ldr   pc, [fp, #28]
-
-	# Remove the space we pushed for the args
-	mov   sp, fp
-
-	# Load a3 with the pointer to storage for the return value
-	ldr   a3, [sp, #24]
-
-	# Load a4 with the return type code 
-	ldr   a4, [sp, #12]
-
-	# If the return value pointer is NULL, assume no return value.
-	cmp   a3, #0
-	beq   epilogue
-
-# return INT
-	cmp   a4, #FFI_TYPE_INT
-	streq a1, [a3]
-	beq   epilogue
-
-# return FLOAT
-	cmp     a4, #FFI_TYPE_FLOAT
+@ return INT
+	cmp	r3, #FFI_TYPE_INT
 #ifdef __SOFTFP__
-	streq	a1, [a3]
-#else
-	stfeqs  f0, [a3]
+	cmpne	r3, #FFI_TYPE_FLOAT
 #endif
-	beq     epilogue
+	streq	r0, [r2]
+	beq	LSYM(Lepilogue)
 
-# return DOUBLE or LONGDOUBLE
-	cmp     a4, #FFI_TYPE_DOUBLE
+	@ return INT64
+	cmp	r3, #FFI_TYPE_SINT64
 #ifdef __SOFTFP__
-	stmeqia	a3, {a1, a2}
-#else
-	stfeqd  f0, [a3]
+	cmpne	r3, #FFI_TYPE_DOUBLE
+#endif
+	stmeqia	r2, {r0, r1}
+
+#ifndef __SOFTFP__
+	beq	LSYM(Lepilogue)
+
+@ return FLOAT
+	cmp	r3, #FFI_TYPE_FLOAT
+	stfeqs	f0, [r2]
+	beq	LSYM(Lepilogue)
+
+@ return DOUBLE or LONGDOUBLE
+	cmp	r3, #FFI_TYPE_DOUBLE
+	stfeqd	f0, [r2]
 #endif
 
-epilogue:
-        ldmfd sp!, {a1-a4, fp, pc}
+LSYM(Lepilogue):
+	RETLDM	"r0-r3,fp"
 
 .ffi_call_SYSV_end:
         .size    CNAME(ffi_call_SYSV),.ffi_call_SYSV_end-CNAME(ffi_call_SYSV)
