@@ -405,7 +405,7 @@ extdef:
 		{ pop_namespace (); }
 	| NAMESPACE identifier '=' 
                 { begin_only_namespace_names (); }
-                any_id ';'
+          any_id ';'
 		{
 		  end_only_namespace_names ();
 		  if (lastiddecl)
@@ -414,18 +414,7 @@ extdef:
 		}
 	| using_decl ';'
 		{ do_toplevel_using_decl ($1); }
-	| USING NAMESPACE
-		{ begin_only_namespace_names (); }
-		any_id ';'
-		{
-		  end_only_namespace_names ();
-		  /* If no declaration was found, the using-directive is
-		     invalid. Since that was not reported, we need the
-		     identifier for the error message. */
-		  if (TREE_CODE ($4) == IDENTIFIER_NODE && lastiddecl)
-		    $4 = lastiddecl;
-		  do_using_directive ($4);
-		}
+	| using_directive
 	| extension extdef
 		{ pedantic = $<itype>1; }
 	;
@@ -446,6 +435,21 @@ namespace_using_decl:
 	        { $$ = build_parse_node (SCOPE_REF, global_namespace, $3); }
 	| USING global_scope namespace_qualifier identifier
 	        { $$ = build_parse_node (SCOPE_REF, $3, $4); }
+	;
+
+using_directive:
+	  USING NAMESPACE
+		{ begin_only_namespace_names (); }
+	  any_id ';'
+		{
+		  end_only_namespace_names ();
+		  /* If no declaration was found, the using-directive is
+		     invalid. Since that was not reported, we need the
+		     identifier for the error message. */
+		  if (TREE_CODE ($4) == IDENTIFIER_NODE && lastiddecl)
+		    $4 = lastiddecl;
+		  do_using_directive ($4);
+		}
 	;
 
 namespace_qualifier:
@@ -3281,12 +3285,7 @@ simple_stmt:
 	| ';'
 		{ finish_stmt (); }
 	| try_block
-	| USING NAMESPACE any_id ';'
-		{ 
-		  if (TREE_CODE ($3) == IDENTIFIER_NODE && lastiddecl)
-		    $3 = lastiddecl;
-		  do_using_directive ($3); 
-		}
+	| using_directive
 	| namespace_using_decl
 	        { do_local_using_decl ($1); }
 	;
