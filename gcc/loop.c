@@ -3245,7 +3245,7 @@ loop_invariant_p (loop, x)
 
 	 We don't know the loop bounds here though, so just fail for all
 	 labels.  */
-      if (flag_unroll_loops)
+      if (flag_old_unroll_loops)
 	return 0;
       else
 	return 1;

@@ -7459,6 +7459,7 @@ count_reg_usage (x, counts, dest, incr)
      int incr;
 {
   enum rtx_code code;
+  rtx note;
   const char *fmt;
   int i, j;
 
@@ -7516,16 +7517,13 @@ count_reg_usage (x, counts, dest, incr)
       /* Things used in a REG_EQUAL note aren't dead since loop may try to
 	 use them.  */
 
-      count_reg_usage (REG_NOTES (x), counts, NULL_RTX, incr);
+      note = find_reg_equal_equiv_note (x);
+      if (note)
+        count_reg_usage (XEXP (note, 0), counts, NULL_RTX, incr);
       return;
 
-    case EXPR_LIST:
     case INSN_LIST:
-      if (REG_NOTE_KIND (x) == REG_EQUAL
-	  || (REG_NOTE_KIND (x) != REG_NONNEG && GET_CODE (XEXP (x,0)) == USE))
-	count_reg_usage (XEXP (x, 0), counts, NULL_RTX, incr);
-      count_reg_usage (XEXP (x, 1), counts, NULL_RTX, incr);
-      return;
+      abort ();
 
     default:
       break;

@@ -291,7 +291,8 @@ in the following sections.
 -fsched2-use-traces  -fsignaling-nans @gol
 -fsingle-precision-constant  -fssa -fssa-ccp -fssa-dce @gol
 -fstrength-reduce  -fstrict-aliasing  -ftracer -fthread-jumps @gol
--funit-at-a-time -funroll-all-loops  -funroll-loops  -funswitch-loops @gol
+-funroll-all-loops  -funroll-loops -fpeel-loops -funswitch-loops @gol
+-fold-unroll-loops -fold-unroll-all-loops @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
 
@@ -4292,17 +4293,50 @@ extra optimizations to take place but consumes more memory.
 
 @item -funroll-loops
 @opindex funroll-loops
-Unroll loops whose number of iterations can be determined at compile
-time or upon entry to the loop.  @option{-funroll-loops} implies both
-@option{-fstrength-reduce} and @option{-frerun-cse-after-loop}.  This
-option makes code larger, and may or may not make it run faster.
+Unroll loops whose number of iterations can be determined at compile time or
+upon entry to the loop.  @option{-funroll-loops} implies
+@option{-frerun-cse-after-loop}.  It also turns on complete loop peeling
+(i.e. complete removal of loops with small constant number of iterations).
+This option makes code larger, and may or may not make it run faster.
 
 @item -funroll-all-loops
 @opindex funroll-all-loops
 Unroll all loops, even if their number of iterations is uncertain when
 the loop is entered.  This usually makes programs run more slowly.
 @option{-funroll-all-loops} implies the same options as
-@option{-funroll-loops},
+@option{-funroll-loops}.
+
+@item -fpeel-loops
+@opindex fpeel-loops
+Peels the loops for that there is enough information that they do not
+roll much (from profile feedback).  It also turns on complete loop peeling
+(i.e. complete removal of loops with small constant number of iterations).
+
+@item -funswitch-loops
+@opindex funswitch-loops
+Move branches with loop invariant conditions out of the loop, with duplicates
+of the loop on both branches (modified according to result of the condition).
+
+@item -fold-unroll-loops
+@opindex fold-unroll-loops
+Unroll loops whose number of iterations can be determined at compile
+time or upon entry to the loop, using the old loop unroller whose loop
+recognition is based on notes from frontend.  @option{-fold-unroll-loops} implies
+both @option{-fstrength-reduce} and @option{-frerun-cse-after-loop}.  This
+option makes code larger, and may or may not make it run faster.
+
+@item -fold-unroll-all-loops
+@opindex fold-unroll-all-loops
+Unroll all loops, even if their number of iterations is uncertain when
+the loop is entered. This is done using the old loop unroller whose loop
+recognition is based on notes from frontend.  This usually makes programs run more slowly.
+@option{-fold-unroll-all-loops} implies the same options as
+@option{-fold-unroll-loops}.
+ 
+@item -funswitch-loops
+@opindex funswitch-loops
+Move branches with loop invariant conditions out of the loop, with duplicates
+of the loop on both branches (modified according to result of the condition).
 
 @item -funswitch-loops
 @opindex funswitch-loops
@@ -4417,6 +4451,28 @@ will not be inlined.  This option is precisely equivalent to
 The maximum number of instructions that a loop should have if that loop
 is unrolled, and if the loop is unrolled, it determines how many times
 the loop code is unrolled.
+
+@item max-average-unrolled-insns
+The maximum number of instructions biased by probabilities of their execution
+that a loop should have if that loop is unrolled, and if the loop is unrolled,
+it determines how many times the loop code is unrolled.
+
+@item max-unroll-times
+The maximum number of unrollings of a single loop.
+
+@item max-peeled-insns
+The maximum number of instructions that a loop should have if that loop
+is peeled, and if the loop is peeled, it determines how many times
+the loop code is peeled.
+
+@item max-peel-times
+The maximum number of peelings of a single loop.
+
+@item max-completely-peeled-insns
+The maximum number of insns of a completely peeled loop.
+
+@item max-completely-peel-times
+The maximum number of iterations of a loop to be suitable for complete peeling.
 
 @item max-unswitch-insns
 The maximum number of insns of an unswitched loop.

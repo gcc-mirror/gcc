@@ -1,3 +1,10 @@
+2003-02-26  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* lib/scanasm.exp: Add support for counting numbers of
+	occurences.
+	* gcc.dg/unswitch-1.c, gcc.dg/peel-1.c, gcc.dg/unroll-1.c,
+	gcc.dg/unroll-2.c, gcc.dg/unroll-3.c: New tests.
+
 2003-02-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9683

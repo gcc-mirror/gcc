@@ -56,6 +56,44 @@ proc scan-assembler { args } {
     }
 }
 
+# Call pass if pattern is present given number of times, otherwise fail.
+proc scan-assembler-times { args } {
+    if { [llength $args] < 2 } {
+	error "scan-assembler: too few arguments"
+        return
+    }
+    if { [llength $args] > 3 } {
+	error "scan-assembler: too many arguments"
+	return
+    }
+    if { [llength $args] >= 3 } {
+	switch [dg-process-target [lindex $args 2]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { error "scan-assembler: `xfail' not allowed here" }
+	    "P" { error "scan-assembler: `xfail' not allowed here" }
+	}
+    }
+
+    # This assumes that we are two frames down from dg-test, and that
+    # it still stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new dejagnu release.
+    upvar 2 name testcase
+
+    # This must match the rule in gcc-dg.exp.
+    set output_file "[file rootname [file tail $testcase]].s"
+
+    set fd [open $output_file r]
+    set text [read $fd]
+    close $fd
+
+    if { [llength [regexp -inline -all -- [lindex $args 0] $text]] == [lindex $args 1]} {
+	pass "$testcase scan-assembler-times [lindex $args 0] [lindex $args 1]"
+    } else {
+	fail "$testcase scan-assembler-times [lindex $args 0] [lindex $args 1]"
+    }
+}
+
 # Call pass if pattern is not present, otherwise fail.
 proc scan-assembler-not { args } {
     if { [llength $args] < 1 } {
