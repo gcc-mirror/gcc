@@ -1,3 +1,8 @@
+2001-05-29  Jeffrey Oldham  <oldham@codesourcery.com>
+
+        * gcc.c-torture/compile/20010518-2.x: New file to compile, not
+        assemble.
+
 2001-05-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/optimize2.C: New file.
