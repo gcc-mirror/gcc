@@ -764,7 +764,7 @@ __fixunssfsi (float a)
 
 #ifdef L_varargs
 #ifdef __i860__
-#if defined(SVR4) || defined(__alliant__)
+#if defined(__svr4__) || defined(__alliant__)
 	asm ("	.text");
 	asm ("	.align	4");
 
@@ -829,7 +829,7 @@ asm ("___builtin_saveregs:");
 	asm ("	bri	%r1");		/* delayed return */
 	asm ("	st.l	%r28,12(%r16)"); /* pointer to overflow args */
 
-#else /* not SVR4 */
+#else /* not __SVR4__ */
 	asm ("	.text");
 	asm ("	.align	4");
 
@@ -867,7 +867,7 @@ asm ("___builtin_saveregs:");
 	asm ("	mov	r30,sp");
 				/* recover stack and pass address to start 
 				   of data.  */
-#endif /* not SVR4 */
+#endif /* not __SVR4__ */
 #else /* not __i860__ */
 #ifdef __sparc__
 	asm (".global __builtin_saveregs");
