@@ -1,7 +1,8 @@
 2001-11-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-	* regex.c: Check defined(__STDC__) || defined(HAVE_STRINGIZE)
-	to determine whether ISO CPP token pasting is available.
+	* regex.c: Check defined(__STDC__) || defined(ALMOST_STDC) ||
+	defined(HAVE_STRINGIZE) to determine whether ISO CPP token pasting
+	is available.
 
 Thu Nov 15 11:06:25 2001  Jeffrey A Law  (law@cygnus.com)
 
