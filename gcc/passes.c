@@ -1048,7 +1048,7 @@ rest_of_handle_gcse (void)
     }
 
   /* If gcse or cse altered any jumps, rerun jump optimizations to clean
-     things up.  Then possibly re-run CSE again.  */
+     things up.  */
   if (tem || tem2)
     {
       timevar_push (TV_JUMP);
