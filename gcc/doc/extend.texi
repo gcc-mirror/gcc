@@ -6543,7 +6543,7 @@ declarations.
 
 The following pragmas are available for all architectures running the
 Darwin operating system.  These are useful for compatibility with other
-MacOS compilers.
+Mac OS compilers.
 
 @table @code
 @item mark @var{tokens}@dots{}
