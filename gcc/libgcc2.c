@@ -3837,47 +3837,6 @@ label:
 #endif /* !DWARF2_UNWIND_INFO */
 
 #endif /* L_eh */
-
-#ifdef L_eh_compat
-
-/* This is needed to provide the old names of the frame info registering
-   code for compatibility.  It should be deleted in GCC 2.9.0.  */
-
-extern void *malloc ();
-
-struct object {
-  void *pc_begin;
-  void *pc_end;
-  void *fde_begin;
-  void *fde_array;
-  size_t count;
-  struct object *next;
-};
-
-void __register_frame_info (void *, struct object *);
-void __register_frame_info_table (void *, struct object *);
-void __deregister_frame_info (void *);
-
-void
-__register_frame (void *begin)
-{
-  __register_frame_info (begin, malloc (sizeof (struct object)));
-}
-
-void
-__register_frame_table (void *begin)
-{
-  __register_frame_info_table (begin, malloc (sizeof (struct object)));
-}
-
-void
-__deregister_frame (void *begin)
-{
-  /* This leaks the memory malloced above,
-     but that's good enough for backward compatibility purposes.  */
-  __deregister_frame_info (begin);
-}
-#endif
 
 #ifdef L_pure
 #ifndef inhibit_libc
