@@ -237,11 +237,8 @@ void FN ()                                                            \
 #undef LIB_SPEC
 #define LIB_SPEC ""
 
-/* Don't link with crt0 files, let the linker start files specify
-   the appropriate crt0 file.  This is overridden by non-embedded
-   targets which wish to provide a crt0.o by default.  */
 #undef  STARTFILE_SPEC
-#define STARTFILE_SPEC "crti%O%s crtbegin%O%s"
+#define STARTFILE_SPEC "crti%O%s crtbegin%O%s %{!mno-crt0:crt0%O%s}"
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend%O%s crtn%O%s"
