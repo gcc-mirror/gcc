@@ -7913,8 +7913,7 @@ if test x"${enable_languages+set}" != xset; then
 		enable_languages=all
 	fi
 else
-	if test x"${enable_languages}" = x ||
-	   test x"${enable_languages}" = xyes;
+	if test x"${enable_languages}" = x;
 	then
 		{ echo "configure: error: --enable-languages needs at least one language argument" 1>&2; exit 1; }
 	fi
@@ -7952,6 +7951,7 @@ do
    esac
 done
 
+remaining_languages=${enable_languages}
 subdirs=
 for lang in ${srcdir}/*/config-lang.in ..
 do
@@ -7976,6 +7976,7 @@ do
 	  *) add_this_lang=no ;;
 	  esac
 	  if test x"${add_this_lang}" = xyes; then
+                remaining_languages=`echo $remaining_languages | sed -e s/${lang_alias}//g`
 		case $lang in
 		    ${srcdir}/ada/config-lang.in)
 			if test x$have_gnat = xyes ; then
@@ -7990,6 +7991,14 @@ do
 	  ;;
 	esac
 done
+
+remaining_languages_check=`echo $remaining_languages | sed -e 's/,//g' -e 's/^c$//'g`
+if test "xxx$remaining_languages_check" != "xxx" -a "xxx$remaining_languages_check" != "xxxall" ; then
+    remaining_languages_clean=`echo $remaining_languages | sed -e 's/^c,//' -e 's/,c,/,/' -e 's/,c$//'  -e 's/^c$//' -e 's/,,*/,/g' -e 's/^,//g' -e 's/,$//g' `
+    echo "Language alias(es) not found: $remaining_languages_clean" 
+    echo "Refer to the configure instructions in the doc directory"
+    exit 1
+fi
 
 # Make gthr-default.h if we have a thread file.
 gthread_flags=
@@ -8035,7 +8044,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:8039: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:8048: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
