@@ -1,5 +1,11 @@
 2002-07-31  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/crtn.asm: Don't use __mips16 to determine the
+	return-address offset.  Define RA to a suitable temporary
+	register for the return address.
+
+2002-07-31  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (eh_set_lr_si, eh_set_lr_di): Change
 	constraints to 'd'.
 
