@@ -34,7 +34,6 @@
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
 #include <locale>
-#include <langinfo.h>
 
 namespace std 
 {
