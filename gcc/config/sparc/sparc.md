@@ -975,9 +975,12 @@
   ""
   "
 {
-  if (GET_CODE (operands[2]) == CONST_INT
-      && GET_CODE (operands[3]) == CONST_INT
-      && INTVAL (operands[2]) / INTVAL (operands[3]) > 32)
+  /* If the size isn't known, don't emit inline code.  output_block_move
+     would output code that's much slower than the library function.
+     Also don't output code for large blocks.  */
+  if (GET_CODE (operands[2]) != CONST_INT
+      || GET_CODE (operands[3]) != CONST_INT
+      || INTVAL (operands[2]) / INTVAL (operands[3]) > 16)
     FAIL;
 
   operands[0] = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
@@ -1414,8 +1417,8 @@
 {
   rtx op2 = operands[2];
 
-  /* If constant is positive, upper bits zeroed, otherwise unchanged
-   * give the assembler a chance to pick the move instruction. */
+  /* If constant is positive, upper bits zeroed, otherwise unchanged.
+     Give the assembler a chance to pick the move instruction. */
   if (GET_CODE (op2) == CONST_INT)
     {
       int sign = INTVAL (op2);
@@ -1472,8 +1475,8 @@
 {
   rtx op2 = operands[2];
 
-  /* If constant is positive, upper bits zeroed, otherwise unchanged
-  /* If constant is positive, upper bits zeroed, otherwise unchanged
+  /* If constant is positive, upper bits zeroed, otherwise unchanged.
+     Give the assembler a chance to pick the move instruction. */
   if (GET_CODE (op2) == CONST_INT)
     {
       int sign = INTVAL (op2);
@@ -1540,8 +1543,8 @@
 {
   rtx op2 = operands[2];
 
-  /* If constant is positive, upper bits zeroed, otherwise unchanged
-   * give the assembler a chance to pick the move instruction. */
+  /* If constant is positive, upper bits zeroed, otherwise unchanged.
+     Give the assembler a chance to pick the move instruction. */
   if (GET_CODE (op2) == CONST_INT)
     {
       int sign = INTVAL (op2);
@@ -1600,8 +1603,8 @@
 {
   rtx op2 = operands[2];
 
-  /* If constant is positive, upper bits zeroed, otherwise unchanged
-   * give the assembler a chance to pick the move instruction. */
+  /* If constant is positive, upper bits zeroed, otherwise unchanged.
+     Give the assembler a chance to pick the move instruction. */
   if (GET_CODE (op2) == CONST_INT)
     {
       int sign = INTVAL (op2);
@@ -1660,8 +1663,8 @@
 {
   rtx op2 = operands[2];
 
-  /* If constant is postive, upper bits zeroed, otherwise unchanged
-   * give the assembler a chance to pick the move instruction. */
+  /* If constant is postive, upper bits zeroed, otherwise unchanged.
+     Give the assembler a chance to pick the move instruction. */
   if (GET_CODE (op2) == CONST_INT)
     {
       int sign = INTVAL (op2);
