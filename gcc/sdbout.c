@@ -847,7 +847,7 @@ sdbout_dequeue_anonymous_types ()
 	{
 	  register tree type = TREE_VALUE (link);
 
-	  if (! TREE_ASM_WRITTEN (type))
+	  if (type && ! TREE_ASM_WRITTEN (type))
 	    sdbout_one_type (type);
 	}
     }
