@@ -4508,12 +4508,6 @@ forget_old_reloads_1 (x, ignored)
       reg_last_reload_reg[regno + nr] = 0;
 }
 
-/* For each reload, the mode of the reload register.  */
-static enum machine_mode reload_mode[MAX_RELOADS];
-
-/* For each reload, the largest number of registers it will require.  */
-static int reload_nregs[MAX_RELOADS];
-
 /* Comparison function for qsort to decide which of two reloads
    should be handled first.  *P1 and *P2 are the reload numbers.  */
 
@@ -4537,7 +4531,7 @@ reload_reg_class_lower (r1p, r2p)
     return t;
 
   /* Aside from solitaires, consider all multi-reg groups first.  */
-  t = reload_nregs[r2] - reload_nregs[r1];
+  t = rld[r2].nregs - rld[r1].nregs;
   if (t != 0)
     return t;
 
@@ -4748,7 +4742,7 @@ clear_reload_reg_in_use (regno, opnum, type, mode)
 	      int conflict_start = true_regnum (rld[i].reg_rtx);
 	      int conflict_end
 		= (conflict_start
-		   + HARD_REGNO_NREGS (conflict_start, reload_mode[i]));
+		   + HARD_REGNO_NREGS (conflict_start, rld[i].mode));
 
 	      /* If there is an overlap with the first to-be-freed register,
 		 adjust the interval start.  */
@@ -5400,7 +5394,7 @@ allocate_reload_reg (chain, r, last_reload, noerror)
      Perhaps those classes should be avoided for reloading
      by use of more alternatives.  */
 
-  int force_group = reload_nregs[r] > 1 && ! last_reload;
+  int force_group = rld[r].nregs > 1 && ! last_reload;
 
   /* If we want a single register and haven't yet found one,
      take any reg in the right class and not in use.
@@ -5453,7 +5447,7 @@ allocate_reload_reg (chain, r, last_reload, noerror)
 						   rld[r].in,
 						   rld[r].out, r, 1)))
 	      && TEST_HARD_REG_BIT (reg_class_contents[class], regnum)
-	      && HARD_REGNO_MODE_OK (regnum, reload_mode[r])
+	      && HARD_REGNO_MODE_OK (regnum, rld[r].mode)
 	      /* Look first for regs to share, then for unshared.  But
 		 don't share regs used for inherited reloads; they are
 		 the ones we want to preserve.  */
@@ -5463,12 +5457,12 @@ allocate_reload_reg (chain, r, last_reload, noerror)
 		      && ! TEST_HARD_REG_BIT (reload_reg_used_for_inherit,
 					      regnum))))
 	    {
-	      int nr = HARD_REGNO_NREGS (regnum, reload_mode[r]);
+	      int nr = HARD_REGNO_NREGS (regnum, rld[r].mode);
 	      /* Avoid the problem where spilling a GENERAL_OR_FP_REG
 		 (on 68000) got us two FP regs.  If NR is 1,
 		 we would reject both of them.  */
 	      if (force_group)
-		nr = CLASS_MAX_NREGS (rld[r].class, reload_mode[r]);
+		nr = CLASS_MAX_NREGS (rld[r].class, rld[r].mode);
 	      /* If we need only one reg, we have already won.  */
 	      if (nr == 1)
 		{
@@ -5517,21 +5511,21 @@ allocate_reload_reg (chain, r, last_reload, noerror)
 
   new = spill_reg_rtx[i];
 
-  if (new == 0 || GET_MODE (new) != reload_mode[r])
+  if (new == 0 || GET_MODE (new) != rld[r].mode)
     spill_reg_rtx[i] = new
-      = gen_rtx_REG (reload_mode[r], spill_regs[i]);
+      = gen_rtx_REG (rld[r].mode, spill_regs[i]);
 
   regno = true_regnum (new);
 
   /* Detect when the reload reg can't hold the reload mode.
      This used to be one `if', but Sequent compiler can't handle that.  */
-  if (HARD_REGNO_MODE_OK (regno, reload_mode[r]))
+  if (HARD_REGNO_MODE_OK (regno, rld[r].mode))
     {
       enum machine_mode test_mode = VOIDmode;
       if (rld[r].in)
 	test_mode = GET_MODE (rld[r].in);
       /* If rld[r].in has VOIDmode, it means we will load it
-	 in whatever mode the reload reg has: to wit, reload_mode[r].
+	 in whatever mode the reload reg has: to wit, rld[r].mode.
 	 We have already tested that for validity.  */
       /* Aside from that, we need to test that the expressions
 	 to reload from or into have modes which are valid for this
@@ -5547,7 +5541,7 @@ allocate_reload_reg (chain, r, last_reload, noerror)
 	    /* Mark as in use for this insn the reload regs we use
 	       for this.  */
 	    mark_reload_reg_in_use (spill_regs[i], rld[r].opnum,
-				    rld[r].when_needed, reload_mode[r]);
+				    rld[r].when_needed, rld[r].mode);
 
 	    rld[r].reg_rtx = new;
 	    reload_spill_index[r] = spill_regs[i];
@@ -5682,16 +5676,16 @@ choose_reload_regs (chain)
       reload_order[j] = j;
       reload_spill_index[j] = -1;
 
-      reload_mode[j] = ((rld[j].inmode == VOIDmode
-			 || (GET_MODE_SIZE (rld[j].outmode)
-			     > GET_MODE_SIZE (rld[j].inmode)))
-			? rld[j].outmode : rld[j].inmode);
+      rld[j].mode = ((rld[j].inmode == VOIDmode
+		      || (GET_MODE_SIZE (rld[j].outmode)
+			  > GET_MODE_SIZE (rld[j].inmode)))
+		     ? rld[j].outmode : rld[j].inmode);
 
-      reload_nregs[j] = CLASS_MAX_NREGS (rld[j].class, reload_mode[j]);
+      rld[j].nregs = CLASS_MAX_NREGS (rld[j].class, rld[j].mode);
 
-      if (reload_nregs[j] > 1)
+      if (rld[j].nregs > 1)
 	{
-	  max_group_size = MAX (reload_nregs[j], max_group_size);
+	  max_group_size = MAX (rld[j].nregs, max_group_size);
 	  group_class = reg_class_superunion[(int)rld[j].class][(int)group_class];
 	}
 
@@ -5700,7 +5694,7 @@ choose_reload_regs (chain)
 	 don't use it in another way.  */
       if (rld[j].reg_rtx)
 	mark_reload_reg_in_use (REGNO (rld[j].reg_rtx), rld[j].opnum,
-				rld[j].when_needed, reload_mode[j]);
+				rld[j].when_needed, rld[j].mode);
     }
 
   if (n_reloads > 1)
@@ -5882,7 +5876,7 @@ choose_reload_regs (chain)
 		       >= GET_MODE_SIZE (mode) + word * UNITS_PER_WORD)
 		      && reg_reloaded_contents[i] == regno
 		      && TEST_HARD_REG_BIT (reg_reloaded_valid, i)
-		      && HARD_REGNO_MODE_OK (i, reload_mode[r])
+		      && HARD_REGNO_MODE_OK (i, rld[r].mode)
 		      && (TEST_HARD_REG_BIT (reg_class_contents[(int) class], i)
 			  /* Even if we can't use this register as a reload
 			     register, we might use it for reload_override_in,
@@ -5901,7 +5895,7 @@ choose_reload_regs (chain)
 #endif
 			      ))
 
-		      && (reload_nregs[r] == max_group_size
+		      && (rld[r].nregs == max_group_size
 			  || ! TEST_HARD_REG_BIT (reg_class_contents[(int) group_class],
 						  i))
 		      && reload_reg_free_for_value_p (i, rld[r].opnum,
@@ -5912,7 +5906,7 @@ choose_reload_regs (chain)
 		      /* If a group is needed, verify that all the subsequent
 			 registers still have their values intact.  */
 		      int nr
-			= HARD_REGNO_NREGS (i, reload_mode[r]);
+			= HARD_REGNO_NREGS (i, rld[r].mode);
 		      int k;
 
 		      for (k = 1; k < nr; k++)
@@ -5953,7 +5947,7 @@ choose_reload_regs (chain)
 				  && rld[r].out)
 			      /* Don't really use the inherited spill reg
 				 if we need it wider than we've got it.  */
-			      || (GET_MODE_SIZE (reload_mode[r])
+			      || (GET_MODE_SIZE (rld[r].mode)
 				  > GET_MODE_SIZE (mode))
 			      || ! TEST_HARD_REG_BIT (reg_class_contents[(int) rld[r].class],
 						      i)
@@ -5978,7 +5972,7 @@ choose_reload_regs (chain)
 			      mark_reload_reg_in_use (i,
 						      rld[r].opnum,
 						      rld[r].when_needed,
-						      reload_mode[r]);
+						      rld[r].mode);
 			      rld[r].reg_rtx = last_reg;
 			      reload_inherited[r] = 1;
 			      reload_inheritance_insn[r]
@@ -6002,7 +5996,7 @@ choose_reload_regs (chain)
 		  || GET_CODE (rld[r].in) == PLUS
 		  || GET_CODE (rld[r].in) == REG
 		  || GET_CODE (rld[r].in) == MEM)
-	      && (reload_nregs[r] == max_group_size
+	      && (rld[r].nregs == max_group_size
 		  || ! reg_classes_intersect_p (rld[r].class, group_class)))
 	    search_equiv = rld[r].in;
 	  /* If this is an output reload from a simple move insn, look
@@ -6021,7 +6015,7 @@ choose_reload_regs (chain)
 	    {
 	      register rtx equiv
 		= find_equiv_reg (search_equiv, insn, rld[r].class,
-				  -1, NULL_PTR, 0, reload_mode[r]);
+				  -1, NULL_PTR, 0, rld[r].mode);
 	      int regno = 0;
 
 	      if (equiv != 0)
@@ -6035,7 +6029,7 @@ choose_reload_regs (chain)
 			 address and not all machines support SUBREGs
 			 there.  */
 		      regno = REGNO (SUBREG_REG (equiv)) + SUBREG_WORD (equiv);
-		      equiv = gen_rtx_REG (reload_mode[r], regno);
+		      equiv = gen_rtx_REG (rld[r].mode, regno);
 		    }
 		  else
 		    abort ();
@@ -6053,7 +6047,7 @@ choose_reload_regs (chain)
 					      regno)))
 		equiv = 0;
 
-	      if (equiv != 0 && ! HARD_REGNO_MODE_OK (regno, reload_mode[r]))
+	      if (equiv != 0 && ! HARD_REGNO_MODE_OK (regno, rld[r].mode))
 		equiv = 0;
 
 	      /* We found a register that contains the value we need.
@@ -6101,7 +6095,7 @@ choose_reload_regs (chain)
 		 to load it, and use it as our reload reg.  */
 	      if (equiv != 0 && regno != HARD_FRAME_POINTER_REGNUM)
 		{
-		  int nr = HARD_REGNO_NREGS (regno, reload_mode[r]);
+		  int nr = HARD_REGNO_NREGS (regno, rld[r].mode);
 		  int k;
 		  rld[r].reg_rtx = equiv;
 		  reload_inherited[r] = 1;
@@ -6121,7 +6115,7 @@ choose_reload_regs (chain)
 			{
 			  mark_reload_reg_in_use (regno, rld[r].opnum,
 						  rld[r].when_needed,
-						  reload_mode[r]);
+						  rld[r].mode);
 			  SET_HARD_REG_BIT (reload_reg_used_for_inherit,
 					    regno + k);
 			}
@@ -6158,7 +6152,7 @@ choose_reload_regs (chain)
 	      if ((rld[s].class != rld[r].class
 		   && reg_classes_intersect_p (rld[r].class,
 					       rld[s].class))
-		  || reload_nregs[s] < reload_nregs[r])
+		  || rld[s].nregs < rld[r].nregs)
 		break;
 	    }
 
@@ -6307,7 +6301,7 @@ choose_reload_regs (chain)
 
 	if (spill_reg_order[regno] >= 0)
 	  clear_reload_reg_in_use (regno, rld[j].opnum,
-				   rld[j].when_needed, reload_mode[j]);
+				   rld[j].when_needed, rld[j].mode);
 	rld[j].reg_rtx = 0;
       }
 
@@ -6328,14 +6322,14 @@ choose_reload_regs (chain)
 	  int nr = 1;
 
 	  if (nregno < FIRST_PSEUDO_REGISTER)
-	    nr = HARD_REGNO_NREGS (nregno, reload_mode[r]);
+	    nr = HARD_REGNO_NREGS (nregno, rld[r].mode);
 
 	  while (--nr >= 0)
 	    reg_has_output_reload[nregno + nr] = 1;
 
 	  if (i >= 0)
 	    {
-	      nr = HARD_REGNO_NREGS (i, reload_mode[r]);
+	      nr = HARD_REGNO_NREGS (i, rld[r].mode);
 	      while (--nr >= 0)
 		SET_HARD_REG_BIT (reg_is_output_reload, i + nr);
 	    }
@@ -6362,7 +6356,7 @@ deallocate_reload_reg (r)
   rld[r].reg_rtx = 0;
   if (spill_reg_order[regno] >= 0)
     clear_reload_reg_in_use (regno, rld[r].opnum, rld[r].when_needed,
-			     reload_mode[r]);
+			     rld[r].mode);
   reload_spill_index[r] = -1;
 }
 
@@ -7640,7 +7634,7 @@ emit_reload_insns (chain)
 		  && REGNO (src_reg) < FIRST_PSEUDO_REGISTER)
 		{
 		  int src_regno = REGNO (src_reg);
-		  int nr = HARD_REGNO_NREGS (src_regno, reload_mode[r]);
+		  int nr = HARD_REGNO_NREGS (src_regno, rld[r].mode);
 		  /* The place where to find a death note varies with
 		     PRESERVE_DEATH_INFO_REGNO_P .  The condition is not
 		     necessarily checked exactly in the code that moves
