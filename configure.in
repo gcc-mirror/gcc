@@ -120,7 +120,7 @@ appdirs=""
 
 # Work in distributions that contain no compiler tools, like Autoconf.
 tentative_cc=""
-if [ -d ${srcdir}/config ]; then
+if test -d ${srcdir}/config ; then
 case "${host}" in
   m68k-hp-hpux*)
     # Avoid "too much defining" errors from HPUX compiler.
@@ -301,7 +301,7 @@ fi
 # If we aren't going to be using gcc, see if we can extract a definition
 # of CC from the fragment.
 # Actually, use the 'pre-extracted' version above.
-if [ -z "${CC}" ] && [ "${build}" = "${host}" ]; then
+if test -z "${CC}" && test "${build}" = "${host}" ; then
   IFS="${IFS= 	}"; save_ifs="$IFS"; IFS="${IFS}:"
   found=
   for dir in $PATH; do
@@ -312,14 +312,14 @@ if [ -z "${CC}" ] && [ "${build}" = "${host}" ]; then
     fi
   done
   IFS="$save_ifs"
-  if [ -z "${found}" ] && [ -n "${tentative_cc}" ] ; then
+  if test -z "${found}" && test -n "${tentative_cc}" ; then
     CC=$tentative_cc
   fi
 fi
 
 # We default to --with-shared on platforms where -fpic is meaningless.
 # Well, we don't yet, but we will.
-if false && [ "${host}" = "${target}" ] && [ x${enable_shared} = x ]; then
+if false && test "${host}" = "${target}" && test x${enable_shared} = x ; then
   case "${target}" in
     alpha*-dec-osf*)	enable_shared=yes ;;
     alpha*-*-linux*)	enable_shared=yes ;;
@@ -344,7 +344,7 @@ case "${enable_shared}" in
 esac
 
 rm -f mh-frag
-if [ -n "${host_makefile_frag}" ] ; then
+if test -n "${host_makefile_frag}" ; then
   for f in ${host_makefile_frag}
   do
     cat ${srcdir}/$f >> mh-frag
@@ -428,7 +428,7 @@ esac
 
 is_cross_compiler=
 
-if [ x"${host}" = x"${target}" ] ; then
+if test x"${host}" = x"${target}" ; then
 	# when doing a native toolchain, don't build the targets
 	# that are in the 'cross only' list
 	skipdirs="${skipdirs} ${cross_only}"
@@ -444,7 +444,7 @@ fi
 # can reliably find it.
 target_subdir=${target_alias}
 
-if [ ! -d ${target_subdir} ] ; then
+if test ! -d ${target_subdir} ; then
   if mkdir ${target_subdir} ; then true
   else
     echo "'*** could not make ${PWD=`pwd`}/${target_subdir}" 1>&2
@@ -454,8 +454,8 @@ fi
 
 build_subdir=${build_alias}
 
-if [ x"${build_alias}" != x"${host}" ] ; then
-  if [ ! -d ${build_subdir} ] ; then
+if test x"${build_alias}" != x"${host}" ; then
+  if test ! -d ${build_subdir} ; then
     if mkdir ${build_subdir} ; then true
     else
       echo "'*** could not make ${PWD=`pwd`}/${build_subdir}" 1>&2
@@ -468,8 +468,8 @@ copy_dirs=
 
 # Handle --with-headers=XXX.  The contents of the named directory are
 # copied to $(tooldir)/sys-include.
-if [ x"${with_headers}" != x ]; then
-  if [ x${is_cross_compiler} = xno ]; then
+if test x"${with_headers}" != x ; then
+  if test x${is_cross_compiler} = xno ; then
     echo 1>&2 '***' --with-headers is only supported when cross compiling
     exit 1
   fi
@@ -482,8 +482,8 @@ fi
 
 # Handle --with-libs=XXX.  Multiple directories are permitted.  The
 # contents are copied to $(tooldir)/lib.
-if [ x"${with_libs}" != x ]; then
-  if [ x${is_cross_compiler} = xno ]; then
+if test x"${with_libs}" != x ; then
+  if test x${is_cross_compiler} = xno ; then
     echo 1>&2 '***' --with-libs is only supported when cross compiling
     exit 1
   fi
@@ -500,21 +500,21 @@ fi
 
 # If both --with-headers and --with-libs are specified, default to
 # --without-newlib.
-if [ x"${with_headers}" != x ] && [ x"${with_libs}" != x ]; then
-  if [ x"${with_newlib}" = x ]; then
+if test x"${with_headers}" != x && test x"${with_libs}" != x ; then
+  if test x"${with_newlib}" = x ; then
     with_newlib=no
   fi
 fi
 
 # Recognize --with-newlib/--without-newlib.
-if [ x${with_newlib} = xno ]; then
+if test x${with_newlib} = xno ; then
   skipdirs="${skipdirs} target-newlib"
-elif [ x${with_newlib} = xyes ]; then
+elif test x${with_newlib} = xyes ; then
   skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
 fi
 
 # Default to using --with-stabs for certain targets.
-if [ x${with_stabs} = x ]; then
+if test x${with_stabs} = x ; then
   case "${target}" in
   mips*-*-irix6*)
     ;;
@@ -528,15 +528,15 @@ fi
 # Handle ${copy_dirs}
 set fnord ${copy_dirs}
 shift
-while [ $# != 0 ]; do
-  if [ -f $2/COPIED ] && [ x"`cat $2/COPIED`" = x"$1" ]; then
+while test $# != 0 ; do
+  if test -f $2/COPIED && test x"`cat $2/COPIED`" = x"$1" ; then
     :
   else
     echo Copying $1 to $2
 
     # Use the install script to create the directory and all required
     # parent directories.
-    if [ -d $2 ]; then
+    if test -d $2 ; then
       :
     else
       echo >config.temp
@@ -749,7 +749,7 @@ case "${target}" in
     ;;
   fr30-*-elf*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    if [ x${is_cross_compiler} != xno ] ; then
+    if test x${is_cross_compiler} != xno ; then
 	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
     fi
     ;;
@@ -794,7 +794,7 @@ case "${target}" in
     ;;
   i[3456]86-*-coff | i[3456]86-*-elf)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    if [ x${is_cross_compiler} != xno ] ; then
+    if test x${is_cross_compiler} != xno ; then
          target_configdirs="${target_configdirs} target-libstub target-cygmon"
     fi
     ;;
@@ -867,13 +867,13 @@ case "${target}" in
     ;;
   m68k-*-elf*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    if [ x${is_cross_compiler} != xno ] ; then
+    if test x${is_cross_compiler} != xno ; then
 	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
     ;;
   m68k-*-coff*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    if [ x${is_cross_compiler} != xno ] ; then
+    if test x${is_cross_compiler} != xno ; then
 	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
     ;;
@@ -887,13 +887,13 @@ case "${target}" in
     ;;
   mn10200-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    if [ x${is_cross_compiler} != xno ] ; then
+    if test x${is_cross_compiler} != xno ; then
 	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
     fi
     ;;
   mn10300-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    if [ x${is_cross_compiler} != xno ] ; then
+    if test x${is_cross_compiler} != xno ; then
 	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
     fi
     ;;
@@ -917,7 +917,7 @@ case "${target}" in
     ;;
   powerpc-*-eabi)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    if [ x${is_cross_compiler} != xno ] ; then
+    if test x${is_cross_compiler} != xno ; then
 	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
     fi
     ;;
@@ -981,26 +981,26 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   sparc-*-elf*)
-    if [ x${is_cross_compiler} != xno ] ; then
+    if test x${is_cross_compiler} != xno ; then
 	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
     fi
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   sparc64-*-elf*)
-    if [ x${is_cross_compiler} != xno ] ; then
+    if test x${is_cross_compiler} != xno ; then
 	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
     fi
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   sparclite-*-*)
-    if [ x${is_cross_compiler} != xno ] ; then
+    if test x${is_cross_compiler} != xno ; then
 	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
     fi
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   sparc-*-sunos4*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    if [ x${is_cross_compiler} != xno ] ; then
+    if test x${is_cross_compiler} != xno ; then
            noconfigdirs="$noconfigdirs gdb gdbtest target-newlib target-libgloss"
     else
            use_gnu_ld=no
@@ -1048,13 +1048,13 @@ case "${noconfigdirs}" in
 esac
 
 # Make sure we don't let GNU ld be added if we didn't want it.
-if [ x$with_gnu_ld = xno ]; then
+if test x$with_gnu_ld = xno ; then
   use_gnu_ld=no
   noconfigdirs="$noconfigdirs ld"
 fi
 
 # Make sure we don't let GNU as be added if we didn't want it.
-if [ x$with_gnu_as = xno ]; then
+if test x$with_gnu_as = xno ; then
   use_gnu_as=no
   noconfigdirs="$noconfigdirs gas"
 fi
@@ -1153,10 +1153,10 @@ done
 notsupp=""
 for dir in . $skipdirs $noconfigdirs ; do
   dirname=`echo $dir | sed -e s/target-//g`
-  if [ $dir != . ]  && echo " ${configdirs} " | grep " ${dir} " >/dev/null 2>&1; then
+  if test $dir != .  && echo " ${configdirs} " | grep " ${dir} " >/dev/null 2>&1; then
     configdirs=`echo " ${configdirs} " | sed -e "s/ ${dir} / /"`
-    if [ -r $srcdir/$dirname/configure ] \
-	|| [ -r $srcdir/$dirname/configure.in ]; then
+    if test -r $srcdir/$dirname/configure \
+	|| test -r $srcdir/$dirname/configure.in ; then
       if echo " ${skipdirs} " | grep " ${dir} " >/dev/null 2>&1; then
 	true
       else
@@ -1164,10 +1164,10 @@ for dir in . $skipdirs $noconfigdirs ; do
       fi
     fi
   fi
-  if [ $dir != . ]  && echo " ${target_configdirs} " | grep " ${dir} " >/dev/null 2>&1; then
+  if test $dir != . && echo " ${target_configdirs} " | grep " ${dir} " >/dev/null 2>&1; then
     target_configdirs=`echo " ${target_configdirs} " | sed -e "s/ ${dir} / /"`
-    if [ -r $srcdir/$dirname/configure ] \
-	|| [ -r $srcdir/$dirname/configure.in ]; then
+    if test -r $srcdir/$dirname/configure \
+	|| test -r $srcdir/$dirname/configure.in ; then
       if echo " ${skipdirs} " | grep " ${dir} " >/dev/null 2>&1; then
 	true
       else
@@ -1179,17 +1179,17 @@ done
 
 # Sometimes the tools are distributed with libiberty but with no other
 # libraries.  In that case, we don't want to build target-libiberty.
-if [ -n "${target_configdirs}" ]; then
+if test -n "${target_configdirs}" ; then
   others=
   for i in `echo ${target_configdirs} | sed -e s/target-//g` ; do
-    if [ "$i" != "libiberty" ]; then
-      if [ -r $srcdir/$i/configure ] || [ -r $srcdir/$i/configure.in ]; then
+    if test "$i" != "libiberty" ; then
+      if test -r $srcdir/$i/configure || test -r $srcdir/$i/configure.in ; then
 	others=yes;
 	break;
       fi
     fi
   done
-  if [ -z "${others}" ]; then
+  if test -z "${others}" ; then
     target_configdirs=
   fi
 fi
@@ -1197,12 +1197,12 @@ fi
 # Deconfigure all subdirectories, in case we are changing the
 # configuration from one where a subdirectory is supported to one where it
 # is not.
-if [ -z "${norecursion}" ] && [ -n "${configdirs}" ]; then
+if test -z "${norecursion}" && test -n "${configdirs}" ; then
   for i in `echo ${configdirs} | sed -e s/target-//g` ; do
     rm -f $i/Makefile
   done
 fi
-if [ -z "${norecursion}" ] && [ -n "${target_configdirs}" ]; then
+if test -z "${norecursion}" && test -n "${target_configdirs}" ; then
   for i in `echo ${target_configdirs} | sed -e s/target-//g` ; do
     rm -f ${target_subdir}/$i/Makefile
   done
@@ -1232,14 +1232,14 @@ done
 # FSF releases, it's important to let people know when their machine isn't
 # supported by the one or two programs in a package.
 
-if [ -n "${notsupp}" ] && [ -z "${norecursion}" ]; then
+if test -n "${notsupp}" && test -z "${norecursion}" ; then
   # If $appdirs is non-empty, at least one of those directories must still
   # be configured, or we error out.  (E.g., if the gas release supports a
   # specified target in some subdirs but not the gas subdir, we shouldn't
   # pretend that all is well.)
-  if [ -n "$appdirs" ]; then
+  if test -n "$appdirs" ; then
     for dir in $appdirs ; do
-      if [ -r $dir/Makefile.in ]; then
+      if test -r $dir/Makefile.in ; then
 	if echo " ${configdirs} " | grep " ${dir} " >/dev/null 2>&1; then
 	  appdirs=""
 	  break
@@ -1250,7 +1250,7 @@ if [ -n "${notsupp}" ] && [ -z "${norecursion}" ]; then
 	fi
       fi
     done
-    if [ -n "$appdirs" ]; then
+    if test -n "$appdirs" ; then
       echo "*** This configuration is not supported by this package." 1>&2
       exit 1
     fi
@@ -1275,15 +1275,15 @@ fi
 # want to do that, then you should use the --without-gnu-as and
 # --without-gnu-ld options for the configure script.
 
-if [ x${use_gnu_as} = x ] ; then
-  if [ x${with_gnu_as} != xno ] && echo " ${configdirs} " | grep " ${gasdir} " > /dev/null 2>&1 && [ -d ${srcdir}/${gasdir} ] ; then
+if test x${use_gnu_as} = x ; then
+  if test x${with_gnu_as} != xno && echo " ${configdirs} " | grep " ${gasdir} " > /dev/null 2>&1 && test -d ${srcdir}/${gasdir} ; then
     with_gnu_as=yes
     withoptions="$withoptions --with-gnu-as"
   fi
 fi
 
-if [ x${use_gnu_ld} = x ] ; then
-  if [ x${with_gnu_ld} != xno ] && echo " ${configdirs} " | grep " ld " > /dev/null 2>&1 && [ -d ${srcdir}/ld ] ; then
+if test x${use_gnu_ld} = x ; then
+  if test x${with_gnu_ld} != xno && echo " ${configdirs} " | grep " ld " > /dev/null 2>&1 && test -d ${srcdir}/ld ; then
     with_gnu_ld=yes
     withoptions="$withoptions --with-gnu-ld"
   fi
@@ -1292,13 +1292,13 @@ fi
 # If using newlib, add --with-newlib to the withoptions so that gcc/configure
 # can detect this case.
 
-if [ x${with_newlib} != xno ] && echo " ${target_configdirs} " | grep " target-newlib " > /dev/null 2>&1 && [ -d ${srcdir}/newlib ] ; then
+if test x${with_newlib} != xno && echo " ${target_configdirs} " | grep " target-newlib " > /dev/null 2>&1 && test -d ${srcdir}/newlib ; then
   with_newlib=yes
   withoptions="$withoptions --with-newlib"
 fi
 
 rm -f mt-frag
-if [ -n "${target_makefile_frag}" ] ; then
+if test -n "${target_makefile_frag}" ; then
   for f in ${target_makefile_frag}
   do
     cat ${srcdir}/$f >> mt-frag
@@ -1312,33 +1312,39 @@ fi
 # can't, we are probably in trouble.  We don't care whether we can run the
 # executable--we might be using a cross compiler--we only care whether it
 # can be created.  At this point the main configure script has set CC.
+we_are_ok=no
 echo "int main () { return 0; }" > conftest.c
 ${CC} -o conftest ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} conftest.c
-if [ $? = 0 ] && [ -s conftest -o -s conftest.exe ]; then
-  :
-else
-  echo 1>&2 "*** The command '${CC} -o conftest ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} conftest.c' failed."
-  echo 1>&2 "*** You must set the environment variable CC to a working compiler."
-  rm -f conftest*
-  exit 1
-fi
+if test $? = 0 ; then
+  if test -s conftest || test -s conftest.exe ; then
+    we_are_ok=yes
+  fi
+fi 
+case $we_are_ok in
+  no)
+    echo 1>&2 "*** The command '${CC} -o conftest ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} conftest.c' failed."
+    echo 1>&2 "*** You must set the environment variable CC to a working compiler."
+    rm -f conftest*
+    exit 1
+    ;;
+esac
 rm -f conftest*
 
 # The Solaris /usr/ucb/cc compiler does not appear to work.
 case "${host}" in
   sparc-sun-solaris2*)
       CCBASE="`echo ${CC-cc} | sed 's/ .*$//'`"
-      if [ "`type $CCBASE | sed 's/^[^/]*//'`" = "/usr/ucb/cc" ] ; then
+      if test "`type $CCBASE | sed 's/^[^/]*//'`" = "/usr/ucb/cc" ; then
           could_use=
-          [ -d /opt/SUNWspro/bin ] && could_use="/opt/SUNWspro/bin"
-          if [ -d /opt/cygnus/bin ] ; then
-              if [ "$could_use" = "" ] ; then
+          test -d /opt/SUNWspro/bin && could_use="/opt/SUNWspro/bin"
+          if test -d /opt/cygnus/bin ; then
+              if test "$could_use" = "" ; then
                   could_use="/opt/cygnus/bin"
               else
                   could_use="$could_use or /opt/cygnus/bin"
               fi
           fi
-        if [ "$could_use" = "" ] ; then
+        if test "$could_use" = "" ; then
             echo "Warning: compilation may fail because you're using"
             echo "/usr/ucb/cc.  You should change your PATH or CC "
             echo "variable and rerun configure."
@@ -1381,7 +1387,7 @@ fi
 
 # If --enable-shared was set, we must set LD_LIBRARY_PATH so that the
 # binutils tools will find libbfd.so.
-if [ "${shared}" = "yes" ]; then
+if test "${shared}" = "yes" ; then
   sed -e 's/^SET_LIB_PATH[ 	]*=.*$/SET_LIB_PATH = $(REALLY_SET_LIB_PATH)/' \
       Makefile > Makefile.tem
   rm -f Makefile
@@ -1417,18 +1423,18 @@ buildargs="--cache-file=../config.cache --build=${build_alias} --host=${build_al
 # native.  However, it would be better to use other mechanisms to make the
 # sorts of decisions they want to make on this basis.  Please consider
 # this option to be deprecated.  FIXME.
-if [ x${is_cross_compiler} = xyes ]; then
+if test x${is_cross_compiler} = xyes ; then
   targargs="--with-cross-host=${host_alias} ${targargs}"
 fi
 
 # Default to --enable-multilib.
-if [ x${enable_multilib} = x ]; then
+if test x${enable_multilib} = x ; then
   targargs="--enable-multilib ${targargs}"
 fi
 
 # Pass --with-newlib if appropriate.  Note that target_configdirs has
 # changed from the earlier setting of with_newlib.
-if [ x${with_newlib} != xno ] && echo " ${target_configdirs} " | grep " newlib " > /dev/null 2>&1 && [ -d ${srcdir}/newlib ] ; then
+if test x${with_newlib} != xno && echo " ${target_configdirs} " | grep " newlib " > /dev/null 2>&1 && test -d ${srcdir}/newlib ; then
   targargs="--with-newlib ${targargs}"
 fi
 
