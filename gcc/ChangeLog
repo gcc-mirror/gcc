@@ -1,3 +1,8 @@
+Tue Mar  2 07:44:56 1999  Mark Mitchell  <mark@markmitchell.com>
+
+	* tree.c (save_tree_status): Don't treat functions with no context
+	as nested.
+
 Tue Mar  2 09:37:05 1999  Robert Lipe  <robertlipe@usa.net>
 
 	* Makefile.in (MAKEINFO): Use makeinfo built from sibling

@@ -320,8 +320,11 @@ gcc_obstack_init (obstack)
 		  (void (*) ()) OBSTACK_CHUNK_FREE);
 }
 
-/* Save all variables describing the current status into the structure *P.
-   This is used before starting a nested function.
+/* Save all variables describing the current status into the structure
+   *P.  This function is called whenever we start compiling one
+   function in the midst of compiling another.  For example, when
+   compiling a nested function, or, in C++, a template instantiation
+   that is required by the function we are currently compiling.
 
    CONTEXT is the decl_function_context for the function we're about to
    compile; if it isn't current_function_decl, we have to play some games.  */
@@ -345,7 +348,7 @@ save_tree_status (p, context)
   p->rtl_obstack = rtl_obstack;
   p->inline_obstacks = inline_obstacks;
 
-  if (context == current_function_decl)
+  if (current_function_decl && context == current_function_decl)
     /* Objects that need to be saved in this function can be in the nonsaved
        obstack of the enclosing function since they can't possibly be needed
        once it has returned.  */
