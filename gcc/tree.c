@@ -2688,20 +2688,25 @@ build_index_type (maxval)
     return itype;
 }
 
-/* Just like build_index_type, but takes lowval and highval instead
-   of just highval (maxval). */
+/* Create a range of some discrete type TYPE (an INTEGER_TYPE,
+   ENUMERAL_TYPE, BOOLEAN_TYPE, or VHAR_TYPE), with
+   low bound LOWVAL and high bound HIGHVAL.
+   if TYPE==NULL_TREE, sizetype is used. */
 
 tree
-build_index_2_type (lowval,highval)
-     tree lowval, highval;
+build_range_type (type, lowval, highval)
+     tree type, lowval, highval;
 {
   register tree itype = make_node (INTEGER_TYPE);
-  TYPE_PRECISION (itype) = TYPE_PRECISION (sizetype);
-  TYPE_MIN_VALUE (itype) = convert (sizetype, lowval);
-  TYPE_MAX_VALUE (itype) = convert (sizetype, highval);
-  TYPE_MODE (itype) = TYPE_MODE (sizetype);
-  TYPE_SIZE (itype) = TYPE_SIZE (sizetype);
-  TYPE_ALIGN (itype) = TYPE_ALIGN (sizetype);
+  TREE_TYPE (itype) = type;
+  if (type == NULL_TREE)
+    type = sizetype;
+  TYPE_PRECISION (itype) = TYPE_PRECISION (type);
+  TYPE_MIN_VALUE (itype) = convert (type, lowval);
+  TYPE_MAX_VALUE (itype) = convert (type, highval);
+  TYPE_MODE (itype) = TYPE_MODE (type);
+  TYPE_SIZE (itype) = TYPE_SIZE (type);
+  TYPE_ALIGN (itype) = TYPE_ALIGN (type);
   if ((TREE_CODE (lowval) == INTEGER_CST)
       && (TREE_CODE (highval) == INTEGER_CST))
     {
@@ -2712,6 +2717,16 @@ build_index_2_type (lowval,highval)
     }
   else
     return itype;
+}
+
+/* Just like build_index_type, but takes lowval and highval instead
+   of just highval (maxval). */
+
+tree
+build_index_2_type (lowval,highval)
+     tree lowval, highval;
+{
+  return build_range_type (NULL_TREE, lowval, highval);
 }
 
 /* Return nonzero iff ITYPE1 and ITYPE2 are equal (in the LISP sense).
