@@ -1,3 +1,7 @@
+2003-08-27  Jason Merrill  <jason@redhat.com>
+
+	* real.c (do_multiply): Initialize with memset.
+
 2003-08-27  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* gcov.c (typedef struct arc_info): New field cs_count.
