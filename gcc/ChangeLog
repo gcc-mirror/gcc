@@ -1,5 +1,11 @@
 2004-02-12  Ian Lance Taylor  <ian@wasabisystems.com>
 
+	PR inline-asm/6162
+	* reload.c (find_reloads): Only support one pair of commutative
+	operands.
+
+2004-02-12  Ian Lance Taylor  <ian@wasabisystems.com>
+
 	PR target/1532
 	Backport from mainline:
 
