@@ -79,10 +79,6 @@ Boston, MA 02111-1307, USA.  */
 
 #endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
 
-#ifndef ACCUMULATE_OUTGOING_ARGS
-#define ACCUMULATE_OUTGOING_ARGS 0
-#endif
-
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
 #endif
