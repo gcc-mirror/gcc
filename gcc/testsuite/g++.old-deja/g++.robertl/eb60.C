@@ -1,3 +1,4 @@
+//Build don't link:
 #include <string>
 
 class t {
