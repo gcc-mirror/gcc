@@ -1112,6 +1112,7 @@ extern void alpha_end_function ();
 /* This macro notes the end of the prologue.  */
 
 #define FUNCTION_END_PROLOGUE(FILE)  output_end_prologue (FILE)
+extern void output_end_prologue ();
 
 /* Output any profiling code before the prologue.  */
 
@@ -1803,8 +1804,8 @@ do {									\
    sized text section with no associated exception handling info.  The
    DEC linker sees this text section, and gives a warning saying that
    the exception handling info is missing.  */
-#define ASM_IDENTIFY_GCC
-#define ASM_IDENTIFY_LANGUAGE
+#define ASM_IDENTIFY_GCC(x)
+#define ASM_IDENTIFY_LANGUAGE(x)
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
@@ -1971,12 +1972,12 @@ literal_section ()						\
 
 #define ASM_OUTPUT_SHORT(FILE,VALUE)  \
   fprintf (FILE, "\t.word %d\n",		\
-    (GET_CODE (VALUE) == CONST_INT		\
+    (int)(GET_CODE (VALUE) == CONST_INT		\
      ? INTVAL (VALUE) & 0xffff : (abort (), 0)))
 
 #define ASM_OUTPUT_CHAR(FILE,VALUE)		\
   fprintf (FILE, "\t.byte %d\n",		\
-    (GET_CODE (VALUE) == CONST_INT		\
+    (int)(GET_CODE (VALUE) == CONST_INT		\
      ? INTVAL (VALUE) & 0xff : (abort (), 0)))
 
 /* We use the default ASCII-output routine, except that we don't write more
@@ -2043,7 +2044,7 @@ literal_section ()						\
 /* This is how to output an assembler line for a numeric constant byte.  */
 
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t.byte 0x%x\n", (VALUE) & 0xff)
+  fprintf (FILE, "\t.byte 0x%x\n", (int) ((VALUE) & 0xff))
 
 /* This is how to output an element of a case-vector that is absolute.
    (Alpha does not use such vectors, but we must define this macro anyway.)  */
@@ -2199,7 +2200,8 @@ do {									\
   else							\
     abort ();						\
 							\
-  fprintf (FILE, "%d($%d)", offset, basereg);		\
+  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, offset);		\
+  fprintf (FILE, "($%d)", basereg);		\
 }
 /* Define the codes that are matched by predicates in alpha.c.  */
 
@@ -2359,7 +2361,7 @@ do {							\
 
 #define PUT_SDB_FUNCTION_END(LINE)
 
-#define PUT_SDB_EPILOGUE_END(NAME)
+#define PUT_SDB_EPILOGUE_END(NAME) ((void)(NAME))
 
 /* Macros for mips-tfile.c to encapsulate stabs in ECOFF, and for
    mips-tdump.c to print them out.
@@ -2389,5 +2391,47 @@ do {							\
 /* The system headers under Alpha systems are generally C++-aware.  */
 #define NO_IMPLICIT_EXTERN_C
 
-/* Prototypes for alpha.c functions used in the md file.  */
+/* Prototypes for alpha.c functions used in the md file & elsewhere.  */
 extern struct rtx_def *get_unaligned_address ();
+extern void alpha_write_verstamp ();
+extern void alpha_reorg ();
+extern int check_float_value ();
+extern int direct_return ();
+extern int const48_operand ();
+extern int add_operand ();
+extern int and_operand ();
+extern int unaligned_memory_operand ();
+extern int zap_mask ();
+extern int current_file_function_operand ();
+extern int alpha_sa_size ();
+extern int alpha_adjust_cost ();
+extern void print_operand ();
+extern int reg_or_0_operand ();
+extern int reg_or_8bit_operand ();
+extern int mul8_operand ();
+extern int reg_or_6bit_operand ();
+extern int alpha_comparison_operator ();
+extern int alpha_swapped_comparison_operator ();
+extern int sext_add_operand ();
+extern int cint8_operand ();
+extern int mode_mask_operand ();
+extern int or_operand ();
+extern int mode_width_operand ();
+extern int reg_or_fp0_operand ();
+extern int signed_comparison_operator ();
+extern int fp0_operand ();
+extern int some_operand ();
+extern int input_operand ();
+extern int divmod_operator ();
+extern int call_operand ();
+extern int reg_or_cint_operand ();
+extern int hard_fp_register_operand ();
+extern void alpha_set_memflags ();
+extern int aligned_memory_operand ();
+extern void get_aligned_mem ();
+extern void alpha_expand_unaligned_load ();
+extern void alpha_expand_unaligned_store ();
+extern int alpha_expand_block_move ();
+extern int alpha_expand_block_clear ();
+extern void alpha_expand_prologue ();
+extern void alpha_expand_epilogue ();

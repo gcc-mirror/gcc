@@ -1,3 +1,38 @@
+Fri Jun 26 09:31:24 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alpha.c: Include system.h and toplev.h.
+	(cint8_operand): Mark parameter `mode' with ATTRIBUTE_UNUSED.
+	(const48_operand): Likewise.
+	(mode_width_operand): Likewise.
+	(mode_mask_operand): Likewise.
+	(mul8_operand): Likewise.
+	(current_file_function_operand): Likewise.
+	(signed_comparison_operator): Likewise.
+	(divmod_operator): Likewise.
+	(any_memory_operand): Likewise.
+	(alpha_return_addr): Likewise for parameter `frame'.
+	(alpha_builtin_saveregs): Likewise for parameter `arglist'.
+	(vms_valid_decl_attribute_p): Likewise for parameters `decl' and
+	`attributes'.
+	(alpha_start_function): Likewise for parameter `decl'.  Use
+ 	HOST_WIDE_INT_PRINT_DEC in call to fprintf.  Fix various format
+ 	specifiers.  Remove unused variables `lab' and `name'.
+	(alpha_end_function): Mark parameter `decl' with ATTRIBUTE_UNUSED.
+	(check_float_value): Likewise for parameter `overflow'.
+	(alpha_need_linkage): Likewise for parameters `name' and `is_local'.
+	
+	* alpha.h (ASM_IDENTIFY_GCC, ASM_IDENTIFY_LANGUAGE): Define as
+	taking an argument.
+	(ASM_OUTPUT_SHORT): Cast argument to `int' in call to fprintf.
+	(ASM_OUTPUT_CHAR): Likewise.
+	(ASM_OUTPUT_BYTE): Likewise.
+	(PRINT_OPERAND_ADDRESS): Use HOST_WIDE_INT_PRINT_DEC in call to
+	fprintf.
+	(PUT_SDB_EPILOGUE_END): Mention argument `NAME' in definition.
+	Add prototypes for functions in alpha.c.
+
+	* alpha.md (ashldi3): Add default case in switch.
+
 1998-06-26  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (gcc_version, gcc_version_trigger): New macros.
