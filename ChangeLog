@@ -1,3 +1,7 @@
+1999-11-29  Bruce Korb  <autogen@linuxbox.com>
+
+	* MAINTAINERS:  update my playtime e-address
+
 Tue Nov 23 00:57:41 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config-ml.in (sparc*-*-*): Disable sparcv9 support if the
