@@ -287,8 +287,8 @@ estimate_probability (loops_info)
 
   dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
   post_dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
-  calculate_dominance_info (NULL, dominators, 0);
-  calculate_dominance_info (NULL, post_dominators, 1);
+  calculate_dominance_info (NULL, dominators, CDI_DOMINATORS);
+  calculate_dominance_info (NULL, post_dominators, CDI_POST_DOMINATORS);
 
   /* Try to predict out blocks in a loop that are not part of a
      natural loop.  */
