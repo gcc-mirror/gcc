@@ -1,3 +1,9 @@
+2003-12-31  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/ia64/ia64.c (ia64_va_arg): Pass pointer for
+	variable-sized type through convert_memory_address.
+	(ia64_in_small_data_p): Always return false for FUNCTION_DECLs.
+
 2003-12-24  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR bootstrap/13068
@@ -17,7 +23,7 @@
 	2003-09-18  Mark Mitchell  <mark@codesourcery.com>
 	* explow.c (convert_memory_address): Define even when
 	POINTERS_EXTEND_UNSIGNED is not defined.  Do nothing if the address
-        is already in the right mode.
+	is already in the right mode.
 
 2003-12-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -54,7 +60,7 @@
 
 2003-12-22  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
-        PR target/11271
+	PR target/11271
 	* reload.c: Revert last backport from mainline.  It breaks s390.
 
 2003-12-21  Roger Sayle  <roger@eyesopen.com>

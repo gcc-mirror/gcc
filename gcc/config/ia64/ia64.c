@@ -3648,8 +3648,12 @@ ia64_va_arg (valist, type)
   /* Variable sized types are passed by reference.  */
   if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
     {
-      rtx addr = std_expand_builtin_va_arg (valist, build_pointer_type (type));
-      return gen_rtx_MEM (ptr_mode, force_reg (Pmode, addr));
+      rtx addr = force_reg (ptr_mode,
+	    std_expand_builtin_va_arg (valist, build_pointer_type (type)));
+#ifdef POINTERS_EXTEND_UNSIGNED
+      addr = convert_memory_address (Pmode, addr);
+#endif
+      return gen_rtx_MEM (ptr_mode, addr);
     }
 
   /* Arguments with alignment larger than 8 bytes start at the next even
@@ -7282,6 +7286,10 @@ ia64_in_small_data_p (exp)
      tree exp;
 {
   if (TARGET_NO_SDATA)
+    return false;
+
+  /* Functions are never small data.  */
+  if (TREE_CODE (exp) == FUNCTION_DECL)
     return false;
 
   if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
