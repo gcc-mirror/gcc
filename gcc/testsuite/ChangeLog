@@ -1,5 +1,9 @@
 2004-10-05  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* gcc.dg/complex-2.c, gcc.dg/complex-2.h: New test.
+
+2004-10-05  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* gcc.c-torture/compile/20041005-1.c: New test.
 
 2004-10-05  Nathan Sidwell  <nathan@codesourcery.com>

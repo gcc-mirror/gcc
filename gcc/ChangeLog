@@ -1,5 +1,10 @@
 2004-10-05  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* c-decl.c (declspecs_add_type): Don't pedwarn for _Complex in
+	system headers.
+
+2004-10-05  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* c-decl.c (pushdecl): When an extern declaration at block scope
 	refers to a visible entity with internal linkage, use the old DECL
 	rather than the new one.
