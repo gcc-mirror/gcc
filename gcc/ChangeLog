@@ -1,3 +1,9 @@
+2005-02-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR rtl-optimization/17728
+	* pa.md (mulsi3, divsi3, udivsi3, modsi3): Change predicate for
+	operand 0 from general_operand to move_dest_operand.
+
 2005-02-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa/elf.h, pa/som.h (ASM_OUTPUT_EXTERNAL): Use assemble_name_raw
