@@ -1,3 +1,8 @@
+2004-10-07  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/17115
+	* g++.dg/warn/Winline-4.C: New test.
+
 2004-10-07  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
 	* gcc.c-torture/compile/20041007-1.c: New test.
