@@ -8242,22 +8242,33 @@ the published application binary interface specifications for the 386
 and will not be binary compatible with structures in code compiled
 without that switch.
 
+@item -m96bit-long-double
 @item -m128bit-long-double
+@opindex m96bit-long-double
 @opindex m128bit-long-double
-Control the size of @code{long double} type. i386 application binary interface
-specify the size to be 12 bytes, while modern architectures (Pentium and newer)
-prefer @code{long double} aligned to 8 or 16 byte boundary.  This is
-impossible to reach with 12 byte long doubles in the array accesses.
+These switches control the size of @code{long double} type. The i386 
+application binary interface specifies the size to be 96 bits, 
+so @option{-m96bit-long-double} is the default in 32 bit mode.
 
-@strong{Warning:} if you use the @option{-m128bit-long-double} switch, the
+Modern architectures (Pentium and newer) would prefer @code{long double}
+to be aligned to an 8 or 16 byte boundary.  In arrays or structures 
+conforming to the ABI, this would not be possible.  So specifying a 
+@option{-m128bit-long-double} will align @code{long double}
+to a 16 byte boundary by padding the @code{long double} with an additional
+32 bit zero. 
+
+In the x86-64 compiler, @option{-m128bit-long-double} is the default choice as
+its ABI specifies that @code{long double} is to be aligned on 16 byte boundary.
+ 
+Notice that neither of these options enable any extra precision over the x87
+standard of 80 bits for a @code{long double}. 
+
+@strong{Warning:} if you override the default value for your target ABI, the
 structures and arrays containing @code{long double} will change their size as
 well as function calling convention for function taking @code{long double}
-will be modified.
+will be modified.  Hence they will not be binary compatible with arrays or
+structures in code compiled without that switch.
 
-@item -m96bit-long-double
-@opindex m96bit-long-double
-Set the size of @code{long double} to 96 bits as required by the i386
-application binary interface.  This is the default.
 
 @item -msvr3-shlib
 @itemx -mno-svr3-shlib
