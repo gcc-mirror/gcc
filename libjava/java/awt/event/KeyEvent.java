@@ -1503,7 +1503,7 @@ public class KeyEvent extends InputEvent
       case VK_NUMPAD7:
       case VK_NUMPAD8:
       case VK_NUMPAD9:
-        return "NumPad-" + (char) (keyCode - VK_NUMPAD0);
+        return "NumPad-" + (keyCode - VK_NUMPAD0);
       case VK_F1:
       case VK_F2:
       case VK_F3:
@@ -1642,63 +1642,64 @@ public class KeyEvent extends InputEvent
   }
 
   /**
-   * Returns a string identifying the event. This is formatted as the field
-   * name of the id type, followed by the keyCode, then the keyChar (if
-   * available), modifiers (if any), extModifiers (if any), and keyLocation.
-   * The keyChar is available unless the keyCode is Backspace, Tab, Enter,
-   * Escape, Numpad-[0-9], Delete, or a keyCode which is an action.
+   * Returns a string identifying the event.  This is formatted as the
+   * field name of the id type, followed by the keyCode, then the
+   * keyChar, modifiers (if any), extModifiers (if any), and
+   * keyLocation.
    *
    * @return a string identifying the event
    */
   public String paramString()
   {
     StringBuffer s = new StringBuffer();
+
     switch (id)
       {
       case KEY_PRESSED:
-        s.append("KEY_PRESSED,keyCode=");
+        s.append("KEY_PRESSED");
         break;
       case KEY_RELEASED:
-        s.append("KEY_RELEASED,keyCode=");
+        s.append("KEY_RELEASED");
         break;
       case KEY_TYPED:
-        s.append("KEY_TYPED,keyCode=");
+        s.append("KEY_TYPED");
         break;
       default:
-        s.append("unknown type,keyCode=");
+        s.append("unknown type");
       }
-    s.append(keyCode);
-    switch (keyCode)
+
+    s.append(",keyCode=").append(keyCode);
+
+    s.append(",keyText=").append(getKeyText(keyCode));
+
+    s.append(",keyChar=");
+    if (isActionKey()
+        || keyCode == VK_SHIFT
+        || keyCode == VK_CONTROL
+        || keyCode == VK_ALT)
+      s.append("Undefined keyChar");
+    else
       {
-      default:
-        if (! isActionKey())
-          {
-            s.append(",keyChar='").append(keyChar).append('\'');
-            break;
-          }
-        // Fallthrough.
-      case VK_BACK_SPACE:
-      case VK_TAB:
-      case VK_ENTER:
-      case VK_ESCAPE:
-      case VK_NUMPAD0:
-      case VK_NUMPAD1:
-      case VK_NUMPAD2:
-      case VK_NUMPAD3:
-      case VK_NUMPAD4:
-      case VK_NUMPAD5:
-      case VK_NUMPAD6:
-      case VK_NUMPAD7:
-      case VK_NUMPAD8:
-      case VK_NUMPAD9:
-      case VK_DELETE:
-        s.append(',').append(getKeyText(keyCode));
+        /* This output string must be selected by examining keyChar
+         * rather than keyCode, because key code information is not
+         * included in KEY_TYPED events.
+         */
+        if (keyChar == VK_BACK_SPACE
+            || keyChar == VK_TAB
+            || keyChar == VK_ENTER
+            || keyChar == VK_ESCAPE
+            || keyChar == VK_DELETE)
+          s.append(getKeyText(keyChar));
+        else
+          s.append("'").append(keyChar).append("'");
       }
+
     if ((modifiers & CONVERT_MASK) != 0)
       s.append(",modifiers=").append(getModifiersExText(modifiers
                                                         & CONVERT_MASK));
     if (modifiers != 0)
       s.append(",extModifiers=").append(getModifiersExText(modifiers));
+
     s.append(",keyLocation=KEY_LOCATION_");
     switch (keyLocation)
       {
@@ -1717,6 +1718,7 @@ public class KeyEvent extends InputEvent
       case KEY_LOCATION_NUMPAD:
         s.append("NUMPAD");
       }
+
     return s.toString();
   }
 

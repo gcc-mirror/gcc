@@ -503,7 +503,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_set__Ljava_lang_String_2Ljava_lang_S
   arg.type = GTK_TYPE_STRING;
   arg.name = (char *) name;
   GTK_VALUE_STRING (arg) = (char *) value;
-  gdk_threads_enter();                          
+  gdk_threads_enter();
   g_object_set(ptr, name, value, NULL);
   gdk_threads_leave();
 
@@ -618,9 +618,10 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectHooks
 
   gdk_threads_enter ();
   gtk_widget_realize (GTK_WIDGET (ptr));
+
   if(GTK_IS_BUTTON(ptr))
-      connect_awt_hook (env, obj, 1, GTK_BUTTON(ptr)->event_window);
+    connect_awt_hook (env, obj, 1, GTK_BUTTON(ptr)->event_window);
   else
-  connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
+    connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
   gdk_threads_leave ();
 }

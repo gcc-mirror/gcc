@@ -1,3 +1,28 @@
+2003-08-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java (postKeyEvent):
+	Add keyLocation parameter.
+	* java/awt/event/KeyEvent.java (getKeyText): Fix "NumPad-"
+	string.
+	(paramString): Generate keyChar string according to keyChar, not
+	keyCode.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
+	(state_to_awt_mods): Handle ALT key.
+	(keyevent_state_to_awt_mods): New function.
+	(get_first_keyval_from_keymap): New function.
+	(keysym_to_awt_keycode): Get virtual key code from keymap.
+	Handle missing VK_ values.
+	(keysym_to_awt_keylocation): New function.
+	(keyevent_to_awt_keychar): New function.
+	(generates_key_typed_event): Handle non-text-component case.
+	Handle GDK_KP_Delete and GDK_KP_Enter.
+	(awt_event_handler): Call new functions to get postKeyEvent
+	parameters.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c (gtkInit):
+	Update postKeyEvent method signature.
+	* jni/gtk-peer/gtkpeer.h: Add KEY_LOCATION defines.  Add missing
+	VK_ defines.
+
 2003-08-05  Matthias Klose  <doko@debian.org>
 
 	* aclocal.m4: check for libart-config binary

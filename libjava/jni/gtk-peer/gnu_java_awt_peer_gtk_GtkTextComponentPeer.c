@@ -456,8 +456,6 @@ textcomponent_commit_cb (GtkIMContext *context,
                          const gchar  *str,
                          jobject peer)
 {
-  void *ptr;
-
   /* str is a \0-terminated UTF-8 encoded character. */
   gunichar2 *jc = g_utf8_to_utf16 (str, -1, NULL, NULL, NULL);
 
@@ -473,7 +471,8 @@ textcomponent_commit_cb (GtkIMContext *context,
                                 /* ... and assume no modifiers. */
                                 0,
                                 VK_UNDEFINED,
-                                (jchar) jc[0]);
+                                (jchar) jc[0],
+                                AWT_KEY_LOCATION_UNKNOWN);
   g_free (jc);
 }
 

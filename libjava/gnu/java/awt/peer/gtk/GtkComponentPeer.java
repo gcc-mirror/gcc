@@ -350,13 +350,13 @@ public class GtkComponentPeer extends GtkGenericPeer
 				 new Rectangle (x, y, width, height)));
   }
 
-  protected void postKeyEvent (int id, long when, int mods, 
-			       int keyCode, char keyChar)
+  protected void postKeyEvent (int id, long when, int mods,
+			       int keyCode, char keyChar, int keyLocation)
   {
-    q.postEvent (new KeyEvent (awtComponent, id, when, mods, 
-			       keyCode, keyChar));
+    q.postEvent (new KeyEvent (awtComponent, id, when, mods,
+			       keyCode, keyChar, keyLocation));
   }
-  
+
   protected void postFocusEvent (int id, boolean temporary)
   {
     q.postEvent (new FocusEvent (awtComponent, id, temporary));
