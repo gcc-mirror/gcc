@@ -4768,21 +4768,29 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		    = replace_rtx (PATTERN (v->insn), d->dest_reg, d->new_reg);
 		  PATTERN (v->insn)
 		    = replace_rtx (PATTERN (v->insn), v->dest_reg, v->new_reg);
-		  if (bl->biv_count != 1)
+		  /* For each place where the biv is incremented, add an
+		     insn to set the new, reduced reg for the giv.
+		     We used to do this only for biv_count != 1, but
+		     this fails when there is a giv after a single biv
+		     increment, e.g. when the last giv was expressed as
+		     pre-decrement.  */
+		  for (tv = bl->biv; tv; tv = tv->next_iv)
 		    {
-		      /* For each place where the biv is incremented, add an
-			 insn to set the new, reduced reg for the giv.  */
-		      for (tv = bl->biv; tv; tv = tv->next_iv)
-			{
-			  /* We always emit reduced giv increments before the
-			     biv increment when bl->biv_count != 1.  So by
-			     emitting the add insns for derived givs after the
-			     biv increment, they pick up the updated value of
-			     the reduced giv.  */
-			  emit_insn_after (copy_rtx (PATTERN (v->insn)),
-					   tv->insn);
-
-			}
+		      /* We always emit reduced giv increments before the
+			 biv increment when bl->biv_count != 1.  So by
+			 emitting the add insns for derived givs after the
+			 biv increment, they pick up the updated value of
+			 the reduced giv.
+			 If the reduced giv is processed with
+			 auto_inc_opt == 1, then it is incremented earlier
+			 than the biv, hence we'll still pick up the right
+			 value.
+			 If it's processed with auto_inc_opt == -1,
+			 that implies that the biv increment is before the
+			 first reduced giv's use.  The derived giv's lifetime
+			 is after the reduced giv's lifetime, hence in this
+			 case, the biv increment doesn't matter.  */
+		      emit_insn_after (copy_rtx (PATTERN (v->insn)), tv->insn);
 		    }
 		  continue;
 		}

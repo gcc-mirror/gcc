@@ -1,3 +1,8 @@
+Wed Jun 16 19:44:33 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (strength_reduce): Insert sets of derived givs at every
+	biv increment, even if it's the only one.
+
 Wed Jun 16 10:33:02 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* dwarfout.c (add_incomplete_type): New fn.
