@@ -359,7 +359,6 @@ case $machine in
 		tm_file="${cpu_type}/${cpu_type}.h i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h gnu.h ${tm_file}"
 		;;
 	esac
-	use_fixproto=no
 	;;
 *-*-openbsd*)
 	tmake_file="t-libc-ok t-openbsd t-libgcc-pic"
@@ -514,6 +513,7 @@ alpha*-*-linux*)
 alpha*-*-gnu*)
 	target_cpu_default="MASK_GAS"
 	tmake_file="${tmake_file} alpha/t-crtfm alpha/t-alpha alpha/t-ieee"
+	use_fixproto=no
 	;;
 alpha*-*-freebsd*)
 	tm_file="${tm_file} ${fbsd_tm_file} alpha/elf.h alpha/freebsd.h"
@@ -967,6 +967,7 @@ x86_64-*-linux*)
 	use_fixproto=no
 	;;
 i[34567]86-*-gnu*)
+	use_fixproto=no
 	;;
 i[34567]86-pc-msdosdjgpp*)
 	xm_file=i386/xm-djgpp.h
@@ -1587,6 +1588,7 @@ powerpc64-*-linux*)
 powerpc64-*-gnu*)
 	tm_file="${cpu_type}/${cpu_type}.h elfos.h svr4.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/linux64.h rs6000/gnu.h"
 	tmake_file="rs6000/t-fprules t-slibgcc-elf-ver t-gnu rs6000/t-linux64"
+	use_fixproto=no
 	;;
 powerpc-*-beos*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/beos.h rs6000/xcoff.h"
@@ -1677,6 +1679,7 @@ powerpc-*-gnu*)
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
+	use_fixproto=no
 	;;
 powerpc-wrs-vxworks*)
 	# We want vxworks.h after rs6000/sysv4.h, which unfortunately
