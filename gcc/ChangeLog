@@ -1,3 +1,7 @@
+Sat Oct  3 06:53:43 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* rs6000.h (CPP_PREDEFINES): Add -D_LONG_LONG.
+
 Fri Oct  2 11:02:41 1998  Klaus Espenlaub <kespenla@student.informatik.uni-ulm.de>
 
 	* Makefile.in (stmp-fixinc, stmp-fixproto, install-multilib):
