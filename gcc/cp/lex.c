@@ -2183,8 +2183,7 @@ whitespace_cr (c)
 	 are undefined.  */
       if (pedantic && !newline_warning)
 	{
-	  warning ("carriage return in source file");
-	  warning ("(we only warn about the first carriage return)");
+	  warning ("carriage return in source file (we only warn about the first carriage return)");
 	  newline_warning = 1;
 	}
       return 1;
@@ -3495,8 +3494,7 @@ do_identifier (token, parsing, args)
 
 	      if (! undeclared_variable_notice)
 		{
-		  error ("(Each undeclared identifier is reported only once");
-		  error ("for each function it appears in.)");
+		  error ("(Each undeclared identifier is reported only once for each function it appears in.)");
 		  undeclared_variable_notice = 1;
 		}
 	    }
