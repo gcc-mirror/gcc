@@ -1,3 +1,8 @@
+2004-12-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* decl.c (define_label): Use POP_TIMEVAR_AND_RETURN.
+	* name-lookup.c (pushdecl_class_level): Likewise.
+
 2004-12-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* name-lookup.c (pushtag): Add missing POP_TIMEVAR_AND_RETURN.

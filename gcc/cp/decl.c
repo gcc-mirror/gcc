@@ -2431,8 +2431,7 @@ define_label (location_t location, tree name)
       check_previous_gotos (decl);
     }
 
-  timevar_pop (TV_NAME_LOOKUP);
-  return decl;
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, decl);
 }
 
 struct cp_switch
