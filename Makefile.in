@@ -369,6 +369,10 @@ all: all.normal
 .PHONY: all
 
 #### host and target specific makefile fragments come in here.
+@target_makefile_frag@
+@alphaieee_frag@
+@ospace_frag@
+@host_makefile_frag@
 ###
 
 # Flags to pass down to all sub-makes.
@@ -1086,7 +1090,7 @@ local-clean:
 
 local-distclean:
 	-rm -f Makefile config.status config.cache mh-frag mt-frag
-	-rm -f multilib.out multilib.ts multilib.tmp
+	-rm -f multilib.out multilib.ts multilib.tmp maybedep.tmp serdep.tmp
 	-if [ "$(TARGET_SUBDIR)" != "." ]; then \
 	  rm -rf $(TARGET_SUBDIR); \
 	else true; fi
@@ -7694,14 +7698,13 @@ multilib.ts: maybe-all-gcc
 $(srcdir)/Makefile.in: # $(srcdir)/Makefile.tpl $(srcdir)/Makefile.def
 	cd $(srcdir) && autogen Makefile.def
 
-# with the gnu make, this is done automatically.
+# Rebuilding Makefile.
+Makefile: Makefile.in configure $(gcc_version_trigger)
+	$(SHELL) ./config.status --recheck
 
-host_makefile_frag=@host_makefile_frag@
-target_makefile_frag=@target_makefile_frag@
-
-Makefile: Makefile.in configure.in $(host_makefile_frag) $(target_makefile_frag) $(gcc_version_trigger)
-	$(SHELL) ./config.status
-
+# Rebuilding configure.
+configure: configure.in
+	cd $(srcdir) && autoconf
 #
 
 .NOEXPORT:

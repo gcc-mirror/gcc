@@ -1,6 +1,3 @@
-# from mh-sysv4
-RANLIB = true
-
 # The l flag generates a warning from the SVR4 archiver, remove it.
 AR_FLAGS = cr
 

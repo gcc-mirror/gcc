@@ -1,3 +1,0 @@
-# If "ar" in $PATH is GNU ar, the symbol table may need rebuilding.
-# If it's HP/UX ar, this should be harmless.
-RANLIB = ar ts

@@ -1,3 +1,12 @@
+2002-12-28  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* acx.m4: New.
+	* mh-a68bsd, mh-aix386, mh-apollo68, mh-delta88, mh-hp300,
+	mh-hpux, mh-hpux8, mh-irix5, mh-irix6, mh-ncrsvr43, mh-openedition,
+	mh-riscos, mh-sysv: Delete.
+	* mh-cxux, mh-dgux386, mh-interix, mh-lynxrs6k, mh-ncr3000,
+	mh-necv4, mh-sco, mh-solaris, mh-sysv4, mh-sysv5, mt-v810: Simplify.
+
 2002-12-16  Christopher Faylor  <cgf@redhat.com>
 
 	* mh-cygwin: Don't build libtermcap if it doesn't exist.
