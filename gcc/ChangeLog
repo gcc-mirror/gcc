@@ -1,5 +1,9 @@
 2000-11-25  Alexandre Oliva  <aoliva@redhat.com>
 
+	* gcc/config/sh/sh.md (sibcalli, sibcalli_pcrel): New insns.
+	(sibcall_pcrel): New insn_and_split.
+	(sibcall, sibcall_value, sibcall_epilogue): New expands.
+
 	* config/sh/sh.md (GOTaddr2picreg, symGOT2reg, symGOTOFF2reg,
 	symPLT_label2reg, call, call_value): Don't set
 	current_function_uses_pic_offset_table.
