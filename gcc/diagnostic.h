@@ -1,5 +1,5 @@
 /* Various declarations for language-independent diagnostics subroutines.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GNU CC.
@@ -166,46 +166,52 @@ extern int diagnostic_message_length_per_line;
 extern output_buffer *diagnostic_buffer;
 
 /* Prototypes */
-void set_diagnostic_context     PARAMS ((diagnostic_context *, const char *,
-                                         va_list *, const char *, int, int));
-void set_fatal_function		PARAMS ((void (*) PARAMS ((const char *,
-							   va_list *))));
-void report_diagnostic          PARAMS ((diagnostic_context *));
-void initialize_diagnostics     PARAMS ((void));
-void reshape_diagnostic_buffer  PARAMS ((void));
-void default_initialize_buffer  PARAMS ((output_buffer *));
-void init_output_buffer		PARAMS ((output_buffer *, const char *, int));
-void flush_diagnostic_buffer    PARAMS ((void));
-void output_clear		PARAMS ((output_buffer *));
-const char *output_get_prefix	PARAMS ((const output_buffer *));
-const char *output_last_position PARAMS ((const output_buffer *));
-void output_set_prefix		PARAMS ((output_buffer *, const char *));
-void output_destroy_prefix      PARAMS ((output_buffer *));
-void output_set_maximum_length  PARAMS ((output_buffer *, int));
-void output_emit_prefix		PARAMS ((output_buffer *));
-void output_add_newline		PARAMS ((output_buffer *));
-void output_add_space		PARAMS ((output_buffer *));
-int output_space_left		PARAMS ((const output_buffer *));
-void output_append		PARAMS ((output_buffer *, const char *,
-                                         const char *));
-void output_add_character	PARAMS ((output_buffer *, int));
-void output_decimal		PARAMS ((output_buffer *, int));
-void output_add_string		PARAMS ((output_buffer *, const char *));
-const char *output_finalize_message PARAMS ((output_buffer *));
-void output_clear_message_text  PARAMS ((output_buffer *));
-void output_printf		PARAMS ((output_buffer *, const char *,
-                                         ...)) ATTRIBUTE_PRINTF_2;
-int output_is_line_wrapping	PARAMS ((output_buffer *));
-void set_message_prefixing_rule PARAMS ((int));
-void output_verbatim            PARAMS ((output_buffer *, const char *, ...))
-     ATTRIBUTE_PRINTF_2;
-void verbatim PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
-char *context_as_prefix         PARAMS ((const char *, int, int));
-char *file_name_as_prefix       PARAMS ((const char *));
-int error_module_changed        PARAMS ((void));
-void record_last_error_module   PARAMS ((void));
-int error_function_changed      PARAMS ((void));
-void record_last_error_function PARAMS ((void));
-void report_problematic_module  PARAMS ((output_buffer *));     
+extern void set_diagnostic_context	PARAMS ((diagnostic_context *,
+						 const char *, va_list *,
+						 const char *, int, int));
+extern void set_fatal_function		PARAMS ((void (*)
+						 PARAMS ((const char *,
+							  va_list *))));
+extern void report_diagnostic		PARAMS ((diagnostic_context *));
+extern void initialize_diagnostics	PARAMS ((void));
+extern void reshape_diagnostic_buffer	PARAMS ((void));
+extern void default_initialize_buffer	PARAMS ((output_buffer *));
+extern void init_output_buffer		PARAMS ((output_buffer *,
+						 const char *, int));
+extern void flush_diagnostic_buffer	PARAMS ((void));
+extern void output_clear		PARAMS ((output_buffer *));
+extern const char *output_get_prefix	PARAMS ((const output_buffer *));
+extern const char *output_last_position PARAMS ((const output_buffer *));
+extern void output_set_prefix		PARAMS ((output_buffer *,
+						 const char *));
+extern void output_destroy_prefix	PARAMS ((output_buffer *));
+extern void output_set_maximum_length	PARAMS ((output_buffer *, int));
+extern void output_emit_prefix		PARAMS ((output_buffer *));
+extern void output_add_newline		PARAMS ((output_buffer *));
+extern void output_add_space		PARAMS ((output_buffer *));
+extern int output_space_left		PARAMS ((const output_buffer *));
+extern void output_append		PARAMS ((output_buffer *, const char *,
+						 const char *));
+extern void output_add_character	PARAMS ((output_buffer *, int));
+extern void output_decimal		PARAMS ((output_buffer *, int));
+extern void output_add_string		PARAMS ((output_buffer *,
+						 const char *));
+extern const char *output_finalize_message PARAMS ((output_buffer *));
+extern void output_clear_message_text	PARAMS ((output_buffer *));
+extern void output_printf		PARAMS ((output_buffer *, const char *,
+						 ...)) ATTRIBUTE_PRINTF_2;
+extern int output_is_line_wrapping	PARAMS ((output_buffer *));
+extern void set_message_prefixing_rule	PARAMS ((int));
+extern void output_verbatim		PARAMS ((output_buffer *, const char *,
+						 ...)) ATTRIBUTE_PRINTF_2;
+extern void verbatim			PARAMS ((const char *, ...))
+     ATTRIBUTE_PRINTF_1;
+extern char *context_as_prefix		PARAMS ((const char *, int, int));
+extern char *file_name_as_prefix	PARAMS ((const char *));
+extern int error_module_changed         PARAMS ((void));
+extern void record_last_error_module	PARAMS ((void));
+extern int error_function_changed	PARAMS ((void));
+extern void record_last_error_function	PARAMS ((void));
+extern void report_problematic_module	PARAMS ((output_buffer *));     
 
 #endif /* __GCC_DIAGNOSTIC_H__ */
