@@ -1,3 +1,7 @@
+2001-06-09  Peter Jakubek <pjak@snafu.de>
+
+	* config/m68k/m68k.md (ashrdi_const): Fix right shift by 16.
+
 2001-06-09  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* vax.h (NOTICE_UPDATE_CC): Set CC_NO_OVERFLOW in cc_status.flags
