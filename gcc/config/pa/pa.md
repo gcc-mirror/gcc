@@ -3478,7 +3478,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(neg:DI (match_operand:DI 1 "register_operand" "r")))]
   ""
-  "sub 0,%R1,%R0\;subb 0,%1,%0"
+  "sub %%r0,%R1,%R0\;subb %%r0,%1,%0"
   [(set_attr "type" "unary")
    (set_attr "length" "8")])
 
@@ -3486,7 +3486,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "sub 0,%1,%0"
+  "sub %%r0,%1,%0"
   [(set_attr "type" "unary")
    (set_attr "length" "4")])
 
@@ -3504,7 +3504,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(not:DI (match_operand:DI 1 "register_operand" "r")))]
   ""
-  "uaddcm 0,%1,%0\;uaddcm 0,%R1,%R0"
+  "uaddcm %%r0,%1,%0\;uaddcm %%r0,%R1,%R0"
   [(set_attr "type" "unary")
    (set_attr "length" "8")])
 
@@ -3512,7 +3512,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(not:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "uaddcm 0,%1,%0"
+  "uaddcm %%r0,%1,%0"
   [(set_attr "type" "unary")
    (set_attr "length" "4")])
 
@@ -3877,7 +3877,7 @@
 		     (match_operand:SI 2 "arith32_operand" "q,n")))]
   ""
   "@
-   vshd 0,%1,%0
+   vshd %%r0,%1,%0
    extru %1,%P2,%L2,%0"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
