@@ -1,3 +1,7 @@
+2004-06-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* real.c: Fix bit count in head comment.
+
 2004-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/15945
