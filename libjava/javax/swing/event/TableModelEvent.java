@@ -42,163 +42,116 @@ import java.util.EventObject;
 import javax.swing.table.TableModel;
 
 /**
- * TableModelEvent
  * @author Andrew Selkirk
  */
-public class TableModelEvent extends EventObject {
+public class TableModelEvent extends EventObject
+{
+  private static final serialVersionUID = -7037680193569691706L;
+  
+  public static int ALL_COLUMNS = -1;
+  public static int DELETE = -1;
+  public static int HEADER_ROW = -1;
+  public static int INSERT = 1;
+  public static int UPDATE = 0;
 
-	//-------------------------------------------------------------
-	// Constants --------------------------------------------------
-	//-------------------------------------------------------------
+  protected int column = 0;
+  protected int firstRow = 0;
+  protected int lastRow = 0;
+  protected int type = 0;
 
-	/**
-	 * ALL_COLUMNS
-	 */
-	public static	int	ALL_COLUMNS		= -1;
+  /**
+   * Creates a <code>TableModelEvent</code> event.
+   * 
+   * @param source The source object
+   */
+  public TableModelEvent(TableModel source)
+  {
+    this(source, 0, source.getRowCount(), ALL_COLUMNS, UPDATE);
+  }
 
-	/**
-	 * DELETE
-	 */
-	public static	int	DELETE			= -1;
+  /**
+   * Creates a <code>TableModelEvent</code> event.
+   * 
+   * @param source The source object
+   * @param row The updated row
+   */
+  public TableModelEvent(TableModel source, int row)
+  {
+    this(source, row, row, ALL_COLUMNS, UPDATE);
+  }
 
-	/**
-	 * HEADER_ROW
-	 */
-	public static	int	HEADER_ROW		= -1;
+  /**
+   * Creates a <code>TableModelEvent</code> event.
+   * 
+   * @param source The source object
+   * @param firstRow The first row of update
+   * @param lastRow The last row of update
+   */
+  public TableModelEvent(TableModel source, int firstRow, int lastRow)
+  {
+    this(source, firstRow, lastRow, ALL_COLUMNS, UPDATE);
+  }
 
-	/**
-	 * INSERT
-	 */
-	public static	int	INSERT			= 1;
+  /**
+   * Creates a <code>TableModelEvent</code> event.
+   * 
+   * @param source The source object
+   * @param firstRow The first row of update
+   * @param lastRow The last row of update
+   * @param column The affected column
+   */
+  public TableModelEvent(TableModel source, int firstRow, int lastRow, int column)
+  {
+    this(source, firstRow, lastRow, column, UPDATE);
+  }
 
-	/**
-	 * UPDATE
-	 */
-	public static	int	UPDATE			= 0;
+  /**
+   * Creates a <code>TableModelEvent</code> event.
+   * 
+   * @param source The source object
+   * @param firstRow The first row of update
+   * @param lastRow The last row of update
+   * @param column The affected column
+   * @param type The type of change
+   */
+  public TableModelEvent(TableModel source, int firstRow, int lastRow, int column, int type)
+  {
+    super(source);
+    this.firstRow = firstRow;
+    this.lastRow = lastRow;
+    this.column = column;
+    this.type = type;
+  }
 
+  /**
+   * Returns the affected column of this event.
+   */
+  public int getColumn()
+  {
+    return column;
+  }
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * Returns the first affected row of this event.
+   */
+  public int getFirstRow()
+  {
+    return firstRow;
+  }
 
-	/**
-	 * column
-	 */
-	protected		int	column			= 0;
-	
-	/**
-	 * firstRow
-	 */
-	protected		int firstRow		= 0;
-	
-	/**
-	 * lastRow
-	 */
-	protected		int	lastRow			= 0;
+  /**
+   * Returns the last affected row of this event.
+   */
+  public int getLastRow()
+  {
+    return lastRow;
+  }
 
-	/**
-	 * type
-	 */
-	protected		int	type			= 0;
-
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor TableModelEvent
-	 * @param source Source object
-	 */
-	public TableModelEvent(TableModel source) {
-		this(source, 0, source.getRowCount(), ALL_COLUMNS, UPDATE);
-	} // TableModelEvent()
-
-	/**
-	 * Constructor TableModelEvent
-	 * @param source Source table model
-	 * @param row Updated row
-	 */
-	public TableModelEvent(TableModel source, int row) {
-		this(source, row, row, ALL_COLUMNS, UPDATE);
-	} // TableModelEvent()
-
-	/**
-	 * Constructor TableModelEvent
-	 * @param source Source table model
-	 * @param firstRow First row of update
-	 * @param lastRow Last row of update
-	 */
-	public TableModelEvent(TableModel source, int firstRow,
-							int lastRow) {
-		this(source, firstRow, lastRow, ALL_COLUMNS, UPDATE);
-	} // TableModelEvent()
-
-	/**
-	 * Constructor TableModelEvent
-	 * @param source Source table model
-	 * @param firstRow First row of update
-	 * @param lastRow Last row of update
-	 * @param column Affected column
-	 */
-	public TableModelEvent(TableModel source, int firstRow,
-							int lastRow, int column) {
-		this(source, firstRow, lastRow, column, UPDATE);
-	} // TableModelEvent()
-
-	/**
-	 * Constructor TableModelEvent
-	 * @param source Source table model
-	 * @param firstRow First row of update
-	 * @param lastRow Last row of update
-	 * @param column Affected column
-	 * @param type Type of change
-	 */
-	public TableModelEvent(TableModel source, int firstRow,
-							int lastRow, int column, int type) {
-		super(source);
-		this.firstRow	= firstRow;
-		this.lastRow	= lastRow;
-		this.column		= column;
-		this.type		= type;
-	} // TableModelEvent()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * getColumn
-	 * @returns column
-	 */
-	public int getColumn() {
-		return column;
-	} // getColumn()
-
-	/**
-	 * getFirstRow
-	 * @returns row
-	 */
-	public int getFirstRow() {
-		return firstRow;
-	} // getFirstRow()
-
-	/**
-	 * getLastRow
-	 * @returns row
-	 */
-	public int getLastRow() {
-		return lastRow;
-	} // getLastRow()
-
-	/**
-	 * Get type
-	 * @returns Type of event
-	 */
-	public int getType() {
-		return type;
-	} // getType()
-
-
-} // TableModelEvent
+  /**
+   * Returns the type of change of this event.
+   */
+  public int getType()
+  {
+    return type;
+  }
+}

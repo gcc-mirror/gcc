@@ -1,5 +1,5 @@
 /* FontUIResource.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,18 +37,65 @@ exception statement from your version. */
 
 
 package javax.swing.plaf;
+
 import java.awt.Font;
+
+
 /**
- * STUBBED
+ * A font that is marked as <code>UIResource</code>, which
+ * indicates that it has been installed by a pluggable
+ * LookAndFeel. Such dimensions are replaced when the LookAndFeel
+ * changes.
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class FontUIResource extends Font implements UIResource
+public class FontUIResource
+  extends Font
+  implements UIResource
 {
-  public FontUIResource(Font f)
-  {
-    super(f.getName(), f.getStyle(), f.getSize());
-  }
+  /**
+   * Constructs a new <code>FontUIResource</code> given
+   * the name, style and size of the font.
+   *
+   * @param name the name of the font. A number of
+   *        &#x201c;logical&#x201d; names are supported by any Java
+   *        implementation. These are
+   *        <code>&#x201c;Dialog&#x201d;</code>,
+   *        <code>&#x201c;DialogInput&#x201d;</code>,
+   *        <code>&#x201c;Monospaced&#x201d;</code>,
+   *        <code>&#x201c;Serif&#x201d;</code>, and
+   *        <code>&#x201c;SansSerif&#x201d;</code>.
+   *
+   * @param style the style of the font, for instance {@link
+   *        java.awt.Font#BOLD} or {@link java.awt.Font#PLAIN}.
+   *
+   * @param size the size of the font in typographic points, for
+   *        instance 10, 12 or 13. Designers of LookAndFeels should be
+   *        aware that some languages (like Japanese and Chinese) have
+   *        glyphs that are too complex to be legible at small point
+   *        sizes.
+   */
   public FontUIResource(String name, int style, int size)
   {
     super(name, style, size);
   }
-} // class FontUIResource
+
+
+  /**
+   * Constructs a new <code>FontUIResource</code> given
+   * an existing font.
+   *
+   * @param f the font that serves as a template.
+   */
+  public FontUIResource(Font f)
+  {
+    /* This implementation will get rid of many font properties,
+     * such as skewing, values of multiple master design axes,
+     * etc.,  unless they get encoded into the name.  It probably
+     * is not a problem for LookAndFeels because user interfaces
+     * are usually not very advanced with respect to typography.
+     */
+    super(f.getName(), f.getStyle(), f.getSize());
+  }
+}

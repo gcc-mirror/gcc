@@ -42,22 +42,23 @@ import java.util.EventListener;
 import javax.swing.tree.ExpandVetoException;
 
 /**
- * TreeWillExpandListener interface
  * @author Andrew Selkirk
  */
-public interface TreeWillExpandListener extends EventListener {
+public interface TreeWillExpandListener extends EventListener
+{
+  /**
+   * Invoked whenever a node in the tree is about to be collapsed.
+   * 
+   * @param event The tree expansion Event
+   */
+  public void treeWillCollapse(TreeExpansionEvent event)
+    throws ExpandVetoException;
 
-	/**
-	 * Tree will collapse
-	 * @param event Tree Expansion Event
-	 */
-	public void treeWillCollapse(TreeExpansionEvent event);
-
-	/**
-	 * Tree will expand
-	 * @param event Tree Expansion Event
-	 */
-	public void treeWillExpand(TreeExpansionEvent event);
-
-
-} // TreeWillExpandListener
+  /**
+   * Invoked whenever a node in the tree is about to be expanded.
+   * 
+   * @param event The tree expansion Event
+   */
+  public void treeWillExpand(TreeExpansionEvent event)
+    throws ExpandVetoException;
+}  

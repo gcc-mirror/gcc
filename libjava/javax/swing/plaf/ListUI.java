@@ -1,5 +1,5 @@
 /* ListUI.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +38,77 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
+import java.awt.Point;
+import java.awt.Rectangle;
+import javax.swing.JList;
 
-public class ListUI extends ComponentUI
+
+/**
+ * An abstract base class for delegates that implement the pluggable
+ * look and feel for a <code>JList</code>.
+ *
+ * @author Sascha Brawer (brawer@dandelis.ch)
+ */
+public abstract class ListUI
+  extends ComponentUI
 {
+  /**
+   * Constructs a new <code>ListUI</code>.
+   */
+  public ListUI()
+  {
+  }
+
+
+  /**
+   * Determines the cell index which is the closest to the specified
+   * location. The find out whether the returned cell actually
+   * contains the location, the caller should also use {@link
+   * #getCellBounds}.
+   *
+   * @param list the <code>JList</code> for which this delegate object
+   *        provides the pluggable user interface.
+   *
+   * @param location a point in the <code>JList</code> coordinate
+   *        system.
+   *
+   * @return the index of the closest cell, or -1 if the list model
+   *         is empty.
+   */
+  public abstract int locationToIndex(JList index, Point location);
+
+
+  /**
+   * Determines the location of the specified cell.
+   *
+   * @param list the <code>JList</code> for which this delegate object
+   *        provides the pluggable user interface.
+   *
+   * @param index the zero-based index of the cell whose location shall be
+   *        determined.
+   *
+   * @return the position of the top left corner of the cell in the
+   *         <code>JList</code> coordinate system, or <code>null</code>
+   *         if <code>cell</code> does not designate a valid cell.
+   */
+  public abstract Point indexToLocation(JList list, int index);
+
+
+  /**
+   * Determines the bounding box of the rectangle spanned by
+   * two list indices.
+   *
+   * @param list the <code>JList</code> for which this delegate object
+   *        provides the pluggable user interface.
+   *
+   * @param index1 the zero-based index of the first cell.
+   *
+   * @param index2 the zero-based index of the second cell.
+   *
+   * @return the spanned rectangle, or <code>null</code> if either
+   *         <code>index1</code> or <code>index2</code> does not
+   *         designate a valid cell.
+   */
+  public abstract Rectangle getCellBounds(JList list,
+                                          int index1, int index2);
 }

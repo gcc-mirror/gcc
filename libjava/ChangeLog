@@ -1,5 +1,34 @@
 2003-06-24  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/event/AncestorEvent.java,
+	javax/swing/event/HyperlinkEvent.java,
+	javax/swing/event/InternalFrameEvent.java,
+	javax/swing/event/ListDataEvent.java,
+	javax/swing/event/TableModelEvent.java,
+	javax/swing/event/TreeWillExpandListener.java,
+	javax/swing/plaf/ComponentUI.java,
+	javax/swing/plaf/DesktopIconUI.java,
+	javax/swing/plaf/DesktopPaneUI.java,
+	javax/swing/plaf/DimensionUIResource.java,
+	javax/swing/plaf/FileChooserUI.java,
+	javax/swing/plaf/FontUIResource.java,
+	javax/swing/plaf/IconUIResource.java,
+	javax/swing/plaf/InputMapUIResource.java,
+	javax/swing/plaf/InsetsUIResource.java,
+	javax/swing/plaf/InternalFrameUI.java,
+	javax/swing/plaf/LabelUI.java,
+	javax/swing/plaf/ListUI.java,
+	javax/swing/plaf/MenuBarUI.java,
+	javax/swing/plaf/MenuItemUI.java,
+	javax/swing/plaf/OptionPaneUI.java,
+	javax/swing/plaf/PanelUI.java,
+	javax/swing/plaf/ProgressBarUI.java,
+	javax/swing/plaf/doc-files/ComponentUI-1.dia,
+	javax/swing/plaf/doc-files/ComponentUI-1.png:
+	New versions from classpath.
+
+2003-06-24  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/Buffer.java
 	(cap): Made package-private.
 	(pos): Likewise.

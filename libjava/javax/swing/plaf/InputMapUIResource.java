@@ -1,5 +1,5 @@
 /* InputMapUIResource.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,26 +37,27 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
-// Imports
-import javax.swing.*;
+import javax.swing.InputMap;
+
 
 /**
- * InputMapUIResource
- * @author	Andrew Selkirk
- * @version	1.0
+ * An <code>InputMap</code> that is marked as <code>UIResource</code>,
+ * which indicates that it has been installed by a pluggable
+ * LookAndFeel. Such dimensions are replaced when the LookAndFeel
+ * changes.
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class InputMapUIResource extends InputMap implements UIResource {
+public class InputMapUIResource
+  extends InputMap
+  implements UIResource
+{
+  /**
+   * Constructs a new <code>InputMapUIResource</code>.
+   */
+  public InputMapUIResource()
+  {
+  }
+}
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor InputMapUIResource
-	 */
-	public InputMapUIResource() {
-		// TODO
-	} // InputMapUIResource()
-
-
-} // InputMapUIResource

@@ -1,5 +1,5 @@
 /* LabelUI.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +38,22 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
-
-public class LabelUI extends ComponentUI
+/**
+ * An abstract base class for delegates that implement the pluggable
+ * look and feel for a <code>JLabel</code>.
+ *
+ * @see javax.swing.JLabel
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
+ */
+public abstract class LabelUI
+  extends ComponentUI
 {
+  /**
+   * Constructs a new <code>LabelUI</code>.
+   */
+  public LabelUI()
+  {
+  }
 }

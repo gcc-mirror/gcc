@@ -1,5 +1,5 @@
 /* ComponentUI.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,89 +38,291 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
-import java.awt.*;
-import javax.swing.border.*;
-import javax.swing.*;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import javax.accessibility.Accessible;
+import javax.swing.JComponent;
 
-import javax.accessibility.*;
 
+/**
+ * The abstract base class for all delegates that provide the
+ * pluggable look and feel for Swing components. User applications
+ * should not need to access this class; it is internal to Swing
+ * and the look-and-feel implementations.
+ *
+ * <p><img src="ComponentUI-1.png" width="700" height="550"
+ * alt="[UML diagram illustrating the architecture for pluggable
+ * look and feels]" />
+ *
+ * <p>Components such as {@link javax.swing.JSlider} do not directly
+ * implement operations related to the look and feel of the user
+ * interface, such as painting or layout. Instead, they use a delegate
+ * object for all such tasks. In the case of <code>JSlider</code>, the
+ * user interface would be provided by some concrete subclass of
+ * {@link javax.swing.plaf.SliderUI}.
+ *
+ * <p>Soon after its creation, a <code>ComponentUI</code> will be sent
+ * an {@link #installUI} message. The <code>ComponentUI</code> will
+ * react by setting properties such as the border or the background
+ * color of the <code>JComponent</code> for which it provides its
+ * services. Soon before the end of its lifecycle, the
+ * <code>ComponentUI</code> will receive an {@link #uninstallUI}
+ * message, at which time the <code>ComponentUI</code> is expected to
+ * undo any changes.
+ *
+ * <p>Note that the <code>ui</code> of a <code>JComponent</code>
+ * changes whenever the user switches between look and feels.  For
+ * example, the <code>ui</code> property of a <code>JSlider</code>
+ * could change from an instance of <code>MetalSliderUI</code> to an
+ * instance of <code>FooSliderUI</code>. This switch can happen at any
+ * time, but it will always be performed from inside the Swing thread.
+ *
+ * @author Sascha Brawer (brawer@dandelis.ch)
+ */
 public abstract class ComponentUI 
-    implements UIResource // ??
 {
-    boolean contains(JComponent c, int x, int y)
-    {
-	return c.inside(x,y);
-    }
-
-    // this SHOULD thow an error:
-    public static ComponentUI createUI(JComponent c)
-    {
-	Exception e = new Exception("createUI from ComponentUI should never be called");
-	e.printStackTrace();
-	System.exit(1);
-	return null;
-    }
-
-    public Accessible getAccessibleChild(JComponent c, int i)
-    {
-	//Return the nth Accessible child of the object. 
-	return null;
-    }
+  /**
+   * Constructs a new UI delegate.
+   */
+  public ComponentUI()
+  {
+  }
   
-    public int getAccessibleChildrenCount(JComponent c)
-    {
-	//Returns the number of accessible children in the object. 
-	return 0;
-    }
   
-    public Dimension getMaximumSize(JComponent c)
+  /**
+   * Sets up the specified component so it conforms the the design
+   * guidelines of the implemented look and feel. When the look and
+   * feel changes, a <code>ComponentUI</code> delegate is created.
+   * The delegate object then receives an <code>installUI</code>
+   * message.
+   *
+   * <p>This method should perform the following tasks:
+   *
+   * <ul><li>Set visual properties such as borders, fonts, colors, or
+   * icons. However, no change should be performed for those
+   * properties whose values have been directly set by the client
+   * application. To allow the distinction, LookAndFeels are expected
+   * to use values that implement the {@link UIResource} marker
+   * interface, such as {@link BorderUIResource} or {@link
+   * ColorUIResource}.</li>
+   *
+   * <li>If necessary, install a {@link java.awt.LayoutManager}.</li>
+   *
+   * <li>Embed custom sub-components. For instance, the UI delegate
+   * for a {@link javax.swing.JSplitPane} might install a special
+   * component for the divider.</li>
+   *
+   * <li>Register event listeners.</li>
+   *
+   * <li>Set up properties related to keyborad navigation, such as
+   * mnemonics or focus traversal policies.</li></ul>
+   *
+   * @param c the component for which this delegate will provide
+   *        services.
+   *
+   * @see #uninstallUI
+   * @see javax.swing.JComponent#setUI
+   * @see javax.swing.JComponent#updateUI
+   */
+  public void installUI(JComponent c)
+  {
+    // The default implementation does not change any properties.
+  }
+
+
+  /**
+   * Puts the specified component into the state it had before
+   * {@link #installUI} was called.
+   *
+   * @param c the component for which this delegate has provided
+   *        services.
+   *
+   * @see #installUI
+   * @see javax.swing.JComponent#setUI
+   * @see javax.swing.JComponent#updateUI
+   */
+  public void uninstallUI(JComponent c)
+  {
+    // The default implementation does not change any properties.
+  }
+  
+  
+  /**
+   * Paints the component according to the design guidelines
+   * of the look and feel. Most subclasses will want to override
+   * this method.
+   *
+   * @param g the graphics for painting.
+   *
+   * @param c the component for which this delegate performs
+   *          services.
+   */
+  public void paint(Graphics g, JComponent c)
+  {
+  }
+  
+  
+  /**
+   * Fills the specified component with its background color
+   * (unless the <code>opaque</code> property is <code>false</code>)
+   * before calling {@link #paint}.
+   *
+   * <p>It is unlikely that a subclass needs to override this method.
+   * The actual rendering should be performed by the {@link #paint}
+   * method.
+   *
+   * @param g the graphics for painting.
+   *
+   * @param c the component for which this delegate performs
+   *          services.
+   *
+   * @see #paint
+   * @see javax.swing.JComponent#paintComponent
+   */
+  public void update(Graphics g, JComponent c)
+  {
+    if (c.isOpaque())
     {
-	return getPreferredSize(c);
+      g.setColor(c.getBackground());
+      g.fillRect(0, 0, c.getWidth(), c.getHeight());
     }
+    paint(g, c);
+  }
+  
+  
+  /**
+   * Determines the preferred size of a component. The default
+   * implementation returns <code>null</code>, which means that
+   * <code>c</code>&#x2019;s layout manager should be asked to
+   * calculate the preferred size.
+   *
+   * @param c the component for which this delegate performs services.
+   *
+   * @return the preferred size, or <code>null</code> to indicate that
+   *         <code>c</code>&#x2019;s layout manager should be asked
+   *         for the preferred size.
+   */
+  public Dimension getPreferredSize(JComponent c)
+  {
+    return null;
+  }
+  
+  
+  /**
+   * Determines the minimum size of a component. The default
+   * implementation calls {@link #getPreferredSize}, but subclasses
+   * might want to override this.
+   *
+   * @param c the component for which this delegate performs services.
+   *
+   * @return the minimum size, or <code>null</code> to indicate that
+   *         <code>c</code>&#x2019;s layout manager should be asked
+   *         to calculate the minimum size.
+   */
+  public Dimension getMinimumSize(JComponent c)
+  {
+    return getPreferredSize(c);
+  }
 
-    public Dimension getMinimumSize(JComponent c)
-    {
-	return getPreferredSize(c);
-    }
 
-    public Dimension getPreferredSize(JComponent c)
-    {
-	return null;
-    }
+  /**
+   * Determines the maximum size of a component. The default
+   * implementation calls {@link #getPreferredSize}, but subclasses
+   * might want to override this.
+   *
+   * @param c the component for which this delegate performs services.
+   *
+   * @return the maximum size, or <code>null</code> to indicate that
+   *         <code>c</code>&#x2019;s layout manager should be asked
+   *         to calculate the maximum size.
+   */
+  public Dimension getMaximumSize(JComponent c)
+  {
+    return getPreferredSize(c);
+  }
 
-    public void installUI(JComponent c)
-    {
-	String id = c.getUIClassID() + ".border";
 
-	Border s = UIManager.getBorder( id );
-	
-	if (s != null)
-	    {
-		c.setBorder( s );
-		//System.out.println("OK-INSTALL: " + this + ", ID=" + id + ",B="+s);
-	    }
-	else
-	    {
-		///System.out.println("FAIL-INSTALL: " + this + ", " + id);
-	    }	
-    }
+  /**
+   * Determines whether a click into the component at a specified
+   * location is considered as having hit the component. The default
+   * implementation checks whether the point falls into the
+   * component&#x2019;s bounding rectangle. Some subclasses might want
+   * to override this, for example in the case of a rounded button.
+   *
+   * @param c the component for which this delegate performs services.
+   *
+   * @param x the x coordinate of the point, relative to the local
+   *        coordinate system of the component. Zero would be be
+   *        component&#x2019;s left edge, irrespective of the location
+   *        inside its parent.
+   *
+   * @param y the y coordinate of the point, relative to the local
+   *        coordinate system of the component. Zero would be be
+   *        component&#x2019;s top edge, irrespective of the location
+   *        inside its parent.
+   */
+  public boolean contains(JComponent c, int x, int y)
+  {    
+    /* JComponent.contains calls the ui delegate for hit
+     * testing. Therefore, endless mutual recursion would result if we
+     * called c.contains(x, y) here.
+     *
+     * The previous Classpath implementation called the deprecated
+     * method java.awt.Component.inside. In the Sun implementation, it
+     * can be observed that inside, other than contains, does not call
+     * the ui delegate.  But that inside() behaves different to
+     * contains() clearly is in violation of the method contract, and
+     * it is not something that a good implementation should rely upon
+     * -- even if Classpath ends up being forced to replicate this
+     * apparent bug of the Sun implementation.
+     */
+    return (x >= 0) && (x < c.getWidth())
+      && (y >= 0) && (y < c.getHeight());
+  }
+  
+  
+  /**
+   * Creates a delegate object for the specified component.  Users
+   * should use the <code>createUI</code> method of a suitable
+   * subclass. The implementation of <code>ComponentUI</code>
+   * always throws an error.
+   *
+   * @param c the component for which a UI delegate is requested.
+   */
+  public static ComponentUI createUI(JComponent c)
+  {
+    throw new Error(
+      "javax.swing.plaf.ComponentUI does not implement createUI; call "
+      + "createUI on a subclass.");
+  }
+  
 
-    public void paint(Graphics g, JComponent c)
-    {
-	//  System.out.println("UI-COMPONENT-> unimplemented paint: " + c + ", UI="+this);
-    }
+  /**
+   * Counts the number of accessible children in the component.  The
+   * default implementation delegates the inquiry to the {@link
+   * javax.accessibility.AccessibleContext} of <code>c</code>.
+   *
+   * @param c the component whose accessible children
+   *        are to be counted.
+   */
+  public int getAccessibleChildrenCount(JComponent c)
+  {
+    return c.getAccessibleContext().getAccessibleChildrenCount();
+  }
 
-    public void uninstallUI(JComponent c)
-    {	
-    }
 
-    public void update(Graphics g, JComponent c) {
-        if (c.isOpaque()) {
-            g.setColor(c.getBackground());
-            g.fillRect(0, 0, c.getWidth(),c.getHeight());
-        }
-        paint(g, c);
-    }
-         
+  /**
+   * Returns the specified accessible child of the component. The
+   * default implementation delegates the inquiry to the {@link
+   * javax.accessibility.AccessibleContext} of <code>c</code>.
+   *
+   * @param i the index of the accessible child, starting at zero.
+   *
+   * @param c the component whose <code>i</code>-th accessible child
+   *        is requested.
+   */
+  public Accessible getAccessibleChild(JComponent c, int i)
+  {
+    return c.getAccessibleContext().getAccessibleChild(i);
+  }
 }
-

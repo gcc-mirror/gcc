@@ -1,5 +1,5 @@
 /* MenuBarUI.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,23 +37,23 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
+
 /**
- * MenuBarUI
- * @author	Andrew Selkirk
- * @version	1.0
+ * An abstract base class for delegates that implement the pluggable
+ * look and feel for a <code>JMenuBar</code>.
+ *
+ * @see javax.swing.JMenuBar
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class MenuBarUI extends ComponentUI {
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor MenuBarUI
-	 */
-	public MenuBarUI() {
-		// TODO
-	} // MenuBarUI()
-
-
-} // MenuBarUI
+public abstract class MenuBarUI
+  extends ComponentUI
+{
+  /**
+   * Constructs a new <code>MenuBarUI</code>.
+   */
+  public MenuBarUI()
+  {
+  }
+}

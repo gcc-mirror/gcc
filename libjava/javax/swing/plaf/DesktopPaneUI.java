@@ -1,5 +1,5 @@
 /* DesktopPaneUI.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,22 +38,22 @@ exception statement from your version. */
 package javax.swing.plaf;
 
 /**
- * DesktopPaneUI
- * @author	Andrew Selkirk
- * @version	1.0
+ * An abstract base class for delegates that implement the pluggable
+ * look and feel for a <code>JDesktopPane</code>.
+ *
+ * @see javax.swing.JDesktopPane
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class DesktopPaneUI extends ComponentUI {
+public abstract class DesktopPaneUI
+  extends ComponentUI
+{
+  /**
+   * Constructs a new <code>DesktopPaneUI</code>.
+   */
+  public DesktopPaneUI()
+  {
+  }
+}
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor DesktopPaneUI
-	 */
-	public DesktopPaneUI() {
-		// TODO
-	} // DesktopPaneUI()
-
-
-} // DesktopPaneUI
