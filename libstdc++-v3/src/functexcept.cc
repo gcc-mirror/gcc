@@ -32,7 +32,7 @@
 #include <new>
 #include <typeinfo>
 #include <ios>
-#ifdef _GLIBCPP_HAVE_LIBINTL_H
+#ifdef _GLIBCPP_USE_NLS
 # include <libintl.h>
 # define _(msgid)   gettext (msgid)
 #else

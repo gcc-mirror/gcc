@@ -1,3 +1,12 @@
+2003-05-01  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acconfig.h (_GLIBCPP_USE_NLS):  New symbol.
+	* configure.in:  Move libintl.h header test...
+	* acinclude.m4 (GLIBCPP_ENABLE_CLOCALE):  ...to here.  Gather all
+	the NLS-related test results into one symbol.
+	* src/functexcept.cc:  Use it here.
+	* aclocal.m4, config.h.in, configure:  Regenerated.
+
 2003-05-01  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/sstream.tcc (overflow): Instead of calling

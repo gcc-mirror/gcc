@@ -1,4 +1,4 @@
-/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+/* config.h.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define if you have a working `mmap' system call.  */
 #undef HAVE_MMAP
@@ -124,6 +124,9 @@
 
 // Define if LC_MESSAGES is available in <locale.h>.
 #undef HAVE_LC_MESSAGES
+
+// Define if NLS translations are to be used.
+#undef _GLIBCPP_USE_NLS
 
 /* Define if you have the __signbit function.  */
 #undef HAVE___SIGNBIT
@@ -745,9 +748,6 @@
 
 /* Define if you have the <nan.h> header file.  */
 #undef HAVE_NAN_H
-
-/* Define if you have the <stdlib.h> header file.  */
-#undef HAVE_STDLIB_H
 
 /* Define if you have the <sys/filio.h> header file.  */
 #undef HAVE_SYS_FILIO_H
