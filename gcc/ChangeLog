@@ -1,3 +1,18 @@
+2005-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR mudflap/19319
+	* gimplify.c (gimplify_modify_expr_rhs) [CALL_EXPR]: Make return
+	slot explicit.
+
+	PR c++/16405
+	* fold-const.c (fold_indirect_ref_1): Split out from...
+	(build_fold_indirect_ref): Here.
+	(fold_indirect_ref): New fn.
+	* tree.h: Declare it.
+	* gimplify.c (gimplify_compound_lval): Call fold_indirect_ref.
+	(gimplify_modify_expr_rhs): Likewise.
+	(gimplify_expr): Likewise.
+
 2005-02-13  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR tree-optimization/14303
