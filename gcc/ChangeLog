@@ -1,3 +1,8 @@
+2001-08-21  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/sysv4.h (ASM_OUTPUT_LABELREF): Don't emit '#' if 
+	ia64_asm_output_label.
+
 2001-08-21  Zack Weinberg  <zackw@panix.com>
 
 	* expmed.c (mode_for_extraction): New function.

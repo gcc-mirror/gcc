@@ -64,7 +64,8 @@ do {						\
   else						\
     fputs (user_label_prefix, STREAM);		\
   fputs (name_, STREAM);			\
-  fputc ('#', STREAM);				\
+  if (!ia64_asm_output_label)			\
+    fputc ('#', STREAM);			\
 } while (0)
 
 /* Intel assembler requires both flags and type if declaring a non-predefined
