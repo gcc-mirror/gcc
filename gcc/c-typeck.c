@@ -5463,7 +5463,6 @@ pop_init_level (implicit)
      int implicit;
 {
   struct constructor_stack *p;
-  HOST_WIDE_INT size = 0;
   tree constructor = 0;
 
   if (implicit == 0)
@@ -5478,9 +5477,6 @@ pop_init_level (implicit)
     }
 
   p = constructor_stack;
-
-  if (constructor_type != 0)
-    size = int_size_in_bytes (constructor_type);
 
   /* Error for initializing a flexible array member, or a zero-length
      array member in an inappropriate context.  */
