@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Convex.
-   Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -41,26 +41,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define alloca __builtin_alloca
 #endif
 
-#ifdef _POSIX_SOURCE
-
 /* Convex ships /tmp as a separate file system - thus it
    usually has more free space than /usr/tmp */
 
 #define P_tmpdir	"/tmp/"
 
-/* Un-hide names hidden in Posix include files.  */
+/* Use memcpy and memset -- either would work but these get inlined. */
 
-#define S_IFMT _S_IFMT
-#define S_IFREG _S_IFREG
+#define bcopy(a,b,c) memcpy (b,a,c)
+#define bzero(a,b) memset (a,0,b)
 
-#else
+/* Convex uses Vax or IEEE floats.
+   Both formats have Vax semantics. */
 
-/* This definition is to prevent 8.0 include files from declaring prototypes.
-   Those include files ANSIfied, but the prototypes sometimes do not match.
-   There is no effect on pre-8.0 OS versions.  */
-
-#ifndef _PROTO
-#define _PROTO(X) ()
-#endif
-
-#endif /* _POSIX_SOURCE */
+#define HOST_FLOAT_FORMAT VAX_FLOAT_FORMAT

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Convex version.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -22,28 +22,75 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 extern int target_flags;
 
-/* Interface to convex.c. */
+/* Convex machine-specific flags
+   -mc1		      target instruction set, libraries, scheduling 
+   -mc2	
+   -mc32
+   -mc34
+   -mc38
+   -margcount	      use standard calling sequence, with arg count word
+   -mno-argcount      don't push arg count, depend on symbol table
+   -margcount-nop     place arg count in a nop instruction (faster than push)
+   -mvolatile-cache   use data cache for volatile mem refs (default)
+   -mvolatile-nocache  bypass data cache for volatile mem refs
+   -mlong32	      cc- and libc-compatible 32-bit longs
+   -mlong64	      64-bit longs
+*/
 
-extern int current_section_is_text;
-extern int const_double_low_int ();
-extern int const_double_high_int ();
-extern char *set_cmp (), *gen_cmp ();
-extern char *output_call ();
+/* Macro to define tables used to set -mXXX flags.
+   This is a list in braces of pairs in braces,
+   each pair being { "NAME", VALUE }
+   where VALUE is the bits to set or minus the bits to clear.
+   An empty string NAME is used to identify the default VALUE.  */
 
-/* Use the proper incantation to search Posix-compliant libraries. */
+#ifndef TARGET_DEFAULT
+#error Use one of convex1.h, convex2.h, etc.
+#endif
 
-#define LINK_SPEC \
-"%{!traditional:-Eposix}%{traditional:-Enoposix}\
- -A__iob=___ap$iob\
- -A_use_libc_sema=___ap$use_libc_sema\
- -L /usr/lib"
+#define TARGET_SWITCHES \
+  { { "c1", 001 }, 	\
+    { "c2", 002 },	\
+    { "c32", 004 },	\
+    { "c34", 010 },	\
+    { "c38", 020 },	\
+    { "argcount", 0100 }, \
+    { "argcount-nop", 0200 }, \
+    { "no-argcount", -0300 }, \
+    { "volatile-cache", -0400 }, \
+    { "no-volatile-cache", 0400 }, \
+    { "volatile-nocache", 0400 }, \
+    { "long64", 01000 }, \
+    { "long32", -01000 }, \
+    { "", TARGET_DEFAULT }}
 
-/* Use the matching startup files. */
+/* Macros used in the machine description to test the flags.  */
 
-#define STARTFILE_SPEC \
-"%{pg:/usr/lib/crt/gcrt0.o}\
-%{!pg:%{p:/usr/lib/crt/mcrt0.o}\
-%{!p:/usr/lib/crt/crt0.o}}"
+#define TARGET_C1 (target_cpu == 0)
+#define TARGET_C2 (target_cpu == 1)
+#define TARGET_C34 (target_cpu == 2)
+#define TARGET_C38 (target_cpu == 3)
+#define TARGET_ARGCOUNT (target_flags & 0100)
+#define TARGET_ARGCOUNT_NOP (target_flags & 0200)
+#define TARGET_LONG64 (target_flags & 01000)
+#define TARGET_VOLATILE_NOCACHE (target_flags & 0400)
+
+#define OVERRIDE_OPTIONS						\
+{									\
+  extern int dollars_in_ident;						\
+  init_convex ();							\
+  /* To compile system header files, allow $ in identifiers even if -ansi */ \
+  dollars_in_ident = 1;							\
+  if ((target_flags & 077) != (TARGET_DEFAULT & 077))			\
+    target_flags &= ~TARGET_DEFAULT;					\
+  if (target_flags & 001)						\
+    target_cpu = 0;							\
+  else if (target_flags & 006)						\
+    target_cpu = 1;							\
+  else if (target_flags & 010)						\
+    target_cpu = 2;							\
+  else if (target_flags & 020)						\
+    target_cpu = 3;							\
+}
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
@@ -53,52 +100,338 @@ extern char *output_call ();
 
 #define TARGET_VERSION fprintf (stderr, " (convex)");
 
-/* Macros used in the machine description to test the flags.  */
+/* Target-dependent specs.
+   Some libraries come in c1 and c2+ versions; use the appropriate ones.
+   Make a target-dependent __convex_cxx__ define to relay the target cpu
+   to the program being compiled. */
 
-/* 
-   -mc1		C1 target (avoid C2-only instructions)
-   -mc2		C2 target
-   -mc32	vitesse
-   -mc34	javelin
-   -mc38	neptune
-   -margcount	use standard calling sequence, with arg count word
-   -mnoargcount don't push arg count, depend on symbol table
-*/
+#if TARGET_DEFAULT & 1
 
-#define TARGET_C1 (target_flags & 1)
-#define TARGET_C2 (target_flags & 2)
-#define TARGET_C34 (target_flags & 4)
-#define TARGET_C38 (target_flags & 010)
-#define TARGET_INDIRECTS (1)
-#define TARGET_ARGCOUNT (target_flags & 040)
+/* C1 default */
 
-/* Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
-   where VALUE is the bits to set or minus the bits to clear.
-   An empty string NAME is used to identify the default VALUE.  */
+#if _IEEE_FLOAT_
 
-#define TARGET_SWITCHES \
-  { { "c1", 021 }, 	\
-    { "c2", 022 },	\
-    { "c32", 022 },	\
-    { "c34", 006 },	\
-    { "c38", 012 },	\
-    { "noc1", -001 }, 	\
-    { "noc2", -002 },	\
-    { "argcount", 040 },  \
-    { "noargcount", -040 }, \
-    { "", TARGET_DEFAULT }}
+#define CPP_SPEC							\
+"%{!mc2:%{!mc32:%{!mc34:%{!mc38:-D__convex_c1__}}}}			\
+ %{mc2:-D__convex_c2__}							\
+ %{mc32:-D__convex_c32__}						\
+ %{mc34:-D__convex_c34__}						\
+ %{mc38:-D__convex_c38__}						\
+ %{fno-builtin:-D__NO_INLINE}						\
+ -D__NO_INLINE_MATH -D__NO_INLINE_STDLIB				\
+ -D_IEEE_FLOAT_								\
+ %{.S:-P}								\
+ %{!traditional:-D__stdc__}						\
+ %{!traditional:-D_LONGLONG}						\
+ %{!traditional:-Ds64_t=long\\ long -Du64_t=unsigned\\ long\\ long}	\
+ %{!ansi:-D_POSIX_SOURCE}						\
+ %{!ansi:-D_CONVEX_SOURCE}"
 
-/* Default target_flags if no switches specified.  */
+#else
 
-#ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 0
+#define CPP_SPEC							\
+"%{!mc2:%{!mc32:%{!mc34:%{!mc38:-D__convex_c1__}}}}			\
+ %{mc2:-D__convex_c2__}							\
+ %{mc32:-D__convex_c32__}						\
+ %{mc34:-D__convex_c34__}						\
+ %{mc38:-D__convex_c38__}						\
+ %{fno-builtin:-D__NO_INLINE}						\
+ -D__NO_INLINE_MATH -D__NO_INLINE_STDLIB				\
+ -D_CONVEX_FLOAT_							\
+ %{.S:-P}								\
+ %{!traditional:-D__stdc__}						\
+ %{!traditional:-D_LONGLONG}						\
+ %{!traditional:-Ds64_t=long\\ long -Du64_t=unsigned\\ long\\ long}	\
+ %{!ansi:-D_POSIX_SOURCE}						\
+ %{!ansi:-D_CONVEX_SOURCE}"
+
 #endif
+
+#define LIB_SPEC							\
+"%{!mc2:%{!mc32:%{!mc34:%{!mc38:-lC1%{traditional:_old}%{p:_p}%{pg:_p}}}}} \
+ %{mc2:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ %{mc32:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ %{mc34:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ %{mc38:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ -lc%{traditional:_old}%{p:_p}%{pg:_p}"
+
+#endif
+
+#if TARGET_DEFAULT & 2
+
+/* C2 default */
+
+#if _IEEE_FLOAT_
+
+#define CPP_SPEC							\
+"%{mc1:-D__convex_c1__}							\
+ %{!mc1:%{!mc32:%{!mc34:%{!mc38:-D__convex_c2__}}}}			\
+ %{mc32:-D__convex_c32__}						\
+ %{mc34:-D__convex_c34__}						\
+ %{mc38:-D__convex_c38__}						\
+ %{fno-builtin:-D__NO_INLINE}						\
+ -D__NO_INLINE_MATH -D__NO_INLINE_STDLIB				\
+ -D_IEEE_FLOAT_								\
+ %{.S:-P}								\
+ %{!traditional:-D__stdc__}						\
+ %{!traditional:-D_LONGLONG}						\
+ %{!traditional:-Ds64_t=long\\ long -Du64_t=unsigned\\ long\\ long}	\
+ %{!ansi:-D_POSIX_SOURCE}						\
+ %{!ansi:-D_CONVEX_SOURCE}"
+
+#else
+
+#define CPP_SPEC							\
+"%{mc1:-D__convex_c1__}							\
+ %{!mc1:%{!mc32:%{!mc34:%{!mc38:-D__convex_c2__}}}}			\
+ %{mc32:-D__convex_c32__}						\
+ %{mc34:-D__convex_c34__}						\
+ %{mc38:-D__convex_c38__}						\
+ %{fno-builtin:-D__NO_INLINE}						\
+ -D__NO_INLINE_MATH -D__NO_INLINE_STDLIB				\
+ -D_CONVEX_FLOAT_							\
+ %{.S:-P}								\
+ %{!traditional:-D__stdc__}						\
+ %{!traditional:-D_LONGLONG}						\
+ %{!traditional:-Ds64_t=long\\ long -Du64_t=unsigned\\ long\\ long}	\
+ %{!ansi:-D_POSIX_SOURCE}						\
+ %{!ansi:-D_CONVEX_SOURCE}"
+
+#endif
+
+#define LIB_SPEC							\
+"%{mc1:-lC1%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ %{!mc1:%{!mc32:%{!mc34:%{!mc38:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}}}} \
+ %{mc32:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ %{mc34:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ %{mc38:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ -lc%{traditional:_old}%{p:_p}%{pg:_p}"
+
+#endif
+
+#if TARGET_DEFAULT & 4
+
+/* C32 default */
+
+#if _IEEE_FLOAT_
+
+#define CPP_SPEC							\
+"%{mc1:-D__convex_c1__}							\
+ %{mc2:-D__convex_c2__}							\
+ %{!mc1:%{!mc2:%{!mc34:%{!mc38:-D__convex_c32__}}}}			\
+ %{mc34:-D__convex_c34__}						\
+ %{mc38:-D__convex_c38__}						\
+ %{fno-builtin:-D__NO_INLINE}						\
+ -D__NO_INLINE_MATH -D__NO_INLINE_STDLIB				\
+ -D_IEEE_FLOAT_								\
+ %{.S:-P}								\
+ %{!traditional:-D__stdc__}						\
+ %{!traditional:-D_LONGLONG}						\
+ %{!traditional:-Ds64_t=long\\ long -Du64_t=unsigned\\ long\\ long}	\
+ %{!ansi:-D_POSIX_SOURCE}						\
+ %{!ansi:-D_CONVEX_SOURCE}"
+
+#else
+
+#define CPP_SPEC							\
+"%{mc1:-D__convex_c1__}							\
+ %{mc2:-D__convex_c2__}							\
+ %{!mc1:%{!mc2:%{!mc34:%{!mc38:-D__convex_c32__}}}}			\
+ %{mc34:-D__convex_c34__}						\
+ %{mc38:-D__convex_c38__}						\
+ %{fno-builtin:-D__NO_INLINE}						\
+ -D__NO_INLINE_MATH -D__NO_INLINE_STDLIB				\
+ -D_CONVEX_FLOAT_							\
+ %{.S:-P}								\
+ %{!traditional:-D__stdc__}						\
+ %{!traditional:-D_LONGLONG}						\
+ %{!traditional:-Ds64_t=long\\ long -Du64_t=unsigned\\ long\\ long}	\
+ %{!ansi:-D_POSIX_SOURCE}						\
+ %{!ansi:-D_CONVEX_SOURCE}"
+
+#endif
+
+#define LIB_SPEC							\
+"%{mc1:-lC1%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ %{mc2:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ %{!mc1:%{!mc2:%{!mc34:%{!mc38:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}}}} \
+ %{mc34:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ %{mc38:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ -lc%{traditional:_old}%{p:_p}%{pg:_p}"
+
+#endif
+
+#if TARGET_DEFAULT & 010
+
+/* C34 default */
+
+#if _IEEE_FLOAT_
+
+#define CPP_SPEC							\
+"%{mc1:-D__convex_c1__}							\
+ %{mc2:-D__convex_c2__}							\
+ %{mc32:-D__convex_c32__}						\
+ %{!mc1:%{!mc2:%{!mc32:%{!mc38:-D__convex_c34__}}}}			\
+ %{mc38:-D__convex_c38__}						\
+ %{fno-builtin:-D__NO_INLINE}						\
+ -D__NO_INLINE_MATH -D__NO_INLINE_STDLIB				\
+ -D_IEEE_FLOAT_								\
+ %{.S:-P}								\
+ %{!traditional:-D__stdc__}						\
+ %{!traditional:-D_LONGLONG}						\
+ %{!traditional:-Ds64_t=long\\ long -Du64_t=unsigned\\ long\\ long}	\
+ %{!ansi:-D_POSIX_SOURCE}						\
+ %{!ansi:-D_CONVEX_SOURCE}"
+
+#else
+
+#define CPP_SPEC							\
+"%{mc1:-D__convex_c1__}							\
+ %{mc2:-D__convex_c2__}							\
+ %{mc32:-D__convex_c32__}						\
+ %{!mc1:%{!mc2:%{!mc32:%{!mc38:-D__convex_c34__}}}}			\
+ %{mc38:-D__convex_c38__}						\
+ %{fno-builtin:-D__NO_INLINE}						\
+ -D__NO_INLINE_MATH -D__NO_INLINE_STDLIB				\
+ -D_CONVEX_FLOAT_							\
+ %{.S:-P}								\
+ %{!traditional:-D__stdc__}						\
+ %{!traditional:-D_LONGLONG}						\
+ %{!traditional:-Ds64_t=long\\ long -Du64_t=unsigned\\ long\\ long}	\
+ %{!ansi:-D_POSIX_SOURCE}						\
+ %{!ansi:-D_CONVEX_SOURCE}"
+
+#endif
+
+#define LIB_SPEC							\
+"%{mc1:-lC1%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ %{mc2:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ %{mc32:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ %{!mc1:%{!mc2:%{!mc32:%{!mc38:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}}}} \
+ %{mc38:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ -lc%{traditional:_old}%{p:_p}%{pg:_p}"
+
+#endif
+
+#if TARGET_DEFAULT & 020
+
+/* C38 default */
+
+#if _IEEE_FLOAT_
+
+#define CPP_SPEC							\
+"%{mc1:-D__convex_c1__}							\
+ %{mc2:-D__convex_c2__}							\
+ %{mc32:-D__convex_c32__}						\
+ %{mc34:-D__convex_c34__}						\
+ %{fno-builtin:-D__NO_INLINE}						\
+ -D__NO_INLINE_MATH -D__NO_INLINE_STDLIB				\
+ -D_IEEE_FLOAT_								\
+ %{!mc1:%{!mc2:%{!mc32:%{!mc34:-D__convex_c38__}}}}			\
+ %{.S:-P}								\
+ %{!traditional:-D__stdc__}						\
+ %{!traditional:-D_LONGLONG}						\
+ %{!traditional:-Ds64_t=long\\ long -Du64_t=unsigned\\ long\\ long}	\
+ %{!ansi:-D_POSIX_SOURCE}						\
+ %{!ansi:-D_CONVEX_SOURCE}"
+
+#else
+
+#define CPP_SPEC							\
+"%{mc1:-D__convex_c1__}							\
+ %{mc2:-D__convex_c2__}							\
+ %{mc32:-D__convex_c32__}						\
+ %{mc34:-D__convex_c34__}						\
+ %{fno-builtin:-D__NO_INLINE}						\
+ -D__NO_INLINE_MATH -D__NO_INLINE_STDLIB				\
+ -D_CONVEX_FLOAT_							\
+ %{!mc1:%{!mc2:%{!mc32:%{!mc34:-D__convex_c38__}}}}			\
+ %{.S:-P}								\
+ %{!traditional:-D__stdc__}						\
+ %{!traditional:-D_LONGLONG}						\
+ %{!traditional:-Ds64_t=long\\ long -Du64_t=unsigned\\ long\\ long}	\
+ %{!ansi:-D_POSIX_SOURCE}						\
+ %{!ansi:-D_CONVEX_SOURCE}"
+
+#endif
+
+#define LIB_SPEC							\
+"%{mc1:-lC1%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ %{mc2:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ %{mc32:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ %{mc34:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}				\
+ %{!mc1:%{!mc2:%{!mc32:%{!mc34:-lC2%{traditional:_old}%{p:_p}%{pg:_p}}}}} \
+ -lc%{traditional:_old}%{p:_p}%{pg:_p}"
+
+#endif
+
+#if _IEEE_FLOAT_
+
+/* ieee default */
+
+#define ASM_SPEC "-fi"
+
+#define LINK_SPEC							\
+"-E%{traditional:no}posix						\
+ -X									\
+ %{F} %{M*} %{y*}							\
+ -fi									\
+ -A__iob=___ap$iob							\
+ -A_use_libc_sema=___ap$use_libc_sema					\
+ %{traditional:-A__gcc_cleanup=__cleanup}				\
+ %{!traditional:-A__gcc_cleanup=___ap$do_registered_functions}		\
+ -L/usr/lib"
+
+#define STARTFILE_SPEC							\
+"%{!pg:%{!p:/usr/lib/crt/crt0.o}}					\
+ %{!pg:%{p:/usr/lib/crt/mcrt0.o}}					\
+ %{pg:/usr/lib/crt/gcrt0.o}						\
+ /usr/lib/crt/fpmode_i.o"
+
+#else
+
+/* native default */
+
+#define ASM_SPEC "-fn"
+
+#define LINK_SPEC							\
+"-E%{traditional:no}posix						\
+ -X									\
+ %{F} %{M*} %{y*}							\
+ -fn									\
+ -A__iob=___ap$iob							\
+ -A_use_libc_sema=___ap$use_libc_sema					\
+ %{traditional:-A___gcc_cleanup=__cleanup}				\
+ %{!traditional:-A___gcc_cleanup=___ap$do_registered_functions}		\
+ -L/usr/lib"
+
+#define STARTFILE_SPEC							\
+"%{!pg:%{!p:/usr/lib/crt/crt0.o}}					\
+ %{!pg:%{p:/usr/lib/crt/mcrt0.o}}					\
+ %{pg:/usr/lib/crt/gcrt0.o}"
+
+#endif
+
+/* Use /path/libgcc.a instead of -lgcc, makes bootstrap work more smoothly. */
+
+#define LINK_LIBGCC_SPECIAL
 
 /* Allow $ in identifiers. */
 
 #define DOLLARS_IN_IDENTIFIERS 2
+
+/* Since IEEE support was added to gcc, most things seem to like it
+   better if we disable exceptions and check afterward for infinity. */
+
+#if __convex__
+#if _IEEE_FLOAT_
+#define REAL_VALUE_ISNAN(x) 0
+#define REAL_VALUE_ISINF(x) ((*(short *) &(x) & 0x7ff0) == 0x7ff0)
+#else
+#define REAL_VALUE_ISNAN(x) 0
+#define REAL_VALUE_ISINF(x) ((*(short *) &(x) & 0xfff0) == 0x8000)
+#endif
+#endif
 
 /* Target machine storage layout */
 
@@ -132,7 +465,7 @@ extern char *output_call ();
 #define PARM_BOUNDARY 32
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
-#define STACK_BOUNDARY 32
+#define STACK_BOUNDARY 64
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 16
@@ -147,7 +480,7 @@ extern char *output_call ();
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
 /* No data type wants to be aligned rounder than this.  */
-/* beware of doubles in structs -- 64 is incompatible with pcc */
+/* beware of doubles in structs -- 64 is incompatible with cc */
 #define BIGGEST_ALIGNMENT 32
 
 /* Set this nonzero if move instructions will actually fail to work
@@ -159,7 +492,7 @@ extern char *output_call ();
 #define CHAR_TYPE_SIZE		8
 #define SHORT_TYPE_SIZE		16
 #define INT_TYPE_SIZE		32
-#define LONG_TYPE_SIZE		32
+#define LONG_TYPE_SIZE		(TARGET_LONG64 ? 64 : 32)
 #define LONG_LONG_TYPE_SIZE	64
 #define FLOAT_TYPE_SIZE		32
 #define DOUBLE_TYPE_SIZE	64
@@ -183,7 +516,8 @@ extern char *output_call ();
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
    For Convex, these are AP, FP, and SP.  */
-#define FIXED_REGISTERS {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1} 
+#define FIXED_REGISTERS \
+  { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1 }
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -191,7 +525,14 @@ extern char *output_call ();
    The latter must include the registers where values are returned
    and the register where structure-value addresses are passed.
    Aside from that, you can include as many other registers as you like.  */
-#define CALL_USED_REGISTERS {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+#define CALL_USED_REGISTERS \
+  { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
+
+/* List the order in which to allocate registers.  Each register must be
+   listed once, even those in FIXED_REGISTERS.
+   For Convex, put S0 (the return register) last. */
+#define REG_ALLOC_ORDER \
+  { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 0, 8, 14, 15 }
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -203,30 +544,28 @@ extern char *output_call ();
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On Convex, S registers can hold any type, A registers any nonfloat. */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  ((REGNO) < 8 || (GET_MODE_CLASS (MODE) != MODE_FLOAT &&		\
-		   GET_MODE_CLASS (MODE) != MODE_COMPLEX_FLOAT &&	\
-		   (MODE) != DImode))
+  (S_REGNO_P (REGNO)							\
+   || (GET_MODE_SIZE (MODE) <= 4 && (MODE) != SFmode))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
    for any hard reg, then this must be 0 for correct output.  */
 #define MODES_TIEABLE_P(MODE1, MODE2)  \
-    ((GET_MODE_CLASS (MODE1) == MODE_FLOAT \
-      || GET_MODE_CLASS (MODE1) == MODE_COMPLEX_FLOAT \
-      || (MODE1) == DImode) \
-     == (GET_MODE_CLASS (MODE2) == MODE_FLOAT \
-	 || GET_MODE_CLASS (MODE2) == MODE_COMPLEX_FLOAT \
-	 || (MODE2) == DImode))
+  ((GET_MODE_SIZE (MODE1) <= 4 && (MODE1) != SFmode)			\
+   == (GET_MODE_SIZE (MODE2) <= 4 && (MODE2) != SFmode))
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 
+#define S0_REGNUM 0
+#define A0_REGNUM 8
+
 /* Register to use for pushing function arguments.  */
-#define STACK_POINTER_REGNUM 8
+#define STACK_POINTER_REGNUM A0_REGNUM
 
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM 15
+#define FRAME_POINTER_REGNUM (A0_REGNUM + 7)
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms
@@ -235,16 +574,16 @@ extern char *output_call ();
 #define FRAME_POINTER_REQUIRED 1
 
 /* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM 14
+#define ARG_POINTER_REGNUM (A0_REGNUM + 6)
 
 /* Register in which static-chain is passed to a function.
    Use S0, not an A reg, because this rare use would otherwise prevent
    an A reg from being available to global-alloc across calls.  */
-#define STATIC_CHAIN_REGNUM 0
+#define STATIC_CHAIN_REGNUM S0_REGNUM
 
 /* Register in which address to store a structure value
    is passed to a function.  */
-#define STRUCT_VALUE_REGNUM 9
+#define STRUCT_VALUE_REGNUM (A0_REGNUM + 1)
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
@@ -268,10 +607,11 @@ extern char *output_call ();
    
 /* Convex has classes A (address) and S (scalar).
    A is further divided into SP_REGS (stack pointer) and INDEX_REGS.
-   Seems to work better to put S first, here and in the md. */
+   SI_REGS is S_REGS + INDEX_REGS -- all the regs except SP. */
 
 enum reg_class {
-  NO_REGS, S_REGS, INDEX_REGS, SP_REGS, A_REGS, ALL_REGS, LIM_REG_CLASSES 
+  NO_REGS, S_REGS, INDEX_REGS, SP_REGS, A_REGS, SI_REGS,
+  ALL_REGS, LIM_REG_CLASSES 
 };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
@@ -284,13 +624,15 @@ enum reg_class {
 /* Give names of register classes as strings for dump file.   */
 
 #define REG_CLASS_NAMES \
- {"NO_REGS", "S_REGS", "INDEX_REGS", "SP_REGS", "A_REGS", "ALL_REGS" }
+ {"NO_REGS", "S_REGS", "INDEX_REGS", "SP_REGS", "A_REGS", "SI_REGS", \
+  "ALL_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS {0, 0x00ff, 0xfe00, 0x0100, 0xff00, 0xffff}
+#define REG_CLASS_CONTENTS \
+  { 0, 0x00ff, 0xfe00, 0x0100, 0xff00, 0xfeff, 0xffff }
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -298,10 +640,10 @@ enum reg_class {
    or could index an array.  */
 
 #define REGNO_REG_CLASS(REGNO) \
-  (S_REGNO_P (REGNO) ? S_REGS : REGNO == 8 ? SP_REGS : INDEX_REGS)
+  ((REGNO) >= FIRST_PSEUDO_REGISTER ? abort() : regno_reg_class[REGNO])
 
-#define S_REGNO_P(REGNO) ((REGNO) < 8)
-#define A_REGNO_P(REGNO) ((REGNO) >= 8)
+#define S_REGNO_P(REGNO) (((REGNO) - S0_REGNUM) < (unsigned) 8)
+#define A_REGNO_P(REGNO) (((REGNO) - A0_REGNUM) < (unsigned) 8)
 
 #define S_REG_P(X) (REG_P (X) && S_REGNO_P (REGNO (X)))
 #define A_REG_P(X) (REG_P (X) && A_REGNO_P (REGNO (X)))
@@ -312,33 +654,32 @@ enum reg_class {
 #define BASE_REG_CLASS INDEX_REGS
 
 /* Get reg_class from a letter such as appears in the machine description.  */
-/* S regs use the letter 'd' because 's' is taken. */
+/* a => A_REGS
+   d => S_REGS  ('s' is taken)
+   A => INDEX_REGS  (i.e., A_REGS except sp) */
 
 #define REG_CLASS_FROM_LETTER(C) \
-  ((C) == 'a' ? A_REGS : \
-   (C) == 'd' ? S_REGS : \
-   (C) == 'A' ? INDEX_REGS : \
-   NO_REGS)
+  reg_class_from_letter[(unsigned char) (C)]
 
 /* The letters I, J, K, L and M in a register constraint string
    can be used to stand for particular ranges of immediate operands.
    This macro defines what the ranges are.
    C is the letter, and VALUE is a constant value.
    Return 1 if VALUE is in the range specified by C.  */
+/* 'I' is used to pass any CONST_INT and reject any CONST_DOUBLE.
+   CONST_DOUBLE integers are handled by G and H constraint chars. */
 
-/* Convex uses only I:
-   32-bit value with sign bit off, usable as immediate in DImode logical 
-     instructions and, or, xor */ 
-
-#define CONST_OK_FOR_LETTER_P(VALUE, C)  ((VALUE) >= 0)
+#define CONST_OK_FOR_LETTER_P(VALUE, C)  1
 
 /* Similar, but for floating constants, and defining letters G and H.
    Here VALUE is the CONST_DOUBLE rtx itself.  */
-/* Convex uses only G:
+/* Convex uses G, H:
    value usable in ld.d (low word 0) or ld.l (high word all sign) */
 
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C) \
-  (LD_D_P (VALUE) || LD_L_P (VALUE))
+#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)				\
+  (((C) == 'G' && LD_D_P (VALUE)) ||					\
+   ((C) == 'H' && LD_L_P (VALUE)) ||					\
+   0)
 
 #define LD_D_P(X) (const_double_low_int (X) == 0)
 
@@ -346,22 +687,27 @@ enum reg_class {
 		   ? const_double_high_int (X) == 0 \
 		   : const_double_high_int (X) == -1)
 
+/* Optional extra constraints for this machine.
+   For Convex, 'Q' means that OP is a volatile MEM.
+   For volatile scalars, we use instructions that bypass the data cache. */
+
+#define EXTRA_CONSTRAINT(OP, C) \
+  ((C) == 'Q' ? (GET_CODE (OP) == MEM && MEM_VOLATILE_P (OP)		\
+		 && ! TARGET_C1 && TARGET_VOLATILE_NOCACHE)   		\
+   : 0)
+
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
    In general this is just CLASS; but on some machines
    in some cases it is preferable to use a more restrictive class.  */
 
-/* CONST_DOUBLEs (constraint 'F') are passed by LEGITIMATE_CONSTANT_P
-   without regard to their value.  Constraint 'G' is used by instructions
-   that need to reject non-immediate values.  The rejected values are
-   dealt with by reload -- PREFERRED_RELOAD_CLASS returns NO_REGS for
-   nonimmediate values, causing reload to put them in memory.  Every insn
-   that uses 'G' must have an alternative that accepts memory.  */
+/* Put 2-word constants that can't be immediate operands into memory. */
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS)	\
-  (GET_CODE (X) != CONST_DOUBLE ? (CLASS) : \
-   (GET_MODE (X) != TFmode && (LD_L_P (X) || LD_D_P (X))) ? (CLASS) : NO_REGS)
-   
+  ((GET_CODE (X) != CONST_DOUBLE					\
+    || GET_MODE (X) == SFmode						\
+    || LD_L_P (X) || LD_D_P (X))  ? (CLASS) : NO_REGS)
+
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)  ((GET_MODE_SIZE (MODE) + 7) / 8)
@@ -399,27 +745,21 @@ enum reg_class {
    FUNTYPE is the data type of the function (as a tree),
    or for a library call it is an identifier node for the subroutine name.
    SIZE is the number of bytes of arguments passed on the stack.  */
-/* The standard Convex call, with arg count word, includes popping the
-   args as part of the call template.  We optionally omit the arg count
-   word and let gcc combine the arg pops. */
-#define RETURN_POPS_ARGS(FUNTYPE, SIZE) (TARGET_ARGCOUNT ? (SIZE) : 0)
+
+#define RETURN_POPS_ARGS(FUNTYPE, SIZE) (SIZE)
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.  */
 
-/* On Convex the return value is in S0 regardless.  */   
-
-#define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), 0)
+#define FUNCTION_VALUE(VALTYPE, FUNC) \
+  gen_rtx (REG, TYPE_MODE (VALTYPE), S0_REGNUM)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-/* On Convex the return value is in S0 regardless.  */   
-
-#define LIBCALL_VALUE(MODE)  gen_rtx (REG, MODE, 0)
+#define LIBCALL_VALUE(MODE)  gen_rtx (REG, MODE, S0_REGNUM)
 
 /* Define this if PCC uses the nonreentrant convention for returning
    structure and union values.  */
@@ -429,7 +769,7 @@ enum reg_class {
 /* 1 if N is a possible register number for a function value.
    On the Convex, S0 is the only register thus used.  */
 
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == 0)
+#define FUNCTION_VALUE_REGNO_P(N) ((N) == S0_REGNUM)
 
 /* 1 if N is a possible register number for function argument passing. */
 
@@ -439,30 +779,24 @@ enum reg_class {
    during the scan of that argument list.  This data type should
    hold all necessary information about the function itself
    and about the args processed so far, enough to enable macros
-   such as FUNCTION_ARG to determine where the next arg should go.
-
-   On convex, this is a single integer, which is a number of bytes
-   of arguments scanned so far.  */
+   such as FUNCTION_ARG to determine where the next arg should go. */
+/* On convex, simply count the arguments in case TARGET_ARGCOUNT is set. */
 
 #define CUMULATIVE_ARGS int
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
-   For a library call, FNTYPE is 0.
+   For a library call, FNTYPE is 0. */
 
-   On Convex, the offset starts at 0.  */
-
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)	\
- ((CUM) = 0)
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME) \
+  ((CUM) = 0)
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be available.)  */
 
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
- ((CUM) += ((MODE) != BLKmode			\
-	    ? (GET_MODE_SIZE (MODE) + 3) & ~3	\
-	    : (int_size_in_bytes (TYPE) + 3) & ~3))
+#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED) \
+  ((CUM) += 1)
 
 /* Define where to put the arguments to a function.
    Value is zero to push the argument on the stack,
@@ -475,11 +809,13 @@ enum reg_class {
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
    NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
+    (otherwise it is an extra parameter matching an ellipsis).
 
-/* On Convex, all args are pushed.  */   
+    Convex: all args go on the stack.  But return the arg count
+    as the "next arg register" to be passed to gen_call.  */
 
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) 0
+#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
+  ((MODE) == VOIDmode ? gen_rtx (CONST_INT, VOIDmode, (CUM)) : 0)
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.
@@ -489,8 +825,23 @@ enum reg_class {
    is ever used in the function.  This macro is responsible for
    knowing which registers should not be saved even if used.  */
 
-#define FUNCTION_PROLOGUE(FILE, SIZE)     \
-{  if ((SIZE) != 0) fprintf (FILE, "\tsub.w #%d,sp\n", ((SIZE) + 3) & -4);}
+#define FUNCTION_PROLOGUE(FILE, SIZE) 					\
+{									\
+  int size = ((SIZE) + 7) & -8;						\
+  if (size != 0)							\
+    fprintf (FILE, "\tsub.w #%d,sp\n", size);				\
+}
+
+/* This macro generates the assembly code for function exit,
+   on machines that need it.  If FUNCTION_EPILOGUE is not defined
+   then individual return instructions are generated for each
+   return statement.  Args are same as for FUNCTION_PROLOGUE.  */
+
+#define FUNCTION_EPILOGUE(FILE, SIZE)					\
+{									\
+  /* Follow function with a zero to stop c34 icache prefetching. */	\
+  fprintf (FILE, "\tds.h 0\n");						\
+}
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.  */
@@ -501,12 +852,8 @@ enum reg_class {
 
 #define TRAMPOLINE_TEMPLATE(FILE) \
 {									\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x11c8));	\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x0140));	\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
+  fprintf (FILE, "\tld.w #69696969,s0\n");				\
+  fprintf (FILE, "\tjmp 52525252\n");					\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */
@@ -521,10 +868,10 @@ enum reg_class {
 {									\
   emit_move_insn (gen_rtx (MEM, Pmode, plus_constant (TRAMP, 2)), CXT);	\
   emit_move_insn (gen_rtx (MEM, Pmode, plus_constant (TRAMP, 8)), FNADDR); \
-  emit_call_insn (gen_call (gen_rtx (MEM, QImode,			\
-				     gen_rtx (SYMBOL_REF, Pmode,	\
-					      "__enable_execute_stack")), \
-			    const0_rtx));				\
+  emit_call_insn (gen_call_pop (gen_rtx (MEM, QImode,			\
+					 gen_rtx (SYMBOL_REF, Pmode,	\
+						  "__enable_execute_stack")), \
+				const0_rtx, const0_rtx, const0_rtx));	\
 }
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
@@ -540,19 +887,12 @@ enum reg_class {
 
 #define EXIT_IGNORE_STACK 1
 
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.  */
-
-/* #define FUNCTION_EPILOGUE(FILE, SIZE)  */
-
 /* Store in the variable DEPTH the initial difference between the
    frame pointer reg contents and the stack pointer reg contents,
    as of the start of the function body.  This depends on the layout
    of the fixed parts of the stack frame and on how registers are saved.  */
 #define INITIAL_FRAME_POINTER_OFFSET(DEPTH)			\
-{ (DEPTH) = get_frame_size (); }
+{ (DEPTH) = (get_frame_size () + 7) & -8; }
 
 /* Addressing modes, and classification of registers for them.  */
 
@@ -571,8 +911,9 @@ enum reg_class {
    has been allocated, which happens in local-alloc.c.  */
 
 #define REGNO_OK_FOR_INDEX_P(regno)  \
-  ((((regno) ^ 010) < 8 || ((reg_renumber[regno] ^ 010) & -8) == 0) \
-   && regno != 8)
+  ((regno) <= LAST_VIRTUAL_REGISTER					\
+    ? regno_ok_for_index_p[regno]					\
+    : regno_ok_for_index_p[reg_renumber[regno]])
 
 #define REGNO_OK_FOR_BASE_P(regno)  REGNO_OK_FOR_INDEX_P (regno)
 
@@ -590,11 +931,12 @@ enum reg_class {
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
-/* For convex, any single-word constant is ok; the only contexts
-   allowing general_operand of mode DI or DF are movdi and movdf. */
+/* For convex, bounce 2-word constants that can't be immediate operands. */
 
 #define LEGITIMATE_CONSTANT_P(X) \
-  (GET_CODE (X) != CONST_DOUBLE ? 1 : (LD_D_P (X) || LD_L_P (X)))
+  (GET_CODE (X) != CONST_DOUBLE						\
+   || GET_MODE (X) == SFmode						\
+   || LD_L_P (X) || LD_D_P (X))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -614,10 +956,8 @@ enum reg_class {
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_INDEX_P(X) \
-  (REGNO (X) > 8 \
-   && REGNO (X) != VIRTUAL_STACK_VARS_REGNUM \
-   && REGNO (X) != VIRTUAL_STACK_DYNAMIC_REGNUM \
-   && REGNO (X) != VIRTUAL_OUTGOING_ARGS_REGNUM)
+  (REGNO (X) > LAST_VIRTUAL_REGISTER || regno_ok_for_index_p[REGNO (X)])
+
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) REG_OK_FOR_INDEX_P (X)
@@ -626,6 +966,7 @@ enum reg_class {
 
 /* Nonzero if X is a hard reg that can be used as an index.  */
 #define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
+
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
 #define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
 
@@ -641,8 +982,8 @@ enum reg_class {
    where indirectable is 
        const, reg, (PLUS reg const)
 
-   On C3-series processors, we avoid indirection since it's substantially
-   slower.  */
+   We don't use indirection since with insn scheduling, load + indexing
+   is better. */
 
 /* 1 if X is an address that we could indirect through.  */
 #define INDIRECTABLE_ADDRESS_P(X)  \
@@ -662,14 +1003,9 @@ enum reg_class {
 { register rtx xfoob = (X);						\
   if (INDIRECTABLE_ADDRESS_P (xfoob))					\
     goto ADDR;								\
-  xfoob = XEXP (X, 0);							\
-  if (GET_CODE (X) == MEM						\
-      && TARGET_INDIRECTS						\
-      && INDIRECTABLE_ADDRESS_P (xfoob))				\
+  if (GET_CODE (xfoob) == PRE_DEC && XEXP (xfoob, 0) == stack_pointer_rtx) \
     goto ADDR;								\
-  if (GET_CODE (X) == PRE_DEC && REG_P (xfoob)				\
-      && REGNO (xfoob) == STACK_POINTER_REGNUM)				\
-    goto ADDR; }
+}
 
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
@@ -728,7 +1064,7 @@ enum reg_class {
 /* #define SLOW_ZERO_EXTEND */
 
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
-#define SLOW_BYTE_ACCESS 0
+#define SLOW_BYTE_ACCESS (! TARGET_C2)
 
 /* Define if shifts truncate the shift count
    which implies one can omit a sign-extension or zero-extension
@@ -766,24 +1102,29 @@ enum reg_class {
   case LABEL_REF: \
   case SYMBOL_REF: \
   case CONST_INT: \
-    return 0; \
   case CONST_DOUBLE: \
-    return 2;
+    return 0;
 
 /* Provide the costs of a rtl expression.  This is in the body of a
-   switch on CODE. 
-   On C1 and C2, multiply is faster than shift. */
+   switch on CODE.  */
 
 #define RTX_COSTS(RTX,CODE,OUTER_CODE) \
+  case PLUS:								\
+    if (regno_pointer_flag != 0						\
+	&& GET_CODE (XEXP (RTX, 0)) == REG				\
+	&& REGNO_POINTER_FLAG (REGNO (XEXP (RTX, 0)))			\
+	&& GET_CODE (XEXP (RTX, 1)) == CONST_INT)			\
+      return 0;								\
+    else break;								\
   case MULT:								\
-    total = COSTS_N_INSNS (4);						\
-    break;								\
+    return 4 * (char) (0x03060403 >> target_cpu * 8);			\
   case LSHIFT:								\
   case ASHIFT:								\
   case LSHIFTRT:							\
   case ASHIFTRT:							\
-    total = COSTS_N_INSNS (3);						\
-    break;
+    return 4 * (char) (0x03010403 >> target_cpu * 8);			\
+  case MEM:								\
+    return 5;
 
 /* Compute the cost of an address.  This is meant to approximate the size
    and/or execution delay of an insn using that address.  If the cost is
@@ -793,31 +1134,53 @@ enum reg_class {
    this macro should be a constant.  The value of this macro only matters
    for valid addresses.  */
 
-#define ADDRESS_COST(RTX) (GET_CODE (RTX) == MEM ? 3 : 1)
+#define ADDRESS_COST(RTX) 0
 
 /* Specify the cost of a branch insn; roughly the number of extra insns that
    should be added to avoid a branch.  */
 
 #define BRANCH_COST 0
 
-/* Check a `double' value for validity for a particular machine mode.  */
+/* Adjust the cost of dependences. */
 
+#define ADJUST_COST(INSN,LINK,DEP,COST) 				\
+{									\
+  /* Antidependencies don't block issue. */				\
+  if (REG_NOTE_KIND (LINK) != 0)					\
+    (COST) = 0;								\
+  /* C38 situations where delay depends on context */			\
+  else if (TARGET_C38							\
+	   && GET_CODE (PATTERN (INSN)) == SET				\
+	   && GET_CODE (PATTERN (DEP)) == SET)				\
+    {									\
+      enum attr_type insn_type = get_attr_type (INSN);			\
+      enum attr_type dep_type = get_attr_type (DEP);			\
+      /* index register must be ready one cycle early */		\
+      if (insn_type == TYPE_MLDW || insn_type == TYPE_MLDL		\
+          || (insn_type == TYPE_MST					\
+	      && reg_mentioned_p (SET_DEST (PATTERN (DEP)),		\
+				  SET_SRC (PATTERN (INSN)))))		\
+	(COST) += 1;							\
+      /* alu forwarding off alu takes two */				\
+      if (dep_type == TYPE_ALU						\
+	  && insn_type != TYPE_ALU					\
+	  && ! (insn_type == TYPE_MST					\
+		&& SET_DEST (PATTERN (DEP)) == SET_SRC (PATTERN (INSN)))) \
+	(COST) += 1;							\
+    }									\
+}
+
+/* Convex uses Vax or IEEE floats.
+   Follow the host format. */
+#define TARGET_FLOAT_FORMAT HOST_FLOAT_FORMAT
+
+/* But must prevent real.c from constructing Vax dfloats */
+#define REAL_VALUE_ATOF(X,S) atof (X)
+extern double atof();
+
+/* Check a `double' value for validity for a particular machine mode.  */
 #define CHECK_FLOAT_VALUE(mode, d) \
-  if ((mode) == SFmode) \
-    { \
-      if ((d) > 1.7014117331926443e+38) \
-	{ error ("magnitude of constant too large for `float'"); \
-	  (d) = 1.7014117331926443e+38; } \
-      else if ((d) < -1.7014117331926443e+38) \
-	{ error ("magnitude of constant too large for `float'"); \
-	  (d) = -1.7014117331926443e+38; } \
-      else if (((d) > 0) && ((d) < 2.9387358770557188e-39)) \
-	{ warning ("`float' constant truncated to zero"); \
-	  (d) = 0.0; } \
-      else if (((d) < 0) && ((d) > -2.9387358770557188e-39)) \
-	{ warning ("`float' constant truncated to zero"); \
-	  (d) = 0.0; } \
-    }
+    check_float_value ((mode), &(d))
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 
@@ -835,7 +1198,11 @@ enum reg_class {
 
 /* Output at beginning of assembler file.  */
 
-#define ASM_FILE_START(FILE) fprintf (FILE, ";NO_APP\n")
+#if _IEEE_FLOAT_
+#define ASM_FILE_START(FILE)  fprintf (FILE, ";NO_APP\n.fpmode ieee\n")
+#else
+#define ASM_FILE_START(FILE)  fprintf (FILE, ";NO_APP\n.fpmode native\n")
+#endif
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
@@ -846,12 +1213,6 @@ enum reg_class {
    no longer contain unusual constructs.  */
 
 #define ASM_APP_OFF ";NO_APP\n"
-
-/* Output something following the gcc2_compiled tag to keep that label from
-   hiding a real function name for tools like adb and prof. */
-
-#define ASM_IDENTIFY_GCC(FILE) \
-  fprintf (FILE, "gcc2_compiled.:\n\tds.h 0\n");
 
 /* Alignment with Convex's assembler goes like this:
    .text can be .aligned up to a halfword.
@@ -904,9 +1265,11 @@ bss_section ()								\
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
-#define REGISTER_NAMES \
-{"s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", \
- "sp", "a1", "a2", "a3", "a4", "a5", "ap", "fp"}
+#define REGISTER_NAMES							\
+{									\
+  "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", 			\
+  "sp", "a1", "a2", "a3", "a4", "a5", "ap", "fp",			\
+}
 
 /* This is BSD, so it wants DBX format.  */
 
@@ -972,20 +1335,22 @@ bss_section ()								\
 
 /* This is how to output an assembler line defining a `double' constant.  */
 
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-  fprintf (FILE, "\tds.d %.17e\n", (VALUE))
+#define ASM_OUTPUT_DOUBLE(FILE,VALUE) \
+  outfloat (FILE, VALUE, "%.17e", "\tds.d ", "\n")
 
 /* This is how to output an assembler line defining a `float' constant.  */
 
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
-  fprintf (FILE, "\tds.s %.9e\n", (VALUE))
+#define ASM_OUTPUT_FLOAT(FILE,VALUE) \
+  outfloat (FILE, VALUE, "%.9e", "\tds.s ", "\n")
 
 /* This is how to output an assembler line defining an `int' constant.  */
 
 #define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\tds.w "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
+{									\
+  fprintf (FILE, "\tds.w ");						\
+  output_addr_const (FILE, simplify_for_convex (VALUE));		\
+  fprintf (FILE, "\n");							\
+}
 
 /* Likewise for a `long long int' constant.  */
 
@@ -1090,6 +1455,11 @@ bss_section ()								\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
   sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
 
+/* Output an arg count before function entries. */
+
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)	\
+  asm_declare_function_name (FILE, NAME, DECL)
+
 /* Define the parentheses used to group arithmetic operations
    in assembler code.  */
 
@@ -1110,60 +1480,12 @@ bss_section ()								\
    if `%z3' was used to print operand 3, then CODE is 'z'. */
 
 #define PRINT_OPERAND(FILE, X, CODE)  \
-{ if (GET_CODE (X) == REG)						\
-    fprintf (FILE, "%s", reg_names[REGNO (X)]);				\
-  else if (GET_CODE (X) == MEM)						\
-    output_address (XEXP (X, 0));					\
-  else if (GET_CODE (X) == CONST_DOUBLE					\
-	   && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)		\
-    { union { double d; int i[2]; } u;					\
-      u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
-      fprintf (FILE, "#%.9e", u.d); }			 		\
-  else { putc ('#', FILE); output_addr_const (FILE, X); }}
+    print_operand (FILE, X, CODE)
 
 /* Print a memory operand whose address is X, on file FILE. */
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)				\
-{ 									\
-  register rtx addr = ADDR;						\
-  register rtx index = 0;						\
-  register rtx offset = 0;						\
-									\
-  if (GET_CODE (addr) == MEM)						\
-    {  									\
-      fprintf (FILE, "@");						\
-      addr = XEXP (addr, 0);						\
-    }									\
-									\
-  switch (GET_CODE (addr))						\
-    {									\
-    case REG:								\
-      index = addr;							\
-      break;								\
-									\
-    case PLUS:								\
-      index = XEXP (addr, 0);						\
-      if (REG_P (index))						\
-	offset = XEXP (addr, 1);					\
-      else								\
-	{								\
-	  offset = XEXP (addr, 0);					\
-	  index = XEXP (addr, 1);					\
-	  if (! REG_P (index)) abort ();				\
-        }								\
-      break;								\
-									\
-    default:								\
-      offset = addr;							\
-      break;								\
-    }									\
-									\
-  if (offset)								\
-    output_addr_const (FILE, offset);					\
-									\
-  if (index) 								\
-    fprintf (FILE, "(%s)", reg_names[REGNO (index)]);			\
-}
+    print_operand_address (FILE, ADDR)
 
 /* Definitions for g++.  */
 
@@ -1180,17 +1502,38 @@ bss_section ()								\
 #define SET_DECL_VINDEX(DECL, INDEX) \
   (DECL_VINDEX (DECL) = (INDEX))
 
-#if 0 /* collect2.c should no longer need these.  */
-/* Defs for compiling collect2.c in -pcc mode during bootstrap. */
+/* __gcc_cleanup is loader-aliased to __ap$do_registered_functions if we
+   are linking against standard libc, 0 if old (-traditional) libc. */
 
-#ifdef COLLECT
-
-#ifndef __STDC__
-
-#define WTERMSIG(x) (((union wait *) &(x))->w_termsig)
-#define WEXITSTATUS(x) (((union wait *) &(x))->w_retcode)
-
+#define EXIT_BODY \
+{									\
+  extern void __gcc_cleanup ();						\
+  if (__gcc_cleanup != _cleanup)					\
+    __gcc_cleanup ();							\
+  _cleanup ();								\
+}
+
+/* cexp.y uses LONG_TYPE_SIZE which depends on target_flags, which it
+   doesn't have.  Until some better way exists, provide a def here. */
+#ifdef YYBISON
+int target_flags;
 #endif
 
-#endif /* COLLECT */
-#endif /* 0 */
+/* Header for convex.c.
+   Here at the end so we can use types defined above. */
+
+extern int target_cpu;
+extern int current_section_is_text;
+extern enum reg_class regno_reg_class[];
+extern enum reg_class reg_class_from_letter[];
+extern char regno_ok_for_index_p_base[];
+#define regno_ok_for_index_p (regno_ok_for_index_p_base + 1)
+
+extern int const_double_low_int ();
+extern int const_double_high_int ();
+extern char *output_cmp ();
+extern char *output_condjump ();
+extern char *output_call ();
+extern void gen_ap_for_call ();
+extern void check_float_value ();
+extern void asm_declare_function_name ();
