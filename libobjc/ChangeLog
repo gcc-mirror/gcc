@@ -1,5 +1,9 @@
 2004-05-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* configure.ac (includedir): Rename to ...
+	(includedirname).
+	* Makefile.in: s/includedir/includedirname/.
+
 	PR target/11572
 	* configure.ac (includedir): Set to "include"
 	except for Darwin.

@@ -40,7 +40,7 @@ toolexecdir = @toolexecdir@
 # Toolexecdir is used only by toolexeclibdir
 toolexeclibdir = @toolexeclibdir@
 
-includedir = @includedir@
+includedirname = @includedirname@
 libext = @libext@
 
 top_builddir = .
@@ -324,10 +324,10 @@ install-libs: installdirs
 
 # Copy Objective C headers to installation include directory.
 install-headers:
-	$(SHELL) $(toplevel_srcdir)/mkinstalldirs $(DESTDIR)$(libsubdir)/$(includedir)/objc
+	$(SHELL) $(toplevel_srcdir)/mkinstalldirs $(DESTDIR)$(libsubdir)/$(includedirname)/objc
 	for file in $(OBJC_H); do \
 	  realfile=$(srcdir)/objc/$${file}; \
-	  $(INSTALL_DATA) $${realfile} $(DESTDIR)$(libsubdir)/$(includedir)/objc; \
+	  $(INSTALL_DATA) $${realfile} $(DESTDIR)$(libsubdir)/$(includedirname)/objc; \
 	done
 
 check uninstall install-strip dist installcheck installdirs:
