@@ -1,6 +1,6 @@
 /* Definitions for code generation pass of GNU compiler.
    Copyright (C) 1987, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,13 +44,16 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define QUEUED_NEXT(P) XEXP (P, 4)
 
 /* This is the 4th arg to `expand_expr'.
+   EXPAND_STACK_PARM means we are possibly expanding a call param onto
+   the stack.  Choosing a value of 2 isn't special;  It just allows
+   some code optimization in store_expr.
    EXPAND_SUM means it is ok to return a PLUS rtx or MULT rtx.
    EXPAND_INITIALIZER is similar but also record any labels on forced_labels.
    EXPAND_CONST_ADDRESS means it is ok to return a MEM whose address
     is a constant that is not a legitimate address.
    EXPAND_WRITE means we are only going to write to the resulting rtx.  */
-enum expand_modifier {EXPAND_NORMAL, EXPAND_SUM, EXPAND_CONST_ADDRESS,
-			EXPAND_INITIALIZER, EXPAND_WRITE};
+enum expand_modifier {EXPAND_NORMAL = 0, EXPAND_STACK_PARM = 2, EXPAND_SUM,
+		      EXPAND_CONST_ADDRESS, EXPAND_INITIALIZER, EXPAND_WRITE};
 
 /* Prevent the compiler from deferring stack pops.  See
    inhibit_defer_pop for more information.  */
@@ -378,8 +381,8 @@ extern rtx convert_modes PARAMS ((enum machine_mode, enum machine_mode,
 enum block_op_methods
 {
   BLOCK_OP_NORMAL,
-  BLOCK_OP_CALL_PARM,
-  BLOCK_OP_NO_LIBCALL
+  BLOCK_OP_NO_LIBCALL,
+  BLOCK_OP_CALL_PARM
 };
 
 extern rtx emit_block_move PARAMS ((rtx, rtx, rtx, enum block_op_methods));
