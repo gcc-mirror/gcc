@@ -1116,6 +1116,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
   tree newtype, oldtype;
   bool pedwarned = false;
   bool warned = false;
+  bool retval = true;
 
   /* If we have error_mark_node for either decl or type, just discard
      the previous decl - we're in an error cascade already.  */
@@ -1266,17 +1267,47 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 
       if (DECL_INITIAL (newdecl))
 	{
-	  if (DECL_INITIAL (olddecl)
-	      && !(DECL_DECLARED_INLINE_P (olddecl)
-		   && DECL_EXTERNAL (olddecl)
-		   && !(DECL_DECLARED_INLINE_P (newdecl)
-			&& DECL_EXTERNAL (newdecl)
-	    		&& same_translation_unit_p (olddecl, newdecl))))
+	  if (DECL_INITIAL (olddecl))
 	    {
-	      error ("%Jredefinition of %qD", newdecl, newdecl);
-	      locate_old_decl (olddecl, error);
-	      return false;
-	    }
+	      /* If both decls have extern inline and are in the same TU,
+	         reject the new decl.  */
+	      if (DECL_DECLARED_INLINE_P (olddecl)
+		  && DECL_EXTERNAL (olddecl)
+		  && DECL_DECLARED_INLINE_P (newdecl)
+		  && DECL_EXTERNAL (newdecl)
+		  && same_translation_unit_p (newdecl, olddecl))
+		{
+		  error ("%Jredefinition of %qD", newdecl, newdecl);
+		  locate_old_decl (olddecl, error);
+		  return false;
+		}
+	      /* If both decls have not extern inline, reject the new decl.  */
+	      if (!DECL_DECLARED_INLINE_P (olddecl)
+		  && !DECL_EXTERNAL (olddecl)
+		  && !DECL_DECLARED_INLINE_P (newdecl)
+		  && !DECL_EXTERNAL (newdecl))
+		{
+		  error ("%Jredefinition of %qD", newdecl, newdecl);
+		  locate_old_decl (olddecl, error);
+		  return false;
+		}
+	      /* If the new decl is declared as extern inline, error if they are
+	         in the same TU, otherwise retain the old decl.  */
+	      if (!DECL_DECLARED_INLINE_P (olddecl)
+		  && !DECL_EXTERNAL (olddecl)
+		  && DECL_DECLARED_INLINE_P (newdecl)
+		  && DECL_EXTERNAL (newdecl))
+		{
+		  if (same_translation_unit_p (newdecl, olddecl))
+		    {
+		      error ("%Jredefinition of %qD", newdecl, newdecl);
+		      locate_old_decl (olddecl, error);
+		      return false;
+		    }
+		  else
+		    retval = false;
+		}
+	   }
 	}
       /* If we have a prototype after an old-style function definition,
 	 the argument types must be checked specially.  */
@@ -1518,7 +1549,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
   if (warned || pedwarned)
     locate_old_decl (olddecl, pedwarned ? pedwarn : warning);
 
-  return true;
+  return retval;
 }
 
 /* Subroutine of duplicate_decls.  NEWDECL has been found to be
