@@ -19,6 +19,9 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+#ifndef GCC_TREE_H
+#define GCC_TREE_H
+
 #include "machmode.h"
 #include "version.h"
 #include "location.h"
@@ -3098,3 +3101,5 @@ extern const char *dump_flag_name	PARAMS ((enum tree_dump_index));
 extern void fancy_abort PARAMS ((const char *, int, const char *))
     ATTRIBUTE_NORETURN;
 #define abort() fancy_abort (__FILE__, __LINE__, __FUNCTION__)
+
+#endif  /* GCC_TREE_H  */
