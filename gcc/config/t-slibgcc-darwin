@@ -11,7 +11,7 @@ SHLIB_OBJS = @shlib_objs@
 SHLIB_SLIBDIR_QUAL = @shlib_slibdir_qual@
 
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -dynamiclib -nodefaultlibs \
-	-Wl,-install_name,$(SHLIB_SONAME) \
+	-Wl,-install_name,$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SONAME) \
 	-Wl,-flat_namespace -o $(SHLIB_NAME) \
 	$(SHLIB_VERSTRING) \
 	@multilib_flags@ $(SHLIB_OBJS) -lc && \
