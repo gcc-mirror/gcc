@@ -14155,7 +14155,7 @@ cplus_expand_expr_stmt (exp)
      trying to do TYPE_MODE on the ERROR_MARK, and really
      go outside the bounds of the type.  */
   if (exp != error_mark_node)
-    expand_expr_stmt (break_out_cleanups (exp));
+    expand_expr_stmt (exp);
 }
 
 /* When a stmt has been parsed, this function is called.  */

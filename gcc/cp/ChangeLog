@@ -1,3 +1,10 @@
+1999-11-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (cplus_expand_expr_stmt): Don't call break_out_cleanups
+	here.
+	* semantics.c (finish_expr_stmt): Call it here instead.  Move
+	default_conversion logic to semantic-analysis time.
+
 1999-11-12  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* rtti.c (synthesize_tinfo_fn): Set DECL_DEFER_OUTPUT.
