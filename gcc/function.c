@@ -6320,6 +6320,10 @@ prepare_function_start ()
 
   cfun->arc_profile = profile_arc_flag || flag_test_coverage;
 
+  cfun->arc_profile = profile_arc_flag || flag_test_coverage;
+
+  cfun->function_frequency = FUNCTION_FREQUENCY_NORMAL;
+
   (*lang_hooks.function.init) (cfun);
   if (init_machine_status)
     (*init_machine_status) (cfun);

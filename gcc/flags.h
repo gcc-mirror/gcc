@@ -204,6 +204,10 @@ extern int flag_branch_probabilities;
 
 extern int flag_reorder_blocks;
 
+/* Nonzero if functions should be reordered.  */
+
+extern int flag_reorder_functions;
+
 /* Nonzero if registers should be renamed.  */
 
 extern int flag_rename_registers;

@@ -1,3 +1,52 @@
+Wed May 15 10:38:27 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* invoke.texi (-malign-double): Re-add lost warning.
+
+	* i386-protos.h (x86_output_mi_thunk): Declare.
+	* unix.h (ASM_OUTPUT_MI_THUNK): Move offline to ...
+	* i386.c (x86_output_mi_thunk): ... here; handle 64bits.
+
+	* dwarf2out.c (output_call_frame_info): Do not skip unwind info
+	when flag_asynchronous_unwind_tables is set.
+
+	* flags.h (flag_reorder_functions): Declare.
+	* function.c (prepare_function_start): Initialize frequnecy.
+	* params.def (HOT_BB_COUNT_FRACTION, HOT_BB_FREQUENCY_FRACTION): New paramters.
+	* Makefile.in (predict.o): Add dependency on target.h and params.h
+	* defaults.h (HOT_TEXT_SECTION_NAME,
+	UNLIKELY_EXECUTED_TEXT_SECTION_NAME): New macros.
+	* predict.c (choose_function_section): New function.
+	(estimate_bb_frequencies): Use it.
+	* toplev.c (flag_reorder_functions): New global variable.
+	(lang_independent_options): New.
+	(parse_options_and_default_flags): Set.
+	* varasm.c (assemble_start_function): Bypass functdion alignment
+	for never executed functions.
+	* invoke.texi (-freorder-blocks, -freorder-functions): Document.
+	(param hot-bb-count-fraction, hot-bb-frequency-fraction): New.
+	* tm.texi (HOT_TEXT_SECTION_NAME, UNLIKELY_EXECUTED_TEXT_SECTION_NAME):
+	Document.
+
+	Thu Jan  3 21:52:09 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c: Inlude profile.h
+	(MIN_COUNT): Rename to MIN_COUNT_FRACTION
+	(maybe_hot_bb_p, probably_cold_bb_p, probably_never_executed_bb_p):
+	Use the information about maximal counter in the program.
+
+	Thu Dec 20 22:14:00 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (maybe_hot_bb_p, probably_cold_bb_p,
+	probably_never_executed_bb_p): New functions.
+	* cfgcleanup.c (outgoing_edges_match): Use them.
+	* predict.c (MIN_COUNT, MIN_FREQUENCY): New macros.
+	(maybe_hot_bb_p, probably_cold_bb_p,
+	probably_never_executed_bb_p): New functions.
+
+	* function.h (function): Add new field function_frequency.
+	* predict.c (compute_function_frequency): New function.
+	(estimate_probability): Call it.
+
 2002-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR optimization/5172, optimization/5200

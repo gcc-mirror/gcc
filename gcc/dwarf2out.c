@@ -1968,7 +1968,8 @@ output_call_frame_info (for_eh)
       fde = &fde_table[i];
 
       /* Don't emit EH unwind info for leaf functions that don't need it.  */
-      if (for_eh && fde->nothrow && ! fde->uses_eh_lsda)
+      if (!flag_asynchronous_unwind_tables && for_eh && fde->nothrow
+	  && !  fde->uses_eh_lsda)
 	continue;
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, FDE_LABEL, for_eh + i * 2);

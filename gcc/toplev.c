@@ -381,6 +381,10 @@ int flag_branch_probabilities = 0;
 
 int flag_reorder_blocks = 0;
 
+/* Nonzero if functions should be reordered.  */
+
+int flag_reorder_functions = 0;
+
 /* Nonzero if registers should be renamed.  */
 
 int flag_rename_registers = 0;
@@ -1076,6 +1080,8 @@ static const lang_independent_options f_options[] =
    N_("Enable basic program profiling code") },
   {"reorder-blocks", &flag_reorder_blocks, 1,
    N_("Reorder basic blocks to improve code placement") },
+  {"reorder-functions", &flag_reorder_functions, 1,
+   N_("Reorder functions to improve code placement") },
   {"rename-registers", &flag_rename_registers, 1,
    N_("Do the register renaming optimization pass") },
   {"cprop-registers", &flag_cprop_registers, 1,
@@ -4657,6 +4663,7 @@ parse_options_and_default_flags (argc, argv)
       flag_strict_aliasing = 1;
       flag_delete_null_pointer_checks = 1;
       flag_reorder_blocks = 1;
+      flag_reorder_functions = 1;
     }
 
   if (optimize >= 3)

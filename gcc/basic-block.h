@@ -628,6 +628,10 @@ extern rtx emit_block_insn_before	PARAMS ((rtx, rtx, basic_block));
 extern void estimate_probability        PARAMS ((struct loops *));
 extern void note_prediction_to_br_prob	PARAMS ((void));
 extern void expected_value_to_br_prob	PARAMS ((void));
+extern void note_prediction_to_br_prob	PARAMS ((void));
+extern bool maybe_hot_bb_p		PARAMS ((basic_block));
+extern bool probably_cold_bb_p		PARAMS ((basic_block));
+extern bool probably_never_executed_bb_p PARAMS ((basic_block));
 
 /* In flow.c */
 extern void init_flow                   PARAMS ((void));
