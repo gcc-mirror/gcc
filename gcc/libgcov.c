@@ -97,15 +97,38 @@ gcov_exit (void)
 {
   struct gcov_info *ptr;
   unsigned ix, jx;
-  struct gcov_summary program;
   gcov_type program_max_one = 0;
-  gcov_type program_max_sum = 0;
   gcov_type program_sum = 0;
   unsigned program_arcs = 0;
+  struct gcov_summary last_prg;
   
-  memset (&program, 0, sizeof (program));
-  program.checksum = gcov_crc32;
-  
+  last_prg.runs = 0;
+
+  for (ptr = gcov_list; ptr; ptr = ptr->next)
+    {
+      unsigned arc_data_index;
+      gcov_type *count_ptr;
+
+      if (!ptr->filename)
+	continue;
+
+      for (arc_data_index = 0;
+	   arc_data_index < ptr->n_counter_sections
+	   && ptr->counter_sections[arc_data_index].tag != GCOV_TAG_ARC_COUNTS;
+	   arc_data_index++)
+	continue;
+
+      for (ix = ptr->counter_sections[arc_data_index].n_counters,
+	   count_ptr = ptr->counter_sections[arc_data_index].counters; ix--;)
+	{
+	  gcov_type count = *count_ptr++;
+
+	  if (count > program_max_one)
+	    program_max_one = count;
+	  program_sum += count;
+	}
+      program_arcs += ptr->counter_sections[arc_data_index].n_counters;
+    }
   for (ptr = gcov_list; ptr; ptr = ptr->next)
     {
       struct gcov_summary object;
@@ -119,8 +142,8 @@ gcov_exit (void)
       gcov_type object_max_one = 0;
       unsigned tag, length;
       unsigned arc_data_index, f_sect_index, sect_index;
+      long summary_pos = 0;
 
-      ptr->wkspc = 0;
       if (!ptr->filename)
 	continue;
 
@@ -148,8 +171,6 @@ gcov_exit (void)
 	  if (count > object_max_one)
 	    object_max_one = count;
 	}
-      if (object_max_one > program_max_one)
-	program_max_one = object_max_one;
       
       memset (&local_prg, 0, sizeof (local_prg));
       memset (&object, 0, sizeof (object));
@@ -248,9 +269,7 @@ gcov_exit (void)
 	      
 	      tag = gcov_read_unsigned ();
 	      gcov_read_unsigned ();
-	      if (tag != GCOV_TAG_PROGRAM_SUMMARY
-		  && tag != GCOV_TAG_PLACEHOLDER_SUMMARY
-		  && tag != GCOV_TAG_INCORRECT_SUMMARY)
+	      if (tag != GCOV_TAG_PROGRAM_SUMMARY)
 		goto read_mismatch;
 	      gcov_read_summary (&local_prg);
 	      if ((error = gcov_is_error ()))
@@ -263,29 +282,38 @@ gcov_exit (void)
 		  goto read_fatal;
 		}
 	      
-	      if (local_prg.checksum != program.checksum)
-		continue;
-	      if (tag == GCOV_TAG_PLACEHOLDER_SUMMARY)
+	      if (local_prg.checksum != gcov_crc32)
 		{
-		  fprintf (stderr,
-			   "profiling:%s:Concurrent race detected\n",
-			   ptr->filename);
-		  goto read_fatal;
+	          memset (&local_prg, 0, sizeof (local_prg));
+		  continue;
 		}
 	      merging = 0;
 	      if (tag != GCOV_TAG_PROGRAM_SUMMARY)
 		break;
 	      
-	      if (program.runs
-		  && memcmp (&program, &local_prg, sizeof (program)))
+	      /* If everything done correctly, the summaries should be
+	         computed equal for each module.  */
+	      if (last_prg.runs
+#ifdef TARGET_HAS_F_SETLKW
+		  && last_prg.runs == local_prg.runs
+#endif
+		  && memcmp (&last_prg, &local_prg, sizeof (last_prg)))
 		{
-		  fprintf (stderr, "profiling:%s:Invocation mismatch\n",
+#ifdef TARGET_HAS_F_SETLKW
+		  fprintf (stderr, "profiling:%s:Invocation mismatch\n\
+Probably some files were removed\n",
 			   ptr->filename);
+#else
+		  fprintf (stderr, "profiling:%s:Invocation mismatch\n\
+Probably some files were removed or parallel race happent because libgcc\n\
+is compiled without file locking support.\n",
+			   ptr->filename);
+#endif
 		  local_prg.runs = 0;
 		}
 	      else
-		memcpy (&program, &local_prg, sizeof (program));
-	      ptr->wkspc = base;
+		memcpy (&last_prg, &local_prg, sizeof (last_prg));
+	      summary_pos = base;
 	      break;
 	    }
 	  gcov_seek (0, 0);
@@ -335,8 +363,6 @@ gcov_exit (void)
 		  if (tag == GCOV_TAG_ARC_COUNTS)
 		    {
 		      object.arc_sum += count;
-		      if (object.arc_max_sum < count)
-			object.arc_max_sum = count;
 		    }
 		  gcov_write_counter (count);
 		}
@@ -347,61 +373,40 @@ gcov_exit (void)
       /* Object file summary.  */
       gcov_write_summary (GCOV_TAG_OBJECT_SUMMARY, &object);
 
+      /* Generate whole program statistics.  */
+      local_prg.runs++;
+      local_prg.checksum = gcov_crc32;
+      local_prg.arcs = program_arcs;
+      local_prg.arc_sum += program_sum;
+      if (local_prg.arc_max_one < program_max_one)
+	local_prg.arc_max_one = program_max_one;
+      local_prg.arc_sum_max += program_max_one;
+
       if (merging)
 	{
-	  ptr->wkspc = gcov_seek_end ();
-	  gcov_write_summary (GCOV_TAG_PLACEHOLDER_SUMMARY, &program);
+  	  gcov_seek_end ();
+	  gcov_write_summary (GCOV_TAG_PROGRAM_SUMMARY, &local_prg);
 	}
-      else if (ptr->wkspc)
+      else if (summary_pos)
 	{
 	  /* Zap trailing program summary */
-	  gcov_seek (ptr->wkspc, 0);
+	  gcov_seek (summary_pos, 0);
 	  if (!local_prg.runs)
 	    ptr->wkspc = 0;
-	  gcov_write_unsigned (local_prg.runs
-			       ? GCOV_TAG_PLACEHOLDER_SUMMARY
-			       : GCOV_TAG_INCORRECT_SUMMARY);
+	  gcov_write_summary (GCOV_TAG_PROGRAM_SUMMARY, &local_prg);
 	}
       if (gcov_close ())
 	{
 	  fprintf (stderr, "profiling:%s:Error writing\n", ptr->filename);
 	  ptr->filename = 0;
 	}
-      else
-	{
-	  program_arcs += ptr->counter_sections[arc_data_index].n_counters;
-	  program_sum += object.arc_sum;
-	  if (program_max_sum < object.arc_max_sum)
-	    program_max_sum = object.arc_max_sum;
-	}
-      free(counters);
     }
-
-  /* Generate whole program statistics.  */
-  program.runs++;
-  program.arcs = program_arcs;
-  program.arc_sum = program_sum;
-  if (program.arc_max_one < program_max_one)
-    program.arc_max_one = program_max_one;
-  if (program.arc_max_sum < program_max_sum)
-    program.arc_max_sum = program_max_sum;
-  program.arc_sum_max += program_max_one;
-  
-  /* Upate whole program statistics.  */
-  for (ptr = gcov_list; ptr; ptr = ptr->next)
-    if (ptr->filename && ptr->wkspc)
-      {
-	if (!gcov_open (ptr->filename, 1))
-	  {
-	    fprintf (stderr, "profiling:%s:Cannot open\n", ptr->filename);
-	    continue;
-	  }
-	
-	gcov_seek (ptr->wkspc, 0);
-	gcov_write_summary (GCOV_TAG_PROGRAM_SUMMARY, &program);
-	if (gcov_close ())
-	  fprintf (stderr, "profiling:%s:Error writing\n", ptr->filename);
-      }
+  /* All statistic we gather can be done in one pass trought the file.
+     Originally we did two - one for counts and other for the statistics.  This
+     brings problem with the file locking interface, but it is possible to
+     implement so if need appears in the future - first pass updates local
+     statistics and number of runs.  Second pass then overwrite global
+     statistics only when number of runs match.  */
 }
 
 /* Add a new object file onto the bb chain.  Invoked automatically
