@@ -1,3 +1,7 @@
+2004-09-15  Jan Hubicka  <jh@suse.cz>
+
+	* tree-cfg.c (remove_bb): Release SSA defs.
+
 2004-09-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/tm.texi: Follow spelling conventions.
