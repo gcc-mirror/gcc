@@ -1,3 +1,10 @@
+2004-02-26  Andrew Haley  <aph@redhat.com>
+
+	* parse.y (check_interface_throws_clauses): Check for
+	!METHOD_INVISIBLE (iface_method).
+	* class.c (layout_class_methods): Check for CLASS_INTERFACE as
+	well as CLASS_ABSTRACT.
+	
 2004-02-22  Matthias Klose  <doko@debian.org>
 
 	Taken from mainline:

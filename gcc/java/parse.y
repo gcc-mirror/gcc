@@ -6524,7 +6524,8 @@ check_interface_throws_clauses (tree check_class_decl, tree class_decl)
 		 Also, multiple inheritance with conflicting throws
 		 clauses is fine in the absence of a concrete
 		 implementation.  */
-	      if (method != NULL_TREE && !METHOD_ABSTRACT (method))
+	      if (method != NULL_TREE && !METHOD_ABSTRACT (method)
+		  && !METHOD_INVISIBLE (iface_method))
 		{
 		  tree method_wfl = DECL_FUNCTION_WFL (method);
 		  check_throws_clauses (method, method_wfl, iface_method);
