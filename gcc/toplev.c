@@ -102,6 +102,7 @@ extern void init_decl_processing ();
 extern void init_obstacks ();
 extern void init_tree_codes ();
 extern void init_rtl ();
+extern void init_regs ();
 extern void init_optabs ();
 extern void init_stmt ();
 extern void init_reg_sets ();
@@ -2023,6 +2024,7 @@ compile_file (name)
   /* Some of these really don't need to be called when generating bytecode,
      but the options would have to be parsed first to know that. -bson */
   init_rtl ();
+  init_regs ();
   init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
 		  || debug_info_level == DINFO_LEVEL_VERBOSE);
   init_decl_processing ();
@@ -3841,10 +3843,6 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
       if (! quiet_flag)
 	print_switch_values ();
     }
-
-  /* Now that register usage is specified, convert it to HARD_REG_SETs.  */
-  if (!output_bytecode)
-    init_reg_sets_1 ();
 
   compile_file (filename);
 
