@@ -2932,7 +2932,7 @@ extern tree finish_this_expr                    PROTO((void));
 extern tree finish_object_call_expr             PROTO((tree, tree, tree));
 extern tree finish_qualified_object_call_expr   PROTO((tree, tree, tree));
 extern tree finish_pseudo_destructor_call_expr  PROTO((tree, tree, tree));
-extern tree finish_globally_qualified_member_call_expr PROTO ((tree, tree));
+extern tree finish_qualified_call_expr          PROTO ((tree, tree));
 extern tree finish_label_address_expr           PROTO((tree));
 extern tree finish_unary_op_expr                PROTO((enum tree_code, tree));
 extern tree finish_id_expr                      PROTO((tree));

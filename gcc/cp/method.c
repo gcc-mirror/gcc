@@ -1954,7 +1954,7 @@ hack_identifier (value, name)
       return value;
     }
 
-  if (TREE_CODE (type) == REFERENCE_TYPE && ! processing_template_decl)
+  if (! processing_template_decl)
     value = convert_from_reference (value);
   return value;
 }
