@@ -1926,10 +1926,8 @@ print_operand (file, op, letter)
       }
 
     case MEM:
-        /*
-	 * For a volatile memory reference, emit a MEMW before the
-	 * load or store.
-	 */
+      /* For a volatile memory reference, emit a MEMW before the
+	 load or store.  */
  	if (letter == 'v')
 	  {
 	    if (MEM_VOLATILE_P (op) && TARGET_SERIALIZE_VOLATILE)
@@ -1937,7 +1935,16 @@ print_operand (file, op, letter)
 	    break;
 	  }
  	else if (letter == 'N')
-	  op = adjust_address (op, GET_MODE (op), 4);
+	  {
+	    enum machine_mode mode;
+	    switch (GET_MODE (op))
+	      {
+	      case DFmode: mode = SFmode; break;
+	      case DImode: mode = SImode; break;
+	      default: abort ();
+	      }
+	    op = adjust_address (op, mode, 4);
+	  }
 
 	output_address (XEXP (op, 0));
 	break;

@@ -1,3 +1,8 @@
+2002-03-22  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (print_operand): Fix incorrect mode
+	passed to adjust_address.  Fix comment formatting.
+
 2002-03-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/mips.h (MASK_RETURN_ADDR): Define.
