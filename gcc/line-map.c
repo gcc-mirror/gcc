@@ -23,6 +23,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "config.h"
 #include "system.h"
 #include "line-map.h"
+#include "intl.h"
 
 /* Initialize a line map set.  */
 
@@ -33,15 +34,27 @@ init_line_maps (set)
   set->maps = 0;
   set->allocated = 0;
   set->used = 0;
+  set->last_listed = -1;
 }
 
 /* Free a line map set.  */
 
-void free_line_maps (set)
+void
+free_line_maps (set)
      struct line_maps *set;
 {
   if (set->maps)
-    free (set->maps);
+    {
+#ifdef ENABLE_CHECKING
+      struct line_map *map;
+
+      for (map = CURRENT_LINE_MAP (set); ! MAIN_FILE_P (map);
+	   map = INCLUDED_FROM (set, map))
+	fprintf (stderr, "line-map.c: file \"%s\" entered but not left\n",
+		 map->to_file);
+#endif
+      free (set->maps);
+    }
 }
 
 /* Add a mapping of logical source line to physical source file and
@@ -76,18 +89,29 @@ add_line_map (set, reason, from_line, to_file, to_line)
   map->to_file = to_file;
   map->to_line = to_line;
 
+  /* If we don't keep our line maps consistent, we can easily
+     segfault.  Don't rely on the client to do it for us.  */
   if (set->used == 0)
-    map->included_from = -1;
-  else if (reason == LC_ENTER)
+    reason = LC_ENTER;
+  else if (reason == LC_LEAVE)
+    {
+      if (MAIN_FILE_P (map - 1)
+	  || strcmp (INCLUDED_FROM (set, map - 1)->to_file, to_file))
+	{
+#ifdef ENABLE_CHECKING
+	  fprintf (stderr, "line-map.c: file \"%s\" left but not entered\n",
+		   to_file);
+#endif
+	  reason = LC_RENAME;
+	}
+    }
+
+  if (reason == LC_ENTER)
     map->included_from = set->used - 1;
   else if (reason == LC_RENAME)
     map->included_from = map[-1].included_from;
   else if (reason == LC_LEAVE)
-    {
-      if (map[-1].included_from < 0)
-	abort ();
-      map->included_from = set->maps[map[-1].included_from].included_from;
-    }
+    map->included_from = INCLUDED_FROM (set, map - 1)->included_from;
 
   set->used++;
   return map;
@@ -118,4 +142,44 @@ lookup_line (set, line)
     }
 
   return &set->maps[mn];
+}
+
+/* Print the file names and line numbers of the #include commands
+   which led to the map MAP, if any, to stderr.  Nothing is output if
+   the most recently listed stack is the same as the current one.  */
+
+void
+print_containing_files (set, map)
+     struct line_maps *set;
+     struct line_map *map;
+{
+  if (MAIN_FILE_P (map) || set->last_listed == map->included_from)
+    return;
+
+  set->last_listed = map->included_from;
+  map = INCLUDED_FROM (set, map);
+
+  fprintf (stderr,  _("In file included from %s:%u"),
+	   map->to_file, LAST_SOURCE_LINE (map));
+
+  while (! MAIN_FILE_P (map))
+    {
+      map = INCLUDED_FROM (set, map);
+      /* Translators note: this message is used in conjunction
+	 with "In file included from %s:%ld" and some other
+	 tricks.  We want something like this:
+
+	 | In file included from sys/select.h:123,
+	 |                  from sys/types.h:234,
+	 |                  from userfile.c:31:
+	 | bits/select.h:45: <error message here>
+
+	 with all the "from"s lined up.
+	 The trailing comma is at the beginning of this message,
+	 and the trailing colon is not translated.  */
+      fprintf (stderr, _(",\n                 from %s:%u"),
+	       map->to_file, LAST_SOURCE_LINE (map));
+    }
+
+  fputs (":\n", stderr);
 }

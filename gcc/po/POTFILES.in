@@ -941,6 +941,7 @@ lcm.c
 #libgcc2.h is part of the GCC library
 #limitx.h is part of the GCC library
 #limity.h is part of the GCC library
+line-map.c
 lists.c
 local-alloc.c
 #longlong.h is part of the GCC library

@@ -29,8 +29,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpphash.h"
 #include "intl.h"
 
-static void print_containing_files	PARAMS ((struct line_map *,
-						 struct line_map *));
 static void print_location		PARAMS ((cpp_reader *,
 						 const char *,
 						 const cpp_lexer_pos *));
@@ -39,49 +37,6 @@ static void print_location		PARAMS ((cpp_reader *,
    script will mistake this as a function definition */
 #define v_message(msgid, ap) \
  do { vfprintf (stderr, _(msgid), ap); putc ('\n', stderr); } while (0)
-
-/* Print the file names and line numbers of the #include
-   commands which led to the current file.  */
-static void
-print_containing_files (map_array, map)
-     struct line_map *map_array;
-     struct line_map *map;
-{
-  int first = 1;
-
-  for (;;)
-    {
-      if (MAIN_FILE_P (map))
-	break;
-      map = &map_array[map->included_from];
-
-      if (first)
-	{
-	  first = 0;
-	  /* The current line in each outer source file is now the
-	     same as the line of the #include.  */
-	  fprintf (stderr,  _("In file included from %s:%u"),
-		   map->to_file, LAST_SOURCE_LINE (map));
-	}
-      else
-	/* Translators note: this message is used in conjunction
-	   with "In file included from %s:%ld" and some other
-	   tricks.  We want something like this:
-
-	   | In file included from sys/select.h:123,
-	   |                  from sys/types.h:234,
-	   |                  from userfile.c:31:
-	   | bits/select.h:45: <error message here>
-
-	   with all the "from"s lined up.
-	   The trailing comma is at the beginning of this message,
-	   and the trailing colon is not translated.  */
-	fprintf (stderr, _(",\n                 from %s:%u"),
-		 map->to_file, LAST_SOURCE_LINE (map));
-    }
-
-  fputs (":\n", stderr);
-}
 
 static void
 print_location (pfile, filename, pos)
@@ -122,12 +77,7 @@ print_location (pfile, filename, pos)
 	  if (col == 0)
 	    col = 1;
 
-	  /* Don't repeat the include stack unnecessarily.  */
-	  if (buffer->prev && ! buffer->include_stack_listed)
-	    {
-	      buffer->include_stack_listed = 1;
-	      print_containing_files (pfile->line_maps.maps, map);
-	    }
+	  print_containing_files (&pfile->line_maps, map);
 	}
 
       if (filename == 0)

@@ -736,12 +736,10 @@ do_line (pfile)
   cpp_get_token (pfile, &token);
   if (token.type == CPP_STRING)
     {
-      const char *fname = (const char *) token.val.str.text;
+      buffer->nominal_fname = (const char *) token.val.str.text;
 
       /* Only accept flags for the # 55 form.  */
-      if (! pfile->state.line_extension)
-	check_eol (pfile);
-      else
+      if (pfile->state.line_extension)
 	{
 	  int flag = 0, sysp = 0;
 
@@ -749,6 +747,8 @@ do_line (pfile)
 	  if (flag == 1)
 	    {
 	      reason = LC_ENTER;
+	      /* Fake an include for cpp_included ().  */
+	      _cpp_fake_include (pfile, buffer->nominal_fname);
 	      flag = read_flag (pfile, flag);
 	    }
 	  else if (flag == 2)
@@ -761,43 +761,11 @@ do_line (pfile)
 	      sysp = 1;
 	      flag = read_flag (pfile, flag);
 	      if (flag == 4)
-		sysp = 2, read_flag (pfile, flag);
-	    }
-
-	  if (reason == LC_ENTER)
-	    {
-	      /* Fake a buffer stack for diagnostics.  */
-	      cpp_push_buffer (pfile, 0, 0, BUF_FAKE, fname, 0);
-	      /* Fake an include for cpp_included.  */
-	      _cpp_fake_include (pfile, fname);
-	      buffer = pfile->buffer;
-	    }
-	  else if (reason == LC_LEAVE)
-	    {
-	      if (buffer->type != BUF_FAKE)
-		{
-		  cpp_warning (pfile, "file \"%s\" left but not entered",
-			       buffer->nominal_fname);
-		  reason = LC_RENAME;
-		}
-	      else
-		{
-		  _cpp_pop_buffer (pfile);
-		  pfile->lexer_pos.output_line++;
-		  buffer = pfile->buffer;
-#ifdef ENABLE_CHECKING
-		  if (strcmp (buffer->nominal_fname, fname))
-		    cpp_warning (pfile, "expected to return to file \"%s\"",
-				 buffer->nominal_fname);
-		  if (buffer->sysp != sysp)
-		    cpp_warning (pfile, "header flags for \"%s\" have changed",
-				 buffer->nominal_fname);
-#endif
-		}
+		sysp = 2;
 	    }
 	  buffer->sysp = sysp;
 	}
-      buffer->nominal_fname = fname;
+      check_eol (pfile);
     }
   else if (token.type != CPP_EOF)
     {
@@ -818,9 +786,8 @@ _cpp_do_file_change (pfile, reason, file_line)
      enum lc_reason reason;
      unsigned int file_line;
 {
-  cpp_buffer *buffer;
-
-  buffer = pfile->buffer;
+  cpp_buffer *buffer = pfile->buffer;
+  
   pfile->map = add_line_map (&pfile->line_maps, reason,
 			     pfile->line, buffer->nominal_fname, file_line);
 
@@ -1785,36 +1752,27 @@ cpp_push_buffer (pfile, buffer, len, type, filename, return_at_eof)
 {
   cpp_buffer *new = xobnew (&pfile->buffer_ob, cpp_buffer);
 
-  if (type == BUF_FAKE)
-    {
-      /* A copy of the current buffer, just with a new name and type.  */
-      memcpy (new, pfile->buffer, sizeof (cpp_buffer));
-      new->type = BUF_FAKE;
-    }
-  else
-    {
-      if (type == BUF_BUILTIN)
-	filename = _("<builtin>");
-      else if (type == BUF_CL_OPTION)
-	filename = _("<command line>");
-      else if (type == BUF_PRAGMA)
-	filename = "<_Pragma>";
+  if (type == BUF_BUILTIN)
+    filename = _("<builtin>");
+  else if (type == BUF_CL_OPTION)
+    filename = _("<command line>");
+  else if (type == BUF_PRAGMA)
+    filename = "<_Pragma>";
 
-      /* Clears, amongst other things, if_stack and mi_cmacro.  */
-      memset (new, 0, sizeof (cpp_buffer));
+  /* Clears, amongst other things, if_stack and mi_cmacro.  */
+  memset (new, 0, sizeof (cpp_buffer));
 
-      new->line_base = new->buf = new->cur = buffer;
-      new->rlimit = buffer + len;
-      new->sysp = 0;
+  new->line_base = new->buf = new->cur = buffer;
+  new->rlimit = buffer + len;
+  new->sysp = 0;
 
-      /* No read ahead or extra char initially.  */
-      new->read_ahead = EOF;
-      new->extra_char = EOF;
+  /* No read ahead or extra char initially.  */
+  new->read_ahead = EOF;
+  new->extra_char = EOF;
 
-      /* Preprocessed files, builtins, _Pragma and command line
-	 options don't do trigraph and escaped newline processing.  */
-      new->from_stage3 = type != BUF_FILE || CPP_OPTION (pfile, preprocessed);
-    }
+  /* Preprocessed files, builtins, _Pragma and command line
+     options don't do trigraph and escaped newline processing.  */
+  new->from_stage3 = type != BUF_FILE || CPP_OPTION (pfile, preprocessed);
 
   if (*filename == '\0')
     new->nominal_fname = _("<stdin>");
@@ -1823,10 +1781,8 @@ cpp_push_buffer (pfile, buffer, len, type, filename, return_at_eof)
   new->type = type;
   new->prev = pfile->buffer;
   new->pfile = pfile;
-  new->include_stack_listed = 0;
   new->return_at_eof = return_at_eof;
 
-  pfile->state.next_bol = 1;
   pfile->buffer_stack_depth++;
   pfile->buffer = new;
 
@@ -1840,49 +1796,26 @@ void
 _cpp_pop_buffer (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *buffer;
+  cpp_buffer *buffer = pfile->buffer;
   struct if_stack *ifs;
 
-  for (;;)
+  /* Walk back up the conditional stack till we reach its level at
+     entry to this file, issuing error messages.  */
+  for (ifs = buffer->if_stack; ifs; ifs = ifs->next)
+    cpp_error_with_line (pfile, ifs->pos.line, ifs->pos.col,
+			 "unterminated #%s", dtable[ifs->type].name);
+
+  /* Update the reader's buffer before _cpp_do_file_change.  */
+  pfile->buffer = buffer->prev;
+  pfile->buffer_stack_depth--;
+
+  if (buffer->type == BUF_FILE)
     {
-      buffer = pfile->buffer;
-      /* Walk back up the conditional stack till we reach its level at
-	 entry to this file, issuing error messages.  */
-      for (ifs = buffer->if_stack; ifs; ifs = ifs->next)
-	cpp_error_with_line (pfile, ifs->pos.line, ifs->pos.col,
-			     "unterminated #%s", dtable[ifs->type].name);
+      /* Callbacks are not generated for popping the main file.  */
+      if (buffer->prev)
+	_cpp_do_file_change (pfile, LC_LEAVE, buffer->prev->return_to_line);
 
-      if (buffer->type == BUF_FAKE)
-	{
-	  buffer->prev->cur = buffer->cur;
-	  buffer->prev->line_base = buffer->line_base;
-	  buffer->prev->read_ahead = buffer->read_ahead;
-	}
-      else if (buffer->type == BUF_FILE)
-	_cpp_pop_file_buffer (pfile, buffer);
-
-      pfile->buffer = buffer->prev;
-      pfile->buffer_stack_depth--;
-
-      /* Callbacks only generated for faked or real files.  */
-      if (buffer->type != BUF_FILE && buffer->type != BUF_FAKE)
-	break;
-	  
-      /* No callback for EOF of last file.  */
-      if (!pfile->buffer)
-	break;
-
-      /* do_line does its own call backs.  */
-      pfile->buffer->include_stack_listed = 0;
-      if (pfile->directive == &dtable[T_LINE])
-	break;
-
-      _cpp_do_file_change (pfile, LC_LEAVE, pfile->buffer->return_to_line);
-      if (pfile->buffer->type == BUF_FILE)
-	break;
-
-      cpp_warning (pfile, "file \"%s\" entered but not left",
-		   buffer->nominal_fname);
+      _cpp_pop_file_buffer (pfile, buffer);
     }
 
   obstack_free (&pfile->buffer_ob, buffer);
