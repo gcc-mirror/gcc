@@ -21,6 +21,7 @@
 
 #define ;			/* { dg-error "identifier" } */
 #define SEMI;			/* { dg-warning "space" } */
+#define defined			/* { dg-error "defined" } */
 #define foo(X			/* { dg-error "missing" } */
 #define foo\
 (X,)				/* { dg-error "parameter name" } */
