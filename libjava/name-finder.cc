@@ -136,6 +136,7 @@ _Jv_name_finder::toHex (void *p)
 bool
 _Jv_name_finder::lookup (void *p)
 {
+  extern char **_Jv_argv;
   toHex (p);
       
 #if defined (HAVE_DLFCN_H) && defined (HAVE_DLADDR)
@@ -146,7 +147,10 @@ _Jv_name_finder::lookup (void *p)
       {
 	strncpy (file_name, dl_info.dli_fname, sizeof file_name);
 	strncpy (method_name, dl_info.dli_sname, sizeof method_name);
-	return true;
+       
+       /* Don't trust dladdr() if the address is from the main program. */
+       if (strcmp (file_name, _Jv_argv[0]) != 0)
+         return true;
       }
   }
 #endif

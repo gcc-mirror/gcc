@@ -11,9 +11,6 @@ details.  */
 #ifndef __JAVA_JVM_H__
 #define __JAVA_JVM_H__
 
-// FIXME: __builtin_expect doesn't work yet.
-#define __builtin_expect(A,B) (A)
-
 #include <gcj/javaprims.h>
 
 #include <java-assert.h>
