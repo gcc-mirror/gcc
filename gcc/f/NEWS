@@ -38,6 +38,10 @@ clarify how they differ from other versions, though this can make
 getting a complete picture of what a particular `egcs' version contains
 somewhat more difficult.
 
+   An online, "live" version of this document (derived directly from
+the up-to-date mainline version of `g77' within `egcs') is available at
+`http://egcs.cygnus.com/onlinedocs/g77_news.html'.
+
 In 0.5.24 and `egcs' 1.1.2 (versus 0.5.23 and 1.1.1):
 =====================================================
 
@@ -251,9 +255,8 @@ In 0.5.23 (versus 0.5.22):
      patching it to fix a few bugs and improve performance in a few
      cases.
 
-     *Note Actual Bugs We Haven't Fixed Yet: Actual Bugs, available in
-     plain-text format in `gcc/f/BUGS', for information on the known
-     bugs in this version, including the regressions.
+     See `egcs/gcc/f/BUGS', for information on the known bugs in this
+     version, including the regressions.
 
      Features that have been dropped from this version of `g77' due to
      their being implemented via `g77'-specific patches to the `gcc'
@@ -507,9 +510,8 @@ In `egcs' 1.0 (versus 0.5.21):
      of patching it to fix a few bugs and improve performance in a few
      cases.
 
-     *Note Actual Bugs We Haven't Fixed Yet: Actual Bugs, available in
-     plain-text format in `gcc/f/BUGS', for information on the known
-     bugs in this version, including the regressions.
+     See `egcs/gcc/f/BUGS', for information on the known bugs in this
+     version, including the regressions.
 
      Features that have been dropped from this version of `g77' due to
      their being implemented via `g77'-specific patches to the `gcc'

@@ -7,44 +7,35 @@ Bugs in GNU Fortran
 *******************
 
    This section identifies bugs that `g77' *users* might run into in
-this version of `g77'.  This includes bugs that are actually in the
-`gcc' back end (GBE) or in `libf2c', because those sets of code are at
-least somewhat under the control of (and necessarily intertwined with)
-`g77', so it isn't worth separating them out.
+the `egcs'-1.1.2 version of `g77'.  This includes bugs that are
+actually in the `gcc' back end (GBE) or in `libf2c', because those sets
+of code are at least somewhat under the control of (and necessarily
+intertwined with) `g77', so it isn't worth separating them out.
 
-   For information on bugs in *other* versions of `g77', *Note News
-About GNU Fortran: News.
+   For information on bugs in *other* versions of `g77', see
+`egcs/gcc/f/NEWS'.
 
-   For information on bugs that might afflict people who configure,
-port, build, and install `g77', *Note Problems Installing::.
+   An online, "live" version of this document (derived directly from
+the up-to-date mainline version of `g77' within `egcs') is available at
+`http://egcs.cygnus.com/onlinedocs/g77_bugs.html'.
 
    * The `IDate' Intrinsic (VXT) fails to return the year in the
      documented, non-Y2K-compliant range of 0-99, instead returning 100
      for the year 2000.
 
-     Fixed in `egcs' 1.2.
-
    * Year 2000 (Y2K) compliance information is missing from the
      documentation.
-
-     Fixed in `egcs' 1.2.
 
    * `g77' crashes when compiling I/O statements using keywords that
      define `INTEGER' values, such as `IOSTAT=J', where J is other than
      default `INTEGER' (such as `INTEGER*2').
 
-     Fixed in `egcs' 1.2.
-
    * The `-ax' option is not obeyed when compiling Fortran programs.
      (It is not passed to the `f771' driver.)
-
-     Fixed in `egcs' 1.2.
 
    * `g77' fails to warn about a reference to a function when the
      corresponding *subsequent* function program unit disagrees with
      the reference concerning the type of the function.
-
-     Fixed in `egcs' 1.2.
 
    * Automatic arrays possibly aren't working on HP-UX systems, at
      least in HP-UX version 10.20.  Writing into them apparently causes
@@ -101,10 +92,7 @@ port, build, and install `g77', *Note Problems Installing::.
      compiler.)
 
      Note that `g77' does display a warning message to notify the user
-     before the compiler appears to hang.  *Note Initialization of
-     Large Aggregate Areas: Large Initialization, for information on
-     how to change the point at which `g77' decides to issue this
-     warning.
+     before the compiler appears to hang.
 
    * `g77' doesn't emit variable and array members of common blocks for
      use with a debugger (the `-g' command-line option).  The code is
@@ -116,9 +104,6 @@ port, build, and install `g77', *Note Problems Installing::.
      As of Version 0.5.19, a temporary kludge solution is provided
      whereby some rudimentary information on a member is written as a
      string that is the member's value as a character string.
-
-     *Note Options for Code Generation Conventions: Code Gen Options,
-     for information on the `-fdebug-kludge' option.
 
    * When debugging, after starting up the debugger but before being
      able to see the source code for the main program unit, the user
