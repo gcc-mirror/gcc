@@ -47,6 +47,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-flags.h"
 #include "insn-config.h"
 #include "output.h"
+#include "regs.h"
 #include "tree.h"
 #include "output.h"
 #include "gcov-io.h"
