@@ -1,6 +1,6 @@
 Sat Feb 16 13:48:50 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	* config/alpha/alpha.md (*movsi_nt_vms_nofix): Was *movesi_nt_vms;
+	* config/alpha/alpha.md (*movsi_nt_vms_nofix): Was *movsi_nt_vms;
 	now only if !TARGET_FIX.
 	(*movsi_nt_vms_fix): New pattern.
 
