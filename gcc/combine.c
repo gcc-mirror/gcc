@@ -1401,8 +1401,8 @@ try_combine (i3, i2, i1)
 	     as I2 will not cause a problem.  */
 
 	  subst_prev_insn = i1
-	    = gen_rtx (INSN, VOIDmode, INSN_UID (i2), 0, i2,
-		       XVECEXP (PATTERN (i2), 0, 1), -1, 0, 0);
+	    = gen_rtx (INSN, VOIDmode, INSN_UID (i2), NULL_RTX, i2,
+		       XVECEXP (PATTERN (i2), 0, 1), -1, NULL_RTX, NULL_RTX);
 
 	  SUBST (PATTERN (i2), XVECEXP (PATTERN (i2), 0, 0));
 	  SUBST (XEXP (SET_SRC (PATTERN (i2)), 0),

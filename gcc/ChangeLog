@@ -1,5 +1,16 @@
 Mon Sep 22 11:36:42 1997  David S. Miller  <davem@tanya.rutgers.edu>
 
+	* combine.c (try_combine): Use NULL_RTX instead of '0' where
+	appropriate in calls to gen_rtx().
+	* cse.c (cse_main): Likewise.
+	* emit-rtl.c (gen_label_rtx): Likewise.
+	* expr.c (init_expr_once): Likewise.
+	* haifa-sched.c (flush_pending_lists, sched_analyze_insn,
+	sched_analyze, init_rgn_data_dependences,
+	compute_block_backward_dependences): Likewise.
+	* sched.c (schedule_insns): Likewise.
+	* varasm.c (immed_double_const): Likewise.
+
 	* sparc.h (INCOMING_FRAME_SP_OFFSET): Define to
 	SPARC_STACK_BIAS for sake of dwarf2 on sparc64.
 
