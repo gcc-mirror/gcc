@@ -89,14 +89,19 @@ private:
 	if (__val == 1)
 	  delete this;
       }
-#elif defined __sparcv9__
+#elif defined __sparc_v9__
     void release ()
       {
 	size_t __newval, __oldval = ref;
 	do
 	  {
 	    __newval = __oldval - 1;
-	    __asm__ ("cas	[%4], %2, %0"
+	    __asm__ (
+#ifdef __arch64__
+		     "casx	[%4], %2, %0"
+#else
+		     "cas	[%4], %2, %0"
+#endif
 		     : "=r" (__oldval), "=m" (ref)
 		     : "r" (__oldval), "m" (ref), "r"(&(ref)), "0" (__newval));
 	  }
