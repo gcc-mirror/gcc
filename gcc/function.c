@@ -852,6 +852,7 @@ put_var_into_stack (decl)
       reg = XEXP (reg, 0);
       decl_mode = promoted_mode = GET_MODE (reg);
     }
+
   if (GET_CODE (reg) != REG)
     return;
 
@@ -860,8 +861,7 @@ put_var_into_stack (decl)
       if (REGNO (reg) < function->max_parm_reg)
 	new = function->parm_reg_stack_loc[REGNO (reg)];
       if (new == 0)
-	new = assign_outer_stack_local (GET_MODE (reg),
-					GET_MODE_SIZE (decl_mode),
+	new = assign_outer_stack_local (decl_mode, GET_MODE_SIZE (decl_mode),
 					0, function);
     }
   else
@@ -869,8 +869,7 @@ put_var_into_stack (decl)
       if (REGNO (reg) < max_parm_reg)
 	new = parm_reg_stack_loc[REGNO (reg)];
       if (new == 0)
-	new = assign_stack_local (GET_MODE (reg),
-				  GET_MODE_SIZE (decl_mode), 0);
+	new = assign_stack_local (decl_mode, GET_MODE_SIZE (decl_mode), 0);
     }
 
   XEXP (reg, 0) = XEXP (new, 0);
@@ -1004,8 +1003,7 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
     {
       rtx next = NEXT_INSN (insn);
       rtx note;
-      if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN
-	  || GET_CODE (insn) == JUMP_INSN)
+      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
 	  /* The insn to load VAR from a home in the arglist
 	     is now a no-op.  When we see it, just delete it.  */
@@ -1464,7 +1462,12 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	   must be left alone, to avoid an infinite loop here.
 	   If the reference to VAR is by a subreg, fix that up,
 	   since SUBREG is not valid for a memref.
-	   Also fix up the address of the stack slot.  */
+	   Also fix up the address of the stack slot.
+
+	   Note that we must not try to recognize the insn until
+	   after we know that we have valid addresses and no
+	   (subreg (mem ...) ...) constructs, since these interfere
+	   with determining the validity of the insn.  */
 
 	if ((SET_SRC (x) == var
 	     || (GET_CODE (SET_SRC (x)) == SUBREG
@@ -1472,20 +1475,42 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	    && (GET_CODE (SET_DEST (x)) == REG
 		|| (GET_CODE (SET_DEST (x)) == SUBREG
 		    && GET_CODE (SUBREG_REG (SET_DEST (x))) == REG))
-	    && recog_memoized (insn) >= 0)
+	    && x == single_set (PATTERN (insn)))
 	  {
+	    rtx pat;
+
 	    replacement = find_fixup_replacement (replacements, SET_SRC (x));
 	    if (replacement->new)
-	      {
 	      SET_SRC (x) = replacement->new;
-	      return;
-	    }
 	    else if (GET_CODE (SET_SRC (x)) == SUBREG)
 	      SET_SRC (x) = replacement->new
 		= fixup_memory_subreg (SET_SRC (x), insn, 0);
 	    else
 	      SET_SRC (x) = replacement->new
 		= fixup_stack_1 (SET_SRC (x), insn);
+
+	    if (recog_memoized (insn) >= 0)
+	      return;
+
+	    /* INSN is not valid, but we know that we want to
+	       copy SET_SRC (x) to SET_DEST (x) in some way.  So
+	       we generate the move and see whether it requires more
+	       than one insn.  If it does, we emit those insns and
+	       delete INSN.  Otherwise, we an just replace the pattern 
+	       of INSN; we have already verified above that INSN has
+	       no other function that to do X.  */
+
+	    pat = gen_move_insn (SET_DEST (x), SET_SRC (x));
+	    if (GET_CODE (pat) == SEQUENCE)
+	      {
+		emit_insn_after (pat, insn);
+		PUT_CODE (insn, NOTE);
+		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+		NOTE_SOURCE_FILE (insn) = 0;
+	      }
+	    else
+	      PATTERN (insn) = pat;
+
 	    return;
 	  }
 
@@ -1495,12 +1520,29 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	    && (GET_CODE (SET_SRC (x)) == REG
 		|| (GET_CODE (SET_SRC (x)) == SUBREG
 		    && GET_CODE (SUBREG_REG (SET_SRC (x))) == REG))
-	    && recog_memoized (insn) >= 0)
+	    && x == single_set (PATTERN (insn)))
 	  {
+	    rtx pat;
+
 	    if (GET_CODE (SET_DEST (x)) == SUBREG)
 	      SET_DEST (x) = fixup_memory_subreg (SET_DEST (x), insn, 0);
 	    else
 	      SET_DEST (x) = fixup_stack_1 (SET_DEST (x), insn);
+
+	    if (recog_memoized (insn) >= 0)
+	      return;
+
+	    pat = gen_move_insn (SET_DEST (x), SET_SRC (x));
+	    if (GET_CODE (pat) == SEQUENCE)
+	      {
+		emit_insn_after (pat, insn);
+		PUT_CODE (insn, NOTE);
+		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+		NOTE_SOURCE_FILE (insn) = 0;
+	      }
+	    else
+	      PATTERN (insn) = pat;
+
 	    return;
 	  }
 
