@@ -1,3 +1,27 @@
+2003-09-22  Andrew Cagney  <cagney@redhat.com>
+
+	* floatformat.c (floatformat_i387_ext_is_valid): New function.
+	(floatformat_always_valid): New function.
+	(floatformat_i387_ext): Initialize new "is_valid" field to
+	"floatformat_i387_ext_is_valid".
+	(floatformat_ieee_single_little): Initialize "is_valid" field to
+	floatformat_always_valid.
+	(floatformat_ieee_double_big): Ditto.
+	(floatformat_ieee_double_little): Ditto.
+	(floatformat_ieee_double_little): Ditto.
+	(floatformat_ieee_double_littlebyte_bigword): Ditto.
+	(floatformat_i960_ext): Ditto.
+	(floatformat_m88110_ext): Ditto.
+	(floatformat_m88110_harris_ext): Ditto.
+	(floatformat_arm_ext_big): Ditto.
+	(floatformat_arm_ext_littlebyte_bigword): Ditto.
+	(floatformat_ia64_spill_big): Ditto.
+	(floatformat_ia64_spill_little): Ditto.
+	(floatformat_ia64_quad_big): Ditto.
+	(floatformat_ia64_quad_little): Ditto.
+	(floatformat_ia64_quad_little): Ditto.
+	(floatformat_is_valid): Call "is_valid".
+
 2003-09-15  Andrew Cagney  <cagney@redhat.com>
 
 	* floatformat.c (get_field): Make "data" constant.

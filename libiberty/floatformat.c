@@ -29,6 +29,22 @@ extern char *memcpy ();
 extern char *memset ();
 #endif
 
+static unsigned long get_field PARAMS ((const unsigned char *,
+					enum floatformat_byteorders,
+					unsigned int,
+					unsigned int,
+					unsigned int));
+static int floatformat_always_valid PARAMS ((const struct floatformat *fmt,
+					     const char *from));
+
+static int
+floatformat_always_valid (fmt, from)
+     const struct floatformat *fmt;
+     const char *from;
+{
+  return 1;
+}
+
 /* The odds that CHAR_BIT will be anything but 8 are low enough that I'm not
    going to bother with trying to muck around with whether it is defined in
    a system header, what we do if not, etc.  */
@@ -39,25 +55,29 @@ const struct floatformat floatformat_ieee_single_big =
 {
   floatformat_big, 32, 0, 1, 8, 127, 255, 9, 23,
   floatformat_intbit_no,
-  "floatformat_ieee_single_big"
+  "floatformat_ieee_single_big",
+  floatformat_always_valid
 };
 const struct floatformat floatformat_ieee_single_little =
 {
   floatformat_little, 32, 0, 1, 8, 127, 255, 9, 23,
   floatformat_intbit_no,
-  "floatformat_ieee_single_little"
+  "floatformat_ieee_single_little",
+  floatformat_always_valid
 };
 const struct floatformat floatformat_ieee_double_big =
 {
   floatformat_big, 64, 0, 1, 11, 1023, 2047, 12, 52,
   floatformat_intbit_no,
-  "floatformat_ieee_double_big"
+  "floatformat_ieee_double_big",
+  floatformat_always_valid
 };
 const struct floatformat floatformat_ieee_double_little =
 {
   floatformat_little, 64, 0, 1, 11, 1023, 2047, 12, 52,
   floatformat_intbit_no,
-  "floatformat_ieee_double_little"
+  "floatformat_ieee_double_little",
+  floatformat_always_valid
 };
 
 /* floatformat for IEEE double, little endian byte order, with big endian word
@@ -67,34 +87,64 @@ const struct floatformat floatformat_ieee_double_littlebyte_bigword =
 {
   floatformat_littlebyte_bigword, 64, 0, 1, 11, 1023, 2047, 12, 52,
   floatformat_intbit_no,
-  "floatformat_ieee_double_littlebyte_bigword"
+  "floatformat_ieee_double_littlebyte_bigword",
+  floatformat_always_valid
 };
+
+static int floatformat_i387_ext_is_valid PARAMS ((const struct floatformat *fmt, const char *from));
+
+static int
+floatformat_i387_ext_is_valid (fmt, from)
+     const struct floatformat *fmt;
+     const char *from;
+{
+  /* In the i387 double-extended format, if the exponent is all ones,
+     then the integer bit must be set.  If the exponent is neither 0
+     nor ~0, the intbit must also be set.  Only if the exponent is
+     zero can it be zero, and then it must be zero.  */
+  unsigned long exponent, int_bit;
+  const unsigned char *ufrom = (const unsigned char *) from;
+  
+  exponent = get_field (ufrom, fmt->byteorder, fmt->totalsize,
+			fmt->exp_start, fmt->exp_len);
+  int_bit = get_field (ufrom, fmt->byteorder, fmt->totalsize,
+		       fmt->man_start, 1);
+  
+  if ((exponent == 0) != (int_bit == 0))
+    return 0;
+  else
+    return 1;
+}
 
 const struct floatformat floatformat_i387_ext =
 {
   floatformat_little, 80, 0, 1, 15, 0x3fff, 0x7fff, 16, 64,
   floatformat_intbit_yes,
-  "floatformat_i387_ext"
+  "floatformat_i387_ext",
+  floatformat_i387_ext_is_valid
 };
 const struct floatformat floatformat_m68881_ext =
 {
   /* Note that the bits from 16 to 31 are unused.  */
   floatformat_big, 96, 0, 1, 15, 0x3fff, 0x7fff, 32, 64,
   floatformat_intbit_yes,
-  "floatformat_m68881_ext"
+  "floatformat_m68881_ext",
+  floatformat_always_valid
 };
 const struct floatformat floatformat_i960_ext =
 {
   /* Note that the bits from 0 to 15 are unused.  */
   floatformat_little, 96, 16, 17, 15, 0x3fff, 0x7fff, 32, 64,
   floatformat_intbit_yes,
-  "floatformat_i960_ext"
+  "floatformat_i960_ext",
+  floatformat_always_valid
 };
 const struct floatformat floatformat_m88110_ext =
 {
   floatformat_big, 80, 0, 1, 15, 0x3fff, 0x7fff, 16, 64,
   floatformat_intbit_yes,
-  "floatformat_m88110_ext"
+  "floatformat_m88110_ext",
+  floatformat_always_valid
 };
 const struct floatformat floatformat_m88110_harris_ext =
 {
@@ -102,53 +152,54 @@ const struct floatformat floatformat_m88110_harris_ext =
      double, and the last 64 bits are wasted. */
   floatformat_big,128, 0, 1, 11,  0x3ff,  0x7ff, 12, 52,
   floatformat_intbit_no,
-  "floatformat_m88110_ext_harris"
+  "floatformat_m88110_ext_harris",
+  floatformat_always_valid
 };
 const struct floatformat floatformat_arm_ext_big =
 {
   /* Bits 1 to 16 are unused.  */
   floatformat_big, 96, 0, 17, 15, 0x3fff, 0x7fff, 32, 64,
   floatformat_intbit_yes,
-  "floatformat_arm_ext_big"
+  "floatformat_arm_ext_big",
+  floatformat_always_valid
 };
 const struct floatformat floatformat_arm_ext_littlebyte_bigword =
 {
   /* Bits 1 to 16 are unused.  */
   floatformat_littlebyte_bigword, 96, 0, 17, 15, 0x3fff, 0x7fff, 32, 64,
   floatformat_intbit_yes,
-  "floatformat_arm_ext_littlebyte_bigword"
+  "floatformat_arm_ext_littlebyte_bigword",
+  floatformat_always_valid
 };
 const struct floatformat floatformat_ia64_spill_big =
 {
   floatformat_big, 128, 0, 1, 17, 65535, 0x1ffff, 18, 64,
   floatformat_intbit_yes,
-  "floatformat_ia64_spill_big"
+  "floatformat_ia64_spill_big",
+  floatformat_always_valid
 };
 const struct floatformat floatformat_ia64_spill_little =
 {
   floatformat_little, 128, 0, 1, 17, 65535, 0x1ffff, 18, 64,
   floatformat_intbit_yes,
-  "floatformat_ia64_spill_little"
+  "floatformat_ia64_spill_little",
+  floatformat_always_valid
 };
 const struct floatformat floatformat_ia64_quad_big =
 {
   floatformat_big, 128, 0, 1, 15, 16383, 0x7fff, 16, 112,
   floatformat_intbit_no,
-  "floatformat_ia64_quad_big"
+  "floatformat_ia64_quad_big",
+  floatformat_always_valid
 };
 const struct floatformat floatformat_ia64_quad_little =
 {
   floatformat_little, 128, 0, 1, 15, 16383, 0x7fff, 16, 112,
   floatformat_intbit_no,
-  "floatformat_ia64_quad_little"
+  "floatformat_ia64_quad_little",
+  floatformat_always_valid
 };
 
-static unsigned long get_field PARAMS ((const unsigned char *,
-					enum floatformat_byteorders,
-					unsigned int,
-					unsigned int,
-					unsigned int));
-
 /* Extract a field which starts at START and is LEN bits long.  DATA and
    TOTAL_LEN are the thing we are extracting it from, in byteorder ORDER.  */
 static unsigned long
@@ -411,30 +462,7 @@ floatformat_is_valid (fmt, from)
      const struct floatformat *fmt;
      const char *from;
 {
-  if (fmt == &floatformat_i387_ext)
-    {
-      /* In the i387 double-extended format, if the exponent is all
-	 ones, then the integer bit must be set.  If the exponent
-	 is neither 0 nor ~0, the intbit must also be set.  Only
-	 if the exponent is zero can it be zero, and then it must
-	 be zero.  */
-      unsigned long exponent, int_bit;
-      const unsigned char *ufrom = (const unsigned char *) from;
-
-      exponent = get_field (ufrom, fmt->byteorder, fmt->totalsize,
-			    fmt->exp_start, fmt->exp_len);
-      int_bit = get_field (ufrom, fmt->byteorder, fmt->totalsize,
-			   fmt->man_start, 1);
-
-      if ((exponent == 0) != (int_bit == 0))
-	return 0;
-      else
-	return 1;
-    }
-
-  /* Other formats with invalid representations should be added
-     here.  */
-  return 1;
+  return fmt->is_valid (fmt, from);
 }
 
 
