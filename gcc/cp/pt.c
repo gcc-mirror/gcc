@@ -6886,7 +6886,7 @@ tsubst_copy (t, args, complain, in_decl)
 
     case LOOKUP_EXPR:
       {
-	/* We must tsbust into a LOOKUP_EXPR in case the names to
+	/* We must tsubst into a LOOKUP_EXPR in case the names to
 	   which it refers is a conversion operator; in that case the
 	   name will change.  We avoid making unnecessary copies,
 	   however.  */
@@ -7211,6 +7211,12 @@ tsubst_expr (t, args, complain, in_decl)
 				     args, complain, in_decl));
       break;
 
+    case USING_STMT:
+      prep_stmt (t);
+      do_using_directive (tsubst_expr (USING_STMT_NAMESPACE (t),
+				       args, complain, in_decl));
+      break;
+      
     case DECL_STMT:
       {
 	tree decl;

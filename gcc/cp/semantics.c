@@ -2220,6 +2220,9 @@ cp_expand_stmt (t)
       genrtl_named_return_value ();
       break;
 
+    case USING_STMT:
+      break;
+    
     default:
       my_friendly_abort (19990810);
       break;

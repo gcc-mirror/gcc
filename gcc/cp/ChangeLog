@@ -1,5 +1,14 @@
 2001-05-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.def (USING_STMT): New statement node.
+	* cp-tree.h (USING_STMT_NAMESPACE): New macro.
+	* decl2.c (do_using_directive): Add USING_STMT to statement
+	tree. Don't emit errors when processing template decl.
+	* pt.c (tsubst_expr, USING_STMT case): New case.
+	* semantics.c (cp_expand_stmt, USING_STMT case): New case.
+
+2001-05-01  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* call.c (build_new_op): Convert args from reference here.
 	(build_conditional_expr): Don't convert here.
 
