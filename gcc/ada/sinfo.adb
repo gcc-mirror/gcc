@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.314 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -227,6 +227,18 @@ package body Sinfo is
           or else NT (N).Nkind in N_Subexpr);
       return Flag15 (N);
    end Assignment_OK;
+
+   function Associated_Node
+      (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+          or else NT (N).Nkind in N_Has_Entity
+        or else NT (N).Nkind = N_Aggregate
+        or else NT (N).Nkind = N_Extension_Aggregate
+        or else NT (N).Nkind = N_Freeze_Entity
+        or else NT (N).Nkind = N_Selected_Component);
+      return Node4 (N);
+   end Associated_Node;
 
    function At_End_Proc
       (N : Node_Id) return Node_Id is
@@ -2572,6 +2584,18 @@ package body Sinfo is
           or else NT (N).Nkind in N_Subexpr);
       Set_Flag15 (N, Val);
    end Set_Assignment_OK;
+
+   procedure Set_Associated_Node
+      (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+          or else NT (N).Nkind in N_Has_Entity
+        or else NT (N).Nkind = N_Aggregate
+        or else NT (N).Nkind = N_Extension_Aggregate
+        or else NT (N).Nkind = N_Freeze_Entity
+        or else NT (N).Nkind = N_Selected_Component);
+      Set_Node4 (N, Val); -- semantic field, no parent set
+   end Set_Associated_Node;
 
    procedure Set_At_End_Proc
       (N : Node_Id; Val : Node_Id) is
