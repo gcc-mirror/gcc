@@ -61,10 +61,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "hard-reg-set.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "flags.h"
-#include "hard-reg-set.h"
 #include "basic-block.h"
 #include "regs.h"
 #include "function.h"
@@ -144,12 +144,6 @@ struct qty
      or -1 if none was found.  */
 
   short phys_reg;
-
-  /* Nonzero if this quantity has been used in a SUBREG in some
-     way that is illegal.  */
-
-  char changes_mode;
-
 };
 
 static struct qty *qty;
@@ -328,7 +322,6 @@ alloc_qty (regno, mode, size, birth)
   qty[qtyno].alternate_class = reg_alternate_class (regno);
   qty[qtyno].n_refs = REG_N_REFS (regno);
   qty[qtyno].freq = REG_FREQ (regno);
-  qty[qtyno].changes_mode = REG_CHANGES_MODE (regno);
 }
 
 /* Main entry point of this file.  */
@@ -2026,9 +2019,6 @@ update_qty_class (qtyno, reg)
   rclass = reg_alternate_class (reg);
   if (reg_class_subset_p (rclass, qty[qtyno].alternate_class))
     qty[qtyno].alternate_class = rclass;
-
-  if (REG_CHANGES_MODE (reg))
-    qty[qtyno].changes_mode = 1;
 }
 
 /* Handle something which alters the value of an rtx REG.
@@ -2182,11 +2172,7 @@ find_free_reg (class, mode, qtyno, accept_call_clobbered, just_try_suggested,
      int born_index, dead_index;
 {
   int i, ins;
-#ifdef HARD_REG_SET
-  /* Declare it register if it's a scalar.  */
-  register
-#endif
-    HARD_REG_SET used, first_used;
+  HARD_REG_SET first_used, used;
 #ifdef ELIMINABLE_REGS
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
@@ -2234,10 +2220,8 @@ find_free_reg (class, mode, qtyno, accept_call_clobbered, just_try_suggested,
   SET_HARD_REG_BIT (used, FRAME_POINTER_REGNUM);
 #endif
 
-#ifdef CLASS_CANNOT_CHANGE_MODE
-  if (qty[qtyno].changes_mode)
-    IOR_HARD_REG_SET (used,
-		      reg_class_contents[(int) CLASS_CANNOT_CHANGE_MODE]);
+#ifdef CANNOT_CHANGE_MODE_CLASS
+  cannot_change_mode_set_regs (&used, mode, qty[qtyno].first_reg);
 #endif
 
   /* Normally, the registers that can be used for the first register in

@@ -126,6 +126,8 @@ extern int sh_pr_n_sets PARAMS ((void));
 extern int sh_hard_regno_rename_ok PARAMS ((unsigned int, unsigned int));
 extern int sh_cfun_interrupt_handler_p PARAMS ((void));
 extern void sh_initialize_trampoline PARAMS ((rtx, rtx, rtx));
+extern enum reg_class sh_cannot_change_mode_class
+	      PARAMS ((enum machine_mode, enum machine_mode));
 
 #ifdef HARD_CONST
 extern void fpscr_set_from_mem PARAMS ((int, HARD_REG_SET));

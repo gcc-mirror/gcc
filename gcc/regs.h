@@ -21,6 +21,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
 #include "varray.h"
+#include "hard-reg-set.h"
+#include "basic-block.h"
 
 #define REG_BYTES(R) mode_size[(int) GET_MODE (R)]
 
@@ -64,6 +66,8 @@ typedef struct reg_info_def
 
 extern varray_type reg_n_info;
 
+extern regset_head subregs_of_mode [NUM_MACHINE_MODES];
+
 /* Indexed by n, gives number of times (REG n) is used or set.  */
 
 #define REG_N_REFS(N) (VARRAY_REG (reg_n_info, N)->refs)
@@ -103,13 +107,6 @@ extern varray_type reg_n_info;
    for registers that are contained in one basic block.  */
 
 #define REG_N_DEATHS(N) (VARRAY_REG (reg_n_info, N)->deaths)
-
-/* Indexed by N; says whether a pseudo register N was ever used
-   within a SUBREG that changes the mode of the reg in some way
-   that is illegal for a given class (usually floating-point)
-   of registers.  */
-
-#define REG_CHANGES_MODE(N) (VARRAY_REG (reg_n_info, N)->changes_mode)
 
 /* Get the number of consecutive words required to hold pseudo-reg N.  */
 

@@ -2343,14 +2343,8 @@ extern enum reg_class mips_char_to_class[256];
    We can't allow 64-bit float registers to change from a 32-bit
    mode to a 64-bit mode.  */
 
-#define CLASS_CANNOT_CHANGE_MODE					\
-  (TARGET_BIG_ENDIAN ? FP_REGS						\
-   : (TARGET_FLOAT64 ? HI_AND_FP_REGS : HI_REG))
-
-/* Defines illegal mode changes for CLASS_CANNOT_CHANGE_MODE.  */
-
-#define CLASS_CANNOT_CHANGE_MODE_P(FROM,TO) \
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO))
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO) \
+  mips_cannot_change_mode_class (FROM, TO)
 
 /* Stack layout; function entry, exit and calling.  */
 

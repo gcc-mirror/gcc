@@ -7733,4 +7733,26 @@ sh_expand_binop_v2sf (code, op0, op1, op2)
   emit_insn ((*fn) (op0, op1, op2, op, sel1, sel1, sel1));
 }
 
+/* Return the class of registers for which a mode change from FROM to TO
+   is invalid.  */
+enum reg_class 
+sh_cannot_change_mode_class (from, to)
+     enum machine_mode from, to;
+{
+  if (GET_MODE_SIZE (from) != GET_MODE_SIZE (to))
+    {
+       if (TARGET_LITTLE_ENDIAN)
+         {
+	   if (GET_MODE_SIZE (to) < 8 || GET_MODE_SIZE (from) < 8)
+	     return DF_REGS;
+	 }
+       else
+	 {
+	   if (GET_MODE_SIZE (from) < 8)
+	     return DF_HI_REGS;
+	 }
+    }
+  return NO_REGS;
+}
+
 #include "gt-sh.h"

@@ -5490,16 +5490,15 @@ choose_reload_regs (chain)
 						GET_MODE_CLASS (mode));
 
 		  if (
-#ifdef CLASS_CANNOT_CHANGE_MODE
-		      (TEST_HARD_REG_BIT
-		       (reg_class_contents[(int) CLASS_CANNOT_CHANGE_MODE], i)
-		       ? ! CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (last_reg),
-						       need_mode)
-		       : (GET_MODE_SIZE (GET_MODE (last_reg))
-			  >= GET_MODE_SIZE (need_mode)))
-#else
+#ifdef CANNOT_CHANGE_MODE_CLASS
+		      (!REG_CANNOT_CHANGE_MODE_P (i, GET_MODE (last_reg),
+						  need_mode)
+		       ||
+#endif
 		      (GET_MODE_SIZE (GET_MODE (last_reg))
 		       >= GET_MODE_SIZE (need_mode))
+#ifdef CANNOT_CHANGE_MODE_CLASS
+		      )
 #endif
 		      && reg_reloaded_contents[i] == regno
 		      && TEST_HARD_REG_BIT (reg_reloaded_valid, i)

@@ -974,10 +974,7 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
      int retrying;
 {
   int i, best_reg, pass;
-#ifdef HARD_REG_SET
-  register		/* Declare it register if it's a scalar.  */
-#endif
-    HARD_REG_SET used, used1, used2;
+  HARD_REG_SET used, used1, used2;
 
   enum reg_class class = (alt_regs_p
 			  ? reg_alternate_class (allocno[num].reg)
@@ -1001,10 +998,8 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 
   IOR_HARD_REG_SET (used1, allocno[num].hard_reg_conflicts);
 
-#ifdef CLASS_CANNOT_CHANGE_MODE
-  if (REG_CHANGES_MODE (allocno[num].reg))
-    IOR_HARD_REG_SET (used1,
-		      reg_class_contents[(int) CLASS_CANNOT_CHANGE_MODE]);
+#ifdef CANNOT_CHANGE_MODE_CLASS
+  cannot_change_mode_set_regs (&used1, mode, allocno[num].reg);
 #endif
 
   /* Try each hard reg to see if it fits.  Do this in two passes.
@@ -1200,11 +1195,9 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 	      && (allocno[num].calls_crossed == 0
 		  || accept_call_clobbered
 		  || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode))
-#ifdef CLASS_CANNOT_CHANGE_MODE
-	      && ! (REG_CHANGES_MODE (allocno[num].reg)
-		    && (TEST_HARD_REG_BIT
-			(reg_class_contents[(int) CLASS_CANNOT_CHANGE_MODE],
-			 regno)))
+#ifdef CANNOT_CHANGE_MODE_CLASS
+	      && ! invalid_mode_change_p (regno, REGNO_REG_CLASS (regno),
+					  mode)
 #endif
 	      )
 	    {

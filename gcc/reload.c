@@ -967,9 +967,10 @@ push_reload (in, out, inloc, outloc, class,
 
   if (in != 0 && GET_CODE (in) == SUBREG
       && (subreg_lowpart_p (in) || strict_low)
-#ifdef CLASS_CANNOT_CHANGE_MODE
-      && (class != CLASS_CANNOT_CHANGE_MODE
-	  || ! CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (SUBREG_REG (in)), inmode))
+#ifdef CANNOT_CHANGE_MODE_CLASS
+      && !reg_classes_intersect_p 
+	   (class, CANNOT_CHANGE_MODE_CLASS (GET_MODE (SUBREG_REG (in)),
+					     inmode))
 #endif
       && (CONSTANT_P (SUBREG_REG (in))
 	  || GET_CODE (SUBREG_REG (in)) == PLUS
@@ -1016,14 +1017,11 @@ push_reload (in, out, inloc, outloc, class,
 						SUBREG_REG (in))
 		  == NO_REGS))
 #endif
-#ifdef CLASS_CANNOT_CHANGE_MODE
+#ifdef CANNOT_CHANGE_MODE_CLASS
 	  || (GET_CODE (SUBREG_REG (in)) == REG
 	      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
-	      && (TEST_HARD_REG_BIT
-		  (reg_class_contents[(int) CLASS_CANNOT_CHANGE_MODE],
-		   REGNO (SUBREG_REG (in))))
-	      && CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (SUBREG_REG (in)),
-					     inmode))
+	      && REG_CANNOT_CHANGE_MODE_P
+	      (REGNO (SUBREG_REG (in)), GET_MODE (SUBREG_REG (in)), inmode))
 #endif
 	  ))
     {
@@ -1081,10 +1079,10 @@ push_reload (in, out, inloc, outloc, class,
      and in that case the constraint should label it input-output.)  */
   if (out != 0 && GET_CODE (out) == SUBREG
       && (subreg_lowpart_p (out) || strict_low)
-#ifdef CLASS_CANNOT_CHANGE_MODE
-      && (class != CLASS_CANNOT_CHANGE_MODE
-	  || ! CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (SUBREG_REG (out)),
-					   outmode))
+#ifdef CANNOT_CHANGE_MODE_CLASS
+      && !reg_classes_intersect_p 
+	    (class, CANNOT_CHANGE_MODE_CLASS (GET_MODE (SUBREG_REG (out)),
+					      outmode))
 #endif
       && (CONSTANT_P (SUBREG_REG (out))
 	  || strict_low
@@ -1118,14 +1116,12 @@ push_reload (in, out, inloc, outloc, class,
 						 SUBREG_REG (out))
 		  == NO_REGS))
 #endif
-#ifdef CLASS_CANNOT_CHANGE_MODE
+#ifdef CANNOT_CHANGE_MODE_CLASS
 	  || (GET_CODE (SUBREG_REG (out)) == REG
 	      && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER
-	      && (TEST_HARD_REG_BIT
-		  (reg_class_contents[(int) CLASS_CANNOT_CHANGE_MODE],
-		   REGNO (SUBREG_REG (out))))
-	      && CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (SUBREG_REG (out)),
-					     outmode))
+	      && REG_CANNOT_CHANGE_MODE_P (REGNO (SUBREG_REG (out)),
+		   			   GET_MODE (SUBREG_REG (out)), 
+					   outmode))
 #endif
 	  ))
     {

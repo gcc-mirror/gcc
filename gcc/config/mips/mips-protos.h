@@ -122,6 +122,8 @@ extern int              mips_adjust_insn_length PARAMS ((rtx, int));
 extern enum reg_class	mips_secondary_reload_class PARAMS ((enum reg_class,
 							     enum machine_mode,
 							     rtx, int));
+extern enum reg_class	mips_cannot_change_mode_class 
+			  PARAMS ((enum machine_mode, enum machine_mode));
 extern int              mips_class_max_nregs PARAMS ((enum reg_class,
 						      enum machine_mode));
 extern int              mips_register_move_cost PARAMS ((enum machine_mode,

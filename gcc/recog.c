@@ -1083,13 +1083,10 @@ register_operand (op, mode)
       if (! reload_completed && GET_CODE (sub) == MEM)
 	return general_operand (op, mode);
 
-#ifdef CLASS_CANNOT_CHANGE_MODE
+#ifdef CANNOT_CHANGE_MODE_CLASS
       if (GET_CODE (sub) == REG
 	  && REGNO (sub) < FIRST_PSEUDO_REGISTER
-	  && (TEST_HARD_REG_BIT
-	      (reg_class_contents[(int) CLASS_CANNOT_CHANGE_MODE],
-	       REGNO (sub)))
-	  && CLASS_CANNOT_CHANGE_MODE_P (mode, GET_MODE (sub))
+	  && REG_CANNOT_CHANGE_MODE_P (REGNO (sub), mode, GET_MODE (sub))
 	  && GET_MODE_CLASS (GET_MODE (sub)) != MODE_COMPLEX_INT
 	  && GET_MODE_CLASS (GET_MODE (sub)) != MODE_COMPLEX_FLOAT)
 	return 0;

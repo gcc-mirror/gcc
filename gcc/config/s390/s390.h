@@ -330,10 +330,8 @@ do								\
 /* If a 4-byte value is loaded into a FPR, it is placed into the
    *upper* half of the register, not the lower.  Therefore, we
    cannot use SUBREGs to switch between modes in FP registers.  */
-#define CLASS_CANNOT_CHANGE_MODE FP_REGS
-#define CLASS_CANNOT_CHANGE_MODE_P(FROM,TO) \
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO))
-
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO)		\
+  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO) ? FP_REGS : NO_REGS)
 
 /* Register classes.  */
  

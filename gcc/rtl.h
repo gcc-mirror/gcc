@@ -2092,6 +2092,7 @@ extern int global_alloc			PARAMS ((FILE *));
 extern void dump_global_regs		PARAMS ((FILE *));
 #endif
 #ifdef HARD_CONST
+/* Yes, this ifdef is silly, but HARD_REG_SET is not always defined.  */
 extern void retry_global_alloc		PARAMS ((int, HARD_REG_SET));
 #endif
 extern void build_insn_chain		PARAMS ((rtx));
@@ -2109,6 +2110,14 @@ extern void regclass			PARAMS ((rtx, int, FILE *));
 extern void reg_scan			PARAMS ((rtx, unsigned int, int));
 extern void reg_scan_update		PARAMS ((rtx, rtx, unsigned int));
 extern void fix_register		PARAMS ((const char *, int, int));
+#ifdef HARD_CONST
+extern void cannot_change_mode_set_regs PARAMS ((HARD_REG_SET *,
+						 enum machine_mode,
+						 unsigned int));
+#endif
+extern bool invalid_mode_change_p	PARAMS ((unsigned int,
+						 enum reg_class,
+						 enum machine_mode));
 
 extern int delete_null_pointer_checks	PARAMS ((rtx));
 
@@ -2269,4 +2278,5 @@ extern void invert_br_probabilities	PARAMS ((rtx));
 extern bool expensive_function_p	PARAMS ((int));
 /* In tracer.c */
 extern void tracer			PARAMS ((void));
+
 #endif /* ! GCC_RTL_H */
