@@ -1,4 +1,4 @@
-Thu Oct 28 20:59:47 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+Sun Oct 31 22:32:17 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config/i386/sol2gas.h: I had installed the wrong version of Sept
 	22's patch in the release branch.  Fixed.
