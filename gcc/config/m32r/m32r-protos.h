@@ -1,5 +1,6 @@
 /* Prototypes for m32r.c functions used in the md file & elsewhere.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -36,7 +37,6 @@ extern void   m32r_load_pic_register (void);
 extern enum m32r_function_type m32r_compute_function_type (tree);
 
 #ifdef HAVE_MACHINE_MODES
-extern void   m32r_setup_incoming_varargs (CUMULATIVE_ARGS *, Mmode, tree, int *, int);
 extern int    function_arg_partial_nregs (CUMULATIVE_ARGS *, Mmode, tree, int);
 #endif
 #endif /* TREE_CODE */
