@@ -89,7 +89,7 @@ ___umulsidi3:
 	nop
 	beq.nd .Ldone
 	and.f 0,r0,1		; if (a & 1)
-	cmp r0,0
+	sub.f 0,r0,0
 	nop
 	beq .Ldontadd
 	add.f r4,r4,r1		; r += b
