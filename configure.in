@@ -361,6 +361,9 @@ no)
     *-*-linux*)
         # Enable libmudflap by default in GNU/Linux.
 	;;
+    *-*-freebsd*)
+        # Enable libmudflap by default in FreeBSD.
+	;;
     *)
         # Disable it by default everywhere else.
 	noconfigdirs="$noconfigdirs target-libmudflap"
