@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "rtl.h"
 #include "bitmap.h"
+#include "real.h"
 
 
 /* How to print out a register name.
@@ -267,6 +268,15 @@ print_rtx (in_rtx)
 		 format_ptr[-1]);
 	abort ();
       }
+
+#if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
+  if (GET_CODE (in_rtx) == CONST_DOUBLE && FLOAT_MODE_P (GET_MODE (in_rtx)))
+    {
+      double val;
+      REAL_VALUE_FROM_CONST_DOUBLE (val, in_rtx);
+      fprintf (outfile, " [%.16g]", val);
+    }
+#endif
 
   fprintf (outfile, ")");
   sawclose = 1;

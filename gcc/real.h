@@ -264,10 +264,18 @@ typedef struct {
    value in host format and then to a single type `long' value which
    is the bitwise equivalent of the `float' value.  */
 #ifndef REAL_VALUE_TO_TARGET_SINGLE
-#define REAL_VALUE_TO_TARGET_SINGLE(IN, OUT)				\
-do { float f = (float) (IN);						\
-     (OUT) = *(long *) &f;						\
-   } while (0)
+#define REAL_VALUE_TO_TARGET_SINGLE(IN, OUT)		\
+do {							\
+  union {						\
+    float f;						\
+    HOST_WIDE_INT l;					\
+  } u;							\
+  if (sizeof(HOST_WIDE_INT) < sizeof(float))		\
+    abort();						\
+  u.l = 0;						\
+  u.f = (IN);						\
+  (OUT) = u.l;						\
+} while (0)
 #endif
 
 /* Convert a type `double' value in host format to a pair of type `long'
@@ -275,18 +283,20 @@ do { float f = (float) (IN);						\
    proper word order for the target.  */
 #ifndef REAL_VALUE_TO_TARGET_DOUBLE
 #define REAL_VALUE_TO_TARGET_DOUBLE(IN, OUT)				\
-do { REAL_VALUE_TYPE in = (IN);  /* Make sure it's not in a register.  */\
-     if (HOST_FLOAT_WORDS_BIG_ENDIAN == FLOAT_WORDS_BIG_ENDIAN)		\
-       {								\
-	 (OUT)[0] = ((long *) &in)[0];					\
-	 (OUT)[1] = ((long *) &in)[1];					\
-       }								\
-     else								\
-       {								\
-	 (OUT)[1] = ((long *) &in)[0];					\
-	 (OUT)[0] = ((long *) &in)[1];					\
-       }								\
-   } while (0)
+do {									\
+  union {								\
+    REAL_VALUE_TYPE f;							\
+    HOST_WIDE_INT l[2];							\
+  } u;									\
+  if (sizeof(HOST_WIDE_INT) * 2 < sizeof(REAL_VALUE_TYPE))		\
+    abort();								\
+  u.l[0] = u.l[1] = 0;							\
+  u.f = (IN);								\
+  if (HOST_FLOAT_WORDS_BIG_ENDIAN == FLOAT_WORDS_BIG_ENDIAN)		\
+    (OUT)[0] = u.l[0], (OUT)[1] = u.l[1];				\
+  else									\
+    (OUT)[1] = u.l[0], (OUT)[0] = u.l[1];				\
+} while (0)
 #endif
 #endif /* HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT */
 
