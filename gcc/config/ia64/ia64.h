@@ -2450,4 +2450,5 @@ enum fetchop_code {
 #undef  PROFILE_BEFORE_PROLOGUE
 #define PROFILE_BEFORE_PROLOGUE 1
 
+#define FUNCTION_OK_FOR_SIBCALL(DECL) ia64_function_ok_for_sibcall (DECL)
 /* End of ia64.h */
