@@ -293,6 +293,12 @@ struct function
   /* Number of function calls seen so far in current function.  */
   int x_function_call_count;
 
+  /* Nonzero if this function is being processed in function-at-a-time
+     mode.  In other words, if all tree structure for this function,
+     including the BLOCK tree is created, before RTL generation
+     commences.  */
+  int x_whole_function_mode_p;
+
   /* List (chain of TREE_LIST) of LABEL_DECLs for all nonlocal labels
      (labels to which there can be nonlocal gotos from nested functions)
      in this function.  */
@@ -521,6 +527,8 @@ extern struct function *outer_function_chain;
    Also store in each NOTE for the beginning or end of a block
    the index of that block in the vector.  */
 extern void identify_blocks PROTO((tree, rtx));
+/* Insert a new BLOCK at an appropriate place in the block tree.  */
+extern void retrofit_block PROTO((tree, rtx));
 
 /* Return size needed for stack frame based on slots so far allocated.
    This size counts from zero.  It is not rounded to STACK_BOUNDARY;

@@ -5381,6 +5381,49 @@ round_trampoline_addr (tramp)
   return tramp;
 }
 
+/* Insert the BLOCK in the block-tree before LAST_INSN.  */
+
+void
+retrofit_block (block, last_insn)
+     tree block;
+     rtx last_insn;
+{
+  rtx insn;
+
+  /* Now insert the new BLOCK at the right place in the block trees
+     for the function which called the inline function.  We just look
+     backwards for a NOTE_INSN_BLOCK_{BEG,END}.  If we find the
+     beginning of a block, then this new block becomes the first
+     subblock of that block.  If we find the end of a block, then this
+     new block follows that block in the list of blocks.  */
+  for (insn = last_insn; insn; insn = PREV_INSN (insn))
+    if (GET_CODE (insn) == NOTE
+	&& (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
+	    || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END))
+      break;
+  if (!insn || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
+    {
+      tree superblock;
+
+      if (insn)
+	superblock = NOTE_BLOCK (insn);
+      else
+	superblock = DECL_INITIAL (current_function_decl);
+
+      BLOCK_SUPERCONTEXT (block) = superblock;
+      BLOCK_CHAIN (block) = BLOCK_SUBBLOCKS (superblock);
+      BLOCK_SUBBLOCKS (superblock) = block;
+    }
+  else
+    {
+      tree prevblock = NOTE_BLOCK (insn);
+
+      BLOCK_SUPERCONTEXT (block) = BLOCK_SUPERCONTEXT (prevblock);
+      BLOCK_CHAIN (block) = BLOCK_CHAIN (prevblock);
+      BLOCK_CHAIN (prevblock) = block;
+    }
+}
+
 /* The functions identify_blocks and reorder_blocks provide a way to
    reorder the tree of BLOCK nodes, for optimizers that reshuffle or
    duplicate portions of the RTL code.  Call identify_blocks before
@@ -5423,15 +5466,30 @@ identify_blocks (block, insns)
 	  {
 	    tree b;
 
+	      /* If there are more block notes than BLOCKs, something
+		 is badly wrong.  */
+	    if (current_block_number == n_blocks)
+	      abort ();
+
 	    b = block_vector[current_block_number++];
 	    NOTE_BLOCK (insn) = b;
 	    block_stack[depth++] = b;
 	  }
-	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
-	  NOTE_BLOCK (insn) = block_stack[--depth];
+	else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
+	  {
+	    if (depth == 0)
+	      /* There are more NOTE_INSN_BLOCK_ENDs that
+		 NOTE_INSN_BLOCK_BEGs.  Something is badly wrong.  */
+	      abort ();
+
+	    NOTE_BLOCK (insn) = block_stack[--depth];
+	  }
       }
 
-  if (n_blocks != current_block_number)
+  /* In whole-function mode, we might not have seen the whole function
+     yet, so we might not use up all the blocks.  */
+  if (n_blocks != current_block_number 
+      && !current_function->x_whole_function_mode_p)
     abort ();
 
   free (block_vector);

@@ -1,3 +1,18 @@
+Fri Sep 17 15:19:01 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* functiion.h (struct function): Add x_whole_function_mode_p.
+	(retrofit_block): Declare.
+	* function.c (retrofit_block): New function.
+	(identify_blocks): Add assertions.  Allow an incomplete set of
+	block notes if we're still generating code for the function.
+	* integrate.c: Include loop.h.
+	(expand_inline_function): Call find_loop_tree_blocks to map block
+	notes to blocks when in whole-function mode.  Use retrofit_block
+	to insert new BLOCKs for the inlined function, rather than
+	insert_block.
+	* stmt.c (expand_fixup): Likewise.  Don't use pushlevel/polevel.
+	* Makefile.in (integrate.o): Depend on loop.h.
+
 Fri Sep 17 15:11:20 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (warn_about_unused_variables): Declare.
