@@ -1,6 +1,6 @@
 // new abi support -*- C++ -*-
   
-// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of GNU CC.
 //
@@ -384,9 +384,6 @@ public:
   enum __flags_masks {
     __non_diamond_repeat_mask = 0x1,   /* distinct instance of repeated base */
     __diamond_shaped_mask = 0x2,       /* diamond shaped multiple inheritance */
-    non_public_base_mask = 0x4,      /* has non-public direct or indirect base */
-    public_base_mask = 0x8,          /* has public base (direct) */
-    
     __flags_unknown_mask = 0x10
   };
 

@@ -1,5 +1,5 @@
 /* RunTime Type Identification
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Mostly written by Jason Merrill (jason@cygnus.com).
 
@@ -916,8 +916,6 @@ dfs_class_hint_mark (tree binfo, void *data)
         *hint |= 1;
       SET_CLASSTYPE_MARKED (basetype);
     }
-  if (!TREE_VIA_PUBLIC (binfo) && TYPE_BINFO (basetype) != binfo)
-    *hint |= 4;
   return NULL_TREE;
 };
 
@@ -939,18 +937,10 @@ static int
 class_hint_flags (tree type)
 {
   int hint_flags = 0;
-  int i;
   
   dfs_walk (TYPE_BINFO (type), dfs_class_hint_mark, NULL, &hint_flags);
   dfs_walk (TYPE_BINFO (type), dfs_class_hint_unmark, NULL, NULL);
   
-  for (i = 0; i < CLASSTYPE_N_BASECLASSES (type); ++i)
-    {
-      tree base_binfo = BINFO_BASETYPE (TYPE_BINFO (type), i);
-      
-      if (TREE_VIA_PUBLIC (base_binfo))
-        hint_flags |= 0x8;
-    }
   return hint_flags;
 }
         
