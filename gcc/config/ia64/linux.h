@@ -3,6 +3,10 @@
 #include <linux.h>
 #include "sysv4.h"
 
+/* This is for -profile to use -lc_p instead of -lc. */
+#undef CC1_SPEC
+#define CC1_SPEC "%{profile:-p} %{G*}"
+
 /* ??? Maybe this should be in sysv4.h?  */
 #define CPP_PREDEFINES "\
 -D__ia64 -D__ia64__ -D__linux -D__linux__ -D_LONGLONG -Dlinux -Dunix \

@@ -1,5 +1,10 @@
 2001-06-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/ia64/ia64.h (CC1_SPEC): Define.
+	* config/ia64/linux.h (CC1_SPEC): Define.
+
+2001-06-08  Jakub Jelinek  <jakub@redhat.com>
+
 	* tradcpp.c (do_define): Make sure we don't walk past limit.
 
 2001-06-08  Jakub Jelinek  <jakub@redhat.com
