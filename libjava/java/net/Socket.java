@@ -1006,12 +1006,11 @@ public class Socket
       throw new SocketException("socket is closed");
     
     getImpl().close();
+    impl = null;
+    bound = false;
 
     if (getChannel() != null)
       getChannel().close();
-    
-    impl = null;
-    bound = false;
   }
 
   /**

@@ -232,6 +232,16 @@ public class DatagramSocket
 	    remotePort = -1;
 	    impl = null;
 	  }
+
+	try
+	  {
+	    if (getChannel() != null)
+	      getChannel().close();
+	  }
+	catch (IOException e)
+	  {
+	    // Do nothing.
+	  }
       }
   }
 

@@ -356,12 +356,11 @@ public class ServerSocket
     if (!isClosed())
       {
 	impl.close();
+	impl = null;
+	bound = false;
 
 	if (getChannel() != null)
 	  getChannel().close();
-    
-	impl = null;
-	bound = false;
       }
   }
 
@@ -543,7 +542,7 @@ public class ServerSocket
     if (!isBound())
       return "ServerSocket[unbound]";
     
-    return ("ServerSocket[addr=" + impl.getInetAddress()
+    return ("ServerSocket[addr=" + getInetAddress()
 	    + ",port=" + impl.getPort()
 	    + ",localport=" + impl.getLocalPort()
 	    + "]");
