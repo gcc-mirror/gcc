@@ -10,6 +10,12 @@ Wed Jun  9 15:57:57 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 	(rs6000_finalize_pic): Likewise.
 	(output_prolog): Handle PIC_OFFSET_TABLE_REGNUM.
 
+Wed Jun  9 19:44:26 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (loop_insn_first_p): Don't compare LUIDs when P
+	is a note; use <= for the compare; advance P while it is
+	a NOTE.
+
 Wed Jun  9 13:12:24 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* fixinc/inclhack.def (no_double_slash): Fix quoting for test.
