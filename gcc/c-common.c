@@ -979,10 +979,10 @@ typedef struct {
   int pointer_count;
   /* Type of argument if no length modifier is used.  */
   tree *nolen;
-  /* Type of argument if length modifier for shortening is used.
+  /* Type of argument if length modifier for shortening to byte is used.
      If NULL, then this modifier is not allowed.  */
   tree *hhlen;
-  /* Type of argument if length modifier for shortening to byte if used.
+  /* Type of argument if length modifier for shortening is used.
      If NULL, then this modifier is not allowed.  */
   tree *hlen;
   /* Type of argument if length modifier `l' is used.
@@ -1556,6 +1556,13 @@ check_format_info (info, params)
 	      if (pedantic)
 		warning ("ANSI C does not support the `ll' length modifier");
 	    }
+	  else if (length_char == 'h' && *format_chars == 'h')
+	    {
+	      length_char = 'H', format_chars++;
+	      /* FIXME: Is allowed in ISO C 9x.  */
+	      if (pedantic)
+		warning ("ANSI C does not support the `hh' length modifier");
+	    }
 	  if (*format_chars == 'a' && info->format_type == scanf_format_type)
 	    {
 	      if (format_chars[1] == 's' || format_chars[1] == 'S'
@@ -1688,15 +1695,6 @@ check_format_info (info, params)
 	warning ("use of `%c' length character with `%c' type character",
 		 length_char, format_char);
 
-      /*
-       ** XXX -- should kvetch about stuff such as
-       **	{
-       **		const int	i;
-       **
-       **		scanf ("%d", &i);
-       **	}
-       */
-
       /* Finally. . .check type of argument against desired type!  */
       if (info->first_arg_num == 0)
 	continue;
@@ -1739,8 +1737,10 @@ check_format_info (info, params)
 	}
 
       /* See if this is an attempt to write into a const type with
-	 scanf.  */
-      if (info->format_type == scanf_format_type
+	 scanf or with printf "%n".  */
+      if ((info->format_type == scanf_format_type
+	   || (info->format_type == printf_format_type
+	       && format_char == 'n'))
 	  && i == fci->pointer_count + aflag
 	  && wanted_type != 0
 	  && TREE_CODE (cur_type) != ERROR_MARK
