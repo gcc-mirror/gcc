@@ -1,3 +1,8 @@
+Tue Aug 10 00:08:29 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* gc_priv.h: Merged IRIX thread changes from
+	include/private/gc_priv.h.
+
 Mon Aug  9 18:33:38 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.in: Rebuilt.
