@@ -1,5 +1,9 @@
 2001-03-14  Mark Mitchell  <mark@codesourcery.com>
 
+	* expr.c (expand_expr): Revove bogus conditional.
+
+2001-03-14  Mark Mitchell  <mark@codesourcery.com>
+
 	* tree.h (DECL_RTL): Allocate RTL lazily.
 	(SET_DECL_RTL): New macro.
 	(DECL_RTL_SET_P): Likewise.
