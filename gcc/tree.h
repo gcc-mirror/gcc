@@ -848,6 +848,33 @@ struct tree_exp
    the debugging output format in use.  */
 #define BLOCK_NUMBER(NODE) (BLOCK_CHECK (NODE)->block.block_num)
 
+/* If block reordering splits a lexical block into discontiguous
+   address ranges, we'll make a copy of the original block.
+
+   Note that this is logically distinct from BLOCK_ABSTRACT_ORIGIN.
+   In that case, we have one source block that has been replicated
+   (through inlining or unrolling) into many logical blocks, and that
+   these logical blocks have different physical variables in them.
+
+   In this case, we have one logical block split into several
+   non-contiguous address ranges.  Most debug formats can't actually
+   represent this idea directly, so we fake it by creating multiple
+   logical blocks with the same variables in them.  However, for those
+   that do support non-contiguous regions, these allow the original
+   logical block to be reconstructed, along with the set of address
+   ranges.
+
+   One of the logical block fragments is arbitrarily chosen to be
+   the ORIGIN.  The other fragments will point to the origin via
+   BLOCK_FRAGMENT_ORIGIN; the origin itself will have this pointer
+   be null.  The list of fragments will be chained through 
+   BLOCK_FRAGMENT_CHAIN from the origin.  */
+
+#define BLOCK_FRAGMENT_ORIGIN(NODE) \
+  (BLOCK_CHECK (NODE)->block.fragment_origin)
+#define BLOCK_FRAGMENT_CHAIN(NODE) \
+  (BLOCK_CHECK (NODE)->block.fragment_chain)
+
 struct tree_block
 {
   struct tree_common common;
@@ -860,6 +887,8 @@ struct tree_block
   union tree_node *subblocks;
   union tree_node *supercontext;
   union tree_node *abstract_origin;
+  union tree_node *fragment_origin;
+  union tree_node *fragment_chain;
 };
 
 /* Define fields and accessors for nodes representing data types.  */

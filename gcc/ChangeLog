@@ -1,5 +1,28 @@
 2001-07-28  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2out.c (dw_val_class_offset): New.
+	(struct dw_ranges_struct, dw_ranges_ref): New.
+	(ranges_table, ranges_table_allocated): New.
+	(ranges_table_in_use, RANGES_TABLE_INCREMENT): New.
+	(add_AT_offset, add_ranges, output_ranges): New.
+	(print_die, output_die): Handle dw_val_class_offset.
+	(attr_checksum, size_of_die, value_format): Likewise.
+	(gen_lexical_block_die): Handle non-contiguous blocks.
+	(gen_block_die): Likewise.
+	(dwarf2out_finish): Add a DW_AT_entry_pc to the compilation unit
+	if needed.  Dump the ranges table.
+	* final.c (final_start_function): Remove unnecessary notes and
+	rebuild the block tree before numbering the blocks.
+	* function.c (reorder_blocks_0): Walk the existing block tree
+	to unmark all blocks.
+	(reorder_blocks_1): Create block fragments when duplicate block
+	notes are seen.
+	(reorder_fix_fragments): New.
+	(reorder_blocks): Call it.
+	* tree.h (BLOCK_FRAGMENT_ORIGIN, BLOCK_FRAGMENT_CHAIN): New.
+
+2001-07-28  Richard Henderson  <rth@redhat.com>
+
 	* emit-rtl.c (adjust_address): Make a copy of the memory address.
 
 2001-07-28  Richard Henderson  <rth@redhat.com>
