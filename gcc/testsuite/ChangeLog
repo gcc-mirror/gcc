@@ -1,3 +1,8 @@
+2002-01-22  Janis Johnson  <janis187@us.ibm.com>
+
+	PR target/5379
+	* gcc.dg/20020122-2.c: New test.
+
 2002-01-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/20020122-1.c: New test.
