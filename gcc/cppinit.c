@@ -931,7 +931,7 @@ do_includes (pfile, p, scan)
 
       /* Later: maybe update this to use the #include "" search path
 	 if cpp_read_file fails.  */
-      if (cpp_read_file (pfile, p->arg) && scan)
+      if (_cpp_read_file (pfile, p->arg) && scan)
 	cpp_scan_buffer_nooutput (pfile, 0);
       q = p->next;
       free (p);
@@ -1002,7 +1002,7 @@ cpp_start_read (pfile, fname)
   if (CPP_OPTION (pfile, out_fname) == NULL)
     CPP_OPTION (pfile, out_fname) = "";
 
-  if (!cpp_read_file (pfile, fname))
+  if (!_cpp_read_file (pfile, fname))
     return 0;
 
   initialize_dependency_output (pfile);

@@ -771,23 +771,23 @@ do_line (pfile)
 	  if (action_number == 1)
 	    {
 	      reason = FC_ENTER;
-	      cpp_make_system_header (pfile, buffer, 0);
+	      cpp_make_system_header (pfile, 0, 0);
 	      read_line_number (pfile, &action_number);
 	    }
 	  else if (action_number == 2)
 	    {
 	      reason = FC_LEAVE;
-	      cpp_make_system_header (pfile, buffer, 0);
+	      cpp_make_system_header (pfile, 0, 0);
 	      read_line_number (pfile, &action_number);
 	    }
 	  if (action_number == 3)
 	    {
-	      cpp_make_system_header (pfile, buffer, 1);
+	      cpp_make_system_header (pfile, 1, 0);
 	      read_line_number (pfile, &action_number);
 	    }
 	  if (action_number == 4)
 	    {
-	      cpp_make_system_header (pfile, buffer, 2);
+	      cpp_make_system_header (pfile, 1, 1);
 	      read_line_number (pfile, &action_number);
 	    }
 	}
@@ -1100,11 +1100,12 @@ static void
 do_pragma_system_header (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *ip = CPP_BUFFER (pfile);
-  if (CPP_PREV_BUFFER (ip) == NULL)
-    cpp_warning (pfile, "#pragma system_header outside include file");
+  cpp_buffer *buffer = pfile->buffer;
+
+  if (buffer->prev == 0)
+    cpp_warning (pfile, "#pragma system_header ignored outside include file");
   else
-    cpp_make_system_header (pfile, ip, 1);
+    cpp_make_system_header (pfile, 1, 0);
 
   check_eol (pfile);
 }

@@ -526,17 +526,16 @@ _cpp_fake_include (pfile, fname)
    see the details of struct include_file.  This is an exported interface
    because fix-header needs it.  */
 void
-cpp_make_system_header (pfile, pbuf, flag)
+cpp_make_system_header (pfile, syshdr, externc)
      cpp_reader *pfile;
-     cpp_buffer *pbuf;
-     int flag;
+     int syshdr, externc;
 {
-  if (flag < 0 || flag > 2)
-    cpp_ice (pfile, "cpp_make_system_header: bad flag %d\n", flag);
-  else if (!pbuf->inc)
-    cpp_ice (pfile, "cpp_make_system_header called on non-file buffer");
-  else
-    pbuf->inc->sysp = flag;
+  int flags = 0;
+
+  /* 1 = system header, 2 = system header to be treated as C.  */
+  if (syshdr)
+    flags = 1 + (externc != 0);
+  pfile->buffer->inc->sysp = flags;
 }
 
 /* Report on all files that might benefit from a multiple include guard.
@@ -714,7 +713,7 @@ _cpp_compare_file_date (pfile, f)
 /* Push an input buffer and load it up with the contents of FNAME.
    If FNAME is "" or NULL, read standard input.  */
 int
-cpp_read_file (pfile, fname)
+_cpp_read_file (pfile, fname)
      cpp_reader *pfile;
      const char *fname;
 {

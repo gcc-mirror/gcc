@@ -636,7 +636,7 @@ read_scan_file (in_fname, argc, argv)
     exit (FATAL_EXIT_CODE);
 
   /* We are scanning a system header, so mark it as such.  */
-  cpp_make_system_header (scan_in, CPP_BUFFER (scan_in), 1);
+  cpp_make_system_header (scan_in, 1, 0);
 
   scan_decls (scan_in, argc, argv);
   for (cur_symbols = &symbol_table[0]; cur_symbols->names; cur_symbols++)
