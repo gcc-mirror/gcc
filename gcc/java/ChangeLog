@@ -1,3 +1,7 @@
+1999-04-30 20:54 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* Makefile.in: Remove -v from bison command lines.
+
 1999-04-29  Anthony Green  <green@cygnus.com>
 
 	* expr.c (generate_name): Use ASM_GENERATE_INTERNAL_LABEL to
