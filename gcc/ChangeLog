@@ -1,3 +1,17 @@
+2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * (initialize, initialize_builtins,
+        initialize_dependency_output, initialize_standard_includes):
+        Rename s/initialize/init. Update.
+        (init_dependency_output): Move to after
+        cpp_handle_options, the correct location temporally at least.
+        (opt_comp): Move next to init (), its caller.  Fix prototype.
+        (init): Make "initialized" local scope.
+        (cpp_create_reader): Always call init ().
+        (cpp_start_read): Update.
+        (output_deps): New function, broken out of cpp_finish.
+        (cpp_finish): Break out output_deps.
+
 2001-01-07  Richard Henderson  <rth@redhat.com>
 
 	* collect2.c (COFF specific stuff): Revert 12-06 patch
