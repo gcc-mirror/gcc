@@ -1,3 +1,10 @@
+2003-10-22  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	Fix for	PR java/12586.
+	* mangle.c (find_compression_record_match): Don't iterate through
+	package namespace elements unless they all match compression_table
+	entries.
+
 2003-10-20  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in (info): Honor $(parsedir) and $(docobjdir).

@@ -287,38 +287,29 @@ find_compression_array_template_match (tree string)
 static int
 find_compression_record_match (tree type, tree *next_current)
 {
-  int i, match;
+  int i, match = -1;
   tree current, saved_current = NULL_TREE;
 
-  /* Search from the beginning for something that matches TYPE, even
-     partially. */
-  for (current = TYPE_PACKAGE_LIST (type), i = 0, match = -1; current;
-       current = TREE_CHAIN (current))
+  current = TYPE_PACKAGE_LIST (type);
+      
+  for (i = 0; i < compression_next; i++)
     {
-      int j;
-      for (j = i; j < compression_next; j++)
-	if (TREE_VEC_ELT (compression_table, j) == TREE_PURPOSE (current))
-	  {
-	    match = i = j;
-	    saved_current = current;
-	    i++;
-	    break;
-	  }
-        else if (atms && TREE_VEC_ELT (compression_table, j) == atms)
-          {
-            /* Skip over a "6JArray". */
-          }
-	else
-	  {
-	    /* We don't want to match an element that appears in the middle
-	    of a package name, so skip forward to the next complete type name.
-	    IDENTIFIER_NODEs (except for a "6JArray") are partial package
-            names while RECORD_TYPEs represent complete type names. */
-	    while (j < compression_next 
-		   && TREE_CODE (TREE_VEC_ELT (compression_table, j)) == 
-		      IDENTIFIER_NODE)
-	      j++;
-	  }
+      tree compression_entry = TREE_VEC_ELT (compression_table, i);
+      if (current && compression_entry == TREE_PURPOSE (current))
+        {
+	  match = i;
+	  saved_current = current;
+	  current = TREE_CHAIN (current);
+	}
+      else
+	/* We don't want to match an element that appears in the middle
+	   of a package name, so skip forward to the next complete type name.
+	   IDENTIFIER_NODEs (except for a "6JArray") are partial package
+	   names while RECORD_TYPEs represent complete type names. */
+	while (i < compression_next 
+	       && TREE_CODE (compression_entry) == IDENTIFIER_NODE
+	       && compression_entry != atms)
+	  compression_entry = TREE_VEC_ELT (compression_table, ++i);
     }
 
   if (!next_current)
