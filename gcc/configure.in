@@ -1500,6 +1500,23 @@ changequote([,])dnl
 		exeext=.exe
 		;;
 changequote(,)dnl
+	i[34567]86-*-interix*)
+changequote([,])dnl
+		tm_file=i386/interix.h
+		xm_file="${xm_file} xm-interix.h"
+		xm_defines="USG NO_SYS_SIGLIST"
+		tmake_file="i386/t-interix"
+		extra_objs=interix.o
+		xmake_file=x-interix
+		fixincludes=fixinc.interix
+ 		if [[ x$enable_threads = xyes ]]; then
+			thread_file='posix'
+		fi
+ 		if [[ x$stabs = xyes ]]; then
+			tm_file="${tm_file} dbxcoff.h"
+		fi
+		;;
+changequote(,)dnl
 	i[34567]86-*-winnt3*)
 changequote([,])dnl
 		tm_file=i386/win-nt.h
