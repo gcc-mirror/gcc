@@ -1,4 +1,8 @@
-2002-01-20  Graham Stott  <grahams@redhat.com>
+2002-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl2.c (max_tinst_depth): Increase default limit to 500.
+
+2002-01-10  Graham Stott  <grahams@redhat.com>
 
 	* spew.c (YYCHAR): Uppercase macro parameter and add
 	parenthesis.

@@ -382,7 +382,7 @@ int flag_use_cxa_atexit;
    arbitrary, but it exists to limit the time it takes to notice
    infinite template instantiations.  */
 
-int max_tinst_depth = 50;
+int max_tinst_depth = 500;
 
 /* Nonzero means output .vtable_{entry,inherit} for use in doing vtable gc.  */
 
