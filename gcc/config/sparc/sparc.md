@@ -6674,3 +6674,33 @@ if (! TARGET_ARCH64)
   [(unspec_volatile [(const_int 0)] 4)]
   "flag_pic"
   "")
+
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 5))]
+  ""
+  "ta 5"
+  [(set_attr "type" "misc")])
+
+(define_expand "conditional_trap"
+  [(trap_if (match_operator 0 "noov_compare_op"
+			    [(match_dup 2) (match_dup 3)])
+	    (match_operand:SI 1 "arith_operand" ""))]
+  ""
+  "operands[2] = gen_compare_reg (GET_CODE (operands[0]),
+				  sparc_compare_op0, sparc_compare_op1);
+   operands[3] = const0_rtx;")
+
+(define_insn ""
+  [(trap_if (match_operator 0 "noov_compare_op" [(reg:CC 100) (const_int 0)])
+	    (match_operand:SI 1 "arith_operand" "rM"))]
+  ""
+  "t%C0 %1"
+  [(set_attr "type" "misc")])
+
+(define_insn ""
+  [(trap_if (match_operator 0 "noov_compare_op" [(reg:CCX 100) (const_int 0)])
+	    (match_operand:SI 1 "arith_operand" "rM"))]
+  "TARGET_V9"
+  "t%C0 %%xcc,%1"
+  [(set_attr "type" "misc")])
+

@@ -246,6 +246,7 @@ static optab init_optab	PROTO((enum rtx_code));
 static void init_libfuncs PROTO((optab, int, int, char *, int));
 static void init_integral_libfuncs PROTO((optab, char *, int));
 static void init_floating_libfuncs PROTO((optab, char *, int));
+static void init_traps PROTO((void));
 
 /* Add a REG_EQUAL note to the last insn in SEQ.  TARGET is being set to
    the result of operation CODE applied to OP0 (and OP1 if it is a binary
@@ -4380,6 +4381,10 @@ init_optabs ()
   chkr_check_exec_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_check_exec");
   chkr_check_str_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_check_str");
 
+#ifdef HAVE_conditional_trap
+  init_traps ();
+#endif
+
 #ifdef INIT_TARGET_OPTABS
   /* Allow the target to add more libcalls or rename some, etc.  */
   INIT_TARGET_OPTABS;
@@ -4402,3 +4407,50 @@ ldexp(x,n)
   return x;
 }
 #endif /* BROKEN_LDEXP */
+
+#ifdef HAVE_conditional_trap
+/* The insn generating function can not take an rtx_code argument.
+   TRAP_RTX is used as an rtx argument.  Its code is replaced with
+   the code to be used in the trap insn and all other fields are
+   ignored.
+
+   ??? Will need to change to support garbage collection.  */
+static rtx trap_rtx;
+
+static void
+init_traps ()
+{
+  if (HAVE_conditional_trap)
+    trap_rtx = gen_rtx_fmt_ee (EQ, VOIDmode, NULL_RTX, NULL_RTX);
+}
+#endif
+
+/* Generate insns to trap with code TCODE if OP1 and OP2 satisfy condition
+   CODE.  Return 0 on failure.  */
+
+rtx
+gen_cond_trap (code, op1, op2, tcode)
+     enum rtx_code code;
+     rtx op1, op2, tcode;
+{
+  enum machine_mode mode = GET_MODE (op1);
+  enum insn_code icode;
+
+  if (mode == VOIDmode)
+    return 0;
+
+#ifdef HAVE_conditional_trap
+  if (HAVE_conditional_trap
+      && cmp_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+    {
+      rtx insn;
+      emit_insn (GEN_FCN (cmp_optab->handlers[(int) mode].insn_code) (op1, op2));
+      PUT_CODE (trap_rtx, code);
+      insn = gen_conditional_trap (trap_rtx, tcode);
+      if (insn)
+	return insn;
+    }
+#endif
+
+  return 0;
+}

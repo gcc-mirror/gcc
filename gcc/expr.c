@@ -8973,9 +8973,26 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 				      VOIDmode, 0);
 	  rtx value = expand_expr (TREE_VALUE (TREE_CHAIN (arglist)),
 				   NULL_RTX, VOIDmode, 0);
+
+	  if (value != const1_rtx)
+	    {
+	      error ("__builtin_longjmp second argument must be 1");
+	      return const0_rtx;
+	    }
+
 	  expand_builtin_longjmp (buf_addr, value);
 	  return const0_rtx;
 	}
+
+    case BUILT_IN_TRAP:
+#ifdef HAVE_trap
+      if (HAVE_trap)
+	emit_insn (gen_trap ());
+      else
+#endif
+	error ("__builtin_trap not supported by this target");
+      emit_barrier ();
+      return const0_rtx;
 
       /* Various hooks for the DWARF 2 __throw routine.  */
     case BUILT_IN_UNWIND_INIT:

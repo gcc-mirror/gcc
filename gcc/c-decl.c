@@ -3425,6 +3425,9 @@ init_decl_processing ()
 					   integer_type_node,
 					   endlink))),
 		    BUILT_IN_LONGJMP, NULL_PTR);
+  builtin_function ("__builtin_trap",
+		    build_function_type (void_type_node, endlink),
+		    BUILT_IN_TRAP, NULL_PTR);
 
   /* In an ANSI C program, it is okay to supply built-in meanings
      for these functions, since applications cannot validly use them

@@ -2629,6 +2629,10 @@ haifa_classify_insn (insn)
 	      tmp_class =
 		WORST_CLASS (tmp_class,
 			   may_trap_exp (SET_SRC (XVECEXP (pat, 0, i)), 0));
+	      break;
+	    case TRAP_IF:
+	      tmp_class = TRAP_RISKY;
+	      break;
 	    default:;
 	    }
 	  insn_class = WORST_CLASS (insn_class, tmp_class);
@@ -2654,6 +2658,10 @@ haifa_classify_insn (insn)
 	  tmp_class =
 	    WORST_CLASS (tmp_class,
 			 may_trap_exp (SET_SRC (pat), 0));
+	  break;
+	case TRAP_IF:
+	  tmp_class = TRAP_RISKY;
+	  break;
 	default:;
 	}
       insn_class = tmp_class;
@@ -3560,10 +3568,14 @@ sched_analyze_2 (x, insn)
 	return;
       }
 
+    /* Force pending stores to memory in case a trap handler needs them.  */
+    case TRAP_IF:
+      flush_pending_lists (insn, 1);
+      break;
+
     case ASM_OPERANDS:
     case ASM_INPUT:
     case UNSPEC_VOLATILE:
-    case TRAP_IF:
       {
 	rtx u;
 

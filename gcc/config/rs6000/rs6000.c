@@ -2046,6 +2046,17 @@ scc_comparison_operator (op, mode)
 
   return 1;
 }
+
+int
+trap_comparison_operator (op, mode)
+    rtx op;
+    enum machine_mode mode;
+{
+  if (mode != VOIDmode && mode != GET_MODE (op))
+    return 0;
+  return (GET_RTX_CLASS (GET_CODE (op)) == '<'
+          || GET_CODE (op) == EQ || GET_CODE (op) == NE);
+}
 
 /* Return 1 if ANDOP is a mask that has no bits on that are not in the
    mask required to convert the result of a rotate insn into a shift
@@ -2923,6 +2934,45 @@ print_operand (file, x, code)
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC))
 	putc ('u', file);
       return;
+
+    case 'V':
+      /* Print the trap code for this operand.  */
+      switch (GET_CODE (x))
+	{
+	case EQ:
+	  fputs ("eq", file);   /* 4 */
+	  break;
+	case NE:
+	  fputs ("ne", file);   /* 24 */
+	  break;
+	case LT:
+	  fputs ("lt", file);   /* 16 */
+	  break;
+	case LE:
+	  fputs ("le", file);   /* 20 */
+	  break;
+	case GT:
+	  fputs ("gt", file);   /* 8 */
+	  break;
+	case GE:
+	  fputs ("ge", file);   /* 12 */
+	  break;
+	case LTU:
+	  fputs ("llt", file);  /* 2 */
+	  break;
+	case LEU:
+	  fputs ("lle", file);  /* 6 */
+	  break;
+	case GTU:
+	  fputs ("lgt", file);  /* 1 */
+	  break;
+	case GEU:
+	  fputs ("lge", file);  /* 5 */
+	  break;
+	default:
+	  abort ();
+	}
+      break;
 
     case 'w':
       /* If constant, low-order 16 bits of constant, signed.  Otherwise, write
