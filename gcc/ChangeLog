@@ -1,3 +1,19 @@
+2003-02-10  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/aof.h, config/arm/aout.h, config/arm/arm-modes.def,
+	config/arm/arm-protos.h, config/arm/arm.c, config/arm/arm.h,
+	config/arm/arm.md, config/arm/cirrus.md, config/arm/coff.h,
+	config/arm/conix-elf.h, config/arm/ecos-elf.h, config/arm/elf.h,
+	config/arm/freebsd.h, config/arm/linux-elf.h,
+	config/arm/linux-gas.h, config/arm/netbsd-elf.h,
+	config/arm/netbsd.h, config/arm/pe.c, config/arm/pe.h,
+	config/arm/rtems-elf.h, config/arm/semi.h, config/arm/semiaof.h,
+	config/arm/strongarm-coff.h, config/arm/strongarm-elf.h,
+	config/arm/strongarm-pe.h, config/arm/uclinux-elf.h,
+	config/arm/unknown-elf-oabi.h, config/arm/unknown-elf.h,
+	config/arm/xscale-elf.h: Replace occurances of "GNU CC" with "GCC"
+	and reformat as appropriate.
+
 2003-02-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/clzsi2.c: Remove.
