@@ -2397,7 +2397,12 @@ for machine in $build $host $target; do
 		tm_file=sparc/rtems.h
 		;;
 	sparc-*-solaris2*)
-		tm_file=sparc/sol2.h
+		if [[ x$gnu_ld = xyes ]]
+		then
+			tm_file=sparc/sol2.h
+		else
+			tm_file=sparc/sol2-sld.h
+		fi
 		xm_file=sparc/xm-sol2.h
 		tmake_file=sparc/t-sol2
 		xmake_file=sparc/x-sysv4
