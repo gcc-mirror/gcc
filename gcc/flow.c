@@ -4327,9 +4327,11 @@ delete_noop_moves (f)
 	  next = NEXT_INSN (insn);
 	  if (INSN_P (insn) && noop_move_p (insn))
 	    {
-	      if (insn == bb->end)
-		bb->end = PREV_INSN (insn);
-	      flow_delete_insn (insn);
+	      /* Do not call flow_delete_insn here to not confuse backward
+	         pointers of LIBCALL block.  */
+	      PUT_CODE (insn, NOTE);
+	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	      NOTE_SOURCE_FILE (insn) = 0;
 	    }
 	}
     }
