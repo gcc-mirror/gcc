@@ -3,7 +3,7 @@
 
    Copyright (C) 1999 Free Software Foundation  */
 
-/* { dg-do compile { xfail mips-sgi-irix6* } } */
+/* { dg-do compile } */
 /* { dg-options "-O3" } */
 
 struct {

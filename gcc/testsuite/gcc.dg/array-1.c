@@ -3,7 +3,7 @@
 
    Copyright (C) 1999 Free Software Foundation  */
 
-/* { dg-do compile { xfail alpha-*-* } } */
+/* { dg-do compile } */
 
 extern char foo[1];
 char foo[] = "";
