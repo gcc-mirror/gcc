@@ -2204,8 +2204,12 @@ execute_fold_all_builtins (void)
 	  if (!set_rhs (stmtp, result))
 	    {
 	      result = convert_to_gimple_builtin (&i, result);
-	      if (result && !set_rhs (stmtp, result))
-		abort ();
+	      if (result)
+		{
+		  bool ok = set_rhs (stmtp, result);
+		  
+		  gcc_assert (ok);
+		}
 	    }
 	  modify_stmt (*stmtp);
 	  if (maybe_clean_eh_stmt (*stmtp)
