@@ -3778,8 +3778,38 @@ mips_output_external (file, decl, name)
       p->size = len;
       extern_head = p;
     }
+
+#ifdef ASM_OUTPUT_UNDEF_FUNCTION
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      p = (struct extern_list *)permalloc ((long) sizeof (struct extern_list));
+      p->next = extern_head;
+      p->name = name;
+      p->size = -1;
+      extern_head = p;
+    }
+#endif
+
   return 0;
 }
+
+#ifdef ASM_OUTPUT_UNDEF_FUNCTION
+int
+mips_output_external_libcall (file, name)
+     FILE *file;
+     char *name;
+{
+  register struct extern_list *p;
+
+  p = (struct extern_list *)permalloc ((long) sizeof (struct extern_list));
+  p->next = extern_head;
+  p->name = name;
+  p->size = -1;
+  extern_head = p;
+
+  return 0;
+}
+#endif
 
 
 /* Compute a string to use as a temporary file name.  */
@@ -4049,10 +4079,9 @@ mips_asm_file_end (file)
   if (HALF_PIC_P ())
     HALF_PIC_FINISH (file);
 
-  if (TARGET_GP_OPT)
+  if (extern_head)
     {
-      if (extern_head)
-	fputs ("\n", file);
+      fputs ("\n", file);
 
       for (p = extern_head; p != 0; p = p->next)
 	{
@@ -4062,12 +4091,22 @@ mips_asm_file_end (file)
 	  if (! TREE_ASM_WRITTEN (name_tree))
 	    {
 	      TREE_ASM_WRITTEN (name_tree) = 1;
-	      fputs ("\t.extern\t", file);
-	      assemble_name (file, p->name);
-	      fprintf (file, ", %d\n", p->size);
+#ifdef ASM_OUTPUT_UNDEF_FUNCTION
+	      if (p->size == -1)
+		ASM_OUTPUT_UNDEF_FUNCTION (file, p->name);
+	      else
+#endif
+		{
+		  fputs ("\t.extern\t", file);
+		  assemble_name (file, p->name);
+		  fprintf (file, ", %d\n", p->size);
+		}
 	    }
 	}
-
+    }
+      
+  if (TARGET_GP_OPT)
+    {
       fprintf (file, "\n\t.text\n");
       rewind (asm_out_text_file);
       if (ferror (asm_out_text_file))
