@@ -1,3 +1,11 @@
+2002-02-07  Tom Rix  <trix@redhat.com>
+
+	* config/rs6000/rs6000.c (reg_or_aligned_short_operand): New. For 
+	immediates in ldu and stdu DS opcode field.
+	* config/rs6000/rs6000.md (movdi_update, movdi_update1): Use.
+	* config/rs6000/rs6000-protos.h: Add reg_or_aligned_short_operand.
+	* config/rs6000/rs6000.h (PREDICATE_CODES): Same.
+
 2002-02-07  Jeff Sturm  <jsturm@one-point.com>
 
 	* config/sparc/sparc.c (compute_frame_size): Don't correct frame

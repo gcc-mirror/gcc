@@ -40,6 +40,7 @@ extern int cc_reg_operand PARAMS ((rtx, enum machine_mode));
 extern int cc_reg_not_cr0_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_short_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_neg_short_operand PARAMS ((rtx, enum machine_mode));
+extern int reg_or_aligned_short_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_u_short_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_cint_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_arith_cint_operand PARAMS ((rtx, enum machine_mode));

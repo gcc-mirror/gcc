@@ -2715,6 +2715,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"cc_reg_not_cr0_operand", {SUBREG, REG}},				   \
   {"reg_or_short_operand", {SUBREG, REG, CONST_INT}},			   \
   {"reg_or_neg_short_operand", {SUBREG, REG, CONST_INT}},		   \
+  {"reg_or_aligned_short_operand", {SUBREG, REG, CONST_INT}},		   \
   {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT}},			   \
   {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}},			   \
   {"reg_or_arith_cint_operand", {SUBREG, REG, CONST_INT}},		   \
