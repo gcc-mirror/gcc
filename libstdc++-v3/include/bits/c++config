@@ -1,6 +1,7 @@
 // Predefined symbols and macros -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,8 +37,7 @@
 // The current version of the C++ library in compressed ISO date format.
 #define __GLIBCPP__ 20030228
 
-// This is necessary until GCC supports separate template
-// compilation.  
+// This is necessary until GCC supports separate template compilation.
 #define _GLIBCPP_NO_TEMPLATE_EXPORT 1
 
 // This is a hack around not having either pre-compiled headers or
@@ -48,6 +48,16 @@
 // member functions are only declared, and definitions are not parsed
 // by the compiler, but instead instantiated into the library binary.
 #define _GLIBCPP_FULLY_COMPLIANT_HEADERS 1
+
+// Allow use of the GNU syntax extension, "extern template." This
+// extension is fully documented in the g++ manual, but in a nutshell,
+// it inhibits all implicit instantiations and is used throughout the
+// library to avoid multiple weak definitions for required types that
+// are already explicitly instantiated in the library binary. This
+// substantially reduces the binary size of resulting executables.
+#ifndef _GLIBCPP_EXTERN_TEMPLATE
+#define _GLIBCPP_EXTERN_TEMPLATE 1
+#endif
 
 // To enable older, ARM-style iostreams and other anachronisms use this.
 //#define _GLIBCPP_DEPRECATED 1

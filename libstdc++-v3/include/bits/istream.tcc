@@ -1,6 +1,6 @@
 // istream classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -1189,6 +1189,7 @@ namespace std
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
   // NB:  This syntax is a GNU extension.
+#if _GLIBCPP_EXTERN_TEMPLATE
   extern template class basic_istream<char>;
   extern template istream& ws(istream&);
   extern template istream& operator>>(istream&, char&);
@@ -1203,5 +1204,6 @@ namespace std
   extern template wistream& ws(wistream&);
   extern template wistream& operator>>(wistream&, wchar_t&);
   extern template wistream& operator>>(wistream&, wchar_t*);
+#endif
 #endif
 } // namespace std

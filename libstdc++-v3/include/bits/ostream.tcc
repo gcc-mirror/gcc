@@ -697,6 +697,7 @@ namespace std
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
   // NB:  This syntax is a GNU extension.
+#if _GLIBCPP_EXTERN_TEMPLATE
   extern template class basic_ostream<char>;
   extern template ostream& endl(ostream&);
   extern template ostream& ends(ostream&);
@@ -717,5 +718,6 @@ namespace std
   extern template wostream& operator<<(wostream&, char);
   extern template wostream& operator<<(wostream&, const wchar_t*);
   extern template wostream& operator<<(wostream&, const char*);
+#endif
 #endif
 } // namespace std
