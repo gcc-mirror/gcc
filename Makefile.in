@@ -187,7 +187,11 @@ RPATH_ENVVAR = LD_LIBRARY_PATH
 
 # configure.in sets SET_LIB_PATH to this if --enable-shared was used.
 REALLY_SET_LIB_PATH = \
-  $(RPATH_ENVVAR)=$$r/bfd:$$r/opcodes:$$$(RPATH_ENVVAR); \
+  if [ x"$$$(RPATH_ENVVAR)" != x ]; then \
+    $(RPATH_ENVVAR)=$$r/bfd:$$r/opcodes:$$$(RPATH_ENVVAR); \
+  else \
+    $(RPATH_ENVVAR)=$$r/bfd:$$r/opcodes; \
+  fi; \
   export $(RPATH_ENVVAR);
 
 ALL = all.normal
