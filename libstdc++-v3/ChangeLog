@@ -1,3 +1,9 @@
+2003-03-07  Jerry Quinn  <jlquinn@tiamat>
+
+	* include/bits/streambuf_iterator.h (_M_put): Set _M_failed if
+	sputn fails.
+	* testsuite/27_io/ostream_fail.cc: New test.
+
 2003-03-07  Matthias Klose  <doko@debian.org> 
 
 	* Makefile.am (AM_MAKEFLAGS): Also pass gxx_include_dir. 
