@@ -7790,7 +7790,7 @@ cse_cc_succs (basic_block bb, rtx cc_reg, rtx cc_src, bool can_change_mode)
 		found = true;
 	      else if (GET_CODE (cc_src) == COMPARE
 		       && GET_CODE (SET_SRC (set)) == COMPARE
-		       && GET_MODE (cc_src) != set_mode
+		       && mode != set_mode
 		       && rtx_equal_p (XEXP (cc_src, 0),
 				       XEXP (SET_SRC (set), 0))
 		       && rtx_equal_p (XEXP (cc_src, 1),
@@ -7806,23 +7806,31 @@ cse_cc_succs (basic_block bb, rtx cc_reg, rtx cc_src, bool can_change_mode)
 	      if (found)
 		{
 		  found_equiv = true;
-		  if (insn_count < ARRAY_SIZE(insns))
+		  if (insn_count < ARRAY_SIZE (insns))
 		    {
 		      insns[insn_count] = insn;
 		      modes[insn_count] = set_mode;
 		      last_insns[insn_count] = end;
 		      ++insn_count;
 
-		      /* Sanity check.  */
-		      if (! can_change_mode && mode != comp_mode)
-			abort ();
-
-		      mode = comp_mode;
+		      if (mode != comp_mode)
+			{
+			  if (! can_change_mode)
+			    abort ();
+			  mode = comp_mode;
+			  PUT_MODE (cc_src, mode);
+			}
 		    }
 		  else
 		    {
 		      if (set_mode != mode)
-			break;
+			{
+			  /* We found a matching expression in the
+			     wrong mode, but we don't have room to
+			     store it in the array.  Punt.  This case
+			     should be rare.  */
+			  break;
+			}
 		      /* INSN sets CC_REG to a value equal to CC_SRC
 			 with the right mode.  We can simply delete
 			 it.  */
@@ -7851,8 +7859,16 @@ cse_cc_succs (basic_block bb, rtx cc_reg, rtx cc_src, bool can_change_mode)
 	 further blocks and this block.  */
       if (insn == end)
 	{
-	  if (cse_cc_succs (e->dest, cc_reg, cc_src, false) != VOIDmode)
-	    found_equiv = true;
+	  enum machine_mode submode;
+
+	  submode = cse_cc_succs (e->dest, cc_reg, cc_src, false);
+	  if (submode != VOIDmode)
+	    {
+	      if (submode != mode)
+		abort ();
+	      found_equiv = true;
+	      can_change_mode = false;
+	    }
 	}
     }
 
@@ -7916,6 +7932,7 @@ cse_condition_code_reg (void)
       rtx cc_src_insn;
       rtx cc_src;
       enum machine_mode mode;
+      enum machine_mode orig_mode;
 
       /* Look for blocks which end with a conditional jump based on a
 	 condition code register.  Then look for the instruction which
@@ -7972,12 +7989,15 @@ cse_condition_code_reg (void)
 	 register is set, and CC_SRC is still meaningful at the end of
 	 the basic block.  */
 
+      orig_mode = GET_MODE (cc_src);
       mode = cse_cc_succs (bb, cc_reg, cc_src, true);
-      if (mode != GET_MODE (cc_src) && mode != VOIDmode)
+      if (mode != VOIDmode)
 	{
-	  PUT_MODE (cc_src, mode);
-	  cse_change_cc_mode_insns (cc_src_insn, NEXT_INSN (last_insn),
-				    gen_rtx_REG (mode, REGNO (cc_reg)));
+	  if (mode != GET_MODE (cc_src))
+	    abort ();
+	  if (mode != orig_mode)
+	    cse_change_cc_mode_insns (cc_src_insn, NEXT_INSN (last_insn),
+				      gen_rtx_REG (mode, REGNO (cc_reg)));
 	}
     }
 }
