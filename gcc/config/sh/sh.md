@@ -1167,7 +1167,7 @@
 (define_insn "push_e"
   [(set (mem:SF (pre_dec:SI (reg:SI 15)))
 	(match_operand:SF 0 "register_operand" "r,f,y"))]
-  ""
+  "TARGET_SH3E"
   "@
 	mov.l	%0,@-r15
 	fmov.s	%0,@-r15
@@ -1178,7 +1178,7 @@
 (define_insn "pop_e"
   [(set (match_operand:SF 0 "register_operand" "=r,f,y")
 	(mem:SF (post_inc:SI (reg:SI 15))))]
-  ""
+  "TARGET_SH3E"
   "@
 	mov.l	@r15+,%0
 	fmov.s	@r15+,%0
