@@ -1593,6 +1593,7 @@ TOOLS_FLAGS_TO_PASS=		\
 	"libsubdir=$(libsubdir)"	\
 	"exeext=$(exeext)"	\
 	"srcdir=$(fsrcdir)"	\
+	"VPATH=$(fsrcdir)"      \
         "TOOLS_LIBS=$(TOOLS_LIBS) $(TGT_LIB)"	\
 	"GNATMAKE=$(GNATMAKE)"	\
 	"GNATLINK=$(GNATLINK)"	\
@@ -1660,9 +1661,9 @@ gnattools2: ../stamp-tools
 
 # These tools are only built for the native version.
 gnattools3: ../stamp-tools
-	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
-	  TOOLSCASE=native \
-	  top_builddir=../.. ../../gnatmem$(exeext) $(EXTRA_GNATTOOLS)
+#	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
+#	  TOOLSCASE=native \
+#	  top_builddir=../.. ../../gnatmem$(exeext) $(EXTRA_GNATTOOLS)
 
 ../../gnatchop$(exeext):
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatchop --GCC="$(CC) $(ALL_ADAFLAGS)"

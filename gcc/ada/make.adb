@@ -447,14 +447,10 @@ package body Make is
    --  Set to True after having scanned the file_name for
    --  switch "-o file_name"
 
-   File_Name_Seen : Boolean := False;
-   --  Set to true after having seen at least one file name.
-   --  Used in Scan_Make_Arg only, but must be a global variable.
-
    type Make_Program_Type is (None, Compiler, Binder, Linker);
 
    Program_Args : Make_Program_Type := None;
-   --  Used to indicate if we are scanning gcc, gnatbind, or gnatbl
+   --  Used to indicate if we are scanning gnatmake, gcc, gnatbind, or gnatbind
    --  options within the gnatmake command line.
    --  Used in Scan_Make_Arg only, but must be a global variable.
 
@@ -4260,16 +4256,14 @@ package body Make is
             Argv = "-cargs"
               or else
             Argv = "-largs"
+              or else
+            Argv = "-margs"
       then
-         if not File_Name_Seen then
-            Fail ("-cargs, -bargs, -largs ",
-                  "must appear after unit or file name");
-         end if;
-
          case Argv (2) is
             when 'c' => Program_Args := Compiler;
             when 'b' => Program_Args := Binder;
             when 'l' => Program_Args := Linker;
+            when 'm' => Program_Args := None;
 
             when others =>
                raise Program_Error;
@@ -4674,7 +4668,6 @@ package body Make is
       --  If not a switch it must be a file name
 
       else
-         File_Name_Seen := True;
          Add_File (Argv);
       end if;
    end Scan_Make_Arg;

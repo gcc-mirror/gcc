@@ -39,11 +39,11 @@ begin
    Write_Str ("Usage: ");
    Osint.Write_Program_Name;
    Write_Str ("  opts  name  ");
-   Write_Str ("{[-cargs opts] [-bargs opts] [-largs opts]}");
+   Write_Str ("{[-cargs opts] [-bargs opts] [-largs opts] [-margs opts]}");
    Write_Eol;
    Write_Eol;
-   Write_Str ("  name  is a file name from which you can omit the");
-   Write_Str (" .adb or .ads suffix");
+   Write_Str ("  name is one or more file name from which you");
+   Write_Str (" can omit the .adb or .ads suffix");
    Write_Eol;
    Write_Eol;
 
@@ -251,6 +251,11 @@ begin
    --  Line for -largs
 
    Write_Str ("  -largs opts   opts are passed to the linker");
+   Write_Eol;
+
+   --  Line for -margs
+
+   Write_Str ("  -margs opts   opts are passed to gnatmake");
    Write_Eol;
 
    --  Add usage information for gcc
