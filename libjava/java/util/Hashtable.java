@@ -179,7 +179,9 @@ public class Hashtable extends Dictionary
       					 + initialCapacity);    
     if (loadFactor <= 0)
       throw new IllegalArgumentException("Illegal Load Factor: " + loadFactor);
-     
+    
+    if (initialCapacity == 0)
+      initialCapacity = 1;    
     buckets = new Entry[initialCapacity];
     this.loadFactor = loadFactor;
     this.threshold = (int) (initialCapacity * loadFactor);

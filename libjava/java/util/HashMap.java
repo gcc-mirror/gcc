@@ -157,7 +157,7 @@ public class HashMap extends AbstractMap
    * @param   loadFactor       the load factor
    * 
    * @throws   IllegalArgumentException    if (initialCapacity < 0) ||
-   *                                          (initialLoadFactor > 1.0) ||
+   *                                          (loadFactor <= 0)
    */
   public HashMap(int initialCapacity, float loadFactor)
     throws IllegalArgumentException
@@ -167,7 +167,9 @@ public class HashMap extends AbstractMap
       					 + initialCapacity);    
     if (loadFactor <= 0)
       throw new IllegalArgumentException("Illegal Load Factor: " + loadFactor);
-  
+
+    if (initialCapacity == 0)
+      initialCapacity = 1;
     buckets = new Entry[initialCapacity];
     this.loadFactor = loadFactor;
     this.threshold = (int) (initialCapacity * loadFactor);
