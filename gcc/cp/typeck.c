@@ -4560,7 +4560,9 @@ build_unary_op (code, xarg, noconvert)
 	  return build1 (ADDR_EXPR, unknown_type_node, arg);
 	}
 
-      if (TREE_CODE (arg) == OVERLOAD)
+      if (TREE_CODE (arg) == OVERLOAD 
+	  || (TREE_CODE (arg) == SCOPE_REF 
+	      && TREE_CODE (TREE_OPERAND (arg, 1)) == TEMPLATE_ID_EXPR))
 	return build1 (ADDR_EXPR, unknown_type_node, arg);
       else if (TREE_CODE (arg) == TREE_LIST)
 	{

@@ -1615,14 +1615,15 @@ build_offset_ref (type, name)
   int dtor = 0;
 
   /* class templates can come in as TEMPLATE_DECLs here.  */
-  if (TREE_CODE (name) != IDENTIFIER_NODE)
+  if (TREE_CODE (name) == TEMPLATE_DECL)
     return name;
 
   if (type == std_node)
     return do_scoped_id (name, 0);
 
-  if (processing_template_decl || uses_template_parms (type))
-    return build_min_nt (SCOPE_REF, type, name);
+  if (processing_template_decl || uses_template_parms (type)
+      || TREE_CODE (name) == TEMPLATE_ID_EXPR)
+    return build_min (SCOPE_REF, unknown_type_node, type, name);
 
   /* Handle namespace names fully here.  */
   if (TREE_CODE (type) == NAMESPACE_DECL)
