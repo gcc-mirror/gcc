@@ -135,7 +135,7 @@ fi
 
 # these libraries are used by various programs built for the host environment
 #
-host_libs="intl mmalloc libiberty opcodes bfd readline db tcl tk itcl tix libgui zlib"
+host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl tix libgui zlib"
 
 libstdcxx_version="target-libstdc++-v3"
 
@@ -144,7 +144,7 @@ libstdcxx_version="target-libstdc++-v3"
 # know that we are building the simulator.
 # binutils, gas and ld appear in that order because it makes sense to run
 # "make check" in that particular order.
-host_tools="texinfo byacc flex bison binutils gas ld gcc sid sim gdb make patch prms send-pr gprof etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool grep diff rcs fileutils shellutils time textutils wdiff find uudecode hello tar gzip indent recode release sed utils guile perl gawk findutils snavigator gettext zip fastjar"
+host_tools="texinfo byacc flex bison binutils gas ld gcc sid sim gdb make patch prms send-pr gprof etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool diff rcs fileutils shellutils time textutils wdiff find uudecode hello tar gzip indent recode release sed utils guile perl gawk findutils gettext zip fastjar"
 
 # libgcj represents the runtime libraries only used by gcj.
 libgcj="target-libffi \
@@ -258,7 +258,7 @@ esac
 
 # Some tools are only suitable for building in a "native" situation.
 # Remove these if host!=target.  
-native_only="autoconf automake libtool fileutils find gawk gettext grep gzip hello indent m4 rcs recode sed shellutils tar textutils uudecode wdiff gprof target-groff guile perl time ash bash bzip2 prms snavigator gnuserv target-gperf"
+native_only="autoconf automake libtool fileutils find gawk gettext gzip hello indent m4 rcs recode sed shellutils tar textutils uudecode wdiff gprof target-groff guile perl time ash bash bzip2 prms gnuserv target-gperf"
 
 # Similarly, some are only suitable for cross toolchains.
 # Remove these if host=target.
@@ -299,13 +299,13 @@ case "${host}" in
     noconfigdirs="$noconfigdirs byacc"
     ;;
   i[[3456]]86-*-vsta)
-    noconfigdirs="tcl expect dejagnu make texinfo bison patch flex byacc send-pr gprof uudecode dejagnu diff guile perl itcl tix db snavigator gnuserv gettext"
+    noconfigdirs="tcl expect dejagnu make texinfo bison patch flex byacc send-pr gprof uudecode dejagnu diff guile perl itcl tix gnuserv gettext"
     ;;
   i[[3456]]86-*-go32* | i[[3456]]86-*-msdosdjgpp*)
-    noconfigdirs="tcl tk expect dejagnu send-pr uudecode guile itcl tix db snavigator gnuserv libffi"
+    noconfigdirs="tcl tk expect dejagnu send-pr uudecode guile itcl tix gnuserv libffi"
 	;;
   i[[3456]]86-*-mingw32*)
-    # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl itcl tix db snavigator gnuserv"
+    # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl itcl tix gnuserv"
      noconfigdirs="expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool"
 	;;
   i[[3456]]86-*-beos*)
@@ -318,7 +318,7 @@ case "${host}" in
     noconfigdirs="rcs"
     ;;
   ppc*-*-pe)
-     noconfigdirs="patch diff make tk tcl expect dejagnu autoconf automake texinfo bison send-pr gprof rcs guile perl itcl tix db snavigator gnuserv"
+     noconfigdirs="patch diff make tk tcl expect dejagnu autoconf automake texinfo bison send-pr gprof rcs guile perl itcl tix gnuserv"
     ;;
   powerpc-*-beos*)
     noconfigdirs="$noconfigdirs tk itcl tix libgui gdb dejagnu readline"
@@ -535,7 +535,7 @@ case "${target}" in
     # Can't build gdb for mingw32 if not native.
     case "${host}" in
       i[[3456]]86-*-mingw32) ;; # keep gdb tcl tk expect etc.
-      *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl tix db snavigator gnuserv"
+      *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl tix gnuserv"
          ;;
     esac
     ;;    
@@ -548,7 +548,7 @@ case "${target}" in
     # Can't build gdb for Cygwin if not native.
     case "${host}" in
       *-*-cygwin*) ;; # keep gdb tcl tk expect etc.
-      *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl tix libgui db snavigator gnuserv"
+      *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl tix libgui gnuserv"
          ;;
     esac
     ;;    
@@ -601,13 +601,13 @@ case "${target}" in
     ;;
   powerpc*-*-winnt* | powerpc*-*-pe* | ppc*-*-pe)
     target_configdirs="$target_configdirs target-winsup"
-    noconfigdirs="$noconfigdirs gdb tcl tk make expect target-libgloss itcl tix db snavigator gnuserv ${libgcj}"
+    noconfigdirs="$noconfigdirs gdb tcl tk make expect target-libgloss itcl tix gnuserv ${libgcj}"
     # always build newlib.
     skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
     ;;
     # This is temporary until we can link against shared libraries
   powerpcle-*-solaris*)
-    noconfigdirs="$noconfigdirs gdb sim make tcl tk expect itcl tix db snavigator gnuserv ${libgcj}"
+    noconfigdirs="$noconfigdirs gdb sim make tcl tk expect itcl tix gnuserv ${libgcj}"
     ;;
   powerpc-*-beos*)
     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
