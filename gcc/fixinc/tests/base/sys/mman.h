@@ -7,8 +7,8 @@
     This had to be done to correct non-standard usages in the
     original, manufacturer supplied header file.  */
 
-#ifndef FIXINC_CXX_UNREADY_CHECK
-#define FIXINC_CXX_UNREADY_CHECK 1
+#ifndef FIXINC_WRAP_SYS_MMAN_H_CXX_UNREADY
+#define FIXINC_WRAP_SYS_MMAN_H_CXX_UNREADY 1
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,4 +22,4 @@ extern void* malloc( size_t );
 }
 #endif
 
-#endif  /* FIXINC_CXX_UNREADY_CHECK */
+#endif  /* FIXINC_WRAP_SYS_MMAN_H_CXX_UNREADY */

@@ -7,8 +7,8 @@
     This had to be done to correct non-standard usages in the
     original, manufacturer supplied header file.  */
 
-#ifndef FIXINC_ULTRIX_STRINGS_CHECK
-#define FIXINC_ULTRIX_STRINGS_CHECK 1
+#ifndef FIXINC_WRAP_STRINGS_H_ULTRIX_STRINGS
+#define FIXINC_WRAP_STRINGS_H_ULTRIX_STRINGS 1
 
 
 
@@ -22,4 +22,4 @@
 
 #endif  /* ULTRIX_STRINGS_CHECK */
 
-#endif  /* FIXINC_ULTRIX_STRINGS_CHECK */
+#endif  /* FIXINC_WRAP_STRINGS_H_ULTRIX_STRINGS */

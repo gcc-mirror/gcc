@@ -7,8 +7,8 @@
     This had to be done to correct non-standard usages in the
     original, manufacturer supplied header file.  */
 
-#ifndef FIXINC_STDIO_STDARG_H_CHECK
-#define FIXINC_STDIO_STDARG_H_CHECK 1
+#ifndef FIXINC_WRAP_STDIO_H_STDIO_STDARG_H
+#define FIXINC_WRAP_STDIO_H_STDIO_STDARG_H 1
 
 #define __need___va_list
 #include <stdarg.h>
@@ -80,4 +80,4 @@ extern char *tempnam( const char *, const char *);
 void f (char * __restrict__ x);
 #endif  /* UNICOSMK_RESTRICT_CHECK */
 
-#endif  /* FIXINC_STDIO_STDARG_H_CHECK */
+#endif  /* FIXINC_WRAP_STDIO_H_STDIO_STDARG_H */
