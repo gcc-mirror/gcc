@@ -22,13 +22,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define USG 1
 
-#include "m68k/xm-m68k.h"
-
-#define NO_SYS_SIGLIST
-
 /* do not use alloca from -lPW with cc, because function epilogues use %sp */
 #ifndef __GNUC__
-#define USE_C_ALLOCA
 #ifdef __STDC__
 extern void *alloca ();
 #else
