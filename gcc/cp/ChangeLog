@@ -3,6 +3,9 @@
 	* decl.c (bad_specifiers): It's OK to have an EH spec on a function
 	pointer.
 
+	* pt.c (maybe_get_template_decl_from_type_decl): Make sure that
+	we're looking at a class.
+
 	* decl.c (lookup_name_real): Set the complain flag if we're
 	looking for a namespace member.
 

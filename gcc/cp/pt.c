@@ -3574,6 +3574,7 @@ maybe_get_template_decl_from_type_decl (decl)
   return (decl != NULL_TREE
 	  && TREE_CODE (decl) == TYPE_DECL 
 	  && DECL_ARTIFICIAL (decl)
+	  && CLASS_TYPE_P (TREE_TYPE (decl))
 	  && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (decl))) 
     ? CLASSTYPE_TI_TEMPLATE (TREE_TYPE (decl)) : decl;
 }
