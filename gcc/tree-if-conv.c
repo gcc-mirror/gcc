@@ -658,7 +658,7 @@ static void
 clean_predicate_lists (struct loop *loop)
 {
 #ifdef ENABLE_CHECKING
-  gcc_assert (loop->num_nodes == 2);
+  gcc_assert (loop->num_nodes == 2 || loop->num_nodes == 1);
 #endif
   loop->header->aux = NULL;
   loop->latch->aux = NULL;
