@@ -1,3 +1,13 @@
+2003-12-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/sol2.h (LINK_ARCH32_SPEC): Define in terms of ...
+	(LINK_ARCH32_SPEC_BASE): ... this new macro.
+	* config/sparc/sol2-bi.h (LINK_ARCH64_SPEC): Define in terms of
+	...
+	(LINK_ARCH64_SPEC_BASE): ... this new macro.
+	* config/sparc/sol2-gld-bi.h (LINK_ARCH32_SPEC): New macro.
+	(LINK_ARCH64_SPEC): Likewise.
+
 2003-12-18  Jason Merrill  <jason@redhat.com>
 
 	PR middle-end/13234
