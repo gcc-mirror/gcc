@@ -1,3 +1,11 @@
+2003-01-09  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
+
+	* Make-lang.in (java.install-common, java.uninstall,
+	java.install-info, java.install-man): Prepend $(DESTDIR)
+	to destination paths in all (un)installation commands.
+	(java.install-common): Rewrite $(LN) command to support
+	DESTDIR with "ln" as well as with "ln -s".
+
 2003-01-08  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* java-tree.h: Protect against multiple inclusion.
