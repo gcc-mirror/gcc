@@ -525,11 +525,12 @@ static struct user_specs *user_specs_head, *user_specs_tail;
 
 /* This defines which switch letters take arguments.  */
 
-#define DEFAULT_SWITCH_TAKES_ARG(CHAR)      \
+#define DEFAULT_SWITCH_TAKES_ARG(CHAR) \
   ((CHAR) == 'D' || (CHAR) == 'U' || (CHAR) == 'o' \
    || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u' \
    || (CHAR) == 'I' || (CHAR) == 'm' || (CHAR) == 'x' \
-   || (CHAR) == 'L' || (CHAR) == 'A')
+   || (CHAR) == 'L' || (CHAR) == 'A' || (CHAR) == 'V' \
+   || (CHAR) == 'B' || (CHAR) == 'b')
 
 #ifndef SWITCH_TAKES_ARG
 #define SWITCH_TAKES_ARG(CHAR) DEFAULT_SWITCH_TAKES_ARG(CHAR)
@@ -2391,6 +2392,9 @@ process_command (argc, argv)
 	      else
 		nstore[endp-startp] = 0;
 	      add_prefix (&exec_prefixes, nstore, 0, 0, NULL_PTR);
+	      add_prefix (&include_prefixes,
+			  concat (nstore, "include", NULL_PTR),
+			  0, 0, NULL_PTR);
 	      if (*endp == 0)
 		break;
 	      endp = startp = endp + 1;
@@ -2630,6 +2634,7 @@ process_command (argc, argv)
 	  switch (c)
 	    {
 	    case 'b':
+              n_switches++;
 	      if (p[1] == 0 && i + 1 == argc)
 		fatal ("argument to `-b' is missing");
 	      if (p[1] == 0)
@@ -2681,6 +2686,7 @@ process_command (argc, argv)
 			}
 		    }
 		}
+                n_switches++;
 	      }
 	      break;
 
@@ -2694,6 +2700,7 @@ process_command (argc, argv)
 	      break;
 
 	    case 'V':
+	      n_switches++;
 	      if (p[1] == 0 && i + 1 == argc)
 		fatal ("argument to `-V' is missing");
 	      if (p[1] == 0)
@@ -2884,13 +2891,6 @@ process_command (argc, argv)
 	  register char *p = &argv[i][1];
 	  register int c = *p;
 
-	  if (c == 'B' || c == 'b' || c == 'V')
-	    {
-	      /* Skip a separate arg, if any.  */
-	      if (p[1] == 0)
-		i++;
-	      continue;
-	    }
 	  if (c == 'x')
 	    {
 	      if (p[1] == 0 && i + 1 == argc)
@@ -2952,6 +2952,12 @@ process_command (argc, argv)
 	  /* This is always valid, since gcc.c itself understands it.  */
 	  if (!strcmp (p, "save-temps"))
 	    switches[n_switches].valid = 1;
+          else
+            {
+              char ch = switches[n_switches].part1[0];
+              if (ch == 'V' || ch == 'b' || ch == 'B')
+                switches[n_switches].valid = 1;
+            }
 	  n_switches++;
 	}
       else
@@ -4373,6 +4379,53 @@ main (argc, argv)
 
   process_command (argc, argv);
 
+  {
+    int i;
+    int first_time;
+
+    /* Build COLLECT_GCC_OPTIONS to have all of the options specified to
+       the compiler.  */
+    obstack_grow (&collect_obstack, "COLLECT_GCC_OPTIONS=",
+		  sizeof ("COLLECT_GCC_OPTIONS=")-1);
+
+    first_time = TRUE;
+    for (i = 0; i < n_switches; i++)
+      {
+	char **args;
+	char *p, *q;
+	if (!first_time)
+	  obstack_grow (&collect_obstack, " ", 1);
+
+	first_time = FALSE;
+	obstack_grow (&collect_obstack, "'-", 2);
+        q = switches[i].part1;
+	while (p = (char *) index (q,'\''))
+          {
+            obstack_grow (&collect_obstack, q, p-q);
+            obstack_grow (&collect_obstack, "'\\''", 4);
+            q = ++p;
+          }
+        obstack_grow (&collect_obstack, q, strlen (q));
+	obstack_grow (&collect_obstack, "'", 1);
+
+	for (args = switches[i].args; args && *args; args++)
+	  {
+	    obstack_grow (&collect_obstack, " '", 2);
+	    q = *args;
+	    while (p = (char *) index (q,'\''))
+	      {
+		obstack_grow (&collect_obstack, q, p-q);
+		obstack_grow (&collect_obstack, "'\\''", 4);
+		q = ++p;
+	      }
+	    obstack_grow (&collect_obstack, q, strlen (q));
+	    obstack_grow (&collect_obstack, "'", 1);
+	  }
+      }
+    obstack_grow (&collect_obstack, "\0", 1);
+    putenv (obstack_finish (&collect_obstack));
+  }
+
   /* Initialize the vector of specs to just the default.
      This means one element containing 0s, as a terminator.  */
 
@@ -4675,32 +4728,6 @@ main (argc, argv)
 	 for collect.  */
       putenv_from_prefixes (&exec_prefixes, "COMPILER_PATH=");
       putenv_from_prefixes (&startfile_prefixes, "LIBRARY_PATH=");
-
-      /* Build COLLECT_GCC_OPTIONS to have all of the options specified to
-	 the compiler.  */
-      obstack_grow (&collect_obstack, "COLLECT_GCC_OPTIONS=",
-		    sizeof ("COLLECT_GCC_OPTIONS=")-1);
-
-      first_time = TRUE;
-      for (i = 0; i < n_switches; i++)
-	{
-	  char **args;
-	  if (!first_time)
-	    obstack_grow (&collect_obstack, " ", 1);
-
-	  first_time = FALSE;
-	  obstack_grow (&collect_obstack, "-", 1);
-	  obstack_grow (&collect_obstack, switches[i].part1,
-			strlen (switches[i].part1));
-
-	  for (args = switches[i].args; args && *args; args++)
-	    {
-	      obstack_grow (&collect_obstack, " ", 1);
-	      obstack_grow (&collect_obstack, *args, strlen (*args));
-	    }
-	}
-      obstack_grow (&collect_obstack, "\0", 1);
-      putenv (obstack_finish (&collect_obstack));
 
       value = do_spec (link_command_spec);
       if (value < 0)

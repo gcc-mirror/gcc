@@ -2886,11 +2886,11 @@ fi
 
 # If we have ld in the build tree, make a link to it.
 if [[ -f ../ld/Makefile ]]; then
-	if [[ x$use_collect2 = x ]]; then
-		rm -f ld; $symbolic_link ../ld/ld.new ld 2>/dev/null
-	else
+#	if [[ x$use_collect2 = x ]]; then
+#		rm -f ld; $symbolic_link ../ld/ld.new ld 2>/dev/null
+#	else
 		rm -f collect-ld; $symbolic_link ../ld/ld.new collect-ld 2>/dev/null
-	fi
+#	fi
 fi
 
 # Figure out what language subdirectories are present.
