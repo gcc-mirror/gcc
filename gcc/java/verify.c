@@ -882,10 +882,12 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	case OPCODE_saload: type = promote_type (short_type_node); goto aload;
         aload:
 	  pop_type (int_type_node);
-	  type = pop_type (ptr_type_node);
-	  if (! is_array_type_p (type))
+	  tmp = pop_type (ptr_type_node);
+	  if (is_array_type_p (tmp))
+	    type = TYPE_ARRAY_ELEMENT (TREE_TYPE (tmp));
+	  else if (tmp != TYPE_NULL)
 	    VERIFICATION_ERROR ("array load from non-array type");
-	  push_type (TYPE_ARRAY_ELEMENT (TREE_TYPE (type)));
+	  push_type (type);
 	  break;
 
 	case OPCODE_anewarray:
