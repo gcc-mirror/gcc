@@ -297,6 +297,8 @@ package body Impunit is
      "s-assert",    -- System.Assertions
      "s-memory",    -- System.Memory
      "s-parint",    -- System.Partition_Interface
+     "s-pooglo",    -- System.Pool_Global
+     "s-pooloc",    -- System.Pool_Local
      "s-restri",    -- System.Restrictions
      "s-rident",    -- System.Rident
      "s-tasinf",    -- System.Task_Info

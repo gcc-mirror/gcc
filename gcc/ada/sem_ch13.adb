@@ -1250,6 +1250,7 @@ package body Sem_Ch13 is
 
          when Attribute_Storage_Pool => Storage_Pool : declare
             Pool : Entity_Id;
+            T    : Entity_Id;
 
          begin
             if Ekind (U_Ent) /= E_Access_Type
@@ -1275,6 +1276,26 @@ package body Sem_Ch13 is
 
             Analyze_And_Resolve
               (Expr, Class_Wide_Type (RTE (RE_Root_Storage_Pool)));
+
+            if Nkind (Expr) = N_Type_Conversion then
+               T := Etype (Expression (Expr));
+            else
+               T := Etype (Expr);
+            end if;
+
+            --  The Stack_Bounded_Pool is used internally for implementing
+            --  access types with a Storage_Size. Since it only work
+            --  properly when used on one specific type, we need to check
+            --  that it is not highjacked improperly:
+            --    type T is access Integer;
+            --    for T'Storage_Size use n;
+            --    type Q is access Float;
+            --    for Q'Storage_Size use T'Storage_Size; -- incorrect
+
+            if Base_Type (T) = RTE (RE_Stack_Bounded_Pool) then
+               Error_Msg_N ("non-sharable internal Pool", Expr);
+               return;
+            end if;
 
             --  If the argument is a name that is not an entity name, then
             --  we construct a renaming operation to define an entity of
@@ -1320,33 +1341,14 @@ package body Sem_Ch13 is
                   Pool := Entity (Expression (Renamed_Object (Pool)));
                end if;
 
-               if Present (Etype (Pool))
-                 and then Etype (Pool) /= RTE (RE_Stack_Bounded_Pool)
-                 and then Etype (Pool) /= RTE (RE_Unbounded_Reclaim_Pool)
-               then
-                  Set_Associated_Storage_Pool (U_Ent, Pool);
-               else
-                  Error_Msg_N ("Non sharable GNAT Pool", Expr);
-               end if;
-
-            --  The pool may be specified as the Storage_Pool of some other
-            --  type. It is rewritten as a class_wide conversion of the
-            --  corresponding pool entity.
+               Set_Associated_Storage_Pool (U_Ent, Pool);
 
             elsif Nkind (Expr) = N_Type_Conversion
               and then Is_Entity_Name (Expression (Expr))
               and then Nkind (Original_Node (Expr)) = N_Attribute_Reference
             then
                Pool := Entity (Expression (Expr));
-
-               if Present (Etype (Pool))
-                 and then Etype (Pool) /= RTE (RE_Stack_Bounded_Pool)
-                 and then Etype (Pool) /= RTE (RE_Unbounded_Reclaim_Pool)
-               then
-                  Set_Associated_Storage_Pool (U_Ent, Pool);
-               else
-                  Error_Msg_N ("Non sharable GNAT Pool", Expr);
-               end if;
+               Set_Associated_Storage_Pool (U_Ent, Pool);
 
             else
                Error_Msg_N ("incorrect reference to a Storage Pool", Expr);
