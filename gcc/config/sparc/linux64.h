@@ -82,7 +82,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* The default code model.  */
 #undef SPARC_DEFAULT_CMODEL
-#define SPARC_DEFAULT_CMODEL CM_MEDANY
+#define SPARC_DEFAULT_CMODEL CM_MEDLOW
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "long int"

@@ -1,3 +1,11 @@
+Sat Aug 29 21:38:24 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.md (pic_lo_sum_di, pic_sethi_di): Rename to
+	movdi_lo_sum_pic and movdi_high_pic and make visible.
+	* config/sparc/sparc.c (legitimize_pic_address): For -fPIC,
+	emit these when Pmode is not SImode.
+	* config/sparc/linux64.h (SPARC_DEFAULT_CMODEL): Make CM_MEDLOW.
+
 Sat Aug 29 14:59:32 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* i386/cygwin32.h (ASM_OUTPUT_SECTION_NAME): Don't emit
