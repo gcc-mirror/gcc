@@ -4453,6 +4453,13 @@ sh_expand_prologue ()
 
   extra_push = 0;
 
+  if (TARGET_SHCOMPACT && flag_pic && current_function_args_info.call_cookie)
+    /* We're going to use the PIC register to load the address of the
+       incoming-argument decoder and/or of the return trampoline from
+       the GOT, so make sure the PIC register is preserved and
+       initialized.  */
+    regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
+
   if (TARGET_SHCOMPACT
       && (current_function_args_info.call_cookie & ~ CALL_COOKIE_RET_TRAMP(1)))
     {
@@ -4733,13 +4740,6 @@ sh_expand_prologue ()
 
   if (frame_pointer_needed)
     emit_insn (GEN_MOV (frame_pointer_rtx, stack_pointer_rtx));
-
-  if (TARGET_SHCOMPACT && flag_pic && current_function_args_info.call_cookie)
-    /* We're going to use the PIC register to load the address of the
-       incoming-argument decoder and/or of the return trampoline from
-       the GOT, so make sure the PIC register is preserved and
-       initialized.  */
-    regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
 
   if (TARGET_SHCOMPACT
       && (current_function_args_info.call_cookie & ~ CALL_COOKIE_RET_TRAMP(1)))
