@@ -1,3 +1,11 @@
+Wed Feb 10 12:15:35 1999  Felix Lee  <flee@cygnus.com>
+
+        * lib/c-torture.exp (c-torture-compile): Pull out code for
+        analyzing gcc error messages.
+        (c-torture-execute): Likewise.  Fix some (harmless) false
+        positives.
+        * lib/gcc.exp (gcc_check_compile): New function.
+
 Mon Feb  8 21:42:57 1999  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/990208-1.c: New test.

@@ -1,4 +1,4 @@
-# Copyright (C) 1992, 1993, 1994, 1996, 1997 Free Software Foundation, Inc.
+# Copyright (C) 1992, 1993, 1994, 1996, 1997, 1999 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -147,6 +147,60 @@ proc gcc_target_compile { source dest type options } {
     lappend options "compiler=$GCC_UNDER_TEST"
     return [target_compile $source $dest $type $options]
 }
+
+
+# Reports pass/fail for a gcc compilation and returns true/false.
+proc gcc_check_compile {testcase option objname gcc_output} {
+
+    set fatal_signal "*cc: Internal compiler error: program*got fatal signal"
+ 
+    if [string match "$fatal_signal 6" $gcc_output] then {
+	gcc_fail $testcase "Got Signal 6, $option"
+	return 0
+    }
+
+    if [string match "$fatal_signal 11" $gcc_output] then {
+	gcc_fail $testcase "Got Signal 11, $option"
+	return 0
+    }
+
+    # We shouldn't get these because of -w, but just in case.
+    if [string match "*cc:*warning:*" $gcc_output] then {
+	warning "$testcase: (with warnings) $option"
+	send_log "$gcc_output\n"
+	unresolved "$testcase, $option"
+	return 0
+    }
+
+    set gcc_output [prune_warnings $gcc_output]
+
+    set unsupported_message [gcc_check_unsupported_p $gcc_output]
+    if { $unsupported_message != "" } {
+	unsupported "$testcase: $unsupported_message"
+	return 0
+    }
+
+    # remove any leftover LF/CR to make sure any output is legit
+    regsub -all -- "\[\r\n\]*" $gcc_output "" gcc_output
+
+    # If any message remains, we fail.
+    if ![string match "" $gcc_output] then {
+	gcc_fail $testcase $option
+	return 0
+    }
+
+    # fail if the desired object file doesn't exist.
+    # FIXME: there's no way of checking for existence on a remote host.
+    if {$objname != "" && ![is3way] && ![file exists $objname]} {
+	gcc_fail $testcase $option
+	return 0
+    }
+
+    gcc_pass $testcase $option
+    return 1
+}
+
+
 
 #
 # gcc_pass -- utility to record a testcase passed
