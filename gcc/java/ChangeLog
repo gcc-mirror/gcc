@@ -1,3 +1,9 @@
+2001-09-01  Per Bothner  <per@bothner.com>
+
+	* parse.y (maybe_yank_clinit):  A field without an initializer is not
+	relevant.  All initializers except static final and constant require
+	<clinit>, regardless of flag_emit_class_files.
+
 2001-08-31  Per Bothner  <per@bothner.com>
 
 	* class.c (set_constant_value):  When not emiting class files, then a

@@ -7862,6 +7862,12 @@ maybe_yank_clinit (mdecl)
       if (!FIELD_STATIC (current))
 	continue;
 
+      /* nor in fields with initializers. */
+      f_init = DECL_INITIAL (current);
+
+      if (f_init == NULL_TREE)
+	continue;
+
       /* Anything that isn't String or a basic type is ruled out -- or
 	 if we know how to deal with it (when doing things natively) we
 	 should generated an empty <clinit> so that SUID are computed
@@ -7869,18 +7875,8 @@ maybe_yank_clinit (mdecl)
       if (! JSTRING_TYPE_P (TREE_TYPE (current))
 	  && ! JNUMERIC_TYPE_P (TREE_TYPE (current)))
 	break;
-	  
-      f_init = DECL_INITIAL (current);
-      /* If we're emitting native code, we want static final fields to
-	 have constant initializers. If we don't meet these
-	 conditions, we keep <clinit> */
-      if (!flag_emit_class_files
-	  && !(FIELD_FINAL (current) && f_init && TREE_CONSTANT (f_init)))
-	break;
-      /* If we're emitting bytecode, we want static fields to have
-	 constant initializers or no initializer. If we don't meet
-	 these conditions, we keep <clinit> */
-      if (flag_emit_class_files && f_init && !TREE_CONSTANT (f_init))
+
+      if (! FIELD_FINAL (current) || ! TREE_CONSTANT (f_init))
 	break;
     }
 
