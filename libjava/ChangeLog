@@ -1,5 +1,10 @@
 2003-12-19  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/MessageFormat.java
+	(MessageFormat): New constructor.
+
+2003-12-19  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/protocol/jar/Handler.java
 	(parseURL): New method.
 	(toExternalForm): New method.

@@ -454,11 +454,25 @@ public class MessageFormat extends Format
    * Creates a new MessageFormat object with
    * the specified pattern
    *
-   * @param aPattern The Pattern
+   * @param pattern The Pattern
    */
-  public MessageFormat (String pattern)
+  public MessageFormat(String pattern)
   {
-    locale = Locale.getDefault();
+    this(pattern, Locale.getDefault());
+  }
+
+  /**
+   * Creates a new MessageFormat object with
+   * the specified pattern
+   *
+   * @param pattern The Pattern
+   * @param locale The Locale to use
+   *
+   * @since 1.4
+   */
+  public MessageFormat(String pattern, Locale locale)
+  {
+    this.locale = locale;
     applyPattern (pattern);
   }
 
