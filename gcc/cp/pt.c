@@ -3538,9 +3538,13 @@ mangle_class_name_for_template (name, parms, arglist)
 	      /* Already substituted with real template.  Just output 
 		 the template name here */
               tree context = DECL_CONTEXT (arg);
-	      if (context)
-		{
-                  my_friendly_assert (TREE_CODE (context) == NAMESPACE_DECL, 980422);
+              if (context)
+                {
+                  /* The template may be defined in a namespace, or
+                     may be a member template.  */
+                  my_friendly_assert (TREE_CODE (context) == NAMESPACE_DECL
+                                      || CLASS_TYPE_P (context), 
+                                      980422);
 		  cat(decl_as_string (DECL_CONTEXT (arg), 0));
 		  cat("::");
 		}
