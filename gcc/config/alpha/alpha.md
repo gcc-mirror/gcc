@@ -1495,6 +1495,29 @@
   "ext%M2l %r1,%3,%0"
   [(set_attr "type" "shift")])
 
+;; Combine has some strange notion of preserving existing undefined behaviour
+;; in shifts larger than a word size.  So capture these patterns that it 
+;; should have turned into zero_extracts.
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and (lshiftrt:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
+		(ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
+			   (const_int 3)))
+	     (match_operand:DI 3 "mode_mask_operand" "n")))]
+  ""
+  "ext%U3l %1,%2,%0"
+  [(set_attr "type" "shift")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(lshiftrt:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
+	  (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
+		     (const_int 3))))]
+  ""
+  "extql %1,%2,%0"
+  [(set_attr "type" "shift")])
+
 (define_insn "extqh"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI
