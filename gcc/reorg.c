@@ -894,15 +894,22 @@ emit_delay_sequence (insn, list, length, avail)
   NEXT_INSN (seq_insn) = NEXT_INSN (insn);
   PREV_INSN (seq_insn) = PREV_INSN (insn);
 
+  if (insn != last)
+    PREV_INSN (NEXT_INSN (seq_insn)) = seq_insn;
+
+  if (insn != first)
+    NEXT_INSN (PREV_INSN (seq_insn)) = seq_insn;
+
+  /* Note the calls to set_new_first_and_last_insn must occur after
+     SEQ_INSN has been completely spliced into the insn stream.
+
+     Otherwise CUR_INSN_UID will get set to an incorrect value because
+     set_new_first_and_last_insn will not find SEQ_INSN in the chain.  */
   if (insn == last)
     set_new_first_and_last_insn (first, seq_insn);
-  else
-    PREV_INSN (NEXT_INSN (seq_insn)) = seq_insn;
 
   if (insn == first)
     set_new_first_and_last_insn (seq_insn, last);
-  else
-    NEXT_INSN (PREV_INSN (seq_insn)) = seq_insn;
 
   /* Build our SEQUENCE and rebuild the insn chain.  */
   XVECEXP (seq, 0, 0) = delay_insn;
