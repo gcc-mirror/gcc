@@ -16,9 +16,3 @@ template <typename A> struct Bar {
   typedef typename Foo<int>::Inner::type type;
 };
 
-template <template <typename T> class TPL> void Foo ()
-{
-  TPL<int> x;
-
-  f (x);
-}
