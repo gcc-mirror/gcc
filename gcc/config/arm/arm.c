@@ -847,11 +847,11 @@ arm_override_options (void)
 
   if (optimize_size)
     {
-      /* If optimizing for space, we let the compiler synthesize constants
-         with up to 2 insns, which uses the same space as a load from memory.
-         This gives the opportunity to take even less space when different
-         offsets can be factorized into multiple pre-indexed loads or stores. */
-      arm_constant_limit = 2;
+      /* There's some dispute as to whether this should be 1 or 2.  However,
+	 experiments seem to show that in pathological cases a setting of
+	 1 degrades less severly than a setting of 2.  This could change if
+	 other parts of the compiler change their behavior.  */
+      arm_constant_limit = 1;
 
       /* If optimizing for size, bump the number of instructions that we
          are prepared to conditionally execute (even on a StrongARM). */
