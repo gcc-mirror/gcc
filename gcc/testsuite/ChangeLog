@@ -1,3 +1,9 @@
+2005-04-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.c-torture/compile/20011119-1.c: Require weak and alias support.
+	* gcc.c-torture/compile/20011119-2.c: Likewise.
+	* gcc.c-torture/compile/981001-2.c: Likewise.
+
 2005-04-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20679

@@ -1,3 +1,5 @@
+/* { dg-require-weak "" } */
+/* { dg-require-alias "" } */
 #define weak_alias(func, aliasname) \
 	extern __typeof (func) aliasname __attribute__ ((weak, alias (#func)));
 
