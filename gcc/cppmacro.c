@@ -174,14 +174,17 @@ builtin_macro (pfile, node)
 
       /* __STDC__ has the value 1 under normal circumstances.
 	 However, if (a) we are in a system header, (b) the option
-	 stdc_0_in_system_headers is true, and (c) __STRICT_ANSI__ is
-	 not defined, then it has the value 0.  */
+	 stdc_0_in_system_headers is true (set by target config), and
+	 (c) we are not in strictly conforming mode, then it has the
+	 value 0.  */
     case BT_STDC:
       {
 	int stdc;
+	enum c_lang lang = CPP_OPTION (pfile, lang);
 	if (CPP_IN_SYSTEM_HEADER (pfile)
 	    && CPP_OPTION (pfile, stdc_0_in_system_headers)
-	    && pfile->spec_nodes.n__STRICT_ANSI__->type == NT_VOID)
+	    && !(lang == CLK_STDC89 || lang == CLK_STDC94
+		 || lang == CLK_STDC99))  /* || lang == CLK_CXX98 ? */
 	  stdc = 0;
 	else
 	  stdc = 1;

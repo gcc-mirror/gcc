@@ -1,4 +1,22 @@
+2002-05-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-common.c (c_common_init): Set options->unsigned_char from
+	flag_signed_char.
+	(cb_register_builtins): Define __STRICT_ANSI__ and
+	__CHAR_UNSIGNED__ here...
+	* cppinit.c (init_builtins): Not here.
+	(cpp_create_reader): unsigned_char option defaults to 0, not
+	!DEFAULT_SIGNED_CHAR.
+	(COMMAND_LINE_OPTIONS, cpp_handle_option): Lose -fsigned-char
+	and -funsigned-char.
+
+	* cpphash.h (struct spec_nodes): Kill n__STRICT_ANSI__.
+	* cpphash.c (_cpp_init_hashtable): Don't set it.
+	* cppmacro.c (builtin_macro) [BT_STDC]: Use the language setting
+	directly.  Clarify comment.
+
 2002-05-21  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
 	* bb-reorder.c (make_reorder_chain_1): Modified.
 	* cfganal.c (can_fallthru, flow_call_edges_add,
 	flow_preorder_transversal_compute): Modified.
@@ -80,8 +98,8 @@ Tue May 21 10:51:54 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-05-20  Dale Johannesen  <dalej@apple.com>
 
-        * combine.c (cant_combine_insn_p):  Back out my
-        previous patch.
+	* combine.c (cant_combine_insn_p):  Back out my
+	previous patch.
 
 2002-05-20  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -134,14 +152,14 @@ Tue May 21 10:51:54 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-05-19  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.h (FUNCTION_VALUE): Only return vectors in
-        an altivec register if TARGET_ALTIVEC.
+	* config/rs6000/rs6000.h (FUNCTION_VALUE): Only return vectors in
+	an altivec register if TARGET_ALTIVEC.
 
-        * config/rs600/rs6000.c (rs6000_emit_move): Change VECTOR_MODE_P
-        to ALTIVEC_VECTOR_MODE.
-        (rs6000_va_arg): Only vectors of type AltiVec are 16 byte aligned.
-        (rs6000_va_arg): Vectors may go in registers if they are not
-        altivec vectors.
+	* config/rs600/rs6000.c (rs6000_emit_move): Change VECTOR_MODE_P
+	to ALTIVEC_VECTOR_MODE.
+	(rs6000_va_arg): Only vectors of type AltiVec are 16 byte aligned.
+	(rs6000_va_arg): Vectors may go in registers if they are not
+	altivec vectors.
 
 2002-05-19  Kazu Hirata  <kazu@cs.umass.edu>
 
