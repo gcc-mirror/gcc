@@ -23,6 +23,9 @@ AC_PREREQ(2.13)
 AC_CANONICAL_SYSTEM
 AC_ARG_PROGRAM
 
+# Get 'install' or 'install-sh' and its variants.
+AC_PROG_INSTALL
+
 sinclude(config/acx.m4)
 
 ### we might need to use some other shell than /bin/sh for running subshells

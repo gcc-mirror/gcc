@@ -1,3 +1,13 @@
+2003-07-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR bootstrap/11273
+	PR bootstrap/11408
+	* Makefile.tpl: Set INSTALL and friends using autoconf.  Remove
+	unused INSTALL_PROGRAM_ARGS.
+	* configure.in: Use AC_PROG_INSTALL.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2003-07-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* MAINTAINERS: Alphabetize.
