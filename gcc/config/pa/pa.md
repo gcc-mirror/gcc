@@ -800,7 +800,9 @@
     }
 
   return \"zdepi %1,%2,%3,%0\";
-}")
+}"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=a,?*r")
@@ -851,7 +853,7 @@
 ;;; Experimental
 
 (define_insn ""
-  [(set (match_operand:SI 0 "fp_reg_operand" "*f*x")
+  [(set (match_operand:SI 0 "fp_reg_operand" "=*f*x")
 	(match_operand:SI 1 "short_memory_operand" "T"))]
   ""
   "fldws%F1 %1,%0"
@@ -859,7 +861,7 @@
    (set_attr "length" "1")])
 
 (define_insn ""
-  [(set (match_operand:SI 0 "short_memory_operand" "T")
+  [(set (match_operand:SI 0 "short_memory_operand" "=T")
 	(match_operand:SI 1 "fp_reg_operand" "*f*x"))]
   ""
   "fstws%F0 %1,%0"
