@@ -1,3 +1,8 @@
+2003-01-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* ifcvt.c (noce_emit_store_flag): Don't emit store flag if mode of x
+	is not a scalar int mode.
+
 2003-01-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (notice_update_cc): Don't assume that
