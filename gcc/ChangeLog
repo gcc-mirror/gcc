@@ -1,3 +1,8 @@
+2001-03-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.texi: Remove obsolete information relating to build and
+	installation problems with enquire or the Pyramid C compiler.
+
 2001-03-16  Philip Blundell  <philb@gnu.org>
 
 	* config.gcc: Remove obsolete targets "arm*-*-linuxoldld" and
