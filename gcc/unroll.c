@@ -2667,6 +2667,12 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
     {
       rtx giv_inc, value;
 
+      
+      /* If this is a new register, can't handle it since it does not have
+	 an entry in reg_n_info.  */
+      if (REGNO (v->dest_reg) >= max_reg_before_loop)
+	continue;
+
       /* Only split the giv if it has already been reduced, or if the loop is
 	 being completely unrolled.  */
       if (unroll_type != UNROLL_COMPLETELY && v->ignore)
