@@ -4879,8 +4879,8 @@ pop_switch ()
   switch_stack = switch_stack->next;
 }
 
-/* Same, but for CASE labels.  If DECL is NULL_TREE, it's the default.  */
-/* XXX Note decl is never actually used. (bpk) */
+/* Note that we've seen a definition of a case label, and complain if this
+   is a bad place for one.  */
 
 void
 define_case_label ()
@@ -4889,6 +4889,10 @@ define_case_label ()
   struct binding_level *b = current_binding_level;
   int identified = 0;
 
+  if (! switch_stack)
+    /* Don't crash; we'll complain in do_case.  */
+    return;
+  
   if (cleanup)
     {
       static int explained = 0;

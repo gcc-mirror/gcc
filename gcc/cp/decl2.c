@@ -567,25 +567,10 @@ lang_decode_option (argc, argv)
       if (!strcmp (p, "handle-exceptions")
 	  || !strcmp (p, "no-handle-exceptions"))
 	warning ("-fhandle-exceptions has been renamed to -fexceptions (and is now on by default)");
-
-      if (!strcmp (p, "memoize-lookups")
-	  || !strcmp (p, "no-memoize-lookups")
-	  || !strcmp (p, "save-memoized")
-	  || !strcmp (p, "no-save-memoized")
-	  || !strcmp (p, "no-all-virtual")
-	  || !strcmp (p, "no-enum-int-equiv")
-	  || !strcmp (p, "init-priority")
-	  || !strcmp (p, "no-init-priority")
-	  || !strcmp (p, "nonnull-objects")
-	  || !strcmp (p, "no-this-is-variable")
-          || !strcmp (p, "ansi-overloading"))
-	/* ignore */
-	;
       else if (!strcmp (p, "all-virtual")
 	       || !strcmp (p, "enum-int-equiv")
 	       || !strcmp (p, "no-nonnull-objects")
-	       || !strcmp (p, "this-is-variable")
-	       || !strcmp (p, "no-ansi-overloading"))
+	       || !strcmp (p, "this-is-variable"))
 	warning ("-f%s is no longer supported", p);
       else if (! strcmp (p, "alt-external-templates"))
 	{
