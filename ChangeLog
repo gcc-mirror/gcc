@@ -1,3 +1,9 @@
+2004-08-26  Phil Edwards  <phil@codesourcery.com>
+
+	* configure.in:  Give a better error message if GMP/MPFR are missing
+	and a language needing them has been requested.
+	* configure:  Regenerated.
+
 2004-08-25  Phil Edwards  <phil@codesourcery.com>
 
 	* configure.in:  Print a list of available language front-ends if
