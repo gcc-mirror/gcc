@@ -989,7 +989,7 @@ main (argc, argv)
 
 static int
 n_occurrences (c, s)
-     char c;
+     int c;
      char *s;
 {
   int n = 0;
