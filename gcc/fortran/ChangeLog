@@ -1,3 +1,12 @@
+2005-02-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/20058
+	* trans-types.c (gfc_max_integer_kind): Declare
+  	(gfc_init_kinds): Initialize it.
+	* gfortran.h (gfc_max_integer_kind): extern it.
+	* primary.c (match_boz_constant): Use it; remove gfortran extension
+  	of kind suffixes on BOZ literal constants
+
 2005-02-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* decl.c, resolve.c, trans-array.c, trans.h: Fix comment typo(s).
