@@ -1,3 +1,26 @@
+Wed Jan  6 17:19:46 1999  Per Bothner  <bothner@cygnus.com>
+
+	* java-tree.h:  Declare read_class.
+	* jcf-parse.c (read_class):  New function.
+	(load_class):  Now just call read_class.
+
+	* java-tree.h (java_parse_abort_on_error):  Only return if new errors.
+	* jcf-parse.c (parse_source_file):  Declare save_error_count,
+	which is needed by java_parse_abort_on_error macro,
+	* parse.y (java_layout_classes, java_expand_classes):  Likewise.
+
+	* parse.y (register_fields):  Set TREE_STATIC flag of NEW_ARRAY_INIT
+	constructor, if initializing a static field.
+	(patch_new_array_init):  Set TREE_CONSTANT if it is.
+	* expr.c (java_lang_expand_expr):  For a static array constructor
+	of primitive elements, allocate the array itself statically.
+	Disabled until we can set the vtable field statically.
+	
+	* check-init.c:  New file.  Checks for definite assignment.
+	* Makefile.in (JAVA_OBJS):  Add check-init.o.
+	* parse.y (java_complete_expand_method): Call check_for_initialization.
+	* parse.h (BLOCK_EXPR_DECLS, BLOCK_EXPR_BODY):  Moved to java-tree.h.
+
 Wed Jan  6 14:53:10 1999  Graham <grahams@rcp.co.uk>
 
 	* parse.y : include system.h instead of including
