@@ -4,7 +4,34 @@ Wed Jun  7 20:00:31 1995  Mike Stump  <mrs@cygnus.com>
 	* decl.c (finish_decl): New routine to handle call backs from the
 	mid end (declare_hidden_char_array).
 
-Mon May 29 12:45:10 1995  Paul Eggert  <eggert@twinsun.com>
+Wed Jun  7 19:02:50 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (start_function): Handle setting C_C_D here.
+	(set_C_C_D): Removed.
+	(struct saved_scope): Remove class_decl.
+	(push_to_top_level): Don't save current_class_decl.
+	(pop_from_top_level): Don't restore current_class_decl or C_C_D.
+	(struct cp_function): Add C_C_D.
+	(push_cp_function_context): Save C_C_D.
+	(pop_cp_function_context): Restore C_C_D.
+
+Fri Jun  2 11:05:58 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (set_C_C_D): New function.
+	(pop_from_top_level, start_function, pop_cp_function_context): Call it.
+
+	* class.c, cp-tree.h, decl.c, decl2.c, parse.y: Lose all references
+	to current_vtable_decl, CLASSTYPE_INST_VAR and CLASSTYPE_VTBL_PTR.
+
+	* decl.c (push_cp_function_context): Save current_class_decl.
+	(pop_cp_function_context): Restore current_class_decl and set C_C_D.
+	(pop_from_top_level): Don't use CLASSTYPE_INST_VAR to set C_C_D.
+	(start_function): Ditto.
+
+	* class.c (popclass): Don't mess with current_class_decl,
+	current_vtable_decl, or C_C_D.
+
+on May 29 12:45:10 1995  Paul Eggert  <eggert@twinsun.com>
 
 	* Make-lang.in (c++.mostlyclean): Remove $(DEMANGLER_PROG).
 
