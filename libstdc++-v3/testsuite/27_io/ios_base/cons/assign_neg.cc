@@ -41,5 +41,5 @@ void test01()
   io1 = io2;
 }
 // { dg-error "within this context" "" { target *-*-* } 41 } 
-// { dg-error "is private" "" { target *-*-* } 739 } 
+// { dg-error "is private" "" { target *-*-* } 782 } 
 // { dg-error "operator=" "" { target *-*-* } 0 } 

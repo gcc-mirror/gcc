@@ -52,7 +52,28 @@ namespace std
   // as permitted (but not required) in the standard, in order to provide
   // better type safety in iostream calls.  A side effect is that
   // expressions involving them are no longer compile-time constants.
-  enum _Ios_Fmtflags { _S_ios_fmtflags_end = 1L << 16 };
+  enum _Ios_Fmtflags 
+    { 
+      _S_boolalpha 	= 1L << 0,
+      _S_dec 		= 1L << 1,
+      _S_fixed 		= 1L << 2,
+      _S_hex 		= 1L << 3,
+      _S_internal 	= 1L << 4,
+      _S_left 		= 1L << 5,
+      _S_oct 		= 1L << 6,
+      _S_right 		= 1L << 7,
+      _S_scientific 	= 1L << 8,
+      _S_showbase 	= 1L << 9,
+      _S_showpoint 	= 1L << 10,
+      _S_showpos 	= 1L << 11,
+      _S_skipws 	= 1L << 12,
+      _S_unitbuf 	= 1L << 13,
+      _S_uppercase 	= 1L << 14,
+      _S_adjustfield 	= _S_left | _S_right | _S_internal,
+      _S_basefield 	= _S_dec | _S_oct | _S_hex,
+      _S_floatfield 	= _S_scientific | _S_fixed,
+      _S_ios_fmtflags_end = 1L << 16 
+    };
 
   inline _Ios_Fmtflags
   operator&(_Ios_Fmtflags __a, _Ios_Fmtflags __b)
@@ -66,15 +87,15 @@ namespace std
   operator^(_Ios_Fmtflags __a, _Ios_Fmtflags __b)
   { return _Ios_Fmtflags(static_cast<int>(__a) ^ static_cast<int>(__b)); }
 
-  inline _Ios_Fmtflags
+  inline _Ios_Fmtflags&
   operator|=(_Ios_Fmtflags& __a, _Ios_Fmtflags __b)
   { return __a = __a | __b; }
 
-  inline _Ios_Fmtflags
+  inline _Ios_Fmtflags&
   operator&=(_Ios_Fmtflags& __a, _Ios_Fmtflags __b)
   { return __a = __a & __b; }
 
-  inline _Ios_Fmtflags
+  inline _Ios_Fmtflags&
   operator^=(_Ios_Fmtflags& __a, _Ios_Fmtflags __b)
   { return __a = __a ^ __b; }
 
@@ -83,7 +104,16 @@ namespace std
   { return _Ios_Fmtflags(~static_cast<int>(__a)); }
 
 
-  enum _Ios_Openmode { _S_ios_openmode_end = 1L << 16 };
+  enum _Ios_Openmode 
+    { 
+      _S_app 		= 1L << 0,
+      _S_ate 		= 1L << 1,
+      _S_bin 		= 1L << 2,
+      _S_in 		= 1L << 3,
+      _S_out 		= 1L << 4,
+      _S_trunc 		= 1L << 5,
+      _S_ios_openmode_end = 1L << 16 
+    };
 
   inline _Ios_Openmode
   operator&(_Ios_Openmode __a, _Ios_Openmode __b)
@@ -97,15 +127,15 @@ namespace std
   operator^(_Ios_Openmode __a, _Ios_Openmode __b)
   { return _Ios_Openmode(static_cast<int>(__a) ^ static_cast<int>(__b)); }
 
-  inline _Ios_Openmode
+  inline _Ios_Openmode&
   operator|=(_Ios_Openmode& __a, _Ios_Openmode __b)
   { return __a = __a | __b; }
 
-  inline _Ios_Openmode
+  inline _Ios_Openmode&
   operator&=(_Ios_Openmode& __a, _Ios_Openmode __b)
   { return __a = __a & __b; }
 
-  inline _Ios_Openmode
+  inline _Ios_Openmode&
   operator^=(_Ios_Openmode& __a, _Ios_Openmode __b)
   { return __a = __a ^ __b; }
 
@@ -114,7 +144,14 @@ namespace std
   { return _Ios_Openmode(~static_cast<int>(__a)); }
 
 
-  enum _Ios_Iostate { _S_ios_iostate_end = 1L << 16 };
+  enum _Ios_Iostate
+    { 
+      _S_goodbit 		= 0,
+      _S_badbit 		= 1L << 0,
+      _S_eofbit 		= 1L << 1,
+      _S_failbit		= 1L << 2,
+      _S_ios_iostate_end = 1L << 16 
+    };
 
   inline _Ios_Iostate
   operator&(_Ios_Iostate __a, _Ios_Iostate __b)
@@ -128,15 +165,15 @@ namespace std
   operator^(_Ios_Iostate __a, _Ios_Iostate __b)
   { return _Ios_Iostate(static_cast<int>(__a) ^ static_cast<int>(__b)); }
 
-  inline _Ios_Iostate
+  inline _Ios_Iostate&
   operator|=(_Ios_Iostate& __a, _Ios_Iostate __b)
   { return __a = __a | __b; }
 
-  inline _Ios_Iostate
+  inline _Ios_Iostate&
   operator&=(_Ios_Iostate& __a, _Ios_Iostate __b)
   { return __a = __a & __b; }
 
-  inline _Ios_Iostate
+  inline _Ios_Iostate&
   operator^=(_Ios_Iostate& __a, _Ios_Iostate __b)
   { return __a = __a ^ __b; }
 
@@ -144,7 +181,13 @@ namespace std
   operator~(_Ios_Iostate __a)
   { return _Ios_Iostate(~static_cast<int>(__a)); }
 
-  enum _Ios_Seekdir { _S_ios_seekdir_end = 1L << 16 };
+  enum _Ios_Seekdir 
+    { 
+      _S_beg = 0,
+      _S_cur = SEEK_CUR,
+      _S_end = SEEK_END,
+      _S_ios_seekdir_end = 1L << 16 
+    };
 
   // 27.4.2  Class ios_base
   /**

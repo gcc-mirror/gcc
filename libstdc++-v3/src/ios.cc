@@ -37,8 +37,9 @@
 #include <bits/atomicity.h>
 
 namespace std 
-{
-  // Definitions for static const data members of __ios_flags.
+{  
+  // XXX GLIBCXX_ABI Deprecated
+   // Definitions for static const data members of __ios_flags.
   const __ios_flags::__int_type __ios_flags::_S_boolalpha;
   const __ios_flags::__int_type __ios_flags::_S_dec;
   const __ios_flags::__int_type __ios_flags::_S_fixed;
