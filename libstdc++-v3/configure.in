@@ -200,7 +200,7 @@ if test ! -f stamp-sanity-warned; then
   echo "  faster => ${srcdir}/docs/configopts.html"
   echo "  slower => <URL:http://sources.redhat.com/libstdc++/configopts.html>"
   echo ""
-  echo "before proceeding with make."
+  echo "before proceeding with ${_cv_gnu_make_command}."
   echo ""
 fi
 

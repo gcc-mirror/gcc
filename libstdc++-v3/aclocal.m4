@@ -265,39 +265,56 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_FEATURES, [
 
 
 dnl
-dnl Check to see if tricky linker opts can be used.
+dnl If GNU ld is in use, check to see if tricky linker opts can be used.  If
+dnl the native linker is in use, all variables will be defined to something
+dnl safe (like an empty string).
 dnl
-dnl Define SECTION_LDFLAGS='-Wl,--gc-sections' if possible
+dnl Define SECTION_LDFLAGS='-Wl,--gc-sections' if possible.
+dnl Define OPT_LDFLAGS='-Wl,-O1' if possible.
+dnl
 dnl GLIBCPP_CHECK_LINKER_FEATURES
 AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
-  # All these tests are for C++; save the language and the compiler flags.
-  # Need to do this so that g++ won't try to link in libstdc++
-  ac_test_CFLAGS="${CFLAGS+set}"
-  ac_save_CFLAGS="$CFLAGS"
-  CFLAGS='-x c++  -Wl,--gc-sections'
+  # If we're not using GNU ld, then there's no point in even trying these
+  # tests.  Check for that first.  We should have already tested for gld
+  # by now (in libtool), but require it now just to be safe...
+  AC_REQUIRE([AC_PROG_LD])
+  if test "$ac_cv_prog_gnu_ld" = "no"; then
+    SECTION_LDFLAGS=''
+    OPT_LDFLAGS=''
 
-  # Check for -Wl,--gc-sections
-  AC_MSG_CHECKING([for ld that supports -Wl,--gc-sections])
-  AC_TRY_RUN([
-   int main(void) 
-   {
-     try { throw 1; }
-     catch (...) { };
-     return 0;
-   }
-  ], [ac_sectionLDflags=yes], [ac_sectionLFflags=no], [ac_sectionLDflags=yes])
-  if test "$ac_test_CFLAGS" = set; then
-    CFLAGS="$ac_save_CFLAGS"
-  else
-    # this is the suspicious part
-    CFLAGS=''
-  fi
-  if test "$ac_sectionLDflags" = "yes"; then
-    SECTION_LDFLAGS='-Wl,--gc-sections'
-  fi
-  AC_MSG_RESULT($ac_sectionLDflags)
+  else   # GNU ld it is!  Joy and bunny rabbits!
 
+    # All these tests are for C++; save the language and the compiler flags.
+    # Need to do this so that g++ won't try to link in libstdc++
+    ac_test_CFLAGS="${CFLAGS+set}"
+    ac_save_CFLAGS="$CFLAGS"
+    CFLAGS='-x c++  -Wl,--gc-sections'
+
+    # Check for -Wl,--gc-sections
+    AC_MSG_CHECKING([for ld that supports -Wl,--gc-sections])
+    AC_TRY_RUN([
+     int main(void) 
+     {
+       try { throw 1; }
+       catch (...) { };
+       return 0;
+     }
+    ], [ac_sectionLDflags=yes], [ac_sectionLFflags=no], [ac_sectionLDflags=yes])
+    if test "$ac_test_CFLAGS" = set; then
+      CFLAGS="$ac_save_CFLAGS"
+    else
+      # this is the suspicious part
+      CFLAGS=''
+    fi
+    if test "$ac_sectionLDflags" = "yes"; then
+      SECTION_LDFLAGS='-Wl,--gc-sections'
+    fi
+    AC_MSG_RESULT($ac_sectionLDflags)
+    OPT_LDFLAGS='-Wl,-O1'
+
+  fi
   AC_SUBST(SECTION_LDFLAGS)
+  AC_SUBST(OPT_LDFLAGS)
 ])
 
 
@@ -314,15 +331,17 @@ dnl ASSUMES argument is a math function with ONE parameter
 dnl
 dnl GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1
 AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1, [
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
   AC_MSG_CHECKING([for $1 declaration])
-  AC_TRY_COMPILE([#include <math.h>], 
-  [ $1(0);], 
-  [use_$1=yes], [use_$1=no])
-  AC_MSG_RESULT($use_$1)
-  AC_LANG_RESTORE
-  if test x$use_$1 = x"yes"; then
+  AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
+    AC_LANG_SAVE
+    AC_LANG_CPLUSPLUS
+    AC_TRY_COMPILE([#include <math.h>], 
+                   [ $1(0);], 
+                   [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
+    AC_LANG_RESTORE
+  ])
+  AC_MSG_RESULT($glibcpp_cv_func_$1_use)
+  if test x$glibcpp_cv_func_$1_use = x"yes"; then
     AC_CHECK_FUNCS($1)    
   fi
 ])
@@ -341,15 +360,17 @@ dnl ASSUMES argument is a math function with TWO parameters
 dnl
 dnl GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2
 AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2, [
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
   AC_MSG_CHECKING([for $1 declaration])
-  AC_TRY_COMPILE([#include <math.h>], 
-  [ $1(0, 0);], 
-  [use_$1=yes], [use_$1=no])
-  AC_MSG_RESULT($use_$1)
-  AC_LANG_RESTORE
-  if test x$use_$1 = x"yes"; then
+  AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
+    AC_LANG_SAVE
+    AC_LANG_CPLUSPLUS
+    AC_TRY_COMPILE([#include <math.h>], 
+                   [ $1(0, 0);], 
+                   [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
+    AC_LANG_RESTORE
+  ])
+  AC_MSG_RESULT($glibcpp_cv_func_$1_use)
+  if test x$glibcpp_cv_func_$1_use = x"yes"; then
     AC_CHECK_FUNCS($1)    
   fi
 ])
@@ -368,15 +389,17 @@ dnl ASSUMES argument is a math function with THREE parameters
 dnl
 dnl GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3
 AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3, [
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
   AC_MSG_CHECKING([for $1 declaration])
-  AC_TRY_COMPILE([#include <math.h>], 
-  [ $1(0, 0, 0);], 
-  [use_$1=yes], [use_$1=no])
-  AC_MSG_RESULT($use_$1)
-  AC_LANG_RESTORE
-  if test x$use_$1 = x"yes"; then
+  AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
+    AC_LANG_SAVE
+    AC_LANG_CPLUSPLUS
+    AC_TRY_COMPILE([#include <math.h>], 
+                   [ $1(0, 0, 0);], 
+                   [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
+    AC_LANG_RESTORE
+  ])
+  AC_MSG_RESULT($glibcpp_cv_func_$1_use)
+  if test x$glibcpp_cv_func_$1_use = x"yes"; then
     AC_CHECK_FUNCS($1)    
   fi
 ])
@@ -397,21 +420,25 @@ dnl ASSUMES argument is a math function with ONE parameter
 dnl
 dnl GLIBCPP_CHECK_BUILTIN_MATH_DECL_LINKAGE_1
 AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1, [
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
   AC_MSG_CHECKING([for $1 declaration])
-  AC_TRY_COMPILE([#include <math.h>], 
-  [ $1(0);], 
-  [use_$1=yes], [use_$1=no])
-  AC_MSG_RESULT($use_$1)
-  AC_LANG_RESTORE
-  if test x$use_$1 = x"yes"; then
+  AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
+    AC_LANG_SAVE
+    AC_LANG_CPLUSPLUS
+    AC_TRY_COMPILE([#include <math.h>], 
+                   [ $1(0);], 
+                   [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
+    AC_LANG_RESTORE
+  ])
+  AC_MSG_RESULT($glibcpp_cv_func_$1_use)
+  if test x$glibcpp_cv_func_$1_use = x"yes"; then
     AC_MSG_CHECKING([for $1 linkage])
+    AC_CACHE_VAL(glibcpp_cv_func_$1_link, [
       AC_TRY_LINK([#include <math.h>], 
-      [ $1(0);],
-      [link_$1=yes], [link_$1=no])
-    AC_MSG_RESULT($link_$1)
-    if test x$link_$1 = x"yes"; then
+                  [ $1(0);], 
+                  [glibcpp_cv_func_$1_link=yes], [glibcpp_cv_func_$1_link=no])
+    ])
+    AC_MSG_RESULT($glibcpp_cv_func_$1_link)
+    if test x$glibcpp_cv_func_$1_link = x"yes"; then
       ac_tr_func=HAVE_`echo $1 | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
       AC_DEFINE_UNQUOTED(${ac_tr_func})
     fi
@@ -1533,7 +1560,7 @@ dnl Then, if any (well almost any) other make is called, and GNU make also
 dnl exists, then the other make wraps the GNU make.
 dnl
 dnl @author John Darrington <j.darrington@elvis.murdoch.edu.au>
-dnl @version $Id: acinclude.m4,v 1.47 2000/07/26 06:51:37 bkoz Exp $
+dnl @version 1.1 #### replaced Id string now that Id is for lib-v3; pme
 dnl
 dnl #### Changes for libstdc++-v3:  reformatting and linewrapping; prepending
 dnl #### GLIBCPP_ to the macro name; adding the :-make fallback in the

@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 Installation Instructions</TITLE>
 <LINK REL="home" HREF="http://sources.redhat.com/libstdc++/">
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: install.html,v 1.4 2000/06/27 15:56:17 pme Exp $ -->
+<!-- $Id: install.html,v 1.5 2000/07/11 21:45:07 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -268,6 +268,15 @@
       message when compiling stringMAIN.cc, see <A HREF="#Werror">the
       resolution at the end of this document</A>.
    </P>
+   <P>If you are rebuilding from a previous build [attempt], some
+      information is kept in a cache file.  This is stored in
+      <EM>gccbuilddir/cpu-vendor-OS/</EM> if you are building with
+      multilibs (the default), or in
+      <EM>gccbuilddir/cpu-vendor-OS/</EM>libstdc++-v3 if you have
+      multilibs disabled.  The filename is config.cache; if previous
+      information is causing problems, you can delete it entirely, or
+      simply edit it and remove lines.
+   </P>
    <P>You're done.  Now install the rebuilt pieces with
       <PRE>
    make install</PRE>
@@ -383,7 +392,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: install.html,v 1.4 2000/06/27 15:56:17 pme Exp $
+<BR> $Id: install.html,v 1.5 2000/07/11 21:45:07 pme Exp $
 </EM></P>
 
 

@@ -21,6 +21,8 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
+## $Id$
+
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
 
@@ -98,7 +100,7 @@ LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) \
 # rules automake generates would be used.  We cannot allow CXX to be used
 # in libtool since this would add -lstdc++ to the link line which of
 # course is impossible.
-CXXLINK = $(LIBTOOL) --mode=link "$(CC)" -Wl,-O1 @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+CXXLINK = $(LIBTOOL) --mode=link "$(CC)" @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 
 headers = \
