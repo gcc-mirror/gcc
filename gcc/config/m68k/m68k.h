@@ -721,7 +721,7 @@ extern enum reg_class regno_reg_class[];
    (C) == 'J' ? (VALUE) >= -0x8000 && (VALUE) <= 0x7FFF : \
    (C) == 'K' ? (VALUE) < -0x80 || (VALUE) >= 0x80 : \
    (C) == 'L' ? (VALUE) < 0 && (VALUE) >= -8 : \
-   (C) == 'M' ? (VALUE) < -0x100 && (VALUE) >= 0x100 : \
+   (C) == 'M' ? (VALUE) < -0x100 || (VALUE) >= 0x100 : \
    (C) == 'N' ? (VALUE) >= 24 && (VALUE) <= 31 : \
    (C) == 'O' ? (VALUE) == 16 : \
    (C) == 'P' ? (VALUE) >= 8 && (VALUE) <= 15 : 0)
