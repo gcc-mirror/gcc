@@ -30,13 +30,14 @@
 ;; Number	USE
 ;; 0		movsi_ul
 ;; 1		movsi_us, get_fnaddr
-;; 2		loadgp
 ;; 3		eh_set_return
 ;; 20		builtin_setjmp_setup
 ;;
 ;; UNSPEC_VOLATILE values
 ;; 0		blockage
+;; 2		loadgp
 ;; 3		builtin_longjmp
+;; 4		exception_receiver
 ;; 10		consttable_qi
 ;; 11		consttable_hi
 ;; 12		consttable_si
@@ -9571,6 +9572,26 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
 		  operands[0]);
   DONE;
 }")
+
+(define_insn "exception_receiver"
+  [(unspec_volatile [(const_int 0)] 4)]
+  "TARGET_ABICALLS && (mips_abi == ABI_32 || mips_abi == ABI_O64)"
+  "*
+{
+  rtx loc;
+
+  operands[0] = pic_offset_table_rtx;
+  if (frame_pointer_needed)
+    loc = hard_frame_pointer_rtx;
+  else
+    loc = stack_pointer_rtx;
+  loc = plus_constant (loc, current_frame_info.args_size);
+  operands[1] = gen_rtx_MEM (Pmode, loc);
+
+  return mips_move_1word (operands, insn, 0);
+}"
+  [(set_attr "type"   "load")
+   (set_attr "length" "8")])
 
 ;;
 ;;  ....................
