@@ -1,3 +1,24 @@
+2000-07-21  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* diagnostic.c (trim_filename, fancy_abort): Moved here from
+	rtl.c.
+	(fatal_function, set_fatal_function): Removed.
+	(fatal): Don't prepare for or call the fatal_function.
+	(diagnostic_lock, error_recursion): New.
+	(diagnostic_for_decl, report_diagnostic): Guard against
+	re-entering the error reporting routines.
+	(fancy_abort): Assume function is not NULL.
+
+	* errors.c (fancy_abort): New.  Assume function is not NULL.
+	* tradcpp.c (fancy_abort): Assume function is not NULL.
+
+	* system.h: Provide default definition of __FUNCTION__.
+	* rtl.h: Use __FUNCTION__ not __PRETTY_FUNCTION__ throughout.
+	Always use __FUNCTION__ in definition of abort.
+	* tree.h: Likewise.
+	* varray.h: Likewise.
+	* toplev.h: Likewise.  Don't prototype set_fatal_function.
+
 2000-07-20  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/aix43.h (CPP_SPEC): Define __LONG_MAX__ correctly
@@ -20,7 +41,7 @@
 	HImode, and SFmode in 32-bit mode, and DFmode in 64-bit mode.
 	* config/rs6000/sysv4.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Add
 	MODE parameter.  Put small constants in the TOC.
-	
+
 	* config/rs6000/rs6000.c (easy_fp_constant_p): All constants are
 	easy in SImode.
 	(rs6000_emit_move): When reload calls us with an illegitimate

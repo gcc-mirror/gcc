@@ -104,3 +104,15 @@ fatal VPARAMS ((const char *format, ...))
   fputc('\n', stderr);
   exit (FATAL_EXIT_CODE);
 }
+
+/* "Fancy" abort.  Reports where in the compiler someone gave up.
+   This file is used only by build programs, so we're not as polite as
+   the version in diagnostic.c.  */
+void
+fancy_abort (file, line, func)
+     const char *file;
+     int line;
+     const char *func;
+{
+  fatal ("ICE in %s, at %s:%d", func, file, line);
+}

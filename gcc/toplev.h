@@ -57,17 +57,11 @@ extern void _fatal_insn			PARAMS ((const char *,
 						const char *))
   ATTRIBUTE_NORETURN;
 
-#if (GCC_VERSION >= 2007)
 #define fatal_insn(msgid, insn) \
-	_fatal_insn (msgid, insn, __FILE__, __LINE__, __PRETTY_FUNCTION__)
+	_fatal_insn (msgid, insn, __FILE__, __LINE__, __FUNCTION__)
 #define fatal_insn_not_found(insn) \
-	_fatal_insn_not_found (insn, __FILE__, __LINE__, __PRETTY_FUNCTION__)
-#else
-#define fatal_insn(msgid, insn) \
-	_fatal_insn (msgid, insn, __FILE__, __LINE__, 0)
-#define fatal_insn_not_found(insn) \
-	_fatal_insn_not_found (insn, __FILE__, __LINE__, 0)
-#endif
+	_fatal_insn_not_found (insn, __FILE__, __LINE__, __FUNCTION__)
+
 extern void warning			PARAMS ((const char *, ...))
 						ATTRIBUTE_PRINTF_1;
 extern void error			PARAMS ((const char *, ...))
@@ -140,5 +134,4 @@ extern int sorrycount;
 
 extern const char *progname;
 
-extern void set_fatal_function PARAMS ((void (*) (const char *, va_list)));
 #endif /* __GCC_TOPLEV_H */
