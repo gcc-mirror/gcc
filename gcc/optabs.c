@@ -5849,7 +5849,7 @@ gen_cond_trap (code, op1, op2, tcode)
 
   start_sequence ();
   op1 = prepare_operand (icode, op1, 0, mode, mode, 0);
-  op2 = prepare_operand (icode, op2, 0, mode, mode, 0);
+  op2 = prepare_operand (icode, op2, 1, mode, mode, 0);
   emit_insn (GEN_FCN (icode) (op1, op2));
 
   PUT_CODE (trap_rtx, code);
