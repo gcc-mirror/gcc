@@ -1,3 +1,32 @@
+2000-03-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (BINFO_FOR_VBASE): Adjust documentation.
+	(CANONICAL_BINFO): New macro.
+	(BINFO_NEW_VTABLE_MARKED): Use it.
+	(SET_BINFO_NEW_VTABLE_MARKED): Likewise.
+	(CLEAR_BINFO_NEW_VTABLE_MARKED): Likewise.
+	* class.c (dfs_build_vbase_offset_vtbl_entries): Use BINFO_TYPE,
+	not TREE_TYPE.
+	(build_primary_vtable): Adjust usage of BINFO_NEW_VTABLE_MARKED.
+	(build_secondary_vtable): Likewise.
+	(dfs_finish_vtbls): Likewise.
+	(dfs_accumulate_vtbl_inits): Likewise.
+	(accumulate_vtbl_inits): New function.
+	(finish_vtbls): Make sure that virtual bases come after
+	non-virtual bases in the vtable group.
+	(record_base_offsets): Don't save and restore TREE_VIA_VIRTUAL.
+	(finish_struct_1): Adjust usage of BINFO_NEW_VTABLE_MARKED.
+	* search.c (struct vbase_info): Move definition.
+	(marked_new_vtable_p): Adjust usage of BINFO_NEW_VTABLE_MARKED.
+	(unmarked_new_vtable_p): Likewise.
+	(dfs_mark_vtable_path): Remove.
+	(dfs_mark_new_vtable): Remove.
+	(dfs_unmark_new_vtable): Likewise.
+	(dfs_clear_search_slot): Likewise.
+	(dfs_find_vbases):  Adjust usage of BINFO_NEW_VTABLE_MARKED.
+	(dfs_clear_vbase_slots): Likewise.
+	(init_vbase_pointers): LIkewise.
+	
 2000-03-22  Jason Merrill  <jason@casey.cygnus.com>
 
 	* typeck.c (type_after_usual_arithmetic_conversions): Prefer a

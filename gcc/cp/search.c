@@ -76,6 +76,15 @@ pop_stack_level (stack)
 #define search_level stack_level
 static struct search_level *search_stack;
 
+struct vbase_info 
+{
+  /* The class dominating the hierarchy.  */
+  tree type;
+  tree decl_ptr;
+  tree inits;
+  tree vbase_types;
+};
+
 static tree next_baselink PARAMS ((tree));
 static tree get_vbase_1 PARAMS ((tree, tree, unsigned int *));
 static tree lookup_field_1 PARAMS ((tree, tree));
@@ -2537,17 +2546,21 @@ unmarked_vtable_pathp (binfo, data)
 static tree 
 marked_new_vtablep (binfo, data) 
      tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+     void *data;
 {
-  return BINFO_NEW_VTABLE_MARKED (binfo) ? binfo : NULL_TREE; 
+  struct vbase_info *vi = (struct vbase_info *) data;
+
+  return BINFO_NEW_VTABLE_MARKED (binfo, vi->type) ? binfo : NULL_TREE; 
 }
 
 static tree
 unmarked_new_vtablep (binfo, data) 
      tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+     void *data;
 { 
-  return !BINFO_NEW_VTABLE_MARKED (binfo) ? binfo : NULL_TREE; 
+  struct vbase_info *vi = (struct vbase_info *) data;
+
+  return !BINFO_NEW_VTABLE_MARKED (binfo, vi->type) ? binfo : NULL_TREE; 
 }
 
 static tree
@@ -2614,31 +2627,7 @@ dfs_vtable_path_unmark (binfo, data)
   return NULL_TREE;
 }
 
-#if 0
-static void
-dfs_mark_vtable_path (binfo) tree binfo;
-{ SET_BINFO_VTABLE_PATH_MARKED (binfo); }
-
-static void
-dfs_mark_new_vtable (binfo) tree binfo;
-{ SET_BINFO_NEW_VTABLE_MARKED (binfo); }
-
-static void
-dfs_unmark_new_vtable (binfo) tree binfo;
-{ CLEAR_BINFO_NEW_VTABLE_MARKED (binfo); }
-
-static void
-dfs_clear_search_slot (binfo) tree binfo;
-{ CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (binfo)) = 0; }
-#endif
 
-struct vbase_info 
-{
-  tree decl_ptr;
-  tree inits;
-  tree vbase_types;
-};
-
 /*  Attach to the type of the virtual base class, the pointer to the
     virtual base class.  */
 
@@ -2668,7 +2657,7 @@ dfs_find_vbases (binfo, data)
 	}
     }
   SET_BINFO_VTABLE_PATH_MARKED (binfo);
-  SET_BINFO_NEW_VTABLE_MARKED (binfo);
+  SET_BINFO_NEW_VTABLE_MARKED (binfo, vi->type);
 
   return NULL_TREE;
 }
@@ -2737,12 +2726,14 @@ dfs_init_vbase_pointers (binfo, data)
 static tree
 dfs_clear_vbase_slots (binfo, data)
      tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+     void *data;
 {
   tree type = BINFO_TYPE (binfo);
+  struct vbase_info *vi = (struct vbase_info *) data;
+
   CLASSTYPE_SEARCH_SLOT (type) = 0;
   CLEAR_BINFO_VTABLE_PATH_MARKED (binfo);
-  CLEAR_BINFO_NEW_VTABLE_MARKED (binfo);
+  CLEAR_BINFO_NEW_VTABLE_MARKED (binfo, vi->type);
   return NULL_TREE;
 }
 
@@ -2760,6 +2751,7 @@ init_vbase_pointers (type, decl_ptr)
 
       /* Find all the virtual base classes, marking them for later
 	 initialization.  */
+      vi.type = type;
       vi.decl_ptr = decl_ptr;
       vi.vbase_types = CLASSTYPE_VBASECLASSES (type);
       vi.inits = NULL_TREE;
@@ -2773,7 +2765,7 @@ init_vbase_pointers (type, decl_ptr)
 		     marked_vtable_pathp,
 		     &vi);
 
-      dfs_walk (binfo, dfs_clear_vbase_slots, marked_new_vtablep, 0);
+      dfs_walk (binfo, dfs_clear_vbase_slots, marked_new_vtablep, &vi);
       flag_this_is_variable = old_flag;
       return vi.inits;
     }
@@ -3088,12 +3080,13 @@ expand_indirect_vtbls_init (binfo, decl_ptr)
     {
       tree vbases = CLASSTYPE_VBASECLASSES (type);
       struct vbase_info vi;
+      vi.type = type;
       vi.decl_ptr = decl_ptr;
       vi.vbase_types = vbases;
 
       dfs_walk (binfo, dfs_find_vbases, unmarked_new_vtablep, &vi);
       fixup_all_virtual_upcast_offsets (type, vi.decl_ptr);
-      dfs_walk (binfo, dfs_clear_vbase_slots, marked_new_vtablep, 0);
+      dfs_walk (binfo, dfs_clear_vbase_slots, marked_new_vtablep, &vi);
     }
 }
 
