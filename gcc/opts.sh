@@ -100,21 +100,43 @@ ${AWK} '
 	print "const unsigned int cl_options_count = N_OPTS;\n" >> c_file
 	print "const struct cl_option cl_options[] =\n{" >> c_file
 
+	for (i = 0; i < n_opts; i++)
+	    back_chain[i] = "N_OPTS";
+
 	for (i = 0; i < n_opts; i++) {
+	    # Combine the flags of identical switches.  Switches
+	    # appear many times if they are handled by many front
+	    # ends, for example.
 	    while( i + 1 != n_opts && opts[i] == opts[i + 1] ) {
 		flags[i + 1] = flags[i] " " flags[i + 1];
 		i++;
 	    }
 
+	    len = length (opts[i]);
 	    enum = "OPT_" opts[i]
-	    gsub( "[^A-Za-z0-9]", "_", enum)
+	    gsub ("[^A-Za-z0-9]", "_", enum)
+
+	    # If this switch takes joined arguments, back-chain all
+	    # subsequent switches to it for which it is a prefix.  If
+	    # a later switch S is a longer prefix of a switch T, T
+	    # will be back-chained to S in a later iteration of this
+	    # for() loop, which is what we want.
+	    if (flags[i] ~ "Joined") {
+		for (j = i + 1; j < n_opts; j++) {
+		    if (substr (opts[j], 1, len) != opts[i])
+			break;
+		    back_chain[j] = enum;
+		}
+	    }
+
 	    s = substr("                                  ", length (opts[i]))
 	    if (i + 1 == n_opts)
 		comma = ""
 
 	    printf("  %s,%s/* -%s */\n", enum, s, opts[i]) >> h_file
-	    printf("  { \"%s\", %u, %s }%s\n", opts[i], \
-		length(opts[i]), switch_flags(flags[i]), comma) >> c_file
+	    printf("  { \"%s\", (unsigned short) %s, %u,\n\t%s }%s\n",
+		   opts[i], back_chain[i], len, switch_flags(flags[i]),
+		   comma) >> c_file
 	}
 
 	print "  N_OPTS\n};"				>> h_file
