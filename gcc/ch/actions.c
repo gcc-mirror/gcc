@@ -1706,11 +1706,7 @@ chill_expand_assignment (lhs, modifycode, rhs)
       tree from_pos = save_expr (TREE_OPERAND (lhs, 1));
       tree array = TREE_OPERAND (lhs, 0);
       tree domain = TYPE_DOMAIN (TREE_TYPE (array));
-      tree array_length = size_binop (PLUS_EXPR,
-				    size_binop (MINUS_EXPR,
-						TYPE_MAX_VALUE (domain),
-						TYPE_MIN_VALUE (domain)),
-				    integer_one_node);
+      tree array_length = powersetlen (array);
       tree filename = force_addr_of (get_chill_filename());
       expand_expr_stmt (
 	build_chill_function_call (lookup_name (
