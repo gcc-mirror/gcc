@@ -400,6 +400,10 @@ struct tree_common
 
 #define POINTER_TYPE_P(TYPE) \
   (TREE_CODE (TYPE) == POINTER_TYPE || TREE_CODE (TYPE) == REFERENCE_TYPE)
+
+/* Nonzero if TYPE represents a type.  */
+
+#define TYPE_P(TYPE)	(TREE_CODE_CLASS (TREE_CODE (TYPE)) == 't')
 
 /* Define many boolean fields that all tree nodes have.  */
 
