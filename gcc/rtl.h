@@ -888,6 +888,12 @@ extern char *note_insn_name[];
 /* For a NOTE_INSN_LIVE note, the original basic block number.  */
 #define RANGE_LIVE_ORIG_BLOCK(INSN) (XINT (INSN, 1))
 
+/* Nonzero if we need to distinguish between the return value of this function
+   and the return value of a function called by this function.  This helps
+   integrate.c.
+   This is 1 until after the rtl generation pass.  */
+extern int rtx_equal_function_value_matters;
+
 /* Generally useful functions.  */
 
 /* The following functions accept a wide integer argument.  Rather than

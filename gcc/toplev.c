@@ -137,8 +137,6 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define DIR_SEPARATOR '/'
 #endif
 
-extern int rtx_equal_function_value_matters;
-
 #if ! (defined (VMS) || defined (OS2))
 extern char **environ;
 #endif

@@ -695,8 +695,6 @@ static void check_fold_consts	PROTO((PTR));
 static struct cse_reg_info* get_cse_reg_info PROTO((int));
 static void free_cse_reg_info   PROTO((splay_tree_value));
 static void flush_hash_table	PROTO((void));
-
-extern int rtx_equal_function_value_matters;
 
 /* Dump the expressions in the equivalence class indicated by CLASSP.
    This function is used only for debugging.  */
