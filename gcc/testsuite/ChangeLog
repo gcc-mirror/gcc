@@ -1,3 +1,9 @@
+2005-01-01  Geoffrey Keating  <geoffk@geoffk.org>
+
+	* g++.old-deja/g++.abi/cxa_vec.C: Add -flat_namespace on Darwin
+	6 and 7.
+	* g++.old-deja/g++.brendan/new3.C: Likewise.
+
 2005-01-01  Steven Bosscher  <stevenb@suse.de>
 
 	* gcc.dg/20041231-1.C: New test.
