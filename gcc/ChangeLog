@@ -1,3 +1,9 @@
+2000-12-27  Chandrakala Chavva  <cchavva@redhat.com>
+
+	* calls.c (store_one_arg):  If parm is passed both in stack and in
+        register and offset is greater than reg_parm_stack_space, split
+        the offset and call emit_push_insn(). 
+
 2000-12-27  Nick Clifton  <nickc@redhat.com>
 
 	* ifcvt.c (noce_emit_store_flag): Handle jump insns that are
