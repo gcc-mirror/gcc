@@ -512,11 +512,14 @@ dump_type_prefix (tree t, int flags)
       if (TREE_CODE (t) == OFFSET_TYPE)	/* pmfs deal with this in d_t_p */
 	{
           pp_maybe_space (cxx_pp);
+          if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+             pp_cxx_left_paren (cxx_pp);
 	  dump_type (TYPE_OFFSET_BASETYPE (t), flags);
 	  pp_cxx_colon_colon (cxx_pp);
 	}
       pp_cxx_star (cxx_pp);
       pp_cxx_cv_qualifier_seq (cxx_pp, t);
+      pp_base (cxx_pp)->padding = pp_before;
       break;
 
       /* Can only be reached through function pointer -- this would not be
@@ -613,6 +616,7 @@ dump_type_suffix (tree t, int flags)
       }
 
     case ARRAY_TYPE:
+      pp_maybe_space (cxx_pp);
       pp_cxx_left_bracket (cxx_pp);
       if (TYPE_DOMAIN (t))
 	{

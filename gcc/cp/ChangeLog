@@ -1,3 +1,12 @@
+2004-06-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR c++/14123	
+	* cxx-pretty-print.c (pp_cxx_ptr_operator): Properly put
+	paranthesis in case of pointers to array members.
+	* error.c (dump_type_prefix): Likewise.
+	(dump_type_suffix): Maybe issue a whitespace when printing
+	ARRAY_TYPE. 
+
 2004-06-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16193
