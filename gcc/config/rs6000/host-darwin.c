@@ -38,11 +38,11 @@ extern int sigaltstack(const stack_t *, stack_t *);
 #undef HOST_HOOKS_EXTRA_SIGNALS
 #define HOST_HOOKS_EXTRA_SIGNALS darwin_rs6000_extra_signals
 
-/* On Darwin/powerpc, a stack fault can be detected as a SIGSEGV that
-   faulted on an instruction that's either
-   or
-   stwux %r1,xxx,%r1
-*/
+/* On Darwin/powerpc, hitting the stack limit turns into a SIGSEGV.
+   This code detects the difference between hitting the stack limit and
+   a true wild pointer dereference by looking at the instruction that
+   faulted; only a few kinds of instruction are used to access below
+   the previous bottom of the stack.  */
 
 static void
 segv_crash_handler (sig)
