@@ -256,10 +256,10 @@ static void make_return_insns	PROTO((rtx));
    CALL_INSNs.  */
 
 static void
-mark_referenced_resources (x, res, include_called_routine)
+mark_referenced_resources (x, res, include_delayed_effects)
      register rtx x;
      register struct resources *res;
-     register int include_called_routine;
+     register int include_delayed_effects;
 {
   register enum rtx_code code = GET_CODE (x);
   register int i, j;
@@ -354,7 +354,7 @@ mark_referenced_resources (x, res, include_called_routine)
       return;
 
     case CALL_INSN:
-      if (include_called_routine)
+      if (include_delayed_effects)
 	{
 	  /* A CALL references memory, the frame pointer if it exists, the
 	     stack pointer, any global registers and any registers given in
@@ -411,8 +411,15 @@ mark_referenced_resources (x, res, include_called_routine)
 
     case INSN:
     case JUMP_INSN:
+
+#ifdef INSN_REFERENCES_ARE_DELAYED
+      if (! include_delayed_effects
+	  && INSN_REFERENCES_ARE_DELAYED (x))
+	return;
+#endif
+
       /* No special processing, just speed up.  */
-      mark_referenced_resources (PATTERN (x), res, include_called_routine);
+      mark_referenced_resources (PATTERN (x), res, include_delayed_effects);
       return;
     }
 
@@ -422,13 +429,13 @@ mark_referenced_resources (x, res, include_called_routine)
     switch (*format_ptr++)
       {
       case 'e':
-	mark_referenced_resources (XEXP (x, i), res, include_called_routine);
+	mark_referenced_resources (XEXP (x, i), res, include_delayed_effects);
 	break;
 
       case 'E':
 	for (j = 0; j < XVECLEN (x, i); j++)
 	  mark_referenced_resources (XVECEXP (x, i, j), res,
-				     include_called_routine);
+				     include_delayed_effects);
 	break;
       }
 }
@@ -447,11 +454,11 @@ mark_referenced_resources (x, res, include_called_routine)
    our computation and thus may be placed in a delay slot.   */
 
 static void
-mark_set_resources (x, res, in_dest, include_called_routine)
+mark_set_resources (x, res, in_dest, include_delayed_effects)
      register rtx x;
      register struct resources *res;
      int in_dest;
-     int include_called_routine;
+     int include_delayed_effects;
 {
   register enum rtx_code code;
   register int i, j;
@@ -486,7 +493,7 @@ mark_set_resources (x, res, in_dest, include_called_routine)
 	 that aren't saved across calls, global registers and anything
 	 explicitly CLOBBERed immediately after the CALL_INSN.  */
 
-      if (include_called_routine)
+      if (include_delayed_effects)
 	{
 	  rtx next = NEXT_INSN (x);
 
@@ -513,6 +520,12 @@ mark_set_resources (x, res, in_dest, include_called_routine)
 	/* An insn consisting of just a CLOBBER (or USE) is just for flow
 	   and doesn't actually do anything, so we ignore it.  */
 
+#ifdef INSN_SETS_ARE_DELAYED
+      if (! include_delayed_effects
+	  && INSN_SETS_ARE_DELAYED (x))
+	return;
+#endif
+
       x = PATTERN (x);
       if (GET_CODE (x) != USE && GET_CODE (x) != CLOBBER)
 	goto restart;
@@ -524,7 +537,7 @@ mark_set_resources (x, res, in_dest, include_called_routine)
 	 effects of the calling routine.  */
 
       mark_set_resources (SET_DEST (x), res,
-			  (include_called_routine
+			  (include_delayed_effects
 			   || GET_CODE (SET_SRC (x)) != CALL),
 			  0);
 
@@ -540,7 +553,7 @@ mark_set_resources (x, res, in_dest, include_called_routine)
 	if (! (INSN_ANNULLED_BRANCH_P (XVECEXP (x, 0, 0))
 	       && INSN_FROM_TARGET_P (XVECEXP (x, 0, i))))
 	  mark_set_resources (XVECEXP (x, 0, i), res, 0,
-			      include_called_routine);
+			      include_delayed_effects);
       return;
 
     case POST_INC:
@@ -579,13 +592,13 @@ mark_set_resources (x, res, in_dest, include_called_routine)
     switch (*format_ptr++)
       {
       case 'e':
-	mark_set_resources (XEXP (x, i), res, in_dest, include_called_routine);
+	mark_set_resources (XEXP (x, i), res, in_dest, include_delayed_effects);
 	break;
 
       case 'E':
 	for (j = 0; j < XVECLEN (x, i); j++)
 	  mark_set_resources (XVECEXP (x, i, j), res, in_dest,
-			      include_called_routine);
+			      include_delayed_effects);
 	break;
       }
 }
@@ -662,15 +675,15 @@ resource_conflicts_p (res1, res2)
    a large block of complex code.  */
 
 static int
-insn_references_resource_p (insn, res, include_called_routine)
+insn_references_resource_p (insn, res, include_delayed_effects)
      register rtx insn;
      register struct resources *res;
-     int include_called_routine;
+     int include_delayed_effects;
 {
   struct resources insn_res;
 
   CLEAR_RESOURCE (&insn_res);
-  mark_referenced_resources (insn, &insn_res, include_called_routine);
+  mark_referenced_resources (insn, &insn_res, include_delayed_effects);
   return resource_conflicts_p (&insn_res, res);
 }
 
@@ -680,15 +693,15 @@ insn_references_resource_p (insn, res, include_called_routine)
    in front of mark_set_resources for details.  */
 
 static int
-insn_sets_resource_p (insn, res, include_called_routine)
+insn_sets_resource_p (insn, res, include_delayed_effects)
      register rtx insn;
      register struct resources *res;
-     int include_called_routine;
+     int include_delayed_effects;
 {
   struct resources insn_sets;
 
   CLEAR_RESOURCE (&insn_sets);
-  mark_set_resources (insn, &insn_sets, 0, include_called_routine);
+  mark_set_resources (insn, &insn_sets, 0, include_delayed_effects);
   return resource_conflicts_p (&insn_sets, res);
 }
 
@@ -2558,8 +2571,8 @@ fill_simple_delay_slots (first, non_jumps_p)
 	    }
 	  else 
 	    {
-	      mark_set_resources (insn, &set, 0, 0);
-	      mark_referenced_resources (insn, &needed, 0);
+	      mark_set_resources (insn, &set, 0, 1);
+	      mark_referenced_resources (insn, &needed, 1);
 	      if (GET_CODE (insn) == JUMP_INSN)
 		{
 		  /* Get our target and show how many more uses we want to
@@ -3751,7 +3764,7 @@ dbr_schedule (first, file)
   if (current_function_return_rtx != 0
       && GET_CODE (current_function_return_rtx) == REG)
     mark_referenced_resources (current_function_return_rtx,
-			       &end_of_function_needs, 0);
+			       &end_of_function_needs, 1);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (global_regs[i])
@@ -3777,7 +3790,7 @@ dbr_schedule (first, file)
   start_of_epilogue_needs = end_of_function_needs;
 
   while (epilogue_insn = next_nonnote_insn (epilogue_insn))
-    mark_set_resources (epilogue_insn, &end_of_function_needs, 0, 0);
+    mark_set_resources (epilogue_insn, &end_of_function_needs, 0, 1);
 
   /* Show we haven't computed an end-of-function label yet.  */
   end_of_function_label = 0;
