@@ -1,5 +1,21 @@
 2004-07-25  Bernardo Innocenti  <bernie@develer.com>
 
+	* basic-block.h (reorder_block_def): Rename to reorder_block_def_p.
+	* c-common.c: Add missing casts from void * to other types.
+	* c-decl.c: Likewise.
+	* c-format.c: Likewise.
+	* c-lex.c: Likewise.
+	* c-pragma.c: Likewise.
+	* c-typeck.c: Likewise.
+	* defaults.h: Likewise.
+	* genconstants.c: Likewise.
+	* gengtype-lex.l: Likewise.
+	* genmodes.c: Likewise.
+	* read-rtl.c: Likewise.
+	* rtl.c: Likewise.
+
+2004-07-25  Bernardo Innocenti  <bernie@develer.com>
+
 	* bitmap.c: Use type-safe memory allocation macros from libiberty.
 	* c-common.c: Likewise.
 	* c-decl.c: Likewise.

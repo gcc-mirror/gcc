@@ -300,7 +300,7 @@ typedef struct reorder_block_def
 
   /* These fields are used by bb-reorder pass.  */
   int visited;
-} *reorder_block_def;
+} *reorder_block_def_p;
 
 #define BB_FREQ_MAX 10000
 

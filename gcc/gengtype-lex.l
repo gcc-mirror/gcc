@@ -85,10 +85,11 @@ ITYPE	{IWORD}({WS}{IWORD})*
       is_pointer = 1;
   for (namelen = 1; ISIDNUM (namestart[namelen]); namelen++)
     ;
-  t = find_structure (xmemdup (tagstart, taglen, taglen+1), union_p);
+  t = find_structure ((const char *) xmemdup (tagstart, taglen, taglen+1),
+		      union_p);
   if (is_pointer)
     t = create_pointer (t);
-  namestart = xmemdup (namestart, namelen, namelen+1);
+  namestart = (char *) xmemdup (namestart, namelen, namelen+1);
 #ifdef USE_MAPPED_LOCATION
   /* temporary kludge - gentype doesn't handle cpp conditionals */
   if (strcmp (namestart, "location_t") != 0
@@ -115,13 +116,14 @@ ITYPE	{IWORD}({WS}{IWORD})*
        ISSPACE(*typestart);
        typestart++)
     ;
-  for (typelen = namestart - typestart; 
-       ISSPACE(typestart[typelen-1]); 
+  for (typelen = namestart - typestart;
+       ISSPACE (typestart[typelen-1]);
        typelen--)
     ;
 
   t = create_scalar_type (typestart, typelen);
-  do_typedef (xmemdup (namestart, namelen, namelen+1), t, &lexer_line);
+  do_typedef ((const char *) xmemdup (namestart, namelen, namelen+1), t,
+	      &lexer_line);
   update_lineno (yytext, yyleng);
 }
 
@@ -137,7 +139,8 @@ ITYPE	{IWORD}({WS}{IWORD})*
   namestart -= namelen - 1;
 
   t = create_scalar_type ("function type", sizeof ("function type")-1);
-  do_typedef (xmemdup (namestart, namelen, namelen+1), t, &lexer_line);
+  do_typedef ((const char *) xmemdup (namestart, namelen, namelen+1), t,
+	      &lexer_line);
   update_lineno (yytext, yyleng);
 }
 
@@ -153,7 +156,8 @@ ITYPE	{IWORD}({WS}{IWORD})*
   namestart -= namelen - 1;
 
   t = create_scalar_type ("function type", sizeof ("function type")-1);
-  do_typedef (xmemdup (namestart, namelen, namelen+1), t, &lexer_line);
+  do_typedef ((const char *) xmemdup (namestart, namelen, namelen+1), t,
+	      &lexer_line);
   update_lineno (yytext, yyleng);
 }
 
@@ -169,7 +173,8 @@ ITYPE	{IWORD}({WS}{IWORD})*
   namestart -= namelen - 1;
 
   t = create_scalar_type ("function type", sizeof ("function type")-1);
-  do_typedef (xmemdup (namestart, namelen, namelen+1), t, &lexer_line);
+  do_typedef ((const char *) xmemdup (namestart, namelen, namelen+1), t,
+	      &lexer_line);
   update_lineno (yytext, yyleng);
 }
 
@@ -185,7 +190,8 @@ ITYPE	{IWORD}({WS}{IWORD})*
   namestart -= namelen - 1;
 
   t = create_scalar_type ("function type", sizeof ("function type")-1);
-  do_typedef (xmemdup (namestart, namelen, namelen+1), t, &lexer_line);
+  do_typedef ((const char *) xmemdup (namestart, namelen, namelen+1), t,
+	      &lexer_line);
   update_lineno (yytext, yyleng);
 }
 
@@ -211,7 +217,9 @@ ITYPE	{IWORD}({WS}{IWORD})*
   for (taglen = 1; ISIDNUM (tagstart[taglen]); taglen++)
     ;
 
-  yylval.t = find_structure (xmemdup (tagstart, taglen, taglen + 1), union_p);
+  yylval.t = find_structure ((const char *) xmemdup (tagstart, taglen,
+						     taglen + 1),
+			     union_p);
   BEGIN(in_struct);
   update_lineno (yytext, yyleng);
   return typedef_p ? ENT_TYPEDEF_STRUCT : ENT_STRUCT;
@@ -251,7 +259,7 @@ ITYPE	{IWORD}({WS}{IWORD})*
   push_macro_expansion (macro, macro_len, arg, arg_len);
 
   /* Create the struct and typedef.  */
-  ptr = xmemdup ("VEC_", 4, 4 + arg_len + 1);
+  ptr = (char *) xmemdup ("VEC_", 4, 4 + arg_len + 1);
   memcpy (&ptr[4], arg, arg_len);
   ptr[4 + arg_len] = 0;
   t = find_structure (ptr, 0);
@@ -276,8 +284,8 @@ ITYPE	{IWORD}({WS}{IWORD})*
 "ptr_alias"/[^[:alnum:]_]	{ return ALIAS; }
 "nested_ptr"/[^[:alnum:]_]	{ return NESTED_PTR; }
 [0-9]+				{ return NUM; }
-"param"[0-9]*"_is"/[^[:alnum:]_]		{ 
-  yylval.s = xmemdup (yytext, yyleng, yyleng+1);
+"param"[0-9]*"_is"/[^[:alnum:]_]		{
+  yylval.s = (const char *) xmemdup (yytext, yyleng, yyleng+1);
   return PARAM_IS;
 }
 
@@ -308,7 +316,7 @@ ITYPE	{IWORD}({WS}{IWORD})*
   while (*ptr != ')' && !ISSPACE (*ptr))
     ptr++;
   arg_len = ptr - arg;
-  ptr = xmemdup (macro, macro_len, macro_len + arg_len + 2);
+  ptr = (char *) xmemdup (macro, macro_len, macro_len + arg_len + 2);
   ptr[macro_len] = '_';
   memcpy (&ptr[macro_len+1], arg, arg_len);
   yylval.s = ptr;
@@ -316,24 +324,24 @@ ITYPE	{IWORD}({WS}{IWORD})*
 }
 
 {ID}/[^[:alnum:]_]		{
-  yylval.s = xmemdup (yytext, yyleng, yyleng+1);
+  yylval.s = (const char *) xmemdup (yytext, yyleng, yyleng+1);
   return ID;
 }
 
 \"([^"\\]|\\.)*\"		{
-  yylval.s = xmemdup (yytext+1, yyleng-2, yyleng-1);
+  yylval.s = (const char *) xmemdup (yytext+1, yyleng-2, yyleng-1);
   return STRING;
 }
 "["[^\[\]]*"]"			{
-  yylval.s = xmemdup (yytext+1, yyleng-2, yyleng-1);
+  yylval.s = (const char *) xmemdup (yytext+1, yyleng-2, yyleng-1);
   return ARRAY;
 }
 ^"%"{ID}			{
-  yylval.s = xmemdup (yytext+1, yyleng-1, yyleng);
+  yylval.s = (const char *) xmemdup (yytext+1, yyleng-1, yyleng);
   return PERCENT_ID;
 }
 "'"("\\".|[^\\])"'"		{
-  yylval.s = xmemdup (yytext+1, yyleng-2, yyleng);
+  yylval.s = (const char *) xmemdup (yytext+1, yyleng-2, yyleng);
   return CHAR;
 }
 

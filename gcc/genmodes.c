@@ -703,7 +703,7 @@ calc_wider_mode (void)
 
   /* Allocate max_n_modes + 1 entries to leave room for the extra null
      pointer assigned after the qsort call below.  */
-  sortbuf = alloca ((max_n_modes + 1) * sizeof (struct mode_data *));
+  sortbuf = (struct mode_data **) alloca ((max_n_modes + 1) * sizeof (struct mode_data *));
 
   for (c = 0; c < MAX_MODE_CLASS; c++)
     {
