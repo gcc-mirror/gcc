@@ -1,3 +1,11 @@
+2000-06-24  Marc Espie <espie@cvs.openbsd.org>
+
+	* collect2.c (resolve_lib_name): Move '/' check to more rational place.
+
+2000-06-24  Dirk Duellmann  <Dirk.Duellmann@cern.ch>
+
+	* ginclude/stddef.h (NULL): define for non-gnu C++ parsers as 0.
+
 2000-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* stmt.c (expand_decl_cleanup): Emit a dummy insn after
