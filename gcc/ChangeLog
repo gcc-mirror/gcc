@@ -1,3 +1,10 @@
+2002-04-19  Dan Nicolaescu  <dann@godzilla.ics.uci.edu>
+	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Specific, sparc-sun-solaris2*): Mention that
+	binutils 2.11.2 and higher generate smaller binaries than Sun's
+	native tools.
+
 2002-04-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/6352
