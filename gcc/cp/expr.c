@@ -239,9 +239,6 @@ cplus_expand_expr (exp, target, tmode, modifier)
 			   integer_one_node),
 	  TREE_OPERAND (exp, 1), 0), target, tmode, modifier);
 
-    case NEW_EXPR:
-      return expand_expr (build_new_1 (exp), target, tmode, modifier);
-
     case STMT_EXPR:
       {
 	tree rtl_expr = begin_stmt_expr ();

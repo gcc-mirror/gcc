@@ -1476,6 +1476,7 @@ dump_expr (t, nop)
 	dump_expr (TREE_OPERAND (t, 1), 0);
       break;
 
+    case INIT_EXPR:
     case MODIFY_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:

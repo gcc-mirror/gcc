@@ -28,8 +28,10 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "toplev.h"
 #include "ggc.h"
+#include "splay-tree.h"
 
 static tree bot_manip PROTO((tree));
+static tree bot_replace PROTO((tree *));
 static tree build_cplus_array_type_1 PROTO((tree, tree));
 static void list_hash_add PROTO((int, tree));
 static int list_hash PROTO((tree, tree, tree));
@@ -37,7 +39,7 @@ static tree list_hash_lookup PROTO((int, tree, tree, tree));
 static void propagate_binfo_offsets PROTO((tree, tree));
 static int avoid_overlap PROTO((tree, tree));
 static cp_lvalue_kind lvalue_p_1 PROTO((tree, int));
-static tree no_linkage_helper PROTO((tree));
+static tree no_linkage_helper PROTO((tree *));
 static tree build_srcloc PROTO((char *, int));
 static void mark_list_hash PROTO ((void *));
 
@@ -1529,19 +1531,20 @@ copy_template_template_parm (t)
    non-null, return that value.  */
 
 tree
-search_tree (t, func)
-     tree t;
-     tree (*func) PROTO((tree));
+search_tree (tp, func)
+     tree *tp;
+     tree (*func) PROTO((tree *));
 {
-#define TRY(ARG) if (tmp=search_tree (ARG, func), tmp != NULL_TREE) return tmp
+#define TRY(ARG) if (tmp=search_tree (&ARG, func), tmp != NULL_TREE) return tmp
 
+  tree t = *tp;
   tree tmp;
   enum tree_code code; 
-
-  if (t == NULL_TREE)
-    return t;
   
-  tmp = func (t);
+  if (t == NULL_TREE)
+    return NULL_TREE;
+  
+  tmp = func (tp);
   if (tmp)
     return tmp;
 
@@ -1618,6 +1621,7 @@ search_tree (t, func)
     case TARGET_EXPR:
     case AGGR_INIT_EXPR:
     case NEW_EXPR:
+    case VEC_INIT_EXPR:
       TRY (TREE_OPERAND (t, 0));
       TRY (TREE_OPERAND (t, 1));
       TRY (TREE_OPERAND (t, 2));
@@ -1737,9 +1741,11 @@ search_tree (t, func)
 /* Passed to search_tree.  Checks for the use of types with no linkage.  */
 
 static tree
-no_linkage_helper (t)
-     tree t;
+no_linkage_helper (tp)
+     tree *tp;
 {
+  tree t = *tp;
+
   if (TYPE_P (t)
       && (IS_AGGR_TYPE (t) || TREE_CODE (t) == ENUMERAL_TYPE)
       && (decl_function_context (TYPE_MAIN_DECL (t))
@@ -1760,7 +1766,7 @@ no_linkage_check (t)
   if (processing_template_decl)
     return NULL_TREE;
 
-  t = search_tree (t, no_linkage_helper);
+  t = search_tree (&t, no_linkage_helper);
   if (t != error_mark_node)
     return t;
   return NULL_TREE;
@@ -1986,6 +1992,7 @@ mapcar (t, func)
       return t;
 
     case NEW_EXPR:
+    case VEC_INIT_EXPR:
       t = copy_node (t);
       TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
       TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
@@ -2093,8 +2100,19 @@ array_type_nelts_total (type)
   return sz;
 }
 
-static
-tree
+/* When we parse a default argument expression, we may create
+   temporary variables via TARGET_EXPRs.  When we actually use the
+   default-argument expression, we make a copy of the expression, but
+   we must relpace the temporaries with appropriate local versions.  */
+
+/* A map from VAR_DECLs declared in TARGET_EXPRs in a default argument
+   to corresponding "instantiations" of those variables.  */
+static splay_tree target_remap;
+static int target_remap_count;
+
+/* Called from break_out_target_exprs via mapcar.  */
+
+static tree
 bot_manip (t)
      tree t;
 {
@@ -2102,16 +2120,26 @@ bot_manip (t)
     return t;
   else if (TREE_CODE (t) == TARGET_EXPR)
     {
+      tree u;
+
       if (TREE_CODE (TREE_OPERAND (t, 1)) == AGGR_INIT_EXPR)
 	{
 	  mark_used (TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (t, 1), 0), 0));
-	  return build_cplus_new
+	  u = build_cplus_new
 	    (TREE_TYPE (t), break_out_target_exprs (TREE_OPERAND (t, 1)));
 	}
-      t = copy_node (t);
-      TREE_OPERAND (t, 0) = build (VAR_DECL, TREE_TYPE (t));
-      layout_decl (TREE_OPERAND (t, 0), 0);
-      return t;
+      else 
+	{
+	  u = copy_node (t);
+	  TREE_OPERAND (u, 0) = build (VAR_DECL, TREE_TYPE (t));
+	  layout_decl (TREE_OPERAND (u, 0), 0);
+	}
+
+      /* Map the old variable to the new one.  */
+      splay_tree_insert (target_remap, 
+			 (splay_tree_key) TREE_OPERAND (t, 0), 
+			 (splay_tree_value) TREE_OPERAND (u, 0));
+      return u;
     }
   else if (TREE_CODE (t) == CALL_EXPR)
     mark_used (TREE_OPERAND (TREE_OPERAND (t, 0), 0));
@@ -2119,13 +2147,43 @@ bot_manip (t)
   return NULL_TREE;
 }
   
+/* Replace all remapped VAR_DECLs in T with their new equivalents.  */
+
+static tree
+bot_replace (t)
+     tree *t;
+{
+  if (TREE_CODE (*t) == VAR_DECL)
+    {
+      splay_tree_node n = splay_tree_lookup (target_remap,
+					     (splay_tree_key) *t);
+      if (n)
+	*t = (tree) n->value;
+    }
+
+  return NULL_TREE;
+}
+	
 /* Actually, we'll just clean out the target exprs for the moment.  */
 
 tree
 break_out_target_exprs (t)
      tree t;
 {
-  return mapcar (t, bot_manip);
+  if (!target_remap_count++)
+    target_remap = splay_tree_new (splay_tree_compare_pointers, 
+				   /*splay_tree_delete_key_fn=*/NULL, 
+				   /*splay_tree_delete_value_fn=*/NULL);
+  t = mapcar (t, bot_manip);
+  search_tree (&t, bot_replace);
+
+  if (!--target_remap_count)
+    {
+      splay_tree_delete (target_remap);
+      target_remap = NULL;
+    }
+
+  return t;
 }
 
 /* Obstack used for allocating nodes in template function and variable

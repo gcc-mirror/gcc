@@ -2065,6 +2065,9 @@ build_new (placement, decl, init, use_global_new)
   rval = build (NEW_EXPR, build_pointer_type (type), placement, t, init);
   NEW_EXPR_USE_GLOBAL (rval) = use_global_new;
   TREE_SIDE_EFFECTS (rval) = 1;
+  rval = build_new_1 (rval);
+  if (rval == error_mark_node)
+    return error_mark_node;
 
   /* Wrap it in a NOP_EXPR so warn_if_unused_value doesn't complain.  */
   rval = build1 (NOP_EXPR, TREE_TYPE (rval), rval);
@@ -2188,11 +2191,7 @@ build_new_1 (exp)
 		      && TREE_TYPE (TREE_VALUE (placement)) == ptr_type_node));
 
   if (use_cookie)
-    {
-      tree extra = BI_header_size;
-
-      size = size_binop (PLUS_EXPR, size, extra);
-    }
+    size = size_binop (PLUS_EXPR, size, BI_header_size);
 
   if (has_array)
     {
@@ -2378,6 +2377,13 @@ build_new_1 (exp)
 	  rval = newrval;
 	  TREE_HAS_CONSTRUCTOR (rval) = 1;
 	}
+      else if (current_function_decl)
+	rval = (build_vec_init
+		(NULL_TREE, 
+		 save_expr (rval),
+		 build_binary_op (MINUS_EXPR, nelts, integer_one_node),
+		 init,
+		 /*from_array=*/0));
       else
 	rval = build (VEC_INIT_EXPR, TREE_TYPE (rval),
 		      save_expr (rval), init, nelts);

@@ -408,6 +408,7 @@ enum cp_tree_index
     CPTI_WCHAR_DECL,
     CPTI_VTABLE_ENTRY_TYPE,
     CPTI_DELTA_TYPE,
+    CPTI_CLEANUP_TYPE,
 
     CPTI_TP_DESC_TYPE,
     CPTI_ACCESS_MODE_TYPE,
@@ -559,6 +560,9 @@ extern tree cp_global_trees[CPTI_MAX];
 
 /* The declaration for `std::atexit'.  */
 #define atexit_node                     cp_global_trees[CPTI_ATEXIT]
+
+/* The type of a destructor.  */
+#define cleanup_type                    cp_global_trees[CPTI_CLEANUP_TYPE]
 
 /* Global state.  */
 
@@ -3855,7 +3859,7 @@ extern void push_permanent_obstack              PROTO((void));
 extern tree build_dummy_object			PROTO((tree));
 extern tree maybe_dummy_object			PROTO((tree, tree *));
 extern int is_dummy_object			PROTO((tree));
-extern tree search_tree                         PROTO((tree, tree (*)(tree)));
+extern tree search_tree                         PROTO((tree *, tree (*)(tree *)));
 extern int cp_valid_lang_attribute		PROTO((tree, tree, tree, tree));
 extern tree make_ptrmem_cst                     PROTO((tree, tree));
 extern tree cp_build_qualified_type_real        PROTO((tree, int, int));

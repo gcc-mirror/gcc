@@ -1,3 +1,34 @@
+1999-09-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (CPTI_CLEANUP_TYPE): New macro.
+	(cleanup_type): Likewise.
+	(search_tree): Change prototype.
+	* decl.c (local_variable_p): Adjust for new interface to
+	search_tree.
+	(check_default_argument): Likewise.
+	* error.c (dump_expr): Handle INIT_EXPR.
+	* except.c (expand_throw): Don't make cleanup_type a local static.
+	* expr.c (cplus_expand_expr): Don't handle NEW_EXPR.
+	* init.c (build_new): Call build_new_1 directly, rather than
+	building a NEW_EXPR.
+	(build_new_1): Tidy.  Don't build a VEC_INIT_EXPR except when
+	processing file-scope initializers.
+	* lex.c (init_parse): Add an opname_tab entry for INIT_EXPR.
+	* tree.c: Include splay-tree.h
+	(no_linkage_helper): Adjust for new interface to search_tree.
+	(search_tree): Pass around pointers to tree nodes, rather than the
+	nodes themselves.  Handle VEC_INIT_EXPR.
+	(no_linkage_check): Adjust for new interface to search_tree.
+	(mapcar): Handle VEC_INIT_EXPR.
+	(target_remap): New variable.
+	(bot_manip): Use it.
+	(bot_replace): New function.
+	(break_out_target_exprs): Use it to remap all variables used in a
+	default argument expression.
+	* typeck.c (build_modify_expr): Don't crash when outside a
+	function and presented with an INIT_EXPR assignment
+	* Makefile.in (tree.o): Depend on splay-tree.h.
+
 Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* decl.c (duplicate_decls): Use DECL_BUILT_IN_CLASS rather than
