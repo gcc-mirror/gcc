@@ -5068,14 +5068,16 @@ define_label (filename, line, name)
 {
   tree decl = lookup_label (name);
   struct named_label_list *ent;
+  register struct binding_level *p;
 
   for (ent = named_labels; ent; ent = ent->next)
     if (ent->label_decl == decl)
       break;
 
-  /* After labels, make any new cleanups go into their
+  /* After labels, make any new cleanups in the function go into their
      own new (temporary) binding contour.  */
-  current_binding_level->more_cleanups_ok = 0;
+  for (p = current_binding_level; !(p->parm_flag); p = p->level_chain)
+    p->more_cleanups_ok = 0;
 
   if (name == get_identifier ("wchar_t"))
     cp_pedwarn ("label named wchar_t");
@@ -5161,6 +5163,7 @@ finish_case_label (low_value, high_value)
      tree high_value;
 {
   tree cond;
+  register struct binding_level *p;
 
   if (! switch_stack)
     {
@@ -5194,9 +5197,10 @@ finish_case_label (low_value, high_value)
 
   check_switch_goto (switch_stack->level);
 
-  /* After labels, make any new cleanups go into their
+  /* After labels, make any new cleanups in the function go into their
      own new (temporary) binding contour.  */
-  current_binding_level->more_cleanups_ok = 0;
+  for (p = current_binding_level; !(p->parm_flag); p = p->level_chain)
+    p->more_cleanups_ok = 0;
   current_function_return_value = NULL_TREE;
 }
 
