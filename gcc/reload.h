@@ -1,5 +1,5 @@
 /* Communication between reload.c and reload1.c.
-   Copyright (C) 1987, 1991, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91, 92, 93, 94, 95, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -39,6 +39,8 @@ Boston, MA 02111-1307, USA.  */
 /* Maximum number of reloads we can need.  */
 #define MAX_RELOADS (2 * MAX_RECOG_OPERANDS * (MAX_REGS_PER_ADDRESS + 1))
 
+extern enum reg_class reload_address_base_reg_class;
+extern enum reg_class reload_address_index_reg_class;
 extern rtx reload_in[MAX_RELOADS];
 extern rtx reload_out[MAX_RELOADS];
 extern rtx reload_in_reg[MAX_RELOADS];
