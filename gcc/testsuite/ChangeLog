@@ -1,3 +1,7 @@
+2000-08-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-printf-2.c, gcc.dg/c99-printf-2.c: New tests.
+
 Sun Aug  6 11:41:51 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* lib/objc.exp (objc_target_compile): Set the ld_library_path so
