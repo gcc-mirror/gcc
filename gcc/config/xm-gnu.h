@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for hosts running GNU.
-   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -26,6 +26,8 @@ Boston, MA 02111-1307, USA.  */
 #define HAVE_STRERROR		/* GNU has strerror.  */
 #define POSIX			/* GNU complies to POSIX.1.  */
 
+#ifndef inhibit_libc
 /* Get a definition of O_RDONLY; some of the GCC files don't include this
    properly and will define it themselves to be zero. */
 #include <fcntl.h>
+#endif
