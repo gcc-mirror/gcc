@@ -9,6 +9,8 @@
 	the existing movqi pattern.
 	(movhi_push): Likewise.
 
+	* reload.c: Fix comment typos.
+
 Mon Jul 23 23:34:07 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (cprop_insn): Update call of cprop_cc0_jump.
