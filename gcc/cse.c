@@ -4276,7 +4276,12 @@ cse_gen_binary (code, mode, op0, op1)
 }
 
 /* Like simplify_binary_operation except used for relational operators.
-   MODE is the mode of the operands, not that of the result.  */
+   MODE is the mode of the operands, not that of the result.  If MODE
+   is VOIDmode, both operands must also be VOIDmode and we compare the
+   operands in "infinite precision".
+
+   If no simplification is possible, this function returns zero.  Otherwise,
+   it returns either const_true_rtx or const0_rtx.  */
 
 rtx
 simplify_relational_operation (code, mode, op0, op1)
@@ -4284,9 +4289,8 @@ simplify_relational_operation (code, mode, op0, op1)
      enum machine_mode mode;
      rtx op0, op1;
 {
-  register HOST_WIDE_INT arg0, arg1, arg0s, arg1s;
-  HOST_WIDE_INT val;
-  int width = GET_MODE_BITSIZE (mode);
+  int equal, op0lt, op0ltu, op1lt, op1ltu;
+  rtx tem;
 
   /* If op0 is a compare, extract the comparison arguments from it.  */
   if (GET_CODE (op0) == COMPARE && op1 == const0_rtx)
@@ -4297,151 +4301,148 @@ simplify_relational_operation (code, mode, op0, op1)
   if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC)
     return 0;
 
-  /* Unlike the arithmetic operations, we can do the comparison whether
-     or not WIDTH is larger than HOST_BITS_PER_WIDE_INT because the
-     CONST_INTs are to be understood as being infinite precision as
-     is the comparison.  So there is no question of overflow.  */
+  /* For integer comparisons of A and B maybe we can simplify A - B and can
+     then simplify a comparison of that with zero.  If A and B are both either
+     a register or a CONST_INT, this can't help; testing for these cases will
+     prevent infinite recursion here and speed things up.
 
-  if (GET_CODE (op0) != CONST_INT || GET_CODE (op1) != CONST_INT || width == 0)
-    {
-      /* Even if we can't compute a constant result,
-	 there are some cases worth simplifying.  */
+     If CODE is an unsigned comparison, we can only do this if A - B is a
+     constant integer, and then we have to compare that integer with zero as a
+     signed comparison.  Note that this will give the incorrect result from
+     comparisons that overflow.  Since these are undefined, this is probably
+     OK.  If it causes a problem, we can check for A or B being an address
+     (fp + const or SYMBOL_REF) and only do it in that case.  */
 
-      /* For non-IEEE floating-point, if the two operands are equal, we know
-	 the result.  */
-      if (rtx_equal_p (op0, op1)
-	  && (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	      || ! FLOAT_MODE_P (GET_MODE (op0)) || flag_fast_math))
-	return (code == EQ || code == GE || code == LE || code == LEU
-		|| code == GEU) ? const_true_rtx : const0_rtx;
+  if (INTEGRAL_MODE_P (mode) && op1 != const0_rtx
+      && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == CONST_INT)
+	    && (GET_CODE (op1) == REG || GET_CODE (op1) == CONST_INT))
+      && 0 != (tem = simplify_binary_operation (MINUS, mode, op0, op1))
+      && (GET_CODE (tem) == CONST_INT
+	  || (code != GTU && code != GEU &&
+	      code != LTU && code != LEU)))
+    return simplify_relational_operation (signed_condition (code),
+					  mode, tem, const0_rtx);
 
+  /* For non-IEEE floating-point, if the two operands are equal, we know the
+     result.  */
+  if (rtx_equal_p (op0, op1)
+      && (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+	  || ! FLOAT_MODE_P (GET_MODE (op0)) || flag_fast_math))
+    equal = 1, op0lt = 0, op0ltu = 0, op1lt = 0, op1ltu = 0;
+
+  /* If the operands are floating-point constants, see if we can fold
+     the result.  */
 #if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
-      else if (GET_CODE (op0) == CONST_DOUBLE
-	       && GET_CODE (op1) == CONST_DOUBLE
-	       && GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
-	{
-	  REAL_VALUE_TYPE d0, d1;
-	  jmp_buf handler;
-	  int op0lt, op1lt, equal;
+  else if (GET_CODE (op0) == CONST_DOUBLE && GET_CODE (op1) == CONST_DOUBLE
+	   && GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
+    {
+      REAL_VALUE_TYPE d0, d1;
+      jmp_buf handler;
+      
+      if (setjmp (handler))
+	return 0;
 
-	  if (setjmp (handler))
-	    return 0;
-
-	  set_float_handler (handler);
-	  REAL_VALUE_FROM_CONST_DOUBLE (d0, op0);
-	  REAL_VALUE_FROM_CONST_DOUBLE (d1, op1);
-	  equal = REAL_VALUES_EQUAL (d0, d1);
-	  op0lt = REAL_VALUES_LESS (d0, d1);
-	  op1lt = REAL_VALUES_LESS (d1, d0);
-	  set_float_handler (NULL_PTR);
-
-	  switch (code)
-	    {
-	    case EQ:
-	      return equal ? const_true_rtx : const0_rtx;
-	    case NE:
-	      return !equal ? const_true_rtx : const0_rtx;
-	    case LE:
-	      return equal || op0lt ? const_true_rtx : const0_rtx;
-	    case LT:
-	      return op0lt ? const_true_rtx : const0_rtx;
-	    case GE:
-	      return equal || op1lt ? const_true_rtx : const0_rtx;
-	    case GT:
-	      return op1lt ? const_true_rtx : const0_rtx;
-	    }
-	}
+      set_float_handler (handler);
+      REAL_VALUE_FROM_CONST_DOUBLE (d0, op0);
+      REAL_VALUE_FROM_CONST_DOUBLE (d1, op1);
+      equal = REAL_VALUES_EQUAL (d0, d1);
+      op0lt = op0ltu = REAL_VALUES_LESS (d0, d1);
+      op1lt = op1ltu = REAL_VALUES_LESS (d1, d0);
+      set_float_handler (NULL_PTR);
+    }
 #endif  /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
 
-      else if (GET_MODE_CLASS (mode) == MODE_INT
-	       && width > HOST_BITS_PER_WIDE_INT
-	       && (GET_CODE (op0) == CONST_DOUBLE
-		   || GET_CODE (op0) == CONST_INT)
-	       && (GET_CODE (op1) == CONST_DOUBLE
-		   || GET_CODE (op1) == CONST_INT))
+  /* Otherwise, see if the operands are both integers.  */
+  else if ((GET_MODE_CLASS (mode) == MODE_INT || mode == VOIDmode)
+	   && (GET_CODE (op0) == CONST_DOUBLE || GET_CODE (op0) == CONST_INT)
+	   && (GET_CODE (op1) == CONST_DOUBLE || GET_CODE (op1) == CONST_INT))
+    {
+      int width = GET_MODE_BITSIZE (mode);
+      HOST_WIDE_INT l0u, l0s, h0u, h0s, l1u, l1s, h1u, h1s;
+
+      /* Get the two words comprising each integer constant.  */
+      if (GET_CODE (op0) == CONST_DOUBLE)
 	{
-	  HOST_WIDE_INT h0, l0, h1, l1;
-	  unsigned HOST_WIDE_INT uh0, ul0, uh1, ul1;
-	  int op0lt, op0ltu, equal;
-
-	  if (GET_CODE (op0) == CONST_DOUBLE)
-	    l0 = CONST_DOUBLE_LOW (op0), h0 = CONST_DOUBLE_HIGH (op0);
-	  else
-	    l0 = INTVAL (op0), h0 = l0 < 0 ? -1 : 0;
+	  l0u = l0s = CONST_DOUBLE_LOW (op0);
+	  h0u = h0s = CONST_DOUBLE_HIGH (op0);
+	}
+      else
+	{
+	  l0u = l0s = INTVAL (op0);
+	  h0u = 0, h0s = l0s < 0 ? -1 : 0;
+	}
 	  
-	  if (GET_CODE (op1) == CONST_DOUBLE)
-	    l1 = CONST_DOUBLE_LOW (op1), h1 = CONST_DOUBLE_HIGH (op1);
-	  else
-	    l1 = INTVAL (op1), h1 = l1 < 0 ? -1 : 0;
-
-	  uh0 = h0, ul0 = l0, uh1 = h1, ul1 = l1;
-
-	  equal = (h0 == h1 && l0 == l1);
-	  op0lt = (h0 < h1 || (h0 == h1 && l0 < l1));
-	  op0ltu = (uh0 < uh1 || (uh0 == uh1 && ul0 < ul1));
-
-	  switch (code)
-	    {
-	    case EQ:
-	      return equal ? const_true_rtx : const0_rtx;
-	    case NE:
-	      return !equal ? const_true_rtx : const0_rtx;
-	    case LE:
-	      return equal || op0lt ? const_true_rtx : const0_rtx;
-	    case LT:
-	      return op0lt ? const_true_rtx : const0_rtx;
-	    case GE:
-	      return !op0lt ? const_true_rtx : const0_rtx;
-	    case GT:
-	      return !equal && !op0lt ? const_true_rtx : const0_rtx;
-	    case LEU:
-	      return equal || op0ltu ? const_true_rtx : const0_rtx;
-	    case LTU:
-	      return op0ltu ? const_true_rtx : const0_rtx;
-	    case GEU:
-	      return !op0ltu ? const_true_rtx : const0_rtx;
-	    case GTU:
-	      return !equal && !op0ltu ? const_true_rtx : const0_rtx;
-	    }
+      if (GET_CODE (op1) == CONST_DOUBLE)
+	{
+	  l1u = l1s = CONST_DOUBLE_LOW (op1);
+	  h1u = h1s = CONST_DOUBLE_HIGH (op1);
+	}
+      else
+	{
+	  l1u = l1s = INTVAL (op1);
+	  h1u = 0, h1s = l1s < 0 ? -1 : 0;
 	}
 
+      /* If WIDTH is nonzero and smaller than HOST_BITS_PER_WIDE_INT,
+	 we have to sign or zero-extend the values.  */
+      if (width != 0 && width <= HOST_BITS_PER_WIDE_INT)
+	h0u = h1u = 0, h0s = l0s < 0 ? -1 : 0, h1s = l1s < 0 ? -1 : 0;
+
+      if (width != 0 && width < HOST_BITS_PER_WIDE_INT)
+	{
+	  l0u &= ((HOST_WIDE_INT) 1 << width) - 1;
+	  l1u &= ((HOST_WIDE_INT) 1 << width) - 1;
+
+	  if (l0s & ((HOST_WIDE_INT) 1 << (width - 1)))
+	    l0s |= ((HOST_WIDE_INT) (-1) << width);
+
+	  if (l1s & ((HOST_WIDE_INT) 1 << (width - 1)))
+	    l1s |= ((HOST_WIDE_INT) (-1) << width);
+	}
+
+      equal = (h0u == h1u && l0u == l1u);
+      op0lt = (h0s < h1s || (h0s == h1s && l0s < l1s));
+      op1lt = (h1s < h0s || (h1s == h0s && l1s < l0s));
+      op0ltu = (h0u < h1u || (h0u == h1u && l0u < l1u));
+      op1ltu = (h1u < h0u || (h1u == h0u && l1u < l0u));
+    }
+
+  /* Otherwise, there are some code-specific tests we can make.  */
+  else
+    {
       switch (code)
 	{
 	case EQ:
-	  {
-#if 0
-	    /* We can't make this assumption due to #pragma weak */
-	    if (CONSTANT_P (op0) && op1 == const0_rtx)
-	      return const0_rtx;
+	  /* References to the frame plus a constant or labels cannot
+	     be zero, but a SYMBOL_REF can due to #pragma weak.  */
+	  if (((NONZERO_BASE_PLUS_P (op0) && op1 == const0_rtx)
+	       || GET_CODE (op0) == LABEL_REF)
+#if FRAME_POINTER_REGNO != ARG_POINTGER_REGNO
+	      /* On some machines, the ap reg can be 0 sometimes.  */
+	      && op0 != arg_pointer_rtx
 #endif
-	    if (NONZERO_BASE_PLUS_P (op0) && op1 == const0_rtx
-		/* On some machines, the ap reg can be 0 sometimes.  */
-		&& op0 != arg_pointer_rtx)
-	      return const0_rtx;
-	    break;
-	  }
+		)
+	    return const0_rtx;
+	  break;
 
 	case NE:
-#if 0
-	  /* We can't make this assumption due to #pragma weak */
-	  if (CONSTANT_P (op0) && op1 == const0_rtx)
-	    return const_true_rtx;
+	  if (((NONZERO_BASE_PLUS_P (op0) && op1 == const0_rtx)
+	       || GET_CODE (op0) == LABEL_REF)
+#if FRAME_POINTER_REGNO != ARG_POINTER_REGNO
+	      && op0 != arg_pointer_rtx
 #endif
-	  if (NONZERO_BASE_PLUS_P (op0) && op1 == const0_rtx
-	      /* On some machines, the ap reg can be 0 sometimes.  */
-	      && op0 != arg_pointer_rtx)
+	      )
 	    return const_true_rtx;
 	  break;
 
 	case GEU:
-	  /* Unsigned values are never negative, but we must be sure we are
-	     actually comparing a value, not a CC operand.  */
-	  if (op1 == const0_rtx && INTEGRAL_MODE_P (mode))
+	  /* Unsigned values are never negative.  */
+	  if (op1 == const0_rtx)
 	    return const_true_rtx;
 	  break;
 
 	case LTU:
-	  if (op1 == const0_rtx && INTEGRAL_MODE_P (mode))
+	  if (op1 == const0_rtx)
 	    return const0_rtx;
 	  break;
 
@@ -4450,8 +4451,8 @@ simplify_relational_operation (code, mode, op0, op1)
 	     unsigned value.  */
 	  if (GET_CODE (op1) == CONST_INT
 	      && INTVAL (op1) == GET_MODE_MASK (mode)
-	      && INTEGRAL_MODE_P (mode))
-	    return const_true_rtx;
+	    && INTEGRAL_MODE_P (mode))
+	  return const_true_rtx;
 	  break;
 
 	case GTU:
@@ -4465,92 +4466,33 @@ simplify_relational_operation (code, mode, op0, op1)
       return 0;
     }
 
-  /* Get the integer argument values in two forms:
-     zero-extended in ARG0, ARG1 and sign-extended in ARG0S, ARG1S.  */
-
-  arg0 = INTVAL (op0);
-  arg1 = INTVAL (op1);
-
-  if (width < HOST_BITS_PER_WIDE_INT)
-    {
-      arg0 &= ((HOST_WIDE_INT) 1 << width) - 1;
-      arg1 &= ((HOST_WIDE_INT) 1 << width) - 1;
-
-      arg0s = arg0;
-      if (arg0s & ((HOST_WIDE_INT) 1 << (width - 1)))
-	arg0s |= ((HOST_WIDE_INT) (-1) << width);
-
-      arg1s = arg1;
-      if (arg1s & ((HOST_WIDE_INT) 1 << (width - 1)))
-	arg1s |= ((HOST_WIDE_INT) (-1) << width);
-    }
-  else
-    {
-      arg0s = arg0;
-      arg1s = arg1;
-    }
-
-  /* Compute the value of the arithmetic.  */
-
+  /* If we reach here, EQUAL, OP0LT, OP0LTU, OP1LT, and OP1LTU are set
+     as appropriate.  */
   switch (code)
     {
-    case NE:
-      val = arg0 != arg1 ? STORE_FLAG_VALUE : 0;
-      break;
-
     case EQ:
-      val = arg0 == arg1 ? STORE_FLAG_VALUE : 0;
-      break;
-
-    case LE:
-      val = arg0s <= arg1s ? STORE_FLAG_VALUE : 0;
-      break;
-
+      return equal ? const_true_rtx : const0_rtx;
+    case NE:
+      return ! equal ? const_true_rtx : const0_rtx;
     case LT:
-      val = arg0s < arg1s ? STORE_FLAG_VALUE : 0;
-      break;
-
-    case GE:
-      val = arg0s >= arg1s ? STORE_FLAG_VALUE : 0;
-      break;
-
+      return op0lt ? const_true_rtx : const0_rtx;
     case GT:
-      val = arg0s > arg1s ? STORE_FLAG_VALUE : 0;
-      break;
-
-    case LEU:
-      val = (((unsigned HOST_WIDE_INT) arg0)
-	     <= ((unsigned HOST_WIDE_INT) arg1) ? STORE_FLAG_VALUE : 0);
-      break;
-
+      return op1lt ? const_true_rtx : const0_rtx;
     case LTU:
-      val = (((unsigned HOST_WIDE_INT) arg0)
-	     < ((unsigned HOST_WIDE_INT) arg1) ? STORE_FLAG_VALUE : 0);
-      break;
-
-    case GEU:
-      val = (((unsigned HOST_WIDE_INT) arg0)
-	     >= ((unsigned HOST_WIDE_INT) arg1) ? STORE_FLAG_VALUE : 0);
-      break;
-
+      return op0ltu ? const_true_rtx : const0_rtx;
     case GTU:
-      val = (((unsigned HOST_WIDE_INT) arg0)
-	     > ((unsigned HOST_WIDE_INT) arg1) ? STORE_FLAG_VALUE : 0);
-      break;
-
-    default:
-      abort ();
+      return op1ltu ? const_true_rtx : const0_rtx;
+    case LE:
+      return equal || op0lt ? const_true_rtx : const0_rtx;
+    case GE:
+      return equal || op1lt ? const_true_rtx : const0_rtx;
+    case LEU:
+      return equal || op0ltu ? const_true_rtx : const0_rtx;
+    case GEU:
+      return equal || op1ltu ? const_true_rtx : const0_rtx;
     }
 
-  /* Clear the bits that don't belong in our mode, unless they and our sign
-     bit are all one.  So we get either a reasonable negative value or a
-     reasonable unsigned value for this mode.  */
-  if (width < HOST_BITS_PER_WIDE_INT
-      && ((val & ((HOST_WIDE_INT) (-1) << (width - 1)))
-	  != ((HOST_WIDE_INT) (-1) << (width - 1))))
-    val &= ((HOST_WIDE_INT) 1 << width) - 1;
-  
-  return GEN_INT (val);
+  abort ();
 }
 
 /* Simplify CODE, an operation with result mode MODE and three operands,
