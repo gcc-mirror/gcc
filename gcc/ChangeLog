@@ -1,3 +1,9 @@
+2002-04-23  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (builtin_memset_gen_str): New function.
+	(expand_builtin_memset): Optimize the case of constant length, but
+	unknown value.
+
 2002-04-23  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/altivec.h (vec_step): Remove extraneous

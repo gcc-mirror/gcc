@@ -1,3 +1,8 @@
+2002-04-23  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c-torture/execute/string-opt-17.c: New test case.
+	* gcc.c-torture/execute/memset-2.c: New test case.
+
 2002-04-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/6256:
@@ -167,7 +172,7 @@
 	* g++.dg/opt/const1.C: New test.
 
 2002-04-10  Lars Brinkhoff  <lars@nocrew.org>
- 
+
 	* gcc.c-torture/execute/20020406-1.c: Declare malloc.
 
 2002-04-10  Nathan Sidwell  <nathan@codesourcery.com>
@@ -330,7 +335,7 @@
 2002-03-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/init/new2.C: New test.
-	
+
 2002-03-26  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/pragma-re-2.c: Avoid empty source file warning.
