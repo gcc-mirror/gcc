@@ -1,3 +1,10 @@
+2003-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/builtins/string-8.c: New test.
+	* gcc.c-torture/execute/builtins/string-8-lib.c: New.
+	* gcc.c-torture/execute/stdio-opt-1.c (main): Add new tests.
+	* gcc.c-torture/execute/string-opt-7.c (main): Add new test.
+
 2003-06-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10468
