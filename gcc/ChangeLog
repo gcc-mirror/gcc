@@ -1,3 +1,14 @@
+Thu Oct  8 05:05:34 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
+
+	* stmt.c (n_occurrences): New static function.
+	(expand_asm_operands): Verify that all constrains match in the
+	number of alternatives.
+	Verify that '+' or '=' are at the beginning of an output constraint.
+	Don't allow '&' for input operands.
+	Verify that '%' isn't written for the last operand.
+	* reload.c (find_reloads): Abort if an asm is found with invalid
+	constraints; all possible problems ought to be checked for earlier.
+
 Thu Oct  8 04:26:20 1998  Michael Hayes <m.hayes@elec.canterbury.ac.nz>
 
 	* flags.h (flag_branch_on_count_reg): Always declare 
