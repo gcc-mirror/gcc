@@ -823,11 +823,22 @@ version of GCC in use.
 
 You can add to this list with the @option{-I@var{dir}} command line
 option.  All the directories named by @option{-I} are searched, in
-left-to-right order, @emph{before} the default directories.  You can
-also prevent GCC from searching any of the default directories with the
-@option{-nostdinc} option.  This is useful when you are compiling an
+left-to-right order, @emph{before} the default directories.  The only
+exception is when @file{dir} is already searched by default.  In
+this case, the option is ignored and the search order for system
+directories remains unchanged.
+
+Duplicate directories are removed from the quote and bracket search
+chains before the two chains are merged to make the final search chain.
+Thus, it is possible for a directory to occur twice in the final search
+chain if it was specified in both the quote and bracket chains.
+
+You can prevent GCC from searching any of the default directories with
+the @option{-nostdinc} option.  This is useful when you are compiling an
 operating system kernel or some other program that does not use the
 standard C library facilities, or the standard C library itself.
+@option{-I} options are not ignored as described above when
+@option{-nostdinc} is in effect.
 
 GCC looks for headers requested with @code{@w{#include "@var{file}"}}
 first in the directory containing the current file, then in the same
@@ -835,12 +846,6 @@ places it would have looked for a header requested with angle brackets.
 For example, if @file{/usr/include/sys/stat.h} contains
 @code{@w{#include "types.h"}}, GCC looks for @file{types.h} first in
 @file{/usr/include/sys}, then in its usual search path.
-
-If you name a search directory with @option{-I@var{dir}} that is also a
-system include directory, the @option{-I} wins; the directory will be
-searched according to the @option{-I} ordering, and it will not be
-treated as a system include directory. GCC will warn you when a system
-include directory is hidden in this way.
 
 @samp{#line} (@pxref{Line Control}) does not change GCC's idea of the
 directory containing the current file.
@@ -1074,8 +1079,8 @@ found in that directory will be considered system headers.
 All directories named by @option{-isystem} are searched @emph{after} all
 directories named by @option{-I}, no matter what their order was on the
 command line.  If the same directory is named by both @option{-I} and
-@option{-isystem}, @option{-I} wins; it is as if the @option{-isystem} option
-had never been specified at all. GCC warns you when this happens.
+@option{-isystem}, the @option{-I} option is ignored.  GCC provides an
+informative message when this occurs if @option{-v} is used.
 
 @findex #pragma GCC system_header
 There is also a directive, @code{@w{#pragma GCC system_header}}, which
@@ -1817,9 +1822,7 @@ conformance to the C Standard.  CPP follows the host convention when
 processing system header files, but when processing user files
 @code{__STDC__} is always 1.  This has been reported to cause problems;
 for instance, some versions of Solaris provide X Windows headers that
-expect @code{__STDC__} to be either undefined or 1.  You may be able to
-work around this sort of problem by using an @option{-I} option to
-cancel treatment of those headers as system headers.  @xref{Invocation}.
+expect @code{__STDC__} to be either undefined or 1.  @xref{Invocation}.
 
 @item __STDC_VERSION__
 This macro expands to the C Standard's version number, a long integer

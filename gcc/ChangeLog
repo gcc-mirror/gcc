@@ -1,3 +1,18 @@
+2002-08-20  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* cppinit.c (remove_dup_dir): Add head_ptr argument to handle removal
+	at head.
+	(remove_dup_nonsys_dirs): New function.
+	(remove_dup_dirs): Change argument head to head_ptr.  Remove warnings.
+	(merge_include_chains): Remove non-system include directories from
+	quote and bracket include chains when they duplicate equivalent system
+	directories.
+	* doc/cpp.texi (-I): Update.
+        * doc/cppopts.texi (-I): Update.
+        * doc/install.texi (--with-local-prefix): Further document usage of
+	this option.
+	* doc/invoke.texi (-I): Update.
+
 2002-08-20  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (TARGET_MEM_FUNCTIONS): Transform to boolean.

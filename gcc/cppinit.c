@@ -94,9 +94,13 @@ static void mark_named_operators	PARAMS ((cpp_reader *));
 static void append_include_chain	PARAMS ((cpp_reader *,
 						 char *, int, int));
 static struct search_path * remove_dup_dir	PARAMS ((cpp_reader *,
+						 struct search_path *,
+						 struct search_path **));
+static struct search_path * remove_dup_nonsys_dirs PARAMS ((cpp_reader *,
+						 struct search_path **,
 						 struct search_path *));
 static struct search_path * remove_dup_dirs PARAMS ((cpp_reader *,
-						 struct search_path *));
+						 struct search_path **));
 static void merge_include_chains	PARAMS ((cpp_reader *));
 static bool push_include		PARAMS ((cpp_reader *,
 						 struct pending_option *));
@@ -257,21 +261,71 @@ append_include_chain (pfile, dir, path, cxx_aware)
 }
 
 /* Handle a duplicated include path.  PREV is the link in the chain
-   before the duplicate.  The duplicate is removed from the chain and
-   freed.  Returns PREV.  */
+   before the duplicate, or NULL if the duplicate is at the head of
+   the chain.  The duplicate is removed from the chain and freed.
+   Returns PREV.  */
 static struct search_path *
-remove_dup_dir (pfile, prev)
+remove_dup_dir (pfile, prev, head_ptr)
      cpp_reader *pfile;
      struct search_path *prev;
+     struct search_path **head_ptr;
 {
-  struct search_path *cur = prev->next;
+  struct search_path *cur;
+
+  if (prev != NULL)
+    {
+      cur = prev->next;
+      prev->next = cur->next;
+    }
+  else
+    {
+      cur = *head_ptr;
+      *head_ptr = cur->next;
+    }
 
   if (CPP_OPTION (pfile, verbose))
     fprintf (stderr, _("ignoring duplicate directory \"%s\"\n"), cur->name);
 
-  prev->next = cur->next;
   free ((PTR) cur->name);
   free (cur);
+
+  return prev;
+}
+
+/* Remove duplicate non-system directories for which there is an equivalent
+   system directory latter in the chain.  The range for removal is between
+   *HEAD_PTR and END.  Returns the directory before END, or NULL if none.
+   This algorithm is quadratic in the number system directories, which is
+   acceptable since there aren't usually that many of them.  */
+static struct search_path *
+remove_dup_nonsys_dirs (pfile, head_ptr, end)
+     cpp_reader *pfile;
+     struct search_path **head_ptr;
+     struct search_path *end;
+{
+  struct search_path *prev, *cur, *other;
+
+  for (cur = *head_ptr; cur; cur = cur->next)
+    {
+      if (cur->sysp)
+	{
+	  for (other = *head_ptr, prev = NULL;
+	       other != end;
+	       other = other ? other->next : *head_ptr)
+	    {
+	      if (!other->sysp
+		  && INO_T_EQ (cur->ino, other->ino)
+		  && cur->dev == other->dev)
+		{
+		  other = remove_dup_dir (pfile, prev, head_ptr);
+		  if (CPP_OPTION (pfile, verbose))
+		    fprintf (stderr,
+  _("  as it is a non-system directory that duplicates a system directory\n"));
+		}
+	      prev = other;
+	    }
+	}
+    }
 
   return prev;
 }
@@ -281,31 +335,18 @@ remove_dup_dir (pfile, prev)
    in the number of -I switches, which is acceptable since there
    aren't usually that many of them.  */
 static struct search_path *
-remove_dup_dirs (pfile, head)
+remove_dup_dirs (pfile, head_ptr)
      cpp_reader *pfile;
-     struct search_path *head;
+     struct search_path **head_ptr;
 {
   struct search_path *prev = NULL, *cur, *other;
 
-  for (cur = head; cur; cur = cur->next)
+  for (cur = *head_ptr; cur; cur = cur->next)
     {
-      for (other = head; other != cur; other = other->next)
+      for (other = *head_ptr; other != cur; other = other->next)
 	if (INO_T_EQ (cur->ino, other->ino) && cur->dev == other->dev)
 	  {
-	    if (cur->sysp && !other->sysp)
-	      {
-		cpp_error (pfile, DL_WARNING,
-			   "changing search order for system directory \"%s\"",
-			   cur->name);
-		if (strcmp (cur->name, other->name))
-		  cpp_error (pfile, DL_WARNING,
-			     "  as it is the same as non-system directory \"%s\"",
-			     other->name);
-		else
-		  cpp_error (pfile, DL_WARNING,
-			     "  as it has already been specified as a non-system directory");
-	      }
-	    cur = remove_dup_dir (pfile, prev);
+	    cur = remove_dup_dir (pfile, prev, head_ptr);
 	    break;
 	  }
       prev = cur;
@@ -343,28 +384,33 @@ merge_include_chains (pfile)
   else
     brack = systm;
 
-  /* This is a bit tricky.  First we drop dupes from the quote-include
-     list.  Then we drop dupes from the bracket-include list.
-     Finally, if qtail and brack are the same directory, we cut out
-     brack and move brack up to point to qtail.
+  /* This is a bit tricky.  First we drop non-system dupes of system
+     directories from the merged bracket-include list.  Next we drop
+     dupes from the bracket and quote include lists.  Then we drop
+     non-system dupes from the merged quote-include list.  Finally,
+     if qtail and brack are the same directory, we cut out brack and
+     move brack up to point to qtail.
 
      We can't just merge the lists and then uniquify them because
      then we may lose directories from the <> search path that should
-     be there; consider -Ifoo -Ibar -I- -Ifoo -Iquux. It is however
+     be there; consider -Ifoo -Ibar -I- -Ifoo -Iquux.  It is however
      safe to treat -Ibar -Ifoo -I- -Ifoo -Iquux as if written
      -Ibar -I- -Ifoo -Iquux.  */
 
-  remove_dup_dirs (pfile, brack);
-  qtail = remove_dup_dirs (pfile, quote);
+  remove_dup_nonsys_dirs (pfile, &brack, systm);
+  remove_dup_dirs (pfile, &brack);
 
   if (quote)
     {
+      qtail = remove_dup_dirs (pfile, &quote);
       qtail->next = brack;
 
+      qtail = remove_dup_nonsys_dirs (pfile, &quote, brack);
+
       /* If brack == qtail, remove brack as it's simpler.  */
-      if (brack && INO_T_EQ (qtail->ino, brack->ino)
+      if (qtail && brack && INO_T_EQ (qtail->ino, brack->ino)
 	  && qtail->dev == brack->dev)
-	brack = remove_dup_dir (pfile, qtail);
+	brack = remove_dup_dir (pfile, qtail, &quote);
     }
   else
     quote = brack;

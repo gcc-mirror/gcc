@@ -51,16 +51,14 @@ for header files.
 @xref{Search Path}.
 @end ifset
 Directories named by @option{-I} are searched before the standard
-system include directories.
-
-It is dangerous to specify a standard system include directory in an
-@option{-I} option.  This defeats the special treatment of system
-headers
+system include directories.  If the directory @var{dir} is a standard
+system include directory, the option is ignored to ensure that the
+default search order for system directories and the special treatment
+of system headers are not defeated
 @ifset cppmanual
 (@pxref{System Headers})
 @end ifset
-.  It can also defeat the repairs to buggy system headers which GCC
-makes when it is installed.
+.
 
 @item -o @var{file}
 @opindex o
