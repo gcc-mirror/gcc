@@ -4483,7 +4483,7 @@ expand_expr (exp, target, tmode, modifier)
 	enum machine_mode index_mode = TYPE_MODE (TREE_TYPE (index));
 
 	if (target == 0)
-	  target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+	  target = gen_reg_rtx (mode);
 
 	/* If domain is empty, answer is no.  */
 	if (tree_int_cst_lt (set_high_bound, set_low_bound))
@@ -4497,18 +4497,14 @@ expand_expr (exp, target, tmode, modifier)
 
 	/* Compare index against bounds, if they are constant.  */
 	if (GET_CODE (index_val) == CONST_INT
-	    && GET_CODE (lo_r) == CONST_INT)
-	  {
-	    if (INTVAL (index_val) < INTVAL (lo_r))
-	      return const0_rtx;
-	  }
+	    && GET_CODE (lo_r) == CONST_INT
+	    && INTVAL (index_val) < INTVAL (lo_r))
+	  return const0_rtx;
 
 	if (GET_CODE (index_val) == CONST_INT
-	    && GET_CODE (hi_r) == CONST_INT)
-	  {
-	    if (INTVAL (hi_r) < INTVAL (index_val))
-	      return const0_rtx;
-	  }
+	    && GET_CODE (hi_r) == CONST_INT
+	    && INTVAL (hi_r) < INTVAL (index_val))
+	  return const0_rtx;
 
 	/* If we get here, we have to generate the code for both cases
 	   (in range and out of range).  */
@@ -4519,46 +4515,51 @@ expand_expr (exp, target, tmode, modifier)
 	if (! (GET_CODE (index_val) == CONST_INT
 	       && GET_CODE (lo_r) == CONST_INT))
 	  {
-	    emit_cmp_insn (index_val, lo_r, LT, 0, GET_MODE (index_val), 0, 0);
+	    emit_cmp_insn (index_val, lo_r, LT, NULL_RTX,
+			   GET_MODE (index_val), 0, 0);
 	    emit_jump_insn (gen_blt (op1));
 	  }
 
 	if (! (GET_CODE (index_val) == CONST_INT
 	       && GET_CODE (hi_r) == CONST_INT))
 	  {
-	    emit_cmp_insn (index_val, hi_r, GT, 0, GET_MODE (index_val), 0, 0);
+	    emit_cmp_insn (index_val, hi_r, GT, NULL_RTX,
+			   GET_MODE (index_val), 0, 0);
 	    emit_jump_insn (gen_bgt (op1));
 	  }
 
 	/* Calculate the element number of bit zero in the first word
 	   of the set.  */
 	if (GET_CODE (lo_r) == CONST_INT)
-	  rlow = gen_rtx (CONST_INT, VOIDmode,
-			  INTVAL (lo_r) & ~ (1 << BITS_PER_UNIT));
+	  rlow = GEN_INT (INTVAL (lo_r)
+			  & ~ ((HOST_WIDE_INT) 1 << BITS_PER_UNIT));
 	else
-	  rlow = expand_binop (index_mode, and_optab,
-			       lo_r, gen_rtx (CONST_INT, VOIDmode,
-					      ~ (1 << BITS_PER_UNIT)),
-			       0, 0, OPTAB_LIB_WIDEN);
+	  rlow = expand_binop (index_mode, and_optab, lo_r,
+			       GEN_INT (~((HOST_WIDE_INT) 1 << BITS_PER_UNIT)),
+			       NULL_RTX, 0, OPTAB_LIB_WIDEN);
 
 	diff = expand_binop (index_mode, sub_optab,
-			     index_val, rlow, 0, 0, OPTAB_LIB_WIDEN);
+			     index_val, rlow, NULL_RTX, 0, OPTAB_LIB_WIDEN);
 
 	quo = expand_divmod (0, TRUNC_DIV_EXPR, index_mode, diff,
-			     gen_rtx (CONST_INT, VOIDmode, BITS_PER_UNIT),
-			     0, 0);
+			     GEN_INT (BITS_PER_UNIT), NULL_RTX, 0);
 	rem = expand_divmod (1, TRUNC_MOD_EXPR, index_mode, index_val,
-			     gen_rtx (CONST_INT, VOIDmode, BITS_PER_UNIT),
-			     0, 0);
+			     GEN_INT (BITS_PER_UNIT), NULL_RTX, 0);
 	addr = memory_address (byte_mode,
 			       expand_binop (index_mode, add_optab,
-					     diff, setaddr));
+					     diff, setaddr, NULL_RTX, 0,
+					     OPTAB_LIB_WIDEN));
 	/* Extract the bit we want to examine */
 	bit = expand_shift (RSHIFT_EXPR, byte_mode,
-			    gen_rtx (MEM, byte_mode, addr), rem, 0, 1);
-	result = expand_binop (SImode, and_optab, bit, const1_rtx, target,
+			    gen_rtx (MEM, byte_mode, addr),
+			    make_tree (TREE_TYPE (index), rem),
+			    NULL_RTX, 1);
+	result = expand_binop (byte_mode, and_optab, bit, const1_rtx,
+			       GET_MODE (target) == byte_mode ? target : 0,
 			       1, OPTAB_LIB_WIDEN);
-	emit_move_insn (target, result);
+
+	if (result != target)
+	  convert_move (target, result, 1);
 
 	/* Output the code to handle the out-of-range case.  */
 	emit_jump (op0);
