@@ -2,6 +2,15 @@
 
 	* cselib.c (hash_rtx): Don't do tail recursion elimination by hand.
 
+	* config/ia64/ia64.c (update_set_flags): New function, broken out of
+	rtx_needs_barrier.
+	(set_src_needs_barrier): Likewise.
+	(rtx_needs_barrier): For SET case, use these two functions.  Rework
+	PARALLEL case to handle all inputs before all outputs.
+	(emit_insn_group_barriers): Call init_insn_group_barriers only if we
+	saw a label and no stop bit since then.
+	(maybe_rotate, process_epilogue): Add prototypes.
+
 2001-03-28  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/rs6000.h (EPILOGUE_USES): Use TARGET_AIX,
