@@ -2598,9 +2598,269 @@ _Utf58_0_1__1_2147483647__2147483648
 --format=gnu-v3
 St9bad_alloc
 std::bad_alloc
+#
+--format=gnu-v3
+_ZN1f1fE
+f::f
+#
+--format=gnu-v3
+_Z1fv
+f()
+#
+--format=gnu-v3
+_Z1fi
+f(int)
+#
+--format=gnu-v3
+_Z3foo3bar
+foo(bar)
+#
+--format=gnu-v3
+_Zrm1XS_
+operator%(X, X)
+#
+--format=gnu-v3
+_ZplR1XS0_
+operator+(X&, X&)
+#
+--format=gnu-v3
+_ZlsRK1XS1_
+operator<<(X const&, X const&)
+#
+--format=gnu-v3
+_ZN3FooIA4_iE3barE
+Foo<int[4]>::bar
+#
+--format=gnu-v3
+_Z1fIiEvi
+void f<int>(int)
+#
+--format=gnu-v3
+_Z5firstI3DuoEvS0_
+void first<Duo>(Duo)
+#
+--format=gnu-v3
+_Z5firstI3DuoEvT_
+void first<Duo>(Duo)
+#
+--format=gnu-v3
+_Z3fooIiFvdEiEvv
+void foo<int, void ()(double), int>()
+#
+--format=gnu-v3
+_ZN1N1fE
+N::f
+#
+--format=gnu-v3
+_ZN6System5Sound4beepEv
+System::Sound::beep()
+#
+--format=gnu-v3
+_ZN5Arena5levelE
+Arena::level
+#
+--format=gnu-v3
+_ZN5StackIiiE5levelE
+Stack<int, int>::level
+#
+--format=gnu-v3
+_Z1fI1XEvPVN1AIT_E1TE
+void f<X>(A<X>::T volatile*)
+#
+--format=gnu-v3
+_ZngILi42EEvN1AIXplT_Li2EEE1TE
+void operator-<42>(A<(42) + (2)>::T)
+#
+--format=gnu-v3
+_Z4makeI7FactoryiET_IT0_Ev
+Factory<int> make<Factory, int>()
+#
+--format=gnu-v3
+_Z4makeI7FactoryiET_IT0_Ev
+Factory<int> make<Factory, int>()
+#
+--format=gnu-v3
+_Z3foo5Hello5WorldS0_S_
+foo(Hello, World, World, Hello)
+#
+--format=gnu-v3
+_Z3fooPM2ABi
+foo(int AB::**)
+#
+--format=gnu-v3
+_ZlsRSoRKSs
+operator<<(std::ostream&, std::string const&)
+#
+--format=gnu-v3
+_ZTI7a_class
+typeinfo for a_class
+#
+--format=gnu-v3
+U4_farrVKPi
+int* restrict volatile const _far
+# 
+--format=gnu-v3
+_Z3fooILi2EEvRAplT_Li1E_i
+void foo<2>(int (&) [(2) + (1)])
+# 
+--format=gnu-v3
+_Z1fM1AKFvvE
+f(void (A::*)() const)
+#
+--format=gnu-v3
+_Z3fooc
+foo(char)
+#
+--format=gnu-v3
+2CBIL_Z3foocEE
+CB<foo(char)>
+#
+--format=gnu-v3
+2CBIL_Z7IsEmptyEE
+CB<IsEmpty>
+#
+--format=gnu-v3
+_ZZN1N1fEiE1p
+N::f(int)::p
+#
+--format=gnu-v3
+_ZZN1N1fEiEs
+N::f(int)::string literal
+# 
+--format=gnu-v3
+_Z1fPFvvEM1SFvvE
+f(void (*)(), void (S::*)())
+#
+--format=gnu-v3
+_ZN1N1TIiiE2mfES0_IddE
+N::T<int, int>::mf(N::T<double, double>)
+# 
+--format=gnu-v3
+_ZSt5state
+std::state
+# 
+--format=gnu-v3
+_ZNSt3_In4wardE
+std::_In::ward
+#
+--format=gnu-v3
+_Z1fKPFiiE
+f(int (* const)(int))
+#
+--format=gnu-v3
+_Z1fAszL_ZZNK1N1A1fEvE3foo_0E_i
+f(int[sizeof(N::A::f() const::foo)])
+#
+--format=gnu-v3
+_Z1fA37_iPS_
+f(int[37], int (*) [37])
+#
+--format=gnu-v3
+_Z1fM1AFivEPS0_
+f(int (A::*)(), int (*)())
+#
+--format=gnu-v3
+_Z1fPFPA1_ivE
+f(int (*(*)()) [1])
+#
+--format=gnu-v3
+_Z1fPKM1AFivE
+f(int (A::* const*)())
+#
+--format=gnu-v3
+_Z1jM1AFivEPS1_
+j(int (A::*)(), int (A::**)())
+#
+--format=gnu-v3
+_Z1sPA37_iPS0_
+s(int (*) [37], int (**) [37])
+#
+--format=gnu-v3
+_Z3fooA30_A_i
+foo(int[30][])
+#
+--format=gnu-v3
+_Z3kooPA28_A30_i
+koo(int (*) [28][30])
+#
+--format=gnu-v3
+_ZlsRKU3fooU4bart1XS0_
+operator<<(X bart foo const&, X bart)
+#
+--format=gnu-v3
+_ZlsRKU3fooU4bart1XS2_
+operator<<(X bart foo const&, X bart foo const)
+#
+--format=gnu-v3
+_Z1fM1AKFivE
+f(int (A::*)() const)
+#
+--format=gnu-v3
+_Z3absILi11EEvv
+void abs<11>()
+#
+--format=gnu-v3
+_ZN1AIfEcvT_IiEEv
+A<float>::operator int<int>()
+#
+--format=gnu-v3
+_ZN12libcw_app_ct10add_optionIS_EEvMT_FvPKcES3_cS3_S3_
+void libcw_app_ct::add_option<libcw_app_ct>(void (libcw_app_ct::*)(char const*), char const*, char, char const*, char const*)
+#
+--format=gnu-v3
+_ZGVN5libcw24_GLOBAL__N_cbll.cc0ZhUKa23compiler_bug_workaroundISt6vectorINS_13omanip_id_tctINS_5debug32memblk_types_manipulator_data_ctEEESaIS6_EEE3idsE
+guard variable for libcw::(anonymous namespace)::compiler_bug_workaround<std::vector<libcw::omanip_id_tct<libcw::debug::memblk_types_manipulator_data_ct>, std::allocator<libcw::omanip_id_tct<libcw::debug::memblk_types_manipulator_data_ct> > > >::ids
+#
+--format=gnu-v3
+_ZN5libcw5debug13cwprint_usingINS_9_private_12GlobalObjectEEENS0_17cwprint_using_tctIT_EERKS5_MS5_KFvRSt7ostreamE
+libcw::debug::cwprint_using_tct<libcw::_private_::GlobalObject> libcw::debug::cwprint_using<libcw::_private_::GlobalObject>(libcw::_private_::GlobalObject const&, void (libcw::_private_::GlobalObject::*)(std::ostream&) const)
+#
+--format=gnu-v3
+_ZNKSt14priority_queueIP27timer_event_request_base_ctSt5dequeIS1_SaIS1_EE13timer_greaterE3topEv
+std::priority_queue<timer_event_request_base_ct*, std::deque<timer_event_request_base_ct*, std::allocator<timer_event_request_base_ct*> >, timer_greater>::top() const
+#
+--format=gnu-v3
+_ZNKSt15_Deque_iteratorIP15memory_block_stRKS1_PS2_EeqERKS5_
+std::_Deque_iterator<memory_block_st*, memory_block_st* const&, memory_block_st* const*>::operator==(std::_Deque_iterator<memory_block_st*, memory_block_st* const&, memory_block_st* const*> const&) const
+#
+--format=gnu-v3
+_ZNKSt17__normal_iteratorIPK6optionSt6vectorIS0_SaIS0_EEEmiERKS6_
+std::__normal_iterator<option const*, std::vector<option, std::allocator<option> > >::operator-(std::__normal_iterator<option const*, std::vector<option, std::allocator<option> > > const&) const
+#
+--format=gnu-v3
+_ZNSbIcSt11char_traitsIcEN5libcw5debug27no_alloc_checking_allocatorEE12_S_constructIPcEES6_T_S7_RKS3_
+char* std::basic_string<char, std::char_traits<char>, libcw::debug::no_alloc_checking_allocator>::_S_construct<char*>(char*, char*, libcw::debug::no_alloc_checking_allocator const&)
+#
+--format=gnu-v3
+_Z1fI1APS0_PKS0_EvT_T0_T1_PA4_S3_M1CS8_
+void f<A, A*, A const*>(A, A*, A const*, A const* (*) [4], A const* (* C::*) [4])
+#
+--format=gnu-v3
+_Z3fooiPiPS_PS0_PS1_PS2_PS3_PS4_PS5_PS6_PS7_PS8_PS9_PSA_PSB_PSC_
+foo(int, int*, int**, int***, int****, int*****, int******, int*******, int********, int*********, int**********, int***********, int************, int*************, int**************, int***************)
+#
+--format=gnu-v3
+_ZSt1BISt1DIP1ARKS2_PS3_ES0_IS2_RS2_PS2_ES2_ET0_T_SB_SA_PT1_
+std::D<A*, A*&, A**> std::B<std::D<A*, A* const&, A* const*>, std::D<A*, A*&, A**>, A*>(std::D<A*, A* const&, A* const*>, std::D<A*, A* const&, A* const*>, std::D<A*, A*&, A**>, A**)
+#
+--format=gnu-v3
+_X11TransParseAddress
+_X11TransParseAddress
+#
+--format=gnu-v3
+_ZNSt13_Alloc_traitsISbIcSt18string_char_traitsIcEN5libcw5debug9_private_17allocator_adaptorIcSt24__default_alloc_templateILb0ELi327664EELb1EEEENS5_IS9_S7_Lb1EEEE15_S_instancelessE
+std::_Alloc_traits<std::basic_string<char, std::string_char_traits<char>, libcw::debug::_private_::allocator_adaptor<char, std::__default_alloc_template<false, 327664>, true> >, libcw::debug::_private_::allocator_adaptor<std::basic_string<char, std::string_char_traits<char>, libcw::debug::_private_::allocator_adaptor<char, std::__default_alloc_template<false, 327664>, true> >, std::__default_alloc_template<false, 327664>, true> >::_S_instanceless
+#
+--format=gnu-v3
+_GLOBAL__I__Z2fnv
+global constructors keyed to fn()
+#
+--format=gnu-v3
+_Z1rM1GFivEMS_KFivES_M1HFivES1_4whatIKS_E5what2IS8_ES3_
+r(int (G::*)(), int (G::*)() const, G, int (H::*)(), int (G::*)(), what<G const>, what2<G const>, int (G::*)() const)
 # 
 # This caused an infinite loop.
 # We still don't demangle this correctly, but at least we don't hang.
 --format=auto
 __CPR212____ct__Q3_3std141list__tm__128_Q2_3edm41THandle__tm__26_Q2_4emid15EMparticleChunkQ2_3std68allocator__tm__51_Q2_3edmJ37J14const_iteratorFRCQ3_3std18list__tm__7_Z1ZZ2Z8iterator
-_Z1ZZ2Z::__CPR212____ct__Q3_3std141list__tm__128_Q2_3edm41THandle__tm__26_Q2_4emid15EMparticleChunkQ2_3std68allocator__tm__51_Q2_3edmJ37J14const_iteratorFRCQ3_3std18list__tm(iterator)
+__CPR212____ct__Q3_3std141list__tm__128_Q2_3edm41THandle__tm__26_Q2_4emid15EMparticleChunkQ2_3std68allocator__tm__51_Q2_3edmJ37J14const_iteratorFRCQ3_3std18list__tm__7_Z1ZZ2Z8iterator
