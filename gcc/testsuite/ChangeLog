@@ -1,3 +1,7 @@
+2000-12-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/compare3.c: New test.
+
 2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/format-warnll-1.c: New test.
