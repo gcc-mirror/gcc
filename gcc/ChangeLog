@@ -1,3 +1,11 @@
+2003-01-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/sparc/gmon-sol2.c (moncontrol, monstartup, _mcleanup,
+	internal_mcount): Don't use PARAMS.
+	(monstartup, _mcleanup, internal_mcount, moncontrol): Convert to
+	ISO C style.
+	(internal_mcount): Use __attribute__, not ATTRIBUTE_UNUSED.
+
 2003-01-13  Andreas Schwab  <schwab@suse.de>
 
 	* config/rs6000/sysv4.h (ASM_OUTPUT_ALIGNED_LOCAL): Output type
