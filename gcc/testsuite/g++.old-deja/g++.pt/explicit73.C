@@ -7,7 +7,7 @@
 // the template
 
 namespace N {
-  template <class T> class foo;
+  template <class T> class foo;	// ERROR - referenced below
 }
 
 using namespace N;
