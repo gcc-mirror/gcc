@@ -250,7 +250,7 @@ package body Exp_Ch4 is
       if Kind = N_Op_Not then
          if Nkind (Op1) in N_Binary_Op then
 
-            --  Use negated version of the binary operators.
+            --  Use negated version of the binary operators
 
             if Nkind (Op1) = N_Op_And then
                Proc_Name := RTE (RE_Vector_Nand);
@@ -428,7 +428,7 @@ package body Exp_Ch4 is
             if Controlled_Type (T)
               and then Ekind (PtrT) = E_Anonymous_Access_Type
             then
-               --  Create local finalization list for access parameter.
+               --  Create local finalization list for access parameter
 
                Flist := Get_Allocator_Final_List (N, Base_Type (T), PtrT);
             end if;
@@ -535,7 +535,7 @@ package body Exp_Ch4 is
                   if Controlled_Type (T)
                     and then Ekind (PtrT) = E_Anonymous_Access_Type
                   then
-                     --  Create local finalization list for access parameter.
+                     --  Create local finalization list for access parameter
 
                      Flist :=
                        Get_Allocator_Final_List (N, Base_Type (T), PtrT);
@@ -964,7 +964,7 @@ package body Exp_Ch4 is
         (Arr : Entity_Id;
          Nam : Name_Id;
          Num : Int) return Node_Id;
-      --  This builds the attribute reference Arr'Nam (Expr).
+      --  This builds the attribute reference Arr'Nam (Expr)
 
       function Component_Equality (Typ : Entity_Id) return Node_Id;
       --  Create one statement to compare corresponding components,
@@ -1152,7 +1152,7 @@ package body Exp_Ch4 is
            Handle_One_Dimension (N + 1, Next_Index (Index)));
 
          if Need_Separate_Indexes then
-            --  Generate guard for loop, followed by increments of indices.
+            --  Generate guard for loop, followed by increments of indices
 
             Append_To (Stm_List,
                Make_Exit_Statement (Loc,
@@ -1852,48 +1852,48 @@ package body Exp_Ch4 is
       --    L := Si'First;       otherwise (where I is the input param given)
 
       function H return Node_Id;
-      --  Builds reference to identifier H.
+      --  Builds reference to identifier H
 
       function Ind_Val (E : Node_Id) return Node_Id;
       --  Builds expression Ind_Typ'Val (E);
 
       function L return Node_Id;
-      --  Builds reference to identifier L.
+      --  Builds reference to identifier L
 
       function L_Pos return Node_Id;
-      --  Builds expression Integer_Type'(Ind_Typ'Pos (L)).
-      --  We qualify the expression to avoid universal_integer computations
-      --  whenever possible, in the expression for the upper bound H.
+      --  Builds expression Integer_Type'(Ind_Typ'Pos (L)). We qualify the
+      --  expression to avoid universal_integer computations whenever possible,
+      --  in the expression for the upper bound H.
 
       function L_Succ return Node_Id;
-      --  Builds expression Ind_Typ'Succ (L).
+      --  Builds expression Ind_Typ'Succ (L)
 
       function One return Node_Id;
-      --  Builds integer literal one.
+      --  Builds integer literal one
 
       function P return Node_Id;
-      --  Builds reference to identifier P.
+      --  Builds reference to identifier P
 
       function P_Succ return Node_Id;
-      --  Builds expression Ind_Typ'Succ (P).
+      --  Builds expression Ind_Typ'Succ (P)
 
       function R return Node_Id;
-      --  Builds reference to identifier R.
+      --  Builds reference to identifier R
 
       function S (I : Nat) return Node_Id;
-      --  Builds reference to identifier Si, where I is the value given.
+      --  Builds reference to identifier Si, where I is the value given
 
       function S_First (I : Nat) return Node_Id;
-      --  Builds expression Si'First, where I is the value given.
+      --  Builds expression Si'First, where I is the value given
 
       function S_Last (I : Nat) return Node_Id;
-      --  Builds expression Si'Last, where I is the value given.
+      --  Builds expression Si'Last, where I is the value given
 
       function S_Length (I : Nat) return Node_Id;
-      --  Builds expression Si'Length, where I is the value given.
+      --  Builds expression Si'Length, where I is the value given
 
       function S_Length_Test (I : Nat) return Node_Id;
-      --  Builds expression Si'Length /= 0, where I is the value given.
+      --  Builds expression Si'Length /= 0, where I is the value given
 
       -------------------
       -- Copy_Into_R_S --
@@ -3957,8 +3957,8 @@ package body Exp_Ch4 is
                --  Lhs of equality
 
                if Nkind (Lhs) = N_Selected_Component
-                 and then Has_Per_Object_Constraint (
-                            Entity (Selector_Name (Lhs)))
+                 and then Has_Per_Object_Constraint
+                            (Entity (Selector_Name (Lhs)))
                then
                   --  Enclosing record is an Unchecked_Union, use formal A
 
@@ -3977,11 +3977,11 @@ package body Exp_Ch4 is
                        Make_Selected_Component (Loc,
                          Prefix => Prefix (Lhs),
                          Selector_Name =>
-                           New_Copy (Get_Discriminant_Value (
-                             First_Discriminant (Lhs_Type),
-                             Lhs_Type,
-                             Stored_Constraint (Lhs_Type))));
-
+                           New_Copy
+                             (Get_Discriminant_Value
+                                (First_Discriminant (Lhs_Type),
+                                 Lhs_Type,
+                                 Stored_Constraint (Lhs_Type))));
                   end if;
 
                --  Comment needed here ???
@@ -3990,21 +3990,21 @@ package body Exp_Ch4 is
                   --  Infer the discriminant value
 
                   Lhs_Discr_Val :=
-                    New_Copy (Get_Discriminant_Value (
-                      First_Discriminant (Lhs_Type),
-                      Lhs_Type,
-                      Stored_Constraint (Lhs_Type)));
-
+                    New_Copy
+                      (Get_Discriminant_Value
+                         (First_Discriminant (Lhs_Type),
+                          Lhs_Type,
+                          Stored_Constraint (Lhs_Type)));
                end if;
 
                --  Rhs of equality
 
                if Nkind (Rhs) = N_Selected_Component
-                  and then Has_Per_Object_Constraint (
-                             Entity (Selector_Name (Rhs)))
+                 and then Has_Per_Object_Constraint
+                            (Entity (Selector_Name (Rhs)))
                then
-                  if Is_Unchecked_Union (Scope
-                       (Entity (Selector_Name (Rhs))))
+                  if Is_Unchecked_Union
+                       (Scope (Entity (Selector_Name (Rhs))))
                   then
                      Rhs_Discr_Val :=
                        Make_Identifier (Loc,
@@ -4260,12 +4260,15 @@ package body Exp_Ch4 is
          elsif Is_Bit_Packed_Array (Typl) then
             Expand_Packed_Eq (N);
 
-         --  For non-floating-point elementary types, the primitive equality
-         --  always applies, and block-bit comparison is fine. Floating-point
-         --  is an exception because of negative zeroes.
+         --  Where the component type is elementary we can use a block bit
+         --  comparison (if supported on the target) exception in the case
+         --  of floating-point (negative zero issues require element by
+         --  element comparison), and atomic types (where we must be sure
+         --  to load elements independently).
 
          elsif Is_Elementary_Type (Component_Type (Typl))
            and then not Is_Floating_Point_Type (Component_Type (Typl))
+           and then not Is_Atomic (Component_Type (Typl))
            and then Support_Composite_Compare_On_Target
          then
             null;
@@ -4337,7 +4340,6 @@ package body Exp_Ch4 is
                end if;
 
                Prim := First_Elmt (Primitive_Operations (Typl));
-
                while Present (Prim) loop
                   exit when Chars (Node (Prim)) = Name_Op_Eq
                     and then Etype (First_Formal (Node (Prim))) =
@@ -5299,7 +5301,7 @@ package body Exp_Ch4 is
             Build_Boolean_Array_Proc_Call (Parent (N), Opnd, Empty);
             return;
 
-         --  Special case the negation of a binary operation.
+         --  Special case the negation of a binary operation
 
          elsif (Nkind (Opnd) = N_Op_And
                  or else Nkind (Opnd) = N_Op_Or
@@ -5324,14 +5326,14 @@ package body Exp_Ch4 is
                if N = Op1
                  and then Nkind (Op2) = N_Op_Not
                then
-                  --  (not A) op (not B) can be reduced to a single call.
+                  --  (not A) op (not B) can be reduced to a single call
 
                   return;
 
                elsif N = Op2
                  and then Nkind (Parent (N)) = N_Op_Xor
                then
-                  --  A xor (not B) can also be special-cased.
+                  --  A xor (not B) can also be special-cased
 
                   return;
                end if;
@@ -6878,7 +6880,9 @@ package body Exp_Ch4 is
       --    only if Conversion_OK is set, i.e. if the fixed-point values
       --    are to be treated as integers.
 
-      --  No other conversions should be passed to Gigi.
+      --  No other conversions should be passed to Gigi
+
+      --  Check: are these rules stated in sinfo??? if so, why restate here???
 
       --  The only remaining step is to generate a range check if we still
       --  have a type conversion at this stage and Do_Range_Check is set.
@@ -7867,7 +7871,7 @@ package body Exp_Ch4 is
       --  is safe. The operand can be empty in the case of negation.
 
       function Is_Unaliased (N : Node_Id) return Boolean;
-      --  Check that N is a stand-alone entity.
+      --  Check that N is a stand-alone entity
 
       ------------------
       -- Is_Unaliased --
