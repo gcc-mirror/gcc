@@ -22,11 +22,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 
 #ifdef __cplusplus
 extern "C" {

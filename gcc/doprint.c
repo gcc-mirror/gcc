@@ -4,11 +4,6 @@
  */
 
 #include "config.h"
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #include "system.h"
 #include "gansidecl.h"
 #undef _doprnt

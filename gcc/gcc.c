@@ -32,12 +32,6 @@ Once it knows which kind of compilation to perform, the procedure for
 compilation is specified by a string called a "spec".  */
 
 #include "config.h"
-
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #include "system.h"
 #include <signal.h>
 #include <sys/stat.h>

@@ -600,11 +600,6 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #include "system.h"
 
 #ifndef __SABER__

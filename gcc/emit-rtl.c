@@ -35,11 +35,6 @@ Boston, MA 02111-1307, USA.  */
    is the kind of rtx's they make and what arguments they use.  */
 
 #include "config.h"
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #include "system.h"
 #include "rtl.h"
 #include "tree.h"

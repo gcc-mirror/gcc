@@ -24,12 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "toplev.h"
 
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
 /* cp_printer is the type of a function which converts an argument into
    a string for digestion by printf.  The cp_printer function should deal
    with all memory management; the functions in this file will not free

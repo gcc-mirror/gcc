@@ -34,11 +34,6 @@ Boston, MA 02111-1307, USA.  */
    by all passes of the compiler.  */
 
 #include "config.h"
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #include "system.h"
 #include <setjmp.h>
 #include "flags.h"

@@ -96,12 +96,6 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "hconfig.h"
-/* varargs must always be included after *config.h, but before stdio.h.  */
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #include "system.h"
 #include "rtl.h"
 #include "insn-config.h"	/* For REGISTER_CONSTRAINTS */

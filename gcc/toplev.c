@@ -24,11 +24,6 @@ Boston, MA 02111-1307, USA.  */
    Error messages and low-level interface to malloc also handled here.  */
 
 #include "config.h"
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #undef FLOAT /* This is for hpux. They should change hpux.  */
 #undef FFS  /* Some systems define this in param.h.  */
 #include "system.h"
