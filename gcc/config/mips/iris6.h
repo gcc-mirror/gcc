@@ -357,7 +357,7 @@ do								\
 while (0)
 
 /* ??? SGI assembler gives warning whenever .lcomm is used.  */
-#undef ASM_OUTPUT_LOCAL
+#undef ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(STREAM, NAME, SIZE, ALIGN)		   \
 do									   \
   {									   \
@@ -369,7 +369,8 @@ do									   \
 	ASM_OUTPUT_SKIP (STREAM, SIZE);					   \
       }									   \
     else								   \
-      mips_declare_object (STREAM, NAME, "\n\t.lcomm\t", ",%u\n", (int)(SIZE)); \
+      mips_declare_common_object (STREAM, NAME, "\n\t.lcomm\t",		   \
+				  SIZE, ALIGN, false);			   \
   }									   \
 while (0)
 

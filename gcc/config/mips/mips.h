@@ -3189,9 +3189,10 @@ while (0)
 /* This says how to define a local common symbol (ie, not visible to
    linker).  */
 
-#define ASM_OUTPUT_LOCAL(STREAM, NAME, SIZE, ROUNDED)			\
-  mips_declare_object (STREAM, NAME, "\n\t.lcomm\t", ",%u\n", (int)(SIZE))
-
+#ifndef ASM_OUTPUT_ALIGNED_LOCAL
+#define ASM_OUTPUT_ALIGNED_LOCAL(STREAM, NAME, SIZE, ALIGN) \
+  mips_declare_common_object (STREAM, NAME, "\n\t.lcomm\t", SIZE, ALIGN, false)
+#endif
 
 /* This says how to output an external.  It would be possible not to
    output anything and let undefined symbol become external. However
