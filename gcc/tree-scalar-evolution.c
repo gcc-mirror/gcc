@@ -959,9 +959,6 @@ analyzable_condition (tree expr)
   switch (TREE_CODE (condition))
     {
     case SSA_NAME:
-      /* Volatile expressions are not analyzable.  */
-      if (TREE_THIS_VOLATILE (SSA_NAME_VAR (condition)))
-	return false;
       return true;
       
     case LT_EXPR:
@@ -970,22 +967,7 @@ analyzable_condition (tree expr)
     case GE_EXPR:
     case EQ_EXPR:
     case NE_EXPR:
-      {
-	tree opnd0, opnd1;
-	
-	opnd0 = TREE_OPERAND (condition, 0);
-	opnd1 = TREE_OPERAND (condition, 1);
-	
-	if (TREE_CODE (opnd0) == SSA_NAME
-	    && TREE_THIS_VOLATILE (SSA_NAME_VAR (opnd0)))
-	  return false;
-	
-	if (TREE_CODE (opnd1) == SSA_NAME
-	    && TREE_THIS_VOLATILE (SSA_NAME_VAR (opnd1)))
-	  return false;
-	
-	return true;
-      }
+      return true;
       
     default:
       return false;
