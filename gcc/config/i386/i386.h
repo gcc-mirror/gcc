@@ -183,9 +183,7 @@ extern const int x86_double_with_add;
   { "soft-float",		-MASK_80387, "Do not use hardware fp" },\
   { "no-soft-float",		 MASK_80387, "Use hardware fp" },	\
   { "386",			 0, "Optimize for i80386" },		\
-  { "no-386",			 0, "" },				\
   { "486",			 0, "Optimize for i80486" },		\
-  { "no-486",			 0, "" },				\
   { "pentium",			 0, "Optimize for Pentium" },		\
   { "pentiumpro",		 0, "Optimize for Pentium Pro, Pentium II" },\
   { "rtd",			 MASK_RTD, "Alternate calling convention" },\
@@ -295,34 +293,34 @@ extern int ix86_arch;
 #define CC1_CPU_SPEC "\
 %{!mcpu*: \
 %{m386:-mcpu=i386 -march=i386} \
-%{mno-486:-mcpu=i386 -march=i386} \
 %{m486:-mcpu=i486 -march=i486} \
-%{mno-386:-mcpu=i486 -march=i486} \
-%{mno-pentium:-mcpu=i486 -march=i486} \
 %{mpentium:-mcpu=pentium} \
-%{mno-pentiumpro:-mcpu=pentium} \
 %{mpentiumpro:-mcpu=pentiumpro}}"
 #endif
 
 #define CPP_486_SPEC "%{!ansi:-Di486} -D__i486 -D__i486__"
 #define CPP_586_SPEC "%{!ansi:-Di586 -Dpentium} \
 	-D__i586 -D__i586__ -D__pentium -D__pentium__"
+#define CPP_K6_SPEC "%{!ansi:-Di586 -Dk6} \
+	-D__i586 -D__i586__ -D__k6 -D__k6__" 
 #define CPP_686_SPEC "%{!ansi:-Di686 -Dpentiumpro} \
 	-D__i686 -D__i686__ -D__pentiumpro -D__pentiumpro__"
 
 #ifndef CPP_CPU_DEFAULT_SPEC
 #if TARGET_CPU_DEFAULT == 1
 #define CPP_CPU_DEFAULT_SPEC "%(cpp_486)"
-#else
+#endif
 #if TARGET_CPU_DEFAULT == 2
 #define CPP_CPU_DEFAULT_SPEC "%(cpp_586)"
-#else
+#endif
 #if TARGET_CPU_DEFAULT == 3
 #define CPP_CPU_DEFAULT_SPEC "%(cpp_686)"
-#else
+#endif
+#if TARGET_CPU_DEFAULT == 4
+#define CPP_CPU_DEFAULT_SPEC "%(cpp_k6)"
+#endif
+#ifndef CPP_CPU_DEFAULT_SPEC
 #define CPP_CPU_DEFAULT_SPEC ""
-#endif
-#endif
 #endif
 #endif /* CPP_CPU_DEFAULT_SPEC */
 
@@ -333,6 +331,7 @@ extern int ix86_arch;
 %{mcpu=i486:%(cpp_486)} %{m486:%(cpp_486)} \
 %{mpentium:%(cpp_586)} %{mcpu=pentium:%(cpp_586)} \
 %{mpentiumpro:%(cpp_686)} %{mcpu=pentiumpro:%(cpp_686)} \
+%{mcpu=k6:%(cpp_k6)} \
 %{!mcpu*:%{!m486:%{!mpentium*:%(cpp_cpu_default)}}}"
 #endif
 
@@ -357,6 +356,7 @@ extern int ix86_arch;
 #define EXTRA_SPECS							\
   { "cpp_486", CPP_486_SPEC},						\
   { "cpp_586", CPP_586_SPEC},						\
+  { "cpp_k6", CPP_K6_SPEC},						\
   { "cpp_686", CPP_686_SPEC},						\
   { "cpp_cpu_default",	CPP_CPU_DEFAULT_SPEC },				\
   { "cpp_cpu",	CPP_CPU_SPEC },						\

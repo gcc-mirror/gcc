@@ -3277,7 +3277,14 @@ changequote([,])dnl
 		target_cpu_default2=1
 		;;
 	i586-*-*)
-		target_cpu_default2=2
+		case $target_alias in
+			k6-*)
+				target_cpu_default2=4
+				;;
+			*)
+				target_cpu_default2=2
+				;;
+		esac
 		;;
 	i686-*-* | i786-*-*)
 		target_cpu_default2=3
