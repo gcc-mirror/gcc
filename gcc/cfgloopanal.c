@@ -47,6 +47,8 @@ static bool simple_condition_p (struct loop *, rtx, regset,
 				struct loop_desc *);
 static basic_block simple_increment (struct loops *, struct loop *, rtx *,
 				     struct loop_desc *);
+static rtx count_strange_loop_iterations (rtx, rtx, enum rtx_code,
+					  int, rtx, enum machine_mode);
 
 /* Checks whether BB is executed exactly once in each LOOP iteration.  */
 bool
@@ -426,7 +428,7 @@ constant_iterations (struct loop_desc *desc, unsigned HOST_WIDE_INT *niter,
     {
       alim = XEXP (desc->lim_alts, 0);
       if (!(expr = count_loop_iterations (desc, XEXP (ainit, 0), alim)))
-	abort ();
+	continue;
       if (GET_CODE (expr) == CONST_INT)
 	{
 	  *niter = INTVAL (expr);
@@ -437,7 +439,7 @@ constant_iterations (struct loop_desc *desc, unsigned HOST_WIDE_INT *niter,
     {
       ainit = XEXP (desc->var_alts, 0);
       if (!(expr = count_loop_iterations (desc, ainit, XEXP (alim, 0))))
-	abort ();
+	continue;
       if (GET_CODE (expr) == CONST_INT)
 	{
 	  *niter = INTVAL (expr);
@@ -446,6 +448,123 @@ constant_iterations (struct loop_desc *desc, unsigned HOST_WIDE_INT *niter,
     }
 
   return false;
+}
+
+/* Attempts to determine a number of iterations of a "strange" loop.
+   Its induction variable starts with value INIT, is compared by COND
+   with LIM.  If POSTINCR, it is incremented after the test.  It is incremented
+   by STRIDE each iteration and iterates in MODE.
+
+   By "strange" we mean loops where induction variable increases in the wrong
+   direction wrto comparison, i.e. for (i = 6; i > 5; i++).  */
+static rtx
+count_strange_loop_iterations (rtx init, rtx lim, enum rtx_code cond,
+			       int postincr, rtx stride, enum machine_mode mode)
+{
+  rtx rqmt, n_to_wrap, before_wrap, after_wrap;
+  rtx mode_min, mode_max;
+  int size;
+
+  if (!postincr)
+    init = simplify_gen_binary (PLUS, mode, init, stride);
+
+  /* If we are able to prove that we don't pass the first test, we are
+     done.  */
+  rqmt = simplify_gen_relational (cond, SImode, mode, init, lim);
+  if (rqmt == const0_rtx)
+    return const0_rtx;
+
+  /* And if we don't know we pass it, the things are too complicated for us.  */
+  if (rqmt != const_true_rtx)
+    return NULL_RTX;
+
+  switch (cond)
+    {
+    case GE:
+    case GT:
+    case LE:
+    case LT:
+      size = GET_MODE_BITSIZE (mode);
+      mode_min = GEN_INT (-((unsigned HOST_WIDEST_INT) 1 << (size - 1)));
+      mode_max = GEN_INT (((unsigned HOST_WIDEST_INT) 1 << (size - 1)) - 1);
+			      
+      break;
+
+    case GEU:
+    case GTU:
+    case LEU:
+    case LTU:
+    case EQ:
+      mode_min = const0_rtx;
+      mode_max = simplify_gen_binary (MINUS, mode, const0_rtx, const1_rtx);
+      break;
+
+    default:
+      abort ();
+    }
+
+  switch (cond)
+    {
+    case EQ:
+      /* This iterates once, as init == lim.  */
+      return const1_rtx;
+
+      /* The behavior is undefined in signed cases.  Never mind, we still
+	 try to behave sanely.  */
+    case GE:
+    case GT:
+    case GEU:
+    case GTU:
+      if (INTVAL (stride) <= 0)
+	abort ();
+      n_to_wrap = simplify_gen_binary (MINUS, mode, mode_max, copy_rtx (init));
+      n_to_wrap = simplify_gen_binary (UDIV, mode, n_to_wrap, stride);
+      before_wrap = simplify_gen_binary (MULT, mode,
+					 copy_rtx (n_to_wrap), stride);
+      before_wrap = simplify_gen_binary (PLUS, mode,
+					 before_wrap, copy_rtx (init));
+      after_wrap = simplify_gen_binary (PLUS, mode,
+					before_wrap, stride);
+      if (GET_CODE (after_wrap) != CONST_INT)
+	{
+	  after_wrap = simplify_gen_binary (PLUS, mode, mode_min, stride);
+	  after_wrap = simplify_gen_binary (MINUS, mode, after_wrap, const1_rtx);
+	}
+      break;
+
+    case LE:
+    case LT:
+    case LEU:
+    case LTU:
+      if (INTVAL (stride) >= 0)
+	abort ();
+      stride = simplify_gen_unary (NEG, mode, stride, mode);
+      n_to_wrap = simplify_gen_binary (MINUS, mode, copy_rtx (init), mode_min);
+      n_to_wrap = simplify_gen_binary (UDIV, mode, n_to_wrap, stride);
+      before_wrap = simplify_gen_binary (MULT, mode,
+					 copy_rtx (n_to_wrap), stride);
+      before_wrap = simplify_gen_binary (MINUS, mode,
+					 copy_rtx (init), before_wrap);
+      after_wrap = simplify_gen_binary (MINUS, mode,
+					before_wrap, stride);
+      if (GET_CODE (after_wrap) != CONST_INT)
+	{
+	  after_wrap = simplify_gen_binary (MINUS, mode, mode_max, stride);
+	  after_wrap = simplify_gen_binary (PLUS, mode, after_wrap, const1_rtx);
+	}
+      break;
+    default:
+      abort ();
+    }
+
+  /* If this is const_true_rtx and we did not take a conservative aproximation
+     of after_wrap above, we might iterate the calculation (but of course we
+     would have to take care about infinite cases).  Ignore this for now.  */
+  rqmt = simplify_gen_relational (cond, SImode, mode, after_wrap, lim);
+  if (rqmt != const0_rtx)
+    return NULL_RTX;
+
+  return simplify_gen_binary (PLUS, mode, n_to_wrap, const1_rtx);
 }
 
 /* Return RTX expression representing number of iterations of loop as bounded
@@ -482,10 +601,11 @@ count_loop_iterations (struct loop_desc *desc, rtx init, rtx lim)
   /* Compute absolute value of the difference of initial and final value.  */
   if (INTVAL (stride) > 0)
     {
-      /* Bypass nonsensical tests.  */
+      /* Handle strange tests specially.  */
       if (cond == EQ || cond == GE || cond == GT || cond == GEU
 	  || cond == GTU)
-	return NULL;
+	return count_strange_loop_iterations (init, lim, cond, desc->postincr,
+					      stride, GET_MODE (desc->var));
       exp = simplify_gen_binary (MINUS, GET_MODE (desc->var),
 				 lim, init);
     }
@@ -494,7 +614,8 @@ count_loop_iterations (struct loop_desc *desc, rtx init, rtx lim)
       /* Bypass nonsensical tests.  */
       if (cond == EQ || cond == LE || cond == LT || cond == LEU
 	  || cond == LTU)
-	return NULL;
+	return count_strange_loop_iterations (init, lim, cond, desc->postincr,
+					      stride, GET_MODE (desc->var));
       exp = simplify_gen_binary (MINUS, GET_MODE (desc->var),
 				 init, lim);
       stride = simplify_gen_unary (NEG, GET_MODE (desc->var),
@@ -675,10 +796,10 @@ simple_loop_exit_p (struct loops *loops, struct loop *loop, edge exit_edge,
   desc->lim_alts = variable_initial_values (e, desc->lim);
 
   /* Number of iterations.  */
-  if (!count_loop_iterations (desc, NULL, NULL))
-    return false;
   desc->const_iter =
     constant_iterations (desc, &desc->niter, &desc->may_be_zero);
+  if (!desc->const_iter && !count_loop_iterations (desc, NULL, NULL))
+    return false;
   return true;
 }
 

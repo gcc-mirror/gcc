@@ -1,3 +1,9 @@
+2003-07-04  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfgloopanal.c (count_strange_loop_iterations): New static function.
+	(constant_iterations, count_loop_iterations, simple_loop_exit_p):
+	Handle strange loops.
+
 2003-07-04  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* install.texi: Even the g77 manpage is derived from
