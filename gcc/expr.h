@@ -624,9 +624,9 @@ extern void emit_push_insn PROTO((rtx, enum machine_mode, tree, rtx, int,
 				  int, rtx, int, rtx, rtx));
 
 /* Emit library call.  */
-extern void emit_library_call PROTO((rtx orgfun, int no_queue,
+extern void emit_library_call PVPROTO((rtx orgfun, int no_queue,
   enum machine_mode outmode, int nargs, ...));
-extern rtx emit_library_call_value PROTO((rtx orgfun, rtx value, int no_queue,
+extern rtx emit_library_call_value PVPROTO((rtx orgfun, rtx value, int no_queue,
   enum machine_mode outmode, int nargs, ...));
 
 /* Expand an assignment that stores the value of FROM into TO. */

@@ -359,9 +359,9 @@ static char *alternative_name;
 rtx frame_pointer_rtx, hard_frame_pointer_rtx, stack_pointer_rtx;
 rtx arg_pointer_rtx;
 
-static rtx attr_rtx		PROTO((enum rtx_code, ...));
+static rtx attr_rtx		PVPROTO((enum rtx_code, ...));
 #ifdef HAVE_VPRINTF
-static char *attr_printf	PROTO((int, char *, ...));
+static char *attr_printf	PVPROTO((int, char *, ...));
 #else
 static char *attr_printf ();
 #endif

@@ -618,8 +618,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 typedef void *PTR_T;
 typedef const void *CPTR_T;
 #define __proto(x) x
+#ifndef VPROTO
+#define PVPROTO(ARGS)		ARGS
 #define VPROTO(ARGS)            ARGS
 #define VA_START(va_list,var)  va_start(va_list,var)
+#endif
 #else
 
 #if defined(_STDIO_H_) || defined(__STDIO_H__)		/* Ultrix 4.0, SGI */
@@ -633,8 +636,11 @@ typedef char *CPTR_T;
 
 #define __proto(x) ()
 #define const
+#ifndef VPROTO
+#define PVPROTO(ARGS)		()
 #define VPROTO(ARGS)            (va_alist) va_dcl
 #define VA_START(va_list,var)  va_start(va_list)
+#endif
 #endif
 
 /* Do to size_t being defined in sys/types.h and different
@@ -665,8 +671,8 @@ extern PTR_T	xrealloc	__proto((PTR_T, Size_t));
 extern void	xfree		__proto((PTR_T));
 
 #ifdef HAVE_VPRINTF
-extern void	fatal		__proto((char *format, ...));
-extern void	error		__proto((char *format, ...));
+extern void	fatal		PVPROTO((char *format, ...));
+extern void	error		PVPROTO((char *format, ...));
 #else
 /* We must not provide any prototype here, even if ANSI C.  */
 extern void	fatal		__proto(());
