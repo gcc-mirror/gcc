@@ -103,6 +103,10 @@ namespace tr1
 
   template<typename _Tp>
     struct is_member_pointer;
+
+  // Extension.
+  template<typename _Tp>
+    struct __is_union_or_class;
    
   /// @brief  type properties [4.5.3].
   template<typename _Tp>
