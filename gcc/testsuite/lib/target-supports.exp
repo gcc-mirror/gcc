@@ -81,7 +81,10 @@ proc check_alias_available { } {
     } else {
         verbose "check_alias_available  compiling testfile" 2
 	set f [open "tmp.c" "w"]
-	puts $f "void f() __attribute__((alias(\"g\")));"
+	# Compile a small test program.  The definition of "g" is
+	# necessary to keep the Solaris assembler from complaining
+	# about the program.
+	puts $f "void g() {} void f() __attribute__((alias(\"g\")));"
 	close $f
 	set lines [gcc_target_compile "tmp.c" "tmp.o" object ""]
 	file delete "tmp.c"
