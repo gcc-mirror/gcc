@@ -198,13 +198,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"m88k, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.70 $"
+#define VERSION_INFO2   "$Revision: 1.71 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.70 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.71 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What: <@(#) m88k.h,v	1.1.1.2.2.2> $"
 #endif  /* __STDC__ */
@@ -1707,10 +1707,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 	     && SET_SRC (PATTERN (INSN)) == SET_DEST (PATTERN (DEP_INSN))) \
       (COST) -= 4; /* 88110 store reservation station.  */		\
   } while (0)
-
-/* Define this to be nonzero if the character `$' should be allowed
-   by default in identifier names.  */
-#define	DOLLARS_IN_IDENTIFIERS	1
 
 /* Do not break .stabs pseudos into continuations.  */
 #define DBX_CONTIN_LENGTH 0

@@ -246,9 +246,6 @@ extern int target_flags;
 #define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
 #endif
 
-/* Allow $ in identifiers.  */
-#define DOLLARS_IN_IDENTIFIERS 2
-
 /* Make gcc agree with <machine/ansi.h> */
 
 #define SIZE_TYPE "unsigned int"

@@ -2723,17 +2723,6 @@ while (0)
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) \
   (TARGET_64BIT ? ((INPREC) <= 32 || (OUTPREC) > 32) : 1)
 
-/* Define this macro to control use of the character `$' in
-   identifier names.  The value should be 0, 1, or 2.  0 means `$'
-   is not allowed by default; 1 means it is allowed by default if
-   `-traditional' is used; 2 means it is allowed by default provided
-   `-ansi' is not used.  1 is the default; there is no need to
-   define this macro in that case. */
-
-#ifndef DOLLARS_IN_IDENTIFIERS
-#define DOLLARS_IN_IDENTIFIERS 1
-#endif
-
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */

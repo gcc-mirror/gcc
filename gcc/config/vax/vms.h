@@ -59,9 +59,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define DEFAULT_GDB_EXTENSIONS 0
 
-/* By default, allow $ to be part of an identifier.  */
-#define DOLLARS_IN_IDENTIFIERS 2
-
 #define TARGET_DEFAULT 1
 #define TARGET_NAME "vax/vms"
 

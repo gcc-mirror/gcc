@@ -1,5 +1,5 @@
 /* Definitions for CPP library.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
 This program is free software; you can redistribute it and/or modify it
@@ -423,17 +423,10 @@ struct cpp_options {
      so don't look for #include "foo" the source-file directory.  */
   char ignore_srcdir;
 
-/* Zero means dollar signs are punctuation.
-   -$ stores 0; -traditional may store 1.  Default is 1 for VMS, 0 otherwise.
-   This must be 0 for correct processing of this ANSI C program:
-	#define foo(a) #a
-	#define lose(b) foo (b)
-	#define test$
-	lose (test)	*/
+  /* Zero means dollar signs are punctuation.
+     This used to be needed for conformance to the C Standard,
+     before the C Standard was corrected.  */
   char dollars_in_ident;
-#ifndef DOLLARS_IN_IDENTIFIERS
-#define DOLLARS_IN_IDENTIFIERS 1
-#endif
 
   /* Nonzero means try to imitate old fashioned non-ANSI preprocessor.  */
   char traditional;
