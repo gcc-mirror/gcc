@@ -19,6 +19,8 @@ details.  */
 #include <java/lang/Class.h>
 #include <java/lang/reflect/Modifier.h>
 #include <java/lang/reflect/Method.h>
+#include <java/lang/ArrayIndexOutOfBoundsException.h>
+#include <java/lang/SecurityManager.h>
 
 #ifdef DEBUG
 #include <java/lang/System.h>
@@ -69,3 +71,33 @@ java::io::ObjectInputStream::callConstructor (jclass klass, jobject obj)
 				+ m->offset);
   _Jv_CallAnyMethodA (obj, JvPrimClass (void), meth, false, arg_types, NULL);
 }
+
+java::lang::ClassLoader* 
+java::io::ObjectInputStream::getCallersClassLoader ()
+{
+  java::lang::ClassLoader *loader = NULL;
+  gnu::gcj::runtime::StackTrace *t 
+    = new gnu::gcj::runtime::StackTrace(4);
+  java::lang::Class *klass = NULL;
+  try
+    {
+      for (int i = 2; !klass; i++)
+	{
+	  klass = t->classAt (i);
+	}
+      loader = klass->getClassLoaderInternal();
+    }
+  catch (::java::lang::ArrayIndexOutOfBoundsException *e)
+    {
+      // FIXME: RuntimeError
+    }
+
+  return loader;
+}
+
+java::lang::ClassLoader*
+java::io::ObjectInputStream::currentClassLoader (::java::lang::SecurityManager *sm)
+{
+  return sm->currentClassLoader ();
+}
+

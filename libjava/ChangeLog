@@ -1,3 +1,20 @@
+2004-06-21  Andrew Haley  <aph@redhat.com>
+
+	* java/io/ObjectOutputStream.java: Add DEBUG statements
+	everywhere.
+	(dumpElementln): New method.
+	(depth): New field.
+	* java/io/ObjectInputStream.java
+	(currentClassLoader): Make native.
+	(callersClassLoader): New field.
+	(depth): New field.
+	(readObject): ENDBLOCKDATA is generated if the class has a write
+	method, not if it has a read method.
+	(readObject): Save and restore this.currentObject and
+	this.currentObjectStreamClass around calls to callReadMethod().
+	* java/io/natObjectInputStream.cc (getCallersClassLoader): New
+	method.
+
 2004-06-18  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/libjava.jni/jni.exp (gcj_jni_test_one): Add lgcc_s for

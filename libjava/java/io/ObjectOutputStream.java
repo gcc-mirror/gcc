@@ -144,6 +144,13 @@ public class ObjectOutputStream extends OutputStream
     protocolVersion = defaultProtocolVersion;
     useSubclassMethod = false;
     writeStreamHeader();
+
+    if (Configuration.DEBUG)
+      {
+	String val = System.getProperty("gcj.dumpobjects");
+	if (val != null && !val.equals(""))
+	  dump = true;
+      }
   }
 
   /**
@@ -172,9 +179,17 @@ public class ObjectOutputStream extends OutputStream
   {
     if (useSubclassMethod)
       {
+	if (dump)
+	  dumpElementln ("WRITE OVERRIDE: " + obj);
+	  
 	writeObjectOverride(obj);
 	return;
       }
+
+    if (dump)
+      dumpElementln ("WRITE: " + obj);
+    
+    depth += 2;    
 
     boolean was_serializing = isSerializing;
     boolean old_mode = setBlockDataMode(false);
@@ -318,6 +333,8 @@ public class ObjectOutputStream extends OutputStream
 
 	    if (obj instanceof Serializable)
 	      {
+		Object prevObject = this.currentObject;
+		ObjectStreamClass prevObjectStreamClass = this.currentObjectStreamClass;
 		currentObject = obj;
 		ObjectStreamClass[] hierarchy =
 		  ObjectStreamClass.getObjectStreamClasses(clazz);
@@ -329,17 +346,25 @@ public class ObjectOutputStream extends OutputStream
 		    fieldsAlreadyWritten = false;
 		    if (currentObjectStreamClass.hasWriteMethod())
 		      {
+			if (dump)
+			  dumpElementln ("WRITE METHOD CALLED FOR: " + obj);
 			setBlockDataMode(true);
 			callWriteMethod(obj, currentObjectStreamClass);
 			setBlockDataMode(false);
 			realOutput.writeByte(TC_ENDBLOCKDATA);
+			if (dump)
+			  dumpElementln ("WRITE ENDBLOCKDATA FOR: " + obj);
 		      }
 		    else
+		      {
+			if (dump)
+			  dumpElementln ("WRITE FIELDS CALLED FOR: " + obj);
 		      writeFields(obj, currentObjectStreamClass);
 		  }
+		  }
 
-		currentObject = null;
-		currentObjectStreamClass = null;
+		this.currentObject = prevObject;
+		this.currentObjectStreamClass = prevObjectStreamClass;
 		currentPutField = null;
 		break;
 	      }
@@ -360,12 +385,22 @@ public class ObjectOutputStream extends OutputStream
 	setBlockDataMode(false);
 	try
 	  {
+	    if (Configuration.DEBUG)
+	      {
+		e.printStackTrace(System.out);
+	      }
 	    writeObject(e);
 	  }
 	catch (IOException ioe)
 	  {
-	    throw new StreamCorruptedException
-	      ("Exception " + ioe + " thrown while exception was being written to stream.");
+	    StreamCorruptedException ex = 
+	      new StreamCorruptedException
+	      (ioe + " thrown while exception was being written to stream.");
+	    if (Configuration.DEBUG)
+	      {
+		ex.printStackTrace(System.out);
+	      }
+	    throw ex;
 	  }
 
 	reset (true);
@@ -375,6 +410,10 @@ public class ObjectOutputStream extends OutputStream
       {
 	isSerializing = was_serializing;
 	setBlockDataMode(old_mode);
+	depth -= 2;
+
+	if (dump)
+	  dumpElementln ("END: " + obj);
       }
   }
 
@@ -1171,6 +1210,9 @@ public class ObjectOutputStream extends OutputStream
 	field_name = fields[i].getName();
 	type = fields[i].getType();
 
+	if (dump)
+	  dumpElementln ("WRITE FIELD: " + field_name + " type=" + type);
+
 	if (type == Boolean.TYPE)
 	  realOutput.writeBoolean(getBooleanField(obj, osc.forClass(), field_name));
 	else if (type == Byte.TYPE)
@@ -1512,6 +1554,14 @@ public class ObjectOutputStream extends OutputStream
     return m;
   }
 
+  private void dumpElementln (String msg)
+  {
+    for (int i = 0; i < depth; i++)
+      System.out.print (" ");
+    System.out.print (Thread.currentThread() + ": ");
+    System.out.println(msg);
+  }
+
   // this value comes from 1.2 spec, but is used in 1.1 as well
   private final static int BUFFER_SIZE = 1024;
 
@@ -1533,6 +1583,12 @@ public class ObjectOutputStream extends OutputStream
   private Hashtable OIDLookupTable;
   private int protocolVersion;
   private boolean useSubclassMethod;
+
+  // The nesting depth for debugging output
+  private int depth = 0;
+
+  // Set if we're generating debugging dumps
+  private boolean dump = false;
 
   static
   {
