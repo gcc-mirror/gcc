@@ -457,7 +457,7 @@ do {  int i;								\
 #define ASM_OUTPUT_SOURCE_LINE(FILE, LINENO)	\
   fprintf (FILE, "\t; ln\t%d\n",			\
 	   (sdb_begin_function_line		\
-	    ? last_linenum - sdb_begin_function_line : 1))
+	    ? (LINENO) - sdb_begin_function_line : 1))
 
 /* Must put address in  %a0 , not  %d0 . -- LGM, 7/15/88 */
 /* UNOS ?? */

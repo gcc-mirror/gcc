@@ -412,7 +412,7 @@ do { long l;					\
 #define ASM_OUTPUT_SOURCE_LINE(FILE, LINENO)	\
   fprintf (FILE, "\tln\t%d\n",			\
 	   (sdb_begin_function_line		\
-	    ? last_linenum - sdb_begin_function_line : 1))
+	    ? (LINENO) - sdb_begin_function_line : 1))
 
 /* Yet another null terminated string format.  */
 
