@@ -1,3 +1,14 @@
+2004-02-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* system.h (FUNCTION_ARG_KEEP_AS_REFERENCE): Poison.
+	* config/frv/frv-protos.h: Remove the prototype for
+	frv_function_arg_keep_as_reference.
+	* config/frv/frv.c (frv_function_arg_keep_as_reference):
+	Remove.
+	* config/frv/frv.h (FUNCTION_ARG_KEEP_AS_REFERENCE): Likewise.
+	* config/stormy16/stormy16.h: Remove the commented-out
+	definition of FUNCTION_ARG_KEEP_AS_REFERENCE.
+
 2004-02-03  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/13914

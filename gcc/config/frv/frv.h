@@ -1912,12 +1912,6 @@ struct machine_function GTY(())
 #define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED)		\
   frv_function_arg_callee_copies (&CUM, MODE, TYPE, NAMED)
 
-/* If defined, a C expression that indicates when it is more desirable to keep
-   an argument passed by invisible reference as a reference, rather than
-   copying it to a pseudo register.  */
-#define FUNCTION_ARG_KEEP_AS_REFERENCE(CUM, MODE, TYPE, NAMED)		\
-  frv_function_arg_keep_as_reference (&CUM, MODE, TYPE, NAMED)
-
 /* A C type for declaring a variable that is used as the first argument of
    `FUNCTION_ARG' and other related values.  For some target machines, the type
    `int' suffices and can hold the number of bytes of argument so far.

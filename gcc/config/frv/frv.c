@@ -3118,19 +3118,6 @@ frv_function_arg_callee_copies (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
   return 0;
 }
 
-/* If defined, a C expression that indicates when it is more desirable to keep
-   an argument passed by invisible reference as a reference, rather than
-   copying it to a pseudo register.  */
-
-int
-frv_function_arg_keep_as_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
-                                    enum machine_mode mode ATTRIBUTE_UNUSED,
-                                    tree type ATTRIBUTE_UNUSED,
-                                    int named ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
 
 /* Return true if a register is ok to use as a base or index register.  */
 
