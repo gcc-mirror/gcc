@@ -138,60 +138,15 @@ public class DatagramSocket
    * the specified local port and address.
    *
    * @param port The local port number to bind to.
-   * @param laddr The local address to bind to.
+   * @param addr The local address to bind to.
    *
    * @exception SecurityException If a security manager exists and its
    * checkListen method doesn't allow the operation.
    * @exception SocketException If an error occurs.
    */
-  public DatagramSocket(int port, InetAddress laddr) throws SocketException
+  public DatagramSocket(int port, InetAddress addr) throws SocketException
   {
-    if (port < 0 || port > 65535)
-      throw new IllegalArgumentException("Invalid port: " + port);
-
-    SecurityManager s = System.getSecurityManager();
-    if (s != null)
-      s.checkListen(port);
-
-    String propVal = System.getProperty("impl.prefix");
-    if (propVal == null || propVal.equals(""))
-      impl = new PlainDatagramSocketImpl();
-    else
-      try
-	{
-          impl = (DatagramSocketImpl) Class.forName
-            ("java.net." + propVal + "DatagramSocketImpl").newInstance();
-	}
-      catch (Exception e)
-	{
-	  System.err.println("Could not instantiate class: java.net." +
-	    propVal + "DatagramSocketImpl");
-	  impl = new PlainDatagramSocketImpl();
-	}
-    impl.create();
-
-    if (laddr == null)
-      laddr = InetAddress.ANY_IF;
-    
-    try
-      {
-        impl.bind (port, laddr);
-      }
-    catch (SocketException exception)
-      {
-        impl.close ();
-        throw exception;
-      }
-    catch (RuntimeException exception)
-      {
-        impl.close ();
-        throw exception;
-      }
-    catch (Error error)
-      {
-        impl.close ();
-        throw error;
-      }
+    this(new InetSocketAddress(addr, port));
   }
 
   /**
@@ -209,8 +164,61 @@ public class DatagramSocket
    */
   public DatagramSocket (SocketAddress address) throws SocketException
   {
-    this (((InetSocketAddress) address).getPort (),
-          ((InetSocketAddress) address).getAddress ());
+    String propVal = System.getProperty("impl.prefix");
+    if (propVal == null || propVal.equals(""))
+      impl = new PlainDatagramSocketImpl();
+    else
+      try
+	{
+          impl = (DatagramSocketImpl) Class.forName
+            ("java.net." + propVal + "DatagramSocketImpl").newInstance();
+	}
+      catch (Exception e)
+	{
+	  System.err.println("Could not instantiate class: java.net." +
+	    propVal + "DatagramSocketImpl");
+	  impl = new PlainDatagramSocketImpl();
+	}
+    impl.create();
+
+    if (address == null)
+      return;
+
+    if (! (address instanceof InetSocketAddress))
+      throw new SocketException("unsupported address type");
+
+    InetAddress addr = ((InetSocketAddress) address).getAddress();
+    int port = ((InetSocketAddress) address).getPort();
+
+    if (port < 0 || port > 65535)
+      throw new IllegalArgumentException("Invalid port: " + port);
+
+    SecurityManager s = System.getSecurityManager();
+    if (s != null)
+      s.checkListen(port);
+
+    if (addr == null)
+      addr = InetAddress.ANY_IF;
+    
+    try
+      {
+        impl.bind(port, addr);
+      }
+    catch (SocketException exception)
+      {
+        impl.close();
+        throw exception;
+      }
+    catch (RuntimeException exception)
+      {
+        impl.close();
+        throw exception;
+      }
+    catch (Error error)
+      {
+        impl.close();
+        throw error;
+      }
   }
   
   /**

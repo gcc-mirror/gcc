@@ -1,3 +1,11 @@
+2003-11-25  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/DatagramSocket.java
+	(DatagramSocket): Move binding code to bind(), simplify constructors.
+	* java/net/MulticastSocket.java
+	(MulticastSocket): Call parent constructor with null argument,
+	bind socket after setReuseAddress is called, simplify constructors.
+
 2003-11-24  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/BoxLayout.java
