@@ -34,6 +34,8 @@ AC_SUBST(libffi_basedir)
 
 AC_CANONICAL_HOST
 
+AM_PROG_LIBTOOL
+
 AM_INIT_AUTOMAKE(libffi,2.00-beta,no-define)
 
 AC_EXEEXT
@@ -137,3 +139,12 @@ else
 	cp fficonfig.h include/fficonfig.h
 fi
 )
+
+# Make target subdirectories if required.
+if ! test -d src; then
+  mkdir src
+fi
+
+if ! test -d src/${TARGETDIR}; then
+  mkdir src/${TARGETDIR}
+fi
