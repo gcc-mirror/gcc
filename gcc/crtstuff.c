@@ -172,8 +172,10 @@ __do_global_dtors_aux (void)
   if (completed)
     return;
 
-  if (__dso_handle && __cxa_finalize)
+#ifdef CRTSTUFFS_O
+  if (__cxa_finalize)
     __cxa_finalize (__dso_handle);
+#endif
 
   while (*p)
     {
