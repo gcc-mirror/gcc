@@ -44,7 +44,9 @@
 #pragma GCC system_header
 
   //  22.2.1.5  Template class codecvt
-  /// Base class for codecvt facet providing conversion result enum.
+  /**
+   *  @brief  Base class for codecvt facet providing conversion result enum.
+   */
   class codecvt_base
   {
   public:
@@ -102,11 +104,12 @@
        *  beginning and carried from a previous call if continuing
        *  conversion.  There are no guarantees about how @a state is used.
        *
-       *  The result returned is a member of codecvt_base::result.  If all the
-       *  input is converted, returns codecvt_base::ok.  If no conversion is
-       *  necessary, returns codecvt_base::noconv.  If the input ends early or
-       *  there is insufficient space in the output, returns codecvt_base::partial.
-       *  Otherwise the conversion failed and codecvt_base::error is returned.
+       *  The result returned is a member of codecvt_base::result.  If
+       *  all the input is converted, returns codecvt_base::ok.  If no
+       *  conversion is necessary, returns codecvt_base::noconv.  If
+       *  the input ends early or there is insufficient space in the
+       *  output, returns codecvt_base::partial.  Otherwise the
+       *  conversion failed and codecvt_base::error is returned.
        *
        *  @param  state  Persistent conversion state data.
        *  @param  from  Start of input.
@@ -181,11 +184,12 @@
        *  beginning and carried from a previous call if continuing
        *  conversion.  There are no guarantees about how @a state is used.
        *
-       *  The result returned is a member of codecvt_base::result.  If all the
-       *  input is converted, returns codecvt_base::ok.  If no conversion is
-       *  necessary, returns codecvt_base::noconv.  If the input ends early or
-       *  there is insufficient space in the output, returns codecvt_base::partial.
-       *  Otherwise the conversion failed and codecvt_base::error is returned.
+       *  The result returned is a member of codecvt_base::result.  If
+       *  all the input is converted, returns codecvt_base::ok.  If no
+       *  conversion is necessary, returns codecvt_base::noconv.  If
+       *  the input ends early or there is insufficient space in the
+       *  output, returns codecvt_base::partial.  Otherwise the
+       *  conversion failed and codecvt_base::error is returned.
        *
        *  @param  state  Persistent conversion state data.
        *  @param  from  Start of input.
@@ -267,7 +271,7 @@
       do_max_length() const throw() = 0;
     };
 
-  // 22.2.1.5 Template class codecvt
+  /// @brief  22.2.1.5 Template class codecvt
   // NB: Generic, mostly useless implementation.
   template<typename _InternT, typename _ExternT, typename _StateT>
     class codecvt
@@ -330,7 +334,7 @@
   template<typename _InternT, typename _ExternT, typename _StateT>
     locale::id codecvt<_InternT, _ExternT, _StateT>::id;
 
-  // codecvt<char, char, mbstate_t> required specialization
+  /// @brief  codecvt<char, char, mbstate_t> required specialization
   template<>
     class codecvt<char, char, mbstate_t>
     : public __codecvt_abstract_base<char, char, mbstate_t>
@@ -388,7 +392,7 @@
   };
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  // codecvt<wchar_t, char, mbstate_t> required specialization
+  /// @brief  codecvt<wchar_t, char, mbstate_t> required specialization
   template<>
     class codecvt<wchar_t, char, mbstate_t>
     : public __codecvt_abstract_base<wchar_t, char, mbstate_t>
@@ -448,7 +452,7 @@
     };
 #endif //_GLIBCXX_USE_WCHAR_T
 
-  // 22.2.1.6  Template class codecvt_byname
+  /// @brief  22.2.1.6  Template class codecvt_byname
   template<typename _InternT, typename _ExternT, typename _StateT>
     class codecvt_byname : public codecvt<_InternT, _ExternT, _StateT>
     {

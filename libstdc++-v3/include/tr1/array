@@ -40,7 +40,7 @@ namespace std
 {
 namespace tr1
 {
-  // [6.2.2] Class template array template
+  /// @brief  [6.2.2] Class template array template
   // Requires complete type _Tp.
   template<typename _Tp, size_t _Nm = 1>
     struct array

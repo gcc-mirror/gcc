@@ -43,19 +43,10 @@
 
 namespace __gnu_cxx
 {
-  /**
-   *  This is a fixed size (power of 2) allocator which - when
-   *  compiled with thread support - will maintain one freelist per
-   *  size per thread plus a "global" one. Steps are taken to limit
-   *  the per thread freelist sizes (by returning excess back to
-   *  "global").
-   *
-   *  Further details:
-   *  http://gcc.gnu.org/onlinedocs/libstdc++/ext/mt_allocator.html
-   */
   typedef void (*__destroy_handler)(void*);
   typedef void (*__create_handler)(void);
 
+  /// @brief  Base class for pool object.
   struct __pool_base
   {
     // Using short int as type for the binmap implies we are never
@@ -187,8 +178,11 @@ namespace __gnu_cxx
     bool 			_M_init;
   };
 
-  // Data describing the underlying memory pool, parameterized on
-  // threading support.
+
+  /**
+   *  @brief  Data describing the underlying memory pool, parameterized on
+   *  threading support.
+   */
   template<bool _Thread>
     class __pool;
 
@@ -198,7 +192,7 @@ namespace __gnu_cxx
   template<>
     class __pool<false>;
 
-  // Specialization for single thread.
+  /// Specialization for single thread.
   template<>
     class __pool<false> : public __pool_base
     {
@@ -265,7 +259,7 @@ namespace __gnu_cxx
   };
  
 #ifdef __GTHREADS
-   // Specialization for thread enabled, via gthreads.h.
+  /// Specialization for thread enabled, via gthreads.h.
   template<>
     class __pool<true> : public __pool_base
     {
@@ -405,9 +399,11 @@ namespace __gnu_cxx
 #endif
 
 
+  /// @brief  Policy for shared __pool objects.
   template<template <bool> class _PoolTp, bool _Thread>
     struct __common_pool_policy;
 
+  /// Partial specialization for single thread.
   template<template <bool> class _PoolTp>
     struct __common_pool_policy<_PoolTp, false>
     {
@@ -438,6 +434,7 @@ namespace __gnu_cxx
     };
 
 #ifdef __GTHREADS
+  /// Partial specialization for thread enabled, via gthreads.h.
   template<template <bool> class _PoolTp>
     struct __common_pool_policy<_PoolTp, true>
     {
@@ -478,9 +475,11 @@ namespace __gnu_cxx
 #endif
 
  
+  /// @brief  Policy for individual __pool objects.
   template<typename _Tp, template <bool> class _PoolTp, bool _Thread>
     struct __per_type_pool_policy;
 
+  /// Partial specialization for single thread.
   template<typename _Tp, template <bool> class _PoolTp>
     struct __per_type_pool_policy<_Tp, _PoolTp, false>
     {
@@ -515,6 +514,7 @@ namespace __gnu_cxx
     };
 
 #ifdef __GTHREADS
+  /// Partial specialization for thread enabled, via gthreads.h.
   template<typename _Tp, template <bool> class _PoolTp>
     struct __per_type_pool_policy<_Tp, _PoolTp, true>
     {
@@ -558,6 +558,7 @@ namespace __gnu_cxx
     };
 #endif
 
+  /// @brief  Base class for _Tp dependent member functions.
   template<typename _Tp>
     class __mt_alloc_base 
     {
@@ -598,6 +599,16 @@ namespace __gnu_cxx
 #define __thread_default false
 #endif
 
+  /**
+   *  @brief  This is a fixed size (power of 2) allocator which - when
+   *  compiled with thread support - will maintain one freelist per
+   *  size per thread plus a "global" one. Steps are taken to limit
+   *  the per thread freelist sizes (by returning excess back to
+   *  the "global" list).
+   *
+   *  Further details:
+   *  http://gcc.gnu.org/onlinedocs/libstdc++/ext/mt_allocator.html
+   */
   template<typename _Tp, 
 	   typename _Poolp = __common_pool_policy<__pool, __thread_default> >
     class __mt_alloc : public __mt_alloc_base<_Tp>

@@ -57,6 +57,8 @@
 namespace __gnu_cxx
 {
   /**
+   *  @brief  Base class for __pool_alloc.
+   *
    *  @if maint
    *  Uses various allocators to fulfill underlying requests (and makes as
    *  few requests as possible when in default high-speed pool mode).
@@ -71,7 +73,6 @@ namespace __gnu_cxx
    *     without permanently losing part of the object.
    *
    *  @endif
-   *  (See @link Allocators allocators info @endlink for more.)
    */
     class __pool_alloc_base
     {
@@ -116,6 +117,7 @@ namespace __gnu_cxx
     };
 
 
+  /// @brief  Class __pool_alloc.
   template<typename _Tp>
     class __pool_alloc : private __pool_alloc_base
     {

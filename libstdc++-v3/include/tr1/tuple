@@ -35,7 +35,7 @@ namespace tr1
   // when the tuple is not maximum possible size.
   struct _NullClass { };
 
-  // Foward definition of the tuple class
+  /// @brief  Foward definition of the tuple class.
   template<typename _Tp0 = _NullClass, typename _Tp1 = _NullClass,
 	   typename _Tp2 = _NullClass, typename _Tp3 = _NullClass,
 	   typename _Tp4 = _NullClass, typename _Tp5 = _NullClass,
@@ -43,7 +43,7 @@ namespace tr1
 	   typename _Tp8 = _NullClass, typename _Tp9 = _NullClass>
     class tuple;
 
-  // Gives the type of the ith element of a given tuple type.
+  /// @brief  Gives the type of the ith element of a given tuple type.
   template<int __i, typename _Tp>
     struct tuple_element;
 
@@ -117,7 +117,7 @@ namespace tr1
 				  _Tp7, _Tp8, _Tp9> >
     { typedef _Tp9 type; };
 
-  // Finds the size of a given tuple type.
+  /// @brief  Finds the size of a given tuple type.
   template<typename _Tp>
     struct tuple_size;
 

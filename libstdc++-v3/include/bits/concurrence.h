@@ -71,10 +71,10 @@ namespace __gnu_cxx
 {
   typedef __glibcxx_mutex_type mutex_type;
   
-  // Scoped lock idiom.
+  /// @brief  Scoped lock idiom.
   // Acquire the mutex here with a constructor call, then release with
   // the destructor call in accordance with RAII style.
-   class lock
+  class lock
   {
     // Externally defined and initialized.
     mutex_type& device;

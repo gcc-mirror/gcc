@@ -46,6 +46,7 @@
 
 namespace __gnu_cxx
 {
+  /// @brief  Class stdio_sync_filebuf.
   template<typename _CharT, typename _Traits = std::char_traits<_CharT> >
     class stdio_sync_filebuf : public std::basic_streambuf<_CharT, _Traits>
     {

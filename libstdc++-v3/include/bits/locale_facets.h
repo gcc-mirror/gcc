@@ -1511,7 +1511,7 @@ namespace std
   // Include host and configuration specific ctype inlines.
   #include <bits/ctype_inline.h>
 
-  // 22.2.1.2  Template class ctype_byname
+  /// @brief  22.2.1.2  Template class ctype_byname
   template<typename _CharT>
     class ctype_byname : public ctype<_CharT>
     {

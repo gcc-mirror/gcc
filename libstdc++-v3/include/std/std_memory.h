@@ -336,7 +336,7 @@ namespace std
 	  }
       }
       
-      /** @{
+      /** 
        *  @brief  Automatic conversions
        *
        *  These operations convert an %auto_ptr into and from an auto_ptr_ref
@@ -368,7 +368,6 @@ namespace std
       template<typename _Tp1>
         operator auto_ptr<_Tp1>() throw()
         { return auto_ptr<_Tp1>(this->release()); }
-      /** @}  */
   };
 } // namespace std
 

@@ -1,3 +1,30 @@
+2004-11-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/17218
+	PR libstdc++/17223
+	* docs/doxygen/filter: Remove.
+	* docs/doxygen/filter.sed: Remove.
+	* docs/doxygen/mainpage.html: Add link to functions.
+	* docs/doxygen/run_doxygen: Changes due to new source filtering.
+	* docs/doxygen/user.cfg.in: Update to doxygen 1.3.9.1, tweak.
+	* include/bits/allocator.h: Tweaks for doxygen.
+	* include/bits/char_traits.h: Same.
+	* include/bits/codecvt.h: Same.
+	* include/bits/concurrence.h: Same.
+	* include/bits/locale_facets.h: Same.
+	* include/ext/array_allocator.h: Same.
+	* include/ext/debug_allocator.h: Same.
+	* include/ext/malloc_allocator.h: Same.
+	* include/ext/mt_allocator.h: Same.
+	* include/ext/new_allocator.h: Same.
+	* include/ext/pool_allocator.h: Same.
+	* include/ext/stdio_sync_filebuf.h: Same.
+	* include/std/std_memory.h: Same.
+	* include/tr1/array: Same.
+	* include/tr1/tuple: Same.
+	* config/locale/ieee_1003.1-2001/codecvt_specializations.h: Same.
+	* config/os/gnu-linux/ctype_base.h: Same.
+
 2004-11-04  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (num_get<>::do_get(bool&)):
