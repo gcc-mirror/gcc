@@ -4485,9 +4485,12 @@ expand_expr (exp, target, tmode, modifier)
     case COMPONENT_REF:
     case BIT_FIELD_REF:
       /* If the operand is a CONSTRUCTOR, we can just extract the
-	 appropriate field if it is present.  */
+	 appropriate field if it is present.  Don't do this if we have
+	 already written the data since we want to refer to that copy
+	 and varasm.c assumes that's what we'll do.  */
       if (code != ARRAY_REF
-	  && TREE_CODE (TREE_OPERAND (exp, 0)) == CONSTRUCTOR)
+	  && TREE_CODE (TREE_OPERAND (exp, 0)) == CONSTRUCTOR
+	  && TREE_CST_RTL (TREE_OPERAND (exp, 0)) == 0)
 	{
 	  tree elt;
 
@@ -6066,6 +6069,7 @@ expand_expr (exp, target, tmode, modifier)
 		= assign_stack_temp (inner_mode,
 				     int_size_in_bytes (inner_type), 1);
 
+	      mark_temp_addr_taken (memloc);
 	      emit_move_insn (memloc, op0);
 	      op0 = memloc;
 	    }
