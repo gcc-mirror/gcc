@@ -78,33 +78,37 @@ static Method_t search_for_method_in_hierarchy (Class class, SEL sel);
 Method_t search_for_method_in_list(MethodList_t list, SEL op);
 id nil_method(id, SEL, ...);
 
-/* Given a selector, return the proper forwarding implementation. */
-__inline__
-IMP
-__objc_get_forward_imp (SEL sel)
-{
-  if (__objc_msg_forward)
-    {
-      IMP result;
-      if ((result = __objc_msg_forward (sel)))
-        return result;
-    }
-  else
-    {
-      const char *t = sel->sel_types;
+/* Given a selector, return the proper forwarding implementation.  */
+__inline__ 
+IMP 
+__objc_get_forward_imp (SEL sel) 
+{ 
+  /* If a custom forwarding hook was registered, try getting a forwarding
+   * function from it.  */
+  if (__objc_msg_forward) 
+    { 
+      IMP result; 
+      if ((result = __objc_msg_forward (sel)) != NULL) 
+        return result; 
+    } 
 
-      if (t && (*t == '[' || *t == '(' || *t == '{')
-#ifdef OBJC_MAX_STRUCT_BY_VALUE
-          && objc_sizeof_type(t) > OBJC_MAX_STRUCT_BY_VALUE
-#endif
-          )
-        return (IMP)__objc_block_forward;
-      else if (t && (*t == 'f' || *t == 'd'))
-        return (IMP)__objc_double_forward;
-      else
-        return (IMP)__objc_word_forward;
-    }
-}
+  /* In all other cases, use the default forwarding functions built using
+   * __builtin_apply and friends.  */
+  { 
+    const char *t = sel->sel_types; 
+ 
+    if (t && (*t == '[' || *t == '(' || *t == '{') 
+#ifdef OBJC_MAX_STRUCT_BY_VALUE 
+        && objc_sizeof_type(t) > OBJC_MAX_STRUCT_BY_VALUE 
+#endif 
+        ) 
+      return (IMP)__objc_block_forward; 
+    else if (t && (*t == 'f' || *t == 'd')) 
+      return (IMP)__objc_double_forward; 
+    else 
+      return (IMP)__objc_word_forward; 
+  } 
+} 
 
 /* Given a class and selector, return the selector's implementation.  */
 __inline__
