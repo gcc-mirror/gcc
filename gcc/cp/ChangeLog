@@ -1,3 +1,15 @@
+1998-10-15  Mark Mitchell  <mark@markmitchell.com>
+
+	* class.c (maybe_warn_about_overly_private_class): Improve error
+	messages for class with only private constructors.
+
+	* cp-tree.def (TYPENAME_TYPE): Add to documentation.
+	* cp-tree.h (TYPENAME_TYPE_FULLNAME): Document.
+	(build_typename_type): New function.
+	* decl.c (build_typename_type): Broken out from ...
+	(make_typename_type): Use it.
+	* search.c (lookup_field): Likewise.
+
 1998-10-14 Benjamin Kosnik  <bkoz@rhino.cygnus.com>
 
 	* pt.c (convert_nontype_argument): Check against type_referred_to.

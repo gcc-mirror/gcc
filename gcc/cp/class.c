@@ -2013,12 +2013,18 @@ maybe_warn_about_overly_private_class (t)
 	    has_nonprivate_method = 1;
 	    break;
 	  }
-	else
+	else if (!DECL_CONSTRUCTOR_P (fn) && !DECL_DESTRUCTOR_P (fn))
 	  has_member_fn = 1;
       } 
 
   if (!has_nonprivate_method && has_member_fn) 
     {
+      /* There are no non-private methods, and there's at least one
+	 private member function that isn't a constructor or
+	 destructor.  (If all the private members are
+	 constructors/destructors we want to use the code below that
+	 issues error messages specifically referring to
+	 constructors/destructors.)  */
       int i;
       tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
       for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); i++)
