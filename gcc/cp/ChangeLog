@@ -1,5 +1,8 @@
 1999-09-23  Mark Mitchell  <mark@codesourcery.com>
 
+	* ir.texi: Improve documentation for TARGET_EXPRs.  Discuss
+	STMT_IS_FULL_EXPR_P.
+
 	* cp-tree.h (language_function): Add cannot_inline.
 	* decl.c (start_function): Restore current_function_cannot_inline
 	from the saved value.
