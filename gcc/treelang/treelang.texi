@@ -12,8 +12,8 @@
 
 @set version-treelang 1.0
 
-@set last-update 2001-07-30
-@set copyrights-treelang 1995,1996,1997,1998,1999,2000,2001,2002
+@set last-update 2004-03-21
+@set copyrights-treelang 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
 
 @set email-general gcc@@gcc.gnu.org
 @set email-bugs gcc-bugs@@gcc.gnu.org or bug-gcc@@gnu.org
@@ -885,7 +885,8 @@ files and accepts Treelang-specific command-line options, plus some
 command-line options that are designed to cater to Treelang users
 but apply to other languages as well.
 
-@xref{G++ and GCC,,Compile C; C++; or Objective-C,GCC,Using and Porting GCC},
+@xref{G++ and GCC,,Programming Languages Supported by GCC,GCC,Using
+the GNU Compiler Collection (GCC)},
 for information on the way different languages are handled
 by the GCC compiler (@code{gcc}).
 
