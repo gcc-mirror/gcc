@@ -1816,12 +1816,10 @@ end_java_method (void)
 void
 java_expand_body (tree fndecl)
 {
-  const char *saved_input_filename = input_filename;
-  int saved_lineno = input_line;
+  location_t saved_location = input_location;
 
   current_function_decl = fndecl;
-  input_filename = DECL_SOURCE_FILE (fndecl);
-  input_line = DECL_SOURCE_LINE (fndecl);
+  input_location = DECL_SOURCE_LOCATION (fndecl);
 
   timevar_push (TV_EXPAND);
 
@@ -1858,8 +1856,7 @@ java_expand_body (tree fndecl)
 
   timevar_pop (TV_EXPAND);
 
-  input_filename = saved_input_filename;
-  input_line = saved_lineno;
+  input_location = saved_location;
 
   current_function_decl = NULL_TREE;
 }

@@ -472,7 +472,7 @@ read_class (tree name)
   JCF this_jcf, *jcf;
   tree icv, class = NULL_TREE;
   tree save_current_class = current_class;
-  const char *save_input_filename = input_filename;
+  location_t save_location = input_location;
   JCF *save_current_jcf = current_jcf;
 
   if ((icv = IDENTIFIER_CLASS_VALUE (name)) != NULL_TREE)
@@ -550,7 +550,7 @@ read_class (tree name)
     }
 
   current_class = save_current_class;
-  input_filename = save_input_filename;
+  input_location = save_location;
   current_jcf = save_current_jcf;
   return 1;
 }
@@ -703,8 +703,7 @@ static void
 parse_class_file (void)
 {
   tree method;
-  const char *save_input_filename = input_filename;
-  int save_lineno = input_line;
+  location_t save_location = input_location;
 
   java_layout_seen_class_methods ();
 
@@ -799,9 +798,8 @@ parse_class_file (void)
 
   finish_class ();
 
-  (*debug_hooks->end_source_file) (save_lineno);
-  input_filename = save_input_filename;
-  input_line = save_lineno;
+  (*debug_hooks->end_source_file) (save_location.line);
+  input_location = save_location;
 }
 
 /* Parse a source file, as pointed by the current value of INPUT_FILENAME. */
@@ -984,10 +982,11 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 
 	  if (twice)
 	    {
-	      const char *saved_input_filename = input_filename;
-	      input_filename = value;
-	      warning ("source file seen twice on command line and will be compiled only once");
-	      input_filename = saved_input_filename;
+	      location_t warn_loc;
+	      warn_loc.file = value;
+	      warn_loc.line = 0;
+	      warning ("%Hsource file seen twice on command line and "
+		       "will be compiled only once", &warn_loc);
 	    }
 	  else
 	    {
