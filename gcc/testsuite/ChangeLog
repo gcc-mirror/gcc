@@ -1,3 +1,7 @@
+2004-06-21  Richard Sandiford  <rsandifo@redhat.com>
+
+	* g++.dg/opt/placeholder1.C: New test.
+
 2004-06-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/compat/struct-complex-1_x.c: Add dummy symbol.
