@@ -8095,7 +8095,7 @@ finish_objc ()
   if (objc_static_instances)
     generate_static_references ();
 
-  if (objc_implementation_context || class_names_chain
+  if (imp_list || class_names_chain
       || meth_var_names_chain || meth_var_types_chain || sel_ref_chain)
     generate_objc_symtab_decl ();
 
