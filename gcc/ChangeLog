@@ -1,3 +1,10 @@
+2000-03-23  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.h (ARG_POINTER_CFA_OFFSET): New definition,
+	try to protect against middle-end changes that break binary
+	compatibility.
+	(DWARF_FRAME_REGISTERS): New definition, likewise for backend.
+
 2000-03-24  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (load_immed_address):  Add DP reg clobber.

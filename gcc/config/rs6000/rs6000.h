@@ -2672,6 +2672,11 @@ do {									\
 #define INCOMING_RETURN_ADDR_RTX   gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)
 #define DWARF_FRAME_RETURN_COLUMN  DWARF_FRAME_REGNUM (LINK_REGISTER_REGNUM)
 
+/* These values are set like this for backwards compatibility,
+   and can't be changed no matter how wrong they are :-(.  */
+#define DWARF_FRAME_REGISTERS 77
+#define ARG_POINTER_CFA_OFFSET(FNDECL) 0
+
 /* Define results of standard character escape sequences.  */
 #define TARGET_BELL 007
 #define TARGET_BS 010
