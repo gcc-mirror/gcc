@@ -44,33 +44,27 @@ std::string test01()
   // Empty string sanity check.
   std::string str01;
   std::string::iterator __i_start = str01.begin();
-  char* __p_start = __i_start.base();
   std::string::iterator __i_end = str01.end();
-  char* __p_end = __i_end.base();
   std::string::size_type len = str01.size();
-  test = __p_start == __p_end;
+  test = __i_start == __i_end;
   test &= len == 0;
 
   // Full string sanity check.
   std::string str02("these golden days, i spend waiting for you:\n 
               Betty Carter on Verve with I'm Yours and You're Mine.");
   __i_start = str02.begin();
-  __p_start = __i_start.base();
   __i_end = str02.end();
-  __p_end = __i_end.base();
   len = str02.size();
-  test &= __p_start != __p_end;
+  test &= __i_start != __i_end;
   test &= len != 0;
  
   // Test an empty ostring stream for sanity.
   std::ostringstream ostrstream0;
   std::string str03 = ostrstream0.str();
   __i_start = str03.begin();
-  __p_start = __i_start.base();
   __i_end = str03.end();
-  __p_end = __i_end.base();
   len = str03.size();
-  test &= __p_start == __p_end;
+  test &= __i_start == __i_end;
   test &= len == 0;
   test &= str01 == str03;
 

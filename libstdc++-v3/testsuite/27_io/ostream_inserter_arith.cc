@@ -141,12 +141,24 @@ class testpunct : public numpunct<_CharT>
 {
 public:
   typedef _CharT  char_type;
+  const char_type dchar;
 
   explicit
-  testpunct(char_type decimal_char) : numpunct<_CharT>() 
-    { 
-      _M_init(decimal_char, ',', "");
-    }
+  testpunct(char_type decimal_char) : numpunct<_CharT>(), dchar(decimal_char)
+  { }
+
+protected:
+  char_type 
+  do_decimal_point() const
+  { return dchar; }
+    
+  char_type 
+  do_thousands_sep() const
+  { return ','; }
+
+  string 
+  do_grouping() const
+  { return string(); }
 };
  
 template<typename _CharT>  

@@ -409,7 +409,7 @@ bool test03() {
   strmsz_1 = fb_03.in_avail(); 
   pt_1 = fb_03.pubseekoff(2, std::ios_base::beg);
   strmsz_2 = fb_03.in_avail(); 
-  off_1 = pt_1._M_position();
+  off_1 = pt_1;
   test &= off_1 > 0;
   c1 = fb_03.snextc(); //current in pointer +1
   test &= c1 == '3';
@@ -423,7 +423,7 @@ bool test03() {
   //cur
   // 27filebuf-3.txt = bd2\n456789:;<=>?...
   pt_2 = fb_03.pubseekoff(2, std::ios_base::cur);
-  off_2 = pt_2._M_position();
+  off_2 = pt_2;
   test &= (off_2 == (off_1 + 2 + 1 + 1));
   c1 = fb_03.snextc(); //current in pointer +1
   test &= c1 == '7';
@@ -437,7 +437,7 @@ bool test03() {
   // 27filebuf-3.txt = "bd2\n456x\n9" 
   pt_2 = fb_03.pubseekoff(0, std::ios_base::end, 
 			  std::ios_base::in|std::ios_base::out);
-  off_1 = pt_2._M_position();
+  off_1 = pt_2;
   test &= off_1 > off_2; //weak, but don't know exactly where it ends
   c3 = fb_03.sputc('\n');
   strmsz_1 = fb_03.sputn("because because because. . .", 28);  
@@ -456,7 +456,7 @@ bool test03() {
   //IN|OUT
   //beg
   pt_1 = fb_03.pubseekoff(78, std::ios_base::beg);
-  off_1 = pt_1._M_position();
+  off_1 = pt_1;
   test &= off_1 > 0;
   c1 = fb_03.snextc(); 		//current in pointer +1
   test &= c1 == ' ';
@@ -464,12 +464,12 @@ bool test03() {
   c3 = fb_03.sgetc();
   fb_03.pubsync(); 		//resets pointers
   pt_2 = fb_03.pubseekpos(pt_1);
-  off_2 = pt_2._M_position();
+  off_2 = pt_2;
   test &= off_1 == off_2;
   c3 = fb_03.snextc(); 		//current in pointer +1
   test &= c2 == c3;
   pt_1 = fb_03.pubseekoff(0, std::ios_base::end);
-  off_1 = pt_1._M_position();
+  off_1 = pt_1;
   test &= off_1 > off_2;
   fb_03.sputn("\nof the wonderful things he does!!\nok", 37);
   fb_03.pubsync();
