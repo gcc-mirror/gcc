@@ -177,6 +177,7 @@ static tree save_noncopied_parts PROTO((tree, tree));
 static tree init_noncopied_parts PROTO((tree, tree));
 static int safe_from_p		PROTO((rtx, tree));
 static int fixed_type_p		PROTO((tree));
+static rtx var_rtx		PROTO((tree));
 static int get_pointer_alignment PROTO((tree, unsigned));
 static tree string_constant	PROTO((tree, tree *));
 static tree c_strlen		PROTO((tree));
@@ -4635,6 +4636,24 @@ fixed_type_p (exp)
     return 1;
   return 0;
 }
+
+/* Subroutine of expand_expr: return rtx if EXP is a
+   variable or parameter; else return 0.  */
+
+static rtx
+var_rtx (exp)
+     tree exp;
+{
+  STRIP_NOPS (exp);
+  switch (TREE_CODE (exp))
+    {
+    case PARM_DECL:
+    case VAR_DECL:
+      return DECL_RTL (exp);
+    default:
+      return 0;
+    }
+}
 
 /* expand_expr: generate code for computing expression EXP.
    An rtx for the computed value is returned.  The value is never null.
@@ -6458,24 +6477,6 @@ expand_expr (exp, target, tmode, modifier)
 	    return target;
 	  }
 
-	/* If we are not to produce a result, we have no target.  Otherwise,
-	   if a target was specified use it; it will not be used as an
-	   intermediate target unless it is safe.  If no target, use a 
-	   temporary.  */
-
-	if (ignore)
-	  temp = 0;
-	else if (original_target
-		 && safe_from_p (original_target, TREE_OPERAND (exp, 0))
-		 && GET_MODE (original_target) == mode
-		 && ! (GET_CODE (original_target) == MEM
-		       && MEM_VOLATILE_P (original_target)))
-	  temp = original_target;
-	else if (TREE_ADDRESSABLE (type))
-	  abort ();
-	else
-	  temp = assign_temp (type, 0, 0, 1);
-
 	/* Check for X ? A + B : A.  If we have this, we can copy
 	   A to the output and conditionally add B.  Similarly for unary
 	   operations.  Don't do this if X has side-effects because
@@ -6498,6 +6499,27 @@ expand_expr (exp, target, tmode, modifier)
 		 && operand_equal_p (TREE_OPERAND (exp, 1),
 				     TREE_OPERAND (TREE_OPERAND (exp, 2), 0), 0))
 	  singleton = TREE_OPERAND (exp, 1), unary_op = TREE_OPERAND (exp, 2);
+
+	/* If we are not to produce a result, we have no target.  Otherwise,
+	   if a target was specified use it; it will not be used as an
+	   intermediate target unless it is safe.  If no target, use a 
+	   temporary.  */
+
+	if (ignore)
+	  temp = 0;
+	else if (original_target
+		 && (safe_from_p (original_target, TREE_OPERAND (exp, 0))
+		     || (singleton && GET_CODE (original_target) == REG
+			 && REGNO (original_target) >= FIRST_PSEUDO_REGISTER
+			 && original_target == var_rtx (singleton)))
+		 && GET_MODE (original_target) == mode
+		 && ! (GET_CODE (original_target) == MEM
+		       && MEM_VOLATILE_P (original_target)))
+	  temp = original_target;
+	else if (TREE_ADDRESSABLE (type))
+	  abort ();
+	else
+	  temp = assign_temp (type, 0, 0, 1);
 
 	/* If we had X ? A + 1 : A and we can do the test of X as a store-flag
 	   operation, do this as A + (X != 0).  Similarly for other simple
