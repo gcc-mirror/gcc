@@ -1,3 +1,9 @@
+2003-08-23  Phil Edwards  <pme@gcc.gnu.org>
+
+	* configure.in:  Use newline instead of semicolon when assuming
+	shell arguments in a for loop.
+	* configure:  Regenerated.
+
 2003-08-22  Jason Eckhardt  <jle@rice.edu>
 
 	* MAINTAINERS: Resurrect the i860 maintainer.

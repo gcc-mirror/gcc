@@ -74,7 +74,8 @@ cat <<\EOF_SED > conftestsed
 s,\\,\\\\,g; s,\$,$$,g
 EOF_SED
 tmp="'$progname'"
-for ac_arg ; do
+for ac_arg
+do
   tmp="$tmp '"`echo "$ac_arg" | sed -fconftestsed`
 done
 rm -f conftestsed
