@@ -667,7 +667,8 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   {
     Calendar cal = Calendar.getInstance();
     cal.setTimeInMillis(time);
-    return cal.get(Calendar.DAY_OF_WEEK);
+    // For Calendar, Sunday is 1.  For Date, Sunday is 0.
+    return cal.get(Calendar.DAY_OF_WEEK) - 1;
   }
 
   /**
