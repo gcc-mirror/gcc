@@ -603,12 +603,12 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
       fprintf (FILE, "\tsprd sb,tos\n");			\
       if (TARGET_REGPARM)					\
 	{							\
-	  fprintf (FILE, "\taddr _GLOBAL_OFFSET_TABLE_(pc),tos\n"); \
+	  fprintf (FILE, "\taddr __GLOBAL_OFFSET_TABLE_(pc),tos\n"); \
 	  fprintf (FILE, "\tlprd sb,tos\n");			\
 	}							\
       else							\
 	{							\
-	  fprintf (FILE, "\taddr _GLOBAL_OFFSET_TABLE_(pc),r0\n"); \
+	  fprintf (FILE, "\taddr __GLOBAL_OFFSET_TABLE_(pc),r0\n"); \
 	  fprintf (FILE, "\tlprd sb,r0\n");			\
 	}							\
     }								\
@@ -851,12 +851,7 @@ __transfer_from_trampoline ()		\
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
-extern int current_function_uses_pic_offset_table, flag_pic;
-#define LEGITIMATE_CONSTANT_P(X) \
-  (((flag_pic && ! current_function_uses_pic_offset_table	\
-     && global_symbolic_reference_mentioned_p (X))?		\
-      (current_function_uses_pic_offset_table = 1):0		\
-   ), 1)
+#define LEGITIMATE_CONSTANT_P(X) 1
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -910,7 +905,10 @@ extern int current_function_uses_pic_offset_table, flag_pic;
    || (GET_CODE (X) == PLUS						\
        && GET_CODE (XEXP (X, 0)) == REG					\
        && REG_OK_FOR_BASE_P (XEXP (X, 0))				\
-       && CONSTANT_ADDRESS_P (XEXP (X, 1))				\
+       && (flag_pic ? 							\
+	     CONSTANT_ADDRESS_NO_LABEL_P (XEXP (X, 1))	 		\
+	   :								\
+	     CONSTANT_ADDRESS_P (XEXP (X, 1))) 				\
        && (GET_CODE (X) != CONST_INT || NS32K_DISPLACEMENT_P (INTVAL (X)))))
 
 /* 1 if integer I will fit in a 4 byte displacement field.
@@ -963,6 +961,7 @@ extern int current_function_uses_pic_offset_table, flag_pic;
 #define GO_IF_INDEXABLE_ADDRESS(X, ADDR) \
 { if (GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X)) goto ADDR;		\
   if (INDIRECTABLE_2_ADDRESS_P (X)) goto ADDR;				\
+  if (INDIRECTABLE_1_ADDRESS_P (X)) goto ADDR;				\
 }
 
 /* 1 if PROD is either a reg times size of mode MODE
@@ -992,7 +991,7 @@ extern int current_function_uses_pic_offset_table, flag_pic;
   extern int current_function_uses_pic_offset_table, flag_pic;		\
   xfooy = X;								\
   if (flag_pic && ! current_function_uses_pic_offset_table		\
-      && global_symbolic_reference_mentioned_p (X))			\
+      && global_symbolic_reference_mentioned_p (X, 1))			\
     current_function_uses_pic_offset_table = 1;				\
   GO_IF_NONINDEXED_ADDRESS (xfooy, ADDR);				\
   if (GET_CODE (xfooy) == PLUS)						\
@@ -1028,6 +1027,17 @@ extern int current_function_uses_pic_offset_table, flag_pic;
    For the ns32k, we do nothing */
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)   {}
+
+/* Nonzero if the constant value X is a legitimate general operand
+   when generating PIC code.  It is given that flag_pic is on and 
+   that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
+
+extern int current_function_uses_pic_offset_table, flag_pic;
+#define LEGITIMATE_PIC_OPERAND_P(X) \
+  (((! current_function_uses_pic_offset_table			\
+     && global_symbolic_reference_mentioned_p (X, 1))?		\
+      (current_function_uses_pic_offset_table = 1):0		\
+   ), 1)
 
 /* Define this macro if references to a symbol must be treated
    differently depending on something about the variable or
