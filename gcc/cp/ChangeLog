@@ -47,6 +47,8 @@
 	* tinfo.cc: Add #pragma implementation.
 	(operator==): Move from inc/typeinfo and tinfo2.cc.
 
+	* typeck2.c (my_friendly_abort): Add URL.
+
 1998-10-05  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* method.c (build_decl_overload_real): Clear
