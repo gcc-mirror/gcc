@@ -1,3 +1,8 @@
+2005-03-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/18380
+	* config/ia64/unwind-ia64.c (_Unwind_FindTableEntry): Removed.
+
 2005-03-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (h8300_init_once): Use MASK_H8300S_1
