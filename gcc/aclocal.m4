@@ -513,9 +513,9 @@ strdup __argz_count __argz_stringify __argz_next])
      else
        AC_MSG_CHECKING(for catalogs to be installed)
        NEW_LINGUAS=
-       for lang in ${LINGUAS=$ALL_LINGUAS}; do
-         case "$ALL_LINGUAS" in
-          *$lang*) NEW_LINGUAS="$NEW_LINGUAS $lang" ;;
+       for lang in $ALL_LINGUAS; do
+         case " $LINGUAS " in
+           *" $lang "*) NEW_LINGUAS="$NEW_LINGUAS $lang" ;;
          esac
        done
        LINGUAS=$NEW_LINGUAS

@@ -1,3 +1,12 @@
+2000-05-30  Philipp Thomas  <pthomas@suse.de>
+
+	* Makefile.in.in: Create compiled catalogs in objdir, not
+	srcdir. Create gcc.pot and cat-tbl-id.c only in maintainer
+	mode.
+	* gcc.pot: Generated and checked in.
+	* cat-tbl-id.c: Generated and checked in.
+	* stamp-cat-id: Generated and checked in.
+
 2000-04-28  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* POTFILES.in: Remove pcp.h.
