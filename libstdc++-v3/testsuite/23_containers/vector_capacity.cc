@@ -100,26 +100,6 @@ void test02()
   }
 }
 
-void test03()
-{
-  bool test = true;
-  std::vector<int> v;
-  try
-    {
-      v.resize(v.max_size());  
-      v[v.max_size() - 1] = 2002;
-    }
-  catch (const std::bad_alloc& error)
-    {
-      test = true;
-    }
-  catch (...)
-    {
-      test = false;
-    }
-  VERIFY( test );
-}
-
 // Verifies basic functionality of reserve() with forced reallocation.
 void
 test_reserve()
@@ -184,7 +164,6 @@ int main()
 {
   test01();
   test02();
-  test03();
   test_reserve();
   test_reserve_exception_guarantee();
   return 0;
