@@ -1,3 +1,30 @@
+2005-03-02  Douglas Gregor  <doug.gregor@gmail.com>
+
+        * include/tr1/functional (_Has_result_type): Cleanup.
+        (_Result_of_impl): Handle member data pointers correctly.
+        (reference_wrapper): Support invocation.
+        Move repetition code into new file include/tr1/repeat.h.
+        * include/tr1/functional_iterate.h (reference_wrapper): Support
+        invocation.  Cleanup long lines.
+        * include/tr1/ref_wrap_iterate.h (reference_wrapper): Declare
+        invocation operators.
+        * include/tr1/repeat.h: Code repetition header.
+        * include/Makefile.am: Add ref_wrap_iterate.h, repeat.h
+        * include/Makefile.in: Add ref_wrap_iterate.h, repeat.h
+        * testsuite/tr1/3_function_objects/reference_wrapper/invoke.cc:
+        New test of reference_wrapper invocation.
+        * testsuite/tr1/3_function_objects/reference_wrapper/typedefs.cc:
+        New test of reference_wrapper typedefs and base classes.
+        * testsuite/tr1/3_function_objects/result_of.cc: Trivial cleanup
+        (e-mail address).
+
+2005-03-02  Douglas Gregor  <doug.gregor@gmail.com>
+
+        * include/tr1/function (result_of): New class template.
+        * include/tr1/functional/iterator.h: Implementation of TR1
+        result_of.
+        * testsuite/tr1/3_function_objects/result_of.cc: New test
+
 2005-03-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/19065
