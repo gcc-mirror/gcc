@@ -1,3 +1,7 @@
+Sat Feb  1 14:14:40 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (combine_simplify_rtx):  Use reversed_comparison_code_parts.
+
 2003-02-01  Richard Sandiford  <rsandifo@redhat.com>
 
 	* flags.h (flag_volatile): Remove declaration.
