@@ -1,3 +1,9 @@
+Mon Sep 21 09:14:49 1998   Robert Lipe  <robertl@dgii.com>
+
+	* i386.h: (TARGET_SWITCHES) Add description fields for flags 
+	documented in install.texi.
+	(TARGET_OPTIONS) Likewise.
+
 Mon Sep 21 01:39:03 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
@@ -14,7 +20,7 @@ Mon Sep 21 01:53:05 1998  Felix Lee  <flee@cygnus.com>
 Mon Sep 21 00:52:12 1998  Per Bothner  <bothner@cygnus.com>
 
 	* Makefile.in (LIBS):  Link in libiberty.a.
-	* c-common.c, gcc.c, toplev.c:  Repalce (some) bcopy calls by memcpy.
+	* c-common.c, gcc.c, toplev.c:  Replace (some) bcopy calls by memcpy.
 
 Sun Sep 20 23:28:11 1998  Richard Henderson  <rth@cygnus.com>
 

@@ -177,33 +177,33 @@ extern const int x86_double_with_add;
 #define TARGET_STACK_PROBE (target_flags & MASK_STACK_PROBE)
 
 #define TARGET_SWITCHES							\
-{ { "80387",			 MASK_80387 },				\
-  { "no-80387",			-MASK_80387 },				\
-  { "hard-float",		 MASK_80387 },				\
-  { "soft-float",		-MASK_80387 },				\
-  { "no-soft-float",		 MASK_80387 },				\
-  { "386",			 0 },					\
-  { "no-386",			 0 },					\
-  { "486",			 0 },					\
-  { "no-486",			 0 },					\
-  { "pentium",			 0 },					\
-  { "pentiumpro",		 0 },					\
-  { "rtd",			 MASK_RTD },				\
-  { "no-rtd",			-MASK_RTD },				\
-  { "align-double",		 MASK_ALIGN_DOUBLE },			\
-  { "no-align-double",		-MASK_ALIGN_DOUBLE },			\
-  { "svr3-shlib",		 MASK_SVR3_SHLIB },			\
-  { "no-svr3-shlib",		-MASK_SVR3_SHLIB },			\
-  { "ieee-fp",			 MASK_IEEE_FP },			\
-  { "no-ieee-fp",		-MASK_IEEE_FP },			\
-  { "fp-ret-in-387",		 MASK_FLOAT_RETURNS },			\
-  { "no-fp-ret-in-387",		-MASK_FLOAT_RETURNS },			\
-  { "no-fancy-math-387",	 MASK_NO_FANCY_MATH_387 },		\
-  { "fancy-math-387",		-MASK_NO_FANCY_MATH_387 },		\
+{ { "80387",			 MASK_80387, "Use hardware fp" },	\
+  { "no-80387",			-MASK_80387, "Do not use hardware fp" },\
+  { "hard-float",		 MASK_80387, "Use hardware fp" },	\
+  { "soft-float",		-MASK_80387, "Do not use hardware fp" },\
+  { "no-soft-float",		 MASK_80387, "Use hardware fp" },	\
+  { "386",			 0, "Optimize for i80386" },		\
+  { "no-386",			 0, "" },				\
+  { "486",			 0, "Optimize for i80486" },		\
+  { "no-486",			 0, "" },				\
+  { "pentium",			 0, "Optimize for Pentium" },		\
+  { "pentiumpro",		 0, "Optimize for Pentium Pro, Pentium II" },\
+  { "rtd",			 MASK_RTD, "Alternate calling convention" },\
+  { "no-rtd",			-MASK_RTD, "Use normal calling convention" },\
+  { "align-double",		 MASK_ALIGN_DOUBLE, "Align doubles on dword boundary" },\
+  { "no-align-double",		-MASK_ALIGN_DOUBLE, "Align doubles on word boundary" },		\
+  { "svr3-shlib",		 MASK_SVR3_SHLIB, "Uninitialized locals in .bss"  },			\
+  { "no-svr3-shlib",		-MASK_SVR3_SHLIB, "Uninitialized locals in .data" },			\
+  { "ieee-fp",			 MASK_IEEE_FP, "Use IEEE math for fp comparisons" },	\
+  { "no-ieee-fp",		-MASK_IEEE_FP, "Do not use IEEE math for fp comparisons" },			\
+  { "fp-ret-in-387",		 MASK_FLOAT_RETURNS, "Return values of functions in FPU registers" },			\
+  { "no-fp-ret-in-387",		-MASK_FLOAT_RETURNS , "Do not return values of functions in FPU registers"},			\
+  { "no-fancy-math-387",	 MASK_NO_FANCY_MATH_387, "Do not generate sin, sos, sqrt for 387" },		\
+  { "fancy-math-387",		-MASK_NO_FANCY_MATH_387, "Generate sin, cos, sqrt for FPU"},		\
   { "omit-leaf-frame-pointer",	 MASK_OMIT_LEAF_FRAME_POINTER }, 	\
   { "no-omit-leaf-frame-pointer",-MASK_OMIT_LEAF_FRAME_POINTER },       \
-  { "no-wide-multiply",		 MASK_NO_WIDE_MULTIPLY },		\
-  { "wide-multiply",		-MASK_NO_WIDE_MULTIPLY },		\
+  { "no-wide-multiply",		 MASK_NO_WIDE_MULTIPLY, "multiplies of 32 bits constrained to 32 bits" },		\
+  { "wide-multiply",		-MASK_NO_WIDE_MULTIPLY, "multiplies of 32 bits are 64 bits" },		\
   { "schedule-prologue",	 MASK_SCHEDULE_PROLOGUE },		\
   { "no-schedule-prologue",	-MASK_SCHEDULE_PROLOGUE },		\
   { "debug-addr",		 MASK_DEBUG_ADDR },			\
@@ -260,13 +260,13 @@ extern int ix86_arch;
    option if the fixed part matches.  The actual option name is made
    by appending `-m' to the specified name.  */
 #define TARGET_OPTIONS							\
-{ { "cpu=",		&ix86_cpu_string},				\
-  { "arch=",		&ix86_arch_string},				\
-  { "reg-alloc=",	&i386_reg_alloc_order },			\
-  { "regparm=",		&i386_regparm_string },				\
-  { "align-loops=",	&i386_align_loops_string },			\
-  { "align-jumps=",	&i386_align_jumps_string },			\
-  { "align-functions=",	&i386_align_funcs_string },			\
+{ { "cpu=",		&ix86_cpu_string, "Schedule code for given CPU"}, \
+  { "arch=",		&ix86_arch_string, "Generate code for given CPU"}, \
+  { "reg-alloc=",	&i386_reg_alloc_order, "Control allocation order of integer registers" }, \
+  { "regparm=",		&i386_regparm_string, "Number of registers used to pass integer arguments" }, \
+  { "align-loops=",	&i386_align_loops_string, "Loop code aligned to this power of 2" }, \
+  { "align-jumps=",	&i386_align_jumps_string, "Jump targets are aligned to this power of 2" }, \
+  { "align-functions=",	&i386_align_funcs_string, "Function starts are aligned to this power of 2" }, \
   { "branch-cost=",	&i386_branch_cost_string },			\
   SUBTARGET_OPTIONS							\
 }
