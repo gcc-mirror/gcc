@@ -1,5 +1,5 @@
 /* Procedure integration for GNU CC.
-   Copyright (C) 1988, 91, 93-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1988, 91, 93-98, 1999 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1893,6 +1893,36 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	      copy = emit_move_insn (newdest, static_chain_value);
 	      static_chain_value = 0;
 	    }
+
+	  /* If this is setting the virtual stack vars register, this must
+	     be the code at the handler for a builtin longjmp.  The value
+	     saved in the setjmp buffer will be the address of the frame
+	     we've made for this inlined instance within our frame.  But we
+	     know the offset of that value so we can use it to reconstruct
+	     our virtual stack vars register from that value.  If we are
+	     copying it from the stack pointer, leave it unchanged.  */
+	  else if (set != 0
+		   && rtx_equal_p (SET_DEST (set), virtual_stack_vars_rtx))
+	    {
+	      temp = map->reg_map[REGNO (SET_DEST (set))];
+	      temp = map->const_equiv_map[REGNO (temp)];
+
+	      if (GET_CODE (temp) != PLUS
+		  || ! rtx_equal_p (XEXP (temp, 0), virtual_stack_vars_rtx)
+		  || GET_CODE (XEXP (temp, 1)) != CONST_INT)
+		abort ();
+
+	      if (rtx_equal_p (SET_SRC (set), stack_pointer_rtx))
+		temp = SET_SRC (set);
+	      else
+		temp
+		  = force_operand (plus_constant (SET_SRC (set),
+						  - INTVAL (XEXP (temp, 1))),
+				   NULL_RTX);
+
+	      copy = emit_move_insn (SET_DEST (set), temp);
+	    }
+
 	  else
 	    copy = emit_insn (copy_rtx_and_substitute (pattern, map));
 	  /* REG_NOTES will be copied later.  */
