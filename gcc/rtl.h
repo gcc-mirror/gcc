@@ -865,11 +865,7 @@ enum reg_note
   REG_SETJMP,
 
   /* Indicate calls that always returns.  */
-  REG_ALWAYS_RETURN,
-
-  /* Indicate that the memory load references a vtable.  The expression
-     is of the form (plus (symbol_ref vtable_sym) (const_int offset)).  */
-  REG_VTABLE_REF
+  REG_ALWAYS_RETURN
 };
 
 /* The base value for branch probability notes.  */
@@ -2200,11 +2196,6 @@ extern void remove_insn (rtx);
 extern void emit_insn_after_with_line_notes (rtx, rtx, rtx);
 extern enum rtx_code classify_insn (rtx);
 extern rtx emit (rtx);
-/* Query and clear/ restore no_line_numbers.  This is used by the
-   switch / case handling in stmt.c to give proper line numbers in
-   warnings about unreachable code.  */
-int force_line_numbers (void);
-void restore_line_number_status (int old_value);
 extern void renumber_insns (FILE *);
 extern void remove_unnecessary_notes (void);
 extern rtx delete_insn (rtx);

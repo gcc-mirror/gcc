@@ -473,6 +473,8 @@ extern void dump_cfg_stats (FILE *);
 extern void debug_cfg_stats (void);
 extern void debug_loop_ir (void);
 extern void print_loop_ir (FILE *);
+extern void cleanup_dead_labels (void);
+extern void group_case_labels (void);
 extern void cleanup_tree_cfg (void);
 extern tree first_stmt (basic_block);
 extern tree last_stmt (basic_block);

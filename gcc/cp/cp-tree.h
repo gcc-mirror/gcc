@@ -1033,7 +1033,7 @@ struct lang_type GTY(())
 {
   union lang_type_u 
   {
-    struct lang_type_header GTY((tag ("2"))) h;
+    struct lang_type_header GTY((skip (""))) h;
     struct lang_type_class  GTY((tag ("1"))) c;
     struct lang_type_ptrmem GTY((tag ("0"))) ptrmem;
   } GTY((desc ("%h.h.is_lang_type_class"))) u;
