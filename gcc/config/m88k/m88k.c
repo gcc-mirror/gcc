@@ -2645,17 +2645,15 @@ emit_bcnd (op, label)
      rtx label;
 {
   if (m88k_compare_op1 == const0_rtx)
-    emit_jump_insn (optimize
-		    ? gen_bxx (emit_test (op, VOIDmode), label)
-		    : gen_bcnd (gen_rtx (op, VOIDmode,
-					 m88k_compare_op0, const0_rtx),
-				label));
+    emit_jump_insn( gen_bcnd (
+			gen_rtx (op, VOIDmode,m88k_compare_op0, const0_rtx),
+			label));
   else if (m88k_compare_op0 == const0_rtx)
-    emit_jump_insn (optimize
-		    ? gen_bxx (emit_test (op, VOIDmode), label)
-		    : gen_bcnd (gen_rtx (swap_condition (op), VOIDmode,
-					 m88k_compare_op1, const0_rtx),
-				label));
+    emit_jump_insn( gen_bcnd(
+		      gen_rtx(
+			swap_condition (op),
+			VOIDmode, m88k_compare_op1, const0_rtx),
+		      label));
   else if (op != EQ && op != NE)
     emit_jump_insn (gen_bxx (emit_test (op, VOIDmode), label));
   else
