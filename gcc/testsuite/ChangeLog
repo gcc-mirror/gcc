@@ -1,3 +1,20 @@
+2003-12-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/compile/20020910-1.c: Disable if __INT_MAX is
+	too small.
+	* gcc.c-torture/compile/930217-1.c: Likewise.
+	* gcc.c-torture/compile/930513-1.c: Likewise.
+	* gcc.c-torture/execute/920908-2.c: Likewise.
+	* gcc.c-torture/execute/921204-1.c: Likewise.
+	* gcc.c-torture/execute/930621-1.c: Likewise.
+	* gcc.c-torture/execute/930630-1.c: Likewise.
+	* gcc.c-torture/execute/931031-1.c: Likewise.
+	* gcc.c-torture/execute/980602-2.c: Likewise.
+	* gcc.c-torture/execute/comp-goto-1.c: Likewise.
+	* gcc.c-torture/execute/compndlit-1.c: Likewise.
+	* gcc.c-torture/execute/extzvsi.c: Likewise.
+	* gcc.c-torture/unsorted/ext.c: Likewise.
+
 2003-12-20  Andrew Pinski  <pinskia@gcc.gnu.org>
 
 	PR target/12749

@@ -1,3 +1,8 @@
+/* The bit-field below would have a problem if __INT_MAX__ is too
+   small.  */
+#if __INT_MAX__ < 2147483647
+int a;
+#else
 double g ();
 typedef union {
   struct {
@@ -12,3 +17,4 @@ f(x, n)
   ((s *)&x)->u.e -= n;
   x = g((double)x, -n);
 }
+#endif

@@ -1,3 +1,12 @@
+/* The bit-field below would have a problem if __INT_MAX__ is too
+   small.  */
+#if __INT_MAX__ < 2147483647
+int
+main (void)
+{
+  exit (0);
+}
+#else
 typedef struct {
   unsigned b0:1, f1:17, b18:1, b19:1, b20:1, f2:11;
 } bf;
@@ -34,3 +43,4 @@ main()
     abort();
   exit(0);
 }
+#endif
