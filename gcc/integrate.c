@@ -2451,7 +2451,17 @@ copy_rtx_and_substitute (orig, map)
 	return gen_rtx_SUBREG (GET_MODE (orig), SUBREG_REG (copy),
 			       SUBREG_WORD (orig) + SUBREG_WORD (copy));
       else if (GET_CODE (copy) == CONCAT)
-	return (subreg_realpart_p (orig) ? XEXP (copy, 0) : XEXP (copy, 1));
+	{
+	  rtx retval = subreg_realpart_p (orig) ? XEXP (copy, 0) : XEXP (copy, 1);
+
+	  if (GET_MODE (retval) == GET_MODE (orig))
+	    return retval;
+	  else
+	    return gen_rtx_SUBREG (GET_MODE (orig), retval,
+				   (SUBREG_WORD (orig) %
+				    (GET_MODE_UNIT_SIZE (GET_MODE (SUBREG_REG (orig)))
+				     / (unsigned) UNITS_PER_WORD)));
+	}
       else
 	return gen_rtx_SUBREG (GET_MODE (orig), copy,
 			       SUBREG_WORD (orig));
