@@ -225,7 +225,7 @@ append_include_chain (pfile, dir, path, cxx_aware)
     {
       /* Dirs that don't exist are silently ignored.  */
       if (errno != ENOENT)
-	cpp_notice_from_errno (pfile, dir);
+	cpp_errno (pfile, DL_ERROR, dir);
       else if (CPP_OPTION (pfile, verbose))
 	fprintf (stderr, _("ignoring nonexistent directory \"%s\"\n"), dir);
       free (dir);
@@ -234,7 +234,7 @@ append_include_chain (pfile, dir, path, cxx_aware)
 
   if (!S_ISDIR (st.st_mode))
     {
-      cpp_notice (pfile, "%s: Not a directory", dir);
+      cpp_error_with_line (pfile, DL_ERROR, 0, 0, "%s: Not a directory", dir);
       free (dir);
       return;
     }
@@ -308,16 +308,16 @@ remove_dup_dirs (pfile, head)
 	  {
 	    if (cur->sysp && !other->sysp)
 	      {
-		cpp_warning (pfile,
-			     "changing search order for system directory \"%s\"",
-			     cur->name);
+		cpp_error (pfile, DL_WARNING,
+			   "changing search order for system directory \"%s\"",
+			   cur->name);
 		if (strcmp (cur->name, other->name))
-		  cpp_warning (pfile, 
-			       "  as it is the same as non-system directory \"%s\"",
-			       other->name);
+		  cpp_error (pfile, DL_WARNING,
+			     "  as it is the same as non-system directory \"%s\"",
+			     other->name);
 		else
-		  cpp_warning (pfile, 
-			       "  as it has already been specified as a non-system directory");
+		  cpp_error (pfile, DL_WARNING,
+			     "  as it has already been specified as a non-system directory");
 	      }
 	    cur = remove_dup_dir (pfile, prev);
 	    break;
@@ -1092,7 +1092,7 @@ output_deps (pfile)
       deps_stream = fopen (CPP_OPTION (pfile, deps_file), deps_mode);
       if (deps_stream == 0)
 	{
-	  cpp_notice_from_errno (pfile, CPP_OPTION (pfile, deps_file));
+	  cpp_errno (pfile, DL_ERROR, CPP_OPTION (pfile, deps_file));
 	  return;
 	}
     }
@@ -1106,7 +1106,7 @@ output_deps (pfile)
   if (deps_stream != stdout)
     {
       if (ferror (deps_stream) || fclose (deps_stream) != 0)
-	cpp_fatal (pfile, "I/O error on output");
+	cpp_error (pfile, DL_FATAL, "I/O error on output");
     }
 }
 
@@ -1350,7 +1350,8 @@ cpp_handle_option (pfile, argc, argv, ignore)
       else if (CPP_OPTION (pfile, out_fname) == NULL)
 	CPP_OPTION (pfile, out_fname) = argv[i];
       else
-	cpp_fatal (pfile, "too many filenames. Type %s --help for usage info",
+	cpp_error (pfile, DL_FATAL,
+		   "too many filenames. Type %s --help for usage info",
 		   progname);
     }
   else
@@ -1377,7 +1378,8 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	      arg = argv[++i];
 	      if (!arg)
 		{
-		  cpp_fatal (pfile, cl_options[opt_index].msg, argv[i - 1]);
+		  cpp_error (pfile, DL_FATAL,
+			     cl_options[opt_index].msg, argv[i - 1]);
 		  return argc;
 		}
 	    }
@@ -1545,7 +1547,7 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	    CPP_OPTION (pfile, out_fname) = arg;
 	  else
 	    {
-	      cpp_fatal (pfile, "output filename specified twice");
+	      cpp_error (pfile, DL_FATAL, "output filename specified twice");
 	      return argc;
 	    }
 	  break;
@@ -1657,7 +1659,7 @@ cpp_handle_option (pfile, argc, argv, ignore)
 		}
 	      else
 		{
-		  cpp_fatal (pfile, "-I- specified twice");
+		  cpp_error (pfile, DL_FATAL, "-I- specified twice");
 		  return argc;
 		}
  	    }
@@ -1843,7 +1845,8 @@ cpp_post_options (pfile)
       (CPP_OPTION (pfile, print_deps_missing_files)
        || CPP_OPTION (pfile, deps_file)
        || CPP_OPTION (pfile, deps_phony_targets)))
-    cpp_fatal (pfile, "you must additionally specify either -M or -MM");
+    cpp_error (pfile, DL_FATAL,
+	       "you must additionally specify either -M or -MM");
 }
 
 /* Set up dependency-file output.  On exit, if print_deps is non-zero

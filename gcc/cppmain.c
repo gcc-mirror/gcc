@@ -89,7 +89,7 @@ cpp_preprocess_file (pfile)
       print.outf = fopen (options->out_fname, "w");
       if (print.outf == NULL)
 	{
-	  cpp_notice_from_errno (pfile, options->out_fname);
+	  cpp_errno (pfile, DL_ERROR, options->out_fname);
 	  return;
 	}
     }
@@ -120,7 +120,7 @@ cpp_preprocess_file (pfile)
   if (print.outf != stdout)
     {
       if (ferror (print.outf) || fclose (print.outf))
-	cpp_notice_from_errno (pfile, options->out_fname);
+	cpp_errno (pfile, DL_ERROR, options->out_fname);
     }
 }
 

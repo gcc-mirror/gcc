@@ -1,3 +1,49 @@
+2002-04-14  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpperror.c (print_location): Don't print include chain
+	if line == 0.
+	(cpp_begin_message): Update to use DL_ macros.
+	(cpp_ice, cpp_fatal, cpp_error_from_errno, cpp_warning,
+	cpp_warning_with_line, cpp_pedwarn, cpp_pedwarn_with_line,
+	cpp_notice, cpp_notice_from_errno): Remove.
+	(cpp_error, cpp_error_with_line): Update to take a diagnostic
+	level.
+	(cpp_errno): New.
+	* cppexp.c (CPP_ICE): Remove.
+	(SYNTAX_ERROR, SYNTAX_ERROR2, parse_number, parse_defined,
+	lex, integer_overflow, _cpp_parse_expr): Update.
+	* cppfiles.c (read_include_file, find_include_file,
+	handle_missing_header, _cpp_read_file, remap_filename): Update.
+	* cpphash.h (enum error_type): Remove.
+	(_cpp_begin_message): Update.
+	* cppinit.c (append_include_chain, remove_dup_dirs, output_deps,
+	cpp_handle_option, cpp_post_options): Update.
+	* cpplex.c (trigraph_p, skip_escaped_newlines, skip_block_comment,
+	skip_whitespace, parse_identifier, parse_slow, parse_string,
+	_cpp_lex_direct, cpp_spell_token, maybe_read_ucs, cpp_parse_escape,
+	cpp_interpret_charconst): Update.
+	* cpplib.c (check_eol, directive_diagnostics, _cpp_handle_directive,
+	lex_macro_node, do_undef, glue_header_name, parse_include,
+	do_include_common, read_flag, do_line, do_linemarker, do_ident,
+	cpp_register_pragma, do_pragma_once, do_pragma_system_header,
+	do_pragma_poison, do_pragma_dependency, _cpp_do__Pragma, do_else,
+	do_elif, do_endif, parse_answer, parse_assertion, do_assert,
+	_cpp_pop_buffer, do_diagnostic): Update.
+	* cpplib.h (DL_WARNING, DL_WARNING_SYSHDR, DL_PEDWARN, DL_ERROR,
+	DL_FATAL, DL_ICE, DL_EXTRACT, DL_WARNING_P): New.
+	(cpp_ice, cpp_fatal, cpp_error_from_errno, cpp_warning,
+	cpp_warning_with_line, cpp_pedwarn, cpp_pedwarn_with_line,
+	cpp_notice, cpp_notice_from_errno): Remove.
+	(cpp_error, cpp_error_with_line): Update to take a diagnostic
+	level.
+	(cpp_errno): New.
+	* cppmacro.c (builtin_macro, stringify_arg, paste_all_tokens,
+	collect_args, enter_macro_context, save_parameter, parse_params,
+	_cpp_create_definition, check_trad_stringification,
+	cpp_macro_definition): Update.
+	* cppmain.c (cpp_preprocess_file): Update.
+	* fix-header.c (read_scan_file): Update.
+
 2002-04-14  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/linux.h (CPP_PREDEFINES): Fix missing backslash.

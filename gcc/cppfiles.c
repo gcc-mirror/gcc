@@ -392,7 +392,7 @@ read_include_file (pfile, inc)
 	 does not bite us.  */
       if (inc->st.st_size > INTTYPE_MAXIMUM (ssize_t))
 	{
-	  cpp_error (pfile, "%s is too large", inc->name);
+	  cpp_error (pfile, DL_ERROR, "%s is too large", inc->name);
 	  goto fail;
 	}
       size = inc->st.st_size;
@@ -422,8 +422,8 @@ read_include_file (pfile, inc)
 	      if (count == 0)
 		{
 		  if (!STAT_SIZE_TOO_BIG (inc->st))
-		    cpp_warning
-		      (pfile, "%s is shorter than expected", inc->name);
+		    cpp_error (pfile, DL_WARNING,
+			       "%s is shorter than expected", inc->name);
 		  size = offset;
 		  buf = xrealloc (buf, size + 1);
 		  inc->st.st_size = size;
@@ -437,7 +437,7 @@ read_include_file (pfile, inc)
     }
   else if (S_ISBLK (inc->st.st_mode))
     {
-      cpp_error (pfile, "%s is a block device", inc->name);
+      cpp_error (pfile, DL_ERROR, "%s is a block device", inc->name);
       goto fail;
     }
   else
@@ -473,7 +473,7 @@ read_include_file (pfile, inc)
   return 0;
 
  perror_fail:
-  cpp_error_from_errno (pfile, inc->name);
+  cpp_errno (pfile, DL_ERROR, inc->name);
  fail:
   return 1;
 }
@@ -563,7 +563,8 @@ find_include_file (pfile, header, type)
 
   if (path == NULL)
     {
-      cpp_error (pfile, "no include path in which to find %s", fname);
+      cpp_error (pfile, DL_ERROR, "no include path in which to find %s",
+		 fname);
       return NO_INCLUDE_PATH;
     }
 
@@ -685,12 +686,10 @@ handle_missing_header (pfile, fname, angle_brackets)
      we can still produce correct output.  Otherwise, we can't produce
      correct output, because there may be dependencies we need inside
      the missing file, and we don't know what directory this missing
-     file exists in.  FIXME: Use a future cpp_diagnostic_with_errno ()
-     for both of these cases.  */
-  else if (CPP_PRINT_DEPS (pfile) && ! print_dep)
-    cpp_warning (pfile, "%s: %s", fname, xstrerror (errno));
+     file exists in.  */
   else
-    cpp_error_from_errno (pfile, fname);
+    cpp_errno (pfile, CPP_PRINT_DEPS (pfile) && ! print_dep
+	       ? DL_WARNING: DL_ERROR, fname);
 }
 
 /* Handles #include-family directives (distinguished by TYPE),
@@ -754,7 +753,7 @@ _cpp_read_file (pfile, fname)
 
   if (f == NULL)
     {
-      cpp_error_from_errno (pfile, fname);
+      cpp_errno (pfile, DL_ERROR, fname);
       return false;
     }
 
@@ -1026,7 +1025,7 @@ remap_filename (pfile, name, loc)
 
   /* We know p != name as absolute paths don't call remap_filename.  */
   if (p == name)
-    cpp_ice (pfile, "absolute file name in remap_filename");
+    cpp_error (pfile, DL_ICE, "absolute file name in remap_filename");
 
   dir = (char *) alloca (p - name + 1);
   memcpy (dir, name, p - name);

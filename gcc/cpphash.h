@@ -356,8 +356,7 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #define CPP_WTRADITIONAL(PF) CPP_OPTION (PF, warn_traditional)
 
 /* In cpperror.c  */
-enum error_type { WARNING = 0, WARNING_SYSHDR, PEDWARN, ERROR, FATAL, ICE };
-extern int _cpp_begin_message PARAMS ((cpp_reader *, enum error_type,
+extern int _cpp_begin_message PARAMS ((cpp_reader *, int,
 				       unsigned int, unsigned int));
 
 /* In cppmacro.c */

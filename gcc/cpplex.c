@@ -150,16 +150,17 @@ trigraph_p (pfile)
   if (CPP_OPTION (pfile, warn_trigraphs) && !pfile->state.lexing_comment)
     {
       if (accept)
-	cpp_warning_with_line (pfile, pfile->line, CPP_BUF_COL (buffer) - 1,
-			       "trigraph ??%c converted to %c",
-			       (int) from_char,
-			       (int) _cpp_trigraph_map[from_char]);
+	cpp_error_with_line (pfile, DL_WARNING,
+			     pfile->line, CPP_BUF_COL (buffer) - 1,
+			     "trigraph ??%c converted to %c",
+			     (int) from_char,
+			     (int) _cpp_trigraph_map[from_char]);
       else if (buffer->cur != buffer->last_Wtrigraphs)
 	{
 	  buffer->last_Wtrigraphs = buffer->cur;
-	  cpp_warning_with_line (pfile, pfile->line,
-				 CPP_BUF_COL (buffer) - 1,
-				 "trigraph ??%c ignored", (int) from_char);
+	  cpp_error_with_line (pfile, DL_WARNING,
+			       pfile->line, CPP_BUF_COL (buffer) - 1,
+			       "trigraph ??%c ignored", (int) from_char);
 	}
     }
 
@@ -215,13 +216,15 @@ skip_escaped_newlines (pfile)
 
 	  if (saved_cur != buffer->cur - 1
 	      && !pfile->state.lexing_comment)
-	    cpp_warning (pfile, "backslash and newline separated by space");
+	    cpp_error (pfile, DL_WARNING,
+		       "backslash and newline separated by space");
 
 	  handle_newline (pfile);
 	  buffer->backup_to = buffer->cur;
 	  if (buffer->cur == buffer->rlimit)
 	    {
-	      cpp_pedwarn (pfile, "backslash-newline at end of file");
+	      cpp_error (pfile, DL_PEDWARN,
+			 "backslash-newline at end of file");
 	      next = EOF;
 	    }
 	  else
@@ -285,9 +288,9 @@ skip_block_comment (pfile)
 	     Don't bother to get it right across escaped newlines.  */
 	  if (CPP_OPTION (pfile, warn_comments)
 	      && buffer->cur[0] == '*' && buffer->cur[1] != '/')
-	    cpp_warning_with_line (pfile,
-				   pfile->line, CPP_BUF_COL (buffer),
-				   "\"/*\" within comment");
+	    cpp_error_with_line (pfile, DL_WARNING,
+				 pfile->line, CPP_BUF_COL (buffer),
+				 "\"/*\" within comment");
 	}
       else if (is_vspace (c))
 	handle_newline (pfile);
@@ -370,15 +373,15 @@ skip_whitespace (pfile, c)
 	    return 0;
 	  if (!warned)
 	    {
-	      cpp_warning (pfile, "null character(s) ignored");
+	      cpp_error (pfile, DL_WARNING, "null character(s) ignored");
 	      warned = 1;
 	    }
 	}
       else if (pfile->state.in_directive && CPP_PEDANTIC (pfile))
-	cpp_pedwarn_with_line (pfile, pfile->line,
-			       CPP_BUF_COL (buffer),
-			       "%s in preprocessing directive",
-			       c == '\f' ? "form feed" : "vertical tab");
+	cpp_error_with_line (pfile, DL_PEDWARN, pfile->line,
+			     CPP_BUF_COL (buffer),
+			     "%s in preprocessing directive",
+			     c == '\f' ? "form feed" : "vertical tab");
 
       c = *buffer->cur++;
     }
@@ -450,14 +453,14 @@ parse_identifier (pfile)
     {
       /* It is allowed to poison the same identifier twice.  */
       if ((result->flags & NODE_POISONED) && !pfile->state.poisoned_ok)
-	cpp_error (pfile, "attempt to use poisoned \"%s\"",
+	cpp_error (pfile, DL_ERROR, "attempt to use poisoned \"%s\"",
 		   NODE_NAME (result));
 
       /* Constraint 6.10.3.5: __VA_ARGS__ should only appear in the
 	 replacement list of a variadic macro.  */
       if (result == pfile->spec_nodes.n__VA_ARGS__
 	  && !pfile->state.va_args_ok)
-	cpp_pedwarn (pfile,
+	cpp_error (pfile, DL_PEDWARN,
 	"__VA_ARGS__ can only appear in the expansion of a C99 variadic macro");
     }
 
@@ -530,7 +533,7 @@ parse_slow (pfile, cur, number_p, plen)
      accepted as an extension.  Don't warn about it in skipped
      conditional blocks.  */
   if (saw_dollar && CPP_PEDANTIC (pfile) && ! pfile->state.skipping)
-    cpp_pedwarn (pfile, "'$' character(s) in identifier or number");
+    cpp_error (pfile, DL_PEDWARN, "'$' character(s) in identifier or number");
 
   /* Identifiers and numbers are null-terminated.  */
   *plen = obstack_object_size (stack);
@@ -647,7 +650,8 @@ parse_string (pfile, token, terminator)
 	     comments are.  */
 	unterminated:
 	  if (CPP_OPTION (pfile, lang) != CLK_ASM || terminator == '>')
-	    cpp_error (pfile, "missing terminating %c character", terminator);
+	    cpp_error (pfile, DL_ERROR, "missing terminating %c character",
+		       terminator);
 	  buffer->cur--;
 	  break;
 	}
@@ -658,7 +662,8 @@ parse_string (pfile, token, terminator)
 	  if (!warned_nulls)
 	    {
 	      warned_nulls = true;
-	      cpp_warning (pfile, "null character(s) preserved in literal");
+	      cpp_error (pfile, DL_WARNING,
+			 "null character(s) preserved in literal");
 	    }
 	}
 
@@ -881,7 +886,7 @@ _cpp_lex_direct (pfile)
 	      /* Non-empty files should end in a newline.  Don't warn
 		 for command line and _Pragma buffers.  */
 	      if (!buffer->from_stage3)
-		cpp_pedwarn (pfile, "no newline at end of file");
+		cpp_error (pfile, DL_PEDWARN, "no newline at end of file");
 	      handle_newline (pfile);
 	    }
 
@@ -1001,7 +1006,7 @@ _cpp_lex_direct (pfile)
       if (c == '*')
 	{
 	  if (skip_block_comment (pfile))
-	    cpp_error (pfile, "unterminated comment");
+	    cpp_error (pfile, DL_ERROR, "unterminated comment");
 	}
       else if (c == '/' && (CPP_OPTION (pfile, cplusplus_comments)
 			    || CPP_IN_SYSTEM_HEADER (pfile)))
@@ -1011,15 +1016,15 @@ _cpp_lex_direct (pfile)
 	  if (CPP_OPTION (pfile, lang) == CLK_GNUC89 && CPP_PEDANTIC (pfile)
 	      && ! buffer->warned_cplusplus_comments)
 	    {
-	      cpp_pedwarn (pfile,
+	      cpp_error (pfile, DL_PEDWARN,
 			   "C++ style comments are not allowed in ISO C89");
-	      cpp_pedwarn (pfile,
-			   "(this will be reported only once per input file)");
+	      cpp_error (pfile, DL_PEDWARN,
+			 "(this will be reported only once per input file)");
 	      buffer->warned_cplusplus_comments = 1;
 	    }
 
 	  if (skip_line_comment (pfile) && CPP_OPTION (pfile, warn_comments))
-	    cpp_warning (pfile, "multi-line comment");
+	    cpp_error (pfile, DL_WARNING, "multi-line comment");
 	}
       else if (c == '=')
 	{
@@ -1334,7 +1339,8 @@ cpp_spell_token (pfile, token, buffer)
     	  case CPP_WCHAR:	left = '\''; right = '\''; tag = 'L';  break;
 	  case CPP_HEADER_NAME:	left = '<';  right = '>';  tag = '\0'; break;
 	  default:
-	    cpp_ice (pfile, "unknown string token %s\n", TOKEN_NAME (token));
+	    cpp_error (pfile, DL_ICE, "unknown string token %s\n",
+		       TOKEN_NAME (token));
 	    return buffer;
 	  }
 	if (tag) *buffer++ = tag;
@@ -1346,7 +1352,7 @@ cpp_spell_token (pfile, token, buffer)
       break;
 
     case SPELL_NONE:
-      cpp_ice (pfile, "unspellable token %s", TOKEN_NAME (token));
+      cpp_error (pfile, DL_ICE, "unspellable token %s", TOKEN_NAME (token));
       break;
     }
 
@@ -1602,13 +1608,14 @@ maybe_read_ucs (pfile, pstr, limit, pc)
     return 1;
 
   if (CPP_WTRADITIONAL (pfile))
-    cpp_warning (pfile, "the meaning of '\\%c' is different in traditional C", c);
+    cpp_error (pfile, DL_WARNING,
+	       "the meaning of '\\%c' is different in traditional C", c);
 
   length = (c == 'u' ? 4: 8);
 
   if ((size_t) (limit - p) < length)
     {
-      cpp_error (pfile, "incomplete universal-character-name");
+      cpp_error (pfile, DL_ERROR, "incomplete universal-character-name");
       /* Skip to the end to avoid more diagnostics.  */
       p = limit;
     }
@@ -1621,7 +1628,7 @@ maybe_read_ucs (pfile, pstr, limit, pc)
 	    code = (code << 4) + hex_digit_value (c);
 	  else
 	    {
-	      cpp_error (pfile,
+	      cpp_error (pfile, DL_ERROR,
 			 "non-hex digit '%c' in universal-character-name", c);
 	      /* We shouldn't skip in case there are multibyte chars.  */
 	      break;
@@ -1630,7 +1637,7 @@ maybe_read_ucs (pfile, pstr, limit, pc)
     }
 
 #ifdef TARGET_EBCDIC
-  cpp_error (pfile, "universal-character-name on EBCDIC target");
+  cpp_error (pfile, DL_ERROR, "universal-character-name on EBCDIC target");
   code = 0x3f;  /* EBCDIC invalid character */
 #else
  /* True extended characters are OK.  */
@@ -1644,7 +1651,7 @@ maybe_read_ucs (pfile, pstr, limit, pc)
     ;
   /* Don't give another error if one occurred above.  */
   else if (length == 0)
-    cpp_error (pfile, "universal-character-name out of range");
+    cpp_error (pfile, DL_ERROR, "universal-character-name out of range");
 #endif
 
   *pstr = p;
@@ -1687,13 +1694,15 @@ cpp_parse_escape (pfile, pstr, limit, mask)
 
     case 'a':
       if (CPP_WTRADITIONAL (pfile))
-	cpp_warning (pfile, "the meaning of '\\a' is different in traditional C");
+	cpp_error (pfile, DL_WARNING,
+		   "the meaning of '\\a' is different in traditional C");
       c = TARGET_BELL;
       break;
 
     case 'e': case 'E':
       if (CPP_PEDANTIC (pfile))
-	cpp_pedwarn (pfile, "non-ISO-standard escape sequence, '\\%c'", c);
+	cpp_error (pfile, DL_PEDWARN,
+		   "non-ISO-standard escape sequence, '\\%c'", c);
       c = TARGET_ESC;
       break;
       
@@ -1703,7 +1712,8 @@ cpp_parse_escape (pfile, pstr, limit, mask)
 
     case 'x':
       if (CPP_WTRADITIONAL (pfile))
-	cpp_warning (pfile, "the meaning of '\\x' is different in traditional C");
+	cpp_error (pfile, DL_WARNING,
+		   "the meaning of '\\x' is different in traditional C");
 
 	{
 	  unsigned int i = 0, overflow = 0;
@@ -1721,11 +1731,13 @@ cpp_parse_escape (pfile, pstr, limit, mask)
 	    }
 
 	  if (!digits_found)
-	    cpp_error (pfile, "\\x used with no following hex digits");
+	    cpp_error (pfile, DL_ERROR, 
+		       "\\x used with no following hex digits");
 
 	  if (overflow | (i != (i & mask)))
 	    {
-	      cpp_pedwarn (pfile, "hex escape sequence out of range");
+	      cpp_error (pfile, DL_PEDWARN,
+			 "hex escape sequence out of range");
 	      i &= mask;
 	    }
 	  c = i;
@@ -1749,7 +1761,8 @@ cpp_parse_escape (pfile, pstr, limit, mask)
 
 	if (i != (i & mask))
 	  {
-	    cpp_pedwarn (pfile, "octal escape sequence out of range");
+	    cpp_error (pfile, DL_PEDWARN,
+		       "octal escape sequence out of range");
 	    i &= mask;
 	  }
 	c = i;
@@ -1764,13 +1777,13 @@ cpp_parse_escape (pfile, pstr, limit, mask)
   if (unknown)
     {
       if (ISGRAPH (c))
-	cpp_pedwarn (pfile, "unknown escape sequence '\\%c'", c);
+	cpp_error (pfile, DL_PEDWARN, "unknown escape sequence '\\%c'", c);
       else
-	cpp_pedwarn (pfile, "unknown escape sequence: '\\%03o'", c);
+	cpp_error (pfile, DL_PEDWARN, "unknown escape sequence: '\\%03o'", c);
     }
 
   if (c > mask)
-    cpp_pedwarn (pfile, "escape sequence out of range for character");
+    cpp_error (pfile, DL_PEDWARN, "escape sequence out of range for type");
 
   *pstr = str;
   return c;
@@ -1833,7 +1846,8 @@ cpp_interpret_charconst (pfile, token, warn_multi, pchars_seen)
       char_len = local_mbtowc (&wc, str, limit - str);
       if (char_len == -1)
 	{
-	  cpp_warning (pfile, "ignoring invalid multibyte character");
+	  cpp_error (pfile, DL_WARNING,
+		     "ignoring invalid multibyte character");
 	  c = *str++;
 	}
       else
@@ -1864,14 +1878,14 @@ cpp_interpret_charconst (pfile, token, warn_multi, pchars_seen)
     }
 
   if (chars_seen == 0)
-    cpp_error (pfile, "empty character constant");
+    cpp_error (pfile, DL_ERROR, "empty character constant");
   else if (chars_seen > max_chars)
     {
       chars_seen = max_chars;
-      cpp_warning (pfile, "character constant too long");
+      cpp_error (pfile, DL_WARNING, "character constant too long");
     }
   else if (chars_seen > 1 && warn_multi)
-    cpp_warning (pfile, "multi-character character constant");
+    cpp_error (pfile, DL_WARNING, "multi-character character constant");
 
   /* If relevant type is signed, sign-extend the constant.  */
   if (chars_seen)
