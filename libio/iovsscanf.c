@@ -51,8 +51,9 @@ _IO_vsscanf (string, format, args)
 #ifdef weak_alias
 weak_alias (_IO_vsscanf, __vsscanf)
 weak_alias (_IO_vsscanf, vsscanf)
-#else
-#ifdef __linux__
-#pragma weak vsscanf = _IO_vsscanf
-#endif
+#elif defined(_G_STDIO_USES_LIBIO) && defined(_G_HAVE_WEAK_SYMBOL)
+int __vsscanf (const char *, const char *, _IO_va_list)
+	    __attribute__ ((weak, alias("_IO_vsscanf")));
+int vsscanf (const char *, const char *, _IO_va_list)
+	    __attribute__ ((weak, alias("_IO_vsscanf")));
 #endif

@@ -1,3 +1,18 @@
+Fri Mar  5 01:15:15 1999  H.J. Lu  (hjl@gnu.org)
+
+        * config/linuxlibc1.mt (MT_CFLAGS): Add -D_G_STDIO_USES_LIBIO
+        -D_G_HAVE_WEAK_SYMBOL.
+
+        * genops.c: Add the proper weak alias if _G_STDIO_USES_LIBIO
+        and _G_HAVE_WEAK_SYMBOL are defined.
+        * iofclose.c: Likewise.
+        * iofeof.c: Likewise.
+        * ioferror.c: Likewise.
+        * iogetc.c: Likewise.
+        * ioputc.c: Likewise.
+        * iovsprintf.c: Likewise.
+        * iovsscanf.c: Likewise.
+
 Wed Feb 10 09:25:48 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* gen-params (VTABLE_LABEL_PREFIX): Handle windows32. 

@@ -54,8 +54,7 @@ _IO_vsprintf (string, format, args)
 
 #ifdef weak_alias
 weak_alias (_IO_vsprintf, vsprintf)
-#else
-#ifdef __linux__
-#pragma weak vsprintf = _IO_vsprintf
-#endif
+#elif defined(_G_STDIO_USES_LIBIO) && defined(_G_HAVE_WEAK_SYMBOL)
+int vsprintf (char *, const char *, _IO_va_list)
+	      __attribute__ ((weak, alias("_IO_vsprintf")));
 #endif
