@@ -269,18 +269,9 @@ public class Proxy implements Serializable
                               ? getProxyData0(loader, interfaces)
                               : ProxyData.getProxyData(pt));
 
-            // FIXME workaround for bug in gcj 3.0.x
-            // Not needed with the latest gcj from cvs
-            //clazz = (Configuration.HAVE_NATIVE_GENERATE_PROXY_CLASS
-            //	       ? generateProxyClass0(loader, data)
-            //         : new ClassFactory(data).generate(loader));
-            if (Configuration.HAVE_NATIVE_GENERATE_PROXY_CLASS)
-              clazz = generateProxyClass0(loader, data);
-            else
-              {
-                ClassFactory cf = new ClassFactory(data);
-                clazz = cf.generate(loader);
-              }
+            clazz = (Configuration.HAVE_NATIVE_GENERATE_PROXY_CLASS
+		     ? generateProxyClass0(loader, data)
+                     : new ClassFactory(data).generate(loader));
           }
 
         Object check = proxyClasses.put(pt, clazz);
