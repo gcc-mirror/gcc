@@ -4761,7 +4761,7 @@ init_function_start (subr, filename, line)
     warning ("function returns an aggregate");
 
   current_function_returns_pointer
-    = (TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == POINTER_TYPE);
+    = POINTER_TYPE_P (TREE_TYPE (DECL_RESULT (subr)));
 
   /* Indicate that we need to distinguish between the return value of the
      present function and the return value of a function being called.  */
