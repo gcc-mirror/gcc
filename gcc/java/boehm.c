@@ -206,13 +206,13 @@ get_boehm_type_descriptor (tree type)
 	  last_set_index >>= 1;
 	  ++count;
 	}
-      value = build_int_cst (value_type, low, high);
+      value = build_int_cst_wide (value_type, low, high);
     }
   else if (! pointer_after_end)
     {
       /* Bottom two bits for bitmap mark type are 01.  */
       set_bit (&low, &high, 0);
-      value = build_int_cst (value_type, low, high);
+      value = build_int_cst_wide (value_type, low, high);
     }
   else
     {
@@ -223,7 +223,7 @@ get_boehm_type_descriptor (tree type)
 	    | DS_PROC)
 	 Here DS_PROC == 2.  */
     procedure_object_descriptor:
-      value = build_int_cst (value_type, 2, 0);
+      value = build_int_cst (value_type, 2);
     }
 
   return value;

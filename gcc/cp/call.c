@@ -919,7 +919,7 @@ convert_class_to_reference (tree t, tree s, tree expr)
      error messages, which we should not issue now because we are just
      trying to find a conversion operator.  Therefore, we use NULL,
      cast to the appropriate type.  */
-  arglist = build_int_cst (build_pointer_type (s), 0, 0);
+  arglist = build_int_cst (build_pointer_type (s), 0);
   arglist = build_tree_list (NULL_TREE, arglist);
 
   reference_type = build_reference_type (t);
@@ -2519,7 +2519,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
 
       ctors = BASELINK_FUNCTIONS (ctors);
 
-      t = build_int_cst (build_pointer_type (totype), 0, 0);
+      t = build_int_cst (build_pointer_type (totype), 0);
       args = build_tree_list (NULL_TREE, expr);
       /* We should never try to call the abstract or base constructor
 	 from here.  */
@@ -4181,7 +4181,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	if (DECL_CONSTRUCTOR_P (convfn))
 	  {
 	    tree t = build_int_cst (build_pointer_type (DECL_CONTEXT (convfn)),
-				    0, 0);
+				    0);
 
 	    args = build_tree_list (NULL_TREE, expr);
 	    if (DECL_HAS_IN_CHARGE_PARM_P (convfn)
@@ -4959,7 +4959,7 @@ build_java_interface_fn_ref (tree fn, tree instance)
         break;
       i++;
     }
-  idx = build_int_cst (NULL_TREE, i, 0);
+  idx = build_int_cst (NULL_TREE, i);
 
   lookup_args = tree_cons (NULL_TREE, klass_ref, 
 			   tree_cons (NULL_TREE, iface_ref,
@@ -5035,7 +5035,7 @@ build_special_member_call (tree instance, tree name, tree args,
   /* Handle the special case where INSTANCE is NULL_TREE.  */
   if (name == complete_ctor_identifier && !instance)
     {
-      instance = build_int_cst (build_pointer_type (class_type), 0, 0);
+      instance = build_int_cst (build_pointer_type (class_type), 0);
       instance = build1 (INDIRECT_REF, class_type, instance);
     }
   else

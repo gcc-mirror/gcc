@@ -63,9 +63,7 @@ UI_To_gnu (Uint Input, tree type)
 
   if (Input <= Uint_Direct_Last)
     gnu_ret = convert (type, build_int_cst (NULL_TREE,
-					    Input - Uint_Direct_Bias,
-					    Input < Uint_Direct_Bias
-					    ? -1 : 0));
+					    Input - Uint_Direct_Bias));
   else
     {
       Int Idx =    Uints_Ptr[Input].Loc;
@@ -76,13 +74,12 @@ UI_To_gnu (Uint Input, tree type)
       tree comp_type
 	= (TYPE_PRECISION (type) >= TYPE_PRECISION (integer_type_node)
 	   ? type : integer_type_node);
-      tree gnu_base = convert (comp_type, build_int_cst (NULL_TREE, Base, 0));
+      tree gnu_base = convert (comp_type, build_int_cst (NULL_TREE, Base));
 
       if (Length <= 0)
 	abort ();
 
-      gnu_ret = convert (comp_type, build_int_cst (NULL_TREE,
-						   First, First < 0 ? -1 : 0));
+      gnu_ret = convert (comp_type, build_int_cst (NULL_TREE, First));
       if (First < 0)
 	for (Idx++, Length--; Length; Idx++, Length--)
 	  gnu_ret = fold (build (MINUS_EXPR, comp_type,
@@ -90,7 +87,7 @@ UI_To_gnu (Uint Input, tree type)
 					      gnu_ret, gnu_base)),
 				 convert (comp_type,
 					  build_int_cst (NULL_TREE,
-							 Udigits_Ptr[Idx], 0))));
+							 Udigits_Ptr[Idx]))));
       else
 	for (Idx++, Length--; Length; Idx++, Length--)
 	  gnu_ret = fold (build (PLUS_EXPR, comp_type,
@@ -98,7 +95,7 @@ UI_To_gnu (Uint Input, tree type)
 					      gnu_ret, gnu_base)),
 				 convert (comp_type,
 					  build_int_cst (NULL_TREE,
-							 Udigits_Ptr[Idx], 0))));
+							 Udigits_Ptr[Idx]))));
     }
 
   gnu_ret = convert (type, gnu_ret);

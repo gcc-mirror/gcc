@@ -378,7 +378,7 @@ coverage_counter_alloc (unsigned counter, unsigned num)
 	 will make any clever transformation on it.  */
       char buf[20];
       tree domain_tree
-        = build_index_type (build_int_cst (NULL_TREE, 1000, 0)); /* replaced later */
+        = build_index_type (build_int_cst (NULL_TREE, 1000)); /* replaced later */
       tree gcov_type_array_type
         = build_array_type (GCOV_TYPE_NODE, domain_tree);
       tree_ctr_tables[counter]
@@ -435,7 +435,7 @@ tree_coverage_counter_ref (unsigned counter, unsigned no)
   /* "no" here is an array index, scaled to bytes later.  */
   return build4 (ARRAY_REF, GCOV_TYPE_NODE, tree_ctr_tables[counter],
 		 fold_convert (domain_type,
-			       build_int_cst (NULL_TREE, no, 0)),
+			       build_int_cst (NULL_TREE, no)),
 		 TYPE_MIN_VALUE (domain_type),
 		 size_binop (EXACT_DIV_EXPR, TYPE_SIZE_UNIT (GCOV_TYPE_NODE),
 			     size_int (TYPE_ALIGN_UNIT (GCOV_TYPE_NODE))));
@@ -610,7 +610,7 @@ build_fn_info_type (unsigned int counters)
   TREE_CHAIN (field) = fields;
   fields = field;
 
-  array_type = build_int_cst (NULL_TREE, counters - 1, 0);
+  array_type = build_int_cst (NULL_TREE, counters - 1);
   array_type = build_index_type (array_type);
   array_type = build_array_type (unsigned_type_node, array_type);
 
@@ -637,21 +637,21 @@ build_fn_info_value (const struct function_list *function, tree type)
   tree array_value = NULL_TREE;
 
   /* ident */
-  value = tree_cons (fields, build_int_cst (unsigned_intSI_type_node,
-					    function->ident, 0), value);
+  value = tree_cons (fields, build_int_cstu (unsigned_intSI_type_node,
+					     function->ident), value);
   fields = TREE_CHAIN (fields);
 
   /* checksum */
-  value = tree_cons (fields, build_int_cst (unsigned_intSI_type_node,
-					    function->checksum, 0), value);
+  value = tree_cons (fields, build_int_cstu (unsigned_intSI_type_node,
+					     function->checksum), value);
   fields = TREE_CHAIN (fields);
 
   /* counters */
   for (ix = 0; ix != GCOV_COUNTERS; ix++)
     if (prg_ctr_mask & (1 << ix))
       {
-	tree counters = build_int_cst (unsigned_type_node,
-				       function->n_ctrs[ix], 0);
+	tree counters = build_int_cstu (unsigned_type_node,
+					function->n_ctrs[ix]);
 
 	array_value = tree_cons (NULL_TREE, counters, array_value);
       }
@@ -712,8 +712,8 @@ build_ctr_info_value (unsigned int counter, tree type)
 
   /* counters */
   value = tree_cons (fields,
-		     build_int_cst (unsigned_intSI_type_node,
-				    prg_n_ctrs[counter], 0),
+		     build_int_cstu (unsigned_intSI_type_node,
+				     prg_n_ctrs[counter]),
 		     value);
   fields = TREE_CHAIN (fields);
 
@@ -721,8 +721,8 @@ build_ctr_info_value (unsigned int counter, tree type)
     {
       tree array_type;
 
-      array_type = build_int_cst (unsigned_type_node,
-				  prg_n_ctrs[counter] - 1, 0);
+      array_type = build_int_cstu (unsigned_type_node,
+				   prg_n_ctrs[counter] - 1);
       array_type = build_index_type (array_type);
       array_type = build_array_type (TREE_TYPE (TREE_TYPE (fields)),
 				     array_type);
@@ -789,8 +789,8 @@ build_gcov_info (void)
   field = build_decl (FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
   TREE_CHAIN (field) = fields;
   fields = field;
-  value = tree_cons (field, build_int_cst (unsigned_intSI_type_node,
-					   GCOV_VERSION, 0), value);
+  value = tree_cons (field, build_int_cstu (unsigned_intSI_type_node,
+					    GCOV_VERSION), value);
 
   /* next -- NULL */
   field = build_decl (FIELD_DECL, NULL_TREE, build_pointer_type (const_type));
@@ -802,8 +802,8 @@ build_gcov_info (void)
   field = build_decl (FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
   TREE_CHAIN (field) = fields;
   fields = field;
-  value = tree_cons (field, build_int_cst (unsigned_intSI_type_node,
-					   local_tick, 0), value);
+  value = tree_cons (field, build_int_cstu (unsigned_intSI_type_node,
+					    local_tick), value);
 
   /* Filename */
   string_type = build_pointer_type (build_qualified_type (char_type_node,
@@ -821,7 +821,7 @@ build_gcov_info (void)
     free (filename);
   TREE_TYPE (filename_string) = build_array_type
     (char_type_node, build_index_type
-     (build_int_cst (NULL_TREE, filename_len, 0)));
+     (build_int_cst (NULL_TREE, filename_len)));
   value = tree_cons (field, build1 (ADDR_EXPR, string_type, filename_string),
 		     value);
 
@@ -837,8 +837,7 @@ build_gcov_info (void)
     {
       tree array_type;
 
-      array_type = build_index_type (build_int_cst (NULL_TREE,
-						    n_fns - 1, 0));
+      array_type = build_index_type (build_int_cst (NULL_TREE, n_fns - 1));
       array_type = build_array_type (fn_info_type, array_type);
 
       fn_info_value = build_constructor (array_type, nreverse (fn_info_value));
@@ -852,7 +851,7 @@ build_gcov_info (void)
   TREE_CHAIN (field) = fields;
   fields = field;
   value = tree_cons (field,
-		     build_int_cst (unsigned_type_node, n_fns, 0),
+		     build_int_cstu (unsigned_type_node, n_fns),
 		     value);
 
   /* fn_info table */
@@ -866,13 +865,13 @@ build_gcov_info (void)
   TREE_CHAIN (field) = fields;
   fields = field;
   value = tree_cons (field,
-		     build_int_cst (unsigned_type_node, prg_ctr_mask, 0),
+		     build_int_cstu (unsigned_type_node, prg_ctr_mask),
 		     value);
 
   /* counters */
   ctr_info_type = build_ctr_info_type ();
   ctr_info_ary_type = build_index_type (build_int_cst (NULL_TREE,
-						       n_ctr_types, 0));
+						       n_ctr_types));
   ctr_info_ary_type = build_array_type (ctr_info_type, ctr_info_ary_type);
   for (ix = 0; ix != GCOV_COUNTERS; ix++)
     if (prg_ctr_mask & (1 << ix))

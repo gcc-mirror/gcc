@@ -113,7 +113,7 @@ gfc_trans_label_assign (gfc_code * code)
     {
       label_str = code->label->format->value.character.string;
       label_len = code->label->format->value.character.length;
-      len_tree = build_int_cst (NULL_TREE, label_len, 0);
+      len_tree = build_int_cst (NULL_TREE, label_len);
       label_tree = gfc_build_string_const (label_len + 1, label_str);
       label_tree = gfc_build_addr_expr (pchar_type_node, label_tree);
     }
@@ -287,7 +287,7 @@ gfc_trans_pause (gfc_code * code)
 
   if (code->expr == NULL)
     {
-      tmp = build_int_cst (gfc_int4_type_node, code->ext.stop_code, 0);
+      tmp = build_int_cst (gfc_int4_type_node, code->ext.stop_code);
       args = gfc_chainon_list (NULL_TREE, tmp);
       fndecl = gfor_fndecl_pause_numeric;
     }
@@ -326,7 +326,7 @@ gfc_trans_stop (gfc_code * code)
 
   if (code->expr == NULL)
     {
-      tmp = build_int_cst (gfc_int4_type_node, code->ext.stop_code, 0);
+      tmp = build_int_cst (gfc_int4_type_node, code->ext.stop_code);
       args = gfc_chainon_list (NULL_TREE, tmp);
       fndecl = gfor_fndecl_stop_numeric;
     }
@@ -1100,7 +1100,7 @@ gfc_trans_character_select (gfc_code *code)
     }
 
   type = build_array_type (select_struct, build_index_type
-			   (build_int_cst (NULL_TREE, n - 1, 0)));
+			   (build_int_cst (NULL_TREE, n - 1)));
 
   init = build1 (CONSTRUCTOR, type, nreverse(init));
   TREE_CONSTANT (init) = 1;
@@ -1118,7 +1118,7 @@ gfc_trans_character_select (gfc_code *code)
   init = gfc_build_addr_expr (pvoid_type_node, init);
   args = gfc_chainon_list (NULL_TREE, init);
 
-  tmp = build_int_cst (NULL_TREE, n, 0);
+  tmp = build_int_cst (NULL_TREE, n);
   args = gfc_chainon_list (args, tmp);
 
   tmp = gfc_build_addr_expr (pvoid_type_node, end_label);

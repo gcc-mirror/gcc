@@ -588,11 +588,11 @@ interpret_integer (const cpp_token *token, unsigned int flags)
     pedwarn ("integer constant is too large for \"%s\" type",
 	     (flags & CPP_N_UNSIGNED) ? "unsigned long" : "long");
 
-  value = build_int_cst (type, integer.low, integer.high);
+  value = build_int_cst_wide (type, integer.low, integer.high);
 
   /* Convert imaginary to a complex type.  */
   if (flags & CPP_N_IMAGINARY)
-    value = build_complex (NULL_TREE, build_int_cst (type, 0, 0), value);
+    value = build_complex (NULL_TREE, build_int_cst (type, 0), value);
 
   return value;
 }
@@ -805,9 +805,9 @@ lex_charconst (const cpp_token *token)
   /* Cast to cppchar_signed_t to get correct sign-extension of RESULT
      before possibly widening to HOST_WIDE_INT for build_int_cst.  */
   if (unsignedp || (cppchar_signed_t) result >= 0)
-    value = build_int_cst (type, result, 0);
+    value = build_int_cst_wide (type, result, 0);
   else
-    value = build_int_cst (type, (cppchar_signed_t) result, -1);
+    value = build_int_cst_wide (type, (cppchar_signed_t) result, -1);
 
   return value;
 }

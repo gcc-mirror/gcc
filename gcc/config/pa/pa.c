@@ -6117,7 +6117,7 @@ hppa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 
       /* Copied from va-pa.h, but we probably don't need to align to
 	 word size, since we generate and preserve that invariant.  */
-      u = build_int_cst (valist_type, (size > 4 ? -8 : -4), -1);
+      u = build_int_cst (valist_type, (size > 4 ? -8 : -4));
       t = build (BIT_AND_EXPR, valist_type, t, u);
 
       t = build (MODIFY_EXPR, valist_type, valist, t);

@@ -790,7 +790,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
           ASSIGN_ADDR can not be used. Equal -1 means that ASSIGN_ADDR is the
           target label's address. Other value is the length of format string
           and ASSIGN_ADDR is the address of format string.  */
-      DECL_INITIAL (length) = build_int_cst (NULL_TREE, -2, -1);
+      DECL_INITIAL (length) = build_int_cst (NULL_TREE, -2);
     }
 
   if (sym->ts.type == BT_CHARACTER)
@@ -1346,7 +1346,7 @@ build_entry_thunks (gfc_namespace * ns)
       gfc_start_block (&body);
 
       /* Pass extra parameter identifying this entry point.  */
-      tmp = build_int_cst (gfc_array_index_type, el->id, 0);
+      tmp = build_int_cst (gfc_array_index_type, el->id);
       args = tree_cons (NULL_TREE, tmp, NULL_TREE);
       string_args = NULL_TREE;
 
@@ -2113,7 +2113,7 @@ gfc_trans_entry_master_switch (gfc_entry_list * el)
       /* Add the case label.  */
       label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
       DECL_CONTEXT (label) = current_function_decl;
-      val = build_int_cst (gfc_array_index_type, el->id, 0);
+      val = build_int_cst (gfc_array_index_type, el->id);
       tmp = build_v (CASE_LABEL_EXPR, val, NULL_TREE, label);
       gfc_add_expr_to_block (&block, tmp);
       

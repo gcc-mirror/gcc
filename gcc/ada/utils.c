@@ -580,7 +580,7 @@ init_gigi_decls (tree long_long_float_type, tree exception_type)
   /* Make the types and functions used for exception processing.    */
   jmpbuf_type
     = build_array_type (gnat_type_for_mode (Pmode, 0),
-			build_index_type (build_int_cst (NULL_TREE, 5, 0)));
+			build_index_type (build_int_cst (NULL_TREE, 5)));
   create_type_decl (get_identifier ("JMPBUF_T"), jmpbuf_type, NULL,
 		    false, true, Empty);
   jmpbuf_ptr_type = build_pointer_type (jmpbuf_type);

@@ -6342,7 +6342,7 @@ sh_va_start (tree valist, rtx nextarg)
   else
     nfp = 0;
   u = fold (build (PLUS_EXPR, ptr_type_node, u,
-		   build_int_cst (NULL_TREE, UNITS_PER_WORD * nfp, 0)));
+		   build_int_cst (NULL_TREE, UNITS_PER_WORD * nfp)));
   t = build (MODIFY_EXPR, ptr_type_node, next_fp_limit, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -6357,7 +6357,7 @@ sh_va_start (tree valist, rtx nextarg)
   else
     nint = 0;
   u = fold (build (PLUS_EXPR, ptr_type_node, u,
-		   build_int_cst (NULL_TREE, UNITS_PER_WORD * nint, 0)));
+		   build_int_cst (NULL_TREE, UNITS_PER_WORD * nint)));
   t = build (MODIFY_EXPR, ptr_type_node, next_o_limit, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);

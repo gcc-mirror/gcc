@@ -1,3 +1,109 @@
+2004-08-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.h  (build_int_cst): New, sign extended constant.
+	(build_int_cstu): New, zero extended constant.
+	(build_int_cst_wide): Renamed from build_int_cst.
+	* tree.c (build_int_cst, build_int_cstu): New.
+	(build_int_cst_wide): Renamed from build_int_cst.
+	(make_vector_type, build_common_tree_nodes,
+	build_common_tree_nodes_2): Adjust build_int_cst calls.
+	* builtins.c (expand_builtin_prefetch, expand_builtin_strstr,
+	expand_builtin_strpbrk, expand_builtin_fputs,
+	build_string_literal, expand_builtin_printf,
+	expand_builtin_sprintf, fold_builtin_classify_type,
+	fold_builtin_lround, fold_builtin_bitop, fold_builtin_isascii,
+	fold_builtin_toascii, fold_builtin_isdigit,
+	simplify_builtin_strstr, simplify_builtin_strpbrk,
+	fold_builtin_fputs, simplify_builtin_sprintf): Likewise.
+	* c-common.c (start_fname_decls, fix_string_type, shorten_compare,
+	DEF_ATTR_INT): Likewise.
+	* c-decl.c (complete_array_type, check_bitfield_type_and_width):
+	Likewise.
+	* c-lex.c (interpret_integer, lex_charconst): Likewise.
+	* c-parse.in (primary) <TYPES_COMPATIBLE_P> Likewise.
+	* c-pretty-print.c (pp_c_integer_constant): Likewise.
+	* c-typeck.c (really_start_incremental_init, push_init_level,
+	set_nonincremental_init_from_string): Likewise.
+	* calls.c (load_register_parameters): Likewise.
+	convert.c (convert_to_pointer): Likewise.
+	coverage.c (coverage_counter_alloc, tree_coverage_counter_ref,
+	build_fn_info_type, build_fn_info_value, build_ctr_info_value,
+	build_gcov_info): Likewise.
+	* except.c (init_eh, assign_filter_values): Likewise.
+	* expmed.c (store_fixed_bit_field, extract_bit_field,
+	extract_fixed_bit_field, extract_split_bit_field, expand_shift,
+	expand_mult_const, expand_mult_highpart_adjust, extract_high_half,
+	expand_sdiv_pow2, expand_divmod, make_tree): Likewise.
+	* expr.c (convert_move, emit_group_load, emit_group_store,
+	expand_assignment, store_constructor, store_field,
+	expand_expr_real_1, reduce_to_bit_field_precision): Likewise.
+	fold-const.c (force_fit_type, int_const_binop, fold_convert_const,
+	invert_truthvalue, optimize_bit_field_compare,
+	decode_field_reference, all_ones_mask_p, constant_boolean_node,
+	fold_div_compare, fold, fold_read_from_constant_string,
+	fold_negate_const, fold_abs_const, fold_not_const, round_up,
+	round_down): Likewise.
+	* function.c (assign_parm_setup_block): Likewise.
+	* stmt.c (shift_return_value, expand_case, estimate_case_costs):
+	Likewise.
+	* stor-layout.c (layout_type, initialize_sizetypes,
+	set_min_and_max_values_for_integral_type): Likewise.
+	* tree-chrec.c (chrec_fold_multiply_poly_poly,
+	reset_evolution_in_loop): Likewise.
+	* tree-chrec.h (build_polynomial_chrec): Likewise.
+	* tree-complex.c (build_replicated_const): Likewise.
+	* tree-eh.c (honor_protect_cleanup_actions,
+	lower_try_finally_onedest, lower_try_finally_copy,
+	lower_try_finally_switch): Likewise.
+	* tree-mudflap.c (mf_build_string, mx_register_decls,
+	mudflap_register_call, mudflap_enqueue_constant): Likewise.
+	* tree-nested.c (get_trampoline_type, get_nl_goto_field): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-ssa-ccp.c (widen_bitfield, maybe_fold_offset_to_array_ref):
+	Likewise.
+	* tree-ssa-dom.c (simplify_rhs_and_lookup_avail_expr): Likewise.
+	* tree-ssa-loop-niter.c (number_of_iterations_cond,
+	loop_niter_by_eval, upper_bound_in_type, lower_bound_in_type):
+	Likewise.
+	* tree-ssa-loop-ivcanon.c (create_canonical_iv,
+	canonicalize_loop_induction_variables): Likewise.
+	* tree-vectorizer.c (vect_create_index_for_array_ref,
+	vect_transform_loop_bound, vect_compute_data_ref_alignment):
+	Likewise.
+
+	* config/alpha/alpha.c (alpha_initialize_trampoline, alpha_va_start,
+	alpha_gimplify_va_arg_1): Likewise.
+	* config/arm/arm.c (arm_get_cookie_size): Likewise.
+	* config/c4x/c4x.c (c4x_gimplify_va_arg_expr): Likewise.
+	* config/i386/i386.c (ix86_va_start, ix86_gimplify_va_arg): Likewise.
+	* config/ia64/ia64.c (ia64_gimplify_va_arg): Likewise.
+	* config/mips/mips.c (mips_build_builtin_va_list, mips_va_start,
+	mips_gimplify_va_arg_expr): Likewise.
+	* config/pa/pa.c (hppa_gimplify_va_arg_expr): Likewise.
+	* config/rs6000/rs6000.c (rs6000_va_start, rs6000_gimplify_va_arg,
+	add_compiler_branch_island): Likewise.
+	* config/s390/s390.c (s390_va_start): Likewise.
+	* config/sh/sh.c (sh_va_start): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_expand_builtin_va_start):
+	Likewise.
+	* config/xtensa/xtensa.c (xtensa_va_start,
+	xtensa_gimplify_va_arg_expr): Likewise.
+	
+	* objc/objc-act.c (build_objc_string_object,
+	build_objc_symtab_template, init_def_list, init_objc_symtab,
+	init_module_descriptor, generate_static_references,
+	build_selector_translation_table, get_proto_encoding,
+	build_typed_selector_reference, build_selector_reference,
+	build_next_objc_exception_stuff,
+	build_method_prototype_list_template, generate_descriptor_table,
+	generate_protocols, build_protocol_initializer,
+	build_ivar_list_template, build_method_list_template,
+	build_ivar_list_initializer, generate_ivars_list,
+	generate_dispatch_table, generate_protocol_list,
+	build_category_initializer, build_shared_structure_initializer,
+	generate_shared_structures, handle_impent,
+	generate_objc_image_info): Likewise.
+
 2004-04-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	* cfglayout.c (duplicate_insn_chain): Remove references to

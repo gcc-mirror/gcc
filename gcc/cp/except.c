@@ -721,7 +721,7 @@ build_throw (tree exp)
 	  cleanup = build1 (ADDR_EXPR, cleanup_type, cleanup);
 	}
       else
-	cleanup = build_int_cst (cleanup_type, 0, 0);
+	cleanup = build_int_cst (cleanup_type, 0);
 	
       tmp = tree_cons (NULL_TREE, cleanup, NULL_TREE);
       tmp = tree_cons (NULL_TREE, throw_type, tmp);

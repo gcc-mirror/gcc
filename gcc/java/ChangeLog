@@ -1,6 +1,28 @@
+2004-08-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* boehm.c (get_boehm_type_descriptor):  Adjust build_int_cst calls.
+	* class.c (build_utf8_ref, build_static_field_ref,
+	make_field_value, make_method_value, get_dispatch_table,
+	make_class_data, emit_symbol_table, emit_catch_table): Likewise.
+	* constants.c (get_tag_node, build_ref_from_constant_pool,
+	build_constants_constructor): Likewise.
+	* decl.c (java_init_decl_processing): Likewise.
+	* expr.c (build_java_array_length_access, build_newarray,
+	expand_java_multianewarray, expand_java_pushc, expand_iinc,
+	build_java_binop, build_field_ref, expand_java_add_case,
+	expand_java_call, build_known_method_ref, build_invokevirtual,
+	build_invokeinterface, build_jni_stub): Likewise.
+	* java-gimplify.c (java_gimplify_new_array_init): Likewise.
+	* jcf-parse.c (get_constant): Likewise.
+	* lex.c (do_java_lex): Likewise.
+	* parse.y (patch_binop, patch_unaryop, patch_cast,
+	build_newarray_node, patch_newarray): Likewise.
+	* resource.c (compile_resource_data): Likewise.
+	* typeck.c (build_prim_array_type): Likewise.
+
 2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* java/decl.c (java_init_decl_processing): Adjust
+	* decl.c (java_init_decl_processing): Adjust
 	initialize_sizetypes call.
 
 2004-08-23  Nathan Sidwell  <nathan@codesourcery.com>

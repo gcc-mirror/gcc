@@ -77,7 +77,7 @@ mf_build_string (const char *string)
   tree result = mf_mark (build_string (len + 1, string));
 
   TREE_TYPE (result) = build_array_type
-    (char_type_node, build_index_type (build_int_cst (NULL_TREE, len, 0)));
+    (char_type_node, build_index_type (build_int_cst (NULL_TREE, len)));
   TREE_CONSTANT (result) = 1;
   TREE_INVARIANT (result) = 1;
   TREE_READONLY (result) = 1;
@@ -918,7 +918,7 @@ mx_register_decls (tree decl, tree *stmt_list)
                                   size,
                                   tree_cons (NULL_TREE,
 					     /* __MF_TYPE_STACK */
-                                             build_int_cst (NULL_TREE, 3, 0),
+                                             build_int_cst (NULL_TREE, 3),
                                              NULL_TREE)));
           /* __mf_unregister (...) */
           unregister_fncall = build_function_call_expr (mf_unregister_fndecl,
@@ -936,7 +936,7 @@ mx_register_decls (tree decl, tree *stmt_list)
                                   size,
                                   tree_cons (NULL_TREE,
 					     /* __MF_TYPE_STACK */
-                                             build_int_cst (NULL_TREE, 3, 0),
+                                             build_int_cst (NULL_TREE, 3),
                                              tree_cons (NULL_TREE,
                                                         variable_name,
                                                         NULL_TREE))));
@@ -1079,7 +1079,7 @@ mudflap_register_call (tree obj, tree object_size, tree varname)
 
   args = tree_cons (NULL_TREE, varname, NULL_TREE);
 
-  arg = build_int_cst (NULL_TREE, 4, 0); /* __MF_TYPE_STATIC */
+  arg = build_int_cst (NULL_TREE, 4); /* __MF_TYPE_STATIC */
   args = tree_cons (NULL_TREE, arg, args);
 
   arg = convert (size_type_node, object_size);
@@ -1161,7 +1161,7 @@ mudflap_enqueue_constant (tree obj)
     return;
 
   if (TREE_CODE (obj) == STRING_CST)
-    object_size = build_int_cst (NULL_TREE, TREE_STRING_LENGTH (obj), 0);
+    object_size = build_int_cst (NULL_TREE, TREE_STRING_LENGTH (obj));
   else
     object_size = size_in_bytes (TREE_TYPE (obj));
 

@@ -560,7 +560,7 @@ vect_create_index_for_array_ref (tree stmt, block_stmt_iterator *bsi)
     abort ();	
 #endif
 
-  vf = build_int_cst (unsigned_type_node, vectorization_factor, 0);
+  vf = build_int_cst (unsigned_type_node, vectorization_factor);
 
   if (vect_debug_details (NULL))
     {
@@ -1457,7 +1457,7 @@ vect_transform_loop_bound (loop_vec_info loop_vinfo)
 
   /* new loop exit test:  */
   lb_type = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (orig_cond_expr, 0), 1));
-  new_loop_bound = build_int_cst (lb_type, old_N/vf, 0);
+  new_loop_bound = build_int_cst (lb_type, old_N/vf);
 
   if (exit_edge->flags & EDGE_TRUE_VALUE) /* 'then' edge exits the loop.  */
     cond = build2 (GE_EXPR, boolean_type_node, indx_after_incr, new_loop_bound);
@@ -2190,7 +2190,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr,
   tree base_decl = NULL_TREE;
   tree bit_offset = size_zero_node;
   tree offset = size_zero_node;
-  tree unit_bits = build_int_cst (unsigned_type_node, BITS_PER_UNIT, 0);
+  tree unit_bits = build_int_cst (unsigned_type_node, BITS_PER_UNIT);
   tree nunits;
   tree alignment;
 
@@ -2294,10 +2294,10 @@ vect_compute_data_ref_alignment (struct data_reference *dr,
 
   /* alignment required, in bytes: */
   alignment = build_int_cst (unsigned_type_node, 
-				TYPE_ALIGN (vectype)/BITS_PER_UNIT, 0);
+			     TYPE_ALIGN (vectype)/BITS_PER_UNIT);
   /* bytes per scalar element: */
   nunits = build_int_cst (unsigned_type_node, 
-				GET_MODE_SIZE (TYPE_MODE (scalar_type)), 0);
+			  GET_MODE_SIZE (TYPE_MODE (scalar_type)));
 
   /* misalign = (offset + (init-array_first_index)*nunits) % alignment  */
   if (vect_debug_details (NULL))

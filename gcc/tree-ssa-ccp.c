@@ -1150,7 +1150,7 @@ widen_bitfield (tree val, tree field, tree var)
 
       wide_val = build (BIT_AND_EXPR, TREE_TYPE (var), val, 
 			fold_convert (TREE_TYPE (var),
-				      build_int_cst (NULL_TREE, mask, 0)));
+				      build_int_cst (NULL_TREE, mask)));
     }
   else
     {
@@ -1162,7 +1162,7 @@ widen_bitfield (tree val, tree field, tree var)
 
       wide_val = build (BIT_IOR_EXPR, TREE_TYPE (var), val,
 			fold_convert (TREE_TYPE (var),
-				      build_int_cst (NULL_TREE, mask, 0)));
+				      build_int_cst (NULL_TREE, mask)));
     }
 
   return fold (wide_val);
@@ -1693,7 +1693,7 @@ maybe_fold_offset_to_array_ref (tree base, tree offset, tree orig_type)
 	  || lrem || hrem)
 	return NULL_TREE;
 
-      idx = build_int_cst (NULL_TREE, lquo, hquo);
+      idx = build_int_cst_wide (NULL_TREE, lquo, hquo);
     }
 
   /* Assume the low bound is zero.  If there is a domain type, get the

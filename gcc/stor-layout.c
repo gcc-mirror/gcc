@@ -1534,7 +1534,7 @@ layout_type (tree type)
     case VECTOR_TYPE:
       {
 	int nunits = TYPE_VECTOR_SUBPARTS (type);
-	tree nunits_tree = build_int_cst (NULL_TREE, nunits, 0);
+	tree nunits_tree = build_int_cst (NULL_TREE, nunits);
 	tree innertype = TREE_TYPE (type);
 
 	if (nunits & (nunits - 1))
@@ -1856,14 +1856,14 @@ initialize_sizetypes (bool signed_p)
   TYPE_USER_ALIGN (t) = 0;
   TYPE_IS_SIZETYPE (t) = 1;
   TYPE_UNSIGNED (t) = !signed_p;
-  TYPE_SIZE (t) = build_int_cst (t, GET_MODE_BITSIZE (SImode), 0);
-  TYPE_SIZE_UNIT (t) = build_int_cst (t, GET_MODE_SIZE (SImode), 0);
+  TYPE_SIZE (t) = build_int_cst (t, GET_MODE_BITSIZE (SImode));
+  TYPE_SIZE_UNIT (t) = build_int_cst (t, GET_MODE_SIZE (SImode));
   TYPE_PRECISION (t) = GET_MODE_BITSIZE (SImode);
-  TYPE_MIN_VALUE (t) = build_int_cst (t, 0, 0);
+  TYPE_MIN_VALUE (t) = build_int_cst (t, 0);
 
   /* 1000 avoids problems with possible overflow and is certainly
      larger than any size value we'd want to be storing.  */
-  TYPE_MAX_VALUE (t) = build_int_cst (t, 1000, 0);
+  TYPE_MAX_VALUE (t) = build_int_cst (t, 1000);
 
   sizetype = t;
   bitsizetype = build_distinct_type_copy (t);
@@ -1951,34 +1951,37 @@ set_min_and_max_values_for_integral_type (tree type,
 
   if (is_unsigned)
     {
-      min_value = build_int_cst (type, 0, 0);
+      min_value = build_int_cst (type, 0);
       max_value
-	= build_int_cst (type, precision - HOST_BITS_PER_WIDE_INT >= 0
-			 ? -1 : ((HOST_WIDE_INT) 1 << precision) - 1,
-			 precision - HOST_BITS_PER_WIDE_INT > 0
-			 ? ((unsigned HOST_WIDE_INT) ~0
-			    >> (HOST_BITS_PER_WIDE_INT
-				- (precision - HOST_BITS_PER_WIDE_INT)))
-			 : 0);
+	= build_int_cst_wide (type, precision - HOST_BITS_PER_WIDE_INT >= 0
+			      ? -1
+			      : ((HOST_WIDE_INT) 1 << precision) - 1,
+			      precision - HOST_BITS_PER_WIDE_INT > 0
+			      ? ((unsigned HOST_WIDE_INT) ~0
+				 >> (HOST_BITS_PER_WIDE_INT
+				     - (precision - HOST_BITS_PER_WIDE_INT)))
+			      : 0);
     }
   else
     {
       min_value
-	= build_int_cst (type,
-			 (precision - HOST_BITS_PER_WIDE_INT > 0
-			  ? 0 : (HOST_WIDE_INT) (-1) << (precision - 1)),
-			 (((HOST_WIDE_INT) (-1)
-			   << (precision - HOST_BITS_PER_WIDE_INT - 1 > 0
-			       ? precision - HOST_BITS_PER_WIDE_INT - 1
-			       : 0))));
+	= build_int_cst_wide (type,
+			      (precision - HOST_BITS_PER_WIDE_INT > 0
+			       ? 0
+			       : (HOST_WIDE_INT) (-1) << (precision - 1)),
+			      (((HOST_WIDE_INT) (-1)
+				<< (precision - HOST_BITS_PER_WIDE_INT - 1 > 0
+				    ? precision - HOST_BITS_PER_WIDE_INT - 1
+				    : 0))));
       max_value
-	= build_int_cst (type,
-			 (precision - HOST_BITS_PER_WIDE_INT > 0
-			  ? -1 : ((HOST_WIDE_INT) 1 << (precision - 1)) - 1),
-			 (precision - HOST_BITS_PER_WIDE_INT - 1 > 0
-			  ? (((HOST_WIDE_INT) 1
-			      << (precision - HOST_BITS_PER_WIDE_INT - 1))) - 1
-			  : 0));
+	= build_int_cst_wide (type,
+			      (precision - HOST_BITS_PER_WIDE_INT > 0
+			       ? -1
+			       : ((HOST_WIDE_INT) 1 << (precision - 1)) - 1),
+			      (precision - HOST_BITS_PER_WIDE_INT - 1 > 0
+			       ? (((HOST_WIDE_INT) 1
+				   << (precision - HOST_BITS_PER_WIDE_INT - 1))) - 1
+			       : 0));
     }
 
   TYPE_MIN_VALUE (type) = min_value;

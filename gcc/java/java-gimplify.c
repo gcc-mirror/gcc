@@ -242,7 +242,7 @@ java_gimplify_new_array_init (tree exp)
   tree data_field = lookup_field (&array_type, get_identifier ("data"));
   tree element_type = TYPE_ARRAY_ELEMENT (array_type);
   HOST_WIDE_INT ilength = java_array_type_length (array_type);
-  tree length = build_int_cst (NULL_TREE, ilength, 0);
+  tree length = build_int_cst (NULL_TREE, ilength);
   tree init = TREE_OPERAND (exp, 0);
   tree values = CONSTRUCTOR_ELTS (init);
 
@@ -263,7 +263,7 @@ java_gimplify_new_array_init (tree exp)
 			 data_field, NULL_TREE);
       tree assignment = build2 (MODIFY_EXPR, element_type,
 				build4 (ARRAY_REF, element_type, lhs,
-					build_int_cst (NULL_TREE, index++, 0),
+					build_int_cst (NULL_TREE, index++),
 					NULL_TREE, NULL_TREE),
 				TREE_VALUE (values));
       body = build2 (COMPOUND_EXPR, element_type, body, assignment);

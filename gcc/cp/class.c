@@ -5085,7 +5085,7 @@ finish_struct_1 (tree t)
 	       thunk base function.  */
 	    DECL_VINDEX (fndecl) = NULL_TREE;
 	  else if (TREE_CODE (DECL_VINDEX (fndecl)) != INTEGER_CST)
-	    DECL_VINDEX (fndecl) = build_int_cst (NULL_TREE, vindex, 0);
+	    DECL_VINDEX (fndecl) = build_int_cst (NULL_TREE, vindex);
 	}
     }
 
@@ -7279,7 +7279,7 @@ build_vtbl_initializer (tree binfo,
   vid.generate_vcall_entries = true;
   /* The first vbase or vcall offset is at index -3 in the vtable.  */
   vid.index = build_int_cst (ssizetype,
-			     -3 * TARGET_VTABLE_DATA_ENTRY_DISTANCE, -1);
+			     -3 * TARGET_VTABLE_DATA_ENTRY_DISTANCE);
 
   /* Add entries to the vtable for RTTI.  */
   build_rtti_vtbl_entries (binfo, &vid);
@@ -7405,7 +7405,7 @@ build_vtbl_initializer (tree binfo,
 	      {
 		tree fdesc = build2 (FDESC_EXPR, vfunc_ptr_type_node,
 				     TREE_OPERAND (init, 0),
-				     build_int_cst (NULL_TREE, i, 0));
+				     build_int_cst (NULL_TREE, i));
 		TREE_CONSTANT (fdesc) = 1;
 		TREE_INVARIANT (fdesc) = 1;
 
