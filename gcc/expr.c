@@ -4110,9 +4110,7 @@ save_noncopied_parts (lhs, list)
 	tree part = TREE_VALUE (tail);
 	tree part_type = TREE_TYPE (part);
 	tree to_be_saved = build (COMPONENT_REF, part_type, lhs, part);
-	rtx target = assign_stack_temp (TYPE_MODE (part_type),
-					int_size_in_bytes (part_type), 0);
-	MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (part_type);
+	rtx target = assign_temp (part_type, 0, 1);
 	if (! memory_address_p (TYPE_MODE (part_type), XEXP (target, 0)))
 	  target = change_address (target, TYPE_MODE (part_type), NULL_RTX);
 	parts = tree_cons (to_be_saved,
@@ -4675,16 +4673,7 @@ expand_expr (exp, target, tmode, modifier)
 	}
       if (SAVE_EXPR_RTL (exp) == 0)
 	{
-	  if (mode == BLKmode)
-	    {
-	      temp
-		= assign_stack_temp (mode, int_size_in_bytes (type), 0);
-	      MEM_IN_STRUCT_P (temp) = AGGREGATE_TYPE_P (type);
-	    }
-	  else if (mode == VOIDmode)
-	    temp = const0_rtx;
-	  else
-	    temp = gen_reg_rtx (promote_mode (type, mode, &unsignedp, 0));
+	  temp = assign_temp (type, 0, 0);
 
 	  SAVE_EXPR_RTL (exp) = temp;
 	  if (!optimize && GET_CODE (temp) == REG)
@@ -4876,17 +4865,7 @@ expand_expr (exp, target, tmode, modifier)
       else
 	{
 	  if (target == 0 || ! safe_from_p (target, exp))
-	    {
-	      if (mode != BLKmode && ! TREE_ADDRESSABLE (exp))
-		target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
-	      else
-		{
-		  target
-		    = assign_stack_temp (mode, int_size_in_bytes (type), 0);
-		  if (AGGREGATE_TYPE_P (type))
-		    MEM_IN_STRUCT_P (target) = 1;
-		}
-	    }
+	    target = assign_temp (type, 0, TREE_ADDRESSABLE (exp));
 
 	  if (TREE_READONLY (exp))
 	    {
@@ -5457,21 +5436,7 @@ expand_expr (exp, target, tmode, modifier)
 	{
 	  tree valtype = TREE_TYPE (TREE_OPERAND (exp, 0));
 	  if (target == 0)
-	    {
-	      if (mode == BLKmode)
-		{
-		  if (TYPE_SIZE (type) == 0
-		      || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
-		    abort ();
-		  target = assign_stack_temp (BLKmode,
-					      (TREE_INT_CST_LOW (TYPE_SIZE (type))
-					       + BITS_PER_UNIT - 1)
-					      / BITS_PER_UNIT, 0);
-		  MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (type);
-		}
-	      else
-		target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
-	    }
+	    target = assign_temp (type, 0, 0);
 
 	  if (GET_CODE (target) == MEM)
 	    /* Store data into beginning of memory target.  */
@@ -6174,20 +6139,8 @@ expand_expr (exp, target, tmode, modifier)
 		 && ! (GET_CODE (original_target) == MEM
 		       && MEM_VOLATILE_P (original_target)))
 	  temp = original_target;
-	else if (mode == BLKmode)
-	  {
-	    if (TYPE_SIZE (type) == 0
-		|| TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
-	      abort ();
-
-	    temp = assign_stack_temp (BLKmode,
-				      (TREE_INT_CST_LOW (TYPE_SIZE (type))
-				       + BITS_PER_UNIT - 1)
-				      / BITS_PER_UNIT, 0);
-	    MEM_IN_STRUCT_P (temp) = AGGREGATE_TYPE_P (type);
-	  }
 	else
-	  temp = gen_reg_rtx (mode);
+	  temp = assign_temp (type, 0, 0);
 
 	/* Check for X ? A + B : A.  If we have this, we can copy
 	   A to the output and conditionally add B.  Similarly for unary
@@ -6501,8 +6454,7 @@ expand_expr (exp, target, tmode, modifier)
 	      }
 	    else
 	      {
-		target = assign_stack_temp (mode, int_size_in_bytes (type), 2);
-		MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (type);
+		target = assign_temp (type, 2, 1);
 		/* All temp slots at this level must not conflict.  */
 		preserve_temp_slots (target);
 		DECL_RTL (slot) = target;
@@ -6709,11 +6661,7 @@ expand_expr (exp, target, tmode, modifier)
 	      /* If this object is in a register, it must be not
 		 be BLKmode. */
 	      tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
-	      enum machine_mode inner_mode = TYPE_MODE (inner_type);
-	      rtx memloc
-		= assign_stack_temp (inner_mode,
-				     int_size_in_bytes (inner_type), 1);
-	      MEM_IN_STRUCT_P (memloc) = AGGREGATE_TYPE_P (inner_type);
+	      rtx memloc = assign_temp (inner_type, 1, 1);
 
 	      mark_temp_addr_taken (memloc);
 	      emit_move_insn (memloc, op0);
