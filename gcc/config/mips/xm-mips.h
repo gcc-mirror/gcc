@@ -74,10 +74,3 @@ extern char * alloca ();
 #define STACK_DIRECTION	-1
 #endif
 #endif /* not MIPS_OVERRIDE_ALLOCA */
-
-/* Say if we have vprintf.  BSD Mips targets probably don't have vfprintf.  */
-#if defined(__OSF1__) || defined(__OSF__) || defined(__osf__) || defined(bsd4_4)
-
-#else
-#define NO_STAB_H		/* mips doesn't typically have stab.h */
-#endif

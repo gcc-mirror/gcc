@@ -60,7 +60,6 @@ Boston, MA 02111-1307, USA.  */
 #define HAVE_STRERROR
 
 #define NO_SYS_PARAMS_H		/* Don't have <sys/params.h> */
-#define NO_STAB_H		/* Don't have <stab.h> */
 #define USE_C_ALLOCA		/* Using alloca.c */
 
 #define HAVE_FCNTL_H 1
