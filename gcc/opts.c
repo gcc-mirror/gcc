@@ -556,6 +556,7 @@ decode_options (unsigned int argc, const char **argv)
       flag_delete_null_pointer_checks = 1;
       flag_reorder_blocks = 1;
       flag_reorder_functions = 1;
+      flag_unit_at_a_time = 1;
     }
 
   if (optimize >= 3)
@@ -563,7 +564,6 @@ decode_options (unsigned int argc, const char **argv)
       flag_inline_functions = 1;
       flag_rename_registers = 1;
       flag_unswitch_loops = 1;
-      flag_unit_at_a_time = 1;
     }
 
   if (optimize < 2 || optimize_size)
