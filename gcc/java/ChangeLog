@@ -1,5 +1,8 @@
 2002-08-21  Tom Tromey  <tromey@redhat.com>
 
+	* Make-lang.in (java/jcf-path.o): Use $(datadir), not
+	$(prefix)/share.  For PR libgcj/7633.
+
 	For PR java/6005 and PR java/7611:
 	* lang.c (LANG_HOOKS_CAN_USE_BITFIELDS_P): New define.
 	(java_can_use_bit_fields_p): New function.
