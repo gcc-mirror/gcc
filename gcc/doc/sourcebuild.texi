@@ -759,6 +759,7 @@ here; FIXME: document the others.
 * libgcj Tests::    The Java library test suites.
 * gcov Testing::    Support for testing gcov.
 * profopt Testing:: Support for testing profile-directed optimizations.
+* compat Testing::  Support for testing binary compatibility.
 @end menu
 
 @node Test Idioms
@@ -1063,3 +1064,88 @@ suffix of profile data files
 list of options with which to run each test, similar to the lists for
 torture tests
 @end table
+
+@node compat Testing
+@subsection Support for testing binary compatibility
+
+The file @file{compat.exp} provides language-independent support for
+binary compatibility testing.  It supports testing interoperability
+of two compilers that follow the same ABI, or of multiple sets of
+compiler options that should not affect binary compatibility.
+It is intended to be used for test suites that complement ABI test
+suites.
+
+A test supported by this framework has three parts, each in a
+separate source file: a main program and two pieces that interact
+with each other to split up the functionality being tested.
+
+@table @file
+@item @var{testname}_main.@var{suffix}
+Contains the main program, which calls a function in file
+@file{@var{testname}_x.@var{suffix}}.
+
+@item @var{testname}_x.@var{suffix}
+Contains at least one call to a function in
+@file{@var{testname}_y.@var{suffix}}.
+
+@item @var{testname}_y.@var{suffix}
+Shares data with, or gets arguments from,
+@file{@var{testname}_x.@var{suffix}}.
+@end table
+
+Within each test, the main program and one functional piece are
+compiled by the GCC under test.  The other piece can be compiled by
+an alternate compiler.  If no alternate compiler is specified,
+then all three source files are all compiled by the GCC under test.
+It's also possible to specify a pair of lists of compiler options,
+one list for each compiler, so that each test will be compiled with
+each pair of options.
+
+@file{compat.exp} defines default pairs of compiler options.
+These can be overridden by defining the environment variable
+@env{COMPAT_OPTIONS} as:
+
+@smallexample
+COMPAT_OPTIONS="[list [list @{@var{tst1}@} @{@var{alt1}@}]
+  ...[list @{@var{tstn}@} @{@var{altn}@}]]"
+@end smallexample
+
+where @var{tsti} and @var{alti} are lists of options, with @var{tsti}
+used by the compiler under test and @var{alti} used by the alternate
+compiler.  For example, with
+@code{[list [list @{-g -O0@} @{-O3@}] [list @{-fpic@} @{-fPIC -O2@}]]},
+the test is first built with @code{-g -O0} by the compiler under
+test and with @code{-O3} by the alternate compiler.  The test is
+built a second time using @code{-fpic} by the compiler under test
+and @code{-fPIC -O2} by the alternate compiler.
+
+An alternate compiler is specified by defining an environment
+variable; for C++ define @env{ALT_CXX_UNDER_TEST} to be the full
+pathname of an installed compiler.  That will be written to the
+@file{site.exp} file used by DejaGNU.  The default is to build each
+test with the compiler under test using the first of each pair of
+compiler options from @env{COMPAT_OPTIONS}.  When
+@env{ALT_CXX_UNDER_TEST} is @code{same}, each test is built using
+the compiler under test but with combinations of the options from
+@env{COMPAT_OPTIONS}.
+
+To run only the C++ compatibility suite using the compiler under test
+and another version of GCC using specific compiler options, do the
+following from @file{@var{objdir}/gcc}:
+
+@smallexample
+rm site.exp
+make -k \
+  ALT_CXX_UNDER_TEST=$@{alt_prefix@}/bin/g++ \
+  COMPAT_OPTIONS="lists as shown above" \
+  check-c++ \
+  RUNTESTFLAGS="compat.exp"
+@end smallexample
+
+A test that fails when the source files are compiled with different
+compilers, but passes when the files are compiled with the same
+compiler, demonstrates incompatibility of the generated code or
+runtime support.  A test that fails for the alternate compiler but
+passes for the compiler under test probably tests for a bug that was
+fixed in the compiler under test but is present in the alternate
+compiler.
