@@ -86,7 +86,6 @@ Fri 15-Sep-2000 06:49:07 BST  Neil Booth  <NeilB@earthling.net>
 	Remove undefine before config/elfos.h.
 	* config/sh/t-sh (EXTRA_MULTILIB_PARTS): Comment out.
 
->>>>>>> 1.7757
 2000-09-14  Kazu Hirata  <kazu@hxi.com>
 
 	* invoke.texi (H8/300 Options): Add -ms2600.
@@ -185,7 +184,6 @@ Tue Sep 12 13:51:13 2000  Denis Chertykov  <denisc@overta.ru>
 	(extendhisi2): Use `movw' for enhanced avr cores.
 	(zero_extendhisi2): Likewise.
 
->>>>>>> 1.7742
 Wed Sep 13 02:31:23 EDT 2000  John Wehle  (john@feith.com)
 
 	* alias.c (find_base_term): Use frame_pointer_rtx
