@@ -80,7 +80,7 @@ Boston, MA 02111-1307, USA.  */
 #define S2P	r6
 #endif
 
-#ifdef __H8300H__
+#if defined (__H8300H__) || defined (__H8300S__)
 #define MOVP	mov.l	/* pointers are 32 bits */
 #define ADDP	add.l
 #define CMPP	cmp.l
@@ -312,6 +312,10 @@ setbit:	inc	A0L		; do insert bit
 
 #ifdef __H8300H__
 	.h8300h
+#endif
+
+#ifdef __H8300S__
+	.h8300s
 #endif
 
 	.section .text
@@ -738,7 +742,13 @@ _done:
 
 #else /* __H8300H__ */
 
+#ifdef __H8300H__
 	.h8300h
+#endif
+
+#ifdef __H8300S__
+	.h8300s
+#endif
 
 	.global	___mulsi3
 ___mulsi3:

@@ -39,13 +39,16 @@ extern char **h8_reg_names;
 "-D__LONG_MAX__=2147483647L -D__LONG_LONG_MAX__=2147483647L"
 
 #define CPP_SPEC \
-  "%{!mh:-D__H8300__} %{mh:-D__H8300H__} \
-   %{!mh:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+  "%{!mh:%{!ms:-D__H8300__}} %{mh:-D__H8300H__} %{ms:-D__H8300S__} \
+   %{!mh:%{!ms:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
    %{mh:-D__SIZE_TYPE__=unsigned\\ long -D__PTRDIFF_TYPE__=long} \
-   %{!mh:-Acpu(h8300) -Amachine(h8300)} %{mh:-Acpu(h8300h) -Amachine(h8300h)} \
+   %{ms:-D__SIZE_TYPE__=unsigned\\ long -D__PTRDIFF_TYPE__=long} \
+   %{!mh:%{!ms:-Acpu(h8300) -Amachine(h8300)}} \
+   %{mh:-Acpu(h8300h) -Amachine(h8300h)} \
+   %{ms:-Acpu(h8300s) -Amachine(h8300s)} \
    %{!mint32:-D__INT_MAX__=32767} %{mint32:-D__INT_MAX__=2147483647}"
 
-#define LINK_SPEC "%{mh:-m h8300h}"
+#define LINK_SPEC "%{mh:-m h8300h} %{ms:-m h8300s}"
 
 #define LIB_SPEC "%{mrelax:-relax} %{g:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
 
@@ -77,8 +80,9 @@ extern int target_flags;
 #define TARGET_RTL_DUMP	(target_flags & 2048)
 
 /* Select between the h8/300 and h8/300h cpus.  */
-#define TARGET_H8300	(! TARGET_H8300H)
+#define TARGET_H8300	(! TARGET_H8300H && ! TARGET_H8300S)
 #define TARGET_H8300H	(target_flags & 4096)
+#define TARGET_H8300S	(target_flags & 1)
 
 /* Align all values on the h8/300h the same way as the h8/300.  Specifically,
    32 bit and larger values are aligned on 16 bit boundaries.
@@ -94,7 +98,9 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  { {"int32",8},		\
+  { {"s",1 },			\
+    {"no-s",-1},		\
+    {"int32",8},		\
     {"addresses",64 },		\
     {"quickcall",128},  	\
     {"no-quickcall",-128},	\
@@ -160,16 +166,16 @@ do {				\
    Note that this is not necessarily the width of data type `int';
    if using 16-bit ints on a 68000, this would still be 32.
    But on a machine with 16-bit registers, this would be 16.  */
-#define BITS_PER_WORD		(TARGET_H8300H ? 32 : 16)
+#define BITS_PER_WORD		(TARGET_H8300H || TARGET_H8300S ? 32 : 16)
 #define MAX_BITS_PER_WORD	32
 
 /* Width of a word, in units (bytes).  */
-#define UNITS_PER_WORD		(TARGET_H8300H ? 4 : 2)
+#define UNITS_PER_WORD		(TARGET_H8300H || TARGET_H8300S ? 4 : 2)
 #define MIN_UNITS_PER_WORD	2
 
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */
-#define POINTER_SIZE (TARGET_H8300H ? 32 : 16)
+#define POINTER_SIZE (TARGET_H8300H || TARGET_H8300S ? 32 : 16)
 
 #define SHORT_TYPE_SIZE 	16
 #define INT_TYPE_SIZE 		(TARGET_INT32 ? 32 : 16)
@@ -182,7 +188,7 @@ do {				\
 #define MAX_FIXED_MODE_SIZE 	32
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
-#define PARM_BOUNDARY (TARGET_H8300H ? 32 : 16)
+#define PARM_BOUNDARY (TARGET_H8300H || TARGET_H8300S ? 32 : 16)
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 16
@@ -199,11 +205,11 @@ do {				\
 /* No data type wants to be aligned rounder than this.
    32 bit values are aligned as such on the 300h for speed.  */
 #define BIGGEST_ALIGNMENT \
-((TARGET_H8300H && ! TARGET_ALIGN_300) ? 32 : 16)
+(((TARGET_H8300H || TARGET_H8300S) && ! TARGET_ALIGN_300) ? 32 : 16)
 
 /* No structure field wants to be aligned rounder than this.  */
 #define BIGGEST_FIELD_ALIGNMENT \
-((TARGET_H8300H && ! TARGET_ALIGN_300) ? 32 : 16)
+(((TARGET_H8300H || TARGET_H8300S) && ! TARGET_ALIGN_300) ? 32 : 16)
 
 /* The stack goes in 16/32 bit lumps.  */
 #define STACK_BOUNDARY (TARGET_H8300 ? 16 : 32)
@@ -699,10 +705,10 @@ struct rtx_def *function_arg();
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)				\
 {										\
-  enum machine_mode mode = TARGET_H8300H ? SImode : HImode;			\
-  emit_move_insn (gen_rtx (MEM, mode, plus_constant ((TRAMP), 2)), CXT);	\
-  emit_move_insn (gen_rtx (MEM, mode, plus_constant ((TRAMP), 6)), FNADDR);	\
-  if (TARGET_H8300H)								\
+  enum machine_mode mode = TARGET_H8300H || TARGET_H8300S? SImode : HImode; \
+  emit_move_insn (gen_rtx (MEM, mode, plus_constant ((TRAMP), 2)), CXT);    \
+  emit_move_insn (gen_rtx (MEM, mode, plus_constant ((TRAMP), 6)), FNADDR); \
+  if (TARGET_H8300H || TARGET_H8300S)					    \
     emit_move_insn (gen_rtx (MEM, QImode, plus_constant ((TRAMP), 6)), GEN_INT (0x5A)); \
 }
 
@@ -886,7 +892,7 @@ struct rtx_def *function_arg();
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
-#define MOVE_MAX	(TARGET_H8300H ? 4 : 2)
+#define MOVE_MAX	(TARGET_H8300H || TARGET_H8300S ? 4 : 2)
 #define MAX_MOVE_MAX	4
 
 /* Define this if zero-extension is slow (more than one real instruction).  */
@@ -907,7 +913,7 @@ struct rtx_def *function_arg();
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
-#define Pmode (TARGET_H8300H ? SImode : HImode)
+#define Pmode (TARGET_H8300H || TARGET_H8300S ? SImode : HImode)
 
 /* ANSI C types.
    We use longs for the 300h because ints can be 16 or 32.

@@ -99,6 +99,7 @@ h8300_init_once ()
     }
   else
     {
+      /* For this we treat the H8/300 and H8/S the same.  */
       cpu_type = (int) CPU_H8300H;
       h8_reg_names = names_extended;
     }
@@ -137,10 +138,10 @@ dosize (file, op, size)
      char *op;
      unsigned int size;
 {
-  /* On the h8300h, for sizes <= 8 bytes it is as good or
+  /* On the h8300h and h8300s, for sizes <= 8 bytes it is as good or
      better to use adds/subs insns rather than add.l/sub.l
      with an immediate value.   */
-  if (size > 4 && size <= 8 && TARGET_H8300H)
+  if (size > 4 && size <= 8 && (TARGET_H8300H || TARGET_H8300S))
     {
       /* Crank the size down to <= 4 */
       fprintf (file, "\t%ss\t#%d,sp\n", op, 4);
@@ -150,7 +151,7 @@ dosize (file, op, size)
   switch (size)
     {
     case 4:
-      if (TARGET_H8300H)
+      if (TARGET_H8300H || TARGET_H8300S)
 	{
 	  fprintf (file, "\t%ss\t#%d,sp\n", op, 4);
 	  size = 0;
@@ -179,9 +180,9 @@ dosize (file, op, size)
 
 /* Output assembly language code for the function prologue.  */
 static int push_order[FIRST_PSEUDO_REGISTER] =
-{6, 5, 4, 3, 2, 1, 0, -1, -1};
-static int pop_order[FIRST_PSEUDO_REGISTER] =
 {0, 1, 2, 3, 4, 5, 6, -1, -1};
+static int pop_order[FIRST_PSEUDO_REGISTER] =
+{6, 5, 4, 3, 2, 1, 0, -1, -1};
 
 /* This is what the stack looks like after the prolog of 
    a function with a frame has been set up:
@@ -240,7 +241,7 @@ function_prologue (file, size)
 	  fprintf (file, "\torc\t#128,ccr\n");
 	  fprintf (file, "\tmov.b\tr0l,@(4,sp)\n");
 	}
-      else if (TARGET_H8300H)
+      else
 	{
 	  fprintf (file, "\tpush\ter0\n");
 	  fprintf (file, "\tstc\tccr,r0l\n");
@@ -257,28 +258,88 @@ function_prologue (file, size)
       fprintf (file, "\t%s\t%s,%s\n", h8_mov_op,
 	       h8_reg_names[STACK_POINTER_REGNUM],
 	       h8_reg_names[FRAME_POINTER_REGNUM]);
-
-      /* leave room for locals */
-      dosize (file, "sub", fsize);
-
-      /* Push the rest of the registers */
-      for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
-	{
-	  int regno = push_order[idx];
-
-	  if (regno >= 0 && WORD_REG_USED (regno) && regno != FRAME_POINTER_REGNUM)
-	    fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[regno]);
-	}
     }
-  else
-    {
-      dosize (file, "sub", fsize);
-      for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
-	{
-	  int regno = push_order[idx];
 
-	  if (regno >= 0 && WORD_REG_USED (regno))
-	    fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[regno]);
+  /* leave room for locals */
+  dosize (file, "sub", fsize);
+
+  /* Push the rest of the registers */
+  for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
+    {
+      int regno = push_order[idx];
+
+      if (regno >= 0
+	  && WORD_REG_USED (regno)
+	  && (!frame_pointer_needed || regno != FRAME_POINTER_REGNUM))
+	{
+	  if (TARGET_H8300S)
+	    {
+	      /* Try to push multiple registers.  */
+	      if (regno == 0 || regno == 4)
+		{
+		  int second_regno = push_order[idx + 1];
+		  int third_regno = push_order[idx + 2];
+		  int fourth_regno = push_order[idx + 3];
+
+		  if (fourth_regno >= 0
+		      && WORD_REG_USED (fourth_regno)
+		      && (!frame_pointer_needed
+			  || fourth_regno != FRAME_POINTER_REGNUM)
+		      && third_regno >= 0
+		      && WORD_REG_USED (third_regno)
+		      && (!frame_pointer_needed
+			  || third_regno != FRAME_POINTER_REGNUM)
+		      && second_regno >= 0
+		      && WORD_REG_USED (second_regno)
+		      && (!frame_pointer_needed
+			  || second_regno != FRAME_POINTER_REGNUM))
+		    {
+		      fprintf (file, "\tstm.l %s-%s,@-sp\n", 
+			       h8_reg_names[regno],
+			       h8_reg_names[fourth_regno]);
+		      idx += 3;
+		      continue;
+		    }
+		}
+	      if (regno == 0 || regno == 4)
+		{
+		  int second_regno = push_order[idx + 1];
+		  int third_regno = push_order[idx + 2];
+
+		  if (third_regno >= 0
+		      && WORD_REG_USED (third_regno)
+		      && (!frame_pointer_needed
+			  || third_regno != FRAME_POINTER_REGNUM)
+		      && second_regno >= 0
+		      && WORD_REG_USED (second_regno)
+		      && (!frame_pointer_needed
+			  || second_regno != FRAME_POINTER_REGNUM))
+		    {
+		      fprintf (file, "\tstm.l %s-%s,@-sp\n", 
+			       h8_reg_names[regno],
+			       h8_reg_names[third_regno]);
+		      idx += 2;
+		      continue;
+		    }
+		}
+	      if (regno == 0 || regno == 2 || regno == 4 || regno == 6)
+		{
+		  int second_regno = push_order[idx + 1];
+
+		  if (second_regno >= 0
+		      && WORD_REG_USED (second_regno)
+		      && (!frame_pointer_needed
+			  || second_regno != FRAME_POINTER_REGNUM))
+		    {
+		      fprintf (file, "\tstm.l %s-%s,@-sp\n", 
+			       h8_reg_names[regno],
+			       h8_reg_names[second_regno]);
+		      idx += 1;
+		      continue;
+		    }
+		}
+	    }
+	  fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[regno]);
 	}
     }
 }
@@ -293,8 +354,6 @@ function_epilogue (file, size)
   register int regno;
   register int mask = 0;
   int fsize = (size + STACK_BOUNDARY / 8 - 1) & -STACK_BOUNDARY / 8;
-  int nregs;
-  int offset;
   int idx;
   rtx insn = get_last_insn ();
 
@@ -318,34 +377,92 @@ function_epilogue (file, size)
   if (insn && GET_CODE (insn) == BARRIER)
     return;
 
-  nregs = 0;
+  /* Pop the saved registers. */
+  for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
+    {
+      int regno = pop_order[idx];
 
+      if (regno >= 0
+	  && WORD_REG_USED (regno)
+	  && (!frame_pointer_needed || regno != FRAME_POINTER_REGNUM))
+	{
+	  if (TARGET_H8300S)
+	    {
+	      /* Try to pop multiple registers.  */
+	      if (regno == 7 || regno == 3)
+		{
+		  int second_regno = pop_order[idx + 1];
+		  int third_regno = pop_order[idx + 2];
+		  int fourth_regno = pop_order[idx + 3];
+
+		  if (fourth_regno >= 0
+		      && WORD_REG_USED (fourth_regno)
+		      && (!frame_pointer_needed
+			  || fourth_regno != FRAME_POINTER_REGNUM)
+		      && third_regno >= 0
+		      && WORD_REG_USED (third_regno)
+		      && (!frame_pointer_needed
+			  || third_regno != FRAME_POINTER_REGNUM)
+		      && second_regno >= 0
+		      && WORD_REG_USED (second_regno)
+		      && (!frame_pointer_needed
+			  || second_regno != FRAME_POINTER_REGNUM))
+		    {
+		      fprintf (file, "\tldm.l @sp+,%s-%s\n", 
+			       h8_reg_names[fourth_regno],
+			       h8_reg_names[regno]);
+		      idx += 3;
+		      continue;
+		    }
+		}
+	      if (regno == 6 || regno == 2)
+		{
+		  int second_regno = pop_order[idx + 1];
+		  int third_regno = pop_order[idx + 2];
+
+		  if (third_regno >= 0
+		      && WORD_REG_USED (third_regno)
+		      && (!frame_pointer_needed
+			  || third_regno != FRAME_POINTER_REGNUM)
+		      && second_regno >= 0
+		      && WORD_REG_USED (second_regno)
+		      && (!frame_pointer_needed
+			  || second_regno != FRAME_POINTER_REGNUM))
+		    {
+		      fprintf (file, "\tldm.l @sp+,%s-%s\n", 
+			       h8_reg_names[third_regno],
+			       h8_reg_names[regno]);
+		      idx += 2;
+		      continue;
+		    }
+		}
+	      if (regno == 7 || regno == 5 || regno == 3 || regno == 1)
+		{
+		  int second_regno = pop_order[idx + 1];
+
+		  if (second_regno >= 0
+		      && WORD_REG_USED (second_regno)
+		      && (!frame_pointer_needed
+			  || second_regno != FRAME_POINTER_REGNUM))
+		    {
+		      fprintf (file, "\tldm.l @sp+,%s-%s\n", 
+			       h8_reg_names[second_regno],
+			       h8_reg_names[regno]);
+		      idx += 1;
+		      continue;
+		    }
+		}
+	    }
+	  fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[regno]);
+	}
+    }
+
+  /* deallocate locals */
+  dosize (file, "add", fsize);
+
+  /* pop frame pointer if we had one. */
   if (frame_pointer_needed)
-    {
-      /* Pop saved registers */
-      for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
-	{
-	  regno = pop_order[idx];
-	  if (regno >= 0 && regno != FRAME_POINTER_REGNUM && WORD_REG_USED (regno))
-	    fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[regno]);
-	}
-      /* deallocate locals */
-      dosize (file, "add", fsize);
-      /* pop frame pointer */
-      fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[FRAME_POINTER_REGNUM]);
-    }
-  else
-    {
-      /* pop saved registers */
-      for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
-	{
-	  regno = pop_order[idx];
-	  if (regno >= 0 && WORD_REG_USED (regno))
-	    fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[regno]);
-	}
-      /* deallocate locals */
-      dosize (file, "add", fsize);
-    }
+    fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[FRAME_POINTER_REGNUM]);
 
   /* If this is a monitor function, there is one register still left on
      the stack.  */
@@ -376,6 +493,8 @@ asm_file_start (file)
     fprintf (file, "; -O%d\n", optimize);
   if (TARGET_H8300H)
     fprintf (file, "\n\t.h8300h\n");
+  else if (TARGET_H8300S)
+    fprintf (file, "\n\t.h8300s\n");
   else
     fprintf (file, "\n\n");
   output_file_directive (file, main_input_filename);
@@ -508,11 +627,11 @@ adds_subs_operand (op, mode)
 	return 1;
       if (INTVAL (op) >= -4 && INTVAL (op) <= 0)
 	return 1;
-      if (TARGET_H8300H
+      if ((TARGET_H8300H || TARGET_H8300S)
 	  && INTVAL (op) != 7
 	  && (INTVAL (op) <= 8 && INTVAL (op) >= 0))
 	return 1;
-      if (TARGET_H8300H
+      if ((TARGET_H8300H || TARGET_H8300S)
 	  && INTVAL (op) != -7
 	  && (INTVAL (op) >= -8 && INTVAL (op) <= 0))
 	return 1;
@@ -532,7 +651,7 @@ one_insn_adds_subs_operand (op, mode)
 
   if (val == 1 || val == -1
       || val == 2 || val == -2
-      || (TARGET_H8300H
+      || ((TARGET_H8300H || TARGET_H8300S)
 	  && (val == 4 || val == -4)))
     return 1;
   return 0;
@@ -547,7 +666,7 @@ output_adds_subs (operands)
   /* First get the value into the range -4..4 inclusive.
 
      The only way it can be out of this range is when TARGET_H8300H
-     is true, thus it is safe to use adds #4 and subs #4.  */
+     or TARGET_H8300S is true, thus it is safe to use adds #4 and subs #4.  */
   if (val > 4)
     {
       output_asm_insn ("adds #4,%A0", operands);
@@ -561,11 +680,13 @@ output_adds_subs (operands)
     }
 
   /* Handle case were val == 4 or val == -4 and we're compiling
-     for TARGET_H8300H.  */
-  if (TARGET_H8300H && val == 4)
+     for TARGET_H8300H or TARGET_H8300S.  */
+  if ((TARGET_H8300H || TARGET_H8300S)
+      && val == 4)
     return "adds #4,%A0";
 
-  if (TARGET_H8300H && val == -4)
+  if ((TARGET_H8300H || TARGET_H8300S)
+      && val == -4)
     return "subs #4,%A0";
 
   if (val > 2)
@@ -851,7 +972,7 @@ const_costs (r, c)
 	  return 0;
 	case 4:
 	case -4:
-	  if (TARGET_H8300H)
+	  if (TARGET_H8300H || TARGET_H8300S)
 	    return 0;
 	  else
 	    return 1;
@@ -1211,13 +1332,15 @@ print_operand (file, x, code)
       if (GET_CODE (x) == CONST_INT)
 	fprintf (file, "#%d", INTVAL (x) & 0xff);
       else
-	fprintf (file, "%s", byte_reg (x, TARGET_H8300 ? 2 : 0));
+	fprintf (file, "%s",
+		 byte_reg (x, TARGET_H8300 ? 2 : 0));
       break;
     case 'x':
       if (GET_CODE (x) == CONST_INT)
 	fprintf (file, "#%d", (INTVAL (x) >> 8) & 0xff);
       else
-	fprintf (file, "%s", byte_reg (x, TARGET_H8300 ? 3 : 1));
+	fprintf (file, "%s",
+		 byte_reg (x, TARGET_H8300 ? 3 : 1));
       break;
     case 'y':
       if (GET_CODE (x) == CONST_INT)
@@ -2414,7 +2537,7 @@ output_simode_bld (bild, log2, operands)
      rtx operands[];
 {
   /* Clear the destination register.  */
-  if (TARGET_H8300H)
+  if (TARGET_H8300H || TARGET_H8300S)
     output_asm_insn ("sub.l\t%S0,%S0", operands);
   else
     output_asm_insn ("sub.w\t%e0,%e0\n\tsub.w\t%f0,%f0", operands);
@@ -2464,14 +2587,15 @@ h8300_adjust_insn_length (insn, length)
       if (TARGET_H8300 && GET_CODE (addr) == REG)
 	return -2;
 
-      /* On the H8/300H, register indirect is 6 bytes shorter than
+      /* On the H8/300H and H8/S, register indirect is 6 bytes shorter than
 	 indicated in the machine description.  */
-      if (TARGET_H8300H && GET_CODE (addr) == REG)
+      if ((TARGET_H8300H || TARGET_H8300S)
+          && GET_CODE (addr) == REG)
 	return -6;
 
-      /* On the H8/300H, reg + d, for small displacements is 4 bytes
-	 shorter than indicated in the machine description.  */
-      if (TARGET_H8300H
+      /* On the H8/300H and H8/300S, reg + d, for small displacements is 4
+	 bytes shorter than indicated in the machine description.  */
+      if ((TARGET_H8300H || TARGET_H8300S)
 	  && GET_CODE (addr) == PLUS
 	  && GET_CODE (XEXP (addr, 0)) == REG
 	  && GET_CODE (XEXP (addr, 1)) == CONST_INT
@@ -2479,9 +2603,9 @@ h8300_adjust_insn_length (insn, length)
 	  && INTVAL (XEXP (addr, 1)) < 32767)
 	return -4;
 
-      /* On the H8/300H, abs:16 is two bytes shorter than the
+      /* On the H8/300H and H8/300S, abs:16 is two bytes shorter than the
 	 more general abs:24.  */
-      if (TARGET_H8300H
+      if ((TARGET_H8300H || TARGET_H8300S)
 	  && GET_CODE (addr) == SYMBOL_REF
 	  && TINY_DATA_NAME_P (XSTR (addr, 0)))
 	return -2;
@@ -2498,7 +2622,7 @@ h8300_adjust_insn_length (insn, length)
 	      || ((INTVAL (SET_SRC (pat)) >> 16) & 0xffff) == 0))
 	return -2;
 
-      if (TARGET_H8300H)
+      if (TARGET_H8300H || TARGET_H8300S)
 	{
 	  int val = INTVAL (SET_SRC (pat));
 
@@ -2531,8 +2655,8 @@ h8300_adjust_insn_length (insn, length)
 	return -(20 - INTVAL (XEXP (src, 1)) * 2);
 
       /* Similarly for HImode and SImode shifts by
-	 small constants on the H8/300H.  */
-      if (TARGET_H8300H
+	 small constants on the H8/300H and H8/300S.  */
+      if ((TARGET_H8300H || TARGET_H8300S)
 	  && (mode == HImode || mode == SImode)
 	  && INTVAL (XEXP (src, 1)) <= 4)
 	return -(20 - INTVAL (XEXP (src, 1)) * 2);
