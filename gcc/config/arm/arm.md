@@ -124,9 +124,8 @@
 ; CLOB means that the condition codes are altered in an undefined manner, if
 ; they are altered at all
 
-; JUMP_CLOB is used when the conditions are not defined if a branch is taken,
-; but are if the branch wasn't taken; the effect is to limit the branch
-; elimination scanning.
+; JUMP_CLOB is used when the condition cannot be represented by a single
+; instruction (UNEQ and LTGT).  These cannot be predicated.
 
 ; NOCOND means that the condition codes are neither altered nor affect the
 ; output of this insn
@@ -698,15 +697,15 @@
 
 (define_insn "incscc"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-        (plus:SI (match_operator:SI 2 "comparison_operator"
+        (plus:SI (match_operator:SI 2 "arm_comparison_operator"
                     [(match_operand:CC 3 "cc_register" "") (const_int 0)])
                  (match_operand:SI 1 "s_register_operand" "0,?r")))]
   "TARGET_ARM"
   "@
   add%d2\\t%0, %1, #1
   mov%D2\\t%0, %1\;add%d2\\t%0, %1, #1"
-[(set_attr "conds" "use")
- (set_attr "length" "4,8")])
+  [(set_attr "conds" "use")
+   (set_attr "length" "4,8")])
 
 ; If a constant is too big to fit in a single instruction then the constant
 ; will be pre-loaded into a register taking at least two insns, we might be
@@ -1012,7 +1011,7 @@
 (define_insn "decscc"
   [(set (match_operand:SI            0 "s_register_operand" "=r,r")
         (minus:SI (match_operand:SI  1 "s_register_operand" "0,?r")
-		  (match_operator:SI 2 "comparison_operator"
+		  (match_operator:SI 2 "arm_comparison_operator"
                    [(match_operand   3 "cc_register" "") (const_int 0)])))]
   "TARGET_ARM"
   "@
@@ -5152,7 +5151,7 @@
 (define_insn "cbranchsi4"
   [(set (pc)
 	(if_then_else
-	    (match_operator                    0 "comparison_operator"
+	    (match_operator                    0 "arm_comparison_operator"
 	                    [(match_operand:SI 1 "register_operand"   "l,r")
 			     (match_operand:SI 2 "nonmemory_operand" "rI,r")])
 	    (label_ref       (match_operand    3 "" ""))
@@ -5187,7 +5186,7 @@
 (define_insn "*negated_cbranchsi4"
   [(set (pc)
 	(if_then_else
-	    (match_operator                            0 "comparison_operator"
+	    (match_operator                            0 "arm_comparison_operator"
 	                    [(match_operand:SI         1 "register_operand"  "l")
 			     (neg:SI (match_operand:SI 2 "nonmemory_operand" "l"))])
 	    (label_ref       (match_operand            3 "" ""))
@@ -5529,11 +5528,123 @@
   "operands[1] = arm_gen_compare_reg (LTU, arm_compare_op0, arm_compare_op1);"
 )
 
-;; patterns to match conditional branch insns
+(define_expand "bunordered"
+  [(set (pc)
+	(if_then_else (unordered (match_dup 1) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "operands[1] = arm_gen_compare_reg (UNORDERED, arm_compare_op0,
+				      arm_compare_op1);"
+)
+
+(define_expand "bordered"
+  [(set (pc)
+	(if_then_else (ordered (match_dup 1) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "operands[1] = arm_gen_compare_reg (ORDERED, arm_compare_op0,
+				      arm_compare_op1);"
+)
+
+(define_expand "bungt"
+  [(set (pc)
+	(if_then_else (ungt (match_dup 1) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "operands[1] = arm_gen_compare_reg (UNGT, arm_compare_op0, arm_compare_op1);"
+)
+
+(define_expand "bunlt"
+  [(set (pc)
+	(if_then_else (unlt (match_dup 1) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "operands[1] = arm_gen_compare_reg (UNLT, arm_compare_op0, arm_compare_op1);"
+)
+
+(define_expand "bunge"
+  [(set (pc)
+	(if_then_else (unge (match_dup 1) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "operands[1] = arm_gen_compare_reg (UNGE, arm_compare_op0, arm_compare_op1);"
+)
+
+(define_expand "bunle"
+  [(set (pc)
+	(if_then_else (unle (match_dup 1) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "operands[1] = arm_gen_compare_reg (UNLE, arm_compare_op0, arm_compare_op1);"
+)
+
+;; The following two patterns need two branch instructions, since there is
+;; no single instruction that will handle all cases.
+(define_expand "buneq"
+  [(set (pc)
+	(if_then_else (uneq (match_dup 1) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "operands[1] = arm_gen_compare_reg (UNEQ, arm_compare_op0, arm_compare_op1);"
+)
+
+(define_expand "bltgt"
+  [(set (pc)
+	(if_then_else (ltgt (match_dup 1) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "operands[1] = arm_gen_compare_reg (LTGT, arm_compare_op0, arm_compare_op1);"
+)
+
+;;
+;; Patterns to match conditional branch insns.
+;;
+
+; Special pattern to match UNEQ.
+(define_insn "*arm_buneq"
+  [(set (pc)
+	(if_then_else (uneq (match_operand 1 "cc_register" "") (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "*
+  if (arm_ccfsm_state != 0)
+    abort ();
+
+  return \"bvs\\t%l0;beq\\t%l0\";
+  "
+  [(set_attr "conds" "jump_clob")
+   (set_attr "length" "8")]
+)
+
+; Special pattern to match LTGT.
+(define_insn "*arm_bltgt"
+  [(set (pc)
+	(if_then_else (ltgt (match_operand 1 "cc_register" "") (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "*
+  if (arm_ccfsm_state != 0)
+    abort ();
+
+  return \"bmi\\t%l0;bgt\\t%l0\";
+  "
+  [(set_attr "conds" "jump_clob")
+   (set_attr "length" "8")]
+)
 
 (define_insn "*arm_cond_branch"
   [(set (pc)
-	(if_then_else (match_operator 1 "comparison_operator"
+	(if_then_else (match_operator 1 "arm_comparison_operator"
 		       [(match_operand 2 "cc_register" "") (const_int 0)])
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
@@ -5549,9 +5660,43 @@
   [(set_attr "conds" "use")]
 )
 
+; Special pattern to match reversed UNEQ.
+(define_insn "*arm_buneq_reversed"
+  [(set (pc)
+	(if_then_else (uneq (match_operand 1 "cc_register" "") (const_int 0))
+		      (pc)
+		      (label_ref (match_operand 0 "" ""))))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "*
+  if (arm_ccfsm_state != 0)
+    abort ();
+
+  return \"bmi\\t%l0;bgt\\t%l0\";
+  "
+  [(set_attr "conds" "jump_clob")
+   (set_attr "length" "8")]
+)
+
+; Special pattern to match reversed LTGT.
+(define_insn "*arm_bltgt_reversed"
+  [(set (pc)
+	(if_then_else (ltgt (match_operand 1 "cc_register" "") (const_int 0))
+		      (pc)
+		      (label_ref (match_operand 0 "" ""))))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "*
+  if (arm_ccfsm_state != 0)
+    abort ();
+
+  return \"bvs\\t%l0;beq\\t%l0\";
+  "
+  [(set_attr "conds" "jump_clob")
+   (set_attr "length" "8")]
+)
+
 (define_insn "*arm_cond_branch_reversed"
   [(set (pc)
-	(if_then_else (match_operator 1 "comparison_operator"
+	(if_then_else (match_operator 1 "arm_comparison_operator"
 		       [(match_operand 2 "cc_register" "") (const_int 0)])
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
@@ -5641,9 +5786,74 @@
   "operands[1] = arm_gen_compare_reg (LTU, arm_compare_op0, arm_compare_op1);"
 )
 
+(define_expand "sunordered"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unordered:SI (match_dup 1) (const_int 0)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "operands[1] = arm_gen_compare_reg (UNORDERED, arm_compare_op0,
+				      arm_compare_op1);"
+)
+
+(define_expand "sordered"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(ordered:SI (match_dup 1) (const_int 0)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "operands[1] = arm_gen_compare_reg (ORDERED, arm_compare_op0,
+				      arm_compare_op1);"
+)
+
+(define_expand "sungt"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(ungt:SI (match_dup 1) (const_int 0)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "operands[1] = arm_gen_compare_reg (UNGT, arm_compare_op0,
+				      arm_compare_op1);"
+)
+
+(define_expand "sunge"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unge:SI (match_dup 1) (const_int 0)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "operands[1] = arm_gen_compare_reg (UNGE, arm_compare_op0,
+				      arm_compare_op1);"
+)
+
+(define_expand "sunlt"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unlt:SI (match_dup 1) (const_int 0)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "operands[1] = arm_gen_compare_reg (UNLT, arm_compare_op0,
+				      arm_compare_op1);"
+)
+
+(define_expand "sunle"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unle:SI (match_dup 1) (const_int 0)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT"
+  "operands[1] = arm_gen_compare_reg (UNLE, arm_compare_op0,
+				      arm_compare_op1);"
+)
+
+;;; DO NOT add patterns for SUNEQ or SLTGT, these can't be represented with
+;;; simple ARM instructions. 
+;
+; (define_expand "suneq"
+;   [(set (match_operand:SI 0 "s_register_operand" "=r")
+; 	(uneq:SI (match_dup 1) (const_int 0)))]
+;   "TARGET_ARM && TARGET_HARD_FLOAT"
+;   "abort ();"
+; )
+;
+; (define_expand "sltgt"
+;   [(set (match_operand:SI 0 "s_register_operand" "=r")
+; 	(ltgt:SI (match_dup 1) (const_int 0)))]
+;   "TARGET_ARM && TARGET_HARD_FLOAT"
+;   "abort ();"
+; )
+
 (define_insn "*mov_scc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(match_operator:SI 1 "comparison_operator"
+	(match_operator:SI 1 "arm_comparison_operator"
 	 [(match_operand 2 "cc_register" "") (const_int 0)]))]
   "TARGET_ARM"
   "mov%D1\\t%0, #0\;mov%d1\\t%0, #1"
@@ -5653,7 +5863,7 @@
 
 (define_insn "*mov_negscc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(neg:SI (match_operator:SI 1 "comparison_operator"
+	(neg:SI (match_operator:SI 1 "arm_comparison_operator"
 		 [(match_operand 2 "cc_register" "") (const_int 0)])))]
   "TARGET_ARM"
   "mov%D1\\t%0, #0\;mvn%d1\\t%0, #0"
@@ -5663,7 +5873,7 @@
 
 (define_insn "*mov_notscc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(not:SI (match_operator:SI 1 "comparison_operator"
+	(not:SI (match_operator:SI 1 "arm_comparison_operator"
 		 [(match_operand 2 "cc_register" "") (const_int 0)])))]
   "TARGET_ARM"
   "mov%D1\\t%0, #0\;mvn%d1\\t%0, #1"
@@ -5676,7 +5886,7 @@
 
 (define_expand "movsicc"
   [(set (match_operand:SI 0 "s_register_operand" "")
-	(if_then_else:SI (match_operand 1 "comparison_operator" "")
+	(if_then_else:SI (match_operand 1 "arm_comparison_operator" "")
 			 (match_operand:SI 2 "arm_not_operand" "")
 			 (match_operand:SI 3 "arm_not_operand" "")))]
   "TARGET_ARM"
@@ -5690,7 +5900,7 @@
 
 (define_expand "movsfcc"
   [(set (match_operand:SF 0 "s_register_operand" "")
-	(if_then_else:SF (match_operand 1 "comparison_operator" "")
+	(if_then_else:SF (match_operand 1 "arm_comparison_operator" "")
 			 (match_operand:SF 2 "s_register_operand" "")
 			 (match_operand:SF 3 "nonmemory_operand" "")))]
   "TARGET_ARM"
@@ -5712,7 +5922,7 @@
 
 (define_expand "movdfcc"
   [(set (match_operand:DF 0 "s_register_operand" "")
-	(if_then_else:DF (match_operand 1 "comparison_operator" "")
+	(if_then_else:DF (match_operand 1 "arm_comparison_operator" "")
 			 (match_operand:DF 2 "s_register_operand" "")
 			 (match_operand:DF 3 "fpu_add_operand" "")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
@@ -5727,7 +5937,7 @@
 (define_insn "*movsicc_insn"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r,r,r,r,r,r")
 	(if_then_else:SI
-	 (match_operator 3 "comparison_operator"
+	 (match_operator 3 "arm_comparison_operator"
 	  [(match_operand 4 "cc_register" "") (const_int 0)])
 	 (match_operand:SI 1 "arm_not_operand" "0,0,rI,K,rI,rI,K,K")
 	 (match_operand:SI 2 "arm_not_operand" "rI,K,0,0,rI,K,rI,K")))]
@@ -5747,7 +5957,7 @@
 (define_insn "*movsfcc_hard_insn"
   [(set (match_operand:SF 0 "s_register_operand" "=f,f,f,f,f,f,f,f")
 	(if_then_else:SF
-	 (match_operator 3 "comparison_operator" 
+	 (match_operator 3 "arm_comparison_operator" 
 	  [(match_operand 4 "cc_register" "") (const_int 0)])
 	 (match_operand:SF 1 "fpu_add_operand" "0,0,fG,H,fG,fG,H,H")
 	 (match_operand:SF 2 "fpu_add_operand" "fG,H,0,0,fG,H,fG,H")))]
@@ -5767,7 +5977,7 @@
 
 (define_insn "*movsfcc_soft_insn"
   [(set (match_operand:SF 0 "s_register_operand" "=r,r")
-	(if_then_else:SF (match_operator 3 "comparison_operator"
+	(if_then_else:SF (match_operator 3 "arm_comparison_operator"
 			  [(match_operand 4 "cc_register" "") (const_int 0)])
 			 (match_operand:SF 1 "s_register_operand" "0,r")
 			 (match_operand:SF 2 "s_register_operand" "r,0")))]
@@ -5775,12 +5985,13 @@
   "@
    mov%D3\\t%0, %2
    mov%d3\\t%0, %1"
-  [(set_attr "conds" "use")])
+  [(set_attr "conds" "use")]
+)
 
 (define_insn "*movdfcc_insn"
   [(set (match_operand:DF 0 "s_register_operand" "=f,f,f,f,f,f,f,f")
 	(if_then_else:DF
-	 (match_operator 3 "comparison_operator"
+	 (match_operator 3 "arm_comparison_operator"
 	  [(match_operand 4 "cc_register" "") (const_int 0)])
 	 (match_operand:DF 1 "fpu_add_operand" "0,0,fG,H,fG,fG,H,H")
 	 (match_operand:DF 2 "fpu_add_operand" "fG,H,0,0,fG,H,fG,H")))]
@@ -6128,41 +6339,43 @@
 
 (define_insn "*cond_return"
   [(set (pc)
-        (if_then_else (match_operator 0 "comparison_operator"
+        (if_then_else (match_operator 0 "arm_comparison_operator"
 		       [(match_operand 1 "cc_register" "") (const_int 0)])
                       (return)
                       (pc)))]
   "TARGET_ARM && USE_RETURN_INSN (TRUE)"
   "*
-{
-  if (arm_ccfsm_state == 2)
-    {
-      arm_ccfsm_state += 2;
-      return \"\";
-    }
-  return output_return_instruction (operands[0], TRUE, FALSE);
-}"
-[(set_attr "conds" "use")
- (set_attr "type" "load")])
+  {
+    if (arm_ccfsm_state == 2)
+      {
+        arm_ccfsm_state += 2;
+        return \"\";
+      }
+    return output_return_instruction (operands[0], TRUE, FALSE);
+  }"
+  [(set_attr "conds" "use")
+   (set_attr "type" "load")]
+)
 
 (define_insn "*cond_return_inverted"
   [(set (pc)
-        (if_then_else (match_operator 0 "comparison_operator"
+        (if_then_else (match_operator 0 "arm_comparison_operator"
 		       [(match_operand 1 "cc_register" "") (const_int 0)])
                       (pc)
 		      (return)))]
   "TARGET_ARM && USE_RETURN_INSN (TRUE)"
   "*
-{
-  if (arm_ccfsm_state == 2)
-    {
-      arm_ccfsm_state += 2;
-      return \"\";
-    }
-  return output_return_instruction (operands[0], TRUE, TRUE);
-}"
-[(set_attr "conds" "use")
- (set_attr "type" "load")])
+  {
+    if (arm_ccfsm_state == 2)
+      {
+        arm_ccfsm_state += 2;
+        return \"\";
+      }
+    return output_return_instruction (operands[0], TRUE, TRUE);
+  }"
+  [(set_attr "conds" "use")
+   (set_attr "type" "load")]
+)
 
 ;; Call subroutine returning any type.
 
@@ -6502,175 +6715,185 @@
    (clobber (match_scratch:SI 0 "=&r"))]
   "TARGET_ARM && reload_in_progress"
   "*
-  output_add_immediate (operands);
-  return \"mla%?s\\t%0, %3, %4, %0\";
-"
-[(set_attr "length" "20")
- (set_attr "conds" "set")
- (set_attr "type" "mult")])
+    output_add_immediate (operands);
+    return \"mla%?s\\t%0, %3, %4, %0\";
+  "
+  [(set_attr "length" "20")
+   (set_attr "conds" "set")
+   (set_attr "type" "mult")]
+)
 
 
 
 (define_insn "*and_scc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(and:SI (match_operator:SI 1 "comparison_operator"
+	(and:SI (match_operator:SI 1 "arm_comparison_operator"
 		 [(match_operand 3 "cc_register" "") (const_int 0)])
 		(match_operand:SI 2 "s_register_operand" "r")))]
   "TARGET_ARM"
   "mov%D1\\t%0, #0\;and%d1\\t%0, %2, #1"
-[(set_attr "conds" "use")
- (set_attr "length" "8")])
+  [(set_attr "conds" "use")
+   (set_attr "length" "8")]
+)
 
 (define_insn "*ior_scc"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(ior:SI (match_operator:SI 2 "comparison_operator"
+	(ior:SI (match_operator:SI 2 "arm_comparison_operator"
 		 [(match_operand 3 "cc_register" "") (const_int 0)])
 		(match_operand:SI 1 "s_register_operand" "0,?r")))]
   "TARGET_ARM"
   "@
    orr%d2\\t%0, %1, #1
    mov%D2\\t%0, %1\;orr%d2\\t%0, %1, #1"
-[(set_attr "conds" "use")
- (set_attr "length" "4,8")])
+  [(set_attr "conds" "use")
+   (set_attr "length" "4,8")]
+)
 
 (define_insn "*compare_scc"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(match_operator:SI 1 "comparison_operator"
+	(match_operator:SI 1 "arm_comparison_operator"
 	 [(match_operand:SI 2 "s_register_operand" "r,r")
 	  (match_operand:SI 3 "arm_add_operand" "rI,L")]))
    (clobber (reg:CC 24))]
   "TARGET_ARM"
   "*
-  if (GET_CODE (operands[1]) == LT && operands[3] == const0_rtx)
-    return \"mov\\t%0, %2, lsr #31\";
+    if (GET_CODE (operands[1]) == LT && operands[3] == const0_rtx)
+      return \"mov\\t%0, %2, lsr #31\";
 
-  if (GET_CODE (operands[1]) == GE && operands[3] == const0_rtx)
-    return \"mvn\\t%0, %2\;mov\\t%0, %0, lsr #31\";
+    if (GET_CODE (operands[1]) == GE && operands[3] == const0_rtx)
+      return \"mvn\\t%0, %2\;mov\\t%0, %0, lsr #31\";
 
-  if (GET_CODE (operands[1]) == NE)
-    {
-      if (which_alternative == 1)
-	return \"adds\\t%0, %2, #%n3\;movne\\t%0, #1\";
-      return \"subs\\t%0, %2, %3\;movne\\t%0, #1\";
-    }
-  if (which_alternative == 1)
-    output_asm_insn (\"cmn\\t%2, #%n3\", operands);
-  else
-    output_asm_insn (\"cmp\\t%2, %3\", operands);
-  return \"mov%D1\\t%0, #0\;mov%d1\\t%0, #1\";
-"
-[(set_attr "conds" "clob")
- (set_attr "length" "12")])
+    if (GET_CODE (operands[1]) == NE)
+      {
+        if (which_alternative == 1)
+	  return \"adds\\t%0, %2, #%n3\;movne\\t%0, #1\";
+        return \"subs\\t%0, %2, %3\;movne\\t%0, #1\";
+      }
+    if (which_alternative == 1)
+      output_asm_insn (\"cmn\\t%2, #%n3\", operands);
+    else
+      output_asm_insn (\"cmp\\t%2, %3\", operands);
+    return \"mov%D1\\t%0, #0\;mov%d1\\t%0, #1\";
+  "
+  [(set_attr "conds" "clob")
+   (set_attr "length" "12")]
+)
 
 (define_insn "*cond_move"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
 	(if_then_else:SI (match_operator 3 "equality_operator"
-			  [(match_operator 4 "comparison_operator"
+			  [(match_operator 4 "arm_comparison_operator"
 			    [(match_operand 5 "cc_register" "") (const_int 0)])
 			   (const_int 0)])
 			 (match_operand:SI 1 "arm_rhs_operand" "0,rI,?rI")
 			 (match_operand:SI 2 "arm_rhs_operand" "rI,0,rI")))]
   "TARGET_ARM"
   "*
-  if (GET_CODE (operands[3]) == NE)
-    {
-      if (which_alternative != 1)
-	output_asm_insn (\"mov%D4\\t%0, %2\", operands);
-      if (which_alternative != 0)
-	output_asm_insn (\"mov%d4\\t%0, %1\", operands);
-      return \"\";
-    }
-  if (which_alternative != 0)
-    output_asm_insn (\"mov%D4\\t%0, %1\", operands);
-  if (which_alternative != 1)
-    output_asm_insn (\"mov%d4\\t%0, %2\", operands);
-  return \"\";
-"
-[(set_attr "conds" "use")
- (set_attr "length" "4,4,8")])
+    if (GET_CODE (operands[3]) == NE)
+      {
+        if (which_alternative != 1)
+	  output_asm_insn (\"mov%D4\\t%0, %2\", operands);
+        if (which_alternative != 0)
+	  output_asm_insn (\"mov%d4\\t%0, %1\", operands);
+        return \"\";
+      }
+    if (which_alternative != 0)
+      output_asm_insn (\"mov%D4\\t%0, %1\", operands);
+    if (which_alternative != 1)
+      output_asm_insn (\"mov%d4\\t%0, %2\", operands);
+    return \"\";
+  "
+  [(set_attr "conds" "use")
+   (set_attr "length" "4,4,8")]
+)
 
 (define_insn "*cond_arith"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
         (match_operator:SI 5 "shiftable_operator" 
-	 [(match_operator:SI 4 "comparison_operator"
+	 [(match_operator:SI 4 "arm_comparison_operator"
            [(match_operand:SI 2 "s_register_operand" "r,r")
 	    (match_operand:SI 3 "arm_rhs_operand" "rI,rI")])
           (match_operand:SI 1 "s_register_operand" "0,?r")]))
    (clobber (reg:CC 24))]
   "TARGET_ARM"
   "*
-  if (GET_CODE (operands[4]) == LT && operands[3] == const0_rtx)
-    return \"%i5\\t%0, %1, %2, lsr #31\";
+    if (GET_CODE (operands[4]) == LT && operands[3] == const0_rtx)
+      return \"%i5\\t%0, %1, %2, lsr #31\";
 
-  output_asm_insn (\"cmp\\t%2, %3\", operands);
-  if (GET_CODE (operands[5]) == AND)
-    output_asm_insn (\"mov%D4\\t%0, #0\", operands);
-  else if (GET_CODE (operands[5]) == MINUS)
-    output_asm_insn (\"rsb%D4\\t%0, %1, #0\", operands);
-  else if (which_alternative != 0)
-    output_asm_insn (\"mov%D4\\t%0, %1\", operands);
-  return \"%i5%d4\\t%0, %1, #1\";
-"
-[(set_attr "conds" "clob")
- (set_attr "length" "12")])
+    output_asm_insn (\"cmp\\t%2, %3\", operands);
+    if (GET_CODE (operands[5]) == AND)
+      output_asm_insn (\"mov%D4\\t%0, #0\", operands);
+    else if (GET_CODE (operands[5]) == MINUS)
+      output_asm_insn (\"rsb%D4\\t%0, %1, #0\", operands);
+    else if (which_alternative != 0)
+      output_asm_insn (\"mov%D4\\t%0, %1\", operands);
+    return \"%i5%d4\\t%0, %1, #1\";
+  "
+  [(set_attr "conds" "clob")
+   (set_attr "length" "12")]
+)
 
 (define_insn "*cond_sub"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
         (minus:SI (match_operand:SI 1 "s_register_operand" "0,?r")
-		  (match_operator:SI 4 "comparison_operator"
+		  (match_operator:SI 4 "arm_comparison_operator"
                    [(match_operand:SI 2 "s_register_operand" "r,r")
 		    (match_operand:SI 3 "arm_rhs_operand" "rI,rI")])))
    (clobber (reg:CC 24))]
   "TARGET_ARM"
   "*
-  output_asm_insn (\"cmp\\t%2, %3\", operands);
-  if (which_alternative != 0)
-    output_asm_insn (\"mov%D4\\t%0, %1\", operands);
-  return \"sub%d4\\t%0, %1, #1\";
-"
-[(set_attr "conds" "clob")
- (set_attr "length" "8,12")])
+    output_asm_insn (\"cmp\\t%2, %3\", operands);
+    if (which_alternative != 0)
+      output_asm_insn (\"mov%D4\\t%0, %1\", operands);
+    return \"sub%d4\\t%0, %1, #1\";
+  "
+  [(set_attr "conds" "clob")
+   (set_attr "length" "8,12")]
+)
 
 (define_insn "*cmp_ite0"
   [(set (match_operand 6 "dominant_cc_register" "")
 	(compare
 	 (if_then_else:SI
-	  (match_operator 4 "comparison_operator"
+	  (match_operator 4 "arm_comparison_operator"
 	   [(match_operand:SI 0 "s_register_operand" "r,r,r,r")
 	    (match_operand:SI 1 "arm_add_operand" "rI,L,rI,L")])
-	  (match_operator:SI 5 "comparison_operator"
+	  (match_operator:SI 5 "arm_comparison_operator"
 	   [(match_operand:SI 2 "s_register_operand" "r,r,r,r")
 	    (match_operand:SI 3 "arm_add_operand" "rI,rI,L,L")])
 	  (const_int 0))
 	 (const_int 0)))]
   "TARGET_ARM"
   "*
-{
-  char * opcodes[4][2] =
   {
-    {\"cmp\\t%2, %3\;cmp%d5\\t%0, %1\",\"cmp\\t%0, %1\;cmp%d4\\t%2, %3\"},
-    {\"cmp\\t%2, %3\;cmn%d5\\t%0, #%n1\", \"cmn\\t%0, #%n1\;cmp%d4\\t%2, %3\"},
-    {\"cmn\\t%2, #%n3\;cmp%d5\\t%0, %1\", \"cmp\\t%0, %1\;cmn%d4\\t%2, #%n3\"},
-    {\"cmn\\t%2, #%n3\;cmn%d5\\t%0, #%n1\",
-     \"cmn\\t%0, #%n1\;cmn%d4\\t%2, #%n3\"}
-  };
-  int swap =
-    comparison_dominates_p (GET_CODE (operands[5]), GET_CODE (operands[4]));
+    static const char * const opcodes[4][2] =
+    {
+      {\"cmp\\t%2, %3\;cmp%d5\\t%0, %1\",
+       \"cmp\\t%0, %1\;cmp%d4\\t%2, %3\"},
+      {\"cmp\\t%2, %3\;cmn%d5\\t%0, #%n1\",
+       \"cmn\\t%0, #%n1\;cmp%d4\\t%2, %3\"},
+      {\"cmn\\t%2, #%n3\;cmp%d5\\t%0, %1\",
+       \"cmp\\t%0, %1\;cmn%d4\\t%2, #%n3\"},
+      {\"cmn\\t%2, #%n3\;cmn%d5\\t%0, #%n1\",
+       \"cmn\\t%0, #%n1\;cmn%d4\\t%2, #%n3\"}
+    };
+    int swap =
+      comparison_dominates_p (GET_CODE (operands[5]), GET_CODE (operands[4]));
 
-  return opcodes[which_alternative][swap];
-}
-"
-[(set_attr "conds" "set")
- (set_attr "length" "8")])
+    return opcodes[which_alternative][swap];
+  }"
+  [(set_attr "conds" "set")
+   (set_attr "length" "8")]
+)
 
 (define_insn "*cmp_ite1"
   [(set (match_operand 6 "dominant_cc_register" "")
 	(compare
 	 (if_then_else:SI
-	  (match_operator 4 "comparison_operator"
+	  (match_operator 4 "arm_comparison_operator"
 	   [(match_operand:SI 0 "s_register_operand" "r,r,r,r")
 	    (match_operand:SI 1 "arm_add_operand" "rI,L,rI,L")])
-	  (match_operator:SI 5 "comparison_operator"
+	  (match_operator:SI 5 "arm_comparison_operator"
 	   [(match_operand:SI 2 "s_register_operand" "r,r,r,r")
 	    (match_operand:SI 3 "arm_add_operand" "rI,rI,L,L")])
 	  (const_int 1))
@@ -6693,12 +6916,13 @@
   return opcodes[which_alternative][swap];
 }
 "
-[(set_attr "conds" "set")
- (set_attr "length" "8")])
+  [(set_attr "conds" "set")
+   (set_attr "length" "8")]
+)
 
 (define_insn "*negscc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(neg:SI (match_operator 3 "comparison_operator"
+	(neg:SI (match_operator 3 "arm_comparison_operator"
 		 [(match_operand:SI 1 "s_register_operand" "r")
 		  (match_operand:SI 2 "arm_rhs_operand" "rI")])))
    (clobber (reg:CC 24))]
@@ -6717,13 +6941,14 @@
   output_asm_insn (\"mov%D3\\t%0, #0\", operands);
   return \"mvn%d3\\t%0, #0\";
 "
-[(set_attr "conds" "clob")
- (set_attr "length" "12")])
+  [(set_attr "conds" "clob")
+   (set_attr "length" "12")]
+)
 
 (define_insn "movcond"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
 	(if_then_else:SI
-	 (match_operator 5 "comparison_operator"
+	 (match_operator 5 "arm_comparison_operator"
 	  [(match_operand:SI 3 "s_register_operand" "r,r,r")
 	   (match_operand:SI 4 "arm_add_operand" "rIL,rIL,rIL")])
 	 (match_operand:SI 1 "arm_rhs_operand" "0,rI,?rI")
@@ -6779,12 +7004,13 @@
     output_asm_insn (\"mov%D5\\t%0, %2\", operands);
   return \"\";
 "
-[(set_attr "conds" "clob")
- (set_attr "length" "8,8,12")])
+  [(set_attr "conds" "clob")
+   (set_attr "length" "8,8,12")]
+)
 
 (define_insn "*ifcompare_plus_move"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(if_then_else:SI (match_operator 6 "comparison_operator"
+	(if_then_else:SI (match_operator 6 "arm_comparison_operator"
 			  [(match_operand:SI 4 "s_register_operand" "r,r")
 			   (match_operand:SI 5 "arm_add_operand" "rIL,rIL")])
 			 (plus:SI
@@ -6794,13 +7020,14 @@
    (clobber (reg:CC 24))]
   "TARGET_ARM"
   "#"
-[(set_attr "conds" "clob")
- (set_attr "length" "8,12")])
+  [(set_attr "conds" "clob")
+   (set_attr "length" "8,12")]
+)
 
 (define_insn "*if_plus_move"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r,r")
 	(if_then_else:SI
-	 (match_operator 4 "comparison_operator"
+	 (match_operator 4 "arm_comparison_operator"
 	  [(match_operand 5 "cc_register" "") (const_int 0)])
 	 (plus:SI
 	  (match_operand:SI 2 "s_register_operand" "r,r,r,r")
@@ -6812,13 +7039,14 @@
    sub%d4\\t%0, %2, #%n3
    add%d4\\t%0, %2, %3\;mov%D4\\t%0, %1
    sub%d4\\t%0, %2, #%n3\;mov%D4\\t%0, %1"
-[(set_attr "conds" "use")
- (set_attr "length" "4,4,8,8")
- (set_attr "type" "*,*,*,*")])
+  [(set_attr "conds" "use")
+   (set_attr "length" "4,4,8,8")
+   (set_attr "type" "*,*,*,*")]
+)
 
 (define_insn "*ifcompare_move_plus"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(if_then_else:SI (match_operator 6 "comparison_operator"
+	(if_then_else:SI (match_operator 6 "arm_comparison_operator"
 			  [(match_operand:SI 4 "s_register_operand" "r,r")
 			   (match_operand:SI 5 "arm_add_operand" "rIL,rIL")])
 			 (match_operand:SI 1 "arm_rhs_operand" "0,?rI")
@@ -6828,13 +7056,14 @@
    (clobber (reg:CC 24))]
   "TARGET_ARM"
   "#"
-[(set_attr "conds" "clob")
- (set_attr "length" "8,12")])
+  [(set_attr "conds" "clob")
+   (set_attr "length" "8,12")]
+)
 
 (define_insn "*if_move_plus"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r,r")
 	(if_then_else:SI
-	 (match_operator 4 "comparison_operator"
+	 (match_operator 4 "arm_comparison_operator"
 	  [(match_operand 5 "cc_register" "") (const_int 0)])
 	 (match_operand:SI 1 "arm_rhs_operand" "0,0,?rI,?rI")
 	 (plus:SI
@@ -6846,13 +7075,14 @@
    sub%D4\\t%0, %2, #%n3
    add%D4\\t%0, %2, %3\;mov%d4\\t%0, %1
    sub%D4\\t%0, %2, #%n3\;mov%d4\\t%0, %1"
-[(set_attr "conds" "use")
- (set_attr "length" "4,4,8,8")
- (set_attr "type" "*,*,*,*")])
+  [(set_attr "conds" "use")
+   (set_attr "length" "4,4,8,8")
+   (set_attr "type" "*,*,*,*")]
+)
 
 (define_insn "*ifcompare_arith_arith"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(if_then_else:SI (match_operator 9 "comparison_operator"
+	(if_then_else:SI (match_operator 9 "arm_comparison_operator"
 			  [(match_operand:SI 5 "s_register_operand" "r")
 			   (match_operand:SI 6 "arm_add_operand" "rIL")])
 			 (match_operator:SI 8 "shiftable_operator"
@@ -6864,12 +7094,13 @@
    (clobber (reg:CC 24))]
   "TARGET_ARM"
   "#"
-[(set_attr "conds" "clob")
- (set_attr "length" "12")])
+  [(set_attr "conds" "clob")
+   (set_attr "length" "12")]
+)
 
 (define_insn "*if_arith_arith"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(if_then_else:SI (match_operator 5 "comparison_operator"
+	(if_then_else:SI (match_operator 5 "arm_comparison_operator"
 			  [(match_operand 8 "cc_register" "") (const_int 0)])
 			 (match_operator:SI 6 "shiftable_operator"
 			  [(match_operand:SI 1 "s_register_operand" "r")
@@ -6879,12 +7110,13 @@
 			   (match_operand:SI 4 "arm_rhs_operand" "rI")])))]
   "TARGET_ARM"
   "%I6%d5\\t%0, %1, %2\;%I7%D5\\t%0, %3, %4"
-[(set_attr "conds" "use")
- (set_attr "length" "8")])
+  [(set_attr "conds" "use")
+   (set_attr "length" "8")]
+)
 
 (define_insn "*ifcompare_arith_move"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(if_then_else:SI (match_operator 6 "comparison_operator"
+	(if_then_else:SI (match_operator 6 "arm_comparison_operator"
 			  [(match_operand:SI 2 "s_register_operand" "r,r")
 			   (match_operand:SI 3 "arm_add_operand" "rIL,rIL")])
 			 (match_operator:SI 7 "shiftable_operator"
@@ -6919,12 +7151,13 @@
     return \"mov%D6\\t%0, %1\";
   return \"\";
 "
-[(set_attr "conds" "clob")
- (set_attr "length" "8,12")])
+  [(set_attr "conds" "clob")
+   (set_attr "length" "8,12")]
+)
 
 (define_insn "*if_arith_move"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(if_then_else:SI (match_operator 4 "comparison_operator"
+	(if_then_else:SI (match_operator 4 "arm_comparison_operator"
 			  [(match_operand 6 "cc_register" "") (const_int 0)])
 			 (match_operator:SI 5 "shiftable_operator"
 			  [(match_operand:SI 2 "s_register_operand" "r,r")
@@ -6934,13 +7167,14 @@
   "@
    %I5%d4\\t%0, %2, %3
    %I5%d4\\t%0, %2, %3\;mov%D4\\t%0, %1"
-[(set_attr "conds" "use")
- (set_attr "length" "4,8")
- (set_attr "type" "*,*")])
+  [(set_attr "conds" "use")
+   (set_attr "length" "4,8")
+   (set_attr "type" "*,*")]
+)
 
 (define_insn "*ifcompare_move_arith"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(if_then_else:SI (match_operator 6 "comparison_operator"
+	(if_then_else:SI (match_operator 6 "arm_comparison_operator"
 			  [(match_operand:SI 4 "s_register_operand" "r,r")
 			   (match_operand:SI 5 "arm_add_operand" "rIL,rIL")])
 			 (match_operand:SI 1 "arm_rhs_operand" "0,?rI")
@@ -6976,13 +7210,14 @@
     output_asm_insn (\"mov%d6\\t%0, %1\", operands);
   return \"%I7%D6\\t%0, %2, %3\";
 "
-[(set_attr "conds" "clob")
- (set_attr "length" "8,12")])
+  [(set_attr "conds" "clob")
+   (set_attr "length" "8,12")]
+)
 
 (define_insn "*if_move_arith"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(if_then_else:SI
-	 (match_operator 4 "comparison_operator"
+	 (match_operator 4 "arm_comparison_operator"
 	  [(match_operand 6 "cc_register" "") (const_int 0)])
 	 (match_operand:SI 1 "arm_rhs_operand" "0,?rI")
 	 (match_operator:SI 5 "shiftable_operator"
@@ -6992,14 +7227,15 @@
   "@
    %I5%D4\\t%0, %2, %3
    %I5%D4\\t%0, %2, %3\;mov%d4\\t%0, %1"
-[(set_attr "conds" "use")
- (set_attr "length" "4,8")
- (set_attr "type" "*,*")])
+  [(set_attr "conds" "use")
+   (set_attr "length" "4,8")
+   (set_attr "type" "*,*")]
+)
 
 (define_insn "*ifcompare_move_not"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(if_then_else:SI
-	 (match_operator 5 "comparison_operator"
+	 (match_operator 5 "arm_comparison_operator"
 	  [(match_operand:SI 3 "s_register_operand" "r,r")
 	   (match_operand:SI 4 "arm_add_operand" "rIL,rIL")])
 	 (match_operand:SI 1 "arm_not_operand" "0,?rIK")
@@ -7008,13 +7244,14 @@
    (clobber (reg:CC 24))]
   "TARGET_ARM"
   "#"
-[(set_attr "conds" "clob")
- (set_attr "length" "8,12")])
+  [(set_attr "conds" "clob")
+   (set_attr "length" "8,12")]
+)
 
 (define_insn "*if_move_not"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
 	(if_then_else:SI
-	 (match_operator 4 "comparison_operator"
+	 (match_operator 4 "arm_comparison_operator"
 	  [(match_operand 3 "cc_register" "") (const_int 0)])
 	 (match_operand:SI 1 "arm_not_operand" "0,?rI,K")
 	 (not:SI (match_operand:SI 2 "s_register_operand" "r,r,r"))))]
@@ -7023,13 +7260,14 @@
    mvn%D4\\t%0, %2
    mov%d4\\t%0, %1\;mvn%D4\\t%0, %2
    mvn%d4\\t%0, #%B1\;mvn%D4\\t%0, %2"
-[(set_attr "conds" "use")
- (set_attr "length" "4,8,8")])
+  [(set_attr "conds" "use")
+   (set_attr "length" "4,8,8")]
+)
 
 (define_insn "*ifcompare_not_move"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(if_then_else:SI 
-	 (match_operator 5 "comparison_operator"
+	 (match_operator 5 "arm_comparison_operator"
 	  [(match_operand:SI 3 "s_register_operand" "r,r")
 	   (match_operand:SI 4 "arm_add_operand" "rIL,rIL")])
 	 (not:SI
@@ -7038,13 +7276,14 @@
    (clobber (reg:CC 24))]
   "TARGET_ARM"
   "#"
-[(set_attr "conds" "clob")
- (set_attr "length" "8,12")])
+  [(set_attr "conds" "clob")
+   (set_attr "length" "8,12")]
+)
 
 (define_insn "*if_not_move"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
 	(if_then_else:SI
-	 (match_operator 4 "comparison_operator"
+	 (match_operator 4 "arm_comparison_operator"
 	  [(match_operand 3 "cc_register" "") (const_int 0)])
 	 (not:SI (match_operand:SI 2 "s_register_operand" "r,r,r"))
 	 (match_operand:SI 1 "arm_not_operand" "0,?rI,K")))]
@@ -7053,13 +7292,14 @@
    mvn%d4\\t%0, %2
    mov%D4\\t%0, %1\;mvn%d4\\t%0, %2
    mvn%D4\\t%0, #%B1\;mvn%d4\\t%0, %2"
-[(set_attr "conds" "use")
- (set_attr "length" "4,8,8")])
+  [(set_attr "conds" "use")
+   (set_attr "length" "4,8,8")]
+)
 
 (define_insn "*ifcompare_shift_move"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(if_then_else:SI
-	 (match_operator 6 "comparison_operator"
+	 (match_operator 6 "arm_comparison_operator"
 	  [(match_operand:SI 4 "s_register_operand" "r,r")
 	   (match_operand:SI 5 "arm_add_operand" "rIL,rIL")])
 	 (match_operator:SI 7 "shift_operator"
@@ -7069,13 +7309,14 @@
    (clobber (reg:CC 24))]
   "TARGET_ARM"
   "#"
-[(set_attr "conds" "clob")
- (set_attr "length" "8,12")])
+  [(set_attr "conds" "clob")
+   (set_attr "length" "8,12")]
+)
 
 (define_insn "*if_shift_move"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
 	(if_then_else:SI
-	 (match_operator 5 "comparison_operator"
+	 (match_operator 5 "arm_comparison_operator"
 	  [(match_operand 6 "cc_register" "") (const_int 0)])
 	 (match_operator:SI 4 "shift_operator"
 	  [(match_operand:SI 2 "s_register_operand" "r,r,r")
@@ -7086,13 +7327,14 @@
    mov%d5\\t%0, %2%S4
    mov%D5\\t%0, %1\;mov%d5\\t%0, %2%S4
    mvn%D5\\t%0, #%B1\;mov%d5\\t%0, %2%S4"
-[(set_attr "conds" "use")
- (set_attr "length" "4,8,8")])
+  [(set_attr "conds" "use")
+   (set_attr "length" "4,8,8")]
+)
 
 (define_insn "*ifcompare_move_shift"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(if_then_else:SI
-	 (match_operator 6 "comparison_operator"
+	 (match_operator 6 "arm_comparison_operator"
 	  [(match_operand:SI 4 "s_register_operand" "r,r")
 	   (match_operand:SI 5 "arm_add_operand" "rIL,rIL")])
 	 (match_operand:SI 1 "arm_not_operand" "0,?rIK")
@@ -7102,13 +7344,14 @@
    (clobber (reg:CC 24))]
   "TARGET_ARM"
   "#"
-[(set_attr "conds" "clob")
- (set_attr "length" "8,12")])
+  [(set_attr "conds" "clob")
+   (set_attr "length" "8,12")]
+)
 
 (define_insn "*if_move_shift"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
 	(if_then_else:SI
-	 (match_operator 5 "comparison_operator"
+	 (match_operator 5 "arm_comparison_operator"
 	  [(match_operand 6 "cc_register" "") (const_int 0)])
 	 (match_operand:SI 1 "arm_not_operand" "0,?rI,K")
 	 (match_operator:SI 4 "shift_operator"
@@ -7119,13 +7362,14 @@
    mov%D5\\t%0, %2%S4
    mov%d5\\t%0, %1\;mov%D5\\t%0, %2%S4
    mvn%d5\\t%0, #%B1\;mov%D5\\t%0, %2%S4"
-[(set_attr "conds" "use")
- (set_attr "length" "4,8,8")])
+  [(set_attr "conds" "use")
+   (set_attr "length" "4,8,8")]
+)
 
 (define_insn "*ifcompare_shift_shift"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(if_then_else:SI
-	 (match_operator 7 "comparison_operator"
+	 (match_operator 7 "arm_comparison_operator"
 	  [(match_operand:SI 5 "s_register_operand" "r")
 	   (match_operand:SI 6 "arm_add_operand" "rIL")])
 	 (match_operator:SI 8 "shift_operator"
@@ -7137,13 +7381,14 @@
    (clobber (reg:CC 24))]
   "TARGET_ARM"
   "#"
-[(set_attr "conds" "clob")
- (set_attr "length" "12")])
+  [(set_attr "conds" "clob")
+   (set_attr "length" "12")]
+)
 
 (define_insn "*if_shift_shift"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(if_then_else:SI
-	 (match_operator 5 "comparison_operator"
+	 (match_operator 5 "arm_comparison_operator"
 	  [(match_operand 8 "cc_register" "") (const_int 0)])
 	 (match_operator:SI 6 "shift_operator"
 	  [(match_operand:SI 1 "s_register_operand" "r")
@@ -7153,13 +7398,14 @@
 	   (match_operand:SI 4 "arm_rhs_operand" "rM")])))]
   "TARGET_ARM"
   "mov%d5\\t%0, %1%S6\;mov%D5\\t%0, %3%S7"
-[(set_attr "conds" "use")
- (set_attr "length" "8")])
+  [(set_attr "conds" "use")
+   (set_attr "length" "8")]
+)
 
 (define_insn "*ifcompare_not_arith"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(if_then_else:SI
-	 (match_operator 6 "comparison_operator"
+	 (match_operator 6 "arm_comparison_operator"
 	  [(match_operand:SI 4 "s_register_operand" "r")
 	   (match_operand:SI 5 "arm_add_operand" "rIL")])
 	 (not:SI (match_operand:SI 1 "s_register_operand" "r"))
@@ -7169,13 +7415,14 @@
    (clobber (reg:CC 24))]
   "TARGET_ARM"
   "#"
-[(set_attr "conds" "clob")
- (set_attr "length" "12")])
+  [(set_attr "conds" "clob")
+   (set_attr "length" "12")]
+)
 
 (define_insn "*if_not_arith"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(if_then_else:SI
-	 (match_operator 5 "comparison_operator"
+	 (match_operator 5 "arm_comparison_operator"
 	  [(match_operand 4 "cc_register" "") (const_int 0)])
 	 (not:SI (match_operand:SI 1 "s_register_operand" "r"))
 	 (match_operator:SI 6 "shiftable_operator"
@@ -7183,13 +7430,14 @@
 	   (match_operand:SI 3 "arm_rhs_operand" "rI")])))]
   "TARGET_ARM"
   "mvn%d5\\t%0, %1\;%I6%D5\\t%0, %2, %3"
-[(set_attr "conds" "use")
- (set_attr "length" "8")])
+  [(set_attr "conds" "use")
+   (set_attr "length" "8")]
+)
 
 (define_insn "*ifcompare_arith_not"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(if_then_else:SI
-	 (match_operator 6 "comparison_operator"
+	 (match_operator 6 "arm_comparison_operator"
 	  [(match_operand:SI 4 "s_register_operand" "r")
 	   (match_operand:SI 5 "arm_add_operand" "rIL")])
 	 (match_operator:SI 7 "shiftable_operator"
@@ -7199,13 +7447,14 @@
    (clobber (reg:CC 24))]
   "TARGET_ARM"
   "#"
-[(set_attr "conds" "clob")
- (set_attr "length" "12")])
+  [(set_attr "conds" "clob")
+   (set_attr "length" "12")]
+)
 
 (define_insn "*if_arith_not"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(if_then_else:SI
-	 (match_operator 5 "comparison_operator"
+	 (match_operator 5 "arm_comparison_operator"
 	  [(match_operand 4 "cc_register" "") (const_int 0)])
 	 (match_operator:SI 6 "shiftable_operator"
 	  [(match_operand:SI 2 "s_register_operand" "r")
@@ -7213,13 +7462,14 @@
 	 (not:SI (match_operand:SI 1 "s_register_operand" "r"))))]
   "TARGET_ARM"
   "mvn%D5\\t%0, %1\;%I6%d5\\t%0, %2, %3"
-[(set_attr "conds" "use")
- (set_attr "length" "8")])
+  [(set_attr "conds" "use")
+   (set_attr "length" "8")]
+)
 
 (define_insn "*ifcompare_neg_move"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(if_then_else:SI
-	 (match_operator 5 "comparison_operator"
+	 (match_operator 5 "arm_comparison_operator"
 	  [(match_operand:SI 3 "s_register_operand" "r,r")
 	   (match_operand:SI 4 "arm_add_operand" "rIL,rIL")])
 	 (neg:SI (match_operand:SI 2 "s_register_operand" "r,r"))
@@ -7227,13 +7477,14 @@
    (clobber (reg:CC 24))]
   "TARGET_ARM"
   "#"
-[(set_attr "conds" "clob")
- (set_attr "length" "8,12")])
+  [(set_attr "conds" "clob")
+   (set_attr "length" "8,12")]
+)
 
 (define_insn "*if_neg_move"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
 	(if_then_else:SI
-	 (match_operator 4 "comparison_operator"
+	 (match_operator 4 "arm_comparison_operator"
 	  [(match_operand 3 "cc_register" "") (const_int 0)])
 	 (neg:SI (match_operand:SI 2 "s_register_operand" "r,r,r"))
 	 (match_operand:SI 1 "arm_not_operand" "0,?rI,K")))]
@@ -7242,13 +7493,14 @@
    rsb%d4\\t%0, %2, #0
    mov%D4\\t%0, %1\;rsb%d4\\t%0, %2, #0
    mvn%D4\\t%0, #%B1\;rsb%d4\\t%0, %2, #0"
-[(set_attr "conds" "use")
- (set_attr "length" "4,8,8")])
+  [(set_attr "conds" "use")
+   (set_attr "length" "4,8,8")]
+)
 
 (define_insn "*ifcompare_move_neg"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(if_then_else:SI
-	 (match_operator 5 "comparison_operator"
+	 (match_operator 5 "arm_comparison_operator"
 	  [(match_operand:SI 3 "s_register_operand" "r,r")
 	   (match_operand:SI 4 "arm_add_operand" "rIL,rIL")])
 	 (match_operand:SI 1 "arm_not_operand" "0,?rIK")
@@ -7256,13 +7508,14 @@
    (clobber (reg:CC 24))]
   "TARGET_ARM"
   "#"
-[(set_attr "conds" "clob")
- (set_attr "length" "8,12")])
+  [(set_attr "conds" "clob")
+   (set_attr "length" "8,12")]
+)
 
 (define_insn "*if_move_neg"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
 	(if_then_else:SI
-	 (match_operator 4 "comparison_operator"
+	 (match_operator 4 "arm_comparison_operator"
 	  [(match_operand 3 "cc_register" "") (const_int 0)])
 	 (match_operand:SI 1 "arm_not_operand" "0,?rI,K")
 	 (neg:SI (match_operand:SI 2 "s_register_operand" "r,r,r"))))]
@@ -7872,7 +8125,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "")
 	(and:SI (ge:SI (match_operand:SI 1 "s_register_operand" "")
 		       (const_int 0))
-		(neg:SI (match_operator:SI 2 "comparison_operator"
+		(neg:SI (match_operator:SI 2 "arm_comparison_operator"
 			 [(match_operand:SI 3 "s_register_operand" "")
 			  (match_operand:SI 4 "arm_rhs_operand" "")]))))
    (clobber (match_operand:SI 5 "s_register_operand" ""))]
@@ -7985,12 +8238,91 @@
 
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
-	(if_then_else:SI (match_operator 1 "comparison_operator"
+	(if_then_else:SI (match_operator 1 "arm_comparison_operator"
+			  [(match_operand 2 "" "") (match_operand 3 "" "")])
+			 (match_dup 0)
+			 (match_operand 4 "" "")))
+   (clobber (reg:CC 24))]
+  "TARGET_ARM && reload_completed"
+  [(set (match_dup 5) (match_dup 6))
+   (cond_exec (match_dup 7)
+	      (set (match_dup 0) (match_dup 4)))]
+  "
+  {
+    enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
+					     operands[2], operands[3]);
+    enum rtx_code rc = GET_CODE (operands[1]);
+
+    operands[5] = gen_rtx_REG (mode, 24);
+    operands[6] = gen_rtx_COMPARE (mode, operands[2], operands[3]);
+    if (mode == CCFPmode || mode == CCFPEmode)
+      rc = reverse_condition_maybe_unordered (rc);
+    else
+      rc = reverse_condition (rc);
+
+    operands[7] = gen_rtx_fmt_ee (rc, VOIDmode, operands[5], const0_rtx);
+  }"
+)
+
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(if_then_else:SI (match_operator 1 "arm_comparison_operator"
+			  [(match_operand 2 "" "") (match_operand 3 "" "")])
+			 (match_operand 4 "" "")
+			 (match_dup 0)))
+   (clobber (reg:CC 24))]
+  "TARGET_ARM && reload_completed"
+  [(set (match_dup 5) (match_dup 6))
+   (cond_exec (match_op_dup 1 [(match_dup 5) (const_int 0)])
+	      (set (match_dup 0) (match_dup 4)))]
+  "
+  {
+    enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
+					     operands[2], operands[3]);
+
+    operands[5] = gen_rtx_REG (mode, 24);
+    operands[6] = gen_rtx_COMPARE (mode, operands[2], operands[3]);
+  }"
+)
+
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(if_then_else:SI (match_operator 1 "arm_comparison_operator"
 			  [(match_operand 2 "" "") (match_operand 3 "" "")])
 			 (match_operand 4 "" "")
 			 (match_operand 5 "" "")))
    (clobber (reg:CC 24))]
   "TARGET_ARM && reload_completed"
+  [(set (match_dup 6) (match_dup 7))
+   (cond_exec (match_op_dup 1 [(match_dup 6) (const_int 0)])
+	      (set (match_dup 0) (match_dup 4)))
+   (cond_exec (match_dup 8)
+	      (set (match_dup 0) (match_dup 5)))]
+  "
+  {
+    enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
+					     operands[2], operands[3]);
+    enum rtx_code rc = GET_CODE (operands[1]);
+
+    operands[6] = gen_rtx_REG (mode, 24);
+    operands[7] = gen_rtx_COMPARE (mode, operands[2], operands[3]);
+    if (mode == CCFPmode || mode == CCFPEmode)
+      rc = reverse_condition_maybe_unordered (rc);
+    else
+      rc = reverse_condition (rc);
+
+    operands[8] = gen_rtx_fmt_ee (rc, VOIDmode, operands[6], const0_rtx);
+  }"
+)
+
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(if_then_else:SI (match_operator 1 "arm_comparison_operator"
+			  [(match_operand 2 "" "") (match_operand 3 "" "")])
+			 (match_operand 4 "" "")
+			 (match_operand 5 "" "")))
+   (clobber (reg:CC 24))]
+  "TARGET_ARM && reload_completed && 0"
   [(set (match_dup 6) (match_dup 7))
    (set (match_dup 0) 
 	(if_then_else:SI (match_op_dup 1 [(match_dup 6) (const_int 0)])
@@ -8008,7 +8340,7 @@
 
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
-	(if_then_else:SI (match_operator 1 "comparison_operator"
+	(if_then_else:SI (match_operator 1 "arm_comparison_operator"
 			  [(match_operand:SI 2 "s_register_operand" "")
 			   (match_operand:SI 3 "arm_add_operand" "")])
 			 (match_operand:SI 4 "arm_rhs_operand" "")
@@ -8033,7 +8365,7 @@
 
 (define_insn "*cond_move_not"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(if_then_else:SI (match_operator 4 "comparison_operator"
+	(if_then_else:SI (match_operator 4 "arm_comparison_operator"
 			  [(match_operand 3 "cc_register" "") (const_int 0)])
 			 (match_operand:SI 1 "arm_rhs_operand" "0,?rI")
 			 (not:SI
