@@ -1,3 +1,8 @@
+2003-02-25  Uwe Stieber <uwe@wwws.de>
+
+	* configure.in: Add support for kaOS as cross build target system.
+	* configure: Regenerated.
+
 2003-02-24  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* MAINTAINERS (Write after approval): Add myself.
