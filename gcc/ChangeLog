@@ -1,5 +1,11 @@
 2004-10-05  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-cfg.c (thread_jumps): Iterate with FOR_EACH_BB instead
+	of FOR_BB_BETWEEN.  Remove a useless check for unreachable
+	blocks.
+
+2004-10-05  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-cfg.c (cleanup_tree_cfg): Don't call
 	delete_unreachable_blosk() after thread_jumps().
 	(thread_jumps): Always remove basic blocks as they become
