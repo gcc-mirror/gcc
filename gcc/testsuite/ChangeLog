@@ -1,5 +1,10 @@
 2003-06-20  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10888
+	* g++.dg/warn/Winline-3.C: New test. 
+
+2003-06-20  Mark Mitchell  <mark@codesourcery.com>
+
 	* lib/target-supports.exp (check_alias_available): Make the test
 	program acceptable to the Solaris assembler.
 

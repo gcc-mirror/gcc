@@ -2811,6 +2811,15 @@ code is to provide behavior which is selectable at compile-time.
 @item -Winline
 @opindex Winline
 Warn if a function can not be inlined and it was declared as inline.
+Even with this option, the compiler will not warn about failures to
+inline functions declared in system headers.  
+
+The compiler uses a variety of heuristics to determine whether or not
+to inline a function.  For example, the compiler takes into account
+the size of the function being inlined and the the amount of inlining
+that has already been done in the current function.  Therefore,
+seemingly insignificant changes in the source program can cause the
+warnings produced by @option{-Winline} to appear or disappear.
 
 @item -Wno-invalid-offsetof @r{(C++ only)}
 @opindex Wno-invalid-offsetof
