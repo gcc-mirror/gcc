@@ -488,7 +488,8 @@ static char *multilib_select = MULTILIB_SELECT;
   || !strcmp (STR, "Tbss") || !strcmp (STR, "include")	\
   || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info") \
   || !strcmp (STR, "idirafter") || !strcmp (STR, "iprefix") \
-  || !strcmp (STR, "iwithprefix") || !strcmp (STR, "iwithprefixbefore"))
+  || !strcmp (STR, "iwithprefix") || !strcmp (STR, "iwithprefixbefore") \
+  || !strcmp (STR, "isystem"))
 
 #ifndef WORD_SWITCH_TAKES_ARG
 #define WORD_SWITCH_TAKES_ARG(STR) DEFAULT_WORD_SWITCH_TAKES_ARG (STR)
