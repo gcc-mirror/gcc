@@ -1,4 +1,4 @@
-// { dg-do run { xfail { powerpc*-*-linux* && broken_cplxf_arg } } }
+// { dg-do run { xfail broken_cplxf_arg } }
 
 // Copyright (C) 2004 Free Software Foundation
 //
