@@ -1,3 +1,8 @@
+1999-12-10  Ben Collins  <bcollins@debian.org>
+
+        * configure.in: Fix typo for "-64" in 64bit as check.
+	* configure: Rebuilt.
+	
 1999-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* longlong.h (__sparc_v9__): Use %rDIGIT instead of %DIGIT where
