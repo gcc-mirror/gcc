@@ -1786,7 +1786,6 @@ fi
 # rpc/types.h on OSF1/2.0 is not C++ ready, even though NO_IMPLICIT_EXTERN_C
 # is defined for the alpha.  The problem is the declaration of malloc.
 file=rpc/types.h
-ls -l $file ${LIB}/$file
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/rpc 2>/dev/null
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
