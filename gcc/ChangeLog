@@ -1,3 +1,10 @@
+Mon May 14 08:56:47 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* config/pa/som.h (NM_FLAGS): Remove.
+	(ASM_OUTPUT_FUNCTION_PREFIX): No longer truncate subspace names.
+	(ASM_OUTPUT_SECTION_NAME): Remove.
+	(MAKE_DECL_ONE_ONLY, ASM_WEAKEN_LABEL): Likewise.
+
 2001-05-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* regrename.c (regrename_optimize): Do not rename registers to
