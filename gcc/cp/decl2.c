@@ -931,10 +931,7 @@ grok_x_components (specs, components)
   else
     {
       t = TREE_TYPE (components);
-      if (TREE_CODE (t) == ENUMERAL_TYPE && TREE_NONLOCAL_FLAG (t))
-	return grok_enum_decls (t, components);
-      else
-	return components;
+      return grok_enum_decls (t, components);
     }
 }
 

@@ -1,3 +1,7 @@
+Thu Jan 22 21:30:42 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* decl2.c (grok_x_components): Always call grok_enum_decls.
+
 Wed Jan 21 10:29:57 1998  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
 
 	* pt.c (coerce_template_parms): Don't access elements of ARGLIST
