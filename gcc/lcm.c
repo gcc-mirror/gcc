@@ -1227,7 +1227,10 @@ optimize_mode_switching (file)
 		 previous block.  */
 	      if (eg->flags & EDGE_ABNORMAL)
 		{
-		  src_bb->end = emit_insn_after (mode_set, src_bb->end);
+		  if (GET_CODE (src_bb->end) == JUMP_INSN)
+		    emit_insn_before (mode_set, src_bb->end);
+		  else
+		    src_bb->end = emit_insn_after (mode_set, src_bb->end);
 		  bb_info[j][src_bb->index].computing = mode;
 		  RESET_BIT (transp[src_bb->index], j);
 		}

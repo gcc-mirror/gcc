@@ -1,3 +1,8 @@
+2001-02-07  Alexandre Oliva  <aoliva@redhat.com>
+
+	* lcm.c (optimize_mode_switching): Emit mode_set before the
+	JUMP_INSN of an abnormal edge.
+
 2001-02-07  Bernd Schmidt  <bernds@redhat.com>
 
 	* builtins.c (expand_builtin_setjmp_receiver): Emit an ASM_INPUT as
