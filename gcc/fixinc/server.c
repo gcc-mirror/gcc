@@ -47,16 +47,9 @@
  */
 #include "auto-host.h"
 
-#include <sys/types.h>
-#ifdef HAVE_FCNTL_H
-#include <fcntl.h>
-#endif
-#include <errno.h>
+#include "gansidecl.h"
+#include "system.h"
 #include <signal.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <sys/param.h>
 
 #include "server.h"
 
