@@ -403,9 +403,14 @@ print_node (file, prefix, node, indent)
 	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, DECL_FRAME_SIZE (node));
 	}
       else if (DECL_BUILT_IN (node))
-	fprintf (file, " built-in %s:%s",
-		 built_in_class_names[(int) DECL_BUILT_IN_CLASS (node)],
-		 built_in_names[(int) DECL_FUNCTION_CODE (node)]);
+	{
+	  if (DECL_BUILT_IN_CLASS (node) == BUILT_IN_MD)
+	    fprintf (file, " built-in BUILT_IN_MD %d", DECL_FUNCTION_CODE (node));
+	  else
+	    fprintf (file, " built-in %s:%s",
+		     built_in_class_names[(int) DECL_BUILT_IN_CLASS (node)],
+		     built_in_names[(int) DECL_FUNCTION_CODE (node)]);
+	}
 
       if (DECL_POINTER_ALIAS_SET_KNOWN_P (node))
 	{
