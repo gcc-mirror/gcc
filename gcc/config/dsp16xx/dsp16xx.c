@@ -54,11 +54,11 @@ const char *chip_name;
 const char *save_chip_name;
 
 /* Save the operands of a compare. The 16xx has not lt or gt, so
-   in these cases we swap the operands and reverse the condition */
+   in these cases we swap the operands and reverse the condition.  */
 
 rtx dsp16xx_compare_op0;
 rtx dsp16xx_compare_op1;
-struct rtx_def *(*dsp16xx_compare_gen)();
+rtx (*dsp16xx_compare_gen) PARAMS (());
 
 static const char *fp;
 static const char *sp;
@@ -168,9 +168,8 @@ hard_regno_mode_ok (regno, mode)
     case VOIDmode:
       return 1;
       
-      /* 
-	We can't use the c0-c2 for QImode, since they are only
-	8 bits in length */
+      /* We can't use the c0-c2 for QImode, since they are only
+	 8 bits in length.  */
 
     case QImode:
       if (regno != REG_C0 && regno != REG_C1 && regno != REG_C2)
@@ -180,7 +179,7 @@ hard_regno_mode_ok (regno, mode)
       
       /* We only allow a0, a1, y, and p to be allocated for 32-bit modes.
          Additionally we allow the virtual ybase registers to be used for 32-bit
-	 modes. */
+	 modes.  */
       
     case HFmode:
     case SFmode:
@@ -285,8 +284,9 @@ dsp16xx_reg_class_from_letter (c)
       return NO_REGS;
     }
 }
+
 /* Return the class number of the smallest class containing
-   reg number REGNO. */
+   reg number REGNO.  */
 
 int 
 regno_reg_class(regno)
@@ -359,7 +359,7 @@ regno_reg_class(regno)
 }
 
 /* A C expression for the maximum number of consecutive registers of class CLASS
-   needed to hold a value of mode MODE */
+   needed to hold a value of mode MODE.  */
 
 int
 class_max_nregs(class, mode)
@@ -443,7 +443,7 @@ preferred_reload_class (x, class)
      enum reg_class class;
 {
   /* The ybase registers cannot have constants copied directly
-     to them. */
+     to them.  */
 
   if (CONSTANT_P (x))
     {
@@ -494,7 +494,7 @@ preferred_reload_class (x, class)
     }
 
   /* If x is not an accumulator or a ybase register, restrict the class of registers
-     we can copy the register into */
+     we can copy the register into.   */
 
   if (REG_P (x) && !IS_ACCUM_REG (REGNO (x)) && !IS_YBASE_REGISTER_WINDOW (REGNO (x)))
     {
@@ -687,7 +687,7 @@ preferred_reload_class (x, class)
     }
 
   /* If x (the input) is a ybase register, restrict the class of registers
-     we can copy the register into */
+     we can copy the register into.  */
 
   if (REG_P (x) && !TARGET_RESERVE_YBASE
       && IS_YBASE_REGISTER_WINDOW (REGNO(x)))
@@ -795,7 +795,7 @@ preferred_reload_class (x, class)
 	    return class;
 
 	  /* If the accumulators are not part of the class
-	     being reloaded into, return NO_REGS */
+	     being reloaded into, return NO_REGS.  */
 #if 0
 	  if (!reg_class_subset_p (ACCUM_REGS, class))
 	    return (!reload_in_progress ? NO_REGS : class);
@@ -804,9 +804,9 @@ preferred_reload_class (x, class)
 	    return ACCUM_HIGH_REGS;
 
 	  /* We will use accumulator 'a1l' for reloading a
-	     PLUS. We can only use one accumulator because
+	     PLUS.  We can only use one accumulator because
 	     'reload_inqi' only allows one alternative to be
-	     used. */
+	     used.  */
 
 	  else if (class == ACCUM_LOW_REGS)
 	    return A1L_REG;
@@ -824,7 +824,7 @@ preferred_reload_class (x, class)
   else if (GET_CODE (x) == MEM)
     {
       /* We can't copy from a memory location into a
-	 ybase register */
+	 ybase register.  */
       if (reg_class_subset_p(YBASE_VIRT_REGS, class))
 	{
 	  switch ((int) class)
@@ -896,7 +896,7 @@ secondary_reload_class (class, mode, in)
 
   /* If we are reloading a plus into a high accumulator register,
      we need a scratch low accumulator, because the low half gets
-     clobbered */
+     clobbered.  */
 
   if (class == ACCUM_HIGH_REGS 
       || class == A1H_REG
@@ -919,7 +919,7 @@ secondary_reload_class (class, mode, in)
 	  rtx addr1 = XEXP (in, 1);
 	  
 	  /* If we are reloading a plus (reg:QI) (reg:QI)
-	     we need an additional register. */ 
+	     we need an additional register.  */ 
 	  if (REG_P (addr0) && REG_P (addr1))
 	    return NO_REGS;
 	}
@@ -942,7 +942,7 @@ secondary_reload_class (class, mode, in)
 
   /* We can copy the ybase registers into:
      r0-r3, a0-a1, y, p, & x or the union of
-     any of these. */
+     any of these.  */
 
   if (!TARGET_RESERVE_YBASE && IS_YBASE_REGISTER_WINDOW(regno))
     {
@@ -990,7 +990,7 @@ secondary_reload_class (class, mode, in)
      directly to the ybase registers. In addition
      we can use any of the ybase virtual registers
      as the secondary reload registers when copying
-     between any of these registers. */
+     between any of these registers.  */
 
   if (!TARGET_RESERVE_YBASE && regno != -1)
     {
@@ -1056,7 +1056,7 @@ secondary_reload_class (class, mode, in)
     }
 
   /* Memory or constants can be moved from or to any register
-     except the ybase virtual registers */
+     except the ybase virtual registers.  */
   if (regno == -1 && GET_CODE(in) != PLUS)
     {
       if (class == YBASE_VIRT_REGS)
@@ -1071,7 +1071,7 @@ secondary_reload_class (class, mode, in)
       rtx addr1 = XEXP (in, 1);
 
       /* If we are reloading a plus (reg:QI) (reg:QI)
-	 we need a low accumulator, not a high one. */
+	 we need a low accumulator, not a high one.  */
       if (REG_P (addr0) && REG_P (addr1))
 	return ACCUM_LOW_REGS;
     }
@@ -1117,7 +1117,7 @@ symbolic_address_p (op)
 
 /* For a Y address space operand we allow only *rn, *rn++, *rn--.
    This routine only recognizes *rn, the '<>' constraints recognize
-   *rn++, *rn-- */
+   (*rn++), and (*rn--).  */
 
 int
 Y_address_operand (op, mode)
@@ -1252,15 +1252,15 @@ notice_update_cc(exp)
 	    cc_status.value1 = SET_SRC (exp);
 	    return;
 	}
-	/* Certain instructions effect the condition codes. */
+	/* Certain instructions effect the condition codes.  */
 	else if (GET_MODE_CLASS (GET_MODE (SET_SRC (exp))) == MODE_INT)
-	    switch( GET_CODE (SET_SRC (exp)) )
+	    switch (GET_CODE (SET_SRC (exp)))
 	    {
 	    case PLUS: 
 	    case MINUS:
 	      if (REG_P (SET_DEST (exp)))
 		{
-		  /* Address registers don't set the condition codes */
+		  /* Address registers don't set the condition codes.  */
 		  if (IS_ADDRESS_REGISTER (REGNO (SET_DEST (exp))))
 		    {
 		      CC_STATUS_INIT;
@@ -1331,7 +1331,7 @@ compute_frame_size (size)
   long extra_size;
   long reg_size;
 
-  /* This value is needed to compute reg_size */
+  /* This value is needed to compute reg_size.  */
   current_frame_info.function_makes_calls = !leaf_function_p ();
 
   reg_size = 0;
@@ -1362,15 +1362,17 @@ compute_frame_size (size)
   return total_size;
 }
 
-int frame_size()
+int 
+frame_size ()
 {
   return (int) compute_frame_size(get_frame_size());
 }
 
-int frame_pointer_offset()
+int 
+frame_pointer_offset ()
 {
   if (!leaf_function_p())
-    return ( -(current_function_outgoing_args_size + 1) );
+    return (-(current_function_outgoing_args_size + 1));
   else
     return 1;
 }
@@ -1406,7 +1408,7 @@ ybase_regs_ever_used ()
 void 
 dsp16xx_output_function_prologue (file, size)
      FILE *file;
-     int  size;
+     HOST_WIDE_INT size;
 {
   int regno;
   long total_size;
@@ -1417,7 +1419,7 @@ dsp16xx_output_function_prologue (file, size)
   
   total_size = compute_frame_size (size);
   
-  fprintf( file, "\t/* FUNCTION PROLOGUE: */\n" );
+  fprintf (file, "\t/* FUNCTION PROLOGUE: */\n");
   fprintf (file, "\t/* total=%d, vars= %d, regs= %d, args=%d, extra= %d */\n",
 	   current_frame_info.total_size,
 	   current_frame_info.var_size,
@@ -1428,7 +1430,7 @@ dsp16xx_output_function_prologue (file, size)
   fprintf (file, "\t/* fp save offset= %d, sp save_offset= %d */\n\n",
 	   current_frame_info.fp_save_offset,
 	   current_frame_info.sp_save_offset);
-  /* Set up the 'ybase' register window. */
+  /* Set up the 'ybase' register window.  */
   
   if (ybase_regs_ever_used())
     {
@@ -1446,7 +1448,7 @@ dsp16xx_output_function_prologue (file, size)
 	fprintf (file, "\t*%s++\n", sp);
       else
         {
-	  if(SMALL_INTVAL(current_frame_info.var_size) && ((current_frame_info.var_size & 0x8000) == 0))
+	  if (SMALL_INTVAL(current_frame_info.var_size) && ((current_frame_info.var_size & 0x8000) == 0))
 	    fprintf (file, "\t%s=%d\n\t*%s++%s\n", reg_names[REG_J], current_frame_info.var_size, sp, reg_names[REG_J]);
 	  else
 	    fatal_error ("Stack size > 32k");
@@ -1454,19 +1456,18 @@ dsp16xx_output_function_prologue (file, size)
     }
   
   /* Save any registers this function uses, unless they are
-   * used in a call, in which case we don't need to
-   */
+     used in a call, in which case we don't need to.  */
   
-  for( regno = 0; regno < FIRST_PSEUDO_REGISTER; ++ regno )
+  for(regno = 0; regno < FIRST_PSEUDO_REGISTER; ++ regno)
     if (dsp16xx_call_saved_register (regno)) 
       {
-	fprintf( file, "\tpush(*%s)=%s\n", sp, reg_names[regno] );
+	fprintf (file, "\tpush(*%s)=%s\n", sp, reg_names[regno]);
       }
 
   /* For debugging purposes, we want the return address to be at a predictable
-     location */
+     location.  */
   if (current_frame_info.function_makes_calls)
-    fprintf( file, "\tpush(*%s)=%s\n", sp, reg_names[RETURN_ADDRESS_REGNUM]);
+    fprintf (file, "\tpush(*%s)=%s\n", sp, reg_names[RETURN_ADDRESS_REGNUM]);
 
   if (current_frame_info.args_size)
     {
@@ -1478,13 +1479,13 @@ dsp16xx_output_function_prologue (file, size)
    
   if (frame_pointer_needed)
     {
-      fprintf( file, "\t%s=%s\n", a1h, sp );
-      fprintf( file, "\t%s=%s\n", fp, a1h );  /* Establish new base frame */
-      fprintf( file, "\t%s=%d\n", reg_names[REG_J], -total_size);
-      fprintf( file, "\t*%s++%s\n", fp, reg_names[REG_J]);
+      fprintf (file, "\t%s=%s\n", a1h, sp);
+      fprintf (file, "\t%s=%s\n", fp, a1h);  /* Establish new base frame */
+      fprintf (file, "\t%s=%d\n", reg_names[REG_J], -total_size);
+      fprintf (file, "\t*%s++%s\n", fp, reg_names[REG_J]);
     }
   
-  fprintf( file, "\t/* END FUNCTION PROLOGUE: */\n\n" );
+  fprintf (file, "\t/* END FUNCTION PROLOGUE: */\n\n");
 }
 
 void
@@ -1517,7 +1518,7 @@ init_emulation_routines ()
 void
 dsp16xx_output_function_epilogue (file, size)
      FILE *file;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   int regno;
   
@@ -1526,7 +1527,7 @@ dsp16xx_output_function_epilogue (file, size)
   rr = reg_names[RETURN_ADDRESS_REGNUM];   /* return address register */
   a1h = reg_names[REG_A1];
   
-  fprintf( file, "\n\t/* FUNCTION EPILOGUE: */\n" );
+  fprintf (file, "\n\t/* FUNCTION EPILOGUE: */\n");
   
   if (current_frame_info.args_size)
     {
@@ -1550,12 +1551,12 @@ dsp16xx_output_function_epilogue (file, size)
     }
 
   if (current_frame_info.function_makes_calls)
-    fprintf( file, "\t%s=pop(*%s)\n", reg_names[RETURN_ADDRESS_REGNUM], sp );
+    fprintf (file, "\t%s=pop(*%s)\n", reg_names[RETURN_ADDRESS_REGNUM], sp);
   
   for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; --regno)
     if (dsp16xx_call_saved_register(regno))
       {
-	fprintf( file, "\t%s=pop(*%s)\n", reg_names[regno], sp );
+	fprintf (file, "\t%s=pop(*%s)\n", reg_names[regno], sp);
       }
   
   if (current_frame_info.var_size)
@@ -1570,7 +1571,7 @@ dsp16xx_output_function_epilogue (file, size)
     }
   
   fprintf (file, "\treturn\n");
-  /* Reset the frame info for the next function */
+  /* Reset the frame info for the next function.  */
   current_frame_info = zero_frame_info;
   init_emulation_routines ();
 }
@@ -1613,7 +1614,7 @@ double_reg_from_memory (operands)
 	xoperands[1] = XEXP (XEXP (operands[1], 0), 0);
 	xoperands[0] = operands[0];
 	
-	/* We can't use j anymore since the compiler can allocate it. */
+	/* We can't use j anymore since the compiler can allocate it.  */
 /*	output_asm_insn ("j=-3\n\t%u0=*%1++\n\t%w0=*%1++j", xoperands); */
 	output_asm_insn ("%u0=*%1++\n\t%w0=*%1--\n\t*%1--\n\t*%1--", xoperands);
     }
@@ -1661,7 +1662,7 @@ double_reg_to_memory (operands)
 	xoperands[0] = XEXP (XEXP (operands[0], 0), 0);
 	xoperands[1] = operands[1];
 	
-	/* We can't use j anymore since the compiler can allocate it. */
+	/* We can't use j anymore since the compiler can allocate it.  */
 
 /*	output_asm_insn ("j=-3\n\t*%0++=%u1\n\t*%0++j=%w1", xoperands); */
 	output_asm_insn ("*%0++=%u1\n\t*%0--=%w1\n\t*%0--\n\t*%0--", xoperands);
@@ -1778,9 +1779,9 @@ next_cc_user_code (insn)
      rtx insn;
 {
   /* If no insn could be found we assume that the jump has been
-     deleted and the compare will be deleted later. */
+     deleted and the compare will be deleted later.  */
 
-  if ( !(insn = next_cc0_user (insn)))
+  if (!(insn = next_cc0_user (insn)))
     return (enum rtx_code) 0;
   else if (GET_CODE (insn) == JUMP_INSN
 	   && GET_CODE (PATTERN (insn)) == SET
@@ -1849,9 +1850,9 @@ print_operand(file, op, letter)
           break;  
     }
 
-    if( code == REG )
+    if (code == REG)
     {
-	/* Print the low half of a 32-bit register pair */
+	/* Print the low half of a 32-bit register pair.  */
         if (letter == 'w')
            fprintf (file, "%s", reg_names[REGNO (op) + 1]);
         else if (letter == 'u' || !letter)
@@ -1874,18 +1875,18 @@ print_operand(file, op, letter)
 	else if (letter == 'h')
 	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, val);
         else if (letter == 'U')
-	  fprintf(file, HOST_WIDE_INT_PRINT_HEX, (val >> 16) & 0xffff);
+	  fprintf (file, HOST_WIDE_INT_PRINT_HEX, (val >> 16) & 0xffff);
         else
-           output_addr_const( file, op );
+           output_addr_const(file, op);
     }
-    else if( code == CONST_DOUBLE && GET_MODE(op) != DImode )
+    else if (code == CONST_DOUBLE && GET_MODE(op) != DImode)
     {
 	  union { double d; int i[2]; } u;
 	  union { float f; int i; } u1;
 	  u.i[0] = CONST_DOUBLE_LOW (op);
 	  u.i[1] = CONST_DOUBLE_HIGH (op);
 	  u1.f = u.d;
-          fprintf( file, "0x%x", u1.i );
+          fprintf (file, "0x%x", u1.i);
     }
     else if (code == CONST)
       {
@@ -1893,7 +1894,7 @@ print_operand(file, op, letter)
 	
 	if (GET_CODE (addr) != PLUS)
 	  {
-	    output_addr_const( file, op);
+	    output_addr_const(file, op);
 	    return;
 	  }
 	
@@ -1924,7 +1925,7 @@ print_operand(file, op, letter)
 	    fprintf (file, "%d", n);
 	  }
 	else
-	  output_addr_const( file, op);
+	  output_addr_const(file, op);
       }
     else
       output_addr_const (file, op);
@@ -1969,10 +1970,10 @@ print_operand_address(file, addr)
       break;
       
     default:
-      if( FITS_5_BITS( addr ) )
-	fprintf( file, "*(0x%x)", (INTVAL(addr) & 0x20) );
+      if (FITS_5_BITS (addr))
+	fprintf (file, "*(0x%x)", (INTVAL (addr) & 0x20));
       else
-	output_addr_const(file, addr);
+	output_addr_const (file, addr);
     }
 }
 
@@ -2008,7 +2009,7 @@ reg_save_size ()
 	reg_save_size += UNITS_PER_WORD;
       }
 
-  /* If the function makes calls we will save need to save the 'pr' register */
+  /* If the function makes calls we will save need to save the 'pr' register.  */
   if (current_frame_info.function_makes_calls)
     reg_save_size += 1;
 
@@ -2047,7 +2048,7 @@ initial_frame_pointer_offset()
 }
 
 /* Generate the minimum number of 1600 core shift instructions
-   to shift by 'shift_amount'. */
+   to shift by 'shift_amount'.  */
 
 #if 0
 void
@@ -2398,8 +2399,7 @@ dsp16xx_address_cost (addr)
    passed in registers, we first load the structure into the
    register, and then when the last argument is passed, we store
    the registers into the stack locations.  This fixes some bugs
-   where GCC did not expect to have register arguments, followed */
-
+   where GCC did not expect to have register arguments, followed.  */
 
 struct rtx_def *
 dsp16xx_function_arg (args_so_far, mode, type, named)
@@ -2463,7 +2463,7 @@ luxworks_dsp16xx_file_start (file)
   int len, err_code;
 
 
-  fprintf(file, "\t.debug ");
+  fprintf (file, "\t.debug ");
   err_code = (TARGET_DEBUG) ? fprintf (file, "yes, ") : fprintf (file, "no, ");
   err_code = (TARGET_SAVE_TEMPS) ? fprintf (file, "asm, ") : fprintf (file, "temp, ");
   len = strlen (main_input_filename);
@@ -2477,8 +2477,8 @@ luxworks_dsp16xx_file_start (file)
          p++;
          }
 #endif
-    fprintf(file, "\"%s\"\n", temp_filename);
-    fprintf(file, "");
+    fprintf (file, "\"%s\"\n", temp_filename);
+    fprintf (file, "");
 
   fprintf (file, "#include <%s.h>\n", save_chip_name);
 
@@ -2487,12 +2487,11 @@ luxworks_dsp16xx_file_start (file)
     * object code. These have been created so that the number and
     * type of sections remain consistent with and without -g option. Note
     * that the .data, .text, .const and .bss are always created when -g
-    * is provided as an option. 
-    */
-   fprintf(file, "\t.rsect \".text\" , nodelete\n");
-   fprintf(file, "\t.rsect \".data\" , nodelete\n");
-   fprintf(file, "\t.rsect \".const\" , nodelete\n");
-   fprintf(file, "\t.rsect \".bss\" , nodelete\n");
+    * is provided as an option.  */
+   fprintf (file, "\t.rsect \".text\" , nodelete\n");
+   fprintf (file, "\t.rsect \".data\" , nodelete\n");
+   fprintf (file, "\t.rsect \".const\" , nodelete\n");
+   fprintf (file, "\t.rsect \".bss\" , nodelete\n");
 }
 
 rtx
@@ -2526,7 +2525,7 @@ gen_compare_reg (code, x, y)
 
   mode = GET_MODE (x);
   /* For floating point compare insns, a call is generated so don't
-     do anything here. */
+     do anything here.  */
 
   if (GET_MODE_CLASS (mode) == MODE_FLOAT)
     return cc0_rtx;
