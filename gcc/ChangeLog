@@ -1,3 +1,9 @@
+2002-08-08  Lars Brinkhoff  <lars@nocrew.org>
+	    Richard Henderson  <rth@redhat.com>
+
+	* emit-rtl.c (gen_rtx_REG): After reload, only return
+	frame_pointer_rtx or hard_frame_pointer_rtx if frame_pointer_needed.
+
 2002-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000-protos.h (rs6000_field_alignment): Remove.
