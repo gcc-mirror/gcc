@@ -149,6 +149,16 @@ extern int errno;
 #endif
 
 #endif /* OBJECT_FORMAT_NONE */
+
+/* Some systems use __main in a way incompatible with its use in gcc, in these
+   cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
+   give the same symbol without quotes for an alternative entry point.  You
+   must define both, or niether. */
+#ifndef NAME__MAIN
+#define NAME__MAIN "__main"
+#define SYMBOL__MAIN __main
+#endif
+
 
 /* Linked lists of constructor and destructor names. */
 
@@ -1297,8 +1307,8 @@ write_c_file (stream, name)
   write_list (stream, "\t", destructors.first);
   fprintf (stream, "\t0\n};\n\n");
 
-  fprintf (stream, "extern entry_pt __main;\n");
-  fprintf (stream, "entry_pt *__main_reference = __main;\n\n");
+  fprintf (stream, "extern entry_pt %s;\n", NAME__MAIN);
+  fprintf (stream, "entry_pt *__main_reference = %s;\n\n", NAME__MAIN);
 }
 
 
@@ -1790,11 +1800,13 @@ scan_prog_file (prog_name, which_pass)
 
 	      if (rw)
 		{
-		  char *n = name;
-		  while (*n == '_')
-		    ++n;
-		  if (*n != 'm' || (n - name) < 2 || strcmp (n, "main"))
+		  char *n = name + strlen (name) - strlen (NAME__MAIN);
+
+		  if ((n - name) < 0 || strcmp (n, NAME__MAIN))
 		    continue;
+		  while (n != name)
+		    if (*--n != '_')
+		      continue;
 
 		  main_sym = sym;
 		}
