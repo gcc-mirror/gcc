@@ -1,3 +1,7 @@
+2005-02-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.c-torture/execute/20020720-1.x: Don't XFAIL cris-*-*.
+
 2005-02-19  Zdenek Dvorak  <dvorakz@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
