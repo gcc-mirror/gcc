@@ -1,5 +1,10 @@
 2002-12-09  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.h (TARGET_CPU_CPP_BUILTINS): Define
+	__tune_pentium2__ and __tune_pentium3__ as necessary.
+
+2002-12-09  Richard Henderson  <rth@redhat.com>
+
 	* target.h (gcc_target): Add cannot_force_const_mem.
 	* target-def.h (TARGET_CANNOT_FORCE_CONST_MEM): New.
 	(TARGET_INITIALIZER): Add it.

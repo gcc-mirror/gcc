@@ -515,6 +515,15 @@ extern int x86_prefetch_sse;
 	{							\
 	  builtin_define ("__tune_i686__");			\
 	  builtin_define ("__tune_pentiumpro__");		\
+	  switch (last_cpu_char)				\
+	    {							\
+	    case '3':						\
+	      builtin_define ("__tune_pentium3__");		\
+	      /* FALLTHRU */					\
+	    case '2':						\
+	      builtin_define ("__tune_pentium2__");		\
+	      break;						\
+	    }							\
 	}							\
       else if (TARGET_K6)					\
 	{							\
