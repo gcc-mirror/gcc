@@ -175,7 +175,7 @@ timestamp.
 
 @menu
 * Config Fragments::     Scripts used by @file{configure}.
-* System Config::        The @file{config.gcc} file.
+* System Config::        The @file{config.build} and @file{config.gcc} files.
 * Configuration Files::  Files created by running @file{configure}.
 @end menu
 
@@ -191,10 +191,12 @@ files, kept in the top level directory, are used.  FIXME: when is the
 the top level one) used?
 
 @item The file @file{config.gcc} is used to handle configuration
-specific to the particular build, host or target machine.  (In
-general, this should only be used for features that cannot reasonably
-be tested in Autoconf feature tests.)  @xref{System Config, , The
-@file{config.gcc} File}, for details of the contents of this file.
+specific to the particular host or target machine.  The file 
+@file{config.build} is used to handle configuration specific to the 
+particular build machine.  (In general, these should only be used for 
+features that cannot reasonably be tested in Autoconf feature tests.)
+@xref{System Config, , The @file{config.build} and @file{config.gcc} Files},
+for details of the contents of these files.
 
 @item Each language subdirectory has a file
 @file{@var{language}/config-lang.in} that is used for
@@ -206,9 +208,9 @@ creating the output of @file{configure}.
 @end itemize
 
 @node System Config
-@subsubsection The @file{config.gcc} File
+@subsubsection The @file{config.build} and @file{config.gcc} Files
 
-FIXME: document the contents of this file, and what variables should
+FIXME: document the contents of these files, and what variables should
 be set to control build, host and target configuration.
 
 @include configfiles.texi

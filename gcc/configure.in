@@ -962,11 +962,10 @@ fi
 # Build, host, and target specific configuration fragments
 # --------------------------------------------------------
 
+# Collect build-machine-specific information.
+. ${srcdir}/config.build
+
 target_gtfiles=
-build_xm_file=
-build_xm_defines=
-build_install_headers_dir=install-headers-tar
-build_exeext=
 host_xm_file=
 host_xm_defines=
 host_xmake_file=
@@ -976,7 +975,7 @@ host_exeext=
 # For the host machine, we save the xm_file variable as host_xm_file;
 # then we decode the target machine and forget everything else
 # that came from the host machine.
-for machine in $build $host $target; do
+for machine in $host $target; do
 	. ${srcdir}/config.gcc
 done
 
