@@ -3107,14 +3107,22 @@ eliminate_regs_in_insn (insn, replace)
 	for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS];
 	     ep++)
 	  if (ep->from_rtx == XEXP (SET_SRC (old_body), 0)
-	      && ep->can_eliminate
-	      && ep->offset == - INTVAL (XEXP (SET_SRC (old_body), 1)))
+	      && ep->can_eliminate)
 	    {
-	      PATTERN (insn) = gen_rtx (SET, VOIDmode,
-					SET_DEST (old_body), ep->to_rtx);
-	      INSN_CODE (insn) = -1;
-	      val = 1;
-	      goto done;
+	      /* We must stop at the first elimination that will be used.
+		 If this one would replace the PLUS with a REG, do it
+		 now.  Otherwise, quit the loop and let eliminate_regs
+		 do its normal replacement.  */
+	      if (ep->offset == - INTVAL (XEXP (SET_SRC (old_body), 1)))
+		{
+		  PATTERN (insn) = gen_rtx (SET, VOIDmode,
+					    SET_DEST (old_body), ep->to_rtx);
+		  INSN_CODE (insn) = -1;
+		  val = 1;
+		  goto done;
+		}
+
+	      break;
 	    }
     }
 
