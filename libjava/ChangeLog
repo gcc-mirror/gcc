@@ -1,3 +1,9 @@
+2003-10-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	* interpret.cc (_Jv_InterpMethod::run): Don't
+	use libffi types, they were meant to be internal.
+	* gcj/javaprims.h (_Jv_ulong): New typedef.
+
 2003-10-13  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natClassLoader.cc (_Jv_InitNewClassFields): Removed.
