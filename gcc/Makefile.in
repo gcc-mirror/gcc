@@ -88,7 +88,7 @@ coverageexts = .{da,bb,bbg}
 # apply to the back end and the C front end, which may be compiled
 # with other compilers.  This is partially controlled by configure in
 # stage1, as not all versions of gcc understand -Wno-long-long.
-LOOSE_WARN = -W -Wall -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
+LOOSE_WARN = -W -Wall -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes -fno-common
 STRICT_WARN = -Wtraditional @strict1_warn@
 STRICT2_WARN = -Wtraditional -pedantic -Wno-long-long
 

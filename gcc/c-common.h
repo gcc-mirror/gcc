@@ -606,7 +606,7 @@ extern int print_struct_values;
 
 /* ???.  Undocumented.  */
 
-const char *constant_string_class_name;
+extern const char *constant_string_class_name;
 
 /* Warn if multiple methods are seen for the same selector, but with
    different argument types.  */
