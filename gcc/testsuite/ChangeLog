@@ -1,3 +1,7 @@
+2003-11-18  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/nested-func-1.c: New test.
+
 2003-11-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/cpp/assert4.c: New test.
