@@ -1,3 +1,8 @@
+2002-06-07  Jeffrey Law  <law@redhat.com>
+
+	* sched-deps.c (free_deps): Avoid calling free_INSN_LIST_list
+	on empty lists.
+
 2002-06-07  H.J. Lu  (hjl@gnu.org)
 
 	* configure.in: Add --enable-__cxa_atexit.
