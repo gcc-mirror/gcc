@@ -38,4 +38,10 @@
    links to, so there's no need for weak-ness for that.  */
 #define _GLIBCXX_GTHREAD_USE_WEAK 0
 
+// On Darwin, in order to enable overriding of operator new and delete,
+// GCC makes the definition of these functions weak, relies on the
+// loader to implement weak semantics properly, and uses
+// -flat_namespace to work around the way that it doesn't.
+#define _GLIBCXX_WEAK_DEFINITION __attribute__ ((weak))
+
 #endif

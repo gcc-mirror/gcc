@@ -30,7 +30,7 @@
 
 #include "new"
 
-__attribute__((weak)) void
+_GLIBCXX_WEAK_DEFINITION void
 operator delete[] (void *ptr) throw ()
 {
   ::operator delete (ptr);
