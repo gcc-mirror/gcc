@@ -922,7 +922,7 @@ _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>
 {
   if (__position._M_node == _M_header->_M_left) { // begin()
     if (size() > 0 && 
-       _M_key_compare(_S_key(__position._M_node), _KeyOfValue()(__v)))
+       _M_key_compare(_KeyOfValue()(__v), _S_key(__position._M_node)))
       return _M_insert(__position._M_node, __position._M_node, __v);
     // first argument just needs to be non-null 
     else
