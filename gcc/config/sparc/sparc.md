@@ -6424,7 +6424,7 @@
    && GET_CODE (operands[1]) == REG
    && REGNO (operands[0]) != REGNO (operands[1])
    && reload_completed"
-  [(set (match_dup 2) (neg (match_dup 3)))
+  [(set (match_dup 2) (neg:SF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))
    (set (match_dup 6) (match_dup 7))]
   "operands[2] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]));
@@ -6497,7 +6497,7 @@
   [(set (match_operand:DF 0 "register_operand" "=e")
 	(neg:DF (match_operand:DF 1 "register_operand" "e")))]
   "TARGET_FPU && TARGET_V9"
-  "fnegd\\t%0, %0"
+  "fnegd\\t%1, %0"
   [(set_attr "type" "fpmove")
    (set_attr "length" "1")])
 
