@@ -1,5 +1,12 @@
 2004-04-26  Paolo Bonzini  <bonzini@gnu.org>
 
+	* Makefile.def (host_modules): Mark with the bootstrap
+	flag packages on which gcc depends.
+	* Makefile.tpl (all-bootstrap): Use it.
+	* Makefile.in: Regenerate.
+
+2004-04-26  Paolo Bonzini  <bonzini@gnu.org>
+
 	* Makefile.def (flags_to_pass): Remove *dir variables that
 	are passed to the modules via TOPLEVEL_CONFIGURE_ARGUMENTS,
 	as well as prefix and exec_prefix.
