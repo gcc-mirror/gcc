@@ -1,3 +1,38 @@
+1999-09-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.def (CLEANUP_STMT): New node.
+	* cp-tree.h (language_function): Add name_declared.
+	(current_function_name_declared): New macro.
+	(CLEANUP_DECL): New macro.
+	(CLEANUP_EXPR): Likewise.
+	(emit_local_var): Likewise.
+	(finish_decl_cleanup): New function.
+	* cvt.c (build_up_reference): Simplify.
+	(ocp_convert): Remove dead code.
+	* decl.c (start_decl): Remove call to add_decl_stmt.
+	(grok_reference_init): Adjust, to handle bindings temporaries to
+	references.  Remove dead code.
+	(initialize_local_var): Don't generate RTL for
+	declarations here, or build cleanups here.  Don't fuss with
+	obstacks.  Replace expand_start_target_temps calls with explicit
+	setting of stms_are_full_exprs_p.
+	(destroy_local_var): New function.
+	(emit_local_var): Likewise.
+	(cp_finish_decl): Use them, as appropriate.
+	(start_function): Announce template functions.
+	(store_parm_decls): Don't call declare_function_name here.
+	(finish_stmt): Don't start emit base-initialization code when just
+	building the statement-tree.
+	* init.c (create_temporary_var): Move add_decl_stmt call ...
+	(get_temp_regvar): Here.
+	* pt.c (tsubst_expr): Make DECL_INITIAL look like what
+	cp_finish_decl would expect.  Don't call add_decl_stmt.
+	* semantics.c (begin_compound_stmt): Call declare_function_name,
+	if appropriate.
+	(finish_decl_cleanup): New function.
+	(expand_stmt): Use emit_local_var to output variables.		
+	(expand_body): Set current_funtion_name_declared.
+	
 1999-09-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (finish_cleanup_try_block): New function.
