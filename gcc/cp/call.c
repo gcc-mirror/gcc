@@ -3924,7 +3924,9 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 
   fnname = ansi_opname (code);
 
-  if (IS_AGGR_TYPE (type) && !global_p)
+  if (CLASS_TYPE_P (type) 
+      && COMPLETE_TYPE_P (complete_type (type))
+      && !global_p)
     /* In [class.free]
 
        If the result of the lookup is ambiguous or inaccessible, or if
