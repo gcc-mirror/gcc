@@ -1,3 +1,15 @@
+2004-03-01  Jeff Law  <law@redhat.com>
+
+	* fold-const.c (fold): An equality comparison of a non-weak object
+	against zero has a known result.  Similarly an equality comparison
+	of the address of two non-weak, unaliased symbols has a known result.
+ 
+	* ggc-page.c (struct page_entry): New field PREV.
+	(ggc_alloc): Update PREV field appropriately.
+	(sweep_pages): Likewise.
+	(ggc_free): Likewise.  Use PREV field rather than loop to
+	improve ggc_free performance.
+ 
 2004-03-01  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_output_division): Use the division

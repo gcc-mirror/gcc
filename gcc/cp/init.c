@@ -2436,7 +2436,8 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
   /* Outermost wrapper: If pointer is null, punt.  */
   body = fold (build (COND_EXPR, void_type_node,
 		      fold (build (NE_EXPR, boolean_type_node, base,
-				   integer_zero_node)),
+				   convert (TREE_TYPE (base),
+					    integer_zero_node))),
 		      body, integer_zero_node));
   body = build1 (NOP_EXPR, void_type_node, body);
 
