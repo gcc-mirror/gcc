@@ -56,6 +56,10 @@ extern int  __objc_fini_thread_system(void);    /* thread.c                 */
 
 extern void class_add_method_list(Class, MethodList_t);
 
+/* Registering instance methods as class methods for root classes */
+extern void __objc_register_instance_methods_to_class(Class);
+extern Method_t search_for_method_in_list(MethodList_t list, SEL op);
+
 /* True when class links has been resolved */     
 extern BOOL __objc_class_links_resolved;
 
