@@ -1,3 +1,7 @@
+2004-10-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* expr.c (expand_expr_real_1): Remove an obsolete comment.
+
 2004-10-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* c-typeck.c (default_function_array_conversion): Always create
