@@ -1,3 +1,9 @@
+2004-09-13  Tom Tromey  <tromey@redhat.com>
+
+	PR java/17216:
+	* class.c (layout_class_method): Put synthetic methods into the
+	vtable.
+
 2004-09-11  Andrew Pinski  <apinski@apple.com>
 
 	* Make-lang.in (java/ggc-none.c): Change dependency
