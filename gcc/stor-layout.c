@@ -261,8 +261,8 @@ layout_decl (decl, known_align)
       if (spec_size == 0 && DECL_NAME (decl) != 0)
 	abort ();
 
-      /* Size is specified number of bits.  */
-      DECL_SIZE (decl) = size_int (spec_size);
+      /* Size is specified in number of bits.  */
+      DECL_SIZE (decl) = bitsize_int (spec_size, 0);
     }
   /* Force alignment required for the data type.
      But if the decl itself wants greater alignment, don't override that.
@@ -298,7 +298,7 @@ layout_decl (decl, known_align)
 	  DECL_ALIGN (decl) = MAX ((unsigned) GET_MODE_ALIGNMENT (xmode),
 				   DECL_ALIGN (decl));
 	  DECL_MODE (decl) = xmode;
-	  DECL_SIZE (decl) = size_int (GET_MODE_BITSIZE (xmode));
+	  DECL_SIZE (decl) = bitsize_int (GET_MODE_BITSIZE (xmode), 0);
 	  /* This no longer needs to be accessed as a bit field.  */
 	  DECL_BIT_FIELD (decl) = 0;
 	}
@@ -517,7 +517,7 @@ layout_record (rec)
 	DECL_FIELD_BITPOS (field) = var_size;
       else
 	{
-	  DECL_FIELD_BITPOS (field) = size_int (const_size);
+	  DECL_FIELD_BITPOS (field) = bitsize_int (const_size, 0L);
 
 	  /* If this field ended up more aligned than we thought it
 	     would be (we approximate this by seeing if its position
@@ -559,7 +559,7 @@ layout_record (rec)
 
   if (var_size == 0)
     {
-      TYPE_SIZE (rec) = size_int (const_size);
+      TYPE_SIZE (rec) = bitsize_int (const_size, 0L);
     }
   else
     {
@@ -607,7 +607,7 @@ layout_union (rec)
   /* The size of the union, based on the fields scanned so far,
      is max (CONST_SIZE, VAR_SIZE).
      VAR_SIZE may be null; then CONST_SIZE by itself is the size.  */
-  register int const_size = 0;
+  register HOST_WIDE_INT const_size = 0;
   register tree var_size = 0;
 
 #ifdef STRUCTURE_SIZE_BOUNDARY
@@ -624,6 +624,8 @@ layout_union (rec)
 
   for (field = TYPE_FIELDS (rec); field; field = TREE_CHAIN (field))
     {
+      tree dsize;
+      
       /* Enums which are local to this class need not be laid out.  */
       if (TREE_CODE (field) == CONST_DECL || TREE_CODE (field) == TYPE_DECL)
 	continue;
@@ -642,19 +644,22 @@ layout_union (rec)
 	union_align = MAX (union_align, TYPE_ALIGN (TREE_TYPE (field)));
 #endif
 
+      dsize = DECL_SIZE (field);
       if (TREE_CODE (rec) == UNION_TYPE)
 	{
 	  /* Set union_size to max (decl_size, union_size).
 	     There are more and less general ways to do this.
 	     Use only CONST_SIZE unless forced to use VAR_SIZE.  */
 
-	  if (TREE_CODE (DECL_SIZE (field)) == INTEGER_CST)
+	  if (TREE_CODE (dsize) == INTEGER_CST
+              && ! TREE_CONSTANT_OVERFLOW (dsize)
+              && TREE_INT_CST_HIGH (dsize) == 0)
 	    const_size
-	      = MAX (const_size, TREE_INT_CST_LOW (DECL_SIZE (field)));
+	      = MAX (const_size, TREE_INT_CST_LOW (dsize));
 	  else if (var_size == 0)
-	    var_size = DECL_SIZE (field);
+	    var_size = dsize;
 	  else
-	    var_size = size_binop (MAX_EXPR, var_size, DECL_SIZE (field));
+	    var_size = size_binop (MAX_EXPR, var_size, dsize);
 	}
       else if (TREE_CODE (rec) == QUAL_UNION_TYPE)
 	var_size = fold (build (COND_EXPR, sizetype, DECL_QUALIFIER (field),
