@@ -30,9 +30,29 @@ proc libstdc++-v3-init { args } {
     global gluefile wrap_flags
 
     set blddir   [lookfor_file $outdir libstdc++-v3]
-    set cxx 	 [exec sh ${blddir}/testsuite_flags --build-cxx]
-    set cxxflags [exec sh ${blddir}/testsuite_flags --cxxflags]
-    set includes [exec sh ${blddir}/testsuite_flags --build-includes]
+
+    if [is_remote host] {
+        set header [remote_download host ${srcdir}/debug_assert.h]
+        if { $header == "" } {
+            verbose -log "Unable to download ${srcdir}/debug_assert.h to host."
+            return "untested"
+        }
+      set cxx [transform "g++"]
+      set cxxflags "-ggdb3 -DDEBUG_ASSERT"
+        set includes "-I./"
+    } else {
+        # If we find a testsuite_flags file, we're testing in the build dir.
+        set flags_file "${blddir}/testsuite_flags"
+        if { [file exists $flags_file] } {
+            set cxx [exec sh $flags_file --build-cxx]
+            set cxxflags [exec sh $flags_file --cxxflags]
+            set includes [exec sh $flags_file --build-includes]
+        } else {
+            set cxx [transform "g++"]
+            set cxxflags "-ggdb3 -DDEBUG_ASSERT"
+            set includes "-I${srcdir}"
+        }
+    }
 
     # By default, we assume we want to run program images.
     global dg-do-what-default
