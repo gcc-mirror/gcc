@@ -16047,7 +16047,7 @@ ix86_expand_vector_init_one_var (bool mmx_ok, enum machine_mode mode,
 
       x = gen_reg_rtx (wmode);
       emit_move_insn (x, gen_lowpart (wmode, const_vec));
-      ix86_expand_vector_set (mmx_ok, target, var, one_var >> 1);
+      ix86_expand_vector_set (mmx_ok, x, var, one_var >> 1);
 
       emit_move_insn (target, gen_lowpart (mode, x));
       return true;
@@ -16182,7 +16182,7 @@ ix86_expand_vector_init_general (bool mmx_ok, enum machine_mode mode,
 	{
 	  rtx tmp = gen_reg_rtx (V4SImode);
 	  vals = gen_rtx_PARALLEL (V4SImode, gen_rtvec_v (4, words));
-	  ix86_expand_vector_init_general (false, V4SImode, target, vals);
+	  ix86_expand_vector_init_general (false, V4SImode, tmp, vals);
 	  emit_move_insn (target, gen_lowpart (mode, tmp));
 	}
       else

@@ -1,5 +1,11 @@
 2005-01-19  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (ix86_expand_vector_init_one_var): Fix typo
+	in QImode expansion to ix86_expand_vector_set.
+	(ix86_expand_vector_init_general): Fix typo in V8HImode recursive call.
+
+2005-01-19  Richard Henderson  <rth@redhat.com>
+
 	PR target/19511
 	* config/i386/i386.c (ix86_preferred_reload_class): Return a proper
 	subclass of the input class.
