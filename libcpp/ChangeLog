@@ -1,3 +1,11 @@
+2005-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/19475
+	* macro.c (create_iso_definition): For < ISO C99, don't
+	pedwarn if there is no whitespace between macro name and its
+	replacement, but the replacement starts with a basic character
+	set character.
+
 2005-03-19  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* configure.ac: Consistently use solaris2.1[0-9]* instead of
