@@ -1748,7 +1748,11 @@ extern char *optarg;
 extern int   optind;
 extern int   opterr;
 extern char *version_string;
+#ifndef NO_SYS_SIGLIST
+#ifndef DONT_DECLARE_SYS_SIGLIST
 extern char *sys_siglist[NSIG + 1];
+#endif
+#endif
 
 #ifndef SEEK_SET	/* Symbolic constants for the "fseek" function: */
 #define	SEEK_SET 0	/* Set file pointer to offset */
@@ -5000,7 +5004,11 @@ catch_signal (signum)
      int signum;
 {
   (void) signal (signum, SIG_DFL);	/* just in case... */
+#ifdef NO_SYS_SIGLIST
+  fatal ("caught signal");
+#else
   fatal (sys_siglist[signum]);
+#endif  
 }
 
 /* Print a fatal error message.  NAME is the text.
