@@ -746,10 +746,12 @@ scan_loop (loop_start, end, nregs)
 		  && validate_replace_rtx (SET_DEST (set), SET_SRC (set),
 					   reg_single_usage[regno]))
 		{
-		  /* Replace any usage in a REG_EQUAL note.  */
+		  /* Replace any usage in a REG_EQUAL note.  Must copy the
+		     new source, so that we don't get rtx sharing between the
+		     SET_SOURCE and REG_NOTES of insn p.  */
 		  REG_NOTES (reg_single_usage[regno])
 		    = replace_rtx (REG_NOTES (reg_single_usage[regno]),
-				   SET_DEST (set), SET_SRC (set));
+				   SET_DEST (set), copy_rtx (SET_SRC (set)));
 				   
 		  PUT_CODE (p, NOTE);
 		  NOTE_LINE_NUMBER (p) = NOTE_INSN_DELETED;
