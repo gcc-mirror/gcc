@@ -2962,6 +2962,61 @@ resolve_select (gfc_code * code)
 }
 
 
+/* Resolve a transfer statement. This is making sure that:
+   -- a derived type being transferred has only non-pointer components
+   -- a derived type being transferred doesn't have private components
+   -- we're not trying to transfer a whole assumed size array.  */
+
+static void
+resolve_transfer (gfc_code * code)
+{
+  gfc_typespec *ts;
+  gfc_symbol *sym;
+  gfc_ref *ref;
+  gfc_expr *exp;
+
+  exp = code->expr;
+
+  if (exp->expr_type != EXPR_VARIABLE)
+    return;
+
+  sym = exp->symtree->n.sym;
+  ts = &sym->ts;
+
+  /* Go to actual component transferred.  */
+  for (ref = code->expr->ref; ref; ref = ref->next)
+    if (ref->type == REF_COMPONENT)
+      ts = &ref->u.c.component->ts;
+
+  if (ts->type == BT_DERIVED)
+    {
+      /* Check that transferred derived type doesn't contain POINTER
+	 components.  */
+      if (derived_pointer (ts->derived))
+	{
+	  gfc_error ("Data transfer element at %L cannot have "
+		     "POINTER components", &code->loc);
+	  return;
+	}
+
+      if (ts->derived->component_access == ACCESS_PRIVATE)
+	{
+	  gfc_error ("Data transfer element at %L cannot have "
+		     "PRIVATE components",&code->loc);
+	  return;
+	}
+    }
+
+  if (sym->as != NULL && sym->as->type == AS_ASSUMED_SIZE
+      && exp->ref->type == REF_ARRAY && exp->ref->u.ar.type == AR_FULL)
+    {
+      gfc_error ("Data transfer element at %L cannot be a full reference to "
+		 "an assumed-size array", &code->loc);
+      return;
+    }
+}
+
+
 /*********** Toplevel code resolution subroutines ***********/
 
 /* Given a branch to a label and a namespace, if the branch is conforming.
@@ -3568,7 +3623,6 @@ resolve_code (gfc_code * code, gfc_namespace * ns)
 	case EXEC_EXIT:
 	case EXEC_CONTINUE:
 	case EXEC_DT_END:
-	case EXEC_TRANSFER:
 	case EXEC_ENTRY:
 	  break;
 
@@ -3752,6 +3806,10 @@ resolve_code (gfc_code * code, gfc_namespace * ns)
 	  resolve_branch (code->ext.dt->err, code);
 	  resolve_branch (code->ext.dt->end, code);
 	  resolve_branch (code->ext.dt->eor, code);
+	  break;
+
+	case EXEC_TRANSFER:
+	  resolve_transfer (code);
 	  break;
 
 	case EXEC_FORALL:
