@@ -1,3 +1,13 @@
+2002-01-23  Loren Rittle <ljrittle@acm.org>
+
+	* testsuite/thread/pthread1.cc: New test.
+	* testsuite/thread/pthread2.cc: New test adapted from libstdc++/5347.
+	* testsuite/thread/pthread3.cc: Likewise.
+	* testsuite/thread/pthread4.cc: New test adapted from
+	http://gcc.gnu.org/ml/gcc-bugs/2002-01/msg00679.html
+	* testsuite/thread/pthread5.cc: New test adapted from libstdc++/5464.
+	* testsuite/thread/pthread6.cc: New test adapted from libstdc++/5444.
+
 2002-01-23  Richard Henderson  <rth@redhat.com>
 
 	PR libstdc++/5198
