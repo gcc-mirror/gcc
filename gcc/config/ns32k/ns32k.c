@@ -244,7 +244,7 @@ char *
 output_move_double (operands)
      rtx *operands;
 {
-  enum anon1 { REGOP, OFFSOP, POPOP, CNSTOP, RNDOP } optype0, optype1;
+  enum anon1 { REGOP, OFFSOP, PUSHOP, CNSTOP, RNDOP } optype0, optype1;
   rtx latehalf[2];
 
   /* First classify both operands.  */
@@ -254,7 +254,7 @@ output_move_double (operands)
   else if (offsettable_memref_p (operands[0]))
     optype0 = OFFSOP;
   else if (GET_CODE (XEXP (operands[0], 0)) == PRE_DEC)
-    optype0 = POPOP;
+    optype0 = PUSHOP;
   else
     optype0 = RNDOP;
 
@@ -266,7 +266,7 @@ output_move_double (operands)
   else if (offsettable_memref_p (operands[1]))
     optype1 = OFFSOP;
   else if (GET_CODE (XEXP (operands[1], 0)) == PRE_DEC)
-    optype1 = POPOP;
+    optype1 = PUSHOP;
   else
     optype1 = RNDOP;
 
@@ -307,10 +307,18 @@ output_move_double (operands)
   else
     latehalf[1] = operands[1];
 
+  /* If insn is effectively movd N(sp),tos then we will do the
+     high word first.  We should use the adjusted operand 1 (which is N+4(sp))
+     for the low word as well, to compensate for the first decrement of sp.
+     Given this, it doesn't matter which half we do "first".  */
+  if (optype0 == PUSHOP
+      && REGNO (XEXP (XEXP (operands[0], 0), 0)) == STACK_POINTER_REGNUM
+      && reg_overlap_mentioned_p (stack_pointer_rtx, operands[1]))
+    operands[1] = latehalf[1];
+
   /* If one or both operands autodecrementing,
      do the two words, high-numbered first.  */
-
-  if (optype0 == POPOP || optype1 == POPOP)
+  else if (optype0 == PUSHOP || optype1 == PUSHOP)
     {
       output_asm_insn (singlemove_string (latehalf), latehalf);
       return singlemove_string (operands);
