@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vax version.
-   Copyright (C) 1987, 1988, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -78,6 +78,10 @@ extern int target_flags;
 #endif
 
 /* Target machine storage layout */
+
+/* Define for software floating point emulation of VAX format
+   when cross compiling from a non-VAX host. */
+/* #define REAL_ARITHMETIC */
 
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.
@@ -898,22 +902,8 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
 
 /* note that it is very hard to accidentally create a number that fits in a
    double but not in a float, since their ranges are almost the same */
-#define CHECK_FLOAT_VALUE(mode, d) \
-  if ((mode) == SFmode) \
-    { \
-      if ((d) > 1.7014117331926444e+38) \
-	{ error ("magnitude of constant too large for `float'"); \
-	  (d) = 1.7014117331926444e+38; } \
-      else if ((d) < -1.7014117331926444e+38) \
-	{ error ("magnitude of constant too large for `float'"); \
-	  (d) = -1.7014117331926444e+38; } \
-      else if (((d) > 0) && ((d) < 2.9387358770557188e-39)) \
-	{ warning ("`float' constant truncated to zero"); \
-	  (d) = 0.0; } \
-      else if (((d) < 0) && ((d) > -2.9387358770557188e-39)) \
-	{ warning ("`float' constant truncated to zero"); \
-	  (d) = 0.0; } \
-    }
+
+#define CHECK_FLOAT_VALUE(mode, d) (check_float_value (mode, &d))
 
 /* For future reference:
    D Float: 9 bit, sign magnitude, excess 128 binary exponent
@@ -1075,13 +1065,18 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
    It is .dfloat or .gfloat, depending.  */
 
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-  fprintf (FILE, "\t.%cfloat 0%c%.20e\n", ASM_DOUBLE_CHAR, \
-					  ASM_DOUBLE_CHAR, (VALUE))
+do { char dstr[30];							\
+     REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", dstr);			\
+     fprintf (FILE, "\t.%cfloat 0%c%s\n", ASM_DOUBLE_CHAR, 		\
+					  ASM_DOUBLE_CHAR, dstr);	\
+   } while (0);
 
 /* This is how to output an assembler line defining a `float' constant.  */
 
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
-  fprintf (FILE, "\t.float 0f%.20e\n", (VALUE))
+  do { char dstr[30];						\
+       REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", dstr);		\
+       fprintf (FILE, "\t.float 0f%s\n", dstr); } while (0);
 
 /* This is how to output an assembler line defining an `int' constant.  */
 
@@ -1238,13 +1233,15 @@ VAX operand formatting codes:
   else if (GET_CODE (X) == MEM)						\
     output_address (XEXP (X, 0));					\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == SFmode)	\
-    { union { double d; int i[2]; } u;					\
-      u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
-      fprintf (FILE, "$0f%.20e", u.d); }				\
+    { REAL_VALUE_TYPE r; char dstr[30];					\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      REAL_VALUE_TO_DECIMAL (r, "%.20e", dstr);				\
+      fprintf (FILE, "$0f%s", dstr); }					\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == DFmode)	\
-    { union { double d; int i[2]; } u;					\
-      u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
-      fprintf (FILE, "$0%c%.20e", ASM_DOUBLE_CHAR, u.d); }		\
+    { REAL_VALUE_TYPE r; char dstr[30];					\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      REAL_VALUE_TO_DECIMAL (r, "%.20e", dstr);				\
+      fprintf (FILE, "$0%c%s", ASM_DOUBLE_CHAR, dstr); }		\
   else { putc ('$', FILE); output_addr_const (FILE, X); }}
 
 /* Print a memory operand whose address is X, on file FILE.
