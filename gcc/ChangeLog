@@ -13,14 +13,6 @@ Thu Jul 22 11:25:20 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(expand_builtin, string_constant): Declare functions.
 	* Makefile.in: Update to build builtin.o.
 
-Wed Jul 21 12:37:34 IDT 1999 Vladik Goytin (goytin@yahoo.com)
-
-	* config/arm/aout.h (ASM_OUTPUT_SECTION_NAME): New macro: Support
-	section attribute for the target 'arm-semi-aout' for the sections
-	.text and .data only.
-	* config/arm/coff.h (ASM_OUTPUT_SECTION_NAME): Override defintion
-	in aout.h
-	
 Wed Jul 21 00:46:58 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* defaults.h (DWARF2_GENERATE_TEXT_SECTION_LABEL): New macro.
