@@ -335,7 +335,11 @@ regrename_optimize ()
 			 ar_idx < FIRST_PSEUDO_REGISTER;
 			 ar_idx++)
 		      {
+#ifdef REG_ALLOC_ORDER
 			avail_reg = reg_alloc_order[ar_idx];
+#else
+			avail_reg = ar_idx;
+#endif
 			if (consider_available (reg_use, avail_reg, &avail_regs,
 						rc, &du, def_idx[def]))
 			  break;
