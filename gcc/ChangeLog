@@ -1,3 +1,12 @@
+Wed Apr  7 13:16:22 EDT 1999  John Wehle  (john@feith.com)
+
+	* i386.c (output_move_memory): Remove.
+	* i386.h: Likewise.
+
+	* i386.md (movsi, movhi, movstricthi, movqi, movstrictqi,
+	movsf, movdf, movxf, movdi): Check no_new_pseudos instead
+	of (reload_in_progress | reload_completed).
+
 Wed Apr  7 03:16:45 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (reg_no_subreg_operand): New function.
