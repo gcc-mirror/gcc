@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "integrate.h"
 #include "tree-inline.h"
+#include "target.h"
 
 static tree bot_manip PARAMS ((tree *, int *, void *));
 static tree bot_replace PARAMS ((tree *, int *, void *));
@@ -2209,6 +2210,14 @@ cp_cannot_inline_tree_fn (fnp)
       fn = *fnp = instantiate_decl (fn, /*defer_ok=*/0);
       if (TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (fn)))
 	return 1;
+    }
+
+  /* Don't auto-inline anything that might not be bound within
+     this unit of translation.  */
+  if (!DECL_DECLARED_INLINE_P (fn) && !(*targetm.binds_local_p) (fn))
+    {
+      DECL_UNINLINABLE (fn) = 1;
+      return 1;
     }
 
   if (varargs_function_p (fn))
