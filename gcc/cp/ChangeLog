@@ -1,3 +1,11 @@
+2001-03-27  Phil Edwards  <pme@sources.redhat.com>
+
+	* pt.c (check_default_tmpl_args):  Make error messages clearer.
+
+2001-03-26  Phil Edwards  <pme@sources.redhat.com>
+
+	* error.c:  Also undefine 'A' macro used for cp_printers definition.
+
 2001-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in: Depend on $(SYSTEM_H), not system.h.
