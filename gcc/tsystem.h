@@ -62,6 +62,10 @@ extern int atexit (void (*)(void));
 extern void abort (void) __attribute__ ((__noreturn__));
 #endif
 
+#ifndef strlen
+extern size_t strlen (const char *);
+#endif
+
 #else /* ! inhibit_libc */
 /* We disable this when inhibit_libc, so that gcc can still be built without
    needing header files first.  */

@@ -1,3 +1,10 @@
+2003-11-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tsystem.h: Add the prototype of strlen.
+	* unwind-pe.h (read_encoded_value_with_base): Add an
+	appropriate cast to handle a case where the pointer size is
+	smaller than sizeof (int).
+
 2003-11-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips-protos.h (mips_global_pic_constant_p): Delete.
