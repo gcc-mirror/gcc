@@ -2402,24 +2402,24 @@ if test x$with_cpu = x ; then
   esac
 fi
 
-	# Similarly for --with-schedule.
-	if test x$with_schedule = x; then
-		case ${target} in
-		hppa1* | parisc1*)
-			# Override default PA8000 scheduling model.
-			with_schedule=7100LC
-			;;
-		esac
-	fi
+# Similarly for --with-schedule.
+if test x$with_schedule = x; then
+	case ${target} in
+	hppa1* | parisc1*)
+		# Override default PA8000 scheduling model.
+		with_schedule=7100LC
+		;;
+	esac
+fi
 
-	# Validate and mark as valid any --with options supported
-	# by this target.  In order to use a particular --with option
-	# you must list it in supported_defaults; validating the value
-	# is optional.  This case statement should set nothing besides
-	# supported_defaults.
+# Validate and mark as valid any --with options supported
+# by this target.  In order to use a particular --with option
+# you must list it in supported_defaults; validating the value
+# is optional.  This case statement should set nothing besides
+# supported_defaults.
 
-	supported_defaults=
-	case "${target}" in
+supported_defaults=
+case "${target}" in
 	alpha*-*-*)
 		supported_defaults="cpu tune"
 		for which in cpu tune; do
@@ -2573,8 +2573,7 @@ fi
 				eval $with_which=
 				;;
 			"" | common \
-			| power | power2 | power3 | power4 \
-			| powerpc | powerpc64 \
+			| power | power[2345] | powerpc | powerpc64 \
 			| rios | rios1 | rios2 | rsc | rsc1 | rs64a \
 			| 401 | 403 | 405 | 405fp | 440 | 440fp | 505 \
 			| 601 | 602 | 603 | 603e | ec603e | 604 \
@@ -2659,11 +2658,11 @@ fi
 			;;
 		esac
 		;;
-	esac
+esac
 
-	# Set some miscellaneous flags for particular targets.
-	target_cpu_default2=
-	case ${target} in
+# Set some miscellaneous flags for particular targets.
+target_cpu_default2=
+case ${target} in
 	alpha*-*-*)
 		if test x$gas = xyes
 		then
@@ -2775,44 +2774,45 @@ fi
 			;;
 		esac
 		;;
-	esac
+esac
 
-	t=
-	all_defaults="abi cpu arch tune schedule float mode"
-	for option in $all_defaults
-	do
-		eval "val=\$with_$option"
-		if test -n "$val"; then
-			case " $supported_defaults " in
-			*" $option "*)
-				;;
-			*)
-				echo "This target does not support --with-$option." 2>&1
-				exit 1
-				;;
-			esac
+t=
+all_defaults="abi cpu arch tune schedule float mode"
+for option in $all_defaults
+do
+	eval "val=\$with_$option"
+	if test -n "$val"; then
+		case " $supported_defaults " in
+		*" $option "*)
+			;;
+		*)
+			echo "This target does not support --with-$option." 2>&1
+			exit 1
+			;;
+		esac
 
-			if test "x$t" = x
-			then
-				t="{ \"$option\", \"$val\" }"
-			else
-				t="${t}, { \"$option\", \"$val\" }"
-			fi
-		fi
-	done
-	if test "x$t" = x
-	then
-		configure_default_options="{ { NULL, NULL} }"
-	else
-		configure_default_options="{ ${t} }"
-	fi
-
-	if test "$target_cpu_default2" != ""
-	then
-		if test "$target_cpu_default" != ""
+		if test "x$t" = x
 		then
-			target_cpu_default="(${target_cpu_default}|${target_cpu_default2})"
+			t="{ \"$option\", \"$val\" }"
 		else
-			target_cpu_default=$target_cpu_default2
+			t="${t}, { \"$option\", \"$val\" }"
 		fi
 	fi
+done
+
+if test "x$t" = x
+then
+	configure_default_options="{ { NULL, NULL} }"
+else
+	configure_default_options="{ ${t} }"
+fi
+
+if test "$target_cpu_default2" != ""
+then
+	if test "$target_cpu_default" != ""
+	then
+		target_cpu_default="(${target_cpu_default}|${target_cpu_default2})"
+	else
+		target_cpu_default=$target_cpu_default2
+	fi
+fi
