@@ -1,3 +1,8 @@
+2000-11-28  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* simplify-rtx.c (cselib_record_sets): Ignore sets whose destination
+	is anything but REG or MEM, but look inside STRICT_LOW_PART.
+
 Tue Nov 28 09:53:50 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* system.h (IS_DIR_SEPARATOR): Use uppercase macro name.
