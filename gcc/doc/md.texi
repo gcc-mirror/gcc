@@ -845,8 +845,8 @@ that of the host machine (on which the compiler is running).
 
 @cindex @samp{F} in constraint
 @item @samp{F}
-An immediate floating operand (expression code @code{const_double}) is
-allowed.
+An immediate floating operand (expression code @code{const_double} or
+@code{const_vector}) is allowed.
 
 @cindex @samp{G} in constraint
 @cindex @samp{H} in constraint

@@ -1635,7 +1635,10 @@ record_reg_classes (n_alts, n_ops, ops, modes,
 
 	      case 'E':
 	      case 'F':
-		if (GET_CODE (op) == CONST_DOUBLE)
+		if (GET_CODE (op) == CONST_DOUBLE
+		    || (GET_CODE (op) == CONST_VECTOR
+			&& (GET_MODE_CLASS (GET_MODE (op))
+			    == MODE_VECTOR_FLOAT)))
 		  win = 1;
 		break;
 
