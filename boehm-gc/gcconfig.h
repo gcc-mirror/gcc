@@ -988,19 +988,17 @@
 #       define CPP_WORDSZ 64
 #       define STACKBOTTOM ((ptr_t) 0x120000000)
 #       ifdef __ELF__
-#   	  if 0
-	    /* __data_start apparently disappeared in some recent releases. */
-            extern int __data_start;
-#           define DATASTART &__data_start
-#	  endif
-#         define DATASTART GC_data_start
-#         define DYNAMIC_LOADING
+            /* glibc for Linux/Alpha no longer provides a symbol marking
+               the start of the data segment.  So libgcj defines
+               data_start on its own (in libgcjdata.a).  */
+            extern int data_start;
+#           define DYNAMIC_LOADING
 #       else
 #           define DATASTART ((ptr_t) 0x140000000)
 #       endif
 	extern int _end;
 #	define DATAEND (&_end)
-#	define MPROTECT_VDB
+#	undef MPROTECT_VDB
 		/* Has only been superficially tested.  May not	*/
 		/* work on all versions.			*/
 #   endif
