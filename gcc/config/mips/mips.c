@@ -246,7 +246,7 @@ char mips_reg_names[][8] =
  "$f8",  "$f9",  "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",
  "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",
  "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",
- "hi",   "lo",   "accum","$fcr31"
+ "hi",   "lo",   "accum","$fcr31","$rap"
 };
 
 /* Mips software names for the registers, used to overwrite the
@@ -262,7 +262,7 @@ char mips_sw_reg_names[][8] =
   "$f8",  "$f9",  "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",
   "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",
   "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",
-  "hi",   "lo",   "accum","$fcr31"
+  "hi",   "lo",   "accum","$fcr31","$rap"
 };
 
 /* Map hard register number to register class */
@@ -284,7 +284,8 @@ enum reg_class mips_regno_to_class[] =
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-  HI_REG,	LO_REG,		HILO_REG,	ST_REGS
+  HI_REG,	LO_REG,		HILO_REG,	ST_REGS,
+  GR_REGS
 };
 
 /* Map register constraint character to register class.  */
