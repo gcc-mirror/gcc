@@ -2,6 +2,18 @@
 
 	* fixinc/fixtests.c(stdc_0_in_system_headers_test): Must return "FIX"
 	when fixincl is operating in test mode
+	* fixinc/inclhack.def(AAB_dgux_int_varargs) : aesthetics
+	(AAB_ultrix_limits): remove redundant text
+	(AAB_ultrix_memory): ditto
+	(AAB_ultrix_string): ditto
+	(djgpp_wchar_h): fix the test text
+	(irix_stdio_va_list): add test text
+	(irix_limits_const): add a testing output file (limits.h is overwritten)
+	(strict_ansi_not_ctd): put limits.h second in list for same reason
+	(solaris27_mutex_init): test text needed selection text, too
+
+	* fixinc/fixtests.c(stdc_0_in_system_headers_test): Must return "FIX"
+	when fixincl is operating in test mode
 
 2001-05-26  Philip Blundell  <philb@gnu.org>
 
