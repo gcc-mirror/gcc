@@ -1931,8 +1931,8 @@ do {									\
 
 #define REDO_SECTION_INFO_P(DECL)					\
    ((TREE_CODE (DECL) == VAR_DECL)					\
-    && (DECL_ONE_ONLY (decl) || DECL_WEAK (decl) || DECL_COMMON (decl)	\
-	|| DECL_SECTION_NAME (decl) != 0))
+    && (DECL_ONE_ONLY (DECL) || DECL_WEAK (DECL) || DECL_COMMON (DECL)	\
+	|| DECL_SECTION_NAME (DECL) != 0))
 
 #define SDATA_NAME_FLAG_CHAR '@'
 

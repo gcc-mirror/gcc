@@ -1,3 +1,7 @@
+2000-08-21  Graham Stott  <grahams@cygnus.co.uk>
+
+	* config/ia64/ia64.h (REDO_SECTION_INFO_P): Change decl to DECL.
+
 2000-08-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* unroll.c (loop_find_equiv_value): If ret is modified between
