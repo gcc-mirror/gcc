@@ -1,5 +1,11 @@
 2002-02-15  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/std/std_iosfwd.h: Don't guard typedefs with
+	_GLIBCPP_USE_WCHAR_T
+	* include/bits/stringfwd.h: Same.
+
+2002-02-15  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* src/locale.cc (moneypunct_byname): Remove definitions.
 	* include/std/std_streambuf.h (streambuf::operator=): Return.
 	
