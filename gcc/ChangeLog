@@ -1,3 +1,8 @@
+Wed Dec 17 15:06:04 1997  Richard Henderson  <rth@cygnus.com>
+
+	* sparc.md (jump): Don't use the annul bit around an empty loop.
+	Patch from Kevin.Kelly@East.Sun.COM.
+
 Wed Dec 17 00:51:36 1997  Stan Cox (scox@cygnus.com)
 
 	* jump.c: (optimize_jump): Don't use the return register as a 

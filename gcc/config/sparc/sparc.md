@@ -5014,7 +5014,21 @@
 (define_insn "jump"
   [(set (pc) (label_ref (match_operand 0 "" "")))]
   ""
-  "b%* %l0%("
+  "*
+{
+  /* Some implementations are reported to have problems with
+	foo: b,a foo
+     i.e. an empty loop with the annul bit set.  The workaround is to use 
+        foo: b foo; nop
+     instead.  */
+
+  if (flag_delayed_branch
+      && (insn_addresses[INSN_UID (operands[0])]
+	  == insn_addresses[INSN_UID (insn)]))
+    return \"b %l0%#\";
+  else
+    return \"b%* %l0%(\";
+}"
   [(set_attr "type" "uncond_branch")])
 
 (define_expand "tablejump"
