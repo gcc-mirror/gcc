@@ -30,6 +30,7 @@ else
   libffi_basedir="${srcdir}"
 fi
 AC_SUBST(libffi_basedir)
+AC_CONFIG_AUX_DIR(${libffi_basedir}/..)
 
 AC_CANONICAL_HOST
 
