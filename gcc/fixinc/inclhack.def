@@ -1119,7 +1119,7 @@ fix = {
 
 
 /*
- * Delete C++ double pow (double, int) inline function from HP-UX 10
+ * Delete C++ double pow (double, int) inline function from HP-UX 10 & 11
  * math.h to prevent clash with define in c_std/bits/std_cmath.h.
  */
 fix = {
@@ -1144,6 +1144,20 @@ fix = {
 	"#    endif";
 };
 
+fix = {
+     hackname  = hpux11_cpp_pow_inline;
+     files     = math.h;
+     select    = " +inline double pow\\(double d,int expon\\) {\n"
+                 " +return pow\\(d, \\(double\\)expon\\);\n"
+                 " +}\n";
+     c_fix     = format;
+     c_fix_arg = "";
+
+     test_text =
+            "   inline double pow(double d,int expon) {\n"
+            "     return pow(d, (double)expon);\n"
+            "   }\n";
+};
 
 /*
  *  Keep HP-UX 11 from stomping on C++ math namespace
@@ -2088,15 +2102,23 @@ fix = {
  * initializer to "{0}" instead
  */
 fix = {
-  hackname = solaris27_mutex_init;
-  select = '@\(#\)pthread.h' "[ \t]+1.26[ \t]+98/04/12 SMI";
-  files = pthread.h;
-  c_fix = format;
-  c_fix_arg = "%1, {0}}";
-  c_fix_arg = "(define[ \t]+PTHREAD_MUTEX_INITIALIZER.*),[ \t]*0}$";
-  test_text =
-  '#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
-  "#define PTHREAD_MUTEX_INITIALIZER {{{0},0}, {{{0}}}, 0}";
+	hackname = solaris_mutex_init;
+	select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+	files = pthread.h;
+	c_fix = format;
+	c_fix_arg = "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
+				"%0\n"
+				"#else\n"
+				"%1, {0}}%3\n"
+				"#endif";
+	c_fix_arg = "(^#define[ \t]+PTHREAD_(MUTEX|COND)_INITIALIZER[ \t]+{.*)"
+				",[ \t]*0}" "(|[ \t].*)$";
+	test_text =
+	'#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
+	"#define PTHREAD_MUTEX_INITIALIZER\t{{{0},0}, {{{0}}}, 0}\n"
+	"#define PTHREAD_COND_INITIALIZER\t{{{0}, 0}, 0}\t/* DEFAULTCV */\n"
+	"#define PTHREAD_RWLOCK_INITIALIZER\t"
+			 "{0, 0, 0, {0, 0, 0}, {0, 0}, {0, 0}}";
 };
 
 
