@@ -208,17 +208,6 @@ Boston, MA 02111-1307, USA.  */
       && ! DECL_WEAK (DECL))					\
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
 
-/* This macro gets just the user-specified name
-   out of the string in a SYMBOL_REF.  Discard
-   a leading * or @.  */
-#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)	\
-do {						\
-  const char *_name = (SYMBOL_NAME);		\
-  while (*_name == '*' || *_name == '@')	\
-    _name++;					\
-  (VAR) = _name;				\
-} while (0)
-
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.  */
 
