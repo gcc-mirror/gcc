@@ -216,10 +216,16 @@ rtx_addr_can_trap_p (x)
 
     case REG:
       /* As in rtx_varies_p, we have to use the actual rtx, not reg number.  */
-      return ! (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
-		|| x == stack_pointer_rtx
-		/* The arg pointer varies if it is not a fixed register.  */
-		|| (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM]));
+      if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
+	  || x == stack_pointer_rtx
+	  /* The arg pointer varies if it is not a fixed register.  */
+	  || (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM]))
+	return 0;
+      /* All of the virtual frame registers are stack references.  */
+      if (REGNO (x) >= FIRST_VIRTUAL_REGISTER
+	  && REGNO (x) <= LAST_VIRTUAL_REGISTER)
+	return 0;
+      return 1;
 
     case CONST:
       return rtx_addr_can_trap_p (XEXP (x, 0));
@@ -234,8 +240,16 @@ rtx_addr_can_trap_p (x)
 		    && CONSTANT_P (XEXP (x, 1))));
 
     case LO_SUM:
+    case PRE_MODIFY:
       return rtx_addr_can_trap_p (XEXP (x, 1));
-      
+
+    case PRE_DEC:
+    case PRE_INC:
+    case POST_DEC:
+    case POST_INC:
+    case POST_MODIFY:
+      return rtx_addr_can_trap_p (XEXP (x, 0));
+
     default:
       break;
     }
