@@ -1,4 +1,4 @@
-#   Copyright (C) 2001 Free Software Foundation, Inc.
+#   Copyright (C) 2001, 2004 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,12 +36,6 @@ global PROFOPT_OPTIONS perf_delta
 global tool profile_option feedback_option prof_ext
 if ![info exists tool] {
     error "Tools is not specified."
-}
-if ![info exists profile_option] {
-    error "No profile option specified for first compile."
-}
-if ![info exists feedback_option] {
-    error "No feedback option specified for second compile."
 }
 if ![info exists prof_ext] {
     error "No profile data file extension specified."
@@ -129,6 +123,13 @@ proc profopt-execute { src } {
     global prof_option_list
     global tool profile_option feedback_option prof_ext perf_ext perf_delta
     global verbose
+
+    if ![info exists profile_option] {
+        error "No profile option specified for first compile."
+    }
+    if ![info exists feedback_option] {
+        error "No feedback option specified for second compile."
+    }
 
     regsub "^$srcdir/?" $src "" testcase
     # If we couldn't rip $srcdir out of `src' then just do the best we can.
