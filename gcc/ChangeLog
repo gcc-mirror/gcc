@@ -1,5 +1,10 @@
 Wed Feb 24 14:03:54 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* calls.c (compute_argument_block_size): New function, extracted from
+	expand_calls.
+	(expand_calls): Use compute_argument_block_size.  Delete
+	original_args_size, use unadjusted_args_size instead.
+
 	* calls.c (precompute_arguments): New function, extracted from
 	expand_call.
 	(expand_call): Use precompute_arguments.

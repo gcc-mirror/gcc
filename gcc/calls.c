@@ -143,7 +143,8 @@ static int finalize_must_preallocate		PROTO ((int, int,
 static void precompute_arguments 		PROTO ((int, int, int,
 							struct arg_data *,
 							struct args_size *));
-
+static int compute_argument_block_size		PROTO ((int, 
+							struct args_size *));
 
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
 static rtx save_fixed_argument_area	PROTO ((int, rtx, int *, int *));
@@ -829,6 +830,70 @@ store_unaligned_arguments_into_pseudos (args, num_actuals)
       }
 }
 
+/* Update ARGS_SIZE to contain the total size for the argument block.
+   Return the original constant component of the argument block's size.
+
+   REG_PARM_STACK_SPACE holds the number of bytes of stack space reserved
+   for arguments passed in registers.  */
+
+static int
+compute_argument_block_size (reg_parm_stack_space, args_size)
+     int reg_parm_stack_space;
+     struct args_size *args_size;
+{
+  int unadjusted_args_size = args_size->constant;
+
+  /* Compute the actual size of the argument block required.  The variable
+     and constant sizes must be combined, the size may have to be rounded,
+     and there may be a minimum required size.  */
+
+  if (args_size->var)
+    {
+      args_size->var = ARGS_SIZE_TREE (*args_size);
+      args_size->constant = 0;
+
+#ifdef PREFERRED_STACK_BOUNDARY
+      if (PREFERRED_STACK_BOUNDARY != BITS_PER_UNIT)
+	args_size->var = round_up (args_size->var, STACK_BYTES);
+#endif
+
+      if (reg_parm_stack_space > 0)
+	{
+	  args_size->var
+	    = size_binop (MAX_EXPR, args_size->var,
+			  size_int (reg_parm_stack_space));
+
+#ifndef OUTGOING_REG_PARM_STACK_SPACE
+	  /* The area corresponding to register parameters is not to count in
+	     the size of the block we need.  So make the adjustment.  */
+	  args_size->var
+	    = size_binop (MINUS_EXPR, args_size->var,
+			  size_int (reg_parm_stack_space));
+#endif
+	}
+    }
+  else
+    {
+#ifdef PREFERRED_STACK_BOUNDARY
+      args_size->constant = (((args_size->constant + (STACK_BYTES - 1))
+			      / STACK_BYTES) * STACK_BYTES);
+#endif
+
+      args_size->constant = MAX (args_size->constant,
+				 reg_parm_stack_space);
+
+#ifdef MAYBE_REG_PARM_STACK_SPACE
+      if (reg_parm_stack_space == 0)
+	args_size->constant = 0;
+#endif
+
+#ifndef OUTGOING_REG_PARM_STACK_SPACE
+      args_size->constant -= reg_parm_stack_space;
+#endif
+    }
+  return unadjusted_args_size;
+}
+
 /* Precompute parameters has needed for a function call.
 
    IS_CONST indicates the target function is a pure function.
@@ -959,6 +1024,7 @@ finalize_must_preallocate (must_preallocate, num_actuals, args, args_size)
     }
   return must_preallocate;
 }
+
 /* Generate all the code for a function call
    and return an rtx for its value.
    Store the value in TARGET (specified as an rtx) if convenient.
@@ -1016,7 +1082,7 @@ expand_call (exp, target, ignore)
   /* Total size in bytes of all the stack-parms scanned so far.  */
   struct args_size args_size;
   /* Size of arguments before any adjustments (such as rounding).  */
-  struct args_size original_args_size;
+  int unadjusted_args_size;
   /* Data on reg parms scanned so far.  */
   CUMULATIVE_ARGS args_so_far;
   /* Nonzero if a reg parm has been scanned.  */
@@ -1648,11 +1714,6 @@ expand_call (exp, target, ignore)
 						     args_size.var);
 #endif
       
-  /* Compute the actual size of the argument block required.  The variable
-     and constant sizes must be combined, the size may have to be rounded,
-     and there may be a minimum required size.  */
-
-  original_args_size = args_size;
   if (args_size.var)
     {
       /* If this function requires a variable-sized argument list, don't try to
@@ -1662,49 +1723,13 @@ expand_call (exp, target, ignore)
 
       is_const = 0;
       must_preallocate = 1;
-
-      args_size.var = ARGS_SIZE_TREE (args_size);
-      args_size.constant = 0;
-
-#ifdef PREFERRED_STACK_BOUNDARY
-      if (PREFERRED_STACK_BOUNDARY != BITS_PER_UNIT)
-	args_size.var = round_up (args_size.var, STACK_BYTES);
-#endif
-
-      if (reg_parm_stack_space > 0)
-	{
-	  args_size.var
-	    = size_binop (MAX_EXPR, args_size.var,
-			  size_int (reg_parm_stack_space));
-
-#ifndef OUTGOING_REG_PARM_STACK_SPACE
-	  /* The area corresponding to register parameters is not to count in
-	     the size of the block we need.  So make the adjustment.  */
-	  args_size.var
-	    = size_binop (MINUS_EXPR, args_size.var,
-			  size_int (reg_parm_stack_space));
-#endif
-	}
     }
-  else
-    {
-#ifdef PREFERRED_STACK_BOUNDARY
-      args_size.constant = (((args_size.constant + (STACK_BYTES - 1))
-			     / STACK_BYTES) * STACK_BYTES);
-#endif
 
-      args_size.constant = MAX (args_size.constant,
-				reg_parm_stack_space);
-
-#ifdef MAYBE_REG_PARM_STACK_SPACE
-      if (reg_parm_stack_space == 0)
-	args_size.constant = 0;
-#endif
-
-#ifndef OUTGOING_REG_PARM_STACK_SPACE
-      args_size.constant -= reg_parm_stack_space;
-#endif
-    }
+  /* Compute the actual size of the argument block required.  The variable
+     and constant sizes must be combined, the size may have to be rounded,
+     and there may be a minimum required size.  */
+  unadjusted_args_size
+    = compute_argument_block_size (reg_parm_stack_space, &args_size);
 
   /* Now make final decision about preallocating stack space.  */
   must_preallocate = finalize_must_preallocate (must_preallocate,
@@ -1937,8 +1962,7 @@ expand_call (exp, target, ignore)
   /* If we push args individually in reverse order, perform stack alignment
      before the first push (the last arg).  */
   if (argblock == 0)
-    anti_adjust_stack (GEN_INT (args_size.constant
-				- original_args_size.constant));
+    anti_adjust_stack (GEN_INT (args_size.constant - unadjusted_args_size));
 #endif
 #endif
 
@@ -2032,8 +2056,7 @@ expand_call (exp, target, ignore)
   /* If we pushed args in forward order, perform stack alignment
      after pushing the last arg.  */
   if (argblock == 0)
-    anti_adjust_stack (GEN_INT (args_size.constant
-				- original_args_size.constant));
+    anti_adjust_stack (GEN_INT (args_size.constant - unadjusted_args_size));
 #endif
 #endif
 
