@@ -217,7 +217,7 @@ pwait (pid, status, flags)
 
 #endif /* MSDOS */
 
-#ifdef _WIN32
+#if defined (_WIN32) && !defined (__CYGWIN32__)
 
 #include <process.h>
 /* ??? Why are these __spawnv{,p} and not _spawnv{,p}?  */
@@ -440,8 +440,9 @@ pfinish ()
 
 #endif /* MPW */
 
-#if ! defined (__MSDOS__) && ! defined (_WIN32) && ! defined (OS2) \
-    && ! defined (MPW)
+/* include for Unix-like environments but not for Dos-like environments */
+#if ! defined (__MSDOS__) && ! defined (OS2) && ! defined (MPW) \
+    && (defined (__CYGWIN32__) || ! defined (_WIN32))
 
 #ifdef USG
 #define vfork fork
@@ -578,4 +579,4 @@ pwait (pid, status, flags)
   return pid;
 }
 
-#endif /* !MSDOS && !WIN32 && !OS2 && !MPW */
+#endif /* ! __MSDOS__ && ! OS2 && ! MPW && (__CYGWIN32___ || ! _WIN32) */
