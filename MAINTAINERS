@@ -174,6 +174,7 @@ in changes outside of the parts of the compiler they maintain.
 			Write After Approval	(last name alphabetical order)
 
 Matt Austern                                    austern@apple.com
+Giovanni Bajo					giovannibajo@gcc.gnu.org
 Scott Bambrough					scottb@netwinder.org
 Wolfgang Bangerth				bangerth@dealii.org
 Daniel Berlin					dan@dberlin.org
@@ -281,7 +282,6 @@ Josef Zlomek					zlomekj@suse.cz
 
 Bug database only accounts
 
-Giovanni Bajo					giovannibajo@libero.it
 James Dennett					jdennett@acm.org
 Christian Ehrhardt				ehrhardt@mathematik.uni-ulm.de
 Dara Hazeghi					dhazeghi@yahoo.com
