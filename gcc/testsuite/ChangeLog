@@ -1,3 +1,8 @@
+2005-04-02  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR rtl-optimization/20290
+	* gcc.c-torture/execute/loop-ivopts-2.c: New.
+
 2005-04-02  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/rs6000-fpint.c: New.
