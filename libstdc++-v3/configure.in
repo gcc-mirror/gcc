@@ -18,6 +18,8 @@ AC_ARG_WITH(cross-host,
 GLIBCPP_CONFIGURE(.)
 AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
+AC_SUBST(enable_shared)
+AC_SUBST(enable_static)
 GLIBCPP_CHECK_GNU_MAKE
   if test "x$_cv_gnu_make_command" = "x"; then
     AC_MSG_ERROR([GNU make not found. Please install it or correct your path.])
@@ -33,8 +35,8 @@ GLIBCPP_CHECK_OS
 GLIBCPP_ENABLE_DEBUG($USE_MAINTAINER_MODE)
 GLIBCPP_ENABLE_C_MBCHAR([yes])
 GLIBCPP_ENABLE_CSTDIO
-GLIBCPP_ENABLE_LONG_LONG(yes)
-GLIBCPP_ENABLE_SHADOW(no)
+GLIBCPP_ENABLE_LONG_LONG([yes])
+GLIBCPP_ENABLE_SHADOW([no])
 GLIBCPP_ENABLE_THREADS
 GLIBCPP_ENABLE_ATOMICITY
 GLIBCPP_ENABLE_CXX_FLAGS([none])
@@ -105,7 +107,7 @@ if test -n "$with_cross_host"; then
 
 	AC_DEFINE(_GLIBCPP_BUGGY_FLOAT_COMPLEX)
 	AC_DEFINE(_GLIBCPP_BUGGY_COMPLEX)
-	# need to ceck for faster f versions of math functions, ie sinf?
+	# need to check for faster f versions of math functions, ie sinf?
 	;;
   esac
 else
@@ -121,7 +123,7 @@ else
 
   # Check for available headers.
   AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h machine/endian.h \
-  machine/param.h sys/machine.h fp.h locale.h float.h inttypes.h])
+  machine/param.h sys/machine.h fp.h locale.h float.h inttypes.h gconv.h])
 
   GLIBCPP_CHECK_COMPILER_FEATURES
   GLIBCPP_CHECK_LINKER_FEATURES
@@ -134,7 +136,6 @@ else
   GLIBCPP_CHECK_STDLIB_SUPPORT
 
   AC_FUNC_MMAP
-  AC_CHECK_HEADERS(gconv.h)
 fi
 
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
