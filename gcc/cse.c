@@ -5001,7 +5001,11 @@ fold_rtx (x, insn)
 		    if (GET_MODE (table) != Pmode)
 		      new = gen_rtx (TRUNCATE, GET_MODE (table), new);
 
-		    return new;
+		    /* Indicate this is a constant.  This isn't a 
+		       valid form of CONST, but it will only be used
+		       to fold the next insns and then discarded, so
+		       it should be safe.  */
+		    return gen_rtx (CONST, GET_MODE (new), new);
 		  }
 	      }
 	  }
@@ -5174,13 +5178,26 @@ fold_rtx (x, insn)
   switch (GET_RTX_CLASS (code))
     {
     case '1':
-      /* We can't simplify extension ops unless we know the original mode.  */
-      if ((code == ZERO_EXTEND || code == SIGN_EXTEND)
-	  && mode_arg0 == VOIDmode)
-	break;
-      new = simplify_unary_operation (code, mode,
-				      const_arg0 ? const_arg0 : folded_arg0,
-				      mode_arg0);
+      {
+	int is_const = 0;
+
+	/* We can't simplify extension ops unless we know the
+	   original mode.  */
+	if ((code == ZERO_EXTEND || code == SIGN_EXTEND)
+	    && mode_arg0 == VOIDmode)
+	  break;
+
+	/* If we had a CONST, strip it off and put it back later if we
+	   fold.  */
+	if (const_arg0 != 0 && GET_CODE (const_arg0) == CONST)
+	  is_const = 1, const_arg0 = XEXP (const_arg0, 0);
+
+	new = simplify_unary_operation (code, mode,
+					const_arg0 ? const_arg0 : folded_arg0,
+					mode_arg0);
+	if (new != 0 && is_const)
+	  new = gen_rtx (CONST, mode, new);
+      }
       break;
       
     case '<':
@@ -5358,6 +5375,13 @@ fold_rtx (x, insn)
 	      if (y != 0 && GET_CODE (XEXP (y, 1)) == LABEL_REF
 		  && XEXP (XEXP (y, 1), 0) == XEXP (const_arg1, 0))
 		return XEXP (y, 0);
+
+	      /* Now try for a CONST of a MINUS like the above.  */
+	      if ((y = lookup_as_function (folded_arg0, CONST)) != 0
+		  && GET_CODE (XEXP (y, 0)) == MINUS
+		  && GET_CODE (XEXP (XEXP (y, 0), 1)) == LABEL_REF
+		  && XEXP (XEXP (XEXP (y, 0),1), 0) == XEXP (const_arg1, 0))
+		return XEXP (XEXP (y, 0), 0);
 	    }
 
 	  /* If second operand is a register equivalent to a negative
