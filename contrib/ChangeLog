@@ -1,3 +1,7 @@
+2004-08-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc_update: Add fixincludes.
+
 2004-08-26  Matthias Klose  <doko@debian.org>
 
 	* texi2pod.pl: keep references of the form @ref{...}, print them bold.
@@ -16,7 +20,7 @@
 	* gcc_update (self): libjava/configure.in -> configure.ac. Automake
 	update done.
 
-2004-08-04  Paolo Bonzini  <gcc@gcc.gnu.org>
+2004-08-04  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc_update: libjava/configure.ac -> configure.in.  Automake
 	1.4 does not handle configure.ac properly.

@@ -1,3 +1,22 @@
+2004-08-31  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.in (build_subdir): New substitution.
+	(fixinc.sh): Simplify heavily since fixincludes is already built.
+	(stmp-fixinc): Depend on specs.ready.
+	(install-mkheaders): Use new location of fixincludes.
+	(clean): Do not descend into fixinc.
+	(FORBUILD): Replace with ../$(build_subdir).
+	* configure.ac (build_subdir): Substitute.
+	(FORBUILD): Do not set.
+	(all_outputs): Remove fixinc/Makefile.
+	(default commands): Do not create links in fixinc.
+	* mkfixinc.sh: New, from fixinc/mkfixinc.sh without
+	the fixincludes configuration steps and substituting
+	@FIXINCL@ in fixinc.in.
+	* fixinc.in: New, from fixinc/fixincl.sh.
+
+	* fixinc/*: Removed.
+	
 2004-08-31  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* attribs.c (strip_attrs): Remove.
@@ -135,6 +154,7 @@
 	* fold-const.c (tree_expr_nonzero_p): Use get_base_address before
 	assuming an ADDR_EXPR is non-null.
 
+>>>>>>> 2.5169
 2004-08-30  Jason Merrill  <jason@redhat.com>
 
 	* gthr-posix.h, gthr-dce.h: Add #pragma weaks.

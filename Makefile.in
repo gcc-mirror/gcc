@@ -746,7 +746,8 @@ all-build:  \
     maybe-all-build-byacc \
     maybe-all-build-flex \
     maybe-all-build-m4 \
-    maybe-all-build-texinfo
+    maybe-all-build-texinfo \
+    maybe-all-build-fixincludes
 .PHONY: all-host
 all-host:  \
     maybe-all-ash \
@@ -2453,6 +2454,71 @@ all-build-texinfo: configure-build-texinfo
 	(cd $(BUILD_SUBDIR)/texinfo && \
 	  $(MAKE)  $(TARGET-build-texinfo))
 @endif build-texinfo
+
+.PHONY: configure-build-fixincludes maybe-configure-build-fixincludes
+maybe-configure-build-fixincludes:
+@if build-fixincludes
+maybe-configure-build-fixincludes: configure-build-fixincludes
+configure-build-fixincludes:
+	@test ! -f $(BUILD_SUBDIR)/fixincludes/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/fixincludes ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(BUILD_EXPORTS) \
+	echo Configuring in $(BUILD_SUBDIR)/fixincludes; \
+	cd "$(BUILD_SUBDIR)/fixincludes" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) \
+	    topdir=$(srcdir) ;; \
+	  *) \
+	    case "$(BUILD_SUBDIR)" in \
+	      .) topdir="../$(srcdir)" ;; \
+	      *) topdir="../../$(srcdir)" ;; \
+	    esac ;; \
+	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
+	    if $(SHELL) $$s/symlink-tree $${topdir}/fixincludes "no-such-file" ; then \
+	      if [ -f Makefile ]; then \
+	        if $(MAKE) distclean; then \
+	          true; \
+	        else \
+	          exit 1; \
+	        fi; \
+	      else \
+	        true; \
+	      fi; \
+	    else \
+	      exit 1; \
+	    fi; \
+	  else \
+	    true; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
+	  srcdiroption="--srcdir=$${topdir}/fixincludes"; \
+	  libsrcdir="$$s/fixincludes"; \
+	fi; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(BUILD_CONFIGARGS) $${srcdiroption} \
+	  --with-build-subdir="$(BUILD_SUBDIR)"  \
+	  || exit 1
+@endif build-fixincludes
+
+.PHONY: all-build-fixincludes maybe-all-build-fixincludes
+maybe-all-build-fixincludes:
+@if build-fixincludes
+TARGET-build-fixincludes=all
+maybe-all-build-fixincludes: all-build-fixincludes
+all-build-fixincludes: configure-build-fixincludes
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(BUILD_EXPORTS) \
+	(cd $(BUILD_SUBDIR)/fixincludes && \
+	  $(MAKE)  $(TARGET-build-fixincludes))
+@endif build-fixincludes
 
 
 # --------------------------------------
@@ -32087,6 +32153,7 @@ all-build-flex: maybe-all-build-byacc
 all-build-flex: maybe-all-build-m4
 all-build-libiberty: maybe-all-build-texinfo
 all-build-m4: maybe-all-build-texinfo
+all-build-fixincludes: maybe-all-build-libiberty
 configure-gcc: maybe-configure-intl
 
 configure-stage1-gcc: maybe-configure-stage1-intl
@@ -32171,6 +32238,24 @@ all-stage4-gcc: maybe-all-build-flex
 all-stageprofile-gcc: maybe-all-build-flex
 all-stagefeedback-gcc: maybe-all-build-flex
 all-prebootstrap: maybe-all-build-flex
+all-gcc: maybe-all-build-libiberty
+
+all-stage1-gcc: maybe-all-build-libiberty
+all-stage2-gcc: maybe-all-build-libiberty
+all-stage3-gcc: maybe-all-build-libiberty
+all-stage4-gcc: maybe-all-build-libiberty
+all-stageprofile-gcc: maybe-all-build-libiberty
+all-stagefeedback-gcc: maybe-all-build-libiberty
+all-prebootstrap: maybe-all-build-libiberty
+all-gcc: maybe-all-build-fixincludes
+
+all-stage1-gcc: maybe-all-build-fixincludes
+all-stage2-gcc: maybe-all-build-fixincludes
+all-stage3-gcc: maybe-all-build-fixincludes
+all-stage4-gcc: maybe-all-build-fixincludes
+all-stageprofile-gcc: maybe-all-build-fixincludes
+all-stagefeedback-gcc: maybe-all-build-fixincludes
+all-prebootstrap: maybe-all-build-fixincludes
 all-gcc: maybe-all-binutils
 
 all-stage1-gcc: maybe-all-stage1-binutils

@@ -132,7 +132,7 @@ fi
 build_libs="build-libiberty"
 
 # these tools are built for the build environment
-build_tools="build-texinfo build-byacc build-flex build-bison build-m4"
+build_tools="build-texinfo build-byacc build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #
@@ -183,13 +183,7 @@ target_tools="target-examples target-groff target-gperf target-rda"
 ## ${target_configdirs} is directories we build using the target tools.
 configdirs=`echo ${host_libs} ${host_tools}`
 target_configdirs=`echo ${target_libraries} ${target_tools}`
-
-# Only make build libraries if build != host.
-if test ${host_alias} != ${build_alias} ; then
-  build_configdirs=`echo ${build_libs} ${build_tools}`
-else
-  build_configdirs=`echo ${build_tools}`
-fi
+build_configdirs=`echo ${build_libs} ${build_tools}`
 
 ################################################################################
 

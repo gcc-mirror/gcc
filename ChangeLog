@@ -1,4 +1,13 @@
-2004-08-26  Paolo Bonzini  <bonzini@gnu.org>
+2004-08-31  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.def (build_modules): Add fixincludes.
+	(dependencies): Make gcc depend on fixincludes.
+	* configure.in (build_tools): Add fixincludes.
+	(build_configdirs): Always include build_libs.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2004-08-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.def (bootstrap stages): Add 'lean' parameter.
 	* Makefile.tpl (configure-stageN-*, all-stageN-*): Turned into

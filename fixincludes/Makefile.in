@@ -1,26 +1,23 @@
-# Makefile for GCC fixincludes.
+# Makefile for fixincludes.
 #
 #   Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
-#This file is part of GCC.
+#This file is part of fixincludes.
 
-#GCC is free software; you can redistribute it and/or modify
+#fixincludes is free software; you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation; either version 2, or (at your option)
 #any later version.
 
-#GCC is distributed in the hope that it will be useful,
+#fixincludes is distributed in the hope that it will be useful,
 #but WITHOUT ANY WARRANTY; without even the implied warranty of
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #GNU General Public License for more details.
 
 #You should have received a copy of the GNU General Public License
-#along with GCC; see the file COPYING.  If not, write to
+#along with fixincludes; see the file COPYING.  If not, write to
 #the Free Software Foundation, 59 Temple Place - Suite 330,
 #Boston, MA 02111-1307, USA.
-
-# The makefile built from this file lives in the fixinc subdirectory.
-# Its purpose is to build the any-platforms fixinc.sh script.
 
 SHELL=@SHELL@
 
@@ -29,13 +26,15 @@ SHELL=@SHELL@
 # in the kernel.  So, we use `echo' instead. 
 STAMP = echo timestamp >
 
-FL_LIST = $(CFLAGS) $(CPPFLAGS)
-FIXINC_DEFS = -DIN_GCC -DHAVE_CONFIG_H $(FL_LIST) $(INCLUDES)
+CC = @CC@
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
+INCLUDES = -I. -I$(srcdir) -I../include -I$(srcdir)/../include
+FIXINC_CFLAGS = -DHAVE_CONFIG_H $(INCLUDES)
 
 # Directory where sources are, from where we are.
 srcdir = @srcdir@
 VPATH = $(srcdir)
-subdir = fixinc
 
 # End of variables for you to override.
 
@@ -43,15 +42,8 @@ default : all
 
 # Now figure out from those variables how to compile and link.
 
-# Specify the directories to be searched for header files.
-# Both . and srcdir are used, in that order.
-#
-INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. \
--I$(srcdir)/../config -I$(srcdir)/../../include
-
-# Always use -I$(srcdir)/config when compiling.
 .c.o:
-	$(CC) -c $(FIXINC_DEFS) $<
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(FIXINC_CFLAGS) $<
 
 # The only suffixes we want for implicit rules are .c and .o.
 .SUFFIXES:
@@ -65,34 +57,35 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. \
 ##
 ## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-LIBERTY = ../../libiberty/libiberty.a
+LIBIBERTY=../libiberty/libiberty.a
 
 ALLOBJ = fixincl.o fixtests.o fixfixes.o server.o procopen.o \
-      fixlib.o ../build-errors.o
+      fixlib.o
 
 TESTOBJ = fixincl.o fixlib.o fixtests.o
 FIXOBJ  = fixfixes.o fixlib.o
 
 HDR = server.h fixlib.h
-FI  = fixincl@build_exeext@
-AF  = applyfix@build_exeext@
+FI  = fixincl@EXEEXT@
+AF  = applyfix@EXEEXT@
 
-all : $(TARGETS)
+all : @TARGET@
 gen : $(srcdir)/fixincl.x
+
 
 oneprocess : full-stamp
 twoprocess : test-stamp $(AF)
 
-full-stamp : $(ALLOBJ) $(LIBERTY)
-	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $(FI) $(ALLOBJ) $(LIBERTY)
+full-stamp : $(ALLOBJ) $(LIBIBERTY)
+	$(CC) $(LDFLAGS) -o $(FI) $(ALLOBJ) $(LIBIBERTY)
 	$(STAMP) $@
 
-test-stamp : $(TESTOBJ) $(LIBERTY)
-	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $(FI) $(TESTOBJ) $(LIBERTY)
+test-stamp : $(TESTOBJ) $(LIBIBERTY)
+	$(CC) $(LDFLAGS) -o $(FI) $(TESTOBJ) $(LIBIBERTY)
 	$(STAMP) $@
 
-$(AF): $(FIXOBJ) $(LIBERTY)
-	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $@ $(FIXOBJ) $(LIBERTY)
+$(AF): $(FIXOBJ) $(LIBIBERTY)
+	$(CC) $(LDFLAGS) -o $@ $(FIXOBJ) $(LIBIBERTY)
 
 $(ALLOBJ)   : $(HDR)
 fixincl.o   : fixincl.c  $(srcdir)/fixincl.x
@@ -111,21 +104,26 @@ clean:
 maintainer-clean : clean
 	rm -f $(srcdir)/fixincl.x
 
-#  Build the executable and copy up into gcc dir.
-#  We still copy the script because we still have alternative scripts.
-#
-install-bin : $(TARGETS)
-	./fixincl -v < /dev/null
-	@if [ -f ../fixinc.sh ] ; then rm -f ../fixinc.sh || \
-	    mv -f ../fixinc.sh ../fixinc.sh.$$ || exit 1 ; else : ; fi
-	@cp $(srcdir)/fixincl.sh ../fixinc.sh
-	chmod 755 ../fixinc.sh
+Makefile: $(srcdir)/Makefile.in config.status
+	$(SHELL) ./config.status Makefile
 
-Makefile: Makefile.in ../config.status
-	cd .. \
-	  && $(SHELL) ./config.status $(subdir)/Makefile
+config.h: stamp-h
+stamp-h: $(srcdir)/config.h.in config.status
+	$(SHELL) ./config.status config.h
 
-check : $(TARGETS)
+config.status: $(srcdir)/configure
+	$(SHELL) ./config.status --recheck
+
+$(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac
+	autoconf
+
+$(srcdir)/config.h.in: @MAINT@ $(srcdir)/configure.ac
+	autoheader
+
+$(srcdir)/aclocal.m4: @MAINT@ $(srcdir)/../gcc/aclocal.m4
+	cp $(srcdir)/../gcc/aclocal.m4 .
+
+check : all
 	autogen -T $(srcdir)/check.tpl $(srcdir)/inclhack.def
 	$(SHELL) ./check.sh $(srcdir)/tests/base
 	@rm -f ./check.sh
