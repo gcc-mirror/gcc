@@ -3109,6 +3109,21 @@ prev_label (rtx insn)
 
   return insn;
 }
+
+/* Return the last label to mark the same position as LABEL.  Return null
+   if LABEL itself is null.  */
+
+rtx
+skip_consecutive_labels (rtx label)
+{
+  rtx insn;
+
+  for (insn = label; insn != 0 && !INSN_P (insn); insn = NEXT_INSN (insn))
+    if (LABEL_P (insn))
+      label = insn;
+
+  return label;
+}
 
 #ifdef HAVE_cc0
 /* INSN uses CC0 and is being moved into a delay slot.  Set up REG_CC_SETTER
