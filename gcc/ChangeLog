@@ -1,3 +1,11 @@
+2004-09-04  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (iterate_hash_expr): Optimize, avoid use of iterative_hash_object.
+	(mix): New macro copied from hashtab.c
+	(iterative_hash_hashval_t, iterative_hash_pointer,
+	iterative_hash_host_wide_int): New functions based on hashtab.c
+	implementation.
+
 2004-09-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (mask): New mode attribute.
