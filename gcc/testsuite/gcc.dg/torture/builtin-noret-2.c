@@ -46,11 +46,17 @@ void
 t_exit (void)
 {
   extern void _exit (int);
+  /* Some non-Unix libcs have _exit, and won't allow it to be re-defined,
+     so make it weak.  */
+#pragma weak _exit
   _exit (1);
   link_failure ();
 }
 
 /* Some non-Unix libcs might not have _exit.  */
+/* Some non-Unix libcs have _exit, and won't allow it to be re-defined,
+   so make it weak.  */
+#pragma weak _exit
 void
 _exit (int i)
 {
@@ -61,11 +67,17 @@ void
 t_Exit (void)
 {
   extern void _Exit (int);
+  /* Some libcs have _Exit, and won't allow it to be re-defined,
+     so make it weak.  */
+#pragma weak _Exit
   _Exit (1);
   link_failure ();
 }
 
 /* Some libcs might not have _Exit.  */
+/* Some libcs have _Exit, and won't allow it to be re-defined,
+   so make it weak.  */
+#pragma weak _Exit
 void
 _Exit (int i)
 {
