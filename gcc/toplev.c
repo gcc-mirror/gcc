@@ -947,6 +947,8 @@ typedef struct
 }
 lang_independent_options;
 
+int flag_trapv = 0;
+
 /* Add or remove a leading underscore from user symbols.  */
 int flag_leading_underscore = -1;
 
@@ -1145,6 +1147,8 @@ lang_independent_options f_options[] =
    "Report time taken by each compiler pass at end of run"},
   {"mem-report", &mem_report, 1,
    "Report on permanent memory allocation at end of run"},
+  { "trapv", &flag_trapv, 1,
+    "Trap for signed overflow in addition / subtraction / multiplication." },
 };
 
 /* Table of language-specific options.  */

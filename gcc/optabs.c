@@ -218,7 +218,19 @@ expand_cmplxdiv_straight (real0, real1, imag0, imag1, realr, imagr, submode,
   rtx real_t, imag_t;
   rtx temp1, temp2;
   rtx res;
+  optab this_add_optab = add_optab;
+  optab this_sub_optab = sub_optab;
+  optab this_neg_optab = neg_optab;
+  optab this_mul_optab = smul_optab;
 	      
+  if (binoptab == sdivv_optab)
+    {
+      this_add_optab = addv_optab;
+      this_sub_optab = subv_optab;
+      this_neg_optab = negv_optab;
+      this_mul_optab = smulv_optab;
+    }
+
   /* Don't fetch these from memory more than once.  */
   real0 = force_reg (submode, real0);
   real1 = force_reg (submode, real1);
@@ -229,16 +241,16 @@ expand_cmplxdiv_straight (real0, real1, imag0, imag1, realr, imagr, submode,
   imag1 = force_reg (submode, imag1);
 
   /* Divisor: c*c + d*d.  */
-  temp1 = expand_binop (submode, smul_optab, real1, real1,
+  temp1 = expand_binop (submode, this_mul_optab, real1, real1,
 			NULL_RTX, unsignedp, methods);
 
-  temp2 = expand_binop (submode, smul_optab, imag1, imag1,
+  temp2 = expand_binop (submode, this_mul_optab, imag1, imag1,
 			NULL_RTX, unsignedp, methods);
 
   if (temp1 == 0 || temp2 == 0)
     return 0;
 
-  divisor = expand_binop (submode, add_optab, temp1, temp2,
+  divisor = expand_binop (submode, this_add_optab, temp1, temp2,
 			  NULL_RTX, unsignedp, methods);
   if (divisor == 0)
     return 0;
@@ -249,44 +261,44 @@ expand_cmplxdiv_straight (real0, real1, imag0, imag1, realr, imagr, submode,
       /* Computationally, (a+i0) / (c+id) = (ac/(cc+dd)) + i(-ad/(cc+dd)).  */
 
       /* Calculate the dividend.  */
-      real_t = expand_binop (submode, smul_optab, real0, real1,
+      real_t = expand_binop (submode, this_mul_optab, real0, real1,
 			     NULL_RTX, unsignedp, methods);
 		  
-      imag_t = expand_binop (submode, smul_optab, real0, imag1,
+      imag_t = expand_binop (submode, this_mul_optab, real0, imag1,
 			     NULL_RTX, unsignedp, methods);
 
       if (real_t == 0 || imag_t == 0)
 	return 0;
 
-      imag_t = expand_unop (submode, neg_optab, imag_t,
+      imag_t = expand_unop (submode, this_neg_optab, imag_t,
 			    NULL_RTX, unsignedp);
     }
   else
     {
       /* Mathematically, ((a+ib)(c-id))/divider.  */
       /* Calculate the dividend.  */
-      temp1 = expand_binop (submode, smul_optab, real0, real1,
+      temp1 = expand_binop (submode, this_mul_optab, real0, real1,
 			    NULL_RTX, unsignedp, methods);
 
-      temp2 = expand_binop (submode, smul_optab, imag0, imag1,
+      temp2 = expand_binop (submode, this_mul_optab, imag0, imag1,
 			    NULL_RTX, unsignedp, methods);
 
       if (temp1 == 0 || temp2 == 0)
 	return 0;
 
-      real_t = expand_binop (submode, add_optab, temp1, temp2,
+      real_t = expand_binop (submode, this_add_optab, temp1, temp2,
 			     NULL_RTX, unsignedp, methods);
 		  
-      temp1 = expand_binop (submode, smul_optab, imag0, real1,
+      temp1 = expand_binop (submode, this_mul_optab, imag0, real1,
 			    NULL_RTX, unsignedp, methods);
 
-      temp2 = expand_binop (submode, smul_optab, real0, imag1,
+      temp2 = expand_binop (submode, this_mul_optab, real0, imag1,
 			    NULL_RTX, unsignedp, methods);
 
       if (temp1 == 0 || temp2 == 0)
 	return 0;
 
-      imag_t = expand_binop (submode, sub_optab, temp1, temp2,
+      imag_t = expand_binop (submode, this_sub_optab, temp1, temp2,
 			     NULL_RTX, unsignedp, methods);
 
       if (real_t == 0 || imag_t == 0)
@@ -340,6 +352,18 @@ expand_cmplxdiv_wide (real0, real1, imag0, imag1, realr, imagr, submode,
   enum machine_mode mode;
   int align;
   rtx res;
+  optab this_add_optab = add_optab;
+  optab this_sub_optab = sub_optab;
+  optab this_neg_optab = neg_optab;
+  optab this_mul_optab = smul_optab;
+
+  if (binoptab == sdivv_optab)
+    {
+      this_add_optab = addv_optab;
+      this_sub_optab = subv_optab;
+      this_neg_optab = negv_optab;
+      this_mul_optab = smulv_optab;
+    }
 	      
   /* Don't fetch these from memory more than once.  */
   real0 = force_reg (submode, real0);
@@ -358,8 +382,8 @@ expand_cmplxdiv_wide (real0, real1, imag0, imag1, realr, imagr, submode,
     }
   else
     {
-      temp1 = expand_abs (submode, real1, NULL_RTX, 1);
-      temp2 = expand_abs (submode, imag1, NULL_RTX, 1);
+      temp1 = expand_abs (submode, real1, NULL_RTX, unsignedp, 1);
+      temp2 = expand_abs (submode, imag1, NULL_RTX, unsignedp, 1);
     }
 
   if (temp1 == 0 || temp2 == 0)
@@ -385,13 +409,13 @@ expand_cmplxdiv_wide (real0, real1, imag0, imag1, realr, imagr, submode,
 
   /* Calculate divisor.  */
 
-  temp1 = expand_binop (submode, smul_optab, imag1, ratio,
+  temp1 = expand_binop (submode, this_mul_optab, imag1, ratio,
 			NULL_RTX, unsignedp, methods);
 
   if (temp1 == 0)
     return 0;
 
-  divisor = expand_binop (submode, add_optab, temp1, real1,
+  divisor = expand_binop (submode, this_add_optab, temp1, real1,
 			  NULL_RTX, unsignedp, methods);
 
   if (divisor == 0)
@@ -405,13 +429,13 @@ expand_cmplxdiv_wide (real0, real1, imag0, imag1, realr, imagr, submode,
 
       /* Compute a / (c+id) as a / (c+d(d/c)) + i (-a(d/c)) / (c+d(d/c)).  */
 
-      imag_t = expand_binop (submode, smul_optab, real0, ratio,
+      imag_t = expand_binop (submode, this_mul_optab, real0, ratio,
 			     NULL_RTX, unsignedp, methods);
 
       if (imag_t == 0)
 	return 0;
 
-      imag_t = expand_unop (submode, neg_optab, imag_t,
+      imag_t = expand_unop (submode, this_neg_optab, imag_t,
 			    NULL_RTX, unsignedp);
 
       if (real_t == 0 || imag_t == 0)
@@ -422,22 +446,22 @@ expand_cmplxdiv_wide (real0, real1, imag0, imag1, realr, imagr, submode,
       /* Compute (a+ib)/(c+id) as
 	 (a+b(d/c))/(c+d(d/c) + i(b-a(d/c))/(c+d(d/c)).  */
 
-      temp1 = expand_binop (submode, smul_optab, imag0, ratio,
+      temp1 = expand_binop (submode, this_mul_optab, imag0, ratio,
 			    NULL_RTX, unsignedp, methods);
 
       if (temp1 == 0)
 	return 0;
 
-      real_t = expand_binop (submode, add_optab, temp1, real0,
+      real_t = expand_binop (submode, this_add_optab, temp1, real0,
 			     NULL_RTX, unsignedp, methods);
 
-      temp1 = expand_binop (submode, smul_optab, real0, ratio,
+      temp1 = expand_binop (submode, this_mul_optab, real0, ratio,
 			    NULL_RTX, unsignedp, methods);
 
       if (temp1 == 0)
 	return 0;
 
-      imag_t = expand_binop (submode, sub_optab, imag0, temp1,
+      imag_t = expand_binop (submode, this_sub_optab, imag0, temp1,
 			     NULL_RTX, unsignedp, methods);
 
       if (real_t == 0 || imag_t == 0)
@@ -490,13 +514,13 @@ expand_cmplxdiv_wide (real0, real1, imag0, imag1, realr, imagr, submode,
 
   /* Calculate divisor.  */
 
-  temp1 = expand_binop (submode, smul_optab, real1, ratio,
+  temp1 = expand_binop (submode, this_mul_optab, real1, ratio,
 			NULL_RTX, unsignedp, methods);
 
   if (temp1 == 0)
     return 0;
 
-  divisor = expand_binop (submode, add_optab, temp1, imag1,
+  divisor = expand_binop (submode, this_add_optab, temp1, imag1,
 			  NULL_RTX, unsignedp, methods);
 
   if (divisor == 0)
@@ -508,10 +532,10 @@ expand_cmplxdiv_wide (real0, real1, imag0, imag1, realr, imagr, submode,
     {
       /* Compute a / (c+id) as a(c/d) / (c(c/d)+d) + i (-a) / (c(c/d)+d).  */
 
-      real_t = expand_binop (submode, smul_optab, real0, ratio,
+      real_t = expand_binop (submode, this_mul_optab, real0, ratio,
 			     NULL_RTX, unsignedp, methods);
 
-      imag_t = expand_unop (submode, neg_optab, real0,
+      imag_t = expand_unop (submode, this_neg_optab, real0,
 			    NULL_RTX, unsignedp);
 
       if (real_t == 0 || imag_t == 0)
@@ -522,22 +546,22 @@ expand_cmplxdiv_wide (real0, real1, imag0, imag1, realr, imagr, submode,
       /* Compute (a+ib)/(c+id) as
 	 (a(c/d)+b)/(c(c/d)+d) + i (b(c/d)-a)/(c(c/d)+d).  */
 
-      temp1 = expand_binop (submode, smul_optab, real0, ratio,
+      temp1 = expand_binop (submode, this_mul_optab, real0, ratio,
 			    NULL_RTX, unsignedp, methods);
 
       if (temp1 == 0)
 	return 0;
 
-      real_t = expand_binop (submode, add_optab, temp1, imag0,
+      real_t = expand_binop (submode, this_add_optab, temp1, imag0,
 			     NULL_RTX, unsignedp, methods);
 
-      temp1 = expand_binop (submode, smul_optab, imag0, ratio,
+      temp1 = expand_binop (submode, this_mul_optab, imag0, ratio,
 			    NULL_RTX, unsignedp, methods);
 
       if (temp1 == 0)
 	return 0;
 
-      imag_t = expand_binop (submode, sub_optab, temp1, real0,
+      imag_t = expand_binop (submode, this_sub_optab, temp1, real0,
 			     NULL_RTX, unsignedp, methods);
 
       if (real_t == 0 || imag_t == 0)
@@ -1491,7 +1515,9 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  else if (imag0)
 	    res = imag0;
 	  else if (binoptab->code == MINUS)
-	    res = expand_unop (submode, neg_optab, imag1, imagr, unsignedp);
+            res = expand_unop (submode,
+                                binoptab == subv_optab ? negv_optab : neg_optab,
+                                imag1, imagr, unsignedp);
 	  else
 	    res = imag1;
 
@@ -1525,8 +1551,10 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	      if (temp1 == 0 || temp2 == 0)
 		break;
 
-	      res = expand_binop (submode, sub_optab, temp1, temp2,
-				  realr, unsignedp, methods);
+	      res = (expand_binop
+                     (submode,
+                      binoptab == smulv_optab ? subv_optab : sub_optab,
+                      temp1, temp2, realr, unsignedp, methods));
 
 	      if (res == 0)
 		break;
@@ -1542,8 +1570,10 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	      if (temp1 == 0 || temp2 == 0)
 		  break;
 
-	      res = expand_binop (submode, add_optab, temp1, temp2,
-				  imagr, unsignedp, methods);
+	      res = (expand_binop
+                     (submode,
+                      binoptab == smulv_optab ? addv_optab : add_optab,
+                      temp1, temp2, imagr, unsignedp, methods));
 
 	      if (res == 0)
 		break;
@@ -2120,7 +2150,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
     }
 
   /* Open-code the complex negation operation.  */
-  else if (unoptab == neg_optab
+  else if (unoptab->code == NEG
 	   && (class == MODE_COMPLEX_FLOAT || class == MODE_COMPLEX_INT))
     {
       rtx target_piece;
@@ -2231,11 +2261,13 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 
   /* If there is no negate operation, try doing a subtract from zero.
      The US Software GOFAST library needs this.  */
-  if (unoptab == neg_optab)
+  if (unoptab->code == NEG)
     {    
       rtx temp;
-      temp = expand_binop (mode, sub_optab, CONST0_RTX (mode), op0,
-			   target, unsignedp, OPTAB_LIB_WIDEN);
+      temp = expand_binop (mode,
+                           unoptab == negv_optab ? subv_optab : sub_optab,
+                           CONST0_RTX (mode), op0,
+                           target, unsignedp, OPTAB_LIB_WIDEN);
       if (temp)
 	return temp;
     }
@@ -2253,16 +2285,21 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
  */
 
 rtx
-expand_abs (mode, op0, target, safe)
+expand_abs (mode, op0, target, result_unsignedp, safe)
      enum machine_mode mode;
      rtx op0;
      rtx target;
+     int result_unsignedp;
      int safe;
 {
   rtx temp, op1;
 
+  if (! flag_trapv)
+    result_unsignedp = 1;
+
   /* First try to do it with a special abs instruction.  */
-  temp = expand_unop (mode, abs_optab, op0, target, 0);
+  temp = expand_unop (mode, result_unsignedp ? abs_optab : absv_optab,
+                      op0, target, 0);
   if (temp != 0)
     return temp;
 
@@ -2298,8 +2335,8 @@ expand_abs (mode, op0, target, safe)
       temp = expand_binop (mode, xor_optab, extended, op0, target, 0,
 			   OPTAB_LIB_WIDEN);
       if (temp != 0)
-	temp = expand_binop (mode, sub_optab, temp, extended, target, 0,
-			     OPTAB_LIB_WIDEN);
+	temp = expand_binop (mode, result_unsignedp ? sub_optab : subv_optab,
+                             temp, extended, target, 0, OPTAB_LIB_WIDEN);
 
       if (temp != 0)
 	return temp;
@@ -2335,7 +2372,8 @@ expand_abs (mode, op0, target, safe)
     do_compare_rtx_and_jump (target, CONST0_RTX (mode), GE, 0, mode,
 			     NULL_RTX, 0, NULL_RTX, op1);
 
-  op0 = expand_unop (mode, neg_optab, target, target, 0);
+  op0 = expand_unop (mode, result_unsignedp ? neg_optab : negv_optab,
+                     target, target, 0);
   if (op0 != target)
     emit_move_insn (target, op0);
   emit_label (op1);
@@ -2365,6 +2403,7 @@ expand_complex_abs (mode, op0, target, unsignedp)
   rtx entry_last = get_last_insn ();
   rtx last;
   rtx pat;
+  optab this_abs_optab;
 
   /* Find the correct mode for the real and imaginary parts.  */
   enum machine_mode submode
@@ -2387,9 +2426,13 @@ expand_complex_abs (mode, op0, target, unsignedp)
   if (target)
     target = protect_from_queue (target, 1);
 
-  if (abs_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+  this_abs_optab = ! unsignedp && flag_trapv
+                   && (GET_MODE_CLASS(mode) == MODE_INT)
+                   ? absv_optab : abs_optab;
+
+  if (this_abs_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
     {
-      int icode = (int) abs_optab->handlers[(int) mode].insn_code;
+      int icode = (int) this_abs_optab->handlers[(int) mode].insn_code;
       enum machine_mode mode0 = insn_data[icode].operand[1].mode;
       rtx xop0 = op0;
 
@@ -2414,10 +2457,12 @@ expand_complex_abs (mode, op0, target, unsignedp)
       if (pat)
 	{
 	  if (GET_CODE (pat) == SEQUENCE
-	      && ! add_equal_note (pat, temp, abs_optab->code, xop0, NULL_RTX))
+	      && ! add_equal_note (pat, temp, this_abs_optab->code, xop0, 
+				   NULL_RTX))
 	    {
 	      delete_insns_since (last);
-	      return expand_unop (mode, abs_optab, op0, NULL_RTX, unsignedp);
+	      return expand_unop (mode, this_abs_optab, op0, NULL_RTX, 
+				  unsignedp);
 	    }
 
 	  emit_insn (pat);
@@ -2433,7 +2478,8 @@ expand_complex_abs (mode, op0, target, unsignedp)
   for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
        wider_mode = GET_MODE_WIDER_MODE (wider_mode))
     {
-      if (abs_optab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing)
+      if (this_abs_optab->handlers[(int) wider_mode].insn_code 
+	  != CODE_FOR_nothing)
 	{
 	  rtx xop0 = op0;
 
@@ -2483,7 +2529,7 @@ expand_complex_abs (mode, op0, target, unsignedp)
     }
 
   /* Now try a library call in this mode.  */
-  if (abs_optab->handlers[(int) mode].libfunc)
+  if (this_abs_optab->handlers[(int) mode].libfunc)
     {
       rtx insns;
       rtx value;
@@ -2499,7 +2545,7 @@ expand_complex_abs (mode, op0, target, unsignedp)
 
       target = gen_reg_rtx (submode);
       emit_libcall_block (insns, target, value,
-			  gen_rtx_fmt_e (abs_optab->code, mode, op0));
+			  gen_rtx_fmt_e (this_abs_optab->code, mode, op0));
 
       return target;
     }
@@ -2509,9 +2555,9 @@ expand_complex_abs (mode, op0, target, unsignedp)
   for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
        wider_mode = GET_MODE_WIDER_MODE (wider_mode))
     {
-      if ((abs_optab->handlers[(int) wider_mode].insn_code
+      if ((this_abs_optab->handlers[(int) wider_mode].insn_code
 	   != CODE_FOR_nothing)
-	  || abs_optab->handlers[(int) wider_mode].libfunc)
+	  || this_abs_optab->handlers[(int) wider_mode].libfunc)
 	{
 	  rtx xop0 = op0;
 
@@ -4528,13 +4574,17 @@ init_optabs ()
 #endif
 
   add_optab = init_optab (PLUS);
+  addv_optab = init_optab (PLUS);
   sub_optab = init_optab (MINUS);
+  subv_optab = init_optab (MINUS);
   smul_optab = init_optab (MULT);
+  smulv_optab = init_optab (MULT);
   smul_highpart_optab = init_optab (UNKNOWN);
   umul_highpart_optab = init_optab (UNKNOWN);
   smul_widen_optab = init_optab (UNKNOWN);
   umul_widen_optab = init_optab (UNKNOWN);
   sdiv_optab = init_optab (DIV);
+  sdivv_optab = init_optab (DIV);
   sdivmod_optab = init_optab (UNKNOWN);
   udiv_optab = init_optab (UDIV);
   udivmod_optab = init_optab (UNKNOWN);
@@ -4560,7 +4610,9 @@ init_optabs ()
   ucmp_optab = init_optab (UNKNOWN);
   tst_optab = init_optab (UNKNOWN);
   neg_optab = init_optab (NEG);
+  negv_optab = init_optab (NEG);
   abs_optab = init_optab (ABS);
+  absv_optab = init_optab (ABS);
   one_cmpl_optab = init_optab (NOT);
   ffs_optab = init_optab (FFS);
   sqrt_optab = init_optab (SQRT);
@@ -4595,11 +4647,18 @@ init_optabs ()
   /* Initialize the optabs with the names of the library functions.  */
   init_integral_libfuncs (add_optab, "add", '3');
   init_floating_libfuncs (add_optab, "add", '3');
+  init_integral_libfuncs (addv_optab, "addv", '3');
+  init_floating_libfuncs (addv_optab, "add", '3');
   init_integral_libfuncs (sub_optab, "sub", '3');
   init_floating_libfuncs (sub_optab, "sub", '3');
+  init_integral_libfuncs (subv_optab, "subv", '3');
+  init_floating_libfuncs (subv_optab, "sub", '3');
   init_integral_libfuncs (smul_optab, "mul", '3');
   init_floating_libfuncs (smul_optab, "mul", '3');
+  init_integral_libfuncs (smulv_optab, "mulv", '3');
+  init_floating_libfuncs (smulv_optab, "mul", '3');
   init_integral_libfuncs (sdiv_optab, "div", '3');
+  init_integral_libfuncs (sdivv_optab, "divv", '3');
   init_integral_libfuncs (udiv_optab, "udiv", '3');
   init_integral_libfuncs (sdivmod_optab, "divmod", '4');
   init_integral_libfuncs (udivmod_optab, "udivmod", '4');
@@ -4621,6 +4680,8 @@ init_optabs ()
   init_integral_libfuncs (umax_optab, "umax", '3');
   init_integral_libfuncs (neg_optab, "neg", '2');
   init_floating_libfuncs (neg_optab, "neg", '2');
+  init_integral_libfuncs (negv_optab, "negv", '2');
+  init_floating_libfuncs (negv_optab, "neg", '2');
   init_integral_libfuncs (one_cmpl_optab, "one_cmpl", '2');
   init_integral_libfuncs (ffs_optab, "ffs", '2');
 

@@ -298,10 +298,13 @@ typedef struct optab
 enum optab_index
 {
   OTI_add,
+  OTI_addv,
   OTI_sub,
+  OTI_subv,
 
   /* Signed and fp multiply */
   OTI_smul,
+  OTI_smulv,
   /* Signed multiply, return high word */
   OTI_smul_highpart,
   OTI_umul_highpart,
@@ -311,6 +314,7 @@ enum optab_index
 
   /* Signed divide */
   OTI_sdiv,
+  OTI_sdivv,
   /* Signed divide-and-remainder in one */
   OTI_sdivmod,
   OTI_udiv,
@@ -357,8 +361,10 @@ enum optab_index
   /* Unary operations */
   /* Negation */
   OTI_neg,
+  OTI_negv,
   /* Abs value */
   OTI_abs,
+  OTI_absv,
   /* Bitwise not */
   OTI_one_cmpl,
   /* Find first bit set */
@@ -393,11 +399,15 @@ extern optab optab_table[OTI_MAX];
 #define add_optab (optab_table[OTI_add])
 #define sub_optab (optab_table[OTI_sub])
 #define smul_optab (optab_table[OTI_smul])
+#define addv_optab (optab_table[OTI_addv])
+#define subv_optab (optab_table[OTI_subv])
 #define smul_highpart_optab (optab_table[OTI_smul_highpart])
 #define umul_highpart_optab (optab_table[OTI_umul_highpart])
 #define smul_widen_optab (optab_table[OTI_smul_widen])
 #define umul_widen_optab (optab_table[OTI_umul_widen])
 #define sdiv_optab (optab_table[OTI_sdiv])
+#define smulv_optab (optab_table[OTI_smulv])
+#define sdivv_optab (optab_table[OTI_sdivv])
 #define sdivmod_optab (optab_table[OTI_sdivmod])
 #define udiv_optab (optab_table[OTI_udiv])
 #define udivmod_optab (optab_table[OTI_udivmod])
@@ -422,7 +432,9 @@ extern optab optab_table[OTI_MAX];
 #define movstrict_optab (optab_table[OTI_movstrict])
 
 #define neg_optab (optab_table[OTI_neg])
+#define negv_optab (optab_table[OTI_negv])
 #define abs_optab (optab_table[OTI_abs])
+#define absv_optab (optab_table[OTI_absv])
 #define one_cmpl_optab (optab_table[OTI_one_cmpl])
 #define ffs_optab (optab_table[OTI_ffs])
 #define sqrt_optab (optab_table[OTI_sqrt])
@@ -769,7 +781,7 @@ extern int expand_twoval_binop PARAMS ((optab, rtx, rtx, rtx, rtx, int));
 extern rtx expand_unop PARAMS ((enum machine_mode, optab, rtx, rtx, int));
 
 /* Expand the absolute value operation.  */
-extern rtx expand_abs PARAMS ((enum machine_mode, rtx, rtx, int));
+extern rtx expand_abs PARAMS ((enum machine_mode, rtx, rtx, int, int));
 
 /* Expand the complex absolute value operation.  */
 extern rtx expand_complex_abs PARAMS ((enum machine_mode, rtx, rtx, int));

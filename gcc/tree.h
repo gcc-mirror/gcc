@@ -574,6 +574,8 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
    The same bit is used in functions as DECL_BUILT_IN_NONANSI.  */
 #define TREE_UNSIGNED(NODE) ((NODE)->common.unsigned_flag)
 
+#define TYPE_TRAP_SIGNED(NODE) (flag_trapv && ! TREE_UNSIGNED (NODE))
+
 /* Nonzero in a VAR_DECL means assembler code has been written.
    Nonzero in a FUNCTION_DECL means that the function has been compiled.
    This is interesting in an inline function, since it might not need

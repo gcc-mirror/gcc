@@ -2358,7 +2358,8 @@ expand_mult (mode, op0, op1, target, unsignedp)
      But this causes such a terrible slowdown sometimes
      that it seems better to use synth_mult always.  */
 
-  if (const_op1 && GET_CODE (const_op1) == CONST_INT)
+  if (const_op1 && GET_CODE (const_op1) == CONST_INT
+      && (unsignedp || ! flag_trapv))
     {
       struct algorithm alg;
       struct algorithm alg2;
@@ -2531,7 +2532,10 @@ expand_mult (mode, op0, op1, target, unsignedp)
 
   /* This used to use umul_optab if unsigned, but for non-widening multiply
      there is no difference between signed and unsigned.  */
-  op0 = expand_binop (mode, smul_optab,
+  op0 = expand_binop (mode, 
+		      ! unsignedp
+                       && flag_trapv && (GET_MODE_CLASS(mode) == MODE_INT)
+                       ? smulv_optab : smul_optab,
 		      op0, op1, target, unsignedp, OPTAB_LIB_WIDEN);
   if (op0 == 0)
     abort ();
@@ -2775,7 +2779,9 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp, max_cost)
 	 multiply.  Maybe change expand_binop to handle widening multiply?  */
       op0 = convert_to_mode (wider_mode, op0, unsignedp);
 
-      tem = expand_mult (wider_mode, op0, wide_op1, NULL_RTX, unsignedp);
+      /* We know that this can't have signed overflow, so pretend this is
+         an unsigned multiply.  */
+      tem = expand_mult (wider_mode, op0, wide_op1, NULL_RTX, 0);
       tem = expand_shift (RSHIFT_EXPR, wider_mode, tem,
 			  build_int_2 (size, 0), NULL_RTX, 1);
       return convert_modes (mode, wider_mode, tem, unsignedp);
@@ -2967,6 +2973,16 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
      the special case if so.  */
   if (op1 == const1_rtx)
     return rem_flag ? const0_rtx : op0;
+
+    /* When dividing by -1, we could get an overflow.
+     negv_optab can handle overflows.  */
+  if (! unsignedp && op1 == constm1_rtx)
+    {
+      if (rem_flag)
+        return const0_rtx;
+      return expand_unop (mode, flag_trapv && GET_MODE_CLASS(mode) == MODE_INT
+                        ? negv_optab : neg_optab, op0, target, 0);
+    }
 
   if (target
       /* Don't use the function value register as a target
@@ -3764,16 +3780,15 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	  {
 	    HOST_WIDE_INT d = INTVAL (op1);
 	    unsigned HOST_WIDE_INT ml;
-	    int post_shift;
+	    int pre_shift;
 	    rtx t1;
 
-	    post_shift = floor_log2 (d & -d);
-	    ml = invert_mod2n (d >> post_shift, size);
-	    t1 = expand_mult (compute_mode, op0, GEN_INT (ml), NULL_RTX,
-			      unsignedp);
-	    quotient = expand_shift (RSHIFT_EXPR, compute_mode, t1,
-				     build_int_2 (post_shift, 0),
-				     NULL_RTX, unsignedp);
+	    pre_shift = floor_log2 (d & -d);
+	    ml = invert_mod2n (d >> pre_shift, size);
+	    t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
+			       build_int_2 (pre_shift, 0), NULL_RTX, unsignedp);
+	    quotient = expand_mult (compute_mode, t1, GEN_INT (ml), NULL_RTX,
+			      	    0);
 
 	    insn = get_last_insn ();
 	    set_unique_reg_note (insn,
@@ -3826,8 +3841,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		remainder = expand_binop (compute_mode, sub_optab, op0, tem,
 					  remainder, 0, OPTAB_LIB_WIDEN);
 	      }
-	    abs_rem = expand_abs (compute_mode, remainder, NULL_RTX, 0);
-	    abs_op1 = expand_abs (compute_mode, op1, NULL_RTX, 0);
+	    abs_rem = expand_abs (compute_mode, remainder, NULL_RTX, 1, 0);
+	    abs_op1 = expand_abs (compute_mode, op1, NULL_RTX, 1, 0);
 	    tem = expand_shift (LSHIFT_EXPR, compute_mode, abs_rem,
 				build_int_2 (1, 0), NULL_RTX, 1);
 	    do_cmp_and_jump (tem, abs_op1, LTU, compute_mode, label);
@@ -4476,6 +4491,11 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	 them.  If that doesn't work, and MODE is smaller than a full word,
 	 we can use zero-extension to the wider mode (an unsigned conversion)
 	 as the operation.  */
+
+      /* CYGNUS LOCAL - amylaar/-ftrapv:  Note that ABS doesn't yield a
+         positive number for INT_MIN, but that is compensated by the
+         subsequent overflow when subtracting one / negating.
+         END CYGNUS LOCAL */
 
       if (abs_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
 	tem = expand_unop (mode, abs_optab, op0, subtarget, 1);
