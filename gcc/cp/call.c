@@ -2998,9 +2998,6 @@ null_ptr_cst_p (t)
   if (t == null_node
       || integer_zerop (t) && INTEGRAL_TYPE_P (TREE_TYPE (t)))
     return 1;
-  /* Remove this eventually.  */
-  if (! pedantic && TREE_TYPE (t) == ptr_type_node && integer_zerop (t))
-    return 1;
   return 0;
 }
 
@@ -3697,7 +3694,7 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
 	{
 	  tree c1 = TREE_TYPE (type1);
 	  tree c2 = (TYPE_PTRMEMFUNC_P (type2)
-		     ? TYPE_METHOD_BASETYPE (TYPE_PTRMEMFUNC_FN_TYPE (type2))
+		     ? TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (type2)))
 		     : TYPE_OFFSET_BASETYPE (TREE_TYPE (type2)));
 
 	  if (IS_AGGR_TYPE (c1) && DERIVED_FROM_P (c2, c1)
@@ -5658,8 +5655,8 @@ compare_ics (ics1, ics2)
 	
       if (TYPE_PTRMEMFUNC_P (to1))
 	{
-	  to1 = TYPE_METHOD_BASETYPE (TYPE_PTRMEMFUNC_FN_TYPE (to1));
-	  from1 = TYPE_METHOD_BASETYPE (TYPE_PTRMEMFUNC_FN_TYPE (from1));
+	  to1 = TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (to1)));
+	  from1 = TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (from1)));
 	}
       else if (TREE_CODE (main1) != BASE_CONV)
 	{
@@ -5676,8 +5673,8 @@ compare_ics (ics1, ics2)
 
       if (TYPE_PTRMEMFUNC_P (to2))
 	{
-	  to2 = TYPE_METHOD_BASETYPE (TYPE_PTRMEMFUNC_FN_TYPE (to2));
-	  from2 = TYPE_METHOD_BASETYPE (TYPE_PTRMEMFUNC_FN_TYPE (from2));
+	  to2 = TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (to2)));
+	  from2 = TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (from2)));
 	}
       else if (TREE_CODE (main1) != BASE_CONV)
 	{
@@ -5778,6 +5775,20 @@ compare_ics (ics1, ics2)
   return 0;
 }
 
+static tree
+source_type (t)
+     tree t;
+{
+  for (;; t = TREE_OPERAND (t, 0))
+    {
+      if (TREE_CODE (t) == USER_CONV
+	  || TREE_CODE (t) == AMBIG_CONV
+	  || TREE_CODE (t) == IDENTITY_CONV)
+	return TREE_TYPE (t);
+    }
+  my_friendly_abort (1823);
+}
+
 /* Compare two candidates for overloading as described in
    [over.match.best].  Return values:
 
@@ -5865,6 +5876,27 @@ joust (cand1, cand2)
 	      goto tweak;
 	    }
 	  winner = comp;
+	}
+    }
+
+  /* warn about confusing overload resolution */
+  if (winner && cand1->second_conv
+      && ! DECL_CONSTRUCTOR_P (cand1->fn)
+      && ! DECL_CONSTRUCTOR_P (cand2->fn))
+    {
+      int comp = compare_ics (cand1->second_conv, cand2->second_conv);
+      if (comp && comp != winner)
+	{
+	  struct z_candidate *w, *l;
+	  if (winner == 1)
+	    w = cand1, l = cand2;
+	  else
+	    w = cand2, l = cand1;
+	  cp_warning ("choosing `%D' over `%D'", w->fn, l->fn);
+	  cp_warning ("  for conversion from `%T' to `%T'",
+		      TREE_TYPE (source_type (TREE_VEC_ELT (w->convs, 0))),
+		      TREE_TYPE (w->second_conv));
+	  cp_warning ("  because conversion sequence for `this' argument is better");
 	}
     }
 

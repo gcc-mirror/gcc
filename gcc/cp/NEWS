@@ -7,7 +7,9 @@
 
   for more information.
 
-* New flags -Wsign-promo, -Wno-pmf-conversion.
+* New flags -Wsign-promo (warn about potentially confusing promotions in
+  overload resolution), -Wno-pmf-conversion (don't warn about converting
+  from a bound member function pointer to function pointer).
 
 * local static variables in extern inline functions will be shared between
   translation units.
@@ -65,7 +67,7 @@
   already has virtual functions, only if they override a virtual destructor
   in a base class.  The compiler will warn if this affects your code.
 
-* The g++ driver no longer links with libg++ by default; it is now
+* The g++ driver now only links against libstdc++, not libg++; it is
   functionally identical to the c++ driver.
 
 * (void *)0 is no longer considered a null pointer constant; NULL in
@@ -101,6 +103,11 @@
        you where you need to add 'typename'.
      + Syntax errors in templates that are never instantiated will now be
        diagnosed.
+
+  Still not supported:
+
+     + Member templates.
+     + Template template parameters.
 
 * Synthesized methods are now emitted in any translation units that need
   an out-of-line copy. They are no longer affected by #pragma interface
