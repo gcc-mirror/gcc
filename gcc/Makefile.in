@@ -2155,6 +2155,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 INTL_CLEAN = intl.clean
 clean: mostlyclean $(INTL_CLEAN) lang.clean
 	-rm -f libgcc.a
+	-rm -rf libgcc
 	-rm -f *.dvi
 	-rm -f */*.dvi
 	-if [ -f md.pre-cpp ]; then \

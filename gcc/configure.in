@@ -332,15 +332,13 @@ AC_SUBST(NO_MINUS_C_MINUS_O)
 
 gcc_AC_C_LONG_DOUBLE
 
-AC_MSG_CHECKING(whether ${CC-cc} accepts -Wno-long-long)
-echo 'void f(){}' > conftest.c
-if test -z "`${CC-cc} -Wno-long-long -c conftest.c 2>&1`"; then
-  ac_cv_prog_cc_no_long_long=yes
-else
-  ac_cv_prog_cc_no_long_long=no
-fi
-rm -f conftest*
-echo "$ac_t"$ac_cv_prog_cc_no_long_long 1>&6
+AC_CACHE_CHECK(whether ${CC-cc} accepts -Wno-long-long,
+ac_cv_prog_cc_no_long_long,
+[save_CFLAGS="$CFLAGS"
+CFLAGS="-Wno-long-long"
+AC_TRY_COMPILE(,,ac_cv_prog_cc_no_long_long=yes,
+	       ac_cv_prog_cc_no_long_long=no)
+CFLAGS="$save_CFLAGS"])
 
 # If the native compiler is GCC, we can enable warnings even in stage1.  
 # That's useful for people building cross-compilers, or just running a
