@@ -23231,12 +23231,12 @@ rm -f conftest*
   echo "$ac_t""$glibcxx_shared_libgcc" 1>&6
 fi
 
-# For GNU ld, we need at least this version.  It's 2.14 in the same format
-# as the tested-for version.  See GLIBCXX_CHECK_LINKER_FEATURES for more.
+# For GNU ld, we need at least this version.  The format is described in
+# GLIBCXX_CHECK_LINKER_FEATURES above.
 glibcxx_min_gnu_ld_version=21400
 
-# Check to see if unspecified "yes" value can win, given results
-# above.
+# Check to see if unspecified "yes" value can win, given results above.
+# Change "yes" into either "no" or a style name.
 if test $enable_symvers = yes ; then
   if test $with_gnu_ld = yes &&
      test $glibcxx_shared_libgcc = yes ;
@@ -23245,10 +23245,19 @@ if test $enable_symvers = yes ; then
       enable_symvers=gnu
     else
       # The right tools, the right setup, but too old.  Fallbacks?
+      echo "configure: warning: === Linker version $glibcxx_gnu_ld_version is too old for" 1>&2
+      echo "configure: warning: === full symbol versioning support in this release of GCC." 1>&2
+      echo "configure: warning: === You would need to upgrade your binutils to version" 1>&2
+      echo "configure: warning: === $glibcxx_min_gnu_ld_version or later and rebuild GCC." 1>&2
+      echo "configure: warning: === Symbol versioning will be disabled." 1>&2
       enable_symvers=no
     fi
   else
     # just fail for now
+    echo "configure: warning: === You have requested some kind of symbol versioning, but" 1>&2
+    echo "configure: warning: === either you are not using a supported linker, or you are" 1>&2
+    echo "configure: warning: === not building a shared libgcc_s (which is required)." 1>&2
+    echo "configure: warning: === Symbol versioning will be disabled." 1>&2
     enable_symvers=no
   fi
 fi
@@ -23278,7 +23287,7 @@ else
   GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE=
 fi
 echo $ac_n "checking versioning on shared library symbols""... $ac_c" 1>&6
-echo "configure:23282: checking versioning on shared library symbols" >&5
+echo "configure:23291: checking versioning on shared library symbols" >&5
 echo "$ac_t""$enable_symvers" 1>&6
 
 
@@ -23293,17 +23302,17 @@ echo "$ac_t""$enable_symvers" 1>&6
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:23297: checking for $ac_hdr" >&5
+echo "configure:23306: checking for $ac_hdr" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 23302 "configure"
+#line 23311 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:23307: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:23316: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -23336,7 +23345,7 @@ done
     # Can't do these in a loop, else the resulting syntax is wrong.
     
   cat > conftest.$ac_ext <<EOF
-#line 23340 "configure"
+#line 23349 "configure"
 #include "confdefs.h"
 #include <unistd.h>
                   #include <sys/time.h>
@@ -23346,7 +23355,7 @@ int main() {
  int f = RLIMIT_DATA ; 
 ; return 0; }
 EOF
-if { (eval echo configure:23350: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:23359: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcxx_mresult=1
 else
@@ -23363,7 +23372,7 @@ EOF
 
     
   cat > conftest.$ac_ext <<EOF
-#line 23367 "configure"
+#line 23376 "configure"
 #include "confdefs.h"
 #include <unistd.h>
                   #include <sys/time.h>
@@ -23373,7 +23382,7 @@ int main() {
  int f = RLIMIT_RSS ; 
 ; return 0; }
 EOF
-if { (eval echo configure:23377: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:23386: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcxx_mresult=1
 else
@@ -23390,7 +23399,7 @@ EOF
 
     
   cat > conftest.$ac_ext <<EOF
-#line 23394 "configure"
+#line 23403 "configure"
 #include "confdefs.h"
 #include <unistd.h>
                   #include <sys/time.h>
@@ -23400,7 +23409,7 @@ int main() {
  int f = RLIMIT_VMEM ; 
 ; return 0; }
 EOF
-if { (eval echo configure:23404: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:23413: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcxx_mresult=1
 else
@@ -23417,7 +23426,7 @@ EOF
 
     
   cat > conftest.$ac_ext <<EOF
-#line 23421 "configure"
+#line 23430 "configure"
 #include "confdefs.h"
 #include <unistd.h>
                   #include <sys/time.h>
@@ -23427,7 +23436,7 @@ int main() {
  int f = RLIMIT_AS ; 
 ; return 0; }
 EOF
-if { (eval echo configure:23431: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:23440: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcxx_mresult=1
 else
@@ -23449,7 +23458,7 @@ EOF
 else
   
       cat > conftest.$ac_ext <<EOF
-#line 23453 "configure"
+#line 23462 "configure"
 #include "confdefs.h"
 #include <unistd.h>
                   #include <sys/time.h>
@@ -23459,7 +23468,7 @@ int main() {
  struct rlimit r; setrlimit(0, &r);
 ; return 0; }
 EOF
-if { (eval echo configure:23463: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:23472: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_setrlimit=yes
 else
@@ -23475,7 +23484,7 @@ fi
   fi
 
   echo $ac_n "checking for testsuite memory limit support""... $ac_c" 1>&6
-echo "configure:23479: checking for testsuite memory limit support" >&5
+echo "configure:23488: checking for testsuite memory limit support" >&5
   if test $setrlimit_have_headers = yes && test $ac_setrlimit = yes; then
     ac_mem_limits=yes
     cat >> confdefs.h <<\EOF
@@ -23491,7 +23500,7 @@ EOF
     # Look for setenv, so that extended locale tests can be performed.
     
   echo $ac_n "checking for setenv declaration""... $ac_c" 1>&6
-echo "configure:23495: checking for setenv declaration" >&5
+echo "configure:23504: checking for setenv declaration" >&5
   if test x${glibcxx_cv_func_setenv_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcxx_cv_func_setenv_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -23506,14 +23515,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 23510 "configure"
+#line 23519 "configure"
 #include "confdefs.h"
 #include <stdlib.h>
 int main() {
  setenv(0, 0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:23517: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:23526: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcxx_cv_func_setenv_use=yes
 else
@@ -23539,12 +23548,12 @@ fi
     for ac_func in setenv
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:23543: checking for $ac_func" >&5
+echo "configure:23552: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 23548 "configure"
+#line 23557 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -23567,7 +23576,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:23571: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:23580: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -23727,7 +23736,7 @@ glibcxx_prefixdir=${prefix}
 
 # Process the option --with-gxx-include-dir=<path to include-files directory>
 echo $ac_n "checking for --with-gxx-include-dir""... $ac_c" 1>&6
-echo "configure:23731: checking for --with-gxx-include-dir" >&5
+echo "configure:23740: checking for --with-gxx-include-dir" >&5
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
 if test "${with_gxx_include_dir+set}" = set; then
   withval="$with_gxx_include_dir"
@@ -23751,7 +23760,7 @@ echo "$ac_t""$gxx_include_dir" 1>&6
 
 # Process the option "--enable-version-specific-runtime-libs"
 echo $ac_n "checking for --enable-version-specific-runtime-libs""... $ac_c" 1>&6
-echo "configure:23755: checking for --enable-version-specific-runtime-libs" >&5
+echo "configure:23764: checking for --enable-version-specific-runtime-libs" >&5
 # Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
 if test "${enable_version_specific_runtime_libs+set}" = set; then
   enableval="$enable_version_specific_runtime_libs"
@@ -23802,7 +23811,7 @@ if test x"$glibcxx_toolexecdir" = x"no"; then
 fi
 
 echo $ac_n "checking for install location""... $ac_c" 1>&6
-echo "configure:23806: checking for install location" >&5
+echo "configure:23815: checking for install location" >&5
 echo "$ac_t""$gxx_include_dir" 1>&6
 
 
@@ -24086,7 +24095,7 @@ s%@OPT_LDFLAGS@%$OPT_LDFLAGS%g
 s%@LIBMATHOBJS@%$LIBMATHOBJS%g
 s%@WERROR@%$WERROR%g
 s%@SYMVER_MAP@%$SYMVER_MAP%g
-s%@port_specific_symbol_file@%$port_specific_symbol_file%g
+s%@port_specific_symbol_files@%$port_specific_symbol_files%g
 s%@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@%$GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE%g
 s%@GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@%$GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE%g
 s%@baseline_dir@%$baseline_dir%g

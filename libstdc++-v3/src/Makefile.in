@@ -133,6 +133,7 @@ glibcxx_toolexeclibdir = @glibcxx_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
 ifGNUmake = @ifGNUmake@
 libtool_VERSION = @libtool_VERSION@
+port_specific_symbol_files = @port_specific_symbol_files@
 toplevel_srcdir = @toplevel_srcdir@
 
 AUTOMAKE_OPTIONS = 1.3 cygnus
@@ -147,10 +148,7 @@ glibcxx_builddir = @glibcxx_builddir@
 toolexecdir = @glibcxx_toolexecdir@
 toolexeclibdir = @glibcxx_toolexeclibdir@
 toolexeclib_LTLIBRARIES = libstdc++.la
-
-# Symbol versioning for shared libraries.
-@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@port_specific_symbol_file = @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@@port_specific_symbol_file@
-@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@version_arg = @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@-Wl,--version-script=libstdc++-symbol.ver
+@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@version_arg = -Wl,--version-script=libstdc++-symbol.ver
 @GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@version_arg = 
 
 # Compile flags that should be constant throughout the build, both for
@@ -159,13 +157,11 @@ OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 
 # These bits are all figured out from configure. Look in acinclude.m4
 # or configure.in to see how they are set. See GLIBCXX_EXPORT_FLAGS
-CONFIG_CXXFLAGS = \
-	@SECTION_FLAGS@ @EXTRA_CXX_FLAGS@
+CONFIG_CXXFLAGS =  	@SECTION_FLAGS@ @EXTRA_CXX_FLAGS@
 
 
 # Warning flags to use.
-WARN_CXXFLAGS = \
-	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
+WARN_CXXFLAGS =  	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
 
 
 # Use common includes from acinclude.m4/GLIBCXX_EXPORT_INCLUDES
@@ -174,79 +170,33 @@ LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
 LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 
-INCLUDES = \
-	-nostdinc++ \
-	$(GLIBCXX_INCLUDES) \
-	$(LIBSUPCXX_INCLUDES) $(LIBMATH_INCLUDES) \
-	$(TOPLEVEL_INCLUDES)
+INCLUDES =  	-nostdinc++ 	$(GLIBCXX_INCLUDES) 	$(LIBSUPCXX_INCLUDES) $(LIBMATH_INCLUDES) 	$(TOPLEVEL_INCLUDES)
 
 
 # Source files linked in via configuration/make substitution for a
 # particular host.
-host_sources = \
-	codecvt_members.cc \
-	collate_members.cc \
-	ctype_members.cc \
-	messages_members.cc \
-	monetary_members.cc \
-	numeric_members.cc \
-	time_members.cc
+host_sources =  	codecvt_members.cc 	collate_members.cc 	ctype_members.cc 	messages_members.cc 	monetary_members.cc 	numeric_members.cc 	time_members.cc
 
 
 # Source files linked in via configuration/make substitution for a
 # particular host, but with ad hoc naming rules.
-host_sources_extra = \
-	basic_file.cc \
-	c++locale.cc
+host_sources_extra =  	basic_file.cc 	c++locale.cc
 
 
 # Sources present in the src directory.
-sources = \
-	allocator-inst.cc \
-	codecvt.cc \
-	complex_io.cc \
-	concept-inst.cc \
-	ctype.cc \
-	demangle.cc \
-	ext-inst.cc \
-	fstream-inst.cc \
-	functexcept.cc \
-	globals.cc \
-	io-inst.cc \
-	ios.cc \
-	istream-inst.cc \
-	limits.cc \
-	locale.cc \
-	locale-inst.cc \
-	localename.cc \
-	misc-inst.cc \
-	ostream-inst.cc \
-	sstream-inst.cc \
-	stdexcept.cc \
-	stl_tree.cc \
-	streambuf-inst.cc \
-	string-inst.cc \
-	strstream.cc \
-	valarray-inst.cc \
-	wstring-inst.cc \
-	${host_sources} \
-	${host_sources_extra}
+sources =  	allocator-inst.cc 	codecvt.cc 	complex_io.cc 	concept-inst.cc 	ctype.cc 	demangle.cc 	ext-inst.cc 	fstream-inst.cc 	functexcept.cc 	globals.cc 	io-inst.cc 	ios.cc 	istream-inst.cc 	limits.cc 	locale.cc 	locale-inst.cc 	localename.cc 	misc-inst.cc 	ostream-inst.cc 	sstream-inst.cc 	stdexcept.cc 	stl_tree.cc 	streambuf-inst.cc 	string-inst.cc 	strstream.cc 	valarray-inst.cc 	wstring-inst.cc 	${host_sources} 	${host_sources_extra}
 
 
 VPATH = $(top_srcdir)/src:$(top_srcdir)
 
 libstdc___la_SOURCES = $(sources)
 
-libstdc___la_LIBADD = \
-	$(top_builddir)/libmath/libmath.la \
-	$(top_builddir)/libsupc++/libsupc++convenience.la
+libstdc___la_LIBADD =  	$(top_builddir)/libmath/libmath.la 	$(top_builddir)/libsupc++/libsupc++convenience.la
 
 
 libstdc___la_DEPENDENCIES = libstdc++-symbol.ver $(libstdc___la_LIBADD)
 
-libstdc___la_LDFLAGS = \
-	-version-info @libtool_VERSION@ ${version_arg} \
-	-lm @LIBUNWIND_FLAG@
+libstdc___la_LDFLAGS =  	-version-info @libtool_VERSION@ ${version_arg} 	-lm @LIBUNWIND_FLAG@
 
 
 # Use special rules for the deprecated source files so that they find
@@ -258,12 +208,7 @@ GLIBCXX_INCLUDE_DIR = @glibcxx_builddir@/include
 # set this option because CONFIG_CXXFLAGS has to be after
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
 # as the occasion calls for it.
-AM_CXXFLAGS = \
-	-fno-implicit-templates \
-	$(LIBSUPCXX_CXXFLAGS) \
-	$(WARN_CXXFLAGS) \
-	$(OPTIMIZE_CXXFLAGS) \
-	$(CONFIG_CXXFLAGS)
+AM_CXXFLAGS =  	-fno-implicit-templates 	$(LIBSUPCXX_CXXFLAGS) 	$(WARN_CXXFLAGS) 	$(OPTIMIZE_CXXFLAGS) 	$(CONFIG_CXXFLAGS)
 
 
 # libstdc++ libtool notes
@@ -284,8 +229,7 @@ AM_CXXFLAGS = \
 # correct solution is to add `--tag CXX' to LTCXXCOMPILE and maybe
 # CXXLINK, just after $(LIBTOOL), so that libtool doesn't have to
 # attempt to infer which configuration to use
-LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
-	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS)
 
 
 # 3) We'd have a problem when building the shared libstdc++ object if
@@ -294,8 +238,7 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
 # course is problematic at this point.  So, we get the top-level
 # directory to configure libstdc++-v3 to use gcc as the C++
 # compilation driver.
-CXXLINK = $(LIBTOOL) --tag CXX --mode=link $(CXX) \
-	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+CXXLINK = $(LIBTOOL) --tag CXX --mode=link $(CXX) 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 
 debugdir = debug
@@ -325,7 +268,7 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 SOURCES = $(libstdc___la_SOURCES)
 OBJECTS = $(libstdc___la_OBJECTS)
@@ -437,7 +380,7 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	  awk '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
-	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+	  || (cd $(srcdir) && etags -o $$here/TAGS $(ETAGS_ARGS) $$tags  $$unique $(LISP))
 
 mostlyclean-tags:
 
@@ -545,10 +488,10 @@ mostlyclean distclean maintainer-clean
 
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@libstdc++-symbol.ver:  ${glibcxx_srcdir}/@SYMVER_MAP@
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	cp ${glibcxx_srcdir}/@SYMVER_MAP@ ./libstdc++-symbol.ver
-@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	if test "x${port_specific_symbol_file}" != x; then \
+@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	if test "x@port_specific_symbol_files@" != x; then \
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	  sed -n '1,/DO NOT DELETE/p' $@ > tmp.top; \
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	  sed -n '/DO NOT DELETE/,$$p' $@ > tmp.bottom; \
-@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	  cat tmp.top $(port_specific_symbol_file) tmp.bottom > $@; \
+@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	  cat tmp.top @port_specific_symbol_file@ tmp.bottom > $@; \
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	  rm tmp.top tmp.bottom; \
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	fi
 @GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@libstdc++-symbol.ver:
