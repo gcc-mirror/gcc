@@ -1388,9 +1388,9 @@ real_to_integer2 (plow, phigh, r)
   *phigh = high;
 }
 
-/* Render R as a decimal floating point constant.  Emit DIGITS
-   significant digits in the result.  If DIGITS <= 0, choose the
-   maximum for the representation.  */
+/* Render R as a decimal floating point constant.  Emit DIGITS significant
+   digits in the result.  If DIGITS <= 0, choose the maximum for the
+   representation.  If DIGITS < 0, strip trailing zeros.  */
 
 #define M_LOG10_2	0.30102999566398119521
 
@@ -1405,6 +1405,7 @@ real_to_decimal (str, r_orig, digits)
   int dec_exp, max_digits, d, cmp_half;
   char *p, *first, *last;
   bool sign;
+  bool crop_trailing_zeros;
 
   r = *r_orig;
   switch (r.class)
@@ -1426,6 +1427,7 @@ real_to_decimal (str, r_orig, digits)
     }
 
   max_digits = SIGNIFICAND_BITS * M_LOG10_2;
+  crop_trailing_zeros = digits < 0;
   if (digits <= 0 || digits > max_digits)
     digits = max_digits;
 
@@ -1514,12 +1516,16 @@ real_to_decimal (str, r_orig, digits)
   first[0] = first[1];
   first[1] = '.';
 
+  if (crop_trailing_zeros)
+    while (last > first + 3 && last[-1] == '0')
+      last--;
+
   sprintf (last, "e%+d", dec_exp);
 }
 
 /* Render R as a hexadecimal floating point constant.  Emit DIGITS
    significant digits in the result.  If DIGITS <= 0, choose the maximum
-   for the representation.  */
+   for the representation.  If DIGITS < 0, strip trailing zeros.  */
 
 void
 real_to_hexadecimal (str, r, digits)
@@ -1528,7 +1534,8 @@ real_to_hexadecimal (str, r, digits)
      int digits;
 {
   int i, j, exp = r->exp;
-  char *p;
+  char *p, *first;
+  bool crop_trailing_zeros;
 
   switch (r->class)
     {
@@ -1548,6 +1555,7 @@ real_to_hexadecimal (str, r, digits)
       abort ();
     }
 
+  crop_trailing_zeros = digits < 0;
   if (digits <= 0)
     digits = SIGNIFICAND_BITS / 4;
 
@@ -1558,6 +1566,7 @@ real_to_hexadecimal (str, r, digits)
   *p++ = 'x';
   *p++ = '0';
   *p++ = '.';
+  first = p;
 
   for (i = SIGSZ - 1; i >= 0; --i)
     for (j = HOST_BITS_PER_LONG - 4; j >= 0; j -= 4)
@@ -1566,7 +1575,12 @@ real_to_hexadecimal (str, r, digits)
 	if (--digits == 0)
 	  goto out;
       }
+
  out:
+  if (crop_trailing_zeros)
+    while (p > first + 2 && p[-1] == '0')
+      p--;
+
   sprintf (p, "p%+d", exp);
 }
 

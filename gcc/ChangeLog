@@ -1,3 +1,10 @@
+2002-10-01  Richard Henderson  <rth@redhat.com>
+
+	* real.c (real_to_decimal): Crop trailing zeros for DIGITS < 0.
+	(real_to_hexadecimal): Likewise.
+	* print-rtl.c (print_rtx): If we are linked with real.c, don't
+	dump the XWINT fields of a floating point CONST_DOUBLE.
+
 2002-10-01  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/vax/elf.h (FUNCTION_PROFILER): Fix __mcount call.
