@@ -4751,20 +4751,53 @@ ia64_override_options (void)
 
   if (TARGET_INLINE_FLOAT_DIV_LAT && TARGET_INLINE_FLOAT_DIV_THR)
     {
-      warning ("cannot optimize floating point division for both latency and throughput");
-      target_flags &= ~MASK_INLINE_FLOAT_DIV_THR;
+      if ((target_flags_explicit & MASK_INLINE_FLOAT_DIV_LAT)
+	   && (target_flags_explicit & MASK_INLINE_FLOAT_DIV_THR))
+	{
+	  warning ("cannot optimize floating point division for both latency and throughput");
+	  target_flags &= ~MASK_INLINE_FLOAT_DIV_THR;
+	}
+      else 
+	{
+	  if (target_flags_explicit & MASK_INLINE_FLOAT_DIV_THR)
+	    target_flags &= ~MASK_INLINE_FLOAT_DIV_LAT;
+	  else
+	    target_flags &= ~MASK_INLINE_FLOAT_DIV_THR;
+	}
     }
 
   if (TARGET_INLINE_INT_DIV_LAT && TARGET_INLINE_INT_DIV_THR)
     {
-      warning ("cannot optimize integer division for both latency and throughput");
-      target_flags &= ~MASK_INLINE_INT_DIV_THR;
+      if ((target_flags_explicit & MASK_INLINE_INT_DIV_LAT)
+	   && (target_flags_explicit & MASK_INLINE_INT_DIV_THR))
+	{
+	  warning ("cannot optimize integer division for both latency and throughput");
+	  target_flags &= ~MASK_INLINE_INT_DIV_THR;
+	}
+      else 
+	{
+	  if (target_flags_explicit & MASK_INLINE_INT_DIV_THR)
+	    target_flags &= ~MASK_INLINE_INT_DIV_LAT;
+	  else
+	    target_flags &= ~MASK_INLINE_INT_DIV_THR;
+	}
     }
 
   if (TARGET_INLINE_SQRT_LAT && TARGET_INLINE_SQRT_THR)
     {
-      warning ("cannot optimize square root for both latency and throughput");
-      target_flags &= ~MASK_INLINE_SQRT_THR;
+      if ((target_flags_explicit & MASK_INLINE_SQRT_LAT)
+	   && (target_flags_explicit & MASK_INLINE_SQRT_THR))
+	{
+	  warning ("cannot optimize square root for both latency and throughput");
+	  target_flags &= ~MASK_INLINE_SQRT_THR;
+	}
+      else 
+	{
+	  if (target_flags_explicit & MASK_INLINE_SQRT_THR)
+	    target_flags &= ~MASK_INLINE_SQRT_LAT;
+	  else
+	    target_flags &= ~MASK_INLINE_SQRT_THR;
+	}
     }
 
   if (TARGET_INLINE_SQRT_LAT)

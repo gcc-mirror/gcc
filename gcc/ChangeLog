@@ -1,3 +1,13 @@
+2004-02-27  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.h (no-inline-float-divide): New option.
+	* config/ia64/ia64.h (no-inline-int-divide): New option.
+	* config/ia64/ia64.h (no-inline-sqrt): New option.
+	(TARGET_DEFAULT): Add MASK_INLINE_FLOAT_DIV_THR to define.
+	* config/ia64/hpux.h (TARGET_DEFAULT): Ditto.
+	* config/ia64/ia64.c (ia64_override_options): Modify error
+	checking for inlined division/sqrt.
+
 2004-02-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* bb-reorder.c, cfgbuild.c, diagnostic.c, explow.c, profile.c,
