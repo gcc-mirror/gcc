@@ -2126,7 +2126,11 @@ counting declarations of unnamed parameters and type names, and relates
 to that declaration (which may be nested in another declaration, for
 example in the case of a parameter declaration).  In future, attribute
 specifiers in some places may however apply to a particular declarator
-within a declaration instead; these cases are noted below.
+within a declaration instead; these cases are noted below.  Where an
+attribute specifier is applied to a parameter declared as a function or
+an array, it should apply to the function or array rather than the
+pointer to which the parameter is implicitly converted, but this is not
+yet correctly implemented.
 
 Any list of specifiers and qualifiers at the start of a declaration may
 contain attribute specifiers, whether or not such a list may in that
