@@ -5339,7 +5339,16 @@ emit_reload_insns (insn)
 
 	  mode = GET_MODE (old);
 	  if (mode == VOIDmode)
-	    abort ();		/* Should never happen for an output.  */
+	    {
+	      /* VOIDmode should never happen for an output.  */
+	      if (asm_noperands (PATTERN (insn)) < 0)
+		/* It's the compiler's fault.  */
+		abort ();
+	      error_for_asm (insn, "output operand is constant in `asm'");
+	      /* Prevent crash--use something we know is valid.  */
+	      mode = word_mode;
+	      old = gen_rtx (REG, mode, REGNO (reloadreg));
+	    }
 
 	  /* A strict-low-part output operand needs to be reloaded
 	     in the mode of the entire value.  */
