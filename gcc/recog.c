@@ -181,7 +181,7 @@ static int changes_allocated;
 
 static int num_changes = 0;
 
-/* Validate a proposed change to OBJECT.  LOC is the location in the rtl for
+/* Validate a proposed change to OBJECT.  LOC is the location in the rtl
    at which NEW will be placed.  If OBJECT is zero, no validation is done,
    the change is simply made.
 
