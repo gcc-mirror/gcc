@@ -1,5 +1,10 @@
 2004-01-10  Paolo Carlini  <pcarlini@suse.de>
 
+	* docs/html/ext/lwg-active.html, docs/html/ext/lwg-defects.html:
+	Import Revision 28.
+
+2004-01-10  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/13630
 	* include/bits/locale_classes.h (class locale): Fix category
 	typedef.

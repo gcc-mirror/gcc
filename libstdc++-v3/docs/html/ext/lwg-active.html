@@ -4,11 +4,11 @@
 <table>
 <tbody><tr>
 <td align="left">Doc. no.</td>
-<td align="left">N1515 = 03-0098</td>
+<td align="left">N1537=03-0120</td>
 </tr>
 <tr>
 <td align="left">Date:</td>
-<td align="left">20 Sep 2003</td>
+<td align="left">13 Nov 2003</td>
 </tr>
 <tr>
 <td align="left">Project:</td>
@@ -19,7 +19,7 @@
 <td align="left">Matt Austern &lt;austern@apple.com&gt;</td>
 </tr>
 </tbody></table>
-<h1>C++ Standard Library Active Issues List (Revision 27)</h1>
+<h1>C++ Standard Library Active Issues List (Revision 28)</h1>
   <p>Reference ISO/IEC IS 14882:1998(E)</p>
   <p>Also see:</p>
   <ul>
@@ -87,6 +87,10 @@
   directory as the issues list files.  </p>
 <h2>Revision History</h2>
 <ul>
+<li>R28: 
+Post-Kona mailing: reflects decisiosn made at the Kona meeting.
+Added new issues <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#432">432</a>-<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#440">440</a>.
+</li>
 <li>R27: 
 Pre-Kona mailing.  Added new issues <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#404">404</a>-<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#431">431</a>.
 </li>
@@ -236,7 +240,7 @@ post-Dublin mailing. Updated to reflect LWG and full committee actions
 in Dublin. (99-0016/N1193, 21 Apr 99)
 </li>
 <li>R7: 
-pre-Dublin updated: Added issues <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-closed.html#130">130</a>, <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-closed.html#131">131</a>,
+pre-Dublin updated: Added issues <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#130">130</a>, <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-closed.html#131">131</a>,
 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html#132">132</a>, <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html#133">133</a>, <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html#134">134</a>,
 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-closed.html#135">135</a>, <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html#136">136</a>, <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html#137">137</a>,
 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-closed.html#138">138</a>, <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html#139">139</a> (31 Mar 99)
@@ -511,10 +515,18 @@ as an ill-formed field. It's not exactly the consensus from Santa
 Cruz, but he thinks it's the simplest and most robust rule and that it
 corresponds to widespread common practice.]</i></p>
 
+<p><i>[Kona: Wording here still isn't quite right, partly because it
+refers to scanf and the scanf description of error conditions is
+murky.  The LWG had to do a very close reading of scanf in an attempt
+to figure out what this proposed resolution means.  General agreement
+that the correct solution: (1) should not refer to scanf behavior, (2)
+should not set errno, (3) should allow users who care to figure out
+what kind of error happened. Martin will provide wording, Howard may
+help.]</i></p> 
 
 <hr>
 <a name="44"><h3>44.&nbsp;Iostreams use operator== on int_type values</h3></a><p>
-<b>Section:</b>&nbsp;27 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.input.output"> [lib.input.output]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;27 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.input.output"> [lib.input.output]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>Many of the specifications for iostreams specify that character
 values or their int_type equivalents are compared using operators ==
 or !=, though in other places traits::eq() or traits::eq_int_type is
@@ -781,7 +793,7 @@ change uses of == and != to use the traits members instead. </p>
 
 <hr>
 <a name="92"><h3>92.&nbsp;Incomplete Algorithm Requirements</h3></a><p>
-<b>Section:</b>&nbsp;25 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
+<b>Section:</b>&nbsp;25 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
 <p>The standard does not state, how often a function object is copied,
 called, or the order of calls inside an algorithm. This may lead to
 surprising/buggy behavior. Consider the following example: </p>
@@ -936,7 +948,7 @@ solution.]</i></p>
 
 <hr>
 <a name="98"><h3>98.&nbsp;Input iterator requirements are badly written</h3></a><p>
-<b>Section:</b>&nbsp;24.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iterators.html#lib.input.iterators"> [lib.input.iterators]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;AFNOR&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
+<b>Section:</b>&nbsp;24.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iterators.html#lib.input.iterators"> [lib.input.iterators]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;AFNOR&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
 <p>Table 72 in 24.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iterators.html#lib.input.iterators"> [lib.input.iterators]</a> specifies semantics for
 <tt>*r++</tt> of:</p>
 
@@ -973,7 +985,7 @@ for <tt>*r++</tt> from <tt>T</tt> to "convertible to T".
   much to read into these semantics clauses.</p>
 <hr>
 <a name="120"><h3>120.&nbsp;Can an implementor add specializations?</h3></a><p>
-<b>Section:</b>&nbsp;17.4.3.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-intro.html#lib.reserved.names"> [lib.reserved.names]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
+<b>Section:</b>&nbsp;17.4.3.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-intro.html#lib.reserved.names"> [lib.reserved.names]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
 
 <p>The original issue asked whether a library implementor could
 specialize standard library templates for built-in types.  (This was
@@ -1021,10 +1033,13 @@ different explicit instantiations might be harmless.</p>
   <p>Append to 17.4.3.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-intro.html#lib.reserved.names"> [lib.reserved.names]</a> paragraph 1: </p>
   <blockquote>
     A program may explicitly instantiate any templates in the standard
-    library only if the declaration depends on a user-defined name of
-    external linkage and the instantiation meets the standard library
+    library only if the declaration depends on the name of a user-defined
+    type of external linkage and the instantiation meets the standard library
     requirements for the original template.
   </blockquote>
+
+<p><i>[Kona: changed the wording from "a user-defined name" to "the name of
+  a user-defined type"]</i></p>
 
 <p><b>Rationale:</b></p>
 <p>The LWG considered another possible resolution:</p>
@@ -1070,9 +1085,45 @@ different explicit instantiations might be harmless.</p>
   linking.  If there are such changes in the future, it may be
   appropriate to revisit this issue later.</p>
 <hr>
+<a name="130"><h3>130.&nbsp;Return type of container::erase(iterator) differs for associative containers</h3></a><p>
+<b>Section:</b>&nbsp;23.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.associative.reqmts"> [lib.associative.reqmts]</a>, 23.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.sequence.reqmts"> [lib.sequence.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Andrew Koenig&nbsp; <b>Date:</b>&nbsp;2 Mar 1999</p>
+<p>Table 67 (23.1.1) says that container::erase(iterator) returns an
+iterator. Table 69 (23.1.2) says that in addition to this requirement,
+associative containers also say that container::erase(iterator)
+returns void.  That's not an addition; it's a change to the
+requirements, which has the effect of making associative containers
+fail to meet the requirements for containers.</p>
+<p><b>Proposed resolution:</b></p>
+
+<p>
+In 23.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.associative.reqmts"> [lib.associative.reqmts]</a>, in Table 69 Associative container
+requirements, change the return type of <tt>a.erase(q)</tt> from
+<tt>void</tt> to <tt>iterator</tt>.  Change the
+assertion/not/pre/post-condition from "erases the element pointed to
+by <tt>q</tt>" to "erases the element pointed to
+by <tt>q</tt> and returns the iterator immediately following
+<tt>q</tt> prior to the erasure."
+</p>
+
+<p>
+In 23.3.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.map"> [lib.map]</a>, in the <tt>map</tt> class synopsis; and 
+in 23.3.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.multimap"> [lib.multimap]</a>, in the <tt>multimap</tt> class synopsis; and
+in 23.3.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.set"> [lib.set]</a>, in the <tt>set</tt> class synopsis; and
+in 23.3.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.multiset"> [lib.multiset]</a>, in the <tt>multiset</tt> class synopsis:
+change the signature of the first <tt>erase</tt> overload to
+</p>
+<pre>   iterator erase(iterator position);
+</pre>
+
+<p><i>[Pre-Kona: reopened at the request of Howard Hinnant]</i></p>
+<p><i>[Post-Kona: the LWG agrees the return type should be
+<tt>iterator</tt>, not <tt>void</tt>.  (Alex Stepanov agrees too.)
+Matt provided wording.]</i></p>
+
+<hr>
 <a name="167"><h3>167.&nbsp;Improper use of <tt>traits_type::length()</tt>
 </h3></a><p>
-<b>Section:</b>&nbsp;27.6.2.5.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ostream.inserters.character"> [lib.ostream.inserters.character]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar Kühl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
+<b>Section:</b>&nbsp;27.6.2.5.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ostream.inserters.character"> [lib.ostream.inserters.character]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar Kühl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
 <p>Paragraph 4 states that the length is determined using
 <tt>traits::length(s)</tt>.  Unfortunately, this function is not
 defined for example if the character type is <tt>wchar_t</tt> and the
@@ -1094,10 +1145,10 @@ const*</tt>.</p>
 </blockquote>
 <p>to:</p>
 <blockquote>
-  <p>Effects: Behaves like an formatted inserter (as described in
+  <p>Effects: Behaves like a formatted inserter (as described in
   lib.ostream.formatted.reqmts) of out. After a sentry object is
   constructed it inserts <i>n</i> characters starting at <i>s</i>,
-  where <i>n</i> is:</p>
+  where <i>n</i> is the number that would be computed as if by:</p>
   <ul>
   <li>traits::length(s) for the overload where the first argument is of
     type basic_ostream&lt;charT, traits&gt;&amp; and the second is
@@ -1119,6 +1170,9 @@ const*</tt>.</p>
 </blockquote>
 
 <p><i>[Santa Cruz: Matt supplied new wording]</i></p>
+
+<p><i>[Kona: changed "where <i>n</i> is" to " where <i>n</i> is the
+  number that would be computed as if by"]</i></p> 
 
 <p><b>Rationale:</b></p>
 <p>We have five separate cases.  In two of them we can use the
@@ -1297,7 +1351,7 @@ clear how numeric_limits applies to each of those cases.  A wholesale
 review of numeric_limits is needed.  A paper would be welcome.]</i></p>
 <hr>
 <a name="226"><h3>226.&nbsp;User supplied specializations or overloads of namespace std function templates</h3></a><p>
-<b>Section:</b>&nbsp;17.4.3.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-intro.html#lib.reserved.names"> [lib.reserved.names]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;01 Apr 2000</p>
+<b>Section:</b>&nbsp;17.4.3.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-intro.html#lib.reserved.names"> [lib.reserved.names]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;01 Apr 2000</p>
 <p>The issues are:&nbsp;</p>
 <p>1. How can a 3rd party library implementor (lib1) write a version of a standard
 algorithm which is specialized to work with his own class template?&nbsp;</p>
@@ -1382,12 +1436,13 @@ not provide an operator&lt;&lt; for std::pair&lt;&gt;.
 
 <p><b>Proposed resolution:</b></p>
 
-<p>Adopt the wording proposed in Howard Hinnant's paper N1439=03-0021,
-"Proposed Resolution To LWG issues 225, 226, 229".</p>
+<p>Adopt the wording proposed in Howard Hinnant's paper
+  N1523=03-0106, "Proposed Resolution To LWG issues 225, 226, 229".</p>
+
 
 <p><i>[Tokyo: Summary, "There is no conforming way to extend
 std::swap for user defined templates."&nbsp; The LWG agrees that
-there is a problem.&nbsp; Would like more information before
+there is a problem.  Would like more information before
 proceeding. This may be a core issue.  Core issue 229 has been opened
 to discuss the core aspects of this problem. It was also noted that
 submissions regarding this issue have been received from several
@@ -1453,7 +1508,8 @@ resolution is the one proposed by Howard.]</i></p>
   However, there were concerns about wording.  Howard will provide new
   wording.  Bill and Jeremy will review it.]</i></p>
 
-<p><i>[Oxford: Howard proposed the new wording.]</i></p>
+<p><i>[Kona: Howard proposed the new wording.  The LWG accepted his
+  proposed resolution.]</i></p>
 
 <p><b>Rationale:</b></p>
 <p>Informally: introduce a Swappable concept, and specify that the
@@ -1633,7 +1689,7 @@ complicated than a while loop whose body is a single-element
 insert.]</i></p>
 <hr>
 <a name="253"><h3>253.&nbsp;valarray helper functions are almost entirely useless</h3></a><p>
-<b>Section:</b>&nbsp;26.3.2.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.cons"> [lib.valarray.cons]</a>, 26.3.2.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.assign"> [lib.valarray.assign]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Robert Klarer&nbsp; <b>Date:</b>&nbsp;31 Jul 2000</p>
+<b>Section:</b>&nbsp;26.3.2.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.cons"> [lib.valarray.cons]</a>, 26.3.2.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.assign"> [lib.valarray.assign]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Robert Klarer&nbsp; <b>Date:</b>&nbsp;31 Jul 2000</p>
 <p>This discussion is adapted from message c++std-lib-7056 posted
 November 11, 1999.  I don't think that anyone can reasonably claim
 that the problem described below is NAD.</p>
@@ -1918,7 +1974,7 @@ desirable to provide this feature in a different way.
 
 <hr>
 <a name="283"><h3>283.&nbsp;std::replace() requirement incorrect/insufficient</h3></a><p>
-<b>Section:</b>&nbsp;25.2.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.replace"> [lib.alg.replace]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;15 Dec 2000</p>
+<b>Section:</b>&nbsp;25.2.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.replace"> [lib.alg.replace]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;15 Dec 2000</p>
 <p>
 (revision of the further discussion)
 There are a number of problems with the requires clauses for the
@@ -2111,7 +2167,7 @@ blanket statement in Clause 25, not just a special requirement for
 
 <hr>
 <a name="291"><h3>291.&nbsp;Underspecification of set algorithms</h3></a><p>
-<b>Section:</b>&nbsp;25.3.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.set.operations"> [lib.alg.set.operations]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;03 Jan 2001</p>
+<b>Section:</b>&nbsp;25.3.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.set.operations"> [lib.alg.set.operations]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;03 Jan 2001</p>
 <p>
 The standard library contains four algorithms that compute set
 operations on sorted ranges: <tt>set_union</tt>, <tt>set_intersection</tt>,
@@ -2668,7 +2724,7 @@ examined by the user to determine why something failed.</p>
 
 <hr>
 <a name="347"><h3>347.&nbsp;locale::category and bitmask requirements</h3></a><p>
-<b>Section:</b>&nbsp;22.1.1.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.category"> [lib.locale.category]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;P.J. Plauger, Nathan Myers&nbsp; <b>Date:</b>&nbsp;23 Oct 2001</p>
+<b>Section:</b>&nbsp;22.1.1.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.category"> [lib.locale.category]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;P.J. Plauger, Nathan Myers&nbsp; <b>Date:</b>&nbsp;23 Oct 2001</p>
 <p>
 In 22.1.1.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.category"> [lib.locale.category]</a> paragraph 1, the category members
 are described as bitmask elements.  In fact, the bitmask requirements
@@ -2758,7 +2814,7 @@ of the other enumerated values; implementations may add extra categories.]
 </blockquote>
 <hr>
 <a name="352"><h3>352.&nbsp;missing fpos requirements</h3></a><p>
-<b>Section:</b>&nbsp;21.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-strings.html#lib.char.traits.typedefs"> [lib.char.traits.typedefs]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;2 Dec 2001</p>
+<b>Section:</b>&nbsp;21.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-strings.html#lib.char.traits.typedefs"> [lib.char.traits.typedefs]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;2 Dec 2001</p>
 <p>
 <i>(1)</i>
 There are no requirements on the <tt>stateT</tt> template parameter of
@@ -2802,7 +2858,7 @@ state type already.  Unless motivation is provided, the second should
 be considered NAD.</p>
 <hr>
 <a name="355"><h3>355.&nbsp;Operational semantics for a.back()</h3></a><p>
-<b>Section:</b>&nbsp;23.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.sequence.reqmts"> [lib.sequence.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Yaroslav Mironov&nbsp; <b>Date:</b>&nbsp;23 Jan 2002</p>
+<b>Section:</b>&nbsp;23.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.sequence.reqmts"> [lib.sequence.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Yaroslav Mironov&nbsp; <b>Date:</b>&nbsp;23 Jan 2002</p>
 
 <p>Table 68 "Optional Sequence Operations" in 23.1.1/12
 specifies operational semantics for "a.back()" as
@@ -2828,7 +2884,7 @@ Operations" in 23.1.1/12 for "a.back()" from</p>
 <p>to</p>
 
 <blockquote>
-  { iterator tmp = a.end(); --tmp; *tmp; }
+  { iterator tmp = a.end(); --tmp; return *tmp; }
 </blockquote>
 
 <p>and the specification for "a.pop_back()" from</p>
@@ -2866,6 +2922,9 @@ LWG would like a new issue opened.]</i></p>
 <p><i>[Oxford: Matt provided new wording to address the concerns raised
   in Santa Cruz.  It does not appear that this problem appears
   anywhere else in clauses 23 or 24.]</i></p>
+
+<p><i>[Kona: In definition of operational semantics of back(), change
+"*tmp" to "return *tmp;"]</i></p>
 
 <hr>
 <a name="356"><h3>356.&nbsp;Meaning of ctype_base::mask enumerators</h3></a><p>
@@ -3012,7 +3071,7 @@ option 1 is required for C99 compatibility.
 
 <hr>
 <a name="359"><h3>359.&nbsp;num_put&lt;&gt;::do_put (..., bool) undocumented</h3></a><p>
-<b>Section:</b>&nbsp;22.2.2.2.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.put.members"> [lib.facet.num.put.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;12 Mar 2002</p>
+<b>Section:</b>&nbsp;22.2.2.2.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.put.members"> [lib.facet.num.put.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;12 Mar 2002</p>
 <p>22.2.2.2.1, p1:</p>
 
     <pre>    iter_type put (iter_type out, ios_base&amp; str, char_type fill,
@@ -3165,7 +3224,7 @@ programming.
   of the Standard and will see what the original intent was.]</i></p>
 <hr>
 <a name="365"><h3>365.&nbsp;Lack of const-qualification in clause 27</h3></a><p>
-<b>Section:</b>&nbsp;27 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.input.output"> [lib.input.output]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Walter Brown, Marc Paterno&nbsp; <b>Date:</b>&nbsp;10 May 2002</p>
+<b>Section:</b>&nbsp;27 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.input.output"> [lib.input.output]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Walter Brown, Marc Paterno&nbsp; <b>Date:</b>&nbsp;10 May 2002</p>
 <p>
 Some stream and streambuf member functions are declared non-const,
 even thought they appear only to report information rather than to
@@ -3475,7 +3534,7 @@ be hard to track down by users. This would also make the need for an
 erase_if() member function that much greater.
 </p>
 
-<p>This issue is somewhat related to LWG issue <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-closed.html#130">130</a>.</p>
+<p>This issue is somewhat related to LWG issue <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#130">130</a>.</p>
 
 <p><i>[Santa Cruz: More people need to look at this.  Much user code
   may assume stability.  On the other hand, it seems drastic to add a
@@ -3571,7 +3630,7 @@ come up with better wording.]</i></p>
 
 <hr>
 <a name="379"><h3>379.&nbsp;nonsensical ctype::do_widen() requirement</h3></a><p>
-<b>Section:</b>&nbsp;22.2.1.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.ctype.virtuals"> [lib.locale.ctype.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;6 Sep 2002</p>
+<b>Section:</b>&nbsp;22.2.1.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.ctype.virtuals"> [lib.locale.ctype.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;6 Sep 2002</p>
 <p>
 The last sentence in 22.2.1.1.2, p11 below doesn't seem to make sense.
 </p>
@@ -3603,14 +3662,17 @@ Replace the last sentence of 22.2.1.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc2
 following text:
 </p>
 <pre>       For any named ctype category with a ctype&lt;char&gt; facet ctc
-       and valid ctype_base::mask value M
+       and valid ctype_base::mask value M,
        (ctc.is(M, c) || !is(M, do_widen(c))) is true.
 </pre>
+
+<p><i>[Kona: Minor edit. Added a comma after the <i>M</i> for clarity.]</i></p>
+
 <p><b>Rationale:</b></p>
 <p>The LWG believes this is just a typo, and that this is the correct fix.</p>
 <hr>
 <a name="382"><h3>382.&nbsp;codecvt do_in/out result</h3></a><p>
-<b>Section:</b>&nbsp;22.2.1.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt"> [lib.locale.codecvt]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;30 Aug  2002</p>
+<b>Section:</b>&nbsp;22.2.1.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt"> [lib.locale.codecvt]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;30 Aug  2002</p>
 <p>
 It seems that the descriptions of codecvt do_in() and do_out() leave
 sufficient room for interpretation so that two implementations of
@@ -3768,6 +3830,16 @@ resolution of lwg issue 19.
 that this general direction is probably correct.  Dietmar, Howard,
 PJP, and Matt will review this wording.]</i></p>
 
+<p><i>[Kona: this isn't quite right.  (a) the description of noconv is
+too vague, both in the existing standard and in the current proposed
+resolution; (b) the description of what noconv means should be
+normative; (c) the phrase "partial, i.e. if from_next != from_end"
+isn't quite right, because those are two separate cases, it's possible
+to get partial either form insufficient input or from insufficient
+space in the output buffer.  The big problem is that the standard is
+written with the assumption of 1-&gt;N conversion in mind, not M-&gt;N.
+Bill, Howard, and Martin will provide new wording.
+]</i></p>
 <hr>
 <a name="384"><h3>384.&nbsp;equal_range has unimplementable runtime complexity</h3></a><p>
 <b>Section:</b>&nbsp;25.3.3.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.equal.range"> [lib.equal.range]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Hans Bos&nbsp; <b>Date:</b>&nbsp;18 Oct 2002</p>
@@ -3880,7 +3952,7 @@ Comments from Dave Abrahams: IMO we should resolve 386 by just saying
 ]</i></p>
 <hr>
 <a name="387"><h3>387.&nbsp;std::complex over-encapsulated</h3></a><p>
-<b>Section:</b>&nbsp;26.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.numbers"> [lib.complex.numbers]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Gabriel Dos Reis&nbsp; <b>Date:</b>&nbsp;8 Nov 2002</p>
+<b>Section:</b>&nbsp;26.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.numbers"> [lib.complex.numbers]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Gabriel Dos Reis&nbsp; <b>Date:</b>&nbsp;8 Nov 2002</p>
 <p>
 The absence of explicit description of std::complex&lt;T&gt; layout
 makes it imposible to reuse existing software developed in traditional
@@ -3974,6 +4046,16 @@ part of <i>x</i>
 part of <i>x</i>
 </p>.
 
+<p><i>[Kona: The layout guarantee is absolutely necessary for C
+  compatibility.  However, there was disagreement about the other part
+  of this proposal: retrieving elements of the complex number as
+  lvalues.  An alternative: continue to have real() and imag() return
+  rvalues, but add set_real() and set_imag().  Straw poll: return
+  lvalues - 2, add setter functions - 5.  Related issue: do we want
+  reinterpret_cast as the interface for converting a complex to an
+  array of two reals, or do we want to provide a more explicit way of
+  doing it?  Howard will try to resolve this issue for the next
+  meeting.]</i></p>
 
 <p><b>Rationale:</b></p>
 <p>The LWG believes that C99 compatibility would be enough
@@ -3981,7 +4063,7 @@ justification for this change even without other considerations.  All
 existing implementations already have the layout proposed here.</p>
 <hr>
 <a name="389"><h3>389.&nbsp;Const overload of valarray::operator[] returns by value</h3></a><p>
-<b>Section:</b>&nbsp;26.3.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.valarray"> [lib.template.valarray]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Gabriel Dos Reis&nbsp; <b>Date:</b>&nbsp;8 Nov 2002</p>
+<b>Section:</b>&nbsp;26.3.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.valarray"> [lib.template.valarray]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Gabriel Dos Reis&nbsp; <b>Date:</b>&nbsp;8 Nov 2002</p>
 <p>Consider the following program:</p>
 <pre>    #include &lt;iostream&gt;
     #include &lt;ostream&gt;
@@ -4023,11 +4105,14 @@ should not return a const T&amp;.</p>
 <p><b>Proposed resolution:</b></p>
 <p>In the class synopsis in 26.3.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.valarray"> [lib.template.valarray]</a>, and in
 26.3.2.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.access"> [lib.valarray.access]</a> just above paragraph 1, change</p>
-<pre>  T operator[](size_t const;)
+<pre>  T operator[](size_t const);
 </pre>
 <p>to</p>
-<pre>  const T&amp; operator[](size_t const;)
+<pre>  const T&amp; operator[](size_t const);
 </pre>
+
+<p><i>[Kona: fixed a minor typo: put semicolon at the end of the line
+  wehre it belongs.]</i></p>
 
 <p><b>Rationale:</b></p>
 <p>Return by value seems to serve no purpose.  Valaray was explicitly
@@ -4037,7 +4122,7 @@ defeats that purpose.  It is believed that this change will have no
 impact on allowable optimizations.</p>
 <hr>
 <a name="391"><h3>391.&nbsp;non-member functions specified as const</h3></a><p>
-<b>Section:</b>&nbsp;22.1.3.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.conversions"> [lib.conversions]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;James Kanze&nbsp; <b>Date:</b>&nbsp;10 Dec 2002</p>
+<b>Section:</b>&nbsp;22.1.3.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.conversions"> [lib.conversions]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;James Kanze&nbsp; <b>Date:</b>&nbsp;10 Dec 2002</p>
 <p>
 The specifications of toupper and tolower both specify the functions as
 const, althought they are not member functions, and are not specified as
@@ -4050,7 +4135,7 @@ const in the header file synopsis in section 22.1 <a href="http://anubis.dkuug.d
 <p>Fixes an obvious typo</p>
 <hr>
 <a name="394"><h3>394.&nbsp;behavior of formatted output on failure</h3></a><p>
-<b>Section:</b>&nbsp;27.6.2.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ostream.formatted"> [lib.ostream.formatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;27 Dec 2002</p>
+<b>Section:</b>&nbsp;27.6.2.5.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ostream.formatted.reqmts"> [lib.ostream.formatted.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;27 Dec 2002</p>
 <p>
 There is a contradiction in Formatted output about what bit is
 supposed to be set if the formatting fails. On sentence says it's
@@ -4123,35 +4208,30 @@ consistent, the Common requirements sections for the Formatted output
 functions should be changed as proposed below.
 </p>
 <p><b>Proposed resolution:</b></p>
-<p>
-In paragraph one of section 27.6.2.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ostream.formatted"> [lib.ostream.formatted]</a>, delete the
-sentence beginning with "If the generation fails".
-</p>
+
+
+<p><i>[Kona: There's agreement that this is a real issue.  What we
+  decided at Kona: 1. An error from the buffer (which can be detected
+  either directly from streambuf's member functions or by examining a
+  streambuf_iterator) should always result in badbit getting set.
+  2. There should never be a circumstance where failbit gets set.
+  That represents a formatting error, and there are no circumstances
+  under which the output facets are specified as signaling a
+  formatting error. (Even more so for string output that for numeric
+  because there's nothing to format.)  If we ever decide to make it
+  possible for formatting errors to exist then the facets can signal
+  the error directly, and that should go in clause 22, not clause 27.
+  3. The phrase "if generation fails" is unclear and should be
+  eliminated.  It's not clear whether it's intended to mean a buffer
+  error (e.g. a full disk), a formatting error, or something else.
+  Most people thought it was supposed to refer to buffer errors; if
+  so, we should say so.  Martin will provide wording.]</i></p>
+
 <p><b>Rationale:</b></p>
-<p>
-There isn't any contradiction here. <tt>put</tt> returns a streambuf iterator.
-<tt>failed()</tt> is a member function of the streambuf iterator.  If
-it's set then that's a streambuf error, not a conversion error.
-</p>
-
-<p>
-The real problem isn't that there's a contradiction, but that the "If
-the generation fails" part makes little sense.  "Generation" isn't
-clearly defined.  It's not clear what it means for generation to
-fail, or even whether it can fail.  The intention is probably that
-generaion meant formatting, as opposed to character insertion, and
-that this sentence was intended as analogous to character parsing.
-</p>
-
-<p>A more precise definition would be that we set failbit if the facet
-  reports failure.  However, the mechanism for the facet reporting
-  failure is that it sets failbit!  Saying that we set failbit if the
-  facet sets failbit would be silly, so the best thing to say is
-  nothing.</p>
 
 <hr>
 <a name="395"><h3>395.&nbsp;inconsistencies in the definitions of rand() and random_shuffle()</h3></a><p>
-<b>Section:</b>&nbsp;26.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.c.math"> [lib.c.math]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;James Kanze&nbsp; <b>Date:</b>&nbsp;3 Jan 2003</p>
+<b>Section:</b>&nbsp;26.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.c.math"> [lib.c.math]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;James Kanze&nbsp; <b>Date:</b>&nbsp;3 Jan 2003</p>
 <p>
 In 26.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.c.math"> [lib.c.math]</a>, the C++ standard refers to the C standard for the
 definition of rand(); in the C standard, it is written that "The
@@ -4233,12 +4313,19 @@ is a bitset, not a string.
            typename basic_string&lt;charT, traits, Allocator&gt;::size_type pos = 0,
            typename basic_string&lt;charT, traits, Allocator&gt;::size_type n =
              basic_string&lt;charT, traits, Allocator&gt;::npos,
-           charT zero = charT('0'));
+           charT zero = charT('0'), charT one = charT('1'))
 </pre>
 <p>Change the first two sentences of 23.3.5.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.bitset.cons"> [lib.bitset.cons]</a> p6 to: "An
 element of the constructed string has value 0 if the corresponding
 character in <i>str</i>, beginning at position <i>pos</i>,
 is <i>zero</i>. Otherwise, the element has the value 1.</p>
+
+<p>Change the text of the second sentence in 23.3.5.1, p5 to read:
+    "The function then throws invalid_argument if any of the rlen
+    characters in str beginning at position pos is other than <i>zero</i>
+    or <i>one</i>. The function uses traits::eq() to compare the character
+    values."
+</p>
 
 <p>Change the declaration of the <tt>to_string</tt> member function
   immediately before 23.3.5.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.bitset.members"> [lib.bitset.members]</a> p33 to:</p>
@@ -4418,31 +4505,8 @@ end-of-file):
   and changing it on an individual basis wouldn't make things better.
   Dietmar will do this work.</p>
 <hr>
-<a name="400"><h3>400.&nbsp;redundant type cast in lib.allocator.members</h3></a><p>
-<b>Section:</b>&nbsp;20.4.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Markus Mauhart&nbsp; <b>Date:</b>&nbsp;27 Feb 2003</p>
-<p>
-20.4.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a> allocator members, contains
-the following 3 lines:
-</p>
-
-<pre>  12 Returns: new((void *) p) T( val)
-     void destroy(pointer p);
-  13 Returns: ((T*) p)-&gt;~T()
-</pre>
-
-<p>
-The type cast "(T*) p" in the last line is redundant cause
-we know that std::allocator&lt;T&gt;::pointer is a typedef for T*.
-</p>
-<p><b>Proposed resolution:</b></p>
-<p>
-Replace "((T*) p)" with "p".
-</p>
-<p><b>Rationale:</b></p>
-<p>Just a typo, this is really editorial.</p>
-<hr>
 <a name="401"><h3>401.&nbsp; incorrect type casts in table 32 in lib.allocator.requirements</h3></a><p>
-<b>Section:</b>&nbsp;20.1.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Markus Mauhart&nbsp; <b>Date:</b>&nbsp;27 Feb 2003</p>
+<b>Section:</b>&nbsp;20.1.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Markus Mauhart&nbsp; <b>Date:</b>&nbsp;27 Feb 2003</p>
 <p>
 I think that in par2 of 20.1.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a> the last two
 lines of table 32 contain two incorrect type casts. The lines are ...
@@ -4483,9 +4547,18 @@ Note: Actually I would prefer to replace "((T*)p)?-&gt;dtor_name" with
 "p?-&gt;dtor_name", but AFAICS this is not possible cause of an omission
 in 13.5.6 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/over.html#over.ref"> [over.ref]</a> (for which I have filed another DR on 29.11.2002).
 </p>
+
+<p><i>[Kona: The LWG thinks this is somewhere on the border between
+  Open and NAD.  The intend is clear: <tt>construct</tt> constructs an
+  object at the location <i>p</i>.  It's reading too much into the
+  description to think that literally calling <tt>new</tt> is
+  required.  Tweaking this description is low priority until we can do
+  a thorough review of allocators, and, in particular, allocators with
+  non-default pointer types.]</i></p>
+
 <hr>
 <a name="402"><h3>402.&nbsp;wrong new expression in [some_]allocator::construct</h3></a><p>
-<b>Section:</b>&nbsp;20.1.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>, 20.4.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a>, &nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Markus Mauhart&nbsp; <b>Date:</b>&nbsp;27 Feb 2003</p>
+<b>Section:</b>&nbsp;20.1.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>, 20.4.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a>, &nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Markus Mauhart&nbsp; <b>Date:</b>&nbsp;27 Feb 2003</p>
 <p>
 This applies to the new expression that is contained in both par12 of
 20.4.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a> and in par2 (table 32) of 20.1.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>.
@@ -4534,12 +4607,11 @@ probably must think about it.
 </p>
 <p><b>Proposed resolution:</b></p>
 <p>
-Therefore I think that "new" should be replaced with "::new" in both
-cases.
+Replace "new" with "::new" in both cases.
 </p>
 <hr>
 <a name="403"><h3>403.&nbsp;basic_string::swap should not throw exceptions</h3></a><p>
-<b>Section:</b>&nbsp;21.3.5.8 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-strings.html#lib.string::swap"> [lib.string::swap]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Beman Dawes&nbsp; <b>Date:</b>&nbsp;25 Mar 2003</p>
+<b>Section:</b>&nbsp;21.3.5.8 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-strings.html#lib.string::swap"> [lib.string::swap]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Beman Dawes&nbsp; <b>Date:</b>&nbsp;25 Mar 2003</p>
 
 <p>
 std::basic_string, 21.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-strings.html#lib.basic.string"> [lib.basic.string]</a> paragraph 2 says that
@@ -4596,7 +4668,7 @@ Throws: Shall not throw exceptions.
 </p>
 <hr>
 <a name="404"><h3>404.&nbsp;May a replacement allocation function be declared inline?</h3></a><p>
-<b>Section:</b>&nbsp;17.4.3.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-intro.html#lib.replacement.functions"> [lib.replacement.functions]</a>, 18.4.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete"> [lib.new.delete]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;24 Apr 2003</p>
+<b>Section:</b>&nbsp;17.4.3.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-intro.html#lib.replacement.functions"> [lib.replacement.functions]</a>, 18.4.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete"> [lib.new.delete]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;24 Apr 2003</p>
 <p>
 The eight basic dynamic memory allocation functions (single-object
 and array versions of ::operator new and ::operator delete, in the
@@ -4624,8 +4696,12 @@ and 18.4.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-support.htm
 <p><b>Proposed resolution:</b></p>
 <p>
 Add a new sentence to the end of 17.4.3.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-intro.html#lib.replacement.functions"> [lib.replacement.functions]</a> paragraph 3:
-"The program's definitions shall not be specified as <tt>inline</tt>."
+"The program's definitions shall not be specified as <tt>inline</tt>.
+No diagnostic is required."
 </p>
+
+<p><i>[Kona: added "no diagnostic is required"]</i></p>
+
 <p><b>Rationale:</b></p>
 <p>
 The fact that <tt>inline</tt> isn't mentioned appears to have been
@@ -4636,7 +4712,7 @@ believed to be of limited value.
 </p>
 <hr>
 <a name="405"><h3>405.&nbsp;qsort and POD</h3></a><p>
-<b>Section:</b>&nbsp;25.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.c.library"> [lib.alg.c.library]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Ray Lischner&nbsp; <b>Date:</b>&nbsp;08 Apr 2003</p>
+<b>Section:</b>&nbsp;25.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.c.library"> [lib.alg.c.library]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Ray Lischner&nbsp; <b>Date:</b>&nbsp;08 Apr 2003</p>
 <p>
 Section 25.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.c.library"> [lib.alg.c.library]</a> describes bsearch and qsort, from the C
 standard library. Paragraph 4 does not list any restrictions on qsort,
@@ -4644,9 +4720,19 @@ but it should limit the base parameter to point to POD.  Presumably,
 qsort sorts the array by copying bytes, which requires POD.
 </p>
 <p><b>Proposed resolution:</b></p>
+<p>
+In 25.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.c.library"> [lib.alg.c.library]</a> paragraph 4, just after the declarations and
+before the nonnormative note, add these words: "both of which have the
+same behavior as the original declaration.  The behavior is undefined
+unless the objects in the array pointed to by <i>base</i> are of POD
+type."
+</p>
+
+<p><i>[Something along these lines is clearly necessary.  Matt
+  provided wording.]</i></p>
 <hr>
 <a name="406"><h3>406.&nbsp;vector::insert(s) exception safety</h3></a><p>
-<b>Section:</b>&nbsp;23.2.4.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.capacity"> [lib.vector.capacity]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;27 Apr 2003</p>
+<b>Section:</b>&nbsp;23.2.4.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.modifiers"> [lib.vector.modifiers]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;27 Apr 2003</p>
 <p>
 There is a possible defect in the standard: the standard text was
 never intended to prevent arbitrary ForwardIterators, whose operations
@@ -4666,9 +4752,14 @@ existing implementation.
    of T (or, if first and last satisfy the forward iterator
    requirements, an operation on first or last) there are no effects.
 </blockquote>
+
+<p><i>[Something along these lines is probably a good idea.  It's
+  unclear why we're making a distinction between Input Iterators and
+  Forward Iterators.]</i></p>
+
 <hr>
 <a name="407"><h3>407.&nbsp;Can singular iterators be destroyed?</h3></a><p>
-<b>Section:</b>&nbsp;24.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iterators.html#lib.iterator.requirements"> [lib.iterator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;3 June 2003</p>
+<b>Section:</b>&nbsp;24.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iterators.html#lib.iterator.requirements"> [lib.iterator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;3 June 2003</p>
 <p>
 Clause 24.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iterators.html#lib.iterator.requirements"> [lib.iterator.requirements]</a>, paragraph 5, says that the only expression
 that is defined for a singular iterator is "an assignment of a
@@ -4685,7 +4776,7 @@ of a non-singular value to an iterator that holds a singular value."
 </p>
 <hr>
 <a name="408"><h3>408.&nbsp;Is vector&lt;reverse_iterator&lt;char*&gt; &gt; forbidden?</h3></a><p>
-<b>Section:</b>&nbsp;24.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iterators.html#lib.iterator.requirements"> [lib.iterator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;3 June 2003</p>
+<b>Section:</b>&nbsp;24.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iterators.html#lib.iterator.requirements"> [lib.iterator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;3 June 2003</p>
 <p>
 I've been discussing iterator semantics with Dave Abrahams, and a 
 surprise has popped up.  I don't think this has been discussed before.
@@ -4798,9 +4889,20 @@ iterator value, singular or not, default-initialized or not.
 <p>Related issue: <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#407">407</a>
 </p>
 <p><b>Proposed resolution:</b></p>
+
+<p><i>[
+We don't want to require all singular iterators to be copyable,
+because that is not the case for pointers.  However, default
+construction may be a special case.  Issue: is it really default
+construction we want to talk about, or is it something like value
+initialization?  We need to check with core to see whether default
+constructed pointers are required to be copyable; if not, it would be
+wrong to impose so strict a requirement for iterators.
+]</i></p>
+
 <hr>
 <a name="409"><h3>409.&nbsp;Closing an fstream should clear error state</h3></a><p>
-<b>Section:</b>&nbsp;27.8.1.7 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ifstream.members"> [lib.ifstream.members]</a>, 27.8.1.10 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ofstream.members"> [lib.ofstream.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;3 June 2003</p>
+<b>Section:</b>&nbsp;27.8.1.7 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ifstream.members"> [lib.ifstream.members]</a>, 27.8.1.10 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ofstream.members"> [lib.ofstream.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;3 June 2003</p>
 <p>
 A strict reading of 27.8.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.fstreams"> [lib.fstreams]</a> shows that opening or
 closing a basic_[io]fstream does not affect the error bits.  This
@@ -4818,9 +4920,27 @@ changes in a TC.  Now that we're working on a new revision of the
 language, those considerations no longer apply.
 </p>
 <p><b>Proposed resolution:</b></p>
+
+<p>Change 27.8.1.4, para. 3 from:</p>
+<blockquote>
+If the open operation succeeds and ( mode &amp; ios_base::ate) != 0,
+positions the file to the end (``as if'' by calling
+std::fseek(file,0,SEEK_END)).
+</blockquote>
+<p>to:</p>
+<blockquote>
+If the open operation succeeds, calls clear(0). Then if
+( mode &amp; ios_base::ate) != 0, positions the file to the end
+(``as if'' by calling std::fseek(file,0,SEEK_END)).
+</blockquote>
+
+<p><i>[Kona: the LWG agrees this is a good idea.  Post-Kona: Bill
+provided wording.  He suggests having open, not close, clear the error
+flags.]</i></p>
+
 <hr>
 <a name="410"><h3>410.&nbsp;Missing semantics for stack and queue comparison operators</h3></a><p>
-<b>Section:</b>&nbsp;23.2.3.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.queue"> [lib.queue]</a>, 23.2.3.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.stack"> [lib.stack]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Hans Bos&nbsp; <b>Date:</b>&nbsp;7 Jun 2003</p>
+<b>Section:</b>&nbsp;23.2.3.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.queue"> [lib.queue]</a>, 23.2.3.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.stack"> [lib.stack]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Hans Bos&nbsp; <b>Date:</b>&nbsp;7 Jun 2003</p>
 <p>
 Sections 23.2.3.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.queue"> [lib.queue]</a> and 23.2.3.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.stack"> [lib.stack]</a> list
 comparison operators (==, !=, &lt;, &lt;=, &gt;, =&gt;) for queue and
@@ -4828,9 +4948,79 @@ stack.  Only the semantics for queue::operator== (23.2.3.1 <a href="http://anubi
 par3) are defined.
 </p>
 <p><b>Proposed resolution:</b></p>
+
+<p>Add the following new paragraphs after 23.2.3.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.queue"> [lib.queue]</a>
+  paragraph 3:</p>
+
+<blockquote>
+
+<pre>  operator!=
+</pre>
+<p>Returns: <tt>x.c != y.c</tt>
+</p>
+
+<pre>  operator&gt;
+</pre>
+<p>Returns: <tt>x.c &gt; y.c</tt>
+</p>
+
+<pre>  operator&lt;=
+</pre>
+<p>Returns: <tt>x.c &lt;= y.c</tt>
+</p>
+
+<pre>  operator&gt;=
+</pre>
+<p>Returns: <tt>x.c &gt;= y.c</tt>
+</p>
+
+</blockquote>
+
+<p>Add the following paragraphs at the end of 23.2.3.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.stack"> [lib.stack]</a>:</p>
+
+<blockquote>
+
+<pre>  operator==
+</pre>
+<p>Returns: <tt>x.c == y.c</tt>
+</p>
+
+<pre>  operator&lt;
+</pre>
+<p>Returns: <tt>x.c &lt; y.c</tt>
+</p>
+
+<pre>  operator!=
+</pre>
+<p>Returns: <tt>x.c != y.c</tt>
+</p>
+
+<pre>  operator&gt;
+</pre>
+<p>Returns: <tt>x.c &gt; y.c</tt>
+</p>
+
+<pre>  operator&lt;=
+</pre>
+<p>Returns: <tt>x.c &lt;= y.c</tt>
+</p>
+
+<pre>  operator&gt;=
+</pre>
+<p>Returns: <tt>x.c &gt;= y.c</tt>
+</p>
+
+</blockquote>
+
+
+<p><i>[Kona: Matt provided wording.]</i></p>
+
+<p><b>Rationale:</b></p>
+There isn't any real doubt about what these operators are
+supposed to do, but we ought to spell it out.
 <hr>
 <a name="411"><h3>411.&nbsp;Wrong names of set member functions</h3></a><p>
-<b>Section:</b>&nbsp;25.3.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.set.operations"> [lib.alg.set.operations]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Daniel Frey&nbsp; <b>Date:</b>&nbsp;9 Jul 2003</p>
+<b>Section:</b>&nbsp;25.3.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.set.operations"> [lib.alg.set.operations]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Daniel Frey&nbsp; <b>Date:</b>&nbsp;9 Jul 2003</p>
 <p>
 25.3.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.set.operations"> [lib.alg.set.operations]</a> paragraph 1 reads:
 "The semantics of the set operations are generalized to multisets in a 
@@ -4847,7 +5037,7 @@ set_intersection(), not union() and intersection().
 <p>Change that sentence to use the correct names.</p>
 <hr>
 <a name="412"><h3>412.&nbsp;Typo in 27.4.4.3</h3></a><p>
-<b>Section:</b>&nbsp;27.4.4.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.iostate.flags"> [lib.iostate.flags]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;10 Jul 2003</p>
+<b>Section:</b>&nbsp;27.4.4.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.iostate.flags"> [lib.iostate.flags]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;10 Jul 2003</p>
 <p>
 The Effects clause in 27.4.4.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.iostate.flags"> [lib.iostate.flags]</a> paragraph 5 says that the
 function only throws if the respective bits are already set prior to
@@ -4858,11 +5048,37 @@ exceptions()) == 0, returns. ..."
 <p><b>Proposed resolution:</b></p>
 <p>
 In 27.4.4.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.iostate.flags"> [lib.iostate.flags]</a> paragraph 5, replace "If (rdstate() &amp;
-exceptions()) == 0" with "If (<i>state</i> &amp; exceptions()) == 0".
+exceptions()) == 0" with "If ((state | (rdbuf() ? goodbit : badbit))
+&amp; exceptions()) == 0".
 </p>
+
+<p><i>[Kona: the original proposed resolution wasn't quite right.  We
+  really do mean rdstate(); the ambiguity is that the wording in the
+  standard doesn't make it clear whether we mean rdstate() before
+  setting the new state, or rdsate() after setting it.  We intend the
+  latter, of course. Post-Kona: Martin provided wording.]</i></p>
+
+<hr>
+<a name="413"><h3>413.&nbsp;Proposed resolution to LDR#64 still wrong</h3></a><p>
+<b>Section:</b>&nbsp;27.6.1.2.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream::extractors"> [lib.istream::extractors]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Bo Persson&nbsp; <b>Date:</b>&nbsp;13 Jul 2003</p>
+<p>
+The second sentence of the proposed resolution says:
+</p>
+
+<p>
+"If it inserted no characters because it caught an exception thrown
+while extracting characters from sb and ..."
+</p>
+
+<p>
+However, we are not extracting from sb, but extracting from the
+basic_istream (*this) and inserting into sb. I can't really tell if
+"extracting" or "sb" is a typo.
+</p>
+<p><b>Proposed resolution:</b></p>
 <hr>
 <a name="414"><h3>414.&nbsp;Which iterators are invalidated by v.erase()?</h3></a><p>
-<b>Section:</b>&nbsp;23.2.4.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.modifiers"> [lib.vector.modifiers]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;19 Aug 2003</p>
+<b>Section:</b>&nbsp;23.2.4.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.modifiers"> [lib.vector.modifiers]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;19 Aug 2003</p>
 <p>
 Consider the following code fragment:
 </p>
@@ -4898,7 +5114,7 @@ The standard doesn't say either of those things.  It says that erase
 invalidates all iterators and references "after the point of the
 erase".  This doesn't include i1, since it's at the point of the
 erase instead of after it.  I can't think of any sensible definition
-of invalidation by which one can say that i2 is invalidated by i1
+of invalidation by which one can say that i2 is invalidated but i1
 isn't.
 </p>
 
@@ -4924,10 +5140,8 @@ erase".
   say that a reference to an erased value remains valid.</p>
 <hr>
 <a name="415"><h3>415.&nbsp;behavior of std::ws</h3></a><p>
-<b>Section:</b>&nbsp;27.6.1.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.manip"> [lib.istream.manip]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
-        <p>
-
-
+<b>Section:</b>&nbsp;27.6.1.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.manip"> [lib.istream.manip]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<p>
 According to 27.6.1.4, the ws() manipulator is not required to construct
 the sentry object. The manipulator is also not a member function so the
 text in 27.6.1, p1 through 4 that describes the exception policy for
@@ -4936,22 +5150,26 @@ the rest of extractors and all the other input functions (i.e., ws will
 not cause a tied stream to be flushed before extraction, it doesn't check
 the stream's exceptions or catch exceptions thrown during input, and it
 doesn't affect the stream's gcount).
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Add to 27.6.1.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.manip"> [lib.istream.manip]</a>, immediately before the first sentence
+of paragraph 1, the following text:
+</p>
 
-        </p>
-    <p><b>Proposed resolution:</b></p>
-        <p>
+    <blockquote>
+    Behaves as an unformatted input function (as described in
+    27.6.1.3, paragraph 1), except that it does not count the number
+    of characters extracted and does not affect the value returned by
+    subsequent calls to is.gcount(). After constructing a sentry
+    object...  
+    </blockquote>
 
+<p><i>[Post-Kona: Martin provided wording]</i></p>
 
-I propose that the manipulator be required to behave like an unformatted
-member function. It should not behave as a formatted member function since
-those set failbit in the sentry ctor according to DR195(*) and ws is explicitly
-forbidden from doing that (sure, it could clear the bit, but why bother?)
-
-(*) http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html#195
-        </p>
-    <hr>
+<hr>
 <a name="416"><h3>416.&nbsp;definitions of XXX_MIN and XXX_MAX macros in climits</h3></a><p>
-<b>Section:</b>&nbsp;18.2.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-support.html#lib.c.limits"> [lib.c.limits]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<b>Section:</b>&nbsp;18.2.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-support.html#lib.c.limits"> [lib.c.limits]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
         <p>
 
 Given two overloads of the function foo(), one taking an argument of type
@@ -4990,20 +5208,19 @@ where the actual type is easily detectable by overload resolution.
 
         </p>
     <p><b>Proposed resolution:</b></p>
-        <p>
 
-Specify the exact type of each XXX_MIN and XXX_MAX constant #defined in
-the header &lt;climits&gt;. Note that it is not possible to #define these macros
-so that they are usable in preprocessor arithmetic expressions, having
-any type other than char, int, unsigned int, long, and unsigned long.
-This means that the type of SHRT_MIN, for instance, has to be either
-int ot long in C++.
-        </p>
-    <hr>
+<p><i>[Kona: the LWG does not believe this is a defect.  The C macro
+  definitions are what they are; we've got a better
+  mechanism, <tt>std::numeric_limits</tt>, that is specified more
+  precisely than the C limit macros.  At most we should add a
+  nonnormative note recommending that users who care about the exact
+  types of limit quantities should use &lt;limits&gt; instead of
+  &lt;climits&gt;.]</i></p>
+
+<hr>
 <a name="417"><h3>417.&nbsp;what does ctype::do_widen() return on failure</h3></a><p>
-<b>Section:</b>&nbsp;22.2.1.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.ctype.virtuals"> [lib.locale.ctype.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
-        <p>
-
+<b>Section:</b>&nbsp;22.2.1.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.ctype.virtuals"> [lib.locale.ctype.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<p>
 The Effects and Returns clauses of the do_widen() member function of
 the ctype facet fail to specify the behavior of the function on failure.
 That the function may not be able to simply cast the narrow character
@@ -5012,44 +5229,47 @@ for some wchar_t encodings. Popular implementations of ctype&lt;wchar_t&gt; that
 use mbtowc() and UTF-8 as the native encoding (e.g., GNU glibc) will fail
 when the argument's MSB is set. There is no way for the the rest of locale
 and iostream to reliably detect this failure. 
-
-        </p>
-    <p><b>Proposed resolution:</b></p>
-        <p>
-
-A partial solution might be to specify that ctype&lt;wchar_t&gt;::do_widen(char)
-must return WEOF to indicate a failure.
-        </p>
-    <hr>
+</p>
+<p><b>Proposed resolution:</b></p>
+<p><i>[Kona: This is a real problem.  Widening can fail.  It's unclear
+  what the solution should be.  Returning WEOF works for the wchar_t
+  specialization, but not in general.  One option might be to add a
+  default, like <i>narrow</i>.  But that's an incompatible change.
+  Using <i>traits::eof</i> might seem like a good idea, but facets
+  don't have access to traits (a recurring problem).  We could
+  have <i>widen</i> throw an exception, but that's a scary option;
+  existing library components aren't written with the assumption
+  that <i>widen</i> can throw.]</i></p>
+<hr>
 <a name="418"><h3>418.&nbsp;exceptions thrown during iostream cleanup</h3></a><p>
-<b>Section:</b>&nbsp;27.4.2.1.6 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ios::Init"> [lib.ios::Init]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
-        <p>
-
+<b>Section:</b>&nbsp;27.4.2.1.6 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ios::Init"> [lib.ios::Init]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<p>
 The dtor of the ios_base::Init object is supposed to call flush() on the
 6 standard iostream objects cout, cerr, clog, wcout, wcerr, and wclog.
 This call may cause an exception to be thrown.
-<br>
+</p>
 
+<p>
 17.4.4.8, p3 prohibits all library destructors from throwing exceptions.
-<br>
+</p>
 
+<p>
 The question is: What should this dtor do if one or more of these calls
 to flush() ends up throwing an exception? This can happen quite easily
 if one of the facets installed in the locale imbued in the iostream
 object throws.
-
-        </p>
-    <p><b>Proposed resolution:</b></p>
-        <p>
-
-I'm not sure what the best approach is in this case -- ignore the exception
-and proceed with the cleanup (required by the clause that prohibits library
-dtors from throwing), abort right there and then, or allow the exception to
-propagate (and allow an unfriendly termination of the program).
-        </p>
-    <hr>
+</p>
+<p><b>Proposed resolution:</b></p>
+<p><i>[Kona: We probably can't do much better than what we've got, so
+  the LWG is leaning toward NAD.  At the point where the standard
+  stream objects are being cleaned up, the usual error reporting
+  mechanism are all unavailable.  And exception from flush at this
+  point will definitely cause problems.  A quality implementation
+  might reasonably swallow the exception, or call abort, or do
+  something even more drastic.]</i></p>
+<hr>
 <a name="419"><h3>419.&nbsp;istream extractors not setting failbit if eofbit is already set</h3></a><p>
-<b>Section:</b>&nbsp;27.6.1.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream::sentry"> [lib.istream::sentry]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<b>Section:</b>&nbsp;27.6.1.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream::sentry"> [lib.istream::sentry]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
         <p>
 
 27.6.1.1.2, p2 says that istream::sentry ctor prepares for input if is.good()
@@ -5120,202 +5340,37 @@ corrected.
 
         </p>
     <p><b>Proposed resolution:</b></p>
-        <p>
-
-A possible change might go in the Effects clause of the sentry ctor in
-27.6.1.1.2, p1. At the end of the paragraph, i.e., after the text beginning
-with
-<br>
-
-Effects: If is.good() is true, ...
-<br>
-
-add
-<br>
-
-Otherwise, if (is.rdstate() == ios_base::eofbit) is true,
-the function calls is.setstate(failbit) (which may throw
-ios_base::failure).
-<br>
-
-Another possible wording is
-<br>
-
-Otherwise, if is.eof() is true, the function calls
-is.setstate(ios_base::failbit) (which may throw
-ios_base::failure).
-<br>
-
-The difference between the two is that when failbit is set in is.exceptions(),
-the first option will cause ios_base::failure to be thrown only during the
-first call to the sentry ctor, while the second option will cause
-ios_base::failure to be thrown each time the sentry ctor is invoked. I think
-I like the first alternative better (i.e., there's no reason to call
-setstate(failbit) if the bit is already known to be set).
-<br>
-
-The change does not address the possibility of just badbit being set.
-Should it? I.e., should the sentry ctor set failbit if (only) badbit is set?
-<br>
-
-I haven't done a full survey of all the input functions to make sure the
-change doesn't break something else. A second pair eyes would be helpful.
-<br>
-
-Survey posted in c++std-lib-11409:
-<br>
-
-Below is a survey of a number of popular implementations, including
-classic iostreams. Three different sets of behavior exist (case 2
-is the same as case 1 except that istream::sentry does not set
-eofbit or failbit in an initially good stream object when its
-attempt to extract whitespace fails).
-<br>
-
-The major difference seems to be in how badbit is treated in the
-initial stream state. Most implementations still set failbit in
-this case, but there are three implementations of classic
-iostreams that do not. Since all surveyed implementations of
-standard iostreams do set failbit in this case, I think we
-should probably either require such behavior, or leave it
-unspecified (in which case I would prefer to be explicit
-about it to avoid any confusion).
-<br>
-
-0. Compaq C++ classic + standard, g++ 2.95.2 classic,
-g++ 3.2 standard, HP aCC 3.45 standard, Rogue Wave 3.1.1,
-Sunpro 5.5 classic + standard, IBM VAC++ 6.0 standard,
-STLport 4.5 classic + standard
-<br>
-
-1. HP aCC 4.45 classic, SGI MIPSpro 7.3 classic, IBM VAC++ 6.0 classic
-<br>
-
-2. SGI MIPSpro 7.3 standard
-<br>
-        </p>
-<pre>                0     1     2
-    =========+=====+=====+=====
-    B--  00  | B-F   B--   B-F
-    B--  01  | B-F   B--   B-F
-    B--  10  | B-F   B--   B-F
-    B--  11  | B-F   B--   B-F
-    -E-  00  | -EF   -EF   -EF
-    -E-  01  | -EF   -EF   -EF
-    -E-  10  | -EF   -EF   -EF
-    -E-  11  | -EF   -EF   -EF
-    --F  00  | --F   --F   --F
-    --F  01  | --F   --F   --F
-    --F  10  | --F   --F   --F
-    --F  11  | --F   --F   --F
-    ---  00  | ---   ---   ---
-    ---  01  | ---   ---   ---
-    ---  10  | -EF   -EF   ---
-    ---  11  | ---   ---   ---
-    BE-  00  | BEF   BEF   BEF
-    BE-  01  | BEF   BEF   BEF
-    BE-  10  | BEF   BEF   BEF
-    BE-  11  | BEF   BEF   BEF
-    B-F  00  | B-F   B-F   B-F
-    B-F  01  | B-F   B-F   B-F
-    B-F  10  | B-F   B-F   B-F
-    B-F  11  | B-F   B-F   B-F
-    BEF  00  | BEF   BEF   BEF
-    BEF  01  | BEF   BEF   BEF
-    BEF  10  | BEF   BEF   BEF
-    BEF  11  | BEF   BEF   BEF
-    -EF  00  | -EF   -EF   -EF
-    -EF  01  | -EF   -EF   -EF
-    -EF  10  | -EF   -EF   -EF
-    -EF  11  | -EF   -EF   -EF
-    =========+=====+=====+=====
-    ^^^  ^^    ^^^   ^^^   ^^^
-     |   ||     |     |     |
-     |   ||     +-----+-----+-- final stream state (Bad, Eof, Good,
-     |   ||                     or '-')
-     |   |+-------------------- noskiws argument to sentry or ipfx(int)
-     |   +--------------------- value of (ios::skipws &amp; rdflags()) != 0
-     +------------------------- initial stream state (Bad, Eof, Good,
-                                '-')
-
-
-#include &lt;istream&gt;
-#include &lt;streambuf&gt;
-#include &lt;stdio.h&gt;
-
-struct mybuf: std::streambuf { };
-
-int main ()
-{
-    static const std::ios::iostate states[] = {
-        std::ios::badbit,
-        std::ios::eofbit,
-        std::ios::failbit,
-        std::ios::goodbit,
-        std::ios::badbit | std::ios::eofbit,
-        std::ios::badbit | std::ios::failbit,
-        std::ios::badbit | std::ios::eofbit | std::ios::failbit,
-        std::ios::eofbit | std::ios::failbit
-    };
-
-    for (int i = 0; i != sizeof states / sizeof *states; ++i) {
-        for (int skipws = 0; skipws != 2; ++skipws) {
-            for (int noskipws = 0; noskipws != 2; ++noskipws) {
-              mybuf sb;
-
-              std::istream strm (&amp;sb);
-
-              strm.setstate (states [i]);
-
-              if (skipws)
-                  strm.setf (std::ios::skipws);
-              else
-                  strm.unsetf (std::ios::skipws);
-
-              // strm.ipfx (noskipws);
-              std::istream::sentry guard (strm, !!noskipws);
-
-              const std::ios::iostate state = strm.rdstate ();
-
-              printf ("%c%c%c %d%d -&gt; %c%c%c\n",
-                      states [i] &amp; std::ios::badbit ? 'B' : '-',
-                      states [i] &amp; std::ios::eofbit ? 'E' : '-',
-                      states [i] &amp; std::ios::failbit ? 'F' : '-',
-                      skipws, noskipws,
-                      state &amp; std::ios::badbit ? 'B' : '-',
-                      state &amp; std::ios::eofbit ? 'E' : '-',
-                      state &amp; std::ios::failbit ? 'F' : '-');
-            }
-        }
-    }
-}
-
-</pre>
-    <hr>
+<p>Kona: Possibly NAD.  If eofbit is set then good() will return false.  We
+  then set <i>ok</i> to false.  We believe that the sentry's
+  constructor should always set failbit when <i>ok</i> is false, and
+  we also think the standard already says that.  Possibly it could be
+  clearer.</p> 
+  
+<hr>
 <a name="420"><h3>420.&nbsp;is std::FILE a complete type?</h3></a><p>
-<b>Section:</b>&nbsp;27.8.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.fstreams"> [lib.fstreams]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
-        <p>
+<b>Section:</b>&nbsp;27.8.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.fstreams"> [lib.fstreams]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<p>
+7.19.1, p2, of C99 requires that the FILE type only be declared in
+&lt;stdio.h&gt;.  None of the (implementation-defined) members of the
+struct is mentioned anywhere for obvious reasons.
+</p>
 
-7.19.1, p2, of C99 requires that the FILE type only be declared in &lt;stdio.h&gt;.
-None of the (implementation-defined) members of the struct is mentioned
-anywhere for obvious reasons.
-
+<p>
 C++ says in 27.8.1, p2 that FILE is a type that's defined in &lt;cstdio&gt;. Is
 it really the intent that FILE be a complete type or is an implementation
 allowed to just declare it without providing a full definition?
-
-        </p>
-    <p><b>Proposed resolution:</b></p>
-        <p>
-
-Change 27.8.1, p2 to say that FILE is declared in &lt;cstdio&gt; and a note saying
-that it's implementation-defined whether the type is complete or not.
-        </p>
-    <hr>
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>In the first sentence of 27.8.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.fstreams"> [lib.fstreams]</a> paragraph 2, change
+  "defined" to "declared".</p>
+<p><b>Rationale:</b></p>
+<p>We don't want to impose any restrictions beyond what the C standard
+  already says. We don't want to make anything implementation defined,
+  because that imposes new requirements in implementations.</p>
+<hr>
 <a name="421"><h3>421.&nbsp;is basic_streambuf copy-constructible?</h3></a><p>
-<b>Section:</b>&nbsp;27.5.2.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.streambuf.cons"> [lib.streambuf.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
-        <p>
-
+<b>Section:</b>&nbsp;27.5.2.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.streambuf.cons"> [lib.streambuf.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<p>
 The reflector thread starting with c++std-lib-11346 notes that the class
 template basic_streambuf, along with basic_stringbuf and basic_filebuf,
 is copy-constructible but that the semantics of the copy constructors
@@ -5330,169 +5385,22 @@ these operations well-defined semantics.
 Note that this problem doesn't seem to be isolated to just the three
 types mentioned above. A number of other types in the library section
 of the standard provide a compiler-generated copy ctor and assignment
-operator yet fail to specify their semantics. A (possibly still
-incomplete) list of such types along with the headers they are defined
-in is provided below, courtesy of Howard Hinnant:
-<br>
-        </p>
-<pre>&lt;limits&gt;
-        numeric_limits
-&lt;stdexcept&gt;
-        logic_error
-        domain_error
-        invalid_argument
-        length_error
-        out_of_range
-        runtime_error
-        range_error
-        overflow_error
-        underflow_error
-&lt;utility&gt;
-        pair
-&lt;functional&gt;
-        unary_function
-        binary_function
-        plus
-        minus
-        multiplies
-        divides
-        modulus
-        negate
-        equal_to
-        not_equal_to
-        greater
-        less
-        greater_equal
-        less_equal
-        logical_and
-        logical_or
-        logical_not
-        unary_negate
-        binary_negate
-        binder1st
-        binder2nd
-        pointer_to_unary_function
-        pointer_to_binary_function
-        mem_fun_t
-        mem_fun1_t
-        mem_fun_ref_t
-        mem_fun1_ref_t
-        const_mem_fun_t
-        const_mem_fun1_t
-        const_mem_fun_ref_t
-        const_mem_fun1_ref_t
-&lt;memory&gt;
-        allocator&lt;void&gt;
-        allocator  // operator= only, which also isn't required by Allocator Requirements
-        raw_storage_iterator
-&lt;string&gt;
-        char_traits&lt;char&gt;
-        char_traits&lt;wchar_t&gt;
-&lt;locale&gt;
-        ctype_base
-        ctype
-        ctype_byname
-        ctype&lt;char&gt;
-        ctype_byname&lt;char&gt;
-        codecvt_base
-        codecvt
-        codecvt_byname
-        num_get
-        num_put
-        numpunct
-        numpunct_byname
-        collate
-        collate_byname
-        time_base
-        time_get
-        time_get_byname
-        time_put
-        time_put_byname
-        money_get
-        money_put
-        money_base
-        moneypunct
-        moneypunct_byname
-        messages_base
-        messages
-        messages_byname
-&lt;queue&gt;
-        queue
-        priority_queue
-&lt;stack&gt;
-        stack
-&lt;vector&gt;
-        vector&lt;bool&gt;::reference // copy ctor only
-&lt;map&gt;
-        map::value_compare
-        multimap::value_compare
-&lt;bitset&gt;
-        bitset::reference  // copy ctor only
-        bitset
-&lt;iterator&gt;
-        iterator_traits
-        iterator_traits&lt;T*&gt;
-        iterator_traits&lt;const T*&gt;
-        iterator
-        input_iterator_tag
-        output_iterator_tag
-        forward_iterator_tag
-        bidirectional_iterator_tag
-        random_access_iterator_tag
-        reverse_iterator
-        back_insert_iterator
-        front_insert_iterator
-        insert_iterator
-        istream_iterator // operator= only
-        ostream_iterator // operator= only
-        istreambuf_iterator
-        istreambuf_iterator::proxy
-        ostreambuf_iterator
-&lt;complex&gt;
-        complex&lt;float&gt; // copy ctor only
-        complex&lt;double&gt; // copy ctor only
-        complex&lt;long double&gt; // copy ctor only
-&lt;valarray&gt;
-        slice
-        gslice
-&lt;ios&gt;
-        ios_base  // addressed by TC issue 50
-        ios_base::failure
-        ios_base::Init
-        fpos
-&lt;streambuf&gt;
-        basic_streambuf
-&lt;istream&gt;
-        basic_istream
-        basic_iostream
-&lt;ostream&gt;
-        basic_ostream
-&lt;sstream&gt;
-        basic_stringbuf
-        basic_istringstream
-        basic_ostringstream
-        basic_stringstream
-&lt;fstream&gt;
-        basic_filebuf
-        basic_ifstream
-        basic_ofstream
-        basic_fstream
-&lt;strstream&gt;
-        strstreambuf
-        istrstream
-        ostrstream
-        strstream
-</pre>
-    <p><b>Proposed resolution:</b></p>
-        <p>
+operator yet fail to specify their semantics.  It's believed that the
+only types for which this is actually a problem (i.e. types where the
+compiler-generated default may be inappropriate and may not have been
+intended) are locale facets.  See issue <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#439">439</a>.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p><i>[Kona: this is an issue for basic_streambuf itself and for its
+  derived classes.  We are leaning toward allowing basic_streambuf to
+  be copyable, and specifying its precise semantics.  (Probably the
+  obvious: copying the buffer pointers.)  We are less sure whether
+  the streambuf derived classes should be copyable.  Howard will
+  write up a proposal.]</i></p>
 
-The standard ought to be clarified to either explicitly disallow copy
-ctors and assignment operators for these types, or to specify what
-the exact semantics of these functions are.
-        </p>
-    <hr>
+<hr>
 <a name="422"><h3>422.&nbsp;explicit specializations of member functions of class templates</h3></a><p>
-<b>Section:</b>&nbsp;17.4.3.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-intro.html#lib.reserved.names"> [lib.reserved.names]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<b>Section:</b>&nbsp;17.4.3.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-intro.html#lib.reserved.names"> [lib.reserved.names]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
 <p>
 It has been suggested that 17.4.3.1, p1 may or may not allow programs to
 explicitly specialize members of standard templates on user-defined types.
@@ -5504,19 +5412,27 @@ in terms of the other member function (the one explicitly specialized by
 the program) by relying on the "as if" rule.
 </p>
 <p><b>Proposed resolution:</b></p>
+
 <p>
-While I think programs should be allowed to explicitly specialize member
-functions of standard templates, I don't find it reasonable to expect
-implementations to follow the "as if" rule to the letter. I propose to add
-a clause to chapter 17 saying that where a function is described in terms
-of another (non-virtual) function using the "as if" rule, an implementation
-may substitute another (non-virtual) function call as long as the effects
-on the object remain the same as in the absence of any specializations
-of the called function in the program.
+  Add the following sentence immediately after the text of 17.4.3.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-intro.html#lib.reserved.names"> [lib.reserved.names]</a>, p1:
 </p>
+
+<blockquote>
+    The behavior of a program that declares explicit specializations
+    of any members of class templates or explicit specializations of
+    any member templates of classes or class templates defined in
+    this library is undefined.
+</blockquote>
+
+
+<p><i>[Kona: straw poll was 6-1 that user programs should not be
+  allowed to specialize individual member functions of standard
+  library class templates, and that doing so invokes undefined
+  behavior. Post-Kona: Martin provided wording.]</i></p>
+
 <hr>
 <a name="423"><h3>423.&nbsp;effects of negative streamsize in iostreams</h3></a><p>
-<b>Section:</b>&nbsp;27 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.input.output"> [lib.input.output]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<b>Section:</b>&nbsp;27 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.input.output"> [lib.input.output]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
 
 <p>
 A third party test suite tries to exercise istream::ignore(N) with
@@ -5539,9 +5455,15 @@ is to allow negative streamsize values in calls to precision() and width()
 but disallow it in calls to streambuf::sgetn(), istream::ignore(), or
 ostream::write().
 </p>
+
+<p><i>[Kona: The LWG agreed that this is probably what we want.  However, we
+  need a review to find all places where functions in clause 27 take
+  arguments of type streamsize that shouldn't be allowed to go
+  negative.  Martin will do that review.]</i></p>
+
 <hr>
 <a name="424"><h3>424.&nbsp;normative notes</h3></a><p>
-<b>Section:</b>&nbsp;17.3.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-intro.html#lib.structure.summary"> [lib.structure.summary]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<b>Section:</b>&nbsp;17.3.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-intro.html#lib.structure.summary"> [lib.structure.summary]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
 
 <p>
 The text in 17.3.1.1, p1 says:
@@ -5583,152 +5505,110 @@ None of these lists is meant to be exhaustive.
 
 <p><b>Proposed resolution:</b></p>
 
-<p>
-One possible solution is to identify all the paragraphs marked "Note(s):"
-that are intended to be normative and either remove the labeling or replace
-it with some other word, such as "Effects:" to make the normative intent
-clear.
-<br>
+<p><i>[Definitely a real problem.  The big problem is there's material
+  that doesn't quite fit any of the named paragraph categories
+  (e.g. <b>Effects</b>).  Either we need a new kind of named
+  paragraph, or we need to put more material in unnamed paragraphs
+  jsut after the signature.  We need to talk to the Project Editor
+  about how to do this.
+]</i></p>
 
-Another possible solution is to change 17.3.1.1, p1 and remove the mention
-of Notes being informative, and then go through all the paragraphs marked
-"Note(s):" that are intended to be informative and make change preserving
-their informative nature.
-        </p>
-    <hr>
+<hr>
 <a name="425"><h3>425.&nbsp;return value of std::get_temporary_buffer</h3></a><p>
-<b>Section:</b>&nbsp;20.4.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.temporary.buffer"> [lib.temporary.buffer]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
-        <p>
-
+<b>Section:</b>&nbsp;20.4.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.temporary.buffer"> [lib.temporary.buffer]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<p>
 The standard is not clear about the requirements on the value returned from
 a call to get_temporary_buffer(0). In particular, it fails to specify whether
 the call should return a distinct pointer each time it is called (like
 operator new), or whether the value is unspecified (as if returned by
 malloc). The standard also fails to mention what the required behavior
 is when the argument is less than 0.
-
-        </p>
-    <p><b>Proposed resolution:</b></p>
-        <p>
-
-In the first case, I propose that the function behave like malloc, i.e.,
-<br>
-
-If the size of the space requested is zero, the behavior is
-implementation-defined: either pair(0, 0) is returned, or the behavior is
-as if the size were some nonzero value, except that the returned pointer
-is not dereferenceable.
-<br>
-
-In the second case, I propose that the function fail by returning pair(0, 0).
-        </p>
-    <hr>
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>Change 20.4.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.temporary.buffer"> [lib.temporary.buffer]</a> paragraph 2 from "...or a pair of 0
+values if no storage can be obtained" to "...or a pair of 0 values if
+no storage can be obtained or if <i>n</i> &lt;= 0."</p>
+<p><i>[Kona: Matt provided wording]</i></p>
+<hr>
 <a name="426"><h3>426.&nbsp;search_n(), fill_n(), and generate_n() with negative n</h3></a><p>
-<b>Section:</b>&nbsp;25.1.9 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.search"> [lib.alg.search]</a>, 25.2.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.fill"> [lib.alg.fill]</a>, 25.2.6 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.generate"> [lib.alg.generate]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
-        <p>
-
+<b>Section:</b>&nbsp;25.1.9 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.search"> [lib.alg.search]</a>, 25.2.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.fill"> [lib.alg.fill]</a>, 25.2.6 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.generate"> [lib.alg.generate]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<p>
 The complexity requirements for these function templates are incorrect
-(or don't even make sense) for negative n:
-<br>
+(or don't even make sense) for negative n:</p>
 
-25.1.9, p7 (search_n):
+<p>25.1.9, p7 (search_n):
 <br>
-
 Complexity: At most (last1 - first1) * count applications
-of the corresponding predicate.
+of the corresponding predicate.</p>
+
+<p>25.2.5, p3 (fill_n):
+<br>
+Complexity: Exactly last - first (or n) assignments.</p>
 <br>
 
-25.2.5, p3 (fill_n):
+<p>25.2.6, p3 (generate_n):
 <br>
+Complexity: Exactly last - first (or n) assignments.</p>
 
-Complexity: Exactly last - first (or n) assignments.
-<br>
-
-25.2.6, p3 (generate_n):
-<br>
-
-Complexity: Exactly last - first (or n) assignments.
-<br>
-
+<p>
 In addition, the Requirements or the Effects clauses for the latter two
 templates don't say anything about the behavior when n is negative.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>Change 25.1.9, p7 to</p>
 
-        </p>
-    <p><b>Proposed resolution:</b></p>
-        <p>
-
-My proposed fix is to:
-<br>
-
-Change 25.1.9, p7 to
-<br>
-
+<blockquote>
 Complexity: At most (last1 - first1) * count applications
 of the corresponding predicate if count is non-negative,
 or 0 otherwise.
-<br>
+</blockquote>
 
-Change 25.2.5, p2 from
-<br>
-
-Effects: Assigns value through all the iterators in the
-range [first, last) or [first, first + n).
-<br>
-
-to
-<br>
-
+<p>Change 25.2.5, p2 to</p>
+<blockquote>
 Effects: Assigns value through all the iterators in the
 range [first, last), or [first, first + n) if n is non
 negative, none otherwise.
-<br>
+</blockquote>
 
-Change 25.2.5, p3 to:
-<br>
-
+<p>Change 25.2.5, p3 to:</p>
+<blockquote>
 Complexity: Exactly last - first (or n if n is non-negative,
 or 0 otherwise) assignments.
-<br>
+</blockquote>
 
-Change 25.2.6, p1 from
-<br>
-
-Effects: Invokes the function object gen and assigns the return
-value of gen though all the iterators in the range [first, last)
-or [first, first + n).
-<br>
-
+<p>
+Change 25.2.6, p1 
 to (notice the correction for the misspelled "through"):
-<br>
-
+</p>
+<blockquote>
 Effects: Invokes the function object genand assigns the return
 value of gen through all the iterators in the range [first, last),
 or [first, first + n) if n is non-negative, or [first, first)
 otherwise.
-<br>
+</blockquote>
 
-Change 25.2.6, p3 to:
-<br>
-
+<p>Change 25.2.6, p3 to:</p>
+<blockquote>
 Complexity: Exactly last - first (or n if n is non-negative,
 or 0 otherwise) assignments.
-<br>
-
-The alternative is to require that n be non-negative. I chose
-the other option in order to keep the requirements in line with
-those of search_n which allows negative counts.
-        </p>
-    <hr>
+</blockquote>
+<p><b>Rationale:</b></p>
+<p>Informally, we want to say that whenever we see a negative number
+  we treat it the same as if it were zero.  We believe the above
+  changes do that (although they probably aren't the minimal way of
+  saying so).  The LWG considered and rejected the alternative of
+  saying that negative numbers are undefined behavior.</p>
+<hr>
 <a name="427"><h3>427.&nbsp;stage 2 and rationale of DR 221</h3></a><p>
-<b>Section:</b>&nbsp;22.2.2.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
-        <p>
-
+<b>Section:</b>&nbsp;22.2.2.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<p>
 The requirements specified in Stage 2 and reiterated in the rationale
 of DR 221 (and echoed again in DR 303) specify that num_get&lt;charT&gt;::
 do_get() compares characters on the stream against the widened elements
 of "012...abc...ABCX+-"
-<br>
+</p>
 
+<p>
 An implementation is required to allow programs to instantiate the num_get
 template on any charT that satisfies the requirements on a user-defined
 character type. These requirements do not include the ability of the
@@ -5740,119 +5620,62 @@ must either make the assumption that the character type is equality-comparable
 the comparisons (some other popular implementations do that). This diversity
 of approaches makes it difficult to write portable programs that attempt to
 instantiate the num_get template on user-defined types.
-
-        </p>
-    <p><b>Proposed resolution:</b></p>
-        <p>
-
-Specify a mechanism whereby the num_get template may compare objects of
-user-defined character types. Several possible solutions, each having
-some drawbacks, were discussed in a thread on c++std-lib@research.att.com
-starting with c++std-lib-10623.
-<br>
-
-One possibility is to require that user-defined character types be equality
-comparable, thus obviating tye need for the char_traits::eq() function. This
-solution would make the requirements imposed on user-defined character types
-by the locale templates inconsistent with those of basic_string.
-<br>
-
-Another option is to require that programs that instantiate num_get on
-user-defined types provide an explicit specialization of the std::char_traits
-template on that type and require num_get to use it. This solution would
-render the basic_string Traits template parameter useless.
-<br>
-
-Yet another option is to specify that when the num_get facet is instantiated
-on a user-defined character type, say charT, that defines the nested type
-charT::traits_type, num_get should use it to do comparisons. Otherwise,
-num_get should use std::char_traits&lt;charT&gt;. This solution, while more
-robust than the first two, might set the unwarranted expectation that
-a program that provides two traits classes for the same character type
-will have meaningful semantics.
-<br>
-
-Finally, arguably the most flexible solution is to remove the requirement
-from Stage 2 that num_get compare the widened set of character literals and
-instead have the template compare the narrowed characters read from the
-input sequence. This issue proposes to adopt this last option as the
-resolution.
-        </p>
-    <hr>
+</p>
+<p><b>Proposed resolution:</b></p>
+<p><i>[Kona: the heart of the problem is that we're theoretically
+  supposed to use traits classes for all fundamental character
+  operations like assignment and comparison, but facets don't have
+  traits parameters.  This is a fundamental design flaw and it
+  appears all over the place, not just in this one place.  It's not
+  clear what the correct solution is, but a thorough review of facets
+  and traits is in order.  (The LWG considered and rejected the
+  possibility of changing numeric facets to use narrowing instead of
+  widening: it wouldn't fix the general problem, it would be a
+  drastic reversal of a deliberate change, and it would probably have
+  unfortunate performance implications.)]</i></p>
+<hr>
 <a name="428"><h3>428.&nbsp;string::erase(iterator) validity</h3></a><p>
-<b>Section:</b>&nbsp;21.3.5.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-strings.html#lib.string::erase"> [lib.string::erase]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
-        <p>
-
+<b>Section:</b>&nbsp;21.3.5.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-strings.html#lib.string::erase"> [lib.string::erase]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<p>
 23.1.1, p3 along with Table 67 specify as a prerequisite for a.erase(q)
 that q must be a valid dereferenceable iterator into the sequence a.
-<br>
+</p>
 
+<p>
 However, 21.3.5.5, p5 describing string::erase(p) only requires that
 p be a valid iterator.
-<br>
+</p>
 
+<p>
 This may be interepreted as a relaxation of the general requirement,
 which is most likely not the intent.
-
-        </p>
-    <p><b>Proposed resolution:</b></p>
-        <p>
-
-Either clarify 21.3.5.5, p5 to say that the iterator is required to be
-valid and dereferenceable or drop the requirement altogether and rely
-on the general container requirements outlined in Table 67.
-        </p>
-    <hr>
-<a name="429"><h3>429.&nbsp;typo in basic_ios::clear(iostate)</h3></a><p>
-<b>Section:</b>&nbsp;27.4.4.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.iostate.flags"> [lib.iostate.flags]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
-        <p>
-
-The Effects clause in 27.4.4.3, p5 describing the effects of a call to
-the ios_base member function clear(iostate state) says that the function
-only throws if the respective bits are already set prior to the function
-call. That's obviously not the intent. If it was, a call to clear(badbit)
-on an object for which (rdstate() == goodbit &amp;&amp; exceptions() == badbit)
-holds would not result in an exception being thrown.
-
-        </p>
-    <p><b>Proposed resolution:</b></p>
-        <p>
-
-The text ought to be changed from
-<br>
-
-"If (rdstate() &amp; exceptions()) == 0, returns. ..."
-<br>
-
-to
-<br>
-
-"If (state &amp; exceptions()) == 0, returns. ..."
-        </p>
-    <hr>
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>Remove 21.3.5.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-strings.html#lib.string::erase"> [lib.string::erase]</a> paragraph 5.</p>
+<p><b>Rationale:</b></p>
+<p>The LWG considered two options: changing the string requirements to
+  match the general container requirements, or just removing the
+  erroneous string requirements altogether.  The LWG chose the latter
+  option, on the grounds that duplicating text always risks the
+  possibility that it might be duplicated incorrectly.</p>
+<hr>
 <a name="430"><h3>430.&nbsp;valarray subset operations</h3></a><p>
-<b>Section:</b>&nbsp;26.3.2.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.sub"> [lib.valarray.sub]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
-        <p>
-
+<b>Section:</b>&nbsp;26.3.2.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.sub"> [lib.valarray.sub]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<p>
 The standard fails to specify the behavior of valarray::operator[](slice)
 and other valarray subset operations when they are passed an "invalid"
 slice object, i.e., either a slice that doesn't make sense at all (e.g.,
 slice (0, 1, 0) or one that doesn't specify a valid subset of the valarray
 object (e.g., slice (2, 1, 1) for a valarray of size 1).
-
-        </p>
-    <p><b>Proposed resolution:</b></p>
-        <p>
-
-Clarify the text of the standard to define what constitutes a valid and
-invalid slice object, and either specify the exact behavior of these
-member functions when passed an invalid slice object, or explicitly
-specify that the behavior is undefined under these conditions for the
-sake of efficiency.
-        </p>
-    <hr>
+</p>
+<p><b>Proposed resolution:</b></p>
+<p><i>[Kona: the LWG believes that invalid slices should invoke
+  undefined behavior.  Valarrays are supposed to be designed for high
+  performance, so we don't want to require specific checking.  We
+  need wording to express this decision.]</i></p>
+<hr>
 <a name="431"><h3>431.&nbsp;Swapping containers with unequal allocators</h3></a><p>
-<b>Section:</b>&nbsp;20.1.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>, 25 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;20 Sep 2003</p>
+<b>Section:</b>&nbsp;20.1.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>, 25 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;20 Sep 2003</p>
 <p>Clause 20.1.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a> paragraph 4 says that implementations
   are permitted to supply containers that are unable to cope with
   allocator instances and that container implementations may assume
@@ -5892,5 +5715,559 @@ sake of efficiency.
   </blockquote>
 
 <p><b>Proposed resolution:</b></p>
+
+<p><i>[Kona: This is part of a general problem.  We need a paper
+  saying how to deal with unequal allocators in general.]</i></p>
+
+<hr>
+<a name="432"><h3>432.&nbsp;stringbuf::overflow() makes only one write position available</h3></a><p>
+<b>Section:</b>&nbsp;27.7.1.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.stringbuf.virtuals"> [lib.stringbuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Christian W Brock&nbsp; <b>Date:</b>&nbsp;24 Sep 2003</p>
+<p>27.7.1.3 par 8 says:</p>
+<blockquote>
+Notes: The function can make a write position available only if
+    ( mode &amp; ios_base::out) != 0. To make a write position
+    available, the function reallocates (or initially allocates) an
+    array object with a sufficient number of elements to hold the
+    current array object (if any), plus one additional write position.
+    If ( mode &amp; ios_base::in) != 0, the function alters the read end
+    pointer egptr() to point just past the new write position (as
+    does the write end pointer epptr()).
+</blockquote>
+
+<p>
+The sentences "plus one additional write position." and especially
+    "(as does the write end pointer epptr())" COULD by interpreted
+    (and is interpreted by at least my library vendor) as:
+</p>
+
+<blockquote>
+    post-condition: epptr() == pptr()+1
+</blockquote>
+
+<p>
+This WOULD force sputc() to call the virtual overflow() each time.
+</p>
+
+<p>The proposed change also affects Defect Report 169.</p>
+
+<p><b>Proposed resolution:</b></p>
+<p>Change the paragraph in question to:</p>
+<blockquote>
+Notes: The function can make a write position available only if
+    ( mode &amp; ios_base::out) != 0. To make a write position
+    available, the function reallocates (or initially allocates) an
+    array object with a sufficient number of elements to hold the
+    current array object (if any), plus at least one additional write
+    position. The function alters the write end
+    pointer epptr() to point one position past
+    the end of the new available write area.
+    If ( mode &amp; ios_base::in) != 0, the function alters the read end
+    pointer egptr() to point just past the new write position.
+</blockquote>
+
+<p><i>[Kona: we want to make this change because of efficiency, but we
+  need to specify more precisely what the underlying character
+  sequence is; the proposed change isn't enough.  (We want the
+  returned string to end with the last character written, for example,
+  not the last character allocated.  This probably implies that the
+  stringbuf keep track of a high water mark.)  Howard will provide
+  wording.]</i></p>
+
+<hr>
+<a name="434"><h3>434.&nbsp;bitset::to_string() hard to use</h3></a><p>
+<b>Section:</b>&nbsp;23.3.5.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.bitset.members"> [lib.bitset.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;15 Oct 2003</p>
+<p>
+It has been pointed out a number of times that the bitset to_string() member
+function template is tedious to use since callers must explicitly specify the
+entire template argument list (3 arguments). At least two implementations
+provide a number of overloads of this template to make it easier to use.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>In order to allow callers to specify no template arguments at all, just the
+first one (charT), or the first 2 (charT and traits), in addition to all
+three template arguments, add the following three overloads to both the
+interface (declarations only) of the class template bitset as well as to
+section 23.3.5.2, immediately after p34, the Returns clause of the existing
+to_string() member function template:</p>
+
+<pre>    template &lt;class charT, class traits&gt;
+    basic_string&lt;charT, traits, allocator&lt;charT&gt; &gt;
+    to_string () const;
+
+    -34.1- Returns: to_string&lt;charT, traits, allocator&lt;charT&gt; &gt;().
+
+    template &lt;class charT&gt;
+    basic_string&lt;charT, char_traits&lt;charT&gt;, allocator&lt;charT&gt; &gt;
+    to_string () const;
+
+    -34.2- Returns: to_string&lt;charT, char_traits&lt;charT&gt;, allocator&lt;charT&gt; &gt;().
+
+    basic_string&lt;char, char_traits&lt;char&gt;, allocator&lt;char&gt; &gt;
+    to_string () const;
+
+    -34.3- Returns: to_string&lt;char, char_traits&lt;char&gt;, allocator&lt;char&gt; &gt;().
+</pre>
+
+<p><i>[Kona: the LWG agrees that this is an improvement over the
+  status quo.  Dietmar will propose an alternative using a proxy
+  object, so that "s = b.to_string()" would work not just when s is
+  of type std::string, but when s is of type std::basic_string&lt;C,T&gt;
+  for arbitrary types C and T.]</i></p>
+
+<hr>
+<a name="435"><h3>435.&nbsp;bug in DR 25</h3></a><p>
+<b>Section:</b>&nbsp;21.3.7.9 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-strings.html#lib.string.io"> [lib.string.io]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;15 Oct 2003</p>
+
+<p>
+It has been pointed out that the proposed resolution in DR 25 may not be
+quite up to snuff: <br>
+http://gcc.gnu.org/ml/libstdc++/2003-09/msg00147.html
+http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html#25<br>
+</p>
+
+<p>
+It looks like Petur is right. The complete corrected text is copied below.
+I think we may have have been confused by the reference to 22.2.2.2.2 and
+the subsequent description of `n' which actually talks about the second
+argument to sputn(), not about the number of fill characters to pad with.
+</p>
+
+<p>
+So the question is: was the original text correct? If the intent was to
+follow classic iostreams then it most likely wasn't, since setting width()
+to less than the length of the string doesn't truncate it on output. This
+is also the behavior of most implementations (except for SGI's standard
+iostreams where the operator does truncate).
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>Change the text in 21.3.7.9, p4 from</p>
+    <blockquote>
+    If bool(k) is true, inserts characters as if by calling
+    os.rdbuf()-&gt;sputn(str.data(), n), padding as described in stage 3
+    of lib.facet.num.put.virtuals, where n is the larger of os.width()
+    and str.size(); 
+    </blockquote>
+<p>to</p>
+    <blockquote>
+    If bool(k) is true, determines padding as described in
+    lib.facet.num.put.virtuals, and then inserts the resulting
+    sequence of characters as if by calling
+    os.rdbuf()-&gt;sputn(sequence, n), where n is the larger of
+    os.width() and str.size();
+     </blockquote>
+
+<p><i>[Kona: it appears that neither the original wording, DR25, nor the
+  proposed resolution, is quite what we want.  We want to say that
+  the string will be output, padded to os.width() if necessary.  We
+  don't want to duplicate the padding rules in clause 22, because
+  they're complicated, but we need to be careful because they weren't
+  quite written with quite this case in mind.  We need to say what
+  the character sequence is, and then defer to clause 22.  Post-Kona:
+  Benjamin provided wording.]</i></p>
+
+<hr>
+<a name="436"><h3>436.&nbsp;are cv-qualified facet types valid facets?</h3></a><p>
+<b>Section:</b>&nbsp;22.1.1.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.facet"> [lib.locale.facet]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;15 Oct 2003</p>
+<p>
+Is "const std::ctype&lt;char&gt;" a valid template argument to has_facet, use_facet,
+and the locale template ctor? And if so, does it designate the same Facet as
+the non-const "std::ctype&lt;char&gt;?" What about "volatile std::ctype&lt;char&gt;?"
+Different implementations behave differently: some fail to compile, others
+accept such types but behave inconsistently.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>Change 22.1.1.1.2, p1 to read:</p>
+
+<p>Template parameters in this clause which are required to be facets
+are those named Facet in declarations. A program that passes a type
+that is not a facet, or a type that refers to volatile-qualified
+facet, as an (explicit or deduced) template parameter to a locale
+function expecting a facet, is ill-formed.  A const-qualified facet is
+a valid template argument to any locale function that expects a Facet
+template parameter.</p>
+
+<p><i>[Kona: changed the last sentence from a footnote to normative
+text.]</i></p>
+
+<hr>
+<a name="438"><h3>438.&nbsp;Ambiguity in the "do the right thing" clause</h3></a><p>
+<b>Section:</b>&nbsp;23.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.sequence.reqmts"> [lib.sequence.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;20 Oct 2003</p>
+
+<p>Section 23.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.sequence.reqmts"> [lib.sequence.reqmts]</a>, paragraphs 9-11, fixed up the problem
+noticed with statements like:</p>
+<pre>vector&lt;int&gt; v(10, 1);
+</pre>
+
+<p>The intent of the above statement was to construct with:</p>
+<pre>vector(size_type, const value_type&amp;);
+</pre>
+
+<p>but early implementations failed to compile as they bound to:</p>
+<pre>template &lt;class InputIterator&gt;
+vector(InputIterator f, InputIterator l);
+</pre>
+<p>instead.</p>
+
+<p>Paragraphs 9-11 say that if InputIterator is an integral type, then the
+member template constructor will have the same effect as:</p>
+<pre>vector&lt;static_cast&lt;size_type&gt;(f), static_cast&lt;value_type&gt;(l));
+</pre>
+<p>(and similarly for the other member template functions of sequences).</p>
+
+<p>There is also a note that describes one implementation technique:</p>
+<blockquote>
+   One way that sequence implementors can satisfy this requirement is to
+   specialize the member template for every integral type.
+</blockquote>
+
+<p>This might look something like:</p>
+<blockquote>
+<pre>template &lt;class T&gt;
+struct vector
+{
+     typedef unsigned size_type;
+
+     explicit vector(size_type) {}
+     vector(size_type, const T&amp;) {}
+
+     template &lt;class I&gt;
+     vector(I, I);
+
+     // ...
+};
+
+template &lt;class T&gt;
+template &lt;class I&gt;
+vector&lt;T&gt;::vector(I, I) { ... }
+
+template &lt;&gt;
+template &lt;&gt;
+vector&lt;int&gt;::vector(int, int) { ... }
+
+template &lt;&gt;
+template &lt;&gt;
+vector&lt;int&gt;::vector(unsigned, unsigned) { ... }
+
+//  ...
+</pre>
+</blockquote>
+
+<p>Label this solution 'A'.</p>
+
+<p>The standard also says:</p>
+<blockquote>
+ Less cumbersome implementation techniques also exist.
+</blockquote>
+<p>
+A popular technique is to not specialize as above, but instead catch
+every call with the member template, detect the type of InputIterator,
+and then redirect to the correct logic.  Something like:
+</p>
+<blockquote>
+<pre>template &lt;class T&gt;
+template &lt;class I&gt;
+vector&lt;T&gt;::vector(I f, I l)
+{
+     choose_init(f, l, int2type&lt;is_integral&lt;I&gt;::value&gt;());
+}
+
+template &lt;class T&gt;
+template &lt;class I&gt;
+vector&lt;T&gt;::choose_init(I f, I l, int2type&lt;false&gt;)
+{
+    // construct with iterators
+}
+
+template &lt;class T&gt;
+template &lt;class I&gt;
+vector&lt;T&gt;::choose_init(I f, I l, int2type&lt;true&gt;)
+{
+    size_type sz = static_cast&lt;size_type&gt;(f);
+    value_type v = static_cast&lt;value_type&gt;(l);
+    // construct with sz,v
+}
+</pre>
+</blockquote>
+
+<p>Label this solution 'B'.</p>
+
+<p>Both of these solutions solve the case the standard specifically
+mentions:</p>
+<pre>vector&lt;int&gt; v(10, 1);  // ok, vector size 10, initialized to 1
+</pre>
+
+<p>
+However, (and here is the problem), the two solutions have different
+behavior in some cases where the value_type of the sequence is not an
+integral type.  For example consider:
+</p>
+<blockquote><pre>     pair&lt;char, char&gt;                     p('a', 'b');
+     vector&lt;vector&lt;pair&lt;char, char&gt; &gt; &gt;   d('a', 'b');
+</pre></blockquote>
+<p>
+The second line of this snippet is likely an error.  Solution A catches
+the error and refuses to compile.  The reason is that there is no
+specialization of the member template constructor that looks like:
+</p>
+<pre>template &lt;&gt;
+template &lt;&gt;
+vector&lt;vector&lt;pair&lt;char, char&gt; &gt; &gt;::vector(char, char) { ... }
+</pre>
+
+<p>
+So the expression binds to the unspecialized member template
+constructor, and then fails (compile time) because char is not an
+InputIterator.
+</p>
+
+<p>
+Solution B compiles the above example though.  'a' is casted to an
+unsigned integral type and used to size the outer vector.  'b' is
+static casted to the inner vector using it's explicit constructor:
+</p>
+
+<pre>explicit vector(size_type n);
+</pre>
+
+<p>
+and so you end up with a static_cast&lt;size_type&gt;('a') by
+static_cast&lt;size_type&gt;('b') matrix.
+</p>
+
+<p>
+It is certainly possible that this is what the coder intended.  But the
+explicit qualifier on the inner vector has been thwarted at any rate.
+</p>
+
+<p>
+The standard is not clear whether the expression:
+</p>
+
+<pre>     vector&lt;vector&lt;pair&lt;char, char&gt; &gt; &gt;   d('a', 'b');
+</pre>
+
+<p>
+(and similar expressions) are:
+</p>
+
+<ol>
+<li>  undefined behavior.</li>
+<li>  illegal and must be rejected.</li>
+<li>  legal and must be accepted.</li>
+</ol>
+
+<p>My preference is listed in the order presented.</p>
+
+<p>There are still other techniques for implementing the requirements of
+paragraphs 9-11, namely the "restricted template technique" (e.g.
+enable_if).  This technique is the most compact and easy way of coding
+the requirements, and has the behavior of #2 (rejects the above
+expression).
+</p>
+
+<p>
+Choosing 1 would allow all implementation techniques I'm aware of.
+Choosing 2 would allow only solution 'A' and the enable_if technique.
+Choosing 3 would allow only solution 'B'.
+</p>
+
+<p>
+Possible wording for a future standard if we wanted to actively reject
+the expression above would be to change "static_cast" in paragraphs
+9-11 to "implicit_cast" where that is defined by:
+</p>
+
+<blockquote>
+<pre>template &lt;class T, class U&gt;
+inline
+T implicit_cast(const U&amp; u)
+{
+     return u;
+}
+</pre>
+</blockquote>
+
+<p><b>Proposed resolution:</b></p>
+
+Replace 23.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.sequence.reqmts"> [lib.sequence.reqmts]</a> paragraphs 9 - 11 with:
+
+<p>For every sequence defined in this clause and in clause lib.strings:</p>
+
+<ul>
+  <li>
+    <p>If the constructor</p>
+       <pre>       template &lt;class InputIterator&gt;
+       X(InputIterator f, InputIterator l,
+         const allocator_type&amp; a = allocator_type())
+       </pre>
+    <p>is called with a type InputIterator that does not qualify as
+    an input iterator, then the constructor will behave as if the
+    overloaded constructor:</p>
+       <pre>       X(size_type, const value_type&amp; = value_type(),
+         const allocator_type&amp; = allocator_type())
+       </pre>
+    <p>were called instead, with the arguments f, l and a, respectively.</p>
+  </li>
+
+  <li>
+    <p>If the member functions of the forms:</p>
+       <pre>       template &lt;class InputIterator&gt;          //  such as  insert()
+       rt fx1(iterator p, InputIterator f, InputIterator l);
+
+       template &lt;class InputIterator&gt;          //  such as  append(), assign()
+       rt fx2(InputIterator f, InputIterator l);
+
+       template &lt;class InputIterator&gt;          //  such as  replace()
+       rt fx3(iterator i1, iterator i2, InputIterator f, InputIterator l);
+       </pre>
+    <p>are called with a type InputIterator that does not qualify as
+    an input iterator, then these functions will behave as if the
+    overloaded member functions:</p>
+       <pre>       rt fx1(iterator, size_type, const value_type&amp;);
+
+       rt fx2(size_type, const value_type&amp;);
+
+       rt fx3(iterator, iterator, size_type, const value_type&amp;);
+       </pre>
+    <p>were called instead, with the same arguments.</p>
+  </li>
+</ul>
+
+<p>In the previous paragraph the alternative binding will fail if f 
+is not implicitly convertible to X::size_type or if l is not implicitly 
+convertible to X::value_type.</p>
+
+<p>The extent to which an implementation endeavors to qualify a type
+as an input iterator is unspecified, except that as a minimum integral
+types will not qualify as input iterators.</p>
+
+
+
+<p><i>[
+Kona: agreed that the current standard requires <tt>v('a', 'b')</tt>
+to be accepted, and also agreed that this is surprising behavior.
+The LWG considered several options, including something like
+implicit_cast, which doesn't appear to be quite what we want.  We
+considered Howards three options: allow acceptance or rejection,
+require rejection as a compile time error, and require acceptance.
+By straw poll (1-6-1), we chose to require a compile time error.
+Post-Kona: Howard provided wording.
+]</i></p>
+
+<p><b>Rationale:</b></p>
+<p>The proposed resolution fixes:</p>
+
+<pre>  vector&lt;int&gt; v(10, 1);
+</pre>
+
+<p>
+since as integral types 10 and 1 must be disqualified as input
+iterators and therefore the (size,value) constructor is called (as
+if).</p>
+
+<p>The proposed resolution breaks:</p>
+
+<pre>  vector&lt;vector&lt;T&gt; &gt; v(10, 1);
+</pre>
+
+<p>
+because the integral type 1 is not *implicitly* convertible to
+vector&lt;T&gt;.  The wording above requires a diagnostic.</p>
+
+<p>
+The proposed resolution leaves the behavior of the following code
+unspecified.
+</p>
+
+<pre>  struct A
+  {
+    operator int () const {return 10;}
+  };
+
+  struct B
+  {
+    B(A) {}
+  };
+
+  vector&lt;B&gt; v(A(), A());
+</pre>
+
+<p>
+The implementation may or may not detect that A is not an input
+iterator and employee the (size,value) constructor.  Note though that
+in the above example if the B(A) constructor is qualified explicit,
+then the implementation must reject the constructor as A is no longer
+implicitly convertible to B.
+</p>
+<hr>
+<a name="439"><h3>439.&nbsp;Should facets be copyable?</h3></a><p>
+<b>Section:</b>&nbsp;22.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.categories"> [lib.locale.categories]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;2 Nov 2003</p>
+<p>The following facets classes have no copy constructors described in
+  the standard, which, according to the standard, means that they are
+  supposed to use the compiler-generated defaults.  Default copy
+  behavior is probably inappropriate.  We should either make these
+  classes uncopyable or else specify exactly what their constructors do.</p>
+
+<p>Related issue: <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#421">421</a>.</p>
+
+<pre>        ctype_base
+        ctype
+        ctype_byname
+        ctype&lt;char&gt;
+        ctype_byname&lt;char&gt;
+        codecvt_base
+        codecvt
+        codecvt_byname
+        num_get
+        num_put
+        numpunct
+        numpunct_byname
+        collate
+        collate_byname
+        time_base
+        time_get
+        time_get_byname
+        time_put
+        time_put_byname
+        money_get
+        money_put
+        money_base
+        moneypunct
+        moneypunct_byname
+        messages_base
+        messages
+        messages_byname
+</pre>
+
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="440"><h3>440.&nbsp;Should std::complex use unqualified transcendentals?</h3></a><p>
+<b>Section:</b>&nbsp;26.2.8 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.transcendentals"> [lib.complex.transcendentals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;5 Nov 2003</p>
+<p>
+Operations like <tt>pow</tt> and <tt>exp</tt> on
+<tt>complex&lt;T&gt;</tt> are typically implemented in terms of
+operations like <tt>sin</tt> and <tt>cos</tt> on <tt>T</tt>.  
+Should implementations write this as <tt>std::sin</tt>, or as plain
+unqualified <tt>sin</tt>?
+</p>
+
+<p>The issue, of course, is whether we want to use
+argument-dependent lookup in the case where <tt>T</tt> is a
+user-defined type.  This is similar to the issue of valarray
+transcendentals, as discussed in issue <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#226">226</a>.</p>
+
+<p>This issue differs from valarray transcendentals in two important
+ways.  First, "the effect of instantiating the template
+<tt>complex</tt> for types other than float, double or long double is
+unspecified." (26.2.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.synopsis"> [lib.complex.synopsis]</a>) Second, the standard does not
+dictate implementation, so there is no guarantee that a particular
+real math function is used in the implementation of a particular
+complex function.</p>
+
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
 <p>----- End of document -----</p>
 </body></html>
