@@ -1,3 +1,12 @@
+2004-09-13  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-decl.c (grokdeclarator): Correct comments about where storage
+	class specifiers are rejected by grammar and add corresponding
+	asserts.  Diagnose typedefs and parameters declared inline.
+	Change warning for inline main to a pedwarn.  Only diagnose inline
+	main if hosted.
+	(declspecs_add_scspec): Allow duplicate "inline".
+
 2004-09-13  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.c (ia64_scalar_mode_supported_p): New.

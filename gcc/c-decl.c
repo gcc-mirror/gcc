@@ -4356,8 +4356,6 @@ grokdeclarator (const struct c_declarator *declarator,
   if (storage_class == csc_typedef)
     {
       tree decl;
-      /* Note that the grammar rejects storage classes
-	 in typenames, fields or parameters */
       if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
 	  && type_quals)
 	pedwarn ("ISO C forbids qualified function types");
@@ -4368,6 +4366,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	  || declspecs->typedef_signed_p)
 	C_TYPEDEF_EXPLICITLY_SIGNED (decl) = 1;
       decl_attributes (&decl, returned_attrs, 0);
+      if (declspecs->inline_p)
+	pedwarn ("%Jtypedef %qD declared %<inline%>", decl, decl);
       return decl;
     }
 
@@ -4391,8 +4391,10 @@ grokdeclarator (const struct c_declarator *declarator,
 
   if (decl_context == TYPENAME)
     {
-      /* Note that the grammar rejects storage classes
-	 in typenames, fields or parameters */
+      /* Note that the grammar rejects storage classes in typenames
+	 and fields.  */
+      gcc_assert (storage_class == csc_none && !threadp
+		  && !declspecs->inline_p);
       if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
 	  && type_quals)
 	pedwarn ("ISO C forbids const or volatile function types");
@@ -4495,9 +4497,16 @@ grokdeclarator (const struct c_declarator *declarator,
 
 	DECL_ARG_TYPE (decl) = promoted_type;
 	DECL_ARG_TYPE_AS_WRITTEN (decl) = type_as_written;
+	if (declspecs->inline_p)
+	  pedwarn ("%Jparameter %qD declared %<inline%>", decl, decl);
       }
     else if (decl_context == FIELD)
       {
+	/* Note that the grammar rejects storage classes in typenames
+	   and fields.  */
+	gcc_assert (storage_class == csc_none && !threadp
+		    && !declspecs->inline_p);
+
 	/* Structure field.  It may not be a function.  */
 
 	if (TREE_CODE (type) == FUNCTION_TYPE)
@@ -4579,10 +4588,10 @@ grokdeclarator (const struct c_declarator *declarator,
 	  C_FUNCTION_IMPLICIT_INT (decl) = 1;
 
 	/* Record presence of `inline', if it is reasonable.  */
-	if (MAIN_NAME_P (declarator->u.id))
+	if (flag_hosted && MAIN_NAME_P (declarator->u.id))
 	  {
 	    if (declspecs->inline_p)
-	      warning ("cannot inline function %<main%>");
+	      pedwarn ("cannot inline function %<main%>");
 	  }
 	else if (declspecs->inline_p)
 	  {
@@ -6858,10 +6867,11 @@ declspecs_add_scspec (struct c_declspecs *specs, tree scspec)
   switch (i)
     {
     case RID_INLINE:
-      /* GCC has hitherto given an error for duplicate inline, but
-	 this should be revisited since C99 permits duplicate
-	 inline.  */
-      dupe = specs->inline_p;
+      /* C99 permits duplicate inline.  Although of doubtful utility,
+	 it seems simplest to permit it in gnu89 mode as well, as
+	 there is also little utility in maintaining this as a
+	 difference between gnu89 and C99 inline.  */
+      dupe = false;
       specs->inline_p = true;
       break;
     case RID_THREAD:

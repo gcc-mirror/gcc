@@ -1,3 +1,12 @@
+2004-09-13  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/declspec-7.c: Don't expect diagnostic for duplicate
+	"inline".
+	* gcc.dg/declspec-11.c: Update expected messages.
+	* gcc.dg/inline-6.c, gcc.dg/inline-7.c, gcc.dg/inline-8.c,
+	gcc.dg/inline-9.c, gcc.dg/inline-10.c, gcc.dg/inline-11.c,
+	gcc.dg/inline-12.c: New tests.
+
 2004-09-13  Andrew MacLeod  <amacleod@redhat.com>
 
 	* g++.dg/tree-ssa/pr17400.C: New testcase.
