@@ -124,8 +124,10 @@ namespace std
       bool __testin = __mode & ios_base::in && _M_mode & ios_base::in;
       bool __testout = __mode & ios_base::out && _M_mode & ios_base::out;
       bool __testboth = __testin && __testout && __way != ios_base::cur;
-      
-      if (_M_buf_size && ((__testin != __testout) || __testboth))
+      __testin &= !(__mode & ios_base::out);
+      __testout &= !(__mode & ios_base::in);
+
+      if (_M_buf_size && (__testin || __testout || __testboth))
 	{
 	  char_type* __beg = _M_buf;
 	  char_type* __curi = NULL;
@@ -133,12 +135,12 @@ namespace std
 	  char_type* __endi = NULL;
 	  char_type* __endo = NULL;
 
-	  if (__testin)
+	  if (__testin || __testboth)
 	    {
 	      __curi = this->gptr();
 	      __endi = this->egptr();
 	    }
-	  if (__testout)
+	  if (__testout || __testboth)
 	    {
 	      __curo = this->pptr();
 	      __endo = this->epptr();
@@ -157,13 +159,13 @@ namespace std
 	      __newoffo = __endo - __beg;
 	    }
 
-	  if (__testin
+	  if ((__testin || __testboth)
 	      && __newoffi + __off >= 0 && __endi - __beg >= __newoffi + __off)
 	    {
 	      _M_in_cur = __beg + __newoffi + __off;
 	      __ret = pos_type(__newoffi);
 	    }
-	  if (__testout
+	  if ((__testout || __testboth)
 	      && __newoffo + __off >= 0 && __endo - __beg >= __newoffo + __off)
 	    {
 	      _M_out_cur_move(__newoffo + __off - (_M_out_cur - __beg));
@@ -179,33 +181,44 @@ namespace std
     seekpos(pos_type __sp, ios_base::openmode __mode)
     {
       pos_type __ret =  pos_type(off_type(-1)); 
-      off_type __pos = __sp._M_position();
-      char_type* __beg = NULL;
-      char_type* __end = NULL;
-      bool __testin = __mode & ios_base::in && _M_mode & ios_base::in;
-      bool __testout = __mode & ios_base::out && _M_mode & ios_base::out;
       
-      if (__testin)
+      if (_M_buf_size)
 	{
-	  __beg = this->eback();
-	  __end = this->egptr();
+	  off_type __pos = __sp._M_position();
+	  char_type* __beg = NULL;
+	  char_type* __end = NULL;
+	  bool __testin = __mode & ios_base::in && _M_mode & ios_base::in;
+	  bool __testout = __mode & ios_base::out && _M_mode & ios_base::out;
+	  bool __testboth = __testin && __testout;
+	  __testin &= !(__mode & ios_base::out);
+	  __testout &= !(__mode & ios_base::in);
+	  
+	  // NB: Ordered.
+	  bool __testposi = false;
+	  bool __testposo = false;
+	  if (__testin || __testboth)
+	    {
+	      __beg = this->eback();
+	      __end = this->egptr();
+	      if (0 <= __pos && __pos <= __end - __beg)
+		__testposi = true;
+	    }
+	  if (__testout || __testboth)
+	    {
+	      __beg = this->pbase();
+	      __end = _M_buf + _M_buf_size;
+	      if (0 <= __pos && __pos <= __end - __beg)
+		__testposo = true;
+	    }
+	  if (__testposi || __testposo)
+	    {
+	      if (__testposi)
+		_M_in_cur = _M_in_beg + __pos;
+	      if (__testposo)
+		_M_out_cur_move((__pos) - (_M_out_cur - __beg));
+	      __ret = pos_type(off_type(__pos));
+	    }
 	}
-      if (__testout)
-	{
-	  __beg = this->pbase();
-	  __end = _M_buf + _M_buf_size;
-	}
- 
-      if (0 <= __pos && __pos <= __end - __beg)
-	{
-	  // Need to set both of these if applicable
-	  if (__testin)
-	    _M_in_cur = _M_in_beg + __pos;
-	  if (__testout)
-	    _M_out_cur_move((__pos) - (_M_out_cur - __beg));
-	  __ret = pos_type(off_type(__pos));
-	}
-      
       return __ret;
     }
 

@@ -1,3 +1,14 @@
+2002-04-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/5180
+	* include/bits/fstream.tcc (filebuf::seekpos): Fix.
+	* include/std/std_fstream.h: Clean.
+	* include/bits/ostream.tcc: Remove extraneous variables.
+	* include/bits/sstream.tcc (stringbuf::seekoff): Be strict about
+	open modes and which modes.
+	(stringbuf::seekpos): Same.
+	* testsuite/27_io/stringbuf_virtuals.cc: New tests.
+	
 2002-04-05  Jonathan Wakely <jw@kayari.org>
 
 	* include/bits/stl_algo.h (unique_copy, __gcd, rotate, rotate_copy,
