@@ -1203,6 +1203,10 @@ gfc_match_do (void)
   if (gfc_match (" do") != MATCH_YES)
     return MATCH_NO;
 
+  m = gfc_match_st_label (&label, 0);
+  if (m == MATCH_ERROR)
+    goto cleanup;
+
 /* Match an infinite DO, make it like a DO WHILE(.TRUE.) */
 
   if (gfc_match_eos () == MATCH_YES)
@@ -1212,13 +1216,9 @@ gfc_match_do (void)
       goto done;
     }
 
-  m = gfc_match_st_label (&label, 0);
-  if (m == MATCH_ERROR)
-    goto cleanup;
-
-  gfc_match_char (',');
-
-  if (gfc_match ("% ") != MATCH_YES)
+  /* match an optional comma, if no comma is found a space is obligatory.  */
+  if (gfc_match_char(',') != MATCH_YES
+      && gfc_match ("% ") != MATCH_YES)
     return MATCH_NO;
 
   /* See if we have a DO WHILE.  */
