@@ -3846,7 +3846,7 @@ print_operand (file, x, code)
 	const char *round = get_round_mode_suffix ();
 
 	if (trap || round)
-	  fprintf (file, "/%s%s", (trap ? trap : ""), (round ? round : ""));
+	  fprintf (file, "%s%s", (trap ? trap : ""), (round ? round : ""));
 
 	break;
       }
