@@ -1,5 +1,7 @@
 Thu Apr 16 22:41:02 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* function.c (assign_outer_stack_local): Make static and add prototype.
+
 	* haifa-sched.c (build_control_flow): Accept raw data as inputs
 	instead of computing it locally.  Callers changed.
 	(find_rgns): Several new arguments.  Callers changed.

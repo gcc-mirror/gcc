@@ -405,6 +405,8 @@ struct fixup_replacement
    
 /* Forward declarations.  */
 
+static rtx assign_outer_stack_local PROTO ((enum machine_mode, HOST_WIDE_INT,
+					    int, struct function *));
 static struct temp_slot *find_temp_slot_from_address  PROTO((rtx));
 static void put_reg_into_stack	PROTO((struct function *, rtx, tree,
 				       enum machine_mode, enum machine_mode,
@@ -728,7 +730,7 @@ assign_stack_local (mode, size, align)
    First three arguments are same as in preceding function.
    The last argument specifies the function to allocate in.  */
 
-rtx
+static rtx
 assign_outer_stack_local (mode, size, align, function)
      enum machine_mode mode;
      HOST_WIDE_INT size;
