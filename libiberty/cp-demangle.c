@@ -2398,6 +2398,8 @@ d_expr_primary (di)
       const char *s;
 
       type = cplus_demangle_type (di);
+      if (type == NULL)
+	return NULL;
 
       /* If we have a type we know how to print, we aren't going to
 	 print the type name itself.  */

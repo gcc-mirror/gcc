@@ -1,3 +1,9 @@
+2004-06-28  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	PR other/16240
+	* cp-demangle.c (d_expr_primary): Check for a failure return from
+	cplus_demangle_type.
+
 2004-05-31  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* pex-win32.c (fix_argv): Expand comment.
