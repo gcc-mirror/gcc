@@ -244,7 +244,12 @@ _Jv_ThreadSelf (void)
 
 #ifdef __alpha__
 
+#ifdef __FreeBSD__
+#include <machine/pal.h>
+#define PAL_rduniq PAL_rdunique
+#else
 #include <asm/pal.h>
+#endif
 
 typedef unsigned long _Jv_ThreadId_t;
 
