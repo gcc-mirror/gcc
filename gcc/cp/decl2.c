@@ -139,11 +139,6 @@ static tree decl_namespace_list;
 
 /* C (and C++) language-specific option variables.  */
 
-/* Nonzero means allow type mismatches in conditional expressions;
-   just make their values `void'.   */
-
-int flag_cond_mismatch;
-
 /* Nonzero means don't recognize the keyword `asm'.  */
 
 int flag_no_asm;
@@ -492,7 +487,6 @@ lang_f_options[] =
   {"short-enums", &flag_short_enums, 1},
   {"short-double", &flag_short_double, 1},
   {"short-wchar", &flag_short_wchar, 1},
-  {"cond-mismatch", &flag_cond_mismatch, 1},
   {"asm", &flag_no_asm, 0},
   {"builtin", &flag_no_builtin, 0},
 
@@ -536,6 +530,7 @@ lang_f_options[] =
    listed here.  This table must be kept in alphabetical order.  */
 static const char * const unsupported_options[] = {
   "all-virtual",
+  "cond-mismatch",
   "enum-int-equiv",
   "guiding-decls",
   "nonnull-objects",
