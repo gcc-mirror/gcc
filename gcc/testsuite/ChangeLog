@@ -1,3 +1,8 @@
+2004-01-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/13289
+	* g++.dg/template/instantiate6.C: New test.
+
 2004-01-12  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/11397

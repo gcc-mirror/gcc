@@ -1,3 +1,9 @@
+2004-01-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/13289
+	* pt.c (instantiate_decl): Set DECL_TEMPLATE_INSTANTIATED before
+	calling regenerate_decl_from_template.
+
 2004-01-12  Scott Brumbaugh  <scottb.lists@verizon.net>
 
 	PR c++/4100
