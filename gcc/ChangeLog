@@ -1,3 +1,9 @@
+2003-10-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/12519
+	* c-semantics.c (genrtl_cleanup_stmt): Ignore the CLEANUP_DECL if
+	it isn't a decl.
+
 2003-10-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c (cpp_options): Only pass -fworking-directory for -g* if
