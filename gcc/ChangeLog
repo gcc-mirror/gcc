@@ -1,3 +1,7 @@
+2001-01-08  Richard Henderson  <rth@redhat.com>
+
+	* jump.c (simplejump_p): Revert last change.
+
 2001-01-08  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cppinit.c (init): Rename init_library.

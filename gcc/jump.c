@@ -2163,21 +2163,10 @@ int
 simplejump_p (insn)
      rtx insn;
 {
-  rtx set;
-
-  if (GET_CODE (insn) != JUMP_INSN)
-    return 0;
-
-  set = PATTERN (insn);
-  if (GET_CODE (set) != SET)
-    {
-      set = single_set_1 (insn);
-      if (set == NULL_RTX)
-	return 0;
-    }
-
-  return (GET_CODE (SET_DEST (set)) == PC
-	  && GET_CODE (SET_SRC (set)) == LABEL_REF);
+  return (GET_CODE (insn) == JUMP_INSN
+	  && GET_CODE (PATTERN (insn)) == SET
+	  && GET_CODE (SET_DEST (PATTERN (insn))) == PC
+	  && GET_CODE (SET_SRC (PATTERN (insn))) == LABEL_REF);
 }
 
 /* Return nonzero if INSN is a (possibly) conditional jump
