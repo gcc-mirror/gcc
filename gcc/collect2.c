@@ -853,10 +853,14 @@ find_a_file (pprefix, name)
   else
     for (pl = pprefix->plist; pl; pl = pl->next)
       {
+	struct stat st;
+
 	strcpy (temp, pl->prefix);
 	strcat (temp, name);
 	
-	if (access (temp, X_OK) == 0)
+	if (stat (temp, &st) >= 0
+	    && ! S_ISDIR (st.st_mode)
+	    && access (temp, X_OK) == 0)
 	  return temp;
 
 #ifdef EXECUTABLE_SUFFIX
@@ -864,7 +868,9 @@ find_a_file (pprefix, name)
 	   So try appending that.  */
 	strcat (temp, EXECUTABLE_SUFFIX);
 	
-	if (access (temp, X_OK) == 0)
+	if (stat (temp, &st) >= 0
+	    && ! S_ISDIR (st.st_mode)
+	    && access (temp, X_OK) == 0)
 	  return temp;
 #endif
       }
