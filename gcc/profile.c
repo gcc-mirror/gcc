@@ -1515,7 +1515,6 @@ output_arc_profiler (arcno, insert_after)
   rtx mem_ref, add_ref;
   rtx sequence;
 
-#ifdef SMALL_REGISTER_CLASSES
   /* In this case, reload can use explicitly mentioned hard registers for
      reloads.  It is not safe to output profiling code between a call
      and the instruction that copies the result to a pseudo-reg.  This
@@ -1560,7 +1559,6 @@ output_arc_profiler (arcno, insert_after)
 	    insert_after = next_insert_after;
 	}
     }
-#endif
 
   start_sequence ();
 
