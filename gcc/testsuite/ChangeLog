@@ -1,3 +1,9 @@
+2005-03-05  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.dg/pr19936_1.f90: New test.
+	* gfortran.dg/pr19936_1.f90: ditto.
+	* gfortran.dg/pr19936_1.f90: ditto.
+
 2005-03-05  Paul Thomas  <prthomas@drfccad.cea.fr>
             Steven G. Kargl  <kargls@comcast.net> 
 
