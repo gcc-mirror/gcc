@@ -36,6 +36,6 @@ package java.security.spec;
 
 	@author Mark Benvenuto
 */
-public abstract interface KeySpec 
+public interface KeySpec 
 {
 }
