@@ -61,7 +61,7 @@ public final class Copies extends IntegerSyntax
     super(value);
 
     if (value < 1)
-      throw new IllegalArgumentException("value may not be less then 1");
+      throw new IllegalArgumentException("value may not be less than 1");
   }
   
   /**
