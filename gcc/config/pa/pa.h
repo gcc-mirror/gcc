@@ -95,7 +95,7 @@ extern int target_flags;
    { "", TARGET_DEFAULT}}
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 128		/* TARGET_GAS + TARGET_JUMP_IN_DELAY */
+#define TARGET_DEFAULT 0x88		/* TARGET_GAS + TARGET_JUMP_IN_DELAY */
 #endif
 
 #define DBX_DEBUGGING_INFO
