@@ -1,3 +1,10 @@
+Fri Dec 14 07:29:52 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* config/alpha/alpha.c (vms_attribute_table): Add new attributes.
+	(alpha_write_linkage): Test for null alpha_links.
+	(SECTION_VMS_GLOBAL, SECTION_VMS_INITIALIZE): New section attributes.
+	(vms_section_type_flags, vms_asm_named_section): Handle them.
+
 Fri Dec 14 12:05:14 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_fpmath, ix86_fpmath_string): New.

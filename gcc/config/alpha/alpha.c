@@ -5804,8 +5804,10 @@ alpha_using_fp ()
 const struct attribute_spec vms_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "overlaid", 0, 0, true,  false, false, NULL },
-  { NULL,       0, 0, false, false, false, NULL }
+  { "overlaid",   0, 0, true,  false, false, NULL },
+  { "global",     0, 0, true,  false, false, NULL },
+  { "initialize", 0, 0, true,  false, false, NULL },
+  { NULL,         0, 0, false, false, false, NULL }
 };
 
 #endif
@@ -7955,15 +7957,20 @@ void
 alpha_write_linkage (stream)
     FILE *stream;
 {
-  readonly_section ();
-  fprintf (stream, "\t.align 3\n");
-  splay_tree_foreach (alpha_links, alpha_write_one_linkage, stream);
+  if (alpha_links)
+    {
+      readonly_section ();
+      fprintf (stream, "\t.align 3\n");
+      splay_tree_foreach (alpha_links, alpha_write_one_linkage, stream);
+    }
 }
 
 /* Given a decl, a section name, and whether the decl initializer
    has relocs, choose attributes for the section.  */
 
 #define SECTION_VMS_OVERLAY	SECTION_FORGET
+#define SECTION_VMS_GLOBAL SECTION_MACH_DEP
+#define SECTION_VMS_INITIALIZE (SECTION_VMS_GLOBAL << 1)
 
 static unsigned int
 vms_section_type_flags (decl, name, reloc)
@@ -7976,6 +7983,12 @@ vms_section_type_flags (decl, name, reloc)
   if (decl && DECL_ATTRIBUTES (decl)
       && lookup_attribute ("overlaid", DECL_ATTRIBUTES (decl)))
     flags |= SECTION_VMS_OVERLAY;
+  if (decl && DECL_ATTRIBUTES (decl)
+      && lookup_attribute ("global", DECL_ATTRIBUTES (decl)))
+    flags |= SECTION_VMS_GLOBAL;
+  if (decl && DECL_ATTRIBUTES (decl)
+      && lookup_attribute ("initialize", DECL_ATTRIBUTES (decl)))
+    flags |= SECTION_VMS_INITIALIZE;
 
   return flags;
 }
@@ -7989,14 +8002,19 @@ vms_asm_named_section (name, flags)
      const char *name;
      unsigned int flags;
 {
-  const char *flag_str = "";
+  fputc ('\n', asm_out_file);
+  fprintf (asm_out_file, ".section\t%s", name);
 
   if (flags & SECTION_VMS_OVERLAY)
-    flag_str = ",OVR";
-  else if (flags & SECTION_DEBUG)
-    flag_str = ",NOWRT";
+    fprintf (asm_out_file, ",OVR");
+  if (flags & SECTION_VMS_GLOBAL)
+    fprintf (asm_out_file, ",GBL");
+  if (flags & SECTION_VMS_INITIALIZE)
+    fprintf (asm_out_file, ",NOMOD");
+  if (flags & SECTION_DEBUG)
+    fprintf (asm_out_file, ",NOWRT");
 
-  fprintf (asm_out_file, ".section\t%s%s\n", name, flag_str);
+  fputc ('\n', asm_out_file);
 }
 
 /* Record an element in the table of global constructors.  SYMBOL is
