@@ -531,6 +531,11 @@ build_vtable (tree class_type, tree name, tree vtable_type)
   DECL_VIRTUAL_P (decl) = 1;
   DECL_ALIGN (decl) = TARGET_VTABLE_ENTRY_ALIGN;
 
+  /* At one time the vtable info was grabbed 2 words at a time.  This
+     fails on sparc unless you have 8-byte alignment.  (tiemann) */
+  DECL_ALIGN (decl) = MAX (TYPE_ALIGN (double_type_node),
+			   DECL_ALIGN (decl));
+
   import_export_vtable (decl, class_type, 0);
 
   return decl;
@@ -552,11 +557,6 @@ get_vtable_decl (tree type, int complete)
   
   decl = build_vtable (type, get_vtable_name (type), vtbl_type_node);
   CLASSTYPE_VTABLES (type) = decl;
-
-  /* At one time the vtable info was grabbed 2 words at a time.  This
-     fails on sparc unless you have 8-byte alignment.  (tiemann) */
-  DECL_ALIGN (decl) = MAX (TYPE_ALIGN (double_type_node),
-			   DECL_ALIGN (decl));
 
   if (complete)
     {
@@ -2017,11 +2017,6 @@ layout_vtable_decl (tree binfo, int n)
       TREE_TYPE (vtable) = atype;
       DECL_SIZE (vtable) = DECL_SIZE_UNIT (vtable) = NULL_TREE;
       layout_decl (vtable, 0);
-
-      /* At one time the vtable info was grabbed 2 words at a time.  This
-	 fails on SPARC unless you have 8-byte alignment.  */
-      DECL_ALIGN (vtable) = MAX (TYPE_ALIGN (double_type_node),
-				 DECL_ALIGN (vtable));
     }
 }
 
@@ -2952,31 +2947,12 @@ check_bitfield_decl (tree field)
     {
       DECL_SIZE (field) = convert (bitsizetype, w);
       DECL_BIT_FIELD (field) = 1;
-
-      if (integer_zerop (w)
-	  && ! (* targetm.ms_bitfield_layout_p) (DECL_FIELD_CONTEXT (field)))
-	{
-#ifdef EMPTY_FIELD_BOUNDARY
-	  DECL_ALIGN (field) = MAX (DECL_ALIGN (field), 
-				    EMPTY_FIELD_BOUNDARY);
-#endif
-#ifdef PCC_BITFIELD_TYPE_MATTERS
-	  if (PCC_BITFIELD_TYPE_MATTERS)
-	    {
-	      DECL_ALIGN (field) = MAX (DECL_ALIGN (field), 
-					TYPE_ALIGN (type));
-	      DECL_USER_ALIGN (field) |= TYPE_USER_ALIGN (type);
-	    }
-#endif
-	}
     }
   else
     {
       /* Non-bit-fields are aligned for their type.  */
       DECL_BIT_FIELD (field) = 0;
       CLEAR_DECL_C_BIT_FIELD (field);
-      DECL_ALIGN (field) = MAX (DECL_ALIGN (field), TYPE_ALIGN (type));
-      DECL_USER_ALIGN (field) |= TYPE_USER_ALIGN (type);
     }
 }
 
@@ -4428,8 +4404,6 @@ create_vtable_ptr (tree t, tree* virtuals_p)
       DECL_ARTIFICIAL (field) = 1;
       DECL_FIELD_CONTEXT (field) = t;
       DECL_FCONTEXT (field) = t;
-      DECL_ALIGN (field) = TYPE_ALIGN (vtbl_ptr_type_node);
-      DECL_USER_ALIGN (field) = TYPE_USER_ALIGN (vtbl_ptr_type_node);
       
       TYPE_VFIELD (t) = field;
       
@@ -4950,8 +4924,6 @@ layout_class_type (tree t, tree *virtuals_p)
 				      char_type_node); 
 	  DECL_BIT_FIELD (padding_field) = 1;
 	  DECL_SIZE (padding_field) = padding;
-	  DECL_ALIGN (padding_field) = 1;
-	  DECL_USER_ALIGN (padding_field) = 0;
 	  layout_nonempty_base_or_field (rli, padding_field,
 					 NULL_TREE, 
 					 empty_base_offsets);

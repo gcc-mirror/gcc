@@ -1,3 +1,12 @@
+2003-04-03  Jason Merrill  <jason@redhat.com>
+
+	* class.c (build_vtable): Set DECL_ALIGN here.
+	(get_vtable_decl): Not here.
+	(layout_vtable_decl): Or here.
+	(create_vtable_ptr): Or here.
+	(layout_class_type): Or here.
+	(check_bitfield_decl): Don't mess with field alignment.
+
 2003-04-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* operators.def (DEF_SIMPLE_OPERATOR, DEF_ASSN_OPERATOR,

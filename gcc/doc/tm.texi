@@ -1160,8 +1160,7 @@ make it all fit in fewer cache lines.
 Alignment in bits to be given to a structure bit-field that follows an
 empty field such as @code{int : 0;}.
 
-Note that @code{PCC_BITFIELD_TYPE_MATTERS} also affects the alignment
-that results from an empty field.
+If @code{PCC_BITFIELD_TYPE_MATTERS} is true, it overrides this macro.
 
 @findex STRUCTURE_SIZE_BOUNDARY
 @item STRUCTURE_SIZE_BOUNDARY
