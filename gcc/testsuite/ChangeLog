@@ -1,5 +1,9 @@
 2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.eh/vbase4.C: New test.
+
+2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.bugs/900215_01.C: Adjust.
 
 2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
