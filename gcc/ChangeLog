@@ -1,3 +1,9 @@
+2004-03-08  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Don't override
+	-msoft-float by -mcpu.  Consolidate similar code for MASK_MULTIPLE
+	and MASK_STRING.
+
 2004-03-07  Aldy Hernandez  <aldyh@redhat.com>
  
         * config/rs6000/rs6000.md (ashrdi3): Do not call ashrdi3_no_power
