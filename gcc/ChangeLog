@@ -1,5 +1,11 @@
 2005-01-31  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (absnegsf2_mixed): Remove all of the # hackery.
+	(absnegsf2_sse, absnegsf2_i387, absnegdf2_mixed, absnegdf2_sse,
+	absnegdf2_i387, absnegxf2_i387): Likewise.
+
+2005-01-31  Richard Henderson  <rth@redhat.com>
+
 	PR 19696
 	* optabs.c (expand_copysign_absneg): New.
 	(expand_copysign_bit): Split out from ...
