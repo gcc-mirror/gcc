@@ -1775,7 +1775,8 @@ for machine in $build $host $target; do
  		;;
 	mips-sgi-irix5cross64)		# Irix5 host, Irix 6 target, cross64
 		tm_file="mips/iris6.h mips/cross64.h"
-		xm_defines="USG HAVE_INTTYPES_H"
+		xm_defines=USG
+		xm_file="mips/xm-iris5.h"
 		fixincludes=Makefile.in
 		xmake_file=mips/x-iris
 		tmake_file=mips/t-cross64
@@ -1816,7 +1817,8 @@ for machine in $build $host $target; do
 		else
 			tm_file=mips/iris5.h
 		fi
-		xm_defines="USG HAVE_INTTYPES_H"
+		xm_defines=USG
+		xm_file="mips/xm-iris5.h"
 		fixincludes=fixinc.irix
 		xmake_file=mips/x-iris
 		# mips-tfile doesn't work yet
