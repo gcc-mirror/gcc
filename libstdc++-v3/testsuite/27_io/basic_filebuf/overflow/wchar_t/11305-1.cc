@@ -32,10 +32,10 @@ void test01()
   fb.pubimbue(loc);
   fb.pubsetbuf(0, 0);
   fb.open("tmp_11305-1", ios_base::out);
-  wint_t n1 = fb.sputc(0x20000000);
+  wfilebuf::int_type n1 = fb.sputc(L'e');
   wfilebuf* f = fb.close();
   
-  VERIFY( n1 != WEOF );
+  VERIFY( n1 != wfilebuf::traits_type::eof() );
   VERIFY( f != NULL );
 }
 
