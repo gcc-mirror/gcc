@@ -2265,6 +2265,15 @@ mark_all_labels (f, cross_jump)
   for (insn = f; insn; insn = NEXT_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
       {
+	if (GET_CODE (insn) == CALL_INSN
+	    && GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
+	  {
+	    mark_all_labels (XEXP (PATTERN (insn), 0), cross_jump);
+	    mark_all_labels (XEXP (PATTERN (insn), 1), cross_jump);
+	    mark_all_labels (XEXP (PATTERN (insn), 2), cross_jump);
+	    continue;
+	  }
+	
 	mark_jump_label (PATTERN (insn), insn, cross_jump, 0);
 	if (! INSN_DELETED_P (insn) && GET_CODE (insn) == JUMP_INSN)
 	  {
