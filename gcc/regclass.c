@@ -25,6 +25,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include <stdio.h>
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "flags.h"
@@ -598,6 +601,7 @@ reg_preferred_class (regno)
 
 enum reg_class
 reg_alternate_class (regno)
+     int regno;
 {
   if (prefclass == 0)
     return ALL_REGS;

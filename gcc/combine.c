@@ -465,7 +465,10 @@ combine_instructions (f, nregs)
      rtx f;
      int nregs;
 {
-  register rtx insn, next, prev;
+  register rtx insn, next;
+#ifdef HAVE_cc0
+  register rtx prev;
+#endif
   register int i;
   register rtx links, nextlinks;
 
@@ -823,7 +826,10 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 {
   int i;
   rtx set = 0, src, dest;
-  rtx p, link;
+  rtx p;
+#ifdef AUTO_INC_DEC
+  rtx, link;
+#endif
   int all_adjacent = (succ ? (next_active_insn (insn) == succ
 			      && next_active_insn (succ) == i3)
 		      : next_active_insn (insn) == i3);
@@ -5739,7 +5745,7 @@ extract_left_shift (x, count)
       /* If we can safely shift this constant and we find the inner shift,
 	 make a new operation.  */
       if (GET_CODE (XEXP (x,1)) == CONST_INT
-	  && (INTVAL (XEXP (x, 1)) & (((HOST_WIDE_INT) 1 << count)) - 1) == 0
+	  && (INTVAL (XEXP (x, 1)) & ((((HOST_WIDE_INT) 1 << count)) - 1)) == 0
 	  && (tem = extract_left_shift (XEXP (x, 0), count)) != 0)
 	return gen_binary (code, mode, tem, 
 			   GEN_INT (INTVAL (XEXP (x, 1)) >> count));
@@ -8126,7 +8132,7 @@ merge_outer_ops (pop0, pconst0, op1, const1, mode, pcomp_p)
 	  op0 = SET;
 	else /* op1 == XOR */
 	  /* (a ^ b) | b == a | b */
-	  ;
+	  {;}
 	break;
 
       case XOR:
@@ -9128,7 +9134,7 @@ gen_rtx_combine VPROTO((enum rtx_code code, enum machine_mode mode, ...))
   va_list p;
   int n_args;
   rtx args[3];
-  int i, j;
+  int j;
   char *fmt;
   rtx rt;
   struct undo *undo;
