@@ -1,3 +1,7 @@
+2001-05-29  Laurent Guerby  <guerby@acm.org>
+
+	* java/awt/geom/Rectangle2D.java: fix doc typo.
+
 2001-05-31  Tom Tromey  <tromey@redhat.com>
 
 	* java/sql/DriverManager.java (getDrivers): Handle case where
