@@ -1,3 +1,8 @@
+2001-03-16  Bruce Korb  <bkorb@gnu.org>, Alexandre Oliva  <aoliva@redhat.com>
+
+	* fixinc/inclhack.def (irix_stdio_va_list): New.
+	* fixinc/fixincl.x: Rebuilt.
+
 2001-03-15  Bruce Korb  <bkorb@gnu.org>
 
 	* gcc.c(main): make more rigorous
@@ -398,7 +403,13 @@ Thu Mar  8 06:32:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(*adcq, *subcq, *addsi_carry, *rotlqi3_with_carry): Likewise.
 	(*rotlhi3_with_carry, *rotrhi3_with_carry): Likewise.
 	(*return_16bit, *unnamed peepholes): Likewise.
+<<<<<<< ChangeLog
+=======
 
+2001-03-03  Laurynas Biveinis  <lauras@softhome.net>
+>>>>>>> 1.9240.2.146
+
+<<<<<<< ChangeLog
 2001-03-03  Laurynas Biveinis  <lauras@softhome.net>
 
 	* gcc.c (convert_filename): Append executable suffix
@@ -406,6 +417,13 @@ Thu Mar  8 06:32:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* gcc.texi: Document NO_AUTO_EXE_SUFFIX.
 	* config/i386/djgpp.h: Define NO_AUTO_EXE_SUFFIX.
 
+=======
+	* gcc.c (convert_filename): Append executable suffix
+	if NO_AUTO_EXE_SUFFIX is not defined.
+	* gcc.texi: Document NO_AUTO_EXE_SUFFIX.
+	* config/i386/djgpp.h: Define NO_AUTO_EXE_SUFFIX.
+
+>>>>>>> 1.9240.2.146
 2001-03-03  David O'Brien  <obrien@FreeBSD.org>
 
 	from 2000-09-06  Zack Weinberg  <zack@wolery.cumb.org>
