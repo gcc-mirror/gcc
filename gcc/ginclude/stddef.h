@@ -7,6 +7,12 @@
 /* This avoids lossage on Sunos but only if stdtypes.h comes first.
    There's no way to win with the other order!  Sun lossage.  */
 
+/* In case nobody has defined these types, but we aren't running under
+   GCC 2.00, make sure that __PTRDIFF_TYPE__, __SIZE__TYPE__, and
+   __WCHAR_TYPE__ have reasonable values.  This can happen if the
+   parts of GCC is compiled by an older compiler, that actually
+   include gstddef.h, such as collect2.  */
+
 /* Signed type of difference of two pointers.  */
 
 #ifndef _PTRDIFF_T	/* in case <sys/types.h> has defined it. */
@@ -19,6 +25,9 @@
 #define __PTRDIFF_T
 #define _PTRDIFF_T_
 #define ___int_ptrdiff_t_h
+#ifndef __PTRDIFF_TYPE__
+#define __PTRDIFF_TYPE__ long int
+#endif
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #endif /* ___int_ptrdiff_t_h */
 #endif /* _PTRDIFF_T_ */
@@ -38,6 +47,9 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #define __SIZE_T
 #define _SIZE_T_
 #define ___int_size_t_h
+#ifndef __SIZE_TYPE__
+#define __SIZE_TYPE__ long unsigned int
+#endif
 typedef __SIZE_TYPE__ size_t;
 #endif /* ___int_size_t_h */
 #endif /* _SIZE_T_ */
@@ -57,6 +69,9 @@ typedef __SIZE_TYPE__ size_t;
 #define __WCHAR_T
 #define _WCHAR_T_
 #define ___int_wchar_t_h
+#ifndef __WCHAR_TYPE__
+#define __WCHAR_TYPE__ int
+#endif
 typedef __WCHAR_TYPE__ wchar_t;
 #endif
 #endif
