@@ -1,3 +1,8 @@
+2003-10-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_addimm_operand): MODE arguemnt is unused.
+	* arm.md (cbranchne_decr1): Fix bootstrap warning.
+
 2003-10-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* fixinc/inclhack.def (alpha_pthread_gcc): New fix.
