@@ -155,7 +155,9 @@ static void initialize_argument_information	PROTO ((int,
 static void compute_argument_addresses		PROTO ((struct arg_data *,
 							rtx, int));
 static rtx rtx_for_function_call		PROTO ((tree, tree));
-							
+static void load_register_parameters		PROTO ((struct arg_data *,
+							int, rtx *));
+
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
 static rtx save_fixed_argument_area	PROTO ((int, rtx, int *, int *));
 static void restore_fixed_argument_area	PROTO ((rtx, rtx, int, int));
@@ -1416,6 +1418,86 @@ rtx_for_function_call (fndecl, exp)
   return funexp;
 }
 
+/* Do the register loads required for any wholly-register parms or any
+   parms which are passed both on the stack and in a register.  Their
+   expressions were already evaluated. 
+
+   Mark all register-parms as living through the call, putting these USE
+   insns in the CALL_INSN_FUNCTION_USAGE field.  */
+
+static void
+load_register_parameters (args, num_actuals, call_fusage)
+     struct arg_data *args;
+     int num_actuals;
+     rtx *call_fusage;
+{
+  int i, j;
+
+#ifdef LOAD_ARGS_REVERSED
+  for (i = num_actuals - 1; i >= 0; i--)
+#else
+  for (i = 0; i < num_actuals; i++)
+#endif
+    {
+      rtx reg = args[i].reg;
+      int partial = args[i].partial;
+      int nregs;
+
+      if (reg)
+	{
+	  /* Set to non-negative if must move a word at a time, even if just
+	     one word (e.g, partial == 1 && mode == DFmode).  Set to -1 if
+	     we just use a normal move insn.  This value can be zero if the
+	     argument is a zero size structure with no fields.  */
+	  nregs = (partial ? partial
+		   : (TYPE_MODE (TREE_TYPE (args[i].tree_value)) == BLKmode
+		      ? ((int_size_in_bytes (TREE_TYPE (args[i].tree_value))
+			  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
+		      : -1));
+
+	  /* Handle calls that pass values in multiple non-contiguous
+	     locations.  The Irix 6 ABI has examples of this.  */
+
+	  if (GET_CODE (reg) == PARALLEL)
+	    {
+	      emit_group_load (reg, args[i].value,
+			       int_size_in_bytes (TREE_TYPE (args[i].tree_value)),
+			       (TYPE_ALIGN (TREE_TYPE (args[i].tree_value))
+				/ BITS_PER_UNIT));
+	    }
+
+	  /* If simple case, just do move.  If normal partial, store_one_arg
+	     has already loaded the register for us.  In all other cases,
+	     load the register(s) from memory.  */
+
+	  else if (nregs == -1)
+	    emit_move_insn (reg, args[i].value);
+
+	  /* If we have pre-computed the values to put in the registers in
+	     the case of non-aligned structures, copy them in now.  */
+
+	  else if (args[i].n_aligned_regs != 0)
+	    for (j = 0; j < args[i].n_aligned_regs; j++)
+	      emit_move_insn (gen_rtx_REG (word_mode, REGNO (reg) + j),
+			      args[i].aligned_regs[j]);
+
+	  else if (partial == 0 || args[i].pass_on_stack)
+	    move_block_to_reg (REGNO (reg),
+			       validize_mem (args[i].value), nregs,
+			       args[i].mode);
+
+	  /* Handle calls that pass values in multiple non-contiguous
+	     locations.  The Irix 6 ABI has examples of this.  */
+	  if (GET_CODE (reg) == PARALLEL)
+	    use_group_regs (call_fusage, reg);
+	  else if (nregs == -1)
+	    use_reg (call_fusage, reg);
+	  else
+	    use_regs (call_fusage, REGNO (reg), nregs == 0 ? 1 : nregs);
+	}
+    }
+}
+
 /* Generate all the code for a function call
    and return an rtx for its value.
    Store the value in TARGET (specified as an rtx) if convenient.
@@ -1530,7 +1612,7 @@ expand_call (exp, target, ignore)
   int old_inhibit_defer_pop = inhibit_defer_pop;
   rtx call_fusage = 0;
   register tree p;
-  register int i, j;
+  register int i;
 
   /* The value of the function call can be put in a hard register.  But
      if -fcheck-memory-usage, code which invokes functions (and thus
@@ -2182,76 +2264,7 @@ expand_call (exp, target, ignore)
 
   funexp = prepare_call_address (funexp, fndecl, &call_fusage, reg_parm_seen);
 
-  /* Now do the register loads required for any wholly-register parms or any
-     parms which are passed both on the stack and in a register.  Their
-     expressions were already evaluated. 
-
-     Mark all register-parms as living through the call, putting these USE
-     insns in the CALL_INSN_FUNCTION_USAGE field.  */
-
-#ifdef LOAD_ARGS_REVERSED
-  for (i = num_actuals - 1; i >= 0; i--)
-#else
-  for (i = 0; i < num_actuals; i++)
-#endif
-    {
-      rtx reg = args[i].reg;
-      int partial = args[i].partial;
-      int nregs;
-
-      if (reg)
-	{
-	  /* Set to non-negative if must move a word at a time, even if just
-	     one word (e.g, partial == 1 && mode == DFmode).  Set to -1 if
-	     we just use a normal move insn.  This value can be zero if the
-	     argument is a zero size structure with no fields.  */
-	  nregs = (partial ? partial
-		   : (TYPE_MODE (TREE_TYPE (args[i].tree_value)) == BLKmode
-		      ? ((int_size_in_bytes (TREE_TYPE (args[i].tree_value))
-			  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
-		      : -1));
-
-	  /* Handle calls that pass values in multiple non-contiguous
-	     locations.  The Irix 6 ABI has examples of this.  */
-
-	  if (GET_CODE (reg) == PARALLEL)
-	    {
-	      emit_group_load (reg, args[i].value,
-			       int_size_in_bytes (TREE_TYPE (args[i].tree_value)),
-			       (TYPE_ALIGN (TREE_TYPE (args[i].tree_value))
-				/ BITS_PER_UNIT));
-	    }
-
-	  /* If simple case, just do move.  If normal partial, store_one_arg
-	     has already loaded the register for us.  In all other cases,
-	     load the register(s) from memory.  */
-
-	  else if (nregs == -1)
-	    emit_move_insn (reg, args[i].value);
-
-	  /* If we have pre-computed the values to put in the registers in
-	     the case of non-aligned structures, copy them in now.  */
-
-	  else if (args[i].n_aligned_regs != 0)
-	    for (j = 0; j < args[i].n_aligned_regs; j++)
-	      emit_move_insn (gen_rtx_REG (word_mode, REGNO (reg) + j),
-			      args[i].aligned_regs[j]);
-
-	  else if (partial == 0 || args[i].pass_on_stack)
-	    move_block_to_reg (REGNO (reg),
-			       validize_mem (args[i].value), nregs,
-			       args[i].mode);
-
-	  /* Handle calls that pass values in multiple non-contiguous
-	     locations.  The Irix 6 ABI has examples of this.  */
-	  if (GET_CODE (reg) == PARALLEL)
-	    use_group_regs (&call_fusage, reg);
-	  else if (nregs == -1)
-	    use_reg (&call_fusage, reg);
-	  else
-	    use_regs (&call_fusage, REGNO (reg), nregs == 0 ? 1 : nregs);
-	}
-    }
+  load_register_parameters (args, num_actuals, &call_fusage);
 
   /* Perform postincrements before actually calling the function.  */
   emit_queue ();
