@@ -1,3 +1,7 @@
+2002-02-04  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/abi/offsetof.C: Fix size comparison.
+
 2002-02-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/cast-qual-2.c: New test.

@@ -18,5 +18,5 @@ struct C: public B { };
 
 int main ()
 {
-  return ((unsigned long) &((C*)0)->i) != 4; // { dg-warning "offsetof" "" }
+  return ((unsigned long) &((C*)0)->i) != sizeof(void*); // { dg-warning "offsetof" "" }
 }
