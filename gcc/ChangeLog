@@ -1,5 +1,8 @@
 Sun Sep 27 07:33:18 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* reload.c (push_reload): If in STRICT_LOW_PART, always reload
+	inside even if SUBREG_WORD is not zero.
+
 	* flow.c (print_rtl_with_bb): Don't say not in basic block if we
 	aren't making basic blocks.8
 
