@@ -1,3 +1,13 @@
+2003-10-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR optimization/12142
+	* cse.c (count_reg_usage): In a SET with a REG SET_DEST, count the
+	uses of the register in the SET_SRC.  Remove unnecessary argument.
+	* pa.c (legitimize_pic_address): Before reload, use a scratch register
+	for the intermediate result in loading the address of a SYMBOL_REF.
+	Set the MEM_NOTRAP_P flag for the MEM.  Add a REG_EQUAL to the insn
+	which loads the SYMBOL_REF address.
+
 2003-10-08  Timo Kokkonen  <tjko@iki.fi>
             Eric Botcazou  <ebotcazou@libertysurf.fr>
 
