@@ -4674,7 +4674,7 @@ subst (x, from, to, in_dest, unique_copy)
 	}
 
 #ifdef SHIFT_COUNT_TRUNCATED
-      else if (GET_CODE (XEXP (x, 1)) != REG)
+      else if (SHIFT_COUNT_TRUNCATED && GET_CODE (XEXP (x, 1)) != REG)
 	SUBST (XEXP (x, 1),
 	       force_to_mode (XEXP (x, 1), GET_MODE (x),
 			      ((HOST_WIDE_INT) 1 
