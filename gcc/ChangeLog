@@ -1,3 +1,17 @@
+2004-10-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/frv/frv.md (*adddi3_internal): Change name to...
+	(adddi3): ...replacing the exisiting define_expand.  Combine
+	alternatives.  Fix the range of the constant constraints ('J' instead
+	of 'NOP').  Remove bogus operands[2] check.  Use simplify_gen_subreg
+	to extract the lower and upper halves of the DImode operands.
+	Always use addi3_lower and adddi3_upper, not the subdi3 forms.
+	(adddi3_lower): Fix the range of the constant constraints and
+	remove the bogus operands[2] check.
+	(adddi3_upper): Use gpr_or_int10_operand as the predicate for
+	operand 2.  Use addxi to handle constant operands.
+	(subdi3_lower, subdi3_upper): Don't handle constant operands.
+
 2004-10-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gengtype-lex.l: Add commented } & ) characters to unconfuse
