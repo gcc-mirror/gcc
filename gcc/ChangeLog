@@ -1,3 +1,7 @@
+2000-05-03  Jason R Thorpe  <thorpej@zembu.com>
+
+	* config/i386/i386.md (lshrqi2_cmpno): Use q not r in constraint.
+
 2000-05-03  Richard Henderson  <rth@cygnus.com>
 
 	* mklibgcc.in: Restrict OLDCC=GCC test to native.  Equate
