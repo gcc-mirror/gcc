@@ -913,6 +913,53 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 	  sched_analyze_2 (deps, XEXP (link, 0), insn);
       }
 
+  if (GET_CODE (insn) == JUMP_INSN)
+    {
+      rtx next, u, pending, pending_mem;
+      next = next_nonnote_insn (insn);
+      if (next && GET_CODE (next) == BARRIER)
+	{
+	  for (i = 0; i < maxreg; i++)
+	    {
+	      for (u = deps->reg_last_sets[i]; u; u = XEXP (u, 1))
+		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+	      for (u = deps->reg_last_clobbers[i]; u; u = XEXP (u, 1))
+		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+	      for (u = deps->reg_last_uses[i]; u; u = XEXP (u, 1))
+		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+	    }
+	}
+      else
+	{
+	  regset_head tmp;
+	  INIT_REG_SET (&tmp);
+
+	  (*current_sched_info->compute_jump_reg_dependencies) (insn, &tmp);
+	  EXECUTE_IF_SET_IN_REG_SET 
+	    (&tmp, 0, i,
+	    {
+	      for (u = deps->reg_last_sets[i]; u; u = XEXP (u, 1))
+		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+	      deps->reg_last_uses[i]
+		= alloc_INSN_LIST (insn, deps->reg_last_uses[i]);
+	    });
+
+	  CLEAR_REG_SET (&tmp);
+	}
+      pending = deps->pending_write_insns;
+      pending_mem = deps->pending_write_mems;
+      while (pending)
+	{
+	  add_dependence (insn, XEXP (pending, 0), 0);
+
+	  pending = XEXP (pending, 1);
+	  pending_mem = XEXP (pending_mem, 1);
+	}
+
+      for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
+	add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+    }
+
   /* If there is a {LOOP,EHREGION}_{BEG,END} note in the middle of a basic
      block, then we must be sure that no instructions are scheduled across it.
      Otherwise, the reg_n_refs info (which depends on loop_depth) would

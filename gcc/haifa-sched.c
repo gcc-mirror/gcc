@@ -144,6 +144,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "flags.h"
 #include "insn-config.h"
 #include "insn-attr.h"
+#include "insn-flags.h"
 #include "except.h"
 #include "toplev.h"
 #include "recog.h"
@@ -740,7 +741,7 @@ priority (insn)
 	    next = XEXP (link, 0);
 
 	    /* Critical path is meaningful in block boundaries only.  */
-	    if (BLOCK_NUM (next) != BLOCK_NUM (insn))
+	    if (! (*current_sched_info->contributes_to_priority) (next, insn))
 	      continue;
 
 	    next_priority = insn_cost (insn, link, next) + priority (next);

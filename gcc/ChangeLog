@@ -1,5 +1,22 @@
 2000-12-20  Bernd Schmidt  <bernds@redhat.com>
 
+	* Makefile.in (OBJS): Add sched-ebb.o.
+	(sched-ebb.o): New rule.
+	(sched-vis.o): Depend on hard-reg-set.h and $(BASIC_BLOCK_H).
+	(haifa-sched.o): Depend on insn-flags.h.
+	* haifa-sched.c: Include "insn-flags.h".
+	(priority): Don't access BLOCK_NUM, use the new contributes_to_priority
+	callback.
+	* rtl.h (schedule_ebbs): Declare.
+	* sched-int.h (struct sched_info): Add new members
+	contributes_to_priority and compute_jump_reg_dependencies.
+	* sched-rgn.c (contributes_to_priority, compute_jump_reg_dependencies):
+	New functions.
+	(region_sched_info): Add them.
+	* sched-vis.c: Include "hard-reg-set.h" and "basic-block.h".
+	* sched-ebb.c: New file.
+	* sched-deps.c (sched_analyze_insn): Add code to handle JUMP_INSNs.
+
 	* flow.c (ior_reg_cond, and_reg_cond, elim_reg_cond): Properly
 	handle all relational operators.
 

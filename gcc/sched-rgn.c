@@ -2042,6 +2042,8 @@ static int new_ready PARAMS ((rtx));
 static int schedule_more_p PARAMS ((void));
 static const char *rgn_print_insn PARAMS ((rtx, int));
 static int rgn_rank PARAMS ((rtx, rtx));
+static int contributes_to_priority PARAMS ((rtx, rtx));
+static void compute_jump_reg_dependencies PARAMS ((rtx, regset));
 
 /* Return nonzero if there are more insns that should be scheduled.  */
 
@@ -2302,6 +2304,29 @@ rgn_rank (insn1, insn2)
   return 0;
 }
 
+/* NEXT is an instruction that depends on INSN (a backward dependence);
+   return nonzero if we should include this dependence in priority
+   calculations.  */
+
+static int
+contributes_to_priority (next, insn)
+     rtx next, insn;
+{
+  return BLOCK_NUM (next) == BLOCK_NUM (insn);
+}
+
+/* INSN is a JUMP_INSN.  Store the set of registers that must be considered
+   to be set by this jump in SET.  */
+
+static void
+compute_jump_reg_dependencies (insn, set)
+     rtx insn ATTRIBUTE_UNUSED;
+     regset set ATTRIBUTE_UNUSED;
+{
+  /* Nothing to do here, since we postprocess jumps in
+     add_branch_dependences.  */
+}
+
 /* Used in schedule_insns to initialize current_sched_info for scheduling
    regions (or single basic blocks).  */
 
@@ -2313,6 +2338,8 @@ static struct sched_info region_sched_info =
   new_ready,
   rgn_rank,
   rgn_print_insn,
+  contributes_to_priority,
+  compute_jump_reg_dependencies,
 
   NULL, NULL,
   NULL, NULL,

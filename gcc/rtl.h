@@ -1754,6 +1754,7 @@ extern void dump_combine_total_stats	PARAMS ((FILE *));
 /* In sched.c. */
 #ifdef BUFSIZ
 extern void schedule_insns		PARAMS ((FILE *));
+extern void schedule_ebbs		PARAMS ((FILE *));
 #endif
 extern void fix_sched_param		PARAMS ((const char *, const char *));
 

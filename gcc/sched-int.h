@@ -115,6 +115,13 @@ struct sched_info
      static buffer for this.  The ALIGNED parameter should cause the string
      to be formatted so that multiple output lines will line up nicely.  */
   const char *(*print_insn) PARAMS ((rtx, int));
+  /* Return nonzero if an insn should be included in priority
+     calculations.  */
+  int (*contributes_to_priority) PARAMS ((rtx, rtx));
+  /* Called when computing dependencies for a JUMP_INSN.  This function
+     should store the set of registers that must be considered as set by
+     the jump in the regset.  */
+  void (*compute_jump_reg_dependencies) PARAMS ((rtx, regset));
 
   /* The boundaries of the set of insns to be scheduled.  */
   rtx prev_head, next_tail;

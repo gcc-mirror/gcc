@@ -738,7 +738,7 @@ OBJS = diagnostic.o version.o tree.o print-tree.o stor-layout.o fold-const.o  \
  mbchar.o splay-tree.o graph.o sbitmap.o resource.o hash.o predict.o	      \
  lists.o ggc-common.o $(GGC) stringpool.o simplify-rtx.o ssa.o bb-reorder.o   \
  sibcall.o conflict.o timevar.o ifcvt.o dominance.o dependence.o dce.o \
- sched-vis.o sched-deps.o sched-rgn.o hashtab.o
+ sched-vis.o sched-deps.o sched-rgn.o sched-ebb.o hashtab.o
 
 BACKEND = toplev.o libbackend.a
 
@@ -1457,15 +1457,18 @@ regmove.o : regmove.c $(CONFIG_H) system.h $(RTL_H) insn-config.h \
    $(EXPR_H) insn-flags.h $(BASIC_BLOCK_H) toplev.h
 haifa-sched.o : haifa-sched.c $(CONFIG_H) system.h $(RTL_H) sched-int.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h flags.h insn-config.h function.h \
-   $(INSN_ATTR_H) toplev.h $(RECOG_H) except.h
+   $(INSN_ATTR_H) insn-flags.h toplev.h $(RECOG_H) except.h
 sched-deps.o : haifa-sched.c $(CONFIG_H) system.h $(RTL_H) sched-int.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h flags.h insn-config.h function.h \
    $(INSN_ATTR_H) toplev.h $(RECOG_H) except.h
 sched-rgn.o : haifa-sched.c $(CONFIG_H) system.h $(RTL_H) sched-int.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h flags.h insn-config.h function.h \
    $(INSN_ATTR_H) toplev.h $(RECOG_H) except.h
+sched-ebb.o : sched-ebb.c $(CONFIG_H) system.h $(RTL_H) sched-int.h \
+   $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h flags.h insn-config.h function.h \
+   $(INSN_ATTR_H) toplev.h $(RECOG_H) except.h
 sched-vis.o : sched-vis.c $(CONFIG_H) system.h $(RTL_H) sched-int.h \
-   $(INSN_ATTR_H) $(REGS_H)
+   hard-reg-set.h $(BASIC_BLOCK_H) $(INSN_ATTR_H) $(REGS_H)
 final.o : final.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h intl.h \
    $(REGS_H) $(RECOG_H) conditions.h insn-config.h $(INSN_ATTR_H) function.h \
    real.h output.h hard-reg-set.h insn-flags.h insn-codes.h gstab.h except.h \
