@@ -1,5 +1,6 @@
 /* List management for the GNU C-Compiler expander.
-   Copyright (C) 1987, 88, 92-97, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

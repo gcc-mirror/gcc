@@ -1,5 +1,6 @@
 /* Generate code to initialize optabs from machine description.
-   Copyright (C) 1993, 94-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
