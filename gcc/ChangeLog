@@ -1,5 +1,12 @@
 2004-04-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* builtins.c (fold_builtin_isdigit): New.
+	(fold_builtin): Handle BUILT_IN_ISDIGIT.
+	* defaults.h: Add TARGET_DIGIT0 and sort.
+	* doc/tm.texi: Add TARGET_BS and TARGET_DIGIT0.
+
+2004-04-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* builtins.c (fold_builtin_cabs, fold_builtin): Use
 	`mathfn_built_in' to determine the new builtin.
 	* fold-const.c (fold): Likewise.
