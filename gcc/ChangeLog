@@ -1,3 +1,8 @@
+Mon Jan 29 20:38:19 2001  Christopher Faylor <cgf@cygnus.com>
+
+	* config/i386/cygwin.h: Add w32api to include search.  Search different
+	directories in a cross-build environment.
+
 2001-11-29  Tim Josling  <tej@melbpc.org.au>
 
 	* tree.h (TYPE_STUB_DECL): Add documentation.
