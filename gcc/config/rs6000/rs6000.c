@@ -2054,6 +2054,15 @@ print_operand (file, x, code)
 	print_operand (file, x, 0);
       return;
 
+    case 'H':
+      /* If constant, output low-order six bits.  Otherwise,
+	 write normally. */
+      if (INT_P (x))
+	fprintf (file, "%d", INT_LOWPART (x) & 63);
+      else
+	print_operand (file, x, 0);
+      return;
+
     case 'I':
       /* Print `i' if this is a constant, else nothing.  */
       if (INT_P (x))
