@@ -81,12 +81,12 @@ static void set_block_abstract_flags	PARAMS ((tree, int));
 static void process_reg_param		PARAMS ((struct inline_remap *, rtx,
 						 rtx));
 void set_decl_abstract_flags		PARAMS ((tree, int));
-static rtx expand_inline_function_eh_labelmap PARAMS ((rtx));
 static void mark_stores                 PARAMS ((rtx, rtx, void *));
 static void save_parm_insns		PARAMS ((rtx, rtx));
 static void copy_insn_list              PARAMS ((rtx, struct inline_remap *,
 						 rtx));
-static void copy_insn_notes		PARAMS ((rtx, struct inline_remap *));
+static void copy_insn_notes		PARAMS ((rtx, struct inline_remap *,
+						 int));
 static int compare_blocks               PARAMS ((const PTR, const PTR));
 static int find_block                   PARAMS ((const PTR, const PTR));
 
@@ -151,6 +151,9 @@ function_cannot_inline_p (fndecl)
 
   if (current_function_calls_setjmp)
     return N_("function using setjmp cannot be inline");
+
+  if (current_function_calls_eh_return)
+    return N_("function uses __builtin_eh_return");
 
   if (current_function_contains_functions)
     return N_("function with nested functions cannot be inline");
@@ -220,19 +223,6 @@ function_cannot_inline_p (fndecl)
   /* We cannot inline a nested function that jumps to a nonlocal label.  */
   if (current_function_has_nonlocal_goto)
     return N_("function with nonlocal goto cannot be inline");
-
-  /* This is a hack, until the inliner is taught about eh regions at
-     the start of the function.  */
-  for (insn = get_insns ();
-       insn
-	 && ! (GET_CODE (insn) == NOTE
-	       && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG);
-       insn = NEXT_INSN (insn))
-    {
-      if (insn && GET_CODE (insn) == NOTE
-	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
-	return N_("function with complex parameters cannot be inline");
-    }
 
   /* We can't inline functions that return a PARALLEL rtx.  */
   if (DECL_RTL_SET_P (DECL_RESULT (fndecl)))
@@ -548,17 +538,6 @@ process_reg_param (map, loc, copy)
   map->reg_map[REGNO (loc)] = copy;
 }
 
-/* Used by duplicate_eh_handlers to map labels for the exception table */
-static struct inline_remap *eif_eh_map;
-
-static rtx
-expand_inline_function_eh_labelmap (label)
-     rtx label;
-{
-  int index = CODE_LABEL_NUMBER (label);
-  return get_label_from_map (eif_eh_map, index);
-}
-
 /* Compare two BLOCKs for qsort.  The key we sort on is the
    BLOCK_ABSTRACT_ORIGIN of the blocks.  */
 
@@ -634,6 +613,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   rtvec arg_vector = (rtvec) inl_f->original_arg_vector;
   rtx static_chain_value = 0;
   int inl_max_uid;
+  int eh_region_offset;
 
   /* The pointer used to track the true location of the memory used
      for MAP->LABEL_MAP.  */
@@ -1140,8 +1120,14 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   /* Now copy the insns one by one.  */
   copy_insn_list (insns, map, static_chain_value);
 
+  /* Duplicate the EH regions.  This will create an offset from the
+     region numbers in the function we're inlining to the region
+     numbers in the calling function.  This must wait until after
+     copy_insn_list, as we need the insn map to be complete.  */
+  eh_region_offset = duplicate_eh_regions (inl_f, map);
+
   /* Now copy the REG_NOTES for those insns.  */
-  copy_insn_notes (insns, map);
+  copy_insn_notes (insns, map, eh_region_offset);
 
   /* If the insn sequence required one, emit the return label.  */
   if (map->local_return_label)
@@ -1259,12 +1245,6 @@ copy_insn_list (insns, map, static_chain_value)
 	       be ignored since we are changing (REG n) into
 	       inline_target.  */
 	    break;
-
-	  /* If the inline fn needs eh context, make sure that
-	     the current fn has one.  */
-	  if (GET_CODE (pattern) == USE
-	      && find_reg_note (insn, REG_EH_CONTEXT, 0) != 0)
-	    get_eh_context ();
 
 	  /* Ignore setting a function value that we don't want to use.  */
 	  if (map->inline_target == 0
@@ -1526,31 +1506,9 @@ copy_insn_list (insns, map, static_chain_value)
 	      copy = emit_note (NOTE_SOURCE_FILE (insn),
 				NOTE_LINE_NUMBER (insn));
 	      if (copy
-		  && (NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_BEG
-		      || NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_END))
-		{
-		  rtx label
-		    = get_label_from_map (map, NOTE_EH_HANDLER (copy));
-
-		  /* We have to duplicate the handlers for the original.  */
-		  if (NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_BEG)
-		    {
-		      /* We need to duplicate the handlers for the EH region
-			 and we need to indicate where the label map is */
-		      eif_eh_map = map;
-		      duplicate_eh_handlers (NOTE_EH_HANDLER (copy),
-					     CODE_LABEL_NUMBER (label),
-					     expand_inline_function_eh_labelmap);
-		    }
-
-		  /* We have to forward these both to match the new exception
-		     region.  */
-		  NOTE_EH_HANDLER (copy) = CODE_LABEL_NUMBER (label);
-		}
-	      else if (copy
-		       && (NOTE_LINE_NUMBER (copy) == NOTE_INSN_BLOCK_BEG
-			   || NOTE_LINE_NUMBER (copy) == NOTE_INSN_BLOCK_END)
-		       && NOTE_BLOCK (insn))
+		  && (NOTE_LINE_NUMBER (copy) == NOTE_INSN_BLOCK_BEG
+		      || NOTE_LINE_NUMBER (copy) == NOTE_INSN_BLOCK_END)
+		  && NOTE_BLOCK (insn))
 		{
 		  tree *mapped_block_p;
 
@@ -1587,9 +1545,10 @@ copy_insn_list (insns, map, static_chain_value)
    that are valid across the entire function.  */
 
 static void
-copy_insn_notes (insns, map)
+copy_insn_notes (insns, map, eh_region_offset)
      rtx insns;
      struct inline_remap *map;
+     int eh_region_offset;
 {
   rtx insn, new_insn;
 
@@ -1620,6 +1579,9 @@ copy_insn_notes (insns, map)
 	      next = XEXP (note, 1);
 	      if (REG_NOTE_KIND (note) == REG_LABEL)
 	        remove_note (new_insn, note);
+	      else if (REG_NOTE_KIND (note) == REG_EH_REGION)
+	        XEXP (note, 0) = GEN_INT (INTVAL (XEXP (note, 0))
+					  + eh_region_offset);
 	    }
         }
 
@@ -1628,8 +1590,12 @@ copy_insn_notes (insns, map)
 	{
 	  int i;
 	  for (i = 0; i < 3; i++)
-	    copy_insn_notes (XEXP (PATTERN (insn), i), map);
+	    copy_insn_notes (XEXP (PATTERN (insn), i), map, eh_region_offset);
 	}
+
+      if (GET_CODE (insn) == JUMP_INSN
+	  && GET_CODE (PATTERN (insn)) == RESX)
+	XINT (PATTERN (new_insn), 0) += eh_region_offset;
     }
 }
 
@@ -2070,12 +2036,6 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 			 (GET_MODE (orig),
 			  copy_rtx_and_substitute (constant, map, for_lhs)),
 			 0);
-	}
-      else if (SYMBOL_REF_NEED_ADJUST (orig))
-	{
-	  eif_eh_map = map;
-	  return rethrow_symbol_map (orig,
-				     expand_inline_function_eh_labelmap);
 	}
 
       return orig;

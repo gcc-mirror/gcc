@@ -1885,9 +1885,9 @@ catch_clause_parameter:
 		     declared initialized by the appropriate function
 		     call */
 		  tree ccpb = enter_block ();
-		  tree init = build_assignment (ASSIGN_TK, $2.location, 
-						TREE_PURPOSE ($3), 
-						soft_exceptioninfo_call_node);
+		  tree init = build_assignment
+		    (ASSIGN_TK, $2.location, TREE_PURPOSE ($3), 
+		     build_exception_object_ref (ptr_type_node));
 		  declare_local_variables (0, TREE_VALUE ($3),
 					   build_tree_list (TREE_PURPOSE ($3),
 							    init));
@@ -7124,9 +7124,6 @@ source_end_java_method ()
   java_parser_context_save_global ();
   lineno = ctxp->last_ccb_indent1;
 
-  /* Set EH language codes */
-  java_set_exception_lang_code ();
-
   /* Turn function bodies with only a NOP expr null, so they don't get
      generated at all and we won't get warnings when using the -W
      -Wall flags. */
@@ -7148,8 +7145,6 @@ source_end_java_method ()
   if (! flag_emit_class_files && ! flag_emit_xref)
     {
       lineno = DECL_SOURCE_LINE_LAST (fndecl);
-      /* Emit catch-finally clauses */
-      emit_handlers ();
       expand_function_end (input_filename, lineno, 0);
 
       /* Run the optimizers and output assembler code for this function. */
@@ -8405,7 +8400,7 @@ build_dot_class_method (class)
   
   /* We initialize the variable with the exception handler. */
   catch = build (MODIFY_EXPR, NULL_TREE, catch_clause_param,
-		 soft_exceptioninfo_call_node);
+		 build_exception_object_ref (ptr_type_node));
   add_stmt_to_block (catch_block, NULL_TREE, catch);
 
   /* We add the statement throwing the new exception */
@@ -12609,7 +12604,7 @@ try_reference_assignconv (lhs_type, rhs)
       else if (valid_ref_assignconv_cast_p (rhs_type, lhs_type, 0))
 	new_rhs = rhs;
       /* This is a magic assignment that we process differently */
-      else if (rhs == soft_exceptioninfo_call_node)
+      else if (TREE_CODE (rhs) == EXC_PTR_EXPR)
 	new_rhs = rhs;
     }
   return new_rhs;

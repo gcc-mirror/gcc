@@ -3146,6 +3146,11 @@ c_common_nodes_and_builtins ()
   builtin_function ("__builtin_frame_address", ptr_ftype_unsigned,
 		    BUILT_IN_FRAME_ADDRESS, BUILT_IN_NORMAL, NULL_PTR);
 
+#ifdef EH_RETURN_DATA_REGNO
+  builtin_function ("__builtin_eh_return_data_regno", int_ftype_int,
+		    BUILT_IN_EH_RETURN_DATA_REGNO, BUILT_IN_NORMAL, NULL_PTR);
+#endif
+
   builtin_function ("__builtin_alloca", ptr_ftype_sizetype,
 		    BUILT_IN_ALLOCA, BUILT_IN_NORMAL, "alloca");
   builtin_function_2 ("__builtin_ffs", "ffs",

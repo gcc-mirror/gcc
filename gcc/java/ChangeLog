@@ -1,5 +1,36 @@
 2001-03-28  Richard Henderson  <rth@redhat.com>
 
+	IA-64 ABI Exception Handling:
+	* Make-lang.in (except.o): Don't depend on eh-common.h.
+	* check-init.c (check_init): Handle EXC_PTR_EXPR.
+	* decl.c (init_decl_processing) [throw_node]: No _Jv_Sjlj_Throw.
+	[soft_exceptioninfo_call_node]: Remove.
+	[eh_personality_libfunc, lang_eh_runtime_type]: New.
+	(end_java_method): No emit_handlers.
+	* except.c (java_set_exception_lang_code): Remove.
+	(method_init_exceptions): Don't call it.
+	(prepare_eh_table_type): No CATCH_ALL_TYPE.
+	(build_exception_object_ref): New.
+	(expand_end_java_handler): Update for except.h name changes.
+	(emit_handlers, expand_resume_after_catch): Remove.
+	* expr.c (java_lang_expand_expr): Update for except.h name changes.
+	(process_jvm_instruction): Use build_exception_object_ref.
+	* java-tree.h (JTI_SOFT_EXCEPTIONINFO_CALL_NODE): Remove.
+	(soft_exceptioninfo_call_node): Remove.
+	(build_exception_object_ref): Declare.
+	* jcf-write.c (generate_bytecode_insns) [CALL_EXPR]: No
+	soft_exceptioninfo_call_node.  Move processing ...
+	[EXC_PTR_EXPR]: ... here.
+	* parse.h (BUILD_ASSIGN_EXCEPTION_INFO): Remove dead code.
+	* parse.y (catch_clause_parameter): Use build_exception_object_ref.
+	(source_end_java_method): No java_set_exception_lang_code or
+	emit_handlers.
+	(build_dot_class_method): Use build_exception_object_ref.
+	(try_reference_assignconv): Check EXC_PTR_EXPR not
+	soft_exceptioninfo_call_node.
+
+2001-03-28  Richard Henderson  <rth@redhat.com>
+
 	* java-tree.h (throw_node): Define as a single member of
 	java_global_trees instead of a separate array.
 	(JTI_THROW_NODE): New.

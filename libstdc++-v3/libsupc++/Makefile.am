@@ -75,7 +75,14 @@ sources = \
 	del_opnt.cc \
 	del_opv.cc \
 	del_opvnt.cc \
-	exception_support.cc \
+	eh_alloc.cc \
+	eh_aux_runtime.cc \
+	eh_catch.cc \
+	eh_exception.cc \
+	eh_globals.cc \
+	eh_personality.cc \
+	eh_terminate.cc \
+	eh_throw.cc \
 	new_handler.cc \
 	new_op.cc \
 	new_opnt.cc \

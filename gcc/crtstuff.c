@@ -60,15 +60,15 @@ Boston, MA 02111-1307, USA.  */
 #include "auto-host.h"
 #include "tconfig.h"
 #include "tsystem.h"
-#include "frame.h"
+#include "unwind-dw2-fde.h"
 
 #ifndef CRT_CALL_STATIC_FUNCTION
 # define CRT_CALL_STATIC_FUNCTION(func) func ()
 #endif
 
 /* We do not want to add the weak attribute to the declarations of these
-   routines in frame.h because that will cause the definition of these
-   symbols to be weak as well.
+   routines in unwind-dw2-fde.h because that will cause the definition of
+   these symbols to be weak as well.
 
    This exposes a core issue, how to handle creating weak references vs
    how to create weak definitions.  Either we have to have the definition

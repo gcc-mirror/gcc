@@ -397,8 +397,10 @@ LIBGCC2_INCLUDES =
 # Additional target-dependent options for compiling libgcc2.a.
 TARGET_LIBGCC2_CFLAGS =
 
-# Additional sources to handle exceptions; overridden by some targets.
-LIB2ADDEH = $(srcdir)/frame-dwarf2.c
+# Additional sources to handle exceptions; overridden on ia64.
+LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
+  $(srcdir)/unwind-sjlj.c
+LIB2ADDEHDEP = unwind.inc unwind-dw2-fde.h
 
 # libgcc1-test target (must also be overridable for a target)
 LIBGCC1_TEST = libgcc1-test
@@ -794,8 +796,6 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
     _mulvsi3 _mulvdi3 _negvsi2 _negvdi2 \
     _ctors
 
-LIB2FUNCS_EH = _eh
-
 FPBIT_FUNCS = _pack_sf _unpack_sf _addsub_sf _mul_sf _div_sf \
     _fpcmp_parts_sf _compare_sf _eq_sf _ne_sf _gt_sf _ge_sf \
     _lt_sf _le_sf _unord_sf _si_to_sf _sf_to_si _negate_sf _make_sf \
@@ -1033,7 +1033,7 @@ xlimits.h: glimits.h limitx.h limity.h
 #
 # Build libgcc.a.
 
-LIB2ADD = $(LIB2ADDEH) $(LIB2FUNCS_EXTRA)
+LIB2ADD = $(LIB2FUNCS_EXTRA)
 
 libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) xgcc$(exeext)
 	objext='$(objext)' \
@@ -1043,8 +1043,9 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) xgcc$(exeext)
 	LIB1ASMFUNCS='$(LIB1ASMFUNCS)' \
 	LIB1FUNCS_EXTRA='$(LIB1FUNCS_EXTRA)' \
 	LIB2FUNCS='$(LIB2FUNCS)' \
-	LIB2FUNCS_EH='$(LIB2FUNCS_EH)' \
 	LIB2ADD='$(LIB2ADD)' \
+	LIB2ADDEH='$(LIB2ADDEH)' \
+	LIB2ADDEHDEP='$(LIB2ADDEHDEP)' \
 	FPBIT='$(FPBIT)' \
 	FPBIT_FUNCS='$(FPBIT_FUNCS)' \
 	DPBIT='$(DPBIT)' \
@@ -1064,8 +1065,9 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) xgcc$(exeext)
 # All the things that might cause us to want to recompile bits of libgcc.
 LIBGCC_DEPS = $(GCC_PASSES) $(LANGUAGES) stmp-int-hdrs $(STMP_FIXPROTO) \
 	libgcc.mk $(srcdir)/libgcc1.c $(srcdir)/libgcc2.c $(TCONFIG_H) \
-	$(MACHMODE_H) longlong.h frame.h gbl-ctors.h config.status \
-	stmp-int-hdrs tsystem.h $(FPBIT) $(DPBIT) $(LIB2ADD) $(EXTRA_PARTS)
+	$(MACHMODE_H) longlong.h gbl-ctors.h config.status stmp-int-hdrs \
+	tsystem.h $(FPBIT) $(DPBIT) $(LIB2ADD) $(LIB2ADDEH) $(LIB2ADDEHDEP) \
+	$(EXTRA_PARTS)
 
 libgcc.a: $(LIBGCC_DEPS)
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
@@ -1125,14 +1127,14 @@ stmp-multilib: $(LIBGCC_DEPS)
 # linked using GCC on systems using COFF or ELF, for the sake of C++
 # constructors.
 $(T)crtbegin.o: crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
-  frame.h gbl-ctors.h stmp-int-hdrs tsystem.h
+  gbl-ctors.h stmp-int-hdrs tsystem.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
 	  -finhibit-size-directive -fno-inline-functions \
 	  -fno-exceptions $(CRTSTUFF_T_CFLAGS) @inhibit_libc@ \
 	  -c $(srcdir)/crtstuff.c -DCRT_BEGIN -o $(T)crtbegin$(objext)
 
 $(T)crtend.o: crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
-  frame.h gbl-ctors.h stmp-int-hdrs tsystem.h
+  gbl-ctors.h stmp-int-hdrs tsystem.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
 	  -finhibit-size-directive -fno-inline-functions \
 	  -fno-exceptions $(CRTSTUFF_T_CFLAGS) @inhibit_libc@ \
@@ -1140,7 +1142,7 @@ $(T)crtend.o: crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
 
 # These are versions of crtbegin and crtend for shared libraries.
 $(T)crtbeginS.o: crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
-  frame.h gbl-ctors.h stmp-int-hdrs tsystem.h
+  gbl-ctors.h stmp-int-hdrs tsystem.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
 	  -finhibit-size-directive -fno-inline-functions \
 	  -fno-exceptions $(CRTSTUFF_T_CFLAGS_S) @inhibit_libc@ \
@@ -1148,7 +1150,7 @@ $(T)crtbeginS.o: crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
 	  -o $(T)crtbeginS$(objext)
 
 $(T)crtendS.o: crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
-  frame.h gbl-ctors.h stmp-int-hdrs tsystem.h
+  gbl-ctors.h stmp-int-hdrs tsystem.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
 	  -finhibit-size-directive -fno-inline-functions \
 	  -fno-exceptions $(CRTSTUFF_T_CFLAGS_S) @inhibit_libc@ \
@@ -1394,8 +1396,9 @@ stmt.o : stmt.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-config.h hard-reg-set.h $(EXPR_H) except.h \
    $(LOOP_H) $(RECOG_H) toplev.h output.h varray.h $(GGC_H) $(TM_P_H)
 except.o : except.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
-   function.h $(EXPR_H) $(REGS_H) hard-reg-set.h \
-   insn-config.h $(RECOG_H) output.h except.h toplev.h intl.h $(GGC_H) $(TM_P_H)
+   except.h function.h $(EXPR_H) integrate.h \
+   insn-config.h hard-reg-set.h $(BASIC_BLOCK_H) output.h \
+   dwarf2asm.h dwarf2out.h toplev.h $(HASHTAB_H) intl.h $(GGC_H)
 expr.o : expr.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h function.h \
    $(REGS_H) $(EXPR_H) insn-config.h $(RECOG_H) \
    output.h typeclass.h hard-reg-set.h toplev.h hard-reg-set.h except.h \
@@ -1414,7 +1417,7 @@ explow.o : explow.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
    toplev.h function.h $(TM_P_H)
 optabs.o : optabs.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h  \
    insn-config.h $(EXPR_H) $(RECOG_H) reload.h \
-   toplev.h $(GGC_H) real.h $(TM_P_H)
+   toplev.h $(GGC_H) real.h $(TM_P_H) except.h
 dbxout.o : dbxout.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) flags.h $(REGS_H) \
    insn-config.h reload.h gstab.h xcoffout.h output.h dbxout.h toplev.h \
    $(TM_P_H)

@@ -1037,6 +1037,7 @@ cp_statement_code_p (code)
     case RETURN_INIT:
     case TRY_BLOCK:
     case HANDLER:
+    case EH_SPEC_BLOCK:
       return 1;
 
     default:

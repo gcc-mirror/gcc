@@ -204,7 +204,6 @@ static void compute_argument_addresses		PARAMS ((struct arg_data *,
 static rtx rtx_for_function_call		PARAMS ((tree, tree));
 static void load_register_parameters		PARAMS ((struct arg_data *,
 							 int, rtx *, int));
-static int libfunc_nothrow			PARAMS ((rtx));
 static rtx emit_library_call_value_1 		PARAMS ((int, rtx, rtx,
 							 enum libcall_type,
 							 enum machine_mode,
@@ -3444,22 +3443,6 @@ expand_call (exp, target, ignore)
   return target;
 }
 
-/* Returns nonzero if FUN is the symbol for a library function which can
-   not throw.  */
-
-static int
-libfunc_nothrow (fun)
-     rtx fun;
-{
-  if (fun == throw_libfunc
-      || fun == rethrow_libfunc
-      || fun == sjthrow_libfunc
-      || fun == sjpopnthrow_libfunc)
-    return 0;
-
-  return 1;
-}
-
 /* Output a library call to function FUN (a SYMBOL_REF rtx).
    The RETVAL parameter specifies whether return value needs to be saved, other
    parameters are documented in the emit_library_call function bellow.  */
@@ -3501,7 +3484,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
   rtx valreg;
   int pcc_struct_value = 0;
   int struct_value_size = 0;
-  int flags = 0;
+  int flags;
   int reg_parm_stack_space = 0;
   int needed;
   rtx before_call;
@@ -3525,6 +3508,9 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 #endif
 #endif
 
+  /* No library functions can throw.  */
+  flags = ECF_NOTHROW;
+
   if (fn_type == LCT_CONST_MAKE_BLOCK)
     flags |= ECF_CONST;
   else if (fn_type == LCT_PURE_MAKE_BLOCK)
@@ -3532,9 +3518,6 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
   else if (fn_type == LCT_NORETURN)
     flags |= ECF_NORETURN;
   fun = orgfun;
-
-  if (libfunc_nothrow (fun))
-    flags |= ECF_NOTHROW;
 
 #ifdef PREFERRED_STACK_BOUNDARY
   /* Ensure current function's preferred stack boundary is at least

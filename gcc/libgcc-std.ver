@@ -114,28 +114,27 @@ GCC_3.0 {
   __gcc_bcmp
 
   # EH symbols
-  __default_terminate
+  _Unwind_DeleteException
+  _Unwind_ForcedUnwind
+  _Unwind_GetGR
+  _Unwind_GetIP
+  _Unwind_GetLanguageSpecificData
+  _Unwind_GetRegionStart
+  _Unwind_RaiseException
+  _Unwind_Resume
+  _Unwind_SetGR
+  _Unwind_SetIP
   __deregister_frame
   __deregister_frame_info
-  __eh_alloc
-  __eh_free
-  __eh_rtime_match
-  __frame_state_for
-  __get_dynamic_handler_chain
-  __get_eh_context
-  __get_eh_info
-  __get_eh_table_language
-  __get_eh_table_version
   __register_frame
   __register_frame_info
   __register_frame_info_table
   __register_frame_table
-  __rethrow
-  __sjpopnthrow
-  __sjthrow
-  __terminate
-  __terminate_set_func
-  __throw
-  __throw_type_match
-  __unwinding_cleanup
+
+  # SjLj EH symbols
+  _Unwind_SjLj_Register
+  _Unwind_SjLj_Unregister
+  _Unwind_SjLj_RaiseException
+  _Unwind_SjLj_ForcedUnwind
+  _Unwind_SjLj_Resume
 }

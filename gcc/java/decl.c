@@ -29,12 +29,14 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "tree.h"
+#include "rtl.h"
 #include "toplev.h"
 #include "flags.h"
 #include "java-tree.h"
 #include "jcf.h"
 #include "toplev.h"
 #include "function.h"
+#include "expr.h"
 #include "except.h"
 #include "java-except.h"
 #include "ggc.h"
@@ -725,13 +727,14 @@ init_decl_processing ()
 							       t),
 					  0, NOT_BUILT_IN,
 					  NULL_PTR);
-  throw_node = builtin_function ((USING_SJLJ_EXCEPTIONS
-				  ? "_Jv_Throw" : "_Jv_Sjlj_Throw"),
+
+  throw_node = builtin_function ("_Jv_Throw",
 				 build_function_type (ptr_type_node, t),
 				 0, NOT_BUILT_IN, NULL_PTR);
   /* Mark throw_nodes as `noreturn' functions with side effects.  */
   TREE_THIS_VOLATILE (throw_node) = 1;
   TREE_SIDE_EFFECTS (throw_node) = 1;
+
   t = build_function_type (int_type_node, endlink);
   soft_monitorenter_node 
     = builtin_function ("_Jv_MonitorEnter", t, 0, NOT_BUILT_IN,
@@ -834,15 +837,6 @@ init_decl_processing ()
 			build_function_type (double_type_node, t),
 			BUILT_IN_FMOD, BUILT_IN_NORMAL, "fmod");
 
-  soft_exceptioninfo_call_node
-    = build (CALL_EXPR, 
-	     ptr_type_node,
-	     build_address_of 
-	       (builtin_function ("_Jv_exception_info", 
-				  build_function_type (ptr_type_node, endlink),
-				  0, NOT_BUILT_IN, NULL_PTR)),
-	     NULL_TREE, NULL_TREE);
-  TREE_SIDE_EFFECTS (soft_exceptioninfo_call_node) = 1;
 #if 0
   t = tree_cons (NULL_TREE, float_type_node,
 		 tree_cons (NULL_TREE, float_type_node, endlink));
@@ -871,6 +865,12 @@ init_decl_processing ()
     = builtin_function ("_Jv_remJ",
 			build_function_type (long_type_node, t),
 			0, NOT_BUILT_IN, NULL_PTR);
+
+  /* Initialize variables for except.c.  */
+  eh_personality_libfunc = init_one_libfunc (USING_SJLJ_EXCEPTIONS
+                                             ? "__gcj_personality_sj0"
+                                             : "__gcj_personality_v0");
+  lang_eh_runtime_type = prepare_eh_table_type;
 
   init_jcf_parse ();
 
@@ -1827,8 +1827,6 @@ end_java_method ()
   poplevel (1, 0, 1);
 
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
-
-  emit_handlers ();
 
   /* Generate rtl for function exit.  */
   expand_function_end (input_filename, lineno, 0);

@@ -2848,26 +2848,24 @@ You will not normally need to define this pattern unless you also define
 @code{builtin_setjmp_setup}.  The single argument is a pointer to the
 @code{jmp_buf}.
 
-@cindex @code{eh_epilogue} instruction pattern
-@item @samp{eh_epilogue}
+@cindex @code{eh_return} instruction pattern
+@item @samp{eh_return}
 This pattern, if defined, affects the way @code{__builtin_eh_return},
-and thence @code{__throw} are built.  It is intended to allow communication
-between the exception handling machinery and the normal epilogue code
-for the target.
+and thence the call frame exception handling library routines, are
+built.  It is intended to handle non-trivial actions needed along
+the abnormal return path.
 
-The pattern takes three arguments.  The first is the exception context
-pointer.  This will have already been copied to the function return
-register appropriate for a pointer; normally this can be ignored.  The
-second argument is an offset to be added to the stack pointer.  It will 
-have been copied to some arbitrary call-clobbered hard reg so that it
-will survive until after reload to when the normal epilogue is generated. 
-The final argument is the address of the exception handler to which
+The pattern takes two arguments.  The first is an offset to be applied
+to the stack pointer.  It will have been copied to some appropriate
+location (typically @code{EH_RETURN_STACKADJ_RTX}) which will survive
+until after reload to when the normal epilogue is generated. 
+The second argument is the address of the exception handler to which
 the function should return.  This will normally need to copied by the
-pattern to some special register.
+pattern to some special register or memory location.
 
-This pattern must be defined if @code{RETURN_ADDR_RTX} does not yield
-something that can be reliably and permanently modified, i.e. a fixed
-hard register or a stack memory reference.
+This pattern only needs to be defined if call frame exception handling
+is to be used, and simple moves to @code{EH_RETURN_STACKADJ_RTX} and
+@code{EH_RETURN_HANDLER_RTX} are not sufficient.
 
 @cindex @code{prologue} instruction pattern
 @item @samp{prologue}

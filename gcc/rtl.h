@@ -924,10 +924,6 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
 /* Flag in a SYMBOL_REF for machine-specific purposes.  */
 #define SYMBOL_REF_FLAG(RTX) ((RTX)->volatil)
 
-/* 1 in a SYMBOL_REF if it represents a symbol which might have to change
-   if its inlined or unrolled. */
-#define SYMBOL_REF_NEED_ADJUST(RTX)  ((RTX)->in_struct)
-
 /* 1 means a SYMBOL_REF has been the library function in emit_library_call.  */
 #define SYMBOL_REF_USED(RTX) ((RTX)->used)
 

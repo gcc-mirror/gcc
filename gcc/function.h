@@ -409,6 +409,9 @@ struct function
      either as a subroutine or builtin.  */
   unsigned int calls_alloca : 1;
 
+  /* Nonzero if the function calls __builtin_eh_return.  */
+  unsigned int calls_eh_return : 1;
+
   /* Nonzero if function being compiled receives nonlocal gotos
      from nested functions.  */
   unsigned int has_nonlocal_label : 1;
@@ -488,6 +491,7 @@ extern struct function *all_functions;
 #define current_function_calls_setjmp (cfun->calls_setjmp)
 #define current_function_calls_alloca (cfun->calls_alloca)
 #define current_function_calls_longjmp (cfun->calls_longjmp)
+#define current_function_calls_eh_return (cfun->calls_eh_return)
 #define current_function_has_computed_jump (cfun->has_computed_jump)
 #define current_function_contains_functions (cfun->contains_functions)
 #define current_function_is_thunk (cfun->is_thunk)

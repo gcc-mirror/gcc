@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "flags.h"
 #include "function.h"
+#include "except.h"
 #include "expr.h"
 #include "recog.h"
 #include "reload.h"
@@ -4758,12 +4759,9 @@ init_optabs ()
   memset_libfunc = init_one_libfunc ("memset");
   bzero_libfunc = init_one_libfunc ("bzero");
 
-  throw_libfunc = init_one_libfunc ("__throw");
-  rethrow_libfunc = init_one_libfunc ("__rethrow");
-  sjthrow_libfunc = init_one_libfunc ("__sjthrow");
-  sjpopnthrow_libfunc = init_one_libfunc ("__sjpopnthrow");
-  terminate_libfunc = init_one_libfunc ("__terminate");
-  eh_rtime_match_libfunc = init_one_libfunc ("__eh_rtime_match");
+  unwind_resume_libfunc = init_one_libfunc (USING_SJLJ_EXCEPTIONS
+					    ? "_Unwind_SjLj_Resume"
+					    : "_Unwind_Resume");
 #ifndef DONT_USE_BUILTIN_SETJMP
   setjmp_libfunc = init_one_libfunc ("__builtin_setjmp");
   longjmp_libfunc = init_one_libfunc ("__builtin_longjmp");
@@ -4771,6 +4769,9 @@ init_optabs ()
   setjmp_libfunc = init_one_libfunc ("setjmp");
   longjmp_libfunc = init_one_libfunc ("longjmp");
 #endif
+  unwind_sjlj_register_libfunc = init_one_libfunc ("_Unwind_SjLj_Register");
+  unwind_sjlj_unregister_libfunc
+    = init_one_libfunc ("_Unwind_SjLj_Unregister");
 
   eqhf2_libfunc = init_one_libfunc ("__eqhf2");
   nehf2_libfunc = init_one_libfunc ("__nehf2");

@@ -661,14 +661,6 @@ typedef struct _jdeplist {
   build_new_invocation (wfl_string_buffer, 				      \
 			(ARG ? build_tree_list (NULL, (ARG)) : NULL_TREE))
 
-/* For exception handling, build diverse function calls */
-#define BUILD_ASSIGN_EXCEPTION_INFO(WHERE, TO)		\
-  {							\
-    (WHERE) = build (MODIFY_EXPR, void_type_node, (TO),	\
-		     soft_exceptioninfo_call_node);	\
-    TREE_SIDE_EFFECTS (WHERE) = 1;			\
-  }
-
 #define BUILD_THROW(WHERE, WHAT)				\
   {								\
     (WHERE) = 							\

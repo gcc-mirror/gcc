@@ -14,8 +14,9 @@
 # LIB1ASMFUNCS
 # LIB1FUNCS_EXTRA
 # LIB2FUNCS
-# LIB2FUNCS_EH
 # LIB2ADD
+# LIB2ADDEH
+# LIB2ADDEHDEP
 # FPBIT
 # FPBIT_FUNCS
 # DPBIT
@@ -79,7 +80,7 @@ make_compile='$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 libgcc1_c_dep='stmp-dirs $(srcdir)/libgcc1.c $(CONFIG_H)'
 
 # Dependancies for libgcc2.c
-libgcc2_c_dep='stmp-dirs $(srcdir)/libgcc2.c $(CONFIG_H) $(MACHMODE_H) longlong.h frame.h gbl-ctors.h config.status stmp-int-hdrs tsystem.h'
+libgcc2_c_dep='stmp-dirs $(srcdir)/libgcc2.c $(CONFIG_H) $(MACHMODE_H) longlong.h gbl-ctors.h config.status stmp-int-hdrs tsystem.h'" $LIB2ADDEHDEP"
 
 # Dependancies for fp-bit.c
 fpbit_c_dep='stmp-dirs config.status tsystem.h'
@@ -180,19 +181,6 @@ for name in $LIB2FUNCS; do
   libgcc2_objs="$libgcc2_objs ${name}${objext}"
 done
 
-for name in $LIB2FUNCS_EH; do
-  for ml in $MULTILIBS; do
-    dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
-    flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
-    out="libgcc/${dir}/${name}${objext}"
-
-    echo $out: $libgcc2_c_dep
-    echo "	$gcc_compile" '$(MAYBE_USE_COLLECT2)' -fexceptions \
-      $flags -DL$name -c '$(srcdir)/libgcc2.c' -o $out
-  done
-  libgcc2_objs="$libgcc2_objs ${name}${objext}"
-done
-
 if [ "$FPBIT" ]; then
   for name in $FPBIT_FUNCS; do
     for ml in $MULTILIBS; do
@@ -237,6 +225,24 @@ for file in $LIB2ADD; do
 
     echo $out: stmp-dirs $file
     echo "	$gcc_compile" $flags -c $file -o $out
+  done
+  libgcc2_objs="$libgcc2_objs ${oname}${objext}"
+done
+
+for file in $LIB2ADDEH; do
+  name=`echo $file | sed -e 's/[.][cSo]$//' -e 's/[.]asm$//' -e 's/[.]txt$//'`
+  oname=`echo $name | sed -e 's,.*/,,'`
+
+  for ml in $MULTILIBS; do
+    dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
+    flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+    out="libgcc/${dir}/${oname}${objext}"
+    if [ ${name}.asm = ${file} ]; then
+      flags="$flags -xassembler-with-cpp"
+    fi
+
+    echo $out: stmp-dirs $file
+    echo "	$gcc_compile" $flags -fexceptions -c $file -o $out
   done
   libgcc2_objs="$libgcc2_objs ${oname}${objext}"
 done

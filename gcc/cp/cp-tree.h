@@ -616,7 +616,6 @@ enum cp_tree_index
     CPTI_PFN_IDENTIFIER,
     CPTI_PFN_OR_DELTA2_IDENTIFIER,
     CPTI_VPTR_IDENTIFIER,
-    CPTI_PUSH_EXCEPTION_IDENTIFIER,
     CPTI_STD_IDENTIFIER,
 
     CPTI_LANG_NAME_C,
@@ -627,6 +626,7 @@ enum cp_tree_index
     CPTI_NULL,
     CPTI_JCLASS,
     CPTI_TERMINATE,
+    CPTI_CALL_UNEXPECTED,
     CPTI_ATEXIT,
     CPTI_DSO_HANDLE,
     CPTI_DCAST,
@@ -740,9 +740,6 @@ extern tree cp_global_trees[CPTI_MAX];
 #define pfn_identifier                  cp_global_trees[CPTI_PFN_IDENTIFIER]
 #define pfn_or_delta2_identifier        cp_global_trees[CPTI_PFN_OR_DELTA2_IDENTIFIER]
 #define vptr_identifier                 cp_global_trees[CPTI_VPTR_IDENTIFIER]
-/* The name of the function to call to push an exception onto the
-   exception stack.  */
-#define cp_push_exception_identifier    cp_global_trees[CPTI_PUSH_EXCEPTION_IDENTIFIER]
 /* The name of the std namespace.  */
 #define std_identifier                  cp_global_trees[CPTI_STD_IDENTIFIER]
 #define lang_name_c                     cp_global_trees[CPTI_LANG_NAME_C]
@@ -760,6 +757,9 @@ extern tree cp_global_trees[CPTI_MAX];
 
 /* The declaration for `std::terminate'.  */
 #define terminate_node                  cp_global_trees[CPTI_TERMINATE]
+
+/* The declaration for "__cxa_call_unexpected".  */
+#define call_unexpected_node            cp_global_trees[CPTI_CALL_UNEXPECTED]
 
 /* A pointer to `std::atexit'.  */
 #define atexit_node                     cp_global_trees[CPTI_ATEXIT]
@@ -872,7 +872,7 @@ struct cp_language_function
   tree x_dtor_label;
   tree x_current_class_ptr;
   tree x_current_class_ref;
-  tree x_eh_spec_try_block;
+  tree x_eh_spec_block;
   tree x_in_charge_parm;
   tree x_vtt_parm;
 
@@ -916,10 +916,10 @@ struct cp_language_function
 #define current_class_ref \
   (cfun ? cp_function_chain->x_current_class_ref : NULL_TREE)
 
-/* The TRY_BLOCK for the exception-specifiers for the current
+/* The EH_SPEC_BLOCK for the exception-specifiers for the current
    function, if any.  */
 
-#define current_eh_spec_try_block cp_function_chain->x_eh_spec_try_block
+#define current_eh_spec_block cp_function_chain->x_eh_spec_block
 
 /* The `__in_chrg' parameter for the current function.  Only used for
    constructors and destructors.  */
@@ -3035,6 +3035,9 @@ extern int flag_new_for_scope;
 #define TRY_STMTS(NODE)         TREE_OPERAND (TRY_BLOCK_CHECK (NODE), 0)
 #define TRY_HANDLERS(NODE)      TREE_OPERAND (TRY_BLOCK_CHECK (NODE), 1)
 
+#define EH_SPEC_STMTS(NODE)     TREE_OPERAND (EH_SPEC_BLOCK_CHECK (NODE), 0)
+#define EH_SPEC_RAISES(NODE)    TREE_OPERAND (EH_SPEC_BLOCK_CHECK (NODE), 1)
+
 /* Nonzero if this try block is a function try block.  */
 #define FN_TRY_BLOCK_P(NODE)    TREE_LANG_FLAG_3 (TRY_BLOCK_CHECK (NODE))
 #define HANDLER_PARMS(NODE)     TREE_OPERAND (HANDLER_CHECK (NODE), 0)
@@ -4000,9 +4003,9 @@ extern void init_exception_processing		PARAMS ((void));
 extern tree expand_start_catch_block		PARAMS ((tree));
 extern void expand_end_catch_block		PARAMS ((tree));
 extern void expand_builtin_throw		PARAMS ((void));
-extern tree expand_start_eh_spec		PARAMS ((void));
-extern void expand_end_eh_spec		        PARAMS ((tree, tree));
+extern void expand_eh_spec_block	        PARAMS ((tree));
 extern void expand_exception_blocks		PARAMS ((void));
+extern tree build_exc_ptr			PARAMS ((void));
 extern tree build_throw				PARAMS ((tree));
 extern void mark_all_runtime_matches            PARAMS ((void));
 extern int nothrow_libfn_p			PARAMS ((tree));
@@ -4256,6 +4259,8 @@ extern tree finish_case_label                   PARAMS ((tree, tree));
 extern tree finish_goto_stmt                    PARAMS ((tree));
 extern tree begin_try_block                     PARAMS ((void));
 extern void finish_try_block                    PARAMS ((tree));
+extern tree begin_eh_spec_block			PARAMS ((void));
+extern void finish_eh_spec_block		PARAMS ((tree, tree));
 extern void finish_handler_sequence             PARAMS ((tree));
 extern tree begin_function_try_block            PARAMS ((void));
 extern void finish_function_try_block           PARAMS ((tree));

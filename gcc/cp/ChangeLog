@@ -1,5 +1,61 @@
 2001-03-28  Richard Henderson  <rth@redhat.com>
 
+	IA-64 ABI Exception Handling:
+	* cp-tree.def (EH_SPEC_BLOCK): New.
+	(MUST_NOT_THROW_EXPR): New.
+	* cp-tree.h: Update changed function declarations.
+	(CPTI_PUSH_EXCEPTION_IDENTIFIER): Remove.
+	(CPTI_CALL_UNEXPECTED): New.
+	(struct cp_language_function): Rename x_eh_spec_try_block
+	to x_eh_spec_block.
+	(EH_SPEC_STMTS, EH_SPEC_RAISES): New.
+	* decl.c (current_binding_level): If no current function 
+	bindings, revert to scope_chain.
+	(initialize_predefined_identifiers): Remove __cp_push_exception.
+	(store_parm_decls): Use begin_eh_spec_block.
+	(finish_function): Use finish_eh_spec_block.
+	(mark_lang_function): Update for name changes.
+	* decl2.c (finish_file): No mark_all_runtime_matches.
+	* dump.c (cp_dump_tree): Handle new tree codes.
+	* error.c (dump_expr) [BIND_EXPR]: Fix typo.
+	* except.c (catch_language_init, catch_language): Remove.
+	(init_exception_processing): Don't set language code.
+	Initialize call_unexpected_node, protect_cleanup_actions,
+	eh_personality_libfunc, lang_eh_runtime_type.
+	(call_eh_info, push_eh_info, get_eh_info, get_eh_value): Remove.
+	(get_eh_type, get_eh_caught, get_eh_handlers): Remove.
+	(prepare_eh_type): Split out type canonicalizations ...
+	(build_eh_type_type): ... from here.
+	(build_eh_type_type_ref): Remove.
+	(mark_all_runtime_matches): Remove.
+	(build_exc_ptr): New.
+	(do_begin_catch, do_end_catch): New.
+	(do_pop_exception): Remove.
+	(build_terminate_handler): Remove.
+	(choose_personality_routine): Split out language choice from ...
+	(initialize_handler_parm): ... here.
+	Use MUST_NOT_THROW_EXPR.
+	(expand_start_catch_block): Use do_begin_catch.  Simplify Java
+	exception object handling.
+	(expand_start_eh_spec, expand_end_eh_spec): Remove.
+	(expand_exception_blocks, alloc_eh_object): Remove.
+	(begin_eh_spec_block, finish_eh_spec_block): New.
+	(do_allocate_exception, do_free_exception): New.
+	(expand_throw): Merge into ...
+	(build_throw): ... here.  Update for abi.
+	* expr.c (cplus_expand_expr): No expand_internal_throw.
+	Handle MUST_NOT_THROW_EXPR.
+	* pt.c (tsubst_expr): Handle EH_SPEC_BLOCK.
+	* semantics.c (*) Update for except.h name changes.
+	(genrtl_try_block): No protect_with_terminate.
+	(genrtl_eh_spec_block): New.
+	(genrtl_handler): Don't emit the goto here.
+	(cp_expand_stmt): Handle EH_SPEC_BLOCK.
+	(genrtl_finish_function): Don't expand_exception_blocks.
+	* tree.c (cp_statement_code_p): Handle EH_SPEC_BLOCK.
+
+2001-03-28  Richard Henderson  <rth@redhat.com>
+
 	* decl.c (struct named_label_list): Rename eh_region to
 	in_try_scope, add in_catch_scope.
 	(struct binding_level): Rename eh_region to is_try_scope,

@@ -254,7 +254,7 @@ java/decl.o: java/decl.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   toplev.h $(SYSTEM_H) function.h gcc.h
 java/except.o: java/except.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h real.h \
   $(RTL_H) java/javaop.h java/java-opcodes.h except.h java/java-except.h \
-  eh-common.h toplev.h $(SYSTEM_H) function.h
+  toplev.h $(SYSTEM_H) function.h
 java/expr.o: java/expr.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h real.h \
   $(RTL_H) $(EXPR_H) java/javaop.h java/java-opcodes.h except.h \
   java/java-except.h java/java-except.h java/parse.h toplev.h \

@@ -1,3 +1,117 @@
+2001-03-28  Richard Henderson  <rth@redhat.com>
+
+	* except.c: Rewrite entirely for IA-64 ABI exception handling.
+	* except.h: Likewise.
+
+	* Makefile.in (LIB2ADDEH): Mention unwind-dw2*.c
+	(LIB2ADDEHDEP): New.
+	(LIB2FUNCS_EH): Remove.
+	(LIB2ADD): Remove LIB2ADDEH.
+	(libgcc.mk): Pass LIB2ADDEHDEP, don't pass LIB2FUNCS_EH.
+	(LIBGCC_DEPS): Use LIB2ADDEHDEP.
+	(crt{begin,end}[S].o): Likewise.
+	(except.o): Update includes.
+	* mklibgcc.in: Remove LIB2FUNCS_EH, add LIB2ADDEH, LIB2ADDEHDEP.
+	(libgcc2_c_dep): Use LIB2ADDEHDEP.
+
+	* basic-block.h (struct basic_block_def): Remove eh_beg, eh_end.
+	* bb-reorder.c (reorder_basic_blocks): Don't disable for EH.
+	* builtins.def (BUILT_IN_EH_RETURN_DATA_REGNO): New.
+	* builtins.c (expand_builtin): Implement it.
+	[BUILT_IN_EH_RETURN]: Update for nr arguments change.
+	* c-common.c (c_common_nodes_and_builtins): Declare it.
+	* c-decl.c (init_decl_processing): Update __builtin_eh_return.
+	* calls.c (libfunc_nothrow): Remove.
+	(emit_library_call_value_1): Don't call it.
+	* crtstuff.c: Include unwind-dw2-fde.h instead of frame.h.
+	* dwarf2.h (dwarf_call_frame_info): Add dwarf2.1 elements.
+	(DW_EH_PE_*): New defines for pointer encoding in .eh_frame.
+	* dwarf2out.c (struct dw_fde_struct): Add uses_eh_lsda, funcdef_number.
+	(current_funcdef_number): Globalize.
+	(output_call_frame_info): Emit frame data if an lsda is needed.
+	Generate augmentation for personality routine.  Don't play with
+	difference symbols.
+	(dwarf2out_begin_prologue): Record funcdef_number.
+	* dwarf2out.h (current_funcdef_number): Declare.
+	* expr.c (expand_expr): Update for except.h name changes.
+	Remove POPDCC_EXPR, POPDHC_EXPR.  Add EXC_PTR_EXPR.
+	* expr.h (LTI_throw, LTI_rethrow): Remove.
+	(LTI_sjthrow, LTI_sjpopnthrow, LTI_terminate): Remove.
+	(LTI_eh_rtime_match): Remove.
+	(LTI_unwind_resume, LTI_eh_personality): Add.
+	(LTI_unwind_sjlj_register, LTI_unwind_sjlj_unregister): Add.
+	* final.c (final): Don't call check_exception_handler_labels,
+	init_insn_eh_region, or free_insn_eh_region.
+	(final_scan_insn): Always emit debug labels for 
+	NOTE_INSN_EH_REGION notes.
+	* flags.h (flag_new_exceptions): Remove.
+	* flow.c (entry_exit_blocks): Remove eh_beg, eh_end.
+	(record_active_eh_regions): Remove.
+	(count_basic_blocks): Check all instructions for REG_EH_REGION.
+	Use can_throw_internal.
+	(find_basic_blocks_1): Likewise.
+	(move_stray_eh_region_notes): Remove.
+	(find_label_refs): No eh_return_stub_label.
+	(make_edges): Likewise.  No init/free_eh_nesting_info.  Handle RESX.
+	(make_eh_edge): No eh_nest_info.  Update for reachable_handlers
+	changes.
+	(delete_unreachable_blocks): Don't track deleted handlers.
+	(flow_delete_block): Use maybe_remove_eh_handler.
+	(delete_eh_regions): Remove.
+	(merge_blocks): Don't check for eh region match.
+	(mark_regs_live_at_end): Handle EH_RETURN_DATA_REGNO, 
+	EH_RETURN_STACKADJ_RTX, EH_RETURN_HANDLER_RTX.
+	(init_propagate_block_info): Disable dead frame store optimization
+	when current_function_calls_eh_return.
+	(dump_bb): Don't print eh_beg, eh_end.
+	* function.c (fixup_var_refs): No catch_clauses.
+	(expand_function_end): Likewise.  Call expand_eh_return before
+	the return register use.  Call sjlj_emit_function_exit_after.
+	(expand_function_start): Force pseudo DECL_RESULT if sjlj exceptions.
+	* function.h (struct function): Add calls_eh_return, uses_eh_lsda.
+	* ifcvt.c (dead_or_predicable): Remove eh region check.
+	* integrate.c (function_cannot_inline_p): Disallow __builtin_eh_return.
+	Don't check for EH vs parameters.
+	(expand_inline_function_eh_labelmap, eif_eh_map): Remove.
+	(expand_inline_function): Call duplicate_eh_regions.
+	(copy_insn_list): Don't handle NOTE_INSN_EH_REGION_BEG/END.
+	(copy_insn_notes): Remap REG_EH_REGION notes.
+	(copy_rtx_and_substitute): Remove SYMBOL_REF_NEED_ADJUST check.
+	* integrate.h (struct inline_remap): Add local_return_label.
+	* jump.c (jump_optimize_1): Don't init/free_insn_eh_region, nor
+	check_exception_handler_labels, nor exception_optimize.
+	(find_cross_jump): No EH region check.
+	* optabs.c (init_optabs): Update for changed eh libfuncs.
+	* rtl.def (RESX): New.
+	* rtl.h (SYMBOL_REF_NEED_ADJUST): Remove.
+	* stmt.c (expand_decl_cleanup): Simplify using_eh_for_cleanups_p
+	checks.  Update for except.h name changes.
+	(expand_cleanups): Likewise.
+	(expand_dcc_cleanup, expand_dhc_cleanup): Remove.
+	* toplev.c (dump_file_index, dump_file): Add .02.eh dump.
+	(compile_file): Call init_eh before init_optabs.  Don't
+	output_exception_table here.
+	(rest_of_compilation): Call convert_from_eh_region_ranges,
+	convert_to_eh_region_ranges, output_function_exception_table.
+	Don't emit_eh_context.
+	* tree.def (POPDHC_EXPR, POPDCC_EXPR): Remove.
+	(EXC_PTR_EXPR): New.
+
+	* md.texi (eh_epilogue): Remove.
+	(eh_return): Document.
+	* tm.texi (EH_RETURN_DATA_REGNO): Document.
+	(EH_RETURN_STACKADJ_RTX, EH_RETURN_HANDLER_RTX): Document.
+
+	* eh-common.h: Remove file.
+	* frame-dwarf2.c, frame.c, frame.h: Remove files.
+	* libgcc2.c (L_eh): Remove.
+
+	* unwind-dw2-fde.c: New file, largely copied from frame.c.
+	* unwind-dw2-fde.h: New file.
+	* unwind-dw2.c: New file, largely cribbed from frame-dwarf2.c.
+	* unwind-sjlj.c, unwind.h, unwind.inc: New files.
+	* libgcc-std.ver: Update for eh symbols.
+
 2001-03-27  Richard Henderson  <rth@redhat.com>
 
 	* regmove.c (perhaps_ends_bb_p): Use can_throw_internal to

@@ -3621,10 +3621,6 @@ finish_file ()
 	    }
 	}
 
-      /* Mark all functions that might deal with exception-handling as
-	 referenced.  */
-      mark_all_runtime_matches ();
-
       /* We lie to the back-end, pretending that some functions are
 	 not defined when they really are.  This keeps these functions
 	 from being put out unnecessarily.  But, we must stop lying

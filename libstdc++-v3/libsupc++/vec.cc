@@ -35,7 +35,7 @@
 #include <exception>
 #include <exception_defines.h>
 
-#include "exception_support.h"
+#include "unwind-cxx.h"
 
 namespace __cxxabiv1
 {
@@ -43,11 +43,21 @@ namespace __cxxabiv1
   {
     struct uncatch_exception 
     {
-      uncatch_exception () { p = __uncatch_exception (); }
-      ~uncatch_exception () { __recatch_exception (p); }
+      uncatch_exception ();
+      ~uncatch_exception () { __cxa_begin_catch (&p->unwindHeader); }
       
-      cp_eh_info *p;
+      __cxa_exception *p;
     };
+
+    uncatch_exception::uncatch_exception ()
+    {
+      __cxa_eh_globals *globals = __cxa_get_globals_fast ();
+
+      p = globals->caughtExceptions;
+      p->handlerCount -= 1;
+      globals->caughtExceptions = p->nextException;
+      globals->uncaughtExceptions += 1;
+    }
   }
 
   // Allocate and construct array.

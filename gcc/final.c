@@ -1945,8 +1945,6 @@ final (first, file, optimize, prescan)
   last_ignored_compare = 0;
   new_block = 1;
 
-  check_exception_handler_labels ();
-
   /* Make a map indicating which line numbers appear in this function.
      When producing SDB debugging info, delete troublesome line number
      notes from inlined functions in other files as well as duplicate
@@ -2003,10 +2001,6 @@ final (first, file, optimize, prescan)
 #endif
     }
 
-  /* Initialize insn_eh_region table if eh is being used.  */
-
-  init_insn_eh_region (first, max_uid);
-
   init_recog ();
 
   CC_STATUS_INIT;
@@ -2040,7 +2034,6 @@ final (first, file, optimize, prescan)
   if (profile_block_flag && new_block)
     add_bb (file);
 
-  free_insn_eh_region ();
   free (line_note_exists);
   line_note_exists = NULL;
 }
@@ -2126,24 +2119,13 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  break;
 
 	case NOTE_INSN_EH_REGION_BEG:
-	  if (! USING_SJLJ_EXCEPTIONS)
-	    {
-	      ASM_OUTPUT_INTERNAL_LABEL (file, "LEHB", NOTE_EH_HANDLER (insn));
-#ifdef ASM_OUTPUT_EH_REGION_BEG
-	      ASM_OUTPUT_EH_REGION_BEG (file, NOTE_EH_HANDLER (insn));
-#endif
-	    }
+	  ASM_OUTPUT_DEBUG_LABEL (asm_out_file, "LEHB",
+				  NOTE_EH_HANDLER (insn));
 	  break;
 
 	case NOTE_INSN_EH_REGION_END:
-	  if (! USING_SJLJ_EXCEPTIONS)
-	    {
-	      ASM_OUTPUT_INTERNAL_LABEL (file, "LEHE", NOTE_EH_HANDLER (insn));
-	      add_eh_table_entry (NOTE_EH_HANDLER (insn));
-#ifdef ASM_OUTPUT_EH_REGION_END
-	      ASM_OUTPUT_EH_REGION_END (file, NOTE_EH_HANDLER (insn));
-#endif
-	    }
+	  ASM_OUTPUT_DEBUG_LABEL (asm_out_file, "LEHE",
+				  NOTE_EH_HANDLER (insn));
 	  break;
 
 	case NOTE_INSN_PROLOGUE_END:

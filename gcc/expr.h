@@ -495,14 +495,12 @@ enum libfunc_index
   LTI_memset,
   LTI_bzero,
 
-  LTI_throw,
-  LTI_rethrow,
-  LTI_sjthrow,
-  LTI_sjpopnthrow,
-  LTI_terminate,
+  LTI_unwind_resume,
+  LTI_eh_personality,
   LTI_setjmp,
   LTI_longjmp,
-  LTI_eh_rtime_match,
+  LTI_unwind_sjlj_register,
+  LTI_unwind_sjlj_unregister,
 
   LTI_eqhf2,
   LTI_nehf2,
@@ -628,14 +626,13 @@ extern rtx libfunc_table[LTI_MAX];
 #define memset_libfunc	(libfunc_table[LTI_memset])
 #define bzero_libfunc	(libfunc_table[LTI_bzero])
 
-#define throw_libfunc	(libfunc_table[LTI_throw])
-#define rethrow_libfunc	(libfunc_table[LTI_rethrow])
-#define sjthrow_libfunc	(libfunc_table[LTI_sjthrow])
-#define sjpopnthrow_libfunc	(libfunc_table[LTI_sjpopnthrow])
-#define terminate_libfunc	(libfunc_table[LTI_terminate])
+#define unwind_resume_libfunc	(libfunc_table[LTI_unwind_resume])
+#define eh_personality_libfunc	(libfunc_table[LTI_eh_personality])
 #define setjmp_libfunc	(libfunc_table[LTI_setjmp])
 #define longjmp_libfunc	(libfunc_table[LTI_longjmp])
-#define eh_rtime_match_libfunc	(libfunc_table[LTI_eh_rtime_match])
+#define unwind_sjlj_register_libfunc (libfunc_table[LTI_unwind_sjlj_register])
+#define unwind_sjlj_unregister_libfunc \
+  (libfunc_table[LTI_unwind_sjlj_unregister])
 
 #define eqhf2_libfunc	(libfunc_table[LTI_eqhf2])
 #define nehf2_libfunc	(libfunc_table[LTI_nehf2])
