@@ -1,3 +1,9 @@
+2002-03-08  Phil Edwards  <pme@gcc.gnu.org>
+
+	PR libstdc++/5734
+	* include/bits/stl_vector.h (vector::push_back()):  Guard with
+	_GLIBCPP_DEPRECATED.
+
 2002-03-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/17_intro/RELEASE-NOTES: Fix usage.

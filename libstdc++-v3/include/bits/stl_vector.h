@@ -1,6 +1,6 @@
 // Vector implementation -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -484,9 +484,13 @@ public:
       _M_insert_aux(end(), __x);
   }
 
+#ifdef _GLIBCPP_DEPRECATED
   /**
    *  Add an element to the end of the vector.  The element is
    *  default-constructed.
+   *
+   *  @note You must define _GLIBCPP_DEPRECATED to make this visible; see
+   *        c++config.h.
   */
   void
   push_back()
@@ -498,6 +502,7 @@ public:
     else
       _M_insert_aux(end());
   }
+#endif
 
   void
   swap(vector<_Tp, _Alloc>& __x)
