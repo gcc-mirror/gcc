@@ -1,3 +1,10 @@
+2003-01-06  Jerry Quinn  <jlquinn@optonline.net>
+
+	* include/bits/locale_facets.h: Document public classes and
+	functions.
+	* include/bits/locale_facets.tcc (time_get::_M_extract_via_format):
+	Add comment.
+
 2004-01-06  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/basic_istream/extractors_other/char/1.cc:
