@@ -8514,7 +8514,7 @@ fix_constructors (mdecl)
       /* We don't generate a super constructor invocation if we're
 	 compiling java.lang.Object. build_super_invocation takes care
 	 of that. */
-      compound = java_method_add_stmt (mdecl, build_super_invocation (mdecl));
+      java_method_add_stmt (mdecl, build_super_invocation (mdecl));
 
       /* Insert the instance initializer block right here, after the
          super invocation. */
@@ -8550,13 +8550,17 @@ fix_constructors (mdecl)
 	    found = 0;
 	    body = NULL_TREE;
 	  }
+
+      /* Generate the assignment to this$<n>, if necessary */
+      if ((thisn_assign = build_thisn_assign ()))
+        compound = add_stmt_to_compound (compound, NULL_TREE, thisn_assign);
+
       /* The constructor is missing an invocation of super() */
       if (!found)
 	compound = add_stmt_to_compound (compound, NULL_TREE,
                                          build_super_invocation (mdecl));
-
-      /* Explicit super() invokation should be kept as the first
-         statement, we move it. */
+      /* Explicit super() invokation should take place before the
+         instance initializer blocks. */
       else
 	{
 	  compound = add_stmt_to_compound (compound, NULL_TREE,
@@ -8564,10 +8568,6 @@ fix_constructors (mdecl)
 	  TREE_OPERAND (found_call, 0) = empty_stmt_node;
 	}
       
-      /* Generate the assignment to this$<n>, if necessary */
-      if ((thisn_assign = build_thisn_assign ()))
-        compound = add_stmt_to_compound (compound, NULL_TREE, thisn_assign);
-
       /* Insert the instance initializer block right after. */
       if ((ii = build_instance_initializer (mdecl)))
 	compound = add_stmt_to_compound (compound, NULL_TREE, ii);
@@ -10122,7 +10122,7 @@ patch_method_invocation (patch, primary, where, from_super,
       /* Prepare to pass hidden parameters to finit$, if any. */
       finit_parms = build_alias_initializer_parameter_list 
 	(AIPL_FUNCTION_FINIT_INVOCATION, current_class, NULL_TREE, NULL);
-
+      
       finit_call = 
 	build_method_invocation (build_wfl_node (finit_identifier_node),
 				 finit_parms);
@@ -11997,6 +11997,7 @@ maybe_absorb_scoping_blocks ()
    are completing them.  */
 
 /* Wrap a non WFL node around a WFL.  */
+
 static tree
 build_wfl_wrap (node, location)
     tree node;
@@ -12016,7 +12017,6 @@ build_wfl_wrap (node, location)
   EXPR_WFL_QUALIFICATION (wfl) = build_tree_list (node_to_insert, NULL_TREE);
   return wfl;
 }
-
 
 /* Build a super() constructor invocation. Returns empty_stmt_node if
    we're currently dealing with the class java.lang.Object. */

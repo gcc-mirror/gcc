@@ -1,3 +1,11 @@
+2001-05-07  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (fix_constructors): Removed unecessary assignment to
+	local. Moved assignment to `this$<n>', fixed comments and
+	indentation.
+	(build_wfl_wrap): Fixed indentation.
+	Fixes PR java/2598, java/2579 and java/2658.
+
 2001-05-03  Mo DeJong  <mdejong@redhat.com>
 
         * lex.c (java_new_lexer): Call iconv_close on temp handle used to
