@@ -1,3 +1,9 @@
+2000-10-17  Marc Espie <espie@openbsd.org>
+
+	* invoke.texi (-shared): Insist on requiring code generation flags
+	to be used along with -shared, and document the subtle failure that
+	may occur otherwise.
+
 2000-10-16  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.md (return_internal): Move `use' after `return'.
