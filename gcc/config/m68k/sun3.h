@@ -208,7 +208,7 @@ Boston, MA 02111-1307, USA.  */
         }							\
       else							\
         { char dstr[30];					\
-          REAL_VALUE_TO_DECIMAL ((VALUE), dstr, 9);		\
+	  real_to_decimal (dstr, &(VALUE), sizeof (dstr), 9, 0); \
           asm_fprintf (FILE, "%I0r%s", dstr);			\
         }							\
     } while (0)
@@ -228,7 +228,7 @@ Boston, MA 02111-1307, USA.  */
         }								\
       else								\
         { char dstr[30];						\
-          REAL_VALUE_TO_DECIMAL ((VALUE), dstr, -1);			\
+	  real_to_decimal (dstr, &(VALUE), sizeof (dstr), 0, 1);	\
           asm_fprintf (FILE, "%I0r%s", dstr);				\
         }								\
     } while (0)

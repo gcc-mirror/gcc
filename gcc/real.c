@@ -1397,23 +1397,26 @@ real_to_integer2 (plow, phigh, r)
 }
 
 /* Render R as a decimal floating point constant.  Emit DIGITS significant
-   digits in the result.  If DIGITS <= 0, choose the maximum for the
-   representation.  If DIGITS < 0, strip trailing zeros.  */
+   digits in the result, bounded by BUF_SIZE.  If DIGITS is 0, choose the
+   maximum for the representation.  If CROP_TRAILING_ZEROS, strip trailing
+   zeros.  */
 
 #define M_LOG10_2	0.30102999566398119521
 
 void
-real_to_decimal (str, r_orig, digits)
+real_to_decimal (str, r_orig, buf_size, digits, crop_trailing_zeros)
      char *str;
      const REAL_VALUE_TYPE *r_orig;
-     int digits;
+     size_t buf_size, digits;
+     int crop_trailing_zeros;
 {
   REAL_VALUE_TYPE r;
   const REAL_VALUE_TYPE *one, *ten;
-  int dec_exp, max_digits, d, cmp_half;
+  int dec_exp, d, cmp_half;
+  size_t max_digits;
   char *p, *first, *last;
+  char exp_buf[16];
   bool sign;
-  bool crop_trailing_zeros;
 
   r = *r_orig;
   switch (r.class)
@@ -1433,11 +1436,6 @@ real_to_decimal (str, r_orig, digits)
     default:
       abort ();
     }
-
-  max_digits = SIGNIFICAND_BITS * M_LOG10_2;
-  crop_trailing_zeros = digits < 0;
-  if (digits <= 0 || digits > max_digits)
-    digits = max_digits;
 
   one = real_digit (1);
   ten = ten_to_ptwo (0);
@@ -1468,6 +1466,21 @@ real_to_decimal (str, r_orig, digits)
   if (sign)
     *p++ = '-';
   first = p++;
+
+  sprintf (exp_buf, "e%+d", dec_exp);
+
+  /* Bound the number of digits printed by the size of the representation.  */
+  max_digits = SIGNIFICAND_BITS * M_LOG10_2;
+  if (digits == 0 || digits > max_digits)
+    digits = max_digits;
+
+  /* Bound the number of digits printed by the size of the output buffer.  */
+  max_digits = buf_size - strlen (exp_buf) - sign - 1;
+  if (max_digits > buf_size)
+    abort ();
+  if (digits > max_digits)
+    digits = max_digits;
+
   while (1)
     {
       d = real_to_integer ((const REAL_VALUE_TYPE *) &r);
@@ -1514,22 +1527,25 @@ real_to_decimal (str, r_orig, digits)
     while (last > first + 3 && last[-1] == '0')
       last--;
 
-  sprintf (last, "e%+d", dec_exp);
+  strcpy (last, exp_buf);
 }
 
 /* Render R as a hexadecimal floating point constant.  Emit DIGITS
-   significant digits in the result.  If DIGITS <= 0, choose the maximum
-   for the representation.  If DIGITS < 0, strip trailing zeros.  */
+   significant digits in the result, bounded by BUF_SIZE.  If DIGITS is 0,
+   choose the maximum for the representation.  If CROP_TRAILING_ZEROS,
+   strip trailing zeros.  */
 
 void
-real_to_hexadecimal (str, r, digits)
+real_to_hexadecimal (str, r, buf_size, digits, crop_trailing_zeros)
      char *str;
      const REAL_VALUE_TYPE *r;
-     int digits;
+     size_t buf_size, digits;
+     int crop_trailing_zeros;
 {
   int i, j, exp = r->exp;
   char *p, *first;
-  bool crop_trailing_zeros;
+  char exp_buf[16];
+  size_t max_digits;
 
   switch (r->class)
     {
@@ -1549,9 +1565,17 @@ real_to_hexadecimal (str, r, digits)
       abort ();
     }
 
-  crop_trailing_zeros = digits < 0;
-  if (digits <= 0)
+  if (digits == 0)
     digits = SIGNIFICAND_BITS / 4;
+
+  /* Bound the number of digits printed by the size of the output buffer.  */
+
+  sprintf (exp_buf, "p%+d", exp);
+  max_digits = buf_size - strlen (exp_buf) - r->sign - 4 - 1;
+  if (max_digits > buf_size)
+    abort ();
+  if (digits > max_digits)
+    digits = max_digits;
 
   p = str;
   if (r->sign)
@@ -1572,7 +1596,7 @@ real_to_hexadecimal (str, r, digits)
 
  out:
   if (crop_trailing_zeros)
-    while (p > first + 2 && p[-1] == '0')
+    while (p > first + 1 && p[-1] == '0')
       p--;
 
   sprintf (p, "p%+d", exp);

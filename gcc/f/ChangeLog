@@ -1,3 +1,8 @@
+2002-10-15  Richard Henderson  <rth@redhat.com>
+
+	* target.h (ffetarget_print_real1, ffetarget_print_real2): Use 
+	real_to_decimal directly, and with the new arguments.
+
 2002-09-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* Make-lang.in (g77spec.o): Don't depend on f/version.h.

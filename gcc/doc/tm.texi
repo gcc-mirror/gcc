@@ -6326,17 +6326,6 @@ host machine.
 The array element values are designed so that you can print them out
 using @code{fprintf} in the order they should appear in the target
 machine's memory.
-
-@item REAL_VALUE_TO_DECIMAL (@var{x}, @var{string}, @var{digits})
-@findex REAL_VALUE_TO_DECIMAL
-This macro converts @var{x}, of type @code{REAL_VALUE_TYPE}, to a
-decimal number and stores it as a string into @var{string}.
-You must pass, as @var{string}, the address of a long enough block
-of space to hold the result.
-
-The argument @var{digits} is the number of decimal digits to print,
-or @minus{}1 to indicate ``enough'', i.e. @code{DECIMAL_DIG} for
-for the target.
 @end table
 
 @node Uninitialized Data

@@ -2260,11 +2260,10 @@ print_operand (file, op, letter)
   else if (GET_CODE (op) == CONST_DOUBLE
 	   && (GET_MODE (op) == DFmode || GET_MODE (op) == XFmode))
     {
-      REAL_VALUE_TYPE r;
       char dstr[30];
 
-      REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-      REAL_VALUE_TO_DECIMAL (r, dstr, -1);
+      real_to_decimal (dstr, CONST_DOUBLE_REAL_VALUE (op),
+		       sizeof (dstr), 0, 1);
       asm_fprintf (file, "%I0r%s", dstr);
     }
   else

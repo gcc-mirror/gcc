@@ -469,7 +469,8 @@ pp_c_real_literal (ppi, r)
      c_pretty_printer ppi;
      tree r;
 {
-  REAL_VALUE_TO_DECIMAL (TREE_REAL_CST (r), pp_buffer (ppi)->digit_buffer, -1);
+  real_to_decimal (pp_buffer (ppi)->digit_buffer, &TREE_REAL_CST (r),
+		   sizeof (pp_buffer (ppi)->digit_buffer), 0, 1);
   pp_identifier (ppi, pp_buffer(ppi)->digit_buffer);
 }
 

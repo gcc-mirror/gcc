@@ -1371,21 +1371,21 @@ enum reg_class
 	else								\
 	  { 								\
             char buf[50];						\
-            REAL_VALUE_TYPE rval;					\
-            REAL_VALUE_FROM_CONST_DOUBLE(rval, XV);			\
-            REAL_VALUE_TO_DECIMAL (rval, buf, -1);			\
 	    if (GET_MODE (XV) == SFmode)				\
 	      {								\
 		mvs_page_lit += 4;					\
+		real_to_decimal (buf, CONST_DOUBLE_REAL_VALUE (XV),	\
+				 sizeof (buf), 0, 1);			\
 		fprintf (FILE, "=E'%s'", buf);				\
 	      }								\
-	    else							\
-	    if (GET_MODE (XV) == DFmode)				\
+	    else if (GET_MODE (XV) == DFmode)				\
 	      {								\
 		mvs_page_lit += 8;					\
+		real_to_decimal (buf, CONST_DOUBLE_REAL_VALUE (XV),	\
+				 sizeof (buf), 0, 1);			\
 		fprintf (FILE, "=D'%s'", buf);				\
 	      }								\
-	    else /* VOIDmode !?!? strange but true ...  */		\
+	    else /* VOIDmode */						\
 	      {								\
 		mvs_page_lit += 8;					\
 		fprintf (FILE, "=XL8'%08X%08X'", 			\
@@ -1665,21 +1665,21 @@ enum reg_class
 	else								\
 	  { 								\
             char buf[50];						\
-            REAL_VALUE_TYPE rval;					\
-            REAL_VALUE_FROM_CONST_DOUBLE(rval, XV);			\
-            REAL_VALUE_TO_DECIMAL (rval, buf, -1);			\
 	    if (GET_MODE (XV) == SFmode)				\
 	      {								\
 		mvs_page_lit += 4;					\
+		real_to_decimal (buf, CONST_DOUBLE_REAL_VALUE (XV),	\
+				 sizeof (buf), 0, 1);			\
 		fprintf (FILE, "=E'%s'", buf);				\
 	      }								\
-	    else							\
-	    if (GET_MODE (XV) == DFmode)				\
+	    else if (GET_MODE (XV) == DFmode)				\
 	      {								\
 		mvs_page_lit += 8;					\
+		real_to_decimal (buf, CONST_DOUBLE_REAL_VALUE (XV),	\
+				 sizeof (buf), 0, 1);			\
 		fprintf (FILE, "=D'%s'", buf);				\
 	      }								\
-	    else /* VOIDmode !?!? strange but true ...  */		\
+	    else /* VOIDmode */						\
 	      {								\
 		mvs_page_lit += 8;					\
 		fprintf (FILE, "=XL8'%08X%08X'", 			\

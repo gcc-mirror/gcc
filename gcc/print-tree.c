@@ -131,9 +131,8 @@ print_node_brief (file, prefix, node, indent)
 	fprintf (file, " Nan");
       else
 	{
-	  char string[100];
-
-	  REAL_VALUE_TO_DECIMAL (d, string, -1);
+	  char string[60];
+	  real_to_decimal (string, &d, sizeof (string), 0, 1);
 	  fprintf (file, " %s", string);
 	}
     }
@@ -684,9 +683,8 @@ print_node (file, prefix, node, indent)
 	      fprintf (file, " Nan");
 	    else
 	      {
-		char string[100];
-
-		REAL_VALUE_TO_DECIMAL (d, string, -1);
+		char string[64];
+		real_to_decimal (string, &d, sizeof (string), 0, 1);
 		fprintf (file, " %s", string);
 	      }
 	  }

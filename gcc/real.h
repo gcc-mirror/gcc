@@ -176,11 +176,11 @@ extern bool exact_real_truncate PARAMS ((enum machine_mode,
 
 /* Render R as a decimal floating point constant.  */
 extern void real_to_decimal	PARAMS ((char *, const REAL_VALUE_TYPE *,
-					 int));
+					 size_t, size_t, int));
 
 /* Render R as a hexadecimal floating point constant.  */
 extern void real_to_hexadecimal	PARAMS ((char *, const REAL_VALUE_TYPE *,
-					 int));
+					 size_t, size_t, int));
 
 /* Render R as an integer.  */
 extern HOST_WIDE_INT real_to_integer PARAMS ((const REAL_VALUE_TYPE *));
@@ -266,9 +266,6 @@ extern const struct real_format c4x_extended_format;
 /* IN is a REAL_VALUE_TYPE.  OUT is a long.  */
 #define REAL_VALUE_TO_TARGET_SINGLE(IN, OUT) \
   ((OUT) = real_to_target (NULL, &(IN), mode_for_size (32, MODE_FLOAT, 0)))
-
-#define REAL_VALUE_TO_DECIMAL(r, s, dig) \
-  real_to_decimal (s, &(r), dig)
 
 #define REAL_VALUE_FROM_INT(r, lo, hi, mode) \
   real_from_integer (&(r), mode, lo, hi, 0)

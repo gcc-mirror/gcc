@@ -1130,11 +1130,13 @@ print_operand (file, x, code)
 	{ 
 #ifdef SEQUENT_ASM
 	  /* Sequent likes its floating point constants as integers */
+	  long l[2];
+	  REAL_VALUE_TO_TARGET_DOUBLE (r, l);
 	  fprintf (file, "0Dx%08x%08x",
-		   CONST_DOUBLE_HIGH (x), CONST_DOUBLE_LOW (x));
+		   l[!WORDS_BIG_ENDIAN], l[WORDS_BIG_ENDIAN]);
 #else
 	  char s[30];
-	  REAL_VALUE_TO_DECIMAL (r, s, -1);
+	  real_to_decimal (s, &r, sizeof (s), 0, 1);
 #ifdef ENCORE_ASM
 	  fprintf (file, "0f%s", s);
 #else
@@ -1150,7 +1152,7 @@ print_operand (file, x, code)
 	  fprintf (file, "0Fx%08lx", l);
 #else
 	  char s[30];
-	  REAL_VALUE_TO_DECIMAL (r, s, -1);
+	  real_to_decimal (s, &r, sizeof (s), 0, 1);
 	  fprintf (file, "0f%s", s);
 #endif
 	}
