@@ -1,4 +1,4 @@
-/* Copyright (C) 2000 Free Software Foundation, Inc.
+/* Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    This file was adapted from glibc sources.
 
 This file is part of GNU CC.
@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 /* See an explanation about .init and .fini in crti.asm.  */
 
 	.section .init
-	mov	r15,r14
+	mov	r14,r15
 	lds.l	@r15+,pr
 	mov.l	@r15+,r14
 	rts
@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 	.section .fini
-	mov	r15,r14
+	mov	r14,r15
 	lds.l	@r15+,pr
 	mov.l	@r15+,r14
 	rts
