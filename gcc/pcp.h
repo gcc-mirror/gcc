@@ -28,7 +28,7 @@ struct stringdef
   int len;			/* Its length */
   int writeflag;		/* Whether we write this */
   int lineno;			/* Linenumber of source file */
-  U_CHAR *filename;		/* Name of source file */
+  const U_CHAR *filename;	/* Name of source file */
   STRINGDEF *chain;		/* Global list of strings in natural order */
   int output_mark;		/* Where in the output this goes */
 };
