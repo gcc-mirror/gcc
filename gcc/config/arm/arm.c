@@ -3592,8 +3592,10 @@ find_barrier (from, max_count)
 
   while (from && count < max_count)
     {
+      rtx tmp;
+
       if (GET_CODE (from) == BARRIER)
-	return from;
+	found_barrier = from;
 
       /* Count the length of this insn */
       if (GET_CODE (from) == INSN
@@ -3601,6 +3603,24 @@ find_barrier (from, max_count)
 	  && CONSTANT_P (SET_SRC (PATTERN (from)))
 	  && CONSTANT_POOL_ADDRESS_P (SET_SRC (PATTERN (from))))
 	count += 8;
+      /* Handle table jumps as a single entity.  */
+      else if (GET_CODE (from) == JUMP_INSN
+	       && JUMP_LABEL (from) != 0
+	       && ((tmp = next_real_insn (JUMP_LABEL (from)))
+		   == next_real_insn (from))
+	       && tmp != NULL
+	       && GET_CODE (tmp) == JUMP_INSN
+	       && (GET_CODE (PATTERN (tmp)) == ADDR_VEC
+		   || GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC))
+	{
+	  int elt = GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC ? 1 : 0;
+	  count += (get_attr_length (from)
+		    + GET_MODE_SIZE (SImode) * XVECLEN (PATTERN (tmp), elt));
+	  /* Continue after the dispatch table.  */
+	  last = from;
+	  from = NEXT_INSN (tmp);
+	  continue;
+	}
       else
 	count += get_attr_length (from);
 
