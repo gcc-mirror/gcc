@@ -478,7 +478,7 @@ make_reorder_chain (bb)
       else
 	probability = 0;
 
-      if (probability >= REG_BR_PROB_BASE / 2)
+      if (probability > REG_BR_PROB_BASE / 2)
 	e = bb->succ->succ_next;
     }
 

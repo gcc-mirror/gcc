@@ -1,3 +1,9 @@
+Fri May  5 10:11:41 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* predict.c: Remove May 4 change.
+	* bb-reorder.c (make_reorder_chain): Do not perform block movement
+	if we have predicted the branch at 50-50 probability.
+
 2000-05-05  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (init_propagate_block_info): Fix merge error
