@@ -1,3 +1,8 @@
+2003-02-25  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/xcoff.h (ASM_FILE_START): Do not emit machine
+	pseudo-op.
+
 2003-02-25  Roger Sayle  <roger@eyesopen.com>
 
 	* combine.c (combine_simplify_rtx, simplfy_comparison):  Use CC0_P.

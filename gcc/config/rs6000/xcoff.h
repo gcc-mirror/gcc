@@ -226,8 +226,6 @@ toc_section ()						\
   fputs ("\t.file\t", FILE);                                    \
   output_quoted_string (FILE, main_input_filename);             \
   fputc ('\n', FILE);                                           \
-  if (TARGET_64BIT)						\
-    fputs ("\t.machine\t\"ppc64\"\n", FILE);			\
   toc_section ();						\
   if (write_symbols != NO_DEBUG)				\
     private_data_section ();					\
