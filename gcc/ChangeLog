@@ -1,3 +1,8 @@
+2004-01-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* regrename.c (find_oldest_value_reg): If the replacement uses 
+	multiple hard registers, check that all of them are in CLASS.
+
 2004-01-14  Jan Hubicka  <jh@suse.cz>
 
 	* alias.c (get_alias_set):  Initialize alias set to 0 when subset is
