@@ -8,9 +8,12 @@
    constant value when it is not.  */
 
 int x;
+
+typedef __SIZE_TYPE__ size_t;
+
 struct gdt
 {
-unsigned a,b,c,d,e,f;
+size_t a,b,c,d,e,f;
 };
 void f()
 {
@@ -18,7 +21,7 @@ struct gdt gdt_table[2]=
 {
     {
 		0,
-		( (((unsigned)(&x))<<(24))&(-1<<(8)) ),
+		( (((size_t)(&x))<<(24))&(-1<<(8)) ),
     },
 };
 }
