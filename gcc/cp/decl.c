@@ -6379,6 +6379,8 @@ grokdeclarator (const cp_declarator *declarator,
 	      }
 	    if (TREE_CODE (decl) == BASELINK)
 	      decl = BASELINK_FUNCTIONS (decl);
+	    if (decl == error_mark_node)
+	      return error_mark_node;
 	    switch (TREE_CODE (decl))
 	      {
 	      case BIT_NOT_EXPR:

@@ -1,3 +1,8 @@
+2004-07-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16270
+	* decl.c (grokdeclarator): Robustify.
+
 2004-07-01  Richard Henderson  <rth@redhat.com>
 
 	* class.c (fixed_type_or_null): Don't handle RTL_EXPR.
