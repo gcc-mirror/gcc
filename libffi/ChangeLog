@@ -2,6 +2,9 @@
 
 	* Makefile.am: libfficonvenience -> libffi_convenience.
 	* Makefile.in: Rebuilt.
+	
+	* Makefile.am: Define ffitest_OBJECTS.
+	* Makefile.in: Rebuilt.
 
 2002-03-07  Andreas Tobler  <toa@pop.agri.ch>
 	    David Edelsohn  <edelsohn@gnu.org>

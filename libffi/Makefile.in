@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -158,7 +158,7 @@ noinst_LTLIBRARIES = libffi_convenience.la
 
 noinst_PROGRAMS = ffitest
 
-ffitest_SOURCES = src/ffitest.c
+ffitest_OBJECTS = ffitest.lo
 ffitest_LDADD = libffi.la
 ffitest_LDFLAGS = -shared-libgcc
 
@@ -307,7 +307,6 @@ libffi_la_LIBADD =
 noinst_PROGRAMS =  ffitest$(EXEEXT)
 PROGRAMS =  $(noinst_PROGRAMS)
 
-ffitest_OBJECTS =  src/ffitest.$(OBJEXT)
 ffitest_DEPENDENCIES =  libffi.la
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -323,8 +322,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(libffi_convenience_la_SOURCES) $(libffi_la_SOURCES) $(ffitest_SOURCES)
-OBJECTS = $(libffi_convenience_la_OBJECTS) $(libffi_la_OBJECTS) $(ffitest_OBJECTS)
+SOURCES = $(libffi_convenience_la_SOURCES) $(libffi_la_SOURCES)
+OBJECTS = $(libffi_convenience_la_OBJECTS) $(libffi_la_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -487,7 +486,7 @@ maintainer-clean-recursive:
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
-	  test "$$subdir" != "." || dot_seen=yes; \
+	  test "$$subdir" = "." && dot_seen=yes; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \
