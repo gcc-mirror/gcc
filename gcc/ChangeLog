@@ -1,5 +1,9 @@
 2003-03-09  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* optabs.c (gen_move_insn): Move logic for synthesizing MODE_CC
+	moves from here ...
+	* expr.c (emit_move_insn_1): ... to here.
+
 	* config/cris/aout.h (CRIS_CPP_SUBTARGET_SPEC): Move -D__AOUT__ to...
 	(TARGET_OS_CPP_BUILTINS): New macro.
 	* config/cris/cris.h (CRIS_CPP_SUBTARGET_SPEC): Move -D__ELF__ to...
