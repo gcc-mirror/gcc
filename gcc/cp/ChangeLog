@@ -1,5 +1,19 @@
 1998-08-27  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* lex.c (handle_cp_pragma): Remove #pragma vtable.
+	* lang-options.h: Remove +e options.
+	* decl2.c (lang_decode_option): Likewise.
+	(import_export_vtable): Don't check write_virtuals.
+	(finish_vtable_vardecl, finish_file): Likewise.
+	* search.c (dfs_debug_mark): Likewise.
+	* semantics.c (begin_class_definition): Likewise.
+	* class.c (build_vtable, finish_vtbls, finish_struct_1): Likewise.
+
+	* call.c (build_over_call): Check flag_elide_constructors.
+	* decl2.c: flag_elide_constructors defaults to 1.
+	* typeck.c (convert_arguments): Remove return_loc parm.
+	(build_function_call_real): Adjust.
+
 	* search.c: Tear out all mi_matrix and memoize code.
 	(lookup_field, lookup_fnfields): Use scratch_tree_cons.
 	* lang-options.h: Remove documentation for -fhandle-exceptions,

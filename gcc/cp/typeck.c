@@ -2916,10 +2916,10 @@ build_function_call_real (function, params, require_complete, flags)
      function prototype, or apply default promotions.  */
 
   if (flags & LOOKUP_COMPLAIN)
-    coerced_params = convert_arguments (NULL_TREE, TYPE_ARG_TYPES (fntype),
+    coerced_params = convert_arguments (TYPE_ARG_TYPES (fntype),
 					params, fndecl, LOOKUP_NORMAL);
   else
-    coerced_params = convert_arguments (NULL_TREE, TYPE_ARG_TYPES (fntype),
+    coerced_params = convert_arguments (TYPE_ARG_TYPES (fntype),
 					params, fndecl, 0);
 
   if (coerced_params == error_mark_node)
@@ -2985,12 +2985,6 @@ build_function_call (function, params)
    If parmdecls is exhausted, or when an element has NULL as its type,
    perform the default conversions.
 
-   RETURN_LOC is the location of the return value, if known, NULL_TREE
-   otherwise.  This is useful in the case where we can avoid creating
-   a temporary variable in the case where we can initialize the return
-   value directly.  If we are not eliding constructors, then we set this
-   to NULL_TREE to avoid this avoidance.
-
    NAME is an IDENTIFIER_NODE or 0.  It is used only for error messages.
 
    This is also where warnings about wrong number of args are generated.
@@ -3004,17 +2998,14 @@ build_function_call (function, params)
    default arguments, if such were specified.  Do so here.  */
 
 tree
-convert_arguments (return_loc, typelist, values, fndecl, flags)
-     tree return_loc, typelist, values, fndecl;
+convert_arguments (typelist, values, fndecl, flags)
+     tree typelist, values, fndecl;
      int flags;
 {
   register tree typetail, valtail;
   register tree result = NULL_TREE;
   char *called_thing = 0;
   int i = 0;
-
-  if (! flag_elide_constructors)
-    return_loc = 0;
 
   /* Argument passing is always copy-initialization.  */
   flags |= LOOKUP_ONLYCONVERTING;
@@ -3120,7 +3111,7 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	  else
 	    {
 	      parmval = convert_for_initialization
-		(return_loc, type, val, flags,
+		(NULL_TREE, type, val, flags,
 		 "argument passing", fndecl, i);
 #ifdef PROMOTE_PROTOTYPES
 	      if ((TREE_CODE (type) == INTEGER_TYPE
@@ -7094,8 +7085,8 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
   return error_mark_node;
 }
 
-/* Convert RHS to be of type TYPE.  If EXP is non-zero,
-   it is the target of the initialization.
+/* Convert RHS to be of type TYPE.
+   If EXP is non-zero, it is the target of the initialization.
    ERRTYPE is a string to use in error messages.
 
    Two major differences between the behavior of

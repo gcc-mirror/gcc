@@ -3409,8 +3409,11 @@ build_over_call (cand, args, flags)
 
   /* Avoid actually calling copy constructors and copy assignment operators,
      if possible.  */
-  if (DECL_CONSTRUCTOR_P (fn)
-      && TREE_VEC_LENGTH (convs) == 1
+
+  if (! flag_elide_constructors)
+    /* Do things the hard way.  */;
+  else if (DECL_CONSTRUCTOR_P (fn)
+	   && TREE_VEC_LENGTH (convs) == 1
       && copy_args_p (fn))
     {
       tree targ;
