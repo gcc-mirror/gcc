@@ -1,3 +1,11 @@
+2004-10-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18093
+	* g++.dg/lookup/ns2.C: New test.
+
+	PR c++/18020
+	* g++.dg/template/enum4.C: New test.
+
 2004-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/debug/20041023-1.c: New test.

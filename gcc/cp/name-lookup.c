@@ -3210,6 +3210,9 @@ do_namespace_alias (tree alias, tree namespace)
   alias = build_lang_decl (NAMESPACE_DECL, alias, void_type_node);     
   DECL_NAMESPACE_ALIAS (alias) = namespace;
   DECL_EXTERNAL (alias) = 1;
+  DECL_CONTEXT (alias) = current_scope ();
+  if (!DECL_CONTEXT (alias))
+    DECL_CONTEXT (alias) = FROB_CONTEXT (current_namespace);
   pushdecl (alias);
 }
 

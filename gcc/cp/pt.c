@@ -8648,6 +8648,14 @@ tsubst_copy_and_build (tree t,
 			     tsubst_copy (TREE_TYPE (t), args, complain, 
 					  in_decl));
 
+    case CONST_DECL:
+      t = tsubst_copy (t, args, complain, in_decl);
+      /* As in finish_id_expression, we resolve enumeration constants
+	 to their underlying values.  */
+      if (TREE_CODE (t) == CONST_DECL)
+	return DECL_INITIAL (t);
+      return t;
+
     default:
       return tsubst_copy (t, args, complain, in_decl);
     }

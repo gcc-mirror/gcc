@@ -1,3 +1,24 @@
+2004-10-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18093
+	* search.c (current_scope): Return the innermost non-block scope,
+	not the innermost non-block, non-namespace scope.
+	(at_namespace_scope_p): Adjust accordingly.
+	(dfs_accessible_post): Do not pass namespaces to is_friend.
+	(dfs_walk_once_accessible_r): Likewise.
+	* decl.c (grokvardecl): Adjust call to current_scope.
+	(build_enumerator): Likewise.
+	* parser.c (cp_parser_using_declaration): Likewise.
+	(cp_parser_direct_declarator): Use at_namespace_scope_p instead of
+	current_scope.
+	(cp_parser_class_head): Adjust call to current_scope.
+	* name-lookup.c (do_namespace_alias): Set the DECL_CONTEXT for the
+	alias.
+
+	PR c++/18020
+	* pt.c (tusbst_copy_and_build): Resolve enumeration constants to
+	their underlying values.
+
 2004-10-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/16301
