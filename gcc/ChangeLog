@@ -1,3 +1,8 @@
+2000-12-02  Bruce Korb  <bkorb@gnu.org>
+
+	* fixnc/mkfixinc.sh(msdosdjgpp): remove from fixincludes exception list
+	(per Laurynas Biveinis  <lauras@softhome.net>)
+
 2000-12-02  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (ARM_REGNO_OK_FOR_BASE_P, THUMB_REGNO_MODE_OK_FOR_BASE_P): New
