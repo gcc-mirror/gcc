@@ -1,3 +1,7 @@
+2001-03-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* dwarf2out.c (rtl_for_decl_location): Use DECL_RTL_IF_SET.
+
 2001-03-15  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.h (ASM_OUTPUT_DWARF_OFFSET): New.
