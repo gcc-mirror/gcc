@@ -1,3 +1,8 @@
+2001-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/alpha/alpha.c (alpha_expand_block_move): GET_MODE of tmp,
+	not XEXP (tmp, 0).
+
 2001-01-12  DJ Delorie  <dj@redhat.com>
 
 	* Makefile.in (bootstrap): rename stages to be mnemonic.  Add
