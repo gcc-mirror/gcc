@@ -984,7 +984,7 @@ pdp11_assemble_integer (x, size, aligned_p)
 
 /* register move costs, indexed by regs */
 
-static int move_costs[N_REG_CLASSES][N_REG_CLASSES] = 
+static const int move_costs[N_REG_CLASSES][N_REG_CLASSES] = 
 {
              /* NO  MUL  GEN  LFPU  NLFPU FPU ALL */
 

@@ -638,7 +638,7 @@ extern enum m32r_sdata m32r_sdata;
 ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
-extern unsigned int m32r_hard_regno_mode_ok[FIRST_PSEUDO_REGISTER];
+extern const unsigned int m32r_hard_regno_mode_ok[FIRST_PSEUDO_REGISTER];
 extern unsigned int m32r_mode_class[];
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
 ((m32r_hard_regno_mode_ok[REGNO] & m32r_mode_class[MODE]) != 0)

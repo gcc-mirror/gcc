@@ -62,7 +62,7 @@ rtx arch_compare_op1;
 
 /* Provides the class number of the smallest class containing
    reg number.  */
-int regno_reg_class[FIRST_PSEUDO_REGISTER] =
+const int regno_reg_class[FIRST_PSEUDO_REGISTER] =
 {
   GENERAL_REGS,	ONLYR1_REGS,  LRW_REGS,	    LRW_REGS,
   LRW_REGS,	LRW_REGS,     LRW_REGS,	    LRW_REGS,
@@ -3519,7 +3519,7 @@ mcore_unique_section (decl, reloc)
      int reloc ATTRIBUTE_UNUSED;
 {
   int len;
-  char * name;
+  const char * name;
   char * string;
   const char * prefix;
 

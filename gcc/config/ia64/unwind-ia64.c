@@ -1212,7 +1212,7 @@ unw_decode_b3_x4 (unsigned char *dp, unsigned char code, void *arg)
 
 typedef unsigned char *(*unw_decoder) (unsigned char *, unsigned char, void *);
 
-static unw_decoder unw_decode_table[2][8] =
+static const unw_decoder unw_decode_table[2][8] =
 {
   /* prologue table: */
   {

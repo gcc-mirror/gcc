@@ -1,3 +1,24 @@
+2002-03-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c4x.c (c4x_fp_reglist): Const-ify.
+	* cris.c (cris_print_operand): Likewise.
+	* i386.c (ix86_va_arg): Likewise.
+	* ia64/unwind-ia64.c (unw_decode_table): Likewise.
+	* m32r.c (m32r_hard_regno_mode_ok): Likewise.
+	* m32r.h (m32r_hard_regno_mode_ok): Likewise.
+	* mcore.c (regno_reg_class, mcore_unique_section): Likewise.
+	* mcore.h (regno_reg_class): Likewise.
+	* mips.c (gen_int_relational): Likewise.
+	* ns32k.c (ns32k_reg_class_contents, regclass_map): Likewise.
+	* ns32k.h (ns32k_reg_class_contents, regclass_map): Likewise.
+	* pdp11.c (pdp11_assemble_integer): Likewise.
+	* pj.h (INITIALIZE_TRAMPOLINE): Likewise.
+	* s390.c (s390_branch_condition_mnemonic, regclass_map):
+	Likewise.
+	* s390.h (regclass_map): Likewise.
+	* sh.c (shift_amounts): Likewise.
+	* sh.md (rot_tab): Likewise.
+
 2002-03-09  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/rs6000/rs6000.md (ne0+4): Add extra CLOBBER.

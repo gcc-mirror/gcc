@@ -1136,7 +1136,7 @@ static const char shift_insns[]    =
    One bit right shifts clobber the T bit, so when possible, put one bit
    shifts in the middle of the sequence, so the ends are eligible for
    branch delay slots.  */
-static short shift_amounts[32][5] = {
+static const short shift_amounts[32][5] = {
   {0}, {1}, {2}, {2, 1},
   {2, 2}, {2, 1, 2}, {2, 2, 2}, {2, 2, 1, 2},
   {8}, {8, 1}, {8, 2}, {8, 1, 2},

@@ -47,9 +47,9 @@ int ns32k_num_files = 0;
    initialized in time. Also this is more convenient as an array of ints.
    We know that HARD_REG_SET fits in an unsigned int */
 
-unsigned int ns32k_reg_class_contents[N_REG_CLASSES][1] = REG_CLASS_CONTENTS;
+const unsigned int ns32k_reg_class_contents[N_REG_CLASSES][1] = REG_CLASS_CONTENTS;
 
-enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
+const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
 {
   GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
   GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,

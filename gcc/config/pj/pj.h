@@ -734,7 +734,7 @@ struct pj_args
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)                             \
 {                                                                             \
-  static int off[4] = { 1, 0, 4, 3 };                                         \
+  static const int off[4] = { 1, 0, 4, 3 };                                   \
   int i;                                                                      \
                                                                               \
   /* Move the FNADDR and CXT into the instruction stream. Do this byte        \

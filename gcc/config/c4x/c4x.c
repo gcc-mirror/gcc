@@ -514,7 +514,7 @@ static const int c4x_int_reglist[3][6] =
   {AR2_REGNO, RC_REGNO, RS_REGNO, RE_REGNO, 0, 0}
 };
 
-static int c4x_fp_reglist[2] = {R2_REGNO, R3_REGNO};
+static const int c4x_fp_reglist[2] = {R2_REGNO, R3_REGNO};
 
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS for a call to a

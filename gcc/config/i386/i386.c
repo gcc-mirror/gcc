@@ -2509,7 +2509,7 @@ rtx
 ix86_va_arg (valist, type)
      tree valist, type;
 {
-  static int intreg[6] = { 0, 1, 2, 3, 4, 5 };
+  static const int intreg[6] = { 0, 1, 2, 3, 4, 5 };
   tree f_gpr, f_fpr, f_ovf, f_sav;
   tree gpr, fpr, ovf, sav, t;
   int size, rsize;

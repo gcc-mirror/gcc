@@ -172,7 +172,7 @@ enum m32r_mode_class
 
 /* Value is 1 if register/mode pair is acceptable on arc.  */
 
-unsigned int m32r_hard_regno_mode_ok[FIRST_PSEUDO_REGISTER] =
+const unsigned int m32r_hard_regno_mode_ok[FIRST_PSEUDO_REGISTER] =
 {
   T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES,
   T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, S_MODES, S_MODES, S_MODES,
