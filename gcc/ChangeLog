@@ -1,3 +1,8 @@
+Mon Jan 26 12:09:42 1998  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
+
+	* except.c (check_exception_handler_labels): Disable warning when
+	flag_syntax_only.
+
 Mon Jan 26 18:17:32 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* sparc.c (pic_setup_code): Don't set LABEL_PRESERVE_P.
