@@ -1,7 +1,3 @@
-# Make assignments for compiling on NeXT with their compiler version.
-CC=cc -traditional-cpp
-OLDCC=CC -traditional-cpp
-
 # Specify other dirs of system header files to be fixed.
 OTHER_FIXINCLUDES_DIRS= /LocalDeveloper/Headers
 

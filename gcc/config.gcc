@@ -243,9 +243,13 @@ sparc*-*-*)
 esac
 
 tm_file=${cpu_type}/${cpu_type}.h
-if test -f ${srcdir}/config/${cpu_type}/${cpu_type}-protos.h;
+if test -f ${srcdir}/config/${cpu_type}/${cpu_type}-protos.h
 then
-	tm_p_file=${cpu_type}/${cpu_type}-protos.h;
+	tm_p_file=${cpu_type}/${cpu_type}-protos.h
+fi
+if test -f ${srcdir}/config/${cpu_type}/x-${cpu_type}
+then
+	xmake_file=${cpu_type}/x-${cpu_type}
 fi
 # On a.out targets, we need to use collect2.
 case $machine in
@@ -289,7 +293,7 @@ case $machine in
 	tmake_file="t-libc-ok t-openbsd"
 	xm_defines=POSIX
 	# don't depend on processor x-fragments as well
-	xmake_file=none
+	xmake_file=
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 		tmake_file="${tmake_file} t-openbsd-thread"
@@ -373,7 +377,6 @@ alpha*-*-linux*ecoff*)
 	target_cpu_default="MASK_GAS"
 	tmake_file="alpha/t-alpha alpha/t-ieee"
 	gas=no
-	xmake_file=none
 	gas=yes gnu_ld=yes
 	;;
 alpha*-*-linux*libc1*)
@@ -381,7 +384,6 @@ alpha*-*-linux*libc1*)
 	target_cpu_default="MASK_GAS"
 	tmake_file="t-linux t-linux-gnulibc1 alpha/t-alpha alpha/t-crtbe alpha/t-ieee"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
-	xmake_file=none
 	gas=yes gnu_ld=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -392,7 +394,6 @@ alpha*-*-linux*)
 	target_cpu_default="MASK_GAS"
 	tmake_file="t-linux alpha/t-crtbe alpha/t-alpha alpha/t-ieee"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
-	xmake_file=none
 	gas=yes gnu_ld=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -404,7 +405,6 @@ alpha*-*-freebsd*)
 	target_cpu_default="MASK_GAS"
 	tmake_file="t-freebsd alpha/t-crtbe alpha/t-alpha alpha/t-ieee"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
-	xmake_file=none
 	gas=yes gnu_ld=yes
 	stabs=yes
 	case x${enable_threads} in
@@ -420,7 +420,6 @@ alpha*-*-netbsd*)
 	target_cpu_default="MASK_GAS"
 	tmake_file="alpha/t-crtbe alpha/t-alpha alpha/t-ieee"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
-	xmake_file=none
 	gas=yes gnu_ld=yes
 	;;
 
@@ -646,7 +645,7 @@ hppa*-*-linux*)
 	tm_file="${tm_file} pa/elf.h linux.h pa/pa-linux.h"
 	tmake_file="t-linux pa/t-linux"
 	extra_parts="crtbegin.o crtend.o"
-	xmake_file=none
+	xmake_file=
 	gas=yes gnu_ld=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -973,7 +972,6 @@ i[34567]86-ibm-aix*)		# IBM PS/2 running AIX
 	;;
 i[34567]86-ncr-sysv4*)		# NCR 3000 - ix86 running system V.4
 	xm_defines="USG POSIX SMALL_ARG_MAX"
-	xmake_file=i386/x-ncr3000
 	if test x$stabs = xyes -a x$gas = xyes
 	then
 		tm_file=i386/sysv4gdb.h
@@ -986,7 +984,6 @@ i[34567]86-ncr-sysv4*)		# NCR 3000 - ix86 running system V.4
 i[34567]86-next-*)
 	tm_file=i386/next.h
 	tmake_file=i386/t-next
-	xmake_file=i386/x-next
 	extra_objs=nextstep.o
 	extra_parts="crtbegin.o crtend.o"
 	if test x$enable_threads = xyes; then
@@ -1008,7 +1005,6 @@ i[34567]86-sequent-bsd*) 		# 80386 from Sequent
 	;;
 i[34567]86-sequent-ptx1*)
 	xm_defines=USG
-	xmake_file=i386/x-sysv3
 	tm_file=i386/seq-sysv3.h
 	tmake_file=i386/t-crtstuff
 	extra_parts="crtbegin.o crtend.o"
@@ -1016,7 +1012,6 @@ i[34567]86-sequent-ptx1*)
 	;;
 i[34567]86-sequent-ptx2* | i[34567]86-sequent-sysv3*)
 	xm_defines=USG
-	xmake_file=i386/x-sysv3
 	tm_file=i386/seq2-sysv3.h
 	tmake_file=i386/t-crtstuff
 	extra_parts="crtbegin.o crtend.o"
@@ -1098,14 +1093,6 @@ i[34567]86-*-coff*)
 	;;
 i[34567]86-*-isc*)		# 80386 running ISC system
 	xm_defines=USG
-	case $machine in
-	  i[34567]86-*-isc[34]*)
-	    xmake_file=i386/x-isc3
-	    ;;
-	  *)
-	    xmake_file=i386/x-isc
-	    ;;
-	esac
         if test x$gas = xyes -a x$stabs = xyes
 	then
 		tm_file=i386/iscdbx.h
@@ -1195,7 +1182,6 @@ i[34567]86-*-lynxos*)
 		tm_file=i386/lynx-ng.h
 	fi
 	tmake_file=i386/t-i386bare
-	xmake_file=x-lynx
 	;;
 i[34567]86-*-mach*)
 	tm_file=i386/mach.h
@@ -1276,7 +1262,6 @@ i[34567]86-*-sco3.2v4*) 	# 80386 running SCO 3.2v4 system
 	# truncate_target=yes
 	;;
 i[34567]86-*-sco*)	 	# 80386 running SCO system
-	xmake_file=i386/x-sco
 	install_headers_dir=install-headers-cpio
         if test x$stabs = xyes
 	then
@@ -1364,7 +1349,6 @@ i[34567]86-*-osf1*)		# Intel 80386's running OSF/1 1.3+
 	;;
 i[34567]86-*-sysv*)		# Intel 80386's running system V
 	xm_defines=USG
-	xmake_file=i386/x-sysv3
 	if test x$gas = xyes
 	then
 		if test x$stabs = xyes
@@ -1388,7 +1372,6 @@ i386-*-vsta)			# Intel 80386's running VSTa kernel
 	xm_file=i386/xm-vsta.h
 	tm_file=i386/vsta.h
 	tmake_file=i386/t-vsta
-	xmake_file=i386/x-vsta
 	;;
 i[34567]86-*-win32)
 	xm_defines=POSIX
@@ -1497,7 +1480,6 @@ i860-*-sysv3*)
 i860-*-sysv4*)
 	tm_file="${tm_file} svr4.h i860/sysv4.h"
 	xm_defines=USG
-	xmake_file=i860/x-sysv4
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
 	;;
@@ -1605,7 +1587,6 @@ m68000-convergent-sysv*)
 	;;
 m68000-hp-bsd*)			# HP 9000/200 running BSD
 	tm_file=m68k/hp2bsd.h
-	xmake_file=m68k/x-hp2bsd
 	use_collect2=yes
 	extra_headers=math-68881.h
 	;;
@@ -1668,7 +1649,6 @@ m68k-apple-aux*)		# Apple Macintosh running A/UX
 	;;
 m68k-apollo-*)
 	tm_file=m68k/apollo68.h
-	xmake_file=m68k/x-apollo68
 	use_collect2=yes
 	extra_headers=math-68881.h
 	float_format=m68k
@@ -1714,7 +1694,6 @@ m68k-motorola-sysv*)
 	xm_defines=USG
 	if test x$gas = xyes
 	then
-		xmake_file=m68k/x-mot3300-gas
 		if test x$gnu_ld = xyes
 		then
 			tmake_file=m68k/t-mot3300-gald
@@ -1723,7 +1702,6 @@ m68k-motorola-sysv*)
 			use_collect2=yes
 		fi
 	else
-		xmake_file=m68k/x-mot3300
 		if test x$gnu_ld = xyes
 		then
 			tmake_file=m68k/t-mot3300-gld
@@ -1740,7 +1718,6 @@ m68k-motorola-sysv*)
 m68k-ncr-sysv*)			# NCR Tower 32 SVR3
 	tm_file=m68k/tower-as.h
 	xm_defines=USG
-	xmake_file=m68k/x-tower
 	extra_parts="crtbegin.o crtend.o"
 	extra_headers=math-68881.h
 	;;
@@ -1757,7 +1734,6 @@ m68k-tti-*)
 	;;
 m68k-crds-unos*)
 	xm_defines="USG unos"
-	xmake_file=m68k/x-crds
 	tm_file=m68k/crds.h
 	use_collect2=yes
 	extra_headers=math-68881.h
@@ -1765,7 +1741,6 @@ m68k-crds-unos*)
 m68k-cbm-sysv4*)		# Commodore variant of V.4.
 	tm_file=m68k/amix.h
 	xm_defines=USG
-	xmake_file=m68k/x-amix
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
 	extra_headers=math-68881.h
@@ -1773,7 +1748,6 @@ m68k-cbm-sysv4*)		# Commodore variant of V.4.
 	;;
 m68k-ccur-rtu)
 	tm_file=m68k/ccur-GAS.h
-	xmake_file=m68k/x-ccur
 	extra_headers=math-68881.h
 	use_collect2=yes
 	float_format=m68k
@@ -1934,7 +1908,6 @@ m68k-*-lynxos*)
 	else
 		tm_file=m68k/lynx-ng.h
 	fi
-	xmake_file=x-lynx
 	tmake_file=m68k/t-lynx
 	extra_headers=math-68881.h
 	float_format=m68k
@@ -2097,7 +2070,6 @@ m88k-*-sysv4*)
 	xm_defines=USG
 	tm_file=m88k/sysv4.h
 	extra_parts="crtbegin.o crtend.o"
-	xmake_file=m88k/x-sysv4
 	tmake_file=m88k/t-sysv4
 	;;
 mcore-*-elf)
@@ -2155,7 +2127,6 @@ mips-sni-sysv4)
 		tm_file=mips/sni-svr4.h
 	fi
 	xm_defines=USG
-        xmake_file=mips/x-sni-svr4
         tmake_file=mips/t-mips-gas
         if test x$gnu_ld != xyes
         then
@@ -2256,7 +2227,6 @@ mips-dec-osf*)			# Decstation running OSF/1 as shipped by DIGITAL
 	if test x$stabs = xyes; then
 		tm_file="${tm_file} dbx.h"
 	fi
-	xmake_file=mips/x-dec-osf1
 	if test x$gas = xyes
 	then
 		tmake_file=mips/t-mips-gas
@@ -2370,7 +2340,6 @@ mips-*-ultrix* | mips-dec-mach3)	# Decstation.
 	if test x$stabs = xyes; then
 		tm_file="${tm_file} dbx.h"
 	fi
-	xmake_file=mips/x-ultrix
 	if test x$gas = xyes
 	then
 		tmake_file=mips/t-mips-gas
@@ -2662,7 +2631,6 @@ romp-*-aos*)
 	use_collect2=yes
 	;;
 romp-*-mach*)
-	xmake_file=romp/x-mach
 	use_collect2=yes
 	;;
 romp-*-openbsd*)
@@ -2677,7 +2645,6 @@ powerpc-*-beos*)
 	xm_defines=USG
 	xm_file=rs6000/xm-beos.h
 	tmake_file=rs6000/t-beos
-	xmake_file=rs6000/x-beos
 	;;
 powerpc-*-darwin*)
 	xm_file=rs6000/xm-darwin.h
@@ -2688,7 +2655,6 @@ powerpc-*-sysv*)
 	xm_defines="USG POSIX"
 	extra_headers=ppc-asm.h
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
-	xmake_file=rs6000/x-sysv4
 	;;
 powerpc-*-chorusos*)
 	xm_defines=USG
@@ -2776,7 +2742,6 @@ powerpcle-*-sysv*)
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/sysv4le.h"
 	xm_defines="USG POSIX"
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
-	xmake_file=rs6000/x-sysv4
 	extra_headers=ppc-asm.h
 	;;
 powerpcle-*-elf*)
@@ -2801,7 +2766,6 @@ powerpcle-*-solaris2*)
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/sysv4le.h rs6000/sol2.h"
 	xm_defines="USG POSIX"
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
-	xmake_file=rs6000/x-sysv4
 	extra_headers=ppc-asm.h
 	;;
 rs6000-ibm-aix3.[01]*)
@@ -2859,13 +2823,11 @@ rs6000-bull-bosx)
 rs6000-*-mach*)
 	tm_file=rs6000/mach.h
 	xm_defines=USG
-	xmake_file=rs6000/x-mach
 	use_collect2=yes
 	;;
 rs6000-*-lynxos*)
 	tm_file=rs6000/lynx.h
 	tmake_file=rs6000/t-rs6000
-	xmake_file=rs6000/x-lynx
 	use_collect2=yes
 	;;
 sh-*-elf*)
@@ -2983,7 +2945,6 @@ sparc-*-lynxos*)
 		tm_file=sparc/lynx-ng.h
 	fi
 	tmake_file=sparc/t-sunos41
-	xmake_file=x-lynx
 	;;
 sparc-*-rtemsaout*)
 	tmake_file="sparc/t-sparcbare t-rtems"
@@ -3016,7 +2977,6 @@ sparcv9-*-solaris2*)
 	else
 		tmake_file="$tmake_file sparc/t-slibgcc-sld"
 	fi
-	xmake_file=sparc/x-sysv4
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o crtbegin.o crtend.o"
 	float_format=none
 	if test x${enable_threads} = x ; then
@@ -3042,7 +3002,6 @@ sparc-hal-solaris2*)
 	else
 		tmake_file="$tmake_file sparc/t-slibgcc-sld"
 	fi
-        xmake_file=sparc/x-sysv4
         extra_parts="crt1.o crti.o crtn.o gmon.o crtbegin.o crtend.o"
         case $machine in
         *-*-solaris2.[0-4])
@@ -3068,7 +3027,6 @@ sparc-*-solaris2*)
 	else
 		tmake_file="$tmake_file sparc/t-slibgcc-sld"
 	fi
-	xmake_file=sparc/x-sysv4
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 # At the moment, 32-to-64 cross compilation doesn't work.
 #	case $machine in
@@ -3126,14 +3084,12 @@ sparc-*-sysv4*)
 	tm_file=sparc/sysv4.h
 	xm_defines="USG POSIX"
 	tmake_file=t-svr4
-	xmake_file=sparc/x-sysv4
 	extra_parts="crtbegin.o crtend.o"
 	;;
 sparc-*-vxsim*)
 	xm_defines="USG POSIX"
 	tm_file=sparc/vxsim.h
 	tmake_file=sparc/t-vxsparc
-	xmake_file=sparc/x-sysv4
 	;;
 sparclet-*-aout*)
 	tm_file="sparc/splet.h libgloss.h"
@@ -3478,9 +3434,6 @@ else
 		then host_xm_file=$xm_file
 		fi
 		host_xm_defines=$xm_defines
-		if test x"$xmake_file" = x
-		then xmake_file=$cpu_type/x-$cpu_type
-		fi
 		host_xmake_file="$xmake_file"
 		host_truncate_target=$truncate_target
 		host_extra_gcc_objs=$extra_gcc_objs

@@ -1,2 +1,2 @@
-# Needed for missing functions in Sym1.
-CLIB=-liberty -lld
+# Needed for collect2?
+CLIB=-lld
