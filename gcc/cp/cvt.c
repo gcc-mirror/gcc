@@ -258,11 +258,19 @@ cp_convert_to_pointer (type, expr)
 	{
 	  tree b1 = TYPE_OFFSET_BASETYPE (TREE_TYPE (type));
 	  tree b2 = TYPE_OFFSET_BASETYPE (TREE_TYPE (intype));
-	  tree binfo = get_binfo (b1, b2, 1);
+	  tree binfo = get_binfo (b2, b1, 1);
+	  enum tree_code code = PLUS_EXPR;
+
 	  if (binfo == NULL_TREE)
-	    binfo = get_binfo (b2, b1, 1);
+	    {
+	      binfo = get_binfo (b1, b2, 1);
+	      code = MINUS_EXPR;
+	    }
+
 	  if (binfo == error_mark_node)
 	    return error_mark_node;
+	  if (binfo && ! TREE_VIA_VIRTUAL (binfo))
+	    expr = size_binop (code, expr, BINFO_OFFSET (binfo));
 	}
 
       if (TREE_CODE (TREE_TYPE (intype)) == METHOD_TYPE
