@@ -1,3 +1,8 @@
+2004-01-13  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/13474
+	* pt.c (tsubst) <INTEGER_TYPE>: Remove obsolete array index tweaking.
+
 2003-01-12  Steven Bosscher  <stevenb@suse.de>
 
 	PR c++/13558
