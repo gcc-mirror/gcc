@@ -17,7 +17,7 @@ echo "/\.o[ 	]*:/ s/config.status//			">> config.sed
 echo "/^target=/ c\					">> config.sed
 echo "target=go32					">> config.sed
 echo "/^version=/ c\					">> config.sed
-sed -e "s/[^\"]*\"/version=/" -e "s/\ .*//" version.c	 >> config.sed
+sed -e "s/.*\"\([^ \"]*\)[ \"].*/version=\1/" version.c  >> config.sed
 echo "s/CC = cc/CC = gcc/				">> config.sed
 echo "s/:\$/: \$/g					">> config.sed
 echo "s/^	\ *\.\//	go32 /			">> config.sed
