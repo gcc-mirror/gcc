@@ -1,5 +1,11 @@
 2001-06-05  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* call.c (build_user_type_conversion_1): Set ICS_USER_FLAG and
+	ICS_BAD_FLAG on created conversion.
+	(compare_ics): Break out rank.
+
+2001-06-05  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* decl.c (xref_tag): Remove extraneous %s on dependent name
 	lookup warning.
 
