@@ -60,7 +60,7 @@ $if flnm.eqs." " then goto loop
 $!
 $flnm = "L"+flnm
 $if flnm.eqs."L_exit" then goto loop1
-$write sys$output "$ gcc/debug/define=''flnm' LIBGCC2.C"
+$write sys$output "$ gcc/debug/define=""''flnm'"" LIBGCC2.C"
 $!
 $objname = flnm
 $if flnm.eqs."L_builtin_New" then objname = "L_builtin_nnew"
@@ -73,10 +73,12 @@ $ gcc_cc1 'cpp_file' -dumpbase 'objname' -
         -quiet -mgnu -g "-O1" -mvaxc-alignment   -o 's_file'
 $ delete/nolog 'cpp_file';
 $ gcc_as "-vGNU CC  V''Version'" 's_file'  -o 'objname'.OBJ
+$! Assemble again, preserving lowercase symbol names this time.
+$ gcc_as "-vGNU CC  V''Version'" -h3 's_file'  -o 'objname'-c.OBJ
 $ delete/nolog 's_file';
 $!
-$lib libgcc2.olb 'objname'.obj
-$del 'objname'.obj;/nolog
+$ library libgcc2.olb 'objname'.obj,'objname'-c.obj
+$ delete/nolog 'objname'.obj;,'objname'-c.obj;
 $!
 $goto loop1
 $!
