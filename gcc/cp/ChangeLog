@@ -1,6 +1,6 @@
 2005-04-05  Mark Mitchell  <mark@codesourcery.com>
 
-	PR c++/20673
+	PR c++/20763
 	* decl.c (grokdeclarator): Correct attribute handling.
 
 	PR c++/19159
