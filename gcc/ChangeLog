@@ -1,3 +1,9 @@
+2003-09-11  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR fortran/11522
+	* dwarf2out.c (gen_inlined_subroutine_die): Emit abstract function
+	for ultimate origin even if block is abstract.
+
 2003-09-11  Roger Sayle  <roger@eyesopen.com>
 
 	* combine.c (combine_simplify_rtx): Move several NOT and NEG
