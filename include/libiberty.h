@@ -200,6 +200,8 @@ extern int asprintf PARAMS ((char **, const char *, ...)) ATTRIBUTE_PRINTF_2;
 extern int vasprintf PARAMS ((char **, const char *, va_list))
   ATTRIBUTE_PRINTF(2,0);
 
+#define ARRAY_SIZE(a) (sizeof (a) / sizeof ((a)[0]))
+
 #ifdef __cplusplus
 }
 #endif
