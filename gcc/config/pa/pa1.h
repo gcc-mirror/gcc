@@ -18,10 +18,9 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/* This is the same as hppa.h, except that we generate snake code by
+#define TARGET_DEFAULT 1	/* TARGET_SNAKE */
+
+/* This is the same as pa.h, except that we generate snake code by
    default. */
 
 #include "pa.h"
-
-#undef TARGET_DEFAULT
-#define TARGET_DEFAULT 1
