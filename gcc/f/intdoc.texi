@@ -5741,7 +5741,7 @@ Description:
 
 Returns the value of @var{I} with bit @var{Pos} cleared (set to
 zero).
-@xref{BTest Intrinsic} for information on bit positions.
+@xref{BTest Intrinsic}, for information on bit positions.
 
 @node IBits Intrinsic
 @subsubsection IBits Intrinsic
@@ -5805,7 +5805,7 @@ Intrinsic groups: @code{mil}, @code{f90}, @code{vxt}.
 Description:
 
 Returns the value of @var{I} with bit @var{Pos} set (to one).
-@xref{BTest Intrinsic} for information on bit positions.
+@xref{BTest Intrinsic}, for information on bit positions.
 
 @end ifset
 @ifset familyF77
@@ -10386,7 +10386,7 @@ to such programs, to wrap around
 (change from a larger value to a smaller one)
 as of the Year 10000.
 
-@xref{FDate Intrinsic (subroutine)} for an equivalent routine.
+@xref{FDate Intrinsic (subroutine)}, for an equivalent routine.
 
 For information on other intrinsics with the same name:
 @xref{Time Intrinsic (UNIX)}.
