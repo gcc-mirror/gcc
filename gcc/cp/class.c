@@ -2991,6 +2991,7 @@ check_for_override (decl, ctype)
   tree binfos = BINFO_BASETYPES (TYPE_BINFO (ctype));
   int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
   int virtualp = DECL_VIRTUAL_P (decl);
+  int found_overriden_fn = 0;
 
   for (i = 0; i < n_baselinks; i++)
     {
@@ -3000,7 +3001,8 @@ check_for_override (decl, ctype)
 	  tree tmp = get_matching_virtual
 	    (base_binfo, decl,
 	     DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl)));
-	  if (tmp)
+
+	  if (tmp && !found_overriden_fn)
 	    {
 	      /* If this function overrides some virtual in some base
 		 class, then the function itself is also necessarily
@@ -3021,26 +3023,15 @@ check_for_override (decl, ctype)
 		}
 	      virtualp = 1;
 
-#if 0 /* The signature of an overriding function is not changed.  */
-	      {
-		/* The argument types may have changed...  */
-		tree type = TREE_TYPE (decl);
-		tree argtypes = TYPE_ARG_TYPES (type);
-		tree base_variant = TREE_TYPE (TREE_VALUE (argtypes));
-		tree raises = TYPE_RAISES_EXCEPTIONS (type);
-
-		argtypes = commonparms (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (tmp))),
-					TREE_CHAIN (argtypes));
-		/* But the return type has not.  */
-		type = build_cplus_method_type (base_variant, TREE_TYPE (type), argtypes);
-		if (raises)
-		  type = build_exception_variant (type, raises);
-		TREE_TYPE (decl) = type;
-	      }
-#endif
 	      DECL_VINDEX (decl)
 		= tree_cons (NULL_TREE, tmp, DECL_VINDEX (decl));
-	      break;
+	      
+	      /* We now know that DECL overrides something,
+		 which is all that is important.  But, we must
+		 continue to iterate through all the base-classes
+		 in order to allow get_matching_virtual to check for
+		 various illegal overrides.  */
+	      found_overriden_fn = 1;
 	    }
 	}
     }
@@ -4896,6 +4887,8 @@ push_nested_class (type, modify)
      int modify;
 {
   tree context;
+
+  my_friendly_assert (!type || TREE_CODE (type) != NAMESPACE_DECL, 980711);
 
   /* A namespace might be passed in error cases, like A::B:C.  */
   if (type == NULL_TREE || type == error_mark_node || ! IS_AGGR_TYPE (type)

@@ -1,3 +1,9 @@
+1999-02-26  Mark Mitchell  <mark@markmitchell.com>
+
+	* class.c (check_for_override): Don't stop checking when we find
+	the first overridden function.  Delete #if 0'd code.
+	* search.c (get_matching_virtual): Likewise.
+	
 1999-02-25  Richard Henderson  <rth@cygnus.com>
 
 	* lang-specs.h: Define __FAST_MATH__ when appropriate.
