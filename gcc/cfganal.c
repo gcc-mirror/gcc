@@ -224,10 +224,13 @@ keep_with_call_p (insn)
   if (INSN_P (insn) && (set = single_set (insn)) != NULL)
     {
       if (GET_CODE (SET_DEST (set)) == REG
-	  && fixed_regs[REGNO (SET_DEST (set))])
+	  && fixed_regs[REGNO (SET_DEST (set))]
+	  && general_operand (SET_SRC (set)))
 	return true;
       if (GET_CODE (SET_SRC (set)) == REG
-	  && FUNCTION_VALUE_REGNO_P (REGNO (SET_SRC (set))))
+	  && FUNCTION_VALUE_REGNO_P (REGNO (SET_SRC (set)))
+	  && GET_CODE (SET_DEST (set)) == REG
+	  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER)
 	return true;
     }
   return false;
