@@ -481,6 +481,7 @@ static void flow_loop_tree_node_add	PARAMS ((struct loop *, struct loop *));
 static void flow_loops_tree_build	PARAMS ((struct loops *));
 static int flow_loop_level_compute	PARAMS ((struct loop *, int));
 static int flow_loops_level_compute	PARAMS ((struct loops *));
+static void delete_dead_jumptables	PARAMS ((void));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register
@@ -4081,6 +4082,8 @@ life_analysis (f, file, flags)
       }
   }
 #endif
+  /* Removing dead insns should've made jumptables really dead.  */
+  delete_dead_jumptables ();
 }
 
 /* A subroutine of verify_wide_reg, called through for_each_rtx.
@@ -4330,6 +4333,32 @@ delete_noop_moves (f)
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (insn) = 0;
 	    }
+	}
+    }
+}
+
+/* Delete any jump tables never referenced.  We can't delete them at the
+   time of removing tablejump insn as they are referenced by the preceeding
+   insns computing the destination, so we delay deleting and garbagecollect
+   them once life information is computed.  */
+static void
+delete_dead_jumptables ()
+{
+  rtx insn, next;
+  for (insn = get_insns (); insn; insn = next)
+    {
+      next = NEXT_INSN (insn);
+      if (GET_CODE (insn) == CODE_LABEL
+	  && LABEL_NUSES (insn) == 0
+	  && GET_CODE (next) == JUMP_INSN
+	  && (GET_CODE (PATTERN (next)) == ADDR_VEC
+	      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
+	{
+	  if (rtl_dump_file)
+	    fprintf (rtl_dump_file, "Dead jumptable %i removed\n", INSN_UID (insn));
+	  flow_delete_insn (NEXT_INSN (insn));
+	  flow_delete_insn (insn);
+	  next = NEXT_INSN (next);
 	}
     }
 }
@@ -7956,7 +7985,7 @@ set_block_for_new_insns (insn, bb)
 
    - test head/end pointers
    - overlapping of basic blocks
-   - edge list corectness
+   - edge list correctness
    - headers of basic blocks (the NOTE_INSN_BASIC_BLOCK note)
    - tails of basic blocks (ensure that boundary is necesary)
    - scans body of the basic block for JUMP_INSN, CODE_LABEL
@@ -8031,8 +8060,9 @@ verify_flow_info ()
   for (i = n_basic_blocks - 1; i >= 0; i--)
     {
       basic_block bb = BASIC_BLOCK (i);
-      /* Check corectness of edge lists */
+      /* Check correctness of edge lists. */
       edge e;
+      int has_fallthru = 0;
 
       e = bb->succ;
       while (e)
@@ -8045,17 +8075,31 @@ verify_flow_info ()
 	    }
 	  last_visited [e->dest->index + 2] = bb;
 
+	  if (e->flags & EDGE_FALLTHRU)
+	    has_fallthru = 1;
+
 	  if ((e->flags & EDGE_FALLTHRU)
 	      && e->src != ENTRY_BLOCK_PTR
-	      && e->dest != EXIT_BLOCK_PTR
-	      && (e->src->index + 1 != e->dest->index
-		  || !can_fallthru (e->src, e->dest)))
+	      && e->dest != EXIT_BLOCK_PTR)
 	    {
-	      error ("verify_flow_info: Incorrect fallthru edge %i->%i",
-		     e->src->index, e->dest->index);
-	      err = 1;
+	      rtx insn;
+	      if (e->src->index + 1 != e->dest->index)
+		{
+		    error ("verify_flow_info: Incorrect blocks for fallthru %i->%i",
+			   e->src->index, e->dest->index);
+		    err = 1;
+		}
+	      else
+		for (insn = NEXT_INSN (e->src->end); insn != e->dest->head;
+		     insn = NEXT_INSN (insn))
+		  if (GET_CODE (insn) == BARRIER || INSN_P (insn))
+		    {
+		      error ("verify_flow_info: Incorrect fallthru %i->%i",
+			     e->src->index, e->dest->index);
+		      fatal_insn ("Wrong insn in the fallthru edge", insn);
+		      err = 1;
+		    }
 	    }
-	    
 	  if (e->src != bb)
 	    {
 	      error ("verify_flow_info: Basic block %d succ edge is corrupted",
@@ -8079,6 +8123,21 @@ verify_flow_info ()
 		}
 	    }
 	  e = e->succ_next;
+	}
+      if (!has_fallthru)
+	{
+	  rtx insn = bb->end;
+
+	  /* Ensure existence of barrier in BB with no fallthru edges.  */
+	  for (insn = bb->end; GET_CODE (insn) != BARRIER;
+	       insn = NEXT_INSN (insn))
+	    if (!insn
+		|| (GET_CODE (insn) == NOTE
+		    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK))
+		{
+		  error ("Missing barrier after block %i", bb->index);
+		  err = 1;
+		}
 	}
 
       e = bb->pred;
