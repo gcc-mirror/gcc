@@ -1,5 +1,14 @@
 2003-12-09  Bernardo Innocenti  <bernie@develer.com>
 
+	* include/c_std/cmath.tcc, include/c_std/std_cassert.h,
+	include/c_std/std_cctype.h, include/c_std/std_cmath.h,
+	include/c_std/std_cstddef.h, include/c_std/std_cstdio.h,
+	include/c_std/std_cstdlib.h, include/c_std/std_cstring.h,
+	include/c_std/std_cwchar.h, include/c_std/std_cwctype.h:
+	Remove trailing whitespace.
+
+2003-12-09  Bernardo Innocenti  <bernie@develer.com>
+
 	* include/c/std_cctype.h, include/c/std_cmath.h,
 	include/c/std_cstdlib.h include/c/std_cwchar.h,
 	include/c/std_cwctype.h: Remove trailing whitespace.

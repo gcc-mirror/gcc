@@ -57,7 +57,7 @@
 #undef iswalpha
 #if _GLIBCXX_HAVE_ISWBLANK
 # undef iswblank
-#endif 
+#endif
 #undef iswcntrl
 #undef iswdigit
 #undef iswgraph
@@ -68,7 +68,7 @@
 #undef iswspace
 #undef iswupper
 #undef iswxdigit
-#undef iswctype  
+#undef iswctype
 #undef towlower
 #undef towupper
 #undef towctrans
@@ -78,7 +78,7 @@
 #if _GLIBCXX_USE_WCHAR_T
 namespace std
 {
-  using ::wint_t; 	  // cwchar
+  using ::wint_t;	  // cwchar
 
   using ::wctype_t;
   using ::wctrans_t;
@@ -87,7 +87,7 @@ namespace std
   using ::iswalpha;
 #if _GLIBCXX_HAVE_ISWBLANK
   using ::iswblank;
-#endif 
+#endif
   using ::iswcntrl;
   using ::iswdigit;
   using ::iswgraph;
@@ -107,4 +107,4 @@ namespace std
 }
 #endif //_GLIBCXX_USE_WCHAR_T
 
-#endif 
+#endif
