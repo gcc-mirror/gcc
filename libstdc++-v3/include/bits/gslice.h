@@ -106,7 +106,7 @@ namespace std {
 	size_t _M_start;
 	valarray<size_t> _M_size;
 	valarray<size_t> _M_stride;
-	valarray<size_t> _M_index;
+	valarray<size_t> _M_index; // Linear array of referenced indices
 	_Indexer(size_t, const valarray<size_t>&,
 		 const valarray<size_t>&);
 	void _M_increment_use() { ++_M_count; }

@@ -63,6 +63,10 @@ namespace std
     public:
       typedef _Tp value_type;
 
+      // this constructor needs to be implemented.
+      ///  Copy constructor.  Both slices refer to the same underlying array.
+      indirect_array(const indirect_array&);
+
       // XXX: This is a proposed resolution for DR-253.
       ///  Assignment operator.  Assigns elements to corresponding elements
       ///  of @a a.
@@ -119,7 +123,6 @@ namespace std
 
     private:
       ///  Copy constructor.  Both slices refer to the same underlying array.
-      indirect_array(const indirect_array&);
       indirect_array(_Array<_Tp>, size_t, _Array<size_t>);
 
       friend class valarray<_Tp>;
