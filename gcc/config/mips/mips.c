@@ -3,7 +3,7 @@
    Changes by     Michael Meissner, meissner@osf.org.
    64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
    Brendan Eich, brendan@microunity.com.
-   Copyright (C) 1989, 1990, 1991, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90, 91, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2818,7 +2818,10 @@ function_arg (cum, mode, type, named)
     case DFmode:
       if (! TARGET_64BIT)
 	cum->arg_words += (cum->arg_words & 1);
-      regbase = (cum->gp_reg_found || TARGET_SOFT_FLOAT || cum->arg_number >= 2
+      regbase = ((cum->gp_reg_found
+		  || TARGET_SOFT_FLOAT
+		  || TARGET_SINGLE_FLOAT
+		  || cum->arg_number >= 2)
 		 ? GP_ARG_FIRST
 		 : FP_ARG_FIRST);
       break;
@@ -3166,6 +3169,10 @@ override_options ()
 	    mips_cpu = PROCESSOR_R4000;
 	  else if (!strcmp (p, "4600"))
 	    mips_cpu = PROCESSOR_R4600;
+	  /* Although the r4650 adds a couple of instructions, it uses
+             the r4600 pipeline.  */
+	  else if (!strcmp (p, "4650"))
+	    mips_cpu = PROCESSOR_R4600;
 	  break;
 
 	case '6':
@@ -3350,12 +3357,14 @@ override_options ()
 	    temp = ((TARGET_FLOAT64 || ((regno & 1) == 0))
 		    && (class == MODE_FLOAT
 			|| class == MODE_COMPLEX_FLOAT
-			|| (TARGET_DEBUG_H_MODE && class == MODE_INT)));
+			|| (TARGET_DEBUG_H_MODE && class == MODE_INT))
+		    && (! TARGET_SINGLE_FLOAT || size <= 4));
 
 	  else if (MD_REG_P (regno))
 	    {
 	      if (TARGET_64BIT)
 		temp = (mode == DImode
+			|| mode == SImode
 			|| (regno == MD_REG_FIRST && mode == TImode));
 	      else
 		temp = (mode == SImode
@@ -4401,7 +4410,7 @@ compute_frame_size (size)
     }
 
   /* Calculate space needed for fp registers.  */
-  if (TARGET_FLOAT64)
+  if (TARGET_FLOAT64 || TARGET_SINGLE_FLOAT)
     {
       fp_inc = 1;
       fp_bits = 1;
@@ -4422,7 +4431,7 @@ compute_frame_size (size)
     }
 
   gp_reg_rounded = MIPS_STACK_ALIGN (gp_reg_size);
-  total_size += gp_reg_rounded + fp_reg_size;
+  total_size += gp_reg_rounded + MIPS_STACK_ALIGN (fp_reg_size);
 
   if (total_size == extra_size)
     total_size = extra_size = 0;
@@ -4626,7 +4635,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
   /* Save floating point registers if needed.  */
   if (fmask)
     {
-      int fp_inc = (TARGET_FLOAT64) ? 1 : 2;
+      int fp_inc = (TARGET_FLOAT64 || TARGET_SINGLE_FLOAT) ? 1 : 2;
       int fp_size = fp_inc * UNITS_PER_FPREG;
 
       /* Pick which pointer to use as a base register.  */
@@ -4700,8 +4709,10 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	    {
 	      if (file == (FILE *)0)
 		{
-		  rtx reg_rtx = gen_rtx (REG, DFmode, regno);
-		  rtx mem_rtx = gen_rtx (MEM, DFmode,
+		  enum machine_mode sz =
+		    TARGET_SINGLE_FLOAT ? SFmode : DFmode;
+		  rtx reg_rtx = gen_rtx (REG, sz, regno);
+		  rtx mem_rtx = gen_rtx (MEM, sz,
 					 gen_rtx (PLUS, Pmode, base_reg_rtx,
 						  GEN_INT (fp_offset - base_offset)));
 
@@ -4712,7 +4723,9 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		}
 	      else
 		fprintf (file, "\t%s\t%s,%ld(%s)\n",
-			 (store_p) ? "s.d" : "l.d",
+			 (TARGET_SINGLE_FLOAT
+			  ? ((store_p) ? "s.s" : "l.s")
+			  : ((store_p) ? "s.d" : "l.d")),
 			 reg_names[regno],
 			 fp_offset - base_offset,
 			 reg_names[REGNO(base_reg_rtx)]);
@@ -5375,4 +5388,26 @@ mips_select_section (decl, reloc)
       else
 	data_section ();
     }
+}
+
+/* Moving the HI or LO register somewhere requires a general register.  */
+
+enum reg_class
+mips_secondary_reload_class (class, mode, x)
+     enum reg_class class;
+     enum machine_mode mode;
+     rtx x;
+{
+  if (class != HI_REG && class != LO_REG && class != MD_REGS)
+    return NO_REGS;
+
+  if (GET_CODE (x) == REG)
+    {
+      int regno = true_regnum (x);
+
+      if (regno >= GP_REG_FIRST && regno <= GP_REG_LAST)
+	return NO_REGS;
+    }
+
+  return GR_REGS;
 }
