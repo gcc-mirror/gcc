@@ -1,3 +1,36 @@
+2001-11-20  David O'Brien  <obrien@FreeBSD.org>
+
+	* config.gcc: Add FreeBSD/PowerPC target.
+	(powerpc64-*-linux*, powerpc-*-sysv*, powerpc-*-netbsd*,
+	powerpc-*-chorusos*, powerpc-*-eabiaix*, powerpc-*-eabisim*,
+	powerpc-*-elf*, powerpc-*-eabi*, powerpc-*-rtems*,
+	powerpc-*-linux*libc1, powerpc-*-linux*, powerpc-wrs-vxworks*,
+	powerpcle-wrs-vxworks*, powerpcle-*-sysv*, powerpcle-*-elf*,
+	powerpcle-*-eabisim*, powerpcle-*-eabi*, powerpcle-*-solaris2*): Add
+	freebsd-spec.h to tm_file.
+	(rs6000-*-lynxos*): Add lynx.h to tm_file.
+	* config/freebsd.h: Tidy up.
+	(USING_CONFIG_FREEBSD): Define.
+	(FBSD_SWITCH_TAKES_ARG, FBSD_WORD_SWITCH_TAKES_ARG,
+	FBSD_CPP_PREDEFINES, FBSD_CPP_SPEC, FBSD_STARTFILE_SPEC,
+	FBSD_ENDFILE_SPEC, FBSD_LIB_SPEC): Remove (moved to freebsd-spec.h).
+	(TARGET_HAS_F_SETLKW): Define.
+	(ASM_OUTPUT_IDENT): Delete, the elfos.h definition is fine.
+	* config/freebsd-spec.h: New file.
+	* config/rs6000/freebsd.h: New file.
+	* config/rs6000/rs6000.h (TARGET_VERSION): Do not define.
+	* config/rs6000/rs6000.c: Test for USING_ELFOS_H rather than
+	USING_SVR4_H to know when to turn on ELF support.
+	* config/rs6000/sysv4.h (TARGET_VERSION, CPP_PREDEFINES): Don't undef,
+	define only if not already defined.
+	Add FreeBSD support.
+	* config/rs6000/aix.h (TARGET_VERSION): Define.
+	* config/rs6000/beos.h: Likewise.
+	* config/rs6000/darwin.h: Likewise.
+	* config/rs6000/mach.h: Likewise.
+	* config/rs6000/lynx.h (TARGET_VERSION): Likewise.
+	Don't include lynx.h directly.
+
 2001-11-20  Graham Stott  <grahams@redhat.com>
 
 	* unwind-dw2-fde.c (__deregister_frame_info_bases):

@@ -194,6 +194,8 @@ do {									\
     }									\
   else if (!strcmp (rs6000_abi_name, "aixdesc"))			\
     rs6000_current_abi = ABI_AIX;					\
+  else if (!strcmp (rs6000_abi_name, "freebsd"))			\
+    rs6000_current_abi = ABI_V4;					\
   else if (!strcmp (rs6000_abi_name, "linux"))				\
     rs6000_current_abi = ABI_V4;					\
   else if (!strcmp (rs6000_abi_name, "netbsd"))				\
@@ -917,12 +919,14 @@ do {						\
 
 /* This is the end of what might become sysv4dbx.h.  */
 
-/* Override rs6000.h definition.  */
-#undef	TARGET_VERSION
+#ifndef	TARGET_VERSION
 #define	TARGET_VERSION fprintf (stderr, " (PowerPC System V.4)");
+#endif
 
+#ifndef	CPP_PREDEFINES
 #define	CPP_PREDEFINES \
   "-DPPC -Dunix -D__svr4__ -Asystem=unix -Asystem=svr4 -Acpu=powerpc -Amachine=powerpc"
+#endif
 
 /* Pass various options to the assembler.  */
 /* Override svr4.h definition.  */
@@ -935,9 +939,11 @@ do {						\
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian} \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
     %{mcall-solaris: -mlittle -msolaris} \
+    %{mcall-freebsd: -mbig} \
     %{mcall-i960-old: -mlittle} \
     %{mcall-linux: -mbig} \
-    %{mcall-netbsd: -mbig} }}}}"
+    %{mcall-netbsd: -mbig} \
+}}}}"
 
 #define	CC1_ENDIAN_BIG_SPEC ""
 
@@ -956,13 +962,14 @@ do {						\
 %{mbig: %(cc1_endian_big)} %{!mbig: %{mbig-endian: %(cc1_endian_big)}} \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
     %{mcall-aixdesc: -mbig %(cc1_endian_big) } \
+    %{mcall-freebsd: -mbig %(cc1_endian_big) } \
     %{mcall-solaris: -mlittle %(cc1_endian_little) } \
     %{mcall-i960-old: -mlittle %(cc1_endian_little) } \
     %{mcall-linux: -mbig %(cc1_endian_big) } \
     %{mcall-netbsd: -mbig %(cc1_endian_big) } \
-    %{!mcall-aixdesc: %{!mcall-solaris: %{!mcall-i960-old: %{!mcall-linux: %{!mcall-netbsd: \
+    %{!mcall-aixdesc: %{!mcall-freebsd: %{!mcall-solaris: %{!mcall-i960-old: %{!mcall-linux: %{!mcall-netbsd: \
 	    %(cc1_endian_default) \
-    }}}}} \
+    }}}}}} \
 }}}} \
 %{mcall-solaris: -mregnames } \
 %{mno-sdata: -msdata=none } \
@@ -970,6 +977,7 @@ do {						\
 %{!meabi: %{!mno-eabi: \
     %{mrelocatable: -meabi } \
     %{mcall-solaris: -mno-eabi } \
+    %{mcall-freebsd: -mno-eabi } \
     %{mcall-i960-old: -meabi } \
     %{mcall-linux: -mno-eabi } \
     %{mcall-netbsd: -mno-eabi }}} \
@@ -1000,10 +1008,11 @@ do {						\
 %{myellowknife: %(link_start_yellowknife) } \
 %{mmvme: %(link_start_mvme) } \
 %{msim: %(link_start_sim) } \
+%{mcall-freebsd: %(link_start_freebsd) } \
 %{mcall-linux: %(link_start_linux) } \
 %{mcall-netbsd: %(link_start_netbsd) } \
 %{mcall-solaris: %(link_start_solaris) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(link_start_default) }}}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(link_start_default) }}}}}}}}"
 
 #define LINK_START_DEFAULT_SPEC ""
 
@@ -1056,10 +1065,11 @@ do {						\
 %{myellowknife: %(link_os_yellowknife) } \
 %{mmvme: %(link_os_mvme) } \
 %{msim: %(link_os_sim) } \
+%{mcall-freebsd: %(link_os_freebsd) } \
 %{mcall-linux: %(link_os_linux) } \
 %{mcall-netbsd: %(link_os_netbsd) } \
 %{mcall-solaris: %(link_os_solaris) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(link_os_default) }}}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(link_os_default) }}}}}}}}"
 
 #define LINK_OS_DEFAULT_SPEC ""
 
@@ -1105,11 +1115,12 @@ do {						\
 %{mbig-endian: %(cpp_endian_big) } \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
     %{mcall-solaris: %(cpp_endian_solaris) } \
+    %{mcall-freebsd: %(cpp_endian_big) } \
     %{mcall-linux: %(cpp_endian_big) } \
     %{mcall-netbsd: %(cpp_endian_big) } \
     %{mcall-i960-old: %(cpp_endian_little) } \
     %{mcall-aixdesc:  %(cpp_endian_big) } \
-    %{!mcall-solaris: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-aixdesc: %(cpp_endian_default) }}}}}}}}"
+    %{!mcall-solaris: %{!mcall-linux: %{!mcall-freebsd: %{!mcall-netbsd: %{!mcall-aixdesc: %(cpp_endian_default) }}}}}}}}}"
 
 #define	CPP_ENDIAN_DEFAULT_SPEC "%(cpp_endian_big)"
 
@@ -1120,10 +1131,11 @@ do {						\
 %{myellowknife: %(cpp_os_yellowknife) } \
 %{mmvme: %(cpp_os_mvme) } \
 %{msim: %(cpp_os_sim) } \
+%{mcall-freebsd: %(cpp_os_freebsd) } \
 %{mcall-linux: %(cpp_os_linux) } \
 %{mcall-netbsd: %(cpp_os_netbsd) } \
 %{mcall-solaris: %(cpp_os_solaris) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(cpp_os_default) }}}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(cpp_os_default) }}}}}}}}"
 
 #define	CPP_OS_DEFAULT_SPEC ""
 
@@ -1134,10 +1146,11 @@ do {						\
 %{myellowknife: %(startfile_yellowknife) } \
 %{mmvme: %(startfile_mvme) } \
 %{msim: %(startfile_sim) } \
+%{mcall-freebsd: %(startfile_freebsd) } \
 %{mcall-linux: %(startfile_linux) } \
 %{mcall-netbsd: %(startfile_netbsd) } \
 %{mcall-solaris: %(startfile_solaris) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(startfile_default) }}}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(startfile_default) }}}}}}}}"
 
 #define	STARTFILE_DEFAULT_SPEC ""
 
@@ -1148,10 +1161,11 @@ do {						\
 %{myellowknife: %(lib_yellowknife) } \
 %{mmvme: %(lib_mvme) } \
 %{msim: %(lib_sim) } \
+%{mcall-freebsd: %(lib_freebsd) } \
 %{mcall-linux: %(lib_linux) } \
 %{mcall-netbsd: %(lib_netbsd) } \
 %{mcall-solaris: %(lib_solaris) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(lib_default) }}}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %%{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(lib_default) }}}}}}}}"
 
 #define LIB_DEFAULT_SPEC ""
 
@@ -1162,11 +1176,12 @@ do {						\
 %{myellowknife: %(endfile_yellowknife)} \
 %{mmvme: %(endfile_mvme)} \
 %{msim: %(endfile_sim)} \
+%{mcall-freebsd: %(endfile_freebsd) } \
 %{mcall-linux: %(endfile_linux) } \
 %{mcall-netbsd: %(endfile_netbsd) } \
 %{mcall-solaris: %(endfile_solaris)} \
 %{mvxworks: %(endfile_vxworks) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %{!mvxworks: %(endfile_default) }}}}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %{!mvxworks: %(endfile_default) }}}}}}}}}"
 
 #define	ENDFILE_DEFAULT_SPEC ""
 
@@ -1221,6 +1236,20 @@ do {						\
 #define LINK_OS_SIM_SPEC "-m elf32ppcsim"
 
 #define CPP_OS_SIM_SPEC ""
+
+/* FreeBSD support.  */
+
+#define CPP_OS_FREEBSD_SPEC	"\
+  -D__PPC__ -D__ppc__ -D__PowerPC__ -D__powerpc__ \
+  -Acpu=powerpc -Amachine=powerpc"
+
+#define	STARTFILE_FREEBSD_SPEC	FBSD_STARTFILE_SPEC
+#define ENDFILE_FREEBSD_SPEC	FBSD_ENDFILE_SPEC
+#define LIB_FREEBSD_SPEC	FBSD_LIB_SPEC
+#define LINK_START_FREEBSD_SPEC	""
+
+#define LINK_OS_FREEBSD_SPEC "\
+  %{symbolic:-Bsymbolic}"
 
 /* GNU/Linux support.  */
 #ifdef USE_GNULIBC_1
@@ -1379,6 +1408,7 @@ ncrtn.o%s"
   { "lib_yellowknife",		LIB_YELLOWKNIFE_SPEC },			\
   { "lib_mvme",			LIB_MVME_SPEC },			\
   { "lib_sim",			LIB_SIM_SPEC },				\
+  { "lib_freebsd",		LIB_FREEBSD_SPEC },			\
   { "lib_linux",		LIB_LINUX_SPEC },			\
   { "lib_netbsd",		LIB_NETBSD_SPEC },			\
   { "lib_solaris",		LIB_SOLARIS_SPEC },			\
@@ -1388,6 +1418,7 @@ ncrtn.o%s"
   { "startfile_yellowknife",	STARTFILE_YELLOWKNIFE_SPEC },		\
   { "startfile_mvme",		STARTFILE_MVME_SPEC },			\
   { "startfile_sim",		STARTFILE_SIM_SPEC },			\
+  { "startfile_freebsd",	STARTFILE_FREEBSD_SPEC },		\
   { "startfile_linux",		STARTFILE_LINUX_SPEC },			\
   { "startfile_netbsd",		STARTFILE_NETBSD_SPEC },		\
   { "startfile_solaris",	STARTFILE_SOLARIS_SPEC },		\
@@ -1397,6 +1428,7 @@ ncrtn.o%s"
   { "endfile_yellowknife",	ENDFILE_YELLOWKNIFE_SPEC },		\
   { "endfile_mvme",		ENDFILE_MVME_SPEC },			\
   { "endfile_sim",		ENDFILE_SIM_SPEC },			\
+  { "endfile_freebsd",		ENDFILE_FREEBSD_SPEC },			\
   { "endfile_linux",		ENDFILE_LINUX_SPEC },			\
   { "endfile_netbsd",		ENDFILE_NETBSD_SPEC },			\
   { "endfile_solaris",		ENDFILE_SOLARIS_SPEC },			\
@@ -1410,6 +1442,7 @@ ncrtn.o%s"
   { "link_start_yellowknife",	LINK_START_YELLOWKNIFE_SPEC },		\
   { "link_start_mvme",		LINK_START_MVME_SPEC },			\
   { "link_start_sim",		LINK_START_SIM_SPEC },			\
+  { "link_start_freebsd",	LINK_START_FREEBSD_SPEC },		\
   { "link_start_linux",		LINK_START_LINUX_SPEC },		\
   { "link_start_netbsd",	LINK_START_NETBSD_SPEC },		\
   { "link_start_solaris",	LINK_START_SOLARIS_SPEC },		\
@@ -1420,6 +1453,7 @@ ncrtn.o%s"
   { "link_os_yellowknife",	LINK_OS_YELLOWKNIFE_SPEC },		\
   { "link_os_mvme",		LINK_OS_MVME_SPEC },			\
   { "link_os_sim",		LINK_OS_SIM_SPEC },			\
+  { "link_os_freebsd",		LINK_OS_FREEBSD_SPEC },			\
   { "link_os_linux",		LINK_OS_LINUX_SPEC },			\
   { "link_os_netbsd",		LINK_OS_NETBSD_SPEC },			\
   { "link_os_solaris",		LINK_OS_SOLARIS_SPEC },			\
@@ -1437,6 +1471,7 @@ ncrtn.o%s"
   { "cpp_os_yellowknife",	CPP_OS_YELLOWKNIFE_SPEC },		\
   { "cpp_os_mvme",		CPP_OS_MVME_SPEC },			\
   { "cpp_os_sim",		CPP_OS_SIM_SPEC },			\
+  { "cpp_os_freebsd",		CPP_OS_FREEBSD_SPEC },			\
   { "cpp_os_linux",		CPP_OS_LINUX_SPEC },			\
   { "cpp_os_netbsd",		CPP_OS_NETBSD_SPEC },			\
   { "cpp_os_solaris",		CPP_OS_SOLARIS_SPEC },			\

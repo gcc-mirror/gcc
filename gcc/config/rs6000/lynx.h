@@ -19,8 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <lynx.h>
-
 /* Definitions we want to override with those from rs6000.h: */
 #undef LIB_SPEC
 #undef PTRDIFF_TYPE
@@ -46,6 +44,9 @@ Boston, MA 02111-1307, USA.  */
 #undef FUNCTION_PROFILER
 
 #include <rs6000/rs6000.h>
+
+/* Print subsidiary information on the compiler version in use.  */
+#define TARGET_VERSION fprintf (stderr, " (LynxOS-RS/6000)");
 
 /* LynxOS has signed chars, regardless of what most R/S 6000 systems do */
 #undef DEFAULT_SIGNED_CHAR

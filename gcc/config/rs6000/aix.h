@@ -189,3 +189,6 @@ Boston, MA 02111-1307, USA.  */
 #define SETUP_FRAME_ADDRESSES() rs6000_aix_emit_builtin_unwind_init ()
 
 #define PROFILE_HOOK(LABEL)   output_profile_hook (LABEL)
+
+/* Print subsidiary information on the compiler version in use.  */
+#define TARGET_VERSION ;

@@ -20,6 +20,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#undef  TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (BeOS/PowerPC)");
 
 /* Enable AIX XL compiler calling convention breakage compatibility.  */
 #define MASK_XL_CALL		0x40000000
