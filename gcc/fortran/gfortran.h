@@ -386,7 +386,7 @@ typedef struct
   /* Variable attributes.  */
   unsigned allocatable:1, dimension:1, external:1, intrinsic:1,
     optional:1, pointer:1, save:1, target:1,
-    dummy:1, result:1, entry:1, assign:1;
+    dummy:1, result:1, assign:1;
 
   unsigned data:1,		/* Symbol is named in a DATA statement.  */
     use_assoc:1;		/* Symbol has been use-associated.  */
@@ -398,6 +398,14 @@ typedef struct
   /* Function/subroutine attributes */
   unsigned sequence:1, elemental:1, pure:1, recursive:1;
   unsigned unmaskable:1, masked:1, contained:1;
+
+  /* Set if this procedure is an alternate entry point.  These procedures
+     don't have any code associated, and the backend will turn them into
+     thunks to the master function.  */
+  unsigned entry:1;
+  /* Set if this is the master function for a procedure with multiple
+     entry points.  */
+  unsigned entry_master:1;
 
   /* Set if a function must always be referenced by an explicit interface.  */
   unsigned always_explicit:1;
@@ -668,7 +676,6 @@ typedef struct gfc_symbol
   struct gfc_namespace *ns;	/* namespace containing this symbol */
 
   tree backend_decl;
-
 }
 gfc_symbol;
 
@@ -687,6 +694,23 @@ gfc_common_head;
 #define gfc_get_common_head() gfc_getmem(sizeof(gfc_common_head))
 
 
+/* A list of all the alternate entry points for a procedure.  */
+
+typedef struct gfc_entry_list
+{
+  /* The symbol for this entry point.  */
+  gfc_symbol *sym;
+  /* The zero-based id of this entry point.  */
+  int id;
+  /* The LABEL_EXPR marking this entry point.  */
+  tree label;
+  /* The nest item in the list.  */
+  struct gfc_entry_list *next;
+}
+gfc_entry_list;
+
+#define gfc_get_entry_list() \
+  (gfc_entry_list *) gfc_getmem(sizeof(gfc_entry_list))
 
 /* Within a namespace, symbols are pointed to by symtree nodes that
    are linked together in a balanced binary tree.  There can be
@@ -711,6 +735,10 @@ typedef struct gfc_symtree
 }
 gfc_symtree;
 
+
+/* A namespace describes the contents of procedure, module or
+   interface block.  */
+/* ??? Anything else use these?  */
 
 typedef struct gfc_namespace
 {
@@ -755,6 +783,14 @@ typedef struct gfc_namespace
   gfc_charlen *cl_list;
 
   int save_all, seen_save;
+
+  /* Normally we don't need to refcount namespaces.  However when we read
+     a module containing a function with multiple entry points, this
+     will appear as several functions with the same formal namespace.  */
+  int refs;
+
+  /* A list of all alternate entry points to this procedure (or NULL).  */
+  gfc_entry_list *entries;
 }
 gfc_namespace;
 
@@ -1204,7 +1240,8 @@ gfc_forall_iterator;
 typedef enum
 {
   EXEC_NOP = 1, EXEC_ASSIGN, EXEC_LABEL_ASSIGN, EXEC_POINTER_ASSIGN,
-  EXEC_GOTO, EXEC_CALL, EXEC_RETURN, EXEC_PAUSE, EXEC_STOP, EXEC_CONTINUE,
+  EXEC_GOTO, EXEC_CALL, EXEC_RETURN, EXEC_ENTRY,
+  EXEC_PAUSE, EXEC_STOP, EXEC_CONTINUE,
   EXEC_IF, EXEC_ARITHMETIC_IF, EXEC_DO, EXEC_DO_WHILE, EXEC_SELECT,
   EXEC_FORALL, EXEC_WHERE, EXEC_CYCLE, EXEC_EXIT,
   EXEC_ALLOCATE, EXEC_DEALLOCATE,
@@ -1243,6 +1280,7 @@ typedef struct gfc_code
     gfc_forall_iterator *forall_iterator;
     struct gfc_code *whichloop;
     int stop_code;
+    gfc_entry_list *entry;
   }
   ext;		/* Points to additional structures required by statement */
 

@@ -186,7 +186,7 @@ get_proc_name (const char *name, gfc_symbol ** result)
   if (*result == NULL)
     return rc;
 
-  /* Deal with ENTRY problem */
+  /* ??? Deal with ENTRY problem */
 
   st = gfc_new_symtree (&gfc_current_ns->sym_root, name);
 
@@ -1871,43 +1871,58 @@ cleanup:
 match
 gfc_match_entry (void)
 {
-  gfc_symbol *function, *result, *entry;
+  gfc_symbol *proc;
+  gfc_symbol *result;
+  gfc_symbol *entry;
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_compile_state state;
   match m;
+  gfc_entry_list *el;
 
   m = gfc_match_name (name);
   if (m != MATCH_YES)
     return m;
 
+  state = gfc_current_state ();
+  if (state != COMP_SUBROUTINE
+      && state != COMP_FUNCTION)
+    {
+      gfc_error ("ENTRY statement at %C cannot appear within %s",
+		 gfc_state_name (gfc_current_state ()));
+      return MATCH_ERROR;
+    }
+
+  if (gfc_current_ns->parent != NULL
+      && gfc_current_ns->parent->proc_name
+      && gfc_current_ns->parent->proc_name->attr.flavor != FL_MODULE)
+    {
+      gfc_error("ENTRY statement at %C cannot appear in a "
+		"contained procedure");
+      return MATCH_ERROR;
+    }
+
   if (get_proc_name (name, &entry))
     return MATCH_ERROR;
 
-  gfc_enclosing_unit (&state);
-  switch (state)
+  proc = gfc_current_block ();
+
+  if (state == COMP_SUBROUTINE)
     {
-    case COMP_SUBROUTINE:
+      /* And entry in a subroutine.  */
       m = gfc_match_formal_arglist (entry, 0, 1);
       if (m != MATCH_YES)
 	return MATCH_ERROR;
 
-      if (gfc_current_state () != COMP_SUBROUTINE)
-	goto exec_construct;
-
       if (gfc_add_entry (&entry->attr, NULL) == FAILURE
 	  || gfc_add_subroutine (&entry->attr, NULL) == FAILURE)
 	return MATCH_ERROR;
-
-      break;
-
-    case COMP_FUNCTION:
+    }
+  else
+    {
+      /* An entry in a function.  */
       m = gfc_match_formal_arglist (entry, 0, 0);
       if (m != MATCH_YES)
 	return MATCH_ERROR;
-
-      if (gfc_current_state () != COMP_FUNCTION)
-	goto exec_construct;
-      function = gfc_state_stack->sym;
 
       result = NULL;
 
@@ -1917,12 +1932,12 @@ gfc_match_entry (void)
 	      || gfc_add_function (&entry->attr, NULL) == FAILURE)
 	    return MATCH_ERROR;
 
-	  entry->result = function->result;
+	  entry->result = proc->result;
 
 	}
       else
 	{
-	  m = match_result (function, &result);
+	  m = match_result (proc, &result);
 	  if (m == MATCH_NO)
 	    gfc_syntax_error (ST_ENTRY);
 	  if (m != MATCH_YES)
@@ -1934,16 +1949,11 @@ gfc_match_entry (void)
 	    return MATCH_ERROR;
 	}
 
-      if (function->attr.recursive && result == NULL)
+      if (proc->attr.recursive && result == NULL)
 	{
 	  gfc_error ("RESULT attribute required in ENTRY statement at %C");
 	  return MATCH_ERROR;
 	}
-
-      break;
-
-    default:
-      goto exec_construct;
     }
 
   if (gfc_match_eos () != MATCH_YES)
@@ -1952,13 +1962,23 @@ gfc_match_entry (void)
       return MATCH_ERROR;
     }
 
+  entry->attr.recursive = proc->attr.recursive;
+  entry->attr.elemental = proc->attr.elemental;
+  entry->attr.pure = proc->attr.pure;
+
+  el = gfc_get_entry_list ();
+  el->sym = entry;
+  el->next = gfc_current_ns->entries;
+  gfc_current_ns->entries = el;
+  if (el->next)
+    el->id = el->next->id + 1;
+  else
+    el->id = 1;
+
+  new_st.op = EXEC_ENTRY;
+  new_st.ext.entry = el;
+
   return MATCH_YES;
-
-exec_construct:
-  gfc_error ("ENTRY statement at %C cannot appear within %s",
-	     gfc_state_name (gfc_current_state ()));
-
-  return MATCH_ERROR;
 }
 
 

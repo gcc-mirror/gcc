@@ -800,12 +800,17 @@ gfc_show_code_node (int level, gfc_code * c)
       gfc_status ("CONTINUE");
       break;
 
+    case EXEC_ENTRY:
+      gfc_status ("ENTRY %s", c->ext.entry->sym->name);
+      break;
+
     case EXEC_ASSIGN:
       gfc_status ("ASSIGN ");
       gfc_show_expr (c->expr);
       gfc_status_char (' ');
       gfc_show_expr (c->expr2);
       break;
+
     case EXEC_LABEL_ASSIGN:
       gfc_status ("LABEL ASSIGN ");
       gfc_show_expr (c->expr);

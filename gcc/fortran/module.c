@@ -1367,7 +1367,7 @@ mio_internal_string (char *string)
 typedef enum
 { AB_ALLOCATABLE, AB_DIMENSION, AB_EXTERNAL, AB_INTRINSIC, AB_OPTIONAL,
   AB_POINTER, AB_SAVE, AB_TARGET, AB_DUMMY, AB_RESULT,
-  AB_ENTRY, AB_DATA, AB_IN_NAMELIST, AB_IN_COMMON, 
+  AB_DATA, AB_IN_NAMELIST, AB_IN_COMMON, 
   AB_FUNCTION, AB_SUBROUTINE, AB_SEQUENCE, AB_ELEMENTAL, AB_PURE,
   AB_RECURSIVE, AB_GENERIC, AB_ALWAYS_EXPLICIT
 }
@@ -1385,7 +1385,6 @@ static const mstring attr_bits[] =
     minit ("TARGET", AB_TARGET),
     minit ("DUMMY", AB_DUMMY),
     minit ("RESULT", AB_RESULT),
-    minit ("ENTRY", AB_ENTRY),
     minit ("DATA", AB_DATA),
     minit ("IN_NAMELIST", AB_IN_NAMELIST),
     minit ("IN_COMMON", AB_IN_COMMON),
@@ -1455,8 +1454,7 @@ mio_symbol_attribute (symbol_attribute * attr)
 	MIO_NAME(ab_attribute) (AB_DUMMY, attr_bits);
       if (attr->result)
 	MIO_NAME(ab_attribute) (AB_RESULT, attr_bits);
-      if (attr->entry)
-	MIO_NAME(ab_attribute) (AB_ENTRY, attr_bits);
+      /* We deliberately don't preserve the "entry" flag.  */
 
       if (attr->data)
 	MIO_NAME(ab_attribute) (AB_DATA, attr_bits);
@@ -1528,9 +1526,6 @@ mio_symbol_attribute (symbol_attribute * attr)
 	      break;
 	    case AB_RESULT:
 	      attr->result = 1;
-	      break;
-	    case AB_ENTRY:
-	      attr->entry = 1;
 	      break;
 	    case AB_DATA:
 	      attr->data = 1;
@@ -2628,10 +2623,16 @@ mio_namespace_ref (gfc_namespace ** nsp)
   if (p->type == P_UNKNOWN)
     p->type = P_NAMESPACE;
 
-  if (iomode == IO_INPUT && p->integer != 0 && p->u.pointer == NULL)
+  if (iomode == IO_INPUT && p->integer != 0)
     {
-      ns = gfc_get_namespace (NULL);
-      associate_integer_pointer (p, ns);
+      ns = (gfc_namespace *)p->u.pointer;
+      if (ns == NULL)
+	{
+	  ns = gfc_get_namespace (NULL);
+	  associate_integer_pointer (p, ns);
+	}
+      else
+	ns->refs++;
     }
 }
 

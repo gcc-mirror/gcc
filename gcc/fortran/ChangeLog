@@ -1,3 +1,51 @@
+2004-08-17  Paul Brook  <paul@codesourcery.com>
+	Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/13082
+	* decl.c (get_proc_name): Update mystery comment.
+	(gfc_match_entry): Check for errors earlier.  Add entry point to list.
+	* dump-parse-tree.c (gfc_show_code_node): Print EXEC_ENTRY nodes.
+	* gfortran.h (symbol_attribute): Add entry_master.  Document entry.
+	(struct gfc_entry_list): Define.
+	(gfc_get_entry_list): Define.
+	(struct gfc_namespace): Add refs and entries.
+	(enum gfc_exec_op): Add EXEC_ENTRY.
+	(struct gfc_code): Add ext.entry.
+	* module.c (ab_attribute, attr_bits): Remove AB_ENTRY.
+	(mio_symbol_attribute): Don't save/reture addr->entry.
+	(mio_namespace_ref): Refcount namespaces.
+	* parse.c (accept_statement): Handle ST_ENTRY.
+	(gfc_fixup_sibling_symbols): Mark symbol as referenced.
+	(parse_contained): Fixup sibling references to entry points
+	after parsing the procedure body.
+	* resolve.c (resolve_contained_fntype): New function.
+	(merge_argument_lists, resolve_entries): New functions.
+	(resolve_contained_functions): Use them.
+	(resolve_code): Handle EXEC_ENTRY.
+	(gfc_resolve): Call resolve_entries.
+	* st.c (gfc_free_statement): Handle EXEC_ENTRY.
+	* symbol.c (gfc_get_namespace): Refcount namespaces.
+	(gfc_free_namespace): Ditto.
+	* trans-array.c (gfc_trans_dummy_array_bias): Treat all args as
+	optional when multiple entry points are present.
+	* trans-decl.c (gfc_get_symbol_decl): Remove incorrect check.
+	(gfc_get_extern_function_decl): Add assertion.  Fix coment.
+	(create_function_arglist, trans_function_start, build_entry_thunks):
+	New functions.
+	(gfc_build_function_decl): Rename ...
+	(build_function_decl): ... to this.
+	(gfc_create_function_decl): New function.
+	(gfc_generate_contained_functions): Use it.
+	(gfc_trans_entry_master_switch): New function.
+	(gfc_generate_function_code): Use new functions.
+	* trans-stmt.c (gfc_trans_entry): New function.
+	* trans-stmt.h (gfc_trans_entry): Add prototype.
+	* trans-types.c (gfc_get_function_type): Add entry point argument.
+	* trans.c (gfc_trans_code): Handle EXEC_ENTRY.
+	(gfc_generate_module_code): Call gfc_create_function_decl.
+	* trans.h (gfc_build_function_decl): Remove.
+	(gfc_create_function_decl): Add prototype.
+
 2004-08-15  Andrew Pinski  <apinski@apple.com>
 
 	PR fortran/17030

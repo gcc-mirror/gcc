@@ -1076,6 +1076,7 @@ accept_statement (gfc_statement st)
 
       break;
 
+    case ST_ENTRY:
     case_executable:
     case_exec_markers:
       add_statement ();
@@ -2140,6 +2141,7 @@ gfc_fixup_sibling_symbols (gfc_symbol * sym, gfc_namespace * siblings)
   gfc_symtree *st;
   gfc_symbol *old_sym;
 
+  sym->attr.referenced = 1;
   for (ns = siblings; ns; ns = ns->sibling)
     {
       gfc_find_sym_tree (sym->name, ns, 0, &st);
@@ -2174,6 +2176,7 @@ parse_contained (int module)
   gfc_state_data s1, s2;
   gfc_statement st;
   gfc_symbol *sym;
+  gfc_entry_list *el;
 
   push_state (&s1, COMP_CONTAINS, NULL);
   parent_ns = gfc_current_ns;
@@ -2234,10 +2237,13 @@ parse_contained (int module)
           sym->attr.contained = 1;
 	  sym->attr.referenced = 1;
 
+	  parse_progunit (ST_NONE);
+
           /* Fix up any sibling functions that refer to this one.  */
           gfc_fixup_sibling_symbols (sym, gfc_current_ns);
-
-	  parse_progunit (ST_NONE);
+	  /* Or refer to any of its alternate entry points.  */
+	  for (el = gfc_current_ns->entries; el; el = el->next)
+	    gfc_fixup_sibling_symbols (el->sym, gfc_current_ns);
 
 	  gfc_current_ns->code = s2.head;
 	  gfc_current_ns = parent_ns;

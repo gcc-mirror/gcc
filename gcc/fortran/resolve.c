@@ -247,6 +247,162 @@ resolve_formal_arglists (gfc_namespace * ns)
 }
 
 
+static void
+resolve_contained_fntype (gfc_symbol * sym, gfc_namespace * ns)
+{
+  try t;
+  
+  /* If this namespace is not a function, ignore it.  */
+  if (! sym
+      || !(sym->attr.function
+	   || sym->attr.flavor == FL_VARIABLE))
+    return;
+
+  /* Try to find out of what type the function is.  If there was an
+     explicit RESULT clause, try to get the type from it.  If the
+     function is never defined, set it to the implicit type.  If
+     even that fails, give up.  */
+  if (sym->result != NULL)
+    sym = sym->result;
+
+  if (sym->ts.type == BT_UNKNOWN)
+    {
+      /* Assume we can find an implicit type.  */
+      t = SUCCESS;
+
+      if (sym->result == NULL)
+	t = gfc_set_default_type (sym, 0, ns);
+      else
+	{
+	  if (sym->result->ts.type == BT_UNKNOWN)
+	    t = gfc_set_default_type (sym->result, 0, NULL);
+
+	  sym->ts = sym->result->ts;
+	}
+
+      if (t == FAILURE)
+	gfc_error ("Contained function '%s' at %L has no IMPLICIT type",
+		    sym->name, &sym->declared_at); /* FIXME */
+    }
+}
+
+
+/* Add NEW_ARGS to the formal argument list of PROC, taking care not to
+   introduce duplicates.   */
+
+static void
+merge_argument_lists (gfc_symbol *proc, gfc_formal_arglist *new_args)
+{
+  gfc_formal_arglist *f, *new_arglist;
+  gfc_symbol *new_sym;
+
+  for (; new_args != NULL; new_args = new_args->next)
+    {
+      new_sym = new_args->sym;
+      /* See if ths arg is already in the formal argument list.  */
+      for (f = proc->formal; f; f = f->next)
+	{
+	  if (new_sym == f->sym)
+	    break;
+	}
+
+      if (f)
+	continue;
+
+      /* Add a new argument.  Argument order is not important.  */
+      new_arglist = gfc_get_formal_arglist ();
+      new_arglist->sym = new_sym;
+      new_arglist->next = proc->formal;
+      proc->formal  = new_arglist;
+    }
+}
+
+
+/* Resolve alternate entry points.  If a symbol has multiple entry points we
+   create a new master symbol for the main routine, and turn the existing
+   symbol into an entry point.  */
+
+static void
+resolve_entries (gfc_namespace * ns)
+{
+  gfc_namespace *old_ns;
+  gfc_code *c;
+  gfc_symbol *proc;
+  gfc_entry_list *el;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  static int master_count = 0;
+
+  if (ns->proc_name == NULL)
+    return;
+
+  /* No need to do anything if this procedure doesn't have alternate entry
+     points.  */
+  if (!ns->entries)
+    return;
+
+  /* We may already have resolved alternate entry points.  */
+  if (ns->proc_name->attr.entry_master)
+    return;
+
+  /* If this isn't a procedure something as gone horribly wrong.   */
+  assert (ns->proc_name->attr.flavor == FL_PROCEDURE);
+  
+  /* Remember the current namespace.  */
+  old_ns = gfc_current_ns;
+
+  gfc_current_ns = ns;
+
+  /* Add the main entry point to the list of entry points.  */
+  el = gfc_get_entry_list ();
+  el->sym = ns->proc_name;
+  el->id = 0;
+  el->next = ns->entries;
+  ns->entries = el;
+  ns->proc_name->attr.entry = 1;
+
+  /* Add an entry statement for it.  */
+  c = gfc_get_code ();
+  c->op = EXEC_ENTRY;
+  c->ext.entry = el;
+  c->next = ns->code;
+  ns->code = c;
+
+  /* Create a new symbol for the master function.  */
+  /* Give the internal function a unique name (within this file).
+     Also include teh function name so the user has some hope of figuring
+     out whats going on.  */
+  snprintf (name, GFC_MAX_SYMBOL_LEN, "master.%d.%s",
+	    master_count++, ns->proc_name->name);
+  name[GFC_MAX_SYMBOL_LEN] = '\0';
+  gfc_get_ha_symbol (name, &proc);
+  assert (proc != NULL);
+
+  gfc_add_procedure (&proc->attr, PROC_INTERNAL, NULL);
+  if (ns->proc_name->attr.subroutine)
+    gfc_add_subroutine (&proc->attr, NULL);
+  else
+    {
+      gfc_add_function (&proc->attr, NULL);
+      gfc_internal_error ("TODO: Functions with alternate entry points");
+    }
+  proc->attr.access = ACCESS_PRIVATE;
+  proc->attr.entry_master = 1;
+
+  /* Merge all the entry point arguments.  */
+  for (el = ns->entries; el; el = el->next)
+    merge_argument_lists (proc, el->sym->formal);
+
+  /* And use it for the function body.  */
+  ns->proc_name = proc;
+
+  /* FInalize the new symbols.  */
+  gfc_commit_symbols ();
+
+  /* Restore the original namespace.  */
+  gfc_current_ns = old_ns;
+}
+
+
 /* Resolve contained function types.  Because contained functions can call one
    another, they have to be worked out before any of the contained procedures
    can be resolved.
@@ -259,65 +415,20 @@ resolve_formal_arglists (gfc_namespace * ns)
 static void
 resolve_contained_functions (gfc_namespace * ns)
 {
-  gfc_symbol *contained_sym, *sym_lower;
   gfc_namespace *child;
-  try t;
+  gfc_entry_list *el;
 
   resolve_formal_arglists (ns);
 
   for (child = ns->contained; child; child = child->sibling)
     {
-      sym_lower = child->proc_name;
+      /* Resolve alternate entry points first.  */
+      resolve_entries (child); 
 
-      /* If this namespace is not a function, ignore it.  */
-      if (! sym_lower
-	  || !( sym_lower->attr.function
-		|| sym_lower->attr.flavor == FL_VARIABLE))
-	continue;
-
-      /* Find the contained symbol in the current namespace.  */
-      gfc_find_symbol (sym_lower->name, ns, 0, &contained_sym);
-
-      if (contained_sym == NULL)
-	gfc_internal_error ("resolve_contained_functions(): Contained "
-			    "function not found in parent namespace");
-
-      /* Try to find out of what type the function is.  If there was an
-	 explicit RESULT clause, try to get the type from it.  If the
-	 function is never defined, set it to the implicit type.  If
-	 even that fails, give up.  */
-      if (sym_lower->result != NULL)
-	sym_lower = sym_lower->result;
-
-      if (sym_lower->ts.type == BT_UNKNOWN)
-	{
-	  /* Assume we can find an implicit type.  */
-	  t = SUCCESS;
-
-	  if (sym_lower->result == NULL)
-	    t = gfc_set_default_type (sym_lower, 0, child);
-	  else
-	    {
-	      if (sym_lower->result->ts.type == BT_UNKNOWN)
-		t = gfc_set_default_type (sym_lower->result, 0, NULL);
-
-	      sym_lower->ts = sym_lower->result->ts;
-	    }
-
-	  if (t == FAILURE)
-	    gfc_error ("Contained function '%s' at %L has no IMPLICIT type",
-			sym_lower->name, &sym_lower->declared_at); /* FIXME */
-	}
-
-      /* If the symbol in the parent of the contained namespace is not
-	 the same as the one in contained namespace itself, copy over
-	 the type information.  */
-      /* ??? Shouldn't we replace the symbol with the parent symbol instead?  */
-      if (contained_sym != sym_lower)
-	{
-	  contained_sym->ts = sym_lower->ts;
-	  contained_sym->as = gfc_copy_array_spec (sym_lower->as);
-	}
+      /* Then check function return types.  */
+      resolve_contained_fntype (child->proc_name, child);
+      for (el = child->entries; el; el = el->next)
+	resolve_contained_fntype (el->sym, child);
     }
 }
 
@@ -3458,6 +3569,7 @@ resolve_code (gfc_code * code, gfc_namespace * ns)
 	case EXEC_CONTINUE:
 	case EXEC_DT_END:
 	case EXEC_TRANSFER:
+	case EXEC_ENTRY:
 	  break;
 
 	case EXEC_WHERE:
@@ -4439,6 +4551,8 @@ gfc_resolve (gfc_namespace * ns)
 
   old_ns = gfc_current_ns;
   gfc_current_ns = ns;
+
+  resolve_entries (ns);
 
   resolve_contained_functions (ns);
 
