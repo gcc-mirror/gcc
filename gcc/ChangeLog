@@ -1,3 +1,8 @@
+2002-01-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-typeck.c (require_complete_type): Return error_mark_node
+	if type is error_mark_node.
+
 2002-01-23  Janis Johnson  <janis187@us.ibm.com>
 
 	* toplev.c (process_options): Disable -fprefetch-loop-arrays with
