@@ -1,3 +1,7 @@
+2002-03-23  Jeff Sturm  <jsturm@one-point.com>
+
+	* java/nat/natPlainSocketImpl.cc (write): Abort loop on error.
+
 2002-03-20  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* posix-threads.cc (_Jv_ThreadSelf_out_of_line): Use write_barrier,

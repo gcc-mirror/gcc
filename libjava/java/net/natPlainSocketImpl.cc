@@ -450,6 +450,7 @@ java::net::PlainSocketImpl::write(jint b)
 	  // Some errors should not cause exceptions.
 	  if (errno != ENOTCONN && errno != ECONNRESET && errno != EBADF)
 	    throw new java::io::IOException (JvNewStringUTF (strerror (errno)));
+	  break;
 	}
     }
 }
@@ -481,6 +482,7 @@ java::net::PlainSocketImpl::write(jbyteArray b, jint offset, jint len)
 	  // Some errors should not cause exceptions.
 	  if (errno != ENOTCONN && errno != ECONNRESET && errno != EBADF)
 	    throw new java::io::IOException (JvNewStringUTF (strerror (errno)));
+	  break;
 	}
       written += r;
       len -= r;
