@@ -127,6 +127,36 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    by hand, rather than passing the argeument '-lgcc' to tell the linker
    to do the search */
 #define LINK_LIBGCC_SPECIAL
+
+/* This is how to output an assembler line defining a `double' constant.
+   Use "word" pseudos to avoid printing NaNs, infinity, etc.  */
+
+/* This is how to output an assembler line defining a `double' constant.  */
+
+#ifdef ASM_OUTPUT_DOUBLE
+#undef ASM_OUTPUT_DOUBLE
+#endif
+#define ASM_OUTPUT_DOUBLE(STREAM,VALUE)					\
+{									\
+  union { double d; long l[2]; } u2;					\
+  u2.d = VALUE;								\
+  fprintf (STREAM, "\t.long\t0x%08lx\t\t# %.20g\n\t.long\t0x%08lx\n",	\
+	   u2.l[0], u2.d, u2.l[1]);					\
+}
+
+/* This is how to output an assembler line defining a `float' constant.  */
+
+#ifdef ASM_OUTPUT_FLOAT
+#undef ASM_OUTPUT_FLOAT
+#endif
+#define ASM_OUTPUT_FLOAT(STREAM,VALUE)					\
+{									\
+  union { float f; long l; } u2;					\
+  u2.f = VALUE;								\
+  fprintf (STREAM, "\t.long\t0x%08lx\t\t# %.12g\n", u2.l, u2.f);	\
+}
+
+
 
 /* Defines to be able to build libgcc.a with GCC.  */
 
