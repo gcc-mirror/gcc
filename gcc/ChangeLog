@@ -1,3 +1,7 @@
+Sun Jun 10 10:58:53 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* predict.def (PRED_OPCODE): Place before call and error_return.
+
 Sun Jun 10 10:00:17 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* predict.def (PRED_CALL, PRED_ERROR_RETURN): New.
