@@ -530,6 +530,9 @@ DEF_RTL_EXPR(CONST, "const", "e", 'o')
    by a SET whose first operand is (PC).  */
 DEF_RTL_EXPR(PC, "pc", "", 'o')
 
+/* Used in the cselib routines to describe a value.  */
+DEF_RTL_EXPR(VALUE, "value", "0", 'o')
+
 /* A register.  The "operand" is the register number, accessed with
    the REGNO macro.  If this number is less than FIRST_PSEUDO_REGISTER
    than a hardware register is being referred to.  The second operand

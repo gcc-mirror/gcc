@@ -92,6 +92,7 @@ typedef union rtunion_def
   struct rtvec_def *rtvec;
   enum machine_mode rttype;
   addr_diff_vec_flags rt_addr_diff_vec_flags;
+  struct cselib_val_struct *rt_cselib;
   struct bitmap_head_def *rtbit;
   union tree_node *rttree;
   struct basic_block_def *bb;
@@ -330,6 +331,7 @@ extern void rtvec_check_failed_bounds PARAMS ((rtvec, int,
 #define X0TREE(RTX, N)	   (RTL_CHECK1(RTX, N, '0').rttree)
 #define X0BBDEF(RTX, N)	   (RTL_CHECK1(RTX, N, '0').bb)
 #define X0ADVFLAGS(RTX, N) (RTL_CHECK1(RTX, N, '0').rt_addr_diff_vec_flags)
+#define X0CSELIB(RTX, N)   (RTL_CHECK1(RTX, N, '0').rt_cselib)
 
 #define XCWINT(RTX, N, C)     (RTL_CHECKC1(RTX, N, C).rtwint)
 #define XCINT(RTX, N, C)      (RTL_CHECKC1(RTX, N, C).rtint)
@@ -341,6 +343,7 @@ extern void rtvec_check_failed_bounds PARAMS ((rtvec, int,
 #define XCTREE(RTX, N, C)     (RTL_CHECKC1(RTX, N, C).rttree)
 #define XCBBDEF(RTX, N, C)    (RTL_CHECKC1(RTX, N, C).bb)
 #define XCADVFLAGS(RTX, N, C) (RTL_CHECKC1(RTX, N, C).rt_addr_diff_vec_flags)
+#define XCCSELIB(RTX, N, C)   (RTL_CHECKC1(RTX, N, C).rt_cselib)
 
 #define XCVECEXP(RTX, N, M, C)	RTVEC_ELT (XCVEC (RTX, N, C), M)
 #define XCVECLEN(RTX, N, C)	GET_NUM_ELEM (XCVEC (RTX, N, C))
@@ -469,6 +472,8 @@ extern void rtvec_check_failed_bounds PARAMS ((rtvec, int,
 #define REG_NOTES(INSN)	XEXP(INSN, 6)
 
 #define ADDR_DIFF_VEC_FLAGS(RTX) X0ADVFLAGS(RTX, 4)
+
+#define CSELIB_VAL_PTR(RTX) X0CSELIB(RTX, 0)
 
 /* Don't forget to change reg_note_name in rtl.c.  */
 enum reg_note { REG_DEAD = 1, REG_INC = 2, REG_EQUIV = 3, REG_WAS_0 = 4,
