@@ -386,6 +386,11 @@ convert_memory_address (to_mode, x)
     case CONST_DOUBLE:
       return x;
 
+    case SUBREG:
+      if (GET_MODE (SUBREG_REG (x)) == to_mode)
+	return SUBREG_REG (x);
+      break;
+
     case LABEL_REF:
       temp = gen_rtx_LABEL_REF (to_mode, XEXP (x, 0));
       LABEL_REF_NONLOCAL_P (temp) = LABEL_REF_NONLOCAL_P (x);

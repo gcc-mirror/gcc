@@ -269,6 +269,7 @@ static void optimize_bit_field	PARAMS ((rtx, rtx, rtx *));
 static void instantiate_decls	PARAMS ((tree, int));
 static void instantiate_decls_1	PARAMS ((tree, int));
 static void instantiate_decl	PARAMS ((rtx, HOST_WIDE_INT, int));
+static rtx instantiate_new_reg	PARAMS ((rtx, HOST_WIDE_INT *));
 static int instantiate_virtual_regs_1 PARAMS ((rtx *, rtx, int));
 static void delete_handlers	PARAMS ((void));
 static void pad_to_arg_alignment PARAMS ((struct args_size *, int,
@@ -3680,6 +3681,35 @@ instantiate_decl (x, size, valid_only)
   XEXP (x, 0) = addr;
 }
 
+/* Given a piece of RTX and a pointer to a HOST_WIDE_INT, if the RTX
+   is a virtual register, return the requivalent hard register and set the
+   offset indirectly through the pointer.  Otherwise, return 0.  */
+
+static rtx
+instantiate_new_reg (x, poffset)
+     rtx x;
+     HOST_WIDE_INT *poffset;
+{
+  rtx new;
+  HOST_WIDE_INT offset;
+
+  if (x == virtual_incoming_args_rtx)
+    new = arg_pointer_rtx, offset = in_arg_offset;
+  else if (x == virtual_stack_vars_rtx)
+    new = frame_pointer_rtx, offset = var_offset;
+  else if (x == virtual_stack_dynamic_rtx)
+    new = stack_pointer_rtx, offset = dynamic_offset;
+  else if (x == virtual_outgoing_args_rtx)
+    new = stack_pointer_rtx, offset = out_arg_offset;
+  else if (x == virtual_cfa_rtx)
+    new = arg_pointer_rtx, offset = cfa_offset;
+  else
+    return 0;
+
+  *poffset = offset;
+  return new;
+}
+
 /* Given a pointer to a piece of rtx and an optional pointer to the
    containing object, instantiate any virtual registers present in it.
 
@@ -3739,21 +3769,14 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	 the actual register should receive the source minus the
 	 appropriate offset.  This is used, for example, in the handling
 	 of non-local gotos.  */
-      if (SET_DEST (x) == virtual_incoming_args_rtx)
-	new = arg_pointer_rtx, offset = -in_arg_offset;
-      else if (SET_DEST (x) == virtual_stack_vars_rtx)
-	new = frame_pointer_rtx, offset = -var_offset;
-      else if (SET_DEST (x) == virtual_stack_dynamic_rtx)
-	new = stack_pointer_rtx, offset = -dynamic_offset;
-      else if (SET_DEST (x) == virtual_outgoing_args_rtx)
-	new = stack_pointer_rtx, offset = -out_arg_offset;
-      else if (SET_DEST (x) == virtual_cfa_rtx)
-	new = arg_pointer_rtx, offset = -cfa_offset;
-
-      if (new)
+      if ((new = instantiate_new_reg (SET_DEST (x), &offset)) != 0)
 	{
 	  rtx src = SET_SRC (x);
 
+	  /* We are setting the register, not using it, so the relevant
+	     offset is the negative of the offset to use were we using
+	     the register.  */
+	  offset = - offset;
 	  instantiate_virtual_regs_1 (&src, NULL_RTX, 0);
 
 	  /* The only valid sources here are PLUS or REG.  Just do
@@ -3793,40 +3816,37 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	  /* Check for (plus (plus VIRT foo) (const_int)) first.  */
 	  if (GET_CODE (XEXP (x, 0)) == PLUS)
 	    {
-	      rtx inner = XEXP (XEXP (x, 0), 0);
-
-	      if (inner == virtual_incoming_args_rtx)
-		new = arg_pointer_rtx, offset = in_arg_offset;
-	      else if (inner == virtual_stack_vars_rtx)
-		new = frame_pointer_rtx, offset = var_offset;
-	      else if (inner == virtual_stack_dynamic_rtx)
-		new = stack_pointer_rtx, offset = dynamic_offset;
-	      else if (inner == virtual_outgoing_args_rtx)
-		new = stack_pointer_rtx, offset = out_arg_offset;
-	      else if (inner == virtual_cfa_rtx)
-		new = arg_pointer_rtx, offset = cfa_offset;
+	      if ((new = instantiate_new_reg (XEXP (XEXP (x, 0), 0), &offset)))
+		{
+		  instantiate_virtual_regs_1 (&XEXP (XEXP (x, 0), 1), object,
+					      extra_insns);
+		  new = gen_rtx_PLUS (Pmode, new, XEXP (XEXP (x, 0), 1));
+		}
 	      else
 		{
 		  loc = &XEXP (x, 0);
 		  goto restart;
 		}
-
-	      instantiate_virtual_regs_1 (&XEXP (XEXP (x, 0), 1), object,
-					  extra_insns);
-	      new = gen_rtx_PLUS (Pmode, new, XEXP (XEXP (x, 0), 1));
 	    }
 
-	  else if (XEXP (x, 0) == virtual_incoming_args_rtx)
-	    new = arg_pointer_rtx, offset = in_arg_offset;
-	  else if (XEXP (x, 0) == virtual_stack_vars_rtx)
-	    new = frame_pointer_rtx, offset = var_offset;
-	  else if (XEXP (x, 0) == virtual_stack_dynamic_rtx)
-	    new = stack_pointer_rtx, offset = dynamic_offset;
-	  else if (XEXP (x, 0) == virtual_outgoing_args_rtx)
-	    new = stack_pointer_rtx, offset = out_arg_offset;
-	  else if (XEXP (x, 0) == virtual_cfa_rtx)
-	    new = arg_pointer_rtx, offset = cfa_offset;
-	  else
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  /* If we have (plus (subreg (virtual-reg)) (const_int)), we know
+	     we can commute the PLUS and SUBREG because pointers into the
+	     frame are well-behaved.  */
+	  else if (GET_CODE (XEXP (x, 0)) == SUBREG && GET_MODE (x) == ptr_mode
+		   && GET_CODE (XEXP (x, 1)) == CONST_INT
+		   && 0 != (new
+			    = instantiate_new_reg (SUBREG_REG (XEXP (x, 0)),
+						   &offset))
+		   && validate_change (object, loc,
+				       plus_constant (gen_lowpart (ptr_mode,
+								   new),
+						      offset
+						      + INTVAL (XEXP (x, 1))),
+				       0))
+		return 1;
+#endif
+	  else if ((new = instantiate_new_reg (XEXP (x, 0), &offset)) == 0)
 	    {
 	      /* We know the second operand is a constant.  Unless the
 		 first operand is a REG (which has been already checked),
@@ -4025,18 +4045,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
     case REG:
       /* Try to replace with a PLUS.  If that doesn't work, compute the sum
 	 in front of this insn and substitute the temporary.  */
-      if (x == virtual_incoming_args_rtx)
-	new = arg_pointer_rtx, offset = in_arg_offset;
-      else if (x == virtual_stack_vars_rtx)
-	new = frame_pointer_rtx, offset = var_offset;
-      else if (x == virtual_stack_dynamic_rtx)
-	new = stack_pointer_rtx, offset = dynamic_offset;
-      else if (x == virtual_outgoing_args_rtx)
-	new = stack_pointer_rtx, offset = out_arg_offset;
-      else if (x == virtual_cfa_rtx)
-	new = arg_pointer_rtx, offset = cfa_offset;
-
-      if (new)
+      if ((new = instantiate_new_reg (x, &offset)) != 0)
 	{
 	  temp = plus_constant (new, offset);
 	  if (!validate_change (object, loc, temp, 0))

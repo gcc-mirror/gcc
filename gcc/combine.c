@@ -8308,6 +8308,16 @@ nonzero_bits (x, mode)
 
 	if (result_low > 0)
 	  nonzero &= ~(((HOST_WIDE_INT) 1 << result_low) - 1);
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+	/* If pointers extend unsigned and this is an addition or subtraction
+	   to a pointer in Pmode, all the bits above ptr_mode are known to be
+	   zero.  */
+	if (POINTERS_EXTEND_UNSIGNED && GET_MODE (x) == Pmode
+	    && (code == PLUS || code == MINUS)
+	    && GET_CODE (XEXP (x, 0)) == REG && REG_POINTER (XEXP (x, 0)))
+	  nonzero &= GET_MODE_MASK (ptr_mode);
+#endif
       }
       break;
 
@@ -8646,7 +8656,20 @@ num_sign_bit_copies (x, mode)
 
       num0 = num_sign_bit_copies (XEXP (x, 0), mode);
       num1 = num_sign_bit_copies (XEXP (x, 1), mode);
-      return MAX (1, MIN (num0, num1) - 1);
+      result = MAX (1, MIN (num0, num1) - 1);
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+      /* If pointers extend signed and this is an addition or subtraction
+	 to a pointer in Pmode, all the bits above ptr_mode are known to be
+	 sign bit copies.  */
+      if (! POINTERS_EXTEND_UNSIGNED && GET_MODE (x) == Pmode
+	  && (code == PLUS || code == MINUS)
+	  && GET_CODE (XEXP (x, 0)) == REG && REG_POINTER (XEXP (x, 0)))
+	result = MAX ((GET_MODE_BITSIZE (Pmode)
+		       - GET_MODE_BITSIZE (ptr_mode) + 1),
+		      result);
+#endif
+      return result;
 
     case MULT:
       /* The number of bits of the product is the sum of the number of
