@@ -2496,21 +2496,6 @@ enum ix86_builtins
   IX86_BUILTIN_MAX
 };
 
-#define TARGET_ENCODE_SECTION_INFO  ix86_encode_section_info
-#define TARGET_STRIP_NAME_ENCODING  ix86_strip_name_encoding
-
-#define ASM_OUTPUT_LABELREF(FILE,NAME)		\
-  do {						\
-    const char *xname = (NAME);			\
-    if (xname[0] == '%')			\
-      xname += 2;				\
-    if (xname[0] == '*')			\
-      xname += 1;				\
-    else					\
-      fputs (user_label_prefix, FILE);		\
-    fputs (xname, FILE);			\
-  } while (0)
-
 /* Max number of args passed in registers.  If this is more than 3, we will
    have problems with ebx (register #4), since it is a caller save register and
    is also used as the pic register in ELF.  So for now, don't allow more than
