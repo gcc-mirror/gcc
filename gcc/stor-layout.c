@@ -80,7 +80,7 @@ get_pending_sizes ()
   return chain;
 }
 
-/* Given a size SIZE that isn't constant, return a SAVE_EXPR
+/* Given a size SIZE that may not be a constant, return a SAVE_EXPR
    to serve as the actual size-expression for a type or decl.  */
 
 tree
@@ -90,7 +90,8 @@ variable_size (size)
   /* If the language-processor is to take responsibility for variable-sized
      items (e.g., languages which have elaboration procedures like Ada),
      just return SIZE unchanged.  Likewise for self-referential sizes.  */
-  if (global_bindings_p () < 0 || contains_placeholder_p (size))
+  if (TREE_CONSTANT (size)
+      || global_bindings_p () < 0 || contains_placeholder_p (size))
     return size;
 
   size = save_expr (size);
