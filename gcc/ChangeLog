@@ -1,3 +1,15 @@
+Mon Mar 22 10:44:33 1999  Vladimir Makarov  <vmakarov@tofu.to.cygnus.com>
+
+	* config/h8300/h8300.md (adjust_length): New attribute.
+ 	(modhi3+1, andsi3+1, iorsi3+1, extzv+1, extzv+2): Change insn
+ 	default value of attribute "adjust_length" onto "no".
+
+	* config/h8300/h8300.c (h8300_adjust_insn_length):  Use 0 if the
+	shift is negative.
+
+	* final.c (shorten_branches): Check insn length after its
+ 	adjusting.
+
 Sun Mar 21 17:33:48 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* i860.h (TARGET_SWITCHES): Add documentation for default case.
