@@ -4,7 +4,7 @@
  *                                                                          *
  *                               A D A I N T                                *
  *                                                                          *
- *                            $Revision$
+ *                            $Revision: 1.4 $
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
@@ -34,7 +34,7 @@
 
 #include <dirent.h>
 
-extern void   __gnat_to_gm_time			   PARAMS ((time_t *, int *,
+extern void   __gnat_to_gm_time			   PARAMS ((int *, int *,
 							    int *, int *,
 							    int *, int *,
 							    int *));

@@ -4,7 +4,7 @@
  *                                                                          *
  *                               A D A I N T                                *
  *                                                                          *
- *                            $Revision$
+ *                            $Revision: 1.6 $
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
@@ -212,8 +212,7 @@ const char *__gnat_library_template = GNAT_LIBRARY_TEMPLATE;
 
 void
 __gnat_to_gm_time (p_time, p_year, p_month, p_day, p_hours, p_mins, p_secs)
-     time_t *p_time;
-     int *p_year, *p_month, *p_day, *p_hours, *p_mins, *p_secs;
+     int *p_time, *p_year, *p_month, *p_day, *p_hours, *p_mins, *p_secs;
 {
   struct tm *res;
   time_t time = *p_time;
