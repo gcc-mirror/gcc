@@ -950,6 +950,8 @@ stack_adjust_offset (pattern)
 	return 0;
 
       offset = INTVAL (XEXP (src, 1));
+      if (code == PLUS)
+	offset = -offset;
     }
   else if (GET_CODE (dest) == MEM)
     {
@@ -957,29 +959,46 @@ stack_adjust_offset (pattern)
       src = XEXP (dest, 0);
       code = GET_CODE (src);
 
-      if ((code != PRE_DEC && code != PRE_INC && code != PRE_MODIFY)
-	  || XEXP (src, 0) != stack_pointer_rtx)
-	return 0;
+      switch (code) 
+        {
+	case PRE_MODIFY:
+	case POST_MODIFY:
+	  if (XEXP (src, 0) == stack_pointer_rtx)
+	    {
+	      rtx val = XEXP (XEXP (src, 1), 1);
+	      /* We handle only adjustments by constant amount.  */
+	      if (GET_CODE (XEXP (src, 1)) != PLUS ||
+		  GET_CODE (val) != CONST_INT)
+		abort();
+	      offset = -INTVAL (val);
+	      break;
+	    }
+	  return 0;
 
-      if (code == PRE_MODIFY)
-	{
-	  rtx val = XEXP (XEXP (src, 1), 1);
+	case PRE_DEC:
+	case POST_DEC:
+	  if (XEXP (src, 0) == stack_pointer_rtx)
+	    {
+	      offset = GET_MODE_SIZE (GET_MODE (dest));
+	      break;
+	    }
+	  return 0;
 
-	  /* We handle only adjustments by constant amount.  */
-	  if (GET_CODE (XEXP (src, 1)) != PLUS ||
-	      GET_CODE (val) != CONST_INT)
-	    abort ();
+	case PRE_INC:
+	case POST_INC:
+	  if (XEXP (src, 0) == stack_pointer_rtx)
+	    {
+	      offset = -GET_MODE_SIZE (GET_MODE (dest));
+	      break;
+	    }
+	  return 0;
 
-	  offset = -INTVAL (val);
+	default:
+	  return 0;
 	}
-      else
-	offset = GET_MODE_SIZE (GET_MODE (dest));
     }
   else
     return 0;
-
-  if (code == PLUS || code == PRE_INC)
-    offset = -offset;
 
   return offset;
 }
