@@ -1,3 +1,12 @@
+2004-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* lib/target-libpath.exp: New file defining set_ld_library_path_env_vars
+	and restore_ld_library_path_env_vars.
+	* g++.dg/compat/compat.exp, lib/g++.exp, lib/gcc-dg.exp,
+	lib/gfortran.exp, lib/objc.exp, lib/treelang.exp: Use new procs.
+	* ada/acats/run_acats (LD_LIBRARY_PATH): Add previous LD_LIBRARY_PATH
+	to LD_LIBRARY_PATH.  Export LD_LIBRARY_PATH.
+
 2004-11-23  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* gcc.dg/pragma-align-2.c: Test macro expansion.

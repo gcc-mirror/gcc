@@ -49,6 +49,7 @@ load_lib libgloss.exp
 load_gcc_lib target-supports.exp
 load_lib prune.exp
 load_lib dg-options.exp
+load_gcc_lib target-libpath.exp
 load_gcc_lib wrapper.exp
 
 # Useful for debugging.  Pass the name of a variable and the verbosity
@@ -81,7 +82,7 @@ proc libstdc++_init { testfile } {
     global cxx cxxflags
     global includes
     global gluefile wrap_flags
-    global original_ld_library_path
+    global ld_library_path
     global target_triplet
 
     # We set LC_ALL and LANG to C so that we get the same error messages as expected.
@@ -123,26 +124,6 @@ proc libstdc++_init { testfile } {
     v3-copy-files [glob -nocomplain "$srcdir/data/*.tst"]
     v3-copy-files [glob -nocomplain "$srcdir/data/*.txt"]
 
-    # Setup LD_LIBRARY_PATH so that libgcc_s, libstdc++ binaries can be found.
-    # Find the existing LD_LIBRARY_PATH.
-    if [info exists env(LD_LIBRARY_PATH)] {
-	set original_ld_library_path $env(LD_LIBRARY_PATH)
-	# For HP-UX
-    } elseif [info exists env(SHLIB_PATH)] {
-	set original_ld_library_path $env(SHLIB_PATH)
-	# For Darwin:
-    } elseif [info exists env(DYLD_LIBRARY_PATH)] {
-	set original_ld_library_path $env(DYLD_LIBRARY_PATH)
-	# For Solaris 32 bit:
-    } elseif [info exists env(LD_LIBRARY_PATH_32)] {
-	set original_ld_library_path $env(LD_LIBRARY_PATH_32)
-	# For Solaris 64 bit:
-    } elseif [info exists env(LD_LIBRARY_PATH_64)] {
-	set original_ld_library_path $env(LD_LIBRARY_PATH_64)
-    } else {
-	set original_ld_library_path ""
-    }
-
     # Locate libgcc.a so we don't need to account for different values of
     # SHLIB_EXT on different platforms
     set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
@@ -170,23 +151,10 @@ proc libstdc++_init { testfile } {
     }
     append ld_library_path ":${blddir}/src/.libs"
 
-    # On IRIX 6, we have to set variables akin to LD_LIBRARY_PATH, but
-    # called LD_LIBRARYN32_PATH (for the N32 ABI) and LD_LIBRARY64_PATH
-    # (for the 64-bit ABI).  The right way to do this would be to modify
-    # unix.exp -- but that's not an option since it's part of DejaGNU
-    # proper, so we do it here.
-    # The same applies to darwin (DYLD_LIBRARY_PATH), solaris 32 bit
-    # (LD_LIBRARY_PATH_32), solaris 64 bit (LD_LIBRARY_PATH_64), and HP-UX
-    # (SHLIB_PATH).
-    setenv  LD_LIBRARY_PATH     "$ld_library_path:$original_ld_library_path"
-    setenv  SHLIB_PATH          "$ld_library_path:$original_ld_library_path"
-    setenv  LD_LIBRARYN32_PATH  "$ld_library_path:$original_ld_library_path"
-    setenv  LD_LIBRARY64_PATH   "$ld_library_path:$original_ld_library_path"
-    setenv  LD_RUN_PATH         "$ld_library_path:$original_ld_library_path"
-    setenv  LD_LIBRARY_PATH_32  "$ld_library_path:$original_ld_library_path"
-    setenv  LD_LIBRARY_PATH_64  "$ld_library_path:$original_ld_library_path"
-    setenv  DYLD_LIBRARY_PATH   "$ld_library_path:$original_ld_library_path"
-    verbose -log "LD_LIBRARY_PATH = $env(LD_LIBRARY_PATH)"
+    set_ld_library_path_env_vars
+    if [info exists env(LD_LIBRARY_PATH)] {
+      verbose -log "LD_LIBRARY_PATH = $env(LD_LIBRARY_PATH)"
+    }
 
     # Do a bunch of handstands and backflips for cross compiling and
     # finding simulators...

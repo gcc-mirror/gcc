@@ -1,3 +1,7 @@
+2004-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* testsuite/lib/libmudflap.exp: Use new procs in target-libpath.exp.
+
 2004-11-23  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in, configure, aclocal.m4: Regenerate with automake 1.9.3.

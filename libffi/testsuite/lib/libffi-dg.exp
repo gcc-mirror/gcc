@@ -21,6 +21,7 @@ proc load_gcc_lib { filename } {
 
 load_lib dg.exp
 load_lib libgloss.exp
+load_gcc_lib target-libpath.exp
 load_gcc_lib wrapper.exp
 
 
@@ -83,6 +84,7 @@ proc libffi-init { args } {
     global libffi_include
     global libffi_link_flags
     global tool_root_dir
+    global ld_library_path
 
     set blddirffi [lookfor_file [get_multilibs] libffi]
     verbose "libffi $blddirffi"
@@ -131,29 +133,7 @@ proc libffi-init { args } {
 	lappend libffi_link_flags "-L${blddircxx}/src/.libs"
     }
 
-    # On IRIX 6, we have to set variables akin to LD_LIBRARY_PATH, but
-    # called LD_LIBRARYN32_PATH (for the N32 ABI) and LD_LIBRARY64_PATH
-    # (for the 64-bit ABI).  The right way to do this would be to modify
-    # unix.exp -- but that's not an option since it's part of DejaGNU
-    # proper, so we do it here.
-    # The same applies to darwin (DYLD_LIBRARY_PATH), solaris 32 bit
-    # (LD_LIBRARY_PATH_32), solaris 64 bit (LD_LIBRARY_PATH_64), and HP-UX
-    # (SHLIB_PATH).
-    if {![is_remote target]} {
-	set ld_path "LD_LIBRARY_PATH SHLIB_PATH LD_LIBRARYN32_PATH LD_LIBRARY64_PATH LD_LIBRARY_PATH_32 LD_LIBRARY_PATH_64 DYLD_LIBRARY_PATH"
-	foreach path $ld_path {
-	    if [info exists env($path)] {
-		# If we've already added these directories once, keep
-		# the existing path.
-		if {$ld_library_path != $env($path)
-		    && [string first $ld_library_path: $env($path)] != 0} {
-		    setenv $path "$ld_library_path:$env($path)"
-		}
-	    } else {
-		setenv $path "$ld_library_path"
-	    }
-	}
-    }
+    set_ld_library_path_env_vars
     libffi_maybe_build_wrapper "${objdir}/testglue.o"
 }
 
