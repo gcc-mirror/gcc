@@ -2187,7 +2187,7 @@ alpha_expand_mov_nobwx (enum machine_mode mode, rtx *operands)
 }
 
 /* Implement the movmisalign patterns.  One of the operands is a memory
-   that is not natually aligned.  Emit instructions to load it.  */
+   that is not naturally aligned.  Emit instructions to load it.  */
 
 void
 alpha_expand_movmisalign (enum machine_mode mode, rtx *operands)
