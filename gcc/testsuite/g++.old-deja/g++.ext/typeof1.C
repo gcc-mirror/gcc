@@ -9,7 +9,7 @@ struct inttest {
 template <class T>
 void F(T x)
 {
-  typedef typeof(x.elem[0]) dummy;
+  typedef __typeof__(x.elem[0]) dummy;
   i = 1;
 }
 
