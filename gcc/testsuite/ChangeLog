@@ -2,6 +2,8 @@
 
 	* consistency.vlad/layout/endian.c: Include string.h.
 
+	* gcc.c-torture/execute/20020805-1.c: New test.
+
 2002-08-04  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* g++.dg/other/conversion1.C: New test.
