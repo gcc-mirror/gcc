@@ -1538,15 +1538,12 @@ init_alias_analysis ()
 
   reg_known_value_size = maxreg;
 
-  reg_known_value
-    = (rtx *) oballoc ((maxreg - FIRST_PSEUDO_REGISTER) * sizeof (rtx))
+  reg_known_value 
+    = (rtx *) xcalloc ((maxreg - FIRST_PSEUDO_REGISTER), sizeof (rtx))
     - FIRST_PSEUDO_REGISTER;
-  reg_known_equiv_p =
-    oballoc (maxreg - FIRST_PSEUDO_REGISTER) - FIRST_PSEUDO_REGISTER;
-  bzero ((char *) (reg_known_value + FIRST_PSEUDO_REGISTER),
-	 (maxreg-FIRST_PSEUDO_REGISTER) * sizeof (rtx));
-  bzero (reg_known_equiv_p + FIRST_PSEUDO_REGISTER,
-	 (maxreg - FIRST_PSEUDO_REGISTER) * sizeof (char));
+  reg_known_equiv_p 
+    = (char*) xcalloc ((maxreg - FIRST_PSEUDO_REGISTER), sizeof (char))
+    - FIRST_PSEUDO_REGISTER;
 
   /* Overallocate reg_base_value to allow some growth during loop
      optimization.  Loop unrolling can create a large number of
@@ -1556,8 +1553,8 @@ init_alias_analysis ()
   if (ggc_p)
     ggc_add_rtx_root (reg_base_value, reg_base_value_size);
 
-  new_reg_base_value = (rtx *)alloca (reg_base_value_size * sizeof (rtx));
-  reg_seen = (char *)alloca (reg_base_value_size);
+  new_reg_base_value = (rtx *) xmalloc (reg_base_value_size * sizeof (rtx));
+  reg_seen = (char *) xmalloc (reg_base_value_size);
   if (! reload_completed && flag_unroll_loops)
     {
       /* ??? Why are we realloc'ing if we're just going to zero it?  */
@@ -1730,15 +1727,21 @@ init_alias_analysis ()
     }
   while (changed && pass < MAX_ALIAS_LOOP_PASSES);
 
+  /* Clean up.  */
+  free (new_reg_base_value);
   new_reg_base_value = 0;
+  free (reg_seen);
   reg_seen = 0;
 }
 
 void
 end_alias_analysis ()
 {
+  free (reg_known_value + FIRST_PSEUDO_REGISTER);
   reg_known_value = 0;
   reg_known_value_size = 0;
+  free (reg_known_equiv_p + FIRST_PSEUDO_REGISTER);
+  reg_known_equiv_p = 0;
   if (reg_base_value)
     {
       if (ggc_p)

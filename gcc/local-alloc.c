@@ -996,6 +996,9 @@ update_equiv_regs ()
 	    }
 	}
     }
+
+  /* Clean up.  */
+  end_alias_analysis ();
 }
 
 /* Mark REG as having no known equivalence.

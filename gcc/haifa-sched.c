@@ -7123,6 +7123,9 @@ schedule_insns (dump_file)
       fprintf (dump, "\n\n");
     }
 
+  /* Clean up.  */
+  end_alias_analysis ();
+
   if (true_dependency_cache)
     {
       free (true_dependency_cache);

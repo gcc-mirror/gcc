@@ -8801,6 +8801,9 @@ cse_main (f, nregs, after_loop, file)
   if (max_elements_made < n_elements_made)
     max_elements_made = n_elements_made;
 
+  /* Clean up.  */
+  end_alias_analysis ();
+
   return cse_jumps_altered || recorded_label_ref;
 }
 
