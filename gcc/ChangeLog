@@ -1,3 +1,20 @@
+2002-09-04  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_flag_pic): New variable.
+	(rs6000_elf_encode_section_info): ATTRIBUTE_UNUSED.
+	(TARGET_BINDS_LOCAL_P): Define.
+	(rs6000_override_options): Save original flag_pic value.
+	(rs6000_elf_select_section): Call default_elf_select_section_1.
+	(rs6000_elf_unique_section): Call default_unique_section_1.
+	(rs6000_elf_in_small_data_p): New function.
+	(rs6000_xcoff_asm_named_section): Determine storage mapping class.
+	(rs6000_xcoff_select_section): Update based on defaults.
+	(rs6000_xcoff_unique_section): Set to basic name if not common.
+	(rs6000_binds_local_p): New function.
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Set
+	targetm.have_srodata_section if SDATA_EABI.
+	(TARGET_IN_SMALL_DATA_P): Define.
+
 2002-09-04  Dale Johannesen  <dalej@apple.com>
 
 	* varasm.c (struct rtx_const, decode_rtx_const):

@@ -261,6 +261,8 @@ do {									\
 	     rs6000_sdata_name, rs6000_abi_name);			\
     }									\
 									\
+  targetm.have_srodata_section = rs6000_sdata == SDATA_EABI;		\
+									\
   if (TARGET_RELOCATABLE && !TARGET_MINIMAL_TOC)			\
     {									\
       target_flags |= MASK_MINIMAL_TOC;					\
@@ -778,14 +780,15 @@ extern int fixuplabelno;
 /* This is the end of what might become sysv4.h.  */
 
 /* Use DWARF 2 debugging information by default.  */
-#undef	PREFERRED_DEBUGGING_TYPE
-#define	PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+#undef  PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 /* Historically we have also supported stabs debugging.  */
-#define	DBX_DEBUGGING_INFO 1
+#define DBX_DEBUGGING_INFO 1
 
-#define	TARGET_ENCODE_SECTION_INFO  rs6000_elf_encode_section_info
-#define	TARGET_STRIP_NAME_ENCODING  rs6000_elf_strip_name_encoding
+#define TARGET_ENCODE_SECTION_INFO  rs6000_elf_encode_section_info
+#define TARGET_STRIP_NAME_ENCODING  rs6000_elf_strip_name_encoding
+#define TARGET_IN_SMALL_DATA_P  rs6000_elf_in_small_data_p
 
 /* The ELF version doesn't encode [DS] or whatever at the end of symbols.  */
 
