@@ -9,8 +9,8 @@ struct A {
 void f ()
 {
   int i[2], j;
-  A a (int (i[1]), j);		// gets bogus error - late parsing XFAIL *-*-*
+  A a (int (i[1]), j);		// gets bogus error - late parsing
   A b (int (i[1]), int j);	// function
-  a.k = 0;			// gets bogus error - late parsing XFAIL *-*-*
+  a.k = 0;			// gets bogus error - late parsing
   b (i, j);
 }

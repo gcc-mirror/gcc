@@ -1,7 +1,7 @@
 // Build don't link:
 // Based on a test case by Phil Blecker <tmwg@inxservices.com>
 
-// excess errors test - XFAIL *-*-*
+// excess errors test
 
 int foo(int);
 int bar() {
