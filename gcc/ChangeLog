@@ -1,3 +1,7 @@
+2003-04-28  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/i386/i386.h (builtin_define): Add __amd64 and __amd64__.
+
 Mon Apr 28 09:54:56 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR c/10308
