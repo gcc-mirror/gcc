@@ -4072,6 +4072,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		fprintf (loop_dump_stream, "is giv of biv %d\n", bl2->regno);
 	      /* Let this giv be discovered by the generic code.  */
 	      REG_IV_TYPE (bl->regno) = UNKNOWN_INDUCT;
+	      reg_biv_class[bl->regno] = NULL_PTR;
 	      /* We can get better optimization if we can move the giv setting
 		 before the first giv use.  */
 	      if (dominator
@@ -4123,7 +4124,13 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		}
 	      /* Remove this biv from the chain.  */
 	      if (bl->next)
-		*bl = *bl->next;
+		{
+		  /* We move the following giv from *bl->next into *bl.
+		     We have to update reg_biv_class for that moved biv
+		     to point to its new address.  */
+		  *bl = *bl->next;
+		  reg_biv_class[bl->regno] = bl;
+		}
 	      else
 		{
 		  *backbl = 0;
