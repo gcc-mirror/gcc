@@ -548,7 +548,7 @@ Objective-C and Objective-C++ Dialects}.
 -mxgot  -mno-xgot  -mgp32  -mgp64  -mfp32  -mfp64 @gol
 -mhard-float  -msoft-float  -msingle-float  -mdouble-float @gol
 -mpaired-single  -mips3d @gol
--mint64  -mlong64  -mlong32 @gol
+-mint64  -mlong64  -mlong32  -msym32  -mno-sym32 @gol
 -G@var{num}  -membedded-data  -mno-embedded-data @gol
 -muninit-const-in-rodata  -mno-uninit-const-in-rodata @gol
 -msplit-addresses  -mno-split-addresses  @gol
@@ -9678,6 +9678,15 @@ the ABI@.  All the supported ABIs use 32-bit @code{int}s.  The n64 ABI
 uses 64-bit @code{long}s, as does the 64-bit EABI; the others use
 32-bit @code{long}s.  Pointers are the same size as @code{long}s,
 or the same size as integer registers, whichever is smaller.
+
+@item -msym32
+@itemx -mno-sym32
+@opindex msym32
+@opindex mno-sym32
+Assume (do not assume) that all symbols have 32-bit values, regardless
+of the selected ABI@.  This option is useful in combination with
+@option{-mabi=64} and @option{-mno-abicalls} because it allows GCC
+to generate shorter and faster references to symbolic addresses.
 
 @item -G @var{num}
 @opindex G
