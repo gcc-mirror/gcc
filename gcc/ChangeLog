@@ -1,3 +1,19 @@
+2003-01-19  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.c (stack_push_word, stack_pop_word,
+	z_reg, z_reg_qi): Declare static and GTY().
+	(da_reg): Remove.
+	(create_regs_rtx): Don't create da_reg.
+	("gt-m68hc11.h"): Include for GTY roots.
+	(m68hc11_autoinc_compatible_p): Remove.
+	(autoinc_mode): Declare prototype.
+	(m68hc11_make_autoinc_notes): Likewise.
+	* config/m68hc11/m68hc11.h (ix_reg, iy_reg, d_reg): Declare extern
+	and GTY() here.
+	(m68hc11_compare_op0, m68hc11_compare_op1): Likewise.
+	(m68hc11_soft_tmp_reg): Likewise.
+	* config/m68hc11/m68hc11-protos.h: Remove above declarations.
+
 2003-01-18  Roger Sayle  <roger@eyesopen.com>
 
 	* config/pa/pa.md (muldi3): Avoid invalid sharing of SUBREG RTXs.

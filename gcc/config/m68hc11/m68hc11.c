@@ -64,9 +64,10 @@ static int go_if_legitimate_address_internal PARAMS((rtx, enum machine_mode,
                                                      int));
 static int register_indirect_p PARAMS((rtx, enum machine_mode, int));
 static rtx m68hc11_expand_compare PARAMS((enum rtx_code, rtx, rtx));
-static int m68hc11_autoinc_compatible_p PARAMS ((rtx, rtx));
 static int must_parenthesize PARAMS ((rtx));
 static int m68hc11_shift_cost PARAMS ((enum machine_mode, rtx, int));
+static int autoinc_mode PARAMS ((rtx));
+static int m68hc11_make_autoinc_notes PARAMS ((rtx*, void*));
 static int m68hc11_auto_inc_p PARAMS ((rtx));
 static tree m68hc11_handle_fntype_attribute PARAMS ((tree *, tree, tree, int, bool *));
 const struct attribute_spec m68hc11_attribute_table[];
@@ -79,8 +80,6 @@ static void m68hc11_asm_out_constructor PARAMS ((rtx, int));
 static void m68hc11_asm_out_destructor PARAMS ((rtx, int));
 static void m68hc11_encode_section_info PARAMS((tree, int));
 
-rtx m68hc11_soft_tmp_reg;
-
 /* Must be set to 1 to produce debug messages.  */
 int debug_m6811 = 0;
 
@@ -89,11 +88,12 @@ extern FILE *asm_out_file;
 rtx ix_reg;
 rtx iy_reg;
 rtx d_reg;
-rtx da_reg;
-rtx stack_push_word;
-rtx stack_pop_word;
+rtx m68hc11_soft_tmp_reg;
+static GTY(()) rtx stack_push_word;
+static GTY(()) rtx stack_pop_word;
+static GTY(()) rtx z_reg;
+static GTY(()) rtx z_reg_qi;
 static int regs_inited = 0;
-rtx z_reg;
 
 /* Set to 1 by expand_prologue() when the function is an interrupt handler.  */
 int current_function_interrupt;
@@ -335,7 +335,6 @@ create_regs_rtx ()
   ix_reg = gen_rtx (REG, HImode, HARD_X_REGNUM);
   iy_reg = gen_rtx (REG, HImode, HARD_Y_REGNUM);
   d_reg = gen_rtx (REG, HImode, HARD_D_REGNUM);
-  da_reg = gen_rtx (REG, QImode, HARD_A_REGNUM);
   m68hc11_soft_tmp_reg = gen_rtx (REG, HImode, SOFT_TMP_REGNUM);
 
   stack_push_word = gen_rtx (MEM, HImode,
@@ -4103,8 +4102,6 @@ struct replace_info
   int z_loaded_with_sp;
 };
 
-rtx z_reg_qi;
-
 static int m68hc11_check_z_replacement PARAMS ((rtx, struct replace_info *));
 static void m68hc11_find_z_replacement PARAMS ((rtx, struct replace_info *));
 static void m68hc11_z_replacement PARAMS ((rtx));
@@ -5553,3 +5550,5 @@ m68hc11_asm_out_destructor (symbol, priority)
   default_dtor_section_asm_out_destructor (symbol, priority);
   fprintf (asm_out_file, "\t.globl\t__do_global_dtors\n");
 }
+
+#include "gt-m68hc11.h"
