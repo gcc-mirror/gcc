@@ -220,6 +220,9 @@ AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h fcntl.h un
 AC_CHECK_HEADER(thread.h, [have_thread_h=yes], [have_thread_h=])
 AC_CHECK_HEADER(pthread.h, [have_pthread_h=yes], [have_pthread_h=])
 
+# See if GNAT has been installed
+AC_CHECK_PROG(gnat, gnatbind, yes, no)
+
 # See if the system preprocessor understands the ANSI C preprocessor
 # stringification operator.
 AC_MSG_CHECKING(whether cpp understands the stringify operator)
@@ -3597,6 +3600,11 @@ do
 	# The odd quoting in the next line works around
 	# an apparent bug in bash 1.12 on linux.
 changequote(,)dnl
+	${srcdir}/ada/config-lang.in)
+	  if test x$gnat = xyes ; then
+		subdirs="$subdirs `echo $lang | sed -e 's,^.*/\([^/]*\)/config-lang.in$,\1,'`"
+	  fi
+	;;
 	${srcdir}/[*]/config-lang.in) ;;
 	*) subdirs="$subdirs `echo $lang | sed -e 's,^.*/\([^/]*\)/config-lang.in$,\1,'`" ;;
 changequote([,])dnl
