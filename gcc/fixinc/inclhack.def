@@ -10,7 +10,7 @@ autogen definitions fixincl;
 
    blocksort output=XXX \
           pattern='^/\*$' \
-          start='DO +NOT +DO +BROKEN +FIXES' \
+          start='== REPLACEMENT FIXES ==' \
           trailer='^/\*EOF\*[/]' \
           input=inclhack.def \
           key='hackname[ 	]*=[ 	]*(.*);'
@@ -22,89 +22,7 @@ autogen definitions fixincl;
 FIXINC_DEBUG = yes;
 #endif
 
-/* DO NOT DO BROKEN FIXES (empty replacement fixes) */
-
-/*
- *  This file on SunOS 4 has a very large macro.  When the sed loop
- *  tries pull it in, it overflows the pattern space size of the SunOS
- *  sed (GNU sed does not have this problem).  Since the file does not
- *  require fixing, we remove it from the fixed directory.
- */
-fix = {
-    hackname = AAA_bad_fixes;
-    files    = sundev/ipi_error.h;
-    /* shouldn't there be a select expression here??? */
-    replace; /* empty replacement -> no fixing the file */
-};
-
-
-/*
- *  Purge some HP-UX 11 files that are only broken after they are "fixed".
- */
-fix = {
-    hackname = AAA_ki;
-    files    = sys/ki.h;
-    select   = '11.00 HP-UX LP64';
-    replace; /* empty replacement -> no fixing the file */
-};
-
-
-/*
- *  Purge some HP-UX 11 files that are only broken after they are "fixed".
- */
-fix = {
-    hackname = AAA_ki_calls;
-    files    = sys/ki_calls.h;
-    select   = 'kthread_create_caller_t';
-    replace; /* empty replacement -> no fixing the file */
-};
-
-
-/*
- *  Purge some HP-UX 11 files that are only broken after they are "fixed".
- */
-fix = {
-    hackname = AAA_ki_defs;
-    files    = sys/ki_defs.h;
-    select   = 'Kernel Instrumentation Definitions';
-    replace; /* empty replacement -> no fixing the file */
-};
-
-
-/*
- *  Purge some HP-UX 11 files that are only broken after they are "fixed".
- */
-fix = {
-    hackname = AAA_ki_iface;
-    files    = sys/ki_iface.h;
-    select   = 'These definitions are for HP Internal developers';
-    replace; /* empty replacement -> no fixing the file */
-};
-
-
-/*
- * Tru64 UNIX V4.0F/V5.1 <standards.h> defines _NO_PROTO and _NONSTD_TYPES
- * correctly for GCC, but strict_ansi_not breaks it.
- */
-fix = {
-    hackname = AAA_standards;
-    files    = standards.h;
-    select   = 'GNU and MIPS C compilers define __STDC__ differently';
-    replace; /* empty replacement -> no fixing the file */
-};
-
-
-/*
- *  Purge some HP-UX 11 files that are only broken after they are "fixed".
- */
-fix = {
-    hackname = AAA_time;
-    files    = sys/time.h;
-    select   = '11.0 and later representation of ki time';
-    replace; /* empty replacement -> no fixing the file */
-};
-
-/* And now, the real fixes, replacement text fixes first: */
+/* == REPLACEMENT FIXES == */
 
 /*
  *  Completely replace <_int_varargs.h> with a file that includes gcc's
@@ -113,69 +31,70 @@ fix = {
 fix = {
     hackname = AAB_dgux_int_varargs;
     files    = _int_varargs.h;
-    replace  =
-"#ifndef __INT_VARARGS_H
-\#define __INT_VARARGS_H
-
-/************************************************************************/
-/* _INT_VARARGS.H - Define the common stuff for varargs/stdarg/stdio.   */
-/************************************************************************/
-
-/*" "
-** This file is a DG internal header.  Never include this
-** file directly.
-*/
-
-\#ifndef ___int_features_h
-\#include <sys/_int_features.h>
-\#endif
-
-\#if !(defined(_VA_LIST) || defined(_VA_LIST_))
-\#define _VA_LIST
-\#define _VA_LIST_
-
-\#ifdef __LINT__
-
-\#ifdef __STDC__
-typedef void * va_list;
-\#else
-typedef char * va_list;
-\#endif
-
-\#else
-\#if _M88K_ANY
-
-\#if defined(__DCC__)
-
-typedef struct {
-      int     next_arg;
-      int     *mem_ptr;
-      int     *reg_ptr;
-} va_list;
-
-\#else  /* ! defined(__DCC__) */
-
-typedef struct {
-      int  __va_arg;       /* argument number */
-      int *__va_stk;       /* start of args passed on stack */
-      int *__va_reg;       /* start of args passed in regs */
-} va_list;
-
-\#endif  /* ! defined(__DCC__) */
-
-\#elif _IX86_ANY
-
-\#if defined(__GNUC__) || defined(__STDC__)
-typedef void * va_list;
-\#else
-typedef char * va_list;
-\#endif
-
-\#endif  /*  _IX86_ANY */
-
-\#endif /* __LINT__ */
-\#endif /*  !(defined(_VA_LIST) || defined(_VA_LIST_)) */
-\#endif /*  #ifndef __INT_VARARGS_H  */\n";
+    replace  = <<- _EOF_
+	#ifndef __INT_VARARGS_H
+	#define __INT_VARARGS_H
+	
+	/********************************************************/
+	/*  Define the common stuff for varargs/stdarg/stdio.   */
+	/********************************************************/
+	
+	/*
+	** This file is a DG internal header.  Never include this
+	** file directly.
+	*/
+	
+	#ifndef ___int_features_h
+	#include <sys/_int_features.h>
+	#endif
+	
+	#if !(defined(_VA_LIST) || defined(_VA_LIST_))
+	#define _VA_LIST
+	#define _VA_LIST_
+	
+	#ifdef __LINT__
+	
+	#ifdef __STDC__
+	typedef void * va_list;
+	#else
+	typedef char * va_list;
+	#endif
+	
+	#else
+	#if _M88K_ANY
+	
+	#if defined(__DCC__)
+	
+	typedef struct {
+	      int     next_arg;
+	      int     *mem_ptr;
+	      int     *reg_ptr;
+	} va_list;
+	
+	#else  /* ! defined(__DCC__) */
+	
+	typedef struct {
+	      int  __va_arg;       /* argument number */
+	      int *__va_stk;       /* start of args passed on stack */
+	      int *__va_reg;       /* start of args passed in regs */
+	} va_list;
+	
+	#endif  /* ! defined(__DCC__) */
+	
+	#elif _IX86_ANY
+	
+	#if defined(__GNUC__) || defined(__STDC__)
+	typedef void * va_list;
+	#else
+	typedef char * va_list;
+	#endif
+	
+	#endif  /*  _IX86_ANY */
+	
+	#endif /* __LINT__ */
+	#endif /*  !(defined(_VA_LIST) || defined(_VA_LIST_)) */
+	#endif /*  #ifndef __INT_VARARGS_H  */
+	_EOF_;
 };
 
 
@@ -194,29 +113,28 @@ fix = {
      * the wrapper, this will follow the #include_next chain until
      * we arrive at the real <asm/posix_types.h>.
      */
-    replace  =
-
-'/* This file fixes a bug in the __FD_ZERO macro
-   for older versions of the Linux kernel. */
-\#ifndef _POSIX_TYPES_H_WRAPPER
-\#include <features.h>
- \#include_next <asm/posix_types.h>
-
-\#if defined(__FD_ZERO) && !defined(__GLIBC__)
-\#undef __FD_ZERO
-\#define __FD_ZERO(fdsetp) \\
-  do { \\
-    int __d0, __d1; \\
-		__asm__ __volatile__("cld ; rep ; stosl" \\
-			: "=&c" (__d0), "=&D" (__d1) \\
-			: "a" (0), "0" (__FDSET_LONGS), \\
-			  "1" ((__kernel_fd_set *) (fdsetp)) :"memory"); \\
-  } while (0)
-\#endif
-
-\#define _POSIX_TYPES_H_WRAPPER
-\#endif /* _POSIX_TYPES_H_WRAPPER */
-';
+    replace  = <<-  _EOF_
+	/* This file fixes a bug in the __FD_ZERO macro
+	   for older versions of the Linux kernel. */
+	#ifndef _POSIX_TYPES_H_WRAPPER
+	#include <features.h>
+	 #include_next <asm/posix_types.h>
+	
+	#if defined(__FD_ZERO) && !defined(__GLIBC__)
+	#undef __FD_ZERO
+	#define __FD_ZERO(fdsetp) \
+	  do { \
+	    int __d0, __d1; \
+			__asm__ __volatile__("cld ; rep ; stosl" \
+				: "=&c" (__d0), "=&D" (__d1) \
+				: "a" (0), "0" (__FDSET_LONGS), \
+				  "1" ((__kernel_fd_set *) (fdsetp)) :"memory"); \
+	  } while (0)
+	#endif
+	
+	#define _POSIX_TYPES_H_WRAPPER
+	#endif /* _POSIX_TYPES_H_WRAPPER */
+	_EOF_;
 };
 
 
@@ -1222,12 +1140,11 @@ fix = {
  */
 fix = {
     hackname  = hpux11_size_t;
-    mach      = "*-hp-hpux*";
-    select    = "^#define __size_t size_t";
+    mach      = "*-hp-hpux11*";
+    select    = "__size_t";
 
     c_fix     = format;
     c_fix_arg = "_hpux_size_t";
-    c_fix_arg = "__size_t";
 
     test_text =
     "#define __size_t size_t\n"
@@ -1269,14 +1186,12 @@ fix = {
 fix = {
     hackname = hpux11_vsnprintf;
     files    = stdio.h;
-    select   = 'extern int vsnprintf\(char \*, __size_t, const char \*,'
-                                     ' __va__list\);';
-
+    select   = '(extern int vsnprintf\(char \*, _[hpux]*_size_t, '
+                                     'const char \*,) __va__list\);';
     c_fix     = format;
-    c_fix_arg = "extern int vsnprintf(char *, __size_t, const char *,"
-                                     " __va_list);";
+    c_fix_arg = "%1 __va_list);";
 
-    test_text = 'extern int vsnprintf(char *, __size_t, const char *,'
+    test_text = 'extern int vsnprintf(char *, _hpux_size_t, const char *,'
                                      ' __va__list);';
 };
 
@@ -2257,12 +2172,11 @@ fix = {
                "(!__STDC__"
                "|__STDC__[ \t]*==[ \t]*0"
                "|__STDC__[ \t]*!=[ \t]*1"
-               "|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0"
-               ")(.*)";
+               "|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0)";
     c_test   = stdc_0_in_system_headers;
 
     c_fix     = format;
-    c_fix_arg = "%1 !defined(__STRICT_ANSI__)%3";
+    c_fix_arg = "%1 !defined(__STRICT_ANSI__)";
 
     test_text = "#if !__STDC__ \n"
                 "#if __STDC__ == 0\n"
@@ -2278,18 +2192,33 @@ fix = {
  */
 fix = {
     hackname = strict_ansi_not_ctd;
-    files    = math.h, limits.h, stdio.h, signal.h, stdlib.h, time.h;
-    select   = "^([ \t]*[|&][|&][ \t(]*)"
-               "(__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0"
-               ")(.*)";
+    files    = math.h, limits.h, stdio.h, signal.h,
+               stdlib.h, sys/signal.h, time.h;
+    /*
+     * Starting at the beginning of a line, skip white space and
+     * a leading "(" or "&&" or "||".  One of those must be found.
+     * Then, zero, one or more copies of a "defined(_FOO_BAR_) &&"
+     * expression.  If these are nested, then they must accumulate
+     * because we won't match any closing parentheses.  Finally,
+     * after skipping over all that, we must then match our suspect
+     * phrase:  "__STDC__-0==0" with or without white space.
+     */
+    select   = "^([ \t]*" '(\(|&&|\|\|)'
+               "([ \t(]*!*[ \t]*defined\\([a-zA-Z_0-9]+\\)[ \t]*[|&][|&])*"
+               "[ \t(]*)"
+               "(__STDC__[ \t]*(|-[ \t]*0[ \t]*)==[ \t]*0)";
     c_test   = stdc_0_in_system_headers;
 
     c_fix     = format;
-    c_fix_arg = "%1 !defined(__STRICT_ANSI__)%3";
+    c_fix_arg = "%1 !defined(__STRICT_ANSI__)";
 
-    test_text = "#if 1\\\n"
-               "|| __STDC__ - 0 == 0 /* not std C */\nint foo;\n#endif";
+    test_text = "#if 1 && \\\\\n"
+               "&& defined(mumbling) |& (__STDC__ - 0 == 0) \\\\\n"
+               "( __STDC__ == 0 && !defined(_XOPEN_SOURCE) \\\\\n"
+               "|| __STDC__ - 0 == 0 ) /* not std C */\n"
+               "int foo;\n#endif";
 };
+
 
 /*
  *  "__STDC__!=0" or "__STDC__==1" or "__STDC__-0==1"
@@ -2301,12 +2230,11 @@ fix = {
                "(__STDC__[ \t]*!=[ \t]*0"
                "|__STDC__[ \t]*==[ \t]*1"
                "|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*1"
-               "|__STDC__[ \t]*-[ \t]*0[ \t]*!=[ \t]*0"
-               ")(.*)";
+               "|__STDC__[ \t]*-[ \t]*0[ \t]*!=[ \t]*0)";
     c_test   = stdc_0_in_system_headers;
 
     c_fix     = format;
-    c_fix_arg = "%1 defined(__STRICT_ANSI__)%3";
+    c_fix_arg = "%1 defined(__STRICT_ANSI__)";
 
     test_text = "#if __STDC__ == 1 /* is std C\n */\nint foo;\n#endif";
 };

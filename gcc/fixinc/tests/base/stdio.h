@@ -20,7 +20,7 @@ extern int getopt(int, char *const[], const char *);
 
 
 #if defined( HPUX11_VSNPRINTF_CHECK )
-extern int vsnprintf(char *, __size_t, const char *, __gnuc_va_list);
+extern int vsnprintf(char *, _hpux_size_t, const char *, __gnuc_va_list);
 #endif  /* HPUX11_VSNPRINTF_CHECK */
 
 
@@ -74,5 +74,10 @@ extern FILE *popen( const char *, const char *);
 extern char *tempnam( const char *, const char *);
 
 #endif  /* ULTRIX_CONST2_CHECK */
+
+
+#if defined( UNICOSMK_RESTRICT_CHECK )
+void f (char * __restrict__ x);
+#endif  /* UNICOSMK_RESTRICT_CHECK */
 
 #endif  /* FIXINC_STDIO_STDARG_H_CHECK */
