@@ -1,9 +1,9 @@
 #! /bin/sh
 # Configuration validation subroutine script.
-#   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
-#   Free Software Foundation, Inc.
+#   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+#   2000, 2001, 2002 Free Software Foundation, Inc.
 
-timestamp='2001-11-21'
+timestamp='2002-01-02'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -227,6 +227,7 @@ case $basic_machine in
 	1750a | 580 \
 	| a29k \
 	| alpha | alphaev[4-8] | alphaev56 | alphaev6[78] | alphapca5[67] \
+	| alpha64 | alpha64ev[4-8] | alpha64ev56 | alpha64ev6[78] | alpha64pca5[67] \
 	| arc | arm | arm[bl]e | arme[lb] | armv[2345] | armv[345][lb] | avr \
 	| c4x | clipper \
 	| d10v | d30v | dsp16xx \
@@ -249,9 +250,9 @@ case $basic_machine in
 	| sparc | sparc64 | sparclet | sparclite | sparcv9 | sparcv9b \
 	| strongarm \
 	| tahoe | thumb | tic80 | tron \
-	| v850 \
+	| v850 | v850e \
 	| we32k \
-	| x86 | xscale | xstormy16 \
+	| x86 | xscale | xstormy16 | xtensa \
 	| z8k)
 		basic_machine=$basic_machine-unknown
 		;;
@@ -278,7 +279,8 @@ case $basic_machine in
 	580-* \
 	| a29k-* \
 	| alpha-* | alphaev[4-8]-* | alphaev56-* | alphaev6[78]-* \
-	| alphapca5[67]-* | arc-* \
+	| alpha64-* | alpha64ev[4-8]-* | alpha64ev56-* | alpha64ev6[78]-* \
+	| alphapca5[67]-* | alpha64pca5[67]-* | arc-* \
 	| arm-*  | armbe-* | armle-* | armv*-* \
 	| avr-* \
 	| bs2000-* \
@@ -307,9 +309,10 @@ case $basic_machine in
 	| sparc-* | sparc64-* | sparc86x-* | sparclite-* \
 	| sparcv9-* | sparcv9b-* | strongarm-* | sv1-* \
 	| t3e-* | tahoe-* | thumb-* | tic30-* | tic54x-* | tic80-* | tron-* \
-	| v850-* | vax-* \
+	| v850-* | v850e-* | vax-* \
 	| we32k-* \
 	| x86-* | x86_64-* | xmp-* | xps100-* | xscale-* | xstormy16-* \
+	| xtensa-* \
 	| ymp-* \
 	| z8k-*)
 		;;
@@ -417,6 +420,14 @@ case $basic_machine in
 		;;
 	decstation | decstation-3100 | pmax | pmax-* | pmin | dec3100 | decstatn)
 		basic_machine=mips-dec
+		;;
+	decsystem10* | dec10*)
+		basic_machine=pdp10-dec
+		os=-tops10
+		;;
+	decsystem20* | dec20*)
+		basic_machine=pdp10-dec
+		os=-tops20
 		;;
 	delta | 3300 | motorola-3300 | motorola-delta \
 	      | 3300-motorola | delta-motorola)
@@ -619,6 +630,10 @@ case $basic_machine in
 	monitor)
 		basic_machine=m68k-rom68k
 		os=-coff
+		;;
+	morphos)
+		basic_machine=powerpc-unknown
+		os=-morphos
 		;;
 	msdos)
 		basic_machine=i386-pc
@@ -881,6 +896,10 @@ case $basic_machine in
 	tx39el)
 		basic_machine=mipstx39el-unknown
 		;;
+	toad1)
+		basic_machine=pdp10-xkl
+		os=-tops20
+		;;
 	tower | tower-32)
 		basic_machine=m68k-ncr
 		;;
@@ -1074,7 +1093,7 @@ case $os in
 	      | -interix* | -uwin* | -rhapsody* | -darwin* | -opened* \
 	      | -openstep* | -oskit* | -conix* | -pw32* | -nonstopux* \
 	      | -storm-chaos* | -tops10* | -tenex* | -tops20* | -its* \
-	      | -os2* | -vos* | -palmos* | -uclinux*)
+	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* | -morphos*)
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-qnx*)
@@ -1209,6 +1228,7 @@ case $basic_machine in
 	arm*-semi)
 		os=-aout
 		;;
+	# This must come before the *-dec entry.
 	pdp10-*)
 		os=-tops20
 		;;
