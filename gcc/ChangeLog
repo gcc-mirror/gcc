@@ -1,3 +1,11 @@
+2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* avr.c (avr_output_function_prologue,
+	avr_output_function_epilogue, print_operand): Fix format specifier
+	warnings.
+	(init_cumulative_args): Mark parameter with ATTRIBUTE_UNUSED.
+	* avr.h (FUNCTION_VALUE_REGNO_P): Fix signed/unsigned warnings.
+
 2003-05-16  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/cppopts.texi (-undef): Fix texinfo warning.

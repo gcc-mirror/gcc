@@ -1224,7 +1224,7 @@ extern int avr_reg_order[];
    data types, because none of the library functions returns such
    types.  */
 
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == RET_REGISTER)
+#define FUNCTION_VALUE_REGNO_P(N) ((int) (N) == RET_REGISTER)
 /* A C expression that is nonzero if REGNO is the number of a hard
    register in which the values of called function may come back.
 
