@@ -1031,19 +1031,16 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   TREE_ASM_WRITTEN (decl) = 1;
 
-  /* If storage size is erroneously variable, just continue.
-     Error message was already made.  */
+  app_disable ();
 
-  if (DECL_SIZE (decl))
+  if (! dont_output_data)
     {
       if (TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
 	goto finish;
 
-      app_disable ();
-
       /* This is better than explicit arithmetic, since it avoids overflow.  */
       size_tree = size_binop (CEIL_DIV_EXPR,
-			      DECL_SIZE (decl), size_int (BITS_PER_UNIT));
+			  DECL_SIZE (decl), size_int (BITS_PER_UNIT));
 
       if (TREE_INT_CST_HIGH (size_tree) != 0)
 	{
@@ -1311,11 +1308,10 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     {
       if (DECL_INITIAL (decl))
 	/* Output the actual data.  */
-	output_constant (DECL_INITIAL (decl),
-			 int_size_in_bytes (TREE_TYPE (decl)));
+	output_constant (DECL_INITIAL (decl), TREE_INT_CST_LOW (size_tree));
       else
 	/* Leave space for it.  */
-	assemble_zeros (int_size_in_bytes (TREE_TYPE (decl)));
+	assemble_zeros (TREE_INT_CST_LOW (size_tree));
     }
 
  finish:
