@@ -1,3 +1,9 @@
+2000-11-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	* acinclude.m4 (LIB_AC_PROG_CXX): Remove CXX from the list of
+	alternatives for CXX_libstdcxx, now that it is useless.
+	* aclocal.m4, configure: Rebuilt.
+
 2000-11-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* acinclude.m4 (LIB_AC_PROG_CXX): Set CXX_libstdcxx from CXX.
