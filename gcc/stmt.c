@@ -1251,6 +1251,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       int j;
       int is_inout = 0;
       int allows_reg = 0;
+      int allows_mem = 0;
 
       /* If there's an erroneous arg, emit no insn.  */
       if (TREE_TYPE (val) == error_mark_node)
@@ -1316,8 +1317,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    break;
 
 	  case '?':  case '!':  case '*':  case '&':
-	  case 'V':  case 'm':  case 'o':  case '<':  case '>':
-	  case 'E':  case 'F':  case 'G':  case 'H':  case 'X':
+	  case 'E':  case 'F':  case 'G':  case 'H':
 	  case 's':  case 'i':  case 'n':
 	  case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
 	  case 'N':  case 'O':  case 'P':  case ',':
@@ -1331,7 +1331,23 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    error ("matching constraint not valid in output operand");
 	    break;
 
-	  case 'p':  case 'g':  case 'r':
+	  case 'V':  case 'm':  case 'o':
+	    allows_mem = 1;
+	    break;
+
+	  case '<':  case '>':
+          /* ??? Before flow, auto inc/dec insns are not supposed to exist,
+             excepting those that expand_call created.  So match memory
+	     and hope.  */
+	    allows_mem = 1;
+	    break;
+
+	  case 'g':  case 'X':
+	    allows_reg = 1;
+	    allows_mem = 1;
+	    break;
+
+	  case 'p': case 'r':
 	  default:
 	    allows_reg = 1;
 	    break;
@@ -1342,8 +1358,10 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	 Make the asm insn write into that, then our caller will copy it to
 	 the real output operand.  Likewise for promoted variables.  */
 
-      if (TREE_CODE (val) == INDIRECT_REF
+      if ((TREE_CODE (val) == INDIRECT_REF
+	   && allows_mem)
 	  || (TREE_CODE_CLASS (TREE_CODE (val)) == 'd'
+	      && (allows_mem || GET_CODE (DECL_RTL (val)) == REG)
 	      && ! (GET_CODE (DECL_RTL (val)) == REG
 		    && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type)))
 	  || ! allows_reg
@@ -1358,6 +1376,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
 	  if (! allows_reg && GET_CODE (output_rtx[i]) != MEM)
 	    error ("output number %d not directly addressable", i);
+	  if (! allows_mem && GET_CODE (output_rtx[i]) == MEM)
+	    error ("output number %d not restored to memory", i);
 	}
       else
 	{
@@ -1472,7 +1492,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	      }
 
 	    /* Try and find the real constraint for this dup.  */
-	    if (j == 0 && c_len == 1)
+	    if ((j == 0 && c_len == 1)
+		|| (j == 1 && c_len == 2 && constraint[0] == '%'))
 	      {
 		tree o = outputs;
 		for (j = constraint[j] - '0'; j > 0; --j)
@@ -1502,7 +1523,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       op = expand_expr (TREE_VALUE (tail), NULL_RTX, VOIDmode, 0);
 
-      if (! asm_operand_ok (op, constraint))
+      if (asm_operand_ok (op, constraint) <= 0)
 	{
 	  if (allows_reg)
 	    op = force_reg (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))), op);
