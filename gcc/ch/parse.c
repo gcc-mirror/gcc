@@ -1,5 +1,5 @@
 /* Parser for GNU CHILL (CCITT High-Level Language)  -*- C -*-
-   Copyright (C) 1992, 1993, 1998, 1999, 2000
+   Copyright (C) 1992, 1993, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -278,14 +278,15 @@ PEEK_TOKEN()
   return terminal_buffer[0];
 }
 #define PEEK_TREE() val_buffer[0].ttype
-#define PEEK_TOKEN1() peek_token_(1)
-#define PEEK_TOKEN2() peek_token_(2)
+#define PEEK_TOKEN1() peek_token_ (1)
+#define PEEK_TOKEN2() peek_token_ (2)
+
 static int
 peek_token_ (i)
      int i;
 {
   if (i > MAX_LOOK_AHEAD)
-    fatal ("internal error - too much lookahead");
+    abort ();
   if (terminal_buffer[i] == TOKEN_NOT_READ)
     {
       terminal_buffer[i] = yylex();
@@ -301,7 +302,7 @@ pushback_token (code, node)
 {
   int i;
   if (terminal_buffer[MAX_LOOK_AHEAD] != TOKEN_NOT_READ)
-    fatal ("internal error - cannot pushback token");
+    abort ();
   for (i = MAX_LOOK_AHEAD; i > 0; i--)
     { 
       terminal_buffer[i] = terminal_buffer[i - 1]; 
@@ -322,17 +323,17 @@ forward_token_()
     }
   terminal_buffer[MAX_LOOK_AHEAD] = TOKEN_NOT_READ;
 }
-#define FORWARD_TOKEN() forward_token_()
+#define FORWARD_TOKEN() forward_token_ ()
 
 /* Skip the next token.
    if it isn't TOKEN, the parser is broken. */
 
 static void
-require(token)
+require (token)
      enum terminal token;
 {
   if (PEEK_TOKEN() != token)
-    fatal ("internal parser error - expected token %d", (int)token);
+    internal_error ("internal parser error - expected token %d", (int) token);
   FORWARD_TOKEN();
 }
 

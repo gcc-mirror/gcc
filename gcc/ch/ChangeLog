@@ -1,3 +1,15 @@
+Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* convert.c (convert): Call abort instead of fatal.
+	* except.c (pop_handler, chill_check_no_handlers): Likewise.
+	* expr.c (chill_expand_expr): Likewise.
+	* parse.c (peek_token_, pushback_token, require): Likewise.
+	* grant.c (write_grant_file): Call fatal_io_error instead of
+	pfatal_with_name.
+	* lex.c (init_parse, same_file, yywrap): Likewise.
+	* lang.c (GNU_xref_begin, GNU_xref_end): Deleted.
+	* lex.c (convert_bitstring): Delete check for alloca failure.
+
 2001-01-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ch-tree.h (integer_minus_one_node): Moved to top level gcc

@@ -1,6 +1,6 @@
 /* Implement grant-file output & seize-file input for CHILL.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2648,7 +2648,7 @@ write_grant_file ()
 
   fb = fopen (grant_file_name, "w");
   if (fb == NULL)
-      pfatal_with_name (grant_file_name);
+    fatal_io_error ("can't open %s", grant_file_name);
     
   /* write file. Due to problems with record sizes on VAX/VMS
      write string to '\n' */
@@ -2670,9 +2670,10 @@ write_grant_file ()
   if (write (fileno (fb), gstring->str, gstring->len) < 0)
     {
       int save_errno = errno;
+
       unlink (grant_file_name);
       errno = save_errno;
-      pfatal_with_name (grant_file_name);
+      fatal_io_error ("can't write to %s", grant_file_name);
     }
 #endif
   fclose (fb);

@@ -1,6 +1,6 @@
 /* Exception support for GNU CHILL.
    WARNING:  Only works for native (needs setjmp.h)!  FIXME!
-   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000
+   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -361,8 +361,9 @@ pop_handler (used)
   if (pass == 1)
     {
       struct handler_state *old = current_handler;
+
       if (old == NULL)
-	fatal ("internal error: on stack out of sync");
+	abort ();
       current_handler = old->next;
 
       if (used)
@@ -539,7 +540,7 @@ void
 chill_check_no_handlers ()
 {
   if (current_handler != NULL)
-    fatal ("internal error: on stack not empty when done");
+    abort ();
 }
 
 static void
