@@ -482,13 +482,14 @@ gen_reg_rtx (mode)
       rtx *new1;
       char *new =
 	(char *) oballoc (regno_pointer_flag_length * 2);
-      bzero (new, regno_pointer_flag_length * 2);
       bcopy (regno_pointer_flag, new, regno_pointer_flag_length);
+      bzero (&new[regno_pointer_flag_length], regno_pointer_flag_length);
       regno_pointer_flag = new;
 
       new1 = (rtx *) oballoc (regno_pointer_flag_length * 2 * sizeof (rtx));
-      bzero (new1, regno_pointer_flag_length * 2 * sizeof (rtx));
       bcopy (regno_reg_rtx, new1, regno_pointer_flag_length * sizeof (rtx));
+      bzero (&new1[regno_pointer_flag_length],
+	     regno_pointer_flag_length * sizeof (rtx));
       regno_reg_rtx = new1;
 
       regno_pointer_flag_length *= 2;
