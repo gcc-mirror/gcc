@@ -136,7 +136,7 @@ libgcj="target-libffi \
 # these libraries are built for the target environment, and are built after
 # the host libraries and the host tools (which may be a cross compiler)
 #
-target_libs="target-libiberty \
+target_libraries="target-libiberty \
 		target-libgloss \
 		target-newlib \
 		target-libstdc++-v3 \
@@ -144,10 +144,10 @@ target_libs="target-libiberty \
 		${libgcj} \
 		target-libobjc"
 
-# these tools are built using the target libs, and are intended to run only
-# in the target environment
+# these tools are built using the target libraries, and are intended to
+# run only in the target environment
 #
-# note: any program that *uses* libraries that are in the "target_libs"
+# note: any program that *uses* libraries that are in the "target_libraries"
 # list belongs in this list.  those programs are also very likely
 # candidates for the "native_only" list which follows
 #
@@ -162,7 +162,7 @@ target_tools="target-examples target-groff target-gperf target-rda"
 ## ${target_configdirs} is directories we build using the target tools.
 #
 configdirs=`echo ${host_libs} ${host_tools}`
-target_configdirs=`echo ${target_libs} ${target_tools}`
+target_configdirs=`echo ${target_libraries} ${target_tools}`
 
 # Only make build modules if build != host.
 # This should be done more generally, but at the moment it doesn't matter.
@@ -805,7 +805,7 @@ do
         *) add_this_lang=no ;;
       esac
       if test x"${add_this_lang}" = xyes; then
-        eval target_libs='"$target_libs "'\"$this_lang_libs\"
+        :
       else
         eval noconfigdirs='"$noconfigdirs "'\"$this_lang_libs $this_lang_dirs\"
       fi
