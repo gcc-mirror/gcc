@@ -1,3 +1,15 @@
+2000-01-20  Nathan Sidwell  <sidwell@codesourcery.com>
+
+	Remap dynamic cast hint values to be consistent across ABIs.
+	* search.c (dynamic_cast_base_recurse): Remap generated value.
+	(get_dynamic_cast_base_type): Adjust documentation.
+	* tinfo.h (__user_type_info::dyncast): Likewise.
+	(__user_type_info::find_public_subobj): Remap BOFF meaning.
+	* tinfo.cc (__si_type_info::do_dyncast): Remap BOFF meaning.
+	(__class_type_info::do_dyncast): Likewise.
+	(__class_type_info::do_find_public_subobj): Likewise.
+	* tinfo2.cc (__dynamic_cast): Remap BOFF parameter.	
+
 2000-01-19  Gabriel Dos Reis  <gdr@codesourcery.coom>
 
         * typeck.c (build_unary_op): Use cp_pedwarn, not pedwarn.
