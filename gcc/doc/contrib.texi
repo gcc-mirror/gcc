@@ -29,6 +29,10 @@ James van Artsdalen wrote the code that makes efficient use of
 the Intel 80387 register stack.
 
 @item
+Abramo and Roberto Bagnara for the SysV68 Motorola 3300 Delta Series
+port.
+
+@item
 Alasdair Baird for various bugfixes.
 
 @item

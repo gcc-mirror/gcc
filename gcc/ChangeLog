@@ -1,3 +1,7 @@
+2002-12-27  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Add Abramo and Roberto Bagnara.
+
 2002-12-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300-protos.h: Fix comment typos.
