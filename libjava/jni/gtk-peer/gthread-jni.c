@@ -223,8 +223,8 @@ exception statement from your version. */
 #elif defined HAVE_INTTYPES_H
 #include <inttypes.h>
 #endif
-#include <stdio.h>		/* snprintf */
 #include <stdarg.h>		/* va_list */
+#include <glib.h>
 #include "gthread-jni.h"
 #include <assert.h>		/* assert() */
 
@@ -464,7 +464,7 @@ throw (JNIEnv * env, jthrowable cause, const char *message,
   if ((buf = malloc (len)))
     {
       memset (buf, 0, len);
-      snprintf (buf, len, fmt, message, file, line);
+      g_snprintf (buf, len, fmt, message, file, line);
       jmessage = (*env)->NewStringUTF (env, buf);
       free (buf);
     }

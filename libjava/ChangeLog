@@ -1,3 +1,8 @@
+2005-02-19  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* jni/gtk-peer/gthread-jni.c (throw): Call g_snprintf instead of
+	snprintf.
+
 2005-02-19  Michael Koch  <konqueror@gmx.de>
 
 	* Makefile.am: Added new files in gnu/java/beans and
