@@ -1,3 +1,8 @@
+Tue Feb  2 22:03:26 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000/linux.h (LINK_START_DEFAULT_SPEC): Delete, unused.
+	(LINK_OS_DEFAULT_SPEC): Delete, unused.
+
 Tue Feb  2 20:29:34 1999  Catherine Moore  <clm@cygnus.com>
  
         * configure.in (arm-*-oabi):  Support.
@@ -14,7 +19,8 @@ Tue Feb  2 19:43:59 1999  Jeffrey A Law  (law@cygnus.com)
 
 Tue Feb  2 18:21:23 1999  Stan Cox  <scox@cygnus.com>
 
-	* sparc.h (TARGET_CPU_sparc86x): Added. TARGET_CPU_sparclite86x synonym.
+	* sparc.h (TARGET_CPU_sparc86x): Added. TARGET_CPU_sparclite86x
+	synonym.
 
 Tue Feb  2 20:24:11 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 

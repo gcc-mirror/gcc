@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 running AIX version 3.1.
-   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@cygnus.com).
 
 This file is part of GNU CC.
@@ -45,12 +45,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	ENDFILE_DEFAULT_SPEC
 #define ENDFILE_DEFAULT_SPEC "%(endfile_linux)"
-
-#undef	LINK_START_DEFAULT_SPEC
-#define LINK_START_DEFAULT_SPEC "%(link_start_linux)"
-
-#undef	LINK_OS_DEFAULT_SPEC
-#define LINK_OS_DEFAULT_SPEC "%(link_os_linux)"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC GNU/Linux)");
