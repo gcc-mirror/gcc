@@ -1,5 +1,12 @@
 2000-02-01  Tom Tromey  <tromey@cygnus.com>
 
+	* include/java-interp.h (_Jv_JNI_conversion_call): Declare.
+	* resolve.cc (ncode): Use _Jv_JNI_conversion_call when
+	constructing the closure if the function is native.
+	* jni.cc (_Jv_JNI_conversion_call): Now returns `void'.  No longer
+	a template function, #if'd out, or static.
+	Include <java-interp.h>.
+
 	* include/jni.h (class _Jv_JNIEnv): Corrected calls using `...'.
 
 	* include/jni.h (class _Jv_JNIEnv): Added all C++ inline methods.

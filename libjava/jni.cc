@@ -45,6 +45,8 @@ details.  */
 #include <gcj/method.h>
 #include <gcj/field.h>
 
+#include <java-interp.h>
+
 #define ClassClass _CL_Q34java4lang5Class
 extern java::lang::Class ClassClass;
 #define ObjectClass _CL_Q34java4lang6Object
@@ -1204,11 +1206,14 @@ _Jv_JNI_FromReflectedMethod (JNIEnv *, jobject method)
 
 // This function is the stub which is used to turn an ordinary (CNI)
 // method call into a JNI call.
-#if 0
-template<typename T>
-static T
-_Jv_JNI_conversion_call (fixme)
+void
+_Jv_JNI_conversion_call (ffi_cif *cif,
+			 void *ret,
+			 ffi_raw *args,
+			 void *__this)
 {
+  _Jv_InterpMethod* _this = (_Jv_InterpMethod*)__this;
+
   JNIEnv env;
   _Jv_JNI_LocalFrame *frame
     = (_Jv_JNI_LocalFrame *) alloca (sizeof (_Jv_JNI_LocalFrame)
@@ -1216,7 +1221,7 @@ _Jv_JNI_conversion_call (fixme)
 
   env.p = &_Jv_JNIFunctions;
   env.ex = NULL;
-  env.klass = FIXME;
+  env.klass = _this->defining_class;
   env.locals = frame;
 
   frame->marker = true;
@@ -1225,20 +1230,24 @@ _Jv_JNI_conversion_call (fixme)
   for (int i = 0; i < frame->size; ++i)
     frame->vec[i] = NULL;
 
-  T result = FIXME_ffi_call (args);
+  // FIXME: we should mark every reference parameter as a local.  For
+  // now we assume a conservative GC, and we assume that the
+  // references are on the stack somewhere.
+
+  ffi_raw_call (cif,
+		NULL, // FIXME: function pointer.
+		ret,
+		args);
 
   do
     {
-      _Jv_JNI_PopLocalFrame (&env, result);
+      _Jv_JNI_PopLocalFrame (&env, NULL);
     }
   while (env.locals != frame);
 
   if (env.ex)
     JvThrow (env.ex);
-
-  return T;
 }
-#endif
 
 
 
