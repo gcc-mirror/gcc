@@ -33,11 +33,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "debug.h"
 #include "target.h"
 #include "cgraph.h"
+#include "diagnostic.h"
 
 static void cgraph_expand_functions PARAMS ((void));
 static void cgraph_mark_functions_to_output PARAMS ((void));
 static void cgraph_expand_function PARAMS ((struct cgraph_node *));
 static tree record_call_1 PARAMS ((tree *, int *, void *));
+static void cgraph_mark_local_functions PARAMS ((void));
 
 /* Analyze function once it is parsed.  Set up the local information
    available - create cgraph edges for function calles via BODY.  */
@@ -51,8 +53,10 @@ cgraph_finalize_function (decl, body)
 
   node->decl = decl;
 
-  /* Set TREE_UNINLINABLE flag.  */
-  tree_inlinable_function_p (decl);
+  if (flag_inline_trees)
+    node->local.inline_many = tree_inlinable_function_p (decl);
+  else
+    node->local.inline_many = 0;
 
   (*debug_hooks->deferred_inline_function) (decl);
 }
@@ -217,7 +221,7 @@ cgraph_mark_functions_to_output ()
 
       if (DECL_SAVED_TREE (decl)
 	  && (node->needed
-	      || (DECL_UNINLINABLE (decl) && node->reachable)
+	      || (!node->local.inline_many && node->reachable)
 	      || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
 	  && !TREE_ASM_WRITTEN (decl) && !node->origin
 	  && !DECL_EXTERNAL (decl))
@@ -235,6 +239,8 @@ cgraph_expand_function (node)
   announce_function (decl);
   if (flag_inline_trees)
     optimize_inline_calls (decl);
+
+  /* Avoid RTL inlining from taking place.  */
   (*lang_hooks.callgraph.expand_function) (decl);
   if (DECL_UNINLINABLE (decl))
     DECL_SAVED_TREE (decl) = NULL;
@@ -325,6 +331,30 @@ cgraph_expand_functions ()
   free (order);
 }
 
+/* Mark all local functions.
+   We can not use node->needed directly as it is modified during
+   execution of cgraph_optimize.  */
+
+static void
+cgraph_mark_local_functions ()
+{
+  struct cgraph_node *node;
+
+  if (!quiet_flag)
+    fprintf (stderr, "\n\nMarking local functions:");
+
+  /* Figure out functions we want to assemble.  */
+  for (node = cgraph_nodes; node; node = node->next)
+    {
+      node->local.local = (!node->needed
+		           && DECL_SAVED_TREE (node->decl)
+		           && !TREE_PUBLIC (node->decl));
+      if (node->local.local)
+	announce_function (node->decl);
+    }
+}
+
+
 /* Perform simple optimizations based on callgraph.  */
 
 void
@@ -332,8 +362,10 @@ cgraph_optimize ()
 {
   struct cgraph_node *node;
   bool changed = true;
-  struct cgraph_edge *edge;
 
+  cgraph_mark_local_functions ();
+
+  cgraph_global_info_ready = true;
   if (!quiet_flag)
     fprintf (stderr, "\n\nAssembling functions:");
 
@@ -343,18 +375,29 @@ cgraph_optimize ()
      Later we should move all inlining decisions to callgraph code to make
      this impossible.  */
   cgraph_expand_functions ();
-  while (changed)
+  if (!quiet_flag)
+    fprintf (stderr, "\n\nAssembling functions that failed to inline:");
+  while (changed && !errorcount && !sorrycount)
     {
       changed = false;
       for (node = cgraph_nodes; node; node = node->next)
 	{
-	  if (!node->needed)
-	    continue;
+	  tree decl = node->decl;
+	  if (!node->origin
+	      && !TREE_ASM_WRITTEN (decl)
+	      && DECL_SAVED_TREE (decl)
+	      && !DECL_EXTERNAL (decl))
+	    {
+	      struct cgraph_edge *edge;
 
-	  for (edge = node->callees; edge; edge = edge->next_callee)
-	    if (!edge->callee->needed)
-	      changed = edge->callee->needed = true;
+	      for (edge = node->callers; edge; edge = edge->next_caller)
+		if (TREE_ASM_WRITTEN (edge->caller->decl))
+		  {
+		    changed = true;
+		    cgraph_expand_function (node);
+		    break;
+		  }
+	    }
 	}
     }
-  cgraph_expand_functions ();
 }

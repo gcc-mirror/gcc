@@ -22,6 +22,27 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_CGRAPH_H
 #define GCC_CGRAPH_H
 
+/* Information about the function collected locally.
+   Available after function is lowered  */
+
+struct cgraph_local_info
+{
+  /* Set when function function is visiable in current compilation unit only
+     and it's address is never taken.  */
+  bool local;
+  bool inline_many;
+};
+
+/* Information about the function that needs to be computed globally
+   once compilation is finished.  Available only with -funit-at-time.  */
+
+struct cgraph_global_info
+{
+  /* Empty for the moment.  */
+  int dummy;
+};
+
+
 /* The cgraph data strutcture.
    Each function decl has assigned cgraph_node listing calees and callers.  */
 
@@ -51,6 +72,8 @@ struct cgraph_node
   bool lowered;
   /* Set when function is scheduled to be assembled.  */
   bool output;
+  struct cgraph_local_info local;
+  struct cgraph_global_info global;
 };
 
 struct cgraph_edge
@@ -62,6 +85,7 @@ struct cgraph_edge
 
 extern struct cgraph_node *cgraph_nodes;
 extern int cgraph_n_nodes;
+extern bool cgraph_global_info_ready;
 
 /* In cgraph.c  */
 void dump_cgraph			PARAMS ((FILE *));
@@ -69,6 +93,8 @@ void cgraph_remove_call			PARAMS ((tree, tree));
 struct cgraph_edge *cgraph_record_call	PARAMS ((tree, tree));
 struct cgraph_node *cgraph_node		PARAMS ((tree decl));
 bool cgraph_calls_p			PARAMS ((tree, tree));
+struct cgraph_local_info *cgraph_local_info PARAMS ((tree));
+struct cgraph_global_info *cgraph_global_info PARAMS ((tree));
 
 /* In cgraphunit.c  */
 void cgraph_finalize_function		PARAMS ((tree, tree));

@@ -43,6 +43,9 @@ struct cgraph_node *cgraph_nodes;
 /* Number of nodes in existence.  */
 int cgraph_n_nodes;
 
+/* Set when whole unit has been analyzed so we can access global info.  */
+bool cgraph_global_info_ready = false;
+
 static struct cgraph_edge *create_edge PARAMS ((struct cgraph_node *,
 						struct cgraph_node *));
 static void remove_edge PARAMS ((struct cgraph_node *, struct cgraph_node *));
@@ -174,6 +177,33 @@ cgraph_calls_p (caller_decl, callee_decl)
     continue;
   return edge != NULL;
 }
+
+/* Return local info for the compiled function.  */
+
+struct cgraph_local_info *
+cgraph_local_info (decl)
+     tree decl;
+{
+  struct cgraph_node *node;
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    abort ();
+  node = cgraph_node (decl);
+  return &node->local;
+}
+
+/* Return local info for the compiled function.  */
+
+struct cgraph_global_info *
+cgraph_global_info (decl)
+     tree decl;
+{
+  struct cgraph_node *node;
+  if (TREE_CODE (decl) != FUNCTION_DECL || !cgraph_global_info_ready)
+    abort ();
+  node = cgraph_node (decl);
+  return &node->global;
+}
+
 
 /* Dump the callgraph.  */
 
