@@ -1,3 +1,8 @@
+Thu Feb 11 17:38:40 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* i960/i960.h (OVERRIDE_OPTIONS): Warn if -mlong-double-64 is used.
+	(LONG_DOUBLE_TYPE_SIZE): Undef then unconditionally define to 96.
+
 Thu Feb 11 15:11:35 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10200.md (bset); Re-enable.

@@ -321,6 +321,9 @@ extern int target_flags;
       flag_signed_char = 1;					\
       target_flags |= TARGET_FLAG_CLEAN_LINKAGE;		\
     }								\
+  /* ??? See the LONG_DOUBLE_TYPE_SIZE definition below.  */	\
+  if (TARGET_LONG_DOUBLE_64)					\
+    warning ("The -mlong-double-64 option does not work yet.", 0);\
   i960_initialize ();						\
 }
 
@@ -368,6 +371,10 @@ extern int target_flags;
 /* Width in bits of a long double.  Define to 96, and let
    ROUND_TYPE_ALIGN adjust the alignment for speed. */
 #define	LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_64 ? 64 : 96)
+
+/* ??? This must be a constant, because real.c and real.h test it with #if.  */
+#undef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE 96
 
 /* Define this to set long double type size to use in libgcc2.c, which can
    not depend on target_flags.  */
