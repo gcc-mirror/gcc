@@ -1,5 +1,6 @@
 2003-11-05  Per Bothner  <pbothner@apple.com>
 
+	PR preprocessor/12891
 	* c-opts.c (finish_options):  Set include_cursor to disable premature
 	calls to push_command_line_include from cpp_scan_nooutput.
 	Fixes bug reported by DJ Delorie.
