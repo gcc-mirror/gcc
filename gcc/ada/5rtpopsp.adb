@@ -54,11 +54,11 @@ package body Specific is
    -- Initialize --
    ----------------
 
-   procedure Initialize (Environment_Task : Task_ID) is
+   procedure Initialize (Environment_Task : Task_Id) is
       pragma Warnings (Off, Environment_Task);
-      Result : Interfaces.C.int;
 
    begin
+      ATCB_Key := No_Key;
       RTEMS_Ada_Self := To_Address (Environment_Task);
    end Initialize;
 
@@ -75,8 +75,7 @@ package body Specific is
    -- Set --
    ---------
 
-   procedure Set (Self_Id : Task_ID) is
-      Result : Interfaces.C.int;
+   procedure Set (Self_Id : Task_Id) is
    begin
       RTEMS_Ada_Self := To_Address (Self_Id);
    end Set;
@@ -98,7 +97,7 @@ package body Specific is
    --  hierarchy, much like the existing implicitly created signal-server
    --  tasks.
 
-   function Self return Task_ID is
+   function Self return Task_Id is
       Result : System.Address;
 
    begin

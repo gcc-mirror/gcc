@@ -62,6 +62,6 @@
 #include "system.h"
 #endif
 
-#if !(defined (VMS) || defined (__MINGW32__))
+#if !(defined (VMS) || defined (__MINGW32__) || defined(__rtems__))
 # include <sys/socket.h>
 #endif
