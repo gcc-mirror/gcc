@@ -1554,7 +1554,8 @@ do {									\
 extern int m32r_sched_odd_word_p;
 
 /* Hook to run before scheduling a block of insns.  */
-#define MD_SCHED_INIT(STREAM, VERBOSE) m32r_sched_init (STREAM, VERBOSE)
+#define MD_SCHED_INIT(STREAM, VERBOSE, MAX_READY) \
+  m32r_sched_init (STREAM, VERBOSE)
 
 /* Hook to reorder the list of ready instructions.  */
 #define MD_SCHED_REORDER(STREAM, VERBOSE, READY, N_READY, CLOCK, CIM) 	\

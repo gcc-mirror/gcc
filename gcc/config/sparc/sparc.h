@@ -2897,7 +2897,7 @@ do {                                                                    \
 #define ADJUST_COST(INSN,LINK,DEP,COST) \
   (COST) = sparc_adjust_cost(INSN, LINK, DEP, COST)
 
-#define MD_SCHED_INIT(DUMP, SCHED_VERBOSE)				\
+#define MD_SCHED_INIT(DUMP, SCHED_VERBOSE, MAX_READY)			\
   if (sparc_cpu == PROCESSOR_ULTRASPARC)				\
     ultrasparc_sched_init (DUMP, SCHED_VERBOSE)
 

@@ -1163,22 +1163,16 @@ no_real_insns_p (head, tail)
   return 1;
 }
 
-/* Delete line notes from bb. Save them so they can be later restored
-   (in restore_line_notes ()).  */
+/* Delete line notes from one block. Save them so they can be later restored
+   (in restore_line_notes).  HEAD and TAIL are the boundaries of the
+   block in which notes should be processed.  */
 
 void
-rm_line_notes (b)
-     int b;
+rm_line_notes (head, tail)
+     rtx head, tail;
 {
   rtx next_tail;
-  rtx tail;
-  rtx head;
   rtx insn;
-
-  get_block_head_tail (b, &head, &tail);
-
-  if (head == tail && (! INSN_P (head)))
-    return;
 
   next_tail = NEXT_INSN (tail);
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
@@ -1203,13 +1197,14 @@ rm_line_notes (b)
     }
 }
 
-/* Save line number notes for each insn in block B.  */
+/* Save line number notes for each insn in block B.  HEAD and TAIL are
+   the boundaries of the block in which notes should be processed.*/
 
 void
-save_line_notes (b)
+save_line_notes (b, head, tail)
      int b;
+     rtx head, tail;
 {
-  rtx head, tail;
   rtx next_tail;
 
   /* We must use the true line number for the first insn in the block
@@ -1220,28 +1215,30 @@ save_line_notes (b)
   rtx line = line_note_head[b];
   rtx insn;
 
-  get_block_head_tail (b, &head, &tail);
   next_tail = NEXT_INSN (tail);
 
-  for (insn = BLOCK_HEAD (b); insn != next_tail; insn = NEXT_INSN (insn))
+  for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
       line = insn;
     else
       LINE_NOTE (insn) = line;
 }
 
-/* After block B was scheduled, insert line notes into the insns list.  */
+/* After block B was scheduled, insert line notes into the insns list.
+   HEAD and TAIL are the boundaries of the block in which notes should
+   be processed.*/
 
 void
-restore_line_notes (b)
+restore_line_notes (b, head, tail)
      int b;
+     rtx head, tail;
 {
   rtx line, note, prev, new;
   int added_notes = 0;
-  rtx head, next_tail, insn;
+  rtx next_tail, insn;
 
-  head = BLOCK_HEAD (b);
-  next_tail = NEXT_INSN (BLOCK_END (b));
+  head = head;
+  next_tail = NEXT_INSN (tail);
 
   /* Determine the current line-number.  We want to know the current
      line number of the first insn of the block here, in case it is
@@ -1263,6 +1260,7 @@ restore_line_notes (b)
      by real instructions all end up at the same address.  I can find no
      use for line number notes before other notes, so none are emitted.  */
     else if (GET_CODE (insn) != NOTE
+	     && INSN_UID (insn) < old_max_uid
 	     && (note = LINE_NOTE (insn)) != 0
 	     && note != line
 	     && (line == 0
@@ -1341,7 +1339,7 @@ rm_redundant_line_notes ()
     fprintf (sched_dump, ";; deleted %d line-number notes\n", notes);
 }
 
-/* Delete notes between head and tail and put them in the chain
+/* Delete notes between HEAD and TAIL and put them in the chain
    of notes ended by NOTE_LIST.  */
 
 void
@@ -1662,7 +1660,7 @@ schedule_block (b, rgn_n_insns)
       fprintf (sched_dump, ";;   ======================================================\n");
       fprintf (sched_dump,
 	       ";;   -- basic block %d from %d to %d -- %s reload\n",
-	       b, INSN_UID (BLOCK_HEAD (b)), INSN_UID (BLOCK_END (b)),
+	       b, INSN_UID (head), INSN_UID (tail),
 	       (reload_completed ? "after" : "before"));
       fprintf (sched_dump, ";;   ======================================================\n");
       fprintf (sched_dump, "\n");
@@ -1682,7 +1680,7 @@ schedule_block (b, rgn_n_insns)
   (*current_sched_info->init_ready_list) (&ready);
 
 #ifdef MD_SCHED_INIT
-  MD_SCHED_INIT (sched_dump, sched_verbose);
+  MD_SCHED_INIT (sched_dump, sched_verbose, ready.veclen);
 #endif
 
   /* No insns scheduled in this block yet.  */
@@ -1712,6 +1710,11 @@ schedule_block (b, rgn_n_insns)
          list.  */
       queue_to_ready (&ready);
 
+#ifdef HAVE_cycle_display
+      if (HAVE_cycle_display)
+	last = emit_insn_after (gen_cycle_display (GEN_INT (clock_var)), last);
+#endif
+
       if (ready.n_ready == 0)
 	abort ();
 
@@ -1740,7 +1743,9 @@ schedule_block (b, rgn_n_insns)
 	}
 
       /* Issue insns from ready list.  */
-      while (ready.n_ready != 0 && can_issue_more)
+      while (ready.n_ready != 0
+	     && can_issue_more
+	     && (*current_sched_info->schedule_more_p) ())
 	{
 	  /* Select and remove the insn from the ready list.  */
 	  rtx insn = ready_remove_first (&ready);
@@ -1768,15 +1773,24 @@ schedule_block (b, rgn_n_insns)
 	  schedule_insn (insn, &ready, clock_var);
 
 	next:
-	  /* Close this block after scheduling its jump.  */
-	  if (GET_CODE (last_scheduled_insn) == JUMP_INSN)
-	    break;
+#ifdef MD_SCHED_REORDER2
+	  /* Sort the ready list based on priority.  */
+	  if (ready.n_ready > 0)
+	    ready_sort (&ready);
+	  MD_SCHED_REORDER2 (sched_dump, sched_verbose,
+			     ready.n_ready ? ready_lastpos (&ready) : NULL,
+			     ready.n_ready, clock_var, can_issue_more);
+#endif
 	}
 
       /* Debug info.  */
       if (sched_verbose)
 	visualize_scheduled_insns (clock_var);
     }
+
+#ifdef MD_SCHED_FINISH
+  MD_SCHED_FINISH (sched_dump, sched_verbose);
+#endif
 
   /* Debug info.  */
   if (sched_verbose)
@@ -1833,17 +1847,14 @@ schedule_block (b, rgn_n_insns)
 /* Set_priorities: compute priority of each insn in the block.  */
 
 int
-set_priorities (b)
-     int b;
+set_priorities (head, tail)
+     rtx head, tail;
 {
   rtx insn;
   int n_insn;
 
-  rtx tail;
   rtx prev_head;
-  rtx head;
 
-  get_block_head_tail (b, &head, &tail);
   prev_head = PREV_INSN (head);
 
   if (head == tail && (! INSN_P (head)))
@@ -1936,12 +1947,23 @@ sched_init (dump_file)
          determine the correct line number for the first insn of the block.  */
 
       for (b = 0; b < n_basic_blocks; b++)
-	for (line = BLOCK_HEAD (b); line; line = PREV_INSN (line))
-	  if (GET_CODE (line) == NOTE && NOTE_LINE_NUMBER (line) > 0)
+	{
+	  for (line = BLOCK_HEAD (b); line; line = PREV_INSN (line))
+	    if (GET_CODE (line) == NOTE && NOTE_LINE_NUMBER (line) > 0)
+	      {
+		line_note_head[b] = line;
+		break;
+	      }
+	  /* Do a forward search as well, since we won't get to see the first
+	     notes in a basic block.  */
+	  for (line = BLOCK_HEAD (b); line; line = NEXT_INSN (line))
 	    {
-	      line_note_head[b] = line;
-	      break;
+	      if (INSN_P (line))
+		break;
+	      if (GET_CODE (line) == NOTE && NOTE_LINE_NUMBER (line) > 0)
+		line_note_head[b] = line;
 	    }
+	}
     }
 
   /* Find units used in this fuction, for visualization.  */

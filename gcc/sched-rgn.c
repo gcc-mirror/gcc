@@ -2032,6 +2032,8 @@ static int sched_target_n_insns;
 static int target_n_insns;
 /* The number of insns from the entire region scheduled so far.  */
 static int sched_n_insns;
+/* Nonzero if the last scheduled insn was a jump.  */
+static int last_was_jump;
 
 /* Implementations of the sched_info functions for region scheduling.  */
 static void init_ready_list PARAMS ((struct ready_list *));
@@ -2046,7 +2048,7 @@ static int rgn_rank PARAMS ((rtx, rtx));
 static int
 schedule_more_p ()
 {
-  return sched_target_n_insns < target_n_insns;
+  return ! last_was_jump && sched_target_n_insns < target_n_insns;
 }
 
 /* Add all insns that are initially ready to the ready list READY.  Called
@@ -2064,6 +2066,7 @@ init_ready_list (ready)
   target_n_insns = 0;
   sched_target_n_insns = 0;
   sched_n_insns = 0;
+  last_was_jump = 0;
 
   /* Print debugging information.  */
   if (sched_verbose >= 5)
@@ -2155,6 +2158,9 @@ static int
 can_schedule_ready_p (insn)
      rtx insn;
 {
+  if (GET_CODE (insn) == JUMP_INSN)
+    last_was_jump = 1;
+
   /* An interblock motion?  */
   if (INSN_BB (insn) != target_bb)
     {
@@ -2589,10 +2595,9 @@ compute_block_backward_dependences (bb)
   /* Free up the INSN_LISTs.  */
   free_deps (&tmp_deps);
 
-  /* Assert that we won't need bb_reg_last_* for this block anymore.  */
-  free (bb_deps[bb].reg_last_uses);
-  free (bb_deps[bb].reg_last_sets);
-  free (bb_deps[bb].reg_last_clobbers);
+  /* Assert that we won't need bb_reg_last_* for this block anymore.  
+     The vectors we're zeroing out have just been freed by the call to
+     free_deps.  */
   bb_deps[bb].reg_last_uses = 0;
   bb_deps[bb].reg_last_sets = 0;
   bb_deps[bb].reg_last_clobbers = 0;
@@ -2726,7 +2731,12 @@ schedule_region (rgn)
 
   /* Set priorities.  */
   for (bb = 0; bb < current_nr_blocks; bb++)
-    rgn_n_insns += set_priorities (BB_TO_BLOCK (bb));
+    {
+      rtx head, tail;
+      get_block_head_tail (BB_TO_BLOCK (bb), &head, &tail);
+
+      rgn_n_insns += set_priorities (head, tail);
+    }
 
   /* Compute interblock info: probabilities, split-edges, dominators, etc.  */
   if (current_nr_blocks > 1)
@@ -2788,8 +2798,8 @@ schedule_region (rgn)
 
       if (write_symbols != NO_DEBUG)
 	{
-	  save_line_notes (b);
-	  rm_line_notes (b);
+	  save_line_notes (b, head, tail);
+	  rm_line_notes (head, tail);
 	}
 
       /* rm_other_notes only removes notes which are _inside_ the
@@ -2855,7 +2865,11 @@ schedule_region (rgn)
   if (write_symbols != NO_DEBUG)
     {
       for (bb = 0; bb < current_nr_blocks; bb++)
-	restore_line_notes (BB_TO_BLOCK (bb));
+	{
+	  rtx head, tail;
+	  get_block_head_tail (BB_TO_BLOCK (bb), &head, &tail);
+	  restore_line_notes (BB_TO_BLOCK (bb), head, tail);
+	}
     }
 
   /* Done with this region.  */

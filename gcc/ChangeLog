@@ -1,5 +1,36 @@
 2000-12-19  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* haifa-sched.c (rm_line_notes): Arguments are now head and tail,
+	not block number.  All callers and prototype changed.
+	(set_priorities): Likewise.
+	(save_line_notes): Add head and tail arguments; all callers and
+	prototype changed.
+	(restore_line_notes): Likewise.  Don't crash on insns generated
+	during scheduling.
+	(schedule_block): Don't use BLOCK_HEAD/BLOCK_END macros.
+	Call MD_SCHED_INIT with additional argument.
+	When starting a new cycle, emit cycle_display insns if available.
+	Don't stop scheduling when encountering a JUMP_INSN, but add another
+	call to schedule_more_p in the inner loop.
+	Call MD_SCHED_REORDER2 after scheduling an insn.
+	Call MD_SCHED_FINISH once all insns are scheduled.
+	(sched_init): Compensate for the fact that get_block_head_tail
+	doesn't include leading notes.
+	* sched-deps.c (free_deps): Free vectors here.
+	* sched-rgn.c (compute_block_backward_dependencies): Not here.
+	(last_was_jump): New static variable.
+	(schedule_more_p): Test it.
+	(init_ready_list): Initialize it.
+	(can_schedule_ready_p): Set it if we have a JUMP_INSN.
+
+	* config/i386/i386.h (MD_SCHED_INIT): Add new arg.
+	* config/m32r/m32r.h (MD_SCHED_INIT): Add new arg.
+	* config/sparc/sparc.h (MD_SCHED_INIT): Add new arg.
+
+	* md.texi (cycle_display): Document.
+	* tm.texi (MD_SCHED_INIT): Document new arg.
+	(MD_SCHED_FINISH, MD_SCHED_REORDER2): Document.
+
 	* flow.c (ior_reg_cond, nand_reg_cond, not_reg_cond): Rewrite
 	to use different representation.  All callers changed.
 	(and_reg_cond): Renamed from nand_reg_cond; caller changed.

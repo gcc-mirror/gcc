@@ -252,14 +252,14 @@ extern void free_dependency_caches PARAMS ((void));
 extern void get_block_head_tail PARAMS ((int, rtx *, rtx *));
 extern int no_real_insns_p PARAMS ((rtx, rtx));
 
-extern void rm_line_notes PARAMS ((int));
-extern void save_line_notes PARAMS ((int));
-extern void restore_line_notes PARAMS ((int));
+extern void rm_line_notes PARAMS ((rtx, rtx));
+extern void save_line_notes PARAMS ((int, rtx, rtx));
+extern void restore_line_notes PARAMS ((int, rtx, rtx));
 extern void rm_redundant_line_notes PARAMS ((void));
 extern void rm_other_notes PARAMS ((rtx, rtx));
 
 extern int insn_issue_delay PARAMS ((rtx));
-extern int set_priorities PARAMS ((int));
+extern int set_priorities PARAMS ((rtx, rtx));
 
 extern void schedule_block PARAMS ((int, int));
 extern void sched_init PARAMS ((FILE *));
