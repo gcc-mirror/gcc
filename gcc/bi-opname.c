@@ -33,6 +33,10 @@ main()
   for (d = defs; d; d = d->next)
     for (v = d->variations; v; v = v->next)
       printf("\"%s%s\",\n", d->basename, v->name);
+
+  fflush (stdout);
+  exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
+  /* NOTREACHED */
   return 0;
 }
 
@@ -47,7 +51,7 @@ xmalloc (nbytes)
   if (!tmp)
     {
       fprintf (stderr, "can't allocate %d bytes (out of virtual memory)\n", nbytes);
-      exit (1);
+      exit (FATAL_EXIT_CODE);
     }
 
   return tmp;
