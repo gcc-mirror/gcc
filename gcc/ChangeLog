@@ -1,3 +1,7 @@
+2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* genrecog.c (write_node): Remove a useless local variable.
+
 2004-01-28  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* Makefile.in (options.c options.h): Use stamp file s-options to
