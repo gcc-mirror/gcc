@@ -1,3 +1,8 @@
+2002-09-06  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.md (extzvsi_internal2): Revert most of
+	2002-07-26 change.  Comment.
+
 2002-09-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* frv.c (frv_unique_section, frv_select_section,
