@@ -563,6 +563,9 @@ execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 	      op_ptr = read_uleb128 (op_ptr, &ptrtmp); reg = ptrtmp;
 	      result += reg;
 	      break;
+
+	    default:
+	      abort ();
 	    }
 	  break;
 
@@ -640,6 +643,9 @@ execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 	    case DW_OP_ne:
 	      result = (_Unwind_Sword)first != (_Unwind_Sword)second;
 	      break;
+
+	    default:
+	      abort ();
 	    }
 	  }
 	  break;
