@@ -112,17 +112,6 @@ sra_elt_eq (const void *x, const void *y)
   return true;
 }
 
-/* Build a temporary.  Make sure and register it to be renamed.  */
-
-static tree
-make_temp (tree type, const char *prefix)
-{
-  tree t = create_tmp_var (type, prefix);
-  add_referenced_tmp_var (t);
-  bitmap_set_bit (vars_to_rename, var_ann (t)->uid);
-  return t;
-}
-
 /* Mark all the variables in VDEF operands for STMT for renaming.
    This becomes necessary when we modify all of a non-scalar.  */
 
@@ -194,7 +183,7 @@ lookup_scalar (struct sra_elt *key, tree type)
       res = xmalloc (sizeof (*res));
       *slot = res;
       *res = *key;
-      res->replace = make_temp (type, "SR");
+      res->replace = make_rename_temp (type, "SR");
 
       if (DECL_NAME (key->base) && !DECL_IGNORED_P (key->base))
 	{
@@ -691,7 +680,7 @@ create_scalar_copies (tree lhs, tree rhs, enum sra_copy_mode mode)
       tree stmt, tmp;
 
       /* Add TMP = VA_ARG_EXPR <>  */
-      tmp = make_temp (TREE_TYPE (rhs), NULL);
+      tmp = make_rename_temp (TREE_TYPE (rhs), NULL);
       stmt = csc_assign (&tsi, tmp, rhs);
 
       /* Mark all the variables in VDEF operands for renaming, because

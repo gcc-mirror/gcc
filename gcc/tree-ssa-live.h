@@ -72,6 +72,7 @@ extern void change_partition_var (var_map, tree, int);
 extern void compact_var_map (var_map, int);
 extern void remove_ssa_form (FILE *, var_map, int);
 extern void register_ssa_partitions_for_vars (bitmap vars, var_map map);
+extern tree make_ssa_temp (tree);
 
 static inline int num_var_partitions (var_map);
 static inline tree var_to_partition_to_var (var_map, tree);

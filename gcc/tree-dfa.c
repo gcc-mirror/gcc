@@ -486,6 +486,18 @@ create_ssa_name_ann (tree t)
 }
 
 
+/* Build a temporary.  Make sure and register it to be renamed.  */
+
+tree
+make_rename_temp (tree type, const char *prefix)
+{
+  tree t = create_tmp_var (type, prefix);
+  add_referenced_tmp_var (t);
+  bitmap_set_bit (vars_to_rename, var_ann (t)->uid);
+  return t;
+}
+
+
 
 /*---------------------------------------------------------------------------
 			      Debugging functions

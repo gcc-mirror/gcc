@@ -1,3 +1,19 @@
+2004-05-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR optimization/14466
+	* tree-complex.c (make_temp): Remove.
+	(gimplify_val): Replace make_temp with make_rename_temp
+	and add NULL as the second argument.
+	(expand_complex_div_wide): Likewise.
+	* tree-dfa.c (make_rename_temp): New function.
+	* tree-flow.h (make_rename_temp): Declare.
+	* tree-sra.c (make_temp): Remove.
+	(lookup_scalar): Replace make_temp with make_rename_temp.
+	(create_scalar_copies): Likewise.
+	* tree-ssa-phiopt.c (conditional_replacement): When we
+	get non gimple create a temporary variable to hold the
+	casted expression.
+
 2004-05-14  Paul Brook  <paul@codesourcery.com>
 
 	* stor-layout.c (update_alignment_for_field): Use

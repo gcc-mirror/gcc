@@ -30,17 +30,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "flags.h"
 
 
-/* Build a temporary.  Make sure and register it to be renamed.  */
-
-static tree
-make_temp (tree type)
-{
-  tree t = create_tmp_var (type, NULL);
-  add_referenced_tmp_var (t);
-  bitmap_set_bit (vars_to_rename, var_ann (t)->uid);
-  return t;
-}
-
 /* Force EXP to be a gimple_val.  */
 
 static tree
@@ -51,7 +40,7 @@ gimplify_val (block_stmt_iterator *bsi, tree type, tree exp)
   if (is_gimple_val (exp))
     return exp;
 
-  t = make_temp (type);
+  t = make_rename_temp (type, NULL);
   new_stmt = build (MODIFY_EXPR, type, t, exp);
 
   orig_stmt = bsi_stmt (*bsi);
@@ -251,8 +240,8 @@ expand_complex_div_wide (block_stmt_iterator *bsi, tree inner_type,
       cond = build (COND_EXPR, void_type_node, cond, t1, t2);
       bsi_insert_before (bsi, cond, BSI_SAME_STMT);
 
-      min = make_temp (inner_type);
-      max = make_temp (inner_type);
+      min = make_rename_temp (inner_type, NULL);
+      max = make_rename_temp (inner_type, NULL);
       l3 = create_artificial_label ();
 
       /* Split the original block, and create the TRUE and FALSE blocks.  */
