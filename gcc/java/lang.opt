@@ -90,6 +90,18 @@ Java
 fassume-compiled=
 Java JoinedOrMissing
 
+fenable-assertions
+Java
+
+fenable-assertions=
+Java JoinedOrMissing
+
+fdisable-assertions
+Java
+
+fdisable-assertions=
+Java JoinedOrMissing
+
 fbootclasspath=
 Java JoinedOrMissing RejectNegative
 --bootclasspath=<path>	Replace system path

@@ -13992,25 +13992,32 @@ build_incomplete_class_ref (int location, tree class_name)
       && !JPRIMITIVE_TYPE_P (class_name)
       && !(TREE_CODE (class_name) == VOID_TYPE))
     {
+      tree cpc_list = GET_CPC_LIST();
+      tree cpc = cpc_list;
       tree target_class;
 
-      if (CLASS_INTERFACE (TYPE_NAME (this_class)))
+      /* For inner classes, add a 'class$' method to their outermost
+	 context, creating it if necessary.  */
+      
+      while (GET_NEXT_ENCLOSING_CPC(cpc))
+	cpc = GET_NEXT_ENCLOSING_CPC(cpc);
+      class_decl = TREE_VALUE (cpc);
+
+      target_class = TREE_TYPE (class_decl);
+
+      if (CLASS_INTERFACE (TYPE_NAME (target_class)))
 	{
 	  /* For interfaces, adding a static 'class$' method directly 
 	     is illegal.  So create an inner class to contain the new
 	     method.  Empirically this matches the behavior of javac.  */
-	  tree t = build_wfl_node (DECL_NAME (TYPE_NAME (object_type_node)));
-	  tree inner = create_anonymous_class (0, t);
+	  tree t, inner;
+	  /* We want the generated inner class inside the outermost class. */
+	  GET_CPC_LIST() = cpc;
+	  t = build_wfl_node (DECL_NAME (TYPE_NAME (object_type_node)));
+	  inner = create_anonymous_class (0, t);
 	  target_class = TREE_TYPE (inner);
 	  end_class_declaration (1);
-	}
-      else
-	{
-	  /* For inner classes, add a 'class$' method to their outermost
-	     context, creating it if necessary.  */
-	  while (INNER_CLASS_DECL_P (class_decl))
-	    class_decl = DECL_CONTEXT (class_decl);
-	  target_class = TREE_TYPE (class_decl);
+	  GET_CPC_LIST() = cpc_list;
 	}
 
       if (TYPE_DOT_CLASS (target_class) == NULL_TREE)
@@ -15298,6 +15305,16 @@ build_assertion (int location, tree condition, tree value)
 {
   tree node;
   tree klass = GET_CPC ();
+
+  if (! enable_assertions (klass))
+    {
+      condition = build (TRUTH_ANDIF_EXPR, NULL_TREE,
+			 boolean_false_node, condition);
+      if (value == NULL_TREE)
+	value = empty_stmt_node;
+      return build_if_else_statement (location, condition,
+				      value, NULL_TREE);
+    }
 
   if (! CLASS_USES_ASSERTIONS (klass))
     {

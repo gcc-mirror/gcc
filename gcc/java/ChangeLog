@@ -1,3 +1,23 @@
+2004-03-19  Per Bothner  <per@bothner.com>
+
+	* class.c (assume_compiled_node_struct):  Rename type to
+	class_flag_node_struct, as it is now also used for enable_assertions.
+	Rename assume_compiled_node typedef.  Rename excludep field to value.
+	(find_assume_compiled_node):  Rename function to find_class_flag_node.
+	Minor optimization - avoid needless strlen.
+	(add_assume_compiled):  Some tweaking and optimization.
+	Rename and generalize to add_class_flag takem an extra parameter.
+	(add_assume_compled):  New just calls add_class_flag.
+	(add_enable_assert, enable_assertions):  New functions.
+	(enable_assert_tree):  New static.
+	* java-tree.h (add_enable_assert, enable_assertions): New declarations.
+	* lang.opt (fenable-assertions, fenable-assertions=,
+	fdisable-assertions, fdisable-assertions=):  New options.
+	* lang.c (java_handle_option):  Handle new options.
+	* parse.y (build_incomplete_class_ref):  Handle class$ in an inner
+	class in an interface - create helper class nested in outer interface.
+        (build_assertion):  Short-circuit if enable_assertions is false.
+
 2004-03-18  Richard Kenner <kenner@vlsi1.ultra.nyu.edu>
 
 	* java-tree.h: Changes throughout to add checking to macros
