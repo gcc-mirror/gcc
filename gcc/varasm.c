@@ -4830,14 +4830,6 @@ merge_weak (newdecl, olddecl)
   if (DECL_WEAK (newdecl) == DECL_WEAK (olddecl))
     return;
 
-  if (SUPPORTS_WEAK
-      && DECL_WEAK (newdecl) 
-      && DECL_EXTERNAL (newdecl) && DECL_EXTERNAL (olddecl)
-      && (TREE_CODE (olddecl) != VAR_DECL || ! TREE_STATIC (olddecl))
-      && TREE_USED (olddecl)
-      && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (olddecl)))
-    warning_with_decl (newdecl, "weak declaration of `%s' after first use results in unspecified behavior");
-
   if (DECL_WEAK (newdecl))
     {
       tree wd;
@@ -4848,10 +4840,26 @@ merge_weak (newdecl, olddecl)
 	 go back and make it weak.  This error cannot caught in
 	 declare_weak because the NEWDECL and OLDDECL was not yet
 	 been merged; therefore, TREE_ASM_WRITTEN was not set.  */
-      if (TREE_CODE (olddecl) == FUNCTION_DECL && TREE_ASM_WRITTEN (olddecl))
+      if (TREE_ASM_WRITTEN (olddecl))
 	error_with_decl (newdecl, 
 			 "weak declaration of `%s' must precede definition");
-      
+
+      /* If we've already generated rtl referencing OLDDECL, we may
+	 have done so in a way that will not function properly with
+	 a weak symbol.  */
+      else if (TREE_USED (olddecl)
+	       && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (olddecl))
+	       /* ??? Not impossible that some platform may generate code
+		  that doesn't function *at all* with incorrect declaration
+		  before use.  However, all known at present will assume
+		  exteral and common symbols are not "local".  */
+	       /* ??? Probably these exceptions to the rule will just
+		  confuse users about the true nature of the problem and
+		  we should warn for *any* use before weakening.  */
+	       && ! (DECL_EXTERNAL (olddecl)
+		     || DECL_COMMON (olddecl)))
+	warning_with_decl (newdecl, "weak declaration of `%s' after first use results in unspecified behavior");
+
       if (SUPPORTS_WEAK)
 	{
 	  /* We put the NEWDECL on the weak_decls list at some point.
@@ -4992,7 +5000,6 @@ assemble_alias (decl, target)
 #else
   ASM_OUTPUT_DEF (asm_out_file, name, IDENTIFIER_POINTER (target));
 #endif
-  TREE_ASM_WRITTEN (decl) = 1;
 #else /* !ASM_OUTPUT_DEF */
 #if defined (ASM_OUTPUT_WEAK_ALIAS) || defined (ASM_WEAKEN_DECL)
   if (! DECL_WEAK (decl))
@@ -5003,11 +5010,14 @@ assemble_alias (decl, target)
 #else
   ASM_OUTPUT_WEAK_ALIAS (asm_out_file, name, IDENTIFIER_POINTER (target));
 #endif
-  TREE_ASM_WRITTEN (decl) = 1;
 #else
   warning ("alias definitions not supported in this configuration; ignored");
 #endif
 #endif
+
+  TREE_USED (decl) = 1;
+  TREE_ASM_WRITTEN (decl) = 1;
+  TREE_ASM_WRITTEN (DECL_ASSEMBLER_NAME (decl)) = 1;
 }
 
 /* Emit an assembler directive to set symbol for DECL visibility to

@@ -1,3 +1,10 @@
+2002-05-15  Richard Henderson  <rth@redhat.com>
+
+	* varasm.c (merge_weak): Error for any weakening after definition.
+	Adjust weakening after use warning to catch more cases.
+	(assemble_alias): Set TREE_USED and TREE_ASM_WRITTEN consistently.
+	* config/alpha/alpha.c (alpha_encode_section_info): Do not abort.
+
 Wed May 15 10:38:27 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* invoke.texi (-malign-double): Re-add lost warning.
@@ -11,7 +18,7 @@ Wed May 15 10:38:27 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* flags.h (flag_reorder_functions): Declare.
 	* function.c (prepare_function_start): Initialize frequnecy.
-	* params.def (HOT_BB_COUNT_FRACTION, HOT_BB_FREQUENCY_FRACTION): New paramters.
+	* params.def (HOT_BB_COUNT_FRACTION, HOT_BB_FREQUENCY_FRACTION): New.
 	* Makefile.in (predict.o): Add dependency on target.h and params.h
 	* defaults.h (HOT_TEXT_SECTION_NAME,
 	UNLIKELY_EXECUTED_TEXT_SECTION_NAME): New macros.
