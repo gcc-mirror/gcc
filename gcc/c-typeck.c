@@ -3701,16 +3701,24 @@ build_c_cast (type, expr)
 	  && TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE)
 	{
-	  /* Go to the innermost object being pointed to.  */
 	  tree in_type = type;
 	  tree in_otype = otype;
+	  int warn = 0;
 
-	  while (TREE_CODE (in_type) == POINTER_TYPE)
-	    in_type = TREE_TYPE (in_type);
-	  while (TREE_CODE (in_otype) == POINTER_TYPE)
-	    in_otype = TREE_TYPE (in_otype);
-	  
-	  if (TYPE_QUALS (in_otype) & ~TYPE_QUALS (in_type))
+	  /* Check that the qualifiers on IN_TYPE are a superset of
+	     the qualifiers of IN_OTYPE.  The outermost level of
+	     POINTER_TYPE nodes is uninteresting and we stop as soon
+	     as we hit a non-POINTER_TYPE node on either type.  */
+	  do
+	    {
+	      in_otype = TREE_TYPE (in_otype);
+	      in_type = TREE_TYPE (in_type);
+	      warn |= (TYPE_QUALS (in_otype) & ~TYPE_QUALS (in_type));
+	    }
+	  while (TREE_CODE (in_type) == POINTER_TYPE
+		 && TREE_CODE (in_otype) == POINTER_TYPE);
+
+	  if (warn)
 	    /* There are qualifiers present in IN_OTYPE that are not
 	       present in IN_TYPE.  */
 	    pedwarn ("cast discards qualifiers from pointer target type");
