@@ -57,7 +57,7 @@ extern const char * const rtx_name[];
 extern const char *rtx_format[];
 #define GET_RTX_FORMAT(CODE)		(rtx_format[(int) (CODE)])
 
-extern char rtx_class[];
+extern const char rtx_class[];
 #define GET_RTX_CLASS(CODE)		(rtx_class[(int) (CODE)])
 
 /* The flags and bitfields of an ADDR_DIFF_VEC.  BASE is the base label
@@ -378,7 +378,7 @@ enum reg_note { REG_DEAD = 1, REG_INC = 2, REG_EQUIV = 3, REG_WAS_0 = 4,
 
 /* Names for REG_NOTE's in EXPR_LIST insn's.  */
 
-extern char *reg_note_name[];
+extern const char * const reg_note_name[];
 #define GET_REG_NOTE_NAME(MODE) (reg_note_name[(int) (MODE)])
 
 /* This field is only present on CALL_INSNs.  It holds a chain of EXPR_LIST of
@@ -479,7 +479,7 @@ extern char *reg_note_name[];
 
 /* Names for NOTE insn's other than line numbers.  */
 
-extern char *note_insn_name[];
+extern const char * const note_insn_name[];
 #define GET_NOTE_INSN_NAME(NOTE_CODE) (note_insn_name[-(NOTE_CODE)])
 
 /* The name of a label, in case it corresponds to an explicit label

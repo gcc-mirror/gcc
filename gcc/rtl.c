@@ -167,7 +167,7 @@ const char *rtx_format[] = {
 /* Indexed by rtx code, gives a character representing the "class" of
    that rtx code.  See rtl.def for documentation on the defined classes.  */
 
-char rtx_class[] = {
+const char rtx_class[] = {
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   CLASS, 
 #include "rtl.def"		/* rtl expressions are defined here */
 #undef DEF_RTL_EXPR
@@ -175,7 +175,7 @@ char rtx_class[] = {
 
 /* Names for kinds of NOTEs and REG_NOTEs.  */
 
-char *note_insn_name[] = { 0                    , "NOTE_INSN_DELETED",
+const char * const note_insn_name[] = { 0       , "NOTE_INSN_DELETED",
 			   "NOTE_INSN_BLOCK_BEG", "NOTE_INSN_BLOCK_END",
 			   "NOTE_INSN_LOOP_BEG", "NOTE_INSN_LOOP_END",
 			   "NOTE_INSN_FUNCTION_END", "NOTE_INSN_SETJMP",
@@ -187,7 +187,7 @@ char *note_insn_name[] = { 0                    , "NOTE_INSN_DELETED",
 			   "NOTE_INSN_RANGE_END", "NOTE_INSN_LIVE",
 			   "NOTE_INSN_BASIC_BLOCK" };
 
-char *reg_note_name[] = { "", "REG_DEAD", "REG_INC", "REG_EQUIV", "REG_WAS_0",
+const char * const reg_note_name[] = { "", "REG_DEAD", "REG_INC", "REG_EQUIV", "REG_WAS_0",
 			  "REG_EQUAL", "REG_RETVAL", "REG_LIBCALL",
 			  "REG_NONNEG", "REG_NO_CONFLICT", "REG_UNUSED",
 			  "REG_CC_SETTER", "REG_CC_USER", "REG_LABEL",
