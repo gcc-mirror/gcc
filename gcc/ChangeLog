@@ -1,3 +1,8 @@
+Wed Apr 25 18:21:01 2001  Christopher Faylor <cgf@cygnus.com>
+
+	* config/i386/cygwin.h: Move W32API search to LINK_SPEC to ensure that
+	this directory is always searched.
+
 2001-04-25  Jason Merrill  <jason_merrill@redhat.com>
 
 	* loop.c (try_swap_copy_prop): Go back to checking insn.
