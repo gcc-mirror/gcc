@@ -1,3 +1,17 @@
+Tue Sep  7 23:23:15 1999  Linas Vepstas  <linas@linas.org>
+
+	* README: Add section discussing status of ELF ABI.
+	* i370.c: Fix misc spelling mistakes.
+	(i370_label_scan): Updated notes, exception handling.
+	(i370_function_prolog): Simplify ELF stack handling.
+	* i370.h: (FIXED_REGISTERS): Free up r12 for ELF.
+	(STACK_GROWS_DOWNWARD): ELF stack grows down.
+	(ASM_DECLARE_FUNCTION_NAME): Fix crazy malloc size.
+	* i370.md: (movdi): Add notes.
+	(floatsidf2): Use stack not rtca for scratch float area.
+	(iorsi3): Correct operand constraints.
+	* x-oe: Restore TAROUTOPTS which are used by pax.
+
 Tue Sep  7 22:39:18 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* rs6000.c: Include ggc.h.
@@ -1317,11 +1331,11 @@ Sat Aug 28 16:24:31 1999  Richard Henderson  <rth@cygnus.com>
 
 Sat Aug 28 16:20:12 1999  Richard Henderson  <rth@cygnus.com>
 
-        * haifa-sched.c (sched_analyze): Clear LOG_LINKS before calling
-        sched_analyze_insn.
-        (sched_analyze_1): Let add_dependence care for not adding dups.
-        (sched_analyze_2): Likewise.
-        (add_branch_dependences): Likewise.
+	* haifa-sched.c (sched_analyze): Clear LOG_LINKS before calling
+	sched_analyze_insn.
+	(sched_analyze_1): Let add_dependence care for not adding dups.
+	(sched_analyze_2): Likewise.
+	(add_branch_dependences): Likewise.
 
 Sat Aug 28 15:58:16 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 

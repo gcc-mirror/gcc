@@ -30,9 +30,47 @@ OpenEdition Hints
 The shell script "install" is handy for users of OpenEdition.
 
 
+The ELF ABI
+-----------
+This compiler, in conjunction with the gas/binutils assembler, defines
+a defacto ELF-based ABI for the ESA/390 architecture.  Be warned: this 
+ABI has several major faults.  It should be fixed.  As it is fixed,
+it is subject to change without warning.  You should not commit to major
+software systems without further exploring and fixing these problems.
+Here are some of the problems:
+
+-- No support for shared libraries or dynamically loadable objects.
+   This is because the compiler currently places address literals in 
+   the text section.  Although the GAS assembler supports a syntax for 
+   USING that will place address literals in the data section, this forces
+   the use of two base registers, one for branches and one for the literal 
+   pool. Work is needed to redesign the function prologue, epilogue and the 
+   base register reloads to minimize the currently excessive use of reserved 
+   registers. 
+
+   I beleive the best solution would be to add a toc or plt, and extending
+   the meaning of the USING directive to encompass this.  This would 
+   allow the continued use of the human-readable and familiar practice
+   of using =A() and =F'' to denote address literals, as opposed to more 
+   difficult jump-table notation.
+
+-- the stackframe is almost twice as big as it needs to be.
+
+-- currently, r15 is used to return 32-bit values.  Because this is the
+   last register, it prevents 64-bit ints and small structures from being 
+   returned in registers, forcing return in memory.  It would be more
+   efficient to use r14 to return 32-bit values, and r14+r15 to return
+   64-bit values.
+
+-- all arguments are currently passed in memory.  It would be more efficient 
+   to pass arguments in registers.
+
+
+
+
 ChangeLog
 ---------
-Oct98-Dec98 -- add ELF back end; work on getting ABI more or less correct.
+Oct98-Dec98 -- add ELF back end; work on getting ABI more or less functional.
 98.12.05 -- fix numerous MVC bugs
 99.02.06 -- multiply insn sometimes not generated when needed.
          -- extendsidi bugs, bad literal values printed
