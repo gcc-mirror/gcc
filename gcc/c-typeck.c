@@ -1823,6 +1823,9 @@ parser_build_binary_op (code, arg1, arg2)
 	      || code2 == BIT_AND_EXPR || code2 == BIT_XOR_EXPR
 	      || code2 == PLUS_EXPR || code2 == MINUS_EXPR)
 	    warning ("suggest parentheses around arithmetic in operand of |");
+	  /* Check cases like x|y==z */
+	  if (TREE_CODE_CLASS (code1) == '<' || TREE_CODE_CLASS (code2) == '<')
+	    warning ("suggest parentheses around comparison in operand of |");
 	}
 
       if (code == BIT_XOR_EXPR)
@@ -1832,6 +1835,9 @@ parser_build_binary_op (code, arg1, arg2)
 	      || code2 == BIT_AND_EXPR
 	      || code2 == PLUS_EXPR || code2 == MINUS_EXPR)
 	    warning ("suggest parentheses around arithmetic in operand of ^");
+	  /* Check cases like x^y==z */
+	  if (TREE_CODE_CLASS (code1) == '<' || TREE_CODE_CLASS (code2) == '<')
+	    warning ("suggest parentheses around comparison in operand of ^");
 	}
 
       if (code == BIT_AND_EXPR)
@@ -1839,6 +1845,9 @@ parser_build_binary_op (code, arg1, arg2)
 	  if (code1 == PLUS_EXPR || code1 == MINUS_EXPR
 	      || code2 == PLUS_EXPR || code2 == MINUS_EXPR)
 	    warning ("suggest parentheses around + or - in operand of &");
+	  /* Check cases like x&y==z */
+	  if (TREE_CODE_CLASS (code1) == '<' || TREE_CODE_CLASS (code2) == '<')
+	    warning ("suggest parentheses around comparison in operand of &");
 	}
     }
 
