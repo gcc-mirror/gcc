@@ -1,3 +1,13 @@
+2003-03-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/stdc++.h: New.	
+	* libsupc++/exception_defines.h (__EXCEPTION_DEFINES_H): Add guard.
+	* include/Makefile.am (stamp-std-precompile): Generate stdc++.h.gch
+        * include/Makefile.in: Regenerate.
+        * testsuite_flags.in (--build-cxx): Add, but don't use PCHFLAGS.
+	(--cxxflags): Put -g -O2 here.
+	* testsuite/libstdc++-v3.dg/dg.exp: Remove -g -O2 here.
+
 2003-03-14  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/testsuite_hooks.h: Suppress runtime exception thrown by
