@@ -1,3 +1,14 @@
+2003-08-28  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("*mulsi3_sign"): New insn.
+	("mulsidi3" expander, "mulsi_6432" insn): Remove, replace by ...
+	("mulsidi3"): ... this new insn.
+	("umulsidi3"): New insn.
+	("divmoddi3", "divmodtidi3", "divmodtisi3"): Simplify by using
+	mixed-mode matching constraints.
+	("udivmodsi4", "udivmoddisi3"): New insns.
+	("udivsi3", "umodsi3"): Use only in ESA/390 mode.
+
 2003-08-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtin-types.def (BT_INT_PTR, BT_FLOAT_PTR, BT_DOUBLE_PTR,
