@@ -1437,7 +1437,8 @@ force_canonical_binfo_r (to, from, type, mappings)
      tree mappings;
 {
   int i, n_baseclasses = BINFO_N_BASETYPES (from);
-  
+
+  my_friendly_assert (to != from, 20010905);
   BINFO_INDIRECT_PRIMARY_P (to)
           = BINFO_INDIRECT_PRIMARY_P (from);
   BINFO_INDIRECT_PRIMARY_P (from) = 0;
@@ -1461,11 +1462,22 @@ force_canonical_binfo_r (to, from, type, mappings)
   my_friendly_assert (same_type_p (BINFO_TYPE (to), BINFO_TYPE (from)),
 		      20010104);
   mappings = tree_cons (from, to, mappings);
+
+  if (CLASSTYPE_HAS_PRIMARY_BASE_P (BINFO_TYPE (from))
+      && TREE_VIA_VIRTUAL (CLASSTYPE_PRIMARY_BINFO (BINFO_TYPE (from))))
+    {
+      tree from_primary = get_primary_binfo (from);
+      
+      if (BINFO_PRIMARY_BASE_OF (from_primary) == from)
+	force_canonical_binfo (get_primary_binfo (to), from_primary,
+			       type, mappings);
+    }
+  
   for (i = 0; i != n_baseclasses; i++)
     {
       tree from_binfo = BINFO_BASETYPE (from, i);
       tree to_binfo = BINFO_BASETYPE (to, i);
-      
+
       if (TREE_VIA_VIRTUAL (from_binfo))
         {
 	  if (BINFO_PRIMARY_P (from_binfo) &&
@@ -1498,17 +1510,19 @@ force_canonical_binfo (to, from, type, mappings)
 {
   tree assoc = purpose_member (BINFO_TYPE (to),
 		               CLASSTYPE_VBASECLASSES (type));
-  TREE_VALUE (assoc) = to;
-  force_canonical_binfo_r (to, from, type, mappings);
+  if (TREE_VALUE (assoc) != to)
+    {
+      TREE_VALUE (assoc) = to;
+      force_canonical_binfo_r (to, from, type, mappings);
+    }
 }
 
-/* Make BASE_BINFO the primary virtual base of BINFO within the hierarchy
-   dominated by TYPE. Returns BASE_BINFO, if it can be made so, NULL
+/* Make BASE_BINFO the a primary virtual base within the hierarchy
+   dominated by TYPE. Returns BASE_BINFO, if it is not already one, NULL
    otherwise (because something else has already made it primary).  */
 
 static tree
-mark_primary_virtual_base (binfo, base_binfo, type)
-     tree binfo;
+mark_primary_virtual_base (base_binfo, type)
      tree base_binfo;
      tree type;
 {
@@ -1519,8 +1533,6 @@ mark_primary_virtual_base (binfo, base_binfo, type)
       /* It's already allocated in the hierarchy. BINFO won't have a
          primary base in this hierachy, even though the complete object
          BINFO is for, would do.  */
-      BINFO_LOST_PRIMARY_P (binfo) = 1;
-      
       return NULL_TREE;
     }
      
@@ -1608,10 +1620,12 @@ mark_primary_bases (type)
       base_binfo = get_primary_binfo (binfo);
 
       if (TREE_VIA_VIRTUAL (base_binfo))
-        base_binfo = mark_primary_virtual_base (binfo, base_binfo, type);
+        base_binfo = mark_primary_virtual_base (base_binfo, type);
 
       if (base_binfo)
         BINFO_PRIMARY_BASE_OF (base_binfo) = binfo;
+      else
+	BINFO_LOST_PRIMARY_P (binfo) = 1;
       
       BINFO_UNSHARED_MARKED (binfo) = 1;
     }
