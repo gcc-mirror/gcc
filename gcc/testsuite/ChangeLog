@@ -1,3 +1,7 @@
+2001-02-16  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.c-torture/execute/longlong.c: New test.
+
 Wed Feb 14 21:41:17 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* g++.old-deja/g++.brendan/new2.C (main): Use sizeof.
