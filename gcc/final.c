@@ -587,6 +587,7 @@ shorten_branches (first)
 	   insn = NEXT_INSN (insn))
 	{
 	  int new_length;
+	  int tmp_length;
 
 	  uid = INSN_UID (insn);
 	  insn_addresses[uid] = insn_current_address;
@@ -630,6 +631,16 @@ shorten_branches (first)
 	      new_length = insn_current_length (insn);
 	      insn_current_address += new_length;
 	    }
+
+#ifdef SHORTEN_WITH_ADJUST_INSN_LENGTH
+#ifdef ADJUST_INSN_LENGTH
+	  /* If needed, do any adjustment.  */
+	  tmp_length = new_length;
+	  ADJUST_INSN_LENGTH (insn, new_length);
+	  insn_current_address += (new_length - tmp_length);
+#endif
+#endif
+
 	  if (new_length != insn_lengths[uid])
 	    {
 	      insn_lengths[uid] = new_length;
