@@ -1759,6 +1759,8 @@ output_fp_cc0_set (insn)
     return "sahf";
 
   next = next_cc0_user (insn);
+  if (next == NULL_RTX)
+    abort ();
 
   if (GET_CODE (next) == JUMP_INSN
       && GET_CODE (PATTERN (next)) == SET
