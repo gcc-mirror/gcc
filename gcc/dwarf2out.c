@@ -9077,7 +9077,10 @@ gen_struct_or_union_type_die (type, context_die)
   else
     {
       add_AT_flag (type_die, DW_AT_declaration, 1);
-      add_incomplete_type (type);
+
+      /* We can't do this for function-local types, and we don't need to.  */
+      if (TREE_PERMANENT (type))
+	add_incomplete_type (type);
     }
 }
 
