@@ -1,3 +1,7 @@
+Fri Jun 19 02:05:14 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/ieee/980619-1.c: New test.
+
 Fri Jun 19 00:58:11 1998  Robert Lipe  <robertl@dgii.com>
 
 	*lib/g77.exp: Replace search for libf2c.a with search for newly
