@@ -12,6 +12,7 @@
 @cindex installing GNU CC
 
 @menu
+* Config Files::  Files created by running @code{configure}.
 * Configurations::    Configurations Supported by GNU CC.
 * Other Dir::     Compiling in a separate directory (not where the source is).
 * Cross-Compiler::   Building and installing a cross-compiler.
@@ -21,11 +22,11 @@
 * Header Dirs::   Understanding the standard header file directories.
 @end menu
 
-Here is the procedure for installing GNU CC on a Unix system.  See
-@ref{VMS Install}, for VMS systems.  In this section we assume you
+Here is the procedure for installing GNU CC on a GNU or Unix system.
+See @ref{VMS Install}, for VMS systems.  In this section we assume you
 compile in the same directory that contains the source files; see
-@ref{Other Dir}, to find out how to compile in a separate directory on Unix
-systems.
+@ref{Other Dir}, to find out how to compile in a separate directory on
+Unix systems.
 
 You cannot install GNU C by itself on MSDOS; it will not compile under
 any MSDOS compiler except itself.  You need to get the complete
@@ -46,9 +47,32 @@ On a System V release 4 system, make sure @file{/usr/bin} precedes
 @file{/usr/ucb} in @code{PATH}.  The @code{cc} command in
 @file{/usr/ucb} uses libraries which have bugs.
 
+@cindex Bison parser generator
+@cindex parser generator, Bison
+@item
+Make sure the Bison parser generator is installed.  (This is
+unnecessary if the Bison output files @file{c-parse.c} and
+@file{cexp.c} are more recent than @file{c-parse.y} and @file{cexp.y}
+and you do not plan to change the @samp{.y} files.)
+
+Bison versions older than Sept 8, 1988 will produce incorrect output
+for @file{c-parse.c}.
+
+@item
+If you have chosen a configuration for GNU CC which requires other GNU
+tools (such as GAS or the GNU linker) instead of the standard system
+tools, install the required tools in the build directory under the names
+@file{as}, @file{ld} or whatever is appropriate.  This will enable the
+compiler to find the proper tools for compilation of the program
+@file{enquire}.
+
+Alternatively, you can do subsequent compilation using a value of the
+@code{PATH} environment variable such that the necessary GNU tools come
+before the standard system tools.
+
 @item
 Specify the host, build and target machine configurations.  You do this
-by running the file @file{configure}.
+when you run the @file{configure} script.
 
 The @dfn{build} machine is the system which you are using, the
 @dfn{host} machine is the system where you want to run the resulting
@@ -97,10 +121,11 @@ See @ref{Configurations}, for a list of supported configuration names and
 notes on many of the configurations.  You should check the notes in that
 section before proceeding any further with the installation of GNU CC.
 
-There are four additional options you can specify independently to
-describe variant hardware and software configurations.  These are
-@samp{--with-gnu-as}, @samp{--with-gnu-ld}, @samp{--with-stabs} and
-@samp{--nfp}.
+@item
+When running @code{configure}, you may also need to specify certain
+additional options that describe variant hardware and software
+configurations.  These are @samp{--with-gnu-as}, @samp{--with-gnu-ld},
+@samp{--with-stabs} and @samp{--nfp}.
 
 @table @samp
 @item --with-gnu-as
@@ -196,59 +221,11 @@ This will slow down the compiler and may only work properly if you
 are building the compiler with GNU C.
 @end table
 
-The @file{configure} script searches subdirectories of the source
-directory for other compilers that are to be integrated into GNU CC.
-The GNU compiler for C++, called G++ is in a subdirectory named
-@file{cp}.  @file{configure} inserts rules into @file{Makefile} to build
-all of those compilers.
-
-Here we spell out what files will be set up by @code{configure}.  Normally
-you need not be concerned with these files.
+@item
+In certain cases, you should specify certain other options when you run
+@code{configure}.
 
 @itemize @bullet
-@item
-@ifset INTERNALS
-A file named @file{config.h} is created that contains a @samp{#include}
-of the top-level config file for the machine you will run the compiler
-on (@pxref{Config}).  This file is responsible for defining information
-about the host machine.  It includes @file{tm.h}.
-@end ifset
-@ifclear INTERNALS
-A file named @file{config.h} is created that contains a @samp{#include}
-of the top-level config file for the machine you will run the compiler
-on (@pxref{Config,,The Configuration File, gcc.info, Using and Porting
-GCC}).  This file is responsible for defining information about the host
-machine.  It includes @file{tm.h}.
-@end ifclear
-
-The top-level config file is located in the subdirectory @file{config}.
-Its name is always @file{xm-@var{something}.h}; usually
-@file{xm-@var{machine}.h}, but there are some exceptions.
-
-If your system does not support symbolic links, you might want to
-set up @file{config.h} to contain a @samp{#include} command which
-refers to the appropriate file.
-
-@item
-A file named @file{tconfig.h} is created which includes the top-level config
-file for your target machine.  This is used for compiling certain
-programs to run on that machine.
-
-@item
-A file named @file{tm.h} is created which includes the
-machine-description macro file for your target machine.  It should be in
-the subdirectory @file{config} and its name is often
-@file{@var{machine}.h}.
-
-@item
-The command file @file{configure} also constructs the file
-@file{Makefile} by adding some text to the template file
-@file{Makefile.in}.  The additional text comes from files in the
-@file{config} directory, named @file{t-@var{target}} and
-@file{x-@var{host}}.  If these files do not exist, it means nothing
-needs to be added for a given target or host.
-@end itemize
-
 @item
 The standard directory for installing GNU CC is @file{/usr/local/lib}.
 If you want to install its files somewhere else, specify
@@ -290,29 +267,7 @@ Indications are that people who use this option use it based on
 mistaken ideas of what it is for.  People use it as if it specified
 where to install part of GNU CC.  Perhaps they make this assumption
 because installing GNU CC creates the directory.
-
-@cindex Bison parser generator
-@cindex parser generator, Bison
-@item
-Make sure the Bison parser generator is installed.  (This is
-unnecessary if the Bison output files @file{c-parse.c} and
-@file{cexp.c} are more recent than @file{c-parse.y} and @file{cexp.y}
-and you do not plan to change the @samp{.y} files.)
-
-Bison versions older than Sept 8, 1988 will produce incorrect output
-for @file{c-parse.c}.
-
-@item
-If you have chosen a configuration for GNU CC which requires other GNU
-tools (such as GAS or the GNU linker) instead of the standard system
-tools, install the required tools in the build directory under the names
-@file{as}, @file{ld} or whatever is appropriate.  This will enable the
-compiler to find the proper tools for compilation of the program
-@file{enquire}.
-
-Alternatively, you can do subsequent compilation using a value of the
-@code{PATH} environment variable such that the necessary GNU tools come
-before the standard system tools.
+@end itemize
 
 @item
 Build the compiler.  Just type @samp{make LANGUAGES=c} in the compiler
@@ -347,9 +302,9 @@ should be investigated and reported (@pxref{Bugs}).
 should be investigated and reported.
 @end ifset
 
-Some commercial compilers fail to compile GNU CC because they have bugs
-or limitations.  For example, the Microsoft compiler is said to run out
-of macro space.  Some Ultrix compilers run out of expression space; then
+Some compilers fail to compile GNU CC because they have bugs or
+limitations.  For example, the Microsoft compiler is said to run out of
+macro space.  Some Ultrix compilers run out of expression space; then
 you need to break up the statement where the problem happens.
 
 @item
@@ -444,8 +399,8 @@ instead of making @file{stage1}, @file{stage2}, and performing
 the two compiler builds.
 
 @item
-Then compare the latest object files with the stage 2 object
-files---they ought to be identical, aside from time stamps (if any).
+Compare the latest object files with the stage 2 object files---they
+ought to be identical, aside from time stamps (if any).
 
 On some systems, meaningful comparison of object files is impossible;
 they always appear ``different.''  This is currently true on Solaris and
@@ -533,11 +488,8 @@ compiler.)
 @item
 @cindex C++ runtime library
 @cindex @code{libstdc++}
-If you're going to use C++, it's likely that you need to also install
-a C++ runtime library.  Just as GNU C does not
-distribute a C runtime library, it also does not include a C++ runtime
-library.  All I/O functionality, special class libraries, etc., are
-provided by the C++ runtime library.
+If you're going to use C++, you need to install the C++ runtime library.
+This includes all I/O functionality, special class libraries, etc.
 
 The standard C++ runtime library for GNU CC is called @samp{libstdc++}.
 An obsolescent library @samp{libg++} may also be available, but it's
@@ -629,6 +581,56 @@ SUN Solaris thread support.
 Microsoft Win32 API thread support.
 @end itemize
 @end enumerate
+
+@node Configuration Files
+@section Files Created by @code{configure}
+
+Here we spell out what files will be set up by @code{configure}.  Normally
+you need not be concerned with these files.
+
+@itemize @bullet
+@item
+@ifset INTERNALS
+A file named @file{config.h} is created that contains a @samp{#include}
+of the top-level config file for the machine you will run the compiler
+on (@pxref{Config}).  This file is responsible for defining information
+about the host machine.  It includes @file{tm.h}.
+@end ifset
+@ifclear INTERNALS
+A file named @file{config.h} is created that contains a @samp{#include}
+of the top-level config file for the machine you will run the compiler
+on (@pxref{Config,,The Configuration File, gcc.info, Using and Porting
+GCC}).  This file is responsible for defining information about the host
+machine.  It includes @file{tm.h}.
+@end ifclear
+
+The top-level config file is located in the subdirectory @file{config}.
+Its name is always @file{xm-@var{something}.h}; usually
+@file{xm-@var{machine}.h}, but there are some exceptions.
+
+If your system does not support symbolic links, you might want to
+set up @file{config.h} to contain a @samp{#include} command which
+refers to the appropriate file.
+
+@item
+A file named @file{tconfig.h} is created which includes the top-level config
+file for your target machine.  This is used for compiling certain
+programs to run on that machine.
+
+@item
+A file named @file{tm.h} is created which includes the
+machine-description macro file for your target machine.  It should be in
+the subdirectory @file{config} and its name is often
+@file{@var{machine}.h}.
+
+@item
+The command file @file{configure} also constructs the file
+@file{Makefile} by adding some text to the template file
+@file{Makefile.in}.  The additional text comes from files in the
+@file{config} directory, named @file{t-@var{target}} and
+@file{x-@var{host}}.  If these files do not exist, it means nothing
+needs to be added for a given target or host.
+@end itemize
 
 @node Configurations
 @section Configurations Supported by GNU CC
