@@ -253,6 +253,18 @@ int reload_first_uid;
 
 int caller_save_needed;
 
+/* The register class to use for a base register when reloading an
+   address.  This is normally BASE_REG_CLASS, but it may be different
+   when using SMALL_REGISTER_CLASSES and passing parameters in
+   registers.  */
+enum reg_class reload_address_base_reg_class;
+
+/* The register class to use for an index register when reloading an
+   address.  This is normally INDEX_REG_CLASS, but it may be different
+   when using SMALL_REGISTER_CLASSES and passing parameters in
+   registers.  */
+enum reg_class reload_address_index_reg_class;
+
 /* Set to 1 while reload_as_needed is operating.
    Required by some machines to handle any generated moves differently.  */
 
@@ -431,6 +443,66 @@ init_reload ()
   /* Initialize obstack for our rtl allocation.  */
   gcc_obstack_init (&reload_obstack);
   reload_firstobj = (char *) obstack_alloc (&reload_obstack, 0);
+
+  /* Decide which register class should be used when reloading
+     addresses.  If we are using SMALL_REGISTER_CLASSES, and any
+     parameters are passed in registers, then we do not want to use
+     those registers when reloading an address.  Otherwise, if a
+     function argument needs a reload, we may wind up clobbering
+     another argument to the function which was already computed.  If
+     we find a subset class which simply avoids those registers, we
+     use it instead.  ??? It would be better to only use the
+     restricted class when we actually are loading function arguments,
+     but that is hard to determine.  */
+  reload_address_base_reg_class = BASE_REG_CLASS;
+  reload_address_index_reg_class = INDEX_REG_CLASS;
+#ifdef SMALL_REGISTER_CLASSES
+  if (SMALL_REGISTER_CLASSES)
+    {
+      int regno;
+      HARD_REG_SET base, index;
+      enum reg_class *p;
+
+      COPY_HARD_REG_SET (base, reg_class_contents[BASE_REG_CLASS]);
+      COPY_HARD_REG_SET (index, reg_class_contents[INDEX_REG_CLASS]);
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	{
+	  if (FUNCTION_ARG_REGNO_P (regno))
+	    {
+	      CLEAR_HARD_REG_BIT (base, regno);
+	      CLEAR_HARD_REG_BIT (index, regno);
+	    }
+	}
+      
+      GO_IF_HARD_REG_EQUAL (base, reg_class_contents[BASE_REG_CLASS],
+			    baseok);
+      for (p = reg_class_subclasses[BASE_REG_CLASS];
+	   *p != LIM_REG_CLASSES;
+	   p++)
+	{
+	  GO_IF_HARD_REG_EQUAL (base, reg_class_contents[*p], usebase);
+	  continue;
+	usebase:
+	  reload_address_base_reg_class = *p;
+	  break;
+	}
+    baseok:;
+
+      GO_IF_HARD_REG_EQUAL (index, reg_class_contents[INDEX_REG_CLASS],
+			    indexok);
+      for (p = reg_class_subclasses[INDEX_REG_CLASS];
+	   *p != LIM_REG_CLASSES;
+	   p++)
+	{
+	  GO_IF_HARD_REG_EQUAL (index, reg_class_contents[*p], useindex);
+	  continue;
+	useindex:
+	  reload_address_index_reg_class = *p;
+	  break;
+	}
+    indexok:;
+    }
+#endif /* SMALL_REGISTER_CLASSES */
 }
 
 /* Main entry point for the reload pass.
