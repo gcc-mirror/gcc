@@ -26,7 +26,6 @@
 
 with Csets;    use Csets;
 with Err_Vars; use Err_Vars;
-with Hostparm; use Hostparm;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Scans;    use Scans;
@@ -302,7 +301,14 @@ package body Scng is
          if Style_Check and Style_Check_Max_Line_Length then
             Style.Check_Line_Terminator (Len);
 
-         elsif Len > Hostparm.Max_Line_Length then
+         --  If style checking is inactive, check maximum line length against
+         --  standard value. Note that we take this from Opt.Max_Line_Length
+         --  rather than Hostparm.Max_Line_Length because we do not want to
+         --  impose any limit during scanning of configuration pragma files,
+         --  and Opt.Max_Line_Length (normally set to Hostparm.Max_Line_Length)
+         --  is reset to Column_Number'Max during scanning of such files.
+
+         elsif Len > Opt.Max_Line_Length then
             Error_Long_Line;
          end if;
       end Check_End_Of_Line;
@@ -359,7 +365,7 @@ package body Scng is
       begin
          Error_Msg
            ("this line is too long",
-            Current_Line_Start + Hostparm.Max_Line_Length);
+            Current_Line_Start + Source_Ptr (Opt.Max_Line_Length));
       end Error_Long_Line;
 
       -------------------------------

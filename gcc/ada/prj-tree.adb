@@ -2361,8 +2361,8 @@ package body Prj.Tree is
             (Project_Nodes.Table (Node).Kind = N_Variable_Reference
                or else
              Project_Nodes.Table (Node).Kind = N_Typed_Variable_Declaration)
-           and then
-            Project_Nodes.Table (To).Kind    = N_String_Type_Declaration);
+          and then
+            Project_Nodes.Table (To).Kind = N_String_Type_Declaration);
 
       if Project_Nodes.Table (Node).Kind = N_Variable_Reference then
          Project_Nodes.Table (Node).Field3 := To;
@@ -2400,9 +2400,9 @@ package body Prj.Tree is
       pragma Assert
         (Node /= Empty_Node
           and then
-           (Project_Nodes.Table (Node).Kind = N_Literal_String
-            or else
-            Project_Nodes.Table (Node).Kind = N_Attribute_Declaration));
+            (Project_Nodes.Table (Node).Kind = N_Literal_String
+              or else
+             Project_Nodes.Table (Node).Kind = N_Attribute_Declaration));
       return Project_Nodes.Table (Node).Src_Index;
    end Source_Index_Of;
 
@@ -2410,9 +2410,7 @@ package body Prj.Tree is
    -- String_Type_Of --
    --------------------
 
-   function String_Type_Of
-     (Node : Project_Node_Id) return Project_Node_Id
-   is
+   function String_Type_Of (Node : Project_Node_Id) return Project_Node_Id is
    begin
       pragma Assert
         (Node /= Empty_Node

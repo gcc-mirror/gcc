@@ -8334,6 +8334,15 @@ decides are necessary.
 Indicates the verbosity of the parsing of GNAT project files.
 See @ref{Switches Related to Project Files}.
 
+@item ^-x^/NON_PROJECT_UNIT_COMPILATION^
+@cindex @option{^-x^/NON_PROJECT_UNIT_COMPILATION^} (@code{gnatmake})
+Indicates that sources that are not part of any Project File may be compiled.
+Normally, when using Project Files, only sources that are part of a Project
+File may be compile. When this switch is used, a source outside of all Project
+Files may be compiled. The ALI file and the object file will be put in the
+object directory of the main Project. The compilation switches used will only
+be those specified on the command line.
+
 @item ^-X^/EXTERNAL_REFERENCE=^@var{name=value}
 Indicates that external variable @var{name} has the value @var{value}.
 The Project Manager will use this value for occurrences of
@@ -17566,7 +17575,9 @@ by @command{gnatstub} to compile an argument source file.
 @cindex @option{^-gnatyM^/MAX_LINE_LENGTH^} (@command{gnatstub})
 (@var{n} is a non-negative integer). Set the maximum line length in the
 body stub to @var{n}; the default is 79. The maximum value that can be
-specified is 32767.
+specified is 32767. Note that in the special case of configuration
+pragma files, the maximum is always 32767 regardless of whether or
+not this switch appears.
 
 @item ^-gnaty^/STYLE_CHECKS=^@var{n}
 @cindex @option{^-gnaty^/STYLE_CHECKS=^} (@command{gnatstub})

@@ -24,14 +24,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Namet;       use Namet;
-with Osint;       use Osint;
-with Prj;         use Prj;
+with Namet;    use Namet;
+with Osint;    use Osint;
+with Prj;      use Prj;
 with Prj.Ext;
 with Prj.Util;
-with Snames;      use Snames;
+with Snames;   use Snames;
 with Table;
-with Types;       use Types;
+with Types;    use Types;
 
 with System.HTable;
 
@@ -43,6 +43,8 @@ package body Makeutl is
    end record;
    --  Identify either a mono-unit source (when Index = 0) or a specific unit
    --  in a multi-unit source.
+
+   --  There follow many global undocumented declarations, comments needed ???
 
    Max_Mask_Num : constant := 2048;
 
@@ -91,9 +93,9 @@ package body Makeutl is
          if Last_Linker_Option = Linker_Options_Buffer'Last then
             declare
                New_Buffer : constant String_List_Access :=
-                 new String_List
-                   (1 .. Linker_Options_Buffer'Last +
-                         Linker_Option_Initial_Count);
+                              new String_List
+                                (1 .. Linker_Options_Buffer'Last +
+                                        Linker_Option_Initial_Count);
             begin
                New_Buffer (Linker_Options_Buffer'Range) :=
                  Linker_Options_Buffer.all;
@@ -158,7 +160,6 @@ package body Makeutl is
         or else Equal_Pos >= Finish
       then
          return False;
-
       else
          Prj.Ext.Add
            (External_Name => Argv (Start .. Equal_Pos - 1),
@@ -173,8 +174,7 @@ package body Makeutl is
 
    function Is_Marked
      (Source_File : File_Name_Type;
-      Index       : Int := 0)
-      return Boolean
+      Index       : Int := 0) return Boolean
    is
    begin
       return Marks.Get (K => (File => Source_File, Index => Index));
@@ -185,21 +185,21 @@ package body Makeutl is
    -----------------------------
 
    function Linker_Options_Switches
-     (Project  : Project_Id)
-      return String_List
+     (Project  : Project_Id) return String_List
    is
+      procedure Recursive_Add_Linker_Options (Proj : Project_Id);
+      --  The recursive routine used to add linker options
 
       ----------------------------------
       -- Recursive_Add_Linker_Options --
       ----------------------------------
 
-      procedure Recursive_Add_Linker_Options (Proj : Project_Id);
-
       procedure Recursive_Add_Linker_Options (Proj : Project_Id) is
-         Data : Project_Data;
+         Data           : Project_Data;
          Linker_Package : Package_Id;
-         Options : Variable_Value;
-         Imported : Project_List;
+         Options        : Variable_Value;
+         Imported       : Project_List;
+
       begin
          if Proj /= No_Project then
             Data := Projects.Table (Proj);
@@ -238,6 +238,8 @@ package body Makeutl is
             end if;
          end if;
       end Recursive_Add_Linker_Options;
+
+   --  Start of processing for Linker_Options_Switches
 
    begin
       Linker_Opts.Init;
@@ -382,7 +384,6 @@ package body Makeutl is
    is
    begin
       if Switch /= null then
-
          declare
             Sw : String (1 .. Switch'Length);
             Start : Positive;
@@ -458,6 +459,7 @@ package body Makeutl is
       Start  : Natural;
       Finish : Natural;
       Result : Int := 0;
+
    begin
       Get_Name_String (ALI_File);
 
@@ -486,9 +488,9 @@ package body Makeutl is
       --  the character that precedes a unit index, this is not the ALI file
       --  of a unit in a multi-unit source.
 
-      if Start > Finish or else
-        Start = 1 or else
-        Name_Buffer (Start - 1) /= Multi_Unit_Index_Character
+      if Start > Finish
+        or else Start = 1
+        or else Name_Buffer (Start - 1) /= Multi_Unit_Index_Character
       then
          return 0;
       end if;
@@ -496,8 +498,8 @@ package body Makeutl is
       --  Build the index from the digit(s)
 
       while Start <= Finish loop
-         Result := (Result * 10) + Character'Pos (Name_Buffer (Start))
-           - Character'Pos ('0');
+         Result := Result * 10 +
+                     Character'Pos (Name_Buffer (Start)) - Character'Pos ('0');
          Start := Start + 1;
       end loop;
 

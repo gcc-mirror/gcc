@@ -3839,6 +3839,14 @@ package VMS_Data is
    --   will execute the elaboration routines of the package and its closure,
    --   then the finalization routines.
 
+   S_Make_Nonpro  : aliased constant S := "/NON_PROJECT_UNIT_COMPILATION " &
+                                            "-x";
+   --        /NON_PROJECT_UNIT_COMPILATION
+   --
+   --    Normally, when using project files, a unit that is not part of any
+   --    project file, cannot be compile. These units may be compile, when
+   --    needed, if this qualifier is specified.
+
    S_Make_Nostinc : aliased constant S := "/NOSTD_INCLUDES "               &
                                             "-nostdinc";
    --        /NOSTD_INCLUDES
@@ -3988,6 +3996,7 @@ package VMS_Data is
       S_Make_Minimal 'Access,
       S_Make_Nolink  'Access,
       S_Make_Nomain  'Access,
+      S_Make_Nonpro  'Access,
       S_Make_Nostinc 'Access,
       S_Make_Nostlib 'Access,
       S_Make_Object  'Access,

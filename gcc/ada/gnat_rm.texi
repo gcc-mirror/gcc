@@ -1356,10 +1356,12 @@ FUNCTION_PROFILE ::= [Parameter_Types => PARAMETER_TYPES,]
                       Result_Type => result_SUBTYPE_NAME]
 
 PARAMETER_TYPES ::= (SUBTYPE_NAME @{, SUBTYPE_NAME@})
-SUBTYPE_NAME    ::= STRING_LITERAL
+SUBTYPE_NAME    ::= STRING_VALUE
 
 SOURCE_LOCATION ::= Source_Location => SOURCE_TRACE
-SOURCE_TRACE    ::= STRING_LITERAL
+SOURCE_TRACE    ::= STRING_VALUE
+
+STRING_VALUE ::= STRING_LITERAL @{& STRING_LITERAL@}
 @end smallexample
 
 @noindent
@@ -1388,7 +1390,7 @@ subprograms denoted by the first two parameters.
 Use PARAMETER_AND_RESULT_TYPE_PROFILE to specify the profile of the subprogram
 to be eliminated in a manner similar to that used for the extended
 @code{Import} and @code{Export} pragmas, except that the subtype names are
-always given as string literals. At the moment, this form of distinguishing
+always given as strings. At the moment, this form of distinguishing
 overloaded subprograms is implemented only partially, so we do not recommend
 using it for practical subprogram elimination.
 
@@ -1398,8 +1400,8 @@ as @code{Parameter_Types => ("")}
 Alternatively, the @code{Source_Location} parameter is used to specify
 which overloaded alternative is to be eliminated by pointing to the
 location of the DEFINING_PROGRAM_UNIT_NAME of this subprogram in the
-source text. The string literal submitted as SOURCE_TRACE should have
-the following format:
+source text. The string literal (or concatenation of string literals)
+given as SOURCE_TRACE must have the following format:
 
 @smallexample @c ada
 SOURCE_TRACE ::= SOURCE_LOCATION@{LBRACKET SOURCE_LOCATION RBRACKET@}

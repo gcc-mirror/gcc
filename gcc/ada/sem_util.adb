@@ -136,9 +136,10 @@ package body Sem_Util is
          Rtyp := Typ;
       end if;
 
-      if No (Compile_Time_Constraint_Error (N, Msg, Ent, Loc, Warn => Warn))
-        or else not Rep
-      then
+      Discard_Node (
+        Compile_Time_Constraint_Error (N, Msg, Ent, Loc, Warn => Warn));
+
+      if not Rep then
          return;
       end if;
 
@@ -3309,9 +3310,21 @@ package body Sem_Util is
                   P_Aliased := True;
                end if;
 
+            --  A discriminant check on a selected component may be
+            --  expanded into a dereference when removing side-effects.
+            --  Recover the original node and its type, which may be
+            --  unconstrained.
+
+            elsif Nkind (P) = N_Explicit_Dereference
+              and then not (Comes_From_Source (P))
+            then
+               P := Original_Node (P);
+               Prefix_Type := Etype (P);
+
             else
                --  Check for prefix being an aliased component ???
                null;
+
             end if;
 
             if Is_Access_Type (Prefix_Type)

@@ -63,9 +63,6 @@ pragma Pure (System);
    --  Storage-related Declarations
 
    type Address is new Long_Integer;
-   subtype Short_Address is Address
-     range -2 ** (32 - 1) .. +2 ** (32 - 1) - 1;
-   for Short_Address'Object_Size use 32;
    Null_Address : constant Address;
 
    Storage_Unit : constant := 8;

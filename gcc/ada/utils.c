@@ -1348,7 +1348,6 @@ create_var_decl (tree var_name,
 	       || (static_flag && ! init_const)))
     assign_init = var_init, var_init = 0;
 
-  DECL_COMMON   (var_decl) = !flag_no_common;
   DECL_INITIAL  (var_decl) = var_init;
   TREE_READONLY (var_decl) = const_flag;
   DECL_EXTERNAL (var_decl) = extern_flag;
@@ -1621,7 +1620,6 @@ process_attributes (tree decl, struct attrib *attr_list)
 	    DECL_SECTION_NAME (decl)
 	      = build_string (IDENTIFIER_LENGTH (attr_list->name),
 			      IDENTIFIER_POINTER (attr_list->name));
-	    DECL_COMMON (decl) = 0;
 	  }
 	else
 	  post_error ("?section attributes are not supported for this target",

@@ -40,8 +40,8 @@ package body Eval_Fat is
 
    type Radix_Power_Table is array (Int range 1 .. 4) of Int;
 
-   Radix_Powers : constant Radix_Power_Table
-     := (Radix**1, Radix**2, Radix**3, Radix**4);
+   Radix_Powers : constant Radix_Power_Table :=
+                    (Radix ** 1, Radix ** 2, Radix ** 3, Radix ** 4);
 
    function Float_Radix return T renames Ureal_2;
    --  Radix expressed in real form

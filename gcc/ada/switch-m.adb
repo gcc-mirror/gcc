@@ -672,6 +672,12 @@ package body Switch.M is
             Ptr := Ptr + 1;
             Verbose_Mode := True;
 
+         --  Processing for x switch
+
+         when 'x' =>
+            Ptr := Ptr + 1;
+            External_Unit_Compilation_Allowed := True;
+
          --  Processing for z switch
 
          when 'z' =>

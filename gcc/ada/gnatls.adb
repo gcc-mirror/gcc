@@ -38,6 +38,7 @@ with Osint;       use Osint;
 with Osint.L;     use Osint.L;
 with Output;      use Output;
 with Rident;      use Rident;
+with Snames;
 with Targparm;    use Targparm;
 with Types;       use Types;
 
@@ -938,6 +939,7 @@ begin
 
    Namet.Initialize;
    Csets.Initialize;
+   Snames.Initialize;
 
    --  Loop to scan out arguments
 

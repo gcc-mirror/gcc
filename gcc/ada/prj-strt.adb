@@ -1205,6 +1205,8 @@ package body Prj.Strt is
 
             Scan;
 
+            --  Check for possible index expression
+
             if Token = Tok_At then
                if not Optional_Index then
                   Error_Msg ("index not allowed here", Token_Ptr);
@@ -1213,6 +1215,8 @@ package body Prj.Strt is
                   if Token = Tok_Integer_Literal then
                      Scan;
                   end if;
+
+               --  Set the index value
 
                else
                   Scan;
@@ -1224,9 +1228,7 @@ package body Prj.Strt is
                      begin
                         if Index = 0 then
                            Error_Msg ("index cannot be zero", Token_Ptr);
-
                         else
-                           --  Set the index
                            Set_Source_Index_Of (Term_Id, To => Index);
                         end if;
                      end;

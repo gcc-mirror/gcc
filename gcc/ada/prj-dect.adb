@@ -197,8 +197,8 @@ package body Prj.Dect is
          --  Set, if appropriate the index case insensitivity flag
 
          elsif Attributes.Table (Current_Attribute).Kind_2 in
-           Case_Insensitive_Associative_Array ..
-             Optional_Index_Case_Insensitive_Associative_Array
+                 Case_Insensitive_Associative_Array ..
+                 Optional_Index_Case_Insensitive_Associative_Array
          then
             Set_Case_Insensitive (Attribute, To => True);
          end if;
@@ -257,15 +257,16 @@ package body Prj.Dect is
                      Expect (Tok_Integer_Literal, "integer literal");
 
                      if Token = Tok_Integer_Literal then
+
+                        --  Set the source index value from given literal
+
                         declare
                            Index : constant Int :=
                                      UI_To_Int (Int_Literal_Value);
                         begin
                            if Index = 0 then
                               Error_Msg ("index cannot be zero", Token_Ptr);
-
                            else
-                              --  Set the index
                               Set_Source_Index_Of (Attribute, To => Index);
                            end if;
                         end;

@@ -382,16 +382,16 @@ one context, where comments explain their purpose.
 @itemize @bullet
 
 @item
-Every operator must be surrounded by spaces, except for the
-exponentiation operator.
+Every operator must be surrounded by spaces. An exception is that
+this rule does not apply to the exponentiation operator, for which
+there are no specific layout rules. The reason for this exception
+is that sometimes it makes clearer reading to leave out the spaces
+around exponentiation.
 @cindex Operators
 
 @smallexample @c adanocomment
        E := A * B**2 + 3 * (C - D);
 @end smallexample
-
-@item
-When folding a long line, fold before an operator, not after.
 
 @item
 Use parentheses where they clarify the intended association of operands

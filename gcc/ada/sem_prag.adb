@@ -9916,7 +9916,6 @@ package body Sem_Prag is
 
          when Unknown_Pragma =>
             raise Program_Error;
-
       end case;
 
    exception
@@ -9948,7 +9947,7 @@ package body Sem_Prag is
         and then
           (Is_Generic_Instance (Result)
             or else Nkind (Parent (Declaration_Node (Result))) =
-              N_Subprogram_Renaming_Declaration)
+                    N_Subprogram_Renaming_Declaration)
         and then Present (Alias (Result))
       loop
          Result := Alias (Result);
@@ -9956,6 +9955,65 @@ package body Sem_Prag is
 
       return Result;
    end Get_Base_Subprogram;
+
+   -----------------------------
+   -- Is_Config_Static_String --
+   -----------------------------
+
+   function Is_Config_Static_String (Arg : Node_Id) return Boolean is
+
+      function Add_Config_Static_String (Arg : Node_Id) return Boolean;
+      --  This is an internal recursive function that is just like the
+      --  outer function except that it adds the string to the name buffer
+      --  rather than placing the string in the name buffer.
+
+      ------------------------------
+      -- Add_Config_Static_String --
+      ------------------------------
+
+      function Add_Config_Static_String (Arg : Node_Id) return Boolean is
+         N : Node_Id;
+         C : Char_Code;
+
+      begin
+         N := Arg;
+
+         if Nkind (N) = N_Op_Concat then
+            if Add_Config_Static_String (Left_Opnd (N)) then
+               N := Right_Opnd (N);
+            else
+               return False;
+            end if;
+         end if;
+
+         if Nkind (N) /= N_String_Literal then
+            Error_Msg_N ("string literal expected for pragma argument", N);
+            return False;
+
+         else
+            for J in 1 .. String_Length (Strval (N)) loop
+               C := Get_String_Char (Strval (N), J);
+
+               if not In_Character_Range (C) then
+                  Error_Msg
+                    ("string literal contains invalid wide character",
+                     Sloc (N) + 1 + Source_Ptr (J));
+                  return False;
+               end if;
+
+               Add_Char_To_Name_Buffer (Get_Character (C));
+            end loop;
+         end if;
+
+         return True;
+      end Add_Config_Static_String;
+
+   --  Start of prorcessing for Is_Config_Static_String
+
+   begin
+      Name_Len := 0;
+      return Add_Config_Static_String (Arg);
+   end Is_Config_Static_String;
 
    -----------------------------------------
    -- Is_Non_Significant_Pragma_Reference --

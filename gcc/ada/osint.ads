@@ -93,10 +93,14 @@ package Osint is
    --  gives the total number of filenames found on the command line.
 
    No_Index : constant := -1;
+   --  Value used in Add_File to indicate that no index is specified
+   --  for a main.
 
    procedure Add_File (File_Name : String; Index : Int := No_Index);
    --  Called by the subprogram processing the command line for each
-   --  file name found.
+   --  file name found. The index, when not defaulted to No_Index
+   --  is the index of the subprogram in its source, zero indicating
+   --  that the source is not multi-unit.
 
    procedure Find_Program_Name;
    --  Put simple name of current program being run (excluding the directory

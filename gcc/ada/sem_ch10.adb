@@ -511,7 +511,7 @@ package body Sem_Ch10 is
          end;
       end if;
 
-      --  Generate distribution stub files if requested and no error
+      --  Generate distribution stubs if requested and no error
 
       if N = Main_Cunit
         and then (Distribution_Stub_Mode = Generate_Receiver_Stub_Body
@@ -546,9 +546,6 @@ package body Sem_Ch10 is
             Add_Stub_Constructs (N);
          end if;
 
-         --  Reanalyze the unit with the new constructs
-
-         Analyze (Unit_Node);
       end if;
 
       if Nkind (Unit_Node) = N_Package_Declaration

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,16 @@ with Unchecked_Conversion;
 
 package System.Aux_DEC is
 pragma Elaborate_Body (Aux_DEC);
+
+   subtype Short_Address is Address;
+   --  In some versions of System.Aux_DEC, notably that for VMS on the
+   --  ia64, there are two address types (64-bit and 32-bit), and the
+   --  name Short_Address is used for the short address form. To avoid
+   --  difficulties (in regression tests and elsewhere) with units that
+   --  reference Short_Address, it is provided for other targets as a
+   --  synonum for the normal Address type, and, as in the case where
+   --  the lengths are different, Address and Short_Address can be
+   --  freely inter-converted.
 
    type Integer_8  is range -2 **  (8 - 1) .. +2 **  (8 - 1) - 1;
    for Integer_8'Size  use  8;

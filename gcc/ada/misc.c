@@ -320,6 +320,9 @@ gnat_init_options (unsigned int argc, const char **argv)
   save_argc = argc;
   save_argv = argv;
 
+  /* Uninitialized really means uninitialized in Ada.  */
+  flag_zero_initialized_in_bss = 0;
+
   return CL_Ada;
 }
 
@@ -972,4 +975,3 @@ fp_size_to_prec (int size)
 
   abort ();
 }
-
