@@ -3453,14 +3453,16 @@ Instead of outputting the result of preprocessing, output a rule
 suitable for @code{make} describing the dependencies of the main source
 file.  The preprocessor outputs one @code{make} rule containing the
 object file name for that source file, a colon, and the names of all the
-included files.  If there are many included files then the rule is split
-into several lines using @samp{\}-newline.
+included files, including those coming from @samp{-include} or
+@samp{-imacros} command line options.  If there are many included files
+then the rule is split into several lines using @samp{\}-newline.
 
 @item -MM
 @findex -MM
 Like @samp{-M}, but mention only the files included with @samp{#include
-"@var{file}"}.  System header files included with @samp{#include
-<@var{file}>} are omitted.
+"@var{file}"} or with @samp{-include} or @samp{-imacros} command line
+options.  System header files included with @samp{#include <@var{file}>}
+are omitted.
 
 @item -MF @var{file}
 @findex -MF

@@ -911,13 +911,8 @@ cpp_start_read (pfile, fname)
     CPP_OPTION (pfile, out_fname) = "";
 
   if (CPP_OPTION (pfile, print_deps))
-    {
-      /* Set the default target (if there is none already), and
-	 the dependency on the main file.  */
-      deps_add_default_target (pfile->deps, CPP_OPTION (pfile, in_fname));
-
-      deps_add_dep (pfile->deps, CPP_OPTION (pfile, in_fname));
-    }
+    /* Set the default target (if there is none already).  */
+    deps_add_default_target (pfile->deps, CPP_OPTION (pfile, in_fname));
 
   /* Open the main input file.  This must be done early, so we have a
      buffer to stand on.  */

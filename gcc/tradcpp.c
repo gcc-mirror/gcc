@@ -848,6 +848,11 @@ main (argc, argv)
 	    perror_with_name (pend[i].arg);
 	    return FATAL_EXIT_CODE;
 	  }
+
+	/* For -M, add this file to the dependencies.  */
+	if (print_deps)
+	  deps_add_dep (deps, pend[i].arg);
+
 	finclude (fd, pend[i].arg, &outbuf);
       }
   indepth--;

@@ -765,6 +765,9 @@ _cpp_read_file (pfile, fname)
       return 0;
     }
 
+  if (CPP_OPTION (pfile, print_deps))
+    deps_add_dep (pfile->deps, f->name);
+
   stack_include_file (pfile, f);
   return 1;
 }
