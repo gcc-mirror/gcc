@@ -726,7 +726,7 @@ case "${target}" in
 	"" | cc*) noconfigdirs="$noconfigdirs emacs emacs19" ;;
         *) ;;
     esac
-    noconfigdirs="$noconfigdirs ld shellutils ${libgcj}"
+    noconfigdirs="$noconfigdirs ld shellutils"
     ;;
   ia64*-*-elf*)
     # No gdb support yet.
@@ -744,7 +744,7 @@ case "${target}" in
     ;;
   i[3456]86-*-mingw32*)
     target_configdirs="$target_configdirs target-mingw"
-    noconfigdirs="$noconfigdirs expect target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs expect target-libgloss"
 
     # Can't build gdb for mingw32 if not native.
     case "${host}" in
@@ -755,7 +755,7 @@ case "${target}" in
     ;;    
   *-*-cygwin*)
     target_configdirs="$target_configdirs target-libtermcap target-winsup"
-    noconfigdirs="$noconfigdirs target-gperf target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs target-gperf target-libgloss"
     # always build newlib.
     skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
 
@@ -778,7 +778,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
     ;;
   i[3456]86-*-solaris2*)
-    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libgloss"
     ;;
   i[3456]86-*-sysv4*)
     # The SYSV4 C compiler doesn't handle Emacs correctly
@@ -790,7 +790,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs emacs emacs19 target-libgloss ${libgcj}"
     ;;
   i[3456]86-*-beos*)
-     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
+     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss"
      ;;
   m68k-*-elf*)
     noconfigdirs="${libgcj}"
@@ -870,7 +870,7 @@ case "${target}" in
   mips*-*-irix6*)
     # The GNU assembler does not support IRIX 6.
     # emacs is emacs 18, which does not work on Irix 5 (emacs19 does work)
-    noconfigdirs="$noconfigdirs gas gprof emacs target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs gas gprof emacs target-libgloss"
     ;;
   mips*-dec-bsd*)
     noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
@@ -898,7 +898,6 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   sparc-*-elf*)
-    noconfigdirs="${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
     fi
@@ -907,7 +906,6 @@ case "${target}" in
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
     fi
-    noconfigdirs="${libgcj}"
     ;;
   sparclite-*-*)
     if [ x${is_cross_compiler} != xno ] ; then
