@@ -1,3 +1,9 @@
+2000-05-30  Michael Meissner  <meissner@redhat.com>
+
+	* dwarf2out.c (dwarf2out_frame_debug_expr): Ignore HIGH
+	instructions.  Treat LO_SUM operations as loading the full integer
+	constant.
+
 2000-05-30  Richard Henderson  <rth@cygnus.com>
 
 	* combine.c (get_pos_from_mask): Test exact_log2 result as signed.
