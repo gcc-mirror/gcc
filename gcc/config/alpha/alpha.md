@@ -1522,10 +1522,9 @@
 			(const_int -8))))
    (set (match_dup 4)
 	(ashift:DI (match_dup 3)
-		   (minus:DI (const_int 56)
+		   (minus:DI (const_int 64)
 			     (ashift:DI
-			      (and:DI (plus:DI (match_dup 2) (const_int -1))
-				      (const_int 7))
+			      (and:DI (match_dup 2) (const_int 7))
 			      (const_int 3)))))
    (set (subreg:DI (match_operand:QI 0 "register_operand" "") 0)
 	(ashiftrt:DI (match_dup 4) (const_int 56)))]
@@ -1543,10 +1542,9 @@
 			(const_int -8))))
    (set (match_dup 4)
 	(ashift:DI (match_dup 3)
-		   (minus:DI (const_int 56)
+		   (minus:DI (const_int 64)
 			     (ashift:DI
-			      (and:DI (plus:DI (match_dup 2) (const_int -1))
-				      (const_int 7))
+			      (and:DI (match_dup 2) (const_int 7))
 			      (const_int 3)))))
    (set (subreg:DI (match_operand:QI 0 "register_operand" "") 0)
 	(ashiftrt:DI (match_dup 4) (const_int 48)))]
@@ -1603,11 +1601,10 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI
 	 (match_operand:DI 1 "reg_or_0_operand" "rJ")
-	  (minus:DI (const_int 56)
+	  (minus:DI (const_int 64)
 		    (ashift:DI
 		     (and:DI
-		      (plus:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-			       (const_int -1))
+		      (match_operand:DI 2 "reg_or_8bit_operand" "rI")
 		      (const_int 7))
 		     (const_int 3)))))]
   ""
@@ -1619,11 +1616,10 @@
 	(ashift:DI
 	 (and:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
 		 (const_int 2147483647))
-	 (minus:DI (const_int 56)
+	 (minus:DI (const_int 64)
 		    (ashift:DI
 		     (and:DI
-		      (plus:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-			       (const_int -1))
+		      (match_operand:DI 2 "reg_or_8bit_operand" "rI")
 		      (const_int 7))
 		     (const_int 3)))))]
   ""
@@ -1635,11 +1631,10 @@
 	(ashift:DI
 	 (and:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
 		 (const_int 65535))
-	 (minus:DI (const_int 56)
+	 (minus:DI (const_int 64)
 		    (ashift:DI
 		     (and:DI
-		      (plus:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-			       (const_int -1))
+		      (match_operand:DI 2 "reg_or_8bit_operand" "rI")
 		      (const_int 7))
 		     (const_int 3)))))]
   ""
