@@ -51,6 +51,61 @@ static void add_attribute		PROTO((enum attrs, char *,
 static void init_attributes		PROTO((void));
 static void record_international_format	PROTO((tree, tree, int));
 
+/* Keep a stack of if statements.  The value recorded is the number of
+   compound statements seen up to the if keyword.  */
+static int *if_stack;
+
+/* Amount of space in the if statement stack.  */
+static int if_stack_space = 0;
+
+/* Stack pointer.  */
+static int if_stack_pointer = 0;
+
+void
+c_expand_start_cond (cond, exitflag, compstmt_count)
+     tree cond;
+     int exitflag;
+     int compstmt_count;
+{
+  /* Make sure there is enough space on the stack.  */
+  if (if_stack_space == 0)
+    {
+      if_stack_space = 10;
+      if_stack = (int *)xmalloc (10 * sizeof (int));
+    }
+  else if (if_stack_space == if_stack_pointer)
+    {
+      if_stack_space += 10;
+      if_stack = (int *)xrealloc (if_stack, if_stack_space * sizeof (int));
+    }
+  
+  /* Record this if statement.  */
+  if_stack[if_stack_pointer++] = compstmt_count;
+
+  expand_start_cond (cond, exitflag);
+}
+
+void
+c_expand_end_cond ()
+{
+  if_stack_pointer--;
+  expand_end_cond ();
+}
+
+void
+c_expand_start_else ()
+{
+  if (warn_parentheses
+      && if_stack_pointer > 1
+      && if_stack[if_stack_pointer - 1] == if_stack[if_stack_pointer - 2])
+    warning ("suggest explicit braces to avoid ambiguous `else'");
+  
+  /* This if statement can no longer cause a dangling else.  */
+  if_stack[if_stack_pointer - 1]--;
+
+  expand_start_else ();
+}
+
 /* Make bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
 
 void
