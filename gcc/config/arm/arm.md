@@ -1194,24 +1194,24 @@
 "
 [(set_attr "conds" "set")])
 
-(define_insn "*zeroextractqi_compare0_scratch"
-  [(set (reg:CC_NOOV 24)
-	(compare:CC_NOOV (zero_extract:SI
-			  (match_operand:QI 0 "memory_operand" "m")
-			  (match_operand 1 "const_int_operand" "n")
-			  (match_operand 2 "const_int_operand" "n"))
-			 (const_int 0)))
-   (clobber (match_scratch:QI 3 "=r"))]
-  "INTVAL (operands[2]) >= 0 && INTVAL (operands[1]) > 0
-   && ((INTVAL (operands[2]) + INTVAL (operands[1])) <= 8)"
+(define_insn "*ne_zeroextractsi"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(ne:SI (zero_extract:SI
+		(match_operand:SI 1 "s_register_operand" "r")
+		(match_operand:SI 2 "const_int_operand" "n")
+		(match_operand:SI 3 "const_int_operand" "n"))
+	       (const_int 0)))]
+  "INTVAL (operands[3]) >= 0 && INTVAL (operands[3]) < 32
+   && INTVAL (operands[2]) > 0 
+   && INTVAL (operands[2]) + (INTVAL (operands[3]) & 1) <= 8
+   && INTVAL (operands[2]) + INTVAL (operands[3]) <= 32"
   "*
-  operands[1] = GEN_INT (((1 << INTVAL (operands[1])) - 1)
-			 << INTVAL (operands[2]));
-  output_asm_insn (\"ldr%?b\\t%3, %0\", operands);
-  output_asm_insn (\"tst%?\\t%3, %1\", operands);
-  return \"\";
+  operands[2] = GEN_INT (((1 << INTVAL (operands[2])) - 1)
+			 << INTVAL (operands[3]));
+  output_asm_insn (\"ands\\t%0, %1, %2\", operands);
+  return \"movne\\t%0, #1\";
 "
-[(set_attr "conds" "set")
+[(set_attr "conds" "clob")
  (set_attr "length" "8")])
 
 ;;; ??? This pattern is bogus.  If operand3 has bits outside the range
@@ -2711,11 +2711,15 @@
 " [(set_attr "type" "load")])
 
 (define_insn "pic_add_dot_plus_eight"
-  [(set (pc) (label_ref (match_operand 0 "" "")))
-   (set (match_operand 1 "register_operand" "+r")
-	(plus:SI (match_dup 1) (const (plus:SI (pc) (const_int 8)))))]
+  [(set (match_operand 0 "register_operand" "+r")
+	(plus:SI (match_dup 0) (const (plus:SI (pc) (const_int 8)))))
+   (use (label_ref (match_operand 1 "" "")))]
   "flag_pic"
-  "add%?\\t%1, %|pc, %1")
+  "*
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+			     CODE_LABEL_NUMBER (operands[1]));
+  return \"add%?\\t%0, %|pc, %0\";
+")
 
 ;; If copying one reg to another we can set the condition codes according to
 ;; its value.  Such a move is common after a return from subroutine and the
