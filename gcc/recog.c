@@ -761,7 +761,8 @@ general_operand (op, mode)
   /* Don't accept CONST_INT or anything similar
      if the caller wants something floating.  */
   if (GET_MODE (op) == VOIDmode && mode != VOIDmode
-      && GET_MODE_CLASS (mode) != MODE_INT)
+      && GET_MODE_CLASS (mode) != MODE_INT
+      && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
     return 0;
 
   if (CONSTANT_P (op))
@@ -901,7 +902,8 @@ immediate_operand (op, mode)
   /* Don't accept CONST_INT or anything similar
      if the caller wants something floating.  */
   if (GET_MODE (op) == VOIDmode && mode != VOIDmode
-      && GET_MODE_CLASS (mode) != MODE_INT)
+      && GET_MODE_CLASS (mode) != MODE_INT
+      && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
     return 0;
 
   return (CONSTANT_P (op)
@@ -934,7 +936,8 @@ const_double_operand (op, mode)
   /* Don't accept CONST_INT or anything similar
      if the caller wants something floating.  */
   if (GET_MODE (op) == VOIDmode && mode != VOIDmode
-      && GET_MODE_CLASS (mode) != MODE_INT)
+      && GET_MODE_CLASS (mode) != MODE_INT
+      && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
     return 0;
 
   return ((GET_CODE (op) == CONST_DOUBLE || GET_CODE (op) == CONST_INT)
@@ -964,7 +967,8 @@ nonmemory_operand (op, mode)
       /* Don't accept CONST_INT or anything similar
 	 if the caller wants something floating.  */
       if (GET_MODE (op) == VOIDmode && mode != VOIDmode
-	  && GET_MODE_CLASS (mode) != MODE_INT)
+	  && GET_MODE_CLASS (mode) != MODE_INT
+	  && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
 	return 0;
 
       return ((GET_MODE (op) == VOIDmode || GET_MODE (op) == mode)
