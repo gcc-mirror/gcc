@@ -1,3 +1,8 @@
+2001-08-13  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* include/bits/ostream.tcc (__pad_char): Change toplevel '__fmt'
+	to '__adjust' to avoid shadowing in nested scope.
+
 2001-08-10  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* include/bits/std_limits.h(__glibcpp_char_is_signed): Use

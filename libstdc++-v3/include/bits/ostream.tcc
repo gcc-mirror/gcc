@@ -472,16 +472,16 @@ namespace std
       char_type* __end;
       size_t __mod = 0;
       size_t __beglen; //either __plen or __oldlen
-      ios_base::fmtflags __fmt = __ios.flags() & ios_base::adjustfield;
+      ios_base::fmtflags __adjust = __ios.flags() & ios_base::adjustfield;
 
-      if (__fmt == ios_base::left)
+      if (__adjust == ios_base::left)
 	{
 	  // Padding last.
 	  __beg = const_cast<char_type*>(__olds);
 	  __beglen = __oldlen;
 	  __end = __pads;
 	}
-      else if (__fmt == ios_base::internal)
+      else if (__adjust == ios_base::internal)
 	{
 	  // Pad after the sign, if there is one.
 	  // Pad after 0[xX], if there is one.
