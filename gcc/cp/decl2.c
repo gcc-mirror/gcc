@@ -2595,6 +2595,7 @@ finish_file ()
   do 
     {
       tree t;
+      size_t n_old, n_new;
 
       reconsider = false;
 
@@ -2611,7 +2612,7 @@ finish_file ()
       while (keyed_classes != NULL_TREE
  	     && maybe_emit_vtables (TREE_VALUE (keyed_classes)))
  	{
-  	  reconsider = 1;
+  	  reconsider = true;
  	  keyed_classes = TREE_CHAIN (keyed_classes);
  	}
  
@@ -2624,7 +2625,7 @@ finish_file ()
  	    {
  	      if (maybe_emit_vtables (TREE_VALUE (next)))
  		{
- 		  reconsider = 1;
+ 		  reconsider = true;
  		  TREE_CHAIN (t) = TREE_CHAIN (next);
  		}
  	      else
@@ -2634,10 +2635,34 @@ finish_file ()
  	    }
  	}
        
-      /* Write out needed type info variables. Writing out one variable
-         might cause others to be needed.  */
-      if (walk_globals (unemitted_tinfo_decl_p, emit_tinfo_decl, /*data=*/0))
-	reconsider = true;
+      /* Write out needed type info variables.  We have to be careful
+ 	 looping through unemitted decls, because emit_tinfo_decl may
+ 	 cause other variables to be needed.  We stick new elements
+ 	 (and old elements that we may need to reconsider) at the end
+ 	 of the array, then shift them back to the beginning once we're
+ 	 done. */
+  
+      n_old = VARRAY_ACTIVE_SIZE (unemitted_tinfo_decls);
+      for (i = 0; i < n_old; ++i)
+  	{
+  	  tree tinfo_decl = VARRAY_TREE (unemitted_tinfo_decls, i);
+  	  if (emit_tinfo_decl (tinfo_decl))
+ 	    reconsider = true;
+  	  else
+  	    VARRAY_PUSH_TREE (unemitted_tinfo_decls, tinfo_decl);
+  	}
+  
+      /* The only elements we want to keep are the new ones.  Copy
+  	 them to the beginning of the array, then get rid of the
+  	 leftovers. */
+      n_new = VARRAY_ACTIVE_SIZE (unemitted_tinfo_decls) - n_old;
+      memmove (&VARRAY_TREE (unemitted_tinfo_decls, 0),
+  	       &VARRAY_TREE (unemitted_tinfo_decls, n_old),
+  	       n_new * sizeof (tree));
+      memset (&VARRAY_TREE (unemitted_tinfo_decls, n_new),
+  	      0,
+  	      n_old * sizeof (tree));
+      VARRAY_ACTIVE_SIZE (unemitted_tinfo_decls) = n_new;
 
       /* The list of objects with static storage duration is built up
 	 in reverse order.  We clear STATIC_AGGREGATES so that any new
