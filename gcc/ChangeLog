@@ -1,3 +1,14 @@
+2000-10-28  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* cpphash.c (cpp_forall_identifiers): Add context variable
+	for callback routine.
+	* cppmain.c (dump_macro): Update to match cpp_forall_identifiers
+	change.
+	(main): Call cpp_forall_identifiers with null context.
+	* cpplib.h (cpp_forall_identifiers): Update prototype.
+
+	* cppmain.c: Make `parse_in' and `print' static.
+
 2000-10-28  Alan Modra <alan@linuxcare.com.au>
 
 	* c-decl.c (finish_function): Clear c_function_name_declared_p.

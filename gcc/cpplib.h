@@ -802,7 +802,10 @@ extern cpp_hashnode *cpp_lookup		PARAMS ((cpp_reader *,
 						 const unsigned char *, size_t));
 extern void cpp_forall_identifiers	PARAMS ((cpp_reader *,
 						 int (*) PARAMS ((cpp_reader *,
-								  cpp_hashnode *))));
+								  cpp_hashnode *,
+								  void *)),
+						 void *));
+
 /* In cppmacro.c */
 extern void cpp_scan_buffer_nooutput	PARAMS ((cpp_reader *));
 extern void cpp_start_lookahead		PARAMS ((cpp_reader *));

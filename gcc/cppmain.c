@@ -42,7 +42,7 @@ int main		PARAMS ((int, char **));
 /* General output routines.  */
 static void scan_buffer	PARAMS ((cpp_reader *));
 static int printer_init PARAMS ((cpp_reader *));
-static int dump_macro PARAMS ((cpp_reader *, cpp_hashnode *));
+static int dump_macro PARAMS ((cpp_reader *, cpp_hashnode *, void *));
 
 static void print_line PARAMS ((const char *));
 static void maybe_print_line PARAMS ((unsigned int));
@@ -62,8 +62,8 @@ static void cb_def_pragma PARAMS ((cpp_reader *));
 static void do_pragma_implementation PARAMS ((cpp_reader *));
 
 const char *progname;
-cpp_reader parse_in;
-struct printer print;
+static cpp_reader parse_in;
+static struct printer print;
 
 int
 main (argc, argv)
@@ -143,7 +143,7 @@ main (argc, argv)
 
   /* -dM command line option.  */
   if (CPP_OPTION (pfile, dump_macros) == dump_only)
-    cpp_forall_identifiers (pfile, dump_macro);
+    cpp_forall_identifiers (pfile, dump_macro, NULL);
 
   cpp_finish (pfile);
   cpp_cleanup (pfile);
@@ -429,9 +429,10 @@ do_pragma_implementation (pfile)
 
 /* Dump out the hash table.  */
 static int
-dump_macro (pfile, node)
+dump_macro (pfile, node, v)
      cpp_reader *pfile;
      cpp_hashnode *node;
+     void *v ATTRIBUTE_UNUSED;
 {
   if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
     {
