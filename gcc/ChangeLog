@@ -1,3 +1,8 @@
+2003-03-17  Steve Ellcey  <sje@cup.hp.com>
+
+	* stmt.c (tail_recursion_args): Call promote_mode to set
+	unsignedp flag correctly before calling convert_move.
+
 2003-03-17  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* loop-unroll.c (decide_peel_completely,
