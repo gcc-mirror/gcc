@@ -1,3 +1,7 @@
+2000-12-13  Mike Stump  <mrs@wrs.com>
+
+	* Makefile.in (local-distclean): Also remove fastjar.
+
 2000-12-12  Rodney Brown  <RodneyBrown@mynd.com>
 
 	* contrib/gcc_update: Add fastjar --touch entries.
