@@ -1,3 +1,18 @@
+2003-06-17  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/DirectByteBufferImpl.java
+	(address): Made package private.
+	(DirectByteBufferImpl): New constructor.
+	* java/nio/natDirectByteBufferImpl.cc
+	(allocateImpl): Moved to java.nio namespace, implemented.
+	(freeImpl): Likewise.
+	(getImpl): Likewise.
+	(putImpl): Likewise.
+	* jni.cc
+	(_Jv_JNI_NewDirectByteBuffer): Implemented.
+	(_Jv_JNI_GetDirectBufferAddress): Implemented.
+	(_Jv_JNI_GetDirectBufferCapacity): Implemented.
+
 2003-06-17  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* include/powerpc-signal.h: New File.
