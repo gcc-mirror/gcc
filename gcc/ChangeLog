@@ -1,3 +1,7 @@
+2003-07-13  Aaron W. LaFramboise  <awlaframboise@aol.com>
+
+	* config/i386/gthr-win32.c (__GTHREAD_HIDE_WIN32API): Define to 1.
+
 2003-07-13  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (expand_expr, case COMPONENT_REF): If reg, copy OP0 to MEM
@@ -2696,10 +2700,6 @@ Mon Jun 30 09:52:39 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(find_char_info_specifier_index, init_dynamic_diag_info): New
 	functions.
 	(handle_format_attribute): Update to handle new format attributes.
-
-2003-06-29  Aaron W. LaFramboise  <awlaframboise@aol.com>
-
-	* config/i386/gthr-win32.h (__GTHREAD_HIDE_WIN32API): Define to 1.
 
 2003-06-29  Dara Hazeghi  <dhazeghi@yahoo.com>
 
