@@ -1,3 +1,8 @@
+2002-02-18  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* libjava.lang/err7.xfail: Removed.
+	* libjava.lang/err8.xfail: Removed.
+
 2002-02-10  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/5641:
