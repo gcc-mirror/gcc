@@ -1,26 +1,11 @@
-// Build don't run:
-// Origin: Mark Mitchell <mark@codesourcery.com>
+// Build don't link:
+// Origin: Loring Holden <lsh@cs.brown.edu>
 
-template <class T>
-void f (T&) ;
+class Wpt {};
 
-template <>
-void f (void (&)()) 
-{
-}
-
-void g () 
-{
-}
-
-void h ()
-{
-}
-
-bool b;
-
-int main ()
-{
-  f (b ? g : h);
-}
-
+class RAYhit {
+   protected:
+      Wpt       _nearpt;
+   public:
+      Wpt       surf        () const { return true ? Wpt(): _nearpt; } 
+};
