@@ -165,6 +165,23 @@ if $LINKS; then
 	      dirname=`echo $dirname | sed -e 's|[^/]*/||'`
 	    done
 	  fi
+	  # Duplicate directory structure created in ${LIB}/$file in new
+	  # root area.
+	  for file2 in $files; do
+	    case $file2 in
+	      $file/.*)
+		;;
+	      *)
+		dupdir=${LIB}/root$x/`echo $file2 | sed -n "s|^${file}/||p"`
+		echo "Duplicating ${file}'s ${dupdir}"
+		if [ -d ${dupdir} ]
+		then true
+		else
+		  mkdir ${dupdir}
+		fi
+		;;
+	    esac
+          done
 	  rm -fr ${LIB}/$file > /dev/null 2>&1
 	  ln -s ${LIB}/root$x ${LIB}/$file > /dev/null 2>&1
 	  treetops="$treetops $x ${LIB}/root$x"
