@@ -1665,7 +1665,7 @@ typedef struct xtensa_args {
 #define ASM_OUTPUT_POOL_PROLOGUE(FILE, FUNNAME, FUNDECL, SIZE)          \
   do {									\
     tree fnsection;							\
-    resolve_unique_section ((FUNDECL), 0);				\
+    resolve_unique_section ((FUNDECL), 0, flag_function_sections);	\
     fnsection = DECL_SECTION_NAME (FUNDECL);				\
     if (fnsection != NULL_TREE)						\
       {									\

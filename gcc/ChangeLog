@@ -1,3 +1,8 @@
+2002-06-27  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h (ASM_OUTPUT_POOL_PROLOGUE): Pass
+	flag_function_sections as new 3rd arg to resolve_unique_section.
+	
 2002-06-27  Neil Booth  <neil@daikokuya.co.uk>
 
 	PR preprocessor/7070
