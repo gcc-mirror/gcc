@@ -1669,11 +1669,6 @@ lex_line (pfile, list)
   first->flags |= BOL;
   pfile->first_directive_token = first;
 
-  /* Drop the EOF unless really at EOF or in a directive.  */
-  if (!(cur_token == first || pfile->state.in_directive
-	|| !pfile->done_initializing))
-    list->tokens_used--;
-
   /* Don't complain about the null directive, nor directives in
      assembly source: we don't know where the comments are, and # may
      introduce assembler pseudo-ops.  Don't complain about invalid
@@ -1696,6 +1691,11 @@ lex_line (pfile, list)
       _cpp_clear_toklist (list);
       goto retry;
     }
+
+  /* Drop the EOF unless really at EOF or in a directive.  */
+  if (cur_token != first && !KNOWN_DIRECTIVE (list)
+      && pfile->done_initializing)
+    list->tokens_used--;
 
   pfile->state.in_lex_line = 0;
 }
