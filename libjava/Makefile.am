@@ -513,6 +513,8 @@ java/net/SocketImpl.java \
 java/net/SocketImplFactory.java	\
 java/net/URL.java \
 java/net/URLConnection.java \
+java/net/URLDecoder.java \
+java/net/URLEncoder.java \
 java/net/URLStreamHandler.java \
 java/net/URLStreamHandlerFactory.java \
 java/net/UnknownHostException.java \

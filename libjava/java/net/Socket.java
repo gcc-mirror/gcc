@@ -156,7 +156,7 @@ public class Socket
     throw new InternalError("Socket.setSoLinger not implemented");
   }
 
-  public boolean getSoLinger() throws SocketException
+  public int getSoLinger() throws SocketException
   {
     throw new InternalError("Socket.getSoLinger not implemented");
   }

@@ -96,10 +96,14 @@ libgcj_basedir = @libgcj_basedir@
 AUTOMAKE_OPTIONS = foreign dejagnu no-installinfo
 
 # Setup the testing framework, if you have one
-EXPECT = `if [ -f $(top_builddir)/../expect/expect ] ; then             echo $(top_builddir)/../expect/expect ;           else echo expect ; fi`
+EXPECT = `if [ -f $(top_builddir)/../expect/expect ] ; then \
+            echo $(top_builddir)/../expect/expect ; \
+          else echo expect ; fi`
 
 
-RUNTEST = `if [ -f $(top_srcdir)/../dejagnu/runtest ] ; then 	       echo $(top_srcdir)/../dejagnu/runtest ; 	    else echo runtest; fi`
+RUNTEST = `if [ -f $(top_srcdir)/../dejagnu/runtest ] ; then \
+	       echo $(top_srcdir)/../dejagnu/runtest ; \
+	    else echo runtest; fi`
 
 
 RUNTESTFLAGS = @AM_RUNTESTFLAGS@

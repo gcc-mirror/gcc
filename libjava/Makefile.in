@@ -374,6 +374,8 @@ java/net/SocketImpl.java \
 java/net/SocketImplFactory.java	\
 java/net/URL.java \
 java/net/URLConnection.java \
+java/net/URLDecoder.java \
+java/net/URLEncoder.java \
 java/net/URLStreamHandler.java \
 java/net/URLStreamHandlerFactory.java \
 java/net/UnknownHostException.java \
@@ -691,7 +693,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/net/ServerSocket.P .deps/java/net/Socket.P \
 .deps/java/net/SocketException.P .deps/java/net/SocketImpl.P \
 .deps/java/net/SocketImplFactory.P .deps/java/net/URL.P \
-.deps/java/net/URLConnection.P .deps/java/net/URLStreamHandler.P \
+.deps/java/net/URLConnection.P .deps/java/net/URLDecoder.P \
+.deps/java/net/URLEncoder.P .deps/java/net/URLStreamHandler.P \
 .deps/java/net/URLStreamHandlerFactory.P \
 .deps/java/net/UnknownHostException.P \
 .deps/java/net/UnknownServiceException.P \
