@@ -1182,8 +1182,7 @@ instantiate_class_template (type)
     {
       tree tmp;
       for (tmp = TYPE_FIELDS (type); tmp; tmp = TREE_CHAIN (tmp))
-	if (TREE_CODE (tmp) == FIELD_DECL
-	    && TREE_CODE (DECL_NAME (tmp)) != SCOPE_REF)
+	if (TREE_CODE (tmp) == FIELD_DECL)
 	  require_complete_type (tmp);
 
       /* XXX handle attributes */

@@ -1584,6 +1584,36 @@ build_call (function, result_type, parms)
   return function;
 }
 
+static tree
+default_parm_conversions (parms, last)
+     tree parms, *last;
+{
+  tree parm, parmtypes = NULL_TREE;
+
+  *last = NULL_TREE;
+
+  for (parm = parms; parm; parm = TREE_CHAIN (parm))
+    {
+      tree t = TREE_TYPE (TREE_VALUE (parm));
+
+      if (TREE_CODE (t) == OFFSET_TYPE
+	  || TREE_CODE (t) == METHOD_TYPE
+	  || TREE_CODE (t) == FUNCTION_TYPE)
+	{
+	  TREE_VALUE (parm) = default_conversion (TREE_VALUE (parm));
+	  t = TREE_TYPE (TREE_VALUE (parm));
+	}
+
+      if (t == error_mark_node)
+	  return error_mark_node;
+
+      *last = build_tree_list (NULL_TREE, t);
+      parmtypes = chainon (parmtypes, *last);
+    }
+
+  return parmtypes;
+}
+
 
 /* Build something of the form ptr->method (args)
    or object.method (args).  This can also build
@@ -1988,35 +2018,10 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
   save_basetype = TYPE_MAIN_VARIANT (basetype);
 
-  last = NULL_TREE;
-  for (parmtypes = NULL_TREE, parm = parms; parm; parm = TREE_CHAIN (parm))
+  parmtypes = default_parm_conversions (parms, &last);
+  if (parmtypes == error_mark_node)
     {
-      tree t = TREE_TYPE (TREE_VALUE (parm));
-      if (TREE_CODE (t) == OFFSET_TYPE)
-	{
-	  /* Convert OFFSET_TYPE entities to their normal selves.  */
-	  TREE_VALUE (parm) = resolve_offset_ref (TREE_VALUE (parm));
-	  t = TREE_TYPE (TREE_VALUE (parm));
-	}
-      if (TREE_CODE (t) == METHOD_TYPE)
-	{
-	  cp_pedwarn ("assuming & on `%E'", TREE_VALUE (parm));
-	  TREE_VALUE (parm) = build_unary_op (ADDR_EXPR, TREE_VALUE (parm), 0);
-	}
-#if 0
-      /* This breaks reference-to-array parameters.  */
-      if (TREE_CODE (t) == ARRAY_TYPE)
-	{
-	  /* Perform the conversion from ARRAY_TYPE to POINTER_TYPE in place.
-	     This eliminates needless calls to `compute_conversion_costs'.  */
-	  TREE_VALUE (parm) = default_conversion (TREE_VALUE (parm));
-	  t = TREE_TYPE (TREE_VALUE (parm));
-	}
-#endif
-      if (t == error_mark_node)
-	return error_mark_node;
-      last = build_tree_list (NULL_TREE, t);
-      parmtypes = chainon (parmtypes, last);
+      return error_mark_node;
     }
 
   if (instance && IS_SIGNATURE (basetype))
@@ -2146,7 +2151,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	      cp->harshness = (struct harshness_code *)
 		alloca ((len + 1) * sizeof (struct harshness_code));
 
-	      result = build_overload_call (name, friend_parms, 0, cp);
+	      result = build_overload_call_real (name, friend_parms, 0, cp, 1);
 
 	      /* If it turns out to be the one we were actually looking for
 		 (it was probably a friend function), the return the
@@ -2429,14 +2434,16 @@ build_method_call (instance, name, parms, basetype_path, flags)
       && value_member (function, get_abstract_virtuals (basetype)))
     cp_error ("abstract virtual `%#D' called from constructor", function);
 
-  if (IS_SIGNATURE (basetype) && static_call_context)
+  if (IS_SIGNATURE (basetype))
     {
-      cp_error ("cannot call signature member function `%T::%D' without signature pointer/reference",
-		basetype, save_name);
-      return error_mark_node;
+      if (static_call_context)
+	{
+	  cp_error ("cannot call signature member function `%T::%D' without signature pointer/reference",
+		    basetype, save_name);
+	  return error_mark_node;
 	}
-  else if (IS_SIGNATURE (basetype))
-    return build_signature_method_call (basetype, instance, function, parms);
+      return build_signature_method_call (basetype, instance, function, parms);
+    }
 
   function = DECL_MAIN_VARIANT (function);
   mark_used (function);
@@ -2632,7 +2639,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, require_complete)
 {
   /* must check for overloading here */
   tree functions, function, parm;
-  tree parmtypes = NULL_TREE, last = NULL_TREE;
+  tree parmtypes, last;
   register tree outer;
   int length;
   int parmlength = list_length (parms);
@@ -2648,31 +2655,14 @@ build_overload_call_real (fnname, parms, flags, final_cp, require_complete)
       final_cp[1].h.code = EVIL_CODE;
     }
 
-  for (parm = parms; parm; parm = TREE_CHAIN (parm))
+  parmtypes = default_parm_conversions (parms, &last);
+  if (parmtypes == error_mark_node)
     {
-      register tree t = TREE_TYPE (TREE_VALUE (parm));
-
-      if (t == error_mark_node)
-	{
-	  if (final_cp)
-	    final_cp->h.code = EVIL_CODE;
-	  return error_mark_node;
-	}
-      if (TREE_CODE (t) == OFFSET_TYPE)
-#if 0
-      /* This breaks reference-to-array parameters.  */
-	  || TREE_CODE (t) == ARRAY_TYPE
-#endif
-	{
-	  /* Perform the conversion from ARRAY_TYPE to POINTER_TYPE in place.
-	     Also convert OFFSET_TYPE entities to their normal selves.
-	     This eliminates needless calls to `compute_conversion_costs'.  */
-	  TREE_VALUE (parm) = default_conversion (TREE_VALUE (parm));
-	  t = TREE_TYPE (TREE_VALUE (parm));
-	}
-      last = build_tree_list (NULL_TREE, t);
-      parmtypes = chainon (parmtypes, last);
+      if (final_cp)
+	final_cp->h.code = EVIL_CODE;
+      return error_mark_node;
     }
+
   if (last)
     TREE_CHAIN (last) = void_list_node;
   else
@@ -2891,10 +2881,9 @@ build_overload_call_real (fnname, parms, flags, final_cp, require_complete)
 
 /* This requires a complete type on the result of the call.  */
 tree
-build_overload_call (fnname, parms, flags, final_cp)
+build_overload_call (fnname, parms, flags)
      tree fnname, parms;
      int flags;
-     struct candidate *final_cp;
 {
-  return build_overload_call_real (fnname, parms, flags, final_cp, 1);
+  return build_overload_call_real (fnname, parms, flags, (struct candidate *)0, 1);
 }

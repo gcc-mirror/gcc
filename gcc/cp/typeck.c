@@ -1430,7 +1430,7 @@ decay_conversion (exp)
   register tree type = TREE_TYPE (exp);
   register enum tree_code code = TREE_CODE (type);
 
-  if (code == OFFSET_TYPE /* || TREE_CODE (exp) == OFFSET_REF */ )
+  if (code == OFFSET_TYPE)
     {
       if (TREE_CODE (exp) == OFFSET_REF)
 	return decay_conversion (resolve_offset_ref (exp));
@@ -2370,7 +2370,7 @@ build_x_function_call (function, params, decl)
 	      (function, params, LOOKUP_COMPLAIN, (struct candidate *)0, 0);
 	  else if (DECL_CHAIN (val) != NULL_TREE)
 	    return build_overload_call
-	      (function, params, LOOKUP_COMPLAIN, (struct candidate *)0);
+	      (function, params, LOOKUP_COMPLAIN);
 	  else
 	    my_friendly_abort (360);
 	}

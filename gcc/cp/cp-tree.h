@@ -1944,7 +1944,7 @@ extern tree build_addr_func			PROTO((tree));
 extern tree build_scoped_method_call		PROTO((tree, tree, tree, tree));
 extern tree build_method_call			PROTO((tree, tree, tree, tree, int));
 extern tree build_overload_call_real		PROTO((tree, tree, int, struct candidate *, int));
-extern tree build_overload_call			PROTO((tree, tree, int, struct candidate *));
+extern tree build_overload_call			PROTO((tree, tree, int));
 
 /* in class.c */
 extern tree build_vbase_pointer			PROTO((tree, tree));

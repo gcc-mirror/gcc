@@ -1233,8 +1233,7 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
 	tree args = tree_cons (NULL_TREE, xarg2, arg3);
 	fnname = ansi_opname[(int) code];
 	if (flags & LOOKUP_GLOBAL)
-	  return build_overload_call (fnname, args, flags & LOOKUP_COMPLAIN,
-				      (struct candidate *)0);
+	  return build_overload_call (fnname, args, flags & LOOKUP_COMPLAIN);
 
 	rval = build_method_call
 	  (build_indirect_ref (build1 (NOP_EXPR, xarg1, error_mark_node),
@@ -1258,8 +1257,7 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
 	if (flags & LOOKUP_GLOBAL)
 	  return build_overload_call (fnname,
 				      build_tree_list (NULL_TREE, xarg1),
-				      flags & LOOKUP_COMPLAIN,
-				      (struct candidate *)0);
+				      flags & LOOKUP_COMPLAIN);
 	arg1 = TREE_TYPE (xarg1);
 
 	/* This handles the case where we're trying to delete
@@ -1481,8 +1479,7 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
     {
       parms = tree_cons (NULL_TREE, xarg1,
 			 build_tree_list (NULL_TREE, xarg2));
-      rval = build_overload_call (fnname, parms, flags,
-				  (struct candidate *)0);
+      rval = build_overload_call (fnname, parms, flags);
     }
 
   return rval;

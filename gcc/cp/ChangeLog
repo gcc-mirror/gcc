@@ -3,6 +3,31 @@ Sat May 11 04:33:50 1996  Doug Evans  <dje@canuck.cygnus.com>
 	* decl2.c (finish_vtable_vardecl): Surround DECL_ONE_ONLY with ifdef.
 	(finish_file): Likewise.
 
+Thu May 16 15:29:33 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* expr.c (do_case): Don't try to dereference null TREE_TYPEs
+	when checking for pointer types.
+
+Thu May 16 13:38:58 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_class_template): Remove obsolete check for
+ 	access declarations.
+
+Thu May 16 13:34:15 1996  Mike Stump  <mrs@cygnus.com>
+
+	* call.c (build_overload_call): Simplify calls to
+	build_overload_call by removing last parameter.
+	(build_method_call): Ditto.
+	* cp-tree.h: Ditto.
+	* method.c (build_opfncall): Ditto.
+	* typeck.c (build_x_function_call): Ditto.
+
+Thu May 16 13:15:43 1996  Mike Stump  <mrs@cygnus.com>
+
+	* call.c (default_parm_conversions): Factor out common code.
+	(build_method_call): Use it.
+	(build_overload_call_real): Use it.
+
 Wed May 15 14:46:14 1996  Mike Stump  <mrs@cygnus.com>
 
 	* call.c (build_method_call): Allow implicit & on METHOD_TYPEs,
