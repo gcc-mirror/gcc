@@ -207,7 +207,7 @@ static const int hash_mask = (HASH_TABLE_SIZE - 1);
 
 static const struct default_include { const char *const fname; 
 			 const char *const component;
-			 int x1, x2; } include_defaults[]
+			 const int x1, x2; } include_defaults[]
 #ifdef INCLUDE_DEFAULTS
   = INCLUDE_DEFAULTS;
 #else

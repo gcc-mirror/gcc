@@ -98,8 +98,7 @@ static const char *const ffeinfo_where_string_[]
 #include "info-w.def"
 #undef FFEINFO_WHERE
 };
-static ffetype ffeinfo_types_[FFEINFO_basictype][FFEINFO_kindtype]
-  = { { NULL } };
+static ffetype ffeinfo_types_[FFEINFO_basictype][FFEINFO_kindtype];
 
 /* Static functions (internal). */
 

@@ -4947,7 +4947,7 @@ extern int prepends_underscore;
 
 int strip_underscore = 0;
 
-static struct option long_options[] = {
+static const struct option long_options[] = {
   {"strip-underscores", no_argument, 0, '_'},
   {"format", required_argument, 0, 's'},
   {"help", no_argument, 0, 'h'},

@@ -1273,7 +1273,7 @@ static EXTR	  *last_func_eptr;
    Maybe this will be fixed in 2.10 or 2.20 of the MIPS compiler
    suite, but for now go with what works.  */
 
-static bt_t map_coff_types[ (int)T_MAX ] = {
+static const bt_t map_coff_types[ (int)T_MAX ] = {
   bt_Nil,			/* T_NULL */
   bt_Nil,			/* T_ARG */
   bt_Char,			/* T_CHAR */
@@ -1293,7 +1293,7 @@ static bt_t map_coff_types[ (int)T_MAX ] = {
 };
 
 /* Convert COFF storage class to ECOFF storage class.  */
-static sc_t map_coff_storage[ (int)C_MAX ] = {
+static const sc_t map_coff_storage[ (int)C_MAX ] = {
   sc_Nil,			/*   0: C_NULL */
   sc_Abs,			/*   1: C_AUTO	  auto var */
   sc_Undefined,			/*   2: C_EXT	  external */
@@ -1404,7 +1404,7 @@ static sc_t map_coff_storage[ (int)C_MAX ] = {
 };
 
 /* Convert COFF storage class to ECOFF symbol type.  */
-static st_t map_coff_sym_type[ (int)C_MAX ] = {
+static const st_t map_coff_sym_type[ (int)C_MAX ] = {
   st_Nil,			/*   0: C_NULL */
   st_Local,			/*   1: C_AUTO	  auto var */
   st_Global,			/*   2: C_EXT	  external */
@@ -1515,7 +1515,7 @@ static st_t map_coff_sym_type[ (int)C_MAX ] = {
 };
 
 /* Map COFF derived types to ECOFF type qualifiers.  */
-static tq_t map_coff_derived_type[ (int)DT_MAX ] = {
+static const tq_t map_coff_derived_type[ (int)DT_MAX ] = {
   tq_Nil,			/* 0: DT_NON	no more qualifiers */
   tq_Ptr,			/* 1: DT_PTR	pointer */
   tq_Proc,			/* 2: DT_FCN	function */
@@ -1594,7 +1594,7 @@ static int	stabs_seen	= 0;		/* != 0 if stabs have been seen */
 #define STABS_SYMBOL "@stabs"
 #endif
 
-static char stabs_symbol[] = STABS_SYMBOL;
+static const char stabs_symbol[] = STABS_SYMBOL;
 
 
 /* Forward reference for functions.  See the definition for more details.  */
@@ -1715,12 +1715,12 @@ extern int   opterr;
    do......  */
 
 typedef struct _pseudo_ops {
-  const char *name;			/* pseudo-op in ascii */
-  int len;				/* length of name to compare */
-  void (*func) PARAMS ((const char *));	/* function to handle line */
+  const char *const name;			/* pseudo-op in ascii */
+  const int len;				/* length of name to compare */
+  void (*const func) PARAMS ((const char *));	/* function to handle line */
 } pseudo_ops_t;
 
-static pseudo_ops_t pseudo_ops[] = {
+static const pseudo_ops_t pseudo_ops[] = {
   { "#.def",	sizeof("#.def")-1,	parse_def },
   { "#.begin",	sizeof("#.begin")-1,	parse_begin },
   { "#.bend",	sizeof("#.bend")-1,	parse_bend },

@@ -807,7 +807,7 @@ static int n_compilers;
 
 /* The default list of file name suffixes and their compilation specs.  */
 
-static struct compiler default_compilers[] =
+static const struct compiler default_compilers[] =
 {
   /* Add lists of suffixes of known languages here.  If those languages
      were not present when we built the driver, we will hit these copies

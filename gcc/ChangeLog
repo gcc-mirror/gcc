@@ -1,5 +1,12 @@
 2002-01-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gcc.c (default_compilers): Const-ify.
+	* mips-tdump.c (stab_names): Likewise.
+	* mips-tfile.c (map_coff_types, map_coff_storage,
+	map_coff_sym_type, map_coff_derived_type, stabs_symbol,
+	pseudo_ops_t, pseudo_ops): Likewise.
+	* protoize.c (default_include): Likewise
+
 	* real.c (GET_REAL, PUT_REAL): Don't cast away const-ness.
 	(ezero, ehalf, eone, etwo, e32, elog2, esqrt2, epi): Const-ify.
 	Add array size in declaration.

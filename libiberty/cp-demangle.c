@@ -3945,7 +3945,7 @@ print_usage (fp, exit_value)
 }
 
 /* Option specification for getopt_long.  */
-static struct option long_options[] = 
+static const struct option long_options[] = 
 {
   { "help",    no_argument, NULL, 'h' },
   { "strict",  no_argument, NULL, 's' },
