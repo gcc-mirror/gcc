@@ -1,3 +1,7 @@
+2002-04-25  Steven Bosscher  <S.Bosscher@student.tudelft.nl>
+
+	* doc/c-tree.texi: Fix typo in introduction.
+
 2002-04-24  Richard Henderson  <rth@redhat.com>
 
 	* configure.in (HAVE_GAS_HIDDEN): Detect sparc binutils 2.12
