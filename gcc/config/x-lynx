@@ -1,0 +1,7 @@
+# /bin/cc is hopelessly broken, so we must use /bin/gcc instead.
+CC	= $(OLDCC)
+OLDCC	= /bin/gcc
+
+# ??? This takes far too long to run, several hours, so let's not do it for
+# now.
+STMP_FIXPROTO =
