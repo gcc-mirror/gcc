@@ -458,7 +458,6 @@ static int flow_loop_entry_edges_find	PARAMS ((basic_block, const sbitmap,
 						 edge **));
 static int flow_loop_exit_edges_find	PARAMS ((const sbitmap, edge **));
 static int flow_loop_nodes_find	PARAMS ((basic_block, basic_block, sbitmap));
-static int flow_depth_first_order_compute PARAMS ((int *, int *));
 static void flow_dfs_compute_reverse_init
   PARAMS ((depth_first_search_ds));
 static void flow_dfs_compute_reverse_add_bb
@@ -8223,7 +8222,7 @@ flow_loop_nodes_find (header, latch, nodes)
   tries to get as far away from the starting point as quickly as
   possible.  */
 
-static int
+int
 flow_depth_first_order_compute (dfs_order, rc_order)
      int *dfs_order;
      int *rc_order;
