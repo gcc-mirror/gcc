@@ -2666,13 +2666,11 @@ build_new_1 (exp)
 	  newrval = build_method_call (newrval, ctor_identifier,
 				       init, TYPE_BINFO (true_type), flags);
 
-	  if (newrval)
-	    {
-	      rval = newrval;
-	      TREE_HAS_CONSTRUCTOR (rval) = 1;
-	    }
-	  else
-	    rval = error_mark_node;
+	  if (newrval == NULL_TREE || newrval == error_mark_node)
+	    return error_mark_node;
+
+	  rval = newrval;
+	  TREE_HAS_CONSTRUCTOR (rval) = 1;
 	}
       else
 	rval = build (VEC_INIT_EXPR, TREE_TYPE (rval),
