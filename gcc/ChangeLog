@@ -1,5 +1,10 @@
 2002-02-10  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/h8300.h (INITIALIZE_TRAMPOLINE): Simplify by
+	using Pmode.
+
+2002-02-10  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300.h (STACK_POINTER_REGNUM): Use the
 	constant definition from h8300.md.
 	(FRAME_POINTER_REGNUM): Likewise.
