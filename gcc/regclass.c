@@ -275,9 +275,10 @@ init_reg_sets ()
     {
       CLEAR_HARD_REG_SET (reg_class_contents[i]);
 
+      /* Note that we hard-code 32 here, not HOST_BITS_PER_INT.  */
       for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
-	if (int_reg_class_contents[i][j / HOST_BITS_PER_INT]
-	    & ((unsigned) 1 << (j % HOST_BITS_PER_INT)))
+	if (int_reg_class_contents[i][j / 32]
+	    & ((unsigned) 1 << (j % 32)))
 	  SET_HARD_REG_BIT (reg_class_contents[i], j);
     }
 
