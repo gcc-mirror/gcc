@@ -344,6 +344,7 @@ in the following sections.
 -mtrap-precision=@var{mode}  -mbuild-constants
 -mcpu=@var{cpu type}
 -mbwx -mno-bwx -mcix -mno-cix -mmax -mno-max
+-mmemory-latency=@var{time}
 
 @emph{Clipper Options}
 -mc300  -mc400
@@ -5033,7 +5034,6 @@ CIX, and MAX instruction sets.  The default is to use the instruction sets
 supported by the CPU type specified via @samp{-mcpu=} option or that
 of the CPU on which GNU CC was built if none was specified.
 
-@item -mcpu=@var{cpu type}
 @item -mcpu=@var{cpu_type}
 Set the instruction set, register set, and instruction scheduling
 parameters for machine type @var{cpu_type}.  You can specify either the
@@ -5059,6 +5059,7 @@ Schedules as an EV5 and has no instruction set extensions.
 Schedules as an EV5 and supports the BWX extension.
 
 @item pca56
+@itemx 21164pc
 @itemx 21164PC
 Schedules as an EV5 and supports the BWX and MAX extensions.
 
@@ -5066,6 +5067,29 @@ Schedules as an EV5 and supports the BWX and MAX extensions.
 @itemx 21264
 Schedules as an EV5 (until Digital releases the scheduling parameters
 for the EV6) and supports the BWX, CIX, and MAX extensions.
+@end table
+
+@item -mmemory-latency=@var{time}
+Sets the latency the scheduler should assume for typical memory
+references as seen by the application.  This number is highly
+dependant on the memory access patterns used by the application
+and the size of the external cache on the machine.
+
+Valid options for @var{time} are
+
+@table @samp
+@item @var{number}
+A decimal number representing clock cycles.
+
+@item L1
+@itemx L2
+@itemx L3
+@itemx main
+The compiler contains estimates of the number of clock cycles for
+``typical'' EV4 & EV5 hardware for the Level 1, 2 & 3 caches
+(also called Dcache, Scache, and Bcache), as well as to main memory.
+Note that L3 is only valid for EV5.
+
 @end table
 @end table
 
