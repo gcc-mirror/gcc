@@ -12351,14 +12351,6 @@ xref_tag (code_type_node, name, globalize)
     }
   else
     {
-      /* If it no longer looks like a nested type, make sure it's
-	 in global scope.
-         If it is not an IDENTIFIER, this is not a declaration */
-      if (b->namespace_p && !class_binding_level
-	  && TREE_CODE (name) == IDENTIFIER_NODE
-	  && IDENTIFIER_NAMESPACE_VALUE (name) == NULL_TREE)
-	SET_IDENTIFIER_NAMESPACE_VALUE (name, TYPE_NAME (ref));
-
       if (!globalize && processing_template_decl && IS_AGGR_TYPE (ref))
 	redeclare_class_template (ref, current_template_parms);
     }

@@ -1,3 +1,7 @@
+2000-02-15  Jason Merrill  <jason@casey.cygnus.com>
+
+	* decl.c (xref_tag): Don't SET_IDENTIFIER_NAMESPACE_VALUE.
+
 2000-02-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (g++spec.o): Depend on $(GCC_H), not gcc.h.
