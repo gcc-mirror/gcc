@@ -1,3 +1,34 @@
+2003-04-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* real.h (EXP_BITS): Make room for...
+	(struct real_value): ... added canonical bit.
+	(struct real_format): Added pnan.
+	(mips_single_format, mips_double_format, mips_extended_format,
+	mips_quad_format): New.
+	* real.c: Copy p to pnan in all formats.
+	(get_canonical_qnan, get_canonical_snan): Set canonical bit.
+	(real_nan): Use pnan to compute significand's shift.
+	(real_identical): Disregard significand in canonical
+	NaNs.
+	(real_hash): Likewise.  Take signalling into account.
+	(encode_ieee_single, encode_ieee_double, encode_ieee_quad):
+	Disregard significand bits in canonical NaNs.  Set all bits of
+	canonical NaN if !qnan_msb_set.
+	(encode_ibm_extended, decode_ibm_extended): Likewise.  Use
+	qnan_msb_set to tell the base double format.
+	(ibm_extended_format): Use 53 as pnan.
+	(mips_single_format, mips_double_format, mips_extended_format,
+	mips_quad_format): Copied from the corresponding ieee/ibm
+	formats, with qnan_msb_set false.
+	* config/mips/iris6.h (MIPS_TFMODE_FORMAT): Use mips_extended_format.
+	* config/mips/linux64.h (MIPS_TFMODE_FORMAT): Use mips_quad_format.
+	* config/mips/mips.c (override_options): Use mips_single_format
+	and mips_double_format.  Default TFmode to mips_quad_format.
+	* config/mips/t-linux64 (tp-bit.c): Define QUIET_NAN_NEGATED.
+	* config/mips/t-irix6: Likewise.
+	* config/mips/t-mips (fp-bit.c, dp-bit.c): Likewise.
+	* config/fp-bit.c (pack_d, unpack_d): Obey it.
+
 2003-04-01  Geoffrey Keating  <geoffk@apple.com>
 
 	* unwind-dw2-fde-darwin.c (DESTRUCTOR_MAY_BE_CALLED_LIVE): New.
