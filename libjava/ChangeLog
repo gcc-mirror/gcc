@@ -1,3 +1,8 @@
+2004-03-18  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* gnu/java/nio/channels/natFileChannelPosix.cc (mapImpl): Cast
+	MAP_FAILED to void *.
+
 2004-03-12  Graydon Hoare  <graydon@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GdkGraphics2D.java: Clipping fixes.
