@@ -18,7 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
-#include <stdio.h>
 #include "config.h"
 #include "gvarargs.h"
 #include "machmode.h"
@@ -33,6 +32,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "bc-opcode.h"
 #include "bc-typecd.h"
 #include "bi-run.h"
+
+#include <stdio.h>
 
 extern char *xmalloc (), *xrealloc ();
 extern void free ();
