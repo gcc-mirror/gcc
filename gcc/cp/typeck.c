@@ -6830,7 +6830,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 		  && binfo_member (TYPE_OFFSET_BASETYPE (ttr),
 				   CLASSTYPE_VBASECLASSES (TYPE_OFFSET_BASETYPE (ttl))))
 		{
-		  sorry ("%s between pointer to members converting across virtual baseclasses", errtype);
+		  error ("%s between pointer to members converting across virtual baseclasses", errtype);
 		  return error_mark_node;
 		}
 	      else if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))

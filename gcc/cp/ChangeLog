@@ -1,3 +1,17 @@
+1998-08-25  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (convert_for_assignment): Converting from pm of vbase
+	to derived is an error, not a sorry.
+
+	* call.c (build_over_call): Use convert_pointer_to_real for 'this'.
+	* class.c (fixed_type_or_null): Rename from
+	resolves_to_fixed_type_p.  Return the dynamic type of the
+	expression, if fixed, or null.
+	(resolves_to_fixed_type_p): Use it.  Return 0 if the dynamic type
+	does not match the static type.
+	(build_vbase_path): Rename 'alias_this' to 'nonnull'.  Use
+	resolves_to_fixed_type_p again.
+
 1998-08-24  Mark Mitchell  <mark@markmitchell.com>
 
 	* pt.c (tsubst_decl): Move special case code for dealing with
