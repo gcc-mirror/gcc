@@ -400,6 +400,7 @@ extern int flag_really_no_inline;
 /* Nonzero if we are only using compiler to check syntax errors.  */
 
 extern int flag_syntax_only;
+extern int rtl_dump_and_exit;
 
 /* Nonzero means we should save auxiliary info into a .X file.  */
 
