@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +38,6 @@ import java.util.Iterator;
 import java.util.Arrays;
 import java.lang.Comparable;
 import gnu.java.rmi.server.RMIHashes;
-// import kaffe.tools.compiler.Compiler;
 
 public class RMIC {
 
@@ -839,16 +838,12 @@ private void generateSkel() throws IOException {
 }
 
 private void compile(String name) throws Exception {
-	throw new Error ("Not implemented");
-//  	Compiler comp = Compiler.getInstance();
-//  	if (verbose) {
-//  		System.out.println("[Compiling class " + name + "]");
-//  	}
-//  	comp.setDestination(destination);
-//  	boolean result = comp.compile(name);
-//  	if (result == false) {
-//  		throw comp.getException();
-//  	}
+	Compiler comp = Compiler.getInstance();
+	if (verbose) {
+		System.out.println("[Compiling class " + name + "]");
+	}
+	comp.setDestination(destination);
+	comp.compile(name);
 }
 
 private static String getPrettyName(Class cls) {

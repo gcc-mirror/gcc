@@ -632,6 +632,9 @@ gnu/java/rmi/dgc/DGCImpl_Stub.java \
 gnu/java/rmi/registry/RegistryImpl.java	\
 gnu/java/rmi/registry/RegistryImpl_Skel.java \
 gnu/java/rmi/registry/RegistryImpl_Stub.java \
+gnu/java/rmi/rmic/Compile_gcj.java \
+gnu/java/rmi/rmic/Compiler.java	\
+gnu/java/rmi/rmic/CompilerProcess.java \
 gnu/java/rmi/rmic/RMIC.java \
 gnu/java/rmi/rmic/TabbedWriter.java \
 gnu/java/rmi/server/ProtocolConstants.java \
@@ -1580,6 +1583,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/rmi/registry/RegistryImpl.P \
 .deps/gnu/java/rmi/registry/RegistryImpl_Skel.P \
 .deps/gnu/java/rmi/registry/RegistryImpl_Stub.P \
+.deps/gnu/java/rmi/rmic/Compile_gcj.P \
+.deps/gnu/java/rmi/rmic/Compiler.P \
+.deps/gnu/java/rmi/rmic/CompilerProcess.P \
 .deps/gnu/java/rmi/rmic/RMIC.P .deps/gnu/java/rmi/rmic/TabbedWriter.P \
 .deps/gnu/java/rmi/server/ProtocolConstants.P \
 .deps/gnu/java/rmi/server/RMIDefaultSocketFactory.P \
