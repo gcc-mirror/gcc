@@ -7838,7 +7838,7 @@ reshape_init (tree type, tree *initp)
 
   if (TREE_CODE (old_init_value) == STRING_CST
       && TREE_CODE (type) == ARRAY_TYPE
-      && char_type_p (TREE_TYPE (type)))
+      && char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type))))
     {
       /* [dcl.init.string]
 
