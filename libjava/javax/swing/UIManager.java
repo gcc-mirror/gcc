@@ -1,5 +1,5 @@
 /* UIManager.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -168,7 +168,7 @@ public class UIManager implements Serializable
   /**
    * Returns the default values for this look and feel. 
    */
-  static  UIDefaults getDefaults()
+  public static UIDefaults getDefaults()
   {
     return getLookAndFeel().getDefaults();
   }
@@ -176,7 +176,7 @@ public class UIManager implements Serializable
   /**
    * Returns a dimension from the defaults table. 
    */
-  static  Dimension getDimension(Object key)
+  public static Dimension getDimension(Object key)
   {
     System.out.println("UIManager.getDim");
     return new Dimension(200,100);
@@ -195,24 +195,24 @@ public class UIManager implements Serializable
     return (Font) getLookAndFeel().getDefaults().get(key);
   }
 
-  static Icon getIcon(Object key)
+  public static Icon getIcon(Object key)
     // Returns an Icon from the defaults table. 
   {
     return (Icon) getLookAndFeel().getDefaults().get(key);
   }
   
-  static Insets getInsets(Object key)
+  public static Insets getInsets(Object key)
     // Returns an Insets object from the defaults table. 
   {
     return (Insets) getLookAndFeel().getDefaults().getInsets(key);
   }
 
-  static LookAndFeelInfo[] getInstalledLookAndFeels()
+  public static LookAndFeelInfo[] getInstalledLookAndFeels()
   {
     return installed;
   }
 
-  static  int getInt(Object key)
+  public static int getInt(Object key)
   {
     Integer x = (Integer) getLookAndFeel().getDefaults().get(key);
     if (x == null)
@@ -220,7 +220,7 @@ public class UIManager implements Serializable
     return x.intValue();
   }
 
-  static  LookAndFeel getLookAndFeel()
+  public static LookAndFeel getLookAndFeel()
   {
     return look_and_feel;
   }
@@ -234,13 +234,13 @@ public class UIManager implements Serializable
     return getLookAndFeel().getDefaults();
   }
 
-  static String getString(Object key)
+  public static String getString(Object key)
     // Returns a string from the defaults table. 
   {
     return (String) getLookAndFeel().getDefaults().get(key);
   }
   
-  static String getSystemLookAndFeelClassName()
+  public static String getSystemLookAndFeelClassName()
     // Returns the name of the LookAndFeel class that implements the native systems look and feel if there is one, otherwise the name of the default cross platform LookAndFeel class. 
   {
     return getCrossPlatformLookAndFeelClassName();
