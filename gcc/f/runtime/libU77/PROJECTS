@@ -1,0 +1,10 @@
+                                                    -*- indented-text-*-
+
+* Interface to strget
+
+* Non-blocking (`asynchronous') i/o (per c.l.f. discussion)
+
+* `ioinit'-type routine for various i/o options
+
+* IEEE/VAX/... number format conversion (or XDR interface).  This
+  might be made optionally transparent per logical unit a la DECtran.

@@ -1,0 +1,567 @@
+# Top level makefile fragment for GNU Fortran.           -*-makefile-*-
+#   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+
+#This file is part of GNU Fortran.
+
+#GNU Fortran is free software; you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation; either version 2, or (at your option)
+#any later version.
+
+#GNU Fortran is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with GNU Fortran; see the file COPYING.  If not, write to
+#the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+#02111-1307, USA.
+
+# This file provides the language dependent support in the main Makefile.
+# Each language makefile fragment must provide the following targets:
+#
+# foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
+# foo.info, foo.dvi,
+# foo.install-normal, foo.install-common, foo.install-info, foo.install-man,
+# foo.uninstall, foo.distdir,
+# foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
+# foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
+#
+# where `foo' is the name of the language.
+#
+# It should also provide rules for:
+#
+# - making any compiler driver (eg: g77)
+# - the compiler proper (eg: f771)
+# - define the names for selecting the language in LANGUAGES.
+#
+# $(srcdir) must be set to the gcc/ source directory (not gcc/f/).
+
+# Extra flags to pass to recursive makes (and to sub-configure).
+# Use different quoting rules compared with FLAGS_TO_PASS so we can use
+# this to set environment variables as well
+# Note that GCC_FOR_TARGET, GCC_FLAGS aren't in here -- treated separately.
+F77_FLAGS_TO_PASS = \
+	CROSS="$(CROSS)" \
+	AR_FLAGS="$(AR_FLAGS)" \
+	AR_FOR_TARGET="$(AR_FOR_TARGET)" \
+	BISON="$(BISON)" \
+	BISONFLAGS="$(BISONFLAGS)" \
+	CC="$(CC)" \
+	CFLAGS="$(CFLAGS)" \
+	X_CFLAGS="$(X_CFLAGS)" \
+	LDFLAGS="$(LDFLAGS)" \
+	LEX="$(LEX)" \
+	LEXFLAGS="$(LEXFLAGS)" \
+	MAKEINFO="$(MAKEINFO)" \
+	MAKEINFOFLAGS="$(MAKEINFOFLAGS)" \
+	RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
+	RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
+	SHELL="$(SHELL)" \
+	exec_prefix="$(exec_prefix)" \
+	prefix="$(prefix)" \
+	tooldir="$(tooldir)" \
+	bindir="$(bindir)" \
+	libsubdir="$(libsubdir)"
+#	"F77_FOR_BUILD=$(F77_FOR_BUILD)" \
+#	"F77FLAGS=$(F77FLAGS)" \
+#	"F77_FOR_TARGET=$(F77_FOR_TARGET)"
+
+# This flag controls whether to install (overwrite) f77 on this system,
+# and also whether to uninstall it when using the uninstall target.
+# As shipped, the flag is a test of whether the `f77_install_ok'
+# file exists in the build or source directories (top level), but
+# you can just change it here if you like.
+F77_INSTALL_FLAG = [ -f f77-install-ok -o -f $(srcdir)/f77-install-ok ]
+
+# This flag is similar to F77_INSTALL_FLAG, but controls whether
+# to install (ovewrite) f2c-related items on this system.  Currently
+# these are `include/f2c.h' and `lib/libf2c.a', though at some point
+# `bin/f2c' itself might be added to the g77 distribution.
+F2C_INSTALL_FLAG = [ -f f2c-install-ok -o -f $(srcdir)/f2c-install-ok ]
+
+# This flag controls whether it is safe to install gcc's libf2c.a
+# even when there's already a lib/libf2c.a installed (which, unless
+# F2C_INSTALL_FLAG is set, will be left alone).
+F2CLIBOK = [ -f f2c-exists-ok -o -f $(srcdir)/f2c-exists-ok ]
+
+# Actual names to use when installing a native compiler.
+F77_INSTALL_NAME = `t='$(program_transform_name)'; echo f77 | sed $$t`
+G77_INSTALL_NAME = `t='$(program_transform_name)'; echo g77 | sed $$t`
+
+# Actual names to use when installing a cross-compiler.
+F77_CROSS_NAME = `t='$(program_transform_cross_name)'; echo f77 | sed $$t`
+G77_CROSS_NAME = `t='$(program_transform_cross_name)'; echo g77 | sed $$t`
+
+# Define the names for selecting f77 in LANGUAGES.
+# Note that it would be nice to move the dependency on g77
+# into the F77 rule, but that needs a little bit of work
+# to do the right thing within all.cross.
+F77 f77: f771 f77-runtime
+
+# Tell GNU make to ignore these if they exist.
+.PHONY: F77 f77 f77-runtime f77-runtime-unsafe f77.all.build f77.all.cross \
+  f77.start.encap f77.rest.encap f77.info f77.dvi maybe-f2c \
+  f77.install-normal install-libf77 install-f2c-all install-f2c-header \
+  install-f2c-lib f77.install-common f77.install-info f77.install-man \
+  f77.uninstall f77.mostlyclean f77.clean f77.distclean f77.extraclean \
+  f77.maintainer-clean f77.realclean f77.stage1 f77.stage2 f77.stage3 \
+  f77.stage4 f77.distdir f77.rebuilt
+
+# Create the compiler driver for g77 (only if `f77' is in LANGUAGES).
+g77: $(srcdir)/f/g77.c $(srcdir)/f/zzz.c $(CONFIG_H) $(LIBDEPS)
+	case '$(LANGUAGES)' in \
+	*f77*) \
+	  $(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) \
+	    -o $@ $(srcdir)/f/g77.c $(srcdir)/f/zzz.c $(LIBS) ;; \
+	esac
+
+# Create a version of the g77 driver which calls the cross-compiler
+# (only if `f77' is in LANGUAGES).
+g77-cross: $(srcdir)/f/g77.c $(srcdir)/f/zzz.c version.o $(LIBDEPS)
+	case '$(LANGUAGES)' in \
+	*f77*) \
+	  $(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) \
+	    -DGCC_NAME=\"$(GCC_CROSS_NAME)\" \
+	    -o $@ $(srcdir)/f/g77.c $(srcdir)/f/zzz.c $(LIBS) ;; \
+	esac
+
+F77_SRCS = \
+ $(srcdir)/f/assert.j \
+ $(srcdir)/f/bad.c \
+ $(srcdir)/f/bad.def \
+ $(srcdir)/f/bad.h \
+ $(srcdir)/f/bit.c \
+ $(srcdir)/f/bit.h \
+ $(srcdir)/f/bld-op.def \
+ $(srcdir)/f/bld.c \
+ $(srcdir)/f/bld.h \
+ $(srcdir)/f/com-rt.def \
+ $(srcdir)/f/com.c \
+ $(srcdir)/f/com.h \
+ $(srcdir)/f/config.j \
+ $(srcdir)/f/convert.j \
+ $(srcdir)/f/data.c \
+ $(srcdir)/f/data.h \
+ $(srcdir)/f/equiv.c \
+ $(srcdir)/f/equiv.h \
+ $(srcdir)/f/expr.c \
+ $(srcdir)/f/expr.h \
+ $(srcdir)/f/fini.c \
+ $(srcdir)/f/flags.j \
+ $(srcdir)/f/glimits.j \
+ $(srcdir)/f/global.c \
+ $(srcdir)/f/global.h \
+ $(srcdir)/f/hconfig.j \
+ $(srcdir)/f/implic.c \
+ $(srcdir)/f/implic.h \
+ $(srcdir)/f/input.j \
+ $(srcdir)/f/info-b.def \
+ $(srcdir)/f/info-k.def \
+ $(srcdir)/f/info-w.def \
+ $(srcdir)/f/info.c \
+ $(srcdir)/f/info.h \
+ $(srcdir)/f/intrin.c \
+ $(srcdir)/f/intrin.def \
+ $(srcdir)/f/intrin.h \
+ $(srcdir)/f/lab.c \
+ $(srcdir)/f/lab.h \
+ $(srcdir)/f/lex.c \
+ $(srcdir)/f/lex.h \
+ $(srcdir)/f/malloc.c \
+ $(srcdir)/f/malloc.h \
+ $(srcdir)/f/name.c \
+ $(srcdir)/f/name.h \
+ $(srcdir)/f/parse.c \
+ $(srcdir)/f/proj.c \
+ $(srcdir)/f/proj.h \
+ $(srcdir)/f/rtl.j \
+ $(srcdir)/f/src.c \
+ $(srcdir)/f/src.h \
+ $(srcdir)/f/st.c \
+ $(srcdir)/f/st.h \
+ $(srcdir)/f/sta.c \
+ $(srcdir)/f/sta.h \
+ $(srcdir)/f/stb.c \
+ $(srcdir)/f/stb.h \
+ $(srcdir)/f/stc.c \
+ $(srcdir)/f/stc.h \
+ $(srcdir)/f/std.c \
+ $(srcdir)/f/std.h \
+ $(srcdir)/f/ste.c \
+ $(srcdir)/f/ste.h \
+ $(srcdir)/f/storag.c \
+ $(srcdir)/f/storag.h \
+ $(srcdir)/f/stp.c \
+ $(srcdir)/f/stp.h \
+ $(srcdir)/f/str-1t.fin \
+ $(srcdir)/f/str-2t.fin \
+ $(srcdir)/f/str-fo.fin \
+ $(srcdir)/f/str-io.fin \
+ $(srcdir)/f/str-nq.fin \
+ $(srcdir)/f/str-op.fin \
+ $(srcdir)/f/str-ot.fin \
+ $(srcdir)/f/str.c \
+ $(srcdir)/f/str.h \
+ $(srcdir)/f/sts.c \
+ $(srcdir)/f/sts.h \
+ $(srcdir)/f/stt.c \
+ $(srcdir)/f/stt.h \
+ $(srcdir)/f/stu.c \
+ $(srcdir)/f/stu.h \
+ $(srcdir)/f/stv.c \
+ $(srcdir)/f/stv.h \
+ $(srcdir)/f/stw.c \
+ $(srcdir)/f/stw.h \
+ $(srcdir)/f/symbol.c \
+ $(srcdir)/f/symbol.def \
+ $(srcdir)/f/symbol.h \
+ $(srcdir)/f/target.c \
+ $(srcdir)/f/target.h \
+ $(srcdir)/f/tconfig.j \
+ $(srcdir)/f/tm.j \
+ $(srcdir)/f/top.c \
+ $(srcdir)/f/top.h \
+ $(srcdir)/f/tree.j \
+ $(srcdir)/f/type.c \
+ $(srcdir)/f/type.h \
+ $(srcdir)/f/where.c \
+ $(srcdir)/f/where.h \
+ $(srcdir)/f/zzz.c \
+ $(srcdir)/f/zzz.h
+
+f771: $(P) $(F77_SRCS) $(LIBDEPS) stamp-objlist f/Makefile
+	$(MAKE) -f f/Makefile $(FLAGS_TO_PASS) VPATH=$(srcdir) srcdir=$(srcdir) f771
+
+f/Makefile: $(srcdir)/f/Makefile.in $(srcdir)/configure
+	$(SHELL) config.status
+
+# Note that the runtime is built in the top-level directory rather
+# than in f/runtime a la the Cygnus CHILL example; then xgcc -B./ will
+# find it.  Use an absolute name for GCC_FOR_TARGET (so we don't have
+# to keep stage? links around everywhere) unless this value has been
+# overridden from the default "./xgcc -B./", hence the case statement.
+# We depend on GCC_PASSES through f/runtime/Makefile.
+stmp-headers = stmp-headers	# to be overrideable in unsafe version
+# Depend on stmp-headers, not stmp-int-hdrs, since libF77 needs float.h.
+f77-runtime:  f/runtime/Makefile include/f2c.h $(stmp-headers) \
+  f/runtime/libF77/Makefile f/runtime/libI77/Makefile f/runtime/libU77/Makefile
+	case "$(LANGUAGES)" in \
+	*f77*) top=`pwd`; \
+	  cd f/runtime && $(MAKE) \
+	    GCC_FOR_TARGET="`case '$(GCC_FOR_TARGET)' in \
+	     './xgcc -B./') echo $${top}/xgcc -B$${top}/;; \
+	     *) echo '$(GCC_FOR_TARGET)';; esac`" \
+	    GCC_FLAGS="$(GCC_FLAGS)" $(F77_FLAGS_TO_PASS) \
+	    all ;; \
+	esac
+
+# This one doesn't depend on cc1 etc. but f2c.h may not be found,
+# in particular, at present...
+f77-runtime-unsafe:
+	$(MAKE) stmp-headers= GCC_PARTS= f77-runtime
+
+# The configuration of the runtime system relies on an autoconf-type
+# configure, not a Cygnus-type one.  It needs to be run *after* the
+# appropriate (cross-)compiler has been built, thus depend on GCC_PARTS.
+# NB, sh uses the *first* value of $a from `a=fred a=joe prog'.
+include/f2c.h \
+f/runtime/Makefile \
+f/runtime/libF77/Makefile \
+f/runtime/libI77/Makefile \
+f/runtime/libU77/Makefile: \
+  $(srcdir)/f/runtime/f2c.h.in \
+  $(srcdir)/f/com.h $(srcdir)/f/proj.h \
+  $(srcdir)/f/runtime/Makefile.in \
+  $(srcdir)/f/runtime/libF77/Makefile.in \
+  $(srcdir)/f/runtime/libI77/Makefile.in \
+  $(srcdir)/f/runtime/libU77/Makefile.in \
+  $(srcdir)/f/runtime/configure \
+  $(srcdir)/f/runtime/libU77/configure \
+  $(GCC_PARTS)
+# The make "stage?" in compiler spec. is fully qualified as above
+	top=`pwd`; \
+	src=`cd $(srcdir); pwd`; \
+	  cd f/runtime; \
+	  CC="`case '$(GCC_FOR_TARGET)' in \
+	     './xgcc -B./') echo $${top}/xgcc -B$${top}/;; \
+	     *) echo '$(GCC_FOR_TARGET)';; esac`" \
+	  $(F77_FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) \
+	  $${src}/f/runtime/configure --srcdir=$${src}/f/runtime
+	top=`pwd`; \
+	src=`cd $(srcdir); pwd`; \
+	  cd f/runtime/libU77; \
+	  CC="`case '$(GCC_FOR_TARGET)' in \
+	     './xgcc -B./') echo $${top}/xgcc -B$${top}/;; \
+	     *) echo '$(GCC_FOR_TARGET)';; esac`" \
+	  $(F77_FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) \
+	  $${src}/f/runtime/libU77/configure --srcdir=$${src}/f/runtime/libU77
+
+#For now, omit f2c stuff.  -- burley
+#f2c: stmp-headers f/f2c/Makefile
+#	cd f/f2c; $(MAKE) all
+#
+#f/f2c/Makefile: $(srcdir)/f/f2c/Makefile.in $(GCC_PARTS) \
+#            $(srcdir)/config/$(xmake_file) $(srcdir)/config/$(tmake_file)
+#	top=`pwd`; cd f/f2c; \
+#          $${top}/f/f2c/configure --srcdir=$${top}/f/f2c
+
+# Build hooks:
+
+# I'm not sure there's a way of getting f2c into here conditionally on
+# the --enable-f2c flag detected by config-lang.in so kluge it with the
+# maybe-f2c target by looking at STAGESTUFF.
+f77.all.build: g77 maybe-f2c
+f77.all.cross: g77-cross maybe-f2c
+f77.start.encap: g77 maybe-f2c
+f77.rest.encap:
+
+f77.info: $(srcdir)/f/g77.info
+f77.dvi: $(srcdir)/f/g77.dvi
+
+# g77 documentation.
+$(srcdir)/f/g77.info: f/g77.texi f/bugs.texi f/install.texi f/news.texi f/intdoc.texi
+	cd $(srcdir)/f; $(MAKEINFO) g77.texi
+
+$(srcdir)/f/g77.dvi: f/g77.texi f/bugs.texi f/install.texi f/news.texi f/intdoc.texi
+	cd $(srcdir)/f; $(TEXI2DVI) g77.texi
+
+$(srcdir)/f/intdoc.texi: f/intdoc.c f/intdoc.h f/intrin.def f/intrin.h
+	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) \
+	      `echo $(srcdir)/f/intdoc.c | sed 's,^\./,,'` -o f/intdoc
+	f/intdoc > $(srcdir)/f/intdoc.texi
+	rm f/intdoc
+
+$(srcdir)/f/BUGS: f/bugs0.texi f/bugs.texi
+	cd $(srcdir)/f; $(MAKEINFO) -D BUGSONLY --no-header --no-split \
+	  --no-validate bugs0.texi -o BUGS
+
+$(srcdir)/f/INSTALL: f/install0.texi f/install.texi
+	cd $(srcdir)/f; $(MAKEINFO) -D INSTALLONLY --no-header --no-split \
+	  --no-validate install0.texi -o INSTALL
+
+$(srcdir)/f/NEWS: f/news0.texi f/news.texi
+	cd $(srcdir)/f; $(MAKEINFO) -D NEWSONLY --no-header --no-split \
+	  --no-validate news0.texi -o NEWS
+
+$(srcdir)/f/runtime/configure: $(srcdir)/f/runtime/configure.in 
+	cd f/runtime && $(MAKE) srcdir=../../$(srcdir)/f/runtime -f ../../$(srcdir)/f/runtime/Makefile.in rebuilt
+$(srcdir)/f/runtime/libU77/configure: $(srcdir)/f/runtime/libU77/configure.in
+	cd f/runtime && $(MAKE) srcdir=../../$(srcdir)/f/runtime -f ../../$(srcdir)/f/runtime/Makefile.in rebuilt
+
+f77.rebuilt: $(srcdir)/f/g77.info $(srcdir)/f/BUGS $(srcdir)/f/INSTALL \
+  $(srcdir)/f/NEWS $(srcdir)/f/runtime/configure \
+  $(srcdir)/f/runtime/libU77/configure
+
+maybe-f2c:
+#For now, omit f2c stuff.  -- burley
+#	case "$(STAGESTUFF)" in *f2c*) $(MAKE) f2c;; esac
+
+# Install hooks:
+# f771 is installed elsewhere as part of $(COMPILERS).
+
+f77.install-normal: install-libf77 install-f2c-all
+
+# Install the F77 run time library.
+install-libf77: f77-runtime
+# Check for the presence of other versions of the library and includes.
+# Test libf2c.* in case of a shared version, for instance.
+	@if test -z "$(F2CLIBOK)" && \
+	   test -z "$(F2C_INSTALL_FLAG)" && \
+	   test "`echo $(libdir)/libf2c.*`" != "$(libdir)/libf2c.*"; then \
+   echo ; \
+   echo 'You already have a version of libf2c installed as' $(libdir)/libf2c.*; \
+   echo 'To use g77 this must be consistent with the one that will be built.'; \
+   echo 'You should probably delete it and/or install ./libf2c.a in its place.'; \
+   echo 'Resume the "make install" after removing the existing library or'; \
+   echo 'define the make variable F2CLIBOK to avoid this test.'; \
+   echo 'Check also for' $(includedir)/f2c.h 'per INSTALL instructions.'; \
+   echo '(Note that a quick and easy way to resume "make -k install" is to'; \
+   echo 'use "make install-libf77".)'; \
+   exit 1; else true; fi
+	if [ -f libf2c.a ] ; then \
+	  $(INSTALL_DATA) libf2c.a $(libsubdir)/libf2c.a; \
+	  if $(RANLIB_TEST) ; then \
+	    (cd $(libsubdir); $(RANLIB) libf2c.a); else true; fi; \
+	  chmod a-x $(libsubdir)/libf2c.a; \
+	else true; fi
+	if [ -f include/f2c.h ] ; then \
+	  $(INSTALL_DATA) include/f2c.h $(libsubdir)/include/f2c.h; \
+	else true; fi
+
+# Install the f2c-related stuff in the directories
+# where f2c and vanilla ld might look for them.
+
+install-f2c-all: install-f2c-header install-f2c-lib
+
+install-f2c-header:
+	-if test -n "$(F2C_INSTALL_FLAG)" && test -f include/f2c.h; then \
+	  $(INSTALL_DATA) include/f2c.h $(includedir)/f2c.h; \
+	  chmod a+r $(includedir)/f2c.h; \
+	else true; fi
+
+install-f2c-lib:
+	-if test -n "$(F2C_INSTALL_FLAG)" && test -f libf2c.a; then \
+	  $(INSTALL_DATA) libf2c.a $(libdir)/libf2c.a; \
+	  if $(RANLIB_TEST) ; then \
+	    (cd $(libdir); $(RANLIB) libf2c.a); else true; fi; \
+	  chmod a-x $(libdir)/libf2c.a; \
+	else true; fi
+
+# Install the driver program as $(target)-g77
+# and also as either g77 (if native) or $(tooldir)/bin/g77.
+f77.install-common:
+	-if [ -f f771$(exeext) ] ; then \
+	  if [ -f g77-cross$(exeext) ] ; then \
+	    rm -f $(bindir)/$(G77_CROSS_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) g77-cross$(exeext) $(bindir)/$(G77_CROSS_NAME)$(exeext); \
+	    chmod a+x $(bindir)/$(G77_CROSS_NAME)$(exeext); \
+	    if $(F77_INSTALL_FLAG) ; then \
+	      rm -f $(bindir)/$(F77_CROSS_NAME)$(exeext); \
+	      ln $(bindir)/$(G77_CROSS_NAME)$(exeext) $(bindir)/$(F77_CROSS_NAME)$(exeext) \
+		> /dev/null 2>&1 \
+		|| cp $(bindir)/$(G77_CROSS_NAME)$(exeext) $(bindir)/$(F77_CROSS_NAME)$(exeext) ; \
+	    fi ; \
+	  else \
+	    rm -f $(bindir)/$(G77_INSTALL_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) g77$(exeext) $(bindir)/$(G77_INSTALL_NAME)$(exeext); \
+	    chmod a+x $(bindir)/$(G77_INSTALL_NAME)$(exeext); \
+	    if $(F77_INSTALL_FLAG) ; then \
+	      rm -f $(bindir)/$(F77_INSTALL_NAME)$(exeext); \
+	      ln $(bindir)/$(G77_INSTALL_NAME)$(exeext) $(bindir)/$(F77_INSTALL_NAME)$(exeext) \
+		> /dev/null 2>&1 \
+		|| cp $(bindir)/$(G77_INSTALL_NAME)$(exeext) $(bindir)/$(F77_INSTALL_NAME)$(exeext) ; \
+	    fi ; \
+	  fi ; \
+	else true; fi
+
+f77.install-info:
+	-rm -f $(infodir)/g77.info*
+	cd $(srcdir)/f; for f in g77.info*; \
+	do $(INSTALL_DATA) $$f $(infodir)/$$f; done
+	-chmod a-x $(infodir)/g77.info*
+
+f77.install-man: $(srcdir)/f/g77.1
+	-if [ -f f771$(exeext) ] ; then \
+	  if [ -f g77-cross$(exeext) ] ; then \
+	    rm -f $(mandir)/$(G77_CROSS_NAME)$(manext); \
+	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(mandir)/$(G77_CROSS_NAME)$(manext); \
+	    chmod a-x $(mandir)/$(G77_CROSS_NAME)$(manext); \
+	    if $(F77_INSTALL_FLAG) ; then \
+	      rm -f $(mandir)/$(F77_CROSS_NAME)$(manext); \
+	      ln $(mandir)/$(G77_CROSS_NAME)$(manext) $(mandir)/$(F77_CROSS_NAME)$(manext) \
+		> /dev/null 2>&1 \
+		|| cp $(mandir)/$(F77_CROSS_NAME)$(manext) $(mandir)/$(F77_CROSS_NAME)$(manext) ; \
+	    fi ;\
+	  else \
+	    rm -f $(mandir)/$(G77_INSTALL_NAME)$(manext); \
+	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(mandir)/$(G77_INSTALL_NAME)$(manext); \
+	    chmod a-x $(mandir)/$(G77_INSTALL_NAME)$(manext); \
+	    if $(F77_INSTALL_FLAG) ; then \
+	      rm -f $(mandir)/$(F77_INSTALL_NAME)$(manext); \
+	      ln $(mandir)/$(G77_INSTALL_NAME)$(manext) $(mandir)/$(F77_INSTALL_NAME)$(manext) \
+		> /dev/null 2>&1 \
+		|| cp $(mandir)/$(F77_INSTALL_NAME)$(manext) $(mandir)/$(F77_INSTALL_NAME)$(manext) ; \
+	    fi ;\
+	  fi; \
+	else true; fi
+
+f77.uninstall:
+	-if $(F77_INSTALL_FLAG) ; then \
+	  rm -rf $(bindir)/$(F77_INSTALL_NAME)$(exeext) ; \
+	  rm -rf $(bindir)/$(F77_CROSS_NAME)$(exeext) ; \
+	  rm -rf $(mandir)/$(F77_INSTALL_NAME)$(manext) ; \
+	  rm -rf $(mandir)/$(F77_CROSS_NAME)$(manext) ; \
+	fi
+	-rm -rf $(bindir)/$(G77_INSTALL_NAME)$(exeext)
+	-rm -rf $(bindir)/$(G77_CROSS_NAME)$(exeext)
+	-rm -rf $(mandir)/$(G77_INSTALL_NAME)$(manext)
+	-rm -rf $(mandir)/$(G77_CROSS_NAME)$(manext)
+	-rm -rf $(infodir)/g77.info*
+	-rm -rf $(libsubdir)/libf2c.a
+	-if $(F2C_INSTALL_FLAG) ; then \
+	  rm -rf include/f2c.h ; \
+	  rm -rf $(libdir)/libf2c.a ; \
+	fi
+
+# Clean hooks:
+# A lot of the ancillary files are deleted by the main makefile.
+# We just have to delete files specific to us.
+
+f77.mostlyclean:
+	-rm -f f/*$(objext)
+	-rm -f f/fini f/f771 f/stamp-str f/str-*.h f/str-*.j f/intdoc
+	-cd f/runtime; $(MAKE) -f ../../$(srcdir)/f/runtime/Makefile.in mostlyclean
+f77.clean:
+	-cd f/runtime; $(MAKE) -f ../../$(srcdir)/f/runtime/Makefile.in clean
+f77.distclean:
+	-cd f/runtime; $(MAKE) -f ../../$(srcdir)/f/runtime/Makefile.in distclean
+	-rm -f f/Makefile
+# like gcc's extraclean, which does clean f/ for us, but not f/gbe,
+# f/runtime, f/runtime/libF77, f/runtime/libI77, and f/runtime/libU77,
+# so do those.
+f77.extraclean: f77.distclean
+	-rm -f f/*/=* f/*/"#"* f/*/*~*
+	-rm -f f/*/patch* f/*/*.orig f/*/*.rej
+	-rm -f f/*/*.dvi f/*/*.oaux f/*/*.d f/*/*.[zZ] f/*/*.gz
+	-rm -f f/*/*.tar f/*/*.xtar f/*/*diff f/*/*.diff.* f/*/*.tar.* f/*/*.xtar.* f/*/*diffs
+	-rm -f f/*/*lose f/*/*.s f/*/*.s[0-9] f/*/*.i
+	-rm -f f/*/*/=* f/*/*/"#"* f/*/*/*~*
+	-rm -f f/*/*/patch* f/*/*/*.orig f/*/*/*.rej
+	-rm -f f/*/*/*.dvi f/*/*/*.oaux f/*/*/*.d f/*/*/*.[zZ] f/*/*/*.gz
+	-rm -f f/*/*/*.tar f/*/*/*.xtar f/*/*/*diff f/*/*/*.diff.* f/*/*/*.tar.* f/*/*/*.xtar.* f/*/*/*diffs
+	-rm -f f/*/*/*lose f/*/*/*.s f/*/*/*.s[0-9] f/*/*/*.i
+# realclean is the pre-2.7.0 name for maintainer-clean
+f77.maintainer-clean f77.realclean: f77.distclean
+	-cd f/runtime; $(MAKE) -f ../../$(srcdir)/f/runtime/Makefile.in maintainer-clean
+	-$(MAKE) f77.maintainer-clean
+	-rm -f f/g77.info* f/g77.*aux f/TAGS f/BUGS f/INSTALL f/NEWS f/intdoc.texi
+
+# Stage hooks:
+# The main makefile has already created stage?/f.
+
+G77STAGESTUFF = f/*$(objext) f/fini f/stamp-str f/str-*.h f/str-*.j
+RUNTIMESTAGESTUFF = f/runtime/config.cache f/runtime/config.log \
+  f/runtime/config.status f/runtime/Makefile f/runtime/stamp-lib
+LIBF77STAGESTUFF = f/runtime/libF77/*$(objext) f/runtime/libF77/Makefile
+LIBI77STAGESTUFF = f/runtime/libI77/*$(objext) f/runtime/libI77/Makefile
+LIBU77STAGESTUFF = f/runtime/libU77/*$(objext) f/runtime/libU77/Makefile \
+  f/runtime/libU77/config.cache f/runtime/libU77/config.log \
+  f/runtime/libU77/config.status
+
+f77.stage1:
+	-mv $(G77STAGESTUFF) stage1/f
+	-mv $(RUNTIMESTAGESTUFF) stage1/f/runtime
+	-mv $(LIBF77STAGESTUFF) stage1/f/runtime/libF77
+	-mv $(LIBI77STAGESTUFF) stage1/f/runtime/libI77
+	-mv $(LIBU77STAGESTUFF) stage1/f/runtime/libU77
+f77.stage2:
+	-mv $(G77STAGESTUFF) stage2/f
+	-mv $(RUNTIMESTAGESTUFF) stage2/f/runtime
+	-mv $(LIBF77STAGESTUFF) stage2/f/runtime/libF77
+	-mv $(LIBI77STAGESTUFF) stage2/f/runtime/libI77
+	-mv $(LIBU77STAGESTUFF) stage2/f/runtime/libU77
+f77.stage3:
+	-mv $(G77STAGESTUFF) stage3/f
+	-mv $(RUNTIMESTAGESTUFF) stage3/f/runtime
+	-mv $(LIBF77STAGESTUFF) stage3/f/runtime/libF77
+	-mv $(LIBI77STAGESTUFF) stage3/f/runtime/libI77
+	-mv $(LIBU77STAGESTUFF) stage3/f/runtime/libU77
+f77.stage4:
+	-mv $(G77STAGESTUFF) stage4/f
+	-mv $(RUNTIMESTAGESTUFF) stage4/f/runtime
+	-mv $(LIBF77STAGESTUFF) stage4/f/runtime/libF77
+	-mv $(LIBI77STAGESTUFF) stage4/f/runtime/libI77
+	-mv $(LIBU77STAGESTUFF) stage4/f/runtime/libU77
+
+# Maintenance hooks:
+
+# This target creates the files that can be rebuilt, but go in the
+# distribution anyway.  It then copies the files to the distdir directory.
+f77.distdir: f77.rebuilt
+	mkdir tmp/f
+	cd f; \
+	for file in *[0-9a-zA-Z+]; do \
+	  ln $$file ../tmp/f >/dev/null 2>&1 || cp $$file ../tmp/f; \
+	done

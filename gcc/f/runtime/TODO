@@ -1,0 +1,17 @@
+970811
+
+TODO list for the g77 library
+
+* `Makefile.in's should be brought up to standard; I'm not sure they
+  have a complete set of targets at present.
+
+* Investigate building shared libraries on systems we know about
+  (probably in 0.5.22, using libtool-1.0 from the FSF, which looks
+  quite useful).
+
+* Test cases.
+
+* Allow the library to be stripped to save space.
+
+* An interface to IEEE maths functions from libc where this makes
+  sense.

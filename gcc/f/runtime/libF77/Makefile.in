@@ -1,0 +1,95 @@
+# Makefile for GNU F77 compiler runtime.
+# Copyright 1990 - 1994 by AT&T Bell Laboratories and Bellcore (see the
+# file `Notice').
+#   Portions of this file Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+#   Contributed by Dave Love (d.love@dl.ac.uk).
+#
+#This file is part of GNU Fortran.
+#
+#GNU Fortran is free software; you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation; either version 2, or (at your option)
+#any later version.
+#
+#GNU Fortran is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+#along with GNU Fortran; see the file COPYING.  If not, write to
+#the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+#02111-1307, USA.
+
+SHELL = /bin/sh
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+#### Start of system configuration section. ####
+
+# The _FOR_TARGET things are appropriate for a cross-make, passed by the
+# superior makefile
+GCC_FOR_TARGET = @CC@
+CC = $(GCC_FOR_TARGET)
+CFLAGS = @CFLAGS@ $(GCC_FLAGS)
+CPPFLAGS = @CPPFLAGS@
+DEFS = @DEFS@
+CGFLAGS = -g0
+# f2c.h should already be installed in xgcc's include directory but add that
+# to -I anyhow in case not using xgcc.
+ALL_CFLAGS = -I. -I$(srcdir) -I../../../include $(CPPFLAGS) $(DEFS) $(CFLAGS)
+AR = @AR@
+AR_FLAGS = rc
+RANLIB = @RANLIB@
+RANLIB_TEST = @RANLIB_TEST@
+CROSS = @CROSS@
+
+.SUFFIXES:
+.SUFFIXES: .c .o
+
+.c.o:
+	$(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) $(CGFLAGS) $<
+
+MISC =	F77_aloc.o VersionF.o main.o s_rnge.o abort_.o getarg_.o iargc_.o\
+	getenv_.o signal_.o s_stop.o s_paus.o system_.o cabs.o\
+	derf_.o derfc_.o erf_.o erfc_.o sig_die.o exit_.o
+POW =	pow_ci.o pow_dd.o pow_di.o pow_hh.o pow_ii.o  pow_ri.o pow_zi.o pow_zz.o \
+	pow_qq.o
+CX =	c_abs.o c_cos.o c_div.o c_exp.o c_log.o c_sin.o c_sqrt.o
+DCX =	z_abs.o z_cos.o z_div.o z_exp.o z_log.o z_sin.o z_sqrt.o
+REAL =	r_abs.o r_acos.o r_asin.o r_atan.o r_atn2.o r_cnjg.o r_cos.o\
+	r_cosh.o r_dim.o r_exp.o r_imag.o r_int.o\
+	r_lg10.o r_log.o r_mod.o r_nint.o r_sign.o\
+	r_sin.o r_sinh.o r_sqrt.o r_tan.o r_tanh.o
+DBL =	d_abs.o d_acos.o d_asin.o d_atan.o d_atn2.o\
+	d_cnjg.o d_cos.o d_cosh.o d_dim.o d_exp.o\
+	d_imag.o d_int.o d_lg10.o d_log.o d_mod.o\
+	d_nint.o d_prod.o d_sign.o d_sin.o d_sinh.o\
+	d_sqrt.o d_tan.o d_tanh.o
+INT =	i_abs.o i_dim.o i_dnnt.o i_indx.o i_len.o i_mod.o i_nint.o i_sign.o
+HALF =	h_abs.o h_dim.o h_dnnt.o h_indx.o h_len.o h_mod.o  h_nint.o h_sign.o
+CMP =	l_ge.o l_gt.o l_le.o l_lt.o hl_ge.o hl_gt.o hl_le.o hl_lt.o
+EFL =	ef1asc_.o ef1cmc_.o
+CHAR =	s_cat.o s_cmp.o s_copy.o
+F90BIT = lbitbits.o lbitshft.o qbitbits.o qbitshft.o
+
+F2C_H = ../../../include/f2c.h
+
+all: $(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) \
+	 $(HALF) $(CMP) $(EFL) $(CHAR) $(F90BIT)
+
+VersionF.o: Version.c
+	$(CC) -c $(CGFLAGS) -o $@ $(srcdir)/Version.c
+
+mostlyclean clean:
+	-rm -f *.o
+
+distclean maintainer-clean: clean
+	-rm -f stage? include Makefile
+
+# Not quite all these actually do depend on f2c.h...
+$(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) \
+  $(HALF) $(CMP) $(EFL) $(CHAR) $(F90BIT): $(F2C_H)
+
+.PHONY: mostlyclean clean distclean maintainer-clean all
