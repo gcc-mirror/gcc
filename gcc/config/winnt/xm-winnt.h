@@ -1,6 +1,5 @@
-/* Configuration for GNU compiler
-   for processor running Windows NT 3.x.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+/* Configuration for GNU compiler for processor running Windows NT 3.x.
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (drupp@cs.washington.edu)
 
 This file is part of GNU CC.
@@ -20,9 +19,12 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include <stdlib.h>
-#define USG
-#define ONLY_INT_FIELDS
+#define USG 1
+#define ONLY_INT_FIELDS 1
 #define USE_PROTOTYPES 1
+#define HAVE_PUTENV 1
+#define HAVE_VPRINTF 1
+#define NO_SYS_SIGLIST 1
 #define bcmp(a,b,c) memcmp (a,b,c)
 #define bcopy(a,b,c) memcpy (b,a,c)
 #define bzero(a,b) memset (a,0,b)
@@ -33,7 +35,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define EXECUTABLE_SUFFIX ".exe"
 #define PATH_SEPARATOR ';'
 #define DIR_SEPARATOR '\\'
-#define HAVE_PUTENV 1
 
 #define S_IRUSR 0000400
 #define S_IWUSR 0000200
