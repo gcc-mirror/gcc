@@ -2883,7 +2883,7 @@ mark_regs_live_at_end (set)
       outgoing = FUNCTION_VALUE (type, current_function_decl);
 #endif
       if (GET_MODE (outgoing) == BLKmode)
-	PUT_MODE (outgoing, DECL_RTL (DECL_RESULT (current_function_decl)));
+	PUT_MODE (outgoing, DECL_MODE (DECL_RESULT (current_function_decl)));
 
       if (GET_CODE (outgoing) == REG)
 	mark_reg (set, outgoing);

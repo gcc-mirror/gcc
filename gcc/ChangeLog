@@ -1,3 +1,7 @@
+2000-01-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* flow.c (mark_regs_live_at_end): Fix typo.
+
 2000-01-28  Ulrich Drepper  <drepper@redhat.com>
 
 	* c-common.c: Adjust variable names, comments, help strings to c99.
