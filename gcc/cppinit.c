@@ -1345,7 +1345,7 @@ cpp_handle_option (pfile, argc, argv)
       case 's':
 	if (!strcmp (argv[i], "-std=gnu89"))
 	  {
-	    opts->cplusplus = 0, opts->cplusplus_comments = 0;
+	    opts->cplusplus = 0, opts->cplusplus_comments = 1;
 	    opts->c89 = 1, opts->c9x = 0, opts->objc = 0;
 	  }
 	else if (!strcmp (argv[i], "-std=gnu9x"))

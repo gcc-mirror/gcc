@@ -140,6 +140,11 @@ struct cpp_buffer
   /* Used by the C++ frontend to implement redirected input (such as for
      default argument and/or template parsing).  */
   char manual_pop;
+
+  /* True if we have already warned about C++ comments in this file.
+     The warning happens only for C89 extended mode with -pedantic on,
+     and only once per file (otherwise it would be far too noisy).  */
+  char warned_cplusplus_comments;
 };
 
 struct file_name_map_list;

@@ -1,3 +1,22 @@
+2000-01-27  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppinit.c (cpp_handle_option): Recognize C++ comments under
+	-std=gnu89.
+	* cpplib.c (skip_block_comment, skip_line_comment): Split code
+	out of...
+	(skip_comment) ... here.  Permit C++ comments in system
+	headers always.  Warn about C++ comments in user code under
+	-std=gnu89 -pedantic.
+	(copy_comment): Use skip_comment.
+	(cpp_skip_hspace, cpp_get_token): skip_comment can no longer
+	return EOF.
+	(consider_directive_while_skipping, do_else, do_endif): Call
+	validate_else unconditionally.
+	(validate_else): Check CPP_PEDANTIC here.  Accept non-comment
+	text after the conditional in a system header.
+	* cpplib.h (struct cpp_buffer): Add flag
+	warned_cplusplus_comments.
+
 2000-01-27  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* emit-rtl.c (unshare_all_rtl): Unshare virtual parameters too.

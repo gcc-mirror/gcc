@@ -255,11 +255,70 @@ null_cleanup (pbuf, pfile)
   return 0;
 }
 
+/* Skip a C-style block comment.  We know it's a comment, and point is
+   at the second character of the starter.  */
+static void
+skip_block_comment (pfile)
+     cpp_reader *pfile;
+{
+  int c, prev_c = -1;
+  long line, col;
+
+  FORWARD(1);
+  cpp_buf_line_and_col (CPP_BUFFER (pfile), &line, &col);
+  for (;;)
+    {
+      c = GETC ();
+      if (c == EOF)
+	{
+	  cpp_error_with_line (pfile, line, col, "unterminated comment");
+	  return;
+	}
+      else if (c == '\n' || c == '\r')
+	/* \r cannot be a macro escape marker here. */
+	CPP_BUMP_LINE (pfile);
+      else if (c == '/' && prev_c == '*')
+	return;
+      else if (c == '*' && prev_c == '/'
+	       && CPP_OPTIONS (pfile)->warn_comments)
+	cpp_warning (pfile, "`/*' within comment");
+
+      prev_c = c;
+    }
+}
+
+/* Skip a C++/Chill line comment.  We know it's a comment, and point
+   is at the second character of the initiator.  */
+static void
+skip_line_comment (pfile)
+     cpp_reader *pfile;
+{
+  FORWARD(1);
+  for (;;)
+    {
+      int c = GETC ();
+
+      /* We don't have to worry about EOF in here.  */
+      if (c == '\n')
+	{
+	  /* Don't consider final '\n' to be part of comment.  */
+	  FORWARD(-1);
+	  return;
+	}
+      else if (c == '\r')
+	{
+	  /* \r cannot be a macro escape marker here. */
+	  CPP_BUMP_LINE (pfile);
+	  if (CPP_OPTIONS (pfile)->warn_comments)
+	    cpp_warning (pfile, "backslash-newline within line comment");
+	}
+    }
+}
+
 /* Skip a comment - C, C++, or Chill style.  M is the first character
    of the comment marker.  If this really is a comment, skip to its
-   end and return ' '.  If we hit end-of-file before end-of-comment,
-   return EOF.  If this is not a comment, return M (which will be
-   '/' or '-').  */
+   end and return ' '.  If this is not a comment, return M (which will
+   be '/' or '-').  */
 
 static int
 skip_comment (pfile, m)
@@ -268,52 +327,42 @@ skip_comment (pfile, m)
 {
   if (m == '/' && PEEKC() == '*')
     {
-      int c, prev_c = -1;
-      long line, col;
-      
-      FORWARD(1);
-      cpp_buf_line_and_col (CPP_BUFFER (pfile), &line, &col);
-      for (;;)
-	{
-	  c = GETC ();
-	  if (c == EOF)
-	    {
-	      cpp_error_with_line (pfile, line, col, "unterminated comment");
-	      return EOF;
-	    }
-	  else if (c == '\n' || c == '\r')
-	    /* \r cannot be a macro escape marker here. */
-	    CPP_BUMP_LINE (pfile);
-	  else if (c == '/' && prev_c == '*')
-	    return ' ';
-	  else if (c == '*' && prev_c == '/'
-		   && CPP_OPTIONS (pfile)->warn_comments)
-	    cpp_warning (pfile, "`/*' within comment");
-
-	  prev_c = c;
-	}
+      skip_block_comment (pfile);
+      return ' ';
     }
-  else if ((m == '/' && PEEKC() == '/'
-	    && CPP_OPTIONS (pfile)->cplusplus_comments)
-	   || (m == '-' && PEEKC() == '-'
-	       && CPP_OPTIONS (pfile)->chill))
+  else if (m == '/' && PEEKC() == '/')
     {
-      FORWARD(1);
-      for (;;)
+      if (CPP_BUFFER (pfile)->system_header_p)
 	{
-	  int c = GETC ();
-	  if (c == EOF)
-	    return ' '; /* Allow // to be terminated by EOF.  */
-	      if (c == '\n')
-		{
-		  /* Don't consider final '\n' to be part of comment.  */
-		  FORWARD(-1);
-		  return ' ';
-		}
-	      else if (c == '\r')
-		/* \r cannot be a macro escape marker here. */
-		CPP_BUMP_LINE (pfile);
+	  /* We silently allow C++ comments in system headers, irrespective
+	     of conformance mode, because lots of busted systems do that
+	     and trying to clean it up in fixincludes is a nightmare.  */
+	  skip_line_comment (pfile);
+	  return ' ';
 	}
+      else if (CPP_OPTIONS (pfile)->cplusplus_comments)
+	{
+	  if (CPP_OPTIONS (pfile)->c89
+	      && CPP_PEDANTIC (pfile)
+	      && ! CPP_BUFFER (pfile)->warned_cplusplus_comments)
+	    {
+	      cpp_pedwarn (pfile,
+			   "C++ style comments are not allowed in ISO C89");
+	      cpp_pedwarn (pfile,
+			   "(this will be reported only once per input file)");
+	      CPP_BUFFER (pfile)->warned_cplusplus_comments = 1;
+	    }
+	  skip_line_comment (pfile);
+	  return ' ';
+	}
+      else
+	return m;
+    }
+  else if (m == '-' && PEEKC() == '-'
+	   && CPP_OPTIONS (pfile)->chill)
+    {
+      skip_line_comment (pfile);
+      return ' ';
     }
   else
     return m;
@@ -326,77 +375,18 @@ copy_comment (pfile, m)
      cpp_reader *pfile;
      int m;
 {
-  if (m == '/' && PEEKC() == '*')
-    {
-      int c, prev_c = -1;
-      long line, col;
+  U_CHAR *start = CPP_BUFFER (pfile)->cur;  /* XXX Layering violation */
+  U_CHAR *limit;
 
-      CPP_PUTC (pfile, '/');
-      CPP_PUTC (pfile, '*');
-      FORWARD(1);
-      cpp_buf_line_and_col (CPP_BUFFER (pfile), &line, &col);
-      for (;;)
-	{
-	  c = GETC ();
-	  if (c == EOF)
-	    {
-	      cpp_error_with_line (pfile, line, col, "unterminated comment");
-	      /* We must pretend this was a legitimate comment, so that the
-		 output in token_buffer is not passed back tagged CPP_POP. */
-	      return ' ';
-	    }
-	  else if (c == '\r')
-	    {
-	      /* \r cannot be a macro escape marker here. */
-	      CPP_BUMP_LINE (pfile);
-	      continue;
-	    }
-
-	  CPP_PUTC (pfile, c);
-	  if (c == '\n')
-	    {
-	      pfile->lineno++;
-	      CPP_BUMP_LINE (pfile);
-	    }
-	  else if (c == '/' && prev_c == '*')
-	    return ' ';
-	  else if (c == '*' && prev_c == '/'
-		   && CPP_OPTIONS (pfile)->warn_comments)
-	    cpp_warning (pfile, "`/*' within comment");
-
-	  prev_c = c;
-	}
-    }
-  else if ((m == '/' && PEEKC() == '/'
-	    && CPP_OPTIONS (pfile)->cplusplus_comments)
-	   || (m == '-' && PEEKC() == '-'
-	       && CPP_OPTIONS (pfile)->chill))
-    {
-      CPP_PUTC (pfile, m);
-      CPP_PUTC (pfile, m);
-      FORWARD(1);
-      for (;;)
-	{
-	  int c = GETC ();
-	  if (c == EOF)
-	    return ' '; /* Allow line comments to be terminated by EOF. */
-	  else if (c == '\n')
-	    {
-	      /* Don't consider final '\n' to be part of comment.  */
-	      FORWARD(-1);
-	      return ' ';
-	    }
-	  else if (c == '\r')
-	    /* \r cannot be a macro escape marker here. */
-	    CPP_BUMP_LINE (pfile);
-
-	  CPP_PUTC (pfile, c);
-	}
-    }
-  else
+  if (skip_comment (pfile, m) == m)
     return m;
-}
 
+  CPP_PUTC (pfile, m);
+  for (limit = CPP_BUFFER (pfile)->cur; start <= limit; start++)
+    if (*start != '\r')
+      CPP_PUTC (pfile, *start);
+  return ' ';
+}
 
 /* Skip whitespace \-newline and comments.  Does not macro-expand.  */
 
@@ -433,9 +423,7 @@ cpp_skip_hspace (pfile)
       else if (c == '/' || c == '-')
 	{
 	  c = skip_comment (pfile, c);
-	  if (c == EOF)
-	    return;
-	  else if (c != ' ')
+	  if (c  != ' ')
 	    break;
 	}
       else
@@ -2008,7 +1996,7 @@ consider_directive_while_skipping (pfile, stack)
 	    return 0;
 
 	case T_ELSE:
-	    if (CPP_PEDANTIC (pfile) && pfile->if_stack != stack)
+	    if (pfile->if_stack != stack)
 	      validate_else (pfile, "#else");
 	    /* fall through */
 	case T_ELIF:
@@ -2024,7 +2012,7 @@ consider_directive_while_skipping (pfile, stack)
 	      }
 
 	    case T_ENDIF:
-		if (CPP_PEDANTIC (pfile) && pfile->if_stack != stack)
+		if (pfile->if_stack != stack)
 		  validate_else (pfile, "#endif");
 
 		if (pfile->if_stack == stack)
@@ -2140,8 +2128,7 @@ do_else (pfile, keyword)
 {
   cpp_buffer *ip = CPP_BUFFER (pfile);
 
-  if (CPP_PEDANTIC (pfile))
-    validate_else (pfile, "#else");
+  validate_else (pfile, "#else");
   skip_rest_of_line (pfile);
 
   if (pfile->if_stack == CPP_BUFFER (pfile)->if_stack) {
@@ -2180,8 +2167,7 @@ do_endif (pfile, keyword)
      cpp_reader *pfile;
      const struct directive *keyword ATTRIBUTE_UNUSED;
 {
-  if (CPP_PEDANTIC (pfile))
-    validate_else (pfile, "#endif");
+  validate_else (pfile, "#endif");
   skip_rest_of_line (pfile);
 
   if (pfile->if_stack == CPP_BUFFER (pfile)->if_stack)
@@ -2226,19 +2212,20 @@ do_endif (pfile, keyword)
   return 0;
 }
 
-/* When an #else or #endif is found while skipping failed conditional,
-   if -pedantic was specified, this is called to warn about text after
-   the command name.  P points to the first char after the command name.  */
+/* Issue -pedantic warning for text which is not a comment following
+   an #else or #endif.  Do not warn in system headers, as this is harmless
+   and very common on old systems.  */
 
 static void
 validate_else (pfile, directive)
      cpp_reader *pfile;
      const char *directive;
 {
-  int c;
+  if (! CPP_PEDANTIC (pfile) || CPP_BUFFER (pfile)->system_header_p)
+    return;
+
   cpp_skip_hspace (pfile);
-  c = PEEKC ();
-  if (c != EOF && c != '\n')
+  if (PEEKC () != '\n')
     cpp_pedwarn (pfile,
 		 "text following `%s' violates ANSI standard", directive);
 }
@@ -2277,7 +2264,6 @@ cpp_get_token (pfile)
   c = GETC();
   if (c == EOF)
     {
-    handle_eof:
       if (CPP_BUFFER (pfile)->manual_pop)
 	/* If we've been reading from redirected input, the
 	   frontend will pop the buffer.  */
@@ -2339,9 +2325,7 @@ cpp_get_token (pfile)
 	    c = copy_comment (pfile, c);
 	  else
 	    c = skip_comment (pfile, c);
-	  if (c == EOF)
-	    goto handle_eof;
-	  else if (c != ' ')
+	  if (c != ' ')
 	    goto randomchar;
 	  
 	  /* Comments are equivalent to spaces.
