@@ -2011,7 +2011,7 @@ sparc64-*-openbsd*)
 	with_cpu=ultrasparc
 	;;
 sparc-*-elf*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/elf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/sol2-gld.h sparc/elf.h"
 	tmake_file="sparc/t-elf sparc/t-crtfm"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	use_fixproto=yes
@@ -2021,7 +2021,7 @@ sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-crtfm"
 	;;
 sparc-*-rtems*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/elf.h sparc/rtemself.h rtems.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/sol2-gld.h sparc/elf.h sparc/rtemself.h rtems.h"
 	tmake_file="sparc/t-elf sparc/t-crtfm t-rtems"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	;;
@@ -2110,13 +2110,13 @@ sparclite-*-coff*)
 	tmake_file=sparc/t-sparclite
 	;;
 sparclite-*-elf*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/elf.h sparc/liteelf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/sol2-gld.h sparc/elf.h sparc/liteelf.h"
 	tmake_file="sparc/t-sparclite sparc/t-crtfm"
         extra_parts="crtbegin.o crtend.o"
 	use_fixproto=yes
 	;;
 sparc86x-*-elf*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/elf.h sparc/sp86x-elf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/sol2-gld.h sparc/elf.h sparc/sp86x-elf.h"
 	tmake_file="sparc/t-sp86x sparc/t-crtfm"
         extra_parts="crtbegin.o crtend.o"
 	use_fixproto=yes
@@ -2126,7 +2126,7 @@ sparc64-*-aout*)
 	use_fixproto=yes
 	;;
 sparc64-*-elf*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/sp64-elf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/sol2-gld.h sparc/sp64-elf.h"
 	tmake_file="${tmake_file} sparc/t-crtfm"
 	extra_parts="crtbegin.o crtend.o"
 	use_fixproto=yes

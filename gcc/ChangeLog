@@ -1,3 +1,12 @@
+2005-02-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/19715
+	* config.gcc (sparc-*-elf*): Include sparc/sol2-gld.h.
+	(sparc-*-rtems*): Likewise.
+	(sparclite-*-elf*): Likewise.
+	(sparc86x-*-elf*): Likewise.
+	(sparc64-*-elf*): Likewise.
+
 2005-02-11  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
 
         PR middle-end/19697
