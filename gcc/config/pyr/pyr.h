@@ -145,12 +145,16 @@ extern int target_flags;
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
 
+/* Every structure's size must be a multiple of this.  */
+/* ??? This is a guess.  */
+#define STRUCTURE_SIZE_BOUNDARY 32
+
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 32
 
 /* Specified types of bitfields affect alignment of those fields
    and of the structure as a whole.  */
-#define PCC_BITFIELD_TYPE_MATTERS
+#define PCC_BITFIELD_TYPE_MATTERS 1
 
 /* Make strings word-aligned so strcpy from constants will be faster. 
    Pyramid documentation says the best alignment is to align
@@ -168,9 +172,9 @@ extern int target_flags;
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
-/* Define this if move instructions will actually fail to work
+/* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
-#define STRICT_ALIGNMENT
+#define STRICT_ALIGNMENT 1
 
 /*** Standard register usage.  ***/
 
@@ -328,6 +332,12 @@ frame n    |            |            |            |
 /* Register in which static-chain is passed to a function.  */
 /* If needed, Pyramid says to use temporary register 12. */
 #define STATIC_CHAIN_REGNUM PYR_TREG(12)
+
+/* If register windows are used, STATIC_CHAIN_INCOMING_REGNUM
+   is the register number as seen by the called function, while
+   STATIC_CHAIN_REGNUM is the register number as seen by the calling
+   function. */
+#define STATIC_CHAIN_INCOMING_REGNUM PYR_PREG(12)
 
 /* Register in which address to store a structure value
    is passed to a function.
@@ -547,7 +557,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define CUMULATIVE_ARGS int
 
-/* Define the number of registers that can hold paramters.
+/* Define the number of registers that can hold parameters.
    This macro is used only in other macro definitions below.   */
 #define NPARM_REGS 12
 
@@ -694,6 +704,38 @@ extern void* pyr_function_arg ();
 
 #endif /* !FRAME_POINTER_REQUIRED */
 
+/* the trampoline stuff was taken from convex.h - S.P. */
+
+/* A C statement to output, on the stream FILE, assembler code for a
+   block of data that contains the constant parts of a trampoline.  This
+   code should not include a label - the label is taken care of
+   automatically.
+	We use TR12/PR12 for the static chain.
+	movew $<STATIC>,pr12	# I2R
+	jump $<func>		# S2R
+ */
+#define TRAMPOLINE_TEMPLATE(FILE) \
+{ ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x2100001C));	\
+  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
+  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x40000000));	\
+  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000)); }
+
+#define TRAMPOLINE_SIZE		16
+#define TRAMPOLINE_ALIGNMENT	32
+
+/* Emit RTL insns to initialize the variable parts of a trampoline.
+   FNADDR is an RTX for the address of the function's pure code.
+   CXT is an RTX for the static chain value for the function.  */
+
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
+{ emit_move_insn (gen_rtx (MEM, Pmode, plus_constant (TRAMP, 4)), CXT);	\
+  emit_move_insn (gen_rtx (MEM, Pmode, plus_constant (TRAMP, 12)), FNADDR); \
+  emit_call_insn (gen_call (gen_rtx (MEM, QImode,			\
+				     gen_rtx (SYMBOL_REF, Pmode,	\
+					      "__enable_execute_stack")), \
+			    const0_rtx));				\
+}
+
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
@@ -728,10 +770,15 @@ extern int current_function_calls_alloca;
    + current_function_args_size != 0					\
    || current_function_calls_alloca)					\
 
-/* If the memory address ADDR is relative to the frame pointer,
-   correct it to be relative to the stack pointer instead.
-   This is for when we don't use a frame pointer.
-   ADDR should be a variable name.  */
+/* Store in the variable DEPTH the initial difference between the
+   frame pointer reg contents and the stack pointer reg contents,
+   as of the start of the function body.  This depends on the layout
+   of the fixed parts of the stack frame and on how registers are saved.
+
+   On the Pyramid, FRAME_POINTER_REQUIRED is always 1, so the definition
+   of this macro doesn't matter.  But it must be defined.  */
+
+#define INITIAL_FRAME_POINTER_OFFSET(DEPTH) (DEPTH) = 0;
 
 /*** Addressing modes, and classification of registers for them.  ***/
 
@@ -1003,6 +1050,10 @@ extern int current_function_calls_alloca;
     return 4;							\
   case CONST_DOUBLE:						\
     return 6;
+
+/* A flag which says to swap the operands of certain insns
+   when they are output.  */
+extern int swap_operands;
 
 /*** Condition Code Information ***/
 
