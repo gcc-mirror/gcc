@@ -2261,7 +2261,7 @@ build_new_1 (exp)
   else
     size = size_in_bytes (type);
 
-  if (true_type == void_type_node)
+  if (TREE_CODE (true_type) == VOID_TYPE)
     {
       error ("invalid type `void' for new");
       return error_mark_node;

@@ -1,3 +1,11 @@
+1998-06-03  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (make_thunk): Use overload machinery to make name.
+	* search.c (covariant_return_p): New fn.
+	(get_matching_virtual): Use it.
+
+	* init.c (build_new_1): Fix check for void.
+
 1998-06-01  Per Bothner  <bothner@cygnus.com>
 
 	* cp-tree.h (TYPE_FOR_JAVA):  New macro.

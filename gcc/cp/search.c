@@ -2133,6 +2133,57 @@ tree_has_any_destructor_p (binfo, i)
   return TYPE_NEEDS_DESTRUCTOR (type);
 }
 
+/* Returns > 0 if a function with type DRETTYPE overriding a function
+   with type BRETTYPE is covariant, as defined in [class.virtual].
+
+   Returns 1 if trivial covariance, 2 if non-trivial (requiring runtime
+   adjustment), or -1 if pedantically invalid covariance.  */
+
+int
+covariant_return_p (brettype, drettype)
+     tree brettype, drettype;
+{
+  tree binfo;
+
+  if (TREE_CODE (brettype) == FUNCTION_DECL
+      || TREE_CODE (brettype) == THUNK_DECL)
+    {
+      brettype = TREE_TYPE (TREE_TYPE (brettype));
+      drettype = TREE_TYPE (TREE_TYPE (drettype));
+    }
+  else if (TREE_CODE (brettype) == METHOD_TYPE)
+    {
+      brettype = TREE_TYPE (brettype);
+      drettype = TREE_TYPE (drettype);
+    }
+
+  if (comptypes (brettype, drettype, 1))
+    return 0;
+
+  if (! (TREE_CODE (brettype) == TREE_CODE (drettype)
+	 && (TREE_CODE (brettype) == POINTER_TYPE
+	     || TREE_CODE (brettype) == REFERENCE_TYPE)
+	 && TYPE_READONLY (brettype) == TYPE_READONLY (drettype)
+	 && TYPE_VOLATILE (brettype) == TYPE_VOLATILE (drettype)))
+    return 0;
+
+  if (! can_convert (brettype, drettype))
+    return 0;
+
+  brettype = TREE_TYPE (brettype);
+  drettype = TREE_TYPE (drettype);
+
+  /* If not pedantic, allow any standard pointer conversion.  */
+  if (! IS_AGGR_TYPE (drettype) || ! IS_AGGR_TYPE (brettype))
+    return -1;
+
+  binfo = get_binfo (brettype, drettype, 0);
+
+  if (! BINFO_OFFSET_ZEROP (binfo) || TREE_VIA_VIRTUAL (binfo))
+    return 2;
+  return 1;
+}
+
 /* Given a class type TYPE, and a function decl FNDECL, look for a
    virtual function in TYPE's hierarchy which FNDECL could match as a
    virtual function.  It doesn't matter which one we find.
@@ -2146,6 +2197,7 @@ get_matching_virtual (binfo, fndecl, dtorp)
      int dtorp;
 {
   tree tmp = NULL_TREE;
+  int i;
 
   /* Breadth first search routines start searching basetypes
      of TYPE, so we must perform first ply of search here.  */
@@ -2209,36 +2261,15 @@ get_matching_virtual (binfo, fndecl, dtorp)
 		  tree brettype = TREE_TYPE (TREE_TYPE (tmp));
 		  if (comptypes (brettype, drettype, 1))
 		    /* OK */;
-		  else if
-		    (TREE_CODE (brettype) == TREE_CODE (drettype)
-		     && (TREE_CODE (brettype) == POINTER_TYPE
-			 || TREE_CODE (brettype) == REFERENCE_TYPE)
-		     && comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (brettype)),
-				   TYPE_MAIN_VARIANT (TREE_TYPE (drettype)),
-				   0))
-		      /* covariant return type */
+		  else if ((i = covariant_return_p (brettype, drettype)))
 		    {
-		      tree b = TREE_TYPE (brettype), d = TREE_TYPE (drettype);
-		      if (TYPE_MAIN_VARIANT (b) != TYPE_MAIN_VARIANT (d))
+		      if (i == 2)
+			sorry ("adjusting pointers for covariant returns");
+
+		      if (pedantic && i == -1)
 			{
-			  tree binfo = get_binfo (b, d, 1);
-			  if (binfo != error_mark_node
-			      && (! BINFO_OFFSET_ZEROP (binfo)
-				  || TREE_VIA_VIRTUAL (binfo)))
-			    sorry ("adjusting pointers for covariant returns");
-			}
-		      if (TYPE_READONLY (d) > TYPE_READONLY (b))
-			{
-			  cp_error_at ("return type of `%#D' adds const", fndecl);
-			  cp_error_at ("  overriding definition as `%#D'",
-				       tmp);
-			}
-		      else if (TYPE_VOLATILE (d) > TYPE_VOLATILE (b))
-			{
-			  cp_error_at ("return type of `%#D' adds volatile",
-				    fndecl);
-			  cp_error_at ("  overriding definition as `%#D'",
-				       tmp);
+			  cp_pedwarn_at ("invalid covariant return type for `%#D' (must be pointer or reference to class)", fndecl);
+			  cp_pedwarn_at ("  overriding `%#D'", tmp);
 			}
 		    }
 		  else if (IS_AGGR_TYPE_2 (brettype, drettype)
