@@ -1,3 +1,7 @@
+1998-05-20  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* dwarf2out.c (base_type_die): Use int_size_in_bytes.
+
 Wed May 20 01:11:02 1998  Doug Evans (devans@cygnus.com)
 			  Jeff Law (law@cygnus.com)
 
@@ -9908,7 +9912,3 @@ Mon Aug 11 10:04:49 1997  Jeffrey A Law  (law@cygnus.com)
 Sun Aug 10 12:00:20 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* egcs project officially starts.
-
-Local Variables:
-add-log-time-format: current-time-string
-End:
