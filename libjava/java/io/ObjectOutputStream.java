@@ -1,5 +1,5 @@
 /* ObjectOutputStream.java -- Class used to write serialized objects
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -550,8 +550,11 @@ public class ObjectOutputStream extends OutputStream
     throws SecurityException
   {
     if (enable)
-      if (getClass ().getClassLoader () != null)
-	throw new SecurityException ("Untrusted ObjectOutputStream subclass attempted to enable object replacement");
+      {
+	SecurityManager sm = System.getSecurityManager ();
+	if (sm != null)
+	  sm.checkPermission (new SerializablePermission ("enableSubstitution"));
+      }
 
     boolean old_val = replacementEnabled;
     replacementEnabled = enable;

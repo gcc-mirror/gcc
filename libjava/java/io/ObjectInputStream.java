@@ -528,8 +528,11 @@ public class ObjectInputStream extends InputStream
     throws SecurityException
   {
     if (enable)
-      if (getClass ().getClassLoader () != null)
-	throw new SecurityException ("Untrusted ObjectInputStream subclass attempted to enable object resolution");
+      {
+	SecurityManager sm = System.getSecurityManager ();
+	if (sm != null)
+	  sm.checkPermission (new SerializablePermission ("enableSubtitution"));
+      }
 
     boolean old_val = this.resolveEnabled;
     this.resolveEnabled = enable;
