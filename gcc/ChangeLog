@@ -1,5 +1,9 @@
 Mon Oct 11 23:35:19 1999  Jeffrey A Law  (law@cygnus.com)
 
+	Tue Jun 29 01:37:53 1999  Jeffrey A Law  (law@cygnus.com)
+	* pa.h (CPP_SPEC): Conditionally add -D__STDC_EXT__ to the cpp
+	command line.
+
 	Thu Sep  2 20:08:23 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	* regmove.c (fixup_match_1): Don't change an unchanging register.
 	(stable_but_for_p): Renamed to:

@@ -278,11 +278,11 @@ extern int target_flags;
 #if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_PA_11) == 0
 #define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}\
  %{mpa-risc-1-1:-D__hp9000s700 -D_PA_RISC1_1}\
- %{!ansi: -D_HPUX_SOURCE -D_HIUX_SOURCE}\
+ %{!ansi: -D_HPUX_SOURCE -D_HIUX_SOURCE -D__STDC_EXT__}\
  %{threads:-D_REENTRANT -D_DCE_THREADS}"
 #else
 #define CPP_SPEC "%{!mpa-risc-1-0:%{!mnosnake:%{!msoft-float:-D__hp9000s700 -D_PA_RISC1_1}}} \
- %{!ansi: -D_HPUX_SOURCE -D_HIUX_SOURCE}\
+ %{!ansi: -D_HPUX_SOURCE -D_HIUX_SOURCE -D__STDC_EXT__}\
  %{threads:-D_REENTRANT -D_DCE_THREADS}"
 #endif
 
