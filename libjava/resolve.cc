@@ -576,7 +576,7 @@ _Jv_PrepareClass(jclass klass)
 	}
       else if (imeth != 0)		// it could be abstract
 	{
-	  _Jv_InterpMethod *im = reinterpret_cast<_Jv_InterpMethod *> (im);
+	  _Jv_InterpMethod *im = reinterpret_cast<_Jv_InterpMethod *> (imeth);
 	  clz->methods[i].ncode = im->ncode ();
 	}
     }
@@ -650,10 +650,20 @@ _Jv_PrepareClass(jclass klass)
 			   + (sizeof (void*) * (vtable_count)));
   vtable->clas = clz;
 
-  /* copy super class' vtable entries (index 0 goes unused). */
-  memcpy ((void*)&vtable->method[1],
-	  (void*)&super_class->vtable->method[1],
-	  sizeof (void*) * super_class->vtable_method_count);
+  {
+    jclass effective_superclass = super_class;
+
+    /* If super_class is abstract or an interface it has no vtable.
+       We need to find a real one... */
+    while (effective_superclass && effective_superclass->vtable == NULL)
+      effective_superclass = effective_superclass->superclass;
+
+    /* copy super class' vtable entries (index 0 goes unused). */
+    if (effective_superclass && effective_superclass->vtable)
+      memcpy ((void*)&vtable->method[1],
+	      (void*)&effective_superclass->vtable->method[1],
+	      sizeof (void*) * effective_superclass->vtable_method_count);
+  }
 
   /* now, install our own vtable entries, reprise... */
   for (int i = 0; i < clz->method_count; i++)
