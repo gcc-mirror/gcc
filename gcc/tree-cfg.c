@@ -712,7 +712,6 @@ make_goto_expr_edges (basic_block bb)
 bool
 cleanup_tree_cfg (void)
 {
-  bool something_changed = true;
   bool retval = false;
 
   timevar_push (TV_TREE_CLEANUP_CFG);
@@ -723,16 +722,12 @@ cleanup_tree_cfg (void)
   /* thread_jumps() sometimes leaves further transformation
      opportunities for itself, so iterate on it until nothing
      changes.  */
-  while (something_changed)
+  while (thread_jumps ())
     {
-      something_changed = thread_jumps ();
-
       /* delete_unreachable_blocks() does its job only when
 	 thread_jumps() produces more unreachable blocks.  */
-      if (something_changed)
-	delete_unreachable_blocks ();
-
-      retval |= something_changed;
+      delete_unreachable_blocks ();
+      retval = true;
     }
 
 #ifdef ENABLE_CHECKING
