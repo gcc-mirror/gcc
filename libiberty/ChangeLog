@@ -1,3 +1,10 @@
+1999-11-22  Jason Merrill  <jason@casey.cygnus.com>
+
+	* strtoul.c, strtol.c, random.c: Remove advertising clause from
+	BSD license, pursuant with
+
+	  ftp://ftp.cs.berkeley.edu/pub/4bsd/README.Impt.License.Change
+
 Wed Nov 10 09:42:39 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* hashtab.c: Include stdio.h.
