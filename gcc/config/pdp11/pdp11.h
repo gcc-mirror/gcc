@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 1994, 1995, 1996, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1994, 95, 96, 98, 99, 2000 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GNU CC.
@@ -19,24 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
-/* declarations */
-int arith_operand ();
-int const_immediate_operand ();
-int expand_shift_operand ();
-int legitimate_address_p ();
-void notice_update_cc_on_set ();
-void output_addr_const_pdp11 ();
-void output_ascii ();
-void output_function_epilogue ();
-void output_function_prologue ();
-char *output_jump();
-char *output_move_double();
-char *output_move_quad();
-char *output_block_move();
-void print_operand_address ();
-int register_move_cost ();
-int simple_memory_operand ();
 
 /* check whether load_fpu_reg or not */
 #define LOAD_FPU_REG_P(x) ((x)>=8 && (x)<=11)
@@ -1061,7 +1043,7 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
 /* do we need reg def's R0 = %0 etc ??? */			\
 )
 #else
-#define ASM_FILE_START(FILE)	(0)
+#define ASM_FILE_START(FILE)
 #endif
 
 
