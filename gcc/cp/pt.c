@@ -4588,7 +4588,7 @@ tsubst_friend_function (decl, args)
       tree template_id, arglist, fns;
       tree new_args;
       tree tmpl;
-      tree ns = CP_DECL_CONTEXT (TYPE_MAIN_DECL (current_class_type));
+      tree ns = decl_namespace_context (TYPE_MAIN_DECL (current_class_type));
       
       /* Friend functions are looked up in the containing namespace scope.
          We must enter that scope, to avoid finding member functions of the
