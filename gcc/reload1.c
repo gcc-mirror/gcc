@@ -352,11 +352,14 @@ static int num_eliminable_invariants;
 
 /* For each label, we record the offset of each elimination.  If we reach
    a label by more than one path and an offset differs, we cannot do the
-   elimination.  This information is indexed by the number of the label.
-   The first table is an array of flags that records whether we have yet
-   encountered a label and the second table is an array of arrays, one
-   entry in the latter array for each elimination.  */
+   elimination.  This information is indexed by the difference of the
+   number of the label and the first label number.  We can't offset the
+   pointer itself as this can cause problems on machines with segmented
+   memory.  The first table is an array of flags that records whether we
+   have yet encountered a label and the second table is an array of arrays,
+   one entry in the latter array for each elimination.  */
 
+static int first_label_num;
 static char *offsets_known_at;
 static int (*offsets_at)[NUM_ELIMINABLE_REGS];
 
@@ -673,11 +676,6 @@ reload (first, global)
   struct elim_table *ep;
   basic_block bb;
 
-  /* The two pointers used to track the true location of the memory used
-     for label offsets.  */
-  char *real_known_ptr = NULL;
-  int (*real_at_ptr)[NUM_ELIMINABLE_REGS];
-
   /* Make sure even insns with volatile mem refs are recognizable.  */
   init_recog ();
 
@@ -856,20 +854,17 @@ reload (first, global)
 
   init_elim_table ();
 
-  num_labels = max_label_num () - get_first_label_num ();
+  first_label_num = get_first_label_num ();
+  num_labels = max_label_num () - first_label_num;
 
   /* Allocate the tables used to store offset information at labels.  */
   /* We used to use alloca here, but the size of what it would try to
      allocate would occasionally cause it to exceed the stack limit and
      cause a core dump.  */
-  real_known_ptr = xmalloc (num_labels);
-  real_at_ptr
+  offsets_known_at = xmalloc (num_labels);
+  offsets_at
     = (int (*)[NUM_ELIMINABLE_REGS])
     xmalloc (num_labels * NUM_ELIMINABLE_REGS * sizeof (int));
-
-  offsets_known_at = real_known_ptr - get_first_label_num ();
-  offsets_at
-    = (int (*)[NUM_ELIMINABLE_REGS]) (real_at_ptr - get_first_label_num ());
 
   /* Alter each pseudo-reg rtx to contain its hard reg number.
      Assign stack slots to the pseudos that lack hard regs or equivalents.
@@ -1269,10 +1264,10 @@ reload (first, global)
     free (reg_equiv_memory_loc);
   reg_equiv_memory_loc = 0;
 
-  if (real_known_ptr)
-    free (real_known_ptr);
-  if (real_at_ptr)
-    free (real_at_ptr);
+  if (offsets_known_at)
+    free (offsets_known_at);
+  if (offsets_at)
+    free (offsets_at);
 
   free (reg_equiv_mem);
   free (reg_equiv_init);
@@ -2155,13 +2150,13 @@ set_label_offsets (x, insn, initial_p)
 	 we guessed wrong, we will suppress an elimination that might have
 	 been possible had we been able to guess correctly.  */
 
-      if (! offsets_known_at[CODE_LABEL_NUMBER (x)])
+      if (! offsets_known_at[CODE_LABEL_NUMBER (x) - first_label_num])
 	{
 	  for (i = 0; i < NUM_ELIMINABLE_REGS; i++)
-	    offsets_at[CODE_LABEL_NUMBER (x)][i]
+	    offsets_at[CODE_LABEL_NUMBER (x) - first_label_num][i]
 	      = (initial_p ? reg_eliminate[i].initial_offset
 		 : reg_eliminate[i].offset);
-	  offsets_known_at[CODE_LABEL_NUMBER (x)] = 1;
+	  offsets_known_at[CODE_LABEL_NUMBER (x) - first_label_num] = 1;
 	}
 
       /* Otherwise, if this is the definition of a label and it is
@@ -2178,7 +2173,7 @@ set_label_offsets (x, insn, initial_p)
 	   where the offsets disagree.  */
 
 	for (i = 0; i < NUM_ELIMINABLE_REGS; i++)
-	  if (offsets_at[CODE_LABEL_NUMBER (x)][i]
+	  if (offsets_at[CODE_LABEL_NUMBER (x) - first_label_num][i]
 	      != (initial_p ? reg_eliminate[i].initial_offset
 		  : reg_eliminate[i].offset))
 	    reg_eliminate[i].can_eliminate = 0;
@@ -3387,7 +3382,7 @@ static void
 set_initial_label_offsets ()
 {
   rtx x;
-  memset ((char *) &offsets_known_at[get_first_label_num ()], 0, num_labels);
+  memset (offsets_known_at, 0, num_labels);
 
   for (x = forced_labels; x; x = XEXP (x, 1))
     if (XEXP (x, 0))
@@ -3408,7 +3403,8 @@ set_offsets_for_label (insn)
   num_not_at_initial_offset = 0;
   for (i = 0, ep = reg_eliminate; i < NUM_ELIMINABLE_REGS; ep++, i++)
     {
-      ep->offset = ep->previous_offset = offsets_at[label_nr][i];
+      ep->offset = ep->previous_offset
+		 = offsets_at[label_nr - first_label_num][i];
       if (ep->can_eliminate && ep->offset != ep->initial_offset)
 	num_not_at_initial_offset++;
     }
