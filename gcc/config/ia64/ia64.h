@@ -2697,7 +2697,6 @@ do {									\
 { "normal_comparison_operator", {EQ, NE, GT, LE, GTU, LEU}},		\
 { "adjusted_comparison_operator", {LT, GE, LTU, GEU}},			\
 { "signed_inequality_operator", {GE, GT, LE, LT}},			\
-{ "call_multiple_values_operation", {PARALLEL}},			\
 { "predicate_operator", {NE, EQ}},					\
 { "ar_lc_reg_operand", {REG}},						\
 { "ar_ccv_reg_operand", {REG}},						\

@@ -57,7 +57,6 @@ extern int fr_reg_or_fp01_operand PARAMS((rtx, enum machine_mode));
 extern int normal_comparison_operator PARAMS((rtx, enum machine_mode));
 extern int adjusted_comparison_operator PARAMS((rtx, enum machine_mode));
 extern int signed_inequality_operator PARAMS((rtx, enum machine_mode));
-extern int call_multiple_values_operation PARAMS((rtx, enum machine_mode));
 extern int destination_operand PARAMS((rtx, enum machine_mode));
 extern int not_postinc_memory_operand PARAMS((rtx, enum machine_mode));
 extern int predicate_operator PARAMS((rtx, enum machine_mode));
@@ -73,10 +72,11 @@ extern rtx ia64_gp_save_reg PARAMS((int));
 extern rtx ia64_split_timode PARAMS((rtx[], rtx, rtx));
 extern rtx spill_tfmode_operand PARAMS((rtx, int));
 extern rtx ia64_expand_compare PARAMS((enum rtx_code, enum machine_mode));
+extern void ia64_expand_call PARAMS((rtx, rtx, rtx, int));
 
 extern HOST_WIDE_INT ia64_initial_elimination_offset PARAMS((int, int));
 extern void ia64_expand_prologue PARAMS((void));
-extern void ia64_expand_epilogue PARAMS((void));
+extern void ia64_expand_epilogue PARAMS((int));
 extern void ia64_function_prologue PARAMS((FILE *, int));
 extern void ia64_function_epilogue PARAMS((FILE *, int));
 

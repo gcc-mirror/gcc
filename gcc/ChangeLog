@@ -1,5 +1,26 @@
 2000-09-24  Richard Henderson  <rth@cygnus.com>
 
+	* config/ia64/ia64-protos.h: Update.
+	* config/ia64/ia64.c (call_multiple_values_operation): Remove.
+	(ia64_expand_call): New.
+	(ia64_expand_prologue): Emit an alloc if we need extra input
+	registers.
+	(ia64_expand_epilogue): New arg sibcall_p; don't emit the return
+	instruction if true.
+	(struct reg_flags): Add is_sibcall.
+	(rtx_needs_barrier): A sibcall does not use CFM et al.  Ignore USEs.
+	(emit_insn_group_barriers): Set flags.is_sibcall.  Remove hacks
+	for CODE_FOR_gr_spill_internal/CODE_FOR_gr_restore_internal.
+	* config/ia64/ia64.h (PREDICATE_CODES): Update.
+	* config/ia64/ia64.md (call): Use ia64_expand_call.
+	(call_value): Likewise.
+	(sibcall, sibcall_value): New.
+	(call patterns): Remove extra expanders; tidy.
+	(sibcall_epilogue): New.
+	(set_bsp): Remove the extra USE.  Put the operand inside the UNSPEC.
+
+2000-09-24  Richard Henderson  <rth@cygnus.com>
+
 	* emit-rtl.c (gen_lowpart_common): Use trunc_int_for_mode.
 
 	* sibcall.c (skip_pic_restore): New.
