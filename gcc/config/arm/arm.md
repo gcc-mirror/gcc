@@ -1983,30 +1983,69 @@
 }
 ")
 
-;; Subroutine to store a half word integer constant into memory.
-;; Operand 0 is the constant
-;; Operand 1 is the destination address in a register (SImode)
-
-(define_expand "storeinthi"
-  [;; store the low byte
-   (set (mem:QI (match_operand:SI 1 "" "")) (match_operand 0 "" ""))
-   ;; store the high byte
-   (set (mem:QI (match_dup 3)) (match_dup 2))]
+(define_expand "storehi_bigend"
+  [(set (mem:QI (match_dup 4)) (match_dup 3))
+   (set (match_dup 2)
+	(ashiftrt:SI (match_operand 0 "" "") (const_int 8)))
+   (set (mem:QI (match_operand 1 "" ""))
+	(subreg:QI (match_dup 2) 0))]
   ""
   "
 {
-  int value = INTVAL (operands[0]);
   enum rtx_code code = GET_CODE (operands[1]);
-
   if ((code == PLUS || code == MINUS)
       && (GET_CODE (XEXP (operands[1], 1)) == REG
 	  || GET_CODE (XEXP (operands[1], 0)) != REG))
-  operands[1] = force_reg (SImode, operands[1]);
+    operands[1] = force_reg (SImode, operands[1]);
 
-  operands[0] = force_reg (QImode, gen_rtx (CONST_INT, VOIDmode, value & 255));
-  operands[2] = force_reg (QImode,
-			   gen_rtx (CONST_INT, VOIDmode,(value>>8) & 255));
-  operands[3] = plus_constant (operands[1], 1);
+  operands[4] = plus_constant (operands[1], 1);
+  operands[3] = gen_lowpart (QImode, operands[0]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[2] = gen_reg_rtx (SImode);
+}
+")
+
+;; Subroutine to store a half word integer constant into memory.
+(define_expand "storeinthi"
+  [(set (mem:QI (match_operand:SI 0 "" ""))
+	(subreg:QI (match_operand 1 "" "") 0))
+   (set (mem:QI (match_dup 3)) (subreg:QI (match_dup 2) 0))]
+  ""
+  "
+{
+  HOST_WIDE_INT value = INTVAL (operands[1]);
+  enum rtx_code code = GET_CODE (operands[0]);
+
+  if ((code == PLUS || code == MINUS)
+      && (GET_CODE (XEXP (operands[0], 1)) == REG
+	  || GET_CODE (XEXP (operands[0], 0)) != REG))
+  operands[0] = force_reg (SImode, operands[0]);
+
+  operands[1] = gen_reg_rtx (SImode);
+  if (BYTES_BIG_ENDIAN)
+    {
+      emit_insn (gen_movsi (operands[1], GEN_INT ((value >> 8) & 255)));
+      if ((value & 255) == ((value >> 8) & 255))
+	operands[2] = operands[1];
+      else
+	{
+	  operands[2] = gen_reg_rtx (SImode);
+	  emit_insn (gen_movsi (operands[2], GEN_INT (value & 255)));
+	}
+    }
+  else
+    {
+      emit_insn (gen_movsi (operands[1], GEN_INT (value & 255)));
+      if ((value & 255) == ((value >> 8) & 255))
+	operands[2] = operands[1];
+      else
+	{
+	  operands[2] = gen_reg_rtx (SImode);
+	  emit_insn (gen_movsi (operands[2], GEN_INT ((value >> 8) & 255)));
+	}
+    }
+
+  operands[3] = plus_constant (operands[0], 1);
 }
 ")
 
@@ -2018,74 +2057,105 @@
 {
   rtx insn;
 
-  if (reload_in_progress || reload_completed)
-    insn = gen_rtx (SET, VOIDmode, operands[0], operands[1]);
-  else
+  if (! (reload_in_progress || reload_completed))
     {
       if (GET_CODE (operands[0]) == MEM)
 	{
 	  if (GET_CODE (operands[1]) == CONST_INT)
-	    {
-	      insn = gen_storeinthi (operands[1], XEXP (operands[0],0));
-	    }
+	    emit_insn (gen_storeinthi (XEXP (operands[0], 0), operands[1]));
 	  else
 	    {
 	      if (GET_CODE (operands[1]) == MEM)
 		operands[1] = force_reg (HImode, operands[1]);
-	      insn = gen_storehi (operands[1], XEXP (operands[0], 0));
+	      if (BYTES_BIG_ENDIAN)
+		emit_insn (gen_storehi_bigend (operands[1],
+					       XEXP (operands[0], 0)));
+	      else
+		emit_insn (gen_storehi (operands[1], XEXP (operands[0], 0)));
 	    }
+	  DONE;
 	}
-      else if (GET_CODE (operands[1]) == CONST_INT
-	       && !(const_ok_for_arm (INTVAL (operands[1]))
-		   || const_ok_for_arm (~INTVAL (operands[1]))))
+      /* Sign extend a constant, and keep it in an SImode reg.  */
+      else if (GET_CODE (operands[1]) == CONST_INT)
 	{
-	  rtx reg, reg2;
+	  rtx reg = gen_reg_rtx (SImode);
+	  HOST_WIDE_INT val = INTVAL (operands[1]) & 0xffff;
 
-	  /* no need to be clever, this will always take two insns.
-	     The top sixteen bits should be all zeros or all ones. */
-	  if (INTVAL (operands[1]) < 0)
+	  /* If the constant is already valid, leave it alone.  */
+	  if (! const_ok_for_arm (val))
 	    {
-	      emit_insn (gen_movsi (reg = gen_reg_rtx (SImode),
-				    GEN_INT (INTVAL (operands[1])
-					     | ~(0x0ff00))));
-	      emit_insn (gen_addsi3 (reg2 = gen_reg_rtx (SImode), reg,
-				     GEN_INT (-((~INTVAL (operands[1]))
-					        & 0xff))));
+	      /* If setting all the top bits will make the constant 
+		 loadable in a single instruction, then set them.  
+		 Otherwise, sign extend the number.  */
+
+	      if (const_ok_for_arm (~ (val | ~0xffff)))
+		val |= ~0xffff;
+	      else if (val & 0x8000)
+		val |= ~0xffff;
 	    }
-	  else
-	    {
-	      emit_insn (gen_movsi (reg = gen_reg_rtx (SImode),
-				    GEN_INT (INTVAL (operands[1]) & 0xff00)));
-	      emit_insn (gen_addsi3 (reg2 = gen_reg_rtx (SImode), reg,
-				     GEN_INT (INTVAL (operands[1]) & 0x00ff)));
-	    }
-	  insn = gen_rtx (SET, HImode, operands[0],
-			  gen_rtx (SUBREG, HImode, reg2, 0));
+
+	  emit_insn (gen_movsi (reg, GEN_INT (val)));
+	  operands[1] = gen_rtx (SUBREG, HImode, reg, 0);
 	}
-      else
-	insn = gen_rtx (SET, VOIDmode, operands[0], operands[1]);
+      else if (BYTES_BIG_ENDIAN && GET_CODE (operands[1]) == MEM)
+	{
+	  emit_insn (gen_movhi_bigend (operands[0], operands[1]));
+	  DONE;
+	}
     }
+}
+")
 
-  emit_insn (insn);
-  DONE;
-}")
+(define_expand "movhi_bigend"
+  [(set (match_dup 2)
+	(rotate:SI (subreg:SI (match_operand:HI 1 "memory_operand" "") 0)
+		   (const_int 16)))
+   (set (match_dup 3)
+	(ashiftrt:SI (match_dup 2) (const_int 16)))
+   (set (match_operand:HI 0 "s_register_operand" "")
+	(subreg:HI (match_dup 3) 0))]
+  ""
+  "
+  operands[2] = gen_reg_rtx (SImode);
+  operands[3] = gen_reg_rtx (SImode);
+")
 
 ;; Pattern to recognise insn generated default case above
 
 (define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=r,r,r,m")
-	(match_operand:HI 1 "general_operand"  "rI,K,m,r"))]
-  "(register_operand (operands[0], HImode)
-    && (GET_CODE (operands[1]) != CONST_INT
-	|| const_ok_for_arm (INTVAL (operands[1]))
-	|| const_ok_for_arm (~INTVAL (operands[1]))))
-   || register_operand (operands[1], HImode)"
+  [(set (match_operand:HI 0 "general_operand" "=r,r,r")
+	(match_operand:HI 1 "general_operand"  "rI,K,m"))]
+  "(! BYTES_BIG_ENDIAN)
+   && (GET_CODE (operands[1]) != CONST_INT
+       || const_ok_for_arm (INTVAL (operands[1]))
+       || const_ok_for_arm (~INTVAL (operands[1])))"
   "@
    mov%?\\t%0, %1\\t%@ movhi
    mvn%?\\t%0, #%B1\\t%@ movhi
-   ldr%?\\t%0, %1\\t%@ movhi
-   bogus code str%?\\t%1, %0\\t%@ movhi"
-[(set_attr "type" "*,*,load,store1")])
+   ldr%?\\t%0, %1\\t%@ movhi"
+[(set_attr "type" "*,*,load")])
+
+(define_insn ""
+  [(set (match_operand:HI 0 "s_register_operand" "=r,r,r")
+	(match_operand:HI 1 "general_operand"  "rI,K,m"))]
+  "BYTES_BIG_ENDIAN
+   && (GET_CODE (operands[1]) != CONST_INT
+       || const_ok_for_arm (INTVAL (operands[1]))
+       || const_ok_for_arm (~INTVAL (operands[1])))"
+  "@
+   mov%?\\t%0, %1\\t%@ movhi
+   mvn%?\\t%0, #%B1\\t%@ movhi
+   ldr%?\\t%0, %1\\t%@ movhi_bigend\;mov%?\\t%0, %0, asr #16"
+[(set_attr "type" "*,*,load")
+ (set_attr "length" "4,4,8")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(rotate:SI (subreg:SI (match_operand:HI 1 "memory_operand" "m") 0)
+		   (const_int 16)))]
+  "BYTES_BIG_ENDIAN"
+  "ldr%?\\t%0, %1\\t%@ movhi_bigend"
+[(set_attr "type" "load")])
 
 (define_expand "reload_outhi"
   [(parallel [(match_operand:HI 0 "reload_memory_operand" "=o")
@@ -2106,10 +2176,11 @@
 
   if (!(reload_in_progress || reload_completed))
     {
-      rtx reg;
       if (GET_CODE (operands[1]) == CONST_INT)
 	{
-	  emit_insn (gen_movsi (reg = gen_reg_rtx (SImode), operands[1]));
+	  rtx reg = gen_reg_rtx (SImode);
+
+	  emit_insn (gen_movsi (reg, operands[1]));
 	  operands[1] = gen_rtx (SUBREG, QImode, reg, 0);
 	}
     }
@@ -4335,7 +4406,7 @@
   "*
 {
   rtx ldm[3];
-  rtx arith[3];
+  rtx arith[4];
   int val1 = 0, val2 = 0;
 
   if (REGNO (operands[0]) > REGNO (operands[4]))
@@ -4353,6 +4424,7 @@
   if (GET_CODE (XEXP (operands[3], 0)) != REG)
     val2 = INTVAL (XEXP (XEXP (operands[3], 0), 1));
   arith[0] = operands[0];
+  arith[3] = operands[1];
   if (val1 < val2)
     {
       arith[1] = ldm[1];
@@ -4391,7 +4463,7 @@
       else
 	output_asm_insn (\"ldm%?da\\t%0, {%1, %2}\", ldm);
     }
-  output_asm_insn (\"%I1%?\\t%0, %1, %2\", arith);
+  output_asm_insn (\"%I3%?\\t%0, %1, %2\", arith);
   return \"\";
 }
 "
@@ -4546,7 +4618,8 @@
 			 (match_operand:SI 2 "index_operand" "rJ"))))
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
-  "REGNO (operands[0]) != FRAME_POINTER_REGNUM
+  "(! BYTES_BIG_ENDIAN)
+   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
    && REGNO (operands[1]) != FRAME_POINTER_REGNUM
    && (GET_CODE (operands[2]) != REG
        || REGNO (operands[2]) != FRAME_POINTER_REGNUM)"
@@ -4559,7 +4632,8 @@
 			  (match_operand:SI 2 "s_register_operand" "r"))))
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(minus:SI (match_dup 1) (match_dup 2)))]
-  "REGNO (operands[0]) != FRAME_POINTER_REGNUM
+  "(!BYTES_BIG_ENDIAN)
+   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
    && REGNO (operands[1]) != FRAME_POINTER_REGNUM
    && (GET_CODE (operands[2]) != REG
        || REGNO (operands[2]) != FRAME_POINTER_REGNUM)"
@@ -4695,7 +4769,8 @@
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(plus:SI (match_op_dup 2 [(match_dup 3)	(match_dup 4)])
 		 (match_dup 1)))]
-  "REGNO (operands[0]) != FRAME_POINTER_REGNUM
+  "(! BYTES_BIG_ENDIAN)
+   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
    && REGNO (operands[1]) != FRAME_POINTER_REGNUM
    && REGNO (operands[3]) != FRAME_POINTER_REGNUM"
   "ldr%?\\t%5, [%0, %3, %S2]!\\t%@ loadhi"
@@ -4710,7 +4785,8 @@
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(minus:SI (match_dup 1) (match_op_dup 2 [(match_dup 3)
 						 (match_dup 4)])))]
-  "REGNO (operands[0]) != FRAME_POINTER_REGNUM
+  "(! BYTES_BIG_ENDIAN)
+   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
    && REGNO (operands[1]) != FRAME_POINTER_REGNUM
    && REGNO (operands[3]) != FRAME_POINTER_REGNUM"
   "ldr%?\\t%5, [%0, -%3, %S2]!\\t%@ loadhi"
@@ -4730,7 +4806,7 @@
    (set (match_dup 0)
 	(plus:SI (match_dup 0) (match_operand:SI 1 "index_operand" "rJ")))]
   ""
-  "strb\\t%2, [%0], %1")
+  "str%?b\\t%2, [%0], %1")
 
 (define_peephole
   [(set (match_operand:QI 0 "s_register_operand" "=r")
@@ -4755,7 +4831,8 @@
 	(mem:HI (match_operand:SI 1 "s_register_operand" "+r")))
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_operand:SI 2 "index_operand" "rJ")))]
-  "REGNO(operands[0]) != REGNO(operands[1])
+  "(! BYTES_BIG_ENDIAN)
+   && REGNO(operands[0]) != REGNO(operands[1])
    && (GET_CODE (operands[2]) != REG
        || REGNO(operands[0]) != REGNO (operands[2]))"
   "ldr%?\\t%0, [%1], %2\\t%@ loadhi")
@@ -4769,6 +4846,25 @@
    && (GET_CODE (operands[2]) != REG
        || REGNO(operands[0]) != REGNO (operands[2]))"
   "ldr%?\\t%0, [%1], %2")
+
+(define_peephole
+  [(set (mem:QI (plus:SI (match_operand:SI 0 "s_register_operand" "+r")
+			 (match_operand:SI 1 "index_operand" "rJ")))
+	(match_operand:QI 2 "s_register_operand" "r"))
+   (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 1)))]
+  ""
+  "str%?b\\t%2, [%0, %1]!")
+
+(define_peephole
+  [(set (mem:QI (plus:SI (match_operator:SI 4 "shift_operator"
+			  [(match_operand:SI 0 "s_register_operand" "r")
+			   (match_operand 1 "const_int_operand" "n")])
+			 (match_operand:SI 2 "s_register_operand" "+r")))
+	(match_operand:QI 3 "s_register_operand" "r"))
+   (set (match_dup 2) (plus:SI (match_op_dup 4 [(match_dup 0) (match_dup 1)])
+			       (match_dup 2)))]
+  ""
+  "str%?b\\t%3, [%2, %0, %S4]!")
 
 ; This pattern is never tried by combine, so do it as a peephole
 
