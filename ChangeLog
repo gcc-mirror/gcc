@@ -1,3 +1,8 @@
+Sat Jan 17 21:04:59 1998 H.J. Lu  (hjl@gnu.org)
+
+	* configure.in: Check makefile fragments in the source
+	directory.
+
 Fri Jan 16 00:41:37 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
 
 	* configure.in: check whether host and target makefile
