@@ -3353,24 +3353,8 @@ fold_rtx (rtx x, rtx insn)
 	    return new;
 	}
 
-      /* If this is a narrowing SUBREG and our operand is a REG, see if
-	 we can find an equivalence for REG that is an arithmetic operation
-	 in a wider mode where both operands are paradoxical SUBREGs
-	 from objects of our result mode.  In that case, we couldn't report
-	 an equivalent value for that operation, since we don't know what the
-	 extra bits will be.  But we can find an equivalence for this SUBREG
-	 by folding that operation is the narrow mode.  This allows us to
-	 fold arithmetic in narrow modes when the machine only supports
-	 word-sized arithmetic.
-
-	 Also look for a case where we have a SUBREG whose operand is the
-	 same as our result.  If both modes are smaller than a word, we
-	 are simply interpreting a register in different modes and we
-	 can use the inner value.  */
-
       if (GET_CODE (folded_arg0) == REG
-	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (folded_arg0))
-	  && subreg_lowpart_p (x))
+	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (folded_arg0)))
 	{
 	  struct table_elt *elt;
 
@@ -3383,95 +3367,122 @@ fold_rtx (rtx x, rtx insn)
 	  if (elt)
 	    elt = elt->first_same_value;
 
-	  for (; elt; elt = elt->next_same_value)
-	    {
-	      enum rtx_code eltcode = GET_CODE (elt->exp);
+	  if (subreg_lowpart_p (x))
+	    /* If this is a narrowing SUBREG and our operand is a REG, see
+	       if we can find an equivalence for REG that is an arithmetic
+	       operation in a wider mode where both operands are paradoxical
+	       SUBREGs from objects of our result mode.  In that case, we
+	       couldn-t report an equivalent value for that operation, since we
+	       don't know what the extra bits will be.  But we can find an
+	       equivalence for this SUBREG by folding that operation in the
+	       narrow mode.  This allows us to fold arithmetic in narrow modes
+	       when the machine only supports word-sized arithmetic.
 
-	      /* Just check for unary and binary operations.  */
-	      if (GET_RTX_CLASS (GET_CODE (elt->exp)) == '1'
-		  && GET_CODE (elt->exp) != SIGN_EXTEND
-		  && GET_CODE (elt->exp) != ZERO_EXTEND
-		  && GET_CODE (XEXP (elt->exp, 0)) == SUBREG
-		  && GET_MODE (SUBREG_REG (XEXP (elt->exp, 0))) == mode
-		  && (GET_MODE_CLASS (mode)
-		      == GET_MODE_CLASS (GET_MODE (XEXP (elt->exp, 0)))))
-		{
-		  rtx op0 = SUBREG_REG (XEXP (elt->exp, 0));
+	       Also look for a case where we have a SUBREG whose operand
+	       is the same as our result.  If both modes are smaller
+	       than a word, we are simply interpreting a register in
+	       different modes and we can use the inner value.	*/
 
-		  if (GET_CODE (op0) != REG && ! CONSTANT_P (op0))
-		    op0 = fold_rtx (op0, NULL_RTX);
+	    for (; elt; elt = elt->next_same_value)
+	      {
+		enum rtx_code eltcode = GET_CODE (elt->exp);
 
-		  op0 = equiv_constant (op0);
-		  if (op0)
-		    new = simplify_unary_operation (GET_CODE (elt->exp), mode,
-						    op0, mode);
-		}
-	      else if ((GET_RTX_CLASS (GET_CODE (elt->exp)) == '2'
-			|| GET_RTX_CLASS (GET_CODE (elt->exp)) == 'c')
-		       && eltcode != DIV && eltcode != MOD
-		       && eltcode != UDIV && eltcode != UMOD
-		       && eltcode != ASHIFTRT && eltcode != LSHIFTRT
-		       && eltcode != ROTATE && eltcode != ROTATERT
-		       && ((GET_CODE (XEXP (elt->exp, 0)) == SUBREG
-			    && (GET_MODE (SUBREG_REG (XEXP (elt->exp, 0)))
-				== mode))
-			   || CONSTANT_P (XEXP (elt->exp, 0)))
-		       && ((GET_CODE (XEXP (elt->exp, 1)) == SUBREG
-			    && (GET_MODE (SUBREG_REG (XEXP (elt->exp, 1)))
-				== mode))
-			   || CONSTANT_P (XEXP (elt->exp, 1))))
-		{
-		  rtx op0 = gen_lowpart_common (mode, XEXP (elt->exp, 0));
-		  rtx op1 = gen_lowpart_common (mode, XEXP (elt->exp, 1));
+	        /* Just check for unary and binary operations.  */
+	        if (GET_RTX_CLASS (GET_CODE (elt->exp)) == '1'
+		    && GET_CODE (elt->exp) != SIGN_EXTEND
+		    && GET_CODE (elt->exp) != ZERO_EXTEND
+		    && GET_CODE (XEXP (elt->exp, 0)) == SUBREG
+		    && GET_MODE (SUBREG_REG (XEXP (elt->exp, 0))) == mode
+		    && (GET_MODE_CLASS (mode)
+		        == GET_MODE_CLASS (GET_MODE (XEXP (elt->exp, 0)))))
+		  {
+		    rtx op0 = SUBREG_REG (XEXP (elt->exp, 0));
 
-		  if (op0 && GET_CODE (op0) != REG && ! CONSTANT_P (op0))
-		    op0 = fold_rtx (op0, NULL_RTX);
+		    if (GET_CODE (op0) != REG && ! CONSTANT_P (op0))
+		      op0 = fold_rtx (op0, NULL_RTX);
 
-		  if (op0)
 		    op0 = equiv_constant (op0);
+		    if (op0)
+		      new = simplify_unary_operation (GET_CODE (elt->exp), mode,
+						      op0, mode);
+		  }
+	        else if ((GET_RTX_CLASS (GET_CODE (elt->exp)) == '2'
+			  || GET_RTX_CLASS (GET_CODE (elt->exp)) == 'c')
+		         && eltcode != DIV && eltcode != MOD
+		         && eltcode != UDIV && eltcode != UMOD
+		         && eltcode != ASHIFTRT && eltcode != LSHIFTRT
+		         && eltcode != ROTATE && eltcode != ROTATERT
+		         && ((GET_CODE (XEXP (elt->exp, 0)) == SUBREG
+			      && (GET_MODE (SUBREG_REG (XEXP (elt->exp, 0)))
+				  == mode))
+			     || CONSTANT_P (XEXP (elt->exp, 0)))
+		         && ((GET_CODE (XEXP (elt->exp, 1)) == SUBREG
+			      && (GET_MODE (SUBREG_REG (XEXP (elt->exp, 1)))
+				  == mode))
+			     || CONSTANT_P (XEXP (elt->exp, 1))))
+		  {
+		    rtx op0 = gen_lowpart_common (mode, XEXP (elt->exp, 0));
+		    rtx op1 = gen_lowpart_common (mode, XEXP (elt->exp, 1));
 
-		  if (op1 && GET_CODE (op1) != REG && ! CONSTANT_P (op1))
-		    op1 = fold_rtx (op1, NULL_RTX);
+		    if (op0 && GET_CODE (op0) != REG && ! CONSTANT_P (op0))
+		      op0 = fold_rtx (op0, NULL_RTX);
 
-		  if (op1)
-		    op1 = equiv_constant (op1);
+		    if (op0)
+		      op0 = equiv_constant (op0);
 
-		  /* If we are looking for the low SImode part of
-		     (ashift:DI c (const_int 32)), it doesn't work
-		     to compute that in SImode, because a 32-bit shift
-		     in SImode is unpredictable.  We know the value is 0.  */
-		  if (op0 && op1
-		      && GET_CODE (elt->exp) == ASHIFT
-		      && GET_CODE (op1) == CONST_INT
-		      && INTVAL (op1) >= GET_MODE_BITSIZE (mode))
-		    {
-		      if (INTVAL (op1) < GET_MODE_BITSIZE (GET_MODE (elt->exp)))
+		    if (op1 && GET_CODE (op1) != REG && ! CONSTANT_P (op1))
+		      op1 = fold_rtx (op1, NULL_RTX);
 
-			/* If the count fits in the inner mode's width,
-			   but exceeds the outer mode's width,
-			   the value will get truncated to 0
-			   by the subreg.  */
-			new = const0_rtx;
-		      else
-			/* If the count exceeds even the inner mode's width,
+		    if (op1)
+		      op1 = equiv_constant (op1);
+
+		    /* If we are looking for the low SImode part of
+		       (ashift:DI c (const_int 32)), it doesn't work
+		       to compute that in SImode, because a 32-bit shift
+		       in SImode is unpredictable.  We know the value is 0.  */
+		    if (op0 && op1
+		        && GET_CODE (elt->exp) == ASHIFT
+		        && GET_CODE (op1) == CONST_INT
+		        && INTVAL (op1) >= GET_MODE_BITSIZE (mode))
+		      {
+		        if (INTVAL (op1)
+			    < GET_MODE_BITSIZE (GET_MODE (elt->exp)))
+			  /* If the count fits in the inner mode's width,
+			     but exceeds the outer mode's width,
+			     the value will get truncated to 0
+			     by the subreg.  */
+			  new = CONST0_RTX (mode);
+		        else
+			  /* If the count exceeds even the inner mode's width,
 			   don't fold this expression.  */
-			new = 0;
-		    }
-		  else if (op0 && op1)
-		    new = simplify_binary_operation (GET_CODE (elt->exp), mode,
-						     op0, op1);
-		}
+			  new = 0;
+		      }
+		    else if (op0 && op1)
+		      new = simplify_binary_operation (GET_CODE (elt->exp),							       mode, op0, op1);
+		  }
 
-	      else if (GET_CODE (elt->exp) == SUBREG
-		       && GET_MODE (SUBREG_REG (elt->exp)) == mode
-		       && (GET_MODE_SIZE (GET_MODE (folded_arg0))
-			   <= UNITS_PER_WORD)
-		       && exp_equiv_p (elt->exp, elt->exp, 1, 0))
-		new = copy_rtx (SUBREG_REG (elt->exp));
+	        else if (GET_CODE (elt->exp) == SUBREG
+		         && GET_MODE (SUBREG_REG (elt->exp)) == mode
+		         && (GET_MODE_SIZE (GET_MODE (folded_arg0))
+			     <= UNITS_PER_WORD)
+		         && exp_equiv_p (elt->exp, elt->exp, 1, 0))
+		  new = copy_rtx (SUBREG_REG (elt->exp));
 
-	      if (new)
-		return new;
-	    }
+	        if (new)
+		  return new;
+	      }
+	  else
+	    /* A SUBREG resulting from a zero extension may fold to zero if
+	       it extracts higher bits than the ZERO_EXTEND's source bits.
+	       FIXME: if combine tried to, er, combine these instructions,
+	       this transformation may be moved to simplify_subreg.  */
+	    for (; elt; elt = elt->next_same_value)
+	      {
+	      	if (GET_CODE (elt->exp) == ZERO_EXTEND
+		    && subreg_lsb (x)
+		       >= GET_MODE_BITSIZE (GET_MODE (XEXP (elt->exp, 0))))
+		  return CONST0_RTX (mode);
+	      }
 	}
 
       return x;
