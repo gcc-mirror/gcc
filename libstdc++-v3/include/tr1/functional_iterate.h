@@ -444,46 +444,34 @@ class _Bind_result<_Result, _Functor(_GLIBCXX_TEMPLATE_ARGS)>
 #undef _GLIBCXX_BIND_REPEAT_HEADER
 };
 
-// Handle member pointers
-template<typename _Tp, typename _Class _GLIBCXX_COMMA _GLIBCXX_TEMPLATE_PARAMS>
-inline _Bind<_Mem_fn<_Tp _Class::*>(_GLIBCXX_TEMPLATE_ARGS)>
-bind(_Tp _Class::* __pm _GLIBCXX_COMMA _GLIBCXX_PARAMS)
-{
-  typedef _Bind<_Mem_fn<_Tp _Class::*>(_GLIBCXX_TEMPLATE_ARGS)> __result_type;
-  return __result_type(_Mem_fn<_Tp _Class::*>(__pm)
-                       _GLIBCXX_COMMA _GLIBCXX_ARGS);
-}
-
-template<typename _Result, typename _Tp, typename _Class
-         _GLIBCXX_COMMA _GLIBCXX_TEMPLATE_PARAMS>
-inline _Bind_result<_Result, _Mem_fn<_Tp _Class::*>(_GLIBCXX_TEMPLATE_ARGS)>
-bind(_Tp _Class::* __pm _GLIBCXX_COMMA _GLIBCXX_PARAMS)
-{
-  typedef _Bind_result<_Result, _Mem_fn<_Tp _Class::*>(_GLIBCXX_TEMPLATE_ARGS)>
-    __result_type;
-  return __result_type(_Mem_fn<_Tp _Class::*>(__pm)
-                       _GLIBCXX_COMMA _GLIBCXX_ARGS);
-}
-
 // Handle arbitrary function objects
 template<typename _Functor _GLIBCXX_COMMA _GLIBCXX_TEMPLATE_PARAMS>
-inline _Bind<_Functor(_GLIBCXX_TEMPLATE_ARGS)>
+inline
+_Bind<typename _Maybe_wrap_member_pointer<_Functor>::type
+        (_GLIBCXX_TEMPLATE_ARGS)>
 bind(_Functor __f _GLIBCXX_COMMA _GLIBCXX_PARAMS)
 {
-  typedef _Bind<_Functor(_GLIBCXX_TEMPLATE_ARGS)> __result_type;
-  return __result_type(__f _GLIBCXX_COMMA _GLIBCXX_ARGS);
+  typedef _Maybe_wrap_member_pointer<_Functor> __maybe_type;
+  typedef typename __maybe_type::type __functor_type;
+  typedef _Bind<__functor_type(_GLIBCXX_TEMPLATE_ARGS)> __result_type;
+  return __result_type(__maybe_type::__do_wrap(__f)
+                       _GLIBCXX_COMMA _GLIBCXX_ARGS);
 }
 
 template<typename _Result, typename _Functor
          _GLIBCXX_COMMA _GLIBCXX_TEMPLATE_PARAMS>
 inline
-typename __enable_if<_Bind_result<_Result, _Functor(_GLIBCXX_TEMPLATE_ARGS)>,
-                     !is_member_pointer<_Functor>::value>::__type
+_Bind_result<_Result,
+             typename _Maybe_wrap_member_pointer<_Functor>::type
+               (_GLIBCXX_TEMPLATE_ARGS)>
 bind(_Functor __f _GLIBCXX_COMMA _GLIBCXX_PARAMS)
 {
-  typedef _Bind_result<_Result, _Functor(_GLIBCXX_TEMPLATE_ARGS)>
+  typedef _Maybe_wrap_member_pointer<_Functor> __maybe_type;
+  typedef typename __maybe_type::type __functor_type;
+  typedef _Bind_result<_Result, __functor_type(_GLIBCXX_TEMPLATE_ARGS)>
     __result_type;
-  return __result_type(__f _GLIBCXX_COMMA _GLIBCXX_ARGS);
+  return __result_type(__maybe_type::__do_wrap(__f)
+                       _GLIBCXX_COMMA _GLIBCXX_ARGS);
 }
 
 template<typename _Res, typename _Functor _GLIBCXX_COMMA
