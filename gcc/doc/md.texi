@@ -1261,13 +1261,13 @@ Says that all following characters, up to the next comma, are to be
 ignored as a constraint.  They are significant only for choosing
 register preferences.
 
-@ifset INTERNALS
 @cindex @samp{*} in constraint
 @item *
 Says that the following character should be ignored when choosing
 register preferences.  @samp{*} has no effect on the meaning of the
 constraint as a constraint, and no effect on reloading.
 
+@ifset INTERNALS
 Here is an example: the 68000 has an instruction to sign-extend a
 halfword in a data register, and can also sign-extend a value by
 copying it into an address register.  While either kind of register is
@@ -1998,6 +1998,73 @@ Memory reference without index register
 
 @item S
 Symbolic constant suitable for use with the @code{larl} instruction
+
+@end table
+
+@item Xstormy16---@file{stormy16.h}
+@table @code
+@item a
+Register r0.
+
+@item b
+Register r1.
+
+@item c
+Register r2.
+
+@item d
+Register r8.
+
+@item e
+Registers r0 through r7.
+
+@item t
+Registers r0 and r1.
+
+@item y
+The carry register.
+
+@item z
+Registers r8 and r9.
+
+@item I
+A constant between 0 and 3 inclusive.
+
+@item J
+A constant that has exactly one bit set.
+
+@item K
+A constant that has exactly one bit clear.
+
+@item L
+A constant between 0 and 255 inclusive.
+
+@item M
+A constant between -255 and 0 inclusive.
+
+@item N
+A constant between -3 and 0 inclusive.
+
+@item O
+A constant between 1 and 4 inclusive.
+
+@item P
+A constant between -4 and -1 inclusive.
+
+@item Q
+A memory reference that is a stack push.
+
+@item R
+A memory reference that is a stack pop.
+
+@item S
+A memory reference that refers to an constant address of known value.
+
+@item T
+The register indicated by Rx (not implemented yet).
+
+@item U
+A constant that is not between 2 and 15 inclusive.
 
 @end table
 
