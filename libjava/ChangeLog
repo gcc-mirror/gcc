@@ -1,3 +1,7 @@
+2002-11-20  Andreas Jaeger  <aj@suse.de>
+
+	* configure: Regenerated with new libtool.m4.
+
 2002-11-19  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/ref/natReference.cc (add_to_hash): Look at `copy', not
@@ -22,11 +26,11 @@
         * java/nio/charset/CoderResult.java (Cache.get): Fix a bug
         that was causing CoderResults to be cached, not WeakReferences
         to CoderResults.
-	
+
 2002-11-18  Joerg Brunsmann  <joerg_brunsmann@yahoo.de>
 
 	* java/security/KeyStore.java (getInstance): Fix
-	comment and throw IllegalArgumentException if 
+	comment and throw IllegalArgumentException if
 	given provider is null.
 	(getInstance): New method for jdk1.4 compatibility.
 
@@ -42,7 +46,7 @@
 	(open): Declare "throws IOException".
 
 2002-11-18  Jesse Rosenstock <jmr@ugcs.caltech.edu>
- 
+
 	* java/nio/charset/Charset.java
 	(<clinit>): New method.
 	(encode): Synchronize use of cached encoder object.
@@ -158,7 +162,7 @@
 	(wrap): New method.
 	(put): New method.
 	(get): New method.
-	
+
 2002-11-13  Michael Koch <konqueror@gmx.de>
 
 	* java/nio/channels/AlreadyConnectedException.java:
@@ -255,7 +259,7 @@
 	* java/nio/charset/CoderResult.java: New file.
 	* Makefile.am (ordinary_java_source_files): Added new files.
 	* Makefile.in: Regenerated.
-	
+
 2002-11-11  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
 
 	* gnu/java/nio/charset/ISO_8859_1.java,
@@ -284,7 +288,7 @@
 	This class must be public, better implementation.
 	* java/nio/charset/UnsupportedCharsetException.java:
 	This class must be public, better implementation.
-	
+
 2002-11-11  Michael Koch <konqueror@gmx.de>
 
 	* java/nio/BufferOverflowException.java,
@@ -292,7 +296,7 @@
 	* Makefile.am (ordinary_java_source_files):
 	Added new files.
 	* Makefile.in: Regenerated.
-	
+
 2002-11-10  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/Container.java (validate): Use tree lock.
@@ -720,7 +724,7 @@
 	(hashCode): Implemented default URL hashCode algorithm.
 	* java/net/natPlainDatagramSocketImpl.cc:
 	No lines longer then 80 characters.
-	
+
 2002-10-20  Adam Megacz <adam@xwt.org>
 
 	* aclocal.m4 (CHECK_FOR_BROKEN_MINGW_LD): added
@@ -887,7 +891,7 @@
 	* Makefile.in: Regenerated.
 
 2002-10-04  C. Scott Ananian <cananian@lesser-magoo.lcs.mit.edu>
-	
+
 	* java/lang/ProtectionDomain.java (linesep): Remove field.
 	(toString): Use System.getProperty("line.separator").
 
@@ -989,7 +993,7 @@
 	* java/net/SocketOptions.java: Reindention.
 	* java/net/SocketPermission
 	(SocketPermission): Documentation fixed.
-	
+
 2002-10-03  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/DatagramSocket.java
@@ -1082,14 +1086,14 @@
 	* java/lang/reflect/Proxy.java: New file.  Imported from GNU
 	Classpath.
 	* gnu/java/lang/reflect/TypeSignature.java: Refresh from GNU
-	Classpath.	
+	Classpath.
 	* gnu/classpath/Configuration.java.in (HAVE_NATIVE_GET_PROXY_DATA,
 	HAVE_NATIVE_GET_PROXY_CLASS, HAVE_NATIVE_GENERATE_PROXY_CLASS):
 	New statics.
 	* gcj/javaprims.h ("Java"): Add new classes.
 	* java/lang/reflect/Proxy.java: Fix check for duplicate interfaces.
 	* Makefile.am (java/lang/reflect/Proxy$$ProxyData.h): Create this.
- 	java/lang/reflect/Proxy$$ProxyType.h): And this.
+	java/lang/reflect/Proxy$$ProxyType.h): And this.
 	(inner_nat_headers): Add these new headers.
 	(ordinary_java_source_files): Add new files.
 	(nat_source_files): Add new file.
@@ -1113,7 +1117,7 @@
 
 2002-09-25  Tom Tromey  <tromey@redhat.com>
 
-	* java/lang/natClassLoader.cc: 
+	* java/lang/natClassLoader.cc:
 	(_Jv_PrepareCompiledClass): Throw NoClassDefFoundError, per spec.
 	* resolve.cc: Include NoClassDefFoundError.h, not
 	ClassNotFoundException.h.
@@ -1401,7 +1405,7 @@
 	* include/config.h.in: Added HAVE_NET_IF_H.
 	* java/net/natNetworkInterface.cc (getRealNetworkInterfaces):
 	Removed #if 0 ... #endif.
-	
+
 2002-09-17  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/natNetworkInterface.cc:
@@ -1442,23 +1446,23 @@
 	and typo fixed.
 
 2002-09-15  Adam Megacz <adam@xwt.org>
-	
+
 	* java/net/natPlainSocketImpl.cc: fixed typo.
 
 2002-09-15  Adam Megacz <adam@xwt.org>
-	
+
 	* java/net/natPlainSocketImpl.cc: #ifdef-shielded socket timeouts,
 	which don't work on Win32 (yet).
 
 2002-09-14  Adam Megacz <adam@xwt.org>
-	
+
 	* java/net/natPlainDatagramSocket.cc: removed #include
 	<ws2tcpip.h>; the mingw header is broken (conflicts with itself).
 	* include/win32.h: included definition for IP_TOS to satisfy
 	natPlainDatagramSocket.cc
-	
+
 2002-09-13  Michael Koch  <konqueror@gmx.de>
-	
+
 	* java/net/DatagramPacket.java (DatagramPacket):
 	Added linebreak for 80 chars per line.
 	* java/net/JarURLConection.java
@@ -1534,7 +1538,7 @@
 	(guessContentTypeFromName): Added/updated documentation.
 	(getFileNameMap): Added/updated documentation.
 	(setFileNameMap): Added/updated documentation.
-	
+
 2002-09-11  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/Socket.java
@@ -1764,7 +1768,7 @@
 	java/net/Socket.java,
 	java/net/URLClassLoader.java,
 	java/net/URLConnection.java: add/update of some @since/@deprecated
-	
+
 2002-08-27  Tony Kimball <alk@pobox.com>
             Tom Tromey  <tromey@redhat.com>
 
@@ -1781,7 +1785,7 @@
 
 	* include/win32.h (getcwd): copied function declaration as
 	temporary fix for header confusion.
-	
+
 2002-08-24  Mark Wielaard <mark@klomp.org>
 
 	* Makefile.am (libgcj_la_SOURCES): Remove name-finder.cc.
@@ -1803,7 +1807,7 @@
 	(stackTraceStringBuffer): New helper method for stackTraceString().
 	(fillInStackTrace): Delegate to VMTrowable.
 	(getStackTrace): Likewise.
-	(getStackTrace0): Removed. 
+	(getStackTrace0): Removed.
 	(trace_enabled, stackTraceBytes): Moved to new VMThrowable.java.
 	(setStackTrace): Copy given array.
 	* java/lang/natThrowable.cc: Removed (replaced by natVMThrowable).
@@ -1844,7 +1848,7 @@
 
 	* java/net/URISyntaxException.java: New file.
 	* java/net/SocketTimeoutException.java: New file.
-	* java/net/PortUnreachableException.java: New file.	
+	* java/net/PortUnreachableException.java: New file.
 	* Makefile.am: Updated.
 	* Makefile.in: Rebuilt.
 
@@ -1902,7 +1906,7 @@
 	* Makefile.in: Regenerate.
 	* gnu/java/security/provider/DefaultPolicy.java
 	(getPermissions): Don't maintain static class variable of Permissions.
-	* gnu/java/security/provider/SHA.java 
+	* gnu/java/security/provider/SHA.java
 	(engineUpdate): algorithm change.
 	(engineDigest): algorithm change.
 
@@ -1924,22 +1928,22 @@
 
 	* gnu/awt/j2d/Graphics2DImpl.java: Implement stubs for new abstract
 	methods in Graphics2D.
-	
+
 2002-08-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	AWT/Swing merge from GNU Classpath.
 
-	* java/awt/AlphaComposite.java, java/awt/AttributeValue.java, 
+	* java/awt/AlphaComposite.java, java/awt/AttributeValue.java,
 	java/awt/BasicStroke.java, java/awt/BufferCapabilities.java,
 	java/awt/color/CMMException.java, java/awt/ColorPaintContext.java,
-	java/awt/color/ProfileDataException.java, 
+	java/awt/color/ProfileDataException.java,
 	java/awt/CompositeContext.java,	java/awt/Composite.java,
 	java/awt/ContainerOrderFocusTraversalPolicy.java,
 	java/awt/datatransfer/FlavorTable.java,
 	java/awt/DefaultFocusTraversalPolicy.java,
 	java/awt/DefaultKeyboardFocusManager.java, java/awt/DisplayMode.java,
 	java/awt/dnd/DnDConstants.java, java/awt/dnd/DragGestureEvent.java,
-	java/awt/dnd/DragGestureListener.java, 
+	java/awt/dnd/DragGestureListener.java,
 	java/awt/dnd/DragGestureRecognizer.java,
 	java/awt/dnd/DragSourceAdapter.java,
 	java/awt/dnd/DragSourceContext.java,
@@ -2255,7 +2259,7 @@
 	javax/swing/UnsupportedLookAndFeelException.java,
 	javax/swing/ViewportLayout.java,
 	javax/swing/WindowConstants.java: New files, from GNU Classpath.
-	
+
 	* java/awt/ActiveEvent.java,
 	java/awt/Adjustable.java, java/awt/AWTError.java,
 	java/awt/AWTEvent.java,	java/awt/AWTEventMulticaster.java,
@@ -2314,7 +2318,7 @@
 	java/awt/MenuItem.java,	java/awt/PaintContext.java,
 	java/awt/Paint.java, java/awt/Panel.java, java/awt/Point.java,
 	java/awt/Polygon.java, java/awt/PrintGraphics.java,
-	java/awt/PrintJob.java, java/awt/Rectangle.java, 
+	java/awt/PrintJob.java, java/awt/Rectangle.java,
 	java/awt/RenderingHints.java, java/awt/ScrollPane.java,
 	java/awt/Shape.java, java/awt/SystemColor.java, java/awt/Toolkit.java,
 	java/awt/Transparency.java, java/awt/Window.java: Merge from classpath.
@@ -2338,8 +2342,8 @@
 	* gnu/awt/xlib/XGraphicsConfiguration.java,
 	gnu/awt/xlib/XToolkit.java: Updated to compile against 1.4 abstract
 	API.
-	
-	* javax/swing/plaf/metal/MetalLookAndFeel.java: New file from 
+
+	* javax/swing/plaf/metal/MetalLookAndFeel.java: New file from
 	GNU Classpath.
 
 	* Makefile.am: Add new files.
@@ -2348,7 +2352,7 @@
 2002-08-07  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/lang/ClassLoader.java (getSystemClassLoader, findClass,
-	defineClass, setSigners, getSystemResource, getSystemResourceAsStream, 
+	defineClass, setSigners, getSystemResource, getSystemResourceAsStream,
 	findResource, getResources, findResources): Add javadoc from classpath.
 	(getSystemResources): Implemented.
 
@@ -2373,7 +2377,7 @@
 	* gnu/java/security/provider/DefaultPolicy.java
 	(getPermissions): Revert to maintaining static class variable of
 	Permissions.
-	* gnu/java/security/provider/SHA.java 
+	* gnu/java/security/provider/SHA.java
 	(engineUpdate): Revert algorithm change.
 	(engineDigest): Revert algorithm change.
 
@@ -2503,7 +2507,7 @@
 	* gnu/java/security/provider/DefaultPolicy.java
 	(getPermissions): do not maintain static class variable of
 	Permissions
-	* gnu/java/security/provider/SHA.java 
+	* gnu/java/security/provider/SHA.java
 	(engineUpdate): algorithm change
 	(engineDigest): algorithm change
 
@@ -2645,7 +2649,7 @@
 	java/sql/Statement.java, java/sql/Struct.java, java/sql/Time.java,
 	java/sql/Timestamp.java, java/sql/Types.java: Updated to JDBC 3.0
 	(JDK 1.4) specification.
-	* javax/sql/ConnectionEvent.java, 
+	* javax/sql/ConnectionEvent.java,
 	javax/sql/ConnectionEventListener.java,
 	javax/sql/ConnectionPoolDataSource.java,
 	javax/sql/DataSource.java, javax/sql/PooledConnection.java,
@@ -2656,7 +2660,7 @@
 	javax/sql/XADataSource.java: New files.
 	* Makefile.am: Add new files.
 	* Makefile.in: Rebuilt.
-	
+
 2002-06-20  Tom Tromey  <tromey@redhat.com>
 
 	For PR libgcj/7073:
@@ -2940,7 +2944,7 @@
 
         * java/io/natFileDescriptorWin32.cc (open): Disable Win32 file
         locking, just like the Sun JVM does.
-	
+
 2002-06-05  H.J. Lu  (hjl@gnu.org)
 
 	* Makefile.am (libgcj_convenience.la): Revert the last change.
@@ -3132,7 +3136,7 @@
 	.java.class: New rule.
 	(CLEANFILES): Remove tmp-list.
 	* libjava/Makefile.in: Regenerated.
-	
+
 2002-05-09  David.Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* testsuite/lib/libjava.exp (test_libjava_from_javac):
@@ -3283,7 +3287,7 @@
 
 2002-04-17  Adam King <aking@dreammechanics.com>
 
-	* java/io/File.java (normalizePath): Add Win32 support for auto 
+	* java/io/File.java (normalizePath): Add Win32 support for auto
 	conversion of a '/' path separator to Win32's '\' separator.
 
 2002-04-16  Tom Tromey  <tromey@redhat.com>
@@ -3303,7 +3307,7 @@
 	(_access, _stat, attr, getCanonicalPath, performMkdir,
 	performRenameTo): Don't use fixed-size array.
 	(getCanonicalPath): Use throw, not _Jv_Throw.
-	
+
 2002-04-15  DJ Delorie  <dj@redhat.com>
 
 	* configure.in: Allow building in $srcdir.
@@ -3411,8 +3415,8 @@
 
 	* java/lang/natSystem.cc (init_properties): Call new function
 	_Jv_platform_initProperties.
-	* win32.cc (_Jv_platform_initProperties): New function that adds Win32 
-	support for the System properties os.name, os.arch, os.version, 
+	* win32.cc (_Jv_platform_initProperties): New function that adds Win32
+	support for the System properties os.name, os.arch, os.version,
 	user.name, user.home, and user.dir.
 	* include/posix.h, include/win32.h, posix.cc: New function
 	_Jv_platform_initProperties.
@@ -3564,7 +3568,7 @@
 	* include/dwarf2-signal.h (MAKE_THROW_FRAME): Add for IA-64.
 	(INIT_SEGV, INIT_FPE): Use __libc_sigaction instead of syscall.
 	Add FIXME comment.
-	
+
 2002-03-25  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.am (libgcj_la_LDFLAGS): Use THREADLDFLAGS.
@@ -3598,9 +3602,9 @@
 
 	* java/io/FileInputStream.java (skip): Call fd.getFilePointer() and
 	calculate correct number of bytes skipped.
-	
+
 	Based on patch from Intel's ORP team:
-	* java/io/PushbackInputStream.java (available): Calculate correct 
+	* java/io/PushbackInputStream.java (available): Calculate correct
 	number of bytes in buffer.
 	(read): Remove redundant bound check. Return bytes from both the
 	buffer and the stream.
@@ -3746,7 +3750,7 @@
 
 2002-03-15  Tom Tromey  <tromey@redhat.com>
 	    Rainer Orth <ro@TechFak.Uni-Bielefeld.DE>
-	
+
 	Fix for PR libgcj/5944.
 	* gnu/gcj/io/shs.h: Define uint8_t and uint32_t.
 
@@ -3771,7 +3775,7 @@
 2002-03-10  Adam Megacz <adam@xwt.org>
 
         * java/net/natPlainSocketImpl.cc: Added #include <platform.h>.
-	
+
 2002-03-10  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/GridLayout.java (layoutContainer): Handle case where
@@ -3812,8 +3816,8 @@
 	slow_pthread_self. Set up symlink for sysdeps directory.
 	* configure: Rebuild.
 	* configure.host: Document more shell variables. Set sysdeps_dir
-	for most platforms. Set slow_pthread_self for i686. Set 
-	enable_hash_synchronization_default and slow_pthread_self for PowerPC. 
+	for most platforms. Set slow_pthread_self for i686. Set
+	enable_hash_synchronization_default and slow_pthread_self for PowerPC.
 	* posix-threads.cc (_Jv_ThreadSelf_out_of_line): Use release_set so
 	that memory barrier is emitted where required.
 	* prims.cc: 64-bit align static primitive class instances.
@@ -3821,7 +3825,7 @@
 	read_barrier() to enforce ordering of reads.
 	* sysdep/powerpc/locks.h: New file. Implementation of synchronization
 	primitives for PowerPC.
-	* sysdep/i386/locks.h: New file. Synchronization primitives for i386 
+	* sysdep/i386/locks.h: New file. Synchronization primitives for i386
 	moved from natObject.cc.
 	* sysdep/alpha/locks.h: Likewise.
 	* sysdep/ia64/locks.h: Likewise.
@@ -3838,7 +3842,7 @@
 
         * win32.cc (_CRT_MT, __mingwthr_key_dtor) Added fake
         definitions to simulate -mthreads.
-	
+
 2002-03-09  Adam Megacz  <adam@xwt.org>
 
         * win32.cc (_Jv_platform_gettimeofday) Cast 1000 to long long to
@@ -3893,7 +3897,7 @@
         returns jlong.
         * java/lang/natSystem.cc (currentTimeMillis): Now uses updated
         _Jv_platform_gettimeofday signature.
-	
+
 2002-03-07  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/net/natPlainSocketImpl.cc (_Jv_recv): Removed.
@@ -4029,7 +4033,7 @@
 	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA):
 	Define ffi_result union for ffi_call result.  Cast
 	ffi_result members to jvalue.
- 
+
 2002-02-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in, gcj/Makefile.in, include/Makefile.in: Rebuilt.
@@ -4207,7 +4211,7 @@
 
 	* boehm.cc (initialized, obj_kind_x, obj_free_list): Removed unused
 	declarations.
-	(_Jv_InitGC): Don't bother locking, as this is always called from a 
+	(_Jv_InitGC): Don't bother locking, as this is always called from a
 	single-thread. Turn off GC_all_interior_pointers. Remove dead code.
 
 2002-02-11  Adam Megacz <adam@xwt.org>
@@ -4331,11 +4335,11 @@
 
 	* gnu/gcj/io/shs.h, gnu/gcj/io/shs.cc, gnu/gcj/io/natSimpleSHSStream.cc:
 	use uint<n>_t instead of LONG and BYTE
-	
+
 2002-02-06  Adam Megacz <adam@xwt.org>
 
 	* name-finder.h: don't #include sys/wait.h unless HAVE_SYS_WAIT_H
-	
+
 2002-02-06  Anthony Green  <green@redhat.com>
 
 	* java/net/natPlainSocketImpl.cc: Fix DISABLE_JAVA_NET targets.
@@ -4393,7 +4397,7 @@
 	* configure.in: Added PLATFORM_SPECIFIC_SOURCES,
 	which is set to posix.cc or win32.cc.
 	* Makefile.am: Updated it to use $(PLATFORM_SPECIFIC_SOURCES).
-	
+
 2002-02-04  Adam Megacz <adam@xwt.org>
 
 	* configure.in: Corrected mingw case branches; added * before
@@ -4429,7 +4433,7 @@
 2002-02-01  Adam Megacz <adam@xwt.org>
 
 	* prims.cc: Added #undef STRICT after #include<windows.h>.
-	
+
 2002-02-01  Adam Megacz <adam@xwt.org>
 
 	* prims.cc
@@ -4437,7 +4441,7 @@
 	USE_WIN32_SIGNALLING and USE_WINSOCK.
 	(win32_exception_handler): Now throws an exception out of
 	the signal handler; assumes SJLJ.
-	
+
 2002-02-01  Adam Megacz <adam@xwt.org>
 
 	* win32-threads.cc:
@@ -4468,7 +4472,7 @@
 2002-02-01  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR java/4972
-	* aclocal.m4, acinclude.m4 (AM_ICONV): Put linking flags 
+	* aclocal.m4, acinclude.m4 (AM_ICONV): Put linking flags
 	for libiconv in LIBICONV variable.
 	* configure: Regenerated.
 
@@ -4574,9 +4578,9 @@
 2002-01-25  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/lang/natObject.cc (X86 compare_and_swap): Use +m constraint.
-	
+
 	* java/awt/image/PixelGrabber.java (grabPixels()): Call grabPixels(0).
-	(grabPixels(long)): Wait to be notified that the ImageProducer has 
+	(grabPixels(long)): Wait to be notified that the ImageProducer has
 	completed.
 
 2002-01-24  Per Bothner  <per@bothner.com>
@@ -4655,539 +4659,539 @@
 
 2002-01-22  Mark Wielaard <mark@klomp.org>
 
-	* java/awt/Adjustable.java java/awt/CheckboxMenuItem.java 
-	java/awt/Choice.java java/awt/Color.java java/awt/Cursor.java 
-	java/awt/Dialog.java java/awt/FileDialog.java 
-	java/awt/Font.java java/awt/FontMetrics.java 
-	java/awt/Image.java java/awt/ImageMediaEntry.java 
-	java/awt/Insets.java java/awt/List.java 
-	java/awt/MediaEntry.java java/awt/MediaTracker.java 
-	java/awt/Menu.java java/awt/MenuBar.java 
-	java/awt/MenuContainer.java java/awt/MenuShortcut.java 
-	java/awt/PaintContext.java java/awt/Panel.java 
-	java/awt/PopupMenu.java java/awt/SystemColor.java 
-	java/awt/peer/ButtonPeer.java java/awt/peer/CanvasPeer.java 
-	java/awt/peer/CheckboxMenuItemPeer.java 
-	java/awt/peer/CheckboxPeer.java java/awt/peer/ChoicePeer.java 
-	java/awt/peer/ComponentPeer.java 
-	java/awt/peer/ContainerPeer.java java/awt/peer/DialogPeer.java 
-	java/awt/peer/FileDialogPeer.java java/awt/peer/FontPeer.java 
-	java/awt/peer/FramePeer.java java/awt/peer/LabelPeer.java 
-	java/awt/peer/LightweightPeer.java java/awt/peer/ListPeer.java 
-	java/awt/peer/MenuBarPeer.java 
-	java/awt/peer/MenuComponentPeer.java 
-	java/awt/peer/MenuItemPeer.java java/awt/peer/MenuPeer.java 
-	java/awt/peer/PanelPeer.java java/awt/peer/PopupMenuPeer.java 
-	java/awt/peer/ScrollPanePeer.java 
-	java/awt/peer/ScrollbarPeer.java 
-	java/awt/peer/TextAreaPeer.java 
-	java/awt/peer/TextComponentPeer.java 
+	* java/awt/Adjustable.java java/awt/CheckboxMenuItem.java
+	java/awt/Choice.java java/awt/Color.java java/awt/Cursor.java
+	java/awt/Dialog.java java/awt/FileDialog.java
+	java/awt/Font.java java/awt/FontMetrics.java
+	java/awt/Image.java java/awt/ImageMediaEntry.java
+	java/awt/Insets.java java/awt/List.java
+	java/awt/MediaEntry.java java/awt/MediaTracker.java
+	java/awt/Menu.java java/awt/MenuBar.java
+	java/awt/MenuContainer.java java/awt/MenuShortcut.java
+	java/awt/PaintContext.java java/awt/Panel.java
+	java/awt/PopupMenu.java java/awt/SystemColor.java
+	java/awt/peer/ButtonPeer.java java/awt/peer/CanvasPeer.java
+	java/awt/peer/CheckboxMenuItemPeer.java
+	java/awt/peer/CheckboxPeer.java java/awt/peer/ChoicePeer.java
+	java/awt/peer/ComponentPeer.java
+	java/awt/peer/ContainerPeer.java java/awt/peer/DialogPeer.java
+	java/awt/peer/FileDialogPeer.java java/awt/peer/FontPeer.java
+	java/awt/peer/FramePeer.java java/awt/peer/LabelPeer.java
+	java/awt/peer/LightweightPeer.java java/awt/peer/ListPeer.java
+	java/awt/peer/MenuBarPeer.java
+	java/awt/peer/MenuComponentPeer.java
+	java/awt/peer/MenuItemPeer.java java/awt/peer/MenuPeer.java
+	java/awt/peer/PanelPeer.java java/awt/peer/PopupMenuPeer.java
+	java/awt/peer/ScrollPanePeer.java
+	java/awt/peer/ScrollbarPeer.java
+	java/awt/peer/TextAreaPeer.java
+	java/awt/peer/TextComponentPeer.java
 	java/awt/peer/TextFieldPeer.java
 	java/awt/peer/WindowPeer.java: Add license clarification.
 
 2002-01-22  Mark Wielaard <mark@klomp.org>
 
-	* LIBGCJ_LICENSE gnu/classpath/Configuration.java.in 
-	gnu/gcj/runtime/StringBuffer.java 
-	gnu/java/awt/BitMaskExtent.java gnu/java/awt/Buffers.java 
-	gnu/java/awt/ComponentDataBlitOp.java 
-	gnu/java/awt/GLightweightPeer.java 
-	gnu/java/beans/BeanInfoEmbryo.java 
-	gnu/java/beans/EmptyBeanInfo.java 
-	gnu/java/beans/ExplicitBeanInfo.java 
-	gnu/java/beans/IntrospectionIncubator.java 
-	gnu/java/beans/editors/ColorEditor.java 
-	gnu/java/beans/editors/FontEditor.java 
-	gnu/java/beans/editors/NativeBooleanEditor.java 
-	gnu/java/beans/editors/NativeByteEditor.java 
-	gnu/java/beans/editors/NativeDoubleEditor.java 
-	gnu/java/beans/editors/NativeFloatEditor.java 
-	gnu/java/beans/editors/NativeIntEditor.java 
-	gnu/java/beans/editors/NativeLongEditor.java 
-	gnu/java/beans/editors/NativeShortEditor.java 
-	gnu/java/beans/editors/StringEditor.java 
-	gnu/java/beans/info/ComponentBeanInfo.java 
-	gnu/java/io/ClassLoaderObjectInputStream.java 
-	gnu/java/io/NullOutputStream.java 
-	gnu/java/io/ObjectIdentityWrapper.java 
-	gnu/java/lang/ArrayHelper.java gnu/java/lang/ClassHelper.java 
-	gnu/java/lang/reflect/TypeSignature.java 
-	gnu/java/locale/Calendar.java gnu/java/locale/Calendar_de.java 
-	gnu/java/locale/Calendar_en.java 
-	gnu/java/locale/Calendar_nl.java 
-	gnu/java/locale/LocaleInformation.java 
-	gnu/java/locale/LocaleInformation_de.java 
-	gnu/java/locale/LocaleInformation_en.java 
-	gnu/java/locale/LocaleInformation_nl.java 
-	gnu/java/math/MPN.java gnu/java/rmi/dgc/DGCImpl.java 
-	gnu/java/rmi/registry/RegistryImpl.java 
-	gnu/java/rmi/rmic/Compile_gcj.java 
-	gnu/java/rmi/rmic/Compiler.java 
-	gnu/java/rmi/rmic/CompilerProcess.java 
-	gnu/java/rmi/rmic/RMIC.java 
-	gnu/java/rmi/rmic/TabbedWriter.java 
-	gnu/java/rmi/server/ProtocolConstants.java 
-	gnu/java/rmi/server/RMIDefaultSocketFactory.java 
-	gnu/java/rmi/server/RMIHashes.java 
-	gnu/java/rmi/server/RMIObjectInputStream.java 
-	gnu/java/rmi/server/RMIObjectOutputStream.java 
-	gnu/java/rmi/server/UnicastConnection.java 
-	gnu/java/rmi/server/UnicastConnectionManager.java 
-	gnu/java/rmi/server/UnicastRef.java 
-	gnu/java/rmi/server/UnicastRemoteCall.java 
-	gnu/java/rmi/server/UnicastRemoteStub.java 
-	gnu/java/rmi/server/UnicastServer.java 
-	gnu/java/rmi/server/UnicastServerRef.java 
-	gnu/java/security/provider/DefaultPolicy.java 
-	gnu/java/security/provider/Gnu.java 
-	gnu/java/security/provider/SHA.java 
-	gnu/java/security/provider/SHA1PRNG.java 
-	gnu/java/text/BaseBreakIterator.java 
-	gnu/java/text/CharacterBreakIterator.java 
-	gnu/java/text/LineBreakIterator.java 
-	gnu/java/text/SentenceBreakIterator.java 
-	gnu/java/text/WordBreakIterator.java 
-	gnu/java/util/DoubleEnumeration.java java/applet/Applet.java 
-	java/applet/AppletContext.java java/applet/AppletStub.java 
-	java/applet/AudioClip.java java/awt/AWTError.java 
-	java/awt/AWTEvent.java java/awt/AWTEventMulticaster.java 
-	java/awt/AWTException.java java/awt/AWTPermission.java 
-	java/awt/ActiveEvent.java java/awt/BorderLayout.java 
-	java/awt/Button.java java/awt/Canvas.java 
-	java/awt/CardLayout.java java/awt/Checkbox.java 
-	java/awt/CheckboxGroup.java java/awt/Component.java 
-	java/awt/ComponentOrientation.java java/awt/Container.java 
-	java/awt/Dimension.java java/awt/Event.java 
-	java/awt/EventDispatchThread.java java/awt/EventQueue.java 
-	java/awt/FlowLayout.java java/awt/Frame.java 
-	java/awt/Graphics.java java/awt/Graphics2D.java 
-	java/awt/GraphicsConfiguration.java java/awt/GridLayout.java 
-	java/awt/IllegalComponentStateException.java 
-	java/awt/ItemSelectable.java java/awt/Label.java 
-	java/awt/LayoutManager.java java/awt/LayoutManager2.java 
-	java/awt/MenuComponent.java java/awt/MenuItem.java 
-	java/awt/Paint.java java/awt/Point.java 
-	java/awt/Rectangle.java java/awt/RenderingHints.java 
-	java/awt/Transparency.java java/awt/Window.java 
-	java/awt/color/ColorSpace.java 
-	java/awt/color/ICC_ColorSpace.java 
-	java/awt/color/ICC_Profile.java 
-	java/awt/event/HierarchyBoundsAdapter.java 
-	java/awt/event/HierarchyBoundsListener.java 
-	java/awt/event/HierarchyEvent.java 
-	java/awt/event/HierarchyListener.java 
-	java/awt/geom/AffineTransform.java 
-	java/awt/geom/Dimension2D.java java/awt/geom/Ellipse2D.java 
-	java/awt/geom/IllegalPathStateException.java 
-	java/awt/geom/Line2D.java 
-	java/awt/geom/NoninvertibleTransformException.java 
-	java/awt/geom/PathIterator.java java/awt/geom/Point2D.java 
-	java/awt/geom/Rectangle2D.java 
-	java/awt/geom/RectangularShape.java 
-	java/awt/geom/RoundRectangle2D.java 
-	java/awt/image/BufferedImage.java 
-	java/awt/image/ColorModel.java 
-	java/awt/image/ComponentColorModel.java 
-	java/awt/image/ComponentSampleModel.java 
-	java/awt/image/DataBuffer.java 
-	java/awt/image/DataBufferByte.java 
-	java/awt/image/DataBufferInt.java 
-	java/awt/image/DataBufferUShort.java 
-	java/awt/image/DirectColorModel.java 
-	java/awt/image/PackedColorModel.java 
-	java/awt/image/Raster.java java/awt/image/RasterOp.java 
-	java/awt/image/SampleModel.java 
-	java/awt/image/SinglePixelPackedSampleModel.java 
-	java/awt/image/WritableRaster.java 
-	java/beans/AppletInitializer.java 
-	java/beans/BeanDescriptor.java java/beans/BeanInfo.java 
-	java/beans/Beans.java java/beans/Customizer.java 
-	java/beans/DesignMode.java java/beans/EventSetDescriptor.java 
-	java/beans/FeatureDescriptor.java 
-	java/beans/IndexedPropertyDescriptor.java 
-	java/beans/IntrospectionException.java 
-	java/beans/Introspector.java java/beans/MethodDescriptor.java 
-	java/beans/ParameterDescriptor.java 
-	java/beans/PropertyChangeEvent.java 
-	java/beans/PropertyChangeListener.java 
-	java/beans/PropertyChangeSupport.java 
-	java/beans/PropertyDescriptor.java 
-	java/beans/PropertyEditor.java 
-	java/beans/PropertyEditorManager.java 
-	java/beans/PropertyEditorSupport.java 
-	java/beans/PropertyVetoException.java 
-	java/beans/SimpleBeanInfo.java 
-	java/beans/VetoableChangeListener.java 
-	java/beans/VetoableChangeSupport.java 
-	java/beans/Visibility.java 
-	java/beans/beancontext/BeanContext.java 
-	java/beans/beancontext/BeanContextChild.java 
-	java/beans/beancontext/BeanContextChildComponentProxy.java 
-	java/beans/beancontext/BeanContextChildSupport.java 
-	java/beans/beancontext/BeanContextContainerProxy.java 
-	java/beans/beancontext/BeanContextEvent.java 
-	java/beans/beancontext/BeanContextMembershipEvent.java 
-	java/beans/beancontext/BeanContextMembershipListener.java 
-	java/beans/beancontext/BeanContextProxy.java 
-	java/beans/beancontext/BeanContextServiceAvailableEvent.java 
-	java/beans/beancontext/BeanContextServiceProvider.java 
-	java/beans/beancontext/BeanContextServiceProviderBeanInfo.java 
-	java/beans/beancontext/BeanContextServiceRevokedEvent.java 
-	java/beans/beancontext/BeanContextServiceRevokedListener.java 
-	java/beans/beancontext/BeanContextServices.java 
-	java/beans/beancontext/BeanContextServicesListener.java 
-	java/io/BufferedInputStream.java 
-	java/io/BufferedOutputStream.java java/io/BufferedReader.java 
-	java/io/BufferedWriter.java java/io/ByteArrayInputStream.java 
-	java/io/ByteArrayOutputStream.java 
-	java/io/CharArrayReader.java java/io/CharArrayWriter.java 
-	java/io/CharConversionException.java java/io/DataInput.java 
-	java/io/DataInputStream.java java/io/DataOutput.java 
-	java/io/EOFException.java java/io/Externalizable.java 
-	java/io/FileFilter.java java/io/FileNotFoundException.java 
-	java/io/FilePermission.java java/io/FileReader.java 
-	java/io/FileWriter.java java/io/FilenameFilter.java 
-	java/io/FilterInputStream.java java/io/FilterOutputStream.java 
-	java/io/FilterReader.java java/io/FilterWriter.java 
-	java/io/IOException.java java/io/InputStream.java 
-	java/io/InterruptedIOException.java 
-	java/io/InvalidClassException.java 
-	java/io/InvalidObjectException.java 
-	java/io/NotActiveException.java 
-	java/io/NotSerializableException.java java/io/ObjectInput.java 
-	java/io/ObjectInputStream.java 
-	java/io/ObjectInputValidation.java java/io/ObjectOutput.java 
-	java/io/ObjectOutputStream.java java/io/ObjectStreamClass.java 
-	java/io/ObjectStreamConstants.java 
-	java/io/ObjectStreamException.java 
-	java/io/ObjectStreamField.java 
-	java/io/OptionalDataException.java java/io/OutputStream.java 
-	java/io/PipedInputStream.java java/io/PipedOutputStream.java 
-	java/io/PipedReader.java java/io/PipedWriter.java 
-	java/io/PrintWriter.java java/io/PushbackInputStream.java 
-	java/io/PushbackReader.java java/io/Reader.java 
-	java/io/SequenceInputStream.java java/io/Serializable.java 
-	java/io/SerializablePermission.java 
-	java/io/StreamCorruptedException.java 
-	java/io/StreamTokenizer.java 
-	java/io/StringBufferInputStream.java java/io/StringReader.java 
-	java/io/StringWriter.java java/io/SyncFailedException.java 
-	java/io/UTFDataFormatException.java 
-	java/io/UnsupportedEncodingException.java 
-	java/io/WriteAbortedException.java java/io/Writer.java 
-	java/lang/AbstractMethodError.java 
-	java/lang/ArithmeticException.java 
-	java/lang/ArrayIndexOutOfBoundsException.java 
-	java/lang/ArrayStoreException.java java/lang/Boolean.java 
-	java/lang/Byte.java java/lang/CharSequence.java 
-	java/lang/ClassCastException.java 
-	java/lang/ClassCircularityError.java 
-	java/lang/ClassFormatError.java 
-	java/lang/ClassNotFoundException.java 
-	java/lang/CloneNotSupportedException.java 
-	java/lang/Cloneable.java java/lang/Comparable.java 
-	java/lang/Compiler.java java/lang/Double.java 
-	java/lang/Error.java java/lang/Exception.java 
-	java/lang/ExceptionInInitializerError.java 
-	java/lang/Float.java java/lang/IllegalAccessError.java 
-	java/lang/IllegalAccessException.java 
-	java/lang/IllegalArgumentException.java 
-	java/lang/IllegalMonitorStateException.java 
-	java/lang/IllegalStateException.java 
-	java/lang/IllegalThreadStateException.java 
-	java/lang/IncompatibleClassChangeError.java 
-	java/lang/IndexOutOfBoundsException.java 
-	java/lang/InheritableThreadLocal.java 
-	java/lang/InstantiationError.java 
-	java/lang/InstantiationException.java java/lang/Integer.java 
-	java/lang/InternalError.java 
-	java/lang/InterruptedException.java 
-	java/lang/LinkageError.java java/lang/Long.java 
-	java/lang/NegativeArraySizeException.java 
-	java/lang/NoClassDefFoundError.java 
-	java/lang/NoSuchFieldError.java 
-	java/lang/NoSuchFieldException.java 
-	java/lang/NoSuchMethodError.java 
-	java/lang/NoSuchMethodException.java 
-	java/lang/NullPointerException.java java/lang/Number.java 
-	java/lang/NumberFormatException.java 
-	java/lang/OutOfMemoryError.java java/lang/Package.java 
-	java/lang/Process.java java/lang/Runnable.java 
-	java/lang/RuntimeException.java 
-	java/lang/RuntimePermission.java 
-	java/lang/SecurityException.java 
-	java/lang/SecurityManager.java java/lang/Short.java 
-	java/lang/StackOverflowError.java java/lang/StringBuffer.java 
-	java/lang/StringIndexOutOfBoundsException.java 
-	java/lang/ThreadDeath.java java/lang/ThreadGroup.java 
-	java/lang/ThreadLocal.java java/lang/UnknownError.java 
-	java/lang/UnsatisfiedLinkError.java 
-	java/lang/UnsupportedClassVersionError.java 
-	java/lang/UnsupportedOperationException.java 
-	java/lang/VerifyError.java java/lang/VirtualMachineError.java 
-	java/lang/Void.java java/lang/ref/PhantomReference.java 
-	java/lang/ref/Reference.java java/lang/ref/ReferenceQueue.java 
-	java/lang/ref/SoftReference.java 
-	java/lang/ref/WeakReference.java 
-	java/lang/reflect/AccessibleObject.java 
-	java/lang/reflect/InvocationTargetException.java 
-	java/lang/reflect/Member.java java/lang/reflect/Modifier.java 
-	java/lang/reflect/ReflectPermission.java 
-	java/math/BigDecimal.java java/math/BigInteger.java 
-	java/net/Authenticator.java java/net/BindException.java 
-	java/net/ConnectException.java java/net/ContentHandler.java 
-	java/net/ContentHandlerFactory.java 
-	java/net/DatagramPacket.java java/net/DatagramSocketImpl.java 
-	java/net/FileNameMap.java java/net/MalformedURLException.java 
-	java/net/MulticastSocket.java java/net/NetPermission.java 
-	java/net/NoRouteToHostException.java 
-	java/net/PasswordAuthentication.java 
-	java/net/ProtocolException.java java/net/ServerSocket.java 
-	java/net/Socket.java java/net/SocketException.java 
-	java/net/SocketImpl.java java/net/SocketImplFactory.java 
-	java/net/SocketOptions.java java/net/SocketPermission.java 
-	java/net/URLDecoder.java java/net/URLEncoder.java 
-	java/net/URLStreamHandlerFactory.java 
-	java/net/UnknownHostException.java 
-	java/net/UnknownServiceException.java 
-	java/rmi/AccessException.java 
-	java/rmi/AlreadyBoundException.java 
-	java/rmi/ConnectException.java 
-	java/rmi/ConnectIOException.java 
-	java/rmi/MarshalException.java java/rmi/MarshalledObject.java 
-	java/rmi/Naming.java java/rmi/NoSuchObjectException.java 
-	java/rmi/NotBoundException.java 
-	java/rmi/RMISecurityException.java 
-	java/rmi/RMISecurityManager.java java/rmi/Remote.java 
-	java/rmi/RemoteException.java java/rmi/ServerError.java 
-	java/rmi/ServerException.java 
-	java/rmi/ServerRuntimeException.java 
-	java/rmi/StubNotFoundException.java 
-	java/rmi/UnexpectedException.java 
-	java/rmi/UnknownHostException.java 
-	java/rmi/UnmarshalException.java 
-	java/rmi/activation/Activatable.java 
-	java/rmi/activation/ActivateFailedException.java 
-	java/rmi/activation/ActivationDesc.java 
-	java/rmi/activation/ActivationException.java 
-	java/rmi/activation/ActivationGroup.java 
-	java/rmi/activation/ActivationGroupDesc.java 
-	java/rmi/activation/ActivationGroupID.java 
-	java/rmi/activation/ActivationID.java 
-	java/rmi/activation/ActivationInstantiator.java 
-	java/rmi/activation/ActivationMonitor.java 
-	java/rmi/activation/ActivationSystem.java 
-	java/rmi/activation/Activator.java 
-	java/rmi/activation/UnknownGroupException.java 
-	java/rmi/activation/UnknownObjectException.java 
-	java/rmi/dgc/DGC.java java/rmi/dgc/Lease.java 
-	java/rmi/dgc/VMID.java java/rmi/registry/LocateRegistry.java 
-	java/rmi/registry/Registry.java 
-	java/rmi/registry/RegistryHandler.java 
-	java/rmi/server/ExportException.java 
-	java/rmi/server/LoaderHandler.java 
-	java/rmi/server/LogStream.java java/rmi/server/ObjID.java 
-	java/rmi/server/Operation.java 
-	java/rmi/server/RMIClassLoader.java 
-	java/rmi/server/RMIClientSocketFactory.java 
-	java/rmi/server/RMIFailureHandler.java 
-	java/rmi/server/RMIServerSocketFactory.java 
-	java/rmi/server/RMISocketFactory.java 
-	java/rmi/server/RemoteCall.java 
-	java/rmi/server/RemoteObject.java 
-	java/rmi/server/RemoteRef.java 
-	java/rmi/server/RemoteServer.java 
-	java/rmi/server/RemoteStub.java 
-	java/rmi/server/ServerCloneException.java 
-	java/rmi/server/ServerNotActiveException.java 
-	java/rmi/server/ServerRef.java java/rmi/server/Skeleton.java 
-	java/rmi/server/SkeletonMismatchException.java 
-	java/rmi/server/SkeletonNotFoundException.java 
-	java/rmi/server/SocketSecurityException.java 
-	java/rmi/server/UID.java 
-	java/rmi/server/UnicastRemoteObject.java 
-	java/rmi/server/Unreferenced.java 
-	java/security/AccessControlContext.java 
-	java/security/AccessControlException.java 
-	java/security/AccessController.java 
-	java/security/AlgorithmParameterGenerator.java 
-	java/security/AlgorithmParameterGeneratorSpi.java 
-	java/security/AlgorithmParameters.java 
-	java/security/AlgorithmParametersSpi.java 
-	java/security/AllPermission.java 
-	java/security/BasicPermission.java 
-	java/security/Certificate.java java/security/CodeSource.java 
-	java/security/DigestException.java 
-	java/security/DigestInputStream.java 
-	java/security/DigestOutputStream.java 
-	java/security/DomainCombiner.java 
-	java/security/DummyKeyPairGenerator.java 
-	java/security/DummyMessageDigest.java 
-	java/security/DummySignature.java 
-	java/security/GeneralSecurityException.java 
-	java/security/Guard.java java/security/GuardedObject.java 
-	java/security/Identity.java java/security/IdentityScope.java 
-	java/security/InvalidAlgorithmParameterException.java 
-	java/security/InvalidKeyException.java 
-	java/security/InvalidParameterException.java 
-	java/security/Key.java java/security/KeyException.java 
-	java/security/KeyFactory.java java/security/KeyFactorySpi.java 
-	java/security/KeyManagementException.java 
-	java/security/KeyPair.java java/security/KeyPairGenerator.java 
-	java/security/KeyPairGeneratorSpi.java 
-	java/security/KeyStore.java 
-	java/security/KeyStoreException.java 
-	java/security/KeyStoreSpi.java 
-	java/security/MessageDigest.java 
-	java/security/MessageDigestSpi.java 
-	java/security/NoSuchAlgorithmException.java 
-	java/security/NoSuchProviderException.java 
-	java/security/Permission.java 
-	java/security/PermissionCollection.java 
-	java/security/Permissions.java java/security/Policy.java 
-	java/security/Principal.java java/security/PrivateKey.java 
-	java/security/PrivilegedAction.java 
-	java/security/PrivilegedActionException.java 
-	java/security/PrivilegedExceptionAction.java 
-	java/security/ProtectionDomain.java 
-	java/security/Provider.java 
-	java/security/ProviderException.java 
-	java/security/PublicKey.java 
-	java/security/SecureClassLoader.java 
-	java/security/SecureRandom.java 
-	java/security/SecureRandomSpi.java java/security/Security.java 
-	java/security/SecurityPermission.java 
-	java/security/Signature.java 
-	java/security/SignatureException.java 
-	java/security/SignatureSpi.java 
-	java/security/SignedObject.java java/security/Signer.java 
-	java/security/UnrecoverableKeyException.java 
-	java/security/UnresolvedPermission.java 
-	java/security/acl/Acl.java java/security/acl/AclEntry.java 
-	java/security/acl/AclNotFoundException.java 
-	java/security/acl/Group.java 
-	java/security/acl/LastOwnerException.java 
-	java/security/acl/NotOwnerException.java 
-	java/security/acl/Owner.java java/security/acl/Permission.java 
-	java/security/cert/CRL.java 
-	java/security/cert/CRLException.java 
-	java/security/cert/Certificate.java 
-	java/security/cert/CertificateEncodingException.java 
-	java/security/cert/CertificateException.java 
-	java/security/cert/CertificateExpiredException.java 
-	java/security/cert/CertificateFactory.java 
-	java/security/cert/CertificateFactorySpi.java 
-	java/security/cert/CertificateNotYetValidException.java 
-	java/security/cert/CertificateParsingException.java 
-	java/security/cert/X509CRL.java 
-	java/security/cert/X509CRLEntry.java 
-	java/security/cert/X509Certificate.java 
-	java/security/cert/X509Extension.java 
-	java/security/interfaces/DSAKey.java 
-	java/security/interfaces/DSAKeyPairGenerator.java 
-	java/security/interfaces/DSAParams.java 
-	java/security/interfaces/DSAPrivateKey.java 
-	java/security/interfaces/DSAPublicKey.java 
-	java/security/interfaces/RSAKey.java 
-	java/security/interfaces/RSAPrivateCrtKey.java 
-	java/security/interfaces/RSAPrivateKey.java 
-	java/security/interfaces/RSAPublicKey.java 
-	java/security/spec/AlgorithmParameterSpec.java 
-	java/security/spec/DSAParameterSpec.java 
-	java/security/spec/DSAPrivateKeySpec.java 
-	java/security/spec/DSAPublicKeySpec.java 
-	java/security/spec/EncodedKeySpec.java 
-	java/security/spec/InvalidKeySpecException.java 
-	java/security/spec/InvalidParameterSpecException.java 
-	java/security/spec/KeySpec.java 
-	java/security/spec/PKCS8EncodedKeySpec.java 
-	java/security/spec/RSAKeyGenParameterSpec.java 
-	java/security/spec/RSAPrivateCrtKeySpec.java 
-	java/security/spec/RSAPrivateKeySpec.java 
-	java/security/spec/RSAPublicKeySpec.java 
-	java/security/spec/X509EncodedKeySpec.java java/sql/Array.java 
-	java/sql/BatchUpdateException.java java/sql/Blob.java 
-	java/sql/CallableStatement.java java/sql/Clob.java 
-	java/sql/Connection.java java/sql/DataTruncation.java 
-	java/sql/DatabaseMetaData.java java/sql/Date.java 
-	java/sql/Driver.java java/sql/DriverManager.java 
-	java/sql/DriverPropertyInfo.java 
-	java/sql/PreparedStatement.java java/sql/Ref.java 
-	java/sql/ResultSet.java java/sql/ResultSetMetaData.java 
-	java/sql/SQLData.java java/sql/SQLException.java 
-	java/sql/SQLInput.java java/sql/SQLOutput.java 
-	java/sql/SQLWarning.java java/sql/Statement.java 
-	java/sql/Struct.java java/sql/Time.java 
-	java/sql/Timestamp.java java/sql/Types.java 
-	java/text/Annotation.java 
-	java/text/AttributedCharacterIterator.java 
-	java/text/AttributedString.java 
-	java/text/AttributedStringIterator.java 
-	java/text/BreakIterator.java java/text/CharacterIterator.java 
-	java/text/ChoiceFormat.java java/text/Collator.java 
-	java/text/DateFormat.java java/text/DateFormatSymbols.java 
-	java/text/DecimalFormat.java 
-	java/text/DecimalFormatSymbols.java 
-	java/text/FieldPosition.java java/text/Format.java 
-	java/text/MessageFormat.java java/text/NumberFormat.java 
-	java/text/ParseException.java java/text/ParsePosition.java 
-	java/text/SimpleDateFormat.java 
-	java/text/StringCharacterIterator.java 
-	java/util/AbstractCollection.java java/util/AbstractList.java 
-	java/util/AbstractMap.java 
-	java/util/AbstractSequentialList.java 
-	java/util/AbstractSet.java java/util/ArrayList.java 
-	java/util/Arrays.java java/util/BasicMapEntry.java 
-	java/util/BitSet.java java/util/Calendar.java 
-	java/util/Collection.java java/util/Collections.java 
-	java/util/Comparator.java 
-	java/util/ConcurrentModificationException.java 
-	java/util/Date.java java/util/Dictionary.java 
-	java/util/EmptyStackException.java java/util/Enumeration.java 
-	java/util/EventListener.java java/util/EventObject.java 
-	java/util/GregorianCalendar.java java/util/HashMap.java 
-	java/util/HashSet.java java/util/Hashtable.java 
-	java/util/IdentityHashMap.java java/util/Iterator.java 
-	java/util/LinkedHashMap.java java/util/LinkedHashSet.java 
-	java/util/LinkedList.java java/util/List.java 
-	java/util/ListIterator.java java/util/ListResourceBundle.java 
-	java/util/Locale.java java/util/Map.java 
-	java/util/MissingResourceException.java 
-	java/util/NoSuchElementException.java 
-	java/util/Observable.java java/util/Observer.java 
-	java/util/Properties.java java/util/PropertyPermission.java 
-	java/util/PropertyResourceBundle.java java/util/Random.java 
-	java/util/RandomAccess.java java/util/ResourceBundle.java 
-	java/util/Set.java java/util/SimpleTimeZone.java 
-	java/util/SortedMap.java java/util/SortedSet.java 
-	java/util/Stack.java java/util/StringTokenizer.java 
-	java/util/TimeZone.java java/util/Timer.java 
-	java/util/TimerTask.java 
-	java/util/TooManyListenersException.java 
-	java/util/TreeMap.java java/util/TreeSet.java 
-	java/util/Vector.java java/util/WeakHashMap.java 
-	java/util/jar/Attributes.java java/util/jar/JarEntry.java 
-	java/util/jar/JarException.java java/util/jar/JarFile.java 
-	java/util/jar/JarInputStream.java 
-	java/util/jar/JarOutputStream.java java/util/jar/Manifest.java 
-	java/util/zip/Adler32.java java/util/zip/CRC32.java 
-	java/util/zip/CheckedInputStream.java 
-	java/util/zip/CheckedOutputStream.java 
-	java/util/zip/Checksum.java 
-	java/util/zip/DataFormatException.java 
-	java/util/zip/Deflater.java 
-	java/util/zip/DeflaterOutputStream.java 
-	java/util/zip/GZIPInputStream.java 
-	java/util/zip/GZIPOutputStream.java 
-	java/util/zip/Inflater.java 
-	java/util/zip/InflaterInputStream.java 
-	java/util/zip/ZipConstants.java java/util/zip/ZipEntry.java 
-	java/util/zip/ZipException.java java/util/zip/ZipFile.java 
-	java/util/zip/ZipInputStream.java 
-	java/util/zip/ZipOutputStream.java 
-	javax/naming/BinaryRefAddr.java 
-	javax/naming/InvalidNameException.java javax/naming/Name.java 
-	javax/naming/NamingException.java javax/naming/RefAddr.java 
+	* LIBGCJ_LICENSE gnu/classpath/Configuration.java.in
+	gnu/gcj/runtime/StringBuffer.java
+	gnu/java/awt/BitMaskExtent.java gnu/java/awt/Buffers.java
+	gnu/java/awt/ComponentDataBlitOp.java
+	gnu/java/awt/GLightweightPeer.java
+	gnu/java/beans/BeanInfoEmbryo.java
+	gnu/java/beans/EmptyBeanInfo.java
+	gnu/java/beans/ExplicitBeanInfo.java
+	gnu/java/beans/IntrospectionIncubator.java
+	gnu/java/beans/editors/ColorEditor.java
+	gnu/java/beans/editors/FontEditor.java
+	gnu/java/beans/editors/NativeBooleanEditor.java
+	gnu/java/beans/editors/NativeByteEditor.java
+	gnu/java/beans/editors/NativeDoubleEditor.java
+	gnu/java/beans/editors/NativeFloatEditor.java
+	gnu/java/beans/editors/NativeIntEditor.java
+	gnu/java/beans/editors/NativeLongEditor.java
+	gnu/java/beans/editors/NativeShortEditor.java
+	gnu/java/beans/editors/StringEditor.java
+	gnu/java/beans/info/ComponentBeanInfo.java
+	gnu/java/io/ClassLoaderObjectInputStream.java
+	gnu/java/io/NullOutputStream.java
+	gnu/java/io/ObjectIdentityWrapper.java
+	gnu/java/lang/ArrayHelper.java gnu/java/lang/ClassHelper.java
+	gnu/java/lang/reflect/TypeSignature.java
+	gnu/java/locale/Calendar.java gnu/java/locale/Calendar_de.java
+	gnu/java/locale/Calendar_en.java
+	gnu/java/locale/Calendar_nl.java
+	gnu/java/locale/LocaleInformation.java
+	gnu/java/locale/LocaleInformation_de.java
+	gnu/java/locale/LocaleInformation_en.java
+	gnu/java/locale/LocaleInformation_nl.java
+	gnu/java/math/MPN.java gnu/java/rmi/dgc/DGCImpl.java
+	gnu/java/rmi/registry/RegistryImpl.java
+	gnu/java/rmi/rmic/Compile_gcj.java
+	gnu/java/rmi/rmic/Compiler.java
+	gnu/java/rmi/rmic/CompilerProcess.java
+	gnu/java/rmi/rmic/RMIC.java
+	gnu/java/rmi/rmic/TabbedWriter.java
+	gnu/java/rmi/server/ProtocolConstants.java
+	gnu/java/rmi/server/RMIDefaultSocketFactory.java
+	gnu/java/rmi/server/RMIHashes.java
+	gnu/java/rmi/server/RMIObjectInputStream.java
+	gnu/java/rmi/server/RMIObjectOutputStream.java
+	gnu/java/rmi/server/UnicastConnection.java
+	gnu/java/rmi/server/UnicastConnectionManager.java
+	gnu/java/rmi/server/UnicastRef.java
+	gnu/java/rmi/server/UnicastRemoteCall.java
+	gnu/java/rmi/server/UnicastRemoteStub.java
+	gnu/java/rmi/server/UnicastServer.java
+	gnu/java/rmi/server/UnicastServerRef.java
+	gnu/java/security/provider/DefaultPolicy.java
+	gnu/java/security/provider/Gnu.java
+	gnu/java/security/provider/SHA.java
+	gnu/java/security/provider/SHA1PRNG.java
+	gnu/java/text/BaseBreakIterator.java
+	gnu/java/text/CharacterBreakIterator.java
+	gnu/java/text/LineBreakIterator.java
+	gnu/java/text/SentenceBreakIterator.java
+	gnu/java/text/WordBreakIterator.java
+	gnu/java/util/DoubleEnumeration.java java/applet/Applet.java
+	java/applet/AppletContext.java java/applet/AppletStub.java
+	java/applet/AudioClip.java java/awt/AWTError.java
+	java/awt/AWTEvent.java java/awt/AWTEventMulticaster.java
+	java/awt/AWTException.java java/awt/AWTPermission.java
+	java/awt/ActiveEvent.java java/awt/BorderLayout.java
+	java/awt/Button.java java/awt/Canvas.java
+	java/awt/CardLayout.java java/awt/Checkbox.java
+	java/awt/CheckboxGroup.java java/awt/Component.java
+	java/awt/ComponentOrientation.java java/awt/Container.java
+	java/awt/Dimension.java java/awt/Event.java
+	java/awt/EventDispatchThread.java java/awt/EventQueue.java
+	java/awt/FlowLayout.java java/awt/Frame.java
+	java/awt/Graphics.java java/awt/Graphics2D.java
+	java/awt/GraphicsConfiguration.java java/awt/GridLayout.java
+	java/awt/IllegalComponentStateException.java
+	java/awt/ItemSelectable.java java/awt/Label.java
+	java/awt/LayoutManager.java java/awt/LayoutManager2.java
+	java/awt/MenuComponent.java java/awt/MenuItem.java
+	java/awt/Paint.java java/awt/Point.java
+	java/awt/Rectangle.java java/awt/RenderingHints.java
+	java/awt/Transparency.java java/awt/Window.java
+	java/awt/color/ColorSpace.java
+	java/awt/color/ICC_ColorSpace.java
+	java/awt/color/ICC_Profile.java
+	java/awt/event/HierarchyBoundsAdapter.java
+	java/awt/event/HierarchyBoundsListener.java
+	java/awt/event/HierarchyEvent.java
+	java/awt/event/HierarchyListener.java
+	java/awt/geom/AffineTransform.java
+	java/awt/geom/Dimension2D.java java/awt/geom/Ellipse2D.java
+	java/awt/geom/IllegalPathStateException.java
+	java/awt/geom/Line2D.java
+	java/awt/geom/NoninvertibleTransformException.java
+	java/awt/geom/PathIterator.java java/awt/geom/Point2D.java
+	java/awt/geom/Rectangle2D.java
+	java/awt/geom/RectangularShape.java
+	java/awt/geom/RoundRectangle2D.java
+	java/awt/image/BufferedImage.java
+	java/awt/image/ColorModel.java
+	java/awt/image/ComponentColorModel.java
+	java/awt/image/ComponentSampleModel.java
+	java/awt/image/DataBuffer.java
+	java/awt/image/DataBufferByte.java
+	java/awt/image/DataBufferInt.java
+	java/awt/image/DataBufferUShort.java
+	java/awt/image/DirectColorModel.java
+	java/awt/image/PackedColorModel.java
+	java/awt/image/Raster.java java/awt/image/RasterOp.java
+	java/awt/image/SampleModel.java
+	java/awt/image/SinglePixelPackedSampleModel.java
+	java/awt/image/WritableRaster.java
+	java/beans/AppletInitializer.java
+	java/beans/BeanDescriptor.java java/beans/BeanInfo.java
+	java/beans/Beans.java java/beans/Customizer.java
+	java/beans/DesignMode.java java/beans/EventSetDescriptor.java
+	java/beans/FeatureDescriptor.java
+	java/beans/IndexedPropertyDescriptor.java
+	java/beans/IntrospectionException.java
+	java/beans/Introspector.java java/beans/MethodDescriptor.java
+	java/beans/ParameterDescriptor.java
+	java/beans/PropertyChangeEvent.java
+	java/beans/PropertyChangeListener.java
+	java/beans/PropertyChangeSupport.java
+	java/beans/PropertyDescriptor.java
+	java/beans/PropertyEditor.java
+	java/beans/PropertyEditorManager.java
+	java/beans/PropertyEditorSupport.java
+	java/beans/PropertyVetoException.java
+	java/beans/SimpleBeanInfo.java
+	java/beans/VetoableChangeListener.java
+	java/beans/VetoableChangeSupport.java
+	java/beans/Visibility.java
+	java/beans/beancontext/BeanContext.java
+	java/beans/beancontext/BeanContextChild.java
+	java/beans/beancontext/BeanContextChildComponentProxy.java
+	java/beans/beancontext/BeanContextChildSupport.java
+	java/beans/beancontext/BeanContextContainerProxy.java
+	java/beans/beancontext/BeanContextEvent.java
+	java/beans/beancontext/BeanContextMembershipEvent.java
+	java/beans/beancontext/BeanContextMembershipListener.java
+	java/beans/beancontext/BeanContextProxy.java
+	java/beans/beancontext/BeanContextServiceAvailableEvent.java
+	java/beans/beancontext/BeanContextServiceProvider.java
+	java/beans/beancontext/BeanContextServiceProviderBeanInfo.java
+	java/beans/beancontext/BeanContextServiceRevokedEvent.java
+	java/beans/beancontext/BeanContextServiceRevokedListener.java
+	java/beans/beancontext/BeanContextServices.java
+	java/beans/beancontext/BeanContextServicesListener.java
+	java/io/BufferedInputStream.java
+	java/io/BufferedOutputStream.java java/io/BufferedReader.java
+	java/io/BufferedWriter.java java/io/ByteArrayInputStream.java
+	java/io/ByteArrayOutputStream.java
+	java/io/CharArrayReader.java java/io/CharArrayWriter.java
+	java/io/CharConversionException.java java/io/DataInput.java
+	java/io/DataInputStream.java java/io/DataOutput.java
+	java/io/EOFException.java java/io/Externalizable.java
+	java/io/FileFilter.java java/io/FileNotFoundException.java
+	java/io/FilePermission.java java/io/FileReader.java
+	java/io/FileWriter.java java/io/FilenameFilter.java
+	java/io/FilterInputStream.java java/io/FilterOutputStream.java
+	java/io/FilterReader.java java/io/FilterWriter.java
+	java/io/IOException.java java/io/InputStream.java
+	java/io/InterruptedIOException.java
+	java/io/InvalidClassException.java
+	java/io/InvalidObjectException.java
+	java/io/NotActiveException.java
+	java/io/NotSerializableException.java java/io/ObjectInput.java
+	java/io/ObjectInputStream.java
+	java/io/ObjectInputValidation.java java/io/ObjectOutput.java
+	java/io/ObjectOutputStream.java java/io/ObjectStreamClass.java
+	java/io/ObjectStreamConstants.java
+	java/io/ObjectStreamException.java
+	java/io/ObjectStreamField.java
+	java/io/OptionalDataException.java java/io/OutputStream.java
+	java/io/PipedInputStream.java java/io/PipedOutputStream.java
+	java/io/PipedReader.java java/io/PipedWriter.java
+	java/io/PrintWriter.java java/io/PushbackInputStream.java
+	java/io/PushbackReader.java java/io/Reader.java
+	java/io/SequenceInputStream.java java/io/Serializable.java
+	java/io/SerializablePermission.java
+	java/io/StreamCorruptedException.java
+	java/io/StreamTokenizer.java
+	java/io/StringBufferInputStream.java java/io/StringReader.java
+	java/io/StringWriter.java java/io/SyncFailedException.java
+	java/io/UTFDataFormatException.java
+	java/io/UnsupportedEncodingException.java
+	java/io/WriteAbortedException.java java/io/Writer.java
+	java/lang/AbstractMethodError.java
+	java/lang/ArithmeticException.java
+	java/lang/ArrayIndexOutOfBoundsException.java
+	java/lang/ArrayStoreException.java java/lang/Boolean.java
+	java/lang/Byte.java java/lang/CharSequence.java
+	java/lang/ClassCastException.java
+	java/lang/ClassCircularityError.java
+	java/lang/ClassFormatError.java
+	java/lang/ClassNotFoundException.java
+	java/lang/CloneNotSupportedException.java
+	java/lang/Cloneable.java java/lang/Comparable.java
+	java/lang/Compiler.java java/lang/Double.java
+	java/lang/Error.java java/lang/Exception.java
+	java/lang/ExceptionInInitializerError.java
+	java/lang/Float.java java/lang/IllegalAccessError.java
+	java/lang/IllegalAccessException.java
+	java/lang/IllegalArgumentException.java
+	java/lang/IllegalMonitorStateException.java
+	java/lang/IllegalStateException.java
+	java/lang/IllegalThreadStateException.java
+	java/lang/IncompatibleClassChangeError.java
+	java/lang/IndexOutOfBoundsException.java
+	java/lang/InheritableThreadLocal.java
+	java/lang/InstantiationError.java
+	java/lang/InstantiationException.java java/lang/Integer.java
+	java/lang/InternalError.java
+	java/lang/InterruptedException.java
+	java/lang/LinkageError.java java/lang/Long.java
+	java/lang/NegativeArraySizeException.java
+	java/lang/NoClassDefFoundError.java
+	java/lang/NoSuchFieldError.java
+	java/lang/NoSuchFieldException.java
+	java/lang/NoSuchMethodError.java
+	java/lang/NoSuchMethodException.java
+	java/lang/NullPointerException.java java/lang/Number.java
+	java/lang/NumberFormatException.java
+	java/lang/OutOfMemoryError.java java/lang/Package.java
+	java/lang/Process.java java/lang/Runnable.java
+	java/lang/RuntimeException.java
+	java/lang/RuntimePermission.java
+	java/lang/SecurityException.java
+	java/lang/SecurityManager.java java/lang/Short.java
+	java/lang/StackOverflowError.java java/lang/StringBuffer.java
+	java/lang/StringIndexOutOfBoundsException.java
+	java/lang/ThreadDeath.java java/lang/ThreadGroup.java
+	java/lang/ThreadLocal.java java/lang/UnknownError.java
+	java/lang/UnsatisfiedLinkError.java
+	java/lang/UnsupportedClassVersionError.java
+	java/lang/UnsupportedOperationException.java
+	java/lang/VerifyError.java java/lang/VirtualMachineError.java
+	java/lang/Void.java java/lang/ref/PhantomReference.java
+	java/lang/ref/Reference.java java/lang/ref/ReferenceQueue.java
+	java/lang/ref/SoftReference.java
+	java/lang/ref/WeakReference.java
+	java/lang/reflect/AccessibleObject.java
+	java/lang/reflect/InvocationTargetException.java
+	java/lang/reflect/Member.java java/lang/reflect/Modifier.java
+	java/lang/reflect/ReflectPermission.java
+	java/math/BigDecimal.java java/math/BigInteger.java
+	java/net/Authenticator.java java/net/BindException.java
+	java/net/ConnectException.java java/net/ContentHandler.java
+	java/net/ContentHandlerFactory.java
+	java/net/DatagramPacket.java java/net/DatagramSocketImpl.java
+	java/net/FileNameMap.java java/net/MalformedURLException.java
+	java/net/MulticastSocket.java java/net/NetPermission.java
+	java/net/NoRouteToHostException.java
+	java/net/PasswordAuthentication.java
+	java/net/ProtocolException.java java/net/ServerSocket.java
+	java/net/Socket.java java/net/SocketException.java
+	java/net/SocketImpl.java java/net/SocketImplFactory.java
+	java/net/SocketOptions.java java/net/SocketPermission.java
+	java/net/URLDecoder.java java/net/URLEncoder.java
+	java/net/URLStreamHandlerFactory.java
+	java/net/UnknownHostException.java
+	java/net/UnknownServiceException.java
+	java/rmi/AccessException.java
+	java/rmi/AlreadyBoundException.java
+	java/rmi/ConnectException.java
+	java/rmi/ConnectIOException.java
+	java/rmi/MarshalException.java java/rmi/MarshalledObject.java
+	java/rmi/Naming.java java/rmi/NoSuchObjectException.java
+	java/rmi/NotBoundException.java
+	java/rmi/RMISecurityException.java
+	java/rmi/RMISecurityManager.java java/rmi/Remote.java
+	java/rmi/RemoteException.java java/rmi/ServerError.java
+	java/rmi/ServerException.java
+	java/rmi/ServerRuntimeException.java
+	java/rmi/StubNotFoundException.java
+	java/rmi/UnexpectedException.java
+	java/rmi/UnknownHostException.java
+	java/rmi/UnmarshalException.java
+	java/rmi/activation/Activatable.java
+	java/rmi/activation/ActivateFailedException.java
+	java/rmi/activation/ActivationDesc.java
+	java/rmi/activation/ActivationException.java
+	java/rmi/activation/ActivationGroup.java
+	java/rmi/activation/ActivationGroupDesc.java
+	java/rmi/activation/ActivationGroupID.java
+	java/rmi/activation/ActivationID.java
+	java/rmi/activation/ActivationInstantiator.java
+	java/rmi/activation/ActivationMonitor.java
+	java/rmi/activation/ActivationSystem.java
+	java/rmi/activation/Activator.java
+	java/rmi/activation/UnknownGroupException.java
+	java/rmi/activation/UnknownObjectException.java
+	java/rmi/dgc/DGC.java java/rmi/dgc/Lease.java
+	java/rmi/dgc/VMID.java java/rmi/registry/LocateRegistry.java
+	java/rmi/registry/Registry.java
+	java/rmi/registry/RegistryHandler.java
+	java/rmi/server/ExportException.java
+	java/rmi/server/LoaderHandler.java
+	java/rmi/server/LogStream.java java/rmi/server/ObjID.java
+	java/rmi/server/Operation.java
+	java/rmi/server/RMIClassLoader.java
+	java/rmi/server/RMIClientSocketFactory.java
+	java/rmi/server/RMIFailureHandler.java
+	java/rmi/server/RMIServerSocketFactory.java
+	java/rmi/server/RMISocketFactory.java
+	java/rmi/server/RemoteCall.java
+	java/rmi/server/RemoteObject.java
+	java/rmi/server/RemoteRef.java
+	java/rmi/server/RemoteServer.java
+	java/rmi/server/RemoteStub.java
+	java/rmi/server/ServerCloneException.java
+	java/rmi/server/ServerNotActiveException.java
+	java/rmi/server/ServerRef.java java/rmi/server/Skeleton.java
+	java/rmi/server/SkeletonMismatchException.java
+	java/rmi/server/SkeletonNotFoundException.java
+	java/rmi/server/SocketSecurityException.java
+	java/rmi/server/UID.java
+	java/rmi/server/UnicastRemoteObject.java
+	java/rmi/server/Unreferenced.java
+	java/security/AccessControlContext.java
+	java/security/AccessControlException.java
+	java/security/AccessController.java
+	java/security/AlgorithmParameterGenerator.java
+	java/security/AlgorithmParameterGeneratorSpi.java
+	java/security/AlgorithmParameters.java
+	java/security/AlgorithmParametersSpi.java
+	java/security/AllPermission.java
+	java/security/BasicPermission.java
+	java/security/Certificate.java java/security/CodeSource.java
+	java/security/DigestException.java
+	java/security/DigestInputStream.java
+	java/security/DigestOutputStream.java
+	java/security/DomainCombiner.java
+	java/security/DummyKeyPairGenerator.java
+	java/security/DummyMessageDigest.java
+	java/security/DummySignature.java
+	java/security/GeneralSecurityException.java
+	java/security/Guard.java java/security/GuardedObject.java
+	java/security/Identity.java java/security/IdentityScope.java
+	java/security/InvalidAlgorithmParameterException.java
+	java/security/InvalidKeyException.java
+	java/security/InvalidParameterException.java
+	java/security/Key.java java/security/KeyException.java
+	java/security/KeyFactory.java java/security/KeyFactorySpi.java
+	java/security/KeyManagementException.java
+	java/security/KeyPair.java java/security/KeyPairGenerator.java
+	java/security/KeyPairGeneratorSpi.java
+	java/security/KeyStore.java
+	java/security/KeyStoreException.java
+	java/security/KeyStoreSpi.java
+	java/security/MessageDigest.java
+	java/security/MessageDigestSpi.java
+	java/security/NoSuchAlgorithmException.java
+	java/security/NoSuchProviderException.java
+	java/security/Permission.java
+	java/security/PermissionCollection.java
+	java/security/Permissions.java java/security/Policy.java
+	java/security/Principal.java java/security/PrivateKey.java
+	java/security/PrivilegedAction.java
+	java/security/PrivilegedActionException.java
+	java/security/PrivilegedExceptionAction.java
+	java/security/ProtectionDomain.java
+	java/security/Provider.java
+	java/security/ProviderException.java
+	java/security/PublicKey.java
+	java/security/SecureClassLoader.java
+	java/security/SecureRandom.java
+	java/security/SecureRandomSpi.java java/security/Security.java
+	java/security/SecurityPermission.java
+	java/security/Signature.java
+	java/security/SignatureException.java
+	java/security/SignatureSpi.java
+	java/security/SignedObject.java java/security/Signer.java
+	java/security/UnrecoverableKeyException.java
+	java/security/UnresolvedPermission.java
+	java/security/acl/Acl.java java/security/acl/AclEntry.java
+	java/security/acl/AclNotFoundException.java
+	java/security/acl/Group.java
+	java/security/acl/LastOwnerException.java
+	java/security/acl/NotOwnerException.java
+	java/security/acl/Owner.java java/security/acl/Permission.java
+	java/security/cert/CRL.java
+	java/security/cert/CRLException.java
+	java/security/cert/Certificate.java
+	java/security/cert/CertificateEncodingException.java
+	java/security/cert/CertificateException.java
+	java/security/cert/CertificateExpiredException.java
+	java/security/cert/CertificateFactory.java
+	java/security/cert/CertificateFactorySpi.java
+	java/security/cert/CertificateNotYetValidException.java
+	java/security/cert/CertificateParsingException.java
+	java/security/cert/X509CRL.java
+	java/security/cert/X509CRLEntry.java
+	java/security/cert/X509Certificate.java
+	java/security/cert/X509Extension.java
+	java/security/interfaces/DSAKey.java
+	java/security/interfaces/DSAKeyPairGenerator.java
+	java/security/interfaces/DSAParams.java
+	java/security/interfaces/DSAPrivateKey.java
+	java/security/interfaces/DSAPublicKey.java
+	java/security/interfaces/RSAKey.java
+	java/security/interfaces/RSAPrivateCrtKey.java
+	java/security/interfaces/RSAPrivateKey.java
+	java/security/interfaces/RSAPublicKey.java
+	java/security/spec/AlgorithmParameterSpec.java
+	java/security/spec/DSAParameterSpec.java
+	java/security/spec/DSAPrivateKeySpec.java
+	java/security/spec/DSAPublicKeySpec.java
+	java/security/spec/EncodedKeySpec.java
+	java/security/spec/InvalidKeySpecException.java
+	java/security/spec/InvalidParameterSpecException.java
+	java/security/spec/KeySpec.java
+	java/security/spec/PKCS8EncodedKeySpec.java
+	java/security/spec/RSAKeyGenParameterSpec.java
+	java/security/spec/RSAPrivateCrtKeySpec.java
+	java/security/spec/RSAPrivateKeySpec.java
+	java/security/spec/RSAPublicKeySpec.java
+	java/security/spec/X509EncodedKeySpec.java java/sql/Array.java
+	java/sql/BatchUpdateException.java java/sql/Blob.java
+	java/sql/CallableStatement.java java/sql/Clob.java
+	java/sql/Connection.java java/sql/DataTruncation.java
+	java/sql/DatabaseMetaData.java java/sql/Date.java
+	java/sql/Driver.java java/sql/DriverManager.java
+	java/sql/DriverPropertyInfo.java
+	java/sql/PreparedStatement.java java/sql/Ref.java
+	java/sql/ResultSet.java java/sql/ResultSetMetaData.java
+	java/sql/SQLData.java java/sql/SQLException.java
+	java/sql/SQLInput.java java/sql/SQLOutput.java
+	java/sql/SQLWarning.java java/sql/Statement.java
+	java/sql/Struct.java java/sql/Time.java
+	java/sql/Timestamp.java java/sql/Types.java
+	java/text/Annotation.java
+	java/text/AttributedCharacterIterator.java
+	java/text/AttributedString.java
+	java/text/AttributedStringIterator.java
+	java/text/BreakIterator.java java/text/CharacterIterator.java
+	java/text/ChoiceFormat.java java/text/Collator.java
+	java/text/DateFormat.java java/text/DateFormatSymbols.java
+	java/text/DecimalFormat.java
+	java/text/DecimalFormatSymbols.java
+	java/text/FieldPosition.java java/text/Format.java
+	java/text/MessageFormat.java java/text/NumberFormat.java
+	java/text/ParseException.java java/text/ParsePosition.java
+	java/text/SimpleDateFormat.java
+	java/text/StringCharacterIterator.java
+	java/util/AbstractCollection.java java/util/AbstractList.java
+	java/util/AbstractMap.java
+	java/util/AbstractSequentialList.java
+	java/util/AbstractSet.java java/util/ArrayList.java
+	java/util/Arrays.java java/util/BasicMapEntry.java
+	java/util/BitSet.java java/util/Calendar.java
+	java/util/Collection.java java/util/Collections.java
+	java/util/Comparator.java
+	java/util/ConcurrentModificationException.java
+	java/util/Date.java java/util/Dictionary.java
+	java/util/EmptyStackException.java java/util/Enumeration.java
+	java/util/EventListener.java java/util/EventObject.java
+	java/util/GregorianCalendar.java java/util/HashMap.java
+	java/util/HashSet.java java/util/Hashtable.java
+	java/util/IdentityHashMap.java java/util/Iterator.java
+	java/util/LinkedHashMap.java java/util/LinkedHashSet.java
+	java/util/LinkedList.java java/util/List.java
+	java/util/ListIterator.java java/util/ListResourceBundle.java
+	java/util/Locale.java java/util/Map.java
+	java/util/MissingResourceException.java
+	java/util/NoSuchElementException.java
+	java/util/Observable.java java/util/Observer.java
+	java/util/Properties.java java/util/PropertyPermission.java
+	java/util/PropertyResourceBundle.java java/util/Random.java
+	java/util/RandomAccess.java java/util/ResourceBundle.java
+	java/util/Set.java java/util/SimpleTimeZone.java
+	java/util/SortedMap.java java/util/SortedSet.java
+	java/util/Stack.java java/util/StringTokenizer.java
+	java/util/TimeZone.java java/util/Timer.java
+	java/util/TimerTask.java
+	java/util/TooManyListenersException.java
+	java/util/TreeMap.java java/util/TreeSet.java
+	java/util/Vector.java java/util/WeakHashMap.java
+	java/util/jar/Attributes.java java/util/jar/JarEntry.java
+	java/util/jar/JarException.java java/util/jar/JarFile.java
+	java/util/jar/JarInputStream.java
+	java/util/jar/JarOutputStream.java java/util/jar/Manifest.java
+	java/util/zip/Adler32.java java/util/zip/CRC32.java
+	java/util/zip/CheckedInputStream.java
+	java/util/zip/CheckedOutputStream.java
+	java/util/zip/Checksum.java
+	java/util/zip/DataFormatException.java
+	java/util/zip/Deflater.java
+	java/util/zip/DeflaterOutputStream.java
+	java/util/zip/GZIPInputStream.java
+	java/util/zip/GZIPOutputStream.java
+	java/util/zip/Inflater.java
+	java/util/zip/InflaterInputStream.java
+	java/util/zip/ZipConstants.java java/util/zip/ZipEntry.java
+	java/util/zip/ZipException.java java/util/zip/ZipFile.java
+	java/util/zip/ZipInputStream.java
+	java/util/zip/ZipOutputStream.java
+	javax/naming/BinaryRefAddr.java
+	javax/naming/InvalidNameException.java javax/naming/Name.java
+	javax/naming/NamingException.java javax/naming/RefAddr.java
 	javax/naming/StringRefAddr.java: Add license clarification.
 
 2002-01-22  Tom Tromey  <tromey@redhat.com>
@@ -5674,7 +5678,7 @@
 	* Makefile.in: Rebuilt.
 	* Makefile.am (jv_convert_LDADD): Removed convert_source_files.
 
-2002-01-08  Nic Ferrier  <nferrier@tf1.tapsellferrier.co.uk> 
+2002-01-08  Nic Ferrier  <nferrier@tf1.tapsellferrier.co.uk>
 
 	* java/net/natPlainSocketImpl.cc: Added timeout handling for
 	sockets.
@@ -5730,4 +5734,3 @@
 
 	* libjava/java/lang/ieeefp.h: Define __IEEE_BIG_ENDIAN for
 	PPC Darwin, not for all of Darwin.
-
