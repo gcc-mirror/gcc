@@ -27,7 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    written by AT&T, but I have never seen it.  */
 
 ifobjc
-%expect 46
+%expect 48
 end ifobjc
 ifc
 %expect 34
@@ -2150,45 +2150,65 @@ parms:
 /* A single parameter declaration or parameter type name,
    as found in a parmlist.  */
 parm:
-	  typed_declspecs parm_declarator maybe_attribute
-		{ $$ = build_tree_list (build_tree_list ($1, $2),
+	  typed_declspecs setspecs parm_declarator maybe_attribute
+		{ $$ = build_tree_list (build_tree_list (current_declspecs,
+							 $3),
 					build_tree_list (prefix_attributes,
-							 $3)); }
-	| typed_declspecs notype_declarator maybe_attribute
-		{ $$ = build_tree_list (build_tree_list ($1, $2),
+							 $4));
+		  current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($2); }
+	| typed_declspecs setspecs notype_declarator maybe_attribute
+		{ $$ = build_tree_list (build_tree_list (current_declspecs,
+							 $3),
 					build_tree_list (prefix_attributes,
-							 $3)); }
-	| typed_declspecs absdcl maybe_attribute
-		{ $$ = build_tree_list (build_tree_list ($1, $2),
+							 $4)); 
+		  current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($2); }
+	| typed_declspecs setspecs absdcl maybe_attribute
+		{ $$ = build_tree_list (build_tree_list (current_declspecs,
+							 $3),
 					build_tree_list (prefix_attributes,
-							 $3)); }
-	| declmods notype_declarator maybe_attribute
-		{ $$ = build_tree_list (build_tree_list ($1, $2),
+							 $4));
+		  current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($2); }
+	| declmods setspecs notype_declarator maybe_attribute
+		{ $$ = build_tree_list (build_tree_list (current_declspecs,
+							 $3),
 					build_tree_list (prefix_attributes,
-							 $3)); }
+							 $4));
+		  current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($2);  }
 
-	| declmods absdcl maybe_attribute
-		{ $$ = build_tree_list (build_tree_list ($1, $2),
+	| declmods setspecs absdcl maybe_attribute
+		{ $$ = build_tree_list (build_tree_list (current_declspecs,
+							 $3),
 					build_tree_list (prefix_attributes,
-							 $3)); }
+							 $4));
+		  current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($2);  }
 	;
 
 /* This is used in a function definition
    where either a parmlist or an identifier list is ok.
    Its value is a list of ..._TYPE nodes or a list of identifiers.  */
 parmlist_or_identifiers:
-          setspecs
 		{ pushlevel (0);
 		  clear_parm_order ();
 		  declare_parm_level (1); }
 	  parmlist_or_identifiers_1
-		{ $$ = $3;
+		{ $$ = $2;
 		  parmlist_tags_warning ();
-		  poplevel (0, 0, 0);
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($1); }
+		  poplevel (0, 0, 0); }
 	;
 
 parmlist_or_identifiers_1:
