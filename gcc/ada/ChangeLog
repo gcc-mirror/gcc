@@ -1,3 +1,7 @@
+2004-04-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gnat_ugn.texi: Correct argument to @setfilename.
+
 2004-04-28  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* a-exexpr.adb (Unwind_Word): New data type.

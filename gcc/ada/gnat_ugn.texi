@@ -77,7 +77,13 @@
 @c
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
-@setfilename gnat_ugn.info
+@ifset vms
+@setfilename gnat_ugn_vms.info
+@end ifset
+
+@ifset unw
+@setfilename gnat_ugn_unw.info
+@end ifset
 
 @ifset vms
 @settitle GNAT User's Guide for Native Platforms / OpenVMS Alpha
