@@ -201,6 +201,9 @@
 /* Define if you have the strsignal function.  */
 #undef HAVE_STRSIGNAL
 
+/* Define if you have the strstr function.  */
+#undef HAVE_STRSTR
+
 /* Define if you have the strtoul function.  */
 #undef HAVE_STRTOUL
 

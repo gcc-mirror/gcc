@@ -69,6 +69,11 @@ AC_SUBST(vfprintf)
 AC_SUBST(doprint)
 ])    
 
+dnl Check if we have strstr.
+AC_DEFUN([gcc_AC_FUNC_STRSTR],
+  [AC_CHECK_FUNCS([strstr], [strstr=], [strstr=strstr.o])
+   AC_SUBST([strstr])])
+
 dnl See if the printf functions in libc support %p in format strings.
 AC_DEFUN(gcc_AC_FUNC_PRINTF_PTR,
 [AC_CACHE_CHECK(whether the printf functions support %p,
