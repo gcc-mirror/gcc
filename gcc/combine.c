@@ -8226,7 +8226,8 @@ nonzero_bits1 (rtx x, enum machine_mode mode, rtx known_x,
 	     stack to be momentarily aligned only to that amount,
 	     so we pick the least alignment.  */
 	  if (x == stack_pointer_rtx && PUSH_ARGS)
-	    alignment = MIN (PUSH_ROUNDING (1), alignment);
+	    alignment = MIN ((unsigned HOST_WIDE_INT) PUSH_ROUNDING (1),
+			     alignment);
 #endif
 
 	  nonzero &= ~(alignment - 1);
