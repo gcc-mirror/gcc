@@ -1,3 +1,26 @@
+2001-10-10  Ed Schonberg <schonber@gnat.com>
+
+	* einfo.adb (Write_Field19_Name): Body_Entity is also defined for 
+	a generic package.
+
+	* einfo.ads: Body_Entity is also defined for generic package.
+	Documentation change only
+	
+	* exp_aggr.adb (Build_Array_Aggr_Code): When expanding an 
+	others_choice for a discriminated component initialization, 
+	convert discriminant references into the corresponding discriminals. 
+	
+	* exp_ch3.adb (Get_Simple_Init_Val): Add qualification to aggregate 
+	only if original type is private and expression has to be wrapped 
+	in a conversion.
+	
+	* checks.adb: 
+	(Apply_Constraint_Check): Do not perform length check 
+	if expression is an aggregate with only an others_choice.
+	(Length_N_Cond): two references to the same in_parameter 
+	(typically the discriminal in an init_proc) denote the same value.
+	Two useful optimization uncovered by bugfixes above.
+
 2001-10-10  Robert Dewar <dewar@gnat.com>
 
 	* xeinfo.adb: Change int to char in translation of enumeration types. 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.205 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -691,6 +691,18 @@ package body Checks is
          Apply_Scalar_Range_Check (N, Typ);
 
       elsif Is_Array_Type (Typ) then
+
+         --  A useful optimization: an aggregate with only an Others clause
+         --  always has the right bounds.
+
+         if Nkind (N) = N_Aggregate
+           and then No (Expressions (N))
+           and then Nkind
+            (First (Choices (First (Component_Associations (N)))))
+              = N_Others_Choice
+         then
+            return;
+         end if;
 
          if Is_Constrained (Typ) then
             Apply_Length_Check (N, Typ);
@@ -2805,8 +2817,9 @@ package body Checks is
 
       function Same_Bounds (L : Node_Id; R : Node_Id) return Boolean;
       --  True for equal literals and for nodes that denote the same constant
-      --  entity, even if its value is not a static constant. This removes
-      --  some obviously superfluous checks.
+      --  entity, even if its value is not a static constant. This includes the
+      --  case of a discriminal reference within an init_proc. Removes some
+      --  obviously superfluous checks.
 
       function Length_E_Cond
         (Exptyp : Entity_Id;
@@ -3038,7 +3051,14 @@ package body Checks is
               and then Ekind (Entity (R)) = E_Constant
               and then Nkind (L) = N_Type_Conversion
               and then Is_Entity_Name (Expression (L))
-              and then Entity (R) = Entity (Expression (L)));
+              and then Entity (R) = Entity (Expression (L)))
+
+         or else
+            (Is_Entity_Name (L)
+              and then Is_Entity_Name (R)
+              and then Entity (L) = Entity (R)
+              and then Ekind (Entity (L)) = E_In_Parameter
+              and then Inside_Init_Proc);
       end Same_Bounds;
 
    --  Start of processing for Selected_Length_Checks

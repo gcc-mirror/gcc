@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.481 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -4210,20 +4210,14 @@ package body Exp_Ch3 is
       then
          pragma Assert (Init_Or_Norm_Scalars);
 
-         --  Build aggregate with an explicit qualification, because it
-         --  may otherwise be ambiguous in context.
-
          return
-           Make_Qualified_Expression (Loc,
-             Subtype_Mark => New_Occurrence_Of (T, Loc),
-             Expression =>
-               Make_Aggregate (Loc,
-                 Component_Associations => New_List (
-                   Make_Component_Association (Loc,
-                     Choices => New_List (
-                       Make_Others_Choice (Loc)),
-                     Expression =>
-                       Get_Simple_Init_Val (Component_Type (T), Loc)))));
+           Make_Aggregate (Loc,
+             Component_Associations => New_List (
+               Make_Component_Association (Loc,
+                 Choices => New_List (
+                   Make_Others_Choice (Loc)),
+                 Expression =>
+                   Get_Simple_Init_Val (Component_Type (T), Loc))));
 
       --  Access type is initialized to null
 
@@ -4267,8 +4261,12 @@ package body Exp_Ch3 is
 
          --  A special case, if the underlying value is null, then qualify
          --  it with the underlying type, so that the null is properly typed
+         --  Similarly, if it is an aggregate it must be qualified, because
+         --  an unchecked conversion does not provide a context for it.
 
-         if Nkind (Val) = N_Null then
+         if Nkind (Val) = N_Null
+           or else Nkind (Val) = N_Aggregate
+         then
             Val :=
               Make_Qualified_Expression (Loc,
                 Subtype_Mark =>

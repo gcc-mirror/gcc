@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.640 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -397,8 +397,8 @@ package Einfo is
 --       Present in block entities. Points to the Block_Statement itself.
 
 --    Body_Entity (Node19)
---       Present in package entities, points to the corresponding package
---       body entity if one is present.
+--       Present in package and generic package entities, points to the
+--       corresponding package body entity if one is present.
 
 --    C_Pass_By_Copy (Flag125) [implementation base type only]
 --       Present in record types. Set if a pragma Convention for the record
