@@ -1,3 +1,9 @@
+2004-10-14  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS),
+	config/rs6000/linuxspe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Disallow
+	-m64.
+
 2004-10-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* reload.c (find_reloads): When reloading a PLUS with constant

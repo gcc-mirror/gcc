@@ -40,7 +40,9 @@
   if (rs6000_spe_string == NULL) \
     rs6000_spe = 1; \
   if (rs6000_isel_string == NULL) \
-    rs6000_isel = 1
+    rs6000_isel = 1; \
+  if (target_flags & MASK_64BIT) \
+    error ("-m64 not supported in this configuration")
 
 /* The e500 ABI says that either long doubles are 128 bits, or if
    implemented in any other size, the compiler/linker should error out.
