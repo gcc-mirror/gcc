@@ -967,7 +967,7 @@ $(DO_X):
 	    if (cd ./$$i; \
 	        $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 			"CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	                "`echo 'RANLIB=$${RANLIB}' | sed -e s/.*=$$/XFOO=/`" \
+	                "`echo "RANLIB=$${RANLIB}" | sed -e s/.*=$$/XFOO=/`" \
 			"DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 			$${target}); \
 	    then true; else exit 1; fi; \
@@ -986,7 +986,7 @@ $(DO_X):
 	    if (cd $(TARGET_SUBDIR)/$$i; \
 	        $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 			"CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	                "`echo 'RANLIB=$(RANLIB)' | sed -e s/.*=$$/XFOO=/`" \
+	                "`echo "RANLIB=$${RANLIB}" | sed -e s/.*=$$/XFOO=/`" \
 			"DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 			$${target}); \
 	    then true; else exit 1; fi; \
