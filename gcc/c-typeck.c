@@ -5394,9 +5394,12 @@ pop_init_level (implicit)
 	      TYPE_DOMAIN (constructor_type) = build_index_type (maxindex);
 	      TREE_TYPE (maxindex) = TYPE_DOMAIN (constructor_type);
 
+	      /* TYPE_MAX_VALUE is always one less than the number of elements
+		 in the array, because we start counting at zero.  Therefore,
+		 warn only if the value is less than zero.  */
 	      if (pedantic
 		  && (tree_int_cst_sgn (TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type)))
-		      <= 0))
+		      < 0))
 		error_with_decl (constructor_decl,
 				 "zero or negative array size `%s'");
 	      layout_type (constructor_type);
