@@ -1264,7 +1264,7 @@ main (argc, argv)
      progname need to be set first, in case a diagnostic is issued.  */
      
   pend_files = (char **) xmalloc (argc * sizeof (char *));
-  pend_defs = (char **) xmalloc (argc * sizeof (char *));
+  pend_defs = (char **) xmalloc ((2 * argc) * sizeof (char *));
   pend_undefs = (char **) xmalloc (argc * sizeof (char *));
   pend_assertions = (char **) xmalloc (argc * sizeof (char *));
   pend_includes = (char **) xmalloc (argc * sizeof (char *));
@@ -1284,7 +1284,7 @@ main (argc, argv)
   cplusplus_comments = 1;
 
   bzero ((char *) pend_files, argc * sizeof (char *));
-  bzero ((char *) pend_defs, argc * sizeof (char *));
+  bzero ((char *) pend_defs, (2 * argc) * sizeof (char *));
   bzero ((char *) pend_undefs, argc * sizeof (char *));
   bzero ((char *) pend_assertions, argc * sizeof (char *));
   bzero ((char *) pend_includes, argc * sizeof (char *));
@@ -1457,7 +1457,7 @@ main (argc, argv)
 	  {
 	    cplusplus = 0, cplusplus_comments = 0, c89 = 1, c9x = 0, objc = 0;
 	    no_trigraphs = 0;
-	    pend_defs[i] = "__STRICT_ANSI__=199000";
+	    pend_defs[2*i] = "__STRICT_ANSI__";
 	  }
 	else if (! strcmp (argv[i], "-lang-c++"))
 	  cplusplus = 1, cplusplus_comments = 1, c89 = 0, c9x = 0, objc = 0;
@@ -1484,19 +1484,21 @@ main (argc, argv)
 		 || !strcmp (argv[i], "-std=gnu99"))
 	  {
 	    cplusplus = 0, cplusplus_comments = 1, c89 = 0, c9x = 1, objc = 0;
+	    pend_defs[2*i+1] = "__STDC_VERSION__=199901L";
 	  }
 	else if (!strcmp (argv[i], "-std=iso9899:1990")
 		 || !strcmp (argv[i], "-std=c89"))
 	  {
 	    cplusplus = 0, cplusplus_comments = 0, c89 = 1, c9x = 0, objc = 0;
 	    no_trigraphs = 0;
-	    pend_defs[i] = "__STRICT_ANSI__=199000";
+	    pend_defs[2*i] = "__STRICT_ANSI__";
 	  }
 	else if (!strcmp (argv[i], "-std=iso9899:199409"))
 	  {
 	    cplusplus = 0, cplusplus_comments = 0, c89 = 1, c9x = 0, objc = 0;
 	    no_trigraphs = 0;
-	    pend_defs[i] = "__STRICT_ANSI__=199409";
+	    pend_defs[2*i] = "__STRICT_ANSI__";
+	    pend_defs[2*i+1] = "__STDC_VERSION__=199409L";
 	  }
         else if (!strcmp (argv[i], "-std=iso9899:199x")
 		 || !strcmp (argv[i], "-std=iso9899:1999")
@@ -1505,7 +1507,8 @@ main (argc, argv)
 	  {
 	    cplusplus = 0, cplusplus_comments = 1, c89 = 0, c9x = 1, objc = 0;
 	    no_trigraphs = 0;
-	    pend_defs[i] = "__STRICT_ANSI__=199900";
+	    pend_defs[2*i] = "__STRICT_ANSI__";
+	    pend_defs[2*i+1] = "__STDC_VERSION__=199901L";
 	  }
 	break;
 
@@ -1655,11 +1658,11 @@ main (argc, argv)
 
       case 'D':
 	if (argv[i][2] != 0)
-	  pend_defs[i] = argv[i] + 2;
+	  pend_defs[2*i] = argv[i] + 2;
 	else if (i + 1 == argc)
 	  fatal ("Macro name missing after -D option");
 	else
-	  i++, pend_defs[i] = argv[i];
+	  i++, pend_defs[2*i] = argv[i];
 	break;
 
       case 'A':
@@ -1680,7 +1683,7 @@ main (argc, argv)
 	       that were passed automatically in from GCC.  */
 	    int j;
 	    for (j = 0; j < i; j++)
-	      pend_defs[j] = pend_assertions[j] = 0;
+	      pend_defs[2*j] = pend_assertions[j] = 0;
 	  } else {
 	    pend_assertions[i] = p;
 	    pend_assertion_options[i] = "-A";
@@ -1805,10 +1808,15 @@ main (argc, argv)
         output_line_directive (fp, &outbuf, 0, same_file);
       make_undef (pend_undefs[i], &outbuf);
     }
-    if (pend_defs[i]) {
+    if (pend_defs[2*i]) {
       if (debug_output)
         output_line_directive (fp, &outbuf, 0, same_file);
-      make_definition (pend_defs[i]);
+      make_definition (pend_defs[2*i]);
+    }
+    if (pend_defs[2*i+1]) {
+      if (debug_output)
+        output_line_directive (fp, &outbuf, 0, same_file);
+      make_definition (pend_defs[2*i+1]);
     }
     if (pend_assertions[i])
       make_assertion (pend_assertion_options[i], pend_assertions[i]);
