@@ -347,6 +347,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define TUNE_SB1                    (mips_tune == PROCESSOR_SB1)
 #define TUNE_SR71K                  (mips_tune == PROCESSOR_SR71000)
 
+#define TARGET_OLDABI		    (mips_abi == ABI_32 || mips_abi == ABI_O64)
 #define TARGET_NEWABI		    (mips_abi == ABI_N32 || mips_abi == ABI_64)
 
 /* IRIX specific stuff.  */
@@ -798,9 +799,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 /* True if the ABI can only work with 64-bit integer registers.  We
    generally allow ad-hoc variations for TARGET_SINGLE_FLOAT, but
    otherwise floating-point registers must also be 64-bit.  */
-#define ABI_NEEDS_64BIT_REGS	(mips_abi == ABI_64			\
-				 || mips_abi == ABI_O64			\
-				 || mips_abi == ABI_N32)
+#define ABI_NEEDS_64BIT_REGS	(TARGET_NEWABI || mips_abi == ABI_O64)
 
 /* Likewise for 32-bit regs.  */
 #define ABI_NEEDS_32BIT_REGS	(mips_abi == ABI_32)
@@ -1334,8 +1333,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 #define FLOAT_TYPE_SIZE 32
 #define DOUBLE_TYPE_SIZE 64
-#define LONG_DOUBLE_TYPE_SIZE \
-  (mips_abi == ABI_N32 || mips_abi == ABI_64 ? 128 : 64)
+#define LONG_DOUBLE_TYPE_SIZE (TARGET_NEWABI ? 128 : 64)
 
 /* long double is not a fixed mode, but the idea is that, if we
    support long double, we also want a 128-bit integer type.  */
@@ -1358,8 +1356,8 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define POINTERS_EXTEND_UNSIGNED 0
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
-#define PARM_BOUNDARY ((mips_abi == ABI_O64 || mips_abi == ABI_N32 \
-			|| mips_abi == ABI_64 \
+#define PARM_BOUNDARY ((mips_abi == ABI_O64 \
+			|| TARGET_NEWABI \
 			|| (mips_abi == ABI_EABI && TARGET_64BIT)) ? 64 : 32)
 
 
@@ -2164,7 +2162,7 @@ extern enum reg_class mips_char_to_class[256];
 
 /* o32 and o64 reserve stack space for all argument registers.  */
 #define REG_PARM_STACK_SPACE(FNDECL) 			\
-  ((mips_abi == ABI_32 || mips_abi == ABI_O64)		\
+  (TARGET_OLDABI					\
    ? (MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD)		\
    : 0)
 
@@ -2175,10 +2173,7 @@ extern enum reg_class mips_char_to_class[256];
    `current_function_outgoing_args_size'.  */
 #define OUTGOING_REG_PARM_STACK_SPACE
 
-#define STACK_BOUNDARY \
-  ((mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI) \
-   ? 64 : 128)
-
+#define STACK_BOUNDARY ((TARGET_OLDABI || mips_abi == ABI_EABI) ? 64 : 128)
 
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
 
@@ -2188,8 +2183,7 @@ extern enum reg_class mips_char_to_class[256];
 #define GP_RETURN (GP_REG_FIRST + 2)
 #define FP_RETURN ((TARGET_SOFT_FLOAT) ? GP_RETURN : (FP_REG_FIRST + 0))
 
-#define MAX_ARGS_IN_REGISTERS \
-  ((mips_abi == ABI_32 || mips_abi == ABI_O64) ? 4 : 8)
+#define MAX_ARGS_IN_REGISTERS (TARGET_OLDABI ? 4 : 8)
 
 /* Largest possible value of MAX_ARGS_IN_REGISTERS.  */
 
@@ -2373,7 +2367,7 @@ typedef struct mips_args {
 /* Treat LOC as a byte offset from the stack pointer and round it up
    to the next fully-aligned offset.  */
 #define MIPS_STACK_ALIGN(LOC)						\
-  ((mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI)	\
+  ((TARGET_OLDABI || mips_abi == ABI_EABI)				\
    ? ((LOC) + 7) & ~7							\
    : ((LOC) + 15) & ~15)
 
@@ -2396,7 +2390,7 @@ typedef struct mips_args {
   fprintf (FILE, "\t.set\tnoat\n");					\
   fprintf (FILE, "\tmove\t%s,%s\t\t# save current return address\n",	\
 	   reg_names[GP_REG_FIRST + 1], reg_names[GP_REG_FIRST + 31]);	\
-  if (mips_abi != ABI_N32 && mips_abi != ABI_64)			\
+  if (!TARGET_NEWABI)							\
     {									\
       fprintf (FILE,							\
 	       "\t%s\t%s,%s,%d\t\t# _mcount pops 2 words from  stack\n", \
@@ -3386,9 +3380,7 @@ while (0)
 /* See mips_expand_prologue's use of loadgp for when this should be
    true.  */
 
-#define DONT_ACCESS_GBLS_AFTER_EPILOGUE (TARGET_ABICALLS 		\
-					 && mips_abi != ABI_32		\
-					 && mips_abi != ABI_O64)
+#define DONT_ACCESS_GBLS_AFTER_EPILOGUE (TARGET_ABICALLS && !TARGET_OLDABI)
 
 
 #define DFMODE_NAN \

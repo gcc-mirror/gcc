@@ -8318,7 +8318,7 @@ ld\t%2,%1-%S1(%2)\;daddu\t%2,%2,$31\;%*j\t%2%/"
 (define_insn "exception_receiver"
   [(set (reg:SI 28)
 	(unspec_volatile:SI [(const_int 0)] UNSPEC_EH_RECEIVER))]
-  "TARGET_ABICALLS && (mips_abi == ABI_32 || mips_abi == ABI_O64)"
+  "TARGET_ABICALLS && TARGET_OLDABI"
 {
   operands[0] = pic_offset_table_rtx;
   operands[1] = mips_gp_save_slot ();

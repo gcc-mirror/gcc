@@ -74,8 +74,7 @@ Boston, MA 02111-1307, USA.  */
 %{mabi=32:-melf32%{EB:b}%{EL:l}tsmip}"
 
 #undef LOCAL_LABEL_PREFIX
-#define LOCAL_LABEL_PREFIX ((mips_abi == ABI_32 || mips_abi == ABI_O64) \
-			    ? "$" : ".")
+#define LOCAL_LABEL_PREFIX (TARGET_OLDABI ? "$" : ".")
 
 /* The size in bytes of a DWARF field indicating an offset or length
    relative to a debug info section, specified to be 4 bytes in the DWARF-2
