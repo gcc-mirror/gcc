@@ -1,3 +1,7 @@
+2002-11-10  Anthony Green  <green@redhat.com>
+
+	* java/util/jar/Attributes.java (Name): Fix name check.
+
 2002-11-10  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/natClass.cc (initializeClass): Throw NoClassDefFoundError
