@@ -1,5 +1,9 @@
 1999-08-21  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* java/net/natPlainDatagramSocketImpl.cc: Include sys/select.h
+	only when configure finds it.
+	* java/net/natPlainSocketImpl.cc: Likewise.
+
 	* java/lang/natSystem.cc (getpwuid_adaptor): New overloaded
 	function that detects the signature of getpwuid_r.
 	(init_properties): Use it.
