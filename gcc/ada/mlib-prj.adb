@@ -1465,6 +1465,7 @@ package body MLib.Prj is
                   Foreign       => Foreign_Objects.all,
                   Afiles        => Ali_Files.all,
                   Options       => Options.all,
+                  Options_2     => No_Argument_List,
                   Interfaces    => Arguments (1 .. Argument_Number),
                   Lib_Filename  => Lib_Filename.all,
                   Lib_Dir       => Lib_Dirpath.all,

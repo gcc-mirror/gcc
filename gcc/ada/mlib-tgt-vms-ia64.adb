@@ -127,6 +127,7 @@ package body MLib.Tgt is
       Foreign      : Argument_List;
       Afiles       : Argument_List;
       Options      : Argument_List;
+      Options_2    : Argument_List;
       Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
@@ -532,7 +533,7 @@ package body MLib.Tgt is
          Options     => VMS_Options,
          Options_2   => Link_With_Shared_Libgcc.all &
                         Opts (Opts'First .. Last_Opt) &
-                        Opts2 (Opts2'First .. Last_Opt2),
+                        Opts2 (Opts2'First .. Last_Opt2) & Options_2,
          Driver_Name => Driver_Name);
 
       --  The auto-init object file need to be deleted, so that it will not

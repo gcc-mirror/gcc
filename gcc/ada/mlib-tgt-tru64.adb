@@ -105,6 +105,7 @@ package body MLib.Tgt is
       Foreign      : Argument_List;
       Afiles       : Argument_List;
       Options      : Argument_List;
+      Options_2    : Argument_List;
       Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
@@ -149,6 +150,7 @@ package body MLib.Tgt is
               Options &
               Expect_Unresolved'Access &
               Init_Fini.all,
+            Options_2   => Options_2,
             Driver_Name => Driver_Name);
 
       else
@@ -163,6 +165,7 @@ package body MLib.Tgt is
                  Version_Arg &
                  Expect_Unresolved'Access &
                  Init_Fini.all,
+               Options_2   => Options_2,
                Driver_Name => Driver_Name);
             Symbolic_Link_Needed := Lib_Version /= Lib_File;
 
@@ -175,6 +178,7 @@ package body MLib.Tgt is
                  Version_Arg &
                  Expect_Unresolved'Access &
                  Init_Fini.all,
+               Options_2   => Options_2,
                Driver_Name => Driver_Name);
             Symbolic_Link_Needed :=
               Lib_Dir & Directory_Separator & Lib_Version /= Lib_File;
