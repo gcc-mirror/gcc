@@ -7,38 +7,41 @@
 /* { dg-final { scan-assembler "movn.d" } } */
 /* { dg-final { scan-assembler "movf.d" } } */
 
+void ext_float (float);
+void ext_double (double);
+
 float
 sub7 (float f, float g, int i)
 {
-  return i ? f : g;
+  ext_float (i ? f : g);
 }
 
 float
 sub8 (float f, float g, long l)
 {
-  return !l ? f : g;
+  ext_float (!l ? f : g);
 }
 
 float
 sub9 (float f, float g, float h)
 {
-  return h ? f : g;
+  ext_float (h ? f : g);
 }
 
 double
 suba (double f, double g, int i)
 {
-  return i ? f : g;
+  ext_double (i ? f : g);
 }
 
 double
 subb (double f, double g, long l)
 {
-  return !l ? f : g;
+  ext_double (!l ? f : g);
 }
 
 double
 subc (double f, double g, double h)
 {
-  return !h ? f : g;
+  ext_double (!h ? f : g);
 }
