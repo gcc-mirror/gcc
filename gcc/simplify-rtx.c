@@ -146,6 +146,9 @@ avoid_constant_pool_reference (x)
     return x;
   addr = XEXP (x, 0);
 
+  if (GET_CODE (addr) == LO_SUM)
+    addr = XEXP (addr, 1);
+
   if (GET_CODE (addr) != SYMBOL_REF
       || ! CONSTANT_POOL_ADDRESS_P (addr))
     return x;
