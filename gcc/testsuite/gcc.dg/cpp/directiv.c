@@ -25,16 +25,11 @@ EMPTY #define bar
 /* Our friend the null directive OK?  */
 #
 
-/* Check that directives always start a line, even if in middle of
-   macro expansion.  */
-#define func(x) x
-func (2		/* { dg-error "unterminated" "" } */
-#define foobar	/* { dg-error "directives may not" } */
-
 /* Check newlines end directives, even in function-like macro
    invocations.  6.10 paragraph 1.
 
    Note that the #if is still treated as a conditional, so there
    should be no errors about #endif without #if.  */
+#define func(x) x
 #if func (			/* { dg-error "unterminated argument" } */
 #endif

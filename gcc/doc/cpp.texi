@@ -121,6 +121,7 @@ Macros
 * Variadic Macros::
 * Predefined Macros::
 * Undefining and Redefining Macros::
+* Directives Within Macro Arguments::
 * Macro Pitfalls::
 
 Predefined Macros
@@ -1115,6 +1116,7 @@ macros when you are compiling C++.
 * Variadic Macros::
 * Predefined Macros::
 * Undefining and Redefining Macros::
+* Directives Within Macro Arguments::
 * Macro Pitfalls::
 @end menu
 
@@ -2115,6 +2117,48 @@ macro to use the new definition.  If the new definition is effectively
 the same, the redefinition is silently ignored.  This allows, for
 instance, two different headers to define a common macro.  The
 preprocessor will only complain if the definitions do not match.
+
+@node Directives Within Macro Arguments
+@section Directives Within Macro Arguments
+@cindex macro arguments and directives
+
+Occasionally it is convenient to use preprocessor directives within
+the arguments of a macro.  The C and C++ standards declare that
+behavior in these cases is undefined.
+
+Versions of GNU CPP prior to 3.2 would reject such constructs with an
+error message.  This was the only syntactic difference between normal
+functions and function-like macros, so it seemed attractive to remove
+this limitation, and people would often be surprised that they could
+not use macros in this way.  Moreover, sometimes people would use
+conditional compilation in the argument list to a normal library
+function like @samp{printf}, only to find that after a library upgrade
+@samp{printf} had changed to be a function-like macro, and their code
+would no longer compile.  So from version 3.2 we changed CPP to
+successfully process arbitrary directives within macro arguments in
+exactly the same way as it would have processed the directive were the
+function-like macro invocation not present.
+
+If, within a macro invocation, that macro is redefined, then the new
+definition takes effect in time for argument pre-expansion, but the
+original definition is still used for argument replacement.  Here is a
+pathological example:
+
+@smallexample
+#define f(x) x x
+f (1
+#undef f
+#define f 2
+f)
+@end smallexample
+
+@noindent which expands to
+
+@smallexample
+1 2 1 2
+@end smallexample
+
+@noindent with the semantics described above.
 
 @node Macro Pitfalls
 @section Macro Pitfalls

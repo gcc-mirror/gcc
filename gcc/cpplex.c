@@ -828,7 +828,10 @@ _cpp_lex_token (pfile)
 	  /* Is this a directive.  If _cpp_handle_directive returns
 	     false, it is an assembler #.  */
 	  if (result->type == CPP_HASH
-	      && !pfile->state.parsing_args
+	      /* 6.10.3 p 11: Directives in a list of macro arguments
+		 gives undefined behavior.  This implementation
+		 handles the directive as normal.  */
+	      && pfile->state.parsing_args != 1
 	      && _cpp_handle_directive (pfile, result->flags & PREV_WHITE))
 	    continue;
 	  if (pfile->cb.line_change && !pfile->state.skipping)

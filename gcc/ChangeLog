@@ -1,3 +1,16 @@
+2002-02-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpplex.c (_cpp_lex_token): Handle directives in macro
+	arguments.
+	* cpplib.c (_cpp_handle_directive): Save and restore state
+	if parsing macro args when entering a directive.
+	* cppmacro.c (collect_args): No need to handle directives
+	in macro arguments.
+	(enter_macro_context, replace_args): Use the original macro
+	definition in case it was redefined whilst collecting arguments.
+doc:
+	* cpp.texi: Update.
+
 2002-02-26  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix43.h (THREAD_MODEL_SPEC): Delete.
