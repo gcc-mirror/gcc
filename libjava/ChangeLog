@@ -1,5 +1,13 @@
 2004-02-26  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/awt/ComponentDataBlitOp.java
+	(INSTANCE): Made final.
+	* gnu/java/awt/image/ImageDecoder.java:
+	Reworked imports.
+	(cm): Unused, removed.
+
+2004-02-26  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/DatagramChannelImpl.java
 	(send): Check if target address is resolved.
 

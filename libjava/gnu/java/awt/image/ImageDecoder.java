@@ -1,5 +1,5 @@
 /* ImageDecoder.java
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,11 +37,14 @@ exception statement from your version. */
 
 package gnu.java.awt.image;
 
-import java.awt.*;
-import java.awt.image.*;
-import java.util.*;
-import java.io.*;
+import java.awt.image.ImageConsumer;
+import java.awt.image.ImageProducer;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.IOException;
 import java.net.URL;
+import java.util.Vector;
 
 public abstract class ImageDecoder implements ImageProducer 
 {
@@ -52,8 +55,6 @@ public abstract class ImageDecoder implements ImageProducer
   int offset;
   int length;
   InputStream input;
-
-  public static ColorModel cm;
 
   static
   {
