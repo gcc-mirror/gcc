@@ -1,3 +1,8 @@
+2005-03-15  Roger Sayle  <roger@eyesopen.com>
+
+	* optabs.c (expand_doubleword_mult): Avoid clobbering op0 and
+	op1 whilst expanding the signed widenening multiply variant.
+
 2005-03-15  Richard Sandiford  <rsandifo@redhat.com>
 
 	* toplev.c (display_target_options): Avoid unused variable warning if

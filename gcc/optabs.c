@@ -843,7 +843,7 @@ expand_doubleword_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 			   NULL_RTX, 1, methods);
       if (temp)
 	op0_high = expand_binop (word_mode, add_optab, op0_high, temp,
-				 op0_high, 0, OPTAB_DIRECT);
+				 NULL_RTX, 0, OPTAB_DIRECT);
       else
 	{
 	  temp = expand_binop (word_mode, ashr_optab, op0_low, wordm1,
@@ -851,7 +851,7 @@ expand_doubleword_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	  if (!temp)
 	    return NULL_RTX;
 	  op0_high = expand_binop (word_mode, sub_optab, op0_high, temp,
-				   op0_high, 0, OPTAB_DIRECT);
+				   NULL_RTX, 0, OPTAB_DIRECT);
 	}
 
       if (!op0_high)
@@ -872,7 +872,7 @@ expand_doubleword_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 			   NULL_RTX, 1, methods);
       if (temp)
 	op1_high = expand_binop (word_mode, add_optab, op1_high, temp,
-				 op1_high, 0, OPTAB_DIRECT);
+				 NULL_RTX, 0, OPTAB_DIRECT);
       else
 	{
 	  temp = expand_binop (word_mode, ashr_optab, op1_low, wordm1,
@@ -880,7 +880,7 @@ expand_doubleword_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	  if (!temp)
 	    return NULL_RTX;
 	  op1_high = expand_binop (word_mode, sub_optab, op1_high, temp,
-				   op1_high, 0, OPTAB_DIRECT);
+				   NULL_RTX, 0, OPTAB_DIRECT);
 	}
 
       if (!op1_high)
