@@ -670,7 +670,7 @@ do {									\
 } while (0)
 
 /* Describe how to emit unitialized external linkage items  */
-#define ASM_OUTPUT_ALIGNED_BSS(FILE, NAME, SIZE, ALIGN)			\
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)		\
 do {									\
   ASM_GLOBALIZE_LABEL (FILE, NAME);					\
   ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);			\
