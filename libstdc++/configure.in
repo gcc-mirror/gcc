@@ -67,20 +67,20 @@ if [ "${shared}" = "yes" ]; then
     *-*-*) 		frags=../../config/mh-${target_cpu}pic ;;
   esac
   case "${target}" in
+    *-*-aix*)		frags="${frags} aix.ml" ;;
     *-dec-osf*)		frags="${frags} dec-osf.ml";;
+    *-*-freebsd2*)	;;
+    *-*-freebsd*)	frags="${frags} freebsd.ml" ;;
+    *-*-gnu*)		frags="${frags} gnu.ml" ;;
     *-*-hpux*)		frags="${frags} hpux.ml" ;;
     *-*-irix[56]*)	frags="${frags} irix5.ml" ;;
     *-*-linux*aout*)	;;
-    *-*-freebsd2*)	;;
-    *-*-freebsd*)	frags="${frags} freebsd.ml" ;;
     *-*-linux*)		frags="${frags} linux.ml" ;;
     *-*-openbsd*)		frags="${frags} openbsd.ml" ;;
     *-*-sysv[45]*|*-*-udk*)	frags="${frags} elf.ml" ;;
     *-*-solaris*)	frags="${frags} sol2shm.ml" ;;
     *-*-sunos4*)	frags="${frags} sunos4.ml" ;;
-    *-*-aix*)		frags="${frags} aix.ml" ;;
     i[3456]86-*-interix*)	frags="${frags} x86-interix.ml" ;;
-    *-*-gnu*)		frags="${frags} gnu.ml" ;;
   esac
 fi
 
