@@ -1,3 +1,10 @@
+Tue Mar  9 02:08:17 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* i386.md (zero_extendhisi2): Split into an expander and anonymous
+	pattern.  Add new anonymous pattern for use when optimizing for
+	size or for the PPro.
+	(zero_extendqihi2, zero_extendqisi2): Likewise.
+
 Mon Mar  8 23:43:47 1999  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (sched_analyze_1): Fix last change -- add clobber
