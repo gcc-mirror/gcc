@@ -49,7 +49,7 @@ libstdcxx_version="target-libstdc++-v3"
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
 # know that we are building the simulator.
-host_tools="texinfo byacc flex bison binutils ld gas gcc sid sim gdb make patch prms send-pr gprof gdbtest tgas etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool ispell grep diff rcs cvssrc fileutils shellutils time textutils wdiff find uudecode hello tar gzip indent recode release sed utils guile perl inet gawk findutils snavigator libtool gettext zip fastjar"
+host_tools="texinfo byacc flex bison binutils ld gas gcc sid sim gdb make patch prms send-pr gprof etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool grep diff rcs fileutils shellutils time textutils wdiff find uudecode hello tar gzip indent recode release sed utils guile perl gawk findutils snavigator libtool gettext zip fastjar"
 
 # libgcj represents the runtime libraries only used by gcj.
 libgcj="target-libffi \
@@ -90,7 +90,7 @@ target_tools="target-examples target-groff target-gperf"
 #
 # This must be a single line because of the way it is searched by grep in
 # the code below.
-native_only="autoconf automake libtool cvssrc fileutils find gawk gettext grep gzip hello indent ispell m4 rcs recode sed shellutils tar textutils uudecode wdiff gprof target-groff guile perl inet time ash bash bzip2 prms snavigator gnuserv target-gperf"
+native_only="autoconf automake libtool fileutils find gawk gettext grep gzip hello indent m4 rcs recode sed shellutils tar textutils uudecode wdiff gprof target-groff guile perl time ash bash bzip2 prms snavigator gnuserv target-gperf"
 
 # directories to be built in a cross environment only
 #
@@ -222,26 +222,26 @@ case "${host}" in
     noconfigdirs="$noconfigdirs byacc"
     ;;
   i[3456]86-*-vsta)
-    noconfigdirs="tcl expect dejagnu make texinfo bison patch flex byacc send-pr gprof uudecode dejagnu diff guile perl inet itcl tix db snavigator gnuserv gettext"
+    noconfigdirs="tcl expect dejagnu make texinfo bison patch flex byacc send-pr gprof uudecode dejagnu diff guile perl itcl tix db snavigator gnuserv gettext"
     ;;
   i[3456]86-*-go32* | i[3456]86-*-msdosdjgpp*)
-    noconfigdirs="tcl tk expect dejagnu send-pr uudecode guile inet itcl tix db snavigator gnuserv libffi"
+    noconfigdirs="tcl tk expect dejagnu send-pr uudecode guile itcl tix db snavigator gnuserv libffi"
 	;;
   i[3456]86-*-mingw32*)
-    # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl inet itcl tix db snavigator gnuserv"
-     noconfigdirs="expect dejagnu cvs autoconf automake send-pr rcs guile perl texinfo inet libtool"
+    # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl itcl tix db snavigator gnuserv"
+     noconfigdirs="expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool"
 	;;
   i[3456]86-*-beos*)
      noconfigdirs="$noconfigdirs tk itcl tix libgui gdb"
      ;;
   *-*-cygwin*)
-     noconfigdirs="autoconf automake send-pr rcs guile perl inet"
+     noconfigdirs="autoconf automake send-pr rcs guile perl"
     ;;
   *-*-netbsd*)
     noconfigdirs="rcs"
     ;;
   ppc*-*-pe)
-     noconfigdirs="patch diff make tk tcl expect dejagnu cvssrc autoconf automake texinfo bison send-pr gprof rcs guile perl inet itcl tix db snavigator gnuserv"
+     noconfigdirs="patch diff make tk tcl expect dejagnu autoconf automake texinfo bison send-pr gprof rcs guile perl itcl tix db snavigator gnuserv"
     ;;
   powerpc-*-beos*)
     noconfigdirs="$noconfigdirs tk itcl tix libgui gdb dejagnu readline"
@@ -543,7 +543,7 @@ case "${target}" in
     ;;
   powerpc-*-aix*)
     # copied from rs6000-*-* entry
-    noconfigdirs="$noconfigdirs gprof cvssrc target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
     ;;
   powerpc*-*-winnt* | powerpc*-*-pe* | ppc*-*-pe)
     target_configdirs="$target_configdirs target-winsup"
@@ -565,8 +565,7 @@ case "${target}" in
     fi
     ;;
   rs6000-*-lynxos*)
-    # The CVS server code doesn't work on the RS/6000
-    noconfigdirs="$noconfigdirs target-newlib gprof cvssrc ${libgcj}"
+    noconfigdirs="$noconfigdirs target-newlib gprof ${libgcj}"
     ;;
   rs6000-*-aix*)
     noconfigdirs="$noconfigdirs gprof ${libgcj}"

@@ -1,3 +1,9 @@
+2002-07-02  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.in: Don't try to build gdbtest, tgas, ispell, inet, or
+	cvs[src].
+	* configure.in: Ditto.
+
 2002-07-01  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* MAINTAINERS (Write After Approval): Update my e-mail address.
@@ -8,7 +14,7 @@
 
 	* Makefile.in (all-cgen): Remove; runs from its source directory.
 	(check-cgen, install-cgen, clean-cgen): Likewise.
-	(all-opcodes): No not depend on all-cgen.
+	(all-opcodes): Do not depend on all-cgen.
 	(all-sim): Likewise.
 
 2002-07-01  Nathanael Nerode <neroden@gcc.gnu.org>
