@@ -1526,6 +1526,12 @@ private:
 
     for (subr_info *subr = jsr_ptrs[csub]; subr != NULL; subr = subr->next)
       {
+	// We might be returning to a `jsr' that is at the end of the
+	// bytecode.  This is ok if we never return from the called
+	// subroutine, but if we see this here it is an error.
+	if (subr->pc >= current_method->code_length)
+	  verify_fail ("fell off end");
+
 	// Temporarily modify the current state so it looks like we're
 	// in the enclosing context.
 	current_state->subroutine = get_subroutine (subr->pc);
@@ -1575,16 +1581,15 @@ private:
     // the local variable state across the jsr, but the subroutine
     // might change the stack depth, so we can't make any assumptions
     // about it.  So we have yet another special case.  We know that
-    // at this point PC points to the instruction after the jsr.
-
-    // FIXME: what if we have a jsr at the end of the code, but that
-    // jsr has no corresponding ret?  Is this verifiable, or is it
-    // not?  If it is then we need a special case here.
-    if (PC >= current_method->code_length)
-      verify_fail ("fell off end");
-
-    current_state->stacktop = state::NO_STACK;
-    push_jump_merge (PC, current_state);
+    // at this point PC points to the instruction after the jsr.  Note
+    // that it is ok to have a `jsr' at the end of the bytecode,
+    // provided that the called subroutine never returns.  So, we have
+    // a special case here and another one when we handle the ret.
+    if (PC < current_method->code_length)
+      {
+	current_state->stacktop = state::NO_STACK;
+	push_jump_merge (PC, current_state);
+      }
     invalidate_pc ();
   }
 
