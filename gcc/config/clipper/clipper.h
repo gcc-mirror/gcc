@@ -196,6 +196,7 @@ extern int target_flags;
    variables `fixed_regs' and `call_used_regs' (both of type `char
    []') after they have been initialized from the two preceding
    macros. A C400 has additional floating registers f8 -> f15 */
+
 #define CONDITIONAL_REGISTER_USAGE	\
    if (target_flags & TARGET_C400)	\
      { int i;				\
@@ -211,15 +212,14 @@ extern int target_flags;
   ((REGNO) >= 16 ? 1 \
    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   On the clipper, 0-15 hold int, 16-31 hold float. DImode regs must be
-   even */
+   On the clipper 0-15 may hold any mode but DImode and DFmode must be even.
+   Registers 16-31 hold SFmode and DFmode */
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE)		\
-  ((GET_MODE_CLASS(MODE) == MODE_FLOAT)		\
-   ? (REGNO) >= 16				\
-   : (REGNO) < 16 && ((MODE) !=DImode || ((REGNO) & 1) == 0))
+#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
+  ((REGNO) < 16 							\
+   ? ((MODE) != DImode && (MODE) != DFmode || ((REGNO) & 1) == 0)	\
+   : ((MODE) == SFmode || (MODE) == DFmode))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
@@ -482,20 +482,30 @@ struct _clipper_cum_args { int num; int size; };
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be available.)  */
 
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-do									\
-{									\
-  if ((CUM).num == 0 && (MODE) == DImode)				\
-    (CUM).num = 2;							\
-  else									\
-    (CUM).num++;       							\
-  if ((CUM).num > 2 || (MODE) == BLKmode)				\
-    {									\
-      int align = FUNCTION_ARG_BOUNDARY (MODE, TYPE) / BITS_PER_UNIT;	\
-      (CUM).size += align - 1;						\
-      (CUM).size &= align - 1;						\
-      (CUM).size += CLIPPER_ARG_SIZE (MODE, TYPE);			\
-    }									\
+#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			      \
+do									      \
+{									      \
+  int reg = 0;								      \
+									      \
+  if ((CUM).num < 2							      \
+      && (GET_MODE_CLASS(MODE)==MODE_INT || GET_MODE_CLASS(MODE)==MODE_FLOAT) \
+      && (GET_MODE_SIZE (MODE) <= 8)					      \
+      && ((MODE) != DImode || (CUM).num == 0))				      \
+    {									      \
+      reg = 1;								      \
+      if ((MODE) == DImode)						      \
+	(CUM).num = 1;							      \
+    }									      \
+									      \
+  (CUM).num++;								      \
+									      \
+  if (! reg)								      \
+    {									      \
+      int align = FUNCTION_ARG_BOUNDARY (MODE, TYPE) / BITS_PER_UNIT;	      \
+      (CUM).size += align - 1;						      \
+      (CUM).size &= align - 1;						      \
+      (CUM).size += CLIPPER_ARG_SIZE (MODE, TYPE);			      \
+    }									      \
 } while (0)
 
 /* Define where to put the arguments to a function.
@@ -509,15 +519,20 @@ do									\
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
    NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
+    (otherwise it is an extra parameter matching an ellipsis).
 
-/* 2 args go into regs, float in f0/f1, anything else in r0/r1 */
+   2 args may go into regs. These must be MODE_INT or MODE_FLOAT but only
+   if they really fit into ONE register. The exception is a DImode arg
+   that occupies both register slots. */
 
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	\
-  (((CUM).num >= 2 || (MODE) == BLKmode || 	\
-    ((MODE) == DImode && (CUM).num)) ? 0 :	\
-   gen_rtx (REG, (MODE),					\
-	    GET_MODE_CLASS(MODE) == MODE_FLOAT ? (CUM).num+16 : (CUM).num))
+#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)				     \
+  (((CUM).num < 2							     \
+    && (GET_MODE_CLASS(MODE)==MODE_INT || GET_MODE_CLASS(MODE)==MODE_FLOAT)  \
+    && (GET_MODE_SIZE (MODE) <= 8)					     \
+    && ((MODE) != DImode || (CUM).num == 0))				     \
+   ? gen_rtx (REG, (MODE),						     \
+	      GET_MODE_CLASS(MODE) == MODE_FLOAT ? (CUM).num+16 : (CUM).num) \
+   : 0)
 
 /* If defined, a C expression that gives the alignment boundary, in bits,
    of an argument with the specified mode and type.  If it is not defined,
@@ -529,14 +544,15 @@ do									\
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
-   For args passed entirely in registers or entirely in memory, zero.  */
+   For args passed entirely in registers or entirely in memory, zero.
+   Clipper never passed args partially in regs/mem. */
 
-#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED)  0
+/* #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED)  0 */
 
 /* Generate necessary RTL for __builtin_saveregs().
    ARGLIST is the argument list; see expr.c.  */
-#define EXPAND_BUILTIN_SAVEREGS(ARGLIST) clipper_builtin_saveregs (ARGLIST)
 
+#define EXPAND_BUILTIN_SAVEREGS(ARGLIST) clipper_builtin_saveregs (ARGLIST)
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.
