@@ -194,13 +194,13 @@ M4 = `if [ -f $$r/m4/m4 ] ; \
 	then echo $$r/m4/m4 ; \
 	else echo ${DEFAULT_M4} ; fi`
 
-# For an installed makeinfo, we require it to be from texinfo 4 or
+# For an installed makeinfo, we require it to be from texinfo 4.2 or
 # higher, else we use the "missing" dummy.
 MAKEINFO=@MAKEINFO@
 USUAL_MAKEINFO = `if [ -f $$r/texinfo/makeinfo/makeinfo ] ; \
 	then echo $$r/texinfo/makeinfo/makeinfo ; \
 	else if (makeinfo --version \
-	  | egrep 'texinfo[^0-9]*([1-3][0-9]|[4-9])') >/dev/null 2>&1; \
+	  | egrep 'texinfo[^0-9]*([1-3][0-9]|4\.[2-9]|[5-9])') >/dev/null 2>&1; \
         then echo makeinfo; else echo $$s/missing makeinfo; fi; fi`
 
 # This just becomes part of the MAKEINFO definition passed down to
