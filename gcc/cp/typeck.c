@@ -1950,7 +1950,6 @@ build_class_member_access_expr (tree object, tree member,
 	  warning ("invalid access to non-static data member `%D' of NULL object", 
 		   member);
 	  warning  ("(perhaps the `offsetof' macro was used incorrectly)");
-	  return error_mark_node;
 	}
 
       /* If MEMBER is from an anonymous aggregate, we have converted
