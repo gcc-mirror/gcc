@@ -3655,6 +3655,88 @@
   "fsqrt,sgl %1,%0"
   [(set_attr "type" "fpsqrtsgl")
    (set_attr "length" "4")])
+
+;; PA 2.0 floating point instructions
+
+; fmpyfadd patterns
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(plus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
+			  (match_operand:DF 2 "register_operand" "f"))
+		 (match_operand:DF 3 "register_operand" "f")))]
+  "TARGET_PA_20 && ! TARGET_SOFT_FLOAT"
+  "fmpyfadd,dbl %1,%2,%3,%0"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(plus:DF (match_operand:DF 1 "register_operand" "f")
+		 (mult:DF (match_operand:DF 2 "register_operand" "f")
+			  (match_operand:DF 3 "register_operand" "f"))))]
+  "TARGET_PA_20 && ! TARGET_SOFT_FLOAT"
+  "fmpyfadd,dbl %2,%3,%1,%0"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(plus:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
+			  (match_operand:SF 2 "register_operand" "f"))
+		 (match_operand:SF 3 "register_operand" "f")))]
+  "TARGET_PA_20 && ! TARGET_SOFT_FLOAT"
+  "fmpyfadd,sgl %1,%2,%3,%0"
+  [(set_attr "type" "fpmulsgl")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(plus:SF (match_operand:SF 1 "register_operand" "f")
+		 (mult:SF (match_operand:SF 2 "register_operand" "f")
+			  (match_operand:SF 3 "register_operand" "f"))))]
+  "TARGET_PA_20 && ! TARGET_SOFT_FLOAT"
+  "fmpyfadd,sgl %2,%3,%1,%0"
+  [(set_attr "type" "fpmulsgl")
+   (set_attr "length" "4")])
+
+; fmpynfadd patterns
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(minus:DF (match_operand:DF 1 "register_operand" "f")
+		  (mult:DF (match_operand:DF 2 "register_operand" "f")
+			   (match_operand:DF 3 "register_operand" "f"))))]
+  "TARGET_PA_20 && ! TARGET_SOFT_FLOAT"
+  "fmpynfadd,dbl %2,%3,%1,%0"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(minus:SF (match_operand:SF 1 "register_operand" "f")
+		  (mult:SF (match_operand:SF 2 "register_operand" "f")
+			   (match_operand:SF 3 "register_operand" "f"))))]
+  "TARGET_PA_20 && ! TARGET_SOFT_FLOAT"
+  "fmpynfadd,sgl %2,%3,%1,%0"
+  [(set_attr "type" "fpmulsgl")
+   (set_attr "length" "4")])
+
+; fnegabs patterns
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(neg:DF (abs:DF (match_operand:DF 1 "register_operand" "f"))))]
+  "TARGET_PA_20 && ! TARGET_SOFT_FLOAT"
+  "fnegabs,dbl %1,%0"
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(neg:SF (abs:SF (match_operand:SF 1 "register_operand" "f"))))]
+  "TARGET_PA_20 && ! TARGET_SOFT_FLOAT"
+  "fnegabs,sgl %1,%0"
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
+
 
 ;;- Shift instructions
 
