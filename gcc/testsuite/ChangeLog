@@ -1,3 +1,7 @@
+2003-01-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/execute/20030109-1.c: New test.
+
 2003-01-08  Larin Hennessey  <larin@science.oregonstate.edu>
 
 	* g++.old-deja/g++.mike/dyncast1.C: Remove reference to AMD A29K
