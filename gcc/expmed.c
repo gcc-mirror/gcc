@@ -2403,8 +2403,9 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
       || code == ROUND_MOD_EXPR || code == ROUND_DIV_EXPR)
     {
       /* If we want the remainder, we may need to use OP0, so make sure
-	 it and ADJUSTED_OP0 are in different registers.  If we want to
-	 preserve subexpressions, make sure OP0 is in a register.
+	 it and ADJUSTED_OP0 are in different registers.  We force OP0
+	 to a register in case it has any queued subexpressions, because
+	 emit_cmp_insn will call emit_queue.
 
 	 If we don't want the remainder, we aren't going to use OP0 anymore.
 	 However, if we cannot clobber OP0 (and hence ADJUSTED_OP0), we must
@@ -2414,7 +2415,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	 CAN_CLOBBER_OP0 will be zero and we know that OP0 cannot
 	 equal TARGET.  */
 
-      if (rem_flag && preserve_subexpressions_p ())
+      if (rem_flag)
 	op0 = force_reg (compute_mode, op0);
 
       if (! can_clobber_op0)
