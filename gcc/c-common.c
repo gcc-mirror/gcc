@@ -27,6 +27,53 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef NULL
 #define NULL 0
 
+/* Make bindings for __NAME__ and __PRINTABLE_NAME__.  */
+
+void
+declare_function_name ()
+{
+  tree decl, init;
+  char *name, *printable_name;
+
+  if (current_function_decl == NULL)
+    {
+      name = "";
+      printable_name = "top level";
+    }
+  else
+    {
+      char *kind = "function";
+      if (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
+	kind = "method";
+      name = IDENTIFIER_POINTER (DECL_NAME (current_function_decl));
+      printable_name = (*decl_printable_name) (current_function_decl, &kind);
+    }
+
+  push_obstacks_nochange ();
+  decl = build_decl (VAR_DECL, get_identifier ("__NAME__"),
+		     char_array_type_node);
+  TREE_STATIC (decl) = 1;
+  TREE_READONLY (decl) = 1;
+  TREE_NO_UNUSED_WARNING (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  init = build_string (strlen (name) + 1, name);
+  TREE_TYPE (init) = char_array_type_node;
+  DECL_INITIAL (decl) = init;
+  finish_decl (pushdecl (decl), init, NULL_TREE);
+
+  push_obstacks_nochange ();
+  decl = build_decl (VAR_DECL, get_identifier ("__PRINTABLE_NAME__"),
+		     char_array_type_node);
+  TREE_STATIC (decl) = 1;
+  TREE_READONLY (decl) = 1;
+  TREE_NO_UNUSED_WARNING (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  init = build_string (strlen (printable_name) + 1, printable_name);
+  TREE_TYPE (init) = char_array_type_node;
+  DECL_INITIAL (decl) = init;
+  finish_decl (pushdecl (decl), init, NULL_TREE);
+}
+
 /* Given a chain of STRING_CST nodes,
    concatenate them into one STRING_CST
    and give it a suitable array-of-chars data type.  */
