@@ -358,6 +358,22 @@
 					   || reload_in_progress,
 					   mode, XEXP (op, 0))")))
 
+;; Return 1 if the operand is an indexed or indirect memory operand.
+(define_predicate "indexed_or_indirect_operand"
+  (and (match_operand 0 "memory_operand")
+       (match_test "REG_P (XEXP (op, 0))
+		    || (GET_CODE (XEXP (op, 0)) == PLUS
+			&& REG_P (XEXP (XEXP (op, 0), 0)) 
+			&& REG_P (XEXP (XEXP (op, 0), 1)))")))
+
+;; Return 1 if the operand is a memory operand with an address divisible by 4
+(define_predicate "word_offset_memref_operand"
+  (and (match_operand 0 "memory_operand")
+       (match_test "GET_CODE (XEXP (op, 0)) != PLUS
+		    || ! REG_P (XEXP (XEXP (op, 0), 0)) 
+		    || GET_CODE (XEXP (XEXP (op, 0), 1)) != CONST_INT
+		    || INTVAL (XEXP (XEXP (op, 0), 1)) % 4 == 0")))
+
 ;; Return 1 if the operand is either a non-special register or can be used
 ;; as the operand of a `mode' add insn.
 (define_predicate "add_operand"

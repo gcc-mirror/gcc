@@ -48,8 +48,6 @@ extern bool rs6000_legitimate_offset_address_p (enum machine_mode, rtx, int);
 
 extern rtx rs6000_got_register (rtx);
 extern rtx find_addr_reg (rtx);
-extern int word_offset_memref_operand (rtx, enum machine_mode);
-extern int indexed_or_indirect_operand (rtx, enum machine_mode);
 extern rtx gen_easy_vector_constant_add_self (rtx);
 extern const char *output_vec_const_move (rtx *);
 extern void build_mask64_2_operands (rtx, rtx *);
