@@ -1,3 +1,17 @@
+1998-07-15  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (build_decl_overload_real): Fix namespace handling.
+
+	* typeck.c (build_unary_op): Extract a lone function from an
+	OVERLOAD.
+
+	* call.c (build_scoped_method_call): Handle getting a namespace
+	for basetype in a destructor call.
+	(check_dtor_name): Handle enums.
+
+	* parse.y (using_directive): New nonterminal.
+	(extdef, simple_stmt): Use it.
+
 1998-07-14  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* decl2.c (add_function): Move error message ...

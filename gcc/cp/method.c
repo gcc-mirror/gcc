@@ -1539,7 +1539,8 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
        as the declaration. Unfortunately, we don't have the _DECL,
        only its name */
     OB_PUTC ('F');
-  else if (!for_method)
+
+  if (!for_method && current_namespace != global_namespace)
     /* qualify with namespace */
     build_qualified_name (current_namespace);
 
