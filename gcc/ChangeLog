@@ -1,3 +1,9 @@
+Fri Nov 21 19:37:40 1997  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* config/mips/elf64.h (MULTILIB_DEFAULTS): Test for
+ 	TARGET_ENDIAN_DEFAULT == zero instead of testing for macro
+ 	definition.
+
 Fri Nov 21 12:49:56 1997  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
 
 	* stmt.c (expand_end_bindings): Allow jump into block with cleanups.
