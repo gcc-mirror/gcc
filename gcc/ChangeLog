@@ -1,5 +1,11 @@
 2001-03-28  Richard Henderson  <rth@redhat.com>
 
+	* config/rs6000/rs6000.h (EPILOGUE_USES): Use TARGET_AIX,
+	not TARGET_TOC for special toc restore handling.
+	* config/rs6000/rs6000.md (eh_return): Likewise.
+
+2001-03-28  Richard Henderson  <rth@redhat.com>
+
 	* config/sparc/sparc.c (eligible_for_epilogue_delay): False if
 	current_function_calls_eh_return.
 	(output_function_epilogue): Handle eh_return.

@@ -1573,7 +1573,7 @@ typedef struct rs6000_args
 #define	EPILOGUE_USES(REGNO)					\
   ((reload_completed && (REGNO) == LINK_REGISTER_REGNUM)	\
    || (current_function_calls_eh_return				\
-       && TARGET_TOC						\
+       && TARGET_AIX						\
        && (REGNO) == TOC_REGISTER))
 
 /* This macro generates the assembly code for function exit,
