@@ -1,5 +1,8 @@
 2003-08-29  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/12093
+	* g++.dg/template/non-dependent4.C: New test.
+
 	PR c++/11928
 	* g++.dg/inherit/conv1.C: New test.
 

@@ -1,5 +1,9 @@
 2003-08-29  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/12093
+	* pt.c (build_non_dependent_expr): Do not build a
+	NON_DEPENDENT_EXPR for a STRING_CST.
+
 	PR c++/11928
 	* search.c (add_conversions): Avoid adding two conversion
 	operators for the same type.
