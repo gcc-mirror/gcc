@@ -728,13 +728,7 @@ struct lang_type
 #define CLASSTYPE_MTABLE_ENTRY(NODE) (TYPE_LANG_SPECIFIC(NODE)->memoized_table_entry)
 
 /* These are the size, mode and alignment of the type without its
-   virtual base classes, for when we use this type as a base itself.
-
-   CLASSTYPE_SIZE is also used during finish_struct_1 to remember the total
-   size of the baseclasses defined for the type.  We do this because it is
-   desirable to layout such information before beginning to process the
-   class itself, and we don't want to compute it second time when actually
-   laying out the type for real.  */
+   virtual base classes, for when we use this type as a base itself.  */
 #define CLASSTYPE_SIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->size)
 #define CLASSTYPE_ALIGN(NODE) (TYPE_LANG_SPECIFIC(NODE)->align)
 
@@ -2591,9 +2585,9 @@ extern tree break_out_calls			PROTO((tree));
 extern tree build_cplus_method_type		PROTO((tree, tree, tree));
 extern tree build_cplus_staticfn_type		PROTO((tree, tree, tree));
 extern tree build_cplus_array_type		PROTO((tree, tree));
-extern void propagate_binfo_offsets		PROTO((tree, tree));
-extern int layout_vbasetypes			PROTO((tree, int));
-extern tree layout_basetypes			PROTO((tree, tree));
+extern int layout_basetypes			PROTO((tree, int));
+extern tree build_vbase_pointer_fields		PROTO((tree));
+extern tree build_base_fields			PROTO((tree));
 extern tree hash_tree_cons			PROTO((int, int, int, tree, tree, tree));
 extern tree hash_tree_chain			PROTO((tree, tree));
 extern tree hash_chainon			PROTO((tree, tree));

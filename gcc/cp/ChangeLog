@@ -1,3 +1,17 @@
+Fri Apr  3 02:22:59 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	Re-implement allocation of base class subobjects.
+	* tree.c (unshare_base_binfos): New fn.
+	(layout_basetypes): Use it.  Now handles offsets of both virtual and
+	non-virtual bases, after layout_type.
+	(layout_vbasetypes): Remove.
+	(build_base_fields): Generate FIELD_DECLs for each non-virtual base.
+	(build_vbase_pointer_fields): Split out from old layout_basetypes.
+	* class.c (finish_base_struct): Lose offset handling code.
+	Move nonvdtor warning here.  Don't mess with t_binfo anymore.
+	(finish_struct_1): Don't mess with t_binfo anymore.  Use fns above.
+	* cp-tree.h: Adjust.
+
 Thu Apr  2 14:25:13 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h: Lose CLASSTYPE_VBASE_SIZE, some unused stuff.
@@ -12,7 +26,7 @@ Wed Apr  1 18:22:25 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* class.c, Make sure system.h is included just after config.h.
 	Delete lingering stdio and errno references too.
-	* decl.c, errfn.c, parse.y, ptree.c search.c, xrefc.: Likewwise.
+	* decl.c, errfn.c, parse.y, ptree.c search.c, xref.c: Likewise.
 	
 Wed Apr  1 15:38:36 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
