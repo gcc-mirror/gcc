@@ -66,7 +66,7 @@
 #include <bits/concept_check.h>
 
 namespace std
-{ 
+{
 
 // The vector base class serves two purposes.  First, its constructor
 // and destructor allocate (but don't initialize) storage.  This makes
@@ -83,9 +83,9 @@ public:
   allocator_type get_allocator() const { return _M_data_allocator; }
 
   _Vector_alloc_base(const allocator_type& __a)
-    : _M_data_allocator(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0) 
+    : _M_data_allocator(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0)
   {}
-  
+
 protected:
   allocator_type _M_data_allocator;
   _Tp* _M_start;
@@ -99,7 +99,7 @@ protected:
 };
 
 // Specialization for allocators that have the property that we don't
-// actually have to store an allocator object.  
+// actually have to store an allocator object.
 template <class _Tp, class _Allocator>
 class _Vector_alloc_base<_Tp, _Allocator, true> {
 public:
@@ -108,9 +108,9 @@ public:
   allocator_type get_allocator() const { return allocator_type(); }
 
   _Vector_alloc_base(const allocator_type&)
-    : _M_start(0), _M_finish(0), _M_end_of_storage(0) 
+    : _M_start(0), _M_finish(0), _M_end_of_storage(0)
   {}
-  
+
 protected:
   _Tp* _M_start;
   _Tp* _M_finish;
@@ -128,7 +128,7 @@ struct _Vector_base
   : public _Vector_alloc_base<_Tp, _Alloc,
                               _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
 {
-  typedef _Vector_alloc_base<_Tp, _Alloc, 
+  typedef _Vector_alloc_base<_Tp, _Alloc,
                              _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
           _Base;
   typedef typename _Base::allocator_type allocator_type;
@@ -141,11 +141,20 @@ struct _Vector_base
   }
 
   ~_Vector_base() { _M_deallocate(_M_start, _M_end_of_storage - _M_start); }
-};    
+};
 
 
+/**
+ *  @brief  A standard container which offers fixed time access to individual
+ *  elements in any order.
+ *
+ *  In some terminology a vector can be described as a dynamic C-style array,
+ *  it offers fast and efficient access to individual elements in any order
+ *  and saves the user from worrying about memory and size allocation.
+ *  Subscripting ( [] ) access is also provided as with C-style arrays.
+*/
 template <class _Tp, class _Alloc = allocator<_Tp> >
-class vector : protected _Vector_base<_Tp, _Alloc> 
+class vector : protected _Vector_base<_Tp, _Alloc>
 {
   // concept requirements
   __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
@@ -182,31 +191,102 @@ protected:
   void _M_insert_aux(iterator __position);
 
 public:
+  /**
+   *  Returns a read/write iterator that points to the first element in the
+   *  vector.  Iteration is done in ordinary element order.
+  */
   iterator begin() { return iterator (_M_start); }
+
+  /**
+   *  Returns a read-only (constant) iterator that points to the first element
+   *  in the vector.  Iteration is done in ordinary element order.
+  */
   const_iterator begin() const
     { return const_iterator (_M_start); }
+
+  /**
+   *  Returns a read/write iterator that points one past the last element in
+   *  the vector.  Iteration is done in ordinary element order.
+  */
   iterator end() { return iterator (_M_finish); }
+
+  /**
+   *  Returns a read-only (constant) iterator that points one past the last
+   *  element in the vector.  Iteration is done in ordinary element order.
+  */
   const_iterator end() const { return const_iterator (_M_finish); }
 
+  /**
+   *  Returns a read/write reverse iterator that points to the last element in
+   *  the vector.  Iteration is done in reverse element order.
+  */
   reverse_iterator rbegin()
     { return reverse_iterator(end()); }
+
+  /**
+   *  Returns a read-only (constant) reverse iterator that points to the last
+   *  element in the vector.  Iteration is done in reverse element order.
+  */
   const_reverse_iterator rbegin() const
     { return const_reverse_iterator(end()); }
+
+  /**
+   *  Returns a read/write reverse iterator that points to one before the
+   *  first element in the vector.  Iteration is done in reverse element
+   *  order.
+  */
   reverse_iterator rend()
     { return reverse_iterator(begin()); }
+
+  /**
+   *  Returns a read-only (constant) reverse iterator that points to one
+   *  before the first element in the vector.  Iteration is done in reverse
+   *  element order.
+  */
   const_reverse_iterator rend() const
     { return const_reverse_iterator(begin()); }
 
+  /**  Returns the number of elements in the vector.  */
   size_type size() const
     { return size_type(end() - begin()); }
+
+  /**  Returns the size of the largest possible vector.  */
   size_type max_size() const
     { return size_type(-1) / sizeof(_Tp); }
+
+  /**
+   *  Returns the amount of memory that has been alocated for the current
+   *  elements (?).
+  */
   size_type capacity() const
     { return size_type(const_iterator(_M_end_of_storage) - begin()); }
+
+  /**
+   *  Returns true if the vector is empty.  (Thus begin() would equal end().)
+  */
   bool empty() const
     { return begin() == end(); }
 
+  /**
+   *  @brief  Subscript access to the data contained in the vector.
+   *  @param  n  The element for which data should be accessed.
+   *  @return  Read/write reference to data.
+   *
+   *  This operator allows for easy, array-style, data access.
+   *  Note that data access with this operator is unchecked and out_of_range
+   *  lookups are not defined. (For checked lookups see at().)
+  */
   reference operator[](size_type __n) { return *(begin() + __n); }
+
+  /**
+   *  @brief  Subscript access to the data contained in the vector.
+   *  @param  n  The element for which data should be accessed.
+   *  @return  Read-only (constant) reference to data.
+   *
+   *  This operator allows for easy, array-style, data access.
+   *  Note that data access with this operator is unchecked and out_of_range
+   *  lookups are not defined. (For checked lookups see at().)
+  */
   const_reference operator[](size_type __n) const { return *(begin() + __n); }
 
   void _M_range_check(size_type __n) const {
@@ -214,16 +294,36 @@ public:
       __throw_out_of_range("vector");
   }
 
+  /**
+   *  @brief  Provides access to the data contained in the vector.
+   *  @param  n  The element for which data should be accessed.
+   *  @return  Read/write reference to data.
+   *
+   *  This function provides for safer data access.  The parameter is first
+   *  checked that it is in the range of the vector.  The function throws
+   *  out_of_range if the check fails.
+  */
   reference at(size_type __n)
     { _M_range_check(__n); return (*this)[__n]; }
+
+  /**
+   *  @brief  Provides access to the data contained in the vector.
+   *  @param  n  The element for which data should be accessed.
+   *  @return  Read-only (constant) reference to data.
+   *
+   *  This function provides for safer data access.  The parameter is first
+   *  checked that it is in the range of the vector.  The function throws
+   *  out_of_range if the check fails.
+  */
   const_reference at(size_type __n) const
     { _M_range_check(__n); return (*this)[__n]; }
+
 
   explicit vector(const allocator_type& __a = allocator_type())
     : _Base(__a) {}
 
   vector(size_type __n, const _Tp& __value,
-         const allocator_type& __a = allocator_type()) 
+         const allocator_type& __a = allocator_type())
     : _Base(__n, __a)
     { _M_finish = uninitialized_fill_n(_M_start, __n, __value); }
 
@@ -231,7 +331,7 @@ public:
     : _Base(__n, allocator_type())
     { _M_finish = uninitialized_fill_n(_M_start, __n, _Tp()); }
 
-  vector(const vector<_Tp, _Alloc>& __x) 
+  vector(const vector<_Tp, _Alloc>& __x)
     : _Base(__x.size(), __x.get_allocator())
     { _M_finish = uninitialized_copy(__x.begin(), __x.end(), _M_start); }
 
@@ -249,7 +349,7 @@ public:
     void _M_initialize_aux(_Integer __n, _Integer __value, __true_type)
 	{
       _M_start = _M_allocate(__n);
-      _M_end_of_storage = _M_start + __n; 
+      _M_end_of_storage = _M_start + __n;
       _M_finish = uninitialized_fill_n(_M_start, __n, __value);
     }
 
@@ -265,6 +365,21 @@ public:
   { _Destroy(_M_start, _M_finish); }
 
   vector<_Tp, _Alloc>& operator=(const vector<_Tp, _Alloc>& __x);
+
+  /**
+   *  @brief  Attempt to preallocate enough memory for specified number of
+   *          elements.
+   *  @param  n  Number of elements required
+   *
+   *  This function attempts to reserve enough memory for the vector to hold
+   *  the specified number of elements.  If the number requested is more than
+   *  max_size() length_error is thrown.
+   *
+   *  The advantage of this function is that if optimal code is a necessity
+   *  and the user can determine the number of elements that will be required
+   *  the user can reserve the memory and thus prevent a possible
+   *  reallocation of memory and copy of vector data.
+  */
   void reserve(size_type __n) {
     if (capacity() < __n) {
       const size_type __old_size = size();
@@ -282,6 +397,17 @@ public:
   // The range version is a member template, so we dispatch on whether
   // or not the type is an integer.
 
+  /**
+   *  @brief  Assigns a given value or range to a vector.
+   *  @param  n  Number of elements to be assigned.
+   *  @param  val  Value to be assigned.
+   *
+   *  This function can be used to assign a range to a vector or fill it
+   *  with a specified number of copies of the given value.
+   *  Note that the assignment completely changes the vector and that the
+   *  resulting vector's size is the same as the number of elements assigned.
+   *  Old data may be lost.
+  */
   void assign(size_type __n, const _Tp& __val) { _M_fill_assign(__n, __val); }
   void _M_fill_assign(size_type __n, const _Tp& __val);
 
@@ -312,13 +438,41 @@ public:
 
   template <class _ForwardIterator>
   void _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
-                     forward_iterator_tag); 
+                     forward_iterator_tag);
 
+  /**
+   *  Returns a read/write reference to the data at the first element of the
+   *  vector.
+  */
   reference front() { return *begin(); }
+
+  /**
+   *  Returns a read-only (constant) reference to the data at the first
+   *  element of the vector.
+  */
   const_reference front() const { return *begin(); }
+
+  /**
+   *  Returns a read/write reference to the data at the last element of the
+   *  vector.
+  */
   reference back() { return *(end() - 1); }
+
+  /**
+   *  Returns a read-only (constant) reference to the data at the first
+   *  element of the vector.
+  */
   const_reference back() const { return *(end() - 1); }
 
+  /**
+   *  @brief  Add data to the end of the vector.
+   *  @param  x  Data to be added.
+   *
+   *  This is a typical stack operation.  The function creates an element at
+   *  the end of the vector and assigns the given data to it.
+   *  Due to the nature of a vector this operation can be done in constant
+   *  time if the vector has preallocated space available.
+  */
   void
   push_back(const _Tp& __x)
   {
@@ -330,6 +484,10 @@ public:
       _M_insert_aux(end(), __x);
   }
 
+  /**
+   *  Add an element to the end of the vector.  The element is
+   *  default-constructed.
+  */
   void
   push_back()
   {
@@ -349,6 +507,17 @@ public:
     std::swap(_M_end_of_storage, __x._M_end_of_storage);
   }
 
+  /**
+   *  @brief  Inserts given value into vector at specified element.
+   *  @param  position  An iterator that points to the element where data
+   *                    should be inserted.
+   *  @param  x  Data to be inserted.
+   *  @return  An iterator that points to the inserted data.
+   *
+   *  This function will insert the given value into the specified location.
+   *  Note that this kind of operation could be expensive for a vector and if
+   *  it is frequently used the user should consider using std::list.
+  */
   iterator
   insert(iterator __position, const _Tp& __x)
   {
@@ -362,6 +531,17 @@ public:
     return begin() + __n;
   }
 
+  /**
+   *  @brief  Inserts an empty element into the vector.
+   *  @param  position  An iterator that points to the element where empty
+   *                    element should be inserted.
+   *  @param  x  Data to be inserted.
+   *  @return  An iterator that points to the inserted element.
+   *
+   *  This function will insert an empty element into the specified location.
+   *  Note that this kind of operation could be expensive for a vector and if
+   *  it is frequently used the user should consider using std::list.
+  */
   iterator
   insert(iterator __position)
   {
@@ -399,15 +579,52 @@ public:
       _M_range_insert(__pos, __first, __last, _IterCategory());
     }
 
+  /**
+   *  @brief  Inserts a number of copies of given data into the vector.
+   *  @param  position  An iterator that points to the element where data
+   *                    should be inserted.
+   *  @param  n  Amount of elements to be inserted.
+   *  @param  x  Data to be inserted.
+   *
+   *  This function will insert a specified number of copies of the given data
+   *  into the specified location.
+   *
+   *  Note that this kind of operation could be expensive for a vector and if
+   *  it is frequently used the user should consider using std::list.
+  */
   void insert (iterator __pos, size_type __n, const _Tp& __x)
     { _M_fill_insert(__pos, __n, __x); }
 
   void _M_fill_insert (iterator __pos, size_type __n, const _Tp& __x);
 
+  /**
+   *  @brief  Removes last element from vector.
+   *
+   *  This is a typical stack operation. It allows us to shrink the vector by
+   *  one.
+   *
+   *  Note that no data is returned and if last element's data is needed it
+   *  should be retrieved before pop_back() is called.
+  */
   void pop_back() {
     --_M_finish;
     _Destroy(_M_finish);
   }
+
+  /**
+   *  @brief  Remove element at given position
+   *  @param  position  Iterator pointing to element to be erased.
+   *  @return  Doc Me! (Iterator pointing to new element at old location?)
+   *
+   *  This function will erase the element at the given position and thus
+   *  shorten the vector by one.
+   *
+   *  Note This operation could be expensive and if it is frequently used the
+   *  user should consider using std::list.  The user is also cautioned that
+   *  this function only erases the element, and that if the element is itself
+   *  a pointer, the pointed-to memory is not touched in any way.  Managing
+   *  the pointer is the user's responsibilty.
+  */
   iterator erase(iterator __position) {
     if (__position + 1 != end())
       copy(__position + 1, end(), __position);
@@ -415,6 +632,22 @@ public:
     _Destroy(_M_finish);
     return __position;
   }
+
+  /**
+   *  @brief  Remove a range of elements from a vector.
+   *  @param  first  Iterator pointing to the first element to be erased.
+   *  @param  last  Iterator pointing to the last element to be erased.
+   *  @return  Doc Me! (Iterator pointing to new element at old location?)
+   *
+   *  This function will erase the elements in the given range and shorten the
+   *  vector accordingly.
+   *
+   *  Note This operation could be expensive and if it is frequently used the
+   *  user should consider using std::list.  The user is also cautioned that
+   *  this function only erases the elements, and that if the elements
+   *  themselves are pointers, the pointed-to memory is not touched in any
+   *  way.  Managing the pointer is the user's responsibilty.
+  */
   iterator erase(iterator __first, iterator __last) {
     iterator __i(copy(__last, end(), __first));
     _Destroy(__i, end());
@@ -422,19 +655,46 @@ public:
     return __first;
   }
 
+  /**
+   *  @brief  Resizes the vector to the specified number of elements.
+   *  @param  new_size  Number of elements the vector should contain.
+   *  @param  x  Data with which new elements should be populated.
+   *
+   *  This function will resize the vector to the specified number of
+   *  elements.  If the number is smaller than the vector's current size the
+   *  vector is truncated, otherwise the vector is extended and new elements
+   *  are populated with given data.
+  */
   void resize(size_type __new_size, const _Tp& __x) {
-    if (__new_size < size()) 
+    if (__new_size < size())
       erase(begin() + __new_size, end());
     else
       insert(end(), __new_size - size(), __x);
   }
+
+  /**
+   *  @brief  Resizes the vector to the specified number of elements.
+   *  @param  new_size  Number of elements the vector should contain.
+   *
+   *  This function will resize the vector to the specified number of
+   *  elements.  If the number is smaller than the vector's current size the
+   *  vector is truncated, otherwise the vector is extended and new elements
+   *  are left uninitialized.
+  */
   void resize(size_type __new_size) { resize(__new_size, _Tp()); }
+
+  /**
+   *  Erases all elements in vector.  Note that this function only erases the
+   *  elements, and that if the elements themselves are pointers, the
+   *  pointed-to memory is not touched in any way.  Managing the pointer is
+   *  the user's responsibilty.
+  */
   void clear() { erase(begin(), end()); }
 
 protected:
 
   template <class _ForwardIterator>
-  pointer _M_allocate_and_copy(size_type __n, _ForwardIterator __first, 
+  pointer _M_allocate_and_copy(size_type __n, _ForwardIterator __first,
                                                _ForwardIterator __last)
   {
     pointer __result = _M_allocate(__n);
@@ -443,21 +703,21 @@ protected:
       return __result;
     }
     catch(...)
-      { 
+      {
 	_M_deallocate(__result, __n);
 	__throw_exception_again;
       }
   }
 
   template <class _InputIterator>
-  void _M_range_initialize(_InputIterator __first,  
+  void _M_range_initialize(_InputIterator __first,
                            _InputIterator __last, input_iterator_tag)
   {
     for ( ; __first != __last; ++__first)
       push_back(*__first);
   }
 
-  // This function is only called by the constructor. 
+  // This function is only called by the constructor.
   template <class _ForwardIterator>
   void _M_range_initialize(_ForwardIterator __first,
                            _ForwardIterator __last, forward_iterator_tag)
@@ -480,7 +740,7 @@ protected:
 };
 
 template <class _Tp, class _Alloc>
-inline bool 
+inline bool
 operator==(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
 {
   return __x.size() == __y.size() &&
@@ -488,10 +748,10 @@ operator==(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
 }
 
 template <class _Tp, class _Alloc>
-inline bool 
+inline bool
 operator<(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
 {
-  return lexicographical_compare(__x.begin(), __x.end(), 
+  return lexicographical_compare(__x.begin(), __x.end(),
                                  __y.begin(), __y.end());
 }
 
@@ -526,7 +786,7 @@ operator>=(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y) {
 }
 
 template <class _Tp, class _Alloc>
-vector<_Tp,_Alloc>& 
+vector<_Tp,_Alloc>&
 vector<_Tp,_Alloc>::operator=(const vector<_Tp, _Alloc>& __x)
 {
   if (&__x != this) {
@@ -552,7 +812,7 @@ vector<_Tp,_Alloc>::operator=(const vector<_Tp, _Alloc>& __x)
 }
 
 template <class _Tp, class _Alloc>
-void vector<_Tp, _Alloc>::_M_fill_assign(size_t __n, const value_type& __val) 
+void vector<_Tp, _Alloc>::_M_fill_assign(size_t __n, const value_type& __val)
 {
   if (__n > capacity()) {
     vector<_Tp, _Alloc> __tmp(__n, __val, get_allocator());
@@ -605,7 +865,7 @@ vector<_Tp, _Alloc>::_M_assign_aux(_ForwardIter __first, _ForwardIter __last,
 }
 
 template <class _Tp, class _Alloc>
-void 
+void
 vector<_Tp, _Alloc>::_M_insert_aux(iterator __position, const _Tp& __x)
 {
   if (_M_finish != _M_end_of_storage) {
@@ -629,8 +889,8 @@ vector<_Tp, _Alloc>::_M_insert_aux(iterator __position, const _Tp& __x)
                                         __new_finish);
     }
     catch(...)
-      { 
-	_Destroy(__new_start,__new_finish); 
+      {
+	_Destroy(__new_start,__new_finish);
 	_M_deallocate(__new_start.base(),__len);
 	__throw_exception_again;
       }
@@ -643,13 +903,13 @@ vector<_Tp, _Alloc>::_M_insert_aux(iterator __position, const _Tp& __x)
 }
 
 template <class _Tp, class _Alloc>
-void 
+void
 vector<_Tp, _Alloc>::_M_insert_aux(iterator __position)
 {
   if (_M_finish != _M_end_of_storage) {
     _Construct(_M_finish, *(_M_finish - 1));
     ++_M_finish;
-    copy_backward(__position, iterator(_M_finish - 2), 
+    copy_backward(__position, iterator(_M_finish - 2),
 		  iterator(_M_finish - 1));
     *__position = _Tp();
   }
@@ -659,16 +919,16 @@ vector<_Tp, _Alloc>::_M_insert_aux(iterator __position)
     pointer __new_start = _M_allocate(__len);
     pointer __new_finish = __new_start;
     try {
-      __new_finish = uninitialized_copy(iterator(_M_start), __position, 
+      __new_finish = uninitialized_copy(iterator(_M_start), __position,
 					__new_start);
       _Construct(__new_finish);
       ++__new_finish;
-      __new_finish = uninitialized_copy(__position, iterator(_M_finish), 
+      __new_finish = uninitialized_copy(__position, iterator(_M_finish),
 					__new_finish);
     }
     catch(...)
       {
-	_Destroy(__new_start,__new_finish); 
+	_Destroy(__new_start,__new_finish);
 	_M_deallocate(__new_start,__len);
 	__throw_exception_again;
       }
@@ -681,7 +941,7 @@ vector<_Tp, _Alloc>::_M_insert_aux(iterator __position)
 }
 
 template <class _Tp, class _Alloc>
-void vector<_Tp, _Alloc>::_M_fill_insert(iterator __position, size_type __n, 
+void vector<_Tp, _Alloc>::_M_fill_insert(iterator __position, size_type __n,
                                          const _Tp& __x)
 {
   if (__n != 0) {
@@ -704,7 +964,7 @@ void vector<_Tp, _Alloc>::_M_fill_insert(iterator __position, size_type __n,
       }
     }
     else {
-      const size_type __old_size = size();        
+      const size_type __old_size = size();
       const size_type __len = __old_size + max(__old_size, __n);
       iterator __new_start(_M_allocate(__len));
       iterator __new_finish(__new_start);
@@ -716,7 +976,7 @@ void vector<_Tp, _Alloc>::_M_fill_insert(iterator __position, size_type __n,
       }
       catch(...)
 	{
-	  _Destroy(__new_start,__new_finish); 
+	  _Destroy(__new_start,__new_finish);
 	  _M_deallocate(__new_start.base(),__len);
 	  __throw_exception_again;
 	}
@@ -730,9 +990,9 @@ void vector<_Tp, _Alloc>::_M_fill_insert(iterator __position, size_type __n,
 }
 
 template <class _Tp, class _Alloc> template <class _InputIterator>
-void 
-vector<_Tp, _Alloc>::_M_range_insert(iterator __pos, 
-                                     _InputIterator __first, 
+void
+vector<_Tp, _Alloc>::_M_range_insert(iterator __pos,
+                                     _InputIterator __first,
                                      _InputIterator __last,
                                      input_iterator_tag)
 {
@@ -743,7 +1003,7 @@ vector<_Tp, _Alloc>::_M_range_insert(iterator __pos,
 }
 
 template <class _Tp, class _Alloc> template <class _ForwardIterator>
-void 
+void
 vector<_Tp, _Alloc>::_M_range_insert(iterator __position,
                                      _ForwardIterator __first,
                                      _ForwardIterator __last,
@@ -776,7 +1036,7 @@ vector<_Tp, _Alloc>::_M_range_insert(iterator __position,
       iterator __new_start(_M_allocate(__len));
       iterator __new_finish(__new_start);
       try {
-        __new_finish = uninitialized_copy(iterator(_M_start), 
+        __new_finish = uninitialized_copy(iterator(_M_start),
 					  __position, __new_start);
         __new_finish = uninitialized_copy(__first, __last, __new_finish);
         __new_finish
@@ -797,7 +1057,7 @@ vector<_Tp, _Alloc>::_M_range_insert(iterator __position,
   }
 }
 
-} // namespace std 
+} // namespace std
 
 #endif /* __GLIBCPP_INTERNAL_VECTOR_H */
 

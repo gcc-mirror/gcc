@@ -1,3 +1,9 @@
+2002-02-07  Stephan Buys  <sbproxy@icon.co.za>
+
+	* include/bits/stl_map.h:  Tweak doxygen markup.
+	* include/bits/stl_multimap.h:  Doxygenate and remove extra spaces.
+	* include/bits/stl_vector.h:  Likewise.
+
 2002-02-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/5286
@@ -75,7 +81,7 @@
 	* docs/doxygen/run_doxygen:  Adjust for new mainpage.
 	* docs/doxygen/user.cfg.in:  Likewise.
 
-2002-02-04  Stephan Buys  <s.buys@icon.co.za>
+2002-02-04  Stephan Buys  <sbproxy@icon.co.za>
 
 	* include/bits/stl_map.h:  Initial doxygen markup.
 	* include/std/std_fstream.h:  Initial doxygen markup.
