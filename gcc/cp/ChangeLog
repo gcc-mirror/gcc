@@ -1,3 +1,9 @@
+2003-12-16  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* semantics.c (finish_id_expression): Refactor the code to handle
+	template parameters, and emit a more informative error message
+	when they are used within non integral constant expressions.
+
 2003-12-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/13387
