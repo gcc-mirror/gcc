@@ -1,3 +1,9 @@
+2003-12-06  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (GXX_CROSS_NAME, CXX_CROSS_NAME): Delete.
+	(c++.install_common, cp/g++.1, c++.install-man): Adjust for above.
+	(c++.uninstall): Likewise.
+
 2003-12-05  Danny Smith <dannysmith@gcc.gnu.org>
 	    Mark Mitchell  <mark@codesourcery.com>
 

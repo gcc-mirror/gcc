@@ -1,3 +1,9 @@
+2003-12-06  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (GCJ_CROSS_NAME): Delete.
+	(java.install_common, java.install-man): Adjust for above.
+	(java.uninstall): Likewise.
+
 2003-12-03  Michael Koch  <konqueror@gmx.de>
 
 	* class.c (make_class_data):
