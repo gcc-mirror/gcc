@@ -848,8 +848,8 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-version-specific-runtime-libs
-   specify that runtime libraries should be installed in a compiler-specific
-   directory
+                          specify that runtime libraries should be installed
+                          in a compiler-specific directory
   --enable-multilib       build many library versions (default)
   --enable-maintainer-mode enable make rules and dependencies not useful
                           (and sometimes confusing) to the casual installer
@@ -862,27 +862,29 @@ Optional Features:
   --enable-hash-synchronization
                           use global hash table for monitor locks
   --enable-libgcj-multifile
-                          allow compilation of several files at once
+                 allow compilation of several files at once
+
   --enable-libgcj-debug   enable runtime debugging code
   --enable-interpreter    enable interpreter
-  --enable-sjlj-exceptions  force use of builtin_setjmp for exceptions
+  --enable-sjlj-exceptions
+                          force use of builtin_setjmp for exceptions
   --disable-java-net      disable java.net
   --disable-jvmpi         disable JVMPI support
   --enable-java-awt       list of AWT peer implementations to be built
-  --enable-gtk-cairo       build the cairo Graphics2D implementation on GTK
-  --enable-java-gc=TYPE   choose garbage collector boehm
+  --enable-gtk-cairo      build the cairo Graphics2D implementation on GTK
+  --enable-java-gc=TYPE   choose garbage collector (default is boehm)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-target-subdir=SUBDIR
-                           configuring in a subdirectory
-  --with-cross-host=HOST  configuring with a cross compiler
-  --with-newlib           Configuring with newlib
+                          configure in a subdirectory
+  --with-cross-host=HOST  configure with a cross compiler from HOST
+  --with-newlib           configure with newlib
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-pic              try to use only PIC/non-PIC objects default=use both
-  --with-win32-nlsapi=ansi, unicows or unicode
-                          native MinGW libgcj Win32 OS API ansi
+  --with-win32-nlsapi=ansi or unicows or unicode
+                          native MinGW libgcj Win32 OS API (default is ansi)
   --without-libffi        don't use libffi
   --with-ecos             enable runtime eCos target support
   --with-system-zlib      use installed libz
@@ -1340,6 +1342,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+# We use these options to decide which functions to include.
 
 # Check whether --with-target-subdir or --without-target-subdir was given.
 if test "${with_target_subdir+set}" = set; then
@@ -1347,6 +1350,8 @@ if test "${with_target_subdir+set}" = set; then
 
 fi;
 
+# We may get other options which we don't document:
+# --with-target-subdir, --with-multisrctop, --with-multisubdir
 
 # When building with srcdir == objdir, links to the source files will
 # be created in directories within the target_subdir.  We have to
@@ -1576,6 +1581,7 @@ else
 
 fi;
 
+# Default to --enable-multilib
 # Check whether --enable-multilib or --disable-multilib was given.
 if test "${enable_multilib+set}" = set; then
   enableval="$enable_multilib"
@@ -1589,6 +1595,7 @@ echo "$as_me: error: bad value ${enableval} for multilib option" >&2;}
 else
   multilib=yes
 fi;
+# It may not be safe to run linking tests in AC_PROG_CC/AC_PROG_CXX.
 
 
 # (1) We use an abnormal CXX (without library references), so we
@@ -2921,7 +2928,9 @@ CXXFLAGS="$save_CXXFLAGS"
 
 
 
+# version is pulled out to make it a bit easier to change using sed.
 version=0.0.7
+# Still use "libjava" here to placate dejagnu.
 # Find a good install program.  We prefer a C program (faster),
 # so one script is as good as another.  But avoid the broken or
 # incompatible versions:
@@ -4315,7 +4324,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4318 "configure"' > conftest.$ac_ext
+  echo '#line 4327 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -4871,6 +4880,7 @@ else
 fi
 
 
+# The -no-testsuite modules omit the test subdir.
 
 
 if test -d $srcdir/testsuite; then
@@ -4881,12 +4891,15 @@ else
   TESTSUBDIR_FALSE=
 fi
 
+# Should the runtime set system properties by examining the
+# environment variable GCJ_PROPERTIES?
 # Check whether --enable-getenv-properties or --disable-getenv-properties was given.
 if test "${enable_getenv_properties+set}" = set; then
   enableval="$enable_getenv_properties"
 
 fi;
 
+# Whether GCJ_PROPERTIES is used depends on the target.
 if test -z "$enable_getenv_properties"; then
    enable_getenv_properties=${enable_getenv_properties_default-yes}
 fi
@@ -4898,6 +4911,7 @@ _ACEOF
 
 fi
 
+# Whether we should use arguments to main()
 if test -z "$enable_main_args"; then
    enable_main_args=${enable_main_args_default-yes}
 fi
@@ -4910,6 +4924,9 @@ _ACEOF
 fi
 
 
+# Should we use hashtable-based synchronization?
+# Currently works only for Linux X86/ia64
+# Typically faster and more space-efficient
 # Check whether --enable-hash-synchronization or --disable-hash-synchronization was given.
 if test "${enable_hash_synchronization+set}" = set; then
   enableval="$enable_hash_synchronization"
@@ -4949,8 +4966,7 @@ fi
 # Check whether --with-win32-nlsapi or --without-win32-nlsapi was given.
 if test "${with_win32_nlsapi+set}" = set; then
   withval="$with_win32_nlsapi"
-
-case "${withval}" in
+  case "${withval}" in
   ansi) with_win32_nlsapi=ansi ;;
   unicows) with_win32_nlsapi=unicows ;;
   unicode) with_win32_nlsapi=unicode ;;
@@ -4972,6 +4988,8 @@ _ACEOF
     ;;
 esac
 
+# configure.host sets slow_pthread_self if the synchronization code should
+# try to avoid pthread_self calls by caching thread IDs in a hashtable.
 if test "${slow_pthread_self}" = "yes"; then
 
 cat >>confdefs.h <<\_ACEOF
@@ -4981,6 +4999,7 @@ _ACEOF
 fi
 
 
+# See if the user has requested runtime debugging.
 LIBGCJDEBUG="false"
 
 # Check whether --enable-libgcj-debug or --disable-libgcj-debug was given.
@@ -4996,6 +5015,7 @@ _ACEOF
   fi
 fi;
 
+# See if the user has the interpreter included.
 # Check whether --enable-interpreter or --disable-interpreter was given.
 if test "${enable_interpreter+set}" = set; then
   enableval="$enable_interpreter"
@@ -5033,7 +5053,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   :
 else
   cat > conftest.$ac_ext << EOF
-#line 5036 "configure"
+#line 5056 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -5089,12 +5109,15 @@ if test $can_unwind_signal = no && test $enable_sjlj_exceptions = no; then
   EXCEPTIONSPEC=
 fi
 
+# See if the user wants to disable java.net.  This is the mildly
+# ugly way that we admit that target-side configuration sucks.
 # Check whether --enable-java-net or --disable-java-net was given.
 if test "${enable_java_net+set}" = set; then
   enableval="$enable_java_net"
 
 fi;
 
+# Whether java.net is built by default can depend on the target.
 if test -z "$enable_java_net"; then
    enable_java_net=${enable_java_net_default-yes}
 fi
@@ -5106,11 +5129,14 @@ _ACEOF
 
 fi
 
+# See if the user wants to configure without libffi.  Some
+# architectures don't support it, and default values are set in
+# configure.host.
 
 # Check whether --with-libffi or --without-libffi was given.
 if test "${with_libffi+set}" = set; then
   withval="$with_libffi"
-
+  :
 else
   with_libffi=${with_libffi_default-yes}
 fi;
@@ -5129,6 +5155,7 @@ fi
 
 
 
+# See if the user wants to disable JVMPI support.
 # Check whether --enable-jvmpi or --disable-jvmpi was given.
 if test "${enable_jvmpi+set}" = set; then
   enableval="$enable_jvmpi"
@@ -5143,6 +5170,10 @@ _ACEOF
 
 fi
 
+# If the target is an eCos system, use the appropriate eCos
+# I/O routines.
+# FIXME: this should not be a local option but a global target
+# system; at present there is no eCos target.
 TARGET_ECOS=${PROCESS-"no"}
 
 # Check whether --with-ecos or --without-ecos was given.
@@ -5551,6 +5582,8 @@ rm -f conftest*
 
 
 
+# These may not be defined in a non-ANS conformant embedded system.
+# FIXME: Should these case a runtime exception in that case?
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -5590,6 +5623,8 @@ fi
 rm -f conftest*
 
 
+# Create the subdirectory for natFile.cc, or the attempt
+# to create the link will fail.
 test -d java || mkdir java
 test -d java/io || mkdir java/io
 test -d gnu || mkdir gnu
@@ -5603,6 +5638,7 @@ done
           ac_config_links="$ac_config_links $ac_config_links_2"
 
 
+# Likewise for ConcreteProcess.java and natConcreteProcess.cc.
 test -d java/lang || mkdir java/lang
 ac_sources="java/lang/${PLATFORM}Process.java"
 ac_dests="java/lang/ConcreteProcess.java"
@@ -5623,6 +5659,7 @@ done
           ac_config_links="$ac_config_links $ac_config_links_4"
 
 
+# Likewise for natInetAddress.cc and natNetworkInterface.cc.
 test -d java/net || mkdir java/net
 ac_sources="java/net/natInetAddress${PLATFORMNET}.cc"
 ac_dests="java/net/natInetAddress.cc"
@@ -5643,6 +5680,7 @@ done
           ac_config_links="$ac_config_links $ac_config_links_6"
 
 
+# Likewise for natPlainSocketImpl.cc and natPlainDatagramSocketImpl.cc.
 test -d gnu/java || mkdir gnu/java
 test -d gnu/java/net || mkdir gnu/java/net
 ac_sources="gnu/java/net/natPlainSocketImpl${PLATFORMNET}.cc"
@@ -5664,6 +5702,7 @@ done
           ac_config_links="$ac_config_links $ac_config_links_8"
 
 
+# Likewise for natPipeImpl.cc and natSelectorImpl.cc.
 test -d gnu/java/nio || mkdir gnu/java/nio
 ac_sources="gnu/java/nio/natPipeImpl${PLATFORM}.cc"
 ac_dests="gnu/java/nio/natPipeImpl.cc"
@@ -7182,6 +7221,7 @@ fi
 fi
 
 
+# Determine which AWT peer libraries to build
 # Check whether --enable-java-awt or --disable-java-awt was given.
 if test "${enable_java_awt+set}" = set; then
   enableval="$enable_java_awt"
@@ -7250,6 +7290,7 @@ else
   GTK_AWT_FALSE=
 fi
 
+# determine whether to enable the cairo GTK Graphics2D backend
 # Check whether --enable-gtk-cairo or --disable-gtk-cairo was given.
 if test "${enable_gtk_cairo+set}" = set; then
   enableval="$enable_gtk_cairo"
@@ -7468,14 +7509,15 @@ fi
 
 
 
+# FIXME: this should be _libs on some hosts.
 libsubdir=.libs
 
+# Allow the GC to be disabled.  Can be useful when debugging.
 echo "$as_me:$LINENO: checking for garbage collector to use" >&5
 echo $ECHO_N "checking for garbage collector to use... $ECHO_C" >&6
 # Check whether --enable-java-gc or --disable-java-gc was given.
 if test "${enable_java_gc+set}" = set; then
   enableval="$enable_java_gc"
-
   GC=$enableval
 else
   GC=boehm
@@ -7495,9 +7537,12 @@ echo "${ECHO_T}boehm" >&6
     JC1GCSPEC='-fuse-boehm-gc'
     GCTESTSPEC="-L`${PWDCMD-pwd}`/../boehm-gc/.libs -rpath `${PWDCMD-pwd}`/../boehm-gc/.libs"
 
-            GCINCS="`cat ../boehm-gc/boehm-cflags`"
+    # We also want to pick up some cpp flags required when including
+    # boehm-config.h.  Yuck.
+    GCINCS="`cat ../boehm-gc/boehm-cflags`"
     GCOBJS=boehm.lo
     GCHDR=boehm-gc.h
+    # The POSIX thread support needs to know this.
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_BOEHM_GC 1
@@ -7584,9 +7629,7 @@ case "$THREADS" in
      *-*-cygwin*)
 	# Don't set THREADLIBS here.  Cygwin doesn't have -lpthread.
 	;;
-
      *-*-freebsd[1234]*)
-
 	# Before FreeBSD 5, it didn't have -lpthread (or any library which
 	# merely adds pthread_* functions) but it does have a -pthread switch
 	# which is required at link-time to select -lc_r *instead* of -lc.
@@ -7757,16 +7800,19 @@ cat >>confdefs.h <<\_ACEOF
 #define HAVE_USLEEP_DECL 1
 _ACEOF
 
+   # This is only for POSIX threads.
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_PTHREAD_MUTEXATTR_INIT 1
 _ACEOF
 
-      cat >>confdefs.h <<\_ACEOF
+   # We also assume we are using gcc, which provides alloca.
+   cat >>confdefs.h <<\_ACEOF
 #define HAVE_ALLOCA 1
 _ACEOF
 
 
+   # Assume we do not have getuid and friends.
 
 cat >>confdefs.h <<\_ACEOF
 #define NO_GETUID 1
@@ -12471,9 +12517,7 @@ fi
 if test -z "${with_multisubdir}"; then
    builddotdot=.
 else
-
    builddotdot=`echo ${with_multisubdir} | sed -e 's:[^/][^/]*:..:g'`
-
 fi
 
 NATIVE=yes
@@ -12828,9 +12872,7 @@ esac
 
 
 # Determine gcj version number.
-
 gcjversion=`$GCJ -v 2>&1 | sed -n 's/^.*version \([^ ]*\).*$/\1/p'`
-
 GCJVERSION=$gcjversion
 
 
@@ -12839,6 +12881,9 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+# We check for sys/filio.h because Solaris 2.5 defines FIONREAD there.
+# On that system, sys/ioctl.h will not include sys/filio.h unless
+# BSD_COMP is defined; just including sys/filio.h is simpler.
 
 
 
@@ -13006,6 +13051,8 @@ fi
 
 done
 
+# We avoid AC_HEADER_DIRENT since we really only care about dirent.h
+# for now.  If you change this, you also must update natFile.cc.
 
 for ac_header in dirent.h
 do
@@ -16391,9 +16438,7 @@ h=`${PWDCMD-pwd}`
    while read f; do
       echo "include $f" >> deps.mk
       test -f $f || {
-
 	 d=`echo $f | sed -e 's,/[^/]*$,,'`
-
 	 if test ! -d $d; then
 	   $libgcj_basedir/../mkinstalldirs $d
 	 fi;

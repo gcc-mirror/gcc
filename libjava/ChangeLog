@@ -1,3 +1,11 @@
+2004-08-03  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Eliminate uses of changequote (mostly by quoting []).
+	Replace most top level 'dnl' comments with '#' comments, conforming
+	to new autoconf style.  Use AS_HELP_STRING throughout; improve a few
+	help strings.
+	* configure: Rebuilt.
+
 2004-07-17  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* acinclude.m4: Include no-executables.m4.
