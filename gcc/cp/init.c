@@ -1662,8 +1662,7 @@ build_offset_ref (type, name)
 	  t = OVL_CURRENT (t);
 
 	  /* unique functions are handled easily.  */
-	  if (!enforce_access (basebinfo, t))
-	    return error_mark_node;
+	  perform_or_defer_access_check (basebinfo, t);
 	  mark_used (t);
 	  if (DECL_STATIC_FUNCTION_P (t))
 	    return t;

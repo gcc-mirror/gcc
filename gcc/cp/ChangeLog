@@ -1,5 +1,40 @@
 2003-05-10  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/9252
+	* cp-tree.h (saved_scope): Remove check_access field.
+	(tsubst_flags_t): Remove tf_parsing.
+	* decl.c (maybe_push_to_top_level): Don't initialize
+	scope_chain->check_access.
+	(make_typename_type, make_unbound_class_template): Don't use
+	tf_parsing.
+	(register_dtor_fn): Use push/pop_deferring_access_checks
+	instead of scope_chain->check_access.
+	* method.c (use_thunk): Likewise.
+	* parser.c (cp_parser_explicit_instantiation
+	(cp_parser_constructor_declarator_p): Don't call
+	push/pop_deferring_access_checks here.
+	(cp_parser_template_argument, cp_parser_class_name): Don't use
+	tf_parsing.
+	(yyparse): Check flag_access_control.
+	* pt.c (instantiate_class_template): Call
+	push/pop_deferring_access_checks.
+	* semantics.c (push_deferring_access_checks): Propagate
+	dk_no_check.
+	(perform_or_defer_access_check): Make sure basetype_path is
+	a type before comparison.
+	* call.c (build_op_delete_call, build_over_call): Use
+	perform_or_defer_access_check.
+	* class.c (alter_access): Likewise.
+	* init.c (build_offset_ref): Likewise.
+	* lex.c (do_identifier): Likewise.
+	* method.c (hack_identifier): Likewise.
+	* search.c (lookup_member): Likewise.
+	* semantics.c (finish_non_static_data_member): Likewise.
+	(simplify_aggr_init_exprs_r): Use push/pop_deferring_access_checks
+	instead of flag_access_control.
+
+2003-05-10  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/9554
 	* parser.c (cp_parser_class_name): Remove check_access parameter.
 	All caller adjusted.  Update declaration.

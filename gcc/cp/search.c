@@ -913,10 +913,6 @@ accessible_p (tree type, tree decl)
      accessibility in TYPE.  */
   int protected_ok = 0;
 
-  /* If we're not checking access, everything is accessible.  */
-  if (!scope_chain->check_access)
-    return 1;
-
   /* If this declaration is in a block or namespace scope, there's no
      access control.  */
   if (!TYPE_P (context_for_name_lookup (decl)))
@@ -1293,9 +1289,8 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
 
      In the case of overloaded function names, access control is
      applied to the function selected by overloaded resolution.  */
-  if (rval && protect && !is_overloaded_fn (rval)
-      && !enforce_access (xbasetype, rval))
-    return error_mark_node;
+  if (rval && protect && !is_overloaded_fn (rval))
+    perform_or_defer_access_check (xbasetype, rval);
 
   if (errstr && protect)
     {

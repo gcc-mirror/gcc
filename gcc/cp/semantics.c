@@ -141,6 +141,12 @@ void push_deferring_access_checks (deferring_kind deferring)
 {
   deferred_access *d;
 
+  /* For context like template instantiation, access checking
+     disabling applies to all nested context.  */
+  if (deferred_access_stack
+      && deferred_access_stack->deferring_access_checks_kind == dk_no_check)
+    deferring = dk_no_check;
+
   /* Recycle previously used free store if available.  */
   if (deferred_access_free_list)
     {
@@ -266,6 +272,7 @@ void perform_or_defer_access_check (tree class_type, tree decl)
        check;
        check = TREE_CHAIN (check))
     if (TREE_VALUE (check) == decl
+	&& TYPE_P (TREE_PURPOSE (check))
 	&& same_type_p (TREE_PURPOSE (check), class_type))
       return;
   /* If not, record the check.  */
@@ -1276,7 +1283,7 @@ finish_non_static_data_member (tree decl, tree qualifying_scope)
 	    access_type = DECL_CONTEXT (access_type);
 	}
 
-      enforce_access (access_type, decl);
+      perform_or_defer_access_check (access_type, decl);
 
       /* If the data member was named `C::M', convert `*this' to `C'
 	 first.  */
@@ -2301,12 +2308,10 @@ simplify_aggr_init_exprs_r (tp, walk_subtrees, data)
       /* If we're using the non-reentrant PCC calling convention, then we
 	 need to copy the returned value out of the static buffer into the
 	 SLOT.  */
-      int old_ac = flag_access_control;
-
-      flag_access_control = 0;
+      push_deferring_access_checks (dk_no_check);
       call_expr = build_aggr_init (slot, call_expr,
 				   DIRECT_BIND | LOOKUP_ONLYCONVERTING);
-      flag_access_control = old_ac;
+      pop_deferring_access_checks ();
     }
 
   /* We want to use the value of the initialized location as the

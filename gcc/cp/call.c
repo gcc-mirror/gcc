@@ -4062,7 +4062,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
       /* If the FN is a member function, make sure that it is
 	 accessible.  */
       if (DECL_CLASS_SCOPE_P (fn))
-	enforce_access (type, fn);
+	perform_or_defer_access_check (type, fn);
 
       if (pass == 0)
 	args = tree_cons (NULL_TREE, addr, args);
@@ -4513,7 +4513,7 @@ build_over_call (struct z_candidate *cand, int flags)
       joust (cand, WRAPPER_ZC (TREE_VALUE (val)), 1);
 
   if (DECL_FUNCTION_MEMBER_P (fn))
-    enforce_access (cand->access_path, fn);
+    perform_or_defer_access_check (cand->access_path, fn);
 
   if (args && TREE_CODE (args) != TREE_LIST)
     args = build_tree_list (NULL_TREE, args);

@@ -696,7 +696,6 @@ struct saved_scope GTY(())
   int x_processing_specialization;
   bool x_processing_explicit_instantiation;
   int need_pop_function_context;
-  int check_access;
 
   struct stmt_tree_s x_stmt_tree;
 
@@ -3013,10 +3012,8 @@ typedef enum tsubst_flags_t {
   tf_ignore_bad_quals = 1 << 3, /* ignore bad cvr qualifiers */
   tf_keep_type_decl = 1 << 4,	/* retain typedef type decls
 				   (make_typename_type use) */
-  tf_ptrmem_ok = 1 << 5,     /* pointers to member ok (internal
+  tf_ptrmem_ok = 1 << 5      /* pointers to member ok (internal
 				instantiate_type use) */
-  tf_parsing = 1 << 6	     /* called from parser
-				(make_typename_type use) */
 } tsubst_flags_t;
 
 /* The kind of checking we can do looking in a class hierarchy.  */
