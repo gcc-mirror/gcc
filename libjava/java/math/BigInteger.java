@@ -11,6 +11,9 @@ details.  */
 package java.math;
 import gnu.gcj.math.*;
 import java.util.Random;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
 
 /**
  * @author Warren Levy <warrenl@cygnus.com>
@@ -35,8 +38,17 @@ public class BigInteger extends Number implements Comparable
    * If words == null, the ival is the value of this BigInteger.
    * Otherwise, the first ival elements of words make the value
    * of this BigInteger, stored in little-endian order, 2's-complement form. */
-  private int ival;
-  private int[] words;
+  transient private int ival;
+  transient private int[] words;
+
+  // Serialization fields.
+  private int bitCount = -1;
+  private int bitLength = -1;
+  private int firstNonzeroByteNum = -2;
+  private int lowestSetBit = -2;
+  private byte[] magnitude;
+  private int signum;
+  private static final long serialVersionUID = -8287574255936472291L;
 
 
   /** We pre-allocate integers in the range minFixNum..maxFixNum. */
@@ -2200,5 +2212,23 @@ public class BigInteger extends Number implements Comparable
 	i = bitCount(x_words, x_len);
       }
     return isNegative() ? x_len * 32 - i : i;
+  }
+
+  private void readObject(ObjectInputStream s)
+    throws IOException, ClassNotFoundException
+  {
+    s.defaultReadObject();
+    words = byteArrayToIntArray(magnitude, signum < 0 ? -1 : 0);
+    BigInteger result = make(words, words.length);
+    this.ival = result.ival;
+    this.words = result.words;
+  }
+
+  private void writeObject(ObjectOutputStream s)
+    throws IOException, ClassNotFoundException
+  {
+    signum = signum();
+    magnitude = toByteArray();
+    s.defaultWriteObject();
   }
 }

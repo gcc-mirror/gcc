@@ -998,6 +998,10 @@ gnu/java/io/ObjectIdentityWrapper.java \
 gnu/java/lang/ArrayHelper.java \
 gnu/java/lang/ClassHelper.java \
 gnu/java/lang/reflect/TypeSignature.java \
+gnu/java/locale/Calendar.java \
+gnu/java/locale/Calendar_de.java \
+gnu/java/locale/Calendar_en.java \
+gnu/java/locale/Calendar_nl.java \
 gnu/java/security/provider/Gnu.java \
 gnu/java/security/provider/SHA.java \
 gnu/java/security/provider/SHA1PRNG.java \

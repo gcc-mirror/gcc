@@ -26,6 +26,7 @@ public final class Locale implements java.io.Serializable, Cloneable
   private String language;
   private String variant;
   private static Locale defaultLocale;
+  private static final long serialVersionUID = 9149081749638150636L;
 
   // These are as specified in the JDK 1.2 AP documentation
 
@@ -144,5 +145,29 @@ public final class Locale implements java.io.Serializable, Cloneable
 	  }
       }
     return result.toString();
+  }
+
+ /**
+   * @serialdata According to jdk1.2 the hashcode should always be 
+   * written as -1; 
+   */
+  private void writeObject(java.io.ObjectOutputStream output)
+    throws java.io.IOException
+  {
+    int tmpHashcode = hashcode;
+    hashcode = -1;
+    output.defaultWriteObject();
+    hashcode = tmpHashcode;
+  }
+
+  /**
+   * @serialdata  According to jdk1.2 the hashCode is always invalid
+   * and must be recomputed.
+   */
+  private void readObject(java.io.ObjectInputStream input)
+    throws java.io.IOException, ClassNotFoundException
+  {
+    input.defaultReadObject();
+    hashcode = language.hashCode() ^ country.hashCode() ^ variant.hashCode();
   }
 }
