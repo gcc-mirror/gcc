@@ -293,14 +293,18 @@ xmalloc (size)
 }
 
 PTR
-xrealloc (ptr, size)
-  PTR ptr;
+xrealloc (old, size)
+  PTR old;
   size_t size;
 {
-  register PTR result = (PTR) realloc (ptr, size);
-  if (!result)
+  register PTR ptr;
+  if (ptr)
+    ptr = (PTR) realloc (old, size);
+  else
+    ptr = (PTR) malloc (size);
+  if (!ptr)
     fatal ("virtual memory exhausted");
-  return result;
+  return ptr;
 }
 
 static void

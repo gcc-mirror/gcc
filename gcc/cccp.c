@@ -10743,7 +10743,11 @@ xrealloc (old, size)
   PTR old;
   size_t size;
 {
-  register PTR ptr = (PTR) realloc (old, size);
+  register PTR ptr;
+  if (ptr)
+    ptr = (PTR) realloc (old, size);
+  else
+    ptr = (PTR) malloc (size);
   if (!ptr)
     memory_full ();
   return ptr;
