@@ -1,3 +1,8 @@
+Thu Sep 25 19:55:56 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* std/bastring.h: Enable exceptions.
+ 	(assign, append, insert, replace): Implement member template versions.
+
 1997-09-15 02:37  Ulrich Drepper  <drepper@cygnus.com>
 
 	* config/linux.mt: New file.  Make sure _PTHREADS is defined

@@ -14,8 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this library; see the file COPYING.  If not, write to the Free
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- 
+
 #include <string>
+#include <algorithm>
 #include <iostream.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -65,6 +66,10 @@ void decltest()
   assert(i == 20);
   assert(f == 20);
 
+  int ar[] = { 'H', 'e', 'l', 'l', 'o' };
+  string is (ar, ar+sizeof(ar)/sizeof(ar[0]));
+  cout << "is = " << is << endl;
+  assert (is == "Hello");
 }
 
 void cattest()
@@ -142,6 +147,13 @@ void substrtest()
   x.replace (0, 1, 'j');
   cout << "x.replace (0, 1, 'j'); x = " << x << "\n";
   assert(x == "jello");
+
+  int ar[] = { 'H', 'e', 'l', 'l', 'o' };
+  x.replace (find (x.begin (), x.end (), 'l'),
+	     find (x.rbegin (), x.rend (), 'l').base (),
+	     ar, ar+sizeof(ar)/sizeof(ar[0]));
+  cout << "x = " << x << endl;
+  assert (x == "jeHelloo");
 }
 
 void iotest()

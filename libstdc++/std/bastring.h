@@ -35,7 +35,7 @@
 #include <cstddef>
 #include <std/straits.h>
 
-#if _G_USE_EXCEPTIONS
+#ifdef __STL_USE_EXCEPTIONS
 
 #include <stdexcept>
 #define OUTOFRANGE(cond) \
@@ -149,14 +149,13 @@ public:
     : dat (nilRep.grab ()) { assign (s); }
   basic_string (size_type n, charT c)
     : dat (nilRep.grab ()) { assign (n, c); }
-#if 0
+#ifdef __STL_MEMBER_TEMPLATES
   template<class InputIterator>
-    basic_string(InputIterator begin, InputIterator end,
-		 Allocator& = Allocator());
+    basic_string(InputIterator begin, InputIterator end)
 #else
   basic_string(const_iterator begin, const_iterator end)
-    : dat (nilRep.grab ()) { assign (begin, end); }
 #endif
+    : dat (nilRep.grab ()) { assign (begin, end); }
 
   ~basic_string ()
     { rep ()->release (); }
@@ -172,13 +171,13 @@ public:
     { return append (s, traits::length (s)); }
   basic_string& append (size_type n, charT c)
     { return replace (length (), 0, n, c); }
-#if 0
+#ifdef __STL_MEMBER_TEMPLATES
   template<class InputIterator>
-    basic_string& append(InputIterator first, InputIterator last);
+    basic_string& append(InputIterator first, InputIterator last)
 #else
   basic_string& append(const_iterator first, const_iterator last)
-    { return replace (length (), 0, first, last - first); }
 #endif
+    { return replace (iend (), iend (), first, last); }
 
   basic_string& assign (const basic_string& str, size_type pos = 0,
 			size_type n = npos)
@@ -189,13 +188,13 @@ public:
     { return assign (s, traits::length (s)); }
   basic_string& assign (size_type n, charT c)
     { return replace (0, npos, n, c); }
-#if 0
+#ifdef __STL_MEMBER_TEMPLATES
   template<class InputIterator>
-    basic_string& assign(InputIterator first, InputIterator last);
+    basic_string& assign(InputIterator first, InputIterator last)
 #else
   basic_string& assign(const_iterator first, const_iterator last)
-    { return replace (0, npos, first, last - first); }
 #endif
+    { return replace (ibegin (), iend (), first, last); }
 
   basic_string& operator= (const charT* s)
     { return assign (s); }
@@ -222,13 +221,13 @@ public:
     { size_type pos = p - begin (); insert (pos, 1, c); return pos +begin (); }
   iterator insert(iterator p, size_type n, charT c)
     { size_type pos = p - begin (); insert (pos, n, c); return pos +begin (); }
-#if 0
+#ifdef __STL_MEMBER_TEMPLATES
   template<class InputIterator>
-    void insert(iterator p, InputIterator first, InputIterator last);
+    void insert(iterator p, InputIterator first, InputIterator last)
 #else
   void insert(iterator p, const_iterator first, const_iterator last)
-    { size_type pos = p - begin(); insert (pos, first, last - first); }
 #endif
+    { replace (p, p, first, last); }
 
   basic_string& remove (size_type pos = 0, size_type n = npos)
     { return replace (pos, n, (size_type)0, (charT)0); }
@@ -254,14 +253,13 @@ public:
     { return replace (i1 - begin (), i2 - i1, s); }
   basic_string& replace (iterator i1, iterator i2, size_type n, charT c)
     { return replace (i1 - begin (), i2 - i1, n, c); }
-#if 0
+#ifdef __STL_MEMBER_TEMPLATES
   template<class InputIterator>
     basic_string& replace(iterator i1, iterator i2,
 			  InputIterator j1, InputIterator j2);
 #else
   basic_string& replace(iterator i1, iterator i2,
-			const_iterator j1, const_iterator j2)
-    { return replace (i1, i2, j1, j2 - j1); }
+			const_iterator j1, const_iterator j2);
 #endif
 
 private:
@@ -360,8 +358,14 @@ public:
 
   iterator begin () { selfish (); return &(*this)[0]; }
   iterator end () { selfish (); return &(*this)[length ()]; }
-  const_iterator begin () const { return &(*rep ())[0]; }
-  const_iterator end () const { return &(*rep ())[length ()]; }
+
+private:
+  iterator ibegin () const { return &(*rep ())[0]; }
+  iterator iend () const { return &(*rep ())[length ()]; }
+
+public:
+  const_iterator begin () const { return ibegin (); }
+  const_iterator end () const { return iend (); }
 
   reverse_iterator       rbegin() { return reverse_iterator (end ()); }
   const_reverse_iterator rbegin() const
@@ -378,6 +382,47 @@ private:
   static Rep nilRep;
   charT *dat;
 };
+
+#ifdef __STL_MEMBER_TEMPLATES
+template <class charT, class traits> template <class InputIterator>
+basic_string <charT, traits>& basic_string <charT, traits>::
+replace (iterator i1, iterator i2, InputIterator j1, InputIterator j2)
+#else
+template <class charT, class traits>
+basic_string <charT, traits>& basic_string <charT, traits>::
+replace (iterator i1, iterator i2, const_iterator j1, const_iterator j2)
+#endif
+{
+  const size_type len = length ();
+  size_type pos = i1 - ibegin ();
+  size_type n1 = i2 - i1;
+  size_type n2 = j2 - j1;
+
+  OUTOFRANGE (pos > len);
+  if (n1 > len - pos)
+    n1 = len - pos;
+  LENGTHERROR (len - n1 > max_size () - n2);
+  size_t newlen = len - n1 + n2;
+
+  if (check_realloc (newlen))
+    {
+      Rep *p = Rep::create (newlen);
+      p->copy (0, data (), pos);
+      p->copy (pos + n2, data () + pos + n1, len - (pos + n1));
+      for (; j1 != j2; ++j1, ++pos)
+	traits::assign ((*p)[pos], *j1);
+      repup (p);
+    }
+  else
+    {
+      rep ()->move (pos + n2, data () + pos + n1, len - (pos + n1));
+      for (; j1 != j2; ++j1, ++pos)
+	traits::assign ((*rep ())[pos], *j1);
+    }
+  rep ()->len = newlen;
+
+  return *this;
+}
 
 template <class charT, class traits>
 inline basic_string <charT, traits>
