@@ -2553,6 +2553,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
   rtx stack_parm = data->stack_parm;
   HOST_WIDE_INT size;
   HOST_WIDE_INT size_stored;
+  rtx orig_entry_parm = entry_parm;
 
   if (GET_CODE (entry_parm) == PARALLEL)
     entry_parm = emit_group_move_into_temps (entry_parm);
@@ -2562,7 +2563,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
   if (GET_CODE (entry_parm) == PARALLEL
       && data->nominal_mode != BLKmode)
     {
-      rtx elt0 = XEXP (XVECEXP (entry_parm, 0, 0), 0);
+      rtx elt0 = XEXP (XVECEXP (orig_entry_parm, 0, 0), 0);
 
       if ((XVECLEN (entry_parm, 0) > 1
 	   || hard_regno_nregs[REGNO (elt0)][GET_MODE (elt0)] > 1)
