@@ -1,3 +1,8 @@
+2000-06-13  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.c (handle_directive): Print non-NUL-terminated string
+	with %.*s.
+
 2000-06-12  Michael Meissner  <meissner@redhat.com>
 
 	* ifcvt.c (dead_or_predicable): Don't do conditional execution
