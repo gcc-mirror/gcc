@@ -1,3 +1,8 @@
+2003-06-06  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux.h (STARTFILE_SPEC): Handle -pie.  Simplify.
+	(ENDFILE_SPEC): Redefine to handle -pie.
+
 2003-06-05  Phil Edwards <phil@jaj.com>
 
 	* Makefile.in (qmtest-g++): Use target_alias, not target.
