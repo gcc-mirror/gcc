@@ -58,7 +58,7 @@ b3()
 
 struct c {
 	unsigned int c:4, b:14, a:14;
-};
+} __attribute__ ((aligned));
 
 int
 c1()
@@ -86,7 +86,7 @@ c3()
 
 struct d {
 	unsigned int a:14, b:14, c:4;
-};
+} __attribute__ ((aligned));
 
 int
 d1()
@@ -114,7 +114,7 @@ d3()
 
 struct e {
 	int c:4, b:14, a:14;
-};
+} __attribute__ ((aligned));
 
 int
 e1()
@@ -140,9 +140,17 @@ e3()
 	return ((x.a & ~8) == (y.a & ~32) && (x.b & ~64) == (y.b & ~16));
 }
 
+int
+e4()
+{
+	static struct e x = { -1, -1, 0 };
+
+	return x.a == 0 && x.b & 0x2000;
+}
+
 struct f {
 	int a:14, b:14, c:4;
-};
+} __attribute__ ((aligned));
 
 int
 f1()
@@ -168,12 +176,20 @@ f3()
 	return ((x.a & ~8) == (y.a & ~32) && (x.b & ~64) == (y.b & ~16));
 }
 
+int
+f4()
+{
+	static struct f x = { 0, -1, -1 };
+
+	return x.a == 0 && x.b & 0x2000;
+}
+
 struct gx {
 	int c:4, b:14, a:14;
-};
+} __attribute__ ((aligned));
 struct gy {
 	int b:14, a:14, c:4;
-};
+} __attribute__ ((aligned));
 
 int
 g1()
@@ -244,10 +260,10 @@ g7()
 
 struct hx {
 	int a:14, b:14, c:4;
-};
+} __attribute__ ((aligned));
 struct hy {
 	int c:4, a:14, b:14;
-};
+} __attribute__ ((aligned));
 
 int
 h1()
@@ -316,11 +332,6 @@ h7()
 		(x.b & 0x3ff0) == (y.b & 0x03ff));
 }
 
-struct foo {
-        int junk;                       /* this is to force alignment */
-        unsigned char w, x, y, z;
-};
-
 int
 main()
 {
@@ -354,11 +365,15 @@ main()
     abort ();
   if (!e3 ())
     abort ();
+  if (!e4 ())
+    abort ();
   if (!f1 ())
     abort ();
   if (!f2 ())
     abort ();
   if (!f3 ())
+    abort ();
+  if (!f4 ())
     abort ();
   if (!g1 ())
     abort ();
