@@ -4403,7 +4403,7 @@ fold (expr)
       return t;
 
     case REALPART_EXPR:
-      if (TREE_CODE (type) != COMPLEX_TYPE)
+      if (TREE_CODE (TREE_TYPE (arg0)) != COMPLEX_TYPE)
 	return t;
       else if (TREE_CODE (arg0) == COMPLEX_EXPR)
 	return omit_one_operand (type, TREE_OPERAND (arg0, 0),
@@ -4422,7 +4422,7 @@ fold (expr)
       return t;
 
     case IMAGPART_EXPR:
-      if (TREE_CODE (type) != COMPLEX_TYPE)
+      if (TREE_CODE (TREE_TYPE (arg0)) != COMPLEX_TYPE)
 	return convert (type, integer_zero_node);
       else if (TREE_CODE (arg0) == COMPLEX_EXPR)
 	return omit_one_operand (type, TREE_OPERAND (arg0, 1),
