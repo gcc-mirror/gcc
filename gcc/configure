@@ -3652,7 +3652,7 @@ fi
 
 for ac_func in times clock dup2 kill getrlimit setrlimit atoll atoq \
 	sysconf strsignal putc_unlocked fputc_unlocked fputs_unlocked \
-	fwrite_unlocked fprintf_unlocked getrusage nl_langinfo lstat \
+	fwrite_unlocked fprintf_unlocked getrusage nl_langinfo \
         scandir alphasort gettimeofday mbstowcs wcswidth mmap mincore \
         setlocale
 do
