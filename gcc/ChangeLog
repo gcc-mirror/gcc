@@ -1,3 +1,13 @@
+2002-10-24  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* fixinc/inclhack.def (libc1_G_va_list): New fix.
+	* fixinc/fixincl.x: Regenerate.
+	* config/i386/linux.h: Move MD_FALLBACK_FRAME_STATE_FOR inside
+	ifndef IN_LIBGCC2.  Wrap it together with signal.h and
+	sys/ucontext.h inclusion in ifndef USE_GNULIBC_1.
+	* configure.in (gcc_AC_CHECK_DECLS): Check vasprintf too.
+	* config.in, configure: Regenerate.
+
 2002-10-24  Igor Shevlyakov <igor@microunity.com>
 
         * varasm.c (struct rtx_const): Array size 16 for V16QImode.

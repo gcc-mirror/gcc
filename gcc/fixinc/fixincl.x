@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 147 fixup descriptions.
+ * This file contains 148 fixup descriptions.
  *
  * See README for more information.
  *
@@ -2571,6 +2571,43 @@ static const char* apzLibc1_Ifdefd_MemxPatch[] = {
 extern [a-z_]+ mem.*(\n\
 [^#].*)*;)\n\
 #endif",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Libc1_G_Va_List fix
+ */
+tSCC zLibc1_G_Va_ListName[] =
+     "libc1_G_va_list";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zLibc1_G_Va_ListList[] =
+  "|_G_config.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzLibc1_G_Va_ListMachs[] = {
+        "*-*-linux*libc1",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zLibc1_G_Va_ListSelect0[] =
+       "typedef void \\* _G_va_list;";
+
+#define    LIBC1_G_VA_LIST_TEST_CT  1
+static tTestDesc aLibc1_G_Va_ListTests[] = {
+  { TT_EGREP,    zLibc1_G_Va_ListSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Libc1_G_Va_List
+ */
+static const char* apzLibc1_G_Va_ListPatch[] = {
+    "format",
+    "typedef __builtin_va_list _G_va_list;",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -5745,9 +5782,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          154
+#define REGEX_COUNT          155
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            147
+#define FIX_COUNT            148
 
 /*
  *  Enumerate the fixes
@@ -5817,6 +5854,7 @@ typedef enum {
     ISC_OMITS_WITH_STDC_FIXIDX,
     KANDR_CONCAT_FIXIDX,
     LIBC1_IFDEFD_MEMX_FIXIDX,
+    LIBC1_G_VA_LIST_FIXIDX,
     LIMITS_IFNDEFS_FIXIDX,
     LYNX_VOID_INT_FIXIDX,
     LYNXOS_FCNTL_PROTO_FIXIDX,
@@ -6222,6 +6260,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzLibc1_Ifdefd_MemxMachs,
      LIBC1_IFDEFD_MEMX_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aLibc1_Ifdefd_MemxTests,   apzLibc1_Ifdefd_MemxPatch, 0 },
+
+  {  zLibc1_G_Va_ListName,    zLibc1_G_Va_ListList,
+     apzLibc1_G_Va_ListMachs,
+     LIBC1_G_VA_LIST_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aLibc1_G_Va_ListTests,   apzLibc1_G_Va_ListPatch, 0 },
 
   {  zLimits_IfndefsName,    zLimits_IfndefsList,
      apzLimits_IfndefsMachs,
