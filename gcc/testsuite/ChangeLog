@@ -1,3 +1,8 @@
+2003-07-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR debug/11473
+	* g++.dg/debug/debug8.C: New test.
+
 2003-07-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10108
