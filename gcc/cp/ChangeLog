@@ -1,5 +1,10 @@
 2001-03-14  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (cp_make_fnname_decl): Set DECL_IGNORED_P on __FUNCTION__
+	and its ilk.
+
+2001-03-14  Mark Mitchell  <mark@codesourcery.com>
+
 	* class.c (build_clone): Use COPY_DECL_RTL, DECL_RTL_SET_P, etc.
 	* cp-tree.h (DECL_IN_MEMORY_P): Likewise.
 	* decl.c (duplicate_decls): Likewise.
