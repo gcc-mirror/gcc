@@ -810,7 +810,7 @@ while (0)
 /* A C expression that is nonzero if it is permissible to store a value of mode
    MODE in hard register number REGNO (or in several registers starting with
    that one).  */
-
+/* ??? movxf_internal does not support XFmode values in integer registers.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   (PR_REGNO_P (REGNO) ? (MODE) == CCmode : 1)
 
@@ -824,7 +824,12 @@ while (0)
 /* ??? If the comments are true, then this must be zero if one mode is CCmode,
    INTEGRAL_MODE_P or FLOAT_MODE_P and the other is not.  Otherwise, it is
    true.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) 1
+/* Don't tie integer and FP modes, as that causes us to get integer registers
+   allocated for FP instructions.  XFmode only supported in FP registers at
+   the moment, so we can't tie it with any other modes.  */
+#define MODES_TIEABLE_P(MODE1, MODE2) \
+  ((GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2)) \
+   && (((MODE1) == XFmode) == ((MODE2) == XFmode)))
 
 /* Define this macro if the compiler should avoid copies to/from CCmode
    registers.  You should only define this macro if support fo copying to/from
