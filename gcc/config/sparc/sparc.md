@@ -3023,7 +3023,7 @@
   "(TARGET_FPU && ! TARGET_VIS && ! TARGET_LIVE_G0)
    && (register_operand (operands[0], SFmode)
        || register_operand (operands[1], SFmode)
-       || fp_zero_operand (operands[1]))"
+       || fp_zero_operand (operands[1], SFmode))"
   "*
 {
   if (GET_CODE (operands[1]) == CONST_DOUBLE
@@ -3068,7 +3068,7 @@
   "(TARGET_FPU && TARGET_VIS)
    && (register_operand (operands[0], SFmode)
        || register_operand (operands[1], SFmode)
-       || fp_zero_operand (operands[1]))"
+       || fp_zero_operand (operands[1], SFmode))"
   "*
 {
   if (GET_CODE (operands[1]) == CONST_DOUBLE
@@ -3181,9 +3181,7 @@
   if (GET_CODE (operands[0]) == REG
       && CONSTANT_P (operands[1]))
     {
-      if (TARGET_VIS
-          && GET_CODE (operands[1]) == CONST_DOUBLE
-	  && fp_zero_operand (operands[1]))
+      if (TARGET_VIS && fp_zero_operand (operands[1], SFmode))
 	goto movsf_is_ok;
 
       /* emit_group_store will send such bogosity to us when it is
@@ -3199,9 +3197,7 @@
   if (GET_CODE (operands[0]) == MEM)
     {
       if (register_operand (operands[1], SFmode)
-	  || (! TARGET_LIVE_G0
-	      && GET_CODE (operands[1]) == CONST_DOUBLE
-              && fp_zero_operand (operands[1])))
+	  || (! TARGET_LIVE_G0 && fp_zero_operand (operands[1], SFmode)))
 	goto movsf_is_ok;
 
       if (! reload_in_progress)
@@ -3234,19 +3230,16 @@
 
 (define_insn "*clear_df"
   [(set (match_operand:DF 0 "register_operand" "=e")
-        (match_operand:DF 1 "const_double_operand" ""))]
-  "TARGET_VIS
-   && fp_zero_operand (operands[1])"
+        (match_operand:DF 1 "fp_zero_operand" ""))]
+  "TARGET_VIS"
   "fzero\\t%0"
   [(set_attr "type" "fpmove")
    (set_attr "length" "1")])
 
 (define_insn "*clear_dfp"
   [(set (match_operand:DF 0 "memory_operand" "=m")
-        (match_operand:DF 1 "const_double_operand" ""))]
-  "! TARGET_LIVE_G0
-   && TARGET_V9
-   && fp_zero_operand (operands[1])"
+        (match_operand:DF 1 "fp_zero_operand" ""))]
+  "! TARGET_LIVE_G0 && TARGET_V9"
   "stx\\t%%g0, %0"
   [(set_attr "type" "store")
    (set_attr "length" "1")])
@@ -3340,9 +3333,7 @@
   if (GET_CODE (operands[0]) == REG
       && CONSTANT_P (operands[1]))
     {
-      if (TARGET_VIS
-          && GET_CODE (operands[1]) == CONST_DOUBLE
-	  && fp_zero_operand (operands[1]))
+      if (TARGET_VIS && fp_zero_operand (operands[1], DFmode))
 	goto movdf_is_ok;
 
       /* emit_group_store will send such bogosity to us when it is
@@ -3604,18 +3595,16 @@
 
 (define_insn "*clear_tf"
   [(set (match_operand:TF 0 "register_operand" "=e")
-        (match_operand:TF 1 "const_double_operand" ""))]
-  "TARGET_VIS
-   && fp_zero_operand (operands[1])"
+        (match_operand:TF 1 "fp_zero_operand" ""))]
+  "TARGET_VIS"
   "#"
   [(set_attr "type" "fpmove")
    (set_attr "length" "2")])
 
 (define_split
   [(set (match_operand:TF 0 "register_operand" "")
-        (match_operand:TF 1 "const_double_operand" ""))]
-  "TARGET_VIS && reload_completed
-   && fp_zero_operand (operands[1])"
+        (match_operand:TF 1 "fp_zero_operand" ""))]
+  "TARGET_VIS && reload_completed"
   [(set (subreg:DF (match_dup 0) 0) (match_dup 1))
    (set (subreg:DF (match_dup 0) 8) (match_dup 1))]
   "
@@ -3626,20 +3615,16 @@
 
 (define_insn "*clear_tfp"
   [(set (match_operand:TF 0 "memory_operand" "=m")
-        (match_operand:TF 1 "const_double_operand" ""))]
-  "! TARGET_LIVE_G0
-   && TARGET_V9
-   && fp_zero_operand (operands[1])"
+        (match_operand:TF 1 "fp_zero_operand" ""))]
+  "! TARGET_LIVE_G0 && TARGET_V9"
   "#"
   [(set_attr "type" "fpmove")
    (set_attr "length" "2")])
 
 (define_split
   [(set (match_operand:TF 0 "memory_operand" "=m")
-        (match_operand:TF 1 "const_double_operand" ""))]
-  "! TARGET_LIVE_G0
-   && TARGET_V9 && reload_completed
-   && fp_zero_operand (operands[1])"
+        (match_operand:TF 1 "fp_zero_operand" ""))]
+  "! TARGET_LIVE_G0 && TARGET_V9 && reload_completed"
   [(set (subreg:DF (match_dup 0) 0) (match_dup 1))
    (set (subreg:DF (match_dup 0) 8) (match_dup 1))]
   "
@@ -3658,9 +3643,7 @@
   if (GET_CODE (operands[0]) == REG
       && CONSTANT_P (operands[1]))
     {
-      if (TARGET_VIS
-          && GET_CODE (operands[1]) == CONST_DOUBLE
-	  && fp_zero_operand (operands[1]))
+      if (TARGET_VIS && fp_zero_operand (operands[1], TFmode))
 	goto movtf_is_ok;
 
       /* emit_group_store will send such bogosity to us when it is

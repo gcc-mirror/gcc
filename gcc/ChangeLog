@@ -1,3 +1,11 @@
+2000-02-01  Richard Henderson  <rth@cygnus.com>
+
+	* sparc.c (fp_zero_operand): Turn into a normal predicate.
+	Use CONST0_RTX.  Update all callers.
+	* sparc.h, sparc-protos.h: Update accordingly.
+	* sparc.md (fp mov insns): Use fp_zero_operand directly
+	where applicable.
+
 Wed Feb  2 02:59:45 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* tm.texi (Values in Registers): Fix typo in HARD_REGNO_NREGS
