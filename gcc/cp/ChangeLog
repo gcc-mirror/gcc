@@ -1,3 +1,7 @@
+1998-05-31  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst): Always copy BINFO_BASETYPES.
+
 1998-05-29  scott snyder  <snyder@d0sgif.fnal.gov>
 
 	* tree.c (layout_basetypes): If we change TYPE_SIZE, change
