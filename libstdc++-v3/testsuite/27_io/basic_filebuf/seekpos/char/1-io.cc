@@ -88,7 +88,7 @@ void test05()
     VERIFY( off_1 > off_2 );
     fb.sputn("\nof the wonderful things he does!!\nok", 37);
     fb.pubsync();
-    VERIFY( !fb.write_position() );
+    VERIFY( fb.write_position() );
     VERIFY( !fb.read_position() );
     fb.close();
     VERIFY( !fb.is_open() );

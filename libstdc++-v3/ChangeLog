@@ -1,3 +1,92 @@
+2003-11-03  Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/12790
+	* include/bits/fstream.tcc: Delete _M_last_overflowed.
+	(basic_filebuf::basic_filebuf): Initialize _M_state_last.
+	(basic_filebuf::open, basic_filebuf::close): Assign
+	_M_state_beg to _M_state_cur and _M_state_last.
+	(basic_filebuf::close): Call _M_terminate_output to handle
+	unshift and flushing.
+	(basic_filebuf::underflow): Assign _M_state_last, throw
+	exception instead of calling abort when codecvt::max_length()
+	is bad.
+	(basic_filebuf::seekoff): Use _M_state_last when calling
+	codecvt::length(), pass correct state to _M_seek.
+	(basic_filebuf::seekpos): Pass __pos.state() to _M_seek.
+	(basic_filebuf::_M_seek): Add __state_type parameter,
+	set _M_state_cur correctly, store the resulting state in
+	the return value and use _M_terminate_output to handle
+	flushing and unshift.
+	(basic_filebuf::_M_terminate_output): Flush contents of
+	output buffer, if any, then call codecvt::unshift as
+	needed and output the result.
+	(basic_filebuf::sync): Move here, don't modify _M_writing
+	or _M_reading.
+	
+	* include/std/std_fstream.h
+	(basic_filebuf::_M_state_last): Declare it.
+	(basic_filebuf::_M_last_overflowed): Delete.
+	(basic_filebuf::_M_seek): Add __state_type parameter.
+	(basic_filebuf::sync): Declare only.
+	(basic_filebuf::_M_output_unshift): Delete.
+	(basic_filebuf::_M_terminate_output): Declare it.
+	
+	* testsuite/testsuite_character.h:
+	Define character class and state class plus char_traits and
+	codecvt specializations for same for testing support for
+	stateful encodings.
+	
+	* testsuite/27_io/basic_filebuf/close/12790-1.cc,
+	* testsuite/27_io/basic_filebuf/close/char/12790-1.cc,
+	* testsuite/27_io/basic_filebuf/close/char/12790-2.cc,
+	* testsuite/27_io/basic_filebuf/close/char/12790-3.cc,
+	* testsuite/27_io/basic_filebuf/close/char/12790-4.cc,
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-1.cc,
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-2.cc,
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-3.cc,
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-4.cc,
+	* testsuite/27_io/basic_filebuf/open/12790-1.cc,
+	* testsuite/27_io/basic_filebuf/seekoff/12790-1.cc,
+	* testsuite/27_io/basic_filebuf/seekoff/12790-2.cc,
+	* testsuite/27_io/basic_filebuf/seekoff/12790-3.cc,
+	* testsuite/27_io/basic_filebuf/seekoff/12790-4.cc,
+	* testsuite/27_io/basic_filebuf/seekoff/char/12790-1.cc,
+	* testsuite/27_io/basic_filebuf/seekoff/char/12790-2.cc,
+	* testsuite/27_io/basic_filebuf/seekoff/char/12790-3.cc,
+	* testsuite/27_io/basic_filebuf/seekoff/char/12790-4.cc,
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/12790-1.cc,
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/12790-2.cc,
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/12790-3.cc,
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/12790-4.cc,
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/3.cc,
+	* testsuite/27_io/basic_filebuf/seekpos/12790-1.cc,
+	* testsuite/27_io/basic_filebuf/seekpos/12790-2.cc,
+	* testsuite/27_io/basic_filebuf/seekpos/12790-3.cc,
+	* testsuite/27_io/basic_filebuf/seekpos/char/12790-1.cc,
+	* testsuite/27_io/basic_filebuf/seekpos/char/12790-2.cc,
+	* testsuite/27_io/basic_filebuf/seekpos/char/12790-3.cc,
+	* testsuite/27_io/basic_filebuf/seekpos/char/12790-4.cc,
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/1.cc,
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/12790-1.cc,
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/12790-2.cc,
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/12790-3.cc,
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/12790-4.cc,
+	* testsuite/27_io/basic_filebuf/sync/char/1.cc,
+	* testsuite/27_io/basic_filebuf/sync/wchar_t/1.cc:
+	New tests.
+
+	* testsuite/27_io/basic_filebuf/3.cc,
+	* testsuite/27_io/basic_filebuf/seekoff/10132-2.cc,
+	* testsuite/27_io/basic_filebuf/seekpos/10132-3.cc,
+	* testsuite/27_io/basic_fstream/3.cc,
+	* testsuite/27_io/basic_ifstream/3.cc,
+	* testsuite/27_io/basic_ofstream/3.cc:
+	Use streamoff as off_type and fpos<state_type> as pos_type.
+
+	* testsuite/27_io/basic_filebuf/seekpos/char/1-io.cc,
+	* testsuite/27_io/basic_filebuf/seekpos/char/1-out.cc:
+	Check that sync does *not* set _M_writing to false.
+
 2003-11-03  Anthony Green  <green@redhat.com>
 
 	* libmath/stubs.c (sqrtf, sqrtl): Reorder so they appear before

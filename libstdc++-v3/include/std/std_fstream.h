@@ -60,6 +60,11 @@ namespace std
    *  sequences.  Many of its sematics are described in terms of similar
    *  behavior in the Standard C Library's @c FILE streams.
   */
+  // Requirements on traits_type, specific to this class:
+  // traits_type::pos_type must be fpos<traits_type::state_type>
+  // traits_type::off_type must be streamoff
+  // traits_type::state_type must be Assignable and DefaultConstructable,
+  // and traits_type::state_type() must be the initial state for codecvt.
   template<typename _CharT, typename _Traits>
     class basic_filebuf : public basic_streambuf<_CharT, _Traits>
     {
@@ -111,14 +116,32 @@ namespace std
       */
       ios_base::openmode 	_M_mode;
 
-      // Current and beginning state type for codecvt.
+      // Beginning state type for codecvt.
+      /**
+       *  @if maint
+       *  @doctodo
+       *  @endif
+      */
+      __state_type 		_M_state_beg;
+
+      // During output, the state that corresponds to pptr(),
+      // during input, the state that corresponds to egptr() and
+      // _M_ext_next.
       /**
        *  @if maint
        *  @doctodo
        *  @endif
       */
       __state_type		_M_state_cur;
-      __state_type 		_M_state_beg;
+
+      // Not used for output. During input, the state that corresponds
+      // to eback() and _M_ext_buf.
+      /**
+       *  @if maint
+       *  @doctodo
+       *  @endif
+      */
+      __state_type		_M_state_last;
 
       /**
        *  @if maint
@@ -155,9 +178,6 @@ namespace std
       */ 
       bool                      _M_reading;
       bool                      _M_writing;
-
-      // XXX Needed?
-      bool			_M_last_overflowed;
 
       //@{
       /**
@@ -386,33 +406,11 @@ namespace std
        *  @endif
       */
       pos_type
-      _M_seek(off_type __off, ios_base::seekdir __way);
+      _M_seek(off_type __off, ios_base::seekdir __way, __state_type __state);
 
       // [documentation is inherited]
       virtual int
-      sync()
-      {
-	int __ret = 0;
-
-	// Make sure that the internal buffer resyncs its idea of
-	// the file position with the external file.
-	// NB: _M_file.sync() will be called within.
-	if (this->pbase() < this->pptr())
-	  {
-	    const int_type __tmp = this->overflow();
-	    if (traits_type::eq_int_type(__tmp, traits_type::eof()))
-	      __ret = -1;
-	    else
-	      {
-		_M_set_buffer(-1);
-		_M_reading = false;
-		_M_writing = false;
-	      }
-	  }
-
-	_M_last_overflowed = false;
-	return __ret;
-      }
+      sync();
 
       // [documentation is inherited]
       virtual void
@@ -443,13 +441,14 @@ namespace std
       virtual streamsize
       xsputn(const char_type* __s, streamsize __n);
 
+      // Flushes output buffer, then writes unshift sequence.
       /**
        *  @if maint
        *  @doctodo
        *  @endif
       */
-      void
-      _M_output_unshift();
+      bool
+      _M_terminate_output();
 
       /**
        *  @if maint 
