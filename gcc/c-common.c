@@ -666,34 +666,56 @@ static tree handle_pure_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static const struct attribute_spec c_common_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "packed",                 0, 0, false, false, false, handle_packed_attribute },
-  { "nocommon",               0, 0, true,  false, false, handle_nocommon_attribute },
-  { "common",                 0, 0, true,  false, false, handle_common_attribute },
+  { "packed",                 0, 0, false, false, false,
+      			      handle_packed_attribute },
+  { "nocommon",               0, 0, true,  false, false,
+			      handle_nocommon_attribute },
+  { "common",                 0, 0, true,  false, false,
+			      handle_common_attribute },
   /* FIXME: logically, noreturn attributes should be listed as
      "false, true, true" and apply to function types.  But implementing this
      would require all the places in the compiler that use TREE_THIS_VOLATILE
      on a decl to identify non-returning functions to be located and fixed
      to check the function type instead.  */
-  { "noreturn",               0, 0, true,  false, false, handle_noreturn_attribute },
-  { "volatile",               0, 0, true,  false, false, handle_noreturn_attribute },
-  { "unused",                 0, 0, false, false, false, handle_unused_attribute },
+  { "noreturn",               0, 0, true,  false, false,
+			      handle_noreturn_attribute },
+  { "volatile",               0, 0, true,  false, false,
+			      handle_noreturn_attribute },
+  { "unused",                 0, 0, false, false, false,
+			      handle_unused_attribute },
   /* The same comments as for noreturn attributes apply to const ones.  */
-  { "const",                  0, 0, true,  false, false, handle_const_attribute },
-  { "transparent_union",      0, 0, false, false, false, handle_transparent_union_attribute },
-  { "constructor",            0, 0, true,  false, false, handle_constructor_attribute },
-  { "destructor",             0, 0, true,  false, false, handle_destructor_attribute },
-  { "mode",                   1, 1, true,  false, false, handle_mode_attribute },
-  { "section",                1, 1, true,  false, false, handle_section_attribute },
-  { "aligned",                0, 1, false, false, false, handle_aligned_attribute },
-  { "format",                 3, 3, true,  false, false, handle_format_attribute },
-  { "format_arg",             1, 1, true,  false, false, handle_format_arg_attribute },
-  { "weak",                   0, 0, true,  false, false, handle_weak_attribute },
-  { "alias",                  1, 1, true,  false, false, handle_alias_attribute },
-  { "no_instrument_function", 0, 0, true,  false, false, handle_no_instrument_function_attribute },
-  { "no_check_memory_usage",  0, 0, true,  false, false, handle_no_check_memory_usage_attribute },
-  { "malloc",                 0, 0, true,  false, false, handle_malloc_attribute },
-  { "no_stack_limit",         0, 0, true,  false, false, handle_no_limit_stack_attribute },
-  { "pure",                   0, 0, true,  false, false, handle_pure_attribute },
+  { "const",                  0, 0, true,  false, false,
+			      handle_const_attribute },
+  { "transparent_union",      0, 0, false, false, false,
+			      handle_transparent_union_attribute },
+  { "constructor",            0, 0, true,  false, false,
+			      handle_constructor_attribute },
+  { "destructor",             0, 0, true,  false, false,
+			      handle_destructor_attribute },
+  { "mode",                   1, 1, true,  false, false,
+			      handle_mode_attribute },
+  { "section",                1, 1, true,  false, false,
+			      handle_section_attribute },
+  { "aligned",                0, 1, false, false, false,
+			      handle_aligned_attribute },
+  { "format",                 3, 3, true,  false, false,
+			      handle_format_attribute },
+  { "format_arg",             1, 1, true,  false, false,
+			      handle_format_arg_attribute },
+  { "weak",                   0, 0, true,  false, false,
+			      handle_weak_attribute },
+  { "alias",                  1, 1, true,  false, false,
+			      handle_alias_attribute },
+  { "no_instrument_function", 0, 0, true,  false, false,
+			      handle_no_instrument_function_attribute },
+  { "no_check_memory_usage",  0, 0, true,  false, false,
+			      handle_no_check_memory_usage_attribute },
+  { "malloc",                 0, 0, true,  false, false,
+			      handle_malloc_attribute },
+  { "no_stack_limit",         0, 0, true,  false, false,
+			      handle_no_limit_stack_attribute },
+  { "pure",                   0, 0, true,  false, false,
+			      handle_pure_attribute },
   { NULL,                     0, 0, false, false, false, NULL }
 };
 
@@ -704,7 +726,8 @@ static const struct attribute_spec default_lang_attribute_table[] =
 };
 
 /* Table of machine-independent attributes for a particular language.  */
-const struct attribute_spec *lang_attribute_table = default_lang_attribute_table;
+const struct attribute_spec *lang_attribute_table
+  = default_lang_attribute_table;
 
 /* Initialize attribute tables, and make some sanity checks
    if --enable-checking.  */
@@ -939,6 +962,7 @@ decl_attributes (node, attributes, flags)
 
 /* Handle a "packed" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_packed_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -976,6 +1000,7 @@ handle_packed_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "nocommon" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_nocommon_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -997,6 +1022,7 @@ handle_nocommon_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "common" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_common_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -1018,6 +1044,7 @@ handle_common_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "noreturn" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_noreturn_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -1047,6 +1074,7 @@ handle_noreturn_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "unused" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_unused_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -1083,6 +1111,7 @@ handle_unused_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "const" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_const_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -1112,6 +1141,7 @@ handle_const_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "transparent_union" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_transparent_union_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -1158,6 +1188,7 @@ handle_transparent_union_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "constructor" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_constructor_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -1187,6 +1218,7 @@ handle_constructor_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "destructor" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_destructor_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -1216,6 +1248,7 @@ handle_destructor_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "mode" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_mode_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -1287,6 +1320,7 @@ handle_mode_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "section" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_section_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -1343,6 +1377,7 @@ handle_section_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "aligned" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_aligned_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -1426,6 +1461,7 @@ handle_aligned_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "weak" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_weak_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -1441,6 +1477,7 @@ handle_weak_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle an "alias" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_alias_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -1490,6 +1527,7 @@ handle_alias_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "no_instrument_function" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_no_instrument_function_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -1522,6 +1560,7 @@ handle_no_instrument_function_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "no_check_memory_usage" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_no_check_memory_usage_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -1554,6 +1593,7 @@ handle_no_check_memory_usage_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "malloc" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_malloc_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -1576,6 +1616,7 @@ handle_malloc_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "no_limit_stack" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_no_limit_stack_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -1608,6 +1649,7 @@ handle_no_limit_stack_attribute (node, name, args, flags, no_add_attrs)
 
 /* Handle a "pure" attribute; arguments as in
    struct attribute_spec.handler.  */
+
 static tree
 handle_pure_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
