@@ -1,5 +1,9 @@
 2004-06-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/compat/struct-align-2_x.c: Include <limits.h>.
+	Use INT_MAX instead of __INT_MAX__.
+	* gcc.dg/compat/struct-align-2_y.c: Likewise.
+
 	* gcc.dg/compat/compat-common.h (CINT, CDBL): Define.
 	* gcc.dg/compat/scalar-return-3_x.c: Use it.
 	* gcc.dg/compat/scalar-return-3_y.c: Use it.
@@ -9,8 +13,6 @@
 	* gcc.dg/compat/scalar-by-value-3_y.c: Use it.
 	* gcc.dg/compat/scalar-by-value-4_x.c: Use it.
 	* gcc.dg/compat/scalar-by-value-4_y.c: Use it.
-
-2004-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/range-test-1.c: New test.
 	* g++.dg/opt/range-test-1.C: New test.
