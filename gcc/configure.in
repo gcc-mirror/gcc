@@ -3039,9 +3039,9 @@ fi
 # and configure language subdirectories
 AC_OUTPUT($all_outputs,
 [
-case x$CONFIG_HEADERS in
-xauto-host.h:config.in)
-echo > cstamp-h ;;
+case ${CONFIG_HEADERS} in
+  *auto-host.h:config.in*)
+  echo > cstamp-h ;;
 esac
 # Make sure all the subdirs exist.
 for d in $subdirs
