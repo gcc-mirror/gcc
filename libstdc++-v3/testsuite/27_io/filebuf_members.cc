@@ -23,9 +23,13 @@
 // various tests for filebuf::open() and filebuf::close() including
 // the non-portable functionality in the libstdc++-v3 IO library
 
+#include <iostream>
 #include <fstream>
 #include <unistd.h>
+#include <signal.h>
 #include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <testsuite_hooks.h>
 
 // verify that std::filebuf doesn't close files that it didn't open
@@ -80,6 +84,7 @@ test_01()
 int
 test_02()
 {
+  bool test = true;
   int first_fd = ::open(name_01, O_RDONLY);
   VERIFY( first_fd != -1 );
   FILE* first_file = ::fdopen(first_fd, "r");
@@ -88,7 +93,7 @@ test_02()
 
   int second_fd = fb.fd();
 
-  bool test = first_fd == second_fd;
+  test = first_fd == second_fd;
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -97,10 +102,64 @@ test_02()
   return test;
 }
 
+// libstdc++/2913, libstdc++/4879
+// John Fardo  <jfardo@laurelnetworks.com>, Brad Garcia <garsh@attbi.com>
+void
+test_03()
+{
+  signal(SIGPIPE, SIG_IGN);
+  
+  if (0 != mkfifo("xxx", S_IRWXU))
+    {
+      std::cerr << "failed to creat fifo" << std::endl;
+      exit(-1);
+    }
+  
+  int fval = fork();
+  if (fval == -1)
+    {
+      std::cerr << "failed to fork" << std::endl;
+      unlink("xxx");
+      exit(-1);
+    }
+  else if (fval == 0)
+    {
+      std::ifstream ifs("xxx");
+      sleep(1);
+      ifs.close();
+      exit(0);
+    }
+
+  std::ofstream ofs("xxx");
+  sleep(2);
+  ofs.put('t');
+
+  /*
+   * ISO/IED 14882:1998(E) 27.8.1.10.4
+   *
+   * void close();
+   *
+   * Effects:  Calls rdbuf()->close() and, if that function fails
+   * (returns a null pointer), calls setstate(failbit)...
+   */
+  ofs.close();
+  if (!(ofs.rdstate() & std::ios::failbit))
+    {
+      std::cerr << "fail bit was not set!" << std::endl;
+      unlink("xxx");
+      exit(-1);
+    }
+
+  unlink("xxx");
+  exit(0);
+}
+
 int
 main()
 {
   test_01();
   test_02();
+
+  test_03();
   return 0;
 }

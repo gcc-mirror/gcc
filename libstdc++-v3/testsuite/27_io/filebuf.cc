@@ -347,16 +347,15 @@ bool test03() {
   for (int i = 50; i < 32 + 29; ++i)
     fb_02.sputc(char(i));
   fb_02.pubseekoff(0, std::ios_base::beg, std::ios_base::out);
-  strmsz_1 = fb_02.in_avail();
   c1 = fb_02.sgetc(); 
+  strmsz_1 = fb_02.in_avail();
   c2 = fb_02.sungetc();
-  strmsz_2 = fb_02.in_avail();
   c3 = fb_02.sgetc();
-  VERIFY( c1 == c2 );
-  VERIFY( c3 == c2 );
-  VERIFY( c1 == c3 );
-  VERIFY( c2 == traits_type::eof() );
-  VERIFY( strmsz_1 == strmsz_2 );
+  strmsz_2 = fb_02.in_avail();
+  VERIFY( c1 != c2 );
+  VERIFY( c2 == c3 );
+  VERIFY( c1 == traits_type::eof() );
+  VERIFY( strmsz_1 != strmsz_2 );
   //test for _in_cur == _in_end
   fb_03.pubseekoff(0, std::ios_base::end);
   strmsz_1 = fb_03.in_avail(); // -1 cuz at the end
@@ -382,7 +381,7 @@ bool test03() {
   fb_02.pubsync();		
   // 27filebuf-2.txt == 53 bytes after this.
   strmsz_2 = fb_02.in_avail();
-  VERIFY( strmsz_2 == -1 );
+  VERIFY( strmsz_2 == 1 );
   VERIFY( strmsz_2 == strmsz_1 );
   strmsz_1 = fb_03.in_avail(); 
   fb_03.pubsync();

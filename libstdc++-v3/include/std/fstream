@@ -182,12 +182,11 @@ namespace std
       sync(void)
       {
 	bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
-	if (__testput)
-	  {
-            // Make sure that libio resyncs its idea of the file position
-            // with the external file.
-            _M_file->sync();
 
+	// Make sure that the internal buffer resyncs its idea of
+	// the file position with the external file.
+	if (__testput && !_M_file->sync())
+	  {
 	    // Need to restore current position. This interpreted as
 	    // the position of the external byte sequence (_M_file)
 	    // plus the offset in the current internal buffer
@@ -354,7 +353,7 @@ namespace std
       close(void)
       { 
 	if (!_M_filebuf.close())
-	  setstate(ios_base::failbit); 
+	  this->setstate(ios_base::failbit); 
       }
     };
 

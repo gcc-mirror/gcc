@@ -1,3 +1,18 @@
+2002-01-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+        libstdc++/2913
+        libstdc++/4879
+	* include/bits/fstream.tcc (filebuf::_M_really_overflow): Test
+	return value of _M_file->sync().
+	(filebuf::showmanyc): Check for is_open.
+	* include/std/fstream (filebuf::sync): Tweak.
+	* testsuite/27_io/filebuf.cc: Tweak.
+
+2002-01-08  John Fardo  <jfardo@laurelnetworks.com>
+	    Brad Garcia  <garsh@attbi.com>
+	
+	* testsuite/27_io/filebuf_members.cc: Add test.
+	
 2002-01-07  Benjamin Kosnik  <bkoz@redhat.com>
  	    Craig Rodrigues  <rodrigc@mediaone.net>
 
