@@ -1,3 +1,9 @@
+Thu Nov 15 11:06:25 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* regex.c (PREFIX): Provide an alternate definition for
+	non-ANSI/ISO compilers.
+	(ARG_PREFIX): Likewise.
+
 2001-11-12  Jim Meyering  <meyering@lucent.com>
 
 	* obstack.c (_): Honor the setting of ENABLE_NLS.  Otherwise,
