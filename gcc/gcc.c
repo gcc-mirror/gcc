@@ -259,6 +259,10 @@ static void error		PROTO(());
 void fancy_abort ();
 char *xmalloc ();
 char *xrealloc ();
+
+#ifdef LANG_SPECIFIC_DRIVER
+extern void lang_specific_driver PROTO ((void (*) (), int *, char ***));
+#endif
 
 /* Specs are strings containing lines, each of which (if not blank)
 is made up of a program name, and arguments separated by spaces.
@@ -1210,8 +1214,9 @@ static int argbuf_length;
 
 static int argbuf_index;
 
+#ifdef MKTEMP_EACH_FILE
 /* This is the list of suffixes and codes (%g/%u/%U) and the associated
-   temp file.  Used only if MKTEMP_EACH_FILE.  */
+   temp file.  */
 
 static struct temp_name {
   char *suffix;		/* suffix associated with the code.  */
@@ -1221,6 +1226,7 @@ static struct temp_name {
   int filename_length;	/* strlen (filename).  */
   struct temp_name *next;
 } *temp_names;
+#endif
 
 /* Number of commands executed so far.  */
 
