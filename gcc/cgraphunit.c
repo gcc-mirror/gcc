@@ -300,7 +300,9 @@ cgraph_assemble_pending_functions (void)
 
       cgraph_nodes_queue = cgraph_nodes_queue->next_needed;
       n->next_needed = NULL;
-      if (!n->global.inlined_to && !DECL_EXTERNAL (n->decl))
+      if (!n->global.inlined_to
+	  && !n->alias
+	  && !DECL_EXTERNAL (n->decl))
 	{
 	  cgraph_expand_function (n);
 	  output = true;

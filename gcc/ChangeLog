@@ -1,3 +1,10 @@
+2005-03-30  Richard Henderson  <rth@redhat.com>
+
+	* cgraph.h (struct cgraph_node): Add alias.
+	* varasm.c (assemble_alias): Set it.
+	* cgraphunit.c (cgraph_assemble_pending_functions): Check it and
+	avoid calling cgraph_expand_function.
+
 2005-03-30  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/772
