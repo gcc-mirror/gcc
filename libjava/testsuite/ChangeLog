@@ -1,8 +1,13 @@
+2004-01-07  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	PR libgcj/13011:
+	* libjava.jar/simple.jar: Add a working MANIFEST.MF.
+
 2003-12-03  Ralph Loader  <rcl@ihug.co.nz>
 
 	PR java/12374:
 	* libjava.compile/PR12374.java: New file.
-	
+
 2003-12-01  Jeff Sturm  <jsturm@one-point.com>
 
 	PR optimization/13024
