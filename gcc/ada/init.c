@@ -547,7 +547,7 @@ __gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
 }
 
-/* Routines called by 5amastop.adb.  */
+/* Routines called by s-mastop-tru64.adb.  */
 
 #define SC_GP 29
 
@@ -558,7 +558,7 @@ __gnat_get_code_loc (struct sigcontext *context)
 }
 
 void
-__gnat_enter_handler ( struct sigcontext *context, char *pc)
+__gnat_enter_handler (struct sigcontext *context, char *pc)
 {
   context->sc_pc = (long) pc;
   context->sc_regs[SC_GP] = exc_lookup_gp (pc);
@@ -578,11 +578,29 @@ __gnat_machine_state_length (void)
 #elif defined (__hpux__)
 
 #include <signal.h>
-
-static void __gnat_error_handler (int);
+#include <sys/ucontext.h>
 
 static void
-__gnat_error_handler (int sig)
+__gnat_error_handler (int sig, siginfo_t *siginfo, void *ucontext);
+
+/* __gnat_adjust_context_for_raise - see comments along with the default
+   version later in this file.  */
+
+#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
+
+void
+__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
+{
+  mcontext_t *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
+
+  if (UseWideRegs (mcontext))
+    mcontext->ss_wide.ss_32.ss_pcoq_head_lo ++;
+  else
+    mcontext->ss_narrow.ss_pcoq_head ++;
+}
+
+static void
+__gnat_error_handler (int sig, siginfo_t *siginfo, void *ucontext)
 {
   struct Exception_Data *exception;
   char *msg;
@@ -609,6 +627,8 @@ __gnat_error_handler (int sig)
       exception = &program_error;
       msg = "unhandled signal";
     }
+
+  __gnat_adjust_context_for_raise (sig, ucontext);
 
   Raise_From_Signal_Handler (exception, msg);
 }
@@ -637,8 +657,8 @@ __gnat_install_handler (void)
 
   sigaltstack (&stack, NULL);
 
-  act.sa_handler = __gnat_error_handler;
-  act.sa_flags = SA_NODEFER | SA_RESTART | SA_ONSTACK;
+  act.sa_sigaction = __gnat_error_handler;
+  act.sa_flags = SA_NODEFER | SA_RESTART | SA_ONSTACK | SA_SIGINFO;
   sigemptyset (&act.sa_mask);
 
   /* Do not install handlers if interrupt state is "System" */
@@ -835,9 +855,16 @@ __gnat_initialize (void *eh ATTRIBUTE_UNUSED)
       implementation of __gnat_portable_no_block_spawn, __gnat_portable_wait */
    __gnat_plist_init();
 
+   /* Note that we do not activate this for the compiler itself to avoid a
+      bootstrap path problem.  Older version of gnatbind will generate a call
+      to __gnat_initialize() without argument. Therefore we cannot use eh in
+      this case.  It will be possible to remove the following #ifdef at some
+      point.  */
+#ifdef IN_RTS
    /* Install the Structured Exception handler.  */
    if (eh)
      __gnat_install_SEH_handler (eh);
+#endif
 }
 
 /***************************************/
@@ -1285,6 +1312,70 @@ struct descriptor_s {unsigned short len, mbz; char *adr; };
 
 long __gnat_error_handler (int *, void *);
 
+/* To deal with VMS conditions and their mapping to Ada exceptions,
+   the __gnat_error_handler routine below is installed as an exception
+   vector having precedence over DEC frame handlers.  Some conditions
+   still need to be handled by such handlers, however, in which case
+   __gnat_error_handler needs to return SS$_RESIGNAL.  Consider for
+   instance the use of a third party library compiled with DECAda and
+   performing it's own exception handling internally.
+
+   To allow some user-level flexibility, which conditions should be
+   resignaled is controlled by a predicate function, provided with the
+   condition value and returning a boolean indication stating whether
+   this condition should be resignaled or not.
+
+   That predicate function is called indirectly, via a function pointer,
+   by __gnat_error_handler, and changing that pointer is allowed to the
+   the user code by way of the __gnat_set_resignal_predicate interface.
+
+   The user level function may then implement what it likes, including
+   for instance the maintenance of a dynamic data structure if the set
+   of to be resignalled conditions has to change over the program's
+   lifetime.
+
+   ??? This is not a perfect solution to deal with the possible
+   interactions between the GNAT and the DECAda exception handling
+   models and better (more general) schemes are studied.  This is so
+   just provided as a conveniency workaround in the meantime, and
+   should be use with caution since the implementation has been kept
+   very simple.  */
+
+typedef int
+resignal_predicate (int code);
+
+/* Default GNAT predicate for resignaling conditions.  */
+
+static int
+__gnat_default_resignal_p (int code)
+{
+  return
+    code == CMA$_EXIT_THREAD
+    || code == SS$_DEBUG /* Gdb attach, resignal to merge activate gdbstub. */
+    || code == 1409786   /* Nickerson bug #33 ??? */
+    || code == 1381050   /* Nickerson bug #33 ??? */
+    || code == 20480426  /* RDB-E-STREAM_EOF */
+    || code == 11829410  /* Resignalled as Use_Error for CE10VRC */
+  ;
+}
+
+/* Static pointer to predicate that the __gnat_error_handler exception
+   vector invokes to determine if it should resignal a condition.  */
+
+static resignal_predicate * __gnat_resignal_p = __gnat_default_resignal_p;
+
+/* User interface to change the predicate pointer to PREDICATE. Reset to
+   the default if PREDICATE is null.  */
+
+void
+__gnat_set_resignal_predicate (resignal_predicate * predicate)
+{
+  if (predicate == 0)
+    __gnat_resignal_p = __gnat_default_resignal_p;
+  else
+    __gnat_resignal_p = predicate;
+}
+
 long
 __gnat_error_handler (int *sigargs, void *mechargs)
 {
@@ -1301,30 +1392,10 @@ __gnat_error_handler (int *sigargs, void *mechargs)
   long curr_invo_handle;
   long *mstate;
 
-  /* Resignaled condtions aren't effected by by pragma Import_Exception */
-
-  switch (sigargs[1])
-  {
-
-    case CMA$_EXIT_THREAD:
-      return SS$_RESIGNAL;
-
-    case SS$_DEBUG: /* Gdb attach, resignal to merge activate gdbstub. */
-      return SS$_RESIGNAL;
-
-    case 1409786: /* Nickerson bug #33 ??? */
-      return SS$_RESIGNAL;
-
-    case 1381050: /* Nickerson bug #33 ??? */
-      return SS$_RESIGNAL;
-
-    case 20480426: /* RDB-E-STREAM_EOF */
-      return SS$_RESIGNAL;
-
-    case 11829410: /* Resignalled as Use_Error for CE10VRC */
-      return SS$_RESIGNAL;
-
-  }
+  /* Check for conditions to resignal which aren't effected by pragma
+     Import_Exception.  */
+  if (__gnat_resignal_p (sigargs [1]))
+    return SS$_RESIGNAL;
 
 #ifdef IN_RTS
   /* See if it's an imported exception. Beware that registered exceptions
@@ -1900,4 +1971,44 @@ void
 __gnat_init_float (void)
 {
 }
+#endif
+
+/***********************************/
+/* __gnat_adjust_context_for_raise */
+/***********************************/
+
+#ifndef HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
+
+/* All targets without a specific version will use an empty one */
+
+/* UCONTEXT is a pointer to a context structure received by a signal handler
+   about to propagate an exception. Adjust it to compensate the fact that the
+   generic unwinder thinks the corresponding PC is a call return address.  */
+
+void
+__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
+				 void *ucontext ATTRIBUTE_UNUSED)
+{
+  /* The point is that the interrupted context PC typically is the address
+     that we should search an EH region for, which is different from the call
+     return address case. The target independant part of the GCC unwinder
+     don't differentiate the two situations, so we compensate here for the
+     adjustments it will blindly make.
+
+     signo is passed because on some targets for some signals the PC in
+     context points to the instruction after the faulting one, in which case
+     the unwinder adjustment is still desired.  */
+
+  /* On a number of targets, we have arranged for the adjustment to be
+     performed by the MD_FALLBACK_FRAME_STATE circuitry, so we don't provide a
+     specific instance of this routine.  The MD_FALLBACK doesn't have access
+     to the signal number, though, so the compensation is systematic there and
+     might be wrong in some cases.  */
+
+  /* Having the compensation wrong leads to potential failures.  A very
+     typical case is what happens when there is no compensation and a signal
+     triggers for the first instruction in a region : the unwinder adjustment
+     has it search in the wrong EH region.  */
+}
+
 #endif

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,7 +88,10 @@ package body System.Interrupt_Management is
    -- Local Subprograms --
    -----------------------
 
-   procedure Notify_Exception (signo : Signal);
+   procedure Notify_Exception
+     (signo    : Signal;
+      siginfo  : System.Address;
+      ucontext : System.Address);
    --  This function identifies the Ada exception to be raised using
    --  the information when the system received a synchronous signal.
    --  Since this function is machine and OS dependent, different code
@@ -101,7 +104,24 @@ package body System.Interrupt_Management is
    Signal_Mask : aliased sigset_t;
    --  The set of signals handled by Notify_Exception
 
-   procedure Notify_Exception (signo : Signal) is
+   procedure Notify_Exception
+     (signo    : Signal;
+      siginfo  : System.Address;
+      ucontext : System.Address)
+   is
+      pragma Unreferenced (siginfo);
+
+      --  The GCC unwinder requires adjustments to the signal's machine
+      --  context to be able to properly unwind through the signal handler.
+      --  This is achieved by the target specific subprogram below, provided
+      --  by init.c to be usable by the non-tasking handler also.
+
+      procedure Adjust_Context_For_Raise
+        (signo    : Signal;
+         ucontext : System.Address);
+      pragma Import
+        (C, Adjust_Context_For_Raise, "__gnat_adjust_context_for_raise");
+
       Result  : Interfaces.C.int;
 
    begin
@@ -110,6 +130,11 @@ package body System.Interrupt_Management is
 
       Result := pthread_sigmask (SIG_UNBLOCK, Signal_Mask'Access, null);
       pragma Assert (Result = 0);
+
+      --  Perform the necessary context adjustments required by the GCC/ZCX
+      --  unwinder, harmless in the SJLJ case.
+
+      Adjust_Context_For_Raise (signo, ucontext);
 
       --  Check that treatment of exception propagation here
       --  is consistent with treatment of the abort signal in
@@ -179,12 +204,12 @@ begin
 
       --  Setting SA_SIGINFO asks the kernel to pass more than just the signal
       --  number argument to the handler when it is called. The set of extra
-      --  parameters typically includes a pointer to a structure describing
-      --  the interrupted context. Although the Notify_Exception handler does
-      --  not use this information, it is actually required for the GCC/ZCX
-      --  exception propagation scheme because on some targets (at least
-      --  alpha-tru64), the structure contents are not even filled when this
-      --  flag is not set.
+      --  parameters includes a pointer to the interrupted context, which the
+      --  ZCX propagation scheme needs.
+
+      --  Most man pages for sigaction mention that sa_sigaction should be set
+      --  instead of sa_handler when SA_SIGINFO is on.  In practice, the two
+      --  fields are actually union'ed and located at the same offset.
 
       --  On some targets, we set sa_flags to SA_NODEFER so that during the
       --  handler execution we do not change the Signal_Mask to be masked for
