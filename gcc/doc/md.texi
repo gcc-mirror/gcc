@@ -71,7 +71,7 @@ named @code{define_insn} or a @code{define_expand}.  The compiler will
 choose the pattern with the right name and apply the operands according
 to the documentation later in this chapter, without regard for the RTL
 template or operand constraints.  Note that the names the compiler looks
-for are hard-coded in the compiler - it will ignore unnamed patterns and
+for are hard-coded in the compiler---it will ignore unnamed patterns and
 patterns with names it doesn't know about, but if you don't provide a
 named pattern it needs, it will abort.
 
@@ -1413,10 +1413,10 @@ Registers from r16 to r31
 Registers from r24 to r31.  These registers can be used in @samp{adiw} command
 
 @item e
-Pointer register (r26 - r31)
+Pointer register (r26--r31)
 
 @item b
-Base pointer register (r28 - r31)
+Base pointer register (r28--r31)
 
 @item q
 Stack pointer register (SPH:SPL)
@@ -1548,7 +1548,7 @@ do not use upper halves)
 that do use upper halves)
 
 @item R
-Legacy register --- equivalent to @code{r} class in i386 mode.
+Legacy register---equivalent to @code{r} class in i386 mode.
 (for non-8-bit registers used together with 8-bit upper halves in a single
 instruction)
 
@@ -3786,7 +3786,7 @@ this:
 in a @code{define_split}.  The @var{split-condition} is also used as in
 @code{define_split}, with the additional behavior that if the condition starts
 with @samp{&&}, the condition used for the split will be the constructed as a
-logical "and" of the split condition with the insn condition.  For example,
+logical ``and'' of the split condition with the insn condition.  For example,
 from i386.md:
 
 @smallexample
