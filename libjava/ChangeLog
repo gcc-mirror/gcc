@@ -1,3 +1,8 @@
+2004-01-08  Graydon Hoare  <graydon@redhat.com>
+
+	* javax/swing/JLayeredPane.java: Rewrite to accomodate
+	djee@redhat.com's recent inverse ordering of Container elements.
+
 2004-01-09  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/lang/ArrayHelper.java
