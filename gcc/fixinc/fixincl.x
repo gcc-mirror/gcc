@@ -4329,7 +4329,8 @@ tSCC zSolaris_WidecList[] =
  *  Machine/OS name selection pattern
  */
 tSCC* apzSolaris_WidecMachs[] = {
-        "*-*-solaris2.[0-5]*",
+        "*-*-solaris2.[0-5]",
+        "*-*-solaris2.[0-5].*",
         (const char*)NULL };
 
 /*

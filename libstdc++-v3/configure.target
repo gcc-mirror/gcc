@@ -154,13 +154,13 @@ case "${target_os}" in
   netbsd*)
     os_include_dir="os/bsd/netbsd"
     ;;
-  solaris2.5*)
+  solaris2.5 | solaris2.5.[0-9])
     os_include_dir="os/solaris/solaris2.5"
     ;;
-  solaris2.6*)
+  solaris2.6)
     os_include_dir="os/solaris/solaris2.6"
     ;;
-  solaris2.[789]*)
+  solaris2.[789] | solaris2.1[0-9])
     os_include_dir="os/solaris/solaris2.7"
     ;;
   windiss*)

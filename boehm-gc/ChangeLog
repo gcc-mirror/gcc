@@ -1,3 +1,10 @@
+2003-10-01  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in: Remove wildcard from Solaris 8-9/Intel and Solaris
+	2.3/SPARC, there are no micro versions.
+	Treat Solaris 10 and up alike.
+	* configure: Regenerate.
+
 2003-09-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* configure: Regenerate.
