@@ -7090,7 +7090,7 @@ pa_can_combine_p (new, anchor, floater, reversed, dest, src1, src2)
   INSN_CODE (new) = -1;
   insn_code_number = recog_memoized (new);
   if (insn_code_number < 0
-      || !constrain_operands (1))
+      || (extract_insn (new), ! constrain_operands (1)))
     return 0;
 
   if (reversed)
