@@ -136,7 +136,6 @@ extern void		gen_conditional_branch ();
 extern struct rtx_def * gen_int_relational ();
 extern void		init_cumulative_args ();
 extern int		large_int ();
-extern int		lui_int ();
 extern int		md_register_operand ();
 extern int		mips_address_cost ();
 extern void		mips_asm_file_end ();
@@ -1344,12 +1343,12 @@ extern enum reg_class mips_char_to_class[];
    : (C) == 'J' ? ((VALUE) == 0)					\
    : (C) == 'K' ? ((unsigned) (VALUE) < 0x10000)			\
    : (C) == 'L' ? (((VALUE) & 0xffff0000) == (VALUE))			\
-   : (C) == 'M' ? ((((VALUE) & 0xffff0000) != 0)			\
-		   && (((VALUE) & 0xffff0000) != 0xffff0000)		\
+   : (C) == 'M' ? ((((VALUE) & ~0x0000ffff) != 0)			\
+		   && (((VALUE) & ~0x0000ffff) != ~0x0000ffff)		\
 		   && ((VALUE) & 0x0000ffff) != 0)			\
-   : (C) == 'N' ? (((VALUE) & 0xffff0000) == 0xffff0000)		\
+   : (C) == 'N' ? (((VALUE) & ~0x0000ffff) == ~0x0000ffff)		\
    : (C) == 'O' ? (exact_log2 (VALUE) >= 0)				\
-   : (C) == 'P' ? ((VALUE) != 0 && (((VALUE) & 0xffff0000) == 0))	\
+   : (C) == 'P' ? ((VALUE) != 0 && (((VALUE) & ~0x0000ffff) == 0))	\
    : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.
