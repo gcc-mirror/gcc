@@ -295,8 +295,7 @@ static void
 c_lex_one_token (c_token *token)
 {
   timevar_push (TV_LEX);
-  token->type = c_lex (&token->value);
-  token->location = input_location;
+  token->type = c_lex_with_flags (&token->value, &token->location, NULL);
   token->in_system_header = in_system_header;
   switch (token->type)
     {
@@ -2179,6 +2178,7 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
       struct c_declarator *inner
 	= build_id_declarator (c_parser_peek_token (parser)->value);
       *seen_id = true;
+      inner->id_loc = c_parser_peek_token (parser)->location;
       c_parser_consume_token (parser);
       return c_parser_direct_declarator_inner (parser, *seen_id, inner);
     }

@@ -4584,6 +4584,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	  }
 
 	decl = build_decl (VAR_DECL, declarator->u.id, type);
+	DECL_SOURCE_LOCATION (decl) = declarator->id_loc;
 	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
 
@@ -6709,6 +6710,8 @@ build_id_declarator (tree ident)
   ret->kind = cdk_id;
   ret->declarator = 0;
   ret->u.id = ident;
+  /* Default value - may get reset to a more precise location. */
+  ret->id_loc = input_location;
   return ret;
 }
 

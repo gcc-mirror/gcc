@@ -287,6 +287,7 @@ struct c_declarator {
   enum c_declarator_kind kind;
   /* Except for cdk_id, the contained declarator.  For cdk_id, NULL.  */
   struct c_declarator *declarator;
+  location_t id_loc; /* Currently only set for cdk_id. */
   union {
     /* For identifiers, an IDENTIFIER_NODE or NULL_TREE if an abstract
        declarator.  */
