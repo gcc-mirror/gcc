@@ -1,5 +1,10 @@
 Sun Nov 14 23:11:05 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* basic-block.h (dump_bb_data): Remove declaration.
+	* flow.c (dump_bb_data): Remove function.
+	* sbitmap.c (sbitmap_intersect_of_predsucc): Delete function.
+	(sbitmap_union_of_predsucc): Likewise.
+
 	* gcse.c (delete_null_pointer_checks_1): Kill unused s_preds
 	argument.  All callers changed.
 	(delete_null_pointer_checks_1): No longer need to compute the
