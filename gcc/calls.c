@@ -889,11 +889,13 @@ expand_call (exp, target, ignore)
       else if (tname[0] == 'l' && tname[1] == 'o'
 	       && ! strcmp (tname, "longjmp"))
 	is_longjmp = 1;
-      /* Only recognize malloc when alias analysis is enabled.  */
-      else if (flag_alias_check
-	       && ((tname[0] == 'm' && ! strcmp(tname + 1, "alloc"))
-		   || (tname[0] == 'c' && ! strcmp(tname + 1, "alloc"))
-		   || (tname[0] == 'r' && ! strcmp(tname + 1, "ealloc"))))
+      /* XXX should have "malloc" attribute on functions instead
+	 of recognizing them by name.  */
+      else if (! strcmp (tname, "malloc")
+	       || ! strcmp (tname, "calloc")
+	       || ! strcmp (tname, "realloc")
+	       || ! strcmp (tname, "__builtin_new")
+	       || ! strcmp (tname, "__builtin_vec_new"))
 	is_malloc = 1;
     }
 
