@@ -1540,7 +1540,7 @@ primary:
 		{ $$ = build_x_component_ref ($$, $2, NULL_TREE, 1); }
 	| object overqualified_id  %prec UNARY
 		{ if (processing_template_decl)
-		    $$ = build_min_nt (COMPONENT_REF, $1, copy_to_permanent ($2));
+		    $$ = build_min_nt (COMPONENT_REF, $1, $2);
 		  else
 		    $$ = build_object_ref ($$, OP0 ($2), OP1 ($2)); }
 	| object unqualified_id '(' nonnull_exprlist ')'

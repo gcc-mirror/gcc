@@ -2444,9 +2444,6 @@ build_new_1 (exp)
 	  fn = TREE_OPERAND (alloc_expr, 1);
 	  fn = TREE_OPERAND (fn, 0);
 
-	  /* Copy size to the saveable obstack.  */
-	  size = mapcar (size, permanent_p);
-
 	  cleanup = build_op_delete_call (dcode, alloc_node, size, flags, fn);
 
 	  resume_momentary (yes);
@@ -2654,15 +2651,6 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
 
   if (controller)
     {
-      /* The CONTROLLER is a BIND_EXPR.  Such things are always
-	 allocated on at least the saveable obstack.  Since we may
-	 need to copy this expression to the permanent obstack, we
-	 must make sure that the operand is on the same obstack as the
-	 BIND_EXPR.  Otherwise, copy_to_permanent will not copy the
-	 operand, since it will assume that anything under a permanent
-	 node is permanent.  */
-      if (TREE_PERMANENT (controller))
-	body = copy_to_permanent (body);
       TREE_OPERAND (controller, 1) = body;
       return controller;
     }
@@ -3010,9 +2998,6 @@ build_vec_init (decl, base, maxindex, init, from_array)
 	 on the temporary obstack.  */
       push_obstacks_nochange ();
       resume_temporary_allocation ();
-      /* And MAXINDEX needs to be copied to the current obstack.  It's
-	 probably on the momentary obstack now.  */
-      maxindex = mapcar (maxindex, permanent_p);
       e = build_vec_delete_1 (rval,
 			      build_binary_op (MINUS_EXPR, maxindex, 
 					       iterator),

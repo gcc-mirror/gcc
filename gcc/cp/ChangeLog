@@ -1,3 +1,46 @@
+1999-09-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (copy_to_permanent): Remove.
+	(permanent_p): Likewise.
+	* decl.c (building_typename_type): Don't use copy_to_permanent.
+	(start_decl): Likewise.
+	(grok_reference_init): Likewise.
+	(cp_finish_decl): Likewise.
+	* init.c (build_new_1): Don't use mapcar.
+	(build_vec_delete_1): Don't use copy_to_permanent.
+	(build_vec_init): Likewise.
+	* parse.y (primary): Likewise.
+	* parse.c: Regenerated.
+	* pt.c (push_template_decl_real): Don't use copy_to_permanent.
+	(lookup_template_class): Likewise.
+	(tsubst_friend_function): Likewise.
+	(instantiate_class_template): Likewise.
+	(tsubst_decl): Likewise.
+	(tsubst): Likewise.
+	(instantiate_template): Likewise.
+	(unify): Likewise.
+	* rtti.c (get_tinfo_fn): Likewise.
+	(build_dynamic_cast): Likewise.
+	* semantics.c (finish_if_stmt_cond): Likewise.
+	(finish_while_stmt_cond): Likewise.
+	(finish_do_stmt): Likewise.
+	(finish_for_cond): Likewise.
+	(finish_for_expr): Likewise.
+	(finish_cleanup): Likewise.
+	(add_decl_stmt): Likewise.
+	(finish_named_return_value): Likewise.
+	(finish_qualified_call_expr): Likewise.
+	* tree.c (perm_manip): Remove.
+	(build_exception_variant): Don't use copy_to_permanent.
+	(permanent_p): Remove.
+	(copy_to_permament): Remove.
+	(build_min_nt): Don't use copy_to_permanent.
+	(build_min): Likewise.
+	(min_tree_cons): Likewise.
+	* typeckc.c (build_static_cast): Likewise.
+	(build_reinterpret_cast): Likewise.
+	(build_const_cast): Likewise.
+	
 1999-09-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (ggc_p): Set it to 1.

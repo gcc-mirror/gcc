@@ -5365,11 +5365,6 @@ build_typename_type (context, name, fullname, base_type)
       ggc_add_tree_hash_table_root (&h, 1);
     }
 
-  /* The FULLNAME needs to exist for the life of the hash table, i.e.,
-     for the entire compilation.  */
-  if (!TREE_PERMANENT (fullname))
-    fullname = copy_to_permanent (fullname);
-
   /* Build the TYPENAME_TYPE.  */
   t = make_lang_type (TYPENAME_TYPE);
   TYPE_CONTEXT (t) = FROB_CONTEXT (context);
@@ -6908,7 +6903,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 	  tree itype = TYPE_DOMAIN (type);
 	  if (itype && ! TREE_PERMANENT (itype))
 	    {
-	      itype = build_index_type (copy_to_permanent (TYPE_MAX_VALUE (itype)));
+	      itype = build_index_type (TYPE_MAX_VALUE (itype));
 	      type = build_cplus_array_type (TREE_TYPE (type), itype);
 	      TREE_TYPE (decl) = type;
 	    }
@@ -7218,8 +7213,6 @@ grok_reference_init (decl, type, init)
   if (TYPE_SIZE (TREE_TYPE (type)))
     {
       init = convert_from_reference (decl);
-      if (TREE_PERMANENT (decl))
-	init = copy_to_permanent (init);
       SET_DECL_REFERENCE_SLOT (decl, init);
     }
 
@@ -7900,7 +7893,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
   if (processing_template_decl)
     {
       if (init && DECL_INITIAL (decl))
-	DECL_INITIAL (decl) = copy_to_permanent (init);
+	DECL_INITIAL (decl) = init;
       goto finish_end0;
     }
 

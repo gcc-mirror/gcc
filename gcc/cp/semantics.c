@@ -138,7 +138,7 @@ finish_if_stmt_cond (cond, if_stmt)
       if (last_tree != if_stmt)
 	RECHAIN_STMTS_FROM_LAST (if_stmt, IF_COND (if_stmt));
       else
-	IF_COND (if_stmt) = copy_to_permanent (cond);
+	IF_COND (if_stmt) = cond;
     }
   else
     {
@@ -236,7 +236,7 @@ finish_while_stmt_cond (cond, while_stmt)
       if (last_tree != while_stmt)
 	RECHAIN_STMTS_FROM_LAST (while_stmt, WHILE_COND (while_stmt)); 
       else
-	TREE_OPERAND (while_stmt, 0) = copy_to_permanent (cond);
+	TREE_OPERAND (while_stmt, 0) = cond;
     }
   else
     {
@@ -311,7 +311,7 @@ finish_do_stmt (cond, do_stmt)
      tree do_stmt;
 {
   if (building_stmt_tree ())
-    DO_COND (do_stmt) = copy_to_permanent (cond);
+    DO_COND (do_stmt) = cond;
   else
     {
       emit_line_note (input_filename, lineno);
@@ -401,7 +401,7 @@ finish_for_cond (cond, for_stmt)
       if (last_tree != for_stmt)
 	RECHAIN_STMTS_FROM_LAST (for_stmt, FOR_COND (for_stmt));
       else
-	FOR_COND (for_stmt) = copy_to_permanent (cond);
+	FOR_COND (for_stmt) = cond;
     }
   else
     {
@@ -429,7 +429,7 @@ finish_for_expr (expr, for_stmt)
      tree for_stmt;
 {
   if (building_stmt_tree ())
-    FOR_EXPR (for_stmt) = copy_to_permanent (expr);
+    FOR_EXPR (for_stmt) = expr;
 
   /* Don't let the tree nodes for EXPR be discarded
      by clear_momentary during the parsing of the next stmt.  */
@@ -659,7 +659,7 @@ finish_cleanup (cleanup, try_block)
 {
   if (building_stmt_tree ()) 
     {
-      TRY_HANDLERS (try_block) = copy_to_permanent (cleanup);
+      TRY_HANDLERS (try_block) = cleanup;
       CLEANUP_P (try_block) = 1;
     }
   else
@@ -924,7 +924,6 @@ add_decl_stmt (decl)
   tree decl_stmt;
 
   /* We need the type to last until instantiation time.  */
-  TREE_TYPE (decl) = copy_to_permanent (TREE_TYPE (decl));
   decl_stmt = build_min_nt (DECL_STMT, decl);
   add_tree (decl_stmt);
 }
@@ -990,8 +989,7 @@ finish_named_return_value (return_id, init)
       pushdecl (decl);
 
       if (building_stmt_tree ())
-	add_tree (build_min_nt (RETURN_INIT, return_id,
-				copy_to_permanent (init)));
+	add_tree (build_min_nt (RETURN_INIT, return_id, init));
       else
 	{
 	  cp_finish_decl (decl, init, NULL_TREE, 0, 0);
@@ -1302,8 +1300,7 @@ finish_qualified_call_expr (fn, args)
      tree args;
 {
   if (processing_template_decl)
-    return build_min_nt (CALL_EXPR, copy_to_permanent (fn), args,
-			 NULL_TREE);
+    return build_min_nt (CALL_EXPR, fn, args, NULL_TREE);
   else
     return build_member_call (TREE_OPERAND (fn, 0),
 			      TREE_OPERAND (fn, 1),
