@@ -35,18 +35,17 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.border;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
 
 public interface Border
 {
-    public Insets getBorderInsets(Component c);
-    public boolean isBorderOpaque();
-    public void paintBorder(Component c, 
-			    Graphics g, 
-			    int x, 
-			    int y,
-			    int width,
-			    int height);
+  public Insets getBorderInsets (Component c);
+  public boolean isBorderOpaque ();
+  public void paintBorder (Component c, Graphics g, int x, int y,
+                           int width, int height);
 }
