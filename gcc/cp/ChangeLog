@@ -1,5 +1,18 @@
 2000-08-17  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* vec.cc (__cxa_vec_new): Set "C" linkage.
+	(__cxa_vec_ctor): Likewise.
+	(__cxa_vec_cctor): Likewise.
+	(__cxa_vec_dtor): Likewise.
+	(__cxa_vec_delete): Likewise.
+	* inc/cxxabi.h (__cxa_vec_new): Set "C" linkage.
+	(__cxa_vec_ctor): Likewise.
+	(__cxa_vec_cctor): Likewise.
+	(__cxa_vec_dtor): Likewise.
+	(__cxa_vec_delete): Likewise.
+
+2000-08-17  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* class.c (instantiate_type): Reinstate local variable
 	deleted in previous change.
 	
