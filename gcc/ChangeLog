@@ -1,3 +1,7 @@
+Mon Mar 30 13:56:30 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* mips/ultrix.h (SUBTARGET_CPP_SPEC): Define.
+
 Wed Mar 25 16:09:01 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.h (FUNCTION_ARG_PADDING): Cast result to be enum
