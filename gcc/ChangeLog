@@ -1,3 +1,7 @@
+Sun Dec 13 01:05:22 PST 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 1998-12-13  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* protoize.c (fputs): Wrap extern declaration in #ifndef fputs.
