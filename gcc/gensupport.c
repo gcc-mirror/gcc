@@ -144,7 +144,7 @@ static struct queue_elem *
 queue_pattern (rtx pattern, struct queue_elem ***list_tail,
 	       const char *filename, int lineno)
 {
-  struct queue_elem *e = xmalloc (sizeof (*e));
+  struct queue_elem *e = XNEW(struct queue_elem);
   e->data = pattern;
   e->filename = filename;
   e->lineno = lineno;
@@ -594,7 +594,7 @@ alter_predicate_for_insn (rtx pattern, int alt, int max_op, int lineno)
 	  {
 	    size_t c_len = strlen (c);
 	    size_t len = alt * (c_len + 1);
-	    char *new_c = xmalloc (len);
+	    char *new_c = XNEWVEC(char, len);
 
 	    memcpy (new_c, c, c_len);
 	    for (i = 1; i < alt; ++i)
@@ -887,7 +887,7 @@ process_define_cond_exec (void)
 static char *
 save_string (const char *s, int len)
 {
-  char *result = xmalloc (len + 1);
+  char *result = XNEWVEC (char, len + 1);
 
   memcpy (result, s, len);
   result[len] = 0;
@@ -921,7 +921,7 @@ init_md_reader_args (int argc, char **argv)
 	      {
 		struct file_name_list *dirtmp;
 
-		dirtmp = xmalloc (sizeof (struct file_name_list));
+		dirtmp = XNEW (struct file_name_list);
 		dirtmp->next = 0;	/* New one goes on the end */
 		if (first_dir_md_include == 0)
 		  first_dir_md_include = dirtmp;
@@ -1122,7 +1122,7 @@ maybe_eval_c_test (const char *expr)
     return -1;
 
   dummy.expr = expr;
-  test = htab_find (condition_table, &dummy);
+  test = (const struct c_test *)htab_find (condition_table, &dummy);
   if (!test)
     abort ();
 

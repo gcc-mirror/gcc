@@ -3756,10 +3756,10 @@ static int spelling_size;		/* Size of the spelling stack.  */
     {									\
       spelling_size += 10;						\
       if (spelling_base == 0)						\
-	spelling_base = xmalloc (spelling_size * sizeof (struct spelling)); \
+	spelling_base = XNEWVEC (struct spelling, spelling_size);	\
       else								\
-        spelling_base = xrealloc (spelling_base,		\
-				  spelling_size * sizeof (struct spelling)); \
+        spelling_base = XRESIZEVEC (struct spelling, spelling_base,	\
+				    spelling_size);			\
       RESTORE_SPELLING_DEPTH (depth);					\
     }									\
 									\
@@ -4309,7 +4309,7 @@ void
 start_init (tree decl, tree asmspec_tree, int top_level)
 {
   const char *locus;
-  struct initializer_stack *p = xmalloc (sizeof (struct initializer_stack));
+  struct initializer_stack *p = XNEW (struct initializer_stack);
   const char *asmspec = 0;
 
   if (asmspec_tree)
@@ -4411,7 +4411,7 @@ finish_init (void)
 void
 really_start_incremental_init (tree type)
 {
-  struct constructor_stack *p = xmalloc (sizeof (struct constructor_stack));
+  struct constructor_stack *p = XNEW (struct constructor_stack);
 
   if (type == 0)
     type = TREE_TYPE (constructor_decl);
@@ -4548,7 +4548,7 @@ push_init_level (int implicit)
 	value = find_init_member (constructor_index);
     }
 
-  p = xmalloc (sizeof (struct constructor_stack));
+  p = XNEW (struct constructor_stack);
   p->type = constructor_type;
   p->fields = constructor_fields;
   p->index = constructor_index;
@@ -4941,7 +4941,7 @@ push_range_stack (tree range_end)
 {
   struct constructor_range_stack *p;
 
-  p = ggc_alloc (sizeof (struct constructor_range_stack));
+  p = GGC_NEW (struct constructor_range_stack);
   p->prev = constructor_range_stack;
   p->next = 0;
   p->fields = constructor_fields;
@@ -5122,7 +5122,7 @@ add_pending_init (tree purpose, tree value)
 	}
     }
 
-  r = ggc_alloc (sizeof (struct init_node));
+  r = GGC_NEW (struct init_node);
   r->purpose = purpose;
   r->value = value;
 
@@ -6391,8 +6391,9 @@ c_start_case (tree exp)
     }
 
   /* Add this new SWITCH_STMT to the stack.  */
-  cs = xmalloc (sizeof (*cs));
-  cs->switch_stmt = build_stmt (SWITCH_STMT, exp, NULL_TREE, orig_type);
+  cs = XNEW (struct c_switch);
+  cs->switch_stmt = build_stmt ((enum tree_code) SWITCH_STMT, exp, NULL_TREE,
+				orig_type);
   cs->orig_type = orig_type;
   cs->cases = splay_tree_new (case_compare, NULL, NULL);
   cs->next = c_switch_stack;
@@ -6440,7 +6441,7 @@ c_finish_case (tree body)
   /* Pop the stack.  */
   c_switch_stack = cs->next;
   splay_tree_delete (cs->cases);
-  free (cs);
+  XDELETE (cs);
 }
 
 /* Emit an if statement.  IF_LOCUS is the location of the 'if'.  COND,

@@ -1051,7 +1051,7 @@ static struct tlist *
 new_tlist (struct tlist *next, tree t, tree writer)
 {
   struct tlist *l;
-  l = obstack_alloc (&tlist_obstack, sizeof *l);
+  l = XOBNEW (&tlist_obstack, struct tlist);
   l->next = next;
   l->expr = t;
   l->writer = writer;
@@ -1322,7 +1322,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
 
 	if (! t)
 	  {
-	    t = obstack_alloc (&tlist_obstack, sizeof *t);
+	    t = XOBNEW (&tlist_obstack, struct tlist_cache);
 	    t->next = save_expr_cache;
 	    t->expr = x;
 	    save_expr_cache = t;

@@ -433,10 +433,10 @@ push_macro_expansion (const char *name, unsigned name_len,
     if (strlen (macro_defs[ix].name) == name_len
         && !memcmp (name, macro_defs[ix].name, name_len))
       {
-        macro_t *expansion = xmalloc (sizeof (*expansion));
+        macro_t *expansion = XNEW (macro_t);
 
 	expansion->next = macro_expns;
-	expansion->name = xmemdup (arg, arg_len, arg_len+1);
+	expansion->name = (char *) xmemdup (arg, arg_len, arg_len+1);
 	expansion->expansion = macro_defs[ix].expansion;
 	macro_expns = expansion;
 	return;

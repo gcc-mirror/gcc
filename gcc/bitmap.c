@@ -131,7 +131,7 @@ bitmap_element_allocate (bitmap head)
 					  obstack_chunk_free);
 	    }
 
-	  element = obstack_alloc (&bitmap_obstack, sizeof (bitmap_element));
+	  element = XOBNEW (&bitmap_obstack, bitmap_element);
 	}
     }
   else
@@ -142,7 +142,7 @@ bitmap_element_allocate (bitmap head)
           bitmap_ggc_free = element->next;
 	}
       else
-	element = ggc_alloc (sizeof (bitmap_element));
+	element = GGC_NEW (bitmap_element);
     }
 
   memset (element->bits, 0, sizeof (element->bits));
@@ -716,7 +716,7 @@ bitmap
 bitmap_initialize (bitmap head, int using_obstack)
 {
   if (head == NULL && ! using_obstack)
-    head = ggc_alloc (sizeof (*head));
+    head = GGC_NEW (struct bitmap_head_def);
 
   head->first = head->current = 0;
   head->using_obstack = using_obstack;

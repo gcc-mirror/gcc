@@ -428,7 +428,7 @@ bind (tree name, tree decl, struct c_scope *scope, bool invisible, bool nested)
       binding_freelist = b->prev;
     }
   else
-    b = ggc_alloc (sizeof (struct c_binding));
+    b = GGC_NEW (struct c_binding);
 
   b->shadowed = 0;
   b->decl = decl;
@@ -603,7 +603,7 @@ push_scope (void)
 	  scope_freelist = scope->outer;
 	}
       else
-	scope = ggc_alloc_cleared (sizeof (struct c_scope));
+	scope = GGC_CNEW (struct c_scope);
 
       scope->keep          = keep_next_level_flag;
       scope->outer         = current_scope;
@@ -1858,7 +1858,7 @@ pushdecl (tree x)
 
   /* Functions need the lang_decl data.  */
   if (TREE_CODE (x) == FUNCTION_DECL && ! DECL_LANG_SPECIFIC (x))
-    DECL_LANG_SPECIFIC (x) = ggc_alloc_cleared (sizeof (struct lang_decl));
+    DECL_LANG_SPECIFIC (x) = GGC_CNEW (struct lang_decl);
 
   /* Must set DECL_CONTEXT for everything not at file scope or
      DECL_FILE_SCOPE_P won't work.  Local externs don't count
@@ -4495,7 +4495,7 @@ grokdeclarator (tree declarator, tree declspecs,
 	decl = build_decl_attribute_variant (decl, decl_attr);
 
 	DECL_LANG_SPECIFIC (decl)
-	  = ggc_alloc_cleared (sizeof (struct lang_decl));
+	  = GGC_CNEW (struct lang_decl);
 
 	if (pedantic && type_quals && ! DECL_IN_SYSTEM_HEADER (decl))
 	  pedwarn ("ISO C forbids qualified function types");
@@ -5324,8 +5324,9 @@ finish_struct (tree t, tree fieldlist, tree attributes)
           ensure that this lives as long as the rest of the struct decl.
           All decls in an inline function need to be saved.  */
 
-        space = ggc_alloc_cleared (sizeof (struct lang_type));
-        space2 = ggc_alloc (sizeof (struct sorted_fields_type) + len * sizeof (tree));
+        space = GGC_CNEW (struct lang_type);
+        space2 = GGC_NEWVAR (struct sorted_fields_type,
+			     sizeof (struct sorted_fields_type) + len * sizeof (tree));
 
         len = 0;
 	space->s = space2;
@@ -5548,7 +5549,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
 
   /* Record the min/max values so that we can warn about bit-field
      enumerations that are too small for the values.  */
-  lt = ggc_alloc_cleared (sizeof (struct lang_type));
+  lt = GGC_CNEW (struct lang_type);
   lt->enum_min = minnode;
   lt->enum_max = maxnode;
   TYPE_LANG_SPECIFIC (enumtype) = lt;
@@ -6451,7 +6452,7 @@ void
 c_push_function_context (struct function *f)
 {
   struct language_function *p;
-  p = ggc_alloc (sizeof (struct language_function));
+  p = GGC_NEW (struct language_function);
   f->language = p;
 
   p->base.x_stmt_tree = c_stmt_tree;
@@ -6505,7 +6506,7 @@ c_dup_lang_specific_decl (tree decl)
   if (!DECL_LANG_SPECIFIC (decl))
     return;
 
-  ld = ggc_alloc (sizeof (struct lang_decl));
+  ld = GGC_NEW (struct lang_decl);
   memcpy (ld, DECL_LANG_SPECIFIC (decl), sizeof (struct lang_decl));
   DECL_LANG_SPECIFIC (decl) = ld;
 }
@@ -6631,7 +6632,7 @@ static void
 c_write_global_declarations_1 (tree globals)
 {
   size_t len = list_length (globals);
-  tree *vec = xmalloc (sizeof (tree) * len);
+  tree *vec = XNEWVEC (tree, len);
   size_t i;
   tree decl;
 

@@ -1,5 +1,25 @@
 2004-07-25  Bernardo Innocenti  <bernie@develer.com>
 
+	* bitmap.c: Use type-safe memory allocation macros from libiberty.
+	* c-common.c: Likewise.
+	* c-decl.c: Likewise.
+	* c-lang.c: Likewise.
+	* c-lex.c: Likewise.
+	* c-opts.c: Likewise.
+	* c-parse.in: Likewise.
+	* c-typeck.c: Likewise.
+	* genconditions.c: Likewise.
+	* gengtype-lex.l: Likewise.
+	* gengtype-yacc.y: Likewise.
+	* gengtype.c: Likewise.
+	* genmodes.c: Likewise.
+	* gensupport.c: Likewise.
+	* read-rtl.c: Likewise.
+	* read-rtl.c (read_constants): Use INSERT instead of TRUE in call to
+	htab_find_slot().
+
+2004-07-25  Bernardo Innocenti  <bernie@develer.com>
+
 	* c-decl.c (groktypename, groktypename_in_param_context): Rename
 	variable typename to type_name.
 	* c-lex.c (interpret_float): Likewise.

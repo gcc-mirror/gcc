@@ -160,10 +160,10 @@ yacc_ids: /* empty */
 	{ $$ = NULL; }
      | yacc_ids ID
         {
-	  pair_p p = xcalloc (1, sizeof (*p));
+	  pair_p p = XCNEW (struct pair);
 	  p->next = $1;
 	  p->line = lexer_line;
-	  p->opt = xmalloc (sizeof (*(p->opt)));
+	  p->opt = XNEW (struct options);
 	  p->opt->name = "tag";
 	  p->opt->next = NULL;
 	  p->opt->info = (char *)$2;
@@ -171,10 +171,10 @@ yacc_ids: /* empty */
 	}
      | yacc_ids CHAR
         {
-	  pair_p p = xcalloc (1, sizeof (*p));
+	  pair_p p = XCNEW (struct pair);
 	  p->next = $1;
 	  p->line = lexer_line;
-	  p->opt = xmalloc (sizeof (*(p->opt)));
+	  p->opt = XNEW (struct options);
 	  p->opt->name = "tag";
 	  p->opt->next = NULL;
 	  p->opt->info = xasprintf ("'%s'", $2);
@@ -185,7 +185,7 @@ yacc_ids: /* empty */
 struct_fields: { $$ = NULL; }
 	       | type optionsopt ID bitfieldopt ';' struct_fields
 	          {
-	            pair_p p = xmalloc (sizeof (*p));
+	            pair_p p = XNEW (struct pair);
 		    p->type = adjust_field_type ($1, $2);
 		    p->opt = $2;
 		    p->name = $3;
@@ -195,7 +195,7 @@ struct_fields: { $$ = NULL; }
 		  }
 	       | type optionsopt ID ARRAY ';' struct_fields
 	          {
-	            pair_p p = xmalloc (sizeof (*p));
+	            pair_p p = XNEW (struct pair);
 		    p->type = adjust_field_type (create_array ($1, $4), $2);
 		    p->opt = $2;
 		    p->name = $3;
@@ -205,7 +205,7 @@ struct_fields: { $$ = NULL; }
 		  }
 	       | type optionsopt ID ARRAY ARRAY ';' struct_fields
 	          {
-	            pair_p p = xmalloc (sizeof (*p));
+	            pair_p p = XNEW (struct pair);
 		    p->type = create_array (create_array ($1, $5), $4);
 		    p->opt = $2;
 		    p->name = $3;
@@ -314,7 +314,7 @@ stringseq: STRING
 	     {
 	       size_t l1 = strlen ($1);
 	       size_t l2 = strlen ($2);
-	       char *s = xrealloc ((char *)$1, l1 + l2 + 1);
+	       char *s = (char *) xrealloc ((char *)$1, l1 + l2 + 1);
 	       memcpy (s + l1, $2, l2 + 1);
 	       free ((void *)$2);
 	       $$ = s;
