@@ -1,3 +1,8 @@
+2003-05-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* libgcov.c (__gcov_merge_add): Do not use gcov_type when inhibit_libc
+	is defined.	
+
 2003-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtin-attrs.def (ATTR_NOTHROW_NONNULL_1,

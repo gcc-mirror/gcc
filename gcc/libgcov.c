@@ -41,9 +41,9 @@ void __gcov_flush (void) { }
 #endif
 
 #ifdef L_gcov_merge_add
-void __gcov_merge_add (gcov_type *, unsigned);
+void __gcov_merge_add (void *, unsigned);
 
-void __gcov_merge_add (gcov_type *counters, unsigned n_counters) { }
+void __gcov_merge_add (void *counters, unsigned n_counters) { }
 #endif
 
 #else
