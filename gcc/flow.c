@@ -376,6 +376,7 @@ find_basic_blocks (f, nonlocal_label_list)
   /* List of label_refs to all labels whose addresses are taken
      and used as data.  */
   rtx label_value_list;
+  int label_value_list_marked_live;
   rtx x, note;
   enum rtx_code prev_code, code;
   int depth, pass;
@@ -384,6 +385,7 @@ find_basic_blocks (f, nonlocal_label_list)
  restart:
 
   label_value_list = 0;
+  label_value_list_marked_live = 0;
   block_live_static = block_live;
   bzero (block_live, n_basic_blocks);
   bzero (block_marked, n_basic_blocks);
@@ -460,13 +462,6 @@ find_basic_blocks (f, nonlocal_label_list)
     abort ();
   n_basic_blocks = i + 1;
 
-  /* Don't delete the labels (in this function)
-     that are referenced by non-jump instructions.  */
-
-  for (x = label_value_list; x; x = XEXP (x, 1))
-    if (! LABEL_REF_NONLOCAL_P (x))
-      block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
-
   for (x = forced_labels; x; x = XEXP (x, 1))
     if (! LABEL_REF_NONLOCAL_P (x))
       block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
@@ -533,6 +528,21 @@ find_basic_blocks (f, nonlocal_label_list)
 		    
 	    if (computed_jump)
 	      {
+		if (label_value_list_marked_live == 0)
+		  {
+		    label_value_list_marked_live = 1;
+
+		    /* This could be made smarter by only considering
+		       these live, if the computed goto is live.  */
+
+		    /* Don't delete the labels (in this function) that
+		       are referenced by non-jump instructions.  */
+
+		    for (x = label_value_list; x; x = XEXP (x, 1))
+		      if (! LABEL_REF_NONLOCAL_P (x))
+			block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
+		  }
+
 		for (x = label_value_list; x; x = XEXP (x, 1))
 		  mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
 				  insn, 0);
@@ -565,6 +575,13 @@ find_basic_blocks (f, nonlocal_label_list)
 	       gotos.  */
 	  }
 
+      /* All blocks associated with labels in label_value_list are
+	 trivially considered as marked live, if the list is empty.
+	 We do this to speed up the below code.  */
+
+      if (label_value_list == 0)
+	label_value_list_marked_live = 1;
+
       /* Pass over all blocks, marking each block that is reachable
 	 and has not yet been marked.
 	 Keep doing this until, in one pass, no blocks have been marked.
@@ -584,6 +601,28 @@ find_basic_blocks (f, nonlocal_label_list)
 		insn = basic_block_end[i];
 		if (GET_CODE (insn) == JUMP_INSN)
 		  mark_label_ref (PATTERN (insn), insn, 0);
+
+		if (label_value_list_marked_live == 0)
+		  /* Now that we know that this block is live, mark as
+		     live, all the blocks that we might be able to get
+		     to as live.  */
+
+		  for (insn = basic_block_head[i];
+		       insn != basic_block_end[i];
+		       insn = NEXT_INSN (insn))
+		    {
+		      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+			{
+			  for (note = REG_NOTES (insn);
+			       note;
+			       note = XEXP (note, 1))
+			    if (REG_NOTE_KIND (note) == REG_LABEL)
+			      {
+				x = XEXP (note, 0);
+				block_live[BLOCK_NUM (x)] = 1;
+			      }
+			}
+		    }
 	      }
 	}
 
