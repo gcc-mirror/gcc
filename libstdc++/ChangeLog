@@ -1,3 +1,7 @@
+1998-08-25  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* stdexcept: Remove __HONOR_STD.
+
 1998-08-23  Mark Mitchell  <mark@markmitchell.com>
 
 	* sinst.cc: Don't explicitly instantiation string_char_traits<char>.
