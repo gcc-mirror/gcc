@@ -11551,18 +11551,15 @@ grokdeclarator (tree declarator,
 		  return void_type_node;
 	      }
 
-	    /* 9.2p13 [class.mem] */
-	    if (constructor_name_p (declarator, current_class_type)
-		/* The standard does not allow non-static data members
-		   here either, but we agreed at the 10/99 meeting
-		   to change that in TC 1 so that they are allowed in
-		   classes with no user-defined constructors.  */
-		&& staticp)
-	      pedwarn ("ISO C++ forbids static data member `%D' with same name as enclosing class",
-			  declarator);
-
 	    if (staticp)
 	      {
+		/* [class.mem] forbids static data members with the
+		   same name as the enclosing class.  Non-static data
+		   members are checked in check_field_decls.  */
+		if (constructor_name_p (declarator, current_class_type))
+		  pedwarn ("ISO C++ forbids static data member `%D' with same name as enclosing class",
+			   declarator);
+		  
 		/* C++ allows static class members.  All other work
 		   for this is done by grokfield.  */
 		decl = build_lang_decl (VAR_DECL, declarator, type);

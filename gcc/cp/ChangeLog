@@ -1,3 +1,10 @@
+2003-03-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7647
+	* decl.c (grokdeclarator): Tidy, slightly.
+	* search.c (lookup_field_1): Add want_type parameter.
+	(lookup_field_r): Adjust call to lookup_field_1.
+
 2003-03-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* Make-lang.in (cp/name-lookup.o): Add more dependencies.
