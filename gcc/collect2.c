@@ -2914,12 +2914,14 @@ scan_prog_file (prog_name, which_pass)
 			     to explicitly export all global symbols or add
 			     them to import list.  */
 			  if (shared_obj) 
-			    if (which_pass == PASS_OBJ && (! export_flag))
-			      add_to_list (&exports, name);
-			    else if (! is_shared && which_pass == PASS_FIRST
-				     && import_flag
-				     && is_in_list(name, undefined.first))
-			      add_to_list (&imports, name);
+			    {
+			      if (which_pass == PASS_OBJ && (! export_flag))
+				add_to_list (&exports, name);
+			      else if (! is_shared && which_pass == PASS_FIRST
+				       && import_flag
+				       && is_in_list(name, undefined.first))
+				add_to_list (&imports, name);
+			    }
 #endif
 			  continue;
 			}
