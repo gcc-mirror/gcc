@@ -2612,10 +2612,11 @@ addr_diff_vec_adjust (insn, first_pass)
   rtx max_lab = XEXP (XVECEXP (pat, 0, 1), 0);
   rtx rel_lab = XEXP (XVECEXP (pat, 0, 2), 0);
   int len = INTVAL (XVECEXP (pat, 0, 3));
-  int addr, min_addr, max_addr, saving, prev_saving = 0;
+  int addr, min_addr, max_addr, saving, prev_saving = 0, offset;
   rtx align_insn = uid_align[INSN_UID (rel_lab)];
   int standard_size = TARGET_BIGTABLE ? 4 : 2;
   int last_size = GET_MODE_SIZE ( GET_MODE(pat));
+  int align_fuzz = 0;
 
   if (! insn_addresses)
     return 0;
@@ -2630,6 +2631,11 @@ addr_diff_vec_adjust (insn, first_pass)
   if (TARGET_SH2)
     prev_saving = ((standard_size - last_size) * len) & ~1;
 
+  /* The savings are linear to the vector length.  However, if we have an
+     odd saving, we need one byte again to reinstate 16 bit alignment.  */
+  saving = ((standard_size - 1) * len) & ~1;
+  offset = prev_saving - saving;
+
   if ((insn_addresses[INSN_UID (align_insn)] < max_addr
        || (insn_addresses[INSN_UID (align_insn)] == max_addr
            && next_real_insn (max_lab) != align_insn))
@@ -2637,21 +2643,31 @@ addr_diff_vec_adjust (insn, first_pass)
     {
       int align = 1 << INTVAL (XVECEXP (PATTERN (align_insn), 0, 0));
       int align_addr = insn_addresses[INSN_UID (align_insn)];
-      prev_saving += (align_addr - 1)  & (align - 2);
+      if (align_addr > insn_addresses[INSN_UID (insn)])
+	{
+	  int old_offset = offset;
+	  offset = (align_addr - 1 & align - 1) + offset & -align;
+	  align_addr += old_offset;
+	}
+      align_fuzz += (align_addr - 1)  & (align - 2);
       align_insn = uid_align[INSN_UID (align_insn)];
       if (insn_addresses[INSN_UID (align_insn)] <= max_addr
           && GET_CODE (align_insn) == INSN)
         {
           int align2 = 1 << INTVAL (XVECEXP (PATTERN (align_insn), 0, 0));
           align_addr = insn_addresses[INSN_UID (align_insn)];
-          prev_saving += (align_addr - 1)  & (align2 - align);
+	  if (align_addr > insn_addresses[INSN_UID (insn)])
+	    {
+	      int old_offset = offset;
+	      offset = (align_addr - 1 & align2 - 1) + offset & -align2;
+	      align_addr += old_offset;
+	    }
+          align_fuzz += (align_addr - 1)  & (align2 - align);
         }
     }
 
-  /* The savings are linear to the vector length.  However, if we have an
-     odd saving, we need one byte again to reinstate 16 bit alignment.  */
-  saving = ((standard_size - 1) * len) & ~1;
-  if (min_addr >= addr && max_addr - addr <= 255 + saving - prev_saving)
+  if (min_addr >= addr
+      && max_addr + offset - addr + align_fuzz <= 255)
     {
       PUT_MODE (pat, QImode);
       return saving;
