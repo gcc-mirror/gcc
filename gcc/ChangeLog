@@ -1,3 +1,19 @@
+2002-11-11  Zack Weinberg  <zack@codesourcery.com>
+
+	* params.def (ggc-min-expand, ggc-min-heapsize): New parameters.
+	* doc/invoke.texi: Document them.
+
+	* ggc-page.c: Include params.h.  Remove definitions of
+	GGC_MIN_EXPAND_FOR_GC, GGC_MIN_LAST_ALLOCATED.  Replace
+	GGC_POISON with ENABLE_GC_CHECKING in ifdefs, delete #define.
+	(init_gcc): Don't set G.allocated_last_gc here.
+	(ggc_collect): Use PARAM_VALUE (GGC_MIN_HEAPSIZE) and
+	PARAM_VALUE (GGC_MIN_EXPAND) to decide whether or not to
+	perform collection.
+	* ggc-simple.c: Similarly.
+	* Makefile.in (ggc-common.o, ggc-simple.o): Add $(PARAMS_H) to
+	dependencies.
+
 2002-11-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gthr-dce.h: Fix formatting.

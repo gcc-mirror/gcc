@@ -27,19 +27,15 @@
 #include "varray.h"
 #include "ggc.h"
 #include "timevar.h"
+#include "params.h"
 
 /* Debugging flags.  */
 
 /* Zap memory before freeing to catch dangling pointers.  */
-#define GGC_POISON
+#undef GGC_POISON
 
 /* Collect statistics on how bushy the search tree is.  */
 #undef GGC_BALANCE
-
-/* Perform collection every time ggc_collect is invoked.  Otherwise,
-   collection is performed only when a significant amount of memory
-   has been allocated since the last collection.  */
-#undef GGC_ALWAYS_COLLECT
 
 /* Always verify that the to-be-marked memory is collectable.  */
 #undef GGC_ALWAYS_VERIFY
@@ -47,9 +43,6 @@
 #ifdef ENABLE_GC_CHECKING
 #define GGC_POISON
 #define GGC_ALWAYS_VERIFY
-#endif
-#ifdef ENABLE_GC_ALWAYS_COLLECT
-#define GGC_ALWAYS_COLLECT
 #endif
 
 #ifndef HOST_BITS_PER_PTR
@@ -114,16 +107,6 @@ static struct globals
   /* Current context level.  */
   int context;
 } G;
-
-/* Skip garbage collection if the current allocation is not at least
-   this factor times the allocation at the end of the last collection.
-   In other words, total allocation must expand by (this factor minus
-   one) before collection is performed.  */
-#define GGC_MIN_EXPAND_FOR_GC (1.3)
-
-/* Bound `allocated_last_gc' to 4MB, to prevent the memory expansion
-   test from triggering too often when the heap is small.  */
-#define GGC_MIN_LAST_ALLOCATED (4 * 1024 * 1024)
 
 /* Local function prototypes.  */
 
@@ -324,10 +307,16 @@ sweep_objs (root)
 void
 ggc_collect ()
 {
-#ifndef GGC_ALWAYS_COLLECT
-  if (G.allocated < GGC_MIN_EXPAND_FOR_GC * G.allocated_last_gc)
+  /* Avoid frequent unnecessary work by skipping collection if the
+     total allocations haven't expanded much since the last
+     collection.  */
+  size_t allocated_last_gc =
+    MAX (G.allocated_last_gc, (size_t)PARAM_VALUE (GGC_MIN_HEAPSIZE) * 1024);
+
+  size_t min_expand = allocated_last_gc * PARAM_VALUE (GGC_MIN_EXPAND) / 100;
+
+  if (G.allocated < allocated_last_gc + min_expand)
     return;
-#endif
 
 #ifdef GGC_BALANCE
   debug_ggc_balance ();
@@ -345,8 +334,6 @@ ggc_collect ()
   sweep_objs (&G.root);
 
   G.allocated_last_gc = G.allocated;
-  if (G.allocated_last_gc < GGC_MIN_LAST_ALLOCATED)
-    G.allocated_last_gc = GGC_MIN_LAST_ALLOCATED;
 
   timevar_pop (TV_GC);
 
@@ -363,7 +350,6 @@ ggc_collect ()
 void
 init_ggc ()
 {
-  G.allocated_last_gc = GGC_MIN_LAST_ALLOCATED;
 }
 
 /* Start a new GGC context.  Memory allocated in previous contexts
