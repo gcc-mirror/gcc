@@ -1,3 +1,25 @@
+2000-10-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (is_valid_printf_arglist, expand_builtin_printf):
+	Move functions from here ...
+
+	* c-common.c (is_valid_printf_arglist, c_expand_builtin_printf):
+	... to here.
+	(c_expand_builtin): New function.
+	(init_function_format_info): Don't set `check_function_format_ptr'.
+	(c_common_nodes_and_builtins): Set built_in_class type for
+	printf/__builtin_printf to BUILT_IN_FRONTEND.
+	(c_expand_expr): Handle CALL_EXPRs that are front-end builtins.
+
+	* c-common.h (build_function_call): Declare.
+
+	* expr.c (expand_expr): Pass builtins with class BUILT_IN_FRONTEND
+	to `lang_expand_expr' rather than `expand_builtin'.
+
+	* tree.c (check_function_format_ptr): Delete.
+
+	* tree.h (check_function_format_ptr): Likewise.
+
 2000-10-06  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* dwarf2out.c (build_cfa_loc): Correct to use DW_OP_regx or

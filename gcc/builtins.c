@@ -111,8 +111,6 @@ static rtx expand_builtin_strlen	PARAMS ((tree, rtx,
 static rtx expand_builtin_alloca	PARAMS ((tree, rtx));
 static rtx expand_builtin_ffs		PARAMS ((tree, rtx, rtx));
 static rtx expand_builtin_frame_address	PARAMS ((tree));
-static int is_valid_printf_arglist	PARAMS ((tree));
-static rtx expand_builtin_printf	PARAMS ((tree, int));
 static rtx expand_builtin_fputs		PARAMS ((tree, int));
 static tree stabilize_va_list		PARAMS ((tree, int));
 static rtx expand_builtin_expect	PARAMS ((tree, rtx));
@@ -2398,120 +2396,6 @@ expand_builtin_fputs (arglist, ignore)
 		      VOIDmode, EXPAND_NORMAL);
 }
 
-/* Check an arglist to *printf for problems.  The arglist should start
-   at the format specifier, with the remaining arguments immediately
-   following it. */
-static int
-is_valid_printf_arglist (arglist)
-  tree arglist;
-{
-  /* Save this value so we can restore it later. */
-  const int SAVE_pedantic = pedantic;
-  int diagnostic_occurred = 0;
-
-  /* If we can't check the format, be safe and return false. */
-  if (!check_function_format_ptr)
-    return 0;
-  
-  /* Set this to a known value so the user setting won't affect code
-     generation.  */
-  pedantic = 1;
-  /* Check to make sure there are no format specifier errors. */
-  check_function_format_ptr (&diagnostic_occurred,
-			     maybe_get_identifier("printf"),
-			     NULL_TREE, arglist);
-
-  /* Restore the value of `pedantic'. */
-  pedantic = SAVE_pedantic;
-
-  /* If calling `check_function_format_ptr' produces a warning, we
-     return false, otherwise we return true. */
-  return ! diagnostic_occurred;
-}
-
-/* If the arguments passed to printf are suitable for optimizations,
-   we attempt to transform the call. */
-static rtx
-expand_builtin_printf (arglist, ignore)
-     tree arglist;
-     int ignore;
-{
-  tree fn_putchar = built_in_decls[BUILT_IN_PUTCHAR],
-    fn_puts = built_in_decls[BUILT_IN_PUTS];
-  tree call_expr, fn;
-  tree format_arg, stripped_string;
-
-  /* If the return value is used, or the replacement _DECL isn't
-     initialized, don't do the transformation. */
-  if (!ignore || !fn_putchar || !fn_puts)
-    return 0;
-
-  /* Verify the required arguments in the original call. */
-  if (arglist == 0
-      || (TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE))
-    return 0;
-  
-  /* Check the specifier vs. the parameters. */
-  if (!is_valid_printf_arglist (arglist))
-    return 0;
-  
-  format_arg = TREE_VALUE (arglist);
-  stripped_string = format_arg;
-  STRIP_NOPS (stripped_string);
-  if (stripped_string && TREE_CODE (stripped_string) == ADDR_EXPR)
-    stripped_string = TREE_OPERAND (stripped_string, 0);
-
-  /* If the format specifier isn't a STRING_CST, punt.  */
-  if (TREE_CODE (stripped_string) != STRING_CST)
-    return 0;
-  
-  /* OK!  We can attempt optimization.  */
-
-  /* If the format specifier was "%s\n", call __builtin_puts(arg2). */
-  if (strcmp (TREE_STRING_POINTER (stripped_string), "%s\n") == 0)
-    {
-      arglist = TREE_CHAIN (arglist);
-      fn = fn_puts;
-    }
-  /* If the format specifier was "%c", call __builtin_putchar (arg2). */
-  else if (strcmp (TREE_STRING_POINTER (stripped_string), "%c") == 0)
-    {
-      arglist = TREE_CHAIN (arglist);
-      fn = fn_putchar;
-    }
-  else
-    {
-     /* We can't handle anything else with % args or %% ... yet. */
-      if (strchr (TREE_STRING_POINTER (stripped_string), '%'))
-	return 0;
-      
-      /* If the resulting constant string has a length of 1, call
-         putchar.  Note, TREE_STRING_LENGTH includes the terminating
-         NULL in its count.  */
-      if (TREE_STRING_LENGTH (stripped_string) == 2)
-        {
-	  /* Given printf("c"), (where c is any one character,)
-             convert "c"[0] to an int and pass that to the replacement
-             function. */
-	  arglist = build_int_2 (TREE_STRING_POINTER (stripped_string)[0], 0);
-	  arglist = build_tree_list (NULL_TREE, arglist);
-	  
-	  fn = fn_putchar;
-        }
-      else
-	/* We'd like to arrange to call fputs(string) here, but we
-           need stdout and don't have a way to get it ... yet.  */
-	return 0;
-    }
-  
-  call_expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
-  call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-		     call_expr, arglist, NULL_TREE);
-  TREE_SIDE_EFFECTS (call_expr) = 1;
-  return expand_expr (call_expr, (ignore ? const0_rtx : NULL_RTX),
-		      VOIDmode, EXPAND_NORMAL);
-}
-
 /* Expand a call to __builtin_expect.  We return our argument and
    emit a NOTE_INSN_EXPECTED_VALUE note.  */
 
@@ -2810,12 +2694,6 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       
     case BUILT_IN_FPUTS:
       target = expand_builtin_fputs (arglist, ignore);
-      if (target)
-	return target;
-      break;
-      
-    case BUILT_IN_PRINTF:
-      target = expand_builtin_printf (arglist, ignore);
       if (target)
 	return target;
       break;

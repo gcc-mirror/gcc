@@ -2446,9 +2446,6 @@ extern const char * const language_string;
 extern tree builtin_function			PARAMS ((const char *, tree, int,
 						       enum built_in_class,
 						       const char *));
-/* Pointer to function to check the format of printf, etc.  This is
-   used by the backend, e.g. builtins.c.  */
-extern void (*check_function_format_ptr) PARAMS ((int *, tree, tree, tree));
 
 /* In tree.c */
 extern char *perm_calloc			PARAMS ((int, long));

@@ -7163,7 +7163,13 @@ expand_expr (exp, target, tmode, modifier)
 	  && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
 	      == FUNCTION_DECL)
 	  && DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)))
-	return expand_builtin (exp, target, subtarget, tmode, ignore);
+        {
+	  if (DECL_BUILT_IN_CLASS (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
+	      == BUILT_IN_FRONTEND)
+	    return (*lang_expand_expr) (exp, original_target, tmode, modifier);
+	  else
+	    return expand_builtin (exp, target, subtarget, tmode, ignore);
+	}
 
       /* If this call was expanded already by preexpand_calls,
 	 just return the result we got.  */
