@@ -1,3 +1,11 @@
+2004-08-04  Thomas Fitzsimmons  <fitzsim@redhat.com>
+	    Michael Koch  <konqueror@gmx.de>
+
+	* acconfig.h: Removed.
+	* Makefile.am: Rename variables for xlib peer to include xlib and
+	gtk_c_headers to gtk_jni_headers.
+	* Makefile.in: Regenerated.
+
 2004-08-04  Andrew Haley  <aph@redhat.com>
 
 	* testsuite/lib/libjava.exp (bytecompile_file): Byte compile with
