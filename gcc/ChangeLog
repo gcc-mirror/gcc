@@ -1,3 +1,20 @@
+Fri Dec 14 12:05:14 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_fpmath, ix86_fpmath_string): New.
+	(override_option): Set ix86_fpmath.
+	* i386.h (MASK_MIX_SSE_I387): Remove.
+	(TARGET_SSE_MATH): New.
+	(TARGET_MIX_SSE_I387): Use ix86_fpmath.
+	(TARGET_SWITCHES): Remove "mix-sse-i387".
+	(fpmath_unit): New enum.
+	(ix86_fpmath, ix86_fpmath_string): Declare.
+	* i386.md (swapsf): Fix condition.
+	(add?f, sub?f, mul?f, div?f, sqrt?f, min?f): Use TARGET_SSE_MATH.
+	(fp_?f_*_nosse): New.
+	(fp_*): Use TARGET_SSE_MATH.
+	* invoke.texi (-mfpmath): Document.
+	(-msse2): Add.
+
 2001-12-14  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (output_die): Print the string in the comment for
