@@ -1276,6 +1276,7 @@ ffedata_gather_ (ffestorag mst, ffestorag st)
 			     ffebld_accter (ffestorag_init (mst)));
 	  ffebld_arrter_set_size (ffestorag_init (mst),
 				  ffedata_storage_size_);
+	  ffebld_arrter_set_pad (ffestorag_init (mst), 0);
 	  ffecom_notify_init_storage (mst);
 	}
 
@@ -1316,6 +1317,7 @@ ffedata_gather_ (ffestorag mst, ffestorag st)
 			     ffebld_accter (ffestorag_init (mst)));
 	  ffebld_arrter_set_size (ffestorag_init (mst),
 				  ffedata_storage_size_);
+	  ffebld_arrter_set_pad (ffestorag_init (mst), 0);
 	  ffecom_notify_init_storage (mst);
 	}
 
@@ -1377,6 +1379,7 @@ ffedata_gather_ (ffestorag mst, ffestorag st)
 			     ffebld_accter (ffestorag_init (mst)));
 	  ffebld_arrter_set_size (ffestorag_init (mst),
 				  ffedata_storage_size_);
+	  ffebld_arrter_set_pad (ffestorag_init (mst), 0);
 	  ffecom_notify_init_storage (mst);
 	}
 
@@ -1658,6 +1661,8 @@ ffedata_value_ (ffebld value, ffelexToken token)
 		 ffebld_accter (ffestorag_init (ffedata_storage_)));
 	      ffebld_arrter_set_size (ffestorag_init (ffedata_storage_),
 				      ffedata_storage_size_);
+	      ffebld_arrter_set_pad (ffestorag_init (ffedata_storage_),
+				     0);
 	      ffecom_notify_init_storage (ffedata_storage_);
 	    }
 	}
@@ -1794,6 +1799,7 @@ ffedata_value_ (ffebld value, ffelexToken token)
 			  ffebld_accter (ffesymbol_init (ffedata_symbol_)));
 	  ffebld_arrter_set_size (ffesymbol_init (ffedata_symbol_),
 				  ffedata_symbolsize_);
+	  ffebld_arrter_set_pad (ffestorag_init (ffedata_symbol_), 0);
 	  ffecom_notify_init_symbol (ffedata_symbol_);
 	}
     }

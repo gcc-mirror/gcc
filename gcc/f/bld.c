@@ -5507,6 +5507,7 @@ ffebld_new_accter (ffebldConstantArray a, ffebit b)
   x->op = FFEBLD_opACCTER;
   x->u.accter.array = a;
   x->u.accter.bits = b;
+  x->u.accter.pad = 0;
   return x;
 }
 
@@ -5529,6 +5530,7 @@ ffebld_new_arrter (ffebldConstantArray a, ffetargetOffset size)
   x->op = FFEBLD_opARRTER;
   x->u.arrter.array = a;
   x->u.arrter.size = size;
+  x->u.arrter.pad = 0;
   return x;
 }
 
@@ -5550,6 +5552,7 @@ ffebld_new_conter_with_orig (ffebldConstant c, ffebld o)
   x->op = FFEBLD_opCONTER;
   x->u.conter.expr = c;
   x->u.conter.orig = o;
+  x->u.conter.pad = 0;
   return x;
 }
 

@@ -418,18 +418,21 @@ struct _ffebld_
 	  {
 	    ffebldConstant expr;
 	    ffebld orig;	/* Original expression, or NULL if none. */
+	    ffetargetAlign pad;	/* Initial padding (for DATA, etc.). */
 	  }
 	conter;
 	struct
 	  {
 	    ffebldConstantArray array;
 	    ffetargetOffset size;
+	    ffetargetAlign pad;	/* Initial padding (for DATA, etc.). */
 	  }
 	arrter;
 	struct
 	  {
 	    ffebldConstantArray array;
 	    ffebit bits;
+	    ffetargetAlign pad;	/* Initial padding (for DATA, etc.). */
 	  }
 	accter;
 	struct
@@ -732,13 +735,17 @@ ffetargetCharacterSize ffebld_size_max (ffebld b);
 
 #define ffebld_accter(b) ((b)->u.accter.array)
 #define ffebld_accter_bits(b) ((b)->u.accter.bits)
+#define ffebld_accter_pad(b) ((b)->u.accter.pad)
 #define ffebld_accter_set_bits(b,bt) ((b)->u.accter.bits = (bt))
+#define ffebld_accter_set_pad(b,p) ((b)->u.accter.pad = (p))
 #define ffebld_accter_size(b) ffebit_size((b)->u.accter.bits)
 #define ffebld_append_item(b,i) (**(b) = ffebld_new_item((i),NULL),	      \
 				 *(b) = &((**(b))->u.item.trail))
 #define ffebld_arity(b) ffebld_arity_op(ffebld_op(b))
 #define ffebld_arity_op(o) (ffebld_arity_op_[o])
 #define ffebld_arrter(b) ((b)->u.arrter.array)
+#define ffebld_arrter_pad(b) ((b)->u.arrter.pad)
+#define ffebld_arrter_set_pad(b,p) ((b)->u.arrter.pad = (p))
 #define ffebld_arrter_set_size(b,s) ((b)->u.arrter.size = (s))
 #define ffebld_arrter_size(b) ((b)->u.arrter.size)
 #if FFEBLD_whereconstCURRENT_ == FFEBLD_whereconstPROGUNIT_
@@ -827,7 +834,9 @@ ffetargetCharacterSize ffebld_size_max (ffebld b);
 #define ffebld_constant_union(c) ((c)->u)
 #define ffebld_conter(b) ((b)->u.conter.expr)
 #define ffebld_conter_orig(b) ((b)->u.conter.orig)
+#define ffebld_conter_pad(b) ((b)->u.conter.pad)
 #define ffebld_conter_set_orig(b,o) ((b)->u.conter.orig = (o))
+#define ffebld_conter_set_pad(b,p) ((b)->u.conter.pad = (p))
 #define ffebld_copy(b) (b)	/* ~~~Someday really make a copy. */
 #define ffebld_cu_ptr_typeless(u) &(u).typeless
 #define ffebld_cu_ptr_hollerith(u) &(u).hollerith
