@@ -1,3 +1,7 @@
+2003-06-18  James A Morrison <ja2morri@student.math.uwaterloo.ca>
+
+	* config/sparc/sparc.c: Update copyright year.
+
 2003-06-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (init_cumulative_args): Limit CALL_LIBCALL
