@@ -1,3 +1,17 @@
+2002-06-21  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/trad: New directory with traditional tests copied
+	from parent directory.
+	* gcc.dg/cpp/assert_trad1.c, gcc.dg/cpp/assert_trad2.c,
+	gcc.dg/cpp/assert_trad3.c, gcc.dg/cpp/defined_trad.c,
+	gcc.dg/cpp/hash2.c, gcc.dg/cpp/tr-define.c, gcc.dg/cpp/tr-direct.c,
+	gcc.dg/cpp/tr-sign.c, gcc.dg/cpp/tr-str.c, gcc.dg/cpp/uchar-2.c:
+	Move to trad/ and rename.
+	* gcc.dg/cpp/trad/__STDC__.c, gcc.dg/cpp/trad/comment.c,
+	gcc.dg/cpp/trad/escaped-eof.c, gcc.dg/cpp/trad/redef1.c,
+	gcc.dg/cpp/trad/redef2.c: New tests.
+	* gcc.dg/cpp/trad/trad.exp: New driver.
+
 2002-06-20  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/assert_trad1.c, gcc.dg/cpp/assert_trad2.c,

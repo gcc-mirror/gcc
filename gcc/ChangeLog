@@ -1,3 +1,12 @@
+2002-06-21  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cpperror.c (cpp_error): For traditional CPP, default to
+	diagnostics on pfile->line.
+	* cpplib.c (prepare_directive_trad): Set line number for
+	diagnostics for #define too.
+	* cpptrad.c (skip_whitespace): Skip comments properly.
+	(_cpp_expansions_different_trad): Initialize quote2.
+
 2002-06-21  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.md: Change GNU CC to GCC in file header comment.

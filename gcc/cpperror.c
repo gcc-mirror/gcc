@@ -137,8 +137,16 @@ cpp_error VPARAMS ((cpp_reader * pfile, int level, const char *msgid, ...))
 
   if (pfile->buffer)
     {
-      line = pfile->cur_token[-1].line;
-      column = pfile->cur_token[-1].col;
+      if (CPP_OPTION (pfile, traditional))
+	{
+	  line = pfile->line;
+	  column = 0;
+	}
+      else
+	{
+	  line = pfile->cur_token[-1].line;
+	  column = pfile->cur_token[-1].col;
+	}
     }
   else
     line = column = 0;

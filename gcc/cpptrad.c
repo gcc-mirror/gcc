@@ -266,7 +266,7 @@ skip_whitespace (pfile, cur, skip_comments)
       if (!c && cur - 1 != RLIMIT (pfile->context))
 	continue;
 
-      if (*cur == '/' && skip_comments)
+      if (c == '/' && skip_comments)
 	{
 	  const uchar *tmp = skip_escaped_newlines (pfile, cur);
 	  if (*tmp == '*')
@@ -1118,7 +1118,7 @@ _cpp_expansions_different_trad (macro1, macro2)
 {
   uchar *p1 = xmalloc (macro1->count + macro2->count);
   uchar *p2 = p1 + macro1->count;
-  uchar quote1 = 0, quote2;
+  uchar quote1 = 0, quote2 = 0;
   bool mismatch;
   size_t len1, len2;
 
