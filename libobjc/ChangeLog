@@ -1,3 +1,8 @@
+2004-06-21  Nick Clifton  <nickc@redhat.com>
+
+	* encoding.c (BITS_PER_UNIT): Define if a definition is not
+	provided.
+
 2004-06-20  Alexander Malmberg  <alexander@malmberg.org>
 
         * Makefile.in (exception.lo): Remove $(OBJC_GCFLAGS).
