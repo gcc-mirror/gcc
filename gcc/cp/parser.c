@@ -8512,8 +8512,7 @@ cp_parser_template_id (cp_parser *parser,
      should we re-parse the token stream, we will not have to repeat
      the effort required to do the parse, nor will we issue duplicate
      error messages about problems during instantiation of the
-     template.  Do so only if parsing succeeded, otherwise we may
-     silently accept template arguments with syntax errors.  */
+     template.  */
   if (start_of_id)
     {
       cp_token *token = cp_lexer_token_at (parser->lexer, start_of_id);
