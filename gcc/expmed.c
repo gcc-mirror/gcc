@@ -2717,7 +2717,7 @@ expand_mult_highpart_adjust (mode, adj_operand, op0, op1, target, unsignedp)
   tem = expand_shift (RSHIFT_EXPR, mode, op0,
 		      build_int_2 (GET_MODE_BITSIZE (mode) - 1, 0),
 		      NULL_RTX, 0);
-  tem = expand_and (tem, op1, NULL_RTX);
+  tem = expand_and (mode, tem, op1, NULL_RTX);
   adj_operand
     = force_operand (gen_rtx_fmt_ee (adj_code, mode, adj_operand, tem),
 		     adj_operand);
@@ -2725,7 +2725,7 @@ expand_mult_highpart_adjust (mode, adj_operand, op0, op1, target, unsignedp)
   tem = expand_shift (RSHIFT_EXPR, mode, op1,
 		      build_int_2 (GET_MODE_BITSIZE (mode) - 1, 0),
 		      NULL_RTX, 0);
-  tem = expand_and (tem, op0, NULL_RTX);
+  tem = expand_and (mode, tem, op0, NULL_RTX);
   target = force_operand (gen_rtx_fmt_ee (adj_code, mode, adj_operand, tem),
 			  target);
 
@@ -4159,23 +4159,16 @@ expand_mult_add (x, target, mult, add, mode, unsignedp)
    If TARGET is 0, a pseudo-register or constant is returned.  */
 
 rtx
-expand_and (op0, op1, target)
+expand_and (mode, op0, op1, target)
+     enum machine_mode mode;
      rtx op0, op1, target;
 {
-  enum machine_mode mode = VOIDmode;
-  rtx tem;
+  rtx tem = 0;
 
-  if (GET_MODE (op0) != VOIDmode)
-    mode = GET_MODE (op0);
-  else if (GET_MODE (op1) != VOIDmode)
-    mode = GET_MODE (op1);
-
-  if (mode != VOIDmode)
+  if (GET_MODE (op0) == VOIDmode && GET_MODE (op1) == VOIDmode)
+    tem = simplify_binary_operation (AND, mode, op0, op1);
+  if (tem == 0)
     tem = expand_binop (mode, and_optab, op0, op1, target, 0, OPTAB_LIB_WIDEN);
-  else if (GET_CODE (op0) == CONST_INT && GET_CODE (op1) == CONST_INT)
-    tem = GEN_INT (INTVAL (op0) & INTVAL (op1));
-  else
-    abort ();
 
   if (target == 0)
     target = tem;
@@ -4433,7 +4426,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 				subtarget, normalizep == 1);
 	  else if (STORE_FLAG_VALUE & 1)
 	    {
-	      op0 = expand_and (op0, const1_rtx, subtarget);
+	      op0 = expand_and (compare_mode, op0, const1_rtx, subtarget);
 	      if (normalizep == -1)
 		op0 = expand_unop (compare_mode, neg_optab, op0, op0, 0);
 	    }

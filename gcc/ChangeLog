@@ -1,3 +1,18 @@
+2002-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/4574
+	* expr.h (expand_and): Add mode argument.
+	* expmed.c (expand_and): Add mode argument.
+	(expand_mult_highpart_adjust, emit_store_flag): Adjust callers.
+	* expr.c (store_field, expand_expr, do_store_flag): Likewise.
+	* except.c (expand_builtin_extract_return_addr): Likewise.
+	* config/alpha/alpha.c (alpha_initialize_trampoline): Likewise.
+	* config/sparc/sparc.c (sparc_initialize_trampoline): Likewise.
+	* config/c4x/c4x.h (INITIALIZE_TRAMPOLINE): Likewise.
+	Use GEN_INT (x) instead of gen_rtx (CONST_INT, VOIDmode, x).
+	* config/c4x/c4x.md: Use GEN_INT (x) instead of
+	gen_rtx (CONST_INT, VOIDmode, x).
+
 2002-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/4697:
