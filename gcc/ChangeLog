@@ -1,3 +1,9 @@
+Tue Jun  9 02:40:49 1998  Richard Henderson  <rth@cygnus.com>
+
+	* mips/elf.h (ASM_DECLARE_OBJECT_NAME): Define.
+	(ASM_FINISH_DECLARE_OBJECT): Define;
+	* mips/elf64.h: Likewise.
+
 Tue Jun  9 01:08:47 1998  Richard Henderson  <rth@cygnus.com>
 
 	* toplev.c (flag_new_exceptions): Remove extraneous `extern'.
