@@ -1,3 +1,9 @@
+2004-02-11  Daniel Berlin  <dberlin@dberlin.org>
+
+	* dwarf2out.c (output_loc_list): Remove no longer necessary, and now
+	incorrect, hunk.
+	(add_location_or_const_value_attribute): Use text_section_label,
+	not TEXT_SECTION_NAME.
 
 2004-02-11  Per Bothner  <per@bothner.com>
 
