@@ -83,6 +83,15 @@ static JIS_ACTION JIS_action_table[JIS_S_NUM][JIS_C_NUM] = {
 
 char *literal_codeset = NULL;
 
+/* Store into *PWC (if PWC is not null) the wide character
+   corresponding to the multibyte character at the start of the
+   buffer S of size N.  Return the number of bytes in the multibyte
+   character.  Return -1 if the bytes do not form a valid character,
+   or 0 if S is null or points to a null byte.
+
+   This function behaves like the Standard C function mbtowc, except
+   it treats locale names of the form "C-..." specially.  */
+
 int
 local_mbtowc (pwc, s, n)
      wchar_t *pwc;
@@ -280,6 +289,13 @@ local_mbtowc (pwc, s, n)
 #endif
 }
 
+/* Return the number of bytes in the multibyte character at the start
+   of the buffer S of size N.  Return -1 if the bytes do not form a
+   valid character, or 0 if S is null or points to a null byte.
+
+   This function behaves like the Standard C function mblen, except
+   it treats locale names of the form "C-..." specially.  */
+
 int
 local_mblen (s, n)
      char *s;
@@ -287,6 +303,11 @@ local_mblen (s, n)
 {
   return local_mbtowc (NULL, s, n);
 }
+
+/* Return the maximum mumber of bytes in a multibyte character.
+
+   This function returns the same value as the Standard C macro MB_CUR_MAX,
+   except it treats locale names of the form "C-..." specially.  */
 
 int
 local_mb_cur_max ()
