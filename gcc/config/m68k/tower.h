@@ -78,10 +78,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_MEM_FUNCTIONS
 #define IDENT_DIRECTIVE
 
-/* This is only used in g++, don't prepend underscore.  */
-
-#define NO_UNDERSCORES
-
 /* Every structure and union's size must be a multiple of two bytes.  */
 
 #define STRUCTURE_SIZE_BOUNDARY 16
