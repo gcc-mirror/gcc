@@ -410,9 +410,6 @@ typedef char boolean;
 static reg_errcode_t byte_regex_compile _RE_ARGS ((const char *pattern, size_t size,
                                                    reg_syntax_t syntax,
                                                    struct re_pattern_buffer *bufp));
-static reg_errcode_t wcs_regex_compile _RE_ARGS ((const char *pattern, size_t size,
-                                                   reg_syntax_t syntax,
-                                                   struct re_pattern_buffer *bufp));
 
 static int byte_re_match_2_internal PARAMS ((struct re_pattern_buffer *bufp,
 					     const char *string1, int size1,
@@ -420,6 +417,19 @@ static int byte_re_match_2_internal PARAMS ((struct re_pattern_buffer *bufp,
 					     int pos,
 					     struct re_registers *regs,
 					     int stop));
+static int byte_re_search_2 PARAMS ((struct re_pattern_buffer *bufp,
+				     const char *string1, int size1,
+				     const char *string2, int size2,
+				     int startpos, int range,
+				     struct re_registers *regs, int stop));
+static int byte_re_compile_fastmap PARAMS ((struct re_pattern_buffer *bufp));
+
+#ifdef MBS_SUPPORT
+static reg_errcode_t wcs_regex_compile _RE_ARGS ((const char *pattern, size_t size,
+                                                   reg_syntax_t syntax,
+                                                   struct re_pattern_buffer *bufp));
+
+
 static int wcs_re_match_2_internal PARAMS ((struct re_pattern_buffer *bufp,
 					    const char *cstring1, int csize1,
 					    const char *cstring2, int csize2,
@@ -429,19 +439,13 @@ static int wcs_re_match_2_internal PARAMS ((struct re_pattern_buffer *bufp,
 					    wchar_t *string1, int size1,
 					    wchar_t *string2, int size2,
 					    int *mbs_offset1, int *mbs_offset2));
-static int byte_re_search_2 PARAMS ((struct re_pattern_buffer *bufp,
-				     const char *string1, int size1,
-				     const char *string2, int size2,
-				     int startpos, int range,
-				     struct re_registers *regs, int stop));
 static int wcs_re_search_2 PARAMS ((struct re_pattern_buffer *bufp,
 				    const char *string1, int size1,
 				    const char *string2, int size2,
 				    int startpos, int range,
 				    struct re_registers *regs, int stop));
-static int byte_re_compile_fastmap PARAMS ((struct re_pattern_buffer *bufp));
 static int wcs_re_compile_fastmap PARAMS ((struct re_pattern_buffer *bufp));
-
+#endif
 
 /* These are the command codes that appear in compiled regular
    expressions.  Some opcodes are followed by argument bytes.  A
@@ -611,29 +615,31 @@ typedef enum
 # define PREFIX(name) byte_##name
 # define ARG_PREFIX(name) name
 # define PUT_CHAR(c) putchar (c)
-#elif defined WCHAR
-# define CHAR_T wchar_t
-# define UCHAR_T wchar_t
-# define COMPILED_BUFFER_VAR wc_buffer
-# define OFFSET_ADDRESS_SIZE 1 /* the size which STORE_NUMBER macro use */
-# define CHAR_CLASS_SIZE ((__alignof__(wctype_t)+sizeof(wctype_t))/sizeof(CHAR_T)+1)
-# define PREFIX(name) wcs_##name
-# define ARG_PREFIX(name) c##name
-/* Should we use wide stream??  */
-# define PUT_CHAR(c) printf ("%C", c);
-# define TRUE 1
-# define FALSE 0
 #else
-# ifdef MBS_SUPPORT
-#  define WCHAR
+# ifdef WCHAR
+#  define CHAR_T wchar_t
+#  define UCHAR_T wchar_t
+#  define COMPILED_BUFFER_VAR wc_buffer
+#  define OFFSET_ADDRESS_SIZE 1 /* the size which STORE_NUMBER macro use */
+#  define CHAR_CLASS_SIZE ((__alignof__(wctype_t)+sizeof(wctype_t))/sizeof(CHAR_T)+1)
+#  define PREFIX(name) wcs_##name
+#  define ARG_PREFIX(name) c##name
+/* Should we use wide stream??  */
+#  define PUT_CHAR(c) printf ("%C", c);
+#  define TRUE 1
+#  define FALSE 0
+# else
+#  ifdef MBS_SUPPORT
+#   define WCHAR
+#   define INSIDE_RECURSION
+#   include "regex.c"
+#   undef INSIDE_RECURSION
+#  endif
+#  define BYTE
 #  define INSIDE_RECURSION
 #  include "regex.c"
 #  undef INSIDE_RECURSION
 # endif
-# define BYTE
-# define INSIDE_RECURSION
-# include "regex.c"
-# undef INSIDE_RECURSION
 #endif
 
 #ifdef INSIDE_RECURSION
@@ -5076,15 +5082,34 @@ weak_alias (__re_search_2, re_search_2)
 #endif
 
 #ifdef WCHAR
-# define FREE_WCS_BUFFERS()    \
-  do {                         \
-    FREE_VAR (string1);                \
-    FREE_VAR (string2);                \
-    FREE_VAR (mbs_offset1);    \
-    FREE_VAR (mbs_offset2);    \
+# define MAX_ALLOCA_SIZE	2000
+
+# define FREE_WCS_BUFFERS() \
+  do {									      \
+    if (size1 > MAX_ALLOCA_SIZE)					      \
+      {									      \
+	free (wcs_string1);						      \
+	free (mbs_offset1);						      \
+      }									      \
+    else								      \
+      {									      \
+	FREE_VAR (wcs_string1);						      \
+	FREE_VAR (mbs_offset1);						      \
+      }									      \
+    if (size2 > MAX_ALLOCA_SIZE) 					      \
+      {									      \
+	free (wcs_string2);						      \
+	free (mbs_offset2);						      \
+      }									      \
+    else								      \
+      {									      \
+	FREE_VAR (wcs_string2);						      \
+	FREE_VAR (mbs_offset2);						      \
+      }									      \
   } while (0)
 
 #endif
+
 
 static int
 PREFIX(re_search_2) (bufp, string1, size1, string2, size2, startpos, range,
@@ -5160,36 +5185,72 @@ PREFIX(re_search_2) (bufp, string1, size1, string2, size2, startpos, range,
      fill them with converted string.  */
   if (size1 != 0)
     {
-      wcs_string1 = REGEX_TALLOC (size1 + 1, CHAR_T);
-      mbs_offset1 = REGEX_TALLOC (size1 + 1, int);
-      is_binary = REGEX_TALLOC (size1 + 1, char);
+      if (size1 > MAX_ALLOCA_SIZE)
+	{
+	  wcs_string1 = TALLOC (size1 + 1, CHAR_T);
+	  mbs_offset1 = TALLOC (size1 + 1, int);
+	  is_binary = TALLOC (size1 + 1, char);
+	}
+      else
+	{
+	  wcs_string1 = REGEX_TALLOC (size1 + 1, CHAR_T);
+	  mbs_offset1 = REGEX_TALLOC (size1 + 1, int);
+	  is_binary = REGEX_TALLOC (size1 + 1, char);
+	}
       if (!wcs_string1 || !mbs_offset1 || !is_binary)
 	{
-	  FREE_VAR (wcs_string1);
-	  FREE_VAR (mbs_offset1);
-	  FREE_VAR (is_binary);
+	  if (size1 > MAX_ALLOCA_SIZE)
+	    {
+	      free (wcs_string1);
+	      free (mbs_offset1);
+	      free (is_binary);
+	    }
+	  else
+	    {
+	      FREE_VAR (wcs_string1);
+	      FREE_VAR (mbs_offset1);
+	      FREE_VAR (is_binary);
+	    }
 	  return -2;
 	}
       wcs_size1 = convert_mbs_to_wcs(wcs_string1, string1, size1,
 				     mbs_offset1, is_binary);
       wcs_string1[wcs_size1] = L'\0'; /* for a sentinel  */
-      FREE_VAR (is_binary);
+      if (size1 > MAX_ALLOCA_SIZE)
+	free (is_binary);
+      else
+	FREE_VAR (is_binary);
     }
   if (size2 != 0)
     {
-      wcs_string2 = REGEX_TALLOC (size2 + 1, CHAR_T);
-      mbs_offset2 = REGEX_TALLOC (size2 + 1, int);
-      is_binary = REGEX_TALLOC (size2 + 1, char);
+      if (size2 > MAX_ALLOCA_SIZE)
+	{
+	  wcs_string2 = TALLOC (size2 + 1, CHAR_T);
+	  mbs_offset2 = TALLOC (size2 + 1, int);
+	  is_binary = TALLOC (size2 + 1, char);
+	}
+      else
+	{
+	  wcs_string2 = REGEX_TALLOC (size2 + 1, CHAR_T);
+	  mbs_offset2 = REGEX_TALLOC (size2 + 1, int);
+	  is_binary = REGEX_TALLOC (size2 + 1, char);
+	}
       if (!wcs_string2 || !mbs_offset2 || !is_binary)
 	{
 	  FREE_WCS_BUFFERS ();
-	  FREE_VAR (is_binary);
+	  if (size2 > MAX_ALLOCA_SIZE)
+	    free (is_binary);
+	  else
+	    FREE_VAR (is_binary);
 	  return -2;
 	}
       wcs_size2 = convert_mbs_to_wcs(wcs_string2, string2, size2,
 				     mbs_offset2, is_binary);
       wcs_string2[wcs_size2] = L'\0'; /* for a sentinel  */
-      FREE_VAR (is_binary);
+      if (size2 > MAX_ALLOCA_SIZE)
+	free (is_binary);
+      else
+	FREE_VAR (is_binary);
     }
 #endif /* WCHAR */
 
