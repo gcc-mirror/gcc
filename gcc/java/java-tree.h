@@ -674,6 +674,8 @@ extern tree build_anewarray PARAMS ((tree, tree));
 extern tree build_new_array PARAMS ((tree, tree));
 extern tree build_java_array_length_access PARAMS ((tree));
 extern tree build_java_arraynull_check PARAMS ((tree, tree, tree));
+extern tree build_get_class PARAMS ((tree));
+extern tree build_instanceof PARAMS ((tree, tree));
 extern tree create_label_decl PARAMS ((tree));
 extern void push_labeled_block PARAMS ((tree));
 extern tree prepare_eh_table_type PARAMS ((tree));

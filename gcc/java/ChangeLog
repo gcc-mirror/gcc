@@ -1,3 +1,13 @@
+2000-05-19  Tom Tromey  <tromey@cygnus.com>
+
+	* java-tree.h (build_instanceof): Declare.
+	(build_get_class): Declare.
+	* parse.y (patch_binop): Use build_instanceof.
+	* expr.c (build_instanceof): New function.  If class is final,
+	don't make a function call.
+	(expand_java_INSTANCEOF): Use it.
+	(build_get_class): New function.
+
 2000-05-18  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* jcf-write.c (generate_classfile): Scan the source_file for

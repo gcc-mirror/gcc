@@ -1036,17 +1036,96 @@ expand_java_NEW (type)
 		     NULL_TREE));
 }
 
+/* This returns an expression which will extract the class of an
+   object.  */
+
+tree
+build_get_class (value)
+     tree value;
+{
+  tree class_field = lookup_field (&dtable_type, get_identifier ("class"));
+  tree vtable_field = lookup_field (&object_type_node,
+				    get_identifier ("vtable"));
+  return build (COMPONENT_REF, class_ptr_type,
+		build1 (INDIRECT_REF, dtable_type,
+			build (COMPONENT_REF, dtable_ptr_type,
+			       build1 (INDIRECT_REF, object_type_node, value),
+			       vtable_field)),
+		class_field);
+}
+
+/* This builds the tree representation of the `instanceof' operator.
+   It tries various tricks to optimize this in cases where types are
+   known.  */
+
+tree
+build_instanceof (value, type)
+     tree value, type;
+{
+  tree expr;
+  tree itype = TREE_TYPE (TREE_TYPE (soft_instanceof_node));
+  tree valtype = TREE_TYPE (TREE_TYPE (value));
+  tree valclass = TYPE_NAME (valtype);
+  tree klass;
+
+  /* When compiling from bytecode, we need to ensure that TYPE has
+     been loaded.  */
+  if (CLASS_P (type) && ! CLASS_LOADED_P (type))
+    {
+      load_class (type, 1);
+      if (! TYPE_SIZE (type) || TREE_CODE (TYPE_SIZE (type)) == ERROR_MARK)
+	return error_mark_node;
+    }
+  klass = TYPE_NAME (type);
+
+  if (type == object_type_node || inherits_from_p (valtype, type))
+    {
+      /* Anything except `null' is an instance of Object.  Likewise,
+	 if the object is known to be an instance of the class, then
+	 we only need to check for `null'.  */
+      expr = build (COND_EXPR, itype,
+		    value,
+		    boolean_true_node, boolean_false_node);
+    }
+  else if (! CLASS_INTERFACE (valclass)
+	   && ! CLASS_INTERFACE (klass)
+	   && ! inherits_from_p (type, valtype)
+	   && (CLASS_FINAL (klass)
+	       || ! inherits_from_p (valtype, type)))
+    {
+      /* The classes are from different branches of the derivation
+	 tree, so we immediately know the answer.  */
+      expr = boolean_false_node;
+    }
+  else if (CLASS_FINAL (klass))
+    {
+      tree save = save_expr (value);
+      expr = build (COND_EXPR, itype,
+		    save,
+		    build (EQ_EXPR, itype,
+			   build_get_class (save),
+			   build_class_ref (type)),
+		    boolean_false_node);
+    }
+  else
+    {
+      expr = build (CALL_EXPR, itype,
+		    build_address_of (soft_instanceof_node),
+		    tree_cons (NULL_TREE, value,
+			       build_tree_list (NULL_TREE,
+						build_class_ref (type))),
+		    NULL_TREE);
+    }
+  TREE_SIDE_EFFECTS (expr) = TREE_SIDE_EFFECTS (value);
+  return expr;
+}
+
 static void
 expand_java_INSTANCEOF (type)
      tree type;
 {
   tree value = pop_value (object_ptr_type_node);
-  value = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (soft_instanceof_node)),
-		 build_address_of (soft_instanceof_node),
-		 tree_cons (NULL_TREE, value,
-			    build_tree_list (NULL_TREE,
-					     build_class_ref (type))),
-		 NULL_TREE);
+  value = build_instanceof (value, type);
   push_value (value);
 }
 
