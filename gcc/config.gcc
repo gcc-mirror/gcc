@@ -830,6 +830,7 @@ hppa*64*-*-hpux11*)
 		thread_file=posix 
 		;;
 	esac
+	use_fixproto=no
 	;;
 hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 	target_cpu_default="MASK_PA_11"
@@ -841,6 +842,7 @@ hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 		;;
 	esac
 	use_collect2=yes
+	use_fixproto=no
 	;;
 hppa1.0-*-hpux11*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h dbxelf.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
@@ -851,6 +853,7 @@ hppa1.0-*-hpux11*)
 		;;
 	esac
 	use_collect2=yes
+	use_fixproto=no
 	;;
 i370-*-opened*)			 # IBM 360/370/390 Architecture
 	xm_defines='FATAL_EXIT_CODE=12'

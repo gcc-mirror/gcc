@@ -1,3 +1,7 @@
+2003-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc (*-hpux11): Disable fixproto.
+
 2003-09-24  Phil Edwards  <phil@codesourcery.com>
 
 	PR pch/12112
