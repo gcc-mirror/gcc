@@ -5161,10 +5161,9 @@ print_operand (file, x, code)
       if (! INT_P (x))
 	output_operand_lossage ("invalid %%v value");
       else
-	{
-	  fprintf (file, "0x%x", (INT_LOWPART (x) >> 16) & 0xffff);
-	  return;
-	}
+	fprintf (file, HOST_WIDE_INT_PRINT_HEX,
+		 (INT_LOWPART (x) >> 16) & 0xffff);
+      return;
 
     case 'U':
       /* Print `u' if this has an auto-increment or auto-decrement.  */
