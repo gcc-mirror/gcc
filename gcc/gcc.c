@@ -2409,7 +2409,7 @@ process_command (argc, argv)
     }
 
   temp = getenv ("LIBRARY_PATH");
-  if (temp)
+  if (temp && ! cross_compile)
     {
       char *startp, *endp;
       char *nstore = (char *) alloca (strlen (temp) + 3);
@@ -2441,7 +2441,7 @@ process_command (argc, argv)
 
   /* Use LPATH like LIBRARY_PATH (for the CMU build program).  */
   temp = getenv ("LPATH");
-  if (temp)
+  if (temp && ! cross_compile)
     {
       char *startp, *endp;
       char *nstore = (char *) alloca (strlen (temp) + 3);
