@@ -1,3 +1,8 @@
+2002-09-27  Alan Modra  <amodra@bigpond.net.au>
+
+	* doloop.c (doloop_modify_runtime <biv skips initial incr>): Adjust
+	by absolute loop increment, not loop increment.
+
 2002-09-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-common.h: Follow spelling conventions.
