@@ -2148,16 +2148,16 @@ find_auto_inc (needed, x, insn)
 		  reg_n_calls_crossed[regno]++;
 	    }
 
-	  if (win)
+	  if (win
+	      /* If we have found a suitable auto-increment, do
+		 POST_INC around the register here, and patch out the
+		 increment instruction that follows. */
+	      && validate_change (insn, &XEXP (x, 0),
+				  gen_rtx ((INTVAL (XEXP (y, 1)) == size
+					    ? (offset ? PRE_INC : POST_INC)
+					    : (offset ? PRE_DEC : POST_DEC)),
+					   Pmode, addr), 0))
 	    {
-	      /* We have found a suitable auto-increment: do POST_INC around
-		 the register here, and patch out the increment instruction 
-		 that follows. */
-	      XEXP (x, 0) = gen_rtx ((INTVAL (XEXP (y, 1)) == size
-				      ? (offset ? PRE_INC : POST_INC)
-				      : (offset ? PRE_DEC : POST_DEC)),
-				     Pmode, addr);
-
 	      /* Record that this insn has an implicit side effect.  */
 	      REG_NOTES (insn)
 		= gen_rtx (EXPR_LIST, REG_INC, addr, REG_NOTES (insn));
@@ -2617,10 +2617,13 @@ try_pre_increment (insn, reg, amount)
   if (GET_MODE_SIZE (GET_MODE (use)) != (amount > 0 ? amount : - amount))
     return 0;
 
-  XEXP (use, 0) = gen_rtx (amount > 0
-			   ? (do_post ? POST_INC : PRE_INC)
-			   : (do_post ? POST_DEC : PRE_DEC),
-			   Pmode, reg);
+  /* See if this combination of instruction and addressing mode exists.  */
+  if (! validate_change (insn, &XEXP (use, 0),
+			 gen_rtx (amount > 0
+				  ? (do_post ? POST_INC : PRE_INC)
+				  : (do_post ? POST_DEC : PRE_DEC),
+				  Pmode, reg), 0))
+    return 0;
 
   /* Record that this insn now has an implicit side effect on X.  */
   REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_INC, reg, REG_NOTES (insn));
