@@ -1,3 +1,8 @@
+2004-09-24  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/17615
+	* gfortran.dg/pr17615.f90: New test.
+
 2004-09-24  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimzation/17517
