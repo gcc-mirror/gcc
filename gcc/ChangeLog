@@ -1,3 +1,9 @@
+Wed Nov 10 00:51:41 1999  Hans-Peter Nilsson  <hp@axis.se>
+
+	* invoke.texi (C Dialect Options): Add missing builtins from
+	c-common.c to list.
+	* extend.texi (Other Builtins): Copy to this list.
+
 Wed Nov 10 04:58:09 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* Makefile.in (recog.o): Use BASIC_BLOCK_H macro.

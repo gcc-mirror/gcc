@@ -3136,11 +3136,12 @@ GNU CC includes builtin versions of many of the functions in the
 standard C library.  These will always be treated as having the same
 meaning as the C library function even if you specify the
 @samp{-fno-builtin} (@pxref{C Dialect Options}) option.  These functions
-correspond to the C library functions @code{alloca}, @code{ffs},
-@code{abs}, @code{fabsf}, @code{fabs}, @code{fabsl}, @code{labs},
-@code{memcpy}, @code{memcmp}, @code{strcmp}, @code{strcpy},
-@code{strlen}, @code{sqrtf}, @code{sqrt}, @code{sqrtl}, @code{sinf},
-@code{sin}, @code{sinl}, @code{cosf}, @code{cos}, and @code{cosl}.
+correspond to the C library functions @code{abort}, @code{abs},
+@code{alloca}, @code{cos}, @code{cosf}, @code{cosl}, @code{exit},
+@code{_exit}, @code{fabs}, @code{fabsf}, @code{fabsl}, @code{ffs},
+@code{labs}, @code{memcmp}, @code{memcpy}, @code{memset}, @code{sin},
+@code{sinf}, @code{sinl}, @code{sqrt}, @code{sqrtf}, @code{sqrtl},
+@code{strcmp}, @code{strcpy}, and @code{strlen}.
 
 @findex __builtin_constant_p
 You can use the builtin function @code{__builtin_constant_p} to
