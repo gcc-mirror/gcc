@@ -81,7 +81,7 @@ static void get_zero PARAMS ((REAL_VALUE_TYPE *, int));
 static void get_canonical_qnan PARAMS ((REAL_VALUE_TYPE *, int));
 static void get_canonical_snan PARAMS ((REAL_VALUE_TYPE *, int));
 static void get_inf PARAMS ((REAL_VALUE_TYPE *, int));
-static void sticky_rshift_significand PARAMS ((REAL_VALUE_TYPE *,
+static bool sticky_rshift_significand PARAMS ((REAL_VALUE_TYPE *,
 					       const REAL_VALUE_TYPE *,
 					       unsigned int));
 static void rshift_significand PARAMS ((REAL_VALUE_TYPE *,
@@ -97,7 +97,7 @@ static bool add_significands PARAMS ((REAL_VALUE_TYPE *r,
 				      const REAL_VALUE_TYPE *));
 static bool sub_significands PARAMS ((REAL_VALUE_TYPE *,
 				      const REAL_VALUE_TYPE *,
-				      const REAL_VALUE_TYPE *));
+				      const REAL_VALUE_TYPE *, int));
 static void neg_significand PARAMS ((REAL_VALUE_TYPE *,
 				     const REAL_VALUE_TYPE *));
 static int cmp_significands PARAMS ((const REAL_VALUE_TYPE *,
@@ -182,10 +182,9 @@ get_inf (r, sign)
 
 
 /* Right-shift the significand of A by N bits; put the result in the
-   significand of R.  If any one bits are shifted out, set the least
-   significant bit of R.  */
+   significand of R.  If any one bits are shifted out, return true.  */
 
-static void
+static bool
 sticky_rshift_significand (r, a, n)
      REAL_VALUE_TYPE *r;
      const REAL_VALUE_TYPE *a;
@@ -220,7 +219,7 @@ sticky_rshift_significand (r, a, n)
 	r->sig[i] = 0;
     }
 
-  r->sig[0] |= (sticky != 0);
+  return sticky != 0;
 }
 
 /* Right-shift the significand of A by N bits; put the result in the
@@ -327,15 +326,16 @@ add_significands (r, a, b)
   return carry;
 }
 
-/* Subtract the significands of A and B, placing the result in R.
-   Return true if there was carry out of the most significant word.  */
+/* Subtract the significands of A and B, placing the result in R.  CARRY is
+   true if there's a borrow incoming to the least significant word.
+   Return true if there was borrow out of the most significant word.  */
 
 static inline bool
-sub_significands (r, a, b)
+sub_significands (r, a, b, carry)
      REAL_VALUE_TYPE *r;
      const REAL_VALUE_TYPE *a, *b;
+     int carry;
 {
-  bool carry = false;
   int i;
 
   for (i = 0; i < SIGSZ; ++i)
@@ -500,7 +500,7 @@ div_significands (r, a, b)
     start:
       if (msb || cmp_significands (&u, b) >= 0)
 	{
-	  sub_significands (&u, &u, b);
+	  sub_significands (&u, &u, b, 0);
 	  set_significand_bit (r, bit);
 	}
     }
@@ -570,6 +570,7 @@ do_add (r, a, b, subtract_p)
 {
   int dexp, sign, exp;
   REAL_VALUE_TYPE t;
+  bool inexact = false;
 
   /* Determine if we need to add or subtract.  */
   sign = a->sign;
@@ -648,13 +649,13 @@ do_add (r, a, b, subtract_p)
 	  return;
 	}
 
-      sticky_rshift_significand (&t, b, dexp);
+      inexact |= sticky_rshift_significand (&t, b, dexp);
       b = &t;
     }
 
   if (subtract_p)
     {
-      if (sub_significands (r, a, b))
+      if (sub_significands (r, a, b, inexact))
 	{
 	  /* We got a borrow out of the subtraction.  That means that
 	     A and B had the same exponent, and B had the larger
@@ -671,7 +672,7 @@ do_add (r, a, b, subtract_p)
 	  /* We got carry out of the addition.  This means we need to
 	     shift the significand back down one bit and increase the
 	     exponent.  */
-	  sticky_rshift_significand (r, r, 1);
+	  inexact |= sticky_rshift_significand (r, r, 1);
 	  r->sig[SIGSZ-1] |= SIG_MSB;
 	  if (++exp > MAX_EXP)
 	    {
@@ -692,6 +693,8 @@ do_add (r, a, b, subtract_p)
      is positive.  */
   if (r->class == rvc_zero)
     r->sign = 0;
+  else
+    r->sig[0] |= inexact;
 }
 
 /* Return R = A * B.  */
@@ -1430,7 +1433,7 @@ rtd_divmod (num, den)
     start:
       if (msb || cmp_significands (num, den) >= 0)
 	{
-	  sub_significands (num, num, den);
+	  sub_significands (num, num, den, 0);
 	  q |= 1;
 	}
     }
@@ -2329,7 +2332,7 @@ round_for_format (fmt, r)
       if (shift)
 	{
 	  shift = fmt->log2_b - shift;
-	  sticky_rshift_significand (r, r, shift);
+	  r->sig[0] |= sticky_rshift_significand (r, r, shift);
 	  r->exp += shift;
 	}
     }
@@ -2355,7 +2358,7 @@ round_for_format (fmt, r)
 	    goto underflow;
 
 	  /* De-normalize the significand.  */
-	  sticky_rshift_significand (r, r, diff);
+	  r->sig[0] |= sticky_rshift_significand (r, r, diff);
 	  r->exp += diff;
 	}
     }
@@ -2395,7 +2398,7 @@ round_for_format (fmt, r)
 	      if (shift)
 		{
 		  shift = fmt->log2_b - shift;
-		  sticky_rshift_significand (r, r, shift);
+		  rshift_significand (r, r, shift);
 		  r->exp += shift;
 		  if (r->exp > emax2)
 		    goto overflow;
@@ -4307,6 +4310,51 @@ const struct real_format c4x_extended_format =
     false,
     false,
     false
+  };
+
+
+/* A synthetic "format" for internal arithmetic.  It's the size of the
+   internal significand minus the two bits needed for proper rounding.
+   The encode and decode routines exist only to satisfy our paranoia
+   harness.  */
+
+static void encode_internal PARAMS ((const struct real_format *fmt,
+				     long *, const REAL_VALUE_TYPE *));
+static void decode_internal PARAMS ((const struct real_format *,
+				     REAL_VALUE_TYPE *, const long *));
+
+static void
+encode_internal (fmt, buf, r)
+     const struct real_format *fmt ATTRIBUTE_UNUSED;
+     long *buf;
+     const REAL_VALUE_TYPE *r;
+{
+  memcpy (buf, r, sizeof (*r));
+}
+
+static void
+decode_internal (fmt, r, buf)
+     const struct real_format *fmt ATTRIBUTE_UNUSED;
+     REAL_VALUE_TYPE *r;
+     const long *buf;
+{
+  memcpy (r, buf, sizeof (*r));
+}
+
+const struct real_format real_internal_format = 
+  {
+    encode_internal,
+    decode_internal,
+    2,
+    1,
+    SIGNIFICAND_BITS - 2,
+    -MAX_EXP,
+    MAX_EXP,
+    true,
+    true,
+    false,
+    true,
+    true 
   };
 
 /* Set up default mode to format mapping for IEEE.  Everyone else has

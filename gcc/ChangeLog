@@ -1,3 +1,15 @@
+2002-10-21  Richard Henderson  <rth@redhat.com>
+
+	* real.c (sticky_rshift_significand): Return inexact, don't
+	or it in immediately.
+	(sub_significands): Accept incomming carry.
+	(div_significands, rtd_divmod): Update for sub_significands change.
+	(round_for_format): Update for sticky_rshift_significand change.
+	(do_add): Don't involve the inexact bit in addition, do give the
+	inexact bit as the subtraction carry-in.
+	(encode_internal, decode_internal, real_internal_format): New.
+	* real.h (real_internal_format): Declare.
+
 2002-10-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* libgcc2.c: Fix __udiv_w_sdiv breakage on platforms that
