@@ -1,3 +1,8 @@
+2001-06-07  Loren J. Rittle  <ljrittle@acm.org>
+
+	* config/alpha/elf.h (MAKE_DECL_ONE_ONLY): Copy definition
+	from config/elfos.h.
+
 2001-06-07  Phil Edwards  <pme@sources.redhat.com>
 
 	* linux.h (CPLUSPLUS_CPP_SPEC):  Move -D_GNU_SOURCE to here.
