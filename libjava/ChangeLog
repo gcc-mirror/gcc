@@ -5,6 +5,11 @@
 	* java/lang/dtoa.c: Include string.h.
 	* java/lang/natString.cc (toLowerCase): Initialize `ch' to prevent
 	compiler warning.
+	
+	From Adam Welc <welc@cs.purdue.edu>:
+	* java/util/LinkedList.java (removeFirst): Update `first' field.
+	Handle the last == first case.
+	(removeLast): Update `last' field. Handle the last == first case.
 
 2000-12-01  Warren Levy  <warrenl@cygnus.com>
 
