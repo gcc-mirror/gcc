@@ -1,3 +1,7 @@
+2001-08-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (type_to_class): Fix typo in last change.
+
 2001-08-21  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/sysv4.h (ASM_OUTPUT_LABELREF): Don't emit '#' if 
