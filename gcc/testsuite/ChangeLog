@@ -1,3 +1,8 @@
+2005-03-03  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.c-torture/execute/pr17133.c: New.
+	* gcc.c-torture/compile/20050303-1.c: New.
+
 2005-03-04  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* gcc.dg/cpp/assert4.c:  Fix for cygwin
