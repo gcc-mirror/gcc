@@ -1,3 +1,10 @@
+Wed Oct 15 21:34:45 1997  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.md (udivsi3, divsi3): Split into MQ and non-MQ cases for
+	PPC601.
+	(umulsidi3,umulsi3_highpart): Ditto.
+	(smulsi3_highpart_no_mq): Add !TARGET_POWER.
+
 Wed Oct 15 18:21:46 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (final_prescan_insn): Gut, remove and transform to ...
