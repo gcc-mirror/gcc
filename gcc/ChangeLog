@@ -1,5 +1,17 @@
 2004-01-24  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300-protos.h: Provide prototypes for
+	h8300_legitimate_constant_p and h8300_legitimate_address_p.
+	* config/h8300/h8300.c (h8300_legitimate_constant_p): New.
+	(h8300_rtx_ok_for_base_p): Likewise.
+	(h8300_legitimate_address_p): Likewise.
+	* config/h8300/h8300.h (LEGITIMATE_CONSTANT_P): Use
+	h8300_legitimate_constant_p.
+	(RTX_OK_FOR_BASE_P): Remove.
+	(GO_IF_LEGITIMATE_ADDRESS): Use h8300_legitimate_address_p.
+
+2004-01-24  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.h (REG_OK_FOR_INDEX_NONSTRICT_P): New.
 	(REG_OK_FOR_BASE_NONSTRICT_P): Likewise.
 	(REG_OK_FOR_INDEX_STRICT_P): Likewise.
