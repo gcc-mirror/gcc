@@ -1,3 +1,7 @@
+2005-02-17  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
+	* config/rs6000/t-rtems: Completely reworked. 
+
 2005-02-17  Ira Rosen  <irar@il.ibm.com>
 
         * tree-data-ref.c (array_base_name_differ_p): Remove gcc_assert.
