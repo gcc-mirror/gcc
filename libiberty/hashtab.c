@@ -88,10 +88,11 @@ higher_prime_number (n)
    created hash table. */
 
 htab_t
-htab_create (size, hash_f, eq_f)
+htab_create (size, hash_f, eq_f, del_f)
      size_t size;
      htab_hash hash_f;
      htab_eq eq_f;
+     htab_del del_f;
 {
   htab_t result;
 
@@ -101,6 +102,7 @@ htab_create (size, hash_f, eq_f)
   result->size = size;
   result->hash_f = hash_f;
   result->eq_f = eq_f;
+  result->del_f = del_f;
   return result;
 }
 
@@ -111,6 +113,15 @@ void
 htab_delete (htab)
      htab_t htab;
 {
+  int i;
+  if (htab->del_f)
+    for (i = htab->size - 1; i >= 0; i--)
+      {
+	if (htab->entries[i] != EMPTY_ENTRY
+	    && htab->entries[i] != DELETED_ENTRY)
+	  (*htab->del_f) (htab->entries[i]);
+      }
+
   free (htab->entries);
   free (htab);
 }
@@ -121,6 +132,15 @@ void
 htab_empty (htab)
      htab_t htab;
 {
+  int i;
+  if (htab->del_f)
+    for (i = htab->size - 1; i >= 0; i--)
+      {
+	if (htab->entries[i] != EMPTY_ENTRY
+	    && htab->entries[i] != DELETED_ENTRY)
+	  (*htab->del_f) (htab->entries[i]);
+      }
+
   memset (htab->entries, 0, htab->size * sizeof (void *));
 }
 
@@ -273,6 +293,9 @@ htab_remove_elt (htab, element)
   if (*slot == EMPTY_ENTRY)
     return;
 
+  if (htab->del_f)
+    (*htab->del_f) (*slot);
+
   *slot = DELETED_ENTRY;
   htab->n_deleted++;
 }
@@ -289,6 +312,8 @@ htab_clear_slot (htab, slot)
   if (slot < htab->entries || slot >= htab->entries + htab->size
       || *slot == EMPTY_ENTRY || *slot == DELETED_ENTRY)
     abort ();
+  if (htab->del_f)
+    (*htab->del_f) (*slot);
   *slot = DELETED_ENTRY;
   htab->n_deleted++;
 }

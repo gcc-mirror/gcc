@@ -47,6 +47,10 @@ typedef unsigned int (*htab_hash) PARAMS ((const void *));
    the table always comes first.  */
 typedef int (*htab_eq) PARAMS ((const void *, const void *));
 
+/* Cleanup function called whenever a live element is removed from
+   the hash table.  */
+typedef void (*htab_del) PARAMS ((void *));
+  
 /* Function called by htab_traverse for each live element.  The first
    arg is the element, the second arg is the auxiliary pointer handed
    to htab_traverse.  Return 1 to continue scan, 0 to stop.  */
@@ -62,10 +66,13 @@ struct htab
   /* Pointer to hash function.  */
   htab_hash hash_f;
 
-  /* Pointer to comparison function. */
+  /* Pointer to comparison function.  */
   htab_eq eq_f;
 
-  /* Table itself */
+  /* Pointer to cleanup function.  */
+  htab_del del_f;
+
+  /* Table itself.  */
   void **entries;
 
   /* Current size (in entries) of the hash table */
@@ -90,7 +97,8 @@ typedef struct htab *htab_t;
 
 /* The prototypes of the package functions. */
 
-extern htab_t	htab_create	PARAMS ((size_t, htab_hash, htab_eq));
+extern htab_t	htab_create	PARAMS ((size_t, htab_hash,
+					 htab_eq, htab_del));
 extern void	htab_delete	PARAMS ((htab_t));
 extern void	htab_empty	PARAMS ((htab_t));
 

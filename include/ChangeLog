@@ -1,3 +1,9 @@
+2000-03-09  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* hashtab.h (struct htab): Add del_f.
+	(htab_del): New type.
+	(htab_create): Add fourth argument.
+
 2000-03-08  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* hashtab.h (hash_table_t): Rename to htab_t.
