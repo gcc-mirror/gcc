@@ -28,6 +28,12 @@ Boston, MA 02111-1307, USA.  */
 	NETBSD_OS_CPP_BUILTINS_LP64();		\
     } while (0)
 
+
+/* NetBSD doesn't use the LANGUAGE* built-ins.  */
+#undef SUBTARGET_LANGUAGE_CPP_BUILTINS
+#define SUBTARGET_LANGUAGE_CPP_BUILTINS()	/* nothing */
+
+
 /* Show that we need a GP when profiling.  */
 #undef TARGET_PROFILING_NEEDS_GP
 #define TARGET_PROFILING_NEEDS_GP 1
