@@ -48,7 +48,7 @@ typedef struct bitmap_element_def
 typedef struct bitmap_head_def {
   bitmap_element *first;	/* First element in linked list. */
   bitmap_element *current;	/* Last element looked at. */
-  int indx;			/* Index of last element looked at. */
+  unsigned int indx;		/* Index of last element looked at. */
 } bitmap_head, *bitmap;
 
 /* Enumeration giving the various operations we support.  */
