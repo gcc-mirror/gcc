@@ -1,3 +1,9 @@
+Fri Feb  6 01:36:21 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (piclist): Check value of enable_shared, not PICFLAG.
+	(stmp-string, ...): Dito.
+	(bigstmp-string, ...): Dito.
+
 Sun Feb  1 13:38:07 1998  H.J. Lu  (hjl@gnu.org)
 
 	* config/linux.mt: Don't define _PTHREADS, but define

@@ -75,7 +75,7 @@ stdlist: $(IO_DIR)/iostream.list $(OBJS) $(SUBLIBS) $(LIBIBERTY_DIR)/libiberty.a
 piclist: stdlist
 	-rm -f tlist
 	cp stdlist tlist
-	if [ -n "$(PICFLAG)" ]; then \
+	if [ x"$(enable_shared)" = xyes ]; then \
 	  sed 's,\([A-Za-z_]*\.o\),pic/\1,g' tlist > tlist2 ; \
 	  mv tlist2 tlist ; \
 	else true ; fi
@@ -125,7 +125,7 @@ stmp-string: ${srcdir}/sinst.cc ${srcdir}/std/bastring.h \
 	     ${srcdir}/std/bastring.cc ${srcdir}/std/straits.h
 	for name in $(STRFUNCS) $(STRIO); do \
 	  echo c$${name}; \
-	  if [ -n "$(PICFLAG)" ]; then \
+	  if [ x"$(enable_shared)" = xyes ]; then \
 	    $(COMPILE.cc) $(PICFLAG) -DC -D$${name} ${srcdir}/sinst.cc \
 	      -o pic/c$${name}.o; \
 	  else true ; fi; \
@@ -138,7 +138,7 @@ stmp-string: ${srcdir}/sinst.cc ${srcdir}/std/bastring.h \
 bigstmp-string: ${srcdir}/sinst.cc ${srcdir}/std/bastring.h \
 	        ${srcdir}/std/bastring.cc ${srcdir}/std/straits.h
 	echo cstring
-	if [ -n "$(PICFLAG)" ]; then \
+	if [ x"$(enable_shared)" = xyes ]; then \
 	  $(COMPILE.cc) $(PICFLAG) -DC \
 	    `for N in $(STRFUNCS); do echo " -D$${N}"; done` \
 	    $(srcdir)/sinst.cc -o pic/cstrmain.o; \
@@ -146,7 +146,7 @@ bigstmp-string: ${srcdir}/sinst.cc ${srcdir}/std/bastring.h \
 	$(COMPILE.cc) -DC `for N in $(STRFUNCS); do echo " -D$${N}"; done` \
 	  $(srcdir)/sinst.cc -o cstrmain.o
 	echo cstrio
-	if [ -n "$(PICFLAG)" ]; then \
+	if [ x"$(enable_shared)" = xyes ]; then \
 	  $(COMPILE.cc) $(PICFLAG) -DC \
 	    `for N in $(STRIO); do echo " -D$${N}"; done` \
 	    $(srcdir)/sinst.cc -o pic/cstrio.o; \
@@ -165,7 +165,7 @@ stmp-complx: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
 	      ${srcdir}/std/ldcomplex.h
 	for N in $(COMFUNCS) $(COMIO); do \
 	  echo f$${N}; \
-	  if [ -n "$(PICFLAG)" ]; then \
+	  if [ x"$(enable_shared)" = xyes ]; then \
 	    $(COMPILE.cc) $(PICFLAG) -DF -D$${N} $(srcdir)/cinst.cc \
 	      -o pic/f$${N}.o; \
 	  else true ; fi; \
@@ -173,7 +173,7 @@ stmp-complx: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
 	  $(COMPILE.cc) -DF -D$${N} ${srcdir}/cinst.cc -o f$${N}.o; \
 	  if [ $$? -eq 0 ]; then true; else exit 1; fi; \
 	  echo d$${N}; \
-	  if [ -n "$(PICFLAG)" ]; then \
+	  if [ x"$(enable_shared)" = xyes ]; then \
 	    $(COMPILE.cc) $(PICFLAG) -DD -D$${N} $(srcdir)/cinst.cc \
 	      -o pic/d$${N}.o; \
 	  else true ; fi; \
@@ -181,7 +181,7 @@ stmp-complx: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
 	  $(COMPILE.cc) -DD -D$${N} ${srcdir}/cinst.cc -o d$${N}.o; \
 	  if [ $$? -eq 0 ]; then true; else exit 1; fi; \
 	  echo ld$${N}; \
-	  if [ -n "$(PICFLAG)" ]; then \
+	  if [ x"$(enable_shared)" = xyes ]; then \
 	    $(COMPILE.cc) $(PICFLAG) -DLD -D$${N} $(srcdir)/cinst.cc \
 	      -o pic/ld$${N}.o; \
 	  else true ; fi; \
@@ -195,7 +195,7 @@ bigstmp-complx: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
 	         ${srcdir}/std/complext.cc ${srcdir}/std/dcomplex.h \
 	         ${srcdir}/std/ldcomplex.h
 	echo fcomplex
-	if [ -n "$(PICFLAG)" ]; then \
+	if [ x"$(enable_shared)" = xyes ]; then \
 	  $(COMPILE.cc) $(PICFLAG) -DF \
 	    `for N in $(COMFUNCS); do echo " -D$${N}"; done` \
 	    $(srcdir)/cinst.cc -o pic/fcomplex.o; \
@@ -203,7 +203,7 @@ bigstmp-complx: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
 	$(COMPILE.cc) -DF `for N in $(COMFUNCS); do echo " -D$${N}"; done` \
 	  $(srcdir)/cinst.cc -o fcomplex.o
 	echo fcomio
-	if [ -n "$(PICFLAG)" ]; then \
+	if [ x"$(enable_shared)" = xyes ]; then \
 	  $(COMPILE.cc) $(PICFLAG) -DF \
 	    `for N in $(COMIO); do echo " -D$${N}"; done` \
 	    $(srcdir)/cinst.cc -o pic/fcomio.o; \
@@ -211,7 +211,7 @@ bigstmp-complx: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
 	$(COMPILE.cc) -DF `for N in $(COMIO); do echo " -D$${N}"; done` \
 	  $(srcdir)/cinst.cc -o fcomio.o
 	echo dcomplex
-	if [ -n "$(PICFLAG)" ]; then \
+	if [ x"$(enable_shared)" = xyes ]; then \
 	  $(COMPILE.cc) $(PICFLAG) -DD \
 	    `for N in $(COMFUNCS); do echo " -D$${N}"; done` \
 	    $(srcdir)/cinst.cc -o pic/dcomplex.o; \
@@ -219,7 +219,7 @@ bigstmp-complx: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
 	$(COMPILE.cc) -DD `for N in $(COMFUNCS); do echo " -D$${N}"; done` \
 	  $(srcdir)/cinst.cc -o dcomplex.o
 	echo dcomio
-	if [ -n "$(PICFLAG)" ]; then \
+	if [ x"$(enable_shared)" = xyes ]; then \
 	  $(COMPILE.cc) $(PICFLAG) -DD \
 	    `for N in $(COMIO); do echo " -D$${N}"; done` \
 	    $(srcdir)/cinst.cc -o pic/dcomio.o; \
@@ -227,7 +227,7 @@ bigstmp-complx: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
 	$(COMPILE.cc) -DD `for N in $(COMIO); do echo " -D$${N}"; done` \
 	  $(srcdir)/cinst.cc -o dcomio.o
 	echo ldcomplex
-	if [ -n "$(PICFLAG)" ]; then \
+	if [ x"$(enable_shared)" = xyes ]; then \
 	  $(COMPILE.cc) $(PICFLAG) -DLD \
 	    `for N in $(COMFUNCS); do echo " -D$${N}"; done` \
 	    $(srcdir)/cinst.cc -o pic/ldcomplex.o; \
@@ -235,7 +235,7 @@ bigstmp-complx: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
 	$(COMPILE.cc) -DLD `for N in $(COMFUNCS); do echo " -D$${N}"; done` \
 	  $(srcdir)/cinst.cc -o ldcomplex.o
 	echo ldcomio
-	if [ -n "$(PICFLAG)" ]; then \
+	if [ x"$(enable_shared)" = xyes ]; then \
 	  $(COMPILE.cc) $(PICFLAG) -DLD \
 	    `for N in $(COMIO); do echo " -D$${N}"; done` \
 	    $(srcdir)/cinst.cc -o pic/ldcomio.o; \
