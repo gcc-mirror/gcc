@@ -1,3 +1,10 @@
+2004-09-18  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux.h (ASM_PREFERRED_EH_DATA_FORMAT): Remove.
+	* config/sh/sh.h (ASM_PREFERRED_EH_DATA_FORMAT): Use
+	DW_EH_PE_sdata* for data.
+	(ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): Likewise.
+
 2004-09-17  Geoffrey Keating  <geoffk@apple.com>
 
 	* tree-inline.c (copy_tree_r): Don't duplicate constants, they're
