@@ -198,10 +198,15 @@ decl_attributes (decl, attributes)
       {
 	if (TREE_CODE (decl) == FIELD_DECL)
 	  DECL_PACKED (decl) = 1;
+	else if (TREE_CODE (decl) == VAR_DECL)
+	  {
+	    DECL_PACKED (decl) = 1;
+	    DECL_ALIGN (decl) = BITS_PER_UNION;
+	  }
       }
     else if (TREE_VALUE (a) != 0
-	&& TREE_CODE (TREE_VALUE (a)) == TREE_LIST
-	&& TREE_PURPOSE (TREE_VALUE (a)) == get_identifier ("mode"))
+	     && TREE_CODE (TREE_VALUE (a)) == TREE_LIST
+	     && TREE_PURPOSE (TREE_VALUE (a)) == get_identifier ("mode"))
       {
 	int i;
 	char *specified_name
