@@ -1458,6 +1458,7 @@ all-fastjar: all-zlib all-libiberty
 configure-target-fastjar: configure-target-zlib
 all-target-fastjar: configure-target-fastjar all-target-zlib all-target-libiberty
 configure-target-libiberty: $(ALL_GCC_C)
+configure-target: $(CONFIGURE_TARGET_MODULES)
 all-target: $(ALL_TARGET_MODULES)
 install-target: $(INSTALL_TARGET_MODULES)
 install-gdb: install-tcl install-tk install-itcl install-tix install-libgui
