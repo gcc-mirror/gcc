@@ -324,11 +324,13 @@ void iteration_info ();
 
 /* Two main functions for implementing bct:
    first - to be called before loop unrolling, and the second - after */
+#ifdef HAVE_decrement_and_branch_on_count
 static void analyze_loop_iterations ();
 static void insert_bct ();
 
 /* Auxiliary function that inserts the bct pattern into the loop */
 static void instrument_loop_bct ();
+#endif /* HAVE_decrement_and_branch_on_count */
 #endif  /* HAIFA */
 
 /* Indirect_jump_in_function is computed once per function.  */
@@ -1980,7 +1982,7 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 		      /* If library call, now fix the REG_NOTES that contain
 			 insn pointers, namely REG_LIBCALL on FIRST
 			 and REG_RETVAL on I1.  */
-		      if (temp = find_reg_note (i1, REG_RETVAL, NULL_RTX))
+		      if ((temp = find_reg_note (i1, REG_RETVAL, NULL_RTX)))
 			{
 			  XEXP (temp, 0) = first;
 			  temp = find_reg_note (first, REG_LIBCALL, NULL_RTX);
@@ -2046,8 +2048,8 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 
 		      /* if library call, delete all insn except last, which
 			 is deleted below */
-		      if (temp = find_reg_note (m1->insn, REG_RETVAL,
-						NULL_RTX))
+		      if ((temp = find_reg_note (m1->insn, REG_RETVAL,
+						 NULL_RTX)))
 			{
 			  for (temp = XEXP (temp, 0); temp != m1->insn;
 			       temp = NEXT_INSN (temp))
@@ -3018,7 +3020,7 @@ consec_sets_invariant_p (reg, n_sets, insn)
 	  this = invariant_p (SET_SRC (set));
 	  if (this != 0)
 	    value |= this;
-	  else if (temp = find_reg_note (p, REG_EQUAL, NULL_RTX))
+	  else if ((temp = find_reg_note (p, REG_EQUAL, NULL_RTX)))
 	    {
 	      /* If this is a libcall, then any invariant REG_EQUAL note is OK.
 		 If this is an ordinary insn, then only CONSTANT_P REG_EQUAL
@@ -6440,7 +6442,10 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
   rtx reg = bl->biv->dest_reg;
   enum machine_mode mode = GET_MODE (reg);
   struct induction *v;
-  rtx arg, new, tem;
+  rtx arg, tem;
+#ifdef HAVE_cc0
+  rtx new;
+#endif
   int arg_operand;
   char *fmt;
   int i, j;
@@ -7164,6 +7169,7 @@ get_condition_for_loop (x)
     loop_increment[loop_num]
     loop_comparison_code[loop_num] */
 
+#ifdef HAVE_decrement_and_branch_on_count
 static
 void analyze_loop_iterations (loop_start, loop_end)
   rtx loop_start, loop_end;
@@ -7641,7 +7647,6 @@ instrument_loop_bct (loop_start, loop_end, loop_num_iterations)
   rtx sequence;
   enum machine_mode loop_var_mode = SImode;
 
-#ifdef HAVE_decrement_and_branch_on_count
   if (HAVE_decrement_and_branch_on_count)
     {
       if (loop_dump_stream)
@@ -7679,8 +7684,9 @@ instrument_loop_bct (loop_start, loop_end, loop_num_iterations)
       LABEL_NUSES (start_label)++;
     }
 
-#endif /* HAVE_decrement_and_branch_on_count */
 }
+#endif /* HAVE_decrement_and_branch_on_count */
+
 #endif	/* HAIFA */
 
 /* Scan the function and determine whether it has indirect (computed) jumps.

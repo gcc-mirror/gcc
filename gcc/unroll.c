@@ -1631,7 +1631,9 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
   rtx insn, pattern;
   rtx tem, copy;
   int dest_reg_was_split, i;
+#ifdef HAVE_cc0
   rtx cc0_insn = 0;
+#endif
   rtx final_label = 0;
   rtx giv_inc, giv_dest_reg, giv_src_reg;
 

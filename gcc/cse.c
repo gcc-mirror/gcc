@@ -7803,13 +7803,15 @@ cse_around_loop (loop_start)
   if (last_jump_equiv_class)
     for (p = last_jump_equiv_class->first_same_value; p;
 	 p = p->next_same_value)
-      if (GET_CODE (p->exp) == MEM || GET_CODE (p->exp) == REG
-	  || (GET_CODE (p->exp) == SUBREG
-	      && GET_CODE (SUBREG_REG (p->exp)) == REG))
-	invalidate (p->exp, VOIDmode);
-      else if (GET_CODE (p->exp) == STRICT_LOW_PART
-	       || GET_CODE (p->exp) == ZERO_EXTRACT)
-	invalidate (XEXP (p->exp, 0), GET_MODE (p->exp));
+      {
+        if (GET_CODE (p->exp) == MEM || GET_CODE (p->exp) == REG
+	    || (GET_CODE (p->exp) == SUBREG
+	        && GET_CODE (SUBREG_REG (p->exp)) == REG))
+	  invalidate (p->exp, VOIDmode);
+        else if (GET_CODE (p->exp) == STRICT_LOW_PART
+	         || GET_CODE (p->exp) == ZERO_EXTRACT)
+	  invalidate (XEXP (p->exp, 0), GET_MODE (p->exp));
+      }
 
   /* Process insns starting after LOOP_START until we hit a CALL_INSN or
      a CODE_LABEL (we could handle a CALL_INSN, but it isn't worth it).
@@ -8752,7 +8754,9 @@ delete_dead_from_cse (insns, nreg)
 {
   int *counts = (int *) alloca (nreg * sizeof (int));
   rtx insn, prev;
+#ifdef HAVE_cc0
   rtx tem;
+#endif
   int i;
   int in_libcall = 0, dead_libcall = 0;
 

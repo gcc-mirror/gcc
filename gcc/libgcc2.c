@@ -1910,7 +1910,7 @@ __bb_exit_trace_func ()
         {
           for (ptr = bb_head; ptr != (struct bb *) 0; ptr = ptr->next)
             {
-              if (!ptr->filename || p->filename != (char *) 0 && strcmp (p->filename, ptr->filename))
+              if (!ptr->filename || (p->filename != (char *) 0 && strcmp (p->filename, ptr->filename)))
                 continue;
               for (blk = 0; blk < ptr->ncounts; blk++)
                 {
@@ -2011,7 +2011,7 @@ found:        ;
                for ( ; bucket; bucket = bucket->next )
                  {
                    fprintf (file, "Jump from block 0x%.*lx to "
-                                  "block 0x%.*lx executed %*d time(s)\n", 
+                                  "block 0x%.*lx executed %*lu time(s)\n", 
                             addr_len, bucket->src_addr, 
                             addr_len, bucket->dst_addr, 
                             cnt_len, bucket->count);
@@ -2111,7 +2111,7 @@ __bb_init_prg ()
             {
               unsigned long l;
               f->next = bb_func_head;
-              if (pos = strchr (p, ':'))
+              if ((pos = strchr (p, ':')))
                 {
                   if (!(f->funcname = (char *) malloc (strlen (pos+1)+1)))
                     continue;

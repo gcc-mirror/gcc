@@ -3310,8 +3310,12 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
      tree type;
 {
   int valid = 0;
+#ifdef VALID_MACHINE_DECL_ATTRIBUTE
   tree decl_attr_list = decl != 0 ? DECL_MACHINE_ATTRIBUTES (decl) : 0;
+#endif
+#ifdef VALID_MACHINE_TYPE_ATTRIBUTE
   tree type_attr_list = TYPE_ATTRIBUTES (type);
+#endif
 
   if (TREE_CODE (attr_name) != IDENTIFIER_NODE)
     abort ();
@@ -3481,6 +3485,7 @@ merge_attributes (a1, a2)
   /* One that completely contains the other?  Take it.  */
 
   else if (a2 && ! attribute_list_contained (a1, a2))
+  {
     if (attribute_list_contained (a2, a1))
       attributes = a2;
     else
@@ -3500,6 +3505,7 @@ merge_attributes (a1, a2)
 	      attributes = a1;
 	    }
       }
+  }
   return attributes;
 }
 

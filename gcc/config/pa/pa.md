@@ -1,5 +1,5 @@
 ;;- Machine description for HP PA-RISC architecture for GNU C compiler
-;;   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+;;   Copyright (C) 1992, 93 - 97, 1998 Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
 
@@ -4495,7 +4495,7 @@
 			 (match_operand:SI 2 "uint5_operand" ""))
 	(match_operand:SI 3 "const_int_operand" ""))]
   "(INTVAL (operands[3]) & 0x10) != 0 &&
-   (~INTVAL (operands[3]) & (1L << INTVAL (operands[1])) - 1 & ~0xf) == 0"
+   (~INTVAL (operands[3]) & ((1L << INTVAL (operands[1])) - 1) & ~0xf) == 0"
   "*
 {
   operands[3] = GEN_INT ((INTVAL (operands[3]) & 0xf) - 0x10);
@@ -4665,7 +4665,7 @@
    (set (match_operand:SI 0 "register_operand" "=r")
 	(plus:SI (match_operand:SI 1 "register_operand" "r")
 		 (match_operand:SI 2 "ireg_or_int5_operand" "rL")))]
-  "reload_completed && operands[0] == operands[1] || operands[0] == operands[2]"
+  "(reload_completed && operands[0] == operands[1]) || operands[0] == operands[2]"
   "*
 {
   return output_parallel_addb (operands, get_attr_length (insn));

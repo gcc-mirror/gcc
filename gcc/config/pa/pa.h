@@ -273,6 +273,17 @@ extern int target_flags;
 /* Machine dependent reorg pass.  */
 #define MACHINE_DEPENDENT_REORG(X) pa_reorg(X)
 
+/* Prototype function used in MACHINE_DEPENDENT_REORG macro. */
+void pa_reorg ();
+
+/* Prototype function used in various macros. */
+int symbolic_operand ();
+
+/* Used in insn-*.c. */
+int following_call ();
+int function_label_operand ();
+int lhs_lshift_cint_operand ();
+
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -Dhp9000 -Dhp800 -Dspectrum -DREVARGV -Asystem(unix) -Asystem(bsd) -Acpu(hppa) -Amachine(hppa)"
@@ -754,6 +765,9 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
    : (C) == 'O' ? (((VALUE) & ((VALUE) + 1)) == 0)		\
    : (C) == 'P' ? and_mask_p (VALUE)				\
    : 0)
+
+/* Prototype function used in macro CONST_OK_FOR_LETTER_P. */
+int zdepi_cint_p ();
 
 /* Similar, but for floating or large integer constants, and defining letters
    G and H.   Here VALUE is the CONST_DOUBLE rtx itself.

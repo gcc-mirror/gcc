@@ -1,7 +1,7 @@
 /* Generate information regarding function declarations and definitions based
    on information stored in GCC's tree structure.  This code implements the
    -aux-info option.
-   Copyright (C) 1989, 1991, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1989, 91, 94, 95, 97, 1998 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@segfault.us.com).
 
 This file is part of GNU CC.
@@ -21,8 +21,15 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
+#ifdef HAVE_STRING_H
+# include <string.h>
+#else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
+#endif
+#endif
 #include "flags.h"
 #include "tree.h"
 #include "c-tree.h"
@@ -39,14 +46,14 @@ typedef enum formals_style_enum formals_style;
 
 static char *data_type;
 
-static char *concat ();
-static char *concat3 ();
-static char *gen_formal_list_for_type ();
-static int   deserves_ellipsis ();
-static char *gen_formal_list_for_func_def ();
-static char *gen_type ();
-static char *gen_decl ();
-void   gen_aux_info_record ();
+static char *concat			PROTO((char *, char *));
+static char *concat3			PROTO((char *, char *, char *));
+static char *affix_data_type		PROTO((char *));
+static char *gen_formal_list_for_type	PROTO((tree, formals_style));
+static int   deserves_ellipsis		PROTO((tree));
+static char *gen_formal_list_for_func_def PROTO((tree, formals_style));
+static char *gen_type			PROTO((char *, tree, formals_style));
+static char *gen_decl			PROTO((tree, int, formals_style));
 
 /*  Take two strings and mash them together into a newly allocated area.  */
 

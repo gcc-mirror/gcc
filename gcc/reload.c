@@ -366,7 +366,6 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
   enum machine_mode t_mode = VOIDmode;
   enum insn_code t_icode = CODE_FOR_nothing;
   enum reload_type secondary_type;
-  int i;
   int s_reload, t_reload = -1;
 
   if (type == RELOAD_FOR_INPUT_ADDRESS
@@ -2460,7 +2459,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
       /* Scan this operand's constraint to see if it is an output operand, 
 	 an in-out operand, is commutative, or should match another.  */
 
-      while (c = *p++)
+      while ((c = *p++))
 	{
 	  if (c == '=')
 	    modified[i] = RELOAD_WRITE;

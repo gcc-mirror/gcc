@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for HPPA.
-   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GNU CC.
@@ -21,6 +21,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include <stdio.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -39,6 +42,10 @@ Boston, MA 02111-1307, USA.  */
 
 static void restore_unscaled_index_insn_codes		PROTO((rtx));
 static void record_unscaled_index_insn_codes		PROTO((rtx));
+static void pa_combine_instructions			PROTO((rtx));
+static int pa_can_combine_p	PROTO((rtx, rtx, rtx, int, rtx, rtx, rtx));
+static int forward_branch_p				PROTO((rtx));
+static int shadd_constant_p				PROTO((int));
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -1445,6 +1452,9 @@ reloc_needed (exp)
 
     case ERROR_MARK:
       break;
+
+    default:
+      break;
     }
   return reloc;
 }
@@ -2195,7 +2205,6 @@ remove_useless_addtr_insns (insns, check_notes)
      int check_notes;
 {
   rtx insn;
-  int all;
   static int pass = 0;
 
   /* This is fairly cheap, so always run it when optimizing.  */
@@ -2712,6 +2721,7 @@ hppa_expand_prologue()
 
   /* Allocate the local frame and set up the frame pointer if needed.  */
   if (actual_fsize)
+  {
     if (frame_pointer_needed)
       {
 	/* Copy the old frame pointer temporarily into %r1.  Set up the
@@ -2756,6 +2766,8 @@ hppa_expand_prologue()
 			  STACK_POINTER_REGNUM,
 			  actual_fsize);
       }
+  }
+
   /* The hppa calling conventions say that that %r19, the pic offset
      register, is saved at sp - 32 (in this function's frame)  when
      generating PIC code.  FIXME:  What is the correct thing to do
@@ -2923,7 +2935,6 @@ output_function_epilogue (file, size)
      int size;
 {
   rtx insn = get_last_insn ();
-  int i;
 
   /* hppa_expand_epilogue does the dirty work now.  We just need
      to output the assembler directives which denote the end
@@ -5067,7 +5078,6 @@ output_millicode_call (insn, call_dest)
     {
       int delay_insn_deleted = 0;
       rtx xoperands[2];
-      rtx link;
 
       /* We need to emit an inline long-call branch.  */
       if (dbr_sequence_length () != 0
@@ -5618,7 +5628,7 @@ plus_xor_ior_operator (op, mode)
 
 /* Return 1 if the given constant is 2, 4, or 8.  These are the valid
    constants for shadd instructions.  */
-int
+static int
 shadd_constant_p (val)
      int val;
 {
@@ -5694,7 +5704,7 @@ non_hard_reg_operand (op, mode)
 
 /* Return 1 if INSN branches forward.  Should be using insn_addresses
    to avoid walking through all the insns... */
-int
+static int
 forward_branch_p (insn)
      rtx insn;
 {
@@ -5823,6 +5833,7 @@ output_parallel_addb (operands, length)
    immediately follows a call since the jump can usually be eliminated
    completely by modifying RP in the delay slot of the call.  */
    
+int
 following_call (insn)
      rtx insn;
 {
@@ -5969,6 +5980,7 @@ record_unscaled_index_insn_codes (insns)
    insns mark where we should emit .begin_brtab and .end_brtab directives
    when using GAS (allows for better link time optimizations).  */
 
+void
 pa_reorg (insns)
      rtx insns;
 {
@@ -6110,6 +6122,7 @@ pa_reorg (insns)
       is an insns away).  These are difficult to use due to the
       branch length restrictions.  */
 
+static void
 pa_combine_instructions (insns)
      rtx insns;
 {
@@ -6135,9 +6148,9 @@ pa_combine_instructions (insns)
 
       /* We only care about INSNs, JUMP_INSNs, and CALL_INSNs.
 	 Also ignore any special USE insns.  */
-      if (GET_CODE (anchor) != INSN
+      if ((GET_CODE (anchor) != INSN
 	  && GET_CODE (anchor) != JUMP_INSN
-	  && GET_CODE (anchor) != CALL_INSN
+	  && GET_CODE (anchor) != CALL_INSN)
 	  || GET_CODE (PATTERN (anchor)) == USE
 	  || GET_CODE (PATTERN (anchor)) == CLOBBER
 	  || GET_CODE (PATTERN (anchor)) == ADDR_VEC

@@ -1,5 +1,5 @@
 /* Protoize program - Original version by Ron Guilmette (rfg@segfault.us.com).
-   Copyright (C) 1989, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -83,6 +83,10 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
 #endif
 
 #ifdef HAVE_STRING_H
@@ -786,7 +790,7 @@ substr (s1, s2)
       const char *p2;
       int c;
 
-      for (p1 = s1, p2 = s2; c = *p2; p1++, p2++)
+      for (p1 = s1, p2 = s2; (c = *p2); p1++, p2++)
         if (*p1 != c)
           goto outer;
       return s1;
@@ -1336,12 +1340,12 @@ abspath (cwd, rel_filename)
     if (rel_filename[0] != '/')
       {
         src_p = cwd2;
-        while (*endp++ = *src_p++)
+        while ((*endp++ = *src_p++))
           continue;
         *(endp-1) = '/';        		/* overwrite null */
       }
     src_p = rel_filename;
-    while (*endp++ = *src_p++)
+    while ((*endp++ = *src_p++))
       continue;
   }
 
@@ -1493,7 +1497,7 @@ shortpath (cwd, filename)
 	  if (rel_buffer + filename_len <= rel_buf_p)
 	    return filename;
 	}
-      while (*rel_buf_p++ = *path_p++);
+      while ((*rel_buf_p++ = *path_p++));
 
       --rel_buf_p;
       if (*(rel_buf_p-1) == '/')

@@ -1,5 +1,5 @@
 /* Implement classes and message passing for Objective C.
-   Copyright (C) 1992, 1993, 1994, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-95, 97, 1998 Free Software Foundation, Inc.
    Contributed by Steve Naroff.
 
 This file is part of GNU CC.
@@ -40,6 +40,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include <stdio.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include "tree.h"
 #include "c-tree.h"
 #include "c-lex.h"
@@ -748,7 +751,9 @@ lookup_method_in_protocol_list (rproto_list, sel_name, class_meth)
 						    sel_name, class_meth);
 	  }
 	else
-	  ; /* An identifier...if we could not find a protocol.  */
+          {
+	    ; /* An identifier...if we could not find a protocol.  */
+          }
 
 	if (fnd)
 	  return fnd;
@@ -786,7 +791,9 @@ lookup_protocol_in_reflist (rproto_list, lproto)
 	 }
      }
    else
-     ; /* An identifier...if we could not find a protocol.  */
+     {
+       ; /* An identifier...if we could not find a protocol.  */
+     }
 
    return 0;
 }
@@ -1349,7 +1356,7 @@ objc_add_static_instance (constructor, class_decl)
      tree constructor, class_decl;
 {
   static int num_static_inst;
-  tree *chain, decl, decl_spec, decl_expr;
+  tree *chain, decl;
   char buf[256];
 
   push_obstacks_nochange ();
@@ -1805,7 +1812,7 @@ get_objc_string_decl (ident, section)
      tree ident;
      enum string_section section;
 {
-  tree chain, decl;
+  tree chain;
 
   if (section == class_names)
     chain = class_names_chain;
@@ -1829,7 +1836,7 @@ static void
 generate_static_references ()
 {
   tree decls = NULL_TREE, ident, decl_spec, expr_decl, expr = NULL_TREE;
-  tree class_name, class, decl, instance, idecl, initlist;
+  tree class_name, class, decl, initlist;
   tree cl_chain, in_chain, type;
   int num_inst, num_class;
   char buf[256];
@@ -6028,7 +6035,9 @@ check_protocols (proto_list, type, name)
 
 	}
       else
-	; /* An identifier if we could not find a protocol.  */
+        {
+	  ; /* An identifier if we could not find a protocol.  */
+        }
 
       /* Check protocols recursively.  */
       if (PROTOCOL_LIST (p))

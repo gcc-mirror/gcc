@@ -1,5 +1,5 @@
 /* Default error handlers for CPP Library.
-   Copyright (C) 1986, 87, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92 - 95, 1998 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -37,7 +37,6 @@ cpp_print_containing_files (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *ip;
-  int i;
   int first = 1;
 
   /* If stack of files hasn't changed since we last printed
@@ -67,7 +66,7 @@ cpp_print_containing_files (pfile)
 	    fprintf (stderr, ",\n                ");
 	}
 
-      fprintf (stderr, " from %s:%d", ip->nominal_fname, line);
+      fprintf (stderr, " from %s:%ld", ip->nominal_fname, line);
     }
   if (! first)
     fprintf (stderr, ":\n");

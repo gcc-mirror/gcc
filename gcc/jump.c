@@ -800,7 +800,10 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		 or a jump to somewhere else.  */
 	      rtx target = JUMP_LABEL (temp);
 	      int nuses = LABEL_NUSES (target);
-	      rtx p, q;
+	      rtx p;
+#ifdef HAVE_cc0
+	      rtx q;
+#endif
 
 	      /* Set P to the first jump insn that goes around "x = a;".  */
 	      for (p = temp; nuses && p; p = prev_nonnote_insn (p))
@@ -2542,7 +2545,6 @@ find_cross_jump (e1, e2, minimum, f1, f2)
 
   rtx last1 = 0, last2 = 0;
   rtx afterlast1 = 0, afterlast2 = 0;
-  rtx prev1;
 
   *f1 = 0;
   *f2 = 0;

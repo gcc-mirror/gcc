@@ -1,5 +1,5 @@
 /* Procedure integration for GNU CC.
-   Copyright (C) 1988, 91, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 91, 93-97, 1998 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1295,7 +1295,9 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   rtx stack_save = 0;
   rtx temp;
   struct inline_remap *map;
+#ifdef HAVE_cc0
   rtx cc0_insn = 0;
+#endif
   rtvec arg_vector = ORIGINAL_ARG_VECTOR (header);
   rtx static_chain_value = 0;
 

@@ -1589,7 +1589,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
       rtx q, inc_dest;
 
       inc_dest = post_inc_set ? SET_DEST (post_inc_set) : src;
-      for (q = post_inc; q = NEXT_INSN (q); )
+      for (q = post_inc; (q = NEXT_INSN (q)); )
 	{
 	  if (GET_CODE (q) == CODE_LABEL || GET_CODE (q) == JUMP_INSN
 	      || (GET_CODE (q) == NOTE

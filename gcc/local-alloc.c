@@ -61,6 +61,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include <stdio.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include "rtl.h"
 #include "flags.h"
 #include "basic-block.h"
@@ -2181,7 +2184,7 @@ requires_inout (p)
   int reg_allowed = 0;
   int num_matching_alts = 0;
 
-  while (c = *p++)
+  while ((c = *p++))
     switch (c)
       {
       case '=':  case '+':  case '?':
