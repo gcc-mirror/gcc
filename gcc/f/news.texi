@@ -49,6 +49,15 @@ involve a combination of these elements.
 @heading In 0.5.24:
 @itemize @bullet
 @item
+The @code{g77} driver now ensures that @samp{-lg2c}
+is specified in the link phase prior to any
+occurrence of @samp{-lm}.
+This prevents accidentally linking to a routine
+in the SunOS4 @samp{-lm} library
+when the generated code wants to link to the one
+in @code{libf2c} (@code{libg2c}).
+
+@item
 @code{g77} no longer crashes when compiling code
 containing specification statements such as
 @samp{INTEGER(KIND=7) PTR}.
