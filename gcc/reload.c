@@ -3540,7 +3540,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    && reload_when_needed[j] == reload_when_needed[i]
 	    && MATCHES (reload_in[i], reload_in[j])
 	    && reload_reg_class[i] == reload_reg_class[j]
-	    && !reload_nocombine[i] && !reload_nocombine[j])
+	    && !reload_nocombine[i] && !reload_nocombine[j]
+	    && reload_reg_rtx[i] == reload_reg_rtx[j])
 	  {
 	    reload_opnum[i] = MIN (reload_opnum[i], reload_opnum[j]);
 	    transfer_replacements (i, j);
