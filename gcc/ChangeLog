@@ -1,3 +1,8 @@
+2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* ginclude/float.h, ginclude/iso646.h, ginclude/stdarg.h,
+	ginclude/stdbool.h, ginclude/stddef.h: GCC, not GNU CC.
+
 2003-03-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (pa_init_builtins): Fix warning.
