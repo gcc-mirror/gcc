@@ -26,8 +26,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "system.h"
 
 #include "jcf.h"
-#include <sys/stat.h>
-#include <sys/wait.h>
 
 /* DOS brain-damage */
 #ifndef O_BINARY
