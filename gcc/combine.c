@@ -6039,7 +6039,7 @@ force_to_mode (x, mode, mask, reg, just_select)
 	     represent a mask for all its bits in a single scalar.
 	     But we only care about the lower bits, so calculate these.  */
 
-	  if (GET_MODE_SIZE (GET_MODE (x)) > sizeof (HOST_WIDE_INT))
+	  if (GET_MODE_BITSIZE (GET_MODE (x)) > HOST_BITS_PER_WIDE_INT))
 	    {
 	      nonzero = ~(HOST_WIDE_INT)0;
 
