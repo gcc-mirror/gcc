@@ -25,6 +25,13 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 typedef unsigned char U_CHAR;
 #define U (const U_CHAR *)  /* Intended use: U"string" */
 
+/* gcc 2.7.2 can't handle __extension__ const char array[] = { ... }.
+   I don't know when this was added - be conservative, assume it only
+   works in 2.95.  */
+#if GCC_VERSION < 2095
+#define __extension__
+#endif
+
 /* The structure of a node in the hash table.  The hash table
    has entries for all tokens defined by #define commands (type T_MACRO),
    plus some special tokens like __LINE__ (these each have their own
@@ -257,41 +264,51 @@ extern int _cpp_handle_directive	PARAMS ((cpp_reader *));
 extern void _cpp_unwind_if_stack	PARAMS ((cpp_reader *, cpp_buffer *));
 extern void _cpp_check_directive        PARAMS ((cpp_toklist *, cpp_token *));
 
-/* These are inline functions (if __GNUC__) instead of macros so we
-   can get type checking.  */
-#if GCC_VERSION >= 2007 && defined __OPTIMIZE__
-extern inline int ustrcmp (const U_CHAR *, const U_CHAR *);
-extern inline int ustrncmp (const U_CHAR *, const U_CHAR *, size_t);
-extern inline size_t ustrlen (const U_CHAR *);
-extern inline U_CHAR *uxstrdup (const U_CHAR *);
-extern inline U_CHAR *ustrchr (const U_CHAR *, int);
+/* These are inline functions instead of macros so we can get type
+   checking.  */
 
-extern inline int
-ustrcmp (const U_CHAR *s1, const U_CHAR *s2)
-{ return strcmp ((const char *)s1, (const char *)s2); }
+static inline int ustrcmp	PARAMS ((const U_CHAR *, const U_CHAR *));
+static inline int ustrncmp	PARAMS ((const U_CHAR *, const U_CHAR *,
+					 size_t));
+static inline size_t ustrlen	PARAMS ((const U_CHAR *));
+static inline U_CHAR *uxstrdup	PARAMS ((const U_CHAR *));
+static inline U_CHAR *ustrchr	PARAMS ((const U_CHAR *, int));
 
-extern inline int
-ustrncmp (const U_CHAR *s1, const U_CHAR *s2, size_t n)
-{ return strncmp ((const char *)s1, (const char *)s2, n); }
+static inline int
+ustrcmp (s1, s2)
+     const U_CHAR *s1, *s2;
+{
+  return strcmp ((const char *)s1, (const char *)s2);
+}
 
-extern inline size_t
-ustrlen (const U_CHAR *s1)
-{ return strlen ((const char *)s1); }
+static inline int
+ustrncmp (s1, s2, n)
+     const U_CHAR *s1, *s2;
+     size_t n;
+{
+  return strncmp ((const char *)s1, (const char *)s2, n);
+}
 
-extern inline U_CHAR *
-uxstrdup (const U_CHAR *s1)
-{ return (U_CHAR *) xstrdup ((const char *)s1); }
+static inline size_t
+ustrlen (s1)
+     const U_CHAR *s1;
+{
+  return strlen ((const char *)s1);
+}
 
-extern inline U_CHAR *
-ustrchr (const U_CHAR *s1, int c)
-{ return (U_CHAR *) strchr ((const char *)s1, c); }
+static inline U_CHAR *
+uxstrdup (s1)
+     const U_CHAR *s1;
+{
+  return (U_CHAR *) xstrdup ((const char *)s1);
+}
 
-#else
-#define ustrcmp(s1_, s2_) strcmp((const char *)s1_, (const char *)s2_)
-#define ustrncmp(s1_, s2_, n_) strncmp((const char *)s1_, (const char *)s2_, n_)
-#define ustrlen(s1_) strlen((const char *)s1_)
-#define uxstrdup(s1_) (U_CHAR *) xstrdup((const char *)s1_)
-#define ustrchr(s1_, c_) (U_CHAR *) strchr((const char *)s1_, c_)
-#endif
+static inline U_CHAR *
+ustrchr (s1, c)
+     const U_CHAR *s1;
+     int c;
+{
+  return (U_CHAR *) strchr ((const char *)s1, c);
+}
 
 #endif
