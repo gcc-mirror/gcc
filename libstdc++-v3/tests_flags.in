@@ -68,7 +68,7 @@ check_options() {
 
 # Directory sanity check
 check_directory() {
-    if [ ! $2 ]; then
+    if [ ! -d $2 ]; then
 	echo "$1 '$2' directory not found, exiting."
 	exit 1
     fi
