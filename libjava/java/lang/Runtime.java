@@ -1,6 +1,6 @@
 // Runtime.java - Runtime class.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -63,6 +63,10 @@ public class Runtime
   }
 
   public native void exit (int status);
+  
+  // Shutdown the runtime without a SecurityManager check. libgcj uses this 
+  // exit function internally.
+  final native void _exit (int status);
 
   public native long freeMemory ();
   public native void gc ();

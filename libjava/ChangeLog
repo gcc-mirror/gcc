@@ -1,3 +1,19 @@
+2001-03-12  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/Runtime.java (_exit): Declare new package-private native.
+	* java/lang/natRuntime.cc (_exit): Implemented. Same as exit() but
+	without a security manager check.
+	(exit): Call _exit after security check.
+	* prims.cc (JvRunMain): Call Runtime._exit to shutdown the runtime
+	"naturally".
+	* java/lang/System.java (setSecurityManager): If a security manager
+	is already in place, call checkPermission. 
+	* java/lang/ThreadGroup.java (uncaughtException): If printStackTrace()
+	throws an exception, try to deal with it gracefully.
+	* java/lang/ExceptionInInitializerError.java (printStackTrace):
+	Only try to print the subordinate stack trace if "exception" is set.
+	Print our class name first.
+
 2001-03-08  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/ObjectStreamClass.java (setUID): Don't write interface

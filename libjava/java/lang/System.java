@@ -230,7 +230,7 @@ public final class System
   public static void setSecurityManager (SecurityManager s)
   {
     if (secman != null)
-      throw new SecurityException ();
+      secman.checkPermission(new RuntimePermission("setSecurityManager"));
     secman = s;
   }
 
