@@ -93,11 +93,6 @@ JvNewStringUTF (const char *bytes)
   return _Jv_NewStringUTF (bytes);
 }
 
-extern class _Jv_PrimClass _Jv_byteClass, _Jv_shortClass, _Jv_intClass,
-  _Jv_longClass, _Jv_booleanClass, _Jv_charClass, _Jv_floatClass,
-  _Jv_doubleClass, _Jv_voidClass;
-#define JvPrimClass(TYPE) ((jclass) & _Jv_##TYPE##Class)
-
 class JvSynchronize
 {
 private:

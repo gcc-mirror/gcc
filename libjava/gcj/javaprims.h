@@ -272,6 +272,7 @@ extern "C" jsize _Jv_GetStringUTFRegion (jstring, jsize, jsize, char *);
 extern "C" void _Jv_Throw (void *) __attribute__ ((__noreturn__));
 extern "C" void _Jv_Sjlj_Throw (void *) __attribute__ ((__noreturn__));
 extern "C" void* _Jv_Malloc (jsize) __attribute__((__malloc__));
+extern "C" void* _Jv_Realloc (void *, jsize);
 extern "C" void _Jv_Free (void*);
 
 typedef unsigned short _Jv_ushort __attribute__((__mode__(__HI__)));

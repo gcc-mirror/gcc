@@ -24,6 +24,7 @@ details.  */
 #include <java/lang/InternalError.h>
 #include <java/lang/VirtualMachineError.h>
 #include <java/lang/NoSuchFieldError.h>
+#include <java/lang/NoSuchMethodError.h>
 #include <java/lang/ClassFormatError.h>
 #include <java/lang/IllegalAccessError.h>
 #include <java/lang/AbstractMethodError.h>
@@ -230,59 +231,78 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
       _Jv_Method *the_method = 0;
       jclass found_class = 0;
 
-      // we make a loop here, because methods are allowed to be moved to
-      // a super class, and still be visible.. (binary compatibility).
+      // First search the class itself.
+      the_method = _Jv_SearchMethodInClass (owner, klass, 
+	           method_name, method_signature);
 
-      for (jclass cls = owner; cls != 0; cls = cls->getSuperclass ())
-	{
-	  for (int i = 0;  i < cls->method_count;  i++)
+      if (the_method != 0)
+        {
+	  found_class = owner;
+          goto end_of_method_search;
+	}
+
+      // If we are resolving an interface method, search the interface's 
+      // superinterfaces (A superinterface is not an interface's superclass - 
+      // a superinterface is implemented by the interface).
+      if (pool->tags[index] == JV_CONSTANT_InterfaceMethodref)
+        {
+	  _Jv_ifaces ifaces;
+	  ifaces.count = 0;
+	  ifaces.len = 4;
+	  ifaces.list = (jclass *) _Jv_Malloc (ifaces.len * sizeof (jclass *));
+
+	  _Jv_GetInterfaces (owner, &ifaces);	  
+          
+	  for (int i=0; i < ifaces.count; i++)
 	    {
-	      _Jv_Method *method = &cls->methods[i];
-	      if (   (!_Jv_equalUtf8Consts (method->name,
-					    method_name))
-		  || (!_Jv_equalUtf8Consts (method->signature,
-					    method_signature)))
-		continue;
-
-	      if (cls == klass 
-		  || ((method->accflags & Modifier::PUBLIC) != 0)
-		  || (((method->accflags & Modifier::PROTECTED) != 0)
-		      && cls->isAssignableFrom (klass))
-		  || (((method->accflags & Modifier::PRIVATE) == 0)
-		      && _Jv_ClassNameSamePackage (cls->name,
-						   klass->name)))
-		{
-		  // FIXME: if (cls->loader != klass->loader), then we
-		  // must actually check that the types of arguments
-		  // correspond.  That is, for each argument type, and
-		  // the return type, doing _Jv_FindClassFromSignature
-		  // with either loader should produce the same result,
-		  // i.e., exactly the same jclass object. JVMS 5.4.3.3
-
-		  the_method = method;
+	      jclass cls = ifaces.list[i];
+	      the_method = _Jv_SearchMethodInClass (cls, klass, method_name, 
+	                                            method_signature);
+	      if (the_method != 0)
+	        {
 		  found_class = cls;
-
-		  
-		  if (pool->tags[index] == JV_CONSTANT_InterfaceMethodref)
-		    vtable_index = -1;
-		  else
-		    vtable_index = _Jv_DetermineVTableIndex
-		      (cls, method_name, method_signature);
-
-		  if (vtable_index == 0)
-		    throw_incompatible_class_change_error
-		      (JvNewStringLatin1 ("method not found"));
-
-		  goto end_of_method_search;
+                  break;
 		}
-	      else
-		{
-		  JvThrow (new java::lang::IllegalAccessError);
-		}
+	    }
+	  
+	  _Jv_Free (ifaces.list);
+	  
+	  if (the_method != 0)
+	    goto end_of_method_search;
+	}
+
+      // Finally, search superclasses. 
+      for (jclass cls = owner->getSuperclass (); cls != 0; 
+           cls = cls->getSuperclass ())
+	{
+	  the_method = _Jv_SearchMethodInClass (cls, klass, 
+	               method_name, method_signature);
+          if (the_method != 0)
+	    {
+	      found_class = cls;
+	      break;
 	    }
 	}
 
     end_of_method_search:
+    
+      // FIXME: if (cls->loader != klass->loader), then we
+      // must actually check that the types of arguments
+      // correspond.  That is, for each argument type, and
+      // the return type, doing _Jv_FindClassFromSignature
+      // with either loader should produce the same result,
+      // i.e., exactly the same jclass object. JVMS 5.4.3.3    
+    
+      if (pool->tags[index] == JV_CONSTANT_InterfaceMethodref)
+	vtable_index = -1;
+      else
+	vtable_index = _Jv_DetermineVTableIndex
+	  (found_class, method_name, method_signature);
+
+      if (vtable_index == 0)
+	throw_incompatible_class_change_error
+	  (JvNewStringLatin1 ("method not found"));
+
       if (the_method == 0)
 	{
 	  jstring msg = JvNewStringLatin1 ("method ");
@@ -290,7 +310,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 	  msg = msg->concat (JvNewStringLatin1("."));
 	  msg = msg->concat (_Jv_NewStringUTF (method_name->data));
 	  msg = msg->concat (JvNewStringLatin1(" was not found."));
-	  JvThrow(new java::lang::NoSuchFieldError (msg));
+	  JvThrow(new java::lang::NoSuchMethodError (msg));
 	}
       
       pool->data[index].rmethod = 
@@ -307,6 +327,41 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
   return pool->data[index];
 }
 
+// Find a method declared in the cls that is referenced from klass and
+// perform access checks.
+_Jv_Method *
+_Jv_SearchMethodInClass (jclass cls, jclass klass, 
+                         _Jv_Utf8Const *method_name, 
+			 _Jv_Utf8Const *method_signature)
+{
+  using namespace java::lang::reflect;
+
+  for (int i = 0;  i < cls->method_count;  i++)
+    {
+      _Jv_Method *method = &cls->methods[i];
+      if (   (!_Jv_equalUtf8Consts (method->name,
+				    method_name))
+	  || (!_Jv_equalUtf8Consts (method->signature,
+				    method_signature)))
+	continue;
+
+      if (cls == klass 
+	  || ((method->accflags & Modifier::PUBLIC) != 0)
+	  || (((method->accflags & Modifier::PROTECTED) != 0)
+	      && cls->isAssignableFrom (klass))
+	  || (((method->accflags & Modifier::PRIVATE) == 0)
+	      && _Jv_ClassNameSamePackage (cls->name,
+					   klass->name)))
+	{
+	  return method;
+	}
+      else
+	{
+	  JvThrow (new java::lang::IllegalAccessError);
+	}
+    }
+  return 0;
+}
 
 void
 _Jv_ResolveField (_Jv_Field *field, java::lang::ClassLoader *loader)
