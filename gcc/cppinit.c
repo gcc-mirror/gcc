@@ -68,8 +68,6 @@ struct cpp_pending
 static void init_library		PARAMS ((void));
 static void init_builtins		PARAMS ((cpp_reader *));
 static void mark_named_operators	PARAMS ((cpp_reader *));
-static bool push_include		PARAMS ((cpp_reader *,
-						 struct pending_option *));
 static void free_chain			PARAMS ((struct pending_option *));
 static void read_original_filename	PARAMS ((cpp_reader *));
 static void new_pending_directive	PARAMS ((struct cpp_pending *,
@@ -432,26 +430,6 @@ init_builtins (pfile)
     (*pfile->cb.register_builtins) (pfile);
 }
 
-/* Pushes a command line -imacro and -include file indicated by P onto
-   the buffer stack.  Returns nonzero if successful.  */
-static bool
-push_include (pfile, p)
-     cpp_reader *pfile;
-     struct pending_option *p;
-{
-  cpp_token header;
-
-  /* Later: maybe update this to use the #include "" search path
-     if cpp_read_file fails.  */
-  header.type = CPP_STRING;
-  header.val.str.text = (const unsigned char *) p->arg;
-  header.val.str.len = strlen (p->arg);
-  /* Make the command line directive take up a line.  */
-  pfile->line++;
-
-  return _cpp_execute_include (pfile, &header, IT_CMDLINE);
-}
-
 /* Frees a pending_option chain.  */
 static void
 free_chain (head)
@@ -552,6 +530,10 @@ cpp_read_main_file (pfile, fname, table)
      hashtable is deferred until now.  */
   _cpp_init_hashtable (pfile, table);
 
+  /* Mark named operators before handling command line macros.  */
+  if (CPP_OPTION (pfile, cplusplus) && CPP_OPTION (pfile, operator_names))
+    mark_named_operators (pfile);
+
   if (CPP_OPTION (pfile, deps.style) != DEPS_NONE)
     {
       if (!pfile->deps)
@@ -615,10 +597,6 @@ void
 cpp_finish_options (pfile)
      cpp_reader *pfile;
 {
-  /* Mark named operators before handling command line macros.  */
-  if (CPP_OPTION (pfile, cplusplus) && CPP_OPTION (pfile, operator_names))
-    mark_named_operators (pfile);
-
   /* Install builtins and process command line macros etc. in the order
      they appeared, but only if not already preprocessed.  */
   if (! CPP_OPTION (pfile, preprocessed))
@@ -637,7 +615,7 @@ cpp_finish_options (pfile)
 	 pfile->next_include_file is NULL, so _cpp_pop_buffer does not
 	 push -include files.  */
       for (p = CPP_OPTION (pfile, pending)->imacros_head; p; p = p->next)
-	if (push_include (pfile, p))
+	if (cpp_push_include (pfile, p->arg))
 	  cpp_scan_nooutput (pfile);
 
       pfile->next_include_file = &CPP_OPTION (pfile, pending)->include_head;
@@ -659,7 +637,7 @@ _cpp_maybe_push_include_file (pfile)
     {
       struct pending_option *head = *pfile->next_include_file;
 
-      while (head && !push_include (pfile, head))
+      while (head && !cpp_push_include (pfile, head->arg))
 	head = head->next;
 
       if (head)

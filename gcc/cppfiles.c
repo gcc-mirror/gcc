@@ -756,6 +756,16 @@ cpp_make_system_header (pfile, syshdr, externc)
 		       SOURCE_LINE (pfile->map, pfile->line), flags);
 }
 
+/* Allow the client to rename the current file.  Used by the front end
+   to achieve pseudo-file names like <built-in>.  */
+void
+cpp_rename_file (pfile, new_name)
+     cpp_reader *pfile;
+     const char *new_name;
+{
+  _cpp_do_file_change (pfile, LC_RENAME, new_name, 1, 0);
+}
+
 /* Report on all files that might benefit from a multiple include guard.
    Triggered by -H.  */
 void
@@ -882,6 +892,24 @@ _cpp_read_file (pfile, fname)
     }
 
   return stack_include_file (pfile, f);
+}
+
+/* Pushes the given file onto the buffer stack.  Returns nonzero if
+   successful.  */
+bool
+cpp_push_include (pfile, filename)
+     cpp_reader *pfile;
+     const char *filename;
+{
+  cpp_token header;
+
+  header.type = CPP_STRING;
+  header.val.str.text = (const unsigned char *) filename;
+  header.val.str.len = strlen (filename);
+  /* Make the command line directive take up a line.  */
+  pfile->line++;
+
+  return _cpp_execute_include (pfile, &header, IT_CMDLINE);
 }
 
 /* Do appropriate cleanup when a file INC's buffer is popped off the

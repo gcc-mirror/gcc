@@ -719,6 +719,8 @@ extern unsigned char *cpp_quote_string	PARAMS ((unsigned char *,
 extern int cpp_included	PARAMS ((cpp_reader *, const char *));
 extern void cpp_make_system_header PARAMS ((cpp_reader *, int, int));
 extern void cpp_simplify_path PARAMS ((char *));
+extern bool cpp_push_include PARAMS ((cpp_reader *, const char *));
+extern void cpp_rename_file PARAMS ((cpp_reader *, const char *));
 
 /* In cpppch.c */
 struct save_macro_data;

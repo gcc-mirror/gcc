@@ -1,3 +1,12 @@
+2003-03-12  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppfiles.c (cpp_rename_file, cpp_push_include): New.
+	* cppinit.c (push_include): Move with changes to cppfiles.c.
+	(cpp_read_main_file): Mark named operators here...
+	(cpp_finish_options): ...not here.  Update.
+	(_cpp_maybe_push_include_file): Update.
+	* cpplib.h (cpp_push_include, cpp_rename_file): New.
+
 2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
         * aclocal.m4: Introduce gcc_GAS_VERSION_GTE_IFELSE,
