@@ -1,3 +1,9 @@
+2004-07-22  David Billinghurst (David.Billinghurst@riotinto.com)
+
+	* gfortran.dg/g77/970625-2.f Copy from g77.f-torture/execute. 
+	Add dg-run directive.  Declare variables as required.
+	* gfortran.dg/g77/README: Update
+
 2004-07-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/cris-peep2-xsrand.c, gcc.dg/cris-peep2-andu1.c,
