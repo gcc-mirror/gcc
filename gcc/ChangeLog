@@ -1,3 +1,8 @@
+Thu Jan  1 15:40:15 1998  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in: Put parenthesis around TARGET_CPU_DEFAULT's value.
+	* configure: Update.
+
 Thu Jan  1 10:49:12 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* emit-rtl.c (operand_subword): Correctly handle extracting a word
