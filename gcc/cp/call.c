@@ -5425,9 +5425,10 @@ build_over_call (fn, convs, args, flags)
   fn = build_call (fn, TREE_TYPE (TREE_TYPE (TREE_TYPE (fn))), converted_args);
   if (TREE_TYPE (fn) == void_type_node)
     return fn;
+  fn = require_complete_type (fn);
   if (IS_AGGR_TYPE (TREE_TYPE (fn)))
     fn = build_cplus_new (TREE_TYPE (fn), fn);
-  return convert_from_reference (require_complete_type (fn));
+  return convert_from_reference (fn);
 }
 
 static tree
