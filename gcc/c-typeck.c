@@ -4803,20 +4803,6 @@ pedwarn_init (format, local, ofwhat)
   pedwarn (format, buffer);
 }
 
-/* Keep a pointer to the last free TREE_LIST node as we digest an initializer,
-   so that we can reuse it.  This is set in digest_init, and used in
-   process_init_constructor.
-
-   We will never keep more than one free TREE_LIST node here.  This is for
-   two main reasons.  First, we take elements off the old list and add them
-   to the new list one at a time, thus there should never be more than
-   one free TREE_LIST at a time, and thus even if there is, we will never
-   need more than one.  Secondly, to avoid dangling pointers to freed obstacks,
-   we want to always ensure that we have either a pointer to a valid TREE_LIST
-   within the current initializer, or else a pointer to null.  */
-
-static tree free_tree_list = NULL_TREE;
-
 /* Digest the parser output INIT as an initializer for type TYPE.
    Return a C expression of type TYPE to represent the initial value.
 
@@ -4842,25 +4828,7 @@ digest_init (type, init, require_constant, constructor_constant)
 {
   enum tree_code code = TREE_CODE (type);
   tree element = 0;
-  tree old_tail_contents;
   tree inside_init = init;
-
-  /* By default, assume we use one element from a list.
-     We correct this later in the cases where it is not true.
-
-     Thus, we update TAIL now to point to the next element, and save the
-     old value in OLD_TAIL_CONTENTS.  If we didn't actually use the first
-     element, then we will reset TAIL before proceeding.  FREE_TREE_LIST
-     is handled similarly.  */
-
-  if (tail)
-    {
-      old_tail_contents = *tail;
-      *tail = TREE_CHAIN (*tail);
-      free_tree_list = old_tail_contents;
-    }
-  else
-    free_tree_list = 0;
 
   if (init == error_mark_node)
     return init;
