@@ -889,7 +889,9 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       switch (binoptab->code)
 	{
 	case PLUS:
+	  /* (a+ib) + (c+id) = (a+c) + i(b+d) */
 	case MINUS:
+	  /* (a+ib) - (c+id) = (a-c) + i(b-d) */
 	  res = expand_binop (submode, binoptab, real0, real1,
 			      realr, unsignedp, methods);
 	  if (res != realr)
@@ -912,15 +914,14 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	case MULT:
 	  /* (a+ib) * (c+id) = (ac-bd) + i(ad+cb) */
 
-	  res = expand_binop (submode, binoptab, real0, real1,
-			      realr, unsignedp, methods);
-
 	  if (imag0 && imag1)
 	    {
 	      rtx temp =
-		expand_binop (submode, sub_optab, res,
-			      expand_binop (submode, binoptab, imag0, imag1,
-					    0, unsignedp, methods),
+		expand_binop (submode, sub_optab,
+			      expand_binop (submode, binoptab, real0,
+					    real1, 0, unsignedp, methods),
+			      expand_binop (submode, binoptab, imag0,
+					    imag1, 0, unsignedp, methods),
 			      realr, unsignedp, methods);
 
 	      if (temp != realr)
@@ -939,6 +940,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	    }
 	  else
 	    {
+	      res = expand_binop (submode, binoptab, real0, real1,
+				  realr, unsignedp, methods);
 	      if (res != realr)
 		emit_move_insn (realr, res);
 
@@ -954,11 +957,11 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  break;
 
 	case DIV:
-	  /* (c+id)/(a+ib) == ((c+id)*(a-ib))/(a*a+b*b) */
+	  /* (a+ib) / (c+id) = ((ac+bd)/(cc+dd)) + i((bc-ad)/(cc+dd)) */
 	  
 	  if (! imag1)
-	    {
-	      /* Simply divide the real and imaginary parts by `a' */
+	    {	/* (a+ib) / (c+i0) = (a/c) + i(b/c) */
+	      /* Simply divide the real and imaginary parts by `c' */
 	      res = expand_binop (submode, binoptab, real0, real1,
 				  realr, unsignedp, methods);
 	      if (res != realr)
