@@ -880,6 +880,10 @@ else
       AC_SUBST(GTK_CFLAGS)
       AC_SUBST(GTK_LIBS)
 
+      PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.2 gthread-2.0 >= 2.2)
+      AC_SUBST(GLIB_CFLAGS)
+      AC_SUBST(GLIB_LIBS)
+
       PKG_CHECK_MODULES(LIBART, libart-2.0 >= 2.1)
       AC_SUBST(LIBART_CFLAGS)
       AC_SUBST(LIBART_LIBS)

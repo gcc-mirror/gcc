@@ -1,3 +1,8 @@
+2004-02-01  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* configure.in: Add pkgconfig check for glib and gthread.
+	* configure: Regenerate.
+
 2004-02-01  Michael Koch  <konqueror@gmx.de>
 
 	* include/jvm.h (MAYBE_UNUSED): New macro tp mark probably unused
