@@ -1,3 +1,11 @@
+2000-02-06  Richard Henderson  <rth@cygnus.com>
+
+	* i386.c (ix86_agi_dependant): Handle pro_epilogue_adjust_stack
+	as a TYPE_LEA insn.
+
+	* i386.md (widening and peepholes): Mask the constant instead of
+	using gen_lowpart.
+
 2000-02-05  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppfiles.c (read_and_prescan) [case SPECCASE_QUESTION]: Bump
