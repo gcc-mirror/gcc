@@ -1,3 +1,8 @@
+2005-02-14  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/19853
+	* tree-dfa.c (add_referenced_var): Always examine DECL_INITIAL.
+
 2005-02-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* passes.c (rest_of_handle_loop_optimize): Remove calls to
@@ -9,7 +14,7 @@
 	swapping commutative operands.
 
 2005-02-14  Sebastian Pop  <pop@cri.ensmp.fr>
-        
+
 	* lambda-code.c (lambda_loopnest_to_gcc_loopnest, perfect_nestify):
 	Use standard_iv_increment_position for computing the bsi position
 	for create_iv.
@@ -19,9 +24,10 @@
 2005-02-13  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR target/17428
-	* cfgrtl.c (safe_insert_insn_on_edge): Avoid extending life range of hard
-	registers.
-	* value-prof.c (insn_prefetch_values_to_profile): Only scan normal insns.
+	* cfgrtl.c (safe_insert_insn_on_edge): Avoid extending
+	life range of hard registers.
+	* value-prof.c (insn_prefetch_values_to_profile): Only
+	scan normal insns.
 
 	* value-prof.c (rtl_find_values_to_profile): Do not look for values to
 	profile in libcalls.

@@ -901,8 +901,7 @@ add_referenced_var (tree var, struct walk_state *walk_state)
       /* Scan DECL_INITIAL for pointer variables as they may contain
 	 address arithmetic referencing the address of other
 	 variables.  */
-      if (DECL_INITIAL (var)
-	  && POINTER_TYPE_P (TREE_TYPE (var)))
+      if (DECL_INITIAL (var))
       	walk_tree (&DECL_INITIAL (var), find_vars_r, walk_state, 0);
     }
 }
