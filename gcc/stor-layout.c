@@ -1057,7 +1057,7 @@ compute_record_mode (type)
       /* Must be BLKmode if any field crosses a word boundary,
 	 since extract_bit_field can't handle that in registers.  */
       if (bitpos / BITS_PER_WORD
-	  != ((TREE_INT_CST_LOW (DECL_SIZE (field)) + bitpos - 1)
+	  != ((tree_low_cst (DECL_SIZE (field), 1) + bitpos - 1)
 	      / BITS_PER_WORD)
 	  /* But there is no problem if the field is entire words.  */
 	  && tree_low_cst (DECL_SIZE (field), 1) % BITS_PER_WORD != 0)
@@ -1069,7 +1069,8 @@ compute_record_mode (type)
 	 we don't support using such a mode if there is no integer mode
 	 of the same size, so don't set it here.  */
       if (field == TYPE_FIELDS (type) && TREE_CHAIN (field) == 0
-	  && int_mode_for_mode (DECL_MODE (field)) != BLKmode)
+	  && int_mode_for_mode (DECL_MODE (field)) != BLKmode
+	  && operand_equal_p (DECL_SIZE (field), TYPE_SIZE (type), 1))
 	mode = DECL_MODE (field);
 
 #ifdef STRUCT_FORCE_BLK
@@ -1336,22 +1337,6 @@ layout_type (type)
 	    tree length;
 	    tree element_size;
 
-	    /* If UB is max (lb - 1, x), remove the MAX_EXPR since the
-	       test for negative below covers it.  */
-	    if (TREE_CODE (ub) == MAX_EXPR
-		&& TREE_CODE (TREE_OPERAND (ub, 0)) == MINUS_EXPR
-		&& integer_onep (TREE_OPERAND (TREE_OPERAND (ub, 0), 1))
-		&& operand_equal_p (TREE_OPERAND (TREE_OPERAND (ub, 0), 0),
-				    lb, 0))
-	      ub = TREE_OPERAND (ub, 1);
-	    else if (TREE_CODE (ub) == MAX_EXPR
-		     && TREE_CODE (TREE_OPERAND (ub, 1)) == MINUS_EXPR
-		     && integer_onep (TREE_OPERAND (TREE_OPERAND (ub, 1), 1))
-		     && operand_equal_p (TREE_OPERAND (TREE_OPERAND (ub, 1),
-						       0),
-					 lb, 0))
-	      ub = TREE_OPERAND (ub, 0);
-
 	    /* The initial subtraction should happen in the original type so
 	       that (possible) negative values are handled appropriately.  */
 	    length = size_binop (PLUS_EXPR, size_one_node,
@@ -1360,23 +1345,17 @@ layout_type (type)
 						       TREE_TYPE (lb),
 						       ub, lb))));
 
-	    /* If neither bound is a constant and sizetype is signed, make
-	       sure the size is never negative.  We should really do this
-	       if *either* bound is non-constant, but this is the best
-	       compromise between C and Ada.  */
-	    if (! TREE_UNSIGNED (sizetype)
-		&& TREE_CODE (TYPE_MIN_VALUE (index)) != INTEGER_CST
-		&& TREE_CODE (TYPE_MAX_VALUE (index)) != INTEGER_CST)
-	      length = size_binop (MAX_EXPR, length, size_zero_node);
-
 	    /* Special handling for arrays of bits (for Chill).  */
 	    element_size = TYPE_SIZE (element);
-	    if (TYPE_PACKED (type) && INTEGRAL_TYPE_P (element))
+	    if (TYPE_PACKED (type) && INTEGRAL_TYPE_P (element)
+		&& (integer_zerop (TYPE_MAX_VALUE (element))
+		    || integer_onep (TYPE_MAX_VALUE (element)))
+		&& host_integerp (TYPE_MIN_VALUE (element), 1))
 	      {
 		HOST_WIDE_INT maxvalue
-		  = TREE_INT_CST_LOW (TYPE_MAX_VALUE (element));
+		  = tree_low_cst (TYPE_MAX_VALUE (element), 1);
 		HOST_WIDE_INT minvalue
-		  = TREE_INT_CST_LOW (TYPE_MIN_VALUE (element));
+		  = tree_low_cst (TYPE_MIN_VALUE (element), 1);
 
 		if (maxvalue - minvalue == 1
 		    && (maxvalue == 1 || maxvalue == 0))
