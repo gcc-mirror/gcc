@@ -1,5 +1,8 @@
 2000-07-26  Nick Clifton  <nickc@cygnus.com>
 
+	* config/arm/vxarm.h (CPP_PREDEFINES): Remove definition of
+	__arm__.  Allow it to be defined by CPP_ISA_SPEC in arm.h
+
 	* dwarf2out.c (dwarf2out_frame_debug_expr): Accept SEQUENCE as
 	well as PARALLEL blocks in FRAME_RELATED_EXPR notes.
 
