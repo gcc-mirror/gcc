@@ -1,3 +1,9 @@
+2000-02-24  Warren Levy  <warrenl@cygnus.com>
+
+	* java/math/BigInteger.java(ival): Made private.
+	(words): Ditto.
+	(neg): Ditto.
+
 2000-02-20  Anthony Green  <green@cygnus.com>
 
 	* Makefile.in: Rebuilt.

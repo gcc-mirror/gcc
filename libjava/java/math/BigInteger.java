@@ -35,8 +35,8 @@ public class BigInteger extends Number implements Comparable
    * If words == null, the ival is the value of this BigInteger.
    * Otherwise, the first ival elements of words make the value
    * of this BigInteger, stored in little-endian order, 2's-complement form. */
-  public int ival;
-  public int[] words;
+  private int ival;
+  private int[] words;
 
 
   /** We pre-allocate integers in the range minFixNum..maxFixNum. */
@@ -1779,7 +1779,7 @@ public class BigInteger extends Number implements Comparable
     return abs(this);
   }
 
-  public static BigInteger neg(BigInteger x)
+  private static BigInteger neg(BigInteger x)
   {
     if (x.words == null && x.ival != Integer.MIN_VALUE)
       return make(- x.ival);
