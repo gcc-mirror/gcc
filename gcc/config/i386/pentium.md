@@ -118,7 +118,7 @@
 					      (pentium-load+pentium-firstv))")
 (define_reservation "pentium-firstuboth" "(pentium-load + pentium-firstu
 					   + pentium-memory)")
-(define_reservation "pentium-firstvboth" "(pentium-load + pentium-firstu
+(define_reservation "pentium-firstvboth" "(pentium-load + pentium-firstv
 					   + pentium-memory)")
 (define_reservation "pentium-firstuvboth" "(pentium-load + pentium-firstuv
 					    + pentium-memory)
