@@ -1,3 +1,16 @@
+2000-11-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mcore.c (mcore_expand_prolog): Call xmalloc/xrealloc, not
+	malloc/realloc.
+
+	* cpplib.c (glue_header_name): Likewise.
+
+	* fixincl.c (run_compiles, start_fixer): Likewise.
+
+	* fixlib.c (load_file_data): Likewise.
+
+	* mkdeps.c (munge): Likewise.
+
 2000-11-17  Hans-Peter Nilsson  <hp@axis.com>
 
 	* defaults.h [EH_FRAME_SECTION_ASM_OP] (EH_FRAME_SECTION): Remove

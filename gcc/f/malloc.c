@@ -140,8 +140,7 @@ malloc_init ()
 {
   if (malloc_reserve_ != NULL)
     return;
-  malloc_reserve_ = malloc (20 * 1024);	/* In case of crash, free this first. */
-  assert (malloc_reserve_ != NULL);
+  malloc_reserve_ = xmalloc (20 * 1024); /* In case of crash, free this first. */
 }
 
 /* malloc_pool_display -- Display a pool

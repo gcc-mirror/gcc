@@ -1,3 +1,7 @@
+Thu Nov 16 23:14:07 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* malloc.c (malloc_init): Call xmalloc, not malloc.
+
 2000-11-10  Rodney Brown  <RodneyBrown@mynd.com>
 
 	* Make-lang.in: Remove OUTPUT_OPTION from g77version.o target.

@@ -528,7 +528,7 @@ glue_header_name (pfile, header)
       if (total_len + len > capacity)
 	{
 	  capacity = (capacity + len) * 2;
-	  buffer = (unsigned char *) realloc (buffer, capacity);
+	  buffer = (unsigned char *) xrealloc (buffer, capacity);
 	}
 
       if (token.flags & PREV_WHITE)
