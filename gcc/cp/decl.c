@@ -10331,6 +10331,14 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    ctype = cname;
 		}
 
+	      /* If the parser sees something like "void a::b" where
+		 "a::b" is a namespace, it will build a SCOPE_REF with
+		 a NAMESPACE_DECL, rather than an IDENTIFIER_NODE, as
+		 the second operand.  Since the SCOPE_REF is being
+		 used as a declarator, we recover from that here.  */
+	      if (TREE_CODE (TREE_OPERAND (decl, 1)) == NAMESPACE_DECL)
+		TREE_OPERAND (decl, 1) = DECL_NAME (TREE_OPERAND (decl, 1));
+
 	      if (ctype && TREE_CODE (TREE_OPERAND (decl, 1)) == TYPE_DECL
 		  && constructor_name_p (DECL_NAME (TREE_OPERAND (decl, 1)),
 					 ctype))
