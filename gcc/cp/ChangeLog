@@ -1,3 +1,11 @@
+2002-06-14  Jason Merrill  <jason@redhat.com>
+
+	C++ ABI changes.
+	* class.c (build_base_field): Set DECL_PACKED.
+	(layout_class_type): Don't use tail padding of PODs.
+	* mangle.c (write_unqualified_name): Fix template conversion op
+	mangling.
+
 2002-06-16  Richard Henderson  <rth@redhat.com>
 
 	PR opt/6793
