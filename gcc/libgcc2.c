@@ -1606,6 +1606,7 @@ typedef void (*vfp)(void);
 extern vfp __new_handler;
 extern void __default_new_handler (void);
 
+void * __builtin_new (size_t sz) __attribute__ ((weak));
 void *
 __builtin_new (size_t sz)
 {
@@ -1632,6 +1633,7 @@ __builtin_new (size_t sz)
 
 extern void * __builtin_new (size_t);
 
+void * __builtin_vec_new (size_t sz) __attribute__ ((weak));
 void *
 __builtin_vec_new (size_t sz)
 {
@@ -1694,6 +1696,7 @@ __default_new_handler ()
    by C++ programs to return to the free store a block of memory allocated
    as a single object. */
 
+void __builtin_delete (void *ptr) __attribute__ ((weak));
 void
 __builtin_delete (void *ptr)
 {
@@ -1709,6 +1712,7 @@ __builtin_delete (void *ptr)
 
 extern void __builtin_delete (void *);
 
+void __builtin_vec_delete (void *ptr) __attribute__ ((weak));
 void
 __builtin_vec_delete (void *ptr)
 {
