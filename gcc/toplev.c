@@ -1702,6 +1702,44 @@ check_global_declarations (tree *vec, int len)
     }
 }
 
+/* Warn about a use of an identifier which was marked deprecated.  */
+void
+warn_deprecated_use (tree node)
+{
+  if (node == 0 || !warn_deprecated_decl)
+    return;
+
+  if (DECL_P (node))
+    warning ("`%s' is deprecated (declared at %s:%d)",
+	     IDENTIFIER_POINTER (DECL_NAME (node)),
+	     DECL_SOURCE_FILE (node), DECL_SOURCE_LINE (node));
+  else if (TYPE_P (node))
+    {
+      const char *what = NULL;
+      tree decl = TYPE_STUB_DECL (node);
+
+      if (TREE_CODE (TYPE_NAME (node)) == IDENTIFIER_NODE)
+	what = IDENTIFIER_POINTER (TYPE_NAME (node));
+      else if (TREE_CODE (TYPE_NAME (node)) == TYPE_DECL
+	       && DECL_NAME (TYPE_NAME (node)))
+	what = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (node)));
+
+      if (what)
+	{
+	  if (decl)
+	    warning ("`%s' is deprecated (declared at %s:%d)", what,
+		     DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
+	  else
+	    warning ("`%s' is deprecated", what);
+	}
+      else if (decl)
+	warning ("type is deprecated (declared at %s:%d)",
+		 DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
+      else
+	warning ("type is deprecated");
+    }
+}
+
 /* Save the current INPUT_LOCATION on the top entry in the
    INPUT_FILE_STACK.  Push a new entry for FILE and LINE, and set the
    INPUT_LOCATION accordingly.  */
