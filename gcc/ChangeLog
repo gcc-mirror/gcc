@@ -1,3 +1,8 @@
+2004-08-24  Nick Clifton  <nickc@redhat.com>
+
+	* config/m32r/m32r.h (PREDICATE_CODES): Remove duplicate defintion
+	of seth_add3_operand.
+
 2004-08-24  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* Makefile.in (HOOKS_H): Add dependency on MACHMODE_H.
