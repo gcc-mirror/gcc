@@ -1914,6 +1914,9 @@ output_constant_def (exp)
   TREE_CST_RTL (exp)
     = gen_rtx (MEM, TYPE_MODE (TREE_TYPE (exp)), def);
   RTX_UNCHANGING_P (TREE_CST_RTL (exp)) = 1;
+  if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
+      || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+    MEM_IN_STRUCT_P (TREE_CST_RTL (exp)) = 1;
 
   pop_obstacks ();
 
