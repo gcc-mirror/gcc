@@ -1,3 +1,8 @@
+2004-07-14  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.c (ia64_expand_compare): Allow ORDERED
+	comparision of TFmode.
+
 2004-07-14  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_gimplify_va_arg_1): Move indirect ...
