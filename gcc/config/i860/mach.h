@@ -1,7 +1,5 @@
 /* Configuration for an i860 running Mach as the target machine.  */
 
-#include "i860/i860.h"
-
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i860 Mach3.x)");
 
