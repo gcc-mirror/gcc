@@ -1,3 +1,7 @@
+Fri Oct  2 21:55:58 1998  Richard Henderson  <rth@cygnus.com>
+
+	* g++.old-deja/g++.other/addrof1.C: New test.
+
 Thu Oct  1 19:05:20 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/981001-2.c: New test.
