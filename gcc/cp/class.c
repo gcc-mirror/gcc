@@ -3377,7 +3377,6 @@ void
 finish_struct_1 (t)
      tree t;
 {
-  int old;
   tree fields = TYPE_FIELDS (t);
   tree x, last_x, method_vec;
   int has_virtual;
@@ -3426,8 +3425,6 @@ finish_struct_1 (t)
 
   TYPE_SIZE (t) = NULL_TREE;
   CLASSTYPE_GOT_SEMICOLON (t) = 0;
-
-  old = suspend_momentary ();
 
   /* Install struct as DECL_FIELD_CONTEXT of each field decl.
      Also process specified field sizes.
@@ -4182,8 +4179,6 @@ finish_struct_1 (t)
   if (TYPE_NAME (t) && TYPE_IDENTIFIER (t))
     undo_template_name_overload (TYPE_IDENTIFIER (t), 1);
 #endif
-
-  resume_momentary (old);
 
   if (warn_overloaded_virtual)
     warn_hidden (t);

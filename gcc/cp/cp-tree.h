@@ -3894,8 +3894,6 @@ extern tree finish_qualified_call_expr          PROTO ((tree, tree));
 extern tree finish_label_address_expr           PROTO((tree));
 extern tree finish_unary_op_expr                PROTO((enum tree_code, tree));
 extern tree finish_id_expr                      PROTO((tree));
-extern int  begin_new_placement                 PROTO((void));
-extern tree finish_new_placement                PROTO((tree, int));
 extern int begin_function_definition            PROTO((tree, tree));
 extern tree begin_constructor_declarator        PROTO((tree, tree));
 extern tree finish_declarator                   PROTO((tree, tree, tree, tree, int));

@@ -1619,32 +1619,6 @@ finish_id_expr (expr)
   return expr;
 }
 
-/* Begin a new-placement.  */
-
-int
-begin_new_placement ()
-{
-  /* The arguments to a placement new might be passed to a
-     deallocation function, in the event that the allocation throws an
-     exception.  Since we don't expand exception handlers until the
-     end of a function, we must make sure the arguments stay around
-     that long.  */
-  return suspend_momentary ();
-}
-
-/* Finish a new-placement.  The ARGS are the placement arguments.  The
-   COOKIE is the value returned by the previous call to
-   begin_new_placement.  */
-
-tree
-finish_new_placement (args, cookie)
-     tree args;
-     int cookie;
-{
-  resume_momentary (cookie);
-  return args;
-}
-
 /* Begin a function defniition declared with DECL_SPECS and
    DECLARATOR.  Returns non-zero if the function-declaration is
    legal.  */

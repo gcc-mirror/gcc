@@ -2193,20 +2193,10 @@ build_new_1 (exp)
     }
   else
     {
-      int susp = 0;
-
-      if (flag_exceptions)
-	/* We will use RVAL when generating an exception handler for
-	   this new-expression, so we must save it.  */
-	susp = suspend_momentary ();
-
       rval = build_op_new_call
 	(code, true_type, tree_cons (NULL_TREE, size, placement),
 	 LOOKUP_NORMAL | (use_global_new * LOOKUP_GLOBAL));
       rval = cp_convert (build_pointer_type (true_type), rval);
-
-      if (flag_exceptions)
-	resume_momentary (susp);
     }
 
   /*        unless an allocation function is declared with an empty  excep-
@@ -2369,9 +2359,6 @@ build_new_1 (exp)
 	  tree cleanup, fn = NULL_TREE;
 	  int flags = LOOKUP_NORMAL | (use_global_new * LOOKUP_GLOBAL);
 
-	  /* All cleanups must last longer than normal.  */
-	  int yes = suspend_momentary ();
-
 	  /* The Standard is unclear here, but the right thing to do
              is to use the same method for finding deallocation
              functions that we use for finding allocation functions.  */
@@ -2383,8 +2370,6 @@ build_new_1 (exp)
 	  fn = TREE_OPERAND (fn, 0);
 
 	  cleanup = build_op_delete_call (dcode, alloc_node, size, flags, fn);
-
-	  resume_momentary (yes);
 
 	  /* Ack!  First we allocate the memory.  Then we set our sentry
 	     variable to true, and expand a cleanup that deletes the memory
@@ -2398,11 +2383,9 @@ build_new_1 (exp)
 	      begin = get_target_expr (boolean_true_node);
 	      sentry = TREE_OPERAND (begin, 0);
 
-	      yes = suspend_momentary ();
 	      TREE_OPERAND (begin, 2)
 		= build (COND_EXPR, void_type_node, sentry,
 			 cleanup, void_zero_node);
-	      resume_momentary (yes);
 
 	      rval = get_target_expr (rval);
 

@@ -9845,13 +9845,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	    if (size)
 	      {
-		/* Must suspend_momentary here because the index
-		   type may need to live until the end of the function.
-		   For example, it is used in the declaration of a
-		   variable which requires destructing at the end of
-		   the function; then build_vec_delete will need this
-		   value.  */
-		int yes = suspend_momentary ();
 		/* Might be a cast. */
 		if (TREE_CODE (size) == NOP_EXPR
 		    && TREE_TYPE (size) == TREE_TYPE (TREE_OPERAND (size, 0)))
@@ -9934,11 +9927,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  }
 
 		itype = build_index_type (itype);
-
-	      dont_grok_size:
-		resume_momentary (yes);
 	      }
 
+	  dont_grok_size:
 	    type = build_cplus_array_type (type, itype);
 	    ctype = NULL_TREE;
 	  }
@@ -14055,11 +14046,8 @@ maybe_build_cleanup_1 (decl, auto_delete)
   tree type = TREE_TYPE (decl);
   if (type != error_mark_node && TYPE_NEEDS_DESTRUCTOR (type))
     {
-      int temp = 0, flags = LOOKUP_NORMAL|LOOKUP_DESTRUCTOR;
+      int flags = LOOKUP_NORMAL|LOOKUP_DESTRUCTOR;
       tree rval;
-
-      if (TREE_CODE (decl) != PARM_DECL)
-	temp = suspend_momentary ();
 
       if (TREE_CODE (type) == ARRAY_TYPE)
 	rval = decl;
@@ -14080,9 +14068,6 @@ maybe_build_cleanup_1 (decl, auto_delete)
 	  && ! TYPE_HAS_DESTRUCTOR (type))
 	rval = build_compound_expr (tree_cons (NULL_TREE, rval,
 					       build_expr_list (NULL_TREE, build_vbase_delete (type, decl))));
-
-      if (TREE_CODE (decl) != PARM_DECL)
-	resume_momentary (temp);
 
       return rval;
     }
