@@ -159,3 +159,35 @@ do {									\
   "%{!shared:%{!symbolic:-lc}} \
   crtend.o%s \
   %{!shared:%{!symbolic:%{pg:crtn.o%s}%{!pg:crtn.o%s}}}"
+
+/* This should be the same as in svr4.h, except with -R added.  */
+#undef LINK_SPEC
+#define LINK_SPEC "%{h*} %{V} %{v:%{!V:-V}} \
+		   %{b} %{Wl,*:%*} \
+		   %{static:-dn -Bstatic} \
+		   %{shared:-G -dy} \
+		   %{symbolic:-Bsymbolic -G -dy} \
+		   %{G:-G} \
+		   %{YP,*} \
+		   %{R*} \
+		   %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+		    %{!p:-Y P,/usr/ccs/lib:/usr/lib}} \
+		   %{Qy:} %{!Qn:-Qy}"
+
+/* This defines which switch letters take arguments.
+   It is as in svr4.h but with -R added.  */
+
+#undef SWITCH_TAKES_ARG
+#define SWITCH_TAKES_ARG(CHAR) \
+  (   (CHAR) == 'D' \
+   || (CHAR) == 'U' \
+   || (CHAR) == 'o' \
+   || (CHAR) == 'e' \
+   || (CHAR) == 'u' \
+   || (CHAR) == 'I' \
+   || (CHAR) == 'm' \
+   || (CHAR) == 'L' \
+   || (CHAR) == 'R' \
+   || (CHAR) == 'A' \
+   || (CHAR) == 'h' \
+   || (CHAR) == 'z')
