@@ -2941,6 +2941,7 @@ extern rtx emit_line_note (location_t);
 #define ECF_LIBCALL_BLOCK	4096
 
 extern int flags_from_decl_or_type (tree);
+extern int call_expr_flags (tree);
 
 extern int setjmp_call_p (tree);
 extern bool alloca_call_p (tree);

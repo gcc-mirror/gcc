@@ -1,3 +1,10 @@
+2003-11-14  Jason Merrill  <jason@redhat.com>
+
+	PR middle-end/12526
+	* tree.c (build): A CALL_EXPR has side-effects if its arguments do.
+	* calls.c (call_expr_flags): New fn.
+	* tree.h: Declare it.
+
 2003-11-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/lib1funcs.asm (__udivsi3): Remove.
