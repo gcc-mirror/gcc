@@ -4303,7 +4303,10 @@ handle_mode_attribute (tree *node, tree name, tree args,
       else
 	for (j = 0; j < NUM_MACHINE_MODES; j++)
 	  if (!strcmp (p, GET_MODE_NAME (j)))
-	    mode = (enum machine_mode) j;
+	    {
+	      mode = (enum machine_mode) j;
+	      break;
+	    }
 
       if (mode == VOIDmode)
 	{
@@ -4363,7 +4366,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
 
       if (typefm == NULL_TREE)
 	{
-	  error ("no data type for mode %<%s%>", p);
+	  error ("no data type for mode %qs", p);
 	  return NULL_TREE;
 	}
       else if (TREE_CODE (type) == ENUMERAL_TYPE)
@@ -4373,8 +4376,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	     this mode for this type.  */
 	  if (TREE_CODE (typefm) != INTEGER_TYPE)
 	    {
-	      error ("cannot use mode %qs for enumeral types",
-		     GET_MODE_NAME (mode));
+	      error ("cannot use mode %qs for enumeral types", p);
 	      return NULL_TREE;
 	    }
 
@@ -4383,6 +4385,12 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	  TYPE_PRECISION (type) = TYPE_PRECISION (typefm);
 	  typefm = type;
 	}
+      else if (TREE_CODE (type) != TREE_CODE (typefm))
+	{
+	  error ("mode %qs applied to inappropriate type", p);
+	  return NULL_TREE;
+	}
+
       *node = typefm;
 
       /* No need to layout the type here.  The caller should do this.  */
