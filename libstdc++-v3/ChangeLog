@@ -1,3 +1,23 @@
+2004-11-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/Makefile.am (tr1_headers): Add utility, functional.
+	* include/Makefile.in: Regenerate.
+
+2004-11-24  Chris Jefferson  <chris@bubblescope.net>
+
+	* include/tr1/tuple(operator!=): Change operator 
+	definition to match (draft) technical report.
+	(operator>): Same.
+	(operator<=): Same.
+	(operator>=): Same.
+	(ref): Move to include/tr1/functional.
+	(cref): Same.
+	(tuple_size<pair>): Move to include/tr1/utility.
+	(tuple_element<,pair>): Same.
+	* include/tr1/functional: New.
+	* include/tr1/utility: New.
+	* testsuite/tr1/6_container/utility/pair.cc: New.
+
 2004-11-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* config/locale/ieee_1003.1-2001/codecvt_specializations.h
