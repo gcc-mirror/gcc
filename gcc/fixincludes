@@ -36,7 +36,7 @@ then echo fixincludes: no output directory specified
 exit 1
 fi
 
-echo 'Building fixincludes in ' ${LIB}
+echo Building fixed headers in ${LIB}
 
 # Determine whether this system has symbolic links.
 if ln -s X $LIB/ShouldNotExist 2>/dev/null; then
@@ -46,7 +46,7 @@ else
   LINKS=false
 fi
 
-echo 'Making directories:'
+echo Finding directories and links to directories
 cd ${INPUT}
 # Find all directories and all symlinks that point to directories.
 # Put the list in $files.
@@ -62,6 +62,7 @@ do
     newdirs=
     for d in $dirs
     do
+	echo " Searching $INPUT/$d"
 	if [ "$d" != . ]
 	then
 	    d=$d/.
@@ -80,7 +81,8 @@ do
 	  theselinks=`find $d -type l -print`
 	for d1 in $theselinks --dummy--
 	do
-	    # If it is a directory, add it to $newdirs
+	    # If the link points to a directory,
+	    # add that dir to $newdirs
 	    if [ -d $d1 ]
 	    then
 		newdirs="$newdirs $d1"
@@ -93,7 +95,7 @@ do
 done
 
 dirs=
-echo all directories:
+echo "All directories (including links to directories):"
 echo $files
 
 for file in $files; do
@@ -102,6 +104,7 @@ for file in $files; do
   then mkdir $LIB/$file
   fi
 done
+mkdir $LIB/root
 
 # treetops gets an alternating list
 # of old directories to copy
@@ -109,7 +112,7 @@ done
 treetops="${INPUT} ${LIB}"
 
 if $LINKS; then
-  echo 'Making internal symbolic directory links'
+  echo 'Making symbolic directory links'
   for file in $files; do
     dest=`ls -ld $file | sed -n 's/.*-> //p'`
     if [ "$dest" ]; then    
@@ -124,21 +127,42 @@ if $LINKS; then
 	cd $dest
 	# X gets the dir that the link actually leads to.
 	x=`pwd`
+	# If a link points to ., make a similar link to .
+	if [ $x = $INPUT ]; then
+	  echo $file '->' . ': Making link'
+	  rm -fr ${LIB}/$file > /dev/null 2>&1
+	  ln -s . ${LIB}/$file > /dev/null 2>&1
 	# If link leads back into ${INPUT},
 	# make a similar link here.
-	if expr $x : "${INPUT}/.*" > /dev/null; then
+	elif expr $x : "${INPUT}/.*" > /dev/null; then
 	  # Y gets the actual target dir name, relative to ${INPUT}.
 	  y=`echo $x | sed -n "s&${INPUT}/&&p"`
 	  echo $file '->' $y ': Making link'
 	  rm -fr ${LIB}/$file > /dev/null 2>&1
 	  ln -s ${LIB}/$y ${LIB}/$file > /dev/null 2>&1
 	else
-	  # If the link is to outside ${INPUT},
+	  # If the link is to a dir $target outside ${INPUT},
+	  # repoint the link at ${INPUT}/root$target
+	  # and process $target into ${INPUT}/root$target
 	  # treat this directory as if it actually contained the files.
-# This line used to have $dest instead of $x.
-# $dest seemed to be wrong for links found in subdirectories
-# of ${INPUT}.  Does this change break anything?
-	  treetops="$treetops $x ${LIB}/$file"
+	  echo $file '->' root$x ': Making link'
+	  if [ -d $LIB/root$x ]
+	  then true
+	  else
+	    dirname=root$x/
+	    dirmade=.
+	    cd $LIB
+	    while [ x$dirname != x ]; do
+	      component=`echo $dirname | sed -e 's|/.*$||'`
+	      mkdir $component >/dev/null 2>&1
+	      cd $component
+	      dirmade=$dirmade/$component
+	      dirname=`echo $dirname | sed -e 's|[^/]*/||'`
+	    done
+	  fi
+	  rm -fr ${LIB}/$file > /dev/null 2>&1
+	  ln -s ${LIB}/root$x ${LIB}/$file > /dev/null 2>&1
+	  treetops="$treetops $x ${LIB}/root$x"
 	fi
       fi
       cd $cwd
@@ -149,13 +173,21 @@ fi
 set - $treetops
 while [ $# != 0 ]; do
   # $1 is an old directory to copy, and $2 is the new directory to copy to.
-  echo "Finding header files in $1:"
   cd ${INPUT}
   cd $1
+# The same dir can appear more than once in treetops.
+# There's no need to scan it more than once.
+  if [ -f $2/DONE ]
+  then
+    files=
+  else
+    touch $2/DONE
+    echo Fixing directory $1 into $2
 # Check .h files which are symlinks as well as those which are files.
 # A link to a header file will not be processed by anything but this.
-  files=`find . -name '*.h' \( -type f -o -type l \) -print`
-  echo 'Checking header files:'
+    files=`find . -name '*.h' \( -type f -o -type l \) -print`
+    echo Checking header files
+  fi
 # Note that BSD43_* are used on recent MIPS systems.
   for file in $files; do
 # This call to egrep is essential, since checking a file with egrep
@@ -730,6 +762,34 @@ if [ -r ${LIB}/$file ]; then
       -e 's@scanf( char \*__format,@scanf( const char *__format,@' \
       -e 's@sscanf( char \*__s, char \*__format,@sscanf( const char *__s, const char *__format,@' \
     ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    echo Deleting ${LIB}/$file\; no fixes were needed.
+    rm -f ${LIB}/$file
+  fi
+fi
+
+# Don't use or define the name va_list in stdio.h.
+# This is for ANSI and also to interoperate properly with gvarargs.h.
+file=stdio.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, use of va_list
+  # Arrange for stdio.h to use stdarg.h to define __gnuc_va_list
+  (echo "#define __need___va_list"
+   echo "#include <stdarg.h>") > ${LIB}/${file}.sed
+  # Use __gnuc_va_list in arg types in place of va_list.
+  # Define __va_list__ (something harmless and unused) instead of va_list.
+  # Don't claim to have defined va_list.
+  sed -e 's@ va_list @ __gnuc_va_list @' \
+      -e 's@ va_list@ __va_list__@' \
+      -e 's@VA_LIST@DUMMY_VA_LIST@' \
+    ${LIB}/$file >> ${LIB}/${file}.sed
+  
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     echo Deleting ${LIB}/$file\; no fixes were needed.
