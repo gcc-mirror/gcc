@@ -1,3 +1,8 @@
+2001-03-06  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* objc/objc-act.c (init_objc): Set save_lang_status,
+	restore_lang_status, and mark_lang_status.
+
 2001-03-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppinternals.texi: Update.

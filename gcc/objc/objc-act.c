@@ -8161,6 +8161,9 @@ init_objc ()
   synth_module_prologue ();
 
   /* Change the default error function */
+  save_lang_status = &push_c_function_context;
+  restore_lang_status = &pop_c_function_context;
+  mark_lang_status = &mark_c_function_context;
   decl_printable_name = objc_printable_name;
   lang_expand_expr = c_expand_expr;
   lang_expand_decl_stmt = c_expand_decl_stmt;
