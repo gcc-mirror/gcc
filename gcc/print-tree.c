@@ -104,6 +104,9 @@ print_node_brief (file, prefix, node, indent)
   /* We might as well always print the value of an integer.  */
   if (TREE_CODE (node) == INTEGER_CST)
     {
+      if (TREE_CONSTANT_OVERFLOW (node))
+	fprintf (file, " overflow");
+
       if (TREE_INT_CST_HIGH (node) == 0)
 	fprintf (file, " %1u", TREE_INT_CST_LOW (node));
       else if (TREE_INT_CST_HIGH (node) == -1
@@ -548,6 +551,9 @@ print_node (file, prefix, node, indent)
       switch (TREE_CODE (node))
 	{
 	case INTEGER_CST:
+	  if (TREE_CONSTANT_OVERFLOW (node))
+	    fprintf (file, " overflow");
+
 	  if (TREE_INT_CST_HIGH (node) == 0)
 	    fprintf (file, " %1u", TREE_INT_CST_LOW (node));
 	  else if (TREE_INT_CST_HIGH (node) == -1
