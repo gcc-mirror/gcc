@@ -1,3 +1,8 @@
+2004-11-30  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_expr_real_1, case NOP_EXPR): Properly handle
+	REDUCE_BIT_FIELD by applying it to result, not input, of conversion.
+
 2004-11-30  Ben Elliston  <bje@au.ibm.com>
 
 	* Makefile.in (REGS_H): Depend on $(BASIC_BLOCK_H).
