@@ -1,3 +1,10 @@
+Thu Nov 26 18:51:51 1998  Richard Henderson <rth@cygnus.com>
+
+	* alpha.c (reg_not_elim_operand): New function.
+	* alpha.h (PREDICATE_CODES): Add it.
+	* alpha.md: Remove reload-only patterns for (plus (plus (mult ...))).
+	(s[48]{add,sub}q): Use new function as predicate for multiplicand.
+
 Thu Nov 26 09:13:35 1998  Hans Cappelle  <cappelle@imec.be>
 
 	* reorg.c (fill_simple_delay_slots): Fix typo in sets_cc0_p call.
