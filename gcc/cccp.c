@@ -19,94 +19,6 @@ Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA. */
 
 #include "config.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <ctype.h>
-#include <stdio.h>
-#include <signal.h>
-
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# if HAVE_SYS_TIME_H
-# include <sys/time.h>
-# else
-#  include <time.h>
-#endif
-#endif
-
-#ifdef HAVE_SYS_RESOURCE_H
-# include <sys/resource.h>
-#endif
-
-#if HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
-
-#if HAVE_LIMITS_H
-# include <limits.h>
-#endif
-
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif
-
-#include <errno.h>
-
-#if HAVE_STDLIB_H
-# include <stdlib.h>
-#endif
-
-#ifdef HAVE_STRING_H
-# include <string.h>
-#else
-# ifdef HAVE_STRINGS_H
-#  include <strings.h>
-#endif
-#endif
-
-typedef unsigned char U_CHAR;
-
-#include "gansidecl.h"
-#include "pcp.h"
-
-#ifdef NEED_DECLARATION_INDEX
-extern char *index ();
-#endif
-
-#ifdef NEED_DECLARATION_RINDEX
-extern char *rindex ();
-#endif
-
-#ifdef NEED_DECLARATION_GETENV
-extern char *getenv ();
-#endif
-
-#ifndef GET_ENVIRONMENT
-#define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ENV_VALUE = getenv (ENV_NAME)
-#endif
-
-#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
-# define __attribute__(x)
-#endif
-
-#ifndef STANDARD_INCLUDE_DIR
-# define STANDARD_INCLUDE_DIR "/usr/include"
-#endif
-
-/* By default, colon separates directories in a path.  */
-#ifndef PATH_SEPARATOR
-# define PATH_SEPARATOR ':'
-#endif
-
-/* By default, the suffix for object files is ".o".  */
-#ifdef OBJECT_SUFFIX
-# define HAVE_OBJECT_SUFFIX
-#else
-# define OBJECT_SUFFIX ".o"
-#endif
-
 #if defined (__STDC__) && defined (HAVE_VPRINTF)
 # include <stdarg.h>
 # define PRINTF_ALIST(msg) char *msg, ...
@@ -131,6 +43,43 @@ extern char *getenv ();
 #define PRINTF_PROTO_2(ARGS) PRINTF_PROTO(ARGS, 2, 3)
 #define PRINTF_PROTO_3(ARGS) PRINTF_PROTO(ARGS, 3, 4)
 #define PRINTF_PROTO_4(ARGS) PRINTF_PROTO(ARGS, 4, 5)
+
+#include "system.h"
+#include <sys/stat.h>
+#include <signal.h>
+
+#ifdef HAVE_SYS_RESOURCE_H
+# include <sys/resource.h>
+#endif
+
+typedef unsigned char U_CHAR;
+
+#include "gansidecl.h"
+#include "pcp.h"
+
+#ifndef GET_ENVIRONMENT
+#define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ENV_VALUE = getenv (ENV_NAME)
+#endif
+
+#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+# define __attribute__(x)
+#endif
+
+#ifndef STANDARD_INCLUDE_DIR
+# define STANDARD_INCLUDE_DIR "/usr/include"
+#endif
+
+/* By default, colon separates directories in a path.  */
+#ifndef PATH_SEPARATOR
+# define PATH_SEPARATOR ':'
+#endif
+
+/* By default, the suffix for object files is ".o".  */
+#ifdef OBJECT_SUFFIX
+# define HAVE_OBJECT_SUFFIX
+#else
+# define OBJECT_SUFFIX ".o"
+#endif
 
 /* VMS-specific definitions */
 #ifdef VMS
@@ -221,10 +170,6 @@ char *strerror (int,...);
 #endif
 HOST_WIDE_INT parse_escape PROTO((char **, HOST_WIDE_INT));
 HOST_WIDE_INT parse_c_expression PROTO((char *, int));
-
-#ifndef errno
-extern int errno;
-#endif
 
 /* Name under which this program was invoked.  */
 

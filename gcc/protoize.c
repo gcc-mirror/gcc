@@ -57,20 +57,12 @@ Boston, MA 02111-1307, USA.  */
 #define _POSIX_SOURCE
 #endif
 
-#ifdef HAVE_VARARGS_H
-#include <varargs.h>
+#ifdef __STDC__
+#include <stdarg.h>
 #else
-#ifdef HAVE_SYS_VARARGS_H
-#include <sys/varargs.h>
+#include <varargs.h>
 #endif
-#endif
-
-/* On some systems stdio.h includes stdarg.h;
-   we must bring in varargs.h first.  */
-#include <stdio.h>
-#include <ctype.h>
-#include <errno.h>
-#include <sys/types.h>
+#include "system.h"
 #include <sys/stat.h>
 #if ! defined (_WIN32) || defined (__CYGWIN32__)
 #if defined(POSIX) || defined(CONCURRENT)
@@ -80,23 +72,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 #include <setjmp.h>
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
-
 #include "gansidecl.h"
 
 /* Include getopt.h for the sake of getopt_long.
@@ -105,10 +80,6 @@ Boston, MA 02111-1307, USA.  */
 #define getopt getopt_loser
 #include "getopt.h"
 #undef getopt
-
-#ifndef errno
-extern int errno;
-#endif
 
 #ifndef HAVE_STRERROR
 extern int sys_nerr;
@@ -161,23 +132,6 @@ typedef char * pointer_type;
 typedef char * const_pointer_type;
 #endif
 
-#if defined(POSIX)
-
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <sys/wait.h>
-
-#else /* !defined(POSIX) */
-
-#ifndef F_OK
-#define R_OK    4       /* Test for Read permission */
-#define W_OK    2       /* Test for Write permission */
-#define X_OK    1       /* Test for eXecute permission */
-#define F_OK    0       /* Test for existence of File */
-#endif
-
 #ifndef O_RDONLY
 #define O_RDONLY        0
 #endif
@@ -185,6 +139,13 @@ typedef char * const_pointer_type;
 #ifndef O_WRONLY
 #define O_WRONLY        1
 #endif
+
+#if defined(POSIX)
+
+#include <signal.h>
+#include <sys/wait.h>
+
+#else /* !defined(POSIX) */
 
 #ifndef WIFSIGNALED
 #define WIFSIGNALED(S) (((S) & 0xff) != 0 && ((S) & 0xff) != 0x7f)
@@ -232,17 +193,13 @@ extern size_t   strlen ()
 
 #endif /* !defined (POSIX) */
 
-#ifdef NEED_DECLARATION_RINDEX
-extern char *rindex ();
-#endif
-
 /* Look for these where the `const' qualifier is intentionally cast aside.  */
 
 #define NONCONST
 
 /* Define a STRINGIFY macro that's right for ANSI or traditional C.  */
 
-#ifdef __STDC__
+#if defined(HAVE_CPP_STRINGIFY) || (defined(__GNUC__) && defined(__STDC__))
 #define STRINGIFY(STRING) #STRING
 #else
 #define STRINGIFY(STRING) "STRING"
