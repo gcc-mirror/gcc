@@ -1,3 +1,7 @@
+2003-03-04  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in (ada.tags): New target.
+
 2003-03-04  Olivier Hainque <hainque@act-europe.fr>
 
 	ada/9911
