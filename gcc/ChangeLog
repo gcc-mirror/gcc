@@ -1,3 +1,7 @@
+Wed Dec 10 12:30:18 1997  Anthony Green  <green@cygnus.com>
+
+	* crtstuff.c (__do_global_ctors): Fix typo.
+
 Tue Dec  9 09:43:59 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* toplev.c (main): Check HAVE_GETRLIMIT and HAVE_SETRLIMIT in addition
