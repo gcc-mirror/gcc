@@ -251,7 +251,7 @@ ___umodhi3:
 ; q low 8 bits of quot
 ; P preserve
 
-; The h8 only has a 16/8 bit divide, so we look at the incoming and
+; The H8/300 only has a 16/8 bit divide, so we look at the incoming and
 ; see how to partition up the expression.
 
 	.global	___udivhi3
@@ -634,7 +634,7 @@ setone:
 #ifdef L_mulhi3
 
 ;; HImode multiply.
-; The h8 only has an 8*8->16 multiply.
+; The H8/300 only has an 8*8->16 multiply.
 ; The answer is the same as:
 ; 
 ; product = (srca.l * srcb.l) + ((srca.h * srcb.l) + (srcb.h * srca.l)) * 256

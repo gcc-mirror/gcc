@@ -1,3 +1,7 @@
+2001-08-29  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/lib1funcs.asm: Fix comment typos.
+
 2001-08-28  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.md (andcmbi3, iorcmbi3): Fix typos.
