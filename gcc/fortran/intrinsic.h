@@ -34,6 +34,7 @@ try gfc_check_abs (gfc_expr *);
 try gfc_check_all_any (gfc_expr *, gfc_expr *);
 try gfc_check_allocated (gfc_expr *);
 try gfc_check_associated (gfc_expr *, gfc_expr *);
+try gfc_check_atan2 (gfc_expr *, gfc_expr *);
 try gfc_check_btest (gfc_expr *, gfc_expr *);
 try gfc_check_char (gfc_expr *, gfc_expr *);
 try gfc_check_cmplx (gfc_expr *, gfc_expr *, gfc_expr *);

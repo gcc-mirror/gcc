@@ -975,7 +975,7 @@ add_functions (void)
   make_generic ("atan", GFC_ISYM_ATAN);
 
   add_sym_2 ("atan2", 1, 1, BT_REAL, dr,
-	     NULL, gfc_simplify_atan2, gfc_resolve_atan2,
+	     gfc_check_atan2, gfc_simplify_atan2, gfc_resolve_atan2,
 	     y, BT_REAL, dr, 0, x, BT_REAL, dr, 0);
 
   add_sym_2 ("datan2", 1, 1, BT_REAL, dd,
