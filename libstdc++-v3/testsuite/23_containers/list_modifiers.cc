@@ -107,14 +107,12 @@ test01()
   VERIFY(list0101.size() == 2);
   VERIFY(T::dtorCount() == 1);
   VERIFY(i->id() == 1);
-  VERIFY(j->id() == 1);
   VERIFY(k->id() == 1);
 
   list0101.pop_front();          // list should be [1]
   VERIFY(list0101.size() == 1);
   VERIFY(T::dtorCount() == 2);
   VERIFY(i->id() == 1);
-  VERIFY(j->id() == 1);
   VERIFY(k->id() == 1);
 }
 

@@ -26,7 +26,8 @@
 void test01()
 {
   std::vector<bool>::iterator i;
-  ++i;
+  if (false)
+    ++i;
 }
 
 // libstdc++/6886

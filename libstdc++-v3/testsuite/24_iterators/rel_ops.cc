@@ -30,7 +30,8 @@ void test01()
 {
   std::vector<int> v;
   std::vector<int>::iterator vi;
-
+  v.push_back(1);
+  vi = v.end();
   vi != v.begin();
   vi > v.begin();
   vi <= v.begin();

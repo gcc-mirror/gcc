@@ -1,5 +1,24 @@
 2003-06-20  Doug Gregor <dgregor@apple.com>
 
+        * testsuite/20_util/auto_ptr.cc: don't dereference NULL auto_ptr
+        * testsuite/21_strings/basic_string/replace/char/4.cc: don't 
+            dereference end iterator.
+        * testsuite/21_strings/basic_string/replace/wchar_t/4.cc: same.
+        * testsuite/22_locale/ctype/narrow/char/1.cc: don't subscript with
+            index equal to the length of a string.
+        * testsuite/22_locale/ctype/narrow/char/2.cc: same.
+        * testsuite/22_locale/ctype/narrow/wchar_t/1.cc: same.
+        * testsuite/22_locale/ctype/narrow/wchar_t/2.cc: same.
+        * testsuite/22_locale/ctype/widen/char/1.cc: same.
+        * testsuite/22_locale/ctype/widen/wchar_t/1.cc: same.
+        * testsuite/23_containers/list_modifiers.cc: don't dereference 
+            singular reverse iterator.
+        * testsuite/23_containers/vector_bool.cc: don't increment singular
+            iterator.
+        * testsuite/24_iterators/rel_ops.cc: don't compare singular iterator.
+
+2003-06-20  Doug Gregor <dgregor@apple.com>
+
 	* include/bits/basic_string.h (basic_string::replace): Dispatch 
 	_InputIterator version based on _Is_integer.
 	* include/bits/basic_string.tcc (basic_string::replace):

@@ -60,7 +60,7 @@ void test02()
     }
 
   // narrow(const charT* low, const charT* high, char dfault, char* dest) const
-  ctype_c.narrow(&wide[0], &wide[wide.length()], dfault, &narrow_chars[0]);  
+  ctype_c.narrow(&wide[0], &wide[0] + wide.length(), dfault, &narrow_chars[0]);
   VERIFY( narrow_chars[0] != dfault );
   for (int i = 0; i < wide.length(); ++i)
     VERIFY( narrow_chars[i] == narrow[i] );

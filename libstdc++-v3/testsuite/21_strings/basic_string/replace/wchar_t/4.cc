@@ -55,7 +55,7 @@ test04()
 
   str02 = L"boards";
   wchar_t* ptr1 = &*str01.begin();
-  wchar_t* ptr2 = &*str01.end();
+  wchar_t* ptr2 = ptr1 + str01.length();
   str02.replace(str02.begin(), str02.end(), ptr1, ptr2);
   VERIFY(str02 == L"geogaddi");
 }
