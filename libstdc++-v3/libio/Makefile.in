@@ -110,8 +110,8 @@ libio_la = @libio_la@
 libstdcxx_interface = @libstdcxx_interface@
 
 AUTOMAKE_OPTIONS = 1.3 cygnus
-
-noinst_LTLIBRARIES = libio.la
+@GLIBCPP_BUILD_LIBIO_TRUE@noinst_LTLIBRARIES = @GLIBCPP_BUILD_LIBIO_TRUE@libio.la
+@GLIBCPP_BUILD_LIBIO_FALSE@noinst_LTLIBRARIES = 
 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
 GLIBCPP_INCLUDE_DIR = @GLIBCPP_INCLUDE_DIR@

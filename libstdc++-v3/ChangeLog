@@ -1,3 +1,14 @@
+2000-12-08  Phil Edwards  <pme@sources.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO):  New conditional,
+	  GLIBCPP_BUILD_LIBIO, true iff building libio.
+	* libio/Makefile.am:  Use; set noinst_LTLIBRARIES empty if false.
+	* aclocal.m4:  Regenerated.
+	* config.h.in:  Regenerated.
+	* configure:  Regenerated.
+	* libio/Makefile.in:  Regenerated.
+	* libmath/Makefile.in:  Regenerated.
+
 2000-12-08  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* libmath/Makefile.am (EXTRA_LONG_DOUBLE_yes): Remove ccosl,
