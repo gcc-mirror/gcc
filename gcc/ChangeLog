@@ -1,3 +1,8 @@
+Mon Feb  9 00:02:53 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* function.c (assign_parms): New variable named_arg, with value
+	depending on STRICT_ARGUMENT_NAMING.  Use instead of ! last_named.
+
 Mon Feb  9 00:01:00 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* loop.c (strength_reduce): When placing increment for auto-inc
