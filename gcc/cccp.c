@@ -239,6 +239,9 @@ my_bzero (b, length)
 #define fopen(fname,mode)	VMS_fopen (fname,mode)
 #define freopen(fname,mode,ofile) VMS_freopen (fname,mode,ofile)
 #define strncat(dst,src,cnt) VMS_strncat (dst,src,cnt)
+#define fstat(fd,stbuf)		VMS_fstat (fd,stbuf)
+#define stat(name,stbuf)	VMS_stat (name,stbuf)
+static int VMS_fstat (), VMS_stat ();
 static char * VMS_strncat ();
 static int VMS_read ();
 static int VMS_write ();
@@ -10330,7 +10333,7 @@ open (fname, flags, prot)
 
 /* Avoid run-time library bug, where copying M out of N+M characters with
    N >= 65535 results in VAXCRTL's strncat falling into an infinite loop.
-   gcc-cpp exercises this particular bug.  */
+   gcc-cpp exercises this particular bug.  [Fixed in V5.5-2's VAXCRTL.]  */
 
 static char *
 strncat (dst, src, cnt)
@@ -10346,5 +10349,84 @@ strncat (dst, src, cnt)
     if (!(*d++ = *s++)) break;
   if (n < 0) *d = '\0';
   return dst;
+}
+
+/* more VMS hackery */
+#include <fab.h>
+#include <nam.h>
+
+extern unsigned long sys$parse(), sys$search();
+
+/* Work around another library bug.  If a file is located via a searchlist,
+   and if the device it's on is not the same device as the one specified
+   in the first element of that searchlist, then both stat() and fstat()
+   will fail to return info about it.  `errno' will be set to EVMSERR, and
+   `vaxc$errno' will be set to SS$_NORMAL due yet another bug in stat()!
+   We can get around this by fully parsing the filename and then passing
+   that absolute name to stat().
+
+   Without this fix, we can end up failing to find header files, which is
+   bad enough, but then compounding the problem by reporting the reason for
+   failure as "normal successful completion."  */
+
+static int
+fstat (fd, statbuf)
+     int fd;
+     struct stat *statbuf;
+{
+#undef fstat
+  int result = fstat (fd, statbuf);
+
+  if (result < 0)
+    {
+      FILE *fp;
+      char nambuf[NAM$C_MAXRSS+1];
+
+      if ((fp = fdopen (fd, "r")) != 0 && fgetname (fp, nambuf) != 0)
+	result = stat (nambuf, statbuf);
+      /* No fclose(fp) here; that would close(fd) as well.  */
+    }
+
+  return result;
+}
+
+static int
+stat (name, statbuf)
+     const char *name;
+     struct stat *statbuf;
+{
+#undef stat
+  int result = stat (name, statbuf);
+
+  if (result < 0)
+    {
+      struct FAB fab;
+      struct NAM nam;
+      char exp_nam[NAM$C_MAXRSS+1],  /* expanded name buffer for sys$parse */
+	   res_nam[NAM$C_MAXRSS+1];  /* resultant name buffer for sys$search */
+
+      fab = cc$rms_fab;
+      fab.fab$l_fna = (char *) name;
+      fab.fab$b_fns = (unsigned char) strlen (name);
+      fab.fab$l_nam = (void *) &nam;
+      nam = cc$rms_nam;
+      nam.nam$l_esa = exp_nam,  nam.nam$b_ess = sizeof exp_nam - 1;
+      nam.nam$l_rsa = res_nam,  nam.nam$b_rss = sizeof res_nam - 1;
+      nam.nam$b_nop = NAM$M_PWD | NAM$M_NOCONCEAL;
+      if (sys$parse (&fab) & 1)
+	{
+	  if (sys$search (&fab) & 1)
+	    {
+	      res_nam[nam.nam$b_rsl] = '\0';
+	      result = stat (res_nam, statbuf);
+	    }
+	  /* Clean up searchlist context cached by the system.  */
+	  nam.nam$b_nop = NAM$M_SYNCHK;
+	  fab.fab$l_fna = 0,  fab.fab$b_fns = 0;
+	  (void) sys$parse (&fab);
+	}
+    }
+
+  return result;
 }
 #endif /* VMS */
