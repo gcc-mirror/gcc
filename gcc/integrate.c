@@ -380,6 +380,8 @@ copy_decl_for_inlining (decl, from_fn, to_fn)
   else
     {
       copy = copy_node (decl);
+      /* The COPY is not abstract; it will be generated in TO_FN.  */
+      DECL_ABSTRACT (copy) = 0;
       (*lang_hooks.dup_lang_specific_decl) (copy);
 
       /* TREE_ADDRESSABLE isn't used to indicate that a label's
