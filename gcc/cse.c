@@ -9215,7 +9215,13 @@ delete_trivially_dead_insns (insns, nreg)
 		else if (GET_CODE (SET_DEST (elt)) != REG
 			 || REGNO (SET_DEST (elt)) < FIRST_PSEUDO_REGISTER
 			 || counts[REGNO (SET_DEST (elt))] != 0
-			 || side_effects_p (SET_SRC (elt)))
+			 || side_effects_p (SET_SRC (elt))
+			 /* An ADDRESSOF expression can turn into a use of the
+			    internal arg pointer, so always consider the
+			    internal arg pointer live.  If it is truly dead,
+			    flow will delete the initializing insn.  */
+			 || (SET_DEST (elt)
+			     == current_function_internal_arg_pointer))
 		  live_insn = 1;
 	      }
 	    else if (GET_CODE (elt) != CLOBBER && GET_CODE (elt) != USE)

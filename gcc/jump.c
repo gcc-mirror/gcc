@@ -290,7 +290,12 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 	       might arrange to use that reg for real.  */	       
 	    && REGNO_LAST_NOTE_UID (REGNO (SET_DEST (set))) == INSN_UID (insn)
 	    && ! side_effects_p (SET_SRC (set))
-	    && ! find_reg_note (insn, REG_RETVAL, 0))
+	    && ! find_reg_note (insn, REG_RETVAL, 0)
+	    /* An ADDRESSOF expression can turn into a use of the internal arg
+	       pointer, so do not delete the initialization of the internal
+	       arg pointer yet.  If it is truly dead, flow will delete the
+	       initializing insn.  */
+	    && SET_DEST (set) != current_function_internal_arg_pointer)
 	  delete_insn (insn);
       }
 
