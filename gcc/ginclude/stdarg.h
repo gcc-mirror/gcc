@@ -12,6 +12,12 @@
 #ifdef __i860__
 #include "va-i860.h"
 #else
+#ifdef __hp9000s800__
+#include "va-hp800.h"
+#else
+#ifdef __mips__
+#include "va-mips.h"
+#else
 
 /* The macro _VA_LIST_ is the same thing used by this file in Ultrix.  */
 #ifndef _VA_LIST_
@@ -45,6 +51,8 @@ void va_end (va_list);		/* Defined in libgcc.a */
  (AP += __va_rounded_size (TYPE),					\
   *((TYPE *) (AP - __va_rounded_size (TYPE))))
 
+#endif /* not mips */
+#endif /* not hp9000s800 */
 #endif /* not i860 */
 #endif /* not m88k */
 #endif /* _STDARG_H */
