@@ -462,7 +462,7 @@ div_and_round_double (code, uns,
   HOST_WIDE_INT den[4], quo[4];
   register int i, j;
   unsigned HOST_WIDE_INT work;
-  register int carry = 0;
+  register unsigned HOST_WIDE_INT carry = 0;
   HOST_WIDE_INT lnum = lnum_orig;
   HOST_WIDE_INT hnum = hnum_orig;
   HOST_WIDE_INT lden = lden_orig;
@@ -529,7 +529,8 @@ div_and_round_double (code, uns,
     {
       /* Full double precision division,
 	 with thanks to Don Knuth's "Seminumerical Algorithms".  */
-    int quo_est, scale, num_hi_sig, den_hi_sig;
+    int num_hi_sig, den_hi_sig;
+    unsigned HOST_WIDE_INT quo_est, scale;
 
     /* Find the highest non-zero divisor digit.  */
     for (i = 4 - 1; ; i--)
