@@ -1,3 +1,8 @@
+2002-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/6561
+	* config/sparc/sparc.md (muldi3_v8plus): Handle %1 equal to %2.
+
 2002-05-05  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_adjust_cost): Remove everything but

@@ -5489,6 +5489,13 @@
       else
 	return \"sllx\\t%H1, 32, %3\\n\\tor\\t%L1, %3, %3\\n\\tmulx\\t%3, %2, %3\\n\\tsrlx\\t%3, 32, %H0\\n\\tmov\\t%3, %L0\";
     }
+  else if (rtx_equal_p (operands[1], operands[2]))
+    {
+      if (which_alternative == 1)
+	return \"or\\t%L1, %H1, %H1\\n\\tmulx\\t%H1, %H1, %L0\;srlx\\t%L0, 32, %H0\";
+      else
+	return \"sllx\\t%H1, 32, %3\\n\\tor\\t%L1, %3, %3\\n\\tmulx\\t%3, %3, %3\\n\\tsrlx\\t%3, 32, %H0\\n\\tmov\\t%3, %L0\";
+    }
   if (sparc_check_64 (operands[2], insn) <= 0)
     output_asm_insn (\"srl\\t%L2, 0, %L2\", operands);
   if (which_alternative == 1)
