@@ -1,3 +1,8 @@
+2004-12-23  DJ Delorie  <dj@redhat.com>
+
+	* genrecog.c (did_you_mean_codes): New.
+	(compute_predicate_codes): Fail unmatched codes.
+
 2004-12-23  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Add
