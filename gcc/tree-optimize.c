@@ -381,12 +381,21 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_loop);
   NEXT_PASS (pass_dominator);
   NEXT_PASS (pass_redundant_phi);
+  /* FIXME: If DCE is not run before checking for uninitialized uses,
+     we may get false warnings (e.g., testsuite/gcc.dg/uninit-5.c).
+     However, this also causes us to misdiagnose cases that should be
+     real warnings (e.g., testsuite/gcc.dg/pr18501.c).
+     
+     To fix the false positives in uninit-5.c, we would have to
+     account for the predicates protecting the set and the use of each
+     variable.  Using a representation like Gated Single Assignment
+     may help.  */
+  NEXT_PASS (pass_late_warn_uninitialized);
   NEXT_PASS (pass_cd_dce);
   NEXT_PASS (pass_dse);
   NEXT_PASS (pass_forwprop);
   NEXT_PASS (pass_phiopt);
   NEXT_PASS (pass_tail_calls);
-  NEXT_PASS (pass_late_warn_uninitialized);
   NEXT_PASS (pass_del_ssa);
   NEXT_PASS (pass_nrv);
   NEXT_PASS (pass_remove_useless_vars);

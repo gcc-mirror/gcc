@@ -23,7 +23,7 @@ func(struct foo *list, int count)
 {
     int n_clobbers = 0;
     int i;
-    struct foo **clob_list;   /* { dg-bogus "clob_list" "uninitialized variable warning" } */
+    struct foo **clob_list;   /* { dg-bogus "clob_list" "uninitialized variable warning" { xfail *-*-* } } */
 
     if(list[0].type == PARALLEL)
     {

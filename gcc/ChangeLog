@@ -1,3 +1,9 @@
+2004-12-17  Diego Novillo  <dnovillo@redhat.com>
+
+	tree-optimization/18501
+	* tree-optimize.c (init_tree_optimization_passes): Run
+	pass_late_warn_uninitialized before the last DCE run.
+
 2004-12-17  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (x86_64_reg_class_name): Re-indent.

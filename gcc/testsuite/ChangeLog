@@ -1,3 +1,9 @@
+2004-12-17  Diego Novillo  <dnovillo@redhat.com>
+
+	* gcc.dg/pr18501.c: New test.
+	* gcc.dg/uninit-5.c: XFAIL.
+	* gcc.dg/uninit-9.c: XFAIL.
+
 2004-12-17  Dale Johannesen  <dalej@apple.com>
 
 	* gcc.dg/20041213-1.c:  New.
