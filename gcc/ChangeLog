@@ -1,3 +1,10 @@
+2004-01-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* doc/invoke.texi: Revamp documentation of MIPS options.  Remove
+	-mabi=meabi, -mabi-fake-default, -mmips-as, -mgas, -mmips-tfile,
+	-m4650, -mfix7000 and -(m)no-crt0.  Put endianness options first,
+	then architecture options, then ABI options.  General rewording.
+
 2004-01-04  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/3414
