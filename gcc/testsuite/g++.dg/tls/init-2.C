@@ -10,4 +10,4 @@ struct S
 {
   S();
 };
-__thread S s;		/* { dg-error "dynamically initialized" } */
+__thread S s;		/* { dg-error "" } two errors here */
