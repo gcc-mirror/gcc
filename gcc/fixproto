@@ -65,7 +65,7 @@ if [ `echo $1 | wc -w` = 0 ] ; then
   exit 1
 fi
 
-std_files="ctype.h dirent.h errno.h curses.h fcntl.h grp.h locale.h math.h pwd.h setjmp.h signal.h stdio.h stdlib.h string.h sys/stat.h sys/times.h sys/resource.h sys/utsname.h sys/wait.h tar.h termios.h time.h unistd.h utime.h"
+std_files="ctype.h dirent.h errno.h curses.h fcntl.h grp.h locale.h math.h pwd.h setjmp.h signal.h stdio.h stdlib.h string.h sys/socket.h sys/stat.h sys/times.h sys/resource.h sys/utsname.h sys/wait.h tar.h termios.h time.h unistd.h utime.h"
 
 rel_target_dir=$1
 # All files in $src_dir_all (normally same as $rel_target_dir) are
