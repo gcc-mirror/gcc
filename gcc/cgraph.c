@@ -231,7 +231,7 @@ cgraph_remove_node (struct cgraph_node *node)
   if (node->previous)
     node->previous->next = node->next;
   else
-    cgraph_nodes = node;
+    cgraph_nodes = node->next;
   if (node->next)
     node->next->previous = node->previous;
   DECL_SAVED_TREE (node->decl) = NULL;
