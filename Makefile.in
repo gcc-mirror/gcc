@@ -23945,24 +23945,20 @@ maybe-configure-gnattools:
 @if gnattools
 maybe-configure-gnattools: configure-gnattools
 configure-gnattools:
-	@test ! -f gnattools/Makefile || exit 0; \
-	[ -d gnattools ] || mkdir gnattools; \
+	@test ! -f $(HOST_SUBDIR)/gnattools/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gnattools ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	echo Configuring in gnattools; \
-	cd gnattools || exit 1; \
+	cd $(HOST_SUBDIR)/gnattools || exit 1; \
 	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/gnattools"; \
-	    libsrcdir="$$s/gnattools";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/gnattools"; \
-	    libsrcdir="$$s/gnattools";; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gnattools/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
+	srcdiroption="--srcdir=$${topdir}/gnattools"; \
+	libsrcdir="$$s/gnattools"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
@@ -23978,8 +23974,8 @@ all-gnattools: configure-gnattools
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gnattools && $(MAKE) $(FLAGS_TO_PASS)  \
-	  $(TARGET-gnattools))
+	(cd $(HOST_SUBDIR)/gnattools && \
+	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-gnattools))
 @endif gnattools
 
 .PHONY: check-gnattools maybe-check-gnattools
@@ -23992,7 +23988,8 @@ check-gnattools:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gnattools && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd $(HOST_SUBDIR)/gnattools && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif gnattools
 
@@ -24006,7 +24003,8 @@ install-gnattools: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gnattools && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd $(HOST_SUBDIR)/gnattools && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif gnattools
 
@@ -24028,7 +24026,7 @@ info-gnattools: \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing info in gnattools" ; \
-	(cd gnattools && \
+	(cd $(HOST_SUBDIR)/gnattools && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -24054,7 +24052,7 @@ dvi-gnattools: \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing dvi in gnattools" ; \
-	(cd gnattools && \
+	(cd $(HOST_SUBDIR)/gnattools && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -24080,7 +24078,7 @@ html-gnattools: \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing html in gnattools" ; \
-	(cd gnattools && \
+	(cd $(HOST_SUBDIR)/gnattools && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -24106,7 +24104,7 @@ TAGS-gnattools: \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing TAGS in gnattools" ; \
-	(cd gnattools && \
+	(cd $(HOST_SUBDIR)/gnattools && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -24133,7 +24131,7 @@ install-info-gnattools: \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing install-info in gnattools" ; \
-	(cd gnattools && \
+	(cd $(HOST_SUBDIR)/gnattools && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -24159,7 +24157,7 @@ installcheck-gnattools: \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing installcheck in gnattools" ; \
-	(cd gnattools && \
+	(cd $(HOST_SUBDIR)/gnattools && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -24184,7 +24182,7 @@ mostlyclean-gnattools:
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing mostlyclean in gnattools" ; \
-	(cd gnattools && \
+	(cd $(HOST_SUBDIR)/gnattools && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -24209,7 +24207,7 @@ clean-gnattools:
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing clean in gnattools" ; \
-	(cd gnattools && \
+	(cd $(HOST_SUBDIR)/gnattools && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -24234,7 +24232,7 @@ distclean-gnattools:
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing distclean in gnattools" ; \
-	(cd gnattools && \
+	(cd $(HOST_SUBDIR)/gnattools && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -24259,7 +24257,7 @@ maintainer-clean-gnattools:
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing maintainer-clean in gnattools" ; \
-	(cd gnattools && \
+	(cd $(HOST_SUBDIR)/gnattools && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
