@@ -23,6 +23,9 @@ Fri Apr  3 17:02:13 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 Wed Apr  8 12:51:19 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* gcc.c (proces_command): Improve error message for -o with
+	either -c or -S.
+
 	* i386/x-cygwin32 (CLIB): Link in advapi32.
 
 	* alpha.h (ASM_IDENTIFY_GCC): Define to nothing.
