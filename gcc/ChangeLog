@@ -1,3 +1,7 @@
+2002-02-11  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* config/stormy16/stormy16.md (zero_extendqihi2): New.
+
 2002-02-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	* regrename.c (regrename_optimize): Don't accept a

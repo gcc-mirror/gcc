@@ -224,6 +224,18 @@
   ""
   "cbw %0")
 
+(define_insn "zero_extendqihi2"
+  [(set (match_operand:HI                 0 "register_operand" 	   "=e,r")
+	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "m,0")))]
+  ""
+  "@
+   mov.b %0, %1
+   shl %0,#8\n\tshr %0,#8"
+  [(set_attr "psw_operand" "nop,0")
+   (set_attr_alternative "length" 
+	     [(const_int 2)
+	      (const_int 4)])])
+
 
 ;; ::::::::::::::::::::
 ;; ::
