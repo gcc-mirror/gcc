@@ -1,3 +1,8 @@
+2003-03-09  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*tstsi_upper_bit): New.
+	(*iorsi3_e2f): Likewise.
+
 2003-03-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (h8300_and_costs): Return the number of
