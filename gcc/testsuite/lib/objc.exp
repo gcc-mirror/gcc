@@ -1,4 +1,4 @@
-# Copyright (C) 1992, 1993, 1994, 1996, 1997, 2000 Free Software Foundation, Inc.
+# Copyright (C) 1992, 1993, 1994, 1996, 1997, 2000, 2001 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -121,6 +121,12 @@ proc objc_target_compile { source dest type options } {
 
     set ld_library_path "."
     lappend options "libs=-lobjc"
+
+    # On Solaris 2.8, we need to include libposix4 inorder to get
+    # sched_get_priority_max and such.
+    if [ishost "sparc-sun-solaris2.8"] {
+	lappend options "libs=-lposix4"
+    }
 
     if { [target_info needs_status_wrapper]!="" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
