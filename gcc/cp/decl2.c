@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1995 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1090,7 +1090,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
 	  return error_mark_node;
 	}
 
-      /* Deleting a pointer with the value zero is legal and has no effect.  */
+      /* Deleting a pointer with the value zero is valid and has no effect.  */
       if (integer_zerop (t))
 	return build1 (NOP_EXPR, void_type_node, t);
     }

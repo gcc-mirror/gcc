@@ -1,6 +1,6 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
-   Copyright (C) 1987, 1989, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1989, 1992, 1993, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1218,7 +1218,7 @@ lookup_field (xbasetype, name, protect, want_type)
 
       /* See if we can find NAME in TYPE.  If RVAL is nonzero,
 	 and we do find NAME in TYPE, verify that such a second
-	 sighting is in fact legal.  */
+	 sighting is in fact valid.  */
 
       nval = lookup_field_1 (type, name);
 
@@ -1694,7 +1694,7 @@ lookup_fnfields (basetype_path, name, complain)
 
       /* See if we can find NAME in TYPE.  If RVAL is nonzero,
 	 and we do find NAME in TYPE, verify that such a second
-	 sighting is in fact legal.  */
+	 sighting is in fact valid.  */
 
       index = lookup_fnfields_here (type, name);
 

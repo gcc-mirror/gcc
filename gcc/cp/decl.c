@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -7953,7 +7953,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
     {
       if (current_binding_level == global_binding_level)
 	{
-	  /* It's common practice (and completely legal) to have a const
+	  /* It's common practice (and completely valid) to have a const
 	     be initialized and declared extern.  */
 	  if (! constp)
 	    warning ("`%s' initialized and declared `extern'", name);
@@ -8063,7 +8063,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 
 	    /* ARM $8.4.3: Since you can't have a pointer to a reference,
 	       you can't have arrays of references.  If we allowed them,
-	       then we'd be saying x[i] is legal for an array x, but
+	       then we'd be saying x[i] is valid for an array x, but
 	       then you'd have to ask: what does `*(x + i)' mean?  */
 	    if (TREE_CODE (type) == REFERENCE_TYPE)
 	      {

@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C++ compiler.
-   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -548,14 +548,14 @@ comp_array_types (cmp, t1, t2, strict)
 	2 : strict, except that if one type is a reference and
 	    the other is not, compare the target type of the
 	    reference to the type that's not a reference (ARM, p308).
-	    This is used for checking for illegal overloading.
+	    This is used for checking for invalid overloading.
 	1 : strict (compared according to ANSI C)
 	    This is used for checking whether two function decls match.
 	0 : <= (compared according to C++)
 	-1: <= or >= (relaxed)
 
    Otherwise, pointers involving base classes and derived classes
-   can be mixed as legal: i.e. a pointer to a base class may be assigned
+   can be mixed as valid: i.e. a pointer to a base class may be assigned
    to a pointer to one of its derived classes, as per C++. A pointer to
    a derived class may be passed as a parameter to a function expecting a
    pointer to a base classes. These allowances do not commute. In this
@@ -1903,7 +1903,7 @@ build_array_ref (array, idx)
 	}
 
       /* Note in C++ we don't bother warning about subscripting a
-	 `register' array, since it's legal in C++ to take the address
+	 `register' array, since it's valid in C++ to take the address
 	 of something with that storage specification.  */
       if (pedantic && !lvalue_p (array))
 	pedwarn ("ANSI C++ forbids subscripting non-lvalue array");
@@ -5948,7 +5948,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	  slot = TREE_OPERAND (newrhs, 0);
       else if (TREE_CODE (newrhs) == ADDR_EXPR)
 	{
-	  /* Bad but legal.  */
+	  /* Bad but valid.  */
 	  slot = newrhs;
 	  warning ("address taken of temporary object");
 	}
