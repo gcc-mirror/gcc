@@ -86,7 +86,7 @@ struct subscript
   
   /* Distance from the iteration that access a conflicting element in
      A to the iteration that access this same conflicting element in
-     B.  The distance is a tree scalar expression, ie. a constant or a
+     B.  The distance is a tree scalar expression, i.e. a constant or a
      symbolic expression, but certainly not a chrec function.  */
   tree distance;
 };

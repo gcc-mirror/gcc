@@ -1441,14 +1441,14 @@ check_case_value (tree value)
 }
 
 /* See if the case values LOW and HIGH are in the range of the original
-   type (ie. before the default conversion to int) of the switch testing
+   type (i.e. before the default conversion to int) of the switch testing
    expression.
    TYPE is the promoted type of the testing expression, and ORIG_TYPE is
    the type before promoting it.  CASE_LOW_P is a pointer to the lower
    bound of the case label, and CASE_HIGH_P is the upper bound or NULL
    if the case is not a case range.
    The caller has to make sure that we are not called with NULL for
-   CASE_LOW_P (ie. the default case).
+   CASE_LOW_P (i.e. the default case).
    Returns true if the case label is in range of ORIG_TYPE (satured or
    untouched) or false if the label is out of range.  */
 

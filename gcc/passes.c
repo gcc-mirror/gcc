@@ -407,7 +407,7 @@ rest_of_handle_stack_regs (void)
 }
 #endif
 
-/* Track the variables, ie. compute where the variable is stored at each position in function.  */
+/* Track the variables, i.e. compute where the variable is stored at each position in function.  */
 static void
 rest_of_handle_variable_tracking (void)
 {
@@ -1570,7 +1570,7 @@ rest_of_clean_state (void)
    after all tree passes have finished for a single function, and we
    have expanded the function body from trees to RTL.
    Once we are here, we have decided that we're supposed to output
-   that function, ie. that we should write assembler code for it.
+   that function, i.e. that we should write assembler code for it.
 
    We run a series of low-level passes here on the function's RTL
    representation.  Each pass is called via a rest_of_* function.  */

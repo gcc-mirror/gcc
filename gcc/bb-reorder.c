@@ -517,7 +517,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	      freq = EDGE_FREQUENCY (e);
 
 	      /* Edge that cannot be fallthru or improbable or infrequent
-		 successor (ie. it is unsuitable successor).  */
+		 successor (i.e. it is unsuitable successor).  */
 	      if (!(e->flags & EDGE_CAN_FALLTHRU) || (e->flags & EDGE_COMPLEX)
 		  || prob < branch_th || freq < exec_th || e->count < count_th)
 		continue;

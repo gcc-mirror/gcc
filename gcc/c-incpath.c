@@ -128,7 +128,7 @@ add_standard_paths (const char *sysroot, const char *iprefix, int cxx_stdinc)
   if (iprefix && (len = cpp_GCC_INCLUDE_DIR_len) != 0)
     {
       /* Look for directories that start with the standard prefix.
-	 "Translate" them, ie. replace /usr/local/lib/gcc... with
+	 "Translate" them, i.e. replace /usr/local/lib/gcc... with
 	 IPREFIX and search them first.  */
       for (p = cpp_include_defaults; p->fname; p++)
 	{

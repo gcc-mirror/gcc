@@ -992,7 +992,7 @@ add_to_sequence (rtx pattern, struct decision_head *last, const char *position,
 	if (allows_const_int)
 	  mode = VOIDmode;
 
-	/* Accept the operand, ie. record it in `operands'.  */
+	/* Accept the operand, i.e. record it in `operands'.  */
 	test = new_decision_test (DT_accept_op, &place);
 	test->u.opno = XINT (pattern, 0);
 

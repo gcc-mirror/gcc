@@ -492,8 +492,8 @@ dump_data_dependence_direction (FILE *file,
 
 /* Given an ARRAY_REF node REF, records its access functions.
    Example: given A[i][3], record in ACCESS_FNS the opnd1 function,
-   ie. the constant "3", then recursively call the function on opnd0,
-   ie. the ARRAY_REF "A[i]".  The function returns the base name:
+   i.e. the constant "3", then recursively call the function on opnd0,
+   i.e. the ARRAY_REF "A[i]".  The function returns the base name:
    "A".  */
 
 static tree
@@ -958,7 +958,7 @@ analyze_subscript_affine_affine (tree chrec_a,
      For answering to the question: "Is there a dependence?" we have
      to prove that there exists a solution to the Diophantine
      equation, and that the solution is in the iteration domain,
-     ie. the solution is positive or zero, and that the solution
+     i.e. the solution is positive or zero, and that the solution
      happens before the upper bound loop.nb_iterations.  Otherwise
      there is no dependence.  This function outputs a description of
      the iterations that hold the intersections.  */
@@ -1049,7 +1049,7 @@ analyze_subscript_affine_affine (tree chrec_a,
       if (!tree_fold_divides_p (integer_type_node, gcd_alpha_beta, gamma))
 	{
 	  /* The "gcd-test" has determined that there is no integer
-	     solution, ie. there is no dependence.  */
+	     solution, i.e. there is no dependence.  */
 	  *overlaps_a = chrec_known;
 	  *overlaps_b = chrec_known;
 	}
@@ -1717,7 +1717,7 @@ compute_affine_dependence (struct data_dependence_relation *ddr)
 
 /* Compute a subset of the data dependence relation graph.  Don't
    compute read-read relations, and avoid the computation of the
-   opposite relation, ie. when AB has been computed, don't compute BA.
+   opposite relation, i.e. when AB has been computed, don't compute BA.
    DATAREFS contains a list of data references, and the result is set
    in DEPENDENCE_RELATIONS.  */
 

@@ -48,7 +48,7 @@ extern void rename_ssa_copies (void);
 
    Each copy is examined to determine if it is possible to rename the base
    variable of one of the operands to the same variable as the other operand.
-   ie.
+   i.e.
    T.3_5 = <blah>
    a_1 = T.3_5
 

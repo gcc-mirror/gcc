@@ -6409,7 +6409,7 @@ struct c_switch {
   /* The SWITCH_STMT being built.  */
   tree switch_stmt;
 
-  /* The original type of the testing expression, ie. before the
+  /* The original type of the testing expression, i.e. before the
      default conversion is applied.  */
   tree orig_type;
 

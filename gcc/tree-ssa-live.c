@@ -133,7 +133,7 @@ var_union (var_map map, tree var1, tree var2)
       if (map->compact_to_partition)
         p2 = map->compact_to_partition[p2];
 
-      /* If there is no root_var set, or its not a user variable, set the
+      /* If there is no root_var set, or it's not a user variable, set the
 	 root_var to this one.  */
       if (!root_var || (DECL_P (root_var) && DECL_IGNORED_P (root_var)))
         {
