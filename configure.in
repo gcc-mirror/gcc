@@ -284,6 +284,14 @@ if false && [ "${host}" = "${target}" ] && [ x${enable_shared} = x ]; then
   esac
 fi
 
+# hpux11 in 64bit mode has libraries in a weird place.  Arrange to find
+# them automatically.
+case "${host}" in
+  hppa*64*-*-hpux11*)	
+    withoptions="$withoptions -x-libraries=/usr/lib/pa20_64 -x-includes=/usr/X11R6/include"
+    ;;
+esac
+
 case "${enable_shared}" in
   yes) shared=yes ;;
   no) shared=no ;;
@@ -543,6 +551,9 @@ esac
 noconfigdirs=""
 
 case "${host}" in
+  hppa*64*-*-*)
+    noconfigdirs="$noconfigdirs byacc"
+    ;;
   i[3456]86-*-vsta)
     noconfigdirs="tcl expect dejagnu make texinfo bison patch flex byacc send-pr gprof uudecode dejagnu diff guile perl apache inet itcl tix db snavigator gnuserv gettext"
     ;;
