@@ -1,3 +1,8 @@
+2005-03-28  Andreas Jaeger  <aj@suse.de>
+
+	* lex.c (warn_about_normalization): Cast field width to int to
+	avoid warning.
+
 2005-03-19  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* configure.ac: Consistently use solaris2.1[0-9]* instead of
