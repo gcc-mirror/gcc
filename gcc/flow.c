@@ -1324,7 +1324,7 @@ make_edges (label_value_list)
 
 	 Also mark the CALL_INSN as reaching any nonlocal goto handler.  */
 
-      else if (code == CALL_INSN || asynchronous_exceptions)
+      else if (code == CALL_INSN || flag_non_call_exceptions)
 	{
 	  /* Add any appropriate EH edges.  We do this unconditionally
 	     since there may be a REG_EH_REGION or REG_EH_RETHROW note
@@ -1333,7 +1333,7 @@ make_edges (label_value_list)
 
 	  /* If we have asynchronous exceptions, do the same for *all*
 	     exception regions active in the block.  */
-	  if (asynchronous_exceptions
+	  if (flag_non_call_exceptions
 	      && bb->eh_beg != bb->eh_end)
 	    {
 	      if (bb->eh_beg >= 0)
