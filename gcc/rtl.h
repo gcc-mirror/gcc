@@ -417,7 +417,7 @@ enum reg_note
      appear on an insn which copies a register parameter to a pseudo-register,
      if there is a memory address which could be used to hold that
      pseudo-register throughout the function.  */
-   REG_EQUIV,
+  REG_EQUIV,
 
   /* Like REG_EQUIV except that the destination is only momentarily equal
      to the specified rtx.  Therefore, it cannot be used for substitution;
@@ -437,7 +437,8 @@ enum reg_note
   REG_RETVAL,
 
   /* The inverse of REG_RETVAL: it goes on the first insn of the library call
-     and points at the one that has the REG_RETVAL.  */
+     and points at the one that has the REG_RETVAL.  This note is also an
+     INSN_LIST.  */
   REG_LIBCALL,
 
   /* The register is always nonnegative during the containing loop.  This is
@@ -459,11 +460,13 @@ enum reg_note
      we permit putting a cc0-setting insn in the delay slot of a branch as
      long as only one copy of the insn exists.  In that case, these notes
      point from one to the other to allow code generation to determine what
-     any require information and to properly update CC_STATUS.  */
+     any require information and to properly update CC_STATUS.  These notes
+     are INSN_LISTs.  */
   REG_CC_SETTER, REG_CC_USER,
 
   /* Points to a CODE_LABEL.  Used by non-JUMP_INSNs to say that the
-     CODE_LABEL contained in the REG_LABEL note is used by the insn.  */
+     CODE_LABEL contained in the REG_LABEL note is used by the insn. 
+     This note is an INSN_LIST.  */
   REG_LABEL,
 
   /* REG_DEP_ANTI and REG_DEP_OUTPUT are used in LOG_LINKS to represent
@@ -544,7 +547,7 @@ extern const char * const reg_note_name[];
 /* The label-number of a code-label.  The assembler label
    is made from `L' and the label-number printed in decimal.
    Label numbers are unique in a compilation.  */
-#define CODE_LABEL_NUMBER(INSN)	XINT(INSN, 3)
+#define CODE_LABEL_NUMBER(INSN)	XINT(INSN, 5)
 
 #define LINE_NUMBER NOTE
 
@@ -664,11 +667,11 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
 
 /* The name of a label, in case it corresponds to an explicit label
    in the input source code.  */
-#define LABEL_NAME(RTX) XCSTR(RTX, 4, CODE_LABEL)
+#define LABEL_NAME(RTX) XCSTR(RTX, 6, CODE_LABEL)
 
 /* In jump.c, each label contains a count of the number
    of LABEL_REFs that point at it, so unused labels can be deleted.  */
-#define LABEL_NUSES(RTX) XCINT(RTX, 5, CODE_LABEL)
+#define LABEL_NUSES(RTX) XCINT(RTX, 3, CODE_LABEL)
 
 /* Associate a name with a CODE_LABEL.  */
 #define LABEL_ALTERNATE_NAME(RTX) XCSTR(RTX, 7, CODE_LABEL)
@@ -687,8 +690,8 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
 /* Once basic blocks are found in flow.c,
    each CODE_LABEL starts a chain that goes through
    all the LABEL_REFs that jump to that label.
-   The chain eventually winds up at the CODE_LABEL; it is circular.  */
-#define LABEL_REFS(LABEL) XCEXP(LABEL, 6, CODE_LABEL)
+   The chain eventually winds up at the CODE_LABEL: it is circular.  */
+#define LABEL_REFS(LABEL) XCEXP(LABEL, 4, CODE_LABEL)
 
 /* This is the field in the LABEL_REF through which the circular chain
    of references to a particular label is linked.

@@ -253,6 +253,7 @@ varray_type basic_block_for_insn;
    bit of surgery to be able to use or co-opt the routines in jump.  */
 
 static rtx label_value_list;
+static rtx tail_recursion_label_list;
 
 /* Holds information for tracking conditional register life information.  */
 struct reg_cond_life_info
@@ -307,7 +308,7 @@ struct propagate_block_info
 
 /* Forward declarations */
 static int count_basic_blocks		PARAMS ((rtx));
-static rtx find_basic_blocks_1		PARAMS ((rtx));
+static void find_basic_blocks_1		PARAMS ((rtx));
 static void clear_edges			PARAMS ((void));
 static void make_edges			PARAMS ((rtx));
 static void make_label_edge		PARAMS ((sbitmap *, basic_block,
@@ -325,6 +326,7 @@ static void delete_eh_regions		PARAMS ((void));
 static int can_delete_note_p		PARAMS ((rtx));
 static void expunge_block		PARAMS ((basic_block));
 static int can_delete_label_p		PARAMS ((rtx));
+static int tail_recursion_label_p	PARAMS ((rtx));
 static int merge_blocks_move_predecessor_nojumps PARAMS ((basic_block,
 							  basic_block));
 static int merge_blocks_move_successor_nojumps PARAMS ((basic_block,
@@ -437,7 +439,7 @@ find_basic_blocks (f, nregs, file)
 
   VARRAY_BB_INIT (basic_block_info, n_basic_blocks, "basic_block_info");
 
-  label_value_list = find_basic_blocks_1 (f);
+  find_basic_blocks_1 (f);
   
   /* Record the block to which an insn belongs.  */
   /* ??? This should be done another way, by which (perhaps) a label is
@@ -535,7 +537,7 @@ count_basic_blocks (f)
    Collect and return a list of labels whose addresses are taken.  This
    will be used in make_edges for use with computed gotos.  */
 
-static rtx
+static void
 find_basic_blocks_1 (f)
      rtx f;
 {
@@ -543,7 +545,8 @@ find_basic_blocks_1 (f)
   int i = 0;
   rtx bb_note = NULL_RTX;
   rtx eh_list = NULL_RTX;
-  rtx label_value_list = NULL_RTX;
+  rtx lvl = NULL_RTX;
+  rtx trll = NULL_RTX;
   rtx head = NULL_RTX;
   rtx end = NULL_RTX;
   
@@ -667,6 +670,12 @@ find_basic_blocks_1 (f)
 	    int region = (note ? INTVAL (XEXP (note, 0)) : 1);
 	    int call_has_abnormal_edge = 0;
 
+	    /* If this is a call placeholder, record its tail recursion
+	       label, if any.  */
+	    if (GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER
+		&& XEXP (PATTERN (insn), 3) != NULL_RTX)
+	      trll = alloc_EXPR_LIST (0, XEXP (PATTERN (insn), 3), trll);
+
 	    /* If there is an EH region or rethrow, we have an edge.  */
 	    if ((eh_list && region > 0)
 		|| find_reg_note (insn, REG_EH_RETHROW, NULL_RTX))
@@ -724,15 +733,16 @@ find_basic_blocks_1 (f)
 		rtx lab = XEXP (note, 0), next;
 
 		if (lab == eh_return_stub_label)
-		    ;
+		  ;
 		else if ((next = next_nonnote_insn (lab)) != NULL
 			 && GET_CODE (next) == JUMP_INSN
 			 && (GET_CODE (PATTERN (next)) == ADDR_VEC
 			     || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
 		  ;
+		else if (GET_CODE (lab) == NOTE)
+		  ;
 		else
-		  label_value_list
-		    = alloc_EXPR_LIST (0, XEXP (note, 0), label_value_list);
+		  lvl = alloc_EXPR_LIST (0, XEXP (note, 0), lvl);
 	      }
 	}
     }
@@ -745,7 +755,8 @@ find_basic_blocks_1 (f)
   if (i != n_basic_blocks)
     abort ();
 
-  return label_value_list;
+  label_value_list = lvl;
+  tail_recursion_label_list = trll;
 }
 
 /* Tidy the CFG by deleting unreachable code and whatnot.  */
@@ -761,7 +772,8 @@ cleanup_cfg (f)
   mark_critical_edges ();
 
   /* Kill the data we won't maintain.  */
-  label_value_list = NULL_RTX;
+  free_EXPR_LIST_list (&label_value_list);
+  free_EXPR_LIST_list (&tail_recursion_label_list);
 }
 
 /* Create a new basic block consisting of the instructions between
@@ -1853,8 +1865,14 @@ flow_delete_insn_chain (start, finish)
       next = NEXT_INSN (start);
       if (GET_CODE (start) == NOTE && !can_delete_note_p (start))
 	;
-      else if (GET_CODE (start) == CODE_LABEL && !can_delete_label_p (start))
-	;
+      else if (GET_CODE (start) == CODE_LABEL
+	       && ! can_delete_label_p (start))
+	{
+	  const char *name = LABEL_NAME (start);
+	  PUT_CODE (start, NOTE);
+	  NOTE_LINE_NUMBER (start) = NOTE_INSN_DELETED_LABEL;
+	  NOTE_SOURCE_FILE (start) = name;
+	}
       else
 	next = flow_delete_insn (start);
 
@@ -1910,20 +1928,6 @@ flow_delete_block (b)
 	    }
 	  prev = &XEXP (x, 1);
 	}
-
-      /* This label may be referenced by code solely for its value, or
-	 referenced by static data, or something.  We have determined
-	 that it is not reachable, but cannot delete the label itself.
-	 Save code space and continue to delete the balance of the block,
-	 along with properly updating the cfg.  */
-      if (!can_delete_label_p (insn))
-	{
-	  /* If we've only got one of these, skip the whole deleting
-	     insns thing.  */
-	  if (insn == b->end)
-	    goto no_delete_insns;
-	  insn = NEXT_INSN (insn);
-	}
     }
 
   /* Include any jump table following the basic block.  */
@@ -1943,8 +1947,6 @@ flow_delete_block (b)
 
   /* Selectively delete the entire chain.  */
   flow_delete_insn_chain (insn, end);
-
- no_delete_insns:
 
   /* Remove the edges into and out of this block.  Note that there may 
      indeed be edges in, if we are removing an unreachable loop.  */
@@ -2061,6 +2063,19 @@ can_delete_label_p (label)
     return 0;
   
   return 1;
+}
+
+static int
+tail_recursion_label_p (label)
+     rtx label;
+{
+  rtx x;
+
+  for (x = tail_recursion_label_list; x ; x = XEXP (x, 1))
+    if (label == XEXP (x, 0))
+      return 1;
+
+  return 0;
 }
 
 /* Blocks A and B are to be merged into a single block A.  The insns
@@ -2180,19 +2195,10 @@ merge_blocks_move_predecessor_nojumps (a, b)
   start = a->head;
   end = a->end;
 
-  /* We want to delete the BARRIER after the end of the insns we are
-     going to move.  If we don't find a BARRIER, then do nothing.  This
-     can happen in some cases if we have labels we can not delete. 
-
-     Similarly, do nothing if we can not delete the label at the start
-     of the target block.  */
   barrier = next_nonnote_insn (end);
-  if (GET_CODE (barrier) != BARRIER
-      || (GET_CODE (b->head) == CODE_LABEL
-	  && ! can_delete_label_p (b->head)))
-    return 0;
-  else
-    flow_delete_insn (barrier);
+  if (GET_CODE (barrier) != BARRIER)
+    abort ();
+  flow_delete_insn (barrier);
 
   /* Move block and loop notes out of the chain so that we do not
      disturb their order.
@@ -2240,20 +2246,23 @@ merge_blocks_move_successor_nojumps (a, b)
 
   start = b->head;
   end = b->end;
+  barrier = NEXT_INSN (end);
 
-  /* We want to delete the BARRIER after the end of the insns we are
-     going to move.  If we don't find a BARRIER, then do nothing.  This
-     can happen in some cases if we have labels we can not delete. 
+  /* Recognize a jump table following block B.  */
+  if (GET_CODE (barrier) == CODE_LABEL
+      && NEXT_INSN (barrier)
+      && GET_CODE (NEXT_INSN (barrier)) == JUMP_INSN
+      && (GET_CODE (PATTERN (NEXT_INSN (barrier))) == ADDR_VEC
+	  || GET_CODE (PATTERN (NEXT_INSN (barrier))) == ADDR_DIFF_VEC))
+    {
+      end = NEXT_INSN (barrier);
+      barrier = NEXT_INSN (end);
+    }
 
-     Similarly, do nothing if we can not delete the label at the start
-     of the target block.  */
-  barrier = next_nonnote_insn (end);
-  if (GET_CODE (barrier) != BARRIER
-      || (GET_CODE (b->head) == CODE_LABEL
-	  && ! can_delete_label_p (b->head)))
-    return 0;
-  else
-    flow_delete_insn (barrier);
+  /* There had better have been a barrier there.  Delete it.  */
+  if (GET_CODE (barrier) != BARRIER)
+    abort ();
+  flow_delete_insn (barrier);
 
   /* Move block and loop notes out of the chain so that we do not
      disturb their order.
@@ -2287,17 +2296,17 @@ merge_blocks (e, b, c)
      edge e;
      basic_block b, c;
 {
+  /* If C has a tail recursion label, do not merge.  There is no
+     edge recorded from the call_placeholder back to this label, as
+     that would make optimize_sibling_and_tail_recursive_calls more
+     complex for no gain.  */
+  if (GET_CODE (c->head) == CODE_LABEL
+      && tail_recursion_label_p (c->head))
+    return 0;
+
   /* If B has a fallthru edge to C, no need to move anything.  */
   if (e->flags & EDGE_FALLTHRU)
     {
-      /* If a label still appears somewhere and we cannot delete the label,
-	 then we cannot merge the blocks.  The edge was tidied already.  */
-
-      rtx insn, stop = NEXT_INSN (c->head);
-      for (insn = NEXT_INSN (b->end); insn != stop; insn = NEXT_INSN (insn))
-	if (GET_CODE (insn) == CODE_LABEL && !can_delete_label_p (insn))
-	  return 0;
-
       merge_blocks_nomove (b, c);
 
       if (rtl_dump_file)

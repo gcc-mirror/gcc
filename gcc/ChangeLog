@@ -1,3 +1,46 @@
+2000-05-12  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (final.o): Depend on BASIC_BLOCK_H.
+	* final.c (final_end_function): Use app_disable.  Rearrange note
+	handling into a switch.  Emit deleted labels.
+	(output_asm_label): Generate label strings for deleted labels.
+	* flow.c (tail_recursion_label_list): New.
+	(find_basic_blocks_1): Set label_value_list directly.  Collect list
+	of tail recursion labels from call_placeholders.  Don't add deleted
+	labels to the label value list.
+	(cleanup_cfg): Use free_EXPR_LIST_list.
+	(flow_delete_insn_chain): Turn non-removable labels into notes.
+	(flow_delete_block): Don't disable deleting the block because of
+	a non-removable label.
+	(tail_recursion_label_p): New.
+	(merge_blocks_move_predecessor_nojumps): Don't disable the merge
+	because of a label.
+	(merge_blocks_move_successor_nojumps): Likewise.  Also move a
+	jump table.
+	(merge_blocks): Disable a merge because of tail recursion labels.
+	* ifcvt.c (merge_if_block): Don't disable a merge because of a label.
+	Use a more accurate measure of not merging the join block.
+	(find_if_block): Don't disable conversion because of a label.
+	(find_if_case_1, find_if_case_2): Likewise.
+	* jump.c (duplicate_loop_exit_test): Preserve the kind of list
+	element when copying.
+	(squeeze_notes): Also leave EH notes.
+	(mark_jump_label): Ignore deleted labels.  Use an INSN_LIST for
+	REG_LABEL notes.
+	(delete_insn): Preserve LABEL_NAME in NOTE_SOURCE_FILE when
+	deleting a label.
+	* print-rtl.c (print_rtx): Print NOTE_SOURCE_FILE for
+	NOTE_INSN_DELETED_LABEL.  Print `[# deleted]' for a label_ref
+	referring to a deleted label.  Convert tail handling to a switch.
+	* rtl.def (CODE_LABEL): Rearrange elements to be compatible with NOTE
+	for NOTE_INSN_DELETED_LABEL.
+	(NOTE): Fix commentary.
+	* rtl.h (REG_LABEL): Update commentary wrt INSN_LIST.
+	(REG_CC_SETTER, REG_CC_USER, REG_LIBCALL): Likewise.
+	(CODE_LABEL_NUMBER, LABEL_NAME): Update index.
+	(LABEL_NUSES, LABEL_REFS): Likewise.
+	* unroll.c (copy_loop_body): Don't copy NOTE_INSN_DELETED_LABEL.
+
 2000-05-12  Zack Weinberg <zack@wolery.cumb.org>
 
         * fixinc/fixfixes.c (IO_use_fix, IO_defn_fix, CTRL_use_fix,

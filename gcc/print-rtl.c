@@ -210,6 +210,13 @@ print_rtx (in_rtx)
 		indent -= 2;
 		break;
 
+	      case NOTE_INSN_DELETED_LABEL:
+		if (NOTE_SOURCE_FILE (in_rtx))
+		  fprintf (outfile, " (\"%s\")", NOTE_SOURCE_FILE (in_rtx));
+		else
+		  fprintf (outfile, " \"\"");
+		break;
+
 	      default:
 		{
 		  const char * const str = X0STR (in_rtx, i);
@@ -334,11 +341,25 @@ print_rtx (in_rtx)
 	    rtx sub = XEXP (in_rtx, i);
 	    enum rtx_code subc = GET_CODE (sub);
 
-	    if (GET_CODE (in_rtx) == LABEL_REF && subc != CODE_LABEL)
-	      goto do_e;
+	    if (GET_CODE (in_rtx) == LABEL_REF)
+	      {
+		if (subc == NOTE
+		    && NOTE_LINE_NUMBER (sub) == NOTE_INSN_DELETED_LABEL)
+		  {
+		    if (flag_dump_unnumbered)
+		      fprintf (outfile, " [# deleted]");
+		    else
+		      fprintf (outfile, " [%d deleted]", INSN_UID (sub));
+		    sawclose = 0;
+		    break;
+		  }
+
+		if (subc != CODE_LABEL)
+		  goto do_e;
+	      }
 
 	    if (flag_dump_unnumbered)
-	      fputc ('#', outfile);
+	      fputs (" #", outfile);
 	    else
 	      fprintf (outfile, " %d", INSN_UID (sub));
 	  }
@@ -372,34 +393,43 @@ print_rtx (in_rtx)
 	abort ();
       }
 
-  if (GET_CODE (in_rtx) == MEM)
-    fprintf (outfile, " %d", MEM_ALIAS_SET (in_rtx));
+  switch (GET_CODE (in_rtx))
+    {
+    case MEM:
+      fprintf (outfile, " %d", MEM_ALIAS_SET (in_rtx));
+      break;
 
 #if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT && MAX_LONG_DOUBLE_TYPE_SIZE == 64
-  if (GET_CODE (in_rtx) == CONST_DOUBLE && FLOAT_MODE_P (GET_MODE (in_rtx)))
-    {
-      double val;
-      REAL_VALUE_FROM_CONST_DOUBLE (val, in_rtx);
-      fprintf (outfile, " [%.16g]", val);
-    }
+    case CONST_DOUBLE:
+      if (FLOAT_MODE_P (GET_MODE (in_rtx)))
+	{
+	  double val;
+	  REAL_VALUE_FROM_CONST_DOUBLE (val, in_rtx);
+	  fprintf (outfile, " [%.16g]", val);
+	}
+      break;
 #endif
 
-  if (GET_CODE (in_rtx) == CODE_LABEL)
-    {
+    case CODE_LABEL:
       fprintf (outfile, " [%d uses]", LABEL_NUSES (in_rtx));
       if (LABEL_ALTERNATE_NAME (in_rtx))
         fprintf (outfile, " [alternate name: %s]",
 		 LABEL_ALTERNATE_NAME (in_rtx));
+      break;
+
+    case CALL_PLACEHOLDER:
+      for (tem = XEXP (in_rtx, 0); tem != 0; tem = NEXT_INSN (tem))
+	if (GET_CODE (tem) == CALL_INSN)
+	  {
+	    fprintf (outfile, " ");
+	    print_rtx (tem);
+	    break;
+	  }
+      break;
+
+    default:
+      break;
     }
-  
-  if (GET_CODE (in_rtx) == CALL_PLACEHOLDER)
-    for (tem = XEXP (in_rtx, 0); tem != 0; tem = NEXT_INSN (tem))
-      if (GET_CODE (tem) == CALL_INSN)
-	{
-	  fprintf (outfile, " ");
-	  print_rtx (tem);
-	  break;
-	}
 
   if (dump_for_graph
       && (is_insn || GET_CODE (in_rtx) == NOTE
