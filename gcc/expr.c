@@ -2414,12 +2414,6 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
      Default is below for small data on big-endian machines; else above.  */
   enum direction where_pad = FUNCTION_ARG_PADDING (mode, type);
 
-  /* If we're placing part of X into a register and part of X onto
-     the stack, indicate that the entire register is clobbered to
-     keep flow from thinking the unused part of the register is live.  */
-  if (partial > 0 && reg != 0)
-    emit_insn (gen_rtx (CLOBBER, VOIDmode, reg));
-
   /* Invert direction if stack is post-update.  */
   if (STACK_PUSH_CODE == POST_INC || STACK_PUSH_CODE == POST_DEC)
     if (where_pad != none)
