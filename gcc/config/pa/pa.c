@@ -8578,10 +8578,8 @@ cmpib_comparison_operator (rtx op, enum machine_mode mode)
    not be placed in the read-only data section.  */
 
 static void
-pa_select_section (exp, reloc, align)
-     tree exp;
-     int reloc;
-     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
+pa_select_section (tree exp, int reloc,
+		   unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
   if (TREE_CODE (exp) == VAR_DECL
       && TREE_READONLY (exp)
