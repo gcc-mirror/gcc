@@ -1,3 +1,13 @@
+2003-01-10  Hartmut Penner  <hpenner@de.ibm.com>
+
+       	* doc/invoke.texi: Document -mtune, delete -mcpu 
+	option for S/390 and zSeries.
+	* config/s390/s390.c (s390_tune_string) New variable.
+	(s390_cpu_string) Delete variable.
+	(override_options): Use s390_tune_string instead of
+	s390_cpu_string.
+	* config/s390/s390.h: (TARGET_OPTIONS) '-mtune' instead of '-mcpu'.
+
 2003-01-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*iorsi3_ashift_31): New.
