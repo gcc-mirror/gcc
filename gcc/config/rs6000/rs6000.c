@@ -4474,7 +4474,7 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
      int delta;
      tree function;
 {
-  char *this_reg = reg_names[ aggregate_value_p (TREE_TYPE (function)) ? 3 : 4 ];
+  char *this_reg = reg_names[ aggregate_value_p (TREE_TYPE (TREE_TYPE (function))) ? 4 : 3 ];
   char *r0	 = reg_names[0];
   char *sp	 = reg_names[1];
   char *toc	 = reg_names[2];
@@ -4559,7 +4559,7 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
   fprintf (file, "\n");
 
 #else
-  if (TREE_ASM_WRITTEN (function)
+  if (current_file_function_operand (XEXP (DECL_RTL (function), 0))
       && !lookup_attribute ("longcall", TYPE_ATTRIBUTES (TREE_TYPE (function))))
     {
       fprintf (file, "\tb %s", prefix);
