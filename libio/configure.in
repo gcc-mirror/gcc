@@ -54,6 +54,9 @@ case "${target}" in
 	rm -fr bits
         mkdir bits
         echo "#include <libc-lock.h>" > bits/libc-lock.h
+	echo 'asm (".weak _pthread_cleanup_pop_restore");' >> bits/libc-lock.h
+	echo 'asm (".weak _pthread_cleanup_push_defer");' >> bits/libc-lock.h
+
         echo "#include <stdio-lock.h>" > bits/stdio-lock.h
       }
     ;;

@@ -55,4 +55,8 @@ _IO_fclose (fp)
 
 #ifdef weak_alias
 weak_alias (_IO_fclose, fclose)
+#else
+#ifdef __linux__
+#pragma weak fclose = _IO_fclose
+#endif
 #endif
