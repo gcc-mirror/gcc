@@ -637,8 +637,7 @@ print_node (file, prefix, node, indent)
 #endif
 		     -TREE_INT_CST_LOW (node));
 	  else
-            fprintf (file, "%c", 'l');
-	  fprintf (file,
+	    fprintf (file,
 #if HOST_BITS_PER_WIDE_INT == 64
 #if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
 		     " 0x%lx%016lx",
