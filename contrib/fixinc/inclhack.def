@@ -118,6 +118,8 @@ fix = {
 fix = {
     hackname = avoid_bool;
     files    = curses.h;
+    files    = term.h;
+    files    = tinfo.h;
 
     sed = "/^#[ \t]*define[ \t][ \t]*bool[ \t][ \t]*char[ \t]*$/i\\\n"
                 "#ifndef __cplusplus\n";
