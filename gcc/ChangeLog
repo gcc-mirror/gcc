@@ -1,3 +1,7 @@
+2003-01-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*andsi3_ashift_n_lower): New.
+
 2003-01-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* doc/bugreport.texi: Use @command instead of @code for commands.
