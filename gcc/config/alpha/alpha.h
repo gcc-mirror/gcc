@@ -2046,6 +2046,7 @@ literal_section ()						\
   {"mode_width_operand", {CONST_INT}},			\
   {"reg_or_fp0_operand", {SUBREG, REG, CONST_DOUBLE}},	\
   {"alpha_comparison_operator", {EQ, LE, LT, LEU, LTU}}, \
+  {"alpha_swapped_comparison_operator", {EQ, GE, GT, GEU, GTU}}, \
   {"signed_comparison_operator", {EQ, NE, LE, LT, GE, GT}}, \
   {"divmod_operator", {DIV, MOD, UDIV, UMOD}},		\
   {"fp0_operand", {CONST_DOUBLE}},			\
