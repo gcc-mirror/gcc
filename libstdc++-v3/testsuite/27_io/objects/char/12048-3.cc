@@ -1,6 +1,3 @@
-// Derived from libstdc++/12048 by LJR <ljrittle@acm.org> with
-// reminder from Petur Runolfsson <peturr02@ru.is>.
-
 // Copyright (C) 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -27,12 +24,12 @@ test01()
 {
   std::freopen("cin_unget-1.txt", "r", stdin);
 
-  char c1;
-  char c2;
-  std::cin.get(c1);
-  std::cin.unget();
-  std::cin.get(c2);
-  VERIFY (c1 == c2);
+  char buf[2];
+  VERIFY( std::cin.rdbuf()->sgetn(buf, 2) == 2 );
+  int c1 = std::cin.rdbuf()->sungetc();
+  int c2 = std::cin.rdbuf()->sbumpc();
+  VERIFY( c1 == std::char_traits<char>::to_int_type(buf[1]) );
+  VERIFY( c2 == c1 );
 }
 
 int main(void)
