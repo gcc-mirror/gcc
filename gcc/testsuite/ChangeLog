@@ -1,3 +1,11 @@
+2004-05-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14821
+	* g++.dg/other/ns1.C: New test.
+
+	PR c++/14883
+	* g++.dg/template/invalid1.C: New test.
+
 2004-05-23  Paul Brook  <paul@codesourcery.com>
 	Victor Leikehman  <lei@haifasphere.co.il>
 
