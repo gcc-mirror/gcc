@@ -1,4 +1,8 @@
-Fri Aug  8 17:07:36 1997  Stan Cox  <coxs@dg-rtp.dg.com>
+Wed Sep 10 00:29:29 1997  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (INSTALL): cd to $(srcdir) before running texinfo.
+
+Tue Sep  9 17:07:36 1997  Stan Cox  <coxs@dg-rtp.dg.com>
 
 	* m88k.c (m88k_expand_prologue): Set MEM_IN_STRUCT_P of va_list
 	template.
