@@ -1,3 +1,8 @@
+2000-02-23  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.c (arm_comp_type_attributes): Simply and
+	comment tests on type attributes.
+
 Wed Feb 23 16:42:21 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* final.c (shorten_branches): Make value passed to LABEL_ALIGN
