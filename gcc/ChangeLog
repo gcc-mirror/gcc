@@ -1,3 +1,13 @@
+Tue Jun  1 19:06:22 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000/aix41.h (RS6000_CALL_GLUE): Define.
+	* rs6000/aix43.h (RS6000_CALL_GLUE): Likewise.
+	* rs6000/rs6000.c (rs6000_file_start): Use putc.
+	(rs6000_output_load_toc_table): Same.
+	(output_prolog, output_mi_thunk): Same.
+	* rs6000/rs6000.h (SELECT_SECTION): Formatting.
+	(ASM_GLOBALIZE_LABEL): Use putc.
+
 Mon May 31 15:23:23 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (reload_*_help): New patterns and splitters.

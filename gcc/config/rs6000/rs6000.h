@@ -2704,7 +2704,7 @@ extern int toc_initialized;
 #define SELECT_SECTION(EXP,RELOC)			\
 {							\
   if ((TREE_CODE (EXP) == STRING_CST			\
-       && !flag_writable_strings)			\
+       && ! flag_writable_strings)			\
       || (TREE_CODE_CLASS (TREE_CODE (EXP)) == 'd'	\
 	  && TREE_READONLY (EXP) && ! TREE_THIS_VOLATILE (EXP) \
 	  && DECL_INITIAL (EXP)				\
@@ -2967,7 +2967,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0). */
 
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
   do { fputs ("\t.globl ", FILE);	\
-       RS6000_OUTPUT_BASENAME (FILE, NAME); fputs ("\n", FILE);} while (0)
+       RS6000_OUTPUT_BASENAME (FILE, NAME); putc ('\n', FILE);} while (0)
 
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.  */

@@ -168,3 +168,9 @@ Boston, MA 02111-1307, USA.  */
      %{mthreads:%{pg:gcrt0_r%O%s}%{!pg:%{p:mcrt0_r%O%s}%{!p:crt0_r%O%s}}}\
      %{!mthreads:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}}"
 
+/* AIX 4 uses PowerPC nop (ori 0,0,0) instruction as call glue for PowerPC
+   and "cror 31,31,31" for POWER architecture.  */
+
+#undef RS6000_CALL_GLUE
+#define RS6000_CALL_GLUE "{cror 31,31,31|nop}"
+
