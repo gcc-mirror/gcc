@@ -2,6 +2,27 @@
 
 	* Makefile.in: Rebuilt.
 	* Makefile.am (awt_java_source_files): Added new files.
+	* java/awt/Toolkit.java: Merged with Classpath.
+	* java/awt/PrintGraphics.java: New file from Classpath.
+	* java/awt/PrintJob.java: New file from Classpath.
+	* java/awt/datatransfer/Clipboard.java: New file from Classpath.
+	* java/awt/datatransfer/ClipboardOwner.java: New file from
+	Classpath.
+	* java/awt/datatransfer/DataFlavor.java: New file from Classpath.
+	* java/awt/datatransfer/FlavorMap.java: New file from Classpath.
+	* java/awt/datatransfer/MimeTypeParseException.java: New file from
+	Classpath.
+	* java/awt/datatransfer/StringSelection.java: New file from
+	Classpath.
+	* java/awt/datatransfer/SystemFlavorMap.java: New file from
+	Classpath.
+	* java/awt/datatransfer/Transferable.java: New file from
+	Classpath.
+	* java/awt/datatransfer/UnsupportedFlavorException.java: New file
+	from Classpath.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added new files.
 	* java/awt/image/AreaAveragingScaleFilter.java: New file from
 	Classpath.
 	* java/awt/image/CropImageFilter.java: New file from Classpath.

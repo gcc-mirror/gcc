@@ -1,4 +1,4 @@
-/* Clipboard.java -- Class for transferring data via cut and paste.
+/* FlavorMap.java -- Maps between flavor names and MIME types.
    Copyright (C) 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,99 +38,45 @@ exception statement from your version. */
 
 package java.awt.datatransfer;
 
+import java.util.Map;
+
 /**
-  * This class allows data to be transferred using a cut and paste type
-  * mechanism.
+  * This interface maps between native platform type names and DataFlavors.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class Clipboard
+public interface FlavorMap
 {
 
-/*
- * Instance Variables
- */
-
 /**
-  * The data being transferred.
-  */
-protected Transferable contents;
-
-/**
-  * The owner of this clipboard.
-  */
-protected ClipboardOwner owner;
-
-// The clipboard name
-private String name;
-
-/*************************************************************************/
-
-/*
- * Constructors
- */
-
-/**
-  * Initializes a new instance of <code>Clipboard</code> with the
-  * specified name.
+  * Maps the specified <code>DataFlavor</code> objects to the native
+  * data type name.  The returned <code>Map</code> has keys that are
+  * the data flavors and values that are strings.  The returned map
+  * may be modified.  This can be useful for implementing nested mappings.
   *
-  * @param name The clipboard name.
-  */
-public 
-Clipboard(String name)
-{
-  this.name = name;
-}
-
-/*************************************************************************/
-
-/*
- * Instance Methods
- */
-
-/**
-  * Returns the name of the clipboard.
-  */
-public String
-getName()
-{
-  return(name);
-}
-
-/*************************************************************************/
-
-/**
-  * Returns the contents of the clipboard.
+  * @param flavors An array of data flavors to map
+  *                or null for all data flavors.
   *
-  * @param requestor The object requesting the contents.
+  * @return A <code>Map</code> of native data types.
   */
-public synchronized Transferable
-getContents(Object requestor)
-{
-  return(contents);
-}
+public abstract Map
+getNativesForFlavors(DataFlavor[] flavors);
 
 /*************************************************************************/
 
 /**
-  * Sets the content and owner of this clipboard.
-  * If the given owner is different from the current owner
-  * then lostOwnership is called on the current owner.
-  * XXX - is this called with the old or new contents.
+  * Maps the specified native type names to <code>DataFlavor</code>'s.
+  * The returned <code>Map</code> has keys that are strings and values
+  * that are <code>DataFlavor</code>'s.  The returned map may be
+  * modified.  This can be useful for implementing nested mappings.
   *
-  * @param contents The new clipboard contents.
-  * @param owner The new clipboard owner
+  * @param natives An array of native types to map
+  *                or null for all native types.
+  *
+  * @return A <code>Map</code> of data flavors.
   */
-public synchronized void
-setContents(Transferable contents, ClipboardOwner owner)
-{
-  if (this.owner != owner)
-    if (this.owner != null)
-      this.owner.lostOwnership(this, contents);
- 
-  this.owner = owner;
-  this.contents = contents;
-}
+public abstract Map
+getFlavorsForNatives(String[] natives);
 
-} // class Clipboard
+} // interface FlavorMap
 

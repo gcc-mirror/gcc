@@ -412,6 +412,8 @@ java/awt/Panel.java \
 java/awt/Point.java \
 java/awt/Polygon.java \
 java/awt/PopupMenu.java	\
+java/awt/PrintGraphics.java \
+java/awt/PrintJob.java \
 java/awt/Rectangle.java	\
 java/awt/RenderingHints.java \
 java/awt/ScrollPane.java \
@@ -428,6 +430,14 @@ java/awt/color/ColorSpace.java \
 java/awt/color/ICC_ColorSpace.java \
 java/awt/color/ICC_Profile.java	\
 java/awt/datatransfer/Clipboard.java \
+java/awt/datatransfer/ClipboardOwner.java \
+java/awt/datatransfer/DataFlavor.java \
+java/awt/datatransfer/FlavorMap.java \
+java/awt/datatransfer/MimeTypeParseException.java \
+java/awt/datatransfer/StringSelection.java \
+java/awt/datatransfer/SystemFlavorMap.java \
+java/awt/datatransfer/Transferable.java	\
+java/awt/datatransfer/UnsupportedFlavorException.java \
 java/awt/event/AWTEventListener.java \
 java/awt/event/ActionEvent.java	\
 java/awt/event/ActionListener.java \
@@ -2028,7 +2038,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/MenuItem.P .deps/java/awt/MenuShortcut.P \
 .deps/java/awt/Paint.P .deps/java/awt/PaintContext.P \
 .deps/java/awt/Panel.P .deps/java/awt/Point.P .deps/java/awt/Polygon.P \
-.deps/java/awt/PopupMenu.P .deps/java/awt/Rectangle.P \
+.deps/java/awt/PopupMenu.P .deps/java/awt/PrintGraphics.P \
+.deps/java/awt/PrintJob.P .deps/java/awt/Rectangle.P \
 .deps/java/awt/RenderingHints.P .deps/java/awt/ScrollPane.P \
 .deps/java/awt/Scrollbar.P .deps/java/awt/Shape.P \
 .deps/java/awt/SystemColor.P .deps/java/awt/TextArea.P \
@@ -2038,6 +2049,14 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/color/ICC_ColorSpace.P \
 .deps/java/awt/color/ICC_Profile.P \
 .deps/java/awt/datatransfer/Clipboard.P \
+.deps/java/awt/datatransfer/ClipboardOwner.P \
+.deps/java/awt/datatransfer/DataFlavor.P \
+.deps/java/awt/datatransfer/FlavorMap.P \
+.deps/java/awt/datatransfer/MimeTypeParseException.P \
+.deps/java/awt/datatransfer/StringSelection.P \
+.deps/java/awt/datatransfer/SystemFlavorMap.P \
+.deps/java/awt/datatransfer/Transferable.P \
+.deps/java/awt/datatransfer/UnsupportedFlavorException.P \
 .deps/java/awt/event/AWTEventListener.P \
 .deps/java/awt/event/ActionEvent.P \
 .deps/java/awt/event/ActionListener.P \

@@ -1,5 +1,5 @@
-/* Clipboard.java -- Class for transferring data via cut and paste.
-   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+/* PrintJob.java -- A print job class
+   Copyright (C) 1999 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,50 +36,26 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package java.awt.datatransfer;
+package java.awt;
 
 /**
-  * This class allows data to be transferred using a cut and paste type
-  * mechanism.
+  * This abstract class represents a print job.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class Clipboard
+public abstract class PrintJob
 {
-
-/*
- * Instance Variables
- */
-
-/**
-  * The data being transferred.
-  */
-protected Transferable contents;
-
-/**
-  * The owner of this clipboard.
-  */
-protected ClipboardOwner owner;
-
-// The clipboard name
-private String name;
-
-/*************************************************************************/
 
 /*
  * Constructors
  */
 
 /**
-  * Initializes a new instance of <code>Clipboard</code> with the
-  * specified name.
-  *
-  * @param name The clipboard name.
+  * This method initializes a new instance of <code>PrintJob</code>.
   */
-public 
-Clipboard(String name)
+public
+PrintJob()
 {
-  this.name = name;
 }
 
 /*************************************************************************/
@@ -89,48 +65,64 @@ Clipboard(String name)
  */
 
 /**
-  * Returns the name of the clipboard.
+  * Returns a graphics context suitable for rendering the next page.
+  *
+  * @return A graphics context for printing the next page.
   */
-public String
-getName()
-{
-  return(name);
-}
+public abstract Graphics
+getGraphics();
 
 /*************************************************************************/
 
 /**
-  * Returns the contents of the clipboard.
+  * Returns the dimension of the page in pixels.  The resolution will be
+  * chosen to be similar to the on screen image.
   *
-  * @param requestor The object requesting the contents.
+  * @return The page dimensions.
   */
-public synchronized Transferable
-getContents(Object requestor)
-{
-  return(contents);
-}
+public abstract Dimension
+getPageDimension();
 
 /*************************************************************************/
 
 /**
-  * Sets the content and owner of this clipboard.
-  * If the given owner is different from the current owner
-  * then lostOwnership is called on the current owner.
-  * XXX - is this called with the old or new contents.
+  * Returns the resolution of the page in pixels per inch.
   *
-  * @param contents The new clipboard contents.
-  * @param owner The new clipboard owner
+  * @return The resolution of the page in pixels per inch.
   */
-public synchronized void
-setContents(Transferable contents, ClipboardOwner owner)
+public abstract int
+getPageResolution();
+
+/*************************************************************************/
+
+/**
+  * Tests whether or not the last page will be printed first.
+  *
+  * @return <code>true</code> if the last page prints first, <code>false</code>
+  * otherwise.
+  */
+public abstract boolean
+lastPageFirst();
+
+/*************************************************************************/
+
+/**
+  * Informs the print job that printing is complete.
+  */
+public abstract void
+end();
+
+/*************************************************************************/
+
+/**
+  * This method explicitly ends the print job in the event the job
+  * becomes un-referenced without the application having done so.
+  */
+public void
+finalize()
 {
-  if (this.owner != owner)
-    if (this.owner != null)
-      this.owner.lostOwnership(this, contents);
- 
-  this.owner = owner;
-  this.contents = contents;
+  end();
 }
 
-} // class Clipboard
+} // class PrintJob
 
