@@ -1,5 +1,14 @@
 Tue Aug 19 09:34:57 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* configure.in: Turn on haifa by default for the PA.
+	* configure: Rebuilt.
+	* pa.c (override_options): Accept -mschedule=7200 option.
+	(pa_adjust_cost): No longer need to scale costs for newer
+	processors.
+	* pa.h (enum processor_type): Add PROCESSOR_7200.
+	* pa.md: Revamp scheduling parameters to work better with
+	haifa.  Add scheduling parameters for the 7200.
+
 	* haifa-sched.c (move_insn): Reemit notes for SCHED_GROUP_P
 	insns too.
 	(schedule_block): When adjusting basic_block_{head,end}, account

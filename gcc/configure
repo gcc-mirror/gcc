@@ -1790,36 +1790,57 @@ for machine in $build $host $target; do
 		float_format=i32
 		;;
 	hppa1.1-*-pro*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		tm_file="pa/pa-pro.h ${tm_file} pa/pa-pro-end.h libgloss.h"
 		xm_file=pa/xm-papro.h
 		tmake_file=pa/t-pro
 		;;
 	hppa1.1-*-osf*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		target_cpu_default=1
 		tm_file="${tm_file} pa/pa-osf.h"
 		use_collect2=yes
 		fixincludes=Makefile.in
 		;;
 	hppa1.1-*-rtems*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		tm_file="pa/pa-pro.h ${tm_file} pa/pa-pro-end.h libgloss.h pa/rtems.h"
 		xm_file=pa/xm-papro.h
 		tmake_file=pa/t-pro
 		;;
 	hppa1.0-*-osf*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		tm_file="${tm_file} pa/pa-osf.h"
 		use_collect2=yes
 		fixincludes=Makefile.in
 		;;
 	hppa1.1-*-bsd*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		target_cpu_default=1
 		use_collect2=yes
 		fixincludes=Makefile.in
 		;;
 	hppa1.0-*-bsd*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		use_collect2=yes
 		fixincludes=Makefile.in
 		;;
 	hppa1.0-*-hpux7*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		tm_file="pa/pa-oldas.h ${tm_file} pa/pa-hpux7.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -1831,6 +1852,9 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.0-*-hpux8.0[0-2]*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		tm_file="${tm_file} pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -1844,6 +1868,9 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.1-*-hpux8.0[0-2]*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		target_cpu_default=1
 		tm_file="${tm_file} pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
@@ -1858,6 +1885,9 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.1-*-hpux8*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		target_cpu_default=1
 		tm_file="${tm_file} pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
@@ -1870,6 +1900,9 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.0-*-hpux8*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		tm_file="${tm_file} pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -1881,6 +1914,9 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.1-*-hpux10*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		target_cpu_default=1
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux10.h"
 		xm_file=pa/xm-pahpux.h
@@ -1893,6 +1929,9 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.0-*-hpux10*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux10.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -1904,6 +1943,9 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.1-*-hpux*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		target_cpu_default=1
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux9.h"
 		xm_file=pa/xm-pahpux.h
@@ -1916,6 +1958,9 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.0-*-hpux*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux9.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -1927,6 +1972,9 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.1-*-hiux*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		target_cpu_default=1
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hiux.h"
 		xm_file=pa/xm-pahpux.h
@@ -1939,6 +1987,9 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.0-*-hiux*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hiux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -1950,6 +2001,9 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa*-*-lites*)
+		if [ x$enable_haifa != xno ]; then
+			enable_haifa=yes
+		fi
 		target_cpu_default=1
 		use_collect2=yes
 		fixincludes=Makefile.in

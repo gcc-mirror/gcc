@@ -99,9 +99,14 @@ override_options ()
       pa_cpu_string = "7100LC";
       pa_cpu = PROCESSOR_7100LC;
     }
+  else if (! strcmp (pa_cpu_string, "7200"))
+    {
+      pa_cpu_string = "7200";
+      pa_cpu = PROCESSOR_7200;
+    }
   else
     {
-      warning ("Unknown -mschedule= option (%s).\nValid options are 700, 7100 and 7100LC\n", pa_cpu_string);
+      warning ("Unknown -mschedule= option (%s).\nValid options are 700, 7100 and 7100LC and 7200\n", pa_cpu_string);
     }
 
   if (flag_pic && TARGET_PORTABLE_RUNTIME)
@@ -3260,8 +3265,8 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		{
 		case TYPE_FPLOAD:
 		  /* This cost 3 cycles, not 2 as the md says for the
-		     700 and 7100.  Note scaling of cost for 7100.  */
-		  return cost + (pa_cpu == PROCESSOR_700) ? 1 : 2;
+		     700 and 7100.  */
+		  return cost + 1;
 
 		case TYPE_FPALU:
 		case TYPE_FPMULSGL:
@@ -3272,7 +3277,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		case TYPE_FPSQRTDBL:
 		  /* In these important cases, we save one cycle compared to
 		     when flop instruction feed each other.  */
-		  return cost - (pa_cpu == PROCESSOR_700) ? 1 : 2;
+		  return cost - 1;
 
 		default:
 		  return cost;
@@ -3320,7 +3325,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		     preceding arithmetic operation has finished if
 		     the target of the fpload is any of the sources
 		     (or destination) of the arithmetic operation.  */
-		  return cost - (pa_cpu == PROCESSOR_700) ? 1 : 2;
+		  return cost - 1;
 
 		default:
 		  return 0;
@@ -3355,7 +3360,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		     preceding divide or sqrt operation has finished if
 		     the target of the ALU flop is any of the sources
 		     (or destination) of the divide or sqrt operation.  */
-		  return cost - (pa_cpu == PROCESSOR_700) ? 2 : 4;
+		  return cost - 2;
 
 		default:
 		  return 0;
@@ -3401,7 +3406,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		     preceding arithmetic operation has finished if
 		     the target of the fpload is the destination of the
 		     arithmetic operation.  */
-		  return cost - (pa_cpu == PROCESSOR_700) ? 1 : 2;
+		  return cost - 1;
 
 		default:
 		  return 0;
@@ -3436,7 +3441,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		     preceding divide or sqrt operation has finished if
 		     the target of the ALU flop is also the target of
 		     of the divide or sqrt operation.  */
-		  return cost - (pa_cpu == PROCESSOR_700) ? 2 : 4;
+		  return cost - 2;
 
 		default:
 		  return 0;

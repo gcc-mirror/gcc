@@ -39,6 +39,7 @@ enum processor_type
   PROCESSOR_700,
   PROCESSOR_7100,
   PROCESSOR_7100LC,
+  PROCESSOR_7200
 };
 
 #define pa_cpu_attr ((enum attr_cpu)pa_cpu)
