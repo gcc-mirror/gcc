@@ -2674,7 +2674,7 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
-ffecom_expr_ (ffebld expr, tree tree_type, tree dest_tree,
+ffecom_expr_ (ffebld expr, tree tree_type_x, tree dest_tree,
 	      ffebld dest, bool *dest_used,
 	      bool assignp)
 {
@@ -2685,6 +2685,8 @@ ffecom_expr_ (ffebld expr, tree tree_type, tree dest_tree,
   ffeinfoKindtype kt;
   tree t;
   tree dt;			/* decl_tree for an ffesymbol. */
+  tree tree_type;
+  tree left, right;
   ffesymbol s;
   enum tree_code code;
 
@@ -2695,8 +2697,7 @@ ffecom_expr_ (ffebld expr, tree tree_type, tree dest_tree,
 
   bt = ffeinfo_basictype (ffebld_info (expr));
   kt = ffeinfo_kindtype (ffebld_info (expr));
-  if (!tree_type)
-    tree_type = ffecom_tree_type[bt][kt];
+  tree_type = ffecom_tree_type[bt][kt];
 
   switch (ffebld_op (expr))
     {
@@ -2940,35 +2941,76 @@ ffecom_expr_ (ffebld expr, tree tree_type, tree dest_tree,
       }
 
     case FFEBLD_opUPLUS:
-      return ffecom_1 (NOP_EXPR, tree_type, ffecom_expr (ffebld_left (expr)));
+      left = ffecom_expr_ (ffebld_left (expr), tree_type_x, NULL, NULL,
+			   NULL, FALSE);
+      return ffecom_1 (NOP_EXPR, tree_type, left);
 
     case FFEBLD_opPAREN:	/* ~~~Make sure Fortran rules respected here */
-      return ffecom_1 (NOP_EXPR, tree_type, ffecom_expr (ffebld_left (expr)));
+      left = ffecom_expr_ (ffebld_left (expr), tree_type_x, NULL, NULL,
+			   NULL, FALSE);
+      return ffecom_1 (NOP_EXPR, tree_type, left);
 
     case FFEBLD_opUMINUS:
-      return ffecom_1 (NEGATE_EXPR, tree_type,
-		       ffecom_expr (ffebld_left (expr)));
+      left = ffecom_expr_ (ffebld_left (expr), tree_type_x, NULL, NULL,
+			   NULL, FALSE);
+      if (tree_type_x) 
+	{
+	  tree_type = tree_type_x;
+	  left = convert (tree_type, left);
+	}
+      return ffecom_1 (NEGATE_EXPR, tree_type, left);
 
     case FFEBLD_opADD:
-      return ffecom_2 (PLUS_EXPR, tree_type,
-		       ffecom_expr (ffebld_left (expr)),
-		       ffecom_expr (ffebld_right (expr)));
-      break;
+      left = ffecom_expr_ (ffebld_left (expr), tree_type_x, NULL, NULL,
+			   NULL, FALSE);
+      right = ffecom_expr_ (ffebld_right (expr), tree_type_x, NULL, NULL,
+			    NULL, FALSE);
+      if (tree_type_x) 
+	{
+	  tree_type = tree_type_x;
+	  left = convert (tree_type, left);
+	  right = convert (tree_type, right);
+	}
+      return ffecom_2 (PLUS_EXPR, tree_type, left, right);
 
     case FFEBLD_opSUBTRACT:
-      return ffecom_2 (MINUS_EXPR, tree_type,
-		       ffecom_expr (ffebld_left (expr)),
-		       ffecom_expr (ffebld_right (expr)));
+      left = ffecom_expr_ (ffebld_left (expr), tree_type_x, NULL, NULL,
+			   NULL, FALSE);
+      right = ffecom_expr_ (ffebld_right (expr), tree_type_x, NULL, NULL,
+			    NULL, FALSE);
+      if (tree_type_x) 
+	{
+	  tree_type = tree_type_x;
+	  left = convert (tree_type, left);
+	  right = convert (tree_type, right);
+	}
+      return ffecom_2 (MINUS_EXPR, tree_type, left, right);
 
     case FFEBLD_opMULTIPLY:
-      return ffecom_2 (MULT_EXPR, tree_type,
-		       ffecom_expr (ffebld_left (expr)),
-		       ffecom_expr (ffebld_right (expr)));
+      left = ffecom_expr_ (ffebld_left (expr), tree_type_x, NULL, NULL,
+			   NULL, FALSE);
+      right = ffecom_expr_ (ffebld_right (expr), tree_type_x, NULL, NULL,
+			    NULL, FALSE);
+      if (tree_type_x) 
+	{
+	  tree_type = tree_type_x;
+	  left = convert (tree_type, left);
+	  right = convert (tree_type, right);
+	}
+      return ffecom_2 (MULT_EXPR, tree_type, left, right);
 
     case FFEBLD_opDIVIDE:
-      return ffecom_tree_divide_ (tree_type,
-			          ffecom_expr (ffebld_left (expr)),
-			          ffecom_expr (ffebld_right (expr)),
+      left = ffecom_expr_ (ffebld_left (expr), tree_type_x, NULL, NULL,
+			   NULL, FALSE);
+      right = ffecom_expr_ (ffebld_right (expr), tree_type_x, NULL, NULL,
+			    NULL, FALSE);
+      if (tree_type_x) 
+	{
+	  tree_type = tree_type_x;
+	  left = convert (tree_type, left);
+	  right = convert (tree_type, right);
+	}
+      return ffecom_tree_divide_ (tree_type, left, right,
 			          dest_tree, dest, dest_used);
 
     case FFEBLD_opPOWER:
