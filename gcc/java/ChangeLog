@@ -1,3 +1,8 @@
+2003-03-01  Roger Sayle  <roger@eyesopen.com>
+
+	* java/builtins.c (builtin_type): Handle DEF_FUNCTION_TYPE_VAR_3.
+	(initialize_builtins): Handle DEF_FUNCTION_TYPE_VAR_3.
+
 2003-03-01  Tom Tromey  <tromey@redhat.com>
 
 	* parse.y (jdep_resolve_class): Only check deprecation if we found
