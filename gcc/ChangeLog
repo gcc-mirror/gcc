@@ -1,3 +1,14 @@
+2004-06-06  Stephane Carrez  <stcarrez@nerim.fr>
+
+	PR target/14457
+	* config/m68hc11/m68hc11.c (splitable_operand): New predicate.
+	* config/m68hc11/m68hc11-protos.h (splitable_operand): Declare.
+	* config/m68hc11/m68hc11.h (PREDICATE_CODES): Register it.
+	(inhibit_libc): Must define.
+	* config/m68hc11/m68hc11.md ("movhi_const0"): Use splitable_operand.
+	("*andhi3_gen", "iorhi3", "*iorhi3_gen"): Likewise.
+	("xorhi3"): Likewise.
+
 2004-06-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* cgraphunit.c (cgraph_decide_inlining): Adjust dump lines in

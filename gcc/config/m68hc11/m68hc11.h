@@ -92,7 +92,9 @@ Note:
   while (0)
 
 /* As an embedded target, we have no libc.  */
-#define inhibit_libc
+#ifndef inhibit_libc
+#  define inhibit_libc
+#endif
 
 /* Forward type declaration for prototypes definitions.
    rtx_ptr is equivalent to rtx. Can't use the same name.  */
@@ -1633,6 +1635,7 @@ do {                                                                    \
 {"m68hc11_shift_operator",   {ASHIFT, ASHIFTRT, LSHIFTRT, ROTATE, ROTATERT}},\
 {"m68hc11_eq_compare_operator", {EQ, NE}},                              \
 {"non_push_operand",         {SUBREG, REG, MEM}},			\
+{"splitable_operand",        {SUBREG, REG, MEM}},			\
 {"reg_or_some_mem_operand",  {SUBREG, REG, MEM}},			\
 {"tst_operand",              {SUBREG, REG, MEM}},			\
 {"cmp_operand",              {SUBREG, REG, MEM, SYMBOL_REF, LABEL_REF,	\
