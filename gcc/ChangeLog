@@ -1,3 +1,8 @@
+2001-01-09  Bernd Schmidt  <bernds@redhat.com>
+
+	* sh.md (reload_outsf): Generate recognizable patterns for
+	TARGET_SH3E.
+
 2001-01-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-lang.c (lang_hooks): Update.
