@@ -1,3 +1,7 @@
+Thu Jun  5 18:33:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* Make-lang.in:  Add support for stageprofile and stagefeedback
+
 2003-06-04  Andreas Jaeger  <aj@suse.de>
 
 	* g77spec.c (lang_specific_driver): Remove ALT_LIBM usage.

@@ -1,3 +1,8 @@
+Thu Jun  5 18:32:20 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.tpl (profiledbootstrap): New target.
+	* Makefile.in (profiledbootstrap): New target.
+
 2003-06-05  Wolfgang Bangerth  <bangerth@dealii.org>
 
 	* MAINTAINERS (Bugzilla only): Add Dara Hazeghi and Andrew

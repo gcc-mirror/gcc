@@ -3014,7 +3014,7 @@ target_list="all.build all.cross start.encap rest.encap tags \
 	install-normal install-common install-info install-man \
 	uninstall \
 	mostlyclean clean distclean extraclean maintainer-clean \
-	stage1 stage2 stage3 stage4"
+	stage1 stage2 stage3 stage4 stageprofile stagefeedback"
 for t in $target_list
 do
 	x=
@@ -3230,7 +3230,7 @@ if test "$symbolic_link" = "ln -s"; then
    if test $d != ..; then
 	STARTDIR=`${PWDCMD-pwd}`
 	cd $d
-	for t in stage1 stage2 stage3 stage4 include
+	for t in stage1 stage2 stage3 stage4 stageprofile stagefeedback include
 	do
 		rm -f $t
 		$symbolic_link ../$t $t 2>/dev/null

@@ -2831,7 +2831,7 @@ clean: mostlyclean $(INTL_CLEAN) lang.clean
 	else if [ "x$(MULTILIB_OPTIONS)" != x ] ; then \
 	  rm -rf `echo $(MULTILIB_OPTIONS) | sed -e 's/\// /g'`; \
 	fi ; fi
-	-rm -fr stage1 stage2 stage3 stage4
+	-rm -fr stage1 stage2 stage3 stage4 stageprofile stagefeedback
 # Delete stamps of bootstrap stages
 	-rm -f stage?_*
 	-rm -f clean?_*
@@ -2847,7 +2847,7 @@ distclean: clean $(INTL_DISTCLEAN) lang.distclean
 	-rm -f Make-lang Make-hooks Make-host Make-target
 	-rm -f Makefile *.oaux
 	-rm -f gthr-default.h
-	-rm -f */stage1 */stage2 */stage3 */stage4 */include
+	-rm -f */stage1 */stage2 */stage3 */stage4 */include */stageprofile */stagefeedback
 	-rm -f c-parse.output
 	-rm -f *.asm
 	-rm -f site.exp site.bak testsuite/site.exp testsuite/site.bak
@@ -3453,18 +3453,30 @@ VOL_FILES=`echo $(BACKEND) $(OBJS) $(C_OBJS) $(LIBCPP_OBJS) *.c *.h gen*`
 # Flags to pass to stage2 and later recursive makes.  Note that the
 # WARN_CFLAGS setting can't be to the expansion of GCC_WARN_CFLAGS in
 # the context of the stage_x rule.
-STAGE2_FLAGS_TO_PASS = \
+
+POSTSTAGE1_FLAGS_TO_PASS = \
 	ADAC="\$$(CC)" \
 	GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	CFLAGS="$(BOOT_CFLAGS)" \
 	LDFLAGS="$(BOOT_LDFLAGS)" \
 	WARN_CFLAGS="\$$(GCC_WARN_CFLAGS)" \
-	WERROR="@WERROR@" \
 	STRICT_WARN="$(STRICT2_WARN)" \
 	libdir=$(libdir) \
 	LANGUAGES="$(LANGUAGES)" \
 	MAKEOVERRIDES= \
 	OUTPUT_OPTION="-o \$$@"
+
+STAGE2_FLAGS_TO_PASS = \
+	CFLAGS="$(BOOT_CFLAGS)" \
+	WERROR="@WERROR@" \
+
+STAGEPROFILE_FLAGS_TO_PASS = \
+	CFLAGS="$(BOOT_CFLAGS) -fprofile-arcs" 
+
+# Files never linked into the final executable produces warnings about missing
+# profile.
+STAGEFEEDBACK_FLAGS_TO_PASS = \
+	CFLAGS="$(BOOT_CFLAGS) -fbranch-probabilities" 
 
 # Only build the C compiler for stage1, because that is the only one that
 # we can guarantee will build with the native compiler, and also it is the
@@ -3487,6 +3499,7 @@ stage1_copy: stage1_build
 stage2_build: stage1_copy
 	$(MAKE) CC="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" BUILD_CC="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" \
 		 STAGE_PREFIX=stage1/ \
+		 $(POSTSTAGE1_FLAGS_TO_PASS) \
 		 $(STAGE2_FLAGS_TO_PASS)
 	$(STAMP) stage2_build
 	echo stage2_build > stage_last
@@ -3496,12 +3509,47 @@ stage2_copy: stage2_build
 	$(STAMP) stage2_copy
 	echo stage3_build > stage_last
 
+stageprofile_build: stage1_copy
+	$(MAKE) CC="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" BUILD_CC="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" \
+		 STAGE_PREFIX=stage1/ \
+		 $(POSTSTAGE1_FLAGS_TO_PASS) \
+		 $(STAGEPROFILE_FLAGS_TO_PASS)
+	$(STAMP) stageprofile_build
+	echo stageprofile_build > stage_last
+
+stageprofile_copy: stageprofile_build
+	$(MAKE) stageprofile
+	$(STAMP) stageprofile_copy
+	echo stagefeedback_build > stage_last
+
 stage3_build: stage2_copy
 	$(MAKE) CC="$(STAGE_CC_WRAPPER) stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" BUILD_CC="$(STAGE_CC_WRAPPER) stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" \
 		 STAGE_PREFIX=stage2/ \
+		 $(POSTSTAGE1_FLAGS_TO_PASS) \
 		 $(STAGE2_FLAGS_TO_PASS)
 	$(STAMP) stage3_build
 	echo stage3_build > stage_last
+
+stagefeedback_build: stageprofile_copy stage1_copy
+	$(MAKE) CC="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" BUILD_CC="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" \
+		 STAGE_PREFIX=stage1/ \
+		 $(POSTSTAGE1_FLAGS_TO_PASS) \
+		 $(STAGEFEEDBACK_FLAGS_TO_PASS)
+	$(STAMP) stagefeedback_build
+	echo stagefeedback_build > stage_last
+
+stagefeedback_copy: stagefeedback_build
+	$(MAKE) stagefeedback
+	$(STAMP) stagefeedback_copy
+	echo stagefeedback2_build > stage_last
+
+stageprofile_build: stage1_copy
+	$(MAKE) CC="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" BUILD_CC="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" \
+		 STAGE_PREFIX=stage1/ \
+		 $(POSTSTAGE1_FLAGS_TO_PASS) \
+		 $(STAGEPROFILE_FLAGS_TO_PASS)
+	$(STAMP) stageprofile_build
+	echo stageprofile_build > stage_last
 
 # For bootstrap4:
 stage3_copy: stage3_build
@@ -3512,6 +3560,7 @@ stage3_copy: stage3_build
 stage4_build: stage3_copy
 	$(MAKE) CC="$(STAGE_CC_WRAPPER) stage3/xgcc$(exeext) -Bstage3/ -B$(build_tooldir)/bin/" BUILD_CC="$(STAGE_CC_WRAPPER) stage3/xgcc$(exeext) -Bstage3/ -B$(build_tooldir)/bin/" \
 		 STAGE_PREFIX=stage3/ \
+		 $(POSTSTAGE1_FLAGS_TO_PASS) \
 		 $(STAGE2_FLAGS_TO_PASS)
 	$(STAMP) stage4_build
 	echo stage4_build > stage_last
@@ -3547,7 +3596,7 @@ bootstrap3 bootstrap3-lean: bootstrap
 
 bootstrap4 bootstrap4-lean: stage4_build
 
-unstage1 unstage2 unstage3 unstage4:
+unstage1 unstage2 unstage3 unstage4 unstageprofile unstagefeedback:
 	-set -vx; stage=`echo $@ | sed -e 's/un//'`; \
 	rm -f $$stage/as$(exeext); \
 	rm -f $$stage/ld$(exeext); \
@@ -3577,6 +3626,12 @@ restage3: unstage3
 
 restage4: unstage4
 	$(MAKE) LANGUAGES="$(LANGUAGES)" stage4_build
+
+restageprofile: unstageprofile
+	$(MAKE) LANGUAGES="$(LANGUAGES)" stageprofile_build
+
+restagefeedback: unstagefeedback
+	$(MAKE) LANGUAGES="$(LANGUAGES)" stagefeedback_build
 
 bubblestrap:
 	if test -f stage3_build; then true; else \
@@ -3812,6 +3867,63 @@ stage4-start:
 	fi; done
 stage4: force stage4-start lang.stage4
 
+stageprofile-start:
+	-if [ -d stageprofile ] ; then true ; else mkdir stageprofile ; fi
+	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stageprofile
+	-for dir in intl $(SUBDIRS) ; \
+	 do \
+	   if [ -d stageprofile/$$dir ] ; then true ; else mkdir stageprofile/$$dir ; fi ; \
+	 done
+	-mv $(STAGESTUFF) stageprofile
+	-mv intl/*$(objext) stageprofile/intl
+# Copy as/ld if they exist to stage dir, so that running xgcc from the stage
+# dir will work properly.
+	-if [ -f as$(exeext) ] ; then (cd stageprofile && $(LN_S) ../as$(exeext) .) ; else true ; fi
+	-if [ -f ld$(exeext) ] ; then (cd stageprofile && $(LN_S) ../ld$(exeext) .) ; else true ; fi
+	-if [ -f collect-ld$(exeext) ] ; then (cd stageprofile && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
+	-rm -f stageprofile/libgcc.a stageprofile/libgcov.a stageprofile/libgcc_eh.a
+	-cp libgcc.a stageprofile
+	-$(RANLIB_FOR_TARGET) stageprofile/libgcc.a
+	-cp libgcov.a stageprofile
+	-$(RANLIB_FOR_TARGET) stageprofile/libgcov.a
+	-if [ -f libgcc_eh.a ] ; then cp libgcc_eh.a stageprofile; \
+	   $(RANLIB_FOR_TARGET) stageprofile/libgcc_eh.a; \
+	fi
+	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
+	  cp stageprofile/$${f} . ; \
+	else true; \
+	fi; done
+stageprofile: force stageprofile-start lang.stageprofile
+
+stagefeedback-start:
+	-if [ -d stagefeedback ] ; then true ; else mkdir stagefeedback ; fi
+	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stagefeedback
+	-for dir in intl $(SUBDIRS) ; \
+	 do \
+	   if [ -d stagefeedback/$$dir ] ; then true ; else mkdir stagefeedback/$$dir ; fi ; \
+	 done
+	-mv $(STAGESTUFF) stagefeedback
+	-mv intl/*$(objext) stagefeedback/intl
+# Copy as/ld if they exist to stage dir, so that running xgcc from the stage
+# dir will work properly.
+	-if [ -f as$(exeext) ] ; then (cd stagefeedback && $(LN_S) ../as$(exeext) .) ; else true ; fi
+	-if [ -f ld$(exeext) ] ; then (cd stagefeedback && $(LN_S) ../ld$(exeext) .) ; else true ; fi
+	-if [ -f collect-ld$(exeext) ] ; then (cd stagefeedback && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
+	-rm -f stagefeedback/libgcc.a stagefeedback/libgcov.a stagefeedback/libgcc_eh.a
+	-rm -f *.da ada/*.da cp/*.da f/*.da java/*.da objc/*.da fixinc/*.da intl po testsuite 2>/dev/null
+	-cp libgcc.a stagefeedback
+	-$(RANLIB_FOR_TARGET) stagefeedback/libgcc.a
+	-cp libgcov.a stagefeedback
+	-$(RANLIB_FOR_TARGET) stagefeedback/libgcov.a
+	-if [ -f libgcc_eh.a ] ; then cp libgcc_eh.a stagefeedback; \
+	   $(RANLIB_FOR_TARGET) stagefeedback/libgcc_eh.a; \
+	fi
+	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
+	  cp stagefeedback/$${f} . ; \
+	else true; \
+	fi; done
+stagefeedback: force stagefeedback-start lang.stagefeedback
+
 # Copy just the executable files from a particular stage into a subdirectory,
 # and delete the object files.  Use this if you're just verifying a version
 # that is pretty sure to work, and you are short of disk space.
@@ -3830,6 +3942,7 @@ risky-stage4: stage4
 #In GNU Make, ignore whether `stage*' exists.
 .PHONY: stage1 stage2 stage3 stage4 clean maintainer-clean TAGS bootstrap
 .PHONY: risky-stage1 risky-stage2 risky-stage3 risky-stage4
+.PHONY: stagefeedback stageprofile
 
 # Rules for generating translated message descriptions.
 # Disabled by autoconf if the tools are not available.

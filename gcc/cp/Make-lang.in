@@ -218,6 +218,10 @@ c++.stage3: stage3-start
 	-mv cp/*$(objext) stage3/cp
 c++.stage4: stage4-start
 	-mv cp/*$(objext) stage4/cp
+c++.stageprofile: stageprofile-start
+	-mv cp/*$(objext) stageprofile/cp
+c++.stagefeedback: stagefeedback-start
+	-mv cp/*$(objext) stagefeedback/cp
 
 #
 # .o: .h dependencies.

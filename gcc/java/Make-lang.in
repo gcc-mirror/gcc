@@ -263,6 +263,10 @@ java.stage3: stage3-start
 	-mv java/*$(objext) stage3/java
 java.stage4: stage4-start
 	-mv java/*$(objext) stage4/java
+java.stageprofile: stageprofile-start
+	-mv java/*$(objext) stageprofile/java
+java.stagefeedback: stageprofile-start
+	-mv java/*$(objext) stagefeedback/java
 
 #
 # .o:.h dependencies.
