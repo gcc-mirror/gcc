@@ -1,3 +1,7 @@
+Wed Oct 14 10:29:06 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (DEVO_SUPPORT): Add config.if.
+
 Tue Oct 13 15:45:36 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure: Add pattern to replace "build_tooldir"'s
