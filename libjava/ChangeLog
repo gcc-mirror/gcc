@@ -1,3 +1,20 @@
+2000-08-10  Bryce McKinlay  <bryce@albatross.co.nz>
+	    John Stracke <francis@ecal.com>
+
+	* gnu/gcj/protocol/http/Connection.java (gotHeaders): Removed.
+	(connect): Don't falsely claim HTTP/1.1 compliance. Call 
+	getHttpHeaders().
+	(disconnect): Don't unset connected flag.
+	(getHeaderField (String)): Call connect() if not connected.
+	(getHeaderField (int)): Ditto.
+	(getHeaderFieldKey): Ditto.
+	(getHttpHeaders): Don't call connect(). 
+	* java/net/HttpURLConnection.java (instanceFollowRedirects,
+	gotResponseVals): New fields.
+	(getResponseCode): Call getResponseVals() conditionally.
+	(getResponseMessage): Ditto.
+	(getResponseVals): Call connect(). Don't throw FileNotFoundException.	
+
 2000-08-09  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Makefile.am: Move beans and applet classes to awt_java_source_files.
