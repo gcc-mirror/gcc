@@ -1,6 +1,6 @@
 /* Handle initialization things in C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -2503,12 +2503,12 @@ build_new_1 (exp)
     {
       if (check_new)
 	{
-	  tree null_node;
+	  tree nullexp;
 	  tree ifexp;
 
-	  null_node = convert (TREE_TYPE (alloc_node),
-			       use_cookie ? cookie_size : size_zero_node);
-	  ifexp = cp_build_binary_op (NE_EXPR, alloc_node, null_node);
+	  nullexp = convert (TREE_TYPE (alloc_node),
+			     use_cookie ? cookie_size : size_zero_node);
+	  ifexp = cp_build_binary_op (NE_EXPR, alloc_node, nullexp);
 	  rval = build_conditional_expr (ifexp, rval, alloc_node);
 	}
 

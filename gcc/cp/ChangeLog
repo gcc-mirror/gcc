@@ -1,3 +1,8 @@
+2003-04-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* init.c (build_new_1): Use nullexp instead of null_node to avoid
+	unwanted macro expansion.
+
 2003-04-14  Ziemowit Laski  <zlaski@apple.com>
 
 	* tree.c (build_cplus_array_type_1): Do not call
