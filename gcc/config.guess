@@ -436,7 +436,7 @@ EOF
 	# The BFD linker knows what the default object file format is, so
 	# first see if it will tell us.
 	ld_help_string=`ld --help 2>&1`
-	ld_supported_emulations=`echo $ld_help_string
+	ld_supported_emulations=`echo $ld_help_string \
 			 | sed -ne '/supported emulations:/!d
 				    s/[ 	][ 	]*/ /g
 				    s/.*supported emulations: *//
