@@ -1,5 +1,9 @@
 2005-01-22  Paul Brook  <paul@codesourcery.com>
 
+	* trans-expr.c (gfc_conv_function_call): Remove bogus TODO.
+
+2005-01-22  Paul Brook  <paul@codesourcery.com>
+
 	* gfortran.h (gfc_check_access): Add prototype.
 	* match.c (gfc_match_namelist): Remove TODO.
 	* module.c (check_access): Rename ...
