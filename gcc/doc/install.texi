@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.4 2001/05/22 14:54:01 gerald Exp $
+@comment $Id: install.texi,v 1.5 2001/05/23 06:41:48 rth Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -968,9 +968,9 @@ GNU Compiler Collection on your machine.
 <h3><a name="alpha*-dec-linux*">alpha*-dec-linux*</a></h3>
 @end html
 
-We require binutils 2.10 or newer.  Upgrading to binutils 2.11
-or newer is strongly recommended, as it will result in more 
-compact debugging and exception handling information.
+We require binutils 2.11 or newer.  Previous binutils releases
+had a number of problems with DWARF2 debugging information, not
+the least of which is incorrect linking of shared libraries.
 
 @html
 </p>
