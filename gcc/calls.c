@@ -182,7 +182,8 @@ static void compute_argument_addresses		PARAMS ((struct arg_data *,
 							 rtx, int));
 static rtx rtx_for_function_call		PARAMS ((tree, tree));
 static void load_register_parameters		PARAMS ((struct arg_data *,
-							 int, rtx *, int));
+							 int, rtx *, int,
+							 int, int *));
 static rtx emit_library_call_value_1 		PARAMS ((int, rtx, rtx,
 							 enum libcall_type,
 							 enum machine_mode,
@@ -191,7 +192,8 @@ static int special_function_p			PARAMS ((tree, int));
 static rtx try_to_integrate			PARAMS ((tree, tree, rtx,
 							 int, tree, rtx));
 static int check_sibcall_argument_overlap_1	PARAMS ((rtx));
-static int check_sibcall_argument_overlap	PARAMS ((rtx, struct arg_data *));
+static int check_sibcall_argument_overlap	PARAMS ((rtx, struct arg_data *,
+							 int));
 
 static int combine_pending_stack_adjustment_and_call
                                                 PARAMS ((int, struct args_size *, int));
@@ -1698,14 +1700,20 @@ rtx_for_function_call (fndecl, exp)
    expressions were already evaluated.
 
    Mark all register-parms as living through the call, putting these USE
-   insns in the CALL_INSN_FUNCTION_USAGE field.  */
+   insns in the CALL_INSN_FUNCTION_USAGE field.  
+ 
+   When IS_SIBCALL, perform the check_sibcall_overlap_argument_overlap
+   checking, setting *SIBCALL_FAILURE if appropriate.  */
 
 static void
-load_register_parameters (args, num_actuals, call_fusage, flags)
+load_register_parameters (args, num_actuals, call_fusage, flags, 
+			    is_sibcall, sibcall_failure)
      struct arg_data *args;
      int num_actuals;
      rtx *call_fusage;
      int flags;
+     int is_sibcall;
+     int *sibcall_failure;
 {
   int i, j;
 
@@ -1722,6 +1730,7 @@ load_register_parameters (args, num_actuals, call_fusage, flags)
 
       if (reg)
 	{
+	  rtx before_arg = get_last_insn ();
 	  /* Set to non-negative if must move a word at a time, even if just
 	     one word (e.g, partial == 1 && mode == DFmode).  Set to -1 if
 	     we just use a normal move insn.  This value can be zero if the
@@ -1758,6 +1767,13 @@ load_register_parameters (args, num_actuals, call_fusage, flags)
 	    move_block_to_reg (REGNO (reg),
 			       validize_mem (args[i].value), nregs,
 			       args[i].mode);
+
+	  /* When a parameter is a block, and perhaps in other cases, it is
+	     possible that it did a load from an argument slot that was
+	     already clobbered. */
+	  if (is_sibcall
+	      && check_sibcall_argument_overlap (before_arg, &args[i], 0))
+	    *sibcall_failure = 1;
 
 	  /* Handle calls that pass values in multiple non-contiguous
 	     locations.  The Irix 6 ABI has examples of this.  */
@@ -2015,14 +2031,16 @@ check_sibcall_argument_overlap_1 (x)
 
 /* Scan sequence after INSN if it does not dereference any argument slots
    we already clobbered by tail call arguments (as noted in stored_args_map
-   bitmap).  Add stack slots for ARG to stored_args_map bitmap afterwards.
-   Return nonzero if sequence after INSN dereferences such argument slots,
-   zero otherwise.  */
+   bitmap).  If MARK_STORED_ARGS_MAP, add stack slots for ARG to
+   stored_args_map bitmap afterwards (when ARG is a register MARK_STORED_ARGS_MAP
+   should be 0).  Return nonzero if sequence after INSN dereferences such argument
+   slots, zero otherwise.  */
 
 static int
-check_sibcall_argument_overlap (insn, arg)
+check_sibcall_argument_overlap (insn, arg, mark_stored_args_map)
      rtx insn;
      struct arg_data *arg;
+     int mark_stored_args_map;
 {
   int low, high;
 
@@ -2036,14 +2054,17 @@ check_sibcall_argument_overlap (insn, arg)
 	&& check_sibcall_argument_overlap_1 (PATTERN (insn)))
       break;
 
+  if (mark_stored_args_map)
+    {
 #ifdef ARGS_GROW_DOWNWARD
-  low = -arg->slot_offset.constant - arg->size.constant;
+      low = -arg->slot_offset.constant - arg->size.constant;
 #else
-  low = arg->slot_offset.constant;
+      low = arg->slot_offset.constant;
 #endif
 
-  for (high = low + arg->size.constant; low < high; low++)
-    SET_BIT (stored_args_map, low);
+      for (high = low + arg->size.constant; low < high; low++)
+	SET_BIT (stored_args_map, low);
+    }
   return insn != NULL_RTX;
 }
 
@@ -2959,7 +2980,7 @@ expand_call (exp, target, ignore)
 			       reg_parm_stack_space)
 		|| (pass == 0
 		    && check_sibcall_argument_overlap (before_arg,
-						       &args[i])))
+						       &args[i], 1)))
 	      sibcall_failure = 1;
 	  }
 
@@ -2983,7 +3004,7 @@ expand_call (exp, target, ignore)
 				 reg_parm_stack_space)
 		  || (pass == 0
 		      && check_sibcall_argument_overlap (before_arg,
-							 &args[i])))
+							 &args[i], 1)))
 		sibcall_failure = 1;
 	    }
 
@@ -3018,7 +3039,8 @@ expand_call (exp, target, ignore)
       funexp = prepare_call_address (funexp, fndecl, &call_fusage,
 				     reg_parm_seen, pass == 0);
 
-      load_register_parameters (args, num_actuals, &call_fusage, flags);
+      load_register_parameters (args, num_actuals, &call_fusage, flags,
+				pass == 0, &sibcall_failure);
 
       /* Perform postincrements before actually calling the function.  */
       emit_queue ();
