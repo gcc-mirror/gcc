@@ -50,7 +50,7 @@ package java.util;
  * <code>k1.compareTo(k2)</code> or <code>comparator.compare(k1, k2)</code>
  * must not throw a ClassCastException. The ordering must be <i>consistent
  * with equals</i> (see {@link Comparator} for this definition), if the
- * map is to obey the general contract of the Set interface.  If not,
+ * set is to obey the general contract of the Set interface.  If not,
  * the results are well-defined, but probably not what you wanted.
  * <p>
  *
@@ -85,7 +85,7 @@ public interface SortedSet extends Set
   Comparator comparator();
 
   /**
-   * Returns the first (lowest sorted) element in the map.
+   * Returns the first (lowest sorted) element in the set.
    *
    * @return the first element
    * @throws NoSuchElementException if the set is empty.
@@ -110,13 +110,13 @@ public interface SortedSet extends Set
    *         contents
    * @throws IllegalArgumentException if this is a subSet, and toElement is out
    *         of range
-   * @throws NullPointerException if toElement is null but the map does not
+   * @throws NullPointerException if toElement is null but the set does not
    *         allow null elements
    */
   SortedSet headSet(Object toElement);
 
   /**
-   * Returns the last (highest sorted) element in the map.
+   * Returns the last (highest sorted) element in the set.
    *
    * @return the last element
    * @throws NoSuchElementException if the set is empty.

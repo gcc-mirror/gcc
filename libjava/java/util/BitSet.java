@@ -133,7 +133,8 @@ public class BitSet implements Cloneable, Serializable
    * Performs the logical AND operation on this bit set and the
    * complement of the given <code>set</code>.  This means it
    * selects every element in the first set, that isn't in the
-   * second set.  The result is stored into this bit set.
+   * second set.  The result is stored into this bit set and is
+   * effectively the set difference of the two.
    *
    * @param set the second bit set
    * @throws NullPointerException if set is null
@@ -210,7 +211,8 @@ public class BitSet implements Cloneable, Serializable
    *
    * @param from the start range (inclusive)
    * @param to the end range (exclusive)
-   * @throws IndexOutOfBoundsException if from &lt; 0 || from &gt; to
+   * @throws IndexOutOfBoundsException if from &lt; 0 || to &lt; 0 ||
+   *         from &gt; to
    * @since 1.4
    */
   public void clear(int from, int to)
@@ -304,7 +306,8 @@ public class BitSet implements Cloneable, Serializable
    *
    * @param from the low index (inclusive)
    * @param to the high index (exclusive)
-   * @throws IndexOutOfBoundsException if from &gt; to || from &lt; 0
+   * @throws IndexOutOfBoundsException if from &gt; to || from &lt; 0 ||
+   *         to &lt; 0
    * @since 1.4
    */
   public void flip(int from, int to)
@@ -352,7 +355,8 @@ public class BitSet implements Cloneable, Serializable
    *
    * @param from the low index (inclusive)
    * @param to the high index (exclusive)
-   * @throws IndexOutOfBoundsException if from &gt; to || from &lt; 0
+   * @throws IndexOutOfBoundsException if from &gt; to || from &lt; 0 ||
+   *         to &lt; 0
    * @since 1.4
    */
   public BitSet get(int from, int to)
@@ -618,7 +622,8 @@ public class BitSet implements Cloneable, Serializable
    *
    * @param from the start range (inclusive)
    * @param to the end range (exclusive)
-   * @throws IndexOutOfBoundsException if from &lt; 0 || from &gt; to
+   * @throws IndexOutOfBoundsException if from &lt; 0 || from &gt; to ||
+   *         to &lt; 0
    * @since 1.4
    */
   public void set(int from, int to)
@@ -649,7 +654,8 @@ public class BitSet implements Cloneable, Serializable
    * @param from the start range (inclusive)
    * @param to the end range (exclusive)
    * @param value the value to set it to
-   * @throws IndexOutOfBoundsException if from &lt; 0 || from &gt; to
+   * @throws IndexOutOfBoundsException if from &lt; 0 || from &gt; to ||
+   *         to &lt; 0
    * @since 1.4
    */
   public void set(int from, int to, boolean value)

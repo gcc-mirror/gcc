@@ -120,7 +120,7 @@ public class ArrayList extends AbstractList
   }
 
   /**
-   * Construct a new ArrayList with the default capcity (16).
+   * Construct a new ArrayList with the default capacity (16).
    */
   public ArrayList()
   {
@@ -311,7 +311,8 @@ public class ArrayList extends AbstractList
   }
 
   /**
-   * Sets the element at the specified index.
+   * Sets the element at the specified index.  The new element, e,
+   * can be an object of any type or null.
    *
    * @param index the index at which the element is being set
    * @param e the element to be set
@@ -328,6 +329,7 @@ public class ArrayList extends AbstractList
 
   /**
    * Appends the supplied element to the end of this list.
+   * The element, e, can be an object of any type or null.
    *
    * @param e the element to be appended to this list
    * @return true, the add will always succeed
@@ -344,6 +346,7 @@ public class ArrayList extends AbstractList
   /**
    * Adds the supplied element at the specified index, shifting all
    * elements currently at that index or higher one to the right.
+   * The element, e, can be an object of any type or null.
    *
    * @param index the index at which the element is being added
    * @param e the item being added
@@ -397,7 +400,8 @@ public class ArrayList extends AbstractList
   /**
    * Add each element in the supplied Collection to this List. It is undefined
    * what happens if you modify the list while this is taking place; for
-   * example, if the collection contains this list.
+   * example, if the collection contains this list.  c can contain objects
+   * of any type, as well as null values.
    *
    * @param c a Collection containing elements to be added to this List
    * @return true if the list was modified, in other words c is not empty
@@ -410,7 +414,8 @@ public class ArrayList extends AbstractList
 
   /**
    * Add all elements in the supplied collection, inserting them beginning
-   * at the specified index.
+   * at the specified index.  c can contain objects of any type, as well
+   * as null values.
    *
    * @param index the index at which the elements will be inserted
    * @param c the Collection containing the elements to be inserted
