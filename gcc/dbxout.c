@@ -1747,7 +1747,7 @@ dbxout_symbol_location (decl, type, suffix, home)
 
 	  if (!DECL_INITIAL (decl))
 	    current_sym_code = N_LCSYM;
-	  else if (TREE_READONLY (decl) && ! TREE_THIS_VOLATILE (decl))
+	  else if (in_text_section ())
 	    /* This is not quite right, but it's the closest
 	       of all the codes that Unix defines.  */
 	    current_sym_code = DBX_STATIC_CONST_VAR_CODE;
