@@ -1,3 +1,7 @@
+2001-06-21  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* cppmacro.c (make_string_token): Null terminate.
+
 2001-06-21  DJ Delorie  <dj@redhat.com>
 
 	* config/alpha/alpha.h (struct machine_function): Remove.
