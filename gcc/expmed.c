@@ -691,7 +691,7 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
     {
       rtx word = gen_lowpart_common (word_mode, value);
 
-      if (word)
+      if (word && (value != word))
 	value = word;
       else
 	value = gen_lowpart_common (word_mode,
