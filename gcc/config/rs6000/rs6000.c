@@ -5161,7 +5161,7 @@ enable_mask_for_builtins (desc, size, start, end)
 }
 
 static void
-spe_init_builtins (void)
+spe_init_builtins ()
 {
   tree endlink = void_list_node;
   tree puint_type_node = build_pointer_type (unsigned_type_node);
@@ -5371,7 +5371,7 @@ spe_init_builtins (void)
 }
 
 static void
-altivec_init_builtins (void)
+altivec_init_builtins ()
 {
   struct builtin_description *d;
   struct builtin_description_predicates *dp;
@@ -5552,7 +5552,7 @@ altivec_init_builtins (void)
 }
 
 static void
-rs6000_common_init_builtins (void)
+rs6000_common_init_builtins ()
 {
   struct builtin_description *d;
   size_t i;
