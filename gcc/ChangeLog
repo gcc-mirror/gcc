@@ -1,3 +1,8 @@
+2004-10-12  Paul Brook  <paul@coodesourcery.com>
+
+	* config/arm/bpabi.h (SUBTARGET_EXTRA_ASM_SPEC): Change meabi=3 to
+	meabi=4.
+
 2004-10-12  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.md (addsi3_cbranch_scratch): Correct constraints.
