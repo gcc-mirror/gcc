@@ -93,7 +93,8 @@
 
 #define va_alist  __builtin_va_alist
 /* The ... causes current_function_varargs to be set in cc1.  */
-#define va_dcl    int __builtin_va_alist; __va_ellipsis
+#define va_dcl	int __builtin_va_alist __attribute__((__mode__(__word__))); \
+		__va_ellipsis
 
 /* Define __gnuc_va_list, just as in gstdarg.h.  */
 
