@@ -1,3 +1,7 @@
+Sat Oct 17 11:25:21 1998  Per Bothner  <bothner@cygnus.com>
+
+	* Makefile.in:  Link with libiberty.a instead of memmove.o.
+
 Fri Oct 16 10:59:01 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* lex.c (setjmp.h): No longer included.
