@@ -1,4 +1,4 @@
-#   Copyright (C) 1999 Free Software Foundation, Inc.
+#   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -85,7 +85,12 @@ proc check_alias_available { testfile } {
 		    set alias_available_saved no
 		}
 	    } else {
-		set alias_available_saved dontknow
+		if [regexp "only weak aliases are supported" $lines] {
+		verbose "check_alias_available  target supports only weak aliases" 2
+		set alias_available_saved no
+		} else {
+		    set alias_available_saved dontknow
+		}
 	    }
 	}
 	
