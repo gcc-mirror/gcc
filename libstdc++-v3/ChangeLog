@@ -1,3 +1,19 @@
+2001-03-05  Laurynas Biveinis  <lauras@softhome.net>
+
+        * config/os/djgpp/ctype_base.h (ctype_base): Fix __to_type
+	definition. Replace enum with static const variables.
+		
+	* config/os/djgpp/ctype_inline.h (ctype<char>::is): Remove
+	throw specification, fix typos, use <static_cast>.
+	(ctype<char>::scan_is): Remove throw specification.
+	(ctype<char>::scan_not): Likewise.
+						
+	* config/os/djgpp/ctype_noninline.h (ctype<char>::ctype): Fix typo.
+	(ctype<char>::do_toupper(char)): Use <static_cast>.
+	(ctype<char>::do_toupper(char *, const char *)): Likewise.
+	(ctype<char>::do_tolower(char)): Likewise.
+	(ctype<char>::do_tolower(char *, const char *)): Likewise.
+											
 2001-02-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/1886
