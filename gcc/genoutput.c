@@ -1,5 +1,5 @@
 /* Generate code from to output assembler insns as recognized from rtl.
-   Copyright (C) 1987, 1988, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -237,7 +237,7 @@ output_epilogue ()
     char * next_name;
     register struct data *n;
 
-    for (n = insn_data, next = 0; n; n = n->next, next++)
+    for (n = insn_data, next = 1; n; n = n->next, next++)
       if (n->name)
 	{
 	  next_name = n->name;
