@@ -141,15 +141,13 @@
 (define_insn_reservation "ir_sr70_load"
                                2
                           (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "load")
-                                    (eq_attr "mode" "!SF,DF,FPSW")))
+                               (eq_attr "type" "load"))
                          "ri_mem")
 
 (define_insn_reservation "ir_sr70_store"
                                1
                           (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "store")
-                                    (eq_attr "mode" "!SF,DF,FPSW")))
+                               (eq_attr "type" "store"))
                          "ri_mem")
 
 
@@ -159,15 +157,13 @@
 (define_insn_reservation "ir_sr70_fload"
                                9
                           (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "load")
-                                    (eq_attr "mode" "SF,DF")))
+                               (eq_attr "type" "fpload,fpidxload"))
                          "(cpu_iss+cp1_iss),(ri_mem+rf_ldmem)")
 
 (define_insn_reservation "ir_sr70_fstore"
                                1
                           (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "store")
-                                    (eq_attr "mode" "SF,DF")))
+                               (eq_attr "type" "fpstore,fpidxstore"))
                          "(cpu_iss+cp1_iss),(fpu_mov+ri_mem)")
 
 

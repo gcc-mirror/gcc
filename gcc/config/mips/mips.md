@@ -93,7 +93,11 @@
 ;; jump		unconditional jump
 ;; call		unconditional call
 ;; load		load instruction(s)
+;; fpload	floating point load
+;; fpidxload    floating point indexed load
 ;; store	store instruction(s)
+;; fpstore	floating point store
+;; fpidxstore	floating point indexed store
 ;; prefetch	memory prefetch (register + offset)
 ;; prefetchx	memory indexed prefetch (register + register)
 ;; move		data movement within same register set
@@ -120,7 +124,7 @@
 ;; multi	multiword sequence (or user asm statements)
 ;; nop		no operation
 (define_attr "type"
-  "unknown,branch,jump,call,load,store,prefetch,prefetchx,move,condmove,xfer,hilo,const,arith,darith,imul,imadd,idiv,icmp,fadd,fmul,fmadd,fdiv,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,multi,nop"
+  "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,prefetch,prefetchx,move,condmove,xfer,hilo,const,arith,darith,imul,imadd,idiv,icmp,fadd,fmul,fmadd,fdiv,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,multi,nop"
   (cond [(eq_attr "jal" "!unset") (const_string "call")
 	 (eq_attr "got" "load") (const_string "load")]
 	(const_string "unknown")))
@@ -182,9 +186,9 @@
 
 	  (eq_attr "type" "const")
 	  (symbol_ref "mips_const_insns (operands[1]) * 4")
-	  (eq_attr "type" "load")
+	  (eq_attr "type" "load,fpload,fpidxload")
 	  (symbol_ref "mips_fetch_insns (operands[1]) * 4")
-	  (eq_attr "type" "store")
+	  (eq_attr "type" "store,fpstore,fpidxstore")
 	  (symbol_ref "mips_fetch_insns (operands[0]) * 4")
 
 	  ;; In the worst case, a call macro will take 8 instructions:
@@ -219,7 +223,7 @@
 ;; of this one.  HILO means that the next two instructions cannot
 ;; write to HI or LO.
 (define_attr "hazard" "none,delay,hilo"
-  (cond [(and (eq_attr "type" "load")
+  (cond [(and (eq_attr "type" "load,fpload,fpidxload")
 	      (ne (symbol_ref "ISA_HAS_LOAD_DELAY") (const_int 0)))
 	 (const_string "delay")
 
@@ -301,16 +305,18 @@
 ;; Make the default case (PROCESSOR_DEFAULT) handle the worst case
 
 (define_function_unit "memory" 1 0
-  (and (eq_attr "type" "load")
+  (and (eq_attr "type" "load,fpload,fpidxload")
        (eq_attr "cpu" "!r3000,r3900,r4600,r4650,r4100,r4120,r4300,r5000"))
   3 0)
 
 (define_function_unit "memory" 1 0
-  (and (eq_attr "type" "load")
+  (and (eq_attr "type" "load,fpload,fpidxload")
        (eq_attr "cpu" "r3000,r3900,r4600,r4650,r4100,r4120,r4300,r5000"))
   2 0)
 
-(define_function_unit "memory"   1 0 (eq_attr "type" "store") 1 0)
+(define_function_unit "memory"   1 0
+  (eq_attr "type" "store,fpstore,fpidxstore")
+  1 0)
 
 (define_function_unit "memory"   1 0 (eq_attr "type" "xfer") 2 0)
 
@@ -4547,7 +4553,7 @@ dsrl\t%3,%3,1\n\
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"move,const,const,load,store,move,xfer,load,xfer,store,hilo,hilo,hilo,xfer,load,xfer,store")
+  [(set_attr "type"	"move,const,const,load,store,move,xfer,fpload,xfer,fpstore,hilo,hilo,hilo,xfer,load,xfer,store")
    (set_attr "mode"	"DI")
    (set_attr "length"	"4,*,*,*,*,4,4,*,4,*,4,4,4,8,*,8,*")])
 
@@ -4671,7 +4677,7 @@ dsrl\t%3,%3,1\n\
    && (register_operand (operands[0], SImode)
        || reg_or_0_operand (operands[1], SImode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"move,const,const,load,store,move,xfer,load,xfer,store,xfer,xfer,hilo,hilo,hilo,xfer,load,xfer,store")
+  [(set_attr "type"	"move,const,const,load,store,move,xfer,fpload,xfer,fpstore,xfer,xfer,hilo,hilo,hilo,xfer,load,xfer,store")
    (set_attr "mode"	"SI")
    (set_attr "length"	"4,*,*,*,*,4,4,*,4,*,4,4,4,4,4,4,*,4,*")])
 
@@ -4789,7 +4795,7 @@ dsrl\t%3,%3,1\n\
 	(match_operand:CC 1 "general_operand" "z,*d,*m,*d,*f,*d,*f,*m,*f"))]
   "ISA_HAS_8CC && TARGET_HARD_FLOAT"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"move,move,load,store,xfer,xfer,move,load,store")
+  [(set_attr "type"	"move,move,load,store,xfer,xfer,move,fpload,fpstore")
    (set_attr "mode"	"SI")
    (set_attr "length"	"8,4,*,*,4,4,4,*,*")])
 
@@ -4846,7 +4852,7 @@ dsrl\t%3,%3,1\n\
 			 (match_operand:SI 2 "register_operand" "d"))))]
   "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "lwxc1\t%0,%1(%2)"
-  [(set_attr "type"	"load")
+  [(set_attr "type"	"fpidxload")
    (set_attr "mode"	"SF")
    (set_attr "length"   "4")])
 
@@ -4856,7 +4862,7 @@ dsrl\t%3,%3,1\n\
 			 (match_operand:DI 2 "register_operand" "d"))))]
   "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "lwxc1\t%0,%1(%2)"
-  [(set_attr "type"	"load")
+  [(set_attr "type"	"fpidxload")
    (set_attr "mode"	"SF")
    (set_attr "length"   "4")])
 
@@ -4866,7 +4872,7 @@ dsrl\t%3,%3,1\n\
 			 (match_operand:SI 2 "register_operand" "d"))))]
   "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "ldxc1\t%0,%1(%2)"
-  [(set_attr "type"	"load")
+  [(set_attr "type"	"fpidxload")
    (set_attr "mode"	"DF")
    (set_attr "length"   "4")])
 
@@ -4876,7 +4882,7 @@ dsrl\t%3,%3,1\n\
 			 (match_operand:DI 2 "register_operand" "d"))))]
   "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "ldxc1\t%0,%1(%2)"
-  [(set_attr "type"	"load")
+  [(set_attr "type"	"fpidxload")
    (set_attr "mode"	"DF")
    (set_attr "length"   "4")])
 
@@ -4886,7 +4892,7 @@ dsrl\t%3,%3,1\n\
 	(match_operand:SF 0 "register_operand" "f"))]
   "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "swxc1\t%0,%1(%2)"
-  [(set_attr "type"	"store")
+  [(set_attr "type"	"fpidxstore")
    (set_attr "mode"	"SF")
    (set_attr "length"   "4")])
 
@@ -4896,7 +4902,7 @@ dsrl\t%3,%3,1\n\
 	(match_operand:SF 0 "register_operand" "f"))]
   "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "swxc1\t%0,%1(%2)"
-  [(set_attr "type"	"store")
+  [(set_attr "type"	"fpidxstore")
    (set_attr "mode"	"SF")
    (set_attr "length"   "4")])
 
@@ -4906,7 +4912,7 @@ dsrl\t%3,%3,1\n\
 	(match_operand:DF 0 "register_operand" "f"))]
   "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "sdxc1\t%0,%1(%2)"
-  [(set_attr "type"	"store")
+  [(set_attr "type"	"fpidxstore")
    (set_attr "mode"	"DF")
    (set_attr "length"   "4")])
 
@@ -4916,7 +4922,7 @@ dsrl\t%3,%3,1\n\
 	(match_operand:DF 0 "register_operand" "f"))]
   "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "sdxc1\t%0,%1(%2)"
-  [(set_attr "type"	"store")
+  [(set_attr "type"	"fpidxstore")
    (set_attr "mode"	"DF")
    (set_attr "length"   "4")])
 
@@ -5133,7 +5139,7 @@ dsrl\t%3,%3,1\n\
    && (register_operand (operands[0], SFmode)
        || reg_or_0_operand (operands[1], SFmode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"move,xfer,load,store,xfer,xfer,move,load,store")
+  [(set_attr "type"	"move,xfer,fpload,fpstore,xfer,xfer,move,load,store")
    (set_attr "mode"	"SF")
    (set_attr "length"	"4,4,*,*,4,4,4,*,*")])
 
@@ -5178,7 +5184,7 @@ dsrl\t%3,%3,1\n\
    && (register_operand (operands[0], DFmode)
        || reg_or_0_operand (operands[1], DFmode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"move,xfer,load,store,xfer,xfer,move,load,store")
+  [(set_attr "type"	"move,xfer,fpload,fpstore,xfer,xfer,move,load,store")
    (set_attr "mode"	"DF")
    (set_attr "length"	"4,4,*,*,4,4,4,*,*")])
 
@@ -5189,7 +5195,7 @@ dsrl\t%3,%3,1\n\
    && (register_operand (operands[0], DFmode)
        || reg_or_0_operand (operands[1], DFmode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"move,xfer,load,store,xfer,xfer,move,load,store")
+  [(set_attr "type"	"move,xfer,fpload,fpstore,xfer,xfer,move,load,store")
    (set_attr "mode"	"DF")
    (set_attr "length"	"4,8,*,*,8,8,8,*,*")])
 
@@ -5251,7 +5257,7 @@ dsrl\t%3,%3,1\n\
   operands[0] = mips_subword (operands[0], 0);
   return mips_output_move (operands[0], operands[1]);
 }
-  [(set_attr "type"	"xfer,load")
+  [(set_attr "type"	"xfer,fpload")
    (set_attr "mode"	"SF")
    (set_attr "length"	"4")])
 
@@ -5267,7 +5273,7 @@ dsrl\t%3,%3,1\n\
   operands[0] = mips_subword (operands[0], 1);
   return mips_output_move (operands[0], operands[1]);
 }
-  [(set_attr "type"	"xfer,load")
+  [(set_attr "type"	"xfer,fpload")
    (set_attr "mode"	"SF")
    (set_attr "length"	"4")])
 
@@ -5282,7 +5288,7 @@ dsrl\t%3,%3,1\n\
   operands[1] = mips_subword (operands[1], 1);
   return mips_output_move (operands[0], operands[1]);
 }
-  [(set_attr "type"	"xfer,store")
+  [(set_attr "type"	"xfer,fpstore")
    (set_attr "mode"	"SF")
    (set_attr "length"	"4")])
 
