@@ -1,5 +1,16 @@
 2003-01-10  Geoffrey Keating  <geoffk@apple.com>
 
+	* Makefile.in (parsedir): New variable.
+	(docobjdir): New variable.
+	(c-parse.o, c-parse.c, c-parse.y, gengtype-lex.o, gengtype-yacc.o, 
+	gengtype-lex.c, gengtype-yacc.c): Use parsedir.
+	(info, cpp.info, gcc.info, gccint.info, gccinstall.info,
+	cppinternals.info, generated-manpages, gcov.1, cpp.1, gcc.1, gfdl.7,
+	gpl.7, fsf-funding.7, maintainer-clean, install-info, install-man): 
+	Use docobjdir.
+	* objc/Make-lang.in (objc/objc-parse.c, objc/objc-parse.y,
+	objc.maintainer-clean): Use parsedir.
+
 	* varasm.c (struct constant_descriptor_rtx): Remove unused
 	`label' field.
 
