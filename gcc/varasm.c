@@ -2209,7 +2209,7 @@ static GTY(()) struct constant_descriptor_tree *
    they are actually used.  This will be if something takes its address or if
    there is a usage of the string in the RTL of a function.  */
 
-#define STRHASH(x) ((hashval_t) ((long) (x) >> 3))
+#define STRHASH(x) htab_hash_pointer (x)
 
 struct deferred_string GTY(())
 {

@@ -5516,8 +5516,8 @@ typename_hash (k)
   hashval_t hash;
   tree t = (tree) k;
 
-  hash = (((hashval_t) TYPE_CONTEXT (t))
-	  ^ ((hashval_t) DECL_NAME (TYPE_NAME (t))));
+  hash = (htab_hash_pointer (TYPE_CONTEXT (t))
+	  ^ htab_hash_pointer (DECL_NAME (TYPE_NAME (t))));
 
   return hash;
 }

@@ -1346,7 +1346,7 @@ size_htab_hash (x)
   tree t = (tree) x;
 
   return (TREE_INT_CST_HIGH (t) ^ TREE_INT_CST_LOW (t)
-	  ^ (hashval_t) ((long) TREE_TYPE (t) >> 3)
+	  ^ htab_hash_pointer (TREE_TYPE (t))
 	  ^ (TREE_OVERFLOW (t) << 20));
 }
 
