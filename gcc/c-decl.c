@@ -178,6 +178,8 @@ tree default_function_type;
 
 tree double_ftype_double, double_ftype_double_double;
 tree int_ftype_int, long_ftype_long;
+tree float_ftype_float;
+tree ldouble_ftype_ldouble;
 
 /* Function type `void (void *, void *, int)' and similar ones */
 
@@ -2916,9 +2918,18 @@ init_decl_processing ()
   void_ftype_any
     = build_function_type (void_type_node, NULL_TREE);
 
+  float_ftype_float
+    = build_function_type (float_type_node,
+			   tree_cons (NULL_TREE, float_type_node, endlink));
+
   double_ftype_double
     = build_function_type (double_type_node,
 			   tree_cons (NULL_TREE, double_type_node, endlink));
+
+  ldouble_ftype_ldouble
+    = build_function_type (long_double_type_node,
+			   tree_cons (NULL_TREE, long_double_type_node,
+				      endlink));
 
   double_ftype_double_double
     = build_function_type (double_type_node,
@@ -3037,7 +3048,11 @@ init_decl_processing ()
     }
 
   builtin_function ("__builtin_abs", int_ftype_int, BUILT_IN_ABS, NULL_PTR);
+  builtin_function ("__builtin_fabsf", float_ftype_float, BUILT_IN_FABS,
+		    NULL_PTR);
   builtin_function ("__builtin_fabs", double_ftype_double, BUILT_IN_FABS,
+		    NULL_PTR);
+  builtin_function ("__builtin_fabsl", ldouble_ftype_ldouble, BUILT_IN_FABS,
 		    NULL_PTR);
   builtin_function ("__builtin_labs", long_ftype_long, BUILT_IN_LABS,
 		    NULL_PTR);
@@ -3099,12 +3114,24 @@ init_decl_processing ()
 		    BUILT_IN_STRCPY, "strcpy");
   builtin_function ("__builtin_strlen", strlen_ftype,
 		    BUILT_IN_STRLEN, "strlen");
+  builtin_function ("__builtin_sqrtf", float_ftype_float, 
+		    BUILT_IN_FSQRT, "sqrtf");
   builtin_function ("__builtin_fsqrt", double_ftype_double, 
 		    BUILT_IN_FSQRT, "sqrt");
+  builtin_function ("__builtin_sqrtl", ldouble_ftype_ldouble, 
+		    BUILT_IN_FSQRT, "sqrtl");
+  builtin_function ("__builtin_sinf", float_ftype_float, 
+		    BUILT_IN_SIN, "sinf");
   builtin_function ("__builtin_sin", double_ftype_double, 
 		    BUILT_IN_SIN, "sin");
+  builtin_function ("__builtin_sinl", ldouble_ftype_ldouble, 
+		    BUILT_IN_SIN, "sinl");
+  builtin_function ("__builtin_cosf", float_ftype_float, 
+		    BUILT_IN_COS, "cosf");
   builtin_function ("__builtin_cos", double_ftype_double, 
 		    BUILT_IN_COS, "cos");
+  builtin_function ("__builtin_cosl", ldouble_ftype_ldouble, 
+		    BUILT_IN_COS, "cosl");
 
   /* In an ANSI C program, it is okay to supply built-in meanings
      for these functions, since applications cannot validly use them
@@ -3113,7 +3140,10 @@ init_decl_processing ()
   if (!flag_no_builtin)
     {
       builtin_function ("abs", int_ftype_int, BUILT_IN_ABS, NULL_PTR);
+      builtin_function ("fabsf", float_ftype_float, BUILT_IN_FABS, NULL_PTR);
       builtin_function ("fabs", double_ftype_double, BUILT_IN_FABS, NULL_PTR);
+      builtin_function ("fabsl", ldouble_ftype_ldouble, BUILT_IN_FABS,
+			NULL_PTR);
       builtin_function ("labs", long_ftype_long, BUILT_IN_LABS, NULL_PTR);
       builtin_function ("memcpy", memcpy_ftype, BUILT_IN_MEMCPY, NULL_PTR);
       builtin_function ("memcmp", int_ftype_cptr_cptr_sizet, BUILT_IN_MEMCMP,
@@ -3123,9 +3153,16 @@ init_decl_processing ()
       builtin_function ("strcpy", string_ftype_ptr_ptr, BUILT_IN_STRCPY,
 			NULL_PTR);
       builtin_function ("strlen", strlen_ftype, BUILT_IN_STRLEN, NULL_PTR);
+      builtin_function ("sqrtf", float_ftype_float, BUILT_IN_FSQRT, NULL_PTR);
       builtin_function ("sqrt", double_ftype_double, BUILT_IN_FSQRT, NULL_PTR);
+      builtin_function ("sqrtl", ldouble_ftype_ldouble, BUILT_IN_FSQRT,
+			NULL_PTR);
+      builtin_function ("sinf", float_ftype_float, BUILT_IN_SIN, NULL_PTR);
       builtin_function ("sin", double_ftype_double, BUILT_IN_SIN, NULL_PTR);
+      builtin_function ("sinl", ldouble_ftype_ldouble, BUILT_IN_SIN, NULL_PTR);
+      builtin_function ("cosf", float_ftype_float, BUILT_IN_COS, NULL_PTR);
       builtin_function ("cos", double_ftype_double, BUILT_IN_COS, NULL_PTR);
+      builtin_function ("cosl", ldouble_ftype_ldouble, BUILT_IN_COS, NULL_PTR);
 
       /* Declare these functions volatile
 	 to avoid spurious "control drops through" warnings.  */
