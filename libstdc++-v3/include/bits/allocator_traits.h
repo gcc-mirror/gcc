@@ -149,9 +149,11 @@ namespace std
       
       size_type
       max_size() const throw() { return size_t(-1) / sizeof(_Tp); }
-      
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 402. wrong new expression in [some_]allocator::construct
       void
-      construct(pointer __p, const _Tp& __val) { new(__p) _Tp(__val); }
+      construct(pointer __p, const _Tp& __val) { ::new(__p) _Tp(__val); }
       
       void
       destroy(pointer __p) { __p->~_Tp(); }

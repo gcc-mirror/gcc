@@ -1,3 +1,16 @@
+2003-12-01  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/10378
+	* include/bits/allocator.h (allocator::construct): Implement
+	resolution of DR 402 [Ready] (in Revision 28).
+	* include/bits/allocator_traits.h (__allocator::construct):
+	Likewise.
+	* include/bits/stl_construct.h (_Construct): Likewise.
+	* testsuite/20_util/allocator_members.cc: Move to...
+	* testsuite/20_util/allocator/1.cc: ... here.
+	* testsuite/20_util/allocator/10378.cc: New.
+	* docs/html/ext/howto.html: Add an entry for DR 402.
+
 2003-11-30  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/gnu/codecvt_members.cc (codecvt::do_in,
