@@ -349,8 +349,7 @@ ior_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  return (register_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT && ior_mask_p (INTVAL (op))));
+  return (GET_CODE (op) == CONST_INT && ior_mask_p (INTVAL (op)));
 }
 
 int
