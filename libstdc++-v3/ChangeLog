@@ -1,3 +1,25 @@
+2003-11-13  Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/12594
+	* include/bits/ostream.tcc
+	(basic_ostream::operator<<(basic_ostream& (*)(basic_ostream&)),
+	basic_ostream::operator<<(basic_ios& (*)(basic_ios&)),
+	basic_ostream::operator<<(ios_base& (*)(ios_base&))):
+	Implement the resolution of DR 60 (TC): These are not formatted
+	output functions so don't construct sentry objects and don't
+	catch exceptions.
+	(basic_ostream::put, basic_ostream::write): Implement the
+	resolution of DR 63 (TC) by catching exceptions and setting
+	badbit.
+	(basic_ostream::flush): Implement the resolution of DR 60 (TC):
+	This is not an unformatted output function so don't construct
+	a sentry object.
+	* testsuite/testsuite_io.h (sync_streambuf): Define.
+	* testsuite/27_io/basic_ostream/flush/char/2.cc: New test.
+	* testsuite/27_io/basic_ostream/inserters_other/char/5.cc: New test.
+	* testsuite/27_io/basic_ostream/put/char/1.cc: New test.
+	* testsuite/27_io/basic_ostream/write/char/1.cc: New test.
+	
 2003-11-13  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-1:
