@@ -213,8 +213,6 @@ static tree
 build_default_init (type)
      tree type;
 {
-  tree init = NULL_TREE;
-
   if (TYPE_NEEDS_CONSTRUCTING (type))
     /* Other code will handle running the default constructor.  We can't do
        anything with a CONSTRUCTOR for arrays here, as that would imply
