@@ -1,3 +1,7 @@
+Tue Oct 12 17:09:38 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* collect2.c (main): Do preliminary link on AIX if rflag.
+
 Mon Oct 11 23:35:19 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Fri Sep  3 09:14:32 1999  Marc Espie <espie@tetto.liafa.jussieu.fr>
