@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---                            $Revision: 1.52 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -101,12 +101,6 @@ begin
 
    Write_Switch_Char;
    Write_Str ("E        Store tracebacks in Exception occurrences");
-   Write_Eol;
-
-   --  Line for -f switch
-
-   Write_Switch_Char;
-   Write_Str ("f        Force RM elaboration ordering rules");
    Write_Eol;
 
    --  Line for -h switch

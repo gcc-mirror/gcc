@@ -220,9 +220,6 @@ procedure GNATCmd is
    S_Bind_Error   : aliased constant S := "/ERROR_LIMIT=#"                 &
                                             "-m#";
 
-   S_Bind_Full    : aliased constant S := "/FULL_ELABORATION "             &
-                                            "-f";
-
    S_Bind_Library : aliased constant S := "/LIBRARY_SEARCH=*"              &
                                             "-aO*";
 
@@ -313,7 +310,6 @@ procedure GNATCmd is
      S_Bind_Elab    'Access,
      S_Bind_Error   'Access,
      S_Ext_Ref      'Access,
-     S_Bind_Full    'Access,
      S_Bind_Library 'Access,
      S_Bind_Linker  'Access,
      S_Bind_Main    'Access,
