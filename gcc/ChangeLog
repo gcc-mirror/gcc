@@ -1,3 +1,8 @@
+2003-04-25  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.h (ISA_HAS_HILO_INTERLOCKS): MIPS32, MIPS32r2,
+	and MIPS64 have HI/LO interlocks.  Update comment.
+
 2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/stormy16/stormy16-protos.h: Remove the prototype for
