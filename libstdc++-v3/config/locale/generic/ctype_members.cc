@@ -1,6 +1,6 @@
 // std::ctype implementation details, generic version -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -126,15 +126,39 @@ namespace std
   bool
   ctype<wchar_t>::
   do_is(mask __m, char_type __c) const
-  { return static_cast<bool>(iswctype(__c, _M_convert_to_wmask(__m))); }
+  { 
+    bool __ret = true;
+    bool __match_any = false;
+    const size_t __bitmasksize = 10; 
+    for (size_t __bitcur = 0; __bitcur <= __bitmasksize; ++__bitcur)
+      {
+	mask __bit = static_cast<mask>(1 << __bitcur);
+	if (__m & __bit)
+	  {
+	    __match_any = true;
+	    __ret &= iswctype(__c, _M_convert_to_wmask(__bit));
+	  }
+      }
+    return __ret & __match_any;    
+  }
   
   const wchar_t* 
   ctype<wchar_t>::
-  do_is(const wchar_t* __lo, const wchar_t* __hi, mask* __m) const
+  do_is(const wchar_t* __lo, const wchar_t* __hi, mask* __vec) const
   {
-    while (__lo < __hi && !this->do_is(*__m, *__lo))
-      ++__lo;
-    return __lo;
+    for (;__lo < __hi; ++__vec, ++__lo)
+      {
+	const size_t __bitmasksize = 10; 
+	mask __m = 0;
+	for (size_t __bitcur = 0; __bitcur <= __bitmasksize; ++__bitcur)
+	  { 
+	    mask __bit = static_cast<mask>(1 << __bitcur);
+	    if (iswctype(*__lo, _M_convert_to_wmask(__bit)))
+	      __m |= __bit;
+	  }
+	*__vec = __m;
+      }
+    return __hi;
   }
   
   const wchar_t* 

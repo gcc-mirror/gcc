@@ -1,3 +1,11 @@
+2003-09-25  Benjamin Kosnik  <bkoz@redhat.com>
+ 
+        PR libstdc++/11065
+        * config/locale/gnu/ctype_members.cc (ctype<wchar_t>::do_is): Fix.
+        * config/locale/generic/ctype_members.cc: Same.
+ 
+        * config/os/generic/ctype_inline.h: Update.
+
 2003-09-10  Daniel Jacobowitz  <drow@mvista.com>
 	    Andreas Jaeger <aj@suse.de>
 

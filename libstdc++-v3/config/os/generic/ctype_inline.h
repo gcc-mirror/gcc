@@ -50,13 +50,15 @@
     else
       {
 	bool __ret = true;
-	const int __bitmasksize = 11; 
-	int __bitcur = 0; // Lowest bitmask in ctype_base == 0
-	for (;__ret && __bitcur < __bitmasksize; ++__bitcur)
+	bool __any_match = false;
+	const size_t __bitmasksize = 10; 
+	size_t __bitcur = 0; // Lowest bitmask in ctype_base == 0
+	for (;__ret && __bitcur <= __bitmasksize; ++__bitcur)
 	  {
 	    mask __bit = static_cast<mask>(1 << __bitcur);
 	    if (__m & __bit)
 	      {
+		__any_match = true;
 		bool __testis;
 		switch (__bit)
 		  {
@@ -100,7 +102,7 @@
 		__ret &= __testis;
 	      }
 	  }
-	return __ret;
+	return __ret & __any_match;
       }
   }
    
@@ -114,13 +116,13 @@
     else
       {
 	// Highest bitmask in ctype_base == 10.
-	const int __bitmasksize = 11; 
+	const size_t __bitmasksize = 10; 
 	for (;__low < __high; ++__vec, ++__low)
 	  {
 	    mask __m = 0;
 	    // Lowest bitmask in ctype_base == 0
-	    int __i = 0; 
-	    for (;__i < __bitmasksize; ++__i)
+	    size_t __i = 0; 
+	    for (;__i <= __bitmasksize; ++__i)
 	      {
 		mask __bit = static_cast<mask>(1 << __i);
 		if (this->is(__bit, *__low))
