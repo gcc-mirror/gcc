@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-require-effective-target ilp32 } */
 // { dg-options "-w" }
 // prms-id: 784
 
