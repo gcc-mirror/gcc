@@ -980,7 +980,7 @@ reload (first, global, dumpfile)
       for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
 	if (reg_renumber[i] < 0 && reg_equiv_memory_loc[i])
 	  {
-	    rtx x = eliminate_regs (reg_equiv_memory_loc[i], 0, NULL_RTX, 0);
+	    rtx x = eliminate_regs (reg_equiv_memory_loc[i], 0, NULL_RTX);
 
 	    if (strict_memory_address_p (GET_MODE (regno_reg_rtx[i]),
 					 XEXP (x, 0)))
@@ -2812,11 +2812,10 @@ static struct rtvec_def *old_asm_operands_vec, *new_asm_operands_vec;
    the proper thing.  */
 
 rtx
-eliminate_regs (x, mem_mode, insn, storing)
+eliminate_regs (x, mem_mode, insn)
      rtx x;
      enum machine_mode mem_mode;
      rtx insn;
-     int storing;
 {
   enum rtx_code code = GET_CODE (x);
   struct elim_table *ep;
@@ -2845,7 +2844,7 @@ eliminate_regs (x, mem_mode, insn, storing)
       /* This is only for the benefit of the debugging backends, which call
 	 eliminate_regs on DECL_RTL; any ADDRESSOFs in the actual insns are
 	 removed after CSE.  */
-      new = eliminate_regs (XEXP (x, 0), 0, insn, 0);
+      new = eliminate_regs (XEXP (x, 0), 0, insn);
       if (GET_CODE (new) == MEM)
 	return XEXP (new, 0);
       return x;
@@ -2881,8 +2880,7 @@ eliminate_regs (x, mem_mode, insn, storing)
 	     elimination) and ignore the fact that this is actually a
 	     reference to the pseudo.  Ensure we make a copy of the
 	     address in case it is shared.  */
-	  new = eliminate_regs (reg_equiv_memory_loc[regno],
-				mem_mode, insn, 0);
+	  new = eliminate_regs (reg_equiv_memory_loc[regno], mem_mode, insn);
 	  if (new != reg_equiv_memory_loc[regno])
 	    {
 	      cannot_omit_stores[regno] = 1;
@@ -2944,8 +2942,8 @@ eliminate_regs (x, mem_mode, insn, storing)
 	 reload.  This is the desired action.  */
 
       {
-	rtx new0 = eliminate_regs (XEXP (x, 0), mem_mode, insn, 0);
-	rtx new1 = eliminate_regs (XEXP (x, 1), mem_mode, insn, 0);
+	rtx new0 = eliminate_regs (XEXP (x, 0), mem_mode, insn);
+	rtx new1 = eliminate_regs (XEXP (x, 1), mem_mode, insn);
 
 	if (new0 != XEXP (x, 0) || new1 != XEXP (x, 1))
 	  {
@@ -3016,9 +3014,9 @@ eliminate_regs (x, mem_mode, insn, storing)
     case GE:       case GT:       case GEU:    case GTU:
     case LE:       case LT:       case LEU:    case LTU:
       {
-	rtx new0 = eliminate_regs (XEXP (x, 0), mem_mode, insn, 0);
+	rtx new0 = eliminate_regs (XEXP (x, 0), mem_mode, insn);
 	rtx new1
-	  = XEXP (x, 1) ? eliminate_regs (XEXP (x, 1), mem_mode, insn, 0) : 0;
+	  = XEXP (x, 1) ? eliminate_regs (XEXP (x, 1), mem_mode, insn) : 0;
 
 	if (new0 != XEXP (x, 0) || new1 != XEXP (x, 1))
 	  return gen_rtx (code, GET_MODE (x), new0, new1);
@@ -3029,7 +3027,7 @@ eliminate_regs (x, mem_mode, insn, storing)
       /* If we have something in XEXP (x, 0), the usual case, eliminate it.  */
       if (XEXP (x, 0))
 	{
-	  new = eliminate_regs (XEXP (x, 0), mem_mode, insn, 0);
+	  new = eliminate_regs (XEXP (x, 0), mem_mode, insn);
 	  if (new != XEXP (x, 0))
 	    x = gen_rtx (EXPR_LIST, REG_NOTE_KIND (x), new, XEXP (x, 1));
 	}
@@ -3042,7 +3040,7 @@ eliminate_regs (x, mem_mode, insn, storing)
 	 strictly needed, but it simplifies the code.  */
       if (XEXP (x, 1))
 	{
-	  new = eliminate_regs (XEXP (x, 1), mem_mode, insn, 0);
+	  new = eliminate_regs (XEXP (x, 1), mem_mode, insn);
 	  if (new != XEXP (x, 1))
 	    return gen_rtx (GET_CODE (x), GET_MODE (x), XEXP (x, 0), new);
 	}
@@ -3078,7 +3076,7 @@ eliminate_regs (x, mem_mode, insn, storing)
     case ABS:
     case SQRT:
     case FFS:
-      new = eliminate_regs (XEXP (x, 0), mem_mode, insn, 0);
+      new = eliminate_regs (XEXP (x, 0), mem_mode, insn);
       if (new != XEXP (x, 0))
 	return gen_rtx (code, GET_MODE (x), new);
       return x;
@@ -3097,7 +3095,7 @@ eliminate_regs (x, mem_mode, insn, storing)
 	  && reg_equiv_memory_loc[REGNO (SUBREG_REG (x))] != 0)
 	{
 	  new = eliminate_regs (reg_equiv_memory_loc[REGNO (SUBREG_REG (x))],
-				mem_mode, insn, 0);
+				mem_mode, insn);
 
 	  /* If we didn't change anything, we must retain the pseudo.  */
 	  if (new == reg_equiv_memory_loc[REGNO (SUBREG_REG (x))])
@@ -3117,37 +3115,38 @@ eliminate_regs (x, mem_mode, insn, storing)
 	    }
 	}
       else
-	new = eliminate_regs (SUBREG_REG (x), mem_mode, insn, 0);
+	new = eliminate_regs (SUBREG_REG (x), mem_mode, insn);
 
       if (new != XEXP (x, 0))
 	{
 	  int x_size = GET_MODE_SIZE (GET_MODE (x));
 	  int new_size = GET_MODE_SIZE (GET_MODE (new));
 
-	  /* When asked to spill a partial word subreg, we need to go
-	     ahead and spill the whole thing against the possibility
-	     that we reload the whole reg and find garbage at the top.  */
-	  if (storing
-	      && GET_CODE (new) == MEM
-	      && x_size < new_size
-	      && ((x_size + UNITS_PER_WORD-1) / UNITS_PER_WORD
-		  == (new_size + UNITS_PER_WORD-1) / UNITS_PER_WORD))
-	    return new;
-	  else if (GET_CODE (new) == MEM
-		   && x_size <= new_size
-#ifdef LOAD_EXTEND_OP
-	           /* On these machines we will be reloading what is
-		      inside the SUBREG if it originally was a pseudo and
-		      the inner and outer modes are both a word or
-		      smaller.  So leave the SUBREG then.  */
-	           && ! (GET_CODE (SUBREG_REG (x)) == REG
-		         && x_size <= UNITS_PER_WORD
-		         && new_size <= UNITS_PER_WORD
-		         && x_size > new_size
-		         && INTEGRAL_MODE_P (GET_MODE (new))
-		         && LOAD_EXTEND_OP (GET_MODE (new)) != NIL)
+	  if (GET_CODE (new) == MEM
+	      && x_size <= new_size
+#ifdef WORD_REGISTER_OPERATIONS
+	      /* On these machines, combine can create rtl of the form
+		   (set (subreg:m1 (reg:m2 R) 0) ...)
+		 where m1 < m2, and expects something interesting to 
+		 happen to the entire word.  Moreover, it will use the
+		 (reg:m2 R) later, expecting all bits to be preserved.
+		 So if the number of words is the same, preserve the 
+		 subreg so that push_reloads can see it.  */
+	      && ! ((x_size-1)/UNITS_PER_WORD == (new_size-1)/UNITS_PER_WORD)
 #endif
-	           )
+#ifdef LOAD_EXTEND_OP
+	      /* On these machines we will be reloading what is
+		 inside the SUBREG if it originally was a pseudo and
+		 the inner and outer modes are both a word or
+		 smaller.  So leave the SUBREG then.  */
+	      && ! (GET_CODE (SUBREG_REG (x)) == REG
+		    && x_size <= UNITS_PER_WORD
+		    && new_size <= UNITS_PER_WORD
+		    && x_size > new_size
+		    && INTEGRAL_MODE_P (GET_MODE (new))
+		    && LOAD_EXTEND_OP (GET_MODE (new)) != NIL)
+#endif
+	      )
 	    {
 	      int offset = SUBREG_WORD (x) * UNITS_PER_WORD;
 	      enum machine_mode mode = GET_MODE (x);
@@ -3175,7 +3174,7 @@ eliminate_regs (x, mem_mode, insn, storing)
 	if (ep->from_rtx == XEXP (x, 0))
 	  ep->can_eliminate = 0;
 
-      new = eliminate_regs (XEXP (x, 0), mem_mode, insn, 0);
+      new = eliminate_regs (XEXP (x, 0), mem_mode, insn);
       if (new != XEXP (x, 0))
 	return gen_rtx (code, GET_MODE (x), new);
       return x;
@@ -3188,7 +3187,7 @@ eliminate_regs (x, mem_mode, insn, storing)
 	if (ep->to_rtx == XEXP (x, 0))
 	  ep->can_eliminate = 0;
 
-      new = eliminate_regs (XEXP (x, 0), mem_mode, insn, 0);
+      new = eliminate_regs (XEXP (x, 0), mem_mode, insn);
       if (new != XEXP (x, 0))
 	return gen_rtx (code, GET_MODE (x), new);
       return x;
@@ -3206,7 +3205,7 @@ eliminate_regs (x, mem_mode, insn, storing)
 	    temp_vec = (rtx *) alloca (XVECLEN (x, 3) * sizeof (rtx));
 	    for (i = 0; i < ASM_OPERANDS_INPUT_LENGTH (x); i++)
 	      temp_vec[i] = eliminate_regs (ASM_OPERANDS_INPUT (x, i),
-					    mem_mode, insn, 0);
+					    mem_mode, insn);
 
 	    for (i = 0; i < ASM_OPERANDS_INPUT_LENGTH (x); i++)
 	      if (temp_vec[i] != ASM_OPERANDS_INPUT (x, i))
@@ -3277,8 +3276,8 @@ eliminate_regs (x, mem_mode, insn, storing)
 
       /* Now avoid the loop below in this common case.  */
       {
-	rtx new0 = eliminate_regs (SET_DEST (x), 0, insn, 1);
-	rtx new1 = eliminate_regs (SET_SRC (x), 0, insn, 0);
+	rtx new0 = eliminate_regs (SET_DEST (x), 0, insn);
+	rtx new1 = eliminate_regs (SET_SRC (x), 0, insn);
 
 	/* If SET_DEST changed from a REG to a MEM and INSN is an insn,
 	   write a CLOBBER insn.  */
@@ -3286,12 +3285,6 @@ eliminate_regs (x, mem_mode, insn, storing)
 	    && insn != 0 && GET_CODE (insn) != EXPR_LIST
 	    && GET_CODE (insn) != INSN_LIST)
 	  emit_insn_after (gen_rtx (CLOBBER, VOIDmode, SET_DEST (x)), insn);
-
-	/* If SET_DEST was a partial-word subreg, NEW0 may have been widened
-	   to spill the entire register (see SUBREG case above).  If the 
-	   widths of SET_DEST and NEW0 no longer match, adjust NEW1.  */
-	if (GET_MODE (SET_DEST (x)) != GET_MODE (new0))
-	  new1 = gen_rtx (SUBREG, GET_MODE (new0), new1, 0);
 
 	if (new0 != SET_DEST (x) || new1 != SET_SRC (x))
 	  return gen_rtx (SET, VOIDmode, new0, new1);
@@ -3304,12 +3297,12 @@ eliminate_regs (x, mem_mode, insn, storing)
 	 eliminate_regs on DECL_RTL; any ADDRESSOFs in the actual insns are
 	 removed after CSE.  */
       if (GET_CODE (XEXP (x, 0)) == ADDRESSOF)
-	return eliminate_regs (XEXP (XEXP (x, 0), 0), 0, insn, 0);
+	return eliminate_regs (XEXP (XEXP (x, 0), 0), 0, insn);
 
       /* Our only special processing is to pass the mode of the MEM to our
 	 recursive call and copy the flags.  While we are here, handle this
 	 case more efficiently.  */
-      new = eliminate_regs (XEXP (x, 0), GET_MODE (x), insn, 0);
+      new = eliminate_regs (XEXP (x, 0), GET_MODE (x), insn);
       if (new != XEXP (x, 0))
 	{
 	  new = gen_rtx (MEM, GET_MODE (x), new);
@@ -3332,7 +3325,7 @@ eliminate_regs (x, mem_mode, insn, storing)
     {
       if (*fmt == 'e')
 	{
-	  new = eliminate_regs (XEXP (x, i), mem_mode, insn, 0);
+	  new = eliminate_regs (XEXP (x, i), mem_mode, insn);
 	  if (new != XEXP (x, i) && ! copied)
 	    {
 	      rtx new_x = rtx_alloc (code);
@@ -3349,7 +3342,7 @@ eliminate_regs (x, mem_mode, insn, storing)
 	  int copied_vec = 0;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    {
-	      new = eliminate_regs (XVECEXP (x, i, j), mem_mode, insn, 0);
+	      new = eliminate_regs (XVECEXP (x, i, j), mem_mode, insn);
 	      if (new != XVECEXP (x, i, j) && ! copied_vec)
 		{
 		  rtvec new_v = gen_rtvec_vv (XVECLEN (x, i),
@@ -3527,7 +3520,7 @@ eliminate_regs_in_insn (insn, replace)
      but now can do this as a load-address.  This saves an insn in this
      common case.  */
 
-  new_body = eliminate_regs (old_body, 0, replace ? insn : NULL_RTX, 0);
+  new_body = eliminate_regs (old_body, 0, replace ? insn : NULL_RTX);
   if (new_body != old_body)
     {
       /* If we aren't replacing things permanently and we changed something,
@@ -3616,7 +3609,7 @@ eliminate_regs_in_insn (insn, replace)
      of spill registers to be needed in the final reload pass than in
      the pre-passes.  */
   if (val && REG_NOTES (insn) != 0)
-    REG_NOTES (insn) = eliminate_regs (REG_NOTES (insn), 0, REG_NOTES (insn), 0);
+    REG_NOTES (insn) = eliminate_regs (REG_NOTES (insn), 0, REG_NOTES (insn));
 
   if (! replace)
     pop_obstacks ();
@@ -4090,7 +4083,7 @@ reload_as_needed (first, live_known)
 	    XEXP (XEXP (PATTERN (insn), 0), 0)
 	      = eliminate_regs (XEXP (XEXP (PATTERN (insn), 0), 0),
 				GET_MODE (XEXP (PATTERN (insn), 0)),
-				NULL_RTX, 0);
+				NULL_RTX);
 
 	  /* If we need to do register elimination processing, do so.
 	     This might delete the insn, in which case we are done.  */
