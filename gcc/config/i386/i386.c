@@ -129,7 +129,7 @@ enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
   SIREG, DIREG, INDEX_REGS, GENERAL_REGS,
   /* FP registers */
   FP_TOP_REG, FP_SECOND_REG, FLOAT_REGS, FLOAT_REGS,
-  FLOAT_REGS, FLOAT_REGS, FLOAT_REGS, FLOAT_REGS,       
+  FLOAT_REGS, FLOAT_REGS, FLOAT_REGS, FLOAT_REGS,
   /* arg pointer */
   INDEX_REGS
 };
@@ -227,7 +227,7 @@ override_options ()
       for (i = 0; (ch = i386_reg_alloc_order[i]) != '\0'; i++)
 	{
 	  int regno = 0;
-	  
+
 	  switch (ch)
 	    {
 	    case 'a':	regno = 0;	break;
@@ -254,7 +254,7 @@ override_options ()
       if (ix86_cpu_string == 0)
 	ix86_cpu_string = PROCESSOR_DEFAULT_STRING;
     }
-  
+
   for (i = 0; i < ptt_size; i++)
     if (! strcmp (ix86_arch_string, processor_target_table[i].name))
       {
@@ -392,7 +392,7 @@ order_regs_for_local_alloc ()
       for (i = order = 0; (ch = i386_reg_alloc_order[i]) != '\0'; i++)
 	{
 	  int regno = 0;
-	  
+
 	  switch (ch)
 	    {
 	    case 'a':	regno = 0;	break;
@@ -502,7 +502,7 @@ i386_aligned_p (op)
 
     case REG:
       return i386_aligned_reg_p (REGNO (op));
-    
+
     default:
       break;
     }
@@ -620,27 +620,27 @@ i386_return_pops_args (fundecl, funtype, size)
      tree fundecl;
      tree funtype;
      int size;
-{ 
+{
   int rtd = TARGET_RTD && (!fundecl || TREE_CODE (fundecl) != IDENTIFIER_NODE);
 
     /* Cdecl functions override -mrtd, and never pop the stack. */
   if (! lookup_attribute ("cdecl", TYPE_ATTRIBUTES (funtype))) {
-  
+
     /* Stdcall functions will pop the stack if not variable args. */
     if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (funtype)))
       rtd = 1;
-  
+
     if (rtd
         && (TYPE_ARG_TYPES (funtype) == NULL_TREE
 	    || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (funtype)))
 		== void_type_node)))
       return size;
   }
-  
+
   /* Lose any fake structure return argument.  */
   if (aggregate_value_p (TREE_TYPE (funtype)))
     return GET_MODE_SIZE (Pmode);
-  
+
     return 0;
 }
 
@@ -927,7 +927,7 @@ output_to_reg (dest, dies, scratch_mem)
 	output_asm_insn (AS1 (pop%L0,%0), &dest);
       else
 	{
-	  xops[0] = adj_offsettable_operand (xops[0], 4);	      
+	  xops[0] = adj_offsettable_operand (xops[0], 4);
 	  xops[3] = dest;
 	  output_asm_insn (AS2 (mov%L0,%0,%3), xops);
 	}
@@ -939,7 +939,7 @@ output_to_reg (dest, dies, scratch_mem)
 	    output_asm_insn (AS1 (pop%L0,%0), &dest);
 	  else
 	    {
-	      xops[0] = adj_offsettable_operand (xops[0], 4);	      
+	      xops[0] = adj_offsettable_operand (xops[0], 4);
 	      output_asm_insn (AS2 (mov%L0,%0,%3), xops);
 	    }
 	}
@@ -1145,7 +1145,7 @@ output_move_double (operands)
          middlehalf[0] = operands[0];
          latehalf[0] = operands[0];
 	}
-    
+
       if (optype1 == REGOP)
 	{
           middlehalf[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
@@ -1365,7 +1365,7 @@ output_move_pushmem (operands, insn, length, tmp_start, n_operands)
       char *push;
       rtx   xops[2];
     } tmp_info[MAX_TMPS];
-  
+
   rtx src = operands[1];
   int max_tmps = 0;
   int offset = 0;
@@ -1777,7 +1777,7 @@ ix86_expand_binary_operator (code, mode, operands)
 	  emit_move_insn (temp, operands[1]);
 	  operands[1] = temp;
 	  return TRUE;
-	}	  
+	}
     }
 
   if (!ix86_binary_operator_ok (code, mode, operands))
@@ -1810,7 +1810,7 @@ ix86_expand_binary_operator (code, mode, operands)
 	      emit_move_insn (temp, operands[1]);
 	      operands[1] = temp;
 	      return TRUE;
-	    }	  
+	    }
 
 	  if (modified && ! ix86_binary_operator_ok (code, mode, operands))
 	    return FALSE;
@@ -1943,7 +1943,7 @@ function_prologue (file, size)
       pic_label_rtx = 0;
       return;
     }
-  
+
   ix86_prologue (0);
 }
 
@@ -1954,7 +1954,7 @@ ix86_expand_prologue ()
 {
   if (! TARGET_SCHEDULE_PROLOGUE)
       return;
- 
+
   ix86_prologue (1);
 }
 
@@ -1981,9 +1981,9 @@ load_pic_register (do_rtl)
       if (do_rtl)
 	{
 	  emit_insn (gen_prologue_get_pc (xops[0], xops[1]));
-	  emit_insn (gen_prologue_set_got (xops[0], 
+	  emit_insn (gen_prologue_set_got (xops[0],
 					   gen_rtx (SYMBOL_REF, Pmode,
-						    "$_GLOBAL_OFFSET_TABLE_"), 
+						    "$_GLOBAL_OFFSET_TABLE_"),
 					   xops[1]));
 	}
       else
@@ -1998,7 +1998,7 @@ load_pic_register (do_rtl)
     {
       xops[0] = pic_offset_table_rtx;
       xops[1] = gen_label_rtx ();
- 
+
       if (do_rtl)
 	{
 	  /* We can't put a raw CODE_LABEL into the RTL, and we can't emit
@@ -2009,12 +2009,12 @@ load_pic_register (do_rtl)
       else
 	{
 	  output_asm_insn (AS1 (call,%P1), xops);
-	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", 
+	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
 				     CODE_LABEL_NUMBER (xops[1]));
 	  output_asm_insn (AS1 (pop%L0,%0), xops);
 	  output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);
 	}
-    } 
+    }
 
   /* When -fpic, we must emit a scheduling barrier, so that the instruction
      that restores %ebx (which is PIC_OFFSET_TABLE_REGNUM), does not get
@@ -2036,7 +2036,7 @@ ix86_prologue (do_rtl)
   long tsize = get_frame_size ();
   rtx insn;
   int cfa_offset = INCOMING_FRAME_SP_OFFSET, cfa_store_offset = cfa_offset;
-  
+
   xops[0] = stack_pointer_rtx;
   xops[1] = frame_pointer_rtx;
   xops[2] = GEN_INT (tsize);
@@ -2058,7 +2058,7 @@ ix86_prologue (do_rtl)
 
       else
 	{
-	  output_asm_insn ("push%L1 %1", xops); 
+	  output_asm_insn ("push%L1 %1", xops);
 #ifdef INCOMING_RETURN_ADDR_RTX
  	  if (dwarf2out_do_frame ())
  	    {
@@ -2071,7 +2071,7 @@ ix86_prologue (do_rtl)
  	    }
 #endif
 
-	  output_asm_insn (AS2 (mov%L0,%0,%1), xops); 
+	  output_asm_insn (AS2 (mov%L0,%0,%1), xops);
 #ifdef INCOMING_RETURN_ADDR_RTX
  	  if (dwarf2out_do_frame ())
  	    dwarf2out_def_cfa ("", FRAME_POINTER_REGNUM, cfa_offset);
@@ -2088,7 +2088,7 @@ ix86_prologue (do_rtl)
 	  insn = emit_insn (gen_prologue_set_stack_ptr (xops[2]));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
-      else 
+      else
 	{
 	  output_asm_insn (AS2 (sub%L0,%2,%0), xops);
 #ifdef INCOMING_RETURN_ADDR_RTX
@@ -2104,7 +2104,7 @@ ix86_prologue (do_rtl)
 #endif
 	}
     }
-  else 
+  else
     {
       xops[3] = gen_rtx_REG (SImode, 0);
       if (do_rtl)
@@ -2182,7 +2182,7 @@ ix86_prologue (do_rtl)
 /* Return 1 if it is appropriate to emit `ret' instructions in the
    body of a function.  Do this only if the epilogue is simple, needing a
    couple of insns.  Prior to reloading, we can't tell how many registers
-   must be saved, so return 0 then.  Return 0 if there is no frame 
+   must be saved, so return 0 then.  Return 0 if there is no frame
    marker to de-allocate.
 
    If NON_SAVING_SETJMP is defined and true, then it is not possible
@@ -2229,7 +2229,7 @@ function_epilogue (file, size)
     return;
 }
 
-/* Restore function stack, frame, and registers. */ 
+/* Restore function stack, frame, and registers. */
 
 void
 ix86_expand_epilogue ()
@@ -2440,7 +2440,7 @@ ix86_epilogue (do_rtl)
 	      output_asm_insn ("jmp %*%0", xops);
 	    }
 	}
-      else 
+      else
 	{
 	  if (do_rtl)
 	    emit_jump_insn (gen_return_pop_internal (xops[1]));
@@ -3119,7 +3119,7 @@ put_condition_code (code, reverse_cc, mode, file)
   if (mode == MODE_INT)
     switch (code)
       {
-      case NE: 
+      case NE:
 	if (cc_prev_status.flags & CC_Z_IN_NOT_C)
 	  fputs ("b", file);
 	else
@@ -3178,34 +3178,34 @@ put_condition_code (code, reverse_cc, mode, file)
   else if (mode == MODE_FLOAT)
     switch (code)
       {
-      case NE: 
+      case NE:
 	fputs (ieee ? (reverse_cc ? "ne" : "e") : "ne", file);
 	return;
-      case EQ: 
+      case EQ:
 	fputs (ieee ? (reverse_cc ? "ne" : "e") : "e", file);
 	return;
-      case GE: 
+      case GE:
 	fputs (ieee ? (reverse_cc ? "ne" : "e") : "nb", file);
 	return;
-      case GT: 
+      case GT:
 	fputs (ieee ? (reverse_cc ? "ne" : "e") : "nbe", file);
 	return;
-      case LE: 
+      case LE:
 	fputs (ieee ? (reverse_cc ? "nb" : "b") : "be", file);
 	return;
-      case LT: 
+      case LT:
 	fputs (ieee ? (reverse_cc ? "ne" : "e") : "b", file);
 	return;
-      case GEU: 
+      case GEU:
 	fputs (ieee ? (reverse_cc ? "ne" : "e") : "nb", file);
 	return;
-      case GTU: 
+      case GTU:
 	fputs (ieee ? (reverse_cc ? "ne" : "e") : "nbe", file);
 	return;
-      case LEU: 
+      case LEU:
 	fputs (ieee ? (reverse_cc ? "nb" : "b") : "be", file);
 	return;
-      case LTU: 
+      case LTU:
 	fputs (ieee ? (reverse_cc ? "ne" : "e") : "b", file);
 	return;
       default:
@@ -3345,9 +3345,9 @@ print_operand (file, x, code)
 	    case GTU: fputs ("jne",  file); return;
 	    case LEU: fputs ("je", file); return;
 	    case LTU: fputs ("#branch never",  file); return;
-	    
+
 	    /* no matching branches for GT nor LE */
-	    
+
 	    default:
 	      abort ();
 	    }
@@ -3439,7 +3439,7 @@ print_operand (file, x, code)
       REAL_VALUE_TO_DECIMAL (r, "%.22e", dstr);
       fprintf (file, "%s", dstr);
     }
-  else 
+  else
     {
       if (code != 'P')
 	{
@@ -4080,7 +4080,7 @@ output_float_compare (insn, operands)
       operands[1] = tmp;
       cc_status.flags |= CC_REVERSED;
     }
-    
+
   if (! STACK_TOP_P (operands[0]))
     abort ();
 
@@ -4139,7 +4139,7 @@ output_float_compare (insn, operands)
 
       if (NON_STACK_REG_P (operands[1]))
 	output_op_from_reg (operands[1], strcat (buf, AS1 (%z0,%1)));
-      else if (cc_status.flags & CC_FCOMI) 
+      else if (cc_status.flags & CC_FCOMI)
 	{
 	  output_asm_insn (strcat (buf, AS2 (%z1,%y1,%0)), operands);
 	  return "";
@@ -4174,7 +4174,7 @@ output_fp_cc0_set (insn)
       if (!(cc_status.flags & CC_REVERSED))
         {
           next = next_cc0_user (insn);
-        
+
           if (GET_CODE (next) == JUMP_INSN
               && GET_CODE (PATTERN (next)) == SET
               && SET_DEST (PATTERN (next)) == pc_rtx
@@ -4437,7 +4437,7 @@ copy_all_rtx (orig)
   copy->integrated = orig->integrated;
   /* intel1 */
   copy->is_spill_rtx = orig->is_spill_rtx;
-  
+
   format_ptr = GET_RTX_FORMAT (GET_CODE (copy));
 
   for (i = 0; i < GET_RTX_LENGTH (GET_CODE (copy)); i++)
@@ -4489,7 +4489,7 @@ copy_all_rtx (orig)
 
 /* Try to rewrite a memory address to make it valid */
 
-void 
+void
 rewrite_address (mem_rtx)
      rtx mem_rtx;
 {
@@ -4526,7 +4526,7 @@ rewrite_address (mem_rtx)
       obfree (storage);
     }
 
-  /* This part is utilized by loop.c.  
+  /* This part is utilized by loop.c.
      If the address contains PLUS (reg,const) and this pattern is invalid
      in this case - try to rewrite the address to make it valid. */
   storage = oballoc (0);
@@ -5159,7 +5159,7 @@ output_strlen_unroll (operands)
   /* Check third byte. */
   output_asm_insn (AS2 (test%L1,%16,%1), xops);
   output_asm_insn (AS1 (je,%l10), xops);
-  
+
   /* Check fourth byte and increment address. */
   output_asm_insn (AS2 (add%L0,%5,%0), xops);
   output_asm_insn (AS2 (test%L1,%17,%1), xops);
@@ -5190,7 +5190,7 @@ output_fp_conditional_move (which_alternative, operands)
       /* r <- cond ? arg : r */
       output_asm_insn (AS2 (fcmov%F1,%2,%0), operands);
       break;
-  
+
     case 1:
       /* r <- cond ? r : arg */
       output_asm_insn (AS2 (fcmov%f1,%3,%0), operands);
