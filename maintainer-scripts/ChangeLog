@@ -1,3 +1,8 @@
+2003-08-24  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcc_release (build_sources): Create/update the LAST_UPDATED file
+	in the source directory with information how sources were obtained.
+	
 2003-08-16  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gcc_release (build_sources): Use two new variables EXPORTTAG and
