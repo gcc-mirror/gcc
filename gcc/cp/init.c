@@ -1434,6 +1434,7 @@ build_member_call (type, name, parmlist)
 {
   tree t;
   tree method_name;
+  tree fns;
   int dtor = 0;
   tree basetype_path, decl;
 
@@ -1511,6 +1512,18 @@ build_member_call (type, name, parmlist)
 
   decl = maybe_dummy_object (type, &basetype_path);
 
+  fns = lookup_fnfields (basetype_path, method_name, 0);
+  if (fns)
+    {
+      if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+	BASELINK_FUNCTIONS (fns) = build_nt (TEMPLATE_ID_EXPR,
+					     BASELINK_FUNCTIONS (fns),
+					     TREE_OPERAND (name, 1));
+      return build_new_method_call (decl, fns, parmlist,
+				    /*conversion_path=*/NULL_TREE,
+				    LOOKUP_NORMAL|LOOKUP_NONVIRTUAL);
+    }
+
   /* Convert 'this' to the specified type to disambiguate conversion
      to the function's context.  */
   if (decl == current_class_ref
@@ -1527,12 +1540,6 @@ build_member_call (type, name, parmlist)
 
   if (constructor_name_p (method_name, type))
     return build_functional_cast (type, parmlist);
-  if (lookup_fnfields (basetype_path, method_name, 0))
-    return build_method_call (decl, 
-			      TREE_CODE (name) == TEMPLATE_ID_EXPR
-			      ? name : method_name,
-			      parmlist, basetype_path,
-			      LOOKUP_NORMAL|LOOKUP_NONVIRTUAL);
   if (TREE_CODE (name) == IDENTIFIER_NODE
       && ((t = lookup_field (TYPE_BINFO (type), name, 1, 0))))
     {
