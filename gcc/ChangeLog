@@ -1,3 +1,8 @@
+Sat May  6 06:55:32 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.c (out_shift_with_cnt): Bugfix for shift by
+	constant count.
+
 2000-05-05  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/genfixes: Improve the matching for make target names
