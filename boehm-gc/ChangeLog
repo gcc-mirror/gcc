@@ -1,3 +1,10 @@
+2001-10-22  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* linux_threads.c (GC_init_parallel): Do not declare as a static
+	constructor.
+	* include/gc.h (GC_init): Declare here. Add description.
+	* include/private/gc_priv.h (GC_init): Remove declaration.
+
 2001-10-16  Loren J. Rittle  <ljrittle@acm.org>
 
 	* include/gc_pthread_redirects.h: Generalize test to use GC_PTHREADS.

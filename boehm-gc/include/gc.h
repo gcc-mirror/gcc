@@ -297,6 +297,14 @@ GC_API int GC_dont_precollect;  /* Don't collect as part of 		*/
 				/* Wizards only.			*/
 
 /* Public procedures */
+
+/* Initialize the collector.  This is only required when using thread-local
+ * allocation, since unlike the regular allocation routines, GC_local_malloc
+ * is not self-initializing.  If you use GC_local_malloc you should arrange
+ * to call this somehow (e.g. from a constructor) before doing any allocation.
+ */
+GC_API void GC_init GC_PROTO((void));
+
 /*
  * general purpose allocation routines, with roughly malloc calling conv.
  * The atomic versions promise that no relevant pointers are contained

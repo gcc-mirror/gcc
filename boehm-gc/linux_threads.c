@@ -204,11 +204,7 @@ GC_thread GC_lookup_thread(pthread_t id);
 
 static GC_bool parallel_initialized = FALSE;
 
-# if defined(__GNUC__)
-    void GC_init_parallel() __attribute__ ((constructor));
-# else
-    void GC_init_parallel();
-# endif
+void GC_init_parallel();
 
 # if defined(THREAD_LOCAL_ALLOC) && !defined(DBG_HDRS_ALL)
 
