@@ -1,3 +1,11 @@
+1998-09-24  Benjamin Kosnik  <bkoz@loony.cygnus.com>
+
+	* spew.c (yylex): Give diagnostic.
+	* hash.h (is_reserved_word): Add export.
+	* gxx.gperf: Ditto.
+	* lex.h (rid): Add RID_EXPORT.
+	* lex.c (init_parse): Ditto. 
+
 Tue Sep 22 21:01:19 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* friend.c (do_friend): Make warning a full sentence.
