@@ -987,9 +987,11 @@ push_reload (in, out, inloc, outloc, class,
 	      && ((GET_MODE_SIZE (outmode)
 		   > GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))))
 #ifdef WORD_REGISTER_OPERATIONS
-		  || ((GET_MODE_SIZE (outmode) - 1) / UNITS_PER_WORD ==
-		      ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))) - 1)
-		       / UNITS_PER_WORD))
+		  || ((GET_MODE_SIZE (outmode)
+		       < GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))))
+		      && ((GET_MODE_SIZE (outmode) - 1) / UNITS_PER_WORD ==
+			  ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))) - 1)
+			   / UNITS_PER_WORD)))
 #endif
 	          ))
 	  || (GET_CODE (SUBREG_REG (out)) == REG
