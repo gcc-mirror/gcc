@@ -517,6 +517,17 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
   int all_zero = 0;
   int all_one = 0;
 
+  /* If VALUE is a floating-point mode, access it as an integer of the
+     corresponding size.  This can occur on a machine with 64 bit registers
+     that uses SFmode for float.  This can also occur for unaligned float
+     structure fields.  */
+  if (GET_MODE_CLASS (GET_MODE (value)) == MODE_FLOAT)
+    {
+      if (GET_CODE (value) != REG)
+	value = copy_to_reg (value);
+      value = gen_rtx (SUBREG, word_mode, value, 0);
+    }
+
   /* There is a case not handled here:
      a structure with a known alignment of just a halfword
      and a field split across two aligned halfwords within the structure.
@@ -612,17 +623,6 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
 
       if (GET_MODE (value) != mode)
 	{
-	  /* If VALUE is a floating-point mode, access it as an integer
-	     of the corresponding size, then convert it.  This can occur on
-	     a machine with 64 bit registers that uses SFmode for float.  */
-	  if (GET_MODE_CLASS (GET_MODE (value)) == MODE_FLOAT)
-	    {
-	      if (GET_CODE (value) != REG)
-		value = copy_to_reg (value);
-	      value
-		= gen_rtx (SUBREG, word_mode, value, 0);
-	    }
-
 	  if ((GET_CODE (value) == REG || GET_CODE (value) == SUBREG)
 	      && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (value)))
 	    value = gen_lowpart (mode, value);
