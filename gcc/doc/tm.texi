@@ -5456,7 +5456,13 @@ instructions.
 
 On entry to the hook, @code{*@var{total}} contains a default estimate
 for the cost of the expression.  The hook should modify this value as
-necessary.
+necessary.  Traditionally, the default costs are @code{COSTS_N_INSNS (5)}
+for multiplications, @code{COSTS_N_INSNS (7)} for division and modulus
+operations, and @code{COSTS_N_INSNS (1)} for all other operations.
+
+When optimizing for code size, i.e@. when @code{optimize_size} is
+non-zero, this target hook should be used to estimate the relative
+size cost of an expression, again relative to @code{COSTS_N_INSNS}.
 
 The hook returns true when all subexpressions of @var{x} have been
 processed, and false when @code{rtx_cost} should recurse.
