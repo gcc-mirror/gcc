@@ -1183,6 +1183,10 @@ static struct path_prefix exec_prefix = { 0, 0, "exec" };
 
 static struct path_prefix startfile_prefix = { 0, 0, "startfile" };
 
+/* List of prefixes to try when looking for include files.  */
+
+static struct path_prefix include_prefix = { 0, 0, "include" };
+
 /* Suffix to attach to directories searched for commands.
    This looks like `MACHINE/VERSION/'.  */
 
@@ -2425,6 +2429,8 @@ process_command (argc, argv)
 		  value = p + 1;
 		add_prefix (&exec_prefix, value, 1, 0, temp);
 		add_prefix (&startfile_prefix, value, 1, 0, temp);
+		add_prefix (&include_prefix, concat (value, "include", ""),
+			    1, 0, 0);
 	      }
 	      break;
 
@@ -3012,14 +3018,27 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    break;
 
 	  case 'I':
-	    if (gcc_exec_prefix)
-	      {
-		do_spec_1 ("-iprefix", 1, NULL_PTR);
-		/* Make this a separate argument.  */
-		do_spec_1 (" ", 0, NULL_PTR);
-		do_spec_1 (gcc_exec_prefix, 1, NULL_PTR);
-		do_spec_1 (" ", 0, NULL_PTR);
-	      }
+	    {
+	      struct prefix_list *pl = include_prefix.plist;
+
+	      if (gcc_exec_prefix)
+		{
+		  do_spec_1 ("-iprefix", 1, NULL_PTR);
+		  /* Make this a separate argument.  */
+		  do_spec_1 (" ", 0, NULL_PTR);
+		  do_spec_1 (gcc_exec_prefix, 1, NULL_PTR);
+		  do_spec_1 (" ", 0, NULL_PTR);
+		}
+
+	      for (; pl; pl = pl->next)
+		{
+		  do_spec_1 ("-isystem", 1, NULL_PTR);
+		  /* Make this a separate argument.  */
+		  do_spec_1 (" ", 0, NULL_PTR);
+		  do_spec_1 (pl->prefix, 1, NULL_PTR);
+		  do_spec_1 (" ", 0, NULL_PTR);
+		}
+	    }
 	    break;
 
 	  case 'o':
