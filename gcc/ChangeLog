@@ -1,3 +1,9 @@
+2003-03-31  Eric Christopher  <echristo@redhat.com>
+
+	* combine.c (can_combine_p): Allow ZERO_EXTRACT and STRICT_LOW_PART.
+	(combinable_i3pat): Remove call to expand_field_assignment and
+	#if 0'd code.
+
 2003-03-31  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10278
@@ -48,7 +54,7 @@
 	the pch file are still undefined, read a sorted list of undefined
 	identifiers, collect all defined identifiers into a sorted list,
 	and walk through both lists to make sure there's no match.
-	
+
 2003-03-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (a peephole2): New.
@@ -175,7 +181,7 @@
 
         * Makefile.in (STRICT_WARN): Don't warn for ISO C constructs.
         (STRICT2_WARN): Likewise.
-	
+
 2003-03-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR other/6955
@@ -211,10 +217,10 @@
 2003-03-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi: Add Eric Botcazou and Roger Sayle.
-	Uniformly use bugfix instead of bug fix. 
+	Uniformly use bugfix instead of bug fix.
 
 2003-03-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
-	
+
 	PR doc/895
 	* ONEWS: Remove those items that already appear in the EGCS
 	release notes on our web pages.
@@ -254,7 +260,7 @@
 
 2003-03-28  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* config/s390/s390.md ("literal_pool_31"): Output pool anchor 
+	* config/s390/s390.md ("literal_pool_31"): Output pool anchor
 	label even if pool empty when generating PIC.
 	("literal_pool_31", "literal_pool_64"): Coding style cleanup.
 
@@ -282,7 +288,7 @@
 	* config/alpha/elf.h (ASM_OUTPUT_ALIGNED_BSS): Remove unnecessary
 	globalize_label.
 	* config/arm/unknown-elf.h (ASM_OUTPUT_ALIGNED_BSS): Likewise.
-	* config/i960/i960.h (ASM_OUTPUT_ALIGNED_BSS): Likewise. 
+	* config/i960/i960.h (ASM_OUTPUT_ALIGNED_BSS): Likewise.
 	* config/m32r/m32r.h (ASM_OUTPUT_ALIGNED_BSS): Likewise.
 	* config/mips/elf.h (ASM_OUTPUT_ALIGNED_BSS): Likewise.
 	* config/mips/linux.h (ASM_OUTPUT_ALIGNED_BSS): Likewise.
@@ -381,7 +387,7 @@
 2003-03-26  Vladimir Makarov  <vmakarov@redhat.com>
 
         * config/rs6000/8540.md: New file.
-	
+
 	* config/rs6000/{40x.md, 603.md, 6xx.md, 7450.md, 7xx.md, mpc.md,
 	power4.md, rios1.md, rios2.md, rs64.md}: Add mult_compare to
 	reservations for imul.
@@ -409,7 +415,7 @@
 	of fpcompare.
 	(tstsfeq_gpr, tstsfgt_gpr, tstsflt_gpr): Use type veccmpsimple
 	instead of fpcompare.
-		
+
 2003-03-26  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/power4.md: Allow delay between dispatch and
@@ -500,7 +506,7 @@ Mon Mar 24 20:03:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 	("*return_32bit"): Likewise.
 	* config/m68hc11/m68hc11.h (ASM_DECLARE_FUNCTION_NAME): Generate .far
 	for 68HC11 too.
-	(DWARF2_ADDR_SIZE): Use 4 so that addresses can 
+	(DWARF2_ADDR_SIZE): Use 4 so that addresses can
 	* config/m68hc11/m68hc11.c (m68hc11_override_options): Accept
 	-mlong-calls for 68HC11.
 	* config/m68hc11/larith.asm (declare_near): New macro.
@@ -9596,4 +9602,3 @@ Mon Mar 24 20:03:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* doc/tm.texi (REGISTER_TARGET_PRAGMAS): Update
 
 See ChangeLog.8 for earlier changes.
-
