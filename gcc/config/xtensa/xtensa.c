@@ -1839,14 +1839,7 @@ override_options ()
 
   /* Check PIC settings.  There's no need for -fPIC on Xtensa and
      some targets need to always use PIC.  */
-  if (XTENSA_ALWAYS_PIC)
-    {
-      if (flag_pic)
-	warning ("-f%s ignored (all code is position independent)",
-		 (flag_pic > 1 ? "PIC" : "pic"));
-      flag_pic = 1;
-    }
-  if (flag_pic > 1)
+  if (flag_pic > 1 || (XTENSA_ALWAYS_PIC))
     flag_pic = 1;
 }
 
