@@ -1,5 +1,12 @@
 2003-03-02  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/text/Caret.java
+	(getMagicCaretPosition): Fixed typo in method name.
+	* javax/swing/text/DefaultCaret.java
+	(getMagicCaretPosition): Fixed typo in method name.
+
+2003-03-02  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/List.java
 	(setMultipleSelections): Deprecated.
 	(delItem): Deprecated.
