@@ -39,7 +39,7 @@
 //   set_memory_limits() uses setrlimit() to restrict dynamic memory
 //   allocation.  We provide a default memory limit if none is passed by the
 //   calling application.  The argument to set_memory_limits() is the
-//   limit in megabytes (a floating-point number).  If _GLIBCXX_MEM_LIMITS is
+//   limit in megabytes (a floating-point number).  If _GLIBCXX_RES_LIMITS is
 //   not #defined before including this header, then no limiting is attempted.
 //
 // 3)  counter
@@ -86,7 +86,7 @@ namespace __gnu_test
   // from c++config.h
 
   // Set memory limits if possible, if not set to 0.
-#ifndef _GLIBCXX_MEM_LIMITS
+#ifndef _GLIBCXX_RES_LIMITS
 #  define MEMLIMIT_MB 0
 #else
 # ifndef MEMLIMIT_MB
@@ -96,11 +96,12 @@ namespace __gnu_test
   extern void
   set_memory_limits(float __size = MEMLIMIT_MB);
 
+  extern void
+  set_file_limit(unsigned long __size);
 
   // Check mangled name demangles (using __cxa_demangle) as expected.
   void
   verify_demangle(const char* mangled, const char* wanted);
-
 
   // Simple callback structure for variable numbers of tests (all with
   // same signature).  Assume all unit tests are of the signature
