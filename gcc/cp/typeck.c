@@ -6668,15 +6668,25 @@ check_return_expr (retval)
       && retval != current_class_ref)
     cp_warning ("`operator=' should return a reference to `*this'");
 
-  /* The fabled Named Return Value optimization: If this is a
-     value-returning function that always returns the same local
-     variable, remember it.
+  /* The fabled Named Return Value optimization, as per [class.copy]/15:
+
+     [...]      For  a function with a class return type, if the expression
+     in the return statement is the name of a local  object,  and  the  cv-
+     unqualified  type  of  the  local  object  is the same as the function
+     return type, an implementation is permitted to omit creating the  tem-
+     porary  object  to  hold  the function return value [...]
+
+     So, if this is a value-returning function that always returns the same
+     local variable, remember it.
 
      It might be nice to be more flexible, and choose the first suitable
      variable even if the function sometimes returns something else, but
      then we run the risk of clobbering the variable we chose if the other
      returned expression uses the chosen variable somehow.  And people expect
-     this restriction, anyway.  (jason 2000-11-19) */
+     this restriction, anyway.  (jason 2000-11-19)
+
+     See finish_function, genrtl_start_function, and declare_return_variable
+     for other pieces of this optimization.  */
 
   if (fn_returns_value_p && flag_elide_constructors)
     {
@@ -6687,9 +6697,11 @@ check_return_expr (retval)
 	  && DECL_CONTEXT (retval) == current_function_decl
 	  && ! TREE_STATIC (retval)
 	  && (DECL_ALIGN (retval)
-	      == DECL_ALIGN (DECL_RESULT (current_function_decl)))
-	  && same_type_p (TREE_TYPE (retval),
-			  TREE_TYPE (TREE_TYPE (current_function_decl))))
+	      >= DECL_ALIGN (DECL_RESULT (current_function_decl)))
+	  && same_type_p ((TYPE_MAIN_VARIANT
+			   (TREE_TYPE (retval))),
+			  (TYPE_MAIN_VARIANT
+			   (TREE_TYPE (TREE_TYPE (current_function_decl))))))
 	current_function_return_value = retval;
       else
 	current_function_return_value = error_mark_node;

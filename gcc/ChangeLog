@@ -1,3 +1,8 @@
+2001-08-08  Jason Merrill  <jason_merrill@redhat.com>
+
+	* c-common.h (RETURN_NULLIFIED_P): Lose.
+	* c-semantics.c (genrtl_return_stmt): Don't check it.
+
 2001-08-10  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_add_large_offset_to_sp): New function.

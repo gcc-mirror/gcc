@@ -13955,6 +13955,28 @@ finish_function (flags)
     my_friendly_abort (122);
   poplevel (1, 0, 1);
 
+  /* Set up the named return value optimization, if we can.  Here, we
+     eliminate the copy from the nrv into the RESULT_DECL and any cleanup
+     for the nrv.  genrtl_start_function and declare_return_variable
+     handle making the nrv and RESULT_DECL share space.  */
+  if (current_function_return_value)
+    {
+      tree r = current_function_return_value;
+      /* This is only worth doing for fns that return in memory--and
+	 simpler, since we don't have to worry about promoted modes.  */
+      if (r != error_mark_node
+	  && aggregate_value_p (TREE_TYPE (TREE_TYPE (fndecl))))
+	{
+	  DECL_ALIGN (r) = DECL_ALIGN (DECL_RESULT (fndecl));
+	  walk_tree_without_duplicates (&DECL_SAVED_TREE (fndecl),
+					nullify_returns_r, r);
+	}
+      else
+	/* Clear it so genrtl_start_function and declare_return_variable
+	   know we're not optimizing.  */
+	current_function_return_value = NULL_TREE;
+    }
+
   /* Remember that we were in class scope.  */
   if (current_class_name)
     ctype = current_class_type;

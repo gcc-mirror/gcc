@@ -4129,6 +4129,7 @@ extern tree finish_typeof			PARAMS ((tree));
 extern void finish_decl_cleanup                 PARAMS ((tree, tree));
 extern void finish_named_return_value           PARAMS ((tree, tree));
 extern void expand_body                         PARAMS ((tree));
+extern tree nullify_returns_r		      PARAMS ((tree *, int *, void *));
 extern void do_pushlevel                        PARAMS ((void));
 extern tree do_poplevel                         PARAMS ((void));
 extern void finish_mem_initializers             PARAMS ((tree));
