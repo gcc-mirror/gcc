@@ -93,6 +93,9 @@ enum rs6000_abi rs6000_current_abi;
 /* Temporary memory used to convert integer -> float */
 static rtx stack_temps[NUM_MACHINE_MODES];
 
+/* Current PIC register used by the V4 code */
+struct rtx_def *rs6000_pic_register = (struct rtx_def *)0;
+
 
 /* Print the options used in the assembly file.  */
 
@@ -522,6 +525,18 @@ reg_or_cint_operand (op, mode)
     enum machine_mode mode;
 {
      return GET_CODE (op) == CONST_INT || gpc_reg_operand (op, mode);
+}
+
+/* Return 1 if the operand is an operand that can be loaded via the GOT */
+
+int
+got_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == SYMBOL_REF
+	  || GET_CODE (op) == CONST
+	  || GET_CODE (op) == LABEL_REF);
 }
 
 /* Return the number of instructions it takes to form a constant in an
@@ -3663,6 +3678,7 @@ output_epilog (file, size)
   /* Reset varargs and save TOC indicator */
   rs6000_sysv_varargs_p = 0;
   rs6000_save_toc_p = 0;
+  rs6000_pic_register = (rtx)0;
 
   if (DEFAULT_ABI == ABI_NT)
     {
