@@ -1,5 +1,8 @@
 2000-07-02  Mark Mitchell  <mark@codesourcery.com>
 
+	* mangle.c (canonicalize_for_substitution): Return the canonical
+	variant of a type.
+
 	* decl.c (duplicate_decls): Preserve DECL_ORIGINAL_TYPE for a
 	TYPE_DECL.
 	* typeck.c (commonparms): Remove obstack manipulations.

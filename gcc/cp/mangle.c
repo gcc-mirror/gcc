@@ -274,6 +274,8 @@ canonicalize_for_substitution (node)
   /* For a TYPE_DECL, use the type instead.  */
   if (TREE_CODE (node) == TYPE_DECL)
     node = TREE_TYPE (node);
+  if (TYPE_P (node))
+    node = canonical_type_variant (node);
 
   return node;
 }
