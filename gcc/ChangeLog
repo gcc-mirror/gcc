@@ -13,7 +13,7 @@
 2004-12-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/18964
-	* config/darwin.c (darwin_assemble_visibility): Fix minor diadnostic
+	* config/darwin.c (darwin_assemble_visibility): Fix minor diagnostic
 	problem, adding a space at the end of the string before concatenation.
 
 2004-12-13  Kazu Hirata  <kazu@cs.umass.edu>
