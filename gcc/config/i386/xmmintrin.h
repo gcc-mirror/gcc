@@ -1581,6 +1581,246 @@ _mm_ucomineq_sd (__m128d __A, __m128d __B)
   return __builtin_ia32_ucomisdneq ((__v2df)__A, (__v2df)__B);
 }
 
+/* Create a vector with element 0 as *P and the rest zero.  */
+
+static __inline __m128i
+_mm_load_si128 (__m128i const *__P)
+{
+  return (__m128i) __builtin_ia32_loaddqa (__P);
+}
+
+static __inline __m128i
+_mm_loadu_si128 (__m128i const *__P)
+{
+  return (__m128i) __builtin_ia32_loaddqu (__P);
+}
+
+static __inline __m128i
+_mm_loadl_epi64 (__m128i const *__P)
+{
+  return (__m128i) __builtin_ia32_movq2dq (*(unsigned long long *)__P);
+}
+
+static __inline void
+_mm_store_si128 (__m128i *__P, __m128i __B)
+{
+  __builtin_ia32_storedqa (__P, (__v16qi)__B);
+}
+
+static __inline void
+_mm_storeu_si128 (__m128i *__P, __m128i __B)
+{
+  __builtin_ia32_storedqu (__P, (__v16qi)__B);
+}
+
+static __inline void
+_mm_storel_epi64 (__m128i *__P, __m128i __B)
+{
+  *(long long *)__P = __builtin_ia32_movdq2q ((__v2di)__B);
+}
+
+static __inline __m128i
+_mm_move_epi64 (__m128i __A)
+{
+  return (__m128i) __builtin_ia32_movq ((__v2di)__A);
+}
+
+/* Create a vector of zeros.  */
+static __inline __m128i
+_mm_setzero_si128 (void)
+{
+  return (__m128i) __builtin_ia32_setzero128 ();
+}
+
+static __inline __m128i
+_mm_set_epi64 (__m64 __A,  __m64 __B)
+{
+  __v2di __tmp = (__v2di)__builtin_ia32_movq2dq ((unsigned long long)__A);
+  __v2di __tmp2 = (__v2di)__builtin_ia32_movq2dq ((unsigned long long)__B);
+  return (__m128i)__builtin_ia32_punpcklqdq128 (__tmp2, __tmp);
+}
+
+/* Create the vector [Z Y X W].  */
+static __inline __m128i
+_mm_set_epi32 (int __Z, int __Y, int __X, int __W)
+{
+  union {
+    int __a[4];
+    __m128i __v;
+  } __u;
+
+  __u.__a[0] = __W;
+  __u.__a[1] = __X;
+  __u.__a[2] = __Y;
+  __u.__a[3] = __Z;
+
+  return __u.__v;
+}
+/* Create the vector [S T U V Z Y X W].  */
+static __inline __m128i
+_mm_set_epi16 (short __Z, short __Y, short __X, short __W,
+	       short __V, short __U, short __T, short __S)
+{
+  union {
+    short __a[8];
+    __m128i __v;
+  } __u;
+
+  __u.__a[0] = __S;
+  __u.__a[1] = __T;
+  __u.__a[2] = __U;
+  __u.__a[3] = __V;
+  __u.__a[4] = __W;
+  __u.__a[5] = __X;
+  __u.__a[6] = __Y;
+  __u.__a[7] = __Z;
+
+  return __u.__v;
+}
+
+/* Create the vector [S T U V Z Y X W].  */
+static __inline __m128i
+_mm_set_epi8 (char __Z, char __Y, char __X, char __W,
+	      char __V, char __U, char __T, char __S,
+	      char __Z1, char __Y1, char __X1, char __W1,
+	      char __V1, char __U1, char __T1, char __S1)
+{
+  union {
+    char __a[16];
+    __m128i __v;
+  } __u;
+
+  __u.__a[0] = __S1;
+  __u.__a[1] = __T1;
+  __u.__a[2] = __U1;
+  __u.__a[3] = __V1;
+  __u.__a[4] = __W1;
+  __u.__a[5] = __X1;
+  __u.__a[6] = __Y1;
+  __u.__a[7] = __Z1;
+  __u.__a[8] = __S;
+  __u.__a[9] = __T;
+  __u.__a[10] = __U;
+  __u.__a[11] = __V;
+  __u.__a[12] = __W;
+  __u.__a[13] = __X;
+  __u.__a[14] = __Y;
+  __u.__a[15] = __Z;
+
+  return __u.__v;
+}
+
+static __inline __m128i
+_mm_set1_epi64 (__m64 __A)
+{
+  __v2di __tmp = (__v2di)__builtin_ia32_movq2dq ((unsigned long long)__A);
+  return (__m128i)__builtin_ia32_punpcklqdq128 (__tmp, __tmp);
+}
+
+static __inline __m128i
+_mm_set1_epi32 (int __A)
+{
+  __v4si __tmp = (__v4si)__builtin_ia32_loadd (&__A);
+  return (__m128i) __builtin_ia32_pshufd ((__v4si)__tmp, _MM_SHUFFLE (0,0,0,0));
+}
+
+static __inline __m128i
+_mm_set1_epi16 (short __A)
+{
+  int __Acopy = (unsigned short)__A;
+  __v4si __tmp = (__v4si)__builtin_ia32_loadd (&__Acopy);
+  __tmp = (__v4si)__builtin_ia32_punpcklwd128 ((__v8hi)__tmp, (__v8hi)__tmp);
+  return (__m128i) __builtin_ia32_pshufd ((__v4si)__tmp, _MM_SHUFFLE (0,0,0,0));
+}
+
+static __inline __m128i
+_mm_set1_epi8 (char __A)
+{
+  int __Acopy = (unsigned char)__A;
+  __v4si __tmp = (__v4si)__builtin_ia32_loadd (&__Acopy);
+  __tmp = (__v4si)__builtin_ia32_punpcklbw128 ((__v16qi)__tmp, (__v16qi)__tmp);
+  __tmp = (__v4si)__builtin_ia32_punpcklbw128 ((__v16qi)__tmp, (__v16qi)__tmp);
+  return (__m128i) __builtin_ia32_pshufd ((__v4si)__tmp, _MM_SHUFFLE (0,0,0,0));
+}
+
+static __inline __m128i
+_mm_setr_epi64 (__m64 __A,  __m64 __B)
+{
+  __v2di __tmp = (__v2di)__builtin_ia32_movq2dq ((unsigned long long)__A);
+  __v2di __tmp2 = (__v2di)__builtin_ia32_movq2dq ((unsigned long long)__B);
+  return (__m128i)__builtin_ia32_punpcklqdq128 (__tmp, __tmp2);
+}
+
+/* Create the vector [Z Y X W].  */
+static __inline __m128i
+_mm_setr_epi32 (int __W, int __X, int __Y, int __Z)
+{
+  union {
+    int __a[4];
+    __m128i __v;
+  } __u;
+
+  __u.__a[0] = __W;
+  __u.__a[1] = __X;
+  __u.__a[2] = __Y;
+  __u.__a[3] = __Z;
+
+  return __u.__v;
+}
+/* Create the vector [S T U V Z Y X W].  */
+static __inline __m128i
+_mm_setr_epi16 (short __S, short __T, short __U, short __V,
+	        short __W, short __X, short __Y, short __Z)
+{
+  union {
+    short __a[8];
+    __m128i __v;
+  } __u;
+
+  __u.__a[0] = __S;
+  __u.__a[1] = __T;
+  __u.__a[2] = __U;
+  __u.__a[3] = __V;
+  __u.__a[4] = __W;
+  __u.__a[5] = __X;
+  __u.__a[6] = __Y;
+  __u.__a[7] = __Z;
+
+  return __u.__v;
+}
+
+/* Create the vector [S T U V Z Y X W].  */
+static __inline __m128i
+_mm_setr_epi8 (char __S1, char __T1, char __U1, char __V1,
+	       char __W1, char __X1, char __Y1, char __Z1,
+	       char __S, char __T, char __U, char __V,
+	       char __W, char __X, char __Y, char __Z)
+{
+  union {
+    char __a[16];
+    __m128i __v;
+  } __u;
+
+  __u.__a[0] = __S1;
+  __u.__a[1] = __T1;
+  __u.__a[2] = __U1;
+  __u.__a[3] = __V1;
+  __u.__a[4] = __W1;
+  __u.__a[5] = __X1;
+  __u.__a[6] = __Y1;
+  __u.__a[7] = __Z1;
+  __u.__a[8] = __S;
+  __u.__a[9] = __T;
+  __u.__a[10] = __U;
+  __u.__a[11] = __V;
+  __u.__a[12] = __W;
+  __u.__a[13] = __X;
+  __u.__a[14] = __Y;
+  __u.__a[15] = __Z;
+
+  return __u.__v;
+}
+
 static __inline __m128d
 _mm_cvtepi32_pd (__m128i __A)
 {
@@ -1773,6 +2013,12 @@ static __inline __m128i
 _mm_unpacklo_epi32 (__m128i __A, __m128i __B)
 {
   return (__m128i)__builtin_ia32_punpckldq128 ((__v4si)__A, (__v4si)__B);
+}
+
+static __inline __m128i
+_mm_unpacklo_epi64 (__m128i __A, __m128i __B)
+{
+  return (__m128i)__builtin_ia32_punpcklqdq128 ((__v2di)__A, (__v2di)__B);
 }
 
 static __inline __m128i
@@ -2075,7 +2321,7 @@ _mm_cmpgt_epi32 (__m128i __A, __m128i __B)
 
 #define _mm_extract_epi16(__A, __B) __builtin_ia32_pextrw128 ((__v8hi)__A, __B)
 
-#define _mm_insert_epi16 (__A, __B, __C) ((__m128i)__builtin_ia32_pinsrw128 ((__v8hi)__A, __B, __C))
+#define _mm_insert_epi16(__A, __B, __C) ((__m128i)__builtin_ia32_pinsrw128 ((__v8hi)__A, __B, __C))
 
 static __inline __m128i
 _mm_max_epi16 (__m128i __A, __m128i __B)

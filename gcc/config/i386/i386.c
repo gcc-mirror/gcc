@@ -797,6 +797,7 @@ const struct attribute_spec ix86_attribute_table[];
 static tree ix86_handle_cdecl_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static tree ix86_handle_regparm_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static int ix86_value_regno PARAMS ((enum machine_mode));
+static bool contains_128bit_aligned_vector_p PARAMS ((tree));
 
 #if defined (DO_GLOBAL_CTORS_BODY) && defined (HAS_INIT_SECTION)
 static void ix86_svr3_asm_out_constructor PARAMS ((rtx, int));
@@ -12117,6 +12118,7 @@ static const struct builtin_description bdesc_2arg[] =
   { MASK_SSE2, CODE_FOR_sse2_punpcklbw, "__builtin_ia32_punpcklbw128", IX86_BUILTIN_PUNPCKLBW128, 0, 0 },
   { MASK_SSE2, CODE_FOR_sse2_punpcklwd, "__builtin_ia32_punpcklwd128", IX86_BUILTIN_PUNPCKLWD128, 0, 0 },
   { MASK_SSE2, CODE_FOR_sse2_punpckldq, "__builtin_ia32_punpckldq128", IX86_BUILTIN_PUNPCKLDQ128, 0, 0 },
+  { MASK_SSE2, CODE_FOR_sse2_punpcklqdq, "__builtin_ia32_punpcklqdq128", IX86_BUILTIN_PUNPCKLQDQ128, 0, 0 },
 
   { MASK_SSE2, CODE_FOR_sse2_packsswb, "__builtin_ia32_packsswb128", IX86_BUILTIN_PACKSSWB128, 0, 0 },
   { MASK_SSE2, CODE_FOR_sse2_packssdw, "__builtin_ia32_packssdw128", IX86_BUILTIN_PACKSSDW128, 0, 0 },
@@ -12168,6 +12170,7 @@ static const struct builtin_description bdesc_1arg[] =
   { MASK_SSE2, CODE_FOR_sse2_pmovmskb, 0, IX86_BUILTIN_PMOVMSKB128, 0, 0 },
   { MASK_SSE2, CODE_FOR_sse2_movmskpd, 0, IX86_BUILTIN_MOVMSKPD, 0, 0 },
   { MASK_SSE2, CODE_FOR_sse2_movq2dq, 0, IX86_BUILTIN_MOVQ2DQ, 0, 0 },
+  { MASK_SSE2, CODE_FOR_sse2_movdq2q, 0, IX86_BUILTIN_MOVDQ2Q, 0, 0 },
 
   { MASK_SSE2, CODE_FOR_sqrtv2df2, 0, IX86_BUILTIN_SQRTPD, 0, 0 },
 
@@ -12187,7 +12190,9 @@ static const struct builtin_description bdesc_1arg[] =
 
   { MASK_SSE2, CODE_FOR_cvtps2dq, 0, IX86_BUILTIN_CVTPS2DQ, 0, 0 },
   { MASK_SSE2, CODE_FOR_cvtps2pd, 0, IX86_BUILTIN_CVTPS2PD, 0, 0 },
-  { MASK_SSE2, CODE_FOR_cvttps2dq, 0, IX86_BUILTIN_CVTTPS2DQ, 0, 0 }
+  { MASK_SSE2, CODE_FOR_cvttps2dq, 0, IX86_BUILTIN_CVTTPS2DQ, 0, 0 },
+
+  { MASK_SSE2, CODE_FOR_sse2_movq, 0, IX86_BUILTIN_MOVQ, 0, 0 }
 };
 
 void
@@ -12343,6 +12348,8 @@ ix86_init_mmx_sse_builtins ()
 
   tree ti_ftype_void
     = build_function_type (intTI_type_node, void_list_node);
+  tree v2di_ftype_void
+    = build_function_type (V2DI_type_node, void_list_node);
   tree ti_ftype_ti_ti
     = build_function_type_list (intTI_type_node,
 				intTI_type_node, intTI_type_node, NULL_TREE);
@@ -12351,6 +12358,9 @@ ix86_init_mmx_sse_builtins ()
   tree v2di_ftype_di
     = build_function_type_list (V2DI_type_node,
 				long_long_unsigned_type_node, NULL_TREE);
+  tree di_ftype_v2di
+    = build_function_type_list (long_long_unsigned_type_node,
+				V2DI_type_node, NULL_TREE);
   tree v4sf_ftype_v4si
     = build_function_type_list (V4SF_type_node, V4SI_type_node, NULL_TREE);
   tree v4si_ftype_v4sf
@@ -12459,6 +12469,18 @@ ix86_init_mmx_sse_builtins ()
 				V16QI_type_node, V16QI_type_node, NULL_TREE);
   tree int_ftype_v16qi
     = build_function_type_list (integer_type_node, V16QI_type_node, NULL_TREE);
+  tree v16qi_ftype_pchar
+    = build_function_type_list (V16QI_type_node, pchar_type_node, NULL_TREE);
+  tree void_ftype_pchar_v16qi
+    = build_function_type_list (void_type_node,
+			        pchar_type_node, V16QI_type_node, NULL_TREE);
+  tree v4si_ftype_pchar
+    = build_function_type_list (V4SI_type_node, pchar_type_node, NULL_TREE);
+  tree void_ftype_pchar_v4si
+    = build_function_type_list (void_type_node,
+			        pchar_type_node, V4SI_type_node, NULL_TREE);
+  tree v2di_ftype_v2di
+    = build_function_type_list (V2DI_type_node, V2DI_type_node, NULL_TREE);
 
   /* Add all builtins that are more or less simple operations on two
      operands.  */
@@ -12639,6 +12661,7 @@ ix86_init_mmx_sse_builtins ()
 
   def_builtin (MASK_SSE2, "__builtin_ia32_maskmovdqu", void_ftype_v16qi_v16qi_pchar, IX86_BUILTIN_MASKMOVDQU);
   def_builtin (MASK_SSE2, "__builtin_ia32_movq2dq", v2di_ftype_di, IX86_BUILTIN_MOVQ2DQ);
+  def_builtin (MASK_SSE2, "__builtin_ia32_movdq2q", di_ftype_v2di, IX86_BUILTIN_MOVDQ2Q);
 
   def_builtin (MASK_SSE2, "__builtin_ia32_loadapd", v2df_ftype_pdouble, IX86_BUILTIN_LOADAPD);
   def_builtin (MASK_SSE2, "__builtin_ia32_loadupd", v2df_ftype_pdouble, IX86_BUILTIN_LOADUPD);
@@ -12701,6 +12724,16 @@ ix86_init_mmx_sse_builtins ()
   def_builtin (MASK_SSE2, "__builtin_ia32_clflush", void_ftype_pvoid, IX86_BUILTIN_CLFLUSH);
   def_builtin (MASK_SSE2, "__builtin_ia32_lfence", void_ftype_void, IX86_BUILTIN_LFENCE);
   def_builtin (MASK_SSE2, "__builtin_ia32_mfence", void_ftype_void, IX86_BUILTIN_MFENCE);
+
+  def_builtin (MASK_SSE2, "__builtin_ia32_loaddqa", v16qi_ftype_pchar, IX86_BUILTIN_LOADDQA);
+  def_builtin (MASK_SSE2, "__builtin_ia32_loaddqu", v16qi_ftype_pchar, IX86_BUILTIN_LOADDQU);
+  def_builtin (MASK_SSE2, "__builtin_ia32_loadd", v4si_ftype_pchar, IX86_BUILTIN_LOADD);
+  def_builtin (MASK_SSE2, "__builtin_ia32_storedqa", void_ftype_pchar_v16qi, IX86_BUILTIN_STOREDQA);
+  def_builtin (MASK_SSE2, "__builtin_ia32_storedqu", void_ftype_pchar_v16qi, IX86_BUILTIN_STOREDQU);
+  def_builtin (MASK_SSE2, "__builtin_ia32_stored", void_ftype_pchar_v4si, IX86_BUILTIN_STORED);
+  def_builtin (MASK_SSE2, "__builtin_ia32_movq", v2di_ftype_v2di, IX86_BUILTIN_MOVQ);
+
+  def_builtin (MASK_SSE1, "__builtin_ia32_setzero128", v2di_ftype_void, IX86_BUILTIN_CLRTI);
 
   def_builtin (MASK_SSE2, "__builtin_ia32_psllw128", v8hi_ftype_v8hi_v2di, IX86_BUILTIN_PSLLW128);
   def_builtin (MASK_SSE2, "__builtin_ia32_pslld128", v4si_ftype_v4si_v2di, IX86_BUILTIN_PSLLD128);
@@ -13153,6 +13186,7 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
 
     case IX86_BUILTIN_STOREAPS:
       return ix86_expand_store_builtin (CODE_FOR_sse_movaps, arglist);
+
     case IX86_BUILTIN_STOREUPS:
       return ix86_expand_store_builtin (CODE_FOR_sse_movups, arglist);
 
@@ -13421,6 +13455,12 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
       emit_insn (gen_mmx_clrdi (target));
       return target;
 
+    case IX86_BUILTIN_CLRTI:
+      target = gen_reg_rtx (V2DImode);
+      emit_insn (gen_sse2_clrti (simplify_gen_subreg (TImode, target, V2DImode, 0)));
+      return target;
+
+
     case IX86_BUILTIN_SQRTSD:
       return ix86_expand_unop1_builtin (CODE_FOR_vmsqrtv2df2, arglist, target);
     case IX86_BUILTIN_LOADAPD:
@@ -13506,6 +13546,20 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
       return ix86_expand_store_builtin (CODE_FOR_sse2_movntv2di, arglist);
     case IX86_BUILTIN_MOVNTI:
       return ix86_expand_store_builtin (CODE_FOR_sse2_movntsi, arglist);
+
+    case IX86_BUILTIN_LOADDQA:
+      return ix86_expand_unop_builtin (CODE_FOR_sse2_movdqa, arglist, target, 1);
+    case IX86_BUILTIN_LOADDQU:
+      return ix86_expand_unop_builtin (CODE_FOR_sse2_movdqu, arglist, target, 1);
+    case IX86_BUILTIN_LOADD:
+      return ix86_expand_unop_builtin (CODE_FOR_sse2_loadd, arglist, target, 1);
+
+    case IX86_BUILTIN_STOREDQA:
+      return ix86_expand_store_builtin (CODE_FOR_sse2_movdqa, arglist);
+    case IX86_BUILTIN_STOREDQU:
+      return ix86_expand_store_builtin (CODE_FOR_sse2_movdqu, arglist);
+    case IX86_BUILTIN_STORED:
+      return ix86_expand_store_builtin (CODE_FOR_sse2_stored, arglist);
 
     default:
       break;

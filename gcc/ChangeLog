@@ -1,3 +1,30 @@
+Tue Oct 22 00:04:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (builtin_description): Add punpcklqdq and movdq2q
+	(ix86_init_mmx_sse_builtins): Add v2di_ftype_void, di_ftype_v2di,
+	v16qi_ftype_pchar, void_ftype_pchar_v16qi, v4si_ftype_pchar,
+	void_ftype_pchar_v4si; Initialize __builtin_ia32_movdq2q,
+	__builtin_ia32_loaddqa, __builtin_ia32_loaddqu, __builtin_ia32_loadd
+	__builtin_ia32_storedqa, __builtin_ia32_storedqu, __builtin_ia32_stored
+	__builtin_ia32_setzero128.
+	(ix86_expand_builtin): Handle IX86_BUILTIN_CLRTI, IX86_BUILTIN_LOADDQA,
+	IX86_BUILTIN_LOADDQU, IX86_BUILTIN_LOADD, IX86_BUILTIN_STOREDQA,
+	IX86_BUILTIN_STOREDQU, IX86_BUILTIN_STORED, Ix86_BUILTIN_MOVQ.
+	* i386.h (ix86_builtins): Add IX86_BUILTIN_LOADDQA, IX86_BUILTIN_LOADDQU,
+	IX86_BUILTIN_STOREDQA, IX86_BUILTIN_STOREDQU, IX86_BUILTIN_LOADD,
+	IX86_BUILTIN_STORED, IX86_BUILTIN_CLRTI, IX86_BUILTIN_MOVDQ2Q,
+	IX86_BUILTIN_PUNPCKLQDQ128, Ix86_BUILTIN_MOVQ.
+	* i386.md (sse2_punpcklqdq, sse2_movqsse2_loadd, sse2_stored,
+	sse2_movq): New patterns.
+	(sse2_movdqa, sse2_movdqu, sse2_movdq2q): Fix.
+	* xmmintrin.h (_mm_load_si128, _mm_loadu_si128, _mm_loadl_epi64,
+	_mm_store_si128, _mm_storeu_si128, _mm_storel_epi64,
+	_mm_setzero_si128, _mm_set_epi64, _mm_set_epi32, _mm_set_epi16,
+	_mm_set_epi8, _mm_set1_epi64, _mm_set1_epi32, _mm_set1_epi16,
+	_mm_set1_epi8, _mm_setr_epi64, _mm_setr_epi32, _mm_setr_epi16,
+	_mm_setr_epi8, _mm_unpacklo_epi64,_mm_set_moveq): New functions.
+	(_mm_insert_epi16): Fix.
+
 2002-10-21  Dale Johannesen  <dalej@apple.com>
 
         * config/rs6000/rs6000.c (rs6000_reverse_condition): Handle
