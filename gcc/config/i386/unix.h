@@ -125,3 +125,21 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
   (fputs (".globl ", FILE), assemble_name (FILE, NAME), fputs ("\n", FILE))
+
+/* By default, target has a 80387, uses IEEE compatible arithmetic,
+   and returns float values in the 387, ie,
+   (TARGET_80387 | TARGET_IEEE_FP | TARGET_FLOAT_RETURNS_IN_80387) */
+
+#define TARGET_DEFAULT 0301
+
+/* Floating-point return values come in the FP register.  */
+
+#define VALUE_REGNO(MODE) \
+  (GET_MODE_CLASS (MODE) == MODE_FLOAT				\
+   && TARGET_FLOAT_RETURNS_IN_80387 ? FIRST_FLOAT_REG : 0)
+
+/* 1 if N is a possible register number for a function value. */
+
+#define FUNCTION_VALUE_REGNO_P(N) \
+  ((N) == 0 || ((N)== FIRST_FLOAT_REG && TARGET_FLOAT_RETURNS_IN_80387))
+
