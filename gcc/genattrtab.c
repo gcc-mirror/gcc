@@ -353,6 +353,9 @@ static char *alternative_name;
 
 int reload_completed = 0;
 
+/* Similarly since PRESERVE_DEATH_INFO_REGNO_P might reference "optimize".  */
+int optimize = 0;
+
 /* Simplify an expression.  Only call the routine if there is something to
    simplify.  */
 #define SIMPLIFY_TEST_EXP(EXP,INSN_CODE,INSN_INDEX)	\
