@@ -2441,10 +2441,6 @@ distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
 	  ln $$file ../tmp/ginclude >/dev/null 2>&1 \
 	   || cp $$file ../tmp/ginclude; \
 	done
-	cd objc; \
-	for file in *[0-9a-zA-Z+]; do \
-	  ln $$file ../tmp/objc >/dev/null 2>&1 || cp $$file ../tmp/objc; \
-	done
 	ln .gdbinit tmp
 
 # Finish making `distdir', after the languages have done their thing.
