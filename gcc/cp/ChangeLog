@@ -1,5 +1,9 @@
 Fri Mar 20 10:42:07 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (make_implicit_typename): Rewrite removed code.
+	(make_typename_type): Call it if the type we look up comes from
+	a base that uses template parms.
+
 	* pt.c (complete_template_args): Rewrite.
 	(tsubst, FUNCTION_DECL): Use it.
 
