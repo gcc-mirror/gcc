@@ -1,3 +1,8 @@
+Sat Oct 11 12:24:23 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* varasm.c (notice_global_symbol):  Fix handling of variables; avoid
+	re-computing of variable.
+
 2003-10-11  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_return_in_memory): Rename from
