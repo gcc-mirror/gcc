@@ -1,3 +1,9 @@
+2002-01-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/netbsd-aout.h (SWITCH_TAKES_ARG): Remove bogus white space
+	after backslash.
+	(ASM_DECLARE_OBJECT_NAME): Add missing backslash before final line.
+
 2002-01-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/i386/freebsd-aout.h (ASM_QUAD): Undefine.

@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 /* This defines which switch letters take arguments. */
 
 #undef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR)		\ 
+#define SWITCH_TAKES_ARG(CHAR)		\
   (DEFAULT_SWITCH_TAKES_ARG(CHAR)	\
    || (CHAR) == 'R')
 
@@ -160,7 +160,7 @@ Boston, MA 02111-1307, USA.  */
 	           int_size_in_bytes (TREE_TYPE (DECL)));		\
 	}								\
       ASM_OUTPUT_LABEL(FILE, NAME);					\
-    }
+    }									\
   while (0)
 
 
