@@ -45,8 +45,6 @@ import java.io.Serializable;
 
 /**
  * This class represents an error that has occurred when using SASL.
- *
- * @version $Revision: 1.1 $
  */
 public class SaslException extends IOException implements Serializable
 {
