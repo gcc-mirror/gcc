@@ -4541,7 +4541,7 @@ bypass_conditional_jumps ()
 	       insn = NEXT_INSN (insn))
 	    if (GET_CODE (insn) == INSN)
 	      {
-		if (!setcc)
+		if (setcc)
 		  break;
 		if (GET_CODE (PATTERN (insn)) != SET)
 		  break;

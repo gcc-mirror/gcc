@@ -1,3 +1,8 @@
+2002-06-10  Roger Sayle  <roger@eyesopen.com>
+
+	* toplev.c (rest_of_compilation): Disable early if-conversion pass.
+	* gcse.c (bypass_conditional_jumps): Fix typo in setcc test.
+
 2002-06-10  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.h: Improve comments.
