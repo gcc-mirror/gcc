@@ -207,7 +207,8 @@ treelang.mostlyclean:
 	    rm -f treelang/$$name$(exeext); \
 	  fi ; \
 	done
-	-rm -f treelang/*.o
+	-rm -f treelang/*$(objext)
+	-rm -f treelang/*$(coverageexts)
 	-rm treelang.done
 
 

@@ -1,3 +1,21 @@
+2002-08-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* configure.in (enable_coverage): New enable switch.
+	* configure: Rebuilt.
+	* Makefile.in (COVERAGE_FLAGS, coverageexts): New variables.
+	(INTERNAL_CFLAGS): Append COVERAGE_FLAGS.
+	(ALL_FLAGS): Reorder so INTERNAL_CFLAGS comes after CFLAGS.
+	(mostlyclean): Remove coverage files.
+	* doc/install.texi: Document enable_coverage.
+
+	* cp/Make-lang.in (c++.mostlyclean): Remove coverage files.
+	* ada/Make-lang.in (ada.mostlyclean): Remove coverage files.
+	* f/Make-lang.in (f.mostlyclean): Remove coverage files.
+	* java/Make-lang.in (java.mostlyclean): Remove coverage files.
+	* objc/Make-lang.in (objc.mostlyclean): Remove coverage files.
+	* treelang/Make-lang.in (treelang.mostlyclean): Remove coverage
+	files.
+	
 2002-08-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-opts.c (cpp_opts): New.

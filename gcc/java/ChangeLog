@@ -1,3 +1,7 @@
+2002-08-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* java/Make-lang.in (java.mostlyclean): Remove coverage files.
+
 2002-08-05  Geoffrey Keating  <geoffk@redhat.com>
 
 	* mangle_name.c: Don't include obstack.h twice.

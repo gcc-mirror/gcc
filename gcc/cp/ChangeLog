@@ -1,3 +1,7 @@
+2002-08-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp/Make-lang.in (c++.mostlyclean): Remove coverage files.
+
 2002-08-07  Mark Mitchell  <mark@codesourcery.com>
 
 	Rework build_component_ref.

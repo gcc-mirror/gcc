@@ -69,6 +69,13 @@ CFLAGS = -g
 STAGE1_CFLAGS = -g @stage1_cflags@
 BOOT_CFLAGS = -g -O2
 
+# Flags to determine code coverage. When coverage is disabled, this will
+# contain the optimization flags, as you normally want code coverage
+# without optimization. The -dumpbase $@ makes sure that the auxilary
+# files end up near the object files.
+COVERAGE_FLAGS = @coverage_flags@
+coverageexts = .{da,bb,bbg}
+
 # The warning flags are separate from BOOT_CFLAGS because people tend to
 # override optimization flags and we'd like them to still have warnings
 # turned on.  These flags are also used to pass other stage dependent
@@ -587,13 +594,13 @@ all.indirect: $(ALL)
 # IN_GCC distinguishes between code compiled into GCC itself and other
 # programs built during a bootstrap.
 # autoconf inserts -DCROSS_COMPILE if we are building a cross compiler.
-INTERNAL_CFLAGS = -DIN_GCC @CROSS@
+INTERNAL_CFLAGS = -DIN_GCC @CROSS@ $(COVERAGE_FLAGS)
 
 # This is the variable actually used when we compile.
 # If you change this line, you probably also need to change the definition
 # of HOST_CFLAGS in build-make to match.
-ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) \
-  $(CFLAGS) $(WARN_CFLAGS) $(XCFLAGS) @DEFS@
+ALL_CFLAGS = $(X_CFLAGS) $(T_CFLAGS) \
+  $(CFLAGS) $(INTERNAL_CFLAGS) $(WARN_CFLAGS) $(XCFLAGS) @DEFS@
 
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
@@ -2602,6 +2609,7 @@ $(docdir)/fsf-funding.7: $(docdir)/include/funding.texi
 INTL_MOSTLYCLEAN = intl.mostlyclean
 mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	-rm -f $(STAGESTUFF)
+	-rm -f *$(coverageexts)
 	-rm -rf libgcc
 # Delete the temporary source copies for cross compilation.
 	-rm -f $(BUILD_PREFIX_1)rtl.c $(BUILD_PREFIX_1)print-rtl.c
