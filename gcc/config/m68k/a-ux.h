@@ -163,8 +163,8 @@ crt2.o%s "
 
 /* Finalize the trampoline by flushing the insn cache */
 
-#undef FINISH_INIT_TRAMPOLINE
-#define FINISH_INIT_TRAMPOLINE(TRAMP)					\
+#undef FINALIZE_TRAMPOLINE
+#define FINALIZE_TRAMPOLINE(TRAMP)					\
   emit_library_call(gen_rtx(SYMBOL_REF, Pmode, "__clear_cache"),	\
 		    0, VOIDmode, 2, TRAMP, Pmode,			\
 		    plus_constant(TRAMP, TRAMPOLINE_SIZE), Pmode);
