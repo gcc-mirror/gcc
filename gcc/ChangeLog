@@ -1,5 +1,7 @@
 2000-02-16  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
+	* cpplib.c (do_line): Pedwarn for #line > 32767.
+
 	* c-lex.c (readescape): Warn about '\x', but do not reject it.
 
 2000-02-15  Jonathan Larmour  <jlarmour@redhat.co.uk>
