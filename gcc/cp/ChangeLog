@@ -1,5 +1,16 @@
 2000-03-15  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (CPTI_REF_DESC_TYPE, ref_desc_type_node): Remove.
+	* decl.c (ref_desc_type_node): Undocument.
+	* rtti.c (ptr_ref_initializer): Rename to ...
+	(ptr_initializer): ... here. Adjust comments.
+	(ptmd_initializer): Fix comment thinko.
+	(synthesize_tinfo_var): Remove REFERENCE_TYPE case.
+	(create_tinfo_types): Remove ref_desc_type_node init.
+	* tinfo2.cc (__reference_type_info): Remove.
+
+2000-03-15  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* decl.c (cp_finish_decl): Remove obsolete comment.
 	
 	* typeck.c (build_ptrmemfunc1): Kill uninitialized warning.
