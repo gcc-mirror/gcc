@@ -1,3 +1,54 @@
+2002-09-23  Richard Henderson  <rth@redhat.com>
+
+	* include/std/std_limits.h (__glibcpp_plain_char_is_signed,
+	__glibcpp_wchar_t_is_signed, __glibcpp_s8_max, __glibcpp_s8_min,
+	__glibcpp_s8_digits, __glibcpp_s8_digits10, __glibcpp_u8_min,
+	__glibcpp_u8_max, __glibcpp_u8_digits, __glibcpp_u8_digits10,
+	__glibcpp_s16_max, __glibcpp_s16_min, __glibcpp_s16_digits,
+	__glibcpp_s16_digits10, __glibcpp_u16_min, __glibcpp_u16_max,
+	__glibcpp_u16_digits, __glibcpp_u16_digits10, __glibcpp_s32_max,
+	__glibcpp_s32_min, __glibcpp_s32_digits, __glibcpp_s32_digits10,
+	__glibcpp_u32_min, __glibcpp_u32_max, __glibcpp_u32_digits,
+	__glibcpp_u32_digits10, __glibcpp_s64_max, __glibcpp_s64_min,
+	__glibcpp_s64_digits, __glibcpp_s64_digits10, __glibcpp_u64_min,
+	__glibcpp_u64_max, __glibcpp_u64_digits, __glibcpp_u64_digits10,
+	__glibcpp_bool_digits, __glibcpp_signed_char_min,
+	__glibcpp_signed_char_max, __glibcpp_signed_char_digits,
+	__glibcpp_signed_char_digits10, __glibcpp_unsigned_char_min,
+	__glibcpp_unsigned_char_max, __glibcpp_unsigned_char_digits,
+	__glibcpp_unsigned_char_digits10, __glibcpp_char_min,
+	__glibcpp_char_max, __glibcpp_char_digits, __glibcpp_char_digits10,
+	__glibcpp_signed_short_min, __glibcpp_signed_short_max,
+	__glibcpp_signed_short_digits, __glibcpp_signed_short_digits10,
+	__glibcpp_unsigned_short_min, __glibcpp_unsigned_short_max,
+	__glibcpp_unsigned_short_digits, __glibcpp_unsigned_short_digits10,
+	__glibcpp_signed_int_min, __glibcpp_signed_int_max,
+	__glibcpp_signed_int_digits, __glibcpp_signed_int_digits10,
+	__glibcpp_unsigned_int_min, __glibcpp_unsigned_int_max,
+	__glibcpp_unsigned_int_digits, __glibcpp_unsigned_int_digits10,
+	__glibcpp_signed_long_min, __glibcpp_signed_long_max,
+	__glibcpp_unsigned_long_digits, __glibcpp_unsigned_long_digits10,
+	__glibcpp_signed_long_long_min, __glibcpp_signed_long_long_max,
+	__glibcpp_signed_long_long_digits, __glibcpp_signed_long_long_digits10,
+	__glibcpp_wchar_t_min, __glibcpp_wchar_t_max, __glibcpp_wchar_t_digits,
+	__glibcpp_wchar_t_digits10): Remove.
+	(__glibcpp_byte, __glibcpp_word_bits, __glibcpp_word): Remove.
+	(__float_storage, __double_storage, __long_double_storage): Remove.
+	(__glibcpp_signed, __glibcpp_min, __glibcpp_max): New.
+	(__glibcpp_digits, __glibcpp_digits10): New.
+	(numeric_limits<T>::min): Use __glibcpp_min or limits.h builtins.
+	(numeric_limits<T>::max): Use __glibcpp_max or limits.h builtins.
+	(numeric_limits<T>::is_signed, T=char,wchar_t): Use __glibcpp_signed.
+	(numeric_limits<T>::digits): Use __glibcpp_digits.
+	(numeric_limits<T>::digits10): Use __glibcpp_digits10.
+	* testsuite/18_support/numeric_limits.cc (test03): Don't use
+	__glibcpp_s8_digits10 et al; check vs the installed versions
+	of digits10 for particular sizes.
+
+        * include/std/std_limits.h (__glibcpp_float_is_modulo,
+        __glibcpp_double_is_modulo, __glibcpp_long_double_is_modulo): Kill.
+        (numeric_limits<T>::is_modulo, T floating): Use false.
+
 2002-09-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.am (all-multi): Fix multilib parallel build.
