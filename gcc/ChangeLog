@@ -1,3 +1,13 @@
+2004-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* simplify-rtx.c (simplify_binary_operation): Simplify
+	((A & N) + B) & M -> (A + B) & M if M is pow2 minus 1 constant and
+	N has at least all bits in M set as well.
+
+	PR tree-optimization/15310
+	* expr.c (expand_assignment): Optimize += or -= on a bit field in
+	most significant bits.
+
 2004-06-30  Steven Bosscher  <stevenb@suse.de>
 
 	* config/c4x/c4x.md: Fix comment.
