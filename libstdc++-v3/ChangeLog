@@ -1,3 +1,36 @@
+2002-05-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/6701
+	* testsuite/22_locale/ctype_narrow_char.cc: New.
+	* testsuite/22_locale/ctype_narrow_wchar_t.cc: New.	
+	* testsuite/22_locale/ctype_widen_char.cc: New.
+	* testsuite/22_locale/ctype_widen_wchar_t.cc: New.
+	* testsuite/22_locale/ctype_members_char.cc: Move some bits into...
+	* testsuite/22_locale/ctype_is_char.cc: ...this.
+	* testsuite/22_locale/ctype_to_char.cc: ...and this.
+	* testsuite/22_locale/ctype_members_wchar_t.cc: Move some bits into...
+	* testsuite/22_locale/ctype_is_wchar_t.cc: ...this.
+	* testsuite/22_locale/ctype_to_wchar_t.cc: ...and this.
+
+	* testsuite/22_locale/ctype_scan_wchar_t.cc: Should pass.
+	
+2002-05-24  Dale Peakall <dale@peakall.net>
+
+	PR libstdc++/6701
+	* config/locale/gnu/ctype_members.cc (ctype<wchar_t>::do_narrow): Fix.
+	* config/locale/generic/ctype_members.cc: Same.
+	
+2002-05-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/6750
+	* include/bits/ostream.tcc (ostream::operator<<(const char*)): Fix
+	for empty string literal.
+	(ostream::operator<<(const _CharT*)): Same.
+	(ostream<char>::operator<<(const char*)): Same.
+	(ostream<char>::operator<<(streambuf*)): Same.
+	* testsuite/27_io/ostream_inserter_char.cc (test08): Add tests.
+	* testsuite/27_io/ostream_inserter_other.cc (test02): Modify.
+	
 2002-05-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in (release_VERSION): Update to 3.1.1.
