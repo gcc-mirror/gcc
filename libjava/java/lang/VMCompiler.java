@@ -141,6 +141,10 @@ final class VMCompiler
 	      catch (java.io.IOException _)
 		{
 		}
+	      catch (java.nio.BufferUnderflowException _)
+		{
+		  // Invalid map file.
+		}
 	    }
 	}
       }
