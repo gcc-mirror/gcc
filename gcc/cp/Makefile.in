@@ -112,7 +112,6 @@ all: all.indirect
 ####host overrides
 ####cross overrides
 ####build overrides
-####site overrides
 
 # Now figure out from those variables how to compile and link.
 
