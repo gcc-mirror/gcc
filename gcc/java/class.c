@@ -1086,26 +1086,25 @@ make_class_data (type)
 		    build_int_2 (get_access_flags_from_decl (type_decl), 0));
 
   PUSH_FIELD_VALUE (cons, "superclass", super);
-  PUSH_FIELD_VALUE (cons, "subclass_head", null_pointer_node);
-  PUSH_FIELD_VALUE (cons, "subclass_next", null_pointer_node);
   PUSH_FIELD_VALUE (cons, "constants", constant_pool_constructor);
   PUSH_FIELD_VALUE (cons, "methods",
 		    build1 (ADDR_EXPR, method_ptr_type_node, methods_decl));
   PUSH_FIELD_VALUE (cons, "nmethods",  build_int_2 (method_count, 0));
-  PUSH_FIELD_VALUE (cons, "msize", TYPE_NVIRTUALS (type));
+  PUSH_FIELD_VALUE (cons, "method_count", TYPE_NVIRTUALS (type));
   PUSH_FIELD_VALUE (cons, "fields",
 		    fields_decl == NULL_TREE ? null_pointer_node
 		    : build1 (ADDR_EXPR, field_ptr_type_node, fields_decl));
-  PUSH_FIELD_VALUE (cons, "bfsize", size_in_bytes (type));
-  PUSH_FIELD_VALUE (cons, "nfields", build_int_2 (field_count, 0));
-  PUSH_FIELD_VALUE (cons, "nsfields", build_int_2 (static_field_count, 0));
+  PUSH_FIELD_VALUE (cons, "size_in_bytes", size_in_bytes (type));
+  PUSH_FIELD_VALUE (cons, "field_count", build_int_2 (field_count, 0));
+  PUSH_FIELD_VALUE (cons, "static_field_count",
+		    build_int_2 (static_field_count, 0));
   /* For now, we let Kaffe fill in the dtable.  */
   PUSH_FIELD_VALUE (cons, "dtable",
 		    dtable_decl == NULL_TREE ? null_pointer_node
 		    : build1 (ADDR_EXPR, dtable_ptr_type, dtable_decl));
   PUSH_FIELD_VALUE (cons, "interfaces", interfaces);
   PUSH_FIELD_VALUE (cons, "loader", null_pointer_node);
-  PUSH_FIELD_VALUE (cons, "interface_len", build_int_2 (interface_len, 0));
+  PUSH_FIELD_VALUE (cons, "interface_count", build_int_2 (interface_len, 0));
   PUSH_FIELD_VALUE (cons, "state",
 		    flag_assume_compiled ? integer_four_node
 		    : integer_two_node);

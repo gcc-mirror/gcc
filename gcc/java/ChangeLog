@@ -1,8 +1,19 @@
+1998-10-28  Tom Tromey  <tromey@cygnus.com>
+
+	* decl.c (init_decl_processing): Renamed fields.
+	* class.c (make_class_data): Renamed bfsize, nfields, nsfields,
+	interface_len, msize fields.
+
+	* class.c (make_class_data): Removed subclass_head and
+	subclass_next fields.
+	* decl.c (init_decl_processing): Removed subclass_head and
+	subclass_next fields.
+
 Wed Oct 28 00:46:15 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* jcf-write.c (emit_load_or_store): Avoid implicit int arguments.
 	* mangle.c (emit_unicode_mangled_name): Similarly.
-	
+
 Sun Oct 25 14:58:05 1998  H.J. Lu  (hjl@gnu.org)
 
 	* Make-lang.in (jv-scan$(exeext)): Add stamp-objlist to
