@@ -911,7 +911,7 @@ namespace std
       {
 	size_type __size = this->size();
 	size_type __osize = __str.size();
-	size_type __len = min(__size, __osize);
+	size_type __len = std::min(__size, __osize);
 
 	int __r = traits_type::compare(_M_data(), __str.data(), __len);
 	if (!__r)
