@@ -52,7 +52,7 @@ extern int    avr_progmem_p                PARAMS ((tree decl));
 extern rtx    avr_function_value           PARAMS ((tree type, tree func));
 extern void   init_cumulative_args         PARAMS ((CUMULATIVE_ARGS *cum,
 						   tree fntype, rtx libname,
-						   int indirect));
+						   tree fndecl));
 extern rtx    function_arg         PARAMS ((CUMULATIVE_ARGS *cum,
 					   enum machine_mode mode,
 					   tree type, int named));

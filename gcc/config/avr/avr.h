@@ -1136,7 +1136,7 @@ typedef struct avr_args {
    store anything in `CUMULATIVE_ARGS'; however, the data structure
    must exist and should not be empty, so use `int'.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT) init_cumulative_args (&(CUM), FNTYPE, LIBNAME, INDIRECT)
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL) init_cumulative_args (&(CUM), FNTYPE, LIBNAME, FNDECL)
 
 /* A C statement (sans semicolon) for initializing the variable CUM
    for the state at the beginning of the argument list.  The variable

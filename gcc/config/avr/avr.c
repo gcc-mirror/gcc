@@ -1488,11 +1488,11 @@ function_arg_regno_p(r)
    of the argument list.  */
 
 void
-init_cumulative_args (cum, fntype, libname, indirect)
+init_cumulative_args (cum, fntype, libname, fndecl)
      CUMULATIVE_ARGS *cum;
      tree fntype;
      rtx libname;
-     int indirect ATTRIBUTE_UNUSED;
+     tree fndecl;
 {
   cum->nregs = 18;
   cum->regno = FIRST_CUM_REG;

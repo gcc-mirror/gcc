@@ -4367,11 +4367,11 @@ output_sibcall (insn, call_operand)
    For a library call, FNTYPE is 0.  */
 
 void
-init_cumulative_args (cum, fntype, libname, indirect)
+init_cumulative_args (cum, fntype, libname, fndecl)
      CUMULATIVE_ARGS *cum;
      tree fntype;
      rtx libname ATTRIBUTE_UNUSED;
-     int indirect ATTRIBUTE_UNUSED;
+     tree fndecl ATTRIBUTE_UNUSED;
 {
   cum->words = 0;
   cum->prototype_p = fntype && TYPE_ARG_TYPES (fntype);

@@ -4273,7 +4273,7 @@ assign_parms (fndecl)
 #ifdef INIT_CUMULATIVE_INCOMING_ARGS
   INIT_CUMULATIVE_INCOMING_ARGS (args_so_far, fntype, NULL_RTX);
 #else
-  INIT_CUMULATIVE_ARGS (args_so_far, fntype, NULL_RTX, 0);
+  INIT_CUMULATIVE_ARGS (args_so_far, fntype, NULL_RTX, fndecl);
 #endif
 
   /* We haven't yet found an argument that we must push and pretend the

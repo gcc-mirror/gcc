@@ -769,9 +769,9 @@ struct hppa_args {int words, nargs_prototype, indirect; };
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT) \
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,FNDECL) \
   (CUM).words = 0, 							\
-  (CUM).indirect = INDIRECT,						\
+  (CUM).indirect = (FNTYPE) && !(FNDECL),				\
   (CUM).nargs_prototype = (FNTYPE && TYPE_ARG_TYPES (FNTYPE)		\
 			   ? (list_length (TYPE_ARG_TYPES (FNTYPE)) - 1	\
 			      + (TYPE_MODE (TREE_TYPE (FNTYPE)) == BLKmode \

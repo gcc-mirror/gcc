@@ -3664,17 +3664,15 @@ arguments are passed on the stack, there is no need to store anything in
 should not be empty, so use @code{int}.
 
 @findex INIT_CUMULATIVE_ARGS
-@item INIT_CUMULATIVE_ARGS (@var{cum}, @var{fntype}, @var{libname}, @var{indirect})
-A C statement (sans semicolon) for initializing the variable @var{cum}
-for the state at the beginning of the argument list.  The variable has
-type @code{CUMULATIVE_ARGS}.  The value of @var{fntype} is the tree node
-for the data type of the function which will receive the args, or 0
-if the args are to a compiler support library function.  The value of
-@var{indirect} is nonzero when processing an indirect call, for example
-a call through a function pointer.  The value of @var{indirect} is zero
-for a call to an explicitly named function, a library function call, or when
-@code{INIT_CUMULATIVE_ARGS} is used to find arguments for the function
-being compiled.
+@item INIT_CUMULATIVE_ARGS (@var{cum}, @var{fntype}, @var{libname},
+@var{fndecl}) A C statement (sans semicolon) for initializing the variable
+@var{cum} for the state at the beginning of the argument list.  The variable
+has type @code{CUMULATIVE_ARGS}.  The value of @var{fntype} is the tree node
+for the data type of the function which will receive the args, or 0 if the args
+are to a compiler support library function.  For direct calls that are not
+libcalls, @var{fndecl} contain the declaration node of the function.
+@var{fndecl} is also set when code{INIT_CUMULATIVE_ARGS} is used to find
+arguments for the function being compiled.
 
 When processing a call to a compiler support library function,
 @var{libname} identifies which one.  It is a @code{symbol_ref} rtx which

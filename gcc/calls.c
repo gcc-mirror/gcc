@@ -2418,7 +2418,7 @@ expand_call (exp, target, ignore)
      calling convention than normal calls.  The last argument in
      INIT_CUMULATIVE_ARGS tells the backend if this is an indirect call
      or not.  */
-  INIT_CUMULATIVE_ARGS (args_so_far, funtype, NULL_RTX, (fndecl == 0));
+  INIT_CUMULATIVE_ARGS (args_so_far, funtype, NULL_RTX, fndecl);
 
   /* Make a vector to hold all the information about each arg.  */
   args = (struct arg_data *) alloca (num_actuals * sizeof (struct arg_data));
