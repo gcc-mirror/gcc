@@ -77,7 +77,8 @@ main(int argc, char** argv)
 	  cerr << "Cannot read baseline file " << baseline_file << endl;
 	exit(1);
 	}
-      compare_symbols(baseline_file, test_file, verbose);
+      if (!compare_symbols(baseline_file, test_file, verbose))
+	exit (1);
     }
   
   if (argv1 == "--examine")
