@@ -35,14 +35,17 @@ or based on this library.  If you modify this library, you may extend
 this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
-package java.text;
+package gnu.java.text;
 
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Map;
+import gnu.classpath.Configuration;
+
+import java.text.AttributedCharacterIterator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
-
 
 /**
  * This class should not be put public and it is only intended to the
@@ -55,7 +58,7 @@ import java.util.Vector;
  * @author Guilhem Lavaux <guilhem@kaffe.org>
  * @date November 22, 2003
  */
-class FormatCharacterIterator implements AttributedCharacterIterator
+public class FormatCharacterIterator implements AttributedCharacterIterator
 {
   private String formattedString;
   private int charIndex;
@@ -68,7 +71,7 @@ class FormatCharacterIterator implements AttributedCharacterIterator
    * are empty and so is the string. However you may append strings
    * and attributes to this iterator.
    */
-  FormatCharacterIterator()
+  public FormatCharacterIterator()
   {
     formattedString = "";
     ranges = new int[0];
@@ -90,7 +93,7 @@ class FormatCharacterIterator implements AttributedCharacterIterator
    * <code>"he"</code> will have the attributes <code>attributes[0]</code>,
    * <code>"llo"</code> the <code>attributes[1]</code>.
    */
-  FormatCharacterIterator (String s, int[] ranges, HashMap[] attributes)
+  public FormatCharacterIterator (String s, int[] ranges, HashMap[] attributes)
   {
     formattedString = s;
     this.ranges = ranges;
@@ -325,12 +328,14 @@ class FormatCharacterIterator implements AttributedCharacterIterator
    *
    * @param attributes the new array attributes to apply to the string.
    */
-  protected void mergeAttributes (HashMap[] attributes, int[] ranges)
+  public void mergeAttributes (HashMap[] attributes, int[] ranges)
   {
     Vector new_ranges = new Vector();
     Vector new_attributes = new Vector();
     int i = 0, j = 0;
 
+    debug("merging " + attributes.length + " attrs");
+    
     while (i < this.ranges.length && j < ranges.length)
       {
 	if (this.attributes[i] != null)
@@ -388,6 +393,7 @@ class FormatCharacterIterator implements AttributedCharacterIterator
 	this.ranges[i] = ((Integer)new_ranges.elementAt (i)).intValue();
       }
     
+    dumpTable();
   }
 
   /**
@@ -397,7 +403,7 @@ class FormatCharacterIterator implements AttributedCharacterIterator
    * @param iterator the iterator which contains the attributed string to
    * append to this iterator.
    */
-  protected void append (AttributedCharacterIterator iterator)
+  public void append (AttributedCharacterIterator iterator)
   {
     char c = iterator.first();
     Vector more_ranges = new Vector();
@@ -405,7 +411,7 @@ class FormatCharacterIterator implements AttributedCharacterIterator
 
     do
       {
-	formattedString = formattedString + String.valueOf(c);
+	formattedString = formattedString + String.valueOf (c);
 	// TODO: Reduce the size of the output array.
 	more_attributes.add (iterator.getAttributes());
 	more_ranges.add (new Integer (formattedString.length()));
@@ -424,8 +430,8 @@ class FormatCharacterIterator implements AttributedCharacterIterator
 
     System.arraycopy (ranges, 0, new_ranges, 0, ranges.length);
     Object[] new_ranges_array = more_ranges.toArray();
-    for (int i=0;i<more_ranges.size();i++)
-      new_ranges[i+ranges.length] = ((Integer)new_ranges_array[i]).intValue();
+    for (int i = 0; i < more_ranges.size();i++)
+      new_ranges[i+ranges.length] = ((Integer) new_ranges_array[i]).intValue();
 
     attributes = new_attributes;
     ranges = new_ranges;
@@ -440,7 +446,7 @@ class FormatCharacterIterator implements AttributedCharacterIterator
    * iterator. If it is <code>null</code> the string will simply have no
    * attributes.
    */
-  protected void append (String text, HashMap local_attributes)
+  public void append (String text, HashMap local_attributes)
   {
     int[] new_ranges = new int[ranges.length+1];
     HashMap[] new_attributes = new HashMap[attributes.length+1];
@@ -462,8 +468,67 @@ class FormatCharacterIterator implements AttributedCharacterIterator
    *
    * @param text The string to append to the iterator.
    */
-  protected void append (String text)
+  public void append (String text)
   {
     append (text, null);
   }  
+
+  /**
+   * This method adds a set of attributes to a range of character. The
+   * bounds are always inclusive. In the case many attributes have to
+   * be added it is advised to directly use {@link #mergeAttributes([Ljava.util.HashMap;[I}
+   *
+   * @param attributes Attributes to merge into the iterator.
+   * @param range_start Lower bound of the range of characters which will receive the
+   * attribute.
+   * @param range_end Upper bound of the range of characters which will receive the
+   * attribute. 
+   *
+   * @throws IllegalArgumentException if ranges are out of bounds.
+   */
+  public void addAttributes(HashMap attributes, int range_start, int range_end)
+  {
+    if (range_start == 0)
+      mergeAttributes(new HashMap[] { attributes }, new int[] { range_end });
+    else
+      mergeAttributes(new HashMap[] { null, attributes }, new int[] { range_start, range_end });
+  }
+
+  final private void debug(String s)
+  {
+    if (Configuration.DEBUG)
+      System.out.println(s);
+  }
+
+  final private void dumpTable()
+  {
+    int start_range = 0;
+    
+    if (!Configuration.DEBUG)
+      return;
+
+    System.out.println("Dumping internal table:");
+    for (int i = 0; i < ranges.length; i++)
+      {
+	System.out.print("\t" + start_range + " => " + ranges[i] + ":");
+	if (attributes[i] == null)
+	  System.out.println("null");
+	else
+	  {
+	    Set keyset = attributes[i].keySet();
+	    if (keyset != null)
+	      {
+		Iterator keys = keyset.iterator();
+		
+		while (keys.hasNext())
+		  System.out.print(" " + keys.next());
+	      }
+	    else
+	      System.out.println("keySet null");
+	    System.out.println();
+	  }
+      }
+    System.out.println();
+    System.out.flush();
+  }
 }

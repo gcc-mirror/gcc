@@ -1,3 +1,18 @@
+2004-05-04  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* gnu/java/text/FormatBuffer.java,
+	gnu/java/text/AttributedFormatBuffer.java,
+	gnu/java/text/StringFormatBuffer.java: New classes to implement
+	attributed iterators in java.text.
+	* gnu/java/text/FormatCharacterIterator.java: Moved 
+	from java/text as it is an internal class.
+	* java/text/FormatCharacterIterator.java: Removed.
+	* java/text/Format.java:
+	Import gnu.java.text.FormatCharacterIterator.
+	* Makefile.am (java_source_files): Added new files.
+	* Makefile.in: Regenerated.
+	
+
 2004-05-04  Mark Wielaard  <mark@klomp.org>
 
 	* gnu/java/nio/channels/FileChannelImpl.java (finalize): New method.

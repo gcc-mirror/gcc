@@ -2469,10 +2469,14 @@ gnu/java/security/x509/X500DistinguishedName.java \
 gnu/java/security/x509/X509Certificate.java \
 gnu/java/security/x509/X509CRLEntry.java \
 gnu/java/security/x509/X509CRL.java \
+gnu/java/text/AttributedFormatBuffer.java \
 gnu/java/text/BaseBreakIterator.java \
 gnu/java/text/CharacterBreakIterator.java \
+gnu/java/text/FormatBuffer.java \
+gnu/java/text/FormatCharacterIterator.java \
 gnu/java/text/LineBreakIterator.java \
 gnu/java/text/SentenceBreakIterator.java \
+gnu/java/text/StringFormatBuffer.java \
 gnu/java/text/WordBreakIterator.java \
 gnu/java/util/DoubleEnumeration.java \
 gnu/java/util/EmptyEnumeration.java \
@@ -2812,7 +2816,6 @@ java/text/DecimalFormat.java \
 java/text/DecimalFormatSymbols.java \
 java/text/FieldPosition.java \
 java/text/Format.java \
-java/text/FormatCharacterIterator.java \
 java/text/MessageFormat.java \
 java/text/NumberFormat.java \
 java/text/ParseException.java \
