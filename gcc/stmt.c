@@ -4269,7 +4269,7 @@ all_cases_count (type, spareness)
     default:
     case INTEGER_TYPE:
       if (TREE_CODE (TYPE_MIN_VALUE (type)) != INTEGER_CST
-	  || TREE_CODE (TYPE_MIN_VALUE (type)) != INTEGER_CST)
+	  || TREE_CODE (TYPE_MAX_VALUE (type)) != INTEGER_CST)
 	return -1;
       else
 	{
