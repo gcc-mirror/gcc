@@ -56,10 +56,10 @@ namespace std
 	      __streambuf_type* __sb = __in.rdbuf();
 	      __int_type __c = __sb->sgetc();
 
-	      __check_facet(__in._M_ctype);
+	      const __ctype_type& __ct = __check_facet(__in._M_ctype);
 	      while (!traits_type::eq_int_type(__c, __eof)
-		     && __in._M_ctype->is(ctype_base::space, 
-					  traits_type::to_char_type(__c)))
+		     && __ct.is(ctype_base::space, 
+				traits_type::to_char_type(__c)))
 		  __c = __sb->snextc();
 
 #ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -117,7 +117,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      __check_facet(this->_M_num_get).get(*this, 0, *this, __err, __n);
+	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+	      __ng.get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(...)
@@ -142,9 +143,10 @@ namespace std
 	{
 	  try 
 	    {
-	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
 	      long __l;
-	      __check_facet(this->_M_num_get).get(*this, 0, *this, __err, __l);
+	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+	      __ng.get(*this, 0, *this, __err, __l);
 #ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 118. basic_istream uses nonexistent num_get member functions.
 	      if (!(__err & ios_base::failbit)
@@ -179,7 +181,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      __check_facet(this->_M_num_get).get(*this, 0, *this, __err, __n);
+	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+	      __ng.get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(...)
@@ -204,9 +207,10 @@ namespace std
 	{
 	  try 
 	    {
-	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
 	      long __l;
-	      __check_facet(this->_M_num_get).get(*this, 0, *this, __err, __l);
+	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+	      __ng.get(*this, 0, *this, __err, __l);
 #ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 118. basic_istream uses nonexistent num_get member functions.
 	      if (!(__err & ios_base::failbit)
@@ -241,7 +245,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      __check_facet(this->_M_num_get).get(*this, 0, *this, __err, __n);
+	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+	      __ng.get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(...)
@@ -267,7 +272,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      __check_facet(this->_M_num_get).get(*this, 0, *this, __err, __n);
+	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+	      __ng.get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(...)
@@ -293,7 +299,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      __check_facet(this->_M_num_get).get(*this, 0, *this, __err, __n);
+	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+	      __ng.get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(...)
@@ -320,7 +327,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      __check_facet(this->_M_num_get).get(*this, 0, *this, __err, __n);
+	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+	      __ng.get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(...)
@@ -346,7 +354,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      __check_facet(this->_M_num_get).get(*this, 0, *this, __err, __n);
+	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+	      __ng.get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(...)
@@ -373,7 +382,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      __check_facet(this->_M_num_get).get(*this, 0, *this, __err, __n);
+	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+	      __ng.get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(...)
@@ -399,7 +409,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      __check_facet(this->_M_num_get).get(*this, 0, *this, __err, __n);
+	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+	      __ng.get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(...)
@@ -425,7 +436,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      __check_facet(this->_M_num_get).get(*this, 0, *this, __err, __n);
+	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+	      __ng.get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(...)
@@ -451,7 +463,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      __check_facet(this->_M_num_get).get(*this, 0, *this, __err, __n);
+	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+	      __ng.get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(...)
@@ -1027,14 +1040,16 @@ namespace std
 	      if (__num <= 0)
 		__num = numeric_limits<streamsize>::max();
 	      
-	      const __ctype_type& __ctype = use_facet<__ctype_type>(__in.getloc());
+	      const __ctype_type& __ct = use_facet<__ctype_type>(__in.getloc());
+
 	      const int_type __eof = _Traits::eof();
 	      __streambuf_type* __sb = __in.rdbuf();
 	      int_type __c = __sb->sgetc();
 	      
 	      while (__extracted < __num - 1 
 		     && !_Traits::eq_int_type(__c, __eof)
-		     && !__ctype.is(ctype_base::space, _Traits::to_char_type(__c)))
+		     && !__ct.is(ctype_base::space, 
+				 _Traits::to_char_type(__c)))
 		{
 		  *__s++ = _Traits::to_char_type(__c);
 		  ++__extracted;
@@ -1073,13 +1088,13 @@ namespace std
       typedef typename __istream_type::__ctype_type 	__ctype_type;
       typedef typename __istream_type::int_type 	__int_type;
 
-      const __ctype_type& __ctype = use_facet<__ctype_type>(__in.getloc());
+      const __ctype_type& __ct = use_facet<__ctype_type>(__in.getloc());
       const __int_type __eof = _Traits::eof();	      
       __streambuf_type* __sb = __in.rdbuf();
       __int_type __c = __sb->sgetc();
 
       while (!_Traits::eq_int_type(__c, __eof) 
-	     && __ctype.is(ctype_base::space, _Traits::to_char_type(__c)))
+	     && __ct.is(ctype_base::space, _Traits::to_char_type(__c)))
 	__c = __sb->snextc();
 
        if (_Traits::eq_int_type(__c, __eof))
@@ -1110,14 +1125,14 @@ namespace std
 	  __size_type __n;
 	  __n = __w > 0 ? static_cast<__size_type>(__w) : __str.max_size();
 
-	  const __ctype_type& __ctype = use_facet<__ctype_type>(__in.getloc());
+	  const __ctype_type& __ct = use_facet<__ctype_type>(__in.getloc());
 	  const __int_type __eof = _Traits::eof();
 	  __streambuf_type* __sb = __in.rdbuf();
 	  __int_type __c = __sb->sgetc();
 	  
 	  while (__extracted < __n 
 		 && !_Traits::eq_int_type(__c, __eof)
-		 && !__ctype.is(ctype_base::space, _Traits::to_char_type(__c)))
+		 && !__ct.is(ctype_base::space, _Traits::to_char_type(__c)))
 	    {
 	      __str += _Traits::to_char_type(__c);
 	      ++__extracted;
@@ -1161,8 +1176,7 @@ namespace std
 	  const __int_type __eof = _Traits::eof();
 	  __testdelim = _Traits::eq_int_type(__c, __idelim);
 
-	  while (__extracted <= __n 
-		 && !_Traits::eq_int_type(__c, __eof)
+	  while (__extracted <= __n && !_Traits::eq_int_type(__c, __eof)
 		 && !__testdelim)
 	    {
 	      __str += _Traits::to_char_type(__c);

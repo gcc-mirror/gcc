@@ -1,3 +1,17 @@
+2003-08-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/basic_ios.h: Remove *_iter typedefs, change num*
+	typedefs to num_*.	
+	* include/bits/basic_ios.tcc: Same.
+	* include/bits/istream.tcc: Same.
+	* include/bits/locale_facets.h: Same.
+	* include/bits/ostream.tcc: Same.
+	* include/std/std_istream.h: Same.
+	* include/std/std_ostream.h: Same.
+	* testsuite/26_numerics/complex_inserters_extractors.cc: Fix.
+
+	* include/ext/rope: Remove build warning.
+	
 2003-08-11  Andreas Jaeger  <aj@suse.de>
 
 	* include/Makefile.am (stamp-c_base): Add dependency on stamp-bits

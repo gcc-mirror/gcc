@@ -917,22 +917,6 @@ namespace std
   template<typename _CharT, typename _InIter>
     locale::id num_get<_CharT, _InIter>::id;
 
-#if 0
-  // Partial specialization for istreambuf_iterator, so can use traits_type.
-  template<typename _CharT>
-    class num_get<_CharT, istreambuf_iterator<_CharT> >;
-
-      iter_type 
-      _M_extract_float(iter_type, iter_type, ios_base&, ios_base::iostate&, 
-		       string& __xtrc) const;
-
-      iter_type 
-      _M_extract_int(iter_type, iter_type, ios_base&, ios_base::iostate&, 
-		     string& __xtrc, int& __base) const;
-
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, bool&) const;
-#endif
 
   template<typename _CharT, typename _OutIter>
     class num_put : public locale::facet, public __num_base

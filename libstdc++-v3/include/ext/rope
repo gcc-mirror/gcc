@@ -189,8 +189,7 @@ class sequence_buffer : public iterator<std::output_iterator_tag,void,void,void,
         {
             if (__len + _M_buf_count <= _Buf_sz) {
                 size_t __i = _M_buf_count;
-                size_t __j = 0;
-                for (; __j < __len; __i++, __j++) {
+                for (size_t __j = 0; __j < __len; __i++, __j++) {
                     _M_buffer[__i] = __s[__j];
                 }
                 _M_buf_count += __len;

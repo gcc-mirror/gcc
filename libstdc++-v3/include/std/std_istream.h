@@ -70,8 +70,8 @@ namespace std
       typedef basic_streambuf<_CharT, _Traits> 		__streambuf_type;
       typedef basic_ios<_CharT, _Traits>		__ios_type;
       typedef basic_istream<_CharT, _Traits>		__istream_type;
-      typedef istreambuf_iterator<_CharT, _Traits>	__istreambuf_iter;
-      typedef num_get<_CharT, __istreambuf_iter>        __numget_type;
+      typedef num_get<_CharT, istreambuf_iterator<_CharT, _Traits> >        
+ 							__num_get_type;
       typedef ctype<_CharT>           			__ctype_type;
 
       template<typename _CharT2, typename _Traits2>
