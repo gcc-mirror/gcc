@@ -4078,6 +4078,7 @@ handle_used_attribute (tree *pnode, tree name, tree ARG_UNUSED (args),
       || (TREE_CODE (node) == VAR_DECL && TREE_STATIC (node)))
     {
       TREE_USED (node) = 1;
+      DECL_PRESERVE_P (node) = 1;
     }
   else
     {

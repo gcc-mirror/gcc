@@ -142,7 +142,7 @@ hook_void_tree (tree a ATTRIBUTE_UNUSED)
 }
 
 void
-hook_void_charptr (char *a ATTRIBUTE_UNUSED)
+hook_void_constcharptr (const char *a ATTRIBUTE_UNUSED)
 {
 }
 

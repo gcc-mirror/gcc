@@ -172,6 +172,11 @@ struct gcc_target
     /* Output an assembler pseudo-op to declare a library function name
        external.  */
     void (*external_libcall) (rtx);
+
+     /* Output an assembler directive to mark decl live. This instructs
+	linker to not dead code strip this symbol.  */
+    void (*mark_decl_preserved) (const char *);
+
   } asm_out;
 
   /* Functions relating to instruction scheduling.  */

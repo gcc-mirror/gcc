@@ -1,3 +1,23 @@
+2004-08-16  Devang Patel  <dpatel@apple.com>
+
+	* c-common.c (handle_used_attribute): Set DECL_PRESERVE_P.
+	* print-tree.c (print_node): Print DECL_PRESERVE_P.
+	* target-def.h (TARGET_ASM_MARK_DECL_PRESERVED): New #define.
+	(TARGET_ASM_OUT): New member, TARGET_ASM_MARK_DECL_PRESERVED
+	* target.h (struct gcc_target): New member, mark_decl_preserved.
+        * hooks.c (hook_void_charptr): Rename to ...
+        (hook_void_constcharptr): ... new name.
+        * hooks.h (hook_void_charptr): Rename to ..
+        (hook_void_constcharptr): ... new name.
+	* tree.h (DECL_PRESERVE_P): New #define.
+	(struct tree_decl): New member, preserve_flag.
+	* varasm.c (assemble_start_function): Mark decl preserved.
+	(assemble_variable): Same.
+	* darwin.c (darwin_mark_decl_preserved): New function.
+	* darwin.h (TARGET_ASM_MARK_DECL_preserved): New #define.
+	* darwin-protos.h (darwin_mark_decl_preserved): New decl.
+	* doc/tm.texi (TARGET_ASM_MARK_DECL_PRESERVED): Document.
+
 2004-08-16  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-decl.c (grokdeclarator): Allow for function definition where

@@ -1222,6 +1222,9 @@ assemble_start_function (tree decl, const char *fnname)
       maybe_assemble_visibility (decl);
     }
 
+  if (DECL_PRESERVE_P (decl))
+    targetm.asm_out.mark_decl_preserved (fnname);
+
   /* Do any machine/system dependent processing of the function name.  */
 #ifdef ASM_DECLARE_FUNCTION_NAME
   ASM_DECLARE_FUNCTION_NAME (asm_out_file, fnname, current_function_decl);
@@ -1561,6 +1564,9 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 
   if (TREE_PUBLIC (decl))
     maybe_assemble_visibility (decl);
+
+  if (DECL_PRESERVE_P (decl))
+    targetm.asm_out.mark_decl_preserved (name);
 
   /* Output any data that we will need to use the address of.  */
   if (DECL_INITIAL (decl) == error_mark_node)
