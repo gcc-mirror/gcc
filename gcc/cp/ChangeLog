@@ -1,5 +1,7 @@
 1999-09-30  Mark Mitchell  <mark@codesourcery.com>
 
+	* method.c (emit_thunk): Don't crash when -fsyntax-only.
+
 	* cp-tree.h (lang_decl_flags): Add global_ctor_p and
 	global_dtor_p.  Add init_priority.
 	(DECL_ACCESS): Adjust accordingly.

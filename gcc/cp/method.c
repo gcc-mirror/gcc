@@ -2086,26 +2086,29 @@ emit_thunk (thunk_fndecl)
 
   TREE_SET_CODE (thunk_fndecl, FUNCTION_DECL);
 
-  {
 #ifdef ASM_OUTPUT_MI_THUNK
-    char *fnname;
-    current_function_decl = thunk_fndecl;
-    /* Make sure we build up its RTL before we go onto the
-       temporary obstack.  */
-    make_function_rtl (thunk_fndecl);
-    temporary_allocation ();
-    DECL_RESULT (thunk_fndecl)
-      = build_decl (RESULT_DECL, 0, integer_type_node);
-    fnname = XSTR (XEXP (DECL_RTL (thunk_fndecl), 0), 0);
-    init_function_start (thunk_fndecl, input_filename, lineno);
-    current_function_is_thunk = 1;
-    assemble_start_function (thunk_fndecl, fnname);
-    ASM_OUTPUT_MI_THUNK (asm_out_file, thunk_fndecl, delta, function);
-    assemble_end_function (thunk_fndecl, fnname);
-    permanent_allocation (1);
-    current_function_decl = 0;
-    current_function = 0;
+  if (!flag_syntax_only)
+    {
+      char *fnname;
+      current_function_decl = thunk_fndecl;
+      /* Make sure we build up its RTL before we go onto the
+	 temporary obstack.  */
+      make_function_rtl (thunk_fndecl);
+      temporary_allocation ();
+      DECL_RESULT (thunk_fndecl)
+	= build_decl (RESULT_DECL, 0, integer_type_node);
+      fnname = XSTR (XEXP (DECL_RTL (thunk_fndecl), 0), 0);
+      init_function_start (thunk_fndecl, input_filename, lineno);
+      current_function_is_thunk = 1;
+      assemble_start_function (thunk_fndecl, fnname);
+      ASM_OUTPUT_MI_THUNK (asm_out_file, thunk_fndecl, delta, function);
+      assemble_end_function (thunk_fndecl, fnname);
+      permanent_allocation (1);
+      current_function_decl = 0;
+      current_function = 0;
+    }
 #else /* ASM_OUTPUT_MI_THUNK */
+  {
   /* If we don't have the necessary macro for efficient thunks, generate a
      thunk function that just makes a call to the real function.
      Unfortunately, this doesn't work for varargs.  */
@@ -2157,8 +2160,8 @@ emit_thunk (thunk_fndecl)
 	output_inline_function (thunk_fndecl);
 	permanent_allocation (1);
       }
-#endif /* ASM_OUTPUT_MI_THUNK */
   }
+#endif /* ASM_OUTPUT_MI_THUNK */
 
   TREE_SET_CODE (thunk_fndecl, THUNK_DECL);
 }
