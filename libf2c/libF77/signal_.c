@@ -14,4 +14,3 @@ G77_signal_0 (integer *sigp, sig_pf proc)
 
 	return (void *) signal(sig, proc);
 	}
-
