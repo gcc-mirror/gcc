@@ -1,3 +1,8 @@
+Thu Dec  6 09:24:12 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c (handle_epilogue_set): Check for FP setting case when
+	SP is set from FP in same insn.
+
 2001-12-06  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/arm.c (load_multiple_sequence): Pass pointer to
