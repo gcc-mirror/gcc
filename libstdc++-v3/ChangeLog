@@ -1,3 +1,24 @@
+2002-08-03  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* include/bits/valarray_array.h (_DEFINE_ARRAY_FUNCTION): Use our
+	object function surrogates.
+	* include/bits/valarray_meta.h (__shift_left): Fix typo.
+	(_BinFunClos<>): Remove.
+	(_BinFunBase<>): Likewise.
+	(_BinFunBase1<>):Likewise.
+	(_BinFunBase2<>): Likewise.
+	(_DEFINE_EXPR_RELATIONAL_OPERATOR): Likewise.
+	(_DEFINE_EXPR_UNARY_OPERATOR): Adjust definition.
+	(_DEFINE_EXPR_BINARY_OPERATOR): Likewise.
+	(_DEFINE_EXPR_BINARY_FUNCTION): Likewise.
+	* include/std/std_valarray.h: Dont #include <functional> anymore.
+	(_Bitwise_or<>, _Bitwise_and<>, _Bitwise_xor<>, _Shift_left<>,
+	_Shift_right<>): Remove.
+	(_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT): Adjust instantiation.
+	(_DEFINE_BINARY_OPERATOR): Tweak definition.
+	(_DEFINE_LOGICAL_OPERATOR): Remove.
+	* testsuite/26_numerics/valarray_name_lookup.C (main): Add more tests.
+
 2002-08-02  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* include/bits/valarray_meta.h (_UnFunBase<>): Remove.
