@@ -194,13 +194,17 @@ TARGET_ECOS="$with_ecos"
 )
 
 case "$TARGET_ECOS" in
-   no)
-      FILE_DESCRIPTOR=natFileDescriptorPosix.cc
-      PROCESS=${PROCESS-Posix}
+   no) case "$host" in
+      mingw)
+            PLATFORM=Win32
+      ;;
+      *)
+            PLATFORM=Posix
+      ;;
+      esac
       ;;
    *)
-      FILE_DESCRIPTOR=natFileDescriptorEcos.cc
-      PROCESS=Ecos
+      PLATFORM=Ecos
       AC_DEFINE(ECOS)
       ;;
 esac
@@ -221,12 +225,12 @@ dnl to create the link will fail.
 test -d java || mkdir java
 test -d java/io || mkdir java/io
 test -d gnu || mkdir gnu
-AC_LINK_FILES(java/io/$FILE_DESCRIPTOR, java/io/natFileDescriptor.cc)
+AC_LINK_FILES(java/io/natFileDescriptor${PLATFORM}.cc, java/io/natFileDescriptor.cc)
 
 dnl Likewise for ConcreteProcess.java and natConcreteProcess.cc.
 test -d java/lang || mkdir java/lang
-AC_LINK_FILES(java/lang/${PROCESS}Process.java, java/lang/ConcreteProcess.java)
-AC_LINK_FILES(java/lang/nat${PROCESS}Process.cc, java/lang/natConcreteProcess.cc)
+AC_LINK_FILES(java/lang/${PLATFORM}Process.java, java/lang/ConcreteProcess.java)
+AC_LINK_FILES(java/lang/nat${PLATFORM}Process.cc, java/lang/natConcreteProcess.cc)
 
 SYSTEMSPEC=
 AC_SUBST(SYSTEMSPEC)
@@ -313,7 +317,9 @@ case "$THREADS" in
 	;;
     esac
     ;;
- decosf1 | irix | mach | os2 | solaris | win32 | dce | vxworks)
+ win32)
+    ;;
+ decosf1 | irix | mach | os2 | solaris | dce | vxworks)
     AC_MSG_ERROR(thread package $THREADS not yet supported)
     ;;
  *)
@@ -372,6 +378,11 @@ changequote([,])
        AC_DEFINE(_REENTRANT, 1, [Required define if using POSIX threads])
     fi
     AC_DEFINE(_POSIX_PTHREAD_SEMANTICS, 1, [Required define if using POSIX threads])
+    ;;
+
+ win32)
+    THREADOBJS=win32-threads.lo
+    THREADH=win32-threads.h
     ;;
 
  none)
@@ -816,6 +827,9 @@ case "${host}" in
     ;;
  alpha*-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h
+    ;;
+ mingw)
+    SIGNAL_HANDLER=include/win32-signal.h
     ;;
  *)
     SIGNAL_HANDLER=include/default-signal.h

@@ -1,3 +1,9 @@
+2002-02-01  Adam Megacz <adam@xwt.org>
+
+	* configure.in: Added support for mingw.
+	* java/lang/Win32Process.java: Created as empty file.
+	* java/lang/natWin32Process.cc: Created as empty file.
+
 2002-02-01  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR java/4972
