@@ -1880,7 +1880,7 @@ try_to_integrate (fndecl, actparms, target, ignore, type, structure_value_addr)
 						NULL_RTX, BITS_PER_UNIT);
 		  seq = get_insns ();
 		  end_sequence ();
-		  emit_insns_before (seq, first_insn);
+		  emit_insn_before (seq, first_insn);
 		  emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
 		}
 	    }
@@ -3078,7 +3078,7 @@ expand_call (exp, target, ignore)
 	    {
 	      insns = get_insns ();
 	      end_sequence ();
-	      emit_insns (insns);
+	      emit_insn (insns);
 	    }
 	  else
 	    {
@@ -3132,7 +3132,7 @@ expand_call (exp, target, ignore)
 	  /* Write out the sequence.  */
 	  insns = get_insns ();
 	  end_sequence ();
-	  emit_insns (insns);
+	  emit_insn (insns);
 	  valreg = temp;
 	}
 
@@ -3419,7 +3419,7 @@ expand_call (exp, target, ignore)
 						tail_recursion_label));
     }
   else
-    emit_insns (normal_call_insns);
+    emit_insn (normal_call_insns);
 
   currently_expanding_call--;
 
@@ -4099,7 +4099,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	{
 	  insns = get_insns ();
 	  end_sequence ();
-	  emit_insns (insns);
+	  emit_insn (insns);
 	}
       else
 	{

@@ -1228,12 +1228,11 @@ optimize_mode_switching (file)
 
 	      start_sequence ();
 	      EMIT_MODE_SET (entity_map[j], mode, live_at_edge);
-	      mode_set = gen_sequence ();
+	      mode_set = get_insns ();
 	      end_sequence ();
 
 	      /* Do not bother to insert empty sequence.  */
-	      if (GET_CODE (mode_set) == SEQUENCE
-		  && !XVECLEN (mode_set, 0))
+	      if (mode_set == NULL_RTX)
 		continue;
 
 	      /* If this is an abnormal edge, we'll insert at the end
@@ -1298,12 +1297,11 @@ optimize_mode_switching (file)
 
 		  start_sequence ();
 		  EMIT_MODE_SET (entity_map[j], ptr->mode, ptr->regs_live);
-		  mode_set = gen_sequence ();
+		  mode_set = get_insns ();
 		  end_sequence ();
 
 		  /* Do not bother to insert empty sequence.  */
-		  if (GET_CODE (mode_set) == SEQUENCE
-		      && !XVECLEN (mode_set, 0))
+		  if (mode_set == NULL_RTX)
 		    continue;
 
 		  emited = true;

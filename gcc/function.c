@@ -1867,7 +1867,7 @@ fixup_var_refs_insn (insn, var, promoted_mode, unsignedp, toplevel, no_share)
 		  start_sequence ();
 		  convert_move (replacements->new,
 				replacements->old, unsignedp);
-		  seq = gen_sequence ();
+		  seq = get_insns ();
 		  end_sequence ();
 		}
 	      else
@@ -1949,7 +1949,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements, no_share)
 
 	      start_sequence ();
 	      new_insn = emit_insn (gen_rtx_SET (VOIDmode, y, sub));
-	      seq = gen_sequence ();
+	      seq = get_insns ();
 	      end_sequence ();
 
 	      if (recog_memoized (new_insn) < 0)
@@ -1960,7 +1960,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements, no_share)
 		  sub = force_operand (sub, y);
 		  if (sub != y)
 		    emit_insn (gen_move_insn (y, sub));
-		  seq = gen_sequence ();
+		  seq = get_insns ();
 		  end_sequence ();
 		}
 
@@ -2390,7 +2390,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements, no_share)
 	       no other function that to do X.  */
 
 	    pat = gen_move_insn (SET_DEST (x), SET_SRC (x));
-	    if (GET_CODE (pat) == SEQUENCE)
+	    if (NEXT_INSN (pat) != NULL_RTX)
 	      {
 		last = emit_insn_before (pat, insn);
 
@@ -2408,7 +2408,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements, no_share)
 		delete_insn (last);
 	      }
 	    else
-	      PATTERN (insn) = pat;
+	      PATTERN (insn) = PATTERN (pat);
 
 	    return;
 	  }
@@ -2434,7 +2434,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements, no_share)
 	      return;
 
 	    pat = gen_move_insn (SET_DEST (x), SET_SRC (x));
-	    if (GET_CODE (pat) == SEQUENCE)
+	    if (NEXT_INSN (pat) != NULL_RTX)
 	      {
 		last = emit_insn_before (pat, insn);
 
@@ -2452,7 +2452,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements, no_share)
 		delete_insn (last);
 	      }
 	    else
-	      PATTERN (insn) = pat;
+	      PATTERN (insn) = PATTERN (pat);
 
 	    return;
 	  }
@@ -2543,7 +2543,7 @@ fixup_memory_subreg (x, insn, promoted_mode, uncritical)
   rtx mem = SUBREG_REG (x);
   rtx addr = XEXP (mem, 0);
   enum machine_mode mode = GET_MODE (x);
-  rtx result;
+  rtx result, seq;
 
   /* Paradoxical SUBREGs are usually invalid during RTL generation.  */
   if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (mem)) && ! uncritical)
@@ -2563,8 +2563,10 @@ fixup_memory_subreg (x, insn, promoted_mode, uncritical)
 
   start_sequence ();
   result = adjust_address (mem, mode, offset);
-  emit_insn_before (gen_sequence (), insn);
+  seq = get_insns ();
   end_sequence ();
+
+  emit_insn_before (seq, insn);
   return result;
 }
 
@@ -2654,7 +2656,7 @@ fixup_stack_1 (x, insn)
 
 	  start_sequence ();
 	  temp = copy_to_reg (ad);
-	  seq = gen_sequence ();
+	  seq = get_insns ();
 	  end_sequence ();
 	  emit_insn_before (seq, insn);
 	  return replace_equiv_address (x, temp);
@@ -2765,7 +2767,7 @@ optimize_bit_field (body, insn, equiv_mem)
 	  memref = adjust_address (memref, mode, offset);
 	  insns = get_insns ();
 	  end_sequence ();
-	  emit_insns_before (insns, insn);
+	  emit_insn_before (insns, insn);
 
 	  /* Store this memory reference where
 	     we found the bit field reference.  */
@@ -2833,7 +2835,7 @@ optimize_bit_field (body, insn, equiv_mem)
 	     special; just let the optimization be suppressed.  */
 
 	  if (apply_change_group () && seq)
-	    emit_insns_before (seq, insn);
+	    emit_insn_before (seq, insn);
 	}
     }
 }
@@ -3066,7 +3068,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 	  && ! validate_replace_rtx (x, sub, insn))
 	abort ();
 
-      insns = gen_sequence ();
+      insns = get_insns ();
       end_sequence ();
       emit_insn_before (insns, insn);
       return true;
@@ -3177,7 +3179,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		      end_sequence ();
 		      goto give_up;
 		    }
-		  seq = gen_sequence ();
+		  seq = get_insns ();
 		  end_sequence ();
 		  emit_insn_before (seq, insn);
 		  compute_insns_for_mem (p ? NEXT_INSN (p) : get_insns (),
@@ -3191,7 +3193,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		     might have created.  */
 		  unshare_all_rtl_again (get_insns ());
 
-		  seq = gen_sequence ();
+		  seq = get_insns ();
 		  end_sequence ();
 		  p = emit_insn_after (seq, insn);
 		  if (NEXT_INSN (insn))
@@ -3216,7 +3218,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		      goto give_up;
 		    }
 
-		  seq = gen_sequence ();
+		  seq = get_insns ();
 		  end_sequence ();
 		  emit_insn_before (seq, insn);
 		  compute_insns_for_mem (p ? NEXT_INSN (p) : get_insns (),
@@ -3821,7 +3823,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	  seq = get_insns ();
 	  end_sequence ();
 
-	  emit_insns_before (seq, object);
+	  emit_insn_before (seq, object);
 	  SET_DEST (x) = new;
 
 	  if (! validate_change (object, &SET_SRC (x), temp, 0)
@@ -3933,7 +3935,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 		  seq = get_insns ();
 		  end_sequence ();
 
-		  emit_insns_before (seq, object);
+		  emit_insn_before (seq, object);
 		  if (! validate_change (object, loc, temp, 0)
 		      && ! validate_replace_rtx (x, temp, object))
 		    abort ();
@@ -4087,7 +4089,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	      seq = get_insns ();
 	      end_sequence ();
 
-	      emit_insns_before (seq, object);
+	      emit_insn_before (seq, object);
 	      if (! validate_change (object, loc, temp, 0)
 		  && ! validate_replace_rtx (x, temp, object))
 		abort ();
@@ -5084,7 +5086,7 @@ assign_parms (fndecl)
 
   /* Output all parameter conversion instructions (possibly including calls)
      now that all parameters have been copied out of hard registers.  */
-  emit_insns (conversion_insns);
+  emit_insn (conversion_insns);
 
   last_parm_insn = get_last_insn ();
 
@@ -6422,7 +6424,7 @@ expand_main_function ()
       /* Enlist allocate_dynamic_stack_space to pick up the pieces.  */
       tmp = force_reg (Pmode, const0_rtx);
       allocate_dynamic_stack_space (tmp, NULL_RTX, BIGGEST_ALIGNMENT);
-      seq = gen_sequence ();
+      seq = get_insns ();
       end_sequence ();
 
       for (tmp = get_last_insn (); tmp; tmp = PREV_INSN (tmp))
@@ -6843,7 +6845,7 @@ expand_function_end (filename, line, end_bindings)
       end_sequence ();
 
       /* Put those insns at entry to the containing function (this one).  */
-      emit_insns_before (seq, tail_recursion_reentry);
+      emit_insn_before (seq, tail_recursion_reentry);
     }
 
   /* If we are doing stack checking and this function makes calls,
@@ -6861,7 +6863,7 @@ expand_function_end (filename, line, end_bindings)
 			       GEN_INT (STACK_CHECK_MAX_FRAME_SIZE));
 	    seq = get_insns ();
 	    end_sequence ();
-	    emit_insns_before (seq, tail_recursion_reentry);
+	    emit_insn_before (seq, tail_recursion_reentry);
 	    break;
 	  }
     }
@@ -7067,7 +7069,7 @@ expand_function_end (filename, line, end_bindings)
 
     start_sequence ();
     clobber_return_register ();
-    seq = gen_sequence ();
+    seq = get_insns ();
     end_sequence ();
 
     after = emit_insn_after (seq, clobber_after);
@@ -7113,7 +7115,7 @@ get_arg_pointer_save_area (f)
 	 have to check it and fix it if necessary.  */
       start_sequence ();
       emit_move_insn (validize_mem (ret), virtual_incoming_args_rtx);
-      seq = gen_sequence ();
+      seq = get_insns ();
       end_sequence ();
 
       push_topmost_sequence ();
@@ -7124,35 +7126,38 @@ get_arg_pointer_save_area (f)
   return ret;
 }
 
-/* Extend a vector that records the INSN_UIDs of INSNS (either a
-   sequence or a single insn).  */
+/* Extend a vector that records the INSN_UIDs of INSNS
+   (a list of one or more insns).  */
 
 static void
 record_insns (insns, vecp)
      rtx insns;
      varray_type *vecp;
 {
-  if (GET_CODE (insns) == SEQUENCE)
-    {
-      int len = XVECLEN (insns, 0);
-      int i = VARRAY_SIZE (*vecp);
+  int i, len;
+  rtx tmp;
 
-      VARRAY_GROW (*vecp, i + len);
-      while (--len >= 0)
-	{
-	  VARRAY_INT (*vecp, i) = INSN_UID (XVECEXP (insns, 0, len));
-	  ++i;
-	}
-    }
-  else
+  tmp = insns;
+  len = 0;
+  while (tmp != NULL_RTX)
     {
-      int i = VARRAY_SIZE (*vecp);
-      VARRAY_GROW (*vecp, i + 1);
-      VARRAY_INT (*vecp, i) = INSN_UID (insns);
+      len++;
+      tmp = NEXT_INSN (tmp);
+    }
+
+  i = VARRAY_SIZE (*vecp);
+  VARRAY_GROW (*vecp, i + len);
+  tmp = insns;
+  while (tmp != NULL_RTX)
+    {
+      VARRAY_INT (*vecp, i) = INSN_UID (tmp);
+      i++;
+      tmp = NEXT_INSN (tmp);
     }
 }
 
-/* Determine how many INSN_UIDs in VEC are part of INSN.  */
+/* Determine how many INSN_UIDs in VEC are part of INSN.  Because we can
+   be running after reorg, SEQUENCE rtl is possible.  */
 
 static int
 contains (insn, vec)
@@ -7264,20 +7269,21 @@ struct epi_info
 static void handle_epilogue_set PARAMS ((rtx, struct epi_info *));
 static void emit_equiv_load PARAMS ((struct epi_info *));
 
-/* Modify SEQ, a SEQUENCE that is part of the epilogue, to no modifications
-   to the stack pointer.  Return the new sequence.  */
+/* Modify INSN, a list of one or more insns that is part of the epilogue, to
+   no modifications to the stack pointer.  Return the new list of insns.  */
 
 static rtx
-keep_stack_depressed (seq)
-     rtx seq;
+keep_stack_depressed (insns)
+     rtx insns;
 {
-  int i, j;
+  int j;
   struct epi_info info;
+  rtx insn, next;
 
   /* If the epilogue is just a single instruction, it ust be OK as is.  */
 
-  if (GET_CODE (seq) != SEQUENCE)
-    return seq;
+  if (NEXT_INSN (insns) == NULL_RTX)
+    return insns;
 
   /* Otherwise, start a sequence, initialize the information we have, and
      process all the insns we were given.  */
@@ -7287,13 +7293,16 @@ keep_stack_depressed (seq)
   info.sp_offset = 0;
   info.equiv_reg_src = 0;
 
-  for (i = 0; i < XVECLEN (seq, 0); i++)
+  insn = insns;
+  next = NULL_RTX;
+  while (insn != NULL_RTX)
     {
-      rtx insn = XVECEXP (seq, 0, i);
+      next = NEXT_INSN (insn);
 
       if (!INSN_P (insn))
 	{
 	  add_insn (insn);
+	  insn = next;
 	  continue;
 	}
 
@@ -7329,6 +7338,7 @@ keep_stack_depressed (seq)
 	    {
 	      emit_equiv_load (&info);
 	      add_insn (insn);
+	      insn = next;
 	      continue;
 	    }
 	  else if (GET_CODE (retaddr) == MEM
@@ -7429,11 +7439,13 @@ keep_stack_depressed (seq)
 
       info.sp_equiv_reg = info.new_sp_equiv_reg;
       info.sp_offset = info.new_sp_offset;
+
+      insn = next;
     }
 
-  seq = gen_sequence ();
+  insns = get_insns ();
   end_sequence ();
-  return seq;
+  return insns;
 }
 
 /* SET is a SET from an insn in the epilogue.  P is a pointer to the epi_info
@@ -7548,12 +7560,10 @@ thread_prologue_and_epilogue_insns (f)
       emit_insn (seq);
 
       /* Retain a map of the prologue insns.  */
-      if (GET_CODE (seq) != SEQUENCE)
-	seq = get_insns ();
       record_insns (seq, &prologue);
       prologue_end = emit_note (NULL, NOTE_INSN_PROLOGUE_END);
 
-      seq = gen_sequence ();
+      seq = get_insns ();
       end_sequence ();
 
       /* Can't deal with multiple successors of the entry block
@@ -7712,11 +7722,9 @@ thread_prologue_and_epilogue_insns (f)
       emit_jump_insn (seq);
 
       /* Retain a map of the epilogue insns.  */
-      if (GET_CODE (seq) != SEQUENCE)
-	seq = get_insns ();
       record_insns (seq, &epilogue);
 
-      seq = gen_sequence ();
+      seq = get_insns ();
       end_sequence ();
 
       insert_insn_on_edge (seq, e);
@@ -7745,13 +7753,13 @@ epilogue_done:
       seq = gen_sibcall_epilogue ();
       end_sequence ();
 
+      /* Retain a map of the epilogue insns.  Used in life analysis to
+	 avoid getting rid of sibcall epilogue insns.  Do this before we
+	 actually emit the sequence.  */
+      record_insns (seq, &sibcall_epilogue);
+
       i = PREV_INSN (insn);
       newinsn = emit_insn_before (seq, insn);
-
-      /* Retain a map of the epilogue insns.  Used in life analysis to
-	 avoid getting rid of sibcall epilogue insns.  */
-      record_insns (GET_CODE (seq) == SEQUENCE
-		    ? seq : newinsn, &sibcall_epilogue);
     }
 #endif
 

@@ -6822,7 +6822,7 @@ emit_output_reload_insns (chain, rl, j)
 
   if (rl->when_needed == RELOAD_OTHER)
     {
-      emit_insns (other_output_reload_insns[rl->opnum]);
+      emit_insn (other_output_reload_insns[rl->opnum]);
       other_output_reload_insns[rl->opnum] = get_insns ();
     }
   else
@@ -7038,25 +7038,25 @@ emit_reload_insns (chain)
      reloads for the operand.  The RELOAD_OTHER output reloads are
      output in descending order by reload number.  */
 
-  emit_insns_before (other_input_address_reload_insns, insn);
-  emit_insns_before (other_input_reload_insns, insn);
+  emit_insn_before (other_input_address_reload_insns, insn);
+  emit_insn_before (other_input_reload_insns, insn);
 
   for (j = 0; j < reload_n_operands; j++)
     {
-      emit_insns_before (inpaddr_address_reload_insns[j], insn);
-      emit_insns_before (input_address_reload_insns[j], insn);
-      emit_insns_before (input_reload_insns[j], insn);
+      emit_insn_before (inpaddr_address_reload_insns[j], insn);
+      emit_insn_before (input_address_reload_insns[j], insn);
+      emit_insn_before (input_reload_insns[j], insn);
     }
 
-  emit_insns_before (other_operand_reload_insns, insn);
-  emit_insns_before (operand_reload_insns, insn);
+  emit_insn_before (other_operand_reload_insns, insn);
+  emit_insn_before (operand_reload_insns, insn);
 
   for (j = 0; j < reload_n_operands; j++)
     {
-      rtx x = emit_insns_after (outaddr_address_reload_insns[j], insn);
-      x = emit_insns_after (output_address_reload_insns[j], x);
-      x = emit_insns_after (output_reload_insns[j], x);
-      emit_insns_after (other_output_reload_insns[j], x);
+      rtx x = emit_insn_after (outaddr_address_reload_insns[j], insn);
+      x = emit_insn_after (output_address_reload_insns[j], x);
+      x = emit_insn_after (output_reload_insns[j], x);
+      emit_insn_after (other_output_reload_insns[j], x);
     }
 
   /* For all the spill regs newly reloaded in this instruction,
@@ -9465,19 +9465,14 @@ fixup_abnormal_edges ()
 	      next = NEXT_INSN (insn);
 	      if (INSN_P (insn))
 		{
-		  rtx seq;
-
 	          delete_insn (insn);
 
 		  /* We're not deleting it, we're moving it.  */
 		  INSN_DELETED_P (insn) = 0;
+		  PREV_INSN (insn) = NULL_RTX;
+		  NEXT_INSN (insn) = NULL_RTX;
 
-		  /* Emit a sequence, rather than scarfing the pattern, so
-		     that we don't lose REG_NOTES etc.  */
-		  /* ??? Could copy the test from gen_sequence, but don't
-		     think it's worth the bother.  */
-		  seq = gen_rtx_SEQUENCE (VOIDmode, gen_rtvec (1, insn));
-	          insert_insn_on_edge (seq, e);
+	          insert_insn_on_edge (insn, e);
 		}
 	      insn = next;
 	    }

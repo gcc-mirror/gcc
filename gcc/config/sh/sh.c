@@ -5034,11 +5034,9 @@ sh_need_epilogue ()
 
       start_sequence ();
       sh_expand_epilogue ();
-      epilogue = gen_sequence ();
+      epilogue = get_insns ();
       end_sequence ();
-      sh_need_epilogue_known
-	= (GET_CODE (epilogue) == SEQUENCE && XVECLEN (epilogue, 0) == 0
-	   ? -1 : 1);
+      sh_need_epilogue_known = (epilogue == NULL ? -1 : 1);
     }
   return sh_need_epilogue_known > 0;
 }

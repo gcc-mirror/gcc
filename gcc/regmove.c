@@ -775,7 +775,7 @@ copy_src_to_dest (insn, src, dest, old_max_uid)
       /* Generate the src->dest move.  */
       start_sequence ();
       emit_move_insn (dest, src);
-      seq = gen_sequence ();
+      seq = get_insns ();
       end_sequence ();
       /* If this sequence uses new registers, we may not use it.  */
       if (old_num_regs != reg_rtx_no

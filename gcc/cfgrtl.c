@@ -1393,11 +1393,11 @@ commit_one_edge_insertion (e, watch_calls)
 
   if (before)
     {
-      emit_insns_before (insns, before);
+      emit_insn_before (insns, before);
       last = prev_nonnote_insn (before);
     }
   else
-    last = emit_insns_after (insns, after);
+    last = emit_insn_after (insns, after);
 
   if (returnjump_p (last))
     {

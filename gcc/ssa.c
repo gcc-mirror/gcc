@@ -124,6 +124,8 @@ struct ssa_rename_from_hash_table_data {
   partition reg_partition;
 };
 
+static rtx gen_sequence
+  PARAMS ((void));
 static void ssa_rename_from_initialize
   PARAMS ((void));
 static rtx ssa_rename_from_lookup
@@ -974,6 +976,28 @@ rename_insn_1 (ptr, data)
     }
 }
 
+static rtx
+gen_sequence ()
+{
+  rtx first_insn = get_insns ();
+  rtx result;
+  rtx tem;
+  int i;
+  int len;
+
+  /* Count the insns in the chain.  */
+  len = 0;
+  for (tem = first_insn; tem; tem = NEXT_INSN (tem))
+    len++;
+
+  result = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (len));
+
+  for (i = 0, tem = first_insn; tem; tem = NEXT_INSN (tem), i++)
+    XVECEXP (result, 0, i) = tem;
+
+  return result;
+}
+
 static void
 rename_block (bb, idom)
      int bb;
@@ -1449,7 +1473,7 @@ eliminate_phi (e, reg_partition)
 	ephi_create (i, visited, pred, succ, nodes);
     }
 
-  insn = gen_sequence ();
+  insn = get_insns ();
   end_sequence ();
   insert_insn_on_edge (insn, e);
   if (rtl_dump_file)

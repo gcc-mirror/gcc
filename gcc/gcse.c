@@ -4819,7 +4819,7 @@ process_insert_insn (expr)
   else if (insn_invalid_p (emit_insn (gen_rtx_SET (VOIDmode, reg, exp))))
     abort ();
 
-  pat = gen_sequence ();
+  pat = get_insns ();
   end_sequence ();
 
   return pat;
@@ -4843,10 +4843,15 @@ insert_insn_end_bb (expr, bb, pre)
   rtx new_insn;
   rtx reg = expr->reaching_reg;
   int regno = REGNO (reg);
-  rtx pat;
-  int i;
+  rtx pat, pat_end;
 
   pat = process_insert_insn (expr);
+  if (pat == NULL_RTX || ! INSN_P (pat))
+    abort ();
+
+  pat_end = pat;
+  while (NEXT_INSN (pat_end) != NULL_RTX)
+    pat_end = NEXT_INSN (pat_end);
 
   /* If the last insn is a jump, insert EXPR in front [taking care to
      handle cc0, etc. properly].  Similary we need to care trapping
@@ -4934,26 +4939,16 @@ insert_insn_end_bb (expr, bb, pre)
   else
     new_insn = emit_insn_after (pat, insn);
 
-  /* Keep block number table up to date.
-     Note, PAT could be a multiple insn sequence, we have to make
-     sure that each insn in the sequence is handled.  */
-  if (GET_CODE (pat) == SEQUENCE)
+  while (1)
     {
-      for (i = 0; i < XVECLEN (pat, 0); i++)
+      if (INSN_P (pat))
 	{
-	  rtx insn = XVECEXP (pat, 0, i);
-	  if (INSN_P (insn))
-	    add_label_notes (PATTERN (insn), new_insn);
-
-	  note_stores (PATTERN (insn), record_set_info, insn);
+	  add_label_notes (PATTERN (pat), new_insn);
+	  note_stores (PATTERN (pat), record_set_info, pat);
 	}
-    }
-  else
-    {
-      add_label_notes (pat, new_insn);
-
-      /* Keep register set table up to date.  */
-      record_one_set (regno, new_insn);
+      if (pat == pat_end)
+	break;
+      pat = NEXT_INSN (pat);
     }
 
   gcse_create_count++;

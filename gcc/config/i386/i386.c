@@ -8628,7 +8628,7 @@ ix86_expand_int_movcc (operands)
 
   start_sequence ();
   compare_op = ix86_expand_compare (code, &second_test, &bypass_test);
-  compare_seq = gen_sequence ();
+  compare_seq = get_insns ();
   end_sequence ();
 
   compare_code = GET_CODE (compare_op);
@@ -9995,7 +9995,7 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
   end_sequence ();
 
   ix86_set_move_mem_attrs (insns, dst, src, destreg, srcreg);
-  emit_insns (insns);
+  emit_insn (insns);
   return 1;
 }
 

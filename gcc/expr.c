@@ -474,13 +474,29 @@ emit_queue ()
     {
       rtx body = QUEUED_BODY (p);
 
-      if (GET_CODE (body) == SEQUENCE)
+      switch (GET_CODE (body))
 	{
-	  QUEUED_INSN (p) = XVECEXP (QUEUED_BODY (p), 0, 0);
-	  emit_insn (QUEUED_BODY (p));
+	case INSN:
+	case JUMP_INSN:
+	case CALL_INSN:
+	case CODE_LABEL:
+	case BARRIER:
+	case NOTE:
+	  QUEUED_INSN (p) = body;
+	  emit_insn (body);
+	  break;
+
+#ifdef ENABLE_CHECKING
+	case SEQUENCE:
+	  abort ();
+	  break;
+#endif
+
+	default:
+	  QUEUED_INSN (p) = emit_insn (body);
+	  break;
 	}
-      else
-	QUEUED_INSN (p) = emit_insn (QUEUED_BODY (p));
+
       pending_chain = QUEUED_NEXT (p);
     }
 }
@@ -3114,7 +3130,7 @@ emit_move_insn_1 (x, y)
 	  last_insn = emit_move_insn (xpart, ypart);
 	}
 
-      seq = gen_sequence ();
+      seq = get_insns ();
       end_sequence ();
 
       /* Show the output dies here.  This is necessary for SUBREGs
@@ -6719,7 +6735,7 @@ expand_expr (exp, target, tmode, modifier)
 	{
 	  if (RTL_EXPR_SEQUENCE (exp) == const0_rtx)
 	    abort ();
-	  emit_insns (RTL_EXPR_SEQUENCE (exp));
+	  emit_insn (RTL_EXPR_SEQUENCE (exp));
 	  RTL_EXPR_SEQUENCE (exp) = const0_rtx;
 	}
       preserve_rtl_expr_result (RTL_EXPR_RTL (exp));
@@ -8859,7 +8875,7 @@ expand_expr (exp, target, tmode, modifier)
 	if (GET_CODE (target) != CONCAT)
 	  emit_no_conflict_block (insns, target, op0, op1, NULL_RTX);
 	else
-	  emit_insns (insns);
+	  emit_insn (insns);
 
 	return target;
       }
@@ -8908,7 +8924,7 @@ expand_expr (exp, target, tmode, modifier)
 	if (GET_CODE (target) != CONCAT)
 	  emit_no_conflict_block (insns, target, op0, NULL_RTX, NULL_RTX);
 	else
-	  emit_insns (insns);
+	  emit_insn (insns);
 
 	return target;
       }

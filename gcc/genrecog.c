@@ -43,11 +43,11 @@
 
    This program also generates the function `split_insns', which
    returns 0 if the rtl could not be split, or it returns the split
-   rtl in a SEQUENCE.
+   rtl as an INSN list.
 
    This program also generates the function `peephole2_insns', which
    returns 0 if the rtl could not be matched.  If there was a match,
-   the new rtl is returned in a SEQUENCE, and LAST_INSN will point
+   the new rtl is returned in an INSN list, and LAST_INSN will point
    to the last recognized insn in the old sequence.  */
 
 #include "hconfig.h"
@@ -2431,10 +2431,10 @@ write_header ()
 
   puts ("\n\
    The function split_insns returns 0 if the rtl could not\n\
-   be split or the split rtl in a SEQUENCE if it can be.\n\
+   be split or the split rtl as an INSN list if it can be.\n\
 \n\
    The function peephole2_insns returns 0 if the rtl could not\n\
-   be matched. If there was a match, the new rtl is returned in a SEQUENCE,\n\
+   be matched. If there was a match, the new rtl is returned in an INSN list,\n\
    and LAST_INSN will point to the last recognized insn in the old sequence.\n\
 */\n\n");
 }

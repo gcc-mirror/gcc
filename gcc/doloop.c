@@ -490,7 +490,7 @@ doloop_modify (loop, iterations, iterations_max,
 
   /* Insert initialization of the count register into the loop header.  */
   convert_move (counter_reg, count, 1);
-  sequence = gen_sequence ();
+  sequence = get_insns ();
   end_sequence ();
   emit_insn_before (sequence, loop->start);
 
@@ -508,7 +508,7 @@ doloop_modify (loop, iterations, iterations_max,
       {
 	start_sequence ();
 	emit_insn (init);
-	sequence = gen_sequence ();
+	sequence = get_insns ();
 	end_sequence ();
 	emit_insn_after (sequence, loop->start);
       }
@@ -747,7 +747,7 @@ doloop_modify_runtime (loop, iterations_max,
 	}
     }
 
-  sequence = gen_sequence ();
+  sequence = get_insns ();
   end_sequence ();
   emit_insn_before (sequence, loop->start);
 
@@ -871,18 +871,17 @@ doloop_optimize (loop)
       return 0;
     }
 
-  /* A raw define_insn may yield a plain pattern.  If a sequence
-     was involved, the last must be the jump instruction.  */
-  if (GET_CODE (doloop_seq) == SEQUENCE)
+  /* If multiple instructions were created, the last must be the
+     jump instruction.  Also, a raw define_insn may yield a plain
+     pattern.  */
+  doloop_pat = doloop_seq;
+  if (INSN_P (doloop_pat) && NEXT_INSN (doloop_pat) != NULL_RTX)
     {
-      doloop_pat = XVECEXP (doloop_seq, 0, XVECLEN (doloop_seq, 0) - 1);
-      if (GET_CODE (doloop_pat) == JUMP_INSN)
-	doloop_pat = PATTERN (doloop_pat);
-      else
+      while (NEXT_INSN (doloop_pat) != NULL_RTX)
+	doloop_pat = NEXT_INSN (doloop_pat);
+      if (GET_CODE (doloop_pat) != JUMP_INSN)
 	doloop_pat = NULL_RTX;
     }
-  else
-    doloop_pat = doloop_seq;
 
   if (! doloop_pat
       || ! (condition = doloop_condition_get (doloop_pat)))

@@ -121,7 +121,7 @@ static void emit_cmp_and_jump_insn_1 PARAMS ((rtx, rtx, enum machine_mode,
 static void prepare_float_lib_cmp PARAMS ((rtx *, rtx *, enum rtx_code *,
 					 enum machine_mode *, int *));
 
-/* Add a REG_EQUAL note to the last insn in SEQ.  TARGET is being set to
+/* Add a REG_EQUAL note to the last insn in INSNS.  TARGET is being set to
    the result of operation CODE applied to OP0 (and OP1 if it is a binary
    operation).
 
@@ -132,43 +132,65 @@ static void prepare_float_lib_cmp PARAMS ((rtx *, rtx *, enum rtx_code *,
    again, ensuring that TARGET is not one of the operands.  */
 
 static int
-add_equal_note (seq, target, code, op0, op1)
-     rtx seq;
+add_equal_note (insns, target, code, op0, op1)
+     rtx insns;
      rtx target;
      enum rtx_code code;
      rtx op0, op1;
 {
-  rtx set;
-  int i;
+  rtx last_insn, insn, set;
   rtx note;
 
-  if ((GET_RTX_CLASS (code) != '1' && GET_RTX_CLASS (code) != '2'
-       && GET_RTX_CLASS (code) != 'c' && GET_RTX_CLASS (code) != '<')
-      || GET_CODE (seq) != SEQUENCE
-      || (set = single_set (XVECEXP (seq, 0, XVECLEN (seq, 0) - 1))) == 0
-      || GET_CODE (target) == ZERO_EXTRACT
-      || (! rtx_equal_p (SET_DEST (set), target)
-	  /* For a STRICT_LOW_PART, the REG_NOTE applies to what is inside the
-	     SUBREG.  */
-	  && (GET_CODE (SET_DEST (set)) != STRICT_LOW_PART
-	      || ! rtx_equal_p (SUBREG_REG (XEXP (SET_DEST (set), 0)),
-				target))))
+  if (! insns
+      || ! INSN_P (insns)
+      || NEXT_INSN (insns) == NULL_RTX)
+    abort ();
+
+  if (GET_RTX_CLASS (code) != '1' && GET_RTX_CLASS (code) != '2'
+      && GET_RTX_CLASS (code) != 'c' && GET_RTX_CLASS (code) != '<')
+    return 1;
+
+  if (GET_CODE (target) == ZERO_EXTRACT)
+    return 1;
+
+  for (last_insn = insns;
+       NEXT_INSN (last_insn) != NULL_RTX;
+       last_insn = NEXT_INSN (last_insn))
+    ;
+
+  set = single_set (last_insn);
+  if (set == NULL_RTX)
+    return 1;
+
+  if (! rtx_equal_p (SET_DEST (set), target)
+      /* For a STRICT_LOW_PART, the REG_NOTE applies to what is inside the
+	 SUBREG.  */
+      && (GET_CODE (SET_DEST (set)) != STRICT_LOW_PART
+	  || ! rtx_equal_p (SUBREG_REG (XEXP (SET_DEST (set), 0)),
+			    target)))
     return 1;
 
   /* If TARGET is in OP0 or OP1, check if anything in SEQ sets TARGET
      besides the last insn.  */
   if (reg_overlap_mentioned_p (target, op0)
       || (op1 && reg_overlap_mentioned_p (target, op1)))
-    for (i = XVECLEN (seq, 0) - 2; i >= 0; i--)
-      if (reg_set_p (target, XVECEXP (seq, 0, i)))
-	return 0;
+    {
+      insn = PREV_INSN (last_insn);
+      while (insn != NULL_RTX)
+	{
+	  if (reg_set_p (target, insn))
+	    return 0;
+
+	  insn = PREV_INSN (insn);
+	}
+    }
 
   if (GET_RTX_CLASS (code) == '1')
     note = gen_rtx_fmt_e (code, GET_MODE (target), copy_rtx (op0));
   else
     note = gen_rtx_fmt_ee (code, GET_MODE (target), copy_rtx (op0), copy_rtx (op1));
 
-  set_unique_reg_note (XVECEXP (seq, 0, XVECLEN (seq, 0) - 1), REG_EQUAL, note);
+  set_unique_reg_note (last_insn, REG_EQUAL, note);
 
   return 1;
 }
@@ -817,10 +839,10 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       pat = GEN_FCN (icode) (temp, xop0, xop1);
       if (pat)
 	{
-	  /* If PAT is a multi-insn sequence, try to add an appropriate
+	  /* If PAT is composed of more than one insn, try to add an appropriate
 	     REG_EQUAL note to it.  If we can't because TEMP conflicts with an
 	     operand, call ourselves again, this time without a target.  */
-	  if (GET_CODE (pat) == SEQUENCE
+	  if (INSN_P (pat) && NEXT_INSN (pat) != NULL_RTX
 	      && ! add_equal_note (pat, temp, binoptab->code, xop0, xop1))
 	    {
 	      delete_insns_since (last);
@@ -1195,7 +1217,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  if (shift_count != BITS_PER_WORD)
 	    emit_no_conflict_block (insns, target, op0, op1, equiv_value);
 	  else
-	    emit_insns (insns);
+	    emit_insn (insns);
 
 
 	  return target;
@@ -2146,7 +2168,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
       pat = GEN_FCN (icode) (temp, xop0);
       if (pat)
 	{
-	  if (GET_CODE (pat) == SEQUENCE
+	  if (INSN_P (pat) && NEXT_INSN (pat) != NULL_RTX
 	      && ! add_equal_note (pat, temp, unoptab->code, xop0, NULL_RTX))
 	    {
 	      delete_insns_since (last);
@@ -2538,7 +2560,7 @@ expand_complex_abs (mode, op0, target, unsignedp)
       pat = GEN_FCN (icode) (temp, xop0);
       if (pat)
 	{
-	  if (GET_CODE (pat) == SEQUENCE
+	  if (INSN_P (pat) && NEXT_INSN (pat) != NULL_RTX
 	      && ! add_equal_note (pat, temp, this_abs_optab->code, xop0, 
 				   NULL_RTX))
 	    {
@@ -2707,7 +2729,7 @@ emit_unop_insn (icode, target, op0, code)
 
   pat = GEN_FCN (icode) (temp, op0);
 
-  if (GET_CODE (pat) == SEQUENCE && code != UNKNOWN)
+  if (INSN_P (pat) && NEXT_INSN (pat) != NULL_RTX && code != UNKNOWN)
     add_equal_note (pat, temp, code, op0, NULL_RTX);
   
   emit_insn (pat);
@@ -2754,12 +2776,12 @@ emit_no_conflict_block (insns, target, op0, op1, equiv)
   rtx prev, next, first, last, insn;
 
   if (GET_CODE (target) != REG || reload_in_progress)
-    return emit_insns (insns);
+    return emit_insn (insns);
   else
     for (insn = insns; insn; insn = NEXT_INSN (insn))
       if (GET_CODE (insn) != INSN
 	  || find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-	return emit_insns (insns);
+	return emit_insn (insns);
 
   /* First emit all insns that do not store into words of the output and remove
      these from the list.  */
@@ -4082,7 +4104,7 @@ have_sub2_insn (x, y)
 }
 
 /* Generate the body of an instruction to copy Y into X.
-   It may be a SEQUENCE, if one insn isn't enough.  */
+   It may be a list of insns, if one insn isn't enough.  */
 
 rtx
 gen_move_insn (x, y)
@@ -4153,7 +4175,7 @@ gen_move_insn (x, y)
 
   start_sequence ();
   emit_move_insn_1 (x, y);
-  seq = gen_sequence ();
+  seq = get_insns ();
   end_sequence ();
   return seq;
 }
@@ -5260,7 +5282,7 @@ gen_cond_trap (code, op1, op2, tcode)
       if (insn)
 	{
 	  emit_insn (insn);
-	  insn = gen_sequence ();
+	  insn = get_insns ();
 	}
       end_sequence();
       return insn;

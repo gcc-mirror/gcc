@@ -1,3 +1,122 @@
+2002-06-05  David S. Miller  <davem@redhat.com>
+
+	Delete SEQUENCE rtl usage outside of reorg and ssa passes.
+	* rtl.h (gen_sequence, emit_insns, emit_insns_before,
+	emit_insns_before_scope, emit_insns_after,
+	emit_insns_after_scope): Delete declaration.
+	* ada/misc.c (insert_code_for): Use emit_insn* instead of
+	emit_insns_foo.
+	* config/alpha/alpha.c (alpha_set_memflags_1): Abort on SEQUENCE.
+	(alpha_set_memflags): Fix comment.
+	(set_frame_related_p): Use get_insns instead of gen_sequence.
+	* config/alpha/alpha.md (setjmp receiver splitter): Avoid
+	emitting no insns.
+	* config/arm/arm.c (arm_finalize_pic): Use get_insns instead of
+	gen_sequence.
+	(arm_gen_load_multiple, arm_gen_store_multiple): Likewise.
+	* config/fr30/fr30.c (fr30_move_double): Likewise.
+	* config/i386/i386.c (ix86_expand_int_movcc, ix86_expand_movstr):
+	Likewise.
+	* config/ia64/ia64.c (spill_restore_mem): Likewise.
+	* config/ia64/ia64.md (conditional move spliiter): Avoid emitting
+	no insns.
+	* config/m32r/m32r.c (gen_split_move_double): Use get_insns
+	instead of gen_sequence.
+	* config/mips/mips.c (embedded_pic_fnaddr_reg): Likewise.
+	(mips_expand_prologue, mips16_gp_pseudo_reg): Likewise.
+	* config/sh/sh.c (sh_need_epilogue): Likewise.
+	* config/sparc/sparc.md (current_function_calls_alloca, flat): New
+	attributes.
+	(setjmp pattern and split): Use them to avoid splitter which emits
+	no RTL.
+	* genattrtab.c (main): Emit include of function.h
+	* config/stormy16/stormy16.c (xstormy16_split_cbranch): Use
+	get_insns instead of gen_sequence.
+	* config/cris/cris.c (cris_split_movdx): Likewise.
+	* emit-rtl.c (emit_insns*): Kill.
+	(try_split): Expect insn list instead of SEQUENCE.
+	(make_jump_insn_raw, make_call_insn_raw): Fix comments.
+	(emit_*insn*): Reimplement to work with INSN lists and PATTERNs.
+	Make them abort if a SEQUENCE is given and RTL checking is
+	enabled.
+	(emit_*_scope): Don't forget to set scope on final insn.
+	(gen_sequence): Move from here...
+	* ssa.c (gen_sequence): To here as private function.
+	* builtins.c (expand_builtin_apply_args): Use emit_insn_foo, fix
+	comments.
+	(expand_builtin_return, expand_builtin_mathfn): Likewise.
+	(expand_builtin_strlen): Use get_insns instead of gen_sequence.
+	(expand_builtin_saveregs): Use emit_insn_foo, fix comments.
+	(expand_builtin_expect_jump): Use get_insns and fix comments.
+	* calls.c (try_to_integrate): Use emit_insn_foo.
+	(expand_call, emit_library_call_value_1): Likewise.
+	* expr.c (emit_queue): Handle insn lists instead of SEQUENCE.
+	(emit_move_insn_1): Use get_insns instead of gen_sequence.
+	(expand_expr): Use emit_insn_foo.
+	* cfgrtl.c (commit_one_edge_insertion): Use emit_insn_foo.
+	* except.c (build_post_landing_pads): Likewise.
+	* flow.c (attempt_auto_inc): Likewise.
+	* stmt.c (expand_fixup, fixup_gotos, expand_nl_handler_label,
+	expand_nl_goto_receivers, expand_decl_cleanup): Likewise.
+	* function.c (fixup_var_refs_insn): Use get_insns instead of
+	gen_sequence.
+	(fixup_var_refs_1): Likewise and expect insn list from gen_foo.
+	(fixup_memory_subreg): Use get_insns instead of gen_sequence.
+	(fixup_stack_1, purge_addressof_1, expand_main_function,
+	get_arg_pointer_save_area): Likewise.
+	(optimize_bit_field, instantiate_virtual_regs_1, assign_parms,
+	expand_function_end): Use emit_insn_foo.
+	(record_insns, keep_stack_depressed): Work with insn list instead
+	of SEQUENCE, fix comments.
+	* ifcvt.c (noce_emit_store_flag, noce_try_store_flag,
+	noce_try_store_flag_constants, noce_try_store_flag_inc,
+	noce_try_store_flag_mask, noce_emit_cmove, noce_try_cmove_arith,
+	noce_try_minmax, noce_try_abs): Use emit_insn_foo.
+	(noce_process_if_block): Use get_insns instead of gen_sequence.
+	* optabs.c (add_equal_note): Work with insn list, fix comments.
+	(expand_binop): Expect insn list from GEN_FCN(), use emit_insn_foo.
+	(expand_unop, expand_complex_abs, expand_unop_insn,
+	expand_no_conflict_block): Likewise.
+	(gen_move_insn): Use get_insns instead of gen_sequence.
+	(gen_cond_trap): Likewise.
+	* integrate.c (copy_rtx_and_substitute): Likewise.
+	(emit_initial_value_sets): Use emit_insn_foo.
+	* reload1.c (emit_output_reload_insns, emit_reload_insns): Likewise.
+	(fixup_abnormal_edges): Avoid losing REG_NOTES more intelligently
+	now that RTL generators give insn lists.
+	* sibcall.c (replace_call_placeholder): Use emit_insn_foo.
+	* doloop.c (doloop_modify, doloop_modify_runtime): Use get_insns
+	instead of gen_sequence.
+	(doloop_optimize): Work with insn lists instead of SEQUENCE rtl.
+	* explow.c (emit_stack_save, emit_stack_restore): Use get_insns
+	instead of gen_sequence.
+	* loop.c (move_movables, emit_prefetch_instructions,
+	gen_add_mult, check_dbra_loop, gen_load_of_final_value):
+	Likewise.
+	(loop_regs_update): Work with insn list instead of SEQUENCE rtl.
+	(product_cheap_p): Likewise, and add commentary about RTL wastage
+	here.
+	* lcm.c (optimize_mode_switching): Use get_insns instead of
+	gen_sequence.
+	* profile.c (gen_edge_profiler): Likewise.
+	* regmove.c (copy_src_to_dest): Likewise.
+	* reg-stack.c (compensate_edge): Likewise and fix comment.
+	* gcse.c (process_insert_insn): Likewise.
+	(insert_insn_end_bb): Work with insn list instead of SEQUENCE rtl.
+	* jump.c (delete_prior_computation): Update comment.
+	* genemit.c (gen_expand, gen_split, main): Use get_insns instead
+	of gen_sequence, update comments to match.
+	* recog.c (peephole2_optimize): Work with insn lists instead of
+	SEQUENCE rtl.
+	* sched-vis.c (print_pattern): Abort on SEQUENCE.
+	* unroll.c (unroll_loop, find_splittable_givs, final_giv_value):
+	Use get_insns instead of gen_sequence.
+	(copy_loop_body): Likewise and don't emit dummy NOTE.
+	* genrecog.c: Don't mention SEQUENCE rtl in comments.
+	* combine.c (try_combine): Expect insn lists from split generator.
+	* reorg.c (relax_delay_slots): Emit SEQUENCE into insn list by
+	hand.
+	
 2002-06-11  Roger Sayle  <roger@eyesopen.com>
 	    Andreas Jaeger <aj@suse.de>
 

@@ -541,11 +541,11 @@ replace_call_placeholder (insn, use)
      sibcall_use_t use;
 {
   if (use == sibcall_use_tail_recursion)
-    emit_insns_before (XEXP (PATTERN (insn), 2), insn);
+    emit_insn_before (XEXP (PATTERN (insn), 2), insn);
   else if (use == sibcall_use_sibcall)
-    emit_insns_before (XEXP (PATTERN (insn), 1), insn);
+    emit_insn_before (XEXP (PATTERN (insn), 1), insn);
   else if (use == sibcall_use_normal)
-    emit_insns_before (XEXP (PATTERN (insn), 0), insn);
+    emit_insn_before (XEXP (PATTERN (insn), 0), insn);
   else
     abort ();
 

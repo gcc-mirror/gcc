@@ -532,7 +532,7 @@ noce_emit_store_flag (if_info, x, reversep, normalize)
 	{
 	  tmp = get_insns ();
 	  end_sequence ();
-	  emit_insns (tmp);
+	  emit_insn (tmp);
 
 	  if_info->cond_earliest = if_info->jump;
 
@@ -612,7 +612,7 @@ noce_try_store_flag (if_info)
 
       seq = get_insns ();
       end_sequence ();
-      emit_insns_before_scope (seq, if_info->jump, INSN_SCOPE (if_info->insn_a));
+      emit_insn_before_scope (seq, if_info->jump, INSN_SCOPE (if_info->insn_a));
 
       return TRUE;
     }
@@ -747,7 +747,7 @@ noce_try_store_flag_constants (if_info)
       if (seq_contains_jump (seq))
 	return FALSE;
 
-      emit_insns_before_scope (seq, if_info->jump, INSN_SCOPE (if_info->insn_a));
+      emit_insn_before_scope (seq, if_info->jump, INSN_SCOPE (if_info->insn_a));
 
       return TRUE;
     }
@@ -807,8 +807,8 @@ noce_try_store_flag_inc (if_info)
 	  if (seq_contains_jump (seq))
 	    return FALSE;
 
-	  emit_insns_before_scope (seq, if_info->jump,
-			  	   INSN_SCOPE (if_info->insn_a));
+	  emit_insn_before_scope (seq, if_info->jump,
+				  INSN_SCOPE (if_info->insn_a));
 
 	  return TRUE;
 	}
@@ -860,8 +860,8 @@ noce_try_store_flag_mask (if_info)
 	  if (seq_contains_jump (seq))
 	    return FALSE;
 
-	  emit_insns_before_scope (seq, if_info->jump,
-			  	   INSN_SCOPE (if_info->insn_a));
+	  emit_insn_before_scope (seq, if_info->jump,
+				  INSN_SCOPE (if_info->insn_a));
 
 	  return TRUE;
 	}
@@ -900,7 +900,7 @@ noce_emit_cmove (if_info, x, code, cmp_a, cmp_b, vfalse, vtrue)
 	{
 	  tmp = get_insns ();
 	  end_sequence ();
-	  emit_insns (tmp);
+	  emit_insn (tmp);
 
 	  return x;
 	}
@@ -956,8 +956,8 @@ noce_try_cmove (if_info)
 
 	  seq = get_insns ();
 	  end_sequence ();
-	  emit_insns_before_scope (seq, if_info->jump,
-			  	   INSN_SCOPE (if_info->insn_a));
+	  emit_insn_before_scope (seq, if_info->jump,
+				  INSN_SCOPE (if_info->insn_a));
 	  return TRUE;
 	}
       else
@@ -1119,7 +1119,7 @@ noce_try_cmove_arith (if_info)
 
   tmp = get_insns ();
   end_sequence ();
-  emit_insns_before_scope (tmp, if_info->jump, INSN_SCOPE (if_info->insn_a));
+  emit_insn_before_scope (tmp, if_info->jump, INSN_SCOPE (if_info->insn_a));
   return TRUE;
 
  end_seq_and_fail:
@@ -1371,7 +1371,7 @@ noce_try_minmax (if_info)
   if (seq_contains_jump (seq))
     return FALSE;
 
-  emit_insns_before_scope (seq, if_info->jump, INSN_SCOPE (if_info->insn_a));
+  emit_insn_before_scope (seq, if_info->jump, INSN_SCOPE (if_info->insn_a));
   if_info->cond = cond;
   if_info->cond_earliest = earliest;
 
@@ -1489,7 +1489,7 @@ noce_try_abs (if_info)
   if (seq_contains_jump (seq))
     return FALSE;
 
-  emit_insns_before_scope (seq, if_info->jump, INSN_SCOPE (if_info->insn_a));
+  emit_insn_before_scope (seq, if_info->jump, INSN_SCOPE (if_info->insn_a));
   if_info->cond = cond;
   if_info->cond_earliest = earliest;
 
@@ -1758,7 +1758,7 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
     {
       start_sequence ();
       noce_emit_move_insn (copy_rtx (orig_x), x);
-      insn_b = gen_sequence ();
+      insn_b = get_insns ();
       end_sequence ();
 
       emit_insn_after_scope (insn_b, test_bb->end, INSN_SCOPE (insn_a));

@@ -1540,7 +1540,9 @@ delete_prior_computation (note, insn)
 	break;
 
       /* If we reach a SEQUENCE, it is too complex to try to
-	 do anything with it, so give up.  */
+	 do anything with it, so give up.  We can be run during
+	 and after reorg, so SEQUENCE rtl can legitimately show
+	 up here.  */
       if (GET_CODE (pat) == SEQUENCE)
 	break;
 
