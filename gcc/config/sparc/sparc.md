@@ -9354,6 +9354,9 @@
    (set_attr "length" "2")])
 
 ;; Now peepholes to do a call followed by a jump.
+;; Do not match this on V9 and later processors, which have a call-return
+;; stack as this corrupts it and causes the code to run slower not faster.
+;; There are not TARGET_ARCH64 patterns because that implies TARGET_V9.
 
 (define_peephole
   [(parallel [(set (match_operand 0 "" "")
@@ -9361,7 +9364,8 @@
 			 (match_operand 2 "" "")))
 	      (clobber (reg:SI 15))])
    (set (pc) (label_ref (match_operand 3 "" "")))]
-  "short_branch (INSN_UID (insn), INSN_UID (operands[3]))
+  "! TARGET_V9
+   && short_branch (INSN_UID (insn), INSN_UID (operands[3]))
    && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (ins1))"
   "call\\t%a1, %2\\n\\tadd\\t%%o7, (%l3-.-4), %%o7")
 
@@ -9370,49 +9374,43 @@
 		    (match_operand 1 "" ""))
 	      (clobber (reg:SI 15))])
    (set (pc) (label_ref (match_operand 2 "" "")))]
-  "short_branch (INSN_UID (insn), INSN_UID (operands[2]))
-   && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (ins1))"
-  "call\\t%a0, %1\\n\\tadd\\t%%o7, (%l2-.-4), %%o7")
-
-(define_peephole
-  [(parallel [(set (match_operand 0 "" "")
-		   (call (mem:SI (match_operand:DI 1 "call_operand_address" "ps"))
-			 (match_operand 2 "" "")))
-	      (clobber (reg:DI 15))])
-   (set (pc) (label_ref (match_operand 3 "" "")))]
-  "TARGET_ARCH64
-   && short_branch (INSN_UID (insn), INSN_UID (operands[3]))
-   && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (ins1))"
-  "call\\t%a1, %2\\n\\tadd\\t%%o7, (%l3-.-4), %%o7")
-
-(define_peephole
-  [(parallel [(call (mem:SI (match_operand:DI 0 "call_operand_address" "ps"))
-		    (match_operand 1 "" ""))
-	      (clobber (reg:DI 15))])
-   (set (pc) (label_ref (match_operand 2 "" "")))]
-  "TARGET_ARCH64
+  "! TARGET_V9
    && short_branch (INSN_UID (insn), INSN_UID (operands[2]))
    && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (ins1))"
   "call\\t%a0, %1\\n\\tadd\\t%%o7, (%l2-.-4), %%o7")
 
-(define_insn "prefetch"
+;; ??? UltraSPARC-III note: A memory operation loading into the floating point register
+;; ??? file, if it hits the prefetch cache, has a chance to dual-issue with other memory
+;; ??? operations.  With DFA we might be able to model this, but it requires a lot of
+;; ??? state.
+(define_expand "prefetch"
+  [(match_operand 0 "address_operand" "")
+   (match_operand 1 "const_int_operand" "")
+   (match_operand 2 "const_int_operand" "")]
+  "TARGET_V9"
+  "
+{
+  if (TARGET_ARCH64)
+    emit_insn (gen_prefetch_64 (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_prefetch_32 (operands[0], operands[1], operands[2]));
+  DONE;
+}")
+
+(define_insn "prefetch_64"
   [(prefetch (match_operand:DI 0 "address_operand" "p")
 	     (match_operand:DI 1 "const_int_operand" "n")
 	     (match_operand:DI 2 "const_int_operand" "n"))]
-  "TARGET_V9"
+  ""
 {
-  static const char * const prefetch_instr[2][4] = {
+  static const char * const prefetch_instr[2][2] = {
     {
       "prefetch\\t[%a0], 1", /* no locality: prefetch for one read */
-      "prefetch\\t[%a0], 0", /* medium locality: prefetch for several reads */
-      "prefetch\\t[%a0], 0", /* medium locality: prefetch for several reads */
-      "prefetch\\t[%a0], 4", /* high locality: prefetch page */
+      "prefetch\\t[%a0], 0", /* medium to high locality: prefetch for several reads */
     },
     {
       "prefetch\\t[%a0], 3", /* no locality: prefetch for one write */
-      "prefetch\\t[%a0], 2", /* medium locality: prefetch for several writes */
-      "prefetch\\t[%a0], 2", /* medium locality: prefetch for several writes */
-      "prefetch\\t[%a0], 4", /* high locality: prefetch page */
+      "prefetch\\t[%a0], 2", /* medium to high locality: prefetch for several writes */
     }
   };
   int read_or_write = INTVAL (operands[1]);
@@ -9422,7 +9420,34 @@
     abort ();
   if (locality < 0 || locality > 3)
     abort ();
-  return prefetch_instr [read_or_write][locality];
+  return prefetch_instr [read_or_write][locality == 0 ? 0 : 1];
+}
+  [(set_attr "type" "load")])
+
+(define_insn "prefetch_32"
+  [(prefetch (match_operand:SI 0 "address_operand" "p")
+	     (match_operand:SI 1 "const_int_operand" "n")
+	     (match_operand:SI 2 "const_int_operand" "n"))]
+  ""
+{
+  static const char * const prefetch_instr[2][2] = {
+    {
+      "prefetch\\t[%a0], 1", /* no locality: prefetch for one read */
+      "prefetch\\t[%a0], 0", /* medium to high locality: prefetch for several reads */
+    },
+    {
+      "prefetch\\t[%a0], 3", /* no locality: prefetch for one write */
+      "prefetch\\t[%a0], 2", /* medium to high locality: prefetch for several writes */
+    }
+  };
+  int read_or_write = INTVAL (operands[1]);
+  int locality = INTVAL (operands[2]);
+
+  if (read_or_write != 0 && read_or_write != 1)
+    abort ();
+  if (locality < 0 || locality > 3)
+    abort ();
+  return prefetch_instr [read_or_write][locality == 0 ? 0 : 1];
 }
   [(set_attr "type" "load")])
 
