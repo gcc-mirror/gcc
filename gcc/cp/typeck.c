@@ -3648,6 +3648,11 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  tree e1;
 	  tree e2;
 
+	  if (TREE_SIDE_EFFECTS (op0))
+	    op0 = save_expr (op0);
+	  if (TREE_SIDE_EFFECTS (op1))
+	    op1 = save_expr (op1);
+
 	  if (flag_new_abi)
 	    {
 	      /* We generate:
@@ -3670,7 +3675,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	      delta1 = build_component_ref (op1, delta_identifier,
 					    NULL_TREE, 0);
 	      e1 = cp_build_binary_op (EQ_EXPR, delta0, delta1);
-	      e2 = cp_build_binary_op (NE_EXPR, 
+	      e2 = cp_build_binary_op (EQ_EXPR, 
 				       pfn0,
 				       cp_convert (TREE_TYPE (pfn0),
 						   integer_zero_node));
@@ -3683,13 +3688,19 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	      /* The code we generate for the test is:
 
 		 (op0.index == op1.index
-		  && ((op1.index != -1 && op0.delta2 == op1.delta2)
-		      || op0.pfn == op1.pfn)) */
+		  && op0.delta == op1.delta
+		  && (op1.index == -1 ? op0.pfn == op1.pfn
+		      : op0.delta2 == op1.delta2)) */
 
 	      tree index0 = build_component_ref (op0, index_identifier,
 						 NULL_TREE, 0);
-	      tree index1 = save_expr (build_component_ref (op1, index_identifier,
-							    NULL_TREE, 0));
+	      tree index1
+		= save_expr (build_component_ref (op1, index_identifier,
+						  NULL_TREE, 0));
+	      tree delta0 = build_component_ref (op0, delta_identifier,
+						 NULL_TREE, 0);
+	      tree delta1 = build_component_ref (op1, delta_identifier,
+						 NULL_TREE, 0);
 	      tree pfn0 = PFN_FROM_PTRMEMFUNC (op0);
 	      tree pfn1 = PFN_FROM_PTRMEMFUNC (op1);
 	      tree delta20 = DELTA2_FROM_PTRMEMFUNC (op0);
@@ -3698,17 +3709,17 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	      tree integer_neg_one_node
 		= cp_build_binary_op (MINUS_EXPR, integer_zero_node,
 				      integer_one_node);
-	      e1 = cp_build_binary_op (EQ_EXPR, index0, index1);
-	      e2 = cp_build_binary_op (NE_EXPR, index1, integer_neg_one_node);
-	      e2 = cp_build_binary_op (TRUTH_ANDIF_EXPR, e2,
-				       cp_build_binary_op (EQ_EXPR, 
-							   delta20, delta21));
+	      e1 = cp_build_binary_op (EQ_EXPR, index1, integer_neg_one_node);
 	      /* We can't use build_binary_op for this cmp because it
 		 would get confused by the ptr to method types and
 		 think we want pmfs.  */
-	      e3 = build (EQ_EXPR, boolean_type_node, pfn0, pfn1);
-	      e2 = cp_build_binary_op (TRUTH_ORIF_EXPR, e2, e3);
-	      e = cp_build_binary_op (TRUTH_ANDIF_EXPR, e1, e2);
+	      e2 = build (EQ_EXPR, boolean_type_node, pfn0, pfn1);
+	      e3 = cp_build_binary_op (EQ_EXPR, delta20, delta21);
+	      e = build_conditional_expr (e1, e2, e3);
+	      e1 = cp_build_binary_op (EQ_EXPR, index0, index1);
+	      e = cp_build_binary_op (TRUTH_ANDIF_EXPR, e1, e);
+	      e1 = cp_build_binary_op (EQ_EXPR, delta0, delta1);
+	      e = cp_build_binary_op (TRUTH_ANDIF_EXPR, e1, e);
 	    }
 	  if (code == EQ_EXPR)
 	    return e;
