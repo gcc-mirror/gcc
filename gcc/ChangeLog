@@ -1,3 +1,9 @@
+2000-10-17  Diego Novillo  <dnovillo@cygnus.com>
+
+	* config/i386/unix.h (ASM_OUTPUT_MI_THUNK): Symbol
+	_GLOBAL_OFFSET_TABLE should not have a $ prefix when
+	using -mintel-syntax.
+
 2000-10-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (FMT_FLAG_DOLLAR_MULTIPLE): Define.
