@@ -1,5 +1,9 @@
 2001-11-12  David O'Brien  <obrien@FreeBSD.org>
 
+	* MAINTAINERS: mips and s390 are also CPU ports.
+
+2001-11-12  David O'Brien  <obrien@FreeBSD.org>
+
 	* MAINTAINERS: mcore, cris and mmix are also CPU ports.
 
 2001-11-11  David O'Brien  <obrien@FreeBSD.org>
