@@ -114,31 +114,9 @@ void ffeste_R1221 (void);
 void ffeste_R1225 (void);
 void ffeste_R1226 (ffesymbol entry);
 void ffeste_R1227 (ffestw block, ffebld expr);
-#if FFESTR_VXT
-void ffeste_V018_start (ffestpRewriteStmt *info, ffestvFormat format);
-void ffeste_V018_item (ffebld expr);
-void ffeste_V018_finish (void);
-void ffeste_V019_start (ffestpAcceptStmt *info, ffestvFormat format);
-void ffeste_V019_item (ffebld expr);
-void ffeste_V019_finish (void);
-#endif
 void ffeste_V020_start (ffestpTypeStmt *info, ffestvFormat format);
 void ffeste_V020_item (ffebld expr);
 void ffeste_V020_finish (void);
-#if FFESTR_VXT
-void ffeste_V021 (ffestpDeleteStmt *info);
-void ffeste_V022 (ffestpBeruStmt *info);
-void ffeste_V023_start (ffestpVxtcodeStmt *info);
-void ffeste_V023_item (ffebld expr);
-void ffeste_V023_finish (void);
-void ffeste_V024_start (ffestpVxtcodeStmt *info);
-void ffeste_V024_item (ffebld expr);
-void ffeste_V024_finish (void);
-void ffeste_V025_start (void);
-void ffeste_V025_item (ffebld u, ffebld m, ffebld n, ffebld asv);
-void ffeste_V025_finish (void);
-void ffeste_V026 (ffestpFindStmt *info);
-#endif
 
 /* Define macros. */
 

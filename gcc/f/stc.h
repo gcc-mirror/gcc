@@ -1,5 +1,5 @@
 /* stc.h -- Private #include File (module.h template V1.0)
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -77,36 +77,8 @@ void ffestc_init_4 (void);
 bool ffestc_is_decl_not_R1219 (void);
 bool ffestc_is_entry_in_subr (void);
 bool ffestc_is_let_not_V027 (void);
-#if FFESTR_F90
-void ffestc_let (ffebld dest, ffebld source, ffelexToken source_token);
-#else
 #define ffestc_let ffestc_R737
-#endif
-#if FFESTR_F90
-void ffestc_module (ffelexToken module_name, ffelexToken procedure_name);
-#endif
-#if FFESTR_F90
-void ffestc_private (void);
-#endif
 void ffestc_terminate_4 (void);
-#if FFESTR_F90
-void ffestc_R423A (void);
-void ffestc_R423B (void);
-void ffestc_R424 (ffelexToken access, ffestrOther access_kw, ffelexToken name);
-void ffestc_R425 (ffelexToken name);
-void ffestc_R426_start (ffestpType type, ffelexToken typet, ffebld kind,
-			ffelexToken kindt, ffebld len, ffelexToken lent);
-void ffestc_R426_attrib (ffestpAttrib attrib, ffelexToken attribt,
-			 ffestrOther intent_kw, ffesttDimList dims);
-void ffestc_R426_item (ffelexToken name, ffebld kind, ffelexToken kindt,
-	      ffesttDimList dims, ffebld len, ffelexToken lent, ffebld init,
-		       ffelexToken initt, bool clist);
-void ffestc_R426_itemstartvals (void);
-void ffestc_R426_itemvalue (ffebld repeat, ffelexToken repeat_token,
-			    ffebld value, ffelexToken value_token);
-void ffestc_R426_itemendvals (ffelexToken t);
-void ffestc_R426_finish (void);
-#endif
 void ffestc_R501_start (ffestpType type, ffelexToken typet, ffebld kind,
 			ffelexToken kindt, ffebld len, ffelexToken lent);
 void ffestc_R501_attrib (ffestpAttrib attrib, ffelexToken attribt,
@@ -119,22 +91,6 @@ void ffestc_R501_itemvalue (ffebld repeat, ffelexToken repeat_token,
 			    ffebld value, ffelexToken value_token);
 void ffestc_R501_itemendvals (ffelexToken t);
 void ffestc_R501_finish (void);
-#if FFESTR_F90
-void ffestc_R519_start (ffelexToken intent, ffestrOther intent_kw);
-void ffestc_R519_item (ffelexToken name);
-void ffestc_R519_finish (void);
-void ffestc_R520_start (void);
-void ffestc_R520_item (ffelexToken name);
-void ffestc_R520_finish (void);
-void ffestc_R521A (void);
-void ffestc_R521Astart (void);
-void ffestc_R521Aitem (ffelexToken name);
-void ffestc_R521Afinish (void);
-void ffestc_R521B (void);
-void ffestc_R521Bstart (void);
-void ffestc_R521Bitem (ffelexToken name);
-void ffestc_R521Bfinish (void);
-#endif
 void ffestc_R522 (void);
 void ffestc_R522start (void);
 void ffestc_R522item_object (ffelexToken name);
@@ -143,17 +99,6 @@ void ffestc_R522finish (void);
 void ffestc_R524_start (bool virtual);
 void ffestc_R524_item (ffelexToken name, ffesttDimList dims);
 void ffestc_R524_finish (void);
-#if FFESTR_F90
-void ffestc_R525_start (void);
-void ffestc_R525_item (ffelexToken name, ffesttDimList dims);
-void ffestc_R525_finish (void);
-void ffestc_R526_start (void);
-void ffestc_R526_item (ffelexToken name, ffesttDimList dims);
-void ffestc_R526_finish (void);
-void ffestc_R527_start (void);
-void ffestc_R527_item (ffelexToken name, ffesttDimList dims);
-void ffestc_R527_finish (void);
-#endif
 void ffestc_R528_start (void);
 void ffestc_R528_item_object (ffebld expr, ffelexToken expr_token);
 void ffestc_R528_item_startvals (void);
@@ -181,21 +126,7 @@ void ffestc_R547_start (void);
 void ffestc_R547_item_object (ffelexToken name, ffesttDimList dims);
 void ffestc_R547_item_cblock (ffelexToken name);
 void ffestc_R547_finish (void);
-#if FFESTR_F90
-void ffestc_R620 (ffesttExprList objects, ffebld stat,
-		  ffelexToken stat_token);
-void ffestc_R624 (ffesttExprList pointers);
-void ffestc_R625 (ffesttExprList objects, ffebld stat,
-		  ffelexToken stat_token);
-#endif
 void ffestc_R737 (ffebld dest, ffebld source, ffelexToken source_token);
-#if FFESTR_F90
-void ffestc_R738 (ffebld dest, ffebld source, ffelexToken source_token);
-void ffestc_R740 (ffebld expr, ffelexToken expr_token);
-void ffestc_R742 (ffebld expr, ffelexToken expr_token);
-void ffestc_R744 (void);
-void ffestc_R745 (void);
-#endif
 void ffestc_R803 (ffelexToken construct_name, ffebld expr,
 		  ffelexToken expr_token);
 void ffestc_R804 (ffebld expr, ffelexToken expr_token, ffelexToken name);
@@ -251,22 +182,8 @@ void ffestc_R923B_finish (void);
 void ffestc_R1001 (ffesttFormatList f);
 void ffestc_R1102 (ffelexToken name);
 void ffestc_R1103 (ffelexToken name);
-#if FFESTR_F90
-void ffestc_R1105 (ffelexToken name);
-void ffestc_R1106 (ffelexToken name);
-void ffestc_R1107_start (ffelexToken name, bool only);
-void ffestc_R1107_item (ffelexToken local, ffelexToken use);
-void ffestc_R1107_finish (void);
-#endif
 void ffestc_R1111 (ffelexToken name);
 void ffestc_R1112 (ffelexToken name);
-#if FFESTR_F90
-void ffestc_R1202 (ffestpDefinedOperator operator, ffelexToken name);
-void ffestc_R1203 (void);
-void ffestc_R1205_start (void);
-void ffestc_R1205_item (ffelexToken name);
-void ffestc_R1205_finish (void);
-#endif
 void ffestc_R1207_start (void);
 void ffestc_R1207_item (ffelexToken name);
 void ffestc_R1207_finish (void);
@@ -274,9 +191,6 @@ void ffestc_R1208_start (void);
 void ffestc_R1208_item (ffelexToken name);
 void ffestc_R1208_finish (void);
 void ffestc_R1212 (ffebld expr, ffelexToken expr_token);
-#if FFESTR_F90
-void ffestc_R1213 (ffebld dest, ffebld source, ffelexToken source_token);
-#endif
 void ffestc_R1219 (ffelexToken funcname, ffesttTokenList args,
 	 ffelexToken final, ffestpType type, ffebld kind, ffelexToken kindt,
    ffebld len, ffelexToken lent, ffelexToken recursive, ffelexToken result);
@@ -287,57 +201,17 @@ void ffestc_R1225 (ffelexToken name);
 void ffestc_R1226 (ffelexToken entryname, ffesttTokenList args,
 		   ffelexToken final);
 void ffestc_R1227 (ffebld expr, ffelexToken expr_token);
-#if FFESTR_F90
-void ffestc_R1228 (void);
-#endif
 void ffestc_R1229_start (ffelexToken name, ffesttTokenList args,
 			 ffelexToken final);
 void ffestc_R1229_finish (ffebld expr, ffelexToken expr_token);
 void ffestc_S3P4 (ffebld filename, ffelexToken filename_token);
-#if FFESTR_VXT
-void ffestc_V003_start (ffelexToken structure_name);
-void ffestc_V003_item (ffelexToken name, ffesttDimList dims);
-void ffestc_V003_finish (void);
-void ffestc_V004 (void);
-void ffestc_V009 (void);
-void ffestc_V010 (void);
-void ffestc_V012 (void);
-void ffestc_V013 (void);
-#endif
 void ffestc_V014_start (void);
 void ffestc_V014_item_object (ffelexToken name);
 void ffestc_V014_item_cblock (ffelexToken name);
 void ffestc_V014_finish (void);
-#if FFESTR_VXT
-void ffestc_V016_start (void);
-void ffestc_V016_item_structure (ffelexToken name);
-void ffestc_V016_item_object (ffelexToken name, ffesttDimList dims);
-void ffestc_V016_finish (void);
-void ffestc_V018_start (void);
-void ffestc_V018_item (ffebld expr, ffelexToken expr_token);
-void ffestc_V018_finish (void);
-void ffestc_V019_start (void);
-void ffestc_V019_item (ffebld expr, ffelexToken expr_token);
-void ffestc_V019_finish (void);
-#endif
 void ffestc_V020_start (void);
 void ffestc_V020_item (ffebld expr, ffelexToken expr_token);
 void ffestc_V020_finish (void);
-#if FFESTR_VXT
-void ffestc_V021 (void);
-void ffestc_V022 (void);
-void ffestc_V023_start (void);
-void ffestc_V023_item (ffebld expr, ffelexToken expr_token);
-void ffestc_V023_finish (void);
-void ffestc_V024_start (void);
-void ffestc_V024_item (ffebld expr, ffelexToken expr_token);
-void ffestc_V024_finish (void);
-void ffestc_V025_start (void);
-void ffestc_V025_item (ffebld u, ffelexToken ut, ffebld m, ffelexToken mt,
-		    ffebld n, ffelexToken nt, ffebld asv, ffelexToken asvt);
-void ffestc_V025_finish (void);
-void ffestc_V026 (void);
-#endif
 void ffestc_V027_start (void);
 void ffestc_V027_item (ffelexToken dest_token, ffebld source,
 		       ffelexToken source_token);

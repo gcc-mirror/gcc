@@ -1,5 +1,5 @@
 /* stb.h -- Private #include File (module.h template V1.0)
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -79,15 +79,6 @@ struct _ffestb_args_
 	ffeTokenLength len;	/* Length of "STOP/PAUSE". */
       }
     halt;
-#if FFESTR_F90
-    struct
-      {
-	const char *badname;
-	ffeTokenLength len;	/* Length of "ALLOCATE/DEALLOCATE". */
-	ffeexprContext ctx;	/* Either ALLOCATE or DEALLOCATE. */
-      }
-    heap;
-#endif
     struct
       {
 	const char *badname;
@@ -96,22 +87,6 @@ struct _ffestb_args_
 				   PRIVATE". */
       }
     varlist;
-#if FFESTR_VXT
-    struct
-      {
-	const char *badname;
-	ffeTokenLength len;	/* Length of "ENCODE/DECODE". */
-      }
-    vxtcode;
-#endif
-#if FFESTR_F90
-    struct
-      {
-	const char *badname;
-	ffeTokenLength len;	/* Length of "ALLOCATABLE/POINTER/TARGET". */
-      }
-    dimlist;
-#endif
     struct
       {
 	const char *badname;
@@ -150,33 +125,9 @@ ffelexHandler ffestb_endxyz (ffelexToken t);
 ffelexHandler ffestb_decl_gentype (ffelexToken t);
 ffelexHandler ffestb_goto (ffelexToken t);
 ffelexHandler ffestb_halt (ffelexToken t);
-#if FFESTR_F90
-ffelexHandler ffestb_heap (ffelexToken t);
-#endif
 ffelexHandler ffestb_if (ffelexToken t);
 ffelexHandler ffestb_let (ffelexToken t);
-#if FFESTR_F90
-ffelexHandler ffestb_module (ffelexToken t);
-#endif
-#if FFESTR_F90
-ffelexHandler ffestb_decl_recursive (ffelexToken t);
-#endif
-#if FFESTR_F90
-ffelexHandler ffestb_type (ffelexToken t);
-#endif
-#if FFESTR_F90
-ffelexHandler ffestb_decl_typetype (ffelexToken t);
-#endif
 ffelexHandler ffestb_varlist (ffelexToken t);
-#if FFESTR_VXT
-ffelexHandler ffestb_vxtcode (ffelexToken t);
-#endif
-#if FFESTR_F90
-ffelexHandler ffestb_where (ffelexToken t);
-#endif
-#if HARD_F90
-ffelexHandler ffestb_R423B (ffelexToken t);
-#endif
 ffelexHandler ffestb_R522 (ffelexToken t);
 ffelexHandler ffestb_R524 (ffelexToken t);
 ffelexHandler ffestb_R528 (ffelexToken t);
@@ -185,9 +136,6 @@ ffelexHandler ffestb_decl_R539 (ffelexToken t);
 ffelexHandler ffestb_R542 (ffelexToken t);
 ffelexHandler ffestb_R544 (ffelexToken t);
 ffelexHandler ffestb_R547 (ffelexToken t);
-#if FFESTR_F90
-ffelexHandler ffestb_R624 (ffelexToken t);
-#endif
 ffelexHandler ffestb_R809 (ffelexToken t);
 ffelexHandler ffestb_R810 (ffelexToken t);
 ffelexHandler ffestb_R834 (ffelexToken t);
@@ -203,36 +151,12 @@ ffelexHandler ffestb_R911 (ffelexToken t);
 ffelexHandler ffestb_R923 (ffelexToken t);
 ffelexHandler ffestb_R1001 (ffelexToken t);
 ffelexHandler ffestb_R1102 (ffelexToken t);
-#if FFESTR_F90
-ffelexHandler ffestb_R1107 (ffelexToken t);
-#endif
-#if FFESTR_F90
-ffelexHandler ffestb_R1202 (ffelexToken t);
-#endif
 ffelexHandler ffestb_R1212 (ffelexToken t);
 ffelexHandler ffestb_R1227 (ffelexToken t);
-#if FFESTR_F90
-ffelexHandler ffestb_R1228 (ffelexToken t);
-#endif
 ffelexHandler ffestb_R1229 (ffelexToken t);
 ffelexHandler ffestb_S3P4 (ffelexToken t);
-#if FFESTR_VXT
-ffelexHandler ffestb_V003 (ffelexToken t);
-ffelexHandler ffestb_V009 (ffelexToken t);
-ffelexHandler ffestb_V012 (ffelexToken t);
-#endif
 ffelexHandler ffestb_V014 (ffelexToken t);
-#if FFESTR_VXT
-ffelexHandler ffestb_V016 (ffelexToken t);
-ffelexHandler ffestb_V018 (ffelexToken t);
-ffelexHandler ffestb_V019 (ffelexToken t);
-#endif
 ffelexHandler ffestb_V020 (ffelexToken t);
-#if FFESTR_VXT
-ffelexHandler ffestb_V021 (ffelexToken t);
-ffelexHandler ffestb_V025 (ffelexToken t);
-ffelexHandler ffestb_V026 (ffelexToken t);
-#endif
 ffelexHandler ffestb_V027 (ffelexToken t);
 
 /* Define macros. */

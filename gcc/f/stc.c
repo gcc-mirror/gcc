@@ -170,15 +170,6 @@ union ffestc_local_u_
 	ffesymbol symbol;	/* SFN symbol. */
       }
     sfunc;
-#if FFESTR_VXT
-    struct
-      {
-	char list_state;	/* 0=>no field names allowed, 1=>error
-				   reported already, 2=>field names req'd,
-				   3=>have a field name. */
-      }
-    V003;
-#endif
   };				/* Merge with the one in ffestc later. */
 
 /* Static objects accessed by functions in this module. */
@@ -226,9 +217,6 @@ static bool ffestc_labelref_is_format_ (ffelexToken label_token,
 					ffelab *label);
 static bool ffestc_labelref_is_loopend_ (ffelexToken label_token,
 					 ffelab *label);
-#if FFESTR_F90
-static ffestcOrder_ ffestc_order_access_ (void);
-#endif
 static ffestcOrder_ ffestc_order_actiondo_ (void);
 static ffestcOrder_ ffestc_order_actionif_ (void);
 static ffestcOrder_ ffestc_order_actionwhere_ (void);
@@ -236,17 +224,8 @@ static void ffestc_order_any_ (void);
 static void ffestc_order_bad_ (void);
 static ffestcOrder_ ffestc_order_blockdata_ (void);
 static ffestcOrder_ ffestc_order_blockspec_ (void);
-#if FFESTR_F90
-static ffestcOrder_ ffestc_order_component_ (void);
-#endif
-#if FFESTR_F90
-static ffestcOrder_ ffestc_order_contains_ (void);
-#endif
 static ffestcOrder_ ffestc_order_data_ (void);
 static ffestcOrder_ ffestc_order_data77_ (void);
-#if FFESTR_F90
-static ffestcOrder_ ffestc_order_derivedtype_ (void);
-#endif
 static ffestcOrder_ ffestc_order_do_ (void);
 static ffestcOrder_ ffestc_order_entry_ (void);
 static ffestcOrder_ ffestc_order_exec_ (void);
@@ -256,89 +235,26 @@ static ffestcOrder_ ffestc_order_iface_ (void);
 static ffestcOrder_ ffestc_order_ifthen_ (void);
 static ffestcOrder_ ffestc_order_implicit_ (void);
 static ffestcOrder_ ffestc_order_implicitnone_ (void);
-#if FFESTR_F90
-static ffestcOrder_ ffestc_order_interface_ (void);
-#endif
-#if FFESTR_F90
-static ffestcOrder_ ffestc_order_map_ (void);
-#endif
-#if FFESTR_F90
-static ffestcOrder_ ffestc_order_module_ (void);
-#endif
 static ffestcOrder_ ffestc_order_parameter_ (void);
 static ffestcOrder_ ffestc_order_program_ (void);
 static ffestcOrder_ ffestc_order_progspec_ (void);
-#if FFESTR_F90
-static ffestcOrder_ ffestc_order_record_ (void);
-#endif
 static ffestcOrder_ ffestc_order_selectcase_ (void);
 static ffestcOrder_ ffestc_order_sfunc_ (void);
-#if FFESTR_F90
-static ffestcOrder_ ffestc_order_spec_ (void);
-#endif
-#if FFESTR_VXT
-static ffestcOrder_ ffestc_order_structure_ (void);
-#endif
 static ffestcOrder_ ffestc_order_subroutine_ (void);
-#if FFESTR_F90
-static ffestcOrder_ ffestc_order_type_ (void);
-#endif
 static ffestcOrder_ ffestc_order_typedecl_ (void);
-#if FFESTR_VXT
-static ffestcOrder_ ffestc_order_union_ (void);
-#endif
 static ffestcOrder_ ffestc_order_unit_ (void);
-#if FFESTR_F90
-static ffestcOrder_ ffestc_order_use_ (void);
-#endif
-#if FFESTR_VXT
-static ffestcOrder_ ffestc_order_vxtstructure_ (void);
-#endif
-#if FFESTR_F90
-static ffestcOrder_ ffestc_order_where_ (void);
-#endif
 static void ffestc_promote_dummy_ (ffelexToken t);
 static void ffestc_promote_execdummy_ (ffelexToken t);
 static void ffestc_promote_sfdummy_ (ffelexToken t);
 static void ffestc_shriek_begin_program_ (void);
-#if FFESTR_F90
-static void ffestc_shriek_begin_uses_ (void);
-#endif
 static void ffestc_shriek_blockdata_ (bool ok);
 static void ffestc_shriek_do_ (bool ok);
 static void ffestc_shriek_end_program_ (bool ok);
-#if FFESTR_F90
-static void ffestc_shriek_end_uses_ (bool ok);
-#endif
 static void ffestc_shriek_function_ (bool ok);
 static void ffestc_shriek_if_ (bool ok);
 static void ffestc_shriek_ifthen_ (bool ok);
-#if FFESTR_F90
-static void ffestc_shriek_interface_ (bool ok);
-#endif
-#if FFESTR_F90
-static void ffestc_shriek_map_ (bool ok);
-#endif
-#if FFESTR_F90
-static void ffestc_shriek_module_ (bool ok);
-#endif
 static void ffestc_shriek_select_ (bool ok);
-#if FFESTR_VXT
-static void ffestc_shriek_structure_ (bool ok);
-#endif
 static void ffestc_shriek_subroutine_ (bool ok);
-#if FFESTR_F90
-static void ffestc_shriek_type_ (bool ok);
-#endif
-#if FFESTR_VXT
-static void ffestc_shriek_union_ (bool ok);
-#endif
-#if FFESTR_F90
-static void ffestc_shriek_where_ (bool ok);
-#endif
-#if FFESTR_F90
-static void ffestc_shriek_wherethen_ (bool ok);
-#endif
 static int ffestc_subr_binsrch_ (const char *const *list, int size,
 				 ffestpFile *spec, const char *whine);
 static ffestvFormat ffestc_subr_format_ (ffestpFile *spec);
@@ -377,13 +293,7 @@ static void ffestc_try_shriek_do_ (void);
 	    || ffestc_statelet_ == FFESTC_stateletITEM_); \
       ffestc_statelet_ = FFESTC_stateletSIMPLE_
 #define ffestc_order_action_() ffestc_order_exec_()
-#if FFESTR_F90
-#define ffestc_order_interfacespec_() ffestc_order_derivedtype_()
-#endif
 #define ffestc_shriek_if_lost_ ffestc_shriek_if_
-#if FFESTR_F90
-#define ffestc_shriek_where_lost_ ffestc_shriek_where_
-#endif
 
 /* ffestc_establish_declinfo_ -- Determine specific type/params info for entity
 
@@ -1834,58 +1744,6 @@ ffestc_labelref_is_loopend_ (ffelexToken label_token, ffelab *x_label)
   return TRUE;
 }
 
-/* ffestc_order_access_ -- Check ordering on <access> statement
-
-   if (ffestc_order_access_() != FFESTC_orderOK_)
-       return;	*/
-
-#if FFESTR_F90
-static ffestcOrder_
-ffestc_order_access_ ()
-{
-  recurse:
-
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateNIL:
-      ffestc_shriek_begin_program_ ();
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_stateMODULE0:
-    case FFESTV_stateMODULE1:
-    case FFESTV_stateMODULE2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateMODULE3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateMODULE3:
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_stateWHERE:
-      ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
-      return FFESTC_orderBAD_;
-
-    case FFESTV_stateIF:
-      ffestc_order_bad_ ();
-      ffestc_shriek_if_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    default:
-      ffestc_order_bad_ ();
-      return FFESTC_orderBAD_;
-    }
-}
-
-#endif
 /* ffestc_order_actiondo_ -- Check ordering on <actiondo> statement
 
    if (ffestc_order_actiondo_() != FFESTC_orderOK_)
@@ -1918,16 +1776,10 @@ ffestc_order_actiondo_ ()
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     default:
@@ -1995,16 +1847,10 @@ recurse:
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     default:
@@ -2082,9 +1928,6 @@ recurse:
       return FFESTC_orderOK_;
 
     case FFESTV_stateWHERE:
-#if FFESTR_F90
-      ffestc_shriek_after1_ = ffestc_shriek_where_;
-#endif
       return FFESTC_orderOK_;
 
     case FFESTV_stateIF:
@@ -2092,9 +1935,6 @@ recurse:
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     default:
@@ -2170,9 +2010,6 @@ recurse:
       return;
 
     case FFESTV_stateWHERE:
-#if FFESTR_F90
-      ffestc_shriek_after1_ = ffestc_shriek_where_;
-#endif
       return;
 
     case FFESTV_stateIF:
@@ -2180,9 +2017,6 @@ recurse:
       return;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     default:
@@ -2254,16 +2088,10 @@ ffestc_order_blockdata_ ()
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -2336,16 +2164,10 @@ ffestc_order_blockspec_ ()
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -2358,122 +2180,6 @@ ffestc_order_blockspec_ ()
       return FFESTC_orderBAD_;
     }
 }
-
-/* ffestc_order_component_ -- Check ordering on <component-decl> statement
-
-   if (ffestc_order_component_() != FFESTC_orderOK_)
-       return;	*/
-
-#if FFESTR_F90
-static ffestcOrder_
-ffestc_order_component_ ()
-{
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateTYPE:
-    case FFESTV_stateSTRUCTURE:
-    case FFESTV_stateMAP:
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateWHERE:
-      ffestc_order_bad_ ();
-      ffestc_shriek_where_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    case FFESTV_stateIF:
-      ffestc_order_bad_ ();
-      ffestc_shriek_if_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    default:
-      ffestc_order_bad_ ();
-      return FFESTC_orderBAD_;
-    }
-}
-
-#endif
-/* ffestc_order_contains_ -- Check ordering on CONTAINS statement
-
-   if (ffestc_order_contains_() != FFESTC_orderOK_)
-       return;	*/
-
-#if FFESTR_F90
-static ffestcOrder_
-ffestc_order_contains_ ()
-{
-  recurse:
-
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateNIL:
-      ffestc_shriek_begin_program_ ();
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_statePROGRAM0:
-    case FFESTV_statePROGRAM1:
-    case FFESTV_statePROGRAM2:
-    case FFESTV_statePROGRAM3:
-    case FFESTV_statePROGRAM4:
-      ffestw_set_state (ffestw_stack_top (), FFESTV_statePROGRAM5);
-      break;
-
-    case FFESTV_stateSUBROUTINE0:
-    case FFESTV_stateSUBROUTINE1:
-    case FFESTV_stateSUBROUTINE2:
-    case FFESTV_stateSUBROUTINE3:
-    case FFESTV_stateSUBROUTINE4:
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateSUBROUTINE5);
-      break;
-
-    case FFESTV_stateFUNCTION0:
-    case FFESTV_stateFUNCTION1:
-    case FFESTV_stateFUNCTION2:
-    case FFESTV_stateFUNCTION3:
-    case FFESTV_stateFUNCTION4:
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateFUNCTION5);
-      break;
-
-    case FFESTV_stateMODULE0:
-    case FFESTV_stateMODULE1:
-    case FFESTV_stateMODULE2:
-    case FFESTV_stateMODULE3:
-    case FFESTV_stateMODULE4:
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateMODULE5);
-      break;
-
-    case FFESTV_stateUSE:
-      ffestc_shriek_end_uses_ (TRUE);
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_stateWHERE:
-      ffestc_order_bad_ ();
-      ffestc_shriek_where_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    case FFESTV_stateIF:
-      ffestc_order_bad_ ();
-      ffestc_shriek_if_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    default:
-      ffestc_order_bad_ ();
-      return FFESTC_orderBAD_;
-    }
-
-  switch (ffestw_state (ffestw_previous (ffestw_stack_top ())))
-    {
-    case FFESTV_stateNIL:
-      ffestw_update (NULL);
-      return FFESTC_orderOK_;
-
-    default:
-      ffestc_order_bad_ ();
-      ffestw_update (NULL);
-      return FFESTC_orderBAD_;
-    }
-}
-
-#endif
 /* ffestc_order_data_ -- Check ordering on DATA statement
 
    if (ffestc_order_data_() != FFESTC_orderOK_)
@@ -2534,16 +2240,10 @@ ffestc_order_data_ ()
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -2619,16 +2319,10 @@ ffestc_order_data77_ ()
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -2641,79 +2335,6 @@ ffestc_order_data77_ ()
       return FFESTC_orderBAD_;
     }
 }
-
-/* ffestc_order_derivedtype_ -- Check ordering on derived TYPE statement
-
-   if (ffestc_order_derivedtype_() != FFESTC_orderOK_)
-       return;	*/
-
-#if FFESTR_F90
-static ffestcOrder_
-ffestc_order_derivedtype_ ()
-{
-  recurse:
-
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateNIL:
-      ffestc_shriek_begin_program_ ();
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_statePROGRAM0:
-    case FFESTV_statePROGRAM1:
-    case FFESTV_statePROGRAM2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_statePROGRAM3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateSUBROUTINE0:
-    case FFESTV_stateSUBROUTINE1:
-    case FFESTV_stateSUBROUTINE2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateSUBROUTINE3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateFUNCTION0:
-    case FFESTV_stateFUNCTION1:
-    case FFESTV_stateFUNCTION2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateFUNCTION3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateMODULE0:
-    case FFESTV_stateMODULE1:
-    case FFESTV_stateMODULE2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateMODULE3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_statePROGRAM3:
-    case FFESTV_stateSUBROUTINE3:
-    case FFESTV_stateFUNCTION3:
-    case FFESTV_stateMODULE3:
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateUSE:
-      ffestc_shriek_end_uses_ (TRUE);
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_stateWHERE:
-      ffestc_order_bad_ ();
-      ffestc_shriek_where_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    case FFESTV_stateIF:
-      ffestc_order_bad_ ();
-      ffestc_shriek_if_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    default:
-      ffestc_order_bad_ ();
-      return FFESTC_orderBAD_;
-    }
-}
-
-#endif
 /* ffestc_order_do_ -- Check ordering on <do> statement
 
    if (ffestc_order_do_() != FFESTC_orderOK_)
@@ -2729,9 +2350,6 @@ ffestc_order_do_ ()
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -2780,16 +2398,10 @@ ffestc_order_entry_ ()
       break;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -2870,16 +2482,10 @@ recurse:
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -2958,16 +2564,10 @@ ffestc_order_format_ ()
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -3002,16 +2602,10 @@ ffestc_order_function_ ()
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -3045,9 +2639,6 @@ ffestc_order_iface_ ()
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -3076,9 +2667,6 @@ ffestc_order_ifthen_ ()
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -3146,16 +2734,10 @@ ffestc_order_implicit_ ()
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -3216,16 +2798,10 @@ ffestc_order_implicitnone_ ()
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -3239,111 +2815,6 @@ ffestc_order_implicitnone_ ()
     }
 }
 
-/* ffestc_order_interface_ -- Check ordering on <interface> statement
-
-   if (ffestc_order_interface_() != FFESTC_orderOK_)
-       return;	*/
-
-#if FFESTR_F90
-static ffestcOrder_
-ffestc_order_interface_ ()
-{
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateINTERFACE0:
-    case FFESTV_stateINTERFACE1:
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateWHERE:
-      ffestc_order_bad_ ();
-      ffestc_shriek_where_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    case FFESTV_stateIF:
-      ffestc_order_bad_ ();
-      ffestc_shriek_if_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    default:
-      ffestc_order_bad_ ();
-      return FFESTC_orderBAD_;
-    }
-}
-
-#endif
-/* ffestc_order_map_ -- Check ordering on <map> statement
-
-   if (ffestc_order_map_() != FFESTC_orderOK_)
-       return;	*/
-
-#if FFESTR_VXT
-static ffestcOrder_
-ffestc_order_map_ ()
-{
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateMAP:
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateWHERE:
-      ffestc_order_bad_ ();
-      ffestc_shriek_where_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    case FFESTV_stateIF:
-      ffestc_order_bad_ ();
-      ffestc_shriek_if_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    default:
-      ffestc_order_bad_ ();
-      return FFESTC_orderBAD_;
-    }
-}
-
-#endif
-/* ffestc_order_module_ -- Check ordering on <module> statement
-
-   if (ffestc_order_module_() != FFESTC_orderOK_)
-       return;	*/
-
-#if FFESTR_F90
-static ffestcOrder_
-ffestc_order_module_ ()
-{
-  recurse:
-
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateMODULE0:
-    case FFESTV_stateMODULE1:
-    case FFESTV_stateMODULE2:
-    case FFESTV_stateMODULE3:
-    case FFESTV_stateMODULE4:
-    case FFESTV_stateMODULE5:
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateUSE:
-      ffestc_shriek_end_uses_ (TRUE);
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_stateWHERE:
-      ffestc_order_bad_ ();
-      ffestc_shriek_where_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    case FFESTV_stateIF:
-      ffestc_order_bad_ ();
-      ffestc_shriek_if_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    default:
-      ffestc_order_bad_ ();
-      return FFESTC_orderBAD_;
-    }
-}
-
-#endif
 /* ffestc_order_parameter_ -- Check ordering on <parameter> statement
 
    if (ffestc_order_parameter_() != FFESTC_orderOK_)
@@ -3407,16 +2878,10 @@ ffestc_order_parameter_ ()
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -3455,16 +2920,10 @@ ffestc_order_program_ ()
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -3544,16 +3003,10 @@ ffestc_order_progspec_ ()
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -3566,93 +3019,6 @@ ffestc_order_progspec_ ()
       return FFESTC_orderBAD_;
     }
 }
-
-/* ffestc_order_record_ -- Check ordering on RECORD statement
-
-   if (ffestc_order_record_() != FFESTC_orderOK_)
-       return;	*/
-
-#if FFESTR_VXT
-static ffestcOrder_
-ffestc_order_record_ ()
-{
-  recurse:
-
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateNIL:
-      ffestc_shriek_begin_program_ ();
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_statePROGRAM0:
-    case FFESTV_statePROGRAM1:
-    case FFESTV_statePROGRAM2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_statePROGRAM3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateSUBROUTINE0:
-    case FFESTV_stateSUBROUTINE1:
-    case FFESTV_stateSUBROUTINE2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateSUBROUTINE3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateFUNCTION0:
-    case FFESTV_stateFUNCTION1:
-    case FFESTV_stateFUNCTION2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateFUNCTION3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateMODULE0:
-    case FFESTV_stateMODULE1:
-    case FFESTV_stateMODULE2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateMODULE3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateBLOCKDATA0:
-    case FFESTV_stateBLOCKDATA1:
-    case FFESTV_stateBLOCKDATA2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateBLOCKDATA3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_statePROGRAM3:
-    case FFESTV_stateSUBROUTINE3:
-    case FFESTV_stateFUNCTION3:
-    case FFESTV_stateMODULE3:
-    case FFESTV_stateBLOCKDATA3:
-    case FFESTV_stateSTRUCTURE:
-    case FFESTV_stateMAP:
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_stateWHERE:
-      ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
-      return FFESTC_orderBAD_;
-
-    case FFESTV_stateIF:
-      ffestc_order_bad_ ();
-      ffestc_shriek_if_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    default:
-      ffestc_order_bad_ ();
-      return FFESTC_orderBAD_;
-    }
-}
-
-#endif
 /* ffestc_order_selectcase_ -- Check ordering on <selectcase> statement
 
    if (ffestc_order_selectcase_() != FFESTC_orderOK_)
@@ -3669,9 +3035,6 @@ ffestc_order_selectcase_ ()
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -3728,16 +3091,10 @@ ffestc_order_sfunc_ ()
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -3750,108 +3107,6 @@ ffestc_order_sfunc_ ()
       return FFESTC_orderBAD_;
     }
 }
-
-/* ffestc_order_spec_ -- Check ordering on <spec> statement
-
-   if (ffestc_order_spec_() != FFESTC_orderOK_)
-       return;	*/
-
-#if FFESTR_F90
-static ffestcOrder_
-ffestc_order_spec_ ()
-{
-  recurse:
-
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateNIL:
-      ffestc_shriek_begin_program_ ();
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_stateSUBROUTINE0:
-    case FFESTV_stateSUBROUTINE1:
-    case FFESTV_stateSUBROUTINE2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateSUBROUTINE3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateFUNCTION0:
-    case FFESTV_stateFUNCTION1:
-    case FFESTV_stateFUNCTION2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateFUNCTION3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateMODULE0:
-    case FFESTV_stateMODULE1:
-    case FFESTV_stateMODULE2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateMODULE3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateSUBROUTINE3:
-    case FFESTV_stateFUNCTION3:
-    case FFESTV_stateMODULE3:
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_stateWHERE:
-      ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
-      return FFESTC_orderBAD_;
-
-    case FFESTV_stateIF:
-      ffestc_order_bad_ ();
-      ffestc_shriek_if_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    default:
-      ffestc_order_bad_ ();
-      return FFESTC_orderBAD_;
-    }
-}
-
-#endif
-/* ffestc_order_structure_ -- Check ordering on <structure> statement
-
-   if (ffestc_order_structure_() != FFESTC_orderOK_)
-       return;	*/
-
-#if FFESTR_VXT
-static ffestcOrder_
-ffestc_order_structure_ ()
-{
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateSTRUCTURE:
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateWHERE:
-      ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
-      return FFESTC_orderBAD_;
-
-    case FFESTV_stateIF:
-      ffestc_order_bad_ ();
-      ffestc_shriek_if_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    default:
-      ffestc_order_bad_ ();
-      return FFESTC_orderBAD_;
-    }
-}
-
-#endif
 /* ffestc_order_subroutine_ -- Check ordering on <subroutine> statement
 
    if (ffestc_order_subroutine_() != FFESTC_orderOK_)
@@ -3873,16 +3128,10 @@ ffestc_order_subroutine_ ()
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -3896,37 +3145,6 @@ ffestc_order_subroutine_ ()
     }
 }
 
-/* ffestc_order_type_ -- Check ordering on <type> statement
-
-   if (ffestc_order_type_() != FFESTC_orderOK_)
-       return;	*/
-
-#if FFESTR_F90
-static ffestcOrder_
-ffestc_order_type_ ()
-{
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateTYPE:
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateWHERE:
-      ffestc_order_bad_ ();
-      ffestc_shriek_where_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    case FFESTV_stateIF:
-      ffestc_order_bad_ ();
-      ffestc_shriek_if_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    default:
-      ffestc_order_bad_ ();
-      return FFESTC_orderBAD_;
-    }
-}
-
-#endif
 /* ffestc_order_typedecl_ -- Check ordering on <typedecl> statement
 
    if (ffestc_order_typedecl_() != FFESTC_orderOK_)
@@ -3986,16 +3204,10 @@ ffestc_order_typedecl_ ()
       return FFESTC_orderOK_;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -4008,40 +3220,6 @@ ffestc_order_typedecl_ ()
       return FFESTC_orderBAD_;
     }
 }
-
-/* ffestc_order_union_ -- Check ordering on <union> statement
-
-   if (ffestc_order_union_() != FFESTC_orderOK_)
-       return;	*/
-
-#if FFESTR_VXT
-static ffestcOrder_
-ffestc_order_union_ ()
-{
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateUNION:
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateWHERE:
-      ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
-      return FFESTC_orderBAD_;
-
-    case FFESTV_stateIF:
-      ffestc_order_bad_ ();
-      ffestc_shriek_if_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    default:
-      ffestc_order_bad_ ();
-      return FFESTC_orderBAD_;
-    }
-}
-
-#endif
 /* ffestc_order_unit_ -- Check ordering on <unit> statement
 
    if (ffestc_order_unit_() != FFESTC_orderOK_)
@@ -4057,9 +3235,6 @@ ffestc_order_unit_ ()
 
     case FFESTV_stateWHERE:
       ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
       return FFESTC_orderBAD_;
 
     case FFESTV_stateIF:
@@ -4072,185 +3247,6 @@ ffestc_order_unit_ ()
       return FFESTC_orderBAD_;
     }
 }
-
-/* ffestc_order_use_ -- Check ordering on USE statement
-
-   if (ffestc_order_use_() != FFESTC_orderOK_)
-       return;	*/
-
-#if FFESTR_F90
-static ffestcOrder_
-ffestc_order_use_ ()
-{
-  recurse:
-
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateNIL:
-      ffestc_shriek_begin_program_ ();
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_statePROGRAM0:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_statePROGRAM1);
-      ffestc_shriek_begin_uses_ ();
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_stateSUBROUTINE0:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateSUBROUTINE1);
-      ffestc_shriek_begin_uses_ ();
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_stateFUNCTION0:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateFUNCTION1);
-      ffestc_shriek_begin_uses_ ();
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_stateMODULE0:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateMODULE1);
-      ffestc_shriek_begin_uses_ ();
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_stateUSE:
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateWHERE:
-      ffestc_order_bad_ ();
-      ffestc_shriek_where_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    case FFESTV_stateIF:
-      ffestc_order_bad_ ();
-      ffestc_shriek_if_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    default:
-      ffestc_order_bad_ ();
-      return FFESTC_orderBAD_;
-    }
-}
-
-#endif
-/* ffestc_order_vxtstructure_ -- Check ordering on STRUCTURE statement
-
-   if (ffestc_order_vxtstructure_() != FFESTC_orderOK_)
-       return;	*/
-
-#if FFESTR_VXT
-static ffestcOrder_
-ffestc_order_vxtstructure_ ()
-{
-  recurse:
-
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateNIL:
-      ffestc_shriek_begin_program_ ();
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_statePROGRAM0:
-    case FFESTV_statePROGRAM1:
-    case FFESTV_statePROGRAM2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_statePROGRAM3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateSUBROUTINE0:
-    case FFESTV_stateSUBROUTINE1:
-    case FFESTV_stateSUBROUTINE2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateSUBROUTINE3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateFUNCTION0:
-    case FFESTV_stateFUNCTION1:
-    case FFESTV_stateFUNCTION2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateFUNCTION3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateMODULE0:
-    case FFESTV_stateMODULE1:
-    case FFESTV_stateMODULE2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateMODULE3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateBLOCKDATA0:
-    case FFESTV_stateBLOCKDATA1:
-    case FFESTV_stateBLOCKDATA2:
-      ffestw_update (NULL);
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateBLOCKDATA3);
-      return FFESTC_orderOK_;
-
-    case FFESTV_statePROGRAM3:
-    case FFESTV_stateSUBROUTINE3:
-    case FFESTV_stateFUNCTION3:
-    case FFESTV_stateMODULE3:
-    case FFESTV_stateBLOCKDATA3:
-    case FFESTV_stateSTRUCTURE:
-    case FFESTV_stateMAP:
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
-      goto recurse;		/* :::::::::::::::::::: */
-
-    case FFESTV_stateWHERE:
-      ffestc_order_bad_ ();
-#if FFESTR_F90
-      ffestc_shriek_where_ (FALSE);
-#endif
-      return FFESTC_orderBAD_;
-
-    case FFESTV_stateIF:
-      ffestc_order_bad_ ();
-      ffestc_shriek_if_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    default:
-      ffestc_order_bad_ ();
-      return FFESTC_orderBAD_;
-    }
-}
-
-#endif
-/* ffestc_order_where_ -- Check ordering on <where> statement
-
-   if (ffestc_order_where_() != FFESTC_orderOK_)
-       return;	*/
-
-#if FFESTR_F90
-static ffestcOrder_
-ffestc_order_where_ ()
-{
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateWHERETHEN:
-      return FFESTC_orderOK_;
-
-    case FFESTV_stateWHERE:
-      ffestc_order_bad_ ();
-      ffestc_shriek_where_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    case FFESTV_stateIF:
-      ffestc_order_bad_ ();
-      ffestc_shriek_if_ (FALSE);
-      return FFESTC_orderBAD_;
-
-    default:
-      ffestc_order_bad_ ();
-      return FFESTC_orderBAD_;
-    }
-}
-
-#endif
 /* Invoked for each token in dummy arg list of FUNCTION, SUBROUTINE, and
    ENTRY (prior to the first executable statement).  */
 
@@ -4605,32 +3601,6 @@ ffestc_shriek_begin_program_ ()
   ffestd_R1102 (s, NULL);
 }
 
-/* ffestc_shriek_begin_uses_ -- Start a bunch of USE statements
-
-   ffestc_shriek_begin_uses_();
-
-   Invoked before handling the first USE statement in a block of one or
-   more USE statements.	 _end_uses_(bool ok) is invoked before handling
-   the first statement after the block (there are no BEGIN USE and END USE
-   statements, but the semantics of USE statements effectively requires
-   handling them as a single block rather than one statement at a time).  */
-
-#if FFESTR_F90
-static void
-ffestc_shriek_begin_uses_ ()
-{
-  ffestw b;
-
-  b = ffestw_update (ffestw_push (NULL));
-  ffestw_set_top_do (b, NULL);
-  ffestw_set_state (b, FFESTV_stateUSE);
-  ffestw_set_blocknum (b, 0);
-  ffestw_set_shriek (b, ffestc_shriek_end_uses_);
-
-  ffestd_begin_uses ();
-}
-
-#endif
 /* ffestc_shriek_blockdata_ -- End a BLOCK DATA
 
    ffestc_shriek_blockdata_(TRUE);  */
@@ -4724,23 +3694,6 @@ ffestc_shriek_end_program_ (bool ok)
   ffe_init_2 ();
 }
 
-/* ffestc_shriek_end_uses_ -- End a bunch of USE statements
-
-   ffestc_shriek_end_uses_(TRUE);
-
-   ok==TRUE means simply not popping due to ffestc_eof()
-   being called, because there is no formal END USES statement in Fortran.  */
-
-#if FFESTR_F90
-static void
-ffestc_shriek_end_uses_ (bool ok)
-{
-  ffestd_end_uses (ok);
-
-  ffestw_kill (ffestw_pop ());
-}
-
-#endif
 /* ffestc_shriek_function_ -- End a FUNCTION
 
    ffestc_shriek_function_(TRUE);  */
@@ -4818,64 +3771,6 @@ ffestc_shriek_ifthen_ (bool ok)
   ffestc_try_shriek_do_ ();
 }
 
-/* ffestc_shriek_interface_ -- End an INTERFACE
-
-   ffestc_shriek_interface_(TRUE);  */
-
-#if FFESTR_F90
-static void
-ffestc_shriek_interface_ (bool ok)
-{
-  ffestd_R1203 (ok);
-
-  ffestw_kill (ffestw_pop ());
-
-  ffestc_try_shriek_do_ ();
-}
-
-#endif
-/* ffestc_shriek_map_ -- End a MAP
-
-   ffestc_shriek_map_(TRUE);  */
-
-#if FFESTR_VXT
-static void
-ffestc_shriek_map_ (bool ok)
-{
-  ffestd_V013 (ok);
-
-  ffestw_kill (ffestw_pop ());
-
-  ffestc_try_shriek_do_ ();
-}
-
-#endif
-/* ffestc_shriek_module_ -- End a MODULE
-
-   ffestc_shriek_module_(TRUE);	 */
-
-#if FFESTR_F90
-static void
-ffestc_shriek_module_ (bool ok)
-{
-  if (!ffesta_seen_first_exec)
-    {
-      ffesta_seen_first_exec = TRUE;
-      ffestd_exec_begin ();
-    }
-
-  ffestd_R1106 (ok);
-
-  ffestd_exec_end ();
-
-  ffelex_token_kill (ffestw_name (ffestw_stack_top ()));
-  ffestw_kill (ffestw_pop ());
-
-  ffe_terminate_2 ();
-  ffe_init_2 ();
-}
-
-#endif
 /* ffestc_shriek_select_ -- End a SELECT
 
    ffestc_shriek_select_(TRUE);	 */
@@ -4901,22 +3796,6 @@ ffestc_shriek_select_ (bool ok)
   ffestc_try_shriek_do_ ();
 }
 
-/* ffestc_shriek_structure_ -- End a STRUCTURE
-
-   ffestc_shriek_structure_(TRUE);  */
-
-#if FFESTR_VXT
-static void
-ffestc_shriek_structure_ (bool ok)
-{
-  ffestd_V004 (ok);
-
-  ffestw_kill (ffestw_pop ());
-
-  ffestc_try_shriek_do_ ();
-}
-
-#endif
 /* ffestc_shriek_subroutine_ -- End a SUBROUTINE
 
    ffestc_shriek_subroutine_(TRUE);  */
@@ -4957,81 +3836,6 @@ ffestc_shriek_subroutine_ (bool ok)
     }
 }
 
-/* ffestc_shriek_type_ -- End a TYPE
-
-   ffestc_shriek_type_(TRUE);  */
-
-#if FFESTR_F90
-static void
-ffestc_shriek_type_ (bool ok)
-{
-  ffestd_R425 (ok);
-
-  ffe_terminate_4 ();
-
-  ffelex_token_kill (ffestw_name (ffestw_stack_top ()));
-  ffestw_kill (ffestw_pop ());
-
-  ffestc_try_shriek_do_ ();
-}
-
-#endif
-/* ffestc_shriek_union_ -- End a UNION
-
-   ffestc_shriek_union_(TRUE);	*/
-
-#if FFESTR_VXT
-static void
-ffestc_shriek_union_ (bool ok)
-{
-  ffestd_V010 (ok);
-
-  ffestw_kill (ffestw_pop ());
-
-  ffestc_try_shriek_do_ ();
-}
-
-#endif
-/* ffestc_shriek_where_ -- Implicit END WHERE statement
-
-   ffestc_shriek_where_(TRUE);
-
-   Implement the end of the current WHERE "block".  ok==TRUE iff statement
-   following WHERE (substatement) is valid; else, statement is invalid
-   or stack forcibly popped due to ffestc_eof().  */
-
-#if FFESTR_F90
-static void
-ffestc_shriek_where_ (bool ok)
-{
-  ffestd_R745 (ok);
-
-  ffestw_kill (ffestw_pop ());
-  ffestc_shriek_after1_ = NULL;
-  if (ffestw_state (ffestw_stack_top ()) == FFESTV_stateIF)
-    ffestc_shriek_if_ (TRUE);	/* "IF (x) WHERE (y) stmt" is only valid
-				   case. */
-
-  ffestc_try_shriek_do_ ();
-}
-
-#endif
-/* ffestc_shriek_wherethen_ -- End a WHERE(-THEN)
-
-   ffestc_shriek_wherethen_(TRUE);  */
-
-#if FFESTR_F90
-static void
-ffestc_shriek_wherethen_ (bool ok)
-{
-  ffestd_end_R740 (ok);
-
-  ffestw_kill (ffestw_pop ());
-
-  ffestc_try_shriek_do_ ();
-}
-
-#endif
 /* ffestc_subr_binsrch_ -- Binary search of char const in list of strings
 
    i = ffestc_subr_binsrch_(search_list,search_list_size,&spec,"etc");
@@ -5372,12 +4176,6 @@ ffestc_decl_start (ffestpType type, ffelexToken typet, ffebld kind,
 
   switch (ffestc_local_.decl.is_R426)
     {
-#if FFESTR_F90
-    case 1:
-      ffestc_R426_start (type, typet, kind, kindt, len, lent);
-      break;
-#endif
-
     case 2:
       ffestc_R501_start (type, typet, kind, kindt, len, lent);
       break;
@@ -5401,27 +4199,11 @@ ffestc_decl_attrib (ffestpAttrib attrib UNUSED,
 		    ffestrOther intent_kw UNUSED,
 		    ffesttDimList dims UNUSED)
 {
-#if FFESTR_F90
-  switch (ffestc_local_.decl.is_R426)
-    {
-    case 1:
-      ffestc_R426_attrib (attrib, attribt, intent_kw, dims);
-      break;
-
-    case 2:
-      ffestc_R501_attrib (attrib, attribt, intent_kw, dims);
-      break;
-
-    default:
-      break;
-    }
-#else
   ffebad_start (FFEBAD_F90);
   ffebad_here (0, ffelex_token_where_line (ffesta_tokens[0]),
 	       ffelex_token_where_column (ffesta_tokens[0]));
   ffebad_finish ();
   return;
-#endif
 }
 
 /* ffestc_decl_item -- R426 or R501
@@ -5437,13 +4219,6 @@ ffestc_decl_item (ffelexToken name, ffebld kind, ffelexToken kindt,
 {
   switch (ffestc_local_.decl.is_R426)
     {
-#if FFESTR_F90
-    case 1:
-      ffestc_R426_item (name, kind, kindt, dims, len, lent, init, initt,
-			clist);
-      break;
-#endif
-
     case 2:
       ffestc_R501_item (name, kind, kindt, dims, len, lent, init, initt,
 			clist);
@@ -5465,12 +4240,6 @@ ffestc_decl_itemstartvals ()
 {
   switch (ffestc_local_.decl.is_R426)
     {
-#if FFESTR_F90
-    case 1:
-      ffestc_R426_itemstartvals ();
-      break;
-#endif
-
     case 2:
       ffestc_R501_itemstartvals ();
       break;
@@ -5492,12 +4261,6 @@ ffestc_decl_itemvalue (ffebld repeat, ffelexToken repeat_token,
 {
   switch (ffestc_local_.decl.is_R426)
     {
-#if FFESTR_F90
-    case 1:
-      ffestc_R426_itemvalue (repeat, repeat_token, value, value_token);
-      break;
-#endif
-
     case 2:
       ffestc_R501_itemvalue (repeat, repeat_token, value, value_token);
       break;
@@ -5519,12 +4282,6 @@ ffestc_decl_itemendvals (ffelexToken t)
 {
   switch (ffestc_local_.decl.is_R426)
     {
-#if FFESTR_F90
-    case 1:
-      ffestc_R426_itemendvals (t);
-      break;
-#endif
-
     case 2:
       ffestc_R501_itemendvals (t);
       break;
@@ -5545,12 +4302,6 @@ ffestc_decl_finish ()
 {
   switch (ffestc_local_.decl.is_R426)
     {
-#if FFESTR_F90
-    case 1:
-      ffestc_R426_finish ();
-      break;
-#endif
-
     case 2:
       ffestc_R501_finish ();
       break;
@@ -5576,9 +4327,6 @@ ffestc_elsewhere (ffelexToken where)
       break;
 
     default:
-#if FFESTR_F90
-      ffestc_R744 ();
-#endif
       break;
     }
 }
@@ -5635,9 +4383,6 @@ recurse:
     case FFESTV_stateMODULE3:
     case FFESTV_stateMODULE4:
     case FFESTV_stateMODULE5:
-#if FFESTR_F90
-      ffestc_R1106 (NULL);
-#endif
       break;
 
     case FFESTV_stateSUBROUTINE0:
@@ -5757,9 +4502,6 @@ recurse:
       break;
 
     case FFESTV_stateUSE:
-#if FFESTR_F90
-      ffestc_shriek_end_uses_ (TRUE);
-#endif
       goto recurse;		/* :::::::::::::::::::: */
 
     default:
@@ -5909,58 +4651,6 @@ ffestc_is_let_not_V027 ()
     }
 }
 
-/* ffestc_module -- MODULE or MODULE PROCEDURE statement
-
-   ffestc_module(module_name_token,procedure_name_token);
-
-   Decide which is intended, and implement it by calling _R1105_ or
-   _R1205_.  */
-
-#if FFESTR_F90
-void
-ffestc_module (ffelexToken module, ffelexToken procedure)
-{
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateINTERFACE0:
-    case FFESTV_stateINTERFACE1:
-      ffestc_R1205_start ();
-      ffestc_R1205_item (procedure);
-      ffestc_R1205_finish ();
-      break;
-
-    default:
-      ffestc_R1105 (module);
-      break;
-    }
-}
-
-#endif
-/* ffestc_private -- Generic PRIVATE statement
-
-   ffestc_end();
-
-   This is either a PRIVATE within R422 derived-type statement or an
-   R521 PRIVATE statement.  Figure it out based on context and implement
-   it, or produce an error.  */
-
-#if FFESTR_F90
-void
-ffestc_private ()
-{
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateTYPE:
-      ffestc_R423A ();
-      break;
-
-    default:
-      ffestc_R521B ();
-      break;
-    }
-}
-
-#endif
 /* ffestc_terminate_4 -- Terminate ffestc after scoping unit
 
    ffestc_terminate_4();
@@ -5974,275 +4664,6 @@ ffestc_terminate_4 ()
   ffestc_entry_num_ = ffestc_saved_entry_num_;
 }
 
-/* ffestc_R423A -- PRIVATE statement (in R422 derived-type statement)
-
-   ffestc_R423A();  */
-
-#if FFESTR_F90
-void
-ffestc_R423A ()
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_type_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  if (ffestw_substate (ffestw_stack_top ()) != 0)
-    {
-      ffebad_start (FFEBAD_DERIVTYP_ACCESS_FIRST);
-      ffebad_here (0, ffelex_token_where_line (ffesta_tokens[0]),
-		   ffelex_token_where_column (ffesta_tokens[0]));
-      ffebad_here (1, ffestw_line (ffestw_stack_top ()), ffestw_col (ffestw_stack_top ()));
-      ffebad_finish ();
-      return;
-    }
-
-  if (ffestw_state (ffestw_previous (ffestw_stack_top ())) != FFESTV_stateMODULE3)
-    {
-      ffebad_start (FFEBAD_DERIVTYP_ACCESS);
-      ffebad_here (0, ffelex_token_where_line (ffesta_tokens[0]),
-		   ffelex_token_where_column (ffesta_tokens[0]));
-      ffebad_finish ();
-      return;
-    }
-
-  ffestw_set_substate (ffestw_stack_top (), 1);	/* Seen
-						   private-sequence-stmt. */
-
-  ffestd_R423A ();
-}
-
-/* ffestc_R423B -- SEQUENCE statement (in R422 derived-type-stmt)
-
-   ffestc_R423B();  */
-
-void
-ffestc_R423B ()
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_type_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  if (ffestw_substate (ffestw_stack_top ()) != 0)
-    {
-      ffebad_start (FFEBAD_DERIVTYP_ACCESS_FIRST);
-      ffebad_here (0, ffelex_token_where_line (ffesta_tokens[0]),
-		   ffelex_token_where_column (ffesta_tokens[0]));
-      ffebad_here (1, ffestw_line (ffestw_stack_top ()), ffestw_col (ffestw_stack_top ()));
-      ffebad_finish ();
-      return;
-    }
-
-  ffestw_set_substate (ffestw_stack_top (), 1);	/* Seen
-						   private-sequence-stmt. */
-
-  ffestd_R423B ();
-}
-
-/* ffestc_R424 -- derived-TYPE-def statement
-
-   ffestc_R424(access_token,access_kw,name_token);
-
-   Handle a derived-type definition.  */
-
-void
-ffestc_R424 (ffelexToken access, ffestrOther access_kw, ffelexToken name)
-{
-  ffestw b;
-
-  assert (name != NULL);
-
-  ffestc_check_simple_ ();
-  if (ffestc_order_derivedtype_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  if ((access != NULL)
-      && (ffestw_state (ffestw_stack_top ()) != FFESTV_stateMODULE3))
-    {
-      ffebad_start (FFEBAD_DERIVTYP_ACCESS);
-      ffebad_here (0, ffelex_token_where_line (access),
-		   ffelex_token_where_column (access));
-      ffebad_finish ();
-      access = NULL;
-    }
-
-  b = ffestw_update (ffestw_push (NULL));
-  ffestw_set_top_do (b, NULL);
-  ffestw_set_state (b, FFESTV_stateTYPE);
-  ffestw_set_blocknum (b, 0);
-  ffestw_set_shriek (b, ffestc_shriek_type_);
-  ffestw_set_name (b, ffelex_token_use (name));
-  ffestw_set_substate (b, 0);	/* Awaiting private-sequence-stmt and one
-				   component-def-stmt. */
-
-  ffestd_R424 (access, access_kw, name);
-
-  ffe_init_4 ();
-}
-
-/* ffestc_R425 -- END TYPE statement
-
-   ffestc_R425(name_token);
-
-   Make sure ffestc_kind_ identifies a TYPE definition.	 If not
-   NULL, make sure name_token gives the correct name.  Implement the end
-   of the type definition.  */
-
-void
-ffestc_R425 (ffelexToken name)
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_type_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  if (ffestw_substate (ffestw_stack_top ()) != 2)
-    {
-      ffebad_start (FFEBAD_DERIVTYP_NO_COMPONENTS);
-      ffebad_here (0, ffelex_token_where_line (ffesta_tokens[0]),
-		   ffelex_token_where_column (ffesta_tokens[0]));
-      ffebad_here (1, ffestw_line (ffestw_stack_top ()), ffestw_col (ffestw_stack_top ()));
-      ffebad_finish ();
-    }
-
-  if ((name != NULL)
-    && (ffelex_token_strcmp (name, ffestw_name (ffestw_stack_top ())) != 0))
-    {
-      ffebad_start (FFEBAD_TYPE_WRONG_NAME);
-      ffebad_here (0, ffelex_token_where_line (name),
-		   ffelex_token_where_column (name));
-      ffebad_here (1, ffelex_token_where_line (ffestw_name (ffestw_stack_top ())),
-	     ffelex_token_where_column (ffestw_name (ffestw_stack_top ())));
-      ffebad_finish ();
-    }
-
-  ffestc_shriek_type_ (TRUE);
-}
-
-/* ffestc_R426_start -- component-declaration-stmt
-
-   ffestc_R426_start(...);
-
-   Verify that R426 component-declaration-stmt is
-   valid here and implement.  */
-
-void
-ffestc_R426_start (ffestpType type, ffelexToken typet, ffebld kind,
-		   ffelexToken kindt, ffebld len, ffelexToken lent)
-{
-  ffestc_check_start_ ();
-  if (ffestc_order_component_ () != FFESTC_orderOK_)
-    {
-      ffestc_local_.decl.is_R426 = 0;
-      return;
-    }
-  ffestc_labeldef_useless_ ();
-
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateSTRUCTURE:
-    case FFESTV_stateMAP:
-      ffestw_set_substate (ffestw_stack_top (), 1);	/* Seen at least one
-							   member. */
-      break;
-
-    case FFESTV_stateTYPE:
-      ffestw_set_substate (ffestw_stack_top (), 2);
-      break;
-
-    default:
-      assert ("Component parent state invalid" == NULL);
-      break;
-    }
-}
-
-/* ffestc_R426_attrib -- type attribute
-
-   ffestc_R426_attrib(...);
-
-   Verify that R426 component-declaration-stmt attribute
-   is valid here and implement.	 */
-
-void
-ffestc_R426_attrib (ffestpAttrib attrib, ffelexToken attribt,
-		    ffestrOther intent_kw, ffesttDimList dims)
-{
-  ffestc_check_attrib_ ();
-}
-
-/* ffestc_R426_item -- declared object
-
-   ffestc_R426_item(...);
-
-   Establish type for a particular object.  */
-
-void
-ffestc_R426_item (ffelexToken name, ffebld kind, ffelexToken kindt,
-	      ffesttDimList dims, ffebld len, ffelexToken lent, ffebld init,
-		  ffelexToken initt, bool clist)
-{
-  ffestc_check_item_ ();
-  assert (name != NULL);
-  assert (ffelex_token_type (name) == FFELEX_typeNAME);	/* Not NAMES. */
-  assert (kind == NULL);	/* No way an expression should get here. */
-
-  if ((dims != NULL) || (init != NULL) || clist)
-    ffesta_set_outpooldisp (FFESTA_pooldispPRESERVE);
-}
-
-/* ffestc_R426_itemstartvals -- Start list of values
-
-   ffestc_R426_itemstartvals();
-
-   Gonna specify values for the object now.  */
-
-void
-ffestc_R426_itemstartvals ()
-{
-  ffestc_check_item_startvals_ ();
-}
-
-/* ffestc_R426_itemvalue -- Source value
-
-   ffestc_R426_itemvalue(repeat,repeat_token,value,value_token);
-
-   Make sure repeat and value are valid for the object being initialized.  */
-
-void
-ffestc_R426_itemvalue (ffebld repeat, ffelexToken repeat_token,
-		       ffebld value, ffelexToken value_token)
-{
-  ffestc_check_item_value_ ();
-}
-
-/* ffestc_R426_itemendvals -- End list of values
-
-   ffelexToken t;  // the SLASH token that ends the list.
-   ffestc_R426_itemendvals(t);
-
-   No more values, might specify more objects now.  */
-
-void
-ffestc_R426_itemendvals (ffelexToken t)
-{
-  ffestc_check_item_endvals_ ();
-}
-
-/* ffestc_R426_finish -- Done
-
-   ffestc_R426_finish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_R426_finish ()
-{
-  ffestc_check_finish_ ();
-}
-
-#endif
 /* ffestc_R501_start -- type-declaration-stmt
 
    ffestc_R501_start(...);
@@ -6281,11 +4702,6 @@ ffestc_R501_attrib (ffestpAttrib attrib, ffelexToken attribt,
 
   switch (attrib)
     {
-#if FFESTR_F90
-    case FFESTP_attribALLOCATABLE:
-      break;
-#endif
-
     case FFESTP_attribDIMENSION:
       ffesta_set_outpooldisp (FFESTA_pooldispPRESERVE);
       break;
@@ -6293,34 +4709,11 @@ ffestc_R501_attrib (ffestpAttrib attrib, ffelexToken attribt,
     case FFESTP_attribEXTERNAL:
       break;
 
-#if FFESTR_F90
-    case FFESTP_attribINTENT:
-      break;
-#endif
-
     case FFESTP_attribINTRINSIC:
       break;
 
-#if FFESTR_F90
-    case FFESTP_attribOPTIONAL:
-      break;
-#endif
-
     case FFESTP_attribPARAMETER:
       break;
-
-#if FFESTR_F90
-    case FFESTP_attribPOINTER:
-      break;
-#endif
-
-#if FFESTR_F90
-    case FFESTP_attribPRIVATE:
-      break;
-
-    case FFESTP_attribPUBLIC:
-      break;
-#endif
 
     case FFESTP_attribSAVE:
       switch (ffestv_save_state_)
@@ -6354,11 +4747,6 @@ ffestc_R501_attrib (ffestpAttrib attrib, ffelexToken attribt,
 	  break;
 	}
       break;
-
-#if FFESTR_F90
-    case FFESTP_attribTARGET:
-      break;
-#endif
 
     default:
       assert ("unexpected attribute" == NULL);
@@ -6708,318 +5096,6 @@ ffestc_R501_finish ()
   ffestc_check_finish_ ();
 }
 
-/* ffestc_R519_start -- INTENT statement list begin
-
-   ffestc_R519_start();
-
-   Verify that INTENT is valid here, and begin accepting items in the list.  */
-
-#if FFESTR_F90
-void
-ffestc_R519_start (ffelexToken intent, ffestrOther intent_kw)
-{
-  ffestc_check_start_ ();
-  if (ffestc_order_spec_ () != FFESTC_orderOK_)
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-  ffestc_labeldef_useless_ ();
-
-  ffestd_R519_start (intent_kw);
-
-  ffestc_ok_ = TRUE;
-}
-
-/* ffestc_R519_item -- INTENT statement for name
-
-   ffestc_R519_item(name_token);
-
-   Make sure name_token identifies a valid object to be INTENTed.  */
-
-void
-ffestc_R519_item (ffelexToken name)
-{
-  ffestc_check_item_ ();
-  assert (name != NULL);
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_R519_item (name);
-}
-
-/* ffestc_R519_finish -- INTENT statement list complete
-
-   ffestc_R519_finish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_R519_finish ()
-{
-  ffestc_check_finish_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_R519_finish ();
-}
-
-/* ffestc_R520_start -- OPTIONAL statement list begin
-
-   ffestc_R520_start();
-
-   Verify that OPTIONAL is valid here, and begin accepting items in the list.  */
-
-void
-ffestc_R520_start ()
-{
-  ffestc_check_start_ ();
-  if (ffestc_order_spec_ () != FFESTC_orderOK_)
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-  ffestc_labeldef_useless_ ();
-
-  ffestd_R520_start ();
-
-  ffestc_ok_ = TRUE;
-}
-
-/* ffestc_R520_item -- OPTIONAL statement for name
-
-   ffestc_R520_item(name_token);
-
-   Make sure name_token identifies a valid object to be OPTIONALed.  */
-
-void
-ffestc_R520_item (ffelexToken name)
-{
-  ffestc_check_item_ ();
-  assert (name != NULL);
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_R520_item (name);
-}
-
-/* ffestc_R520_finish -- OPTIONAL statement list complete
-
-   ffestc_R520_finish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_R520_finish ()
-{
-  ffestc_check_finish_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_R520_finish ();
-}
-
-/* ffestc_R521A -- PUBLIC statement
-
-   ffestc_R521A();
-
-   Verify that PUBLIC is valid here.  */
-
-void
-ffestc_R521A ()
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_access_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  switch (ffestv_access_state_)
-    {
-    case FFESTV_accessstateNONE:
-      ffestv_access_state_ = FFESTV_accessstatePUBLIC;
-      ffestv_access_line_
-	= ffewhere_line_use (ffelex_token_where_line (ffesta_tokens[0]));
-      ffestv_access_col_
-	= ffewhere_column_use (ffelex_token_where_column (ffesta_tokens[0]));
-      break;
-
-    case FFESTV_accessstateANY:
-      break;
-
-    case FFESTV_accessstatePUBLIC:
-    case FFESTV_accessstatePRIVATE:
-      ffebad_start (FFEBAD_CONFLICTING_ACCESSES);
-      ffebad_here (0, ffestv_access_line_, ffestv_access_col_);
-      ffebad_here (1, ffelex_token_where_line (ffesta_tokens[0]),
-		   ffelex_token_where_column (ffesta_tokens[0]));
-      ffebad_finish ();
-      ffestv_access_state_ = FFESTV_accessstateANY;
-      break;
-
-    default:
-      assert ("unexpected access state" == NULL);
-      break;
-    }
-
-  ffestd_R521A ();
-}
-
-/* ffestc_R521Astart -- PUBLIC statement list begin
-
-   ffestc_R521Astart();
-
-   Verify that PUBLIC is valid here, and begin accepting items in the list.  */
-
-void
-ffestc_R521Astart ()
-{
-  ffestc_check_start_ ();
-  if (ffestc_order_access_ () != FFESTC_orderOK_)
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-  ffestc_labeldef_useless_ ();
-
-  ffestd_R521Astart ();
-
-  ffestc_ok_ = TRUE;
-}
-
-/* ffestc_R521Aitem -- PUBLIC statement for name
-
-   ffestc_R521Aitem(name_token);
-
-   Make sure name_token identifies a valid object to be PUBLICed.  */
-
-void
-ffestc_R521Aitem (ffelexToken name)
-{
-  ffestc_check_item_ ();
-  assert (name != NULL);
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_R521Aitem (name);
-}
-
-/* ffestc_R521Afinish -- PUBLIC statement list complete
-
-   ffestc_R521Afinish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_R521Afinish ()
-{
-  ffestc_check_finish_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_R521Afinish ();
-}
-
-/* ffestc_R521B -- PRIVATE statement
-
-   ffestc_R521B();
-
-   Verify that PRIVATE is valid here (outside a derived-type statement).  */
-
-void
-ffestc_R521B ()
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_access_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  switch (ffestv_access_state_)
-    {
-    case FFESTV_accessstateNONE:
-      ffestv_access_state_ = FFESTV_accessstatePRIVATE;
-      ffestv_access_line_
-	= ffewhere_line_use (ffelex_token_where_line (ffesta_tokens[0]));
-      ffestv_access_col_
-	= ffewhere_column_use (ffelex_token_where_column (ffesta_tokens[0]));
-      break;
-
-    case FFESTV_accessstateANY:
-      break;
-
-    case FFESTV_accessstatePUBLIC:
-    case FFESTV_accessstatePRIVATE:
-      ffebad_start (FFEBAD_CONFLICTING_ACCESSES);
-      ffebad_here (0, ffestv_access_line_, ffestv_access_col_);
-      ffebad_here (1, ffelex_token_where_line (ffesta_tokens[0]),
-		   ffelex_token_where_column (ffesta_tokens[0]));
-      ffebad_finish ();
-      ffestv_access_state_ = FFESTV_accessstateANY;
-      break;
-
-    default:
-      assert ("unexpected access state" == NULL);
-      break;
-    }
-
-  ffestd_R521B ();
-}
-
-/* ffestc_R521Bstart -- PRIVATE statement list begin
-
-   ffestc_R521Bstart();
-
-   Verify that PRIVATE is valid here, and begin accepting items in the list.  */
-
-void
-ffestc_R521Bstart ()
-{
-  ffestc_check_start_ ();
-  if (ffestc_order_access_ () != FFESTC_orderOK_)
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-  ffestc_labeldef_useless_ ();
-
-  ffestd_R521Bstart ();
-
-  ffestc_ok_ = TRUE;
-}
-
-/* ffestc_R521Bitem -- PRIVATE statement for name
-
-   ffestc_R521Bitem(name_token);
-
-   Make sure name_token identifies a valid object to be PRIVATEed.  */
-
-void
-ffestc_R521Bitem (ffelexToken name)
-{
-  ffestc_check_item_ ();
-  assert (name != NULL);
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_R521Bitem (name);
-}
-
-/* ffestc_R521Bfinish -- PRIVATE statement list complete
-
-   ffestc_R521Bfinish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_R521Bfinish ()
-{
-  ffestc_check_finish_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_R521Bfinish ();
-}
-
-#endif
 /* ffestc_R522 -- SAVE statement with no list
 
    ffestc_R522();
@@ -7420,182 +5496,6 @@ ffestc_R524_finish ()
   ffestd_R524_finish ();
 }
 
-/* ffestc_R525_start -- ALLOCATABLE statement list begin
-
-   ffestc_R525_start();
-
-   Verify that ALLOCATABLE is valid here, and begin accepting items in the
-   list.  */
-
-#if FFESTR_F90
-void
-ffestc_R525_start ()
-{
-  ffestc_check_start_ ();
-  if (ffestc_order_progspec_ () != FFESTC_orderOK_)
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-  ffestc_labeldef_useless_ ();
-
-  ffestd_R525_start ();
-
-  ffestc_ok_ = TRUE;
-}
-
-/* ffestc_R525_item -- ALLOCATABLE statement for object-name
-
-   ffestc_R525_item(name_token,dim_list);
-
-   Make sure name_token identifies a valid object to be ALLOCATABLEd.  */
-
-void
-ffestc_R525_item (ffelexToken name, ffesttDimList dims)
-{
-  ffestc_check_item_ ();
-  assert (name != NULL);
-  if (!ffestc_ok_)
-    return;
-
-  ffesta_set_outpooldisp (FFESTA_pooldispPRESERVE);
-
-  ffestd_R525_item (name, dims);
-}
-
-/* ffestc_R525_finish -- ALLOCATABLE statement list complete
-
-   ffestc_R525_finish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_R525_finish ()
-{
-  ffestc_check_finish_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_R525_finish ();
-}
-
-/* ffestc_R526_start -- POINTER statement list begin
-
-   ffestc_R526_start();
-
-   Verify that POINTER is valid here, and begin accepting items in the
-   list.  */
-
-void
-ffestc_R526_start ()
-{
-  ffestc_check_start_ ();
-  if (ffestc_order_progspec_ () != FFESTC_orderOK_)
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-  ffestc_labeldef_useless_ ();
-
-  ffestd_R526_start ();
-
-  ffestc_ok_ = TRUE;
-}
-
-/* ffestc_R526_item -- POINTER statement for object-name
-
-   ffestc_R526_item(name_token,dim_list);
-
-   Make sure name_token identifies a valid object to be POINTERd.  */
-
-void
-ffestc_R526_item (ffelexToken name, ffesttDimList dims)
-{
-  ffestc_check_item_ ();
-  assert (name != NULL);
-  if (!ffestc_ok_)
-    return;
-
-  ffesta_set_outpooldisp (FFESTA_pooldispPRESERVE);
-
-  ffestd_R526_item (name, dims);
-}
-
-/* ffestc_R526_finish -- POINTER statement list complete
-
-   ffestc_R526_finish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_R526_finish ()
-{
-  ffestc_check_finish_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_R526_finish ();
-}
-
-/* ffestc_R527_start -- TARGET statement list begin
-
-   ffestc_R527_start();
-
-   Verify that TARGET is valid here, and begin accepting items in the
-   list.  */
-
-void
-ffestc_R527_start ()
-{
-  ffestc_check_start_ ();
-  if (ffestc_order_progspec_ () != FFESTC_orderOK_)
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-  ffestc_labeldef_useless_ ();
-
-  ffestd_R527_start ();
-
-  ffestc_ok_ = TRUE;
-}
-
-/* ffestc_R527_item -- TARGET statement for object-name
-
-   ffestc_R527_item(name_token,dim_list);
-
-   Make sure name_token identifies a valid object to be TARGETd.  */
-
-void
-ffestc_R527_item (ffelexToken name, ffesttDimList dims)
-{
-  ffestc_check_item_ ();
-  assert (name != NULL);
-  if (!ffestc_ok_)
-    return;
-
-  ffesta_set_outpooldisp (FFESTA_pooldispPRESERVE);
-
-  ffestd_R527_item (name, dims);
-}
-
-/* ffestc_R527_finish -- TARGET statement list complete
-
-   ffestc_R527_finish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_R527_finish ()
-{
-  ffestc_check_finish_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_R527_finish ();
-}
-
-#endif
 /* ffestc_R528_start -- DATA statement list begin
 
    ffestc_R528_start();
@@ -8556,86 +6456,6 @@ ffestc_R547_finish ()
   ffestd_R547_finish ();
 }
 
-/* ffestc_R620 -- ALLOCATE statement
-
-   ffestc_R620(exprlist,stat,stat_token);
-
-   Make sure the expression list is valid, then implement it.  */
-
-#if FFESTR_F90
-void
-ffestc_R620 (ffesttExprList exprlist, ffebld stat, ffelexToken stat_token)
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_actionif_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_branch_begin_ ();
-
-  ffestd_R620 (exprlist, stat);
-
-  if (ffestc_shriek_after1_ != NULL)
-    (*ffestc_shriek_after1_) (TRUE);
-  ffestc_labeldef_branch_end_ ();
-}
-
-/* ffestc_R624 -- NULLIFY statement
-
-   ffestc_R624(pointer_name_list);
-
-   Make sure pointer_name_list identifies valid pointers for a NULLIFY.	 */
-
-void
-ffestc_R624 (ffesttExprList pointers)
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_actionif_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_branch_begin_ ();
-
-  ffestd_R624 (pointers);
-
-  if (ffestc_shriek_after1_ != NULL)
-    (*ffestc_shriek_after1_) (TRUE);
-  ffestc_labeldef_branch_end_ ();
-}
-
-/* ffestc_R625 -- DEALLOCATE statement
-
-   ffestc_R625(exprlist,stat,stat_token);
-
-   Make sure the equivalence is valid, then implement it.  */
-
-void
-ffestc_R625 (ffesttExprList exprlist, ffebld stat, ffelexToken stat_token)
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_actionif_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_branch_begin_ ();
-
-  ffestd_R625 (exprlist, stat);
-
-  if (ffestc_shriek_after1_ != NULL)
-    (*ffestc_shriek_after1_) (TRUE);
-  ffestc_labeldef_branch_end_ ();
-}
-
-#endif
-/* ffestc_let -- R1213 or R737
-
-   ffestc_let(...);
-
-   Verify that R1213 defined-assignment or R737 assignment-stmt are
-   valid here, figure out which one, and implement.  */
-
-#if FFESTR_F90
-void
-ffestc_let (ffebld dest, ffebld source, ffelexToken source_token)
-{
-  ffestc_R737 (dest, source, source_token);
-}
-
-#endif
 /* ffestc_R737 -- Assignment statement
 
    ffestc_R737(dest_expr,source_expr,source_token);
@@ -8646,26 +6466,6 @@ void
 ffestc_R737 (ffebld dest, ffebld source, ffelexToken source_token)
 {
   ffestc_check_simple_ ();
-
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-#if FFESTR_F90
-    case FFESTV_stateWHERE:
-    case FFESTV_stateWHERETHEN:
-      if (ffestc_order_actionwhere_ () != FFESTC_orderOK_)
-	return;
-      ffestc_labeldef_useless_ ();
-
-      ffestd_R737B (dest, source);
-
-      if (ffestc_shriek_after1_ != NULL)
-	(*ffestc_shriek_after1_) (TRUE);
-      return;
-#endif
-
-    default:
-      break;
-    }
 
   if (ffestc_order_actionwhere_ () != FFESTC_orderOK_)
     return;
@@ -8681,130 +6481,6 @@ ffestc_R737 (ffebld dest, ffebld source, ffelexToken source_token)
   ffestc_labeldef_branch_end_ ();
 }
 
-/* ffestc_R738 -- Pointer assignment statement
-
-   ffestc_R738(dest_expr,source_expr,source_token);
-
-   Make sure the assignment is valid.  */
-
-#if FFESTR_F90
-void
-ffestc_R738 (ffebld dest, ffebld source, ffelexToken source_token)
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_actionif_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_branch_begin_ ();
-
-  ffestd_R738 (dest, source);
-
-  if (ffestc_shriek_after1_ != NULL)
-    (*ffestc_shriek_after1_) (TRUE);
-  ffestc_labeldef_branch_end_ ();
-}
-
-/* ffestc_R740 -- WHERE statement
-
-   ffestc_R740(expr,expr_token);
-
-   Make sure statement is valid here; implement.  */
-
-void
-ffestc_R740 (ffebld expr, ffelexToken expr_token)
-{
-  ffestw b;
-
-  ffestc_check_simple_ ();
-  if (ffestc_order_actionif_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_branch_begin_ ();
-
-  b = ffestw_update (ffestw_push (NULL));
-  ffestw_set_top_do (b, ffestw_top_do (ffestw_previous (b)));
-  ffestw_set_state (b, FFESTV_stateWHERE);
-  ffestw_set_blocknum (b, ffestc_blocknum_++);
-  ffestw_set_shriek (b, ffestc_shriek_where_lost_);
-
-  ffestd_R740 (expr);
-
-  /* Leave label finishing to next statement. */
-
-}
-
-/* ffestc_R742 -- WHERE-construct statement
-
-   ffestc_R742(expr,expr_token);
-
-   Make sure statement is valid here; implement.  */
-
-void
-ffestc_R742 (ffebld expr, ffelexToken expr_token)
-{
-  ffestw b;
-
-  ffestc_check_simple_ ();
-  if (ffestc_order_exec_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_notloop_probably_this_wont_work_ ();
-
-  b = ffestw_update (ffestw_push (NULL));
-  ffestw_set_top_do (b, ffestw_top_do (ffestw_previous (b)));
-  ffestw_set_state (b, FFESTV_stateWHERETHEN);
-  ffestw_set_blocknum (b, ffestc_blocknum_++);
-  ffestw_set_shriek (b, ffestc_shriek_wherethen_);
-  ffestw_set_substate (b, 0);	/* Haven't seen ELSEWHERE yet. */
-
-  ffestd_R742 (expr);
-}
-
-/* ffestc_R744 -- ELSE WHERE statement
-
-   ffestc_R744();
-
-   Make sure ffestc_kind_ identifies a WHERE block.
-   Implement the ELSE of the current WHERE block.  */
-
-void
-ffestc_R744 ()
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_where_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  if (ffestw_substate (ffestw_stack_top ()) != 0)
-    {
-      ffebad_start (FFEBAD_SECOND_ELSE_WHERE);
-      ffebad_here (0, ffelex_token_where_line (ffesta_tokens[0]),
-		   ffelex_token_where_column (ffesta_tokens[0]));
-      ffebad_here (1, ffestw_line (ffestw_stack_top ()), ffestw_col (ffestw_stack_top ()));
-      ffebad_finish ();
-    }
-
-  ffestw_set_substate (ffestw_stack_top (), 1);	/* Saw ELSEWHERE. */
-
-  ffestd_R744 ();
-}
-
-/* ffestc_R745 -- END WHERE statement
-
-   ffestc_R745();
-
-   Make sure ffestc_kind_ identifies a WHERE block.
-   Implement the end of the current WHERE block.  */
-
-void
-ffestc_R745 ()
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_where_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  ffestc_shriek_wherethen_ (TRUE);
-}
-
-#endif
 /* ffestc_R803 -- Block IF (IF-THEN) statement
 
    ffestc_R803(construct_name,expr,expr_token);
@@ -10119,27 +7795,9 @@ ffestc_R841 ()
   if (ffestc_order_actionwhere_ () != FFESTC_orderOK_)
     return;
 
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-#if FFESTR_F90
-    case FFESTV_stateWHERE:
-    case FFESTV_stateWHERETHEN:
-      ffestc_labeldef_useless_ ();
+  ffestc_labeldef_branch_begin_ ();
 
-      ffestd_R841 (TRUE);
-
-      /* It's okay that we call ffestc_labeldef_branch_end_ () below,
-	 since that will be a no-op after calling _useless_ () above.  */
-      break;
-#endif
-
-    default:
-      ffestc_labeldef_branch_begin_ ();
-
-      ffestd_R841 (FALSE);
-
-      break;
-    }
+  ffestd_R841 (FALSE);
 
   if (ffestc_shriek_after1_ != NULL)
     (*ffestc_shriek_after1_) (TRUE);
@@ -11496,124 +9154,6 @@ ffestc_R1103 (ffelexToken name)
   ffestc_shriek_end_program_ (TRUE);
 }
 
-/* ffestc_R1105 -- MODULE statement
-
-   ffestc_R1105(name_token);
-
-   Make sure ffestc_kind_ identifies an empty block.  Make sure name_token
-   gives a valid name.	Implement the beginning of a module.  */
-
-#if FFESTR_F90
-void
-ffestc_R1105 (ffelexToken name)
-{
-  ffestw b;
-
-  assert (name != NULL);
-
-  ffestc_check_simple_ ();
-  if (ffestc_order_unit_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  ffestc_blocknum_ = 0;
-  b = ffestw_update (ffestw_push (NULL));
-  ffestw_set_top_do (b, NULL);
-  ffestw_set_state (b, FFESTV_stateMODULE0);
-  ffestw_set_blocknum (b, ffestc_blocknum_++);
-  ffestw_set_shriek (b, ffestc_shriek_module_);
-  ffestw_set_name (b, ffelex_token_use (name));
-
-  ffestd_R1105 (name);
-}
-
-/* ffestc_R1106 -- END MODULE statement
-
-   ffestc_R1106(name_token);
-
-   Make sure ffestc_kind_ identifies the current kind of program unit.	If not
-   NULL, make sure name_token gives the correct name.  Implement the end
-   of the current program unit.	 */
-
-void
-ffestc_R1106 (ffelexToken name)
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_module_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  if ((name != NULL)
-      && (ffelex_token_strcmp (name, ffestw_name (ffestw_stack_top ())) != 0))
-    {
-      ffebad_start (FFEBAD_UNIT_WRONG_NAME);
-      ffebad_here (0, ffelex_token_where_line (name),
-		   ffelex_token_where_column (name));
-      ffebad_here (1, ffelex_token_where_line (ffestw_name (ffestw_stack_top ())),
-	     ffelex_token_where_column (ffestw_name (ffestw_stack_top ())));
-      ffebad_finish ();
-    }
-
-  ffestc_shriek_module_ (TRUE);
-}
-
-/* ffestc_R1107_start -- USE statement list begin
-
-   ffestc_R1107_start();
-
-   Verify that USE is valid here, and begin accepting items in the list.  */
-
-void
-ffestc_R1107_start (ffelexToken name, bool only)
-{
-  ffestc_check_start_ ();
-  if (ffestc_order_use_ () != FFESTC_orderOK_)
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-  ffestc_labeldef_useless_ ();
-
-  ffestd_R1107_start (name, only);
-
-  ffestc_ok_ = TRUE;
-}
-
-/* ffestc_R1107_item -- USE statement for name
-
-   ffestc_R1107_item(local_token,use_token);
-
-   Make sure name_token identifies a valid object to be USEed.	local_token
-   may be NULL if _start_ was called with only==TRUE.  */
-
-void
-ffestc_R1107_item (ffelexToken local, ffelexToken use)
-{
-  ffestc_check_item_ ();
-  assert (use != NULL);
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_R1107_item (local, use);
-}
-
-/* ffestc_R1107_finish -- USE statement list complete
-
-   ffestc_R1107_finish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_R1107_finish ()
-{
-  ffestc_check_finish_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_R1107_finish ();
-}
-
-#endif
 /* ffestc_R1111 -- BLOCK DATA statement
 
    ffestc_R1111(name_token);
@@ -11707,139 +9247,6 @@ ffestc_R1112 (ffelexToken name)
   ffestc_shriek_blockdata_ (TRUE);
 }
 
-/* ffestc_R1202 -- INTERFACE statement
-
-   ffestc_R1202(operator,defined_name);
-
-   Make sure ffestc_kind_ identifies an INTERFACE block.
-   Implement the end of the current interface.
-
-   15-May-90  JCB  1.1
-      Allow no operator or name to mean INTERFACE by itself; missed this
-      valid form when originally doing syntactic analysis code.	 */
-
-#if FFESTR_F90
-void
-ffestc_R1202 (ffestpDefinedOperator operator, ffelexToken name)
-{
-  ffestw b;
-
-  ffestc_check_simple_ ();
-  if (ffestc_order_interfacespec_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  b = ffestw_update (ffestw_push (NULL));
-  ffestw_set_top_do (b, NULL);
-  ffestw_set_state (b, FFESTV_stateINTERFACE0);
-  ffestw_set_blocknum (b, 0);
-  ffestw_set_shriek (b, ffestc_shriek_interface_);
-
-  if ((operator == FFESTP_definedoperatorNone) && (name == NULL))
-    ffestw_set_substate (b, 0);	/* No generic-spec, so disallow MODULE
-				   PROCEDURE. */
-  else
-    ffestw_set_substate (b, 1);	/* MODULE PROCEDURE ok. */
-
-  ffestd_R1202 (operator, name);
-
-  ffe_init_4 ();
-}
-
-/* ffestc_R1203 -- END INTERFACE statement
-
-   ffestc_R1203();
-
-   Make sure ffestc_kind_ identifies an INTERFACE block.
-   Implement the end of the current interface.	*/
-
-void
-ffestc_R1203 ()
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_interface_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  ffestc_shriek_interface_ (TRUE);
-
-  ffe_terminate_4 ();
-}
-
-/* ffestc_R1205_start -- MODULE PROCEDURE statement list begin
-
-   ffestc_R1205_start();
-
-   Verify that MODULE PROCEDURE is valid here, and begin accepting items in
-   the list.  */
-
-void
-ffestc_R1205_start ()
-{
-  ffestc_check_start_ ();
-  if (ffestc_order_interface_ () != FFESTC_orderOK_)
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-  ffestc_labeldef_useless_ ();
-
-  if (ffestw_substate (ffestw_stack_top ()) == 0)
-    {
-      ffebad_start (FFEBAD_INVALID_MODULE_PROCEDURE);
-      ffebad_here (0, ffelex_token_where_line (ffesta_tokens[0]),
-		   ffelex_token_where_column (ffesta_tokens[0]));
-      ffebad_here (1, ffestw_line (ffestw_stack_top ()), ffestw_col (ffestw_stack_top ()));
-      ffebad_finish ();
-      ffestc_ok_ = FALSE;
-      return;
-    }
-
-  if (ffestw_state (ffestw_stack_top ()) == FFESTV_stateINTERFACE0)
-    {
-      ffestw_update (NULL);	/* Update state line/col info. */
-      ffestw_set_state (ffestw_stack_top (), FFESTV_stateINTERFACE1);
-    }
-
-  ffestd_R1205_start ();
-
-  ffestc_ok_ = TRUE;
-}
-
-/* ffestc_R1205_item -- MODULE PROCEDURE statement for name
-
-   ffestc_R1205_item(name_token);
-
-   Make sure name_token identifies a valid object to be MODULE PROCEDUREed.  */
-
-void
-ffestc_R1205_item (ffelexToken name)
-{
-  ffestc_check_item_ ();
-  assert (name != NULL);
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_R1205_item (name);
-}
-
-/* ffestc_R1205_finish -- MODULE PROCEDURE statement list complete
-
-   ffestc_R1205_finish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_R1205_finish ()
-{
-  ffestc_check_finish_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_R1205_finish ();
-}
-
-#endif
 /* ffestc_R1207_start -- EXTERNAL statement list begin
 
    ffestc_R1207_start();
@@ -12104,29 +9511,6 @@ ffestc_R1212 (ffebld expr, ffelexToken expr_token UNUSED)
   ffestc_labeldef_branch_end_ ();
 }
 
-/* ffestc_R1213 -- Defined assignment statement
-
-   ffestc_R1213(dest_expr,source_expr,source_token);
-
-   Make sure the assignment is valid.  */
-
-#if FFESTR_F90
-void
-ffestc_R1213 (ffebld dest, ffebld source, ffelexToken source_token)
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_actionif_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_branch_begin_ ();
-
-  ffestd_R1213 (dest, source);
-
-  if (ffestc_shriek_after1_ != NULL)
-    (*ffestc_shriek_after1_) (TRUE);
-  ffestc_labeldef_branch_end_ ();
-}
-
-#endif
 /* ffestc_R1219 -- FUNCTION statement
 
    ffestc_R1219(funcname,arglist,ending_token,kind,kindt,len,lent,
@@ -12702,26 +10086,6 @@ ffestc_R1227 (ffebld expr, ffelexToken expr_token)
   ffestc_labeldef_branch_end_ ();
 }
 
-/* ffestc_R1228 -- CONTAINS statement
-
-   ffestc_R1228();  */
-
-#if FFESTR_F90
-void
-ffestc_R1228 ()
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_contains_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  ffestd_R1228 ();
-
-  ffe_terminate_3 ();
-  ffe_init_3 ();
-}
-
-#endif
 /* ffestc_R1229_start -- STMTFUNCTION statement begin
 
    ffestc_R1229_start(func_name,func_arg_list,close_paren);
@@ -12860,255 +10224,6 @@ ffestc_S3P4 (ffebld filename, ffelexToken filename_token UNUSED)
   ffestd_S3P4 (filename);
 }
 
-/* ffestc_V003_start -- STRUCTURE statement list begin
-
-   ffestc_V003_start(structure_name);
-
-   Verify that STRUCTURE is valid here, and begin accepting items in the list.	*/
-
-#if FFESTR_VXT
-void
-ffestc_V003_start (ffelexToken structure_name)
-{
-  ffestw b;
-
-  ffestc_check_start_ ();
-  if (ffestc_order_vxtstructure_ () != FFESTC_orderOK_)
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-  ffestc_labeldef_useless_ ();
-
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateSTRUCTURE:
-    case FFESTV_stateMAP:
-      ffestc_local_.V003.list_state = 2;	/* Require at least one field
-						   name. */
-      ffestw_set_substate (ffestw_stack_top (), 1);	/* Seen at least one
-							   member. */
-      break;
-
-    default:
-      ffestc_local_.V003.list_state = 0;	/* No field names required. */
-      if (structure_name == NULL)
-	{
-	  ffebad_start (FFEBAD_STRUCT_MISSING_NAME);
-	  ffebad_here (0, ffelex_token_where_line (ffesta_tokens[0]),
-		       ffelex_token_where_column (ffesta_tokens[0]));
-	  ffebad_finish ();
-	}
-      break;
-    }
-
-  b = ffestw_update (ffestw_push (NULL));
-  ffestw_set_top_do (b, NULL);
-  ffestw_set_state (b, FFESTV_stateSTRUCTURE);
-  ffestw_set_blocknum (b, 0);
-  ffestw_set_shriek (b, ffestc_shriek_structure_);
-  ffestw_set_substate (b, 0);	/* No field-declarations seen yet. */
-
-  ffestd_V003_start (structure_name);
-
-  ffestc_ok_ = TRUE;
-}
-
-/* ffestc_V003_item -- STRUCTURE statement for object-name
-
-   ffestc_V003_item(name_token,dim_list);
-
-   Make sure name_token identifies a valid object to be STRUCTUREd.  */
-
-void
-ffestc_V003_item (ffelexToken name, ffesttDimList dims)
-{
-  ffestc_check_item_ ();
-  assert (name != NULL);
-  if (!ffestc_ok_)
-    return;
-
-  if (ffestc_local_.V003.list_state < 2)
-    {
-      if (ffestc_local_.V003.list_state == 0)
-	{
-	  ffestc_local_.V003.list_state = 1;
-	  ffebad_start (FFEBAD_STRUCT_IGNORING_FIELD);
-	  ffebad_here (0, ffelex_token_where_line (name),
-		       ffelex_token_where_column (name));
-	  ffebad_finish ();
-	}
-      return;
-    }
-  ffestc_local_.V003.list_state = 3;	/* Have at least one field name. */
-
-  if (dims != NULL)
-    ffesta_set_outpooldisp (FFESTA_pooldispPRESERVE);
-
-  ffestd_V003_item (name, dims);
-}
-
-/* ffestc_V003_finish -- STRUCTURE statement list complete
-
-   ffestc_V003_finish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_V003_finish ()
-{
-  ffestc_check_finish_ ();
-  if (!ffestc_ok_)
-    return;
-
-  if (ffestc_local_.V003.list_state == 2)
-    {
-      ffebad_start (FFEBAD_STRUCT_MISSING_FIELD);
-      ffebad_here (0, ffelex_token_where_line (ffesta_tokens[0]),
-		   ffelex_token_where_column (ffesta_tokens[0]));
-      ffebad_here (1, ffestw_line (ffestw_previous (ffestw_stack_top ())),
-		   ffestw_col (ffestw_previous (ffestw_stack_top ())));
-      ffebad_finish ();
-    }
-
-  ffestd_V003_finish ();
-}
-
-/* ffestc_V004 -- END STRUCTURE statement
-
-   ffestc_V004();
-
-   Make sure ffestc_kind_ identifies a STRUCTURE block.
-   Implement the end of the current STRUCTURE block.  */
-
-void
-ffestc_V004 ()
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_structure_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  if (ffestw_substate (ffestw_stack_top ()) != 1)
-    {
-      ffebad_start (FFEBAD_STRUCT_NO_COMPONENTS);
-      ffebad_here (0, ffelex_token_where_line (ffesta_tokens[0]),
-		   ffelex_token_where_column (ffesta_tokens[0]));
-      ffebad_here (1, ffestw_line (ffestw_stack_top ()), ffestw_col (ffestw_stack_top ()));
-      ffebad_finish ();
-    }
-
-  ffestc_shriek_structure_ (TRUE);
-}
-
-/* ffestc_V009 -- UNION statement
-
-   ffestc_V009();  */
-
-void
-ffestc_V009 ()
-{
-  ffestw b;
-
-  ffestc_check_simple_ ();
-  if (ffestc_order_structure_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  ffestw_set_substate (ffestw_stack_top (), 1);	/* Seen at least one member. */
-
-  b = ffestw_update (ffestw_push (NULL));
-  ffestw_set_top_do (b, NULL);
-  ffestw_set_state (b, FFESTV_stateUNION);
-  ffestw_set_blocknum (b, 0);
-  ffestw_set_shriek (b, ffestc_shriek_union_);
-  ffestw_set_substate (b, 0);	/* No map decls seen yet. */
-
-  ffestd_V009 ();
-}
-
-/* ffestc_V010 -- END UNION statement
-
-   ffestc_V010();
-
-   Make sure ffestc_kind_ identifies a UNION block.
-   Implement the end of the current UNION block.  */
-
-void
-ffestc_V010 ()
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_union_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  if (ffestw_substate (ffestw_stack_top ()) != 2)
-    {
-      ffebad_start (FFEBAD_UNION_NO_TWO_MAPS);
-      ffebad_here (0, ffelex_token_where_line (ffesta_tokens[0]),
-		   ffelex_token_where_column (ffesta_tokens[0]));
-      ffebad_here (1, ffestw_line (ffestw_stack_top ()), ffestw_col (ffestw_stack_top ()));
-      ffebad_finish ();
-    }
-
-  ffestc_shriek_union_ (TRUE);
-}
-
-/* ffestc_V012 -- MAP statement
-
-   ffestc_V012();  */
-
-void
-ffestc_V012 ()
-{
-  ffestw b;
-
-  ffestc_check_simple_ ();
-  if (ffestc_order_union_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  if (ffestw_substate (ffestw_stack_top ()) != 2)
-    ffestw_substate (ffestw_stack_top ())++;	/* 0=>1, 1=>2. */
-
-  b = ffestw_update (ffestw_push (NULL));
-  ffestw_set_top_do (b, NULL);
-  ffestw_set_state (b, FFESTV_stateMAP);
-  ffestw_set_blocknum (b, 0);
-  ffestw_set_shriek (b, ffestc_shriek_map_);
-  ffestw_set_substate (b, 0);	/* No field-declarations seen yet. */
-
-  ffestd_V012 ();
-}
-
-/* ffestc_V013 -- END MAP statement
-
-   ffestc_V013();
-
-   Make sure ffestc_kind_ identifies a MAP block.
-   Implement the end of the current MAP block.	*/
-
-void
-ffestc_V013 ()
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_map_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_useless_ ();
-
-  if (ffestw_substate (ffestw_stack_top ()) != 1)
-    {
-      ffebad_start (FFEBAD_MAP_NO_COMPONENTS);
-      ffebad_here (0, ffelex_token_where_line (ffesta_tokens[0]),
-		   ffelex_token_where_column (ffesta_tokens[0]));
-      ffebad_here (1, ffestw_line (ffestw_stack_top ()), ffestw_col (ffestw_stack_top ()));
-      ffebad_finish ();
-    }
-
-  ffestc_shriek_map_ (TRUE);
-}
-
-#endif
 /* ffestc_V014_start -- VOLATILE statement list begin
 
    ffestc_V014_start();
@@ -13182,284 +10297,6 @@ ffestc_V014_finish ()
   ffestd_V014_finish ();
 }
 
-/* ffestc_V016_start -- RECORD statement list begin
-
-   ffestc_V016_start();
-
-   Verify that RECORD is valid here, and begin accepting items in the list.  */
-
-#if FFESTR_VXT
-void
-ffestc_V016_start ()
-{
-  ffestc_check_start_ ();
-  if (ffestc_order_record_ () != FFESTC_orderOK_)
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-  ffestc_labeldef_useless_ ();
-
-  switch (ffestw_state (ffestw_stack_top ()))
-    {
-    case FFESTV_stateSTRUCTURE:
-    case FFESTV_stateMAP:
-      ffestw_set_substate (ffestw_stack_top (), 1);	/* Seen at least one
-							   member. */
-      break;
-
-    default:
-      break;
-    }
-
-  ffestd_V016_start ();
-
-  ffestc_ok_ = TRUE;
-}
-
-/* ffestc_V016_item_structure -- RECORD statement for common-block-name
-
-   ffestc_V016_item_structure(name_token);
-
-   Make sure name_token identifies a valid structure to be RECORDed.  */
-
-void
-ffestc_V016_item_structure (ffelexToken name)
-{
-  ffestc_check_item_ ();
-  assert (name != NULL);
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_V016_item_structure (name);
-}
-
-/* ffestc_V016_item_object -- RECORD statement for object-name
-
-   ffestc_V016_item_object(name_token,dim_list);
-
-   Make sure name_token identifies a valid object to be RECORDd.  */
-
-void
-ffestc_V016_item_object (ffelexToken name, ffesttDimList dims)
-{
-  ffestc_check_item_ ();
-  assert (name != NULL);
-  if (!ffestc_ok_)
-    return;
-
-  if (dims != NULL)
-    ffesta_set_outpooldisp (FFESTA_pooldispPRESERVE);
-
-  ffestd_V016_item_object (name, dims);
-}
-
-/* ffestc_V016_finish -- RECORD statement list complete
-
-   ffestc_V016_finish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_V016_finish ()
-{
-  ffestc_check_finish_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_V016_finish ();
-}
-
-/* ffestc_V018_start -- REWRITE(...) statement list begin
-
-   ffestc_V018_start();
-
-   Verify that REWRITE is valid here, and begin accepting items in the
-   list.  */
-
-void
-ffestc_V018_start ()
-{
-  ffestvFormat format;
-
-  ffestc_check_start_ ();
-  if (ffestc_order_actionif_ () != FFESTC_orderOK_)
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-  ffestc_labeldef_branch_begin_ ();
-
-  if (!ffestc_subr_is_branch_
-      (&ffestp_file.rewrite.rewrite_spec[FFESTP_rewriteixERR])
-      || !ffestc_subr_is_format_
-      (&ffestp_file.rewrite.rewrite_spec[FFESTP_rewriteixFMT])
-      || !ffestc_subr_is_present_ ("UNIT",
-		   &ffestp_file.rewrite.rewrite_spec[FFESTP_rewriteixUNIT]))
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-
-  format = ffestc_subr_format_
-    (&ffestp_file.rewrite.rewrite_spec[FFESTP_rewriteixFMT]);
-  switch (format)
-    {
-    case FFESTV_formatNAMELIST:
-    case FFESTV_formatASTERISK:
-      ffebad_start (FFEBAD_CONFLICTING_SPECS);
-      ffebad_here (0, ffelex_token_where_line (ffesta_tokens[0]),
-		   ffelex_token_where_column (ffesta_tokens[0]));
-      assert (ffestp_file.rewrite.rewrite_spec[FFESTP_rewriteixFMT].kw_or_val_present);
-      if (ffestp_file.rewrite.rewrite_spec[FFESTP_rewriteixFMT].kw_present)
-	{
-	  ffebad_here (0, ffelex_token_where_line
-		 (ffestp_file.rewrite.rewrite_spec[FFESTP_rewriteixFMT].kw),
-		       ffelex_token_where_column
-		(ffestp_file.rewrite.rewrite_spec[FFESTP_rewriteixFMT].kw));
-	}
-      else
-	{
-	  ffebad_here (1, ffelex_token_where_line
-	      (ffestp_file.rewrite.rewrite_spec[FFESTP_rewriteixFMT].value),
-		       ffelex_token_where_column
-	     (ffestp_file.rewrite.rewrite_spec[FFESTP_rewriteixFMT].value));
-	}
-      ffebad_finish ();
-      ffestc_ok_ = FALSE;
-      return;
-
-    default:
-      break;
-    }
-
-  ffestd_V018_start (format);
-
-  ffestc_ok_ = TRUE;
-}
-
-/* ffestc_V018_item -- REWRITE statement i/o item
-
-   ffestc_V018_item(expr,expr_token);
-
-   Implement output-list expression.  */
-
-void
-ffestc_V018_item (ffebld expr, ffelexToken expr_token)
-{
-  ffestc_check_item_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_V018_item (expr);
-}
-
-/* ffestc_V018_finish -- REWRITE statement list complete
-
-   ffestc_V018_finish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_V018_finish ()
-{
-  ffestc_check_finish_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_V018_finish ();
-
-  if (ffestc_shriek_after1_ != NULL)
-    (*ffestc_shriek_after1_) (TRUE);
-  ffestc_labeldef_branch_end_ ();
-}
-
-/* ffestc_V019_start -- ACCEPT statement list begin
-
-   ffestc_V019_start();
-
-   Verify that ACCEPT is valid here, and begin accepting items in the
-   list.  */
-
-void
-ffestc_V019_start ()
-{
-  ffestvFormat format;
-
-  ffestc_check_start_ ();
-  if (ffestc_order_actionif_ () != FFESTC_orderOK_)
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-  ffestc_labeldef_branch_begin_ ();
-
-  if (!ffestc_subr_is_format_
-      (&ffestp_file.accept.accept_spec[FFESTP_acceptixFORMAT]))
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-
-  format = ffestc_subr_format_
-    (&ffestp_file.accept.accept_spec[FFESTP_acceptixFORMAT]);
-  ffestc_namelist_ = (format == FFESTV_formatNAMELIST);
-
-  ffestd_V019_start (format);
-
-  ffestc_ok_ = TRUE;
-}
-
-/* ffestc_V019_item -- ACCEPT statement i/o item
-
-   ffestc_V019_item(expr,expr_token);
-
-   Implement output-list expression.  */
-
-void
-ffestc_V019_item (ffebld expr, ffelexToken expr_token)
-{
-  ffestc_check_item_ ();
-  if (!ffestc_ok_)
-    return;
-
-  if (ffestc_namelist_ != 0)
-    {
-      if (ffestc_namelist_ == 1)
-	{
-	  ffestc_namelist_ = 2;
-	  ffebad_start (FFEBAD_NAMELIST_ITEMS);
-	  ffebad_here (0, ffelex_token_where_line (expr_token),
-		       ffelex_token_where_column (expr_token));
-	  ffebad_finish ();
-	}
-      return;
-    }
-
-  ffestd_V019_item (expr);
-}
-
-/* ffestc_V019_finish -- ACCEPT statement list complete
-
-   ffestc_V019_finish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_V019_finish ()
-{
-  ffestc_check_finish_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_V019_finish ();
-
-  if (ffestc_shriek_after1_ != NULL)
-    (*ffestc_shriek_after1_) (TRUE);
-  ffestc_labeldef_branch_end_ ();
-}
-
-#endif
 /* ffestc_V020_start -- TYPE statement list begin
 
    ffestc_V020_start();
@@ -13545,277 +10382,6 @@ ffestc_V020_finish ()
   ffestc_labeldef_branch_end_ ();
 }
 
-/* ffestc_V021 -- DELETE statement
-
-   ffestc_V021();
-
-   Make sure a DELETE is valid in the current context, and implement it.  */
-
-#if FFESTR_VXT
-void
-ffestc_V021 ()
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_actionif_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_branch_begin_ ();
-
-  if (ffestc_subr_is_branch_
-      (&ffestp_file.delete.delete_spec[FFESTP_deleteixERR])
-      && ffestc_subr_is_present_ ("UNIT",
-		      &ffestp_file.delete.delete_spec[FFESTP_deleteixUNIT]))
-    ffestd_V021 ();
-
-  if (ffestc_shriek_after1_ != NULL)
-    (*ffestc_shriek_after1_) (TRUE);
-  ffestc_labeldef_branch_end_ ();
-}
-
-/* ffestc_V022 -- UNLOCK statement
-
-   ffestc_V022();
-
-   Make sure a UNLOCK is valid in the current context, and implement it.  */
-
-void
-ffestc_V022 ()
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_actionif_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_branch_begin_ ();
-
-  if (ffestc_subr_is_branch_
-      (&ffestp_file.beru.beru_spec[FFESTP_beruixERR])
-      && ffestc_subr_is_present_ ("UNIT",
-			    &ffestp_file.beru.beru_spec[FFESTP_beruixUNIT]))
-    ffestd_V022 ();
-
-  if (ffestc_shriek_after1_ != NULL)
-    (*ffestc_shriek_after1_) (TRUE);
-  ffestc_labeldef_branch_end_ ();
-}
-
-/* ffestc_V023_start -- ENCODE(...) statement list begin
-
-   ffestc_V023_start();
-
-   Verify that ENCODE is valid here, and begin accepting items in the
-   list.  */
-
-void
-ffestc_V023_start ()
-{
-  ffestc_check_start_ ();
-  if (ffestc_order_actionif_ () != FFESTC_orderOK_)
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-  ffestc_labeldef_branch_begin_ ();
-
-  if (!ffestc_subr_is_branch_
-      (&ffestp_file.vxtcode.vxtcode_spec[FFESTP_vxtcodeixERR]))
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-
-  ffestd_V023_start ();
-
-  ffestc_ok_ = TRUE;
-}
-
-/* ffestc_V023_item -- ENCODE statement i/o item
-
-   ffestc_V023_item(expr,expr_token);
-
-   Implement output-list expression.  */
-
-void
-ffestc_V023_item (ffebld expr, ffelexToken expr_token)
-{
-  ffestc_check_item_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_V023_item (expr);
-}
-
-/* ffestc_V023_finish -- ENCODE statement list complete
-
-   ffestc_V023_finish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_V023_finish ()
-{
-  ffestc_check_finish_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_V023_finish ();
-
-  if (ffestc_shriek_after1_ != NULL)
-    (*ffestc_shriek_after1_) (TRUE);
-  ffestc_labeldef_branch_end_ ();
-}
-
-/* ffestc_V024_start -- DECODE(...) statement list begin
-
-   ffestc_V024_start();
-
-   Verify that DECODE is valid here, and begin accepting items in the
-   list.  */
-
-void
-ffestc_V024_start ()
-{
-  ffestc_check_start_ ();
-  if (ffestc_order_actionif_ () != FFESTC_orderOK_)
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-  ffestc_labeldef_branch_begin_ ();
-
-  if (!ffestc_subr_is_branch_
-      (&ffestp_file.vxtcode.vxtcode_spec[FFESTP_vxtcodeixERR]))
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-
-  ffestd_V024_start ();
-
-  ffestc_ok_ = TRUE;
-}
-
-/* ffestc_V024_item -- DECODE statement i/o item
-
-   ffestc_V024_item(expr,expr_token);
-
-   Implement output-list expression.  */
-
-void
-ffestc_V024_item (ffebld expr, ffelexToken expr_token)
-{
-  ffestc_check_item_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_V024_item (expr);
-}
-
-/* ffestc_V024_finish -- DECODE statement list complete
-
-   ffestc_V024_finish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_V024_finish ()
-{
-  ffestc_check_finish_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_V024_finish ();
-
-  if (ffestc_shriek_after1_ != NULL)
-    (*ffestc_shriek_after1_) (TRUE);
-  ffestc_labeldef_branch_end_ ();
-}
-
-/* ffestc_V025_start -- DEFINEFILE statement list begin
-
-   ffestc_V025_start();
-
-   Verify that DEFINEFILE is valid here, and begin accepting items in the
-   list.  */
-
-void
-ffestc_V025_start ()
-{
-  ffestc_check_start_ ();
-  if (ffestc_order_actionif_ () != FFESTC_orderOK_)
-    {
-      ffestc_ok_ = FALSE;
-      return;
-    }
-  ffestc_labeldef_branch_begin_ ();
-
-  ffestd_V025_start ();
-
-  ffestc_ok_ = TRUE;
-}
-
-/* ffestc_V025_item -- DEFINE FILE statement item
-
-   ffestc_V025_item(u,ut,m,mt,n,nt,asv,asvt);
-
-   Implement item.  */
-
-void
-ffestc_V025_item (ffebld u, ffelexToken ut, ffebld m, ffelexToken mt,
-		  ffebld n, ffelexToken nt, ffebld asv, ffelexToken asvt)
-{
-  ffestc_check_item_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_V025_item (u, m, n, asv);
-}
-
-/* ffestc_V025_finish -- DEFINE FILE statement list complete
-
-   ffestc_V025_finish();
-
-   Just wrap up any local activities.  */
-
-void
-ffestc_V025_finish ()
-{
-  ffestc_check_finish_ ();
-  if (!ffestc_ok_)
-    return;
-
-  ffestd_V025_finish ();
-
-  if (ffestc_shriek_after1_ != NULL)
-    (*ffestc_shriek_after1_) (TRUE);
-  ffestc_labeldef_branch_end_ ();
-}
-
-/* ffestc_V026 -- FIND statement
-
-   ffestc_V026();
-
-   Make sure a FIND is valid in the current context, and implement it.	*/
-
-void
-ffestc_V026 ()
-{
-  ffestc_check_simple_ ();
-  if (ffestc_order_actionif_ () != FFESTC_orderOK_)
-    return;
-  ffestc_labeldef_branch_begin_ ();
-
-  if (ffestc_subr_is_branch_
-      (&ffestp_file.find.find_spec[FFESTP_findixERR])
-      && ffestc_subr_is_present_ ("UNIT",
-			     &ffestp_file.find.find_spec[FFESTP_findixUNIT])
-      && ffestc_subr_is_present_ ("REC",
-			     &ffestp_file.find.find_spec[FFESTP_findixREC]))
-    ffestd_V026 ();
-
-  if (ffestc_shriek_after1_ != NULL)
-    (*ffestc_shriek_after1_) (TRUE);
-  ffestc_labeldef_branch_end_ ();
-}
-
-#endif
 /* ffestc_V027_start -- VXT PARAMETER statement list begin
 
    ffestc_V027_start();
