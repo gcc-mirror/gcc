@@ -38,7 +38,6 @@ package java.util;
  */
 public abstract class AbstractSequentialList extends AbstractList
 {
-
   /**
    * Returns a ListIterator over the list, starting from position index.
    * Subclasses must provide an implementation of this method.

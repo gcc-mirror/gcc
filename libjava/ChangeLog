@@ -10,6 +10,15 @@
 	Rectangle.clone(), not Object.clone().
 
 	* java/util/HashSet.java (clone): Remove try/catch.
+	
+	* java/util/AbstractSequentialList.java: Synchronize with Classpath.
+	* java/util/Collection.java: Likewise.
+	* java/util/Comparator.java: Likewise.
+	* java/util/Dictionary.java: Likewise.
+	* java/util/Iterator.java: Likewise.
+	* java/util/ListIterator.java: Likewise.
+	* java/util/Map.java: Likewise.
+	* java/util/Set.java: Likewise.
 
 2001-02-14  Bryce McKinlay  <bryce@albatross.co.nz>
 
