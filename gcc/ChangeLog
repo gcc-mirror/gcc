@@ -1,3 +1,12 @@
+2002-03-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in: Update.
+doc:
+	* cppenv.texi, cppopts.texi: Split out of cpp.texi and gcc.texi.
+	Update documentation.
+	* gcc.texi: Include cppopts.texi and cppenv.texi.
+	* cpp.texi: Include cppopts.texi and cppenv.texi.
+
 2002-03-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in: Give texi2pod its input file as a command line
