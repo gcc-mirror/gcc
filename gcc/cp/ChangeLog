@@ -1,6 +1,15 @@
 2004-01-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport from mainline
+	2004-01-05  Mark Mitchell  <mark@codesourcery.com>
+
+        PR c++/13057
+        * class.c (build_clone): Copy type attributes from the original
+        function to the clone.
+	
+2004-01-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Backport from mainline
 	2003-12-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13009

@@ -4103,6 +4103,9 @@ build_clone (fn, name)
       if (exceptions)
 	TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone),
 						     exceptions);
+      TREE_TYPE (clone) 
+	= build_type_attribute_variant (TREE_TYPE (clone),
+					TYPE_ATTRIBUTES (TREE_TYPE (fn)));
     }
 
   /* Copy the function parameters.  But, DECL_ARGUMENTS on a TEMPLATE_DECL
