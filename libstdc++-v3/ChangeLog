@@ -1,5 +1,13 @@
 2004-12-12  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/type_traits: Implement extent.
+	* testsuite/tr1/4_metaprogramming/type_properties/extent/
+	extent.cc: New.
+	* testsuite/tr1/4_metaprogramming/type_properties/extent/
+	typedefs.cc: Likewise.
+
+2004-12-12  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/type_traits: Implement is_pointer, remove_pointer,
 	and add_pointer; reformat. 
 	(_DEFINE_PRIMARY_SPEC_HELPER, _DEFINE_PRIMARY_SPEC): Generalize
