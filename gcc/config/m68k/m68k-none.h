@@ -97,7 +97,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #if TARGET_DEFAULT & 02
 /* ??? Why isn't m68302 treated like m68000 here?  */
 #define CPP_FPU_SPEC \
-"%{!mc68000:%{!m68000:%{!m68332:%{!msoft-float:%{mfpa:-D__HAVE_FPA__ }%{!mfpa:-D__HAVE_68881__ }}}}}"
+"%{!mc68000:%{!m68000:%{!m68332:%{!m5200:%{!msoft-float:%{mfpa:-D__HAVE_FPA__ }%{!mfpa:-D__HAVE_68881__ }}}}}}"
 #else
 /* This can't currently happen, but we code it anyway to show how it's done.  */
 #if TARGET_DEFAULT & 0100
@@ -120,6 +120,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
    -m68020-40: define mc68020 mc68030 mc68040
    -m68302: define mc68302
    -m68332: define mc68332
+   -m5200: define mcf5200
    default: define as above appropriately
 
    GCC won't automatically add __'d versions, we have to mention them
@@ -128,9 +129,9 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #undef CPP_SPEC
 #define CPP_SPEC "\
 %(cpp_fpu) \
-%{!ansi:%{m68010:-Dmc68010 }%{m68020:-Dmc68020 }%{mc68020:-Dmc68020 }%{m68030:-Dmc68030 }%{m68040:-Dmc68040 }%{m68020-40:-Dmc68020 -Dmc68030 -Dmc68040 }%{m68302:-Dmc68302 }%{m68332:-Dmc68332 }} \
-%{m68010:-D__mc68010__ -D__mc68010 }%{m68020:-D__mc68020__ -D__mc68020 }%{mc68020:-D__mc68020__ -D__mc68020 }%{m68030:-D__mc68030__ -D__mc68030 }%{m68040:-D__mc68040__ -D__mc68040 }%{m68020-40:-D__mc68020__ -D__mc68030__ -D__mc68040__ -D__mc68020 -D__mc68030 -D__mc68040 }%{m68302:-D__mc68302__ -D__mc68302 }%{m68332:-D__mc68332__ -D__mc68332 } \
-%{!mc68000:%{!m68000:%{!m68010:%{!mc68020:%{!m68020:%{!m68030:%{!m68040:%{!m68020-40:%{!m68302:%{!m68332:%(cpp_cpu_default)}}}}}}}}}} \
+%{!ansi:%{m68010:-Dmc68010 }%{m68020:-Dmc68020 }%{mc68020:-Dmc68020 }%{m68030:-Dmc68030 }%{m68040:-Dmc68040 }%{m68020-40:-Dmc68020 -Dmc68030 -Dmc68040 }%{m68060:-Dmc68060 }%{m68302:-Dmc68302 }%{m68332:-Dmc68332 }%{m5200:-Dmcf5200 }} \
+%{m68010:-D__mc68010__ -D__mc68010 }%{m68020:-D__mc68020__ -D__mc68020 }%{mc68020:-D__mc68020__ -D__mc68020 }%{m68030:-D__mc68030__ -D__mc68030 }%{m68040:-D__mc68040__ -D__mc68040 }%{m68020-40:-D__mc68020__ -D__mc68030__ -D__mc68040__ -D__mc68020 -D__mc68030 -D__mc68040 }%{mc68060:-D__mc68060__ -D__mc68060 }%{m68302:-D__mc68302__ -D__mc68302 }%{m68332:-D__mc68332__ -D__mc68332 }%{m5200:-D__mcf5200__ -D__mcf5200 } \
+%{!mc68000:%{!m68000:%{!m68010:%{!mc68020:%{!m68020:%{!m68030:%{!m68040:%{!m68020-40:%{!m68060:%{!m68302:%{!m68332:%{!m5200:%(cpp_cpu_default)}}}}}}}}}}}} \
 %(cpp_subtarget) \
 "
 
@@ -139,8 +140,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #undef ASM_SPEC
 #define ASM_SPEC "\
 %{m68851}%{mno-68851}%{m68881}%{mno-68881}%{msoft-float:-mno-68881 } \
-%{m68000}%{mc68000}%{m68010}%{m68020}%{mc68020}%{m68030}%{m68040}%{m68020-40:-mc68040 }%{m68302}%{m68332} \
-%{!m68000:%{!mc68000:%{!m68010:%{!mc68020:%{!m68020:%{!m68030:%{!m68040:%{!m68020-40:%{!m68302:%{!m68332:%(asm_cpu_default)}}}}}}}}}} \
+%{m68000}%{mc68000}%{m68010}%{m68020}%{mc68020}%{m68030}%{m68040}%{m68020-40:-mc68040}%{m68060}%{m68302}%{m68332}%{m5200} \
+%{!mc68000:%{!m68000:%{!m68010:%{!mc68020:%{!m68020:%{!m68030:%{!m68040:%{!m68020-40:%{!m68060:%{!m68302:%{!m68332:%{!m5200:%(asm_cpu_default)}}}}}}}}}}}} \
 "
 
 #undef CC1_SPEC
