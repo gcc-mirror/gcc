@@ -1,5 +1,7 @@
 1999-09-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* ir.texi: Document CLEANUP_STMT, SCOPE_STMT, and START_CATCH_STMT.
+
 	* decl.c (pushdecl): Do create a binding for extern "C" functions,
 	but not for their DECL_ASSEMBLER_NAMEs.
 	(lookup_name_current_level): Fix formatting.

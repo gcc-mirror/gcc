@@ -1011,6 +1011,9 @@ FIXME: Explain about constructor try-catch blocks.
 @findex ASM_OUTPUTS
 @findex ASM_CLOBBERS
 @tindex BREAK_STMT
+@tindex CLEANUP_STMT
+@findex CLEANUP_DECL
+@findex CLEANUP_EXPR
 @tindex COMPOUND_STMT
 @findex COMPOUND_BODY
 @tindex CONTINUE_STMT
@@ -1038,6 +1041,12 @@ FIXME: Explain about constructor try-catch blocks.
 @tindex RETURN_INIT
 @tindex RETURN_STMT
 @findex RETURN_EXPR
+@tindex SCOPE_STMT
+@findex SCOPE_BEGIN_P
+@findex SCOPE_END_P
+@findex SCOPE_NULLIFIED_P
+@tindex START_CATCH_STMT
+@findex START_CATCH_TYPE
 @tindex SUBOBJECT
 @findex SUBOBJECT_CLEANUP
 @tindex SWITCH_STMT
@@ -1190,6 +1199,18 @@ case 2 ... 5:
 The first value will be @code{CASE_LOW}, while the second will be
 @code{CASE_HIGH}.
 
+@item CLEANUP_STMT
+
+Used to represent an action that should take place upon exit from the
+enclosing scope.  Typically, these actions are calls to destructors for
+local objects, but back-ends cannot rely on this fact.  If these nodes
+are in fact representing such destructors, @code{CLEANUP_DECL} will be
+the @code{VAR_DECL} destroyed.  Otherwise, @code{CLEANUP_DECL} will be
+@code{NULL_TREE}.  In any case, the @code{CLEANUP_EXPR} is the
+expression to execute.  The cleanups executed on exit from a scope
+should be run in the reverse order of the order in which the associated
+@code{CLEANUP_STMT}s were encountered.
+
 @item COMPOUND_STMT
 
 Used to represent a brace-enclosed block.  The first substatement is
@@ -1266,6 +1287,24 @@ was just
 return;
 @end example
 
+@item SCOPE_STMT
+
+A scope-statement represents the beginning or end of a scope.  If
+@code{SCOPE_BEGIN_P} holds, this statement represents the beginning of a
+scope; if @code{SCOPE_END_P} holds this statement represents the end of
+a scope.  On exit from a scope, all cleanups from @code{CLEANUP_STMT}s
+occurring in the scope must be run, in reverse order to the order in
+which they were encountered.  If @code{SCOPE_NULLIFIED_P} holds of the
+scope, back-ends should behave as if the @code{SCOPE_STMT} were not
+present at all.
+
+@item START_CATCH_STMT
+
+These statements represent the location to which control is transferred
+when an exception is thrown.  The @code{START_CATCH_TYPE} is the type of
+exception that will be caught by this handler; it is equal (by pointer
+equalit) to @code{CATCH_ALL_TYPE} if this handler is for all types.
+
 @item SUBOBJECT
 
 In a constructor, these nodes are used to mark the point at which a
@@ -1286,11 +1325,8 @@ Used to represent a @code{try} block.  The body of the try block is
 given by @code{TRY_STMTS}.  Each of the catch blocks is a @code{HANDLER}
 node.  The first handler is given by @code{TRY_HANDLERS}.  Subsequent
 handlers are obtained by following the @code{TREE_CHAIN} link from one
-handler to the next.  The parameters for each handler are given by
-@code{HANDLER_PARMS}.  The body of the handler is given by
+handler to the next.  The body of the handler is given by
 @code{HANDLER_BODY}.
-
-FIXME: Document the use of @code{HANDLER_PARMS}.
 
 If @code{CLEANUP_P} holds of the @code{TRY_BLOCK}, then the
 @code{TRY_HANDLERS} will not be a @code{HANDLER} node.  Instead, it will
