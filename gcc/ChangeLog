@@ -1,3 +1,8 @@
+2003-02-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* regmove.c (optimize_reg_copy_1): Do not replace a hard register
+	in an asm.
+
 2003-02-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (ggc-common.o): Depend on $(PARAMS_H)
