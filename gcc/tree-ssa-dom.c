@@ -553,10 +553,10 @@ tree_ssa_dominator_optimize (void)
 
   /* Create our hash tables.  */
   avail_exprs = htab_create (1024, avail_expr_hash, avail_expr_eq, free);
-  VARRAY_TREE_INIT (const_and_copies, highest_ssa_version, "const_and_copies");
+  VARRAY_TREE_INIT (const_and_copies, num_ssa_names, "const_and_copies");
   nonzero_vars = BITMAP_XMALLOC ();
   VARRAY_EDGE_INIT (redirection_edges, 20, "redirection_edges");
-  VARRAY_GENERIC_PTR_INIT (vrp_data, highest_ssa_version, "vrp_data");
+  VARRAY_GENERIC_PTR_INIT (vrp_data, num_ssa_names, "vrp_data");
 
   /* Setup callbacks for the generic dominator tree walker.  */
   walk_data.walk_stmts_backward = false;
@@ -625,8 +625,8 @@ tree_ssa_dominator_optimize (void)
 
 	  /* The into SSA translation may have created new SSA_NAMES whic
 	     affect the size of CONST_AND_COPIES and VRP_DATA.  */
-	  VARRAY_GROW (const_and_copies, highest_ssa_version);
-	  VARRAY_GROW (vrp_data, highest_ssa_version);
+	  VARRAY_GROW (const_and_copies, num_ssa_names);
+	  VARRAY_GROW (vrp_data, num_ssa_names);
 	}
 
       /* Reinitialize the various tables.  */

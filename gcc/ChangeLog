@@ -1,3 +1,28 @@
+2004-06-10  Diego Novillo  <dnovillo@redhat.com>
+
+	* Makefile.in (tree-ssanames.o): Depend on TREE_FLOW_H.
+	* tree-flow.h (ssa_names, num_ssa_names, ssa_name): Declare.
+	(highest_ssa_version): Remove.
+	* tree-outof-ssa.c (new_temp_expr_table): Replace
+	highest_ssa_version with num_ssa_names.
+	(dump_replaceable_exprs): Likewise.
+	(rewrite_vars_out_of_ssa): Likewise.
+	* tree-ssa-ccp.c (initialize): Likewise
+	* tree-ssa-copyrename.c (rename_ssa_copies): Likewise.
+	* tree-ssa-dce.c (tree_dce_init): Likewise.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Likewise.
+	* tree-ssa-live.c (create_ssa_var_map): Likewise.
+	(dump_var_map): Likewise.
+	* tree-ssa.c (verify_ssa): Likewise.
+	(kill_redundant_phi_nodes): Likewise.
+	Do not build a local array of SSA_NAMEs.  Use the ssa_names table.
+	* tree-ssanames.c: Include tree-flow.h
+	(ssa_names): New varray.
+	(init_ssa_names): Initialize ssa_names.
+	Reserve the first slot of the ssa_names table.
+	(make_ssa_name): Push the newly created SSA_NAME into ssa_names.
+	Assign version numbers using num_ssa_names.
+
 2004-06-10  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/sourcebuild.texi (Front End): Add details of more

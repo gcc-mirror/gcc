@@ -1205,7 +1205,7 @@ new_temp_expr_table (var_map map)
   t = (temp_expr_table_p) xmalloc (sizeof (struct temp_expr_table_d));
   t->map = map;
 
-  t->version_info = xcalloc (highest_ssa_version + 1, sizeof (void *));
+  t->version_info = xcalloc (num_ssa_names + 1, sizeof (void *));
   t->partition_dep_list = xcalloc (num_var_partitions (map) + 1, 
 				   sizeof (value_expr_p));
 
@@ -1700,7 +1700,7 @@ dump_replaceable_exprs (FILE *f, tree *expr)
   tree stmt, var;
   int x;
   fprintf (f, "\nReplacing Expressions\n");
-  for (x = 0; x < (int)highest_ssa_version + 1; x++)
+  for (x = 0; x < (int)num_ssa_names + 1; x++)
     if (expr[x])
       {
         stmt = expr[x];
@@ -2089,7 +2089,7 @@ rewrite_vars_out_of_ssa (bitmap vars)
                                                                                 
       /* Now register partitions for all instances of the variables we
 	 are taking out of SSA form.  */
-      map = init_var_map (highest_ssa_version + 1);
+      map = init_var_map (num_ssa_names + 1);
       register_ssa_partitions_for_vars (vars, map);
 
       /* Now that we have all the partitions registered, translate the

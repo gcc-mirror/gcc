@@ -1120,11 +1120,11 @@ initialize (void)
   bb_in_list = sbitmap_alloc (last_basic_block);
   sbitmap_zero (bb_in_list);
 
-  value_vector = (value *) xmalloc (highest_ssa_version * sizeof (value));
-  memset (value_vector, 0, highest_ssa_version * sizeof (value));
+  value_vector = (value *) xmalloc (num_ssa_names * sizeof (value));
+  memset (value_vector, 0, num_ssa_names * sizeof (value));
 
   /* 1 if ssa variable is used in a virtual variable context.  */
-  virtual_var = sbitmap_alloc (highest_ssa_version);
+  virtual_var = sbitmap_alloc (num_ssa_names);
   sbitmap_zero (virtual_var);
 
   /* Initialize default values and simulation flags for PHI nodes, statements 
