@@ -1,3 +1,9 @@
+2004-11-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/15342
+	* regrename.c (scan_rtx): Treat the destinations of SETs and CLOBBERs
+	as OP_INOUT if the instruction is predicated.
+
 2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* bitmap.h: Fix a comment typo.  Follow spelling conventions.
