@@ -554,7 +554,7 @@ install-pch:
 	  $(INSTALL_DATA) $$file $(DESTDIR)${gxx_include_dir}/${pch_output_builddir}; done
 
 # By adding these files here, automake will remove them for 'make clean'
-CLEANFILES = *.gch 
+CLEANFILES = ${pch_input} ${pch_output_builddir}/*
 
 # Stop implicit '.o' make rules from ever stomping on extensionless
 # headers, in the improbable case where some foolish, crack-addled
