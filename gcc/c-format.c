@@ -399,7 +399,7 @@ typedef struct
 } format_length_info;
 
 
-/* Structure desribing the combination of a conversion specifier
+/* Structure describing the combination of a conversion specifier
    (or a set of specifiers which act identically) and a length modifier.  */
 typedef struct
 {
@@ -420,7 +420,7 @@ typedef struct
 #define NOLENGTHS	{ BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN }
 
 
-/* Structure desribing a format conversion specifier (or a set of specifiers
+/* Structure describing a format conversion specifier (or a set of specifiers
    which act identically), and the length modifiers used with it.  */
 typedef struct
 {
