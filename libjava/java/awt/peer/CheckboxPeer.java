@@ -38,10 +38,15 @@ exception statement from your version. */
 
 package java.awt.peer;
 
+import java.awt.CheckboxGroup;
+
 public interface CheckboxPeer extends ComponentPeer
 {
-  public void setCheckboxGroup(java.awt.CheckboxGroup group);
-  public void setLabel(String label);
-  public void setState(boolean state);
+  void setCheckboxGroup (CheckboxGroup group);
+
+  void setLabel (String label);
+
+  void setState (boolean state);
+
 } // interface CheckboxPeer
 

@@ -40,8 +40,8 @@ package java.awt.peer;
 
 public interface ScrollbarPeer extends ComponentPeer
 {
-  public void setLineIncrement(int inc);
-  public void setPageIncrement(int inc);
-  public void setValues(int value, int visible, int min, int max);
+  void setLineIncrement(int inc);
+  void setPageIncrement(int inc);
+  void setValues(int value, int visible, int min, int max);
 } // interface ScrollbarPeer 
 

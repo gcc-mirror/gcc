@@ -40,9 +40,9 @@ package java.awt.peer;
 
 public interface MenuItemPeer extends MenuComponentPeer
 {
-  public void disable();
-  public void enable();
-  public void setEnabled(boolean enabled);
-  public void setLabel(String text);
+  void disable();
+  void enable();
+  void setEnabled(boolean enabled);
+  void setLabel(String text);
 } // interface MenuItemPeer 
 

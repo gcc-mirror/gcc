@@ -42,16 +42,16 @@ import java.awt.Rectangle;
 
 public interface TextComponentPeer extends ComponentPeer
 {
-  public int getSelectionEnd();
-  public int getSelectionStart();
-  public String getText();
-  public void setText(String text);
-  public void select(int start_pos, int end_pos);
-  public void setEditable(boolean editable);
-  public int getCaretPosition();
-  public void setCaretPosition(int pos);
-  public int getIndexAtPoint(int x, int y);
-  public Rectangle getCharacterBounds(int pos);
-  public long filterEvents(long filter);
+  int getSelectionEnd();
+  int getSelectionStart();
+  String getText();
+  void setText(String text);
+  void select(int start_pos, int end_pos);
+  void setEditable(boolean editable);
+  int getCaretPosition();
+  void setCaretPosition(int pos);
+  int getIndexAtPoint(int x, int y);
+  Rectangle getCharacterBounds(int pos);
+  long filterEvents(long filter);
 } // interface TextComponentPeer 
 

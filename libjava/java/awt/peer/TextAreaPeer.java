@@ -42,12 +42,12 @@ import java.awt.Dimension;
 
 public interface TextAreaPeer extends TextComponentPeer
 {
-  public void insert(String text, int pos);
-  public void insertText(String text, int pos);
-  public Dimension minimumSize(int rows, int cols);
-  public Dimension getMinimumSize(int rows, int cols);
-  public Dimension preferredSize(int rows, int cols);
-  public Dimension getPreferredSize(int rows, int cols);
-  public void replaceRange(String text, int start_pos, int end_pos);
-  public void replaceText(String text, int start_pos, int end_pos);
+  void insert(String text, int pos);
+  void insertText(String text, int pos);
+  Dimension minimumSize(int rows, int cols);
+  Dimension getMinimumSize(int rows, int cols);
+  Dimension preferredSize(int rows, int cols);
+  Dimension getPreferredSize(int rows, int cols);
+  void replaceRange(String text, int start_pos, int end_pos);
+  void replaceText(String text, int start_pos, int end_pos);
 } // interface TextAreaPeer

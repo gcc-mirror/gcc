@@ -40,10 +40,15 @@ package java.awt.peer;
 
 public interface ChoicePeer extends ComponentPeer
 {
-  public void add(String item, int index);
-  public void addItem(String item, int index);
-  public void remove(int index);
-  public void removeAll();
-  public void select(int index);  
+  void add (String item, int index);
+
+  void addItem (String item, int index);
+
+  void remove (int index);
+
+  void removeAll();
+
+  void select (int index);  
+
 } // interface ChoicePeer 
 

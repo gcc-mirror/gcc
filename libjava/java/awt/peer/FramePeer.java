@@ -44,12 +44,12 @@ import java.awt.Rectangle;
 
 public interface FramePeer extends WindowPeer
 {
-  public void setIconImage(Image image);
-  public void setMenuBar(MenuBar mb);
-  public void setResizable(boolean resizable);
-  public void setTitle(String title);
-  public int getState();
-  public void setState(int state);
-  public void setMaximizedBounds(Rectangle r);
+  void setIconImage(Image image);
+  void setMenuBar(MenuBar mb);
+  void setResizable(boolean resizable);
+  void setTitle(String title);
+  int getState();
+  void setState(int state);
+  void setMaximizedBounds(Rectangle r);
 } // interface FramePeer
 

@@ -40,6 +40,7 @@ package java.awt.peer;
 
 public interface CheckboxMenuItemPeer extends MenuItemPeer
 {
-  public void setState(boolean state);
+  void setState (boolean state);
+  
 } // interface CheckboxMenuItemPeer
 
