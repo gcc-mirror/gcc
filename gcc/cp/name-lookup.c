@@ -1195,7 +1195,7 @@ cxx_scope_descriptor (cxx_scope *scope)
   return scope_kind_names[kind];
 }
 
-/* Output a debugging information about SCOPE when performning
+/* Output a debugging information about SCOPE when performing
    ACTION at LINE.  */
 static void
 cxx_scope_debug (cxx_scope *scope, int line, const char *action)
@@ -1334,7 +1334,7 @@ leave_scope (void)
 
   /* Namespace-scopes are left most probably temporarily, not completely;
      they can be reopen later, e.g. in namespace-extension or any name
-     binding acttivity that requires us to resume a namespace.  For other
+     binding activity that requires us to resume a namespace.  For other
      scopes, we just make the structure available for reuse.  */
   if (scope->kind != sk_namespace)
     {
@@ -1814,7 +1814,7 @@ clear_anon_tags (void)
   last_cnt = anon_cnt;
 }
 
-/* Return (from the stack of) the BINDING, if any, establihsed at SCOPE.  */ 
+/* Return (from the stack of) the BINDING, if any, established at SCOPE.  */ 
 
 static inline cxx_binding *
 find_binding (cxx_scope *scope, cxx_binding *binding)
@@ -3694,7 +3694,7 @@ lookup_qualified_name (tree scope, tree name, bool is_type_p, bool complain)
   return error_mark_node;
 }
 
-/* Subroutine of unualified_namespace_lookup:
+/* Subroutine of unqualified_namespace_lookup:
    Add the bindings of NAME in used namespaces to VAL.
    We are currently looking for names in namespace SCOPE, so we
    look through USINGS for using-directives of namespaces

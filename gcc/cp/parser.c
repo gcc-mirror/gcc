@@ -1200,7 +1200,7 @@ typedef struct cp_parser GTY(())
 
   /* TRUE if default arguments are allowed within a parameter list
      that starts at this point. FALSE if only a gnu extension makes
-     them permissable.  */
+     them permissible.  */
   bool default_arg_ok_p;
   
   /* TRUE if we are parsing an integral constant-expression.  See
@@ -1790,7 +1790,7 @@ cp_parser_check_for_definition_in_return_type (tree declarator,
     error ("new types may not be defined in a return type");
 }
 
-/* Issue an eror message about the fact that THING appeared in a
+/* Issue an error message about the fact that THING appeared in a
    constant-expression.  Returns ERROR_MARK_NODE.  */
 
 static tree
@@ -2502,7 +2502,7 @@ cp_parser_primary_expression (cp_parser *parser,
    named is a template.  
 
    If DECLARATOR_P is true, the id-expression is appearing as part of
-   a declarator, rather than as part of an exprsesion.  */
+   a declarator, rather than as part of an expression.  */
 
 static tree
 cp_parser_id_expression (cp_parser *parser,
@@ -12088,7 +12088,7 @@ cp_parser_member_declaration (cp_parser* parser)
      = 0
 
    Returns INTEGER_ZERO_NODE if a pure specifier is found.
-   Otherwiser, ERROR_MARK_NODE is returned.  */
+   Otherwise, ERROR_MARK_NODE is returned.  */
 
 static tree
 cp_parser_pure_specifier (cp_parser* parser)
@@ -12829,7 +12829,7 @@ cp_parser_attribute_list (cp_parser* parser)
       if (token->type != CPP_COMMA)
 	break;
 
-      /* Consume the commma and keep going.  */
+      /* Consume the comma and keep going.  */
       cp_lexer_consume_token (parser->lexer);
     }
 
@@ -13885,7 +13885,7 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
     = TREE_CHAIN (parser->unparsed_functions_queues);
 }
 
-/* If DECL contains any default args, remeber it on the unparsed
+/* If DECL contains any default args, remember it on the unparsed
    functions queue.  */
 
 static void
@@ -14277,7 +14277,7 @@ cp_parser_check_class_key (enum tag_types class_key, tree type)
 	     type);
 }
 			   
-/* Issue an error message if DECL is redeclared with differnt
+/* Issue an error message if DECL is redeclared with different
    access than its original declaration [class.access.spec/3].
    This applies to nested classes and nested class templates.
    [class.mem/1].  */

@@ -1,3 +1,22 @@
+2003-10-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Fix typos.
+	* call.c: Fix comment typos.
+	* class.c: Likewise.
+	* cp-tree.h: Likewise.
+	* cvt.c: Likewise.
+	* cxx-pretty-print.c: Likewise.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* init.c: Likewise.
+	* mangle.c: Likewise.
+	* name-lookup.c: Likewise.
+	* parser.c: Likewise.
+	* search.c: Likewise.
+	* semantics.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+
 2003-10-20  Jan Hubicka  <jh@suse.cz>
 
 	* decl.c (start_cleanup_fn):  Set DECL_DECLARED_INLINE_P to deffer
@@ -1206,7 +1225,7 @@
 	* typeck2.c (build_functional_cast): Do not perform name lookups.
 
 	PR c++/10717
-	* decl.c (expand_static_init): Remove unncessary code.
+	* decl.c (expand_static_init): Remove unnecessary code.
 
 2003-08-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -1694,7 +1713,7 @@
 	(decay_conversion): Use convert_to_integer.
 	(build_unary_op): Use build_nop.
 	(get_delta_difference): Use convert_to_integer.
-	(build_ptrmemfunc): Avoid unncessary conversions.
+	(build_ptrmemfunc): Avoid unnecessary conversions.
 
 2003-07-28  Jan Hubicka  <jh@suse.cz>
 
@@ -4550,7 +4569,7 @@
 	* decl2.c (is_namespace_ancestor): Rename to ...
 	(namespace_anecestor): ... this.
 	(set_decl_namespace): Adjust accordingly.
-	(handle_class_head): Remove unncessary parameters.
+	(handle_class_head): Remove unnecessary parameters.
 	* parser.c (cp_parser_class_head): Check that
 	nested-name-specifiers are used appropriately.
 
@@ -8569,7 +8588,7 @@
 	(instantiate_class_template): Adjust call to xref_basetypes.
 	* semantics.c (begin_mem_initializers): New function.
 	* tree.c (is_overloaded_fn): Use BASELINK_FUNCTIONS.
-	(really_overlaoded_fn): Likewise.
+	(really_overloaded_fn): Likewise.
 	(get_overloaded_fn): New function.'
 	(get_first_fn): USe BASELINK_FUNCTIONS.
 
