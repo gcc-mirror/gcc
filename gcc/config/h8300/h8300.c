@@ -1969,10 +1969,32 @@ static const char *const rotate_two[3][3] =
     }
 };
 
+struct shift_info {
+  /* Shift algorithm.  */
+  enum shift_alg alg;
+
+  /* The number of bits to be shifted by shift1 and shift2.  Valid
+     when ALG is SHIFT_SPECIAL.  */
+  unsigned int remainder;
+
+  /* Special insn for a shift.  Valid when ALG is SHIFT_SPECIAL.  */
+  const char *special;
+
+  /* Insn for a one-bit shift.  Valid when ALG is either SHIFT_INLINE
+     or SHIFT_SPECIAL, and REMAINDER is non-zero.  */
+  const char *shift1;
+
+  /* Insn for a two-bit shift.  Valid when ALG is either SHIFT_INLINE
+     or SHIFT_SPECIAL, and REMAINDER is non-zero.  */
+  const char *shift2;
+
+  /* Valid CC flags.  */
+  int cc_valid_p;
+};
+
 static enum shift_alg get_shift_alg PARAMS ((enum shift_type,
 					     enum shift_mode, int,
-					     const char **, const char **,
-					     int *));
+					     struct shift_info *));
 
 /* Given CPU, MODE, SHIFT_TYPE, and shift count COUNT, determine the best
    algorithm for doing the shift.  The assembler code is stored in ASSEMBLER.
@@ -1988,23 +2010,20 @@ static enum shift_alg get_shift_alg PARAMS ((enum shift_type,
    1,2,3,4 will be inlined (1,2 for SI).  */
 
 static enum shift_alg
-get_shift_alg (shift_type, shift_mode, count, assembler_p,
-	       assembler2_p, cc_valid_p)
+get_shift_alg (shift_type, shift_mode, count, info)
      enum shift_type shift_type;
      enum shift_mode shift_mode;
      int count;
-     const char **assembler_p;
-     const char **assembler2_p;
-     int *cc_valid_p;
+     struct shift_info *info;
 {
   /* Assume either SHIFT_LOOP or SHIFT_INLINE.
      It is up to the caller to know that looping clobbers cc.  */
-  *assembler_p = shift_one[cpu_type][shift_type][shift_mode].assembler;
+  info->shift1 = shift_one[cpu_type][shift_type][shift_mode].assembler;
   if (TARGET_H8300S)
-    *assembler2_p = shift_two[shift_type][shift_mode].assembler;
+    info->shift2 = shift_two[shift_type][shift_mode].assembler;
   else
-    *assembler2_p = NULL;
-  *cc_valid_p = shift_one[cpu_type][shift_type][shift_mode].cc_valid;
+    info->shift2 = NULL;
+  info->cc_valid_p = shift_one[cpu_type][shift_type][shift_mode].cc_valid;
 
   /* Now look for cases we want to optimize.  */
 
@@ -2024,8 +2043,8 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	     through the entire value.  */
 	  if (shift_type == SHIFT_ASHIFTRT && count == 7)
 	    {
-	      *assembler_p = "shll\t%X0\n\tsubx\t%X0,%X0";
-	      *cc_valid_p = 0;
+	      info->special = "shll\t%X0\n\tsubx\t%X0,%X0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 
@@ -2034,10 +2053,10 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	    return SHIFT_LOOP;
 
 	  /* Other shifts by 5, 6, or 7 bits use SHIFT_ROT_AND.  */
-	  *assembler_p = rotate_one[cpu_type][shift_type][shift_mode];
+	  info->shift1 = rotate_one[cpu_type][shift_type][shift_mode];
 	  if (TARGET_H8300S)
-	    *assembler2_p = rotate_two[shift_type][shift_mode];
-	  *cc_valid_p = 0;
+	    info->shift2 = rotate_two[shift_type][shift_mode];
+	  info->cc_valid_p = 0;
 	  return SHIFT_ROT_AND;
 	}
 
@@ -2050,36 +2069,36 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	{
 	  if (shift_type == SHIFT_ASHIFT && TARGET_H8300)
 	    {
-	      *assembler_p = "shar.b\t%t0\n\tmov.b\t%s0,%t0\n\trotxr.b\t%t0\n\trotr.b\t%s0\n\tand.b\t#0x80,%s0";
-	      *cc_valid_p = 0;
+	      info->special = "shar.b\t%t0\n\tmov.b\t%s0,%t0\n\trotxr.b\t%t0\n\trotr.b\t%s0\n\tand.b\t#0x80,%s0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 
 	  if (shift_type == SHIFT_ASHIFT && TARGET_H8300H)
 	    {
-	      *assembler_p = "shar.b\t%t0\n\tmov.b\t%s0,%t0\n\trotxr.w\t%T0\n\tand.b\t#0x80,%s0";
-	      *cc_valid_p = 0;
+	      info->special = "shar.b\t%t0\n\tmov.b\t%s0,%t0\n\trotxr.w\t%T0\n\tand.b\t#0x80,%s0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 
 	  if (shift_type == SHIFT_LSHIFTRT && TARGET_H8300)
 	    {
-	      *assembler_p = "shal.b\t%s0\n\tmov.b\t%t0,%s0\n\trotxl.b\t%s0\n\trotl.b\t%t0\n\tand.b\t#0x01,%t0";
-	      *cc_valid_p = 0;
+	      info->special = "shal.b\t%s0\n\tmov.b\t%t0,%s0\n\trotxl.b\t%s0\n\trotl.b\t%t0\n\tand.b\t#0x01,%t0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 
 	  if (shift_type == SHIFT_LSHIFTRT && TARGET_H8300H)
 	    {
-	      *assembler_p = "shal.b\t%s0\n\tmov.b\t%t0,%s0\n\trotxl.w\t%T0\n\tand.b\t#0x01,%t0";
-	      *cc_valid_p = 0;
+	      info->special = "shal.b\t%s0\n\tmov.b\t%t0,%s0\n\trotxl.w\t%T0\n\tand.b\t#0x01,%t0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 
 	  if (shift_type == SHIFT_ASHIFTRT)
 	    {
-	      *assembler_p = "shal.b\t%s0\n\tmov.b\t%t0,%s0\n\trotxl.b\t%s0\n\tsubx\t%t0,%t0";
-	      *cc_valid_p = 0;
+	      info->special = "shal.b\t%s0\n\tmov.b\t%t0,%s0\n\trotxl.b\t%s0\n\tsubx\t%t0,%t0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 	}
@@ -2088,19 +2107,19 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	  switch (shift_type)
 	    {
 	    case SHIFT_ASHIFT:
-	      *assembler_p = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_LSHIFTRT:
-	      *assembler_p = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_ASHIFTRT:
 	      if (TARGET_H8300)
-		*assembler_p = "mov.b\t%t0,%s0\n\tshll\t%t0\n\tsubx\t%t0,%t0";
+		info->special = "mov.b\t%t0,%s0\n\tshll\t%t0\n\tsubx\t%t0,%t0";
 	      else
-		*assembler_p = "mov.b\t%t0,%s0\n\texts.w\t%T0";
-	      *cc_valid_p = 0;
+		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 	}
@@ -2109,19 +2128,19 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	  switch (shift_type)
 	    {
 	    case SHIFT_ASHIFT:
-	      *assembler_p = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t%t0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t%t0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_LSHIFTRT:
-	      *assembler_p = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t%s0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t%s0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_ASHIFTRT:
 	      if (TARGET_H8300)
-		*assembler_p = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0\n\tshar.b\t%s0";
+		info->special = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0\n\tshar.b\t%s0";
 	      else
-		*assembler_p = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t%s0";
-	      *cc_valid_p = 0;
+		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t%s0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 	}
@@ -2131,26 +2150,26 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	    {
 	    case SHIFT_ASHIFT:
 	      if (TARGET_H8300S)
-		*assembler_p = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t#2,%t0";
+		info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t#2,%t0";
 	      else
-		*assembler_p = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t%t0\n\tshal.b\t%t0";
-	      *cc_valid_p = 0;
+		info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t%t0\n\tshal.b\t%t0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_LSHIFTRT:
 	      if (TARGET_H8300S)
-		*assembler_p = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t#2,%s0";
+		info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t#2,%s0";
 	      else
-		*assembler_p = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t%s0\n\tshlr.b\t%s0";
-	      *cc_valid_p = 0;
+		info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t%s0\n\tshlr.b\t%s0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_ASHIFTRT:
 	      if (TARGET_H8300)
-		*assembler_p = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0\n\tshar.b\t%s0\n\tshar.b\t%s0";
+		info->special = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0\n\tshar.b\t%s0\n\tshar.b\t%s0";
 	      else if (TARGET_H8300H)
-		*assembler_p = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t%s0\n\tshar.b\t%s0";
+		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t%s0\n\tshar.b\t%s0";
 	      else if (TARGET_H8300S)
-		*assembler_p = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t#2,%s0";
-	      *cc_valid_p = 0;
+		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t#2,%s0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 	}
@@ -2160,26 +2179,26 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	    {
 	    case SHIFT_ASHIFT:
 	      if (TARGET_H8300S)
-		*assembler_p = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t#2,%t0\n\tshal.b\t%t0";
+		info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t#2,%t0\n\tshal.b\t%t0";
 	      else
-		*assembler_p = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t%t0\n\tshal.b\t%t0\n\tshal.b\t%t0";
-	      *cc_valid_p = 0;
+		info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t%t0\n\tshal.b\t%t0\n\tshal.b\t%t0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_LSHIFTRT:
 	      if (TARGET_H8300S)
-		*assembler_p = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t#2,%s0\n\tshlr.b\t%s0";
+		info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t#2,%s0\n\tshlr.b\t%s0";
 	      else
-		*assembler_p = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t%s0\n\tshlr.b\t%s0\n\tshlr.b\t%s0";
-	      *cc_valid_p = 0;
+		info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t%s0\n\tshlr.b\t%s0\n\tshlr.b\t%s0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_ASHIFTRT:
 	      if (TARGET_H8300)
-		*assembler_p = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0";
+		info->special = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0";
 	      else if (TARGET_H8300H)
-		*assembler_p = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0";
+		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0";
 	      else if (TARGET_H8300S)
-		*assembler_p = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t#2,%s0\n\tshar.b\t%s0";
-	      *cc_valid_p = 0;
+		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t#2,%s0\n\tshar.b\t%s0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 	}
@@ -2189,26 +2208,26 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	    {
 	    case SHIFT_ASHIFT:
 	      if (TARGET_H8300S)
-		*assembler_p = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t#2,%t0\n\tshal.b\t#2,%t0";
+		info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t#2,%t0\n\tshal.b\t#2,%t0";
 	      else
-		*assembler_p = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t%t0\n\tshal.b\t%t0\n\tshal.b\t%t0\n\tshal.b\t%t0";
-	      *cc_valid_p = 0;
+		info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t%t0\n\tshal.b\t%t0\n\tshal.b\t%t0\n\tshal.b\t%t0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_LSHIFTRT:
 	      if (TARGET_H8300S)
-		*assembler_p = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t#2,%s0\n\tshlr.b\t#2,%s0";
+		info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t#2,%s0\n\tshlr.b\t#2,%s0";
 	      else
-		*assembler_p = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t%s0\n\tshlr.b\t%s0\n\tshlr.b\t%s0\n\tshlr.b\t%s0";
-	      *cc_valid_p = 0;
+		info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t%s0\n\tshlr.b\t%s0\n\tshlr.b\t%s0\n\tshlr.b\t%s0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_ASHIFTRT:
 	      if (TARGET_H8300)
-		*assembler_p = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0";
+		info->special = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0";
 	      else if (TARGET_H8300H)
-		*assembler_p = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0";
+		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0";
 	      else if (TARGET_H8300S)
-		*assembler_p = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t#2,%s0\n\tshar.b\t#2,%s0";
-	      *cc_valid_p = 0;
+		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t#2,%s0\n\tshar.b\t#2,%s0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 	}
@@ -2217,18 +2236,18 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	{
 	  if (count == 15 && shift_type == SHIFT_ASHIFTRT)
 	    {
-	      *assembler_p = "shll\t%t0,%t0\n\tsubx\t%t0,%t0\n\tmov.b\t%t0,%s0";
-	      *cc_valid_p = 0;
+	      info->special = "shll\t%t0,%t0\n\tsubx\t%t0,%t0\n\tmov.b\t%t0,%s0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 	  else if (shift_type != SHIFT_ASHIFTRT)
 	    {
-	      *assembler_p = rotate_one[cpu_type][shift_type][shift_mode];
+	      info->shift1 = rotate_one[cpu_type][shift_type][shift_mode];
 	      if (TARGET_H8300S)
-	        *assembler2_p = rotate_two[shift_type][shift_mode];
+	        info->shift2 = rotate_two[shift_type][shift_mode];
 	      else
-		*assembler2_p = NULL;
-	      *cc_valid_p = 0;
+		info->shift2 = NULL;
+	      info->cc_valid_p = 0;
 	      return SHIFT_ROT_AND;
 	    }
 	}
@@ -2244,16 +2263,16 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	  switch (shift_type)
 	    {
 	    case SHIFT_ASHIFT:
-	      *assembler_p = "mov.b\t%y0,%z0\n\tmov.b\t%x0,%y0\n\tmov.b\t%w0,%x0\n\tsub.b\t%w0,%w0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.b\t%y0,%z0\n\tmov.b\t%x0,%y0\n\tmov.b\t%w0,%x0\n\tsub.b\t%w0,%w0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_LSHIFTRT:
-	      *assembler_p = "mov.b\t%x0,%w0\n\tmov.b\t%y0,%x0\n\tmov.b\t%z0,%y0\n\tsub.b\t%z0,%z0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.b\t%x0,%w0\n\tmov.b\t%y0,%x0\n\tmov.b\t%z0,%y0\n\tsub.b\t%z0,%z0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_ASHIFTRT:
-	      *assembler_p = "mov.b\t%x0,%w0\n\tmov.b\t%y0,%x0\n\tmov.b\t%z0,%y0\n\tshll\t%z0\n\tsubx\t%z0,%z0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.b\t%x0,%w0\n\tmov.b\t%y0,%x0\n\tmov.b\t%z0,%y0\n\tshll\t%z0\n\tsubx\t%z0,%z0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 	}
@@ -2262,16 +2281,16 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	  switch (shift_type)
 	    {
 	    case SHIFT_ASHIFT:
-	      *assembler_p = "mov.w\t%e0,%f4\n\tmov.b\t%s4,%t4\n\tmov.b\t%t0,%s4\n\tmov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tmov.w\t%f4,%e0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.w\t%e0,%f4\n\tmov.b\t%s4,%t4\n\tmov.b\t%t0,%s4\n\tmov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tmov.w\t%f4,%e0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_LSHIFTRT:
-	      *assembler_p = "mov.w\t%e0,%f4\n\tmov.b\t%t0,%s0\n\tmov.b\t%s4,%t0\n\tmov.b\t%t4,%s4\n\textu.w\t%f4\n\tmov.w\t%f4,%e0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.w\t%e0,%f4\n\tmov.b\t%t0,%s0\n\tmov.b\t%s4,%t0\n\tmov.b\t%t4,%s4\n\textu.w\t%f4\n\tmov.w\t%f4,%e0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_ASHIFTRT:
-	      *assembler_p = "mov.w\t%e0,%f4\n\tmov.b\t%t0,%s0\n\tmov.b\t%s4,%t0\n\tmov.b\t%t4,%s4\n\texts.w\t%f4\n\tmov.w\t%f4,%e0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.w\t%e0,%f4\n\tmov.b\t%t0,%s0\n\tmov.b\t%s4,%t0\n\tmov.b\t%t4,%s4\n\texts.w\t%f4\n\tmov.w\t%f4,%e0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 	}
@@ -2280,19 +2299,19 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	  switch (shift_type)
 	    {
 	    case SHIFT_ASHIFT:
-	      *assembler_p = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_LSHIFTRT:
-	      *assembler_p = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_ASHIFTRT:
 	      if (TARGET_H8300)
-		*assembler_p = "mov.w\t%e0,%f0\n\tshll\t%z0\n\tsubx\t%z0,%z0\n\tmov.b\t%z0,%y0";
+		info->special = "mov.w\t%e0,%f0\n\tshll\t%z0\n\tsubx\t%z0,%z0\n\tmov.b\t%z0,%y0";
 	      else
-		*assembler_p = "mov.w\t%e0,%f0\n\texts.l\t%S0";
-	      *cc_valid_p = 0;
+		info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 	}
@@ -2301,16 +2320,16 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	  switch (shift_type)
 	    {
 	    case SHIFT_ASHIFT:
-	      *assembler_p = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t%S0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t%S0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_LSHIFTRT:
-	      *assembler_p = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t%S0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t%S0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_ASHIFTRT:
-	      *assembler_p = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t%S0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t%S0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 	}
@@ -2320,24 +2339,24 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	    {
 	    case SHIFT_ASHIFT:
 	      if (TARGET_H8300S)
-		*assembler_p = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t#2,%S0";
+		info->special = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t#2,%S0";
 	      else
-		*assembler_p = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t%S0\n\tshll.l\t%S0";
-	      *cc_valid_p = 0;
+		info->special = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t%S0\n\tshll.l\t%S0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_LSHIFTRT:
 	      if (TARGET_H8300S)
-		*assembler_p = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t#2,%S0";
+		info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t#2,%S0";
 	      else
-		*assembler_p = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t%S0\n\tshlr.l\t%S0";
-	      *cc_valid_p = 0;
+		info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t%S0\n\tshlr.l\t%S0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_ASHIFTRT:
 	      if (TARGET_H8300S)
-		*assembler_p = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t#2,%S0";
+		info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t#2,%S0";
 	      else
-		*assembler_p = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t%S0\n\tshar.l\t%S0";
-	      *cc_valid_p = 0;
+		info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t%S0\n\tshar.l\t%S0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 	}
@@ -2347,24 +2366,24 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	    {
 	    case SHIFT_ASHIFT:
 	      if (TARGET_H8300S)
-		*assembler_p = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t#2,%S0\n\tshll.l\t%S0";
+		info->special = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t#2,%S0\n\tshll.l\t%S0";
 	      else
-		*assembler_p = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t%S0\n\tshll.l\t%S0\n\tshll.l\t%S0";
-	      *cc_valid_p = 0;
+		info->special = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t%S0\n\tshll.l\t%S0\n\tshll.l\t%S0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_LSHIFTRT:
 	      if (TARGET_H8300S)
-		*assembler_p = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t#2,%S0\n\tshlr.l\t%S0";
+		info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t#2,%S0\n\tshlr.l\t%S0";
 	      else
-		*assembler_p = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t%S0\n\tshlr.l\t%S0\n\tshlr.l\t%S0";
-	      *cc_valid_p = 0;
+		info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t%S0\n\tshlr.l\t%S0\n\tshlr.l\t%S0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_ASHIFTRT:
 	      if (TARGET_H8300S)
-		*assembler_p = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t#2,%S0\n\tshar.l\t%S0";
+		info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t#2,%S0\n\tshar.l\t%S0";
 	      else
-		*assembler_p = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t%S0\n\tshar.l\t%S0\n\tshar.l\t%S0";
-	      *cc_valid_p = 0;
+		info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t%S0\n\tshar.l\t%S0\n\tshar.l\t%S0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 	}
@@ -2373,16 +2392,16 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	  switch (shift_type)
 	    {
 	    case SHIFT_ASHIFT:
-	      *assembler_p = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t#2,%S0\n\tshll.l\t#2,%S0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t#2,%S0\n\tshll.l\t#2,%S0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_LSHIFTRT:
-	      *assembler_p = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t#2,%S0\n\tshlr.l\t#2,%S0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t#2,%S0\n\tshlr.l\t#2,%S0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_ASHIFTRT:
-	      *assembler_p = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t#2,%S0\n\tshar.l\t#2,%S0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t#2,%S0\n\tshar.l\t#2,%S0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 	}
@@ -2391,16 +2410,16 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	  switch (shift_type)
 	    {
 	    case SHIFT_ASHIFT:
-	      *assembler_p = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tmov.w\t%f0,%e0\n\tsub.w\t%f0,%f0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tmov.w\t%f0,%e0\n\tsub.w\t%f0,%f0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_LSHIFTRT:
-	      *assembler_p = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\textu.w\t%f0\n\textu.l\t%S0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\textu.w\t%f0\n\textu.l\t%S0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_ASHIFTRT:
-	      *assembler_p = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\texts.w\t%f0\n\texts.l\t%S0";
-	      *cc_valid_p = 0;
+	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\texts.w\t%f0\n\texts.l\t%S0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 	}
@@ -2412,12 +2431,12 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	    }
 	  else
 	    {
-	      *assembler_p = rotate_one[cpu_type][shift_type][shift_mode];
+	      info->shift1 = rotate_one[cpu_type][shift_type][shift_mode];
 	      if (TARGET_H8300S)
-		*assembler2_p = rotate_two[shift_type][shift_mode];
+		info->shift2 = rotate_two[shift_type][shift_mode];
 	      else
-		*assembler2_p = NULL;
-	      *cc_valid_p = 0;
+		info->shift2 = NULL;
+	      info->cc_valid_p = 0;
 	      return SHIFT_ROT_AND;
 	    }
 	}
@@ -2426,10 +2445,10 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	  if (shift_type == SHIFT_ASHIFTRT)
 	    {
 	      if (TARGET_H8300)
-		*assembler_p = "shll\t%z0\n\tsubx\t%w0,%w0\n\tmov.b\t%w0,%x0\n\tmov.w\t%f0,%e0";
+		info->special = "shll\t%z0\n\tsubx\t%w0,%w0\n\tmov.b\t%w0,%x0\n\tmov.w\t%f0,%e0";
 	      else
-		*assembler_p = "shll\t%e0\n\tsubx\t%w0,%w0\n\tmov.b\t%w0,%x0\n\tmov.w\t%f0,%e0";
-	      *cc_valid_p = 0;
+		info->special = "shll\t%e0\n\tsubx\t%w0,%w0\n\tmov.b\t%w0,%x0\n\tmov.w\t%f0,%e0";
+	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
 	  else
@@ -2437,20 +2456,20 @@ get_shift_alg (shift_type, shift_mode, count, assembler_p,
 	      if (TARGET_H8300)
 		{
 		  if (shift_type == SHIFT_ASHIFT)
-		    *assembler_p = "sub.w\t%e0,%e0\n\tshlr\t%w0\n\tmov.w\t%e0,%f0\n\trotxr\t%z0";
+		    info->special = "sub.w\t%e0,%e0\n\tshlr\t%w0\n\tmov.w\t%e0,%f0\n\trotxr\t%z0";
 		  else
-		    *assembler_p = "sub.w\t%f0,%f0\n\tshll\t%z0\n\tmov.w\t%f0,%e0\n\trotxl\t%w0";
-		  *cc_valid_p = 0;
+		    info->special = "sub.w\t%f0,%f0\n\tshll\t%z0\n\tmov.w\t%f0,%e0\n\trotxl\t%w0";
+		  info->cc_valid_p = 0;
 		  return SHIFT_SPECIAL;
 		}
 	      else
 		{
-		  *assembler_p = rotate_one[cpu_type][shift_type][shift_mode];
+		  info->shift1 = rotate_one[cpu_type][shift_type][shift_mode];
 		  if (TARGET_H8300S)
-		    *assembler2_p = rotate_two[shift_type][shift_mode];
+		    info->shift2 = rotate_two[shift_type][shift_mode];
 		  else
-		    *assembler2_p = NULL;
-		  *cc_valid_p = 0;
+		    info->shift2 = NULL;
+		  info->cc_valid_p = 0;
 		  return SHIFT_ROT_AND;
 		}
 	    }
@@ -2473,14 +2492,12 @@ emit_a_shift (insn, operands)
      rtx *operands;
 {
   static int loopend_lab;
-  const char *assembler;
-  const char *assembler2;
-  int cc_valid;
   rtx shift = operands[3];
   enum machine_mode mode = GET_MODE (shift);
   enum rtx_code code = GET_CODE (shift);
   enum shift_type shift_type;
   enum shift_mode shift_mode;
+  struct shift_info info;
 
   loopend_lab++;
 
@@ -2521,11 +2538,10 @@ emit_a_shift (insn, operands)
       fprintf (asm_out_file, "\tble	.Lle%d\n", loopend_lab);
 
       /* Get the assembler code to do one shift.  */
-      get_shift_alg (shift_type, shift_mode, 1, &assembler,
-		     &assembler2, &cc_valid);
+      get_shift_alg (shift_type, shift_mode, 1, &info);
 
       fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
-      output_asm_insn (assembler, operands);
+      output_asm_insn (info.shift1, operands);
       output_asm_insn ("add	#0xff,%X4", operands);
       fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
       fprintf (asm_out_file, ".Lle%d:\n", loopend_lab);
@@ -2546,31 +2562,30 @@ emit_a_shift (insn, operands)
       else if ((unsigned int) n > GET_MODE_BITSIZE (mode))
 	n = GET_MODE_BITSIZE (mode);
 
-      alg = get_shift_alg (shift_type, shift_mode, n, &assembler,
-			   &assembler2, &cc_valid);
+      alg = get_shift_alg (shift_type, shift_mode, n, &info);
 
       switch (alg)
 	{
 	case SHIFT_INLINE:
 	  /* Emit two bit shifts first.  */
-	  while (n > 1 && assembler2 != NULL)
+	  while (n > 1 && info.shift2 != NULL)
 	    {
-	      output_asm_insn (assembler2, operands);
+	      output_asm_insn (info.shift2, operands);
 	      n -= 2;
 	    }
 
 	  /* Now emit one bit shifts for any residual.  */
 	  while (n > 0)
 	    {
-	      output_asm_insn (assembler, operands);
+	      output_asm_insn (info.shift1, operands);
 	      n -= 1;
 	    }
 
 	  /* Keep track of CC.  */
-	  if (cc_valid)
+	  if (info.cc_valid_p)
 	    {
 	      cc_status.value1 = operands[0];
-	      cc_status.flags |= cc_valid;
+	      cc_status.flags |= info.cc_valid_p;
 	    }
 	  return "";
 
@@ -2584,20 +2599,20 @@ emit_a_shift (insn, operands)
 
 	    /* Not all possibilities of rotate are supported.  They shouldn't
 	       be generated, but let's watch for 'em.  */
-	    if (assembler == 0)
+	    if (info.shift1 == 0)
 	      abort ();
 
 	    /* Emit two bit rotates first.  */
-	    while (m > 1 && assembler2 != NULL)
+	    while (m > 1 && info.shift2 != NULL)
 	      {
-		output_asm_insn (assembler2, operands);
+		output_asm_insn (info.shift2, operands);
 		m -= 2;
 	      }
 
 	    /* Now single bit rotates for any residual.  */
 	    while (m > 0)
 	      {
-		output_asm_insn (assembler, operands);
+		output_asm_insn (info.shift1, operands);
 		m -= 1;
 	      }
 
@@ -2634,29 +2649,29 @@ emit_a_shift (insn, operands)
 	  }
 
 	case SHIFT_SPECIAL:
-	  output_asm_insn (assembler, operands);
+	  output_asm_insn (info.special, operands);
 	  return "";
 
 	case SHIFT_LOOP:
 	  /* A loop to shift by a "large" constant value.
 	     If we have shift-by-2 insns, use them.  */
-	  if (assembler2 != NULL)
+	  if (info.shift2 != NULL)
 	    {
 	      fprintf (asm_out_file, "\tmov.b	#%d,%sl\n", n / 2,
 		       names_big[REGNO (operands[4])]);
 	      fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
-	      output_asm_insn (assembler2, operands);
+	      output_asm_insn (info.shift2, operands);
 	      output_asm_insn ("add	#0xff,%X4", operands);
 	      fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
 	      if (n % 2)
-		output_asm_insn (assembler, operands);
+		output_asm_insn (info.shift1, operands);
 	    }
 	  else
 	    {
 	      fprintf (asm_out_file, "\tmov.b	#%d,%sl\n", n,
 		       names_big[REGNO (operands[4])]);
 	      fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
-	      output_asm_insn (assembler, operands);
+	      output_asm_insn (info.shift1, operands);
 	      output_asm_insn ("add	#0xff,%X4", operands);
 	      fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
 	    }
