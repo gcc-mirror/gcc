@@ -1427,9 +1427,11 @@ static void __objc_finish_write_root_object(struct objc_typed_stream* stream)
 static void __objc_finish_read_root_object(struct objc_typed_stream* stream)
 {
   node_ptr node;
+  struct objc_list* free_list;
   SEL awake_sel = sel_get_any_uid ("awake");
 
   /* resolve object forward references */
+  free_list = list_cons(NULL, NULL);
   for (node = hash_next (stream->object_refs, NULL); node;
        node = hash_next (stream->object_refs, node))
     {
@@ -1439,10 +1441,13 @@ static void __objc_finish_read_root_object(struct objc_typed_stream* stream)
       while(reflist)
 	{
 	  *((id*)reflist->head) = object;
+          if (list_find(&free_list, reflist) == NULL)
+	    free_list = list_cons (reflist, free_list);
 	  reflist = reflist->tail;
 	}
-      list_free (node->value);
     }
+  list_mapcar (free_list, free);
+  list_free (free_list);
 
   /* empty object reference table */
   hash_delete (stream->object_refs);
