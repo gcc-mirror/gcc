@@ -1,3 +1,7 @@
+2001-01-06  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/io/PipedReader: Synchronize on "lock" instead of this.
+
 2001-01-05  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/Thread.java: Update comment.
@@ -6,7 +10,7 @@
 	* java/io/PipedOutputStream: Updated to match new PipedInputStream.
 	* java/io/PipedReader: New implementation based on new 
 	PipedInputStream.
-	* java/io/PipedWriter: Updated to match new PipedOutputStream.
+	* java/io/PipedWriter: Updated to match new PipedReader.
 
 2001-01-03  Tom Tromey  <tromey@redhat.com>
 

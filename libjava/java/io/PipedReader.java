@@ -141,54 +141,57 @@ public class PipedReader extends Reader
     *           put it here in order to support that bizarre recieve(int)
     *           method.
     */  
-  synchronized void receive(char[] buf, int offset, int len)
+  void receive(char[] buf, int offset, int len)
     throws IOException
   {
-    if (closed)
-      throw new IOException ("Pipe closed");
+    synchronized (lock)
+    {
+      if (closed)
+	throw new IOException ("Pipe closed");
 
-    int bufpos = offset;
-    int copylen;
-    
-    while (len > 0)
-      {
-        try
-	  {
-	    while (in == out)
-	      {
-		// The pipe is full. Wake up any readers and wait for them.
-		notifyAll();
-		wait();
-		// The pipe could have been closed while we were waiting.
-	        if (closed)
-		  throw new IOException ("Pipe closed");
-	      }
-	  }
-	catch (InterruptedException ix)
-	  {
-            throw new InterruptedIOException ();
-	  }
+      int bufpos = offset;
+      int copylen;
 
-	if (in < 0) // The pipe is empty.
-	  in = 0;
-	
-	// Figure out how many chars from buf can be copied without 
-	// overrunning out or going past the length of the buffer.
-	if (in < out)
-	  copylen = Math.min (len, out - in);
-	else
-	  copylen = Math.min (len, buffer.length - in);
+      while (len > 0)
+	{
+          try
+	    {
+	      while (in == out)
+		{
+		  // The pipe is full. Wake up any readers and wait for them.
+		  lock.notifyAll();
+		  lock.wait();
+		  // The pipe could have been closed while we were waiting.
+	          if (closed)
+		    throw new IOException ("Pipe closed");
+		}
+	    }
+	  catch (InterruptedException ix)
+	    {
+              throw new InterruptedIOException ();
+	    }
 
-	// Copy chars until the pipe is filled, wrapping if neccessary.
-	System.arraycopy(buf, bufpos, buffer, in, copylen);
-	len -= copylen;
-	bufpos += copylen;
-	in += copylen;
-	if (in == buffer.length)
-	  in = 0;
-      }
-    // Notify readers that new data is in the pipe.
-    notifyAll();
+	  if (in < 0) // The pipe is empty.
+	    in = 0;
+
+	  // Figure out how many chars from buf can be copied without 
+	  // overrunning out or going past the length of the buffer.
+	  if (in < out)
+	    copylen = Math.min (len, out - in);
+	  else
+	    copylen = Math.min (len, buffer.length - in);
+
+	  // Copy chars until the pipe is filled, wrapping if neccessary.
+	  System.arraycopy(buf, bufpos, buffer, in, copylen);
+	  len -= copylen;
+	  bufpos += copylen;
+	  in += copylen;
+	  if (in == buffer.length)
+	    in = 0;
+	}
+      // Notify readers that new data is in the pipe.
+      lock.notifyAll();
+    }
   }
   
   /**
@@ -240,84 +243,90 @@ public class PipedReader extends Reader
     * @exception IOException If <code>close()/code> was called on this Piped
     *                        Reader.
     */  
-  public synchronized int read(char[] buf, int offset, int len)
+  public int read(char[] buf, int offset, int len)
     throws IOException
   {
-    if (source == null)
-      throw new IOException ("Not connected");
-    if (closed)
-      throw new IOException ("Pipe closed");
+    synchronized (lock)
+    {
+      if (source == null)
+	throw new IOException ("Not connected");
+      if (closed)
+	throw new IOException ("Pipe closed");
 
-    // If the buffer is empty, wait until there is something in the pipe 
-    // to read.
-    try
-      {
-	while (in < 0)
-	  {
-	    if (source.closed)
-	      return -1;
-	    wait();
-	  }
-      }
-    catch (InterruptedException ix)
-      {
-        throw new InterruptedIOException();
-      }
-    
-    int total = 0;
-    int copylen;
-    
-    while (true)
-      {
-	// Figure out how many chars from the pipe can be copied without 
-	// overrunning in or going past the length of buf.
-	if (out < in)
-	  copylen = Math.min (len, in - out);
-	else
-	  copylen = Math.min (len, buffer.length - out);
+      // If the buffer is empty, wait until there is something in the pipe 
+      // to read.
+      try
+	{
+	  while (in < 0)
+	    {
+	      if (source.closed)
+		return -1;
+	      lock.wait();
+	    }
+	}
+      catch (InterruptedException ix)
+	{
+          throw new InterruptedIOException();
+	}
 
-        System.arraycopy (buffer, out, buf, offset, copylen);
-	offset += copylen;
-	len -= copylen;
-	out += copylen;
-	total += copylen;
-	
-	if (out == buffer.length)
-	  out = 0;
-	
-	if (out == in)
-	  {
-	    // Pipe is now empty.
-	    in = -1;
+      int total = 0;
+      int copylen;
+
+      while (true)
+	{
+	  // Figure out how many chars from the pipe can be copied without 
+	  // overrunning in or going past the length of buf.
+	  if (out < in)
+	    copylen = Math.min (len, in - out);
+	  else
+	    copylen = Math.min (len, buffer.length - out);
+
+          System.arraycopy (buffer, out, buf, offset, copylen);
+	  offset += copylen;
+	  len -= copylen;
+	  out += copylen;
+	  total += copylen;
+
+	  if (out == buffer.length)
 	    out = 0;
-	  }
 
-        // If output buffer is filled or the pipe is empty, we're done.
-	if (len == 0 || in == -1)
-	  {
-	    // Notify any waiting Writer that there is now space
-	    // to write.
-	    notifyAll();
-	    return total;
-	  }
-      }
+	  if (out == in)
+	    {
+	      // Pipe is now empty.
+	      in = -1;
+	      out = 0;
+	    }
+
+          // If output buffer is filled or the pipe is empty, we're done.
+	  if (len == 0 || in == -1)
+	    {
+	      // Notify any waiting Writer that there is now space
+	      // to write.
+	      lock.notifyAll();
+	      return total;
+	    }
+	}
+    }
   }
   
-  public synchronized boolean ready() throws IOException
+  public boolean ready() throws IOException
   {
     // The JDK 1.3 implementation does not appear to check for the closed or 
     // unconnected stream conditions here.
     
-    if (in < 0)
-      return false;
-    
-    int count;
-    if (out < in)
-      count = in - out;
-    else
-      count = (buffer.length - out) - in;
-    
-    return (count > 0);
+    synchronized (lock)
+    {
+      if (in < 0)
+	return false;
+
+      int count;
+      if (out < in)
+	count = in - out;
+      else
+	count = (buffer.length - out) - in;
+
+      return (count > 0);
+    }
   }
   
   /**
@@ -326,10 +335,13 @@ public class PipedReader extends Reader
   *
   * @exception IOException If an error occurs
   */
-  public synchronized void close() throws IOException
+  public void close() throws IOException
   {
-    closed = true;
-    // Wake any thread which may be in receive() waiting to write data.
-    notifyAll();
+    synchronized (lock)
+    {
+      closed = true;
+      // Wake any thread which may be in receive() waiting to write data.
+      lock.notifyAll();
+    }
   }
 }
