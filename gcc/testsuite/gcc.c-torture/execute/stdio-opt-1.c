@@ -12,6 +12,8 @@ extern void abort(void);
    If stdio.h provides one, that is okay.  */
 extern int fputs();
 
+int i;
+
 int main()
 {
   FILE *s_array[] = {stdout, NULL}, **s_ptr = s_array;
@@ -50,6 +52,15 @@ int main()
      prototypes are set correctly too.  */
   __builtin_fputc ('\n', *s_ptr);
   __builtin_fwrite ("hello\n", 1, 6, *s_ptr);
+
+  /* Check side-effects in conditional expression.  */
+  s_ptr = s_array;
+  fputs (i++ ? "f" : "x", *s_ptr++);
+  if (s_ptr != s_array+1 || *s_ptr != 0 || i != 1)
+    abort();
+  fputs (--i ? "\n" : "\n", *--s_ptr);
+  if (s_ptr != s_array || i != 0)
+    abort();
 
   return 0;
 }

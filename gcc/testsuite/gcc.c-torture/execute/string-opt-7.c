@@ -12,6 +12,8 @@ extern int strcmp (const char *, const char *);
 extern int strncmp (const char *, const char *, size_t);
 extern void *memset (void *, int, size_t);
 
+int i;
+
 int main ()
 {
   const char *const src = "hello world";
@@ -61,6 +63,12 @@ int main ()
   memset (dst, 0, sizeof (dst));
   if (__builtin_strncpy (dst, src, 4) != dst || strncmp (dst, src, 4))
     abort();
+
+  memset (dst, 0, sizeof (dst));
+  if (strncpy (dst, i++ ? "xfoo" + 1 : "bar", 4) != dst
+      || strcmp (dst, "bar")
+      || i != 1)
+    abort ();
 
   return 0;
 }
