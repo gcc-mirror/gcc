@@ -1,6 +1,6 @@
 #! /bin/sh
 # Common stub for a few missing GNU programs while installing.
-# Copyright (C) 1996, 1997, 1999, 2000, 2002 Free Software Foundation, Inc.
+# Copyright (C) 1996, 1997, 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
 # Originally by Fran,cois Pinard <pinard@iro.umontreal.ca>, 1996.
 
 # This program is free software; you can redistribute it and/or modify
@@ -165,7 +165,7 @@ WARNING: \`$1' is missing on your system.  You should only need it if
 WARNING: \`$1' is needed, and you do not seem to have it handy on your
          system.  You might have modified some files without having the
          proper tools for further handling them.
-         You can get \`$1Help2man' as part of \`Autoconf' from any GNU
+         You can get \`$1' as part of \`Autoconf' from any GNU
          archive site."
 
     file=`echo "$*" | sed -n 's/.*--output[ =]*\([^ ]*\).*/\1/p'`
@@ -326,7 +326,7 @@ WARNING: I can't seem to be able to run \`tar' with the given arguments.
 WARNING: \`$1' is needed, and you do not seem to have it handy on your
          system.  You might have modified some files without having the
          proper tools for further handling them.  Check the \`README' file,
-         it often tells you about the needed prerequirements for installing
+         it often tells you about the needed prerequisites for installing
          this package.  You may also peek at any GNU archive site, in case
          some other package would contain this missing \`$1' program."
     exit 1

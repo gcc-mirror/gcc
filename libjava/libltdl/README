@@ -6,4 +6,5 @@ It supports the following dlopen interfaces:
 * LoadLibrary (Win16 and Win32)
 * load_add_on (BeOS)
 * GNU DLD (emulates dynamic linking for static libraries)
+* dyld (darwin/Mac OS X)
 * libtool's dlpreopen

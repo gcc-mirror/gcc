@@ -55,8 +55,8 @@ modename="$progname"
 # Constants.
 PROGRAM=ltmain.sh
 PACKAGE=libtool
-VERSION=1.5
-TIMESTAMP=" (1.1220 2003/04/05 19:32:58)"
+VERSION=1.5.0a
+TIMESTAMP=" (1.1220.2.25 2003/08/01 19:08:35) Debian$Rev: 49 $"
 
 default_mode=
 help="Try \`$progname --help' for more information."
@@ -70,8 +70,8 @@ rm="rm -f"
 Xsed="${SED}"' -e 1s/^X//'
 sed_quote_subst='s/\([\\`\\"$\\\\]\)/\\\1/g'
 # test EBCDIC or ASCII
-case `echo A|od -x` in
- *[Cc]1*) # EBCDIC based system
+case `echo A|tr A '\301'` in
+ A) # EBCDIC based system
   SP2NL="tr '\100' '\n'"
   NL2SP="tr '\r\n' '\100\100'"
   ;;
@@ -94,7 +94,8 @@ if test "${LANG+set}" = set; then
 fi
 
 # Make sure IFS has a sensible default
-: ${IFS=" 	"}
+: ${IFS=" 	
+"}
 
 if test "$build_libtool_libs" != yes && test "$build_old_libs" != yes; then
   $echo "$modename: not configured to build any kind of library" 1>&2
@@ -1813,12 +1814,18 @@ EOF
 	  fi
 	  name=`$echo "X$deplib" | $Xsed -e 's/^-l//'`
 	  for searchdir in $newlib_search_path $lib_search_path $sys_lib_search_path $shlib_search_path; do
-	    # Search the libtool library
-	    lib="$searchdir/lib${name}.la"
-	    if test -f "$lib"; then
-	      found=yes
-	      break
-	    fi
+	    for search_ext in .la $shrext .so .a; do
+	      # Search the libtool library
+	      lib="$searchdir/lib${name}${search_ext}"
+	      if test -f "$lib"; then
+		if test "$search_ext" = ".la"; then
+		  found=yes
+		else
+		  found=no
+		fi
+		break 2
+	      fi
+	    done
 	  done
 	  if test "$found" != yes; then
 	    # deplib doesn't seem to be a libtool library
@@ -2352,7 +2359,7 @@ EOF
 		if test -n "$inst_prefix_dir"; then
 		  case "$libdir" in
 		    [\\/]*)
-		      add_dir="-L$inst_prefix_dir$libdir $add_dir"
+		      add_dir="$add_dir -L$inst_prefix_dir$libdir"
 		      ;;
 		  esac
 		fi
@@ -2424,7 +2431,7 @@ EOF
 	      if test -n "$inst_prefix_dir"; then
 		case "$libdir" in
 		  [\\/]*)
-		    add_dir="-L$inst_prefix_dir$libdir $add_dir"
+		    add_dir="$add_dir -L$inst_prefix_dir$libdir"
 		    ;;
 		esac
 	      fi
@@ -2568,7 +2575,11 @@ EOF
 		    if test -f "$path/$depdepl" ; then
 		      depdepl="$path/$depdepl"
 		   fi
-		    newlib_search_path="$newlib_search_path $path"
+		    # do not add paths which are already there
+		    case " $newlib_search_path " in
+		    *" $path "*) ;;
+		    *) newlib_search_path="$newlib_search_path $path";;
+		    esac
 		    path=""
 		  fi
 		  ;;
@@ -5051,7 +5062,9 @@ fi\
       # Quote the link command for shipping.
       relink_command="(cd `pwd`; $SHELL $0 --mode=relink $libtool_args @inst_prefix_dir@)"
       relink_command=`$echo "X$relink_command" | $Xsed -e "$sed_quote_subst"`
-
+      if test "$hardcode_automatic" = yes ; then
+        relink_command=
+      fi  
       # Only create the output if not a dry run.
       if test -z "$run"; then
 	for installed in no yes; do
@@ -5097,6 +5110,25 @@ fi\
 		exit 1
 	      fi
 	      newdlprefiles="$newdlprefiles $libdir/$name"
+	    done
+	    dlprefiles="$newdlprefiles"
+	  else
+	    newdlfiles=
+	    for lib in $dlfiles; do
+	      case $lib in 
+		[\\/]* | [A-Za-z]:[\\/]*) abs="$lib" ;;
+		*) abs=`pwd`"/$lib" ;;
+	      esac
+	      newdlfiles="$newdlfiles $abs"
+	    done
+	    dlfiles="$newdlfiles"
+	    newdlprefiles=
+	    for lib in $dlprefiles; do
+	      case $lib in 
+		[\\/]* | [A-Za-z]:[\\/]*) abs="$lib" ;;
+		*) abs=`pwd`"/$lib" ;;
+	      esac
+	      newdlprefiles="$newdlprefiles $abs"
 	    done
 	    dlprefiles="$newdlprefiles"
 	  fi

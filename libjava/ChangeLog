@@ -1,5 +1,29 @@
 2003-12-16  Michael Koch  <konqueror@gmx.de>
 
+	Fix for PR libgcj/13056.
+	* libltdl/configure.in,
+	libltdl/config.h.in: Removed.
+	* libltdl/configure.ac,
+	libltdl/config-h.in,
+	libltdl/install-sh,
+	libltdl/config.guess,
+	libltdl/config.sub,
+	libltdl/missing,
+	libltdl/mkinstalldirs,
+	libltdl/ltmain.sh: New files.
+	* libltdl/Makefile.am,
+	libltdl/acinclude.m4,
+	libltdl/aclocal.m4,
+	libltdl/ltdl.c,
+	libltdl/ltdl.h,
+	libltdl/README: Update to versions from libtool 1.5.
+	libltdl/configure,
+	* libltdl/Makefile.in: Regenerated.
+	* java/lang/natRuntime.cc (find_symbol):
+	Use type 'lt_ptr' instead of 'lt_ptr_t'.
+
+2003-12-16  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/MenuComponent.java
 	(serialVersionUID): Fixed value.
 
