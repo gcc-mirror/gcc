@@ -29,10 +29,14 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+
+/* We include auto-host.h here to get HAVE_GAS_HIDDEN.  This is
+   supposedly valid even though this is a "target" file.  */
+#include "auto-host.h"
+
 /* It is incorrect to include config.h here, because this file is being
    compiled for the target, and hence definitions concerning only the host
    do not apply.  */
-
 #include "tconfig.h"
 #include "tsystem.h"
 #include "coretypes.h"
@@ -41,6 +45,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Don't use `fancy_abort' here even if config.h says to use it.  */
 #ifdef abort
 #undef abort
+#endif
+
+#ifdef HAVE_GAS_HIDDEN
+#define ATTRIBUTE_HIDDEN  __attribute__ ((__visibility__ ("hidden")))
+#else
+#define ATTRIBUTE_HIDDEN
 #endif
 
 #include "libgcc2.h"
@@ -495,11 +505,6 @@ __udiv_w_sdiv (UWtype *rp __attribute__ ((__unused__)),
 #define L_udivmoddi4
 #endif
 
-#if (defined (L_clzsi2) || defined (L_clzdi2) || \
-     defined (L_ctzsi2) || defined (L_ctzdi2))
-extern const UQItype __clz_tab[];
-#endif
-
 #ifdef L_clz
 const UQItype __clz_tab[] =
 {
@@ -518,22 +523,13 @@ const UQItype __clz_tab[] =
 Wtype
 __clzsi2 (USItype x)
 {
-  Wtype a;
+  UWtype w = x;
+  Wtype ret;
 
-  /* Note that we've already verified that BITS_PER_UNIT == 8, and
-     thus SItype is 32 bits wide.  */
-  if (x < (1 << 2 * 8))
-    if (x < (1 << 1 * 8))
-      a = 0 * 8;
-    else
-      a = 1 * 8;
-  else
-    if (x < (1 << 3 * 8))
-      a = 2 * 8;
-    else
-      a = 3 * 8;
+  count_leading_zeros (ret, w);
+  ret -= (sizeof(w) - sizeof(x)) * BITS_PER_UNIT;
 
-  return 32 - (__clz_tab[x >> a] + a);
+  return ret;
 }
 #endif
 
@@ -541,15 +537,24 @@ __clzsi2 (USItype x)
 Wtype
 __clzdi2 (UDItype x)
 {
-  Wtype a;
+  UWtype word;
+  Wtype ret, add;
 
-  /* Note that we've already verified that BITS_PER_UNIT == 8, and
-     thus DItype is 64 bits wide.  */
-  for (a = 64 - 8; a > 0; a -= 8)
-    if (((x >> a) & 0xff) != 0)
-      break;
+  if (sizeof(x) > sizeof(word))
+    {
+      DWunion uu;
 
-  return 64 - (__clz_tab[x >> a] + a);
+      uu.ll = x;
+      if (uu.s.high)
+	word = uu.s.high, add = 0;
+      else
+	word = uu.s.low, add = W_TYPE_SIZE;
+    }
+  else
+    word = x, add = (Wtype)(sizeof(x) - sizeof(word)) * BITS_PER_UNIT;
+
+  count_leading_zeros (ret, word);
+  return ret + add;
 }
 #endif
 
@@ -557,24 +562,11 @@ __clzdi2 (UDItype x)
 Wtype
 __ctzsi2 (USItype x)
 {
-  Wtype a;
+  Wtype ret;
 
-  x = x & -x;
+  count_trailing_zeros (ret, x);
 
-  /* Note that we've already verified that BITS_PER_UNIT == 8, and
-     thus SItype is 32 bits wide.  */
-  if (x < (1 << 2 * 8))
-    if (x < (1 << 1 * 8))
-      a = 0 * 8;
-    else
-      a = 1 * 8;
-  else
-    if (x < (1 << 3 * 8))
-      a = 2 * 8;
-    else
-      a = 3 * 8;
-
-  return __clz_tab[x >> a] + a - 1;
+  return ret;
 }
 #endif
 
@@ -582,20 +574,30 @@ __ctzsi2 (USItype x)
 Wtype
 __ctzdi2 (UDItype x)
 {
-  Wtype a;
+  UWtype word;
+  Wtype ret, add;
 
-  x = x & -x;
-  for (a = 64 - 8; a > 0; a -= 8)
-    if (((x >> a) & 0xff) != 0)
-      break;
+  if (sizeof(x) > sizeof(word))
+    {
+      DWunion uu;
 
-  return __clz_tab[x >> a] + a - 1;
+      uu.ll = x;
+      if (uu.s.low)
+	word = uu.s.low, add = 0;
+      else
+	word = uu.s.high, add = W_TYPE_SIZE;
+    }
+  else
+    word = x, add = 0;
+
+  count_trailing_zeros (ret, word);
+  return ret + add;
 }
 #endif
 
-#if (defined (L_popcountsi2) || defined (L_popcountdi2) || \
-     defined (L_paritysi2) || defined (L_paritydi2))
-extern const UQItype __popcount_tab[];
+#if (defined (L_popcountsi2) || defined (L_popcountdi2)	\
+     || defined (L_popcount_tab))
+extern const UQItype __popcount_tab[] ATTRIBUTE_HIDDEN;
 #endif
 
 #ifdef L_popcount_tab
@@ -642,9 +644,13 @@ __popcountdi2 (UDItype x)
 Wtype
 __paritysi2 (USItype x)
 {
-  x ^= x >> 16;
-  x ^= x >> 8;
-  return __popcount_tab[x & 0xff] & 1;
+  UWtype nx = x;
+  nx ^= nx >> 16;
+  nx ^= nx >> 8;
+  nx ^= nx >> 4;
+  nx ^= nx >> 2;
+  nx ^= nx >> 1;
+  return nx & 1;
 }
 #endif
 
@@ -652,10 +658,13 @@ __paritysi2 (USItype x)
 Wtype
 __paritydi2 (UDItype x)
 {
-  Wtype nx = x ^ (x >> 32);
+  UWtype nx = x ^ (x >> 32);
   nx ^= nx >> 16;
   nx ^= nx >> 8;
-  return __popcount_tab[nx & 0xff] & 1;
+  nx ^= nx >> 4;
+  nx ^= nx >> 2;
+  nx ^= nx >> 1;
+  return nx & 1;
 }
 #endif
 
