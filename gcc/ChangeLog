@@ -1,3 +1,8 @@
+1999-11-28  Robert Lipe  <robertl@cygnus.com>
+
+	* i386/sco5.h (FINI_SECTION_ASM_OP_COFF): Move destructor fn
+	table from .fini into .dtor.                                
+
 1999-11-28  Anthony Green  <green@cygnus.com>
 
 	* tree.h (struct tree_decl): Add malloc_flag.
