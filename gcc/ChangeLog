@@ -1,3 +1,19 @@
+2002-05-03  David S. Miller  <davem@redhat.com>
+
+	Delete cycle display scheduling hook.
+	* config/ia64/ia64.c (ia64_cycle_display,
+	TARGET_SCHED_CYCLE_DISPLAY, ia64_emit_insn_before): Delete.
+	(ia64_sched_reorder2): Don't check for CODE_FOR_cycle_display
+	and use emit_insn_before instead of ia64_emit_insn_before.
+	* config/ia64/ia64.md (unspec usage): Delete cycle display.
+	(cycle_display): Delete insn pattern.
+	* config/sparc/sparc.md (unspec usage): Delete cycle display.
+	(cycle_display): Delete insn pattern.
+	* config/sparc/sparc.c (sparc_cycle_display,
+	TARGET_SCHED_CYCLE_DISPLAY): Delete.
+	* doc/md.texi (cycle_display): Don't mention.
+	* doc/tm.texi (TARGET_SCHED_CYCLE_DISPLAY): Likewise.
+	
 2002-05-03  Richard Henderson  <rth@redhat.com>
 
 	* recog.c (store_data_bypass_p, if_test_bypass_p): New.

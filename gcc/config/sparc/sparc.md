@@ -44,7 +44,6 @@
 ;;			16	embmedany_textlo
 ;;			18	sethm
 ;;			19	setlo
-;;			20	cycle_display
 ;;
 ;; UNSPEC_VOLATILE:	0	blockage
 ;;			1	flush_register_windows
@@ -9316,9 +9315,3 @@
   "TARGET_V9"
   "t%C0\\t%%xcc, %1"
   [(set_attr "type" "misc")])
-
-(define_insn "cycle_display"
-  [(unspec [(match_operand 0 "const_int_operand" "")] 20)]
-  ""
-  "! cycle %0"
-  [(set_attr "length" "0")])

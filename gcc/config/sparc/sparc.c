@@ -167,7 +167,6 @@ static int sparc_issue_rate PARAMS ((void));
 static void sparc_sched_init PARAMS ((FILE *, int, int));
 static int sparc_use_dfa_pipeline_interface PARAMS ((void));
 static int sparc_use_sched_lookahead PARAMS ((void));
-static rtx sparc_cycle_display PARAMS ((int, rtx));
 
 static void emit_soft_tfmode_libcall PARAMS ((const char *, int, rtx *));
 static void emit_soft_tfmode_binop PARAMS ((enum rtx_code, rtx *));
@@ -233,8 +232,6 @@ enum processor_type sparc_cpu;
 #define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE sparc_use_dfa_pipeline_interface
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD sparc_use_sched_lookahead
-#undef TARGET_SCHED_CYCLE_DISPLAY
-#define TARGET_SCHED_CYCLE_DISPLAY sparc_cycle_display
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -7688,17 +7685,6 @@ sparc_use_sched_lookahead ()
        (1 << PROCESSOR_SPARCLITE86X)))
     return 3;
   return 0;
-}
-
-static rtx
-sparc_cycle_display (clock, last)
-     int clock;
-     rtx last;
-{
-  if (reload_completed)
-    return emit_insn_after (gen_cycle_display (GEN_INT (clock)), last);
-  else
-    return last;
 }
 
 static int

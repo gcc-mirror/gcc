@@ -5498,14 +5498,6 @@ to.  @var{verbose} is the verbose level provided by
 @option{-fsched-verbose-@var{n}}.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_SCHED_CYCLE_DISPLAY (int @var{clock}, rtx @var{last})
-This hook is called in verbose mode only, at the beginning of each pass
-over a basic block.  It should insert an insn into the chain after
-@var{last}, which has no effect, but records the value @var{clock} in
-RTL dumps and assembly output.  Define this hook only if you need this
-level of detail about what the scheduler is doing.
-@end deftypefn
-
 @deftypefn {Target Hook} int TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE (void)
 This hook is called many times during insn scheduling.  If the hook
 returns nonzero, the automaton based pipeline description is used for

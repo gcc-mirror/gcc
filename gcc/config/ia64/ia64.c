@@ -152,7 +152,6 @@ static int ia64_internal_sched_reorder PARAMS ((FILE *, int, rtx *,
 static int ia64_sched_reorder PARAMS ((FILE *, int, rtx *, int *, int));
 static int ia64_sched_reorder2 PARAMS ((FILE *, int, rtx *, int *, int));
 static int ia64_variable_issue PARAMS ((FILE *, int, rtx, int));
-static rtx ia64_cycle_display PARAMS ((int, rtx));
 
 
 /* Table of valid machine attributes.  */
@@ -211,8 +210,6 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_SCHED_REORDER ia64_sched_reorder
 #undef TARGET_SCHED_REORDER2
 #define TARGET_SCHED_REORDER2 ia64_sched_reorder2
-#undef TARGET_SCHED_CYCLE_DISPLAY
-#define TARGET_SCHED_CYCLE_DISPLAY ia64_cycle_display
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5162,7 +5159,6 @@ int ia64_final_schedule = 0;
 static int itanium_split_issue PARAMS ((const struct ia64_packet *, int));
 static rtx ia64_single_set PARAMS ((rtx));
 static int insn_matches_slot PARAMS ((const struct ia64_packet *, enum attr_type, int, rtx));
-static void ia64_emit_insn_before PARAMS ((rtx, rtx));
 static void maybe_rotate PARAMS ((FILE *));
 static void finish_last_head PARAMS ((FILE *, int));
 static void rotate_one_bundle PARAMS ((FILE *));
@@ -5485,21 +5481,6 @@ insn_matches_slot (p, itype, slot, insn)
   return 0;
 }
 
-/* Like emit_insn_before, but skip cycle_display insns.  This makes the
-   assembly output a bit prettier.  */
-
-static void
-ia64_emit_insn_before (insn, before)
-     rtx insn, before;
-{
-  rtx prev = PREV_INSN (before);
-  if (prev && GET_CODE (prev) == INSN
-      && GET_CODE (PATTERN (prev)) == UNSPEC
-      && XINT (PATTERN (prev), 1) == 23)
-    before = prev;
-  emit_insn_before (insn, before);
-}
-
 /* When rotating a bundle out of the issue window, insert a bundle selector
    insn in front of it.  DUMP is the scheduling dump file or NULL.  START
    is either 0 or 3, depending on whether we want to emit a bundle selector
@@ -5531,7 +5512,7 @@ finish_last_head (dump, start)
     fprintf (dump, "//    Emitting template before %d: %s\n",
 	     INSN_UID (insn), b->name);
 
-  ia64_emit_insn_before (gen_bundle_selector (GEN_INT (bundle_type)), insn);
+  emit_insn_before (gen_bundle_selector (GEN_INT (bundle_type)), insn);
 }
 
 /* We can't schedule more insns this cycle.  Fix up the scheduling state
@@ -6391,9 +6372,8 @@ ia64_sched_reorder2 (dump, sched_verbose, ready, pn_ready, clock_var)
 	    abort ();
 	  insn_code = recog_memoized (stop);
 
-	  /* Ignore cycle displays and .pred.rel.mutex.  */
-	  if (insn_code == CODE_FOR_cycle_display
-	      || insn_code == CODE_FOR_pred_rel_mutex
+	  /* Ignore .pred.rel.mutex.  */
+	  if (insn_code == CODE_FOR_pred_rel_mutex
 	      || insn_code == CODE_FOR_prologue_use)
 	    continue;
 
@@ -6490,7 +6470,7 @@ ia64_variable_issue (dump, sched_verbose, insn, can_issue_more)
       int t = sched_data.first_slot;
       if (t == 0)
 	t = 3;
-      ia64_emit_insn_before (gen_insn_group_barrier (GEN_INT (t)), insn);
+      emit_insn_before (gen_insn_group_barrier (GEN_INT (t)), insn);
       init_insn_group_barriers ();
       sched_data.last_was_stop = 0;
     }
@@ -6546,17 +6526,6 @@ ia64_sched_finish (dump, sched_verbose)
   rotate_two_bundles (NULL);
   free (sched_types);
   free (sched_ready);
-}
-
-static rtx
-ia64_cycle_display (clock, last)
-     int clock;
-     rtx last;
-{
-  if (ia64_final_schedule)
-    return emit_insn_after (gen_cycle_display (GEN_INT (clock)), last);
-  else
-    return last;
 }
 
 /* Emit pseudo-ops for the assembler to describe predicate relations.
