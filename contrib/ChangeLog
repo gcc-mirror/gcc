@@ -1,3 +1,14 @@
+2000-11-19  Zack Weinberg  <zackw@stanford.edu>
+
+	* texi2pod.pl:
+	  - Add real command line parsing.
+	  - Support @ifset, @ifclear, @set, @value, -D switch.
+	  - Support @sc.  Improve handling of @ref and friends.
+	  - Discard @subsection, @need, @node lines.
+	  - Un-nest font changes to match texinfo semantics.
+	  - Handle @{ and @}.  Oops.
+	  - Don't emit E<> directives inside verbatim blocks.
+
 2000-11-12  Bruce Korb  <bkorb@gnu.org>
 
 	* release: generalize the release script a bit.
