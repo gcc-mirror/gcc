@@ -104,7 +104,7 @@ byte_reg (x, b)
 {
   static char *names_small[] =
   {"r0l", "r0h", "r1l", "r1h", "r2l", "r2h", "r3l", "r3h",
-   "r4l", "r4h", "r5l", "r5h", "r6l", "r6h", "r7lBAD", "r7hBAD"};
+   "r4l", "r4h", "r5l", "r5h", "r6l", "r6h", "r7l", "r7h"};
 
   return names_small[REGNO (x) * 2 + b];
 }
@@ -1545,8 +1545,6 @@ expand_a_shift (mode, code, operands)
      int code;
      rtx operands[];
 {
-  extern int rtx_equal_function_value_matters;
-
   emit_move_insn (operands[0], operands[1]);
 
   /* need a loop to get all the bits we want  - we generate the
@@ -2229,3 +2227,29 @@ h8300_valid_machine_decl_attribute (decl, attributes, attr, args)
   return 0;
 }
 
+char *
+output_simode_bld (bild, log2, operands)
+     int bild;
+     int log2;
+     rtx operands[];
+{
+  /* Clear the destination register.  */
+  if (TARGET_H8300H)
+    output_asm_insn ("sub.l\t%S0,%S0", operands);
+  else
+    output_asm_insn ("sub.w\t%e0,%e0\n\tsub.w\t%f0,%f0", operands);
+
+  /* Get the bit number we want to load.  */
+  if (log2)
+    operands[2] = GEN_INT (exact_log2 (INTVAL (operands[2])));
+
+  /* Now output the bit load or bit inverse load, and store it in
+     the destination.  */
+  if (bild)
+    output_asm_insn ("bild\t%Z2,%Y1\n\tbst\t#0,%w0", operands);
+  else
+    output_asm_insn ("bld\t%Z2,%Y1\n\tbst\t#0,%w0", operands);
+
+  /* All done.  */
+  return "";
+}
