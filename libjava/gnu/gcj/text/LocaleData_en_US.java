@@ -21,6 +21,8 @@ public final class LocaleData_en_US extends ListResourceBundle
 {
   // These are for DateFormatSymbols.
   static String[][] zoneStringsDefault = {
+    { "GMT", "Greenwich Mean Time", "GMT",
+      /**/   "Greenwich Mean Time", "GMT", "GMT" },
     { "PST", "Pacific Standard Time", "PST",
       /**/   "Pacific Daylight Time", "PDT", "San Francisco" },
     { "MST", "Mountain Standard Time", "MST",
@@ -35,10 +37,18 @@ public final class LocaleData_en_US extends ListResourceBundle
       /**/   "Eastern Standard Time", "EST", "Indianapolis" },
     { "PRT", "Atlantic Standard Time", "AST",
       /**/   "Atlantic Daylight Time", "ADT", "Halifax" },
+    { "CNT", "Newfoundland Standard Time", "NST",
+      /**/   "Newfoundland Daylight Time", "NDT", "St. Johns" },
+    { "ECT", "Central European Standard Time", "CET",
+      /**/   "Central European Daylight Time", "CEST", "Paris" },
+    { "CTT", "China Standard Time", "CST",
+      /**/   "China Standard Time", "CST", "Shanghai" },
+    { "JST", "Japan Standard Time", "JST",
+      /**/   "Japan Standard Time", "JST", "Tokyo" },
     { "HST", "Hawaii Standard Time", "HST",
-      /**/   "Hawaii Daylight Time", "HDT", "Honolulu" },
-    { "AST", "Alaska Standard Time", "AST",
-      /**/   "Alaska Daylight Time", "ADT", "Anchorage" }
+      /**/   "Hawaii Standard Time", "HST", "Honolulu" },
+    { "AST", "Alaska Standard Time", "AKST",
+      /**/   "Alaska Daylight Time", "AKDT", "Anchorage" }
   };
 
   private static final Object[][] contents =
