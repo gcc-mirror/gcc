@@ -1,4 +1,4 @@
-CC=gcc -DUSE_C_ALLOCA -D__inline=
+CC=gcc -DUSE_C_ALLOCA -D__inline= -Dbsd4_4
 # BSD on the PA already has ANSI include files which are c++ compatable.
 INSTALL_HEADERS=
 STMP_FIXPROTO=
