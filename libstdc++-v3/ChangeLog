@@ -1,3 +1,8 @@
+2004-11-16  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/19_diagnostics/howto.html: Document change from
+	_GLIBCPP_CONCEPT_CHECKS to _GLIBCXX_CONCEPT_CHECKS in 3.4.
+
 2004-11-16  Matthias Klose  <doko@debian.org>
 
 	* docs/doxygen/user.cfg.in: Set HAVE_DOT to NO.
