@@ -2578,16 +2578,25 @@ reemit_notes (insn, last)
       if (REG_NOTE_KIND (note) == REG_DEAD
 	  && GET_CODE (XEXP (note, 0)) == CONST_INT)
 	{
-	  if (INTVAL (XEXP (note, 0)) == NOTE_INSN_SETJMP)
+	  int note_type = INTVAL (XEXP (note, 0));
+	  if (note_type == NOTE_INSN_SETJMP)
 	    {
-	      CONST_CALL_P (emit_note_after (INTVAL (XEXP (note, 0)), insn))
+	      CONST_CALL_P (emit_note_after (note_type, insn))
 		= CONST_CALL_P (note);
 	      remove_note (insn, note);
 	      note = XEXP (note, 1);
 	    }
+	  else if (note_type == NOTE_INSN_RANGE_START
+                   || note_type == NOTE_INSN_RANGE_END)
+	    {
+	      last = emit_note_before (note_type, last);
+	      remove_note (insn, note);
+	      note = XEXP (note, 1);
+	      NOTE_RANGE_INFO (last) = XEXP (note, 0);
+	    }
 	  else
 	    {
-	      last = emit_note_before (INTVAL (XEXP (note, 0)), last);
+	      last = emit_note_before (note_type, last);
 	      remove_note (insn, note);
 	      note = XEXP (note, 1);
 	      NOTE_BLOCK_NUMBER (last) = INTVAL (XEXP (note, 0));

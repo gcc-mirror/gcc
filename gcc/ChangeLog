@@ -1,3 +1,9 @@
+Thu Jul 22 18:23:56 1999  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (reemit_notes): Tidy.
+	* sched.c (reemit_notes): Duplicate 1998-08-31 patch to
+	haifa's routine.
+
 Thu Jul 22 18:21:04 1999  Richard Henderson  <rth@cygnus.com>
 
 	* explow.c (trunc_int_for_mode): New function.
