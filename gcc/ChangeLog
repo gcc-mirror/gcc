@@ -1,3 +1,8 @@
+Fri Jan 23 22:48:24 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* crtstuff.c (init_dummy): Keep the epilogue in the init
+	section for non-ELF systems.
+
 Fri Jan 23 23:28:59 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.md (movqi_i+1): New peephole.
