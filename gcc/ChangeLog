@@ -5,6 +5,8 @@ Thu May 21 19:50:13 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 Thu May 21 23:09:50 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in (gencheck): Depend on HOST_LIBDEPS.
+
 	* alias.c (rtx_equal_for_memref_p): Handle SCRATCH as a memory
 	address.
 

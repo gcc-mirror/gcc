@@ -1371,7 +1371,7 @@ s-check : tree.def gencheck $(srcdir)/move-if-change
 	$(srcdir)/move-if-change tmp-check.h tree-check.h
 	touch s-check
 
-gencheck : gencheck.o tree.h tree.def
+gencheck : gencheck.o tree.h tree.def $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 gencheck.o $(HOST_LIBS)
 
