@@ -1466,6 +1466,8 @@ The @code{WHILE_BODY} is the body of the loop.
 @tindex CALL_EXPR
 @tindex CONSTRUCTOR
 @tindex STMT_EXPR
+@tindex LOOP_EXPR
+@tindex EXIT_EXPR
 @tindex ARRAY_REF
 
 The internal representation for expressions is for the most part quite
@@ -1816,6 +1818,17 @@ such an expression.  The @code{STMT_EXPR_STMT} gives the statement
 contained in the expression; this is always a @code{COMPOUND_STMT}.  The
 value of the expression is the value of the last sub-statement in the
 @code{COMPOUND_STMT}.
+
+@item LOOP_EXPR
+These nodes represent ``infinite'' loops.  The @code{LOOP_EXPR_BODY}
+represents the body of the loop.  It should be executed forever, unless
+an @code{EXIT_EXPR} is encountered.
+
+@item EXIT_EXPR
+These nodes represent conditional exits from the nearest enclosing
+@code{LOOP_EXPR}.  The single operand is the condition; if it is
+non-zero, then the loop should be exited.  An @code{EXIT_EXPR} will only
+appear within a @code{LOOP_EXPR}.
 
 @item CONSTRUCTOR
 These nodes represent the brace-enclosed initializers for a structure or
