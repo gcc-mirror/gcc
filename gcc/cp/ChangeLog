@@ -2,6 +2,8 @@ Tue May 16 07:06:28 1995  Paul Eggert  <eggert@twinsun.com>
 
 	* method.c (numeric_output_need_bar): Renamed from misspelling.
 
+	* typeck.c (build_ptrmemfunc): Fix misspellings in messages.
+
 Sun May 14 10:26:22 1995  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* lang-options.h, lang-specs.h: New files.
