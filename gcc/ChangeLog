@@ -1,3 +1,8 @@
+2004-04-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload1.c (emit_reload_insns): Set reg_has_output_reload to one
+	after setting reg_last_reload_reg for optional output reloads.
+
 2004-04-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa64-regs.h (DBX_REGISTER_NUMBER): Simplify and correct mapping of
