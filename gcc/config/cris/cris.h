@@ -837,7 +837,7 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
    number of __builtin_eh_return callers is limited.  For now return
    parameter registers in reverse order and hope for the best.  */
 #define EH_RETURN_DATA_REGNO(N) \
-  (IN_RANGE((N), 0, 3) ? (CRIS_FIRST_ARG_REG + 3 - (N)) : INVALID_REGNUM)
+  (IN_RANGE ((N), 0, 3) ? (CRIS_FIRST_ARG_REG + 3 - (N)) : INVALID_REGNUM)
 
 /* Store the stack adjustment in the structure-return-address register.  */
 #define CRIS_STACKADJ_REG STRUCT_VALUE_REGNUM
