@@ -381,12 +381,12 @@ do
     then
       echo Fixed $file
       rm -f $LIB/$file
-      cat <<'__EOF__' >$LIB/$file
+      cat << __EOF__ >$LIB/$file
 #ifndef _CURSES_H_WRAPPER
 #ifdef __cplusplus
 # define bool __curses_bool_t
 #endif
-#include_next <curses.h>
+#include_next <$file>
 #ifdef __cplusplus
 # undef bool
 #endif
@@ -396,7 +396,7 @@ __EOF__
       # Define _CURSES_H_WRAPPER at the end of the wrapper, not the start,
       # so that if #include_next gets another instance of the wrapper,
       # this will follow the #include_next chain until we arrive at
-      # the real <curses.h>.
+      # the real system include file.
       chmod a+r $LIB/$file
     fi
   fi

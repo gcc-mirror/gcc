@@ -381,12 +381,12 @@ do
     then
       echo Fixed $file
       rm -f $LIB/$file
-      cat <<'__EOF__' >$LIB/$file
+      cat <<__EOF__ >$LIB/$file
 #ifndef _CURSES_H_WRAPPER
 #ifdef __cplusplus
 # define bool __curses_bool_t
 #endif
-#include_next <curses.h>
+#include_next <$file>
 #ifdef __cplusplus
 # undef bool
 #endif
