@@ -252,30 +252,6 @@ retry:
     }
 }
 
-/* This is a wrapper around fancy_abort, as used in the back end and
-   other front ends.  It will also report the magic number assigned to
-   this particular abort.  That is for backward compatibility with the
-   old C++ abort handler, which would just report the magic number.  */
-void
-friendly_abort (where, file, line, func)
-     int where;
-     const char *file;
-     int line;
-     const char *func;
-{
-  if (errorcount > 0 || sorrycount > 0)
-    /* Say nothing.  */;
-  else if (where > 0)
-    {
-      error ("internal error #%d", where);
-
-      /* Uncount this error, so internal_error will do the right thing.  */
-      --errorcount;
-    }
-
-  fancy_abort (file, line, func);
-}
-
 
 /* Perform appropriate conversions on the initial value of a variable,
    store it in the declaration DECL,
