@@ -1856,7 +1856,7 @@ gfc_trans_auto_character_variable (gfc_symbol * sym, tree fnbody)
 
   /* Emit a DECL_EXPR for this variable, which will cause the
      gimplifier to allocate storage, and all that good stuff.  */
-  tmp = build (DECL_EXPR, TREE_TYPE (decl), decl);
+  tmp = build1 (DECL_EXPR, TREE_TYPE (decl), decl);
   gfc_add_expr_to_block (&body, tmp);
 
   gfc_add_expr_to_block (&body, fnbody);
@@ -2114,7 +2114,7 @@ gfc_trans_entry_master_switch (gfc_entry_list * el)
       label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
       DECL_CONTEXT (label) = current_function_decl;
       val = build_int_cst (gfc_array_index_type, el->id);
-      tmp = build_v (CASE_LABEL_EXPR, val, NULL_TREE, label);
+      tmp = build3_v (CASE_LABEL_EXPR, val, NULL_TREE, label);
       gfc_add_expr_to_block (&block, tmp);
       
       /* And jump to the actual entry point.  */
@@ -2130,7 +2130,7 @@ gfc_trans_entry_master_switch (gfc_entry_list * el)
   tmp = gfc_finish_block (&block);
   /* The first argument selects the entry point.  */
   val = DECL_ARGUMENTS (current_function_decl);
-  tmp = build_v (SWITCH_EXPR, val, tmp, NULL_TREE);
+  tmp = build3_v (SWITCH_EXPR, val, tmp, NULL_TREE);
   return tmp;
 }
 
@@ -2233,9 +2233,9 @@ gfc_generate_function_code (gfc_namespace * ns)
       else
 	{
 	  /* Set the return value to the dummy result variable.  */
-	  tmp = build (MODIFY_EXPR, TREE_TYPE (result),
-		       DECL_RESULT (fndecl), result);
-	  tmp = build_v (RETURN_EXPR, tmp);
+	  tmp = build2 (MODIFY_EXPR, TREE_TYPE (result),
+			DECL_RESULT (fndecl), result);
+	  tmp = build1_v (RETURN_EXPR, tmp);
 	  gfc_add_expr_to_block (&block, tmp);
 	}
     }

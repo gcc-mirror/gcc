@@ -422,8 +422,8 @@ create_common (gfc_common_head *com)
   /* Build component reference for each variable.  */
   for (s = current_common; s; s = next_s)
     {
-      s->sym->backend_decl = build (COMPONENT_REF, TREE_TYPE (s->field),
-                                    decl, s->field, NULL_TREE);
+      s->sym->backend_decl = build3 (COMPONENT_REF, TREE_TYPE (s->field),
+				     decl, s->field, NULL_TREE);
 
       next_s = s->next;
       gfc_free (s);
