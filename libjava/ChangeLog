@@ -1,5 +1,10 @@
 2003-06-18  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/Locale.java
+	(equals): Merged from classpath.
+
+2003-06-18  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/InetAddress.java:
 	Reformatted to better match classpath's version.
 	* java/net/URL.java

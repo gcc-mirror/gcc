@@ -723,9 +723,12 @@ public final class Locale implements Serializable, Cloneable
    */
   public boolean equals(Object obj)
   {
+    if (this == obj)
+      return true;
     if (! (obj instanceof Locale))
       return false;
     Locale l = (Locale) obj;
+
     return (language.equals(l.language)
             && country.equals(l.country)
             && variant.equals(l.variant));
