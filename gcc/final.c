@@ -245,6 +245,7 @@ static void notice_source_line	PARAMS ((rtx));
 static rtx walk_alter_subreg	PARAMS ((rtx));
 static void output_asm_name	PARAMS ((void));
 static tree get_decl_from_op	PARAMS ((rtx, int *));
+static void output_asm_operand_names PARAMS ((rtx *, int *, int));
 static void output_operand	PARAMS ((rtx, int));
 #ifdef LEAF_REGISTERS
 static void leaf_renumber_regs	PARAMS ((rtx));
@@ -3332,6 +3333,34 @@ get_decl_from_op (op, paddressp)
   return inner_addressp ? 0 : decl;
 }
   
+/* Output operand names for assembler instructions.  OPERANDS is the
+   operand vector, OPORDER is the order to write the operands, and NOPS
+   is the number of operands to write.  */
+
+static void
+output_asm_operand_names (operands, oporder, nops)
+     rtx *operands;
+     int *oporder;
+     int nops;
+{
+  int wrote = 0;
+  int i;
+
+  for (i = 0; i < nops; i++)
+    {
+      int addressp;
+      tree decl = get_decl_from_op (operands[oporder[i]], &addressp);
+
+      if (decl && DECL_NAME (decl))
+	{
+	  fprintf (asm_out_file, "%s %s%s",
+		   wrote ? "," : ASM_COMMENT_START, addressp ? "*" : "",
+		   IDENTIFIER_POINTER (DECL_NAME (decl)));
+	  wrote = 1;
+	}
+    }
+}
+
 /* Output text from TEMPLATE to the assembler output file,
    obeying %-directions to substitute operands taken from
    the vector OPERANDS.
@@ -3359,6 +3388,7 @@ output_asm_insn (template, operands)
   int dialect = 0;
 #endif
   int oporder[MAX_RECOG_OPERANDS];
+  char opoutput[MAX_RECOG_OPERANDS];
   int ops = 0;
 
   /* An insn may return a null string template
@@ -3366,6 +3396,7 @@ output_asm_insn (template, operands)
   if (*template == 0)
     return;
 
+  memset (opoutput, 0, sizeof opoutput);
   p = template;
   putc ('\t', asm_out_file);
 
@@ -3377,8 +3408,13 @@ output_asm_insn (template, operands)
     switch (c)
       {
       case '\n':
+	if (flag_verbose_asm)
+	  output_asm_operand_names (operands, oporder, ops);
 	if (flag_print_asm_name)
 	  output_asm_name ();
+
+	ops = 0;
+	memset (opoutput, 0, sizeof opoutput);
 
 	putc (c, asm_out_file);
 #ifdef ASM_OUTPUT_OPCODE
@@ -3499,7 +3535,9 @@ output_asm_insn (template, operands)
 	    else
 	      output_operand (operands[c], letter);
 
-	    oporder[ops++] = c;
+	    if (!opoutput[c])
+	      oporder[ops++] = c;
+	    opoutput[c] = 1;
 
 	    while ((c = *p) >= '0' && c <= '9')
 	      p++;
@@ -3514,7 +3552,10 @@ output_asm_insn (template, operands)
 	    else
 	      output_operand (operands[c], 0);
 
-	    oporder[ops++] = c;
+	    if (!opoutput[c])
+	      oporder[ops++] = c;
+	    opoutput[c] = 1;
+
 	    while ((c = *p) >= '0' && c <= '9')
 	      p++;
 	  }
@@ -3535,26 +3576,7 @@ output_asm_insn (template, operands)
 
   /* Write out the variable names for operands, if we know them.  */
   if (flag_verbose_asm)
-    {
-      int wrote = 0;
-      int i;
-
-      for (i = 0; i < ops; i++)
-	{
-	  int addressp;
-	  tree decl = get_decl_from_op (operands[oporder[i]], &addressp);
-
-	  if (decl && DECL_NAME (decl))
-	    {
-	      fprintf (asm_out_file, "%s %s%s",
-		       wrote ? "," : ASM_COMMENT_START,
-		       addressp ? "*" : "",
-		       IDENTIFIER_POINTER (DECL_NAME (decl)));
-	      wrote = 1;
-	    }
-	}
-    }
-
+    output_asm_operand_names (operands, oporder, ops);
   if (flag_print_asm_name)
     output_asm_name ();
 

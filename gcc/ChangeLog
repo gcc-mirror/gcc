@@ -1,5 +1,9 @@
 Sat Oct 20 07:27:14 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* final.c (output_asm_operand_names): New fcn, from output_asm_insn.
+	(output_asm_insn): Call it for each line output.
+	Don't record an operand more than once.
+
 	* toplev.h (struct lang_hooks): HONOR_READONLY now bool.
 	* main.c: Include config.h and system.h, but not ansidecl.h.
 	* Makefile.in (main.o): Update accordingly.
