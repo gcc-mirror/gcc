@@ -145,33 +145,8 @@ extern int errno;
 # include <limits.h>
 #endif
 
-/* Find HOST_WIDEST_INT and set its bit size, type and print macros.
-   It will be the largest integer mode supported by the host which may
-   (or may not) be larger than HOST_WIDE_INT.  This must appear after
-   <limits.h> since we only use `long long' if its bigger than a
-   `long' and also if it is supported by macros in limits.h.  For old
-   hosts which don't have a limits.h (and thus won't include it in
-   stage2 cause we don't rerun configure) we assume gcc supports long
-   long.)  Note, you won't get these defined if you don't include
-   {ht}config.h before this file to set the HOST_BITS_PER_* macros. */
-
-#ifndef HOST_WIDEST_INT
-# if defined (HOST_BITS_PER_LONG) && defined (HOST_BITS_PER_LONGLONG)
-#  if (HOST_BITS_PER_LONGLONG > HOST_BITS_PER_LONG) && (defined (LONG_LONG_MAX) || defined (LONGLONG_MAX) || defined (LLONG_MAX) || defined (__GNUC__))
-#   define HOST_BITS_PER_WIDEST_INT HOST_BITS_PER_LONGLONG
-#   define HOST_WIDEST_INT long long
-#   define HOST_WIDEST_INT_PRINT_DEC "%lld"
-#   define HOST_WIDEST_INT_PRINT_UNSIGNED "%llu"
-#   define HOST_WIDEST_INT_PRINT_HEX "0x%llx"
-#  else
-#   define HOST_BITS_PER_WIDEST_INT HOST_BITS_PER_LONG
-#   define HOST_WIDEST_INT long
-#   define HOST_WIDEST_INT_PRINT_DEC "%ld"
-#   define HOST_WIDEST_INT_PRINT_UNSIGNED "%lu"
-#   define HOST_WIDEST_INT_PRINT_HEX "0x%lx"
-#  endif /*(long long>long) && (LONG_LONG_MAX||LONGLONG_MAX||LLONG_MAX||GNUC)*/
-# endif /* defined(HOST_BITS_PER_LONG) && defined(HOST_BITS_PER_LONGLONG) */
-#endif /* ! HOST_WIDEST_INT */
+/* Get definitions of HOST_WIDE_INT and HOST_WIDEST_INT.  */
+#include "hwint.h"
 
 /* Infrastructure for defining missing _MAX and _MIN macros.  Note that
    macros defined with these cannot be used in #if.  */

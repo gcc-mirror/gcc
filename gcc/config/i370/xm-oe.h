@@ -22,8 +22,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* This describes the machine the compiler is hosted on.  */
 
-/* ??? Is this a typo?  */
-#define HOST_BITS_PER_LONGLONG	32
 #define HOST_FLOAT_FORMAT	IBM_FLOAT_FORMAT
 #define HOST_EBCDIC		1
 

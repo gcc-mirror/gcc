@@ -9,24 +9,21 @@
 #ifndef __HWINT_H__
 #define __HWINT_H__
 
-/* This describes the machine the compiler is hosted on.  The defaults
-   we provide describe the standard 32 bit host since that is the most
-   common type supported in gcc.  */
-#ifndef HOST_BITS_PER_CHAR
-# define HOST_BITS_PER_CHAR 8
-#endif
-#ifndef HOST_BITS_PER_SHORT
-# define HOST_BITS_PER_SHORT 16
-#endif
-#ifndef HOST_BITS_PER_INT
-# define HOST_BITS_PER_INT 32
-#endif
-#ifndef HOST_BITS_PER_LONG
-# define HOST_BITS_PER_LONG 32
-#endif
-#ifndef HOST_BITS_PER_LONGLONG
-# define HOST_BITS_PER_LONGLONG 64
-#endif
+/* This describes the machine the compiler is hosted on.  */
+#define HOST_BITS_PER_CHAR  CHAR_BIT
+#define HOST_BITS_PER_SHORT (CHAR_BIT * SIZEOF_SHORT)
+#define HOST_BITS_PER_INT   (CHAR_BIT * SIZEOF_INT)
+#define HOST_BITS_PER_LONG  (CHAR_BIT * SIZEOF_LONG)
+
+#ifdef HAVE_LONG_LONG
+# define HOST_BITS_PER_LONGLONG (CHAR_BIT * SIZEOF_LONG_LONG)
+#else
+/* If we're here and we're GCC, assume this is stage 2+ of a bootstrap
+   and 'long long' has the width of the *target*'s long long.  */
+# if GCC_VERSION > 3000
+#  define HOST_BITS_PER_LONGLONG LONG_LONG_TYPE_SIZE
+# endif /* gcc */
+#endif /* no long long */
 
 /* Find the largest host integer type and set its size and type.  */
 
@@ -41,7 +38,6 @@
 # endif
 
 #endif /* ! HOST_BITS_PER_WIDE_INT */
-
 
 /* Provide defaults for the way to print a HOST_WIDE_INT
    in various manners.  */
@@ -105,5 +101,26 @@
 #  endif
 # endif
 #endif /* ! HOST_WIDE_INT_PRINT_DOUBLE_HEX */
+
+/* Find HOST_WIDEST_INT and set its bit size, type and print macros.
+   It will be the largest integer mode supported by the host which may
+   (or may not) be larger than HOST_WIDE_INT.  */
+
+#ifndef HOST_WIDEST_INT
+#if defined HOST_BITS_PER_LONGLONG \
+    && HOST_BITS_PER_LONGLONG > HOST_BITS_PER_LONG
+#   define HOST_BITS_PER_WIDEST_INT HOST_BITS_PER_LONGLONG
+#   define HOST_WIDEST_INT long long
+#   define HOST_WIDEST_INT_PRINT_DEC "%lld"
+#   define HOST_WIDEST_INT_PRINT_UNSIGNED "%llu"
+#   define HOST_WIDEST_INT_PRINT_HEX "0x%llx"
+#  else
+#   define HOST_BITS_PER_WIDEST_INT HOST_BITS_PER_LONG
+#   define HOST_WIDEST_INT long
+#   define HOST_WIDEST_INT_PRINT_DEC "%ld"
+#   define HOST_WIDEST_INT_PRINT_UNSIGNED "%lu"
+#   define HOST_WIDEST_INT_PRINT_HEX "0x%lx"
+# endif /* long long wider than long */
+#endif /* ! HOST_WIDEST_INT */
 
 #endif /* __HWINT_H__ */

@@ -21,7 +21,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This describes the machine the compiler is hosted on.  */
+/* Unlike MVS and OE, i370-linux uses IEEE floating point.  */
 #define HOST_FLOAT_FORMAT	IEEE_FLOAT_FORMAT
 
 #define HOST_WORDS_BIG_ENDIAN    

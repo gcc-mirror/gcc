@@ -23,8 +23,3 @@ Boston, MA 02111-1307, USA.  */
 #ifdef __BIG_ENDIAN__
 #define HOST_WORDS_BIG_ENDIAN
 #endif
-
-/* ??? This depends on the as yet unimplemented ILP32 option.  */
-
-/* A C expression for the number of bits in `long' on the host machine.  */
-#define HOST_BITS_PER_LONG 64

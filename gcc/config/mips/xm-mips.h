@@ -23,9 +23,3 @@ Boston, MA 02111-1307, USA.  */
 #if !defined(MIPSEL) && !defined(__MIPSEL__)
 #define HOST_WORDS_BIG_ENDIAN
 #endif
-
-/* A code distinguishing the floating point format of the host
-   machine.  There are three defined values: IEEE_FLOAT_FORMAT,
-   VAX_FLOAT_FORMAT, and UNKNOWN_FLOAT_FORMAT.  */
-
-#define HOST_FLOAT_FORMAT IEEE_FLOAT_FORMAT

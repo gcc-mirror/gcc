@@ -357,7 +357,7 @@ alpha-*-interix)
 	target_cpu_default="MASK_GAS|MASK_IEEE_CONFORMANT"
 
 	xm_defines=USG
-	xm_file="alpha/xm-alpha.h alpha/xm-alpha-interix.h xm-interix.h"
+	xm_file="alpha/xm-alpha-interix.h xm-interix.h"
 	xmake_file=x-interix
 	tmake_file="alpha/t-alpha alpha/t-interix alpha/t-ieee"
 	if test x$enable_threads = xyes ; then
@@ -661,7 +661,6 @@ hppa*-*-openbsd*)
 	;;
 hppa1.1-*-rtems*)
 	tm_file="pa/pa-pro.h ${tm_file} pa/pa-pro-end.h libgloss.h pa/rtems.h"
-	xm_file=pa/xm-papro.h
 	tmake_file="pa/t-pro t-rtems"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
@@ -670,7 +669,6 @@ hppa1.1-*-rtems*)
 hppa1.1-*-pro*)
 	target_cpu_default="(MASK_JUMP_IN_DELAY | MASK_PORTABLE_RUNTIME | MASK_GAS | MASK_NO_SPACE_REGS | MASK_SOFT_FLOAT)"
 	tm_file="${tm_file} pa/pa32-regs.h elfos.h pa/elf.h pa/pa-pro-end.h libgloss.h"
-	xm_file=pa/xm-papro.h
 	tmake_file=pa/t-pro
 	;;
 hppa1.1-*-osf*)
@@ -681,7 +679,6 @@ hppa1.1-*-osf*)
 hppa1.1-*-rtems*)
 	target_cpu_default="(MASK_JUMP_IN_DELAY | MASK_PORTABLE_RUNTIME | MASK_GAS | MASK_NO_SPACE_REGS | MASK_SOFT_FLOAT)"
 	tm_file="${tm_file} pa/pa32-regs.h elfos.h pa/elf.h pa/pa-pro-end.h libgloss.h pa/rtems.h"
-	xm_file=pa/xm-papro.h
 	tmake_file=pa/t-pro
 	;;
 hppa1.0-*-osf*)
@@ -700,7 +697,6 @@ hppa1.0-*-bsd*)
 hppa1.0-*-hpux7*)
 	tm_file="pa/pa-oldas.h ${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux7.h"
 	xm_defines=USG
-	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
 	then
@@ -712,7 +708,6 @@ hppa1.0-*-hpux7*)
 hppa1.0-*-hpux8.0[0-2]*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
 	xm_defines=USG
-	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
 	then
@@ -727,7 +722,6 @@ hppa1.1-*-hpux8.0[0-2]*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
 	xm_defines=USG
-	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
 	then
@@ -742,7 +736,6 @@ hppa1.1-*-hpux8*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
 	xm_defines=USG
-	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
 	then
@@ -754,7 +747,6 @@ hppa1.1-*-hpux8*)
 hppa1.0-*-hpux8*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
 	xm_defines=USG
-	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
 	then
@@ -768,7 +760,6 @@ hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
 	float_format=i128
 	xm_defines=USG
-	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	tmake_file=pa/t-pa
 	if test x$gas = xyes
@@ -790,7 +781,6 @@ hppa1.0-*-hpux10*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
 	float_format=i128
 	xm_defines=USG
-	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	tmake_file=pa/t-pa
 	if test x$gas = xyes
@@ -810,7 +800,6 @@ hppa1.0-*-hpux10*)
 	;;
 hppa*64*-*-hpux11*)
 	xm_defines=USG
-	xm_file=pa/xm-pa64hpux.h
 	xmake_file=pa/x-pa-hpux
 	tmake_file=pa/t-pa
 	tm_file="pa/pa64-start.h ${tm_file} pa/pa64-regs.h pa/long_double.h pa/elf.h pa/pa-hpux.h pa/pa-hpux11.h pa/pa-64.h"
@@ -837,7 +826,6 @@ hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
 	float_format=i128
 	xm_defines=USG
-	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	tmake_file=pa/t-pa
 	if test x$gas = xyes
@@ -858,7 +846,6 @@ hppa1.0-*-hpux11*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
 	float_format=i128
 	xm_defines=USG
-	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
 	then
@@ -878,7 +865,6 @@ hppa1.1-*-hpux* | hppa2*-*-hpux*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hpux9.h"
 	xm_defines=USG
-	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
 	then
@@ -890,7 +876,6 @@ hppa1.1-*-hpux* | hppa2*-*-hpux*)
 hppa1.0-*-hpux*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hpux9.h"
 	xm_defines=USG
-	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
 	then
@@ -903,7 +888,6 @@ hppa1.1-*-hiux* | hppa2*-*-hiux*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hiux.h"
 	xm_defines=USG
-	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
 	then
@@ -915,7 +899,6 @@ hppa1.1-*-hiux* | hppa2*-*-hiux*)
 hppa1.0-*-hiux*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hiux.h"
 	xm_defines=USG
-	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
 	then
@@ -2133,7 +2116,6 @@ mips-sgi-irix6*)		# SGI System V.4., IRIX 6
 	fi
 	tmake_file=mips/t-iris6
 	xm_defines=USG
-	xm_file='mips/xm-mips.h mips/xm-iris6.h'
 	xmake_file=mips/x-iris6
 #	if test x$enable_threads = xyes; then
 #		thread_file='irix'
@@ -3036,7 +3018,6 @@ sparcv9-*-solaris2*)
 	else
 		tm_file=sparc/sol2-sld-64.h
 	fi
-	xm_file="sparc/xm-sysv4.h sparc/xm-sp64.h"
 	xm_defines="USG POSIX"
 	tmake_file="sparc/t-sol2 sparc/t-sol2-64"
 	if test x$gnu_ld = xyes; then
@@ -3062,7 +3043,6 @@ sparcv9-*-solaris2*)
 	fi
 	;;
 sparc-hal-solaris2*)
-        xm_file="sparc/xm-sysv4.h"
         xm_defines="USG POSIX"
         tm_file="sparc/sol2.h sparc/hal.h"
         tmake_file="sparc/t-halos sparc/t-sol2"
@@ -3090,7 +3070,6 @@ sparc-*-solaris2*)
 	else
 		tm_file=sparc/sol2-sld.h
 	fi
-	xm_file="sparc/xm-sysv4.h"
 	xm_defines="USG POSIX"
 	tmake_file=sparc/t-sol2
 	if test x$gnu_ld = xyes; then
@@ -3154,14 +3133,12 @@ sparc-*-sunos3*)
 	;;
 sparc-*-sysv4*)
 	tm_file=sparc/sysv4.h
-	xm_file="sparc/xm-sysv4.h"
 	xm_defines="USG POSIX"
 	tmake_file=t-svr4
 	xmake_file=sparc/x-sysv4
 	extra_parts="crtbegin.o crtend.o"
 	;;
 sparc-*-vxsim*)
-	xm_file="sparc/xm-sysv4.h"
 	xm_defines="USG POSIX"
 	tm_file=sparc/vxsim.h
 	tmake_file=sparc/t-vxsparc
@@ -3204,7 +3181,6 @@ sparc64-*-elf*)
 	;;
 sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
 	tmake_file="t-linux sparc/t-linux64"
-	xm_file="sparc/xm-sparc.h sparc/xm-sp64.h"
 	tm_file=sparc/linux64.h
 	xmake_file=x-linux
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
