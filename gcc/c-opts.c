@@ -1392,6 +1392,10 @@ add_prefixed_path (const char *suffix, size_t chain)
 static bool
 finish_options (const char *tif)
 {
+  this_input_filename = tif;
+  if (! cpp_find_main_file (parse_in, this_input_filename))
+    return false;
+
   if (!cpp_opts->preprocessed)
     {
       size_t i;
@@ -1441,9 +1445,6 @@ finish_options (const char *tif)
     }
 
   include_cursor = 0;
-  this_input_filename = tif;
-  if (! cpp_find_main_file (parse_in, this_input_filename))
-    return false;
   push_command_line_include ();
   return true;
 }
