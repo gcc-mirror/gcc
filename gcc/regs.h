@@ -38,10 +38,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern int max_regno;
 
-/* Maximum number of SCRATCH rtx's in each block of this function.  */
-
-extern int max_scratch;
-
 /* Register information indexed by register number */
 typedef struct reg_info_def {
 				/* fields set by reg_scan */
