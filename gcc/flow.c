@@ -1861,16 +1861,15 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
 				       free_reg_cond_life_info);
   pbi->reg_cond_reg = BITMAP_XMALLOC ();
 
-  /* If this block ends in a conditional branch, for each register live
-     from one side of the branch and not the other, record the register
-     as conditionally dead.  */
+  /* If this block ends in a conditional branch, for each register
+     live from one side of the branch and not the other, record the
+     register as conditionally dead.  */
   if (GET_CODE (bb->end) == JUMP_INSN
       && any_condjump_p (bb->end))
     {
       regset_head diff_head;
       regset diff = INITIALIZE_REG_SET (diff_head);
       basic_block bb_true, bb_false;
-      rtx cond_true, cond_false, set_src;
       int i;
 
       /* Identify the successor blocks.  */
@@ -1898,53 +1897,59 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
 	  bb_false = bb_true;
 	}
 
-      /* Extract the condition from the branch.  */
-      set_src = SET_SRC (pc_set (bb->end));
-      cond_true = XEXP (set_src, 0);
-      cond_false = gen_rtx_fmt_ee (reverse_condition (GET_CODE (cond_true)),
-				   GET_MODE (cond_true), XEXP (cond_true, 0),
-				   XEXP (cond_true, 1));
-      if (GET_CODE (XEXP (set_src, 1)) == PC)
-	{
-	  rtx t = cond_false;
-	  cond_false = cond_true;
-	  cond_true = t;
-	}
-
       /* Compute which register lead different lives in the successors.  */
       if (bitmap_operation (diff, bb_true->global_live_at_start,
 			    bb_false->global_live_at_start, BITMAP_XOR))
 	{
+	  /* Extract the condition from the branch.  */
+	  rtx set_src = SET_SRC (pc_set (bb->end));
+	  rtx cond_true = XEXP (set_src, 0);
 	  rtx reg = XEXP (cond_true, 0);
 
 	  if (GET_CODE (reg) == SUBREG)
 	    reg = SUBREG_REG (reg);
 
-	  if (GET_CODE (reg) != REG)
-	    abort ();
+	  /* We can only track conditional lifetimes if the condition is
+	     in the form of a comparison of a register against zero.  
+	     If the condition is more complex than that, then it is safe
+	     not to record any information.  */
+	  if (GET_CODE (reg) == REG
+	      && XEXP (cond_true, 1) == const0_rtx)
+	    {
+	      rtx cond_false
+		= gen_rtx_fmt_ee (reverse_condition (GET_CODE (cond_true)),
+				  GET_MODE (cond_true), XEXP (cond_true, 0),
+				  XEXP (cond_true, 1));
+	      if (GET_CODE (XEXP (set_src, 1)) == PC)
+		{
+		  rtx t = cond_false;
+		  cond_false = cond_true;
+		  cond_true = t;
+		}
 
-	  SET_REGNO_REG_SET (pbi->reg_cond_reg, REGNO (reg));
+	      SET_REGNO_REG_SET (pbi->reg_cond_reg, REGNO (reg));
 
-	  /* For each such register, mark it conditionally dead.  */
-	  EXECUTE_IF_SET_IN_REG_SET
-	    (diff, 0, i,
-	     {
-	       struct reg_cond_life_info *rcli;
-	       rtx cond;
+	      /* For each such register, mark it conditionally dead.  */
+	      EXECUTE_IF_SET_IN_REG_SET
+		(diff, 0, i,
+		 {
+		   struct reg_cond_life_info *rcli;
+		   rtx cond;
 
-	       rcli = xmalloc (sizeof (*rcli));
+		   rcli = xmalloc (sizeof (*rcli));
 
-	       if (REGNO_REG_SET_P (bb_true->global_live_at_start, i))
-		 cond = cond_false;
-	       else
-		 cond = cond_true;
-	       rcli->condition = cond;
-	       rcli->stores = const0_rtx;
-	       rcli->orig_condition = cond;
+		   if (REGNO_REG_SET_P (bb_true->global_live_at_start, i))
+		     cond = cond_false;
+		   else
+		     cond = cond_true;
+		   rcli->condition = cond;
+		   rcli->stores = const0_rtx;
+		   rcli->orig_condition = cond;
 
-	       splay_tree_insert (pbi->reg_cond_dead, i,
-				  (splay_tree_value) rcli);
-	     });
+		   splay_tree_insert (pbi->reg_cond_dead, i,
+				      (splay_tree_value) rcli);
+		 });
+	    }
 	}
 
       FREE_REG_SET (diff);

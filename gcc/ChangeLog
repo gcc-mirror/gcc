@@ -1,3 +1,9 @@
+2003-10-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	* flow.c (init_propagate_block_info): Don't abort if a conditional
+	jump is not a comparison of a register.  Instead, just don't record
+	conditional life information.
+
 2003-10-16  Jan Hubicka  <jh@suse.cz>
 
 	PR optimization/12630
