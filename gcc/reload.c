@@ -372,11 +372,18 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 	 in operand 1.  Outputs should have an initial "=", which we must
 	 skip.  */
 
-      char insn_letter
-	= insn_data[(int) icode].operand[!in_p].constraint[in_p];
-      enum reg_class insn_class
-	= (insn_letter == 'r' ? GENERAL_REGS
-	   : REG_CLASS_FROM_LETTER ((unsigned char) insn_letter));
+      enum reg_class insn_class;
+
+      if (insn_data[(int) icode].operand[!in_p].constraint[0] == 0)
+	insn_class = ALL_REGS;
+      else
+	{
+	  char insn_letter
+	    = insn_data[(int) icode].operand[!in_p].constraint[in_p];
+	  insn_class
+	    = (insn_letter == 'r' ? GENERAL_REGS
+	       : REG_CLASS_FROM_LETTER ((unsigned char) insn_letter));
+	}
 
       if (insn_class == NO_REGS
 	  || (in_p
