@@ -75,6 +75,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    function.  It is externally callable so that __main can invoke it when
    INVOKE__main is defined.  This has the additional effect of forcing cc1
    to switch to the .text section.  */
+static void __do_global_ctors_aux ();
 void __do_global_ctors () { __do_global_ctors_aux (); }
 
 asm (INIT_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
