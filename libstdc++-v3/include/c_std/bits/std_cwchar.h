@@ -40,7 +40,7 @@
 
 #if _GLIBCPP_HAVE_WCHAR_H
 #pragma GCC system_header
-#include_next <wchar.h>
+#include <wchar.h>
 #endif
 
 // Need to do a bit of trickery here with mbstate_t as char_traits

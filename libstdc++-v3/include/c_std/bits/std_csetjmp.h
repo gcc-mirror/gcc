@@ -35,7 +35,7 @@
 #define _CPP_CSETJMP 1
 
 #pragma GCC system_header
-#include_next <setjmp.h>
+#include <setjmp.h>
 
 // Get rid of those macros defined in <setjmp.h> in lieu of real functions.
 #undef longjmp

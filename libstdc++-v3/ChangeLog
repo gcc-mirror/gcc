@@ -1,3 +1,7 @@
+2001-09-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/c_std/bits/std_c*.h: Don't use include_next.
+
 2001-09-03  Richard Sandiford  <rsandifo@redhat.com>
 
 	* libsupc++/eh_personality.cc (parse_lsda_header): Change type of

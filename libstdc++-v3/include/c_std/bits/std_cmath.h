@@ -37,7 +37,7 @@
 #include <bits/c++config.h>
 
 #pragma GCC system_header
-#include_next <math.h>
+#include <math.h>
 
 // Get rid of those macros defined in <math.h> in lieu of real functions.
 #undef abs
