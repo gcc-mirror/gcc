@@ -160,26 +160,28 @@ cgraph_finalize_function (tree decl, tree body ATTRIBUTE_UNUSED)
 	 
 	 ??? It may make more sense to use one body for inlining and other body
 	 for expanding the function but this is dificult to do.  */
-      if (!node->needed)
+      /* Reset our datastructures so we can analyze the function body
+	 again.  */
+      memset (&node->local, 0, sizeof (node->local));
+      memset (&node->global, 0, sizeof (node->global));
+      memset (&node->rtl, 0, sizeof (node->rtl));
+      node->lowered = false;
+      if (node->output)
+	abort ();
+      while (node->callees)
+	cgraph_remove_call (node->decl, node->callees->callee->decl);
+      /* We may need to re-queue the node for assembling in case
+         we already proceeded it and ignored as not needed.  */
+      if (node->reachable && !flag_unit_at_a_time)
 	{
-	  /* Reset our datastructures so we can analyze the function body
-	     again.  */
-	  memset (&node->local, 0, sizeof (node->local));
-	  memset (&node->global, 0, sizeof (node->global));
-	  memset (&node->rtl, 0, sizeof (node->rtl));
-	  node->lowered = false;
-	  if (node->output)
-	    abort ();
-	  while (node->callees)
-	    cgraph_remove_call (node->decl, node->callees->callee->decl);
+	  struct cgraph_node *n;
+
+	  for (n = cgraph_nodes_queue; n; n = n->next_needed)
+	    if (n == node)
+	      break;
+	  if (!n)
+	    node->reachable = 0;
 	}
-      else
-      /* Frontend may call finalize_function twice when it is incorrectly
-         redefined.  */
-      if (errorcount || sorrycount)
-	return;
-      else
-        abort ();
     }
   notice_global_symbol (decl);
   node->decl = decl;
@@ -332,6 +334,12 @@ cgraph_finalize_compilation_unit (void)
 
       node = cgraph_nodes_queue;
       cgraph_nodes_queue = cgraph_nodes_queue->next_needed;
+
+      /* ??? It is possible to create extern inline function and later using
+	 weak alas attribute to kill it's body. See
+	 gcc.c-torture/compile/20011119-1.c  */
+      if (!DECL_SAVED_TREE (decl))
+	continue;
 
       if (node->lowered || !node->reachable || !DECL_SAVED_TREE (decl))
 	abort ();
