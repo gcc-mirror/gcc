@@ -1093,6 +1093,10 @@ ffecom_arglist_expr_ (char *c, ffebld expr)
   tree item;
   bool ptr = FALSE;
   tree wanted = NULL_TREE;
+  static char zed[] = "0";
+
+  if (c == NULL)
+    c = &zed[0];
 
   while (expr != NULL)
     {
@@ -1183,6 +1187,39 @@ ffecom_arglist_expr_ (char *c, ffebld expr)
 	  *ptrail = build_tree_list (NULL_TREE, length);
 	  ptrail = &TREE_CHAIN (*ptrail);
 	}
+    }
+
+  /* We've run out of args in the call; if the implementation expects
+     more, supply null pointers for them, which the implementation can
+     check to see if an arg was omitted. */
+
+  while (*c != '\0' && *c != '0')
+    {
+      if (*c == '&')
+	++c;
+      else
+	assert ("missing arg to run-time routine!" == NULL);
+
+      switch (*(c++))
+	{
+	case '\0':
+	case 'a':
+	case 'c':
+	case 'd':
+	case 'e':
+	case 'f':
+	case 'i':
+	case 'j':
+	  break;
+
+	default:
+	  assert ("bad arg string code" == NULL);
+	  break;
+	}
+      *plist
+	= build_tree_list (NULL_TREE,
+			   null_pointer_node);
+      plist = &TREE_CHAIN (*plist);
     }
 
   *plist = trail;
