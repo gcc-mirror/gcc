@@ -1,5 +1,6 @@
 /* Target definitions for GNU compiler for PowerPC running System V.4
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
 This file is part of GNU CC.
@@ -19,11 +20,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "rs6000/rs6000.h"
-
-/* Use the regular svr4 definitions.  */
-
-#include "svr4.h"
 
 /* Yes!  We are ELF.  */
 #define	TARGET_OBJECT_FORMAT OBJECT_ELF

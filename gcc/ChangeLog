@@ -1,3 +1,34 @@
+2001-01-09  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config.gcc (powerpc-*-beos*): Include ${tm_file} and rs6000/aix.h.
+	(rs6000-ibm-aix3.[01]*): Likewise.
+	(rs6000-ibm-aix3.2.[456789]*, powerpc-ibm-aix3.2.[456789]*): Likewise.
+	(rs6000-ibm-aix4.[12]*, powerpc-ibm-aix4.[12]*): Likewise.
+	(rs6000-ibm-aix4.[3456789]*, powerpc-ibm-aix4.[3456789]*): Likewise.
+	(rs6000-ibm-aix[56789].*, powerpc-ibm-aix[56789].*): Likewise.
+	(powerpc-*-sysv*): Include {tm_file}. svr4.h and rs6000/sysv4.h.
+	(powerpc-*-eabiaix*): Likewise.
+	(powerpc-*-eabisim*): Likewise.
+	(powerpc-*-elf*): Likewise.
+	(powerpc-*-eabi*): Likewise.
+	(powerpc-*-rtems*): Likewise.
+	(powerpc-*-linux*libc1): Likewise.
+	(powerpc-*-linux*): Likewise.
+	(powerpc-wrs-vxworks*): Likewise.
+	(powerpcle-wrs-vxworks*): Likewise.
+	(powerpcle-*-sysv*): Likewise.
+	(powerpcle-*-elf*): Likewise.
+	(powerpcle-*-eabisim*): Likewise.
+	(powerpcle-*-eabi*): Likewise.
+	(powerpcle-*-solaris2*): Likewise.
+	* config/rs6000/aix31.h: Delete includes.
+	* config/rs6000/aix3newas.h: Likewise.
+	* config/rs6000/aix41.h: Likewise.
+	* config/rs6000/aix43.h: Likewise.
+	* config/rs6000/beos.h: Likewise.
+	* config/rs6000/rtems.h: Likewise.
+	* config/rs6000/sysv4.h: Likewise.
+
 2001-01-09  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (get_shift_alg): Remove an argument cpu.

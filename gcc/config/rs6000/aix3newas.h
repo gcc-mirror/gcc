@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX version 3.x with the fixed assembler.
-   Copyright (C) 1995, 1996, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com).
 
 This file is part of GNU CC.
@@ -20,9 +20,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
-#include "rs6000/rs6000.h"
-#include "rs6000/aix.h"
 
 /* Tell the assembler to assume that all undefined names are external.  */
 

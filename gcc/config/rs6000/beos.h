@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for BeOS.
-   Copyright (C) 1997, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com), based on aix41.h
    from David Edelsohn (edelsohn@npac.syr.edu).
 
@@ -20,9 +20,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
-#include "rs6000/rs6000.h"
-#include "rs6000/aix.h"
 
 /* Enable AIX XL compiler calling convention breakage compatibility.  */
 #define MASK_XL_CALL		0x40000000
