@@ -1,7 +1,7 @@
 #! /bin/sh
 # Install modified versions of certain ANSI-incompatible
 # native System V Release 4 system include files.
-# Copyright (C) 1994, 1996, 1997, 1998 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1996, 1997, 1998, 2000 Free Software Foundation, Inc.
 # Contributed by Ron Guilmette (rfg@monkeys.com).
 #
 # This file is part of GNU CC.
@@ -1650,6 +1650,10 @@ cat <<'__EOF__' >${LIB}/sys/byteorder.h
 #error You lose!  This file is only useful with GNU compilers.
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef __BYTE_ORDER__
 /* Byte order defines.  These are as defined on UnixWare 1.1, but with
    double underscores added at the front and back.  */
@@ -1773,6 +1777,10 @@ ntohs (unsigned int __arg)
 {
   return htons (__arg);
 }
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 __EOF__
 
