@@ -1,3 +1,8 @@
+1999-04-16  Tom Tromey  <tromey@cygnus.com>
+
+	* config.h (__start): Declare as `int' in alpha/OSF1 case.  From
+	David Pettersson <dapet@mai.liu.se>
+
 1999-04-14  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.

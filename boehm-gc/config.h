@@ -833,7 +833,7 @@
 	/* Normally HEURISTIC2 is too conervative, since		*/
 	/* the text segment immediately follows the stack.		*/
 	/* Hence we give an upper pound.				*/
-    	extern __start;
+    	extern int __start;
 #   	define HEURISTIC2_LIMIT ((ptr_t)((word)(&__start) & ~(getpagesize()-1)))
 #   	define CPP_WORDSZ 64
 #   	define MPROTECT_VDB
