@@ -25,7 +25,6 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-
 #include <bits/std_clocale.h>
 #include <bits/std_locale.h>
 #include <bits/std_cstring.h>
@@ -33,21 +32,21 @@
 #include <bits/std_stdexcept.h>
 
 namespace std {
-
   locale::_Impl::
   ~_Impl() throw()
   {
-    std::vector<facet*>::iterator it = _M_facets->begin();
+    __vec_facet::iterator it = _M_facets->begin();
     for (; it != _M_facets->end(); ++it)
-      (*it)->_M_remove_reference();
+      if (*it)
+	(*it)->_M_remove_reference();
     delete _M_facets;
-    delete _M_category_names;
+    locale::facet::_S_destroy_c_locale(_M_c_locale);
   }
 
+  // Clone existing _Impl object.
   locale::_Impl::
   _Impl(const _Impl& __imp, size_t __refs)
-  : _M_references(__refs - 1), _M_facets(0), _M_category_names(0), 
-    _M_has_name(__imp._M_has_name), _M_name(__imp._M_name)
+  : _M_references(__refs - 1), _M_facets(0), _M_c_locale(0) // XXX
   {
     try
       {  _M_facets = new __vec_facet(*(__imp._M_facets)); }
@@ -57,121 +56,89 @@ namespace std {
 	throw;
       }
 
-    try 
-      {	_M_category_names = new __vec_string(*(__imp._M_category_names)); }
-    catch(...) 
-      {
-	delete _M_category_names;
-	throw;
-      }
+    for (size_t i = 0; i < _S_num_categories; ++i)
+      _M_names[i] = __imp._M_names[i];
 
-    std::vector<facet*>::iterator __it = _M_facets->begin();
-    for (; __it != _M_facets->end(); ++__it)
-      (*__it)->_M_add_reference();
-  }
-
-  // This constructor is used to correctly initialize named locales,
-  // including the standard "C" locale.
-  locale::_Impl::
-  _Impl(size_t __num, size_t __refs, bool __has_name, string __str)
-  : _M_references(__refs - 1), _M_facets(0), _M_category_names(0), 
-    _M_has_name(__has_name), _M_name(__str)
-  {
-    try
-      {  _M_facets = new __vec_facet(__num, NULL); }
-    catch(...) 
-      {
-	delete _M_facets;
-	throw;
-      }
-
-    try 
-      {	_M_category_names = new __vec_string(_S_categories_num, _M_name); }
-    catch(...) 
-      {
-	delete _M_category_names;
-	throw;
-      }
-  }
-  
-  // Construct specific categories, leaving unselected ones alone
-  locale::_Impl::
-  _Impl(const _Impl& __imp, const string& __str, category __cat, size_t __refs)
-  : _M_references(__refs - 1)
-  {
-    __cat = _S_normalize_category(__cat);  // might throw
-
-    try 
-      { _M_facets = new __vec_facet(*(__imp._M_facets)); }
-    catch(...) 
-      {
-	delete _M_facets;
-	throw;
-      }
-
-    try 
-      {	_M_category_names = new __vec_string(*(__imp._M_category_names)); }
-    catch(...) 
-      {
-	delete _M_category_names;
-	throw;
-      }
-
-    static void(_Impl::* ctors[]) (const char*) = 
-    {
-      //  NB: Order must match the decl order in class locale.
-      &locale::_Impl::_M_construct_ctype,
-      &locale::_Impl::_M_construct_numeric,
-      &locale::_Impl::_M_construct_collate,
-      &locale::_Impl::_M_construct_time,
-      &locale::_Impl::_M_construct_monetary,
-      &locale::_Impl::_M_construct_messages,
-      0
-    };
-    
     __vec_facet::iterator __it = _M_facets->begin();
     for (; __it != _M_facets->end(); ++__it)
-      (*__it)->_M_add_reference();
+      if (*__it)
+	(*__it)->_M_add_reference();
+  }
 
-    try 
-      {
-	unsigned mask = (locale::all & -(unsigned)locale::all);
-	for (unsigned ix = 0; (-mask & __cat) != 0; ++ix, (mask <<= 1))
-	  {
-	    if (!(mask & __cat))
-	      continue;
-	    
-	    if (mask & __cat)
-	      _M_replace_category(_S_classic, _S_facet_categories[ix]);
-	    else
-	      (this->*ctors[ix])(__str.c_str());
-	  }
-      }
+  // Construct named _Impl, including the standard "C" locale.
+  locale::_Impl::
+  _Impl(string __str, size_t __refs)
+  : _M_references(__refs - 1), _M_facets(0)
+  {
+    // Initialize the underlying locale model, which also checks to
+    // see if the given name is valid.
+    if (__str != "C" && __str != "POSIX")
+      locale::facet::_S_create_c_locale(_M_c_locale, __str.c_str());
+    else
+      _M_c_locale = NULL;
+
+    // Allocate facet container.
+    try
+      {  _M_facets = new __vec_facet(_S_num_facets, NULL); }
     catch(...) 
       {
-	__it = _M_facets->begin();
-	for (; __it != _M_facets->end(); ++__it)
-	  (*__it)->_M_remove_reference();
+	delete _M_facets;
 	throw;
       }
 
-    // XXX May need to be adjusted
-    if (__cat == all)
-      _M_name = __str;
-    _M_has_name = __str != "*";
+    // Name all the categories.
+    for (size_t i = 0; i < _S_num_categories; ++i)
+      _M_names[i] = __str;
+
+    // Construct all standard facets and add them to _M_facets.
+    // XXX Eventually, all should use __c_locale ctor like numpunct
+    _M_init_facet(new std::collate<char>);
+    _M_init_facet(new std::ctype<char>);
+    _M_init_facet(new codecvt<char, char, mbstate_t>);
+    _M_init_facet(new moneypunct<char, false>(_M_c_locale));
+    _M_init_facet(new moneypunct<char,true >);
+    _M_init_facet(new money_get<char>);
+    _M_init_facet(new money_put<char>);
+    _M_init_facet(new numpunct<char>(_M_c_locale));
+    _M_init_facet(new num_get<char>);
+    _M_init_facet(new num_put<char>);
+    _M_init_facet(new time_get<char>);
+    _M_init_facet(new time_put<char>);
+    _M_init_facet(new std::messages<char>);
+    
+#ifdef  _GLIBCPP_USE_WCHAR_T
+    _M_init_facet(new std::collate<wchar_t>);
+    _M_init_facet(new std::ctype<wchar_t>);
+    _M_init_facet(new codecvt<wchar_t, char, mbstate_t>);
+    _M_init_facet(new moneypunct<wchar_t, false>(_M_c_locale));
+    _M_init_facet(new moneypunct<wchar_t,true >);
+    _M_init_facet(new money_get<wchar_t>);
+    _M_init_facet(new money_put<wchar_t>);
+    _M_init_facet(new numpunct<wchar_t>(_M_c_locale));
+    _M_init_facet(new num_get<wchar_t>);
+    _M_init_facet(new num_put<wchar_t>);
+    _M_init_facet(new time_get<wchar_t>);
+    _M_init_facet(new time_put<wchar_t>);
+    _M_init_facet(new std::messages<wchar_t>);
+#endif	  
   }
   
   void
   locale::_Impl::
   _M_replace_categories(const _Impl* __imp, category __cat)
   {
-    category  __mask = locale::all & -static_cast<unsigned int>(locale::all);
-    for (unsigned int __ix = 0; (-__mask & __cat) != 0; ++__ix, (__mask <<= 1))
+    const string __none("*");
+    category __mask;
+    for (unsigned int __ix = 0; __ix < _S_num_categories; ++__ix)
       {
+	__mask = 1 << __ix;
 	if (__mask & __cat)
 	  {
+	    // Need to replace entry in _M_facets with other locale's info.
 	    _M_replace_category(__imp, _S_facet_categories[__ix]);
-	    (*_M_category_names)[__ix] = (*(__imp->_M_category_names))[__ix];
+	    // If both have names, go ahead and mangle.
+	    if (_M_names[__ix] != __none && __imp->_M_names[__ix] != __none)
+	      _M_names[__ix] = __imp->_M_names[__ix];
 	  }
       }
   }
@@ -201,91 +168,36 @@ namespace std {
   locale::_Impl::
   _M_install_facet(const locale::id* __idp, facet* __fp)
   {
-    if (__fp == 0)
-      return;
+    if (__fp)
+      {
+	size_t& __index = __idp->_M_index;
+	if (!__index)
+	  __index = ++locale::id::_S_highwater;  // XXX MT
+	
+	if (__index >= _M_facets->size())
+	  _M_facets->resize(__index + 1, 0);  // might throw
 
-    size_t& __index = __idp->_M_index;
-    if (!__index)
-      __index = ++locale::id::_S_highwater;  // XXX MT
-
-    if (__index >= _M_facets->size())
-      _M_facets->resize(__index + 1, 0);  // might throw
-    facet*& __fpr = (*_M_facets)[__index];
-    // Order matters, here:
-    __fp->_M_add_reference();
-    if (__fpr) 
-      __fpr->_M_remove_reference();
-    __fpr = __fp;
-  }
- 
-  void 
-  locale::_Impl::_M_construct_collate(const char* __s)
-  {
-    _M_facet_init(new collate_byname<char>(__s, 0));
-#ifdef _GLIBCPP_USE_WCHAR_T
-    _M_facet_init(new collate_byname<wchar_t>(__s, 0));
-#endif 
-  }
-
-  void 
-  locale::_Impl::_M_construct_ctype(const char* __s)
-  {
-    _M_facet_init(new ctype_byname<char>(__s, 0));
-    _M_facet_init(new codecvt_byname<char, char, mbstate_t>(__s));
-#ifdef _GLIBCPP_USE_WCHAR_T
-    _M_facet_init(new ctype_byname<wchar_t>(__s, 0));
-    _M_facet_init(new codecvt_byname<wchar_t, char, mbstate_t>(__s));
-#endif 
-  }
-    
-  void 
-  locale::_Impl::_M_construct_monetary(const char* __s)
-  {
-    _M_replace_facet(locale::_S_classic, &money_get<char>::id);
-    _M_replace_facet(locale::_S_classic, &money_put<char>::id);
-    _M_facet_init(new moneypunct_byname<char, false>(__s, 0));
-    _M_facet_init(new moneypunct_byname<char, true >(__s, 0));
-#ifdef _GLIBCPP_USE_WCHAR_T
-    _M_replace_facet(locale::_S_classic, &money_get<wchar_t>::id);
-    _M_replace_facet(locale::_S_classic, &money_put<wchar_t>::id);
-    _M_facet_init(new moneypunct_byname<wchar_t, false>(__s, 0));
-    _M_facet_init(new moneypunct_byname<wchar_t, true >(__s, 0));
-#endif
-  }
-    
-  void 
-  locale::_Impl::_M_construct_numeric(const char* __s)
-  {
-    _M_replace_facet(locale::_S_classic, &num_get<char>::id);
-    _M_replace_facet(locale::_S_classic, &num_put<char>::id);
-    _M_facet_init(new numpunct_byname<char>(__s, 0));
-#ifdef _GLIBCPP_USE_WCHAR_T
-    _M_replace_facet(locale::_S_classic, &num_get<wchar_t>::id);
-    _M_replace_facet(locale::_S_classic, &num_put<wchar_t>::id);
-    _M_facet_init(new numpunct_byname<wchar_t>(__s, 0));
-#endif 
-  }
-    
-  void 
-  locale::_Impl::_M_construct_time(const char* __s)
-  {
-    _M_facet_init(new time_get_byname<char>(__s, 0));
-    _M_facet_init(new time_put_byname<char>(__s, 0));
-#ifdef _GLIBCPP_USE_WCHAR_T
-    _M_facet_init(new time_get_byname<wchar_t>(__s, 0));
-    _M_facet_init(new time_put_byname<wchar_t>(__s, 0));
-#endif 
-  }
-    
-  void 
-  locale::_Impl::_M_construct_messages(const char* __s)
-  {
-    _M_facet_init(new messages_byname<char>(__s, 0));
-#ifdef _GLIBCPP_USE_WCHAR_T
-    _M_facet_init(new messages_byname<wchar_t>(__s, 0));
-#endif 
+	facet*& __fpr = (*_M_facets)[__index];
+	if (__fpr)
+	  {
+	    // Replacing an existing facet.
+	    // Order matters, here:
+	    __fp->_M_add_reference();
+	    if (__fpr) 
+	      __fpr->_M_remove_reference();
+	    __fpr = __fp;
+	  }
+	else
+	  {
+	    // Installing a newly created facet into an empty
+	    // _M_facets container, say a newly-constructed,
+	    // swanky-fresh _Impl.
+	    (*_M_facets)[__index] = __fp;
+	  }
+      }
   }
 }
+
 
 
 

@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,7 +39,9 @@
 #include <bits/std_memory.h>    // For auto_ptr
 #include <bits/sbuf_iter.h>     // For streambuf_iterators
 #include <bits/std_cctype.h>    // For isspace
+#include <typeinfo> 		// For bad_cast
 #include <bits/std_vector.h>	
+
 
 namespace std
 {
@@ -49,7 +51,6 @@ namespace std
     {
       locale __copy(*this);
       __copy._M_impl->_M_replace_facet(__other._M_impl, &_Facet::id);
-      __copy._M_impl->_M_has_name = false;
       return __copy;
     }
 
@@ -58,8 +59,6 @@ namespace std
     locale::operator()(const basic_string<_CharT, _Traits, _Alloc>& __s1,
                        const basic_string<_CharT, _Traits, _Alloc>& __s2) const
     {
-      // XXX should not need to qualify here.
-      // typedef collate<_CharT> __collate_type;
       typedef std::collate<_CharT> __collate_type;
       const __collate_type* __fcoll = &use_facet<__collate_type>(*this);
       return (__fcoll->compare(__s1.data(), __s1.data() + __s1.length(),
@@ -71,12 +70,12 @@ namespace std
     use_facet(const locale& __loc)
     {
       typedef locale::_Impl::__vec_facet        __vec_facet;
-      locale::id& __id = _Facet::id;         // check member id
+      locale::id& __id = _Facet::id;         
       size_t __i = __id._M_index;
       __vec_facet* __facet = __loc._M_impl->_M_facets;
-      const locale::facet* __fp = (*__facet)[__i]; // check derivation
-      if (__i >= __facet->size() || __fp == 0)
-        return _Use_facet_failure_handler<_Facet>(__loc);
+      const locale::facet* __fp = (*__facet)[__i]; 
+      if (__fp == 0 || __i >= __facet->size())
+        throw bad_cast();
       return static_cast<const _Facet&>(*__fp);
     }
 
@@ -85,7 +84,7 @@ namespace std
     has_facet(const locale& __loc) throw()
     {
       typedef locale::_Impl::__vec_facet        __vec_facet;
-      locale::id& __id = _Facet::id;         // check member id
+      locale::id& __id = _Facet::id;         
       size_t __i = __id._M_index;
       __vec_facet* __facet = __loc._M_impl->_M_facets;
       return (__i < __facet->size() && (*__facet)[__i] != 0);

@@ -5,12 +5,14 @@
   </H1>
 </HEAD>
 <I>
-prepared by Benjamin Kosnik (bkoz@redhat.com) on September 15, 2000
+prepared by Benjamin Kosnik (bkoz@redhat.com) on January 24, 2001
 </I>
 
 <P>
 <H2>
-1. Abstract
+1. Abstract Describes the basic locale object, including nested
+classes id, facet, and the reference-counted implementation object,
+class _Impl.
 </H2>
 <P>
 </P>
@@ -18,6 +20,7 @@ prepared by Benjamin Kosnik (bkoz@redhat.com) on September 15, 2000
 <P>
 <H2>
 2. What the standard says
+See Chapter 22 of the standard.
 </H2>
 
 
@@ -27,17 +30,44 @@ prepared by Benjamin Kosnik (bkoz@redhat.com) on September 15, 2000
 </H2>
 
 <P>
-For the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt; ,
-conversions are made between the internal character set (always UCS4
-on GNU/Linux) and whatever the currently selected locale for the
-LC_CTYPE category implements.
+The major problem is fitting an object-orientated and non-global locale
+design ontop of POSIX and other relevant stanards, which include the
+Single Unix (nee X/Open.)
 
+Because POSIX falls down so completely, portibility is an issue.
 <P>
+
 <H2>
 4. Design
 </H2>
-The two required specializations are implemented as follows:
+Class locale in non-templatized and has three distinct types nested
+inside of it:
 
+class facet
+22.1.1.1.2 Class locale::facet
+
+Facets actually implement locale functionality. For instance, a facet
+called numpunct is the data objects that can be used to query for the
+thousands seperator is in the German locale.
+
+Literally, a facet is strictly defined:
+ - containing 
+public:
+  static locale::id id;
+
+- or derived from another facet
+
+The only other thing of interest in this class is the memory
+management of facets. Each constructor of a facet class takes a
+std::size_t __refs argument: if __refs == 0, the facet is deleted when
+no longer used. if __refs == 1, the facet is not destroyed, even when
+it is no longer reference.
+
+
+class id
+Provides an index for looking up specific facets.
+
+class _Impl
 
 <P>
 <H2>
@@ -45,7 +75,7 @@ The two required specializations are implemented as follows:
 </H2>
 
 <pre>
-  typedef ctype<char> cctype;
+  typedef __locale_t locale;
 </pre>
 
 More information can be found in the following testcases:

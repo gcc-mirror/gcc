@@ -22,6 +22,8 @@
 
 #include <cwchar> // for mbstate_t
 #include <locale>
+#include <stdexcept>
+#include <string>
 #include <iterator>
 #include <debug_assert.h>
 
@@ -169,37 +171,66 @@ std::locale::id gnu_facet::id;
 
 void test01()
 {
-  // 1
-  gnu_collate 			obj01;
-  gnu_ctype 			obj02;
-  gnu_codecvt 			obj03;
-  gnu_moneypunct		obj04;
-  gnu_moneypunct_true		obj05;
-  gnu_money_get			obj06;
-  gnu_money_put			obj07;
-  gnu_numpunct			obj08;
-  gnu_num_get			obj09;
-  gnu_num_put			obj10;
-  gnu_time_get			obj11;
-  gnu_time_put			obj12;
-  gnu_messages			obj13;
-  gnu_time_put_out		obj14(0);
-  gnu_time_put_byname		obj15("gnu_message_byname", 0);
-  gnu_time_get_in		obj16(0);
-  gnu_time_get_byname		obj17("gnu_message_byname", 0);
-  gnu_num_put_out		obj18(0);
-  gnu_num_get_in		obj19(0);
-  gnu_numpunct_byname		obj20("gnu_message_byname", 0);
-  gnu_money_put_out		obj21(0);
-  gnu_money_get_in		obj22(0);
-  gnu_moneypunct_byname_false	obj23("gnu_message_byname", 0);
-  gnu_moneypunct_byname_true	obj24("gnu_message_byname", 0);
-  gnu_ctype_byname		obj25("gnu_message_byname", 0);
-  gnu_collate_byname		obj26("gnu_message_byname", 0);
-  gnu_messages_byname		obj27("gnu_message_byname", 0);
+  bool test = true;
+  const std::string name_no("*");
+  const std::string name_c("C");
+
+  try 
+    {
+      gnu_collate 			obj01;
+      gnu_ctype 			obj02;
+      gnu_codecvt 			obj03;
+      gnu_moneypunct			obj04;
+      gnu_moneypunct_true		obj05;
+      gnu_money_get			obj06;
+      gnu_money_put			obj07;
+      gnu_numpunct			obj08;
+      gnu_num_get			obj09;
+      gnu_num_put			obj10;
+      gnu_time_get			obj11;
+      gnu_time_put			obj12;
+      gnu_messages			obj13;
+      gnu_time_put_out			obj14(0);
+      gnu_time_put_byname		obj15("C", 0);
+      gnu_time_get_in			obj16(0);
+      gnu_time_get_byname		obj17("C", 0);
+      gnu_num_put_out			obj18(0);
+      gnu_num_get_in			obj19(0);
+      gnu_numpunct_byname		obj20("C", 0);
+      gnu_money_put_out			obj21(0);
+      gnu_money_get_in			obj22(0);
+      gnu_moneypunct_byname_false	obj23("C", 0);
+      gnu_moneypunct_byname_true	obj24("C", 0);
+      gnu_ctype_byname			obj25("C", 0);
+      gnu_collate_byname		obj26("C", 0);
+      gnu_messages_byname		obj27("C", 0);
+    }
+  catch (std::runtime_error& obj)
+    { 
+      // named locale not valid
+      VERIFY( false );
+    }
+  catch (std::exception& obj)
+    {
+      // some other error
+      VERIFY( false );
+    }
 
   // 2
-  gnu_facet 			obj28;
+  try
+    { 
+      gnu_facet 			obj28; 
+    }
+  catch (std::runtime_error& obj)
+    { 
+      // named locale not valid
+      VERIFY( false );
+    }
+  catch (std::exception& obj)
+    {
+      // some other error
+      VERIFY( false );
+    }
 }
 
 int main ()

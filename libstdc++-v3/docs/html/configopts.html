@@ -7,7 +7,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 configure options</TITLE>
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.3 2001/01/03 15:53:27 bkoz Exp $ -->
+<!-- $Id: configopts.html,v 1.4 2001/01/21 09:36:09 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -67,6 +67,21 @@ options</A></H1>
         <A HREF="http://sources.redhat.com/glibc/">glibc</A>, the
         GNU C library), or 'stdio' to use a generic &quot;C&quot;
 	abstraction.  The default is 'stdio'.
+     </P>
+
+ <DT><TT>--enable-clocale  </TT>
+ <DD><P>This is an abbreviated form of <TT>'--enable-clocale=generic'</TT>
+        (described next).
+     </P>
+
+ <DT><TT>--enable-clocale=MODEL  </TT>
+ <DD><P>Select a target-specific underlying locale package. The
+        choices are 'gnu' to specify an X/Open (IEEE Std. 1003.1-200x)
+        model based on langinfo/iconv (from <A
+        HREF="http://sources.redhat.com/glibc/">glibc</A>, the GNU C
+        library), or 'generic' to use a generic &quot;C&quot;
+        abstraction which consists of "C" locale info.  The default is
+        'generic'.
      </P>
 
  <DT><TT>--enable-long-long  </TT>
@@ -178,7 +193,7 @@ options</A></H1>
 
 <HR>
 <P CLASS="fineprint"><EM>
-$Id: configopts.html,v 1.3 2001/01/03 15:53:27 bkoz Exp $
+$Id: configopts.html,v 1.4 2001/01/21 09:36:09 pme Exp $
 </EM></P>
 
 

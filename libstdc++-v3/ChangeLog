@@ -1,3 +1,110 @@
+2001-01-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Preliminary named locales.
+	* acinclude.m4 (GLIBCPP_ENABLE_CLOCALE): New macro.
+	* aclocal.m4: Regenerate.
+	* configure.in: Use it.
+	* configure: Regerate.
+	* src/Makefile.am (sources): Add c++locale.cc.
+	(build_headers): Add c++locale.h.
+	* src/Makefile.in: Regenerate.
+	* config/c_locale_gnu.h: New file. 	
+	* config/c_locale_gnu.cc: New file. Non-inline member functions
+	for named locales, gnu-specific.
+	* config/c_locale_generic.h: New file. 		
+	* config/c_locale_generic.cc: New file. Non-inline member
+	functions for named locales, generic version.
+	* docs/html/configopts.html: Add documentation on new options.
+
+	* include/bits/locale_facets.h (class _Messages): Remove.
+	(class _Moneypunct): Remove.
+	* src/locale-inst.cc: Remove.
+	
+	* include/bits/locale_facets.h (class _Collate): Remove.
+	* src/locale-inst.cc (std): Remove.
+	* src/locale.cc: And here.
+	
+	* include/bits/localefwd.h (locale::_M_coalesce): New
+	function. Correctly put together multi-name locales.
+	(_Impl(const _Impl&, category, size_t)): Remove.
+
+	* include/bits/localefwd.h (locale::_Impl): Remove _M_construct_*
+	member functions.
+	(_M_normalize_category_names): Remove.
+	(_M_replace_categories): Fix.
+
+	* src/localename.cc (locale::_Impl::_M_construct_collate): Remove.
+	(locale::_Impl::_M_construct_ctype): Remove.
+	(locale::_Impl::_M_construct_monetary): Remove.	
+	(locale::_Impl::_M_construct_numeric): Remove.	
+	(locale::_Impl::_M_construct_time): Remove.		
+	(locale::_Impl::_M_construct_messages): Remove.		
+
+	* include/bits/locale_facets.h (_Bad_use_facet): Remove.
+	(_Use_facet_failure_handle): Remove.
+	* src/locale.cc: Remove definitions.
+	* src/locale-inst.cc: And here.
+	
+	* testsuite/22_locale/ctor_copy_dtor.cc (test01): Fixup. Add tests.
+
+	* src/localename.cc (locale::facet::_S_create_c_locale): Properly
+	create and error-check underlying locale object.
+	(locale::facet::_S_destroy_c_locale): Add, take care of properly
+	tearing down underlying locale object.
+	* include/bits/localefwd.h (locale::facet): Declare.
+	* testsuite/22_locale/members.cc: Don't test "fr_FR" locale for
+	correctness, as glibc apparently has incorrect info in it. Test
+	with it when it works again.....	
+
+	* include/bits/localefwd.h (locale::_Impl::__vec_string):
+	Remove. Number of categories is fixed at six, so just simplify and
+	make this an array of strings.
+	(locale::_Impl::_M_has_name): Remove.
+	(locale::_Impl::_M_name): Remove.	
+	(locale::_Impl::_M_category_names): Turns into...	
+	(locale::_Impl::_M_names): ...this.
+	(locale::_Impl::_M_has_same_name()): New function.
+	* src/localename.cc (locale::_Impl::~_Impl()): Remove here.
+	(locale::_Impl::_Impl(size_t __refs, string __str)): Simplify
+	signature.
+	* src/locale.cc (locale::name()): Construct mangled name
+	accurately reflecting combined locale categories.
+
+	* src/locale.cc (locale::classic()): Don't initialize here.
+	* src/localename.cc (locale::_Impl::_Impl(size_t __num, size_t
+	__refs, bool __has_name, string __str): Do it here.
+
+	* include/bits/localefwd.h: _S_categories_num to
+	_S_num_categories. _S_facets_num to _S_num_facets.
+	(locale::id::id()): Explicitly set _M_index to zero.
+	* src/locale.cc: Same.
+
+	* src/locale.cc: (locale::locale(const char*)): Construct named
+	locales uniquely.
+
+	* src/locale.cc: Remove numpunct_byname ctors.
+	* testsuite/22_locale/numpunct_byname.cc: New file.
+	* testsuite/22_locale/numpunct.cc: New file.	
+	
+	* include/bits/localefwd.h (class locale): Change data members to
+	protected, from private.
+	(_Impl::_M_get_c_locale): Add member function.
+	(locale::facet::_M_get_global_impl()): Add member function.
+	* include/bits/locale_facets.h (numpunct::_M_init): Change to take
+	a __c_locale pointer.
+	(numpunct::numpunct( __c_locale*, size_t)): Add additonal ctor for
+	named locales.
+	* testsuite/22_locale/members.cc: New file, test name and combine.
+	
+	* include/bits/locale_facets.h (class numpunct): Remove class
+	_Punct and _Numpunct. Rewrite class numpunct to be correct for
+	named locales.
+	* include/bits/localefwd.h (locale::_Imp::_M_c_locale): Add.
+	* src/localename.cc (_Impl::~_Impl()): Call __frelocale.
+	(_Imp::_Impl(size_t, size_t, bool, string)) Initialize _M_c_locale.
+	* src/locale-inst.cc: Remove _Numpunct, _Punct instantiations.
+	* testsuite/22_locale/numpunct_char_members.cc: New file.
+	
 2001-01-28  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* testsuite/README: Add more comment.

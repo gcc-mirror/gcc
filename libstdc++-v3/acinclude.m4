@@ -1055,6 +1055,51 @@ AC_SUBST(EXTRA_CXX_FLAGS)
 
 
 dnl
+dnl Check for which locale library to use:  gnu or generic.
+dnl
+dnl GLIBCPP_ENABLE_CLOCALE
+dnl --enable-clocale=gnu sets config/c_locale_gnu.cc and friends
+dnl --enable-clocale=generic sets config/c_locale_generic.cc and friends
+dnl 
+dnl default is generic
+dnl
+AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
+  AC_MSG_CHECKING([for clocale to use])
+  AC_ARG_ENABLE(clocale,
+  [  --enable-clocale       enable model for target locale package. 
+     --enable-clocale=MODEL use MODEL target-speific locale package. [default=generic]
+  ], 
+  if test x$enable_clocale = xno; then
+     enable_clocale=generic
+  fi,
+     enable_clocale=generic)
+
+  enable_clocale_flag=$enable_clocale
+
+  dnl Check if a valid locale package
+  case x${enable_clocale_flag} in
+    xgnu)
+      CLOCALE_H=config/c_locale_gnu.h
+      CLOCALE_CC=config/c_locale_gnu.cc
+      AC_MSG_RESULT(gnu)
+      ;;
+    xgeneric)
+      CLOCALE_H=config/c_locale_generic.h
+      CLOCALE_CC=config/c_locale_generic.cc
+      AC_MSG_RESULT(generic)
+      ;;
+    *)
+      echo "$enable_clocale is an unknown locale package" 1>&2
+      exit 1
+      ;;
+  esac
+
+  AC_LINK_FILES($CLOCALE_H, include/bits/c++locale.h)
+  AC_LINK_FILES($CLOCALE_CC, src/c++locale.cc)
+])
+
+
+dnl
 dnl Check for which I/O library to use:  libio, or something specific.
 dnl
 dnl GLIBCPP_ENABLE_CSTDIO

@@ -1,4 +1,4 @@
-// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,8 +55,8 @@ namespace std
 
   locale::_Impl* 		locale::_S_classic;
   locale::_Impl* 		locale::_S_global; 
-  const int 			locale::_S_categories_num;
-  const int 			locale::_S_facets_num;
+  const size_t 			locale::_S_num_categories;
+  const size_t 			locale::_S_num_facets;
 
   // Definitions for locale::id of standard facets. 
   locale::id ctype<char>::id;
@@ -180,9 +180,457 @@ namespace std
     0
   };
 
+  // Construct and return valid pattern consisting of some combination of:
+  // space none symbol sign value
+  money_base::pattern
+  money_base::_S_construct_pattern(char __preceeds, char __space, char __posn)
+  { 
+    pattern __ret;
+
+    // This insanely complicated routine attempts to construct a valid
+    // pattern for use with monyepunct. A couple of invariants:
+
+    // if (__preceeds) symbol -> value
+    // else value -> symbol
+    
+    // if (__space) space
+    // else none
+
+    // none == never first
+    // space never first or last
+
+    // Any elegant implementations of this are welcome.
+    switch (__posn)
+      {
+      case 1:
+	// 1 The sign precedes the value and symbol.
+	if (__space)
+	  {
+	    // Pattern starts with sign.
+	    if (__preceeds)
+	      {
+		__ret.field[1] = symbol;
+		__ret.field[2] = space;
+		__ret.field[3] = value;
+	      }
+	    else
+	      {
+		__ret.field[1] = value;
+		__ret.field[2] = space;
+		__ret.field[3] = symbol;
+	      }
+	    __ret.field[0] = sign;
+	  }
+	else
+	  {
+	    // Pattern starts with sign and ends with none.
+	    if (__preceeds)
+	      {
+		__ret.field[1] = symbol;
+		__ret.field[2] = value;
+	      }
+	    else
+	      {
+		__ret.field[1] = value;
+		__ret.field[2] = symbol;
+	      }
+	    __ret.field[0] = sign;
+	    __ret.field[3] = none;
+	  }
+	break;
+      case 2:
+	// 2 The sign follows the value and symbol.
+	if (__space)
+	  {
+	    // Pattern either ends with sign.
+	    if (__preceeds)
+	      {
+		__ret.field[0] = symbol;
+		__ret.field[1] = space;
+		__ret.field[2] = value;
+	      }
+	    else
+	      {
+		__ret.field[0] = value;
+		__ret.field[1] = space;
+		__ret.field[2] = symbol;
+	      }
+	    __ret.field[3] = sign;
+	  }
+	else
+	  {
+	    // Pattern ends with sign then none.
+	    if (__preceeds)
+	      {
+		__ret.field[0] = symbol;
+		__ret.field[1] = value;
+	      }
+	    else
+	      {
+		__ret.field[0] = value;
+		__ret.field[1] = symbol;
+	      }
+	    __ret.field[2] = sign;
+	    __ret.field[3] = none;
+	  }
+	break;
+      case 3:
+	// 3 The sign immediately precedes the symbol.
+	if (__space)
+	  {
+	    // Have space.
+	    if (__preceeds)
+	      {
+		__ret.field[0] = sign;
+		__ret.field[1] = symbol;
+		__ret.field[2] = space;
+		__ret.field[3] = value;
+	      }
+	    else
+	      {
+		__ret.field[0] = value;
+		__ret.field[1] = space;
+		__ret.field[2] = sign;
+		__ret.field[3] = symbol;
+	      }
+	  }
+	else
+	  {
+	    // Have none.
+	    if (__preceeds)
+	      {
+		__ret.field[0] = sign;
+		__ret.field[1] = symbol;
+		__ret.field[2] = value;
+	      }
+	    else
+	      {
+		__ret.field[0] = value;
+		__ret.field[1] = sign;
+		__ret.field[2] = symbol;
+	      }
+	    __ret.field[3] = none;
+	  }
+	break;
+      case 4:
+	// 4 The sign immediately follows the symbol. 
+	if (__space)
+	  {
+	    // Have space.
+	    if (__preceeds)
+	      {
+		__ret.field[0] = symbol;
+		__ret.field[1] = sign;
+		__ret.field[2] = space;
+		__ret.field[3] = value;
+	      }
+	    else
+	      {
+		__ret.field[0] = value;
+		__ret.field[1] = space;
+		__ret.field[2] = symbol;
+		__ret.field[3] = sign;
+	      }
+	  }
+	else
+	  {
+	    // Have none.
+	    if (__preceeds)
+	      {
+		__ret.field[0] = symbol;
+		__ret.field[1] = sign;
+		__ret.field[2] = value;
+	      }
+	    else
+	      {
+		__ret.field[0] = value;
+		__ret.field[1] = symbol;
+		__ret.field[2] = sign;
+	      }
+	    __ret.field[3] = none;
+	  }
+	break;
+      default:
+	;
+      }
+    return __ret;
+  }
+
+  locale::~locale() throw()
+  { _M_impl->_M_remove_reference(); }
+
+  void
+  locale::_M_coalesce(const locale& __base, const locale& __add, 
+		      category __cat)
+  {
+    __cat = _S_normalize_category(__cat);  
+    _M_impl = new _Impl(*__base._M_impl, 1);  
+
+    try 
+      { _M_impl->_M_replace_categories(__add._M_impl, __cat); }
+    catch (...) 
+      { 
+	_M_impl->_M_remove_reference(); 
+	throw; 
+      }
+  }
+
+  locale::locale() throw()
+  { 
+    _S_initialize(); 
+    (_M_impl = _S_global)->_M_add_reference(); 
+  } // XXX MT
+
+  locale::locale(const locale& __other) throw()
+  { (_M_impl = __other._M_impl)->_M_add_reference(); }
+
+  locale::locale(_Impl* __ip) throw()
+  : _M_impl(__ip)
+  { __ip->_M_add_reference(); }
+
+  locale::locale(const char* __s)
+  {
+    if (__s)
+      {
+	if (strcmp(__s, "C") == 0 || strcmp(__s, "POSIX") == 0)
+	  (_M_impl = _S_classic)->_M_add_reference();
+	else
+	  _M_impl = new _Impl(__s, 1);
+      }
+    else
+      throw runtime_error("attempt to create locale from NULL name");
+  }
+
+  locale::locale(const locale& __base, const char* __s, category __cat)
+  { 
+    // NB: There are complicated, yet more efficient ways to do
+    // this. Building up locales on a per-category way is tedious, so
+    // let's do it this way until people complain.
+    locale __add(__s);
+    _M_coalesce(__base, __add, __cat);
+  }
+
+  locale::locale(const locale& __base, const locale& __add, category __cat)
+  { _M_coalesce(__base, __add, __cat); }
+
+  bool
+  locale::operator==(const locale& __rhs) const throw()
+  {
+    string __name = this->name();
+    return (_M_impl == __rhs._M_impl 
+	    || (__name != "*" && __name == __rhs.name()));
+  }
+
+  const locale&
+  locale::operator=(const locale& __other) throw()
+  {
+    __other._M_impl->_M_add_reference();
+    _M_impl->_M_remove_reference();
+    _M_impl = __other._M_impl;
+    return *this;
+  }
+
+  locale
+  locale::global(const locale& __other)
+  {
+    // XXX MT
+    _S_initialize();
+    locale __old(_S_global);
+    __other._M_impl->_M_add_reference();
+    _S_global->_M_remove_reference();
+    _S_global = __other._M_impl; 
+    if (_S_global->_M_check_same_name() && _S_global->_M_names[0] != "*")
+      setlocale(LC_ALL, __other.name().c_str());
+    return __old;
+  }
+
+  string
+  locale::name() const
+  {
+    string __ret;
+    // Need some kind of separator character. This one was pretty much
+    // arbitrarily chosen as to not conflict with glibc locales: the
+    // exact formatting is not set in stone.
+    const char __separator = '|';
+
+    if (_M_impl->_M_check_same_name())
+      __ret = _M_impl->_M_names[0];
+    else
+      {
+	for (size_t i = 0; i < _S_num_categories; ++i)
+	  __ret += __separator + _M_impl->_M_names[i];
+      }
+    return __ret;
+  }
+
+  locale const&
+  locale::classic()
+  {
+    static locale* __classic_locale;
+    // XXX MT
+    if (!_S_classic)
+      {
+	try 
+	  {
+	    // 26 Standard facets, 2 references.
+	    // One reference for _M_classic, one for _M_global
+	    _S_classic = new _Impl("C", 2);
+	    _S_global = _S_classic; 	    
+
+	    // Finesse static init order hassles
+	    __classic_locale = new locale(_S_classic);
+	  }
+	catch(...) 
+	  {
+	    delete __classic_locale;
+	    if (_S_classic)
+	      {
+		_S_classic->_M_remove_reference();
+		_S_global->_M_remove_reference();
+	      }
+	    _S_classic = _S_global = 0;
+	    // XXX MT
+	    throw;
+	  }
+      }
+    return *__classic_locale;
+  }
+
+  locale::category
+  locale::_S_normalize_category(category __cat) 
+  {
+    int __ret;
+    if (__cat == none || (__cat & all) && !(__cat & ~all))
+      __ret = __cat;
+    else
+      {
+	// NB: May be a C-style "LC_ALL" category; convert.
+	switch (__cat)
+	  {
+	  case LC_COLLATE:  
+	    __ret = collate; 
+	    break;
+	  case LC_CTYPE:    
+	    __ret = ctype;
+	    break;
+	  case LC_MONETARY: 
+	    __ret = monetary;
+	    break;
+	  case LC_NUMERIC:  
+	    __ret = numeric;
+	    break;
+	  case LC_TIME:     
+	    __ret = time; 
+	    break;
+#ifdef _GLIBCPP_HAVE_LC_MESSAGES
+	  case LC_MESSAGES: 
+	    __ret = messages;
+	    break;
+#endif	
+	  case LC_ALL:      
+	    __ret = all;
+	    break;
+	  default:
+	    throw runtime_error("bad locale category");
+	  }
+      }
+    return __ret;
+  }
+
+  locale::facet::
+  facet(size_t __refs) throw()
+  : _M_references(__refs) 
+  { }
+
+  void  
+  locale::facet::
+  _M_add_reference() throw()
+  { ++_M_references; }                     // XXX MT
+
+  void  
+  locale::facet::
+  _M_remove_reference() throw()
+  {
+    if (_M_references)
+      --_M_references;
+    else
+      {
+        try 
+	  { delete this; }  // XXX MT
+	catch (...) 
+	  { }
+      }
+  }
+  
+  // Definitions for static const data members of ctype_base.
+  const ctype_base::mask ctype_base::space;
+  const ctype_base::mask ctype_base::print;
+  const ctype_base::mask ctype_base::cntrl;
+  const ctype_base::mask ctype_base::upper;
+  const ctype_base::mask ctype_base::lower;
+  const ctype_base::mask ctype_base::alpha;
+  const ctype_base::mask ctype_base::digit;
+  const ctype_base::mask ctype_base::punct;
+  const ctype_base::mask ctype_base::xdigit;
+  const ctype_base::mask ctype_base::alnum;
+  const ctype_base::mask ctype_base::graph;
+
+  // Platform-specific initialization code for ctype tables.
+  #include <bits/ctype_noninline.h>
+
+  const size_t ctype<char>::table_size;
+
+  ctype<char>::~ctype()
+  { if (_M_del) delete[] this->table(); }
+
+  // These are dummy placeholders as these virtual functions are never called.
+  bool 
+  ctype<char>::do_is(mask, char_type) const 
+  { return false; }
+  
+  const char*
+  ctype<char>::do_is(const char_type* __c, const char_type*, mask*) const 
+  { return __c; }
+  
+  const char*
+  ctype<char>::do_scan_is(mask, const char_type* __c, const char_type*) const 
+  { return __c; }
+
+  const char* 
+  ctype<char>::do_scan_not(mask, const char_type* __c, const char_type*) const
+  { return __c; }
+
+  char
+  ctype<char>::do_widen(char __c) const
+  { return __c; }
+  
+  const char* 
+  ctype<char>::do_widen(const char* __low, const char* __high, 
+			char* __dest) const
+  {
+    memcpy(__dest, __low, __high - __low);
+    return __high;
+  }
+  
+  char
+  ctype<char>::do_narrow(char __c, char /*__dfault*/) const
+  { return __c; }
+  
+  const char* 
+  ctype<char>::do_narrow(const char* __low, const char* __high, 
+			 char /*__dfault*/, char* __dest) const
+  {
+    memcpy(__dest, __low, __high - __low);
+    return __high;
+  }
+
+  ctype_byname<char>::ctype_byname(const char* /*__s*/, size_t __refs)
+  : ctype<char>(new mask[table_size], true, __refs)
+  { }
+
   // Definitions for static const data members of money_base
   const money_base::pattern 
-  money_base::_S_default_pattern =  {{symbol, sign, none, value}};;
+  money_base::_S_default_pattern =  {{symbol, sign, none, value}};
 
   template<>
     _Format_cache<char>::_Format_cache()
@@ -565,300 +1013,8 @@ namespace std
     return __incl_prec;
   }
 
-
-  locale::locale(_Impl* __ip) throw()
-  : _M_impl(__ip)
-  { __ip->_M_add_reference(); }
-
-
-  locale::locale(const char* __name)
-  {
-    if (__name)
-      {
-	if (strcmp(__name, "C") == 0 || strcmp(__name, "POSIX") == 0)
-	  (_M_impl = _S_classic)->_M_add_reference();
-	// Might throw:
-	else
-	  // XXX Named locale support not finished.
-	  // _M_impl = new _Impl(_S_facets_num, 1, true, __name);
-	  _M_impl = new _Impl(*_S_classic, __name, all, 1);
-      }
-    else
-      throw runtime_error("attempt to create named locale from NULL name");
-  }
-
-  locale::locale(const locale& __other, const char* __name, category __cat)
-  { 
-    if (__name)
-      {
-	if (__other.name() == __name)
-	  (_M_impl = __other._M_impl)->_M_add_reference();
-	// Might throw:
-	else
-	  _M_impl = new _Impl(*__other._M_impl, __name, __cat, 1);
-      }
-    else
-      throw runtime_error("attempt to create locale from NULL named locale");
-  }
-
-  locale::locale(const locale& __other, const locale& __one, category __cat)
-  {
-    __cat = _S_normalize_category(__cat);    // might throw
-    _M_impl = new _Impl(*__other._M_impl, 1);  // might throw
-
-    try { 
-      _M_impl->_M_replace_categories(__one._M_impl, __cat); 
-    }
-    catch (...) { 
-      _M_impl->_M_remove_reference(); 
-      throw; 
-    }
-
-    // XXX
-    //    _M_impl->_M_cached_name_ok = false;
-    if (!__other._M_impl->_M_has_name)
-      _M_impl->_M_has_name = false;
-  }
-
-  bool
-  locale::operator==(const locale& __rhs) const throw()
-  {
-    return (_M_impl == __rhs._M_impl
-	    || (this->name() != "*" && this->name() == __rhs.name()));
-  }
-
-  const locale&
-  locale::operator=(const locale& __other) throw()
-  {
-    __other._M_impl->_M_add_reference();
-    _M_impl->_M_remove_reference();
-    _M_impl = __other._M_impl;
-    return *this;
-  }
-
-  locale
-  locale::global(const locale& __other)
-  {
-    // XXX MT
-    _S_initialize();
-    locale __keep(_S_global);
-    __other._M_impl->_M_add_reference();
-    _S_global->_M_remove_reference();
-    _S_global = __other._M_impl; 
-    if (_S_global->_M_has_name)
-      setlocale(LC_ALL, __other.name().c_str());
-    return __keep;
-  }
-
-  string
-  locale::name() const
-  { return _M_impl->_M_name; }
-
-  locale const&
-  locale::classic()
-  {
-    static locale* __classic_locale;
-    // XXX MT
-    if (!_S_classic)
-      {
-	try {
-	  // 26 Standard facets, 2 references.
-	  // One reference for _M_classic, one for _M_global
-	  _S_classic = new _Impl(_S_facets_num, 2, true, "C");
-	  _S_global = _S_classic; 
-
-	  _S_classic->_M_facet_init(new std::collate<char>);
-	  _S_classic->_M_facet_init(new std::ctype<char>);
-	  _S_classic->_M_facet_init(new codecvt<char, char, mbstate_t>);
-	  _S_classic->_M_facet_init(new moneypunct<char, false>);
-	  _S_classic->_M_facet_init(new moneypunct<char,true >);
-	  _S_classic->_M_facet_init(new money_get<char>);
-	  _S_classic->_M_facet_init(new money_put<char>);
-	  _S_classic->_M_facet_init(new numpunct<char>);
-	  _S_classic->_M_facet_init(new num_get<char>);
-	  _S_classic->_M_facet_init(new num_put<char>);
-	  _S_classic->_M_facet_init(new time_get<char>);
-	  _S_classic->_M_facet_init(new time_put<char>);
-	  _S_classic->_M_facet_init(new std::messages<char>);
-
-#ifdef  _GLIBCPP_USE_WCHAR_T
-	  _S_classic->_M_facet_init(new std::collate<wchar_t>);
-	  _S_classic->_M_facet_init(new std::ctype<wchar_t>);
-	  _S_classic->_M_facet_init(new codecvt<wchar_t, char, mbstate_t>);
-	  _S_classic->_M_facet_init(new moneypunct<wchar_t, false>);
-	  _S_classic->_M_facet_init(new moneypunct<wchar_t,true >);
-	  _S_classic->_M_facet_init(new money_get<wchar_t>);
-	  _S_classic->_M_facet_init(new money_put<wchar_t>);
-	  _S_classic->_M_facet_init(new numpunct<wchar_t>);
-	  _S_classic->_M_facet_init(new num_get<wchar_t>);
-	  _S_classic->_M_facet_init(new num_put<wchar_t>);
-	  _S_classic->_M_facet_init(new time_get<wchar_t>);
-	  _S_classic->_M_facet_init(new time_put<wchar_t>);
-	  _S_classic->_M_facet_init(new std::messages<wchar_t>);
-#endif	  
-
-	  // Finesse static init order hassles
-	  __classic_locale = new locale(_S_classic);
-	}
-	catch(...) {
-	  delete __classic_locale;
-	  if (_S_classic)
-	    {
-	      _S_classic->_M_remove_reference();
-	      _S_global->_M_remove_reference();
-	    }
-	  _S_classic = _S_global = 0;
-	  // XXX MT
-	  throw;
-	}
-      }
-    return *__classic_locale;
-  }
-
-  int
-  locale::_S_normalize_category(int __cat) 
-  {
-    int __ret;
-    if ((__cat & all) && !(__cat & ~all))
-      __ret = __cat;
-    else
-      {
-	// NB: May be a C-style "LC_ALL" category; convert.
-	switch (__cat)
-	  {
-	  case LC_COLLATE:  
-	    __ret = collate; 
-	    break;
-	  case LC_CTYPE:    
-	    __ret = ctype;
-	    break;
-	  case LC_MONETARY: 
-	    __ret = monetary;
-	    break;
-	  case LC_NUMERIC:  
-	    __ret = numeric;
-	    break;
-	  case LC_TIME:     
-	    __ret = time; 
-	    break;
-#ifdef _GLIBCPP_HAVE_LC_MESSAGES
-	  case LC_MESSAGES: 
-	    __ret = messages;
-	    break;
-#endif	
-	  case LC_ALL:      
-	    __ret = all;
-	    break;
-	  default:
-	    throw runtime_error("bad locale category");
-	  }
-      }
-    return __ret;
-  }
-
-  locale::facet::
-  facet(size_t __refs) throw()
-  : _M_references(__refs - 1) 
-  { }
-
-  void  
-  locale::facet::
-  _M_add_reference() throw()
-  { 
-    if (this) 
-      ++_M_references; 
-  }                     // XXX MT
-
-  void  
-  locale::facet::
-  _M_remove_reference() throw()
-  {
-    if (this && _M_references-- == 0)
-      {
-        try { 
-	  delete this; 
-	}  // XXX MT
-	catch (...) { 
-	}
-      }
-  }
-
-  char const* 
-  _Bad_use_facet::
-  what() const throw()
-  { return "_Bad_use_facet thrown from use_facet"; }
-
-  _Bad_use_facet::
-  ~_Bad_use_facet() throw() { }
-  
-  // Definitions for static const data members of ctype_base.
-  const ctype_base::mask ctype_base::space;
-  const ctype_base::mask ctype_base::print;
-  const ctype_base::mask ctype_base::cntrl;
-  const ctype_base::mask ctype_base::upper;
-  const ctype_base::mask ctype_base::lower;
-  const ctype_base::mask ctype_base::alpha;
-  const ctype_base::mask ctype_base::digit;
-  const ctype_base::mask ctype_base::punct;
-  const ctype_base::mask ctype_base::xdigit;
-  const ctype_base::mask ctype_base::alnum;
-  const ctype_base::mask ctype_base::graph;
-
-  // Platform-specific initialization code for ctype tables.
-  #include <bits/ctype_noninline.h>
-
-  const size_t ctype<char>::table_size;
-
-  ctype<char>::~ctype()
-  { if (_M_del) delete[] this->table(); }
-
-  // These are dummy placeholders as these virtual functions are never called.
-  bool 
-  ctype<char>::do_is(mask, char_type) const 
-  { return false; }
-  
-  const char*
-  ctype<char>::do_is(const char_type* __c, const char_type*, mask*) const 
-  { return __c; }
-  
-  const char*
-  ctype<char>::do_scan_is(mask, const char_type* __c, const char_type*) const 
-  { return __c; }
-
-  const char* 
-  ctype<char>::do_scan_not(mask, const char_type* __c, const char_type*) const
-  { return __c; }
-
-  char
-  ctype<char>::do_widen(char __c) const
-  { return __c; }
-  
-  const char* 
-  ctype<char>::do_widen(const char* __low, const char* __high, 
-			char* __dest) const
-  {
-    memcpy(__dest, __low, __high - __low);
-    return __high;
-  }
-  
-  char
-  ctype<char>::do_narrow(char __c, char /*__dfault*/) const
-  { return __c; }
-  
-  const char* 
-  ctype<char>::do_narrow(const char* __low, const char* __high, 
-			 char /*__dfault*/, char* __dest) const
-  {
-    memcpy(__dest, __low, __high - __low);
-    return __high;
-  }
-
-  ctype_byname<char>::ctype_byname(const char* /*__s*/, size_t __refs)
-  : ctype<char>(new mask[table_size], true, __refs)
-  { }
-
   collate<char>::collate(size_t __refs)
-  : _Collate<char>(__refs) { }
+  : locale::facet(__refs) { }
   
   collate<char>::~collate() { }
   
@@ -895,9 +1051,6 @@ namespace std
   
   collate_byname<char>::collate_byname(const char* /*__s*/, size_t __refs)
   : collate<char>(__refs) { }
-
-  numpunct_byname<char>::numpunct_byname(const char* /*__s*/, size_t __refs)
-  : numpunct<char>(__refs) { }
 
   moneypunct_byname<char, false>::moneypunct_byname(const char* /*__s*/, 
 						    size_t __refs)
@@ -1068,8 +1221,7 @@ namespace std
   : ctype<wchar_t>(__refs) { }
 
   collate<wchar_t>::
-  collate(size_t __refs)
-  : _Collate<wchar_t> (__refs) { }
+  collate(size_t __refs): locale::facet(__refs) { }
   
   collate<wchar_t>::
   ~collate() { }
@@ -1094,27 +1246,14 @@ namespace std
     return 0; // XXX not done
   }
 
-  numpunct_byname<wchar_t>::
-  numpunct_byname(const char* /*__s*/, size_t __refs)
-  : numpunct<wchar_t> (__refs) { }
-
   collate_byname<wchar_t>::
   collate_byname(const char* /*__s*/, size_t __refs)
   : collate<wchar_t> (__refs) { }
   
-  moneypunct_byname<wchar_t, false>::
-  moneypunct_byname(const char* /*__s*/, size_t __refs)
-  : moneypunct<wchar_t, false> (__refs) { }
-  
-  moneypunct_byname<wchar_t, true>::
-  moneypunct_byname(const char* /*__s*/, size_t __refs)
-  : moneypunct<wchar_t, true> (__refs) { }
-    
   messages_byname<wchar_t>::
   messages_byname(const char* /*__s*/, size_t __refs)
   : messages<wchar_t> (__refs) { }
 #endif //  _GLIBCPP_USE_WCHAR_T
-
 } // namespace std
 
 
