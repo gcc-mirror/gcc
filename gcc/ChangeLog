@@ -1,3 +1,8 @@
+2004-08-18  Paolo Bonzini  <bonzini@gnu.org>
+
+	* c4x.c (legitimize_operands): Remove calls to
+	preserve_subexpressions_p.
+
 2004-08-18  David Edelsohn  <edelsohn@gnu.org>
 
 	* varasm.c (MAX_OFILE_ALIGNMENT): Move ...
