@@ -1490,6 +1490,7 @@ extern rtx find_reg_equal_equiv_note	PARAMS ((rtx));
 extern int find_reg_fusage		PARAMS ((rtx, enum rtx_code, rtx));
 extern int find_regno_fusage		PARAMS ((rtx, enum rtx_code,
 						 unsigned int));
+extern int pure_call_p			PARAMS ((rtx));
 extern void remove_note			PARAMS ((rtx, rtx));
 extern int side_effects_p		PARAMS ((rtx));
 extern int volatile_refs_p		PARAMS ((rtx));

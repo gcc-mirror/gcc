@@ -1,3 +1,11 @@
+2002-04-10  Alan Modra  <amodra@bigpond.net.au>
+
+	PR optimization/6233
+	* rtlanal.c (pure_call_p): New function.
+	* rtl.h (pure_call_p): Declare.
+	* loop.c (prescan_loop): Use it to set has_nonconst_call.
+	* gcse.c (store_killed_in_insn): Use pure_call_p here too.
+
 2002-04-09  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (movdi_er_maybe_g): New.

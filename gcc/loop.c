@@ -2493,6 +2493,8 @@ prescan_loop (loop)
 	      loop_info->unknown_address_altered = 1;
 	      loop_info->has_nonconst_call = 1;
 	    }
+	  else if (pure_call_p (insn))
+	    loop_info->has_nonconst_call = 1;
 	  loop_info->has_call = 1;
 	  if (can_throw_internal (insn))
 	    loop_info->has_multiple_exit_targets = 1;
