@@ -4130,12 +4130,24 @@ iterative_hash_expr (tree t, hashval_t val)
       for (; t; t = TREE_CHAIN (t))
 	val = iterative_hash_expr (TREE_VALUE (t), val);
       return val;
+    case FUNCTION_DECL:
+      /* When referring to a built-in FUNCTION_DECL, use the
+	 __builtin__ form.  Otherwise nodes that compare equal
+	 according to operand_equal_p might get different
+	 hash codes.  */
+      if (DECL_BUILT_IN (t))
+	{
+	  val = iterative_hash_pointer (built_in_decls[DECL_FUNCTION_CODE (t)], 
+				      val);
+	  return val;
+	}
+      /* else FALL THROUGH */
     default:
       class = TREE_CODE_CLASS (code);
 
       if (class == tcc_declaration)
 	{
-	  /* Decls we can just compare by pointer.  */
+	  /* Otherwise, we can just compare decls by pointer.  */
 	  val = iterative_hash_pointer (t, val);
 	}
       else

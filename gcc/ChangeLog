@@ -1,3 +1,7 @@
+2004-12-23  Dale Johannesen  <dalej@apple.com>
+
+	* tree.c (iterative_hash_expr):  Canonicalize builtins.
+
 2004-12-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR target/16819
