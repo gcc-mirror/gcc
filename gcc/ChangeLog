@@ -1,3 +1,14 @@
+2005-01-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6k_nonimmediate_operand): Rename
+	to rs6000_nonimmediate_operand.
+	* config/rs6000/rs6000.h (PREDICATE_CODES): Rename
+	rs6k_nonimmediate_operand to rs6000_nonimmediate_operand.
+	* config/rs6000/rs6000.md (movsi_internal1): Rename predicate to
+	rs6000_nonimmediate_operand.
+	* config/rs6000/spe.md (movdf_e500_double): Rename predicate to
+	rs6000_nonimmediate_operand.
+
 2005-01-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* tree-ssa-alias.c (pass_may_alias): Add TODO_verify_stmts.
