@@ -35,16 +35,21 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define MASK_HALF_PIC     	0x40000000	/* Mask for half-pic code */
 #define MASK_HALF_PIC_DEBUG	0x20000000	/* Debug flag */
+#define MASK_ELF		0x10000000	/* ELF not rose */
 
 #define TARGET_HALF_PIC	(target_flags & MASK_HALF_PIC)
 #define TARGET_DEBUG	(target_flags & MASK_HALF_PIC_DEBUG)
 #define HALF_PIC_DEBUG	TARGET_DEBUG
+#define TARGET_ELF	(target_flags & MASK_ELF)
 
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
      { "half-pic",	 MASK_HALF_PIC},				\
      { "no-half-pic",	-MASK_HALF_PIC},				\
-     { "debugb",	 MASK_HALF_PIC_DEBUG},
+     { "debugb",	 MASK_HALF_PIC_DEBUG},				\
+     { "elf",		 MASK_ELF},					\
+     { "no-elf",	-MASK_ELF},					\
+     { "rose",		-MASK_ELF},
 
 /* OSF/rose uses stabs, not dwarf.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
@@ -53,22 +58,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define DWARF_DEBUGGING_INFO	/* enable dwarf debugging for testing */
 #endif
 
-/* Prefix that appears before all global/static identifiers, except for
-   temporary labels.  */
+/* Handle #pragma weak and #pragma pack.  */
 
-#define IDENTIFIER_PREFIX "_"
-
-/* Suffix that appears after all global/static identifiers, except for
-   temporary labels.  */
-
-#define IDENTIFIER_SUFFIX ""
+#define HANDLE_SYSV_PRAGMA
 
 /* Change default predefines.  */
 #undef	CPP_PREDEFINES
-#define CPP_PREDEFINES "-DOSF -DOSF1 -Dunix -Di386"
+#define CPP_PREDEFINES "-DOSF -DOSF1 -Dunix -Di386 -Asystem(unix) -Acpu(i386) -Amachine(i386)"
 
 #undef  CPP_SPEC
 #define CPP_SPEC "\
+%{!melf: -D__ROSE__} %{melf: -D__ELF__} \
 %{.S:	%{!ansi:%{!traditional:%{!traditional-cpp:%{!ftraditional: -traditional}}}}} \
 %{.S:	-D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
 %{.cc:	-D__LANGUAGE_C_PLUS_PLUS} \
@@ -80,6 +80,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Turn on -mpic-extern by default.  */
 #undef  CC1_SPEC
 #define CC1_SPEC "\
+%{!melf: %{!mrose: %{!mno-elf: -mrose }}} \
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
 %{pic-none:   -mno-half-pic} \
 %{fpic:	      -mno-half-pic} \
@@ -431,3 +432,35 @@ while (0)
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
+
+/* Map i386 registers to the numbers dwarf expects.  Of course this is different
+   from what stabs expects.  */
+
+#define DWARF_DBX_REGISTER_NUMBER(n) \
+((n) == 0 ? 0 \
+ : (n) == 1 ? 2 \
+ : (n) == 2 ? 1 \
+ : (n) == 3 ? 3 \
+ : (n) == 4 ? 6 \
+ : (n) == 5 ? 7 \
+ : (n) == 6 ? 5 \
+ : (n) == 7 ? 4 \
+ : ((n) >= FIRST_STACK_REG && (n) <= LAST_STACK_REG) ? (n)+3 \
+ : (-1))
+
+/* Now what stabs expects in the register.  */
+#define STABS_DBX_REGISTER_NUMBER(n) \
+((n) == 0 ? 0 : \
+ (n) == 1 ? 2 : \
+ (n) == 2 ? 1 : \
+ (n) == 3 ? 3 : \
+ (n) == 4 ? 6 : \
+ (n) == 5 ? 7 : \
+ (n) == 6 ? 4 : \
+ (n) == 7 ? 5 : \
+ (n) + 4)
+
+#undef	DBX_REGISTER_NUMBER
+#define DBX_REGISTER_NUMBER(n) ((write_symbols == DWARF_DEBUG)		\
+				? DWARF_DBX_REGISTER_NUMBER(n)		\
+				: STABS_DBX_REGISTER_NUMBER(n))
