@@ -941,8 +941,10 @@ namespace std
 	  switch (__which)
 		{
 		case money_base::symbol:
-		  if (__io.flags() & ios_base::showbase || __i < 2 ||
-		      __i == 2 && static_cast<part>(__p.field[3]) != money_base::none)
+		  if (__io.flags() & ios_base::showbase
+		      || __i < 2
+		      || (__i == 2 && static_cast<part>(__p.field[3]) != money_base::none)
+		      || __sign.size() > 1)
 		    {
 		      // According to 22.2.6.1.2.2, symbol is required if
 		      // (__io.flags() & ios_base::showbase), otherwise is optional
