@@ -1,3 +1,7 @@
+2002-03-11  Richard Henderson  <rth@redhat.com>
+
+	* include/bits/stl_bvector.h (_Bit_type): New.  Use throughout.
+
 2002-03-11  Phil Edwards  <pme@gcc.gnu.org>
 
 	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-list-sourcefiles):
