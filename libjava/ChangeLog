@@ -1,5 +1,10 @@
 2004-01-26  Kim Ho  <kho@redhat.com>
 
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java (setMenuBar):
+	Fix spacing.
+
+2004-01-26  Kim Ho  <kho@redhat.com>
+
 	* gnu/java/awt/peer/gtk/GtkFramePeer.java (moveLayout): New
 	method.
 	(setMenuBar): Shift the Gtk layout up/down by the MenuBar
