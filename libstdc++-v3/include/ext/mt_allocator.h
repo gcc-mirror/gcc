@@ -342,23 +342,32 @@ namespace __gnu_cxx
 		      __block->_M_next = reinterpret_cast<_Block_record*>(__c);
 		      __block = __block->_M_next;
 		    }
+		  __block->_M_next = NULL;
 		}
 	      else
 		{
-		  if (__block_count > __bin._M_free[0])
-		    __block_count = __bin._M_free[0];
-		  const size_t __added = __block_count;
-		  _Block_record* __first = __bin._M_first[0];
-		  __block = __first;
-		  --__block_count;
-		  while (__block_count-- > 0)
-		    __block = __block->_M_next;
-		  __bin._M_first[0] = __block->_M_next;
-		  __bin._M_free[0] -= __added;
+		  // Is the number of required blocks greater than or
+		  // equal to the number that can be provided by the
+		  // global free list?
+		  __bin._M_first[__thread_id] = __bin._M_first[0];
+		  if (__block_count >= __bin._M_free[0])
+		    {
+		      __bin._M_free[__thread_id] = __bin._M_free[0];
+		      __bin._M_free[0] = 0;
+		      __bin._M_first[0] = NULL;
+		    }
+		  else
+		    {
+		      __bin._M_free[__thread_id] = __block_count;
+		      __bin._M_free[0] -= __block_count;
+		      --__block_count;
+		      __block = __bin._M_first[0];
+		      while (__block_count-- > 0)
+			__block = __block->_M_next;
+		      __bin._M_first[0] = __block->_M_next;
+		      __block->_M_next = NULL;
+		    }
 		  __gthread_mutex_unlock(__bin._M_mutex);
-
-		  __bin._M_first[__thread_id] = __first;
-		  __bin._M_free[__thread_id] += __added;
 		}
 	    }
 	  else
@@ -375,9 +384,8 @@ namespace __gnu_cxx
 		  __block->_M_next = reinterpret_cast<_Block_record*>(__c);
 		  __block = __block->_M_next;
 		}
+	      __block->_M_next = NULL;
 	    }
-
-	  __block->_M_next = NULL;
 	}
 
       __block = __bin._M_first[__thread_id];

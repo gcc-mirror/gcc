@@ -1,3 +1,15 @@
+2004-05-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h:(__mt_alloc::allocate): Minor
+	tweaks.
+
+2004-05-18  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* include/ext/mt_allocator.h:(__mt_alloc::allocate): Re-write
+	allocation loop which removes blocks from the global free list
+	from O(N) to O(1) when the required blocks are <= the number
+	available.
+
 2004-05-18  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/ext/enc_filebuf.h: Move concept-check macro to class scope.
