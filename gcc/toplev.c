@@ -1857,39 +1857,21 @@ pipe_closed (signo)
 }
 
 /* Strip off a legitimate source ending from the input string NAME of
-   length LEN. */
+   length LEN.  Rather than having to know the names used by all of
+   our front ends, we strip off an ending of a period followed by one,
+   two, or three characters.  */
 
 void
 strip_off_ending (name, len)
      char *name;
      int len;
 {
-  if (len > 2 && ! strcmp (".c", name + len - 2))
-    name[len - 2] = 0;
-  else if (len > 2 && ! strcmp (".m", name + len - 2))
-    name[len - 2] = 0;
-  else if (len > 2 && ! strcmp (".i", name + len - 2))
-    name[len - 2] = 0;
-  else if (len > 3 && ! strcmp (".ii", name + len - 3))
-    name[len - 3] = 0;
-  else if (len > 3 && ! strcmp (".co", name + len - 3))
-    name[len - 3] = 0;
-  else if (len > 3 && ! strcmp (".cc", name + len - 3))
-    name[len - 3] = 0;
-  else if (len > 2 && ! strcmp (".C", name + len - 2))
-    name[len - 2] = 0;
-  else if (len > 4 && ! strcmp (".cxx", name + len - 4))
-    name[len - 4] = 0;
-  else if (len > 4 && ! strcmp (".cpp", name + len - 4))
-    name[len - 4] = 0;
-  else if (len > 2 && ! strcmp (".f", name + len - 2))
-    name[len - 2] = 0;
-  /* Ada will use extensions like .ada, .adb, and .ads, so just test
-     for "ad".  */
-  else if (len > 4 && ! strncmp (".ad", name + len - 4, 3))
-    name[len - 4] = 0;
-  else if (len > 4 && ! strcmp (".atr", name + len - 4))
-    name[len - 4] = 0;
+  if (len > 2 && name[len - 2] == '.')
+    name[len - 2] = '\0';
+  else if (len > 3 && name[len - 3] == '.')
+    name[len - 3] = '\0';
+  else if (len > 4 && name[len - 4] == '.')
+    name[len - 4] = '\0';
 }
 
 /* Output a quoted string.  */
