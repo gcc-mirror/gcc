@@ -1,3 +1,8 @@
+2004-03-08  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("*extendqidi2_short_displ"): Add CC clobber.
+	("*extendqisi2_short_displ"): Likewise.
+
 2004-03-08  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	* expr.c (highest_pow2_factor_for_type): Rename into
