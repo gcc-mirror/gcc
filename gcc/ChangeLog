@@ -1,3 +1,11 @@
+2001-12-31  Richard Henderson  <rth@redhat.com>
+
+	* regrename.c (build_def_use): Don't rename asm operands that
+	were originally hard registers. 
+	(copyprop_hardreg_forward_1): Likewise.
+	(find_oldest_value_reg): Copy ORIGINAL_REGNO from source.
+	* varasm.c (make_decl_rtl): Use gen_rtx_raw_REG.  Set ORIGINAL_REGNO.
+
 2001-12-31  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/vms.h (HAS_INIT_SECTION, NEED_ATEXIT): Remove.

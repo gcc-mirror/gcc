@@ -898,14 +898,11 @@ make_decl_rtl (decl, asmspec)
 
 	  /* If the user specified one of the eliminables registers here,
 	     e.g., FRAME_POINTER_REGNUM, we don't want to get this variable
-	     confused with that register and be eliminated.  Although this
-	     usage is somewhat suspect, we nevertheless use the following
-	     kludge to avoid setting DECL_RTL to frame_pointer_rtx.  */
+	     confused with that register and be eliminated.  This usage is
+	     somewhat suspect...  */
 
-	  SET_DECL_RTL (decl,
-			gen_rtx_REG (DECL_MODE (decl),
-				     FIRST_PSEUDO_REGISTER));
-	  REGNO (DECL_RTL (decl)) = reg_number;
+	  SET_DECL_RTL (decl, gen_rtx_raw_REG (DECL_MODE (decl), reg_number));
+	  ORIGINAL_REGNO (DECL_RTL (decl)) = reg_number;
 	  REG_USERVAR_P (DECL_RTL (decl)) = 1;
 
 	  if (TREE_STATIC (decl))
