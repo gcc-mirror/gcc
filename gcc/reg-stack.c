@@ -2374,13 +2374,14 @@ change_stack (rtx insn, stack old, stack new, enum emit_where where)
     {
       bool slots[REG_STACK_SIZE];
       int pops[REG_STACK_SIZE];
-      int next, dest;
+      int next, dest, topsrc;
 
       /* First pass to determine the free slots.  */
       for (reg = 0; reg <= new->top; reg++)
 	slots[reg] = TEST_HARD_REG_BIT (new->reg_set, old->reg[reg]);
 
       /* Second pass to allocate preferred slots.  */
+      topsrc = -1;
       for (reg = old->top; reg > new->top; reg--)
 	if (TEST_HARD_REG_BIT (new->reg_set, old->reg[reg]))
 	  {
@@ -2388,6 +2389,10 @@ change_stack (rtx insn, stack old, stack new, enum emit_where where)
 	    for (next = 0; next <= new->top; next++)
 	      if (!slots[next] && new->reg[next] == old->reg[reg])
 		{
+		  /* If this is a preference for the new top of stack, record
+		     the fact by remembering it's old->reg in topsrc.  */
+                  if (next == new->top)
+		    topsrc = reg;
 		  slots[next] = true;
 		  dest = next;
 		  break;
@@ -2397,8 +2402,23 @@ change_stack (rtx insn, stack old, stack new, enum emit_where where)
 	else
 	  pops[reg] = reg;
 
+      /* Intentionally, avoid placing the top of stack in it's correct
+	 location, if we still need to permute the stack below and we
+	 can usefully place it somewhere else.  This is the case if any
+	 slot is still unallocated, in which case we should place the
+	 top of stack there.  */
+      if (topsrc != -1)
+	for (reg = 0; reg < new->top; reg++)
+	  if (!slots[reg])
+	    {
+	      pops[topsrc] = reg;
+	      slots[new->top] = false;
+	      slots[reg] = true;
+	      break;
+	    }
+
       /* Third pass allocates remaining slots and emits pop insns.  */
-      next = 0;
+      next = new->top;
       for (reg = old->top; reg > new->top; reg--)
 	{
 	  dest = pops[reg];
@@ -2406,27 +2426,38 @@ change_stack (rtx insn, stack old, stack new, enum emit_where where)
 	    {
 	      /* Find next free slot.  */
 	      while (slots[next])
-		next++;
-	      dest = next++;
+		next--;
+	      dest = next--;
 	    }
 	  emit_pop_insn (insn, old, FP_MODE_REG (old->reg[dest], DFmode),
 			 EMIT_BEFORE);
 	}
     }
   else
-    /* The following loop attempts to maximize the number of times we
-       pop the top of the stack, as this permits the use of the faster
-       ffreep instruction on platforms that support it.  */
-    for (reg = 0; reg <= old->top; reg++)
-      if (! TEST_HARD_REG_BIT (new->reg_set, old->reg[reg]))
-	{
-	  while (old->top > reg
-		 && ! TEST_HARD_REG_BIT (new->reg_set, old->reg[old->top]))
-	    emit_pop_insn (insn, old, FP_MODE_REG (old->reg[old->top], DFmode),
+    {
+      /* The following loop attempts to maximize the number of times we
+	 pop the top of the stack, as this permits the use of the faster
+	 ffreep instruction on platforms that support it.  */
+      int live, next;
+
+      live = 0;
+      for (reg = 0; reg <= old->top; reg++)
+        if (TEST_HARD_REG_BIT (new->reg_set, old->reg[reg]))
+          live++;
+
+      next = live;
+      while (old->top >= live)
+        if (TEST_HARD_REG_BIT (new->reg_set, old->reg[old->top]))
+	  {
+	    while (TEST_HARD_REG_BIT (new->reg_set, old->reg[next]))
+	      next--;
+	    emit_pop_insn (insn, old, FP_MODE_REG (old->reg[next], DFmode),
 			   EMIT_BEFORE);
-	  emit_pop_insn (insn, old, FP_MODE_REG (old->reg[reg], DFmode),
+	  }
+	else
+	  emit_pop_insn (insn, old, FP_MODE_REG (old->reg[old->top], DFmode),
 			 EMIT_BEFORE);
-	}
+    }
 
   if (new->top == -2)
     {
