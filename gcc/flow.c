@@ -1564,11 +1564,9 @@ delete_unreachable_blocks ()
       if ((s = b->succ) != NULL
 	  && s->succ_next == NULL
 	  && s->dest == c
-	  /* If the last insn is not a normal conditional jump
-	     (or an unconditional jump), then we can not tidy the
-	     fallthru edge because we can not delete the jump.  */
-	  && GET_CODE (b->end) == JUMP_INSN
-	  && condjump_p (b->end))
+	  /* If the jump insn has side effects, we can't tidy the edge.  */
+	  && (GET_CODE (b->end) != JUMP_INSN
+	      || onlyjump_p (b->end)))
 	tidy_fallthru_edge (s, b, c);
     }
 
@@ -1587,11 +1585,9 @@ delete_unreachable_blocks ()
 	     && (s->flags & EDGE_EH) == 0
 	     && (c = s->dest) != EXIT_BLOCK_PTR
 	     && c->pred->pred_next == NULL
-	     /* If the last insn is not a normal conditional jump
-		(or an unconditional jump), then we can not merge
-		the blocks because we can not delete the jump.  */
-	     && GET_CODE (b->end) == JUMP_INSN
-	     && condjump_p (b->end)
+	     /* If the jump insn has side effects, we can't kill the edge.  */
+	     && (GET_CODE (b->end) != JUMP_INSN
+		 || onlyjump_p (b->end))
 	     && merge_blocks (s, b, c))
 	continue;
 

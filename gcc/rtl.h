@@ -1352,6 +1352,7 @@ extern int condjump_p			PROTO ((rtx));
 extern rtx condjump_label		PROTO ((rtx));
 extern int simplejump_p			PROTO ((rtx));
 extern int returnjump_p			PROTO ((rtx));
+extern int onlyjump_p			PROTO ((rtx));
 extern int sets_cc0_p			PROTO ((rtx));
 extern int invert_jump			PROTO ((rtx, rtx));
 extern int rtx_renumbered_equal_p	PROTO ((rtx, rtx));
