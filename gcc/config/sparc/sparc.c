@@ -641,7 +641,8 @@ sparc_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (register_operand (op, mode))
+  if (register_operand (op, mode)
+      || GET_CODE (op) == CONSTANT_P_RTX)
     return 1;
   if (GET_CODE (op) == CONST_INT)
     return SMALL_INT (op);
@@ -666,7 +667,8 @@ move_operand (op, mode)
 {
   if (mode == DImode && arith_double_operand (op, mode))
     return 1;
-  if (register_operand (op, mode))
+  if (register_operand (op, mode)
+      || GET_CODE (op) == CONSTANT_P_RTX)
     return 1;
   if (GET_CODE (op) == CONST_INT)
     return SMALL_INT (op) || SPARC_SETHI_P (INTVAL (op));
@@ -773,6 +775,7 @@ v9_regcmp_op (op, mode)
   return v9_regcmp_p (code);
 }
 
+/* ??? Same as eq_or_neq.  */
 int
 v8plus_regcmp_op (op, mode)
      register rtx op;
@@ -834,7 +837,8 @@ arith_operand (op, mode)
      enum machine_mode mode;
 {
   int val;
-  if (register_operand (op, mode))
+  if (register_operand (op, mode)
+      || GET_CODE (op) == CONSTANT_P_RTX)
     return 1;
   if (GET_CODE (op) != CONST_INT)
     return 0;
@@ -852,6 +856,7 @@ arith11_operand (op, mode)
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
+	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || (GET_CODE (op) == CONST_INT && SPARC_SIMM11_P (INTVAL (op))));
 }
 
@@ -865,6 +870,7 @@ arith10_operand (op, mode)
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
+	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || (GET_CODE (op) == CONST_INT && SPARC_SIMM10_P (INTVAL (op))));
 }
 
@@ -881,6 +887,7 @@ arith_double_operand (op, mode)
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
+	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || (GET_CODE (op) == CONST_INT && SMALL_INT (op))
 	  || (! TARGET_ARCH64
 	      && GET_CODE (op) == CONST_DOUBLE
@@ -906,6 +913,7 @@ arith11_double_operand (op, mode)
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
+	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || (GET_CODE (op) == CONST_DOUBLE
 	      && (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
 	      && (unsigned HOST_WIDE_INT) (CONST_DOUBLE_LOW (op) + 0x400) < 0x800
@@ -929,6 +937,7 @@ arith10_double_operand (op, mode)
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
+	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || (GET_CODE (op) == CONST_DOUBLE
 	      && (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
 	      && (unsigned) (CONST_DOUBLE_LOW (op) + 0x200) < 0x400
@@ -950,7 +959,8 @@ small_int (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return (GET_CODE (op) == CONST_INT && SMALL_INT (op));
+  return ((GET_CODE (op) == CONST_INT && SMALL_INT (op))
+	  || GET_CODE (op) == CONSTANT_P_RTX);
 }
 
 /* Recognize operand values for the umul instruction.  That instruction sign
@@ -964,14 +974,16 @@ uns_small_int (op, mode)
 {
 #if HOST_BITS_PER_WIDE_INT > 32
   /* All allowed constants will fit a CONST_INT.  */
-  return (GET_CODE (op) == CONST_INT
-	  && ((INTVAL (op) >= 0 && INTVAL (op) < 0x1000)
-	      || (INTVAL (op) >= 0xFFFFF000 && INTVAL (op) < 0x100000000L)));
+  return ((GET_CODE (op) == CONST_INT
+	   && ((INTVAL (op) >= 0 && INTVAL (op) < 0x1000)
+	       || (INTVAL (op) >= 0xFFFFF000 && INTVAL (op) < 0x100000000L)))
+	  || GET_CODE (op) == CONSTANT_P_RTX);
 #else
-  return ((GET_CODE (op) == CONST_INT && (unsigned) INTVAL (op) < 0x1000)
-	  || (GET_CODE (op) == CONST_DOUBLE
-	      && CONST_DOUBLE_HIGH (op) == 0
-	      && (unsigned) CONST_DOUBLE_LOW (op) - 0xFFFFF000 < 0x1000));
+  return (((GET_CODE (op) == CONST_INT && (unsigned) INTVAL (op) < 0x1000)
+	   || (GET_CODE (op) == CONST_DOUBLE
+	       && CONST_DOUBLE_HIGH (op) == 0
+	       && (unsigned) CONST_DOUBLE_LOW (op) - 0xFFFFF000 < 0x1000))
+	  || GET_CODE (op) == CONSTANT_P_RTX);
 #endif
 }
 
@@ -2685,350 +2697,6 @@ find_addr_reg (addr)
     return addr;
   abort ();
 }
-
-#if 0 /* not currently used */
-
-void
-output_sized_memop (opname, mode, signedp)
-     char *opname;
-     enum machine_mode mode;
-     int signedp;
-{
-  static char *ld_size_suffix_u[] = { "ub", "uh", "", "?", "d" };
-  static char *ld_size_suffix_s[] = { "sb", "sh", "", "?", "d" };
-  static char *st_size_suffix[] = { "b", "h", "", "?", "d" };
-  char **opnametab, *modename;
-
-  if (opname[0] == 'l')
-    if (signedp)
-      opnametab = ld_size_suffix_s;
-    else
-      opnametab = ld_size_suffix_u;
-  else
-    opnametab = st_size_suffix;
-  modename = opnametab[GET_MODE_SIZE (mode) >> 1];
-
-  fprintf (asm_out_file, "\t%s%s", opname, modename);
-}
-
-void
-output_move_with_extension (operands)
-     rtx *operands;
-{
-  if (GET_MODE (operands[2]) == HImode)
-    output_asm_insn ("sll %2,0x10,%0", operands);
-  else if (GET_MODE (operands[2]) == QImode)
-    output_asm_insn ("sll %2,0x18,%0", operands);
-  else
-    abort ();
-}
-#endif /* not currently used */
-
-#if 0
-/* ??? These are only used by the movstrsi pattern, but we get better code
-   in general without that, because emit_block_move can do just as good a
-   job as this function does when alignment and size are known.  When they
-   aren't known, a call to strcpy may be faster anyways, because it is
-   likely to be carefully crafted assembly language code, and below we just
-   do a byte-wise copy.
-
-   Also, emit_block_move expands into multiple read/write RTL insns, which
-   can then be optimized, whereas our movstrsi pattern can not be optimized
-   at all.  */
-
-/* Load the address specified by OPERANDS[3] into the register
-   specified by OPERANDS[0].
-
-   OPERANDS[3] may be the result of a sum, hence it could either be:
-
-   (1) CONST
-   (2) REG
-   (2) REG + CONST_INT
-   (3) REG + REG + CONST_INT
-   (4) REG + REG  (special case of 3).
-
-   Note that (3) is not a legitimate address.
-   All cases are handled here.  */
-
-void
-output_load_address (operands)
-     rtx *operands;
-{
-  rtx base, offset;
-
-  if (CONSTANT_P (operands[3]))
-    {
-      output_asm_insn ("set %3,%0", operands);
-      return;
-    }
-
-  if (REG_P (operands[3]))
-    {
-      if (REGNO (operands[0]) != REGNO (operands[3]))
-	output_asm_insn ("mov %3,%0", operands);
-      return;
-    }
-
-  if (GET_CODE (operands[3]) != PLUS)
-    abort ();
-
-  base = XEXP (operands[3], 0);
-  offset = XEXP (operands[3], 1);
-
-  if (GET_CODE (base) == CONST_INT)
-    {
-      rtx tmp = base;
-      base = offset;
-      offset = tmp;
-    }
-
-  if (GET_CODE (offset) != CONST_INT)
-    {
-      /* Operand is (PLUS (REG) (REG)).  */
-      base = operands[3];
-      offset = const0_rtx;
-    }
-
-  if (REG_P (base))
-    {
-      operands[6] = base;
-      operands[7] = offset;
-      if (SMALL_INT (offset))
-	output_asm_insn ("add %6,%7,%0", operands);
-      else
-	output_asm_insn ("set %7,%0\n\tadd %0,%6,%0", operands);
-    }
-  else if (GET_CODE (base) == PLUS)
-    {
-      operands[6] = XEXP (base, 0);
-      operands[7] = XEXP (base, 1);
-      operands[8] = offset;
-
-      if (SMALL_INT (offset))
-	output_asm_insn ("add %6,%7,%0\n\tadd %0,%8,%0", operands);
-      else
-	output_asm_insn ("set %8,%0\n\tadd %0,%6,%0\n\tadd %0,%7,%0", operands);
-    }
-  else
-    abort ();
-}
-
-/* Output code to place a size count SIZE in register REG.
-   ALIGN is the size of the unit of transfer.
-
-   Because block moves are pipelined, we don't include the
-   first element in the transfer of SIZE to REG.  */
-
-static void
-output_size_for_block_move (size, reg, align)
-     rtx size, reg;
-     rtx align;
-{
-  rtx xoperands[3];
-
-  xoperands[0] = reg;
-  xoperands[1] = size;
-  xoperands[2] = align;
-  if (GET_CODE (size) == REG)
-    output_asm_insn ("sub %1,%2,%0", xoperands);
-  else
-    {
-      xoperands[1]
-	= GEN_INT (INTVAL (size) - INTVAL (align));
-      output_asm_insn ("set %1,%0", xoperands);
-    }
-}
-
-/* Emit code to perform a block move.
-
-   OPERANDS[0] is the destination.
-   OPERANDS[1] is the source.
-   OPERANDS[2] is the size.
-   OPERANDS[3] is the alignment safe to use.
-   OPERANDS[4] is a register we can safely clobber as a temp.  */
-
-char *
-output_block_move (operands)
-     rtx *operands;
-{
-  /* A vector for our computed operands.  Note that load_output_address
-     makes use of (and can clobber) up to the 8th element of this vector.  */
-  rtx xoperands[10];
-  rtx zoperands[10];
-  static int movstrsi_label = 0;
-  int i;
-  rtx temp1 = operands[4];
-  rtx sizertx = operands[2];
-  rtx alignrtx = operands[3];
-  int align = INTVAL (alignrtx);
-  char label3[30], label5[30];
-
-  xoperands[0] = operands[0];
-  xoperands[1] = operands[1];
-  xoperands[2] = temp1;
-
-  /* We can't move more than this many bytes at a time because we have only
-     one register, %g1, to move them through.  */
-  if (align > UNITS_PER_WORD)
-    {
-      align = UNITS_PER_WORD;
-      alignrtx = GEN_INT (UNITS_PER_WORD);
-    }
-
-  /* We consider 8 ld/st pairs, for a total of 16 inline insns to be
-     reasonable here.  (Actually will emit a maximum of 18 inline insns for
-     the case of size == 31 and align == 4).  */
-
-  if (GET_CODE (sizertx) == CONST_INT && (INTVAL (sizertx) / align) <= 8
-      && memory_address_p (QImode, plus_constant_for_output (xoperands[0],
-							     INTVAL (sizertx)))
-      && memory_address_p (QImode, plus_constant_for_output (xoperands[1],
-							     INTVAL (sizertx))))
-    {
-      int size = INTVAL (sizertx);
-      int offset = 0;
-
-      /* We will store different integers into this particular RTX.  */
-      xoperands[2] = rtx_alloc (CONST_INT);
-      PUT_MODE (xoperands[2], VOIDmode);
-
-      /* This case is currently not handled.  Abort instead of generating
-	 bad code.  */
-      if (align > UNITS_PER_WORD)
-	abort ();
-
-      if (TARGET_ARCH64 && align >= 8)
-	{
-	  for (i = (size >> 3) - 1; i >= 0; i--)
-	    {
-	      INTVAL (xoperands[2]) = (i << 3) + offset;
-	      output_asm_insn ("ldx [%a1+%2],%%g1\n\tstx %%g1,[%a0+%2]",
-			       xoperands);
-	    }
-	  offset += (size & ~0x7);
-	  size = size & 0x7;
-	  if (size == 0)
-	    return "";
-	}
-
-      if (align >= 4)
-	{
-	  for (i = (size >> 2) - 1; i >= 0; i--)
-	    {
-	      INTVAL (xoperands[2]) = (i << 2) + offset;
-	      output_asm_insn ("ld [%a1+%2],%%g1\n\tst %%g1,[%a0+%2]",
-			       xoperands);
-	    }
-	  offset += (size & ~0x3);
-	  size = size & 0x3;
-	  if (size == 0)
-	    return "";
-	}
-
-      if (align >= 2)
-	{
-	  for (i = (size >> 1) - 1; i >= 0; i--)
-	    {
-	      INTVAL (xoperands[2]) = (i << 1) + offset;
-	      output_asm_insn ("lduh [%a1+%2],%%g1\n\tsth %%g1,[%a0+%2]",
-			       xoperands);
-	    }
-	  offset += (size & ~0x1);
-	  size = size & 0x1;
-	  if (size == 0)
-	    return "";
-	}
-
-      if (align >= 1)
-	{
-	  for (i = size - 1; i >= 0; i--)
-	    {
-	      INTVAL (xoperands[2]) = i + offset;
-	      output_asm_insn ("ldub [%a1+%2],%%g1\n\tstb %%g1,[%a0+%2]",
-			       xoperands);
-	    }
-	  return "";
-	}
-
-      /* We should never reach here.  */
-      abort ();
-    }
-
-  /* If the size isn't known to be a multiple of the alignment,
-     we have to do it in smaller pieces.  If we could determine that
-     the size was a multiple of 2 (or whatever), we could be smarter
-     about this.  */
-  if (GET_CODE (sizertx) != CONST_INT)
-    align = 1;
-  else
-    {
-      int size = INTVAL (sizertx);
-      while (size % align)
-	align >>= 1;
-    }
-
-  if (align != INTVAL (alignrtx))
-    alignrtx = GEN_INT (align);
-
-  xoperands[3] = GEN_INT (movstrsi_label++);
-  xoperands[4] = GEN_INT (align);
-  xoperands[5] = GEN_INT (movstrsi_label++);
-
-  ASM_GENERATE_INTERNAL_LABEL (label3, "Lm", INTVAL (xoperands[3]));
-  ASM_GENERATE_INTERNAL_LABEL (label5, "Lm", INTVAL (xoperands[5]));
-
-  /* This is the size of the transfer.  Emit code to decrement the size
-     value by ALIGN, and store the result in the temp1 register.  */
-  output_size_for_block_move (sizertx, temp1, alignrtx);
-
-  /* Must handle the case when the size is zero or negative, so the first thing
-     we do is compare the size against zero, and only copy bytes if it is
-     zero or greater.  Note that we have already subtracted off the alignment
-     once, so we must copy 1 alignment worth of bytes if the size is zero
-     here.
-
-     The SUN assembler complains about labels in branch delay slots, so we
-     do this before outputting the load address, so that there will always
-     be a harmless insn between the branch here and the next label emitted
-     below.  */
-
-  {
-    char pattern[100];
-
-    sprintf (pattern, "cmp %%2,0\n\tbl %s", &label5[1]);
-    output_asm_insn (pattern, xoperands);
-  }
-
-  zoperands[0] = operands[0];
-  zoperands[3] = plus_constant_for_output (operands[0], align);
-  output_load_address (zoperands);
-
-  /* ??? This might be much faster if the loops below were preconditioned
-     and unrolled.
-
-     That is, at run time, copy enough bytes one at a time to ensure that the
-     target and source addresses are aligned to the largest possible
-     alignment.  Then use a preconditioned unrolled loop to copy say 16
-     bytes at a time.  Then copy bytes one at a time until finish the rest.  */
-
-  /* Output the first label separately, so that it is spaced properly.  */
-
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "Lm", INTVAL (xoperands[3]));
-
-  {
-    char pattern[200];
-    register char *ld_suffix = ((align == 1) ? "ub" : (align == 2) ? "uh"
-				: (align == 8 && TARGET_ARCH64) ? "x" : "");
-    register char *st_suffix = ((align == 1) ? "b" : (align == 2) ? "h"
-				: (align == 8 && TARGET_ARCH64) ? "x" : "");
-
-    sprintf (pattern, "ld%s [%%1+%%2],%%%%g1\n\tsubcc %%2,%%4,%%2\n\tbge %s\n\tst%s %%%%g1,[%%0+%%2]\n%s:", ld_suffix, &label3[1], st_suffix, &label5[1]);
-    output_asm_insn (pattern, xoperands);
-  }
-
-  return "";
-}
-#endif
 
 /* Output reasonable peephole for set-on-condition-code insns.
    Note that these insns assume a particular way of defining
@@ -6797,31 +6465,4 @@ sparc_return_peephole_ok (dest, src)
       && (GET_CODE (src) != REG || ! IN_OR_GLOBAL_P (src)))
     return 0;
   return IN_OR_GLOBAL_P (dest);
-}
-
-int
-delay_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-{
-  switch (GET_CODE (op))
-    {
-    case CONST:
-    case CONST_INT:
-    case SYMBOL_REF:
-    case LABEL_REF:
-      return 1;
-
-    case MEM:
-      return delay_operand (XEXP (op, 0), Pmode);
-
-    case REG:
-      return IN_OR_GLOBAL_P (op);
-
-    case PLUS:
-      return delay_operand (XEXP (op, 0), Pmode) && delay_operand (XEXP (op, 1), Pmode);
-
-    default:
-      return 0;
-    }
 }
