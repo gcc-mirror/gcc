@@ -1,3 +1,8 @@
+Mon Jul  2 06:29:36 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stor-layout.c (layout_decl): Revert change to handling of alignment
+	in packed types.
+
 Sun Jul  1 11:53:52 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-common.c (decl_attributes, case A_MODE): Don't call layout_decl
