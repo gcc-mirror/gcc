@@ -11,6 +11,13 @@ LIB2FUNCS_EXTRA = $(MOVE_ASM)
 LIBGCC1 = libgcc1.null
 CROSS_LIBGCC1 = libgcc1.null
 
-# In a coff environment, a link script is required.
+# In a coff environment, a link script is required for ctors and dtors.
 m88kdgux.ld: $(srcdir)/config/m88k/dgux.ld
 	rm -f m88kdgux.ld; cp $(srcdir)/config/m88k/dgux.ld ./m88kdgux.ld
+
+# A bcs crtbegin.o is needed since bcs does not  
+# increment the stack pointer in the init section as elf does 
+bcscrtbegin.o:     crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) -DCRT_BEGIN -DBCS \
+	-finhibit-size-directive -fno-inline-functions \
+	-g0 -c $(srcdir)/crtstuff.c -o bcscrtbegin.o 
