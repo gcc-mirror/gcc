@@ -173,7 +173,7 @@ Notable areas of divergence from what may be previous local practice
      int foo;
 
 13. Spacing WRT return statements.
-   no extra spacing before returns
+   no extra spacing before returns, no parenthesis
    ie
 
    }
@@ -183,6 +183,12 @@ Notable areas of divergence from what may be previous local practice
    }
 
    return __ret;
+
+   -NOT-
+
+   }
+   return (__ret);
+
 
 14. Location of global variables.
    All global variables of class type, whether in the "user visable"
@@ -264,7 +270,7 @@ namespace std
 
     int 
     two_lines(const char* arg) 
-      { return strchr(arg, 'a'); }
+    { return strchr(arg, 'a'); }
 
     inline int 
     three_lines();  // inline, but defined below.
@@ -359,8 +365,4 @@ namespace std
     // doesn't fit in one line.
   }
 } // namespace std
-
-
-
-
 

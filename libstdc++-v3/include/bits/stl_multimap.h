@@ -123,7 +123,7 @@ namespace std
         value_compare(_Compare __c) : comp(__c) {}
       public:
         bool operator()(const value_type& __x, const value_type& __y) const
-          { return comp(__x.first, __y.first); }
+        { return comp(__x.first, __y.first); }
     };
   
   private:
@@ -347,7 +347,7 @@ namespace std
     */
     iterator
     insert(iterator __position, const value_type& __x)
-      { return _M_t.insert_equal(__position, __x); }
+    { return _M_t.insert_equal(__position, __x); }
   
     /**
      *  @brief A template function that attemps to insert a range of elements.
@@ -360,7 +360,7 @@ namespace std
     template <typename _InputIterator>
       void
       insert(_InputIterator __first, _InputIterator __last)
-        { _M_t.insert_equal(__first, __last); }
+      { _M_t.insert_equal(__first, __last); }
   
     /**
      *  @brief Erases an element from a %multimap.

@@ -113,20 +113,20 @@ namespace std
     /// Walk the %list forward.
     void
     _M_incr()
-      { _M_node = _M_node->_M_next; }
+    { _M_node = _M_node->_M_next; }
   
     /// Walk the %list backward.
     void
     _M_decr()
-      { _M_node = _M_node->_M_prev; }
+    { _M_node = _M_node->_M_prev; }
   
     bool
     operator==(const _List_iterator_base& __x) const
-      { return _M_node == __x._M_node; }
+    { return _M_node == __x._M_node; }
   
     bool
     operator!=(const _List_iterator_base& __x) const
-      { return _M_node != __x._M_node; }
+    { return _M_node != __x._M_node; }
   };
   
   /**
@@ -164,12 +164,12 @@ namespace std
   
     reference
     operator*() const
-      { return static_cast<_Node*>(_M_node)->_M_data; }
-      // Must downcast from List_node_base to _List_node to get to _M_data.
+    { return static_cast<_Node*>(_M_node)->_M_data; }
+    // Must downcast from List_node_base to _List_node to get to _M_data.
   
     pointer
     operator->() const
-      { return &(operator*()); }
+    { return &(operator*()); }
   
     _Self&
     operator++()
@@ -226,11 +226,11 @@ namespace std
   protected:
     _List_node<_Tp>*
     _M_get_node()
-      { return _M_node_allocator.allocate(1); }
+    { return _M_node_allocator.allocate(1); }
   
     void
     _M_put_node(_List_node<_Tp>* __p)
-      { _M_node_allocator.deallocate(__p, 1); }
+    { _M_node_allocator.deallocate(__p, 1); }
   
     // NOTA BENE
     // The stored instance is not actually of "allocator_type"'s type.  Instead
@@ -272,11 +272,11 @@ namespace std
   
     _List_node<_Tp>*
     _M_get_node()
-      { return _Alloc_type::allocate(1); }
+    { return _Alloc_type::allocate(1); }
   
     void
     _M_put_node(_List_node<_Tp>* __p)
-      { _Alloc_type::deallocate(__p, 1); }
+    { _Alloc_type::deallocate(__p, 1); }
   
     _List_node<_Tp>* _M_node;
   };
@@ -828,7 +828,7 @@ namespace std
     */
     void
     insert(iterator __pos, size_type __n, const value_type& __x)
-      { _M_fill_insert(__pos, __n, __x); }
+    { _M_fill_insert(__pos, __n, __x); }
   
     /**
      *  @brief  Inserts a range into the %list.
