@@ -32,6 +32,7 @@ GLIBCPP_ENABLE_THREADS
 #GLIBCPP_ENABLE_NAMESPACES(yes)
 #GLIBCPP_ENABLE_RELIBGCC([../..])
 
+
 if test -n "$with_cross_host"; then
 
   # We are being configured with a cross compiler.  AC_REPLACE_FUNCS
