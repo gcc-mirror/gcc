@@ -666,7 +666,17 @@ void
 genrtl_compound_stmt (t)
     tree t;
 {
+#ifdef ENABLE_CHECKING
+  struct nesting *n = current_nesting_level ();
+#endif
+
   expand_stmt (COMPOUND_BODY (t));
+
+#ifdef ENABLE_CHECKING
+  /* Make sure that we've pushed and popped the same number of levels.  */
+  if (n != current_nesting_level ())
+    abort ();
+#endif
 }
 
 /* Generate the RTL for an ASM_STMT. */

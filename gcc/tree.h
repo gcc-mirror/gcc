@@ -2567,6 +2567,7 @@ extern void end_cleanup_deferral		PARAMS ((void));
 extern int is_body_block			PARAMS ((tree));
 
 extern int conditional_context			PARAMS ((void));
+extern struct nesting * current_nesting_level	PARAMS ((void));
 extern tree last_cleanup_this_contour		PARAMS ((void));
 extern void expand_start_case			PARAMS ((int, tree, tree,
 						       const char *));
