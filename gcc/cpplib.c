@@ -1366,7 +1366,7 @@ do_if (pfile)
   int skip = 1;
 
   if (! pfile->state.skipping)
-    skip = _cpp_parse_expr (pfile) == 0;
+    skip = _cpp_parse_expr (pfile) == false;
 
   push_conditional (pfile, skip, T_IF, pfile->mi_ind_cmacro);
 }

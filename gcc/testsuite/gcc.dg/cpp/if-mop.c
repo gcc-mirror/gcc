@@ -12,7 +12,7 @@
 #if ~		/* { dg-error "no right op" "no unary operand" } */
 #endif
 
-#if 3 + * 6 + 4  /* { dg-error "no left op" "no left operand" } */
+#if 3 + * 6 + 4  /* { dg-error "no right op" "no right operand" } */
 #endif
 
 #if 2 ~2	/* { dg-error "missing bin" "no binary operator" } */

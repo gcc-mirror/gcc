@@ -535,6 +535,9 @@ cpp_create_reader (lang)
   pfile->a_buff = _cpp_get_buff (pfile, 0);
   pfile->u_buff = _cpp_get_buff (pfile, 0);
 
+  /* The expression parser stack.  */
+  _cpp_expand_op_stack (pfile);
+
   /* Initialise the buffer obstack.  */
   gcc_obstack_init (&pfile->buffer_ob);
 
@@ -556,6 +559,7 @@ cpp_destroy (pfile)
 
   free_chain (CPP_OPTION (pfile, pending)->include_head);
   free (CPP_OPTION (pfile, pending));
+  free (pfile->op_stack);
 
   while (CPP_BUFFER (pfile) != NULL)
     _cpp_pop_buffer (pfile);

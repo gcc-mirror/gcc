@@ -1,3 +1,27 @@
+2002-04-28  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppexp.c (lex): Update to use state.skip_eval.
+	(struct op): Remove prio and flags members.
+	(FLAG_BITS, FLAG_MASK, PRIO_SHIFT, EXTRACT_PRIO, EXTRACT_FLAGS,
+	SHORT_CIRCUIT, RIGHT_ASSOC, ..._PRIO, op_to_prio): Remove.
+	(LEFT_ASSOC): New macro.
+	(optab): New table of operator priorities and flags.
+	(SHIFT): Update.
+	(_cpp_parse_expr): Clean up logic.  Return bool.  Use a
+	malloc-ed parser stack.
+	(reduce): New; reduce the operator stack.
+	(_cpp_expand_op_stack): Expand the operator stack as necessary.
+	* cpphash.h (struct op): Predeclare.
+	(struct cpp_reader): New members op_stack, op_limit.
+	(struct lexer_state): New member skip_eval.
+	(_cpp_parse_expr): Update.
+	(_cpp_expand_op_stack): New.
+	* cpplib.c (do_if): Update.
+	* cppinit.c (cpp_create_reader): Create op stack.
+	(cpp_destroy): And destroy it.
+	* cpplib.h (CPP_LAST_CPP_OP): Correct.
+	(TTYPE_TABLE): Correct.
+
 2002-04-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR c/6343

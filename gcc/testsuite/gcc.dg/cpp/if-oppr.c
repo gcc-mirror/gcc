@@ -20,7 +20,7 @@
 #endif
 
 /* , not higher than ?.  This is not a syntax error if it is.  */
-#if 1 ? 0, 1: 1	/* { dg-error "syntax" "? higher precedence than ," } */
+#if 1 ? 0, 1: 1	/* { dg-error "without" "? higher precedence than ," } */
 #error
 #endif
 

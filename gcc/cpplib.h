@@ -58,7 +58,7 @@ struct file_name_map_list;
 #define CPP_LAST_EQ CPP_MAX
 #define CPP_FIRST_DIGRAPH CPP_HASH
 #define CPP_LAST_PUNCTUATOR CPP_DOT_STAR
-#define CPP_LAST_CPP_OP CPP_EOF
+#define CPP_LAST_CPP_OP CPP_LESS_EQ
 
 #define TTYPE_TABLE				\
   OP(CPP_EQ = 0,	"=")			\
@@ -86,13 +86,13 @@ struct file_name_map_list;
   OP(CPP_COMMA,		",")	/* grouping */	\
   OP(CPP_OPEN_PAREN,	"(")			\
   OP(CPP_CLOSE_PAREN,	")")			\
+  TK(CPP_EOF,		SPELL_NONE)		\
   OP(CPP_EQ_EQ,		"==")	/* compare */	\
   OP(CPP_NOT_EQ,	"!=")			\
   OP(CPP_GREATER_EQ,	">=")			\
   OP(CPP_LESS_EQ,	"<=")			\
 \
-  /* These 3 are special in preprocessor expressions.  */ \
-  TK(CPP_EOF,		SPELL_NONE)		\
+  /* These two are unary + / - in preprocessor expressions.  */ \
   OP(CPP_PLUS_EQ,	"+=")	/* math */	\
   OP(CPP_MINUS_EQ,	"-=")			\
 \
