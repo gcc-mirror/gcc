@@ -1,3 +1,11 @@
+2004-03-05  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (function_arg): Handle 16-byte aligned args.
+	(xtensa_va_start): Initialize __va_stk to ($arg_ptr - 32).  Adjust
+	__va_ndx by 2 words when referencing an argument on the stack.
+	(xtensa_va_arg): Handle 16-byte aligned args.  Adjust __va_ndx by 2
+	words when an arg on the stack is first seen.
+
 2004-03-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR driver/13577
