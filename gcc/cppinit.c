@@ -463,7 +463,7 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
       deps_add_default_target (pfile->deps, fname);
     }
 
-  if (! _cpp_stack_file (pfile, fname))
+  if (!_cpp_stack_file (pfile, fname))
     return NULL;
 
   /* Set this here so the client can change the option if it wishes,
