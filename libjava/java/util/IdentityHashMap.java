@@ -83,11 +83,22 @@ public class IdentityHashMap extends AbstractMap
     size = 0;
   }
 
+  /**
+   * Creates a shallow copy where keys and values are not cloned.
+   */
   public Object clone ()
   {
-    IdentityHashMap copy = (IdentityHashMap) super.clone ();
-    copy.table = (Object[]) table.clone ();
-    return copy;
+    try 
+      {
+        IdentityHashMap copy = (IdentityHashMap) super.clone ();
+	copy.table = (Object[]) table.clone ();
+	return copy;
+      }
+    catch (CloneNotSupportedException e) 
+      {
+	// Can't happen.
+	return null;
+      }
   }
 
   public boolean containsKey (Object key)
