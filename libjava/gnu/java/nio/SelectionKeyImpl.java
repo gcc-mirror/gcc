@@ -44,7 +44,9 @@ import java.nio.channels.spi.AbstractSelectionKey;
 
 public class SelectionKeyImpl extends AbstractSelectionKey
 {
-  int fd, ops;
+  int fd;
+  int readyOps;
+  int interestOps;
   SelectorImpl impl;
   SelectableChannel ch;
 
@@ -62,17 +64,23 @@ public class SelectionKeyImpl extends AbstractSelectionKey
 
   public int readyOps ()
   {
-    return 0;
+    return readyOps;
+  }
+
+  public SelectionKey readyOps (int ops)
+  {
+    readyOps = ops;
+    return this;
   }
 
   public int interestOps ()
   {
-    return ops;    
+    return interestOps;    
   }
 
   public SelectionKey interestOps (int ops)
   {
-    this.ops = ops;
+    interestOps = ops;
     return this;
   }
     
