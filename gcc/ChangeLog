@@ -1,3 +1,9 @@
+2004-09-14  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/17397
+	* gimplify.c (gimplify_addr_expr): Don't inadvertently change types
+	while folding <ADDR_EXPR <INDIRECT_REF X>>.
+
 2004-09-14  Andrew Pinski  <apinski@apple.com>
 
 	* tree-ssa-copy.c (may_propagate_copy): Don't check the aliasing

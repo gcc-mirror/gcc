@@ -74,6 +74,9 @@ typedef struct gimple_temp_hash_elt
 
 /* Forward declarations.  */
 static enum gimplify_status gimplify_compound_expr (tree *, tree *, bool);
+#ifdef ENABLE_CHECKING
+static bool cpt_same_type (tree a, tree b);
+#endif
 
 
 /* Return a hash value for a formal temporary table entry.  */
@@ -3051,12 +3054,34 @@ gimplify_addr_expr (tree *expr_p, tree *pre_p, tree *post_p)
   switch (TREE_CODE (op0))
     {
     case INDIRECT_REF:
+    do_indirect_ref:
       /* Check if we are dealing with an expression of the form '&*ptr'.
 	 While the front end folds away '&*ptr' into 'ptr', these
 	 expressions may be generated internally by the compiler (e.g.,
 	 builtins like __builtin_va_end).  */
-      *expr_p = TREE_OPERAND (op0, 0);
-      ret = GS_OK;
+      /* Caution: the silent array decomposition semantics we allow for
+	 ADDR_EXPR means we can't always discard the pair.  */
+      {
+	tree op00 = TREE_OPERAND (op0, 0);
+	tree t_expr = TREE_TYPE (expr);
+	tree t_op00 = TREE_TYPE (op00);
+
+        if (!lang_hooks.types_compatible_p (t_expr, t_op00))
+	  {
+#ifdef ENABLE_CHECKING
+	    tree t_op0 = TREE_TYPE (op0);
+	    gcc_assert (TREE_CODE (t_op0) == ARRAY_TYPE
+			&& POINTER_TYPE_P (t_expr)
+			&& cpt_same_type (TREE_TYPE (t_op0),
+					  TREE_TYPE (t_expr))
+			&& POINTER_TYPE_P (t_op00)
+			&& cpt_same_type (t_op0, TREE_TYPE (t_op00)));
+#endif
+	    op00 = fold_convert (TREE_TYPE (expr), op00);
+	  }
+        *expr_p = op00;
+        ret = GS_OK;
+      }
       break;
 
     case VIEW_CONVERT_EXPR:
@@ -3079,14 +3104,12 @@ gimplify_addr_expr (tree *expr_p, tree *pre_p, tree *post_p)
 			   is_gimple_addressable, fb_either);
       if (ret != GS_ERROR)
 	{
-	  /* The above may have made an INDIRECT_REF (e.g, Ada's NULL_EXPR),
-	     so check for it here.  It's not worth checking for the other
-	     cases above.  */
-	  if (TREE_CODE (TREE_OPERAND (expr, 0)) == INDIRECT_REF)
-	    {
-	      *expr_p = TREE_OPERAND (TREE_OPERAND (expr, 0), 0);
-	      break;
-	    }
+	  op0 = TREE_OPERAND (expr, 0);
+
+	  /* For various reasons, the gimplification of the expression
+	     may have made a new INDIRECT_REF.  */
+	  if (TREE_CODE (op0) == INDIRECT_REF)
+	    goto do_indirect_ref;
 
 	  /* Make sure TREE_INVARIANT, TREE_CONSTANT, and TREE_SIDE_EFFECTS
 	     is set properly.  */
