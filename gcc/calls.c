@@ -119,7 +119,6 @@ int stack_arg_under_construction;
 #endif
 
 static int calls_function	PROTO((tree, int));
-static rtx prepare_call_address	PROTO((rtx, tree, rtx *));
 static void emit_call_1		PROTO((rtx, tree, int, int, rtx, rtx, int,
 				       rtx, int));
 static void store_one_arg	PROTO ((struct arg_data *, rtx, int, int,
@@ -218,7 +217,7 @@ calls_function (exp, which)
    to which a USE of the static chain
    register should be added, if required.  */
 
-static rtx
+rtx
 prepare_call_address (funexp, fndecl, use_insns)
      rtx funexp;
      tree fndecl;
