@@ -95,10 +95,6 @@ static rtx *jump_chain;
 
 static int max_jump_chain;
 
-/* Set nonzero by jump_optimize if control can fall through
-   to the end of the function.  */
-int can_reach_end;
-
 /* Indicates whether death notes are significant in cross jump analysis.
    Normally they are not significant, because of A and B jump to C,
    and R dies in A, it must die in B.  But this might not be true after
@@ -112,7 +108,6 @@ static void delete_barrier_successors	PARAMS ((rtx));
 static void mark_all_labels		PARAMS ((rtx, int));
 static rtx delete_unreferenced_labels	PARAMS ((rtx));
 static void delete_noop_moves		PARAMS ((rtx));
-static int calculate_can_reach_end	PARAMS ((rtx, int));
 static int duplicate_loop_exit_test	PARAMS ((rtx));
 static void find_cross_jump		PARAMS ((rtx, rtx, int, rtx *, rtx *));
 static void do_cross_jump		PARAMS ((rtx, rtx, rtx));
@@ -743,13 +738,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 	}
   }
 
-  /* CAN_REACH_END is persistent for each function.  Once set it should
-     not be cleared.  This is especially true for the case where we
-     delete the NOTE_FUNCTION_END note.  CAN_REACH_END is cleared by
-     the front-end before compiling each function.  */
-  if (! minimal && calculate_can_reach_end (last_insn, optimize != 0))
-    can_reach_end = 1;
-
 end:
   /* Clean up.  */
   free (jump_chain);
@@ -1060,66 +1048,6 @@ delete_noop_moves (f)
 	}
       insn = next;
     }
-}
-
-/* See if there is still a NOTE_INSN_FUNCTION_END in this function.
-   If so indicate that this function can drop off the end by returning
-   1, else return 0.
-
-   CHECK_DELETED indicates whether we must check if the note being
-   searched for has the deleted flag set.
-
-   DELETE_FINAL_NOTE indicates whether we should delete the note
-   if we find it.  */
-
-static int
-calculate_can_reach_end (last, delete_final_note)
-     rtx last;
-     int delete_final_note;
-{
-  rtx insn = last;
-  int n_labels = 1;
-
-  while (insn != NULL_RTX)
-    {
-      int ok = 0;
-
-      /* One label can follow the end-note: the return label.  */
-      if (GET_CODE (insn) == CODE_LABEL && n_labels-- > 0)
-	ok = 1;
-      /* Ordinary insns can follow it if returning a structure.  */
-      else if (GET_CODE (insn) == INSN)
-	ok = 1;
-      /* If machine uses explicit RETURN insns, no epilogue,
-	 then one of them follows the note.  */
-      else if (GET_CODE (insn) == JUMP_INSN
-	       && GET_CODE (PATTERN (insn)) == RETURN)
-	ok = 1;
-      /* A barrier can follow the return insn.  */
-      else if (GET_CODE (insn) == BARRIER)
-	ok = 1;
-      /* Other kinds of notes can follow also.  */
-      else if (GET_CODE (insn) == NOTE
-	       && NOTE_LINE_NUMBER (insn) != NOTE_INSN_FUNCTION_END)
-	ok = 1;
-
-      if (ok != 1)
-	break;
-
-      insn = PREV_INSN (insn);
-    }
-
-  /* See if we backed up to the appropriate type of note.  */
-  if (insn != NULL_RTX
-      && GET_CODE (insn) == NOTE
-      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_END)
-    {
-      if (delete_final_note)
-	delete_insn (insn);
-      return 1;
-    }
-
-  return 0;
 }
 
 /* LOOP_START is a NOTE_INSN_LOOP_BEG note that is followed by an unconditional

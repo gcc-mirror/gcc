@@ -1,5 +1,25 @@
 2000-10-05  Richard Henderson  <rth@cygnus.com>
 
+	* c-decl.c (warn_missing_noreturn): Remove.
+	(c_expand_body): Don't set or check can_reach_end.
+	* c-tree.h (warn_missing_noreturn): Move ...
+	* flags.h: ... here.
+	(can_reach_end): Remove.
+	* flow.c (check_function_return_warnings): New.
+	(make_edges): No edge to exit for noreturn sibcalls.
+	* function.c (expand_function_end): Save the return value
+	clobber instruction.
+	(mark_function_status): Mark it.
+	* function.h (struct function): Add x_clobber_return_insn.
+	* jump.c (can_reach_end): Remove.
+	(calculate_can_reach_end): Remove.
+	(jump_optimize_1): Don't call it.
+	* output.h (check_function_return_warnings): Declare.
+	* toplev.c (warn_missing_noreturn): Move from c-decl.c
+	(rest_of_compilation): Call check_function_return_warnings.
+
+2000-10-05  Richard Henderson  <rth@cygnus.com>
+
 	* Makefile.in (NM_FOR_TARGET): New.
 	(libgcc.mk): Pass SHLIB_MKMAP, SHLIB_MAPFILES.
 	(libgcc.a, stmp-multilib): Pass NM_FOR_TARGET.

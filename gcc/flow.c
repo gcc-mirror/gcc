@@ -511,6 +511,43 @@ find_basic_blocks (f, nregs, file)
 #endif
 }
 
+void
+check_function_return_warnings ()
+{
+  if (warn_missing_noreturn
+      && !TREE_THIS_VOLATILE (cfun->decl)
+      && EXIT_BLOCK_PTR->pred == NULL)
+    warning ("function might be possible candidate for attribute `noreturn'");
+
+  /* If we have a path to EXIT, then we do return.  */
+  if (TREE_THIS_VOLATILE (cfun->decl)
+      && EXIT_BLOCK_PTR->pred != NULL)
+    warning ("`noreturn' function does return");
+
+  /* If the clobber_return_insn appears in some basic block, then we
+     do reach the end without returning a value.  */
+  else if (warn_return_type
+	   && cfun->x_clobber_return_insn != NULL
+	   && EXIT_BLOCK_PTR->pred != NULL)
+    {
+      int max_uid = get_max_uid ();
+
+      /* If clobber_return_insn was excised by jump1, then renumber_insns
+	 can make max_uid smaller than the number still recorded in our rtx.
+	 That's fine, since this is a quick way of verifying that the insn
+	 is no longer in the chain.  */
+      if (INSN_UID (cfun->x_clobber_return_insn) < max_uid)
+	{
+	  /* Recompute insn->block mapping, since the initial mapping is
+	     set before we delete unreachable blocks.  */
+	  compute_bb_for_insn (max_uid);
+
+	  if (BLOCK_FOR_INSN (cfun->x_clobber_return_insn) != NULL)
+	    warning ("control reaches end of non-void function");
+	}
+    }
+}
+
 /* Count the basic blocks of the function.  */
 
 static int
@@ -1115,8 +1152,11 @@ make_edges (label_value_list)
 	 wouldn't have created the sibling call in the first place.  */
 
       if (code == CALL_INSN && SIBLING_CALL_P (insn))
-	make_edge (edge_cache, bb, EXIT_BLOCK_PTR,
-		   EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
+	{
+	  if (! find_reg_note (insn, REG_NORETURN, NULL_RTX))
+	    make_edge (edge_cache, bb, EXIT_BLOCK_PTR,
+		       EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
+	}
       else
 
       /* If this is a CALL_INSN, then mark it as reaching the active EH

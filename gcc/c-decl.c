@@ -403,10 +403,6 @@ int warn_cast_qual;
 
 int warn_bad_function_cast;
 
-/* Warn about functions which might be candidates for attribute noreturn.  */
-
-int warn_missing_noreturn;
-
 /* Warn about traditional constructs whose meanings changed in ANSI C.  */
 
 int warn_traditional;
@@ -6760,9 +6756,6 @@ c_expand_body (fndecl, nested_p)
   /* Generate rtl for function exit.  */
   expand_function_end (input_filename, lineno, 0);
 
-  /* So we can tell if jump_optimize sets it to 1.  */
-  can_reach_end = 0;
-
   /* If this is a nested function, protect the local variables in the stack
      above us from being collected while we're compiling this function.  */
   if (nested_p)
@@ -6775,25 +6768,11 @@ c_expand_body (fndecl, nested_p)
   if (nested_p)
     ggc_pop_context ();
 
-  current_function_returns_null |= can_reach_end;
-
-  if (warn_missing_noreturn
-      && !TREE_THIS_VOLATILE (fndecl)
-      && !current_function_returns_null
-      && !current_function_returns_value)
-    warning ("function might be possible candidate for attribute `noreturn'");
-
-  if (TREE_THIS_VOLATILE (fndecl) && current_function_returns_null)
-    warning ("`noreturn' function does return");
-  else if (warn_return_type && can_reach_end
-	   && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl))))
-    /* If this function returns non-void and control can drop through,
-       complain.  */
-    warning ("control reaches end of non-void function");
   /* With just -W, complain only if function returns both with
      and without a value.  */
-  else if (extra_warnings
-	   && current_function_returns_value && current_function_returns_null)
+  if (extra_warnings
+      && current_function_returns_value
+      && current_function_returns_null)
     warning ("this function may return with or without a value");
 
   /* If requested, warn about function definitions where the function will

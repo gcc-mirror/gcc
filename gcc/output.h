@@ -136,6 +136,7 @@ extern void find_basic_blocks		PARAMS ((rtx, int, FILE *));
 extern void cleanup_cfg			PARAMS ((rtx));
 extern void free_basic_block_vars     PARAMS ((int));
 extern void set_block_num             PARAMS ((rtx, int));
+extern void check_function_return_warnings PARAMS ((void));
 #endif
 
 /* Functions in varasm.c.  */

@@ -373,6 +373,11 @@ struct function
      needed by inner routines.  */
   rtx x_arg_pointer_save_area;
 
+  /* If the function returns non-void, we will emit a clobber of the
+     return registers just in case the user fell off the end without
+     returning a proper value.  This is that insn.  */
+  rtx x_clobber_return_insn;
+
   /* Offset to end of allocated area of stack frame.
      If stack grows down, this is the address of the last stack slot allocated.
      If stack grows up, this is the address for the next slot.  */
