@@ -1350,19 +1350,14 @@ reload (first, global, dumpfile)
 		    }
 
 		  /* Now count extra regs if there might be a conflict with
-		     the return value register.
+		     the return value register. */
 
-		     ??? This is not quite correct because we don't properly
-		     handle the case of groups, but if we end up doing
-		     something wrong, it either will end up not mattering or
-		     we will abort elsewhere.  */
-		   
 		  for (r = regno; r < regno + nregs; r++)
 		    if (spill_reg_order[r] >= 0)
 		      for (i = 0; i < N_REG_CLASSES; i++)
 			if (TEST_HARD_REG_BIT (reg_class_contents[i], r))
 			  {
-			    if (basic_needs[i] > 0 || basic_groups[i] > 0)
+			    if (basic_needs[i] > 0)
 			      {
 				enum reg_class *p;
 
@@ -1370,6 +1365,15 @@ reload (first, global, dumpfile)
 				p = reg_class_superclasses[i];
 				while (*p != LIM_REG_CLASSES)
 				  insn_needs.other.regs[0][(int) *p++]++;
+			      }
+			    if (basic_groups[i] > 0)
+			      {
+				enum reg_class *p;
+
+				insn_needs.other.groups[i]++;
+				p = reg_class_superclasses[i];
+				while (*p != LIM_REG_CLASSES)
+				  insn_needs.other.groups[(int) *p++]++;
 			      }
 			  }
 		}
