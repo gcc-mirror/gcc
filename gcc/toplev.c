@@ -1115,7 +1115,7 @@ documented_lang_options[] =
   { "-Wno-sign-compare", "" },
   { "-Wfloat-equal", "Warn about testing equality of floating point numbers" },
   { "-Wno-float-equal", "" },
-  { "-Wunknown-pragmas", "Warn about unrecognised pragmas" },
+  { "-Wunknown-pragmas", "Warn about unrecognized pragmas" },
   { "-Wno-unknown-pragmas", "" },
   { "-Wstrict-prototypes", "Warn about non-prototyped function decls" },
   { "-Wno-strict-prototypes", "" },
@@ -1425,7 +1425,7 @@ print_time (str, total)
   fprintf (stderr,
 	   "time in %s: %d.%06d (%.0f%%)\n",
 	   str, total / 1000000, total % 1000000,
-	   (double)total / (double)all_time * 100.0);
+	   all_time == 0 ? 0.00 : (double) total / (double) all_time * 100.0);
 }
 
 /* This is the default decl_printable_name function.  */
@@ -4103,7 +4103,7 @@ decode_d_option (arg)
       case 'I':
 	break;
       default:
-	warning ("unrecognised gcc debugging option: %c", arg[-1]);
+	warning ("unrecognized gcc debugging option: %c", arg[-1]);
 	break;
       }
 }
@@ -4179,7 +4179,7 @@ decode_f_option (arg)
     stack_limit_rtx = NULL_RTX;
   else if (!strcmp (arg, "preprocessed"))
     /* Recognise this switch but do nothing.  This prevents warnings
-       about an unrecognised switch if cpplib has not been linked in.  */
+       about an unrecognized switch if cpplib has not been linked in.  */
     ;
   else
     return 0;
@@ -4758,7 +4758,7 @@ main (argc, argv)
 		}
 	    }
 	  else
-	    error ("Unrecognised option `%s'", argv[i]);
+	    error ("Unrecognized option `%s'", argv[i]);
 	  
 	  i++;
 	}
