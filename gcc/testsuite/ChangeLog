@@ -1,3 +1,35 @@
+2004-04-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/compat/struct-by-value-5a_main.c,
+	gcc.dg/compat/struct-by-value-5b_main.c: New files.
+	* gcc.dg/compat/struct-by-value-5_main.c: Delete.
+	* gcc.dg/compat/struct-by-value-5a_x.c,
+	gcc.dg/compat/struct-by-value-5b_x.c: New, split out from
+	gcc.dg/compat/struct-by-value-5_x.c.
+	* gcc.dg/compat/struct-by-value-5a_y.c,
+	gcc.dg/compat/struct-by-value-5b_y.c: New, split out from
+	gcc.dg/compat/struct-by-value-5_y.c.
+	
+	* gcc.dg/compat/struct-by-value-6a_main.c,
+	gcc.dg/compat/struct-by-value-6b_main.c: New files.
+	* gcc.dg/compat/struct-by-value-6_main.c: Delete.
+	* gcc.dg/compat/struct-by-value-6a_x.c,
+	gcc.dg/compat/struct-by-value-6b_x.c: New, split out from
+	gcc.dg/compat/struct-by-value-6_x.c.
+	* gcc.dg/compat/struct-by-value-6a_y.c,
+	gcc.dg/compat/struct-by-value-6b_y.c: New, split out from
+	gcc.dg/compat/struct-by-value-6_y.c.
+	
+	* gcc.dg/compat/struct-by-value-7a_main.c,
+	gcc.dg/compat/struct-by-value-7b_main.c: New files.
+	* gcc.dg/compat/struct-by-value-7_main.c: Delete.
+	* gcc.dg/compat/struct-by-value-7a_x.c,
+	gcc.dg/compat/struct-by-value-7b_x.c: New, split out from
+	gcc.dg/compat/struct-by-value-7_x.c.
+	* gcc.dg/compat/struct-by-value-7a_y.c,
+	gcc.dg/compat/struct-by-value-7b_y.c: New, split out from
+	gcc.dg/compat/struct-by-value-7_y.c.
+
 2004-04-05  Paul Brook  <paul@codesourcery.com>
 
 	PR 2123

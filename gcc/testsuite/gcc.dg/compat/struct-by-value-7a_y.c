@@ -2,7 +2,8 @@
 
 #include "compat-common.h"
 
-#ifdef SKIP_VA
+/* Turn off checking for variable arguments with -DSKIPVA.  */
+#ifdef SKIPVA
 const int test_va = 0;
 #else
 const int test_va = 1;
