@@ -73,7 +73,7 @@ while read header; do
 
     namespace _C_Swamp { namespace _C_Shadow { } }
     using namespace ::_C_Swamp::_C_Shadow;
-    namespace _C_Swamp_ {
+    namespace _C_Swamp {
       extern "C" {
 #       define _IN_C_SWAMP_
 #       include_next <${header}>
