@@ -693,7 +693,6 @@ setup_one_parameter (inline_data *id, tree p, tree value, tree fn,
 {
   tree init_stmt;
   tree var;
-  tree var_sub;
 
   /* If the parameter is never assigned to, we may not need to
      create a new variable here at all.  Instead, we may be able
@@ -724,23 +723,10 @@ setup_one_parameter (inline_data *id, tree p, tree value, tree fn,
      function. */
   var = copy_decl_for_inlining (p, fn, VARRAY_TREE (id->fns, 0));
 
-  /* See if the frontend wants to pass this by invisible reference.  If
-     so, our new VAR_DECL will have REFERENCE_TYPE, and we need to
-     replace uses of the PARM_DECL with dereferences.  */
-  if (TREE_TYPE (var) != TREE_TYPE (p)
-      && POINTER_TYPE_P (TREE_TYPE (var))
-      && TREE_TYPE (TREE_TYPE (var)) == TREE_TYPE (p))
-    {
-      insert_decl_map (id, var, var);
-      var_sub = build1 (INDIRECT_REF, TREE_TYPE (p), var);
-    }
-  else
-    var_sub = var;
-
   /* Register the VAR_DECL as the equivalent for the PARM_DECL;
      that way, when the PARM_DECL is encountered, it will be
      automatically replaced by the VAR_DECL.  */
-  insert_decl_map (id, p, var_sub);
+  insert_decl_map (id, p, var);
 
   /* Declare this new variable.  */
   TREE_CHAIN (var) = *vars;
