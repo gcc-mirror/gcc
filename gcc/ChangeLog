@@ -1,3 +1,11 @@
+2000-09-08  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* Makefile.in (DPBIT_FUNCS): Add _usi_to_df.
+	(FPBIT_FUNCS): Add _usi_to_sf.
+	* config/fp-bit.c (usi_to_float): New function.
+	* config/fp-bit.h (L_usi_to_sf, L_usi_to_df): Define.
+	(usi_to_float): Add appropriate #define.
+
 2000-09-08  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* i386-protos.h (sse_comparison_operator, mmx_reg_operand): Declare
