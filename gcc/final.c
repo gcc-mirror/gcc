@@ -1658,6 +1658,12 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	      recog_operand[i] = alter_subreg (recog_operand[i]);
 	  }
 
+	for (i = 0; i < insn_n_dups[insn_code_number]; i++)
+	  {
+	    if (GET_CODE (*recog_dup_loc[i]) == SUBREG)
+	      *recog_dup_loc[i] = alter_subreg (*recog_dup_loc[i]);
+	  }
+
 #ifdef REGISTER_CONSTRAINTS
 	if (! constrain_operands (insn_code_number, 1))
 	  fatal_insn_not_found (insn);
