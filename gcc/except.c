@@ -2388,27 +2388,18 @@ emit_eh_context ()
       }
 }
 
-/* Scan the current insns and build a list of handler labels. The
-   resulting list is placed in the global variable exception_handler_labels.
+/* Scan the insn chain F and build a list of handler labels. The
+   resulting list is placed in the global variable exception_handler_labels.  */
 
-   It is called after the last exception handling region is added to
-   the current function (when the rtl is almost all built for the
-   current function) and before the jump optimization pass.  */
-
-void
-find_exception_handler_labels ()
+static void
+find_exception_handler_labels_1 (f)
+     rtx f;
 {
   rtx insn;
 
-  exception_handler_labels = NULL_RTX;
-
-  /* If we aren't doing exception handling, there isn't much to check.  */
-  if (! doing_eh (0))
-    return;
-
   /* For each start of a region, add its label to the list.  */
 
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+  for (insn = f; insn; insn = NEXT_INSN (insn))
     {
       struct handler_info* ptr;
       if (GET_CODE (insn) == NOTE
@@ -2427,8 +2418,33 @@ find_exception_handler_labels ()
                                ptr->handler_label, exception_handler_labels);
             }
 	}
+      else if (GET_CODE (insn) == CALL_INSN
+	       && GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
+	{
+	  find_exception_handler_labels_1 (XEXP (PATTERN (insn), 0));
+	  find_exception_handler_labels_1 (XEXP (PATTERN (insn), 1));
+	  find_exception_handler_labels_1 (XEXP (PATTERN (insn), 2));
+	}
     }
 }
+
+/* Scan the current insns and build a list of handler labels. The
+   resulting list is placed in the global variable exception_handler_labels.
+
+   It is called after the last exception handling region is added to
+   the current function (when the rtl is almost all built for the
+   current function) and before the jump optimization pass.  */
+void
+find_exception_handler_labels ()
+{
+  exception_handler_labels = NULL_RTX;
+
+  /* If we aren't doing exception handling, there isn't much to check.  */
+  if (! doing_eh (0))
+    return;
+
+  find_exception_handler_labels_1 (get_insns ());
+}     
 
 /* Return a value of 1 if the parameter label number is an exception handler
    label. Return 0 otherwise. */
