@@ -47,7 +47,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	1.96.5.2 06 Feb 1992 10:02:20";
+static char out_sccs_id[] = "@(#)m88k.c	2.0.2.1 28 Feb 1992 12:36:54";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -63,6 +63,8 @@ int m88k_case_index;
 rtx m88k_compare_reg;		/* cmp output pseudo register */
 rtx m88k_compare_op0;		/* cmpsi operand 0 */
 rtx m88k_compare_op1;		/* cmpsi operand 1 */
+
+enum attr_cpu m88k_cpu;		/* target cpu */
 
 /* Determine what instructions are needed to manufacture the integer VALUE
    in the given MODE.  */
@@ -2129,10 +2131,11 @@ m88k_debugger_offset (reg, offset)
     offset -= m88k_stack_size;
   else if (reg != arg_pointer_rtx)
     {
+#if (MONITOR_GCC & 0x10) /* Watch for suspicious symbolic locations.  */
       if (! (GET_CODE (reg) == REG
 	     && REGNO (reg) >= FIRST_PSEUDO_REGISTER))
-	/* @@ For now, I'd like to know if this happens.  */
 	warning ("Internal gcc error: Can't express symbolic location");
+#endif
       return 0;
     }
 
