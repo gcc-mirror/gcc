@@ -1,3 +1,20 @@
+2003-02-12  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/ByteBuffer.java
+	(allocate): Implemented.
+	(wrap): Implemented.
+	* java/nio/CharBuffer.java:
+	Some documentation added and reworked.
+	(endian): Removed.
+	(allocate): Implemented.
+	(wrap): Implemented.
+	(array): Throw exceptions.
+	(arrayOffset): Throw exceptions.
+	(toString): Implemented.
+	(length): Implemented.
+	(put): Implemented.
+	(charAt): Implemented.
+
 2003-02-11  John Leuner  <jewel@debian.org>
 
 	* java/util/zip/ZipInputStream.java: Fix problem with 0-length 

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.nio;
 
+import gnu.java.nio.ByteBufferImpl;
+
 /**
  * @since 1.4
  */
@@ -58,7 +60,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    */
   public static ByteBuffer allocate (int capacity)
   {
-    return null;
+    return new ByteBufferImpl (capacity, 0, capacity);
   }
  
   /**
@@ -69,7 +71,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    */
   final public static ByteBuffer wrap (byte[] array, int offset, int length)
   {
-    return null;
+    return new ByteBufferImpl (array, offset, length);
   }
 
   /**
