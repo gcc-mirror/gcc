@@ -1,11 +1,10 @@
 Fri Jan 19 14:31:35 2001  Alexandre Oliva  <aoliva@redhat.com>, J"orn Rennecke <amylaar@redhat.com>
 
-	* reload1.c (move2add_note_store): Treat all registers about which
-	no information is known as potential bases, and treat all
-	registers directly or indirectly derived from it as members of the
-	same set of values.
-	(reload_cse_move2add): Adjust accordingly.  Take mode and
-	offset of base register into account.
+	* reload1.c (move2add_note_store): Treat all registers directly or
+	indirectly derived from a base register as members of the same set
+	of values.
+	(reload_cse_move2add): Adjust accordingly.  Take mode and offset
+	of base register into account.
 
 Fri Jan 19 09:18:42 2001  J"orn Rennecke <amylaar@redhat.com>
 
