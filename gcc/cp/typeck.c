@@ -7771,9 +7771,9 @@ casts_away_constness_r (t1, t2)
      pointer to member level is ignored when determining if a const
      cv-qualifier has been cast away.  */
   if (TYPE_PTRMEM_P (*t1))
-    *t1 = build_pointer_type (TREE_TYPE (*t1));
+    *t1 = build_pointer_type (TREE_TYPE (TREE_TYPE (*t1)));
   if (TYPE_PTRMEM_P (*t2))
-    *t2 = build_pointer_type (TREE_TYPE (*t2));
+    *t2 = build_pointer_type (TREE_TYPE (TREE_TYPE (*t2)));
 
   /* [expr.const.cast]
 
@@ -7844,8 +7844,9 @@ casts_away_constness (t1, t2)
        T2" casts away constness if a cast from an rvalue of type
        "poitner to T1" to the type "pointer to T2" casts away
        constness.  */
-    return casts_away_constness (build_pointer_type (TREE_TYPE (t1)),
-				 build_pointer_type (TREE_TYPE (t2)));
+    return casts_away_constness
+      (build_pointer_type (TREE_TYPE (TREE_TYPE (t1))),
+       build_pointer_type (TREE_TYPE (TREE_TYPE (t2))));
 
   /* Casting away constness is only something that makes sense for
      pointer or reference types.  */
