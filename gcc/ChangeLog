@@ -1,3 +1,8 @@
+Sat Oct 30 21:32:17 1999  David Starner  <dstarner98@aasaa.ofe.org>
+
+	* gcc.texi (Passes): Update front-end files to their current 
+	location.
+
 Sat Oct 30 14:41:40 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (SECONDARY_INPUT_RELOAD_CLASS): Call secondary_reload_class.

@@ -3218,19 +3218,21 @@ along with header files
 @file{c-lex.h}, and
 @file{c-tree.h}.
 
-The source files for parsing C++ are @file{cp-parse.y},
-@file{cp-class.c},@*
-@file{cp-cvt.c}, @file{cp-decl.c}, @file{cp-decl2.c},
-@file{cp-dem.c}, @file{cp-except.c},@*
-@file{cp-expr.c}, @file{cp-init.c}, @file{cp-lex.c},
-@file{cp-method.c}, @file{cp-ptree.c},@*
-@file{cp-search.c}, @file{cp-tree.c}, @file{cp-type2.c}, and
-@file{cp-typeck.c}, along with header files @file{cp-tree.def},
-@file{cp-tree.h}, and @file{cp-decl.h}.
+The source files for parsing C++ are in @file{cp/}.
+They are @file{parse.y},
+@file{class.c},@*
+@file{cvt.c}, @file{decl.c}, @file{decl2.c}, 
+@file{except.c},@*
+@file{expr.c}, @file{init.c}, @file{lex.c},
+@file{method.c}, @file{ptree.c},@*
+@file{search.c}, @file{tree.c}, 
+@file{typeck2.c}, and
+@file{typeck.c}, along with header files @file{cp-tree.def},
+@file{cp-tree.h}, and @file{decl.h}.
 
-The special source files for parsing Objective C are
-@file{objc-parse.y}, @file{objc-actions.c}, @file{objc-tree.def}, and
-@file{objc-actions.h}.  Certain C-specific files are used for this as
+The special source files for parsing Objective C are in @file{objc/}.
+They are @file{objc-parse.y}, @file{objc-act.c}, @file{objc-tree.def}, and
+@file{objc-act.h}.  Certain C-specific files are used for this as
 well.
 
 The file @file{c-common.c} is also used for all of the above languages.
