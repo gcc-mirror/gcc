@@ -5,6 +5,10 @@
 
 2000-08-04  Kazu Hirata  <kazu@hxi.com>
 
+	* h8300.c (function_prologue): Rearrange code for conciseness.
+	(function_epilogue): Likewise.
+	* h8300.h (OK_FOR_U): Fix formatting.
+
 	* cse.c: Fix a comment typo. Fix formatting.
 
 2000-08-03  Richard Henderson  <rth@cygnus.com>
