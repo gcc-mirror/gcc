@@ -1,3 +1,81 @@
+2003-06-19  Andreas Jaeger  <aj@suse.de>
+
+	Backport from mainline:
+	2003-06-18  Andreas Jaeger  <aj@suse.de>
+
+	* testsuite/Makefile.am (new-abi-baseline): Create baseline
+	directory.
+	(baseline_file): Use baseline_dir.
+	(baseline_dir): New.
+	(mkinstalldirs): New.
+
+	* acinclude.m4: Rename baseline_file to baseline_dir, strip
+	filename from baseline_dir.
+
+	* testsuite/Makefile.in: Regenerated.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Regenerated.
+	* configure: Regenerated.
+
+	2003-06-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/abi/i486-linux-gnu/baseline_symbols.txt: Update to 3.3.0.
+
+	2003-06-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* Makefile.am (check-abi): Move...
+	(new-abi-baseline): Move...
+	* testsuite/Makefile.am: ...here.
+	(new-abi-baseline): Conditionalize.
+	(check-abi): Conditionalize.
+	(check-abi-verbose): New.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* configure.in: Consolidate testsuite configure bits.
+	* acinclude.m4 (GLIBCPP_CONFIGURE_TESTSUITE): Same.
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+	* testsuite/abi_check.cc: Add --check-verbose.
+	Only output detailed information if --check-verbose.
+
+
+	2003-06-16  Andreas Jaeger  <aj@suse.de>
+
+        * testsuite/abi_check.cc: Create summary report.
+
+	2003-06-16  Andreas Jaeger  <aj@suse.de>
+
+	* acinclude.m4 (GLIBCPP_CONFIGURE_TESTSUITE): Make
+	check-abi multilib aware.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
+	2003-06-16  Benjamin Kosnik  <bkoz@redhat.com>
+            Andreas Jaeger  <aj@suse.de>
+
+	* configure.target: Set x86_64 abi_baseline pair correctly.
+
+
+	2003-06-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/abi/i686-pc-linux-gnu: To..
+	* config/abi/i486-linux-gnu: ...this.
+	* config/abi/alphaev67-unknown-linux-gnu: To..
+	* config/abi/alpha-linux-gnu: ...this.
+	* config/abi/ia64-unknown-linux-gnu: To...
+	* config/abi/ia64-linux-gnu: ...this.
+	* config/abi/x86_64-unknown-linux-gnu: To...
+	* config/abi/x86_64-linux-gnu: ...this.
+	* config/abi/i386-unknown-freebsd4: To...
+	* config/abi/i386-freebsd4: ...this.
+	* configure.target: abi_baseline_triplet to abi_baseline_pair.
+	Simplify cpu bits so that abi_baseline_pair can use the same
+	cpu configuration.
+	* acinclude.m4: Same.
+	* aclocal.m4: Regenerate.
+	* configure.in: Can't get enable_abi_check to yes unless native.
+	* configure: Regenerate.
+
 2003-06-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in (libtool_VERSION): To 5:5:0.
