@@ -115,23 +115,20 @@ public class GregorianCalendar extends Calendar {
   public GregorianCalendar (int year, int month, int date)
   {
     this();
-    setDefaultTime ();
-    set (year, month, date);
+    set (year, month, date, 0, 0, 0);
   }
 
   public GregorianCalendar (int year, int month, int date,
 			    int hour, int minute)
   {
     this();
-    setDefaultTime ();
-    set (year, month, date, hour, minute);
+    set (year, month, date, hour, minute, 0);
   }
 
   public GregorianCalendar (int year, int month, int date,
 			    int hour, int minute, int second)
   {
     this();
-    setDefaultTime ();
     set (year, month, date, hour, minute, second);
   }
 

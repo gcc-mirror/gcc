@@ -257,7 +257,7 @@ public abstract class Calendar implements Serializable, Cloneable
    */
   public static final int DECEMBER = 11;
   /**
-   * Constant representing Undecimber. This is an artifical name useful
+   * Constant representing Undecimber. This is an artificial name useful
    * for lunar calendars.
    */
   public static final int UNDECIMBER = 12;
@@ -581,9 +581,9 @@ public abstract class Calendar implements Serializable, Cloneable
   public final void set(int year, int month, int date, int hour, int minute)
   {
     set(year, month, date);
-    fields[HOUR] = hour;
+    fields[HOUR_OF_DAY] = hour;
     fields[MINUTE] = minute;
-    isSet[HOUR] = isSet[MINUTE] = true;
+    isSet[HOUR_OF_DAY] = isSet[MINUTE] = true;
   }
 
   /**

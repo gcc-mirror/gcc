@@ -896,8 +896,9 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     int hours = offset / 60;
     int minutes = offset % 60;
 
-    sb.append('0' + hours / 10).append('0' + hours % 10).append(':');
-    sb.append('0' + minutes / 10).append('0' + minutes % 10);
+    sb.append((char) ('0' + hours / 10)).append((char) ('0' + hours % 10));
+    sb.append(':');
+    sb.append((char) ('0' + minutes / 10)).append((char) ('0' + minutes % 10));
     return sb.toString();
   }
 
