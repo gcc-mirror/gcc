@@ -1780,7 +1780,7 @@ build_canonical=${build}
 host_canonical=${host}
 target_subdir=
 if test "${host}" != "${target}" ; then
-    target_subdir=${target}/
+    target_subdir=${target_alias}/
 fi
 AC_SUBST(build_canonical)
 AC_SUBST(host_canonical)
