@@ -49,6 +49,9 @@ echo $header
 for file in $files; do
     wfile=$website$file
     echo $wfile
-    lynx -dump $wfile
+    # We lie to Lynx about the kind of terminal in use because we
+    # want to get consistent output everywhere, and we want this
+    # script to work even when it is not run interactively.
+    env TERM=vt100 lynx -dump $wfile
     echo $header
 done
