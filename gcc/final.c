@@ -303,7 +303,7 @@ end_final (filename)
     {
       char name[20];
       int align = exact_log2 (BIGGEST_ALIGNMENT / BITS_PER_UNIT);
-      int size = (INT_TYPE_SIZE / BITS_PER_UNIT) * count_basic_blocks;
+      int size = (POINTER_SIZE / BITS_PER_UNIT) * count_basic_blocks;
       int rounded = size;
       struct bb_list *ptr;
       struct bb_str *sptr;
@@ -947,14 +947,14 @@ static void
 profile_function (file)
      FILE *file;
 {
-  int align = MIN (BIGGEST_ALIGNMENT, BITS_PER_WORD);
+  int align = MIN (BIGGEST_ALIGNMENT, POINTER_SIZE);
   int sval = current_function_returns_struct;
   int cxt = current_function_needs_context;
 
   data_section ();
   ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
   ASM_OUTPUT_INTERNAL_LABEL (file, "LP", profile_label_no);
-  assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+  assemble_integer (const0_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
 
   text_section ();
 
