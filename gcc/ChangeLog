@@ -18,6 +18,9 @@ Fri Apr  3 17:02:13 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 Wed Apr  8 12:51:19 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* alpha.h (ASM_IDENTIFY_GCC): Define to nothing.
+	(ASM_IDENTIFY_LANGUAGE): Likewise.
+
 	* i386.md (movqi recognizer): Don't perfom byte increment into
 	a NON_QI_REG_P.
 
