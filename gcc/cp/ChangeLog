@@ -1,13 +1,22 @@
-Sat Feb 14 06:50:26 1998  Jason Merrill  <jason@yorick.cygnus.com>
+Mon Nov 24 12:15:55 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (mark_addressable): Don't assume a FUNCTION_DECL
+	has DECL_LANG_SPECIFIC.
+
+Mon Dec  8 23:17:13 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (copy_args_p): Handle copy elision for types with virtual
  	bases.
   	* call.c (build_over_call): Likewise.
 
+Tue Dec  2 01:37:19 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
 	* exception.cc (__cp_pop_exception): Lose handler arg.
 	* except.c (do_pop_exception): Likewise.
 	(push_eh_cleanup): Let the cleanup mechanism supply the handler.
 	(expand_end_catch_block): Likewise.
+
+Sun Feb  8 23:47:38 1998  scott snyder  <sss@d0linux01.fnal.gov>
 
 	* method.c (make_thunk): Avoid name buffer overflow.
 
