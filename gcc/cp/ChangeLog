@@ -1,3 +1,9 @@
+2001-12-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/90
+	* typeck.c (build_function_call_real): Use original function
+	expression for errors.
+
 2001-12-18  Jason Merrill  <jason@redhat.com>
 
 	* class.c (add_method): Do compare 'this' quals when trying to match a

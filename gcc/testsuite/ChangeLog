@@ -1,3 +1,7 @@
+2001-12-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/other/error1.C: New test.
+
 Mon Dec 17 14:31:42 2001  Jeffrey A Law  (law@redhat.com)
 
 	* gcc.c-torture/execute/20011217-1.c: New test.
