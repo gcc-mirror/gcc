@@ -1,3 +1,8 @@
+2002-10-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7584
+	* g++.dg/inherit/using3.C: New test.
+
 Thu Oct 17 19:12:58 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/20021017-2.c: New test.

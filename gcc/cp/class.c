@@ -1155,9 +1155,12 @@ handle_using_decl (using_decl, t)
   tree flist = NULL_TREE;
   tree old_value;
 
-  binfo = binfo_or_else (ctype, t);
+  binfo = lookup_base (t, ctype, ba_any, NULL);
   if (! binfo)
-    return;
+    {
+      error_not_base_type (t, ctype);
+      return;
+    }
   
   if (constructor_name_p (name, ctype))
     {

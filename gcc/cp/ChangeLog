@@ -1,5 +1,9 @@
 2002-10-17  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/7584
+	* class.c (handle_using_decl): Allow the declaration used to be
+	from an ambiguous base.
+
 	* pt.c (convert_template_argument): Revert this change:
 		2002-10-16  Mark Mitchell  <mark@codesourcery.com>
 		* pt.c (convert_template_argument): Do not fold non-type
