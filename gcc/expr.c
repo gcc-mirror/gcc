@@ -6227,7 +6227,7 @@ expand_expr (exp, target, tmode, modifier)
       }
 
     case PARM_DECL:
-      if (DECL_RTL (exp) == 0)
+      if (! DECL_RTL_SET_P (exp))
 	{
 	  error_with_decl (exp, "prior parameter's size depends on `%s'");
 	  return CONST0_RTX (mode);
