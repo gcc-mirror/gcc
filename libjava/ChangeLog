@@ -1,3 +1,9 @@
+1999-04-14  Tom Tromey  <tromey@cygnus.com>
+
+	* java/net/natInetAddress.cc (lookup): On glibc2.0 systems, make
+	buffer larger to work around bug.
+	From Bryce McKinlay <bryce@albatross.co.nz>.
+
 1999-04-14  Andrew Haley  <aph@cygnus.com>
 
  	* java/lang/natDouble.java (doubleToLongBits): ensure that all
