@@ -454,14 +454,8 @@ TARGET_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)
 # The BUILD_* variables are a special case, which are used for the gcc
 # cross-building scheme.
 EXTRA_GCC_FLAGS = \
-	'AR=$(AR)' \
-	'AS=$(AS)' \
-	'CC=$(CC)' \
-	'CXX=$(CXX)' \
 	'BUILD_PREFIX=$(BUILD_PREFIX)' \
 	'BUILD_PREFIX_1=$(BUILD_PREFIX_1)' \
-	'NM=$(NM)' \
-	'RANLIB=$(RANLIB)' \
 	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
 	"`echo 'LANGUAGES=$(LANGUAGES)' | sed -e s/.*=$$/XFOO=/`" \
@@ -473,7 +467,7 @@ EXTRA_GCC_FLAGS = \
 	"`echo 'STAGE1_CFLAGS=$(STAGE1_CFLAGS)' | sed -e s/.*=$$/XFOO=/`" \
 	"`echo 'BOOT_CFLAGS=$(BOOT_CFLAGS)' | sed -e s/.*=$$/XFOO=/`"
 
-GCC_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS)
+GCC_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(EXTRA_GCC_FLAGS)
 
 .PHONY: configure-host
 configure-host: maybe-configure-gcc [+
