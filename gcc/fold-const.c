@@ -1382,7 +1382,7 @@ negate_expr (t)
       break;
     }
 
-  return convert (type, build1 (NEGATE_EXPR, TREE_TYPE (t), t));
+  return convert (type, fold (build1 (NEGATE_EXPR, TREE_TYPE (t), t)));
 }
 
 /* Split a tree IN into a constant, literal and variable parts that could be
