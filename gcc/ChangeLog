@@ -1,5 +1,7 @@
 Sun Jul 12 01:27:05 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* cplus-dem.c (demangle_nested_args): Return a value.
+
 	* tree.h (TYPE_P): New macro.
 
 Sat Jul 11 16:19:48 1998  Mark Mitchell  <mark@markmitchell.com>
