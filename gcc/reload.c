@@ -3581,7 +3581,41 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	   || reload_when_needed[i] == RELOAD_FOR_OUTPUT_ADDRESS)
 	  && (operand_reloadnum[reload_opnum[i]] < 0
 	      || reload_optional[operand_reloadnum[reload_opnum[i]]]))
-	reload_when_needed[i] = RELOAD_FOR_OPERAND_ADDRESS;
+	{
+	  /* If we have a secondary reload to go along with this reload,
+	     change its type to RELOAD_FOR_OPADDR_ADDR. */
+
+	  if (reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS
+	      && reload_secondary_in_reload[i] != -1)
+	    {
+	      int secondary_in_reload = reload_secondary_in_reload[i];
+
+	      reload_when_needed[secondary_in_reload] = 
+		RELOAD_FOR_OPADDR_ADDR;
+
+	      /* If there's a tertiary reload we have to change it also. */
+	      if (secondary_in_reload > 0
+		  && reload_secondary_in_reload[secondary_in_reload] != -1)
+		reload_when_needed[reload_secondary_in_reload[secondary_in_reload]] 
+		  = RELOAD_FOR_OPADDR_ADDR;
+	    }
+
+	  if (reload_when_needed[i] == RELOAD_FOR_OUTPUT_ADDRESS
+	      && reload_secondary_out_reload[i] != -1)
+	    {
+	      int secondary_out_reload = reload_secondary_out_reload[i];
+
+	      reload_when_needed[secondary_out_reload] = 
+		RELOAD_FOR_OPADDR_ADDR;
+
+	      /* If there's a tertiary reload we have to change it also. */
+	      if (secondary_out_reload
+		  && reload_secondary_out_reload[secondary_out_reload] != -1)
+		reload_when_needed[reload_secondary_out_reload[secondary_out_reload]] 
+		  = RELOAD_FOR_OPADDR_ADDR;
+	    }
+	  reload_when_needed[i] = RELOAD_FOR_OPERAND_ADDRESS;
+	}
 
       if (reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS
 	  && operand_reloadnum[reload_opnum[i]] >= 0
