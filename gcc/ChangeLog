@@ -1,3 +1,11 @@
+2004-09-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm/ieee754-df.S (aeabi_ul2d, aeabi_l2d, floatundidf)
+	(floatdidf): New functions.
+	* arm/ieee754-sf.S (aeabi_ul2f, aeabi_l2f, floatundisf)
+	(floatdisf): New functions.
+	* t-arm-elf: Use them.
+
 2004-09-01  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-common.h (lookup_interface): Remove prototype.

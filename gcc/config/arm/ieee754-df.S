@@ -449,6 +449,83 @@ ARM_FUNC_ALIAS aeabi_f2d extendsfdf2
 	FUNC_END aeabi_f2d
 	FUNC_END extendsfdf2
 
+ARM_FUNC_START floatundidf
+ARM_FUNC_ALIAS aeabi_ul2d floatundidf
+	
+	orrs	r2, r0, r1
+#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
+	mvfeqd	f0, #0.0
+#endif
+	RETc(eq)
+#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
+	@ For hard FPA code we want to return via the tail below so that
+	@ we can return the result in f0 as well as in r0/r1 for backwards
+	@ compatibility.
+	adr	ip, 1f
+	stmfd	sp!, {r4, r5, ip, lr}
+#else
+	stmfd	sp!, {r4, r5, lr}
+#endif
+	mov	r5, #0
+	b	2f
+
+ARM_FUNC_START floatdidf
+ARM_FUNC_ALIAS aeabi_l2d floatdidf
+	orrs	r2, r0, r1
+#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
+	mvfeqd	f0, #0.0
+#endif
+	RETc(eq)
+#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
+	@ For hard FPA code we want to return via the tail below so that
+	@ we can return the result in f0 as well as in r0/r1 for backwards
+	@ compatibility.
+	adr	ip, 1f
+	stmfd	sp!, {r4, r5, ip, lr}
+#else
+	stmfd	sp!, {r4, r5, lr}
+#endif
+	ands	r5, ah, #0x80000000	@ sign bit in r5
+	bpl	2f
+	rsbs	al, al, #0
+	rsc	ah, ah, #0
+2:
+	mov	r4, #(0x400 << 20)	@ initial exponent
+	add	r4, r4, #((52 - 1) << 20)
+#if !defined (__VFP_FP__) && !defined(__ARMEB__)
+	@ FPA little-endian: must swap the word order.
+	mov	ip, al
+	mov	xh, ah
+	mov	xl, ip
+#endif
+	movs	ip, xh, lsr #23
+	beq	LSYM(Lad_p)
+	@ The value's too big.  Scale it down a bit...
+	mov	r2, #3
+	movs	ip, ip, lsr #3
+	addne	r2, r2, #3
+	movs	ip, ip, lsr #3
+	addne	r2, r2, #3
+	rsb	r3, r2, #32
+	mov	ip, xl, lsl r3
+	mov	xl, xl, lsr r2
+	orr	xl, xl, xh, lsl r3
+	mov	xh, xh, lsr r2
+	add	r4, r4, r2, lsl #20
+	b	LSYM(Lad_p)
+#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
+1:
+	@ Legacy code expects the result to be returned in f0.  Copy it
+	@ there as well.
+	stmfd	sp!, {r0, r1}
+	ldfd	f0, [sp], #8
+	RETLDM
+#endif
+	FUNC_END floatdidf
+	FUNC_END aeabi_l2d
+	FUNC_END floatundidf
+	FUNC_END aeabi_ul2d
+
 #endif /* L_addsubdf3 */
 
 #ifdef L_muldivdf3

@@ -290,6 +290,7 @@ ARM_FUNC_ALIAS aeabi_i2f floatsisf
 1:	teq	r0, #0
 	RETc(eq)
 
+3:
 	mov	r1, #0
 	mov	r2, #((127 + 23) << 23)
 	tst	r0, #0xfc000000
@@ -297,7 +298,8 @@ ARM_FUNC_ALIAS aeabi_i2f floatsisf
 
 	@ We need to scale the value a little before branching to code above.
 	tst	r0, #0xf0000000
-	movne	r1, r0, lsl #28
+4:
+	orrne	r1, r1, r0, lsl #28
 	movne	r0, r0, lsr #4
 	addne	r2, r2, #(4 << 23)
 	tst	r0, #0x0c000000
@@ -312,6 +314,110 @@ ARM_FUNC_ALIAS aeabi_i2f floatsisf
 	FUNC_END floatsisf
 	FUNC_END aeabi_ui2f
 	FUNC_END floatunsisf
+
+ARM_FUNC_START floatundisf
+ARM_FUNC_ALIAS aeabi_ul2f floatundisf
+	orrs	r2, r0, r1
+#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
+	mvfeqs	f0, #0.0
+#endif
+	RETc(eq)
+	
+#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
+	@ For hard FPA code we want to return via the tail below so that
+	@ we can return the result in f0 as well as in r0 for backwards
+	@ compatibility.
+	str	lr, [sp, #-4]!
+	adr	lr, 4f
+#endif
+
+	mov	r3, #0
+	b	2f
+
+ARM_FUNC_START floatdisf
+ARM_FUNC_ALIAS aeabi_l2f floatdisf
+
+	orrs	r2, r0, r1
+#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
+	mvfeqs	f0, #0.0
+#endif
+	RETc(eq)
+	
+#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
+	@ For hard FPA code we want to return via the tail below so that
+	@ we can return the result in f0 as well as in r0 for backwards
+	@ compatibility.
+	str	lr, [sp, #-4]!
+	adr	lr, 4f
+#endif
+	ands	r3, ah, #0x80000000	@ sign bit in r3
+	bpl	2f
+	rsbs	al, al, #0
+	rsc	ah, ah, #0
+2:
+	movs	ip, ah
+#ifdef __ARMEB__
+	moveq	r0, al
+#endif
+	beq	3b
+	mov	r2, #((127 + 23 + 32) << 23)	@ initial exponent
+#ifndef __ARMEB__
+	mov	r1, al
+	mov	r0, ip
+#endif
+	tst	r0, #0xfc000000
+	bne	3f
+
+#if __ARM_ARCH__ < 5
+	cmp	r0, #(1 << 13)
+	movlo	ip, #13
+	movlo	r0, r0, lsl #13
+	movhs	ip, #0
+	tst	r0, #0x03fc0000
+	addeq	ip, ip, #8
+	moveq	r0, r0, lsl #8
+	tst	r0, #0x03c00000
+	addeq	ip, ip, #4
+	moveq	r0, r0, lsl #4
+	tst	r0, #0x03000000
+	addeq	ip, ip, #2
+	moveq	r0, r0, lsl #2
+#else
+	clz	ip, r0
+	sub	ip, ip, #6
+	mov	r0, r0, lsl ip
+#endif
+	sub	r2, r2, ip, lsl #23
+	rsb	ip, ip, #32
+	orr	r0, r0, r1, lsr ip
+	rsb	ip, ip, #32
+	mov	r1, r1, asl ip
+	@ At this point we no-longer care about the precise value in r1, only
+	@ whether only the top bit is set, or if the top bit and some others
+	@ are set.
+	and	ip, r1, #0xff
+	orr	r1, r1, ip, lsl #8
+	b	LSYM(Lad_p)
+3:
+	@ We need to scale the value a little before branching to code above.
+	@ At this point we no-longer care about the precise value in r1, only
+	@ whether only the top bit is set, or if the top bit and some others
+	@ are set.
+	and	ip, r1, #0xff
+	orr	r1, r1, ip, lsl #8
+	tst	r0, #0xf0000000
+	movne	r1, r1, lsr #4
+	b	4b
+#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
+4:
+	str	r0, [sp, #-4]!
+	ldfs	f0, [sp], #4
+	RETLDM
+#endif
+	FUNC_END floatdisf
+	FUNC_END aeabi_l2f
+	FUNC_END floatundisf
+	FUNC_END aeabi_ul2f
 
 #endif /* L_addsubsf3 */
 
