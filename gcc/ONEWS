@@ -1,111 +1,27 @@
 This file contains information about GCC releases up to GCC 2.8.1, and
-some information about EGCS releases.  For more details of changes in
-EGCS releases, and details of changes in GCC 2.95 and more recent
-releases, see the release notes on the GCC web site and the file NEWS
-which contains the most relevant parts of those release notes in text
-form.
+a tiny bit of information on EGCS.
 
-Noteworthy changes in GCC for EGCS 1.1.
----------------------------------------
+For details of changes in EGCS releases and GCC 2.95 and later releases,
+see the release notes on the GCC web site or the file NEWS which contains
+the most relevant parts of those release notes in text form.
 
-The compiler now implements global common subexpression elimination (gcse) as
-well as global constant/copy propagation.  (link to gcse page).
-
-More major improvements have been made to the alias analysis code.  A new
-option to allow front-ends to provide alias information to the optimizers
-has also been added (-fstrict-aliasing).  -fstrict-aliasing is off by default
-now, but will be enabled by default in the future. (link to alias page)
-
-Major changes continue in the exception handling support.  This release
-includes some changes to reduce static overhead for exception handling.  It
-also includes some major changes to the setjmp/longjmp based EH mechanism to
-make it less pessimistic.  And finally, major infrastructure improvements
-to the dwarf2 EH mechanism have been made to make our EH support extensible.
-
-We have fixed the infamous security problems with temporary files. 
-
-The "regmove" optimization pass has been nearly completely rewritten.  It now
-uses much more information about the target to determine profitability of
-transformations.
-
-The compiler now recomputes register usage information immediately before
-register allocation.  Previously such information was only not kept up to
-date after instruction combination which led to poor register allocation
-choices by our priority based register allocator.
-
-The register reloading phase of the compiler has been improved to better
-optimize spill code.  This primarily helps targets which generate lots of
-spills (like the x86 ports and many register poor embedded ports).
-
-A few changes in the heuristics used by the register allocator and scheduler
-have been made which can significantly improve performance for certain
-applications.
-
-The compiler's branch shortening algorithms have been significantly improved
-to work better on targets which align jump targets.
+Changes in GCC for EGCS (that are not listed in the web release notes)
+---------------------------------------------------------------------
 
 The compiler now supports the "ADDRESSOF" optimization which can significantly
 reduce the overhead for certain inline calls (and inline calls in general).
 
-The compiler now supports a code size optimization switch (-Os).  When enabled
-the compiler will prefer optimizations which improve code size over those
-which improve code speed.
-
-The compiler has been improved to completely eliminate library calls which
-compute constant values.  This is particularly useful on machines which
-do not have integer mul/div or floating point support on-chip.
-
-GCC now supports a "--help" option to print detailed help information.
-
-cpplib has been greatly improved.  It is probably usable for some sites now
-(major missing feature is trigraphs).
-
-Memory footprint for the compiler has been significantly reduced for certain
-pathalogical cases.
-
-Build time improvements for targets which support lots of sched parameters
-(alpha and mips primarily).
-
 Compile time for certain programs using large constant initializers has been
 improved (affects glibc significantly).
-
-Plus an incredible number of infrastructure changes, warning fixes, bugfixes
-and local optimizations.
 
 Various improvements have been made to better support cross compilations.  They
 are still not easy, but they are improving.
 
-Target specific NEWS
-
-    Sparc: Now includes V8 plus and V9 support, lots of tuning for Ultrasparcs
-           and uses the Haifa scheduler by default.
-
-    Alpha: EV6 tuned, optimized expansion of memcpy/bzero.
-
-    x86: Data in the static store is aligned per Intel recommendations.  Jump
-         targets are aligned per Intel recommendations.  Improved epilogue
-         sequences for Pentium chips.  Backend improvements which should help
-         register allocation on all x86 variants.  Support for PPro conditional
-         move instructions has been fixed and enabled.  Random changes
-	 throughout the port to make generated code more Pentium friendly.
-         Improved support for 64bit integer operations.
-         Unixware 7, a System V Release 5 target is now supported.
-         SCO OpenServer targets can support GAS.  See gcc/INSTALL for details.
-
-    RS6000/PowerPC: Includes AIX4.3 support as well as PowerPC64 support.  
-                    Haifa instruction scheduling is enabled by default now.
-
-    MIPS: Multiply/Multiply-Add support has been largely rewritten to generate
-          more efficient code.  Includes mips16 support.
-
-    M68K: Various micro-optimizations and Coldfire fixes.
+Target-specific changes:
 
     M32r: Major improvements to this port.
 
     Arm: Includes Thumb and super interworking support.
-
-EGCS includes all gcc2 changes up to and including the June 9, 1998 snapshot.
-
 
 Noteworthy changes in GCC version 2.8.1
 ---------------------------------------
