@@ -5,7 +5,8 @@
 /* { dg-options "-Wtraditional" } */
 
 void
-testfunc (long l)
+testfunc (l)
+     long l;
 {
   switch (l) /* { dg-warning "switch expression" "switch expression" } */
   {

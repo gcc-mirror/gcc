@@ -8,7 +8,7 @@ enum { SIGN_EXTEND = 23 };
 
 #define SIGN_EXTEND(v) (((v) < 0) ? -1 : 0)
 
-int fun(void)
+int fun()
 {
   return SIGN_EXTEND;	/* { dg-warning "must be used with arguments" } */
 }

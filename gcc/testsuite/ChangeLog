@@ -1,3 +1,22 @@
+2002-07-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/cpp/tr-warn2.c: Use traditional C style function definitions.
+	* gcc.dg/wtr-aggr-init-1.c: Likewise.
+	* gcc.dg/wtr-conversion-1.c: Likewise.
+	* gcc.dg/wtr-escape-1.c: Likewise.
+	* gcc.dg/wtr-int-type-1.c: Likewise.
+	* gcc.dg/wtr-label-1.c: Likewise.
+	* gcc.dg/wtr-static-1.c: Likewise.
+	* gcc.dg/wtr-strcat-1.c: Likewise.
+	* gcc.dg/wtr-suffix-1.c: Likewise.
+	* gcc.dg/wtr-switch-1.c: Likewise.
+	* gcc.dg/wtr-unary-plus-1.c: Likewise.
+	* gcc.dg/wtr-union-init-1.c: Likewise.
+	* gcc.dg/wtr-union-init-2.c: Likewise.
+	* gcc.dg/wtr-union-init-3.c: Likewise.
+
+	* gcc.dg/wtr-func-def-1.c: New test.
+
 2002-07-02 Devang Patel <dpatel@apple.com>
 
 	* objc.dg/param-1.m: New test.
