@@ -366,7 +366,7 @@ ggc_free_rtvec (v)
 #endif
 #ifdef GGC_POISON
   memset (v, 0xBB, sizeof (*v) + ((GET_NUM_ELEM (&v->vec) - 1)
-				  * sizeof (rtunion)));
+				  * sizeof (rtx)));
 #endif
 
   free (v);

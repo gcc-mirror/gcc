@@ -1,5 +1,10 @@
 Sun Oct  3 14:14:16 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* ggc-none.c (ggc_alloc_rtvec): An rtvec is an array of rtx,
+	not an array of rtunion.
+	* gcc-page.c (ggc_alloc_rtvec): Similarly.
+	* gcc-simple (ggc_free_rtvec): Similarly.
+
 	* genattrtab.c (simplify_cond): Make TESTS an array of rtxs, instead
 	of rtunions.
 

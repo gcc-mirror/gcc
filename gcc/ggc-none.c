@@ -51,7 +51,7 @@ rtvec
 ggc_alloc_rtvec (nelt)
      int nelt;
 {
-  int size = sizeof (struct rtvec_def) + (nelt - 1) * sizeof (rtunion);
+  int size = sizeof (struct rtvec_def) + (nelt - 1) * sizeof (rtx);
   rtvec v;
 
   v = (rtvec) xmalloc (size);
