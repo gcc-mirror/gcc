@@ -1,3 +1,7 @@
+2003-01-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cpplex.c (cpp_interpret_charconst): Squelch warning with cast.
+
 2003-01-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* genattrtab.c (write_attr_get): Mark 'insn' paramter
