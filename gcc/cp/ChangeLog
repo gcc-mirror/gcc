@@ -1,3 +1,11 @@
+2002-01-04  Jason Merrill  <jason@redhat.com>
+
+	* class.c (update_vtable_entry_for_fn): Set delta to zero for a
+	lost primary.
+
+	* class.c (build_vtbl_initializer): Check for a lost primary
+	before calculating the vtable entry to throw away.
+
 2002-01-02  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (expand_body): Call outlining_inline_function when
