@@ -1,4 +1,4 @@
-2001-10-16  Loren J. Rittle  <ljrittle@acm.org>
+2001-10-24  Loren J. Rittle  <ljrittle@acm.org>
 
 	* configure.in (case $THREADS): Add *-*-freebsd* configuration.
 	(HAVE_GETHOSTBYADDR_R): Create a valid, non-optimal
