@@ -99,7 +99,8 @@ proc check_visibility_available { } {
 
 proc check_alias_available { } {
     global alias_available_saved
-    
+    global tool
+
     if [info exists alias_available_saved] {
         verbose "check_alias_available  returning saved $alias_available_saved" 2
     } else {
@@ -110,7 +111,7 @@ proc check_alias_available { } {
 	# about the program.
 	puts $f "void g() {} void f() __attribute__((alias(\"g\")));"
 	close $f
-	set lines [gcc_target_compile "tmp.c" "tmp.o" object ""]
+	set lines [${tool}_target_compile "tmp.c" "tmp.o" object ""]
 	file delete "tmp.c"
 
 	if [string match "" $lines] then {
@@ -148,10 +149,11 @@ proc check_alias_available { } {
 
 proc check_gc_sections_available { } {
     global gc_sections_available_saved
+    global tool
 
     if {![info exists gc_sections_available_saved]} {
 	# Check if the ld used by gcc supports --gc-sections.
-	set gcc_ld [lindex [gcc_target_compile "-print-prog-name=ld" "" "none" ""] 0]
+	set gcc_ld [lindex [${tool}_target_compile "-print-prog-name=ld" "" "none" ""] 0]
 	set ld_output [remote_exec host "$gcc_ld" "--help"]
 	if { [ string first "--gc-sections" $ld_output ] >= 0 } {
 	    set gc_sections_available_saved 1

@@ -1,4 +1,5 @@
 // PR c++/12795
+// { dg-require-alias "" }
 
 void foo()
 {
