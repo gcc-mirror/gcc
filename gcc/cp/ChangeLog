@@ -2,6 +2,7 @@ Fri Jul  8 17:41:46 1994  Mike Stump  (mrs@cygnus.com)
 
 	* decl.c (cplus_expand_expr_stmt): Wrap statement expressions inside
 	CLEANUP_POINT_EXPRs so that the stack slots can be reused.
+	(disabled for now)
 
 Fri Jul  8 12:59:38 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
