@@ -71,16 +71,23 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifdef VMS
 /* The extra parameters substantially improve the I/O performance.  */
 static FILE *
-VMS_fopen (fname, type)
+vms_fopen (fname, type)
      char * fname;
      char * type;
 {
-  if (strcmp (type, "w") == 0)
-    return fopen (fname, type, "mbc=16", "deq=64", "fop=tef", "shr=nil");
-  return fopen (fname, type, "mbc=16");
+  /* The <stdio.h> in the gcc-vms-1.42 distribution prototypes fopen with two
+     fixed arguments, which matches ANSI's specification but not VAXCRTL's
+     pre-ANSI implementation.  This hack circumvents the mismatch problem.  */
+  FILE *(*vmslib_fopen)() = (FILE *(*)()) fopen;
+
+  if (*type == 'w')
+    return (*vmslib_fopen) (fname, type, "mbc=32",
+			    "deq=64", "fop=tef", "shr=nil");
+  else
+    return (*vmslib_fopen) (fname, type, "mbc=32");
 }
-#define fopen VMS_fopen
-#endif
+#define fopen vms_fopen
+#endif	/* VMS */
 
 #ifndef DEFAULT_GDB_EXTENSIONS
 #define DEFAULT_GDB_EXTENSIONS 1
