@@ -1,3 +1,8 @@
+Fri Apr 23 02:08:32 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi (Compiler Prototypes): Replace "missing" subscript-
+	checking option with something else.
+
 Fri Apr 23 01:48:28 1999  Craig Burley  <craig@jcb-sc.com>
 
 	Support new -fsubscript-check and -ff2c-subscript-check options:

@@ -9493,10 +9493,11 @@ of these features.)
 
 @code{g77} offers a whole bunch of compiler options that @code{f2c} doesn't.
 
-However, @code{f2c} offers a few that @code{g77} doesn't, like an
-option to generate code to check array subscripts at run time.
-It is expected that @code{g77} will offer some or all of these
-missing options at some time in the future.
+However, @code{f2c} offers a few that @code{g77} doesn't,
+like an option to have @code{REAL} default to @code{REAL*8}.
+It is expected that @code{g77} will offer all of the
+missing options pertinent to being a Fortran compiler
+at some time in the future.
 
 @node Compiler Speed
 @subsection Compiler Speed
