@@ -792,7 +792,7 @@ DEFUN(main, (argc, argv),
       for (; argi < argc; argi++)
 	{
 	  char *arg = argv[argi];
-	  char* class_filename = find_class (arg, strlen (arg), jcf, 1);
+	  char* class_filename = find_class (arg, strlen (arg), jcf, 0);
 	  if (class_filename == NULL)
 	    class_filename = find_classfile (arg, jcf, NULL);
 	  if (class_filename == NULL)
