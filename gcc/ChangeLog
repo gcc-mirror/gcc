@@ -1,5 +1,10 @@
 2001-10-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* ChangeLog.2, ChangeLog.3, ChangeLog.4, FSFChangeLog.10,
+	FSFChangeLog.11, c-common.c, c-common.def, c-common.h, c-decl.c,
+	c-dump.c, c-typeck.c, except.c, sdbout.c, simplify-rtx.c,
+	timevar.h, tree.h, varasm.c: Fix spelling errors and typos.
+
 	* loop.h (struct induction): Rename ext_dependant to
 	ext_dependent.
 	* loop.c: Change all uses.

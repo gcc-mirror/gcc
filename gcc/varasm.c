@@ -5325,7 +5325,7 @@ assemble_vtable_entry (symbol, offset)
   fputc ('\n', asm_out_file);
 }
 
-/* Used for vtable gc in GNU binutils.  Record the class heirarchy by noting
+/* Used for vtable gc in GNU binutils.  Record the class hierarchy by noting
    that the vtable symbol CHILD is derived from the vtable symbol PARENT.  */
 
 void

@@ -3820,7 +3820,7 @@ build_c_cast (type, expr)
 	}
     }
 
-  /* Pedantically, don't ley (void *) (FOO *) 0 be a null pointer constant.  */
+  /* Pedantically, don't let (void *) (FOO *) 0 be a null pointer constant.  */
   if (pedantic && TREE_CODE (value) == INTEGER_CST
       && TREE_CODE (expr) == INTEGER_CST
       && TREE_CODE (TREE_TYPE (expr)) != INTEGER_TYPE)
@@ -5762,7 +5762,7 @@ set_init_label (fieldname)
 }
 
 /* Add a new initializer to the tree of pending initializers.  PURPOSE
-   indentifies the initializer, either array index or field in a structure. 
+   identifies the initializer, either array index or field in a structure. 
    VALUE is the value of that index or field.  */
 
 static void

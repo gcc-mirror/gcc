@@ -2617,7 +2617,7 @@ simplify_subreg (outermode, op, innermode, byte)
       res = simplify_subreg (outermode, part, GET_MODE (part), final_offset);
       if (res)
 	return res;
-      /* We can at least simplify it by referring directly to the relevent part.  */
+      /* We can at least simplify it by referring directly to the relevant part.  */
       return gen_rtx_SUBREG (outermode, part, final_offset);
     }
 

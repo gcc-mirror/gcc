@@ -545,7 +545,7 @@ dequeue_and_dump (di)
       break;
 
     case CASE_LABEL:
-      /* Note that a case label is not like other statments; there is
+      /* Note that a case label is not like other statements; there is
 	 no way to get the line-number of a case label.  */
       dump_child ("low", CASE_LOW (t));
       dump_child ("high", CASE_HIGH (t));

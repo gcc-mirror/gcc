@@ -4070,7 +4070,7 @@ Sat Aug  2 13:25:33 1997  Tristan Gingold  (gingold@email.enst.fr)
 	* stmt.c (expand_computed_goto): If -fcheck-memory-usage, check that
 	computed address of a goto is executable.
 	(expand_asm, expand_asm_operands): If -fcheck-memory-usage,
-	disallow asm statments.
+	disallow asm statements.
 	* toplev.c (flag_check_memory_usage, flag_prefix_function_name): New
 	variable.
 	(f_options): Add `check-memory-usage' and `prefix_function_name'.

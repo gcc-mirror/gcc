@@ -63,7 +63,7 @@ struct timevar_time_def
   float wall;
 };
 
-/* An enumeration of timing variable indentifiers.  Constructed from
+/* An enumeration of timing variable identifiers.  Constructed from
    the contents of timevar.def.  */
 
 #define DEFTIMEVAR(identifier__, name__) \

@@ -1182,7 +1182,7 @@ sdbout_one_type (type)
 
 	/* Print out the base class information with fields
 	   named after the types they hold.  */
-	/* This is only relevent to aggregate types.  TYPE_BINFO is used
+	/* This is only relevant to aggregate types.  TYPE_BINFO is used
 	   for other purposes in an ENUMERAL_TYPE, so we must exclude that
 	   case.  */
 	if (TREE_CODE (type) != ENUMERAL_TYPE)
