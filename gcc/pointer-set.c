@@ -46,8 +46,8 @@ struct pointer_set_t
    relatively prime to 2^sizeof(size_t).  The result is two words.
    Discard the most significant word, and return the most significant
    N bits of the least significant word.  As suggested by Knuth, our
-   choice for A is the integer part of 2^32 / phi, where phi is the
-   golden ratio.
+   choice for A is the integer part of (ULONG_MAX + 1.0) / phi, where phi
+   is the golden ratio.
 
    We don't need to do anything special for full-width multiplication
    because we're only interested in the least significant word of the
@@ -56,8 +56,16 @@ struct pointer_set_t
 static inline size_t
 hash1 (const void *p, unsigned long max, unsigned long logmax)
 {
+#if HOST_BITS_PER_LONG == 32
   const unsigned long A = 0x9e3779b9u;
-  const unsigned long shift = sizeof(unsigned long) * CHAR_BIT - logmax;
+#elif HOST_BITS_PER_LONG == 64
+  const unsigned long A = 0x9e3779b97f4a7c16ul;
+#else
+  const double M = (ULONG_MAX + 1.0);
+  const double B = M / ((sqrt (5) - 1) / 2.0);
+  const unsigned long A = B - (floor (B / M) * M);
+#endif
+  const unsigned long shift = sizeof (unsigned long) * CHAR_BIT - logmax;
 
   return ((A * (unsigned long) p) >> shift) & (max - 1);
 }

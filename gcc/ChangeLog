@@ -1,3 +1,8 @@
+2004-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* pointer-set.c (hash1): Use integer part of 2^64 / phi
+	instead 2^32 / phi if long is 64-bit.
+
 2004-10-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-common.h (enum rid): Remove RID_PTRBASE, RID_PTREXTENT and
