@@ -1,4 +1,12 @@
-2003-03-04  Benjamin Kosnik  <bkoz@redhat.com>
+2003-03-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* libsupc++/demangle.h: Move to..
+	* include/bits/demangle.h: ...here.
+	* src/demangle.cc: Adjust include.
+	* include/Makefile.am (bits_headers): Add.
+	* include/Makefile.in: Regenerate.
+	
+2003-03-04  Benjamin Kosnik  <bkoz@redhat.com>	
 
 	* src/globals.cc: Clarify comments, remove c_locale_imp_compat.
 
