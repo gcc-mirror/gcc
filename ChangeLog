@@ -1,3 +1,7 @@
+Wed Sep 10 15:19:22 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* config.sub: Accept 'amigados' for backward compatability.
+
 Sun Sep  7 23:18:32 1997  Fred Fish  <fnf@ninemoons.com>
 
 	* config.sub: Change 'amigados' to 'amigaos' to match current usage.
