@@ -1,3 +1,25 @@
+2003-03-13  Mike Stump  <mrs@apple.com>
+
+	* ggc-page.c (struct page_entry): Remove varray.h header.
+	Add index_by_depth field.
+	Remove save_in_use_p field.
+	(struct globals): Add depth_in_use, depth_max, by_depth_in_use,
+	by_depth_max, by_depth, and save_in_use fields.
+	(INITIAL_PTE_COUNT): Add.
+	(save_in_use_p_i): Add.
+	(save_in_use_p): Add.
+	(adjust_depth): Add.
+	(push_depth): Add.
+	(push_by_depth): Add.
+	(prefetch): Add.
+	(free_page): Add support for and use faster data structures.
+	(ggc_alloc): Likewise.
+	(init_ggc): Likewise.
+	(ggc_recalculate_in_use_p): Likewise.
+	(ggc_pop_context): Likewise.
+	(clear_marks): Likewise.
+	* Makefile.in (ggc-page.o): Remove varray.h.
+
 2003-03-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (pa_init_builtins): Fix warning.

@@ -1353,7 +1353,7 @@ ggc-simple.o: ggc-simple.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
 	$(GGC_H) varray.h $(TIMEVAR_H) $(TM_P_H) $(PARAMS_H)
 
 ggc-page.o: ggc-page.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
-	toplev.h $(GGC_H) varray.h $(TIMEVAR_H) $(TM_P_H)
+	toplev.h $(GGC_H) $(TIMEVAR_H) $(TM_P_H)
 
 stringpool.o: stringpool.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(OBSTACK_H) \
 	flags.h toplev.h $(GGC_H)

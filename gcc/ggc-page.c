@@ -24,7 +24,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "rtl.h"
 #include "tm_p.h"
 #include "toplev.h"
-#include "varray.h"
 #include "flags.h"
 #include "ggc.h"
 #include "timevar.h"
@@ -239,9 +238,9 @@ typedef struct page_entry
   struct page_group *group;
 #endif
 
-  /* Saved in-use bit vector for pages that aren't in the topmost
-     context during collection.  */
-  unsigned long *save_in_use_p;
+  /* This is the index in the by_depth varray where this page table
+     can be found.  */
+  unsigned long index_by_depth;
 
   /* Context depth of this page.  */
   unsigned short context_depth;
@@ -353,6 +352,36 @@ static struct globals
 
   /* The file descriptor for debugging output.  */
   FILE *debug_file;
+
+  /* Current number of elements in use in depth below.  */
+  unsigned int depth_in_use;
+
+  /* Maximum number of elements that can be used before resizing.  */
+  unsigned int depth_max;
+
+  /* Each element of this arry is an index in by_depth where the given
+     depth starts.  This structure is indexed by that given depth we
+     are interested in.  */
+  unsigned int *depth;
+
+  /* Current number of elements in use in by_depth below.  */
+  unsigned int by_depth_in_use;
+
+  /* Maximum number of elements that can be used before resizing.  */
+  unsigned int by_depth_max;
+
+  /* Each element of this array is a pointer to a page_entry, all
+     page_entries can be found in here by increasing depth.
+     index_by_depth in the page_entry is the index into this data
+     structure where that page_entry can be found.  This is used to
+     speed up finding all page_entries at a particular depth.  */
+  page_entry **by_depth;
+
+  /* Each element is a pointer to the saved in_use_p bits, if any,
+     zero otherwise.  We allocate them all together, to enable a
+     better runtime data access pattern.  */
+  unsigned long **save_in_use;
+
 } G;
 
 /* The size in bytes required to maintain a bitmap for the objects
@@ -365,6 +394,9 @@ static struct globals
    free list.  This cannot be larger than HOST_BITS_PER_INT for the
    in_use bitmask for page_group.  */
 #define GGC_QUIRE_SIZE 16
+
+/* Initial guess as to how many page table entries we might need.  */
+#define INITIAL_PTE_COUNT 128
 
 static int ggc_allocated_p PARAMS ((const void *));
 static page_entry *lookup_page_table_entry PARAMS ((const void *));
@@ -384,13 +416,58 @@ static void clear_marks PARAMS ((void));
 static void sweep_pages PARAMS ((void));
 static void ggc_recalculate_in_use_p PARAMS ((page_entry *));
 static void compute_inverse PARAMS ((unsigned));
+static inline void adjust_depth PARAMS ((void));
 
 #ifdef ENABLE_GC_CHECKING
 static void poison_pages PARAMS ((void));
 #endif
 
 void debug_print_page_list PARAMS ((int));
+static void push_depth PARAMS ((unsigned int));
+static void push_by_depth PARAMS ((page_entry *, unsigned long *));
 
+/* Push an entry onto G.depth.  */
+
+inline static void
+push_depth (i)
+     unsigned int i;
+{
+  if (G.depth_in_use >= G.depth_max)
+    {
+      G.depth_max *= 2;
+      G.depth = (unsigned int *) xrealloc ((char *) G.depth,
+					   G.depth_max * sizeof (unsigned int));
+    }
+  G.depth[G.depth_in_use++] = i;
+}
+
+/* Push an entry onto G.by_depth and G.save_in_use.  */
+
+inline static void
+push_by_depth (p, s)
+     page_entry *p;
+     unsigned long *s;
+{
+  if (G.by_depth_in_use >= G.by_depth_max)
+    {
+      G.by_depth_max *= 2;
+      G.by_depth = (page_entry **) xrealloc ((char *) G.by_depth,
+					     G.by_depth_max * sizeof (page_entry *));
+      G.save_in_use = (unsigned long **) xrealloc ((char *) G.save_in_use,
+						   G.by_depth_max * sizeof (unsigned long *));
+    }
+  G.by_depth[G.by_depth_in_use] = p;
+  G.save_in_use[G.by_depth_in_use++] = s;
+}
+
+/* For the 3.3 release, we will avoid prefetch, as it isn't tested widely.  */
+#define prefetch(X) ((void) X)
+
+#define save_in_use_p_i(__i) \
+  (G.save_in_use[__i])
+#define save_in_use_p(__p) \
+  (save_in_use_p_i (__p->index_by_depth))
+
 /* Returns nonzero if P was allocated in GC'able memory.  */
 
 static inline int
@@ -758,6 +835,26 @@ alloc_page (order)
   return entry;
 }
 
+/* Adjust the size of G.depth so that no index greater than the one
+   used by the top of the G.by_depth is used.  */
+
+static inline void
+adjust_depth ()
+{
+  page_entry *top;
+
+  if (G.by_depth_in_use)
+    {
+      top = G.by_depth[G.by_depth_in_use-1];
+
+      /* Peel back indicies in depth that index into by_depth, so that
+	 as new elements are added to by_depth, we note the indicies
+	 of those elements, if they are for new context depths.  */
+      while (G.depth_in_use > (size_t)top->context_depth+1)
+	--G.depth_in_use;
+    }
+}
+
 /* For a page that is no longer needed, put it on the free page list.  */
 
 static inline void
@@ -778,6 +875,30 @@ free_page (entry)
 #ifdef USING_MALLOC_PAGE_GROUPS
   clear_page_group_in_use (entry->group, entry->page);
 #endif
+
+  if (G.by_depth_in_use > 1)
+    {
+      page_entry *top = G.by_depth[G.by_depth_in_use-1];
+
+      /* If they are at the same depth, put top element into freed
+	 slot.  */
+      if (entry->context_depth == top->context_depth)
+	{
+	  int i = entry->index_by_depth;
+	  G.by_depth[i] = top;
+	  G.save_in_use[i] = G.save_in_use[G.by_depth_in_use-1];
+	  top->index_by_depth = i;
+	}
+      else
+	{
+	  /* We cannot free a page from a context deeper than the
+	     current one.  */
+	  abort ();
+	}
+    }
+  --G.by_depth_in_use;
+
+  adjust_depth ();
 
   entry->next = G.free_pages;
   G.free_pages = entry;
@@ -901,6 +1022,14 @@ ggc_alloc (size)
     {
       struct page_entry *new_entry;
       new_entry = alloc_page (order);
+
+      new_entry->index_by_depth = G.by_depth_in_use;
+      push_by_depth (new_entry, 0);
+
+      /* We can skip context depths, if we do, make sure we go all the
+	 way to the new depth.  */
+      while (new_entry->context_depth >= G.depth_in_use)
+	push_depth (G.by_depth_in_use-1);
 
       /* If this is the only entry, it's also the tail.  */
       if (entry == NULL)
@@ -1204,6 +1333,15 @@ init_ggc ()
       for (i = OBJECT_SIZE (order); size_lookup [i] == o; --i)
 	size_lookup[i] = order;
     }
+
+  G.depth_in_use = 0;
+  G.depth_max = 10;
+  G.depth = (unsigned int *) xmalloc (G.depth_max * sizeof (unsigned int));
+
+  G.by_depth_in_use = 0;
+  G.by_depth_max = INITIAL_PTE_COUNT;
+  G.by_depth = (page_entry **) xmalloc (G.by_depth_max * sizeof (page_entry *));
+  G.save_in_use = (unsigned long **) xmalloc (G.by_depth_max * sizeof (unsigned long *));
 }
 
 /* Increment the `GC context'.  Objects allocated in an outer context
@@ -1246,7 +1384,7 @@ ggc_recalculate_in_use_p (p)
 
       /* Something is in use if it is marked, or if it was in use in a
 	 context further down the context stack.  */
-      p->in_use_p[i] |= p->save_in_use_p[i];
+      p->in_use_p[i] |= save_in_use_p (p)[i];
 
       /* Decrement the free object count for every object allocated.  */
       for (j = p->in_use_p[i]; j; j >>= 1)
@@ -1264,7 +1402,10 @@ void
 ggc_pop_context ()
 {
   unsigned long omask;
-  unsigned order, depth;
+  unsigned int depth, i, e;
+#ifdef ENABLE_CHECKING
+  unsigned int order;
+#endif
 
   depth = --G.context_depth;
   omask = (unsigned long)1 << (depth + 1);
@@ -1276,9 +1417,66 @@ ggc_pop_context ()
   G.context_depth_allocations &= omask - 1;
   G.context_depth_collections &= omask - 1;
 
-  /* Any remaining pages in the popped context are lowered to the new
-     current context; i.e. objects allocated in the popped context and
-     left over are imported into the previous context.  */
+  /* The G.depth array is shortend so that the last index is the
+     context_depth of the top element of by_depth.  */
+  if (depth+1 < G.depth_in_use)
+    e = G.depth[depth+1];
+  else
+    e = G.by_depth_in_use;
+
+  /* We might not have any PTEs of depth depth.  */
+  if (depth < G.depth_in_use)
+    {    
+
+      /* First we go through all the pages at depth depth to
+	 recalculate the in use bits.  */
+      for (i = G.depth[depth]; i < e; ++i)
+	{
+	  page_entry *p;
+
+#ifdef ENABLE_CHECKING
+	  p = G.by_depth[i];
+
+	  /* Check that all of the pages really are at the depth that
+	     we expect.  */
+	  if (p->context_depth != depth)
+	    abort ();
+	  if (p->index_by_depth != i)
+	    abort ();
+#endif
+
+	  prefetch (&save_in_use_p_i (i+8));
+	  prefetch (&save_in_use_p_i (i+16));
+	  if (save_in_use_p_i (i))
+	    {
+	      p = G.by_depth[i];
+	      ggc_recalculate_in_use_p (p);
+	      free (save_in_use_p_i (i));
+	      save_in_use_p_i (i) = 0;
+	    }
+	}
+    }
+
+  /* Then, we reset all page_entries with a depth greater than depth
+     to be at depth.  */
+  for (i = e; i < G.by_depth_in_use; ++i)
+    {
+      page_entry *p = G.by_depth[i];
+
+      /* Check that all of the pages really are at the depth we
+	 expect.  */
+#ifdef ENABLE_CHECKING
+      if (p->context_depth <= depth)
+	abort ();
+      if (p->index_by_depth != i)
+	abort ();
+#endif
+      p->context_depth = depth;
+    }
+
+  adjust_depth ();
+
+#ifdef ENABLE_CHECKING
   for (order = 2; order < NUM_ORDERS; order++)
     {
       page_entry *p;
@@ -1286,18 +1484,12 @@ ggc_pop_context ()
       for (p = G.pages[order]; p != NULL; p = p->next)
 	{
 	  if (p->context_depth > depth)
-	    p->context_depth = depth;
-
-	  /* If this page is now in the topmost context, and we'd
-	     saved its allocation state, restore it.  */
-	  else if (p->context_depth == depth && p->save_in_use_p)
-	    {
-	      ggc_recalculate_in_use_p (p);
-	      free (p->save_in_use_p);
-	      p->save_in_use_p = 0;
-	    }
+	    abort ();
+	  else if (p->context_depth == depth && save_in_use_p (p))
+	    abort ();
 	}
     }
+#endif
 }
 
 /* Unmark all objects.  */
@@ -1326,9 +1518,9 @@ clear_marks ()
 	     marks.  So, back them up first.  */
 	  if (p->context_depth < G.context_depth)
 	    {
-	      if (! p->save_in_use_p)
-		p->save_in_use_p = xmalloc (bitmap_size);
-	      memcpy (p->save_in_use_p, p->in_use_p, bitmap_size);
+	      if (! save_in_use_p (p))
+		save_in_use_p (p) = xmalloc (bitmap_size);
+	      memcpy (save_in_use_p (p), p->in_use_p, bitmap_size);
 	    }
 
 	  /* Reset reset the number of free objects and clear the
