@@ -47,7 +47,7 @@ debug_tree (node)
      tree node;
 {
   table = (struct bucket **) permalloc (HASH_SIZE * sizeof (struct bucket *));
-  bzero ((char *) table, HASH_SIZE * sizeof (struct bucket *));
+  memset ((char *) table, 0, HASH_SIZE * sizeof (struct bucket *));
   print_node (stderr, "", node, 0);
   table = 0;
   fprintf (stderr, "\n");

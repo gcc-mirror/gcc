@@ -993,7 +993,7 @@ new_basic_block ()
 
   /* Clear out hash table state for this pass.  */
 
-  bzero ((char *) reg_hash, sizeof reg_hash);
+  memset ((char *) reg_hash, 0, sizeof reg_hash);
 
   if (cse_reg_info_used_list)
     {

@@ -115,8 +115,8 @@ java_init_lex (finput, encoding)
   CPC_INITIALIZER_LIST (ctxp) = CPC_STATIC_INITIALIZER_LIST (ctxp) =
     CPC_INSTANCE_INITIALIZER_LIST (ctxp) = ctxp->incomplete_class = NULL_TREE;
 
-  bzero ((PTR) ctxp->modifier_ctx, 11*sizeof (ctxp->modifier_ctx[0]));
-  bzero ((PTR) current_jcf, sizeof (JCF));
+  memset ((PTR) ctxp->modifier_ctx, 0, 11*sizeof (ctxp->modifier_ctx[0]));
+  memset ((PTR) current_jcf, 0, sizeof (JCF));
   ctxp->current_parsed_class = NULL;
   ctxp->package = NULL_TREE;
 #endif

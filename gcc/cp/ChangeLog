@@ -1,3 +1,10 @@
+2000-11-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* class.c (duplicate_tag_error, build_vtbl_initializer), decl.c
+	(push_binding_level), error.c (cp_tree_printer), pt.c
+	(process_partial_specialization, tsubst_template_arg_vector),
+	search.c (lookup_member): Use memset () instead of bzero ().
+
 2000-11-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (build_ptrmemfunc_type): Allow error_mark_node.

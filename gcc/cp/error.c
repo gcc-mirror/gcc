@@ -2650,7 +2650,7 @@ cp_tree_printer (buffer)
   int be_verbose = 0;
   tree_formatting_info tfi;
 
-  bzero (&tfi, sizeof (tree_formatting_info));
+  memset (&tfi, 0, sizeof (tree_formatting_info));
 
   if (*output_buffer_text_cursor (buffer) == '+')
     ++output_buffer_text_cursor (buffer);

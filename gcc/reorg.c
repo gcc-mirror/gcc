@@ -3589,8 +3589,8 @@ dbr_schedule (first, file)
   end_of_function_label = 0;
 
   /* Initialize the statistics for this function.  */
-  bzero ((char *) num_insns_needing_delays, sizeof num_insns_needing_delays);
-  bzero ((char *) num_filled_delays, sizeof num_filled_delays);
+  memset ((char *) num_insns_needing_delays, 0, sizeof num_insns_needing_delays);
+  memset ((char *) num_filled_delays, 0, sizeof num_filled_delays);
 
   /* Now do the delay slot filling.  Try everything twice in case earlier
      changes make more slots fillable.  */
@@ -3667,8 +3667,8 @@ dbr_schedule (first, file)
 	      fprintf (file, "\n");
 	    }
 	}
-      bzero ((char *) total_delay_slots, sizeof total_delay_slots);
-      bzero ((char *) total_annul_slots, sizeof total_annul_slots);
+      memset ((char *) total_delay_slots, 0, sizeof total_delay_slots);
+      memset ((char *) total_annul_slots, 0, sizeof total_annul_slots);
       for (insn = first; insn; insn = NEXT_INSN (insn))
 	{
 	  if (! INSN_DELETED_P (insn)

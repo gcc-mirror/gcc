@@ -1344,7 +1344,7 @@ combine_movables (movables, regs)
 	register struct movable *m1;
 	int regno = m->regno;
 
-	bzero (matched_regs, regs->num);
+	memset (matched_regs, 0, regs->num);
 	matched_regs[regno] = 1;
 
 	/* We want later insns to match the first one.  Don't make the first
@@ -3367,7 +3367,7 @@ count_loop_regs_set (loop, may_not_move, single_usage, count_ptr, nregs)
 	}
 
       if (GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == JUMP_INSN)
-	bzero ((char *) last_set, nregs * sizeof (rtx));
+	memset ((char *) last_set, 0, nregs * sizeof (rtx));
     }
   *count_ptr = count;
 
@@ -8664,9 +8664,9 @@ load_mems_and_recount_loop_regs_set (loop, insn_count)
 	  VARRAY_GROW (regs->single_usage, nregs);
 	}
       /* Clear the arrays */
-      bzero ((char *) &regs->set_in_loop->data, nregs * sizeof (int));
-      bzero ((char *) &regs->may_not_optimize->data, nregs * sizeof (char));
-      bzero ((char *) &regs->single_usage->data, nregs * sizeof (rtx));
+      memset ((char *) &regs->set_in_loop->data, 0, nregs * sizeof (int));
+      memset ((char *) &regs->may_not_optimize->data, 0, nregs * sizeof (char));
+      memset ((char *) &regs->single_usage->data, 0, nregs * sizeof (rtx));
 
       count_loop_regs_set (loop, regs->may_not_optimize, regs->single_usage,
 			   insn_count, nregs);

@@ -1538,7 +1538,7 @@ lookup_member (xbasetype, name, protect, want_type)
   n_calls_lookup_field++;
 #endif /* GATHER_STATISTICS */
 
-  bzero ((PTR) &lfi, sizeof (lfi));
+  memset ((PTR) &lfi, 0, sizeof (lfi));
   lfi.type = type;
   lfi.name = name;
   lfi.want_type = want_type;

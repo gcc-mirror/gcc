@@ -789,15 +789,15 @@ init_reg_last_arrays ()
 {
   unsigned int nregs = combine_max_regno;
 
-  bzero ((char *) reg_last_death, nregs * sizeof (rtx));
-  bzero ((char *) reg_last_set, nregs * sizeof (rtx));
-  bzero ((char *) reg_last_set_value, nregs * sizeof (rtx));
-  bzero ((char *) reg_last_set_table_tick, nregs * sizeof (int));
-  bzero ((char *) reg_last_set_label, nregs * sizeof (int));
-  bzero (reg_last_set_invalid, nregs * sizeof (char));
-  bzero ((char *) reg_last_set_mode, nregs * sizeof (enum machine_mode));
-  bzero ((char *) reg_last_set_nonzero_bits, nregs * sizeof (HOST_WIDE_INT));
-  bzero (reg_last_set_sign_bit_copies, nregs * sizeof (char));
+  memset ((char *) reg_last_death, 0, nregs * sizeof (rtx));
+  memset ((char *) reg_last_set, 0, nregs * sizeof (rtx));
+  memset ((char *) reg_last_set_value, 0, nregs * sizeof (rtx));
+  memset ((char *) reg_last_set_table_tick, 0, nregs * sizeof (int));
+  memset ((char *) reg_last_set_label, 0, nregs * sizeof (int));
+  memset (reg_last_set_invalid, 0, nregs * sizeof (char));
+  memset ((char *) reg_last_set_mode, 0, nregs * sizeof (enum machine_mode));
+  memset ((char *) reg_last_set_nonzero_bits, 0, nregs * sizeof (HOST_WIDE_INT));
+  memset (reg_last_set_sign_bit_copies, 0, nregs * sizeof (char));
 }
 
 /* Set up any promoted values for incoming argument registers.  */

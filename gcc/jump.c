@@ -3745,7 +3745,7 @@ thread_jumps (f, max_reg, flag_before_loop)
 	      || ! any_condjump_p (b1) || JUMP_LABEL (b1) == 0)
 	    continue;
 
-	  bzero (modified_regs, max_reg * sizeof (char));
+	  memset (modified_regs, 0, max_reg * sizeof (char));
 	  modified_mem = 0;
 
 	  bcopy ((char *) all_reset, (char *) same_regs,

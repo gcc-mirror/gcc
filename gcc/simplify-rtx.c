@@ -1510,7 +1510,7 @@ simplify_plus_minus (code, mode, op0, op1)
   int first = 1, negate = 0, changed;
   int i, j;
 
-  bzero ((char *) ops, sizeof ops);
+  memset ((char *) ops, 0, sizeof ops);
   
   /* Set up the two operands and then expand them until nothing has been
      changed.  If we run out of room in our array, give up; this should

@@ -566,7 +566,7 @@ push_binding_level (newlevel, tag_transparent, keep)
 {
   /* Add this level to the front of the chain (stack) of levels that
      are active.  */
-  bzero ((char*) newlevel, sizeof (struct binding_level));
+  memset ((char*) newlevel, 0, sizeof (struct binding_level));
   newlevel->level_chain = current_binding_level;
   current_binding_level = newlevel;
   newlevel->tag_transparent = tag_transparent;

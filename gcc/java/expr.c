@@ -2507,7 +2507,7 @@ note_instructions (jcf, method)
   JCF_SEEK (jcf, DECL_CODE_OFFSET (method));
   byte_ops = jcf->read_ptr;
   instruction_bits = xrealloc (instruction_bits, length + 1);
-  bzero (instruction_bits, length + 1);
+  memset (instruction_bits, 0, length + 1);
 
   /* This pass figures out which PC can be the targets of jumps. */
   for (PC = 0; PC < length;)

@@ -648,7 +648,7 @@ init_outgoing_cpool ()
 {
   current_constant_pool_data_ref = NULL_TREE;
   outgoing_cpool = (struct CPool *)xmalloc (sizeof (struct CPool));
-  bzero (outgoing_cpool, sizeof (struct CPool));
+  memset (outgoing_cpool, 0, sizeof (struct CPool));
 }
 
 static void

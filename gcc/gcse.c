@@ -817,7 +817,7 @@ compute_can_copy ()
 #ifndef AVOID_CCMODE_COPIES
   rtx reg,insn;
 #endif
-  bzero (can_copy_p, NUM_MACHINE_MODES);
+  memset (can_copy_p, 0, NUM_MACHINE_MODES);
 
   start_sequence ();
   for (i = 0; i < NUM_MACHINE_MODES; i++)
@@ -890,7 +890,7 @@ alloc_gcse_mem (f)
   max_uid = get_max_uid ();
   n = (max_uid + 1) * sizeof (int);
   uid_cuid = (int *) gmalloc (n);
-  bzero ((char *) uid_cuid, n);
+  memset ((char *) uid_cuid, 0, n);
   for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
     {
       if (INSN_P (insn))
@@ -904,7 +904,7 @@ alloc_gcse_mem (f)
   max_cuid = i;
   n = (max_cuid + 1) * sizeof (rtx);
   cuid_insn = (rtx *) gmalloc (n);
-  bzero ((char *) cuid_insn, n);
+  memset ((char *) cuid_insn, 0, n);
   for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn))
       CUID_INSN (i++) = insn;
@@ -1095,7 +1095,7 @@ alloc_reg_set_mem (n_regs)
   reg_set_table_size = n_regs + REG_SET_TABLE_SLOP;
   n = reg_set_table_size * sizeof (struct reg_set *);
   reg_set_table = (struct reg_set **) gmalloc (n);
-  bzero ((char *) reg_set_table, n);
+  memset ((char *) reg_set_table, 0, n);
 
   gcc_obstack_init (&reg_set_obstack);
 }
@@ -1125,7 +1125,7 @@ record_one_set (regno, insn)
       reg_set_table
 	= (struct reg_set **) grealloc ((char *) reg_set_table,
 					new_size * sizeof (struct reg_set *));
-      bzero ((char *) (reg_set_table + reg_set_table_size),
+      memset ((char *) (reg_set_table + reg_set_table_size), 0,
 	     (new_size - reg_set_table_size) * sizeof (struct reg_set *));
       reg_set_table_size = new_size;
     }
@@ -2154,7 +2154,7 @@ compute_hash_table (set_p)
      ??? This isn't needed during const/copy propagation, but it's cheap to
      compute.  Later.  */
   sbitmap_vector_zero (reg_set_in_block, n_basic_blocks);
-  bzero ((char *) mem_set_in_block, n_basic_blocks);
+  memset ((char *) mem_set_in_block, 0, n_basic_blocks);
 
   /* Some working arrays used to track first and last set in each block.  */
   /* ??? One could use alloca here, but at some size a threshold is crossed
@@ -2282,7 +2282,7 @@ compute_set_hash_table ()
 {
   /* Initialize count of number of entries in hash table.  */
   n_sets = 0;
-  bzero ((char *) set_hash_table,
+  memset ((char *) set_hash_table, 0,
 	 set_hash_table_size * sizeof (struct expr *));
 
   compute_hash_table (1);
@@ -2326,7 +2326,7 @@ compute_expr_hash_table ()
 {
   /* Initialize count of number of entries in hash table.  */
   n_exprs = 0;
-  bzero ((char *) expr_hash_table,
+  memset ((char *) expr_hash_table, 0,
 	 expr_hash_table_size * sizeof (struct expr *));
 
   compute_hash_table (0);

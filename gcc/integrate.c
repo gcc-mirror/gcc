@@ -275,7 +275,7 @@ initialize_for_inline (fndecl)
   tree parms;
 
   /* Clear out PARMDECL_MAP.  It was allocated in the caller's frame.  */
-  bzero ((char *) parmdecl_map, max_parm_reg * sizeof (tree));
+  memset ((char *) parmdecl_map, 0, max_parm_reg * sizeof (tree));
   arg_vector = rtvec_alloc (list_length (DECL_ARGUMENTS (fndecl)));
 
   for (parms = DECL_ARGUMENTS (fndecl), i = 0;
@@ -1094,7 +1094,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
   /* Initialize label_map.  get_label_from_map will actually make
      the labels.  */
-  bzero ((char *) &map->label_map[min_labelno],
+  memset ((char *) &map->label_map[min_labelno], 0,
 	 (max_labelno - min_labelno) * sizeof (rtx));
 
   /* Make copies of the decls of the symbols in the inline function, so that

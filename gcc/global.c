@@ -454,8 +454,8 @@ global_alloc (file)
   /* Calculate amount of usage of each hard reg by pseudos
      allocated by local-alloc.  This is to see if we want to
      override it.  */
-  bzero ((char *) local_reg_live_length, sizeof local_reg_live_length);
-  bzero ((char *) local_reg_n_refs, sizeof local_reg_n_refs);
+  memset ((char *) local_reg_live_length, 0, sizeof local_reg_live_length);
+  memset ((char *) local_reg_n_refs, 0, sizeof local_reg_n_refs);
   for (i = FIRST_PSEUDO_REGISTER; i < (size_t) max_regno; i++)
     if (reg_renumber[i] >= 0)
       {
@@ -637,7 +637,7 @@ global_conflicts ()
 
   for (b = 0; b < n_basic_blocks; b++)
     {
-      bzero ((char *) allocnos_live, allocno_row_words * sizeof (INT_TYPE));
+      memset ((char *) allocnos_live, 0, allocno_row_words * sizeof (INT_TYPE));
 
       /* Initialize table of registers currently live
 	 to the state at the beginning of this basic block.

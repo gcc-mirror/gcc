@@ -1127,8 +1127,8 @@ rename_registers (nregs, idom)
   ssa_rename_from_initialize ();
 
   ssa_rename_to_pseudo = (rtx *) alloca (nregs * sizeof(rtx));
-  bzero ((char *) ssa_rename_to_pseudo, nregs * sizeof(rtx));
-  bzero ((char *) ssa_rename_to_hard, 
+  memset ((char *) ssa_rename_to_pseudo, 0, nregs * sizeof(rtx));
+  memset ((char *) ssa_rename_to_hard, 0, 
 	 FIRST_PSEUDO_REGISTER * NUM_MACHINE_MODES * sizeof (rtx));
 
   rename_block (0, idom);

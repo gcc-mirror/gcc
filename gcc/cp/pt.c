@@ -2108,10 +2108,10 @@ process_partial_specialization (decl)
      or some such would have been OK.  */
   tpd.level = TMPL_PARMS_DEPTH (current_template_parms);
   tpd.parms = alloca (sizeof (int) * ntparms);
-  bzero ((PTR) tpd.parms, sizeof (int) * ntparms);
+  memset ((PTR) tpd.parms, 0, sizeof (int) * ntparms);
 
   tpd.arg_uses_template_parms = alloca (sizeof (int) * nargs);
-  bzero ((PTR) tpd.arg_uses_template_parms, sizeof (int) * nargs);
+  memset ((PTR) tpd.arg_uses_template_parms, 0, sizeof (int) * nargs);
   for (i = 0; i < nargs; ++i)
     {
       tpd.current_arg = i;
@@ -2195,7 +2195,7 @@ process_partial_specialization (decl)
 		 template, not in the specialization.  */
 	      tpd2.current_arg = i;
 	      tpd2.arg_uses_template_parms[i] = 0;
-	      bzero ((PTR) tpd2.parms, sizeof (int) * nargs);
+	      memset ((PTR) tpd2.parms, 0, sizeof (int) * nargs);
 	      for_each_template_parm (type,
 				      &mark_template_parm,
 				      &tpd2);
@@ -5195,7 +5195,7 @@ tsubst_template_arg_vector (t, args, complain)
   int len = TREE_VEC_LENGTH (t), need_new = 0, i;
   tree *elts = (tree *) alloca (len * sizeof (tree));
   
-  bzero ((char *) elts, len * sizeof (tree));
+  memset ((char *) elts, 0, len * sizeof (tree));
   
   for (i = 0; i < len; i++)
     {

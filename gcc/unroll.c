@@ -1072,10 +1072,10 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 	      emit_label_after (labels[unroll_number - i],
 				PREV_INSN (loop_start));
 
-	      bzero ((char *) map->insn_map, max_insnno * sizeof (rtx));
-	      bzero ((char *) &VARRAY_CONST_EQUIV (map->const_equiv_varray, 0),
-		     (VARRAY_SIZE (map->const_equiv_varray)
-		      * sizeof (struct const_equiv_data)));
+	      memset ((char *) map->insn_map, 0, max_insnno * sizeof (rtx));
+	      memset ((char *) &VARRAY_CONST_EQUIV (map->const_equiv_varray, 0),
+		      0, (VARRAY_SIZE (map->const_equiv_varray)
+			  * sizeof (struct const_equiv_data)));
 	      map->const_age = 0;
 
 	      for (j = 0; j < max_labelno; j++)
@@ -1219,9 +1219,9 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 
   for (i = 0; i < unroll_number; i++)
     {
-      bzero ((char *) map->insn_map, max_insnno * sizeof (rtx));
-      bzero ((char *) &VARRAY_CONST_EQUIV (map->const_equiv_varray, 0),
-	     VARRAY_SIZE (map->const_equiv_varray) * sizeof (struct const_equiv_data));
+      memset ((char *) map->insn_map, 0, max_insnno * sizeof (rtx));
+      memset ((char *) &VARRAY_CONST_EQUIV (map->const_equiv_varray, 0), 0,
+	      VARRAY_SIZE (map->const_equiv_varray) * sizeof (struct const_equiv_data));
       map->const_age = 0;
 
       for (j = 0; j < max_labelno; j++)

@@ -2053,7 +2053,7 @@ init_alias_analysis ()
       /* ??? Why are we realloc'ing if we're just going to zero it?  */
       alias_invariant = (rtx *)xrealloc (alias_invariant,
 					 reg_base_value_size * sizeof (rtx));
-      bzero ((char *)alias_invariant, reg_base_value_size * sizeof (rtx));
+      memset ((char *)alias_invariant, 0, reg_base_value_size * sizeof (rtx));
     }
     
 
@@ -2091,10 +2091,10 @@ init_alias_analysis ()
       copying_arguments = 1;
 
       /* Wipe the potential alias information clean for this pass.  */
-      bzero ((char *) new_reg_base_value, reg_base_value_size * sizeof (rtx));
+      memset ((char *) new_reg_base_value, 0, reg_base_value_size * sizeof (rtx));
 
       /* Wipe the reg_seen array clean.  */
-      bzero ((char *) reg_seen, reg_base_value_size);
+      memset ((char *) reg_seen, 0, reg_base_value_size);
 
       /* Mark all hard registers which may contain an address.
 	 The stack, frame and argument pointers may contain an address.

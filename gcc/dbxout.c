@@ -1043,7 +1043,7 @@ dbxout_type (type, full, show_arg_types)
 	  typevec
 	    = (struct typeinfo *) xrealloc (typevec,
 					    typevec_len * 2 * sizeof typevec[0]);
-	  bzero ((char *) (typevec + typevec_len),
+	  memset ((char *) (typevec + typevec_len), 0,
 		 typevec_len * sizeof typevec[0]);
 	  typevec_len *= 2;
 	}

@@ -5612,7 +5612,7 @@ expand_end_case (orig_index)
 
 	  ncases = TREE_INT_CST_LOW (range) + 1;
 	  labelvec = (rtx *) alloca (ncases * sizeof (rtx));
-	  bzero ((char *) labelvec, ncases * sizeof (rtx));
+	  memset ((char *) labelvec, 0, ncases * sizeof (rtx));
 
 	  for (n = thiscase->data.case_stmt.case_list; n; n = n->right)
 	    {

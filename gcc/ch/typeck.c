@@ -253,7 +253,7 @@ build_chill_slice (array, min_value, length)
 		       * (tree_low_cst (min_value, 0)
 			  - tree_low_cst (domain_min, 0)));
 
-	  bzero (buffer, type_size);
+	  memset (buffer, 0, type_size);
 	  if (expand_constant_to_buffer (array, buffer, type_size))
 	    {
 	      result = extract_constant_from_buffer (slice_type,
@@ -1193,7 +1193,7 @@ build_chill_cast (type, expr)
     {
       unsigned char *buffer = (unsigned char*) alloca (type_size);
       tree value;
-      bzero (buffer, type_size);
+      memset (buffer, 0, type_size);
       if (!expand_constant_to_buffer (expr, buffer, type_size))
 	{
 	  error ("not implemented: constant conversion from that kind of expression");

@@ -1,3 +1,31 @@
+2000-11-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* alias.c (init_alias_analysis), calls.c (expand_call,
+	emit_library_call_value_1), combine.c (init_reg_last_arrays),
+	cse.c (new_basic_block), dbxout.c (dbxout_type), diagnostic.c
+	(init_output_buffer, set_diagnostic_context), dwarf2out.c
+	(equate_decl_number_to_die, build_abbrev_table), emit-rtl.c
+	(init_emit_once), fold-const.c (mul_double, div_and_round_double),
+	function.c (assign_parms), gcse.c (compute_can_copy,
+	alloc_gcse_mem, alloc_reg_set_mem, record_one_set,
+	compute_hash_table, compute_set_hash_table,
+	compute_expr_hash_table), genattrtab.c (optimize_attrs), global.c
+	(global_alloc, global_conflicts), haifa-sched.c (compute_trg_info,
+	clear_units, schedule_block), integrate.c (initialize_for_inline,
+	expand_inline_function), jump.c (thread_jumps), local-alloc.c
+	(local_alloc), loop.c (combine_movables, count_loop_regs_set,
+	load_mems_and_recount_loop_regs_set), print-tree.c (debug_tree),
+	regclass.c (init_reg_sets, init_reg_sets_1, regclass,
+	record_reg_classes, allocate_reg_info), reload.c
+	(get_secondary_mem, remove_address_replacements, find_reloads),
+	reload1.c (reload, set_initial_label_offsets, finish_spills,
+	reload_as_needed, choose_reload_regs_init,
+	reload_cse_simplify_operands), reorg.c (dbr_schedule), sbitmap.c
+	(sbitmap_zero), simplify-rtx.c (simplify_plus_minus), ssa.c
+	(rename_registers), stmt.c (expand_end_case), unroll.c
+	(unroll_loop), varray.c (varray_grow), objc/objc-act.c: Use memset
+	() instead of bzero ().
+
 2000-11-07  Neil Booth  <neilb@earthling.net>
 
        * cp/lang-specs.h: Fix -save-temps specs under USE_CPPLIB.
