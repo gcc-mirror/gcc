@@ -1,3 +1,6 @@
+[+ AutoGen5 template
+in
++]
 
 # Makefile.in is generated from Makefile.tpl by 'autogen Makefile.def'.
 #
@@ -525,67 +528,8 @@ CONFIGURE_BUILD_MODULES = \
 
 # This is a list of the targets for all of the modules which are compiled
 # using $(FLAGS_TO_PASS).
-ALL_MODULES = \
-	all-ash \
-	all-autoconf \
-	all-automake \
-	all-bash \
-	all-bfd \
-	all-opcodes \
-	all-binutils \
-	all-bison \
-	all-byacc \
-	all-bzip2 \
-	all-db \
-	all-dejagnu \
-	all-diff \
-	all-dosutils \
-	all-etc \
-	all-fastjar \
-	all-fileutils \
-	all-findutils \
-	all-find \
-	all-flex \
-	all-gas \
-	all-gawk \
-	all-gettext \
-	all-gnuserv \
-	all-gprof \
-	all-grep \
-	all-gzip \
-	all-hello \
-	all-indent \
-	all-intl \
-	all-tcl \
-	all-itcl \
-	all-ld \
-	all-libgui \
-	all-libiberty \
-	all-libtool \
-	all-m4 \
-	all-make \
-	all-mmalloc \
-	all-patch \
-	all-perl \
-	all-prms \
-	all-rcs \
-	all-readline \
-	all-release \
-	all-recode \
-	all-sed \
-	all-send-pr \
-	all-shellutils \
-	all-sid \
-	all-sim \
-	all-snavigator \
-	all-tar \
-	all-texinfo \
-	all-textutils \
-	all-time \
-	all-uudecode \
-	all-wdiff \
-	all-zip \
-	all-zlib \
+ALL_MODULES = [+ FOR host_modules +]\
+	all-[+module+] [+ ENDFOR host_modules +]\
 	$(EXTRA_TARGET_HOST_ALL_MODULES)
 
 # This is a list of the check targets for all of the modules which are
@@ -601,58 +545,8 @@ NATIVE_CHECK_MODULES = \
 	check-flex \
 	check-zip
 
-CROSS_CHECK_MODULES = \
-	check-ash \
-	check-autoconf \
-	check-automake \
-	check-bash \
-	check-bfd \
-	check-opcodes \
-	check-binutils \
-	check-bzip2 \
-	check-db \
-	check-dejagnu \
-	check-diff \
-	check-etc \
-	check-fileutils \
-	check-findutils \
-	check-find \
-	check-gas \
-	check-gawk \
-	check-gettext \
-	check-gnuserv \
-	check-gprof \
-	check-grep \
-	check-gzip \
-	check-hello \
-	check-indent \
-	check-intl \
-	check-tcl \
-	check-itcl \
-	check-ld \
-	check-libgui \
-	check-libiberty \
-	check-libtool \
-	check-m4 \
-	check-make \
-	check-patch \
-	check-perl \
-	check-prms \
-	check-rcs \
-	check-readline \
-	check-recode \
-	check-sed \
-	check-send-pr \
-	check-shellutils \
-	check-sid \
-	check-sim \
-	check-snavigator \
-	check-tar \
-	check-texinfo \
-	check-textutils \
-	check-time \
-	check-uudecode \
-	check-wdiff \
+CROSS_CHECK_MODULES = [+ FOR host_modules +][+ IF no_check  +][+ ELIF no_check_cross +][+ ELSE x +]\
+	check-[+module+] [+ ENDIF no_check +][+ ENDFOR host_modules +]\
 	$(EXTRA_TARGET_HOST_CHECK_MODULES)
 
 CHECK_MODULES=$(NATIVE_CHECK_MODULES) $(CROSS_CHECK_MODULES)
@@ -664,64 +558,8 @@ CHECK_MODULES=$(NATIVE_CHECK_MODULES) $(CROSS_CHECK_MODULES)
 # library.
 # We put install-tcl before install-itcl because itcl wants to run a
 # program on installation which uses the Tcl libraries.
-INSTALL_MODULES = \
-	install-ash \
-	install-autoconf \
-	install-automake \
-	install-bash \
-	install-bfd \
-	install-opcodes \
-	install-binutils \
-	install-bison \
-	install-byacc \
-	install-bzip2 \
-	install-db \
-	install-dejagnu \
-	install-diff \
-	install-dosutils \
-	install-etc \
-	install-fastjar \
-	install-fileutils \
-	install-findutils \
-	install-find \
-	install-flex \
-	install-gas \
-	install-gawk \
-	install-gettext \
-	install-gnuserv \
-	install-gprof \
-	install-grep \
-	install-gzip \
-	install-hello \
-	install-indent \
-	install-intl \
-	install-tcl \
-	install-itcl \
-	install-ld \
-	install-libgui \
-	install-libiberty \
-	install-libtool \
-	install-m4 \
-	install-make \
-	install-mmalloc \
-	install-patch \
-	install-perl \
-	install-prms \
-	install-rcs \
-	install-readline \
-	install-recode \
-	install-sed \
-	install-send-pr \
-	install-shellutils \
-	install-sid \
-	install-sim \
-	install-snavigator \
-	install-tar \
-	install-textutils \
-	install-time \
-	install-uudecode \
-	install-wdiff \
-	install-zip \
+INSTALL_MODULES = [+ FOR host_modules+][+ IF no_install +][+ ELSE no_install +]\
+	install-[+module+] [+ ENDIF no_install +][+ ENDFOR host_modules +]\
 	$(EXTRA_TARGET_HOST_INSTALL_MODULES)
 
 # This is a list of the targets for all of the modules which are compiled
@@ -826,67 +664,8 @@ INSTALL_TARGET_MODULES = \
 	install-target-gperf
 
 # This is a list of the targets for which we can do a clean-{target}.
-CLEAN_MODULES = \
-	clean-ash \
-	clean-autoconf \
-	clean-automake \
-	clean-bash \
-	clean-bfd \
-	clean-opcodes \
-	clean-binutils \
-	clean-bison \
-	clean-byacc \
-	clean-bzip2 \
-	clean-db \
-	clean-dejagnu \
-	clean-diff \
-	clean-dosutils \
-	clean-etc \
-	clean-fastjar \
-	clean-fileutils \
-	clean-findutils \
-	clean-find \
-	clean-flex \
-	clean-gas \
-	clean-gawk \
-	clean-gettext \
-	clean-gnuserv \
-	clean-gprof \
-	clean-grep \
-	clean-gzip \
-	clean-hello \
-	clean-indent \
-	clean-intl \
-	clean-tcl \
-	clean-itcl \
-	clean-ld \
-	clean-libgui \
-	clean-libiberty \
-	clean-libtool \
-	clean-m4 \
-	clean-make \
-	clean-mmalloc \
-	clean-patch \
-	clean-perl \
-	clean-prms \
-	clean-rcs \
-	clean-readline \
-	clean-release \
-	clean-recode \
-	clean-sed \
-	clean-send-pr \
-	clean-shellutils \
-	clean-sid \
-	clean-sim \
-	clean-snavigator \
-	clean-tar \
-	clean-texinfo \
-	clean-textutils \
-	clean-time \
-	clean-uudecode \
-	clean-wdiff \
-	clean-zip \
-	clean-zlib 
+CLEAN_MODULES = [+ FOR host_modules +][+ IF no_clean +][+ ELSE no_clean +]\
+	clean-[+module+] [+ ENDIF no_clean +][+ ENDFOR host_modules +]
 
 # All of the target modules that can be cleaned
 CLEAN_TARGET_MODULES = \
@@ -1787,6 +1566,10 @@ etags tags: TAGS
 # the user could load to tell emacs19 where all the TAGS files we just
 # built are.
 TAGS: do-TAGS
+
+# Rebuilding Makefile.in, using autogen.
+$(srcdir)/Makefile.in: $(srcdir)/Makefile.tpl $(srcdir)/Makefile.def
+	cd $(srcdir) && autogen Makefile.def
 
 # with the gnu make, this is done automatically.
 

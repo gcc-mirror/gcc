@@ -104,6 +104,8 @@ libjava/libltdl/aclocal.m4: libjava/libltdl/configure.in libjava/libltdl/acinclu
 libjava/libltdl/Makefile.in: libjava/libltdl/Makefile.am libjava/libltdl/configure.in libjava/libltdl/aclocal.m4
 libjava/libltdl/configure: libjava/libltdl/configure.in libjava/libltdl/aclocal.m4
 libjava/libltdl/stamp-h.in: libjava/libltdl/configure.in libjava/libltdl/aclocal.m4 libjava/libltdl/acconfig.h
+# Top level
+Makefile.in: Makefile.tpl Makefile.def
 EOF
 }
 
