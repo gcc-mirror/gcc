@@ -3679,7 +3679,7 @@ quickstrap:
 
 cleanstrap:
 	-$(MAKE) clean
-	$(MAKE) LANGUAGES="$(LANGUAGES)" bootstrap
+	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" bootstrap
 
 unstrap:
 	-rm -rf stage[234]*
@@ -3690,7 +3690,7 @@ unstrap:
 # not from scratch.
 restrap:
 	$(MAKE) unstrap
-	$(MAKE) LANGUAGES="$(LANGUAGES)" bootstrap
+	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" bootstrap
 
 # Compare the object files in the current directory with those in the
 # stage2 directory.

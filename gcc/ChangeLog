@@ -1,3 +1,8 @@
+2003-08-11  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* Makefile.in (cleanstrap): Pass BOOT_CFLAGS to bootstrap.
+	(restrap): Likewise.
+
 2003-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcse.c (gmalloc): Argument is a size_t.  Add ATTRIBUTE_MALLOC.
