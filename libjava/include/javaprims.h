@@ -175,12 +175,6 @@ extern "Java"
       };
     };
 
-    namespace security
-    {
-      class MessageDigest;
-      class NoSuchAlgorithmException;
-    };
-
     namespace util
     {
       class BitSet;
