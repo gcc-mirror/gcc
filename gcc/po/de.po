@@ -5029,236 +5029,236 @@ msgstr "»%s« ist veraltet (deklariert bei %s:%d)"
 #: diagnostic.c:1465
 #, c-format
 msgid "`%s' is deprecated"
-msgstr ""
+msgstr "»%s« ist veraltet"
 
 #: diagnostic.c:1468
 #, c-format
 msgid "type is deprecated (declared at %s:%d)"
-msgstr ""
+msgstr "Typ ist veraltet (in %s:%d deklariert)"
 
 #: diagnostic.c:1471
 msgid "type is deprecated"
-msgstr ""
+msgstr "Typ ist veraltet"
 
 #: dominance.c:728
 #, c-format
 msgid "dominator of %d should be %d, not %d"
-msgstr ""
+msgstr "Herrscher über %d sollte %d sein, nicht %d"
 
 #: dwarf2out.c:3135
 #, c-format
 msgid "DW_LOC_OP %s not implemented\n"
-msgstr ""
+msgstr "DW_LOC_OP %s nicht implementiert\n"
 
 #: dwarfout.c:2066
 #, c-format
 msgid "internal regno botch: `%s' has regno = %d\n"
-msgstr ""
+msgstr "interner RegNr-Fehler: »%s« hat RegNr = %d\n"
 
 #: dwarfout.c:6181
 msgid "support for the DWARF1 debugging format is deprecated"
-msgstr ""
+msgstr "Unterstützung für das DWARF1-Debugging-Format ist veraltet"
 
 #: dwarfout.c:6278
 msgid "can't get current directory"
-msgstr ""
+msgstr "kann aktuelles Verzeichnis nicht ermitteln"
 
 #: emit-rtl.c:1155
 msgid "can't access real part of complex value in hard register"
-msgstr ""
+msgstr "kann nicht auf realen Teil des komplexen Wertes im festen Register zugreifen"
 
 #: emit-rtl.c:1177
 msgid "can't access imaginary part of complex value in hard register"
-msgstr ""
+msgstr "kann nicht auf imaginären Teil des komplexen Wertes im festen Register zugreifen"
 
 #: emit-rtl.c:3402
 msgid "ICE: emit_insn used where emit_jump_insn needed:\n"
-msgstr ""
+msgstr "ICE: emit_insn verwendet, wo emit_jump_insn erforderlich:\n"
 
 #: errors.c:136
 #, c-format
 msgid "abort in %s, at %s:%d"
-msgstr ""
+msgstr "Abbruch in %s, bei %s:%d"
 
 #: except.c:369
 msgid "exception handling disabled, use -fexceptions to enable"
-msgstr ""
+msgstr "Ausnahmebehandlung ausgeschaltet, benutzen Sie -fexeptions zum Anschalten"
 
 #: except.c:2994
 msgid "argument of `__builtin_eh_return_regno' must be constant"
-msgstr ""
+msgstr "Argument für »__builtin_eh_return_regno« muss konstant sein"
 
 #: except.c:3137
 msgid "__builtin_eh_return not supported on this target"
-msgstr ""
+msgstr "__builtin_eh_return für dieses Ziel nicht unterstützt"
 
 #: explow.c:1408
 msgid "stack limits not supported on this target"
-msgstr ""
+msgstr "Kellergrenzen nicht für dieses Ziel unterstützt"
 
 #: expr.c:3355
 msgid "function using short complex types cannot be inline"
-msgstr ""
+msgstr "Funktion, die komplexe »short«-Typen verwendet, kann nicht »inline« sein"
 
 #: expr.c:6272 expr.c:6281 expr.c:6290 expr.c:6295 expr.c:6604 expr.c:6620
 msgid "unsupported wide integer operation"
-msgstr ""
+msgstr "breite Ganzzahloperation nicht unterstützt"
 
 #: expr.c:6669
 #, c-format
 msgid "prior parameter's size depends on `%s'"
-msgstr ""
+msgstr "vorherige Parametergröße hängt von »%s« ab"
 
 #: expr.c:7005
 msgid "returned value in block_exit_expr"
-msgstr ""
+msgstr "zurückgelieferter Wert in block_exit_expr"
 
 #. We can't make a bitwise copy of this object, so fail.
 #: expr.c:9202
 msgid "cannot take the address of an unaligned member"
-msgstr ""
+msgstr "die Adresse eines nicht ausgerichteten Members kann nicht ermittelt werden"
 
 #: final.c:1342
 msgid "negative insn length"
-msgstr ""
+msgstr "negative insn-Länge"
 
 #: final.c:2793
 msgid "could not split insn"
-msgstr ""
+msgstr "insn kann nicht aufgeteilt werden"
 
 #: final.c:3141
 msgid "invalid `asm': "
-msgstr ""
+msgstr "ungültiges »asm«: "
 
 #: final.c:3328
 msgid "nested assembly dialect alternatives"
-msgstr ""
+msgstr "geschachtelte Assemblerdialekt-Alternativen"
 
 #: final.c:3345 final.c:3357
 msgid "unterminated assembly dialect alternative"
-msgstr ""
+msgstr "unbeendete Assemblerdialekt-Alternative"
 
 #: final.c:3401
 #, c-format
 msgid "operand number missing after %%-letter"
-msgstr ""
+msgstr "Operandenzahl fehlt hinter %%-Buchstabe"
 
 #: final.c:3404 final.c:3443
 msgid "operand number out of range"
-msgstr ""
+msgstr "Operandenzahl außerhalb des Wertebereiches"
 
 #: final.c:3462
 #, c-format
 msgid "invalid %%-code"
-msgstr ""
+msgstr "ungültiger %%-Code"
 
 #: final.c:3493
 #, c-format
 msgid "`%%l' operand isn't a label"
-msgstr ""
+msgstr "»%%l«-Operand ist keine Marke"
 
 #. We can't handle floating point constants;
 #. PRINT_OPERAND must handle them.
 #: final.c:3600 vmsdbgout.c:466 config/i386/i386.c:6314
 #: config/pdp11/pdp11.c:1573
 msgid "floating constant misused"
-msgstr ""
+msgstr "Gleitkommakonstante falsch benutzt"
 
 #: final.c:3656 vmsdbgout.c:523 config/i386/i386.c:6392
 #: config/pdp11/pdp11.c:1620
 msgid "invalid expression as operand"
-msgstr ""
+msgstr "ungültiger Ausdruck als Operand"
 
 #: flow.c:352
 msgid "function might be possible candidate for attribute `noreturn'"
-msgstr ""
+msgstr "Funktion könnte möglicher Kandidat für Attribut »noreturn« sein"
 
 #: flow.c:357
 msgid "`noreturn' function does return"
-msgstr ""
+msgstr "»noreturn«-Funktion kehrt zurück"
 
 #: flow.c:378
 msgid "control reaches end of non-void function"
-msgstr ""
+msgstr "Kontrollfluss erreicht Ende einer Nicht-void-Funktion"
 
 #: flow.c:1642
 msgid "Attempt to delete prologue/epilogue insn:"
-msgstr ""
+msgstr "Versuch, Prolog/Epilog-insn zu löschen"
 
 #: fold-const.c:2546 fold-const.c:2559
 #, c-format
 msgid "comparison is always %d due to width of bit-field"
-msgstr ""
+msgstr "Vergleich ist immer %d wegen Breite des Bitfeldes"
 
 #: fold-const.c:3753 fold-const.c:3770
 #, c-format
 msgid "comparison is always %d"
-msgstr ""
+msgstr "Vergleich ist immer %d"
 
 #: fold-const.c:3901
 msgid "`or' of unmatched not-equal tests is always 1"
-msgstr ""
+msgstr "»oder« nicht passender Ungleichheits-Tests ist immer 1"
 
 #: fold-const.c:3906
 msgid "`and' of mutually exclusive equal-tests is always 0"
-msgstr ""
+msgstr "»und« gegenseitig ausschließender Gleichheits-Tests ist immer 0"
 
 #: function.c:884 varasm.c:1503
 #, c-format
 msgid "size of variable `%s' is too large"
-msgstr ""
+msgstr "Größe der Variable »%s« ist zu hoch"
 
 #: function.c:3772
 msgid "impossible constraint in `asm'"
-msgstr ""
+msgstr "unmögliche Bedingung in »asm«"
 
 #: function.c:5527
 #, c-format
 msgid "`%s' might be used uninitialized in this function"
-msgstr ""
+msgstr "»%s« könnte in dieser Funktion uninitialisiert bleiben"
 
 #: function.c:5534
 #, c-format
 msgid "variable `%s' might be clobbered by `longjmp' or `vfork'"
-msgstr ""
+msgstr "Variable »%s« könnte von »longjmp« oder »vfork« zerstört werden"
 
 #: function.c:5553
 #, c-format
 msgid "argument `%s' might be clobbered by `longjmp' or `vfork'"
-msgstr ""
+msgstr "Argument »%s« könnte von »longjmp« oder »vfork« zerstört werden"
 
 #: function.c:6420
 msgid "function returns an aggregate"
-msgstr ""
+msgstr "Funktion gibt Aggregat zurück"
 
 #: function.c:6925
 #, c-format
 msgid "unused parameter `%s'"
-msgstr ""
+msgstr "nicht benutzter Parameter »%s«"
 
 #: gcc.c:1107
 #, c-format
 msgid "ambiguous abbreviation %s"
-msgstr ""
+msgstr "mehrdeutige Abkürzung %s"
 
 #: gcc.c:1134
 #, c-format
 msgid "incomplete `%s' option"
-msgstr ""
+msgstr "unvollständige »%s«-Option"
 
 #: gcc.c:1145
 #, c-format
 msgid "missing argument to `%s' option"
-msgstr ""
+msgstr "fehlendes Argument für »%s«-Option"
 
 #: gcc.c:1158
 #, c-format
 msgid "extraneous argument to `%s' option"
-msgstr ""
+msgstr "zusätzliches (belangloses) Argument für »%s«-Option"
 
 #: gcc.c:1486
 msgid "Using built-in specs.\n"
-msgstr ""
+msgstr "Benutze eingebaute Spezifikationen.\n"
 
 #: gcc.c:1667
 #, c-format
@@ -5266,41 +5266,43 @@ msgid ""
 "Setting spec %s to '%s'\n"
 "\n"
 msgstr ""
+"Setze Spezifikation %s auf '%s'\n"
+"\n"
 
 #: gcc.c:1774
 #, c-format
 msgid "Reading specs from %s\n"
-msgstr ""
+msgstr "Lese Spezifikationen von %s\n"
 
 #: gcc.c:1872 gcc.c:1891
 #, c-format
 msgid "specs %%include syntax malformed after %ld characters"
-msgstr ""
+msgstr "falsche %%include-Syntax für Spezifikationen nach %ld Zeichen"
 
 #: gcc.c:1899
 #, c-format
 msgid "could not find specs file %s\n"
-msgstr ""
+msgstr "konnte Spezifikationsdatei %s nicht finden\n"
 
 #: gcc.c:1916 gcc.c:1924 gcc.c:1933 gcc.c:1942
 #, c-format
 msgid "specs %%rename syntax malformed after %ld characters"
-msgstr ""
+msgstr "falsche %%rename-Syntax für Spezifikationen nach %ld Zeichen"
 
 #: gcc.c:1951
 #, c-format
 msgid "specs %s spec was not found to be renamed"
-msgstr ""
+msgstr "keine %s-Spezifikation zum Umbenennen gefunden"
 
 #: gcc.c:1958
 #, c-format
 msgid "%s: attempt to rename spec '%s' to already defined spec '%s'"
-msgstr ""
+msgstr "%s: Versuch, Spezifikation »%s« in bereits definierte Spezifikation »%s« umzubenennen"
 
 #: gcc.c:1963
 #, c-format
 msgid "rename spec %s to %s\n"
-msgstr ""
+msgstr "benenne Spezifikation %s nach %s um\n"
 
 #: gcc.c:1965
 #, c-format
@@ -5308,20 +5310,22 @@ msgid ""
 "spec is '%s'\n"
 "\n"
 msgstr ""
+"Spezifikation ist '%s'\n"
+"\n"
 
 #: gcc.c:1978
 #, c-format
 msgid "specs unknown %% command after %ld characters"
-msgstr ""
+msgstr "Spezifikation: unbekannter %%-Befehl nach %ld Zeichen"
 
 #: gcc.c:1989 gcc.c:2002
 #, c-format
 msgid "specs file malformed after %ld characters"
-msgstr ""
+msgstr "Fehler in Spezifikationsdatei nach %ld Zeichen"
 
 #: gcc.c:2056
 msgid "spec file has no spec for linking"
-msgstr ""
+msgstr "Spezifikationsdatei hat keine Spezifikation zum Binden"
 
 #: gcc.c:2554
 msgid "-pipe not supported"
@@ -5353,7 +5357,7 @@ msgstr ""
 #: gcc.c:2753
 #, c-format
 msgid "# %s %.2f %.2f\n"
-msgstr ""
+msgstr "# %s %.2f %.2f\n"
 
 #: gcc.c:2883
 #, c-format
@@ -5366,7 +5370,7 @@ msgstr "Optionen:\n"
 
 #: gcc.c:2886
 msgid "  -pass-exit-codes         Exit with highest error code from a phase\n"
-msgstr ""
+msgstr "  -pass-exit-codes         Ende mit höchstem Rückgabe-Code einer Phase\n"
 
 #: gcc.c:2887
 msgid "  --help                   Display this information\n"
@@ -5374,121 +5378,133 @@ msgstr "  --help                   Diese Informationen anzeigen\n"
 
 #: gcc.c:2888
 msgid "  --target-help            Display target specific command line options\n"
-msgstr ""
+msgstr "  --target-help            Zielspezifische Kommandozeilenoptionen anzeigen\n"
 
 #: gcc.c:2890
 msgid "  (Use '-v --help' to display command line options of sub-processes)\n"
-msgstr ""
+msgstr "  ('-v --help' zum Anzeigen der Kommandozeilenoptionen von Subprozessen verwenden)\n"
 
 #: gcc.c:2891
 msgid "  -dumpspecs               Display all of the built in spec strings\n"
-msgstr ""
+msgstr "  -dumpspecs               Alle eingebauten Spezifikationszeichenketten anzeigen\n"
 
 #: gcc.c:2892
 msgid "  -dumpversion             Display the version of the compiler\n"
-msgstr ""
+msgstr "  -dumpversion             Compilerversion anzeigen\n"
 
 #: gcc.c:2893
 msgid "  -dumpmachine             Display the compiler's target processor\n"
-msgstr ""
+msgstr "  -dumpmachine             Zielprozessor des Compilers anzeigen\n"
 
 #: gcc.c:2894
 msgid "  -print-search-dirs       Display the directories in the compiler's search path\n"
-msgstr ""
+msgstr "  -print-search-dirs       Verzeichnisse im Suchpfad des Compilers anzeigen\n"
 
 #: gcc.c:2895
 msgid "  -print-libgcc-file-name  Display the name of the compiler's companion library\n"
-msgstr ""
+msgstr "  -print-libgcc-file-name  Name der Begleitbibliothek des Compilers anzeigen\n"
 
 #: gcc.c:2896
 msgid "  -print-file-name=<lib>   Display the full path to library <lib>\n"
-msgstr ""
+msgstr "  -print-file-name=<lib>   Vollen Pfad zur Bibliothek <lib> anzeigen\n"
 
 #: gcc.c:2897
 msgid "  -print-prog-name=<prog>  Display the full path to compiler component <prog>\n"
-msgstr ""
+msgstr "  -print-prog-name=<prog>  Vollen Pfad zur Compilerkomponente <prog> anzeigen\n"
 
 #: gcc.c:2898
 msgid "  -print-multi-directory   Display the root directory for versions of libgcc\n"
-msgstr ""
+msgstr "  -print-multi-directory   Wurzelverzeichnis für Versionen von libgcc anzeigen\n"
 
 #: gcc.c:2899
 msgid ""
 "  -print-multi-lib         Display the mapping between command line options and\n"
 "                           multiple library search directories\n"
 msgstr ""
+"  -print-multi-lib         Abbildung zwischen Kommandozeilenoptionen und\n"
+"                           mehreren Suchverzeichnissen für Bibliotheken anzeigen\n"
 
 #: gcc.c:2902
 msgid "  -print-multi-os-directory Display the relative path to OS libraries\n"
 msgstr ""
+"  -print-multi-os-directory Relativen Pfad zu Betriebssystembibliotheken\n"
+"                           anzeigen\n"
 
 #: gcc.c:2903
 msgid "  -Wa,<options>            Pass comma-separated <options> on to the assembler\n"
-msgstr ""
+msgstr "  -Wa,<Optionen>           Komma-getrennte <Optionen> an Assembler übergeben\n"
 
 #: gcc.c:2904
 msgid "  -Wp,<options>            Pass comma-separated <options> on to the preprocessor\n"
-msgstr ""
+msgstr "  -Wp,<Optionen>           Komma-getrennte <Optionen> an Präprozessor übergeben\n"
 
 #: gcc.c:2905
 msgid "  -Wl,<options>            Pass comma-separated <options> on to the linker\n"
-msgstr ""
+msgstr "  -Wl,<Optionen>           Komma-getrennte <Optionen> an Linker übergeben\n"
 
 #: gcc.c:2906
 msgid "  -Xlinker <arg>           Pass <arg> on to the linker\n"
-msgstr ""
+msgstr "  -Xlinker <arg>           <arg> an den Linker übergeben\n"
 
 #: gcc.c:2907
 msgid "  -save-temps              Do not delete intermediate files\n"
-msgstr ""
+msgstr "  -save-temps              Temporäre Dateien nicht löschen\n"
 
 #: gcc.c:2908
 msgid "  -pipe                    Use pipes rather than intermediate files\n"
-msgstr ""
+msgstr "  -pipe                    Pipes statt temporärer Dateien verwenden\n"
 
 #: gcc.c:2909
 msgid "  -time                    Time the execution of each subprocess\n"
-msgstr ""
+msgstr "  -time                    Zeit für Ausführung jedes Subprozesses stoppen\n"
 
 #: gcc.c:2910
 msgid "  -specs=<file>            Override built-in specs with the contents of <file>\n"
 msgstr ""
+"  -specs=<Datei>           Eingebaute Spezifikationen mit Inhalt der <Datei>\n"
+"                           überschreiben\n"
 
 #: gcc.c:2911
 msgid "  -std=<standard>          Assume that the input sources are for <standard>\n"
-msgstr ""
+msgstr "  -std=<Standard>          Annehmen, dass die Eingabequellen für <Standard> sind\n"
 
 #: gcc.c:2912
 msgid "  -B <directory>           Add <directory> to the compiler's search paths\n"
-msgstr ""
+msgstr "  -B <Verzeichnis>         <Verzeichnis> zum Suchpfad des Compilers hinzufügen\n"
 
 #: gcc.c:2913
 msgid "  -b <machine>             Run gcc for target <machine>, if installed\n"
 msgstr ""
+"  -b <Maschine>            GCC für die Ziel-<Maschine> laufen lassen, falls\n"
+"                           installiert\n"
 
 #: gcc.c:2914
 msgid "  -V <version>             Run gcc version number <version>, if installed\n"
-msgstr ""
+msgstr "  -V <Version>             GCC <Version> laufen lassen, falls installiert\n"
 
 #: gcc.c:2915
 msgid "  -v                       Display the programs invoked by the compiler\n"
-msgstr ""
+msgstr "  -v                       Vom Compiler aufgerufene Programme anzeigen\n"
 
 #: gcc.c:2916
 msgid "  -###                     Like -v but options quoted and commands not executed\n"
 msgstr ""
+"  -###                     Wie -v, aber mit zitierten Optionen und nicht\n"
+"                           ausgeführten Befehlen\n"
 
 #: gcc.c:2917
 msgid "  -E                       Preprocess only; do not compile, assemble or link\n"
 msgstr ""
+"  -E                       Nur Präprozessor, kein Compiler, Assembler oder\n"
+"                           Binder\n"
 
 #: gcc.c:2918
 msgid "  -S                       Compile only; do not assemble or link\n"
-msgstr ""
+msgstr "  -S                       Nur kompilieren, nicht assemblieren oder binden\n"
 
 #: gcc.c:2919
 msgid "  -c                       Compile and assemble, but do not link\n"
-msgstr ""
+msgstr "  -c                       Nur kompilieren und assemblieren, aber nicht binden\n"
 
 #: gcc.c:2920
 msgid "  -o <file>                Place the output into <file>\n"
@@ -5501,6 +5517,11 @@ msgid ""
 "                           'none' means revert to the default behavior of\n"
 "                           guessing the language based on the file's extension\n"
 msgstr ""
+"  -x <Sprache>             Sprache der folgenden Eingabedateien angeben\n"
+"                           Zulässige Sprachen sind: c c++ assembler none\n"
+"                           'none' bedeutet den Rückfall auf das Standard-\n"
+"                           verhalten, die Sprache aufgrund der Dateinamens-\n"
+"                           erweiterung zu vermuten\n"
 
 #: gcc.c:2928
 #, c-format
@@ -5510,16 +5531,21 @@ msgid ""
 " passed on to the various sub-processes invoked by %s.  In order to pass\n"
 " other options on to these processes the -W<letter> options must be used.\n"
 msgstr ""
+"\n"
+"Optionen, die mit -g, -f, -m, -O, -W, oder --param beginnen, werden automatisch\n"
+" an die verschiedenen Subprozesse, die von %s aufgerufen werden, übergeben.\n"
+" Um andere Optionen an diese Prozesse zu übergeben, müssen die Optionen\n"
+" -W<Buchstabe> verwendet werden.\n"
 
 #: gcc.c:3063
 #, c-format
 msgid "`-%c' option must have argument"
-msgstr ""
+msgstr "Die Option »-%c« muss ein Argument haben"
 
 #: gcc.c:3085
 #, c-format
 msgid "couldn't run `%s': %s"
-msgstr ""
+msgstr "konnte »%s« nicht ausführen: %s"
 
 #. translate_options () has turned --version into -fversion.
 #: gcc.c:3262
@@ -5543,63 +5569,63 @@ msgstr ""
 
 #: gcc.c:3366
 msgid "argument to `-Xlinker' is missing"
-msgstr ""
+msgstr "Argument für »-Xlinker« fehlt"
 
 #: gcc.c:3374
 msgid "argument to `-l' is missing"
-msgstr ""
+msgstr "Argument für »-l« fehlt"
 
 #: gcc.c:3391
 msgid "argument to `-specs' is missing"
-msgstr ""
+msgstr "Argument für »-specs« fehlt"
 
 #: gcc.c:3406
 msgid "argument to `-specs=' is missing"
-msgstr ""
+msgstr "Argument für »-specs=« fehlt"
 
 #: gcc.c:3436
 #, c-format
 msgid "`-%c' must come at the start of the command line"
-msgstr ""
+msgstr "»-%c« muss am Anfang der Kommandozeile stehen"
 
 #: gcc.c:3445
 msgid "argument to `-B' is missing"
-msgstr ""
+msgstr "Argument für »-B« fehlt"
 
 #: gcc.c:3618
 msgid "cannot specify -o with -c or -S and multiple compilations"
-msgstr ""
+msgstr "kann nicht -o mit -c oder -S und mehrere Kompilierungen angeben"
 
 #: gcc.c:3791
 msgid "warning: -pipe ignored because -save-temps specified"
-msgstr ""
+msgstr "Warnung: -pipe ignoriert, da -save-temps angegeben"
 
 #: gcc.c:3795
 msgid "warning: -pipe ignored because -time specified"
-msgstr ""
+msgstr "Warnung: -pipe ignoriert, da -time angegeben"
 
 #: gcc.c:3807
 msgid "argument to `-x' is missing"
-msgstr ""
+msgstr "Argument für »-x« fehlt"
 
 #: gcc.c:3835
 #, c-format
 msgid "argument to `-%s' is missing"
-msgstr ""
+msgstr "Argument für »-%s« fehlt"
 
 #: gcc.c:3896
 #, c-format
 msgid "warning: `-x %s' after last input file has no effect"
-msgstr ""
+msgstr "Warnung: »-x %s« hinter letzter Eingabedatei hat keine Wirkung"
 
 #: gcc.c:4241
 msgid "invalid specification!  Bug in cc"
-msgstr ""
+msgstr "ungültige Spezifikation!  Fehler in cc"
 
 #: gcc.c:4395
 #, c-format
 msgid "%s\n"
-msgstr ""
+msgstr "%s\n"
 
 #. Catch the case where a spec string contains something like
 #. '%{foo:%*}'.  ie there is no * in the pattern on the left
@@ -5607,69 +5633,69 @@ msgstr ""
 #: gcc.c:4955
 #, c-format
 msgid "spec failure: '%%*' has not been initialized by pattern match"
-msgstr ""
+msgstr "Spezifikationsfehler: »%%*« wurde nicht durch Mustererkennung initialisiert"
 
 #: gcc.c:4964
 #, c-format
 msgid "warning: use of obsolete %%[ operator in specs"
-msgstr ""
+msgstr "Warnung: Verwendung des veralteten Operators %%[ in Spezifikation"
 
 #: gcc.c:4982
 #, c-format
 msgid "Processing spec %c%s%c, which is '%s'\n"
-msgstr ""
+msgstr "Verarbeite Spezifikation %c%s%c, welche »%s« ist\n"
 
 #: gcc.c:5107
 #, c-format
 msgid "spec failure: unrecognized spec option '%c'"
-msgstr ""
+msgstr "Spezifikationsfehler: nicht erkannte Option »%c«"
 
 #: gcc.c:5188
 #, c-format
 msgid "unknown spec function `%s'"
-msgstr ""
+msgstr "unbekannte Spezifikationsfunktion »%s«"
 
 #: gcc.c:5207
 #, c-format
 msgid "error in args to spec function `%s'"
-msgstr ""
+msgstr "Fehler in Argumenten für Spezifikationsfunktion »%s«"
 
 #: gcc.c:5256
 msgid "malformed spec function name"
-msgstr ""
+msgstr "schlechter Name für Spezifikationsfunktion"
 
 #. )
 #: gcc.c:5259
 msgid "no arguments for spec function"
-msgstr ""
+msgstr "keine Argumente für Spezifikationsfunktion"
 
 #: gcc.c:5278
 msgid "malformed spec function arguments"
-msgstr ""
+msgstr "schlechte Argumente für Spezifikationsfunktion"
 
 #: gcc.c:5386
 msgid "mismatched braces in specs"
-msgstr ""
+msgstr "unpassende geschweifte Klammern in Spezifikation"
 
 #: gcc.c:6081
 #, c-format
 msgid "unrecognized option `-%s'"
-msgstr ""
+msgstr "nicht erkannte Option »-%s«"
 
 #: gcc.c:6087
 #, c-format
 msgid "install: %s%s\n"
-msgstr ""
+msgstr "installiere: %s%s\n"
 
 #: gcc.c:6088
 #, c-format
 msgid "programs: %s\n"
-msgstr ""
+msgstr "Programme: %s\n"
 
 #: gcc.c:6089
 #, c-format
 msgid "libraries: %s\n"
-msgstr ""
+msgstr "Bibliotheken: %s\n"
 
 #: gcc.c:6146
 msgid ""
@@ -5689,7 +5715,7 @@ msgstr "Konfiguriert mit: %s\n"
 #: gcc.c:6176
 #, c-format
 msgid "Thread model: %s\n"
-msgstr ""
+msgstr "Thread-Modell: %s\n"
 
 #: gcc.c:6187
 #, c-format
@@ -5699,7 +5725,7 @@ msgstr "gcc-Version %s\n"
 #: gcc.c:6189
 #, c-format
 msgid "gcc driver version %s executing gcc version %s\n"
-msgstr ""
+msgstr "gcc-Treiberversion %s führt gcc Version %s aus\n"
 
 #: gcc.c:6197
 msgid "no input files"
@@ -5713,7 +5739,7 @@ msgstr "%s: %s-Compiler ist auf diesem System nicht installiert"
 #: gcc.c:6310
 #, c-format
 msgid "%s: linker input file unused because linking not done"
-msgstr ""
+msgstr "%s: Eingabedateien des Binders unbenutzt, da keine Bindung geschieht"
 
 #: gcc.c:6353
 #, c-format
@@ -5722,11 +5748,11 @@ msgstr "Sprache %s nicht erkannt"
 
 #: gcc.c:6456
 msgid "internal gcc abort"
-msgstr ""
+msgstr "interner Abruch des gcc"
 
 #: gcov.c:325
 msgid "Internal gcov abort.\n"
-msgstr ""
+msgstr "Interner gcov-Abbruch.\n"
 
 #: gcov.c:338
 msgid ""
@@ -5741,6 +5767,8 @@ msgid ""
 "Print code coverage information.\n"
 "\n"
 msgstr ""
+"Information zur Code-Überdeckung ausgeben.\n"
+"\n"
 
 #: gcov.c:340
 msgid "  -h, --help                      Print this help, then exit\n"
@@ -5752,13 +5780,13 @@ msgstr "  -v, --version                   Versionsnummer anzeigen\n"
 
 #: gcov.c:342
 msgid "  -b, --branch-probabilities      Include branch probabilities in output\n"
-msgstr ""
+msgstr "  -b, --branch-probabilities      Zweigwahrscheinlichkeiten in Ausgabe aufnehmen\n"
 
 #: gcov.c:343
 msgid ""
 "  -c, --branch-counts             Given counts of branches taken\n"
 "                                    rather than percentages\n"
-msgstr ""
+msgstr "  -c, --branch-counts             Angegebene Zweigzahlen statt Anteilen nehmen\n"
 
 #: gcov.c:345
 msgid "  -n, --no-output                 Do not create an output file\n"
@@ -5769,18 +5797,22 @@ msgid ""
 "  -l, --long-file-names           Use long output file names for included\n"
 "                                    source files\n"
 msgstr ""
+"  -l, --long-file-names           Lange Dateinamen für Ausgabedateien für\n"
+"                                    eingefügte Quelldateien verwenden\n"
 
 #: gcov.c:348
 msgid "  -f, --function-summaries        Output summaries for each function\n"
-msgstr ""
+msgstr "  -f, --function-summaries        Ausgabezusammenfassungen für jede Funktion\n"
 
 #: gcov.c:349
 msgid "  -o, --object-directory DIR|FILE Search for object files in DIR or called FILE\n"
 msgstr ""
+"  -o, --object-directory DIR|FILE In DIR oder aufgerufener Datei FILE nach\n"
+"                                  Objektdateien suchen\n"
 
 #: gcov.c:350
 msgid "  -p, --preserve-paths            Preserve all pathname components\n"
-msgstr ""
+msgstr "  -p, --preserve-paths            Alle Pfadnamenskomponenten bewahren\n"
 
 #: gcov.c:351
 #, c-format
@@ -5806,201 +5838,201 @@ msgstr "Copyright © 2001 Free Software Foundation, Inc.\n"
 #: gcov.c:500
 #, c-format
 msgid "Could not open basic block file %s.\n"
-msgstr ""
+msgstr "Konnte einfache Blockdatei %s nicht öffnen.\n"
 
 #: gcov.c:507
 #, c-format
 msgid "Could not open program flow graph file %s.\n"
-msgstr ""
+msgstr "Konnte Programmflussgraphdatei %s nicht öffnen.\n"
 
 #: gcov.c:524
 #, c-format
 msgid "Could not open data file %s.\n"
-msgstr ""
+msgstr "Konnte Datei %s nicht öffnen.\n"
 
 #: gcov.c:525
 msgid "Assuming that all execution counts are zero.\n"
-msgstr ""
+msgstr "Angenommen, dass alle Ausführungszähler null sind.\n"
 
 #: gcov.c:534
 #, c-format
 msgid "No executable code associated with file %s.\n"
-msgstr ""
+msgstr "Kein ausführbarer Code mit Datei %s verbunden.\n"
 
 #: gcov.c:1186
 #, c-format
 msgid "%s of %d lines executed in %s %s\n"
-msgstr ""
+msgstr "%s von %d Zeilen in %s %s ausgeführt\n"
 
 #: gcov.c:1191
 #, c-format
 msgid "No executable lines in %s %s\n"
-msgstr ""
+msgstr "Keine ausführbaren Zeilen in %s %s\n"
 
 #: gcov.c:1198
 #, c-format
 msgid "%s of %d branches executed in %s %s\n"
-msgstr ""
+msgstr "%s von %d Zweigen in %s %s ausgeführt\n"
 
 #: gcov.c:1203
 #, c-format
 msgid "%s of %d branches taken at least once in %s %s\n"
-msgstr ""
+msgstr "%s von %d Zweigen mindestens einmal in %s %s genommen\n"
 
 #: gcov.c:1209
 #, c-format
 msgid "No branches in %s %s\n"
-msgstr ""
+msgstr "Keine Zweige in %s %s\n"
 
 #: gcov.c:1211
 #, c-format
 msgid "%s of %d calls executed in %s %s\n"
-msgstr ""
+msgstr "%s von %d Aufrufe in %s %s ausgeführt\n"
 
 #: gcov.c:1216
 #, c-format
 msgid "No calls in %s %s\n"
-msgstr ""
+msgstr "Keine Aufrufe in %s %s\n"
 
 #: gcov.c:1351
 #, c-format
 msgid "didn't use all bb entries of graph, function %s\n"
-msgstr ""
+msgstr "nicht alle bb-Einträge des Graphen wurden benutzt, Funktion %s\n"
 
 #: gcov.c:1353
 #, c-format
 msgid "block_num = %ld, num_blocks = %d\n"
-msgstr ""
+msgstr "block_num = %ld, num_blocks = %d\n"
 
 #: gcov.c:1367
 #, c-format
 msgid "ERROR: unexpected line number %ld\n"
-msgstr ""
+msgstr "FEHLER: nicht erwartete Zeilennummer %ld\n"
 
 #: gcov.c:1383
 #, c-format
 msgid "ERROR: too many basic blocks in function %s\n"
-msgstr ""
+msgstr "FEHLER: zu viele Basis-Blöcke in Funktion %s\n"
 
 #: gcov.c:1398
 #, c-format
 msgid "ERROR: out of range line number in function %s\n"
-msgstr ""
+msgstr "FEHLER: Zeilennummer außerhalb des Wertebereiches in Funktion %s\n"
 
 #: gcov.c:1470
 #, c-format
 msgid "Could not open source file %s.\n"
-msgstr ""
+msgstr "Konnte Quelldatei %s nicht öffnen.\n"
 
 #: gcov.c:1480
 #, c-format
 msgid "Warning: source file %s is newer than %s\n"
-msgstr ""
+msgstr "Warnung: Quelldatei %s ist neuer als %s\n"
 
 #: gcov.c:1510
 #, c-format
 msgid "Unexpected EOF while reading source file %s.\n"
-msgstr ""
+msgstr "Unerwartetes Dateiende beim Lesen der Quelldatei %s.\n"
 
 #: gcov.c:1532
 #, c-format
 msgid "call   %2d never executed\n"
-msgstr ""
+msgstr "Aufruf %2d niemals ausgeführt\n"
 
 #: gcov.c:1535
 #, c-format
 msgid "call   %2d returns %s\n"
-msgstr ""
+msgstr "Aufruf %2d gibt %s zurück\n"
 
 #: gcov.c:1543
 #, c-format
 msgid "branch %2d never executed\n"
-msgstr ""
+msgstr "Zweig %2d niemals ausgeführt\n"
 
 #: gcov.c:1546
 #, c-format
 msgid "branch %2d taken %s\n"
-msgstr ""
+msgstr "Zweig %2d genommen %s\n"
 
 #: gcov.c:1610
 #, c-format
 msgid "Creating %s.\n"
-msgstr ""
+msgstr "Erzeuge %s.\n"
 
 #: gcov.c:1613
 #, c-format
 msgid "Error writing output file %s.\n"
-msgstr ""
+msgstr "Fehler beim Schreiben der Ausgabedatei %s.\n"
 
 #: gcov.c:1618
 #, c-format
 msgid "Could not open output file %s.\n"
-msgstr ""
+msgstr "Konnte Ausgabedatei %s nicht öffnen.\n"
 
 #: gcse.c:763
 #, c-format
 msgid "GCSE disabled: %d > 1000 basic blocks and %d >= 20 edges/basic block"
-msgstr ""
+msgstr "GCSE ausgeschaltet: %d > 1000 Basis-Blöcke und %d >= 20 Kanten/Basis-Blöcke"
 
 #: gcse.c:775
 #, c-format
 msgid "GCSE disabled: %d basic blocks and %d registers"
-msgstr ""
+msgstr "GCSE ausgeschaltet: %d Basis-Blöcke und %d Register"
 
 #: genautomata.c:1490
 #, c-format
 msgid "Name `%s' contains quotes"
-msgstr ""
+msgstr "Name »%s« enthält Anführungszeichen"
 
 #: genautomata.c:1621
 #, c-format
 msgid "invalid string `%s' in define_cpu_unit"
-msgstr ""
+msgstr "ungültige Zeichenkette »%s« in define_cpu_unit"
 
 #: genautomata.c:1650
 #, c-format
 msgid "invalid string `%s' in define_query_cpu_unit"
-msgstr ""
+msgstr "ungültige Zeichenkette »%s« in define_query_cpu_unit"
 
 #: genautomata.c:1682 genautomata.c:1685
 #, c-format
 msgid "invalid string `%s' in define_bypass"
-msgstr ""
+msgstr "ungültige Zeichenkette »%s« in define_bypass"
 
 #: genautomata.c:1720
 #, c-format
 msgid "invalid first string `%s' in exclusion_set"
-msgstr ""
+msgstr "ungültige erste Zeichenkette »%s« in exclusion_set"
 
 #: genautomata.c:1724
 #, c-format
 msgid "invalid second string `%s' in exclusion_set"
-msgstr ""
+msgstr "ungültige zweite Zeichenkette »%s« in exclusion_set"
 
 #: genautomata.c:1760
 #, c-format
 msgid "invalid first string `%s' in presence_set"
-msgstr ""
+msgstr "ungültige erste Zeichenkette »%s« in presence_set"
 
 #: genautomata.c:1764
 #, c-format
 msgid "invalid second string `%s' in presence_set"
-msgstr ""
+msgstr "ungültige zweite Zeichenkette »%s« in presence_set"
 
 #: genautomata.c:1800
 #, c-format
 msgid "invalid first string `%s' in absence_set"
-msgstr ""
+msgstr "ungültige erste Zeichenkette »%s« in absence_set"
 
 #: genautomata.c:1804
 #, c-format
 msgid "invalid second string `%s' in absence_set"
-msgstr ""
+msgstr "ungültige zweite Zeichenkette »%s« in absence_set"
 
 #: genautomata.c:1837
 #, c-format
 msgid "invalid string `%s' in define_automaton"
-msgstr ""
+msgstr "ungültige Zeichenkette »%s« in define_automaton"
 
 #: genautomata.c:1868
 #, c-format
@@ -6010,12 +6042,12 @@ msgstr "ungültige Option »%s« in automata_option"
 #: genautomata.c:1890
 #, c-format
 msgid "garbage after ) in reservation `%s'"
-msgstr ""
+msgstr "Müll hinter ) in Reservierung »%s«"
 
 #: genautomata.c:1921 genautomata.c:1954 genautomata.c:1981
-#, fuzzy, c-format
+#, c-format
 msgid "invalid `%s' in reservation `%s'"
-msgstr "ungültige Option »%s«"
+msgstr "ungültiges »%s« in Reservierung »%s«"
 
 #: genautomata.c:1932
 #, c-format
