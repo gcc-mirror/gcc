@@ -1779,6 +1779,27 @@ add_candidate_1 (struct ivopts_data *data,
   return cand;
 }
 
+/* Returns true if incrementing the induction variable at the end of the LOOP
+   is allowed.
+
+   The purpose is to avoid splitting latch edge with a biv increment, thus
+   creating a jump, possibly confusing other optimization passes and leaving
+   less freedom to scheduler.  So we allow IP_END_POS only if IP_NORMAL_POS
+   is not available (so we do not have a better alternative), or if the latch
+   edge is already nonempty.  */
+
+static bool
+allow_ip_end_pos_p (struct loop *loop)
+{
+  if (!ip_normal_pos (loop))
+    return true;
+
+  if (!empty_block_p (ip_end_pos (loop)))
+    return true;
+
+  return false;
+}
+
 /* Adds a candidate BASE + STEP * i.  Important field is set to IMPORTANT and
    position to POS.  If USE is not NULL, the candidate is set as related to
    it.  The candidate computation is scheduled on all available positions.  */
@@ -1789,7 +1810,8 @@ add_candidate (struct ivopts_data *data,
 {
   if (ip_normal_pos (data->current_loop))
     add_candidate_1 (data, base, step, important, IP_NORMAL, use, NULL_TREE);
-  if (ip_end_pos (data->current_loop))
+  if (ip_end_pos (data->current_loop)
+      && allow_ip_end_pos_p (data->current_loop))
     add_candidate_1 (data, base, step, important, IP_END, use, NULL_TREE);
 }
 
@@ -3518,8 +3540,7 @@ static void
 determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
 {
   unsigned cost_base, cost_step;
-  tree base, last;
-  basic_block bb;
+  tree base;
 
   if (!cand->iv)
     {
@@ -3543,15 +3564,9 @@ determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
   
   /* Prefer not to insert statements into latch unless there are some
      already (so that we do not create unnecessary jumps).  */
-  if (cand->pos == IP_END)
-    {
-      bb = ip_end_pos (data->current_loop);
-      last = last_stmt (bb);
-
-      if (!last
-	  || TREE_CODE (last) == LABEL_EXPR)
-	cand->cost++;
-    }
+  if (cand->pos == IP_END
+      && empty_block_p (ip_end_pos (data->current_loop)))
+    cand->cost++;
 }
 
 /* Determines costs of computation of the candidates.  */
