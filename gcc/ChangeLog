@@ -1,3 +1,8 @@
+2003-06-20  Andreas Jaeger  <aj@suse.de>
+
+	* c-common.c: Change _Bool to bool reverting part of the last
+	patch.
+
 2003-06-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree.h (expand_function_end): Remove all parameters.

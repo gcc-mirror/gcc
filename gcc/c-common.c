@@ -4665,7 +4665,7 @@ shadow_warning (enum sw_kind msgcode, const char *name, tree decl)
 
 static tree
 handle_packed_attribute (tree *node, tree name, tree args  ATTRIBUTE_UNUSED,
-			 int flags, _Bool *no_add_attrs)
+			 int flags, bool *no_add_attrs)
 {
   tree *type = NULL;
   if (DECL_P (*node))
@@ -4701,7 +4701,7 @@ handle_packed_attribute (tree *node, tree name, tree args  ATTRIBUTE_UNUSED,
 static tree
 handle_nocommon_attribute (tree *node, tree name,
 			   tree args ATTRIBUTE_UNUSED,
-			   int flags ATTRIBUTE_UNUSED, _Bool *no_add_attrs)
+			   int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   if (TREE_CODE (*node) == VAR_DECL)
     DECL_COMMON (*node) = 0;
@@ -4719,7 +4719,7 @@ handle_nocommon_attribute (tree *node, tree name,
 
 static tree
 handle_common_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
-			 int flags ATTRIBUTE_UNUSED, _Bool *no_add_attrs)
+			 int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   if (TREE_CODE (*node) == VAR_DECL)
     DECL_COMMON (*node) = 1;
@@ -4737,7 +4737,7 @@ handle_common_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
 
 static tree
 handle_noreturn_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
-			   int flags ATTRIBUTE_UNUSED, _Bool *no_add_attrs)
+			   int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   tree type = TREE_TYPE (*node);
 
@@ -4765,7 +4765,7 @@ handle_noreturn_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
 static tree
 handle_noinline_attribute (tree *node, tree name,
 			   tree args ATTRIBUTE_UNUSED,
-			   int flags ATTRIBUTE_UNUSED, _Bool *no_add_attrs)
+			   int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
     DECL_UNINLINABLE (*node) = 1;
@@ -4785,7 +4785,7 @@ static tree
 handle_always_inline_attribute (tree *node, tree name,
 				tree args ATTRIBUTE_UNUSED,
 				int flags ATTRIBUTE_UNUSED,
-				_Bool *no_add_attrs)
+				bool *no_add_attrs)
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
     {
@@ -4806,7 +4806,7 @@ handle_always_inline_attribute (tree *node, tree name,
 
 static tree
 handle_used_attribute (tree *pnode, tree name, tree args ATTRIBUTE_UNUSED,
-		       int flags ATTRIBUTE_UNUSED, _Bool *no_add_attrs)
+		       int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   tree node = *pnode;
 
@@ -4828,7 +4828,7 @@ handle_used_attribute (tree *pnode, tree name, tree args ATTRIBUTE_UNUSED,
 
 static tree
 handle_unused_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
-			 int flags ATTRIBUTE_UNUSED, _Bool *no_add_attrs)
+			 int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   if (DECL_P (*node))
     {
@@ -4861,7 +4861,7 @@ handle_unused_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
 
 static tree
 handle_const_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
-			int flags ATTRIBUTE_UNUSED, _Bool *no_add_attrs)
+			int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   tree type = TREE_TYPE (*node);
 
@@ -4889,7 +4889,7 @@ handle_const_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
 static tree
 handle_transparent_union_attribute (tree *node, tree name,
 				    tree args ATTRIBUTE_UNUSED, int flags,
-				    _Bool *no_add_attrs)
+				    bool *no_add_attrs)
 {
   tree decl = NULL_TREE;
   tree *type = NULL;
@@ -4934,7 +4934,7 @@ static tree
 handle_constructor_attribute (tree *node, tree name,
 			      tree args ATTRIBUTE_UNUSED,
 			      int flags ATTRIBUTE_UNUSED,
-			      _Bool *no_add_attrs)
+			      bool *no_add_attrs)
 {
   tree decl = *node;
   tree type = TREE_TYPE (decl);
@@ -4962,7 +4962,7 @@ static tree
 handle_destructor_attribute (tree *node, tree name,
 			     tree args ATTRIBUTE_UNUSED,
 			     int flags ATTRIBUTE_UNUSED,
-			     _Bool *no_add_attrs)
+			     bool *no_add_attrs)
 {
   tree decl = *node;
   tree type = TREE_TYPE (decl);
@@ -4988,7 +4988,7 @@ handle_destructor_attribute (tree *node, tree name,
 
 static tree
 handle_mode_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
-		       int flags ATTRIBUTE_UNUSED, _Bool *no_add_attrs)
+		       int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   tree type = *node;
 
@@ -5073,7 +5073,7 @@ handle_mode_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
 
 static tree
 handle_section_attribute (tree *node, tree name ATTRIBUTE_UNUSED, tree args,
-			  int flags ATTRIBUTE_UNUSED, _Bool *no_add_attrs)
+			  int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   tree decl = *node;
 
@@ -5127,7 +5127,7 @@ handle_section_attribute (tree *node, tree name ATTRIBUTE_UNUSED, tree args,
 
 static tree
 handle_aligned_attribute (tree *node, tree name ATTRIBUTE_UNUSED, tree args,
-			  int flags, _Bool *no_add_attrs)
+			  int flags, bool *no_add_attrs)
 {
   tree decl = NULL_TREE;
   tree *type = NULL;
@@ -5209,7 +5209,7 @@ static tree
 handle_weak_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
 		       tree args ATTRIBUTE_UNUSED,
 		       int flags ATTRIBUTE_UNUSED,
-		       _Bool *no_add_attrs ATTRIBUTE_UNUSED)
+		       bool *no_add_attrs ATTRIBUTE_UNUSED)
 {
   declare_weak (*node);
 
@@ -5221,7 +5221,7 @@ handle_weak_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
 
 static tree
 handle_alias_attribute (tree *node, tree name, tree args,
-			int flags ATTRIBUTE_UNUSED, _Bool *no_add_attrs)
+			int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   tree decl = *node;
 
@@ -5267,7 +5267,7 @@ handle_alias_attribute (tree *node, tree name, tree args,
 static tree
 handle_visibility_attribute (tree *node, tree name, tree args,
 			     int flags ATTRIBUTE_UNUSED,
-			     _Bool *no_add_attrs)
+			     bool *no_add_attrs)
 {
   tree decl = *node;
 
@@ -5306,7 +5306,7 @@ handle_visibility_attribute (tree *node, tree name, tree args,
 
 static tree
 handle_tls_model_attribute (tree *node, tree name, tree args,
-			    int flags ATTRIBUTE_UNUSED, _Bool *no_add_attrs)
+			    int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   tree decl = *node;
 
@@ -5347,7 +5347,7 @@ static tree
 handle_no_instrument_function_attribute (tree *node, tree name,
 					 tree args ATTRIBUTE_UNUSED,
 					 int flags ATTRIBUTE_UNUSED,
-					 _Bool *no_add_attrs)
+					 bool *no_add_attrs)
 {
   tree decl = *node;
 
@@ -5376,7 +5376,7 @@ handle_no_instrument_function_attribute (tree *node, tree name,
 
 static tree
 handle_malloc_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
-			 int flags ATTRIBUTE_UNUSED, _Bool *no_add_attrs)
+			 int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
     DECL_IS_MALLOC (*node) = 1;
@@ -5397,7 +5397,7 @@ static tree
 handle_no_limit_stack_attribute (tree *node, tree name,
 				 tree args ATTRIBUTE_UNUSED,
 				 int flags ATTRIBUTE_UNUSED,
-				 _Bool *no_add_attrs)
+				 bool *no_add_attrs)
 {
   tree decl = *node;
 
@@ -5426,7 +5426,7 @@ handle_no_limit_stack_attribute (tree *node, tree name,
 
 static tree
 handle_pure_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
-		       int flags ATTRIBUTE_UNUSED, _Bool *no_add_attrs)
+		       int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
     DECL_IS_PURE (*node) = 1;
@@ -5446,7 +5446,7 @@ handle_pure_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
 static tree
 handle_deprecated_attribute (tree *node, tree name,
 			     tree args ATTRIBUTE_UNUSED, int flags,
-			     _Bool *no_add_attrs)
+			     bool *no_add_attrs)
 {
   tree type = NULL_TREE;
   int warn = 0;
@@ -5511,7 +5511,7 @@ static GTY(()) tree vector_type_node_list = 0;
 static tree
 handle_vector_size_attribute (tree *node, tree name, tree args,
 			      int flags ATTRIBUTE_UNUSED,
-			      _Bool *no_add_attrs)
+			      bool *no_add_attrs)
 {
   unsigned HOST_WIDE_INT vecsize, nunits;
   enum machine_mode mode, orig_mode, new_mode;
@@ -5689,7 +5689,7 @@ vector_size_helper (tree type, tree bottom)
 static tree
 handle_nonnull_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
 			  tree args, int flags ATTRIBUTE_UNUSED,
-			  _Bool *no_add_attrs)
+			  bool *no_add_attrs)
 {
   tree type = *node;
   unsigned HOST_WIDE_INT attr_arg_num;
@@ -5853,7 +5853,7 @@ get_nonnull_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
 
 static tree
 handle_nothrow_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
-			  int flags ATTRIBUTE_UNUSED, _Bool *no_add_attrs)
+			  int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
     TREE_NOTHROW (*node) = 1;
@@ -5872,7 +5872,7 @@ handle_nothrow_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
 
 static tree
 handle_cleanup_attribute (tree *node, tree name, tree args,
-			  int flags ATTRIBUTE_UNUSED, _Bool *no_add_attrs)
+			  int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   tree decl = *node;
   tree cleanup_id, cleanup_decl;
