@@ -1,3 +1,9 @@
+Tue Feb 16 10:53:51 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	* config/arm/arm.md (*zeroextractqi_compare0_scratch): Re-add load
+	instruction killed in previous change.  Simplify mask generation.
+	(*zeroextractsi_compare0_scratch): Simpify mask generation.
+
 Tue Feb 16 09:52:26 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.md (zeroextractqi_compare0_scratch): Ensure that
