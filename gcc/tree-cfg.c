@@ -150,7 +150,7 @@ build_tree_cfg (tree *tp)
   if (found_computed_goto)
     factor_computed_gotos ();
 
-  /* Make sure there is always at least one block, even if its empty.  */
+  /* Make sure there is always at least one block, even if it's empty.  */
   if (n_basic_blocks == 0)
     create_empty_bb (ENTRY_BLOCK_PTR);
 
@@ -607,8 +607,8 @@ label_to_block (tree dest)
 {
   int uid = LABEL_DECL_UID (dest);
 
-  /* We would die hard when faced by undefined label.  Emit label to
-     very first basic block.  This will hopefully make even the dataflow
+  /* We would die hard when faced by an undefined label.  Emit a label to
+     the very first basic block.  This will hopefully make even the dataflow
      and undefined variable warnings quite right.  */
   if ((errorcount || sorrycount) && uid < 0)
     {
@@ -802,7 +802,7 @@ cleanup_dead_labels (void)
   label_for_bb = xcalloc (last_basic_block, sizeof (tree));
 
   /* Find a suitable label for each block.  We use the first user-defined
-     label is there is one, or otherwise just the first label we see.  */
+     label if there is one, or otherwise just the first label we see.  */
   FOR_EACH_BB (bb)
     {
       block_stmt_iterator i;
@@ -3638,7 +3638,7 @@ tree_verify_flow_info (void)
 }
 
 
-/* Updates phi nodes after creating forwarder block joined
+/* Updates phi nodes after creating a forwarder block joined
    by edge FALLTHRU.  */
 
 static void
