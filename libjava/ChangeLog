@@ -1,6 +1,19 @@
+2002-09-13  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/channels/DatagramChannel.java,
+	java/nio/channels/ServerSocketChannel.java
+	java/nio/channels/SocketChannel.java:
+	New dummy files to make java.net fully JDK 1.4 compatible
+	* Makefile.am (ordinary_java_source_files): Added
+	java/net/DatagramSocketImplFactory.java (long forgotten),
+	java/nio/SocketChannel.java,
+	java/nio/ServerSocketChannel.java,
+	java/nio/DatagramChannel.java
+	* Makefile.in: Regenrated.
+
 2002-09-12  Michael Koch  <konqueror@gmx.de>
 
-	* java/net/DatagramSocketImpl.jav
+	* java/net/DatagramSocketImpl.java
 	(peekData): New method.
 	* java/net/PlainDatagramSocketImpl.java
 	(peekData): New method.
