@@ -3938,11 +3938,11 @@ handle_directive (ip, op)
 	    if (*xp == '\n') {
 	      xp++;
 	      cp--;
-	      if (cp != buf && is_space[cp[-1]]) {
-		while (cp != buf && is_space[cp[-1]]) cp--;
-		cp++;
+	      if (cp != buf && is_hor_space[cp[-1]]) {
+		while (cp - 1 != buf && is_hor_space[cp[-2]])
+		  cp--;
 		SKIP_WHITE_SPACE (xp);
-	      } else if (is_space[*xp]) {
+	      } else if (is_hor_space[*xp]) {
 		*cp++ = *xp++;
 		SKIP_WHITE_SPACE (xp);
 	      }
