@@ -700,11 +700,8 @@ extern int rs6000_altivec_abi;
 
 #define FIRST_PSEUDO_REGISTER 110
 
-/* This must not decrease, for backwards compatibility.  If
-   FIRST_PSEUDO_REGISTER increases, this should as well.  */
-/* fixme: this needs to be defined to "TARGET_ALTIVEC_ABI ? 110 : 77"
-   and then fix usages of DWARF_FRAME_REGISTERS to work.  */
-#define DWARF_FRAME_REGISTERS 77
+/* This must be included for pre gcc 3.0 glibc compatability.  */
+#define PRE_GCC3_DWARF_FRAME_REGISTERS 77
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.

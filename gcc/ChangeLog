@@ -1,3 +1,8 @@
+2001-12-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* rs6000.h (PRE_GCC3_DWARF_FRAME_REGISTERS): New.
+        (DWARF_FRAME_REGISTERS): Delete.
+
 2001-12-06  Janis Johnson  <janis187@us.ibm.com>
 
 	* builtin-types.def (BT_FN_VOID_PTR_VAR): New.
