@@ -1138,7 +1138,7 @@ expand_gimple_basic_block (basic_block bb, FILE * dump_file)
 
   do_pending_stack_adjust ();
 
-  /* Find the the block tail.  The last insn is the block is the insn
+  /* Find the block tail.  The last insn in the block is the insn
      before a barrier and/or table jump insn.  */
   last = get_last_insn ();
   if (BARRIER_P (last))

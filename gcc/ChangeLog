@@ -1,3 +1,17 @@
+2005-02-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* ChangeLog.5: Fix log message typo(s).
+	* ChangeLog.7: Likewise.
+	* ChangeLog.tree-ssa: Likewise.
+	* cfgexpand.c: Fix comment typo(s).
+	* conflict.c: Likewise.
+	* defaults.h: Likewise.
+	* dwarf2out.c: Likewise.
+	* gcse.c: Likewise.
+	* ggc-page.c: Likewise.
+	* tree-eh.c: Likewise.
+	* tree-ssa-dom.c: Likewise.
+
 2005-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/19019

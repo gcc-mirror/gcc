@@ -4117,7 +4117,7 @@ static char ranges_section_label[2 * MAX_ARTIFICIAL_LABEL_BYTES];
 #endif
 
 /* We allow a language front-end to designate a function that is to be
-   called to "demangle" any name before it it put into a DIE.  */
+   called to "demangle" any name before it is put into a DIE.  */
 
 static const char *(*demangle_name_func) (const char *);
 

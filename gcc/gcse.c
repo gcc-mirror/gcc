@@ -4130,7 +4130,7 @@ pre_edge_insert (struct edge_list *edge_list, struct expr **index_map)
 		    if (! occr->deleted_p)
 		      continue;
 
-		    /* Insert this expression on this edge if if it would
+		    /* Insert this expression on this edge if it would
 		       reach the deleted occurrence in BB.  */
 		    if (!TEST_BIT (inserted[e], j))
 		      {
@@ -5846,7 +5846,7 @@ find_loads (rtx x, rtx store_pattern, int after)
 
 /* Check if INSN kills the store pattern X (is aliased with it).
    AFTER is true if we are checking the case when store X occurs
-   after the insn.  Return true if it it does.  */
+   after the insn.  Return true if it does.  */
 
 static bool
 store_killed_in_insn (rtx x, rtx x_regs, rtx insn, int after)

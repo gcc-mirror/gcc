@@ -2218,8 +2218,7 @@ ggc_pch_write_object (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
       /* To speed small writes, we use a nulled-out array that's larger
          than most padding requests as the source for our null bytes.  This
          permits us to do the padding with fwrite() rather than fseek(), and
-         limits the chance the the OS may try to flush any outstanding
-         writes.  */
+         limits the chance the OS may try to flush any outstanding writes.  */
       if (padding <= sizeof(emptyBytes))
         {
           if (fwrite (emptyBytes, 1, padding, f) != padding)
