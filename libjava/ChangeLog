@@ -1,5 +1,12 @@
 2005-02-08  Tom Tromey  <tromey@redhat.com>
 
+	* java/net/URI.java (AUTHORITY_REGEXP): Handle case where user
+	name or port is missing.
+	(AUTHORITY_USERINFO_GROUP, AUTHORITY_HOST_GROUP,
+	AUTHORITY_PORT_GROUP): Updated.
+
+2005-02-08  Tom Tromey  <tromey@redhat.com>
+
 	* configure: Rebuilt.
 	* configure.ac: Reduce number of calls to AC_CHECK_FUNCS and
 	AC_CHECK_HEADERS.
