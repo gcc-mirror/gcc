@@ -1,5 +1,7 @@
 Sun Oct 25 06:12:33 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* configure.in (AC_CHECK_HEADERS): Fix typo with sys/stat.h.
+
 	* Makefile.in (config.status): Use $(srcdir) for configure.
 
 	* sparc.md (*sethi_di_medium_pic): Add CLOBBER of register 1.
