@@ -63,12 +63,11 @@ static int absorber;
 #define USE_ABSORBER absorber = 0
 
 /* Keep track of the current class name and package name.  */
-static const char *current_class;
+static char *current_class;
 static const char *package_name;
 
 /* Keep track of the current inner class qualifier. */
-static char *inner_qualifier;
-static int   inner_qualifier_length;
+static int current_class_length;
 
 /* Keep track of whether things have be listed before.  */
 static int previous_output;
@@ -76,9 +75,12 @@ static int previous_output;
 /* Record modifier uses  */
 static int modifier_value;
 
-/* Keep track of number of bracket pairs after a variable declarator
+/* Keeps track of number of bracket pairs after a variable declarator
    id.  */
 static int bracket_count; 
+
+/* Numbers anonymous classes */
+static int anonymous_count;
 
 /* Record a method declaration  */
 struct method_declarator {
@@ -897,18 +899,20 @@ primary_no_new_array:
 class_instance_creation_expression:
 	NEW_TK class_type OP_TK argument_list CP_TK
 |	NEW_TK class_type OP_TK CP_TK
-        /* Added, JDK1.1 inner classes but modified to use
-           'class_type' instead of 'TypeName' (type_name) mentionned
-           in the documentation but doesn't exist. */
-|	NEW_TK class_type OP_TK argument_list CP_TK class_body
-|	NEW_TK class_type OP_TK CP_TK class_body         
-        /* Added, JDK1.1 inner classes, modified to use name or
-	   primary instead of primary solely which couldn't work in
-	   all situations.  */
+|	anonymous_class_creation
 |	something_dot_new identifier OP_TK CP_TK
 |	something_dot_new identifier OP_TK CP_TK class_body
 |	something_dot_new identifier OP_TK argument_list CP_TK
 |	something_dot_new identifier OP_TK argument_list CP_TK class_body
+;
+
+anonymous_class_creation:
+	NEW_TK class_type OP_TK CP_TK
+		{ report_class_declaration (NULL); }
+	class_body         
+|	NEW_TK class_type OP_TK argument_list CP_TK
+		{ report_class_declaration (NULL); }
+	class_body
 ;
 
 something_dot_new:		/* Added, not part of the specs. */
@@ -1128,29 +1132,61 @@ static void
 push_class_context (name)
     const char *name;
 {
-  size_t name_length = strlen (name);
-  inner_qualifier = xrealloc (inner_qualifier, 
-                             inner_qualifier_length + name_length+2);
-  memcpy (inner_qualifier+inner_qualifier_length, name, name_length);
-  inner_qualifier_length += name_length;
-  inner_qualifier [inner_qualifier_length] = '$';
-  inner_qualifier [++inner_qualifier_length] = '\0';
+  /* If we already have CURRENT_CLASS set, we're in an inter
+     class. Mangle its name. */
+  if (current_class)
+    {
+      const char *p;
+      char anonymous [3];
+      int additional_length;
+      
+      /* NAME set to NULL indicates an anonymous class, which are named by
+	 numbering them. */
+      if (!name)
+	{
+	  sprintf (anonymous, "%d", ++anonymous_count);
+	  p = anonymous;
+	}
+      else
+	p = name;
+      
+      additional_length = strlen (p)+1; /* +1 for `$' */
+      current_class = xrealloc (current_class, 
+				current_class_length + additional_length + 1);
+      current_class [current_class_length] = '$';
+      strcpy (&current_class [current_class_length+1], p);
+      current_class_length += additional_length;
+    }
+  else
+    {
+      if (!name)
+	return;
+      current_class_length = strlen (name);
+      current_class = xmalloc (current_class_length+1);
+      strcpy (current_class, name);
+    }
 }
 
 static void
 pop_class_context ()
 {
-  while (--inner_qualifier_length > 0
-        && inner_qualifier [inner_qualifier_length-1] != '$')
+  /* Go back to the last `$' and cut. */
+  while (--current_class_length > 0
+        && current_class [current_class_length] != '$')
     ;
-  inner_qualifier = xrealloc (inner_qualifier, inner_qualifier_length+1);
-  if (inner_qualifier_length == -1)
-    inner_qualifier_length = 0;
-  inner_qualifier [inner_qualifier_length] = '\0';
+  if (current_class_length)
+    {
+      current_class = xrealloc (current_class, current_class_length+1);
+      current_class [current_class_length] = '\0';
+    }
+  else
+    {
+      current_class = NULL;
+      anonymous_count = 0;
+    }
 }
 
 /* Actions defined here */
-#define INNER_QUALIFIER (inner_qualifier ? inner_qualifier : "")
 
 static void
 report_class_declaration (name)
@@ -1158,6 +1194,7 @@ report_class_declaration (name)
 {
   extern int flag_dump_class, flag_list_filename;
 
+  push_class_context (name);
   if (flag_dump_class)
     {
       if (!previous_output)
@@ -1168,13 +1205,10 @@ report_class_declaration (name)
 	}
 	
       if (package_name)
-	fprintf (out, "%s.%s%s ", package_name, INNER_QUALIFIER, name);
+	fprintf (out, "%s.%s ", package_name, current_class);
       else
-	fprintf (out, "%s%s ", INNER_QUALIFIER, name);
+	fprintf (out, "%s ", current_class);
     }
-
-  push_class_context (name);
-  current_class = name;
 }
 
 static void
@@ -1208,7 +1242,8 @@ report_main_declaration (declarator)
 void reset_report ()
 {
   previous_output = 0;
-  current_class = package_name = NULL;
+  package_name = NULL;
+  current_class = NULL;
 }
 
 void
