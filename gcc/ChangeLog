@@ -1,7 +1,19 @@
-2003-01-15  Alexandre Oliva  <aoliva@redhat.com>
+2003-01-15  Hartmut Penner  <hpenner@de.ibm.com>
 
-	* config/i386/i386.c (ix86_expand_vector_move): Validize constant
-	forced to memory.  Fixes PR bootstrap/9036.
+	* config/s390/s390.c (s390_safe_attr_type): New function.
+	(s390_use_dfa_pipeline_interface): New function, return true for z900.
+	(s390_issue_rate): New function.
+	(s390_agen_dep_p): New function.
+	(addr_generation_dependency_p): Use 's390_safe_attr_type'.
+	(s390_adjust_cost): Return 'cost' if new DFA is used.
+	(s390_adjust_priority): Delete function.
+	* config/s390/s390-protos.h: (s390_agen_dep_p): New prototype.
+	* config/s390/s390.md (atype attribute): Attribute 'atype' default
+	determined by 'op_type'.
+	(type attribute): Added more type attributes.
+	* config/s390/2064.md: New DFA description for z900 pipeline.
+	
+2003-01-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/mips.h (CRT_CALL_STATIC_FUNCTION): Define so as
 	to set $gp before the call.

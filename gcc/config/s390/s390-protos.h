@@ -76,6 +76,8 @@ extern void s390_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern rtx s390_gen_rtx_const_DI PARAMS ((int, int));
 extern rtx s390_simplify_dwarf_addr PARAMS ((rtx));
 extern void s390_machine_dependent_reorg PARAMS ((rtx));
+extern int s390_agen_dep_p PARAMS ((rtx, rtx));
+
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
