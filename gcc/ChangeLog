@@ -1,5 +1,14 @@
 2001-11-22  Graham Stott  <grahams@redhat.com>
 
+	* cfgrtl.c (try_redirect_by_replacing_jump): Fix typo, emit
+	replacement jump after original jump.
+
+	(verify_flow_info): Remove redundent initialisation.
+	Handle reaching end of insn list before finding a BARRIER.
+	Only issue one missing barrier diagnostic.
+
+2001-11-22  Graham Stott  <grahams@redhat.com>
+
 	* local-alloc.c (combine_regs): Handle SUBREG_REG being a MEM.
 
 Thu Nov 22 06:49:14 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
