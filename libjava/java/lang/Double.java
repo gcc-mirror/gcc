@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -54,9 +54,6 @@ public final class Double extends Number implements Comparable
 
   public boolean equals (Object obj)
   {
-    if (obj == null)
-      return false;
-
     if (!(obj instanceof Double))
       return false;
 
@@ -108,12 +105,8 @@ public final class Double extends Number implements Comparable
     return toString (v, false);
   }
 
-  public static Double valueOf (String s) throws NullPointerException, 
-    NumberFormatException
+  public static Double valueOf (String s) throws NumberFormatException
   {
-    if (s == null)
-      throw new NullPointerException ();
-
     return new Double (parseDouble (s));
   }
 
@@ -145,6 +138,12 @@ public final class Double extends Number implements Comparable
   }
 
   public static native long doubleToLongBits (double value);
+
+  public static long doubleToRawLongBits (double value)
+  {
+    // FIXME: Check that this is correct with respect to NaN values.
+    return doubleToLongBits (value);
+  }
 
   public static native double longBitsToDouble (long bits);
 
