@@ -1,3 +1,7 @@
+Mon Feb  4 19:23:19 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* final.c (final_scan_insn): Add case for NOTE_INSN_LOOP_END_TOP_COND.
+
 2002-02-04  Richard Henderson  <rth@redhat.com>
 
 	* combine.c (nonzero_bits): Re-introduce special case for
