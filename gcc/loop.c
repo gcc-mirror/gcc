@@ -313,6 +313,9 @@ static int replace_label PARAMS ((rtx *, void *));
 static rtx check_insn_for_givs PARAMS((struct loop *, rtx, int, int));
 static rtx check_insn_for_bivs PARAMS((struct loop *, rtx, int, int));
 
+static void loop_dump_aux PARAMS ((const struct loop *, FILE *, int));
+void debug_loop PARAMS ((const struct loop *));
+
 typedef struct rtx_and_int {
   rtx r;
   int i;
@@ -9952,4 +9955,90 @@ replace_label (x, data)
   --LABEL_NUSES (old_label);
 
   return 0;
+}
+
+#define LOOP_BLOCK_NUM_1(INSN) \
+((INSN) ? (BLOCK_FOR_INSN (INSN) ? BLOCK_NUM (INSN) : - 1) : -1)
+
+/* The notes do not have an assigned block, so look at the next insn.  */
+#define LOOP_BLOCK_NUM(INSN) \
+((INSN) ? (GET_CODE (INSN) == NOTE \
+            ? LOOP_BLOCK_NUM_1 (next_nonnote_insn (INSN)) \
+            : LOOP_BLOCK_NUM_1 (INSN)) \
+        : -1)
+
+#define LOOP_INSN_UID(INSN) ((INSN) ? INSN_UID (INSN) : -1)
+
+static void loop_dump_aux (loop, file, verbose)
+     const struct loop *loop;
+     FILE *file;
+     int verbose;
+{
+  rtx label;
+
+  if (! loop || ! file)
+    return;
+
+  /* Print diagnostics to compare our concept of a loop with
+     what the loop notes say.  */
+  if (! PREV_INSN (loop->first->head)
+      || GET_CODE (PREV_INSN (loop->first->head)) != NOTE
+      || NOTE_LINE_NUMBER (PREV_INSN (loop->first->head))
+      != NOTE_INSN_LOOP_BEG)
+    fprintf (file, ";;  No NOTE_INSN_LOOP_BEG at %d\n", 
+	     INSN_UID (PREV_INSN (loop->first->head)));
+  if (! NEXT_INSN (loop->last->end)
+      || GET_CODE (NEXT_INSN (loop->last->end)) != NOTE
+      || NOTE_LINE_NUMBER (NEXT_INSN (loop->last->end))
+      != NOTE_INSN_LOOP_END)
+    fprintf (file, ";;  No NOTE_INSN_LOOP_END at %d\n",
+	     INSN_UID (NEXT_INSN (loop->last->end)));
+
+  if (loop->start)
+    {
+      fprintf (file,
+	       ";;  start %d (%d), cont dom %d (%d), cont %d (%d), vtop %d (%d), end %d (%d)\n",
+	       LOOP_BLOCK_NUM (loop->start),
+	       LOOP_INSN_UID (loop->start),
+	       LOOP_BLOCK_NUM (loop->cont),
+	       LOOP_INSN_UID (loop->cont),
+	       LOOP_BLOCK_NUM (loop->cont),
+	       LOOP_INSN_UID (loop->cont),
+	       LOOP_BLOCK_NUM (loop->vtop),
+	       LOOP_INSN_UID (loop->vtop),
+	       LOOP_BLOCK_NUM (loop->end),
+	       LOOP_INSN_UID (loop->end));
+      fprintf (file, ";;  top %d (%d), scan start %d (%d)\n",
+	       LOOP_BLOCK_NUM (loop->top),
+	       LOOP_INSN_UID (loop->top) ,
+	       LOOP_BLOCK_NUM (loop->scan_start),
+	       LOOP_INSN_UID (loop->scan_start));
+      fprintf (file, ";;  exit_count %d", loop->exit_count);
+      if (loop->exit_count)
+	{
+	  fputs (", labels:", file);
+	  for (label = loop->exit_labels; label; label = LABEL_NEXTREF (label))
+	    {
+	      fprintf (file, " %d ",
+		       LOOP_INSN_UID (XEXP (label, 0)));
+	    }
+	}
+      fputs ("\n", file);
+      
+      /* This can happen when a marked loop appears as two nested loops,
+	 say from while (a || b) {}.  The inner loop won't match
+	 the loop markers but the outer one will.  */
+      if (LOOP_BLOCK_NUM (loop->cont) != loop->latch->index)
+	fprintf (file, ";;  NOTE_INSN_LOOP_CONT not in loop latch\n");
+    }
+}
+  
+
+/* Call this function from the debugger to dump LOOP.  */
+
+void
+debug_loop (loop)
+     const struct loop *loop;
+{
+  flow_loop_dump (loop, stderr, loop_dump_aux, 1);
 }

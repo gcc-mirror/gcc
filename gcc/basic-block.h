@@ -398,8 +398,12 @@ struct loops
 
 extern int flow_loops_find PARAMS ((struct loops *));
 extern void flow_loops_free PARAMS ((struct loops *));
-extern void flow_loops_dump PARAMS ((const struct loops *, FILE *, int));
-
+extern void flow_loops_dump PARAMS ((const struct loops *, FILE *,
+				     void (*)(const struct loop *,
+					      FILE *, int), int));
+extern void flow_loop_dump PARAMS ((const struct loop *, FILE *,
+				    void (*)(const struct loop *,
+					     FILE *, int), int));
 
 /* This structure maintains an edge list vector.  */
 struct edge_list 

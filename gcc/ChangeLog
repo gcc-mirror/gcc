@@ -1,5 +1,20 @@
 2000-08-26  Michael Hayes  <mhayes@cygnus.com>
 
+	* loop.c (loop_dump_aux, debug_loop): New functions.
+	(LOOP_BLOCK_NUM_1, LOOP_BLOCK_NUM, LOOP_INSN_UID): New macros.
+
+	* flow.c (flow_loops_dump): Add callback parameter.
+	(flow_loop_dump): Add callback parameter and call it.  Move
+	loop note debugging code to loop_dump_aux.
+
+	* basic-block.h (flow_loop_dump): Add callback parameter
+	(flow_loops_dump): Likewise.
+
+	* toplev.c (rest_of_compilation): Add NULL callback function pointer
+	to call to flow_loops_dump.
+	
+2000-08-26  Michael Hayes  <mhayes@cygnus.com>
+
 	* loop.c (count_loop_regs_set): Replace start and end arguments
 	with loop argument.  All callers udated.
 	
