@@ -1044,7 +1044,6 @@ initdcl:
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_init ();
-		  decl_attributes ($<ttype>5, $3, prefix_attributes);
 		  finish_decl ($<ttype>5, $6, $2); }
 	| declarator maybeasm maybe_attribute
 		{ tree d = start_decl ($1, current_declspecs, 0);
