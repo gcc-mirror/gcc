@@ -1,3 +1,8 @@
+2003-12-20  Jason Merrill  <jason@redhat.com>
+
+	* config/cpu/powerpc/atomicity.h: Fix oversight in previous
+	change.
+
 2003-12-20  Jerry Quinn  <jlquinn@optonline.net>
 
 	* docs/doxygen/TODO: Update.
