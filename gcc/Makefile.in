@@ -2187,6 +2187,9 @@ clean: mostlyclean $(INTL_CLEAN) lang.clean
 	  rm -rf `echo $(MULTILIB_OPTIONS) | sed -e 's/\// /g'`; \
 	fi ; fi
 	-rm -fr stage1 stage2 stage3 stage4
+# Delete stamps of bootstrap stages
+	-rm -f stage_*
+	-rm -f clean_*
 
 # Delete all files that users would normally create
 # while building and installing GCC.
@@ -2766,34 +2769,82 @@ diff:
 # A list of files to be destroyed during "lean" builds.
 VOL_FILES=`echo $(BACKEND) $(OBJS) $(C_OBJS) $(LIBCPP_OBJS) *.c *.h gen*`
 
-bootstrap bootstrap-lean: force
 # Only build the C compiler for stage1, because that is the only one that
 # we can guarantee will build with the native compiler, and also it is the
 # only thing useful for building stage2.
-	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)" LANG_LIB2FUNCS=
+stage_a: 
+	+$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)" LANG_LIB2FUNCS=
+	touch stage_a
+
+stage_b:
 	$(MAKE) stage1
-	-if test $@ = bootstrap-lean; then cd stage1 ; rm -f $(VOL_FILES); else true; fi
+	touch stage_b
+
 # This used to define ALLOCA as empty, but that would lead to bad results
 # for a subsequent `make install' since that would not have ALLOCA empty.
 # To prevent `make install' from compiling alloca.o and then relinking cc1
 # because alloca.o is newer, we permit these recursive makes to compile
 # alloca.o.  Then cc1 is newer, so it won't have to be relinked.
-	$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" CFLAGS="$(BOOT_CFLAGS)" WARN_CFLAGS="$(WARN2_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
-	$(MAKE) stage2
-	-if test $@ = bootstrap-lean; then rm -rf stage1; cd stage2 ; rm -f $(VOL_FILES); else true; fi
-	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" CFLAGS="$(BOOT_CFLAGS)" WARN_CFLAGS="$(WARN2_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
+stage_c:
+	+$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" CFLAGS="$(BOOT_CFLAGS)" WARN_CFLAGS="$(WARN2_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
+	touch stage_c
 
-bootstrap2 bootstrap2-lean: force
-	$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" CFLAGS="$(BOOT_CFLAGS)" WARN_CFLAGS="$(WARN2_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
-	$(MAKE) stage2
-	-if test $@ = bootstrap2-lean; then rm -rf stage1; cd stage2 ; rm -f $(VOL_FILES); else true; fi
-	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" CFLAGS="$(BOOT_CFLAGS)" WARN_CFLAGS="$(WARN2_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
+stage_d:
+	+$(MAKE) stage2
+	touch stage_d
+ 
+stage_e:
+	+$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" CFLAGS="$(BOOT_CFLAGS)" WARN_CFLAGS="$(WARN2_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
+	touch stage_e
 
-bootstrap3 bootstrap3-lean: force
-	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" CFLAGS="$(BOOT_CFLAGS)" WARN_CFLAGS="$(WARN2_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
+# For bootstrap4:
+stage_f:
+	+$(MAKE) CC="stage3/xgcc$(exeext) -B$(build_tooldir)/bin/ -Bstage3/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage3/ LANGUAGES="$(LANGUAGES)"
+	touch stage_f
 
-bootstrap4 bootstrap4-lean: force
-	$(MAKE) CC="stage3/xgcc$(exeext) -Bstage3/ -B$(build_tooldir)/bin/" CFLAGS="$(WARN2_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage3/ LANGUAGES="$(LANGUAGES)"
+# Additional steps for *-lean targets:
+clean_s1:
+	-cd stage1; rm -f $(VOL_FILES)
+	touch clean_s1
+
+clean_s2:
+	-rm -rf stage1
+	-cd stage2; rm -f $(VOL_FILES)
+	touch clean_s2
+
+# This next little bit is the way it is for parallel builds.  It's simply
+# a chain of stages which DO have to be done sequentially.
+
+bootstrap_a:              stage_a
+bootstrap_b:  bootstrap_a stage_b
+bootstrap_c:  bootstrap_b stage_c
+bootstrap_d:  bootstrap_c stage_d
+bootstrap_e:  bootstrap_d stage_e
+bootstrap: force bootstrap_e
+
+bootstrap-lean_a:                   stage_a
+bootstrap-lean_b:  bootstrap-lean_a stage_b
+bootstrap-lean_c:  bootstrap-lean_b clean_s1 
+bootstrap-lean_d:  bootstrap-lean_c stage_c
+bootstrap-lean_e:  bootstrap-lean_d stage_d
+bootstrap-lean_f:  bootstrap-lean_e clean_s2
+bootstrap-lean_g:  bootstrap-lean_f stage_e
+bootstrap-lean: force bootstrap-lean_f
+
+bootstrap2_c:               stage_c
+bootstrap2_d:  bootstrap2_c stage_d
+bootstrap2_e:  bootstrap2_d stage_e
+bootstrap2: force bootstrap2_e
+
+bootstrap2-lean_c:                    stage_c
+bootstrap2-lean_d:  bootstrap2-lean_c stage_d
+bootstrap2-lean_e:  bootstrap2-lean_d clean_s2
+bootstrap2-lean_f:  bootstrap2-lean_e stage_e
+bootstrap2-lean: force bootstrap2-lean_f
+
+bootstrap3 bootstrap3-lean: force stage_e
+ 
+bootstrap4 bootstrap4-lean: force stage_f
 
 # Compare the object files in the current directory with those in the
 # stage2 directory.

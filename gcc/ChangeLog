@@ -1,3 +1,8 @@
+2000-09-03  Donn Terry  <donn@interix.com>,  Laurynas Biveinis  <lauras@softhome.net>
+
+	* Makefile.in: Restructure bootstrap stages to allow clean
+	restart after failure.
+
 2000-09-05  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64.md (movsi and movdi patterns): Allow moves from
