@@ -731,6 +731,10 @@ dtors_section ()							\
 #undef HANDLE_SYSV_PRAGMA
 #define HANDLE_SYSV_PRAGMA 1
 
+/* Though OpenServer support .weak in COFF, g++ doesn't play nice with it
+ * so we'll punt on it for now
+ */
+#define SUPPORTS_WEAK (TARGET_ELF)
 #define ASM_WEAKEN_LABEL(FILE,NAME) \
   do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME);		\
 	fputc ('\n', FILE); } while (0)

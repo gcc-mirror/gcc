@@ -1,3 +1,7 @@
+Wed Sep 16 22:10:42 1998  Robert Lipe  <robertl@dgii.com>
+
+	* config/i386/sco5.h (SUPPORTS_WEAK): True only if targeting ELF.
+
 Wed Sep 16 15:24:54 1998  Richard Henderson  <rth@cygnus.com>
 
 	* i386.h (PREFERRED_RELOAD_CLASS): Respect an existing class
