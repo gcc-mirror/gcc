@@ -1,5 +1,5 @@
 /* { dg-do run { target powerpc*-*-* } } */
-/* { dg-options "-O2 -ftree-vectorize -mpowerpc64 -fdump-tree-vect-stats -maltivec" { target powerpc*-*-* } } */
+/* { dg-options "-O2 -ftree-vectorize -mpowerpc64 -fdump-tree-vect-stats -maltivec" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"

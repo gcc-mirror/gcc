@@ -1,8 +1,5 @@
-/* { dg-do compile { target powerpc*-*-* i?86-*-* } } */
-/* { dg-do compile { target mipsisa64*-*-* } } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-stats -maltivec" { target powerpc*-*-* } } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-stats -msse2" { target i?86-*-* } } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-stats -mpaired-single" { target mipsisa64*-*-* } } */
+/* { dg-do compile } */
+/* { dg-require-effective-target vect_float } */
 
 #define VECTOR_SIZE 512
 typedef float afloat __attribute__ ((__aligned__(16)));

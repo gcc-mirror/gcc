@@ -1,7 +1,4 @@
-/* { dg-do run { target powerpc*-*-* } } */
-/* { dg-do run { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-stats -maltivec" { target powerpc*-*-* } } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-stats -msse2" { target i?86-*-* x86_64-*-* } } */
+/* { dg-require-effective-target vect_int } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -46,5 +43,7 @@ int main (void)
   return 0;
 }
 
+/* These are not yet vectorized on targets that do not model alignment-handling
+   mechanisms.  */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail i?86-*-* x86_64-*-* } } } */
 

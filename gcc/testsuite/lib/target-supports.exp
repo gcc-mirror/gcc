@@ -392,6 +392,73 @@ proc check_effective_target_lp64 { } {
     return $answer
 }
 
+# Return 1 if the target supports hardware vectors of int, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_int { } {
+    global et_vect_int_saved
+
+    if [info exists et_vect_int_saved] {
+	verbose "check_effective_target_vect_int: using cached result" 2
+    } else {
+	set et_vect_int_saved 0
+	if { [istarget i?86-*-*]
+	      || [istarget powerpc*-*-*]
+	      || [istarget x86_64-*-*]
+	      || [istarget sparc*-*-*] } {
+	   set et_vect_int_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_int: returning $et_vect_int_saved" 2
+    return $et_vect_int_saved
+}
+
+# Return 1 if the target supports hardware vectors of float, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_float { } {
+    global et_vect_float_saved
+
+    if [info exists et_vect_float_saved] {
+	verbose "check_effective_target_vect_float: using cached result" 2
+    } else {
+	set et_vect_float_saved 0
+	if { [istarget i?86-*-*]
+	      || [istarget powerpc*-*-*]
+	      || [istarget mipsisa64*-*-*]
+	      || [istarget x86_64-*-*] } {
+	   set et_vect_float_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_float: returning $et_vect_float_saved" 2
+    return $et_vect_float_saved
+}
+
+# Return 1 if the target supports hardware vectors of double, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_double { } {
+    global et_vect_double_saved
+
+    if [info exists et_vect_double_saved] {
+	verbose "check_effective_target_vect_double: using cached result" 2
+    } else {
+	set et_vect_double_saved 0
+	if { [istarget i?86-*-*]
+	      || [istarget x86_64-*-*] } {
+	   set et_vect_double_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_double: returning $et_vect_double_saved" 2
+    return $et_vect_double_saved
+}
+
 # Return 1 if the target matches the effective target 'arg', 0 otherwise.
 # This can be used with any check_* proc that takes no argument and
 # returns only 1 or 0.  It could be used with check_* procs that take
@@ -405,6 +472,9 @@ proc is-effective-target { arg } {
 	"vmx_hw" { set selected [check_vmx_hw_available] }
 	"named_sections" { set selected [check_named_sections_available] }
 	"gc_sections" { set selected [check_gc_sections_available] }
+	"vect_int" { set selected [check_effective_target_vect_int] }
+	"vect_float" { set selected [check_effective_target_vect_float] }
+	"vect_double" { set selected [check_effective_target_vect_double] }
 	default  { error "unknown effective target selector `$arg'" }
     }
     verbose "is-effective-target: $arg $selected" 2
