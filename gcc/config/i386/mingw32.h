@@ -50,7 +50,7 @@ Boston, MA 02111-1307, USA. */
 /* For Windows applications, include more libraries, but always include
    kernel32.  */
 #undef LIB_SPEC
-#define LIB_SPEC "%{mwindows:-lgdi32 -lcomdlg32} \
+#define LIB_SPEC "%{pg:-lgmon} %{mwindows:-lgdi32 -lcomdlg32} \
                   -luser32 -lkernel32 -ladvapi32 -lshell32"
 
 /* Include in the mingw32 libraries with libgcc */
@@ -58,7 +58,7 @@ Boston, MA 02111-1307, USA. */
 #define LIBGCC_SPEC "-lmingw32 -lgcc -lmoldname -lmsvcrt"
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{mdll:dllcrt2%O%s} %{!mdll:crt2%O%s}"
+#define STARTFILE_SPEC "%{mdll:dllcrt2%O%s} %{!mdll:crt2%O%s} %{pg:gcrt2%O%s}"
 
 /* MS runtime does not need a separate math library. */
 #define MATH_LIBRARY ""
@@ -83,4 +83,8 @@ do {						\
 						\
   putc ('\"', asm_file);			\
 } while (0)
+
+/* Override Cygwin's definition. This is necessary now due to the way
+   Cygwin profiling code is written. Once "fixed", we can remove this.  */
+#undef SUBTARGET_PROLOGUE
 
