@@ -1,3 +1,11 @@
+2003-09-20  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/157
+	* parser.c (cp_parser_direct_declarator): Clear
+	parser->num_template_parameter_lists when parsing function
+	parameters.
+	(cp_parser_constructor_declarator_p): Likewise.
+
 2003-09-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/495
