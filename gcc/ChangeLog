@@ -1,3 +1,8 @@
+2003-09-09  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (fold_builtin_cabs): Protect the complex argument
+	against multiple evaluation when optimizing cabs* into sqrt*.
+
 Tue Sep  9 15:36:28 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* varasm.c (notice_global_symbol):  Properly deal with weak symbols.
