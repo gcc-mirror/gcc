@@ -6817,6 +6817,24 @@ All modules should be compiled with the same @option{-G @var{num}} value.
 On System V.4 and embedded PowerPC systems do (do not) emit register
 names in the assembly language output using symbolic forms.
 
+@item -mlongcall
+@itemx -mno-longcall
+@opindex mlongcall
+@opindex mno-longcall
+Default to making all function calls via pointers, so that functions
+which reside further than 64 megabytes (67,108,864 bytes) from the
+current location can be called.  This setting can be overridden by the
+@code{shortcall} function attribute, or by @code{#pragma longcall(0)}.
+
+Some linkers are capable of detecting out-of-range calls and generating
+glue code on the fly.  On these systems, long calls are unnecessary and
+generate slower code.  As of this writing, the AIX linker can do this,
+as can the GNU linker for PowerPC/64.  It is planned to add this feature
+to the GNU linker for 32-bit PowerPC systems as well.
+
+In the future, we may cause GCC to ignore all longcall specifications
+when the linker is known to generate glue.
+
 @item -pthread
 @opindex pthread
 Adds support for multithreading with the @dfn{pthreads} library.

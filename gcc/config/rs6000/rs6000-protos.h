@@ -19,6 +19,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef GCC_RS6000_PROTOS_H
+#define GCC_RS6000_PROTOS_H
+
 /* Declare functions in rs6000.c */
 
 #ifdef RTX_CODE
@@ -186,3 +189,9 @@ extern void rs6000_emit_epilogue PARAMS ((int));
 extern void debug_stack_info PARAMS ((rs6000_stack_t *));
 
 extern void machopic_output_stub PARAMS ((FILE *, const char *, const char *));
+
+#ifdef GCC_CPPLIB_H
+extern void rs6000_pragma_longcall PARAMS ((cpp_reader *));
+#endif
+
+#endif  /* rs6000-protos.h */
