@@ -1,3 +1,10 @@
+2001-07-16  Daniel Berlin  <dan@cgsoftware.com>
+
+	* ssa-ccp.c: (optimize_unexecutable_edges): Add note about removal
+	of edge, and removal of phi alternative to dump file. 
+	(ssa_ccp_substitute_constants): Add note about register now being
+	constant, and which uses were replaced in what insns to dump file.
+
 2001-07-16  Andreas Jaeger  <aj@suse.de>
 
 	* gcov.c (output_data): Use HOST_WIDEST_INT_PRINT_DEC to output
