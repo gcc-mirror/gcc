@@ -144,14 +144,23 @@ namespace std
   void
   ios_base::Init::_S_ios_create(bool __sync)
   {
-    int __bufsize = __sync ? 0 : static_cast<int>(BUFSIZ);
+    int __out_bufsize = __sync ? 0 : static_cast<int>(BUFSIZ);
+    int __in_bufsize = __sync ? 1 : static_cast<int>(BUFSIZ);
+
+#if _GLIBCPP_AVOID_FSEEK
+    // Platforms that prefer to avoid fseek() calls on streams only
+    // get their desire when the C++-layer input buffer size is 1.
+    // This hack hurts performance but keeps correctness across
+    // all types of streams that might be attached to (e.g.) cin.
+    __in_bufsize = 1;
+#endif
 
     // NB: The file globals.cc creates the four standard files
     // with NULL buffers. At this point, we swap out the dummy NULL
     // [io]stream objects and buffers with the real deal.
-    new (&buf_cout) filebuf(stdout, ios_base::out, __bufsize);
-    new (&buf_cin) filebuf(stdin, ios_base::in, 1);
-    new (&buf_cerr) filebuf(stderr, ios_base::out, __bufsize);
+    new (&buf_cout) filebuf(stdout, ios_base::out, __out_bufsize);
+    new (&buf_cin) filebuf(stdin, ios_base::in, __in_bufsize);
+    new (&buf_cerr) filebuf(stderr, ios_base::out, __out_bufsize);
     new (&cout) ostream(&buf_cout);
     new (&cin) istream(&buf_cin);
     new (&cerr) ostream(&buf_cerr);
@@ -160,9 +169,9 @@ namespace std
     cerr.flags(ios_base::unitbuf);
     
 #ifdef _GLIBCPP_USE_WCHAR_T
-    new (&buf_wcout) wfilebuf(stdout, ios_base::out, __bufsize);
-    new (&buf_wcin) wfilebuf(stdin, ios_base::in, 1);
-    new (&buf_wcerr) wfilebuf(stderr, ios_base::out, __bufsize);
+    new (&buf_wcout) wfilebuf(stdout, ios_base::out, __out_bufsize);
+    new (&buf_wcin) wfilebuf(stdin, ios_base::in, __in_bufsize);
+    new (&buf_wcerr) wfilebuf(stderr, ios_base::out, __out_bufsize);
     new (&wcout) wostream(&buf_wcout);
     new (&wcin) wistream(&buf_wcin);
     new (&wcerr) wostream(&buf_wcerr);
