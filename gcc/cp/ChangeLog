@@ -1,3 +1,9 @@
+2003-08-04  Roger Sayle  <roger@eyesopen.com>
+
+	* decl.c (cxx_insert_default_attributes): Delete.
+	* cp-tree.h (cxx_insert_default_attributes): Don't prototype.
+	* cp-lang.c (LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES): Don't define.
+
 2003-08-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11704

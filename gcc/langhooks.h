@@ -272,10 +272,6 @@ struct lang_hooks
      error_mark_node).  */
   tree (*truthvalue_conversion) (tree);
 
-  /* Possibly apply default attributes to a function (represented by
-     a FUNCTION_DECL).  */
-  void (*insert_default_attributes) (tree);
-
   /* Hook called by safe_from_p for language-specific tree codes.  It is
      up to the language front-end to install a hook if it has any such
      codes that safe_from_p needs to know about.  Since same_from_p will

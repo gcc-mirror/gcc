@@ -549,11 +549,6 @@ extern int flag_isoc99;
 
 extern int flag_hosted;
 
-/* Nonzero means add default format_arg attributes for functions not
-   in ISO C.  */
-
-extern int flag_noniso_default_format_attributes;
-
 /* Nonzero means warn when casting a function call to a type that does
    not match the return type (e.g. (float)sqrt() or (anything*)malloc()
    when there is no previous declaration of sqrt or malloc.  */
@@ -893,7 +888,6 @@ extern void check_function_format (int *, tree, tree);
 extern void set_Wformat (int);
 extern tree handle_format_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
-extern void c_common_insert_default_attributes (tree);
 extern int c_common_handle_option (size_t code, const char *arg, int value);
 extern bool c_common_missing_argument (const char *opt, size_t code);
 extern tree c_common_type_for_mode (enum machine_mode, int);

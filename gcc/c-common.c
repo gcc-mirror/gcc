@@ -372,11 +372,6 @@ int flag_isoc99;
 
 int flag_hosted = 1;
 
-/* Nonzero means add default format_arg attributes for functions not
-   in ISO C.  */
-
-int flag_noniso_default_format_attributes = 1;
-
 /* Nonzero means warn when casting a function call to a type that does
    not match the return type (e.g. (float)sqrt() or (anything*)malloc()
    when there is no previous declaration of sqrt or malloc.  */
@@ -2957,19 +2952,15 @@ enum built_in_attribute
 #define DEF_ATTR_INT(ENUM, VALUE) ENUM,
 #define DEF_ATTR_IDENT(ENUM, STRING) ENUM,
 #define DEF_ATTR_TREE_LIST(ENUM, PURPOSE, VALUE, CHAIN) ENUM,
-#define DEF_FN_ATTR(NAME, ATTRS, PREDICATE) /* No entry needed in enum.  */
 #include "builtin-attrs.def"
 #undef DEF_ATTR_NULL_TREE
 #undef DEF_ATTR_INT
 #undef DEF_ATTR_IDENT
 #undef DEF_ATTR_TREE_LIST
-#undef DEF_FN_ATTR
   ATTR_LAST
 };
 
 static GTY(()) tree built_in_attributes[(int) ATTR_LAST];
-
-static bool c_attrs_initialized = false;
 
 static void c_init_attributes (void);
 
@@ -3348,8 +3339,7 @@ c_common_nodes_and_builtins (void)
 #undef DEF_FUNCTION_TYPE_VAR_3
 #undef DEF_POINTER_TYPE
 
-  if (!c_attrs_initialized)
-    c_init_attributes ();
+  c_init_attributes ();
 
 #define DEF_BUILTIN(ENUM, NAME, CLASS, TYPE, LIBTYPE,			\
 		    BOTH_P, FALLBACK_P, NONANSI_P, ATTRS, IMPLICIT)	\
@@ -4176,21 +4166,11 @@ c_init_attributes (void)
     = tree_cons (built_in_attributes[(int) PURPOSE],	\
 		 built_in_attributes[(int) VALUE],	\
 		 built_in_attributes[(int) CHAIN]);
-#define DEF_FN_ATTR(NAME, ATTRS, PREDICATE) /* No initialization needed.  */
 #include "builtin-attrs.def"
 #undef DEF_ATTR_NULL_TREE
 #undef DEF_ATTR_INT
 #undef DEF_ATTR_IDENT
 #undef DEF_ATTR_TREE_LIST
-#undef DEF_FN_ATTR
-  c_attrs_initialized = true;
-}
-
-/* Depending on the name of DECL, apply default attributes to it.  */
-
-void
-c_common_insert_default_attributes (tree decl ATTRIBUTE_UNUSED)
-{
 }
 
 /* Output a -Wshadow warning MSGCODE about NAME, and give the location

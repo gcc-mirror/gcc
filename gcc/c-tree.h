@@ -186,7 +186,6 @@ extern void insert_block (tree);
 extern void set_block (tree);
 extern tree pushdecl (tree);
 
-extern void c_insert_default_attributes (tree);
 extern void c_init_decl_processing (void);
 extern void c_dup_lang_specific_decl (tree);
 extern void c_print_identifier (FILE *, tree, int);
