@@ -1478,11 +1478,6 @@ print_operand (file, x, code)
       else
 	fprintf (file, "%s", byte_reg (x, 1));
       break;
-    case 'u':
-      if (GET_CODE (x) != CONST_INT)
-	abort ();
-      fprintf (file, "%ld", INTVAL (x));
-      break;
     case 'w':
       if (GET_CODE (x) == CONST_INT)
 	fprintf (file, "#%ld", INTVAL (x) & 0xff);
