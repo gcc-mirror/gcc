@@ -23929,9 +23929,9 @@ ac_given_srcdir=$srcdir
 ac_given_INSTALL="$INSTALL"
 
 trap 'rm -fr `echo "Makefile \
-    include/Makefile src/Makefile \
-    libmath/Makefile libio/Makefile libsupc++/Makefile \
-    po/Makefile testsuite/Makefile mkcheck testsuite_flags config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+include/Makefile src/Makefile \
+libmath/Makefile libio/Makefile libsupc++/Makefile \
+po/Makefile testsuite/Makefile mkcheck testsuite_flags config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -24127,9 +24127,9 @@ EOF
 cat >> $CONFIG_STATUS <<EOF
 
 CONFIG_FILES=\${CONFIG_FILES-"Makefile \
-    include/Makefile src/Makefile \
-    libmath/Makefile libio/Makefile libsupc++/Makefile \
-    po/Makefile testsuite/Makefile mkcheck testsuite_flags"}
+include/Makefile src/Makefile \
+libmath/Makefile libio/Makefile libsupc++/Makefile \
+po/Makefile testsuite/Makefile mkcheck testsuite_flags"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then
@@ -24313,20 +24313,17 @@ CXX="${CXX}"
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
- if ! test -f stamp-h; then
-   test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
-    if test -n "$CONFIG_FILES"; then
-     if test -n "${with_build_subdir}" || test -n "${with_target_subdir}"; then
-      LD="${ORIGINAL_LD_FOR_MULTILIBS}"
-      ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
-      grep '^MULTISUBDIR =' Makefile >> src/Makefile
-      grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
-     fi
-    fi
+test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
+ if test -n "$CONFIG_FILES"; then
+   if test -n "${with_build_subdir}" || test -n "${with_target_subdir}"; then
+     LD="${ORIGINAL_LD_FOR_MULTILIBS}"
+     ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
+     grep '^MULTISUBDIR =' Makefile >> src/Makefile
+     grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
    fi
-chmod +x mkcheck
-chmod +x testsuite_flags
-
+ fi
+ chmod +x mkcheck
+ chmod +x testsuite_flags
 exit 0
 EOF
 chmod +x $CONFIG_STATUS

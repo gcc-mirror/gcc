@@ -1,3 +1,8 @@
+2003-01-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.in: Revert.
+	* configure: Regenerate.
+
 2003-01-09  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* include/Makefile.am (install-data-local): Prepend

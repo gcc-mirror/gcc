@@ -471,23 +471,20 @@ AC_SUBST(LIBSUPCXX_PICFLAGS)
 # down from config-ml.in -> top_srcdir/Makefile.am ->
 # top_srcdir/{src,libsupc++}/Makefile.am, manually append it here.
 AC_OUTPUT(Makefile \
-    include/Makefile src/Makefile \
-    libmath/Makefile libio/Makefile libsupc++/Makefile \
-    po/Makefile testsuite/Makefile mkcheck testsuite_flags,
-[ if ! test -f stamp-h; then
-   test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
-    if test -n "$CONFIG_FILES"; then
-     if test -n "${with_build_subdir}" || test -n "${with_target_subdir}"; then
-      LD="${ORIGINAL_LD_FOR_MULTILIBS}"
-      ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
-      grep '^MULTISUBDIR =' Makefile >> src/Makefile
-      grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
-     fi
-    fi
+include/Makefile src/Makefile \
+libmath/Makefile libio/Makefile libsupc++/Makefile \
+po/Makefile testsuite/Makefile mkcheck testsuite_flags,
+[test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
+ if test -n "$CONFIG_FILES"; then
+   if test -n "${with_build_subdir}" || test -n "${with_target_subdir}"; then
+     LD="${ORIGINAL_LD_FOR_MULTILIBS}"
+     ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
+     grep '^MULTISUBDIR =' Makefile >> src/Makefile
+     grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
    fi
-chmod +x mkcheck
-chmod +x testsuite_flags
-],
+ fi
+ chmod +x mkcheck
+ chmod +x testsuite_flags],
 srcdir=${srcdir}
 host=${host}
 target=${target}
