@@ -3077,10 +3077,8 @@ enum size_type_kind
 {
   SIZETYPE,		/* Normal representation of sizes in bytes.  */
   SSIZETYPE,		/* Signed representation of sizes in bytes.  */
-  USIZETYPE,		/* Unsigned representation of sizes in bytes.  */
   BITSIZETYPE,		/* Normal representation of sizes in bits.  */
   SBITSIZETYPE,		/* Signed representation of sizes in bits.  */
-  UBITSIZETYPE,	        /* Unsigned representation of sizes in bits.  */
   TYPE_KIND_LAST};
 
 extern GTY(()) tree sizetype_tab[(int) TYPE_KIND_LAST];
@@ -3088,9 +3086,7 @@ extern GTY(()) tree sizetype_tab[(int) TYPE_KIND_LAST];
 #define sizetype sizetype_tab[(int) SIZETYPE]
 #define bitsizetype sizetype_tab[(int) BITSIZETYPE]
 #define ssizetype sizetype_tab[(int) SSIZETYPE]
-#define usizetype sizetype_tab[(int) USIZETYPE]
 #define sbitsizetype sizetype_tab[(int) SBITSIZETYPE]
-#define ubitsizetype sizetype_tab[(int) UBITSIZETYPE]
 
 extern tree size_binop (enum tree_code, tree, tree);
 extern tree size_diffop (tree, tree);

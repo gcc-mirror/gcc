@@ -1728,8 +1728,7 @@ size_diffop (tree arg0, tree arg1)
   if (!TYPE_UNSIGNED (type))
     return size_binop (MINUS_EXPR, arg0, arg1);
 
-  ctype = (type == bitsizetype || type == ubitsizetype
-	   ? sbitsizetype : ssizetype);
+  ctype = type == bitsizetype ? sbitsizetype : ssizetype;
 
   /* If either operand is not a constant, do the conversions to the signed
      type and subtract.  The hardware will do the right thing with any
