@@ -1,3 +1,10 @@
+2001-04-28  Jens Schweikhardt <schweikh@schweikhardt.net>
+
+	* gcc.c (process_command): Allow -l lib in addition to -llib
+	for POSIX compliance. This fixes PR c/2347.
+
+	* invoke.texi: Update section on Link Options accordingly.
+
 2001-04-27  Zack Weinberg  <zackw@stanford.edu>
 
 	* function.c (purge_addressof_1): Remove the duplicate
