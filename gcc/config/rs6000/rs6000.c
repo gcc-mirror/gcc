@@ -17195,7 +17195,8 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
       fprintf (file, "\taddis r11,r11,ha16(%s-%s)\n",
 	       lazy_ptr_name, local_label_0);
       fprintf (file, "\tmtlr r0\n");
-      fprintf (file, "\tlwzu r12,lo16(%s-%s)(r11)\n",
+      fprintf (file, "\t%s r12,lo16(%s-%s)(r11)\n",
+	       (TARGET_64BIT ? "ldu" : "lwzu"),
 	       lazy_ptr_name, local_label_0);
       fprintf (file, "\tmtctr r12\n");
       fprintf (file, "\tbctr\n");

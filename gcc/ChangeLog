@@ -1,3 +1,8 @@
+2004-11-05  Stan Shebs  <shebs@apple.com>
+
+	* config/rs6000/rs6000.c (machopic_output_stub): Output
+	ldu instead of lwzu for 64-bit stubs.
+
 2004-11-05  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_expand_unaligned_load): Special case
