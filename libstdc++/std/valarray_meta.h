@@ -449,7 +449,7 @@ struct  _BinClos<_Oper,_ValArray,_Expr,typename _Dom::value_type,_Dom>
     typedef _BinBase<_Oper,valarray<_Tp>,_Dom> _Base;
     typedef typename _Base::value_type value_type;
     
-    _BinClos (const valarray<_Tp> __e1, const _Dom& __e2)
+    _BinClos (const valarray<_Tp>& __e1, const _Dom& __e2)
             : _Base (__e1, __e2) {}
 };
 
@@ -917,7 +917,7 @@ _Name(const _Expr<_Dom,typename _Dom::value_type>& __e)                 \
 {                                                                       \
     typedef typename _Dom::value_type _Tp;                              \
     typedef _UnFunClos<_Expr,_Dom> _Closure;                            \
-    return _Expr<_Closure,_Tp> (_Closure (__e, (_Tp(*)(_Tp))(&_Name))); \
+    return _Expr<_Closure,_Tp>(_Closure(__e(), (_Tp(*)(_Tp))(&_Name))); \
 }                                                                       \
                                                                         \
 template<typename _Tp>                                                  \
@@ -936,7 +936,8 @@ _Name(const valarray<_Tp>& __v)                                         \
     _DEFINE_EXPR_UNARY_FUNCTION(sin)
     _DEFINE_EXPR_UNARY_FUNCTION(asin)
     _DEFINE_EXPR_UNARY_FUNCTION(sinh)    
-    _DEFINE_EXPR_UNARY_FUNCTION(tan)    
+    _DEFINE_EXPR_UNARY_FUNCTION(tan)
+    _DEFINE_EXPR_UNARY_FUNCTION(tanh)
     _DEFINE_EXPR_UNARY_FUNCTION(atan)
     _DEFINE_EXPR_UNARY_FUNCTION(exp)    
     _DEFINE_EXPR_UNARY_FUNCTION(log)

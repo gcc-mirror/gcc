@@ -1,9 +1,26 @@
-2000-02-06 Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+Tue Mar  7 21:37:56 2000  Jeffrey A Law  (law@cygnus.com)
 
+	1999-11-19  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+	* std/valarray_meta.h (_DEFINE_EXPR_UNARY_FUNCTION): Don't forget
+	to define tanh. 
+
+	1999-11-05  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+	* std/valarray_meta.h (_DEFINE_EXPR_UNARY_FUNCTION):  When
+	building meta-expressions don't forget to take the contained
+	closures.
+
+	1999-10-19  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+	* std/valarray_meta.h: (_BinClos::_BinClos): Fix typo.
+
+	1999-09-17 Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+	* std/complext.cc (pow): Don't expect floating point promotion
+	in presence of template argument deduction.  There is no such
+	thing. 
+
+2000-02-06 Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 	* std/valarray_array.h (__valarray_copy): Fix typo.
 
 1999-12-14  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
-
 	* std/bastring.h (basic_string::basic_string): Rename parameters
 	to avoid shadow warnings.
 	* std/bastring.cc (alloc): Likewise.
