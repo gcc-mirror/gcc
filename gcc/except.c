@@ -2047,8 +2047,12 @@ sjlj_emit_function_enter (rtx dispatch_label)
   if (cfun->uses_eh_lsda)
     {
       char buf[20];
+      rtx sym;
+
       ASM_GENERATE_INTERNAL_LABEL (buf, "LLSDA", current_function_funcdef_no);
-      emit_move_insn (mem, gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf)));
+      sym = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
+      SYMBOL_REF_FLAGS (sym) = SYMBOL_FLAG_LOCAL;
+      emit_move_insn (mem, sym);
     }
   else
     emit_move_insn (mem, const0_rtx);
