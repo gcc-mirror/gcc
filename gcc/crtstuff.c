@@ -95,6 +95,8 @@ extern void __register_frame_info_bases (void *, struct object *,
 				  TARGET_ATTRIBUTE_WEAK;
 extern void *__deregister_frame_info (void *)
 				     TARGET_ATTRIBUTE_WEAK;
+extern void *__deregister_frame_info_bases (void *)
+				     TARGET_ATTRIBUTE_WEAK;
 
 #ifndef OBJECT_FORMAT_MACHO
 
@@ -210,9 +212,17 @@ __do_global_dtors_aux (void)
     }
 
 #ifdef EH_FRAME_SECTION_ASM_OP
+#if defined(CRT_GET_RFIB_TEXT) || defined(CRT_GET_RFIB_DATA)
+  /* If we used the new __register_frame_info_bases interface,
+     make sure that we deregister from the same place.  */
+  if (__deregister_frame_info_bases)
+    __deregister_frame_info_bases (__EH_FRAME_BEGIN__);
+#else
   if (__deregister_frame_info)
     __deregister_frame_info (__EH_FRAME_BEGIN__);
 #endif
+#endif
+
   completed = 1;
 }
 

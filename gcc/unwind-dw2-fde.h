@@ -94,6 +94,7 @@ extern void __register_frame_info_table_bases (void *, struct object *,
 extern void __register_frame_info_table (void *, struct object *);
 extern void __register_frame_table (void *);
 extern void *__deregister_frame_info (void *);
+extern void *__deregister_frame_info_bases (void *);
 extern void __deregister_frame (void *);
 
 

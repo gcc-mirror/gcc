@@ -1,3 +1,12 @@
+2001-05-22  Richard Henderson  <rth@redhat.com>
+
+	* unwind-dw2-fde.c (__deregister_frame_info): Stubbify in favour of...
+	(__deregister_frame_info_bases): New.
+	* unwind-dw2-fde.h: Declare it.
+	* libgcc-std.ver: Export it.
+	* crtstuff.c (__do_global_dtors_aux): Call it if we would have
+	called __register_frame_info_bases.
+
 2001-05-22  Loren J. Rittle  <ljrittle@acm.org>
 
 	* config/freebsd.h (FBSD_CPP_PREDEFINES): Use #endif/#if pair
