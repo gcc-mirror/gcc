@@ -2903,41 +2903,57 @@ eliminate_regs_in_insn (insn, replace)
 	    val = 1;
 	    goto done;
 	  }
+    }
 
-      /* Check for (set (reg) (plus (reg from) (offset))) where the offset
-	 in the insn is the negative of the offset in FROM.  Substitute
-	 (set (reg) (reg to)) for the insn and change its code.
+  /* We allow one special case which happens to work on all machines we
+     currently support: a single set with the source being a PLUS of an
+     eliminable register and a constant.  */
+  if (old_set
+      && GET_CODE (SET_SRC (old_set)) == PLUS
+      && GET_CODE (XEXP (SET_SRC (old_set), 0)) == REG
+      && GET_CODE (XEXP (SET_SRC (old_set), 1)) == CONST_INT
+      && REGNO (XEXP (SET_SRC (old_set), 0)) < FIRST_PSEUDO_REGISTER)
+    {
+      rtx reg = XEXP (SET_SRC (old_set), 0);
+      int offset = INTVAL (XEXP (SET_SRC (old_set), 1));
 
-	 We have to do this here, rather than in eliminate_regs, so that we can
-	 change the insn code.  */
+      for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+	if (ep->from_rtx == reg && ep->can_eliminate)
+	  {
+	    offset += ep->offset;
 
-      if (GET_CODE (SET_SRC (old_set)) == PLUS
-	  && GET_CODE (XEXP (SET_SRC (old_set), 0)) == REG
-	  && GET_CODE (XEXP (SET_SRC (old_set), 1)) == CONST_INT)
-	for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS];
-	     ep++)
-	  if (ep->from_rtx == XEXP (SET_SRC (old_set), 0)
-	      && ep->can_eliminate)
-	    {
-	      /* We must stop at the first elimination that will be used.
-		 If this one would replace the PLUS with a REG, do it
-		 now.  Otherwise, quit the loop and let eliminate_regs
-		 do its normal replacement.  */
-	      if (ep->offset == - INTVAL (XEXP (SET_SRC (old_set), 1)))
-		{
-		  /* We assume here that we don't need a PARALLEL of
-		     any CLOBBERs for this assignment.  There's not
-		     much we can do if we do need it.  */
-		  PATTERN (insn) = gen_rtx_SET (VOIDmode,
-						SET_DEST (old_set),
-						ep->to_rtx);
-		  INSN_CODE (insn) = -1;
-		  val = 1;
-		  goto done;
-		}
+	    if (offset == 0)
+	      {
+		/* We assume here that we don't need a PARALLEL of
+		   any CLOBBERs for this assignment.  There's not
+		   much we can do if we do need it.  */
+		PATTERN (insn) = gen_rtx_SET (VOIDmode,
+					      SET_DEST (old_set),
+					      ep->to_rtx);
+		INSN_CODE (insn) = recog (PATTERN (insn), insn, 0);
+		if (INSN_CODE (insn) < 0)
+		  abort ();
+	      }
+	    else
+	      {
+		new_body = old_body;
+		if (! replace)
+		  {
+		    new_body = copy_insn (old_body);
+		    if (REG_NOTES (insn))
+		      REG_NOTES (insn) = copy_insn_1 (REG_NOTES (insn));
+		  }
+		PATTERN (insn) = new_body;
+		old_set = single_set (insn);
 
-	      break;
-	    }
+		XEXP (SET_SRC (old_set), 0) = ep->to_rtx;
+		XEXP (SET_SRC (old_set), 1) = GEN_INT (offset);
+	      }
+	    val = 1;
+	    /* This can't have an effect on elimination offsets, so skip right
+	       to the end.  */
+	    goto done;
+	  }
     }
 
   /* Determine the effects of this insn on elimination offsets.  */
@@ -2990,7 +3006,7 @@ eliminate_regs_in_insn (insn, replace)
 
   for (i = 0; i < recog_data.n_dups; i++)
     *recog_data.dup_loc[i]
-	= *recog_data.operand_loc[(int)recog_data.dup_num[i]];
+      = *recog_data.operand_loc[(int)recog_data.dup_num[i]];
 
   /* If any eliminable remain, they aren't eliminable anymore.  */
   check_eliminable_occurrences (old_body);

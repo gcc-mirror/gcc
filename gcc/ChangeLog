@@ -1,3 +1,8 @@
+2000-03-09  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* reload1.c (eliminate_regs_in_insn): Handle additions of eliminable
+	register and a constant specially.
+
 2000-03-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libgcc2.h: New file.
