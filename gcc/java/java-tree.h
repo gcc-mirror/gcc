@@ -43,6 +43,7 @@ struct JCF;
    0: IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P (in IDENTIFIER_NODE)
       RESOLVE_EXPRESSION_NAME_P (in EXPR_WITH_FILE_LOCATION)
       FOR_LOOP_P (in LOOP_EXPR)
+      SUPPRESS_UNREACHABLE_ERROR (for other _EXPR nodes)
       ANONYMOUS_CLASS_P (in RECORD_TYPE)
       ARG_FINAL_P (in TREE_LIST)
    1: CLASS_HAS_SUPER_FLAG (in TREE_VEC).
@@ -1502,6 +1503,12 @@ extern tree *type_map;
 /* True if NODE (a TREE_LIST) hold a pair of argument name/type
    declared with the final modifier */
 #define ARG_FINAL_P(NODE) TREE_LANG_FLAG_0 (NODE)
+
+/* True if NODE (some kind of EXPR, but not a WFL) should not give an
+   error if it is found to be unreachable.  This can only be applied
+   to those EXPRs which can be used as the update expression of a
+   `for' loop.  In particular it can't be set on a LOOP_EXPR.  */
+#define SUPPRESS_UNREACHABLE_ERROR(NODE) TREE_LANG_FLAG_0 (NODE)
 
 /* True if EXPR (a WFL in that case) resolves into a package name */
 #define RESOLVE_PACKAGE_NAME_P(WFL) TREE_LANG_FLAG_3 (WFL)

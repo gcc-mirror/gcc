@@ -1,3 +1,11 @@
+2002-05-06  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR java/5941:
+	* parse.y (finish_for_loop): Set SUPPRESS_UNREACHABLE_ERROR for
+	loop update expression.
+	(java_complete_lhs): Use SUPPRESS_UNREACHABLE_ERROR.
+	* java-tree.h (SUPPRESS_UNREACHABLE_ERROR): New macro.
+
 2002-05-04  Mark Wielaard  <mark@klomp.org>
 
 	For PR java/6519:
