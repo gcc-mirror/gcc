@@ -3170,7 +3170,7 @@ simplify_ternary_operation (enum rtx_code code, enum machine_mode mode,
 		  != ((HOST_WIDE_INT) (-1) << (width - 1))))
 	    val &= ((HOST_WIDE_INT) 1 << width) - 1;
 
-	  return GEN_INT (val);
+	  return gen_int_mode (val, mode);
 	}
       break;
 
