@@ -1,3 +1,42 @@
+2000-03-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (scope_kind): New type.
+	(tmpl_spec_kind): Likewise.
+	(declare_pseudo_global_level): Remove.
+	(pseudo_global_level_p): Rename to template_parm_scope_p.
+	(pushlevel): Remove declaration.
+	(begin_scope): New function.
+	(finish_scope): Likewise.
+	(current_tmpl_spec_kind): Likewise.
+	* decl.c (struct binding_level): Shorten parm_flag to 2 bits.
+	Shorten keep to 2 bits.  Rename pseudo_global to template_parms_p.
+	Add template_spec_p.
+	(toplevel_bindings_p): Adjust.
+	(declare_pseudo_global_level): Remove.
+	(pseudo_global_level_p): Rename to template_parm_scope_p.
+	(current_tmpl_spec_kind): New function.
+	(begin_scope): Likewise.
+	(finish_scope): Likewise.
+	(maybe_push_to_top_level): Adjust.
+	(maybe_process_template_type_declaration): Likewise.
+	(pushtag): Likewise.
+	(pushdecl_nonclass_level): Likewise.
+	(lookup_tag): Likewise.
+	(grokfndecl): Handle member template specializations.  Share
+	constructor and non-constructor code.
+	* decl2.c (check_classfn): Handle member template specializations.
+	* pt.c (begin_template_parm_list): Use begin_scope.
+	(begin_specialization): Likewise.
+	(end_specialization): Likewise.
+	(check_explicit_specialization): Use current_tmpl_spec_kind.
+	Handle member template specializations.
+	(end_template_decl): Use finish_scope.  Remove call to
+	get_pending_sizes.
+	(push_template_decl_real): Remove bogus error message.
+	(tsubst_decl): Fix typo in code contained in comment.
+	(instantiate_template): Handle member template specializations.
+	(most_general_template): Likewise.
+	
 2000-03-11  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* lex.c (whitespace_cr): Compress consecutive calls to warning().

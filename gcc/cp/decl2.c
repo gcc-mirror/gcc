@@ -1358,6 +1358,8 @@ check_classfn (ctype, function)
   tree *end = 0;
   
   if (DECL_USE_TEMPLATE (function)
+      && !(TREE_CODE (function) == TEMPLATE_DECL
+	   && DECL_TEMPLATE_SPECIALIZATION (function))
       && is_member_template (DECL_TI_TEMPLATE (function)))
     /* Since this is a specialization of a member template,
        we're not going to find the declaration in the class.

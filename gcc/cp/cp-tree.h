@@ -3043,6 +3043,32 @@ typedef enum cp_lvalue_kind {
   clk_bitfield = 4, /* An lvalue for a bit-field.  */
 } cp_lvalue_kind;
 
+/* The kinds of scopes we recognize.  */
+typedef enum scope_kind {
+  sk_template_parms, /* A scope for template parameters.  */
+  sk_template_spec   /* A scope corresponding to a template
+			specialization.  There is never anything in
+			this scope.  */
+} scope_kind;
+
+/* Various kinds of template specialization, instantiation, etc.  */
+typedef enum tmpl_spec_kind {
+  tsk_none,                /* Not a template at all.  */
+  tsk_invalid_member_spec, /* An explicit member template
+			      specialization, but the enclosing
+			      classes have not all been explicitly
+			      specialized.  */
+  tsk_invalid_expl_inst,   /* An explicit instantiation containing
+			      template parameter lists.  */
+  tsk_excessive_parms,     /* A template declaration with too many
+			      template parameter lists.  */
+  tsk_insufficient_parms,  /* A template declaration with too few
+			      parameter lists.  */
+  tsk_template,            /* A template declaration.  */
+  tsk_expl_spec,           /* An explicit specialization.  */
+  tsk_expl_inst            /* An explicit instantiation.  */
+} tmpl_spec_kind;
+
 /* Zero means prototype weakly, as in ANSI C (no args means nothing).
    Each language context defines how this variable should be set.  */
 extern int strict_prototype;
@@ -3682,10 +3708,10 @@ extern int toplevel_bindings_p			PARAMS ((void));
 extern int namespace_bindings_p			PARAMS ((void));
 extern void keep_next_level			PARAMS ((int));
 extern int kept_level_p				PARAMS ((void));
-extern void declare_pseudo_global_level		PARAMS ((void));
-extern int pseudo_global_level_p		PARAMS ((void));
+extern int template_parm_scope_p		PARAMS ((void));
 extern void set_class_shadows			PARAMS ((tree));
-extern void pushlevel				PARAMS ((int));
+extern void begin_scope                         PARAMS ((scope_kind));
+extern void finish_scope                        PARAMS ((void));
 extern void note_level_for_for			PARAMS ((void));
 extern void resume_level			PARAMS ((struct binding_level *));
 extern void delete_block			PARAMS ((tree));
@@ -3832,6 +3858,7 @@ extern int local_variable_p                     PARAMS ((tree));
 extern int nonstatic_local_decl_p               PARAMS ((tree));
 extern tree declare_global_var                  PARAMS ((tree, tree));
 extern void register_dtor_fn                    PARAMS ((tree));
+extern tmpl_spec_kind current_tmpl_spec_kind    PARAMS ((int));
 
 /* in decl2.c */
 extern void init_decl2				PARAMS ((void));
