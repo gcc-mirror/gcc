@@ -1,3 +1,9 @@
+2000-11-07  Geoff Keating  <geoffk@redhat.com>
+
+	* config/rs6000/rs6000.md (movdi_internal32+1): Use
+	operand_subreg_force rather than gen_rtx_SUBREG.
+	(movdi_internal32+2): Likewise.
+
 2000-11-07  Philip Blundell  <philb@gnu.org>
 
 	* configure.in (arm*-*-linuxaout*): Obsolete, deleted.
