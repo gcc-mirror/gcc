@@ -3,7 +3,7 @@
  * Copyright (c) 1998, 1999 Cygnus Solutions.
  */
 
-#include "boehm-config.h"
+#include "gcconfig.h"
 
 #ifdef QUICK_THREADS
 
