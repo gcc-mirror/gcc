@@ -107,7 +107,7 @@ somewhat more difficult.
 
 @ifset DOC-G77
 For information on bugs in the @value{which-g77} version of @code{g77},
-@ref{Known Bugs,,Known Bugs In GNU Fortran}.
+see @ref{Known Bugs,,Known Bugs In GNU Fortran}.
 @end ifset
 
 @ifset DOC-BUGS

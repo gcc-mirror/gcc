@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-update 1999-03-13
+@set last-update 1999-03-15
 @set copyrights-g77 1995-1999
 
 @include root.texi
@@ -1527,7 +1527,8 @@ Such source code cannot contain any preprocessor directives, such
 as @code{#include}, @code{#define}, @code{#if}, and so on.
 
 You can force @samp{.f} files to be preprocessed by @samp{cpp} by using
-@samp{-x f77-cpp-input}, @ref{LEX}.
+@samp{-x f77-cpp-input}.
+@xref{LEX}.
 
 @cindex preprocessor
 @cindex C preprocessor
@@ -2735,8 +2736,8 @@ but not in code like:
       d = (b + c) * e
 @end smallexample
 
-For another, potentially better, way of controlling the precision
-@ref{Floating-point precision}.
+For another, potentially better, way of controlling the precision,
+see @ref{Floating-point precision}.
 
 @cindex -fforce-mem option
 @cindex options, -fforce-mem
@@ -5989,14 +5990,15 @@ they are documented elsewhere.
 @ifinfo
 @xref{Characters Lines Sequence},
 @end ifinfo
-for information on additional fixed source form lexical issues.  In
-addition, the free source form is supported through the
+for information on additional fixed source form lexical issues.
 @cindex @samp{-ffree-form}
-@samp{-ffree-form} option.  Other Fortran 90 features can be turned on
-by the
+Further, the free source form is supported through the
+@samp{-ffree-form} option.
 @cindex @samp{-ff90}
-@samp{-ff90} option, @ref{Fortran 90}.  For information on the Fortran
-90 intrinsics available @ref{Table of Intrinsic Functions}.
+Other Fortran 90 features can be turned on by the @samp{-ff90} option;
+see @ref{Fortran 90}.
+For information on the Fortran 90 intrinsics available,
+see @ref{Table of Intrinsic Functions}.
 
 @table @asis
 @item Automatic arrays in procedures
@@ -12198,7 +12200,7 @@ written.
 Thus for exchanging a sequential or direct access unformatted file
 between big- and little-endian 32-bit systems using IEEE 754 floating
 point it would be sufficient to reverse the bytes in consecutive words
-in the file @emph{iff} only @code{REAL*4}, @code{COMPLEX},
+in the file if, and @emph{only} if, only @code{REAL*4}, @code{COMPLEX},
 @code{INTEGER*4} and/or @code{LOGICAL*4} data have been written to it by
 @code{g77}.
 
