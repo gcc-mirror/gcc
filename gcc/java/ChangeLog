@@ -1,3 +1,25 @@
+Tue Dec 22 11:25:19 1998  Per Bothner  <bothner@cygnus.com>
+
+	* expr.c (process_jvm_instruction):  Do load_type_state after JSR.
+	* verify.c (verify_jvm_instructions):  Fix off-by-one error.
+
+	* jcf-write.c (CHECK_PUT):  Add (void) cast to avoid -Wall warnings.
+	(localvar_alloc):  Change return type to void,
+	(emit_unop):  Remove unused variable size.
+	
+	* jcf-write.c (struct jcf_block):  Add new union.
+	(PENDING_CLEANUP_PC, PENDING_EXIT_PC, UNDEFINED_PC):  New macros.
+	(call_cleanups):  New functions.
+	(struct jcf_partial):  New fields num_finalizers and return_value_decl.
+	(generate_bytecode_insns):  Support CLEANUP_POINT_EXPR and
+	WITH_CLEANUP_EXPR.  Handle cleanups in RETURN_EXPR and EXIT_BLOCK_EXPR.
+	* lang.c (lang_init):  Call using_eh_for_cleanups.
+	* parse.y (java_complete_lhs):  For SYNCHRONIZED_EXPR, defer
+	completing operands to patch_synchronized_statement.
+	Support CLEANUP_POINT_EXPR, WITH_CLEANUP_EXPR.
+	(patch_synchronized_statement): Re-write suing CLEANUP_POINT_EXPR and
+	WITH_CLEANUP_EXPR instead of TRY_EXPR.	
+
 Sun Dec 20 16:15:44 1998  John F. Carr  <jfc@mit.edu>
 
 	* Make-lang.in: Comment out control-Ls; they upset some makes.

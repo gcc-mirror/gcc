@@ -494,6 +494,8 @@ lang_init ()
 	 (char *)(tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE),
 	 (LAST_JAVA_TREE_CODE - 
 	  (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
+
+  using_eh_for_cleanups ();
 }
 
 /* This doesn't do anything on purpose. It's used to satisfy the
