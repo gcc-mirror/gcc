@@ -744,11 +744,12 @@ needs to be added for a given target or host.
 Here are the possible CPU types:
 
 @quotation
-@c gmicro, alliant, spur and tahoe omitted since they don't work.
-1750a, a29k, alpha, arm, c@var{n}, clipper, dsp16xx, elxsi, h8300,
-hppa1.0, hppa1.1, i370, i386, i486, i586, i860, i960, m32r, m68000, m68k,
-m88k, mips, mipsel, mips64, mips64el, ns32k, powerpc, powerpcle,
-pyramid, romp, rs6000, sh, sparc, sparclite, sparc64, vax, we32k.
+@c gmicro, fx80, spur and tahoe omitted since they don't work.
+1750a, a29k, alpha, arm, c@var{n}, clipper, dsp16xx, elxsi, fr30, h8300,
+hppa1.0, hppa1.1, i370, i386, i486, i586, i686, i786, i860, i960, m32r,
+m68000, m68k, m88k, mips, mipsel, mips64, mips64el, mn10200, mn10300,
+ns32k, pdp11, powerpc, powerpcle, romp, rs6000, sh, sparc, sparclite,
+sparc64, v850, vax, we32k.
 @end quotation
 
 Here are the recognized company names.  As you can see, customary
