@@ -35,6 +35,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define UNUSED(x) x __attribute__((unused))
 #endif
 
+void __gnat_default_lock (void);
+void __gnat_default_unlock (void);
+
 void
 __gnat_default_lock (void)
 {
@@ -47,17 +50,14 @@ __gnat_default_unlock (void)
   return;
 }
 
-static void (*__gnat_task_lock) () = *__gnat_default_lock;
-static void (*__gnat_task_unlock) () = *__gnat_default_unlock;
+static void (*__gnat_task_lock) (void) = *__gnat_default_lock;
+static void (*__gnat_task_unlock) (void) = *__gnat_default_unlock;
 
  void
-__gnat_install_locks (lock, unlock)
-     void (*lock) ();
-     void (*unlock) ();
+__gnat_install_locks (void (*lock) (void), void (*unlock) (void))
 {
   __gnat_task_lock = lock;
   __gnat_task_unlock = unlock;
-
 }
 
 int
@@ -79,6 +79,3 @@ __gthread_mutex_unlock (__gthread_mutex_t * UNUSED (mutex))
   __gnat_task_unlock ();
   return 0;
 }
-
-#undef UNUSED
-
