@@ -56,25 +56,25 @@ int main (void)
     return 4;
   if (__alignof__ (b.e) != 4)
     return 5;
-  if (&c.i - &c.g != 16)
+  if (&c.i - &c.g != 12)
     return 6;
-  if (sizeof (c) != 24)
+  if (sizeof (c) != 16)
     return 7;
-  if (sizeof (c4) != 4 * 24)
+  if (sizeof (c4) != 4 * 16)
     return 8;
-  if (sizeof (d) != 2 * 8 + 24)
+  if (sizeof (d) != 2 * 4 + 16)
     return 9;
-  if (__alignof__ (d.k) != 8)
+  if (__alignof__ (d.k) != 4)
     return 10;
-  if (&e.o - &e.m != 28)
+  if (&e.o - &e.m != 24)
     return 11;
-  if (sizeof (e) != 32)
+  if (sizeof (e) != 28)
     return 12;
-  if (sizeof (e4) != 4 * 32)
+  if (sizeof (e4) != 4 * 28)
     return 13;
-  if (sizeof (f) != 2 * 8 + 32)
+  if (sizeof (f) != 2 * 4 + 28)
     return 14;
-  if (__alignof__ (f.q) != 8)
+  if (__alignof__ (f.q) != 4)
     return 15;
   return 0;
 }

@@ -671,7 +671,8 @@ place_union_field (rli, field)
 #endif
 
 #ifdef ADJUST_FIELD_ALIGN
-  desired_align = ADJUST_FIELD_ALIGN (field, desired_align);
+  if (! DECL_USER_ALIGN (field))
+    desired_align = ADJUST_FIELD_ALIGN (field, desired_align);
 #endif
 
   TYPE_USER_ALIGN (rli->t) |= DECL_USER_ALIGN (field);
@@ -685,10 +686,14 @@ place_union_field (rli, field)
      entire union to have `int' alignment.  */
   if (PCC_BITFIELD_TYPE_MATTERS && DECL_BIT_FIELD_TYPE (field))
     {
-      rli->record_align = MAX (rli->record_align,
-			       TYPE_ALIGN (TREE_TYPE (field)));
-      rli->unpadded_align = MAX (rli->unpadded_align,
-				 TYPE_ALIGN (TREE_TYPE (field)));
+      unsigned int type_align = TYPE_ALIGN (TREE_TYPE (field));
+
+#ifdef ADJUST_FIELD_ALIGN
+      if (! TYPE_USER_ALIGN (TREE_TYPE (field)))
+	type_align = ADJUST_FIELD_ALIGN (field, type_align);
+#endif
+      rli->record_align = MAX (rli->record_align, type_align);
+      rli->unpadded_align = MAX (rli->unpadded_align, type_align);
     }
 #endif
 
@@ -785,7 +790,8 @@ place_field (rli, field)
 #endif
 
 #ifdef ADJUST_FIELD_ALIGN
-  desired_align = ADJUST_FIELD_ALIGN (field, desired_align);
+  if (! user_align)
+    desired_align = ADJUST_FIELD_ALIGN (field, desired_align);
 #endif
 
   /* Record must have at least as much alignment as any field.
@@ -828,6 +834,11 @@ place_field (rli, field)
       if (DECL_NAME (field) != 0)
 	{
 	  unsigned int type_align = TYPE_ALIGN (type);
+
+#ifdef ADJUST_FIELD_ALIGN
+	  if (! TYPE_USER_ALIGN (type))
+	    type_align = ADJUST_FIELD_ALIGN (field, type_align);
+#endif
 
 	  if (maximum_field_alignment != 0)
 	    type_align = MIN (type_align, maximum_field_alignment);
@@ -917,6 +928,11 @@ place_field (rli, field)
       HOST_WIDE_INT offset = tree_low_cst (rli->offset, 0);
       HOST_WIDE_INT bit_offset = tree_low_cst (rli->bitpos, 0);
 
+#ifdef ADJUST_FIELD_ALIGN
+      if (! TYPE_USER_ALIGN (type))
+	type_align = ADJUST_FIELD_ALIGN (field, type_align);
+#endif
+
       /* A bit field may not span more units of alignment of its type
 	 than its type itself.  Advance to next boundary if necessary.  */
       if ((((offset * BITS_PER_UNIT + bit_offset + field_size +
@@ -945,6 +961,11 @@ place_field (rli, field)
       HOST_WIDE_INT field_size = tree_low_cst (dsize, 1);
       HOST_WIDE_INT offset = tree_low_cst (rli->offset, 0);
       HOST_WIDE_INT bit_offset = tree_low_cst (rli->bitpos, 0);
+
+#ifdef ADJUST_FIELD_ALIGN
+      if (! TYPE_USER_ALIGN (type))
+	type_align = ADJUST_FIELD_ALIGN (field, type_align);
+#endif
 
       if (maximum_field_alignment != 0)
 	type_align = MIN (type_align, maximum_field_alignment);
