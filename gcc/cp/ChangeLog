@@ -1,5 +1,8 @@
 2002-05-03  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (build_cplus_array_type): Only const and volatile get
+	special handling.
+
 	* decl.c (BOOL_TYPE_SIZE): Move default to defaults.h.
 
 2002-04-30  Mark Mitchell  <mark@codesourcery.com>
