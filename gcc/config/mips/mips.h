@@ -337,11 +337,11 @@ extern void		sbss_section PARAMS ((void));
 #define TARGET_MIPS4300             (mips_arch == PROCESSOR_R4300)
 
 /* Scheduling target defines.  */
-#define TUNE_MIPS3000               (mips_cpu == PROCESSOR_R3000)
-#define TUNE_MIPS3900               (mips_cpu == PROCESSOR_R3900)
-#define TUNE_MIPS4000               (mips_cpu == PROCESSOR_R4000)
-#define TUNE_MIPS5000               (mips_cpu == PROCESSOR_R5000)
-#define TUNE_MIPS6000               (mips_cpu == PROCESSOR_R6000)
+#define TUNE_MIPS3000               (mips_tune == PROCESSOR_R3000)
+#define TUNE_MIPS3900               (mips_tune == PROCESSOR_R3900)
+#define TUNE_MIPS4000               (mips_tune == PROCESSOR_R4000)
+#define TUNE_MIPS5000               (mips_tune == PROCESSOR_R5000)
+#define TUNE_MIPS6000               (mips_tune == PROCESSOR_R6000)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -1027,6 +1027,7 @@ while (0)
 
 #define EXTRA_SPECS							\
   { "subtarget_cc1_spec", SUBTARGET_CC1_SPEC },				\
+  { "cc1_cpu_spec", CC1_CPU_SPEC},                                      \
   { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },				\
   { "subtarget_cpp_size_spec", SUBTARGET_CPP_SIZE_SPEC },		\
   { "long_max_spec", LONG_MAX_SPEC },					\
