@@ -409,10 +409,10 @@ upload_files() {
 
 #Print description if snapshot exists
 snapshot_print() {
-  if [ -e ${RELEASE}/${SNAP_FILE} ]; then
-     printf "%-38s%s\n\n" "${SNAP_FILE}" "${SNAP_DESCRIPTION}" >> ${SNAPSHOT_README}
-     echo -e "  <tr><td><a href=\"${SNAP_FILE}\">${SNAP_FILE}</a></td>\n" \
-             "      <td>${SNAP_DESCRIPTION}</td></tr>" >> ${SNAPSHOT_INDEX}
+  if [ -e ${RELEASE}/$1 ]; then
+     printf "%-38s%s\n\n" "$1" "$2" >> ${SNAPSHOT_README}
+     echo "  <tr><td><a href=\"$1\">$1</a></td>" >> ${SNAPSHOT_INDEX}
+     echo "      <td>$2</td></tr>" >> ${SNAPSHOT_INDEX}
   fi
 }
 
@@ -425,84 +425,76 @@ announce_snapshot() {
   SNAPSHOT_INDEX=${RELEASE}/index.html
 
   changedir "${SNAPSHOTS_DIR}"
-  echo -e "Snapshot gcc-"${RELEASE}" is now available on" \
-          "\n  ftp://gcc.gnu.org/pub/gcc/snapshots/"${RELEASE}"/" \
-          "\nand on various mirrors, see http://gcc.gnu.org/mirrors.html for details." \
-          "\n\nThis snapshot has been generated from the GCC "${BRANCH}" CVS branch" \
-          "\nwith the following options: "${EXPORTTAG} ${EXPORTDATE} \
-          "\n\nYou'll find:\n" > ${SNAPSHOT_README}
+  echo \
+"Snapshot gcc-"${RELEASE}" is now available on
+  ftp://gcc.gnu.org/pub/gcc/snapshots/"${RELEASE}"/
+and on various mirrors, see http://gcc.gnu.org/mirrors.html for details.
 
-  echo -e "<html>" \
-          "\n\n<head>" \
-          "\n<title>GCC "${RELEASE}" Snapshot</title>" \
-          "\n</head>" \
-          "\n\n<body>" \
-          "\n<h1>GCC "${RELEASE}" Snapshot</h1>" \
-          "\n\n<p>The <a href =\"http://gcc.gnu.org/\">GCC Project</a> makes" \
-          "\nperiodic snapshots of the GCC source tree available to the public" \
-          "\nfor testing purposes.</p>" \
-          "\n\n<p>If you are planning to download and use one of our snapshots, then" \
-          "\nwe highly recommend you join the GCC developers list.  Details for" \
-          "\nhow to sign up can be found on the GCC project home page.</p>" \
-          "\n\n<p>This snapshot has been generated from the GCC "${BRANCH}" CVS branch" \
-          "\nwith the following options: <code>"${EXPORTTAG} ${EXPORTDATE}"</code></p>" \
-          "\n\n<table>" > ${SNAPSHOT_INDEX}
+This snapshot has been generated from the GCC "${BRANCH}" CVS branch
+with the following options: "${EXPORTTAG} ${EXPORTDATE}"
+
+You'll find:
+" > ${SNAPSHOT_README}
+
+  echo \
+"<html>
+
+<head>
+<title>GCC "${RELEASE}" Snapshot</title>
+</head>
+
+<body>
+<h1>GCC "${RELEASE}" Snapshot</h1>
+
+<p>The <a href =\"http://gcc.gnu.org/\">GCC Project</a> makes
+periodic snapshots of the GCC source tree available to the public
+for testing purposes.</p>
+	
+<p>If you are planning to download and use one of our snapshots, then
+we highly recommend you join the GCC developers list.  Details for
+how to sign up can be found on the GCC project home page.</p>
+
+<p>This snapshot has been generated from the GCC "${BRANCH}" CVS branch
+with the following options: <code>"${EXPORTTAG} ${EXPORTDATE}"</code></p>
+
+<table>" > ${SNAPSHOT_INDEX}
        
-  SNAP_FILE=gcc-${RELEASE}.tar.bz2
-  SNAP_DESCRIPTION="Complete GCC (includes all of below)"
-  snapshot_print
+  snapshot_print gcc-${RELEASE}.tar.bz2 "Complete GCC (includes all of below)"
+  snapshot_print gcc-core-${RELEASE}.tar.bz2 "C front end and core compiler"
+  snapshot_print gcc-ada-${RELEASE}.tar.bz2 "Ada front end and runtime"
+  snapshot_print gcc-fortran-${RELEASE}.tar.bz2 "Fortran front end and runtime"
+  snapshot_print gcc-g++-${RELEASE}.tar.bz2 "C++ front end and runtime"
+  snapshot_print gcc-g77-${RELEASE}.tar.bz2 "Fortran 77 front end and runtime"
+  snapshot_print gcc-java-${RELEASE}.tar.bz2 "Java front end and runtime"
+  snapshot_print gcc-objc-${RELEASE}.tar.bz2 "Objective-C front end and runtime"
+  snapshot_print gcc-testsuite-${RELEASE}.tar.bz2 "The GCC testsuite"
 
-  SNAP_FILE=gcc-core-${RELEASE}.tar.bz2
-  SNAP_DESCRIPTION="C front end and core compiler"
-  snapshot_print
+  echo \
+"Diffs from "${BRANCH}"-"${LAST_DATE}" are available in the diffs/ subdirectory.
 
-  SNAP_FILE=gcc-ada-${RELEASE}.tar.bz2
-  SNAP_DESCRIPTION="Ada front end and runtime"
-  snapshot_print
+When a particular snapshot is ready for public consumption the LATEST-"${BRANCH}"
+link is updated and a message is sent to the gcc list.  Please do not use
+a snapshot before it has been announced that way." >> ${SNAPSHOT_README}
 
-  SNAP_FILE=gcc-fortran-${RELEASE}.tar.bz2
-  SNAP_DESCRIPTION="Fortran front end and runtime"
-  snapshot_print
+  echo \
+"</table>
+<p>Diffs from "${BRANCH}"-"${LAST_DATE}" are available in the
+<a href=\"diffs/\">diffs/ subdirectory</a>.</p>
 
-  SNAP_FILE=gcc-g++-${RELEASE}.tar.bz2
-  SNAP_DESCRIPTION="C++ front end and runtime"
-  snapshot_print
+<p>When a particular snapshot is ready for public consumption the LATEST-"${BRANCH}"
+link is updated and a message is sent to the gcc list.  Please do not use
+a snapshot before it has been announced that way.</p>
 
-  SNAP_FILE=gcc-g77-${RELEASE}.tar.bz2
-  SNAP_DESCRIPTION="Fortran 77 front end and runtime"
-  snapshot_print
+<hr />
 
-  SNAP_FILE=gcc-java-${RELEASE}.tar.bz2
-  SNAP_DESCRIPTION="Objective-C front end and runtime"
-  snapshot_print
+<address>
+<a href=\"mailto:gcc@gcc.gnu.org\">gcc@gcc.gnu.org</a>
+<br />
+Last modified "${TEXT_DATE}"
+</address>
+</body>
 
-  SNAP_FILE=gcc-objc-${RELEASE}.tar.bz2
-  SNAP_DESCRIPTION="Java front end and runtime"
-  snapshot_print
-
-  SNAP_FILE=gcc-testsuite-${RELEASE}.tar.bz2
-  SNAP_DESCRIPTION="The GCC testsuite"
-  snapshot_print
-
-  echo -e "\nDiffs from "${BRANCH}"-"${LAST_DATE}" are available in the diffs/ subdirectory." \
-          "\n\nWhen a particular snapshot is ready for public consumption the LATEST-"${BRANCH} \
-          "\nlink is updated and a message is sent to the gcc list.  Please do not use" \
-          "\na snapshot before it has been announced that way." >> ${SNAPSHOT_README}
-
-  echo -e "</table>" \
-          "\n<p>Diffs from "${BRANCH}"-"${LAST_DATE}" are available in the" \
-          "\n<a href=\"diffs/\">diffs/ subdirectory</a>.</p>" \
-          "\n\n<p>When a particular snapshot is ready for public consumption the LATEST-"${BRANCH} \
-          "\nlink is updated and a message is sent to the gcc list.  Please do not use" \
-          "\na snapshot before it has been announced that way.</p>" \
-          "\n\n<hr />" \
-          "\n\n<address>" \
-          "\n<a href=\"mailto:gcc@gcc.gnu.org\">gcc@gcc.gnu.org</a>" \
-          "\n<br />" \
-          "\nLast modified "${TEXT_DATE} \
-          "\n</address>" \
-          "\n</body>" \
-          "\n\n</html>" >> ${SNAPSHOT_INDEX}
+</html>" >> ${SNAPSHOT_INDEX}
 
   rm -f LATEST-${BRANCH}
   ln -s ${RELEASE} LATEST-${BRANCH}
