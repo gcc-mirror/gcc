@@ -1,3 +1,8 @@
+Wed Oct 20 22:57:58 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* local-alloc.c (update_equiv_regs): Check the correct insn
+	for pre-existing REG_EQUIV notes.
+
 Wed Oct 20 20:41:46 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* cse.c (cse_end_of_basic_block): Don't return the end of a basic
