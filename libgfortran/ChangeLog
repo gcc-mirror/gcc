@@ -1,3 +1,7 @@
+2005-02-27  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* runtime/environ.c: Update copyright years.
+
 2005-02-27  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* io/write.c: Update copyright years.
@@ -12,7 +16,7 @@
 
 	* io/write.c (output_float): Fix typo in condition.
 
-2005-02-25  Peter O'Gorman  <peter@pogman.com>
+2005-02-25  Peter O'Gorman  <peter@pogma.com>
             Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR libgfortran/17748
