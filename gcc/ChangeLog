@@ -1,3 +1,8 @@
+2004-07-25  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (movdi_internal64): Further disparage
+	f->f.
+
 2004-07-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree.h (BINFO_BASE_ACCESSES): Accesses are a VEC(tree).
