@@ -31,6 +31,16 @@ typedef void (*diagnostic_starter_fn) PARAMS ((output_buffer *,
                                                diagnostic_context *));
 typedef diagnostic_starter_fn diagnostic_finalizer_fn;
 
+typedef enum
+{
+#define DEFINE_DIAGNOSTIC_KIND(K, M) K,  
+#include "diagnostic.def"
+#undef DEFINE_DIAGNOSTIC_KIND
+  DK_LAST_DIAGNOSTIC_KIND
+} diagnostic_t;
+
+#define pedantic_error_kind() (flag_pedantic_errors ? DK_ERROR : DK_WARNING)
+
 #define DIAGNOSTICS_SHOW_PREFIX_ONCE       0x0
 #define DIAGNOSTICS_SHOW_PREFIX_NEVER      0x1
 #define DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE 0x2

@@ -1,3 +1,9 @@
+2001-05-01  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.def: New file.
+	* diagnostic.h (diagnostic_t): New enum.
+	* Makefile.in (diagnostic.o): Depend on diagnostic.def
+
 2001-04-30  Zack Weinberg  <zackw@stanford.edu>
 
 	* tsystem.h: Test only POSIX for availability of string.h 
