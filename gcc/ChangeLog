@@ -1,3 +1,10 @@
+1999-12-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* toplev.h (note_deferall_of_defined_inline_function): Declare.
+	* toplev.c (note_deferral_of_defined_inline_function): New
+	function, split out from ...
+	(rest_of_compilation): ... here.  Use it.
+	
 Fri Dec 24 12:34:26 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (store_constructor): Don't call clear_storage if size is

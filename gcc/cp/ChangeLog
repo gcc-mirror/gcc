@@ -1,3 +1,8 @@
+1999-12-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* semantics.c (expand_body): Use
+	note_deferral_of_defined_inline_function.
+
 1999-12-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* dump.c (dequeue_and_dump): Handle CTOR_STMTs.
