@@ -1,6 +1,6 @@
 // 2003-05-04  Paolo Carlini  <pcarlini@unitus.it>
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -63,7 +63,7 @@ bool test03(void)
   // size_type find_first_not_of(const char* s, size_type pos, size_type n) const;
   csz01 = str01.find_first_not_of(str_lit01, 0, 0);
   VERIFY( csz01 == 0 );
-  csz01 = str01.find_first_not_of(str_lit01, 0, 10);
+  csz01 = str01.find_first_not_of(str_lit01, 0, 8);
   VERIFY( csz01 == 8 );
   csz01 = str01.find_first_not_of(str_lit01, 10, 0);
   VERIFY( csz01 == 10 );
