@@ -50,6 +50,8 @@ static void scale_bbs_frequencies (basic_block *, int, int, int);
 static basic_block create_preheader (struct loop *, int);
 static void fix_irreducible_loops (basic_block);
 
+#define RDIV(X,Y) (((X) + (Y) / 2) / (Y))
+
 /* Splits basic block BB after INSN, returns created edge.  Updates loops
    and dominators.  */
 edge
@@ -458,7 +460,7 @@ scale_bbs_frequencies (basic_block *bbs, int nbbs, int num, int den)
   for (i = 0; i < nbbs; i++)
     {
       bbs[i]->frequency = (bbs[i]->frequency * num) / den;
-      bbs[i]->count = (bbs[i]->count * num) / den;
+      bbs[i]->count = RDIV (bbs[i]->count * num, den);
       for (e = bbs[i]->succ; e; e = e->succ_next)
 	e->count = (e->count * num) /den;
     }
@@ -812,7 +814,6 @@ can_duplicate_loop_p (struct loop *loop)
   return ret;
 }
 
-#define RDIV(X,Y) (((X) + (Y) / 2) / (Y))
 
 /* Duplicates body of LOOP to given edge E NDUPL times.  Takes care of updating
    LOOPS structure and dominators.  E's destination must be LOOP header for

@@ -1,3 +1,8 @@
+2004-04-22  Jan Hubicka  <jh@suse.cz>
+
+      * cfgloopmanip.c (scale_bbs_frequencies): Use RDIV macro
+      * cfgloopanal.c (expected_loop_iterations): Change the return value
+
 2004-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* cselib.h (struct elt_loc_list): Remove canon_loc field.
