@@ -1,5 +1,8 @@
 2001-07-11  Janis Johnson <janis@us.ibm.com>
 
+	* gcov.c (arcdata): Use gcov_type to fix branch percentage
+	for large hit count.
+
 	* profile.c (branch_prob): Fix .bbg info for computed gotos
 	and C++ EH code.
 
