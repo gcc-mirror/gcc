@@ -2115,16 +2115,23 @@ extern struct mips_frame_info current_frame_info;
    cases preventing register elimination are things that the compiler
    already knows about.
 
-   We can always eliminate to the frame pointer.  We can eliminate to
-   the stack pointer unless a frame pointer is needed.  In mips16
-   mode, we need a frame pointer for a large frame; otherwise, reload
-   may be unable to compute the address of a local variable, since
-   there is no way to add a large constant to the stack pointer
-   without using a temporary register.  */
+   When not in mips16 and mips64, we can always eliminate to the
+   frame pointer.  We can eliminate to the stack pointer unless
+   a frame pointer is needed.  In mips16 mode, we need a frame
+   pointer for a large frame; otherwise, reload may be unable
+   to compute the address of a local variable, since there is
+   no way to add a large constant to the stack pointer
+   without using a temporary register.
+
+   In mips16, for some instructions (eg lwu), we can't eliminate the
+   frame pointer for the stack pointer.  These instructions are
+   only generated in TARGET_64BIT mode.
+   */
 
 #define CAN_ELIMINATE(FROM, TO)						\
   ((TO) == HARD_FRAME_POINTER_REGNUM					\
    || ((TO) == STACK_POINTER_REGNUM && ! frame_pointer_needed		\
+       && ! (TARGET_MIPS16 && TARGET_64BIT)                             \
        && (! TARGET_MIPS16						\
 	   || compute_frame_size (get_frame_size ()) < 32768)))
 
