@@ -454,14 +454,17 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	    /* For certain integer operations, we need not actually extend
 	       the narrow operands, as long as we will truncate
-	       the results to the same narrowness.  */
+	       the results to the same narrowness.  Don't do this when
+	       WIDER_MODE is wider than a word since a paradoxical SUBREG
+	       isn't valid for such modes.  */
 
 	    if ((binoptab == ior_optab || binoptab == and_optab
 		 || binoptab == xor_optab
 		 || binoptab == add_optab || binoptab == sub_optab
 		 || binoptab == smul_optab
 		 || binoptab == ashl_optab || binoptab == lshl_optab)
-		&& class == MODE_INT)
+		&& class == MODE_INT
+		&& GET_MODE_SIZE (wider_mode) <= UNITS_PER_WORD)
 	      no_extend = 1;
 
 	    /* If an operand is a constant integer, we might as well
@@ -879,14 +882,17 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	      /* For certain integer operations, we need not actually extend
 		 the narrow operands, as long as we will truncate
-		 the results to the same narrowness.  */
+		 the results to the same narrowness.  Don't do this when
+		 WIDER_MODE is wider than a word since a paradoxical SUBREG
+		 isn't valid for such modes.  */
 
 	      if ((binoptab == ior_optab || binoptab == and_optab
 		   || binoptab == xor_optab
 		   || binoptab == add_optab || binoptab == sub_optab
 		   || binoptab == smul_optab
 		   || binoptab == ashl_optab || binoptab == lshl_optab)
-		  && class == MODE_INT)
+		  && class == MODE_INT
+		  && GET_MODE_SIZE (wider_mode) <= UNITS_PER_WORD)
 		no_extend = 1;
 
 	      /* If an operand is a constant integer, we might as well
@@ -1207,6 +1213,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 	       results to the same narrowness.  */
 
 	    if ((unoptab == neg_optab || unoptab == one_cmpl_optab)
+		&& GET_MODE_SIZE (wider_mode) <= UNITS_PER_WORD
 		&& class == MODE_INT)
 	      xop0 = gen_rtx (SUBREG, wider_mode, force_reg (mode, xop0), 0);
 	    else
@@ -1304,6 +1311,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 		 results to the same narrowness.  */
 
 	      if ((unoptab == neg_optab || unoptab == one_cmpl_optab)
+		  && GET_MODE_SIZE (wider_mode) <= UNITS_PER_WORD
 		  && class == MODE_INT)
 		xop0 = gen_rtx (SUBREG, wider_mode, force_reg (mode, xop0), 0);
 	      else
