@@ -31,6 +31,8 @@
 #ifndef __SGI_STL_INTERNAL_MULTIMAP_H
 #define __SGI_STL_INTERNAL_MULTIMAP_H
 
+#include <bits/concept_checks.h>
+
 __STL_BEGIN_NAMESPACE
 
 #if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)
@@ -55,6 +57,11 @@ inline bool operator<(const multimap<_Key,_Tp,_Compare,_Alloc>& __x,
 
 template <class _Key, class _Tp, class _Compare, class _Alloc>
 class multimap {
+  // requirements:
+
+  __STL_CLASS_REQUIRES(_Tp, _Assignable);
+  __STL_CLASS_BINARY_FUNCTION_CHECK(_Compare, bool, _Key, _Key);
+
 public:
 
 // typedefs:
@@ -200,19 +207,19 @@ public:
     return _M_t.equal_range(__x);
   }
 
-#ifdef __STL_MEMBER_TEMPLATES 
+#ifdef __STL_TEMPLATE_FRIENDS 
   template <class _K1, class _T1, class _C1, class _A1>
   friend bool operator== (const multimap<_K1, _T1, _C1, _A1>&,
                           const multimap<_K1, _T1, _C1, _A1>&);
   template <class _K1, class _T1, class _C1, class _A1>
   friend bool operator< (const multimap<_K1, _T1, _C1, _A1>&,
                          const multimap<_K1, _T1, _C1, _A1>&);
-#else /* __STL_MEMBER_TEMPLATES */
+#else /* __STL_TEMPLATE_FRIENDS */
   friend bool __STD_QUALIFIER
   operator== __STL_NULL_TMPL_ARGS (const multimap&, const multimap&);
   friend bool __STD_QUALIFIER
   operator< __STL_NULL_TMPL_ARGS (const multimap&, const multimap&);
-#endif /* __STL_MEMBER_TEMPLATES */
+#endif /* __STL_TEMPLATE_FRIENDS */
 };
 
 template <class _Key, class _Tp, class _Compare, class _Alloc>

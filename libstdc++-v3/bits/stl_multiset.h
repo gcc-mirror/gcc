@@ -31,6 +31,8 @@
 #ifndef __SGI_STL_INTERNAL_MULTISET_H
 #define __SGI_STL_INTERNAL_MULTISET_H
 
+#include <bits/concept_checks.h>
+
 __STL_BEGIN_NAMESPACE
 
 #if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)
@@ -54,7 +56,13 @@ inline bool operator<(const multiset<_Key,_Compare,_Alloc>& __x,
 
 template <class _Key, class _Compare, class _Alloc>
 class multiset {
+  // requirements:
+  
+  __STL_CLASS_REQUIRES(_Key, _Assignable);
+  __STL_CLASS_BINARY_FUNCTION_CHECK(_Compare, bool, _Key, _Key);
+
 public:
+
   // typedefs:
 
   typedef _Key     key_type;
@@ -191,19 +199,19 @@ public:
     return _M_t.equal_range(__x);
   }
 
-#ifdef __STL_MEMBER_TEMPLATES
+#ifdef __STL_TEMPLATE_FRIENDS
   template <class _K1, class _C1, class _A1>
   friend bool operator== (const multiset<_K1,_C1,_A1>&,
                           const multiset<_K1,_C1,_A1>&);
   template <class _K1, class _C1, class _A1>
   friend bool operator< (const multiset<_K1,_C1,_A1>&,
                          const multiset<_K1,_C1,_A1>&);
-#else /* __STL_MEMBER_TEMPLATES */
+#else /* __STL_TEMPLATE_FRIENDS */
   friend bool __STD_QUALIFIER
   operator== __STL_NULL_TMPL_ARGS (const multiset&, const multiset&);
   friend bool __STD_QUALIFIER
   operator< __STL_NULL_TMPL_ARGS (const multiset&, const multiset&);
-#endif /* __STL_MEMBER_TEMPLATES */
+#endif /* __STL_TEMPLATE_FRIENDS */
 };
 
 template <class _Key, class _Compare, class _Alloc>

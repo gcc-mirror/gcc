@@ -513,7 +513,7 @@ operator!=(const reverse_iterator<_RandomAccessIterator, _Tp,
                                   _Reference, _Distance>& __x, 
            const reverse_iterator<_RandomAccessIterator, _Tp,
                                   _Reference, _Distance>& __y) {
-  return !(__x == __y); }
+  return !(__x == __y);
 }
 
 template <class _RandomAccessIterator, class _Tp,
@@ -679,6 +679,8 @@ private:
 // operator* or operator++ has been called, _M_is_initialized is false.
 template<class _CharT, class _Traits>
 class istreambuf_iterator
+  : public iterator<input_iterator_tag, _CharT,
+                    typename _Traits::off_type, _CharT*, _CharT&>
 {
 public:
   typedef _CharT                           char_type;
@@ -686,12 +688,6 @@ public:
   typedef typename _Traits::int_type       int_type;
   typedef basic_streambuf<_CharT, _Traits> streambuf_type;
   typedef basic_istream<_CharT, _Traits>   istream_type;
-
-  typedef input_iterator_tag               iterator_category;
-  typedef _CharT                           value_type;
-  typedef typename _Traits::off_type       difference_type;
-  typedef const _CharT*                    pointer;
-  typedef const _CharT&                    reference;
 
 public:
   istreambuf_iterator(streambuf_type* __p = 0) { this->_M_init(__p); }
@@ -791,6 +787,7 @@ inline bool operator!=(const istreambuf_iterator<_CharT, _Traits>& __x,
 // The default template argument is declared in iosfwd
 template<class _CharT, class _Traits>
 class ostreambuf_iterator
+  : public iterator<output_iterator_tag, void, void, void, void>
 {
 public:
   typedef _CharT                           char_type;
@@ -799,16 +796,10 @@ public:
   typedef basic_streambuf<_CharT, _Traits> streambuf_type;
   typedef basic_ostream<_CharT, _Traits>   ostream_type;
 
-  typedef output_iterator_tag              iterator_category;
-  typedef void                             value_type;
-  typedef void                             difference_type;
-  typedef void                             pointer;
-  typedef void                             reference;
-
 public:
   ostreambuf_iterator(streambuf_type* __buf) : _M_buf(__buf), _M_ok(__buf) {}
   ostreambuf_iterator(ostream_type& __o)
-    : _M_buf(__o.rdbuf()), _M_ok(__o.rdbuf()) {}
+    : _M_buf(__o.rdbuf()), _M_ok(__o.rdbuf() != 0) {}
 
   ostreambuf_iterator& operator=(char_type __c) {
     _M_ok = _M_ok && !traits_type::eq_int_type(_M_buf->sputc(__c),
@@ -837,15 +828,15 @@ inline bool operator==(const istream_iterator<_Tp, _Dist>&,
 
 template <class _Tp, class _Dist>
 class istream_iterator {
-#ifdef __STL_MEMBER_TEMPLATES
+#ifdef __STL_TEMPLATE_FRIENDS
   template <class _T1, class _D1>
   friend bool operator==(const istream_iterator<_T1, _D1>&,
                          const istream_iterator<_T1, _D1>&);
-#else /* __STL_MEMBER_TEMPLATES */
+#else /* __STL_TEMPLATE_FRIENDS */
   friend bool __STD_QUALIFIER
   operator== __STL_NULL_TMPL_ARGS (const istream_iterator&,
                                    const istream_iterator&);
-#endif /* __STL_MEMBER_TEMPLATES */
+#endif /* __STL_TEMPLATE_FRIENDS */
 
 protected:
   istream* _M_stream;

@@ -37,6 +37,7 @@ __STL_BEGIN_NAMESPACE
 template <class _InputIterator, class _Tp>
 _Tp accumulate(_InputIterator __first, _InputIterator __last, _Tp __init)
 {
+  __STL_REQUIRES(_InputIterator, _InputIterator);
   for ( ; __first != __last; ++__first)
     __init = __init + *__first;
   return __init;
@@ -46,6 +47,7 @@ template <class _InputIterator, class _Tp, class _BinaryOperation>
 _Tp accumulate(_InputIterator __first, _InputIterator __last, _Tp __init,
               _BinaryOperation __binary_op)
 {
+  __STL_REQUIRES(_InputIterator, _InputIterator);
   for ( ; __first != __last; ++__first)
     __init = __binary_op(__init, *__first);
   return __init;
@@ -55,6 +57,8 @@ template <class _InputIterator1, class _InputIterator2, class _Tp>
 _Tp inner_product(_InputIterator1 __first1, _InputIterator1 __last1,
                  _InputIterator2 __first2, _Tp __init)
 {
+  __STL_REQUIRES(_InputIterator2, _InputIterator);
+  __STL_REQUIRES(_InputIterator2, _InputIterator);
   for ( ; __first1 != __last1; ++__first1, ++__first2)
     __init = __init + (*__first1 * *__first2);
   return __init;
@@ -67,6 +71,8 @@ _Tp inner_product(_InputIterator1 __first1, _InputIterator1 __last1,
                  _BinaryOperation1 __binary_op1,
                  _BinaryOperation2 __binary_op2)
 {
+  __STL_REQUIRES(_InputIterator2, _InputIterator);
+  __STL_REQUIRES(_InputIterator2, _InputIterator);
   for ( ; __first1 != __last1; ++__first1, ++__first2)
     __init = __binary_op1(__init, __binary_op2(*__first1, *__first2));
   return __init;
@@ -90,6 +96,8 @@ _OutputIterator
 partial_sum(_InputIterator __first, _InputIterator __last,
             _OutputIterator __result)
 {
+  __STL_REQUIRES(_InputIterator, _InputIterator);
+  __STL_REQUIRES(_OutputIterator, _OutputIterator);
   if (__first == __last) return __result;
   *__result = *__first;
   return __partial_sum(__first, __last, __result, __VALUE_TYPE(__first));
@@ -114,6 +122,8 @@ _OutputIterator
 partial_sum(_InputIterator __first, _InputIterator __last,
             _OutputIterator __result, _BinaryOperation __binary_op)
 {
+  __STL_REQUIRES(_InputIterator, _InputIterator);
+  __STL_REQUIRES(_OutputIterator, _OutputIterator);
   if (__first == __last) return __result;
   *__result = *__first;
   return __partial_sum(__first, __last, __result, __VALUE_TYPE(__first), 
@@ -139,6 +149,8 @@ _OutputIterator
 adjacent_difference(_InputIterator __first,
                     _InputIterator __last, _OutputIterator __result)
 {
+  __STL_REQUIRES(_InputIterator, _InputIterator);
+  __STL_REQUIRES(_OutputIterator, _OutputIterator);
   if (__first == __last) return __result;
   *__result = *__first;
   return __adjacent_difference(__first, __last, __result,
@@ -165,6 +177,8 @@ _OutputIterator
 adjacent_difference(_InputIterator __first, _InputIterator __last,
                     _OutputIterator __result, _BinaryOperation __binary_op)
 {
+  __STL_REQUIRES(_InputIterator, _InputIterator);
+  __STL_REQUIRES(_OutputIterator, _OutputIterator);
   if (__first == __last) return __result;
   *__result = *__first;
   return __adjacent_difference(__first, __last, __result,
@@ -222,10 +236,12 @@ inline _Tp power(_Tp __x, _Integer __n)
 
 // iota is not part of the C++ standard.  It is an extension.
 
-template <class _ForwardIterator, class _Tp>
+template <class _ForwardIter, class _Tp>
 void 
-iota(_ForwardIterator __first, _ForwardIterator __last, _Tp __value)
+iota(_ForwardIter __first, _ForwardIter __last, _Tp __value)
 {
+  __STL_REQUIRES(_ForwardIter, _Mutable_ForwardIterator);
+  __STL_CONVERTIBLE(_Tp, typename iterator_traits<_ForwardIter>::value_type);
   while (__first != __last)
     *__first++ = __value++;
 }

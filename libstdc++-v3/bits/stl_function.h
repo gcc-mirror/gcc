@@ -411,7 +411,7 @@ struct _Constant_binary_fun {
 
 template <class _Result>
 struct constant_void_fun : public _Constant_void_fun<_Result> {
-  constant_void_fun(const _Result& __v) : _Constant_void_fun<_Result>(_v) {}
+  constant_void_fun(const _Result& __v) : _Constant_void_fun<_Result>(__v) {}
 };  
 
 

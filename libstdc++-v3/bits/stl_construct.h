@@ -36,23 +36,28 @@
 __STL_BEGIN_NAMESPACE
 
 // construct and destroy.  These functions are not part of the C++ standard,
-// and are provided for backward compatibility with the HP STL.
+// and are provided for backward compatibility with the HP STL. We also
+// provide internal names _Construct and _Destroy that can be used within
+// the library, so that standard-conforming pieces don't have to rely on
+// non-standard extensions.
+
+// Internal names
+
+template <class _T1, class _T2>
+inline void _Construct(_T1* __p, const _T2& __value) {
+new ((void*) __p) _T1(__value);
+}
+  
+template <class _T1>
+inline void _Construct(_T1* __p) {
+  new ((void*) __p) _T1();
+}
 
 template <class _Tp>
-inline void destroy(_Tp* __pointer) {
-  __pointer->_Tp::~_Tp();
+inline void _Destroy(_Tp* __pointer) {
+  __pointer->~_Tp();
 }
-
-template <class _Tp1, class _Tp2>
-inline void construct(_Tp1* __p, const _Tp2& __value) {
-  new (__p) _Tp1(__value);
-}
-
-template <class _Tp1>
-inline void construct(_Tp1* __p) {
-  new (__p) _Tp1();
-}
-
+  
 template <class _ForwardIterator>
 void
 __destroy_aux(_ForwardIterator __first, _ForwardIterator __last, __false_type)
@@ -74,12 +79,41 @@ __destroy(_ForwardIterator __first, _ForwardIterator __last, _Tp*)
 }
 
 template <class _ForwardIterator>
-inline void destroy(_ForwardIterator __first, _ForwardIterator __last) {
+inline void _Destroy(_ForwardIterator __first, _ForwardIterator __last) {
   __destroy(__first, __last, __VALUE_TYPE(__first));
 }
 
-inline void destroy(char*, char*) {}
-inline void destroy(wchar_t*, wchar_t*) {}
+inline void _Destroy(char*, char*) {}
+inline void _Destroy(int*, int*) {}
+inline void _Destroy(long*, long*) {}
+inline void _Destroy(float*, float*) {}
+inline void _Destroy(double*, double*) {}
+#ifdef __STL_HAS_WCHAR_T
+inline void _Destroy(wchar_t*, wchar_t*) {}
+#endif /* __STL_HAS_WCHAR_T */
+
+// --------------------------------------------------
+// Old names from the HP STL.
+
+template <class _T1, class _T2>
+inline void construct(_T1* __p, const _T2& __value) {
+  _Construct(__p, __value);
+}
+
+template <class _T1>
+inline void construct(_T1* __p) {
+  _Construct(__p);
+}
+
+template <class _Tp>
+inline void destroy(_Tp* __pointer) {
+  _Destroy(__pointer);
+}
+
+template <class _ForwardIterator>
+inline void destroy(_ForwardIterator __first, _ForwardIterator __last) {
+  _Destroy(__first, __last);
+}
 
 __STL_END_NAMESPACE
 

@@ -35,6 +35,8 @@
 // The internal file stl_iterator.h contains predefined iterators, 
 // such as front_insert_iterator and istream_iterator.
 
+#include <bits/concept_checks.h>
+
 __STL_BEGIN_NAMESPACE
 
 struct input_iterator_tag {};
@@ -274,6 +276,7 @@ inline void __distance(_RandomAccessIterator __first,
                        _RandomAccessIterator __last, 
                        _Distance& __n, random_access_iterator_tag)
 {
+  __STL_REQUIRES(_RandomAccessIterator, _RandomAccessIterator);
   __n += __last - __first;
 }
 
@@ -281,6 +284,7 @@ template <class _InputIterator, class _Distance>
 inline void distance(_InputIterator __first, 
                      _InputIterator __last, _Distance& __n)
 {
+  __STL_REQUIRES(_InputIterator, _InputIterator);
   __distance(__first, __last, __n, iterator_category(__first));
 }
 
@@ -301,6 +305,7 @@ template <class _RandomAccessIterator>
 inline typename iterator_traits<_RandomAccessIterator>::difference_type
 __distance(_RandomAccessIterator __first, _RandomAccessIterator __last,
            random_access_iterator_tag) {
+  __STL_REQUIRES(_RandomAccessIterator, _RandomAccessIterator);
   return __last - __first;
 }
 
@@ -309,6 +314,7 @@ inline typename iterator_traits<_InputIterator>::difference_type
 distance(_InputIterator __first, _InputIterator __last) {
   typedef typename iterator_traits<_InputIterator>::iterator_category 
     _Category;
+  __STL_REQUIRES(_InputIterator, _InputIterator);
   return __distance(__first, __last, _Category());
 }
 
@@ -326,6 +332,7 @@ inline void __advance(_InputIter& __i, _Distance __n, input_iterator_tag) {
 template <class _BidirectionalIterator, class _Distance>
 inline void __advance(_BidirectionalIterator& __i, _Distance __n, 
                       bidirectional_iterator_tag) {
+  __STL_REQUIRES(_BidirectionalIterator, _BidirectionalIterator);
   if (__n >= 0)
     while (__n--) ++__i;
   else
@@ -339,11 +346,13 @@ inline void __advance(_BidirectionalIterator& __i, _Distance __n,
 template <class _RandomAccessIterator, class _Distance>
 inline void __advance(_RandomAccessIterator& __i, _Distance __n, 
                       random_access_iterator_tag) {
+  __STL_REQUIRES(_RandomAccessIterator, _RandomAccessIterator);
   __i += __n;
 }
 
 template <class _InputIterator, class _Distance>
 inline void advance(_InputIterator& __i, _Distance __n) {
+  __STL_REQUIRES(_InputIterator, _InputIterator);
   __advance(__i, __n, iterator_category(__i));
 }
 

@@ -9,22 +9,17 @@
  * in supporting documentation.  Silicon Graphics makes no
  * representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
- */
+ */ 
 
-#ifndef _CPP_BITSET
-#define _CPP_BITSET 1
+#ifndef __SGI_STL_BITSET
+#define __SGI_STL_BITSET
 
-// This implementation of bitset<> has a second template parameter,
-// _WordT, which defaults to unsigned long.  *YOU SHOULD NOT USE
-// THIS FEATURE*.  It is experimental, and it may be removed in
-// future releases.
+// A bitset of size N has N % (sizeof(unsigned long) * CHAR_BIT) unused 
+// bits.  (They are the high- order bits in the highest word.)  It is
+// a class invariant of class bitset<> that those unused bits are
+// always zero.
 
-// A bitset of size N, using words of type _WordT, will have
-// N % (sizeof(_WordT) * CHAR_BIT) unused bits.  (They are the high-
-// order bits in the highest word.)  It is a class invariant
-// of class bitset<> that those unused bits are always zero.
-
-// Most of the actual code isn't contained in bitset<> itself, but in the
+// Most of the actual code isn't contained in bitset<> itself, but in the 
 // base class _Base_bitset.  The base class works with whole words, not with
 // individual bits.  This allows us to specialize _Base_bitset for the
 // important special case where the bitset is only a single word.
@@ -36,15 +31,20 @@
 
 
 #include <bits/std_cstddef.h>     // for size_t
+#include <bits/std_cstring.h>     // for memset
 #include <bits/std_string.h>
-#include <bits/std_stdexcept.h>
-#include <bits/std_istream.h>
-#include <bits/std_ostream.h>
-#include <bits/std_algorithm.h>
+#include <bits/std_stdexcept.h>   // for invalid_argument, out_of_range, 
+				  // overflow_error
 
-#define __BITS_PER_WORDT(__wt) (CHAR_BIT*sizeof(__wt))
-#define __BITSET_WORDS(__n,__wt) \
- ((__n) < 1 ? 1 : ((__n) + __BITS_PER_WORDT(__wt) - 1)/__BITS_PER_WORDT(__wt))
+#ifdef __STL_USE_NEW_IOSTREAMS 
+#include <iostream>
+#else
+#include <bits/std_iostream.h>   // for istream, ostream
+#endif
+
+#define __BITS_PER_WORD (CHAR_BIT*sizeof(unsigned long))
+#define __BITSET_WORDS(__n) \
+ ((__n) < 1 ? 1 : ((__n) + __BITS_PER_WORD - 1)/__BITS_PER_WORD)
 
 __STL_BEGIN_NAMESPACE
 
@@ -53,14 +53,14 @@ __STL_BEGIN_NAMESPACE
 #endif
 
 // structure to aid in counting bits
-template<bool __dummy>
+template<bool __dummy> 
 struct _Bit_count {
   static unsigned char _S_bit_count[256];
 };
 
 // Mapping from 8 bit unsigned integers to the index of the first one
 // bit:
-template<bool __dummy>
+template<bool __dummy> 
 struct _First_one {
   static unsigned char _S_first_one[256];
 };
@@ -69,26 +69,26 @@ struct _First_one {
 // Base class: general case.
 //
 
-template<size_t _Nw, class _WordT>
+template<size_t _Nw>
 struct _Base_bitset {
+  typedef unsigned long _WordT;
+
   _WordT _M_w[_Nw];                // 0 is the least significant word.
 
   _Base_bitset( void ) { _M_do_reset(); }
+  _Base_bitset(unsigned long __val) {
+    _M_do_reset();
+    _M_w[0] = __val;
+  }
 
-  _Base_bitset(unsigned long __val);
-
-  static size_t _S_whichword( size_t __pos ) {
-    return __pos / __BITS_PER_WORDT(_WordT);
-  }
-  static size_t _S_whichbyte( size_t __pos ) {
-    return (__pos % __BITS_PER_WORDT(_WordT)) / CHAR_BIT;
-  }
-  static size_t _S_whichbit( size_t __pos ) {
-    return __pos % __BITS_PER_WORDT(_WordT);
-  }
-  static _WordT _S_maskbit( size_t __pos ) {
-    return (static_cast<_WordT>(1)) << _S_whichbit(__pos);
-  }
+  static size_t _S_whichword( size_t __pos )
+    { return __pos / __BITS_PER_WORD; }
+  static size_t _S_whichbyte( size_t __pos )
+    { return (__pos % __BITS_PER_WORD) / CHAR_BIT; }
+  static size_t _S_whichbit( size_t __pos )
+    { return __pos % __BITS_PER_WORD; }
+  static _WordT _S_maskbit( size_t __pos )
+    { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
 
   _WordT& _M_getword(size_t __pos)       { return _M_w[_S_whichword(__pos)]; }
   _WordT  _M_getword(size_t __pos) const { return _M_w[_S_whichword(__pos)]; }
@@ -96,26 +96,25 @@ struct _Base_bitset {
   _WordT& _M_hiword()       { return _M_w[_Nw - 1]; }
   _WordT  _M_hiword() const { return _M_w[_Nw - 1]; }
 
-  void _M_do_and(const _Base_bitset<_Nw,_WordT>& __x) {
+  void _M_do_and(const _Base_bitset<_Nw>& __x) {
     for ( size_t __i = 0; __i < _Nw; __i++ ) {
       _M_w[__i] &= __x._M_w[__i];
     }
   }
 
-  void _M_do_or(const _Base_bitset<_Nw,_WordT>& __x) {
+  void _M_do_or(const _Base_bitset<_Nw>& __x) {
     for ( size_t __i = 0; __i < _Nw; __i++ ) {
       _M_w[__i] |= __x._M_w[__i];
     }
   }
 
-  void _M_do_xor(const _Base_bitset<_Nw,_WordT>& __x) {
+  void _M_do_xor(const _Base_bitset<_Nw>& __x) {
     for ( size_t __i = 0; __i < _Nw; __i++ ) {
       _M_w[__i] ^= __x._M_w[__i];
     }
   }
 
   void _M_do_left_shift(size_t __shift);
-
   void _M_do_right_shift(size_t __shift);
 
   void _M_do_flip() {
@@ -130,13 +129,9 @@ struct _Base_bitset {
     }
   }
 
-  void _M_do_reset() {
-    for ( size_t __i = 0; __i < _Nw; __i++ ) {
-      _M_w[__i] = 0;
-    }
-  }
+  void _M_do_reset() { memset(_M_w, 0, _Nw * sizeof(_WordT)); }
 
-  bool _M_is_equal(const _Base_bitset<_Nw,_WordT>& __x) const {
+  bool _M_is_equal(const _Base_bitset<_Nw>& __x) const {
     for (size_t __i = 0; __i < _Nw; ++__i) {
       if (_M_w[__i] != __x._M_w[__i])
         return false;
@@ -145,7 +140,7 @@ struct _Base_bitset {
   }
 
   bool _M_is_any() const {
-    for ( size_t __i = 0; __i < __BITSET_WORDS(_Nw,_WordT); __i++ ) {
+    for ( size_t __i = 0; __i < _Nw; __i++ ) {
       if ( _M_w[__i] != static_cast<_WordT>(0) )
         return true;
     }
@@ -164,7 +159,7 @@ struct _Base_bitset {
     return __result;
   }
 
-  unsigned long _M_do_to_ulong() const;
+  unsigned long _M_do_to_ulong() const; 
 
   // find first "on" bit
   size_t _M_do_find_first(size_t __not_found) const;
@@ -175,107 +170,67 @@ struct _Base_bitset {
 
 //
 // Definitions of non-inline functions from _Base_bitset.
-//
+// 
 
-template<size_t _Nw, class _WordT>
-_Base_bitset<_Nw, _WordT>::_Base_bitset(unsigned long __val)
-{
-  _M_do_reset();
-  const size_t __n = min(sizeof(unsigned long)*CHAR_BIT,
-                         __BITS_PER_WORDT(_WordT)*_Nw);
-  for(size_t __i = 0; __i < __n; ++__i, __val >>= 1)
-    if ( __val & 0x1 )
-      _M_getword(__i) |= _S_maskbit(__i);
-}
-
-template<size_t _Nw, class _WordT>
-void _Base_bitset<_Nw, _WordT>::_M_do_left_shift(size_t __shift)
+template<size_t _Nw>
+void _Base_bitset<_Nw>::_M_do_left_shift(size_t __shift) 
 {
   if (__shift != 0) {
-    const size_t __wshift = __shift / __BITS_PER_WORDT(_WordT);
-    const size_t __offset = __shift % __BITS_PER_WORDT(_WordT);
-    const size_t __sub_offset = __BITS_PER_WORDT(_WordT) - __offset;
-    const _WordT __mask = __offset == static_cast<size_t>(0) ?
-			  static_cast<_WordT>(0) :
-			  ~static_cast<_WordT>(0);
-    size_t __n = _Nw - 1;
-    for ( ; __n > __wshift; --__n)
-      _M_w[__n] = (_M_w[__n - __wshift] << __offset) |
-		((_M_w[__n - __wshift - 1] >> __sub_offset) & __mask);
-    if (__n == __wshift)
-      _M_w[__n] = _M_w[0] << __offset;
-    for (size_t __n1 = 0; __n1 < __n; ++__n1)
-      _M_w[__n1] = static_cast<_WordT>(0);
+    const size_t __wshift = __shift / __BITS_PER_WORD;
+    const size_t __offset = __shift % __BITS_PER_WORD;
+
+    if (__offset == 0)
+      for (size_t __n = _Nw - 1; __n >= __wshift; --__n)
+        _M_w[__n] = _M_w[__n - __wshift];
+
+    else {
+      const size_t __sub_offset = __BITS_PER_WORD - __offset;
+      for (size_t __n = _Nw - 1; __n > __wshift; --__n)
+        _M_w[__n] = (_M_w[__n - __wshift] << __offset) | 
+                    (_M_w[__n - __wshift - 1] >> __sub_offset);
+      _M_w[__wshift] = _M_w[0] << __offset;
+    }
+
+    fill(_M_w + 0, _M_w + __wshift, static_cast<_WordT>(0));
   }
 }
 
-template<size_t _Nw, class _WordT>
-void _Base_bitset<_Nw, _WordT>::_M_do_right_shift(size_t __shift)
+template<size_t _Nw>
+void _Base_bitset<_Nw>::_M_do_right_shift(size_t __shift) 
 {
   if (__shift != 0) {
-    const size_t __wshift = __shift / __BITS_PER_WORDT(_WordT);
-    const size_t __offset = __shift % __BITS_PER_WORDT(_WordT);
-    const size_t __sub_offset = __BITS_PER_WORDT(_WordT) - __offset;
-    const _WordT __mask = __offset == static_cast<size_t>(0) ?
-			  static_cast<_WordT>(0) :
-			  ~static_cast<_WordT>(0);
+    const size_t __wshift = __shift / __BITS_PER_WORD;
+    const size_t __offset = __shift % __BITS_PER_WORD;
     const size_t __limit = _Nw - __wshift - 1;
-    size_t __n = 0;
-    for ( ; __n < __limit; ++__n)
-      _M_w[__n] = (_M_w[__n + __wshift] >> __offset) |
-		  ((_M_w[__n + __wshift + 1] << __sub_offset) & __mask);
-    _M_w[__limit] = _M_w[_Nw-1] >> __offset;
-    for (size_t __n1 = __limit + 1; __n1 < _Nw; ++__n1)
-      _M_w[__n1] = static_cast<_WordT>(0);
+
+    if (__offset == 0)
+      for (size_t __n = 0; __n <= __limit; ++__n)
+        _M_w[__n] = _M_w[__n + __wshift];
+
+    else {
+      const size_t __sub_offset = __BITS_PER_WORD - __offset;
+      for (size_t __n = 0; __n < __limit; ++__n)
+        _M_w[__n] = (_M_w[__n + __wshift] >> __offset) |
+                    (_M_w[__n + __wshift + 1] << __sub_offset);
+      _M_w[__limit] = _M_w[_Nw-1] >> __offset;
+    }
+
+    fill(_M_w + __limit + 1, _M_w + _Nw, static_cast<_WordT>(0));
   }
 }
 
-template<size_t _Nw, class _WordT>
-unsigned long _Base_bitset<_Nw, _WordT>::_M_do_to_ulong() const
+template<size_t _Nw>
+unsigned long _Base_bitset<_Nw>::_M_do_to_ulong() const
 {
-  if (sizeof(_WordT) >= sizeof(unsigned long)) {
-    for (size_t __i = 1; __i < _Nw; ++__i)
-      if (_M_w[__i])
-        __STL_THROW(overflow_error("bitset"));
-
-    const _WordT __mask = static_cast<_WordT>(static_cast<unsigned long>(-1));
-    if (_M_w[0] & ~__mask)
+  for (size_t __i = 1; __i < _Nw; ++__i) 
+    if (_M_w[__i]) 
       __STL_THROW(overflow_error("bitset"));
+  
+  return _M_w[0];
+}
 
-    return static_cast<unsigned long>(_M_w[0] & __mask);
-  }
-  else {                      // sizeof(_WordT) < sizeof(unsigned long).
-    const size_t __nwords =
-      (sizeof(unsigned long) + sizeof(_WordT) - 1) / sizeof(_WordT);
-
-    size_t __min_nwords = __nwords;
-    if (_Nw > __nwords) {
-      for (size_t __i = __nwords; __i < _Nw; ++__i)
-        if (_M_w[__i])
-          __STL_THROW(overflow_error("bitset"));
-    }
-    else
-      __min_nwords = _Nw;
-
-    // If unsigned long is 8 bytes and _WordT is 6 bytes, then an unsigned
-    // long consists of all of one word plus 2 bytes from another word.
-    const size_t __part = sizeof(unsigned long) % sizeof(_WordT);
-
-    if (__part != 0 && __nwords <= _Nw &&
-        (_M_w[__min_nwords - 1] >> ((sizeof(_WordT) - __part) * CHAR_BIT)) != 0)
-      __STL_THROW(overflow_error("bitset"));
-
-    unsigned long __result = 0;
-    for (size_t __i = 0; __i < __min_nwords; ++__i) {
-      __result |= static_cast<unsigned long>(
-         _M_w[__i]) << (__i * sizeof(_WordT) * CHAR_BIT);
-    }
-    return __result;
-  }
-} // End _M_do_to_ulong
-
-template<size_t _Nw, class _WordT>
-size_t _Base_bitset<_Nw, _WordT>::_M_do_find_first(size_t __not_found) const
+template<size_t _Nw>
+size_t _Base_bitset<_Nw>::_M_do_find_first(size_t __not_found) const 
 {
   for ( size_t __i = 0; __i < _Nw; __i++ ) {
     _WordT __thisword = _M_w[__i];
@@ -285,7 +240,7 @@ size_t _Base_bitset<_Nw, _WordT>::_M_do_find_first(size_t __not_found) const
         unsigned char __this_byte
           = static_cast<unsigned char>(__thisword & (~(unsigned char)0));
         if ( __this_byte )
-          return __i*__BITS_PER_WORDT(_WordT) + __j*CHAR_BIT +
+          return __i*__BITS_PER_WORD + __j*CHAR_BIT +
             _First_one<true>::_S_first_one[__this_byte];
 
         __thisword >>= CHAR_BIT;
@@ -296,16 +251,15 @@ size_t _Base_bitset<_Nw, _WordT>::_M_do_find_first(size_t __not_found) const
   return __not_found;
 }
 
-template<size_t _Nw, class _WordT>
+template<size_t _Nw>
 size_t
-_Base_bitset<_Nw, _WordT>::_M_do_find_next(size_t __prev,
-                                           size_t __not_found) const
+_Base_bitset<_Nw>::_M_do_find_next(size_t __prev, size_t __not_found) const
 {
   // make bound inclusive
   ++__prev;
 
   // check out of bounds
-  if ( __prev >= _Nw * __BITS_PER_WORDT(_WordT) )
+  if ( __prev >= _Nw * __BITS_PER_WORD )
     return __not_found;
 
     // search first word
@@ -323,7 +277,7 @@ _Base_bitset<_Nw, _WordT>::_M_do_find_next(size_t __prev,
       unsigned char __this_byte
         = static_cast<unsigned char>(__thisword & (~(unsigned char)0));
       if ( __this_byte )
-        return __i*__BITS_PER_WORDT(_WordT) + __j*CHAR_BIT +
+        return __i*__BITS_PER_WORD + __j*CHAR_BIT +
           _First_one<true>::_S_first_one[__this_byte];
 
       __thisword >>= CHAR_BIT;
@@ -340,7 +294,7 @@ _Base_bitset<_Nw, _WordT>::_M_do_find_next(size_t __prev,
         unsigned char __this_byte
           = static_cast<unsigned char>(__thisword & (~(unsigned char)0));
         if ( __this_byte )
-          return __i*__BITS_PER_WORDT(_WordT) + __j*CHAR_BIT +
+          return __i*__BITS_PER_WORD + __j*CHAR_BIT +
             _First_one<true>::_S_first_one[__this_byte];
 
         __thisword >>= CHAR_BIT;
@@ -359,28 +313,21 @@ _Base_bitset<_Nw, _WordT>::_M_do_find_next(size_t __prev,
 // Base class: specialization for a single word.
 //
 
-#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
-
-template<class _WordT>
-struct _Base_bitset<1, _WordT> {
+__STL_TEMPLATE_NULL struct _Base_bitset<1> {
+  typedef unsigned long _WordT;
   _WordT _M_w;
 
-  _Base_bitset( void ) { _M_do_reset(); }
+  _Base_bitset( void ) : _M_w(0) {}
+  _Base_bitset(unsigned long __val) : _M_w(__val) {}
 
-  _Base_bitset(unsigned long __val);
-
-  static size_t _S_whichword( size_t __pos ) {
-    return __pos / __BITS_PER_WORDT(_WordT);
-  }
-  static size_t _S_whichbyte( size_t __pos ) {
-    return (__pos % __BITS_PER_WORDT(_WordT)) / CHAR_BIT;
-  }
-  static size_t _S_whichbit( size_t __pos ) {
-    return __pos % __BITS_PER_WORDT(_WordT);
-  }
-  static _WordT _S_maskbit( size_t __pos ) {
-    return (static_cast<_WordT>(1)) << _S_whichbit(__pos);
-  }
+  static size_t _S_whichword( size_t __pos )
+    { return __pos / __BITS_PER_WORD; }
+  static size_t _S_whichbyte( size_t __pos )
+    { return (__pos % __BITS_PER_WORD) / CHAR_BIT; }
+  static size_t _S_whichbit( size_t __pos )
+    {  return __pos % __BITS_PER_WORD; }
+  static _WordT _S_maskbit( size_t __pos )
+    { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
 
   _WordT& _M_getword(size_t)       { return _M_w; }
   _WordT  _M_getword(size_t) const { return _M_w; }
@@ -388,26 +335,25 @@ struct _Base_bitset<1, _WordT> {
   _WordT& _M_hiword()       { return _M_w; }
   _WordT  _M_hiword() const { return _M_w; }
 
-  void _M_do_and(const _Base_bitset<1,_WordT>& __x) { _M_w &= __x._M_w; }
-  void _M_do_or(const _Base_bitset<1,_WordT>& __x)  { _M_w |= __x._M_w; }
-  void _M_do_xor(const _Base_bitset<1,_WordT>& __x) { _M_w ^= __x._M_w; }
+  void _M_do_and(const _Base_bitset<1>& __x) { _M_w &= __x._M_w; }
+  void _M_do_or(const _Base_bitset<1>& __x)  { _M_w |= __x._M_w; }
+  void _M_do_xor(const _Base_bitset<1>& __x) { _M_w ^= __x._M_w; }
   void _M_do_left_shift(size_t __shift)     { _M_w <<= __shift; }
   void _M_do_right_shift(size_t __shift)    { _M_w >>= __shift; }
   void _M_do_flip()                       { _M_w = ~_M_w; }
   void _M_do_set()                        { _M_w = ~static_cast<_WordT>(0); }
   void _M_do_reset()                      { _M_w = 0; }
 
-  bool _M_is_equal(const _Base_bitset<1,_WordT>& __x) const {
-    return _M_w == __x._M_w;
-  }
-  bool _M_is_any() const {
-    return _M_w != 0;
-  }
+  bool _M_is_equal(const _Base_bitset<1>& __x) const
+    { return _M_w == __x._M_w; }
+  bool _M_is_any() const
+    { return _M_w != 0; }
 
   size_t _M_do_count() const {
     size_t __result = 0;
     const unsigned char* __byte_ptr = (const unsigned char*)&_M_w;
-    const unsigned char* __end_ptr = ((const unsigned char*)&_M_w)+sizeof(_M_w);
+    const unsigned char* __end_ptr
+      = ((const unsigned char*)&_M_w)+sizeof(_M_w);
     while ( __byte_ptr < __end_ptr ) {
       __result += _Bit_count<true>::_S_bit_count[*__byte_ptr];
       __byte_ptr++;
@@ -415,21 +361,12 @@ struct _Base_bitset<1, _WordT> {
     return __result;
   }
 
-  unsigned long _M_do_to_ulong() const {
-    if (sizeof(_WordT) <= sizeof(unsigned long))
-        return static_cast<unsigned long>(_M_w);
-    else {
-      const _WordT __mask = static_cast<_WordT>(static_cast<unsigned long>(-1));
-      if (_M_w & ~__mask)
-        __STL_THROW(overflow_error("bitset"));
-      return static_cast<unsigned long>(_M_w);
-    }
-  }
+  unsigned long _M_do_to_ulong() const { return _M_w; }
 
   size_t _M_do_find_first(size_t __not_found) const;
 
   // find the next "on" bit that follows "prev"
-  size_t _M_do_find_next(size_t __prev, size_t __not_found) const;
+  size_t _M_do_find_next(size_t __prev, size_t __not_found) const; 
 
 };
 
@@ -438,19 +375,7 @@ struct _Base_bitset<1, _WordT> {
 //  _Base_bitset.
 //
 
-template <class _WordT>
-_Base_bitset<1, _WordT>::_Base_bitset(unsigned long __val)
-{
-  _M_do_reset();
-  const size_t __n = min(sizeof(unsigned long)*CHAR_BIT,
-                         __BITS_PER_WORDT(_WordT)*_Nw);
-  for(size_t __i = 0; __i < __n; ++__i, __val >>= 1)
-    if ( __val & 0x1 )
-      _M_w |= _S_maskbit(__i);
-}
-
-template <class _WordT>
-size_t _Base_bitset<1, _WordT>::_M_do_find_first(size_t __not_found) const
+size_t _Base_bitset<1>::_M_do_find_first(size_t __not_found) const
 {
   _WordT __thisword = _M_w;
 
@@ -469,16 +394,13 @@ size_t _Base_bitset<1, _WordT>::_M_do_find_first(size_t __not_found) const
   return __not_found;
 }
 
-template <class _WordT>
-size_t
-_Base_bitset<1, _WordT>::_M_do_find_next(size_t __prev,
-                                         size_t __not_found ) const
+size_t _Base_bitset<1>::_M_do_find_next(size_t __prev, size_t __not_found ) const
 {
   // make bound inclusive
   ++__prev;
 
   // check out of bounds
-  if ( __prev >= __BITS_PER_WORDT(_WordT) )
+  if ( __prev >= __BITS_PER_WORD )
     return __not_found;
 
     // search first (and only) word
@@ -505,89 +427,35 @@ _Base_bitset<1, _WordT>::_M_do_find_next(size_t __prev,
   return __not_found;
 } // end _M_do_find_next
 
-//
-// One last specialization: _M_do_to_ulong() and the constructor from
-// unsigned long are very simple if the bitset consists of a single
-// word of type unsigned long.
-//
-
-__STL_TEMPLATE_NULL
-inline unsigned long
-_Base_bitset<1, unsigned long>::_M_do_to_ulong() const { return _M_w; }
-
-__STL_TEMPLATE_NULL
-inline _Base_bitset<1, unsigned long>::_Base_bitset(unsigned long __val) {
-  _M_w = __val;
-}
-
-#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 // ------------------------------------------------------------
 // Helper class to zero out the unused high-order bits in the highest word.
 
-#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
-
-template <class _WordT, size_t _Extrabits> struct _Sanitize {
-  static void _M_do_sanitize(_WordT& __val)
-    { __val &= ~((~static_cast<_WordT>(0)) << _Extrabits); }
+template <size_t _Extrabits> struct _Sanitize {
+  static void _M_do_sanitize(unsigned long& __val)
+    { __val &= ~((~static_cast<unsigned long>(0)) << _Extrabits); }
 };
 
-template <class _WordT> struct _Sanitize<_WordT, 0> {
-  static void _M_do_sanitize(_WordT) {}
+__STL_TEMPLATE_NULL struct _Sanitize<0> {
+  static void _M_do_sanitize(unsigned long) {}
 };
 
-#else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
- 
-template <class _WordT, size_t _Extrabits> struct _Sanitize {
-  static void _M_do_sanitize(_WordT& __val) {
-    if (_Extrabits != 0)
-      __val &= ~((~static_cast<_WordT>(0)) << _Extrabits);
-  }
-};
- 
-#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
+
 
 // ------------------------------------------------------------
 // Class bitset.
 //   _Nb may be any nonzero number of type size_t.
-//   Type _WordT may be any unsigned integral type.
 
-template<size_t _Nb, class _WordT = unsigned long>
-class bitset : private _Base_bitset<__BITSET_WORDS(_Nb,_WordT), _WordT>
+template<size_t _Nb>
+class bitset : private _Base_bitset<__BITSET_WORDS(_Nb)>
 {
 private:
-  typedef _Base_bitset<__BITSET_WORDS(_Nb,_WordT), _WordT> _Base;
-
-  // Import base's protected interface.  Necessary because of new template
-  // name resolution rules.
-
-#ifdef __STL_HAS_NAMESPACES
-  using _Base::_S_whichword;
-  using _Base::_S_whichbyte;
-  using _Base::_S_whichbit;
-  using _Base::_S_maskbit;
-  using _Base::_M_getword;
-  using _Base::_M_hiword;
-  using _Base::_M_do_and;
-  using _Base::_M_do_or;
-  using _Base::_M_do_xor;
-  using _Base::_M_do_left_shift;
-  using _Base::_M_do_right_shift;
-  using _Base::_M_do_flip;
-  using _Base::_M_do_set;
-  using _Base::_M_do_reset;
-  using _Base::_M_is_equal;
-  using _Base::_M_is_any;
-  using _Base::_M_do_count;
-  using _Base::_M_do_to_ulong;
-  using _Base::_M_do_find_first;
-  using _Base::_M_do_find_next;
-#endif /* __STL_HAS_NAMESPACES */
+  typedef _Base_bitset<__BITSET_WORDS(_Nb)> _Base;
+  typedef unsigned long _WordT;
 
 private:
   void _M_do_sanitize() {
-    _Sanitize<_WordT,_Nb%__BITS_PER_WORDT(_WordT) >
-      ::_M_do_sanitize(_M_hiword());
+    _Sanitize<_Nb%__BITS_PER_WORD>::_M_do_sanitize(this->_M_hiword());
   }
 
 public:
@@ -595,7 +463,7 @@ public:
   // bit reference:
   class reference;
   friend class reference;
-  
+
   class reference {
     friend class bitset;
 
@@ -608,7 +476,7 @@ public:
   public:
     reference( bitset& __b, size_t __pos ) {
       _M_wp = &__b._M_getword(__pos);
-      _M_bpos = _S_whichbit(__pos);
+      _M_bpos = _Base::_S_whichbit(__pos);
     }
 
     ~reference() {}
@@ -616,101 +484,101 @@ public:
     // for b[i] = __x;
     reference& operator=(bool __x) {
       if ( __x )
-        *_M_wp |= _S_maskbit(_M_bpos);
+        *_M_wp |= _Base::_S_maskbit(_M_bpos);
       else
-        *_M_wp &= ~_S_maskbit(_M_bpos);
+        *_M_wp &= ~_Base::_S_maskbit(_M_bpos);
 
       return *this;
     }
 
     // for b[i] = b[__j];
     reference& operator=(const reference& __j) {
-      if ( (*(__j._M_wp) & _S_maskbit(__j._M_bpos)) )
-        *_M_wp |= _S_maskbit(_M_bpos);
+      if ( (*(__j._M_wp) & _Base::_S_maskbit(__j._M_bpos)) )
+        *_M_wp |= _Base::_S_maskbit(_M_bpos);
       else
-        *_M_wp &= ~_S_maskbit(_M_bpos);
+        *_M_wp &= ~_Base::_S_maskbit(_M_bpos);
 
       return *this;
     }
 
     // flips the bit
-    bool operator~() const { return (*(_M_wp) & _S_maskbit(_M_bpos)) == 0; }
+    bool operator~() const
+      { return (*(_M_wp) & _Base::_S_maskbit(_M_bpos)) == 0; }
 
     // for __x = b[i];
-    operator bool() const { return (*(_M_wp) & _S_maskbit(_M_bpos)) != 0; }
+    operator bool() const
+      { return (*(_M_wp) & _Base::_S_maskbit(_M_bpos)) != 0; }
 
     // for b[i].flip();
     reference& flip() {
-      *_M_wp ^= _S_maskbit(_M_bpos);
+      *_M_wp ^= _Base::_S_maskbit(_M_bpos);
       return *this;
     }
   };
 
   // 23.3.5.1 constructors:
   bitset() {}
-  bitset(unsigned long __val) :
-    _Base_bitset<__BITSET_WORDS(_Nb,_WordT), _WordT>(__val) {}
+  bitset(unsigned long __val) : _Base_bitset<__BITSET_WORDS(_Nb)>(__val) 
+    { _M_do_sanitize(); }
 
 #ifdef __STL_MEMBER_TEMPLATES
   template<class _CharT, class _Traits, class _Alloc>
-  explicit bitset(const basic_string<_CharT,_Traits,_Alloc>& __s,
+  explicit bitset(const basic_string<_CharT, _Traits, _Alloc>& __s,
                   size_t __pos = 0)
-    : _Base()
+    : _Base() 
   {
-    if (__pos > __s.size())
+    if (__pos > __s.size()) 
       __STL_THROW(out_of_range("bitset"));
-    _M_copy_from_string(__s, __pos, 
-		        basic_string<_CharT,_Traits,_Alloc>::npos);
+    _M_copy_from_string(__s, __pos,
+                        basic_string<_CharT, _Traits, _Alloc>::npos);
   }
-
   template<class _CharT, class _Traits, class _Alloc>
-    bitset(const basic_string<_CharT, _Traits, _Alloc>& __s,
-	   size_t __pos,
-	   size_t __n)
+  bitset(const basic_string<_CharT, _Traits, _Alloc>& __s,
+         size_t __pos,
+         size_t __n)
     : _Base() 
-    {
-      if (__pos > __s.size()) 
-	__STL_THROW(out_of_range("bitset"));
-      _M_copy_from_string(__s, __pos, __n);
-    }
-#else 
+  {
+    if (__pos > __s.size()) 
+      __STL_THROW(out_of_range("bitset"));
+    _M_copy_from_string(__s, __pos, __n);
+  }
+#else /* __STL_MEMBER_TEMPLATES */
   explicit bitset(const basic_string<char>& __s,
-		  size_t __pos = 0,
-		  size_t __n = basic_string<char>::npos) 
+                  size_t __pos = 0,
+                  size_t __n = basic_string<char>::npos) 
     : _Base() 
-    {
-      if (__pos > __s.size()) 
-        __STL_THROW(out_of_range("bitset"));
-      _M_copy_from_string(__s, __pos, __n);
-    }
-
+  {
+    if (__pos > __s.size()) 
+      __STL_THROW(out_of_range("bitset"));
+    _M_copy_from_string(__s, __pos, __n);
+  }
 #endif /* __STL_MEMBER_TEMPLATES */
 
   // 23.3.5.2 bitset operations:
-  bitset<_Nb,_WordT>& operator&=(const bitset<_Nb,_WordT>& __rhs) {
-    _M_do_and(__rhs);
+  bitset<_Nb>& operator&=(const bitset<_Nb>& __rhs) {
+    this->_M_do_and(__rhs);
     return *this;
   }
 
-  bitset<_Nb,_WordT>& operator|=(const bitset<_Nb,_WordT>& __rhs) {
-    _M_do_or(__rhs);
+  bitset<_Nb>& operator|=(const bitset<_Nb>& __rhs) {
+    this->_M_do_or(__rhs);
     return *this;
   }
 
-  bitset<_Nb,_WordT>& operator^=(const bitset<_Nb,_WordT>& __rhs) {
-    _M_do_xor(__rhs);
+  bitset<_Nb>& operator^=(const bitset<_Nb>& __rhs) {
+    this->_M_do_xor(__rhs);
     return *this;
   }
 
-  bitset<_Nb,_WordT>& operator<<=(size_t __pos) {
-    _M_do_left_shift(__pos);
-    _M_do_sanitize();
+  bitset<_Nb>& operator<<=(size_t __pos) {
+    this->_M_do_left_shift(__pos);
+    this->_M_do_sanitize();
     return *this;
   }
 
-  bitset<_Nb,_WordT>& operator>>=(size_t __pos) {
-    _M_do_right_shift(__pos);
-    _M_do_sanitize();
+  bitset<_Nb>& operator>>=(size_t __pos) {
+    this->_M_do_right_shift(__pos);
+    this->_M_do_sanitize();
     return *this;
   }
 
@@ -719,83 +587,84 @@ public:
   // Versions of single-bit set, reset, flip, test with no range checking.
   //
 
-  bitset<_Nb,_WordT>& _Unchecked_set(size_t __pos) {
-    _M_getword(__pos) |= _S_maskbit(__pos);
+  bitset<_Nb>& _Unchecked_set(size_t __pos) {
+    this->_M_getword(__pos) |= _Base::_S_maskbit(__pos);
     return *this;
   }
 
-  bitset<_Nb,_WordT>& _Unchecked_set(size_t __pos, int __val) {
+  bitset<_Nb>& _Unchecked_set(size_t __pos, int __val) {
     if (__val)
-      _M_getword(__pos) |= _S_maskbit(__pos);
+      this->_M_getword(__pos) |= _Base::_S_maskbit(__pos);
     else
-      _M_getword(__pos) &= ~_S_maskbit(__pos);
+      this->_M_getword(__pos) &= ~_Base::_S_maskbit(__pos);
 
     return *this;
   }
 
-  bitset<_Nb,_WordT>& _Unchecked_reset(size_t __pos) {
-    _M_getword(__pos) &= ~_S_maskbit(__pos);
+  bitset<_Nb>& _Unchecked_reset(size_t __pos) {
+    this->_M_getword(__pos) &= ~_Base::_S_maskbit(__pos);
     return *this;
   }
 
-  bitset<_Nb,_WordT>& _Unchecked_flip(size_t __pos) {
-    _M_getword(__pos) ^= _S_maskbit(__pos);
+  bitset<_Nb>& _Unchecked_flip(size_t __pos) {
+    this->_M_getword(__pos) ^= _Base::_S_maskbit(__pos);
     return *this;
   }
 
   bool _Unchecked_test(size_t __pos) const {
-    return (_M_getword(__pos) & _S_maskbit(__pos)) != static_cast<_WordT>(0);
+    return (this->_M_getword(__pos) & _Base::_S_maskbit(__pos))
+      != static_cast<_WordT>(0);
   }
 
   // Set, reset, and flip.
 
-  bitset<_Nb,_WordT>& set() {
-    _M_do_set();
-    _M_do_sanitize();
+  bitset<_Nb>& set() {
+    this->_M_do_set();
+    this->_M_do_sanitize();
     return *this;
   }
 
-  bitset<_Nb,_WordT>& set(size_t __pos) {
+  bitset<_Nb>& set(size_t __pos) {
     if (__pos >= _Nb)
       __STL_THROW(out_of_range("bitset"));
 
     return _Unchecked_set(__pos);
   }
 
-  bitset<_Nb,_WordT>& set(size_t __pos, int __val) {
+  bitset<_Nb>& set(size_t __pos, int __val) {
     if (__pos >= _Nb)
       __STL_THROW(out_of_range("bitset"));
 
     return _Unchecked_set(__pos, __val);
   }
 
-  bitset<_Nb,_WordT>& reset() {
-    _M_do_reset();
+  bitset<_Nb>& reset() {
+    this->_M_do_reset();
     return *this;
   }
 
-  bitset<_Nb,_WordT>& reset(size_t __pos) {
+  bitset<_Nb>& reset(size_t __pos) {
     if (__pos >= _Nb)
       __STL_THROW(out_of_range("bitset"));
 
     return _Unchecked_reset(__pos);
   }
 
-  bitset<_Nb,_WordT>& flip() {
-    _M_do_flip();
-    _M_do_sanitize();
+  bitset<_Nb>& flip() {
+    this->_M_do_flip();
+    this->_M_do_sanitize();
     return *this;
   }
 
-  bitset<_Nb,_WordT>& flip(size_t __pos) {
+  bitset<_Nb>& flip(size_t __pos) {
     if (__pos >= _Nb)
       __STL_THROW(out_of_range("bitset"));
 
     return _Unchecked_flip(__pos);
   }
 
-  bitset<_Nb,_WordT> operator~() const {
-    return bitset<_Nb,_WordT>(*this).flip();
+  bitset<_Nb> operator~() const { 
+    return bitset<_Nb>(*this).flip();
   }
 
   // element access:
@@ -803,23 +672,20 @@ public:
   reference operator[](size_t __pos) { return reference(*this,__pos); }
   bool operator[](size_t __pos) const { return _Unchecked_test(__pos); }
 
-  unsigned long to_ulong() const { return _M_do_to_ulong(); }
+  unsigned long to_ulong() const { return this->_M_do_to_ulong(); }
 
-#if  defined(__STL_MEMBER_TEMPLATES) && \
-     defined(__STL_EXPLICIT_FUNCTION_TMPL_ARGS)
-
+#if defined(__STL_MEMBER_TEMPLATES) && \
+    defined(__STL_EXPLICIT_FUNCTION_TMPL_ARGS)
   template <class _CharT, class _Traits, class _Alloc>
   basic_string<_CharT, _Traits, _Alloc> to_string() const {
     basic_string<_CharT, _Traits, _Alloc> __result;
     _M_copy_to_string(__result);
     return __result;
   }
-
 #endif /* member templates and explicit function template args */
 
   // Helper functions for string operations.
 #ifdef __STL_MEMBER_TEMPLATES
-
   template<class _CharT, class _Traits, class _Alloc>
   void _M_copy_from_string(const basic_string<_CharT,_Traits,_Alloc>& __s,
                           size_t,
@@ -827,23 +693,20 @@ public:
 
   template<class _CharT, class _Traits, class _Alloc>
   void _M_copy_to_string(basic_string<_CharT,_Traits,_Alloc>&) const;
-
 #else /* __STL_MEMBER_TEMPLATES */
-
   void _M_copy_from_string(const basic_string<char>&, size_t, size_t);
   void _M_copy_to_string(basic_string<char>&) const;
-
 #endif /* __STL_MEMBER_TEMPLATES */
 
-  size_t count() const { return _M_do_count(); }
+  size_t count() const { return this->_M_do_count(); }
 
   size_t size() const { return _Nb; }
 
-  bool operator==(const bitset<_Nb,_WordT>& __rhs) const {
-    return _M_is_equal(__rhs);
+  bool operator==(const bitset<_Nb>& __rhs) const {
+    return this->_M_is_equal(__rhs);
   }
-  bool operator!=(const bitset<_Nb,_WordT>& __rhs) const {
-    return !_M_is_equal(__rhs);
+  bool operator!=(const bitset<_Nb>& __rhs) const {
+    return !this->_M_is_equal(__rhs);
   }
 
   bool test(size_t __pos) const {
@@ -853,27 +716,27 @@ public:
     return _Unchecked_test(__pos);
   }
 
-  bool any() const { return _M_is_any(); }
-  bool none() const { return !_M_is_any(); }
+  bool any() const { return this->_M_is_any(); }
+  bool none() const { return !this->_M_is_any(); }
 
-  bitset<_Nb,_WordT> operator<<(size_t __pos) const
-    { return bitset<_Nb,_WordT>(*this) <<= __pos; }
-  bitset<_Nb,_WordT> operator>>(size_t __pos) const
-    { return bitset<_Nb,_WordT>(*this) >>= __pos; }
+  bitset<_Nb> operator<<(size_t __pos) const
+    { return bitset<_Nb>(*this) <<= __pos; }
+  bitset<_Nb> operator>>(size_t __pos) const
+    { return bitset<_Nb>(*this) >>= __pos; }
 
   //
   // EXTENSIONS: bit-find operations.  These operations are
   // experimental, and are subject to change or removal in future
   // versions.
-  //
+  // 
 
   // find the index of the first "on" bit
-  size_t _Find_first() const
-    { return _M_do_find_first(_Nb); }
+  size_t _Find_first() const 
+    { return this->_M_do_find_first(_Nb); }
 
   // find the index of the next "on" bit after prev
-  size_t _Find_next( size_t __prev ) const
-    { return _M_do_find_next(__prev, _Nb); }
+  size_t _Find_next( size_t __prev ) const 
+    { return this->_M_do_find_next(__prev, _Nb); }
 
 };
 
@@ -883,9 +746,9 @@ public:
 
 #ifdef __STL_MEMBER_TEMPLATES
 
-template <size_t _Nb, class _WordT>
+template <size_t _Nb>
 template<class _CharT, class _Traits, class _Alloc>
-void bitset<_Nb, _WordT>
+void bitset<_Nb>
   ::_M_copy_from_string(const basic_string<_CharT,_Traits,_Alloc>& __s,
                         size_t __pos,
                         size_t __n)
@@ -905,23 +768,23 @@ void bitset<_Nb, _WordT>
   }
 }
 
-template <size_t _Nb, class _WordT>
+template <size_t _Nb>
 template <class _CharT, class _Traits, class _Alloc>
-void bitset<_Nb, _WordT>
+void bitset<_Nb>
   ::_M_copy_to_string(basic_string<_CharT, _Traits, _Alloc>& __s) const
 {
   __s.assign(_Nb, '0');
-
-  for (size_t __i = 0; __i < _Nb; ++__i)
+  
+  for (size_t __i = 0; __i < _Nb; ++__i) 
     if (_Unchecked_test(__i))
       __s[_Nb - 1 - __i] = '1';
 }
 
 #else /* __STL_MEMBER_TEMPLATES */
- 
-template <size_t _Nb, class _WordT>
-void bitset<_Nb, _WordT>::_M_copy_from_string(const basic_string<char>& __s,
-					      size_t __pos, size_t __n)
+
+template <size_t _Nb>
+void bitset<_Nb>::_M_copy_from_string(const basic_string<char>& __s,
+                                      size_t __pos, size_t __n)
 {
   reset();
   size_t __tmp = _Nb;
@@ -939,8 +802,8 @@ void bitset<_Nb, _WordT>::_M_copy_from_string(const basic_string<char>& __s,
   }
 }
 
-template <size_t _Nb, class _WordT>
-void bitset<_Nb, _WordT>::_M_copy_to_string(basic_string<char>& __s) const
+template <size_t _Nb>
+void bitset<_Nb>::_M_copy_to_string(basic_string<char>& __s) const
 {
   __s.assign(_Nb, '0');
   
@@ -957,36 +820,33 @@ void bitset<_Nb, _WordT>::_M_copy_to_string(basic_string<char>& __s) const
 // 23.3.5.3 bitset operations:
 //
 
-template <size_t _Nb, class _WordT>
-inline bitset<_Nb,_WordT> operator&(const bitset<_Nb,_WordT>& __x,
-                                    const bitset<_Nb,_WordT>& __y) {
-  bitset<_Nb,_WordT> __result(__x);
+template <size_t _Nb>
+inline bitset<_Nb> operator&(const bitset<_Nb>& __x, const bitset<_Nb>& __y) {
+  bitset<_Nb> __result(__x);
   __result &= __y;
   return __result;
 }
 
 
-template <size_t _Nb, class _WordT>
-inline bitset<_Nb,_WordT> operator|(const bitset<_Nb,_WordT>& __x,
-                                    const bitset<_Nb,_WordT>& __y) {
-  bitset<_Nb,_WordT> __result(__x);
+template <size_t _Nb>
+inline bitset<_Nb> operator|(const bitset<_Nb>& __x, const bitset<_Nb>& __y) {
+  bitset<_Nb> __result(__x);
   __result |= __y;
   return __result;
 }
 
-template <size_t _Nb, class _WordT>
-inline bitset<_Nb,_WordT> operator^(const bitset<_Nb,_WordT>& __x,
-                                    const bitset<_Nb,_WordT>& __y) {
-  bitset<_Nb,_WordT> __result(__x);
+template <size_t _Nb>
+inline bitset<_Nb> operator^(const bitset<_Nb>& __x, const bitset<_Nb>& __y) {
+  bitset<_Nb> __result(__x);
   __result ^= __y;
   return __result;
 }
 
 #ifdef __STL_USE_NEW_IOSTREAMS
 
-template <class _CharT, class _Traits, size_t _Nb, class _WordT>
+template <class _CharT, class _Traits, size_t _Nb>
 basic_istream<_CharT, _Traits>&
-operator>>(basic_istream<_CharT, _Traits>& __is, bitset<_Nb,_WordT>& __x)
+operator>>(basic_istream<_CharT, _Traits>& __is, bitset<_Nb>& __x)
 {
   basic_string<_CharT, _Traits> __tmp;
   __tmp.reserve(_Nb);
@@ -1025,10 +885,9 @@ operator>>(basic_istream<_CharT, _Traits>& __is, bitset<_Nb,_WordT>& __x)
   return __is;
 }
 
-template <class _CharT, class _Traits, size_t _Nb, class _WordT>
+template <class _CharT, class _Traits, size_t _Nb>
 basic_ostream<_CharT, _Traits>&
-operator<<(basic_ostream<_CharT, _Traits>& __os,
-           const bitset<_Nb,_WordT>& __x)
+operator<<(basic_ostream<_CharT, _Traits>& __os, const bitset<_Nb>& __x)
 {
   basic_string<_CharT, _Traits> __tmp;
   __x._M_copy_to_string(__tmp);
@@ -1037,9 +896,8 @@ operator<<(basic_ostream<_CharT, _Traits>& __os,
 
 #else /* __STL_USE_NEW_IOSTREAMS */
 
-template <size_t _Nb, class _WordT>
-istream&
-operator>>(istream& __is, bitset<_Nb,_WordT>& __x) {
+template <size_t _Nb>
+istream& operator>>(istream& __is, bitset<_Nb>& __x) {
   string __tmp;
   __tmp.reserve(_Nb);
 
@@ -1074,8 +932,8 @@ operator>>(istream& __is, bitset<_Nb,_WordT>& __x) {
   return __is;
 }
 
-template <size_t _Nb, class _WordT>
-ostream& operator<<(ostream& __os, const bitset<_Nb,_WordT>& __x) {
+template <size_t _Nb>
+ostream& operator<<(ostream& __os, const bitset<_Nb>& __x) {
   string __tmp;
   __x._M_copy_to_string(__tmp);
   return __os << __tmp;
@@ -1140,7 +998,7 @@ unsigned char _Bit_count<__dummy>::_S_bit_count[] = {
   6, /* 245 */ 6, /* 246 */ 7, /* 247 */ 5, /* 248 */ 6, /* 249 */
   6, /* 250 */ 7, /* 251 */ 6, /* 252 */ 7, /* 253 */ 7, /* 254 */
   8  /* 255 */
-}; // end _S_bit_count
+}; // end _Bit_count
 
 template<bool __dummy>
 unsigned char _First_one<__dummy>::_S_first_one[] = {
@@ -1205,12 +1063,13 @@ unsigned char _First_one<__dummy>::_S_first_one[] = {
 __STL_END_NAMESPACE
 
 
-#undef __BITS_PER_WORDT
+#undef __BITS_PER_WORD
 #undef __BITSET_WORDS
 
-#endif /* _CPP_BITSET */
+#endif /* __SGI_STL_BITSET */
 
 
 // Local Variables:
 // mode:C++
 // End:
+

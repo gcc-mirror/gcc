@@ -51,6 +51,8 @@
 //   member functions of classes.
 // * __STL_MEMBER_TEMPLATE_CLASSES: defined if the compiler supports 
 //   nested classes that are member templates of other classes.
+// * __STL_TEMPLATE_FRIENDS: defined if the compiler supports templatized
+//   friend declarations.
 // * __STL_EXPLICIT_FUNCTION_TMPL_ARGS: defined if the compiler 
 //   supports calling a function template by providing its template
 //   arguments explicitly.
@@ -86,8 +88,23 @@
 //   types.  (They're not in the C++ standard, but they are expected to be 
 //   included in the forthcoming C9X standard.)
 // * __STL_THREADS is defined if thread safety is needed.
-// * __STL_VOLATILE is deifined to be "volatile" if threads are being
+// * __STL_VOLATILE is defined to be "volatile" if threads are being
 //   used, and the empty string otherwise.
+// * __STL_USE_CONCEPT_CHECKS enables some extra compile-time error
+//   checking to make sure that user-defined template arguments satisfy
+//   all of the appropriate requirements.  This may result in more
+//   comprehensible error messages.  It incurs no runtime overhead.  This 
+//   feature requires member templates and partial specialization.
+// * __STL_NO_USING_CLAUSE_IN_CLASS: The compiler does not handle "using"
+//   clauses inside of class definitions.
+// * __STL_NO_FRIEND_TEMPLATE_CLASS: The compiler does not handle friend
+//   declaractions where the friend is a template class.
+// * __STL_NO_FUNCTION_PTR_IN_CLASS_TEMPLATE: The compiler does not
+//   support the use of a function pointer type as the argument
+//   for a template.
+// * __STL_MEMBER_TEMPLATE_KEYWORD: standard C++ requires the template
+//   keyword in a few new places (14.2.4).  This flag is set for
+//   compilers that support (and require) this usage.
 
 
 // User-settable macros that control compilation:
@@ -107,6 +124,8 @@
 // * _UITHREADS:if defined, use SCO/Solaris/UI threads for multithreading 
 //   support
 // * _NOTHREADS: if defined, don't use any multithreading support.  
+// * _STL_NO_CONCEPT_CHECKS: if defined, disables the error checking that
+//   we get from __STL_USE_CONCEPT_CHECKS.
 // * __STL_USE_NEW_IOSTREAMS: if defined, then the STL will use new,
 //   standard-conforming iostreams (e.g. the <iosfwd> header).  If not
 //   defined, the STL will use old cfront-style iostreams (e.g. the
@@ -152,6 +171,7 @@
 #   endif
 #   ifdef _MEMBER_TEMPLATES
 #     define __STL_MEMBER_TEMPLATES
+#     define __STL_TEMPLATE_FRIENDS
 #     define __STL_MEMBER_TEMPLATE_CLASSES
 #   endif
 #   if defined(_MEMBER_TEMPLATE_KEYWORD)
@@ -163,7 +183,7 @@
 #   if (_COMPILER_VERSION >= 730) && defined(_MIPS_SIM) && _MIPS_SIM != _ABIO32
 #     define __STL_MEMBER_TEMPLATE_KEYWORD
 #   endif
-#   if defined(_MIPS_SIM) && _MIPS_SIM == _ABIO32
+#   if COMPILER_VERSION < 720 || (defined(_MIPS_SIM) && _MIPS_SIM == _ABIO32)
 #     define __STL_DEFAULT_CONSTRUCTOR_BUG
 #   endif
 #   if !defined(_EXPLICIT_IS_KEYWORD)
@@ -175,7 +195,8 @@
 #   if (_COMPILER_VERSION >= 721) && defined(_NAMESPACES)
 #     define __STL_HAS_NAMESPACES
 #   endif 
-#   if (_COMPILER_VERSION < 721)
+#   if (_COMPILER_VERSION < 721) || \
+    !defined(__STL_HAS_NAMESPACES) || defined(__STL_NO_NAMESPACES)
 #     define __STL_NO_EXCEPTION_HEADER
 #   endif
 #   if _COMPILER_VERSION < 730 || !defined(_STANDARD_C_PLUS_PLUS) || \
@@ -236,6 +257,7 @@
 #   define __STL_HAS_WCHAR_T
 #   define __STL_MEMBER_TEMPLATES
 #   define __STL_MEMBER_TEMPLATE_CLASSES
+#   define __STL_TEMPLATE_FRIENDS
 #   define __STL_CLASS_PARTIAL_SPECIALIZATION 
 #   define __STL_PARTIAL_SPECIALIZATION_SYNTAX 
 #   define __STL_FUNCTION_TMPL_PARTIAL_ORDER
@@ -257,6 +279,9 @@
 #   ifndef __STRICT_ANSI__
 #     define __STL_LONG_LONG
 #   endif
+#   if (__GNUC__ < 2) || (__GNUC__ == 2 && __GNUC_MINOR__ < 95)
+#     define __STL_NO_FUNCTION_PTR_IN_CLASS_TEMPLATE
+#   endif
 # endif
 
 # if defined(__SUNPRO_CC) 
@@ -276,6 +301,7 @@
 # if defined(__COMO__)
 #   define __STL_MEMBER_TEMPLATES
 #   define __STL_MEMBER_TEMPLATE_CLASSES
+#   define __STL_TEMPLATE_FRIENDS
 #   define __STL_CLASS_PARTIAL_SPECIALIZATION
 #   define __STL_USE_EXCEPTIONS
 #   define __STL_HAS_NAMESPACES
@@ -286,6 +312,7 @@
 #   define __STL_LONG_LONG 
 #   define __STL_MEMBER_TEMPLATES
 #   define __STL_MEMBER_TEMPLATE_CLASSES
+#   define __STL_TEMPLATE_FRIENDS
 #   define __STL_FUNCTION_TMPL_PARTIAL_ORDER
 #   define __STL_CLASS_PARTIAL_SPECIALIZATION
 #   define __STL_NO_DRAND48
@@ -300,19 +327,32 @@
 #   endif
 # endif
 
-// Mingw32, EGCS compiler using the Microsoft C runtime
+// Mingw32, egcs compiler using the Microsoft C runtime
 # if defined(__MINGW32__)
+#   define __STL_NO_DRAND48
+#   ifdef _MT
+#     define __STL_WIN32THREADS
+#   endif
+# endif
+
+// Cygwin32, egcs compiler on MS Windows
+# if defined(__CYGWIN__)
 #   define __STL_NO_DRAND48
 # endif
 
+
+
 // Microsoft compiler.
-# if defined(_MSC_VER) && !defined(__ICL)
+# if defined(_MSC_VER) && !defined(__ICL) && !defined(__MWERKS__)
 #   define __STL_NO_DRAND48
 #   define __STL_STATIC_CONST_INIT_BUG
 #   define __STL_NEED_TYPENAME
+#   define __STL_NO_USING_CLAUSE_IN_CLASS
+#   define __STL_NO_FRIEND_TEMPLATE_CLASS
 #   if _MSC_VER < 1100  /* 1000 is version 4.0, 1100 is 5.0, 1200 is 6.0. */
 #     define __STL_NEED_EXPLICIT
 #     define __STL_NO_BOOL
+#     define __STL_NO_BAD_ALLOC
 #   endif
 #   if _MSC_VER > 1000
 #     include <yvals.h>
@@ -330,8 +370,16 @@
 #   if _MSC_VER >= 1200
 #     define __STL_PARTIAL_SPECIALIZATION_SYNTAX
 #     define __STL_HAS_NAMESPACES
-#     define __STL_NO_NAMESPACES
 #     define __STL_CAN_THROW_RANGE_ERRORS
+#     define NOMINMAX
+#     undef min
+#     undef max
+// disable warning 'initializers put in unrecognized initialization area'
+#     pragma warning ( disable : 4075 )
+// disable warning 'empty controlled statement found'
+#     pragma warning ( disable : 4390 )
+// disable warning 'debug symbol greater than 255 chars'
+#     pragma warning ( disable : 4786 )
 #   endif
 #   if _MSC_VER < 1100
 #     define __STL_NO_EXCEPTION_HEADER
@@ -343,13 +391,21 @@
 # endif
 
 # if defined(__BORLANDC__)
-#   define __STL_NO_BAD_ALLOC
-#   define __STL_NO_DRAND48
-#   define __STL_NEED_TYPENAME
-#   define __STL_LIMITED_DEFAULT_TEMPLATES
-#   define __SGI_STL_NO_ARROW_OPERATOR
-#   define __STL_DEFAULT_CONSTRUCTOR_BUG
-#   define __STL_NON_TYPE_TMPL_PARAM_BUG
+#     define __STL_NO_BAD_ALLOC
+#     define __STL_NO_DRAND48
+#     define __STL_DEFAULT_CONSTRUCTOR_BUG
+#   if __BORLANDC__ >= 0x540 /* C++ Builder 4.0 */
+#     define __STL_CLASS_PARTIAL_SPECIALIZATION
+#     define __STL_FUNCTION_TMPL_PARTIAL_ORDER
+#     define __STL_EXPLICIT_FUNCTION_TMPL_ARGS
+#     define __STL_MEMBER_TEMPLATES
+#     define __STL_TEMPLATE_FRIENDS
+#   else
+#     define __STL_NEED_TYPENAME
+#     define __STL_LIMITED_DEFAULT_TEMPLATES
+#     define __SGI_STL_NO_ARROW_OPERATOR
+#     define __STL_NON_TYPE_TMPL_PARAM_BUG
+#   endif
 #   ifdef _CPPUNWIND
 #     define __STL_USE_EXCEPTIONS
 #   endif
@@ -366,6 +422,12 @@
 
 # ifdef __STL_NEED_TYPENAME
 #   define typename
+# endif
+
+# ifdef __STL_LIMITED_DEFAULT_TEMPLATES
+#   define __STL_DEPENDENT_DEFAULT_TMPL(_Tp)
+# else
+#   define __STL_DEPENDENT_DEFAULT_TMPL(_Tp) = _Tp
 # endif
 
 # ifdef __STL_MEMBER_TEMPLATE_KEYWORD
@@ -403,6 +465,14 @@
     !defined(__STL_LIMITED_DEFAULT_TEMPLATES) && \
     !defined(__STL_USE_SGI_ALLOCATORS) 
 #   define __STL_USE_STD_ALLOCATORS
+# endif
+
+# ifndef __STL_DEFAULT_ALLOCATOR
+#   ifdef __STL_USE_STD_ALLOCATORS
+#     define __STL_DEFAULT_ALLOCATOR(T) allocator< T >
+#   else
+#     define __STL_DEFAULT_ALLOCATOR(T) alloc
+#   endif
 # endif
 
 // __STL_NO_NAMESPACES is a hook so that users can disable namespaces
@@ -475,13 +545,20 @@
 # define __stl_assert(expr)
 #endif
 
-#if defined(__STL_WIN32THREADS) || defined(STL_SGI_THREADS) \
+#if defined(__STL_WIN32THREADS) || defined(__STL_SGI_THREADS) \
     || defined(__STL_PTHREADS)  || defined(__STL_UITHREADS)
 #   define __STL_THREADS
 #   define __STL_VOLATILE volatile
 #else
 #   define __STL_VOLATILE
 #endif
+
+#if defined(__STL_CLASS_PARTIAL_SPECIALIZATION) \
+    && defined(__STL_MEMBER_TEMPLATES) \
+    && !defined(_STL_NO_CONCEPT_CHECKS)
+#  define __STL_USE_CONCEPT_CHECKS
+#endif
+
 
 #endif /* __STL_CONFIG_H */
 

@@ -62,9 +62,13 @@ public:
     return *this;
   }
 #endif /* __STL_MEMBER_TEMPLATES */
-
-  ~auto_ptr() __STL_NOTHROW { delete _M_ptr; }
-
+  
+  // Note: The C++ standard says there is supposed to be an empty throw
+  // specification here, but omitting it is standard conforming.  Its 
+  // presence can be detected only if _Tp::~_Tp() throws, but (17.4.3.6/2)
+  // this is prohibited.
+  ~auto_ptr() { delete _M_ptr; }
+ 
   _Tp& operator*() const __STL_NOTHROW {
     return *_M_ptr;
   }

@@ -31,6 +31,8 @@
 #ifndef __SGI_STL_INTERNAL_STACK_H
 #define __SGI_STL_INTERNAL_STACK_H
 
+#include <bits/sequence_concepts.h>
+
 __STL_BEGIN_NAMESPACE
 
 // Forward declarations of operators == and <, needed for friend declaration.
@@ -48,6 +50,14 @@ bool operator<(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y);
 
 template <class _Tp, class _Sequence>
 class stack {
+
+  // requirements:
+
+  __STL_CLASS_REQUIRES(_Tp, _Assignable);
+  __STL_CLASS_REQUIRES(_Sequence, _BackInsertionSequence);
+  typedef typename _Sequence::value_type _Sequence_value_type;
+  __STL_CLASS_REQUIRES_SAME_TYPE(_Tp, _Sequence_value_type);
+
 
 #ifdef __STL_MEMBER_TEMPLATES
   template <class _Tp1, class _Seq1>
