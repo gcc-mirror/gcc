@@ -1057,6 +1057,13 @@ layout_type (type)
 		 register instead of forcing it to live in the stack.  */
 	      if (simple_cst_equal (TYPE_SIZE (type), DECL_SIZE (field)))
 		mode = DECL_MODE (field);
+
+#ifdef STRUCT_FORCE_BLK
+	      /* With some targets, eg. c4x, it is sub-optimal
+		 to access an aligned BLKmode structure as a scalar.  */
+	      if (mode == VOIDmode && STRUCT_FORCE_BLK (field))
+		  goto record_lose;
+#endif /* STRUCT_FORCE_BLK  */
 	    }
 
 	  if (mode != VOIDmode)
