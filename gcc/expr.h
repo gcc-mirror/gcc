@@ -423,11 +423,11 @@ extern void move_block_from_reg PARAMS ((int, rtx, int, int));
 
 /* Load a BLKmode value into non-consecutive registers represented by a
    PARALLEL.  */
-extern void emit_group_load PARAMS ((rtx, rtx, int, unsigned int));
+extern void emit_group_load PARAMS ((rtx, rtx, int));
 
 /* Store a BLKmode value from non-consecutive registers represented by a
    PARALLEL.  */
-extern void emit_group_store PARAMS ((rtx, rtx, int, unsigned int));
+extern void emit_group_store PARAMS ((rtx, rtx, int));
 
 #ifdef TREE_CODE
 /* Copy BLKmode object from a set of registers.  */
@@ -746,12 +746,11 @@ mode_for_extraction PARAMS ((enum extraction_pattern, int));
 
 extern rtx store_bit_field PARAMS ((rtx, unsigned HOST_WIDE_INT,
 				    unsigned HOST_WIDE_INT,
-				    enum machine_mode, rtx,
-				    unsigned int, HOST_WIDE_INT));
+				    enum machine_mode, rtx, HOST_WIDE_INT));
 extern rtx extract_bit_field PARAMS ((rtx, unsigned HOST_WIDE_INT,
 				      unsigned HOST_WIDE_INT, int, rtx,
 				      enum machine_mode, enum machine_mode,
-				      unsigned int, HOST_WIDE_INT));
+				      HOST_WIDE_INT));
 extern rtx expand_mult PARAMS ((enum machine_mode, rtx, rtx, rtx, int));
 extern rtx expand_mult_add PARAMS ((rtx, rtx, rtx, rtx,enum machine_mode, int));
 extern rtx expand_mult_highpart_adjust PARAMS ((enum machine_mode, rtx, rtx, rtx, rtx, int));

@@ -580,8 +580,7 @@ noce_emit_move_insn (x, y)
   outmode = GET_MODE (outer);
   inmode = GET_MODE (inner);
   bitpos = SUBREG_BYTE (outer) * BITS_PER_UNIT;
-  store_bit_field (inner, GET_MODE_BITSIZE (outmode),
-		   bitpos, outmode, y, GET_MODE_BITSIZE (inmode),
+  store_bit_field (inner, GET_MODE_BITSIZE (outmode), bitpos, outmode, y,
 		   GET_MODE_BITSIZE (inmode));
 }
 

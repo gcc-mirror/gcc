@@ -1,5 +1,16 @@
 Sun Nov 11 05:56:01 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expmed.c (extract_bit_field): No longer pass in alignment.
+	(extract_fixed_bit_field, extract_split_bit_field): Likewise.
+	(store_bit_field, store_fixed_bit_field, store_split_bit_field):
+	Likewise.
+	* expr.c (store_constructor, store_constructor_field): Likewise.
+	(store_field, emit_group_load, emit_group_store): Likewise.
+	* expr.h (emit_group_load, emit_group_store): Delete ALIGN parm.
+	(store_bit_field, extract_bit_field): Likewise.
+	* calls.c, expr.c, function.c: Change calls to above functions.
+	* ifcvt.c, stmt.c: Likewise.
+	
 	* alias.c (nonoverlapping_memrefs_p): Not overlapping if one base is
 	constant and one is on frame.
 	If know memref offset, adjust size from decl.

@@ -1037,7 +1037,6 @@ store_unaligned_arguments_into_pseudos (args, num_actuals)
 	    rtx reg = gen_reg_rtx (word_mode);
 	    rtx word = operand_subword_force (args[i].value, j, BLKmode);
 	    int bitsize = MIN (bytes * BITS_PER_UNIT, BITS_PER_WORD);
-	    int bitalign = TYPE_ALIGN (TREE_TYPE (args[i].tree_value));
 
 	    args[i].aligned_regs[j] = reg;
 
@@ -1057,9 +1056,9 @@ store_unaligned_arguments_into_pseudos (args, num_actuals)
 	    bytes -= bitsize / BITS_PER_UNIT;
 	    store_bit_field (reg, bitsize, big_endian_correction, word_mode,
 			     extract_bit_field (word, bitsize, 0, 1, NULL_RTX,
-						word_mode, word_mode, bitalign,
+						word_mode, word_mode,
 						BITS_PER_WORD),
-			     bitalign, BITS_PER_WORD);
+			     BITS_PER_WORD);
 	  }
       }
 }
@@ -1736,8 +1735,7 @@ load_register_parameters (args, num_actuals, call_fusage, flags)
 
 	  if (GET_CODE (reg) == PARALLEL)
 	    emit_group_load (reg, args[i].value,
-			     int_size_in_bytes (TREE_TYPE (args[i].tree_value)),
-			     TYPE_ALIGN (TREE_TYPE (args[i].tree_value)));
+			     int_size_in_bytes (TREE_TYPE (args[i].tree_value)));
 
 	  /* If simple case, just do move.  If normal partial, store_one_arg
 	     has already loaded the register for us.  In all other cases,
@@ -3225,8 +3223,7 @@ expand_call (exp, target, ignore)
 
 	  if (! rtx_equal_p (target, valreg))
 	    emit_group_store (target, valreg,
-			      int_size_in_bytes (TREE_TYPE (exp)),
-			      TYPE_ALIGN (TREE_TYPE (exp)));
+			      int_size_in_bytes (TREE_TYPE (exp)));
 
 	  /* We can not support sibling calls for this case.  */
 	  sibcall_failure = 1;
@@ -4004,9 +4001,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
       /* Handle calls that pass values in multiple non-contiguous
 	 locations.  The PA64 has examples of this for library calls.  */
       if (reg != 0 && GET_CODE (reg) == PARALLEL)
-	emit_group_load (reg, val,
-			 GET_MODE_SIZE (GET_MODE (val)),
-			 GET_MODE_ALIGNMENT (GET_MODE (val)));
+	emit_group_load (reg, val, GET_MODE_SIZE (GET_MODE (val)));
       else if (reg != 0 && partial == 0)
 	emit_move_insn (reg, val);
 

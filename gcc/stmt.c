@@ -3071,8 +3071,7 @@ expand_value_return (val)
 	val = convert_modes (mode, old_mode, val, unsignedp);
 #endif
       if (GET_CODE (return_reg) == PARALLEL)
-	emit_group_load (return_reg, val, int_size_in_bytes (type),
-			 TYPE_ALIGN (type));
+	emit_group_load (return_reg, val, int_size_in_bytes (type));
       else
 	emit_move_insn (return_reg, val);
     }
@@ -3253,8 +3252,8 @@ expand_return (retval)
 			   extract_bit_field (src, bitsize,
 					      bitpos % BITS_PER_WORD, 1,
 					      NULL_RTX, word_mode, word_mode,
-					      bitsize, BITS_PER_WORD),
-			   bitsize, BITS_PER_WORD);
+					      BITS_PER_WORD),
+			   BITS_PER_WORD);
 	}
 
       /* Find the smallest integer mode large enough to hold the
