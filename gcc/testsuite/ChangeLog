@@ -1,3 +1,11 @@
+2003-05-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/gcc-dg.exp (gcc-dg-debug-runtest): Add opt_opts parameter.
+	* gcc.dg/debug/debug.exp: Pass opt_opts parameter to
+	gcc-dg-debug-runtest.
+	* g++.dg/debug/debug.exp: Pass opt_opts parameter to
+	gcc-dg-debug-runtest.
+
 2003-05-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9022
