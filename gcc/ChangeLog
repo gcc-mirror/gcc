@@ -1,5 +1,10 @@
 2003-03-02  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.md ("mulqi3"): Allow address register to
+	avoid reload problems; define split for it.
+
+2003-03-02  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/m68hc11.c (m68hc11_shift_operator): New function.
 	* config/m68hc11/m68hc11-protos.h (m68hc11_shift_operator): Declare.
 	* config/m68hc11/m68hc11.h (PREDICATE_CODES): Register.
