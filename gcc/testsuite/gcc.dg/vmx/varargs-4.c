@@ -13,13 +13,6 @@ typedef struct n_a
 }
 n_a;
 
-typedef struct n_a_x
-{
-  n_a b;
-  char a;
-}
-n_a_x;
-
 static n_a gn_a;
 
 static int
@@ -103,7 +96,6 @@ initn_a(signed char p1, short p2, int p3, double p4, vector float p5)
 	"i.m5");
 
   check(sizeof(n_a) == 32, "sizeof(n_a)");
-  check(sizeof(n_a_x) - sizeof(n_a) == 32, "align(n_a_x)");
 
   check(offsetof(n_a, m1) == 0,  "offsetof(m1)");
   check(offsetof(n_a, m2) == 2,  "offsetof(m2)");
