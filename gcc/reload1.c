@@ -441,7 +441,7 @@ reload (first, global, dumpfile)
      FILE *dumpfile;
 {
   register int class;
-  register int i, j;
+  register int i, j, k;
   register rtx insn;
   register struct elim_table *ep;
 
@@ -907,7 +907,6 @@ reload (first, global, dumpfile)
 	      int old_code = INSN_CODE (insn);
  	      rtx old_notes = REG_NOTES (insn);
 	      int did_elimination = 0;
-	      int max_total_input_groups = 0, max_total_output_groups = 0;
 
 	      /* To compute the number of reload registers of each class 
 		 needed for an insn, we must similate what choose_reload_regs
@@ -927,73 +926,24 @@ reload (first, global, dumpfile)
 		 The total number of registers needed is the maximum of the
 		 inputs and outputs.  */
 
-	      /* These just count RELOAD_OTHER.  */
-	      int insn_needs[N_REG_CLASSES];
-	      int insn_groups[N_REG_CLASSES];
-	      int insn_nongroups[N_REG_CLASSES];
-	      int insn_total_groups = 0;
-
-	      /* Count RELOAD_FOR_INPUT reloads.  */
-	      int insn_needs_for_inputs[N_REG_CLASSES];
-	      int insn_nongroups_for_inputs[N_REG_CLASSES];
-	      int insn_groups_for_inputs[N_REG_CLASSES];
-	      int insn_total_groups_for_inputs = 0;
-
-	      /* Count RELOAD_FOR_OUTPUT reloads.  */
-	      int insn_needs_for_outputs[N_REG_CLASSES];
-	      int insn_nongroups_for_outputs[N_REG_CLASSES];
-	      int insn_groups_for_outputs[N_REG_CLASSES];
-	      int insn_total_groups_for_outputs = 0;
-
-	      /* Count RELOAD_FOR_INSN reloads.  */
-	      int insn_needs_for_insn[N_REG_CLASSES];
-	      int insn_nongroups_for_insn[N_REG_CLASSES];
-	      int insn_groups_for_insn[N_REG_CLASSES];
-	      int insn_total_groups_for_insn = 0;
-
-	      /* Count RELOAD_FOR_OTHER_ADDRESS reloads.  */
-	      int insn_needs_for_other_addr[N_REG_CLASSES];
-	      int insn_nongroups_for_other_addr[N_REG_CLASSES];
-	      int insn_groups_for_other_addr[N_REG_CLASSES];
-	      int insn_total_groups_for_other_addr = 0;
-
-	      /* Count RELOAD_FOR_INPUT_ADDRESS reloads.  */
-	      int insn_needs_for_in_addr[MAX_RECOG_OPERANDS][N_REG_CLASSES];
-	      int insn_nongroups_for_in_addr[MAX_RECOG_OPERANDS][N_REG_CLASSES];
-	      int insn_groups_for_in_addr[MAX_RECOG_OPERANDS][N_REG_CLASSES];
-	      int insn_total_groups_for_in_addr[MAX_RECOG_OPERANDS];
-
-	      /* Count RELOAD_FOR_OUTPUT_ADDRESS reloads.  */
-	      int insn_needs_for_out_addr[MAX_RECOG_OPERANDS][N_REG_CLASSES];
-	      int insn_nongroups_for_out_addr[MAX_RECOG_OPERANDS][N_REG_CLASSES];
-	      int insn_groups_for_out_addr[MAX_RECOG_OPERANDS][N_REG_CLASSES];
-	      int insn_total_groups_for_out_addr[MAX_RECOG_OPERANDS];
-
-	      /* Count RELOAD_FOR_OPERAND_ADDRESS reloads.  */
-	      int insn_needs_for_op_addr[N_REG_CLASSES];
-	      int insn_nongroups_for_op_addr[N_REG_CLASSES];
-	      int insn_groups_for_op_addr[N_REG_CLASSES];
-	      int insn_total_groups_for_op_addr = 0;
-
-#if 0  /* This wouldn't work nowadays, since optimize_bit_field
-	  looks for non-strict memory addresses.  */
-	      /* Optimization: a bit-field instruction whose field
-		 happens to be a byte or halfword in memory
-		 can be changed to a move instruction.  */
-
-	      if (GET_CODE (PATTERN (insn)) == SET)
+	      struct needs
 		{
-		  rtx dest = SET_DEST (PATTERN (insn));
-		  rtx src = SET_SRC (PATTERN (insn));
+		  /* [0] is normal, [1] is nongroup.  */
+		  int regs[2][N_REG_CLASSES];
+		  int groups[N_REG_CLASSES];
+		};
 
-		  if (GET_CODE (dest) == ZERO_EXTRACT
-		      || GET_CODE (dest) == SIGN_EXTRACT)
-		    optimize_bit_field (PATTERN (insn), insn, reg_equiv_mem);
-		  if (GET_CODE (src) == ZERO_EXTRACT
-		      || GET_CODE (src) == SIGN_EXTRACT)
-		    optimize_bit_field (PATTERN (insn), insn, reg_equiv_mem);
-		}
-#endif
+	      /* Each `struct needs' corresponds to one RELOAD_... type.  */
+	      struct {
+		struct needs other;
+		struct needs input;
+		struct needs output;
+		struct needs insn;
+		struct needs other_addr;
+		struct needs op_addr;
+		struct needs in_addr[MAX_RECOG_OPERANDS];
+		struct needs out_addr[MAX_RECOG_OPERANDS];
+	      } insn_needs;
 
 	      /* If needed, eliminate any eliminable registers.  */
 	      if (num_eliminable)
@@ -1065,49 +1015,8 @@ reload (first, global, dumpfile)
 		continue;
 
 	      something_needs_reloads = 1;
+	      bzero (&insn_needs, sizeof insn_needs);
 
-	      for (i = 0; i < N_REG_CLASSES; i++)
-		{
-		  insn_needs[i] = 0, insn_nongroups[i] = 0, 
-		  insn_groups[i] = 0;
-
-		  insn_needs_for_inputs[i] = 0, 
-		  insn_nongroups_for_inputs[i] = 0,
-		  insn_groups_for_inputs[i] = 0;
-
-		  insn_needs_for_outputs[i] = 0, 
-		  insn_nongroups_for_outputs[i] = 0,
-		  insn_groups_for_outputs[i] = 0;
-
-		  insn_needs_for_insn[i] = 0, 
-		  insn_nongroups_for_insn[i] = 0,
-		  insn_groups_for_insn[i] = 0;
-
-		  insn_needs_for_op_addr[i] = 0, 
-		  insn_nongroups_for_op_addr[i] = 0,
-		  insn_groups_for_op_addr[i] = 0;
-
-		  insn_needs_for_other_addr[i] = 0, 
-		  insn_nongroups_for_other_addr[i] = 0,
-		  insn_groups_for_other_addr[i] = 0;
-		}
-
-	      for (i = 0; i < reload_n_operands; i++)
-		{
-		  insn_total_groups_for_in_addr[i] = 0;
-		  insn_total_groups_for_out_addr[i] = 0;
-
-		  for (j = 0; j < N_REG_CLASSES; j++)
-		    {
-		      insn_needs_for_in_addr[i][j] = 0;
-		      insn_needs_for_out_addr[i][j] = 0;
-		      insn_nongroups_for_in_addr[i][j] = 0;
-		      insn_nongroups_for_out_addr[i][j] = 0;
-		      insn_groups_for_in_addr[i][j] = 0;
-		      insn_groups_for_out_addr[i][j] = 0;
-		    }
-		}
-		    
 	      /* Count each reload once in every class
 		 containing the reload's own class.  */
 
@@ -1118,9 +1027,7 @@ reload (first, global, dumpfile)
 		  int size;
 		  enum machine_mode mode;
 		  int nongroup_need;
-		  int *this_groups;
-		  int *this_needs;
-		  int *this_total_groups;
+		  struct needs *this_needs;
 
 		  /* Don't count the dummy reloads, for which one of the
 		     regs mentioned in the insn can be used for reloading.
@@ -1148,11 +1055,10 @@ reload (first, global, dumpfile)
 		    mode = reload_outmode[i];
 		  size = CLASS_MAX_NREGS (class, mode);
 
-		  /* If this class doesn't want a group determine if
-		     we have a nongroup need or a regular need.  We have
-		     a nongroup need if this reload conflicts with a
-		     group reload whose class intersects with this reload's
-		     class.  */
+		  /* If this class doesn't want a group, determine if we have
+		     a nongroup need or a regular need.  We have a nongroup
+		     need if this reload conflicts with a group reload whose
+		     class intersects with this reload's class.  */
 
 		  nongroup_need = 0;
 		  if (size == 1)
@@ -1175,77 +1081,28 @@ reload (first, global, dumpfile)
 		  switch (reload_when_needed[i])
 		    {
 		    case RELOAD_OTHER:
-		      if (nongroup_need)
-			this_needs = insn_nongroups;
-		      else
-			this_needs = insn_needs;
-		      this_groups = insn_groups;
-		      this_total_groups = &insn_total_groups;
+		      this_needs = &insn_needs.other;
 		      break;
-
 		    case RELOAD_FOR_INPUT:
-		      if (nongroup_need)
-			this_needs = insn_nongroups_for_inputs;
-		      else
-			this_needs = insn_needs_for_inputs;
-		      this_groups = insn_groups_for_inputs;
-		      this_total_groups = &insn_total_groups_for_inputs;
+		      this_needs = &insn_needs.input;
 		      break;
-
 		    case RELOAD_FOR_OUTPUT:
-		      if (nongroup_need)
-			this_needs = insn_nongroups_for_outputs;
-		      else
-			this_needs = insn_needs_for_outputs;
-		      this_groups = insn_groups_for_outputs;
-		      this_total_groups = &insn_total_groups_for_outputs;
+		      this_needs = &insn_needs.output;
 		      break;
-
 		    case RELOAD_FOR_INSN:
-		      if (nongroup_need)
-			this_needs = insn_nongroups_for_insn;
-		      else
-			this_needs = insn_needs_for_insn;
-		      this_groups = insn_groups_for_insn;
-		      this_total_groups = &insn_total_groups_for_insn;
+		      this_needs = &insn_needs.insn;
 		      break;
-
 		    case RELOAD_FOR_OTHER_ADDRESS:
-		      if (nongroup_need)
-			this_needs = insn_nongroups_for_other_addr;
-		      else
-			this_needs = insn_needs_for_other_addr;
-		      this_groups = insn_groups_for_other_addr;
-		      this_total_groups = &insn_total_groups_for_other_addr;
+		      this_needs = &insn_needs.other_addr;
 		      break;
-
 		    case RELOAD_FOR_INPUT_ADDRESS:
-		      if (nongroup_need)
-			this_needs = insn_nongroups_for_in_addr[reload_opnum[i]];
-		      else
-			this_needs = insn_needs_for_in_addr[reload_opnum[i]];
-		      this_groups = insn_groups_for_in_addr[reload_opnum[i]];
-		      this_total_groups
-			= &insn_total_groups_for_in_addr[reload_opnum[i]];
+		      this_needs = &insn_needs.in_addr[reload_opnum[i]];
 		      break;
-
 		    case RELOAD_FOR_OUTPUT_ADDRESS:
-		      if (nongroup_need)
-			this_needs = insn_nongroups_for_out_addr[reload_opnum[i]];
-		      else
-			this_needs = insn_needs_for_out_addr[reload_opnum[i]];
-		      this_groups = insn_groups_for_out_addr[reload_opnum[i]];
-		      this_total_groups
-			= &insn_total_groups_for_out_addr[reload_opnum[i]];
+		      this_needs = &insn_needs.out_addr[reload_opnum[i]];
 		      break;
-
 		    case RELOAD_FOR_OPERAND_ADDRESS:
-		      if (nongroup_need)
-			this_needs = insn_nongroups_for_op_addr;
-		      else
-			this_needs = insn_needs_for_op_addr;
-		      this_groups = insn_groups_for_op_addr;
-		      this_total_groups = &insn_total_groups_for_op_addr;
+		      this_needs = &insn_needs.op_addr;
 		      break;
 		    }
 
@@ -1255,11 +1112,10 @@ reload (first, global, dumpfile)
 
 		      /* Count number of groups needed separately from
 			 number of individual regs needed.  */
-		      this_groups[(int) class]++;
+		      this_needs->groups[(int) class]++;
 		      p = reg_class_superclasses[(int) class];
 		      while (*p != LIM_REG_CLASSES)
-			this_groups[(int) *p++]++;
-		      (*this_total_groups)++;
+			this_needs->groups[(int) *p++]++;
 
 		      /* Record size and mode of a group of this class.  */
 		      /* If more than one size group is needed,
@@ -1281,19 +1137,17 @@ reload (first, global, dumpfile)
 		      /* Crash if two dissimilar machine modes both need
 			 groups of consecutive regs of the same class.  */
 
-		      if (other_mode != VOIDmode
-			  && other_mode != allocate_mode
+		      if (other_mode != VOIDmode && other_mode != allocate_mode
 			  && ! modes_equiv_for_class_p (allocate_mode,
-							other_mode,
-							class))
+							other_mode, class))
 			abort ();
 		    }
 		  else if (size == 1)
 		    {
-		      this_needs[(int) class] += 1;
+		      this_needs->regs[nongroup_need][(int) class] += 1;
 		      p = reg_class_superclasses[(int) class];
 		      while (*p != LIM_REG_CLASSES)
-			this_needs[(int) *p++] += 1;
+			this_needs->regs[nongroup_need][(int) *p++] += 1;
 		    }
 		  else
 		    abort ();
@@ -1308,101 +1162,65 @@ reload (first, global, dumpfile)
 		{
 		  int in_max, out_max;
 
+		  /* Compute normal and nongroup needs.  */
+		  for (j = 0; j <= 1; j++)
+		    {
+		      for (in_max = 0, out_max = 0, k = 0;
+			   k < reload_n_operands; k++)
+			{
+			  in_max
+			    = MAX (in_max, insn_needs.in_addr[k].regs[j][i]);
+			  out_max
+			    = MAX (out_max, insn_needs.out_addr[k].regs[j][i]);
+			}
+
+		      /* RELOAD_FOR_INSN reloads conflict with inputs, outputs,
+			 and operand addresses but not things used to reload
+			 them.  Similarly, RELOAD_FOR_OPERAND_ADDRESS reloads
+			 don't conflict with things needed to reload inputs or
+			 outputs. */
+
+		      in_max = MAX (in_max, insn_needs.op_addr.regs[j][i]);
+		      out_max = MAX (out_max, insn_needs.insn.regs[j][i]);
+
+		      insn_needs.input.regs[j][i]
+			= MAX (insn_needs.input.regs[j][i]
+			       + insn_needs.op_addr.regs[j][i]
+			       + insn_needs.insn.regs[j][i],
+			       in_max + insn_needs.input.regs[j][i]);
+
+		      insn_needs.output.regs[j][i] += out_max;
+		      insn_needs.other.regs[j][i]
+			+= MAX (MAX (insn_needs.input.regs[j][i],
+				     insn_needs.output.regs[j][i]),
+				insn_needs.other_addr.regs[j][i]);
+
+		    }
+
+		  /* Now compute group needs.  */
 		  for (in_max = 0, out_max = 0, j = 0;
 		       j < reload_n_operands; j++)
 		    {
-		      in_max = MAX (in_max, insn_needs_for_in_addr[j][i]);
-		      out_max = MAX (out_max, insn_needs_for_out_addr[j][i]);
+		      in_max = MAX (in_max, insn_needs.in_addr[j].groups[i]);
+		      out_max
+			= MAX (out_max, insn_needs.out_addr[j].groups[i]);
 		    }
 
-		  /* RELOAD_FOR_INSN reloads conflict with inputs, outputs,
-		     and operand addresses but not things used to reload them.
-		     Similarly, RELOAD_FOR_OPERAND_ADDRESS reloads don't
-		     conflict with things needed to reload inputs or
-		     outputs. */
+		  in_max = MAX (in_max, insn_needs.op_addr.groups[i]);
+		  out_max = MAX (out_max, insn_needs.insn.groups[i]);
 
-		  in_max = MAX (in_max, insn_needs_for_op_addr[i]);
-		  out_max = MAX (out_max, insn_needs_for_insn[i]);
+		  insn_needs.input.groups[i]
+		    = MAX (insn_needs.input.groups[i]
+			   + insn_needs.op_addr.groups[i]
+			   + insn_needs.insn.groups[i],
+			   in_max + insn_needs.input.groups[i]);
 
-		  insn_needs_for_inputs[i]
-		    = MAX (insn_needs_for_inputs[i]
-			   + insn_needs_for_op_addr[i]
-			   + insn_needs_for_insn[i],
-			   in_max + insn_needs_for_inputs[i]);
-
-		  insn_needs_for_outputs[i] += out_max;
-		  insn_needs[i] += MAX (MAX (insn_needs_for_inputs[i],
-					     insn_needs_for_outputs[i]),
-					insn_needs_for_other_addr[i]);
-
-		  for (in_max = 0, out_max = 0, j = 0;
-		       j < reload_n_operands; j++)
-		    {
-		      in_max = MAX (in_max, insn_nongroups_for_in_addr[j][i]);
-		      out_max = MAX (out_max, insn_nongroups_for_out_addr[j][i]);
-		    }
-
-		  in_max = MAX (in_max, insn_nongroups_for_op_addr[i]);
-		  out_max = MAX (out_max, insn_nongroups_for_insn[i]);
-
-		  insn_nongroups_for_inputs[i]
-		    = MAX (insn_nongroups_for_inputs[i]
-			   + insn_nongroups_for_op_addr[i]
-			   + insn_nongroups_for_insn[i],
-			   in_max + insn_nongroups_for_inputs[i]);
-
-		  insn_nongroups_for_outputs[i] += out_max;
-		  insn_nongroups[i] += MAX (MAX (insn_nongroups_for_inputs[i],
-						 insn_nongroups_for_outputs[i]),
-					    insn_nongroups_for_other_addr[i]);
-
-		  for (in_max = 0, out_max = 0, j = 0;
-		       j < reload_n_operands; j++)
-		    {
-		      in_max = MAX (in_max, insn_groups_for_in_addr[j][i]);
-		      out_max = MAX (out_max, insn_groups_for_out_addr[j][i]);
-		    }
-
-		  in_max = MAX (in_max, insn_groups_for_op_addr[i]);
-		  out_max = MAX (out_max, insn_groups_for_insn[i]);
-
-		  insn_groups_for_inputs[i]
-		    = MAX (insn_groups_for_inputs[i]
-			   + insn_groups_for_op_addr[i]
-			   + insn_groups_for_insn[i],
-			   in_max + insn_groups_for_inputs[i]);
-
-		  insn_groups_for_outputs[i] += out_max;
-		  insn_groups[i] += MAX (MAX (insn_groups_for_inputs[i],
-					      insn_groups_for_outputs[i]),
-					 insn_groups_for_other_addr[i]);
+		  insn_needs.output.groups[i] += out_max;
+		  insn_needs.other.groups[i]
+		    += MAX (MAX (insn_needs.input.groups[i],
+				 insn_needs.output.groups[i]),
+			    insn_needs.other_addr.groups[i]);
 		}
-
-	      for (i = 0; i < reload_n_operands; i++)
-		{
-		  max_total_input_groups
-		    = MAX (max_total_input_groups,
-			   insn_total_groups_for_in_addr[i]);
-		  max_total_output_groups
-		    = MAX (max_total_output_groups,
-			   insn_total_groups_for_out_addr[i]);
-		}
-
-	      max_total_input_groups = MAX (max_total_input_groups,
-					    insn_total_groups_for_op_addr);
-	      max_total_output_groups = MAX (max_total_output_groups,
-					     insn_total_groups_for_insn);
-
-	      insn_total_groups_for_inputs
-		= MAX (max_total_input_groups + insn_total_groups_for_op_addr
-		       + insn_total_groups_for_insn,
-		       max_total_input_groups + insn_total_groups_for_inputs);
-
-	      insn_total_groups_for_outputs += max_total_output_groups;
-
-	      insn_total_groups += MAX (MAX (insn_total_groups_for_outputs,
-					     insn_total_groups_for_inputs),
-					insn_total_groups_for_other_addr);
 
 	      /* If this is a CALL_INSN and caller-saves will need
 		 a spill register, act as if the spill register is
@@ -1423,8 +1241,29 @@ reload (first, global, dumpfile)
 	      if (GET_CODE (insn) == CALL_INSN
 		  && caller_save_spill_class != NO_REGS)
 		{
-		  int *caller_save_needs
-		    = (caller_save_group_size > 1 ? insn_groups : insn_needs);
+		  /* See if this register would conflict with any reload
+		     that needs a group.  */
+		  int nongroup_need = 0;
+		  int *caller_save_needs;
+
+		  for (j = 0; j < n_reloads; j++)
+		    if ((CLASS_MAX_NREGS (reload_reg_class[j],
+					  (GET_MODE_SIZE (reload_outmode[j])
+					   > GET_MODE_SIZE (reload_inmode[j]))
+					  ? reload_outmode[j]
+					  : reload_inmode[j])
+			 > 1)
+			&& reg_classes_intersect_p (caller_save_spill_class,
+						    reload_reg_class[j]))
+		      {
+			nongroup_need = 1;
+			break;
+		      }
+
+		  caller_save_needs 
+		    = (caller_save_group_size > 1
+		       ? insn_needs.other.groups
+		       : insn_needs.other.regs[nongroup_need]); 
 
 		  if (caller_save_needs[(int) caller_save_spill_class] == 0)
 		    {
@@ -1437,21 +1276,17 @@ reload (first, global, dumpfile)
 			caller_save_needs[(int) *p++] += 1;
 		    }
 
-		  if (caller_save_group_size > 1)
-		    insn_total_groups = MAX (insn_total_groups, 1);
-
-
-                /* Show that this basic block will need a register of
+		  /* Show that this basic block will need a register of
                    this class.  */
 
-                if (global
-                    && ! (basic_block_needs[(int) caller_save_spill_class]
-                          [this_block]))
-                  {
-                    basic_block_needs[(int) caller_save_spill_class]
-                      [this_block] = 1;
-                    new_basic_block_needs = 1;
-                  }
+		  if (global
+		      && ! (basic_block_needs[(int) caller_save_spill_class]
+			    [this_block]))
+		    {
+		      basic_block_needs[(int) caller_save_spill_class]
+			[this_block] = 1;
+		      new_basic_block_needs = 1;
+		    }
 		}
 
 #ifdef SMALL_REGISTER_CLASSES
@@ -1462,6 +1297,7 @@ reload (first, global, dumpfile)
 		 then add add an extra need in that class.
 		 This makes sure we have a register available that does
 		 not overlap the return value.  */
+
 	      if (avoid_return_reg)
 		{
 		  int regno = REGNO (avoid_return_reg);
@@ -1474,8 +1310,10 @@ reload (first, global, dumpfile)
 		     need only in the smallest class in which it
 		     is required.  */
 
-		  bcopy (insn_needs, basic_needs, sizeof basic_needs);
-		  bcopy (insn_groups, basic_groups, sizeof basic_groups);
+		  bcopy (insn_needs.other.regs[0], basic_needs,
+			 sizeof basic_needs);
+		  bcopy (insn_needs.other.groups, basic_groups,
+			 sizeof basic_groups);
 
 		  for (i = 0; i < N_REG_CLASSES; i++)
 		    {
@@ -1509,10 +1347,10 @@ reload (first, global, dumpfile)
 			      {
 				enum reg_class *p;
 
-				insn_needs[i]++;
+				insn_needs.other.regs[0][i]++;
 				p = reg_class_superclasses[i];
 				while (*p != LIM_REG_CLASSES)
-				  insn_needs[(int) *p++]++;
+				  insn_needs.other.regs[0][(int) *p++]++;
 			      }
 			  }
 		}
@@ -1522,19 +1360,19 @@ reload (first, global, dumpfile)
 
 	      for (i = 0; i < N_REG_CLASSES; i++)
 		{
-		  if (max_needs[i] < insn_needs[i])
+		  if (max_needs[i] < insn_needs.other.regs[0][i])
 		    {
-		      max_needs[i] = insn_needs[i];
+		      max_needs[i] = insn_needs.other.regs[0][i];
 		      max_needs_insn[i] = insn;
 		    }
-		  if (max_groups[i] < insn_groups[i])
+		  if (max_groups[i] < insn_needs.other.groups[i])
 		    {
-		      max_groups[i] = insn_groups[i];
+		      max_groups[i] = insn_needs.other.groups[i];
 		      max_groups_insn[i] = insn;
 		    }
-		  if (max_nongroups[i] < insn_nongroups[i])
+		  if (max_nongroups[i] < insn_needs.other.regs[1][i])
 		    {
-		      max_nongroups[i] = insn_nongroups[i];
+		      max_nongroups[i] = insn_needs.other.regs[1][i];
 		      max_nongroups_insn[i] = insn;
 		    }
 		}
