@@ -742,7 +742,7 @@ approx_reg_cost (x)
   int hardregs = 0;
 
   INIT_REG_SET (&set);
-  for_each_rtx (&x, approx_reg_cost_1, (void *)&set);
+  for_each_rtx (&x, approx_reg_cost_1, (void *) &set);
 
   EXECUTE_IF_SET_IN_REG_SET
     (&set, 0, i,
@@ -1990,7 +1990,7 @@ remove_invalid_refs (regno)
       {
 	next = p->next_same_hash;
 	if (GET_CODE (p->exp) != REG
-	    && refers_to_regno_p (regno, regno + 1, p->exp, (rtx*) 0))
+	    && refers_to_regno_p (regno, regno + 1, p->exp, (rtx *) 0))
 	  remove_from_table (p, i);
       }
 }
@@ -2020,7 +2020,7 @@ remove_invalid_subreg_refs (regno, offset, mode)
 		|| (((SUBREG_BYTE (exp)
 		      + (GET_MODE_SIZE (GET_MODE (exp)) - 1)) >= offset)
 		    && SUBREG_BYTE (exp) <= end))
-	    && refers_to_regno_p (regno, regno + 1, p->exp, (rtx*) 0))
+	    && refers_to_regno_p (regno, regno + 1, p->exp, (rtx *) 0))
 	  remove_from_table (p, i);
       }
 }
@@ -2212,8 +2212,8 @@ canon_hash_string (ps)
      const char *ps;
 {
   unsigned hash = 0;
-  const unsigned char *p = (const unsigned char *)ps;
-  
+  const unsigned char *p = (const unsigned char *) ps;
+
   if (p)
     while (*p)
       hash += *p++;
@@ -2264,7 +2264,7 @@ canon_hash (x, mode)
 	   failure to do so leads to failure to simplify 0<100 type of
 	   conditionals.
 
-	   On all machines, we can't record any global registers.  
+	   On all machines, we can't record any global registers.
 	   Nor should we record any register that is in a small
 	   class, as defined by CLASS_LIKELY_SPILLED_P.  */
 
@@ -2375,7 +2375,7 @@ canon_hash (x, mode)
       if (GET_CODE (XEXP (x, 0)) == MEM
 	  && ! MEM_VOLATILE_P (XEXP (x, 0)))
 	{
-	  hash += (unsigned)USE;
+	  hash += (unsigned) USE;
 	  x = XEXP (x, 0);
 
 	  if (! RTX_UNCHANGING_P (x) || FIXED_BASE_PLUS_P (XEXP (x, 0)))
@@ -3237,7 +3237,7 @@ find_comparison_args (code, parg1, parg2, pmode1, pmode2)
 #ifdef FLOAT_STORE_FLAG_VALUE
 		    || (code == GE
 			&& GET_MODE_CLASS (inner_mode) == MODE_FLOAT
-		        && (REAL_VALUE_NEGATIVE
+			&& (REAL_VALUE_NEGATIVE
 			    (FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)))))
 #endif
 		    )
@@ -3270,7 +3270,8 @@ find_comparison_args (code, parg1, parg2, pmode1, pmode2)
 	  enum rtx_code reversed = reversed_comparison_code (x, NULL_RTX);
 	  if (reversed == UNKNOWN)
 	    break;
-	  else code = reversed;
+	  else
+	    code = reversed;
 	}
       else if (GET_RTX_CLASS (GET_CODE (x)) == '<')
 	code = GET_CODE (x);
@@ -3808,7 +3809,7 @@ fold_rtx (x, insn)
 	replacements[0] = cheap_arg;
 	replacements[1] = expensive_arg;
 
-	for (j = 0; j < 2 && replacements[j];  j++)
+	for (j = 0; j < 2 && replacements[j]; j++)
 	  {
 	    int old_cost = COST_IN (XEXP (x, i), code);
 	    int new_cost = COST_IN (replacements[j], code);
@@ -3926,7 +3927,7 @@ fold_rtx (x, insn)
 	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	    {
 	      true_rtx = (CONST_DOUBLE_FROM_REAL_VALUE
-		      (FLOAT_STORE_FLAG_VALUE (mode), mode));
+			  (FLOAT_STORE_FLAG_VALUE (mode), mode));
 	      false_rtx = CONST0_RTX (mode);
 	    }
 #endif
@@ -5469,13 +5470,13 @@ cse_insn (insn, libcall_insn)
 	      continue;
 	    }
 
-          if (elt)
+	  if (elt)
 	    {
 	      src_elt_cost = elt->cost;
 	      src_elt_regcost = elt->regcost;
 	    }
 
-          /* Find cheapest and skip it for the next time.   For items
+	  /* Find cheapest and skip it for the next time.   For items
 	     of equal cost, use this order:
 	     src_folded, src, src_eqv, src_related and hash table entry.  */
 	  if (src_folded
@@ -5509,7 +5510,7 @@ cse_insn (insn, libcall_insn)
 	  else if (src_related
 		   && preferrable (src_related_cost, src_related_regcost,
 				   src_elt_cost, src_elt_regcost) <= 0)
-  	    trial = copy_rtx (src_related), src_related_cost = MAX_COST;
+	    trial = copy_rtx (src_related), src_related_cost = MAX_COST;
 	  else
 	    {
 	      trial = copy_rtx (elt->exp);
@@ -5674,7 +5675,7 @@ cse_insn (insn, libcall_insn)
 	     a new one if one does not already exist.  */
 	  set_unique_reg_note (insn, REG_EQUAL, src_const);
 
-          /* If storing a constant value in a register that
+	  /* If storing a constant value in a register that
 	     previously held the constant value 0,
 	     record this fact with a REG_WAS_0 note on this insn.
 
@@ -7367,7 +7368,7 @@ cse_basic_block (from, to, next_branch, around_loop)
      we can cse into the loop.  Don't do this if we changed the jump
      structure of a loop unless we aren't going to be following jumps.  */
 
-  insn = prev_nonnote_insn(to);
+  insn = prev_nonnote_insn (to);
   if ((cse_jumps_altered == 0
        || (flag_cse_follow_jumps == 0 && flag_cse_skip_blocks == 0))
       && around_loop && to != 0
@@ -7674,7 +7675,8 @@ delete_trivially_dead_insns (insns, nreg)
 	      dead_libcall = 0;
 	    }
 	}
-    } while (ndead != nlastdead);
+    }
+  while (ndead != nlastdead);
 
   if (rtl_dump_file && ndead)
     fprintf (rtl_dump_file, "Deleted %i trivially dead insns; %i iterations\n",

@@ -422,7 +422,7 @@ gen_rtx_REG (mode, regno)
 #endif
       if (regno == PIC_OFFSET_TABLE_REGNUM
 	  && fixed_regs[PIC_OFFSET_TABLE_REGNUM])
-        return pic_offset_table_rtx;
+	return pic_offset_table_rtx;
       if (regno == STACK_POINTER_REGNUM)
 	return stack_pointer_rtx;
     }
@@ -532,7 +532,7 @@ gen_rtx VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
 	HOST_WIDE_INT arg0 = va_arg (p, HOST_WIDE_INT);
 	HOST_WIDE_INT arg1 = va_arg (p, HOST_WIDE_INT);
 
-        rt_val = gen_rtx_CONST_DOUBLE (mode, arg0, arg1);
+	rt_val = gen_rtx_CONST_DOUBLE (mode, arg0, arg1);
       }
       break;
 
@@ -905,14 +905,14 @@ gen_lowpart_common (mode, x)
   else if (GET_MODE_CLASS (mode) == MODE_FLOAT
 	   && GET_MODE_BITSIZE (mode) == 32
 	   && GET_CODE (x) == CONST_INT)
-  {
+    {
       REAL_VALUE_TYPE r;
       HOST_WIDE_INT i;
 
       i = INTVAL (x);
       r = REAL_VALUE_FROM_TARGET_SINGLE (i);
       return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
-  }
+    }
   else if (GET_MODE_CLASS (mode) == MODE_FLOAT
 	   && GET_MODE_BITSIZE (mode) == 64
 	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
@@ -962,16 +962,16 @@ gen_lowpart_common (mode, x)
       switch (GET_MODE_BITSIZE (GET_MODE (x)))
 	{
 	case 32:
-          REAL_VALUE_TO_TARGET_SINGLE (r, i[3 * endian]);
+	  REAL_VALUE_TO_TARGET_SINGLE (r, i[3 * endian]);
 	  i[1] = 0;
 	  i[2] = 0;
-          i[3 - 3 * endian] = 0;
-          break;
+	  i[3 - 3 * endian] = 0;
+	  break;
 	case 64:
-          REAL_VALUE_TO_TARGET_DOUBLE (r, i + 2 * endian);
+	  REAL_VALUE_TO_TARGET_DOUBLE (r, i + 2 * endian);
 	  i[2 - 2 * endian] = 0;
 	  i[3 - 2 * endian] = 0;
-          break;
+	  break;
 	case 96:
 	  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, i + endian);
 	  i[3 - 3 * endian] = 0;
@@ -1139,8 +1139,8 @@ gen_highpart (mode, x)
    be VOIDmode constant.  */
 rtx
 gen_highpart_mode (outermode, innermode, exp)
-    enum machine_mode outermode, innermode;
-    rtx exp;
+     enum machine_mode outermode, innermode;
+     rtx exp;
 {
   if (GET_MODE (exp) != VOIDmode)
     {
@@ -1151,6 +1151,7 @@ gen_highpart_mode (outermode, innermode, exp)
   return simplify_gen_subreg (outermode, exp, innermode,
 			      subreg_highpart_offset (outermode, innermode));
 }
+
 /* Return offset in bytes to get OUTERMODE low part
    of the value in mode INNERMODE stored in memory in target format.  */
 
@@ -1182,7 +1183,7 @@ subreg_highpart_offset (outermode, innermode)
   int difference = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode));
 
   if (GET_MODE_SIZE (innermode) < GET_MODE_SIZE (outermode))
-     abort ();
+    abort ();
 
   if (difference > 0)
     {
@@ -1530,10 +1531,10 @@ component_ref_for_mem_expr (ref)
 	     || TREE_CODE (inner) == VIEW_CONVERT_EXPR
 	     || TREE_CODE (inner) == SAVE_EXPR
 	     || TREE_CODE (inner) == PLACEHOLDER_EXPR)
-	  if (TREE_CODE (inner) == PLACEHOLDER_EXPR)
-	    inner = find_placeholder (inner, &placeholder_ptr);
-	  else
-	    inner = TREE_OPERAND (inner, 0);
+	if (TREE_CODE (inner) == PLACEHOLDER_EXPR)
+	  inner = find_placeholder (inner, &placeholder_ptr);
+	else
+	  inner = TREE_OPERAND (inner, 0);
 
       if (! DECL_P (inner))
 	inner = NULL_TREE;
@@ -1632,7 +1633,7 @@ set_mem_attributes (ref, t, objectp)
 	  size = (DECL_SIZE_UNIT (t)
 		  && host_integerp (DECL_SIZE_UNIT (t), 1)
 		  ? GEN_INT (tree_low_cst (DECL_SIZE_UNIT (t), 1)) : 0);
-	  align =  DECL_ALIGN (t);
+	  align = DECL_ALIGN (t);
 	}
 
       /* If this is a constant, we know the alignment.  */
@@ -1708,7 +1709,7 @@ set_mem_alias_set (mem, set)
      rtx mem;
      HOST_WIDE_INT set;
 {
-#ifdef ENABLE_CHECKING	
+#ifdef ENABLE_CHECKING
   /* If the new and old alias sets don't conflict, something is wrong.  */
   if (!alias_sets_conflict_p (set, MEM_ALIAS_SET (mem)))
     abort ();
@@ -1915,7 +1916,7 @@ offset_address (memref, offset, pow2)
 
   new = simplify_gen_binary (PLUS, Pmode, addr, offset);
 
-  /* At this point we don't know _why_ the address is invalid.  It 
+  /* At this point we don't know _why_ the address is invalid.  It
      could have secondary memory refereces, multiplies or anything.
 
      However, if we did go and rearrange things, we can wind up not
@@ -1942,7 +1943,7 @@ offset_address (memref, offset, pow2)
 		     GET_MODE (new));
   return new;
 }
-  
+
 /* Return a memory reference like MEMREF, but with its address changed to
    ADDR.  The caller is asserting that the actual piece of memory pointed
    to is the same, just the form of the address is being changed, such as
@@ -2916,8 +2917,8 @@ prev_cc0_setter (insn)
 /* Increment the label uses for all labels present in rtx.  */
 
 static void
-mark_label_nuses(x)
-    rtx x;
+mark_label_nuses (x)
+     rtx x;
 {
   enum rtx_code code;
   int i, j;
@@ -3027,7 +3028,7 @@ try_split (pat, trial, last)
 		  = CALL_INSN_FUNCTION_USAGE (trial);
 
 	  /* Copy notes, particularly those related to the CFG.  */
-	  for (note = REG_NOTES (trial); note ; note = XEXP (note, 1))
+	  for (note = REG_NOTES (trial); note; note = XEXP (note, 1))
 	    {
 	      switch (REG_NOTE_KIND (note))
 		{
@@ -3081,7 +3082,7 @@ try_split (pat, trial, last)
 	  if (GET_CODE (trial) == INSN)
 	    for (i = XVECLEN (seq, 0) - 1; i >= 0; i--)
 	      if (GET_CODE (XVECEXP (seq, 0, i)) == INSN)
-	        mark_label_nuses (PATTERN (XVECEXP (seq, 0, i)));
+		mark_label_nuses (PATTERN (XVECEXP (seq, 0, i)));
 
 	  tem = emit_insn_after (seq, trial);
 
@@ -3256,7 +3257,7 @@ add_insn_after (insn, after)
     {
       set_block_for_insn (insn, bb);
       if (INSN_P (insn))
-        bb->flags |= BB_DIRTY;
+	bb->flags |= BB_DIRTY;
       /* Should not happen as first in the BB is always
 	 either NOTE or LABEL.  */
       if (bb->end == after
@@ -3325,7 +3326,7 @@ add_insn_before (insn, before)
     {
       set_block_for_insn (insn, bb);
       if (INSN_P (insn))
-        bb->flags |= BB_DIRTY;
+	bb->flags |= BB_DIRTY;
       /* Should not happen as first in the BB is always
 	 either NOTE or LABEl.  */
       if (bb->head == insn
@@ -3404,7 +3405,7 @@ remove_insn (insn)
       && (bb = BLOCK_FOR_INSN (insn)))
     {
       if (INSN_P (insn))
-        bb->flags |= BB_DIRTY;
+	bb->flags |= BB_DIRTY;
       if (bb->head == insn)
 	{
 	  /* Never ever delete the basic block note without deleting whole
@@ -3483,7 +3484,7 @@ reorder_insns (from, to, after)
     {
       rtx x;
       bb->flags |= BB_DIRTY;
- 
+
       if (basic_block_for_insn
 	  && ((unsigned int) INSN_UID (from)
 	      < basic_block_for_insn->num_elements)
@@ -3614,7 +3615,7 @@ remove_unnecessary_notes ()
 	     then there is no PC range in the generated code that will
 	     actually be in this block, so there's no point in
 	     remembering the existence of the block.  */
-	  for (tmp = PREV_INSN (insn); tmp ; tmp = PREV_INSN (tmp))
+	  for (tmp = PREV_INSN (insn); tmp; tmp = PREV_INSN (tmp))
 	    {
 	      /* This block contains a real instruction.  Note that we
 		 don't include labels; if the only thing in the block
@@ -3913,7 +3914,7 @@ emit_line_note_after (file, line, after)
       return 0;
     }
 
-  note  = rtx_alloc (NOTE);
+  note = rtx_alloc (NOTE);
   INSN_UID (note) = cur_insn_uid++;
   NOTE_SOURCE_FILE (note) = file;
   NOTE_LINE_NUMBER (note) = line;
@@ -4431,7 +4432,7 @@ end_full_sequence (first, last)
 {
   *first = first_insn;
   *last = last_insn;
-  end_sequence();
+  end_sequence ();
 }
 
 /* Return 1 if currently emitting into a sequence.  */
@@ -4929,7 +4930,7 @@ init_emit_once (line_numbers)
 	   mode = GET_MODE_WIDER_MODE (mode))
 	{
 	  rtx tem = rtx_alloc (CONST_DOUBLE);
- 
+
 	  /* Can't use CONST_DOUBLE_FROM_REAL_VALUE here; that uses the
 	     tables we're setting up right now.  */
 	  memcpy (&CONST_DOUBLE_LOW (tem), r, sizeof (REAL_VALUE_TYPE));
