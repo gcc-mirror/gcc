@@ -319,7 +319,7 @@ __objc_send_message_in_list (MethodList_t method_list, Class class, SEL op)
 	  (*mth->method_imp) ((id)class, mth->method_name);
 
 	  /* Add this method into the +load hash table */
-	  hash_add (&__objc_load_methods, mth->method_imp, mth->method_imp);
+	  hash_add (&__objc_load_methods, mth->method_name, mth->method_imp);
 
 	  DEBUG_PRINTF ("sending +load in class: %s\n", class->name);
 
