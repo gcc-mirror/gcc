@@ -1,22 +1,22 @@
 2001-10-30  Kazu Hirata  <kazu@hxi.com>
 
-	* config/elf.h: Fix comment formatting.
-	* config/elf64.h: Likewise.
-	* config/iris5.h: Likewise.
-	* config/iris5gas.h: Likewise.
-	* config/iris6.h: Likewise.
-	* config/isa3264.h: Likewise.
-	* config/linux.h: Likewise.
-	* config/mips.c: Likewise.
-	* config/mips.h: Likewise.
-	* config/mips.md: Likewise.
-	* config/mips16.S: Likewise.
-	* config/netbsd.h: Likewise.
-	* config/osfrose.h: Likewise.
-	* config/r3900.h: Likewise.
-	* config/sni-svr4.h: Likewise.
-	* config/svr4-t.h: Likewise.
-	* config/ultrix.h: Likewise.
+	* config/mips/elf.h: Fix comment formatting.
+	* config/mips/elf64.h: Likewise.
+	* config/mips/iris5.h: Likewise.
+	* config/mips/iris5gas.h: Likewise.
+	* config/mips/iris6.h: Likewise.
+	* config/mips/isa3264.h: Likewise.
+	* config/mips/linux.h: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/mips/mips.h: Likewise.
+	* config/mips/mips.md: Likewise.
+	* config/mips/mips16.S: Likewise.
+	* config/mips/netbsd.h: Likewise.
+	* config/mips/osfrose.h: Likewise.
+	* config/mips/r3900.h: Likewise.
+	* config/mips/sni-svr4.h: Likewise.
+	* config/mips/svr4-t.h: Likewise.
+	* config/mips/ultrix.h: Likewise.
 
 2001-10-30  Daniel Berlin  <dan@cgsoftware.com>
 
