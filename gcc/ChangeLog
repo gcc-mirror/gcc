@@ -1,3 +1,8 @@
+2002-06-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/arit.c (do_31div, __Udiv, __Umod): Mark prototype
+	__always_inline__.
+
 2002-06-18  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/ia64/ia64.md (doloop_end_internal): Correct rtl.
