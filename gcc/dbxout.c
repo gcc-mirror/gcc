@@ -94,8 +94,8 @@ extern int errno;
 #define ASM_STABN_OP ".stabn"
 #endif
 
-#ifndef DBX_DECL_STABS_CODE
-#define DBX_DECL_STABS_CODE N_LSYM
+#ifndef DBX_TYPE_DECL_STABS_CODE
+#define DBX_TYPE_DECL_STABS_CODE N_LSYM
 #endif
 
 #ifndef DBX_STATIC_CONST_VAR_CODE
@@ -108,6 +108,10 @@ extern int errno;
 
 #ifndef DBX_REGPARM_STABS_LETTER
 #define DBX_REGPARM_STABS_LETTER 'P'
+#endif
+
+#ifndef DBX_MEMPARM_STABS_LETTER
+#define DBX_MEMPARM_STABS_LETTER 'p'
 #endif
 
 /* Nonzero means if the type has methods, only output debugging
@@ -1098,6 +1102,9 @@ dbxout_type (type, full, show_arg_types)
 	  fprintf (asmfile, ":");
 	  return;
 	}
+#ifdef DBX_OUTPUT_ENUM
+      DBX_OUTPUT_ENUM (asmfile, type);
+#else
       putc ('e', asmfile);
       CHARS (1);
       for (tem = TYPE_VALUES (type); tem; tem = TREE_CHAIN (tem))
@@ -1110,6 +1117,7 @@ dbxout_type (type, full, show_arg_types)
 	}
       putc (';', asmfile);
       CHARS (1);
+#endif
       break;
 
     case POINTER_TYPE:
@@ -1367,6 +1375,16 @@ dbxout_symbol (decl, local)
 	    fprintf (asmfile, "%s \"%s:", ASM_STABS_OP,
 		     IDENTIFIER_POINTER (DECL_NAME (decl)));
 
+/* #ifndef DBX_NO_EXTRA_TAGS   rms: I think this is no longer needed.  */
+	    /* This section makes absolutely no sense to me. Why would a tag
+	       ever be needed at this point? The result of this is that any
+	       structure typedef with the tag omitted is treated as if the
+	       tag was given to be the same as the typedef name. Probably
+	       no harm in it, unless the programmer used the same name for
+	       the tag of a *different* structure. At any rate, Alliant's
+	       debugger would want the tag output before the typedef, so
+	       this code still loses.  -- hyc */
+
 	    /* Short cut way to output a tag also.  */
 	    if ((TREE_CODE (type) == RECORD_TYPE
 		 || TREE_CODE (type) == UNION_TYPE)
@@ -1380,9 +1398,10 @@ dbxout_symbol (decl, local)
 		else
 		  tag_needed = 1;
 	      }
+/* #endif */
 
 	    putc ('t', asmfile);
-	    current_sym_code = DBX_DECL_STABS_CODE;
+	    current_sym_code = DBX_TYPE_DECL_STABS_CODE;
 
 	    dbxout_type (type, 1, 0);
 	    dbxout_finish_symbol (decl);
@@ -1400,7 +1419,7 @@ dbxout_symbol (decl, local)
 	    if (TREE_CODE (name) == TYPE_DECL)
 	      name = DECL_NAME (name);
 
-	    current_sym_code = DBX_DECL_STABS_CODE;
+	    current_sym_code = DBX_TYPE_DECL_STABS_CODE;
 	    current_sym_value = 0;
 	    current_sym_addr = 0;
 	    current_sym_nchars = 2 + IDENTIFIER_LENGTH (name);
@@ -1771,13 +1790,15 @@ dbxout_parms (parms)
 	      {
 		current_sym_nchars = 2 + IDENTIFIER_LENGTH (DECL_NAME (parms));
 
-		fprintf (asmfile, "%s \"%s:p", ASM_STABS_OP,
-			 IDENTIFIER_POINTER (DECL_NAME (parms)));
+		fprintf (asmfile, "%s \"%s:%c", ASM_STABS_OP,
+			 IDENTIFIER_POINTER (DECL_NAME (parms)),
+			 DBX_MEMPARM_STABS_LETTER);
 	      }
 	    else
 	      {
 		current_sym_nchars = 8;
-		fprintf (asmfile, "%s \"(anon):p", ASM_STABS_OP);
+		fprintf (asmfile, "%s \"(anon):%c", ASM_STABS_OP,
+			 DBX_MEMPARM_STABS_LETTER);
 	      }
 
 	    if (GET_CODE (DECL_RTL (parms)) == REG
@@ -1917,13 +1938,15 @@ dbxout_parms (parms)
 	      {
 		current_sym_nchars = 2 + strlen (IDENTIFIER_POINTER (DECL_NAME (parms)));
 
-		fprintf (asmfile, "%s \"%s:p", ASM_STABS_OP,
-			 IDENTIFIER_POINTER (DECL_NAME (parms)));
+		fprintf (asmfile, "%s \"%s:%c", ASM_STABS_OP,
+			 IDENTIFIER_POINTER (DECL_NAME (parms)),
+			 DBX_MEMPARM_STABS_LETTER);
 	      }
 	    else
 	      {
 		current_sym_nchars = 8;
-		fprintf (asmfile, "%s \"(anon):p", ASM_STABS_OP);
+		fprintf (asmfile, "%s \"(anon):%c", ASM_STABS_OP,
+		DBX_MEMPARM_STABS_LETTER);
 	      }
 
 	    current_sym_value
@@ -2121,9 +2144,13 @@ dbxout_block (block, depth, args)
 		    }
 		}
 
+#ifdef DBX_OUTPUT_LBRAC
+	      DBX_OUTPUT_LBRAC (asmfile, buf);
+#else
 	      fprintf (asmfile, "%s %d,0,0,", ASM_STABN_OP, N_LBRAC);
 	      assemble_name (asmfile, buf);
 	      fprintf (asmfile, "\n");
+#endif
 	    }
 	  else if (depth > 0)
 	    /* Count blocks the same way regardless of debug_info_level.  */
@@ -2146,9 +2173,13 @@ dbxout_block (block, depth, args)
 	    {
 	      char buf[20];
 	      ASM_GENERATE_INTERNAL_LABEL (buf, "LBE", blocknum);
+#ifdef DBX_OUTPUT_RBRAC
+	      DBX_OUTPUT_RBRAC (asmfile, buf);
+#else
 	      fprintf (asmfile, "%s %d,0,0,", ASM_STABN_OP, N_RBRAC);
 	      assemble_name (asmfile, buf);
 	      fprintf (asmfile, "\n");
+#endif
 	    }
 	}
       block = BLOCK_CHAIN (block);
