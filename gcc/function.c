@@ -998,12 +998,12 @@ assign_stack_temp_for_type (mode, size, keep, type)
 	 So for requests which depended on the rounding of SIZE, we go ahead
 	 and round it now.  We also make sure ALIGNMENT is at least
 	 BIGGEST_ALIGNMENT.  */
-      if (mode == BLKmode)
-	{
-	  align = MAX (align, BIGGEST_ALIGNMENT / BITS_PER_UNIT);
-	  size = CEIL_ROUND (size, align);
-	}
-      p->slot = assign_stack_local (mode, size, align);
+      if (mode == BLKmode && align < (BIGGEST_ALIGNMENT / BITS_PER_UNIT))
+	abort();
+      p->slot = assign_stack_local (mode,
+				    mode == BLKmode
+				      ? CEIL_ROUND (size, align) : size,
+				    align);
 
       p->align = align;
       p->alias_set = alias_set;
