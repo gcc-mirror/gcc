@@ -3,7 +3,7 @@
 #   Copyright (C) 1991, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
-# can handle that machine.  It does not imply ALL GNU software can. 
+# can handle that machine.  It does not imply ALL GNU software can.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -231,6 +231,10 @@ case $basic_machine in
 		;;
 	cray2)
 		basic_machine=cray2-cray
+		os=-unicos
+		;;
+	[ctj]90-cray)
+		basic_machine=c90-cray
 		os=-unicos
 		;;
 	crds | unos)
