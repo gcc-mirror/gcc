@@ -1,3 +1,9 @@
+2004-12-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/18968
+	* class.c (build_base_path): Convert the zero constant to the correct
+	type when comparing.
+
 2004-12-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18925
