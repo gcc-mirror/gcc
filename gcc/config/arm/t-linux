@@ -3,9 +3,6 @@
 TARGET_LIBGCC2_CFLAGS = -fomit-frame-pointer -fPIC
 LIBGCC2_DEBUG_CFLAGS = -g0
 
-# Don't build enquire
-ENQUIRE=
-
 LIB1ASMSRC = arm/lib1funcs.asm
 LIB1ASMFUNCS = _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_lnx
 
