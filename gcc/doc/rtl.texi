@@ -2681,7 +2681,7 @@ This means that the above invariants are not necessarily true for insns
 inside @code{sequence} expressions.  Specifically, if @var{insn} is the
 first insn in a @code{sequence}, @code{NEXT_INSN (PREV_INSN (@var{insn}))}
 is the insn containing the @code{sequence} expression, as is the value
-of @code{PREV_INSN (NEXT_INSN (@var{insn}))} is @var{insn} is the last
+of @code{PREV_INSN (NEXT_INSN (@var{insn}))} if @var{insn} is the last
 insn in the @code{sequence} expression.  You can use these expressions
 to find the containing @code{sequence} expression.
 
@@ -3098,7 +3098,7 @@ insufficient registers are available.
 Except for stack homes for parameters, which are indicated by a
 @code{REG_EQUIV} note and are not useful to the early optimization
 passes and pseudo registers that are equivalent to a memory location
-throughout there entire life, which is not detected until later in
+throughout their entire life, which is not detected until later in
 the compilation, all equivalences are initially indicated by an attached
 @code{REG_EQUAL} note.  In the early stages of register allocation, a
 @code{REG_EQUAL} note is changed into a @code{REG_EQUIV} note if

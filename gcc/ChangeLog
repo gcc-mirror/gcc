@@ -1,3 +1,7 @@
+2002-01-11  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/rtl.texi (Insns): Fix 2 typos.
+
 2002-01-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/invoke.texi: Avoid overfull hboxes.  Add summary of D30V
