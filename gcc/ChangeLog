@@ -1,3 +1,8 @@
+2000-10-20  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.c (process_command, main): Use "because" instead of
+	"since" in error messages.
+
 Fri Oct 20 13:33:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stor-layout.c (compute_record_mode): Use tree_low_cst.

@@ -3595,11 +3595,11 @@ process_command (argc, argv)
 	{
 	  /* -save-temps overrides -pipe, so that temp files are produced */
 	  if (save_temps_flag)
-	    error ("Warning: -pipe ignored since -save-temps specified");
+	    error ("Warning: -pipe ignored because -save-temps specified");
           /* -time overrides -pipe because we can't get correct stats when
 	     multiple children are running at once.  */
 	  else if (report_times)
-	    error ("Warning: -pipe ignored since -time specified");
+	    error ("Warning: -pipe ignored because -time specified");
 	}
       else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
@@ -5636,7 +5636,7 @@ main (argc, argv)
   if (! linker_was_run && error_count == 0)
     for (i = 0; (int) i < n_infiles; i++)
       if (explicit_link_files[i])
-	error ("%s: linker input file unused since linking not done",
+	error ("%s: linker input file unused because linking not done",
 	       outfiles[i]);
 
   /* Delete some or all of the temporary files we made.  */
