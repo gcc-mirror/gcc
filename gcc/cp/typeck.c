@@ -7031,8 +7031,7 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
       && (IS_SIGNATURE_POINTER (type) || IS_SIGNATURE_REFERENCE (type)))
     return build_signature_pointer_constructor (type, rhs);
 
-  if (IS_AGGR_TYPE (type)
-      && (TYPE_NEEDS_CONSTRUCTING (type) || TREE_HAS_CONSTRUCTOR (rhs)))
+  if (IS_AGGR_TYPE (type))
     return ocp_convert (type, rhs, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
 
   if (type == TREE_TYPE (rhs))
