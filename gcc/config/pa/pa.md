@@ -5561,8 +5561,8 @@
 ;; Use a different pattern for functions which have non-trivial
 ;; epilogues so as not to confuse jump and reorg.
 (define_insn "return_internal"
-  [(use (reg:SI 2))
-   (return)]
+  [(return)
+   (use (reg:SI 2))]
   ""
   "*
 {
