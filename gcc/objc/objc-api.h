@@ -310,11 +310,53 @@ extern Class (*_objc_lookup_class)(const char *name);
 */
 extern void (*_objc_load_callback)(Class class, Category* category);
 
+/*
+** Hook functions for allocating, copying and disposing of instances
+*/
 extern id (*_objc_object_alloc)(Class class);
-
 extern id (*_objc_object_copy)(id object);
-
 extern id (*_objc_object_dispose)(id object);
+
+/*
+** Standard functions for memory allocation and disposal.
+** Users should use these functions in their ObjC programs so
+** that they work properly with garbage collectors as well as
+** can take advantage of the exception/error handling available.
+*/
+void *
+objc_malloc(size_t size);
+
+void *
+objc_atomic_malloc(size_t size);
+
+void *
+objc_valloc(size_t size);
+
+void *
+objc_realloc(void *mem, size_t size);
+
+void *
+objc_calloc(size_t nelem, size_t size);
+
+void
+objc_free(void *mem);
+
+/*
+** Hook functions for memory allocation and disposal.
+** This makes it easy to substitute garbage collection systems
+** such as Boehm's GC by assigning these function pointers
+** to the GC's allocation routines.  By default these point
+** to the ANSI standard malloc, realloc, free, etc.
+**
+** Users should call the normal objc routines above for
+** memory allocation and disposal within their programs.
+*/
+extern void *(*_objc_malloc)(size_t);
+extern void *(*_objc_atomic_malloc)(size_t);
+extern void *(*_objc_valloc)(size_t);
+extern void *(*_objc_realloc)(void *, size_t);
+extern void *(*_objc_calloc)(size_t, size_t);
+extern void (*_objc_free)(void *);
 
 Method_t class_get_class_method(MetaClass class, SEL aSel);
 
