@@ -1610,6 +1610,14 @@ sched_analyze_1 (x, insn)
 	    add_dependence (insn, reg_last_sets[regno], REG_DEP_OUTPUT);
 	  reg_last_sets[regno] = insn;
 
+	  /* Pseudos that are REG_EQUIV to something may be replaced
+	     by that during reloading, so we can potentially read
+	     quantities mentioned in those addresses. */
+	  if (! reload_completed)
+	    if (reg_known_value[regno] != regno_reg_rtx[regno])
+	      if (GET_CODE (reg_known_value[regno]) == MEM)
+		sched_analyze_2 (XEXP (reg_known_value[regno], 0), insn);
+
 	  /* Don't let it cross a call after scheduling if it doesn't
 	     already cross one.  */
 	  if (reg_n_calls_crossed[regno] == 0 && last_function_call)
@@ -1761,6 +1769,12 @@ sched_analyze_2 (x, insn)
 	      = gen_rtx (INSN_LIST, VOIDmode, insn, reg_last_uses[regno]);
 	    if (reg_last_sets[regno])
 	      add_dependence (insn, reg_last_sets[regno], 0);
+
+	    /* Pseudos that are REG_EQUIV to something may be replaced
+	       by that, so we depend on anything mentioned there too. */
+	    if (! reload_completed)
+	      if (reg_known_value[regno] != regno_reg_rtx[regno])
+		sched_analyze_2 (reg_known_value[regno], insn);
 
 	    /* If the register does not already cross any calls, then add this
 	       insn to the sched_before_next_call list so that it will still
