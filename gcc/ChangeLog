@@ -6,6 +6,12 @@ Wed Jun 10 08:56:27 1998  John Carr  <jfc@mit.edu>
 
 Wed Jun 10 02:11:55 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* mips.c (gpr_mode): New variable.
+	(override_options): Initialize gpr_mode.
+	(compute_frame_size): Use "gpr_mode" instead of "word_mode" to
+	determine size and offset of general purpose registers save slots.
+	(save_restore_insns, mips_expand_prologue): Similarly.
+
 	* reload.c (find_reloads_toplev): Use gen_lowpart common to convert
 	between constant representations when we have (SUBREG (REG)) with
 	REG equivalent to a constant.
