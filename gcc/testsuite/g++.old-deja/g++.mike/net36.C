@@ -11,7 +11,7 @@ typedef void (A::*handler) (X*);
 
 class B {
 public:
-  void setHandler(handler);	// ERROR - fn ref in err msg 
+  void setHandler(handler);
 };
 
 void f(B* b) {
