@@ -32,6 +32,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    are used also for allocating many other kinds of objects
    by all passes of the compiler.  */
 
+#include <setjmp.h>
 #include "config.h"
 #include "flags.h"
 #include "tree.h"
@@ -1292,19 +1293,35 @@ build_real_from_int_cst (type, i)
      tree i;
 {
   tree v;
+  int overflow = TREE_OVERFLOW (i);
   REAL_VALUE_TYPE d;
+  jmp_buf float_error;
 
   v = make_node (REAL_CST);
   TREE_TYPE (v) = type;
 
+  if (setjmp (float_error))
+    {
+      d = dconst0;
+      overflow = 1;
+      goto got_it;
+    }
+
+  set_float_handler (float_error);
+
   d = REAL_VALUE_TRUNCATE (TYPE_MODE (type), real_value_from_int_cst (i));
-  /* Check for valid float value for this type on this target machine;
-     if not, can print error message and store a valid value in D.  */
+
+  /* Check for valid float value for this type on this target machine.  */
+
+ got_it:
+  set_float_handler (NULL_PTR);
+
 #ifdef CHECK_FLOAT_VALUE
-  CHECK_FLOAT_VALUE (TYPE_MODE (type), d);
+  CHECK_FLOAT_VALUE (TYPE_MODE (type), d, overflow);
 #endif
 
   TREE_REAL_CST (v) = d;
+  TREE_OVERFLOW (v) = TREE_CONSTANT_OVERFLOW (v) = overflow;
   return v;
 }
 
@@ -1339,9 +1356,13 @@ build_complex (real, imag)
      tree real, imag;
 {
   register tree t = make_node (COMPLEX_CST);
+
   TREE_REALPART (t) = real;
   TREE_IMAGPART (t) = imag;
   TREE_TYPE (t) = build_complex_type (TREE_TYPE (real));
+  TREE_OVERFLOW (t) = TREE_OVERFLOW (real) | TREE_OVERFLOW (imag);
+  TREE_CONSTANT_OVERFLOW (t)
+    = TREE_CONSTANT_OVERFLOW (real) | TREE_CONSTANT_OVERFLOW (imag);
   return t;
 }
 
