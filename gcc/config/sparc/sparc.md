@@ -1605,7 +1605,7 @@
      handle it correctly.  */
   if (GET_CODE (operands[2]) == CONST_DOUBLE)
     operands[2] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (operands[2]));
-  return \"or %R1,%%lo(%a2),%R0\";
+  return \"or %L1,%%lo(%a2),%L0\";
 }"
   ;; Need to set length for this arith insn because operand2
   ;; is not an "arith_operand".
@@ -3538,29 +3538,23 @@
 {
   rtx op2 = operands[2];
 
-  /* If constant is positive, upper bits zeroed, otherwise unchanged.
-     Give the assembler a chance to pick the move instruction. */
-  if (GET_CODE (op2) == CONST_INT)
-    {
-      int sign = INTVAL (op2);
-      if (sign < 0)
-	return \"addcc %R1,%2,%R0\;addx %1,-1,%0\";
-      return \"addcc %R1,%2,%R0\;addx %1,0,%0\";
-    }
-  else if (GET_CODE (op2) == CONST_DOUBLE)
+  if (GET_CODE (op2) == CONST_INT
+      || GET_CODE (op2) == CONST_DOUBLE)
     {
       rtx xoperands[4];
       xoperands[0] = operands[0];
       xoperands[1] = operands[1];
-      xoperands[2] = GEN_INT (CONST_DOUBLE_LOW (op2));
-      xoperands[3] = GEN_INT (CONST_DOUBLE_HIGH (op2));
-      if (xoperands[2] == const0_rtx && xoperands[0] == xoperands[1])
-	output_asm_insn (\"add %1,%3,%0\", xoperands);
+      if (WORDS_BIG_ENDIAN)
+	split_double (op2, &xoperands[2], &xoperands[3]);
       else
-	output_asm_insn (\"addcc %R1,%2,%R0\;addx %1,%3,%0\", xoperands);
+	split_double (op2, &xoperands[3], &xoperands[2]);
+      if (xoperands[3] == const0_rtx && xoperands[0] == xoperands[1])
+	output_asm_insn (\"add %H1,%2,%H0\", xoperands);
+      else
+	output_asm_insn (\"addcc %L1,%3,%L0\;addx %H1,%2,%H0\", xoperands);
       return \"\";
     }
-  return \"addcc %R1,%R2,%R0\;addx %1,%2,%0\";
+  return \"addcc %L1,%L2,%L0\;addx %H1,%H2,%H0\";
 }"
   [(set_attr "length" "2")])
 
@@ -3646,29 +3640,23 @@
 {
   rtx op2 = operands[2];
 
-  /* If constant is positive, upper bits zeroed, otherwise unchanged.
-     Give the assembler a chance to pick the move instruction. */
-  if (GET_CODE (op2) == CONST_INT)
-    {
-      int sign = INTVAL (op2);
-      if (sign < 0)
-	return \"subcc %R1,%2,%R0\;subx %1,-1,%0\";
-      return \"subcc %R1,%2,%R0\;subx %1,0,%0\";
-    }
-  else if (GET_CODE (op2) == CONST_DOUBLE)
+  if (GET_CODE (op2) == CONST_INT
+      || GET_CODE (op2) == CONST_DOUBLE)
     {
       rtx xoperands[4];
       xoperands[0] = operands[0];
       xoperands[1] = operands[1];
-      xoperands[2] = GEN_INT (CONST_DOUBLE_LOW (op2));
-      xoperands[3] = GEN_INT (CONST_DOUBLE_HIGH (op2));
-      if (xoperands[2] == const0_rtx && xoperands[0] == xoperands[1])
-	output_asm_insn (\"sub %1,%3,%0\", xoperands);
+      if (WORDS_BIG_ENDIAN)
+	split_double (op2, &xoperands[2], &xoperands[3]);
       else
-	output_asm_insn (\"subcc %R1,%2,%R0\;subx %1,%3,%0\", xoperands);
+	split_double (op2, &xoperands[3], &xoperands[2]);
+      if (xoperands[3] == const0_rtx && xoperands[0] == xoperands[1])
+	output_asm_insn (\"sub %H1,%2,%H0\", xoperands);
+      else
+	output_asm_insn (\"subcc %L1,%3,%L0\;subx %H1,%2,%H0\", xoperands);
       return \"\";
     }
-  return \"subcc %R1,%R2,%R0\;subx %1,%2,%0\";
+  return \"subcc %L1,%L2,%L0\;subx %H1,%H2,%H0\";
 }"
   [(set_attr "length" "2")])
 
@@ -3780,7 +3768,7 @@
   "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "*
 {
-  return TARGET_SPARCLET ? \"smuld %1,%2,%R0\" : \"smul %1,%2,%R0\;rd %%y,%0\";
+  return TARGET_SPARCLET ? \"smuld %1,%2,%L0\" : \"smul %1,%2,%L0\;rd %%y,%H0\";
 }"
   [(set (attr "length")
 	(if_then_else (eq_attr "isa" "sparclet")
@@ -3795,7 +3783,7 @@
   "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "*
 {
-  return TARGET_SPARCLET ? \"smuld %1,%2,%R0\" : \"smul %1,%2,%R0\;rd %%y,%0\";
+  return TARGET_SPARCLET ? \"smuld %1,%2,%L0\" : \"smul %1,%2,%L0\;rd %%y,%H0\";
 }"
   [(set (attr "length")
 	(if_then_else (eq_attr "isa" "sparclet")
@@ -3858,7 +3846,7 @@
   "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "*
 {
-  return TARGET_SPARCLET ? \"umuld %1,%2,%R0\" : \"umul %1,%2,%R0\;rd %%y,%0\";
+  return TARGET_SPARCLET ? \"umuld %1,%2,%L0\" : \"umul %1,%2,%L0\;rd %%y,%H0\";
 }"
   [(set (attr "length")
 	(if_then_else (eq_attr "isa" "sparclet")
@@ -3873,7 +3861,7 @@
   "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "*
 {
-  return TARGET_SPARCLET ? \"umuld %1,%2,%R0\" : \"umul %1,%2,%R0\;rd %%y,%0\";
+  return TARGET_SPARCLET ? \"umuld %1,%2,%L0\" : \"umul %1,%2,%L0\;rd %%y,%H0\";
 }"
   [(set (attr "length")
 	(if_then_else (eq_attr "isa" "sparclet")
@@ -4027,7 +4015,7 @@
 			   (match_operand:SI 2 "register_operand" "r")))
 		 (match_operand:DI 3 "register_operand" "0")))]
   "TARGET_SPARCLET"
-  "smacd %1,%2,%R0"
+  "smacd %1,%2,%L0"
   [(set_attr "type" "imul")])
 
 (define_insn "*umacdi"
@@ -4038,7 +4026,7 @@
 			   (match_operand:SI 2 "register_operand" "r")))
 		 (match_operand:DI 3 "register_operand" "0")))]
   "TARGET_SPARCLET"
-  "umacd %1,%2,%R0"
+  "umacd %1,%2,%L0"
   [(set_attr "type" "imul")])
 
 ;;- Boolean instructions
@@ -4061,25 +4049,17 @@
 {
   rtx op2 = operands[2];
 
-  /* If constant is positive, upper bits zeroed, otherwise unchanged.
-     Give the assembler a chance to pick the move instruction. */
-  if (GET_CODE (op2) == CONST_INT)
-    {
-      int sign = INTVAL (op2);
-      if (sign < 0)
-	return \"mov %1,%0\;and %R1,%2,%R0\";
-      return \"mov 0,%0\;and %R1,%2,%R0\";
-    }
-  else if (GET_CODE (op2) == CONST_DOUBLE)
+  if (GET_CODE (op2) == CONST_INT
+      || GET_CODE (op2) == CONST_DOUBLE)
     {
       rtx xoperands[4];
       xoperands[0] = operands[0];
       xoperands[1] = operands[1];
-      xoperands[2] = GEN_INT (CONST_DOUBLE_LOW (op2));
-      xoperands[3] = GEN_INT (CONST_DOUBLE_HIGH (op2));
-      /* We could optimize then operands[1] == operands[0]
-	 and either half of the constant is -1.  */
-      output_asm_insn (\"and %R1,%2,%R0\;and %1,%3,%0\", xoperands);
+      if (WORDS_BIG_ENDIAN)
+	split_double (op2, &xoperands[2], &xoperands[3]);
+      else
+	split_double (op2, &xoperands[3], &xoperands[2]);
+      output_asm_insn (\"and %L1,%3,%L0\;and %H1,%2,%H0\", xoperands);
       return \"\";
     }
   return \"and %1,%2,%0\;and %R1,%R2,%R0\";
@@ -4155,30 +4135,17 @@
 {
   rtx op2 = operands[2];
 
-  /* If constant is positive, upper bits zeroed, otherwise unchanged.
-     Give the assembler a chance to pick the move instruction. */
-  if (GET_CODE (op2) == CONST_INT)
-    {
-      int sign = INTVAL (op2);
-      if (sign < 0)
-	{
-	  if (TARGET_LIVE_G0)
-	    return \"and %0,0,%0\;add %0,-1,%0\;or %R1,%2,%R0\";
-	  else
-	    return \"mov -1,%0\;or %R1,%2,%R0\";
-	}
-      return \"mov %1,%0\;or %R1,%2,%R0\";
-    }
-  else if (GET_CODE (op2) == CONST_DOUBLE)
+  if (GET_CODE (op2) == CONST_INT
+      || GET_CODE (op2) == CONST_DOUBLE)
     {
       rtx xoperands[4];
       xoperands[0] = operands[0];
       xoperands[1] = operands[1];
-      xoperands[2] = GEN_INT (CONST_DOUBLE_LOW (op2));
-      xoperands[3] = GEN_INT (CONST_DOUBLE_HIGH (op2));
-      /* We could optimize then operands[1] == operands[0]
-	 and either half of the constant is 0.  */
-      output_asm_insn (\"or %R1,%2,%R0\;or %1,%3,%0\", xoperands);
+      if (WORDS_BIG_ENDIAN)
+	split_double (op2, &xoperands[2], &xoperands[3]);
+      else
+	split_double (op2, &xoperands[3], &xoperands[2]);
+      output_asm_insn (\"or %L1,%3,%L0\;or %H1,%2,%H0\", xoperands);
       return \"\";
     }
   return \"or %1,%2,%0\;or %R1,%R2,%R0\";
@@ -4254,25 +4221,17 @@
 {
   rtx op2 = operands[2];
 
-  /* If constant is positive, upper bits zeroed, otherwise unchanged.
-     Give the assembler a chance to pick the move instruction. */
-  if (GET_CODE (op2) == CONST_INT)
-    {
-      int sign = INTVAL (op2);
-      if (sign < 0)
-	return \"xor %1,-1,%0\;xor %R1,%2,%R0\";
-      return \"mov %1,%0\;xor %R1,%2,%R0\";
-    }
-  else if (GET_CODE (op2) == CONST_DOUBLE)
+  if (GET_CODE (op2) == CONST_INT
+      || GET_CODE (op2) == CONST_DOUBLE)
     {
       rtx xoperands[4];
       xoperands[0] = operands[0];
       xoperands[1] = operands[1];
-      xoperands[2] = GEN_INT (CONST_DOUBLE_LOW (op2));
-      xoperands[3] = GEN_INT (CONST_DOUBLE_HIGH (op2));
-      /* We could optimize then operands[1] == operands[0]
-	 and either half of the constant is 0.  */
-      output_asm_insn (\"xor %R1,%2,%R0\;xor %1,%3,%0\", xoperands);
+      if (WORDS_BIG_ENDIAN)
+	split_double (op2, &xoperands[2], &xoperands[3]);
+      else
+	split_double (op2, &xoperands[3], &xoperands[2]);
+      output_asm_insn (\"xor %L1,%3,%L0\;xor %H1,%2,%H0\", xoperands);
       return \"\";
     }
   return \"xor %1,%2,%0\;xor %R1,%R2,%R0\";
@@ -4515,7 +4474,7 @@
 {
   if (TARGET_LIVE_G0)
     output_asm_insn (\"and %%g0,0,%%g0\", operands);
-  return \"subcc %%g0,%R1,%R0\;subx %%g0,%1,%0\";
+  return \"subcc %%g0,%L1,%L0\;subx %%g0,%H1,%H0\";
 }"
   [(set_attr "type" "unary")
    ;; ??? This is wrong for TARGET_LIVE_G0 but it's not critical.
