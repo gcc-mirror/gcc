@@ -52,6 +52,16 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include <stdio.h>
 #include <ctype.h>
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
 
 #include "tree.h"
 #include "rtl.h"
@@ -837,7 +847,11 @@ shorten_branches (first)
 	   insn = NEXT_INSN (insn))
 	{
 	  int new_length;
+#ifdef SHORTEN_WITH_ADJUST_INSN_LENGTH
+#ifdef ADJUST_INSN_LENGTH
 	  int tmp_length;
+#endif
+#endif
 
 	  uid = INSN_UID (insn);
 	  insn_addresses[uid] = insn_current_address;
@@ -1063,8 +1077,14 @@ profile_function (file)
      FILE *file;
 {
   int align = MIN (BIGGEST_ALIGNMENT, LONG_TYPE_SIZE);
+#if defined(ASM_OUTPUT_REG_PUSH)
+#if defined(STRUCT_VALUE_INCOMING_REGNUM) || defined(STRUCT_VALUE_REGNUM)
   int sval = current_function_returns_struct;
+#endif
+#if defined(STATIC_CHAIN_INCOMING_REGNUM) || defined(STATIC_CHAIN_REGNUM)
   int cxt = current_function_needs_context;
+#endif
+#endif /* ASM_OUTPUT_REG_PUSH */
 
   data_section ();
   ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
@@ -1683,7 +1703,9 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	register rtx body = PATTERN (insn), set;
 	int insn_code_number;
 	char *template;
+#ifdef HAVE_cc0
 	rtx note;
+#endif
 
 	/* An INSN, JUMP_INSN or CALL_INSN.
 	   First check for special kinds that recog doesn't recognize.  */
@@ -1857,7 +1879,9 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	       actions in these insns and the CC must be marked as being
 	       clobbered by the function.  */
 	    if (GET_CODE (XVECEXP (body, 0, 0)) == CALL_INSN)
-	      CC_STATUS_INIT;
+	      {
+		CC_STATUS_INIT;
+	      }
 
 	    /* Following a conditional branch sequence, we have a new basic
 	       block.  */
@@ -2575,7 +2599,7 @@ output_asm_insn (template, operands)
      rtx *operands;
 {
   register char *p;
-  register int c, i;
+  register int c;
 
   /* An insn may return a null string template
      in a case where no assembler code is needed.  */
@@ -2589,7 +2613,7 @@ output_asm_insn (template, operands)
   ASM_OUTPUT_OPCODE (asm_out_file, p);
 #endif
 
-  while (c = *p++)
+  while ((c = *p++))
     switch (c)
       {
       case '\n':
@@ -2607,16 +2631,20 @@ output_asm_insn (template, operands)
 
 #ifdef ASSEMBLER_DIALECT
       case '{':
-	/* If we want the first dialect, do nothing.  Otherwise, skip
-	   DIALECT_NUMBER of strings ending with '|'.  */
-	for (i = 0; i < dialect_number; i++)
-	  {
-	    while (*p && *p++ != '|')
-	      ;
+	{
+	  register int i;
+	  
+	  /* If we want the first dialect, do nothing.  Otherwise, skip
+	     DIALECT_NUMBER of strings ending with '|'.  */
+	  for (i = 0; i < dialect_number; i++)
+	    {
+	      while (*p && *p++ != '|')
+		;
 
-	    if (*p == '|')
-	      p++;
-	  }
+	      if (*p == '|')
+		p++;
+	    }
+	}
 	break;
 
       case '|':
@@ -2904,7 +2932,6 @@ asm_fprintf VPROTO((FILE *file, char *p, ...))
   va_list argptr;
   char buf[10];
   char *q, c;
-  int i;
 
   VA_START (argptr, p);
 
@@ -2915,21 +2942,25 @@ asm_fprintf VPROTO((FILE *file, char *p, ...))
 
   buf[0] = '%';
 
-  while (c = *p++)
+  while ((c = *p++))
     switch (c)
       {
 #ifdef ASSEMBLER_DIALECT
       case '{':
-	/* If we want the first dialect, do nothing.  Otherwise, skip
-	   DIALECT_NUMBER of strings ending with '|'.  */
-	for (i = 0; i < dialect_number; i++)
-	  {
-	    while (*p && *p++ != '|')
-	      ;
+	{
+	  int i;
 
-	    if (*p == '|')
-	      p++;
+	  /* If we want the first dialect, do nothing.  Otherwise, skip
+	     DIALECT_NUMBER of strings ending with '|'.  */
+	  for (i = 0; i < dialect_number; i++)
+	    {
+	      while (*p && *p++ != '|')
+		;
+
+	      if (*p == '|')
+		p++;
 	  }
+	}
 	break;
 
       case '|':
