@@ -21,7 +21,7 @@ export TARGET_MACHINE DESTDIR SRCDIR FIND_BASE VERBOSE
 mkdir ${DESTDIR} ${SRCDIR}
 
 ( cd ${SRCDIR}
-  mkdir sys X11 Xm sundev sunwindow )
+  mkdir netinet rpc sparc sundev sunwindow sys X11 Xm )
 
 [=
 
