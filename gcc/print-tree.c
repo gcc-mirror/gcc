@@ -397,7 +397,6 @@ print_node (file, prefix, node, indent)
 	       DECL_SOURCE_FILE (node), DECL_SOURCE_LINE (node));
 
       print_node (file, "size", DECL_SIZE (node), indent + 4);
-      print_node (file, "attributes", TYPE_ATTRIBUTES (node), indent + 4);
       indent_to (file, indent + 3);
       if (TREE_CODE (node) != FUNCTION_DECL)
 	fprintf (file, " align %d", DECL_ALIGN (node));
