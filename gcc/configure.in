@@ -1418,7 +1418,7 @@ AC_SUBST(inhibit_libc)
 # These are the normal (build=host) settings:
 BUILD_PREFIX=			AC_SUBST(BUILD_PREFIX)
 BUILD_PREFIX_1=ignore-		AC_SUBST(BUILD_PREFIX_1)
-BUILD_CC='$(CC)'		AC_SUBST(BUILD_CC)
+CC_FOR_BUILD='$(CC)'		AC_SUBST(CC_FOR_BUILD)
 BUILD_CFLAGS='$(ALL_CFLAGS)'	AC_SUBST(BUILD_CFLAGS)
 
 STMP_FIXINC=stmp-fixinc		AC_SUBST(STMP_FIXINC)
@@ -1429,7 +1429,6 @@ if test x$build != x$host
 then
     BUILD_PREFIX=build-
     BUILD_PREFIX_1=build-
-    BUILD_CC='$(CC_FOR_BUILD)'
     BUILD_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS_FOR_BUILD) $(XCFLAGS)'
 
     if test "x$TARGET_SYSTEM_ROOT" = x; then

@@ -1,3 +1,9 @@
+2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Replace BUILD_CC references with CC_FOR_BUILD.
+	* configure: Regenerate.
+	* Makefile.in: Replace BUILD_CC references with CC_FOR_BUILD.
+
 2003-06-17  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* install.texi (Testing): Add information on how to run Java
