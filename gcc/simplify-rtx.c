@@ -407,6 +407,8 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  return gen_rtx_CONST_VECTOR (mode, v);
 	}
     }
+  else if (GET_CODE (op) == CONST)
+    return simplify_unary_operation (code, mode, XEXP (op, 0), op_mode);
 
   if (VECTOR_MODE_P (mode) && GET_CODE (trueop) == CONST_VECTOR)
     {
@@ -971,11 +973,22 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	    return simplify_gen_binary (MINUS, mode, XEXP (op, 1),
 					XEXP (op, 0));
 
-	  /* (neg (plus A B)) is canonicalized to (minus (neg A) B).  */
 	  if (GET_CODE (op) == PLUS
 	      && !HONOR_SIGNED_ZEROS (mode)
 	      && !HONOR_SIGN_DEPENDENT_ROUNDING (mode))
 	    {
+	      /* (neg (plus A C)) is simplified to (minus -C A).  */
+	      if (GET_CODE (XEXP (op, 1)) == CONST_INT
+		  || GET_CODE (XEXP (op, 1)) == CONST_DOUBLE)
+		{
+		  temp = simplify_unary_operation (NEG, mode, XEXP (op, 1),
+						   mode);
+		  if (temp)
+		    return simplify_gen_binary (MINUS, mode, temp,
+						XEXP (op, 0));
+		}
+
+	      /* (neg (plus A B)) is canonicalized to (minus (neg A) B).  */
 	      temp = simplify_gen_unary (NEG, mode, XEXP (op, 0), mode);
 	      return simplify_gen_binary (MINUS, mode, temp, XEXP (op, 1));
 	    }
@@ -1571,6 +1584,16 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  /* (a - (-b)) -> (a + b).  True even for IEEE.  */
 	  if (GET_CODE (op1) == NEG)
 	    return simplify_gen_binary (PLUS, mode, op0, XEXP (op1, 0));
+
+	  /* (-x - c) may be simplified as (-c - x).  */
+	  if (GET_CODE (op0) == NEG
+	      && (GET_CODE (op1) == CONST_INT
+		  || GET_CODE (op1) == CONST_DOUBLE))
+	    {
+	      tem = simplify_unary_operation (NEG, mode, op1, mode);
+	      if (tem)
+		return simplify_gen_binary (MINUS, mode, tem, XEXP (op0, 0));
+	    }
 
 	  /* If one of the operands is a PLUS or a MINUS, see if we can
 	     simplify this by the associative law.
@@ -2375,6 +2398,13 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
   /* Sort the operations based on swap_commutative_operands_p.  */
   qsort (ops, n_ops, sizeof (*ops), simplify_plus_minus_op_data_cmp);
 
+  /* Create (minus -C X) instead of (neg (const (plus X C))).  */
+  if (n_ops == 2
+      && GET_CODE (ops[1].op) == CONST_INT
+      && CONSTANT_P (ops[0].op)
+      && ops[0].neg)
+    return gen_rtx_fmt_ee (MINUS, mode, ops[1].op, ops[0].op);
+  
   /* We suppressed creation of trivial CONST expressions in the
      combination loop to avoid recursion.  Create one manually now.
      The combination loop should have ensured that there is exactly
