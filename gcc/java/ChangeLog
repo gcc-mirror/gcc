@@ -1,5 +1,20 @@
 2001-01-14  Per Bothner  <per@bothner.com>
 
+	Various patches to emit better messages on verification errors.
+	* expr.c (push_type_0):  Return error indication on stack overflow,
+	instead of callinfg fatal.
+	(push_type):  Now just call push_type_0 (nd fatal on overflow).
+	(pop_type_0):  Return detailed error message (in a char** argument).
+	(pop_type):  If pop_type_0 fails, print error message.
+	(pop_argument_types):  Moved to verify.c.
+	* verify.c (pop_argument_types):  Moved from expr.c.
+	Return a (possible) error message, rather than void.
+	(POP_TYPE, POP_TYPE_CONV, PUSH_TYPE, PUSH_PENDING):  New macros.
+	(verify_jvm_instruction):  Use new macros, improving error messages.
+	For case OPCODE_astore use object_ptr_type_node.
+	* java-tree.h (TYPE_UNDERFLOW, TYPE_UNEXPECTED):  New macros.
+	(pop_type_0, push_type_0, pop_argument_types):  Update accordingly.
+
 	* parse.y (java_complete_lhs case EXPR_WITH_FILE_LOCATION): If body is
 	constant, return body without wrapper.  (Improves constant folding.)
 	* lex.c (build_wfl_node):  Clear TREE_TYPE from returned node.

@@ -256,19 +256,31 @@ flush_quick_stack ()
     }
 }
 
-void
-push_type (type)
+/* Push TYPE on the type stack.
+   Return true on success, 0 on overflow. */
+
+int
+push_type_0 (type)
      tree type;
 {
   int n_words;
   type = promote_type (type);
   n_words = 1 + TYPE_IS_WIDE (type);
   if (stack_pointer + n_words > DECL_MAX_STACK (current_function_decl))
-    fatal ("stack overflow");
+    return 0;
   stack_type_map[stack_pointer++] = type;
   n_words--;
   while (--n_words >= 0)
     stack_type_map[stack_pointer++] = TYPE_SECOND;
+  return 1;
+}
+
+void
+push_type (type)
+     tree type;
+{
+  if (! push_type_0 (type))
+    fatal ("stack overflow");
 }
 
 static void
@@ -296,23 +308,32 @@ push_value (value)
 
 /* Pop a type from the type stack.
    TYPE is the expected type.   Return the actual type, which must be
-   convertible to TYPE, otherwise NULL_TREE is returned. */
+   convertible to TYPE.
+   On an error, *MESSAGEP is set to a freshly malloc'd error message. */
 
 tree
-pop_type_0 (type)
+pop_type_0 (type, messagep)
      tree type;
+     char **messagep;
 {
   int n_words;
   tree t;
+  *messagep = NULL;
   if (TREE_CODE (type) == RECORD_TYPE)
     type = promote_type (type);
   n_words = 1 + TYPE_IS_WIDE (type);
   if (stack_pointer < n_words)
-    fatal ("stack underflow");
+    {
+      *messagep = xstrdup ("stack underflow");
+      return type;
+    }
   while (--n_words > 0)
     {
       if (stack_type_map[--stack_pointer] != void_type_node)
-	fatal ("Invalid multi-word value on type stack");
+	{
+	  *messagep = xstrdup ("Invalid multi-word value on type stack");
+	  return type;
+	}
     }
   t = stack_type_map[--stack_pointer];
   if (type == NULL_TREE || t == type)
@@ -334,7 +355,24 @@ pop_type_0 (type)
       /* FIXME: this is worse than a kludge, probably.  */
       return object_ptr_type_node;
     }
-  return NULL_TREE;
+  {
+    const char *str1 = "expected type '";
+    const char *str3 = "' but stack contains '";
+    const char *str5 = "'";
+    int len1 = strlen (str1);
+    int len2 = strlen (lang_printable_name (type, 0));
+    int len3 = strlen (str3);
+    int len4 = strlen (lang_printable_name (t, 0));
+    int len5 = strlen (str5);
+    char *msg = xmalloc (len1 + len2 + len3 + len4 + len5 + 1);
+    *messagep = msg;
+    strcpy (msg, str1);  msg += len1;
+    strcpy (msg, lang_printable_name (type, 0));  msg += len2;
+    strcpy (msg, str3);  msg += len3;
+    strcpy (msg, lang_printable_name (t, 0));  msg += len4;
+    strcpy (msg, str5);
+    return type;
+  }
 }
 
 /* Pop a type from the type stack.
@@ -345,10 +383,13 @@ tree
 pop_type (type)
      tree type;
 {
-  tree t = pop_type_0 (type);
-  if (t != NULL_TREE)
-    return t;
-  error ("unexpected type on stack");
+  char *message = NULL;
+  type = pop_type_0 (type, &message);
+  if (message != NULL)
+    {
+      error (message);
+      free (message);
+    }
   return type;
 }
 
@@ -1575,23 +1616,6 @@ expand_java_ret (return_address)
 #endif
 }
 #endif
-
-/* Recursive helper function to pop argument types during verifiation. */
-
-void
-pop_argument_types (arg_types)
-     tree arg_types;
-{
-  if (arg_types == end_params_node)
-    return;
-  if (TREE_CODE (arg_types) == TREE_LIST)
-    {
-      pop_argument_types (TREE_CHAIN (arg_types));
-      pop_type (TREE_VALUE (arg_types));
-      return;
-    }
-  abort ();
-}
 
 static tree
 pop_arguments (arg_types)
