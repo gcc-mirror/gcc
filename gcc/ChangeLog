@@ -1,3 +1,25 @@
+Wed Sep 10 01:38:30 1997  Doug Evans  <dje@cygnus.com>
+
+	Add port done awhile ago for the ARC cpu.
+	* arc/arc.h: New file.
+	* arc/arc.c: New file.
+	* arc/arc.md: New file.
+	* arc/initfini.c: New file.
+	* arc/lib1funcs.asm: New file.
+	* arc/t-arc: New file.
+	* arc/xm-arc.h: New file.
+	* ginclude/va-arc.h: New file.
+	* ginclude/stdarg.h: Include va-arc.h ifdef __arc__.
+	* ginclude/varargs.h: Likewise.
+	* Makefile.in (USER_H): Add va-arc.h.
+	* configure.in (arc-*-elf*): Recognize.
+	* longlong.h: Add ARC support.
+
+Wed Sep 10 01:32:54 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* expr.c (clear_storage): Use CONST0_RTX instead of const0_rtx.
+	when clearing non-BLKmode data.
+
 Wed Sep 10 00:29:29 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* xm-m88k.h (USG): Only define if it hasn't already been defined.
