@@ -5140,7 +5140,8 @@ instantiate_type (lhstype, rhs, complain)
 	else for (elems = rhs; elems; elems = OVL_CHAIN (elems))
 	  {
 	    elem = OVL_FUNCTION (elems);
-	    if (comptypes (lhstype, TREE_TYPE (elem), 1))
+	    if (TREE_CODE (elem) == FUNCTION_DECL
+		&& comptypes (lhstype, TREE_TYPE (elem), 1))
 	      {
 		mark_used (elem);
 		return elem;
@@ -5195,7 +5196,8 @@ instantiate_type (lhstype, rhs, complain)
 	    for (elems = rhs; elems; elems = OVL_NEXT (elems))
 	      {
 		elem = OVL_CURRENT (elems);
-		if (comp_target_types (lhstype, TREE_TYPE (elem), 1) > 0)
+		if (TREE_CODE (elem) == FUNCTION_DECL
+		    && comp_target_types (lhstype, TREE_TYPE (elem), 1) > 0)
 		  break;
 	      }
 	    if (elems)
@@ -5205,7 +5207,8 @@ instantiate_type (lhstype, rhs, complain)
 		     elems = OVL_CHAIN (elems))
 		  {
 		    elem = OVL_FUNCTION (elems);
-		    if (comp_target_types (lhstype, TREE_TYPE (elem), 0) > 0)
+		    if (TREE_CODE (elem) == FUNCTION_DECL
+			&& comp_target_types (lhstype, TREE_TYPE (elem), 0) >0)
 		      break;
 		  }
 		if (elems)
