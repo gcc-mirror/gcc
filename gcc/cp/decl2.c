@@ -45,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #include "dwarfout.h"
 #include "ggc.h"
 #include "timevar.h"
+#include "diagnostic.h"
 
 #if USE_CPPLIB
 #include "cpplib.h"
@@ -648,6 +649,15 @@ lang_decode_option (argc, argv)
 	set_message_length
 	  (read_integral_parameter (p + 15, p - 2,
 				    /* default line-wrap length */ 72));
+      else if (!strncmp (p, "diagnostics-show-location=", 24))
+        {
+          if (!strncmp (p + 24, "once", 4))
+            set_message_prefixing_rule (DIAGNOSTICS_SHOW_PREFIX_ONCE);
+          else if (!strncmp (p + 24, "every-line", 10))
+            set_message_prefixing_rule (DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE);
+          else
+            error ("Unrecognized option `%s'", p - 2);
+        }
       else if (!strncmp (p, "dump-translation-unit-", 22))
 	{
 	  if (p[22] == '\0')

@@ -109,6 +109,10 @@ void (*print_error_function) PARAMS ((const char *)) =
    Zero means don't wrap lines. */
 
 static int output_maximum_width = 0;
+
+/* Used to control every diagnostic message formatting.  Front-ends should
+   call set_message_prefixing_rule to set up their politics.  */
+static current_prefixing_rule = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
 
 /* Predicate. Return 1 if we're in automatic line wrapping mode.  */
 
@@ -125,6 +129,13 @@ set_message_length (n)
      int n;
 {
     output_maximum_width = n;
+}
+
+void
+set_message_prefixing_rule (rule)
+     int rule;
+{
+  current_prefixing_rule = rule;
 }
 
 /* Returns true if BUFFER is in line-wrappind mode.  */
@@ -183,6 +194,7 @@ output_set_prefix (buffer, prefix)
 {
   buffer->prefix = prefix;
   set_real_maximum_length (buffer);
+  buffer->emitted_prefix_p = 0;
 }
 
 /* Construct an output BUFFER with PREFIX and of MAXIMUM_LENGTH
@@ -197,6 +209,8 @@ init_output_buffer (buffer, prefix, maximum_length)
   buffer->ideal_maximum_length = maximum_length;
   buffer->line_length = 0;
   output_set_prefix (buffer, prefix);
+  buffer->emitted_prefix_p = 0;
+  buffer->prefixing_rule = current_prefixing_rule;
   
   buffer->cursor = NULL;
 }
@@ -237,8 +251,25 @@ output_emit_prefix (buffer)
 {
   if (buffer->prefix)
     {
-      buffer->line_length = strlen (buffer->prefix);
-      obstack_grow (&buffer->obstack, buffer->prefix, buffer->line_length);
+      switch (buffer->prefixing_rule)
+        {
+        default:
+        case DIAGNOSTICS_SHOW_PREFIX_NEVER:
+          break;
+
+        case DIAGNOSTICS_SHOW_PREFIX_ONCE:
+          if (buffer->emitted_prefix_p)
+            break;
+          else
+            buffer->emitted_prefix_p = 1;
+          /* Fall through.  */
+
+        case DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE:
+          buffer->line_length += strlen (buffer->prefix);
+          obstack_grow
+            (&buffer->obstack, buffer->prefix, buffer->line_length);
+          break;
+        }
     }
 }
 

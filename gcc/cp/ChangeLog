@@ -1,3 +1,13 @@
+2000-05-13  Gabriel Dos Reis <gdr@codesourcery.com>
+
+	* lex.c: #include diagnostic.h.
+	(lang_init_options): Set default prefixing rules.
+
+	* lang-options.h: Add -fdiagnostics-show-location=.
+	
+	* decl2.c: #include diagnostic.h.
+	(lang_decode_option): Handle -fdiagnostics-show-location=.
+
 2000-05-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tinfo.cc: Revert my 2000-05-08 and 2000-05-07 changes.
