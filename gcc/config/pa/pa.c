@@ -1247,7 +1247,7 @@ emit_move_sequence (operands, mode, scratch_reg)
   /* Simplify the source if we need to.
      Note we do have to handle function labels here, even though we do
      not consider them legitimate constants.  Loop optimizations can
-     call the emit_move_xxx with one a function as a source.  */
+     call the emit_move_xxx with one as a source.  */
   if ((GET_CODE (operand1) != HIGH && immediate_operand (operand1, mode))
       || function_label_operand (operand1, mode)
       || (GET_CODE (operand1) == HIGH
