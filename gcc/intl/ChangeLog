@@ -1,3 +1,7 @@
+2001-05-25  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* po2tbl.sed.in: Fixed typo.
+
 2000-09-18  Bruno Haible  <haible@clisp.cons.org>
 
 	* intl/dcgettext.c: Outside libc, use local variable names that don't
