@@ -1,3 +1,8 @@
+Thu Apr 16 13:45:51 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* reg-stack.c (constrain_asm_operands): Set n_alternatives to zero if
+	no operands.
+
 Wed Apr 15 11:33:09 1998  Alexandre Petit-Bianco  <apbianco@sendai.cygnus.com>
 
         * tree.c (build_expr_wfl): Use NULL_TREE if the file name is NULL.
