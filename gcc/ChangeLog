@@ -1,3 +1,12 @@
+2004-03-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	* rtlanal.c: Include target.h and output.h
+	(rtx_cost, address_cost, default_address_cost): Move from...
+	* cse.c (rtx_cost, address_cost, default_address_cost):
+	... this file.
+	* rtl.h (rtx_cost, address_cost): Move under rtlanal.c.
+	* Makefile.in: Adjust dependencies.
+
 2004-03-05  Paolo Bonzini <bonzini@gnu.org>
 
 	* cse.c (cse_end_of_basic_block): Make static.

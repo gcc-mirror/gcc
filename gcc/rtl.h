@@ -1168,6 +1168,17 @@ enum label_kind
 #define SUBREG_BYTE(RTX) XCUINT (RTX, 1, SUBREG)
 
 /* in rtlanal.c */
+/* Return the right cost to give to an operation
+   to make the cost of the corresponding register-to-register instruction
+   N times that of a fast register-to-register instruction.  */
+#define COSTS_N_INSNS(N) ((N) * 4)
+
+/* Maximum cost of an rtl expression.  This value has the special meaning
+   not to use an rtx with this cost under any circumstances.  */
+#define MAX_COST INT_MAX
+
+extern int rtx_cost (rtx, enum rtx_code);
+extern int address_cost (rtx, enum machine_mode);
 extern unsigned int subreg_lsb (rtx);
 extern unsigned int subreg_lsb_1 (enum machine_mode, enum machine_mode,
 				  unsigned int);
@@ -2099,25 +2110,10 @@ extern int no_new_pseudos;
 extern int rtx_to_tree_code (enum rtx_code);
 
 /* In cse.c */
-struct cse_basic_block_data;
-
-/* Return the right cost to give to an operation
-   to make the cost of the corresponding register-to-register instruction
-   N times that of a fast register-to-register instruction.  */
-#define COSTS_N_INSNS(N) ((N) * 4)
-
-/* Maximum cost of an rtl expression.  This value has the special meaning
-   not to use an rtx with this cost under any circumstances.  */
-#define MAX_COST INT_MAX
-
-extern int rtx_cost (rtx, enum rtx_code);
-extern int address_cost (rtx, enum machine_mode);
 extern int delete_trivially_dead_insns (rtx, int);
 #ifdef BUFSIZ
 extern int cse_main (rtx, int, int, FILE *);
 #endif
-extern void cse_end_of_basic_block (rtx, struct cse_basic_block_data *,
-				    int, int, int);
 extern void cse_condition_code_reg (void);
 
 /* In jump.c */
@@ -2238,12 +2234,10 @@ extern void print_inline_rtx (FILE *, rtx, int);
 
 /* In loop.c */
 extern void init_loop (void);
-extern rtx libcall_other_reg (rtx, rtx);
 #ifdef BUFSIZ
 extern void loop_optimize (rtx, FILE *, int);
 #endif
 extern void branch_target_load_optimize (rtx, bool);
-extern void record_excess_regs (rtx, rtx, rtx *);
 
 /* In function.c */
 extern void reposition_prologue_and_epilogue_notes (rtx);
@@ -2343,7 +2337,6 @@ extern void dbr_schedule (rtx, FILE *);
 extern void dump_local_alloc (FILE *);
 #endif
 extern int local_alloc (void);
-extern int function_invariant_p (rtx);
 
 /* In profile.c */
 extern void init_branch_prob (void);

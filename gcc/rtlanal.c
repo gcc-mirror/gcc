@@ -29,6 +29,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "hard-reg-set.h"
 #include "insn-config.h"
 #include "recog.h"
+#include "target.h"
+#include "output.h"
 #include "tm_p.h"
 #include "flags.h"
 #include "basic-block.h"
@@ -3785,3 +3787,107 @@ label_is_jump_target_p (rtx label, rtx jump_insn)
   return false;
 }
 
+
+/* Return an estimate of the cost of computing rtx X.
+   One use is in cse, to decide which expression to keep in the hash table.
+   Another is in rtl generation, to pick the cheapest way to multiply.
+   Other uses like the latter are expected in the future.  */
+
+int
+rtx_cost (rtx x, enum rtx_code outer_code ATTRIBUTE_UNUSED)
+{
+  int i, j;
+  enum rtx_code code;
+  const char *fmt;
+  int total;
+
+  if (x == 0)
+    return 0;
+
+  /* Compute the default costs of certain things.
+     Note that targetm.rtx_costs can override the defaults.  */
+
+  code = GET_CODE (x);
+  switch (code)
+    {
+    case MULT:
+      total = COSTS_N_INSNS (5);
+      break;
+    case DIV:
+    case UDIV:
+    case MOD:
+    case UMOD:
+      total = COSTS_N_INSNS (7);
+      break;
+    case USE:
+      /* Used in loop.c and combine.c as a marker.  */
+      total = 0;
+      break;
+    default:
+      total = COSTS_N_INSNS (1);
+    }
+
+  switch (code)
+    {
+    case REG:
+      return 0;
+
+    case SUBREG:
+      /* If we can't tie these modes, make this expensive.  The larger
+	 the mode, the more expensive it is.  */
+      if (! MODES_TIEABLE_P (GET_MODE (x), GET_MODE (SUBREG_REG (x))))
+	return COSTS_N_INSNS (2
+			      + GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD);
+      break;
+
+    default:
+      if ((*targetm.rtx_costs) (x, code, outer_code, &total))
+	return total;
+      break;
+    }
+
+  /* Sum the costs of the sub-rtx's, plus cost of this operation,
+     which is already in total.  */
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    if (fmt[i] == 'e')
+      total += rtx_cost (XEXP (x, i), code);
+    else if (fmt[i] == 'E')
+      for (j = 0; j < XVECLEN (x, i); j++)
+	total += rtx_cost (XVECEXP (x, i, j), code);
+
+  return total;
+}
+
+/* Return cost of address expression X.
+   Expect that X is properly formed address reference.  */
+
+int
+address_cost (rtx x, enum machine_mode mode)
+{
+  /* The address_cost target hook does not deal with ADDRESSOF nodes.  But,
+     during CSE, such nodes are present.  Using an ADDRESSOF node which
+     refers to the address of a REG is a good thing because we can then
+     turn (MEM (ADDRESSOF (REG))) into just plain REG.  */
+
+  if (GET_CODE (x) == ADDRESSOF && REG_P (XEXP ((x), 0)))
+    return -1;
+
+  /* We may be asked for cost of various unusual addresses, such as operands
+     of push instruction.  It is not worthwhile to complicate writing
+     of the target hook by such cases.  */
+
+  if (!memory_address_p (mode, x))
+    return 1000;
+
+  return (*targetm.address_cost) (x);
+}
+
+/* If the target doesn't override, compute the cost as with arithmetic.  */
+
+int
+default_address_cost (rtx x)
+{
+  return rtx_cost (x, MEM);
+}
