@@ -1,3 +1,8 @@
+2003-09-02  Josef Zlomek  <zlomekj@suse.cz>
+
+	* cfgbuild.c (compute_outgoing_frequencies): Use NOTE instead of
+	finding the note again.
+
 2003-09-02  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc: Remove host-specific rewrites of target_alias.

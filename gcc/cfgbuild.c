@@ -725,9 +725,7 @@ compute_outgoing_frequencies (basic_block b)
       if (!note)
 	return;
 
-      probability = INTVAL (XEXP (find_reg_note (b->end,
-						 REG_BR_PROB, NULL),
-				  0));
+      probability = INTVAL (XEXP (note, 0));
       e = BRANCH_EDGE (b);
       e->probability = probability;
       e->count = ((b->count * probability + REG_BR_PROB_BASE / 2)
