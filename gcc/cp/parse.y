@@ -1446,7 +1446,7 @@ primary:
 		  $<ttype>$ = begin_stmt_expr (); 
 		}
 	  compstmt ')'
-               { $$ = finish_stmt_expr ($<ttype>2, $3); }
+               { $$ = finish_stmt_expr ($<ttype>2); }
         /* Koenig lookup support
            We could store lastiddecl in $1 to avoid another lookup,
            but that would result in many additional reduce/reduce conflicts. */

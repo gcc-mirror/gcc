@@ -990,10 +990,8 @@ finish_init_stmts (stmt_expr, compound_stmt)
      tree compound_stmt;
 {
   pop_momentary ();
-  stmt_expr 
-    = finish_stmt_expr (stmt_expr,
-			finish_compound_stmt (/*has_no_scope=*/1, 
-					      compound_stmt));
+  finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
+  stmt_expr = finish_stmt_expr (stmt_expr);
 
   /* To avoid spurious warnings about unused values, we set 
      TREE_USED.  */

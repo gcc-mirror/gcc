@@ -3674,7 +3674,7 @@ extern void finish_label_decl                   PROTO((tree));
 extern void finish_subobject                    PROTO((tree));
 extern tree finish_parenthesized_expr           PROTO((tree));
 extern tree begin_stmt_expr                     PROTO((void));
-extern tree finish_stmt_expr                    PROTO((tree, tree));
+extern tree finish_stmt_expr                    PROTO((tree));
 extern tree finish_call_expr                    PROTO((tree, tree, int));
 extern tree finish_increment_expr               PROTO((tree, enum tree_code));
 extern tree finish_this_expr                    PROTO((void));

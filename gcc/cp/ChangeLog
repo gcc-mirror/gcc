@@ -1,5 +1,13 @@
 1999-09-20  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (finish_stmt_expr): Change prototype.
+	* expr.c (cplus_expand_expr): Adjust call accordingly.
+	* init.c (finish_init_stmts): Likewise.
+	* parse.y (primary): Likewise.
+	* pt.c (tsubst_copy): Likewise.
+	* semantics.c (finish_stmt_expr): Don't take two parameters.
+	Don't remove generated BLOCKs from the block-tree.
+
 	Remove support for assigning to `this'.
 	* NEWS: Note that fact.
 	* class.c (build_vbase_path): Don't check flag_this_is_variable.

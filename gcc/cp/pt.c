@@ -7085,9 +7085,9 @@ tsubst_copy (t, args, complain, in_decl)
       if (!processing_template_decl)
 	{
 	  tree rtl_expr = begin_stmt_expr ();
-	  tree block = tsubst_expr (STMT_EXPR_STMT (t), args,
-				    complain, in_decl);
-	  return finish_stmt_expr (rtl_expr, block);
+	  tsubst_expr (STMT_EXPR_STMT (t), args,
+		       complain, in_decl);
+	  return finish_stmt_expr (rtl_expr);
 	}
       
       return t;

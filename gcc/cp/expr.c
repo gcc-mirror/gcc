@@ -245,8 +245,8 @@ cplus_expand_expr (exp, target, tmode, modifier)
     case STMT_EXPR:
       {
 	tree rtl_expr = begin_stmt_expr ();
-	tree block = expand_stmt (STMT_EXPR_STMT (exp));
-	finish_stmt_expr (rtl_expr, block);
+	expand_stmt (STMT_EXPR_STMT (exp));
+	finish_stmt_expr (rtl_expr);
 	return expand_expr (rtl_expr, target, tmode, modifier);
       }
       break;
