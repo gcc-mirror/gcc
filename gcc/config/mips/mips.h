@@ -643,6 +643,9 @@ extern void		sbss_section PARAMS ((void));
 /* ISA has conditional trap instructions.  */
 #define ISA_HAS_COND_TRAP	(mips_isa >= 2)
 
+/* ISA has nmadd and nmsub instructions.  */
+#define ISA_HAS_NMADD_NMSUB	(mips_isa == 4				\
+				)
 
 /* CC1_SPEC causes -mips3 and -mips4 to set -mfp64 and -mgp64; -mips1 or
    -mips2 sets -mfp32 and -mgp32.  This can be overridden by an explicit
