@@ -1,3 +1,7 @@
+2000-05-22  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.compile/PR235.java: New file.  For PR gcj/235.
+
 2000-05-21  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.compile/PR234.java: New file.  For PR gcj/234.
