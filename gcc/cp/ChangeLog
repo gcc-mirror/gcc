@@ -1,3 +1,10 @@
+2001-03-26  Mike Yang <yang@research.att.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	* dump.c (dump_access): New function.
+	(cp_dump_tree): Use it.  Dump basetype information for class
+	types.
+
 2001-03-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (optimize.o): Depend on params.h.
