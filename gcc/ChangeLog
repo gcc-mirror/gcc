@@ -1,4 +1,21 @@
-2005-04-04  Adrian Strae¤tling  <straetling@de.ibm.com>
+2005-04-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/4198
+	PR target/12027
+	* config.gcc (Obsolete configurations): Remove
+	sparclite-*-coff*, sparclite-*-elf* and sparc-*-openbsd*.
+	(sparclite-*-coff*): Delete.
+	(sparclite-*-elf*): Likewise.
+	(sparc86x-*-elf*): Likewise.
+	(target_cpu_default) <sparc*-*-*>: Remove sparc86x.
+	* config/sparc/lite.h: Delete.
+	* config/sparc/litecoff.h: Likewise.
+	* config/sparc/liteelf.h: Likewise.
+	* config/sparc/sp86x-elf.h: Likewise.
+	* config/sparc/t-sparclite: Likewise.
+	* config/sparc/t-sp86x: Likewise.
+
+2005-04-04  Adrian Straetling  <straetling@de.ibm.com>
 
 	* config/s390/s390-protos.h: (s390_comparison,
 	s390_alc_comparison, s390_slb_comparison, const0_operand,
