@@ -496,7 +496,8 @@ gen_lowpart_common (mode, x)
 	    / UNITS_PER_WORD);
 
   if ((GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND)
-      && GET_MODE_CLASS (mode) == MODE_INT)
+      && (GET_MODE_CLASS (mode) == MODE_INT
+	  || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT))
     {
       /* If we are getting the low-order part of something that has been
 	 sign- or zero-extended, we can either just use the object being
@@ -544,7 +545,9 @@ gen_lowpart_common (mode, x)
 
   /* If X is a CONST_INT or a CONST_DOUBLE, extract the appropriate bits
      from the low-order part of the constant.  */
-  else if (GET_MODE_CLASS (mode) == MODE_INT && GET_MODE (x) == VOIDmode
+  else if ((GET_MODE_CLASS (mode) == MODE_INT
+	    || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
+	   && GET_MODE (x) == VOIDmode
 	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE))
     {
       /* If MODE is twice the host word size, X is already the desired
@@ -632,7 +635,8 @@ gen_lowpart_common (mode, x)
   else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
 	     && HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
 	    || flag_pretend_float)
-	   && GET_MODE_CLASS (mode) == MODE_INT
+	   && (GET_MODE_CLASS (mode) == MODE_INT
+	       || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
 	   && GET_CODE (x) == CONST_DOUBLE
 	   && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
 	   && GET_MODE_BITSIZE (mode) == BITS_PER_WORD)
@@ -646,7 +650,8 @@ gen_lowpart_common (mode, x)
   else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
 	     && HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
 	    || flag_pretend_float)
-	   && GET_MODE_CLASS (mode) == MODE_INT
+	   && (GET_MODE_CLASS (mode) == MODE_INT
+	       && GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
 	   && GET_CODE (x) == CONST_DOUBLE
 	   && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
 	   && GET_MODE_BITSIZE (mode) == 2 * BITS_PER_WORD)
