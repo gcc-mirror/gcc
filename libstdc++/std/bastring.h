@@ -298,8 +298,7 @@ private:
 
 public:
   const charT* c_str () const
-    { if (length () == 0) return traits::empty();
-      terminate (); return data (); }
+    { if (length () == 0) return ""; terminate (); return data (); }
   void resize (size_type n, charT c);
   void resize (size_type n)
     { resize (n, eos ()); }
