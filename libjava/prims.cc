@@ -956,8 +956,7 @@ _Jv_CreateJavaVM (void* /*vm_args*/)
   _Jv_GCInitializeFinalizers (&::gnu::gcj::runtime::FinalizerThread::finalizerReady);
 
   // Start the GC finalizer thread.  A VirtualMachineError can be
-  // thrown by the runtime if, say, threads aren't available.  In this
-  // case finalizers simply won't run.
+  // thrown by the runtime if, say, threads aren't available.
   try
     {
       using namespace gnu::gcj::runtime;
