@@ -1,5 +1,11 @@
 2000-04-22  Richard Henderson  <rth@cygnus.com>
 
+	* predict.c (estimate_probability): Examine both sides of
+	a branch for no exits.  Use 90% not 50% for predict taken.
+	Reorg for one copy of note generation code.
+
+2000-04-22  Richard Henderson  <rth@cygnus.com>
+
 	* flow.c (mark_used_reg): Hack around rs6000 eliminable pic reg.
 
 2000-04-22  Richard Henderson  <rth@cygnus.com>
