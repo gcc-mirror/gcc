@@ -1,3 +1,9 @@
+2005-03-22  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.misc-tests/options.exp (check_for_options): Create a real C
+	program, compile it into a real executable and then delete the .c
+	and .x files afterwards, to avoid problems on testglue targets.
+
 2005-03-21  Stuart Hastings  <stuart@apple.com>
 
 	* gcc.target/i386/sse-2.c: New.
