@@ -6,7 +6,7 @@ The Standard C++ Library, or libstdc++-v3, is an ongoing project
 to fully implement the ISO 14882 Standard C++ library as described in
 chapters 17 through 27 and annex D.
 
-This is the fourteenth snapshot of the libstdc++ rewrite.  It is still
+This is the fourteenth snapshot of the libstdc++ rewrite.  It still
 has some incomplet and incorrekt parts, but it's a lot less incomplete
 and incorrect than some of the earlier snapshots, and quite usable.
 
