@@ -1477,15 +1477,18 @@ yylex ()
 	int count = 0;
 	int largest_digit = 0;
 	int numdigits = 0;
-	/* for multi-precision arithmetic,
-	   we actually store only HOST_BITS_PER_CHAR bits in each part.
-	   The number of parts is chosen so as to be sufficient to hold
-	   the enough bits to fit into the two HOST_WIDE_INTs that contain
-	   the integer value (this is always at least as many bits as are
-	   in a target `long long' value, but may be wider).  */
-#define TOTAL_PARTS ((HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR) * 2 + 2)
-	int parts[TOTAL_PARTS];
 	int overflow = 0;
+
+	/* We actually store only HOST_BITS_PER_CHAR bits in each part.
+	   The code below which fills the parts array assumes that a host
+	   int is at least twice as wide as a host char, and that 
+	   HOST_BITS_PER_WIDE_INT is an even multiple of HOST_BITS_PER_CHAR.
+	   Two HOST_WIDE_INTs is the largest int literal we can store.
+	   In order to detect overflow below, the number of parts (TOTAL_PARTS)
+	   must be exactly the number of parts needed to hold the bits
+	   of two HOST_WIDE_INTs. */
+#define TOTAL_PARTS ((HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR) * 2)
+	unsigned int parts[TOTAL_PARTS];
 
 	enum anon1 { NOT_FLOAT, AFTER_POINT, TOO_MANY_POINTS, AFTER_EXPON}
 	  floatflag = NOT_FLOAT;
@@ -1616,11 +1619,16 @@ yylex ()
 		    else
 		      parts[0] += c;
 		  }
-
-		/* If the extra highest-order part ever gets anything in it,
-		   the number is certainly too big.  */
-		if (parts[TOTAL_PARTS - 1] != 0)
-		  overflow = 1;
+		
+		/* If the highest-order part overflows (gets larger than
+		   a host char will hold) then the whole number has 
+		   overflowed.  Record this and truncate the highest-order
+		   part. */
+		if (parts[TOTAL_PARTS - 1] >> HOST_BITS_PER_CHAR)
+		  {
+		    overflow = 1;
+		    parts[TOTAL_PARTS - 1] &= (1 << HOST_BITS_PER_CHAR) - 1;
+		  }
 
 		if (p >= token_buffer + maxtoken - 3)
 		  p = extend_token_buffer (p);
@@ -1772,12 +1780,12 @@ yylex ()
 		c = GETC();
 	      }
 
-	    /* If it won't fit in the host's representation for integers,
-	       then pedwarn. */
-
-	    warn = overflow;
-	    if (warn)
-	      pedwarn ("integer constant is too large for this configuration of the compiler - truncated to %d bits", HOST_BITS_PER_WIDE_INT * 2);
+	    /* If the literal overflowed, pedwarn about it now. */
+	    if (overflow)
+	      {
+		warn = 1;
+		pedwarn ("integer constant is too large for this configuration of the compiler - truncated to %d bits", HOST_BITS_PER_WIDE_INT * 2);
+	      }
 
 	    /* This is simplified by the fact that our constant
 	       is always positive.  */
