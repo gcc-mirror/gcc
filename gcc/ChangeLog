@@ -1,3 +1,14 @@
+Mon Jun 10 18:02:24 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	Fix cfi generation for SH[1-4]:
+
+	* sh.c (frame_insn): New function.
+	(output_stack_adjust): Add parameter emit_fn.  All callers changed.
+	(push): Now returns rtx.  Use frame_insn.
+	(sh_expand_prologue): Clear RTX_FRAME_RELATED_P for second push
+	of a DF register.
+	* sh.h (INCOMING_RETURN_ADDR_RTX, DWARF_FRAME_RETURN_COLUMN): Define.
+
 2002-06-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (STAGESTUFF): Add s-gtype, gt-*.h, gtype-*.h,
