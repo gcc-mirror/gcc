@@ -2422,7 +2422,8 @@ gcc.xtar: distdir
 # stuff gets done.
 distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
   $(srcdir)/c-parse.c $(srcdir)/cexp.c $(srcdir)/config.in \
-  $(srcdir)/bi-parser.h $(srcdir)/bi-parser.c
+  $(srcdir)/bi-parser.h $(srcdir)/bi-parser.c $(srcdir)/version.c
+	if [ -d $(srcdir)/CVS ]; then cvs -r update; fi
 	@if grep -s "for version ${mainversion}" gcc.texi > /dev/null; \
 	then true; \
 	else echo "You must update the version number in \`gcc.texi'"; sleep 10;\
