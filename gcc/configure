@@ -2029,7 +2029,6 @@ for machine in $build $host $target; do
 		xm_defines=USE_BFD
 		target_cpu_default="MASK_GAS"
 		tmake_file="t-linux alpha/t-linux"
-		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		xmake_file=none
 		fixincludes=Makefile.in
 		gas=yes gnu_ld=yes
@@ -5049,7 +5048,6 @@ ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xma
 
 
 
-
 # Echo that links are built
 if [ x$host = x$target ]
 then
@@ -5293,7 +5291,6 @@ s%@cc_set_by_configure@%$cc_set_by_configure%g
 s%@stage_prefix_set_by_configure@%$stage_prefix_set_by_configure%g
 s%@install@%$install%g
 s%@symbolic_link@%$symbolic_link%g
-s%@version_dep@%$version_dep%g
 /@target_overrides@/r $target_overrides
 s%@target_overrides@%%g
 /@host_overrides@/r $host_overrides
@@ -5520,7 +5517,6 @@ srcdir='${srcdir}'
 subdirs='${subdirs}'
 oldstyle_subdirs='${oldstyle_subdirs}'
 symbolic_link='${symbolic_link}'
-version_dep='${version_dep}'
 program_transform_set='${program_transform_set}'
 program_transform_name='${program_transform_name}'
 dep_host_xmake_file='${dep_host_xmake_file}'

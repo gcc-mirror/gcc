@@ -1,3 +1,8 @@
+Sat Apr  4 13:32:08 1998  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in (alpha-*-linux-gnu*): Undo Feb 3 change brought in
+	from gcc2 merge.
+
 Sat Apr  4 10:23:41 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Check in merge from gcc2.  See ChangeLog.11 and ChangeLog.12
