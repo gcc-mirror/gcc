@@ -1,3 +1,8 @@
+2004-02-05  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* diagnostic.h (DEFINE_DIAGNOSTIC_KIND): Change parameter M to
+	msgid.
+
 2004-02-05  Paul Brook  <paul@codesourcery.com>
 
 	Backport from mainline.

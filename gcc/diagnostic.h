@@ -27,7 +27,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Constants used to discriminate diagnostics.  */
 typedef enum
 {
-#define DEFINE_DIAGNOSTIC_KIND(K, M) K,  
+#define DEFINE_DIAGNOSTIC_KIND(K, msgid) K,  
 #include "diagnostic.def"
 #undef DEFINE_DIAGNOSTIC_KIND
   DK_LAST_DIAGNOSTIC_KIND
