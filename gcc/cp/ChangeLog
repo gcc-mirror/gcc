@@ -1,5 +1,30 @@
 2000-04-08  Mark Mitchell  <mark@codesourcery.com>
 
+	Under the new ABI, constructors don't return `this'.
+	* cp-tree.h (warn_reorder): Declare.
+	(special_function_kind): New enum.
+	(global_base_init_list): Remove declaration.
+	(emit_base_init): Don't return a value.
+	(check_base_init): Don't declare.
+	(is_aggr_typedef): Likewise.
+	* decl.c (check_special_function_return_type): New function.
+	(return_types): Remove.
+	(grokdeclarator): Use check_special_function_return_type.
+	(start_function): Don't initialize ctor_label under the new ABI.
+	(finish_construtor_body): Don't create a corresponding LABEL_STMT.
+	* init.c (begin_init_stmts): Move to top of file.
+	(finish_init_stmts): Likewise.
+	(warn_reorder): Don't declare.
+	(emit_base_init): Don't create a STMT_EXPR here.  Don't return a
+	value.
+	(check_base_init): Remove.
+	(is_aggr_typedef): Likewise.
+	(build_new_1): Don't use the return value of a constructor.
+	* semantics.c (setup_vtbl_ptr): Don't use the return value
+	of emit_base_init.
+	* typeck.c (check_return_expr): Don't magically convert return
+	statements into `return this' in constructors under the new ABI.
+	
 	* cp-tree.h (cp_tree_index): Add CPTI_BASE_CTOR_IDENTIFIER,
 	CPTI_BASE_DTOR_IDENTIFIER, and CPTI_DELETING_DTOR_IDENTIFIER.
 	(base_ctor_identifier): New macro.

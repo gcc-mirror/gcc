@@ -178,6 +178,8 @@ static tree start_cleanup_fn PARAMS ((void));
 static void end_cleanup_fn PARAMS ((void));
 static tree cp_make_fname_decl PARAMS ((tree, const char *, int));
 static void initialize_predefined_identifiers PARAMS ((void));
+static tree check_special_function_return_type 
+  PARAMS ((special_function_kind, tree, tree, tree));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PARAMS ((void));
@@ -9298,6 +9300,54 @@ create_array_type_for_decl (name, type, size)
   return build_cplus_array_type (type, itype);
 }
 
+/* Check that it's OK to declare a function with the indicated TYPE.
+   SFK indicates the kind of special function (if any) that this
+   function is.  CTYPE is the class of which this function is a
+   member.  OPTYPE is the type given in a conversion operator
+   declaration.  Returns the actual return type of the function; that
+   may be different than TYPE if an error occurs, or for certain
+   special functions.  */
+
+static tree
+check_special_function_return_type (sfk, type, ctype, optype)
+     special_function_kind sfk;
+     tree type;
+     tree ctype;
+     tree optype;
+{
+  switch (sfk)
+    {
+    case sfk_constructor:
+      if (type)
+	cp_error ("return type specification for constructor invalid");
+	
+      /* In the old ABI, we return `this'; in the new ABI we don't
+	 bother.  */
+      type = flag_new_abi ? void_type_node : build_pointer_type	(ctype);
+      break;
+
+    case sfk_destructor:
+      if (type)
+	cp_error ("return type specification for destructor invalid");
+      type = void_type_node;
+      break;
+
+    case sfk_conversion:
+      if (type && !same_type_p (type, optype))
+	cp_error ("operator `%T' declared to return `%T'", optype, type);
+      else if (type)
+	cp_pedwarn ("return type specified for `operator %T'",  optype);
+      type = optype;
+      break;
+
+    default:
+      my_friendly_abort (20000408);
+      break;
+    }
+
+  return type;
+}
+
 /* Given declspecs and a declarator,
    determine the name and type of the object declared
    and construct a ..._DECL node for it.
@@ -9358,8 +9408,6 @@ create_array_type_for_decl (name, type, size)
    May return void_type_node if the declarator turned out to be a friend.
    See grokfield for details.  */
 
-enum return_types { return_normal, return_ctor, return_dtor, return_conversion };
-
 tree
 grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
      tree declspecs;
@@ -9398,7 +9446,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   /* Keep track of what sort of function is being processed
      so that we can warn about default return values, or explicit
      return values which do not match prescribed defaults.  */
-  enum return_types return_type = return_normal;
+  special_function_kind sfk = sfk_none;
 
   tree dname = NULL_TREE;
   tree ctype = current_class_type;
@@ -9448,7 +9496,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	      my_friendly_assert (flags == NO_SPECIAL, 152);
 	      flags = DTOR_FLAG;
-	      return_type = return_dtor;
+	      sfk = sfk_destructor;
 	      if (TREE_CODE (name) == TYPE_DECL)
 		TREE_OPERAND (decl, 0) = name = constructor_name (name);
 	      my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 153);
@@ -9547,7 +9595,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		&& decl != NULL_TREE && flags != DTOR_FLAG
 		&& decl == constructor_name (ctype))
 	      {
-		return_type = return_ctor;
+		sfk = sfk_constructor;
 		ctor_return_type = ctype;
 	      }
 	    ctype = NULL_TREE;
@@ -9595,7 +9643,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    my_friendly_assert (flags == NO_SPECIAL, 154);
 		    flags = TYPENAME_FLAG;
 		    ctor_return_type = TREE_TYPE (dname);
-		    return_type = return_conversion;
+		    sfk = sfk_conversion;
 		  }
 		name = operator_name_string (dname);
 	      }
@@ -9659,7 +9707,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  if (TREE_CODE (decl) == IDENTIFIER_NODE
 		      && constructor_name (ctype) == decl)
 		    {
-		      return_type = return_ctor;
+		      sfk = sfk_constructor;
 		      ctor_return_type = ctype;
 		    }
 		  else if (TREE_CODE (decl) == BIT_NOT_EXPR
@@ -9667,7 +9715,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			   && (constructor_name (ctype) == TREE_OPERAND (decl, 0)
 			       || constructor_name_full (ctype) == TREE_OPERAND (decl, 0)))
 		    {
-		      return_type = return_dtor;
+		      sfk = sfk_destructor;
 		      ctor_return_type = ctype;
 		      flags = DTOR_FLAG;
 		      TREE_OPERAND (decl, 0) = constructor_name (ctype);
@@ -9883,58 +9931,35 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       defaulted_int = 1;
     }
 
-  if (type == NULL_TREE)
+  if (sfk != sfk_none)
+    type = check_special_function_return_type (sfk, type,
+					       ctor_return_type,
+					       ctor_return_type);
+  else if (type == NULL_TREE)
     {
+      int is_main;
+
       explicit_int = -1;
-      if (return_type == return_dtor)
-	type = void_type_node;
-      else if (return_type == return_ctor)
-	type = build_pointer_type (ctor_return_type);
-      else if (return_type == return_conversion)
-	type = ctor_return_type;
-      else
-	{
+
 	  /* We handle `main' specially here, because 'main () { }' is so
 	     common.  With no options, it is allowed.  With -Wreturn-type,
 	     it is a warning.  It is only an error with -pedantic-errors.  */
-	  int is_main = (funcdef_flag
-			 && MAIN_NAME_P (dname)
-			 && ctype == NULL_TREE
-			 && in_namespace == NULL_TREE
-			 && current_namespace == global_namespace);
+      is_main = (funcdef_flag
+		 && MAIN_NAME_P (dname)
+		 && ctype == NULL_TREE
+		 && in_namespace == NULL_TREE
+		 && current_namespace == global_namespace);
 
-	  if (in_system_header || flag_ms_extensions)
-	    /* Allow it, sigh.  */;
-	  else if (pedantic || ! is_main)
-	    cp_pedwarn ("ISO C++ forbids declaration of `%s' with no type",
-			name);
-	  else if (warn_return_type)
-	    cp_warning ("ISO C++ forbids declaration of `%s' with no type",
-			name);
+      if (in_system_header || flag_ms_extensions)
+	/* Allow it, sigh.  */;
+      else if (pedantic || ! is_main)
+	cp_pedwarn ("ISO C++ forbids declaration of `%s' with no type",
+		    name);
+      else if (warn_return_type)
+	cp_warning ("ISO C++ forbids declaration of `%s' with no type",
+		    name);
 
-	  type = integer_type_node;
-	}
-    }
-  else if (return_type == return_dtor)
-    {
-      error ("return type specification for destructor invalid");
-      type = void_type_node;
-    }
-  else if (return_type == return_ctor)
-    {
-      error ("return type specification for constructor invalid");
-      type = build_pointer_type (ctor_return_type);
-    }
-  else if (return_type == return_conversion)
-    {
-      if (!same_type_p (type, ctor_return_type))
-	cp_error ("operator `%T' declared to return `%T'",
-		  ctor_return_type, type);
-      else
-	cp_pedwarn ("return type specified for `operator %T'",
-		    ctor_return_type);
-
-      type = ctor_return_type;
+      type = integer_type_node;
     }
 
   ctype = NULL_TREE;
@@ -10079,7 +10104,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	type = build_complex_type (type);
     }
 
-  if (return_type == return_conversion
+  if (sfk == sfk_conversion
       && (RIDBIT_SETP (RID_CONST, specbits)
 	  || RIDBIT_SETP (RID_VOLATILE, specbits)
 	  || RIDBIT_SETP (RID_RESTRICT, specbits)))
@@ -10376,7 +10401,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		&& (friendp == 0 || dname == current_class_name))
 	      ctype = current_class_type;
 
-	    if (ctype && return_type == return_conversion)
+	    if (ctype && sfk == sfk_conversion)
 	      TYPE_HAS_CONVERSION (ctype) = 1;
 	    if (ctype && constructor_name (ctype) == dname)
 	      {
@@ -10435,7 +10460,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		      if (RIDBIT_ANY_SET (tmp_bits))
 			error ("return value type specifier for constructor ignored");
 		    }
-		    type = build_pointer_type (ctype);
 		    if (decl_context == FIELD)
 		      {
 			if (! member_function_or_else (ctype,
@@ -10443,7 +10467,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 						       flags))
 			  return void_type_node;
 			TYPE_HAS_CONSTRUCTOR (ctype) = 1;
-			if (return_type != return_ctor)
+			if (sfk != sfk_constructor)
 			  return NULL_TREE;
 		      }
 		  }
@@ -13532,7 +13556,12 @@ start_function (declspecs, declarator, attrs, flags)
       dtor_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
       DECL_CONTEXT (dtor_label) = current_function_decl;
     }
-  else if (DECL_CONSTRUCTOR_P (decl1))
+  /* Under the old ABI we return `this' from constructors, so we make
+     ordinary `return' statements in constructors jump to CTOR_LABEL;
+     from there we return `this'.  Under the new ABI, we don't bother
+     with any of this.  By not setting CTOR_LABEL the remainder of the
+     machinery is automatically disabled.  */
+  else if (!flag_new_abi && DECL_CONSTRUCTOR_P (decl1))
     {
       ctor_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
       DECL_CONTEXT (ctor_label) = current_function_decl;
@@ -13764,7 +13793,8 @@ static void
 finish_constructor_body ()
 {
   /* Any return from a constructor will end up here.  */
-  add_tree (build_min_nt (LABEL_STMT, ctor_label));
+  if (ctor_label)
+    add_tree (build_min_nt (LABEL_STMT, ctor_label));
 
   /* Clear CTOR_LABEL so that finish_return_stmt knows to really
      generate the return, rather than a goto to CTOR_LABEL.  */

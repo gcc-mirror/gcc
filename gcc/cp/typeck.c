@@ -6796,9 +6796,9 @@ check_return_expr (retval)
     /* You can't return a value from a constructor.  */
     error ("returning a value from a constructor");
 
-  /* Constructors actually always return `this', even though in C++
-     you can't return a value from a constructor.  */
-  if (DECL_CONSTRUCTOR_P (current_function_decl))
+  /* Under the old ABI, constructors actually always return `this',
+     even though in C++ you can't return a value from a constructor.  */
+  if (!flag_new_abi && DECL_CONSTRUCTOR_P (current_function_decl))
     retval = current_class_ptr;
 
   /* When no explicit return-value is given in a function with a named

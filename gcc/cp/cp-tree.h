@@ -1102,6 +1102,10 @@ extern int warn_extern_inline;
 
 extern int warn_old_style_cast;
 
+/* Non-zero means warn when the compiler will reorder code.  */
+
+extern int warn_reorder;
+
 /* Nonzero means to treat bitfields as unsigned unless they say `signed'.  */
 
 extern int flag_signed_bitfields;
@@ -3098,6 +3102,13 @@ typedef enum access_kind {
   ak_private = 3           /* Accessible, as a `private' thing.  */
 } access_kind;
 
+typedef enum special_function_kind {
+  sfk_none,                /* Not a special function.  */
+  sfk_constructor,         /* A constructor.  */
+  sfk_destructor,          /* A destructor.  */
+  sfk_conversion           /* A conversion operator.  */
+} special_function_kind;
+
 /* Zero means prototype weakly, as in ANSI C (no args means nothing).
    Each language context defines how this variable should be set.  */
 extern int strict_prototype;
@@ -3217,10 +3228,6 @@ extern int current_class_depth;
 /* Points to the name of that function. May not be the DECL_NAME
    of CURRENT_FUNCTION_DECL due to overloading */
 extern tree original_function_name;
-
-/* in init.c  */
-extern tree global_base_init_list;
-
 
 /* Here's where we control how name mangling takes place.  */
 
@@ -3999,11 +4006,9 @@ extern tree do_friend				PARAMS ((tree, tree, tree, tree, tree, enum overload_fl
 
 /* in init.c */
 extern void init_init_processing		PARAMS ((void));
-extern tree emit_base_init			PARAMS ((tree));
-extern void check_base_init			PARAMS ((tree));
+extern void emit_base_init			PARAMS ((tree));
 extern void expand_member_init			PARAMS ((tree, tree, tree));
 extern tree build_aggr_init			PARAMS ((tree, tree, int));
-extern int is_aggr_typedef			PARAMS ((tree, int));
 extern int is_aggr_type				PARAMS ((tree, int));
 extern tree get_aggr_from_typedef		PARAMS ((tree, int));
 extern tree get_type_value			PARAMS ((tree));
