@@ -1,3 +1,7 @@
+Fri Nov  3 05:41:07 2000  J"orn Rennecke <amylaar@redhat.com>
+
+	* flow.c (verify_local_live_at_start): Allow hard regs to die.
+
 2000-11-02  Neil Booth  <neilb@earthling.net>
 
 config:
