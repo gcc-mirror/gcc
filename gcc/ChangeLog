@@ -1,3 +1,14 @@
+2004-01-28  Zack Weinberg  <zack@codesourcery.com>
+	    Jim Wilson  <wilson@specifixinc.com>
+
+	* config/ia64/ia64.c (ia64_split_tmode, ia64_split_tmode_move):
+	Rewrite to use POST_INC/POST_DEC/POST_MODIFY instead of a
+	scratch pointer.
+	(ia64_secondary_reload_class): Delete case GR_REGS.
+	* config/ia64/ia64.md (movti, *movti_internal, movtf, *movtf_internal):
+	Do not allocate a scratch register.
+	(reload_inti, reload_outti, reload_intf, reload_outtf): Delete.
+
 2004-01-28  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (bypass_block): Prevent edges to be unified when we are
@@ -43,7 +54,7 @@
 	* config/s390/s390.h (TARGET_DEFAULT): Default to !TARGET_BACKCHAIN.
 	* config/s390/s390.c (s390_return_addr_rtx): Fail for all but current
 	frame if !TARGET_BACKCHAIN.
-	* config/s390/s390.md ("allocate_stack"): Use pattern only if 
+	* config/s390/s390.md ("allocate_stack"): Use pattern only if
 	TARGET_BACKCHAIN.
 	* doc/invoke.texi (-mbackchain/-mno-backchain): Document new default.
 
