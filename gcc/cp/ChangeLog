@@ -1,3 +1,9 @@
+2004-10-27  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/13560
+	* error.c (cp_error_at): Output the context as it might be
+	different file as the other location.
+
 2004-10-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18093
