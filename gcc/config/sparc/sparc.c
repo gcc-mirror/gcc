@@ -3401,7 +3401,7 @@ mem_min_alignment (mem, desired)
 
 
 /* Vectors to keep interesting information about registers where it can easily
-   be got.  We use to use the actual mode value as the bit number, but there
+   be got.  We used to use the actual mode value as the bit number, but there
    are more than 32 modes now.  Instead we use two tables: one indexed by
    hard register number, and one indexed by mode.  */
 
@@ -7969,6 +7969,8 @@ sparc_check_64 (x, insn)
   return 0;
 }
 
+/* Returns assembly code to perform a DImode shift using
+   a 64-bit global or out register on SPARC-V8+.  */
 char *
 sparc_v8plus_shift (operands, insn, opcode)
      rtx *operands;
@@ -7977,8 +7979,11 @@ sparc_v8plus_shift (operands, insn, opcode)
 {
   static char asm_code[60];
 
-  if (GET_CODE (operands[3]) == SCRATCH)
+  /* The scratch register is only required when the destination
+     register is not a 64-bit global or out register.  */
+  if (which_alternative != 2)
     operands[3] = operands[0];
+
   if (GET_CODE (operands[1]) == CONST_INT)
     {
       output_asm_insn ("mov\t%1, %3", operands);
@@ -7992,6 +7997,7 @@ sparc_v8plus_shift (operands, insn, opcode)
     }
 
   strcpy(asm_code, opcode);
+
   if (which_alternative != 2)
     return strcat (asm_code, "\t%0, %2, %L0\n\tsrlx\t%L0, 32, %H0");
   else
