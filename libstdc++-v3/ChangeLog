@@ -1,5 +1,6 @@
 2002-03-03  Phil Edwards  <pme@gcc.gnu.org>
 
+	PR libstdc++/3955
 	* include/std/std_sstream.h:  Remove trailing spaces.
 	(basic_stringbuf::_M_stringbuf_init):  Also check for ios_base::app.
 	* testsuite/27_io/stringbuf.cc (test05, test06):  New tests.
