@@ -640,6 +640,11 @@ typedef char *CPTR_T;
 #define Size_t		unsigned int
 #define Ptrdiff_t	int
 
+#define CODE_MASK 0x8F300
+#define MIPS_IS_STAB(sym) (((sym)->index & 0xFFF00) == CODE_MASK)
+#define MIPS_MARK_STAB(code) ((code)+CODE_MASK)
+#define MIPS_UNMARK_STAB(code) ((code)-CODE_MASK)
+
 /* The following might be called from obstack or malloc,
    so they can't be static.  */
 
@@ -651,11 +656,6 @@ extern PTR_T	xmalloc		__proto((Size_t));
 extern PTR_T	xcalloc		__proto((Size_t, Size_t));
 extern PTR_T	xrealloc	__proto((PTR_T, Size_t));
 extern void	xfree		__proto((PTR_T));
-
-extern PTR_T	malloc		__proto((Size_t));
-extern PTR_T	calloc		__proto((Size_t, Size_t));
-extern PTR_T	realloc		__proto((PTR_T, Size_t));
-extern void	free		__proto((PTR_T));
 
 extern void	fatal();	/* can't use prototypes here */
 extern void	error();
@@ -688,6 +688,31 @@ main ()
 #include <errno.h>
 #include <signal.h>
 #include <sys/stat.h>
+
+#ifdef USG
+#include "stab.h"  /* If doing DBX on sysV, use our own stab.h.  */
+#else
+#include <stab.h>  /* On BSD, use the system's stab.h.  */
+#endif /* not USG */
+
+#ifdef __GNU_STAB__
+#define STAB_CODE_TYPE enum __stab_debug_code
+#else
+#define STAB_CODE_TYPE int
+#endif
+
+#ifdef _OSF_SOURCE
+#define HAS_STDLIB_H
+#define HAS_UNISTD_H
+#endif
+
+#ifdef HAS_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef HAS_UNISTD_H
+#include <unistd.h>
+#endif
 
 #ifndef errno
 extern int errno;			/* MIPS errno.h doesn't declare this */
@@ -887,6 +912,21 @@ typedef enum hash_state {
   hash_record	= 2		/* ok to record hash, but don't use prev. */
 } hash_state_t;
 
+
+/* Types of different sized allocation requests.  */
+enum alloc_type {
+  alloc_type_none,		/* dummy value */
+  alloc_type_scope,		/* nested scopes linked list */
+  alloc_type_vlinks,		/* glue linking pages in varray */
+  alloc_type_shash,		/* string hash element */
+  alloc_type_thash,		/* type hash element */
+  alloc_type_tag,		/* struct/union/tag element */
+  alloc_type_forward,		/* element to hold unknown tag */
+  alloc_type_thead,		/* head of type hash list */
+  alloc_type_varray,		/* general varray allocation */
+  alloc_type_last		/* last+1 element for array bounds */
+};
+
 
 #define WORD_ALIGN(x)  (((x) + 3) & ~3)
 #define DWORD_ALIGN(x) (((x) + 7) & ~7)
@@ -959,6 +999,7 @@ typedef unsigned long symint_t;
 /* Linked list support for nested scopes (file, block, structure, etc.).  */
 typedef struct scope {
   struct scope	*prev;		/* previous scope level */
+  struct scope	*free;		/* free list pointer */
   SYMR		*lsym;		/* pointer to local symbol node */
   symint_t	 lnumber;	/* lsym index */
   st_t		 type;		/* type of the node */
@@ -968,6 +1009,7 @@ typedef struct scope {
 /* Forward reference list for tags referenced, but not yet defined.  */
 typedef struct forward {
   struct forward *next;		/* next forward reference */
+  struct forward *free;		/* free list pointer */
   AUXU		 *ifd_ptr;	/* pointer to store file index */
   AUXU		 *index_ptr;	/* pointer to store symbol index */
   AUXU		 *type_ptr;	/* pointer to munge type info */
@@ -977,6 +1019,7 @@ typedef struct forward {
 /* Linked list support for tags.  The first tag in the list is always
    the current tag for that block.  */
 typedef struct tag {
+  struct tag	 *free;		/* free list pointer */
   struct shash	 *hash_ptr;	/* pointer to the hash table head */
   struct tag	 *same_name;	/* tag with same name in outer scope */
   struct tag	 *same_block;	/* next tag defined in the same block.  */
@@ -986,16 +1029,26 @@ typedef struct tag {
   symint_t	  index;	/* index within file's local symbols */
 } tag_t;
 
+
 /* Head of a block's linked list of tags.  */
 typedef struct thead {
   struct thead	*prev;		/* previous block */
+  struct thead	*free;		/* free list pointer */
   struct tag	*first_tag;	/* first tag in block defined */
 } thead_t;
 
 
+/* Union containing pointers to each the small structures which are freed up.  */
+typedef union small_free {
+  scope_t	*f_scope;	/* scope structure */
+  thead_t	*f_thead;	/* tag head structure */
+  tag_t		*f_tag;		/* tag element structure */
+  forward_t	*f_forward;	/* forward tag reference */
+} small_free_t;
+
+
 /* String hash table support.  The size of the hash table must fit
    within a page.  */
-
 
 #ifndef SHASH_SIZE
 #define SHASH_SIZE 1009
@@ -1010,6 +1063,7 @@ typedef struct shash {
   symint_t	 index;		/* index within string table */
   EXTR		*esym_ptr;	/* global symbol pointer */
   SYMR		*sym_ptr;	/* local symbol pointer */
+  SYMR		*end_ptr;	/* symbol pointer to end block */
   tag_t		*tag_ptr;	/* tag pointer */
   PDR		*proc_ptr;	/* procedure descriptor pointer */
 } shash_t;
@@ -1031,44 +1085,26 @@ typedef struct thash {
 } thash_t;
 
 
-/* Union of various small structures that are allocated and freed
-   from the same heap.  */
-
-typedef union word8 {
-  union word8  *prev;		/* previous word8 structure */
-  scope_t	s;		/* scope structure */
-  vlinks_t	v;		/* varray linked list */
-  shash_t	sh;		/* string hash linked list */
-  thash_t	th;		/* type hash linked list */
-  tag_t		t;		/* tag structure */
-  forward_t	f;		/* forward tag references */
-  thead_t	thead;		/* thead strcture */
-  long		words[8];	/* words to zero out when allocating */
-} word8_t;
-
-
 /* Extended file descriptor that contains all of the support necessary
    to add things to each file separately.  */
 typedef struct efdr {
-  FDR	   fdr;			/* File header to be written out */
-  FDR	  *orig_fdr;		/* original file header */
-  char	  *name;		/* filename */
-  int	   name_len;		/* length of the filename */
-  symint_t void_type;		/* aux. pointer to 'void' type */
-  symint_t int_type;		/* aux. pointer to 'int' type */
-  scope_t *cur_scope;		/* current nested scopes */
-  symint_t file_index;		/* current file number */
-  int	   nested_scopes;	/* # nested scopes */
-  varray_t strings;		/* local strings */
-  varray_t symbols;		/* local symbols */
-  varray_t procs;		/* procedures */
-  varray_t aux_syms;		/* auxiliary symbols */
-
-  struct efdr *next_file;	/* next file descriptor */
-
+  FDR		 fdr;		/* File header to be written out */
+  FDR		*orig_fdr;	/* original file header */
+  char		*name;		/* filename */
+  int		 name_len;	/* length of the filename */
+  symint_t	 void_type;	/* aux. pointer to 'void' type */
+  symint_t	 int_type;	/* aux. pointer to 'int' type */
+  scope_t	*cur_scope;	/* current nested scopes */
+  symint_t	 file_index;	/* current file number */
+  int		 nested_scopes;	/* # nested scopes */
+  varray_t	 strings;	/* local strings */
+  varray_t	 symbols;	/* local symbols */
+  varray_t	 procs;		/* procedures */
+  varray_t	 aux_syms;	/* auxiliary symbols */
+  struct efdr	*next_file;	/* next file descriptor */
 				/* string/type hash tables */
-  shash_t **shash_head;		/* string hash table */
-  thash_t *thash_head[THASH_SIZE];
+  shash_t      **shash_head;	/* string hash table */
+  thash_t	*thash_head[THASH_SIZE];
 } efdr_t;
 
 /* Pre-initialized extended file structure.  */
@@ -1094,7 +1130,7 @@ static efdr_t init_file =
     langC,		/* lang:	language for this file */
     1,			/* fMerge:	whether this file can be merged */
     0,			/* fReadin:	true if read in (not just created) */
-#ifdef BYTES_BIG_ENDIAN
+#if BYTES_BIG_ENDIAN
     1,			/* fBigendian:	if 1, compiled on big endian machine */
 #else
     0,			/* fBigendian:	if 1, compiled on big endian machine */
@@ -1125,24 +1161,41 @@ static efdr_t init_file =
 };
 
 
-static efdr_t *first_file;	/* first file descriptor */
-static efdr_t *last_file;	/* last  file descriptor */
+static efdr_t *first_file;			/* first file descriptor */
+static efdr_t **last_file_ptr = &first_file;	/* file descriptor tail */
 
 
 /* Union of various things that are held in pages.  */
 typedef union page {
-  char		byte [ PAGE_SIZE ];
-  unsigned char	ubyte[ PAGE_SIZE ];
-  efdr_t	file [ PAGE_SIZE / sizeof (efdr_t)  ];
-  FDR		ofile[ PAGE_SIZE / sizeof (FDR)     ];
-  PDR		proc [ PAGE_SIZE / sizeof (PDR)     ];
-  SYMR		sym  [ PAGE_SIZE / sizeof (SYMR)    ];
-  EXTR		esym [ PAGE_SIZE / sizeof (EXTR)    ];
-  AUXU		aux  [ PAGE_SIZE / sizeof (AUXU)    ];
-  DNR		dense[ PAGE_SIZE / sizeof (DNR)     ];
-  word8_t	word8[ PAGE_SIZE / sizeof (word8_t) ];
+  char		byte	[ PAGE_SIZE ];
+  unsigned char	ubyte	[ PAGE_SIZE ];
+  efdr_t	file	[ PAGE_SIZE / sizeof (efdr_t)	 ];
+  FDR		ofile	[ PAGE_SIZE / sizeof (FDR)	 ];
+  PDR		proc	[ PAGE_SIZE / sizeof (PDR)	 ];
+  SYMR		sym	[ PAGE_SIZE / sizeof (SYMR)	 ];
+  EXTR		esym	[ PAGE_SIZE / sizeof (EXTR)	 ];
+  AUXU		aux	[ PAGE_SIZE / sizeof (AUXU)	 ];
+  DNR		dense	[ PAGE_SIZE / sizeof (DNR)	 ];
+  scope_t	scope	[ PAGE_SIZE / sizeof (scope_t)	 ];
+  vlinks_t	vlinks	[ PAGE_SIZE / sizeof (vlinks_t)	 ];
+  shash_t	shash	[ PAGE_SIZE / sizeof (shash_t)	 ];
+  thash_t	thash	[ PAGE_SIZE / sizeof (thash_t)	 ];
+  tag_t		tag	[ PAGE_SIZE / sizeof (tag_t)	 ];
+  forward_t	forward	[ PAGE_SIZE / sizeof (forward_t) ];
+  thead_t	thead	[ PAGE_SIZE / sizeof (thead_t)	 ];
 } page_t;
 
+
+/* Structure holding allocation information for small sized structures.  */
+typedef struct alloc_info {
+  char		*alloc_name;	/* name of this allocation type (must be first) */
+  page_t	*cur_page;	/* current page being allocated from */
+  small_free_t	 free_list;	/* current free list if any */
+  int		 unallocated;	/* number of elements unallocated on page */
+  int		 total_alloc;	/* total number of allocations */
+  int		 total_free;	/* total number of frees */
+  int		 total_pages;	/* total number of pages allocated */
+} alloc_info_t;
 
 /* Type information collected together.  */
 typedef struct type_info {
@@ -1482,7 +1535,10 @@ static tq_t map_coff_derived_type[ (int)DT_MAX ] = {
 };
 
 
+/* Keep track of different sized allocation requests.  */
+static alloc_info_t alloc_counts[ (int)alloc_type_last ];
 
+
 /* Pointers and such to the original symbol table that is read in.  */
 static struct filehdr orig_file_header;		/* global object file header */
 
@@ -1520,6 +1576,8 @@ static EXTR	*orig_ext_syms;			/* external symbols */
 static HDRR	symbolic_header;		/* symbolic header */
 static efdr_t  *cur_file_ptr	= (efdr_t *) 0;	/* current file desc. header */
 static PDR     *cur_proc_ptr	= (PDR *) 0;	/* current procedure header */
+static SYMR    *cur_oproc_begin	= (SYMR *) 0;	/* original proc. sym begin info */
+static SYMR    *cur_oproc_end	= (SYMR *) 0;	/* original proc. sym end info */
 static PDR     *cur_oproc_ptr	= (PDR *) 0;	/* current original procedure*/
 static thead_t *cur_tag_head	= (thead_t *)0;	/* current tag head */
 static long	file_offset	= 0;		/* current file offset */
@@ -1540,6 +1598,14 @@ static int	version		= 0; 		/* print version # */
 static int	had_errors	= 0;		/* != 0 if errors were found */
 static int	rename_output	= 0;		/* != 0 if rename output file*/
 static int	delete_input	= 0;		/* != 0 if delete input after done */
+
+
+/* Pseudo symbol to use when putting stabs into the symbol table.  */
+#ifndef STABS_SYMBOL
+#define STABS_SYMBOL "@stabs"
+#endif
+
+static char stabs_symbol[] = STABS_SYMBOL;
 
 
 /* Forward reference for functions.  See the definition for more details.  */
@@ -1620,6 +1686,10 @@ STATIC void	parse_def	__proto((const char *));
 STATIC void	parse_end	__proto((const char *));
 STATIC void	parse_ent	__proto((const char *));
 STATIC void	parse_file	__proto((const char *));
+STATIC void	parse_stabs_common
+				__proto((const char *, const char *, const char *));
+STATIC void	parse_stabs	__proto((const char *));
+STATIC void	parse_stabn	__proto((const char *));
 STATIC page_t  *read_seek	__proto((Size_t, off_t, const char *));
 STATIC void	copy_object	__proto((void));
 
@@ -1637,9 +1707,18 @@ STATIC page_t  *allocate_cluster
 				__proto((Size_t));
 #endif
 
-STATIC word8_t *allocate_word8	__proto((void));
-STATIC void	free_word8	__proto((word8_t *));
+STATIC forward_t *allocate_forward	__proto((void));
+STATIC scope_t	 *allocate_scope	__proto((void));
+STATIC shash_t	 *allocate_shash	__proto((void));
+STATIC tag_t	 *allocate_tag		__proto((void));
+STATIC thash_t	 *allocate_thash	__proto((void));
+STATIC thead_t	 *allocate_thead	__proto((void));
+STATIC vlinks_t	 *allocate_vlinks	__proto((void));
 
+STATIC void	  free_forward		__proto((forward_t *));
+STATIC void	  free_scope		__proto((scope_t *));
+STATIC void	  free_tag		__proto((tag_t *));
+STATIC void	  free_thead		__proto((thead_t *));
 
 /* Prototypes for library functions used.  */
 #if !defined(NO_LIB_PROTOTYPE) && !defined(_OSF_SOURCE) && !defined(_STDIO_H_)
@@ -1668,25 +1747,27 @@ extern int    rename		__proto((const char *, const char *));
 extern int    setvbuf		__proto((FILE *, char *, int, int));
 extern int    fputs		__proto((char *, FILE *));
 #endif
-
-#ifndef NO_LIB_INTERNALS
-extern int    _filbuf		__proto((FILE *));
-extern int    _flsbuf		__proto((int, FILE *));
-#endif
 #endif
 
 extern char  *sbrk		__proto((int));
+
+#ifndef HAS_STDLIB_H
 extern PTR_T  malloc		__proto((Size_t));
 extern PTR_T  calloc		__proto((Size_t, Size_t));
 extern PTR_T  realloc		__proto((PTR_T, Size_t));
 extern void   free		__proto((PTR_T));
+extern int    getopt		__proto((int, char **, const char *));
+#endif
+
+#ifndef HAS_UNISTD_H
 extern int    close		__proto((int));
 extern int    write		__proto((int, CPTR_T, Size_t));
 extern int    read		__proto((int, PTR_T, Size_t));
 extern long   lseek		__proto((int, long, int));
 extern int    ftruncate		__proto((int, long));
-extern int    getopt		__proto((int, char **, const char *));
 extern int    fstat		__proto((int, struct stat *));
+#endif
+
 extern char  *mktemp		__proto((char *));
 
 extern char *optarg;
@@ -1718,6 +1799,10 @@ static pseudo_ops_t pseudo_ops[] = {
   { ".end",	sizeof(".end")-1,	parse_end },
   { ".ent",	sizeof(".ent")-1,	parse_ent },
   { ".file",	sizeof(".file")-1,	parse_file },
+  { "#.stabs",	sizeof("#.stabs")-1,	parse_stabs },
+  { "#.stabn",	sizeof("#.stabn")-1,	parse_stabn },
+  { ".stabs",	sizeof(".stabs")-1,	parse_stabs },
+  { ".stabn",	sizeof(".stabn")-1,	parse_stabn },
 };
 
 
@@ -1727,7 +1812,7 @@ STATIC void
 add_varray_page (vp)
      varray_t *vp;				/* varray to add page to */
 {
-  vlinks_t *new_links = (vlinks_t *) allocate_word8 ();
+  vlinks_t *new_links = allocate_vlinks ();
 
 #ifdef MALLOC_CHECK
   if (vp->object_size > 1)
@@ -1735,6 +1820,9 @@ add_varray_page (vp)
   else
 #endif
     new_links->datum = allocate_page ();
+
+  alloc_counts[ (int)alloc_type_varray ].total_alloc++;
+  alloc_counts[ (int)alloc_type_varray ].total_pages++;
 
   new_links->start_index = vp->num_allocated;
   vp->objects_last_page = 0;
@@ -1817,7 +1905,7 @@ add_string (vp, hash_tbl, start, end_p1, ret_hash)
 	  add_varray_page (vp);
 	}
 
-      hash_ptr = (shash_t *) allocate_word8 ();
+      hash_ptr = allocate_shash ();
       hash_ptr->next = hash_tbl[hi];
       hash_tbl[hi] = hash_ptr;
 
@@ -1882,10 +1970,14 @@ add_local_symbol (str_start, str_end_p1, type, storage, value, indx)
 
   ret = vp->num_allocated++;
 
+  if (MIPS_IS_STAB(psym))
+    return ret;
+
   /* Save the symbol within the hash table if this is a static
-     item.  */
-  if (type == st_Global || type == st_Static || type == st_Label
-      || type == st_Proc || type == st_StaticProc)
+     item, and it has a name.  */
+  if (hash_ptr != (shash_t *)0
+      && (type == st_Global || type == st_Static || type == st_Label
+	  || type == st_Proc || type == st_StaticProc))
     hash_ptr->sym_ptr = psym;
 
   /* push or pop a scope if appropriate.  */
@@ -1898,7 +1990,7 @@ add_local_symbol (str_start, str_end_p1, type, storage, value, indx)
     case st_Proc:			/* procedure */
     case st_StaticProc:			/* static procedure */
     case st_Block:			/* begin scope */
-      pscope = (scope_t *) allocate_word8 ();
+      pscope = allocate_scope ();
       pscope->prev = cur_file_ptr->cur_scope;
       pscope->lsym = psym;
       pscope->lnumber = ret;
@@ -1913,7 +2005,7 @@ add_local_symbol (str_start, str_end_p1, type, storage, value, indx)
 	 file types, so that tags can span file boundaries.  */
       if (type != st_File && storage != sc_Info)
 	{
-	  ptag_head = (thead_t *) allocate_word8 ();
+	  ptag_head = allocate_thead ();
 	  ptag_head->first_tag = 0;
 	  ptag_head->prev = cur_tag_head;
 	  cur_tag_head = ptag_head;
@@ -1948,10 +2040,10 @@ add_local_symbol (str_start, str_end_p1, type, storage, value, indx)
 
 		  ptag_next = ptag->same_block;
 		  ptag->hash_ptr->tag_ptr = ptag->same_name;
-		  free_word8 ((word8_t *) ptag);
+		  free_tag (ptag);
 		}
 
-	      free_word8 ((word8_t *) ptag_head);
+	      free_thead (ptag_head);
 	    }
 
 	  cur_file_ptr->cur_scope = pscope->prev;
@@ -1981,7 +2073,7 @@ add_local_symbol (str_start, str_end_p1, type, storage, value, indx)
 		}
 	    }
 
-	  free_word8 ((word8_t *) pscope);
+	  free_scope (pscope);
 	}
     }
 
@@ -2181,7 +2273,7 @@ add_aux_sym_tir (t, state, hash_tbl)
 
       if (hash_ptr == (thash_t *)0)
 	{
-	  hash_ptr = (thash_t *) allocate_word8 ();
+	  hash_ptr = allocate_thash ();
 	  hash_ptr->next = hash_tbl[hi];
 	  hash_ptr->type = aux;
 	  hash_ptr->index = vp->num_allocated;
@@ -2197,6 +2289,19 @@ add_aux_sym_tir (t, state, hash_tbl)
   *aux_ptr = aux;
 
   ret = vp->num_allocated++;
+
+  /* Add bitfield length if it exists.
+     
+     NOTE:  Mips documentation claims bitfield goes at the end of the
+     AUX record, but the DECstation compiler emits it here.
+     (This would only make a difference for enum bitfields.)
+
+     Also note:  We use the last size given since gcc may emit 2
+     for an enum bitfield.  */
+
+  if (t->bitfield)
+    (void) add_aux_sym_symint ((symint_t)t->sizes[t->num_sizes-1]);
+
 
   /* Add tag information if needed.  Structure, union, and enum
      references add 2 aux symbols: a [file index, symbol index]
@@ -2221,7 +2326,7 @@ add_aux_sym_tir (t, state, hash_tbl)
 	}
       else
 	{
-	  register forward_t *forward_ref = (forward_t *) allocate_word8 ();
+	  register forward_t *forward_ref = allocate_forward ();
 
 	  forward_ref->type_ptr = aux_ptr;
 	  forward_ref->next = t->tag_ptr->forward_ref;
@@ -2237,11 +2342,6 @@ add_aux_sym_tir (t, state, hash_tbl)
 	}
     }
 
-  /* Add bitfield length if it exists.  */
-  if (t->bitfield)
-    (void) add_aux_sym_symint ((symint_t)t->sizes[0]);
-
-
   /* Add information about array bounds if they exist.  */
   for (i = 0; i < t->num_dims; i++)
     {
@@ -2255,6 +2355,9 @@ add_aux_sym_tir (t, state, hash_tbl)
 			      ? 0
 			      : (t->sizes[i] * 8) / t->dimensions[i]);
     };
+
+  /* NOTE:  Mips documentation claism that the bitfield width goes here.
+     But it needs to be emitted earlier. */
 
   return ret;
 }
@@ -2295,7 +2398,7 @@ get_tag (tag_start, tag_end_p1, index, basic_type)
 		     tag_end_p1,
 		     &hash_ptr);
 
-  tag_ptr = (tag_t *) allocate_word8 ();
+  tag_ptr = allocate_tag ();
   tag_ptr->forward_ref	= (forward_t *) 0;
   tag_ptr->hash_ptr	= hash_ptr;
   tag_ptr->same_name	= hash_ptr->tag_ptr;
@@ -2362,7 +2465,7 @@ add_unknown_tag (ptag)
       f_cur->ifd_ptr->isym = file_index;
       f_cur->index_ptr->rndx.index = sym_index;
 
-      free_word8 ((word8_t *) f_cur);
+      free_forward (f_cur);
     }
 
   return;
@@ -2405,13 +2508,17 @@ add_procedure (func_start, func_end_p1)
     {
       register PDR *old_proc_ptr = shash_ptr->proc_ptr;
       register SYMR *sym_ptr = shash_ptr->sym_ptr;
+      register FDR *orig_fdr = file_ptr->orig_fdr;
 
       if (old_proc_ptr != (PDR *)0
 	  && sym_ptr != (SYMR *)0
 	  && ((st_t)sym_ptr->st == st_Proc || (st_t)sym_ptr->st == st_StaticProc))
 	{
-	  cur_oproc_ptr = old_proc_ptr;
+	  cur_oproc_begin = sym_ptr;
+	  cur_oproc_end = shash_ptr->end_ptr;
 	  value = sym_ptr->value;
+
+	  cur_oproc_ptr = old_proc_ptr;
 	  proc_type = (st_t)sym_ptr->st;
 	  *new_proc_ptr = *old_proc_ptr;	/* initialize */
 	}
@@ -2424,10 +2531,8 @@ add_procedure (func_start, func_end_p1)
   new_proc_ptr->isym = file_ptr->symbols.num_allocated;
 
   /* Push the start of the function.  */
-  (void) add_local_symbol (func_start,
-			   func_end_p1,
-			   proc_type,
-			   sc_Text,
+  (void) add_local_symbol (func_start, func_end_p1,
+			   proc_type, sc_Text,
 			   value,
 			   (symint_t)0);
 }
@@ -2499,12 +2604,8 @@ add_file (file_start, file_end_p1)
       file_ptr->name_len = file_end_p1 - file_start;
 
       /* Update the linked list of file descriptors.  */
-      if (first_file == (efdr_t *)0)
-	first_file = file_ptr;
-      else
-	last_file->next_file = file_ptr;
-
-      last_file = file_ptr;
+      *last_file_ptr = file_ptr;
+      last_file_ptr = &file_ptr->next_file;
 
       /* Add void & int types to the file (void should be first to catch
 	 errant 0's within the index fields).  */
@@ -2717,11 +2818,15 @@ parse_begin (start)
       return;
     }
 
-  (void) add_local_symbol ((const char *)0,
-			   (const char *)0,
-			   st_Block,
-			   sc_Text,
-			   (symint_t)hash_ptr->sym_ptr->value,
+  if (cur_oproc_begin == (SYMR *)0)
+    {
+      error ("Procedure table %.*s not found for #.begin", end_p1 - start, start);
+      return;
+    }
+
+  (void) add_local_symbol ((const char *)0, (const char *)0,
+			   st_Block, sc_Text,
+			   (symint_t)hash_ptr->sym_ptr->value - cur_oproc_begin->value,
 			   (symint_t)0);
 }
 
@@ -2745,7 +2850,7 @@ parse_bend (start)
 
   if (cur_proc_ptr == (PDR *)0)
     {
-      error ("#.begin directive without a preceeding .ent directive");
+      error ("#.bend directive without a preceeding .ent directive");
       return;
     }
 
@@ -2759,15 +2864,19 @@ parse_bend (start)
 
   if (hash_ptr == (shash_t *)0)
     {
-      error ("Label %.*s not found for #.begin", end_p1 - start, start);
+      error ("Label %.*s not found for #.bend", end_p1 - start, start);
       return;
     }
 
-  (void) add_local_symbol ((const char *)0,
-			   (const char *)0,
-			   st_End,
-			   sc_Text,
-			   (symint_t)hash_ptr->sym_ptr->value,
+  if (cur_oproc_begin == (SYMR *)0)
+    {
+      error ("Procedure table %.*s not found for #.bend", end_p1 - start, start);
+      return;
+    }
+
+  (void) add_local_symbol ((const char *)0, (const char *)0,
+			   st_End, sc_Text,
+			   (symint_t)hash_ptr->sym_ptr->value - cur_oproc_begin->value,
 			   (symint_t)0);
 }
 
@@ -3115,9 +3224,12 @@ parse_def (name_start)
 		  if ((orig_hash_ptr == (shash_t *)0
 		       || orig_hash_ptr->sym_ptr == (SYMR *)0)
 		      && eptr == (EXTR *)0)
-		    error ("internal error, %.*s not found in original or external symbol tables",
-			   arg_end_p1 - arg_start,
-			   arg_start);
+		    {
+		      fprintf (stderr, "warning, %.*s not found in original or external symbol tables, value defaults to 0\n",
+			       arg_end_p1 - arg_start,
+			       arg_start);
+		      value = 0;
+		    }
 		  else
 		    {
 		      SYMR *ptr = (orig_hash_ptr != (shash_t *)0
@@ -3290,10 +3402,8 @@ parse_def (name_start)
       || eptr->asym.st == (int)st_Nil
       || cur_proc_ptr != (PDR *)0)
     {
-      symint_t isym = add_local_symbol (name_start,
-					name_end_p1,
-					symbol_type,
-					storage_class,
+      symint_t isym = add_local_symbol (name_start, name_end_p1,
+					symbol_type, storage_class,
 					value,
 					index);
 
@@ -3321,7 +3431,7 @@ parse_def (name_start)
 	      f_cur->ifd_ptr->isym = file_index;
 	      f_cur->index_ptr->rndx.index = isym;
 
-	      free_word8 ((word8_t *) f_cur);
+	      free_forward (f_cur);
 	    }
 
 	  tag_ptr->forward_ref = (forward_t *)0;
@@ -3389,23 +3499,14 @@ parse_end (start)
 
   orig_fdr = cur_file_ptr->orig_fdr;
   value = 0;
-  if (orig_fdr != (FDR *)0 && cur_oproc_ptr != (PDR *)0)
-    {
-      register SYMR *sym_ptr = ORIG_LSYMS (orig_fdr->isymBase + cur_oproc_ptr->isym);
+  if (orig_fdr != (FDR *)0 && cur_oproc_end != (SYMR *)0)
+    value = cur_oproc_end->value;
 
-      if ((st_t)sym_ptr->st == st_Proc
-	  || (st_t)sym_ptr->st == st_StaticProc)
-	{
-	  AUXU *aptr = ORIG_AUX (orig_fdr->iauxBase + sym_ptr->index);
-	  symint_t end_index = aptr->isym;
-	  value = (ORIG_LSYMS (orig_fdr->isymBase + end_index - 1))->value;
-	}
-    }
+  else
+    error ("Cannot find .end block for %.*s", end_func_p1 - start_func, start_func);
 
-  (void) add_local_symbol (start_func,
-			   end_func_p1,
-			   st_End,
-			   sc_Text,
+  (void) add_local_symbol (start_func, end_func_p1,
+			   st_End, sc_Text,
 			   value,
 			   (symint_t)0);
 
@@ -3479,6 +3580,201 @@ parse_file (start)
 }
 
 
+/* Parse .stabs directives.
+
+   .stabs directives have five fields:
+	"string"	a string, encoding the type information.
+	code		a numeric code, defined in <stab.h>
+	0		a zero
+	0		a zero or line number
+	value		a numeric value or an address.
+
+    If the value is relocatable, we transform this into:
+	iss		points as an index into string space
+	value		value from lookup of the name
+	st		st from lookup of the name
+	sc		sc from lookup of the name
+	index		code|CODE_MASK
+
+    If the value is not relocatable, we transform this into:
+	iss		points as an index into string space
+	value		value
+	st		st_Nil
+	sc		sc_Nil
+	index		code|CODE_MASK
+
+    .stabn directives have four fields (string is null):
+	code		a numeric code, defined in <stab.h>
+	0		a zero
+	0		a zero or a line number
+	value		a numeric value or an address.  */
+
+STATIC void
+parse_stabs_common (string_start, string_end, rest)
+     const char *string_start;		/* start of string or NULL */
+     const char *string_end;		/* end+1 of string or NULL */
+     const char *rest;			/* rest of the directive. */
+{
+  efdr_t *save_file_ptr = cur_file_ptr;
+  symint_t code;
+  symint_t value;
+  char *p;
+  st_t st;
+  sc_t sc;
+  int ch;
+  static int stabs_seen = 0;
+
+  if (stabs_seen++ == 0)
+    {
+      /* Add a dummy @stabs dymbol. */
+      (void) add_local_symbol (stabs_symbol,
+			       stabs_symbol + sizeof (stabs_symbol),
+			       stNil, scInfo, -1, MIPS_MARK_STAB(0));
+    }
+
+  /* Read code from stabs.  */
+  if (!isdigit (*rest))
+    {
+      error ("Illegal .stabs/.stabn directive, code is non-numeric");
+      return;
+    }
+
+  code = strtol (rest, &p, 0);
+
+  /* Line number stabs are handled differently, since they have two values,
+     the line number and the address of the label.  We use the index field
+     (aka code) to hold the line number, and the value field to hold the
+     address.  The symbol type is st_Label, which should be different from
+     the other stabs, so that gdb can recognize it.  */
+
+  if (code == (int)N_SLINE)
+    {
+      SYMR *sym_ptr;
+      shash_t *shash_ptr;
+
+      /* Skip ,0, */
+      if (p[0] != ',' || p[1] != '0' || p[2] != ',' || !isdigit (p[3]))
+	{
+	  error ("Illegal line number .stabs/.stabn directive");
+	  return;
+	}
+
+      code = strtol (p+3, &p, 0);
+      ch = *++p;
+      if (code <= 0 || p[-1] != ',' || isdigit (ch) || !IS_ASM_IDENT (ch))
+	{
+	  error ("Illegal line number .stabs/.stabn directive");
+	  return;
+	}
+
+      shash_ptr = hash_string (p,
+			       strlen (p) - 1,
+			       &orig_str_hash[0],
+			       (symint_t *)0);
+
+      if (shash_ptr == (shash_t *)0
+	  || (sym_ptr = shash_ptr->sym_ptr) == (SYMR *)0)
+	{
+	  error ("Illegal .stabs/.stabn directive, value not found");
+	  return;
+	}
+
+      if ((st_t) sym_ptr->st != st_Label)
+	{
+	  error ("Illegal line number .stabs/.stabn directive");
+	  return;
+	}
+
+      st = st_Label;
+      sc = (sc_t) sym_ptr->sc;
+      value = sym_ptr->value;
+    }
+  else
+    {
+      code = MIPS_MARK_STAB(code);
+
+      /* Skip ,0,0, */
+      if (p[0] != ',' || p[1] != '0' || p[2] != ',' || p[3] != '0' || p[4] != ',')
+	{
+	  error ("Illegal .stabs/.stabn directive, manditory 0 isn't");
+	  return;
+	}
+
+      p += 5;
+      ch = *p;
+      if (!IS_ASM_IDENT (ch) && ch != '-')
+	{
+	  error ("Illegal .stabs/.stabn directive, bad character");
+	  return;
+	}
+
+      if (isdigit (ch) || ch == '-')
+	{
+	  st = st_Nil;
+	  sc = sc_Nil;
+	  value = strtol (p, &p, 0);
+	  if (*p != '\n')
+	    {
+	      error ("Illegal .stabs/.stabn directive, stuff after numeric value");
+	      return;
+	    }
+	}
+      else if (!IS_ASM_IDENT (ch))
+	{
+	  error ("Illegal .stabs/.stabn directive, bad character");
+	  return;
+	}
+      else
+	{
+	  SYMR *sym_ptr;
+	  shash_t *shash_ptr = hash_string (p,
+					    strlen (p) - 1,
+					    &orig_str_hash[0],
+					    (symint_t *)0);
+
+	  if (shash_ptr == (shash_t *)0
+	      || (sym_ptr = shash_ptr->sym_ptr) == (SYMR *)0)
+	    {
+	      error ("Illegal .stabs/.stabn directive, value not found");
+	      return;
+	    }
+
+	  st = (st_t) sym_ptr->st;
+	  sc = (sc_t) sym_ptr->sc;
+	  value = sym_ptr->value;
+	}
+    }
+
+  (void) add_local_symbol (string_start, string_end, st, sc, value, code);
+  /* Restore normal file type.  */
+  cur_file_ptr = save_file_ptr;
+}
+
+
+STATIC void
+parse_stabs (start)
+     const char *start;			/* start of directive */
+{
+  const char *end = strchr (start+1, '"');
+
+  if (*start != '"' || end == (const char *)0 || end[1] != ',')
+    {
+      error ("Illegal .stabs directive, no string");
+      return;
+    }
+
+  parse_stabs_common (start+1, end, end+2);
+}
+
+
+STATIC void
+parse_stabn (start)
+     const char *start;			/* start of directive */
+{
+  parse_stabs_common ((const char *)0, (const char *)0, start);
+}
+
+
 /* Parse the input file, and write the lines to the output file
    if needed.  */
 
@@ -3496,7 +3792,7 @@ parse_input __proto((void))
 
   /* Add a dummy scope block around the entire compilation unit for
      structures defined outside of blocks.  */
-  ptag_head = (thead_t *) allocate_word8 ();
+  ptag_head = allocate_thead ();
   ptag_head->first_tag = 0;
   ptag_head->prev = cur_tag_head;
   cur_tag_head = ptag_head;
@@ -3534,10 +3830,10 @@ parse_input __proto((void))
 
       ptag_next = ptag->same_block;
       ptag->hash_ptr->tag_ptr = ptag->same_name;
-      free_word8 ((word8_t *) ptag);
+      free_tag (ptag);
     }
 
-  free_word8 ((word8_t *) ptag_head);
+  free_thead (ptag_head);
 
 }
 
@@ -3576,10 +3872,8 @@ update_headers __proto((void))
        file_ptr = file_ptr->next_file)
     {
       cur_file_ptr = file_ptr;
-      (void) add_local_symbol ((const char *)0,
-			       (const char *)0,
-			       st_End,
-			       sc_Text,
+      (void) add_local_symbol ((const char *)0, (const char *)0,
+			       st_End, sc_Text,
 			       (symint_t)0,
 			       (symint_t)0);
 
@@ -4023,6 +4317,7 @@ copy_object __proto((void))
   register int sys_write;
   register int fd, es;
   register int delete_ifd = 0;
+  register int *remap_file_number;
   struct stat stat_buf;
 
   if (debug)
@@ -4168,12 +4463,33 @@ copy_object __proto((void))
     }
 
 
+  /* Create array to map original file numbers to the new file numbers
+     (in case there are duplicate filenames, we collapse them into one
+     file section, the MIPS assembler may or may not collapse them).  */
+
+  remap_file_number = (int *) alloca (sizeof (int) * orig_sym_hdr.ifdMax);
+
+  for (fd = delete_ifd; fd < orig_sym_hdr.ifdMax; fd++)
+    {
+      register FDR *fd_ptr = ORIG_FILES (fd);
+      register char *filename = ORIG_LSTRS (fd_ptr->issBase + fd_ptr->rss);
+
+      /* file support itself.  */
+      add_file (filename, filename + strlen (filename));
+      remap_file_number[fd] = cur_file_ptr->file_index;
+    }
+
+  if (delete_ifd > 0)		/* just in case */
+    remap_file_number[0] = remap_file_number[1];
+
+
   /* Loop, adding each of the external symbols.  These must be in
      order or otherwise we would have to change the relocation
      entries.  We don't just call add_bytes, because we need to have
      the names put into the external hash table.  We set the type to
      'void' for now, and parse_def will fill in the correct type if it
-     is in the symbol table.  */
+     is in the symbol table.  We must add the external symbols before
+     the locals, since the locals do lookups against the externals.  */
 
   if (debug)
     fprintf (stderr, "\tehash\n");
@@ -4182,6 +4498,7 @@ copy_object __proto((void))
     {
       register EXTR *eptr = orig_ext_syms + es;
       register char *ename = ORIG_ESTRS (eptr->asym.iss);
+      register unsigned ifd = eptr->ifd;
 
       (void) add_ext_symbol (ename,
 			     ename + strlen (ename),
@@ -4189,7 +4506,7 @@ copy_object __proto((void))
 			     (sc_t) eptr->asym.sc,
 			     eptr->asym.value,
 			     (symint_t)((eptr->asym.index == indexNil) ? indexNil : 0),
-			     eptr->ifd - delete_ifd);
+			     (ifd < orig_sym_hdr.ifdMax) ? remap_file_number[ ifd ] : ifd);
     }
 
 
@@ -4258,7 +4575,7 @@ copy_object __proto((void))
 
 		else
 		  {
-		    shash_ptr = (shash_t *) allocate_word8 ();
+		    shash_ptr = allocate_shash ();
 		    shash_ptr->next = orig_str_hash[hash_index];
 		    orig_str_hash[hash_index] = shash_ptr;
 
@@ -4268,6 +4585,27 @@ copy_object __proto((void))
 		    shash_ptr->sym_ptr = sym;
 		  }
 	      }
+	      break;
+
+	    case st_End:
+	      if ((sc_t) sym->sc == sc_Text)
+		{
+		  register char *str = ORIG_LSTRS (fd_ptr->issBase + sym->iss);
+
+		  if (*str != '\0')
+		    {
+		      register Size_t len = strlen (str);
+		      register shash_t *shash_ptr = hash_string (str,
+								 (Ptrdiff_t)len,
+								 &orig_str_hash[0],
+								 (symint_t *)0);
+
+		      if (shash_ptr != (shash_t *)0)
+			shash_ptr->end_ptr = sym;
+		    }
+		}
+	      break;
+
 	    }
 	}
 
@@ -4355,6 +4693,7 @@ main (argc, argv)
   char *p = strrchr (argv[0], '/');
   char *num_end;
   int option;
+  int i;
 
   progname = (p != 0) ? p+1 : argv[0];
 
@@ -4373,11 +4712,17 @@ main (argc, argv)
 	   sizeof (page_t),
 	   PAGE_USIZE);
 
-  if (sizeof (word8_t) != 8 * sizeof (symint_t))
-    fatal ("Word8_t has a sizeof %d bytes, when it should be %d",
-	   sizeof (word8_t),
-	   8 * sizeof (symint_t));
 #endif
+
+  alloc_counts[ alloc_type_none    ].alloc_name = "none";
+  alloc_counts[ alloc_type_scope   ].alloc_name = "scope";
+  alloc_counts[ alloc_type_vlinks  ].alloc_name = "vlinks";
+  alloc_counts[ alloc_type_shash   ].alloc_name = "shash";
+  alloc_counts[ alloc_type_thash   ].alloc_name = "thash";
+  alloc_counts[ alloc_type_tag     ].alloc_name = "tag";
+  alloc_counts[ alloc_type_forward ].alloc_name = "forward";
+  alloc_counts[ alloc_type_thead   ].alloc_name = "thead";
+  alloc_counts[ alloc_type_varray  ].alloc_name = "varray";
 
   int_type_info  = type_info_init;
   int_type_info.basic_type = bt_Int;
@@ -4500,7 +4845,7 @@ main (argc, argv)
 	    fatal ("wrote %d bytes to %s, expected to write %d", len2, obj_in_name, len);
 	}
 
-      free_multiple_pages (buffer, 4);
+      free_multiple_pages ((page_t *)buffer, 4);
 
       if (len < 0)
 	pfatal_with_name (object_name);
@@ -4532,23 +4877,26 @@ main (argc, argv)
 	pfatal_with_name (argv[optind]);
     }
 
-
-#ifdef _IOFBF
-  /* Try to prevent stdio from malloc'ing memory for the buffers.  At the
-     same time, increase the size of mips' stdio buffers.  */
-
-  setvbuf (object_stream, (char *) allocate_multiple_pages (2), _IOFBF, 2*PAGE_SIZE);
-  setvbuf (obj_in_stream, (char *) allocate_multiple_pages (2), _IOFBF, 2*PAGE_SIZE);
-  setvbuf (stdin,	  (char *) allocate_multiple_pages (2), _IOFBF, 2*PAGE_SIZE);
-  setvbuf (stdout,	  (char *) allocate_multiple_pages (2), _IOFBF, 2*PAGE_SIZE);
-  setvbuf (stderr,	  (char *) allocate_multiple_pages (2), _IOLBF, 2*PAGE_SIZE);
-#endif
-
   copy_object ();			/* scan & copy object file */
   parse_input ();			/* scan all of input */
 
   update_headers ();			/* write out tfile */
   write_object ();
+
+  if (debug)
+    {
+      fprintf (stderr, "\n\tAllocation summary:\n\n");
+      for (i = (int)alloc_type_none; i < (int)alloc_type_last; i++)
+	if (alloc_counts[i].total_alloc)
+	  {
+	    fprintf (stderr,
+		     "\t%s\t%5d allocation(s), %5d free(s), %2d page(s)\n",
+		     alloc_counts[i].alloc_name,
+		     alloc_counts[i].total_alloc,
+		     alloc_counts[i].total_free,
+		     alloc_counts[i].total_pages);
+	  }
+    }
 
   return (had_errors) ? 1 : 0;
 }
@@ -4751,65 +5099,337 @@ allocate_page __proto((void))
 }
 
 
-/* Allocate and release 4 word quanities.  */
+/* Allocate scoping information.  */
 
-#ifndef MALLOC_CHECK
-static word8_t *word8_free_list = (word8_t *)0;
-#endif
-
-STATIC word8_t *
-allocate_word8 __proto((void))
+STATIC scope_t *
+allocate_scope __proto((void))
 {
+  register scope_t *ptr;
+  static scope_t initial_scope;
+
 #ifndef MALLOC_CHECK
-  register word8_t *ptr = word8_free_list;
-  if (ptr != (word8_t *)0)
-    word8_free_list = ptr->prev;
+  ptr = alloc_counts[ (int)alloc_type_scope ].free_list.f_scope;
+  if (ptr != (scope_t *)0)
+    alloc_counts[ (int)alloc_type_scope ].free_list.f_scope = ptr->free;
+
   else
     {
-      register int i;
-      register page_t *page_ptr;
+      register int unallocated	= alloc_counts[ (int)alloc_type_scope ].unallocated;
+      register page_t *cur_page	= alloc_counts[ (int)alloc_type_scope ].cur_page;
 
-      page_ptr = allocate_page ();
-      ptr = &page_ptr->word8[0];
-      for (i = 0; i < (PAGE_SIZE / sizeof (word8_t)) - 1; i++)
+      if (unallocated == 0)
 	{
-	  ptr->prev = word8_free_list;
-	  word8_free_list = ptr;
-	  ptr++;
+	  unallocated = PAGE_SIZE / sizeof (scope_t);
+	  alloc_counts[ (int)alloc_type_scope ].cur_page = cur_page = allocate_page ();
+	  alloc_counts[ (int)alloc_type_scope ].total_pages++;
 	}
+
+      ptr = &cur_page->scope[ --unallocated ];
+      alloc_counts[ (int)alloc_type_scope ].unallocated = unallocated;
     }
 
-  ptr->words[0] = 0;
-  ptr->words[1] = 0;
-  ptr->words[2] = 0;
-  ptr->words[3] = 0;
-  ptr->words[4] = 0;
-  ptr->words[5] = 0;
-  ptr->words[6] = 0;
-  ptr->words[7] = 0;
+#else
+  ptr = (scope_t *) xmalloc (sizeof (scope_t));
+
+#endif
+
+  alloc_counts[ (int)alloc_type_scope ].total_alloc++;
+  *ptr = initial_scope;
   return ptr;
-
-#else	/* MALLOC_CHECK */
-  return (word8_t *) xcalloc (1, sizeof (word8_t));
-
-#endif	/* MALLOC_CHECK */
 }
+
+/* Free scoping information.  */
 
 STATIC void
-free_word8 (ptr)
-     word8_t *ptr;
+free_scope (ptr)
+     scope_t *ptr;
 {
+  alloc_counts[ (int)alloc_type_scope ].total_free++;
+
 #ifndef MALLOC_CHECK
-  ptr->prev = word8_free_list;
-  word8_free_list = ptr;
+  ptr->free = alloc_counts[ (int)alloc_type_scope ].free_list.f_scope;
+  alloc_counts[ (int)alloc_type_scope ].free_list.f_scope = ptr;
 
-#else	/* MALLOC_CHECK */
-  xfree ((PTR_T)ptr);
+#else
+  xfree ((PTR_T) ptr);
+#endif
 
-#endif	/* MALLOC_CHECK */
 }
 
-#endif				/* MIPS_DEBUGGING defined */
+
+/* Allocate links for pages in a virtual array.  */
+
+STATIC vlinks_t *
+allocate_vlinks __proto((void))
+{
+  register vlinks_t *ptr;
+  static vlinks_t initial_vlinks;
+
+#ifndef MALLOC_CHECK
+  register int unallocated	= alloc_counts[ (int)alloc_type_vlinks ].unallocated;
+  register page_t *cur_page	= alloc_counts[ (int)alloc_type_vlinks ].cur_page;
+
+  if (unallocated == 0)
+    {
+      unallocated = PAGE_SIZE / sizeof (vlinks_t);
+      alloc_counts[ (int)alloc_type_vlinks ].cur_page = cur_page = allocate_page ();
+      alloc_counts[ (int)alloc_type_vlinks ].total_pages++;
+    }
+
+  ptr = &cur_page->vlinks[ --unallocated ];
+  alloc_counts[ (int)alloc_type_vlinks ].unallocated = unallocated;
+
+#else
+  ptr = (vlinks_t *) xmalloc (sizeof (vlinks_t));
+
+#endif
+
+  alloc_counts[ (int)alloc_type_vlinks ].total_alloc++;
+  *ptr = initial_vlinks;
+  return ptr;
+}
+
+
+/* Allocate string hash buckets.  */
+
+STATIC shash_t *
+allocate_shash __proto((void))
+{
+  register shash_t *ptr;
+  static shash_t initial_shash;
+
+#ifndef MALLOC_CHECK
+  register int unallocated	= alloc_counts[ (int)alloc_type_shash ].unallocated;
+  register page_t *cur_page	= alloc_counts[ (int)alloc_type_shash ].cur_page;
+
+  if (unallocated == 0)
+    {
+      unallocated = PAGE_SIZE / sizeof (shash_t);
+      alloc_counts[ (int)alloc_type_shash ].cur_page = cur_page = allocate_page ();
+      alloc_counts[ (int)alloc_type_shash ].total_pages++;
+    }
+
+  ptr = &cur_page->shash[ --unallocated ];
+  alloc_counts[ (int)alloc_type_shash ].unallocated = unallocated;
+
+#else
+  ptr = (shash_t *) xmalloc (sizeof (shash_t));
+
+#endif
+
+  alloc_counts[ (int)alloc_type_shash ].total_alloc++;
+  *ptr = initial_shash;
+  return ptr;
+}
+
+
+/* Allocate type hash buckets.  */
+
+STATIC thash_t *
+allocate_thash __proto((void))
+{
+  register thash_t *ptr;
+  static thash_t initial_thash;
+
+#ifndef MALLOC_CHECK
+  register int unallocated	= alloc_counts[ (int)alloc_type_thash ].unallocated;
+  register page_t *cur_page	= alloc_counts[ (int)alloc_type_thash ].cur_page;
+
+  if (unallocated == 0)
+    {
+      unallocated = PAGE_SIZE / sizeof (thash_t);
+      alloc_counts[ (int)alloc_type_thash ].cur_page = cur_page = allocate_page ();
+      alloc_counts[ (int)alloc_type_thash ].total_pages++;
+    }
+
+  ptr = &cur_page->thash[ --unallocated ];
+  alloc_counts[ (int)alloc_type_thash ].unallocated = unallocated;
+
+#else
+  ptr = (thash_t *) xmalloc (sizeof (thash_t));
+
+#endif
+
+  alloc_counts[ (int)alloc_type_thash ].total_alloc++;
+  *ptr = initial_thash;
+  return ptr;
+}
+
+
+/* Allocate structure, union, or enum tag information.  */
+
+STATIC tag_t *
+allocate_tag __proto((void))
+{
+  register tag_t *ptr;
+  static tag_t initial_tag;
+
+#ifndef MALLOC_CHECK
+  ptr = alloc_counts[ (int)alloc_type_tag ].free_list.f_tag;
+  if (ptr != (tag_t *)0)
+    alloc_counts[ (int)alloc_type_tag ].free_list.f_tag = ptr->free;
+
+  else
+    {
+      register int unallocated	= alloc_counts[ (int)alloc_type_tag ].unallocated;
+      register page_t *cur_page	= alloc_counts[ (int)alloc_type_tag ].cur_page;
+
+      if (unallocated == 0)
+	{
+	  unallocated = PAGE_SIZE / sizeof (tag_t);
+	  alloc_counts[ (int)alloc_type_tag ].cur_page = cur_page = allocate_page ();
+	  alloc_counts[ (int)alloc_type_tag ].total_pages++;
+	}
+
+      ptr = &cur_page->tag[ --unallocated ];
+      alloc_counts[ (int)alloc_type_tag ].unallocated = unallocated;
+    }
+
+#else
+  ptr = (tag_t *) xmalloc (sizeof (tag_t));
+
+#endif
+
+  alloc_counts[ (int)alloc_type_tag ].total_alloc++;
+  *ptr = initial_tag;
+  return ptr;
+}
+
+/* Free scoping information.  */
+
+STATIC void
+free_tag (ptr)
+     tag_t *ptr;
+{
+  alloc_counts[ (int)alloc_type_tag ].total_free++;
+
+#ifndef MALLOC_CHECK
+  ptr->free = alloc_counts[ (int)alloc_type_tag ].free_list.f_tag;
+  alloc_counts[ (int)alloc_type_tag ].free_list.f_tag = ptr;
+
+#else
+  xfree ((PTR_T) ptr);
+#endif
+
+}
+
+
+/* Allocate forward reference to a yet unknown tag.  */
+
+STATIC forward_t *
+allocate_forward __proto((void))
+{
+  register forward_t *ptr;
+  static forward_t initial_forward;
+
+#ifndef MALLOC_CHECK
+  ptr = alloc_counts[ (int)alloc_type_forward ].free_list.f_forward;
+  if (ptr != (forward_t *)0)
+    alloc_counts[ (int)alloc_type_forward ].free_list.f_forward = ptr->free;
+
+  else
+    {
+      register int unallocated	= alloc_counts[ (int)alloc_type_forward ].unallocated;
+      register page_t *cur_page	= alloc_counts[ (int)alloc_type_forward ].cur_page;
+
+      if (unallocated == 0)
+	{
+	  unallocated = PAGE_SIZE / sizeof (forward_t);
+	  alloc_counts[ (int)alloc_type_forward ].cur_page = cur_page = allocate_page ();
+	  alloc_counts[ (int)alloc_type_forward ].total_pages++;
+	}
+
+      ptr = &cur_page->forward[ --unallocated ];
+      alloc_counts[ (int)alloc_type_forward ].unallocated = unallocated;
+    }
+
+#else
+  ptr = (forward_t *) xmalloc (sizeof (forward_t));
+
+#endif
+
+  alloc_counts[ (int)alloc_type_forward ].total_alloc++;
+  *ptr = initial_forward;
+  return ptr;
+}
+
+/* Free scoping information.  */
+
+STATIC void
+free_forward (ptr)
+     forward_t *ptr;
+{
+  alloc_counts[ (int)alloc_type_forward ].total_free++;
+
+#ifndef MALLOC_CHECK
+  ptr->free = alloc_counts[ (int)alloc_type_forward ].free_list.f_forward;
+  alloc_counts[ (int)alloc_type_forward ].free_list.f_forward = ptr;
+
+#else
+  xfree ((PTR_T) ptr);
+#endif
+
+}
+
+
+/* Allocate head of type hash list.  */
+
+STATIC thead_t *
+allocate_thead __proto((void))
+{
+  register thead_t *ptr;
+  static thead_t initial_thead;
+
+#ifndef MALLOC_CHECK
+  ptr = alloc_counts[ (int)alloc_type_thead ].free_list.f_thead;
+  if (ptr != (thead_t *)0)
+    alloc_counts[ (int)alloc_type_thead ].free_list.f_thead = ptr->free;
+
+  else
+    {
+      register int unallocated	= alloc_counts[ (int)alloc_type_thead ].unallocated;
+      register page_t *cur_page	= alloc_counts[ (int)alloc_type_thead ].cur_page;
+
+      if (unallocated == 0)
+	{
+	  unallocated = PAGE_SIZE / sizeof (thead_t);
+	  alloc_counts[ (int)alloc_type_thead ].cur_page = cur_page = allocate_page ();
+	  alloc_counts[ (int)alloc_type_thead ].total_pages++;
+	}
+
+      ptr = &cur_page->thead[ --unallocated ];
+      alloc_counts[ (int)alloc_type_thead ].unallocated = unallocated;
+    }
+
+#else
+  ptr = (thead_t *) xmalloc (sizeof (thead_t));
+
+#endif
+
+  alloc_counts[ (int)alloc_type_thead ].total_alloc++;
+  *ptr = initial_thead;
+  return ptr;
+}
+
+/* Free scoping information.  */
+
+STATIC void
+free_thead (ptr)
+     thead_t *ptr;
+{
+  alloc_counts[ (int)alloc_type_thead ].total_free++;
+
+#ifndef MALLOC_CHECK
+  ptr->free = (thead_t *) alloc_counts[ (int)alloc_type_thead ].free_list.f_thead;
+  alloc_counts[ (int)alloc_type_thead ].free_list.f_thead = ptr;
+
+#else
+  xfree ((PTR_T) ptr);
+#endif
+
+}
+
+#endif /* MIPS_DEBUGGING_INFO *?
 
 
 /* Output an error message and exit */
