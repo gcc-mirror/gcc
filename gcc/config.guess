@@ -147,12 +147,20 @@ EOF
 		echo rs6000-ibm-aix3.2
 	fi
 	exit 0 ;;
-    *:AIX:1:4)
+    *:AIX:*:4)
 	if /usr/sbin/lsattr -EHl proc0 | grep POWER >/dev/null 2>&1; then
-		echo rs6000-ibm-aix4.1
+		IBM_ARCH=rs6000
 	else
-		echo powerpc-ibm-aix4.1
+		IBM_ARCH=powerpc
 	fi
+	if grep bos410 /usr/include/stdio.h >/dev/null 2>&1; then
+		IBM_REV=4.1
+	elif grep bos411 /usr/include/stdio.h >/dev/null 2>&1; then
+		IBM_REV=4.1.1
+	else
+		IBM_REV=4
+	fi
+	echo ${IBM_ARCH}-ibm-aix${IBM_REV}
 	exit 0 ;;
     *:AIX:*:*)
 	echo rs6000-ibm-aix
