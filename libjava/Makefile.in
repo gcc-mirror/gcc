@@ -77,6 +77,7 @@ GCDEPS = @GCDEPS@
 GCINCS = @GCINCS@
 GCLIBS = @GCLIBS@
 GCOBJS = @GCOBJS@
+GCSPEC = @GCSPEC@
 LD = @LD@
 LIBGCJ_CFLAGS = @LIBGCJ_CFLAGS@
 LIBGCJ_CXXFLAGS = @LIBGCJ_CXXFLAGS@
@@ -88,12 +89,17 @@ MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
 PERL = @PERL@
 RANLIB = @RANLIB@
+SYSTEMSPEC = @SYSTEMSPEC@
 THREADDEPS = @THREADDEPS@
 THREADINCS = @THREADINCS@
 THREADLIBS = @THREADLIBS@
 THREADOBJS = @THREADOBJS@
+THREADSPEC = @THREADSPEC@
 USE_SYMBOL_UNDERSCORE = @USE_SYMBOL_UNDERSCORE@
 VERSION = @VERSION@
+ZDEPS = @ZDEPS@
+ZLIBS = @ZLIBS@
+ZLIBSPEC = @ZLIBSPEC@
 here = @here@
 libgcj_basedir = @libgcj_basedir@
 
@@ -106,6 +112,7 @@ toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
 
 toolexeclib_LTLIBRARIES = libgcj.la
+toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.zip
 
 @NATIVE_TRUE@bin_PROGRAMS = \
@@ -185,17 +192,17 @@ CONVERT_DIR = gnu/gcj/convert
 
 jv_convert_SOURCES = 
 EXTRA_jv_convert_SOURCES = $(convert_source_files)
-jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert -nodefaultlibs \
+jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert \
 	-rpath $(toolexeclibdir)
 
 jv_convert_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
 	-o jv-convert
 
 jv_convert_LDADD = $(convert_source_files:.java=.lo) libgcj.la \
-	$(GCLIBS) $(THREADLIBS) -lm -lgcc -lc -lgcc
+	$(GCLIBS) $(THREADLIBS) $(ZLIBS) -L.
 
 jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
-	$(GCDEPS) $(THREADDEPS) libgcj.la
+	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la
 
 
 gen_from_JIS_SOURCES = 
@@ -610,7 +617,7 @@ cygnus_hack =
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ./include/config.h
-CONFIG_CLEAN_FILES = 
+CONFIG_CLEAN_FILES =  libgcj.spec
 LTLIBRARIES =  $(toolexeclib_LTLIBRARIES)
 
 
@@ -637,11 +644,11 @@ COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CF
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
-DATA =  $(data_DATA)
+DATA =  $(data_DATA) $(toolexeclib_DATA)
 
 DIST_COMMON =  COPYING.LIB ChangeLog Makefile.am Makefile.in acconfig.h \
 acinclude.m4 aclocal.m4 configure configure.in include/config.h.in \
-include/stamp-h.in
+include/stamp-h.in libgcj.spec.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -874,6 +881,8 @@ distclean-hdr:
 	-rm -f include/config.h
 
 maintainer-clean-hdr:
+libgcj.spec: $(top_builddir)/config.status libgcj.spec.in
+	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 mostlyclean-toolexeclibLTLIBRARIES:
 
@@ -998,6 +1007,25 @@ uninstall-dataDATA:
 	@$(NORMAL_UNINSTALL)
 	list='$(data_DATA)'; for p in $$list; do \
 	  rm -f $(DESTDIR)$(datadir)/$$p; \
+	done
+
+install-toolexeclibDATA: $(toolexeclib_DATA)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(toolexeclibdir)
+	@list='$(toolexeclib_DATA)'; for p in $$list; do \
+	  if test -f $(srcdir)/$$p; then \
+	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(toolexeclibdir)/$$p"; \
+	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(toolexeclibdir)/$$p; \
+	  else if test -f $$p; then \
+	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(toolexeclibdir)/$$p"; \
+	    $(INSTALL_DATA) $$p $(DESTDIR)$(toolexeclibdir)/$$p; \
+	  fi; fi; \
+	done
+
+uninstall-toolexeclibDATA:
+	@$(NORMAL_UNINSTALL)
+	list='$(toolexeclib_DATA)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(toolexeclibdir)/$$p; \
 	done
 
 # This directory's subdirectories are mostly independent; you can cd
@@ -1213,7 +1241,8 @@ installcheck-am:
 installcheck: installcheck-recursive
 install-info-am: 
 install-info: install-info-recursive
-install-exec-am: install-toolexeclibLTLIBRARIES install-binPROGRAMS
+install-exec-am: install-toolexeclibLTLIBRARIES install-binPROGRAMS \
+		install-toolexeclibDATA
 install-exec: install-exec-recursive
 
 install-data-am: install-dataDATA
@@ -1223,7 +1252,7 @@ install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-recursive
 uninstall-am: uninstall-toolexeclibLTLIBRARIES uninstall-binPROGRAMS \
-		uninstall-dataDATA
+		uninstall-dataDATA uninstall-toolexeclibDATA
 uninstall: uninstall-recursive
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(DATA)
 all-redirect: all-recursive
@@ -1232,7 +1261,7 @@ install-strip:
 installdirs: installdirs-recursive
 installdirs-am:
 	$(mkinstalldirs)  $(DESTDIR)$(toolexeclibdir) $(DESTDIR)$(bindir) \
-		$(DESTDIR)$(datadir)
+		$(DESTDIR)$(datadir) $(DESTDIR)$(toolexeclibdir)
 
 
 mostlyclean-generic:
@@ -1294,6 +1323,7 @@ distclean-binPROGRAMS clean-binPROGRAMS maintainer-clean-binPROGRAMS \
 uninstall-binPROGRAMS install-binPROGRAMS mostlyclean-noinstPROGRAMS \
 distclean-noinstPROGRAMS clean-noinstPROGRAMS \
 maintainer-clean-noinstPROGRAMS uninstall-dataDATA install-dataDATA \
+uninstall-toolexeclibDATA install-toolexeclibDATA \
 install-data-recursive uninstall-data-recursive install-exec-recursive \
 uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
 all-recursive check-recursive installcheck-recursive info-recursive \
