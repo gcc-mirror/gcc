@@ -1,5 +1,14 @@
 2002-01-29  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/h8300-protos.h: Update the prototype of
+	output_a_shift.
+	* config/h8300/h8300.c (output_a_shift): Remove an unused
+	argument 'insn'.  Remove redundant code.
+	* config/h8300/h8300.md: Adust to the new prototype of
+	output_a_shift.
+
+2002-01-29  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300-protos.h: Update the prototypes of
 	emit_a_rotate and expand_a_rotate.
 	* config/h8300/h8300.c (emit_a_rotate): Change the type of the
