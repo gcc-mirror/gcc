@@ -1,3 +1,10 @@
+2003-12-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13323
+	* class.c (same_signature_p): Handle conversion operators
+	correctly.
+	(check_for_override): Likewise.
+
 2003-11-14  Bernardo Innocenti  <bernie@develer.com>
 
 	Backport from 3.4-branch.
