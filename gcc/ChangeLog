@@ -1,3 +1,7 @@
+Wed Oct  7 02:27:52 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (DRIVER_DEFINES): Remove last change.
+	
 Wed Oct  7 01:08:43 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
 
 	* caller-save.c (restore_referenced_regs): Lose mode argument.
