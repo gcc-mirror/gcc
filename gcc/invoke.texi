@@ -368,27 +368,18 @@ in the following sections.
 -malignment-traps -mno-alignment-traps @gol
 -msoft-float -mhard-float -mfpe @gol
 -mthumb-interwork -mno-thumb-interwork @gol
--mcpu= -march= -mfpe=  @gol
--mstructure-size-boundary= @gol
+-mcpu=@var{name} -march=@var{name} -mfpe=@var{name}  @gol
+-mstructure-size-boundary=@var{n} @gol
 -mbsd -mxopen -mno-symrename @gol
 -mabort-on-noreturn @gol
 -mlong-calls -mno-long-calls @gol
--mnop-fun-dllimport -mno-nop-fun-dllimport @gol
 -msingle-pic-base -mno-single-pic-base @gol
--mpic-register=}
-
-@emph{Thumb Options}
-@gccoptlist{
--mtpcs-frame -mno-tpcs-frame @gol
--mtpcs-leaf-frame -mno-tpcs-leaf-frame @gol
--mlittle-endian  -mbig-endian @gol
--mthumb-interwork -mno-thumb-interwork @gol
--mstructure-size-boundary= @gol
--mnop-fun-dllimport -mno-nop-fun-dllimport @gol
--mcallee-super-interworking -mno-callee-super-interworking @gol
--mcaller-super-interworking -mno-caller-super-interworking @gol
--msingle-pic-base -mno-single-pic-base @gol
--mpic-register=}
+-mpic-register=@var{reg} @gol
+-mnop-fun-dllimport @gol
+-mpoke-function-name @gol
+-mthumb -marm @gol
+-mtpcs-frame -mtpcs-leaf-frame @gol
+-mcaller-super-interworking -mcallee-super-interworking }
 
 @emph{MN10200 Options}
 @gccoptlist{
@@ -4546,7 +4537,6 @@ that macro, which enables you to change the defaults.
 * Convex Options::
 * AMD29K Options::
 * ARM Options::
-* Thumb Options::
 * MN10200 Options::
 * MN10300 Options::
 * M32R/D Options::
@@ -5219,6 +5209,8 @@ and conforming to the function calling standards for the APCS 32-bit
 option.  This option replaces the @samp{-m6} option of previous releases
 of the compiler.
 
+@ignore
+@c not currently implemented
 @item -mapcs-stack-check
 @kindex -mapcs-stack-check
 @kindex -mno-apcs-stack-check
@@ -5230,6 +5222,7 @@ called, depending upon the amount of stack space required.  The run time
 system is required to provide these functions.  The default is
 @samp{-mno-apcs-stack-check}, since this produces smaller code.
 
+@c not currently implemented
 @item -mapcs-float
 @kindex -mapcs-float
 @kindex -mno-apcs-float
@@ -5240,17 +5233,18 @@ arithmetic is going to be performed by the code.  The default is
 @samp{-mno-apcs-float}, since integer only code is slightly increased in
 size if @samp{-mapcs-float} is used.
 
+@c not currently implemented
 @item -mapcs-reentrant
 @kindex -mapcs-reentrant
 @kindex -mno-apcs-reentrant
-Generate reentrant, position independent code.  This is the equivalent
-to specifying the @samp{-fpic} option.  The default is
+Generate reentrant, position independent code.  The default is
 @samp{-mno-apcs-reentrant}.
+@end ignore
 
 @item -mthumb-interwork
 @kindex -mthumb-interwork
 @kindex -mno-thumb-interwork
-Generate code which supports calling between the ARM and THUMB
+Generate code which supports calling between the ARM and Thumb
 instruction sets.  Without this option the two instruction sets cannot
 be reliably used inside one program.  The default is
 @samp{-mno-thumb-interwork}, since slightly larger code is generated
@@ -5322,7 +5316,7 @@ objects in memory.
 @kindex -mno-alignment-traps
 Generate code that assumes that the MMU will not trap unaligned
 accesses.  This produces better code when the target instruction set
-does not have half-word memory operations (implementations prior to
+does not have half-word memory operations (i.e. implementations prior to
 ARMv4).
 
 Note that you cannot use this option to access unaligned word objects,
@@ -5334,20 +5328,16 @@ this produces better code when there are no half-word memory
 instructions available.
 
 @item -mshort-load-bytes
+@itemx -mno-short-load-words
 @kindex -mshort-load-bytes
-This is a deprecated alias for @samp{-malignment-traps}.
+@kindex -mno-short-load-words
+These are deprecated aliases for @samp{-malignment-traps}.
 
 @item -mno-short-load-bytes
+@itemx -mshort-load-words
 @kindex -mno-short-load-bytes
-This is a deprecated alias for @samp{-mno-alignment-traps}.
-
-@item -mshort-load-words
 @kindex -mshort-load-words
-This is a deprecated alias for @samp{-mno-alignment-traps}.
-
-@item -mno-short-load-words
-@kindex -mno-short-load-words
-This is a deprecated alias for @samp{-malignment-traps}.
+This are deprecated aliases for @samp{-mno-alignment-traps}.
 
 @item -mbsd
 @kindex -mbsd
@@ -5371,12 +5361,13 @@ compiler is built for cross-compilation.
 @item -mcpu=<name>
 @kindex -mcpu=
 This specifies the name of the target ARM processor.  GCC uses this name
-to determine what kind of instructions it can use when generating
+to determine what kind of instructions it can emit when generating
 assembly code.  Permissible names are: arm2, arm250, arm3, arm6, arm60,
 arm600, arm610, arm620, arm7, arm7m, arm7d, arm7dm, arm7di, arm7dmi,
 arm70, arm700, arm700i, arm710, arm710c, arm7100, arm7500, arm7500fe,
 arm7tdmi, arm8, strongarm, strongarm110, strongarm1100, arm8, arm810,
-arm9, arm920, arm920t, arm9tdmi.
+arm9, arm9e, arm920, arm920t, arm940t, arm9tdmi, arm10tdmi, arm1020t,
+xscale.
 
 @itemx -mtune=<name>
 @kindex -mtune=
@@ -5386,16 +5377,16 @@ restricting which instructions can be used, it specifies that GCC should
 tune the performance of the code as if the target were of the type
 specified in this option, but still choosing the instructions that it
 will generate based on the cpu specified by a @samp{-mcpu=} option.
-For some arm implementations better performance can be obtained by using
+For some ARM implementations better performance can be obtained by using
 this option.
 
 @item -march=<name>
 @kindex -march=
 This specifies the name of the target ARM architecture.  GCC uses this
-name to determine what kind of instructions it can use when generating
+name to determine what kind of instructions it can emit when generating
 assembly code.  This option can be used in conjunction with or instead
 of the @samp{-mcpu=} option.  Permissible names are: armv2, armv2a,
-armv3, armv3m, armv4, armv4t, armv5.
+armv3, armv3m, armv4, armv4t, armv5, armv5t, armv5te.
 
 @item -mfpe=<number>
 @itemx -mfp=<number>
@@ -5403,7 +5394,7 @@ armv3, armv3m, armv4, armv4t, armv5.
 @kindex -mfp=
 This specifies the version of the floating point emulation available on
 the target.  Permissible values are 2 and 3.  @samp{-mfp=} is a synonym
-for @samp{-mfpe=} to support older versions of GCC.
+for @samp{-mfpe=}, for compatibility with older versions of GCC.
 
 @item -mstructure-size-boundary=<n>
 @kindex -mstructure-size-boundary
@@ -5415,14 +5406,14 @@ can produce faster, more efficient code, but can also increase the size
 of the program.  The two values are potentially incompatible.  Code
 compiled with one value cannot necessarily expect to work with code or
 libraries compiled with the other value, if they exchange information
-using structures or unions.  Programmers are encouraged to use the 32
-value as future versions of the toolchain may default to this value.
+using structures or unions.
 
 @item -mabort-on-noreturn
 @kindex -mabort-on-noreturn
 @kindex -mnoabort-on-noreturn
-Generate a call to the function abort at the end of a noreturn function.
-It will be executed if the function tries to return.
+Generate a call to the function @code{abort} at the end of a
+@code{noreturn} function.  It will be executed if the function tries to
+return.
 
 @item -mlong-calls
 @itemx -mno-long-calls
@@ -5444,7 +5435,7 @@ the scope of a @samp{#pragma long_calls} directive, will always be
 turned into long calls.
 
 This feature is not enabled by default.  Specifying
-@samp{--no-long-calls} will restore the default behaviour, as will
+@samp{-mno-long-calls} will restore the default behaviour, as will
 placing the function calls within the scope of a @samp{#pragma
 long_calls_off} directive.  Note these switches have no effect on how
 the compiler generates code to handle function calls via function
@@ -5452,7 +5443,7 @@ pointers.
 
 @item -mnop-fun-dllimport
 @kindex -mnop-fun-dllimport
-Disable the support for the @emph{dllimport} attribute.
+Disable support for the @emph{dllimport} attribute.
 
 @item -msingle-pic-base
 @kindex -msingle-pic-base
@@ -5466,62 +5457,47 @@ before execution begins.
 Specify the register to be used for PIC addressing.  The default is R10
 unless stack-checking is enabled, when R9 is used.
 
-@end table
+@item -mpoke-function-name
+@kindex -mpoke-function-name
+Write the name of each function into the text section, directly
+preceding the function prologue.  The generated code is similar to this:
 
-@node Thumb Options
-@subsection Thumb Options
-@cindex Thumb Options
+@smallexample
+     t0
+         .ascii "arm_poke_function_name", 0
+         .align
+     t1
+         .word 0xff000000 + (t1 - t0)
+     arm_poke_function_name
+         mov     ip, sp
+         stmfd   sp!, @{fp, ip, lr, pc@}
+         sub     fp, ip, #4
+@end smallexample
 
-@table @gcctabopt
+When performing a stack backtrace, code can inspect the value of
+@code{pc} stored at @code{fp + 0}.  If the trace function then looks at
+location @code{pc - 12} and the top 8 bits are set, then we know that
+there is a function name embedded immediately preceding this location
+and has length @code{((pc[-3]) & 0xff000000)}.
 
-@item -mthumb-interwork
-@kindex -mthumb-interwork
-@kindex -mno-thumb-interwork
-Generate code which supports calling between the THUMB and ARM
-instruction sets.  Without this option the two instruction sets cannot
-be reliably used inside one program.  The default is
-@samp{-mno-thumb-interwork}, since slightly smaller code is generated
-with this option.
+@item -mthumb
+@kindex -mthumb
+Generate code for the 16-bit Thumb instruction set.  The default is to
+use the 32-bit ARM instruction set.
 
 @item -mtpcs-frame
 @kindex -mtpcs-frame
 @kindex -mno-tpcs-frame
 Generate a stack frame that is compliant with the Thumb Procedure Call
 Standard for all non-leaf functions.  (A leaf function is one that does
-not call any other functions).  The default is @samp{-mno-apcs-frame}.
+not call any other functions.)  The default is @samp{-mno-tpcs-frame}.
 
 @item -mtpcs-leaf-frame
 @kindex -mtpcs-leaf-frame
 @kindex -mno-tpcs-leaf-frame
 Generate a stack frame that is compliant with the Thumb Procedure Call
 Standard for all leaf functions.  (A leaf function is one that does
-not call any other functions).  The default is @samp{-mno-apcs-leaf-frame}.
-
-@item -mlittle-endian
-@kindex -mlittle-endian
-Generate code for a processor running in little-endian mode.  This is
-the default for all standard configurations.
-
-@item -mbig-endian
-@kindex -mbig-endian
-Generate code for a processor running in big-endian mode.
-
-@item -mstructure-size-boundary=<n>
-@kindex -mstructure-size-boundary
-The size of all structures and unions will be rounded up to a multiple
-of the number of bits set by this option.  Permissible values are 8 and
-32.  The default value varies for different toolchains.  For the COFF
-targeted toolchain the default value is 8.  Specifying the larger number
-can produced faster, more efficient code, but can also increase the size
-of the program.  The two values are potentially incompatible.  Code
-compiled with one value cannot necessarily expect to work with code or
-libraries compiled with the other value, if they exchange information
-using structures or unions.  Programmers are encouraged to use the 32
-value as future versions of the toolchain may default to this value.
-
-@item -mnop-fun-dllimport
-@kindex -mnop-fun-dllimport
-Disable the support for the @emph{dllimport} attribute.
+not call any other functions.)  The default is @samp{-mno-apcs-leaf-frame}.
 
 @item -mcallee-super-interworking
 @kindex -mcallee-super-interworking
@@ -5536,17 +5512,6 @@ Allows calls via function pointers (including virtual functions) to
 execute correctly regardless of whether the target code has been
 compiled for interworking or not.  There is a small overhead in the cost
 of executing a function pointer if this option is enabled.
-
-@item -msingle-pic-base
-@kindex -msingle-pic-base
-Treat the register used for PIC addressing as read-only, rather than
-loading it in the prologue for each function.  The run-time system is
-responsible for initialising this register with an appropriate value
-before execution begins.
-
-@item -mpic-register=<reg>
-@kindex -mpic-register=
-Specify the register to be used for PIC addressing.  The default is R10.
 
 @end table
 

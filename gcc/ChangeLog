@@ -1,3 +1,10 @@
+2001-05-24  Philip Blundell  <philb@gnu.org>
+
+	* invoke.texi (ARM Options): Improve wording slightly.  Add
+	documentation for more options, including those for Thumb mode.
+	Don't mention options that don't exist or are unimplemented.
+	(Thumb Options): Delete; merged into above section.
+
 2001-05-24  Geoff Keating  <geoffk@redhat.com>
 
        * config/rs6000/linux.h (SIGNAL_FRAMESIZE): Define.
