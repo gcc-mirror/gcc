@@ -1,3 +1,8 @@
+2001-09-14  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/CloneNotSupportedException.java: Re-merged with
+	Classpath.
+
 2001-09-14  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/io/File.java (normalizePath): Use equals() not '==' for string 
