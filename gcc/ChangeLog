@@ -1,3 +1,9 @@
+2001-09-04  Stan Shebs  <shebs@apple.com>
+
+	* config/darwin.h (ASM_DECLARE_FUNCTION_NAME): Define.
+	* config/darwin.c (machopic_stub_name): Account for internally
+	generated lib calls such as memcpy.
+
 2001-09-04  Richard Henderson  <rth@redhat.com>
 
 	* unwind.h (_UA_END_OF_STACK): New flag.
