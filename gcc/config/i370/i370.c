@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for System/370.
-   Copyright (C) 1989, 1993, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1995, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for MVS C/370 by Dave Pitts (dpitts@nyx.cs.du.edu)
 
@@ -21,9 +21,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -35,12 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "flags.h"
 #include "recog.h"
-#ifdef sun
-#include <sys/types.h>
-#include <ctype.h>
-#endif
-#include <time.h>
-
 
 /* Label node, this structure is used to keep track of labels on the
    current page.  */
