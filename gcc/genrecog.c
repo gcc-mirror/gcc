@@ -2576,42 +2576,6 @@ record_insn_name (code, name)
   insn_name_ptr[code] = new;
 }  
 
-char *
-xstrdup (input)
-  const char *input;
-{
-  register size_t len = strlen (input) + 1;
-  register char *output = xmalloc (len);
-  memcpy (output, input, len);
-  return output;
-}
-
-PTR
-xrealloc (old, size)
-  PTR old;
-  size_t size;
-{
-  register PTR ptr;
-  if (old)
-    ptr = (PTR) realloc (old, size);
-  else
-    ptr = (PTR) malloc (size);
-  if (!ptr)
-    fatal ("virtual memory exhausted");
-  return ptr;
-}
-
-PTR
-xmalloc (size)
-  size_t size;
-{
-  register PTR val = (PTR) malloc (size);
-
-  if (val == 0)
-    fatal ("virtual memory exhausted");
-  return val;
-}
-
 static void
 debug_decision_2 (test)
      struct decision_test *test;

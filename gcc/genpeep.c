@@ -368,32 +368,6 @@ print_code (code)
   for (p1 = GET_RTX_NAME (code); *p1; p1++)
     putchar (TOUPPER(*p1));
 }
-
-PTR
-xmalloc (size)
-  size_t size;
-{
-  register PTR val = (PTR) malloc (size);
-
-  if (val == 0)
-    fatal ("virtual memory exhausted");
-  return val;
-}
-
-PTR
-xrealloc (old, size)
-  PTR old;
-  size_t size;
-{
-  register PTR ptr;
-  if (old)
-    ptr = (PTR) realloc (old, size);
-  else
-    ptr = (PTR) malloc (size);
-  if (!ptr)
-    fatal ("virtual memory exhausted");
-  return ptr;
-}
 
 extern int main PARAMS ((int, char **));
 

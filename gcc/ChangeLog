@@ -1,3 +1,16 @@
+2000-05-18  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* genopinit.c: Use $ for escape sequences in optab patterns.
+	Remove backslashes from optab patterns.  Change $A, $B, $C to
+	expand to (int) whatever instead of just whatever; remove
+	explicit (int) from all optab patterns.
+
+	* gensupport.c (xmalloc, xrealloc, xstrdup): Provide.
+	* genattr.c, genattrtab.c, gencodes.c, genconfig.c, genemit.c,
+	genextract.c, genflags.c, genopinit.c, genoutput.c, genpeep.c,
+	genrecog.c: Remove private copies of xmalloc, xrealloc, and
+	xstrdup.
+
 2000-05-18  Richard Henderson  <rth@cygnus.com>
 
 	* jump.c (jump_optimize_1): Base minimum insn count during

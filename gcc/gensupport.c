@@ -847,3 +847,40 @@ read_md_rtx (lineno, seqnr)
 
   return desc;
 }
+
+/* Until we can use the versions in libiberty.  */
+char *
+xstrdup (input)
+  const char *input;
+{
+  register size_t len = strlen (input) + 1;
+  register char *output = xmalloc (len);
+  memcpy (output, input, len);
+  return output;
+}
+
+PTR
+xrealloc (old, size)
+  PTR old;
+  size_t size;
+{
+  register PTR ptr;
+  if (old)
+    ptr = (PTR) realloc (old, size);
+  else
+    ptr = (PTR) malloc (size);
+  if (!ptr)
+    fatal ("virtual memory exhausted");
+  return ptr;
+}
+
+PTR
+xmalloc (size)
+  size_t size;
+{
+  register PTR val = (PTR) malloc (size);
+
+  if (val == 0)
+    fatal ("virtual memory exhausted");
+  return val;
+}
