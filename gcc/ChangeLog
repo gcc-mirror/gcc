@@ -1,3 +1,7 @@
+2003-07-22  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.in (install-common): Add dependency on installdirs.
+
 2003-07-21  Alexandre Oliva  <aoliva@redhat.com>
 
 	* c-common.c (c_common_type_for_mode): Return integer types for

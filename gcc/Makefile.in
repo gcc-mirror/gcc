@@ -2940,7 +2940,7 @@ installdirs:
 	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(man7dir)
 
 # Install the compiler executables built during cross compilation.
-install-common: native $(EXTRA_PARTS) lang.install-common
+install-common: native $(EXTRA_PARTS) lang.install-common installdirs
 	for file in $(COMPILERS); do \
 	  if [ -f $$file ] ; then \
 	    rm -f $(DESTDIR)$(libsubdir)/$$file; \
