@@ -30,9 +30,6 @@ Boston, MA 02111-1307, USA.  */
 #define  BAD_ADDR ((void*)-1)
 #endif
 
-#if ! defined( SIGCHLD ) && defined( SIGCLD )
-#  define SIGCHLD SIGCLD
-#endif
 #ifndef SEPARATE_FIX_PROC
 #include "server.h"
 #endif
@@ -291,12 +288,8 @@ initialize ( int argc, char** argv )
 # endif
 
   signal (SIGQUIT, SIG_IGN);
-#ifdef SIGIOT
   signal (SIGIOT,  SIG_IGN);
-#endif
-#ifdef SIGPIPE
   signal (SIGPIPE, SIG_IGN);
-#endif
   signal (SIGALRM, SIG_IGN);
   signal (SIGTERM, SIG_IGN);
 }
@@ -552,7 +545,11 @@ create_file (void)
           *pz_dir = NUL;
           if (stat (fname, &stbf) < 0)
             {
+#ifdef _WIN32
+              mkdir (fname);
+#else
               mkdir (fname, S_IFDIR | S_DIRALL);
+#endif
             }
 
           *pz_dir = '/';
@@ -835,8 +832,8 @@ internal_fix (int read_fd, tFixDesc* p_fixd)
    *  Make the fd passed in the stdin, and the write end of
    *  the new pipe become the stdout.
    */
-  fcntl (fd[1], F_DUPFD, STDOUT_FILENO);
-  fcntl (read_fd, F_DUPFD, STDIN_FILENO);
+  dup2 (fd[1], STDOUT_FILENO);
+  dup2 (read_fd, STDIN_FILENO);
 
   apply_fix (p_fixd, pz_curr_file);
   exit (0);

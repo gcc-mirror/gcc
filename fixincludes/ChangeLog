@@ -1,3 +1,20 @@
+2004-10-20  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	PR bootstrap/17832
+
+	* fixincl.c (SIGCHLD): Remove definition.
+	(initialize): Remove SIGIOT and SIGPIPE checks.
+	(create_file): Fix mkdir() for Win32.
+	(internal_fix): Use dup2() instead of fcntl().
+
+	* fixlib.h (SIGQUIT): Define if undefined.
+	(SIGIOT): Same.
+	(SIGPIPE): Same.
+	(SIGALRM): Same.
+	(SIGKILL): Same.
+
+	* procopen.c (chain_open): Use dup2() instead of fcntl().
+
 2004-08-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR other/17991

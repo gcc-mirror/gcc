@@ -2,7 +2,7 @@
 /*
  *  server.c  Set up and handle communications with a server process.
  *
- *  Server Handling copyright 1992-1999 The Free Software Foundation
+ *  Server Handling copyright 1992-1999, 2004 The Free Software Foundation
  *
  *  Server Handling is free software.
  *  You may redistribute it and/or modify it under the terms of the
@@ -155,8 +155,8 @@ chain_open (int stdin_fd, tCC** pp_args, pid_t* p_child)
    *  Make the fd passed in the stdin, and the write end of
    *  the new pipe become the stdout.
    */
-  fcntl (stdout_pair.write_fd, F_DUPFD, STDOUT_FILENO);
-  fcntl (stdin_fd, F_DUPFD, STDIN_FILENO);
+  dup2 (stdout_pair.write_fd, STDOUT_FILENO);
+  dup2 (stdin_fd, STDIN_FILENO);
 
   if (*pp_args == (char *) NULL)
     *pp_args = pz_cmd;
