@@ -42,7 +42,6 @@ Wed Dec 24 23:33:17 1997  Jeffrey A Law  (law@cygnus.com)
 Wed Dec 24 23:12:14 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* cse.c (max_insn_uid): New variable.
-	(invalidate): Remove CYGNUS LOCAL patch.
 	(cse_around_loop): Use max_insn_uid.
 	(cse_main): Set max_insn_uid.
 
