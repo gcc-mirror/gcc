@@ -1,3 +1,11 @@
+2002-03-25  Andrew Haley <aph@cambridge.redhat.com>, Hans Boehm <Hans_Boehm@hp.com>
+
+	* configure.in, configure: enable dwarf2-exception-style
+	exception handling on IA-64.
+	* include/dwarf2-signal.h (MAKE_THROW_FRAME): Add for IA-64.
+	(INIT_SEGV, INIT_FPE): Use __libc_sigaction instead of syscall.
+	Add FIXME comment.
+	
 2002-03-25  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.am (libgcj_la_LDFLAGS): Use THREADLDFLAGS.
