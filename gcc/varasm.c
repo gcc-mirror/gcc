@@ -1843,6 +1843,9 @@ assemble_integer (x, size, align, force)
     {
       const char *asm_op = NULL;
 
+      /* ??? This isn't quite as flexible as the ASM_OUTPUT_INT type hooks.
+	 At present powerpc-eabi can't jump -mrelocatable hoops, so you can
+	 get assembler errors from symbolic references in packed structs.  */
       switch (size)
 	{
 #ifdef UNALIGNED_SHORT_ASM_OP
