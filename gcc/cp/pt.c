@@ -5837,6 +5837,8 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	else
 	  {
 	    tree new_decl = tsubst (decl, args, complain, in_decl);
+	    if (new_decl == error_mark_node)
+	      return error_mark_node;
 
 	    DECL_TEMPLATE_RESULT (r) = new_decl;
 	    DECL_TI_TEMPLATE (new_decl) = r;
