@@ -6221,6 +6221,7 @@ init_decl_processing ()
     = build_pointer_type (build_qualified_type (void_type_node,
 						TYPE_QUAL_CONST));
   c_common_nodes_and_builtins (1, flag_no_builtin, flag_no_nonansi_builtin);
+  lang_type_promotes_to = convert_type_from_ellipsis;
 
   void_ftype_ptr
     = build_exception_variant (void_ftype_ptr, empty_except_spec);

@@ -3813,6 +3813,48 @@ convert_arg_to_ellipsis (arg)
   return arg;
 }
 
+/* va_arg (EXPR, TYPE) is a builtin. Make sure it is not abused.  */
+
+tree
+build_x_va_arg (expr, type)
+     tree expr;
+     tree type;
+{
+  type = complete_type_or_else (type, NULL_TREE);
+
+  if (expr == error_mark_node || !type)
+    return error_mark_node;
+  
+  if (! pod_type_p (type))
+    {
+      /* Undefined behaviour [expr.call] 5.2.2/7.  */
+      cp_warning ("cannot receive objects of non-POD type `%#T' through `...'",
+		  type);
+    }
+  
+  return build_va_arg (expr, type);
+}
+
+/* TYPE has been given to va_arg. Apply the default conversions which would
+   have happened when passed via ellipsis. Return the promoted type, or
+   NULL_TREE, if there is no change.  */
+
+tree
+convert_type_from_ellipsis (type)
+     tree type;
+{
+  tree promote;
+  
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    promote = build_pointer_type (TREE_TYPE (type));
+  else if (TREE_CODE (type) == FUNCTION_TYPE)
+    promote = build_pointer_type (type);
+  else
+    promote = type_promotes_to (type);
+  
+  return same_type_p (type, promote) ? NULL_TREE : promote;
+}
+
 /* ARG is a default argument expression being passed to a parameter of
    the indicated TYPE, which is a parameter to FN.  Do any required
    conversions.  Return the converted value.  */

@@ -3270,6 +3270,8 @@ extern int can_convert_arg			PROTO((tree, tree, tree));
 extern int enforce_access                       PROTO((tree, tree));
 extern tree convert_default_arg                 PROTO((tree, tree, tree));
 extern tree convert_arg_to_ellipsis             PROTO((tree));
+extern tree build_x_va_arg                      PROTO((tree, tree));
+extern tree convert_type_from_ellipsis          PROTO((tree));
 extern int is_properly_derived_from             PROTO((tree, tree));
 extern tree initialize_reference                PROTO((tree, tree));
 extern tree strip_top_quals                     PROTO((tree));

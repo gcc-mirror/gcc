@@ -1,3 +1,15 @@
+1999-10-13  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (build_x_va_arg): Prototype new function.
+	* call.c (build_x_va_arg): Define it.
+	* parse.y (unary_expr): Call build_x_va_arg.
+	
+	* cp-tree.h (convert_type_from_ellipsis): Prototype new function.
+	* call.c (convert_type_from_ellipsis): Define it.
+	* decl.c (init_decl_processing): Set lang_type_promotes_to.
+
+	* tree.c (lvalue_p_1): Accept VA_ARG_EXPR with aggregates.
+
 1999-10-11  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (fixed_type_or_null): Always set *nonnull.
