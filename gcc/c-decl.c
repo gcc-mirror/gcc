@@ -3459,10 +3459,10 @@ finish_decl (decl, init, asmspec_tree)
 	  && (TREE_STATIC (decl)
 	      ?
 		/* A static variable with an incomplete type
-		   is an error if it is initialized or `static'.
+		   is an error if it is initialized.
 		   Otherwise, let it through, but if it is not `extern'
 		   then it may cause an error message later.  */
-		!TREE_PUBLIC (decl) || DECL_INITIAL (decl)
+		DECL_INITIAL (decl) != 0
 	      :
 		/* An automatic variable with an incomplete type
 		   is an error.  */
