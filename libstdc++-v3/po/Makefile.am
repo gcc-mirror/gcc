@@ -46,7 +46,9 @@ all-local-no:
 all-local-yes: $(LOCALE_OUT) 
 
 # 'make check' needs the catalogs constructed in build directory.
-check:
+check: check-@USE_NLS@
+check-no:
+check-yes:
 	$(mkinstalldirs) $(locale_builddir) 
 	@catalogs='$(LOCALE_OUT)'; \
 	for cat in $$catalogs; do \
@@ -69,8 +71,7 @@ install-data-local-yes: all-local-yes
 	  lang=`echo $$cat | sed 's/\.mo$$//'`; \
 	  install_dir=$(locale_installdir)/$$lang/LC_MESSAGES; \
 	  $(mkinstalldirs) $$install_dir; \
-	  build_cat=$(locale_builddir)/$$lang/LC_MESSAGES/$(PACKAGE).mo; \
-	  $(INSTALL_DATA) $$build_cat $$install_dir/$(PACKAGE).mo; \
+	  $(INSTALL_DATA) $$cat $$install_dir/$(PACKAGE).mo; \
 	done
 
 # Specify what gets cleaned up on a 'make clean'
