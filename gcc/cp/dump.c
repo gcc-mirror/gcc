@@ -395,6 +395,8 @@ dequeue_and_dump (di)
 	dump_string (di, "artificial");
       if (TREE_CHAIN (t))
 	dump_child ("chan", TREE_CHAIN (t));
+      if (DECL_LANG_SPECIFIC (t) && DECL_LANGUAGE (t) != lang_cplusplus)
+	dump_string (di, language_to_string (DECL_LANGUAGE (t), 0));
     }
   else if (code_class == 't')
     {

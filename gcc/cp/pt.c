@@ -1392,7 +1392,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	      name = is_constructor ? ctor_identifier : dtor_identifier;
 	    }
 
-	  if (!IDENTIFIER_TYPENAME_P (name))
+	  if (!DECL_CONV_FN_P (decl))
 	    {
 	      idx = lookup_fnfields_1 (ctype, name);
 	      if (idx >= 0)
@@ -5687,7 +5687,7 @@ tsubst_decl (t, args, type, in_decl)
 			      /*complain=*/1, t,
 			      /*entering_scope=*/1);
 
-	if (member && IDENTIFIER_TYPENAME_P (DECL_NAME (r)))
+	if (member && DECL_CONV_FN_P (r))
 	  /* Type-conversion operator.  Reconstruct the name, in
 	     case it's the name of one of the template's parameters.  */
 	  DECL_NAME (r) = build_typename_overload (TREE_TYPE (type));
@@ -7055,12 +7055,9 @@ tsubst_copy (t, args, complain, in_decl)
       return tsubst (t, args, complain, in_decl);
 
     case IDENTIFIER_NODE:
-      if (IDENTIFIER_TYPENAME_P (t)
-	  /* Make sure it's not just a variable named `__opr', for instance,
-	     which can occur in some existing code.  */
-	  && TREE_TYPE (t))
-	return build_typename_overload
-	  (tsubst (TREE_TYPE (t), args, complain, in_decl));
+      if (IDENTIFIER_TYPENAME_P (t))
+	return (build_typename_overload
+		(tsubst (TREE_TYPE (t), args, complain, in_decl)));
       else
 	return t;
 

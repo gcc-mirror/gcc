@@ -1,3 +1,25 @@
+2000-05-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (IDENTIFIER_TYPENAME_P): Use a flag, not strncmp.
+	(DECL_CONV_FN_P): Simplify.
+	(DECL_OPERATOR): Remove.
+	(language_to_string): Declare.
+	* decl.c (duplicate_decls): Fix typo in comment.
+	(grokdeclarator): Adjust use of IDENTIFIER_TYPENAME_P.
+	(grok_op_properties): Use DECL_CONV_FN_P instead of
+	IDENTIFIER_TYPENAME_P.
+	* dump.c (dequeue_and_dump): Dump the language linkage of
+	declarations.
+	* error.c (language_to_string): Give it external linkage.
+	* method.c (build_typename_overload): Set IDENTIFIER_TYPENAME_P.
+	(implicitly_declare_fn): Set DECL_LANGUAGE.
+	* pt.c (check_explicit_specialization): Use DECL_CONV_FN_P, not
+	IDENTIFIER_TYPENAME_P.
+	(tsubst_decl): Likewise.
+	(tsubst_copy): Adjust use of IDENTIFIER_TYPENAME_P.
+	* semantics.c (finish_member_declaration): Don't mark members of
+	classes declared in an extern "C" region as extern "C".
+	
 2000-05-22  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* decl2.c (qualified_lookup_using_namespace): Look through

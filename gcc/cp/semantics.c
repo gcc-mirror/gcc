@@ -2004,6 +2004,13 @@ finish_member_declaration (decl)
   /* Mark the DECL as a member of the current class.  */
   DECL_CONTEXT (decl) = current_class_type;
 
+  /* [dcl.link]
+
+     A C language linkage is ignored for the names of class members
+     and the member function type of class member functions.  */
+  if (DECL_LANG_SPECIFIC (decl) && DECL_LANGUAGE (decl) == lang_c)
+    DECL_LANGUAGE (decl) = lang_cplusplus;
+
   /* Put functions on the TYPE_METHODS list and everything else on the
      TYPE_FIELDS list.  Note that these are built up in reverse order.
      We reverse them (to obtain declaration order) in finish_struct.  */

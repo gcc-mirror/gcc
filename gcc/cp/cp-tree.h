@@ -73,6 +73,7 @@ Boston, MA 02111-1307, USA.  */
           or FIELD_DECL).
       NEED_TEMPORARY_P (in REF_BIND, BASE_CONV)
       SCOPE_PARTIAL_P (in SCOPE_STMT)
+      IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
    5: BINFO_PRIMARY_MARKED_P (in BINFO)
    6: BINFO_VBASE_PRIMARY_P (in BINFO)
 
@@ -484,10 +485,8 @@ struct tree_srcloc
 
 /* Nonzero if this identifier is the name of a type-conversion
    operator.  */
-#define IDENTIFIER_TYPENAME_P(NODE)			\
-  (! strncmp (IDENTIFIER_POINTER (NODE),		\
-              OPERATOR_TYPENAME_FORMAT,			\
-	      strlen (OPERATOR_TYPENAME_FORMAT)))
+#define IDENTIFIER_TYPENAME_P(NODE) \
+  (TREE_LANG_FLAG_4 (NODE))
 
 /* Nonzero if this identifier is the name of a constructor or
    destructor.  */
@@ -1972,8 +1971,8 @@ struct lang_decl
   (DECL_LANG_SPECIFIC (NODE)->cloned_function)
 
 /* Non-zero if NODE is a user-defined conversion operator.  */
-#define DECL_CONV_FN_P(NODE)						     \
-  (IDENTIFIER_TYPENAME_P (DECL_NAME (NODE)) && TREE_TYPE (DECL_NAME (NODE)))
+#define DECL_CONV_FN_P(NODE) \
+  (IDENTIFIER_TYPENAME_P (DECL_NAME (NODE)))
 
 /* Non-zero if NODE is an overloaded operator.  */
 #define DECL_OVERLOADED_OPERATOR_P(NODE)	\
@@ -2683,11 +2682,6 @@ extern int flag_new_for_scope;
    erroneously declared PARM_DECL.  */
 #define DECL_THIS_STATIC(NODE) \
   DECL_LANG_FLAG_6 (VAR_FUNCTION_OR_PARM_DECL_CHECK (NODE))
-
-/* Nonzero in FUNCTION_DECL means it is really an operator.
-   Just used to communicate formatting information to dbxout.c.  */
-#define DECL_OPERATOR(NODE) \
-  (DECL_LANG_SPECIFIC(FUNCTION_DECL_CHECK (NODE))->decl_flags.operator_attr)
 
 /* Nonzero if TYPE is an anonymous union or struct type.  We have to use a
    flag for this because "A union for which objects or pointers are
@@ -4084,6 +4078,7 @@ extern const char *context_as_string            PARAMS ((tree, enum tree_string_
 extern const char *lang_decl_name		PARAMS ((tree, int));
 extern const char *cp_file_of			PARAMS ((tree));
 extern int cp_line_of				PARAMS ((tree));
+extern const char *language_to_string           PARAMS ((enum languages, int));
 
 /* in except.c */
 extern void init_exception_processing		PARAMS ((void));
