@@ -27,8 +27,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define INCLUDE_DEFAULTS				\
   {							\
     { GPLUSPLUS_INCLUDE_DIR, 1},			\
-    { GCC_INCLUDE_DIR, 0},				\
     { LOCAL_INCLUDE_DIR, 0},				\
+    { TOOL_INCLUDE_DIR, 0 },				\
+    { GCC_INCLUDE_DIR, 0},				\
+    /* These are for fixincludes-fixed ansi/bsd headers	\
+       which wouldn't be found otherwise.		\
+       (The use of string catenation here is OK since	\
+	NeXT's native compiler is derived from GCC.) */	\
+    { GCC_INCLUDE_DIR "/ansi", 0 },			\
+    { GCC_INCLUDE_DIR "/bsd", 0 },			\
     { "/NextDeveloper/Headers", 0},			\
     { "/NextDeveloper/Headers/ansi", 0},		\
     { "/NextDeveloper/Headers/bsd", 0},			\
