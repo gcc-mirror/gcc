@@ -1,3 +1,18 @@
+Mon Feb  5 21:56:16 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* combine.c (nonzero_bits, case PLUS): If pointers extend unsigned
+	and this is the sum of a pointer and a constant, we know the result
+	did not overflow.
+	(num_sign_bit_copies, case PLUS): Likewise.
+	* explow.c (convert_memory_address): Remove opposite SUBREG.
+	* function.c (instantiate_new_reg): New function (from common code).
+	(instantiate_virtual_regs_1): Call it.
+	For PLUS, handle if (plus (subreg (virt-reg) (const_int))
+	if pointers sign- or zero-extend.
+	* simplify-rtx.c (simplify_unary_operation, case ZERO_EXTEND):
+	If pointers extend unsigned, use inside of SUBREG.
+	(simplify_unary_operation, case SIGN_EXTEND): Likewise, if sign extend.
+
 2001-02-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* Makefile.in (-DGPLUSPLUS_TOOL_INCLUDE_DIR): Change to target
