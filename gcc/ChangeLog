@@ -1,3 +1,10 @@
+2002-11-25  Andrew Haley  <aph@redhat.com>
+
+        * libgcc-std.ver (_Unwind_Find_Enclosing_Function): Add.
+        * config/ia64/unwind-ia64.c (_Unwind_Find_Enclosing_Function): New.
+        * unwind-sjlj.c (_Unwind_Find_Enclosing_Function): Likewise.
+        * unwind-dw2.c (_Unwind_Find_Enclosing_Function): Likewise.
+
 2002-11-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (h8300_init_once): Fix a typo in the

@@ -1642,6 +1642,12 @@ _Unwind_GetRegionStart (struct _Unwind_Context *context)
   return context->region_start;
 }
 
+void *
+_Unwind_Find_Enclosing_Function (void *pc)
+{
+  return NULL;
+}
+
 
 static _Unwind_Reason_Code
 uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
