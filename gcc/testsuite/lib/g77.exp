@@ -24,6 +24,8 @@
 # They are also used by the various testsuites to define the environment:
 # where to find stdio.h, libc.a, etc.
 
+load_lib gcc-defs.exp
+
 #
 # G77_UNDER_TEST is the compiler under test.
 #
@@ -151,102 +153,12 @@ proc g77_target_compile { source dest type options } {
     return [target_compile $source $dest $type $options]
 }
 
-#
-# g77_pass -- utility to record a testcase passed
-#
-
-proc g77_pass { testcase cflags } {
-    if { "$cflags" == "" } {
-	pass "$testcase"
-    } else {
-	pass "$testcase, $cflags"
-    }
-}
-
-#
-# g77_fail -- utility to record a testcase failed
-#
-
-proc g77_fail { testcase cflags } {
-    if { "$cflags" == "" } {
-	fail "$testcase"
-    } else {
-	fail "$testcase, $cflags"
-    }
-}
-
-#
-# g77_finish -- called at the end of every .exp script that calls g77_init
-#
-# The purpose of this proc is to hide all quirks of the testing environment
-# from the testsuites.  It also exists to undo anything that g77_init did
-# (that needs undoing).
-#
-
-proc g77_finish { } {
-    # The testing harness apparently requires this.
-    global errorInfo;
-
-    if [info exists errorInfo] then {
-	unset errorInfo
-    }
-
-    # Might as well reset these (keeps our caller from wondering whether
-    # s/he has to or not).
-    global prms_id bug_id
-    set prms_id 0
-    set bug_id 0
-}
-
-proc g77_exit { } {
-    global gluefile;
-
-    if [info exists gluefile] {
-	file_on_build delete $gluefile;
-	unset gluefile;
-    }
-}
-    
-# If this is an older version of dejagnu (without runtest_file_p),
-# provide one and assume the old syntax: foo1.exp bar1.c foo2.exp bar2.c.
-# This can be deleted after next dejagnu release.
-
-if { [info procs runtest_file_p] == "" } then {
-    proc runtest_file_p { runtests testcase } {
-	if { $runtests != "" && [regexp "\[.\]\[cC\]" $runtests] } then {
-	    if { [lsearch $runtests [file tail $testcase]] >= 0 } then {
-		return 1
-	    } else {
-		return 0
-	    }
-	}
-	return 1
-    }
-}
-
 # Provide a definition of this if missing (delete after next dejagnu release).
 
 if { [info procs prune_warnings] == "" } then {
     proc prune_warnings { text } {
 	return $text
     }
-}
-
-# Utility used by mike-gcc.exp and c-torture.exp.
-# Check the compiler(/assembler/linker) output for text indicating that
-# the testcase should be marked as "unsupported".
-#
-# When dealing with a large number of tests, it's difficult to weed out the
-# ones that are too big for a particular cpu (eg: 16 bit with a small amount
-# of memory).  There are various ways to deal with this.  Here's one.
-# Fortunately, all of the cases where this is likely to happen will be using
-# gld so we can tell what the error text will look like.
-
-proc ${tool}_check_unsupported_p { output } {
-    if [regexp "(^|\n)\[^\n\]*: region \[^\n\]* is full" $output] {
-	return "memory full"
-    }
-    return ""
 }
 
 # Prune messages from g77 that aren't useful.
