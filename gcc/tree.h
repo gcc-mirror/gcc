@@ -965,10 +965,12 @@ union tree_node
 #endif
 
 /* Format for global names of constructor and destructor functions.  */
+#ifndef CONSTRUCTOR_NAME_FORMAT  /* Some machines need to override this.  */
 #ifndef NO_DOLLAR_IN_LABEL
 #define CONSTRUCTOR_NAME_FORMAT "_GLOBAL_$I$%s"
 #else
 #define CONSTRUCTOR_NAME_FORMAT "_GLOBAL_.I.%s"
+#endif
 #endif
 
 /* The following functions accept a wide integer argument.  Rather than
