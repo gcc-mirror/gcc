@@ -1,3 +1,8 @@
+2000-07-11  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/fixtests.c(double_slash): obsolete
+	(else_endif_label): likewise
+
 2000-07-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cpplex.c (T, I, S, C, N): Avoid non-constant initializers.
