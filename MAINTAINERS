@@ -99,7 +99,7 @@ RTEMS Ports		Joel Sherrill		joel@oarcorp.com
 RTEMS Ports		Ralf Corsepius		ralf.corsepius@rtems.org
 VxWorks ports		Zack Weinberg		zack@codesourcery.com
 VxWorks ports		Nathan Sidwell		nathan@codesourcery.com
-windows, cygwin, mingw	Christopher Faylor	cgf@redhat.com
+windows, cygwin, mingw	Christopher Faylor	cgf@gcc.gnu.org
 
 			Language Front Ends Maintainers
 
