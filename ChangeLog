@@ -1,3 +1,7 @@
+2001-12-03  Ben Elliston  <bje@redhat.com>
+
+	* MAINTAINERS: Update mail address for config.* patches.
+
 2001-11-27  DJ Delorie <dj@redhat.com>
 	    Zack Weinberg  <zack@codesourcery.com>
 
