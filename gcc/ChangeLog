@@ -1,3 +1,8 @@
+2004-06-24  Richard Henderson  <rth@redhat.com>
+
+	* tree-ssa-dom.c (real_avail_expr_hash): New.
+	(tree_ssa_dominator_optimize): Use it in the htab.
+
 2004-06-24  Frank Ch. Eigler  <fche@redhat.com>
 
 	* tree-mudflap.c (mx_register_decls): Add third (type) argument
