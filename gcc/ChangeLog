@@ -1,5 +1,8 @@
 2001-06-03  Alexandre Oliva  <aoliva@redhat.com>
 
+	* insn-addr.h (INSN_ADDRESSES_NEW): Make insn_uid__ unsigned.
+	Reformat according to coding standards.
+
 	Warning removal.
 	* config/sh/sh.c (print_operand_address): Cast INTVAL to int.
 	(shl_and_kind): Cast wide constant.
