@@ -1,3 +1,8 @@
+2001-10-26  Vincent Celier <celier@gnat.com>
+
+	* g-os_lib.adb (Normalize_Pathname): Preserve the double slash 
+        ("//") that precede the drive letter on Interix.
+
 2001-10-26  Geert Bosch <bosch@gnat.com>
 
 	* gnat_rm.texi: Add GNAT Reference Manual.
