@@ -268,8 +268,9 @@ int flag_reorder_functions = 0;
 
 /* Nonzero if registers should be renamed.  When
    flag_rename_registers == AUTODETECT_FLAG_VAR_TRACKING it will be set
-   according to optimize and default_debug_hooks in process_options ().  */
-int flag_rename_registers = AUTODETECT_FLAG_VAR_TRACKING;
+   according to optimize and default_debug_hooks in process_options (),
+   but we do not do this yet because it triggers aborts in flow.c.  */
+int flag_rename_registers = 0;
 int flag_cprop_registers = 0;
 
 /* Nonzero for -pedantic switch: warn about anything

@@ -1,3 +1,13 @@
+2004-04-20  Paolo Bonzini  <bonzini@gnu.org>
+
+	Revert part of 2004-04-17 change that moved -frename-registers
+	to -O1.  -frename-registers is buggy.
+
+	* toplev.c (flag_rename_registers): Initialize to 0.
+	* doc/invoke.texi (Optimize options): Move -frename-registers
+	to "Not triggered by any -O level" section.  Adjust commentary
+	accordingly.
+					
 2004-04-20  Anil Paranjpe   <anilp1@kpitcummins.com>
 
 	* toplev.c (compile_file): Move targetm.asm_out.file_end call to end.
