@@ -2748,18 +2748,6 @@ make_unbound_class_template (tree context, tree name, tsubst_flags_t complain)
 
 
 
-/* A chain of TYPE_DECLs for the builtin types.  */
-
-static GTY(()) tree builtin_type_decls;
-
-/* Return a chain of TYPE_DECLs for the builtin types.  */
-
-tree
-cxx_builtin_type_decls (void)
-{
-  return builtin_type_decls;
-}
-
 /* Push the declarations of builtin types into the namespace.
    RID_INDEX is the index of the builtin type in the array
    RID_POINTERS.  NAME is the name used when looking up the builtin
@@ -2803,10 +2791,7 @@ record_builtin_type (enum rid rid_index,
     TYPE_NAME (type) = tdecl;
 
   if (tdecl)
-    {
-      TREE_CHAIN (tdecl) = builtin_type_decls;
-      builtin_type_decls = tdecl;
-    }
+    debug_hooks->type_decl (tdecl, 0);
 }
 
 /* Record one of the standard Java types.

@@ -48,6 +48,7 @@ AT&T C compiler.  From the example below I would conclude the following:
 #include "debug.h"
 #include "tree.h"
 #include "ggc.h"
+#include "varray.h"
 
 static GTY(()) tree anonymous_types;
 
@@ -58,6 +59,10 @@ static GTY(()) int sdbout_source_line_counter;
 /* Counter to generate unique "names" for nameless struct members.  */
 
 static GTY(()) int unnamed_struct_number;
+
+/* Declarations whose debug info was deferred till end of compilation.  */
+
+static GTY(()) varray_type deferred_global_decls;
 
 #ifdef SDB_DEBUGGING_INFO
 
@@ -331,6 +336,7 @@ const struct gcc_debug_hooks sdb_debug_hooks =
   sdbout_end_function,		         /* end_function */
   debug_nothing_tree,		         /* function_decl */
   sdbout_global_decl,		         /* global_decl */
+  sdbout_type_decl,			 /* type_decl */
   debug_nothing_tree_tree,               /* imported_module_or_decl */
   debug_nothing_tree,		         /* deferred_inline_function */
   debug_nothing_tree,		         /* outlining_inline_function */
@@ -1438,6 +1444,8 @@ sdbout_global_decl (tree decl)
 	 sdbout_finish ().  */
       if (!DECL_INITIAL (decl) || !TREE_PUBLIC (decl))
 	sdbout_symbol (decl, 0);
+      else
+	VARRAY_PUSH_TREE (deferred_global_decls, decl);
 
       /* Output COFF information for non-global file-scope initialized
 	 variables.  */
@@ -1452,29 +1460,12 @@ sdbout_global_decl (tree decl)
 static void
 sdbout_finish (const char *main_filename ATTRIBUTE_UNUSED)
 {
-  tree decl = (*lang_hooks.decls.getdecls) ();
-  unsigned int len = list_length (decl);
-  tree *vec = xmalloc (sizeof (tree) * len);
-  unsigned int i;
+  int i;
 
-  /* Process the decls in reverse order--earliest first.  Put them
-     into VEC from back to front, then take out from front.  */
+  for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_global_decls); i++)
+    sdbout_symbol (VARRAY_TREE (deferred_global_decls, i), 0);
 
-  for (i = 0; i < len; i++, decl = TREE_CHAIN (decl))
-    vec[len - i - 1] = decl;
-
-  for (i = 0; i < len; i++)
-    {
-      decl = vec[i];
-      if (TREE_CODE (decl) == VAR_DECL
-	  && ! DECL_EXTERNAL (decl)
-	  && DECL_INITIAL (decl)
-	  && TREE_PUBLIC (decl)
-	  && DECL_RTL_SET_P (decl))
-	sdbout_symbol (decl, 0);
-    }
-
-  free (vec);
+  VARRAY_FREE (deferred_global_decls);
 }
 
 /* Describe the beginning of an internal block within a function.
@@ -1677,6 +1668,8 @@ sdbout_init (const char *input_file_name ATTRIBUTE_UNUSED)
   current_file->next = NULL;
   current_file->name = input_file_name;
 #endif
+
+  VARRAY_TREE_INIT (deferred_global_decls, 12, "deferred_global_decls");
 }
 
 #else  /* SDB_DEBUGGING_INFO */

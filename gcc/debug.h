@@ -89,6 +89,14 @@ struct gcc_debug_hooks
      compilation proper has finished.  */
   void (* global_decl) (tree decl);
 
+  /* Debug information for a type DECL.  Called from toplev.c after
+     compilation proper, also from various language front ends to
+     record built-in types.  The second argument is properly a
+     boolean, which indicates whether or not the type is a "local"
+     type as determined by the language.  (It's not a boolean for
+     legacy reasons.)  */
+  void (* type_decl) (tree decl, int local);
+
   /* Debug information for imported modules and declarations.  */
   void (* imported_module_or_decl) (tree decl, tree context);
 
@@ -122,6 +130,7 @@ extern void debug_nothing_int_charstar (unsigned int, const char *);
 extern void debug_nothing_int (unsigned int);
 extern void debug_nothing_int_int (unsigned int, unsigned int);
 extern void debug_nothing_tree (tree);
+extern void debug_nothing_tree_int (tree, int);
 extern void debug_nothing_tree_tree (tree, tree);
 extern bool debug_true_tree (tree);
 extern void debug_nothing_rtx (rtx);
@@ -131,7 +140,6 @@ extern const struct gcc_debug_hooks do_nothing_debug_hooks;
 extern const struct gcc_debug_hooks dbx_debug_hooks;
 extern const struct gcc_debug_hooks sdb_debug_hooks;
 extern const struct gcc_debug_hooks xcoff_debug_hooks;
-extern const struct gcc_debug_hooks dwarf_debug_hooks;
 extern const struct gcc_debug_hooks dwarf2_debug_hooks;
 extern const struct gcc_debug_hooks vmsdbg_debug_hooks;
 

@@ -1605,10 +1605,10 @@ dbxout.o : dbxout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_
    insn-config.h reload.h gstab.h xcoffout.h output.h dbxout.h toplev.h \
    $(GGC_H) gt-dbxout.h
 debug.o : debug.c debug.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
-sdbout.o : sdbout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
-   flags.h function.h $(EXPR_H) output.h hard-reg-set.h $(REGS_H) real.h \
-   insn-config.h xcoffout.h c-pragma.h $(GGC_H) $(TARGET_H) \
-   sdbout.h toplev.h $(TM_P_H) except.h debug.h langhooks.h gt-sdbout.h
+sdbout.o : sdbout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) debug.h \
+   $(TREE_H) $(GGC_H) varray.h $(RTL_H) $(REGS_H) flags.h insn-config.h \
+   output.h toplev.h $(TM_P_H) gsyms.h langhooks.h $(TARGET_H) sdbout.h \
+   gt-sdbout.h
 dwarf2out.o : dwarf2out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(RTL_H) dwarf2.h debug.h flags.h insn-config.h reload.h \
    output.h $(DIAGNOSTIC_H) real.h hard-reg-set.h $(REGS_H) $(EXPR_H) \

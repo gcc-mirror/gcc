@@ -1978,50 +1978,18 @@ rest_of_decl_compilation (tree decl,
 	    expand_decl (decl);
 	}
     }
-#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-  else if ((write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
-	   && TREE_CODE (decl) == TYPE_DECL)
+  else if (TREE_CODE (decl) == TYPE_DECL)
     {
       timevar_push (TV_SYMOUT);
-      dbxout_symbol (decl, 0);
+      debug_hooks->type_decl (decl, !top_level);
       timevar_pop (TV_SYMOUT);
     }
-#endif
-#ifdef SDB_DEBUGGING_INFO
-  else if (write_symbols == SDB_DEBUG && top_level
-	   && TREE_CODE (decl) == TYPE_DECL)
-    {
-      timevar_push (TV_SYMOUT);
-      sdbout_symbol (decl, 0);
-      timevar_pop (TV_SYMOUT);
-    }
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-  else if ((write_symbols == DWARF2_DEBUG
-	   || write_symbols == VMS_AND_DWARF2_DEBUG)
-	   && top_level
-	   && TREE_CODE (decl) == TYPE_DECL)
-    {
-      timevar_push (TV_SYMOUT);
-      dwarf2out_decl (decl);
-      timevar_pop (TV_SYMOUT);
-    }
-#endif
 }
 
 /* Called after finishing a record, union or enumeral type.  */
 
 void
-rest_of_type_compilation (
-#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)	\
-    || defined (SDB_DEBUGGING_INFO) || defined (DWARF2_DEBUGGING_INFO)
-			  tree type,
-			  int toplev
-#else
-			  tree type ATTRIBUTE_UNUSED,
-			  int toplev ATTRIBUTE_UNUSED
-#endif
-			  )
+rest_of_type_compilation (tree type, int toplev)
 {
   /* Avoid confusing the debug information machinery when there are
      errors.  */
@@ -2029,20 +1997,7 @@ rest_of_type_compilation (
     return;
 
   timevar_push (TV_SYMOUT);
-#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-  if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
-    dbxout_symbol (TYPE_STUB_DECL (type), !toplev);
-#endif
-#ifdef SDB_DEBUGGING_INFO
-  if (write_symbols == SDB_DEBUG)
-    sdbout_symbol (TYPE_STUB_DECL (type), !toplev);
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-  if ((write_symbols == DWARF2_DEBUG
-       || write_symbols == VMS_AND_DWARF2_DEBUG)
-      && toplev)
-    dwarf2out_decl (TYPE_STUB_DECL (type));
-#endif
+  debug_hooks->type_decl (TYPE_STUB_DECL (type), !toplev);
   timevar_pop (TV_SYMOUT);
 }
 

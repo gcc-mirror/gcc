@@ -189,9 +189,6 @@ struct lang_hooks_for_decls
   /* Returns the chain of decls so far in the current scope level.  */
   tree (*getdecls) (void);
 
-  /* Returns a chain of TYPE_DECLs for built-in types.  */
-  tree (*builtin_type_decls) (void);
-
   /* Returns true when we should warn for an unused global DECL.
      We will already have checked that it has static binding.  */
   bool (*warn_unused_global) (tree);

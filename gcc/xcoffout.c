@@ -112,59 +112,71 @@ const char *xcoff_lastfile;
 #define ASM_OUTPUT_LBE(FILE,LINENUM,BLOCKNUM) \
   fprintf (FILE, "\t.eb\t%d\n", ABS_OR_RELATIVE_LINENO (LINENUM))
 
-static void assign_type_number (tree, const char *, int);
 static void xcoffout_block (tree, int, tree);
 static void xcoffout_source_file (FILE *, const char *, int);
 
 /* Support routines for XCOFF debugging info.  */
 
-/* Assign NUMBER as the stabx type number for the type described by NAME.
-   Search all decls in the list SYMS to find the type NAME.  */
-
-static void
-assign_type_number (tree syms, const char *name, int number)
+struct xcoff_type_number
 {
-  tree decl;
-
-  for (decl = syms; decl; decl = TREE_CHAIN (decl))
-    if (DECL_NAME (decl)
-	&& strcmp (IDENTIFIER_POINTER (DECL_NAME (decl)), name) == 0)
-      {
-	TREE_ASM_WRITTEN (decl) = 1;
-	TYPE_SYMTAB_ADDRESS (TREE_TYPE (decl)) = number;
-      }
-}
-
-/* Setup gcc primitive types to use the XCOFF built-in type numbers where
-   possible.  */
-
-void
-xcoff_output_standard_types (tree syms)
-{
-  /* Handle built-in C types here.  */
-
-  assign_type_number (syms, "int", -1);
-  assign_type_number (syms, "char", -2);
-  assign_type_number (syms, "short int", -3);
-  assign_type_number (syms, "long int", (TARGET_64BIT ? -31 : -4));
-  assign_type_number (syms, "unsigned char", -5);
-  assign_type_number (syms, "signed char", -6);
-  assign_type_number (syms, "short unsigned int", -7);
-  assign_type_number (syms, "unsigned int", -8);
+  const char *name;
+  int number;
+};
+static const struct xcoff_type_number xcoff_type_numbers[] = {
+  { "int", -1 },
+  { "char", -2 },
+  { "short int", -3 },
+  { "long int", -4 },  /* fiddled to -31 if 64 bits */
+  { "unsigned char", -5 },
+  { "signed char", -6 },
+  { "short unsigned int", -7 },
+  { "unsigned int", -8 },
   /* No such type "unsigned".  */
-  assign_type_number (syms, "long unsigned int", (TARGET_64BIT ? -32 : -10));
-  assign_type_number (syms, "void", -11);
-  assign_type_number (syms, "float", -12);
-  assign_type_number (syms, "double", -13);
-  assign_type_number (syms, "long double", -14);
+  { "long unsigned int", -10 }, /* fiddled to -32 if 64 bits */
+  { "void", -11 },
+  { "float", -12 },
+  { "double", -13 },
+  { "long double", -14 },
   /* Pascal and Fortran types run from -15 to -29.  */
-  assign_type_number (syms, "wchar", -30);
-  assign_type_number (syms, "long long int", -31);
-  assign_type_number (syms, "long long unsigned int", -32);
+  { "wchar", -30 },  /* XXX Should be "wchar_t" ? */
+  { "long long int", -31 },
+  { "long long unsigned int", -32 },
   /* Additional Fortran types run from -33 to -37.  */
 
   /* ??? Should also handle built-in C++ and Obj-C types.  There perhaps
      aren't any that C doesn't already have.  */
+};    
+
+/* Returns an XCOFF fundamental type number for DECL (assumed to be a
+   TYPE_DECL), or 0 if dbxout.c should assign a type number normally.  */
+int
+xcoff_assign_fundamental_type_number (tree decl)
+{
+  const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
+  size_t i;
+
+  /* Do not waste time searching the list for non-intrinsic types.  */
+  if (DECL_SOURCE_LINE (decl) > 0)
+    return 0;
+
+  /* Linear search, blech, but the list is too small to bother
+     doing anything else.  */
+  for (i = 0; i < ARRAY_SIZE (xcoff_type_numbers); i++)
+    if (!strcmp (xcoff_type_numbers[i].name, name))
+      goto found;
+  return 0;
+
+ found:
+  /* -4 and -10 should be replaced with -31 and -32, respectively,
+     when used for a 64-bit type.  */
+  if (int_size_in_bytes (TREE_TYPE (decl)) == 8)
+    {
+      if (xcoff_type_numbers[i].number == -4)
+	return -31;
+      if (xcoff_type_numbers[i].number == -10)
+	return -32;
+    }
+  return xcoff_type_numbers[i].number;
 }
 
 /* Print an error message for unrecognized stab codes.  */

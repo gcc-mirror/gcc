@@ -265,17 +265,6 @@ c_objc_common_finish_file (void)
 
       finish_cdtor (body);
     }
-
-  {
-    int flags;
-    FILE *stream = dump_begin (TDI_all, &flags);
-
-    if (stream)
-      {
-	dump_node (getdecls (), flags & ~TDF_SLIM, stream);
-	dump_end (TDI_all, stream);
-      }
-  }
 }
 
 /* Called during diagnostic message formatting process to print a
