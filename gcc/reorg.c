@@ -1110,6 +1110,8 @@ get_branch_condition (insn, target)
     return gen_rtx (reverse_condition (GET_CODE (XEXP (src, 0))),
 		    GET_MODE (XEXP (src, 0)),
 		    XEXP (XEXP (src, 0), 0), XEXP (XEXP (src, 0), 1));
+
+  return 0;
 }
 
 /* Return non-zero if CONDITION is more strict than the condition of

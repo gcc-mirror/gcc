@@ -4153,9 +4153,10 @@ find_reloads_address_1 (x, context, loc, operand, ind_levels)
 
       if (reg_equiv_constant[regno] != 0)
 	{
-	  push_reload (reg_equiv_constant[regno], NULL_RTX, loc, NULL_PTR,
-		       context ? INDEX_REG_CLASS : BASE_REG_CLASS,
-		       GET_MODE (x), VOIDmode, 0, 0, operand);
+	  find_reloads_address_part (reg_equiv_constant[regno], loc, 
+				     (context ? INDEX_REG_CLASS
+				      : BASE_REG_CLASS),
+				     GET_MODE (x), operand, ind_levels);
 	  return 1;
 	}
 

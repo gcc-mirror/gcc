@@ -65,6 +65,8 @@ static int keyword_parsing = 0;
 /* some external tables of character types */
 extern unsigned char is_idstart[], is_idchar[], is_hor_space[];
 
+extern char *xmalloc ();
+
 /* Flag for -pedantic.  */
 extern int pedantic;
 

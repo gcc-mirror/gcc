@@ -1886,14 +1886,32 @@ try_combine (i3, i2, i1)
       distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i3dest_killed, NULL_RTX),
 			NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
 			NULL_RTX, NULL_RTX);
+
+    /* For I2 and I1, we have to be careful.  If NEWI2PAT exists and sets
+       I2DEST or I1DEST, the death must be somewhere before I2, not I3.  If
+       we passed I3 in that case, it might delete I2.  */
+
     if (i2dest_in_i2src)
-      distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i2dest, NULL_RTX),
-			NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
-			NULL_RTX, NULL_RTX);
+      {
+	if (newi2pat && reg_set_p (i2dest, newi2pat))
+	  distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i2dest, NULL_RTX),
+			    NULL_RTX, i2, NULL_RTX, NULL_RTX, NULL_RTX);
+	else
+	  distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i2dest, NULL_RTX),
+			    NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
+			    NULL_RTX, NULL_RTX);
+      }
+
     if (i1dest_in_i1src)
-      distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i1dest, NULL_RTX),
-			NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
-			NULL_RTX, NULL_RTX);
+      {
+	if (newi2pat && reg_set_p (i1dest, newi2pat))
+	  distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i1dest, NULL_RTX),
+			    NULL_RTX, i2, NULL_RTX, NULL_RTX, NULL_RTX);
+	else
+	  distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i1dest, NULL_RTX),
+			    NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
+			    NULL_RTX, NULL_RTX);
+      }
 
     distribute_links (i3links);
     distribute_links (i2links);
