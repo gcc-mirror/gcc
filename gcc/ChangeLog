@@ -1,3 +1,17 @@
+2001-06-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	Warning removal.
+	* config/sh/sh.c (print_operand_address): Cast INTVAL to int.
+	(shl_and_kind): Cast wide constant.
+	(gen_far_branch): Define as static, as in declaration.
+	(barrier_align): Compute cache-line length as unsigned.  Add
+	parentheses in initial credit computation.
+	(rounded_frame_size): Add parentheses.
+	(permanent_obstack): Remove declaration.  Include ggc.h for
+	declaration of ggc_add_root_rtx().
+	(get_free_reg): Removed declaration of unused variable reg.
+	(legitimize_pic_address): Mark mode argument as unused.
+
 2001-06-03  Igor Shevlyakov  <igor@windriver.com>
 
 	* config/sh/sh.c (output_branch): Support for insn with lenght
