@@ -4156,7 +4156,7 @@ This is about addressing modes.
 @table @code
 @findex HAVE_POST_INCREMENT
 @item HAVE_POST_INCREMENT
-Define this macro if the machine supports post-increment addressing.
+A C expression that is nonzero the machine supports post-increment addressing.
 
 @findex HAVE_PRE_INCREMENT
 @findex HAVE_POST_DECREMENT

@@ -52,9 +52,7 @@ struct match {
   int early_clobber[MAX_RECOG_OPERANDS];
 };
 
-#ifdef AUTO_INC_DEC
 static int try_auto_increment PROTO((rtx, rtx, rtx, rtx, HOST_WIDE_INT, int));
-#endif
 static int find_matches PROTO((rtx, struct match *));
 static int fixup_match_1 PROTO((rtx, rtx, rtx, rtx, rtx, int, int, int, FILE *))
 ;
@@ -93,7 +91,6 @@ gen_add3_insn (r0, r1, c)
   return (GEN_FCN (icode) (r0, r1, c));
 }
 
-#ifdef AUTO_INC_DEC
 
 /* INC_INSN is an instruction that adds INCREMENT to REG.
    Try to fold INC_INSN as a post/pre in/decrement into INSN.
@@ -117,18 +114,14 @@ try_auto_increment (insn, inc_insn, inc_insn_set, reg, increment, pre)
 	{
 	  int size = GET_MODE_SIZE (GET_MODE (use));
 	  if (0
-#ifdef HAVE_POST_INCREMENT
-	      || (pre == 0 && (inc_code = POST_INC, increment == size))
-#endif
-#ifdef HAVE_PRE_INCREMENT
-	      || (pre == 1 && (inc_code = PRE_INC, increment == size))
-#endif
-#ifdef HAVE_POST_DECREMENT
-	      || (pre == 0 && (inc_code = POST_DEC, increment == -size))
-#endif
-#ifdef HAVE_PRE_DECREMENT
-	      || (pre == 1 && (inc_code = PRE_DEC, increment == -size))
-#endif
+	      || (HAVE_POST_INCREMENT
+		  && pre == 0 && (inc_code = POST_INC, increment == size))
+	      || (HAVE_PRE_INCREMENT
+		  && pre == 1 && (inc_code = PRE_INC, increment == size))
+	      || (HAVE_POST_DECREMENT
+		  && pre == 0 && (inc_code = POST_DEC, increment == -size))
+	      || (HAVE_PRE_DECREMENT
+		  && pre == 1 && (inc_code = PRE_DEC, increment == -size))
 	  )
 	    {
 	      if (inc_insn_set)
@@ -156,7 +149,6 @@ try_auto_increment (insn, inc_insn, inc_insn_set, reg, increment, pre)
     }
   return 0;
 }
-#endif  /* AUTO_INC_DEC */
 
 static int *regno_src_regno;
 
@@ -1725,11 +1717,10 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
   if (code == MINUS)
     {
       post_inc = emit_insn_after (copy_rtx (PATTERN (insn)), p);
-#if defined (HAVE_PRE_INCREMENT) || defined (HAVE_PRE_DECREMENT)
-      if (search_end
+      if ((HAVE_PRE_INCREMENT || HAVE_PRE_DECREMENT)
+	  && search_end
 	  && try_auto_increment (search_end, post_inc, 0, src, newconst, 1))
 	post_inc = 0;
-#endif
       validate_change (insn, &XEXP (SET_SRC (set), 1), GEN_INT (insn_const), 0);
       REG_N_SETS (REGNO (src))++;
       REG_N_REFS (REGNO (src)) += true_loop_depth;
@@ -1834,31 +1825,23 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
      else in the next two conditionally included code blocks.  */
   if (0)
     {;}
-#if defined (HAVE_PRE_INCREMENT) || defined (HAVE_PRE_DECREMENT)
-  else if ((code == PLUS || code == MINUS) && insn_const
+  else if ((HAVE_PRE_INCREMENT || HAVE_PRE_DECREMENT)
+	   && (code == PLUS || code == MINUS) && insn_const
 	   && try_auto_increment (p, insn, 0, src, insn_const, 1))
     insn = p;
-#endif
-#if defined (HAVE_POST_INCREMENT) || defined (HAVE_POST_DECREMENT)
-  else if (post_inc
+  else if ((HAVE_POST_INCREMENT || HAVE_POST_DECREMENT)
+	   && post_inc
 	   && try_auto_increment (p, post_inc, post_inc_set, src, newconst, 0))
     post_inc = 0;
-#endif
-#if defined (HAVE_PRE_INCREMENT) || defined (HAVE_PRE_DECREMENT)
   /* If post_inc still prevails, try to find an
      insn where it can be used as a pre-in/decrement.
      If code is MINUS, this was already tried.  */
   if (post_inc && code == PLUS
   /* Check that newconst is likely to be usable
      in a pre-in/decrement before starting the search.  */
-      && (0
-#if defined (HAVE_PRE_INCREMENT)
-	  || (newconst > 0 && newconst <= MOVE_MAX)
-#endif
-#if defined (HAVE_PRE_DECREMENT)
-	  || (newconst < 0 && newconst >= -MOVE_MAX)
-#endif
-	 ) && exact_log2 (newconst))
+      && ((HAVE_PRE_INCREMENT && newconst > 0 && newconst <= MOVE_MAX)
+	  || (HAVE_PRE_DECREMENT && newconst < 0 && newconst >= -MOVE_MAX))
+      && exact_log2 (newconst))
     {
       rtx q, inc_dest;
 
@@ -1895,7 +1878,6 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	    }
 	}
     }
-#endif /* defined (HAVE_PRE_INCREMENT) || defined (HAVE_PRE_DECREMENT) */
   /* Move the death note for DST to INSN if it is used
      there.  */
   if (reg_overlap_mentioned_p (dst, PATTERN (insn)))

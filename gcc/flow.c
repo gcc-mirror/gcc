@@ -2444,20 +2444,14 @@ find_auto_inc (needed, x, insn)
 	  && (y = SET_SRC (set), GET_CODE (y) == PLUS)
 	  && XEXP (y, 0) == addr
 	  && GET_CODE (XEXP (y, 1)) == CONST_INT
-	  && (0
-#ifdef HAVE_POST_INCREMENT
-	      || (INTVAL (XEXP (y, 1)) == size && offset == 0)
-#endif
-#ifdef HAVE_POST_DECREMENT
-	      || (INTVAL (XEXP (y, 1)) == - size && offset == 0)
-#endif
-#ifdef HAVE_PRE_INCREMENT
-	      || (INTVAL (XEXP (y, 1)) == size && offset == size)
-#endif
-#ifdef HAVE_PRE_DECREMENT
-	      || (INTVAL (XEXP (y, 1)) == - size && offset == - size)
-#endif
-	      )
+	  && ((HAVE_POST_INCREMENT
+	       && (INTVAL (XEXP (y, 1)) == size && offset == 0))
+	      || (HAVE_POST_DECREMENT
+		  && (INTVAL (XEXP (y, 1)) == - size && offset == 0))
+	      || (HAVE_PRE_INCREMENT
+		  && (INTVAL (XEXP (y, 1)) == size && offset == size))
+	      || (HAVE_PRE_DECREMENT
+		  && (INTVAL (XEXP (y, 1)) == - size && offset == - size)))
 	  /* Make sure this reg appears only once in this insn.  */
 	  && (use = find_use_as_address (PATTERN (insn), addr, offset),
 	      use != 0 && use != (rtx) 1))
@@ -3021,23 +3015,15 @@ try_pre_increment (insn, reg, amount)
 
   /* From the sign of increment, see which possibilities are conceivable
      on this target machine.  */
-#ifdef HAVE_PRE_INCREMENT
-  if (amount > 0)
+  if (HAVE_PRE_INCREMENT && amount > 0)
     pre_ok = 1;
-#endif
-#ifdef HAVE_POST_INCREMENT
-  if (amount > 0)
+  if (HAVE_POST_INCREMENT && amount > 0)
     post_ok = 1;
-#endif
 
-#ifdef HAVE_PRE_DECREMENT
-  if (amount < 0)
+  if (HAVE_PRE_DECREMENT && amount < 0)
     pre_ok = 1;
-#endif
-#ifdef HAVE_POST_DECREMENT
-  if (amount < 0)
+  if (HAVE_POST_DECREMENT && amount < 0)
     post_ok = 1;
-#endif
 
   if (! (pre_ok || post_ok))
     return 0;

@@ -1299,11 +1299,11 @@ extern struct dsp16xx_frame_info current_frame_info;
 /* ADDRESSING MODES */
 
 /* The 1610 has post-increment and decrement, but no pre-modify */
-#define HAVE_POST_INCREMENT
-#define HAVE_POST_DECREMENT
+#define HAVE_POST_INCREMENT 1
+#define HAVE_POST_DECREMENT 1
 
-/* #define HAVE_PRE_DECREMENT */
-/* #define HAVE_PRE_INCREMENT */
+/* #define HAVE_PRE_DECREMENT 0 */
+/* #define HAVE_PRE_INCREMENT 0 */
 
 /* Recognize any constant value that is a valid address.  */
 #define CONSTANT_ADDRESS_P(X)  CONSTANT_P (X)

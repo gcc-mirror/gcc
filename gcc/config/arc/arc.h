@@ -927,8 +927,8 @@ do { \
 #define MAX_REGS_PER_ADDRESS 1
 
 /* We have pre inc/dec (load/store with update).  */
-#define HAVE_PRE_INCREMENT
-#define HAVE_PRE_DECREMENT
+#define HAVE_PRE_INCREMENT 1
+#define HAVE_PRE_DECREMENT 1
 
 /* Recognize any constant value that is a valid address.  */
 #define CONSTANT_ADDRESS_P(X) \

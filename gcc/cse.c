@@ -5760,14 +5760,14 @@ fold_rtx (x, insn)
 		 identical powers of two with post decrement.  */
 
 	      if (code == PLUS && INTVAL (const_arg1) == INTVAL (inner_const)
-		  && (0
-#if defined(HAVE_PRE_INCREMENT) || defined(HAVE_POST_INCREMENT)
-		      || exact_log2 (INTVAL (const_arg1)) >= 0
-#endif
-#if defined(HAVE_PRE_DECREMENT) || defined(HAVE_POST_DECREMENT)
-		      || exact_log2 (- INTVAL (const_arg1)) >= 0
-#endif
-		  ))
+		  && ((HAVE_PRE_INCREMENT
+			  && exact_log2 (INTVAL (const_arg1)) >= 0)
+		      || (HAVE_POST_INCREMENT
+			  && exact_log2 (INTVAL (const_arg1)) >= 0)
+		      || (HAVE_PRE_DECREMENT
+			  && exact_log2 (- INTVAL (const_arg1)) >= 0)
+		      || (HAVE_POST_DECREMENT
+			  && exact_log2 (- INTVAL (const_arg1)) >= 0)))
 		break;
 
 	      /* Compute the code used to compose the constants.  For example,

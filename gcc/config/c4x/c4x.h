@@ -1519,14 +1519,14 @@ extern struct rtx_def *c4x_gen_compare_reg ();
 
 /* Addressing Modes  */
 
-#define HAVE_POST_INCREMENT
-#define HAVE_PRE_INCREMENT
-#define HAVE_POST_DECREMENT
-#define HAVE_PRE_DECREMENT
-#define HAVE_PRE_MODIFY_REG
-#define HAVE_POST_MODIFY_REG
-#define HAVE_PRE_MODIFY_DISP
-#define HAVE_POST_MODIFY_DISP
+#define HAVE_POST_INCREMENT 1
+#define HAVE_PRE_INCREMENT 1
+#define HAVE_POST_DECREMENT 1
+#define HAVE_PRE_DECREMENT 1
+#define HAVE_PRE_MODIFY_REG 1
+#define HAVE_POST_MODIFY_REG 1
+#define HAVE_PRE_MODIFY_DISP 1
+#define HAVE_POST_MODIFY_DISP 1
 
 /* What about LABEL_REF?  */
 #define CONSTANT_ADDRESS_P(X) (GET_CODE (X) == SYMBOL_REF)

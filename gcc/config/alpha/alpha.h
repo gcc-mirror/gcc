@@ -1316,11 +1316,11 @@ extern void alpha_init_expanders ();
 
 /* Addressing modes, and classification of registers for them.  */
 
-/* #define HAVE_POST_INCREMENT */
-/* #define HAVE_POST_DECREMENT */
+/* #define HAVE_POST_INCREMENT 0 */
+/* #define HAVE_POST_DECREMENT 0 */
 
-/* #define HAVE_PRE_DECREMENT */
-/* #define HAVE_PRE_INCREMENT */
+/* #define HAVE_PRE_DECREMENT 0 */
+/* #define HAVE_PRE_INCREMENT 0 */
 
 /* Macros to check register numbers against specific register classes.  */
 
