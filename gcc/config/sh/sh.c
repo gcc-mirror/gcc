@@ -958,13 +958,11 @@ output_shift (string, reg, k, code)
 	{
 	case LSHIFTRT:
 	case ASHIFTRT:
-	  code = LSHIFT;
+	  code = ASHIFT;
 	  break;
 	case ASHIFT:
 	  code = ASHIFTRT;
 	  break;
-	case LSHIFT:
-	  code = LSHIFTRT;
 	default:
 	  abort ();
 	}
