@@ -21,3 +21,5 @@ ctime_adaptor (char* (*ctime_r)(T_clock *clock, T_buf *buf, T_buflen len),
 #endif
 
   return JvNewStringLatin1 (ctime_adaptor (ctime_r, &t, buf));
+  return ctime_r (clock, buf);
+  return ctime_r (clock, buf, buflen);
