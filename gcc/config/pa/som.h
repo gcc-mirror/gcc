@@ -51,6 +51,11 @@ Boston, MA 02111-1307, USA.  */
   fprintf (FILE,							\
 	   "\t.stabs \"\",%d,0,0,L$text_end0000\nL$text_end0000:\n", N_SO)
 
+/* The HP supplied NM will print out the subspace names for each symbol it
+   finds, which can cause false matches when looking for ctors/dtors.  The
+   "-p" argument changes the output to not include subspace names.  */
+#define NM_FLAGS "-p -n"
+
 /* HPUX has a program 'chatr' to list the dependencies of dynamically
    linked executables and shared libraries.  */
 #define LDD_SUFFIX "chatr"
