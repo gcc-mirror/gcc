@@ -1374,6 +1374,18 @@ sysv4 | sysv4.2uw2* | sysv4.3* | sysv5*)
   esac
   ;;
 
+tpf*)
+  version_type=linux
+  need_lib_prefix=no
+  need_version=no
+  library_names_spec='${libname}${release}.so$versuffix ${libname}${release}.so $major $libname.so'
+  soname_spec='${libname}${release}.so$major'
+  shlibpath_var=LD_LIBRARY_PATH
+  shlibpath_overrides_runpath=no
+  hardcode_into_libs=yes
+  dynamic_linker='GNU/Linux ld.so'
+  ;;
+
 uts4*)
   version_type=linux
   library_names_spec='${libname}${release}.so$versuffix ${libname}${release}.so$major $libname.so'

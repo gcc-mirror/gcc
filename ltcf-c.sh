@@ -213,6 +213,10 @@ EOF
     hardcode_shlibpath_var=no
     ;;
 
+  tpf*)
+    ld_shlibs=yes
+    ;;
+
   *)
     if $LD --help 2>&1 | egrep ': supported targets:.* elf' > /dev/null; then
       archive_cmds='$CC -shared $libobjs $deplibs $compiler_flags ${wl}-soname $wl$soname -o $lib'
