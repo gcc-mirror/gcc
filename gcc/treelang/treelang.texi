@@ -711,7 +711,7 @@ the programmer's intention.)
 @cindex questionable instructions
 @item
 There are a few warnings in treelang.  For example an unused static function
-generate a warnings when -Wunused-function is specified, similarily an unused
+generate a warnings when -Wunused-function is specified, similarly an unused
 static variable generates a warning when -Wunused-variable are specified.
 The only treelang specific warning is a warning when an expression is in a
 return statement for functions that return void.
