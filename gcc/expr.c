@@ -4049,8 +4049,8 @@ store_expr (exp, target, want_value)
 	    {
 	      temp = gen_lowpart_SUBREG (GET_MODE (target), temp);
 	      SUBREG_PROMOTED_VAR_P (temp) = 1;
-	      SUBREG_PROMOTED_UNSIGNED_P (temp)
-		= SUBREG_PROMOTED_UNSIGNED_P (target);
+	      SUBREG_PROMOTED_UNSIGNED_SET (temp, 
+		SUBREG_PROMOTED_UNSIGNED_P (target));
 	    }
 	  else
 	    temp = convert_modes (GET_MODE (target),
@@ -6289,7 +6289,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	  temp = gen_lowpart_SUBREG (mode, DECL_RTL (exp));
 	  SUBREG_PROMOTED_VAR_P (temp) = 1;
-	  SUBREG_PROMOTED_UNSIGNED_P (temp) = unsignedp;
+	  SUBREG_PROMOTED_UNSIGNED_SET (temp, unsignedp);
 	  return temp;
 	}
 
@@ -6409,7 +6409,7 @@ expand_expr (exp, target, tmode, modifier)
 	    {
 	      temp = gen_lowpart_SUBREG (mode, SAVE_EXPR_RTL (exp));
 	      SUBREG_PROMOTED_VAR_P (temp) = 1;
-	      SUBREG_PROMOTED_UNSIGNED_P (temp) = unsignedp;
+	      SUBREG_PROMOTED_UNSIGNED_SET (temp, unsignedp);
 	    }
 
 	  if (temp == const0_rtx)
@@ -6431,7 +6431,7 @@ expand_expr (exp, target, tmode, modifier)
 	  promote_mode (type, mode, &unsignedp, 0);
 	  temp = gen_lowpart_SUBREG (mode, SAVE_EXPR_RTL (exp));
 	  SUBREG_PROMOTED_VAR_P (temp) = 1;
-	  SUBREG_PROMOTED_UNSIGNED_P (temp) = unsignedp;
+	  SUBREG_PROMOTED_UNSIGNED_SET (temp, unsignedp);
 	  return temp;
 	}
 

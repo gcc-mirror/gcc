@@ -853,7 +853,16 @@ extern unsigned int subreg_regno 	PARAMS ((rtx));
    when assigning to SUBREG_REG.  */
 
 #define SUBREG_PROMOTED_VAR_P(RTX) ((RTX)->in_struct)
-#define SUBREG_PROMOTED_UNSIGNED_P(RTX) ((RTX)->unchanging)
+#define SUBREG_PROMOTED_UNSIGNED_SET(RTX, VAL)	\
+do {						\
+  if ((VAL) < 0)				\
+    (RTX)->volatil = 1;				\
+  else {					\
+    (RTX)->volatil = 0;				\
+    (RTX)->unchanging = (VAL);			\
+  }						\
+} while (0)
+#define SUBREG_PROMOTED_UNSIGNED_P(RTX) ((RTX)->volatil ? -1 : (RTX)->unchanging)
 
 /* Access various components of an ASM_OPERANDS rtx.  */
 

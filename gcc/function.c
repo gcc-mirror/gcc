@@ -4733,7 +4733,7 @@ assign_parms (fndecl)
 		  /* The argument is already sign/zero extended, so note it
 		     into the subreg.  */
 		  SUBREG_PROMOTED_VAR_P (tempreg) = 1;
-		  SUBREG_PROMOTED_UNSIGNED_P (tempreg) = unsignedp;
+		  SUBREG_PROMOTED_UNSIGNED_SET (tempreg, unsignedp);
 		}
 
 	      /* TREE_USED gets set erroneously during expand_assignment.  */

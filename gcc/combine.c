@@ -8270,7 +8270,7 @@ nonzero_bits (x, mode)
 	 been zero-extended, we know that at least the high-order bits
 	 are zero, though others might be too.  */
 
-      if (SUBREG_PROMOTED_VAR_P (x) && SUBREG_PROMOTED_UNSIGNED_P (x))
+      if (SUBREG_PROMOTED_VAR_P (x) && SUBREG_PROMOTED_UNSIGNED_P (x) > 0)
 	nonzero = (GET_MODE_MASK (GET_MODE (x))
 		   & nonzero_bits (SUBREG_REG (x), GET_MODE (x)));
 
@@ -11325,7 +11325,7 @@ record_promoted_value (insn, subreg)
 
       if (reg_last_set[regno] == insn)
 	{
-	  if (SUBREG_PROMOTED_UNSIGNED_P (subreg))
+	  if (SUBREG_PROMOTED_UNSIGNED_P (subreg) > 0)
 	    reg_last_set_nonzero_bits[regno] &= GET_MODE_MASK (mode);
 	}
 

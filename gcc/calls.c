@@ -1542,8 +1542,8 @@ precompute_arguments (flags, num_actuals, args)
 		args[i].initial_value
 		  = gen_lowpart_SUBREG (mode, args[i].value);
 		SUBREG_PROMOTED_VAR_P (args[i].initial_value) = 1;
-		SUBREG_PROMOTED_UNSIGNED_P (args[i].initial_value)
-		  = args[i].unsignedp;
+		SUBREG_PROMOTED_UNSIGNED_SET (args[i].initial_value,
+		  args[i].unsignedp);
 	      }
 #endif
 	  }
@@ -3279,7 +3279,7 @@ expand_call (exp, target, ignore)
 	  }
 	  target = gen_rtx_SUBREG (TYPE_MODE (type), target, offset);
 	  SUBREG_PROMOTED_VAR_P (target) = 1;
-	  SUBREG_PROMOTED_UNSIGNED_P (target) = unsignedp;
+	  SUBREG_PROMOTED_UNSIGNED_SET (target, unsignedp);
 	}
 #endif
 

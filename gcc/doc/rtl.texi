@@ -631,13 +631,29 @@ string constant pool.
 Stored in the @code{frame_related} field and printed as @samp{/f}.
 
 @findex SUBREG_PROMOTED_UNSIGNED_P
+@cindex @code{subreg} and @samp{/u} and @samp{/v}
+@cindex @code{unchanging}, in @code{subreg}
+@cindex @code{volatil}, in @code{subreg}
+@item SUBREG_PROMOTED_UNSIGNED_P (@var{x})
+Returns a value greater then zero for a @code{subreg} that has
+@code{SUBREG_PROMOTED_VAR_P} nonzero if the object being referenced is kept
+zero-extended, zero if it is kept sign-extended, and less then zero if it is
+extended some other way via the @code{ptr_extend} instruction.
+Stored in the @code{unchanging}
+field and @code{volatil} field, printed as @samp{/u} and @samp{/v}.
+This macro may only be used to get the value it may not be used to change
+the value.  Use @code{SUBREG_PROMOTED_UNSIGNED_SET} to change the value.
+
+@findex SUBREG_PROMOTED_UNSIGNED_SET
 @cindex @code{subreg} and @samp{/u}
 @cindex @code{unchanging}, in @code{subreg}
-@item SUBREG_PROMOTED_UNSIGNED_P (@var{x})
-Nonzero in a @code{subreg} that has @code{SUBREG_PROMOTED_VAR_P} nonzero
-if the object being referenced is kept zero-extended and zero if it
-is kept sign-extended.  Stored in the @code{unchanging} field and
-printed as @samp{/u}.
+@cindex @code{volatil}, in @code{subreg}
+@item SUBREG_PROMOTED_UNSIGNED_SET (@var{x})
+Set the @code{unchanging} and @code{volatil} fields in a @code{subreg}
+to reflect zero, sign, or other extension.  If @code{volatil} is
+zero, then @code{unchanging} as nonzero means zero extension and as
+zero means sign extension. If @code{volatil} is nonzero then some
+other type of extension was done via the @code{ptr_extend} instruction.
 
 @findex SUBREG_PROMOTED_VAR_P
 @cindex @code{subreg} and @samp{/s}
