@@ -2361,6 +2361,22 @@
   "fmuls %1,%2,%0"
   [(set_attr "type" "fpmul")])
 
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(mult:DF (float_extend:DF (match_operand:SF 1 "register_operand" "f"))
+		 (float_extend:DF (match_operand:SF 2 "register_operand" "f"))))]
+  "TARGET_V8 && TARGET_FPU"
+  "fsmuld %1,%2,%0"
+  [(set_attr "type" "fpmul")])
+
+(define_insn ""
+  [(set (match_operand:TF 0 "register_operand" "=f")
+	(mult:TF (float_extend:TF (match_operand:DF 1 "register_operand" "f"))
+		 (float_extend:TF (match_operand:DF 2 "register_operand" "f"))))]
+  "TARGET_V8 && TARGET_FPU"
+  "fdmulq %1,%2,%0"
+  [(set_attr "type" "fpmul")])
+
 (define_insn "divtf3"
   [(set (match_operand:TF 0 "register_operand" "=f")
 	(div:TF (match_operand:TF 1 "register_operand" "f")
