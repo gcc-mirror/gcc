@@ -2965,7 +2965,7 @@ other_variable_style_function (ansi_header)
   /* See if we have a stdarg function, or a function which has stdarg style
      parameters or a stdarg style return type.  */
 
-  return (int) substr (ansi_header, "...");
+  return substr (ansi_header, "...") != 0;
 
 #else /* !defined (UNPROTOIZE) */
 
