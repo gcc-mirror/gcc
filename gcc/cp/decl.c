@@ -10705,11 +10705,9 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	 defining how to inline.  So set DECL_EXTERNAL in that case.  */
       DECL_EXTERNAL (decl1) = current_extern_inline;
 
-#if 0
       DECL_DEFER_OUTPUT (decl1)
 	= (DECL_INLINE (decl1) && (DECL_IMPLICIT_INSTANTIATION (decl1)
 				   || DECL_FUNCTION_MEMBER_P (decl1)));
-#endif
     }
 
   if (ctype != NULL_TREE && DECL_STATIC_FUNCTION_P (decl1))
