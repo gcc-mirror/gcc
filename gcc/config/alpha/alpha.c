@@ -2841,12 +2841,15 @@ alpha_initialize_trampoline (tramp, fnaddr, cxt, fnofs, cxtofs, jmpofs)
      int fnofs, cxtofs, jmpofs;
 {
   rtx temp, temp1, addr;
+  /* ??? Something is wrong with VMS codegen in that we get aborts when
+     using ptr_mode.  Hack around it for now.  */
+  enum machine_mode mode = TARGET_OPEN_VMS ? Pmode : ptr_mode;
 
   /* Store function address and CXT.  */
-  addr = memory_address (ptr_mode, plus_constant (tramp, fnofs));
-  emit_move_insn (gen_rtx (MEM, ptr_mode, addr), fnaddr);
-  addr = memory_address (ptr_mode, plus_constant (tramp, cxtofs));
-  emit_move_insn (gen_rtx (MEM, ptr_mode, addr), cxt);
+  addr = memory_address (mode, plus_constant (tramp, fnofs));
+  emit_move_insn (gen_rtx (MEM, mode, addr), fnaddr);
+  addr = memory_address (mode, plus_constant (tramp, cxtofs));
+  emit_move_insn (gen_rtx (MEM, mode, addr), cxt);
 
   /* This has been disabled since the hint only has a 32k range, and in
      no existing OS is the stack within 32k of the text segment. */
