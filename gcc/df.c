@@ -1684,7 +1684,7 @@ df_rd_global_compute (df, blocks)
 	      if (e->dest == EXIT_BLOCK_PTR)
 		continue;
 	      
-	      SET_BIT (worklist, i);
+	      SET_BIT (worklist, e->dest->index);
 	    }
 	}
     }
@@ -1761,7 +1761,7 @@ df_ru_global_compute (df, blocks)
 	      if (e->src == ENTRY_BLOCK_PTR)
 		continue;
 
-	      SET_BIT (worklist, i);	      
+	      SET_BIT (worklist, e->src->index);	      
 	    }
 	}
     }
