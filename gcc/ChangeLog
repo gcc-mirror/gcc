@@ -1,4 +1,9 @@
-2002-03-13  Roger Sayle  <roger@eyesopen.com>
+2003-03-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (processor_target_table): Really allow
+	GP optional instructions on Power4.
+
+2003-03-13  Roger Sayle  <roger@eyesopen.com>
 
 	* calls.c (flags_from_decl_or_type): Factor and remove redundant
 	conditional tests.
