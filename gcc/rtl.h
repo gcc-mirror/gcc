@@ -972,7 +972,6 @@ extern int rtx_addr_varies_p		PROTO((rtx));
 extern HOST_WIDE_INT get_integer_term	PROTO((rtx));
 extern rtx get_related_value		PROTO((rtx));
 extern int reg_mentioned_p		PROTO((rtx, rtx));
-extern int reg_mentioned_between_p	PROTO((rtx, rtx, rtx));
 extern int reg_referenced_p		PROTO((rtx, rtx));
 extern int reg_used_between_p		PROTO((rtx, rtx, rtx));
 extern int reg_referenced_between_p	PROTO((rtx, rtx, rtx));
