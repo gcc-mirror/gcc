@@ -2049,6 +2049,7 @@ expand_complex_abs (mode, op0, target, unsignedp)
     {
       rtx insns;
       rtx funexp = abs_optab->handlers[(int) mode].libfunc;
+      rtx value;
 
       start_sequence ();
 
