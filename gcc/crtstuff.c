@@ -344,7 +344,7 @@ __frame_dummy (void)
 #endif /* defined(INIT_SECTION_ASM_OP) */
 
 /* Force cc1 to switch to .data section.  */
-static func_ptr force_to_data[0] __attribute__ ((__unused__)) = { };
+static func_ptr force_to_data[1] __attribute__ ((__unused__)) = { };
 
 /* NOTE:  In order to be able to support SVR4 shared libraries, we arrange
    to have one set of symbols { __CTOR_LIST__, __DTOR_LIST__, __CTOR_END__,
@@ -495,7 +495,7 @@ __do_global_ctors (void)
 #endif /* defined(INIT_SECTION_ASM_OP) */
 
 /* Force cc1 to switch to .data section.  */
-static func_ptr force_to_data[0] __attribute__ ((__unused__)) = { };
+static func_ptr force_to_data[1] __attribute__ ((__unused__)) = { };
 
 /* Put a word containing zero at the end of each of our two lists of function
    addresses.  Note that the words defined here go into the .ctors and .dtors
@@ -586,7 +586,7 @@ __dereg_frame_dtor (void)
 /* Terminate the frame section with a final zero. */
 
 /* Force cc1 to switch to .data section.  */
-static void * force_to_data[0] __attribute__ ((__unused__)) = { };
+static void * force_to_data[1] __attribute__ ((__unused__)) = { };
 
 typedef unsigned int ui32 __attribute__ ((mode (SI)));
 asm (EH_FRAME_SECTION_ASM_OP);

@@ -1,5 +1,7 @@
 2000-11-19  Richard Henderson  <rth@redhat.com>
 
+	* crtstuff.c (force_to_data): Use array size 1 not 0.
+
 	* dwarf2out.c (simple_type_size_in_bits): Handle a type with
 	no computed size as size zero.
 	(field_byte_offset): Likewise.
