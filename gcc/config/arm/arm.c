@@ -3232,6 +3232,74 @@ arm_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
   return x;
 }
 
+
+/* Try machine-dependent ways of modifying an illegitimate Thumb address
+   to be legitimate.  If we find one, return the new, valid address.  */
+rtx
+thumb_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
+{
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && (INTVAL (XEXP (x, 1)) >= 32 * GET_MODE_SIZE (mode)
+	  || INTVAL (XEXP (x, 1)) < 0))
+    {
+      rtx xop0 = XEXP (x, 0);
+      rtx xop1 = XEXP (x, 1);
+      HOST_WIDE_INT offset = INTVAL (xop1);
+
+      /* Try and fold the offset into a biasing of the base register and
+	 then offsetting that.  Don't do this when optimizing for space
+	 since it can cause too many CSEs.  */
+      if (optimize_size && offset >= 0
+	  && offset < 256 + 31 * GET_MODE_SIZE (mode))
+	{
+	  HOST_WIDE_INT delta;
+
+	  if (offset >= 256)
+	    delta = offset - (256 - GET_MODE_SIZE (mode));
+	  else if (offset < 32 * GET_MODE_SIZE (mode) + 8)
+	    delta = 31 * GET_MODE_SIZE (mode);
+	  else
+	    delta = offset & (~31 * GET_MODE_SIZE (mode));
+
+	  xop0 = force_operand (plus_constant (xop0, offset - delta),
+				NULL_RTX);
+	  x = plus_constant (xop0, delta);
+	}
+      else if (offset < 0 && offset > -256)
+	/* Small negative offsets are best done with a subtract before the
+	   dereference, forcing these into a register normally takes two
+	   instructions.  */
+	x = force_operand (x, NULL_RTX);
+      else
+	{
+	  /* For the remaining cases, force the constant into a register.  */
+	  xop1 = force_reg (SImode, xop1);
+	  x = gen_rtx_PLUS (SImode, xop0, xop1);
+	}
+    }
+  else if (GET_CODE (x) == PLUS
+	   && s_register_operand (XEXP (x, 1), SImode)
+	   && !s_register_operand (XEXP (x, 0), SImode))
+    {
+      rtx xop0 = force_operand (XEXP (x, 0), NULL_RTX);
+
+      x = gen_rtx_PLUS (SImode, xop0, XEXP (x, 1));
+    }
+
+  if (flag_pic)
+    {
+      /* We need to find and carefully transform any SYMBOL and LABEL
+	 references; so go back to the original address expression.  */
+      rtx new_x = legitimize_pic_address (orig_x, mode, NULL_RTX);
+
+      if (new_x != orig_x)
+	x = new_x;
+    }
+
+  return x;
+}
+
 
 
 #define REG_OR_SUBREG_REG(X)						\
