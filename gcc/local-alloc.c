@@ -1142,7 +1142,15 @@ block_alloc (b)
 	     Suitable insns are those with at least two operands and where
 	     operand 0 is an output that is a register that is not
 	     earlyclobber.
-	     For a commutative operation, try (set reg0 (arithop ... reg1)).
+
+	     We can tie operand 0 with some operand that dies in this insn.
+	     First look for operands that are required to be in the same
+	     register as operand 0.  If we find such, only try tying that
+	     operand or one that can be put into that operand if the
+	     operation is commutative.  If we don't find an operand
+	     that is required to be in the same register as operand 0,
+	     we can tie with any operand.
+
 	     Subregs in place of regs are also ok.
 
 	     If tying is done, WIN is set nonzero.  */
@@ -1158,56 +1166,64 @@ block_alloc (b)
 #endif
 	      )
 	    {
+#ifdef REGISTER_CONSTRAINTS
+	      int must_match_0 = -1;
+
+
+	      for (i = 1; i < insn_n_operands[insn_code_number]; i++)
+		if (requires_inout_p
+		    (insn_operand_constraint[insn_code_number][i]))
+		  must_match_0 = i;
+#endif
+
 	      r0 = recog_operand[0];
-	      r1 = recog_operand[1];
-
-	      /* If the first operand is an address, find a register in it.
-		 There may be more than one register, but we only try one of
-		 them.  */
-	      if (
-#ifdef REGISTER_CONSTRAINTS
-		  insn_operand_constraint[insn_code_number][1][0] == 'p'
-#else
-		  insn_operand_address_p[insn_code_number][1]
-#endif
-		  )
-		while (GET_CODE (r1) == PLUS || GET_CODE (r1) == MULT)
-		  r1 = XEXP (r1, 0);
-
-	      if (GET_CODE (r0) == REG || GET_CODE (r0) == SUBREG)
+	      for (i = 1; i < insn_n_operands[insn_code_number]; i++)
 		{
-		  /* We have two priorities for hard register preferences.
-		     If we have a move insn or an insn whose first input can
-		     only be in the same register as the output, give
-		     priority to an equivalence found from that insn.  */
 #ifdef REGISTER_CONSTRAINTS
-		  int may_save_copy
-		    = ((SET_DEST (body) == r0 && SET_SRC (body) == r1)
-		       || (r1 == recog_operand[1]
-			   && (requires_inout_p (insn_operand_constraint[insn_code_number][1]))));
-#else
-		  int may_save_copy = 0;
+		  /* Skip this operand if we found an operand that
+		     must match operand 0 and this operand isn't it
+		     and can't be made to be it by commutativity.  */
+
+		  if (must_match_0 >= 0 && i != must_match_0
+		      && ! (i == must_match_0 + 1
+			    && insn_operand_constraint[insn_code_number][i-1][0] == '%')
+		      && ! (i == must_match_0 - 1
+			    && insn_operand_constraint[insn_code_number][i][0] == '%'))
+		    continue;
 #endif
 
-		  if (GET_CODE (r1) == REG || GET_CODE (r1) == SUBREG)
-		    win = combine_regs (r1, r0, may_save_copy,
-					insn_number, insn, 0);
+		  r1 = recog_operand[i];
 
-		  if (win == 0
-		      && insn_n_operands[insn_code_number] > 2
+		  /* If the operand is an address, find a register in it.
+		     There may be more than one register, but we only try one
+		     of them.  */
+		  if (
 #ifdef REGISTER_CONSTRAINTS
-		      && insn_operand_constraint[insn_code_number][1][0] == '%'
+		      insn_operand_constraint[insn_code_number][i][0] == 'p'
 #else
-		      && GET_CODE (PATTERN (insn)) == SET
-		      && (GET_RTX_CLASS (GET_CODE (SET_SRC (PATTERN (insn))))
-			  == 'c')
-		      && rtx_equal_p (recog_operand[2],
-				      XEXP (SET_SRC (PATTERN (insn)), 0))
+		      insn_operand_address_p[insn_code_number][i]
 #endif
-		      && (r1 = recog_operand[2],
-			  GET_CODE (r1) == REG || GET_CODE (r1) == SUBREG))
-		    win = combine_regs (r1, r0, may_save_copy,
-					insn_number, insn, 0);
+		      )
+		    while (GET_CODE (r1) == PLUS || GET_CODE (r1) == MULT)
+		      r1 = XEXP (r1, 0);
+
+		  if (GET_CODE (r0) == REG || GET_CODE (r0) == SUBREG)
+		    {
+		      /* We have two priorities for hard register preferences.
+			 If we have a move insn or an insn whose first input
+			 can only be in the same register as the output, give
+			 priority to an equivalence found from that insn.  */
+		      int may_save_copy
+			= ((SET_DEST (body) == r0 && SET_SRC (body) == r1)
+#ifdef REGISTER_CONSTRAINTS
+			   || (r1 == recog_operand[i] && must_match_0 >= 0)
+#endif
+			   );
+		      
+		      if (GET_CODE (r1) == REG || GET_CODE (r1) == SUBREG)
+			win = combine_regs (r1, r0, may_save_copy,
+					    insn_number, insn, 0);
+		    }
 		}
 	    }
 
