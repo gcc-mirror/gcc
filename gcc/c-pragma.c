@@ -30,6 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "ggc.h"
 #include "c-lex.h"
+#include "output.h"
 #include "tm_p.h"
 
 #define BAD(msgid) do { warning (msgid); return; } while (0)

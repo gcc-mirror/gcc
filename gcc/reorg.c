@@ -138,6 +138,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "obstack.h"
 #include "insn-attr.h"
 #include "resource.h"
+#include "except.h"
 #include "params.h"
 
 #ifdef DELAY_SLOTS

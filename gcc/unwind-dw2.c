@@ -778,7 +778,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 		unused_rs = unused_rs->prev;
 	      }
 	    else
-	      new_rs = alloca (sizeof (struct frame_state_reg_info));
+	      new_rs = __builtin_alloca (sizeof (struct frame_state_reg_info));
 
 	    *new_rs = fs->regs;
 	    fs->regs.prev = new_rs;
