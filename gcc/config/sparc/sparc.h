@@ -1082,7 +1082,6 @@ extern int sparc_mode_class[];
 
 #define PIC_OFFSET_TABLE_REGNUM 23
 
-#define INITIALIZE_PIC initialize_pic ()
 #define FINALIZE_PIC finalize_pic ()
 
 /* Pick a default value we can notice from override_options:
