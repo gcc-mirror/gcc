@@ -1,3 +1,15 @@
+2004-01-23  Roger Sayle  <roger@eyesopen.com>
+
+	* real.c (real_floor, real_ceil): Tweak to allow input and output
+	arguments to overlap.
+	(real_round): New function to implement round(3m) semantics.
+	* real.h (real_round): Prototype here.
+	* builtins.c (fold_builtin_round): New function to constant fold
+	round, roundf and roundl.
+	(fold_builtin): Call fold_builtin_round for BUILT_IN_ROUND{,F,L}.
+
+	* gcc.dg/builtins-29.c: New test case.
+
 2004-01-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR optimization/13819

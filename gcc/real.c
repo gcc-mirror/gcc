@@ -4539,11 +4539,13 @@ void
 real_floor (REAL_VALUE_TYPE *r, enum machine_mode mode,
 	    const REAL_VALUE_TYPE *x)
 {
-  do_fix_trunc (r, x);
-  if (! real_identical (r, x) && r->sign)
-    do_add (r, r, &dconstm1, 0);
+  REAL_VALUE_TYPE t;
+
+  do_fix_trunc (&t, x);
+  if (! real_identical (&t, x) && x->sign)
+    do_add (&t, &t, &dconstm1, 0);
   if (mode != VOIDmode)
-    real_convert (r, mode, r);
+    real_convert (r, mode, &t);
 }
 
 /* Round X to the smallest integer not less then argument, i.e. round
@@ -4553,9 +4555,25 @@ void
 real_ceil (REAL_VALUE_TYPE *r, enum machine_mode mode,
 	   const REAL_VALUE_TYPE *x)
 {
-  do_fix_trunc (r, x);
-  if (! real_identical (r, x) && ! r->sign)
-    do_add (r, r, &dconst1, 0);
+  REAL_VALUE_TYPE t;
+
+  do_fix_trunc (&t, x);
+  if (! real_identical (&t, x) && ! x->sign)
+    do_add (&t, &t, &dconst1, 0);
+  if (mode != VOIDmode)
+    real_convert (r, mode, &t);
+}
+
+/* Round X to the nearest integer, but round halfway cases away from
+   zero.  */
+
+void
+real_round (REAL_VALUE_TYPE *r, enum machine_mode mode,
+	    const REAL_VALUE_TYPE *x)
+{
+  do_add (r, x, &dconsthalf, x->sign);
+  do_fix_trunc (r, r);
   if (mode != VOIDmode)
     real_convert (r, mode, r);
 }
+
