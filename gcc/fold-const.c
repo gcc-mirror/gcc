@@ -1071,8 +1071,6 @@ int_const_binop (code, arg1, arg2, notrunc, forsize)
   int overflow = 0;
   int no_overflow = 0;
 
-  STRIP_NOPS (arg1); STRIP_NOPS (arg2);
-
   int1l = TREE_INT_CST_LOW (arg1);
   int1h = TREE_INT_CST_HIGH (arg1);
   int2l = TREE_INT_CST_LOW (arg2);
