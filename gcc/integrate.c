@@ -265,6 +265,16 @@ static rtvec copy_asm_constraints_vector;
 /* In save_for_inline, nonzero if past the parm-initialization insns.  */
 static int in_nonparm_insns;
 
+/* subroutines passed to duplicate_eh_handlers to map exception labels */
+
+static rtx 
+save_for_inline_eh_labelmap (label)
+     rtx label;
+{
+  int index = CODE_LABEL_NUMBER (label);
+  return label_map[index];
+}
+
 /* Subroutine for `save_for_inline{copying,nocopy}'.  Performs initialization
    needed to save FNDECL's insns and info for future inline expansion.  */
    
@@ -667,19 +677,8 @@ save_for_inline_copying (fndecl)
 
               /* we have to duplicate the handlers for the original */
               if (NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_BEG) 
-                {
-                  handler_info *ptr, *temp;
-                  int nr;
-                  nr = new_eh_region_entry (new_region);
-                  ptr = get_first_handler (NOTE_BLOCK_NUMBER (copy));
-                  for ( ; ptr; ptr = ptr->next)
-                    {
-                      temp = get_new_handler (
-                           label_map[CODE_LABEL_NUMBER (ptr->handler_label)],
-                                                               ptr->type_info);
-                      add_new_handler (nr, temp);
-                    }
-                }
+                duplicate_eh_handlers (NOTE_BLOCK_NUMBER (copy), new_region,
+                                       save_for_inline_eh_labelmap);
                 
 	      /* We have to forward these both to match the new exception
 		 region.  */
@@ -1075,10 +1074,14 @@ copy_for_inline (orig)
     {
     case QUEUED:
     case CONST_INT:
-    case SYMBOL_REF:
     case PC:
     case CC0:
       return x;
+
+    case SYMBOL_REF:
+      if (! SYMBOL_REF_NEED_ADJUST (x))
+        return x;
+      return rethrow_symbol_map (x, save_for_inline_eh_labelmap);
 
     case CONST_DOUBLE:
       /* We have to make a new CONST_DOUBLE to ensure that we account for
@@ -1338,6 +1341,18 @@ process_reg_param (map, loc, copy)
     }
   map->reg_map[REGNO (loc)] = copy;
 }
+
+/* Used by duplicate_eh_handlers to map labels for the exception table */
+static struct inline_remap *eif_eh_map;
+
+static rtx 
+expand_inline_function_eh_labelmap (label)
+   rtx label;
+{
+  int index = CODE_LABEL_NUMBER (label);
+  return get_label_from_map (eif_eh_map, index);
+}
+
 /* Integrate the procedure defined by FNDECL.  Note that this function
    may wind up calling itself.  Since the static variables are not
    reentrant, we do not assign them until after the possibility
@@ -2055,17 +2070,12 @@ expand_inline_function (fndecl, parms, target, ignore, type,
                   /* we have to duplicate the handlers for the original */
                   if (NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_BEG)
                     {
-                      handler_info *ptr, *temp;
-                      int nr;
-                      nr = new_eh_region_entry (CODE_LABEL_NUMBER (label));
-                      ptr = get_first_handler (NOTE_BLOCK_NUMBER (copy));
-                      for ( ; ptr; ptr = ptr->next)
-                        {
-                          temp = get_new_handler ( get_label_from_map (map, 
-                                      CODE_LABEL_NUMBER (ptr->handler_label)),
-                                                               ptr->type_info);
-                          add_new_handler (nr, temp);
-                        }
+                      /* We need to duplicate the handlers for the EH region
+                         and we need to indicate where the label map is */
+                      eif_eh_map = map;
+                      duplicate_eh_handlers (NOTE_BLOCK_NUMBER (copy), 
+                                             CODE_LABEL_NUMBER (label),
+                                             expand_inline_function_eh_labelmap);
                     }
 
 		  /* We have to forward these both to match the new exception
@@ -2533,6 +2543,13 @@ copy_rtx_and_substitute (orig, map)
 								   map)),
 			 0);
 	}
+      else
+        if (SYMBOL_REF_NEED_ADJUST (orig)) 
+          {
+            eif_eh_map = map;
+            return rethrow_symbol_map (orig, 
+                                       expand_inline_function_eh_labelmap);
+          }
 
       return orig;
 

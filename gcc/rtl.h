@@ -340,6 +340,14 @@ typedef struct rtvec_def{
      REG_FRAME_RELATED_EXPR is attached to insns that are RTX_FRAME_RELATED_P,
    but are too complex for DWARF to interpret what they imply.  The attached
    rtx is used instead of intuition.  */
+/*   REG_EH_REGION is used to indicate what exception region an INSN
+   belongs in. This can be used to indicate what region a call may throw
+   to. a REGION of 0 indicates that a call cannot throw at all.
+     REG_EH_RETHROW is used to indicate what that a call is actually a
+   call to rethrow, and specifies which region the rethrow is targetting.
+   This provides a way to generate the non standard flow edges required 
+   for a rethrow. */
+   
 
 #define REG_NOTES(INSN)	((INSN)->fld[6].rtx)
 
@@ -353,7 +361,8 @@ enum reg_note { REG_DEAD = 1, REG_INC = 2, REG_EQUIV = 3, REG_WAS_0 = 4,
 		REG_DEP_ANTI = 14, REG_DEP_OUTPUT = 15, REG_BR_PROB = 16,
 		REG_EXEC_COUNT = 17, REG_NOALIAS = 18, REG_SAVE_AREA = 19,
 		REG_BR_PRED = 20, REG_EH_CONTEXT = 21,
-		REG_FRAME_RELATED_EXPR = 22 };
+		REG_FRAME_RELATED_EXPR = 22, REG_EH_REGION = 23,
+		REG_EH_RETHROW = 24 };
 /* The base value for branch probability notes.  */
 #define REG_BR_PROB_BASE  10000
 
@@ -616,6 +625,10 @@ extern char *note_insn_name[];
 
 /* Flag in a SYMBOL_REF for machine-specific purposes.  */
 #define SYMBOL_REF_FLAG(RTX) ((RTX)->volatil)
+
+/* 1 in a SYMBOL_REF if it represents a symbol which might have to change
+   if its inlined or unrolled. */
+#define SYMBOL_REF_NEED_ADJUST(RTX)  ((RTX)->in_struct)
 
 /* 1 means a SYMBOL_REF has been the library function in emit_library_call.  */
 #define SYMBOL_REF_USED(RTX) ((RTX)->used)

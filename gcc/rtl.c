@@ -193,7 +193,8 @@ char *reg_note_name[] = { "", "REG_DEAD", "REG_INC", "REG_EQUIV", "REG_WAS_0",
 			  "REG_DEP_ANTI", "REG_DEP_OUTPUT", "REG_BR_PROB",
 			  "REG_EXEC_COUNT", "REG_NOALIAS", "REG_SAVE_AREA",
 			  "REG_BR_PRED", "REG_EH_CONTEXT",
-			  "REG_FRAME_RELATED_EXPR" };
+			  "REG_FRAME_RELATED_EXPR", "REG_EH_REGION",
+			  "REG_EH_RETHROW" };
 
 static void dump_and_abort	PROTO((int, int, FILE *)) ATTRIBUTE_NORETURN;
 static void read_name		PROTO((char *, FILE *));

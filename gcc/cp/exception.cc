@@ -117,13 +117,29 @@ __cp_exception_info (void)
   return &((*__get_eh_info ())->value);
 }
 
-/* Compiler hook to return a pointer to the info for the current exception.
+#define CP_EH_INFO ((cp_eh_info *) *__get_eh_info ())
+
+/* Old Compiler hook to return a pointer to the info for the current exception.
    Used by get_eh_info ().  */
 
 extern "C" cp_eh_info *
 __cp_eh_info (void)
 {
-  return *__get_eh_info ();
+  cp_eh_info *p = CP_EH_INFO;
+  return p;
+}
+
+/* Compiler hook to return a pointer to the info for the current exception,
+   Set the caught bit, and increment the number of handlers that are
+   looking at this exception. This makes handlers smaller. */
+
+extern "C" cp_eh_info *
+__start_cp_handler (void)
+{
+  cp_eh_info *p = CP_EH_INFO;
+  p->caught = 1;
+  p->handlers++;
+  return p;
 }
 
 /* Allocate a buffer for a cp_eh_info and an exception object of size SIZE,
@@ -242,7 +258,7 @@ __cp_pop_exception (cp_eh_info *p)
 extern "C" void
 __uncatch_exception (void)
 {
-  cp_eh_info *p = __cp_eh_info ();
+  cp_eh_info *p = CP_EH_INFO;
   if (p == 0)
     terminate ();
   p->caught = false;
@@ -263,7 +279,7 @@ __uncatch_exception (void)
 extern "C" void
 __check_eh_spec (int n, const void **spec)
 {
-  cp_eh_info *p = __cp_eh_info ();
+  cp_eh_info *p = CP_EH_INFO;
 
   for (int i = 0; i < n; ++i)
     {
@@ -316,7 +332,7 @@ __throw_bad_typeid (void)
 bool
 std::uncaught_exception ()
 {
-  cp_eh_info *p = __cp_eh_info ();
+  cp_eh_info *p = CP_EH_INFO;
   return p && ! p->caught;
 }
 

@@ -1,3 +1,19 @@
+1998-12-08  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* cp/except.c (call_eh_info): use __start_cp_handler instead of
+	__cp_eh_info for getting the eh info pointer. Add table_index to
+	field list.
+	(push_eh_cleanup): Don't increment 'handlers' data field.
+	(process_start_catch_block): Don't set the 'caught' field.
+
+	* cp/exception.cc (CP_EH_INFO): New macro for getting the 
+	exception info pointer within library routines.
+	(__cp_eh_info): Use CP_EH_INFO.
+	(__start_cp_handler): Get exception info pointer, set caught field,
+	and increment the handlers field. Avoids this being done by handlers.
+	(__uncatch_exception, __check_eh_spec): Use CP_EH_INFO macro.
+	(uncaught_exception): Use CP_EH_INFO macro.
+
 Tue Dec  8 10:48:21 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Make-lang.in (cxxmain.o): Depend on $(DEMANGLE_H), not demangle.h

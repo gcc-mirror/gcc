@@ -119,6 +119,7 @@ rtx memset_libfunc;
 rtx bzero_libfunc;
 
 rtx throw_libfunc;
+rtx rethrow_libfunc;
 rtx sjthrow_libfunc;
 rtx sjpopnthrow_libfunc;
 rtx terminate_libfunc;
@@ -4294,6 +4295,7 @@ init_optabs ()
   bzero_libfunc = gen_rtx_SYMBOL_REF (Pmode, "bzero");
 
   throw_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__throw");
+  rethrow_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__rethrow");
   sjthrow_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__sjthrow");
   sjpopnthrow_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__sjpopnthrow");
   terminate_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__terminate");
