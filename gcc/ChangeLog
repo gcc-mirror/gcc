@@ -22,9 +22,6 @@
 	* config/i960/i960.h (BOOL_TYPE_SIZE): Don't define.
 	* config/mcore/mcore.h (BOOL_TYPE_SIZE): Don't define.
 
-	* dwarf2out.c (gen_type_die): Don't recurse if TYPE_NAME doesn't
-	actually declare this type.
-
 2002-05-02  Loren J. Rittle  <ljrittle@acm.org>
 
 	* doc/install.texi (*-*-freebsd*): Update to latest status.
