@@ -1,3 +1,9 @@
+2002-10-03  Andreas Jaeger  <aj@suse.de>
+
+	* gengtype.c (adjust_field_rtx_def): Cast variables of type size_t
+	to unsigned long, adjust printf format string.
+	(output_mangled_typename): Likewise.
+
 2002-10-03  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/vax/vax.c (vax_output_function_prologue): Use asm_fprintf.
@@ -46,7 +52,7 @@
 	* config.gcc (hppa*64*-*-hpux11*): Check gnu_ld.
 	* config/pa/pa.h (MASK_GNU_LD): New.
 	(TARGET_GNU_LD): New.
-	* config/pa/pa64-hpux.h (LINK_SPEC): Set based 
+	* config/pa/pa64-hpux.h (LINK_SPEC): Set based
 	on gnu-ld and MASK_GNU_LD.
 	(SUBTARGET_SWITCHES): New gnu-ld & hp-ld flags.
 
@@ -127,7 +133,7 @@ Thu Oct  3 21:42:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
 Thu Oct  3 15:15:00 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (lea to mul peep2): Fix condition.
-	
+
 2002-10-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa-linux.h (FUNCTION_OK_FOR_SIBCALL): Delete macro.
@@ -202,7 +208,7 @@ Wed Oct  2 17:01:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
             Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (vax-*-netbsdelf*): Enable configuration.
-	* config/elfos.h (PCC_BITFIELD_TYPE_MATTERS): Define only 
+	* config/elfos.h (PCC_BITFIELD_TYPE_MATTERS): Define only
 	if not already defined.
 	* config/vax/elf.h: New file.
 	* config/vax/netbsd-elf.h: New file.
@@ -244,7 +250,7 @@ Wed Oct  2 17:01:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* stor-layout.c (update_alignment_for_field): New function.
 	(place_union_field): Use it.
 	(place_field): Likewise.
-	
+
 2002-10-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR other/8077
@@ -256,7 +262,7 @@ Wed Oct  2 17:01:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-09-30  Andrew Haley  <aph@redhat.com>
 
-	* flow.c (insn_dead_p): When using non-call-exceptions, don't 
+	* flow.c (insn_dead_p): When using non-call-exceptions, don't
 	eliminate insns that may trap.
 	* cse.c (insn_live_p): Likewise.
 
@@ -1076,7 +1082,7 @@ Tue Aug 27 20:07:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(const_float_1_operand): Use dconst1.
 	* config/mips/mips.md (movsf, movsf_internal1, movsf_internal2,
 	movdf, movdf_internal1, movdf_internal1a, movdf_internal2):
- 	Don't allow arbitrary constants; fix predicates and C constraint.
+	Don't allow arbitrary constants; fix predicates and C constraint.
 
 2002-09-20  Neil Booth  <neil@daikokuya.co.uk>
 
