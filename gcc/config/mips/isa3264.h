@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
    ABI_{EABI,O64,O32,...} are #defined. */
 
 #if MIPS_ABI_DEFAULT == ABI_EABI
-#undef SUBTARGET_CPP_SIZE_SPEC
+#undef  SUBTARGET_CPP_SIZE_SPEC
 #define SUBTARGET_CPP_SIZE_SPEC "\
 %{mabi=eabi|!mabi=*:\
   %{mips1|mips2|mips32|mlong32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
@@ -51,8 +51,10 @@ Boston, MA 02111-1307, USA.  */
  %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
 %{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 "
-#elif MIPS_ABI_DEFAULT == ABI_O64
-#undef SUBTARGET_CPP_SIZE_SPEC
+#endif
+
+#if MIPS_ABI_DEFAULT == ABI_O64
+#undef  SUBTARGET_CPP_SIZE_SPEC
 #define SUBTARGET_CPP_SIZE_SPEC "\
 %{mabi=eabi:\
   %{mips1|mips2|mips32|mlong32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
@@ -62,10 +64,11 @@ Boston, MA 02111-1307, USA.  */
  %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
 %{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 "
+#endif
 
-#elif MIPS_ABI_DEFAULT == ABI_32
+#if MIPS_ABI_DEFAULT == ABI_32
 #if MIPS_ISA_DEFAULT == 3 || MIPS_ISA_DEFAULT == 4 || MIPS_ISA_DEFAULT == 5 || MIPS_ISA_DEFAULT == 64
-#undef SUBTARGET_CPP_SIZE_SPEC
+#undef  SUBTARGET_CPP_SIZE_SPEC
 #define SUBTARGET_CPP_SIZE_SPEC "\
 %{mabi=eabi:\
   %{mips1|mips2|mips32|mlong32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
@@ -76,7 +79,7 @@ Boston, MA 02111-1307, USA.  */
 %{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 "
 #else /* not a 64bit default ISA */
-#undef SUBTARGET_CPP_SIZE_SPEC
+#undef  SUBTARGET_CPP_SIZE_SPEC
 #define SUBTARGET_CPP_SIZE_SPEC "\
 %{mabi=eabi:\
   %{mips3|mips4|mips5|mips64|mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
@@ -93,8 +96,9 @@ Boston, MA 02111-1307, USA.  */
   -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}} \
 "
 #endif /* ISA */
+#endif
 
-#elif MIPS_ABI_DEFAULT == ABI_MEABI
+#if MIPS_ABI_DEFAULT == ABI_MEABI
 /* For MEABI, don't link with crt0 files, let the linker start files specify
    the appropriate crt0 file.  */
 #undef  STARTFILE_SPEC
@@ -109,7 +113,7 @@ Boston, MA 02111-1307, USA.  */
    handle overriding mlong32 with mlong64 and vise-versa, the specs cannot. */
 
 #if MIPS_ISA_DEFAULT == 3 || MIPS_ISA_DEFAULT == 4 || MIPS_ISA_DEFAULT == 5 || MIPS_ISA_DEFAULT == 64
-#undef SUBTARGET_CPP_SIZE_SPEC
+#undef  SUBTARGET_CPP_SIZE_SPEC
 #define SUBTARGET_CPP_SIZE_SPEC "\
 %{mabi=meabi:\
   %{mips1|mips2|mips32|mlong32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
@@ -126,7 +130,7 @@ Boston, MA 02111-1307, USA.  */
 "
 
 #else /* not a 64bit default ISA */
-#undef SUBTARGET_CPP_SIZE_SPEC
+#undef  SUBTARGET_CPP_SIZE_SPEC
 #define SUBTARGET_CPP_SIZE_SPEC "\
 %{mabi=meabi:\
   %{mips3|mips4|mips5|mips64|mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
@@ -142,7 +146,5 @@ Boston, MA 02111-1307, USA.  */
  %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int }} \
 "
 #endif /* ISA */
+#endif
 
-#endif /* ABI */
-
-/* eof */

@@ -1,3 +1,8 @@
+2001-10-25  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/mips/isa3264.h (SUBTARGET_CPP_SIZE_SPEC): Replace
+	occurrences of #elif with #if...#endif.
+
 2001-10-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cris.h (EH_RETURN_DATA_REGNO): Fix unsigned>=0 warning.
