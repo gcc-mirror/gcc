@@ -1,3 +1,42 @@
+Wed Dec  1 16:51:22 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10300.c (REG_SAVE_BYTES): Allocate space for AM33 registers.
+	(asm_file_start): Emit .am33 into assembly file when compiling for
+	the AM33.
+	(print_operand_address): Handle POST_INC addresses.
+	(can_use_return_insn, initial_offset): Check AM33 registers too.
+	(expand_prologue): Check & save AM33 registers too.
+	(expand_epilogue): Similarly.
+	(secondary_reload_class): Handle AM33 specific secondary reloads.
+	(output_tst): Emit efficient code for the AM33 too.
+	* mn10300.h (CPP_SPEC, TARGET_AM33): Define.
+	(TARGET_SWITCHES): Add -mam33 switch.
+	(FIRST_PSEUDO_REGISTER): Handle new AM33 registers.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS): Likewise.
+	(REG_ALLOC_ORDER, CONDITIONAL_REGISTER_USAGE): Likewise.
+	(HARD_REGNO_MODE_OK, MODES_TIEABLE_P): Likewise.
+	(enum reg_class, REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS, REGNO_REG_CLASS): Likewise.
+	(INDEX_REG_CLASS, REG_CLASS_FROM_LETTER): Likewise.
+	(REGNO_OK_FOR_INDEX_P, PREFERRED_RELOAD_CLASS): Likewise.
+	(PREFERRED_OUTPUT_RELOAD_CLASS, LIMIT_RELOAD_CLASS): Likewise.
+	(REGISTER_MOVE_COST, REGISTER_NAMES): Likewise.
+	(HAVE_POST_INCREMENT): Define.
+	(GO_IF_LEGITIMATE_ADDRESS): Allow POST_INC addresses for the AM33.
+	(GO_IF_MODE_DEPENDENT_ADDRESS): POST_INC is a mode dependent address.
+	* mn10300.md (movqi, movhi, addsi, subsi): Add AM33 variants.
+	(mulsi, andsi, iorsi, xorsi, notsi): Likewise.
+	(ashiftsi, lshiftrtsi, ashiftrtsi): Likewise.
+	(zero_extend to SI from QI/HI): Likewise.
+	(sign_extend to SI from QI/HI): Likewise.
+	(mulsidi3, umulsidi3): New patterns for the AM33.
+	(tstsi with zero extension from QI/HI): Add AM33 variants.
+	(movsi, movsf, movdi, movdf): Generate efficient code for the AM33 too.
+	(return_internal_regs, store_movm): Handle new AM33 registers.
+	* t-mn10300 (MULTILIB_OPTIONS, MULTILIB_DIRNAMES): Define.
+	(LIBGCC, INSTALL_LIBGCC): Likewise.
+	* invoke.texi: Document new flags.
+
 Fri Nov 26 10:59:12 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* i386.md (addsi3_cc): Add "binary_operator_ok" to the condition.

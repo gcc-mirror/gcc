@@ -42,8 +42,10 @@ Boston, MA 02111-1307, USA.  */
    speed standpoint, so we want to optimize this sooner or later.  */
 #define REG_SAVE_BYTES (4 * regs_ever_live[2] \
 			+ 4 * regs_ever_live[3] \
-			+ 4 * regs_ever_live[6] \
-			+ 4 * regs_ever_live[7])
+		        + 4 * regs_ever_live[6] \
+			+ 4 * regs_ever_live[7] \
+			+ 16 * (regs_ever_live[14] || regs_ever_live[15] \
+				|| regs_ever_live[16] || regs_ever_live[17]))
 
 void
 asm_file_start (file)
@@ -54,6 +56,9 @@ asm_file_start (file)
     fprintf (file, "# -O%d\n", optimize);
   else
     fprintf (file, "\n\n");
+
+  if (TARGET_AM33)
+    fprintf (file, "\t.am33\n");
   output_file_directive (file, main_input_filename);
 }
 
@@ -312,6 +317,10 @@ print_operand_address (file, addr)
 {
   switch (GET_CODE (addr))
     {
+    case POST_INC:
+      print_operand_address (file, XEXP (addr, 0));
+      fputc ('+', file);
+      break;
     case REG:
       if (addr == stack_pointer_rtx)
 	print_operand_address (file, gen_rtx_PLUS (SImode,
@@ -360,6 +369,10 @@ can_use_return_insn ()
 	  && !regs_ever_live[3]
 	  && !regs_ever_live[6]
 	  && !regs_ever_live[7]
+	  && !regs_ever_live[14]
+	  && !regs_ever_live[15]
+	  && !regs_ever_live[16]
+	  && !regs_ever_live[17]
 	  && !frame_pointer_needed);
 }
 
@@ -388,6 +401,8 @@ expand_prologue ()
      single two byte instruction.  */
   if (regs_ever_live[2] || regs_ever_live[3]
       || regs_ever_live[6] || regs_ever_live[7]
+      || regs_ever_live[14] || regs_ever_live[15]
+      || regs_ever_live[16] || regs_ever_live[17]
       || frame_pointer_needed)
     emit_insn (gen_store_movm ());
 
@@ -432,6 +447,8 @@ expand_epilogue ()
       size = 0;
     }
   else if ((regs_ever_live[2] || regs_ever_live[3]
+	    || regs_ever_live[14] || regs_ever_live[15]
+	    || regs_ever_live[16] || regs_ever_live[17]
 	    || regs_ever_live[6] || regs_ever_live[7])
 	   && size + REG_SAVE_BYTES > 255)
     {
@@ -448,6 +465,8 @@ expand_epilogue ()
      stack requirements and is faster.  */
   if (regs_ever_live[2] || regs_ever_live[3]
       || regs_ever_live[6] || regs_ever_live[7]
+      || regs_ever_live[14] || regs_ever_live[15]
+      || regs_ever_live[16] || regs_ever_live[17]
       || frame_pointer_needed)
     emit_jump_insn (gen_return_internal_regs (GEN_INT (size + REG_SAVE_BYTES)));
   else
@@ -554,6 +573,8 @@ secondary_reload_class (class, mode, in)
       && (mode == QImode || mode == HImode)
       && (class == ADDRESS_REGS || class == SP_REGS))
     {
+      if (TARGET_AM33)
+	return DATA_OR_EXTENDED_REGS;
       return DATA_REGS;
     }
 
@@ -562,6 +583,9 @@ secondary_reload_class (class, mode, in)
   if (class != SP_REGS
       && class != ADDRESS_REGS
       && class != SP_OR_ADDRESS_REGS
+      && class != SP_OR_EXTENDED_REGS
+      && class != ADDRESS_OR_EXTENDED_REGS
+      && class != SP_OR_ADDRESS_OR_EXTENDED_REGS
       && (in == stack_pointer_rtx
 	  || (GET_CODE (in) == PLUS
 	      && (XEXP (in, 0) == stack_pointer_rtx
@@ -572,6 +596,8 @@ secondary_reload_class (class, mode, in)
       && (XEXP (in, 0) == stack_pointer_rtx
 	  || XEXP (in, 1) == stack_pointer_rtx))
     {
+      if (TARGET_AM33)
+	return DATA_OR_EXTENDED_REGS;
       return DATA_REGS;
     }
  
@@ -589,6 +615,8 @@ initial_offset (from, to)
     {
       if (regs_ever_live[2] || regs_ever_live[3]
 	  || regs_ever_live[6] || regs_ever_live[7]
+	  || regs_ever_live[14] || regs_ever_live[15]
+	  || regs_ever_live[16] || regs_ever_live[17]
 	  || frame_pointer_needed)
 	return REG_SAVE_BYTES;
       else
@@ -602,6 +630,8 @@ initial_offset (from, to)
     {
       if (regs_ever_live[2] || regs_ever_live[3]
 	  || regs_ever_live[6] || regs_ever_live[7]
+	  || regs_ever_live[14] || regs_ever_live[15]
+	  || regs_ever_live[16] || regs_ever_live[17]
 	  || frame_pointer_needed)
 	return (get_frame_size () + REG_SAVE_BYTES
 		+ (current_function_outgoing_args_size
@@ -855,6 +885,26 @@ output_tst (operand, insn)
 	  && !reg_set_between_p (SET_DEST (set), temp, insn)
 	  && (REGNO_REG_CLASS (REGNO (SET_DEST (set)))
 	      == REGNO_REG_CLASS (REGNO (operand)))
+	  && REGNO_REG_CLASS (REGNO (SET_DEST (set))) != EXTENDED_REGS
+	  && REGNO (SET_DEST (set)) != REGNO (operand)
+	  && (!past_call 
+	      || !call_used_regs[REGNO (SET_DEST (set))]))
+	{
+	  rtx xoperands[2];
+	  xoperands[0] = operand;
+	  xoperands[1] = SET_DEST (set);
+
+	  output_asm_insn ("cmp %1,%0", xoperands);
+	  return "";
+	}
+
+      if (REGNO_REG_CLASS (REGNO (operand)) == EXTENDED_REGS
+	  && REG_P (SET_DEST (set))
+	  && SET_SRC (set) == CONST0_RTX (GET_MODE (SET_DEST (set)))
+	  && !reg_set_between_p (SET_DEST (set), temp, insn)
+	  && (REGNO_REG_CLASS (REGNO (SET_DEST (set)))
+	      != REGNO_REG_CLASS (REGNO (operand)))
+	  && REGNO_REG_CLASS (REGNO (SET_DEST (set))) == EXTENDED_REGS
 	  && REGNO (SET_DEST (set)) != REGNO (operand)
 	  && (!past_call 
 	      || !call_used_regs[REGNO (SET_DEST (set))]))

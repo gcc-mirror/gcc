@@ -32,6 +32,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define CPP_PREDEFINES "-D__mn10300__ -D__MN10300__"
 
+#define CPP_SPEC "%{mam33:-D__AM33__}"
+
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
 extern int target_flags;
@@ -46,9 +48,16 @@ extern int target_flags;
 
 /* Generate code to work around mul/mulq bugs on the mn10300.  */
 #define TARGET_MULT_BUG			(target_flags & 0x1)
+
+/* Generate code for the AM33 processor.  */
+#define TARGET_AM33			(target_flags & 0x2)
+
 #define TARGET_SWITCHES  \
   {{ "mult-bug",	0x1,  "Work around hardware multiply bug"},	\
    { "no-mult-bug", 	-0x1, "Do not work around hardware multiply bug"},\
+   { "am33", 		0x2},	\
+   { "am33", 		-(0x1)},\
+   { "no-am33", 	-0x2},	\
    { "", TARGET_DEFAULT, NULL}}
 
 #ifndef TARGET_DEFAULT
@@ -134,13 +143,13 @@ extern int target_flags;
    All registers that the compiler knows about must be given numbers,
    even those that are not normally considered general registers.  */
 
-#define FIRST_PSEUDO_REGISTER 10
+#define FIRST_PSEUDO_REGISTER 18
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.  */
 
 #define FIXED_REGISTERS \
-  { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1}
+  { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0}
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -151,10 +160,19 @@ extern int target_flags;
    like.  */
 
 #define CALL_USED_REGISTERS \
-  { 1, 1, 0, 0, 1, 1, 0, 0, 1, 1}
+  { 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0}
 
 #define REG_ALLOC_ORDER \
-  { 0, 1, 4, 5, 2, 3, 6, 7, 8, 9}
+  { 0, 1, 4, 5, 2, 3, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17, 8, 9}
+
+#define CONDITIONAL_REGISTER_USAGE \
+{						\
+  if (!TARGET_AM33)				\
+    {						\
+      for (i = 10; i < 18; i++) 		\
+	fixed_regs[i] = call_used_regs[i] = 1; 	\
+    }						\
+}
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -169,7 +187,9 @@ extern int target_flags;
    MODE.  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
- (REGNO_REG_CLASS (REGNO) == DATA_REGS 			\
+ ((REGNO_REG_CLASS (REGNO) == DATA_REGS \
+   || (TARGET_AM33 && REGNO_REG_CLASS (REGNO) == ADDRESS_REGS) \
+   || REGNO_REG_CLASS (REGNO) == EXTENDED_REGS) \
   ? ((REGNO) & 1) == 0 || GET_MODE_SIZE (MODE) <= 4	\
   : ((REGNO) & 1) == 0 || GET_MODE_SIZE (MODE) == 4)
 
@@ -178,7 +198,9 @@ extern int target_flags;
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
    for any hard reg, then this must be 0 for correct output.  */
 #define MODES_TIEABLE_P(MODE1, MODE2) \
-  (MODE1 == MODE2 || (GET_MODE_SIZE (MODE1) <= 4 && GET_MODE_SIZE (MODE2) <= 4))
+  (TARGET_AM33  \
+   || MODE1 == MODE2 \
+   || (GET_MODE_SIZE (MODE1) <= 4 && GET_MODE_SIZE (MODE2) <= 4))
 
 /* 4 data, and effectively 3 address registers is small as far as I'm
    concerned.  */
@@ -207,6 +229,8 @@ extern int target_flags;
 enum reg_class {
   NO_REGS, DATA_REGS, ADDRESS_REGS, SP_REGS,
   DATA_OR_ADDRESS_REGS, SP_OR_ADDRESS_REGS, 
+  EXTENDED_REGS, DATA_OR_EXTENDED_REGS, ADDRESS_OR_EXTENDED_REGS,
+  SP_OR_EXTENDED_REGS, SP_OR_ADDRESS_OR_EXTENDED_REGS, 
   GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES
 };
 
@@ -217,6 +241,9 @@ enum reg_class {
 #define REG_CLASS_NAMES \
 { "NO_REGS", "DATA_REGS", "ADDRESS_REGS", \
   "SP_REGS", "DATA_OR_ADDRESS_REGS", "SP_OR_ADDRESS_REGS", \
+  "EXTENDED_REGS", \
+  "DATA_OR_EXTENDED_REGS", "ADDRESS_OR_EXTENDED_REGS", \
+  "SP_OR_EXTENDED_REGS", "SP_OR_ADDRESS_OR_EXTENDED_REGS", \
   "GENERAL_REGS", "ALL_REGS", "LIM_REGS" }
 
 /* Define which registers fit in which classes.
@@ -225,13 +252,18 @@ enum reg_class {
 
 #define REG_CLASS_CONTENTS  			\
 {      0,		/* No regs      */	\
-   0x00f,		/* DATA_REGS */		\
-   0x1f0,		/* ADDRESS_REGS */	\
-   0x200,		/* SP_REGS */		\
-   0x1ff,		/* DATA_OR_ADDRESS_REGS */\
-   0x1f0,		/* SP_OR_ADDRESS_REGS */\
-   0x1ff,		/* GENERAL_REGS */    	\
-   0x3ff,		/* ALL_REGS 	*/	\
+   0x0000f,		/* DATA_REGS */		\
+   0x001f0,		/* ADDRESS_REGS */	\
+   0x00200,		/* SP_REGS */		\
+   0x001ff,		/* DATA_OR_ADDRESS_REGS */\
+   0x003f0,		/* SP_OR_ADDRESS_REGS */\
+   0x2fc00,		/* EXTENDED_REGS */	\
+   0x2fc0f,		/* DATA_OR_EXTENDED_REGS */	\
+   0x2fdf0,		/* ADDRESS_OR_EXTENDED_REGS */	\
+   0x2fe00,		/* SP_OR_EXTENDED_REGS */	\
+   0x2fff0,		/* SP_OR_ADDRESS_OR_EXTENDED_REGS */	\
+   0x2fdff,		/* GENERAL_REGS */    	\
+   0x2ffff,		/* ALL_REGS 	*/	\
 }
 
 /* The same information, inverted:
@@ -242,10 +274,11 @@ enum reg_class {
 #define REGNO_REG_CLASS(REGNO) \
   ((REGNO) < 4 ? DATA_REGS : \
    (REGNO) < 9 ? ADDRESS_REGS : \
-    (REGNO) == 9 ? SP_REGS : 0)
+    (REGNO) == 9 ? SP_REGS : \
+     (REGNO) < 18 ? EXTENDED_REGS : 0)
 
 /* The class value for index registers, and the one for base regs.  */
-#define INDEX_REG_CLASS DATA_REGS
+#define INDEX_REG_CLASS DATA_OR_EXTENDED_REGS
 #define BASE_REG_CLASS  SP_OR_ADDRESS_REGS
 
 /* Get reg_class from a letter such as appears in the machine description.  */
@@ -253,6 +286,7 @@ enum reg_class {
 #define REG_CLASS_FROM_LETTER(C) \
   ((C) == 'd' ? DATA_REGS : \
    (C) == 'a' ? ADDRESS_REGS : \
+   (C) == 'x' ? EXTENDED_REGS : \
    (C) == 'y' ? SP_REGS : NO_REGS)
 
 /* Macros to check register numbers against specific register classes.  */
@@ -273,6 +307,8 @@ enum reg_class {
 
 #define REGNO_OK_FOR_INDEX_P(regno) \
   (((regno) >= 0 && regno < 4)	\
+   || ((regno) >= 10 && regno < 18)	\
+   || (reg_renumber[regno] >= 10 && reg_renumber[regno] < 18) \
    || (reg_renumber[regno] >= 0 && reg_renumber[regno] < 4))
 
 
@@ -282,13 +318,15 @@ enum reg_class {
    in some cases it is preferable to use a more restrictive class.  */
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS) \
-  (X == stack_pointer_rtx && CLASS != SP_REGS ? ADDRESS_REGS : CLASS)
+  (X == stack_pointer_rtx && CLASS != SP_REGS \
+   ? ADDRESS_OR_EXTENDED_REGS : CLASS)
 
 #define PREFERRED_OUTPUT_RELOAD_CLASS(X,CLASS) \
-  (X == stack_pointer_rtx && CLASS != SP_REGS ? ADDRESS_REGS : CLASS)
+  (X == stack_pointer_rtx && CLASS != SP_REGS \
+   ? ADDRESS_OR_EXTENDED_REGS : CLASS)
 
 #define LIMIT_RELOAD_CLASS(MODE, CLASS) \
-  ((MODE == QImode || MODE == HImode) ? DATA_REGS : CLASS)
+  (!TARGET_AM33 && (MODE == QImode || MODE == HImode) ? DATA_REGS : CLASS)
 
 #define SECONDARY_RELOAD_CLASS(CLASS,MODE,IN) \
   secondary_reload_class(CLASS,MODE,IN)
@@ -645,6 +683,8 @@ extern struct rtx_def *mn10300_va_arg();
 #endif
 
 
+#define HAVE_POST_INCREMENT (TARGET_AM33)
+
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
    that is a valid memory address for an instruction.
    The MODE argument is the machine mode for the MEM expression
@@ -677,6 +717,11 @@ extern struct rtx_def *mn10300_va_arg();
   if (CONSTANT_ADDRESS_P (X))				\
     goto ADDR;						\
   if (RTX_OK_FOR_BASE_P (X))				\
+    goto ADDR;						\
+  if (TARGET_AM33					\
+      && GET_CODE (X) == POST_INC			\
+      && RTX_OK_FOR_BASE_P (XEXP (X, 0))		\
+      && (MODE == SImode || MODE == SFmode || MODE == HImode))\
     goto ADDR;						\
   if (GET_CODE (X) == PLUS)				\
     {							\
@@ -719,7 +764,9 @@ extern struct rtx_def *legitimize_address ();
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.  */
 
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)  {}
+#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)        \
+  if (GET_CODE (ADDR) == POST_INC) \
+    goto LABEL
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
@@ -772,8 +819,9 @@ extern struct rtx_def *legitimize_address ();
   case CONST_DOUBLE:							\
     return 8;
 
-
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)  (CLASS1 != CLASS2 ? 4 : 2)
+#define REGISTER_MOVE_COST(CLASS1, CLASS2) \
+  ((CLASS1 == CLASS2 && (CLASS1 == ADDRESS_REGS || CLASS1 == DATA_REGS)) ? 2 :\
+   CLASS1 == CLASS2 && CLASS1 == EXTENDED_REGS ? 6 : 4)
 
 /* A crude cut at RTX_COSTS for the MN10300.  */
 
@@ -923,7 +971,8 @@ do { char dstr[30];					\
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
 #define REGISTER_NAMES \
-{ "d0", "d1", "d2", "d3", "a0", "a1", "a2", "a3", "ap", "sp" }
+{ "d0", "d1", "d2", "d3", "a0", "a1", "a2", "a3", "ap", "sp", \
+  "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7" }
 
 /* Print an instruction operand X on file FILE.
    look in mn10300.c for details */
