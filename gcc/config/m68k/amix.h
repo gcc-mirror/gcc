@@ -23,6 +23,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* ler@lerami.lerctr.org reports as doesn't accept $.  */
 #define NO_DOLLAR_IN_LABEL
+/* rhealey@aggregate.com says dots are no good either.  */
+#define NO_DOT_IN_LABEL
 
 /* Alter assembler syntax for fsgldiv and fsglmul.
    It is highly likely that this is a generic SGS m68k assembler dependency.
@@ -126,7 +128,8 @@ do {									\
   putc ('\n', (FILE));						\
 }
 
-#if 0 /* This should be unnecessary as a result of PIC_CASE_VECTOR_ADDRESS.  */
+/* The following should be unnecessary as a result of PIC_CASE_VECTOR_ADDRESS.
+   But rhealey@aggregate.com says they are still needed.  */
 
 /* Override these for the sake of an assembler bug: the Amix
    assembler can't handle .LC0@GOT syntax.  This pollutes the final
@@ -145,5 +148,3 @@ do {									\
     asm_fprintf (FILE, "%s%%%d:\n", PREFIX, NUM);	\
   else							\
     asm_fprintf (FILE, "%0L%s%d:\n", PREFIX, NUM)
-
-#endif /* 0 */
