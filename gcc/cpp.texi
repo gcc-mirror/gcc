@@ -3339,7 +3339,8 @@ Requests @samp{-Wcomment}, @samp{-Wtrigraphs}, and @samp{-Wwhite-space}
 @item -Wtraditional
 @findex -Wtraditional
 Warn about certain constructs that behave differently in traditional and
-ISO C@.
+ISO C@.  Also warn about ISO C constructs that have no traditional C
+equivalent, and/or problematic constructs which should be avoided.
 
 @itemize @bullet
 @item
@@ -3368,10 +3369,9 @@ The unary plus operator.
 The `U' integer constant suffix.  (Traditonal C does support the `L'
 suffix on integer constants.)  Note, these suffixes appear in macros
 defined in the system headers of most modern systems, e.g. the _MIN/_MAX
-macros in limits.h.  Use of these macros can lead to spurious warnings
-as they do not necessarily reflect whether the code in question is any
-less portable to traditional C given that suitable backup definitions
-are provided.
+macros in limits.h.  Use of these macros in user code might normally
+lead to spurious warnings, however gcc's integrated preprocessor has
+enough context to avoid warning in these cases.
 @end itemize
 
 @item -Wundef
