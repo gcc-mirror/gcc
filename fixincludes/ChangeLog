@@ -1,3 +1,10 @@
+2004-11-23  Geoffrey Keating  <geoffk@apple.com>
+
+	* mkfixinc.sh: Check error code from 'cat'.  Don't try running
+	built fixincl program.
+	* mkheaders.in: Use @SHELL@ rather than ${SHELL} to avoid picking
+	up csh from user.
+
 2004-11-20  Roger Sayle  <roger@eyesopen.com>
 
 	* inclhack.def (alpha_pthread_init): Fix technical problems with
