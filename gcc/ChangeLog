@@ -1,5 +1,17 @@
 2004-02-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* config/mips/iris5.h (BSS_SECTION_ASM_OP): Define.
+	* config/mips/iris6.h (BSS_SECTION_ASM_OP): Undef.
+
+	* config/mips/iris6.h (TARGET_ASM_NAMED_SECTION): Moved ...
+	* config/mips/iris5.h: ... here.
+	* config/mips/iris5gas.h (TARGET_ASM_NAMED_SECTION): Remove.
+
+	* config/mips/iris6.h (EXTRA_SECTION_FUNCTIONS): Move ...
+	* config/mips/iris5.h: ... here.
+
+2004-02-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* configure.ac: Remove default executable files before AC_PROG_CC.
 	* configure: Regenerate.
 
