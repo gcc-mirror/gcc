@@ -1,3 +1,8 @@
+1998-09-25  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* decl.c (lookup_namespace_name): If the name is a namespace,
+	return it immediately.
+
 Fri Sep 25 11:45:38 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h (define_case_label): Remove unused parameter.

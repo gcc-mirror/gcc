@@ -4752,6 +4752,11 @@ lookup_namespace_name (namespace, name)
   tree val;
 
   my_friendly_assert (TREE_CODE (namespace) == NAMESPACE_DECL, 370);
+
+  /* This happens for A::B<int> when B is a namespace. */
+  if (TREE_CODE (name) == NAMESPACE_DECL)
+    return name;
+
   my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 373);
   
   val = binding_init (&_b);
