@@ -1,3 +1,8 @@
+2000-03-21  Stephane Carrez  <stcarrez@worldnet.fr>
+
+	* regmove.c (combine_stack_adjustments_for_block): Check that
+	the stack pointer is a valid memory address.
+
 Wed Mar 22 11:44:50 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c: re-install Mar 16 emit_library_call merge.
