@@ -84,28 +84,7 @@ static int no_line_numbers;
    All of these except perhaps the floating-point CONST_DOUBLEs
    are unique; no other rtx-object will be equal to any of these.  */
 
-/* Avoid warnings by initializing the `fld' field.  Since its a union,
-   bypass problems with KNR compilers by only doing so when __GNUC__. */
-#ifdef __GNUC__
-#define FLDI , {{0}}
-#else
-#define FLDI
-#endif
-
-struct _global_rtl global_rtl =
-{
-  {PC, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI },  /* pc_rtx */
-  {CC0, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* cc0_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* stack_pointer_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* frame_pointer_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* hard_frame_pointer_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* arg_pointer_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_incoming_args_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_stack_vars_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_stack_dynamic_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_outgoing_args_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_cfa_rtx */
-};
+rtx global_rtl[GR_MAX];
 
 /* We record floating-point CONST_DOUBLEs in each floating-point mode for
    the values of 0, 1, and 2.  For the integer entries and VOIDmode, we
@@ -153,7 +132,7 @@ rtx return_address_pointer_rtx;	/* (REG:Pmode RETURN_ADDRESS_POINTER_REGNUM) */
    to save space during the compilation and simplify comparisons of
    integers.  */
 
-struct rtx_def const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
+rtx const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
 
 /* start_sequence and gen_sequence can make a lot of rtx expressions which are
    shortly thrown away.  We use two mechanisms to prevent this waste:
@@ -197,7 +176,7 @@ gen_rtx_CONST_INT (mode, arg)
      HOST_WIDE_INT arg;
 {
   if (arg >= - MAX_SAVED_CONST_INT && arg <= MAX_SAVED_CONST_INT)
-    return &const_int_rtx[arg + MAX_SAVED_CONST_INT];
+    return const_int_rtx[arg + MAX_SAVED_CONST_INT];
 
 #if STORE_FLAG_VALUE != 1 && STORE_FLAG_VALUE != -1
   if (const_true_rtx && arg == STORE_FLAG_VALUE)
@@ -3515,121 +3494,32 @@ init_emit_once (line_numbers)
 
   no_line_numbers = ! line_numbers;
 
-  /* Compute the word and byte modes.  */
-
-  byte_mode = VOIDmode;
-  word_mode = VOIDmode;
-  double_mode = VOIDmode;
-
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
-    {
-      if (GET_MODE_BITSIZE (mode) == BITS_PER_UNIT
-	  && byte_mode == VOIDmode)
-	byte_mode = mode;
-
-      if (GET_MODE_BITSIZE (mode) == BITS_PER_WORD
-	  && word_mode == VOIDmode)
-	word_mode = mode;
-    }
-
-#ifndef DOUBLE_TYPE_SIZE
-#define DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
-    {
-      if (GET_MODE_BITSIZE (mode) == DOUBLE_TYPE_SIZE
-	  && double_mode == VOIDmode)
-	double_mode = mode;
-    }
-
-  ptr_mode = mode_for_size (POINTER_SIZE, GET_MODE_CLASS (Pmode), 0);
-
-  /* Create the unique rtx's for certain rtx codes and operand values.  */
-
-  /* Don't use gen_rtx here since gen_rtx in this case
-     tries to use these variables.  */
-  for (i = - MAX_SAVED_CONST_INT; i <= MAX_SAVED_CONST_INT; i++)
-    {
-      PUT_CODE (&const_int_rtx[i + MAX_SAVED_CONST_INT], CONST_INT);
-      PUT_MODE (&const_int_rtx[i + MAX_SAVED_CONST_INT], VOIDmode);
-      INTVAL (&const_int_rtx[i + MAX_SAVED_CONST_INT]) = i;
-    }
-
-  if (STORE_FLAG_VALUE >= - MAX_SAVED_CONST_INT
-      && STORE_FLAG_VALUE <= MAX_SAVED_CONST_INT)
-    const_true_rtx = &const_int_rtx[STORE_FLAG_VALUE + MAX_SAVED_CONST_INT];
-  else
-    const_true_rtx = gen_rtx_CONST_INT (VOIDmode, STORE_FLAG_VALUE);
-
-  dconst0 = REAL_VALUE_ATOF ("0", double_mode);
-  dconst1 = REAL_VALUE_ATOF ("1", double_mode);
-  dconst2 = REAL_VALUE_ATOF ("2", double_mode);
-  dconstm1 = REAL_VALUE_ATOF ("-1", double_mode);
-
-  for (i = 0; i <= 2; i++)
-    {
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
-	{
-	  rtx tem = rtx_alloc (CONST_DOUBLE);
-	  union real_extract u;
-
-	  bzero ((char *) &u, sizeof u);  /* Zero any holes in a structure.  */
-	  u.d = i == 0 ? dconst0 : i == 1 ? dconst1 : dconst2;
-
-	  bcopy ((char *) &u, (char *) &CONST_DOUBLE_LOW (tem), sizeof u);
-	  CONST_DOUBLE_MEM (tem) = cc0_rtx;
-	  PUT_MODE (tem, mode);
-
-	  const_tiny_rtx[i][(int) mode] = tem;
-	}
-
-      const_tiny_rtx[i][(int) VOIDmode] = GEN_INT (i);
-
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
-	const_tiny_rtx[i][(int) mode] = GEN_INT (i);
-
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_PARTIAL_INT);
-	   mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
-	const_tiny_rtx[i][(int) mode] = GEN_INT (i);
-    }
-
-  for (mode = CCmode; mode < MAX_MACHINE_MODE; ++mode)
-    if (GET_MODE_CLASS (mode) == MODE_CC)
-      const_tiny_rtx[0][(int) mode] = const0_rtx;
-
   /* Assign register numbers to the globally defined register rtx.
      This must be done at runtime because the register number field
      is in a union and some compilers can't initialize unions.  */
 
-  REGNO (stack_pointer_rtx) = STACK_POINTER_REGNUM;
-  PUT_MODE (stack_pointer_rtx, Pmode);
-  REGNO (frame_pointer_rtx) = FRAME_POINTER_REGNUM;
-  PUT_MODE (frame_pointer_rtx, Pmode);
-#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-  REGNO (hard_frame_pointer_rtx) = HARD_FRAME_POINTER_REGNUM;
-  PUT_MODE (hard_frame_pointer_rtx, Pmode);
-#endif
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM && HARD_FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-  REGNO (arg_pointer_rtx) = ARG_POINTER_REGNUM;
-  PUT_MODE (arg_pointer_rtx, Pmode);
-#endif
+  pc_rtx = gen_rtx (PC, VOIDmode);
+  cc0_rtx = gen_rtx (CC0, VOIDmode);
+  stack_pointer_rtx = gen_rtx_raw_REG (Pmode, STACK_POINTER_REGNUM);
+  frame_pointer_rtx = gen_rtx_raw_REG (Pmode, FRAME_POINTER_REGNUM);
+  if (hard_frame_pointer_rtx == 0)
+    hard_frame_pointer_rtx = gen_rtx_raw_REG (Pmode, 
+					      HARD_FRAME_POINTER_REGNUM);
+  if (arg_pointer_rtx == 0)
+    arg_pointer_rtx = gen_rtx_raw_REG (Pmode, ARG_POINTER_REGNUM);
+  virtual_incoming_args_rtx = 
+    gen_rtx_raw_REG (Pmode, VIRTUAL_INCOMING_ARGS_REGNUM);
+  virtual_stack_vars_rtx = 
+    gen_rtx_raw_REG (Pmode, VIRTUAL_STACK_VARS_REGNUM);
+  virtual_stack_dynamic_rtx = 
+    gen_rtx_raw_REG (Pmode, VIRTUAL_STACK_DYNAMIC_REGNUM);
+  virtual_outgoing_args_rtx = 
+    gen_rtx_raw_REG (Pmode, VIRTUAL_OUTGOING_ARGS_REGNUM); 
+  virtual_cfa_rtx = gen_rtx_raw_REG (Pmode, VIRTUAL_CFA_REGNUM);
 
-  REGNO (virtual_incoming_args_rtx) = VIRTUAL_INCOMING_ARGS_REGNUM;
-  PUT_MODE (virtual_incoming_args_rtx, Pmode);
-  REGNO (virtual_stack_vars_rtx) = VIRTUAL_STACK_VARS_REGNUM;
-  PUT_MODE (virtual_stack_vars_rtx, Pmode);
-  REGNO (virtual_stack_dynamic_rtx) = VIRTUAL_STACK_DYNAMIC_REGNUM;
-  PUT_MODE (virtual_stack_dynamic_rtx, Pmode);
-  REGNO (virtual_outgoing_args_rtx) = VIRTUAL_OUTGOING_ARGS_REGNUM;
-  PUT_MODE (virtual_outgoing_args_rtx, Pmode);
-  REGNO (virtual_cfa_rtx) = VIRTUAL_CFA_REGNUM;
-  PUT_MODE (virtual_cfa_rtx, Pmode);
+  /* These rtx must be roots if GC is enabled.  */
+  if (ggc_p)
+    ggc_add_rtx_root (global_rtl, GR_MAX);
 
 #ifdef RETURN_ADDRESS_POINTER_REGNUM
   return_address_pointer_rtx
@@ -3686,6 +3576,93 @@ init_emit_once (line_numbers)
      init_function_start.  */
   INIT_EXPANDERS;
 #endif
+
+  /* Compute the word and byte modes.  */
+
+  byte_mode = VOIDmode;
+  word_mode = VOIDmode;
+  double_mode = VOIDmode;
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      if (GET_MODE_BITSIZE (mode) == BITS_PER_UNIT
+	  && byte_mode == VOIDmode)
+	byte_mode = mode;
+
+      if (GET_MODE_BITSIZE (mode) == BITS_PER_WORD
+	  && word_mode == VOIDmode)
+	word_mode = mode;
+    }
+
+#ifndef DOUBLE_TYPE_SIZE
+#define DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
+#endif
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      if (GET_MODE_BITSIZE (mode) == DOUBLE_TYPE_SIZE
+	  && double_mode == VOIDmode)
+	double_mode = mode;
+    }
+
+  ptr_mode = mode_for_size (POINTER_SIZE, GET_MODE_CLASS (Pmode), 0);
+
+  /* Create the unique rtx's for certain rtx codes and operand values.  */
+
+  /* Don't use gen_rtx here since gen_rtx in this case
+     tries to use these variables.  */
+  for (i = - MAX_SAVED_CONST_INT; i <= MAX_SAVED_CONST_INT; i++)
+    const_int_rtx[i + MAX_SAVED_CONST_INT] = 
+      gen_rtx_raw_CONST_INT (VOIDmode, i);
+  if (ggc_p)
+    ggc_add_rtx_root (const_int_rtx, 2 * MAX_SAVED_CONST_INT + 1);
+
+  if (STORE_FLAG_VALUE >= - MAX_SAVED_CONST_INT
+      && STORE_FLAG_VALUE <= MAX_SAVED_CONST_INT)
+    const_true_rtx = const_int_rtx[STORE_FLAG_VALUE + MAX_SAVED_CONST_INT];
+  else
+    const_true_rtx = gen_rtx_CONST_INT (VOIDmode, STORE_FLAG_VALUE);
+
+  dconst0 = REAL_VALUE_ATOF ("0", double_mode);
+  dconst1 = REAL_VALUE_ATOF ("1", double_mode);
+  dconst2 = REAL_VALUE_ATOF ("2", double_mode);
+  dconstm1 = REAL_VALUE_ATOF ("-1", double_mode);
+
+  for (i = 0; i <= 2; i++)
+    {
+      for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
+	   mode = GET_MODE_WIDER_MODE (mode))
+	{
+	  rtx tem = rtx_alloc (CONST_DOUBLE);
+	  union real_extract u;
+
+	  bzero ((char *) &u, sizeof u);  /* Zero any holes in a structure.  */
+	  u.d = i == 0 ? dconst0 : i == 1 ? dconst1 : dconst2;
+
+	  bcopy ((char *) &u, (char *) &CONST_DOUBLE_LOW (tem), sizeof u);
+	  CONST_DOUBLE_MEM (tem) = cc0_rtx;
+	  PUT_MODE (tem, mode);
+
+	  const_tiny_rtx[i][(int) mode] = tem;
+	}
+
+      const_tiny_rtx[i][(int) VOIDmode] = GEN_INT (i);
+
+      for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
+	   mode = GET_MODE_WIDER_MODE (mode))
+	const_tiny_rtx[i][(int) mode] = GEN_INT (i);
+
+      for (mode = GET_CLASS_NARROWEST_MODE (MODE_PARTIAL_INT);
+	   mode != VOIDmode;
+	   mode = GET_MODE_WIDER_MODE (mode))
+	const_tiny_rtx[i][(int) mode] = GEN_INT (i);
+    }
+
+  for (mode = CCmode; mode < MAX_MACHINE_MODE; ++mode)
+    if (GET_MODE_CLASS (mode) == MODE_CC)
+      const_tiny_rtx[0][(int) mode] = const0_rtx;
 
   ggc_add_rtx_root (&const_tiny_rtx[0][0], sizeof(const_tiny_rtx)/sizeof(rtx));
 
