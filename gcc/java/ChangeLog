@@ -1,3 +1,15 @@
+2002-11-05  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR java/6388.
+	* lex.h (JAVA_INTEGRAL_RANGE_ERROR): Wrap in do...while.
+	* java-tree.h (enum java_tree_index): New values
+	JTI_DECIMAL_INT_MAX_NODE, JTI_DECIMAL_LONG_MAX_NODE.
+	(decimal_int_max, decimal_long_max): New defines.
+	* lex.c (yylex): Rewrote range checking.  Sign extend literals.
+	(error_if_numeric_overflow): Rewrote range checking.
+	* decl.c (java_init_decl_processing): Initialize decimal_int_max,
+	decimal_long_max.
+
 2002-11-02  Tom Tromey  <tromey@redhat.com>
 
 	* java-tree.h: Move JV_STATE_ERROR before JV_STATE_DONE.
