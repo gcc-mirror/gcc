@@ -1,3 +1,15 @@
+2005-02-15  Jeff Law  <law@redhat.com>
+
+	* gcse.c (blocks_with_calls): New bitmap.
+	(alloc_gcse_mem): Allocate it.
+	(free_gcse_mem): Free it.
+	(clear_modifY_mem_tables): Clear it.
+	(record_last_mem_set_info): Set the proper bit in BLOCK_WITH_CALLS
+	when we encounter CALL_INSNs.
+	(compute_transp, case MEM): Handle blocks with calls separate
+	from blocks without calls.  Use bitmap iterators rather than
+	FOR_EACH_BB.
+
 2005-02-15  Peter O'Gorman  <peter@pogma.com>
 
 	PR bootstrap/18810

@@ -501,6 +501,10 @@ static bitmap modify_mem_list_set;
 /* This array parallels modify_mem_list, but is kept canonicalized.  */
 static rtx * canon_modify_mem_list;
 
+/* Bitmap indexed by block numbers to record which blocks contain
+   function calls.  */
+static bitmap blocks_with_calls;
+
 /* Various variables for statistics gathering.  */
 
 /* Memory used in a pass.
@@ -967,6 +971,7 @@ alloc_gcse_mem (rtx f)
   modify_mem_list = gcalloc (last_basic_block, sizeof (rtx));
   canon_modify_mem_list = gcalloc (last_basic_block, sizeof (rtx));
   modify_mem_list_set = BITMAP_XMALLOC ();
+  blocks_with_calls = BITMAP_XMALLOC ();
 }
 
 /* Free memory allocated by alloc_gcse_mem.  */
@@ -982,6 +987,7 @@ free_gcse_mem (void)
   sbitmap_vector_free (reg_set_in_block);
   free_modify_mem_tables ();
   BITMAP_XFREE (modify_mem_list_set);
+  BITMAP_XFREE (blocks_with_calls);
 }
 
 /* Compute the local properties of each recorded expression.
@@ -1971,6 +1977,7 @@ record_last_mem_set_info (rtx insn)
 	 need to insert a pair of items, as canon_list_insert does.  */
       canon_modify_mem_list[bb] =
 	alloc_INSN_LIST (insn, canon_modify_mem_list[bb]);
+      bitmap_set_bit (blocks_with_calls, bb);
     }
   else
     note_stores (PATTERN (insn), canon_list_insert, (void*) insn);
@@ -2197,6 +2204,7 @@ clear_modify_mem_tables (void)
       free_insn_expr_list_list (canon_modify_mem_list + i);
     }
   bitmap_clear (modify_mem_list_set);
+  bitmap_clear (blocks_with_calls);
 }
 
 /* Release memory used by modify_mem_list_set.  */
@@ -2460,41 +2468,51 @@ compute_transp (rtx x, int indx, sbitmap *bmap, int set_p)
       return;
 
     case MEM:
-      FOR_EACH_BB (bb)
-	{
-	  rtx list_entry = canon_modify_mem_list[bb->index];
+      {
+	bitmap_iterator bi;
+	unsigned bb_index;
 
-	  while (list_entry)
-	    {
-	      rtx dest, dest_addr;
+	/* First handle all the blocks with calls.  We don't need to
+	   do any list walking for them.  */
+	EXECUTE_IF_SET_IN_BITMAP (blocks_with_calls, 0, bb_index, bi)
+	  {
+	    if (set_p)
+	      SET_BIT (bmap[bb_index], indx);
+	    else
+	      RESET_BIT (bmap[bb_index], indx);
+	  }
 
-	      if (CALL_P (XEXP (list_entry, 0)))
-		{
-		  if (set_p)
-		    SET_BIT (bmap[bb->index], indx);
-		  else
-		    RESET_BIT (bmap[bb->index], indx);
-		  break;
-		}
-	      /* LIST_ENTRY must be an INSN of some kind that sets memory.
-		 Examine each hunk of memory that is modified.  */
+	/* Now iterate over the blocks which have memory modifications
+	   but which do not have any calls.  */
+	EXECUTE_IF_AND_COMPL_IN_BITMAP (modify_mem_list_set, blocks_with_calls,
+					0, bb_index, bi)
+	  {
+	    rtx list_entry = canon_modify_mem_list[bb_index];
 
-	      dest = XEXP (list_entry, 0);
-	      list_entry = XEXP (list_entry, 1);
-	      dest_addr = XEXP (list_entry, 0);
+	    while (list_entry)
+	      {
+		rtx dest, dest_addr;
 
-	      if (canon_true_dependence (dest, GET_MODE (dest), dest_addr,
-					 x, rtx_addr_varies_p))
-		{
-		  if (set_p)
-		    SET_BIT (bmap[bb->index], indx);
-		  else
-		    RESET_BIT (bmap[bb->index], indx);
-		  break;
-		}
-	      list_entry = XEXP (list_entry, 1);
-	    }
-	}
+		/* LIST_ENTRY must be an INSN of some kind that sets memory.
+		   Examine each hunk of memory that is modified.  */
+
+		dest = XEXP (list_entry, 0);
+		list_entry = XEXP (list_entry, 1);
+		dest_addr = XEXP (list_entry, 0);
+
+		if (canon_true_dependence (dest, GET_MODE (dest), dest_addr,
+					   x, rtx_addr_varies_p))
+		  {
+		    if (set_p)
+		      SET_BIT (bmap[bb_index], indx);
+		    else
+		      RESET_BIT (bmap[bb_index], indx);
+		    break;
+		  }
+		list_entry = XEXP (list_entry, 1);
+	      }
+	  }
+      }
 
       x = XEXP (x, 0);
       goto repeat;
