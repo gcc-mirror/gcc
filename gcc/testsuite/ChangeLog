@@ -1,3 +1,8 @@
+2003-02-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9459
+	* g++.dg/ext/typeof4.C: New test.
+
 2003-02-15  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/i386-387-3.c: New test case.
