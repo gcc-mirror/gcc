@@ -1,3 +1,8 @@
+Tue Jul 10 07:27:53 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (adjust_address, adjust_address_nv): Change criteria for
+	whether can put offset inside LO_SUM to check mode alignment, not size.
+
 2001-07-10  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* doc/tm.texi (Misc): Fix thinko.
