@@ -57,7 +57,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_PREDEFINES "-Dns32000 -Dns32532 -Dpc532 -Dunix"
 
 /* Use pc relative addressing whenever possible,
-   it's more efficient than absolute (out-ns32k.c)
+   it's more efficient than absolute (ns32k.c)
    You have to fix a bug in gas 1.38.1 to make this work with gas,
    patch available from jkp@cs.hut.fi. */
 
@@ -66,3 +66,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* This machine appears to use GAS syntax.  */
 
 #define GAS_SYNTAX
+
+/* Every address needs to use a base reg.  */
+
+#define BASE_REG_NEEDED

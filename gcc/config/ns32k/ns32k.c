@@ -211,7 +211,7 @@ secondary_reload_class (class, mode, in)
 /* Generate the rtx that comes from an address expression in the md file */
 /* The expression to be build is BASE[INDEX:SCALE].  To recognize this,
    scale must be converted from an exponent (from ASHIFT) to a
-   muliplier (for MULT). */
+   multiplier (for MULT). */
 rtx
 gen_indexed_expr (base, index, scale)
      rtx base, index, scale;
@@ -380,22 +380,55 @@ print_operand (file, x, code)
   else if (GET_CODE (x) == REG)
     fprintf (file, "%s", reg_names[REGNO (x)]);
   else if (GET_CODE (x) == MEM)
-    output_address (XEXP (x, 0));
+    {
+      rtx tmp = XEXP (x, 0);
+#ifndef PC_RELATIVE
+      if (GET_CODE (tmp) == SYMBOL_REF || GET_CODE (tmp) == LABEL_REF)
+	{
+	  char *out = XSTR (tmp, 0);
+	  if (out[0] == '*')
+	    fprintf (file, "@%s", &out[1]);
+	  else
+	    ASM_OUTPUT_LABELREF (file, out);
+	}
+      else
+#endif
+	output_address (XEXP (x, 0));
+    }
   else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != DImode)
-    if (GET_MODE (x) == DFmode)
-      { 
-        union { double d; int i[2]; } u;
-	u.i[0] = CONST_DOUBLE_LOW (x); u.i[1] = CONST_DOUBLE_HIGH (x);
-	PUT_IMMEDIATE_PREFIX(file);
-	fprintf (file, "0d%.20e", u.d); 
-      }
-    else
-      { 
-        union { double d; int i[2]; } u;
-	u.i[0] = CONST_DOUBLE_LOW (x); u.i[1] = CONST_DOUBLE_HIGH (x);
-	PUT_IMMEDIATE_PREFIX(file);
-	fprintf (file, "0f%.20e", u.d); 
-      }
+    {
+      if (GET_MODE (x) == DFmode)
+	{ 
+	  union { double d; int i[2]; } u;
+	  u.i[0] = CONST_DOUBLE_LOW (x); u.i[1] = CONST_DOUBLE_HIGH (x);
+	  PUT_IMMEDIATE_PREFIX(file);
+#ifdef SEQUENT_ASM
+	  /* Sequent likes it's floating point constants as integers */
+	  fprintf (file, "0Dx%08x%08x", u.i[1], u.i[0])l
+#else
+#ifdef ENCORE_ASM
+	  fprintf (file, "0f%.20e", u.d); 
+#else
+	  fprintf (file, "0d%.20e", u.d); 
+#endif
+#endif
+	}
+      else
+	{ 
+	  union { double d; int i[2]; } u;
+	  u.i[0] = CONST_DOUBLE_LOW (x); u.i[1] = CONST_DOUBLE_HIGH (x);
+	  PUT_IMMEDIATE_PREFIX(file);
+#ifdef SEQUENT_ASM
+	  {
+	    union { float f; long l; } uu;
+	    uu.f = u.d;
+	    fprintf (file, "0Fx%08x", uu.l);
+	  }
+#else
+	  fprintf (file, "0f%.20e", u.d); 
+#endif
+	}
+    }
   else
     {
       PUT_IMMEDIATE_PREFIX(file);
