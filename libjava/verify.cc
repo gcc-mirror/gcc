@@ -891,6 +891,18 @@ private:
       // FIXME: subroutine handling?
     }
 
+    // Modify this state to reflect entry into a subroutine.
+    void enter_subroutine (int npc, int max_locals)
+    {
+      subroutine = npc;
+      // Mark all items as unchanged.  Each subroutine needs to keep
+      // track of its `changed' state independently.  In the case of
+      // nested subroutines, this information will be merged back into
+      // parent by the `ret'.
+      for (int i = 0; i < max_locals; ++i)
+	local_changed[i] = false;
+    }
+
     // Merge STATE_OLD into this state.  Destructively modifies this
     // state.  Returns true if the new state was in fact changed.
     // Will throw an exception if the states are not mergeable.
@@ -936,7 +948,12 @@ private:
       // Merge local variables.
       for (int i = 0; i < max_locals; ++i)
 	{
-	  if (! ret_semantics || local_changed[i])
+	  // If we're not processing a `ret', then we merge every
+	  // local variable.  If we are processing a `ret', then we
+	  // only merge locals which changed in the subroutine.  When
+	  // processing a `ret', STATE_OLD is the state at the point
+	  // of the `ret', and THIS is the state just after the `jsr'.
+	  if (! ret_semantics || state_old->local_changed[i])
 	    {
 	      if (locals[i].merge (state_old->locals[i], true, verifier))
 		{
@@ -1264,6 +1281,8 @@ private:
 						   this, true);
     state s (current_state, current_method->max_stack,
 	     current_method->max_locals);
+    if (current_method->max_stack < 1)
+      verify_fail ("stack overflow at exception handler");
     s.set_exception (t, current_method->max_stack);
     push_jump_merge (pc, &s);
   }
@@ -1401,18 +1420,19 @@ private:
       current_state->check_no_uninitialized_objects (current_method->max_locals, this);
     check_nonrecursive_call (current_state->subroutine, npc);
 
-    // Temporarily modify the current state so that it looks like we are
-    // in the subroutine.
+    // Create a new state and modify it as appropriate for entry into
+    // a subroutine.  We're writing this in a weird way because,
+    // unfortunately, push_type only works on the current state.
     push_type (return_address_type);
-    int save = current_state->subroutine;
-    current_state->subroutine = npc;
-
-    // Merge into the subroutine.
     push_jump_merge (npc, current_state);
-
-    // Undo our modifications.
-    current_state->subroutine = save;
+    // Clean up the weirdness.
     pop_type (return_address_type);
+
+    // On entry to the subroutine, the subroutine number must be set
+    // and the locals must be marked as cleared.  We do this after
+    // merging state so that we don't erroneously "notice" a variable
+    // change merely on entry.
+    states[npc]->enter_subroutine (npc, current_method->max_locals);
   }
 
   jclass construct_primitive_array_type (type_val prim)
