@@ -1,3 +1,7 @@
+2003-04-26  David Edelsohn  <edelsohn@gnu.org>
+
+	* g++.dg/warn/weak1.C: XFAIL on AIX4.
+
 2003-04-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.old-deja/g++.pt/instantiate12.C: Explicit instantiate
