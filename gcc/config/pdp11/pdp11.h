@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 1994, 1995, 1996, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1994, 1995, 1996, 1998, 1999, 2000, 2001, 2002, 2004
    Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
@@ -332,13 +332,6 @@ extern int target_flags;
 /* Register in which static-chain is passed to a function.  */
 /* ??? - i don't want to give up a reg for this! */
 #define STATIC_CHAIN_REGNUM 4
-
-/* Register in which address to store a structure value
-   is passed to a function.  
-   let's make it an invisible first argument!!! */
-
-#define STRUCT_VALUE 0
-
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
@@ -561,18 +554,6 @@ not without FPU!!!! ) */
 maybe ac0 ? - as option someday! */
 
 #define FUNCTION_VALUE_REGNO_P(N) (((N) == 0) || (TARGET_AC0 && (N) == 8))
-
-/* should probably return DImode and DFmode in memory,lest
-   we fill up all regs!
-
- have to, else we crash - exception: maybe return result in 
- ac0 if DFmode and FPU present - compatibility problem with
- libraries for non-floating point ...
-*/
-
-#define RETURN_IN_MEMORY(TYPE)	\
-  (TYPE_MODE(TYPE) == DImode || (TYPE_MODE(TYPE) == DFmode && ! TARGET_AC0))
-
 
 /* 1 if N is a possible register number for function argument passing.
    - not used on pdp */

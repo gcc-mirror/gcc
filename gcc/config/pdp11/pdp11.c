@@ -1,5 +1,5 @@
 /* Subroutines for gcc2 for pdp11.
-   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2001
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2001, 2004
    Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
@@ -60,6 +60,7 @@ static bool pdp11_assemble_integer (rtx, unsigned int, int);
 static void pdp11_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void pdp11_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static bool pdp11_rtx_costs (rtx, int, int, int *);
+static bool pdp11_return_in_memory (tree, tree);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -83,6 +84,11 @@ static bool pdp11_rtx_costs (rtx, int, int, int *);
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS pdp11_rtx_costs
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY pdp11_return_in_memory
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1692,4 +1698,17 @@ output_addr_const_pdp11 (FILE *file, rtx x)
     default:
       output_operand_lossage ("invalid expression as operand");
     }
+}
+
+static bool
+pdp11_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  /* Should probably return DImode and DFmode in memory, lest
+     we fill up all regs!
+
+     have to, else we crash - exception: maybe return result in 
+     ac0 if DFmode and FPU present - compatibility problem with
+     libraries for non-floating point....  */
+  return (TYPE_MODE (type) == DImode
+	  || (TYPE_MODE (type) == DFmode && ! TARGET_AC0));
 }
