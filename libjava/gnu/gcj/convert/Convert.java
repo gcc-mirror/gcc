@@ -40,7 +40,7 @@ public class Convert
 
   static void version ()
   {
-    System.out.println("jv-convert (GNU "
+    System.out.println("jv-convert ("
 		       + System.getProperty("java.vm.name")
 		       + ") "
 		       + System.getProperty("java.vm.version"));

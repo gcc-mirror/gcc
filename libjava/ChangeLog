@@ -1,5 +1,17 @@
 2002-03-25  Tom Tromey  <tromey@redhat.com>
 
+	For PR libgcj/5303:
+	* gnu/java/rmi/registry/RegistryImpl.java (main): Recognize --help
+	and --version.
+	(help): New method.
+	(version): Likewise.
+	* gnu/gcj/convert/Convert.java (version): Removed extraneous
+	"GNU".
+	* gnu/java/rmi/rmic/RMIC.java (parseOptions): Removed extraneous
+	"GNU".
+
+2002-03-25  Tom Tromey  <tromey@redhat.com>
+
 	* java/awt/Component.java (processEvent): Check ComponentEvent
 	after KeyEvent.
 
