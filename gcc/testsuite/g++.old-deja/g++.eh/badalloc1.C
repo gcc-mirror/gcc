@@ -2,43 +2,78 @@
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 6 June 2000 <nathan@codesourcery.com>
 
-// Check we can throw a bad_alloc exception when malloc dies
+// Check we can throw a bad_alloc exception when malloc dies.
 
-static __SIZE_TYPE__ arena[64]; // so things can initialize
-static int fail;
-static unsigned pos;
+typedef __SIZE_TYPE__ size_t;
+extern "C" void abort();
+extern "C" void *memcpy(void *, const void *, size_t);
 
-extern "C" void *malloc (__SIZE_TYPE__ size)
+// Assume that STACK_SIZE defined implies a system that does not have a
+// large data space either, and additionally that we're not linking against
+// a shared libstdc++ (which requires quite a bit more initialization space).
+#ifdef STACK_SIZE
+const int arena_size = 256;
+#else
+const int arena_size = 32768;
+#endif
+
+struct object
 {
-  __SIZE_TYPE__ *p = &arena[pos];
+  size_t size __attribute__((aligned));
+};
+
+static char arena[arena_size] __attribute__((aligned));
+static size_t pos;
+
+// So we can force a failure when needed.
+static int fail;
+
+extern "C" void *malloc (size_t size)
+{
+  object *p = reinterpret_cast<object *>(&arena[pos]);
 
   if (fail)
     return 0;
-  
-  arena[pos] = size;
-  size = (size + 4 * sizeof (__SIZE_TYPE__) - 1)
-         / sizeof (__SIZE_TYPE__) & ~3; // Yes, this is a hack
-  pos += size + 4;
-  return p + 4;
+
+  p->size = size;
+  size = (size + __alignof__(object) + 1) & - __alignof__(object);
+  pos += size + sizeof(object);
+
+  // Verify that we didn't run out of memory before getting initialized.
+  if (pos > arena_size)
+    abort ();
+
+  return p + 1;
 }
+
 extern "C" void free (void *)
 {
-  
 }
-extern "C" void *realloc (void *p, __SIZE_TYPE__ size)
+
+extern "C" void *realloc (void *p, size_t size)
 {
-  void *r = malloc (size);
-  unsigned int oldSize;
-  
-  if (r && p)
+  void *r;
+
+  if (p)
     {
-      oldSize = ((__SIZE_TYPE__ *)p)[-4];
-      if (oldSize < size)
-        size = oldSize;
-      while (size--)
-        ((char *)r)[size] = ((char *)p)[size];
+      object *o = reinterpret_cast<object *>(p) - 1;
+      size_t old_size = o->size;
+
+      if (old_size >= size)
+	{
+	  r = p;
+	  o->size = size;
+	}
+      else
+	{
+	  r = malloc (size);
+	  memcpy (r, p, old_size);
+	  free (p);
+	}
     }
-  free (p);
+  else
+    r = malloc (size);
+
   return r;
 }
 
