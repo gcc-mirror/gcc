@@ -6,6 +6,11 @@
 
 # Usage: newcvsroot <newroot> <modulename> <toplevel directory>
 
+if [ $# != 3 ]; then
+    echo "usage: `basename $0` <newroot> <modulename> <toplevel directory>"
+    exit 1
+fi
+
 root=$1; shift
 module=$1; shift
 topdir=$1; shift
