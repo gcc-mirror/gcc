@@ -1,3 +1,8 @@
+2001-04-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (tsubst_decl): Use VOID_TYPE_P.
+	* semantics.c: Fix some typos.
+
 2001-04-23  Phil Edwards  <pme@sources.redhat.com>
 
 	* cp/decl2.c (flag_honor_std):  Always initialize to 1.

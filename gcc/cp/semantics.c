@@ -284,7 +284,7 @@ finish_else_clause (if_stmt)
   RECHAIN_STMTS (if_stmt, ELSE_CLAUSE (if_stmt));
 }
 
-/* Finsh an if-statement.  */
+/* Finish an if-statement.  */
 
 void 
 finish_if_stmt ()
@@ -403,7 +403,7 @@ finish_return_stmt (expr)
 	{
 	  /* Similarly, all destructors must run destructors for
 	     base-classes before returning.  So, all returns in a
-	     destructor get sent to the DTOR_LABEL; finsh_function emits
+	     destructor get sent to the DTOR_LABEL; finish_function emits
 	     code to return a value there.  */
 	  return finish_goto_stmt (dtor_label);
 	}

@@ -5901,8 +5901,8 @@ tsubst_decl (t, args, type)
 	DECL_INITIAL (r) = tsubst_expr (DECL_INITIAL (t), args,
 					/*complain=*/1, in_decl);
 	TREE_CHAIN (r) = NULL_TREE;
-	if (TREE_CODE (type) == VOID_TYPE) 
-	  cp_error_at ("instantiation of `%D' as type void", r);
+	if (VOID_TYPE_P (type)) 
+	  cp_error_at ("instantiation of `%D' as type `%T'", r, type);
       }
       break;
 
@@ -6015,8 +6015,8 @@ tsubst_decl (t, args, type)
 	  register_local_specialization (r, t);
 
 	TREE_CHAIN (r) = NULL_TREE;
-	if (TREE_CODE (r) == VAR_DECL && TREE_CODE (type) == VOID_TYPE)
-	  cp_error_at ("instantiation of `%D' as type void", r);
+	if (TREE_CODE (r) == VAR_DECL && VOID_TYPE_P (type))
+	  cp_error_at ("instantiation of `%D' as type `%T'", r, type);
       }
       break;
 
