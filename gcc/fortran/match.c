@@ -835,6 +835,13 @@ gfc_match_assignment (void)
   if (m != MATCH_YES)
     goto cleanup;
 
+  if (lvalue->symtree->n.sym->attr.flavor == FL_PARAMETER)
+    {
+      gfc_error ("Cannot assign to a PARAMETER variable at %C");
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
+
   m = gfc_match (" %e%t", &rvalue);
   if (m != MATCH_YES)
     goto cleanup;
@@ -844,6 +851,8 @@ gfc_match_assignment (void)
   new_st.op = EXEC_ASSIGN;
   new_st.expr = lvalue;
   new_st.expr2 = rvalue;
+
+  gfc_check_do_variable (lvalue->symtree);
 
   return MATCH_YES;
 
@@ -1231,6 +1240,8 @@ gfc_match_do (void)
     return MATCH_NO;
   if (m == MATCH_ERROR)
     goto cleanup;
+
+  gfc_check_do_variable (iter.var->symtree);
 
   if (gfc_match_eos () != MATCH_YES)
     {
@@ -1688,6 +1699,9 @@ gfc_match_allocate (void)
       if (m == MATCH_ERROR)
 	goto cleanup;
 
+      if (gfc_check_do_variable (tail->expr->symtree))
+	goto cleanup;
+
       if (gfc_pure (NULL)
           && gfc_impure_variable (tail->expr->symtree->n.sym))
 	{
@@ -1723,6 +1737,14 @@ gfc_match_allocate (void)
 	     "procedure");
 	  goto cleanup;
 	}
+
+      if (stat->symtree->n.sym->attr.flavor != FL_VARIABLE)
+	{
+	  gfc_error("STAT expression at %C must be a variable");
+	  goto cleanup;
+	}
+
+      gfc_check_do_variable(stat->symtree);
     }
 
   if (gfc_match (" )%t") != MATCH_YES)
@@ -1766,6 +1788,9 @@ gfc_match_nullify (void)
 	goto cleanup;
       if (m == MATCH_NO)
 	goto syntax;
+
+      if (gfc_check_do_variable(p->symtree))
+	goto cleanup;
 
       if (gfc_pure (NULL) && gfc_impure_variable (p->symtree->n.sym))
 	{
@@ -1841,6 +1866,9 @@ gfc_match_deallocate (void)
       if (m == MATCH_NO)
 	goto syntax;
 
+      if (gfc_check_do_variable (tail->expr->symtree))
+	goto cleanup;
+
       if (gfc_pure (NULL)
           && gfc_impure_variable (tail->expr->symtree->n.sym))
 	{
@@ -1860,11 +1888,29 @@ gfc_match_deallocate (void)
 	break;
     }
 
-  if (stat != NULL && stat->symtree->n.sym->attr.intent == INTENT_IN)
+  if (stat != NULL)
     {
-      gfc_error ("STAT variable '%s' of DEALLOCATE statement at %C cannot be "
-		 "INTENT(IN)", stat->symtree->n.sym->name);
-      goto cleanup;
+      if (stat->symtree->n.sym->attr.intent == INTENT_IN)
+	{
+	  gfc_error ("STAT variable '%s' of DEALLOCATE statement at %C "
+		     "cannot be INTENT(IN)", stat->symtree->n.sym->name);
+	  goto cleanup;
+	}
+
+      if (gfc_pure(NULL) && gfc_impure_variable (stat->symtree->n.sym))
+	{
+	  gfc_error ("Illegal STAT variable in DEALLOCATE statement at %C "
+		     "for a PURE procedure");
+	  goto cleanup;
+	}
+
+      if (stat->symtree->n.sym->attr.flavor != FL_VARIABLE)
+	{
+	  gfc_error("STAT expression at %C must be a variable");
+	  goto cleanup;
+	}
+
+      gfc_check_do_variable(stat->symtree);
     }
 
   if (gfc_match (" )%t") != MATCH_YES)
@@ -1897,8 +1943,8 @@ gfc_match_return (void)
 
   gfc_enclosing_unit (&s);
   if (s == COMP_PROGRAM
-      && gfc_notify_std (GFC_STD_GNU, "RETURN statement in a main "
-			 "program at %C is an extension.") == FAILURE)
+      && gfc_notify_std (GFC_STD_GNU, "Extension: RETURN statement in "
+			 "main program at %C") == FAILURE)
       return MATCH_ERROR;
 
   e = NULL;

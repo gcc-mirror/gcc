@@ -1,3 +1,25 @@
+2004-07-16  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/16404
+	(parts ported from g95)
+	* parse.h (gfc_state_data): New field do_variable.
+	(gfc_check_do_variable): Add prototype.
+	* parse.c (push_state): Initialize field 'do_variable'.
+	(gfc_check_do_variable): New function.
+	(parse_do_block): Remember do iterator variable.
+	(parse_file): Initialize field 'do_variable'.
+	* match.c (gfc_match_assignment, gfc_match_do,
+	gfc_match_allocate, gfc_match_nullify, gfc_match_deallocate):
+	Add previously missing checks.
+	(gfc_match_return): Reformat error message.
+	* io.c (match_out_tag): New function.
+	(match_open_element, match_close_element,
+	match_file_element, match_dt_element): Call match_out_tag
+	instead of match_vtag where appropriate.
+	(match_io_iterator, match_io_element): Add missing check.
+	(match_io): Reformat error message.
+	(match_inquire_element): Call match_out_tag where appropriate.
+
 2004-07-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15129

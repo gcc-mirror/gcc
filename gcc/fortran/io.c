@@ -918,6 +918,21 @@ match_vtag (const io_tag * tag, gfc_expr ** v)
 }
 
 
+/* Match I/O tags that cause variables to become redefined.  */
+
+static match
+match_out_tag(const io_tag *tag, gfc_expr **result)
+{
+  match m;
+
+  m = match_vtag(tag, result);
+  if (m == MATCH_YES)
+    gfc_check_do_variable((*result)->symtree);
+
+  return m;
+}
+
+
 /* Match a label I/O tag.  */
 
 static match
@@ -993,7 +1008,7 @@ match_open_element (gfc_open * open)
   m = match_etag (&tag_unit, &open->unit);
   if (m != MATCH_NO)
     return m;
-  m = match_vtag (&tag_iostat, &open->iostat);
+  m = match_out_tag (&tag_iostat, &open->iostat);
   if (m != MATCH_NO)
     return m;
   m = match_etag (&tag_file, &open->file);
@@ -1179,7 +1194,7 @@ match_close_element (gfc_close * close)
   m = match_etag (&tag_status, &close->status);
   if (m != MATCH_NO)
     return m;
-  m = match_vtag (&tag_iostat, &close->iostat);
+  m = match_out_tag (&tag_iostat, &close->iostat);
   if (m != MATCH_NO)
     return m;
   m = match_ltag (&tag_err, &close->err);
@@ -1292,7 +1307,7 @@ match_file_element (gfc_filepos * fp)
   m = match_etag (&tag_unit, &fp->unit);
   if (m != MATCH_NO)
     return m;
-  m = match_vtag (&tag_iostat, &fp->iostat);
+  m = match_out_tag (&tag_iostat, &fp->iostat);
   if (m != MATCH_NO)
     return m;
   m = match_ltag (&tag_err, &fp->err);
@@ -1603,7 +1618,7 @@ match_dt_element (io_kind k, gfc_dt * dt)
   m = match_etag (&tag_rec, &dt->rec);
   if (m != MATCH_NO)
     return m;
-  m = match_vtag (&tag_iostat, &dt->iostat);
+  m = match_out_tag (&tag_iostat, &dt->iostat);
   if (m != MATCH_NO)
     return m;
   m = match_ltag (&tag_err, &dt->err);
@@ -1612,7 +1627,7 @@ match_dt_element (io_kind k, gfc_dt * dt)
   m = match_etag (&tag_advance, &dt->advance);
   if (m != MATCH_NO)
     return m;
-  m = match_vtag (&tag_size, &dt->size);
+  m = match_out_tag (&tag_size, &dt->size);
   if (m != MATCH_NO)
     return m;
 
@@ -1842,7 +1857,10 @@ match_io_iterator (io_kind k, gfc_code ** result)
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_YES)
-	break;
+	{
+	  gfc_check_do_variable (iter->var->symtree);
+	  break;
+	}
 
       m = match_io_element (k, &new);
       if (m == MATCH_ERROR)
@@ -1941,6 +1959,9 @@ match_io_element (io_kind k, gfc_code ** cpp)
 		       expr->symtree->n.sym->name);
 	    m = MATCH_ERROR;
 	  }
+
+	if (gfc_check_do_variable (expr->symtree))
+	  m = MATCH_ERROR;
 
 	break;
 
@@ -2149,8 +2170,8 @@ get_io_list:
   if (!comma_flag
       && gfc_match_char (',') == MATCH_YES
       && k == M_WRITE
-      && gfc_notify_std (GFC_STD_GNU, "Comma before output item list "
-			 "at %C is an extension") == FAILURE)
+      && gfc_notify_std (GFC_STD_GNU, "Extension: Comma before output "
+			 "item list at %C is an extension") == FAILURE)
     return MATCH_ERROR;
 
   io_code = NULL;
@@ -2298,20 +2319,20 @@ match_inquire_element (gfc_inquire * inquire)
   m = match_etag (&tag_unit, &inquire->unit);
   RETM m = match_etag (&tag_file, &inquire->file);
   RETM m = match_ltag (&tag_err, &inquire->err);
-  RETM m = match_vtag (&tag_iostat, &inquire->iostat);
+  RETM m = match_out_tag (&tag_iostat, &inquire->iostat);
   RETM m = match_vtag (&tag_exist, &inquire->exist);
   RETM m = match_vtag (&tag_opened, &inquire->opened);
   RETM m = match_vtag (&tag_named, &inquire->named);
   RETM m = match_vtag (&tag_name, &inquire->name);
-  RETM m = match_vtag (&tag_number, &inquire->number);
+  RETM m = match_out_tag (&tag_number, &inquire->number);
   RETM m = match_vtag (&tag_s_access, &inquire->access);
   RETM m = match_vtag (&tag_sequential, &inquire->sequential);
   RETM m = match_vtag (&tag_direct, &inquire->direct);
   RETM m = match_vtag (&tag_s_form, &inquire->form);
   RETM m = match_vtag (&tag_formatted, &inquire->formatted);
   RETM m = match_vtag (&tag_unformatted, &inquire->unformatted);
-  RETM m = match_vtag (&tag_s_recl, &inquire->recl);
-  RETM m = match_vtag (&tag_nextrec, &inquire->nextrec);
+  RETM m = match_out_tag (&tag_s_recl, &inquire->recl);
+  RETM m = match_out_tag (&tag_nextrec, &inquire->nextrec);
   RETM m = match_vtag (&tag_s_blank, &inquire->blank);
   RETM m = match_vtag (&tag_s_position, &inquire->position);
   RETM m = match_vtag (&tag_s_action, &inquire->action);
