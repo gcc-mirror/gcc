@@ -315,7 +315,8 @@ namespace std
     protected:
       _Predicate _M_pred;
     public:
-      explicit unary_negate(const _Predicate& __x) : _M_pred(__x) {}
+      explicit
+      unary_negate(const _Predicate& __x) : _M_pred(__x) {}
       
       bool
       operator()(const typename _Predicate::argument_type& __x) const
@@ -338,7 +339,8 @@ namespace std
     protected:
       _Predicate _M_pred;
     public:
-      explicit binary_negate(const _Predicate& __x)
+      explicit
+      binary_negate(const _Predicate& __x)
       : _M_pred(__x) { }
 
       bool
@@ -483,7 +485,8 @@ namespace std
     public:
       pointer_to_unary_function() {}
       
-      explicit pointer_to_unary_function(_Result (*__x)(_Arg))
+      explicit
+      pointer_to_unary_function(_Result (*__x)(_Arg))
       : _M_ptr(__x) {}
 
       _Result
@@ -507,7 +510,8 @@ namespace std
     public:
       pointer_to_binary_function() {}
 
-      explicit pointer_to_binary_function(_Result (*__x)(_Arg1, _Arg2)) 
+      explicit
+      pointer_to_binary_function(_Result (*__x)(_Arg1, _Arg2)) 
       : _M_ptr(__x) {}
 
       _Result
@@ -587,7 +591,8 @@ namespace std
     class mem_fun_t : public unary_function<_Tp*, _Ret>
     {
     public:
-      explicit mem_fun_t(_Ret (_Tp::*__pf)())
+      explicit
+      mem_fun_t(_Ret (_Tp::*__pf)())
       : _M_f(__pf) {}
 
       _Ret
@@ -602,7 +607,8 @@ namespace std
     class const_mem_fun_t : public unary_function<const _Tp*, _Ret>
     {
     public:
-      explicit const_mem_fun_t(_Ret (_Tp::*__pf)() const)
+      explicit
+      const_mem_fun_t(_Ret (_Tp::*__pf)() const)
       : _M_f(__pf) {}
 
       _Ret
@@ -617,7 +623,8 @@ namespace std
     class mem_fun_ref_t : public unary_function<_Tp, _Ret>
     {
     public:
-      explicit mem_fun_ref_t(_Ret (_Tp::*__pf)())
+      explicit
+      mem_fun_ref_t(_Ret (_Tp::*__pf)())
       : _M_f(__pf) {}
 
       _Ret
@@ -632,7 +639,8 @@ namespace std
     class const_mem_fun_ref_t : public unary_function<_Tp, _Ret>
     {
     public:
-      explicit const_mem_fun_ref_t(_Ret (_Tp::*__pf)() const)
+      explicit
+      const_mem_fun_ref_t(_Ret (_Tp::*__pf)() const)
       : _M_f(__pf) {}
 
       _Ret
@@ -647,7 +655,8 @@ namespace std
     class mem_fun1_t : public binary_function<_Tp*, _Arg, _Ret>
     {
     public:
-      explicit mem_fun1_t(_Ret (_Tp::*__pf)(_Arg)) 
+      explicit
+      mem_fun1_t(_Ret (_Tp::*__pf)(_Arg)) 
       : _M_f(__pf) {}
 
       _Ret
@@ -662,7 +671,8 @@ namespace std
     class const_mem_fun1_t : public binary_function<const _Tp*, _Arg, _Ret>
     {
     public:
-      explicit const_mem_fun1_t(_Ret (_Tp::*__pf)(_Arg) const)
+      explicit
+      const_mem_fun1_t(_Ret (_Tp::*__pf)(_Arg) const)
       : _M_f(__pf) {}
 
       _Ret
@@ -677,7 +687,8 @@ namespace std
     class mem_fun1_ref_t : public binary_function<_Tp, _Arg, _Ret>
     {
     public:
-      explicit mem_fun1_ref_t(_Ret (_Tp::*__pf)(_Arg))
+      explicit
+      mem_fun1_ref_t(_Ret (_Tp::*__pf)(_Arg))
       : _M_f(__pf) {}
 
       _Ret
@@ -692,7 +703,8 @@ namespace std
     class const_mem_fun1_ref_t : public binary_function<_Tp, _Arg, _Ret>
     {
     public:
-      explicit const_mem_fun1_ref_t(_Ret (_Tp::*__pf)(_Arg) const)
+      explicit
+      const_mem_fun1_ref_t(_Ret (_Tp::*__pf)(_Arg) const)
       : _M_f(__pf) {}
 
       _Ret
@@ -707,7 +719,8 @@ namespace std
     class mem_fun_t<void, _Tp> : public unary_function<_Tp*, void>
     {
     public:
-      explicit mem_fun_t(void (_Tp::*__pf)())
+      explicit
+      mem_fun_t(void (_Tp::*__pf)())
       : _M_f(__pf) {}
 
       void
@@ -722,7 +735,8 @@ namespace std
     class const_mem_fun_t<void, _Tp> : public unary_function<const _Tp*, void>
     {
     public:
-      explicit const_mem_fun_t(void (_Tp::*__pf)() const)
+      explicit
+      const_mem_fun_t(void (_Tp::*__pf)() const)
       : _M_f(__pf) {}
 
       void
@@ -737,7 +751,8 @@ namespace std
     class mem_fun_ref_t<void, _Tp> : public unary_function<_Tp, void>
     {
     public:
-      explicit mem_fun_ref_t(void (_Tp::*__pf)())
+      explicit
+      mem_fun_ref_t(void (_Tp::*__pf)())
       : _M_f(__pf) {}
 
       void
@@ -752,7 +767,8 @@ namespace std
     class const_mem_fun_ref_t<void, _Tp> : public unary_function<_Tp, void>
     {
     public:
-      explicit const_mem_fun_ref_t(void (_Tp::*__pf)() const)
+      explicit
+      const_mem_fun_ref_t(void (_Tp::*__pf)() const)
       : _M_f(__pf) {}
 
       void
@@ -767,7 +783,8 @@ namespace std
     class mem_fun1_t<void, _Tp, _Arg> : public binary_function<_Tp*, _Arg, void>
     {
     public:
-      explicit mem_fun1_t(void (_Tp::*__pf)(_Arg))
+      explicit
+      mem_fun1_t(void (_Tp::*__pf)(_Arg))
       : _M_f(__pf) {}
     
       void
@@ -783,8 +800,9 @@ namespace std
     : public binary_function<const _Tp*, _Arg, void>
     {
     public:
-      explicit const_mem_fun1_t(void (_Tp::*__pf)(_Arg) const)
-	: _M_f(__pf) {}
+      explicit
+      const_mem_fun1_t(void (_Tp::*__pf)(_Arg) const)
+      : _M_f(__pf) {}
       
       void
       operator()(const _Tp* __p, _Arg __x) const
@@ -799,7 +817,8 @@ namespace std
     : public binary_function<_Tp, _Arg, void>
     {
     public:
-      explicit mem_fun1_ref_t(void (_Tp::*__pf)(_Arg))
+      explicit
+      mem_fun1_ref_t(void (_Tp::*__pf)(_Arg))
       : _M_f(__pf) {}
 
       void
@@ -815,7 +834,8 @@ namespace std
     : public binary_function<_Tp, _Arg, void>
     {
     public:
-      explicit const_mem_fun1_ref_t(void (_Tp::*__pf)(_Arg) const)
+      explicit
+      const_mem_fun1_ref_t(void (_Tp::*__pf)(_Arg) const)
       : _M_f(__pf) {}
 
       void
