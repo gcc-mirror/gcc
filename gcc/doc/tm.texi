@@ -8134,11 +8134,6 @@ floating point format supports negative zeroes and/or NaNs,
 Tests whether @var{x} is less than @var{y}.
 @end deftypefn
 
-@findex ldexp
-@deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_LDEXP (REAL_VALUE_TYPE @var{x}, int @var{scale})
-Multiplies @var{x} by 2 raised to the power @var{scale}.
-@end deftypefn
-
 @deftypefn Macro HOST_WIDE_INT REAL_VALUE_FIX (REAL_VALUE_TYPE @var{x})
 Truncates @var{x} to a signed integer, rounding toward zero.
 @end deftypefn
@@ -8146,17 +8141,6 @@ Truncates @var{x} to a signed integer, rounding toward zero.
 @deftypefn Macro {unsigned HOST_WIDE_INT} REAL_VALUE_UNSIGNED_FIX (REAL_VALUE_TYPE @var{x})
 Truncates @var{x} to an unsigned integer, rounding toward zero.  If
 @var{x} is negative, returns zero.
-@end deftypefn
-
-@deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_RNDZINT (REAL_VALUE_TYPE @var{x})
-Rounds the target-machine floating point value @var{x} towards zero to an
-integer value, but leaves it represented as a floating point number.
-@end deftypefn
-
-@deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_UNSIGNED_RNDZINT (REAL_VALUE_TYPE @var{x})
-Rounds the target-machine floating point value @var{x} towards zero to an
-unsigned integer value, but leaves it represented as a floating point
-number.  If @var{x} is negative, returns (positive) zero.
 @end deftypefn
 
 @deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_ATOF (const char *@var{string}, enum machine_mode @var{mode})

@@ -576,11 +576,13 @@ tree_transform (gnat_node)
 		gigi_abort (336);
 
 	      else
-		gnu_result
-		  = build_real (gnu_result_type,
-				REAL_VALUE_LDEXP
-				(TREE_REAL_CST (gnu_result),
-				 - UI_To_Int (Denominator (ur_realval))));
+		{
+		  REAL_VALUE_TYPE tmp;
+
+		  real_ldexp (&tmp, &TREE_REAL_CST (gnu_result),
+			      - UI_To_Int (Denominator (ur_realval)));
+		  gnu_result = build_real (gnu_result_type, tmp);
+		}
 	    }
 
 	  /* Now see if we need to negate the result.  Do it this way to

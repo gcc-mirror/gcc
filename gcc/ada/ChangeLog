@@ -1,3 +1,14 @@
+2002-09-17  Richard Henderson  <rth@redhat.com>
+
+	* trans.c (tree_transform): Use real_ldexp not REAL_VALUE_LDEXP.
+	* config/dsp16xx/dsp16xx.md (fixuns_trunchfhi2): Use real_2expN.
+	* config/mips/mips.md (fixuns_truncdfsi2): Likewise.
+	(fixuns_truncdfdi2, fixuns_truncsfsi2, fixuns_truncsfdi2): Likewise.
+	* config/m68k/m68k.c (floating_exact_log2): Use real_exponent
+	and real_2expN instead of a loop.
+	* doc/tm.texi (REAL_VALUE_LDEXP): Remove.
+	(REAL_VALUE_RNDZINT, REAL_VALUE_UNSIGNED_RNDZINT): Remove.
+
 2002-08-25  Andre Leis <a.leis@gmx.net>
  	    David Billinghurst (David.Billinghurst@riotinto.com>
 
