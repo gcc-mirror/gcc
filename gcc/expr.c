@@ -7974,7 +7974,12 @@ expand_builtin_setjmp (buf_addr, target)
 #endif
     emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
 
-  current_function_has_nonlocal_goto = 1;
+  /* Do we need to do something like:
+     
+     current_function_has_nonlocal_label = 1;
+
+     here?  It seems like we might have to, or some subset of that
+     functionality, but I am unsure.  (mrs) */
 
 #if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
   if (fixed_regs[ARG_POINTER_REGNUM])
