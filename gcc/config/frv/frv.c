@@ -1876,7 +1876,7 @@ frv_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
   memset (&frv_ifcvt.tmp_reg, 0, sizeof (frv_ifcvt.tmp_reg));
 
   /* Release the bitmap of created insns.  */
-  BITMAP_XFREE (frv_ifcvt.scratch_insns_bitmap);
+  BITMAP_FREE (frv_ifcvt.scratch_insns_bitmap);
 }
 
 
@@ -7722,7 +7722,7 @@ frv_ifcvt_modify_final (ce_if_block_t *ce_info ATTRIBUTE_UNUSED)
     {
       rtx insn = emit_insn_before (frv_ifcvt.scratch_regs[i], existing_insn);
       if (! frv_ifcvt.scratch_insns_bitmap)
-	frv_ifcvt.scratch_insns_bitmap = BITMAP_XMALLOC ();
+	frv_ifcvt.scratch_insns_bitmap = BITMAP_ALLOC (NULL);
       bitmap_set_bit (frv_ifcvt.scratch_insns_bitmap, INSN_UID (insn));
       frv_ifcvt.scratch_regs[i] = NULL_RTX;
     }
