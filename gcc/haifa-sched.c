@@ -1774,6 +1774,7 @@ schedule_block (b, rgn_n_insns)
 	  schedule_insn (insn, &ready, clock_var);
 
 	next:
+	  ;
 #ifdef MD_SCHED_REORDER2
 	  /* Sort the ready list based on priority.  */
 	  if (ready.n_ready > 0)
