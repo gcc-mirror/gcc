@@ -1,5 +1,10 @@
 2004-03-11  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/PlainSocketImpl.java:
+	Reformated to merge better with classpath's version.
+
+2004-03-11  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/Locale.java
 	(getISO3Language): Use String.equals() instead of ==.
 	(getISO3Country): Likewise.
