@@ -1,3 +1,9 @@
+2003-09-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR c/9862
+	* c-decl.c (c_expand_body_1): Move return warning from here...
+	(finish_function): ...to here.
+
 2003-09-05  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/darwin.h (PREFERRED_RELOAD_CLASS): Always return

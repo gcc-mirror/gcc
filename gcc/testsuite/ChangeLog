@@ -1,3 +1,9 @@
+2003-09-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR c/9862
+	* gcc.dg/20030906-1.c: New test.
+	* gcc.dg/20030906-2.c: Likewise.
+
 2003-09-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/12167
