@@ -1595,7 +1595,9 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   argvec = rtvec_alloc (ninputs);
   constraints = rtvec_alloc (ninputs);
 
-  body = gen_rtx_ASM_OPERANDS (VOIDmode, TREE_STRING_POINTER (string),
+  body = gen_rtx_ASM_OPERANDS ((noutputs == 0 ? VOIDmode
+				: GET_MODE (output_rtx[0])),
+			       TREE_STRING_POINTER (string), 
 			       empty_string, 0, argvec, constraints,
 			       filename, line);
 
@@ -1771,9 +1773,9 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    warning ("asm operand %d probably doesn't match constraints", i);
 	}
       generating_concat_p = old_generating_concat_p;
-      XVECEXP (body, 3, i) = op;
+      ASM_OPERANDS_INPUT (body, i) = op;
 
-      XVECEXP (body, 4, i)      /* constraints */
+      ASM_OPERANDS_INPUT_CONSTRAINT_EXP (body, i)
 	= gen_rtx_ASM_INPUT (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))),
 			     orig_constraint);
       i++;
@@ -1785,7 +1787,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   generating_concat_p = 0;
 
   for (i = 0; i < ninputs - ninout; i++)
-    XVECEXP (body, 3, i) = protect_from_queue (XVECEXP (body, 3, i), 0);
+    ASM_OPERANDS_INPUT (body, i)
+      = protect_from_queue (ASM_OPERANDS_INPUT (body, i), 0);
 
   for (i = 0; i < noutputs; i++)
     output_rtx[i] = protect_from_queue (output_rtx[i], 1);
@@ -1795,9 +1798,9 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
     {
       int j = inout_opnum[i];
 
-      XVECEXP (body, 3, ninputs - ninout + i)      /* argvec */
+      ASM_OPERANDS_INPUT (body, ninputs - ninout + i)
 	= output_rtx[j];
-      XVECEXP (body, 4, ninputs - ninout + i)      /* constraints */
+      ASM_OPERANDS_INPUT_CONSTRAINT_EXP (body, ninputs - ninout + i)
 	= gen_rtx_ASM_INPUT (inout_mode[i], digit_strings[j]);
     }
 
@@ -1810,7 +1813,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
   if (noutputs == 1 && nclobbers == 0)
     {
-      XSTR (body, 1) = TREE_STRING_POINTER (TREE_PURPOSE (outputs));
+      ASM_OPERANDS_OUTPUT_CONSTRAINT (body)
+	= TREE_STRING_POINTER (TREE_PURPOSE (outputs));
       insn = emit_insn (gen_rtx_SET (VOIDmode, output_rtx[0], body));
     }
 
@@ -1837,7 +1841,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    = gen_rtx_SET (VOIDmode,
 			   output_rtx[i],
 			   gen_rtx_ASM_OPERANDS
-			   (VOIDmode,
+			   (GET_MODE (output_rtx[i]),
 			    TREE_STRING_POINTER (string),
 			    TREE_STRING_POINTER (TREE_PURPOSE (tail)),
 			    i, argvec, constraints,

@@ -3913,10 +3913,10 @@ copy_insn_1 (orig)
     }
   else if (code == ASM_OPERANDS)
     {
-      orig_asm_operands_vector = XVEC (orig, 3);
-      copy_asm_operands_vector = XVEC (copy, 3);
-      orig_asm_constraints_vector = XVEC (orig, 4);
-      copy_asm_constraints_vector = XVEC (copy, 4);
+      orig_asm_operands_vector = ASM_OPERANDS_INPUT_VEC (orig);
+      copy_asm_operands_vector = ASM_OPERANDS_INPUT_VEC (copy);
+      orig_asm_constraints_vector = ASM_OPERANDS_INPUT_CONSTRAINT_VEC (orig);
+      copy_asm_constraints_vector = ASM_OPERANDS_INPUT_CONSTRAINT_VEC (copy);
     }
 
   return copy;
