@@ -2957,6 +2957,14 @@ general register, but an alternate column needs to be used for
 signal frames.
 @end defmac
 
+@defmac DWARF_ZERO_REG
+A C expression whose value is an integer giving a DWARF 2 register
+number that is considered to always have the value zero.  This should
+only be defined if the target has an architected zero register, and
+someone decided it was a good idea to use that register number to
+terminate the stack backtrace.  New ports should avoid this.
+@end defmac
+
 @defmac INCOMING_FRAME_SP_OFFSET
 A C expression whose value is an integer giving the offset, in bytes,
 from the value of the stack pointer register to the top of the stack
