@@ -55,23 +55,43 @@ set_local_type (slot, type)
 
 /* Convert an IEEE real to an integer type.  The result of such a
    conversion when the source operand is a NaN isn't defined by
-   IEEE754, but by the Java language standard: it must be zero.  This
-   conversion produces something like:
-   
-   ({ double tmp = expr; (tmp != tmp) ? 0 : (int)tmp; })
+   IEEE754, but by the Java language standard: it must be zero.  Also,
+   overflows must be clipped to within range.  This conversion
+   produces something like:
 
-   */
+      ((expr >= (float)MAX_INT)
+       ? MAX_INT 
+       : ((expr <= (float)MIN_INT)
+	  ? MIN_INT
+	  : ((expr != expr)
+	     ? 0 
+	     : (int)expr))) */
 
 static tree
 convert_ieee_real_to_integer (type, expr)
      tree type, expr;
 {
+  tree result;
   expr = save_expr (expr);
 
-  return build (COND_EXPR, type, 
-		build (NE_EXPR, boolean_type_node, expr, expr),
-		convert (type, integer_zero_node),
-		convert_to_integer (type, expr));
+  result = build (COND_EXPR, type,
+		  build (NE_EXPR, boolean_type_node, expr, expr),
+		  convert (type, integer_zero_node),
+		  convert_to_integer (type, expr));
+		  
+  result = build (COND_EXPR, type, 
+		  build (LE_EXPR, boolean_type_node, expr, 
+			 convert (TREE_TYPE (expr), TYPE_MIN_VALUE (type))),
+		  TYPE_MIN_VALUE (type),
+		  result);
+
+  result = build (COND_EXPR, type,
+		  build (GE_EXPR, boolean_type_node, expr, 
+			 convert (TREE_TYPE (expr), TYPE_MAX_VALUE (type))),	
+		  TYPE_MAX_VALUE (type),
+		  result);
+
+  return result;
 }  
 
 /* Create an expression whose value is that of EXPR,
@@ -100,12 +120,9 @@ convert (type, expr)
     return fold (convert_to_boolean (type, expr));
   if (code == INTEGER_TYPE)
     {
-      if (TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
-#ifdef TARGET_SOFT_FLOAT
-	  && !TARGET_SOFT_FLOAT
-#endif
-	  && !flag_emit_class_files
-	  && !flag_fast_math
+      if (! flag_fast_math
+	  && ! flag_emit_class_files
+	  && TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
 	  && TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT)
 	return fold (convert_ieee_real_to_integer (type, expr));
       else

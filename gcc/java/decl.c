@@ -365,6 +365,11 @@ tree soft_monitorexit_node;
 tree soft_lookupinterfacemethod_node;
 tree soft_fmod_node;
 tree soft_exceptioninfo_call_node;
+tree soft_idiv_node;
+tree soft_irem_node;
+tree soft_ldiv_node;
+tree soft_lrem_node;
+
 
 /* Build (and pushdecl) a "promoted type" for all standard
    types shorter than int.  */
@@ -812,6 +817,26 @@ init_decl_processing ()
 			BUILT_IN_FMOD, "fmodf");
 #endif
     
+  soft_idiv_node
+    = builtin_function ("_Jv_divI",
+			build_function_type (int_type_node, t),
+			NOT_BUILT_IN, NULL_PTR);
+
+  soft_irem_node
+    = builtin_function ("_Jv_remI",
+			build_function_type (int_type_node, t),
+			NOT_BUILT_IN, NULL_PTR);
+
+  soft_ldiv_node
+    = builtin_function ("_Jv_divJ",
+			build_function_type (long_type_node, t),
+			NOT_BUILT_IN, NULL_PTR);
+
+  soft_lrem_node
+    = builtin_function ("_Jv_remJ",
+			build_function_type (long_type_node, t),
+			NOT_BUILT_IN, NULL_PTR);
+
   init_class_processing ();
 }
 
