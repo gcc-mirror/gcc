@@ -1,5 +1,6 @@
 /* Parser for Java(TM) .class files.
-   Copyright (C) 1996, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1080,7 +1081,7 @@ yyparse ()
 
   if (resource_name)
     {
-      char *resource_filename;
+      const char *resource_filename;
       
       /* Only one resource file may be compiled at a time.  */
       assert (TREE_CHAIN (current_file_list) == NULL);
