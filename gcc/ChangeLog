@@ -1,3 +1,7 @@
+Mon Sep  1 11:25:47 1997  Stephen Williams  (steve@icarus.icarus.com)
+
+	* i960.h (LINK_SPEC): Handle "-mjX" and "-mrp" switches.
+
 Mon Sep  1 08:29:46 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* cccp.c (sys_errlist): Remove special 4.4bsd declaration.

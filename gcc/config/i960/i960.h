@@ -81,7 +81,7 @@ Boston, MA 02111-1307, USA.  */
 #define LINK_SPEC \
 	"%{mka:-AKA}%{mkb:-AKB}%{msa:-ASA}%{msb:-ASB}\
 	%{mmc:-AMC}%{mca:-ACA}%{mcc:-ACC}%{mcf:-ACF}\
-	%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:%{!mcc:%{!mcf:-AKB}}}}}}}}\
+	%{mja:-AJX}%{mjd:-AJX}%{mjf:-AJX}%{mrp:-AJX}\
 	%{mbout:-Fbout}%{mcoff:-Fcoff}\
 	%{mlink-relax:-relax}"
 
