@@ -157,6 +157,7 @@
 
 #include "config.h"
 #include "system.h"
+#include "toplev.h"
 #include "rtl.h"
 #include "basic-block.h"
 #include "regs.h"
