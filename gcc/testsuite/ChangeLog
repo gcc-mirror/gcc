@@ -1,3 +1,8 @@
+Sun Jun 28 12:49:02 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* g77.f-torture/execute/980628-4.f: New test from Craig.
+	* g77.f-torture/execute/980628-5.f: Likewise.
+
 Sun Jun 28 00:37:26 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/g77.exp (default_g77_version): Tweak to make it work in a build
