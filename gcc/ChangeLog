@@ -1,3 +1,7 @@
+2005-02-11  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/ia64/hpux.h (WCHAR_TYPE, WCHAR_TYPE_SIZE): Define.
+
 2005-02-11  Dale Johannesen  <dalej@apple.com>
 
 	* cselib.c (cselib_process_insn):  Clear out regs where

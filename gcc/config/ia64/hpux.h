@@ -30,6 +30,12 @@ Boston, MA 02111-1307, USA.  */
 #undef  TARGET_HPUX
 #define TARGET_HPUX 1
 
+#undef WCHAR_TYPE
+#define WCHAR_TYPE "unsigned int"
+
+#undef WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE 32
+
 /* Target OS builtins.  */
 #define TARGET_OS_CPP_BUILTINS()			\
 do {							\
