@@ -1,5 +1,5 @@
 /* Utility to update paths from internal to external forms.
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -106,62 +106,6 @@ get_key_value (key)
     free (temp);
 
   return prefix;
-}
-
-/* Concatenate a sequence of strings, returning the result.
-
-   This function is based on the one in libiberty.  */
-
-char *
-concat VPARAMS ((const char *first, ...))
-{
-  register int length;
-  register char *newstr;
-  register char *end;
-  register const char *arg;
-  va_list args;
-#ifndef ANSI_PROTOTYPES
-  const char *first;
-#endif
-
-  /* First compute the size of the result and get sufficient memory.  */
-
-  VA_START (args, first);
-#ifndef ANSI_PROTOTYPES
-  first = va_arg (args, const char *);
-#endif
-
-  arg = first;
-  length = 0;
-
-  while (arg != 0)
-    {
-      length += strlen (arg);
-      arg = va_arg (args, const char *);
-    }
-
-  newstr = (char *) xmalloc (length + 1);
-  va_end (args);
-
-  /* Now copy the individual pieces to the result string.  */
-
-  VA_START (args, first);
-#ifndef ANSI_PROTOTYPES
-  first = va_arg (args, char *);
-#endif
-
-  end = newstr;
-  arg = first;
-  while (arg != 0)
-    {
-      while (*arg)
-	*end++ = *arg++;
-      arg = va_arg (args, const char *);
-    }
-  *end = '\000';
-  va_end (args);
-
-  return (newstr);
 }
 
 /* Return a copy of a string that has been placed in the heap.  */
