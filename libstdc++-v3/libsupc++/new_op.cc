@@ -1,5 +1,5 @@
 // Support routines for the -*- C++ -*- dynamic memory management.
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation
 //
 // This file is part of GNU CC.
 //
@@ -33,8 +33,8 @@
 
 using std::new_handler;
 using std::bad_alloc;
+using std::malloc;
 
-extern "C" void *malloc (std::size_t);
 extern new_handler __new_handler;
 
 void *

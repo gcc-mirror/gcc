@@ -1,3 +1,17 @@
+2002-06-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/c/std_cwchar.h: Guard. Add mbstate_t bits.
+	* include/c/std_cwctype.h: Guard.
+
+	* libsupc++/eh_alloc.cc: Tweak include order.
+	* libsupc++/pure.cc: Use cstdio.
+	* libsupc++/new_op.cc: Remove malloc forward declaration, as
+	cstdlib brings it in. Use std::malloc.
+
+	* src/Makefile.am (sources): Remove cmath.cc.
+	* src/Makefile.in: Regenerate.
+	* src/cmath.cc: Remove.
+	
 2002-06-18  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure.target:  Force mips to use the generic cpu routines.
