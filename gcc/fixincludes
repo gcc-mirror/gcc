@@ -68,9 +68,24 @@ do
 	fi
 
 	# Find all directories under $d, relative to $d, excluding $d itself.
-        files="$files `find $d -type d -print | sed '|/\.$|d'`"
+        files="$files `find $d -type d -print | \
+		       sed -e '/\/\.$/d' -e '/^\.$/d'`"
+	# Find all links to directories.
+	# Using `-exec test -d' in find fails on some systems,
+	# and trying to run test via sh fails on others,
+	# so this is the simplest alternative left.
+	# First find all the links, then test each one.
+	theselinks=
 	$LINKS && \
-	  newdirs="$newdirs `find $d -type l -exec test -d '{}' \; -print`"
+	  theselinks=`find $d -type l -print`
+	for d1 in $theselinks --dummy--
+	do
+	    # If it is a directory, add it to $newdirs
+	    if [ -d $d1 ]
+	    then
+		newdirs="$newdirs $d1"
+	    fi
+	done
     done
 
     files="$files $newdirs"
