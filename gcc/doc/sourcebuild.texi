@@ -60,7 +60,7 @@ The Fortran runtime library.
 The @code{libffi} library, used as part of the Java runtime library.
 
 @item libiberty
-The @code{libibery} library, used for portability and for some
+The @code{libiberty} library, used for portability and for some
 generally useful data structures and algorithms.  @xref{Top, ,
 Introduction, libiberty, @sc{gnu} libiberty}, for more information
 about this library.
