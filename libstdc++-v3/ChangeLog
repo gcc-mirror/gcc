@@ -1,5 +1,10 @@
 2003-03-08  Jerry Quinn  <jlquinn@optonline.net>
 
+	* include/bits/locale_facets.tcc (num_put::do_put(bool)): Use
+	locale cache for truename and falsename.
+
+2003-03-08  Jerry Quinn  <jlquinn@optonline.net>
+
 	* src/ios.cc (ios_base::ios_base): Correct order of _M_word and
 	_M_word_size initialization.
 
