@@ -93,8 +93,9 @@
 
 #define va_alist  __builtin_va_alist
 /* The ... causes current_function_varargs to be set in cc1.  */
-#define va_dcl	int __builtin_va_alist __attribute__((__mode__(__word__))); \
-		__va_ellipsis
+/* ??? We don't process attributes correctly in K&R argument context.  */
+typedef int __builtin_va_alist_t __attribute__((__mode__(__word__)));
+#define va_dcl	__builtin_va_alist_t __builtin_va_alist; __va_ellipsis
 
 /* Define __gnuc_va_list, just as in gstdarg.h.  */
 
