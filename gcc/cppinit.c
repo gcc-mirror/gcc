@@ -1331,7 +1331,7 @@ cpp_handle_option (pfile, argc, argv)
 	    opts->cplusplus = 0, opts->cplusplus_comments = 0;
 	    opts->c89 = 1, opts->c9x = 0, opts->objc = 0;
 	    opts->trigraphs = 1;
-	    new_pending_define (opts, "__STRICT_ANSI__=199000");
+	    new_pending_define (opts, "__STRICT_ANSI__");
 	  }
 	if (! strcmp (argv[i], "-lang-c++"))
 	  opts->cplusplus = 1, opts->cplusplus_comments = 1, opts->c89 = 0,
@@ -1365,6 +1365,7 @@ cpp_handle_option (pfile, argc, argv)
 	  {
 	    opts->cplusplus = 0, opts->cplusplus_comments = 1;
 	    opts->c89 = 0, opts->c9x = 1, opts->objc = 0;
+	    new_pending_define (opts, "__STDC_VERSION__=199901L");
 	  }
 	else if (!strcmp (argv[i], "-std=iso9899:1990")
 		 || !strcmp (argv[i], "-std=c89"))
@@ -1372,14 +1373,15 @@ cpp_handle_option (pfile, argc, argv)
 	    opts->cplusplus = 0, opts->cplusplus_comments = 0;
 	    opts->c89 = 1, opts->c9x = 0, opts->objc = 0;
 	    opts->trigraphs = 1;
-	    new_pending_define (opts, "__STRICT_ANSI__=199000");
+	    new_pending_define (opts, "__STRICT_ANSI__");
 	  }
 	else if (!strcmp (argv[i], "-std=iso9899:199409"))
 	  {
 	    opts->cplusplus = 0, opts->cplusplus_comments = 0;
 	    opts->c89 = 1, opts->c9x = 0, opts->objc = 0;
 	    opts->trigraphs = 1;
-	    new_pending_define (opts, "__STRICT_ANSI__=199409");
+	    new_pending_define (opts, "__STRICT_ANSI__");
+	    new_pending_define (opts, "__STDC_VERSION__=199409L");
 	  }
 	else if (!strcmp (argv[i], "-std=iso9899:199x")
 		 || !strcmp (argv[i], "-std=iso9899:1999")
@@ -1389,7 +1391,8 @@ cpp_handle_option (pfile, argc, argv)
 	    opts->cplusplus = 0, opts->cplusplus_comments = 1;
 	    opts->c89 = 0, opts->c9x = 1, opts->objc = 0;
 	    opts->trigraphs = 1;
-	    new_pending_define (opts, "__STRICT_ANSI__=199900");
+	    new_pending_define (opts, "__STRICT_ANSI__");
+	    new_pending_define (opts, "__STDC_VERSION__=199901L");
 	  }
 	break;
 
