@@ -17,7 +17,7 @@
 ;;  contrived to support published timings.
 ;;
 ;; Reference:
-;;   "SR3 Microporocessor Specification, System development information,"
+;;   "SR3 Microprocessor Specification, System development information,"
 ;;   Revision 1.0, 13 December 2000.
 ;;
 ;;

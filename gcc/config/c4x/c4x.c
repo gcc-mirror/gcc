@@ -1244,7 +1244,7 @@ c4x_emit_move_sequence (rtx *operands, enum machine_mode mode)
       && dp_reg_operand (XEXP (op1, 0), mode))
     {
       /* expand_increment will sometimes create a LO_SUM immediate
-	 address.  Undo this sillyness.  */
+	 address.  Undo this silliness.  */
       op1 = XEXP (op1, 1);
     }
   

@@ -4762,7 +4762,7 @@ override_options (void)
 
        (1) The value of an R_MIPS_GOT16 relocation depends on whether
 	   the symbol is local or global.  We therefore need to know
-	   a symbol's binding before refering to it using %got().
+	   a symbol's binding before referring to it using %got().
 
        (2) R_MIPS_CALL16 can only be applied to global symbols.
 

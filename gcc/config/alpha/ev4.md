@@ -98,7 +98,7 @@
   "ev4_ist"
   "store_data_bypass_p")
 
-; Multiplies use a non-piplined imul unit.  Also, "no [ebox] insn can
+; Multiplies use a non-pipelined imul unit.  Also, "no [ebox] insn can
 ; be issued exactly three cycles before an integer multiply completes".
 
 (define_insn_reservation "ev4_imulsi" 21

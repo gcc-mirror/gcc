@@ -3045,7 +3045,7 @@ convert_regs (FILE *file)
 
   /* ??? Future: process inner loops first, and give them arbitrary
      initial stacks which emit_swap_insn can modify.  This ought to
-     prevent double fxch that aften appears at the head of a loop.  */
+     prevent double fxch that often appears at the head of a loop.  */
 
   /* Process all blocks reachable from all entry points.  */
   for (e = ENTRY_BLOCK_PTR->succ; e ; e = e->succ_next)

@@ -484,7 +484,7 @@
 (define_reservation "2_M_only_um01" "2_M0_only_um01|2_M1_only_um01")
 
 ;; I instruction is dispersed to the lowest numbered I unit
-;; not already in use.  Remeber about possible splitting.
+;; not already in use.  Remember about possible splitting.
 (define_reservation "2_I0"
   "2_0mi.i+2_ui0|2_0mii.+(2_ui0|2_ui1)|2_0mmi.+2_ui0\
    |2_0mfi.+2_ui0|2_0mi.b+2_ui0|(2_1mi.i|2_1mi.b)+(2_ui0|2_ui1)\
@@ -1335,7 +1335,7 @@
    +(2b_um2|2b_um3)")
 
 ;; I instruction is dispersed to the lowest numbered I unit
-;; not already in use.  Remeber about possible splitting.
+;; not already in use.  Remember about possible splitting.
 (define_reservation "2b_I"
   "2b_0mi.i+2_2+2b_ui0|2b_0mii.+2_3+(2b_ui0|2b_ui1)|2b_0mmi.+2_3+2b_ui0\
    |2b_0mfi.+2_3+2b_ui0|2b_0mi.b+2_2+2b_ui0\

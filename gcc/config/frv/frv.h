@@ -931,7 +931,7 @@ extern int target_flags;
 #define LAST_ARG_REGNUM		(FIRST_ARG_REGNUM + FRV_NUM_ARG_REGS - 1)
 
 /* Registers used by the exception handling functions.  These should be
-   registers that are not otherwised used by the calling sequence.  */
+   registers that are not otherwise used by the calling sequence.  */
 #define FIRST_EH_REGNUM		14
 #define LAST_EH_REGNUM		15
 

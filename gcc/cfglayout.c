@@ -1172,7 +1172,7 @@ cfg_layout_initialize_rbi (basic_block bb)
   memset (bb->rbi, 0, sizeof (struct reorder_block_def));
 }
 
-/* Main entry point to this module - initialize the datastructures for
+/* Main entry point to this module - initialize the data structures for
    CFG layout changes.  It keeps LOOPS up-to-date if not null.  */
 
 void

@@ -1,3 +1,18 @@
+2004-04-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* bb-reorder.c, c-opts.c, cfglayout.c, cgraph.c, cgraphunit.c,
+	cppfiles.c, fold-const.c, ggc-zone.c, loop-doloop.c, optabs.c,
+	reg-stack.c, varasm.c, config/alpha/ev4.md,
+	config/alpha/ev5.md, config/alpha/ev6.md, config/arm/arm.c,
+	config/c4x/c4x.c, config/c4x/c4x.md, config/cris/cris.c,
+	config/cris/cris.h, config/fr30/fr30.h, config/frv/frv.c,
+	config/frv/frv.h, config/frv/frv.md, config/h8300/h8300.c,
+	config/i386/i386.c, config/i386/i386.md, config/i386/winnt.c,
+	config/ia64/itanium2.md, config/ip2k/ip2k.c,
+	config/mips/mips.c, config/mips/mips.h, config/mips/sr71k.md,
+	config/pa/pa.c, config/s390/s390.c, config/sh/sh.c: Fix
+	comment typos.
+
 2004-04-30  Paul Brook  <paul@codesourcery.com>
 
 	* config.gcc: Default ep9312 to hard-float.

@@ -15817,7 +15817,7 @@ ix86_expand_vector_init (rtx target, rtx vals)
     }
 
   /* ... values where only first field is non-constant are best loaded
-     from the pool and overwriten via move later.  */
+     from the pool and overwritten via move later.  */
   if (!i)
     {
       rtx op = simplify_gen_subreg (mode, XVECEXP (vals, 0, 0),

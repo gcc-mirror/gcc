@@ -236,7 +236,7 @@ unlikely_text_section (void)
 		   current_function_name ());
 	  unlikely_section_label_printed = true;
 
-	  /* Make sure that we have approprate alignment for instructions
+	  /* Make sure that we have appropriate alignment for instructions
 	     in this section.  */
 	  assemble_align (FUNCTION_BOUNDARY);
 	}

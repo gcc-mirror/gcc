@@ -1208,7 +1208,7 @@ extern struct rtx_def * fr30_compare_op0;
 extern struct rtx_def * fr30_compare_op1;
 
 /*}}}*/ 
-/*{{{  PERDICATE_CODES.  */ 
+/*{{{  PREDICATE_CODES.  */ 
 
 #define PREDICATE_CODES					\
   { "stack_add_operand",	{ CONST_INT }},		\
