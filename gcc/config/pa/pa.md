@@ -2402,7 +2402,7 @@
 	(plus:SI (plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
 				   (match_operand:SI 4 "shadd_operand" ""))
 			  (match_operand:SI 1 "register_operand" "r"))
-		 (match_operand:SI 3 "const_int_operand" "rJ")))]
+		 (match_operand:SI 3 "const_int_operand" "rI")))]
   "reload_in_progress"
   "sh%O4add %2,%1,%0\;add%I3 %3,%0,%0"
   [(set_attr "type" "multi")
