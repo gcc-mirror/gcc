@@ -1,5 +1,5 @@
 /* CharArrayWriter.java -- Write chars to a buffer
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -98,19 +98,13 @@ public class CharArrayWriter extends Writer
    */
   public void close ()
   {
-    closed = true;
   }
 
   /**
    * This method flushes all buffered chars to the stream.
    */
-  public void flush () throws IOException
+  public void flush ()
   {
-    synchronized (lock)
-      {
-	if (closed)
-	  throw new IOException ("Stream closed");
-      }
   }
 
   /**
@@ -123,9 +117,6 @@ public class CharArrayWriter extends Writer
     synchronized (lock)
       {
 	count = 0;
-	// Allow this to reopen the stream.
-	// FIXME - what does the JDK do?
-	closed = false;
       }
   }
 
@@ -187,13 +178,10 @@ public class CharArrayWriter extends Writer
    *
    * @param oneChar The char to be read passed as an int
    */
-  public void write (int oneChar) throws IOException
+  public void write (int oneChar)
   {
     synchronized (lock)
       {
-	if (closed)
-	  throw new IOException ("Stream closed");
-
 	resize (1);
 	buf[count++] = (char) oneChar;
       }
@@ -207,13 +195,10 @@ public class CharArrayWriter extends Writer
    * @param offset The index into the buffer to start writing data from
    * @param len The number of chars to write
    */
-  public void write (char[] buffer, int offset, int len) throws IOException
+  public void write (char[] buffer, int offset, int len)
   {
     synchronized (lock)
       {
-	if (closed)
-	  throw new IOException ("Stream closed");
-
 	if (len >= 0)
 	  resize (len);
 	System.arraycopy(buffer, offset, buf, count, len);
@@ -230,13 +215,10 @@ public class CharArrayWriter extends Writer
    * @param offset The index into the string to start writing data from
    * @param len The number of chars to write
    */
-  public void write (String str, int offset, int len) throws IOException
+  public void write (String str, int offset, int len)
   {
     synchronized (lock)
       {
-	if (closed)
-	  throw new IOException ("Stream closed");
-
 	if (len >= 0)
 	  resize (len);
 	str.getChars(offset, offset + len, buf, count);
@@ -289,9 +271,4 @@ public class CharArrayWriter extends Writer
    * The number of chars that have been written to the buffer
    */
   protected int count;
-
-  /**
-   * True if the stream has been closed.
-   */
-  private boolean closed;
 }

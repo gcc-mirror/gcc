@@ -1,3 +1,14 @@
+2002-12-01  Tom Tromey  <tromey@redhat.com>
+
+	Bug compatibility, for PR libgcj/8738:
+	* java/io/CharArrayWriter.java (close): Do nothing.
+	(flush): Likewise.
+	(reset): Don't touch `closed'.
+	(write(int)): Don't throw IOException.
+	(write(char[],int,int)): Likewise.
+	(write(String,int,int)): Likewise.
+	(closed): Removed.
+
 2002-12-01  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/SecurityManager.java: Remerge comments, indenting and
