@@ -236,7 +236,7 @@ build_cplus_new (type, init, with_cleanup_p)
     {
       TREE_OPERAND (rval, 2) = error_mark_node;
       rval = build (WITH_CLEANUP_EXPR, type, rval, 0,
-		    build_delete (TYPE_POINTER_TO (type),
+		    build_delete (build_pointer_type (type),
 				  build_unary_op (ADDR_EXPR, slot, 0),
 				  integer_two_node,
 				  LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0));
@@ -1318,7 +1318,7 @@ void
 debug_binfo (elem)
      tree elem;
 {
-  int i;
+  unsigned HOST_WIDE_INT n;
   tree virtuals;
 
   fprintf (stderr, "type \"%s\"; offset = %d\n",
@@ -1332,20 +1332,17 @@ debug_binfo (elem)
     fprintf (stderr, "no vtable decl yet\n");
   fprintf (stderr, "virtuals:\n");
   virtuals = BINFO_VIRTUALS (elem);
-  if (virtuals != 0)
-    {
-      /* skip the rtti type descriptor entry */
-      virtuals = TREE_CHAIN (virtuals);
-    }
-  i = 1;
+
+  n = skip_rtti_stuff (&virtuals);
+
   while (virtuals)
     {
       tree fndecl = TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals)), 0);
       fprintf (stderr, "%s [%d =? %d]\n",
 	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl)),
-	       i, TREE_INT_CST_LOW (DECL_VINDEX (fndecl)));
+	       n, TREE_INT_CST_LOW (DECL_VINDEX (fndecl)));
+      ++n;
       virtuals = TREE_CHAIN (virtuals);
-      i += 1;
     }
 }
 
@@ -1567,11 +1564,11 @@ id_cmp (p1, p2)
   return (HOST_WIDE_INT)TREE_VALUE (*p1) - (HOST_WIDE_INT)TREE_VALUE (*p2);
 }
 
-/* Build the FUNCTION_TYPE or METHOD_TYPE which may raise exceptions
+/* Build the FUNCTION_TYPE or METHOD_TYPE which may throw exceptions
    listed in RAISES.  */
 tree
-build_exception_variant (ctype, type, raises)
-     tree ctype, type;
+build_exception_variant (type, raises)
+     tree type;
      tree raises;
 {
   int i;
@@ -1902,4 +1899,97 @@ break_out_target_exprs (t)
      tree t;
 {
   return mapcar (t, bot_manip);
+}
+
+tree
+unsave_expr (expr)
+     tree expr;
+{
+  tree t;
+
+  t = build1 (UNSAVE_EXPR, TREE_TYPE (expr), expr);
+  TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (expr);
+  return t;
+}
+
+/* Modify a tree in place so that all the evaluate only once things
+   are cleared out.  Return the EXPR given.  */
+tree
+unsave_expr_now (expr)
+     tree expr;
+{
+  enum tree_code code;
+  register int i;
+
+  if (expr == NULL_TREE)
+    return expr;
+
+  code = TREE_CODE (expr);
+  switch (code)
+    {
+    case SAVE_EXPR:
+      SAVE_EXPR_RTL (expr) = NULL_RTX;
+      break;
+
+    case TARGET_EXPR:
+      sorry ("TARGET_EXPR reused inside UNSAVE_EXPR");
+      break;
+      
+    case RTL_EXPR:
+      warning ("RTL_EXPR reused inside UNSAVE_EXPR");
+      RTL_EXPR_SEQUENCE (expr) = NULL_RTX;
+      break;
+
+    case CALL_EXPR:
+      CALL_EXPR_RTL (expr) = NULL_RTX;
+      if (TREE_OPERAND (expr, 1)
+	  && TREE_CODE (TREE_OPERAND (expr, 1)) == TREE_LIST)
+	{
+	  tree exp = TREE_OPERAND (expr, 1);
+	  while (exp)
+	    {
+	      unsave_expr_now (TREE_VALUE (exp));
+	      exp = TREE_CHAIN (exp);
+	    }
+	}
+      break;
+      
+    case WITH_CLEANUP_EXPR:
+      warning ("WITH_CLEANUP_EXPR reused inside UNSAVE_EXPR");
+      RTL_EXPR_RTL (expr) = NULL_RTX;
+      break;
+    }
+
+  switch (TREE_CODE_CLASS (code))
+    {
+    case 'c':  /* a constant */
+    case 't':  /* a type node */
+    case 'x':  /* something random, like an identifier or an ERROR_MARK.  */
+    case 'd':  /* A decl node */
+    case 'b':  /* A block node */
+      return expr;
+
+    case 'e':  /* an expression */
+    case 'r':  /* a reference */
+    case 's':  /* an expression with side effects */
+    case '<':  /* a comparison expression */
+    case '2':  /* a binary arithmetic expression */
+    case '1':  /* a unary arithmetic expression */
+      for (i = tree_code_length[(int) code] - 1; i >= 0; i--)
+	unsave_expr_now (TREE_OPERAND (expr, i));
+      return expr;
+
+    default:
+      my_friendly_abort (999);
+    }
+}
+
+/* Since cleanup may have SAVE_EXPRs in it, we protect it with an
+   UNSAVE_EXPR as the backend cannot yet handle SAVE_EXPRs in cleanups
+   by itself.  */
+int
+cp_expand_decl_cleanup (decl, cleanup)
+     tree decl, cleanup;
+{
+  return expand_decl_cleanup (decl, unsave_expr (cleanup));
 }

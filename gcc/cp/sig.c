@@ -942,12 +942,12 @@ build_signature_method_call (basetype, instance, function, parms)
       deflt_call = build_function_call (pfn, parms);
     }
 
-  new_object_ptr = build (PLUS_EXPR, TYPE_POINTER_TO (basetype),
+  new_object_ptr = build (PLUS_EXPR, build_pointer_type (basetype),
 			  convert (ptrdiff_type_node, object_ptr),
 			  convert (ptrdiff_type_node, delta));
 
   parms = tree_cons (NULL_TREE,
-		     convert (TYPE_POINTER_TO (basetype), object_ptr),
+		     convert (build_pointer_type (basetype), object_ptr),
 		     TREE_CHAIN (parms));
   new_parms = tree_cons (NULL_TREE, new_object_ptr, TREE_CHAIN (parms));
 
@@ -956,7 +956,7 @@ build_signature_method_call (basetype, instance, function, parms)
     tree old_this = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (TREE_TYPE (pfn))));
 
     TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (TREE_TYPE (pfn)))) =
-      build_type_variant (TYPE_POINTER_TO (basetype),
+      build_type_variant (build_pointer_type (basetype),
 			  TYPE_READONLY (old_this),
 			  TYPE_VOLATILE (old_this));
 

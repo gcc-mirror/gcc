@@ -428,6 +428,18 @@ get_vbase (parent, binfo, depth)
   return rval;
 }
 
+/* Convert EXPR to a virtual base class of type TYPE.  We know that
+   EXPR is a non-null POINTER_TYPE to RECORD_TYPE.  We also know that
+   the type of what expr points to has a virtual base of type TYPE.  */
+tree
+convert_pointer_to_vbase (type, expr)
+     tree type;
+     tree expr;
+{
+  tree vb = get_vbase (type, TYPE_BINFO (TREE_TYPE (TREE_TYPE (expr))), NULL_PTR);
+  return convert_pointer_to_real (vb, expr);
+}
+
 /* This is the newer recursive depth first search routine. */
 #if 0				/* unused */
 /* Return non-zero if PARENT is directly derived from TYPE.  By directly
@@ -2117,16 +2129,17 @@ get_abstract_virtuals_1 (binfo, do_self, abstract_virtuals)
   /* Should we use something besides CLASSTYPE_VFIELDS? */
   if (do_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
     {
-      /* Get around first entry reserved for RTTI.  */
-      tree tmp = TREE_CHAIN (BINFO_VIRTUALS (binfo));
+      tree virtuals = BINFO_VIRTUALS (binfo);
 
-      while (tmp)
+      skip_rtti_stuff (&virtuals);
+
+      while (virtuals)
 	{
-	  tree base_pfn = FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (tmp));
+	  tree base_pfn = FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals));
 	  tree base_fndecl = TREE_OPERAND (base_pfn, 0);
 	  if (DECL_ABSTRACT_VIRTUAL_P (base_fndecl))
 	    abstract_virtuals = tree_cons (NULL_TREE, base_fndecl, abstract_virtuals);
-	  tmp = TREE_CHAIN (tmp);
+	  virtuals = TREE_CHAIN (virtuals);
 	}
     }
   return abstract_virtuals;
@@ -2139,7 +2152,7 @@ tree
 get_abstract_virtuals (type)
      tree type;
 {
-  tree vbases, tmp;
+  tree vbases;
   tree abstract_virtuals = CLASSTYPE_ABSTRACT_VIRTUALS (type);
 
   /* First get all from non-virtual bases. */
@@ -2148,17 +2161,17 @@ get_abstract_virtuals (type)
 					       
   for (vbases = CLASSTYPE_VBASECLASSES (type); vbases; vbases = TREE_CHAIN (vbases))
     {
-      if (! BINFO_VIRTUALS (vbases))
-	continue;
+      tree virtuals = BINFO_VIRTUALS (vbases);
 
-      tmp = TREE_CHAIN (BINFO_VIRTUALS (vbases));
-      while (tmp)
+      skip_rtti_stuff (&virtuals);
+
+      while (virtuals)
 	{
-	  tree base_pfn = FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (tmp));
+	  tree base_pfn = FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals));
 	  tree base_fndecl = TREE_OPERAND (base_pfn, 0);
 	  if (DECL_ABSTRACT_VIRTUAL_P (base_fndecl))
 	    abstract_virtuals = tree_cons (NULL_TREE, base_fndecl, abstract_virtuals);
-	  tmp = TREE_CHAIN (tmp);
+	  virtuals = TREE_CHAIN (virtuals);
 	}
     }
   return nreverse (abstract_virtuals);
@@ -2293,7 +2306,7 @@ convert_pointer_to_single_level (to_type, expr)
   last = get_binfo (to_type, TREE_TYPE (TREE_TYPE (expr)), 0);
   BINFO_INHERITANCE_CHAIN (last) = binfo_of_derived;
   BINFO_INHERITANCE_CHAIN (binfo_of_derived) = NULL_TREE;
-  return build_vbase_path (PLUS_EXPR, TYPE_POINTER_TO (to_type), expr, last, 1);
+  return build_vbase_path (PLUS_EXPR, build_pointer_type (to_type), expr, last, 1);
 }
 
 /* The main function which implements depth first search.
@@ -2517,7 +2530,7 @@ dfs_find_vbases (binfo)
 	  tree binfo = binfo_member (vbase, vbase_types);
 
 	  CLASSTYPE_SEARCH_SLOT (vbase)
-	    = (char *) build (PLUS_EXPR, TYPE_POINTER_TO (vbase),
+	    = (char *) build (PLUS_EXPR, build_pointer_type (vbase),
 			      vbase_decl_ptr, BINFO_OFFSET (binfo));
 	}
     }
@@ -2549,7 +2562,7 @@ dfs_init_vbase_pointers (binfo)
 
   this_vbase_ptr = vbase_decl_ptr_intermediate;
 
-  if (TYPE_POINTER_TO (type) != TYPE_MAIN_VARIANT (TREE_TYPE (this_vbase_ptr)))
+  if (build_pointer_type (type) != TYPE_MAIN_VARIANT (TREE_TYPE (this_vbase_ptr)))
     my_friendly_abort (125);
 
   while (fields && DECL_NAME (fields)
@@ -2620,6 +2633,18 @@ virtual_context (fndecl, t, vbase)
   tree path;
   if (get_base_distance (DECL_CLASS_CONTEXT (fndecl), t, 0, &path) < 0)
     {
+      /* DECL_CLASS_CONTEXT can be ambiguous in t.  */
+      if (get_base_distance (DECL_CLASS_CONTEXT (fndecl), vbase, 0, &path) >= 0)
+	{
+	  while (path)
+	    {
+	      /* Not sure if checking path == vbase is necessary here, but just in
+		 case it is.  */
+	      if (TREE_VIA_VIRTUAL (path) || path == vbase)
+		return binfo_member (BINFO_TYPE (path), CLASSTYPE_VBASECLASSES (t));
+	      path = BINFO_INHERITANCE_CHAIN (path);
+	    }
+	}
       /* This shouldn't happen, I don't want errors! */
       warning ("recoverable compiler error, fixups for virtual function");
       return vbase;
@@ -2666,10 +2691,8 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, t, vbase_offsets)
       *vbase_offsets = delta;
     }
 
-  /* Skip RTTI fake object. */
-  n = 1;
-  if (virtuals)
-    virtuals = TREE_CHAIN (virtuals);
+  n = skip_rtti_stuff (&virtuals);
+
   while (virtuals)
     {
       tree current_fndecl = TREE_VALUE (virtuals);
@@ -2831,10 +2854,9 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr, use_computed_offsets)
 	  else
 	    {
 #if 1
-	      tree vb = get_vbase (TREE_TYPE (vbases), TYPE_BINFO (TREE_TYPE (vbase_decl)),
-				   NULL_PTR);
-	      addr = convert_pointer_to_real (vb, vbase_decl_ptr);
+	      addr = convert_pointer_to_vbase (TREE_TYPE (vbases), vbase_decl_ptr);
 #else
+	      /* This should should never work better than the above.  (mrs) */
 	      tree vbinfo = get_binfo (TREE_TYPE (vbases),
 				       TREE_TYPE (vbase_decl),
 				       0);
@@ -3069,13 +3091,107 @@ note_debug_info_needed (type)
 
 /* Subroutines of push_class_decls ().  */
 
+/* Add in a decl to the envelope.  */
+static void
+envelope_add_decl (type, decl, values)
+     tree type, decl, *values;
+{
+  tree context, *tmp;
+  tree name = DECL_NAME (decl);
+  int dont_add = 0;
+
+  /* virtual base names are always unique. */
+  if (VBASE_NAME_P (name))
+    *values = NULL_TREE;
+
+  /* Possible ambiguity.  If its defining type(s)
+     is (are all) derived from us, no problem.  */
+  else if (*values && TREE_CODE (*values) != TREE_LIST)
+    {
+      tree value = *values;
+      /* Only complain if we shadow something we can access.  */
+      if (warn_shadow && TREE_CODE (decl) == FUNCTION_DECL
+	  && ((DECL_LANG_SPECIFIC (*values)
+	       && DECL_CLASS_CONTEXT (value) == current_class_type)
+	      || ! TREE_PRIVATE (value)))
+	/* Should figure out access control more accurately.  */
+	{
+	  cp_warning_at ("member `%#D' is shadowed", value);
+	  cp_warning_at ("by member function `%#D'", decl);
+	  warning ("in this context");
+	}
+
+      context = (TREE_CODE (value) == FUNCTION_DECL
+		 && DECL_VIRTUAL_P (value))
+	? DECL_CLASS_CONTEXT (value)
+	  : DECL_CONTEXT (value);
+
+      if (context == type)
+	{
+	  if (TREE_CODE (value) == TYPE_DECL
+	      && DECL_ARTIFICIAL (value))
+	    *values = NULL_TREE;
+	  else
+	    dont_add = 1;
+	}
+      else if (context && TYPE_DERIVES_FROM (context, type))
+	{
+	  /* Don't add in *values to list */
+	  *values = NULL_TREE;
+	}
+      else
+	*values = build_tree_list (NULL_TREE, value);
+    }
+  else
+    for (tmp = values; *tmp;)
+      {
+	tree value = TREE_VALUE (*tmp);
+	my_friendly_assert (TREE_CODE (value) != TREE_LIST, 999);
+	context = (TREE_CODE (value) == FUNCTION_DECL
+		   && DECL_VIRTUAL_P (value))
+	  ? DECL_CLASS_CONTEXT (value)
+	    : DECL_CONTEXT (value);
+
+	if (context && TYPE_DERIVES_FROM (context, type))
+	  {
+	    /* remove *tmp from list */
+	    *tmp = TREE_CHAIN (*tmp);
+	  }
+	else
+	  tmp = &TREE_CHAIN (*tmp);
+      }
+
+  if (! dont_add)
+    {
+      /* Put the new contents in our envelope.  */
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	{
+	  *values = tree_cons (name, decl, *values);
+	  TREE_NONLOCAL_FLAG (*values) = 1;
+	  TREE_TYPE (*values) = unknown_type_node;
+	}
+      else
+	{
+	  if (*values)
+	    {
+	      *values = tree_cons (NULL_TREE, decl, *values);
+	      /* Mark this as a potentially ambiguous member.  */
+	      /* Leaving TREE_TYPE blank is intentional.
+		 We cannot use `error_mark_node' (lookup_name)
+		 or `unknown_type_node' (all member functions use this).  */
+	      TREE_NONLOCAL_FLAG (*values) = 1;
+	    }
+	  else
+	    *values = decl;
+	}
+    }
+}
+
 /* Add the instance variables which this class contributed to the
-   current class binding contour.  When a redefinition occurs,
-   if the redefinition is strictly within a single inheritance path,
-   we just overwrite (in the case of a data field) or
-   cons (in the case of a member function) the old declaration with
-   the new.  If the fields are not within a single inheritance path,
-   we must cons them in either case.
+   current class binding contour.  When a redefinition occurs, if the
+   redefinition is strictly within a single inheritance path, we just
+   overwrite the old declaration with the new.  If the fields are not
+   within a single inheritance path, we must cons them.
 
    In order to know what decls are new (stemming from the current
    invocation of push_class_decls) we enclose them in an "envelope",
@@ -3114,123 +3230,25 @@ dfs_pushdecls (binfo)
 	  continue;
 	}
 
-#if 0
-      if (TREE_CODE (fields) != TYPE_DECL)
-	{
-	  DECL_PUBLIC (fields) = 0;
-	  DECL_PROTECTED (fields) = 0;
-	  DECL_PRIVATE (fields) = 0;
-	}
-#endif
-
       if (DECL_NAME (fields))
 	{
-	  tree class_value = IDENTIFIER_CLASS_VALUE (DECL_NAME (fields));
+	  tree name = DECL_NAME (fields);
+	  tree class_value = IDENTIFIER_CLASS_VALUE (name);
 
-	  /* If the class value is an envelope of the kind described in
-	     the comment above, we try to rule out possible ambiguities.
-	     If we can't do that, keep a TREE_LIST with possibly ambiguous
-	     decls in there.  */
-	  if (class_value && TREE_CODE (class_value) == TREE_LIST
-	      && TREE_PURPOSE (class_value) != NULL_TREE
-	      && (TREE_CODE (TREE_PURPOSE (class_value))
-		  != IDENTIFIER_NODE))
-	    {
-	      tree value = TREE_PURPOSE (class_value);
-	      tree context;
-
-	      /* Possible ambiguity.  If its defining type(s)
-		 is (are all) derived from us, no problem.  */
-	      if (TREE_CODE (value) != TREE_LIST)
-		{
-		  context = (TREE_CODE (value) == FUNCTION_DECL
-			     && DECL_VIRTUAL_P (value))
-		    ? DECL_CLASS_CONTEXT (value)
-		      : DECL_CONTEXT (value);
-
-		  if (context == type)
-		    {
-		      if (TREE_CODE (value) == TYPE_DECL
-			  && DECL_ARTIFICIAL (value))
-			value = fields;
-		      /* else the old value wins */
-		    }
-		  else if (context && TYPE_DERIVES_FROM (context, type))
-		    value = fields;
-		  else
-		    value = tree_cons (NULL_TREE, fields,
-				       build_tree_list (NULL_TREE, value));
-		}
-	      else
-		{
-		  /* All children may derive from us, in which case
-		     there is no problem.  Otherwise, we have to
-		     keep lists around of what the ambiguities might be.  */
-		  tree values;
-		  int problem = 0;
-
-		  for (values = value; values; values = TREE_CHAIN (values))
-		    {
-		      tree sub_values = TREE_VALUE (values);
-
-		      if (TREE_CODE (sub_values) == TREE_LIST)
-			{
-			  for (; sub_values; sub_values = TREE_CHAIN (sub_values))
-			    {
-			      register tree list_mbr = TREE_VALUE (sub_values);
-
-			      context = (TREE_CODE (list_mbr) == FUNCTION_DECL
-					 && DECL_VIRTUAL_P (list_mbr))
-				? DECL_CLASS_CONTEXT (list_mbr)
-				  : DECL_CONTEXT (list_mbr);
-
-			      if (! TYPE_DERIVES_FROM (context, type))
-				{
-				  value = tree_cons (NULL_TREE, TREE_VALUE (values), value);
-				  problem = 1;
-				  break;
-				}
-			    }
-			}
-		      else
-			{
-			  context = (TREE_CODE (sub_values) == FUNCTION_DECL
-				     && DECL_VIRTUAL_P (sub_values))
-			    ? DECL_CLASS_CONTEXT (sub_values)
-			      : DECL_CONTEXT (sub_values);
-
-			  if (context && ! TYPE_DERIVES_FROM (context, type))
-			    {
-			      value = tree_cons (NULL_TREE, values, value);
-			      problem = 1;
-			      break;
-			    }
-			}
-		    }
-		  if (! problem) value = fields;
-		}
-
-	      /* Mark this as a potentially ambiguous member.  */
-	      if (TREE_CODE (value) == TREE_LIST)
-		{
-		  /* Leaving TREE_TYPE blank is intentional.
-		     We cannot use `error_mark_node' (lookup_name)
-		     or `unknown_type_node' (all member functions use this).  */
-		  TREE_NONLOCAL_FLAG (value) = 1;
-		}
-
-	      /* Put the new contents in our envelope.  */
-	      TREE_PURPOSE (class_value) = value;
-	    }
-	  else
+	  /* If the class value is not an envelope of the kind described in
+	     the comment above, we create a new envelope.  */
+	  if (class_value == NULL_TREE || TREE_CODE (class_value) != TREE_LIST
+	      || TREE_PURPOSE (class_value) == NULL_TREE
+	      || TREE_CODE (TREE_PURPOSE (class_value)) == IDENTIFIER_NODE)
 	    {
 	      /* See comment above for a description of envelopes.  */
-	      tree envelope = tree_cons (fields, class_value,
-					 closed_envelopes);
-
-	      closed_envelopes = envelope;
-	      IDENTIFIER_CLASS_VALUE (DECL_NAME (fields)) = envelope;
+	      closed_envelopes = tree_cons (NULL_TREE, class_value,
+					    closed_envelopes);
+	      IDENTIFIER_CLASS_VALUE (name) = closed_envelopes;
+	      class_value = IDENTIFIER_CLASS_VALUE (name);
 	    }
+
+	  envelope_add_decl (type, fields, &TREE_PURPOSE (class_value));
 	}
     }
 
@@ -3241,78 +3259,32 @@ dfs_pushdecls (binfo)
       methods = &TREE_VEC_ELT (method_vec, 1);
       end = TREE_VEC_END (method_vec);
 
-      /* This does not work for multiple inheritance yet.  */
       while (methods != end)
 	{
 	  /* This will cause lookup_name to return a pointer
-	     to the tree_list of possible methods of this name.
-	     If the order is a problem, we can nreverse them.  */
-	  tree tmp;
-	  tree class_value = IDENTIFIER_CLASS_VALUE (DECL_NAME (*methods));
+	     to the tree_list of possible methods of this name.  */
+	  tree name = DECL_NAME (*methods);
+	  tree class_value = IDENTIFIER_CLASS_VALUE (name);
 
-	  if (class_value && TREE_CODE (class_value) == TREE_LIST
-	      && TREE_PURPOSE (class_value) != NULL_TREE
-	      && TREE_CODE (TREE_PURPOSE (class_value)) != IDENTIFIER_NODE)
+	  /* If the class value is not an envelope of the kind described in
+	     the comment above, we create a new envelope.  */
+	  if (class_value == NULL_TREE || TREE_CODE (class_value) != TREE_LIST
+	      || TREE_PURPOSE (class_value) == NULL_TREE
+	      || TREE_CODE (TREE_PURPOSE (class_value)) == IDENTIFIER_NODE)
 	    {
-	      tree old = TREE_PURPOSE (class_value);
-
-	      maybe_push_cache_obstack ();
-	      if (TREE_CODE (old) == TREE_LIST)
-		tmp = tree_cons (DECL_NAME (*methods), *methods, old);
-	      else
-		{
-		  /* Only complain if we shadow something we can access.  */
-		  if (old
-		      && warn_shadow
-		      && ((DECL_LANG_SPECIFIC (old)
-			   && DECL_CLASS_CONTEXT (old) == current_class_type)
-			  || ! TREE_PRIVATE (old)))
-		    /* Should figure out access control more accurately.  */
-		    {
-		      cp_warning_at ("member `%#D' is shadowed", old);
-		      cp_warning_at ("by member function `%#D'", *methods);
-		      warning ("in this context");
-		    }
-		  tmp = build_tree_list (DECL_NAME (*methods), *methods);
-		}
-	      pop_obstacks ();
-
-	      TREE_TYPE (tmp) = unknown_type_node;
-#if 0
-	      TREE_OVERLOADED (tmp) = DECL_OVERLOADED (*methods);
-#endif
-	      TREE_NONLOCAL_FLAG (tmp) = 1;
-	      
-	      /* Put the new contents in our envelope.  */
-	      TREE_PURPOSE (class_value) = tmp;
-	    }
-	  else
-	    {
-	      maybe_push_cache_obstack ();
-	      tmp = build_tree_list (DECL_NAME (*methods), *methods);
-	      pop_obstacks ();
-
-	      TREE_TYPE (tmp) = unknown_type_node;
-#if 0
-	      TREE_OVERLOADED (tmp) = DECL_OVERLOADED (*methods);
-#endif
-	      TREE_NONLOCAL_FLAG (tmp) = 1;
-	      
 	      /* See comment above for a description of envelopes.  */
-	      closed_envelopes = tree_cons (tmp, class_value,
+	      closed_envelopes = tree_cons (NULL_TREE, class_value,
 					    closed_envelopes);
-	      IDENTIFIER_CLASS_VALUE (DECL_NAME (*methods)) = closed_envelopes;
+	      IDENTIFIER_CLASS_VALUE (name) = closed_envelopes;
+	      class_value = IDENTIFIER_CLASS_VALUE (name);
 	    }
-#if 0
-	  tmp = *methods;
-	  while (tmp != 0)
-	    {
-	      DECL_PUBLIC (tmp) = 0;
-	      DECL_PROTECTED (tmp) = 0;
-	      DECL_PRIVATE (tmp) = 0;
-	      tmp = DECL_CHAIN (tmp);
-	    }
-#endif
+
+	  /* Here we try to rule out possible ambiguities.
+	     If we can't do that, keep a TREE_LIST with possibly ambiguous
+	     decls in there.  */
+	  maybe_push_cache_obstack ();
+	  envelope_add_decl (type, *methods, &TREE_PURPOSE (class_value));
+	  pop_obstacks ();
 
 	  methods++;
 	}
@@ -3369,41 +3341,6 @@ push_class_decls (type)
 {
   tree id;
   struct obstack *ambient_obstack = current_obstack;
-
-#if 0
-  tree tags = CLASSTYPE_TAGS (type);
-
-  while (tags)
-    {
-      tree code_type_node;
-      tree tag;
-
-      switch (TREE_CODE (TREE_VALUE (tags)))
-	{
-	case ENUMERAL_TYPE:
-	  code_type_node = enum_type_node;
-	  break;
-	case RECORD_TYPE:
-	  code_type_node = record_type_node;
-	  break;
-	case CLASS_TYPE:
-	  code_type_node = class_type_node;
-	  break;
-	case UNION_TYPE:
-	  code_type_node = union_type_node;
-	  break;
-	default:
-	  my_friendly_abort (297);
-	}
-      tag = xref_tag (code_type_node, TREE_PURPOSE (tags),
-		      TYPE_BINFO_BASETYPE (TREE_VALUE (tags), 0), 0);
-#if 0 /* not yet, should get fixed properly later */
-      pushdecl (make_type_decl (TREE_PURPOSE (tags), TREE_VALUE (tags)));
-#else
-      pushdecl (build_decl (TYPE_DECL, TREE_PURPOSE (tags), TREE_VALUE (tags)));
-#endif
-    }
-#endif
 
   search_stack = push_search_level (search_stack, &search_obstack);
 

@@ -165,14 +165,6 @@ report_type_mismatch (cp, parmtypes, name_kind)
 		cp->function);
       return;
 
-    case -3:
-      if (TYPE_READONLY (TREE_TYPE (TREE_VALUE (parmtypes))))
-	cp_error ("call to const %s `%#D' with non-const object", name_kind,
-		  cp->function);
-      else
-	cp_error ("call to non-const %s `%#D' with const object", name_kind,
-		  cp->function);
-      return;
     case -2:
       cp_error ("too few arguments for %s `%#D'", name_kind, cp->function);
       return;
@@ -180,14 +172,15 @@ report_type_mismatch (cp, parmtypes, name_kind)
       cp_error ("too many arguments for %s `%#D'", name_kind, cp->function);
       return;
     case 0:
-      if (TREE_CODE (TREE_TYPE (cp->function)) == METHOD_TYPE)
-	{
-	  /* Happens when we have an ambiguous base class.  */
-	  my_friendly_assert (get_binfo (DECL_CLASS_CONTEXT (cp->function),
-			     TREE_TYPE (TREE_TYPE (TREE_VALUE (parmtypes))), 1) == error_mark_node,
-			      241);
-	  return;
-	}
+      if (TREE_CODE (TREE_TYPE (cp->function)) != METHOD_TYPE)
+	break;
+    case -3:
+      /* Happens when the implicit object parameter is rejected.  */
+      my_friendly_assert (! TYPE_READONLY (TREE_TYPE (TREE_VALUE (parmtypes))),
+			  241);
+      cp_error ("call to non-const %s `%#D' with const object",
+		name_kind, cp->function);
+      return;
     }
 
   ttf = TYPE_ARG_TYPES (TREE_TYPE (cp->function));
@@ -510,6 +503,12 @@ build_overload_value (type, value)
 		}
 	    }
 	  sorry ("template instantiation with pointer to method that is too complex");
+	  return;
+	}
+      if (TREE_CODE (value) == INTEGER_CST)
+	{
+	  build_overload_int (value);
+	  numeric_output_need_bar = 1;
 	  return;
 	}
       value = TREE_OPERAND (value, 0);
@@ -1803,7 +1802,9 @@ make_thunk (function, delta)
     {
       thunk = build_decl (THUNK_DECL, thunk_id, TREE_TYPE (func_decl));
       DECL_RESULT (thunk)
-	= build_decl (RESULT_DECL, NULL_TREE, TREE_TYPE (vtable_entry_type));
+	= build_decl (RESULT_DECL, 0, TYPE_MAIN_VARIANT (TREE_TYPE (vtable_entry_type)));
+      TREE_READONLY (thunk) = TYPE_READONLY (TREE_TYPE (vtable_entry_type));
+      TREE_THIS_VOLATILE (thunk) = TYPE_VOLATILE (TREE_TYPE (vtable_entry_type));
       make_function_rtl (thunk);
       DECL_INITIAL (thunk) = function;
       THUNK_DELTA (thunk) = delta;
@@ -2249,7 +2250,7 @@ synthesize_method (fndecl)
   input_filename = DECL_SOURCE_FILE (fndecl);
   interface_unknown = CLASSTYPE_INTERFACE_UNKNOWN (base);
   interface_only = CLASSTYPE_INTERFACE_ONLY (base);
-  start_function (NULL_TREE, fndecl, NULL_TREE, 1);
+  start_function (NULL_TREE, fndecl, NULL_TREE, NULL_TREE, 1);
   store_parm_decls ();
 
   if (DECL_NAME (fndecl) == ansi_opname[MODIFY_EXPR])

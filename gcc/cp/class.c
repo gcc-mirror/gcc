@@ -188,6 +188,9 @@ build_vbase_path (code, type, expr, path, alias_this)
   tree basetype;
   tree offset = integer_zero_node;
 
+  if (nonnull == 0 && (alias_this && flag_this_is_variable <= 0))
+    nonnull = 1;
+
   /* We need additional logic to convert back to the unconverted type
      (the static type of the complete object), and then convert back
      to the type we want.  Until that is done, or until we can
@@ -244,8 +247,8 @@ build_vbase_path (code, type, expr, path, alias_this)
 			  || !flag_assume_nonnull_objects)
 		      && null_expr == NULL_TREE)
 		    {
-		      null_expr = build1 (NOP_EXPR, TYPE_POINTER_TO (last_virtual), integer_zero_node);
-		      expr = build (COND_EXPR, TYPE_POINTER_TO (last_virtual),
+		      null_expr = build1 (NOP_EXPR, build_pointer_type (last_virtual), integer_zero_node);
+		      expr = build (COND_EXPR, build_pointer_type (last_virtual),
 				    build (EQ_EXPR, boolean_type_node, expr,
 					   integer_zero_node),
 				    null_expr, nonnull_expr);
@@ -286,12 +289,9 @@ build_vbase_path (code, type, expr, path, alias_this)
   if (changed)
     {
       tree intype = TREE_TYPE (TREE_TYPE (expr));
-      if (TYPE_MAIN_VARIANT (intype) == BINFO_TYPE (last))
-	basetype = intype;
-      else
+      if (TYPE_MAIN_VARIANT (intype) != BINFO_TYPE (last))
 	{
 	  tree binfo = get_binfo (last, TYPE_MAIN_VARIANT (intype), 0);
-	  basetype = last;
 	  offset = BINFO_OFFSET (binfo);
 	}
     }
@@ -319,7 +319,7 @@ build_vbase_path (code, type, expr, path, alias_this)
 	 case of constructors need we worry, and in those cases,
 	 it will be zero, or initialized to some valid value to
 	 which we may add.  */
-      if (nonnull == 0 && (alias_this == 0 || flag_this_is_variable > 0))
+      if (nonnull == 0)
 	{
 	  if (null_expr)
 	    TREE_TYPE (null_expr) = type;
@@ -641,6 +641,36 @@ build_type_pathname (format, parent, type)
   return id;
 }
 
+/* Update the rtti info for this class.  */
+static void
+set_rtti_entry (virtuals, offset, type)
+     tree virtuals, offset, type;
+{
+  if (! flag_vtable_thunks)
+    TREE_VALUE (virtuals)
+      = build_vtable_entry (offset,
+			    (flag_rtti
+			     ? build_t_desc (type, 0)
+			     : integer_zero_node));
+  else
+    {
+      tree vfn = build1 (NOP_EXPR, vfunc_ptr_type_node, offset);
+      TREE_CONSTANT (vfn) = 1;
+
+      TREE_VALUE (virtuals)
+	= build_vtable_entry (integer_zero_node, vfn);
+      /* The second slot is for the tdesc pointer when thunks are used.  */
+      vfn = flag_rtti
+	     ? build_t_desc (type, 0)
+	     : integer_zero_node;
+      vfn = build1 (NOP_EXPR, vfunc_ptr_type_node, vfn);
+      TREE_CONSTANT (vfn) = 1;
+
+      TREE_VALUE (TREE_CHAIN (virtuals))
+	= build_vtable_entry (integer_zero_node, vfn);
+    }
+}
+
 /* Give TYPE a new virtual function table which is initialized
    with a skeleton-copy of its original initialization.  The only
    entry that changes is the `delta' entry, so we can really
@@ -684,11 +714,9 @@ prepare_fresh_vtable (binfo, for_type)
   else
     offset = BINFO_OFFSET (binfo);
 
-  /* Install the value for `headof' if that's what we're doing.  */
-  if (flag_rtti)
-    TREE_VALUE (BINFO_VIRTUALS (binfo))
-      = build_vtable_entry (size_binop (MINUS_EXPR, integer_zero_node, offset),
-			    build_t_desc (for_type, 0));
+  set_rtti_entry (BINFO_VIRTUALS (binfo),
+		  size_binop (MINUS_EXPR, integer_zero_node, offset),
+		  for_type);
 
 #ifdef GATHER_STATISTICS
   n_vtables += 1;
@@ -713,19 +741,19 @@ static tree
 get_vtable_entry (virtuals, base_fndecl)
      tree virtuals, base_fndecl;
 {
-  unsigned HOST_WIDE_INT i = (HOST_BITS_PER_WIDE_INT >= BITS_PER_WORD
+  unsigned HOST_WIDE_INT n = (HOST_BITS_PER_WIDE_INT >= BITS_PER_WORD
 	   ? (TREE_INT_CST_LOW (DECL_VINDEX (base_fndecl))
 	      & (((unsigned HOST_WIDE_INT)1<<(BITS_PER_WORD-1))-1))
 	   : TREE_INT_CST_LOW (DECL_VINDEX (base_fndecl)));
 
 #ifdef GATHER_STATISTICS
-  n_vtable_searches += i;
+  n_vtable_searches += n;
 #endif
 
-  while (i > 0 && virtuals)
+  while (n > 0 && virtuals)
     {
+      --n;
       virtuals = TREE_CHAIN (virtuals);
-      i -= 1;
     }
   return virtuals;
 }
@@ -759,14 +787,14 @@ modify_vtable_entry (old_entry_in_list, new_entry, fndecl)
 /* Access the virtual function table entry i.  VIRTUALS is the virtual
    function table's initializer.  */
 static tree
-get_vtable_entry_n (virtuals, i)
+get_vtable_entry_n (virtuals, n)
      tree virtuals;
-     unsigned HOST_WIDE_INT i;
+     unsigned HOST_WIDE_INT n;
 {
-  while (i > 0)
+  while (n > 0)
     {
+      --n;
       virtuals = TREE_CHAIN (virtuals);
-      i -= 1;
     }
   return virtuals;
 }
@@ -811,15 +839,20 @@ add_virtual_function (pending_virtuals, has_virtual, fndecl, t)
 	{
 	  /* CLASSTYPE_RTTI is only used as a Boolean (NULL or not). */
 	  CLASSTYPE_RTTI (t) = integer_one_node;
-#if 0
-	  *has_virtual = 1;
-#endif
         }
+
+      /* If we are using thunks, use two slots at the front, one
+	 for the offset pointer, one for the tdesc pointer.  */
+      if (*has_virtual == 0 && flag_vtable_thunks)
+	{
+	  *has_virtual = 1;
+	}
 
       /* Build a new INT_CST for this DECL_VINDEX.  */
       {
 	static tree index_table[256];
 	tree index;
+	/* We skip a slot for the offset/tdesc entry.  */
 	int i = ++(*has_virtual);
 
 	if (i >= 256 || index_table[i] == 0)
@@ -2225,6 +2258,30 @@ get_class_offset (context, t, binfo, fndecl)
   return offset;
 }
 
+/* Skip RTTI information at the front of the virtual list.  */
+unsigned HOST_WIDE_INT
+skip_rtti_stuff (virtuals)
+     tree *virtuals;
+{
+  int n;
+
+  n = 0;
+  if (*virtuals)
+    {
+      /* We always reserve a slot for the offset/tdesc entry.  */
+      ++n;
+      *virtuals = TREE_CHAIN (*virtuals);
+    }
+  if (flag_vtable_thunks && *virtuals)
+    {
+      /* The second slot is reserved for the tdesc pointer when thunks
+         are used.  */
+      ++n;
+      *virtuals = TREE_CHAIN (*virtuals);
+    }
+  return n;
+}
+
 static void
 modify_one_vtable (binfo, t, fndecl, pfn)
      tree binfo, t, fndecl, pfn;
@@ -2247,12 +2304,11 @@ modify_one_vtable (binfo, t, fndecl, pfn)
 	    prepare_fresh_vtable (binfo, t);
 	}
     }
-  if (fndecl == NULL_TREE) return;
+  if (fndecl == NULL_TREE)
+    return;
 
-  /* Skip RTTI fake object. */
-  n = 1;
-  if (virtuals)
-    virtuals = TREE_CHAIN (virtuals);
+  n = skip_rtti_stuff (&virtuals);
+
   while (virtuals)
     {
       tree current_fndecl = TREE_VALUE (virtuals);
@@ -2346,10 +2402,8 @@ fixup_vtable_deltas1 (binfo, t)
   tree virtuals = BINFO_VIRTUALS (binfo);
   unsigned HOST_WIDE_INT n;
   
-  /* Skip RTTI fake object. */
-  n = 1;
-  if (virtuals)
-    virtuals = TREE_CHAIN (virtuals);
+  n = skip_rtti_stuff (&virtuals);
+
   while (virtuals)
     {
       tree fndecl = TREE_VALUE (virtuals);
@@ -2517,9 +2571,8 @@ override_one_vtable (binfo, old, t)
   if (BINFO_NEW_VTABLE_MARKED (binfo))
     choose = NEITHER;
 
-  /* Skip RTTI fake object. */
-  virtuals = TREE_CHAIN (virtuals);
-  old_virtuals = TREE_CHAIN (old_virtuals);
+  skip_rtti_stuff (&virtuals);
+  skip_rtti_stuff (&old_virtuals);
 
   while (virtuals)
     {
@@ -2640,6 +2693,8 @@ merge_overrides (binfo, old, do_self, t)
     }
 }
 
+extern int interface_only, interface_unknown;
+
 /* Create a RECORD_TYPE or UNION_TYPE node for a C struct or union declaration
    (or C++ class declaration).
 
@@ -2700,22 +2755,19 @@ merge_overrides (binfo, old, do_self, t)
    or otherwise in a type-consistent manner.  */
 
 tree
-finish_struct (t, list_of_fieldlists, warn_anon)
+finish_struct_1 (t, warn_anon)
      tree t;
-     tree list_of_fieldlists;
      int warn_anon;
 {
-  extern int interface_only, interface_unknown;
-
   int old;
   int round_up_size = 1;
 
+  tree name = TYPE_IDENTIFIER (t);
   enum tree_code code = TREE_CODE (t);
-  register tree x, last_x, method_vec;
+  tree fields = TYPE_FIELDS (t);
+  tree fn_fields = CLASSTYPE_METHODS (t);
+  tree x, last_x, method_vec;
   int needs_virtual_dtor;
-  tree name = TYPE_NAME (t), fields, fn_fields, *tail;
-  tree *tail_user_methods = &CLASSTYPE_METHODS (t);
-  enum access_type access;
   int all_virtual;
   int has_virtual;
   int max_has_virtual;
@@ -2740,37 +2792,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   int nonprivate_method = 0;
   tree t_binfo = TYPE_BINFO (t);
   tree access_decls = NULL_TREE;
+  int aggregate = 1;
 
-  if (TREE_CODE (name) == TYPE_DECL)
-    {
-#if 0				/* Maybe later.  -jason  */
-      struct tinst_level *til = tinst_for_decl();
-
-      if (til)
-	{
-	  DECL_SOURCE_FILE (name) = til->file;
-	  if (DECL_SOURCE_LINE (name))
-	    DECL_SOURCE_LINE (name) = til->line;
-	}
-      else
-#endif
-	{
-	  extern int lineno;
-	  
-	  DECL_SOURCE_FILE (name) = input_filename;
-	  /* For TYPE_DECL that are not typedefs (those marked with a line
-	     number of zero, we don't want to mark them as real typedefs.
-	     If this fails one needs to make sure real typedefs have a
-	     previous line number, even if it is wrong, that way the below
-	     will fill in the right line number.  (mrs) */
-	  if (DECL_SOURCE_LINE (name))
-	    DECL_SOURCE_LINE (name) = lineno;
-	  CLASSTYPE_SOURCE_LINE (t) = lineno;
-	}
-      name = DECL_NAME (name);
-    }
-
-  if (warn_anon && code != UNION_TYPE && ANON_AGGRNAME_P (name))
+  if (warn_anon && code != UNION_TYPE && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
     pedwarn ("anonymous class type not used to declare any objects");
 
   if (TYPE_SIZE (t))
@@ -2788,10 +2812,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       pedwarn ("types cannot be defined %s",
 	       dont_allow_type_definitions);
     }
-
-  /* Append the fields we need for constructing signature tables.  */
-  if (IS_SIGNATURE (t))
-    append_signature_fields (list_of_fieldlists);
 
   GNU_xref_decl (current_function_decl, t);
 
@@ -2838,8 +2858,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 
       /* If using multiple inheritance, this may cause variants of our
 	 basetypes to be used (instead of their canonical forms).  */
-      fields = layout_basetypes (t, BINFO_BASETYPES (t_binfo));
-      last_x = tree_last (fields);
+      tree vf = layout_basetypes (t, BINFO_BASETYPES (t_binfo));
+      last_x = tree_last (vf);
+      fields = chainon (vf, fields);
 
       first_vfn_base_index = finish_base_struct (t, &base_info, t_binfo);
       /* Remember where we got our vfield from */
@@ -2856,6 +2877,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       no_const_asn_ref = base_info.no_const_asn_ref;
       needs_virtual_dtor = base_info.needs_virtual_dtor;
       n_baseclasses = TREE_VEC_LENGTH (BINFO_BASETYPES (t_binfo));
+      aggregate = 0;
     }
   else
     {
@@ -2864,7 +2886,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       max_has_virtual = has_virtual;
       vfield = NULL_TREE;
       vfields = NULL_TREE;
-      fields = NULL_TREE;
       last_x = NULL_TREE;
       cant_have_default_ctor = 0;
       cant_have_const_ctor = 0;
@@ -2892,10 +2913,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   CLASSTYPE_VFIELDS (t) = vfields;
   CLASSTYPE_VFIELD (t) = vfield;
 
-  tail = &fn_fields;
-  if (last_x && list_of_fieldlists)
-    TREE_CHAIN (last_x) = TREE_VALUE (list_of_fieldlists);
-
   if (IS_SIGNATURE (t))
     all_virtual = 0;
   else if (flag_all_virtual == 1 && TYPE_OVERLOADS_METHOD_CALL_EXPR (t))
@@ -2903,426 +2920,359 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   else
     all_virtual = 0;
 
-  /* For signatures, we made all methods `public' in the parser and
-     reported an error if a access specifier was used.  */
-  if (CLASSTYPE_DECLARED_CLASS (t) == 0)
+  for (x = CLASSTYPE_METHODS (t); x; x = TREE_CHAIN (x))
     {
-      nonprivate_method = 1;
-      if (list_of_fieldlists
-	  && TREE_PURPOSE (list_of_fieldlists) == (tree)access_default)
-	TREE_PURPOSE (list_of_fieldlists) = (tree)access_public;
-    }
-  else if (list_of_fieldlists
-	   && TREE_PURPOSE (list_of_fieldlists) == (tree)access_default)
-    TREE_PURPOSE (list_of_fieldlists) = (tree)access_private;
+      GNU_xref_member (current_class_name, x);
 
-  while (list_of_fieldlists)
-    {
-      access = (enum access_type)TREE_PURPOSE (list_of_fieldlists);
+      nonprivate_method |= ! TREE_PRIVATE (x);
 
-      for (x = TREE_VALUE (list_of_fieldlists); x; x = TREE_CHAIN (x))
+      /* If this was an evil function, don't keep it in class.  */
+      if (IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (x)))
+	continue;
+
+      DECL_CLASS_CONTEXT (x) = t;
+
+      /* Do both of these, even though they're in the same union;
+	 if the insn `r' member and the size `i' member are
+	 different sizes, as on the alpha, the larger of the two
+	 will end up with garbage in it.  */
+      DECL_SAVED_INSNS (x) = NULL_RTX;
+      DECL_FIELD_SIZE (x) = 0;
+
+      /* The name of the field is the original field name
+	 Save this in auxiliary field for later overloading.  */
+      if (DECL_VINDEX (x)
+	  || (all_virtual == 1 && ! DECL_CONSTRUCTOR_P (x)))
 	{
-	  TREE_PRIVATE (x) = access == access_private;
-	  TREE_PROTECTED (x) = access == access_protected;
-	  GNU_xref_member (current_class_name, x);
+	  pending_virtuals = add_virtual_function (pending_virtuals,
+						   &has_virtual, x, t);
+	  if (DECL_ABSTRACT_VIRTUAL_P (x))
+	    abstract_virtuals = tree_cons (NULL_TREE, x, abstract_virtuals);
+	  else
+	    TREE_USED (x) = 1;
+	}
+    }
 
-          if (TREE_CODE (x) == TYPE_DECL)
-            {
-	      /* Make sure we set this up.  In find_scoped_type, it explicitly
-		 looks for a TYPE_DECL in the TYPE_FIELDS list.  If we don't
-		 do this here, we'll miss including this TYPE_DECL in the
-		 list.  */
-	      if (! fields)
-		fields = x;
-	      last_x = x;
-	      continue;
-	    }
+  for (x = TYPE_FIELDS (t); x; x = TREE_CHAIN (x))
+    {
+      GNU_xref_member (current_class_name, x);
 
-	  /* Check for inconsistent use of this name in the class body.
-             Enums, types and static vars have already been checked.  */
-	  if (TREE_CODE (x) != CONST_DECL && TREE_CODE (x) != VAR_DECL)
-	    {
-	      tree name = DECL_NAME (x);
-	      tree icv;
+      /* Handle access declarations.  */
+      if (DECL_NAME (x) && TREE_CODE (DECL_NAME (x)) == SCOPE_REF)
+	{
+	  tree fdecl = TREE_OPERAND (DECL_NAME (x), 1);
+	  enum access_type access
+	    = TREE_PRIVATE (x) ? access_private :
+	      TREE_PROTECTED (x) ? access_protected : access_public;
 
-	      /* Don't get confused by access decls.  */
-	      if (name && TREE_CODE (name) == IDENTIFIER_NODE)
-		icv = IDENTIFIER_CLASS_VALUE (name);
-	      else
-		icv = NULL_TREE;
+	  if (last_x)
+	    TREE_CHAIN (last_x) = TREE_CHAIN (x);
+	  else
+	    fields = TREE_CHAIN (x);
 
-	      if (icv
-		  /* Don't complain about constructors.  */
-		  && name != constructor_name (current_class_type)
-		  /* Or inherited names.  */
-		  && id_in_current_class (name)
-		  /* Or shadowed tags.  */
-		  && !(TREE_CODE (icv) == TYPE_DECL
-		       && DECL_CONTEXT (icv) == t))
-		{
-		  cp_error_at ("declaration of identifier `%D' as `%+#D'",
-			       name, x);
-		  cp_error_at ("conflicts with other use in class as `%#D'",
-			       icv);
-		}
-	    }
+	  access_decls = tree_cons ((tree) access, fdecl, access_decls);
+	  continue;
+	}
 
-	  if (TREE_CODE (x) == FUNCTION_DECL)
-	    {
-	      nonprivate_method |= ! TREE_PRIVATE (x);
+      last_x = x;
 
-	      /* If this was an evil function, don't keep it in class.  */
-	      if (IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (x)))
-		continue;
+      if (TREE_CODE (x) == TYPE_DECL)
+	continue;
 
-	      if (last_x)
-		TREE_CHAIN (last_x) = TREE_CHAIN (x);
-	      /* Link x onto end of fn_fields and CLASSTYPE_METHODS. */
-	      *tail = x;
-	      tail = &TREE_CHAIN (x);
-	      *tail_user_methods = x;
-	      tail_user_methods = &DECL_NEXT_METHOD (x);
+      /* If we've gotten this far, it's a data member, possibly static,
+	 or an enumerator. */
 
-	      DECL_CLASS_CONTEXT (x) = t;
+      DECL_FIELD_CONTEXT (x) = t;
 
-	      /* Do both of these, even though they're in the same union;
-		 if the insn `r' member and the size `i' member are
-		 different sizes, as on the alpha, the larger of the two
-		 will end up with garbage in it.  */
-	      DECL_SAVED_INSNS (x) = NULL_RTX;
-	      DECL_FIELD_SIZE (x) = 0;
+      /* ``A local class cannot have static data members.'' ARM 9.4 */
+      if (current_function_decl && TREE_STATIC (x))
+	cp_error_at ("field `%D' in local class cannot be static", x);
 
-	      /* The name of the field is the original field name
-		 Save this in auxiliary field for later overloading.  */
-	      if (DECL_VINDEX (x)
-		  || (all_virtual == 1 && ! DECL_CONSTRUCTOR_P (x)))
-		{
-                  pending_virtuals = add_virtual_function (pending_virtuals,
-                                                           &has_virtual, x, t);
-                  if (DECL_ABSTRACT_VIRTUAL_P (x))
-                    abstract_virtuals = tree_cons (NULL_TREE, x, abstract_virtuals);
-		}
-	      continue;
-	    }
-
-	  /* Handle access declarations.  */
-	  if (DECL_NAME (x) && TREE_CODE (DECL_NAME (x)) == SCOPE_REF)
-	    {
-	      tree fdecl = TREE_OPERAND (DECL_NAME (x), 1);
-
-	      if (last_x)
-		TREE_CHAIN (last_x) = TREE_CHAIN (x);
-	      access_decls = tree_cons ((tree) access, fdecl, access_decls);
-	      continue;
-	    }
-
-	  /* If we've gotten this far, it's a data member, possibly static,
-	     or an enumerator. */
-
-	  DECL_FIELD_CONTEXT (x) = t;
-
-	  /* ``A local class cannot have static data members.'' ARM 9.4 */
-	  if (current_function_decl && TREE_STATIC (x))
-	    cp_error_at ("field `%D' in local class cannot be static", x);
-
-	  /* Perform error checking that did not get done in
-             grokdeclarator.  */
-	  if (TREE_CODE (TREE_TYPE (x)) == FUNCTION_TYPE)
-	    {
-	      cp_error_at ("field `%D' invalidly declared function type",
-			x);
-	      TREE_TYPE (x) = build_pointer_type (TREE_TYPE (x));
-	    }
-	  else if (TREE_CODE (TREE_TYPE (x)) == METHOD_TYPE)
-	    {
-	      cp_error_at ("field `%D' invalidly declared method type", x);
-		  TREE_TYPE (x) = build_pointer_type (TREE_TYPE (x));
-	    }
-	  else if (TREE_CODE (TREE_TYPE (x)) == OFFSET_TYPE)
-	    {
-	      cp_error_at ("field `%D' invalidly declared offset type", x);
-	      TREE_TYPE (x) = build_pointer_type (TREE_TYPE (x));
-	    }
+      /* Perform error checking that did not get done in
+	 grokdeclarator.  */
+      if (TREE_CODE (TREE_TYPE (x)) == FUNCTION_TYPE)
+	{
+	  cp_error_at ("field `%D' invalidly declared function type",
+		       x);
+	  TREE_TYPE (x) = build_pointer_type (TREE_TYPE (x));
+	}
+      else if (TREE_CODE (TREE_TYPE (x)) == METHOD_TYPE)
+	{
+	  cp_error_at ("field `%D' invalidly declared method type", x);
+	  TREE_TYPE (x) = build_pointer_type (TREE_TYPE (x));
+	}
+      else if (TREE_CODE (TREE_TYPE (x)) == OFFSET_TYPE)
+	{
+	  cp_error_at ("field `%D' invalidly declared offset type", x);
+	  TREE_TYPE (x) = build_pointer_type (TREE_TYPE (x));
+	}
 
 #if 0
-	  if (DECL_NAME (x) == constructor_name (t))
-	    cant_have_default_ctor = cant_synth_copy_ctor = 1;
+      if (DECL_NAME (x) == constructor_name (t))
+	cant_have_default_ctor = cant_synth_copy_ctor = 1;
 #endif
 
-	  if (TREE_TYPE (x) == error_mark_node)
-	    continue;
+      if (TREE_TYPE (x) == error_mark_node)
+	continue;
 	  
-	  if (! fields)
-	    fields = x;
-	  last_x = x;
+      DECL_SAVED_INSNS (x) = NULL_RTX;
+      DECL_FIELD_SIZE (x) = 0;
 
-	  DECL_SAVED_INSNS (x) = NULL_RTX;
-	  DECL_FIELD_SIZE (x) = 0;
+      /* When this goes into scope, it will be a non-local reference.  */
+      DECL_NONLOCAL (x) = 1;
 
-	  /* When this goes into scope, it will be a non-local reference.  */
-	  DECL_NONLOCAL (x) = 1;
+      if (TREE_CODE (x) == CONST_DECL)
+	continue;
 
-	  if (TREE_CODE (x) == CONST_DECL)
-	    continue;
-
-	  if (TREE_CODE (x) == VAR_DECL)
-	    {
-	      if (TREE_CODE (t) == UNION_TYPE)
-		/* Unions cannot have static members.  */
-		cp_error_at ("field `%D' declared static in union", x);
+      if (TREE_CODE (x) == VAR_DECL)
+	{
+	  if (TREE_CODE (t) == UNION_TYPE)
+	    /* Unions cannot have static members.  */
+	    cp_error_at ("field `%D' declared static in union", x);
 	      
-	      continue;
-	    }
+	  continue;
+	}
 
-	  /* Now it can only be a FIELD_DECL.  */
+      /* Now it can only be a FIELD_DECL.  */
 
-	  /* If this is of reference type, check if it needs an init.
-	     Also do a little ANSI jig if necessary.  */
-	  if (TREE_CODE (TREE_TYPE (x)) == REFERENCE_TYPE)
+      if (TREE_PRIVATE (x) || TREE_PROTECTED (x))
+	aggregate = 0;
+
+      /* If this is of reference type, check if it needs an init.
+	 Also do a little ANSI jig if necessary.  */
+      if (TREE_CODE (TREE_TYPE (x)) == REFERENCE_TYPE)
+ 	{
+	  if (DECL_INITIAL (x) == NULL_TREE)
+	    ref_sans_init = 1;
+
+	  /* ARM $12.6.2: [A member initializer list] (or, for an
+	     aggregate, initialization by a brace-enclosed list) is the
+	     only way to initialize nonstatic const and reference
+	     members.  */
+	  cant_synth_asn_ref = 1;
+	  cant_have_default_ctor = 1;
+
+	  if (! TYPE_HAS_CONSTRUCTOR (t) && extra_warnings)
 	    {
-	      if (DECL_INITIAL (x) == NULL_TREE)
-		ref_sans_init = 1;
-
-	      /* ARM $12.6.2: [A member initializer list] (or, for an
-		 aggregate, initialization by a brace-enclosed list) is the
-		 only way to initialize nonstatic const and reference
-		 members.  */
-	      cant_synth_asn_ref = 1;
-	      cant_have_default_ctor = 1;
-
-	      if (! TYPE_HAS_CONSTRUCTOR (t) && extra_warnings)
-		{
-		  if (DECL_NAME (x))
-		    cp_warning_at ("non-static reference `%#D' in class without a constructor", x);
-		  else
-		    cp_warning_at ("non-static reference in class without a constructor", x);
-		}
-	    }
-
-	  /* If any field is const, the structure type is pseudo-const.  */
-	  if (TREE_READONLY (x))
-	    {
-	      C_TYPE_FIELDS_READONLY (t) = 1;
-	      if (DECL_INITIAL (x) == NULL_TREE)
-		const_sans_init = 1;
-
-	      /* ARM $12.6.2: [A member initializer list] (or, for an
-		 aggregate, initialization by a brace-enclosed list) is the
-		 only way to initialize nonstatic const and reference
-		 members.  */
-	      cant_synth_asn_ref = 1;
-	      cant_have_default_ctor = 1;
-
-	      if (! TYPE_HAS_CONSTRUCTOR (t) && !IS_SIGNATURE (t)
-		  && extra_warnings)
-		{
-		  if (DECL_NAME (x))
-		    cp_warning_at ("non-static const member `%#D' in class without a constructor", x);
-		  else
-		    cp_warning_at ("non-static const member in class without a constructor", x);
-		}
-	    }
-	  else
-	    {
-	      /* A field that is pseudo-const makes the structure
-		 likewise.  */
-	      tree t1 = TREE_TYPE (x);
-	      while (TREE_CODE (t1) == ARRAY_TYPE)
-		t1 = TREE_TYPE (t1);
-	      if (IS_AGGR_TYPE (t1))
-		{
-		  if (C_TYPE_FIELDS_READONLY (t1))
-		    C_TYPE_FIELDS_READONLY (t) = 1;
-		  if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (t1))
-		    const_sans_init = 1;
-		}
-	    }
-
-	  /* We set DECL_BIT_FIELD tentatively in grokbitfield.
-	     If the type and width are valid, we'll keep it set.
-	     Otherwise, the flag is cleared.  */
-	  if (DECL_BIT_FIELD (x))
-	    {
-	      DECL_BIT_FIELD (x) = 0;
-	      /* Invalid bit-field size done by grokfield.  */
-	      /* Detect invalid bit-field type.  */
-	      if (DECL_INITIAL (x)
-		  && ! INTEGRAL_TYPE_P (TREE_TYPE (x)))
-		{
-		  cp_error_at ("bit-field `%#D' with non-integral type", x);
-		  DECL_INITIAL (x) = NULL;
-		}
-
-	      /* Detect and ignore out of range field width.  */
-	      if (DECL_INITIAL (x))
-		{
-		  register int width = TREE_INT_CST_LOW (DECL_INITIAL (x));
-
-		  if (width < 0)
-		    {
-		      DECL_INITIAL (x) = NULL;
-		      cp_error_at ("negative width in bit-field `%D'", x);
-		    }
-		  else if (width == 0 && DECL_NAME (x) != 0)
-		    {
-		      DECL_INITIAL (x) = NULL;
-		      cp_error_at ("zero width for bit-field `%D'", x);
-		    }
-		  else if (width
-			   > TYPE_PRECISION (long_long_unsigned_type_node))
-		    {
-		      /* The backend will dump if you try to use something
-			 too big; avoid that.  */
-		      DECL_INITIAL (x) = NULL;
-		      sorry ("bit-fields larger than %d bits",
-			     TYPE_PRECISION (long_long_unsigned_type_node));
-		      cp_error_at ("  in declaration of `%D'", x);
-		    }
-		  else if (width > TYPE_PRECISION (TREE_TYPE (x))
-			   && TREE_CODE (TREE_TYPE (x)) != ENUMERAL_TYPE)
-		    {
-		      cp_warning_at ("width of `%D' exceeds its type", x);
-		    }
-		  else if (TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE
-	       && ((min_precision (TYPE_MIN_VALUE (TREE_TYPE (x)),
-				   TREE_UNSIGNED (TREE_TYPE (x))) > width)
-		   || (min_precision (TYPE_MAX_VALUE (TREE_TYPE (x)),
-				      TREE_UNSIGNED (TREE_TYPE (x))) > width)))
-		    {
-		      cp_warning_at ("`%D' is too small to hold all values of `%#T'",
-				     x, TREE_TYPE (x));
-		    }
-		}
-
-	      /* Process valid field width.  */
-	      if (DECL_INITIAL (x))
-		{
-		  register int width = TREE_INT_CST_LOW (DECL_INITIAL (x));
-
-		  if (width == 0)
-		    {
-#ifdef EMPTY_FIELD_BOUNDARY
-		      /* field size 0 => mark following field as "aligned" */
-		      if (TREE_CHAIN (x))
-			DECL_ALIGN (TREE_CHAIN (x))
-			  = MAX (DECL_ALIGN (TREE_CHAIN (x)), EMPTY_FIELD_BOUNDARY);
-		      /* field of size 0 at the end => round up the size.  */
-		      else
-			round_up_size = EMPTY_FIELD_BOUNDARY;
-#endif
-#ifdef PCC_BITFIELD_TYPE_MATTERS
-		      DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
-					    TYPE_ALIGN (TREE_TYPE (x)));
-#endif
-		    }
-		  else
-		    {
-		      DECL_INITIAL (x) = NULL_TREE;
-		      DECL_FIELD_SIZE (x) = width;
-		      DECL_BIT_FIELD (x) = 1;
-		      /* Traditionally a bit field is unsigned
-			 even if declared signed.  */
-		      if (flag_traditional
-			  && TREE_CODE (TREE_TYPE (x)) == INTEGER_TYPE)
-			TREE_TYPE (x) = unsigned_type_node;
-		    }
-		}
+	      if (DECL_NAME (x))
+		cp_warning_at ("non-static reference `%#D' in class without a constructor", x);
 	      else
-		/* Non-bit-fields are aligned for their type.  */
-		DECL_ALIGN (x) = MAX (DECL_ALIGN (x), TYPE_ALIGN (TREE_TYPE (x)));
-	    }
-	  else
-	    {
-	      tree type = TREE_TYPE (x);
-
-	      if (TREE_CODE (type) == ARRAY_TYPE)
-		type = TREE_TYPE (type);
-
-	      if (TYPE_LANG_SPECIFIC (type) && ! ANON_UNION_P (x)
-		  && ! TYPE_PTRMEMFUNC_P (type))
-		{
-		  /* Never let anything with uninheritable virtuals
-		     make it through without complaint.  */
-		  if (CLASSTYPE_ABSTRACT_VIRTUALS (type))
-		    abstract_virtuals_error (x, type);
-		      
-		  /* Don't let signatures make it through either.  */
-		  if (IS_SIGNATURE (type))
-		    signature_error (x, type);
-		      
-		  if (code == UNION_TYPE)
-		    {
-		      char *fie = NULL;
-		      if (TYPE_NEEDS_CONSTRUCTING (type))
-			fie = "constructor";
-		      else if (TYPE_NEEDS_DESTRUCTOR (type))
-			fie = "destructor";
-		      else if (TYPE_HAS_REAL_ASSIGNMENT (type))
-			fie = "assignment operator";
-		      if (fie)
-			cp_error_at ("member `%#D' with %s not allowed in union", x,
-				     fie);
-		    }
-		  else
-		    {
-		      TYPE_NEEDS_CONSTRUCTING (t) |= TYPE_NEEDS_CONSTRUCTING (type);
-		      TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_NEEDS_DESTRUCTOR (type);
-		      TYPE_HAS_COMPLEX_ASSIGN_REF (t) |= TYPE_HAS_COMPLEX_ASSIGN_REF (type);
-		      TYPE_HAS_COMPLEX_INIT_REF (t) |= TYPE_HAS_COMPLEX_INIT_REF (type);
-		    }
-
-		  if (! TYPE_HAS_INIT_REF (type)
-		      || (TYPE_HAS_NONPUBLIC_CTOR (type)
-			  && ! is_friend (t, type)))
-		    cant_synth_copy_ctor = 1;
-		  else if (!TYPE_HAS_CONST_INIT_REF (type))
-		    cant_have_const_ctor = 1;
-
-		  if (! TYPE_HAS_ASSIGN_REF (type)
-		      || (TYPE_HAS_NONPUBLIC_ASSIGN_REF (type)
-			  && ! is_friend (t, type)))
-		    cant_synth_asn_ref = 1;
-		  else if (!TYPE_HAS_CONST_ASSIGN_REF (type))
-		    no_const_asn_ref = 1;
-
-		  if (TYPE_HAS_CONSTRUCTOR (type)
-		      && ! TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
-		    {
-		      cant_have_default_ctor = 1;
-#if 0
-		      /* This is wrong for aggregates.  */
-		      if (! TYPE_HAS_CONSTRUCTOR (t))
-			{
-			  if (DECL_NAME (x))
-			    cp_pedwarn_at ("member `%#D' with only non-default constructor", x);
-			  else
-			    cp_pedwarn_at ("member with only non-default constructor", x);
-			  cp_pedwarn_at ("in class without a constructor",
-					 x);
-			}
-#endif
-		    }
-		}
-	      if (DECL_INITIAL (x) != NULL_TREE)
-		{
-		  /* `build_class_init_list' does not recognize
-                     non-FIELD_DECLs.  */
-		  if (code == UNION_TYPE && any_default_members != 0)
-		    cp_error_at ("multiple fields in union `%T' initialized");
-		  any_default_members = 1;
-		}
+		cp_warning_at ("non-static reference in class without a constructor", x);
 	    }
 	}
-      list_of_fieldlists = TREE_CHAIN (list_of_fieldlists);
-      /* link the tail while we have it! */
-      if (last_x)
-	{
-	  TREE_CHAIN (last_x) = NULL_TREE;
 
-	  if (list_of_fieldlists
-	      && TREE_VALUE (list_of_fieldlists)
-	      && TREE_CODE (TREE_VALUE (list_of_fieldlists)) != FUNCTION_DECL)
-	    TREE_CHAIN (last_x) = TREE_VALUE (list_of_fieldlists);
+      /* If any field is const, the structure type is pseudo-const.  */
+      if (TREE_READONLY (x))
+	{
+	  C_TYPE_FIELDS_READONLY (t) = 1;
+	  if (DECL_INITIAL (x) == NULL_TREE)
+	    const_sans_init = 1;
+
+	  /* ARM $12.6.2: [A member initializer list] (or, for an
+	     aggregate, initialization by a brace-enclosed list) is the
+	     only way to initialize nonstatic const and reference
+	     members.  */
+	  cant_synth_asn_ref = 1;
+	  cant_have_default_ctor = 1;
+
+	  if (! TYPE_HAS_CONSTRUCTOR (t) && !IS_SIGNATURE (t)
+	      && extra_warnings)
+	    {
+	      if (DECL_NAME (x))
+		cp_warning_at ("non-static const member `%#D' in class without a constructor", x);
+	      else
+		cp_warning_at ("non-static const member in class without a constructor", x);
+	    }
+	}
+      else
+	{
+	  /* A field that is pseudo-const makes the structure
+	     likewise.  */
+	  tree t1 = TREE_TYPE (x);
+	  while (TREE_CODE (t1) == ARRAY_TYPE)
+	    t1 = TREE_TYPE (t1);
+	  if (IS_AGGR_TYPE (t1))
+	    {
+	      if (C_TYPE_FIELDS_READONLY (t1))
+		C_TYPE_FIELDS_READONLY (t) = 1;
+	      if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (t1))
+		const_sans_init = 1;
+	    }
+	}
+
+      /* We set DECL_BIT_FIELD tentatively in grokbitfield.
+	 If the type and width are valid, we'll keep it set.
+	 Otherwise, the flag is cleared.  */
+      if (DECL_BIT_FIELD (x))
+	{
+	  DECL_BIT_FIELD (x) = 0;
+	  /* Invalid bit-field size done by grokfield.  */
+	  /* Detect invalid bit-field type.  */
+	  if (DECL_INITIAL (x)
+	      && ! INTEGRAL_TYPE_P (TREE_TYPE (x)))
+	    {
+	      cp_error_at ("bit-field `%#D' with non-integral type", x);
+	      DECL_INITIAL (x) = NULL;
+	    }
+
+	  /* Detect and ignore out of range field width.  */
+	  if (DECL_INITIAL (x))
+	    {
+	      register int width = TREE_INT_CST_LOW (DECL_INITIAL (x));
+
+	      if (width < 0)
+		{
+		  DECL_INITIAL (x) = NULL;
+		  cp_error_at ("negative width in bit-field `%D'", x);
+		}
+	      else if (width == 0 && DECL_NAME (x) != 0)
+		{
+		  DECL_INITIAL (x) = NULL;
+		  cp_error_at ("zero width for bit-field `%D'", x);
+		}
+	      else if (width
+		       > TYPE_PRECISION (long_long_unsigned_type_node))
+		{
+		  /* The backend will dump if you try to use something
+		     too big; avoid that.  */
+		  DECL_INITIAL (x) = NULL;
+		  sorry ("bit-fields larger than %d bits",
+			 TYPE_PRECISION (long_long_unsigned_type_node));
+		  cp_error_at ("  in declaration of `%D'", x);
+		}
+	      else if (width > TYPE_PRECISION (TREE_TYPE (x))
+		       && TREE_CODE (TREE_TYPE (x)) != ENUMERAL_TYPE)
+		{
+		  cp_warning_at ("width of `%D' exceeds its type", x);
+		}
+	      else if (TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE
+		       && ((min_precision (TYPE_MIN_VALUE (TREE_TYPE (x)),
+					   TREE_UNSIGNED (TREE_TYPE (x))) > width)
+			   || (min_precision (TYPE_MAX_VALUE (TREE_TYPE (x)),
+					      TREE_UNSIGNED (TREE_TYPE (x))) > width)))
+		{
+		  cp_warning_at ("`%D' is too small to hold all values of `%#T'",
+				 x, TREE_TYPE (x));
+		}
+	    }
+
+	  /* Process valid field width.  */
+	  if (DECL_INITIAL (x))
+	    {
+	      register int width = TREE_INT_CST_LOW (DECL_INITIAL (x));
+
+	      if (width == 0)
+		{
+#ifdef EMPTY_FIELD_BOUNDARY
+		  /* field size 0 => mark following field as "aligned" */
+		  if (TREE_CHAIN (x))
+		    DECL_ALIGN (TREE_CHAIN (x))
+		      = MAX (DECL_ALIGN (TREE_CHAIN (x)), EMPTY_FIELD_BOUNDARY);
+		  /* field of size 0 at the end => round up the size.  */
+		  else
+		    round_up_size = EMPTY_FIELD_BOUNDARY;
+#endif
+#ifdef PCC_BITFIELD_TYPE_MATTERS
+		  DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
+					TYPE_ALIGN (TREE_TYPE (x)));
+#endif
+		}
+	      else
+		{
+		  DECL_INITIAL (x) = NULL_TREE;
+		  DECL_FIELD_SIZE (x) = width;
+		  DECL_BIT_FIELD (x) = 1;
+		  /* Traditionally a bit field is unsigned
+		     even if declared signed.  */
+		  if (flag_traditional
+		      && TREE_CODE (TREE_TYPE (x)) == INTEGER_TYPE)
+		    TREE_TYPE (x) = unsigned_type_node;
+		}
+	    }
+	  else
+	    /* Non-bit-fields are aligned for their type.  */
+	    DECL_ALIGN (x) = MAX (DECL_ALIGN (x), TYPE_ALIGN (TREE_TYPE (x)));
+	}
+      else
+	{
+	  tree type = TREE_TYPE (x);
+
+	  if (TREE_CODE (type) == ARRAY_TYPE)
+	    type = TREE_TYPE (type);
+
+	  if (TYPE_LANG_SPECIFIC (type) && ! ANON_UNION_P (x)
+	      && ! TYPE_PTRMEMFUNC_P (type))
+	    {
+	      /* Never let anything with uninheritable virtuals
+		 make it through without complaint.  */
+	      if (CLASSTYPE_ABSTRACT_VIRTUALS (type))
+		abstract_virtuals_error (x, type);
+		      
+	      /* Don't let signatures make it through either.  */
+	      if (IS_SIGNATURE (type))
+		signature_error (x, type);
+		      
+	      if (code == UNION_TYPE)
+		{
+		  char *fie = NULL;
+		  if (TYPE_NEEDS_CONSTRUCTING (type))
+		    fie = "constructor";
+		  else if (TYPE_NEEDS_DESTRUCTOR (type))
+		    fie = "destructor";
+		  else if (TYPE_HAS_REAL_ASSIGNMENT (type))
+		    fie = "assignment operator";
+		  if (fie)
+		    cp_error_at ("member `%#D' with %s not allowed in union", x,
+				 fie);
+		}
+	      else
+		{
+		  TYPE_NEEDS_CONSTRUCTING (t) |= TYPE_NEEDS_CONSTRUCTING (type);
+		  TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_NEEDS_DESTRUCTOR (type);
+		  TYPE_HAS_COMPLEX_ASSIGN_REF (t) |= TYPE_HAS_COMPLEX_ASSIGN_REF (type);
+		  TYPE_HAS_COMPLEX_INIT_REF (t) |= TYPE_HAS_COMPLEX_INIT_REF (type);
+		}
+
+	      if (! TYPE_HAS_INIT_REF (type)
+		  || (TYPE_HAS_NONPUBLIC_CTOR (type)
+		      && ! is_friend (t, type)))
+		cant_synth_copy_ctor = 1;
+	      else if (!TYPE_HAS_CONST_INIT_REF (type))
+		cant_have_const_ctor = 1;
+
+	      if (! TYPE_HAS_ASSIGN_REF (type)
+		  || (TYPE_HAS_NONPUBLIC_ASSIGN_REF (type)
+		      && ! is_friend (t, type)))
+		cant_synth_asn_ref = 1;
+	      else if (!TYPE_HAS_CONST_ASSIGN_REF (type))
+		no_const_asn_ref = 1;
+
+	      if (TYPE_HAS_CONSTRUCTOR (type)
+		  && ! TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
+		{
+		  cant_have_default_ctor = 1;
+#if 0
+		  /* This is wrong for aggregates.  */
+		  if (! TYPE_HAS_CONSTRUCTOR (t))
+		    {
+		      if (DECL_NAME (x))
+			cp_pedwarn_at ("member `%#D' with only non-default constructor", x);
+		      else
+			cp_pedwarn_at ("member with only non-default constructor", x);
+		      cp_pedwarn_at ("in class without a constructor",
+				     x);
+		    }
+#endif
+		}
+	    }
+	  if (DECL_INITIAL (x) != NULL_TREE)
+	    {
+	      /* `build_class_init_list' does not recognize
+		 non-FIELD_DECLs.  */
+	      if (code == UNION_TYPE && any_default_members != 0)
+		cp_error_at ("multiple fields in union `%T' initialized");
+	      any_default_members = 1;
+	    }
 	}
     }
 
@@ -3337,6 +3287,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   /* Synthesize any needed methods.  Note that methods will be synthesized
      for anonymous unions; grok_x_components undoes that.  */
 
+  if (! fn_fields)
+    nonprivate_method = 1;
+
   if (TYPE_NEEDS_DESTRUCTOR (t) && !TYPE_HAS_DESTRUCTOR (t)
       && !IS_SIGNATURE (t))
     {
@@ -3349,8 +3302,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       else
 	{
 	  /* Link dtor onto end of fn_fields. */
-	  *tail = dtor;
-	  tail = &TREE_CHAIN (dtor);
+
+	  TREE_CHAIN (dtor) = fn_fields;
+	  fn_fields = dtor;
 
 	  if (DECL_VINDEX (dtor) == NULL_TREE
 	      && (needs_virtual_dtor
@@ -3364,16 +3318,10 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	}
     }
 
-  *tail = NULL_TREE;
-  *tail_user_methods = NULL_TREE;
-
   TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_HAS_DESTRUCTOR (t);
   if (flag_rtti && (max_has_virtual > 0 || needs_virtual_dtor) && 
 	has_virtual == 0)
     has_virtual = 1;
-
-  if (! fn_fields)
-    nonprivate_method = 1;
 
   TYPE_HAS_COMPLEX_INIT_REF (t)
     |= (TYPE_HAS_INIT_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t)
@@ -3381,6 +3329,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   TYPE_NEEDS_CONSTRUCTING (t)
     |= (TYPE_HAS_CONSTRUCTOR (t) || TYPE_USES_VIRTUAL_BASECLASSES (t)
 	|| has_virtual || any_default_members || first_vfn_base_index >= 0);
+  if (! IS_SIGNATURE (t))
+    CLASSTYPE_NON_AGGREGATE (t)
+      = ! aggregate || has_virtual || TYPE_HAS_CONSTRUCTOR (t);
 
   /* ARM $12.1: A default constructor will be generated for a class X
      only if no constructor has been declared for class X.  So we
@@ -3653,6 +3604,13 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 		if (TREE_CODE (uelt) != FIELD_DECL)
 		  continue;
 
+		if (TREE_PRIVATE (uelt))
+		  cp_pedwarn_at ("private member `%#D' in anonymous union",
+				 uelt);
+		else if (TREE_PROTECTED (uelt))
+		  cp_pedwarn_at ("protected member `%#D' in anonymous union",
+				 uelt);
+
 		DECL_FIELD_CONTEXT (uelt) = DECL_FIELD_CONTEXT (field);
 		DECL_FIELD_BITPOS (uelt) = DECL_FIELD_BITPOS (field);
 	      }
@@ -3788,39 +3746,28 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       /* We must enter these virtuals into the table.  */
       if (first_vfn_base_index < 0)
 	{
-	  if (flag_rtti)
-	    pending_virtuals = tree_cons (NULL_TREE,
-		build_vtable_entry (integer_zero_node, build_t_desc (t, 0)),
-	        pending_virtuals);
-	  else 
-            pending_virtuals = tree_cons (NULL_TREE,
-                build_vtable_entry (integer_zero_node, integer_zero_node),
-                pending_virtuals);
+	  /* The first slot is for the rtti offset.  */
+	  pending_virtuals = tree_cons (NULL_TREE, NULL_TREE, pending_virtuals);
 
-#if 0
-	  /* The size is no longer used. */
-	  /* now we put the size of the vtable as first entry */
-	  pending_virtuals = tree_cons (NULL_TREE, the_null_vtable_entry,
-					pending_virtuals);
-#endif
+	  /* The second slot is for the tdesc pointer when thunks are used.  */
+	  if (flag_vtable_thunks)
+	    pending_virtuals = tree_cons (NULL_TREE, NULL_TREE, pending_virtuals);
+
+	  set_rtti_entry (pending_virtuals, integer_zero_node, t);
 	  build_vtable (NULL_TREE, t);
 	}
       else
 	{
+	  tree offset;
 	  /* Here we know enough to change the type of our virtual
 	     function table, but we will wait until later this function.  */
 
 	  if (! BINFO_NEW_VTABLE_MARKED (TYPE_BINFO (t)))
 	    build_vtable (TREE_VEC_ELT (TYPE_BINFO_BASETYPES (t), first_vfn_base_index), t);
 
-	  /* Update the rtti pointer for this class.  */
-	  if (flag_rtti)
-	    {
-	      tree offset = get_derived_offset (TYPE_BINFO (t), NULL_TREE);
-	      offset = size_binop (MINUS_EXPR, integer_zero_node, offset);
-	      TREE_VALUE (TYPE_BINFO_VIRTUALS (t))
-		= build_vtable_entry (offset, build_t_desc (t, 0));
-	    }
+	  offset = get_derived_offset (TYPE_BINFO (t), NULL_TREE);
+	  offset = size_binop (MINUS_EXPR, integer_zero_node, offset);
+	  set_rtti_entry (TYPE_BINFO_VIRTUALS (t), offset, t);
 	}
 
       /* If this type has basetypes with constructors, then those
@@ -3918,29 +3865,10 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 
   finish_struct_bits (t, max_has_virtual);
 
-  /* Promote each bit-field's type to int if it is narrower than that.
-     There's more: complete the rtl for any static member objects which
-     is of the same type we're working on.  */
+  /* Complete the rtl for any static member objects of the type we're
+     working on.  */
   for (x = fields; x; x = TREE_CHAIN (x))
     {
-      if (DECL_BIT_FIELD (x)
-	  && (C_PROMOTING_INTEGER_TYPE_P (TREE_TYPE (x))
-	      || DECL_FIELD_SIZE (x) < TYPE_PRECISION (integer_type_node)))
-	{
-	  tree type = TREE_TYPE (x);
-
-	  /* Preserve unsignedness if traditional or if not really getting
-	     any wider.  */
-	  if (TREE_UNSIGNED (type)
-	      && (flag_traditional
-		  ||
-		  (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)
-		   && DECL_FIELD_SIZE (x) == TYPE_PRECISION (integer_type_node))))
-	    TREE_TYPE (x) = unsigned_type_node;
-	  else
-	    TREE_TYPE (x) = integer_type_node;
-	}
-
       if (TREE_CODE (x) == VAR_DECL && TREE_STATIC (x)
 	  && TREE_TYPE (x) == t)
 	{
@@ -4109,6 +4037,146 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   rest_of_type_compilation (t, toplevel_bindings_p ());
 
   return t;
+}
+
+tree
+finish_struct (t, list_of_fieldlists, warn_anon)
+     tree t;
+     tree list_of_fieldlists;
+     int warn_anon;
+{
+  tree fields = NULL_TREE, fn_fields, *tail;
+  tree *tail_user_methods = &CLASSTYPE_METHODS (t);
+  tree name = TYPE_NAME (t);
+  tree x, last_x = NULL_TREE;
+  enum access_type access;
+
+  if (TREE_CODE (name) == TYPE_DECL)
+    {
+      extern int lineno;
+	  
+      DECL_SOURCE_FILE (name) = input_filename;
+      /* For TYPE_DECL that are not typedefs (those marked with a line
+	 number of zero, we don't want to mark them as real typedefs.
+	 If this fails one needs to make sure real typedefs have a
+	 previous line number, even if it is wrong, that way the below
+	 will fill in the right line number.  (mrs) */
+      if (DECL_SOURCE_LINE (name))
+	DECL_SOURCE_LINE (name) = lineno;
+      CLASSTYPE_SOURCE_LINE (t) = lineno;
+      name = DECL_NAME (name);
+    }
+
+  /* Append the fields we need for constructing signature tables.  */
+  if (IS_SIGNATURE (t))
+    append_signature_fields (list_of_fieldlists);
+
+  tail = &fn_fields;
+  if (last_x && list_of_fieldlists)
+    TREE_CHAIN (last_x) = TREE_VALUE (list_of_fieldlists);
+
+  /* For signatures, we made all methods `public' in the parser and
+     reported an error if a access specifier was used.  */
+  if (CLASSTYPE_DECLARED_CLASS (t) == 0)
+    {
+      if (list_of_fieldlists
+	  && TREE_PURPOSE (list_of_fieldlists) == (tree)access_default)
+	TREE_PURPOSE (list_of_fieldlists) = (tree)access_public;
+    }
+  else if (list_of_fieldlists
+	   && TREE_PURPOSE (list_of_fieldlists) == (tree)access_default)
+    TREE_PURPOSE (list_of_fieldlists) = (tree)access_private;
+
+  while (list_of_fieldlists)
+    {
+      access = (enum access_type)TREE_PURPOSE (list_of_fieldlists);
+
+      for (x = TREE_VALUE (list_of_fieldlists); x; x = TREE_CHAIN (x))
+	{
+	  TREE_PRIVATE (x) = access == access_private;
+	  TREE_PROTECTED (x) = access == access_protected;
+
+	  /* Check for inconsistent use of this name in the class body.
+             Enums, types and static vars have already been checked.  */
+	  if (TREE_CODE (x) != TYPE_DECL
+	      && TREE_CODE (x) != CONST_DECL && TREE_CODE (x) != VAR_DECL)
+	    {
+	      tree name = DECL_NAME (x);
+	      tree icv;
+
+	      /* Don't get confused by access decls.  */
+	      if (name && TREE_CODE (name) == IDENTIFIER_NODE)
+		icv = IDENTIFIER_CLASS_VALUE (name);
+	      else
+		icv = NULL_TREE;
+
+	      if (icv
+		  /* Don't complain about constructors.  */
+		  && name != constructor_name (current_class_type)
+		  /* Or inherited names.  */
+		  && id_in_current_class (name)
+		  /* Or shadowed tags.  */
+		  && !(TREE_CODE (icv) == TYPE_DECL
+		       && DECL_CONTEXT (icv) == t))
+		{
+		  cp_error_at ("declaration of identifier `%D' as `%+#D'",
+			       name, x);
+		  cp_error_at ("conflicts with other use in class as `%#D'",
+			       icv);
+		}
+	    }
+
+	  if (TREE_CODE (x) == FUNCTION_DECL)
+	    {
+	      if (last_x)
+		TREE_CHAIN (last_x) = TREE_CHAIN (x);
+	      /* Link x onto end of fn_fields and CLASSTYPE_METHODS. */
+	      *tail = x;
+	      tail = &TREE_CHAIN (x);
+	      *tail_user_methods = x;
+	      tail_user_methods = &DECL_NEXT_METHOD (x);
+	      continue;
+	    }
+
+#if 0
+	  /* Handle access declarations.  */
+	  if (DECL_NAME (x) && TREE_CODE (DECL_NAME (x)) == SCOPE_REF)
+	    {
+	      tree n = DECL_NAME (x);
+	      x = build_decl
+		(USING_DECL, DECL_NAME (TREE_OPERAND (n, 1)), TREE_TYPE (x));
+	      DECL_RESULT (x) = n;
+	    }
+#endif
+
+	  if (! fields)
+	    fields = x;
+	  last_x = x;
+	}
+      list_of_fieldlists = TREE_CHAIN (list_of_fieldlists);
+      /* link the tail while we have it! */
+      if (last_x)
+	{
+	  TREE_CHAIN (last_x) = NULL_TREE;
+
+	  if (list_of_fieldlists
+	      && TREE_VALUE (list_of_fieldlists)
+	      && TREE_CODE (TREE_VALUE (list_of_fieldlists)) != FUNCTION_DECL)
+	    TREE_CHAIN (last_x) = TREE_VALUE (list_of_fieldlists);
+	}
+    }
+
+  *tail = NULL_TREE;
+  *tail_user_methods = NULL_TREE;
+  TYPE_FIELDS (t) = fields;
+
+  if (0 && processing_template_defn)
+    {
+      CLASSTYPE_METHOD_VEC (t) = finish_struct_methods (t, fn_fields, 1);
+      return t;
+    }
+  else
+    return finish_struct_1 (t, warn_anon);
 }
 
 /* Return non-zero if the effective type of INSTANCE is static.
@@ -4452,7 +4520,7 @@ push_nested_class (type, modify)
 {
   tree context;
 
-  if (type == error_mark_node || ! IS_AGGR_TYPE (type))
+  if (type == NULL_TREE || type == error_mark_node || ! IS_AGGR_TYPE (type))
     return;
   
   context = DECL_CONTEXT (TYPE_NAME (type));

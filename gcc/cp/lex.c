@@ -1559,8 +1559,8 @@ reinit_parse_for_method (yychar, decl)
    output if something goes wrong.  This should really be cleaned up somehow,
    without loss of clarity.  */
 void
-reinit_parse_for_block (yychar, obstackp, is_template)
-     int yychar;
+reinit_parse_for_block (pyychar, obstackp, is_template)
+     int pyychar;
      struct obstack *obstackp;
      int is_template;
 {
@@ -1572,22 +1572,34 @@ reinit_parse_for_block (yychar, obstackp, is_template)
   int look_for_semicolon = 0;
   int look_for_lbrac = 0;
 
-  if (yychar == '{')
+  if (pyychar == '{')
     obstack_1grow (obstackp, '{');
-  else if (yychar == '=')
+  else if (pyychar == '=')
     look_for_semicolon = 1;
-  else if (yychar != ':' && (yychar != RETURN || is_template))
+  else if (pyychar == ':')
+    {
+      obstack_1grow (obstackp, pyychar);
+      look_for_lbrac = 1;
+      blev = 0;
+    }
+  else if (pyychar == RETURN && !is_template)
+    {
+      obstack_grow (obstackp, "return", 6);
+      look_for_lbrac = 1;
+      blev = 0;
+    }
+  else if (pyychar == TRY && !is_template)
+    {
+      obstack_grow (obstackp, "try", 3);
+      look_for_lbrac = 1;
+      blev = 0;
+    }
+  else
     {
       yyerror (is_template
 	       ? "parse error in template specification"
 	       : "parse error in method specification");
       obstack_1grow (obstackp, '{');
-    }
-  else
-    {
-      obstack_1grow (obstackp, yychar);
-      look_for_lbrac = 1;
-      blev = 0;
     }
 
   if (nextchar != EOF)
@@ -1640,7 +1652,26 @@ reinit_parse_for_block (yychar, obstackp, is_template)
 	    {
 	      blev--;
 	      if (blev == 0 && !look_for_semicolon)
-		goto done;
+		{
+		  if (pyychar == TRY)
+		    {
+		      if (peekyylex () == CATCH)
+			{
+			  yylex ();
+			  obstack_grow (obstackp, " catch ", 7);
+			  look_for_lbrac = 1;
+			}
+		      else
+			{
+			  yychar = '{';
+			  goto done;
+			}
+		    }
+		  else
+		    {
+		      goto done;
+		    }
+		}
 	    }
 	  else if (c == '\\')
 	    {
@@ -1783,7 +1814,8 @@ cons_up_default_function (type, full_name, kind)
     if (retref)
       declarator = build_parse_node (ADDR_EXPR, declarator);
     
-    fn = grokfield (declarator, declspecs, NULL_TREE, NULL_TREE, NULL_TREE);
+    fn = grokfield (declarator, declspecs, NULL_TREE, NULL_TREE,
+		    NULL_TREE, NULL_TREE);
   }
   
   if (fn == void_type_node)
@@ -2278,8 +2310,8 @@ check_newline ()
 		}
 #endif
 #endif
+	      goto skipline;
 	    }
-	  goto skipline;
 	}
       else if (c == 'd')
 	{
@@ -2817,6 +2849,9 @@ identifier_type (decl)
 void
 see_typename ()
 {
+  looking_for_typename = 1;
+  if (yychar < 0)
+    if ((yychar = yylex()) < 0) yychar = 0;
   looking_for_typename = 0;
   if (yychar == IDENTIFIER)
     {
@@ -2920,8 +2955,6 @@ do_identifier (token)
   if (TREE_CODE (id) == VAR_DECL && DECL_DEAD_FOR_LOCAL (id))
     {
       tree shadowed = DECL_SHADOWED_FOR_VAR (id);
-      if (!shadowed)
-	shadowed = IDENTIFIER_GLOBAL_VALUE (DECL_NAME (id));
       if (shadowed)
 	{
 	  if (!DECL_ERROR_REPORTED (id))
@@ -3142,6 +3175,12 @@ real_yylex ()
 
 		*p++ = c;
 		c = getc (finput);
+	      }
+
+	    if (linemode && c == '\n')
+	      {
+		put_back (c);
+		c = EOF;
 	      }
 	  }
 	else
@@ -4668,7 +4707,10 @@ handle_sysv_pragma ()
 	  handle_pragma_token (NULL_PTR, NULL_TREE);
 	  return;
 	default:
-	  abort ();
+	  handle_pragma_token (NULL_PTR, NULL_TREE);
+	  while (yylex () != END_OF_LINE)
+	    /* continue */;
+	  return;
 	}
     }
 }

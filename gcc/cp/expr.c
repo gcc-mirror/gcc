@@ -105,7 +105,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	    && TREE_CODE (TREE_OPERAND (func, 0)) == FUNCTION_DECL
 	    && DECL_CONSTRUCTOR_P (TREE_OPERAND (func, 0)))
 	  {
-	    type = TYPE_POINTER_TO (type);
+	    type = build_pointer_type (type);
 	    /* Don't clobber a value that might be part of a default
 	       parameter value.  */
 	    mark_addressable (slot);
@@ -225,6 +225,14 @@ cplus_expand_expr (exp, target, tmode, modifier)
     case THROW_EXPR:
       expand_throw (TREE_OPERAND (exp, 0));
       return NULL;
+
+    case UNSAVE_EXPR:
+      {
+	rtx temp;
+	temp = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
+	TREE_OPERAND (exp, 0) = unsave_expr_now (TREE_OPERAND (exp, 0));
+	return temp;
+      }
 
     default:
       break;

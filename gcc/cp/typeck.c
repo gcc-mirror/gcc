@@ -440,7 +440,7 @@ common_type (t1, t2)
 	  {
 	    rval = build_function_type (valtype, p2);
 	    if ((raises = TYPE_RAISES_EXCEPTIONS (t2)))
-	      rval = build_exception_variant (NULL_TREE, rval, raises);
+	      rval = build_exception_variant (rval, raises);
 	    return build_type_attribute_variant (rval, attributes);
 	  }
 	raises = TYPE_RAISES_EXCEPTIONS (t1);
@@ -448,12 +448,12 @@ common_type (t1, t2)
 	  {
 	    rval = build_function_type (valtype, p1);
 	    if (raises)
-	      rval = build_exception_variant (NULL_TREE, rval, raises);
+	      rval = build_exception_variant (rval, raises);
 	    return build_type_attribute_variant (rval, attributes);
 	  }
 
 	rval = build_function_type (valtype, commonparms (p1, p2));
-	rval = build_exception_variant (NULL_TREE, rval, raises);
+	rval = build_exception_variant (rval, raises);
 	return build_type_attribute_variant (rval, attributes);
       }
 
@@ -498,7 +498,7 @@ common_type (t1, t2)
 	  t2 = build_function_type (TREE_TYPE (t2), TREE_CHAIN (TYPE_ARG_TYPES (t2)));
 	  t3 = common_type (t1, t2);
 	  t3 = build_cplus_method_type (basetype, TREE_TYPE (t3), TYPE_ARG_TYPES (t3));
-	  t1 = build_exception_variant (basetype, t3, raises);
+	  t1 = build_exception_variant (t3, raises);
 	}
       else
         compiler_error ("common_type called with uncommon method types");
@@ -672,9 +672,9 @@ comptypes (type1, type2, strict)
       return 0;
 
     case OFFSET_TYPE:
-      val = (comptypes (TYPE_POINTER_TO (TYPE_OFFSET_BASETYPE (t1)),
-			 TYPE_POINTER_TO (TYPE_OFFSET_BASETYPE (t2)), strict)
-	      && comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict));
+      val = (comptypes (build_pointer_type (TYPE_OFFSET_BASETYPE (t1)),
+			build_pointer_type (TYPE_OFFSET_BASETYPE (t2)), strict)
+	     && comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict));
       break;
 
     case METHOD_TYPE:
@@ -686,11 +686,9 @@ comptypes (type1, type2, strict)
 	 to something expecting a derived member (or member function),
 	 but not vice-versa!  */
 
-      val = (comptypes (TYPE_POINTER_TO (TYPE_METHOD_BASETYPE (t2)),
-			 TYPE_POINTER_TO (TYPE_METHOD_BASETYPE (t1)), strict)
-	      && comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict)
-	      && compparms (TREE_CHAIN (TYPE_ARG_TYPES (t1)),
-			    TREE_CHAIN (TYPE_ARG_TYPES (t2)), strict));
+      val = (comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict)
+	     && compparms (TYPE_ARG_TYPES (t1),
+			   TYPE_ARG_TYPES (t2), strict));
       break;
 
     case POINTER_TYPE:
@@ -742,7 +740,7 @@ comptypes (type1, type2, strict)
       break;
 
     case TEMPLATE_TYPE_PARM:
-      return 1;
+      return TEMPLATE_TYPE_IDX (t1) == TEMPLATE_TYPE_IDX (t2);
 
     case UNINSTANTIATED_P_TYPE:
       if (UPT_TEMPLATE (t1) != UPT_TEMPLATE (t2))
@@ -813,7 +811,30 @@ comp_target_types (ttl, ttr, nptrs)
 	    return comp_ptr_ttypes (ttl, ttr);
 	}
 
-      return comp_target_types (ttl, ttr, nptrs - 1);
+      /* Const and volatile mean something different for function types,
+	 so the usual checks are not appropriate.  */
+      if (TREE_CODE (ttl) == FUNCTION_TYPE || TREE_CODE (ttl) == METHOD_TYPE)
+	return comp_target_types (ttl, ttr, nptrs - 1);
+
+      /* Make sure that the cv-quals change only in the same direction as
+	 the target type.  */
+      {
+	int t;
+	int c = TYPE_READONLY (ttl) - TYPE_READONLY (ttr);
+	int v = TYPE_VOLATILE (ttl) - TYPE_VOLATILE (ttr);
+
+	if ((c > 0 && v < 0) || (c < 0 && v > 0))
+	  return 0;
+
+	if (TYPE_MAIN_VARIANT (ttl) == TYPE_MAIN_VARIANT (ttr))
+	  return (c + v < 0) ? -1 : 1;
+
+	t = comp_target_types (ttl, ttr, nptrs - 1);
+	if ((t == 1 && c + v >= 0) || (t == -1 && c + v <= 0))
+	  return t;
+
+	return 0;
+      }
     }
 
   if (TREE_CODE (ttr) == REFERENCE_TYPE)
@@ -852,9 +873,9 @@ comp_target_types (ttl, ttr, nptrs)
     {
       if (nptrs < 0)
 	return 0;
-      if (comptypes (TYPE_POINTER_TO (ttl), TYPE_POINTER_TO (ttr), 0))
+      if (comptypes (build_pointer_type (ttl), build_pointer_type (ttr), 0))
 	return 1;
-      if (comptypes (TYPE_POINTER_TO (ttr), TYPE_POINTER_TO (ttl), 0))
+      if (comptypes (build_pointer_type (ttr), build_pointer_type (ttl), 0))
 	return -1;
       return 0;
     }
@@ -1408,7 +1429,7 @@ decay_conversion (exp)
 			      inner);
 	      TREE_REFERENCE_EXPR (inner) = 1;
 	    }
-	  return convert (TYPE_POINTER_TO (TREE_TYPE (type)), inner);
+	  return convert (build_pointer_type (TREE_TYPE (type)), inner);
 	}
 
       if (TREE_CODE (exp) == COMPOUND_EXPR)
@@ -1845,11 +1866,15 @@ build_indirect_ref (ptr, errorstring)
   if (ptr == current_class_decl)
     return C_C_D;
 
-  ptr = build_expr_type_conversion (WANT_POINTER, pointer, 1);
-  if (ptr)
+  if (IS_AGGR_TYPE (type))
     {
-      pointer = ptr;
-      type = TREE_TYPE (pointer);
+      ptr = build_expr_type_conversion (WANT_POINTER, pointer, 1);
+
+      if (ptr)
+	{
+	  pointer = ptr;
+	  type = TREE_TYPE (pointer);
+	}
     }
 
   if (TREE_CODE (type) == POINTER_TYPE || TREE_CODE (type) == REFERENCE_TYPE)
@@ -2144,7 +2169,7 @@ build_x_function_call (function, params, decl)
 	      return error_mark_node;
 	    }
 	  /* Yow: call from a static member function.  */
-	  decl = build1 (NOP_EXPR, TYPE_POINTER_TO (current_class_type),
+	  decl = build1 (NOP_EXPR, build_pointer_type (current_class_type),
 			 error_mark_node);
 	  decl = build_indirect_ref (decl, NULL_PTR);
 	}
@@ -2223,14 +2248,14 @@ build_x_function_call (function, params, decl)
 
       /* Explicitly named method?  */
       if (TREE_CODE (function) == FUNCTION_DECL)
-	ctypeptr = TYPE_POINTER_TO (DECL_CLASS_CONTEXT (function));
+	ctypeptr = build_pointer_type (DECL_CLASS_CONTEXT (function));
       /* Expression with ptr-to-method type?  It could either be a plain
 	 usage, or it might be a case where the ptr-to-method is being
 	 passed in as an argument.  */
       else if (TYPE_PTRMEMFUNC_P (fntype))
 	{
 	  tree rec = TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (fntype)));
-	  ctypeptr = TYPE_POINTER_TO (rec);
+	  ctypeptr = build_pointer_type (rec);
 	}
       /* Unexpected node type?  */
       else
@@ -2273,24 +2298,26 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 
   if (TYPE_PTRMEMFUNC_P (TREE_TYPE (function)))
     {
-      tree fntype = TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (function));
-      tree index = save_expr (build_component_ref (function,
-						   index_identifier,
-						   0, 0));
-      tree e1 = build (GT_EXPR, boolean_type_node, index,
-		       convert (delta_type_node, integer_zero_node));
-      tree delta = convert (ptrdiff_type_node,
-			    build_component_ref (function, delta_identifier, 0, 0));
-      tree delta2 = DELTA2_FROM_PTRMEMFUNC (function);
-      tree e2;
-      tree e3;
-      tree aref, vtbl;
-
+      tree fntype, index, e1, delta, delta2, e2, e3, aref, vtbl;
       tree instance;
+
       tree instance_ptr = *instance_ptrptr;
 
       if (TREE_SIDE_EFFECTS (instance_ptr))
 	instance_ptr = save_expr (instance_ptr);
+
+      if (TREE_SIDE_EFFECTS (function))
+	function = save_expr (function);
+
+      fntype = TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (function));
+      index = save_expr (build_component_ref (function,
+					      index_identifier,
+					      0, 0));
+      e1 = build (GT_EXPR, boolean_type_node, index,
+		  convert (delta_type_node, integer_zero_node));
+      delta = convert (ptrdiff_type_node,
+		       build_component_ref (function, delta_identifier, 0, 0));
+      delta2 = DELTA2_FROM_PTRMEMFUNC (function);
 
       /* convert down to the right base, before using the instance. */
       instance
@@ -4409,11 +4436,11 @@ unary_complex_lvalue (code, arg)
 	  targ = arg;
 	else
 	  targ = build_cplus_new (TREE_TYPE (arg), arg, 1);
-	return build1 (ADDR_EXPR, TYPE_POINTER_TO (TREE_TYPE (arg)), targ);
+	return build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (arg)), targ);
       }
 
     if (TREE_CODE (arg) == SAVE_EXPR && TREE_CODE (targ) == INDIRECT_REF)
-      return build (SAVE_EXPR, TYPE_POINTER_TO (TREE_TYPE (arg)),
+      return build (SAVE_EXPR, build_pointer_type (TREE_TYPE (arg)),
 		     TREE_OPERAND (targ, 0), current_function_decl, NULL);
 
     /* We shouldn't wrap WITH_CLEANUP_EXPRs inside of SAVE_EXPRs, but in case
@@ -4516,6 +4543,8 @@ mark_addressable (exp)
 	TREE_ADDRESSABLE (x) = 1;
 	TREE_USED (x) = 1;
 	TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (x)) = 1;
+	if (asm_out_file)
+	  assemble_external (x);
 	return 1;
 
       default:
@@ -4747,7 +4776,7 @@ build_conditional_expr (ifexp, op1, op2)
 		cp_pedwarn ("`%T' and `%T' converted to `%T *' in conditional expression",
 			    type1, type2, result_type);
 
-	      result_type = TYPE_POINTER_TO (result_type);
+	      result_type = build_pointer_type (result_type);
 	    }
 	}
       else
@@ -5015,6 +5044,9 @@ tree build_const_cast (type, expr)
 {
   tree intype = TREE_TYPE (expr);
   tree t1, t2;
+
+  if (type == error_mark_node || expr == error_mark_node)
+    return error_mark_node;
 
   if (TYPE_PTRMEMFUNC_P (type))
     type = TYPE_PTRMEMFUNC_FN_TYPE (type);
@@ -6353,6 +6385,23 @@ build_ptrmemfunc (type, pfn, force)
       npfn = TREE_VALUE (CONSTRUCTOR_ELTS (npfn));
       if (integer_zerop (nindex))
 	pfn = integer_zero_node;
+      else if (integer_zerop (fold (size_binop (PLUS_EXPR, nindex, integer_one_node))))
+	{
+	  tree e3;
+	  delta = get_delta_difference (TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn)))),
+					TYPE_METHOD_BASETYPE (TREE_TYPE (type)),
+					force);
+	  delta = build_binary_op (PLUS_EXPR, delta, ndelta, 1);
+	  pfn = build1 (NOP_EXPR, type, npfn);
+	  TREE_CONSTANT (pfn) = TREE_CONSTANT (npfn);
+
+	  u = build_nt (CONSTRUCTOR, 0, tree_cons (pfn_identifier, pfn, NULL_TREE));
+	  u = build_nt (CONSTRUCTOR, 0, tree_cons (NULL_TREE, delta,
+						   tree_cons (NULL_TREE, nindex,
+							      tree_cons (NULL_TREE, u, NULL_TREE))));
+	  e3 = digest_init (TYPE_GET_PTRMEMFUNC_TYPE (type), u, (tree*)0);
+	  return e3;
+	}
       else
 	{
 	  sorry ("value casting of variable nonnull pointer to member functions not supported");
@@ -6623,7 +6672,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 
 	  if (ctt < 0)
 	    cp_pedwarn ("converting `%T' to `%T' is a contravariance violation",
-			ttr, ttl);
+			rhstype, type);
 
 	  if (TYPE_MAIN_VARIANT (ttl) != void_type_node
 	      && TYPE_MAIN_VARIANT (ttr) == void_type_node
@@ -7388,6 +7437,11 @@ c_expand_return (retval)
 	{
 	  store_expr (result, original_result_rtx, 0);
 	  expand_cleanups_to (NULL_TREE);
+	  use_variable (DECL_RTL (result));
+	  if (ctor_label  && TREE_CODE (ctor_label) != ERROR_MARK)
+	    expand_goto (ctor_label);
+	  else
+	    expand_null_return ();
 	}
       else if (retval && retval != result)
 	{
@@ -7408,12 +7462,6 @@ c_expand_return (retval)
 	}
       else
 	expand_return (result);
-
-      use_variable (DECL_RTL (result));
-      if (ctor_label  && TREE_CODE (ctor_label) != ERROR_MARK)
-	expand_goto (ctor_label);
-      else
-	expand_null_return ();
     }
   else
     {
@@ -7530,15 +7578,20 @@ comp_ptr_ttypes_real (to, from, constp)
       if (TREE_CODE (to) != TREE_CODE (from))
 	return 0;
 
-      if (TYPE_READONLY (from) > TYPE_READONLY (to)
-	  || TYPE_VOLATILE (from) > TYPE_VOLATILE (to))
-	return 0;
+      /* Const and volatile mean something different for function types,
+	 so the usual checks are not appropriate.  */
+      if (TREE_CODE (to) != FUNCTION_TYPE && TREE_CODE (to) != METHOD_TYPE)
+	{
+	  if (TYPE_READONLY (from) > TYPE_READONLY (to)
+	      || TYPE_VOLATILE (from) > TYPE_VOLATILE (to))
+	    return 0;
 
-      if (! constp
-	  && (TYPE_READONLY (to) > TYPE_READONLY (from)
-	      || TYPE_VOLATILE (to) > TYPE_READONLY (from)))
-	return 0;
-      constp &= TYPE_READONLY (to);
+	  if (! constp
+	      && (TYPE_READONLY (to) > TYPE_READONLY (from)
+		  || TYPE_VOLATILE (to) > TYPE_READONLY (from)))
+	    return 0;
+	  constp &= TYPE_READONLY (to);
+	}
 
       if (TREE_CODE (to) != POINTER_TYPE)
 	return comptypes (TYPE_MAIN_VARIANT (to), TYPE_MAIN_VARIANT (from), 1);

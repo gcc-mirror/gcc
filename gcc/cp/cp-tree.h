@@ -450,11 +450,12 @@ struct lang_type
       unsigned has_complex_init_ref : 1;
       unsigned has_complex_assign_ref : 1;
       unsigned has_abstract_assign_ref : 1;
+      unsigned non_aggregate : 1;
 
       /* The MIPS compiler gets it wrong if this struct also
 	 does not fill out to a multiple of 4 bytes.  Add a
 	 member `dummy' with new bits if you go over the edge.  */
-      unsigned dummy : 20;
+      unsigned dummy : 19;
 
       unsigned n_vancestors : 16;
     } type_flags;
@@ -1054,6 +1055,9 @@ struct lang_decl
    class where a virtual function instance is actually defined, and the
    lexical scope of a friend function defined in a class body.  */
 #define DECL_CLASS_CONTEXT(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.context)
+#define DECL_REAL_CONTEXT(NODE) \
+  ((TREE_CODE (NODE) == FUNCTION_DECL && DECL_FUNCTION_MEMBER_P (NODE)) \
+   ? DECL_CLASS_CONTEXT (NODE) : DECL_CONTEXT (NODE))
 
 /* For a FUNCTION_DECL: the chain through which the next method
    in the method chain is found.  We now use TREE_CHAIN to
@@ -1068,7 +1072,7 @@ struct lang_decl
 #define DECL_NEXT_METHOD(NODE) (DECL_LANG_SPECIFIC(NODE)->next_method)
 
 /* In a VAR_DECL for a variable declared in a for statement,
-   this is the shadowed (local) variable. */
+   this is the shadowed variable. */
 #define DECL_SHADOWED_FOR_VAR(NODE) DECL_RESULT(NODE)
 
 /* Points back to the decl which caused this lang_decl to be allocated.  */
@@ -1217,6 +1221,13 @@ extern int flag_new_for_scope;
    of ARRAY_TYPE if the type of the elements needs a constructor.  */
 #define TYPE_NEEDS_CONSTRUCTING(NODE) (TYPE_LANG_FLAG_3(NODE))
 #endif
+
+/* Nonzero means that an object of this type can not be initialized using
+   an initializer list.  */
+#define CLASSTYPE_NON_AGGREGATE(NODE) \
+  (TYPE_LANG_SPECIFIC (NODE)->type_flags.non_aggregate)
+#define TYPE_NON_AGGREGATE_CLASS(NODE) \
+  (IS_AGGR_TYPE (NODE) && CLASSTYPE_NON_AGGREGATE (NODE))
 
 /* Nonzero if there is a user-defined X::op=(x&) for this class.  */
 #define TYPE_HAS_REAL_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_real_assign_ref)
@@ -1953,6 +1964,7 @@ extern int root_lang_context_p			PROTO((void));
 extern tree instantiate_type			PROTO((tree, tree, int));
 extern void print_class_statistics		PROTO((void));
 extern void maybe_push_cache_obstack		PROTO((void));
+extern unsigned HOST_WIDE_INT skip_rtti_stuff	PROTO((tree *));
 
 /* in cvt.c */
 extern tree convert_to_reference		PROTO((tree, tree, int, int, tree));
@@ -2030,7 +2042,7 @@ extern void cp_finish_decl			PROTO((tree, tree, tree, int, int));
 extern void expand_static_init			PROTO((tree, tree));
 extern int complete_array_type			PROTO((tree, tree, int));
 extern tree build_ptrmemfunc_type		PROTO((tree));
-extern tree grokdeclarator			(); /* PROTO((tree, tree, enum decl_context, int, tree)); */
+/* the grokdeclarator prototype is in decl.h */
 extern int parmlist_is_exprlist			PROTO((tree));
 extern tree xref_tag				PROTO((tree, tree, tree, int));
 extern void xref_basetypes			PROTO((tree, tree, tree, tree));
@@ -2038,8 +2050,10 @@ extern tree start_enum				PROTO((tree));
 extern tree finish_enum				PROTO((tree, tree));
 extern tree build_enumerator			PROTO((tree, tree));
 extern tree grok_enum_decls			PROTO((tree, tree));
-extern int start_function			PROTO((tree, tree, tree, int));
+extern int start_function			PROTO((tree, tree, tree, tree, int));
 extern void store_parm_decls			PROTO((void));
+extern void expand_start_early_try_stmts	PROTO((void));
+extern void store_in_parms			PROTO((struct rtx_def *));
 extern void store_return_init			PROTO((tree, tree));
 extern void finish_function			PROTO((int, int, int));
 extern tree start_method			PROTO((tree, tree, tree));
@@ -2059,8 +2073,8 @@ extern void grokclassfn				PROTO((tree, tree, tree, enum overload_flags, tree));
 extern tree grok_alignof			PROTO((tree));
 extern tree grok_array_decl			PROTO((tree, tree));
 extern tree delete_sanity			PROTO((tree, tree, int, int));
-extern void check_classfn			PROTO((tree, tree, tree));
-extern tree grokfield				PROTO((tree, tree, tree, tree, tree));
+extern tree check_classfn			PROTO((tree, tree, tree));
+extern tree grokfield				PROTO((tree, tree, tree, tree, tree, tree));
 extern tree grokbitfield			PROTO((tree, tree, tree));
 extern tree groktypefield			PROTO((tree, tree));
 extern tree grokoptypename			PROTO((tree, tree));
@@ -2093,6 +2107,7 @@ extern tree do_toplevel_using_decl		PROTO((tree));
 extern tree do_class_using_decl			PROTO((tree));
 extern tree current_namespace_id		PROTO((tree));
 extern tree get_namespace_id			PROTO((void));
+extern void check_default_args			PROTO((tree));
 
 /* in edsel.c */
 
@@ -2113,12 +2128,16 @@ extern int might_have_exceptions_p		PROTO((void));
 extern void emit_exception_table		PROTO((void));
 extern tree build_throw				PROTO((tree));
 extern void init_exception_processing		PROTO((void));
+extern void expand_builtin_throw		PROTO((void));
+extern void expand_start_eh_spec		PROTO((void));
+extern void expand_end_eh_spec			PROTO((tree));
 
 /* in expr.c */
 /* skip cplus_expand_expr */
 extern void init_cplus_expand			PROTO((void));
 extern void fixup_result_decl			PROTO((tree, struct rtx_def *));
 extern int decl_in_memory_p			PROTO((tree));
+extern tree unsave_expr_now			PROTO((tree));
 
 /* in gc.c */
 extern int type_needs_gc_entry			PROTO((tree));
@@ -2232,6 +2251,7 @@ extern char *code_as_string			PROTO((enum tree_code, int));
 extern char *language_as_string			PROTO((enum languages, int));
 extern char *parm_as_string			PROTO((int, int));
 extern char *op_as_string			PROTO((enum tree_code, int));
+extern char *cv_as_string			PROTO((tree, int));
 
 /* in method.c */
 extern void init_method				PROTO((void));
@@ -2367,13 +2387,15 @@ extern int promotes_to_aggr_type		PROTO((tree, enum tree_code));
 extern int is_aggr_type_2			PROTO((tree, tree));
 extern void message_2_types			PROTO((void (*)(), char *, tree, tree));
 extern char *lang_printable_name		PROTO((tree));
-extern tree build_exception_variant		PROTO((tree, tree, tree));
+extern tree build_exception_variant		PROTO((tree, tree));
 extern tree copy_to_permanent			PROTO((tree));
 extern void print_lang_statistics		PROTO((void));
 /* skip __eprintf */
 extern tree array_type_nelts_total		PROTO((tree));
 extern tree array_type_nelts_top		PROTO((tree));
 extern tree break_out_target_exprs		PROTO((tree));
+extern tree build_unsave_expr			PROTO((tree));
+extern int cp_expand_decl_cleanup		PROTO((tree, tree));
 
 /* in typeck.c */
 extern tree condition_conversion		PROTO((tree));
@@ -2397,6 +2419,7 @@ extern tree signed_or_unsigned_type		PROTO((int, tree));
 extern tree c_sizeof				PROTO((tree));
 extern tree c_sizeof_nowarn			PROTO((tree));
 extern tree c_alignof				PROTO((tree));
+extern tree decay_conversion			PROTO((tree));
 extern tree default_conversion			PROTO((tree));
 extern tree build_object_ref			PROTO((tree, tree, tree));
 extern tree build_component_ref_1		PROTO((tree, tree, int));

@@ -884,9 +884,15 @@ digest_init (type, init, tail)
 
   if (code == ARRAY_TYPE || code == RECORD_TYPE || code == UNION_TYPE)
     {
-      if (raw_constructor)
+      if (raw_constructor && TYPE_NON_AGGREGATE_CLASS (type))
+	{
+	  cp_error ("subobject of type `%T' must be initialized by constructor, not by `%E'",
+		    type, init);
+	  return error_mark_node;
+	}
+      else if (raw_constructor)
 	return process_init_constructor (type, init, (tree *)0);
-      else if (TYPE_NEEDS_CONSTRUCTING (type))
+      else if (TYPE_NON_AGGREGATE_CLASS (type))
 	{
 	  /* This can only be reached when caller is initializing
 	     ARRAY_TYPE.  In that case, we don't want to convert
