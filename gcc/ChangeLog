@@ -1,5 +1,31 @@
 1998-12-15  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
+	* cpplib.c: Make all directive handlers read their own
+          arguments.
+	  (struct directive): Remove last two arguments from FUNC
+          member prototype. Remove `command_reads_line' member
+          entirely.
+	  (directive_table): Remove initializations of
+          command_reads_line flag.  Pretty-print.
+	  (eval_if_expression, do_define, do_line, do_include,
+          do_undef, do_error, do_pragma, do_ident, do_if, do_xifdef,
+          do_else, do_elif, do_sccs, do_assert, do_unassert,
+          do_warning): Take only two args.
+
+	  (cpp_define): Call do_define with two args and the text to
+	  define stuffed into a buffer.
+	  (make_assertion): Call do_assert with two args.
+	  (handle_directive): Call do_line with two args. Call
+	  kt->func with two args.  Remove command_reads_line
+	  processing.
+	  (do_define, do_undef, do_error, do_warning, do_pragma,
+	  do_sccs): Read the rest of the line here.
+	  (do_ident): Gobble rest of line, as cccp does.
+	  (cpp_undef): New function.
+	  (cpp_start_read): Call cpp_undef instead of do_undef.
+
+1998-12-15  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
 	* cpphash.h (union hash_value): Remove `keydef' member, add a
           `struct hashnode *aschain' member for #assert.  
 

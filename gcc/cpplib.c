@@ -159,7 +159,7 @@ extern void fancy_abort ();
 static int check_macro_name		PROTO ((cpp_reader *, U_CHAR *, char *));
 static int compare_defs			PROTO ((cpp_reader *,
 						DEFINITION *, DEFINITION *));
-static HOST_WIDE_INT eval_if_expression	PROTO ((cpp_reader *, U_CHAR *, int));
+static HOST_WIDE_INT eval_if_expression	PROTO ((cpp_reader *));
 static int change_newlines		PROTO ((U_CHAR *, int));
 static void push_macro_expansion PARAMS ((cpp_reader *,
 					  U_CHAR *, int, HASHNODE *));
@@ -243,34 +243,33 @@ static struct default_include {
 struct directive {
   int length;			/* Length of name */
   int (*func)			/* Function to handle directive */
-    PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+    PARAMS ((cpp_reader *, struct directive *));
   char *name;			/* Name of directive */
   enum node_type type;		/* Code which describes which directive.  */
-  char command_reads_line;      /* One if rest of line is read by func.  */
 };
 
 /* These functions are declared to return int instead of void since they
    are going to be placed in a table and some old compilers have trouble with
    pointers to functions returning void.  */
 
-static int do_define PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
-static int do_line PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
-static int do_include PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
-static int do_undef PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
-static int do_error PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
-static int do_pragma PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
-static int do_ident PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
-static int do_if PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
-static int do_xifdef PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
-static int do_else PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
-static int do_elif PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
-static int do_endif PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_define PARAMS ((cpp_reader *, struct directive *));
+static int do_line PARAMS ((cpp_reader *, struct directive *));
+static int do_include PARAMS ((cpp_reader *, struct directive *));
+static int do_undef PARAMS ((cpp_reader *, struct directive *));
+static int do_error PARAMS ((cpp_reader *, struct directive *));
+static int do_pragma PARAMS ((cpp_reader *, struct directive *));
+static int do_ident PARAMS ((cpp_reader *, struct directive *));
+static int do_if PARAMS ((cpp_reader *, struct directive *));
+static int do_xifdef PARAMS ((cpp_reader *, struct directive *));
+static int do_else PARAMS ((cpp_reader *, struct directive *));
+static int do_elif PARAMS ((cpp_reader *, struct directive *));
+static int do_endif PARAMS ((cpp_reader *, struct directive *));
 #ifdef SCCS_DIRECTIVE
-static int do_sccs PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_sccs PARAMS ((cpp_reader *, struct directive *));
 #endif
-static int do_assert PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
-static int do_unassert PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
-static int do_warning PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_assert PARAMS ((cpp_reader *, struct directive *));
+static int do_unassert PARAMS ((cpp_reader *, struct directive *));
+static int do_warning PARAMS ((cpp_reader *, struct directive *));
 
 #define IS_INCLUDE_DIRECTIVE_TYPE(t) \
 ((int) T_INCLUDE <= (int) (t) && (int) (t) <= (int) T_IMPORT)
@@ -279,28 +278,28 @@ static int do_warning PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHA
    The initialize_builtins function assumes #define is the very first.  */
 
 static struct directive directive_table[] = {
-  {  6, do_define, "define", T_DEFINE, 0},
-  {  5, do_xifdef, "ifdef", T_IFDEF, 1},
-  {  6, do_xifdef, "ifndef", T_IFNDEF, 1},
-  {  7, do_include, "include", T_INCLUDE, 1},
-  { 12, do_include, "include_next", T_INCLUDE_NEXT, 1},
-  {  6, do_include, "import", T_IMPORT, 1},
-  {  5, do_endif, "endif", T_ENDIF, 1},
-  {  4, do_else, "else", T_ELSE, 1},
-  {  2, do_if, "if", T_IF, 1},
-  {  4, do_elif, "elif", T_ELIF, 1},
-  {  5, do_undef, "undef", T_UNDEF, 0},
-  {  5, do_error, "error", T_ERROR, 0},
-  {  7, do_warning, "warning", T_WARNING, 0},
-  {  6, do_pragma, "pragma", T_PRAGMA, 0},
-  {  4, do_line, "line", T_LINE, 1},
-  {  5, do_ident, "ident", T_IDENT, 1},
+  {  6, do_define,   "define",       T_DEFINE },
+  {  5, do_xifdef,   "ifdef",        T_IFDEF },
+  {  6, do_xifdef,   "ifndef",       T_IFNDEF },
+  {  7, do_include,  "include",      T_INCLUDE },
+  { 12, do_include,  "include_next", T_INCLUDE_NEXT },
+  {  6, do_include,  "import",       T_IMPORT },
+  {  5, do_endif,    "endif",        T_ENDIF },
+  {  4, do_else,     "else",         T_ELSE },
+  {  2, do_if,       "if",           T_IF },
+  {  4, do_elif,     "elif",         T_ELIF },
+  {  5, do_undef,    "undef",        T_UNDEF },
+  {  5, do_error,    "error",        T_ERROR },
+  {  7, do_warning,  "warning",      T_WARNING },
+  {  6, do_pragma,   "pragma",       T_PRAGMA },
+  {  4, do_line,     "line",         T_LINE },
+  {  5, do_ident,    "ident",        T_IDENT },
 #ifdef SCCS_DIRECTIVE
-  {  4, do_sccs, "sccs", T_SCCS, 0},
+  {  4, do_sccs,     "sccs",         T_SCCS },
 #endif
-  {  6, do_assert, "assert", T_ASSERT, 1},
-  {  8, do_unassert, "unassert", T_UNASSERT, 1},
-  {  -1, 0, "", T_UNUSED, 0},
+  {  6, do_assert,   "assert",       T_ASSERT },
+  {  8, do_unassert, "unassert",     T_UNASSERT },
+  {  -1, 0, "", T_UNUSED }
 };
 
 /* table to tell if char can be part of a C identifier.  */
@@ -467,7 +466,11 @@ cpp_define (pfile, str)
     *q = 0;
   }
   
-  do_define (pfile, NULL, buf, buf + strlen (buf));
+  if (cpp_push_buffer (pfile, buf, strlen (buf)) != NULL)
+    {
+      do_define (pfile, NULL);
+      cpp_pop_buffer (pfile);
+    }
 }
 
 /* Process the string STR as if it appeared as the body of a #assert.
@@ -508,10 +511,10 @@ make_assertion (pfile, option, str)
     cpp_error (pfile, "malformed option `%s %s'", option, str);
     return;
   }
-  
+
   if (cpp_push_buffer (pfile, buf, strlen (buf)) != NULL)
     {
-      do_assert (pfile, NULL, NULL, NULL);
+      do_assert (pfile, NULL);
       cpp_pop_buffer (pfile);
     }
 }
@@ -793,8 +796,7 @@ handle_directive (pfile)
 { int c;
   register struct directive *kt;
   int ident_length;
-  long after_ident;
-  U_CHAR *ident, *line_end;
+  U_CHAR *ident;
   long old_written = CPP_WRITTEN (pfile);
 
   cpp_skip_hspace (pfile);
@@ -805,7 +807,7 @@ handle_directive (pfile)
       /* Handle # followed by a line number.  */
       if (CPP_PEDANTIC (pfile))
 	cpp_pedwarn (pfile, "`#' followed by integer");
-      do_line (pfile, NULL, NULL, NULL);
+      do_line (pfile, NULL);
       goto done_a_directive;
     }
 
@@ -851,40 +853,23 @@ handle_directive (pfile)
   for (kt = directive_table; ; kt++) {
     if (kt->length <= 0)
       goto not_a_directive;
-    if (kt->length == ident_length && !strncmp (kt->name, ident, ident_length)) 
+    if (kt->length == ident_length
+	&& !strncmp (kt->name, ident, ident_length)) 
       break;
   }
-
-  if (kt->command_reads_line)
-    after_ident = 0;
-  else
-    {
-      /* Nonzero means do not delete comments within the directive.
-         #define needs this when -traditional.  */
-	int comments = CPP_TRADITIONAL (pfile) && kt->type == T_DEFINE;
-	int save_put_out_comments = CPP_OPTIONS (pfile)->put_out_comments;
-	CPP_OPTIONS (pfile)->put_out_comments = comments;
-	after_ident = CPP_WRITTEN (pfile);
-	copy_rest_of_line (pfile);
-	CPP_OPTIONS (pfile)->put_out_comments = save_put_out_comments;
-    }
 
   /* We may want to pass through #define, #pragma, and #include.
      Other directives may create output, but we don't want the directive
      itself out, so we pop it now.  For example conditionals may emit
-     #failed ... #endfailed stuff.  But note that popping the buffer
-     means the parameters to kt->func may point after pfile->limit
-     so these parameters are invalid as soon as something gets appended
-     to the token_buffer.  */
+     #failed ... #endfailed stuff.  */
 
-  line_end = CPP_PWRITTEN (pfile);
   if (! (kt->type == T_DEFINE
 	 || kt->type == T_PRAGMA
 	 || (IS_INCLUDE_DIRECTIVE_TYPE (kt->type)
 	     && CPP_OPTIONS (pfile)->dump_includes)))
     CPP_SET_WRITTEN (pfile, old_written);
 
-  (*kt->func) (pfile, kt, pfile->token_buffer + after_ident, line_end);
+  (*kt->func) (pfile, kt);
 
   if (kt->type == T_DEFINE)
     {
@@ -911,7 +896,7 @@ handle_directive (pfile)
 
 /* Pass a directive through to the output file.
    BUF points to the contents of the directive, as a contiguous string.
-   LIMIT points to the first character past the end of the directive.
+m   LIMIT points to the first character past the end of the directive.
    KEYWORD is the keyword-table entry for the directive.  */
 
 static void
@@ -1533,28 +1518,44 @@ comp_def_part (first, beg1, len1, beg2, len2, last)
 }
 
 /* Process a #define command.
-BUF points to the contents of the #define command, as a contiguous string.
-LIMIT points to the first character past the end of the definition.
 KEYWORD is the keyword-table entry for #define,
 or NULL for a "predefined" macro.  */
 
 static int
-do_define (pfile, keyword, buf, limit)
+do_define (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword;
-     U_CHAR *buf, *limit;
 {
   int hashcode;
   MACRODEF mdef;
   HASHNODE *hp;
+  int save_put_out_comments;
+  long here;
+  U_CHAR *macro, *buf, *end;
+
+  here = CPP_WRITTEN (pfile);
+  
+  save_put_out_comments = CPP_OPTIONS (pfile)->put_out_comments;
+  CPP_OPTIONS (pfile)->put_out_comments = CPP_TRADITIONAL (pfile);
+  copy_rest_of_line (pfile);
+  CPP_OPTIONS (pfile)->put_out_comments = save_put_out_comments;
+
+  /* Copy out the line so we can pop the token buffer. */
+  buf = pfile->token_buffer + here;
+  end = CPP_PWRITTEN (pfile);
+  macro = alloca (end - buf + 1);
+  bcopy (buf, macro, end - buf + 1);
+  end = macro + (end - buf);
+
+  CPP_SET_WRITTEN (pfile, here);
 
 #if 0
   /* If this is a precompiler run (with -pcp) pass thru #define commands.  */
   if (pcp_outfile && keyword)
-    pass_thru_directive (buf, limit, pfile, keyword);
+    pass_thru_directive (macro, end, pfile, keyword);
 #endif
 
-  mdef = create_definition (buf, limit, pfile, keyword == NULL);
+  mdef = create_definition (macro, end, pfile, keyword == NULL);
   if (mdef.defn == 0)
     goto nope;
 
@@ -1580,7 +1581,7 @@ do_define (pfile, keyword, buf, limit)
 	  /* If we are passing through #define and #undef directives, do
 	     that for this re-definition now.  */
 	  if (CPP_OPTIONS (pfile)->debug_output && keyword)
-	    pass_thru_directive (buf, limit, pfile, keyword);
+	    pass_thru_directive (macro, end, pfile, keyword);
 
 	  msg = (U_CHAR *) alloca (mdef.symlen + 22);
 	  *msg = '`';
@@ -1600,7 +1601,7 @@ do_define (pfile, keyword, buf, limit)
       /* If we are passing through #define and #undef directives, do
 	 that for this new definition now.  */
       if (CPP_OPTIONS (pfile)->debug_output && keyword)
-	pass_thru_directive (buf, limit, pfile, keyword);
+	pass_thru_directive (macro, end, pfile, keyword);
       install (mdef.symnam, mdef.symlen, T_MACRO, 0,
 	       (char *) mdef.defn, hashcode);
     }
@@ -2871,10 +2872,9 @@ get_directive_token (pfile)
    This is safe.  */
 
 static int
-do_include (pfile, keyword, unused1, unused2)
+do_include (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword;
-     U_CHAR *unused1 ATTRIBUTE_UNUSED, *unused2 ATTRIBUTE_UNUSED;
 {
   int importing = (keyword->type == T_IMPORT);
   int skip_dirs = (keyword->type == T_INCLUDE_NEXT);
@@ -3147,10 +3147,9 @@ convert_string (pfile, result, in, limit, handle_escapes)
 #define FNAME_HASHSIZE 37
 
 static int
-do_line (pfile, keyword, unused1, unused2)
+do_line (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
-     U_CHAR *unused1 ATTRIBUTE_UNUSED, *unused2 ATTRIBUTE_UNUSED;
 {
   cpp_buffer *ip = CPP_BUFFER (pfile);
   int new_lineno;
@@ -3278,14 +3277,43 @@ do_line (pfile, keyword, unused1, unused2)
  */
 
 static int
-do_undef (pfile, keyword, buf, limit)
+do_undef (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword;
-     U_CHAR *buf, *limit;
 {
   int sym_length;
   HASHNODE *hp;
-  U_CHAR *orig_buf = buf;
+  U_CHAR *buf, *name, *limit;
+  int c;
+  long here = CPP_WRITTEN (pfile);
+  enum cpp_token token;
+
+  cpp_skip_hspace (pfile);
+  c = GETC();
+  if (! is_idstart[c])
+  {
+      cpp_error (pfile, "token after #undef is not an identifier");
+      skip_rest_of_line (pfile);
+      return 1;
+  }
+
+  parse_name (pfile, c);
+  buf = pfile->token_buffer + here;
+  limit = CPP_PWRITTEN(pfile);
+
+  /* Copy out the token so we can pop the token buffer. */
+  name = alloca (limit - buf + 1);
+  bcopy(buf, name, limit - buf);
+  name[limit - buf] = '\0';
+
+  token = get_directive_token (pfile);
+  if (token != CPP_VSPACE)
+  {
+      cpp_pedwarn (pfile, "junk on line after #undef");
+      skip_rest_of_line (pfile);
+  }
+
+  CPP_SET_WRITTEN (pfile, here);
 
 #if 0
   /* If this is a precompiler run (with -pcp) pass thru #undef commands.  */
@@ -3293,28 +3321,35 @@ do_undef (pfile, keyword, buf, limit)
     pass_thru_directive (buf, limit, pfile, keyword);
 #endif
 
-  SKIP_WHITE_SPACE (buf);
-  sym_length = check_macro_name (pfile, buf, "macro");
+  sym_length = check_macro_name (pfile, name, "macro");
 
-  while ((hp = cpp_lookup (pfile, buf, sym_length, -1)) != NULL)
+  while ((hp = cpp_lookup (pfile, name, sym_length, -1)) != NULL)
     {
       /* If we are generating additional info for debugging (with -g) we
 	 need to pass through all effective #undef commands.  */
       if (CPP_OPTIONS (pfile)->debug_output && keyword)
-	pass_thru_directive (orig_buf, limit, pfile, keyword);
+	pass_thru_directive (name, name+sym_length, pfile, keyword);
       if (hp->type != T_MACRO)
 	cpp_warning (pfile, "undefining `%s'", hp->name);
       delete_macro (hp);
     }
 
-  if (CPP_PEDANTIC (pfile)) {
-    buf += sym_length;
-    SKIP_WHITE_SPACE (buf);
-    if (buf != limit)
-      cpp_pedwarn (pfile, "garbage after `#undef' directive");
-  }
   return 0;
 }
+
+/* Wrap do_undef for -U processing. */
+static void
+cpp_undef (pfile, macro)
+     cpp_reader *pfile;
+     U_CHAR *macro;
+{
+    if (cpp_push_buffer (pfile, macro, strlen(macro)))
+    {
+	do_undef (pfile, NULL);
+	cpp_pop_buffer (pfile);
+    }
+}
+
 
 /*
  * Report an error detected by the program we are processing.
@@ -3323,77 +3358,78 @@ do_undef (pfile, keyword, buf, limit)
  */
 
 static int
-do_error (pfile, keyword, buf, limit)
+do_error (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
-     U_CHAR *buf, *limit;
 {
-  int length = limit - buf;
-  U_CHAR *copy = (U_CHAR *) alloca (length + 1);
-  bcopy (buf, copy, length);
-  copy[length] = 0;
-  SKIP_WHITE_SPACE (copy);
-  cpp_error (pfile, "#error %s", copy);
+  long here = CPP_WRITTEN (pfile);
+  U_CHAR *text;
+  copy_rest_of_line (pfile);
+  text = pfile->token_buffer + here;
+  SKIP_WHITE_SPACE(text);
+
+  cpp_error (pfile, "#error %s", text);
+  CPP_SET_WRITTEN (pfile, here);
   return 0;
 }
 
 /*
  * Report a warning detected by the program we are processing.
  * Use the text of the line in the warning message, then continue.
- * (We use error because it prints the filename & line#.)
  */
 
 static int
-do_warning (pfile, keyword, buf, limit)
+do_warning (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
-     U_CHAR *buf, *limit;
 {
-  int length = limit - buf;
-  U_CHAR *copy = (U_CHAR *) alloca (length + 1);
-  bcopy (buf, copy, length);
-  copy[length] = 0;
-  SKIP_WHITE_SPACE (copy);
+  U_CHAR *text;
+  long here = CPP_WRITTEN(pfile);
+  copy_rest_of_line (pfile);
+  text = pfile->token_buffer + here;
+  SKIP_WHITE_SPACE(text);
 
   if (CPP_PEDANTIC (pfile) && !CPP_BUFFER (pfile)->system_header_p)
     cpp_pedwarn (pfile, "ANSI C does not allow `#warning'");
 
   /* Use `pedwarn' not `warning', because #warning isn't in the C Standard;
      if -pedantic-errors is given, #warning should cause an error.  */
-  cpp_pedwarn (pfile, "#warning %s", copy);
+  cpp_pedwarn (pfile, "#warning %s", text);
+  CPP_SET_WRITTEN (pfile, here);
   return 0;
 }
 
 /* Report program identification.  */
 
 static int
-do_ident (pfile, keyword, buf, limit)
+do_ident (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
-     U_CHAR *buf ATTRIBUTE_UNUSED, *limit ATTRIBUTE_UNUSED;
 {
-/*  long old_written = CPP_WRITTEN (pfile);*/
-
   /* Allow #ident in system headers, since that's not user's fault.  */
   if (CPP_PEDANTIC (pfile) && !CPP_BUFFER (pfile)->system_header_p)
     cpp_pedwarn (pfile, "ANSI C does not allow `#ident'");
 
-  /* Leave rest of line to be read by later calls to cpp_get_token.  */
+  skip_rest_of_line (pfile);  /* Correct?  Appears to match cccp.  */
 
   return 0;
 }
 
-/* #pragma and its argument line have already been copied to the output file.
-   Just check for some recognized pragmas that need validation here.  */
+/* Just check for some recognized pragmas that need validation here,
+   and leave the text in the token buffer to be output. */
 
 static int
-do_pragma (pfile, keyword, buf, limit)
+do_pragma (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
-     U_CHAR *buf, *limit ATTRIBUTE_UNUSED;
 {
-  while (*buf == ' ' || *buf == '\t')
-    buf++;
+  long here = CPP_WRITTEN (pfile);
+  U_CHAR *buf;
+  
+  copy_rest_of_line (pfile);
+  buf = pfile->token_buffer + here;
+  SKIP_WHITE_SPACE (buf);
+  
   if (!strncmp (buf, "once", 4))
     {
       cpp_buffer *ip = NULL;
@@ -3444,44 +3480,17 @@ do_pragma (pfile, keyword, buf, limit)
   return 0;
 }
 
-#if 0
-/* This was a fun hack, but #pragma seems to start to be useful.
-   By failing to recognize it, we pass it through unchanged to cc1.  */
-
-/*
- * the behavior of the #pragma directive is implementation defined.
- * this implementation defines it as follows.
- */
-
-static int
-do_pragma ()
-{
-  close (0);
-  if (open ("/dev/tty", O_RDONLY, 0666) != 0)
-    goto nope;
-  close (1);
-  if (open ("/dev/tty", O_WRONLY, 0666) != 1)
-    goto nope;
-  execl ("/usr/games/hack", "#pragma", 0);
-  execl ("/usr/games/rogue", "#pragma", 0);
-  execl ("/usr/new/emacs", "-f", "hanoi", "9", "-kill", 0);
-  execl ("/usr/local/emacs", "-f", "hanoi", "9", "-kill", 0);
-nope:
-  fatal ("You are in a maze of twisty compiler features, all different");
-}
-#endif
-
 #ifdef SCCS_DIRECTIVE
 /* Just ignore #sccs, on systems where we define it at all.  */
 
 static int
-do_sccs (pfile, keyword, buf, limit)
+do_sccs (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
-     U_CHAR *buf ATTRIBUTE_UNUSED, *limit ATTRIBUTE_UNUSED;
 {
   if (CPP_PEDANTIC (pfile))
     cpp_pedwarn (pfile, "ANSI C does not allow `#sccs'");
+  skip_rest_of_line (pfile);
   return 0;
 }
 #endif
@@ -3500,12 +3509,11 @@ do_sccs (pfile, keyword, buf, limit)
  */
 
 static int
-do_if (pfile, keyword, buf, limit)
+do_if (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
-     U_CHAR *buf, *limit;
 {
-  HOST_WIDE_INT value = eval_if_expression (pfile, buf, limit - buf);
+  HOST_WIDE_INT value = eval_if_expression (pfile);
   conditional_skip (pfile, value == 0, T_IF, NULL_PTR);
   return 0;
 }
@@ -3516,10 +3524,9 @@ do_if (pfile, keyword, buf, limit)
  */
 
 static int
-do_elif (pfile, keyword, buf, limit)
+do_elif (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
-     U_CHAR *buf, *limit;
 {
   if (pfile->if_stack == CPP_BUFFER (pfile)->if_stack) {
     cpp_error (pfile, "`#elif' not within a conditional");
@@ -3542,7 +3549,7 @@ do_elif (pfile, keyword, buf, limit)
   if (pfile->if_stack->if_succeeded)
     skip_if_group (pfile, 0);
   else {
-    HOST_WIDE_INT value = eval_if_expression (pfile, buf, limit - buf);
+    HOST_WIDE_INT value = eval_if_expression (pfile);
     if (value == 0)
       skip_if_group (pfile, 0);
     else {
@@ -3559,10 +3566,8 @@ do_elif (pfile, keyword, buf, limit)
  */
 
 static HOST_WIDE_INT
-eval_if_expression (pfile, buf, length)
+eval_if_expression (pfile)
      cpp_reader *pfile;
-     U_CHAR *buf ATTRIBUTE_UNUSED;
-     int length ATTRIBUTE_UNUSED;
 {
   HASHNODE *save_defined;
   HOST_WIDE_INT value;
@@ -3587,10 +3592,9 @@ eval_if_expression (pfile, buf, length)
  */
 
 static int
-do_xifdef (pfile, keyword, unused1, unused2)
+do_xifdef (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword;
-     U_CHAR *unused1 ATTRIBUTE_UNUSED, *unused2 ATTRIBUTE_UNUSED;
 {
   int skip;
   cpp_buffer *ip = CPP_BUFFER (pfile);
@@ -3868,10 +3872,9 @@ skip_if_group (pfile, any)
  */
 
 static int
-do_else (pfile, keyword, buf, limit)
+do_else (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
-     U_CHAR *buf ATTRIBUTE_UNUSED, *limit ATTRIBUTE_UNUSED;
 {
   cpp_buffer *ip = CPP_BUFFER (pfile);
 
@@ -3911,10 +3914,9 @@ do_else (pfile, keyword, buf, limit)
  */
 
 static int
-do_endif (pfile, keyword, buf, limit)
+do_endif (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
-     U_CHAR *buf ATTRIBUTE_UNUSED, *limit ATTRIBUTE_UNUSED;
 {
   if (CPP_PEDANTIC (pfile))
     validate_else (pfile, "#endif");
@@ -4830,7 +4832,7 @@ cpp_start_read (pfile, fname)
 	    case 'U':
 	      if (opts->debug_output)
 		output_line_command (pfile, 0, same_file);
-	      do_undef (pfile, NULL, pend->arg, pend->arg + strlen (pend->arg));
+	      cpp_undef (pfile, pend->arg);
 	      break;
 	    case 'D':
 	      if (opts->debug_output)
@@ -6006,10 +6008,9 @@ parse_assertion (pfile)
 }
 
 static int
-do_assert (pfile, keyword, buf, limit)
+do_assert (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
-     U_CHAR *buf ATTRIBUTE_UNUSED, *limit ATTRIBUTE_UNUSED;
 {
   char *sym;
   int ret, c;
@@ -6073,10 +6074,9 @@ do_assert (pfile, keyword, buf, limit)
 }
 
 static int
-do_unassert (pfile, keyword, buf, limit)
+do_unassert (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
-     U_CHAR *buf ATTRIBUTE_UNUSED, *limit ATTRIBUTE_UNUSED;
 {
   int c, ret;
   char *sym;
@@ -6568,9 +6568,6 @@ cpp_perror_with_name (pfile, name)
  * No pre-compiled header file support.
  *
  * Possibly different enum token codes for each C/C++ token.
- *
- * Should clean up remaining directives to that do_XXX functions
- *   only take two arguments and all have command_reads_line.
  *
  * Find and cleanup remaining uses of static variables,
  *
