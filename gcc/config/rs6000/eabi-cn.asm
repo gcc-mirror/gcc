@@ -79,12 +79,12 @@ __SDATA_END__:
 	.type	__SBSS_END__,@object
 __SBSS_END__:
 
-	.section ".sdata2","aw"
+	.section ".sdata2","a"
 	.globl	__SDATA2_END__
 	.type	__SDATA2_END__,@object
 __SDATA2_END__:
 
-	.section ".sbss2","aw"
+	.section ".sbss2","a"
 	.globl	__SBSS2_END__
 	.type	__SBSS2_END__,@object
 __SBSS2_END__:
