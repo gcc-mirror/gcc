@@ -1561,10 +1561,6 @@ add_class_decl (out, jcf, signature)
   const unsigned char *s = JPOOL_UTF_DATA (jcf, signature);
   int len = JPOOL_UTF_LENGTH (jcf, signature);
   int i;
-  /* Name of class we are processing.  */
-  int name_index = JPOOL_USHORT1 (jcf, jcf->this_class);
-  int tlen = JPOOL_UTF_LENGTH (jcf, name_index);
-  const char *tname = JPOOL_UTF_DATA (jcf, name_index);
 
   for (i = 0; i < len; ++i)
     {

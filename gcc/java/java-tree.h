@@ -1359,6 +1359,16 @@ extern tree *type_map;
    scope of TYPE_DECL.  */
 #define DECL_INNER_CLASS_LIST(NODE) DECL_INITIAL (NODE)
 
+/* Build a IDENTIFIER_POINTER for a file name we're considering. We
+   need to register the root, but we're trying to register it only
+   once.  */
+#define BUILD_FILENAME_IDENTIFIER_NODE(F, S)	\
+  if (!((F) = maybe_get_identifier ((S))))	\
+    {						\
+      (F) = get_identifier ((S));		\
+      ggc_mark_tree ((F));			\
+    }
+
 /* Add a FIELD_DECL to RECORD_TYPE RTYPE.
    The field has name NAME (a char*), and type FTYPE.
    Unless this is the first field, FIELD most hold the previous field.

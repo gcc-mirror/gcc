@@ -1526,7 +1526,7 @@ java_get_line_col (filename, line, col)
   while (cline != line)
     {
       c = getc (fp);
-      if (c < 0)
+      if (c == EOF)
 	{
 	  static char msg[] = "<<file too short - unexpected EOF>>";
 	  obstack_grow (&temporary_obstack, msg, sizeof(msg)-1);
@@ -1563,7 +1563,7 @@ java_get_line_col (filename, line, col)
 
   /* Place the '^' a the right position */
   base = obstack_base (&temporary_obstack);
-  for (ccol = 1; ccol <= col; ccol++)
+  for (ccol = 1; ccol <= col+3; ccol++)
     {
       /* Compute \t when reaching first_non_space */
       char c = (first_non_space ?
