@@ -73,7 +73,8 @@ Boston, MA 02111-1307, USA.  */
 #define LINK_SPEC "%{v:-v}"
 #endif /* defined (USE_GLD) */
 
-#define CPP_SPEC "%{!msoft-float:-D__HAVE_68881__}"
+#define CPP_SPEC "%{!msoft-float:-D__HAVE_68881__}\
+%{!mc68000:%{!m68000: -D__mc68020__}}"
 
 /* Shared libraries need to use crt0s.o  */
 
