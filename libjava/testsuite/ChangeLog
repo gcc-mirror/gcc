@@ -1,3 +1,9 @@
+2000-06-13  Warren Levy  <warrenl@cygnus.com>
+
+	Test for PR java.lang/258:
+	* libjava.lang/Class_1.java: New file.
+	* libjava.lang/Class_1.out: New file.
+
 2000-05-29  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* libjava.lang/PR242.java: New file. PR gcj/242.

@@ -1,0 +1,21 @@
+Testing class `Class_1'...
+false
+true
+true
+false
+true
+true
+false
+true
+printIsAssignableFrom(C[].class, C[][].class, false); case uncompilable due to known compiler limitation.
+true
+true
+false
+true
+false
+false
+true
+true
+false
+true
+false
