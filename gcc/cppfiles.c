@@ -218,11 +218,10 @@ file_cleanup (pbuf, pfile)
    with calling open is in one place, and if we ever need more, it'll
    be in one place too.
 
-   Open files in nonblocking mode, so we don't get stuck if someone
-   clever has asked cpp to process /dev/rmt0.  read_include_file
-   will check that we have a real file to work with.  Also take care
-   not to acquire a controlling terminal by mistake (this can't happen
-   on sane systems, but paranoia is a virtue).
+   We used to open files in nonblocking mode, but that caused more
+   problems than it solved.  Do take care not to acquire a controlling
+   terminal by mistake (this can't happen on sane systems, but
+   paranoia is a virtue).
 
    Use the three-argument form of open even though we aren't
    specifying O_CREAT, to defend against broken system headers.  */
@@ -232,7 +231,7 @@ open_include_file (pfile, filename)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
      const char *filename;
 {
-  return open (filename, O_RDONLY|O_NONBLOCK|O_NOCTTY, 0666);
+  return open (filename, O_RDONLY|O_NOCTTY, 0666);
 }
 
 /* Search for include file FNAME in the include chain starting at
@@ -708,19 +707,18 @@ read_include_file (pfile, fd, ihash)
 
   if (fstat (fd, &st) < 0)
     goto perror_fail;
-  if (fcntl (fd, F_SETFL, 0) == -1)  /* turn off nonblocking mode */
-    goto perror_fail;
 
   /* If fd points to a plain file, we know how big it is, so we can
      allocate the buffer all at once.  If fd is a pipe or terminal, we
      can't.  Most C source files are 4k or less, so we guess that.  If
-     fd is something weird, like a block device or a directory, we
-     don't want to read it at all.
+     fd is something weird, like a directory, we don't want to read it
+     at all.
 
      Unfortunately, different systems use different st.st_mode values
      for pipes: some have S_ISFIFO, some S_ISSOCK, some are buggy and
-     zero the entire struct stat except a couple fields.  Hence the
-     mess below.
+     zero the entire struct stat except a couple fields.  Hence we don't
+     even try to figure out what something is, except for plain files,
+     directories, and block devices.
 
      In all cases, read_and_prescan will resize the buffer if it
      turns out there's more data than we thought.  */
@@ -740,22 +738,20 @@ read_include_file (pfile, fd, ihash)
 	  goto fail;
 	}
     }
-  else if (S_ISFIFO (st.st_mode) || S_ISSOCK (st.st_mode)
-	   /* Permit any kind of character device: the sensible ones are
-	      ttys and /dev/null, but weeding out the others is too hard.  */
-	   || S_ISCHR (st.st_mode)
-	   /* Some 4.x (x<4) derivatives have a bug that makes fstat() of a
-	      socket or pipe return a stat struct with most fields zeroed.  */
-	   || (st.st_mode == 0 && st.st_nlink == 0 && st.st_size == 0))
+  else if (S_ISBLK (st.st_mode))
     {
-      /* Cannot get its file size before reading.  4k is a decent
-         first guess. */
-      st_size = 4096;
+      cpp_error (pfile, "%s is a block device", ihash->name);
+      goto fail;
+    }
+  else if (S_ISDIR (st.st_mode))
+    {
+      cpp_error (pfile, "%s is a directory", ihash->name);
+      goto fail;
     }
   else
     {
-      cpp_error (pfile, "`%s' is not a file, pipe, or tty", ihash->name);
-      goto fail;
+      /* We don't know how big this is.  4k is a decent first guess.  */
+      st_size = 4096;
     }
 
   /* Read the file, converting end-of-line characters and trigraphs
