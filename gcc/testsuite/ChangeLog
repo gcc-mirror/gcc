@@ -1,3 +1,7 @@
+Wed Oct  7 12:00:20 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* gcc.c-torture/compile/981007-1.c: New test for irix6 -O0 core dump.
+
 1998-10-06  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.pt/friend35.C: New test.  A template function
