@@ -6068,7 +6068,7 @@ move\\t%0,%z4\\n\\
 ;; current function.  This specialized instruction does just that.
 
 (define_insn "get_fnaddr"
-  [(set (match_operand 0 "register_operand" "d")
+  [(set (match_operand 0 "register_operand" "=d")
 	(unspec [(match_operand 1 "" "")] 1))
    (clobber (reg:SI 31))]
   "TARGET_EMBEDDED_PIC
