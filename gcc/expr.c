@@ -7128,21 +7128,11 @@ expand_expr (exp, target, tmode, modifier)
 	  tree negated = fold (build1 (NEGATE_EXPR, type,
 				       TREE_OPERAND (exp, 1)));
 
-	  /* Deal with the case where we can't negate the constant
-	     in TYPE.  */
 	  if (TREE_UNSIGNED (type) || TREE_OVERFLOW (negated))
-	    {
-	      tree newtype = signed_type (type);
-	      tree newop0 = convert (newtype, TREE_OPERAND (exp, 0));
-	      tree newop1 = convert (newtype, TREE_OPERAND (exp, 1));
-	      tree newneg = fold (build1 (NEGATE_EXPR, newtype, newop1));
-
-	      if (! TREE_OVERFLOW (newneg))
-		return expand_expr (convert (type, 
-					     build (PLUS_EXPR, newtype,
-						    newop0, newneg)),
-				    target, tmode, ro_modifier);
-	    }
+	    /* If we can't negate the constant in TYPE, leave it alone and
+	       expand_binop will negate it for us.  We used to try to do it
+	       here in the signed version of TYPE, but that doesn't work
+	       on POINTER_TYPEs.  */;
 	  else
 	    {
 	      exp = build (PLUS_EXPR, type, TREE_OPERAND (exp, 0), negated);
@@ -7845,6 +7835,11 @@ expand_expr (exp, target, tmode, modifier)
 	if (! ignore)
 	  target = original_target;
 
+	/* Set this here so that if we get a target that refers to a
+	   register variable that's already been used, put_reg_into_stack
+	   knows that it should fix up those uses.  */	   
+	TREE_USED (slot) = 1;
+
 	if (target == 0)
 	  {
 	    if (DECL_RTL (slot) != 0)
@@ -7914,7 +7909,6 @@ expand_expr (exp, target, tmode, modifier)
 	/* Mark it as expanded.  */
 	TREE_OPERAND (exp, 1) = NULL_TREE;
 
-	TREE_USED (slot) = 1;
 	store_expr (exp1, target, 0);
 
 	expand_decl_cleanup (NULL_TREE, cleanups);
