@@ -71,7 +71,7 @@ varray_grow (va, n)
 
 /* Check the bounds of a varray access.  */
 
-#if defined ENABLE_CHECKING && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
+#if defined ENABLE_CHECKING && HAVE_GCC_VERSION(2,7)
 
 extern void error PVPROTO ((const char *, ...))	ATTRIBUTE_PRINTF_1;
 

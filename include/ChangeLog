@@ -1,3 +1,10 @@
+1999-10-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ansidecl.h (HAVE_GCC_VERSION): New macro.  Use it instead of
+	explicitly testing __GNUC__ and __GNUC_MINOR__.
+	
+	(ATTRIBUTE_PRINTF): Use `__format__', not `format'.
+
 1999-09-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h (make_temp_file):  Add a prototype.

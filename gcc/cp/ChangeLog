@@ -1,3 +1,8 @@
+1999-10-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cp-tree.h: Use HAVE_GCC_VERSION instead of explicitly testing
+	__GNUC__ and __GNUC_MINOR__.
+
 1999-10-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (make_rtl_for_local_static): New function.  

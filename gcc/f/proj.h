@@ -31,17 +31,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 #include "system.j"
 
-#if !defined (__GNUC__) || (__GNUC__ < 2)
+#if ! HAVE_GCC_VERSION(2,0)
 #error "You have to use gcc 2.x to build g77 (might be fixed in g77-0.6)."
 #endif
-
-#ifndef BUILT_WITH_270
-#if (__GNUC__ > 2) || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
-#define BUILT_WITH_270 1
-#else
-#define BUILT_WITH_270 0
-#endif
-#endif	/* !defined (BUILT_WITH_270) */
 
 /* Include files everyone gets.  <assert.h> is needed for assert().
    <stddef.h> is needed for offsetof, but technically also NULL,
@@ -69,11 +61,7 @@ typedef enum
 #define ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
 
 #ifndef UNUSED	/* Compile with -DUNUSED= if cc doesn't support this. */
-#if BUILT_WITH_270
-#define UNUSED __attribute__ ((unused))
-#else	/* !BUILT_WITH_270 */
-#define UNUSED
-#endif	/* !BUILT_WITH_270 */
+#define UNUSED ATTRIBUTE_UNUSED
 #endif  /* !defined (UNUSED) */
 
 #ifndef dmpout

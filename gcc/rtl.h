@@ -230,7 +230,7 @@ typedef struct rtvec_def{
 
 /* General accessor macros for accessing the fields of an rtx.  */
 
-#if defined ENABLE_CHECKING  && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
+#if defined ENABLE_CHECKING  && HAVE_GCC_VERSION(2,7)
 /* The bit with a star outside the statement expr and an & inside is
    so that N can be evaluated only once.  */
 #define RTL_CHECK1(RTX, N, C1)						\
@@ -1673,7 +1673,7 @@ extern void rtx_free			PROTO ((rtx));
 
 extern void fancy_abort PROTO((const char *, int, const char *))
     ATTRIBUTE_NORETURN;
-#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+#if ! HAVE_GCC_VERSION(2,7)
 #define abort() fancy_abort (__FILE__, __LINE__, 0)
 #else
 #define abort() fancy_abort (__FILE__, __LINE__, __PRETTY_FUNCTION__)

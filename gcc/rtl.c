@@ -981,7 +981,7 @@ read_rtx (infile)
   return return_rtx;
 }
 
-#if defined ENABLE_CHECKING && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
+#if defined ENABLE_CHECKING && HAVE_GCC_VERSION(2,7)
 void
 rtl_check_failed_bounds (r, n, file, line, func)
     rtx r;
