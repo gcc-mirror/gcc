@@ -1,3 +1,10 @@
+2003-07-18  Andreas Jaeger  <aj@suse.de>
+
+	* config/abi/sparc-linux-gnu/baseline_symbols.txt: New file.
+	* config/abi/mips-linux-gnu/baseline_symbols.txt: New file.
+	* config/abi/hppa-linux-gnu/baseline_symbols.txt: New file.
+	* config/abi/x86_64-linux-gnu/baseline_symbols.txt: Regenerated.
+
 2003-07-17  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	* config/linker-map.gnu: Add __moneypunct_cache, __timepunct_cache.
