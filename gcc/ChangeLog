@@ -1,3 +1,7 @@
+2003-02-20  Josef Zlomek  <zlomekj@suse.cz>
+
+	* bb-reorder.c (find_traces_1_round): Fix comment typo.
+
 2003-02-19  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_real_zero_addition_p): Don't fold a zero
