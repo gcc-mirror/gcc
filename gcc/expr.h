@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 1987, 91-95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -214,6 +214,46 @@ enum direction {none, upward, downward};  /* Value has this type.  */
 
 #ifndef RETURN_IN_MEMORY
 #define RETURN_IN_MEMORY(TYPE) (TYPE_MODE (TYPE) == BLKmode)
+#endif
+
+/* Provide default values for the macros controlling stack checking.  */
+
+#ifndef STACK_CHECK_BUILTIN
+#define STACK_CHECK_BUILTIN 0
+#endif
+
+/* The default interval is one page.  */
+#ifndef STACK_CHECK_PROBE_INTERVAL
+#define STACK_CHECK_PROBE_INTERVAL 4096
+#endif
+
+/* The default is to do a store into the stack.  */
+#ifndef STACK_CHECK_PROBE_LOAD
+#define STACK_CHECK_PROBE_LOAD 0
+#endif
+
+/* This value is arbitrary, but should be sufficient for most machines.  */
+#ifndef STACK_CHECK_PROTECT
+#define STACK_CHECK_PROTECT (75 * UNITS_PER_WORD)
+#endif
+
+/* Make the maximum frame size be the largest we can and still only need
+   one probe per function.  */
+#ifndef STACK_CHECK_MAX_FRAME_SIZE
+#define STACK_CHECK_MAX_FRAME_SIZE \
+  (STACK_CHECK_PROBE_INTERVAL - UNITS_PER_WORD)
+#endif
+
+/* This is arbitrary, but should be large enough everywhere.  */
+#ifndef STACK_CHECK_FIXED_FRAME_SIZE
+#define STACK_CHECK_FIXED_FRAME_SIZE (4 * UNITS_PER_WORD)
+#endif
+
+/* Provide a reasonable default for the maximum size of an object to
+   allocate in the fixed frame.  We may need to be able to make this
+   controllable by the user at some point.  */
+#ifndef STACK_CHECK_MAX_VAR_SIZE
+#define STACK_CHECK_MAX_VAR_SIZE (STACK_CHECK_MAX_FRAME_SIZE / 100)
 #endif
 
 /* Optabs are tables saying how to generate insn bodies
@@ -838,6 +878,13 @@ extern void emit_stack_restore PROTO((enum save_level, rtx, rtx));
 /* Allocate some space on the stack dynamically and return its address.  An rtx
    says how many bytes.  */
 extern rtx allocate_dynamic_stack_space PROTO((rtx, rtx, int));
+
+/* Probe a range of stack addresses from FIRST to FIRST+SIZE, inclusive. 
+   FIRST is a constant and size is a Pmode RTX.  These are offsets from the
+   current stack pointer.  STACK_GROWS_DOWNWARD says whether to add or
+   subtract from the stack.  If SIZE is constant, this is done
+   with a fixed number of probes.  Otherwise, we must make a loop.  */
+extern void probe_stack_range PROTO((HOST_WIDE_INT, rtx));
 
 /* Return an rtx that refers to the value returned by a library call
    in its original home.  This becomes invalid if any more code is emitted.  */
