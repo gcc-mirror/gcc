@@ -1,3 +1,8 @@
+2004-04-06  Devang Patel  <dpatel@apple.com>
+
+	PR 14467
+	* config/darwin.h (LINK_COMMAND_SPEC): Use c++filt instead of c++filt3.
+	
 2004-03-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* expr.c (store_constructor): Use gen_int_mode to correctly
