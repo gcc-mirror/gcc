@@ -854,7 +854,15 @@ poplevel (keep, reverse, functionbody)
 	&& ! TREE_ASM_WRITTEN (decl)
 	&& DECL_INITIAL (decl) != 0
 	&& TREE_ADDRESSABLE (decl))
-      output_inline_function (decl);
+      {
+	/* If this decl was copied from a file-scope decl
+	   on account of a block-scope extern decl,
+	   propagate TREE_ADDRESSABLE to the file-scope decl.  */
+	if (DECL_ABSTRACT_ORIGIN (decl) != 0)
+	  TREE_ADDRESSABLE (DECL_ABSTRACT_ORIGIN (decl)) = 1;
+	else
+	  output_inline_function (decl);
+      }
 
   /* If there were any declarations or structure tags in that level,
      or if this level is a function body,
@@ -1844,6 +1852,9 @@ pushdecl (x)
 		      DECL_INITIAL (x) = DECL_INITIAL (oldglobal);
 		      DECL_SAVED_INSNS (x) = DECL_SAVED_INSNS (oldglobal);
 		      DECL_ARGUMENTS (x) = DECL_ARGUMENTS (oldglobal);
+		      DECL_RESULT (x) = DECL_RESULT (oldglobal);
+		      TREE_ASM_WRITTEN (x) = TREE_ASM_WRITTEN (oldglobal);
+		      DECL_ABSTRACT_ORIGIN (x) = oldglobal;
 		    }
 		  /* Inner extern decl is built-in if global one is.  */
 		  if (DECL_BUILT_IN (oldglobal))
@@ -3195,7 +3206,8 @@ finish_decl (decl, init, asmspec_tree)
 	      expand_decl (decl);
 	    }
 	  /* Compute and store the initial value.  */
-	  expand_decl_init (decl);
+	  if (TREE_CODE (decl) != FUNCTION_DECL)
+	    expand_decl_init (decl);
 	}
     }
 
@@ -4871,7 +4883,18 @@ finish_struct (t, fieldlist)
   for (x = fieldlist; x; x = TREE_CHAIN (x))
     if (DECL_BIT_FIELD (x)
 	&& C_PROMOTING_INTEGER_TYPE_P (TREE_TYPE (x)))
-      TREE_TYPE (x) = integer_type_node;
+    {
+      tree type = TREE_TYPE (x);
+
+      /* Preserve unsignedness if traditional or if not really any wider.  */
+      if (TREE_UNSIGNED (type)
+	  && (flag_traditional
+	      || (TYPE_PRECISION (type)
+		  == TYPE_PRECISION (integer_type_node))))
+	TREE_TYPE (x) = unsigned_type_node;
+      else
+	TREE_TYPE (x) = integer_type_node;
+    }
 
   /* If this structure or union completes the type of any previous
      variable declaration, lay it out and output its rtl.  */
@@ -5240,7 +5263,17 @@ start_function (declspecs, declarator, nested)
   restype = TREE_TYPE (TREE_TYPE (current_function_decl));
   /* Promote the value to int before returning it.  */
   if (C_PROMOTING_INTEGER_TYPE_P (restype))
-    restype = integer_type_node;
+    {
+      /* It retains unsignedness if traditional
+	 or if not really getting wider.  */
+      if (TREE_UNSIGNED (restype)
+	  && (flag_traditional
+	      || (TYPE_PRECISION (restype)
+		  == TYPE_PRECISION (integer_type_node))))
+	restype = unsigned_type_node;
+      else
+	restype = integer_type_node;
+    }
   DECL_RESULT (current_function_decl)
     = build_decl (RESULT_DECL, NULL_TREE, restype);
 
@@ -5852,7 +5885,7 @@ finish_function (nested)
 
   if (TREE_THIS_VOLATILE (fndecl) && current_function_returns_null)
     warning ("`volatile' function does return");
-  else if (warn_return_type && current_function_returns_null
+  else if (warn_return_type && can_reach_end
 	   && TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (fndecl))) != void_type_node)
     /* If this function returns non-void and control can drop through,
        complain.  */
