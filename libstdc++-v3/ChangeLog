@@ -1,3 +1,9 @@
+2003-01-16  Jeffrey D. Oldham  <oldham@codesourcery.com>
+
+	* config/locale/generic/messages_members.h
+	(messages_byname<_CharT>::messages_byname): Use this-> to refer to
+	unqualified members of base clasess.
+
 2003-01-16  Mark Mitchell  <mark@codesourcery.com>
 	    Jeffrey Oldham <oldham@codesourcery.com>
 	
