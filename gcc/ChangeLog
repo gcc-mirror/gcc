@@ -1,3 +1,8 @@
+2004-07-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.md (prefetch, prefetch_32, prefetch_64): Only allow short
+	displacements with the spatial-locality cache-control completer.
+
 2004-07-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* langhooks.c: Don't include gt-langhooks.h.
