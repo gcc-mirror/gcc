@@ -1,3 +1,7 @@
+2001-09-19  Richard Henderson  <rth@redhat.com>
+
+	* cfgbuild.c (find_sub_basic_blocks): Handle insns that can throw.
+
 2001-09-18  Catherine Moore  <clm@redhat.com>
 
 	* config/stormy16/stormy16.h (DEFAULT_PCC_STRUCT_RETURN): 

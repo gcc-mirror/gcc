@@ -671,8 +671,8 @@ find_sub_basic_blocks (bb)
 {
   rtx insn = bb->head;
   rtx end = bb->end;
-  rtx jump_insn = NULL_RTX;
-  edge falltru = 0;
+  rtx flow_transfer_insn = NULL_RTX;
+  edge fallthru = NULL;
   basic_block first_bb = bb;
   int i;
 
@@ -686,44 +686,66 @@ find_sub_basic_blocks (bb)
   while (1)
     {
       enum rtx_code code = GET_CODE (insn);
+
       switch (code)
 	{
 	case BARRIER:
-	  if (!jump_insn)
+	  if (!flow_transfer_insn)
 	    abort ();
 	  break;
+
 	/* On code label, split current basic block.  */
 	case CODE_LABEL:
-	  falltru = split_block (bb, PREV_INSN (insn));
-	  if (jump_insn)
-	    bb->end = jump_insn;
-	  bb = falltru->dest;
-	  remove_edge (falltru);
-	  jump_insn = 0;
+	  fallthru = split_block (bb, PREV_INSN (insn));
+	  if (flow_transfer_insn)
+	    bb->end = flow_transfer_insn;
+	  bb = fallthru->dest;
+	  remove_edge (fallthru);
+	  flow_transfer_insn = NULL_RTX;
 	  if (LABEL_ALTERNATE_NAME (insn))
 	    make_edge (ENTRY_BLOCK_PTR, bb, 0);
 	  break;
+
 	case INSN:
 	case JUMP_INSN:
-	  /* In case we've previously split insn on the JUMP_INSN, move the
-	     block header to proper place.  */
-	  if (jump_insn)
+	case CALL_INSN:
+	  /* In case we've previously split an insn that effects a control
+	     flow transfer, move the block header to proper place.  */
+	  if (flow_transfer_insn)
 	    {
-	      falltru = split_block (bb, PREV_INSN (insn));
-	      bb->end = jump_insn;
-	      bb = falltru->dest;
-	      remove_edge (falltru);
-	      jump_insn = 0;
+	      fallthru = split_block (bb, PREV_INSN (insn));
+	      bb->end = flow_transfer_insn;
+	      bb = fallthru->dest;
+	      remove_edge (fallthru);
+	      flow_transfer_insn = NULL_RTX;
 	    }
+
 	  /* We need some special care for those expressions.  */
-	  if (GET_CODE (insn) == JUMP_INSN)
+	  if (code == JUMP_INSN)
 	    {
 	      if (GET_CODE (PATTERN (insn)) == ADDR_VEC
 		  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
 		abort();
-	      jump_insn = insn;
+	      flow_transfer_insn = insn;
 	    }
+	  else if (code == CALL_INSN)
+	    {
+	      rtx note;
+	      if (nonlocal_goto_handler_labels
+		  && (!(note = find_reg_note (insn, REG_EH_REGION, NULL_RTX))
+		      || INTVAL (XEXP (note, 0)) >= 0))
+		flow_transfer_insn = insn;
+	      else if (can_throw_internal (insn))
+		flow_transfer_insn = insn;
+	      else if (SIBLING_CALL_P (insn))
+		flow_transfer_insn = insn;
+	      else if (find_reg_note (insn, REG_NORETURN, 0))
+		flow_transfer_insn = insn;
+	    }
+	  else if (flag_non_call_exceptions && can_throw_internal (insn))
+	    flow_transfer_insn = insn;
 	  break;
+
 	default:
 	  break;
 	}
@@ -735,8 +757,8 @@ find_sub_basic_blocks (bb)
   /* In case expander replaced normal insn by sequence terminating by
      return and barrier, or possibly other sequence not behaving like
      ordinary jump, we need to take care and move basic block boundary.  */
-  if (jump_insn && GET_CODE (bb->end) != JUMP_INSN)
-    bb->end = jump_insn;
+  if (flow_transfer_insn)
+    bb->end = flow_transfer_insn;
 
   /* We've possibly replaced the conditional jump by conditional jump
      followed by cleanup at fallthru edge, so the outgoing edges may
