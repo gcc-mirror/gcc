@@ -26,7 +26,6 @@ configure.tps
 configure.vr
 configure.vrs
 dir.info
-Makefile
 lost+found
 update.out
 LAST_UPDATED
