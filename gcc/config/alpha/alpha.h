@@ -1669,6 +1669,7 @@ do {						\
   {"unaligned_memory_operand", {MEM}},					\
   {"reg_or_unaligned_mem_operand", {SUBREG, REG, MEM}},			\
   {"any_memory_operand", {MEM}},					\
+  {"normal_memory_operand", {MEM}},					\
   {"hard_fp_register_operand", {SUBREG, REG}},				\
   {"hard_int_register_operand", {SUBREG, REG}},				\
   {"reg_not_elim_operand", {SUBREG, REG}},				\
