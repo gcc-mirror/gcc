@@ -1,5 +1,5 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O2 -march=athlon" } */
+/* { dg-options "-O2 -march=k8" } */
 /* { dg-final { scan-assembler "sbb" } } */
 
 /* Conditional increment is best done using sbb $-1, val.  */
