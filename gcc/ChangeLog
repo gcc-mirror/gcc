@@ -1,5 +1,9 @@
 2004-11-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree-pretty-print.c (dump_generic_node, case POINTER_TYPE):
+	Handle TYPE_REF_CAN_ALIAS_ALL.
+	(print_declaration): Print array dimensions like dump_generic_node.
+
 	* fold-const.c (operand_equal_p): Remove kludge allowing ARG0 and
 	ARG1 to be null; instead define OP_SAME and OP_SAME_NULL and use them.
 

@@ -397,6 +397,9 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	    pp_string (buffer,  "volatile");
 	  else if (quals & TYPE_QUAL_RESTRICT)
 	    pp_string (buffer, " restrict");
+
+	  if (TYPE_REF_CAN_ALIAS_ALL (node))
+	    pp_string (buffer, " {ref-all}");
 	}
       break;
 
@@ -1515,13 +1518,18 @@ print_declaration (pretty_printer *buffer, tree t, int spc, int flags)
 	  pp_character (buffer, '[');
 	  if (TYPE_DOMAIN (tmp))
 	    {
-	      if (TREE_CODE (TYPE_SIZE (tmp)) == INTEGER_CST)
-		pp_wide_integer (buffer,
-				TREE_INT_CST_LOW (TYPE_SIZE (tmp)) /
-				TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (tmp))));
-	      else
-		dump_generic_node (buffer, TYPE_SIZE_UNIT (tmp), spc, flags,
-				   false);
+	      if (TYPE_MIN_VALUE (TYPE_DOMAIN (tmp))
+		  && !integer_zerop (TYPE_MIN_VALUE (TYPE_DOMAIN (tmp))))
+		{
+		  dump_generic_node (buffer,
+				     TYPE_MIN_VALUE (TYPE_DOMAIN (tmp)),
+				     spc, flags, false);
+		  pp_string (buffer, " .. ");
+		}
+
+	      if (TYPE_MAX_VALUE (TYPE_DOMAIN (tmp)))
+		dump_generic_node (buffer, TYPE_MAX_VALUE (TYPE_DOMAIN (tmp)),
+				   spc, flags, false);
 	    }
 	  pp_character (buffer, ']');
 	  tmp = TREE_TYPE (tmp);
