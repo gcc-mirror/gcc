@@ -1,4 +1,4 @@
-// 2004-12-11  Paolo Carlini  <pcarlini@suse.de>
+// 2004-12-12  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2004 Free Software Foundation, Inc.
 //

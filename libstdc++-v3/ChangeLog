@@ -1,5 +1,11 @@
 2004-12-12  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/type_traits: Minor tweak.
+	* testsuite/tr1/4_metaprogramming/type_properties/extent/
+	typedefs.cc: Fix date.
+
+2004-12-12  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/type_traits: Implement extent.
 	* testsuite/tr1/4_metaprogramming/type_properties/extent/
 	extent.cc: New.
