@@ -1,3 +1,8 @@
+Thu Feb  7 12:40:58 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* MAINTAINERS: Put self in as maintainer for x86-64 port.
+	Remove self as Write After Approval.
+
 2002-01-31  Geoffrey Keating  <geoffk@redhat.com>
 
 	* MAINTAINERS: Put self in as maintainer for contrib/regression
