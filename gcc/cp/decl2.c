@@ -526,7 +526,7 @@ lang_decode_option (argc, argv)
   if (! cpp_initialized)
     {
       cpp_reader_init (&parse_in);
-      parse_in.data = &parse_options;
+      parse_in.opts = &parse_options;
       cpp_options_init (&parse_options);
       cpp_initialized = 1;
     }
