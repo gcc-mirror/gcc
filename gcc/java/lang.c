@@ -500,8 +500,11 @@ put_decl_node (node)
       if (TREE_CODE (node) == FUNCTION_DECL
 	  && ! DECL_CONSTRUCTOR_P (node)
 	  && ! DECL_ARTIFICIAL (node) && DECL_CONTEXT (node))
-	put_decl_node (TYPE_NAME (DECL_CONTEXT (node)));
-      else if (! DECL_CONSTRUCTOR_P (node))
+	{
+	  put_decl_node (TYPE_NAME (DECL_CONTEXT (node)));
+	  put_decl_string (".", 1);
+	}
+      if (! DECL_CONSTRUCTOR_P (node))
 	put_decl_node (DECL_NAME (node));
       if (TREE_CODE (node) == FUNCTION_DECL && TREE_TYPE (node) != NULL_TREE)
 	{
