@@ -935,16 +935,9 @@ names @samp{c9x} and @samp{iso9899:199x} are deprecated.
 Default, ISO C89 plus GNU extensions (including some C99 features).
 
 @item gnu99
-iso9899:1999 + gnu extensions
-
-@item iso9899:199x
-same as @option{-std=iso9899:1999}, deprecated
-
-@item c9x
-same as @option{-std=iso9899:1999}, deprecated
-
 @item gnu9x
-same as @option{-std=gnu99}, deprecated
+ISO C99 plus GNU extensions.  When ISO C99 is fully implemented in GCC,
+this will become the default.  The name @samp{gnu9x} is deprecated.
 
 @end table
 
