@@ -92,22 +92,32 @@
 	   && (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (NODE))))))
 
 /* Things we only need one of.  This module is not reentrant.  */
-static struct globals
+typedef struct globals GTY(())
 {
-  /* The name in which we're building the mangled name.  */
-  struct obstack name_obstack;
-
   /* An array of the current substitution candidates, in the order
      we've seen them.  */
   varray_type substitutions;
 
   /* The entity that is being mangled.  */
-  tree entity;
+  tree GTY ((skip)) entity;
 
   /* True if the mangling will be different in a future version of the
      ABI.  */
   bool need_abi_warning;
-} G;
+} globals;
+
+static GTY (()) globals G;
+
+/* The obstack on which we build mangled names.  */
+static struct obstack *mangle_obstack;
+
+/* The obstack on which we build mangled names that are not going to
+   be IDENTIFIER_NODEs.  */
+static struct obstack name_obstack;
+
+  /* The first object on the name_obstack; we use this to free memory
+     allocated on the name_obstack.  */
+static void *name_base;
 
 /* Indices into subst_identifiers.  These are identifiers used in
    special substitution rules.  */
@@ -206,7 +216,7 @@ static const char *mangle_decl_string (const tree);
 
 /* Control functions.  */
 
-static inline void start_mangling (const tree);
+static inline void start_mangling (const tree, bool);
 static inline const char *finish_mangling (const bool);
 static tree mangle_special_for_type (const tree, const char *);
 
@@ -217,16 +227,16 @@ static void write_java_integer_type_codes (const tree);
 /* Append a single character to the end of the mangled
    representation.  */
 #define write_char(CHAR)                                              \
-  obstack_1grow (&G.name_obstack, (CHAR))
+  obstack_1grow (mangle_obstack, (CHAR))
 
 /* Append a sized buffer to the end of the mangled representation.  */
 #define write_chars(CHAR, LEN)                                        \
-  obstack_grow (&G.name_obstack, (CHAR), (LEN))
+  obstack_grow (mangle_obstack, (CHAR), (LEN))
 
 /* Append a NUL-terminated string to the end of the mangled
    representation.  */
 #define write_string(STRING)                                          \
-  obstack_grow (&G.name_obstack, (STRING), strlen (STRING))
+  obstack_grow (mangle_obstack, (STRING), strlen (STRING))
 
 /* Nonzero if NODE1 and NODE2 are both TREE_LIST nodes and have the
    same purpose (context, which may be a type) and value (template
@@ -2401,12 +2411,18 @@ write_substitution (const int seq_id)
 /* Start mangling ENTITY.  */
 
 static inline void
-start_mangling (const tree entity)
+start_mangling (const tree entity, const bool ident_p)
 {
   G.entity = entity;
   G.need_abi_warning = false;
-  VARRAY_TREE_INIT (G.substitutions, 1, "mangling substitutions");
-  obstack_free (&G.name_obstack, obstack_base (&G.name_obstack));
+  if (!ident_p) 
+    {
+      obstack_free (&name_obstack, name_base);
+      mangle_obstack = &name_obstack;
+      name_base = obstack_alloc (&name_obstack, 0);
+    }
+  else
+    mangle_obstack = &ident_hash->stack;
 }
 
 /* Done with mangling.  Return the generated mangled name.  If WARN is
@@ -2422,12 +2438,12 @@ finish_mangling (const bool warn)
 	     G.entity);
 
   /* Clear all the substitutions.  */
-  G.substitutions = 0;
+  VARRAY_CLEAR (G.substitutions);
 
   /* Null-terminate the string.  */
   write_char ('\0');
 
-  return (const char *) obstack_base (&G.name_obstack);
+  return (const char *) obstack_finish (mangle_obstack);
 }
 
 /* Initialize data structures for mangling.  */
@@ -2435,7 +2451,9 @@ finish_mangling (const bool warn)
 void
 init_mangle (void)
 {
-  gcc_obstack_init (&G.name_obstack);
+  gcc_obstack_init (&name_obstack);
+  name_base = obstack_alloc (&name_obstack, 0);
+  VARRAY_TREE_INIT (G.substitutions, 1, "mangling substitutions");
 
   /* Cache these identifiers for quick comparison when checking for
      standard substitutions.  */
@@ -2454,7 +2472,7 @@ mangle_decl_string (const tree decl)
 {
   const char *result;
 
-  start_mangling (decl);
+  start_mangling (decl, /*ident_p=*/true);
 
   if (TREE_CODE (decl) == TYPE_DECL)
     write_type (TREE_TYPE (decl));
@@ -2467,14 +2485,24 @@ mangle_decl_string (const tree decl)
   return result;
 }
 
+/* Like get_identifier, except that NAME is assumed to have been
+   allocated on the obstack used by the identifier hash table.  */
+
+static inline tree
+get_identifier_nocopy (const char *name)
+{
+  hashnode ht_node = ht_lookup (ident_hash, name, 
+				strlen (name), HT_ALLOCED);
+  return HT_IDENT_TO_GCC_IDENT (ht_node);
+}
+
 /* Create an identifier for the external mangled name of DECL.  */
 
 void
 mangle_decl (const tree decl)
 {
-  tree id = get_identifier (mangle_decl_string (decl));
-
-  SET_DECL_ASSEMBLER_NAME (decl, id);
+  SET_DECL_ASSEMBLER_NAME (decl, 
+			   get_identifier_nocopy (mangle_decl_string (decl)));
 }
 
 /* Generate the mangled representation of TYPE.  */
@@ -2484,20 +2512,12 @@ mangle_type_string (const tree type)
 {
   const char *result;
 
-  start_mangling (type);
+  start_mangling (type, /*ident_p=*/false);
   write_type (type);
   result = finish_mangling (/*warn=*/false);
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_type_string = '%s'\n\n", result);
   return result;
-}
-
-/* Create an identifier for the mangled representation of TYPE.  */
-
-tree
-mangle_type (const tree type)
-{
-  return get_identifier (mangle_type_string (type));
 }
 
 /* Create an identifier for the mangled name of a special component
@@ -2511,7 +2531,7 @@ mangle_special_for_type (const tree type, const char *code)
 
   /* We don't have an actual decl here for the special component, so
      we can't just process the <encoded-name>.  Instead, fake it.  */
-  start_mangling (type);
+  start_mangling (type, /*ident_p=*/true);
 
   /* Start the mangling.  */
   write_string ("_Z");
@@ -2524,7 +2544,7 @@ mangle_special_for_type (const tree type, const char *code)
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_special_for_type = %s\n\n", result);
 
-  return get_identifier (result);
+  return get_identifier_nocopy (result);
 }
 
 /* Create an identifier for the mangled representation of the typeinfo
@@ -2580,7 +2600,7 @@ mangle_ctor_vtbl_for_type (const tree type, const tree binfo)
 {
   const char *result;
 
-  start_mangling (type);
+  start_mangling (type, /*ident_p=*/true);
 
   write_string ("_Z");
   write_string ("TC");
@@ -2592,7 +2612,7 @@ mangle_ctor_vtbl_for_type (const tree type, const tree binfo)
   result = finish_mangling (/*warn=*/false);
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_ctor_vtbl_for_type = %s\n\n", result);
-  return get_identifier (result);
+  return get_identifier_nocopy (result);
 }
 
 /* Mangle a this pointer or result pointer adjustment.
@@ -2637,7 +2657,7 @@ mangle_thunk (tree fn_decl, const int this_adjusting, tree fixed_offset,
 {
   const char *result;
   
-  start_mangling (fn_decl);
+  start_mangling (fn_decl, /*ident_p=*/true);
 
   write_string ("_Z");
   write_char ('T');
@@ -2671,7 +2691,7 @@ mangle_thunk (tree fn_decl, const int this_adjusting, tree fixed_offset,
   result = finish_mangling (/*warn=*/false);
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_thunk = %s\n\n", result);
-  return get_identifier (result);
+  return get_identifier_nocopy (result);
 }
 
 /* This hash table maps TYPEs to the IDENTIFIER for a conversion
@@ -2740,7 +2760,7 @@ mangle_conv_op_name_for_type (const tree type)
 tree
 mangle_guard_variable (const tree variable)
 {
-  start_mangling (variable);
+  start_mangling (variable, /*ident_p=*/true);
   write_string ("_ZGV");
   if (strncmp (IDENTIFIER_POINTER (DECL_NAME (variable)), "_ZGR", 4) == 0)
     /* The name of a guard variable for a reference temporary should refer
@@ -2748,7 +2768,7 @@ mangle_guard_variable (const tree variable)
     write_string (IDENTIFIER_POINTER (DECL_NAME (variable)) + 4);
   else
     write_name (variable, /*ignore_local_scope=*/0);
-  return get_identifier (finish_mangling (/*warn=*/false));
+  return get_identifier_nocopy (finish_mangling (/*warn=*/false));
 }
 
 /* Return an identifier for the name of a temporary variable used to
@@ -2758,10 +2778,10 @@ mangle_guard_variable (const tree variable)
 tree
 mangle_ref_init_variable (const tree variable)
 {
-  start_mangling (variable);
+  start_mangling (variable, /*ident_p=*/true);
   write_string ("_ZGR");
   write_name (variable, /*ignore_local_scope=*/0);
-  return get_identifier (finish_mangling (/*warn=*/false));
+  return get_identifier_nocopy (finish_mangling (/*warn=*/false));
 }
 
 
