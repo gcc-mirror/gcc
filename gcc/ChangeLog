@@ -1,3 +1,7 @@
+1999-06-14  Robert Lipe  (robertlipe@usa.net)
+
+	* svr4.h (DWARF2_DEBUGGING_INFO): Check for redefinition.
+
 Mon Jun 14 10:30:52 BST 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* c-typeck.c (process_init_element): Detect excess elements in
