@@ -1,3 +1,9 @@
+2000-08-16  Richard Henderson  <rth@cygnus.com>
+
+	* combine.c (simplify_shift_const): Revert previous two
+	changes.  If SHIFT_COUNT_TRUNCATED, crop the shift count
+	before the main loop.
+
 2000-08-15  Richard Henderson  <rth@cygnus.com>
 
 	* combine.c (simplify_shift_const): Bound shift count when
