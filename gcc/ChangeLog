@@ -1,3 +1,8 @@
+2001-05-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (type_num_arguments): Declare it.
+	* tree.c (type_num_arguments): New function.
+
 2001-05-21  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (current_funcdef_number): Move outside dwarf2

@@ -3334,6 +3334,28 @@ type_list_equal (l1, l2)
   return t1 == t2;
 }
 
+/* Returns the number of arguments to the FUNCTION_TYPE or METHOD_TYPE
+   given by TYPE.  If the argument list accepts variable arguments,
+   then this function counts only the ordinary arguments.  */
+
+int
+type_num_arguments (type)
+     tree type;
+{
+  int i = 0;
+  tree t;
+
+  for (t = TYPE_ARG_TYPES (type); t; t = TREE_CHAIN (t))
+    /* If the function does not take a variable number of arguments,
+       the last element in the list will have type `void'.  */
+    if (VOID_TYPE_P (TREE_VALUE (t)))
+      break;
+    else
+      ++i;
+
+  return i;
+}
+
 /* Nonzero if integer constants T1 and T2
    represent the same constant value.  */
 
