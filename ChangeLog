@@ -1,3 +1,10 @@
+2003-01-09  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Substitute TOPLEVEL_CONFIGURE_ARGUMENTS.
+	* Makefile.tpl: Pass TOPLEVEL_CONFIGURE_ARGUMENTS to gcc.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2003-01-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in: Remove Makefile in build, host and target modules

@@ -46,6 +46,9 @@ enable_version_specific_runtime_libs = @enable_version_specific_runtime_libs@
 gcc_version_trigger = @gcc_version_trigger@
 gcc_version = @gcc_version@
 
+# The gcc driver likes to know the arguments it was configured with.
+TOPLEVEL_CONFIGURE_ARGUMENTS=@TOPLEVEL_CONFIGURE_ARGUMENTS@
+
 srcdir = @srcdir@
 
 prefix = @prefix@
@@ -7369,6 +7372,7 @@ configure-gcc:
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
+	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
 	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
 	  AR="$(AR)"; export AR; \
 	  AS="$(AS)"; export AS; \
