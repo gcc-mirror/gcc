@@ -1,5 +1,11 @@
 2005-02-01  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in: Rebuilt.
+	* Makefile.am (BOOTCLASSPATH): Added sax and w3c_dom.
+	(.java.class): Use BOOTCLASSPATH.
+
+2005-02-01  Tom Tromey  <tromey@redhat.com>
+
 	* external/w3c_dom/Makefile.am: New file.
 	* external/w3c_dom/Makefile.in: New file.
 	* external/sax/Makefile.am: New file.

@@ -4972,7 +4972,7 @@ AM_CPPFLAGS = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 	$(GCINCS) $(THREADINCS) $(INCLTDL) \
 	$(GCC_UNWIND_INCLUDE) $(ZINCS) $(LIBFFIINCS)
 
-BOOTCLASSPATH = $(here)'$(CLASSPATH_SEPARATOR)'$(srcdir)
+BOOTCLASSPATH = $(here)'$(CLASSPATH_SEPARATOR)'$(srcdir)'$(CLASSPATH_SEPARATOR)'$(srcdir)/external/w3c_dom'$(CLASSPATH_SEPARATOR)'$(srcdir)/external/sax
 libgij_la_SOURCES = gij.cc
 libgij_la_DEPENDENCIES = libgcj.la libgcj.spec
 libgij_la_LIBADD = -L$(here)/.libs libgcj.la
@@ -25853,7 +25853,7 @@ $(lib_gnu_java_awt_peer_gtk_la_OBJECTS): $(lib_gnu_java_awt_peer_gtk_la_DEPENDEN
 # Compile each classfile individually.
 
 @ONESTEP_FALSE@.java.class:
-@ONESTEP_FALSE@	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here)'$(CLASSPATH_SEPARATOR)'$(srcdir) -d $(here) $<
+@ONESTEP_FALSE@	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(BOOTCLASSPATH) -d $(here) $<
 
 @ONESTEP_FALSE@libgcj-@gcc_version@.jar: $(all_java_class_files) $(all_property_files)
 @ONESTEP_FALSE@	-@rm -f libgcj-@gcc_version@.jar

@@ -195,7 +195,7 @@ AM_CPPFLAGS = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 	$(GCINCS) $(THREADINCS) $(INCLTDL) \
 	$(GCC_UNWIND_INCLUDE) $(ZINCS) $(LIBFFIINCS)
 
-BOOTCLASSPATH = $(here)'$(CLASSPATH_SEPARATOR)'$(srcdir)
+BOOTCLASSPATH = $(here)'$(CLASSPATH_SEPARATOR)'$(srcdir)'$(CLASSPATH_SEPARATOR)'$(srcdir)/external/w3c_dom'$(CLASSPATH_SEPARATOR)'$(srcdir)/external/sax
 
 ## ################################################################
 
@@ -543,7 +543,7 @@ else # !ONESTEP
 # Compile each classfile individually.
 
 .java.class:
-	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here)'$(CLASSPATH_SEPARATOR)'$(srcdir) -d $(here) $<
+	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(BOOTCLASSPATH) -d $(here) $<
 
 libgcj-@gcc_version@.jar: $(all_java_class_files) $(all_property_files)
 	-@rm -f libgcj-@gcc_version@.jar
