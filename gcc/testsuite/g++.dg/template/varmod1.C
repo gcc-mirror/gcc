@@ -6,5 +6,5 @@ void bar()
 {
   int i;
   int A[i][i]; 
-  foo(A); // { dg-error } 
+  foo(A); // { dg-error "" } 
 }

@@ -1,3 +1,7 @@
+2002-12-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/template/varmod1.C: Fix typo.
+
 2002-12-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	DR 180
