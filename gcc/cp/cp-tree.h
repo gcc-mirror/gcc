@@ -4464,25 +4464,6 @@ extern void genrtl_ctor_stmt                    PARAMS ((tree));
 extern void genrtl_subobject                    PARAMS ((tree));
 extern tree genrtl_do_poplevel                  PARAMS ((void));
 extern void clear_out_block                     PARAMS ((void));
-extern void genrtl_goto_stmt                    PARAMS ((tree));
-extern void genrtl_expr_stmt                    PARAMS ((tree));
-extern void genrtl_decl_stmt                    PARAMS ((tree));
-extern void genrtl_if_stmt                      PARAMS ((tree));
-extern void genrtl_while_stmt                   PARAMS ((tree));
-extern void genrtl_do_stmt                      PARAMS ((tree));
-extern void genrtl_return_stmt                  PARAMS ((tree));
-extern void genrtl_for_stmt                     PARAMS ((tree));
-extern void genrtl_break_stmt                   PARAMS ((void));
-extern void genrtl_continue_stmt                PARAMS ((void));
-extern void genrtl_scope_stmt                   PARAMS ((tree));
-extern void genrtl_switch_stmt                  PARAMS ((tree));
-extern void genrtl_case_label                   PARAMS ((tree, tree));
-extern tree genrtl_begin_compound_stmt          PARAMS ((int));
-extern tree genrtl_finish_compound_stmt         PARAMS ((int));
-extern tree genrtl_compound_stmt                PARAMS ((tree));
-extern void genrtl_asm_stmt                     PARAMS ((tree, tree,
-							 tree, tree,
-							 tree));
 extern void genrtl_named_return_value           PARAMS ((tree,
 							 tree));
 extern tree begin_global_stmt_expr              PARAMS ((void));
