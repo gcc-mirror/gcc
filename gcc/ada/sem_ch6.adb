@@ -5089,8 +5089,8 @@ package body Sem_Ch6 is
 
             --  Ada 2005 (AI-231): Create and decorate an internal subtype
             --  declaration corresponding to the null-excluding type of the
-            --  formal in the enclosing scope. In addition, replace the
-            --  parameter type of the formal to this internal subtype.
+            --  formal in the enclosing scope. Finally, replace the
+            --  parameter type of the formal with the internal subtype.
 
             if Null_Exclusion_Present (Param_Spec) then
                declare
@@ -5105,7 +5105,7 @@ package body Sem_Ch6 is
 
                   Ptype : constant Node_Id := Parameter_Type (Param_Spec);
                   Decl  : Node_Id;
-                  P     : Node_Id := Parent (Parent (Related_Nod));
+                  P     : Node_Id := Parent (Related_Nod);
 
                begin
                   Set_Is_Internal (Anon);
@@ -5127,12 +5127,13 @@ package body Sem_Ch6 is
                   Mark_Rewrite_Insertion (Decl);
 
                   --  Insert the new declaration in the nearest enclosing scope
+                  --  in front of the subprogram or entry declaration.
 
-                  while not Has_Declarations (P) loop
+                  while not Is_List_Member (P) loop
                      P := Parent (P);
                   end loop;
 
-                  Prepend (Decl, Declarations (P));
+                  Insert_Before (P, Decl);
 
                   Rewrite (Ptype, New_Occurrence_Of (Anon, Loc));
                   Mark_Rewrite_Insertion (Ptype);
@@ -5456,15 +5457,24 @@ package body Sem_Ch6 is
 
       if Nkind (Parameter_Type (Spec)) = N_Access_Definition then
 
-         --  Ada 2005 (AI-231): This behaviour has been modified in Ada 2005.
-         --  It is only forced if the null_exclusion appears.
+         --  Ada 2005 (AI-231): In Ada95, access parameters are always non-
+         --  null; In Ada 2005, only if then null_exclusion is explicit.
 
          if Ada_Version < Ada_05
            or else Null_Exclusion_Present (Spec)
+           or else Can_Never_Be_Null (Etype (Formal_Id))
          then
             Set_Is_Known_Non_Null (Formal_Id);
             Set_Can_Never_Be_Null (Formal_Id);
          end if;
+
+      elsif Is_Access_Type (Etype (Formal_Id))
+        and then Can_Never_Be_Null (Etype (Formal_Id))
+      then
+         --  Ada 2005: The access subtype may be declared with null-exclusion
+
+         Set_Is_Known_Non_Null (Formal_Id);
+         Set_Can_Never_Be_Null (Formal_Id);
       end if;
 
       Set_Mechanism (Formal_Id, Default_Mechanism);
