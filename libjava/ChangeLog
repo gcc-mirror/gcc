@@ -1,3 +1,8 @@
+1999-06-23  Tom Tromey  <tromey@cygnus.com>
+
+	* java/util/zip/InflaterInputStream.java (read): Throw
+	ZipException if inflater throws a DataFormatException.
+
 1999-06-23  Warren Levy  <warrenl@cygnus.com>
 
 	* java/net/DatagramSocketImpl.java (localPort): Fixed typo to match JDK.
