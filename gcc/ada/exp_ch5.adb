@@ -330,6 +330,24 @@ package body Exp_Ch5 is
       elsif Has_Controlled_Component (L_Type) then
          Loop_Required := True;
 
+         --  If object is atomic, we cannot tolerate a loop
+
+      elsif Is_Atomic_Object (Act_Lhs)
+              or else
+            Is_Atomic_Object (Act_Rhs)
+      then
+         return;
+
+      --  Loop is required if we have atomic components since we have to
+      --  be sure to do any accesses on an element by element basis.
+
+      elsif Has_Atomic_Components (L_Type)
+        or else Has_Atomic_Components (R_Type)
+        or else Is_Atomic (Component_Type (L_Type))
+        or else Is_Atomic (Component_Type (R_Type))
+      then
+         Loop_Required := True;
+
       --  Case where no slice is involved
 
       elsif not L_Slice and not R_Slice then
