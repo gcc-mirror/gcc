@@ -694,12 +694,17 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 
    For the Alpha, `Q' means that this is a memory operand but not a
    reference to an unaligned location.
+
    `R' is a SYMBOL_REF that has SYMBOL_REF_FLAG set or is the current
-   function.  */
+   function.
+
+   'S' is a 6-bit constant (valid for a shift insn).  */
 
 #define EXTRA_CONSTRAINT(OP, C)				\
-  ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) != AND \
-   : (C) == 'R' ? current_file_function_operand (OP, Pmode)	\
+  ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) != AND	\
+   : (C) == 'R' ? current_file_function_operand (OP, Pmode)		\
+   : (C) == 'S' ? (GET_CODE (OP) == CONST_INT				\
+		   && (unsigned HOST_WIDE_INT) INTVAL (OP) < 64)	\
    : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
