@@ -1,4 +1,11 @@
 2004-05-23  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/13773
+	* expr.c (restricted_args): Remove redundant checks/argument.
+	(external_spec_function): Update to match.
+	(restricted_intrinsic): Rewrite.
+
+2004-05-23  Paul Brook  <paul@codesourcery.com>
 	Victor Leikehman  <lei@haifasphere.co.il>
 
 	* gfortran.h (struct gfc_symbol): Add equiv_built.
