@@ -1817,6 +1817,92 @@ move_block_from_reg (regno, x, nregs, size)
     }
 }
 
+/* Emit code to move a block Y to a block X, where X is non-consecutive
+   registers represented by a PARALLEL.  */
+
+void
+emit_group_load (x, y)
+     rtx x, y;
+{
+  rtx target_reg, source;
+  int i;
+
+  if (GET_CODE (x) != PARALLEL)
+    abort ();
+
+  /* Check for a NULL entry, used to indicate that the parameter goes
+     both on the stack and in registers.  */
+  if (XEXP (XVECEXP (x, 0, 0), 0))
+    i = 0;
+  else
+    i = 1;
+
+  for (; i < XVECLEN (x, 0); i++)
+    {
+      rtx element = XVECEXP (x, 0, i);
+
+      target_reg = XEXP (element, 0);
+
+      if (GET_CODE (y) == MEM)
+	source = change_address (y, GET_MODE (target_reg),
+				 plus_constant (XEXP (y, 0),
+						INTVAL (XEXP (element, 1))));
+      else if (XEXP (element, 1) == const0_rtx)
+	{
+	  if (GET_MODE (target_reg) == GET_MODE (y))
+	    source = y;
+	  else if (GET_MODE_SIZE (GET_MODE (target_reg))
+		   == GET_MODE_SIZE (GET_MODE (y)))
+	    source = gen_rtx (SUBREG, GET_MODE (target_reg), y, 0);
+	  else
+	    abort ();	    
+	}
+      else
+	abort ();
+
+      emit_move_insn (target_reg, source);
+    }
+}
+
+/* Emit code to move a block Y to a block X, where Y is non-consecutive
+   registers represented by a PARALLEL.  */
+
+void
+emit_group_store (x, y)
+     rtx x, y;
+{
+  rtx source_reg, target;
+  int i;
+
+  if (GET_CODE (y) != PARALLEL)
+    abort ();
+
+  /* Check for a NULL entry, used to indicate that the parameter goes
+     both on the stack and in registers.  */
+  if (XEXP (XVECEXP (y, 0, 0), 0))
+    i = 0;
+  else
+    i = 1;
+
+  for (; i < XVECLEN (y, 0); i++)
+    {
+      rtx element = XVECEXP (y, 0, i);
+
+      source_reg = XEXP (element, 0);
+
+      if (GET_CODE (x) == MEM)
+	target = change_address (x, GET_MODE (source_reg),
+				 plus_constant (XEXP (x, 0),
+						INTVAL (XEXP (element, 1))));
+      else if (XEXP (element, 1) == const0_rtx)
+	target = x;
+      else
+	abort ();
+
+      emit_move_insn (target, source_reg);
+    }
+}
+
 /* Add a USE expression for REG to the (possibly empty) list pointed
    to by CALL_FUSAGE.  REG must denote a hard register.  */
 
@@ -1849,6 +1935,28 @@ use_regs (call_fusage, regno, nregs)
 
   for (i = 0; i < nregs; i++)
     use_reg (call_fusage, gen_rtx (REG, reg_raw_mode[regno + i], regno + i));
+}
+
+/* Add USE expressions to *CALL_FUSAGE for each REG contained in the
+   PARALLEL REGS.  This is for calls that pass values in multiple
+   non-contiguous locations.  The Irix 6 ABI has examples of this.  */
+
+void
+use_group_regs (call_fusage, regs)
+     rtx *call_fusage;
+     rtx regs;
+{
+  int i;
+
+  /* Check for a NULL entry, used to indicate that the parameter goes
+     both on the stack and in registers.  */
+  if (XEXP (XVECEXP (regs, 0, 0), 0))
+    i = 0;
+  else
+    i = 1;
+
+  for (; i < XVECLEN (regs, 0); i++)
+    use_reg (call_fusage, XEXP (XVECEXP (regs, 0, i), 0));
 }
 
 /* Generate several move instructions to clear LEN bytes of block TO.
@@ -2648,7 +2756,14 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
      into the appropriate registers.  Do this now, at the end,
      since mem-to-mem copies above may do function calls.  */
   if (partial > 0 && reg != 0)
-    move_block_to_reg (REGNO (reg), x, partial, mode);
+    {
+      /* Handle calls that pass values in multiple non-contiguous locations.
+	 The Irix 6 ABI has examples of this.  */
+      if (GET_CODE (reg) == PARALLEL)
+	emit_group_load (reg, x);
+      else
+	move_block_to_reg (REGNO (reg), x, partial, mode);
+    }
 
   if (extra && args_addr == 0 && where_pad == stack_direction)
     anti_adjust_stack (GEN_INT (extra));
@@ -2812,7 +2927,11 @@ expand_assignment (to, from, want_value, suggest_reg)
       if (to_rtx == 0)
 	to_rtx = expand_expr (to, NULL_RTX, VOIDmode, 0);
 
-      if (GET_MODE (to_rtx) == BLKmode)
+      /* Handle calls that return values in multiple non-contiguous locations.
+	 The Irix 6 ABI has examples of this.  */
+      if (GET_CODE (to_rtx) == PARALLEL)
+	emit_group_load (to_rtx, value);
+      else if (GET_MODE (to_rtx) == BLKmode)
 	emit_block_move (to_rtx, value, expr_size (from),
 			 TYPE_ALIGN (TREE_TYPE (from)) / BITS_PER_UNIT);
       else
@@ -3167,6 +3286,10 @@ store_expr (exp, target, want_value)
 		emit_label (label);
 	    }
 	}
+      /* Handle calls that return values in multiple non-contiguous locations.
+	 The Irix 6 ABI has examples of this.  */
+      else if (GET_CODE (target) == PARALLEL)
+	emit_group_load (target, temp);
       else if (GET_MODE (temp) == BLKmode)
 	emit_block_move (target, temp, expr_size (exp),
 			 TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT);
