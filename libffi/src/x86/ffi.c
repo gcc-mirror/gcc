@@ -62,8 +62,8 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
       size_t z;
 
       /* Align if necessary */
-      if (((*p_arg)->alignment - 1) & (unsigned) argp)
-	argp = (char *) ALIGN(argp, (*p_arg)->alignment);
+      if ((sizeof(int) - 1) & (unsigned) argp)
+	argp = (char *) ALIGN(argp, sizeof(int));
 
       z = (*p_arg)->size;
       if (z < sizeof(int))
@@ -301,8 +301,8 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue,
       size_t z;
 
       /* Align if necessary */
-      if (((*p_arg)->alignment - 1) & (unsigned) argp) {
-	argp = (char *) ALIGN(argp, (*p_arg)->alignment);
+      if ((sizeof(int) - 1) & (unsigned) argp) {
+	argp = (char *) ALIGN(argp, sizeof(int));
       }
 
       z = (*p_arg)->size;
