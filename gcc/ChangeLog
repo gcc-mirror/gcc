@@ -1,13 +1,21 @@
+Tue Apr 28 17:30:05 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* final.c (alter_subreg): Make new SUBREG if reload replacement
+	scheduled inside it.
+
+	* dwarf2out.c (add_bound_info, case SAVE_EXPR): Pass 
+	SAVE_EXPR_RTL address through fix_lexical_addr.
+
 Mon Apr 27 18:57:18 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* mips/sni-svr4.h (CPP_PREDEFINES): Add -Dsinix and -DSNI.
 
 Mon Apr 20 14:48:29 1998  Michael Meissner  <meissner@cygnus.com>
 
-	* rs6000.md (mov{sf,df} define_splits): When splitting a move of
-	a constant to an integer register, don't split the insns that do
-	the simple AND and OR operations, rather just split each word, and
-	let the normal movsi define split handle it further.
+	* rs6000.md (mov{sf,df} define_splits): When splitting move of
+	constant to int reg, don't split  insns that do simple AND and OR
+	operations; just split each word and let normal movsi define split
+	handle it further.
 
 Sun Apr 19 20:21:19 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
 
