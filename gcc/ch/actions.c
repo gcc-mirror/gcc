@@ -1,5 +1,5 @@
 /* Implement actions for CHILL.
-   Copyright (C) 1992, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 1994, 1998 Free Software Foundation, Inc.
    Authors: Per Bothner, Bill Cox, Michael Tiemann, Michael North
 
 This file is part of GNU CC.
