@@ -487,6 +487,8 @@ append_include_chain (pfile, pend, dir, path)
   new->dev  = st.st_dev;
   new->sysp = (path == SYSTEM);
   new->name_map = NULL;
+  new->next = NULL;
+  new->alloc = NULL;
 
   switch (path)
     {
