@@ -1,5 +1,10 @@
 2001-01-12  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* typeck.c (build_c_cast): Do template processing earlier.
+	Always pedwarn on array casts.
+
+2001-01-12  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* friend.c (make_friend_class): Make sure a templated class is
 	actually a template.
 
