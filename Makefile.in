@@ -175,10 +175,10 @@ REALLY_SET_LIB_PATH = \
 
 ALL = all.normal
 INSTALL_TARGET = installdirs \
+	install-gcc \
 	$(INSTALL_MODULES) \
 	$(INSTALL_TARGET_MODULES) \
 	$(INSTALL_X11_MODULES) \
-	install-gcc \
 	$(INSTALL_DOSREL)
 
 
