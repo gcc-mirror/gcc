@@ -1,3 +1,7 @@
+Tue Feb 17 10:14:32 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* i386.md (adddi3): Add =!r,0,0,X alternative.
+
 Mon Feb 16 16:13:43 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.h (MY_ISCOFF): Add numeric value of U803XTOCMAGIC.
