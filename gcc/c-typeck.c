@@ -5295,6 +5295,16 @@ push_init_level (implicit)
 	{
 	  constructor_max_index
 	    = TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type));
+
+	  if (constructor_max_index == NULL_TREE)
+	    {
+	      /* This is a zero-length array or flexible array member.  */
+	      if (pedantic)
+		pedwarn_init ("ISO C does not support initialization of flexible array members");
+	      if (constructor_depth != 2)
+		error_init ("initialization of zero-length array inside a nested structure");
+	    }
+
 	  constructor_index
 	    = convert (bitsizetype, 
 				  TYPE_MIN_VALUE

@@ -171,6 +171,7 @@ static void mark_constant_pool		PARAMS ((void));
 static void mark_constants		PARAMS ((rtx));
 static int output_addressed_constants	PARAMS ((tree));
 static void output_after_function_constants PARAMS ((void));
+static int array_size_for_constructor	PARAMS ((tree));
 static void output_constructor		PARAMS ((tree, int));
 #ifdef ASM_WEAKEN_LABEL
 static void remove_from_pending_weak_list	PARAMS ((const char *));
@@ -4413,8 +4414,53 @@ output_constant (exp, size)
 }
 
 
-/* Subroutine of output_constant, used for CONSTRUCTORs
-   (aggregate constants).
+/* Subroutine of output_constructor, used for computing the size of
+   arrays of unspecified length.  VAL must be a CONSTRUCTOR of an array
+   type with an unspecified upper bound.  */
+
+static int
+array_size_for_constructor (val)
+     tree val;
+{
+  tree max_index, i;
+
+  if (!val || TREE_CODE (val) != CONSTRUCTOR
+      || TREE_CODE (TREE_TYPE (val)) != ARRAY_TYPE
+      || TYPE_DOMAIN (TREE_TYPE (val)) == NULL_TREE
+      || TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (val))) != NULL_TREE
+      || TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (val))) == NULL_TREE)
+    abort ();
+
+  max_index = NULL_TREE;
+  for (i = CONSTRUCTOR_ELTS (val); i ; i = TREE_CHAIN (i))
+    {
+      tree index = TREE_PURPOSE (i);
+
+      if (TREE_CODE (index) == RANGE_EXPR)
+	index = TREE_OPERAND (index, 1);
+      if (max_index == NULL_TREE || tree_int_cst_lt (max_index, index))
+	max_index = index;
+    }
+
+  /* ??? I'm fairly certain if there were no elements, we shouldn't have
+     created the constructor in the first place.  */
+  if (max_index == NULL_TREE)
+    abort ();
+
+  /* Compute the total number of array elements.  */
+  i = fold (build (MINUS_EXPR, TREE_TYPE (max_index), max_index, 
+		   TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (val)))));
+  i = fold (build (PLUS_EXPR, TREE_TYPE (i), i,
+		   convert (TREE_TYPE (i), integer_one_node)));
+
+  /* Multiply by the array element unit size to find number of bytes.  */
+  i = fold (build (MULT_EXPR, TREE_TYPE (max_index), i,
+		   TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (val)))));
+
+  return tree_low_cst (i, 1);
+}
+
+/* Subroutine of output_constant, used for CONSTRUCTORs (aggregate constants).
    Generate at least SIZE bytes, padding if necessary.  */
 
 static void
@@ -4532,7 +4578,18 @@ output_constructor (exp, size)
 
 	  /* Determine size this element should occupy.  */
 	  if (field)
-	    fieldsize = tree_low_cst (DECL_SIZE_UNIT (field), 1);
+	    {
+	      if (DECL_SIZE_UNIT (field))
+		fieldsize = tree_low_cst (DECL_SIZE_UNIT (field), 1);
+	      else
+		{
+		  /* If DECL_SIZE is not set, then this must be an array
+		     of unspecified length.  The initialized value must
+		     be a CONSTRUCTOR, and we take the length from the
+		     last initialized element.  */
+		  fieldsize = array_size_for_constructor (val);
+		}
+	    }
 	  else
 	    fieldsize = int_size_in_bytes (TREE_TYPE (type));
 
