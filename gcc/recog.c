@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "real.h"
 #include "toplev.h"
+#include "basic-block.h"
 
 #ifndef STACK_PUSH_CODE
 #ifdef STACK_GROWS_DOWNWARD
@@ -2596,3 +2597,83 @@ reg_fits_class_p (operand, class, offset, mode)
 }
 
 #endif /* REGISTER_CONSTRAINTS */
+
+/* Do the splitting of insns in the block B. Only try to actually split if
+   DO_SPLIT is true; otherwise, just remove nops. */ 
+
+void
+split_block_insns (b, do_split)
+     int b;
+     int do_split;
+{
+  rtx insn, next;
+
+  for (insn = BLOCK_HEAD (b);; insn = next)
+    {
+      rtx set;
+
+      /* Can't use `next_real_insn' because that
+         might go across CODE_LABELS and short-out basic blocks.  */
+      next = NEXT_INSN (insn);
+      if (GET_CODE (insn) != INSN)
+	{
+	  if (insn == BLOCK_END (b))
+	    break;
+
+	  continue;
+	}
+
+      /* Don't split no-op move insns.  These should silently disappear
+         later in final.  Splitting such insns would break the code
+         that handles REG_NO_CONFLICT blocks.  */
+      set = single_set (insn);
+      if (set && rtx_equal_p (SET_SRC (set), SET_DEST (set)))
+	{
+	  if (insn == BLOCK_END (b))
+	    break;
+
+	  /* Nops get in the way while scheduling, so delete them now if
+	     register allocation has already been done.  It is too risky
+	     to try to do this before register allocation, and there are
+	     unlikely to be very many nops then anyways.  */
+	  if (reload_completed)
+	    {
+
+	      PUT_CODE (insn, NOTE);
+	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	      NOTE_SOURCE_FILE (insn) = 0;
+	    }
+
+	  continue;
+	}
+
+      if (do_split)
+	{
+	  /* Split insns here to get max fine-grain parallelism.  */
+	  rtx first = PREV_INSN (insn);
+	  rtx notes = REG_NOTES (insn);
+	  rtx last = try_split (PATTERN (insn), insn, 1);
+
+	  if (last != insn)
+	    {
+	      /* try_split returns the NOTE that INSN became.  */
+	      first = NEXT_INSN (first);
+	      update_flow_info (notes, first, last, insn);
+	      
+	      PUT_CODE (insn, NOTE);
+	      NOTE_SOURCE_FILE (insn) = 0;
+	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	      if (insn == BLOCK_HEAD (b))
+		BLOCK_HEAD (b) = first;
+	      if (insn == BLOCK_END (b))
+		{
+		  BLOCK_END (b) = last;
+		  break;
+		}
+	    }
+	}
+
+      if (insn == BLOCK_END (b))
+	break;
+    }
+}

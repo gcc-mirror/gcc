@@ -1,3 +1,20 @@
+Fri Jan 29 21:00:56 1999  Bob Manson  <manson@charmed.cygnus.com>
+
+	* resource.c, resource.h: New files.
+
+	* haifa-sched.c (regno_use_in): Moved to rtlanal.c.
+	(split_block_insns): Moved to recog.c.
+	(update_flow_info): Make public.
+
+	* reorg.c: Moved the functions dealing with computing resource
+	usage to resource.c.
+
+	* sched.c (regno_use_in): Moved to rtlanal.c.
+	(update_flow_info): Make public.
+	(schedule_insns): Use split_block_insns.
+
+	* recog.c (split_block_insns): New function.
+
 Tue Feb  2 22:03:26 1999  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000/linux.h (LINK_START_DEFAULT_SPEC): Delete, unused.
