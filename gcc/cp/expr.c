@@ -165,7 +165,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
 
 		    init = maybe_build_cleanup (convert_from_reference (init));
 		    if (init != NULL_TREE)
-		      expand_expr (init, 0, 0, 0);
+		      expand_expr (init, const0_rtx, VOIDmode, 0);
 		  }
 		call_target = return_target = DECL_RTL (slot);
 	      }

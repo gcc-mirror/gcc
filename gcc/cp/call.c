@@ -640,18 +640,19 @@ user_harshness (type, parmtype)
   for (conv = lookup_conversions (parmtype); conv; conv = TREE_CHAIN (conv))
     {
       struct harshness_code tmp;
+      tree cand = TREE_VALUE (conv);
 
-      if (winner && TREE_VALUE (winner) == TREE_VALUE (conv))
+      if (winner && winner == cand)
 	continue;
 
-      if (tmp = convert_harshness (type, TREE_PURPOSE (conv), NULL_TREE),
-	  (tmp.code < USER_CODE) && (tmp.distance >= 0))
+      tmp = convert_harshness (type, TREE_TYPE (TREE_TYPE (cand)), NULL_TREE);
+      if ((tmp.code < USER_CODE) && (tmp.distance >= 0))
 	{
 	  if (winner)
 	    return EVIL_CODE;
 	  else
 	    {
-	      winner = conv;
+	      winner = cand;
 	      code = tmp.code;
 	    }
 	}

@@ -1750,6 +1750,8 @@ emit_thunk (thunk_fndecl)
   if (current_function_decl)
     abort ();
   current_function_decl = thunk_fndecl;
+
+  TREE_SET_CODE (thunk_fndecl, FUNCTION_DECL);
 #ifdef ASM_OUTPUT_MI_THUNK
   temporary_allocation ();
   assemble_start_function (thunk_fndecl, fnname);
@@ -1937,6 +1939,7 @@ emit_thunk (thunk_fndecl)
   permanent_allocation (1);
   flag_omit_frame_pointer = save_ofp;
 #endif /* ASM_OUTPUT_MI_THUNK */
+  TREE_SET_CODE (thunk_fndecl, THUNK_DECL);
 
   decl_printable_name = save_decl_printable_name;
   current_function_decl = 0;

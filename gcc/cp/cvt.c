@@ -1509,10 +1509,12 @@ build_type_conversion (code, xtype, expr, for_sure)
   /* Nope; try looking for others.  */
   for (conv = lookup_conversions (basetype); conv; conv = TREE_CHAIN (conv))
     {
-      if (winner && TREE_VALUE (winner) == TREE_VALUE (conv))
+      tree cand = TREE_VALUE (conv);
+
+      if (winner && winner == cand)
 	continue;
 
-      if (can_convert (xtype, TREE_PURPOSE (conv)))
+      if (can_convert (xtype, TREE_TYPE (TREE_TYPE (cand))))
 	{
 	  if (winner)
 	    {
@@ -1520,19 +1522,19 @@ build_type_conversion (code, xtype, expr, for_sure)
 		{
 		  cp_error ("ambiguous conversion from `%T' to `%T'", basetype,
 			    xtype);
-		  cp_error ("  candidate conversions include `%T' and `%T'",
-			    TREE_PURPOSE (winner), TREE_PURPOSE (conv));
+		  cp_error ("  candidate conversions include `%D' and `%D'",
+			    winner, cand);
 		}
 	      return NULL_TREE;
 	    }
 	  else
-	    winner = conv;
+	    winner = cand;
 	}
     }
 
   if (winner)
     return build_type_conversion_1 (xtype, basetype, expr,
-				    DECL_NAME (TREE_VALUE (winner)), for_sure);
+				    DECL_NAME (winner), for_sure);
 
   return NULL_TREE;
 }
@@ -1590,11 +1592,12 @@ build_expr_type_conversion (desires, expr, complain)
     {
       int win = 0;
       tree candidate;
+      tree cand = TREE_VALUE (conv);
 
-      if (winner && TREE_VALUE (winner) == TREE_VALUE (conv))
+      if (winner && winner == cand)
 	continue;
 
-      candidate = TREE_PURPOSE (conv);
+      candidate = TREE_TYPE (TREE_TYPE (cand));
       if (TREE_CODE (candidate) == REFERENCE_TYPE)
 	candidate = TREE_TYPE (candidate);
 
@@ -1619,23 +1622,23 @@ build_expr_type_conversion (desires, expr, complain)
 		{
 		  cp_error ("ambiguous default type conversion from `%T'",
 			    basetype);
-		  cp_error ("  candidate conversions include `%T' and `%T'",
-			    TREE_PURPOSE (winner), TREE_PURPOSE (conv));
+		  cp_error ("  candidate conversions include `%D' and `%D'",
+			    winner, cand);
 		}
 	      return error_mark_node;
 	    }
 	  else
-	    winner = conv;
+	    winner = cand;
 	}
     }
 
   if (winner)
     {
-      tree type = TREE_PURPOSE (winner);
+      tree type = TREE_TYPE (TREE_TYPE (winner));
       if (TREE_CODE (type) == REFERENCE_TYPE)
 	type = TREE_TYPE (type);
       return build_type_conversion_1 (type, basetype, expr,
-				      DECL_NAME (TREE_VALUE (winner)), 1);
+				      DECL_NAME (winner), 1);
     }
 
   return NULL_TREE;
@@ -1839,11 +1842,6 @@ build_conv (code, type, from)
   int rank = ICS_STD_RANK (from);
   switch (code)
     {
-    case PROMO_CONV:
-      if (rank < PROMO_RANK)
-	rank = PROMO_RANK;
-      break;
-      
     case PTR_CONV:
     case PMEM_CONV:
     case BASE_CONV:
@@ -1852,16 +1850,10 @@ build_conv (code, type, from)
 	rank = STD_RANK;
       break;
 
-    case PBOOL_CONV:
-      if (rank < PBOOL_RANK)
-	rank = PBOOL_RANK;
-      break;
-
     default:
       break;
     }
   ICS_STD_RANK (t) = rank;
-  ICS_USER_FLAG (t) = ICS_USER_FLAG (from);
   return t;
 }
 
@@ -1877,8 +1869,6 @@ standard_conversion (to, from, expr)
     return from;
 
   conv = build1 (EXACT_CONV, from, expr);
-  if (TREE_CODE (expr) == USER_CONV)
-    ICS_USER_FLAG (conv) = 1;
 
   if (fcode == FUNCTION_TYPE)
     {
@@ -1979,25 +1969,25 @@ standard_conversion (to, from, expr)
 	     || fcode == POINTER_TYPE || TYPE_PTRMEMFUNC_P (from)))
 	return 0;
 
-      if (fcode == POINTER_TYPE || TYPE_PTRMEMFUNC_P (from))
-	conv = build_conv (PBOOL_CONV, to, conv);
-      else
-	conv = build_conv (STD_CONV, to, conv);
+      conv = build_conv (STD_CONV, to, conv);
+      if (fcode == POINTER_TYPE || TYPE_PTRMEMFUNC_P (from)
+	  && ICS_STD_RANK (conv) < PBOOL_RANK)
+	ICS_STD_RANK (conv) = PBOOL_RANK;
     }
   else if (INTEGRAL_CODE_P (tcode) || tcode == REAL_TYPE)
     {
       if (! (INTEGRAL_CODE_P (fcode) || fcode == REAL_TYPE))
 	return 0;
-      else if (to == type_promotes_to (from))
-	conv = build_conv (PROMO_CONV, to, conv);
-      else 
-	conv = build_conv (STD_CONV, to, conv);
+      conv = build_conv (STD_CONV, to, conv);
+
+      /* Give this a better rank if it's a promotion.  */
+      if (to == type_promotes_to (from)
+	  && ICS_STD_RANK (TREE_OPERAND (conv, 0)) <= PROMO_RANK)
+	ICS_STD_RANK (conv) = PROMO_RANK;
     }
   else if (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
 	   && DERIVED_FROM_P (to, from))
-    {
-      conv = build_conv (BASE_CONV, to, conv);
-    }
+    conv = build_conv (BASE_CONV, to, conv);
   else
     return 0;
 
@@ -2021,24 +2011,69 @@ implicit_conversion (to, from, expr, flags)
   if (! cand)
     return NULL_TREE;
 
-  conv = cand->second_conv;
-
-  for (t = conv; TREE_CODE (TREE_OPERAND (t, 0)) != EXACT_MATCH; )
-    t = TREE_OPERAND (t, 0));
-
-  TREE_OPERAND (t, 0) = build (USER_CONV
-
-  return conv;
+  return cand->second_conv;
 }
 
 struct z_candidate *
-add_method_candidate (candidates, method, instance, parms, flags)
+add_function_candidate (candidates, fn, arglist, flags)
      struct z_candidate *candidates;
-     tree method, instance, parms;
+     tree fn, args;
      int flags;
 {
-  
+  tree parmlist = TYPE_ARG_TYPES (TREE_TYPE (fn));
+  int i, len = list_length (args);
+  tree convs = make_tree_vec (len);
+  tree parmnode = parmlist;
+  tree argnode = arglist;
+  int viable = 1;
+  struct z_candidate *cand;
+
+  for (i = 0; i < len; ++i)
+    {
+      tree arg = TREE_VALUE (argnode);
+      tree argtype = TREE_TYPE (arg);
+      tree t;
+
+      if (parmnode == void_list_node)
+	break;
+      else if (parmnode)
+	t = implicit_conversion (TREE_VALUE (parmnode), argtype, arg, flags);
+      else
+	{
+	  t = build1 (EXACT_CONV, argtype, arg);
+	  ICS_ELLIPSIS_FLAG (t) = 1;
+	}
+
+      TREE_VEC_ELT (convs, i) = t;
+      if (! t)
+	{
+	  viable = 0;
+	  break;
+	}
+
+      if (parm)
+	parm = TREE_CHAIN (parm);
+      arg = TREE_CHAIN (arg);
+    }
+
+  if (parmnode && parmnode != void_list_node)
+    viable = 0;
+
+  cand = (struct z_candidate *) oballoc (sizeof (struct z_candidate));
+
+  cand->fn = fn;
+  cand->convs = convs;
+  cand->second_conv = NULL_TREE;
+  cand->viable = viable;
+  cand->template = NULL_TREE;
+  cand->basetype_path = NULL_TREE;
+  cand->next = candidates;
+
+  return cand;
 }
+
+/* Returns the best overload candidate to perform the requested
+   conversion.  */
 
 struct z_candidate *
 build_user_type_conversion_1 (totype, expr, flags)
@@ -2048,6 +2083,7 @@ build_user_type_conversion_1 (totype, expr, flags)
   struct z_candidate *candidates, *cand;
   tree fromtype = TREE_TYPE (expr);
   tree ctors = NULL_TREE, convs = NULL_TREE, t;
+  tree method_args;
 
   if (IS_AGGR_TYPE (totype))
     ctors = lookup_fnfields (TYPE_BINFO (totype), ctor_identifier, 0);
@@ -2059,7 +2095,11 @@ build_user_type_conversion_1 (totype, expr, flags)
   for (; ctors; ctors = DECL_CHAIN (ctors))
     {
       candidates = add_ctor_candidate (candidates, ctors, expr, flags);
+      candidates->basetype_path = TYPE_BINFO (totype);
     }
+
+  method_args = build_tree_list
+    (NULL_TREE, build_unary_op (ADDR_EXPR, expr, 0));
 
   for (; convs; convs = TREE_CHAIN (convs))
     {
@@ -2067,16 +2107,23 @@ build_user_type_conversion_1 (totype, expr, flags)
       tree ics = standard_conversion (totype, TREE_TYPE (TREE_TYPE (fn)), 0);
       if (ics)
 	{
-	  candidates = add_method_candidate
-	    (candidates, fn, expr, NULL_TREE, flags);
+	  candidates = add_function_candidate
+	    (candidates, fn, method_args, flags);
 	  candidates->second_ics = ics;
+	  candidates->basetype_path = TREE_PURPOSE (convs);
 	}
     }
 
   if (! any_viable (candidates))
     {
       if (flags & LOOKUP_COMPLAIN)
-	cp_error ("no viable candidates");
+	{
+	  if (candidates && ! candidates->next)
+	    /* say why this one won't work or try to be loose */;
+	  else
+	    cp_error ("no viable candidates");
+	}
+
       return 0;
     }
 
@@ -2089,7 +2136,108 @@ build_user_type_conversion_1 (totype, expr, flags)
 	cp_error ("ambiguous user-defined type conversion");
     }
 
+  for (t = cand->second_conv; TREE_CODE (TREE_OPERAND (t, 0)) != EXACT_MATCH; )
+    t = TREE_OPERAND (t, 0);
+
+  TREE_OPERAND (t, 0) = build
+    (USER_CONV, TREE_TYPE (TREE_TYPE (cand->fn)),
+     NULL_TREE, cand->fn, cand->convs, cand->basetype_path);
+  ICS_USER_FLAG (cand->second_conv) = 1;
+
   return cand;
+}
+
+tree
+build_user_type_conversion (totype, expr, flags)
+     tree totype, expr, flags;
+{
+  struct z_candidate *cand
+    = build_user_type_conversion_1 (totype, expr, flags);
+
+  return convert_like (cand->second_conv, expr);
+}
+
+void
+enforce_access (basetype_path, function)
+     tree basetype_path, function;
+{
+  tree access = compute_access (basetype_path, function);
+
+  if (access == access_private_node)
+    {
+      cp_error_at ("%s `%+#D' is %s", name_kind, function, 
+		   TREE_PRIVATE (function) ? "private"
+		   : "from private base class");
+      error ("within this context");
+    }
+  else if (access == access_protected_node)
+    {
+      cp_error_at ("%s `%+#D' %s", name_kind, function,
+		   TREE_PROTECTED (function) ? "is protected"
+		   : "has protected accessibility");
+      error ("within this context");
+    }
+}
+
+tree
+convert_like (convs, expr)
+     tree convs, expr;
+{
+  tree previous;
+
+  if (TREE_CODE (convs) == USER_CONV)
+    {
+      tree fn = TREE_OPERAND (convs, 1);
+      enforce_access (TREE_OPERAND (convs, 3), fn);
+      return build_over_call (TREE_OPERAND (convs, 1),
+			      TREE_OPERAND (convs, 2), expr, LOOKUP_NORMAL);
+    }
+  else if (TREE_CODE (convs) == EXACT_CONV)
+    return expr;
+
+  previous = convert_like (TREE_OPERAND (convs, 0), expr);
+  return convert (TREE_TYPE (convs), expr);
+}
+
+tree
+build_over_call (fn, convs, args, flags)
+     tree fn, convs, args;
+     int flags;
+{
+  tree converted_args;
+  tree parm = TYPE_ARG_TYPES (TREE_TYPE (fn));
+  tree conv = convs;
+  tree arg = args;
+
+  if (TREE_CODE (arg) != TREE_LIST)
+    arg = build_tree_list (NULL_TREE, arg);
+
+  for (; arg;
+       parm = TREE_CHAIN (parm), arg = TREE_CHAIN (arg),
+       conv = TREE_CHAIN (conv))
+    converted_args = tree_cons
+      (NULL_TREE, convert_like (TREE_VALUE (conv), TREE_VALUE (arg)),
+       converted_args);
+
+  for (; parm; parm = TREE_CHAIN (parm))
+    converted_args = tree_cons
+      (NULL_TREE,
+       convert_for_ellipsis (TREE_VALUE (parm), TREE_PURPOSE (parm)),
+       converted_args);
+
+  converted_args = nreverse (converted_args);
+
+  return build_x_call (fn, converted_args, flags);
+}
+
+tree
+build_x_call (fn, args, flags)
+     tree fn, args;
+     int flags;
+{
+  if (DECL_FUNCTION_MEMBER_P (fn))
+    {
+    }
 }
 
 /* Compare two implicit conversion sequences according to the rules set out in
@@ -2139,29 +2287,6 @@ compare_ics (ics1, ics2)
   /* A conversion that is not a conversion of a pointer,  or  pointer  to
      member,  to  bool  is  better than another conversion that is such a
      conversion.  */
-  {
-    int bool1 = TREE_CODE (ics1) == BOOL_CONV;
-    int bool2 = TREE_CODE (ics2) == BOOL_CONV;
-
-    if (bool1)
-      {
-	tree it = TREE_TYPE (TREE_OPERAND (ics1, 0));
-	if (TREE_CODE (it) != POINTER_TYPE
-	    && ! TYPE_PTRMEMFUNC_TYPE (it))
-	  bool1 = 0;
-      }
-    if (bool2)
-      {
-	tree it = TREE_TYPE (TREE_OPERAND (ics2, 0));
-	if (TREE_CODE (it) != POINTER_TYPE
-	    && ! TYPE_PTRMEMFUNC_TYPE (it))
-	  bool2 = 0;
-      }
-    if (bool1 && ! bool2)
-      return 1;
-    if (bool2 && ! bool1)
-      return -1;
-  }
 #endif
 
   if (TREE_CODE (ics1) == QUAL_CONV)
@@ -2306,11 +2431,26 @@ compare_ics (ics1, ics2)
   return 0;
 }
 
+/* Compare two candidates for overloading as described in
+   [over.match.best].  Return values:
+
+      1: cand1 is better than cand2
+     -1: cand2 is better than cand1
+      0: cand1 and cand2 are indistinguishable */
+
 int joust (cand1, cand2)
      struct z_candidate *cand1, *cand2;
 {
   int winner = 0;
   int i;
+
+  /* a viable function F1
+     is defined to be a better function than another viable function F2  if
+     for  all arguments i, ICSi(F1) is not a worse conversion sequence than
+     ICSi(F2), and then */
+
+  /* for some argument j, ICSj(F1) is a better conversion  sequence  than
+     ICSj(F2) */
 
   for (i = 0; i < TREE_VEC_LENGTH (cand1->convs); ++i)
     {
@@ -2325,11 +2465,35 @@ int joust (cand1, cand2)
 	}
     }
 
-  if (winner == 0 && cand1->second_ics)
+  if (winner)
+    return winner;
+
+  /* or, if not that,
+     F1 is a non-template function and F2 is a template function */
+
+  if (! cand1->template && cand2->template)
+    return 1;
+  else if (cand1->template && ! cand2->template)
+    return -1;
+
+  /* or, if not that,
+     the  context  is  an  initialization by user-defined conversion (see
+     _dcl.init_  and  _over.match.user_)  and  the  standard   conversion
+     sequence  from  the return type of F1 to the destination type (i.e.,
+     the type of the entity being initialized)  is  a  better  conversion
+     sequence  than the standard conversion sequence from the return type
+     of F2 to the destination type. */
+
+  if (cand1->second_ics)
     winner = compare_ics (cand1->second_ics, cand2->second_ics);
 
   return winner;
 }
+
+/* Given a list of candidates for overloading, find the best one, if any.
+   This algorithm has a worst case of O(2n) (winner is last), and a best
+   case of O(n/2) (totally ambiguous); much better than a sorting
+   algorithm.  */
 
 struct z_candidate *
 tourney (candidates)
@@ -2338,8 +2502,8 @@ tourney (candidates)
   struct z_candidate *champ = candidates, *challenger;
   int fate;
 
-  /* This algorithm has a worst case of O(2n) (winner is last) , and a best
-     case of O(n/2) (no winner); much better than a sorting algorithm.  */
+  /* Walk through the list once, comparing each current champ to the next
+     candidate, knocking out a candidate or two with each comparison.  */
 
   for (challenger = champ->next; challenger; )
     {
@@ -2360,6 +2524,10 @@ tourney (candidates)
 	  challenger = champ->next;
 	}
     }
+
+  /* Make sure the champ is better than all the candidates it hasn't yet
+     been compared to.  This may do one more comparison than necessary.  Oh
+     well.  */
 
   for (challenger = candidates; challenger != champ;
        challenger = challenger->next)

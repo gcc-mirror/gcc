@@ -318,10 +318,6 @@ enum cplus_tree_code {
 };
 #undef DEFTREECODE
 
-/* Override OFFSET_REFs from the back-end, as we want our very own. */
-/* Allow complex pointer to members to work correctly. */
-#define OFFSET_REF CP_OFFSET_REF
-
 enum languages { lang_c, lang_cplusplus };
 
 /* Macros to make error reporting functions' lives easier.  */

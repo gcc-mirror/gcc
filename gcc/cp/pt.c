@@ -2093,7 +2093,7 @@ tsubst_expr (t, args, nargs, in_decl)
 	   tsubst (TREE_OPERAND (t, 2), args, nargs, in_decl));
 	init = tsubst_expr (TREE_OPERAND (t, 3), args, nargs, in_decl);
 	cp_finish_decl
-	  (dcl, init, NULL_TREE, 1, init ? LOOKUP_ONLYCONVERTING : 0);
+	  (dcl, init, NULL_TREE, 1, /*init ? LOOKUP_ONLYCONVERTING :*/ 0);
 	resume_momentary (i);
 	return dcl;
       }

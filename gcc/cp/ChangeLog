@@ -3,6 +3,36 @@ Sat May 11 04:33:50 1996  Doug Evans  <dje@canuck.cygnus.com>
 	* decl2.c (finish_vtable_vardecl): Surround DECL_ONE_ONLY with ifdef.
 	(finish_file): Likewise.
 
+Tue Jun  4 15:41:45 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst_expr, case DECL_STMT): Don't pass
+ 	LOOKUP_ONLYCONVERTING at all for now.
+
+	* search.c (add_conversions): Put the conversion function in
+ 	TREE_VALUE, the basetype in TREE_PURPOSE.
+	* cvt.c (build_type_conversion): Adjust.
+	* cvt.c (build_expr_type_conversion): Adjust.
+	* call.c (user_harshness): Adjust.
+
+Mon Jun  3 15:30:52 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (emit_thunk): Pretend this is a FUNCTION_DECL for the
+ 	backend's benefit.
+
+Fri May 31 14:56:13 1996  Mike Stump  <mrs@cygnus.com>
+
+	* cp-tree.h (OFFSET_REF): Remove.
+	* tree.def (CP_OFFSET_REF): Rename to OFFSET_REF.
+	* expr.c (cplus_expand_expr): Cleanup callers of expand_expr.
+	* init.c (expand_aggr_init_1): Ditto.
+	(build_new): Ditto.
+	* typeck.c (expand_target_expr): Ditto.
+
+Fri May 31 14:22:08 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_modify_expr): Don't use TREE_VALUE on a
+ 	TARGET_EXPR.
+
 Wed May 29 17:04:33 1996  Mike Stump  <mrs@cygnus.com>
 
 	* cvt.c (build_up_reference): Redo how and when temporaries are

@@ -3508,8 +3508,7 @@ add_conversions (binfo)
       tree tmp = TREE_VEC_ELT (method_vec, i);
       if (! IDENTIFIER_TYPENAME_P (DECL_NAME (tmp)))
 	break;
-      conversions = tree_cons (TREE_TYPE (TREE_TYPE (tmp)), tmp,
-			       conversions);
+      conversions = tree_cons (binfo, tmp, conversions);
     }
 }
 

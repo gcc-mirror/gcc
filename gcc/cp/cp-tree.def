@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
    Operand 0 is the object within which the offset is taken.
    Operand 1 is the offset.  The language independent OFFSET_REF
    just won't work for us.  */
-DEFTREECODE (CP_OFFSET_REF, "cp_offset_ref", "r", 2)
+DEFTREECODE (OFFSET_REF, "offset_ref", "r", 2)
 
 /* For DELETE_EXPR, operand 0 is the store to be destroyed.
    Operand 1 is the value to pass to the destroying function
@@ -50,7 +50,7 @@ DEFTREECODE (MEMBER_REF, "member_ref", "r", 2)
    operator converts to.  Operand is expression to be converted.  */
 DEFTREECODE (TYPE_EXPR, "type_expr", "e", 1)
 
-/* For CPLUS_NEW_EXPR, operand 0 is function which performs initialization,
+/* For NEW_EXPR, operand 0 is function which performs initialization,
    operand 1 is argument list to initialization function,
    and operand 2 is the slot which was allocated for this expression.  */
 DEFTREECODE (NEW_EXPR, "nw_expr", "e", 3)

@@ -5370,7 +5370,7 @@ expand_target_expr (t)
   do_pending_stack_adjust ();
   start_sequence_for_rtl_expr (xval);
   emit_note (0, -1);
-  rtxval = expand_expr (t, NULL, VOIDmode, 0);
+  rtxval = expand_expr (t, NULL_RTX, VOIDmode, 0);
   do_pending_stack_adjust ();
   TREE_SIDE_EFFECTS (xval) = 1;
   RTL_EXPR_SEQUENCE (xval) = get_insns ();
@@ -5803,7 +5803,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	 expanded without a target.  */
       if (TREE_CODE (newrhs) == TARGET_EXPR)
 	newrhs = build (COMPOUND_EXPR, TREE_TYPE (newrhs), newrhs,
-			TREE_VALUE (newrhs));
+			TREE_OPERAND (newrhs, 0));
     }
 
   if (TREE_CODE (newrhs) == ERROR_MARK)
