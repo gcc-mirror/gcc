@@ -3117,7 +3117,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  break;
 
 	case FLOAT_TRUNCATE:
-	  d = (double) real_value_truncate (mode, d);
+	  d = real_value_truncate (mode, d);
 	  break;
 
 	case FLOAT_EXTEND:
@@ -3125,11 +3125,11 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  break;
 
 	case FIX:
-	  d = (double) REAL_VALUE_FIX_TRUNCATE (d);
+	  d = REAL_VALUE_RNDZINT (d);
 	  break;
 
 	case UNSIGNED_FIX:
-	  d = (double) REAL_VALUE_UNSIGNED_FIX_TRUNCATE (d);
+	  d = REAL_VALUE_UNSIGNED_RNDZINT (d);
 	  break;
 
 	case SQRT:
@@ -3263,7 +3263,7 @@ simplify_binary_operation (code, mode, op0, op1)
       f1 = real_value_truncate (mode, f1);
 
 #ifdef REAL_ARITHMETIC
-      REAL_ARITHMETIC (value, code, f0, f1);
+      REAL_ARITHMETIC (value, rtx_to_tree_code (code), f0, f1);
 #else
       switch (code)
 	{
@@ -3645,7 +3645,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	      if (REAL_VALUES_EQUAL (d, dconst0))
 		abort();
 #if defined (REAL_ARITHMETIC)
-	      REAL_ARITHMETIC (d, RDIV_EXPR, dconst1, d);
+	      REAL_ARITHMETIC (d, (int) RDIV_EXPR, dconst1, d);
 	      return gen_rtx (MULT, mode, op0, 
 			      CONST_DOUBLE_FROM_REAL_VALUE (d, mode));
 #else
