@@ -1,3 +1,8 @@
+Mon Mar  3 19:07:21 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation):  Avoid cfg_cleanup calls when not
+	optimizing.
+
 2003-03-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*ixorsi3_zext_hi): Restrict to
