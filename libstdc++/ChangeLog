@@ -1,3 +1,8 @@
+Sun Nov  2 23:34:09 1997  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure.in: Use delta.mt for m68k-motorola-sysv.
+	* config/delta.mt: New makefile fragment.
+
 Sun Nov  2 12:14:37 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* Makefile.in (install): Some of HEADERS come from the stl dir now.
