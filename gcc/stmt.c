@@ -3500,11 +3500,7 @@ expand_decl (decl)
 
       /* If this is a memory ref that contains aggregate components,
 	 mark it as such for cse and loop optimize.  */
-      MEM_IN_STRUCT_P (DECL_RTL (decl))
-	= (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
-	   || TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
-	   || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
-	   || TREE_CODE (TREE_TYPE (decl)) == QUAL_UNION_TYPE);
+      MEM_IN_STRUCT_P (DECL_RTL (decl)) = AGGREGATE_TYPE_P (TREE_TYPE (decl));
 #if 0
       /* If this is in memory because of -ffloat-store,
 	 set the volatile bit, to prevent optimizations from
@@ -3551,11 +3547,7 @@ expand_decl (decl)
 
       /* If this is a memory ref that contains aggregate components,
 	 mark it as such for cse and loop optimize.  */
-      MEM_IN_STRUCT_P (DECL_RTL (decl))
-	= (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
-	   || TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
-	   || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
-	   || TREE_CODE (TREE_TYPE (decl)) == QUAL_UNION_TYPE);
+      MEM_IN_STRUCT_P (DECL_RTL (decl)) = AGGREGATE_TYPE_P (TREE_TYPE (decl));
 
       /* Indicate the alignment we actually gave this variable.  */
 #ifdef STACK_BOUNDARY

@@ -540,10 +540,7 @@ make_decl_rtl (decl, asmspec, top_level)
 	  if (TREE_READONLY (decl))
 	    RTX_UNCHANGING_P (DECL_RTL (decl)) = 1;
 	  MEM_IN_STRUCT_P (DECL_RTL (decl))
-	    = (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
-	       || TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
-	       || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
-	       || TREE_CODE (TREE_TYPE (decl)) == QUAL_UNION_TYPE);
+	    = AGGREGATE_TYPE_P (TREE_TYPE (decl));
 
 	  /* Optionally set flags or add text to the name to record information
 	     such as that it is a function name.
@@ -2613,8 +2610,7 @@ output_constant_def (exp)
   TREE_CST_RTL (exp)
     = gen_rtx (MEM, TYPE_MODE (TREE_TYPE (exp)), def);
   RTX_UNCHANGING_P (TREE_CST_RTL (exp)) = 1;
-  if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
-      || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+  if (AGGREGATE_TYPE_P (TREE_TYPE (exp)))
     MEM_IN_STRUCT_P (TREE_CST_RTL (exp)) = 1;
 
   pop_obstacks ();
