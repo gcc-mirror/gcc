@@ -1008,7 +1008,7 @@ grokclassfn (ctype, function, flags, quals)
 
   /* Even within an `extern "C"' block, members get C++ linkage.  See
      [dcl.link] for details.  */
-  DECL_LANGUAGE (function) = lang_cplusplus;
+  SET_DECL_LANGUAGE (function, lang_cplusplus);
 
   if (fn_name == NULL_TREE)
     {
