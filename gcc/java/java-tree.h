@@ -52,17 +52,15 @@ struct JCF;
       COMPOUND_ASSIGN_P (in EXPR (binop_*))
       LOCAL_CLASS_P (in RECORD_TYPE)
       BLOCK_IS_IMPLICIT (in BLOCK)
-      JAVA_FILE_P (in TREE_LIST in current_file_list)
    2: RETURN_MAP_ADJUSTED (in TREE_VEC).
       QUALIFIED_P (in IDENTIFIER_NODE)
       PRIMARY_P (in EXPR_WITH_FILE_LOCATION)
       MODIFY_EXPR_FROM_INITIALIZATION_P (in MODIFY_EXPR)
       CLASS_METHOD_CHECKED_P (in RECORD_TYPE) 
-      CLASS_FILE_P (in TREE_LIST in current_file_list)
+      CLASS_FILE_P (in a TRANSLATION_UNIT_DECL in current_file_list)
    3: IS_AN_IMPORT_ON_DEMAND_P (in IDENTIFIER_NODE)
       RESOLVE_PACKAGE_NAME_P (in EXPR_WITH_FILE_LOCATION)
       SWITCH_HAS_DEFAULT (in SWITCH_EXPR)
-      ZIP_FILE_P (in TREE_LIST in current_file_list)
       HAS_FINALIZER (in RECORD_TYPE)
    4: IS_A_COMMAND_LINE_FILENAME_P (in IDENTIFIER_NODE)
       RESOLVE_TYPE_NAME_P (in EXPR_WITH_FILE_LOCATION)
@@ -756,7 +754,7 @@ union lang_tree_node
 /* Number of local variable slots needed for the arguments of this function. */
 #define DECL_ARG_SLOT_COUNT(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->u.f.arg_slot_count)
-/* Line number of end of function. */
+/* Source location of end of function. */
 #define DECL_FUNCTION_LAST_LINE(DECL) (DECL_LANG_SPECIFIC(DECL)->u.f.last_line)
 /* Information on declaration location */
 #define DECL_FUNCTION_WFL(DECL)  (DECL_LANG_SPECIFIC(DECL)->u.f.wfl)
@@ -958,7 +956,9 @@ struct lang_decl_func GTY(())
   int max_locals;
   int max_stack;
   int arg_slot_count;
-  int last_line; 		/* End line number for a function decl */
+  /* A temportary lie for the sake of ggc.  Actually, last_line is
+  * only a source_location if USE_MAPPED_LOCATION.  FIXME. */
+  source_location last_line;	/* End line number for a function decl */
   tree wfl;			/* Information on the original location */
   tree throws_list;		/* Exception specified by `throws' */
   tree function_decl_body;	/* Hold all function's statements */
@@ -1378,9 +1378,7 @@ extern tree builtin_function (const char *, tree, int, enum built_in_class,
 #define METHOD_INVISIBLE(DECL) \
   (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (DECL))->u.f.invisible)
 
-#define JAVA_FILE_P(NODE) TREE_LANG_FLAG_2 (NODE)
 #define CLASS_FILE_P(NODE) TREE_LANG_FLAG_3 (NODE)
-#define ZIP_FILE_P(NODE) TREE_LANG_FLAG_4 (NODE)
 
 /* Other predicates on method decls  */
 

@@ -80,8 +80,11 @@ static GTY(()) tree parse_roots[3];
 /* The METHOD_DECL for the current method.  */
 #define current_method parse_roots[1]
 
-/* A list of file names.  */
+/* A list of TRANSLATION_UNIT_DECLs for the files to be compiled.  */
 #define current_file_list parse_roots[2]
+
+/* Line 0 in current file, if compiling from bytecode. */
+static location_t file_start_location;
 
 /* The Java archive that provides main_class;  the main input file. */
 static GTY(()) struct JCF * main_jcf;
@@ -128,21 +131,48 @@ set_source_filename (JCF *jcf, int index)
 {
   tree sfname_id = get_name_constant (jcf, index);
   const char *sfname = IDENTIFIER_POINTER (sfname_id);
-  if (input_filename != NULL)
+  const char *old_filename = input_filename;
+  int new_len = IDENTIFIER_LENGTH (sfname_id);
+  if (old_filename != NULL)
     {
-      int old_len = strlen (input_filename);
-      int new_len = IDENTIFIER_LENGTH (sfname_id);
+      int old_len = strlen (old_filename);
       /* Use the current input_filename (derived from the class name)
 	 if it has a directory prefix, but otherwise matches sfname. */
       if (old_len > new_len
-	  && strcmp (sfname, input_filename + old_len - new_len) == 0
-	  && (input_filename[old_len - new_len - 1] == '/'
-	      || input_filename[old_len - new_len - 1] == '\\'))
+	  && strcmp (sfname, old_filename + old_len - new_len) == 0
+	  && (old_filename[old_len - new_len - 1] == '/'
+	      || old_filename[old_len - new_len - 1] == '\\'))
 	return;
     }
+  if (strchr (sfname, '/') == NULL && strchr (sfname, '\\') == NULL)
+    {
+      const char *class_name
+	= IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class)));
+      char *dot = strrchr (class_name, '.');
+      if (dot != NULL)
+	{
+	  int i = dot - class_name;
+	  /* Concatenate current package prefix with new sfname. */
+	  char *buf = xmalloc (i+new_len+3);
+	  /* Replace '.' by DIR_SEPARATOR. */
+	  for (; i >= 0;  i--)
+	    {
+	      if (buf[i] == '.')
+		buf[i] = DIR_SEPARATOR;
+	    }
+	  sfname_id = get_identifier (buf);
+	  sfname = IDENTIFIER_POINTER (sfname_id);
+	}
+    }
+      
+#ifdef USE_MAPPED_LOCATION
+  line_table.maps[line_table.used-1].to_file = sfname;
+#else
   input_filename = sfname;
-  DECL_SOURCE_FILE (TYPE_NAME (current_class)) = sfname;
-  if (current_class == main_class) main_input_filename = input_filename;
+  DECL_SOURCE_LOCATION (TYPE_NAME (current_class)) = input_location;
+  file_start_location = input_location;
+#endif
+  if (current_class == main_class) main_input_filename = sfname;
 }
 
 #define HANDLE_SOURCEFILE(INDEX) set_source_filename (jcf, INDEX)
@@ -414,10 +444,22 @@ give_name_to_class (JCF *jcf, int i)
       tree class_name = unmangle_classname ((const char *) JPOOL_UTF_DATA (jcf, j),
 					    JPOOL_UTF_LENGTH (jcf, j));
       this_class = lookup_class (class_name);
-      input_filename = DECL_SOURCE_FILE (TYPE_NAME (this_class));
-      input_line = 0;
+#ifdef USE_MAPPED_LOCATION
+      {
+      tree source_name = identifier_subst (class_name, "", '.', '/', ".java");
+      const char *sfname = IDENTIFIER_POINTER (source_name);
+      linemap_add (&line_table, LC_ENTER, false, sfname, 0);
+      input_location = linemap_line_start (&line_table, 0, 1);
+      file_start_location = input_location;
+      DECL_SOURCE_LOCATION (TYPE_NAME (this_class)) = input_location;
+      if (main_input_filename == NULL && jcf == main_jcf)
+	main_input_filename = sfname;
+      }
+#else
+      input_location = DECL_SOURCE_LOCATION (TYPE_NAME (this_class));
       if (main_input_filename == NULL && jcf == main_jcf)
 	main_input_filename = input_filename;
+#endif
 
       jcf->cpool.data[i].t = this_class;
       JPOOL_TAG (jcf, i) = CONSTANT_ResolvedClass;
@@ -602,6 +644,11 @@ load_class (tree class_or_name, int verbose)
 	  *separator = '\0';
 	  name = get_identifier (IDENTIFIER_POINTER (name));
 	  *separator = c;
+
+	  /* Otherwise we might get infinite recursion, if say we have
+	     String.class but not String$CaseInsensitiveComparator.class. */
+	  if (current_jcf && current_jcf->java_source == 0)
+	    break;
 	}
       /* Otherwise, we failed, we bail. */
       else
@@ -707,8 +754,7 @@ parse_class_file (void)
 
   java_layout_seen_class_methods ();
 
-  input_filename = DECL_SOURCE_FILE (TYPE_NAME (current_class));
-  input_line = 0;
+  input_location = DECL_SOURCE_LOCATION (TYPE_NAME (current_class));
   (*debug_hooks->start_source_file) (input_line, input_filename);
 
   /* Currently we always have to emit calls to _Jv_InitClass when
@@ -895,6 +941,7 @@ void
 java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 {
   int filename_count = 0;
+  location_t save_location = input_location;
   char *list, *next;
   tree node;
   FILE *finput = NULL;
@@ -903,7 +950,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
   if (flag_filelist_file)
     {
       int avail = 2000;
-      finput = fopen (input_filename, "r");
+      finput = fopen (main_input_filename, "r");
       if (finput == NULL)
 	fatal_error ("can't open %s: %m", input_filename);
       list = xmalloc(avail);
@@ -935,7 +982,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       finput = NULL;
     }
   else
-    list = input_filename ? xstrdup (input_filename) : 0;
+    list = (char *) main_input_filename;
 
   while (list)
     {
@@ -977,51 +1024,32 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 
       if (list[0]) 
 	{
-	  char *value;
-	  tree id;
-	  int twice = 0;
-
-	  int len = strlen (list);
-
-	  obstack_grow0 (&temporary_obstack, list, len);
-	  value = obstack_finish (&temporary_obstack);
+	  node = get_identifier (list);
 
 	  filename_count++;
 
-	  /* Exclude file that we see twice on the command line. For
-	     all files except {Class,Error,Object,RuntimeException,String,
-	     Throwable}.java we can rely on maybe_get_identifier. For
-	     these files, we need to do a linear search of
-	     current_file_list. This search happens only for these
-	     files, presumably only when we're recompiling libgcj. */
+	  /* Exclude file that we see twice on the command line. */
 	     
-	  if ((id = maybe_get_identifier (value)))
-	    {
-	      if (predefined_filename_p (id))
-		{
-		  tree c;
-		  for (c = current_file_list; c; c = TREE_CHAIN (c))
-		    if (TREE_VALUE (c) == id)
-		      twice = 1;
-		}
-	      else
-		twice = 1;
-	    }
-
-	  if (twice)
+	  if (IS_A_COMMAND_LINE_FILENAME_P (node))
 	    {
 	      location_t warn_loc;
-	      warn_loc.file = value;
+#ifdef USE_MAPPED_LOCATION
+	      linemap_add (&line_table, LC_RENAME, 0,
+			   IDENTIFIER_POINTER (node), 0);
+	      warn_loc = linemap_line_start (&line_table, 0, 1);
+#else
+	      warn_loc.file = IDENTIFIER_POINTER (node);
 	      warn_loc.line = 0;
+#endif
 	      warning ("%Hsource file seen twice on command line and "
 		       "will be compiled only once", &warn_loc);
 	    }
 	  else
 	    {
-	      node = get_identifier (value);
+	      tree file_decl = build_decl (TRANSLATION_UNIT_DECL, node, NULL);
+	      TREE_CHAIN (file_decl) = current_file_list;
+	      current_file_list = file_decl;
 	      IS_A_COMMAND_LINE_FILENAME_P (node) = 1;
-	      current_file_list = tree_cons (NULL_TREE, node, 
-					     current_file_list);
 	    }
 	}
       list = next;
@@ -1037,7 +1065,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       /* Only one resource file may be compiled at a time.  */
       assert (TREE_CHAIN (current_file_list) == NULL);
 
-      resource_filename = IDENTIFIER_POINTER (TREE_VALUE (current_file_list));
+      resource_filename = IDENTIFIER_POINTER (DECL_NAME (current_file_list));
       compile_resource_file (resource_name, resource_filename);
 
       goto finish;
@@ -1049,27 +1077,27 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
     {
       unsigned char magic_string[4];
       uint32 magic = 0;
-      tree name = TREE_VALUE (node);
+      tree name = DECL_NAME (node);
       tree real_file;
+      const char *filename = IDENTIFIER_POINTER (name);
 
       /* Skip already parsed files */
-      real_file = get_identifier (lrealpath (IDENTIFIER_POINTER (name)));
+      real_file = get_identifier (lrealpath (filename));
       if (HAS_BEEN_ALREADY_PARSED_P (real_file))
 	continue;
-      
+
       /* Close previous descriptor, if any */
       if (finput && fclose (finput))
 	fatal_error ("can't close input file %s: %m", main_input_filename);
       
-      finput = fopen (IDENTIFIER_POINTER (name), "rb");
+      finput = fopen (filename, "rb");
       if (finput == NULL)
-	fatal_error ("can't open %s: %m", IDENTIFIER_POINTER (name));
+	fatal_error ("can't open %s: %m", filename);
 
 #ifdef IO_BUFFER_SIZE
       setvbuf (finput, xmalloc (IO_BUFFER_SIZE),
 	       _IOFBF, IO_BUFFER_SIZE);
 #endif
-      input_filename = IDENTIFIER_POINTER (name);
 
       /* Figure what kind of file we're dealing with */
       if (fread (magic_string, 1, 4, finput) == 4)
@@ -1085,22 +1113,29 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	  current_jcf->read_state = finput;
 	  current_jcf->filbuf = jcf_filbuf_from_stdio;
 	  jcf_parse (current_jcf);
+	  DECL_SOURCE_LOCATION (node) = file_start_location;
 	  TYPE_JCF (current_class) = current_jcf;
 	  CLASS_FROM_CURRENTLY_COMPILED_P (current_class) = 1;
-	  TREE_PURPOSE (node) = current_class;
+	  TREE_TYPE (node) = current_class;
 	}
       else if (magic == (JCF_u4)ZIPMAGIC)
 	{
-	  ZIP_FILE_P (node) = 1;
 	  main_jcf = ggc_alloc (sizeof (JCF));
 	  JCF_ZERO (main_jcf);
 	  main_jcf->read_state = finput;
 	  main_jcf->filbuf = jcf_filbuf_from_stdio;
-	  if (open_in_zip (main_jcf, input_filename, NULL, 0) <  0)
-	    fatal_error ("bad zip/jar file %s", IDENTIFIER_POINTER (name));
+#ifdef USE_MAPPED_LOCATION
+	  linemap_add (&line_table, LC_ENTER, false, filename, 0);
+	  input_location = linemap_line_start (&line_table, 0, 1);
+#endif
+	  if (open_in_zip (main_jcf, filename, NULL, 0) <  0)
+	    fatal_error ("bad zip/jar file %s", filename);
 	  localToFile = SeenZipFiles;
 	  /* Register all the classes defined there.  */
 	  process_zip_dir (main_jcf->read_state);
+#ifdef USE_MAPPED_LOCATION
+	  linemap_add (&line_table, LC_LEAVE, false, NULL, 0);
+#endif
 	  parse_zip_file_entries ();
 	  /*
 	  for (each entry)
@@ -1109,7 +1144,6 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	}
       else
 	{
-	  JAVA_FILE_P (node) = 1;
 	  java_push_parser_context ();
 	  java_parser_context_save_global ();
 
@@ -1133,10 +1167,10 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 
   for (node = current_file_list; node; node = TREE_CHAIN (node))
     {
-      input_filename = IDENTIFIER_POINTER (TREE_VALUE (node));
+      input_location = DECL_SOURCE_LOCATION (node);
       if (CLASS_FILE_P (node))
 	{
-	  output_class = current_class = TREE_PURPOSE (node);
+	  output_class = current_class = TREE_TYPE (node);
 	  current_jcf = TYPE_JCF (current_class);
 	  layout_class (current_class);
 	  load_inner_classes (current_class);
@@ -1144,7 +1178,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	  JCF_FINISH (current_jcf);
 	}
     }
-  input_filename = main_input_filename;
+  input_location = save_location;
 
   java_expand_classes ();
   if (java_report_errors () || flag_syntax_only)
@@ -1244,7 +1278,6 @@ parse_zip_file_entries (void)
 
 	    if (TYPE_SIZE (current_class) != error_mark_node)
 	      {
-		input_filename = current_jcf->filename;
 		parse_class_file ();
 		FREE (current_jcf->buffer); /* No longer necessary */
 		/* Note: there is a way to free this buffer right after a

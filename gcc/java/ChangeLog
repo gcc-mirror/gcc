@@ -11,6 +11,23 @@
 	* class.c (maybe_layout_super_class):  Adjust build_expr_wfl call
 	to USE_MAPPED_LOCATION case.
 
+	* java-tree.h (JAVA_FILE_P, ZIP_FILE_P):  Remove unused macros.
+	* jcf-parse.c (java_parse_file): Don't set input_filename.
+	Use IS_A_COMMAND_LINE_FILENAME_P to check for duplicate filenames.
+	Create a list of TRANSLATION_UNIT_DECL.
+	(current_file_list):  Is now a TRANSLATION_UNIT_DECL chain.  The
+	reason is so we can set a DECL_SOURCE_LOCATION for each file.
+	(java_parse_file):  Don't set unused ZIP_FILE_P, JAVA_FILE_P..
+	Create line-map LC_ENTER/LC_LEAVE entries for archive itself.
+	(file_start_location):  New static.
+	(set_source_filename):  Avoid extra access to input_filename macro.
+	Concatenate new name with class's package prefix.
+	(set_source_filename, give_name_to_class): Update.
+	(give_name_to_class):  Set class's "line 0" input_location here.
+	(parse_class_file):  Set input_location as a unit.
+
+	* jcf-parse.c (load_class): Sanity test if missing inner class file.
+
 2004-09-29  Per Bothner  <per@bothner.com>
 
 	* java-tree.h:  Redefine some macros and add soem declaration
