@@ -1,3 +1,8 @@
+2001-09-25  Phil Edwards  <pme@gcc.gnu.org>
+
+	* testsuite/21_strings/c_strings.cc (test01, test02):  Increase
+	`carray' size.
+
 2001-09-14  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/html/17_intro/headers_cc.txt:  "Sync"/copy real file over.
