@@ -67,6 +67,9 @@ static void   avr_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void   avr_unique_section PARAMS ((tree, int));
 static void   avr_encode_section_info PARAMS ((tree, int));
 
+static void   avr_asm_out_ctor PARAMS ((rtx, int));
+static void   avr_asm_out_dtor PARAMS ((rtx, int));
+
 /* Allocate registers from r25 to r8 for parameters for function calls */
 #define FIRST_CUM_REG 26
 
@@ -757,8 +760,18 @@ avr_output_function_epilogue (file, size)
   fprintf (file, "/* epilogue: frame size=%d */\n", size);
   if (main_p)
     {
-      fprintf (file, "__stop_progIi__:\n\trjmp __stop_progIi__\n");
-      ++epilogue_size;
+      /* Return value from main() is already in the correct registers
+	 (r25:r24) as the exit() argument.  */
+      if (AVR_MEGA)
+	{
+	  fputs ("\t" AS1 (jmp,exit) "\n", file);
+	  epilogue_size += 2;
+	}
+      else
+	{
+	  fputs ("\t" AS1 (rjmp,exit) "\n", file);
+	  ++epilogue_size;
+	}
     }
   else if (minimize && (frame_pointer_needed || live_seq > 4))
     {
@@ -4814,7 +4827,13 @@ asm_file_start (file)
   fputs ("__tmp_reg__ = 0\n" 
 	 "__zero_reg__ = 1\n"
 	 "_PC_ = 2\n", file);
-  
+
+  /* FIXME: output these only if there is anything in the .data / .bss
+     sections - some code size could be saved by not linking in the
+     initialization code from libgcc if one or both sections are empty.  */
+  fputs ("\t.global __do_copy_data\n", file);
+  fputs ("\t.global __do_clear_bss\n", file);
+
   commands_in_file = 0;
   commands_in_prologues = 0;
   commands_in_epilogues = 0;
@@ -5531,3 +5550,22 @@ avr_out_sbxx_branch (insn, operands)
     return AS1 (rjmp,%3);
   return "";
 }
+
+static void
+avr_asm_out_ctor (symbol, priority)
+     rtx symbol;
+     int priority;
+{
+  fputs ("\t.global __do_global_ctors\n", asm_out_file);
+  default_ctor_section_asm_out_constructor (symbol, priority);
+}
+
+static void
+avr_asm_out_dtor (symbol, priority)
+     rtx symbol;
+     int priority;
+{
+  fputs ("\t.global __do_global_dtors\n", asm_out_file);
+  default_dtor_section_asm_out_destructor (symbol, priority);
+}
+

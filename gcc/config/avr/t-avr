@@ -17,7 +17,11 @@ LIB1ASMFUNCS = \
 	_epilogue \
 	_exit \
 	_cleanup \
-	_tablejump
+	_tablejump \
+	_copy_data \
+	_clear_bss \
+	_ctors \
+	_dtors
 
 # We do not have the DF type.
 # Most of the C functions in libgcc2 use almost all registers,

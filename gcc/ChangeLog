@@ -1,3 +1,21 @@
+2002-06-02  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	Support for C++ constructors/destructors.
+	* config/avr/avr.c (avr_output_function_epilogue): Jump to exit()
+	instead of looping if main() returns.
+	(asm_file_start): Output global symbols that cause .data and .bss
+	initialization code to be linked in, unconditionally for now.
+	(avr_asm_out_ctor, avr_asm_out_dtor): New functions.
+	* config/avr/avr.h (CTORS_SECTION_ASM_OP, DTORS_SECTION_ASM_OP): New.
+	(TARGET_ASM_CONSTRUCTOR, TARGET_ASM_DESTRUCTOR): New.
+	(LIBSTDCXX): New.
+	* config/avr/libgcc.S (_exit): Split in .fini9 and .fini0 sections.
+	(__tablejump__): New.
+	(__do_copy_data, __do_clear_bss): New.
+	(__do_global_ctors, __do_global_dtors): New.
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _copy_data, _clear_bss,
+	_ctors, _dtors.
+
 2002-06-02  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c4x/c4x.h (TARGET_CPU_CPP_BUILTINS): New.
