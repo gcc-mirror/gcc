@@ -12,11 +12,12 @@ details.  */
 
 #include <gcj/cni.h>
 #include <gnu/gcj/runtime/SharedLibLoader.h>
-#include <dlfcn.h>
 #include <java/io/IOException.h>
 #include <java/lang/UnsupportedOperationException.h>
 
 #ifdef HAVE_DLOPEN
+#include <dlfcn.h>
+
 /* Only used during dlopen, while having a lock on Class.class. */
 static gnu::gcj::runtime::SharedLibLoader* curLoader;
 
