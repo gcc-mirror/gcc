@@ -2080,6 +2080,12 @@ truthvalue_conversion (expr)
       return real_zerop (expr) ? boolean_false_node : boolean_true_node;
 
     case ADDR_EXPR:
+      /* If we are taking the address of a external decl, it might be zero
+	 if it is weak, so we cannot optimize.  */
+      if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (expr, 0))) == 'd'
+	  && DECL_EXTERNAL (TREE_OPERAND (expr, 0)))
+	break;
+
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 0)))
 	return build (COMPOUND_EXPR, boolean_type_node,
 		      TREE_OPERAND (expr, 0), boolean_true_node);
