@@ -524,14 +524,17 @@ namespace std
 	 {
 	   // First, copy the chars already present in the buffer.
 	   const streamsize __avail = this->egptr() - this->gptr();
-	   if (__avail == 1)
-	     *__s = *this->gptr();
-	   else if (__avail > 1)
-	     traits_type::move(__s, this->gptr(), __avail);
-	   __s += __avail;
-	   this->gbump(__avail);
-	   __ret += __avail;
-	   __n -= __avail;
+	   if (__avail != 0)
+	     {
+	       if (__avail == 1)
+		 *__s = *this->gptr();
+	       else if (__avail > 1)
+		 traits_type::copy(__s, this->gptr(), __avail);
+	       __s += __avail;
+	       this->gbump(__avail);
+	       __ret += __avail;
+	       __n -= __avail;
+	     }
 
 	   const streamsize __len = _M_file.xsgetn(reinterpret_cast<char*>(__s),
 						   __n);
