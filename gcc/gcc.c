@@ -37,6 +37,7 @@ compilation is specified by a string called a "spec".  */
 #include "system.h"
 
 #include <signal.h>
+#include <sys/stat.h>
 #ifdef __STDC__
 #include <stdarg.h>
 #else
