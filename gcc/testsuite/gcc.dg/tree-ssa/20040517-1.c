@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-tree-ssa-vops" } */
+extern void abort (void);
 int a; 
  
 extern void __attribute__ ((malloc)) *foo ();

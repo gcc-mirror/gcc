@@ -3,6 +3,8 @@
    { dg-options "" }
    { dg-do run } */
 
+extern void abort (void);
+
 typedef unsigned char uint8_t;
 
 typedef struct {

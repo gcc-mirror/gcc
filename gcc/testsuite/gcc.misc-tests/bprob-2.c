@@ -3,6 +3,9 @@
    This is the same as test gcc.c-torture/execute/980526-1.c and
    gcc.misc-tests/gcov-3.c */
 
+extern void abort (void);
+extern void exit (int);
+
 int expect_do1 = 1, expect_do2 = 2;
  
 static int doit(int x){

@@ -4,6 +4,8 @@
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
 /* { dg-do run { target native } } */
 
+extern void abort (void);
+
 int do_something (int i)
 {
   return i;

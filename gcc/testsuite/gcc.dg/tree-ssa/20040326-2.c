@@ -4,6 +4,7 @@
 /* Gimplification problem exposed by zsh.  All the side-effects in
    function arguments and in the called expression should happen
    before the actual function call.  */
+extern void abort (void);
 int A;
 
 typedef void (*fnptr) (void);

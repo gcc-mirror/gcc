@@ -10,6 +10,16 @@
 
 #include "builtins-config.h"
 
+extern double cos (double);
+extern double sin (double);
+extern double tan (double);
+extern float cosf (float);
+extern float sinf (float);
+extern float tanf (float);
+extern long double cosl (long double);
+extern long double sinl (long double);
+extern long double tanl (long double);
+
 extern void link_error(void);
 
 void test1(double x)

@@ -7,6 +7,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O1" } */ 
 
+extern __SIZE_TYPE__ strlen (const char *);
+
 int i; 
 
 static void 

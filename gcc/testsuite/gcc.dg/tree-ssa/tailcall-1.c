@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-tailc-details" } */
+extern void *alloca (__SIZE_TYPE__);
 int q(int a);
 int *v;
 int

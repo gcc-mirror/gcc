@@ -1,3 +1,5 @@
+extern void abort (void);
+extern void exit (int);
 static int v = 3;
 
 f ()

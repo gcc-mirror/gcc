@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-tree-dom3" } */
 
+extern void abort (void);
 typedef unsigned int size_t;
 struct rtx_def;
 typedef struct rtx_def *rtx;

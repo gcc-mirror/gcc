@@ -2,6 +2,8 @@
    of a field.  */
 /* { dg-do run } */
 
+extern void abort (void);
+
 struct A {
   double d;
 } __attribute__ ((aligned));

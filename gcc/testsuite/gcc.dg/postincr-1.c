@@ -1,6 +1,8 @@
 /* Simple test for proper postincrement semantics.  */
 /* { dg-do run } */
 
+extern void abort (void);
+
 int i;
 int c;
 int *f ()

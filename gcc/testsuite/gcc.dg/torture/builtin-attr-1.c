@@ -26,9 +26,10 @@ void test_builtin_##FN(TYPE x, TYPE y) \
 { if (__builtin_##FN(x,y) != __builtin_##FN(x,y)) link_failure_builtin_##FN(); }
 
 /* Also test the regular (non-__builtin_) function.  */
-#define TEST1(FN, TYPE) \
+#define TEST1(FN, TYPE, RTYPE) \
 BUILTIN_TEST1(FN, TYPE) \
 extern void link_failure_##FN(void); \
+extern RTYPE FN(TYPE); \
 void test_##FN(TYPE x) { if (FN(x) != FN(x)) link_failure_##FN(); }
 
 /* Test the __builtin_ functions taking void arguments (with the "f"
@@ -153,12 +154,32 @@ void test_builtin_##FN##l(_Complex long double ld1, _Complex long double ld2) \
 /* These macros additionally test the non-__builtin_ functions.  */
 
 /* Test the functions taking one FP argument (with the "f" and "l"
-   variants).  */
+   variants) and returning that type.  */
 #define FPTEST1(FN) \
 BUILTIN_FPTEST1(FN) \
 extern void link_failure_##FN(void); \
 extern void link_failure_##FN##f(void); \
 extern void link_failure_##FN##l(void); \
+extern double FN(double); \
+extern float FN##f(float); \
+extern long double FN##l(long double); \
+void test_##FN(double d) \
+{ if (FN(d) != FN(d)) link_failure_##FN(); } \
+void test_##FN##f(float f) \
+{ if (FN##f(f) != FN##f(f)) link_failure_##FN##f(); } \
+void test_##FN##l(long double ld) \
+{ if (FN##l(ld) != FN##l(ld)) link_failure_##FN##l(); }
+
+/* Test the functions taking one FP argument (with the "f" and "l"
+   variants) and returning TYPE.  */
+#define FPTEST1T(FN, TYPE) \
+BUILTIN_FPTEST1(FN) \
+extern void link_failure_##FN(void); \
+extern void link_failure_##FN##f(void); \
+extern void link_failure_##FN##l(void); \
+extern TYPE FN(double); \
+extern TYPE FN##f(float); \
+extern TYPE FN##l(long double); \
 void test_##FN(double d) \
 { if (FN(d) != FN(d)) link_failure_##FN(); } \
 void test_##FN##f(float f) \
@@ -173,6 +194,9 @@ BUILTIN_FPTEST2(FN) \
 extern void link_failure_##FN(void); \
 extern void link_failure_##FN##f(void); \
 extern void link_failure_##FN##l(void); \
+extern double FN(double, double); \
+extern float FN##f(float, float); \
+extern long double FN##l(long double, long double); \
 void test_##FN(double d1, double d2) \
 { if (FN(d1,d2) != FN(d1,d2)) link_failure_##FN(); } \
 void test_##FN##f(float f1, float f2) \
@@ -188,6 +212,9 @@ BUILTIN_FPTEST2ARG1(FN, TYPE) \
 extern void link_failure_##FN(void); \
 extern void link_failure_##FN##f(void); \
 extern void link_failure_##FN##l(void); \
+extern double FN(TYPE, double); \
+extern float FN##f(TYPE, float); \
+extern long double FN##l(TYPE, long double); \
 void test_##FN(TYPE x, double d) \
 { if (FN(x,d) != FN(x,d)) link_failure_##FN(); } \
 void test_##FN##f(TYPE x, float f) \
@@ -203,6 +230,9 @@ BUILTIN_FPTEST2ARG2(FN, TYPE) \
 extern void link_failure_##FN(void); \
 extern void link_failure_##FN##f(void); \
 extern void link_failure_##FN##l(void); \
+extern double FN(double, TYPE); \
+extern float FN##f(float, TYPE); \
+extern long double FN##l(long double, TYPE); \
 void test_##FN(double d, TYPE x) \
 { if (FN(d,x) != FN(d,x)) link_failure_##FN(); } \
 void test_##FN##f(float f, TYPE x) \
@@ -217,6 +247,9 @@ BUILTIN_FPTEST3(FN) \
 extern void link_failure_##FN(void); \
 extern void link_failure_##FN##f(void); \
 extern void link_failure_##FN##l(void); \
+extern double FN(double, double, double); \
+extern float FN##f(float, float, float); \
+extern long double FN##l(long double, long double, long double); \
 void test_##FN(double d1, double d2, double d3) \
 { if (FN(d1,d2,d3) != FN(d1,d2,d3)) link_failure_##FN(); } \
 void test_##FN##f(float f1, float f2, float f3) \
@@ -225,12 +258,32 @@ void test_##FN##l(long double ld1, long double ld2, long double ld3) \
 { if (FN##l(ld1,ld2,ld3) != FN##l(ld1,ld2,ld3)) link_failure_##FN##l(); }
 
 /* Test the functions taking one complex argument (with the "f" and
-   "l" variants).  */
+   "l" variants) and returning that type.  */
 #define CPTEST1(FN) \
 BUILTIN_CPTEST1(FN) \
 extern void link_failure_##FN(void); \
 extern void link_failure_##FN##f(void); \
 extern void link_failure_##FN##l(void); \
+extern _Complex double FN(_Complex double); \
+extern _Complex float FN##f(_Complex float); \
+extern _Complex long double FN##l(_Complex long double); \
+void test_##FN(_Complex double d) \
+{ if (FN(d) != FN(d)) link_failure_##FN(); } \
+void test_##FN##f(_Complex float f) \
+{ if (FN##f(f) != FN##f(f)) link_failure_##FN##f(); } \
+void test_##FN##l(_Complex long double ld) \
+{ if (FN##l(ld) != FN##l(ld)) link_failure_##FN##l(); }
+
+/* Test the functions taking one complex argument (with the "f" and
+   "l" variants) and returning the real type.  */
+#define CPTEST1R(FN) \
+BUILTIN_CPTEST1(FN) \
+extern void link_failure_##FN(void); \
+extern void link_failure_##FN##f(void); \
+extern void link_failure_##FN##l(void); \
+extern double FN(_Complex double); \
+extern float FN##f(_Complex float); \
+extern long double FN##l(_Complex long double); \
 void test_##FN(_Complex double d) \
 { if (FN(d) != FN(d)) link_failure_##FN(); } \
 void test_##FN##f(_Complex float f) \
@@ -245,6 +298,9 @@ BUILTIN_CPTEST2(FN) \
 extern void link_failure_##FN(void); \
 extern void link_failure_##FN##f(void); \
 extern void link_failure_##FN##l(void); \
+extern _Complex double FN(_Complex double, _Complex double); \
+extern _Complex float FN##f(_Complex float, _Complex float); \
+extern _Complex long double FN##l(_Complex long double, _Complex long double); \
 void test_##FN(_Complex double d1, _Complex double d2) \
 { if (FN(d1,d2) != FN(d1,d2)) link_failure_##FN(); } \
 void test_##FN##f(_Complex float f1, _Complex float f2) \
@@ -283,27 +339,27 @@ FPTEST2            (fmod)
 FPTEST1            (gamma)
 BUILTIN_FPTEST0    (huge_val)
 FPTEST2            (hypot)
-FPTEST1            (ilogb)
+FPTEST1T           (ilogb, int)
 BUILTIN_FPTEST0    (inf)
 FPTEST1            (j0)
 FPTEST1            (j1)
 FPTEST2ARG1        (jn, int)
 FPTEST2ARG2        (ldexp, int)
 FPTEST1            (lgamma)
-FPTEST1            (llrint)
-FPTEST1            (llround)
+FPTEST1T           (llrint, long long)
+FPTEST1T           (llround, long long)
 FPTEST1            (log)
 FPTEST1            (log10)
 FPTEST1            (log1p)
 FPTEST1            (log2)
 FPTEST1            (logb)
-FPTEST1            (lrint)
-FPTEST1            (lround)
+FPTEST1T           (lrint, long)
+FPTEST1T           (lround, long)
 BUILTIN_FPTEST1ARG (nan, char *)
 BUILTIN_FPTEST1ARG (nans, char *)
 FPTEST1            (nearbyint)
 FPTEST2            (nextafter)
-FPTEST2            (nexttoward)
+FPTEST2ARG2        (nexttoward, long double)
 FPTEST2            (pow)
 FPTEST1            (pow10)
 FPTEST2            (remainder)
@@ -328,7 +384,7 @@ FPTEST2ARG1        (yn, int)
 /*CPTEST1 (cabs) See http://gcc.gnu.org/ml/gcc-patches/2003-09/msg00040.html */
 CPTEST1 (cacos)
 CPTEST1 (cacosh)
-CPTEST1 (carg)
+CPTEST1R (carg)
 CPTEST1 (casin)
 CPTEST1 (casinh)
 CPTEST1 (catan)
@@ -336,32 +392,43 @@ CPTEST1 (catanh)
 CPTEST1 (ccos)
 CPTEST1 (ccosh)
 CPTEST1 (cexp)
-CPTEST1 (cimag)
+CPTEST1R (cimag)
 /*CPTEST1 (clog)*/
 CPTEST1 (conj)
 CPTEST2 (cpow)
 CPTEST1 (cproj)
-CPTEST1 (creal)
+CPTEST1R (creal)
 CPTEST1 (csin)
 CPTEST1 (csinh)
 CPTEST1 (csqrt)
 CPTEST1 (ctan)
 CPTEST1 (ctanh)
 
+/* These next definitions are kludges.  When GCC has a <stdint.h> it
+   should be used.
+*/
+#if __INT_MAX__ == __LONG_LONG_MAX__
+typedef int intmax_t;
+#elif __LONG_MAX__ == __LONG_LONG_MAX__
+typedef long intmax_t;
+#else
+typedef long long intmax_t;
+#endif
+
 /* Various other const builtins.  */
-TEST1         (abs, int)
+TEST1         (abs, int, int)
 BUILTIN_TEST1 (clz, int)
 BUILTIN_TEST1 (clzl, long)
 BUILTIN_TEST1 (clzll, long long)
 BUILTIN_TEST1 (ctz, int)
 BUILTIN_TEST1 (ctzl, long)
 BUILTIN_TEST1 (ctzll, long long)
-TEST1         (ffs, int)
-TEST1         (ffsl, long)
-TEST1         (ffsll, long long)
-TEST1         (imaxabs, int)
-TEST1         (labs, long)
-TEST1         (llabs, long long)
+TEST1         (ffs, int, int)
+TEST1         (ffsl, long, int)
+TEST1         (ffsll, long long, int)
+TEST1         (imaxabs, intmax_t, intmax_t)
+TEST1         (labs, long, long)
+TEST1         (llabs, long long, long long)
 BUILTIN_TEST1 (parity, int)
 BUILTIN_TEST1 (parityl, long)
 BUILTIN_TEST1 (parityll, long long)

@@ -3,6 +3,9 @@
    0 iterations of the loop rather than the correct 1.  */
 /* { dg-do run } */
 
+extern void abort (void);
+extern void exit (int);
+
 __inline__ int tag() { return 0; }
 
 void f ();

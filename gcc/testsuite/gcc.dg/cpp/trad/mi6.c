@@ -5,6 +5,8 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 
+extern void abort (void);
+
 /* Each include file should not be subject to MI optimisation, since
    macro definitions can change.  Each header increments the variable
    VAR if it is defined.

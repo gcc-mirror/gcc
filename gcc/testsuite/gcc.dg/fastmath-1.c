@@ -1,6 +1,8 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -ffast-math" } */
 
+extern void abort (void);
+
 int foo ( float* dists,  int k) 
 { 
 if ( ( dists [ 0 ] > 0 ) == ( dists [ 1 ] > 0 ) ) 

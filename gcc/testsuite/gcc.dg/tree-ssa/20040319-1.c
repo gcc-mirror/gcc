@@ -6,6 +6,8 @@
    were not being processed by the type based alias analyzer,
    resulting in optimizations removing a non-redundant load.  */
 
+extern void abort (void);
+
 struct bar { int count;  int *arr;};
 
 void foo (struct bar *b)

@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-dom3" } */
      
+extern void exit (int);
 extern void *ggc_alloc (__SIZE_TYPE__);
 typedef struct dw_attr_struct *dw_attr_ref;
 typedef struct dw_attr_struct

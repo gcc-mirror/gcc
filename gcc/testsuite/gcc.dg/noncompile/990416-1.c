@@ -1,3 +1,4 @@
+extern void *memcpy (void *, const void *, __SIZE_TYPE__);
 typedef int word_type;
    
 static void

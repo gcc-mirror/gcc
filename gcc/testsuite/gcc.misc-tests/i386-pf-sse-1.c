@@ -3,6 +3,8 @@
 
 /* { dg-do compile { target i?86-*-* } } */
 
+extern void exit (int);
+
 char *msg = "howdy there";
 
 void foo (char *p)

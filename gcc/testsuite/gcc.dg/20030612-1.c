@@ -1,6 +1,8 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 
+extern void abort (void);
+
 int A, B;
 
 void foo()

@@ -10,6 +10,9 @@
 double cabs (__complex__ double);
 float cabsf (__complex__ float);
 long double cabsl (__complex__ long double);
+double fabs (double);
+float fabsf (float);
+long double fabsl (long double);
 
 void link_error (void);
 

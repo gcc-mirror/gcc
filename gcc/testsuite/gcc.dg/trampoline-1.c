@@ -8,6 +8,7 @@
    trampoline couldn't be made executable.  */
 
 extern void abort(void);
+extern double fabs(double);
 
 void foo (void)
 {

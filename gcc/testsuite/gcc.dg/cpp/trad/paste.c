@@ -4,6 +4,8 @@
 
 /* { dg-do compile } */
 
+extern int printf (const char *, ...);
+
 #define A(name) X/**/name
 
 #define B(name) \

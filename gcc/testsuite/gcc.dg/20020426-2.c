@@ -4,6 +4,8 @@
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -frename-registers -fomit-frame-pointer -fPIC -mtune=i686" { target i?86-*-* } } */
 
+extern void exit (int);
+
 typedef struct
 {
   union

@@ -4,6 +4,7 @@
     not boolean */
 /* { dg-options "-O3" } */
 /* { dg-do run } */
+extern void abort (void);
 char *foo(char *p, char *q) {
     int x = (p !=0) + (q != 0);
     if (x==2)  return "a"; else return 0;

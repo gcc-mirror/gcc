@@ -13,6 +13,9 @@
    (except targets where the test does not work due to the return address
    not saved on the regular stack).  */
 
+extern void abort (void);
+extern void exit (int);
+
 static void recurser_void1 (int);
 static void recurser_void2 (int);
 extern void track (int);

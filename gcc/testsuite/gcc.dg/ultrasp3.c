@@ -1,6 +1,9 @@
 /* { dg-options "" } */
 /* { dg-options "-mcpu=ultrasparc -mv8plus" { target sparc-*-* } } */
 
+extern void abort (void);
+extern void exit (int);
+
 unsigned long long foo (unsigned long long x)
 {
   return 0x73500000735LL * x;

@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-dom3" } */
   
- 
+extern void abort (void);
 
 union tree_node;
 typedef union tree_node *tree;

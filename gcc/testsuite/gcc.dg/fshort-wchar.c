@@ -7,6 +7,8 @@
 
    Test that __WCHAR_MAX__ is correct with -fshort-wchar.  */
 
+extern void abort (void);
+
 int main ()
 {
   __WCHAR_TYPE__ w = ~(__WCHAR_TYPE__) 0;

@@ -9,6 +9,8 @@
 /* { dg-options "-O2 -ffast-math" } */
 
 extern void abort(void);
+extern double pow(double, double);
+extern double sqrt(double);
 
 void test(double x)
 {

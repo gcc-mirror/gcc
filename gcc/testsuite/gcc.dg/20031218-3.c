@@ -5,6 +5,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -g" } */
 
+extern __SIZE_TYPE__ strlen (const char *);
+
 int x (char *s)
 {
   int y () { return (strlen (s)); }

@@ -8,6 +8,8 @@
 /* { dg-do run } */
 /* { dg-options "-O -fno-pic" } */
 
+extern void abort (void);
+
 #if defined(__alpha__)
 /* PIC register is $29, but is used even without -fpic.  */
 #elif defined(__arc__)

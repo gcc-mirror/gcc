@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fno-tree-dominator-opts -fdump-tree-ccp" } */
-                                                                                
+
+extern int printf (const char *, ...); 
 
 main ()
 {

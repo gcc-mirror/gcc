@@ -8,6 +8,16 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -ffast-math" } */
 
+extern double fabs (double);
+extern float fabsf (float);
+extern long double fabsl (long double);
+extern double sqrt (double);
+extern float sqrtf (float);
+extern long double sqrtl (long double);
+extern double exp (double);
+extern float expf (float);
+extern long double expl (long double);
+
 double test1(double x)
 {
   return fabs(x*x);

@@ -5,6 +5,8 @@
 
 /* { dg-do run } */
 
+extern void exit (int);
+
 enum locality { none, low, moderate, high, bogus };
 enum rw { read, write };
 
