@@ -4881,12 +4881,6 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	 endian in both bits and bytes or little endian in bits and bytes.
 	 If it is mixed, we must adjust.  */
 	     
-#if BYTES_BIG_ENDIAN != BITS_BIG_ENDIAN
-      if (! spans_byte && is_mode != wanted_mem_mode)
-	offset = (GET_MODE_SIZE (is_mode)
-		  - GET_MODE_SIZE (wanted_mem_mode) - offset);
-#endif
-
       /* If bytes are big endian and we had a paradoxical SUBREG, we must
 	 adjust OFFSET to compensate. */
 #if BYTES_BIG_ENDIAN
@@ -4901,6 +4895,12 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	  offset += pos / BITS_PER_UNIT;
 	  pos %= GET_MODE_BITSIZE (wanted_mem_mode);
 	}
+
+#if BYTES_BIG_ENDIAN != BITS_BIG_ENDIAN
+      if (! spans_byte && is_mode != wanted_mem_mode)
+	offset = (GET_MODE_SIZE (is_mode)
+		  - GET_MODE_SIZE (wanted_mem_mode) - offset);
+#endif
 
       if (offset != 0 || inner_mode != wanted_mem_mode)
 	{
