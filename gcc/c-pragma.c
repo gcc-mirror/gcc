@@ -91,12 +91,6 @@ Alignment must be a small power of two, not %d, in #pragma pack",
 
       entry = (align_stack *) xmalloc (sizeof (* entry));
 
-      if (entry == NULL)
-	{
-	  warning ("Out of memory pushing #pragma pack");
-	  return 0;
-	}
-
       entry->alignment  = alignment;
       entry->num_pushes = 1;
       entry->id         = id;
