@@ -1,3 +1,7 @@
+2001-04-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/20000724-1.c: Add a clobber of `esp'.
+
 2001-04-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* g++.old-deja/g++.other/crash14.C: Remove -fnew-abi.
