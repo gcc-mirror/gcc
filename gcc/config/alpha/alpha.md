@@ -3102,22 +3102,17 @@
 }")
 
 (define_expand "call_nt"
-  [(parallel [(call (mem:DI (match_operand:DI 0 "" ""))
+  [(parallel [(call (mem:DI (match_operand 0 "" ""))
 		    (match_operand 1 "" ""))
 	      (clobber (reg:DI 26))])]
   ""
   "
 { if (GET_CODE (operands[0]) != MEM)
     abort ();
-  operands[0] = XEXP (operands[0], 0);
 
-  if (GET_CODE (operands[1]) != SYMBOL_REF
-      && ! (GET_CODE (operands[1]) == REG && REGNO (operands[1]) == 27))
-    {
-      rtx tem = gen_rtx (REG, DImode, 27);
-      emit_move_insn (tem, operands[1]);
-      operands[1] = tem;
-    }
+  operands[0] = XEXP (operands[0], 0);
+  if (GET_CODE (operands[0]) != SYMBOL_REF && GET_CODE (operands[0]) != REG)
+    operands[0] = force_reg (DImode, operands[0]);
 }")
 
 ;;
@@ -3215,7 +3210,7 @@
 
 (define_expand "call_value_nt"
   [(parallel [(set (match_operand 0 "" "")
-		   (call (mem:DI (match_operand:DI 1 "" ""))
+		   (call (mem:DI (match_operand 1 "" ""))
 			 (match_operand 2 "" "")))
 	      (clobber (reg:DI 26))])]
   ""
@@ -3224,13 +3219,8 @@
     abort ();
 
   operands[1] = XEXP (operands[1], 0);
-  if (GET_CODE (operands[1]) != SYMBOL_REF
-      && ! (GET_CODE (operands[1]) == REG && REGNO (operands[1]) == 27))
-    {
-      rtx tem = gen_rtx (REG, DImode, 27);
-      emit_move_insn (tem, operands[1]);
-      operands[1] = tem;
-    }
+  if (GET_CODE (operands[0]) != SYMBOL_REF && GET_CODE (operands[0]) != REG)
+    operands[1] = force_reg (DImode, operands[1]);
 }")
 
 (define_expand "call_value_vms"
@@ -3292,13 +3282,14 @@
   [(set_attr "type" "jsr")])
       
 (define_insn ""
-  [(call (mem:DI (match_operand:DI 0 "call_operand" "r,i"))
+  [(call (mem:DI (match_operand:DI 0 "call_operand" "r,R,i"))
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 26))]
   "TARGET_WINDOWS_NT"
   "@
    jsr $26,(%0)
-   bsr $26,%0"
+   bsr $26,%0
+   jsr $26,%0"
   [(set_attr "type" "jsr")])
       
 (define_insn ""
@@ -3328,14 +3319,15 @@
   [(set_attr "type" "jsr")])
 
 (define_insn ""
-  [(set (match_operand 0 "register_operand" "=rf,rf")
-	(call (mem:DI (match_operand:DI 1 "call_operand" "r,i"))
+  [(set (match_operand 0 "register_operand" "=rf,rf,rf")
+	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,i"))
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 26))]
   "TARGET_WINDOWS_NT"
   "@
    jsr $26,(%1)
-   bsr $26,%1"
+   bsr $26,%1
+   jsr $26,%1"
   [(set_attr "type" "jsr")])
 
 (define_insn ""

@@ -525,7 +525,8 @@ call_operand (op, mode)
     return 0;
 
   return (GET_CODE (op) == SYMBOL_REF
-	  || (GET_CODE (op) == REG && (TARGET_OPEN_VMS || REGNO (op) == 27)));
+	  || (GET_CODE (op) == REG
+	      && (TARGET_OPEN_VMS || TARGET_WINDOWS_NT || REGNO (op) == 27)));
 }
 
 /* Return 1 if OP is a valid Alpha comparison operator.  Here we know which
