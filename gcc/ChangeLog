@@ -1,3 +1,7 @@
+2002-07-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/spe.md ("spe_evmra"): Change to unspec.
+
 2002-07-29  Richard Henderson  <rth@redhat.com>
 
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Rename from
