@@ -50,6 +50,17 @@ Boston, MA 02111-1307, USA.  */
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend.o%s %{pg:crtn.o%s}%{!pg:crtn.o%s}"
 
+#undef	STARTFILE_SPEC
+#define STARTFILE_SPEC "%{!shared: \
+			 %{!symbolic: \
+			  %{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}}}\
+			%{pg:gmon.o%s}%{!pg:crti.o%s} \
+			%{ansi:values-Xc.o%s} \
+			%{!ansi: \
+			 %{traditional:values-Xt.o%s} \
+			 %{!traditional:values-Xa.o%s}} \
+ 			crtbegin.o%s"
+  
 /* This should be the same as in svr4.h, except with -R added.  */
 #undef LINK_SPEC
 #define LINK_SPEC \
