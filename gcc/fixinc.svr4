@@ -913,11 +913,10 @@ mknod (const char *path, mode_t mode, dev_t dev)
 1,\$s/\\([^_r]\\)dev\\([^_]\\)/\\1__dev\\2/g
 wq
 EOF
-    echo Fixed $file_to_fix
-    rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
-    rm -f /tmp/$base
-  fi
+  echo Fixed $file_to_fix
+  rm -f ${LIB}/$file
+  cp /tmp/$base ${LIB}/$file
+  rm -f /tmp/$base
 fi
 
 # Sony NEWSOS 5.0 does not support the complete ANSI C standard.
