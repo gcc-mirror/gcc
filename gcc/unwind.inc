@@ -72,7 +72,6 @@ _Unwind_RaiseException_Phase2(struct _Unwind_Exception *exc,
   return code;
 }
 
-
 /* Raise an exception, passing along the given exception object.  */
 
 _Unwind_Reason_Code
@@ -81,6 +80,7 @@ _Unwind_RaiseException(struct _Unwind_Exception *exc)
   struct _Unwind_Context this_context, cur_context;
   _Unwind_Reason_Code code;
 
+  /* Set up this_context to describe the current stack frame.  */
   uw_init_context (&this_context);
   cur_context = this_context;
 
@@ -90,6 +90,8 @@ _Unwind_RaiseException(struct _Unwind_Exception *exc)
     {
       _Unwind_FrameState fs;
 
+      /* Set up fs to describe the FDE for the caller of cur_context.  The
+	 first time through the loop, that means __cxa_throw.  */
       code = uw_frame_state_for (&cur_context, &fs);
 
       if (code == _URC_END_OF_STACK)
@@ -112,6 +114,7 @@ _Unwind_RaiseException(struct _Unwind_Exception *exc)
 	    return _URC_FATAL_PHASE1_ERROR;
 	}
 
+      /* Update cur_context to describe the same frame as fs.  */
       uw_update_context (&cur_context, &fs);
     }
 
@@ -144,6 +147,7 @@ _Unwind_ForcedUnwind_Phase2(struct _Unwind_Exception *exc,
       _Unwind_FrameState fs;
       int action;
 
+      /* Set up fs to describe the FDE for the caller of cur_context.  */
       code = uw_frame_state_for (context, &fs);
       if (code != _URC_NO_REASON && code != _URC_END_OF_STACK)
 	return _URC_FATAL_PHASE2_ERROR;
@@ -172,6 +176,7 @@ _Unwind_ForcedUnwind_Phase2(struct _Unwind_Exception *exc,
 	    return _URC_FATAL_PHASE2_ERROR;
 	}
 
+      /* Update cur_context to describe the same frame as fs.  */
       uw_update_context (context, &fs);
     }
 
