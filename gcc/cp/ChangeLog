@@ -1,3 +1,19 @@
+2004-10-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (SAME_BINFO_TYPE_P): New.
+	* class.c (build_base_path): Use SAME_BINFO_TYPE_P to compare
+	binfo types.
+	(convert_to_base_statically, determine_primary_bases,
+	update_vtable_entry_for_fn, dfs_modify_vtables, build_vtt_inits,
+	dfs_build_secondary_vptr_vtt_inits, build_ctor_vtbl_group,
+	accumulate_vtbl_inits, dfs_accumulate_vtbl_inits,
+	build_vtbl_initializer, add_vcall_offset_vtbl_entries_1): Likewise.
+	* init.c (expand_member_init): Likewise.
+	* search.c (lookup_base_r, dynamic_cast_base_recurse,
+	binfo_via_virtual, copied_binfo, binfo_for_vbase,
+	original_binfo): Likewise.
+	* tree.c (copy_binfo): Likewise.
+
 2004-10-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* semantics.c: Fix comment typos.

@@ -979,7 +979,7 @@ expand_member_init (tree name)
 
       /* Look for a direct base.  */
       for (i = 0; BINFO_BASE_ITERATE (class_binfo, i, direct_binfo); ++i)
-	if (same_type_p (basetype, BINFO_TYPE (direct_binfo)))
+	if (SAME_BINFO_TYPE_P (BINFO_TYPE (direct_binfo), basetype))
 	  break;
 
       /* Look for a virtual base -- unless the direct base is itself

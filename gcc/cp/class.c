@@ -259,11 +259,10 @@ build_base_path (enum tree_code code,
   if (want_pointer)
     probe = TYPE_MAIN_VARIANT (TREE_TYPE (probe));
 
-  gcc_assert (code == MINUS_EXPR
-	      ? same_type_p (BINFO_TYPE (binfo), probe)
-	      : code == PLUS_EXPR
-	      ? same_type_p (BINFO_TYPE (d_binfo), probe)
-	      : false);
+  gcc_assert ((code == MINUS_EXPR
+	       && SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), probe))
+	      || (code == PLUS_EXPR
+		  && SAME_BINFO_TYPE_P (BINFO_TYPE (d_binfo), probe)));
   
   if (binfo == d_binfo)
     /* Nothing to do.  */
@@ -445,8 +444,8 @@ convert_to_base (tree object, tree type, bool check_access)
   return build_base_path (PLUS_EXPR, object, binfo, /*nonnull=*/1);
 }
 
-/* EXPR is an expression with class type.  BASE is a base class (a
-   BINFO) of that class type.  Returns EXPR, converted to the BASE
+/* EXPR is an expression with unqualified class type.  BASE is a base
+   binfo of that class type.  Returns EXPR, converted to the BASE
    type.  This function assumes that EXPR is the most derived class;
    therefore virtual bases can be found at their static offsets.  */
 
@@ -456,7 +455,7 @@ convert_to_base_statically (tree expr, tree base)
   tree expr_type;
 
   expr_type = TREE_TYPE (expr);
-  if (!same_type_p (expr_type, BINFO_TYPE (base)))
+  if (!SAME_BINFO_TYPE_P (BINFO_TYPE (base), expr_type))
     {
       tree pointer_type;
 
@@ -1276,7 +1275,8 @@ determine_primary_bases (tree t)
 	  tree parent_primary = CLASSTYPE_PRIMARY_BINFO (BINFO_TYPE (parent));
 	  
 	  if (parent_primary
-	      && BINFO_TYPE (base_binfo) == BINFO_TYPE (parent_primary))
+	      && SAME_BINFO_TYPE_P (BINFO_TYPE (base_binfo),
+				    BINFO_TYPE (parent_primary)))
 	    /* We are the primary binfo.  */
 	    BINFO_PRIMARY_P (base_binfo) = 1;
 	}
@@ -2062,8 +2062,8 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
     {
       /* If we find the final overrider, then we can stop
 	 walking.  */
-      if (same_type_p (BINFO_TYPE (b), 
-		       BINFO_TYPE (TREE_VALUE (overrider))))
+      if (SAME_BINFO_TYPE_P (BINFO_TYPE (b),
+			     BINFO_TYPE (TREE_VALUE (overrider))))
 	break;
 
       /* If we find a virtual base, and we haven't yet found the
@@ -2153,7 +2153,8 @@ dfs_modify_vtables (tree binfo, void* data)
       /* Similarly, a base without a vtable needs no modification.  */
       && TYPE_CONTAINS_VPTR_P (BINFO_TYPE (binfo))
       /* Don't do the primary vtable, if it's new.  */
-      && (BINFO_TYPE (binfo) != t || CLASSTYPE_HAS_PRIMARY_BASE_P (t)))
+      && (!SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), t)
+	  || CLASSTYPE_HAS_PRIMARY_BASE_P (t)))
     {
       tree virtuals;
       tree old_virtuals;
@@ -6697,7 +6698,7 @@ build_vtt_inits (tree binfo, tree t, tree *inits, tree *index)
   tree init;
   tree secondary_vptrs;
   secondary_vptr_vtt_init_data data;
-  int top_level_p = same_type_p (TREE_TYPE (binfo), t);
+  int top_level_p = SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), t);
 
   /* We only need VTTs for subobjects with virtual bases.  */
   if (!CLASSTYPE_VBASECLASSES (BINFO_TYPE (binfo)))
@@ -6783,7 +6784,7 @@ dfs_build_secondary_vptr_vtt_inits (tree binfo, void *data_)
 
   /* We're only interested in proper subobjects of the type being
      constructed.  */
-  if (same_type_p (BINFO_TYPE (binfo), data->type_being_constructed))
+  if (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), data->type_being_constructed))
     return NULL_TREE;
 
   /* We're only interested in bases with virtual bases or reachable
@@ -6869,7 +6870,7 @@ build_ctor_vtbl_group (tree binfo, tree t)
   if (IDENTIFIER_GLOBAL_VALUE (id))
     return;
 
-  gcc_assert (!same_type_p (BINFO_TYPE (binfo), t));
+  gcc_assert (!SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), t));
   /* Build a version of VTBL (with the wrong type) for use in
      constructing the addresses of secondary vtables in the
      construction vtable group.  */
@@ -6925,9 +6926,9 @@ accumulate_vtbl_inits (tree binfo,
 {
   int i;
   tree base_binfo;
-  int ctor_vtbl_p = !same_type_p (BINFO_TYPE (rtti_binfo), t);
+  int ctor_vtbl_p = !SAME_BINFO_TYPE_P (BINFO_TYPE (rtti_binfo), t);
 
-  gcc_assert (same_type_p (BINFO_TYPE (binfo), BINFO_TYPE (orig_binfo)));
+  gcc_assert (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), BINFO_TYPE (orig_binfo)));
 
   /* If it doesn't have a vptr, we don't do anything.  */
   if (!TYPE_CONTAINS_VPTR_P (BINFO_TYPE (binfo)))
@@ -6975,7 +6976,7 @@ dfs_accumulate_vtbl_inits (tree binfo,
 {
   tree inits = NULL_TREE;
   tree vtbl = NULL_TREE;
-  int ctor_vtbl_p = !same_type_p (BINFO_TYPE (rtti_binfo), t);
+  int ctor_vtbl_p = !SAME_BINFO_TYPE_P (BINFO_TYPE (rtti_binfo), t);
 
   if (ctor_vtbl_p
       && BINFO_VIRTUAL_P (orig_binfo) && BINFO_PRIMARY_P (orig_binfo))
@@ -7109,8 +7110,8 @@ build_vtbl_initializer (tree binfo,
   vid.derived = t;
   vid.rtti_binfo = rtti_binfo;
   vid.last_init = &vid.inits;
-  vid.primary_vtbl_p = (binfo == TYPE_BINFO (t));
-  vid.ctor_vtbl_p = !same_type_p (BINFO_TYPE (rtti_binfo), t);
+  vid.primary_vtbl_p = SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), t);
+  vid.ctor_vtbl_p = !SAME_BINFO_TYPE_P (BINFO_TYPE (rtti_binfo), t);
   vid.generate_vcall_entries = true;
   /* The first vbase or vcall offset is at index -3 in the vtable.  */
   vid.index = ssize_int(-3 * TARGET_VTABLE_DATA_ENTRY_DISTANCE);
@@ -7523,7 +7524,7 @@ add_vcall_offset_vtbl_entries_1 (tree binfo, vtbl_init_data* vid)
 	  /* When processing BINFO, we only want to generate vcall slots for
 	     function slots introduced in BINFO.  So don't try to generate
 	     one if the function isn't even defined in BINFO.  */
-	  if (!same_type_p (DECL_CONTEXT (orig_fn), BINFO_TYPE (binfo)))
+	  if (!SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), DECL_CONTEXT (orig_fn)))
 	    continue;
 
 	  add_vcall_offset (orig_fn, binfo, vid);

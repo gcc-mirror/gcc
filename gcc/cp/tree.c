@@ -611,7 +611,7 @@ copy_binfo (tree binfo, tree type, tree t, tree *igo_prev, int virt)
       tree base_binfo;
 
       gcc_assert (!BINFO_DEPENDENT_BASE_P (binfo));
-      gcc_assert (type == BINFO_TYPE (binfo));
+      gcc_assert (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), type));
 
       BINFO_OFFSET (new_binfo) = BINFO_OFFSET (binfo);
       BINFO_VIRTUALS (new_binfo) = BINFO_VIRTUALS (binfo);
