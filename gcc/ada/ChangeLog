@@ -90,6 +90,27 @@
 	* sem_ch10.adb (Analyze_Compilation_Unit): Register as *loaded*
 	explicitly withed predefined units.
 
+2004-06-26  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* ada-tree.def (DECL_STMT): Deleted.
+	* ada-tree.h (IS_ADA_STMT): Now test against STMT_STMT.
+	(DECL_STMT_VAR): Deleted.
+	* decl.c: add_decl_stmt now add_decl_expr.
+	* gigi.h: Likewise.
+	* trans.c: Likewise.
+ 	(gnat_gimplify_type_sizes, gnat_gimplify_one_sizepos): Deleted.
+	(gnat_to_gnu, case N_Subprogram_Body): Set cfun->function_end_locus.
+	(add_stmt): Only handle padded type here.
+	(add_stmt_with_node): Allow gnat_node to not be present.
+	(gnat_gimplify_stmt, case USE_STMT): Set *STMT_P to null.
+	(gnat_gimplify_stmt, case DECL_STMT): Deleted.
+	(gnat_stabilize_reference_1): If COMPONENT_REF of fat pointer,
+	make a SAVE_EXPR for the entire fat pointer.
+	* utils.c (pushdecl): Walk a DECL_EXPR in global case.
+	(create_index_type): Make a DECL_EXPR.
+	(end_subprog_body): Don't call allocate_struct_function here but
+	do clear cfun.
+
 2004-06-25  Pascal Obry  <obry@gnat.com>
 
 	* makegpr.adb (Build_Library): Remove parameter Lib_Address and
