@@ -9036,7 +9036,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
 	      != INTEGER_TYPE)
 	  || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
-	  || (INTEGER_CST
+	  || (INTEGER_TYPE
 	      != (TREE_CODE (TREE_TYPE
 			     (TREE_VALUE
 			      (TREE_CHAIN (TREE_CHAIN (arglist))))))))
@@ -9061,11 +9061,16 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  if (expand_expr (val, NULL_RTX, VOIDmode, 0) != const0_rtx)
 	    break;
 
+	  /* If LEN does not expand to a constant, don't do this
+	     operation in-line.  */
+	  len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
+	  if (GET_CODE (len_rtx) != CONST_INT)
+	    break;
+
 	  dest_rtx = expand_expr (dest, NULL_RTX, ptr_mode, EXPAND_SUM);
 	  dest_mem = gen_rtx (MEM, BLKmode,
 			      memory_address (BLKmode, dest_rtx));
-	  len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
-
+	   
 	  /* Just check DST is writable and mark it as readable.  */
 	  if (flag_check_memory_usage)
 	    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
@@ -9073,7 +9078,6 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 			       len_rtx, TYPE_MODE (sizetype),
 			       GEN_INT (MEMORY_USE_WO),
 			       TYPE_MODE (integer_type_node));
-
 
 	  /* There could be a void* cast on top of the object.  */
 	  while (TREE_CODE (dest) == NOP_EXPR)
