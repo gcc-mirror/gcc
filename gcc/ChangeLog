@@ -1,3 +1,12 @@
+2002-03-31  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c (LIBGCC_SPEC): Folded %L and duplicate %G here...
+	(LINK_COMMAND_SPEC): ... from here.
+	(init_gcc_specs): Duplicate it here too, omitting 
+	shared_name in the second copy.
+	(init_spec): Test for duplicate
+	* config/i386/djgpp.h (LINK_COMMAND_SPEC): Remove `%L %G'.
+
 2002-03-30  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/linux.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define.
