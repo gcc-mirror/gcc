@@ -225,7 +225,6 @@ extern void		sbss_section PARAMS ((void));
 #define MASK_DEBUG_E	0		/* function_arg debug */
 #define MASK_DEBUG_F	0		/* ??? */
 #define MASK_DEBUG_G	0		/* don't support 64 bit arithmetic */
-#define MASK_DEBUG_H	0               /* allow ints in FP registers */
 #define MASK_DEBUG_I	0		/* unused */
 
 					/* Dummy switches used only in specs */
@@ -253,7 +252,6 @@ extern void		sbss_section PARAMS ((void));
 #define TARGET_DEBUG_E_MODE	(target_flags & MASK_DEBUG_E)
 #define TARGET_DEBUG_F_MODE	(target_flags & MASK_DEBUG_F)
 #define TARGET_DEBUG_G_MODE	(target_flags & MASK_DEBUG_G)
-#define TARGET_DEBUG_H_MODE	(target_flags & MASK_DEBUG_H)
 #define TARGET_DEBUG_I_MODE	(target_flags & MASK_DEBUG_I)
 
 					/* Reg. Naming in .s ($21 vs. $a0) */
@@ -585,8 +583,6 @@ extern void		sbss_section PARAMS ((void));
      NULL},								\
   {"debugg",		  MASK_DEBUG_G,					\
      NULL},								\
-  {"debugh",		  MASK_DEBUG_H,					\
-     NULL},								\
   {"debugi",		  MASK_DEBUG_I,					\
      NULL},								\
   {"",			  (TARGET_DEFAULT				\
@@ -782,6 +778,11 @@ extern void		sbss_section PARAMS ((void));
 				  || ISA_MIPS32				\
 				  || ISA_MIPS64)	       		\
 				 && !TARGET_MIPS16)
+
+/* True if trunc.w.s and trunc.w.d are real (not synthetic)
+   instructions.  Both require TARGET_HARD_FLOAT, and trunc.w.d
+   also requires TARGET_DOUBLE_FLOAT.  */
+#define ISA_HAS_TRUNC_W		(!ISA_MIPS1)
 
 /* CC1_SPEC causes -mips3 and -mips4 to set -mfp64 and -mgp64; -mips1 or
    -mips2 sets -mfp32 and -mgp32.  This can be overridden by an explicit
@@ -2243,17 +2244,20 @@ extern enum reg_class mips_char_to_class[256];
 
 /* If defined, gives a class of registers that cannot be used as the
    operand of a SUBREG that changes the mode of the object illegally.
-   When FP regs are larger than integer regs... Er, anyone remember what
-   goes wrong?
 
    In little-endian mode, the hi-lo registers are numbered backwards,
    so (subreg:SI (reg:DI hi) 0) gets the high word instead of the low
-   word as intended.  */
+   word as intended.
+
+   Also, loading a 32-bit value into a 64-bit floating-point register
+   will not sign-extend the value, despite what LOAD_EXTEND_OP says.
+   We can't allow 64-bit float registers to change from a 32-bit
+   mode to a 64-bit mode.  */
 
 #define CLASS_CANNOT_CHANGE_MODE					\
   (TARGET_BIG_ENDIAN							\
-   ? (TARGET_FLOAT64 && ! TARGET_64BIT ? FP_REGS : NO_REGS)		\
-   : (TARGET_FLOAT64 && ! TARGET_64BIT ? HI_AND_FP_REGS : HI_REG))
+   ? (TARGET_FLOAT64 ? FP_REGS : NO_REGS)				\
+   : (TARGET_FLOAT64 ? HI_AND_FP_REGS : HI_REG))
 
 /* Defines illegal mode changes for CLASS_CANNOT_CHANGE_MODE.  */
 
@@ -3677,7 +3681,6 @@ typedef struct mips_args {
   {"se_nonmemory_operand",	{ CONST_INT, CONST_DOUBLE, CONST,	\
 				  SYMBOL_REF, LABEL_REF, SUBREG,	\
 				  REG, SIGN_EXTEND }},			\
-  {"se_nonimmediate_operand",   { SUBREG, REG, MEM, SIGN_EXTEND }},	\
   {"consttable_operand",	{ LABEL_REF, SYMBOL_REF, CONST_INT,	\
 				  CONST_DOUBLE, CONST }},		\
   {"extend_operator",           { SIGN_EXTEND, ZERO_EXTEND }},          \
