@@ -1,3 +1,11 @@
+2004-04-19  Andrew PInski  <pinskia@physics.uc.edu>
+
+	PR bootstrap/15009
+	* bb-reorder.c (fix_up_fall_thru_edges): Init cond_jump.
+
+	PR bootstrap/14999
+	* builtins.c (fold_builtin_cabs): Mark fndecl as unused.
+
 2004-04-19  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expmed.c (expand_mult_highpart_adjust): Make OP1 valid for MODE.
