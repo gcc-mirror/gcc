@@ -5712,7 +5712,8 @@ start_function (tree declspecs, tree declarator, tree attributes)
 		    TREE_TYPE (TREE_TYPE (old_decl)))
       && TYPE_ARG_TYPES (TREE_TYPE (decl1)) == 0)
     {
-      TREE_TYPE (decl1) = TREE_TYPE (old_decl);
+      TREE_TYPE (decl1) = composite_type (TREE_TYPE (old_decl),
+					  TREE_TYPE (decl1));
       current_function_prototype_locus = DECL_SOURCE_LOCATION (old_decl);
     }
 

@@ -1,3 +1,8 @@
+2004-07-23  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-decl.c (start_function): Form composite type of function types
+	rather than copying type from previous prototype declaration.
+
 2004-07-23  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/rs6000/altivec.h (vec_lvewx, vec_lvehx, vec_lvwbx): Remove
