@@ -186,6 +186,7 @@ match_rtx (x, path, fail_label)
       return;
 
     case MATCH_DUP:
+    case MATCH_PAR_DUP:
       printf ("  x = ");
       print_path (path);
       printf (";\n");
