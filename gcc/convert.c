@@ -85,7 +85,7 @@ convert_to_real (type, expr)
     return build1 (flag_float_store ? CONVERT_EXPR : NOP_EXPR,
 		   type, expr);
 
-  if (form == INTEGER_TYPE || form == ENUMERAL_TYPE)
+  if (INTEGRAL_TYPE_P (TREE_TYPE (expr)))
     return build1 (FLOAT_EXPR, type, expr);
 
   if (form == COMPLEX_TYPE)
