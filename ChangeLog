@@ -1,3 +1,8 @@
+Fri Mar 20 09:32:14 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (install-gcc): Don't specify LANGUAGES here.
+	(install-gcc-cross): Instead, override LANGUAGES here.
+
 1998-03-18  Dave Love  <d.love@dl.ac.uk>
 
 	* Makefile.in ($(CONFIGURE_TARGET_MODULES)): Set CONFIG_SITE to a
