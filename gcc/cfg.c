@@ -273,43 +273,29 @@ unchecked_make_edge (basic_block src, basic_block dst, int flags)
 edge
 cached_make_edge (sbitmap *edge_cache, basic_block src, basic_block dst, int flags)
 {
-  int use_edge_cache;
-  edge e;
+  if (edge_cache == NULL
+      || src == ENTRY_BLOCK_PTR
+      || dst == EXIT_BLOCK_PTR)
+    return make_edge (src, dst, flags);
 
-  /* Don't bother with edge cache for ENTRY or EXIT, if there aren't that
-     many edges to them, or we didn't allocate memory for it.  */
-  use_edge_cache = (edge_cache
-		    && src != ENTRY_BLOCK_PTR && dst != EXIT_BLOCK_PTR);
-
-  /* Make sure we don't add duplicate edges.  */
-  switch (use_edge_cache)
+  /* Does the requested edge already exist?  */
+  if (! TEST_BIT (edge_cache[src->index], dst->index))
     {
-    default:
-      /* Quick test for non-existence of the edge.  */
-      if (! TEST_BIT (edge_cache[src->index], dst->index))
-	break;
-
-      /* The edge exists; early exit if no work to do.  */
-      if (flags == 0)
-	return NULL;
-
-      /* Fall through.  */
-    case 0:
-      e = find_edge (src, dst);
-      if (e)
-	{
-	  e->flags |= flags;
-	  return NULL;
-	}
-      break;
+      /* The edge does not exist.  Create one and update the
+	 cache.  */
+      SET_BIT (edge_cache[src->index], dst->index);
+      return unchecked_make_edge (src, dst, flags);
     }
 
-  e = unchecked_make_edge (src, dst, flags);
+  /* At this point, we know that the requested edge exists.  Adjust
+     flags if necessary.  */
+  if (flags)
+    {
+      edge e = find_edge (src, dst);
+      e->flags |= flags;
+    }
 
-  if (use_edge_cache)
-    SET_BIT (edge_cache[src->index], dst->index);
-
-  return e;
+  return NULL;
 }
 
 /* Create an edge connecting SRC and DEST with flags FLAGS.  Return newly
@@ -318,7 +304,16 @@ cached_make_edge (sbitmap *edge_cache, basic_block src, basic_block dst, int fla
 edge
 make_edge (basic_block src, basic_block dest, int flags)
 {
-  return cached_make_edge (NULL, src, dest, flags);
+  edge e = find_edge (src, dest);
+
+  /* Make sure we don't add duplicate edges.  */
+  if (e)
+    {
+      e->flags |= flags;
+      return NULL;
+    }
+
+  return unchecked_make_edge (src, dest, flags);
 }
 
 /* Create an edge connecting SRC to DEST and set probability by knowing
