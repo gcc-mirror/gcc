@@ -3912,15 +3912,17 @@ print_operand (file, x, code)
   else if (GET_CODE (x) == MEM)
     {
       int size = GET_MODE_SIZE (GET_MODE (x));
-      rtx base = XEXP (XEXP (x, 0), 0);
+      rtx base = NULL_RTX;
       switch (GET_CODE (XEXP (x, 0)))
 	{
 	case PRE_DEC:
 	case POST_DEC:
+	  base = XEXP (XEXP (x, 0), 0);
 	  fprintf (file, "-%d(%s)", size, reg_names [REGNO (base)]);
 	  break;
 	case PRE_INC:
 	case POST_INC:
+	  base = XEXP (XEXP (x, 0), 0);
 	  fprintf (file, "%d(%s)", size, reg_names [REGNO (base)]);
 	  break;
 	default:

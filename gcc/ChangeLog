@@ -1,3 +1,8 @@
+Mon Apr  3 00:50:06 2000  Jason Eckhardt <jle@cygnus.com>
+
+	* pa.c (print_operand): Compute 'base' only inside the code paths
+	that use it.
+
 2000-04-03  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* stor-layout.c (byte_from_pos): Use TRUNC_DIV_EXPR rather than
