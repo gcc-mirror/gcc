@@ -1537,6 +1537,7 @@ extern void expand_fixups			PROTO((struct rtx_def *));
 extern tree expand_start_stmt_expr		PROTO((void));
 extern tree expand_end_stmt_expr		PROTO((tree));
 extern void expand_expr_stmt			PROTO((tree));
+extern int warn_if_unused_value			PROTO((tree));
 extern void expand_decl_init			PROTO((tree));
 extern void clear_last_expr			PROTO((void));
 extern void expand_label			PROTO((tree));
