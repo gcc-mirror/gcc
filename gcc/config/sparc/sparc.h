@@ -2586,10 +2586,18 @@ do {                                                                    \
 #define LTTF2_LIBCALL "_Q_flt"
 #define LETF2_LIBCALL "_Q_fle"
 
+/* These functions were added in SCD 2.3, so not necessarily all targets
+   support them.  */
+#define FLOATDITF2_LIBCALL "_Q_lltoq"
+#define FIX_TRUNCTFDI2_LIBCALL "_Q_qtoll"
+#define FIXUNS_TRUNCTFDI2_LIBCALL "_Q_qtoull"
+
+#define DITF_CONVERSION_LIBFUNCS	0
+
 /* Assume by default that the _Qp_* 64-bit libcalls are implemented such
    that the inputs are fully consumed before the output memory is clobbered.  */
 
-#define TARGET_BUGGY_QP_LIB	0
+#define TARGET_BUGGY_QP_LIB		0
 
 /* We can define the TFmode sqrt optab only if TARGET_FPU.  This is because
    with soft-float, the SFmode and DFmode sqrt instructions will be absent,
@@ -2623,6 +2631,13 @@ do {                                                                    \
 	fixtfsi_libfunc = init_one_libfunc (FIX_TRUNCTFSI2_LIBCALL);	\
 	fixunstfsi_libfunc						\
 	  = init_one_libfunc (FIXUNS_TRUNCTFSI2_LIBCALL);		\
+	if (DITF_CONVERSION_LIBFUNCS)					\
+	  {								\
+	    floatditf_libfunc = init_one_libfunc (FLOATDITF2_LIBCALL);	\
+	    fixtfdi_libfunc = init_one_libfunc (FIX_TRUNCTFDI2_LIBCALL);\
+	    fixunstfdi_libfunc						\
+	      = init_one_libfunc (FIXUNS_TRUNCTFDI2_LIBCALL);		\
+	  }								\
 	if (TARGET_FPU)							\
 	  sqrt_optab->handlers[(int) TFmode].libfunc			\
 	    = init_one_libfunc ("_Q_sqrt");				\

@@ -245,6 +245,9 @@ do {									\
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
 #endif
 
+#undef DITF_CONVERSION_LIBFUNCS
+#define DITF_CONVERSION_LIBFUNCS       1
+
 #if !defined(USE_GNULIBC_1) && defined(HAVE_LD_EH_FRAME_HDR)
 #define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
 #endif
