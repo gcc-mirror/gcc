@@ -1,5 +1,8 @@
 2000-07-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* gcc.dg/c90-hexfloat-1.c, gcc.dg/c90-hexfloat-2.c,
+	gcc.dg/c99-hexfloat-1.c, gcc.dg/c99-hexfloat-2.c: New tests.
+
 	* gcc.dg/c90-enum-comma-1.c, gcc.dg/c90-idem-qual-1.c,
 	gcc.dg/c90-impl-decl-1.c, gcc.dg/c90-impl-int-1.c,
 	gcc.dg/c90-longlong.c, gcc.dg/c90-restrict-1.c,
