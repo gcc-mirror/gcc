@@ -2254,6 +2254,8 @@ extern tree build_op_delete_call		PROTO((enum tree_code, tree, tree, int));
 extern int can_convert				PROTO((tree, tree));
 extern int can_convert_arg			PROTO((tree, tree, tree));
 extern void enforce_access                      PROTO((tree, tree));
+extern tree convert_default_arg                 PROTO((tree, tree));
+extern tree convert_arg_to_ellipsis             PROTO((tree));
 
 /* in class.c */
 extern tree build_vbase_path			PROTO((enum tree_code, tree, tree, tree, int));
@@ -2532,7 +2534,6 @@ extern void init_init_processing		PROTO((void));
 extern void expand_direct_vtbls_init		PROTO((tree, tree, int, int, tree));
 extern void emit_base_init			PROTO((tree, int));
 extern void check_base_init			PROTO((tree));
-extern void do_member_init			PROTO((tree, tree, tree));
 extern void expand_member_init			PROTO((tree, tree, tree));
 extern void expand_aggr_init			PROTO((tree, tree, int, int));
 extern int is_aggr_typedef			PROTO((tree, int));

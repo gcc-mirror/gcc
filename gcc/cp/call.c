@@ -47,7 +47,6 @@ static struct z_candidate * tourney PROTO((struct z_candidate *));
 static int joust PROTO((struct z_candidate *, struct z_candidate *, int));
 static int compare_ics PROTO((tree, tree));
 static tree build_over_call PROTO((struct z_candidate *, tree, int));
-static tree convert_default_arg PROTO((tree, tree));
 static tree convert_like PROTO((tree, tree));
 static void op_error PROTO((enum tree_code, enum tree_code, tree, tree,
 			    tree, char *));
@@ -3155,8 +3154,32 @@ convert_like (convs, expr)
 	return expr;
       /* else fall through */
     case BASE_CONV:
-      return build_user_type_conversion
-	(TREE_TYPE (convs), expr, LOOKUP_NORMAL);
+      {
+	tree cvt_expr = build_user_type_conversion
+	  (TREE_TYPE (convs), expr, LOOKUP_NORMAL);
+	if (!cvt_expr) 
+	  {
+	    /* This can occur if, for example, the EXPR has incomplete
+	       type.  We can't check for that before attempting the
+	       conversion because the type might be an incomplete
+	       array type, which is OK if some constructor for the
+	       destination type takes a pointer argument.  */
+	    if (TYPE_SIZE (TREE_TYPE (expr)) == 0)
+	      {
+		if (comptypes (TREE_TYPE (expr), TREE_TYPE (convs), 1))
+		  incomplete_type_error (expr, TREE_TYPE (expr));
+		else
+		  cp_error ("could not convert `%E' (with incomplete type `%T') to `%T'",
+			    expr, TREE_TYPE (expr), TREE_TYPE (convs));
+	      }
+	    else
+	      cp_error ("could not convert `%E' to `%T'",
+			expr, TREE_TYPE (convs));
+	    return error_mark_node;
+	  }
+	return cvt_expr;
+      }
+
     case REF_BIND:
       return convert_to_reference
 	(TREE_TYPE (convs), expr,
@@ -3172,7 +3195,34 @@ convert_like (convs, expr)
 		      LOOKUP_NORMAL|LOOKUP_NO_CONVERSION);
 }
 
-static tree
+/* ARG is being passed to a varargs function.  Perform any conversions
+   required.  Return the converted value.  */
+
+tree
+convert_arg_to_ellipsis (arg)
+     tree arg;
+{
+  if (TREE_CODE (TREE_TYPE (arg)) == REAL_TYPE
+      && (TYPE_PRECISION (TREE_TYPE (arg))
+	  < TYPE_PRECISION (double_type_node)))
+    /* Convert `float' to `double'.  */
+    arg = cp_convert (double_type_node, arg);
+  else if (IS_AGGR_TYPE (TREE_TYPE (arg))
+	   && ! TYPE_HAS_TRIVIAL_INIT_REF (TREE_TYPE (arg)))
+    cp_warning ("cannot pass objects of type `%T' through `...'",
+		TREE_TYPE (arg));
+  else
+    /* Convert `short' and `char' to full-size `int'.  */
+    arg = default_conversion (arg);
+
+  return arg;
+}
+
+/* ARG is a default argument expression being passed to a parameter of
+   the indicated TYPE.  Do any required conversions.  Return the
+   converted value.  */
+
+tree
 convert_default_arg (type, arg)
      tree type, arg;
 {
@@ -3341,24 +3391,10 @@ build_over_call (cand, args, flags)
 
   /* Ellipsis */
   for (; arg; arg = TREE_CHAIN (arg))
-    {
-      val = TREE_VALUE (arg);
-
-      if (TREE_CODE (TREE_TYPE (val)) == REAL_TYPE
-	  && (TYPE_PRECISION (TREE_TYPE (val))
-	      < TYPE_PRECISION (double_type_node)))
-	/* Convert `float' to `double'.  */
-	val = cp_convert (double_type_node, val);
-      else if (IS_AGGR_TYPE (TREE_TYPE (val))
-	       && ! TYPE_HAS_TRIVIAL_INIT_REF (TREE_TYPE (val)))
-	cp_warning ("cannot pass objects of type `%T' through `...'",
-		    TREE_TYPE (val));
-      else
-	/* Convert `short' and `char' to full-size `int'.  */
-	val = default_conversion (val);
-
-      converted_args = expr_tree_cons (NULL_TREE, val, converted_args);
-    }
+    converted_args 
+      = expr_tree_cons (NULL_TREE,
+			convert_arg_to_ellipsis (TREE_VALUE (arg)),
+			converted_args);
 
   converted_args = nreverse (converted_args);
 
