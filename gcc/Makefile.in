@@ -985,7 +985,8 @@ stamp-mlib: $(srcdir)/genmultilib Makefile
 
 # Build multiple copies of libgcc.a, one for each target switch.
 stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \
-   $(LIB2FUNCS_EXTRA) machmode.h longlong.h gbl-ctors.h config.status
+   $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS) machmode.h longlong.h gbl-ctors.h \
+   config.status
 	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
 	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
 	  flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
