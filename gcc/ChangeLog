@@ -1,5 +1,9 @@
 2002-11-16  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md: Fix formatting.
+
+2002-11-16  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md: Replace spaces with tabs.
 	* config/h8300/t-h8300: Remove a trailing empty line.
 
