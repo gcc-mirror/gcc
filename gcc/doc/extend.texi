@@ -5111,6 +5111,25 @@ The following functions are made available by including
 @option{-mabi=altivec}.  The functions implement the functionality
 described in Motorola's AltiVec Programming Interface Manual.
 
+There are a few differences from Motorola's documentation and GCC's
+implementation.  Vector constants are done with curly braces (not
+parentheses).  Vector initializers require no casts if the vector
+constant is of the same type as the variable it is initializing.  The
+@code{vector bool} type is deprecated and will be discontinued in
+further revisions.  Use @code{vector signed} instead.  If @code{signed}
+or @code{unsigned} is omitted, the vector type will default to
+@{signed}.  Lastly, all overloaded functions are implemented with macros
+for the C implementation.  So code the following example will not work:
+
+@smallexample
+  vec_add ((vector signed int){1, 2, 3, 4}, foo);
+@end smallexample
+
+Since vec_add is a macro, the vector constant in the above example will
+be treated as four different arguments.  Wrap the entire argument in
+parentheses for this to work.  The C++ implementation does not use
+macros.
+
 @emph{Note:} Only the @code{<altivec.h>} interface is supported.
 Internally, GCC uses built-in functions to achieve the functionality in
 the aforementioned header file, but they are not supported and are

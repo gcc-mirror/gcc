@@ -1,3 +1,8 @@
+2002-06-25  Aldy Hernandez  <aldyh@redhat.com>
+
+        * doc/extend.texi (PowerPC AltiVec Built-in Functions): Document
+        discrepancies from motorola's documentation.
+
 Tue Jun 25 21:51:13 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* optabs.c (expand_vector_binop, expand_vector_unop): Don't assume
