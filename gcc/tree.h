@@ -2077,7 +2077,11 @@ extern void lang_init				PROTO((void));
 extern void lang_finish				PROTO((void));
 
 /* Function to identify which front-end produced the output file. */
-extern char *lang_identify			PROTO((void));
+extern const char *lang_identify			PROTO((void));
+
+/* Called by report_error_function to print out function name.
+ * Default may be overridden by language front-ends.  */
+extern void (*print_error_function) PROTO((const char *));
 
 /* Function to replace the DECL_LANG_SPECIFIC field of a DECL with a copy.  */
 extern void copy_lang_decl			PROTO((tree));

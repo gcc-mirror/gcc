@@ -682,7 +682,7 @@ lang_finish ()
 {
 }
 
-char *
+const char *
 lang_identify ()
 {
   return "objc";

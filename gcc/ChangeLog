@@ -1,3 +1,12 @@
+Mon Aug  9 19:36:00 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* tree.h (lang_identify): Constify a char*.
+	(print_error_function): Add extern prototype.  Constify a char*.
+
+	* c-lang.c (lang_identify): Constify a char*.
+
+	* objc/objc-act.c (lang_identify): Constify a char*.
+
 Mon Aug  9 16:21:53 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* genpeep.c (main): Make generated file include "function.h".
