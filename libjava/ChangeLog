@@ -1,3 +1,8 @@
+2004-04-24  Jerry Quinn  <jlquinn@optonline.net>
+
+	* java/text/CollationElementIterator.java (reset): Reset
+        lookahead variables.
+
 2004-04-23  Mark Wielaard  <mark@klomp.org>
 
 	* jni/classpath/jcl.c: Changed C++ comments into C comments.
