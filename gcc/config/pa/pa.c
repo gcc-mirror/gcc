@@ -787,11 +787,15 @@ output_move_double (operands)
   if (optype0 == MEMOP)
     {
       rtx addr = XEXP (operands[0], 0);
-      if (GET_CODE (addr) == POST_INC || GET_CODE (addr) == POST_DEC
-	  || GET_CODE (addr) == PRE_INC || GET_CODE (addr) == PRE_DEC)
+      if (GET_CODE (addr) == POST_INC || GET_CODE (addr) == PRE_INC)
 	{
 	  operands[0] = gen_rtx (MEM, SImode, addr);
-	  return "stw%M0 %1,%0\n\tstw%M0 %1,%0";
+	  return "stw%M0 %1,%0\n\tstw%M0 %R1,%0";
+	}
+      else if (GET_CODE (addr) == POST_DEC || GET_CODE (addr) == PRE_DEC)
+	{
+	  operands[0] = gen_rtx (MEM, SImode, addr);
+	  return "stw%M0 %R1,%0\n\tstw%M0 %1,%0";
 	}
     }
   if (optype1 == MEMOP)
@@ -1207,7 +1211,7 @@ output_block_move (operands, size_is_constant)
 
   if (size_is_constant)
     {
-      /* Size is an compile-time determined, and also not
+      /* Size is compile-time determined, and also not
 	 very small (such small cases are handled above).  */
       operands[4] = gen_rtx (CONST_INT, VOIDmode, n_bytes - 4);
       output_asm_insn ("ldo %4(0),%2", operands);
