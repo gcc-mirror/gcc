@@ -2513,7 +2513,7 @@ print_z_candidates (struct z_candidate *candidates)
       size_t len = gcc_gettext_width (str) + 1;
       char *spaces = alloca (len);
       memset (spaces, ' ', len-1);
-      spaces[len] = '\0';
+      spaces[len - 1] = '\0';
 
       candidates = candidates->next;
       do

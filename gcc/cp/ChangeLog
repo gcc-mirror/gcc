@@ -1,3 +1,7 @@
+2003-04-24  Sylvain Pion  <Sylvain.Pion@mpi-sb.mpg.de>
+
+        * call.c (print_z_candidates): Fix off by one error.
+
 2003-04-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/10337
