@@ -680,7 +680,9 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
   else if ((FROM) == ARG_POINTER_REGNUM)				\
     (OFFSET) = (ALPHA_ROUND (current_function_outgoing_args_size)	\
 		+ alpha_sa_size ()					\
-		+ ALPHA_ROUND (get_frame_size ()));			\
+		+ (ALPHA_ROUND (get_frame_size ()			\
+			       + current_function_pretend_args_size)	\
+		   - current_function_pretend_args_size));		\
 }
 
 /* Define this if stack space is still allocated for a parameter passed
