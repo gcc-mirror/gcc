@@ -1,3 +1,8 @@
+2003-10-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/7939
+	* g++.dg/template/crash11.C: New test.
+
 2003-10-14  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* g++.dg/tls/init-2.C: Fix. Expect two warnings.

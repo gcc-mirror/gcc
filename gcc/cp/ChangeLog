@@ -1,3 +1,10 @@
+2003-10-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/7939
+	* typeck.c (comptypes): Don't ICE when its first argument is
+	error_mark_node.
+	(compparms): Reverse the arguments of same_type_p.
+
 2003-10-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/11878

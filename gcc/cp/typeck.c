@@ -909,10 +909,8 @@ comptypes (t1, t2, strict)
   if (t1 == t2)
     return 1;
 
-  /* This should never happen.  */
-  my_friendly_assert (t1 != error_mark_node, 307);
-
-  if (t2 == error_mark_node)
+  /* Suppress errors caused by previously reported errors */
+  if (t1 == error_mark_node || t2 == error_mark_node)
     return 0;
 
   /* If either type is the internal version of sizetype, return the
@@ -1405,7 +1403,7 @@ compparms (parms1, parms2)
 	 they fail to match.  */
       if (t1 == 0 || t2 == 0)
 	return 0;
-      if (!same_type_p (TREE_VALUE (t2), TREE_VALUE (t1)))
+      if (!same_type_p (TREE_VALUE (t1), TREE_VALUE (t2)))
 	return 0;
 
       t1 = TREE_CHAIN (t1);
