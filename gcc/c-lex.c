@@ -525,7 +525,7 @@ extend_token_buffer (p)
 static int
 pragma_getc ()
 {
-  return GETC();
+  return GETC ();
 }
 
 static void
@@ -638,7 +638,7 @@ check_newline ()
 	     (if both are defined), in order to give the back
 	     end a chance to override the interpretation of
 	     SYSV style pragmas.  */
-	  if (HANDLE_PRAGMA (getch, put_back,
+	  if (HANDLE_PRAGMA (pragma_getc, pragma_ungetc,
 			     IDENTIFIER_POINTER (yylval.ttype)))
 	    goto skipline;
 #endif /* HANDLE_PRAGMA */
