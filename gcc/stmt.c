@@ -1517,6 +1517,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   for (tail = inputs; tail; tail = TREE_CHAIN (tail))
     {
       int j;
+      int allows_reg = 0;
 
       /* If there's an erroneous arg, emit no insn,
 	 because the ASM_INPUT would get VOIDmode
@@ -1532,23 +1533,65 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       /* Make sure constraint has neither `=' nor `+'.  */
 
-      for (j = 0; j < TREE_STRING_LENGTH (TREE_PURPOSE (tail)); j++)
-	if (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j] == '='
-	    || TREE_STRING_POINTER (TREE_PURPOSE (tail))[j] == '+')
+      for (j = 0; j < TREE_STRING_LENGTH (TREE_PURPOSE (tail)) - 1; j++)
+	switch (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j])
 	  {
+	  case '+':   case '=':
 	    error ("input operand constraint contains `%c'",
 		   TREE_STRING_POINTER (TREE_PURPOSE (tail))[j]);
 	    return;
+
+	  case '?':  case '!':  case '*':  case '%':  case '&':
+	  case '0':  case '1':  case '2':  case '3':  case '4':
+	  case 'V':  case 'm':  case 'o':  case '<':  case '>':
+	  case 'E':  case 'F':  case 'G':  case 'H':  case 'X':
+	  case 's':  case 'i':  case 'n':
+	  case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
+	  case 'N':  case 'O':  case 'P':  case ',':
+#ifdef EXTRA_CONSTRAINT
+	  case 'Q':  case 'R':  case 'S':  case 'T':  case 'U':
+#endif
+	    break;
+
+	  case 'p':  case 'g':  case 'r':
+	  default:
+	    allows_reg = 1;
+	    break;
 	  }
+
+      if (! allows_reg)
+	mark_addressable (TREE_VALUE (tail));
 
       XVECEXP (body, 3, i)      /* argvec */
 	= expand_expr (TREE_VALUE (tail), NULL_RTX, VOIDmode, 0);
       if (CONSTANT_P (XVECEXP (body, 3, i))
 	  && ! general_operand (XVECEXP (body, 3, i),
 				TYPE_MODE (TREE_TYPE (TREE_VALUE (tail)))))
-	XVECEXP (body, 3, i)
-	  = force_reg (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))),
-		       XVECEXP (body, 3, i));
+	{
+	  if (allows_reg)
+	    XVECEXP (body, 3, i)
+	      = force_reg (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))),
+			   XVECEXP (body, 3, i));
+	  else
+	    XVECEXP (body, 3, i)
+	      = force_const_mem (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))),
+				 XVECEXP (body, 3, i));
+	}
+
+      if (! allows_reg
+	  && (GET_CODE (XVECEXP (body, 3, i)) == REG
+	      || GET_CODE (XVECEXP (body, 3, i)) == SUBREG
+	      || GET_CODE (XVECEXP (body, 3, i)) == CONCAT))
+	{
+	  tree type = TREE_TYPE (TREE_VALUE (tail));
+	  rtx memloc = assign_stack_temp (TYPE_MODE (type),
+					  int_size_in_bytes (type), 1);
+
+	  MEM_IN_STRUCT_P (memloc) = AGGREGATE_TYPE_P (type);
+	  emit_move_insn (memloc, XVECEXP (body, 3, i));
+	  XVECEXP (body, 3, i) = memloc;
+	}
+	  
       XVECEXP (body, 4, i)      /* constraints */
 	= gen_rtx (ASM_INPUT, TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))),
 		   TREE_STRING_POINTER (TREE_PURPOSE (tail)));
