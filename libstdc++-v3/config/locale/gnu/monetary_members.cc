@@ -335,9 +335,13 @@ namespace std
       else
 	{
 	  // Named locale.
-	  // XXX Fix me. Switch to named locale so that mbsrtowcs will work.
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+	  __c_locale __old = __uselocale(__cloc);
+#else
+	  // Switch to named locale so that mbsrtowcs will work.
 	  char* __old = strdup(setlocale(LC_ALL, NULL));
 	  setlocale(LC_ALL, __name);
+#endif
 
 	  _M_decimal_point = static_cast<wchar_t>(((union { const char *__s; unsigned int __w; }){ __s: __nl_langinfo_l(_NL_NUMERIC_DECIMAL_POINT_WC, __cloc)}).__w);
 
@@ -400,9 +404,12 @@ namespace std
 	  char __nspace = *(__nl_langinfo_l(__INT_N_SEP_BY_SPACE, __cloc));
 	  _M_neg_format = _S_construct_pattern(__nprecedes, __nspace, __nposn);
 
-	  // XXX
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+	  __uselocale(__old);
+#else
 	  setlocale(LC_ALL, __old);
 	  free(__old);
+#endif
 	}
     }
 
@@ -427,9 +434,13 @@ namespace std
       else
 	{
 	  // Named locale.
-	  // XXX Fix me. Switch to named locale so that mbsrtowcs will work.
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+	  __c_locale __old = __uselocale(__cloc);
+#else
+	  // Switch to named locale so that mbsrtowcs will work.
 	  char* __old = strdup(setlocale(LC_ALL, NULL));
 	  setlocale(LC_ALL, __name);
+#endif
 
 	  _M_decimal_point = static_cast<wchar_t>(((union { const char *__s; unsigned int __w; }){ __s: __nl_langinfo_l(_NL_NUMERIC_DECIMAL_POINT_WC, __cloc)}).__w);
 	  _M_thousands_sep = static_cast<wchar_t>(((union { const char *__s; unsigned int __w; }){ __s: __nl_langinfo_l(_NL_NUMERIC_THOUSANDS_SEP_WC, __cloc)}).__w);
@@ -491,9 +502,12 @@ namespace std
 	  char __nspace = *(__nl_langinfo_l(__N_SEP_BY_SPACE, __cloc));
 	  _M_neg_format = _S_construct_pattern(__nprecedes, __nspace, __nposn);
 
-	  // XXX
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+	  __uselocale(__old);
+#else
 	  setlocale(LC_ALL, __old);
 	  free(__old);
+#endif
 	}
     }
 
