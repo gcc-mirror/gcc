@@ -1,5 +1,7 @@
 2003-12-05  Mark Mitchell  <mark@codesourcery.com>
 
+	* config/ia64/ia64.h (MUST_PASS_IN_STACK): Define.
+
 	PR c++/13314
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Robustify.
 
