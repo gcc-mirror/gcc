@@ -1,3 +1,8 @@
+2005-04-06  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (finish_decl): Apply pending #pragma weak regardless of
+	scope.
+
 2005-04-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cse.c, tree-flow-inline.h, tree-flow.h, tree-ssa-operands.c,
