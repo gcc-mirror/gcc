@@ -693,7 +693,7 @@ static format_char_info print_char_table[] = {
   { "u",	0,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	"-wp0"		},
 /* Two GNU extensions.  */
   { "Z",	0,	T_ST,	NULL,	NULL,	NULL,	NULL,	"-wp0"		},
-  { "m",	0,	T_UI,	T_UI,	T_UL,	NULL,	NULL,	"-wp"		},
+  { "m",	0,	T_V,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
   { "feEgG",	0,	T_D,	NULL,	NULL,	NULL,	T_LD,	"-wp0 +#"	},
   { "c",	0,	T_I,	NULL,	T_W,	NULL,	NULL,	"-w"		},
   { "C",	0,	T_W,	NULL,	NULL,	NULL,	NULL,	"-w"		},
@@ -1193,6 +1193,9 @@ check_format_info (info, params)
 
       /* Finally. . .check type of argument against desired type!  */
       if (info->first_arg_num == 0)
+	continue;
+      if (fci->pointer_count == 0 && wanted_type == void_type_node)
+	/* This specifier takes no argument.  */
 	continue;
       if (params == 0)
 	{
