@@ -2797,14 +2797,14 @@ print_operand (file, x, code)
 	    }
 	  abort ();
 
-      /* This is used by the conditional move instructions.  */
-    case 'C':
-	put_condition_code (GET_CODE (x), file);
-	return;
-      /* like above but reverse condition */
-    case 'N':
-	put_condition_code (reverse_condition (GET_CODE (x)), file);
-	return;
+	  /* This is used by the conditional move instructions.  */
+	case 'C':
+	  put_condition_code (GET_CODE (x), file);
+	  return;
+	  /* like above, but reverse condition */
+	case 'N':
+	  put_condition_code (reverse_condition (GET_CODE (x)), file);
+	  return;
 
 	default:
 	  {
@@ -4542,7 +4542,7 @@ output_strlen_unroll (operands)
 
     /* Generate loop to check 4 bytes at a time */
     /* IMHO it is not a good idea to align this loop.  It gives only */
-    /* huge programms, but does not help to speed up */
+    /* huge programs, but does not help to speed up */
   /* ASM_OUTPUT_LOOP_ALIGN (asm_out_file); */
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (xops[8]));
 
@@ -4551,11 +4551,11 @@ output_strlen_unroll (operands)
 
   if (QI_REG_P (xops[1]))
     {
- 	/* on i586 it is faster to compare the hi- and lo- part */
-	/* as a kind of lookahead.  If xoring both is zero, then one */
-	/* of both *could* be zero, otherwith none of both is zero */
-	/* this saves one instruction, on i486 this is slower */
-	/* testet with P-90, i486DX2-66, AMD486DX2-66 */
+      /* On i586 it is faster to combine the hi- and lo- part as
+	 a kind of lookahead.  If anding both yields zero, then one
+	 of both *could* be zero, otherwise none of both is zero;
+	 this saves one instruction, on i486 this is slower
+	 tested with P-90, i486DX2-66, AMD486DX2-66  */
       if(TARGET_PENTIUM)
         {
 	  output_asm_insn (AS2 (test%B1,%h1,%b1), xops);
