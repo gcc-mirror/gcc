@@ -813,6 +813,23 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# parameters conflict with C++ new on rs/6000 
+file=stdio.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, parameter name conflicts
+  sed -e 's@rename(const char \*old, const char \*new)@rename(const char *_old, const char *_new)@' \
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
+
 # Don't use or define the name va_list in stdio.h.
 # This is for ANSI and also to interoperate properly with gvarargs.h.
 file=stdio.h
