@@ -1,3 +1,8 @@
+2000-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (do_compare_and_jump): If op0 was replaced by promoted
+	integer constant, use type of op1 for comparison.
+
 2000-11-20  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/xm-darwin.h: New file, Darwin host definitions.

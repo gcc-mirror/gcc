@@ -1,3 +1,7 @@
+2000-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/inline17.C: New test.
+
 2000-11-20  Donald Lindsay  <dlindsay@redhat.com>
 
 	* gcc.dg/20000614-2.c: Bug fix. This test expected an unitialized

@@ -10054,8 +10054,21 @@ do_compare_and_jump (exp, signed_code, unsigned_code, if_false_label,
     return;
 
   op1 = expand_expr_unaligned (TREE_OPERAND (exp, 1), &align1);
+  if (TREE_CODE (TREE_OPERAND (exp, 1)) == ERROR_MARK)
+    return;
+
   type = TREE_TYPE (TREE_OPERAND (exp, 0));
   mode = TYPE_MODE (type);
+  if (TREE_CODE (TREE_OPERAND (exp, 0)) == INTEGER_CST
+      && (TREE_CODE (TREE_OPERAND (exp, 1)) != INTEGER_CST
+	  || (GET_MODE_BITSIZE (mode)
+	      > GET_MODE_BITSIZE (TREE_TYPE (TREE_OPERAND (exp, 1))))))
+    {
+      /* op0 might have been replaced by promoted constant, in which
+	 case the type of second argument should be used.  */
+      type = TREE_TYPE (TREE_OPERAND (exp, 1));
+      mode = TYPE_MODE (type);
+    }
   unsignedp = TREE_UNSIGNED (type);
   code = unsignedp ? unsigned_code : signed_code;
 
