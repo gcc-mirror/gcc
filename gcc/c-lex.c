@@ -335,13 +335,13 @@ cb_def_pragma (pfile, line)
   if (warn_unknown_pragmas > in_system_header)
     {
       const unsigned char *space, *name = 0;
-      cpp_token s;
+      const cpp_token *s;
 
-      cpp_get_token (pfile, &s);
-      space = cpp_token_as_text (pfile, &s);
-      cpp_get_token (pfile, &s);
-      if (s.type == CPP_NAME)
-	name = cpp_token_as_text (pfile, &s);
+      s = cpp_get_token (pfile);
+      space = cpp_token_as_text (pfile, s);
+      s = cpp_get_token (pfile);
+      if (s->type == CPP_NAME)
+	name = cpp_token_as_text (pfile, s);
 
       lineno = SOURCE_LINE (map, line);
       if (name)
@@ -767,12 +767,13 @@ int
 c_lex (value)
      tree *value;
 {
-  cpp_token tok;
-  enum cpp_ttype type;
+  const cpp_token *tok;
 
   retry:
   timevar_push (TV_CPP);
-  cpp_get_token (parse_in, &tok);
+  do
+    tok = cpp_get_token (parse_in);
+  while (tok->type == CPP_PADDING);
   timevar_pop (TV_CPP);
 
   /* The C++ front end does horrible things with the current line
@@ -781,37 +782,36 @@ c_lex (value)
   lineno = src_lineno;
 
   *value = NULL_TREE;
-  type = tok.type;
-  switch (type)
+  switch (tok->type)
     {
     case CPP_OPEN_BRACE:  indent_level++;  break;
     case CPP_CLOSE_BRACE: indent_level--;  break;
 
-    /* Issue this error here, where we can get at tok.val.c.  */
+    /* Issue this error here, where we can get at tok->val.c.  */
     case CPP_OTHER:
-      if (ISGRAPH (tok.val.c))
-	error ("stray '%c' in program", tok.val.c);
+      if (ISGRAPH (tok->val.c))
+	error ("stray '%c' in program", tok->val.c);
       else
-	error ("stray '\\%o' in program", tok.val.c);
+	error ("stray '\\%o' in program", tok->val.c);
       goto retry;
       
     case CPP_NAME:
-      *value = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok.val.node));
+      *value = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node));
       break;
 
     case CPP_NUMBER:
-      *value = lex_number ((const char *)tok.val.str.text, tok.val.str.len);
+      *value = lex_number ((const char *)tok->val.str.text, tok->val.str.len);
       break;
 
     case CPP_CHAR:
     case CPP_WCHAR:
-      *value = lex_charconst (&tok);
+      *value = lex_charconst (tok);
       break;
 
     case CPP_STRING:
     case CPP_WSTRING:
-      *value = lex_string ((const char *)tok.val.str.text,
-			   tok.val.str.len, tok.type == CPP_WSTRING);
+      *value = lex_string ((const char *)tok->val.str.text,
+			   tok->val.str.len, tok->type == CPP_WSTRING);
       break;
 
       /* These tokens should not be visible outside cpplib.  */
@@ -823,7 +823,7 @@ c_lex (value)
     default: break;
     }
 
-  return type;
+  return tok->type;
 }
 
 #define ERROR(msgid) do { error(msgid); goto syntax_error; } while(0)

@@ -24,6 +24,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "scan.h"
 
 static void skip_to_closing_brace PARAMS ((cpp_reader *));
+static const cpp_token *get_a_token PARAMS ((cpp_reader *));
 
 int brace_nesting = 0;
 
@@ -38,6 +39,19 @@ char extern_C_braces[20];
    prefixed by extern "C".  */
 int current_extern_C = 0;
 
+/* Get a token but skip padding.  */
+static const cpp_token *
+get_a_token (pfile)
+     cpp_reader *pfile;
+{
+  for (;;)
+    {
+      const cpp_token *result = cpp_get_token (pfile);
+      if (result->type != CPP_PADDING)
+	return result;
+    }
+}
+
 static void
 skip_to_closing_brace (pfile)
      cpp_reader *pfile;
@@ -45,11 +59,8 @@ skip_to_closing_brace (pfile)
   int nesting = 1;
   for (;;)
     {
-      cpp_token tok;
-      enum cpp_ttype token;
+      enum cpp_ttype token = get_a_token (pfile)->type;
 
-      cpp_get_token (pfile, &tok);
-      token = tok.type;
       if (token == CPP_EOF)
 	break;
       if (token == CPP_OPEN_BRACE)
@@ -88,16 +99,17 @@ scan_decls (pfile, argc, argv)
      char **argv ATTRIBUTE_UNUSED;
 {
   int saw_extern, saw_inline;
-  cpp_token token, prev_id;
+  cpp_token prev_id;
+  const cpp_token *token;
 
  new_statement:
-  cpp_get_token (pfile, &token);
+  token = get_a_token (pfile);
 
  handle_statement:
   current_extern_C = 0;
   saw_extern = 0;
   saw_inline = 0;
-  if (token.type == CPP_OPEN_BRACE)
+  if (token->type == CPP_OPEN_BRACE)
     {
       /* Pop an 'extern "C"' nesting level, if appropriate.  */
       if (extern_C_braces_length
@@ -106,24 +118,24 @@ scan_decls (pfile, argc, argv)
       brace_nesting--;
       goto new_statement;
     }
-  if (token.type == CPP_OPEN_BRACE)
+  if (token->type == CPP_OPEN_BRACE)
     {
       brace_nesting++;
       goto new_statement;
     }
 
-  if (token.type == CPP_EOF)
+  if (token->type == CPP_EOF)
     return 0;
 
-  if (token.type == CPP_SEMICOLON)
+  if (token->type == CPP_SEMICOLON)
     goto new_statement;
-  if (token.type != CPP_NAME)
+  if (token->type != CPP_NAME)
     goto new_statement;
 
   prev_id.type = CPP_EOF;
   for (;;)
     {
-      switch (token.type)
+      switch (token->type)
 	{
 	default:
 	  goto handle_statement;
@@ -138,7 +150,7 @@ scan_decls (pfile, argc, argv)
 	    {
 	      recognized_extern (&prev_id);
 	    }
-	  if (token.type == CPP_COMMA)
+	  if (token->type == CPP_COMMA)
 	    break;
 	  /* ... fall through ...  */
 	case CPP_OPEN_BRACE:  case CPP_CLOSE_BRACE:
@@ -155,27 +167,27 @@ scan_decls (pfile, argc, argv)
 	      int have_arg_list = 0;
 	      for (;;)
 		{
-		  cpp_get_token (pfile, &token);
-		  if (token.type == CPP_OPEN_PAREN)
+		  token = get_a_token (pfile);
+		  if (token->type == CPP_OPEN_PAREN)
 		    nesting++;
-		  else if (token.type == CPP_CLOSE_PAREN)
+		  else if (token->type == CPP_CLOSE_PAREN)
 		    {
 		      nesting--;
 		      if (nesting == 0)
 			break;
 		    }
-		  else if (token.type == CPP_EOF)
+		  else if (token->type == CPP_EOF)
 		    break;
-		  else if (token.type == CPP_NAME
-			   || token.type == CPP_ELLIPSIS)
+		  else if (token->type == CPP_NAME
+			   || token->type == CPP_ELLIPSIS)
 		    have_arg_list = 1;
 		}
-	      recognized_function (&prev_id, token.line,
+	      recognized_function (&prev_id, token->line,
 				   (saw_inline ? 'I'
 				    : in_extern_C_brace || current_extern_C
 				    ? 'F' : 'f'), have_arg_list);
-	      cpp_get_token (pfile, &token);
-	      if (token.type == CPP_OPEN_BRACE)
+	      token = get_a_token (pfile);
+	      if (token->type == CPP_OPEN_BRACE)
 		{
 		  /* skip body of (normally) inline function */
 		  skip_to_closing_brace (pfile);
@@ -184,28 +196,28 @@ scan_decls (pfile, argc, argv)
 
 	      /* skip a possible __attribute__ or throw expression after the
 		 parameter list */
-	      while (token.type != CPP_SEMICOLON && token.type != CPP_EOF)
-		cpp_get_token (pfile, &token);
+	      while (token->type != CPP_SEMICOLON && token->type != CPP_EOF)
+		token = get_a_token (pfile);
 	      goto new_statement;
 	    }
 	  break;
 	case CPP_NAME:
 	  /* "inline" and "extern" are recognized but skipped */
-	  if (cpp_ideq (&token, "inline"))
+	  if (cpp_ideq (token, "inline"))
 	    {
 	      saw_inline = 1;
 	    }
-	  else if (cpp_ideq (&token, "extern"))
+	  else if (cpp_ideq (token, "extern"))
 	    {
 	      saw_extern = 1;
-	      cpp_get_token (pfile, &token);
-	      if (token.type == CPP_STRING
-		  && token.val.str.len == 1
-		  && token.val.str.text[0] == 'C')
+	      token = get_a_token (pfile);
+	      if (token->type == CPP_STRING
+		  && token->val.str.len == 1
+		  && token->val.str.text[0] == 'C')
 		{
 		  current_extern_C = 1;
-		  cpp_get_token (pfile, &token);
-		  if (token.type == CPP_OPEN_BRACE)
+		  token = get_a_token (pfile);
+		  if (token->type == CPP_OPEN_BRACE)
 		    {
 		      brace_nesting++;
 		      extern_C_braces[extern_C_braces_length++]
@@ -218,9 +230,9 @@ scan_decls (pfile, argc, argv)
 	      break;
 	    }
 	  /* This may be the name of a variable or function.  */
-	  prev_id = token;
+	  prev_id = *token;
 	  break;
 	}
-      cpp_get_token (pfile, &token);
+      token = get_a_token (pfile);
     }
 }

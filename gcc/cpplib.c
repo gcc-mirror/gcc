@@ -86,8 +86,8 @@ static void directive_diagnostics
 	PARAMS ((cpp_reader *, const directive *, int));
 static void run_directive	PARAMS ((cpp_reader *, int,
 					 const char *, size_t));
-static int glue_header_name	PARAMS ((cpp_reader *, cpp_token *));
-static int  parse_include	PARAMS ((cpp_reader *, cpp_token *));
+static const cpp_token *glue_header_name PARAMS ((cpp_reader *));
+static const cpp_token *parse_include PARAMS ((cpp_reader *));
 static void push_conditional	PARAMS ((cpp_reader *, int, int,
 					 const cpp_hashnode *));
 static unsigned int read_flag	PARAMS ((cpp_reader *, unsigned int));
@@ -100,7 +100,8 @@ static void do_pragma_once	PARAMS ((cpp_reader *));
 static void do_pragma_poison	PARAMS ((cpp_reader *));
 static void do_pragma_system_header	PARAMS ((cpp_reader *));
 static void do_pragma_dependency	PARAMS ((cpp_reader *));
-static int get__Pragma_string	PARAMS ((cpp_reader *, cpp_token *));
+static const cpp_token *get_token_no_padding PARAMS ((cpp_reader *));
+static const cpp_token *get__Pragma_string PARAMS ((cpp_reader *));
 static unsigned char *destringize	PARAMS ((const cpp_string *,
 						 unsigned int *));
 static int parse_answer PARAMS ((cpp_reader *, struct answer **, int));
@@ -485,13 +486,13 @@ do_undef (pfile)
 
 /* Helper routine used by parse_include.  Reinterpret the current line
    as an h-char-sequence (< ... >); we are looking at the first token
-   after the <.  Returns zero on success.  */
-static int
-glue_header_name (pfile, header)
+   after the <.  Returns the header as a token, or NULL on failure.  */
+static const cpp_token *
+glue_header_name (pfile)
      cpp_reader *pfile;
-     cpp_token *header;
 {
-  cpp_token token;
+  cpp_token *header = NULL;
+  const cpp_token *token;
   unsigned char *buffer, *token_mem;
   size_t len, total_len = 0, capacity = 1024;
 
@@ -501,25 +502,25 @@ glue_header_name (pfile, header)
   buffer = (unsigned char *) xmalloc (capacity);
   for (;;)
     {
-      cpp_get_token (pfile, &token);
+      token = cpp_get_token (pfile);
 
-      if (token.type == CPP_GREATER || token.type == CPP_EOF)
+      if (token->type == CPP_GREATER || token->type == CPP_EOF)
 	break;
 
-      len = cpp_token_len (&token);
+      len = cpp_token_len (token);
       if (total_len + len > capacity)
 	{
 	  capacity = (capacity + len) * 2;
 	  buffer = (unsigned char *) xrealloc (buffer, capacity);
 	}
 
-      if (token.flags & PREV_WHITE)
+      if (token->flags & PREV_WHITE)
 	buffer[total_len++] = ' ';
 
-      total_len = cpp_spell_token (pfile, &token, &buffer[total_len]) - buffer;
+      total_len = cpp_spell_token (pfile, token, &buffer[total_len]) - buffer;
     }
 
-  if (token.type == CPP_EOF)
+  if (token->type == CPP_EOF)
     cpp_error (pfile, "missing terminating > character");
   else
     {
@@ -527,6 +528,7 @@ glue_header_name (pfile, header)
       memcpy (token_mem, buffer, total_len);
       token_mem[total_len] = '\0';
 
+      header = _cpp_temp_token (pfile);
       header->type = CPP_HEADER_NAME;
       header->flags &= ~PREV_WHITE;
       header->val.str.len = total_len;
@@ -534,17 +536,17 @@ glue_header_name (pfile, header)
     }
 
   free ((PTR) buffer);
-  return token.type == CPP_EOF;
+  return header;
 }
 
-/* Parse the header name of #include, #include_next, #import and
-   #pragma dependency.  Returns zero on success.  */
-static int
-parse_include (pfile, header)
+/* Returns the header string of #include, #include_next, #import and
+   #pragma dependency.  Returns NULL on error.  */
+static const cpp_token *
+parse_include (pfile)
      cpp_reader *pfile;
-     cpp_token *header;
 {
   const unsigned char *dir;
+  const cpp_token *header;
 
   if (pfile->directive == &dtable[T_PRAGMA])
     dir = U"pragma dependency";
@@ -552,25 +554,27 @@ parse_include (pfile, header)
     dir = pfile->directive->name;
 
   /* Allow macro expansion.  */
-  cpp_get_token (pfile, header);
+  header = cpp_get_token (pfile);
   if (header->type != CPP_STRING && header->type != CPP_HEADER_NAME)
     {
       if (header->type != CPP_LESS)
 	{
 	  cpp_error (pfile, "#%s expects \"FILENAME\" or <FILENAME>", dir);
-	  return 1;
+	  return NULL;
 	}
-      if (glue_header_name (pfile, header))
-	return 1;
+
+      header = glue_header_name (pfile);
+      if (header == NULL)
+	return header;
     }
 
   if (header->val.str.len == 0)
     {
       cpp_error (pfile, "empty file name in #%s", dir);
-      return 1;
+      return NULL;
     }
 
-  return 0;
+  return header;
 }
 
 /* Handle #include, #include_next and #import.  */
@@ -579,7 +583,7 @@ do_include_common (pfile, type)
      cpp_reader *pfile;
      enum include_type type;
 {
-  cpp_token header;
+  const cpp_token *header;
 
   /* For #include_next, if this is the primary source file, warn and
      use the normal search logic.  */
@@ -595,7 +599,8 @@ do_include_common (pfile, type)
 	   "#import is obsolete, use an #ifndef wrapper in the header file");
     }
 
-  if (!parse_include (pfile, &header))
+  header = parse_include (pfile);
+  if (header)
     {
       /* Prevent #include recursion.  */
       if (pfile->line_maps.depth >= CPP_STACK_MAX)
@@ -607,9 +612,9 @@ do_include_common (pfile, type)
 	  skip_rest_of_line (pfile);
 	  if (pfile->cb.include)
 	    (*pfile->cb.include) (pfile, pfile->directive_line,
-				  pfile->directive->name, &header);
+				  pfile->directive->name, header);
 
-	  _cpp_execute_include (pfile, &header, type);
+	  _cpp_execute_include (pfile, header, type);
 	}
     }
 }
@@ -693,7 +698,7 @@ static void
 do_line (pfile)
      cpp_reader *pfile;
 {
-  cpp_token token;
+  const cpp_token *token;
   const char *new_file = pfile->map->to_file;
   unsigned long new_lineno;
   unsigned int cap, new_sysp = pfile->map->sysp;
@@ -708,12 +713,13 @@ do_line (pfile)
     _cpp_backup_tokens (pfile, 1);
 
   /* #line commands expand macros.  */
-  cpp_get_token (pfile, &token);
-  if (token.type != CPP_NUMBER
-      || strtoul_for_line (token.val.str.text, token.val.str.len, &new_lineno))
+  token = cpp_get_token (pfile);
+  if (token->type != CPP_NUMBER
+      || strtoul_for_line (token->val.str.text, token->val.str.len,
+			   &new_lineno))
     {
       cpp_error (pfile, "\"%s\" after #line is not a positive integer",
-		 cpp_token_as_text (pfile, &token));
+		 cpp_token_as_text (pfile, token));
       return;
     }      
 
@@ -721,10 +727,10 @@ do_line (pfile)
       && (new_lineno == 0 || new_lineno > cap))
     cpp_pedwarn (pfile, "line number out of range");
 
-  cpp_get_token (pfile, &token);
-  if (token.type == CPP_STRING)
+  token = cpp_get_token (pfile);
+  if (token->type == CPP_STRING)
     {
-      new_file = (const char *) token.val.str.text;
+      new_file = (const char *) token->val.str.text;
 
       /* Only accept flags for the # 55 form.  */
       if (pfile->state.line_extension)
@@ -755,10 +761,10 @@ do_line (pfile)
 	}
       check_eol (pfile);
     }
-  else if (token.type != CPP_EOF)
+  else if (token->type != CPP_EOF)
     {
       cpp_error (pfile, "\"%s\" is not a valid filename",
-		 cpp_token_as_text (pfile, &token));
+		 cpp_token_as_text (pfile, token));
       return;
     }
 
@@ -827,13 +833,12 @@ static void
 do_ident (pfile)
      cpp_reader *pfile;
 {
-  cpp_token str;
+  const cpp_token *str = cpp_get_token (pfile);
 
-  cpp_get_token (pfile, &str);
-  if (str.type != CPP_STRING)
-    cpp_error (pfile, "invalid #ident");
+  if (str->type != CPP_STRING)
+    cpp_error (pfile, "invalid #ident directive");
   else if (pfile->cb.ident)
-    (*pfile->cb.ident) (pfile, pfile->directive_line, &str.val.str);
+    (*pfile->cb.ident) (pfile, pfile->directive_line, &str->val.str);
 
   check_eol (pfile);
 }
@@ -950,7 +955,7 @@ do_pragma (pfile)
 {
   pragma_cb handler = NULL;
   const struct pragma_entry *p;
-  cpp_token tok;
+  const cpp_token *token;
   unsigned int count = 0;
 
   p = pfile->pragmas;
@@ -958,10 +963,10 @@ do_pragma (pfile)
 
  new_space:
   count++;
-  cpp_get_token (pfile, &tok);
-  if (tok.type == CPP_NAME)
+  token = cpp_get_token (pfile);
+  if (token->type == CPP_NAME)
     {
-      const cpp_hashnode *node = tok.val.node;
+      const cpp_hashnode *node = token->val.node;
       size_t len = NODE_LEN (node);
 
       while (p)
@@ -990,7 +995,7 @@ do_pragma (pfile)
      themselves.  Stand-alone CPP must ignore us, otherwise it will
      prefix the directive with spaces, hence the 1.  Ugh.  */
   if (pfile->cb.line_change)
-    (*pfile->cb.line_change)(pfile, &tok, 1);
+    (*pfile->cb.line_change)(pfile, token, 1);
 
   if (handler)
     (*handler) (pfile);
@@ -1078,22 +1083,22 @@ static void
 do_pragma_dependency (pfile)
      cpp_reader *pfile;
 {
-  cpp_token header, msg;
+  const cpp_token *header;
   int ordering;
  
-  if (parse_include (pfile, &header))
+  header = parse_include (pfile);
+  if (!header)
     return;
 
-  ordering = _cpp_compare_file_date (pfile, &header);
+  ordering = _cpp_compare_file_date (pfile, header);
   if (ordering < 0)
     cpp_warning (pfile, "cannot find source %s",
-		 cpp_token_as_text (pfile, &header));
+		 cpp_token_as_text (pfile, header));
   else if (ordering > 0)
     {
       cpp_warning (pfile, "current file is older than %s",
-		   cpp_token_as_text (pfile, &header));
-      cpp_get_token (pfile, &msg);
-      if (msg.type != CPP_EOF)
+		   cpp_token_as_text (pfile, header));
+      if (cpp_get_token (pfile)->type != CPP_EOF)
 	{
 	  _cpp_backup_tokens (pfile, 1);
 	  do_diagnostic (pfile, WARNING, 0);
@@ -1101,24 +1106,38 @@ do_pragma_dependency (pfile)
     }
 }
 
-/* Check syntax is "(string-literal)".  Returns 0 on success.  */
-static int
-get__Pragma_string (pfile, string)
+/* Get a token but skip padding.  */
+static const cpp_token *
+get_token_no_padding (pfile)
      cpp_reader *pfile;
-     cpp_token *string;
 {
-  cpp_token paren;
+  for (;;)
+    {
+      const cpp_token *result = cpp_get_token (pfile);
+      if (result->type != CPP_PADDING)
+	return result;
+    }
+}
 
-  cpp_get_token (pfile, &paren);
-  if (paren.type != CPP_OPEN_PAREN)
-    return 1;
+/* Check syntax is "(string-literal)".  Returns the string on success,
+   or NULL on failure.  */
+static const cpp_token *
+get__Pragma_string (pfile)
+     cpp_reader *pfile;
+{
+  const cpp_token *string;
 
-  cpp_get_token (pfile, string);
+  if (get_token_no_padding (pfile)->type != CPP_OPEN_PAREN)
+    return NULL;
+
+  string = get_token_no_padding (pfile);
   if (string->type != CPP_STRING && string->type != CPP_WSTRING)
-    return 1;
+    return NULL;
 
-  cpp_get_token (pfile, &paren);
-  return paren.type != CPP_CLOSE_PAREN;
+  if (get_token_no_padding (pfile)->type != CPP_CLOSE_PAREN)
+    return NULL;
+
+  return string;
 }
 
 /* Returns a malloced buffer containing a destringized cpp_string by
@@ -1148,11 +1167,11 @@ void
 _cpp_do__Pragma (pfile)
      cpp_reader *pfile;
 {
-  cpp_token string;
+  const cpp_token *string = get__Pragma_string (pfile);
   unsigned char *buffer;
   unsigned int len;
 
-  if (get__Pragma_string (pfile, &string))
+  if (!string)
     cpp_error (pfile, "_Pragma takes a parenthesized string literal");
   else
     {
@@ -1167,7 +1186,7 @@ _cpp_do__Pragma (pfile)
 	 Getting these correct line markers is a little tricky.  */
 
       unsigned int orig_line = pfile->line;
-      buffer = destringize (&string.val.str, &len);
+      buffer = destringize (&string->val.str, &len);
       run_directive (pfile, T_PRAGMA, (char *) buffer, len);
       free ((PTR) buffer);
       pfile->line = orig_line;
@@ -1386,7 +1405,7 @@ parse_answer (pfile, answerp, type)
      struct answer **answerp;
      int type;
 {
-  cpp_token paren, *token;
+  const cpp_token *paren;
   struct answer *answer;
 
   if (POOL_FRONT (&pfile->macro_pool) + sizeof (struct answer) >
@@ -1397,10 +1416,10 @@ parse_answer (pfile, answerp, type)
 
   /* In a conditional, it is legal to not have an open paren.  We
      should save the following token in this case.  */
-  cpp_get_token (pfile, &paren);
+  paren = cpp_get_token (pfile);
 
   /* If not a paren, see if we're OK.  */
-  if (paren.type != CPP_OPEN_PAREN)
+  if (paren->type != CPP_OPEN_PAREN)
     {
       /* In a conditional no answer is a test for any answer.  It
          could be followed by any token.  */
@@ -1411,7 +1430,7 @@ parse_answer (pfile, answerp, type)
 	}
 
       /* #unassert with no answer is valid - it removes all answers.  */
-      if (type == T_UNASSERT && paren.type == CPP_EOF)
+      if (type == T_UNASSERT && paren->type == CPP_EOF)
 	return 0;
 
       cpp_error (pfile, "missing '(' after predicate");
@@ -1420,7 +1439,7 @@ parse_answer (pfile, answerp, type)
 
   for (;;)
     {
-      token = &answer->first[answer->count];
+      cpp_token *token = &answer->first[answer->count];
       /* Check we have room for the token.  */
       if ((unsigned char *) (token + 1) >= POOL_LIMIT (&pfile->macro_pool))
 	{
@@ -1429,7 +1448,7 @@ parse_answer (pfile, answerp, type)
 	  token = &answer->first[answer->count];
 	}
 
-      cpp_get_token (pfile, token);
+      *token = *cpp_get_token (pfile);
       if (token->type == CPP_CLOSE_PAREN)
 	break;
 
@@ -1466,25 +1485,25 @@ parse_assertion (pfile, answerp, type)
      int type;
 {
   cpp_hashnode *result = 0;
-  cpp_token predicate;
+  const cpp_token *predicate;
 
   /* We don't expand predicates or answers.  */
   pfile->state.prevent_expansion++;
 
   *answerp = 0;
-  cpp_get_token (pfile, &predicate);
-  if (predicate.type == CPP_EOF)
+  predicate = cpp_get_token (pfile);
+  if (predicate->type == CPP_EOF)
     cpp_error (pfile, "assertion without predicate");
-  else if (predicate.type != CPP_NAME)
+  else if (predicate->type != CPP_NAME)
     cpp_error (pfile, "predicate must be an identifier");
   else if (parse_answer (pfile, answerp, type) == 0)
     {
-      unsigned int len = NODE_LEN (predicate.val.node);
+      unsigned int len = NODE_LEN (predicate->val.node);
       unsigned char *sym = alloca (len + 1);
 
       /* Prefix '#' to get it out of macro namespace.  */
       sym[0] = '#';
-      memcpy (sym + 1, NODE_NAME (predicate.val.node), len);
+      memcpy (sym + 1, NODE_NAME (predicate->val.node), len);
       result = cpp_lookup (pfile, sym, len + 1);
     }
 

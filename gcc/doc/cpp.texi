@@ -1515,10 +1515,10 @@ token pasting.
 However, two tokens that don't together form a valid token cannot be
 pasted together.  For example, you cannot concatenate @code{x} with
 @code{+} in either order.  If you try, the preprocessor issues a warning
-and emits the two tokens as if they had been written next to each other.
-It is common to find unnecessary uses of @samp{##} in complex macros.
-If you get this warning, it is likely that you can simply remove the
-@samp{##}.
+and emits the two tokens.  Whether it puts white space between the
+tokens is undefined.  It is common to find unnecessary uses of @samp{##}
+in complex macros.  If you get this warning, it is likely that you can
+simply remove the @samp{##}.
 
 Both the tokens combined by @samp{##} could come from the macro body,
 but you could just as well write them as one token in the first place.

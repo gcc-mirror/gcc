@@ -510,8 +510,12 @@ cpp_create_reader (table, lang)
   /* Initialize lexer state.  */
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
 
-  /* Indicate date and time not yet calculated.  */
+  /* Set up static tokens.  */
   pfile->date.type = CPP_EOF;
+  pfile->avoid_paste.type = CPP_PADDING;
+  pfile->avoid_paste.val.source = NULL;
+  pfile->eof.type = CPP_EOF;
+  pfile->eof.flags = 0;
 
   /* Create a token buffer for the lexer.  */
   _cpp_init_tokenrun (&pfile->base_run, 250);

@@ -661,12 +661,11 @@ read_scan_file (in_fname, argc, argv)
 		       /* from_stage3 */ true, 1);
       for (;;)
 	{
-	  cpp_token t;
+	  const cpp_token *t = cpp_get_token (scan_in);
 
-	  cpp_get_token (scan_in, &t);
-	  if (t.type == CPP_EOF)
+	  if (t->type == CPP_EOF)
 	    break;
-	  else if (cpp_ideq (&t, "_filbuf"))
+	  else if (cpp_ideq (t, "_filbuf"))
 	    seen_filbuf++;
 	}
 

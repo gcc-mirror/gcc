@@ -95,11 +95,10 @@ struct search_path
 /* #include types.  */
 enum include_type {IT_INCLUDE, IT_INCLUDE_NEXT, IT_IMPORT, IT_CMDLINE};
 
-typedef struct toklist toklist;
-struct toklist
+union utoken
 {
-  cpp_token *first;
-  cpp_token *limit;
+  const cpp_token *token;
+  const cpp_token **ptoken;
 };
 
 typedef struct tokenrun tokenrun;
@@ -117,10 +116,14 @@ struct cpp_context
 
   /* Contexts other than the base context are contiguous tokens.
      e.g. macro expansions, expanded argument tokens.  */
-  struct toklist list;
+  union utoken first;
+  union utoken last;
 
   /* For a macro context, these are the macro and its arguments.  */
   cpp_macro *macro;
+
+  /* True if utoken element is token, else ptoken.  */
+  bool direct_p;
 };
 
 struct lexer_state
@@ -294,6 +297,10 @@ struct cpp_reader
   cpp_token date;
   cpp_token time;
 
+  /* EOF token, and a token forcing paste avoidance.  */
+  cpp_token avoid_paste;
+  cpp_token eof;
+
   /* Opaque handle to the dependencies of mkdeps.c.  Used by -M etc.  */
   struct deps *deps;
 
@@ -398,6 +405,7 @@ extern void _cpp_pop_file_buffer	PARAMS ((cpp_reader *,
 extern int _cpp_parse_expr		PARAMS ((cpp_reader *));
 
 /* In cpplex.c */
+extern cpp_token *_cpp_temp_token	PARAMS ((cpp_reader *));
 extern const cpp_token *_cpp_lex_token	PARAMS ((cpp_reader *));
 extern cpp_token *_cpp_lex_direct	PARAMS ((cpp_reader *));
 extern int _cpp_equiv_tokens		PARAMS ((const cpp_token *,
