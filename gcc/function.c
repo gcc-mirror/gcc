@@ -263,7 +263,7 @@ rtx arg_pointer_save_area;
 /* Offset to end of allocated area of stack frame.
    If stack grows down, this is the address of the last stack slot allocated.
    If stack grows up, this is the address for the next slot.  */
-int frame_offset;
+HOST_WIDE_INT frame_offset;
 
 /* List (chain of TREE_LISTs) of static chains for containing functions.
    Each link has a FUNCTION_DECL in the TREE_PURPOSE and a reg rtx
@@ -633,7 +633,7 @@ void pop_function_context ()
    This size counts from zero.  It is not rounded to STACK_BOUNDARY;
    the caller may have to do that.  */
 
-int
+HOST_WIDE_INT
 get_frame_size ()
 {
 #ifdef FRAME_GROWS_DOWNWARD
