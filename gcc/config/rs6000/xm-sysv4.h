@@ -1,6 +1,5 @@
 /* Configuration for GNU C-compiler for PowerPC running System V.4.
    Copyright (C) 1995, 1998 Free Software Foundation, Inc.
-
    Cloned from sparc/xm-sysv4.h by Michael Meissner (meissner@cygnus.com).
 
 This file is part of GNU CC.
@@ -56,13 +55,4 @@ extern char *alloca ();
 #endif
 #undef ONLY_INT_FIELDS
 #define ONLY_INT_FIELDS
-#endif
-
-#ifdef __PPC__
-#ifndef __STDC__
-extern char *malloc (), *realloc (), *calloc ();
-#else
-extern void *malloc (), *realloc (), *calloc ();
-#endif
-extern void free ();
 #endif

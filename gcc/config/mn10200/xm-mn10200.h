@@ -1,5 +1,5 @@
 /* Configuration for Matsushita MN10200. 
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
 This file is part of GNU CC.
@@ -38,10 +38,3 @@ Boston, MA 02111-1307, USA.  */
    tm.h is a symbolic link to the actual target specific file.   */
 
 #include "tm.h"
-
-#ifndef __STDC__
-extern char *malloc (), *realloc (), *calloc ();
-#else
-extern void *malloc (), *realloc (), *calloc ();
-#endif
-extern void free ();
