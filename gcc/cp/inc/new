@@ -6,6 +6,7 @@
 
 #pragma interface "new"
 #include <stddef.h>
+#include <exception>
 
 extern "C++" {
 
@@ -13,8 +14,15 @@ extern "C++" {
 namespace std {
 #endif
 
-typedef void (*new_handler)();
-extern "C" new_handler set_new_handler (new_handler);
+  class bad_alloc : public exception {
+  public:
+    virtual const char* what() const throw() { return "bad_alloc"; }
+  };
+
+  struct nothrow_t {};
+  extern const nothrow_t nothrow;
+  typedef void (*new_handler)();
+  extern "C" new_handler set_new_handler (new_handler);
 
 #if 0
 } // namespace std
@@ -26,13 +34,15 @@ extern "C" void __default_new_handler (void);
 
 // replaceable signatures
 void *operator new (size_t);
+void *operator new (size_t, const nothrow_t&) throw();
 void *operator new[] (size_t);
-void operator delete (void *);
-void operator delete[] (void *);
+void *operator new[] (size_t, const nothrow_t&) throw();
+void operator delete (void *) throw();
+void operator delete[] (void *) throw();
 
 // default placement versions of operator new
-inline void *operator new(size_t, void *place) { return place; }
-inline void *operator new[](size_t, void *place) { return place; }
+inline void *operator new(size_t, void *place) throw() { return place; }
+inline void *operator new[](size_t, void *place) throw() { return place; }
 } // extern "C++"
 
 #endif
