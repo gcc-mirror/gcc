@@ -73,6 +73,10 @@ extern int errno;		/* needed for VAX.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
+#ifndef DIR_SEPARATOR
+#define DIR_SEPARATOR '/'
+#endif
+
 extern struct obstack permanent_obstack;
 extern struct obstack *current_obstack, *saveable_obstack;
 
@@ -104,7 +108,7 @@ char *
 file_name_nondirectory (x)
      char *x;
 {
-  char *tmp = (char *) rindex (x, '/');
+  char *tmp = (char *) rindex (x, DIR_SEPARATOR);
   if (tmp)
     return (char *) (tmp + 1);
   else
