@@ -132,7 +132,9 @@ AC_PROG_RANLIB
 AC_PROG_YACC
 AC_PROG_INSTALL
 
-AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h unistd.h sys/file.h)
+AC_HEADER_STDC
+AC_HEADER_TIME
+AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h times.h fcntl.h unistd.h sys/file.h sys/time.h sys/resource.h sys/param.h)
 
 # Use <inttypes.h> only if it exists,
 # doesn't clash with <sys/types.h>, and declares intmax_t.
@@ -166,6 +168,7 @@ GCC_NEED_DECLARATION(calloc)
 GCC_NEED_DECLARATION(free)
 GCC_NEED_DECLARATION(index)
 GCC_NEED_DECLARATION(rindex)
+GCC_NEED_DECLARATION(getenv)
 
 AC_DECL_SYS_SIGLIST
 
