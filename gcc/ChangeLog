@@ -1,3 +1,8 @@
+2004-03-03  Nicolas Pitre <nico@cam.org>
+
+	* config/arm/ieee754-df.S (muldf3, divdf3): Fix denormalization of
+	small negative values.
+
 2004-03-03  Jan Hubicka  <jh@suse.cz>
 
 	* cselib.c (hash_table):  Remove GTY marker.
