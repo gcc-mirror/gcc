@@ -1,3 +1,55 @@
+2002-08-15  Eric Christopher  <echristo@redhat.com>
+	    Jeff Knaggs  <jknaggs@redhat.com>
+
+	* config.gcc (mipsisa64sr71k-elf): New target.
+	* config/mips/sr71k.md: New file.
+	* config/mips/mips.md: Use it.
+	(rot*): Add sr71k specifics.
+	* config/mips/t-sr71k: New file.
+	* config/mips/mips.h (sr71k): New cpu.
+	(TARGET_SR71K): Use it.
+	(TUNE_SR71K): Ditto.
+	(GENERATE_BRANCHLIKELY): Ditto.
+	(ISA_HAS_MULHI, ISA_HAS_MULS, ISA_HAS_MSAC, ISA_HAS_MACC,
+	ISA_HAS_ROTR_SIISA_HAS_ROTR_DI): Ditto.
+	* config/mips/mips.c (sr71k): New cpu.
+	(mips_use_dfa_pipeline_interface): Use.
+
+2002-08-15  Eric Christopher  <echristo@redhat.com>
+            Richard Sandiford <rsandifo@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+	    Graham Stott    <grahams@redhat.com>
+	    Michael Meissner  <meissner@redhat.com>
+	    Gavin Romig-Koch  <gavin@redhat.com>
+	    Ken Raeburn  <raeburn@cygnus.com>
+	    Alexandre Oliva <aoliva@redhat.com>
+
+	* config.gcc (mips64vr-elf): New target.
+	* config/mips/5400.md: New file.
+	* config/mips/5500.md: Ditto.
+	* config/mips/mips.md: Use them.
+	(frsqrt): New.
+	* config/mips/mips.c (vr4111, vr4121, vr4320, vr5400, vr5500): New
+	cpus.
+	(mips_issue_rate): Use them.
+	(mips_use_dfa_pipeline_interface): New function. Use for 5400 and 5500.
+	(TARGET_SCHEDUSE_DFA_PIPELINE_INTERFACE): Define. Use above.
+	* config/mips/mips.h (vr4111, vr4121, vr4320, vr5400, vr5500): New
+	cpus.
+	(TARGET_MIPSx): Use them.
+	(TUNE_MIPSx): Ditto.
+	(GETNATE_MULT3_SI): Ditto.
+	(ISA_HAS_BRANCHLIKELY): Ditto.
+	(ISA_HAS_CONDMOVE): Ditto.
+	(ISA_HAS_NMADD_NMSUB): Ditto.
+	(ISA_HAS_MULHI): New. Ditto.
+	(ISA_HAS_MULS): Ditto.
+	(ISA_HAS_MSAC): Ditto.
+	(ISA_HAS_MACC): Ditto.
+	(ISA_HAS_ROTR_SI): Ditto.
+	(ISA_HAS_ROTR_DI): Ditto.
+	(RTX_COSTS): Use.
+
 2002-08-20  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* cppinit.c (remove_dup_dir): Add head_ptr argument to handle removal
@@ -47,7 +99,7 @@
 	(build_private_template): Call get_class_ivars instead of
 	build_ivar_chain.
 	(start_class): Allocate room for the CLASS_OWN_IVARS slot.
-	(continue_class): Call get_class_ivars instead of 
+	(continue_class): Call get_class_ivars instead of
 	build_ivar_chain.
 	(encode_field_decl): Check for DECL_BIT_FIELD_TYPE instead
 	of DECL_BIT_FIELD (which may have been cleared).
@@ -88,7 +140,7 @@
 	* config/rs6000/rs6000.c (rs6000_emit_set_const): Inline
 	multi-instruction SImode constant.  Add REG_EQUAL note.
 	* config/rs6000/rs6000.md (movsi splitter): Use
-	rs6000_emit_set_const. 
+	rs6000_emit_set_const.
 
 2002-08-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -313,7 +365,7 @@
 
 	Fix PR/7566
 	* c-semantics.c (genrtl_case_label): Don't (mis)use
-	warning_with_decl. 
+	warning_with_decl.
 
 2002-08-14  Dale Johannesen  <dalej@apple.com>
 
@@ -338,11 +390,11 @@
 
 2002-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* reload.c (find_reloads): Handle constraint letters marked by 
+	* reload.c (find_reloads): Handle constraint letters marked by
 	EXTRA_ADDRESS_CONSTRAINT and EXTRA_MEMORY_CONSTRAINT.
 	(alternative_allows_memconst): Likewise.
 	* reload1.c (maybe_fix_stack_asms): Likewise.
-	* recog.c (asm_operand_ok, preprocess_constraints, 
+	* recog.c (asm_operand_ok, preprocess_constraints,
 	constrain_operands): Likewise.
 	* regclass.c (record_operand_costs, record_reg_classes): Likewise.
 	* local-alloc.c (block_alloc, requires_inout): Likewise.
@@ -391,7 +443,7 @@
 	(__premain, exit, abort, _cleanup, memcpy, memset, ___adddi3,
 	___subdi3, ___notdi2, __mulhi32, __mulsi3): Use them to use 'rtc'
 	and declare the symbol far when compiled with -mlong-calls.
-	(__far_trampoline): New for 68HC12 trampoline code to invoke a 
+	(__far_trampoline): New for 68HC12 trampoline code to invoke a
 	far handler using jsr/bsr.
 
 	* config/m68hc11/m68hc11-crt0.S: Put a mode for ELF ABI flags.
@@ -403,7 +455,7 @@
 
 	* config/m68hc11/m68hc11.h (CPP_SPEC): Pass -D__USE_RTC__ when
 	-mlong-calls is specified.
-	(ASM_DECLARE_FUNCTION_NAME): Define to generate .far and .interrupt 
+	(ASM_DECLARE_FUNCTION_NAME): Define to generate .far and .interrupt
 	assembler directives.
 	(TARGET_LONG_CALL, MASK_LONG_CALL): Declare.
 	(TARGET_SWITCHES): Add -mlong-calls options.
@@ -508,10 +560,10 @@ Tue Aug 13 17:40:25 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	"*tmqi_mem", "*tmhi_full", "*tmqi_full"): ... these new patterns.
 
 	("*ltgr", "*cmpdi_ccs_0_64", "*cmpdi_ccs_0_31", "*ltr", "*icm15",
-	"*icm15_cconly", "*cmpsi_ccs_0", "*icm3", "*cmphi_ccs_0", "*icm1", 
+	"*icm15_cconly", "*cmpsi_ccs_0", "*icm3", "*cmphi_ccs_0", "*icm1",
 	"*cmpqi_ccs_0"): Remove, replace by ...
 	("*tstdi_sign", "*tstdi", "*tstdi_cconly", "*tstdi_cconly_31",
-	"*tstsi", "*tstsi_cconly", "*tstsi_cconly2", "*tsthi", "*tsthi_cconly", 
+	"*tstsi", "*tstsi_cconly", "*tstsi_cconly2", "*tsthi", "*tsthi_cconly",
 	"*tstqi", "*tstqi_cconly"): ... these new patterns.
 
 	("*cmpsidi_ccs"): Remove, replace by ...
@@ -529,7 +581,7 @@ Tue Aug 13 17:40:25 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	("adddi3"): Adapt expander.
 
 	("*addsi3_cc"): Allow "general_operand" for operand 2.
-	("*addsi3_carry1_cc", "*addsi3_carry1_cconly", 
+	("*addsi3_carry1_cc", "*addsi3_carry1_cconly",
 	"*addsi3_carry2_cc", "*addsi3_carry2_cconly"): New patterns.
 
 	("addhi3", "addqi3"): Remove, replace by ...
@@ -575,7 +627,7 @@ Tue Aug 13 14:49:20 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(ip2k_set_compare): Don't use lookup_const_double.
 	(asm_file_start): Initialization of commands_in_file removed.
 	(asm_file_end): Output of commands_in_file removed.
-	
+
 	* config/ip2k/ip2k.c (CPP_PREDEFINES): Remove definition of
 	__INT_MAX__.
 
@@ -635,7 +687,7 @@ Tue Aug 13 14:49:20 2002  J"orn Rennecke <joern.rennecke@superh.com>
 2002-08-12  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* diagnostic.h (output_formatted_scalar): Rename from
-	output_formatted_integer. 
+	output_formatted_integer.
 	* diagnostic.def: Add DK_DEBUG.
 	* diagnostic.c (output_decimal): Adjust.
 	(output_long_decimal): Likewise.

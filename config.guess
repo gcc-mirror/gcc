@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002 Free Software Foundation, Inc.
 
-timestamp='2002-07-09'
+timestamp='2002-08-19'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -231,6 +231,7 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	# A Tn.n version is a released field test version.
 	# A Xn.n version is an unreleased experimental baselevel.
 	# 1.2 uses "1.2" for uname -r.
+	eval $set_cc_for_build
 	cat <<EOF >$dummy.s
 	.data
 \$Lformat:
@@ -256,7 +257,6 @@ main:
 	jsr \$26,exit
 	.end main
 EOF
-	eval $set_cc_for_build
 	$CC_FOR_BUILD $dummy.s -o $dummy 2>/dev/null
 	if test "$?" = 0 ; then
 		case `$dummy` in
@@ -280,6 +280,9 @@ EOF
 				;;
 			2-1307)
 				UNAME_MACHINE="alphaev68"
+				;;
+			3-1307)
+				UNAME_MACHINE="alphaev7"
 				;;
 		esac
 	fi
@@ -875,7 +878,7 @@ EOF
 		;;
 	  a.out-i386-linux)
 		echo "${UNAME_MACHINE}-pc-linux-gnuaout"
-		exit 0 ;;		
+		exit 0 ;;
 	  coff-i386)
 		echo "${UNAME_MACHINE}-pc-linux-gnucoff"
 		exit 0 ;;
@@ -1078,6 +1081,9 @@ EOF
 	exit 0 ;;
     SX-5:SUPER-UX:*:*)
 	echo sx5-nec-superux${UNAME_RELEASE}
+	exit 0 ;;
+    SX-6:SUPER-UX:*:*)
+	echo sx6-nec-superux${UNAME_RELEASE}
 	exit 0 ;;
     Power*:Rhapsody:*:*)
 	echo powerpc-apple-rhapsody${UNAME_RELEASE}

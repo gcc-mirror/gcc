@@ -1875,6 +1875,12 @@ mipsisa64-*-elf* | mipsisa64el-*-elf*)
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64|MASK_GAS"
 	tm_defines="MIPS_ISA_DEFAULT=64 MIPS_ABI_DEFAULT=ABI_MEABI"
 	;;
+mipsisa64sr71k-*-elf*)
+        tm_file="${tm_file} mips/elf.h"
+        tmake_file=mips/t-sr71k
+	target_cpu_default="MASK_64BIT|MASK_FLOAT64|MASK_GAS"
+	tm_defines="MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sr71000\\\" MIPS_ABI_DEFAULT=ABI_MEABI"
+        ;;
 mipsisa64sb1-*-elf* | mipsisa64sb1el-*-elf*)
 	tm_file="${tm_file} mips/elf.h"
 	tmake_file=mips/t-elf
@@ -1891,6 +1897,11 @@ mips64-*-elf* | mips64el-*-elf*)
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64|MASK_GAS"
 	tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
 	;;
+mips64vr-*-elf* | mips64vrel-*-elf*)
+        tm_file="mips/vr.h ${tm_file} mips/elf64.h"
+        tm_defines="MIPS_ABI_DEFAULT=ABI_O64"
+        tmake_file=mips/t-vr
+        ;;
 mips64orion-*-elf* | mips64orionel-*-elf*)
 	tm_file="${tm_file} mips/elforion.h mips/elf64.h"
 	tmake_file=mips/t-elf

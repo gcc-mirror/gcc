@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002 Free Software Foundation, Inc.
 
-timestamp='2002-07-03'
+timestamp='2002-08-20'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -239,6 +239,7 @@ case $basic_machine in
 	| mips | mipsbe | mipseb | mipsel | mipsle \
 	| mips16 \
 	| mips64 | mips64el \
+        | mips64vr | mips64vrel \
 	| mips64orion | mips64orionel \
 	| mips64vr4100 | mips64vr4100el \
 	| mips64vr4300 | mips64vr4300el \
@@ -246,6 +247,7 @@ case $basic_machine in
 	| mipsisa32 | mipsisa32el \
 	| mipsisa64 | mipsisa64el \
 	| mipsisa64sb1 | mipsisa64sb1el \
+	| mipsisa64sr71k | mipsisa64sr71kel \
 	| mipstx39 | mipstx39el \
 	| mn10200 | mn10300 \
 	| ns16k | ns32k \
@@ -307,6 +309,7 @@ case $basic_machine in
 	| mips-* | mipsbe-* | mipseb-* | mipsel-* | mipsle-* \
 	| mips16-* \
 	| mips64-* | mips64el-* \
+        | mips64vr-* | mips64vrel-* \
 	| mips64orion-* | mips64orionel-* \
 	| mips64vr4100-* | mips64vr4100el-* \
 	| mips64vr4300-* | mips64vr4300el-* \
@@ -314,6 +317,7 @@ case $basic_machine in
 	| mipsisa32-* | mipsisa32el-* \
 	| mipsisa64-* | mipsisa64el-* \
 	| mipsisa64sb1-* | mipsisa64sb1el-* \
+	| mipsisa64sr71k-* | mipsisa64sr71kel-* \
 	| mipstx39 | mipstx39el \
 	| none-* | np1-* | ns16k-* | ns32k-* \
 	| orion-* \
@@ -751,7 +755,7 @@ case $basic_machine in
 	pentium | p5 | k5 | k6 | nexgen | viac3)
 		basic_machine=i586-pc
 		;;
-	pentiumpro | p6 | 6x86 | athlon)
+	pentiumpro | p6 | 6x86 | athlon | athlon_*)
 		basic_machine=i686-pc
 		;;
 	pentiumii | pentium2)
@@ -817,6 +821,12 @@ case $basic_machine in
 	sa29200)
 		basic_machine=a29k-amd
 		os=-udi
+		;;
+	sb1)
+		basic_machine=mipsisa64sb1-unknown
+		;;
+	sb1el)
+		basic_machine=mipsisa64sb1el-unknown
 		;;
 	sequent)
 		basic_machine=i386-sequent
