@@ -1,3 +1,7 @@
+2004-02-11  Uros Bizjak  <uros@kss-loka.si>
+
+	* gcc.dg/builtins-33.c: New test.
+
 2004-02-11  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc.dg/pr14092-1.c: Use intptr_t for the cast.

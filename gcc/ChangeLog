@@ -1,3 +1,19 @@
+2004-02-11  Uros Bizjak  <uros@kss-loka.si>
+
+	* optabs.h (enum optab_index): Add new OTI_log10 and OTI_log2.
+	(log10_optab, log2_optab): Define corresponding macros.
+	* optabs.c (init_optabs): Initialize log10_optab and log2_optab.
+	* genopinit.c (optabs): Implement log10_optab and log2_optab
+	using log10?f2 and log2?f2 patterns.
+	* builtins.c (expand_builtin_mathfn): Handle BUILT_IN_LOG10{,F,L}
+	using log10_optab, and BUILT_IN_LOG2{,F,L} using log2_optab.
+	(expand_builtin): Expand BUILT_IN_LOG10{,F,L} and BUILT_IN_LOG2{,F,L}
+	using expand_builtin_mathfn if flag_unsafe_math_optimizations is set.
+
+	* config/i386/i386.md (log10sf2, log10df2, log10xf2, log2sf2,
+	log2df2, log2xf2): New patterns to implement log10, log10f, log10l,
+	log2, log2f and log2l built-ins as inline x87 intrinsics.
+
 2004-02-11  Richard Henderson  <rth@redhat.com>
 
 	* flow.c (insn_dead_p): A clobber of a dead hard register is a
