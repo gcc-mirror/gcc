@@ -194,10 +194,8 @@ skip_rest_of_line (pfile)
     _cpp_pop_context (pfile);
 
   /* Sweep up all tokens remaining on the line.  */
-  pfile->state.prevent_expansion++;
   while (!pfile->state.next_bol)
     _cpp_lex_token (pfile, &token);
-  pfile->state.prevent_expansion--;
 }
 
 /* Ensure there are no stray tokens at the end of a directive.  */
@@ -565,10 +563,9 @@ parse_include (pfile, header)
      cpp_reader *pfile;
      cpp_token *header;
 {
-  int is_pragma = pfile->directive == &dtable[T_PRAGMA];
   const unsigned char *dir;
 
-  if (is_pragma)
+  if (pfile->directive == &dtable[T_PRAGMA])
     dir = U"pragma dependency";
   else
     dir = pfile->directive->name;
@@ -592,15 +589,6 @@ parse_include (pfile, header)
       return 1;
     }
 
-  if (!is_pragma)
-    {
-      check_eol (pfile);
-      /* Get out of macro context, if we are.  */
-      skip_rest_of_line (pfile);
-      if (pfile->cb.include)
-	(*pfile->cb.include) (pfile, dir, header);
-    }
-
   return 0;
 }
 
@@ -612,22 +600,32 @@ do_include_common (pfile, type)
 {
   cpp_token header;
 
+  /* For #include_next, if this is the primary source file, warn and
+     use the normal search logic.  */
+  if (type == IT_INCLUDE_NEXT && ! pfile->buffer->prev)
+    {
+      cpp_warning (pfile, "#include_next in primary source file");
+      type = IT_INCLUDE;
+    }
+  else if (type == IT_IMPORT && CPP_OPTION (pfile, warn_import))
+    {
+      CPP_OPTION (pfile, warn_import) = 0;
+      cpp_warning (pfile,
+	   "#import is obsolete, use an #ifndef wrapper in the header file");
+    }
+
   if (!parse_include (pfile, &header))
     {
       /* Prevent #include recursion.  */
       if (pfile->buffer_stack_depth >= CPP_STACK_MAX)
 	cpp_fatal (pfile, "#include nested too deeply");
-      else if (pfile->context->prev)
-	cpp_ice (pfile, "attempt to push file buffer with contexts stacked");
       else
 	{
-	  /* For #include_next, if this is the primary source file,
-	     warn and use the normal search logic.  */
-	  if (type == IT_INCLUDE_NEXT && ! pfile->buffer->prev)
-	    {
-	      cpp_warning (pfile, "#include_next in primary source file");
-	      type = IT_INCLUDE;
-	    }
+	  check_eol (pfile);
+	  /* Get out of macro context, if we are.  */
+	  skip_rest_of_line (pfile);
+	  if (pfile->cb.include)
+	    (*pfile->cb.include) (pfile, pfile->directive->name, &header);
 
 	  _cpp_execute_include (pfile, &header, type);
 	}
@@ -645,13 +643,6 @@ static void
 do_import (pfile)
      cpp_reader *pfile;
 {
-  if (!pfile->import_warning && CPP_OPTION (pfile, warn_import))
-    {
-      pfile->import_warning = 1;
-      cpp_warning (pfile,
-	   "#import is obsolete, use an #ifndef wrapper in the header file");
-    }
-
   do_include_common (pfile, IT_IMPORT);
 }
 
@@ -1111,11 +1102,6 @@ do_pragma_poison (pfile)
       hp->flags |= NODE_POISONED | NODE_DIAGNOSTIC;
     }
   pfile->state.poisoned_ok = 0;
-
-#if 0				/* Doesn't quite work yet.  */
-  if (tok.type == CPP_EOF && pfile->cb.poison)
-    (*pfile->cb.poison) (pfile);
-#endif
 }
 
 /* Mark the current header as a system header.  This will suppress

@@ -1,3 +1,15 @@
+2001-07-29  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* cpphash.h (struct cpp_reader): Remove import_warning.
+	* cpplib.c (skip_rest_of_line): Don't bother turning off
+	macro expansion.
+	(parse_include): Move include handling to...
+	(do_include_common): ... here.  Move import warning from...
+	(do_import): ... here.
+	(do_pragma_poison): Don't do a callback for poison identifiers.
+	* cpplib.h (struct cpp_callbacks): Don't do poison callbacks.
+	* cppmain.c (setup_callbacks): Similarly.
+
 Sun Jul 29 23:26:50 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* rtlanal.c (parms_set, find_first_parameter_load): Break out from...;
