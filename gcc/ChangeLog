@@ -1,3 +1,8 @@
+2004-03-07  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold) <EQ_EXPR>: Rewrite optimization to transform
+	"foo++ == const" into "++foo == const+incr".
+
 2004-03-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_in_small_data_p): Return false if
