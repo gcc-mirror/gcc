@@ -1,3 +1,8 @@
+2002-11-10  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/mips/netbsd.h (TARGET_OS_CPP_BUILTINS): Define
+	__ABICALLS__ if TARGET_ABICALLS.
+
 Sun Nov 10 18:49:21 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (MIN_UNITS_PER_WORD): Define to 8 for x86-64 libgcc.

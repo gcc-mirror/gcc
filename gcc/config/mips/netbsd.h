@@ -39,6 +39,9 @@ Boston, MA 02111-1307, USA.  */
       if (TARGET_LONG64)				\
 	builtin_define ("__LONG64");			\
 							\
+      if (TARGET_ABICALLS)				\
+	builtin_define ("__ABICALLS__");		\
+							\
       if (mips_abi == ABI_EABI)				\
 	builtin_define ("__mips_eabi");			\
       else if (mips_abi == ABI_N32)			\
