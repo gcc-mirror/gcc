@@ -864,7 +864,7 @@ tagged_types_tu_compatible_p (tree t1, tree t2)
 	    tagged_tu_seen_base = &tts;
 
 	    if (DECL_NAME (s1) != NULL)
-	      for (s2 = TYPE_VALUES (t2); s2; s2 = TREE_CHAIN (s2))
+	      for (s2 = TYPE_FIELDS (t2); s2; s2 = TREE_CHAIN (s2))
 		if (DECL_NAME (s1) == DECL_NAME (s2))
 		  {
 		    int result;
