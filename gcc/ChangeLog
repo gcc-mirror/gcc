@@ -1,3 +1,7 @@
+2001-06-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* NEWS: Remove.
+
 2001-06-13  Richard Henderson  <rth@redhat.com>
 
 	* ifcvt.c (cond_exec_get_condition): Use reversed_comparison_code.

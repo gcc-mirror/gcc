@@ -1,3 +1,11 @@
+2001-06-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_release (-b): Remove option. 
+	(build_sources): Generate NEWS files.
+	(build_tarfiles): Set permissions on directories and files.
+	Always generate BZIP2 files.
+	* gennews: Set TERM to vt100 for Lynx.
+
 2001-06-13  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release (build_sources): Generate documentation in HTML from

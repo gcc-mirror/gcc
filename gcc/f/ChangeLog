@@ -1,3 +1,8 @@
+Wed Jun 13 11:22:39 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* BUGS: Remove.
+	* NEWS: Likewise.
+
 2001-06-10  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* g77install.texi: Remove all documentation here.  Point

@@ -34,8 +34,8 @@
 # Notes
 ########################################################################
 
-# Here is an example usage of this script, to create the GCC 3.0.2
-# release:
+# Here is an example usage of this script, to create a GCC 3.0.2
+# prerelease:
 #
 #   gcc_release -r 3.0.2
 #
@@ -69,7 +69,7 @@ gcc_release     [-d destination]
 		[-r release]
 		[-t tag]
 		[-p previous-tarball]
-		[-b] [-s] [-f]
+		[-s] [-f]
 EOF
     exit 1
 }
@@ -122,10 +122,8 @@ build_sources() {
   changedir "gcc-${RELEASE}"
   contrib/gcc_update --touch
 
-  # Now, we must build the compiler in order to create any generated
-  # files that are supposed to go in the source directory.  This is
-  # also a good sanity check to make sure that the release builds
-  # on at least one platform.
+  # For a prerelease or real release, we need to generate additional
+  # files not present in CVS.
   if [ $SNAPSHOT -ne 1 ]; then
     # Generate the documentation.
     inform "Building install docs"
@@ -135,9 +133,22 @@ build_sources() {
     export DESTDIR
     ${SOURCE_DIRECTORY}/gcc/doc/install.texi2html
 
+    # Regenerate the NEWS file.
+    contrib/gennews > gcc/NEWS || \
+      error "Could not regenerate NEWS files"
+
+    # Now, we must build the compiler in order to create any generated
+    # files that are supposed to go in the source directory.  This is
+    # also a good sanity check to make sure that the release builds
+    # on at least one platform.
     inform "Building compiler"
-    contrib/gcc_build -d ${SOURCE_DIRECTORY} -o ../objdir build || \
+    OBJECT_DIRECTORY=../objdir
+    contrib/gcc_build -d ${SOURCE_DIRECTORY} -o ${OBJECT_DIRECTORY} build || \
       error "Could not rebuild GCC"
+
+    # Regenerate the Fotran NEWS and BUGS files.
+    (cd  ${OBJECT_DIRECTORY}/gcc/f && make f77.rebuilt) || \
+      error "Could not regenerate Fortran NEWS and BUGS files"
   fi
 
   # Move message catalogs to source directory.
@@ -176,6 +187,12 @@ build_tarfiles() {
 
   changedir "${WORKING_DIRECTORY}"
 
+  # The GNU Coding Standards specify that all files should
+  # world readable.
+  chmod -R a+r ${SOURCE_DIRECTORY}
+  # And that all directories have mode 777.
+  find ${SOURCE_DIRECTORY} -type d -exec chmod 777 {} \;
+ 
   # Build one huge tarfile for the entire distribution.
   build_tarfile gcc-${RELEASE} `basename ${SOURCE_DIRECTORY}`
 
@@ -203,12 +220,10 @@ build_tarfiles() {
   fi
 
   # Possibly build .bz2 files.
-  if [ $CREATE_BZIP2 -ne 0 ]; then
-    for f in ${FILE_LIST}; do
-      bzfile=${f%.gz}.bz2
-      zcat $f | ${BZIP2} > ${bzfile}
-      FILE_LIST="${FILE_LIST} ${bzfile}"
-    done
+  for f in ${FILE_LIST}; do
+    bzfile=${f%.gz}.bz2
+    zcat $f | ${BZIP2} > ${bzfile}
+    FILE_LIST="${FILE_LIST} ${bzfile}"
   fi
 }
 
@@ -321,9 +336,6 @@ TESTSUITE_DIRS="gcc/testsuite"
 # Non-zero if this is the final release, rather than a prerelease.
 FINAL=0
 
-# Non-zero if we create .bz2 files.
-CREATE_BZIP2=0
-
 # Non-zero if we are building a snapshot, and don't build gcc or
 # include generated files.
 SNAPSHOT=0
@@ -350,14 +362,13 @@ TAR="${TAR:-tar}"
 ########################################################################
 
 # Parse the options.
-while getopts "d:fr:u:t:p:bs" ARG; do
+while getopts "d:fr:u:t:p:s" ARG; do
     case $ARG in
     d)    DESTINATION="${OPTARG}";;
     r)    RELEASE="${OPTARG}";;
     t)    TAG="${OPTARG}";;
     u)    CVS_USERNAME="${OPTARG}";;
     f)    FINAL=1;;
-    b)    CREATE_BZIP2=1;;
     s)    SNAPSHOT=1;;
     p)    OLD_TARS="${OLD_TARS} ${OPTARG}";;
     \?)   usage;;
