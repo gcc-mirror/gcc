@@ -1714,12 +1714,9 @@ complete_start_java_method (fndecl)
 	{
 	  tree function_body = DECL_FUNCTION_BODY (fndecl);
 	  tree body = BLOCK_EXPR_BODY (function_body);
-	  lock = build (WITH_CLEANUP_EXPR, void_type_node,
-			enter, exit, NULL_TREE);
-	  TREE_SIDE_EFFECTS (lock) = 1;
-	  lock = build (COMPOUND_EXPR, TREE_TYPE (body), lock, body);
-	  TREE_SIDE_EFFECTS (lock) = 1;
-	  lock = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (body), lock);
+	  lock = build (COMPOUND_EXPR, void_type_node,
+			enter,
+			build (TRY_FINALLY_EXPR, void_type_node, body, exit));
 	  TREE_SIDE_EFFECTS (lock) = 1;
 	  BLOCK_EXPR_BODY (function_body) = lock;
 	}

@@ -529,29 +529,6 @@ check_init (exp, before)
 	break;
       }
 
-    case CLEANUP_POINT_EXPR:
-      {
-	struct alternatives alt;
-	BEGIN_ALTERNATIVES (before, alt);
-	CLEAR_ALL (alt.combined);
-	check_init (TREE_OPERAND (exp, 0), before); 
-	UNION (alt.combined, alt.combined, before);
-	END_ALTERNATIVES (before, alt);
-      }
-      return;
-    case WITH_CLEANUP_EXPR:
-      {
-	struct alternatives *alt = alternatives;	
-#ifdef ENABLE_JC1_CHECKING
-	if (TREE_CODE (alt->block) != CLEANUP_POINT_EXPR)
-	  abort ();
-#endif
-	check_init (TREE_OPERAND (exp, 0), before);
-	UNION (alt->combined, alt->combined, before);
-	check_init (TREE_OPERAND (exp, 1), alt->combined);
-	return;
-      }
-
     case TRY_EXPR:
       {
 	tree try_clause = TREE_OPERAND (exp, 0);
