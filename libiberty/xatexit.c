@@ -5,6 +5,20 @@
  * %sccs.include.redist.c%
  */
 
+
+/*
+
+@deftypefun int xatexit (void (*@var{fn}) (void))
+
+Behaves as the standard @code{atexit} function, but with no limit on
+the number of registered funtions.  Returns 0 on success, or -1 on
+failure.  If you use @code{xatexit} to register functions, you must use
+@code{xexit} to terminate your program.
+
+@end deftypefun
+
+*/
+
 /* Adapted from newlib/libc/stdlib/{,at}exit.[ch].
    If you use xatexit, you must call xexit instead of exit.  */
 

@@ -1,3 +1,28 @@
+2001-09-20  DJ Delorie  <dj@redhat.com>
+	    Phil Edwards  <pedwards@disaster.jaj.com>
+	
+	* configure.in (MAKEINFO, PERL): Detect these.
+	(--enable-maintainer-mode): Add.
+	* configure: Regenerate.
+	* Makefile.in (MAKEINFO, PERL): Define.
+	(libiberty.info, libiberty.dvi, libiberty.html): New.
+	(CFILES): Add bsearch.c.
+	(CONFIGURED_OFILES): New, list of objects configure might add.
+	(maint-missing, maint-buildall): New, for maintainers only.
+	(clean, mostlyclean): Add info/dvi/html files.
+	* libiberty.texi, copying-lib.texi, obstacks.texi, functions.texi: New.
+	* gather-docs: New, for maintainers.
+	* maint-tool: New, for maintainers.
+	* alloca.c, atexit.c, basename.c, bcmp.c, bcopy.c, bsearch.c,
+	bzero.c, calloc.c, clock.c, configure.in, configure, getcwd.c,
+	getpagesize.c, getpwd.c, index.c, memchr.c, memcmp.c, memcpy.c,
+	memmove.c, memset.c, putenv.c, rename.c, rindex.c, setenv.c,
+	sigsetmask.c, strcasecmp.c, strchr.c, strdup.c, strerror.c,
+	strncasecmp.c, strncmp.c, strrchr.c, strstr.c, strtod.c, strtol.c,
+	tmpnam.c, vfork.c, vprintf.c, waitpid.c, xatexit.c, xexit.c,
+	xmalloc.c, xmemdup.c, xstrdup.c, xstrerror.c: Add or update
+	documentation.
+	
 2001-09-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* concat.c (reconcat): Fix for traditional C.

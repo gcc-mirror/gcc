@@ -2,20 +2,14 @@
 
 /*
 
-NAME
+@deftypefn Supplemental int getpagesize ()
 
-	getpagesize -- return the number of bytes in page of memory
+Returns the number of bytes in a page of memory.  This is the
+granularity of many of the system memory management routines.  No
+guarantee is made as to whether or not it is the same as the basic
+memory management hardware page size.
 
-SYNOPSIS
-
-	int getpagesize (void)
-
-DESCRIPTION
-
-	Returns the number of bytes in a page of memory.  This is the
-	granularity of many of the system memory management routines.
-	No guarantee is made as to whether or not it is the same as the
-	basic memory management hardware page size.
+@end deftypefn
 
 BUGS
 

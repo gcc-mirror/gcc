@@ -1,5 +1,16 @@
 /* calloc -- allocate memory which has been initialized to zero.
    This function is in the public domain. */
+
+/*
+
+@deftypefn Supplemental void* calloc (size_t @var{nelem}, size_t @var{elsize})
+
+Uses @code{malloc} to allocate storage for @var{nelem} objects of
+@var{elsize} bytes each, then zeros the memory.
+
+@end deftypefn
+
+*/
  
 #include "ansidecl.h"
 #include "libiberty.h"

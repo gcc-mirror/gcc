@@ -1,6 +1,17 @@
 /* memset
    This implementation is in the public domain.  */
 
+/*
+
+@deftypefn Supplemental void* memset (void *@var{s}, int @var{c}, size_t @var{count})
+
+Sets the first @var{count} bytes of @var{s} to the constant byte
+@var{c}, returning a pointer to @var{s}.
+
+@end deftypefn
+
+*/
+
 #include <ansidecl.h>
 #ifdef __STDC__
 #include <stddef.h>

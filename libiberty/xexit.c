@@ -17,6 +17,18 @@ License along with libiberty; see the file COPYING.LIB.  If not, write
 to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/*
+
+@deftypefn Replacement void xexit (int @var{code})
+
+Terminates the program.  If any functions have been registered with
+the @code{xatexit} rpelacement function, they will be called first.
+Termination is handled via the system's normal @code{exit} call.
+
+@end deftypefn
+
+*/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

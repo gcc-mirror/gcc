@@ -1,3 +1,14 @@
+/*
+
+@deftypefn Supplemental char* strdup (const char *@var{s})
+
+Returns a pointer to a copy of @var{s} in memory obtained from
+@code{malloc}, or NULL if insufficient memory was available.
+
+@end deftypefn
+
+*/
+
 char *
 strdup(s)
      char *s;

@@ -1,7 +1,16 @@
 /* rename -- rename a file
    This function is in the public domain. */
 
-/* Rename a file.  */
+/*
+
+@deftypefn Supplemental int rename (const char *@var{old}, const char *@var{new})
+
+Renames a file from @var{old} to @var{new}.  If @var{new} already
+exists, it is removed.
+
+@end deftypefn
+
+*/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

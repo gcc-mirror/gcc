@@ -26,6 +26,51 @@ else
 fi
 AC_CONFIG_AUX_DIR($libiberty_topdir)
 
+dnl Very limited version of automake's enable-maintainer-mode
+
+AC_MSG_CHECKING([whether to enable maintainer-specific portions of Makefiles])
+  dnl maintainer-mode is disabled by default
+  AC_ARG_ENABLE(maintainer-mode,
+[  --enable-maintainer-mode
+                          enable make rules and dependencies not useful
+                          (and sometimes confusing) to the casual installer],
+      maintainer_mode=$enableval,
+      maintainer_mode=no)
+
+AC_MSG_RESULT($maintainer_mode)
+
+if test "$maintainer_mode" = "yes"; then
+  MAINT=''
+  NOTMAINT='#'
+else
+  MAINT='#'
+  NOTMAINT=''
+fi
+AC_SUBST(MAINT)dnl
+AC_SUBST(NOTMAINT)dnl
+
+# Do we have a single-tree copy of texinfo?
+if test -f $srcdir/../texinfo/Makefile.in; then
+  MAKEINFO='$(objdir)/../texinfo/makeinfo/makeinfo'
+  AC_MSG_RESULT([Using makeinfo from the unified source tree.])
+else
+  AC_CHECK_PROG(MAKEINFO, makeinfo, makeinfo, )
+fi
+if test x"$MAKEINFO" = x""; then
+  BUILD_INFO=
+else
+  BUILD_INFO=info
+fi
+AC_SUBST(BUILD_INFO)
+
+AC_CHECK_PROG(PERL, perl, perl, )
+if test x"$PERL" = x""; then
+  HAVE_PERL='#'
+else
+  HAVE_PERL=''
+fi
+AC_SUBST(HAVE_PERL)
+
 AC_CANONICAL_HOST
 
 dnl When we start using automake:

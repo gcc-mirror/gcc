@@ -3,8 +3,17 @@
    Contributed by Cygnus Support.
    This file is in the public doamin. */
 
-/* Set the current signal mask to the set provided, and return the 
-   previous value */
+/*
+
+@deftypefn Supplemental int sigsetmask (int @var{set})
+
+Sets the signal mask to the one provided in @var{set} and returns
+the old mask (which, for libiberty's implementation, will always
+be the value @code{1}).
+
+@end deftypefn
+
+*/
 
 #define _POSIX_SOURCE
 #include <ansidecl.h>

@@ -2,15 +2,14 @@
    This function is in the public domain.  */
 
 /*
-NAME
-	memcpy -- copy memory regions of arbitary length
 
-SYNOPSIS
-	void* memcpy (void *out, const void *in, size_t n);
+@deftypefn Supplemental void* memcpy (void *@var{out}, const void *@var{in}, size_t @var{length})
 
-DESCRIPTION
-	Copy LENGTH bytes from memory region pointed to by IN to memory
-	region pointed to by OUT.
+Copies @var{length} bytes from memory region @var{in} to region
+@var{out}.  Returns a pointer to @var{out}.
+
+@end deftypefn
+
 */
 
 #include <ansidecl.h>

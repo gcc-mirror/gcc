@@ -16,6 +16,19 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
+/*
+
+@deftypefn Supplemental int putenv (const char *@var{string})
+
+Uses @code{setenv} or @code{unsetenv} to put @var{string} into
+the environment or remove it.  If @var{string} is of the form
+@samp{name=value} the string is added; if no `=' is present the
+name is unset/removed.
+
+@end deftypefn
+
+*/
+
 #if defined (_AIX) && !defined (__GNUC__)
  #pragma alloca
 #endif

@@ -28,6 +28,23 @@
  * SUCH DAMAGE.
  */
 
+/*
+
+@deftypefn Supplemental {long int} strtol (const char *@var{string}, char **@var{endptr}, int @var{base})
+
+The @code{strtol} function converts the string in @var{string} to a
+long integer value according to the given @var{base}, which must be
+between 2 and 36 inclusive, or be the special value 0.  If @var{base}
+is 0, @code{strtol} will look for the prefixes @code{0} and @code{0x}
+to indicate bases 8 and 16, respectively, else default to base 10.
+When the base is 16 (either explicitly or implicitly), a prefix of
+@code{0x} is allowed.  The handling of endptr is as that of
+@code{strtod} above.
+
+@end deftypefn
+
+*/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

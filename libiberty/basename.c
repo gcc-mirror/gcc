@@ -2,20 +2,14 @@
    This file is in the public domain. */
 
 /*
-NAME
-	basename -- return pointer to last component of a pathname
 
-SYNOPSIS
-	char *basename (const char *name)
+@deftypefn Supplemental char* basename (const char *@var{name})
 
-DESCRIPTION
-	Given a pointer to a string containing a typical pathname
-	(/usr/src/cmd/ls/ls.c for example), returns a pointer to the
-	last component of the pathname ("ls.c" in this case).
+Returns a pointer to the last component of pathname @var{name}.
+Behavior is undefined if the pathname ends in a directory separator.
 
-BUGS
-	Presumes a UNIX or DOS/Windows style path with UNIX or DOS/Windows 
-	style separators.
+@end deftypefn
+
 */
 
 #include "ansidecl.h"

@@ -2,6 +2,19 @@
    This trivial function is in the public domain.
    Jeff Garzik, September 1999.  */
 
+/*
+
+@deftypefn Replacement void* xmemdup (void *@var{input}, size_t @var{copy_size}, size_t @var{alloc_size})
+
+Duplicates a region of memory without fail.  First, @var{alloc_size} bytes
+are allocated, then @var{copy_size} bytes from @var{input} are copied into
+it, and the new memory is returned.  If fewer bytes are copied than were
+allocated, the remaining memory is zeroed.
+
+@end deftypefn
+
+*/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

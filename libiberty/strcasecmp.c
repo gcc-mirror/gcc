@@ -10,6 +10,16 @@
  * is provided ``as is'' without express or implied warranty.
  */
 
+/*
+  
+@deftypefn Supplemental int strcasecmp (const char *@var{s1}, const char *@var{s2})
+
+A case-insensitive @code{strcmp}.
+
+@end deftypefn
+
+*/
+
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "@(#)strcasecmp.c	5.5 (Berkeley) 11/24/87";
 #endif /* LIBC_SCCS and not lint */

@@ -2,16 +2,17 @@
    This function is in the public domain.  */
 
 /*
-NAME
-	memcmp -- compare two memory regions
 
-SYNOPSIS
-	int memcmp (const void *from, const void *to, size_t count)
+@deftypefn Supplemental int memcmp (const void *@var{x}, const void *@var{y}, size_t @var{count})
 
-DESCRIPTION
-	Compare two memory regions and return less than,
-	equal to, or greater than zero, according to lexicographical
-	ordering of the compared regions.
+Compares the first @var{count} bytes of two areas of memory.  Returns
+zero if they are the same, a value less than zero if @var{x} is
+lexically less than @var{y}, or a value greater than zero if @var{x}
+is lexically greater than @var{y}.  Note that lexical order is determined
+as if comparing unsigned char arrays.
+
+@end deftypefn
+
 */
 
 #include <ansidecl.h>

@@ -21,6 +21,27 @@
    allocating any.  It is a good idea to use alloca(0) in
    your main control loop, etc. to force garbage collection.  */
 
+/*
+
+@deftypefn Replacement void* alloca (size_t)
+
+This function allocates memory which will be automatically reclaimed
+after the procedure exits.  The @libib{} implementation does not free
+the memory immediately but will do so eventually during subsequent
+calls to this function.  Memory is allocated using @code{xmalloc} under
+normal circumstances.
+
+The header file @file{alloca-conf.h} can be used in conjunction with the
+GNU Autoconf test @code{AC_FUNC_ALLOCA} to test for and properly make
+available this function.  The @code{AC_FUNC_ALLOCA} test requires that
+client code use a block of preprocessor code to be safe (see the Autoconf
+manual for more); this header incorporates that logic and more, including
+the possibility of a GCC builtin function.
+
+@end deftypefn
+
+*/
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
