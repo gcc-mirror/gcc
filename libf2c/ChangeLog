@@ -1,3 +1,9 @@
+2002-01-20  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* Makefile.in: $(MULTISUBDIR) has an implied leading `/';
+	remove duplicates.
+	Use libtool for removing libg2c{a|la|so} for the `uninstall' target.
+
 2002-01-18  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* Makefile.in: Add missing `/' separator in last change.
