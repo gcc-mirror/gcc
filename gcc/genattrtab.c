@@ -5212,18 +5212,15 @@ write_attr_case (attr, av, write_case_lines, prefix, suffix, indent,
   must_extract = must_constrain = address_used = 0;
   walk_attr_value (av->value);
 
-  if (must_extract)
-    {
-      write_indent (indent + 2);
-      printf ("extract_insn (insn);\n");
-    }
-
   if (must_constrain)
     {
       write_indent (indent + 2);
-      printf ("if (! constrain_operands (reload_completed))\n");
+      printf ("extract_constrain_insn_cached (insn);\n");
+    }
+  else if (must_extract)
+    {
       write_indent (indent + 2);
-      printf ("  fatal_insn_not_found (insn);\n");
+      printf ("extract_insn_cached (insn);\n");
     }
 
   write_attr_set (attr, indent + 2, av->value, prefix, suffix,

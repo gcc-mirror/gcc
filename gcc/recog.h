@@ -116,6 +116,8 @@ extern int recog			PARAMS ((rtx, rtx, int *));
 extern void add_clobbers		PARAMS ((rtx, int));
 extern void insn_extract		PARAMS ((rtx));
 extern void extract_insn		PARAMS ((rtx));
+extern void extract_constrain_insn_cached PARAMS ((rtx));
+extern void extract_insn_cached		PARAMS ((rtx));
 extern void preprocess_constraints	PARAMS ((void));
 extern rtx peep2_next_insn		PARAMS ((int));
 extern int peep2_regno_dead_p		PARAMS ((int, int));
@@ -186,6 +188,9 @@ struct recog_data
 
   /* The number of alternatives in the constraints for the insn.  */
   char n_alternatives;
+
+  /* In case we are caching, hold insn data was generated for.  */
+  rtx insn;
 };
 
 extern struct recog_data recog_data;
