@@ -1422,8 +1422,31 @@ split_edge (edge_in)
   BASIC_BLOCK (i) = bb;
   bb->index = i;
 
-  /* Create the basic block note.  */
-  if (old_succ != EXIT_BLOCK_PTR)
+  /* Create the basic block note. 
+
+     Where we place the note can have a noticable impact on the generated
+     code.  Consider this cfg: 
+	
+
+		        E
+			|
+			0
+		       / \
+		   +->1-->2--->E
+                   |  |
+		   +--+
+
+      If we need to insert an insn on the edge from block 0 to block 1,
+      we want to ensure the instructions we insert are outside of any
+      loop notes that physically sit between block 0 and block 1.  Otherwise
+      we confuse the loop optimizer into thinking the loop is a phony.  */
+  if (old_succ != EXIT_BLOCK_PTR
+      && PREV_INSN (old_succ->head)
+      && GET_CODE (PREV_INSN (old_succ->head)) == NOTE
+      && NOTE_LINE_NUMBER (PREV_INSN (old_succ->head)) == NOTE_INSN_LOOP_BEG)
+    bb_note = emit_note_before (NOTE_INSN_BASIC_BLOCK,
+				PREV_INSN (old_succ->head));
+  else if (old_succ != EXIT_BLOCK_PTR)
     bb_note = emit_note_before (NOTE_INSN_BASIC_BLOCK, old_succ->head);
   else
     bb_note = emit_note_after (NOTE_INSN_BASIC_BLOCK, get_last_insn ());
