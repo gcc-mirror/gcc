@@ -159,7 +159,7 @@ ext_headers = \
 	${ext_srcdir}/stl_rope.h
 
 # This is the common subset of files that all three "C" header models use.
-c_base_srcdir = @C_INCLUDE_DIR@/
+c_base_srcdir = @C_INCLUDE_DIR@
 c_base_builddir = ./
 c_base_headers = \
 	${c_base_srcdir}/cassert \
