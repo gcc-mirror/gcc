@@ -16,6 +16,9 @@
 	LABEL_REF to mcore_general_movsrc_operand.  Add SYMBOL_REF to
 	mcore_call_address_operand.
 
+	* config/sh/sh.h (PREDICATE_CODES): Add CONST to
+	general_movsrc_operand.
+
 2005-04-04  Alan Modra  <amodra@bigpond.net.au>
 
 	* passes.c (rest_of_handle_final): NULL unlikely_text_section_name
