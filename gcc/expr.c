@@ -6523,7 +6523,8 @@ expand_expr (exp, target, tmode, modifier)
 		    tree elem = CONSTRUCTOR_ELTS (init);
 
 		    for (elem = CONSTRUCTOR_ELTS (init);
-			 ! tree_int_cst_equal (TREE_PURPOSE (elem), index);
+			 (elem
+			  && !tree_int_cst_equal (TREE_PURPOSE (elem), index));
 			 elem = TREE_CHAIN (elem))
 		      ;
 

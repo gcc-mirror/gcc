@@ -1,6 +1,11 @@
+2000-03-08  Jason Merrill  <jason@casey.cygnus.com>
+
+	* expr.c (expand_expr, case ARRAY_REF): Still check for missing
+	CONSTRUCTOR element.
+
 2000-03-08  Gavin Romig-Koch  <gavin@cetus.cygnus.com>
 
-	* config/mips/mips.c (mips_expand_prologue): If the last 
+	* mips.c (mips_expand_prologue): If the last 
 	named argument is the vararg marker "va_list", treat it as
 	an unnamed argument.
 
