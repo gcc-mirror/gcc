@@ -23,10 +23,10 @@
 /* Defined in libgcc.a */
 #ifdef __cplusplus
 extern "C" {
-extern void __eprintf (const char *, const char *, int, const char *);
+extern void __eprintf (const char *, const char *, unsigned, const char *);
 }
 #else
-extern void __eprintf (const char *, const char *, int, const char *);
+extern void __eprintf (const char *, const char *, unsigned, const char *);
 #endif
 
 #define assert(expression)  \
