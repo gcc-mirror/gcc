@@ -1676,8 +1676,27 @@ easy_vector_constant (rtx op, enum machine_mode mode)
       && cst2 >= -0x7fff && cst2 <= 0x7fff)
     return 1;
 
-  if (TARGET_ALTIVEC && EASY_VECTOR_15 (cst, op, mode))
-    return 1;
+  if (TARGET_ALTIVEC)
+    switch (mode) 
+      {
+      case V4SImode:
+	if (EASY_VECTOR_15 (cst, op, mode))
+	  return 1;
+	if ((cst & 0xffff) != ((cst >> 16) & 0xffff))
+	  break;
+	cst = cst >> 16;
+      case V8HImode:
+	if (EASY_VECTOR_15 (cst, op, mode))
+	  return 1;
+	if ((cst & 0xff) != ((cst >> 8) & 0xff))
+	  break;
+	cst = cst >> 8;
+      case V16QImode:
+	if (EASY_VECTOR_15 (cst, op, mode))
+	  return 1;
+      default: 
+	break;
+      }
 
   if (TARGET_ALTIVEC && EASY_VECTOR_15_ADD_SELF (cst, op, mode))
     return 1;
@@ -1718,23 +1737,37 @@ output_vec_const_move (rtx *operands)
     {
       if (zero_constant (vec, mode))
 	return "vxor %0,%0,%0";
-      else if (EASY_VECTOR_15 (cst, vec, mode))
+      else if (EASY_VECTOR_15_ADD_SELF (cst, vec, mode))
+	return "#";
+      else if (easy_vector_constant (vec, mode))
 	{
 	  operands[1] = GEN_INT (cst);
 	  switch (mode)
 	    {
 	    case V4SImode:
-	      return "vspltisw %0,%1";
+	      if (EASY_VECTOR_15 (cst, vec, mode))
+		{
+		  operands[1] = GEN_INT (cst);
+		  return "vspltisw %0,%1";
+		}
+	      cst = cst >> 16;
 	    case V8HImode:
-	      return "vspltish %0,%1";
+	      if (EASY_VECTOR_15 (cst, vec, mode))
+		{
+		  operands[1] = GEN_INT (cst);
+		  return "vspltish %0,%1";
+		}
+	      cst = cst >> 8;
 	    case V16QImode:
-	      return "vspltisb %0,%1";
+	      if (EASY_VECTOR_15 (cst, vec, mode))
+		{
+		  operands[1] = GEN_INT (cst);
+		  return "vspltisb %0,%1";
+		}
 	    default:
 	      abort ();
 	    }
 	}
-      else if (EASY_VECTOR_15_ADD_SELF (cst, vec, mode))
-	return "#";
       else
 	abort ();
     }
