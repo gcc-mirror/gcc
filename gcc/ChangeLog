@@ -1,5 +1,11 @@
 2003-07-14  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/elf.h (ASM_OUTPUT_ALIGNED_BSS): Use
+	mips_output_aligned_bss.
+	* config/mips/linux.h: Likewise.
+	* config/mips/mips-protos.h (mips_output_aligned_bss): Declare.
+	* config/mips/mips.c (mips_output_aligned_bss): New function.
+
 	* config/mips/elf.h (DBX_DEBUGGING_INFO): Delete.
 	* config/mips/elf64.h: Likewise.
 

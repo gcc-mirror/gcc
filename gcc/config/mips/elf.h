@@ -71,26 +71,8 @@ Boston, MA 02111-1307, USA.  */
 #define BSS_SECTION_ASM_OP	"\t.section\t.bss"
 #endif
 
-/* Like `ASM_OUTPUT_BSS' except takes the required alignment as a
-   separate, explicit argument.  If you define this macro, it is used
-   in place of `ASM_OUTPUT_BSS', and gives you more flexibility in
-   handling the required alignment of the variable.  The alignment is
-   specified as the number of bits.
-
-   Try to use function `asm_output_aligned_bss' defined in file
-   `varasm.c' when defining this macro.  */
 #ifndef ASM_OUTPUT_ALIGNED_BSS
-#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
-do {									\
-  if (SIZE > 0 && SIZE <= (unsigned HOST_WIDE_INT)mips_section_threshold)\
-    named_section (0, ".sbss", 0);					\
-  else									\
-    bss_section ();							\
-  ASM_OUTPUT_ALIGN (FILE, floor_log2 (ALIGN / BITS_PER_UNIT));		\
-  last_assemble_variable_decl = DECL;					\
-  ASM_DECLARE_OBJECT_NAME (FILE, NAME, DECL);				\
-  ASM_OUTPUT_SKIP (FILE, SIZE ? SIZE : 1);				\
-} while (0)
+#define ASM_OUTPUT_ALIGNED_BSS mips_output_aligned_bss
 #endif
 
 #undef ASM_DECLARE_OBJECT_NAME

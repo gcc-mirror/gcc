@@ -6175,6 +6175,31 @@ mips_file_start ()
 	     ASM_COMMENT_START,
 	     mips_section_threshold, mips_arch_info->name, mips_isa);
 }
+
+#ifdef BSS_SECTION_ASM_OP
+/* Implement ASM_OUTPUT_ALIGNED_BSS.  This differs from the default only
+   in the use of sbss.  */
+
+void
+mips_output_aligned_bss (stream, decl, name, size, align)
+     FILE *stream;
+     tree decl;
+     const char *name;
+     unsigned HOST_WIDE_INT size;
+     int align;
+{
+  extern tree last_assemble_variable_decl;
+
+  if (mips_in_small_data_p (decl))
+    named_section (0, ".sbss", 0);
+  else
+    bss_section ();
+  ASM_OUTPUT_ALIGN (stream, floor_log2 (align / BITS_PER_UNIT));
+  last_assemble_variable_decl = decl;
+  ASM_DECLARE_OBJECT_NAME (stream, name, decl);
+  ASM_OUTPUT_SKIP (stream, size != 0 ? size : 1);
+}
+#endif
 
 /* If we are optimizing the global pointer, emit the text section now and any
    small externs which did not have .comm, etc that are needed.  Also, give a

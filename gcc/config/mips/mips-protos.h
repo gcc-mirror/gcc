@@ -39,6 +39,9 @@ extern void		mips_declare_object_name PARAMS ((FILE *, const char *,
 							  tree));
 extern void		mips_finish_declare_object PARAMS ((FILE *, tree,
 							    int, int));
+extern void		mips_output_aligned_bss
+				PARAMS ((FILE *, tree, const char *,
+					 unsigned HOST_WIDE_INT, int));
 extern void		mips_expand_epilogue PARAMS ((int));
 extern void		mips_expand_prologue PARAMS ((void));
 extern void		mips_output_filename PARAMS ((FILE *, const char *));
