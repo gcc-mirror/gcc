@@ -946,7 +946,7 @@ grow_vect (old_vect, size, min_size, element_size)
       *size *= 2;
       if (*size < min_size)
 	*size = min_size;
-      *old_vect = xrealloc (*old_vect, *size * element_size);
+      *old_vect = (void *) xrealloc (*old_vect, *size * element_size);
     }
 }
 
@@ -1206,7 +1206,7 @@ work_stuff_copy_to_from (to, from)
 
   if (from->ntmpl_args)
     to->tmpl_argvec
-      = xmalloc (from->ntmpl_args * sizeof (to->tmpl_argvec[0]));
+      = (char **) xmalloc (from->ntmpl_args * sizeof (to->tmpl_argvec[0]));
 
   for (i = 0; i < from->ntmpl_args; i++)
     {

@@ -835,8 +835,8 @@ demangling_new (name, style)
       return NULL;
     }
   dm->style = style;
-  dm->is_constructor = 0;
-  dm->is_destructor = 0;
+  dm->is_constructor = (enum gnu_v3_ctor_kinds) 0;
+  dm->is_destructor = (enum gnu_v3_dtor_kinds) 0;
 
   return dm;
 }
@@ -974,7 +974,7 @@ demangle_char (dm, c)
   else
     {
       if (error_message == NULL)
-	error_message = strdup ("Expected ?");
+	error_message = (char *) strdup ("Expected ?");
       error_message[9] = c;
       return error_message;
     }
@@ -3974,7 +3974,7 @@ is_gnu_v3_mangled_ctor (name)
       return result;
     }
   else
-    return 0;
+    return (enum gnu_v3_ctor_kinds) 0;
 }
 
 
@@ -3996,7 +3996,7 @@ is_gnu_v3_mangled_dtor (name)
       return result;
     }
   else
-    return 0;
+    return (enum gnu_v3_dtor_kinds) 0;
 }
 #endif /* IN_GLIBCPP_V3 */
 

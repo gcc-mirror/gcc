@@ -48,20 +48,20 @@ Boston, MA 02111-1307, USA.  */
 #define xd _sch_isxdigit
 
 /* Masks.  */
-#define L  lo|is   |pr	/* lower case letter */
-#define XL lo|is|xd|pr	/* lowercase hex digit */
-#define U  up|is   |pr	/* upper case letter */
-#define XU up|is|xd|pr	/* uppercase hex digit */
-#define D  di   |xd|pr	/* decimal digit */
-#define P  pn      |pr	/* punctuation */
-#define _  pn|is   |pr	/* underscore */
+#define L  (const unsigned short) (lo|is   |pr)	/* lower case letter */
+#define XL (const unsigned short) (lo|is|xd|pr)	/* lowercase hex digit */
+#define U  (const unsigned short) (up|is   |pr)	/* upper case letter */
+#define XU (const unsigned short) (up|is|xd|pr)	/* uppercase hex digit */
+#define D  (const unsigned short) (di   |xd|pr)	/* decimal digit */
+#define P  (const unsigned short) (pn      |pr)	/* punctuation */
+#define _  (const unsigned short) (pn|is   |pr)	/* underscore */
 
-#define C           cn	/* control character */
-#define Z  nv      |cn	/* NUL */
-#define M  nv|sp   |cn	/* cursor movement: \f \v */
-#define V  vs|sp   |cn	/* vertical space: \r \n */
-#define T  nv|sp|bl|cn	/* tab */
-#define S  nv|sp|bl|pr	/* space */
+#define C  (const unsigned short) (         cn)	/* control character */
+#define Z  (const unsigned short) (nv      |cn)	/* NUL */
+#define M  (const unsigned short) (nv|sp   |cn)	/* cursor movement: \f \v */
+#define V  (const unsigned short) (vs|sp   |cn)	/* vertical space: \r \n */
+#define T  (const unsigned short) (nv|sp|bl|cn)	/* tab */
+#define S  (const unsigned short) (nv|sp|bl|pr)	/* space */
 
 /* Are we ASCII? */
 #if '\n' == 0x0A && ' ' == 0x20 && '0' == 0x30 \
