@@ -27,9 +27,6 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-#define VISIBLE __attribute__((visibility("default")))
-extern VISIBLE double __aeabi_ul2d (unsigned long long);
-extern VISIBLE float __aeabi_ul2f (unsigned long long);
 extern long long __divdi3 (long long, long long);
 extern unsigned long long __udivdi3 (unsigned long long, 
 				     unsigned long long);
@@ -38,37 +35,6 @@ extern unsigned long long __gnu_uldivmod_helper (unsigned long long,
 						 unsigned long long, 
 						 unsigned long long *);
 
-/* These functions are based on __floatdidf and __floatdisf, but
-   convert unsigned DImode values instead of signed DImode
-   values.  */
-
-#define WORD_SIZE (sizeof (int) * 8)
-#define HIGH_HALFWORD_COEFF (((unsigned long long) 1) << (WORD_SIZE / 2))
-#define HIGH_WORD_COEFF (((unsigned long long) 1) << WORD_SIZE)
-
-double
-__aeabi_ul2d (unsigned long long u)
-{
-  double d = (unsigned) (u >> WORD_SIZE);
-  d *= HIGH_HALFWORD_COEFF;
-  d *= HIGH_HALFWORD_COEFF;
-  d += (unsigned) (u & (HIGH_WORD_COEFF - 1));
-
-  return d;
-}
-
-float
-__aeabi_ul2f (unsigned long long u)
-{
-  /* Do the calculation in DFmode so that we don't lose any of the
-     precision of the high word while multiplying it.  */
-  double f = (unsigned) (u >> WORD_SIZE);
-  f *= HIGH_HALFWORD_COEFF;
-  f *= HIGH_HALFWORD_COEFF;
-  f += (unsigned) (u & (HIGH_WORD_COEFF - 1));
-
-  return (float) f;
-}
 
 long long
 __gnu_ldivmod_helper (long long a, 
