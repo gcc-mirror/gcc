@@ -1,5 +1,5 @@
 /* LongBuffer.java -- 
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -265,32 +265,27 @@ public abstract class LongBuffer extends Buffer
    */
   public int compareTo (Object obj)
   {
-    LongBuffer a = (LongBuffer) obj;
+    LongBuffer other = (LongBuffer) obj;
 
-    if (a.remaining () != remaining ())
-      return 1;
-
-    if (! hasArray () ||
-        ! a.hasArray ())
+    int num = Math.min(remaining(), other.remaining());
+    int pos_this = position();
+    int pos_other = other.position();
+    
+    for (int count = 0; count < num; count++)
       {
-        return 1;
+	 long a = get(pos_this++);
+	 long b = other.get(pos_other++);
+      	 
+	 if (a == b)
+	   continue;
+      	   
+	 if (a < b)
+	   return -1;
+      	   
+	 return 1;
       }
-
-    int r = remaining ();
-    int i1 = position ();
-    int i2 = a.position ();
-
-    for (int i = 0; i < r; i++)
-      {
-        int t = (int) (get (i1) - a.get (i2));
-
-        if (t != 0)
-          {
-            return (int) t;
-          }
-      }
-
-    return 0;
+      
+     return remaining() - other.remaining();
   }
 
   /**
