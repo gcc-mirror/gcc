@@ -3557,8 +3557,22 @@ output_local_subroutine_die (arg)
       if (TREE_ASM_WRITTEN (decl))
 	{
 	  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+	  rtx x;
+	  char *fnname;
 
-	  low_pc_attribute (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+	  /* Get the function's name, as described by its RTL.
+	     This may be different from the DECL_NAME name used
+             in the source file.  */
+
+	  x = DECL_RTL (decl);
+	  if (GET_CODE (x) != MEM)
+	    abort ();
+	  x = XEXP (x, 0);
+	  if (GET_CODE (x) != SYMBOL_REF)
+	    abort ();
+	  fnname = XSTR (x, 0);
+
+	  low_pc_attribute (fnname);
 	  sprintf (label, FUNC_END_LABEL_FMT, current_funcdef_number);
 	  high_pc_attribute (label);
 	  sprintf (label, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
