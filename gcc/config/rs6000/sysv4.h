@@ -630,8 +630,6 @@ extern int rs6000_pic_labelno;
 #undef	ASM_OUTPUT_ALIGNED_LOCAL
 #define	ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
 do {									\
-  extern unsigned HOST_WIDE_INT g_switch_value;				\
-									\
   if (rs6000_sdata != SDATA_NONE && (SIZE) > 0				\
       && (SIZE) <= g_switch_value)					\
     {									\
