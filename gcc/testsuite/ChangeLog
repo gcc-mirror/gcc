@@ -1,5 +1,9 @@
 2002-05-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* gcc.dg/cpp/charconst-3.c: Run, don't compile.
+
+2002-05-06  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* gcc.dg/cpp/charconst-3.c: New test.
 
 2002-05-05  Neil Booth  <neil@daikokuya.demon.co.uk>
