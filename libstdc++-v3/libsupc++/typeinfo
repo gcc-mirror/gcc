@@ -1,6 +1,6 @@
 // RTTI support for -*- C++ -*-
-// Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000 Free Software Foundation
-
+// Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001 Free Software Foundation
+//
 // This file is part of GNU CC.
 //
 // GNU CC is free software; you can redistribute it and/or modify
@@ -27,11 +27,6 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-// __GXX_ABI_VERSION distinguishes the ABI that is being used. Values <100
-// indicate the `old' abi, which grew as C++ was defined. Values >=100
-// indicate the `new' abi, which is a cross vendor C++ abi, documented at
-// `http://reality.sgi.com/dehnert_engr/cxx/'.
-
 #ifndef __TYPEINFO__
 #define __TYPEINFO__
 
@@ -41,23 +36,16 @@
 
 extern "C++" {
 
-#if defined(__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
 namespace __cxxabiv1
 {
   class __class_type_info;
 } // namespace __cxxabiv1
-#endif
 
-
-#if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
-  // In the old ABI, typeinfo name strings were not merged.
-  #define __GXX_MERGED_TYPEINFO_NAMES 0
-#elif !__GXX_WEAK__
-  // If weak symbols are not supported, they are still not merged.
+#if !__GXX_WEAK__
+  // If weak symbols are not supported, typeinfo names are not merged.
   #define __GXX_MERGED_TYPEINFO_NAMES 0
 #else
-  // In the new ABI, on platforms that support weak symbols, they are
-  // merged.
+  // On platforms that support weak symbols, typeinfo names are merged.
   #define __GXX_MERGED_TYPEINFO_NAMES 1
 #endif
 
@@ -85,13 +73,8 @@ namespace std
     
   public:
     // the public interface
-#if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
     const char* name() const
     { return __name; }
-#else
-    const char* name() const
-    { return __name; }
-#endif
 
 #if !__GXX_MERGED_TYPEINFO_NAMES
     bool before(const type_info& arg) const;
@@ -111,7 +94,6 @@ namespace std
     { return !operator==(__arg); }
     
     // the internal interface
-#if defined(__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
   public:
     // return true if this is a pointer type of some kind
     virtual bool __is_pointer_p() const;
@@ -130,7 +112,6 @@ namespace std
     // internally used during catch matching
     virtual bool __do_upcast(const __cxxabiv1::__class_type_info *__target,
 			     void **__obj_ptr) const;
-#endif
   };
 
   class bad_cast : public exception 

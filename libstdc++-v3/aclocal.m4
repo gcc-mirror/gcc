@@ -337,7 +337,11 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_1, [
     AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
       AC_LANG_SAVE
       AC_LANG_CPLUSPLUS
-      AC_TRY_COMPILE([#include <math.h>], 
+      AC_TRY_COMPILE([#include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     ], 
                      [ $1(0);], 
                      [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
       AC_LANG_RESTORE
@@ -1577,8 +1581,7 @@ fi
 # Calculate glibcpp_toolexecdir, glibcpp_toolexeclibdir
 # Install a library built with a cross compiler in tooldir, not libdir.
 if test x"$glibcpp_toolexecdir" = x"no"; then 
-  if test -n "$with_cross_host" \
-     && test x"$with_cross_host" != x"no"; then
+  if test -n "$with_cross_host" && test x"$with_cross_host" != x"no"; then
     glibcpp_toolexecdir='$(exec_prefix)/$(target_alias)'
     glibcpp_toolexeclibdir='$(toolexecdir)/lib$(MULTISUBDIR)'
   else

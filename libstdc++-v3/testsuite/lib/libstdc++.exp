@@ -304,8 +304,8 @@ proc libstdc++-process-options { testfile } {
 }
 
 ###
-### The following is an abominal hack, non-recommendable software practice.
-### This is supposed to be a very very short term solution.
+### The following is an abominal hack, non-recomandable software practice.
+### This is supposed to be a very-very short term solution.
 ### Please, do not add any piece of code without my approval.
 ### -- Gaby
 ###

@@ -36,12 +36,6 @@
 // The current version of the C++ library in compressed ISO date format.
 #define __GLIBCPP__ 20010102
 
-// This flag controls the error handling in string, and perhaps other
-// bits as time goes on: check out bits/basic_string.h for more
-// info. It also helps alleviate the circular dependency between
-// string and exception.
-# define _GLIBCPP_USE_EXCEPTIONS 1 
-
 // This is necessary until GCC supports separate template
 // compilation.  
 #define _GLIBCPP_NO_TEMPLATE_EXPORT 1
@@ -53,7 +47,7 @@
 // types. For the io library, this means that larger, out-of-line
 // member functions are only declared, and definitions are not parsed
 // by the compiler, but instead instantiated into the library binary.
-//#define _GLIBCPP_FULLY_COMPLIANT_HEADERS 1
+// #define _GLIBCPP_FULLY_COMPLIANT_HEADERS 1
 
 // To enable older, ARM-style iostreams and other anachronisms use this.
 //#define _GLIBCPP_DEPRECATED 1

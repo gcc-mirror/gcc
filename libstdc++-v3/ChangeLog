@@ -1,19 +1,185 @@
+2001-02-16  Greg Bumgardner <bumgard@roguewave.com>
+
+	libstdc++/1734
+        * include/bits/std_ostream.h: Replaced usage of
+        _Traits::_S_eos() with _CharT() as per section 17.2.2.1.3.  
+        * include/bits/char_traits.h: Removed non-standard
+        methods that cannot be used elsewhere.  
+	
+	libstdc++/1885
+        * include/bits/basic_ios.h: Uncommented #include of
+        bits/basic_ios.tcc 
+	
+	libstdc++/1897
+        * include/bits/codecvt.h: See next...
+        * include/bits/fstream.tcc: See next...
+        * include/bits/ostream.tcc: Add __extension__ 
+        to variable-length arrays.  
+	
+	libstdc++/1967
+        * include/bits/localefwd.h: Changed int counter type to size_t.
+
+	libstdc++/1968
+        * include/bits/std_fstream.h: Added typedef for __ctype_type.
+
+2001-02-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/21_strings/char_traits.cc: Move to ...
+	* testsuite/21_strings/char_traits_requirements.cc: ..here.
+	* testsuite/21_strings/char_traits-int_type.cc: Move to ...
+	* testsuite/21_strings/char_traits_typedefs.cc: ..here.
+
 2001-02-16  Gabriel Dos Reis  <gdr@codesourcery.com>
- 
-       * libmath/mathconf.h (FINITE_P, INFINITE_P): Remove macro
-       definitions. 
+
+	* libmath/mathconf.h (FINITE_P, INFINITE_P): Remove macro
+	definitions. 
+
+2001-02-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/c++config: Revert.
+
+2001-02-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* include/bits/istream.tcc: Use ios_base::iostate in place of
+	iostate throughout.  Insert `typename' keyword where necessary.
+	* include/bits/ostream.tcc: Insert `typename' keyword where
+	necessary.
+	
+2001-02-15  Jeffrey Oldham  <oldham@codesourcery.com>
+
+        * include/bits/c++config (_GLIBCPP_FULLY_COMPLIANT_HEADERS):
+        Define so library is compliant.
 
 2001-02-15  Anthony Green  <green@redhat.com>
 
-	* acinclude.m4 (glibcpp_toolexeclibdir): Fix test for cross
-	compilation.
+        * acinclude.m4 (glibcpp_toolexeclibdir): Fix test for cross
+        compilation.
+        * aclocal.m4: Regenerate.
+        * configure: Regenerate.
+
+2001-02-15  Rodney Brown  <RodneyBrown@mynd.com>
+
+        * acinclude.m4 (GLIBCPP_CHECK_MATH_DECL_1):
+        Include ieeefp.h for fpclass on UnixWare{2,7}.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
+        * mkcheck.in (size_command): Do without GNU-grep when using
+        size from binutils.
+
+2001-02-15  Mark Mitchell  <mark@codesourcery.com>
+
+	Remove old ABI support from libsupc++.
+	* libsupc++/cxxabi.h: Remove conditionally compiled code.
+	* libsupc++/exception_support.cc: Likewise.
+	* libsupc++/pure.cc: Likewise.
+	* libsupc++/tinfo.cc: Likewise.
+	* libsupc++/tinfo.h: Likewise.
+	* libsupc++/tinfo2.cc: Likewise.
+	* libsupc++/typeinfo: Likewise.
+	* libsupc++/vec.cc: Likewise.
+
+2001-02-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Add support for -fno-exceptions.
+	* include/bits/exception_support.h: Remove.
+	* include/bits/basic_string.h: Remove exception_support.
+	(string::_M_check): Replace __OUTOFRANGE with __throw_out_of_range.
+	(string::at): Same.
+	(string::substr): Same.
+	* include/bits/basic_string.tcc (string::reserve): Replace
+	__LENGTHERROR with __throw_length_error.
+	(string::_S_create): Same.
+	(string::resize): Same.
+	(string::_M_replace): Same.
+	(string::replace): Same.
+	(string::copy): Replace __OUTOFRANGE with __throw_out_of_range.
+	(string::compare): Same.
+	* include/bits/stl_vector.h: Remove exception_support.
+	* src/Makefile.am (base_headers): Remove here.
+	* src/Makefile.in: Regenerate.
+
+	* include/bits/stl_range_errors.h: Remove.
+	* include/bits/stl_deque.h: Use __throw_range_error.
+	* include/bits/std_deque.h: Include functexcept.h.
+	* include/bits/std_vector.h: Same.
+	* src/Makefile.am (base_headers): Remove here.
+	* src/Makefile.in: Regenerate.
+	* include/ext/stl_bvector.h (class __BVECTOR): Use __throw_range_error.
+	* include/ext/bvector: Remove stl_range_errors.h
+
+	* include/bits/c++config (_GLIBCPP_USE_EXCEPTIONS): Remove.
+
+	* include/bits/functexcept.h: New file.
+	* src/functexcept.cc: New file. Definitions for function-based
+	exception routines.
+	* src/Makefile.am (sources): Add functexcept.cc.
+	* src/Makefile.in: Regenerate.
+
+	* include/bits/stl_config.h (__STL_USE_EXCEPTIONS): Wrap with
+	__EXCEPTIONS.
+
+	* include/bits/localefwd.h: Include functexcept.h.
+	* include/bits/std_iosfwd.h: Same.
+
+	* include/bits/basic_ios.h: Use __throw_ios_failure instead of
+	throw basic_ios::failure.
+	* include/bits/fstream.tcc (filebuf::_M_allocate_buffers):
+	Use __throw_exception_again.
+	(filebuf::_M_filebuf_init): Same.
+	* include/bits/streambuf.tcc (__copy_streambufs): Same.
+	* include/bits/ostream.tcc (ostream::operator<<): Same.
+	* include/bits/istream.tcc (istream::operator>>): Same.
+	* include/bits/basic_string.tcc (string::_M_mutate): Same.
+	(string::_S_construct): Same.
+	(string::_M_clone): Same.
+	* include/bits/locale_facets.tcc (use_facet(const locale&)): Use
+	__throw_bad_cast.
+	(num_put<_CharT, _OutIter>::do_put): Use __throw_exception_again.
+	* src/localename.cc (locale::_Imp::_Imp(const _Impl&, size_t): Use
+	__throw_exception_again.
+	(locale::_Imp::_Imp(string, size_t): Same.
+	(locale::_Imp::_M_replace_facet): Use __throw_runtime_error.
+	* src/locale.cc (locale::_M_coalesce): Use __throw_exception_again.
+	(locale::locale(const char*)): Use __throw_runtime_error.
+	(locale::classic): Use __throw_exception_again.
+	(locale::_S_normalize_category): Use __throw_runtime_error.
+
+	* src/stdexcept.cc: Remove cruft.
+
+	* libsupc++/exception_defines.h: New file.
+	* libsupc++/new_opnt.cc: Include exception_defines.h.
+	* libsupc++/vec.cc: Same.
+	(__cxa_vec_new2): Use __throw_exception_again.
+	(__cxa_vec_new3): Same.
+	(__cxa_vec_ctor): Same.
+	(__cxa_vec_delete3): Same.
+	(__cxa_vec_cctor): Same.
+	(__cxa_vec_delete2): Same.
+	(__cxa_vec_dtor): Same.
+	* libsupc++/exception_support.cc: Include exception_defines.h. Only
+	compile exception-handling bits if __EXCEPTIONS is defined.
+	Remove old ABI support.
+	* libsupc++/new_op.cc (new): Include exception_defines.h. Use
+	std::__throw_bad_alloc() instead of throw bad_alloc.
+	* libsupc++/Makefile.am: Add exception_defines.h.
+	* libsupc++/Makefile.in: Reformat.
+	* libsupc++/*: Format.
+
+2001-02-15  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/html/configopts.html:  Minor updates and typo fixes.
+	* docs/html/faq/index.html:  Updates of the "not really bugs" list.
+	* docs/html/faq/index.txt:  Regenerated.
 
 2001-02-15  Gabriel Dos Reis  <gdr@codesourcery.com>
 
-	* testsuite/lib/libstdc++.exp(dg-test): Lift, temporarily, out of
-	dejagnu/dg.exp.  Adapt to log options used to run testcases.
+	* testsuite/lib/libstdc++.exp: Lift, temporarily, out of
+        dejagnu/dg.exp.  Adapt to log options used to run testcases.
+
+2001-02-13  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* testsuite/lib/libstdc++.exp(dg-test): Lift temporarily from
+	dejagnu/dg.exp.
 
 2001-02-13  Dirk Mueller <dmuell@gmx.net>
             Phil Edwards  <pme@sources.redhat.com>

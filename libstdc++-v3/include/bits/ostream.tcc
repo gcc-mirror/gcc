@@ -59,7 +59,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-		throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -81,7 +81,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-		throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -103,7 +103,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-		throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -125,7 +125,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -155,7 +155,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -177,7 +177,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -206,7 +206,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -228,7 +228,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -251,7 +251,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -273,7 +273,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -295,7 +295,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    this->setstate(ios_base::badbit);
 	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return *this;
@@ -417,7 +417,7 @@ namespace std {
       typedef typename traits_type::int_type int_type;
       
       int_type __plen = static_cast<size_t>(__newlen - __oldlen); 
-      char_type __pads[__plen];
+      __extension__ char_type __pads[__plen];
       traits_type::assign(__pads, __plen, __ios.fill()); 
 
       char_type* __beg;
@@ -491,12 +491,12 @@ namespace std {
     operator<<(basic_ostream<_CharT, _Traits>& __out, _CharT __c)
     {
       typedef basic_ostream<_CharT, _Traits> __ostream_type;
-      __ostream_type::sentry __cerb(__out);
+      typename __ostream_type::sentry __cerb(__out);
       if (__cerb)
 	{
 	  try {
 	    streamsize __w = __out.width();
-	    _CharT __pads[__w];
+	    __extension__ _CharT __pads[__w];
 	    __pads[0] = __c;
 	    streamsize __len = 1;
 	    if (__w > __len)
@@ -512,7 +512,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    __out.setstate(ios_base::badbit);
 	    if ((__out.exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return __out;
@@ -524,12 +524,12 @@ namespace std {
     operator<<(basic_ostream<char, _Traits>& __out, char __c)
     {
       typedef basic_ostream<char, _Traits> __ostream_type;
-      __ostream_type::sentry __cerb(__out);
+      typename __ostream_type::sentry __cerb(__out);
       if (__cerb)
 	{
 	  try {
 	    streamsize __w = __out.width();
-	    char __pads[__w + 1];
+	    __extension__ char __pads[__w + 1];
 	    __pads[0] = __c;
 	    streamsize __len = 1;
 	    if (__w > __len)
@@ -545,7 +545,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    __out.setstate(ios_base::badbit);
 	    if ((__out.exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return __out;
@@ -556,7 +556,7 @@ namespace std {
     operator<<(basic_ostream<_CharT, _Traits>& __out, const _CharT* __s)
     {
       typedef basic_ostream<_CharT, _Traits> __ostream_type;
-      __ostream_type::sentry __cerb(__out);
+      typename __ostream_type::sentry __cerb(__out);
       if (__cerb)
 	{
 	  try {
@@ -577,7 +577,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    __out.setstate(ios_base::badbit);
 	    if ((__out.exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return __out;
@@ -592,11 +592,11 @@ namespace std {
 // 167.  Improper use of traits_type::length()
       typedef char_traits<char>		     __ctraits_type;
 #endif
-      __ostream_type::sentry __cerb(__out);
+      typename __ostream_type::sentry __cerb(__out);
       if (__cerb)
 	{
 	  size_t __clen = __ctraits_type::length(__s);
-	  _CharT __ws[__clen + 1];
+	  __extension__ _CharT __ws[__clen + 1];
 	  for (size_t  __i = 0; __i <= __clen; ++__i)
 	    __ws[__i] = __out.widen(__s[__i]);
 	  _CharT* __str = __ws;
@@ -604,7 +604,7 @@ namespace std {
 	  try {
 	    streamsize __len = static_cast<streamsize>(__clen);
 	    streamsize __w = __out.width();
-	    _CharT __pads[__w];
+	    __extension__ _CharT __pads[__w];
 
 	    if (__w > __len)
 	      {
@@ -620,7 +620,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    __out.setstate(ios_base::badbit);
 	    if ((__out.exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return __out;
@@ -632,12 +632,12 @@ namespace std {
     operator<<(basic_ostream<char, _Traits>& __out, const char* __s)
     {
       typedef basic_ostream<char, _Traits> __ostream_type;
-      __ostream_type::sentry __cerb(__out);
+      typename __ostream_type::sentry __cerb(__out);
       if (__cerb)
 	{
 	  try {
 	    streamsize __w = __out.width();
-	    char __pads[__w];
+	    __extension__ char __pads[__w];
 	    streamsize __len = static_cast<streamsize>(_Traits::length(__s));
 	    if (__w > __len)
 	      {
@@ -653,7 +653,7 @@ namespace std {
 	    // Turn this on without causing an ios::failure to be thrown.
 	    __out.setstate(ios_base::badbit);
 	    if ((__out.exceptions() & ios_base::badbit) != 0)
-	      throw;
+	      __throw_exception_again;
 	  }
 	}
       return __out;

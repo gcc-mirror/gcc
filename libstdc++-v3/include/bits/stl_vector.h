@@ -31,7 +31,7 @@
 #ifndef __SGI_STL_INTERNAL_VECTOR_H
 #define __SGI_STL_INTERNAL_VECTOR_H
 
-#include <bits/exception_support.h>
+#include <bits/functexcept.h>
 
 #include <bits/concept_checks.h>
 
@@ -231,7 +231,7 @@ public:
 #ifdef __STL_THROW_RANGE_ERRORS
   void _M_range_check(size_type __n) const {
     if (__n >= this->size())
-      __out_of_range("vector");
+      __throw_out_of_range("vector");
   }
 
   reference at(size_type __n)

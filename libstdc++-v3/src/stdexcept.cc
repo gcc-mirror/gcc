@@ -33,9 +33,6 @@
 
 #include <bits/std_string.h>
 #include <bits/std_stdexcept.h>
-#if 1
-#include <bits/stl_range_errors.h>
-#endif
 
 namespace std 
 {
@@ -77,27 +74,6 @@ namespace std
 
   underflow_error::underflow_error(const string& __arg)
   : runtime_error(__arg) { }
-
-#if 1
-  // XXX need to deal with this.
-  void
-  __out_of_range(const char *str)
-  { throw out_of_range(str); }
-
-  void 
-  __length_error(const char *str)
-  { throw length_error(str); }
-
-  // XXX: From stl_range_errors.h, eventually these approaches need to
-  // be merged.
-  void 
-  __stl_throw_range_error(const char* __msg) 
-  { throw range_error(__msg); }
-
-  void 
-  __stl_throw_length_error(const char* __msg)
-  { throw length_error(__msg); }
-#endif
 } // namespace std
 
 

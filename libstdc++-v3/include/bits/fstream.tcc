@@ -49,7 +49,7 @@ namespace std
 	  catch(...) 
 	    {
 	      delete _M_file;
-	      throw;
+	      __throw_exception_again;
 	    }
 	}
     }
@@ -67,7 +67,7 @@ namespace std
 	  catch(...) 
 	    {
 	      delete [] _M_buf;
-	      throw;
+	      __throw_exception_again;
 	    }
 	  
 	  // Allocate pback buffer.
@@ -76,7 +76,7 @@ namespace std
 	  catch(...) 
 	    {
 	      delete [] _M_pback;
-	      throw;
+	      __throw_exception_again;
 	    }
 	}
     }
@@ -262,7 +262,7 @@ namespace std
 	      // Part one: (Re)fill external buf (_M_file->_IO_*) from
 	      // external byte sequence (whatever physical byte sink or
 	      // FILE actually is.)
-	      char_type __conv_buf[_M_buf_size];
+	      __extension__ char_type __conv_buf[_M_buf_size];
 	      streamsize __size = _M_file->xsgetn(__conv_buf, _M_buf_size);
 	      
 	      // Part two: (Re)fill internal buf contents from external buf.
@@ -436,7 +436,7 @@ namespace std
 	  // stack. Convert internal buffer plus __c (ie,
 	  // "pending sequence") to temporary conversion buffer.
 	  int __plen = _M_out_end - _M_out_beg;
-	  char_type __pbuf[__plen + 1];	      
+	  __extension__ char_type __pbuf[__plen + 1];	      
 	  traits_type::copy(__pbuf, this->pbase(), __plen);
 	  if (!__testeof)
 	    {
@@ -445,7 +445,7 @@ namespace std
 	    }
 
 	  char_type* __pend;
-	  char __conv_buf[__plen];
+	  __extension__ char __conv_buf[__plen];
 	  char* __conv_end;
 	  _M_state_beg = _M_state_cur;
 

@@ -35,10 +35,11 @@
 #define _CPP_BITS_LOCCORE_H	1
 
 #include <bits/c++config.h>
+#include <bits/c++locale.h>     // Defines __c_locale.
 #include <bits/std_climits.h>	// For CHAR_BIT
 #include <bits/std_string.h> 	// For string
 #include <bits/std_cctype.h>	// For isspace, etc.
-#include <bits/c++locale.h>     // Defines __c_locale.
+#include <bits/functexcept.h>
 
 namespace std
 {
@@ -396,7 +397,7 @@ namespace std
     {
       _M_impl = new _Impl(*__other._M_impl, 1);
       _M_impl->_M_install_facet(&_Facet::id, __f);
-      for (int __i = 0; __i < _S_num_categories; ++__i)
+      for (size_t __i = 0; __i < _S_num_categories; ++__i)
 	_M_impl->_M_names[__i] = "*";
     }
 

@@ -1,10 +1,10 @@
 // Functions for Exception Support for -*- C++ -*-
 
-// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-// 2001 Free Software Foundation
-
+// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001 
+// Free Software Foundation
+//
 // This file is part of GNU CC.
-
+//
 // GNU CC is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2, or (at your option)
@@ -35,6 +35,7 @@
 #include "exception"
 #include <cstddef>
 #include "exception_support.h"
+#include "exception_defines.h"
 
 /* Define terminate, unexpected, set_terminate, set_unexpected as
    well as the default terminate func and default unexpected func.  */
@@ -83,18 +84,18 @@ std::unexpected ()
 }
 
 /* Language-specific EH info pointer, defined in libgcc2. */
-
 extern "C" cp_eh_info **__get_eh_info (); 	// actually void **
+#define CP_EH_INFO ((cp_eh_info *) *__get_eh_info ())
 
 /* Exception allocate and free, defined in libgcc2. */
 extern "C" void *__eh_alloc(std::size_t);
 extern "C" void __eh_free(void *);
 
 /* Is P the type_info node for a pointer of some kind?  */
-
 extern bool __is_pointer (void *);
 
 
+#ifdef __EXCEPTIONS
 /* OLD Compiler hook to return a pointer to the info for the current exception.
    Used by get_eh_info ().  This fudges the actualy returned value to
    point to the beginning of what USE to be the cp_eh_info structure.
@@ -105,8 +106,6 @@ __cp_exception_info (void)
 {
   return &((*__get_eh_info ())->value);
 }
-
-#define CP_EH_INFO ((cp_eh_info *) *__get_eh_info ())
 
 /* Old Compiler hook to return a pointer to the info for the current exception.
    Used by get_eh_info ().  */
@@ -152,10 +151,6 @@ __cplus_type_matcher (__eh_info *info_, void *match_info,
   
   void *match_type = match_info;
   
-#if !defined (__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
-  match_type  = ((void *(*)())match_type) ();
-#endif
-
   if (__throw_type_match_rtti_2 (match_type, info->type,
 				 info->original_value, &info->value))
     // Arbitrary non-null pointer.
@@ -348,44 +343,40 @@ __check_null_eh_spec (void)
 {
   __check_eh_spec (0, 0);
 }
+#endif //__EXCEPTIONS
 
 // Helpers for rtti. Although these don't return, we give them return types so
 // that the type system is not broken.
-
-#if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
-#define THROW_BAD_CAST __throw_bad_cast
-#define THROW_BAD_TYPEID __throw_bad_typeid
-#else 
-#define THROW_BAD_CAST __cxa_bad_cast
-#define THROW_BAD_TYPEID __cxa_bad_typeid
-#endif
-
 extern "C" void *
-THROW_BAD_CAST ()
+__cxa_bad_cast ()
 {
-  throw std::bad_cast ();
+#ifdef __EXCEPTIONS  
+  throw std::bad_cast();
+#else
+  std::abort();
+#endif
   return 0;
 }
 
 extern "C" std::type_info const &
-THROW_BAD_TYPEID ()
+__cxa_bad_typeid ()
 {
-  throw std::bad_typeid ();
+#ifdef __EXCEPTIONS  
+  throw std::bad_typeid();
+#else
+  std::abort();
+#endif
   return typeid (void);
 }
 
 /* Has the current exception been caught?  */
-
 bool
-std::uncaught_exception () throw()
+std::uncaught_exception() throw()
 {
   cp_eh_info *p = CP_EH_INFO;
   return p && ! p->caught;
 }
 
-const char * 
-std::exception::
-what () const throw()
-{
-  return typeid (*this).name ();
-}
+const char* 
+std::exception::what() const throw()
+{ return typeid (*this).name (); }
