@@ -1,3 +1,12 @@
+2003-07-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* class.c (add_method, check_field_decl): Fix format specifier.
+	* decl.c (duplicate_decls, pushdecl, check_goto,
+	fixup_anonymous_aggr, maybe_commonize_var, grokdeclarator,
+	start_enum): Likewise.
+	* decl2.c (ambiguous_decl): Likewise.
+	* pt.c (redeclare_class_template): Likewise.
+
 2003-07-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/10219

@@ -927,7 +927,7 @@ add_method (tree type, tree method, int error_p)
 	      else
 		{
 		  cp_error_at ("`%#D' and `%#D' cannot be overloaded",
-			       method, fn, method);
+			       method, fn);
 
 		  /* We don't call duplicate_decls here to merge
 		     the declarations because that will confuse
@@ -2961,7 +2961,7 @@ check_field_decl (tree field,
       /* `build_class_init_list' does not recognize
 	 non-FIELD_DECLs.  */
       if (TREE_CODE (t) == UNION_TYPE && any_default_members != 0)
-	cp_error_at ("multiple fields in union `%T' initialized");
+	error ("multiple fields in union `%T' initialized", t);
       *any_default_members = 1;
     }
 }

@@ -2984,7 +2984,8 @@ redeclare_class_template (tree type, tree parms)
 	     A template-parameter may not be given default arguments
 	     by two different declarations in the same scope.  */
 	  error ("redefinition of default argument for `%#D'", parm);
-	  cp_error_at ("  original definition appeared here", tmpl_parm);
+	  error ("%H  original definition appeared here",
+		 &DECL_SOURCE_LOCATION (tmpl_parm));
 	  return;
 	}
 
