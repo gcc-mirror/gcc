@@ -1,3 +1,7 @@
+2000-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* execute/va-arg-20.c: New test.
+
 2000-04-20  Greg McGary  <gkm@gnu.org>
 
 	* compile/20000420-2.c: New test for stack misalignment
