@@ -5,7 +5,7 @@
 echo ";; -*- buffer-read-only: t -*-"
 echo ";; Generated automatically by gentune.sh from arm-cores.def"
 
-allcores=`awk -F'[(,]' '/^ARM_CORE/ { cores = cores$2"," } END { print cores } ' $1`
+allcores=`awk -F'[(, 	]+' '/^ARM_CORE/ { cores = cores$3"," } END { print cores } ' $1`
 
 echo "(define_attr \"tune\""
 echo "	\"$allcores\"" | sed -e 's/,"$/"/'

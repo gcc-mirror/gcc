@@ -1,5 +1,17 @@
 2004-09-01  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm/arm-cores.def (ARM_CORE): Add new field for the real name of the
+	CPU.
+	(arm7tdmi-s): New CPU name.
+	* arm/arm.c (ARM_CORE): Update for new format.
+	* arm/arm.h (ARM_CORE): Likewise.
+	* arm/gentune.sh: Update for extra field.
+	* config.gcc: Likewise.
+	* arm/arm-tune.md: Regenerate.
+	* doc/invoke.texi: Document the real processor names for ARM cpus.
+
+2004-09-01  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm/ieee754-df.S (aeabi_ul2d, aeabi_l2d, floatundidf)
 	(floatdidf): New functions.
 	* arm/ieee754-sf.S (aeabi_ul2f, aeabi_l2f, floatundisf)
