@@ -3,6 +3,9 @@
 	* tree-into-ssa.c (find_idf): Speed up by putting the indexes
 	of basic blocks into work_stack.
 
+	* builtin-attrs.def, c-lex.c, c-pragma.h, reg-stack.c,
+	config/mips/vr.h: Update copyright.
+
 2005-03-13  Andy Hutchinson  <HutchinsonAndy@netscape.net>
 
 	PR target/18251
