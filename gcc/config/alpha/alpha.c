@@ -447,7 +447,8 @@ input_operand (op, mode)
 	return 1;
       /* ... fall through ... */
     case MEM:
-      return mode != HImode && mode != QImode && general_operand (op, mode);
+      return (TARGET_BYTE_OPS || (mode != HImode && mode != QImode)
+	      && general_operand (op, mode));
 
     case CONST_DOUBLE:
       return GET_MODE_CLASS (mode) == MODE_FLOAT && op == CONST0_RTX (mode);
