@@ -879,8 +879,8 @@ do_pragma_dependency (pfile)
     {
       const cpp_token *msg = _cpp_get_token (pfile);
       
-      cpp_warning (pfile, "current file is older than %c%s%c",
-		   left, name, right);
+      cpp_warning (pfile, "current file is older than %c%.*s%c",
+		   left, (int)len, name, right);
       if (msg->type != CPP_EOF)
 	{
 	  U_CHAR *text, *limit;
@@ -889,6 +889,9 @@ do_pragma_dependency (pfile)
 	  _cpp_dump_list (pfile, &pfile->token_list, msg, 0);
 	  limit = pfile->limit;
 	  pfile->limit = text;
+	  while (*text == ' ')
+	    /* There must be something non-whitespace after. */
+	    text++; 
 	  cpp_warning (pfile, "%.*s", (int)(limit - text), text);
 	}
     }
