@@ -1271,9 +1271,8 @@ mark_def_site_blocks (void)
       those variables are removed from the flow graph so that they can
       be computed again.
 
-   2- Compute dominance frontier and immediate dominators, needed to
-      insert PHI nodes and rename the function in dominator tree
-      order.
+   2- Compute dominance frontier, needed to insert PHI nodes and
+      rename the function in dominator tree order.
 
    3- Find and mark all the blocks that define variables
       (mark_def_site_blocks).
@@ -1319,9 +1318,7 @@ rewrite_into_ssa (bool all)
 
   mark_def_site_blocks ();
 
-  /* Initialize dominance frontier and immediate dominator bitmaps. 
-     Also count the number of predecessors for each block.  Doing so
-     can save significant time during PHI insertion for large graphs.  */
+  /* Initialize dominance frontier.  */
   dfs = (bitmap *) xmalloc (last_basic_block * sizeof (bitmap *));
   FOR_EACH_BB (bb)
     dfs[bb->index] = BITMAP_ALLOC (NULL);
