@@ -1,5 +1,7 @@
 2002-03-11  Douglas B Rupp  <rupp@gnat.com>
 
+	* toplev.c (vms_fopen): Remove, not needed.
+
 	* vmsdbgout.c (lookup_filename): Adjust creation date for GMT.
 
 	* config/alpha/xm-vms.h (__UNIX_FWRITE): Define.
