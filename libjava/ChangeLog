@@ -1,5 +1,10 @@
 2000-12-14  Tom Tromey  <tromey@redhat.com>
 
+	* java/text/NumberFormat.java (groupingUsed, parseIntegerOnly,
+	maximumFractionDigits, maximumIntegerDigits,
+	minimumFractionDigits, minimumIntegerDigits): Now
+	package-private.
+
 	* java/lang/Thread.java (checkAccess): Now final.
 
 	* java/lang/RuntimePermission.java: Class now final.

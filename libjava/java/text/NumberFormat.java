@@ -251,16 +251,16 @@ public abstract class NumberFormat extends Format implements Cloneable
     }
 
   // These field names are fixed by the serialization spec.
-  protected boolean groupingUsed;
-  protected int maximumFractionDigits;
+  boolean groupingUsed;
+  int maximumFractionDigits;
   private byte maxFractionDigits;
-  protected int maximumIntegerDigits;
+  int maximumIntegerDigits;
   private byte maxIntegerDigits;
-  protected int minimumFractionDigits;
+  int minimumFractionDigits;
   private byte minFractionDigits;
-  protected int minimumIntegerDigits;
+  int minimumIntegerDigits;
   private byte minIntegerDigits;
-  protected boolean parseIntegerOnly;
+  boolean parseIntegerOnly;
   private int serialVersionOnStream;
   private static final long serialVersionUID = -2308460125733713944L;
 
