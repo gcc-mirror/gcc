@@ -3680,9 +3680,15 @@ split_double (value, first, second)
 	     Extract the bits from it into two word-sized pieces.
 	     Sign extend each half to HOST_WIDE_INT.  */
 	  rtx low, high;
+	  /* On machines where HOST_BITS_PER_WIDE_INT == BITS_PER_WORD
+	     the shift below will cause a compiler warning, even though
+	     this code won't be executed.  So put the shift amounts in
+	     variables to avoid the warning.  */
+	  int rshift = HOST_BITS_PER_WIDE_INT - BITS_PER_WORD;
+	  int lshift = HOST_BITS_PER_WIDE_INT - 2 * BITS_PER_WORD;
 
-	  low = GEN_INT (INTVAL (value) << (HOST_BITS_PER_WIDE_INT - BITS_PER_WORD) >> (HOST_BITS_PER_WIDE_INT - BITS_PER_WORD));
-	  high = GEN_INT (INTVAL (value) << (HOST_BITS_PER_WIDE_INT - 2 * BITS_PER_WORD) >> (HOST_BITS_PER_WIDE_INT - BITS_PER_WORD));
+	  low = GEN_INT ((INTVAL (value) << rshift) >> rshift);
+	  high = GEN_INT ((INTVAL (value) << lshift) >> rshift);
 	  if (WORDS_BIG_ENDIAN)
 	    {
 	      *first = high;
