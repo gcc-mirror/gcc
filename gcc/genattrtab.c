@@ -101,6 +101,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-config.h"	/* For REGISTER_CONSTRAINTS */
 #include <stdio.h>
 
+#ifndef VMS
+#ifndef USG
+#include <sys/time.h>
+#include <sys/resource.h>
+#endif
+#endif
+
 static struct obstack obstack, obstack1, obstack2;
 struct obstack *rtl_obstack = &obstack;
 struct obstack *hash_obstack = &obstack1;
@@ -5463,6 +5470,18 @@ main (argc, argv)
   struct insn_def *id;
   rtx tem;
   int i;
+
+#ifdef RLIMIT_STACK
+  /* Get rid of any avoidable limit on stack size.  */
+  {
+    struct rlimit rlim;
+
+    /* Set the stack limit huge so that alloca does not fail. */
+    getrlimit (RLIMIT_STACK, &rlim);
+    rlim.rlim_cur = rlim.rlim_max;
+    setrlimit (RLIMIT_STACK, &rlim);
+  }
+#endif /* RLIMIT_STACK defined */
 
   obstack_init (rtl_obstack);
   obstack_init (hash_obstack);
