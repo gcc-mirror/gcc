@@ -3292,8 +3292,18 @@ collect_one_action_chain (ar_hash, region)
       /* An exception specification adds its filter to the
 	 beginning of the chain.  */
       next = collect_one_action_chain (ar_hash, region->outer);
-      return add_action_record (ar_hash, region->u.allowed.filter,
-				next < 0 ? 0 : next);
+
+      /* If there is no next action, terminate the chain.  */
+      if (next == -1)
+	next = 0;
+      /* If all outer actions are cleanups or must_not_throw,
+	 we'll have no action record for it, since we had wanted
+	 to encode these states in the call-site record directly.
+	 Add a cleanup action to the chain to catch these.  */
+      else if (next <= 0)
+	next = add_action_record (ar_hash, 0, 0);
+      
+      return add_action_record (ar_hash, region->u.allowed.filter, next);
 
     case ERT_MUST_NOT_THROW:
       /* A must-not-throw region with no inner handlers or cleanups
