@@ -1,4 +1,4 @@
-2001-10-04  Jason Merrill  <jason_merrill@redhat.com>
+2001-10-09  Jason Merrill  <jason_merrill@redhat.com>
 
 	* call.c (standard_conversion): Add bad conversion between
 	integers and pointers.
@@ -10,10 +10,6 @@
 	* cp-tree.h: Declare it.
 	* typeck.c (convert_for_assignment): Use it.
 	(ptr_reasonably_similar): Any target type is similar to void.
-
-2001-10-02  Jason Merrill  <jason_merrill@redhat.com>
-
-	* decl2.c (cxx_decode_option): Add 'else'.
 
 2001-10-08  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -98,6 +94,8 @@
 	to build the declaration instead of the declaration itself.
 
 2001-10-02  Jason Merrill  <jason_merrill@redhat.com>
+
+	* decl2.c (cxx_decode_option): Add 'else'.
 
 	* spew.c (end_input): No longer static.
 	* cp-tree.h: Declare it.
