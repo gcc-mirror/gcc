@@ -232,7 +232,14 @@ test -d java/lang || mkdir java/lang
 AC_LINK_FILES(java/lang/${PLATFORM}Process.java, java/lang/ConcreteProcess.java)
 AC_LINK_FILES(java/lang/nat${PLATFORM}Process.cc, java/lang/natConcreteProcess.cc)
 
-SYSTEMSPEC=
+case "${host}" in
+    mingw)
+      SYSTEMSPEC="-lgdi32 -lwsock32 -lws2_32"
+    ;;
+    *)
+      SYSTEMSPEC=
+    ;;
+esac
 AC_SUBST(SYSTEMSPEC)
 
 LIBGCJTESTSPEC="-L`pwd`/.libs -rpath `pwd`/.libs"
