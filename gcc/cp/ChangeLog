@@ -1,3 +1,12 @@
+1999-11-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl.c (pushdecl, grokdeclarator): Don't call a variadic
+	function with a non-literal format string.
+
+	* lex.c (do_identifier): Likewise.
+
+	* typeck.c (build_unary_op): Likewise.
+
 1999-11-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DECL_NEEDED_P): Tweak to match documentation.

@@ -3965,22 +3965,21 @@ pushdecl (x)
 		   /* No shadow warnings for vars made for inlining.  */
 		   && ! DECL_FROM_INLINE (x))
 	    {
-	      const char *warnstring = NULL;
-
 	      if (oldlocal != NULL_TREE && TREE_CODE (oldlocal) == PARM_DECL)
-		warnstring = "declaration of `%s' shadows a parameter";
+		warning ("declaration of `%s' shadows a parameter",
+			IDENTIFIER_POINTER (name));
 	      else if (IDENTIFIER_CLASS_VALUE (name) != NULL_TREE
 		       && current_class_ptr
 		       && !TREE_STATIC (name))
-		warnstring = "declaration of `%s' shadows a member of `this'";
+		warning ("declaration of `%s' shadows a member of `this'",
+			IDENTIFIER_POINTER (name));
 	      else if (oldlocal != NULL_TREE)
-		warnstring = "declaration of `%s' shadows previous local";
+		warning ("declaration of `%s' shadows previous local",
+			IDENTIFIER_POINTER (name));
 	      else if (oldglobal != NULL_TREE)
 		/* XXX shadow warnings in outer-more namespaces */
-		warnstring = "declaration of `%s' shadows global declaration";
-
-	      if (warnstring)
-		warning (warnstring, IDENTIFIER_POINTER (name));
+		warning ("declaration of `%s' shadows global declaration",
+			IDENTIFIER_POINTER (name));
 	    }
 	}
 
@@ -9776,9 +9775,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		     op ? operator_name_string (tmp) : name);
 	    }
 	  else
-	    error (((decl_context == PARM || decl_context == CATCHPARM)
-		    ? "storage class specified for parameter `%s'"
-		    : "storage class specified for typename"), name);
+	    {
+	      if (decl_context == PARM || decl_context == CATCHPARM)
+		error ("storage class specified for parameter `%s'", name);
+	      else
+		error ("storage class specified for typename");
+	    }
 	  RIDBIT_RESET (RID_REGISTER, specbits);
 	  RIDBIT_RESET (RID_AUTO, specbits);
 	  RIDBIT_RESET (RID_EXTERN, specbits);
