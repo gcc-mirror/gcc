@@ -36,9 +36,6 @@
 #include "unwind-ia64.h"
 
 #if !USING_SJLJ_EXCEPTIONS
-
-#define inline
-
 #define UNW_VER(x)		((x) >> 48)
 #define UNW_FLAG_MASK		0x0000ffff00000000
 #define UNW_FLAG_OSMASK		0x0000f00000000000
@@ -174,7 +171,8 @@ struct _Unwind_Context
   unsigned long regstk_top;	/* bsp for first frame */
 
   /* Current frame info.  */
-  unsigned long bsp;		/* backing store pointer value */
+  unsigned long bsp;		/* backing store pointer value
+				   corresponding to psp.  */
   unsigned long sp;		/* stack pointer value */
   unsigned long psp;		/* previous sp value */
   unsigned long rp;		/* return pointer */
@@ -203,10 +201,14 @@ struct _Unwind_Context
       enum unw_nat_type type : 3;
       signed long off : 61;		/* NaT word is at loc+nat.off */
     } nat;
-  } ireg[32 - 2];
+  } ireg[32 - 2];	/* Indexed by <register number> - 2 */
 
   unsigned long *br_loc[7];
   void *fr_loc[32 - 2];
+
+  /* ??? We initially point pri_unat_loc here.  The entire NAT bit
+     logic needs work.  */
+  unsigned long initial_unat;
 };
 
 typedef unsigned long unw_word;
@@ -1317,7 +1319,7 @@ unw_access_gr (struct _Unwind_Context *info, int regnum,
   else if (regnum < 32)
     {
       /* Access a non-stacked register.  */
-      ireg = &info->ireg[regnum - 1];
+      ireg = &info->ireg[regnum - 2];
       addr = ireg->loc;
       if (addr)
 	{
@@ -1468,7 +1470,7 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
     {
       /* Couldn't find unwind info for this function.  Try an
 	 os-specific fallback mechanism.  This will necessarily
-	 not profide a personality routine or LSDA.  */
+	 not provide a personality routine or LSDA.  */
 #ifdef MD_FALLBACK_FRAME_STATE_FOR
       MD_FALLBACK_FRAME_STATE_FOR (context, fs, success);
 
@@ -1727,37 +1729,39 @@ uw_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 }
 
 /* Fill in CONTEXT for top-of-stack.  The only valid registers at this
-   level will be the return address and the CFA.  */
+   level will be the return address and the CFA.  Note that CFA = SP+16.  */
    
-#define uw_init_context(CONTEXT) \
-  uw_init_context_1 (CONTEXT, __builtin_dwarf_cfa (), __builtin_ia64_bsp ())
+#define uw_init_context(CONTEXT)					\
+  do {									\
+    /* ??? There is a whole lot o code in uw_install_context that	\
+       tries to avoid spilling the entire machine state here.  We	\
+       should try to make that work again.  */				\
+    __builtin_unwind_init();						\
+    uw_init_context_1 (CONTEXT, __builtin_ia64_bsp ());			\
+  } while (0)
 
 static void
-uw_init_context_1 (struct _Unwind_Context *context, void *psp, void *bsp)
+uw_init_context_1 (struct _Unwind_Context *context, void *bsp)
 {
   void *rp = __builtin_extract_return_addr (__builtin_return_address (0));
-  void *sp = __builtin_dwarf_cfa ();
+  /* Set psp to the caller's stack pointer. */
+  void *psp = __builtin_dwarf_cfa () - 16;
   _Unwind_FrameState fs;
 
   /* Flush the register stack to memory so that we can access it.  */
   __builtin_ia64_flushrs ();
 
   memset (context, 0, sizeof (struct _Unwind_Context));
-  context->bsp = (unsigned long) bsp;
-  context->sp = (unsigned long) sp;
+  context->bsp = context->regstk_top = (unsigned long) bsp;
   context->psp = (unsigned long) psp;
   context->rp = (unsigned long) rp;
-
+  asm ("mov %0 = sp" : "=r" (context->sp));
   asm ("mov %0 = pr" : "=r" (context->pr));
+  context->pri_unat_loc = &context->initial_unat;	/* ??? */
   /* ??? Get rnat.  Don't we have to turn off the rse for that?  */
 
   if (uw_frame_state_for (context, &fs) != _URC_NO_REASON)
     abort ();
-
-  /* Force the frame state to use the known cfa value.  */
-  fs.curr.reg[UNW_REG_PSP].when = -1;
-  fs.curr.reg[UNW_REG_PSP].where = UNW_WHERE_NONE;
-  fs.curr.reg[UNW_REG_PSP].val = sp - psp;
 
   uw_update_context (context, &fs);
 }
@@ -1791,8 +1795,9 @@ uw_install_context (struct _Unwind_Context *current __attribute__((unused)),
      target function.  The value that we install below will be
      adjusted by the BR.RET instruction based on the contents
      of AR.PFS.  So we must unadjust that here.  */
-  target->bsp
-    = ia64_rse_skip_regs (target->bsp, (*target->pfs_loc >> 7) & 0x7f);
+  target->bsp = (unsigned long)
+    ia64_rse_skip_regs ((unsigned long *)target->bsp,
+			(*target->pfs_loc >> 7) & 0x7f);
 
   /* Provide assembly with the offsets into the _Unwind_Context.  */
   asm volatile ("uc_rnat = %0"
