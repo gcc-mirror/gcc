@@ -918,7 +918,28 @@ force_nonfallthru_and_redirect (e, target)
     abort ();
   else if (!(e->flags & EDGE_FALLTHRU))
     abort ();
-  else if (e->src->succ->succ_next)
+  else if (e->src == ENTRY_BLOCK_PTR)
+    {
+      /* We can't redirect the entry block.  Create an empty block at the
+         start of the function which we use to add the new jump.  */
+      edge *pe1;
+      basic_block bb = create_basic_block (0, e->dest->head, NULL);
+
+      /* Change the existing edge's source to be the new block, and add
+	 a new edge from the entry block to the new block.  */
+      e->src = bb;
+      for (pe1 = &ENTRY_BLOCK_PTR->succ; *pe1; pe1 = &(*pe1)->succ_next)
+	if (*pe1 == e)
+	  {
+	    *pe1 = e->succ_next;
+	    break;
+	  }
+      e->succ_next = 0;
+      bb->succ = e;
+      make_single_succ_edge (ENTRY_BLOCK_PTR, bb, EDGE_FALLTHRU);
+    }
+
+  if (e->src->succ->succ_next)
     {
       /* Create the new structures.  */
       note = last_loop_beg_note (e->src->end);
