@@ -837,8 +837,10 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #define TARGET_ASM_UNALIGNED_HI_OP "\t.align 0\n\t.half\t"
 #undef TARGET_ASM_UNALIGNED_SI_OP
 #define TARGET_ASM_UNALIGNED_SI_OP "\t.align 0\n\t.word\t"
+/* The IRIX 6 O32 assembler gives an error for `align 0; .dword', contrary
+   to the documentation, so disable it.  */
 #undef TARGET_ASM_UNALIGNED_DI_OP
-#define TARGET_ASM_UNALIGNED_DI_OP "\t.align 0\n\t.dword\t"
+#define TARGET_ASM_UNALIGNED_DI_OP NULL
 #endif
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE

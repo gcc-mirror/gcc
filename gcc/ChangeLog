@@ -1,3 +1,8 @@
+2003-06-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/mips.c (TARGET_ASM_UNALIGNED_DI_OP) [TARGET_IRIX5 &&
+	!TARGET_IRIX6]: Define as NULL.
+
 2003-06-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (sparc_va_arg): Don't align 16-byte+ structures.
