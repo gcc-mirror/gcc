@@ -5903,7 +5903,7 @@ choose_reload_regs (chain)
 
 			  if (i1 != n_earlyclobbers
 			      /* Don't use it if we'd clobber a pseudo reg.  */
-			      || (! TEST_HARD_REG_BIT (reg_used_by_pseudo, i)
+			      || (TEST_HARD_REG_BIT (reg_used_by_pseudo, i)
 				  && reload_out[r]
 				  && ! TEST_HARD_REG_BIT (reg_reloaded_dead, i))
 			      /* Don't really use the inherited spill reg
@@ -7551,6 +7551,7 @@ emit_reload_insns (chain)
 		      spill_reg_stored_to[src_regno + nr] = out;
 		      reg_reloaded_contents[src_regno + nr] = nregno;
 		      reg_reloaded_insn[src_regno + nr] = store_insn;
+		      CLEAR_HARD_REG_BIT (reg_reloaded_dead, src_regno + nr);
 		      SET_HARD_REG_BIT (reg_reloaded_valid, src_regno + nr);
 		      SET_HARD_REG_BIT (reg_is_output_reload, src_regno + nr);
 		      if (note)
