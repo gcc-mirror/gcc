@@ -64,6 +64,13 @@ typedef unsigned char uchar;
 #define CPP_BUF_COLUMN(BUF, CUR) ((CUR) - (BUF)->line_base)
 #define CPP_BUF_COL(BUF) CPP_BUF_COLUMN(BUF, (BUF)->cur)
 
+#define CPP_INCREMENT_LINE(PFILE, COLS_HINT) do { \
+    const struct line_map *map \
+      = linemap_lookup (PFILE->line_table, PFILE->line); \
+    unsigned int line = SOURCE_LINE (map, PFILE->line) + 1; \
+    PFILE->line = linemap_line_start (PFILE->line_table, line, COLS_HINT); \
+  } while (0)
+
 /* Maximum nesting of cpp_buffers.  We use a static limit, partly for
    efficiency, and partly to limit runaway recursion.  */
 #define CPP_STACK_MAX 200
@@ -296,23 +303,24 @@ struct cpp_buffer
      The warning happens only for C89 extended mode with -pedantic on,
      or for -Wtraditional, and only once per file (otherwise it would
      be far too noisy).  */
-  unsigned char warned_cplusplus_comments;
+  unsigned int warned_cplusplus_comments : 1;
 
   /* True if we don't process trigraphs and escaped newlines.  True
      for preprocessed input, command line directives, and _Pragma
      buffers.  */
-  unsigned char from_stage3;
+  unsigned int from_stage3 : 1;
 
   /* Nonzero means that the directory to start searching for ""
      include files has been calculated and stored in "dir" below.  */
   unsigned char search_cached;
 
+  /* One for a system header, two for a C system header file that therefore
+     needs to be extern "C" protected in C++, and zero otherwise. */
+  unsigned char sysp;
+
   /* The directory of the this buffer's file.  Its NAME member is not
      allocated, so we don't need to worry about freeing it.  */
   struct cpp_dir dir;
-
-  /* Used for buffer overlays by cpptrad.c.  */
-  const uchar *saved_cur, *saved_rlimit;
 
   /* Descriptor for converting from the input character set to the
      source character set.  */
@@ -335,7 +343,6 @@ struct cpp_reader
 
   /* Source line tracking.  */
   struct line_maps *line_table;
-  const struct line_map *map;
   fileline line;
 
   /* The line of the '#' of the current directive.  */
@@ -455,6 +462,9 @@ struct cpp_reader
     fileline first_line;
   } out;
 
+  /* Used for buffer overlays by cpptrad.c.  */
+  const uchar *saved_cur, *saved_rlimit, *saved_line_base;
+
   /* Used to save the original line number during traditional
      preprocessing.  */
   unsigned int saved_line;
@@ -493,12 +503,18 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 
 /* Macros.  */
 
-#define CPP_IN_SYSTEM_HEADER(PFILE) ((PFILE)->map && (PFILE)->map->sysp)
+static inline int cpp_in_system_header (cpp_reader *);
+static inline int
+cpp_in_system_header (cpp_reader *pfile)
+{
+  return pfile->buffer ? pfile->buffer->sysp : 0;
+}
 #define CPP_PEDANTIC(PF) CPP_OPTION (PF, pedantic)
 #define CPP_WTRADITIONAL(PF) CPP_OPTION (PF, warn_traditional)
 
 /* In cpperror.c  */
-extern int _cpp_begin_message (cpp_reader *, int, fileline, unsigned int);
+extern int _cpp_begin_message (cpp_reader *, int,
+			       source_location, unsigned int);
 
 /* In cppmacro.c */
 extern void _cpp_free_definition (cpp_hashnode *);

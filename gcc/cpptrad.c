@@ -148,7 +148,7 @@ static const uchar *
 copy_comment (cpp_reader *pfile, const uchar *cur, int in_define)
 {
   bool unterminated, copy = false;
-  unsigned int from_line = pfile->line;
+  source_location src_loc = pfile->line;
   cpp_buffer *buffer = pfile->buffer;
 
   buffer->cur = cur;
@@ -158,7 +158,7 @@ copy_comment (cpp_reader *pfile, const uchar *cur, int in_define)
     unterminated = _cpp_skip_block_comment (pfile);
     
   if (unterminated)
-    cpp_error_with_line (pfile, CPP_DL_ERROR, from_line, 0,
+    cpp_error_with_line (pfile, CPP_DL_ERROR, src_loc, 0,
 			 "unterminated comment");
 
   /* Comments in directives become spaces so that tokens are properly
@@ -268,13 +268,14 @@ _cpp_overlay_buffer (cpp_reader *pfile, const uchar *start, size_t len)
   cpp_buffer *buffer = pfile->buffer;
 
   pfile->overlaid_buffer = buffer;
-  buffer->saved_cur = buffer->cur;
-  buffer->saved_rlimit = buffer->rlimit;
-  /* Prevent the ISO lexer from scanning a fresh line.  */
-  pfile->saved_line = pfile->line--;
+  pfile->saved_cur = buffer->cur;
+  pfile->saved_rlimit = buffer->rlimit;
+  pfile->saved_line_base = buffer->next_line;
+  pfile->saved_line = pfile->line;
   buffer->need_line = false;
 
   buffer->cur = start;
+  buffer->line_base = start;
   buffer->rlimit = start + len;
 }
 
@@ -284,12 +285,12 @@ _cpp_remove_overlay (cpp_reader *pfile)
 {
   cpp_buffer *buffer = pfile->overlaid_buffer;
 
-  buffer->cur = buffer->saved_cur;
-  buffer->rlimit = buffer->saved_rlimit;
+  buffer->cur = pfile->saved_cur;
+  buffer->rlimit = pfile->saved_rlimit;
+  buffer->line_base = pfile->saved_line_base;
   buffer->need_line = true;
 
   pfile->overlaid_buffer = NULL;
-  pfile->line = pfile->saved_line;
 }
 
 /* Reads a logical line into the output buffer.  Returns TRUE if there
@@ -404,7 +405,7 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro)
 	  pfile->out.cur = out - 1;
 	  pfile->buffer->cur = cur;
 	  pfile->buffer->need_line = true;
-	  pfile->line++;
+	  CPP_INCREMENT_LINE (pfile, 0);
 
 	  if ((lex_state == ls_fun_open || lex_state == ls_fun_close)
 	      && !pfile->state.in_directive
@@ -605,7 +606,7 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro)
 		  /* Null directive.  Ignore it and don't invalidate
 		     the MI optimization.  */
 		  pfile->buffer->need_line = true;
-		  pfile->line++;
+		  CPP_INCREMENT_LINE (pfile, 0);
 		  result = false;
 		  goto done;
 		}

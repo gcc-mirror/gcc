@@ -777,8 +777,9 @@ strtoul_for_line (const uchar *str, unsigned int len, long unsigned int *nump)
 static void
 do_line (cpp_reader *pfile)
 {
+  const struct line_map *map = linemap_lookup (pfile->line_table, pfile->line);
   const cpp_token *token;
-  const char *new_file = pfile->map->to_file;
+  const char *new_file = map->to_file;
   unsigned long new_lineno;
 
   /* C99 raised the minimum limit on #line numbers.  */
@@ -816,7 +817,7 @@ do_line (cpp_reader *pfile)
 
   skip_rest_of_line (pfile);
   _cpp_do_file_change (pfile, LC_RENAME, new_file, new_lineno,
-		       pfile->map->sysp);
+		       map->sysp);
 }
 
 /* Interpret the # 44 "file" [flags] notation, which has slightly
@@ -825,10 +826,11 @@ do_line (cpp_reader *pfile)
 static void
 do_linemarker (cpp_reader *pfile)
 {
+  const struct line_map *map = linemap_lookup (pfile->line_table, pfile->line);
   const cpp_token *token;
-  const char *new_file = pfile->map->to_file;
+  const char *new_file = map->to_file;
   unsigned long new_lineno;
-  unsigned int new_sysp = pfile->map->sysp;
+  unsigned int new_sysp = map->sysp;
   enum lc_reason reason = LC_RENAME;
   int flag;
 
@@ -876,6 +878,7 @@ do_linemarker (cpp_reader *pfile)
 	  flag = read_flag (pfile, flag);
 	  if (flag == 4)
 	    new_sysp = 2;
+	  pfile->buffer->sysp = new_sysp;
 	}
 
       check_eol (pfile);
@@ -900,11 +903,15 @@ _cpp_do_file_change (cpp_reader *pfile, enum lc_reason reason,
 		     const char *to_file, unsigned int file_line,
 		     unsigned int sysp)
 {
-  pfile->map = linemap_add (pfile->line_table, reason, sysp,
-			    pfile->line, to_file, file_line);
+  const struct line_map *map = linemap_add (pfile->line_table, reason, sysp,
+					    to_file, file_line);
+  if (map == NULL)
+    pfile->line = 0;
+  else
+    pfile->line = linemap_line_start (pfile->line_table, map->to_line, 127);
 
   if (pfile->cb.file_change)
-    pfile->cb.file_change (pfile, pfile->map);
+    pfile->cb.file_change (pfile, map);
 }
 
 /* Report a warning or error detected by the program we are
@@ -912,9 +919,7 @@ _cpp_do_file_change (cpp_reader *pfile, enum lc_reason reason,
 static void
 do_diagnostic (cpp_reader *pfile, int code, int print_dir)
 {
-  if (_cpp_begin_message (pfile, code,
-			  pfile->cur_token[-1].line,
-			  pfile->cur_token[-1].col))
+  if (_cpp_begin_message (pfile, code, pfile->cur_token[-1].src_loc, 0))
     {
       if (print_dir)
 	fprintf (stderr, "#%s ", pfile->directive->name);
@@ -1340,7 +1345,6 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in)
     pfile->context = saved_context;
     pfile->cur_token = saved_cur_token;
     pfile->cur_run = saved_cur_run;
-    pfile->line--;
   }
 
   /* See above comment.  For the moment, we'd like
@@ -1901,13 +1905,6 @@ cpp_callbacks *
 cpp_get_callbacks (cpp_reader *pfile)
 {
   return &pfile->cb;
-}
-
-/* The line map set.  */
-const struct line_maps *
-cpp_get_line_maps (cpp_reader *pfile)
-{
-  return pfile->line_table;
 }
 
 /* Copy the given callbacks structure to our own.  */
