@@ -2342,5 +2342,46 @@ h8300_adjust_insn_length (insn, length)
 	}
     }
 
+  /* Shifts need various adjustments.  */
+  if (GET_CODE (pat) == PARALLEL
+      && GET_CODE (XVECEXP (pat, 0, 0)) == SET
+      && (GET_CODE (SET_SRC (XVECEXP (pat, 0, 0))) == ASHIFTRT
+          || GET_CODE (SET_SRC (XVECEXP (pat, 0, 0))) == LSHIFTRT
+          || GET_CODE (SET_SRC (XVECEXP (pat, 0, 0))) == ASHIFT))
+    {
+      rtx src = SET_SRC (XVECEXP (pat, 0, 0));
+      enum machine_mode mode = GET_MODE (src);
+
+      if (GET_CODE (XEXP (src, 1)) != CONST_INT)
+	return 0;
+
+      /* QImode shifts by small constants take one insn
+	 per shift.  So the adjustment is 20 (md length) -
+	 # shifts * 2.  */
+      if (mode == QImode && INTVAL (XEXP (src, 1)) <= 4)
+	return -(20 - INTVAL (XEXP (src, 1)) * 2);
+
+      /* Similarly for HImode and SImode shifts by
+	 small constants on the H8/300H.  */
+      if (TARGET_H8300H
+	  && (mode == HImode || mode == SImode)
+	  && INTVAL (XEXP (src, 1)) <= 4)
+	return -(20 - INTVAL (XEXP (src, 1)) * 2);
+
+      /* HImode shifts by small constants for the H8/300.  */
+      if (mode == HImode
+	  && INTVAL (XEXP (src, 1)) <= 4)
+	return -(20 - (INTVAL (XEXP (src, 1))
+		       * (GET_CODE (src) == ASHIFT ? 2 : 4)));
+
+      /* SImode shifts by small constants for the H8/300.  */
+      if (mode == SImode
+	  && INTVAL (XEXP (src, 1)) <= 2)
+	return -(20 - (INTVAL (XEXP (src, 1))
+		       * (GET_CODE (src) == ASHIFT ? 6 : 8)));
+
+      /* XXX ??? Could check for more shift/rotate cases here.  */
+    }
+    
   return 0;
 }
