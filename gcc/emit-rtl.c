@@ -91,19 +91,27 @@ static int no_line_numbers;
    All of these except perhaps the floating-point CONST_DOUBLEs
    are unique; no other rtx-object will be equal to any of these.  */
 
+/* Avoid warnings by initializing the `fld' field.  Since its a union,
+   bypass problems with KNR compilers by only doing so when __GNUC__. */
+#ifdef __GNUC__
+#define FLDI , {{0}}
+#else
+#define FLDI
+#endif
+
 struct _global_rtl global_rtl =
 {
-  {PC, VOIDmode},			/* pc_rtx */
-  {CC0, VOIDmode},			/* cc0_rtx */
-  {REG},				/* stack_pointer_rtx */
-  {REG},				/* frame_pointer_rtx */
-  {REG},				/* hard_frame_pointer_rtx */
-  {REG},				/* arg_pointer_rtx */
-  {REG},				/* virtual_incoming_args_rtx */
-  {REG},				/* virtual_stack_vars_rtx */
-  {REG},				/* virtual_stack_dynamic_rtx */
-  {REG},				/* virtual_outgoing_args_rtx */
-  {REG},				/* virtual_cfa_rtx */
+  {PC, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI },  /* pc_rtx */
+  {CC0, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* cc0_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* stack_pointer_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* frame_pointer_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* hard_frame_pointer_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* arg_pointer_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_incoming_args_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_stack_vars_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_stack_dynamic_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_outgoing_args_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_cfa_rtx */
 };
 
 /* We record floating-point CONST_DOUBLEs in each floating-point mode for

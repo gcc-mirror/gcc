@@ -2333,7 +2333,7 @@ edivm (den, num)
       tnum = (((unsigned EMULONG) num[M]) << 16) + num[M+1];
 
       /* Do not execute the divide instruction if it will overflow.  */
-      if ((tdenm * 0xffffL) < tnum)
+      if ((tdenm * (unsigned long)0xffff) < tnum)
 	tquot = 0xffff;
       else
 	tquot = tnum / tdenm;

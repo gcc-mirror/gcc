@@ -126,7 +126,7 @@ static void emit_call_1		PROTO((rtx, tree, tree, HOST_WIDE_INT,
 				       HOST_WIDE_INT, rtx, rtx,
 				       int, rtx, int));
 static void store_one_arg	PROTO ((struct arg_data *, rtx, int, int,
-					tree, int));
+					int));
 
 /* If WHICH is 1, return 1 if EXP contains a call to the built-in function
    `alloca'.
@@ -343,8 +343,8 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, struct_value_size,
              next_arg_reg, valreg, old_inhibit_defer_pop, call_fusage,
 	     is_const)
      rtx funexp;
-     tree fndecl;
-     tree funtype;
+     tree fndecl ATTRIBUTE_UNUSED;
+     tree funtype ATTRIBUTE_UNUSED;
      HOST_WIDE_INT stack_size;
      HOST_WIDE_INT struct_value_size;
      rtx next_arg_reg;
@@ -1765,7 +1765,7 @@ expand_call (exp, target, ignore)
   for (i = 0; i < num_actuals; i++)
     if (args[i].reg == 0 || args[i].pass_on_stack)
       store_one_arg (&args[i], argblock, may_be_alloca,
-		     args_size.var != 0, fndecl, reg_parm_stack_space);
+		     args_size.var != 0, reg_parm_stack_space);
 
   /* If we have a parm that is passed in registers but not in memory
      and whose alignment does not permit a direct copy into registers,
@@ -1777,7 +1777,7 @@ expand_call (exp, target, ignore)
       if (args[i].reg != 0 && ! args[i].pass_on_stack
 	&& args[i].mode == BLKmode
 	  && (TYPE_ALIGN (TREE_TYPE (args[i].tree_value))
-	      < MIN (BIGGEST_ALIGNMENT, BITS_PER_WORD)))
+	      < (unsigned int) MIN (BIGGEST_ALIGNMENT, BITS_PER_WORD)))
 	{
 	  int bytes = int_size_in_bytes (TREE_TYPE (args[i].tree_value));
 	  int big_endian_correction = 0;
@@ -1835,7 +1835,7 @@ expand_call (exp, target, ignore)
     for (i = 0; i < num_actuals; i++)
       if (args[i].partial != 0 && ! args[i].pass_on_stack)
 	store_one_arg (&args[i], argblock, may_be_alloca,
-		       args_size.var != 0, fndecl, reg_parm_stack_space);
+		       args_size.var != 0, reg_parm_stack_space);
 
 #ifndef PUSH_ARGS_REVERSED
 #ifdef STACK_BOUNDARY
@@ -3357,13 +3357,12 @@ target_for_arg (type, size, args_addr, offset)
    FNDECL is the declaration of the function we are calling.  */
 
 static void
-store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
+store_one_arg (arg, argblock, may_be_alloca, variable_size,
 	       reg_parm_stack_space)
      struct arg_data *arg;
      rtx argblock;
      int may_be_alloca;
      int variable_size;
-     tree fndecl;
      int reg_parm_stack_space;
 {
   register tree pval = arg->tree_value;

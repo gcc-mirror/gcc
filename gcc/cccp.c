@@ -942,7 +942,7 @@ static void record_control_macro PROTO((struct include_file *, U_CHAR *));
 
 static char *check_precompiled PROTO((int, struct stat *, char *, char **));
 static int check_preconditions PROTO((char *));
-static void pcfinclude PROTO((U_CHAR *, U_CHAR *, U_CHAR *, FILE_BUF *));
+static void pcfinclude PROTO((U_CHAR *, U_CHAR *, FILE_BUF *));
 static void pcstring_used PROTO((HASHNODE *));
 static void write_output PROTO((void));
 static void pass_thru_directive PROTO((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
@@ -1024,7 +1024,7 @@ static void dump_arg_n PROTO((DEFINITION *, int, FILE *));
 static void initialize_char_syntax PROTO((void));
 static void initialize_builtins PROTO((FILE_BUF *, FILE_BUF *));
 
-static void make_definition PROTO((char *, FILE_BUF *));
+static void make_definition PROTO((char *));
 static void make_undef PROTO((char *, FILE_BUF *));
 
 static void make_assertion PROTO((char *, char *));
@@ -1828,7 +1828,7 @@ main (argc, argv)
 	    sprintf (versbuf, "__VMS_VER=%08ld", vms_version_value);
 	    if (debug_output)
 	      output_line_directive (fp, &outbuf, 0, same_file);
-	    make_definition (versbuf, &outbuf);
+	    make_definition (versbuf);
 	  }
       }
 #endif
@@ -1847,7 +1847,7 @@ main (argc, argv)
 	  *p++= 0;
 	if (debug_output)
 	  output_line_directive (fp, &outbuf, 0, same_file);
-	make_definition (q, &outbuf);
+	make_definition (q);
 	while (*p == ' ' || *p == '\t')
 	  p++;
       } else if (p[0] == '-' && p[1] == 'A') {
@@ -1912,7 +1912,7 @@ main (argc, argv)
     if (pend_defs[i]) {
       if (debug_output)
         output_line_directive (fp, &outbuf, 0, same_file);
-      make_definition (pend_defs[i], &outbuf);
+      make_definition (pend_defs[i]);
     }
     if (pend_assertions[i])
       make_assertion (pend_assertion_options[i], pend_assertions[i]);
@@ -4806,8 +4806,7 @@ get_filename:
     if (pcfbuf) {
       pcfname = xmalloc (strlen (pcftry) + 1);
       strcpy (pcfname, pcftry);
-      pcfinclude ((U_CHAR *) pcfbuf, (U_CHAR *) pcfbuflimit,
-		  (U_CHAR *) fname, op);
+      pcfinclude ((U_CHAR *) pcfbuf, (U_CHAR *) fname, op);
     }
     else
       finclude (f, inc, op, is_system_include (fname), searchptr);
@@ -5514,8 +5513,8 @@ check_preconditions (prec)
    in.  OP is the main output buffer.  */
 
 static void
-pcfinclude (buf, limit, name, op)
-     U_CHAR *buf, *limit, *name;
+pcfinclude (buf, name, op)
+     U_CHAR *buf, *name;
      FILE_BUF *op;
 {
   FILE_BUF tmpbuf;
@@ -5802,7 +5801,7 @@ create_definition (buf, limit, op)
       while (is_idchar[*bp]) {
 	bp++;
 	/* do we have a "special" rest-args extension here? */
-	if (limit - bp > REST_EXTENSION_LENGTH
+	if (limit - bp > (long) REST_EXTENSION_LENGTH
 	    && bcmp (rest_extension, bp, REST_EXTENSION_LENGTH) == 0) {
 	  if (pedantic && !instack[indepth].system_header_p)
 	    pedwarn ("ANSI C does not allow macro with variable arguments");
@@ -10185,9 +10184,8 @@ initialize_builtins (inp, outp)
  */
 
 static void
-make_definition (str, op)
+make_definition (str)
      char *str;
-     FILE_BUF *op;
 {
   FILE_BUF *ip;
   struct directive *kt;

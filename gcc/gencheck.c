@@ -20,6 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "hconfig.h"
 #include "system.h"
+#include "gansidecl.h"
 
 #define DEFTREECODE(SYM, NAME, TYPE, LEN)   STRINGIFY(SYM),
 
@@ -36,7 +37,7 @@ void usage ()
 
 int main (argc, argv)
      int argc;
-     char *argv[];
+     char *argv[] ATTRIBUTE_UNUSED;
 {
   int i;
 

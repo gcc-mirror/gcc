@@ -1,3 +1,106 @@
+Tue Oct 13 17:46:18 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (gencheck.o): Depend on gansidecl.h.
+
+	* c-common.c (print_char_table): Add missing initializers.
+	(scan_char_table): Likewise.
+	(time_char_table): Likewise.
+
+	* c-decl.c (c_decode_option): Mark parameter `argc' with
+	ATTRIBUTE_UNUSED.
+	(declare_parm_level): Mark parameter `definition_flag' with
+	ATTRIBUTE_UNUSED.
+
+	* c-lex.c (readescape): Use `(unsigned)1' in shift.
+	(yylex): Likewise.  Cast `sizeof' to an (int) when comparing
+	against one.
+
+	* calls.c (store_one_arg): Remove unused parameter `fndecl'.  All
+	callers changed.
+	(emit_call_1): Mark parameters `fndecl' and `funtype' with
+	ATTRIBUTE_UNUSED.
+	(expand_call): Cast result of MIN() to (unsigned int) when
+	comparing against an unsigned value.
+
+	* cccp.c (pcfinclude): Remove unused parameter `limit'.  All
+	callers changed.
+	(make_definition): Remove unused parameter `op'.  All callers
+	changed.
+	(create_definition): Cast REST_EXTENSION_LENGTH to (long) when
+	comparing against the result of pointer arithmetic.
+
+	* config/mips/mips.h (FUNCTION_ARG_BOUNDARY): Cast to (unsigned)
+	when comparing against one.
+
+	* dwarf2out.c (dwarf2out_frame_debug): Cast REGNO() and
+ 	HARD_FRAME_POINTER_REGNUM to (unsigned) when comparing against
+ 	one.
+	(output_die): Move variable `i' into the scope in which it is
+	used.  Change its type to `unsigned'.
+	(output_die): Cast the result of `strlen' to (int) when passing it
+	to ASM_OUTPUT_ASCII().
+	(output_pubnames): Likewise.
+	(output_line_info): Likewise.
+
+	* emit-rtl.c (global_rtl): Add missing initializers.
+
+	* explow.c (promote_mode): Mark parameter `for_call' with
+	ATTRIBUTE_UNUSED.
+
+	* expmed.c (expand_shift): Cast the result of GET_MODE_BITSIZE to
+ 	`unsigned HOST_WIDE_INT' when comparing against one.
+	(synth_mult): Change type of variable `cost' to int.
+	(emit_store_flag): Use `(unsigned HOST_WIDE_INT) 1' in shift.
+
+	* expr.c (copy_blkmode_from_reg): Cast BITS_PER_WORD to (unsigned)
+	when comparing against one.
+	(get_inner_reference): Change variable `alignment' to unsigned.
+	(expand_expr): Cast the result of GET_MODE_ALIGNMENT to (unsigned
+	int) when comparing against one.
+	(expand_builtin_setjmp): Change type of variable `i' to size_t.
+
+	* fold-const.c (div_and_round_double): Cast BASE to
+	(HOST_WIDE_INT) when comparing against one.
+
+	* gencheck.c: Include gansidecl.h.
+	(main): Mark parameter `argv' with ATTRIBUTE_UNUSED.
+
+	* optabs.c (gen_cond_trap): Mark parameters `code', `op2' and
+	`tcode' with ATTRIBUTE_UNUSED.
+
+	* real.c (edivm): Cast constant value to (unsigned long) in
+	expression compared against an unsigned value.
+
+	* stmt.c (expand_return): Cast BITS_PER_WORD to (unsigned) when
+	comparing against one.
+	(expand_end_case): Cast CASE_VALUES_THRESHOLD to (unsigned int)
+	when comparing against one.
+
+	* stor-layout.c (mode_for_size): Cast MAX_FIXED_MODE_SIZE to
+	(unsigned int) when comparing against one.  Likewise for
+	GET_MODE_BITSIZE.
+	(smallest_mode_for_size): Likewise.
+	(save_storage_status): Mark parameter `p' with ATTRIBUTE_UNUSED.
+	(restore_storage_status): Likewise.
+	
+	* toplev.c (debug_args): Add missing initializer.
+	(f_options): Spelling correction.  Add missing initializers.
+	(documented_lang_options): Likewise.
+	(debug_end_source_file): Mark parameter `lineno' with
+	ATTRIBUTE_UNUSED.
+
+	* tree.c (valid_machine_attribute): Mark parameters `attr_args',
+	`decl' and `type' with ATTRIBUTE_UNUSED.
+
+	* varasm.c (decode_reg_name): Cast `sizeof' expression to (int)
+	when comparing against one.
+	(assemble_variable): Mark parameter `top_level' with
+	ATTRIBUTE_UNUSED.
+	(assemble_external_libcall): Mark parameter `fun' with
+	ATTRIBUTE_UNUSED.
+	(output_constant_pool): Mark parameters `fnname' and `fndecl' with
+	ATTRIBUTE_UNUSED.
+
 Tue Oct 13 12:51:04 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/v850/lib1funcs.asm (_udivsi3): Add .type declaration.

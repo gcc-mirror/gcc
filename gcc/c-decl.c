@@ -601,7 +601,7 @@ int dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
    
 int
 c_decode_option (argc, argv)
-     int argc;
+     int argc ATTRIBUTE_UNUSED;
      char **argv;
 {
   int strings_processed;
@@ -946,7 +946,7 @@ kept_level_p ()
 
 void
 declare_parm_level (definition_flag)
-     int definition_flag;
+     int definition_flag ATTRIBUTE_UNUSED;
 {
   current_binding_level->parm_flag = 1;
 }

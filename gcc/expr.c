@@ -2101,7 +2101,7 @@ copy_blkmode_from_reg(tgtblk,srcreg,type)
 {
       int bytes = int_size_in_bytes (type);
       rtx src = NULL, dst = NULL;
-      int bitsize = MIN (TYPE_ALIGN (type), BITS_PER_WORD);
+      int bitsize = MIN (TYPE_ALIGN (type), (unsigned int) BITS_PER_WORD);
       int bitpos, xbitpos, big_endian_correction = 0;
       
       if (tgtblk == 0)
@@ -4709,7 +4709,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
   tree size_tree = 0;
   enum machine_mode mode = VOIDmode;
   tree offset = integer_zero_node;
-  int alignment = BIGGEST_ALIGNMENT;
+  unsigned int alignment = BIGGEST_ALIGNMENT;
 
   if (TREE_CODE (exp) == COMPONENT_REF)
     {
@@ -6462,7 +6462,7 @@ expand_expr (exp, target, tmode, modifier)
 		    /* If the field isn't aligned enough to fetch as a memref,
 		       fetch it as a bit field.  */
 		    || (SLOW_UNALIGNED_ACCESS
-			&& ((TYPE_ALIGN (TREE_TYPE (tem)) < GET_MODE_ALIGNMENT (mode))
+			&& ((TYPE_ALIGN (TREE_TYPE (tem)) < (unsigned int) GET_MODE_ALIGNMENT (mode))
 			    || (bitpos % GET_MODE_ALIGNMENT (mode) != 0))))))
 	  {
 	    enum machine_mode ext_mode = mode;
@@ -8422,7 +8422,7 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
   if (fixed_regs[ARG_POINTER_REGNUM])
     {
 #ifdef ELIMINABLE_REGS
-      int i;
+      size_t i;
       static struct elims {int from, to;} elim_regs[] = ELIMINABLE_REGS;
 
       for (i = 0; i < sizeof elim_regs / sizeof elim_regs[0]; i++)

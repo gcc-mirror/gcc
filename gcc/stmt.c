@@ -2630,7 +2630,8 @@ expand_return (retval)
       int big_endian_correction = 0;
       int bytes = int_size_in_bytes (TREE_TYPE (retval_rhs));
       int n_regs = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-      int bitsize = MIN (TYPE_ALIGN (TREE_TYPE (retval_rhs)),BITS_PER_WORD);
+      int bitsize = MIN (TYPE_ALIGN (TREE_TYPE (retval_rhs)),
+			 (unsigned int)BITS_PER_WORD);
       rtx *result_pseudos = (rtx *) alloca (sizeof (rtx) * n_regs);
       rtx result_reg, src = NULL_RTX, dst = NULL_RTX;
       rtx result_val = expand_expr (retval_rhs, NULL_RTX, VOIDmode, 0);
@@ -4899,7 +4900,7 @@ expand_end_case (orig_index)
 #endif /* CASE_VALUES_THRESHOLD */
 
       else if (TREE_INT_CST_HIGH (range) != 0
-	       || count < CASE_VALUES_THRESHOLD
+	       || count < (unsigned int) CASE_VALUES_THRESHOLD
 	       || ((unsigned HOST_WIDE_INT) (TREE_INT_CST_LOW (range))
 		   > 10 * count)
 #ifndef ASM_OUTPUT_ADDR_DIFF_ELT

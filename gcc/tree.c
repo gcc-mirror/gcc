@@ -3332,9 +3332,10 @@ build_type_attribute_variant (ttype, attribute)
 
 int
 valid_machine_attribute (attr_name, attr_args, decl, type)
-     tree attr_name, attr_args;
-     tree decl;
-     tree type;
+  tree attr_name;
+  tree attr_args ATTRIBUTE_UNUSED;
+  tree decl ATTRIBUTE_UNUSED;
+  tree type ATTRIBUTE_UNUSED;
 {
   int valid = 0;
 #ifdef VALID_MACHINE_DECL_ATTRIBUTE

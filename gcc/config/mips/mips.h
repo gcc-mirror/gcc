@@ -2470,7 +2470,7 @@ typedef struct mips_args {
 
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE)				\
   (((TYPE) != 0)							\
-	? ((TYPE_ALIGN(TYPE) <= PARM_BOUNDARY)				\
+	? ((TYPE_ALIGN(TYPE) <= (unsigned)PARM_BOUNDARY)		\
 		? PARM_BOUNDARY						\
 		: TYPE_ALIGN(TYPE))					\
 	: ((GET_MODE_ALIGNMENT(MODE) <= PARM_BOUNDARY)			\
