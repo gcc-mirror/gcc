@@ -3640,7 +3640,8 @@ duplicate_decls (newdecl, olddecl)
     }
 
   /* Merge the storage class information.  */
-  DECL_WEAK (newdecl) |= DECL_WEAK (olddecl);
+  merge_weak (newdecl, olddecl);
+
   DECL_ONE_ONLY (newdecl) |= DECL_ONE_ONLY (olddecl);
   DECL_DEFER_OUTPUT (newdecl) |= DECL_DEFER_OUTPUT (olddecl);
   TREE_PUBLIC (newdecl) = TREE_PUBLIC (olddecl);
