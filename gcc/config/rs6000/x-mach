@@ -3,9 +3,5 @@
 # Show we need to use the C version of ALLOCA
 ALLOCA=alloca.o
 
-# We can't use -S to compile alloca
-ALLOCA_FLAGS=-c
-ALLOCA_FINISH=
-
 # For some reason, we need -lm for cc1.
 CLIB=-lm
