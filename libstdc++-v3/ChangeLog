@@ -1,3 +1,9 @@
+2004-11-19  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* Makefile.am (doxygen, doxygen-maint, doxygen-man): Remove extra '$'
+	from host_alias variable.
+	* Makefile.in: Regenerate.
+
 2004-11-19  Chris Jefferson  <chris@bubblescope.net>
 
 	* include/bits/stl_list.h (list::back, list::back const):
