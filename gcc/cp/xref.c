@@ -811,14 +811,14 @@ open_xref_file(file)
 #ifdef XREF_FILE_NAME
   XREF_FILE_NAME (xref_name, file);
 #else
-  s = rindex (file, '/');
+  s = strrchr (file, '/');
   if (s == NULL)
     sprintf (xref_name, ".%s.gxref", file);
   else
     {
       ++s;
       strcpy (xref_name, file);
-      t = rindex (xref_name, '/');
+      t = strrchr (xref_name, '/');
       ++t;
       *t++ = '.';
       strcpy (t, s);

@@ -1,3 +1,8 @@
+2000-11-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* com.c (open_include_file, ffecom_open_include_): Use strchr ()
+	and strrchr () instead of index () and rindex ().
+
 2000-10-27  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* Make-lang.in: Move all build rules here from Makefile.in,

@@ -946,7 +946,7 @@ translate_options (argcp, argvp)
 
 		      /* If this mapping requires extra text at end of name,
 			 accept that as "argument".  */
-		      else if (index (arginfo, '*') != 0)
+		      else if (strchr (arginfo, '*') != 0)
 			arg = argv[i] + optlen;
 
 		      /* Otherwise, extra text at end means mismatch.
@@ -955,14 +955,14 @@ translate_options (argcp, argvp)
 			continue;
 		    }
 
-		  else if (index (arginfo, '*') != 0)
+		  else if (strchr (arginfo, '*') != 0)
 		    {
 		      error ("Incomplete `%s' option", option_map[j].name);
 		      break;
 		    }
 
 		  /* Handle arguments.  */
-		  if (index (arginfo, 'a') != 0)
+		  if (strchr (arginfo, 'a') != 0)
 		    {
 		      if (arg == 0)
 			{
@@ -976,9 +976,9 @@ translate_options (argcp, argvp)
 			  arg = argv[++i];
 			}
 		    }
-		  else if (index (arginfo, '*') != 0)
+		  else if (strchr (arginfo, '*') != 0)
 		    ;
-		  else if (index (arginfo, 'o') == 0)
+		  else if (strchr (arginfo, 'o') == 0)
 		    {
 		      if (arg != 0)
 			error ("Extraneous argument to `%s' option",
@@ -987,7 +987,7 @@ translate_options (argcp, argvp)
 		    }
 
 		  /* Store the translation as one argv elt or as two.  */
-		  if (arg != 0 && index (arginfo, 'j') != 0)
+		  if (arg != 0 && strchr (arginfo, 'j') != 0)
 		    newv[newindex++] = concat (option_map[j].equivalent, arg,
 					       NULL_PTR);
 		  else if (arg != 0)
@@ -3646,7 +3646,7 @@ process_command (argc, argv)
 	      /* Null-terminate the vector.  */
 	      switches[n_switches].args[j] = 0;
 	    }
-	  else if (index (switches_need_spaces, c))
+	  else if (strchr (switches_need_spaces, c))
 	    {
 	      /* On some systems, ld cannot handle some options without
 		 a space.  So split the option from its argument.  */
@@ -5288,7 +5288,7 @@ main (argc, argv)
 	first_time = FALSE;
 	obstack_grow (&collect_obstack, "'-", 2);
 	q = switches[i].part1;
-	while ((p = index (q, '\'')))
+	while ((p = strchr (q, '\'')))
 	  {
 	    obstack_grow (&collect_obstack, q, p - q);
 	    obstack_grow (&collect_obstack, "'\\''", 4);
@@ -5301,7 +5301,7 @@ main (argc, argv)
 	  {
 	    obstack_grow (&collect_obstack, " '", 2);
 	    q = *args;
-	    while ((p = index (q, '\'')))
+	    while ((p = strchr (q, '\'')))
 	      {
 		obstack_grow (&collect_obstack, q, p - q);
 		obstack_grow (&collect_obstack, "'\\''", 4);

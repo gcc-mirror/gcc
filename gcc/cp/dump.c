@@ -378,7 +378,7 @@ dequeue_and_dump (di)
       /* And a source position.  */
       if (DECL_SOURCE_FILE (t))
 	{
-	  const char *filename = rindex (DECL_SOURCE_FILE (t), '/');
+	  const char *filename = strrchr (DECL_SOURCE_FILE (t), '/');
 	  if (!filename)
 	    filename = DECL_SOURCE_FILE (t);
 	  else

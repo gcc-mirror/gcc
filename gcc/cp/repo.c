@@ -301,7 +301,7 @@ open_repo_file (filename)
     return;
 
   p = file_name_nondirectory (s);
-  p = rindex (p, '.');
+  p = strrchr (p, '.');
   if (! p)
     p = s + strlen (s);
 

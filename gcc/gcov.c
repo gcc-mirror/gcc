@@ -376,7 +376,7 @@ open_files ()
 	  strcat (bbg_file_name, "/");
 	}
 
-      cptr = rindex (input_file_name, '/');
+      cptr = strrchr (input_file_name, '/');
       if (cptr)
 	{
 	  strcat (da_file_name, cptr + 1);
@@ -397,19 +397,19 @@ open_files ()
       strcpy (bbg_file_name, input_file_name);
     }
 
-  cptr = rindex (bb_file_name, '.');
+  cptr = strrchr (bb_file_name, '.');
   if (cptr)
     strcpy (cptr, ".bb");
   else
     strcat (bb_file_name, ".bb");
 
-  cptr = rindex (da_file_name, '.');
+  cptr = strrchr (da_file_name, '.');
   if (cptr)
     strcpy (cptr, ".da");
   else
     strcat (da_file_name, ".da");
 
-  cptr = rindex (bbg_file_name, '.');
+  cptr = strrchr (bbg_file_name, '.');
   if (cptr)
     strcpy (cptr, ".bbg");
   else
@@ -1249,7 +1249,7 @@ output_data ()
 	    }
 
 	  count = strlen (source_file_name);
-	  cptr = rindex (s_ptr->name, '/');
+	  cptr = strrchr (s_ptr->name, '/');
 	  if (cptr)
 	    cptr = cptr + 1;
 	  else
@@ -1258,7 +1258,7 @@ output_data ()
 	    {
 	      gcov_file_name = xmalloc (count + 7 + strlen (input_file_name));
 	      
-	      cptr = rindex (input_file_name, '/');
+	      cptr = strrchr (input_file_name, '/');
 	      if (cptr)
 		strcpy (gcov_file_name, cptr + 1);
 	      else
@@ -1266,7 +1266,7 @@ output_data ()
 
 	      strcat (gcov_file_name, ".");
 
-	      cptr = rindex (source_file_name, '/');
+	      cptr = strrchr (source_file_name, '/');
 	      if (cptr)
 		strcat (gcov_file_name, cptr + 1);
 	      else
@@ -1275,7 +1275,7 @@ output_data ()
 	  else
 	    {
 	      gcov_file_name = xmalloc (count + 6);
-	      cptr = rindex (source_file_name, '/');
+	      cptr = strrchr (source_file_name, '/');
 	      if (cptr)
 		strcpy (gcov_file_name, cptr + 1);
 	      else

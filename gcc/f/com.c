@@ -15794,11 +15794,11 @@ open_include_file (filename, searchptr)
      looking in.  Thus #include <sys/types.h> will look up sys/types.h
      in /usr/include/header.gcc and look up types.h in
      /usr/include/sys/header.gcc.  */
-  p = rindex (filename, '/');
+  p = strrchr (filename, '/');
 #ifdef DIR_SEPARATOR
-  if (! p) p = rindex (filename, DIR_SEPARATOR);
+  if (! p) p = strrchr (filename, DIR_SEPARATOR);
   else {
-    char *tmp = rindex (filename, DIR_SEPARATOR);
+    char *tmp = strrchr (filename, DIR_SEPARATOR);
     if (tmp != NULL && tmp > p) p = tmp;
   }
 #endif
@@ -16139,18 +16139,18 @@ ffecom_open_include_ (char *name, ffewhereLine l, ffewhereColumn c)
 	      dsp[0].next = search_start;
 	      search_start = dsp;
 #ifndef VMS
-	      ep = rindex (nam, '/');
+	      ep = strrchr (nam, '/');
 #ifdef DIR_SEPARATOR
-	    if (ep == NULL) ep = rindex (nam, DIR_SEPARATOR);
+	    if (ep == NULL) ep = strrchr (nam, DIR_SEPARATOR);
 	    else {
-	      char *tmp = rindex (nam, DIR_SEPARATOR);
+	      char *tmp = strrchr (nam, DIR_SEPARATOR);
 	      if (tmp != NULL && tmp > ep) ep = tmp;
 	    }
 #endif
 #else				/* VMS */
-	      ep = rindex (nam, ']');
-	      if (ep == NULL) ep = rindex (nam, '>');
-	      if (ep == NULL) ep = rindex (nam, ':');
+	      ep = strrchr (nam, ']');
+	      if (ep == NULL) ep = strrchr (nam, '>');
+	      if (ep == NULL) ep = strrchr (nam, ':');
 	      if (ep != NULL) ep++;
 #endif				/* VMS */
 	      if (ep != NULL)
@@ -16229,7 +16229,7 @@ ffecom_open_include_ (char *name, ffewhereLine l, ffewhereColumn c)
 	      fname[flen] = 0;
 #if 0	/* Not for g77.  */
 	      /* if it's '#include filename', add the missing .h */
-	      if (index (fname, '.') == NULL)
+	      if (strchr (fname, '.') == NULL)
 		strcat (fname, ".h");
 #endif
 	    }

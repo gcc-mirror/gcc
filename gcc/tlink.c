@@ -327,10 +327,10 @@ frob_extension (s, ext)
      const char *s;
      const char *ext;
 {
-  const char *p = rindex (s, '/');
+  const char *p = strrchr (s, '/');
   if (! p)
     p = s;
-  p = rindex (p, '.');
+  p = strrchr (p, '.');
   if (! p)
     p = s + strlen (s);
 
@@ -652,12 +652,12 @@ scan_linker_output (fname)
 	  q = 0;
 
 	  /* First try `GNU style'.  */
-	  p = index (oldq, '`');
+	  p = strchr (oldq, '`');
 	  if (p)
-	    p++, q = index (p, '\'');
+	    p++, q = strchr (p, '\'');
 	  /* Then try "double quotes".  */
-	  else if (p = index (oldq, '"'), p)
-	    p++, q = index (p, '"');
+	  else if (p = strchr (oldq, '"'), p)
+	    p++, q = strchr (p, '"');
 
 	  /* Don't let the strstr's below see the demangled name; we
 	     might get spurious matches.  */

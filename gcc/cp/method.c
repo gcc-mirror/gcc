@@ -770,7 +770,7 @@ build_overload_value (type, value, flags)
 	    else
 	      {
 		REAL_VALUE_TO_DECIMAL (val, "%.20e", bufp);
-		bufp = (char *) index (bufp, 'e');
+		bufp = (char *) strchr (bufp, 'e');
 		if (!bufp)
 		  strcat (digit_buffer, "e0");
 		else
@@ -799,7 +799,7 @@ build_overload_value (type, value, flags)
 		      }
 		  }
 #ifdef NO_DOT_IN_LABEL
-		bufp = (char *) index (bufp, '.');
+		bufp = (char *) strchr (bufp, '.');
 		if (bufp)
 		  *bufp = '_';
 #endif
