@@ -7384,7 +7384,13 @@ epilogue_done:
 	 there are line number notes before where we inserted the
 	 prologue we should move them, and (2) we should generate a
 	 note before the end of the first basic block, if there isn't
-	 one already there.  */
+	 one already there.
+
+	 ??? This behaviour is completely broken when dealing with
+	 multiple entry functions.  We simply place the note always
+	 into first basic block and let alternate entry points
+	 to be missed.
+       */
 
       for (insn = prologue_end; insn; insn = prev)
 	{
@@ -7402,7 +7408,7 @@ epilogue_done:
 
       /* Find the last line number note in the first block.  */
       for (insn = BASIC_BLOCK (0)->end;
-	   insn != prologue_end;
+	   insn != prologue_end && insn;
 	   insn = PREV_INSN (insn))
 	if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
 	  break;
@@ -7487,6 +7493,9 @@ reposition_prologue_and_epilogue_notes (f)
 		BLOCK_HEAD (0) = next;
 
 	      remove_insn (note);
+	      /* Avoid placing note between CODE_LABEL and BASIC_BLOCK note.  */
+	      if (GET_CODE (insn) == CODE_LABEL)
+		insn = NEXT_INSN (insn);
 	      add_insn_after (note, insn);
 	    }
 	}
