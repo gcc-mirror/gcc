@@ -6,6 +6,8 @@ extern "C" void exit(int);
 class A;
 class B;
 
+int c;
+
 class A {
 public:
 
@@ -30,6 +32,7 @@ public:
   virtual ~B(void){}
 
   void print(void) const {
+    ++c;
     printf("B::print\n");
   }
 
@@ -50,6 +53,14 @@ int main ()
 {
   A titi;
   A toto = titi.compute();
-  printf("PASS\n");
-  return 0;
+  if (c != 1)
+    {
+      printf ("FAIL\n");
+      return 1;
+    }
+  else
+    {
+      printf("PASS\n");
+      return 0;
+    }
 }
