@@ -1,3 +1,8 @@
+2004-01-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* objc.dg/call-super-2.m: Make LP64-safe.
+	* objc.dg/desig-init-1.m: Likewise.
+
 2004-01-27  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* gcc.dg/arm-mmx-1.c: New test.
