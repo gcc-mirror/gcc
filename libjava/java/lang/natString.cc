@@ -1,6 +1,6 @@
 // natString.cc - Implementation of java.lang.String native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -198,7 +198,7 @@ unintern (jobject obj)
   // interning the String.  If we subsequently re-intern the same
   // String, then we set the bit.  When finalizing, if the bit is set
   // then we clear it and re-register the finalizer.  We know this is
-  // a safe approach because both the intern() and unintern() acquire
+  // a safe approach because both intern() and unintern() acquire
   // the class lock; this bit can't be manipulated when the lock is
   // not held.  So if we are finalizing and the bit is clear then we
   // know all references are gone and we can clear the entry in the
