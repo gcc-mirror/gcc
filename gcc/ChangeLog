@@ -1,3 +1,52 @@
+2001-11-14  David O'Brien  <obrien@FreeBSD.org>
+
+	* config.gcc (sparc64-wrs-vxworks*, sparc-*-netbsd*, sparc-*-openbsd*,
+	sparc-*-chorusos*, sparc-*-elf*, sparc-*-linux*aout*,
+	sparc-*-linux*libc1*, sparc-*-linux*, sparc-*-lynxos*, sparc-*-rtems*,
+	sparc-*-rtemself*, sparc-hal-solaris2*, sparc-*-solaris2*,
+	sparc-*-sunos4.0*, sparc-*-sunos4*, sparc-*-sunos3*, sparc-*-sysv4*,
+	sparc-*-vxsim*, sparclite-*-aout*, sparclite-*-elf*, sparc86x-*-aout*,
+	sparc86x-*-elf*, sparc64-*-aout*, sparc64-*-elf*, sparc64-*-linux*):
+	Include various CPU headers via tm_file.  a.out based platforms now
+	properly include sparc/aout.h.  sol2.h usage now implies including
+	elfos.h, svr4.h, and sparc/sysv4.h.
+	* config/netbsd.h (TARGET_MEM_FUNCTIONS): Undef before defining it.
+	Also define to '1'.
+	* sparc/sparc.h (CPP_PREDEFINES, TARGET_VERSION, WORD_SWITCH_TAKES_ARG,
+	SELECT_SECTION, ASM_DECLARE_FUNCTION_NAME, TEXT_SECTION_ASM_OP,
+	DATA_SECTION_ASM_OP, DBX_REGISTER_NUMBER, ASM_OUTPUT_SOURCE_LINE):
+	Remove.  They are a.out specific and belong in sparc/aout.h.
+	* sparc/aout.h (TARGET_VERSION, WORD_SWITCH_TAKES_ARG, SELECT_SECTION,
+	ASM_DECLARE_FUNCTION_NAME, TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP,
+	DBX_REGISTER_NUMBER, ASM_OUTPUT_SOURCE_LINE): Define.  Moved here from
+	sparc/sparc.h.
+	* sparc/litecoff.h (WORD_SWITCH_TAKES_ARG, ASM_DECLARE_FUNCTION_NAME,
+	TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP, DBX_REGISTER_NUMBER): Define.
+	Moved here from sparc/sparc.h.
+	* config/sparc/linux-aout.h (DEFAULT_PCC_STRUCT_RETURN): Undef before
+	defining.
+	* config/sparc/linux64.h (UNALIGNED_DOUBLE_INT_ASM_OP): Undef before
+	* config/sparc/lynx.h:  Don't include lynx.h.
+	(SELECT_SECTION): Do not undef.
+	* config/sparc/openbsd.h: Don't include sparc/sparc.h.
+	* config/sparc/sol2-sld-64.h: Include sparc/sparc.h, elfos.h, svr4.h,
+	and sparc/sysv4.h.
+	* config/sparc/sol2.h: Don't include sparc/sparc.h and sparc/sysv4.h.
+	* config/sparc/sp64-aout.h (CPP_PREDEFINES): Don't define.  Get from
+	sparc/aout.h now.
+	* config/sparc/sp64-elf.h (DWARF_DEBUGGING_INFO, DWARF2_DEBUGGING_INFO):
+	Don't undef, there is no need.
+	* config/sparc/splet.h (CPP_PREDEFINES): Define.
+	* config/sparc/sun4o3.h (CPP_PREDEFINES): Likewise.
+	* config/sparc/sunos4.h (CPP_PREDEFINES): Likewise.
+	Don't include sparc/sparc.h.
+	* config/sparc/sysv4.h (WORD_SWITCH_TAKES_ARG, ASM_OUTPUT_SOURCE_LINE,
+	SELECT_SECTION, ASM_DECLARE_FUNCTION_NAME, TEXT_SECTION_ASM_OP,
+	DATA_SECTION_ASM_OP): Don't undef, there is no need now.  Don't include
+	elfos.h and svr4.h.
+	(TARGET_VERSION): Define.
+	* config/sparc/vxsim.h (TARGET_VERSION): Define.
+
 Wed Nov 14 19:46:08 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* cfglayout.c (fixup_fallthru_exit_predecesor): New static function.

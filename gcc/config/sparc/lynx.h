@@ -19,12 +19,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #undef ASM_OUTPUT_IDENT
-#undef SELECT_SECTION
 #undef SELECT_RTX_SECTION
 
 #define BSS_SECTION_ASM_OP	"\t.section\t\".bss\""
-
-#include <lynx.h>
 
 /* ??? Must redefine to get sparclite and v8 defines.  Can this be done
    differently?  */

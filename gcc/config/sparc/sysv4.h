@@ -20,19 +20,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
-/* Undefine some symbols which are defined in "sparc.h" but which are
-   appropriate only for SunOS 4.x, and not for svr4.  */
-
-#undef WORD_SWITCH_TAKES_ARG
-#undef ASM_OUTPUT_SOURCE_LINE
-#undef SELECT_SECTION
-#undef ASM_DECLARE_FUNCTION_NAME
-#undef TEXT_SECTION_ASM_OP
-#undef DATA_SECTION_ASM_OP
-
-#include "elfos.h"
-#include "svr4.h"
+#ifndef TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (sparc ELF)"); 
+#endif
 
 /* ??? Put back the SIZE_TYPE/PTRDIFF_TYPE definitions set by sparc.h.
    Why, exactly, is svr4.h messing with this?  Seems like the chip 

@@ -5,6 +5,10 @@
 #include "sparc/sparc_bi.h"
 #endif
 
+#include "sparc/sparc.h"
+#include "elfos.h"
+#include "svr4.h"
+#include "sparc/sysv4.h"
 #include "sparc/sol2.h"
 
 #ifdef AS_SPARC64_FLAG

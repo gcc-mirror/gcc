@@ -2905,7 +2905,7 @@ sparc-tti-*)
 	xm_defines=POSIX
 	;;
 sparc64-wrs-vxworks*)
-        tm_file="sparc/sol2.h sparc/elf.h sparc/sparc_bi.h gofast.h sparc/vxsparc64.h"
+        tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/elf.h sparc/sparc_bi.h gofast.h sparc/vxsparc64.h"
         tmake_file=sparc/t-vxsparc64
         use_collect2=yes
         ;;
@@ -2920,11 +2920,12 @@ sparc-*-aout*)
 	tm_file="sparc/sparc.h aoutos.h sparc/aout.h libgloss.h"
 	;;
 sparc-*-netbsd*)
-	tm_file="${tm_file} netbsd.h sparc/netbsd.h"
+	tm_file="${tm_file} sparc/aout.h netbsd.h sparc/netbsd.h"
 	tmake_file=t-netbsd
 	use_collect2=yes
 	;;
 sparc-*-openbsd*)
+	tm_file="sparc/sparc.h ${tm_file}"
 	# needed to unconfuse gdb
 	tmake_file="t-libc-ok t-openbsd sparc/t-openbsd"
 	# we need collect2 until our bug is fixed...
@@ -2934,7 +2935,7 @@ sparc-*-bsd*)
 	tm_file="${tm_file} sparc/bsd.h"
 	;;
 sparc-*-chorusos*)
-	tm_file="${tm_file} sparc/sysv4.h sparc/sol2.h sparc/elf.h chorus.h"
+	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/elf.h chorus.h"
 	tmake_file=sparc/t-chorus-elf
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	float_format=i64
@@ -2945,20 +2946,20 @@ sparc-*-chorusos*)
 	esac
 	;;
 sparc-*-elf*)
-	tm_file="sparc/sol2.h sparc/elf.h"
+	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/elf.h"
 	tmake_file=sparc/t-elf
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	#float_format=i128
 	float_format=i64
 	;;
 sparc-*-linux*aout*)		# Sparc's running GNU/Linux, a.out
-	tm_file="aoutos.h sparc/sparc.h sparc/linux-aout.h"
+	tm_file="aoutos.h sparc/sparc.h sparc/aout.h sparc/linux-aout.h"
 	xmake_file=x-linux
 	gnu_ld=yes
 	;;
 sparc-*-linux*libc1*)	# Sparc's running GNU/Linux, libc5
 	xmake_file=x-linux
-	tm_file="${tm_file} sparc/sysv4.h sparc/linux.h"
+	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
@@ -2966,7 +2967,7 @@ sparc-*-linux*libc1*)	# Sparc's running GNU/Linux, libc5
 	;;
 sparc-*-linux*)		# Sparc's running GNU/Linux, libc6
 	xmake_file=x-linux
-	tm_file="${tm_file} sparc/sysv4.h sparc/linux.h"
+	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
@@ -2978,9 +2979,9 @@ sparc-*-linux*)		# Sparc's running GNU/Linux, libc6
 sparc-*-lynxos*)
 	if test x$gas = xyes
 	then
-		tm_file="${tm_file} sparc/lynx.h"
+		tm_file="${tm_file} lynx.h sparc/aout.h sparc/lynx.h"
 	else
-		tm_file="${tm_file} lynx-ng.h sparc/lynx-ng.h"
+		tm_file="${tm_file} lynx-ng.h sparc/aout.h sparc/lynx-ng.h"
 	fi
 	tmake_file=sparc/t-sunos41
 	;;
@@ -2992,7 +2993,7 @@ sparc-*-rtemsaout*)
 	fi
 	;;
 sparc-*-rtems*|sparc-*-rtemself*)
-	tm_file="sparc/sol2.h sparc/elf.h sparc/rtemself.h rtems.h"
+	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/elf.h sparc/rtemself.h rtems.h"
 	tmake_file="sparc/t-elf t-rtems"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	#float_format=i128
@@ -3033,7 +3034,7 @@ sparcv9-*-solaris2* | sparc64-*-solaris2*)
 	;;
 sparc-hal-solaris2*)
         xm_defines=POSIX
-        tm_file="sparc/sol2.h sparc/hal.h"
+        tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/hal.h"
         tmake_file="sparc/t-halos sparc/t-sol2"
 	if test x$gnu_ld = xyes; then
 		tmake_file="$tmake_file t-slibgcc-elf-ver"
@@ -3054,9 +3055,9 @@ sparc-hal-solaris2*)
 sparc-*-solaris2*)
 	if test x$gnu_ld = xyes
 	then
-		tm_file="sparc/sol2.h"
+		tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/sol2.h"
 	else
-		tm_file="sparc/sol2.h sparc/sol2-sld.h"
+		tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/sol2-sld.h"
 	fi
 	xm_defines=POSIX
 	tmake_file=sparc/t-sol2
@@ -3101,11 +3102,11 @@ sparc-*-solaris2*)
 	fi
 	;;
 sparc-*-sunos4.0*)
-	tm_file=sparc/sunos4.h
+	tm_file="${tm_file} sparc/aout.h sparc/sunos4.h"
 	use_collect2=yes
 	;;
 sparc-*-sunos4*)
-	tm_file=sparc/sunos4.h
+	tm_file="${tm_file} sparc/aout.h sparc/sunos4.h"
 	tmake_file=sparc/t-sunos41
 	use_collect2=yes
 	if test x$gas = xyes; then
@@ -3113,18 +3114,18 @@ sparc-*-sunos4*)
 	fi
 	;;
 sparc-*-sunos3*)
-	tm_file="${tm_file} sparc/sun4o3.h"
+	tm_file="${tm_file} sparc/aout.h sparc/sun4o3.h"
 	use_collect2=yes
 	;;
 sparc-*-sysv4*)
-	tm_file="${tm_file} sparc/sysv4.h"
+	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h"
 	xm_defines=POSIX
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
 	;;
 sparc-*-vxsim*)
 	xm_defines=POSIX
-	tm_file="${tm_file} sparc/sysv4.h sparc/vxsim.h"
+	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/vxsim.h"
 	tmake_file=sparc/t-vxsparc
 	;;
 sparclet-*-aout*)
@@ -3136,33 +3137,33 @@ sparclite-*-coff*)
 	tmake_file=sparc/t-sparclite
 	;;
 sparclite-*-aout*)
-	tm_file="${tm_file} gofast.h sparc/lite.h aoutos.h libgloss.h"
+	tm_file="${tm_file} gofast.h sparc/aout.h sparc/lite.h aoutos.h libgloss.h"
 	tmake_file=sparc/t-sparclite
 	;;
 sparclite-*-elf*)
-	tm_file="sparc/sol2.h sparc/elf.h gofast.h sparc/liteelf.h"
+	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/elf.h gofast.h sparc/liteelf.h"
 	tmake_file=sparc/t-sparclite
         extra_parts="crtbegin.o crtend.o"
 	;;
 sparc86x-*-aout*)
-	tm_file="${tm_file} gofast.h sparc/sp86x-aout.h aoutos.h libgloss.h"
+	tm_file="${tm_file} gofast.h sparc/aout.h sparc/sp86x-aout.h aoutos.h libgloss.h"
 	tmake_file=sparc/t-sp86x
 	;;
 sparc86x-*-elf*)
-	tm_file="sparc/sol2.h sparc/elf.h gofast.h sparc/sp86x-elf.h"
+	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/elf.h gofast.h sparc/sp86x-elf.h"
 	tmake_file=sparc/t-sp86x
         extra_parts="crtbegin.o crtend.o"
 	;;
 sparc64-*-aout*)
-	tm_file="sparc/sparc.h aoutos.h sparc/sp64-aout.h"
+	tm_file="sparc/sparc.h aoutos.h sparc/aout.h sparc/sp64-aout.h"
 	;;
 sparc64-*-elf*)
-	tm_file="sparc/sol2.h sparc/sp64-elf.h"
+	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/sp64-elf.h"
 	extra_parts="crtbegin.o crtend.o"
 	;;
 sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
 	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-linux64"
-	tm_file="sparc/sparc_bi.h ${tm_file} sparc/sysv4.h sparc/linux64.h"
+	tm_file="sparc/sparc_bi.h ${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/linux64.h"
 	xmake_file=x-linux
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes

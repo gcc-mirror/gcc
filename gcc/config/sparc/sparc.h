@@ -210,14 +210,6 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 #endif /* !SPARC_BI_ARCH */
 
-/* Names to predefine in the preprocessor for this target machine.
-   ??? It would be nice to not include any subtarget specific values here,
-   however there's no way to portably provide subtarget values to
-   CPP_PREFINES.  Also, -D values in CPP_SUBTARGET_SPEC don't get turned into
-   foo, __foo and __foo__.  */
-
-#define CPP_PREDEFINES "-Dsparc -Dsun -Dunix -Asystem=unix -Asystem=bsd"
-
 /* Define macros to distinguish architectures.  */
 
 /* Common CPP definitions used by CPP_SPEC amongst the various targets
@@ -413,16 +405,6 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 /* This is meant to be redefined in the host dependent files.  */
 #define SUBTARGET_OVERRIDE_OPTIONS
-
-/* These compiler options take an argument.  We ignore -target for now.  */
-
-#define WORD_SWITCH_TAKES_ARG(STR)				\
- (DEFAULT_WORD_SWITCH_TAKES_ARG (STR)				\
-  || !strcmp (STR, "target") || !strcmp (STR, "assert"))
-
-/* Print subsidiary information on the compiler version in use.  */
-
-#define TARGET_VERSION fprintf (stderr, " (sparc)");
 
 /* Generate DBX debugging information.  */
 
@@ -911,36 +893,6 @@ if (TARGET_ARCH64				\
 #define SUNOS4_SHARED_LIBRARIES 0
 #endif
 
-/* This is defined differently for v9 in a cover file.  */
-#define SELECT_SECTION(T,RELOC,ALIGN)					\
-{									\
-  if (TREE_CODE (T) == VAR_DECL)					\
-    {									\
-      if (TREE_READONLY (T) && ! TREE_SIDE_EFFECTS (T)			\
-	  && DECL_INITIAL (T)						\
-	  && (DECL_INITIAL (T) == error_mark_node			\
-	      || TREE_CONSTANT (DECL_INITIAL (T)))			\
-	  && DECL_ALIGN (T) <= MAX_TEXT_ALIGN				\
-	  && ! (flag_pic && ((RELOC) || SUNOS4_SHARED_LIBRARIES)))	\
-	text_section ();						\
-      else								\
-	data_section ();						\
-    }									\
-  else if (TREE_CODE (T) == CONSTRUCTOR)				\
-    {									\
-      if (flag_pic && ((RELOC) || SUNOS4_SHARED_LIBRARIES))		\
-	data_section ();						\
-    }									\
-  else if (TREE_CODE_CLASS (TREE_CODE (T)) == 'c')			\
-    {									\
-      if ((TREE_CODE (T) == STRING_CST && flag_writable_strings)	\
-	  || TYPE_ALIGN (TREE_TYPE (T)) > MAX_TEXT_ALIGN		\
-	  || (flag_pic && ((RELOC) || SUNOS4_SHARED_LIBRARIES)))	\
-	data_section ();						\
-      else								\
-	text_section ();						\
-    }									\
-}
 
 /* Use text section for a constant
    unless we need more alignment than that offers.  */
@@ -1883,14 +1835,6 @@ extern struct rtx_def *sparc_compare_op0, *sparc_compare_op1;
 
 #define ASM_DECLARE_RESULT(FILE, RESULT) \
   fprintf ((FILE), "\t.proc\t0%lo\n", sparc_type_code (TREE_TYPE (RESULT)))
-
-/* Output the label for a function definition.  */
-
-#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
-do {									\
-  ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));			\
-  ASM_OUTPUT_LABEL (FILE, NAME);					\
-} while (0)
 
 /* Output the special assembly code needed to tell the assembler some
    register is used as global register variable.  
@@ -2905,14 +2849,6 @@ do {									\
 #define ASM_DOUBLE	".double"
 #define ASM_LONGDOUBLE	".xxx"		/* ??? Not known (or used yet).  */
 
-/* Output before read-only data.  */
-
-#define TEXT_SECTION_ASM_OP "\t.text"
-
-/* Output before writable data.  */
-
-#define DATA_SECTION_ASM_OP "\t.data"
-
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
@@ -2936,12 +2872,6 @@ do {									\
 #define ADDITIONAL_REGISTER_NAMES \
 {{"ccr", SPARC_ICC_REG}, {"cc", SPARC_ICC_REG}}
 
-/* How to renumber registers for dbx and gdb.  In the flat model, the frame
-   pointer is really %i7.  */
-
-#define DBX_REGISTER_NUMBER(REGNO) \
-  (TARGET_FLAT && REGNO == FRAME_POINTER_REGNUM ? 31 : REGNO)
-
 /* On Sun 4, this limit is 2048.  We use 1000 to be safe, since the length
    can run past this up to a continuation point.  Once we used 1500, but
    a single entry in C++ can run more than 500 bytes, due to the length of
@@ -2949,17 +2879,6 @@ do {									\
    continuations when they are actually needed instead of trying to
    guess...  */
 #define DBX_CONTIN_LENGTH 1000
-
-/* This is how to output a note to DBX telling it the line number
-   to which the following sequence of instructions corresponds.
-
-   This is needed for SunOS 4.0, and should not hurt for 3.2
-   versions either.  */
-#define ASM_OUTPUT_SOURCE_LINE(file, line)		\
-  { static int sym_lineno = 1;				\
-    fprintf (file, ".stabn 68,0,%d,LM%d\nLM%d:\n",	\
-	     line, sym_lineno, sym_lineno);		\
-    sym_lineno += 1; }
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */

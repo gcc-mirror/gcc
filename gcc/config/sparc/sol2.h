@@ -22,8 +22,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Supposedly the same as vanilla sparc svr4, except for the stuff below: */
-#include "sparc/sparc.h"
-#include "sparc/sysv4.h"
 
 /* Solaris 2 uses a wint_t different from the default. This is required
    by the SCD 2.4.1, p. 6-83, Figure 6-66.  */

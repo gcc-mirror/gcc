@@ -356,6 +356,7 @@ do {									\
    misnamed.  These should all refer to explicit sizes (half/word/xword?),
    anything other than short/int/long/etc.  */
 
+#undef  UNALIGNED_DOUBLE_INT_ASM_OP
 #define UNALIGNED_DOUBLE_INT_ASM_OP	"\t.uaxword\t"
 
 /* DWARF bits.  */

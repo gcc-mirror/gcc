@@ -68,7 +68,8 @@
 
 /* Implicit library calls should use memcpy, not bcopy, etc.  */
 
-#define TARGET_MEM_FUNCTIONS
+#undef TARGET_MEM_FUNCTIONS
+#define TARGET_MEM_FUNCTIONS 1
 
 /* Handle #pragma weak and #pragma pack.  */
 
