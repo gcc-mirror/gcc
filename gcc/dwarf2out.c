@@ -201,6 +201,7 @@ static void initial_return_save		PROTO((rtx));
 static void output_cfi			PROTO((dw_cfi_ref, dw_fde_ref));
 static void output_call_frame_info	PROTO((int));
 static unsigned reg_number		PROTO((rtx));
+static void dwarf2out_stack_adjust	PROTO((rtx));
 
 /* Definitions of defaults for assembler-dependent names of various
    pseudo-ops and section names.
