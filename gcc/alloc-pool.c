@@ -1,5 +1,6 @@
 /* Functions to support a pool of allocatable objects.
-   Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001, 2003
+   Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@cgsoftware.com>
 
 This file is part of GCC.
@@ -23,8 +24,55 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "system.h"
 #include "alloc-pool.h"
 
+/* Redefine abort to report an internal error w/o coredump, and
+   reporting the location of the error in the source file.  This logic
+   is duplicated in rtl.h and tree.h because every file that needs the
+   special abort includes one or both.  toplev.h gets too few files,
+   system.h gets too many.  */
+
+extern void fancy_abort PARAMS ((const char *, int, const char *))
+    ATTRIBUTE_NORETURN;
+#define abort() fancy_abort (__FILE__, __LINE__, __FUNCTION__)
+
 #define align_four(x) (((x+3) >> 2) << 2)
 #define align_eight(x) (((x+7) >> 3) << 3)
+
+/* The internal allocation object.  */
+typedef struct allocation_object_def
+{
+#ifdef ENABLE_CHECKING
+  /* The ID of alloc pool which the object was allocated from.  */
+  ALLOC_POOL_ID_TYPE id;
+#endif
+
+  union
+    {
+      /* The data of the object.  */
+      char data[1];
+
+      /* Because we want any type of data to be well aligned after the ID,
+	 the following elements are here.  They are never accessed so
+	 the allocated object may be even smaller than this structure.  */
+      char *align_p;
+      double align_d;
+      HOST_WIDEST_INT align_i;
+#ifdef HAVE_LONG_DOUBLE
+      long double align_ld;
+#endif
+    } u;
+} allocation_object;
+
+/* Convert a pointer to allocation_object from a pointer to user data.  */
+#define ALLOCATION_OBJECT_PTR_FROM_USER_PTR(X)				\
+   ((allocation_object *) (((char *) (X))				\
+			   - offsetof (allocation_object, u.data)))
+
+/* Convert a pointer to user data from a pointer to allocation_object.  */
+#define USER_PTR_FROM_ALLOCATION_OBJECT_PTR(X)				\
+   ((void *) (((allocation_object *) (X))->u.data))
+
+/* Last used ID.  */
+static ALLOC_POOL_ID_TYPE last_id;
 
 /* Create a pool of things of size SIZE, with NUM in each block we
    allocate.  */
@@ -47,6 +95,11 @@ create_alloc_pool (name, size, num)
 
   /* Now align the size to a multiple of 4.  */
   size = align_four (size);
+
+#ifdef ENABLE_CHECKING
+  /* Add the aligned size of ID.  */
+  size += offsetof (allocation_object, u.data);
+#endif
 
   /* Um, we can't really allocate 0 elements per block.  */
   if (num == 0)
@@ -73,6 +126,16 @@ create_alloc_pool (name, size, num)
   pool->blocks_allocated = 0;
   pool->block_list = NULL;
 
+#ifdef ENABLE_CHECKING
+  /* Increase the last used ID and use it for this pool.
+     ID == 0 is used for free elements of pool so skip it.  */
+  last_id++;
+  if (last_id == 0)
+    last_id++;
+
+  pool->id = last_id;
+#endif
+
   return (pool);
 }
 
@@ -83,8 +146,10 @@ free_alloc_pool (pool)
 {
   alloc_pool_list block, next_block;
 
+#ifdef ENABLE_CHECKING
   if (!pool)
     abort ();
+#endif
 
   /* Free each block allocated to the pool.  */
   for (block = pool->block_list; block != NULL; block = next_block)
@@ -105,8 +170,10 @@ pool_alloc (pool)
   alloc_pool_list header;
   char *block;
 
+#ifdef ENABLE_CHECKING
   if (!pool)
     abort ();
+#endif
 
   /* If there are no more free elements, make some more!.  */
   if (!pool->free_list)
@@ -126,7 +193,11 @@ pool_alloc (pool)
       /* Now put the actual block pieces onto the free list.  */
       for (i = 0; i < pool->elts_per_block; i++, block += pool->elt_size)
       {
-        header = (alloc_pool_list) block;
+#ifdef ENABLE_CHECKING
+	/* Mark the element to be free.  */
+	((allocation_object *) block)->id = 0;
+#endif
+        header = (alloc_pool_list) USER_PTR_FROM_ALLOCATION_OBJECT_PTR (block);
         header->next = pool->free_list;
         pool->free_list = header;
       }
@@ -141,6 +212,12 @@ pool_alloc (pool)
   header = pool->free_list;
   pool->free_list = header->next;
   pool->elts_free--;
+
+#ifdef ENABLE_CHECKING
+  /* Set the ID for element.  */
+  ALLOCATION_OBJECT_PTR_FROM_USER_PTR (header)->id = pool->id;
+#endif
+
   return ((void *) header);
 }
 
@@ -152,12 +229,22 @@ pool_free (pool, ptr)
 {
   alloc_pool_list header;
 
+#ifdef ENABLE_CHECKING
   if (!ptr)
     abort ();
 
+  /* Check whether the PTR was allocated from POOL.  */
+  if (pool->id != ALLOCATION_OBJECT_PTR_FROM_USER_PTR (ptr)->id)
+    abort ();
+
+  /* Mark the element to be free.  */
+  ALLOCATION_OBJECT_PTR_FROM_USER_PTR (ptr)->id = 0;
+#else
   /* Check if we free more than we allocated, which is Bad (TM).  */
   if (pool->elts_free + 1 > pool->elts_allocated)
     abort ();
+#endif
+
   header = (alloc_pool_list) ptr;
   header->next = pool->free_list;
   pool->free_list = header;
