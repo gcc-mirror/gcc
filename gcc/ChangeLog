@@ -1,3 +1,8 @@
+2001-03-28  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* config/avr/libgcc.S (__mulhi3): Correct tests to exit the loop
+	when multiplier or multiplicand is zero.
+
 2001-03-28  Bernd Schmidt  <bernds@redhat.com>
 
 	* cselib.c (hash_rtx): Don't do tail recursion elimination by hand.
