@@ -152,6 +152,21 @@ namespace c99
   extern "C" long double strtold(const char*, char**); 
 #endif
 } // namespace c99
+
+namespace std
+{
+  using c99::lldiv_t;
+  using c99::abs;
+  //using c99::llabs; // XXX ???
+  using c99::div;
+  using c99::lldiv;
+  using c99::atoll;
+  using c99::strtoll;
+  using c99::strtoull;
+#ifdef _GLIBCPP_HAVE_STRTOLD
+  using c99::strtold;
+#endif
+}
 #endif
 
 #endif 

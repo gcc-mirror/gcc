@@ -722,12 +722,29 @@ namespace c99
 
   template<typename _Tp>
     int 
-    islessgreater(_Tp __f) { return __capture_islessgreater(__f); }
+    islessgreater(_Tp __f1, _Tp __f2) 
+    { return __capture_islessgreater(__f1, __f2); }
 
   template<typename _Tp>
     int 
     isunordered(_Tp __f1, _Tp __f2) 
     { return __capture_isunordered(__f1, __f2); }
+}
+
+namespace std
+{
+  using c99::fpclassify;
+  using c99::isfinite;
+  using c99::isinf;
+  using c99::isnan;
+  using c99::isnormal;
+  using c99::signbit;
+  using c99::isgreater;
+  using c99::isgreaterequal;
+  using c99::isless;
+  using c99::islessequal;
+  using c99::islessgreater;
+  using c99::isunordered;
 }
 #endif
   

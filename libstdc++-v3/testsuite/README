@@ -8,7 +8,7 @@ testcases should be written with the new style DejaGnu framework in
 mind.
 
 To ease transition, here is the list of dg-keyword documentation
-lifted from dg.exp -- eventuaklly we should improve DejaGnu
+lifted from dg.exp -- eventually we should improve DejaGnu
 documentation, but getting checkin account currently demands Pyrrhic
 effort. 
 

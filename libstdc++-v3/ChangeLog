@@ -1,3 +1,15 @@
+2001-04-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/c_std/bits/std_cmath.h (std): Explicitly inject c99 names.
+	* include/c_std/bits/std_cstdlib.h (std): Same, except for llabs.
+	* include/c_std/bits/std_cwchar.h (std): Same.
+	* acconfig.h (std): Remove c99 injection into std.
+	* config.h.in: Regenerate.
+	
+	* testsuite/README: Fix typo.
+
+	* include/bits/codecvt.h: Remove warnings.
+	
 2001-04-24  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
         * include/ext/slist: Include required header files. 
