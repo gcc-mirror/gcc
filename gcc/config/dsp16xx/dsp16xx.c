@@ -1691,8 +1691,6 @@ double_reg_to_memory (operands)
 void
 override_options ()
 {
-  char *tmp;
-
   if (chip_name == (char *) 0)
     chip_name = DEFAULT_CHIP_NAME;
 
@@ -1710,21 +1708,10 @@ override_options ()
   
   save_chip_name = xstrdup (chip_name);
 
-  rsect_text = tmp = (char *) xmalloc (strlen(".rsect ") + 
-				       strlen(text_seg_name) + 3);
-  sprintf (tmp, ".rsect \"%s\"", text_seg_name);
-
-  rsect_data = tmp = (char *) xmalloc (strlen(".rsect ") + 
-				       strlen(data_seg_name) + 3);
-  sprintf (tmp, ".rsect \"%s\"", data_seg_name);
-
-  rsect_bss = tmp = (char *) xmalloc (strlen(".rsect ") + 
-				      strlen(bss_seg_name) + 3);
-  sprintf (tmp,  ".rsect \"%s\"", bss_seg_name);
-
-  rsect_const = tmp = (char *) xmalloc (strlen(".rsect ") + 
-					strlen(const_seg_name) + 3);
-  sprintf (tmp, ".rsect \"%s\"", const_seg_name);
+  rsect_text = concat (".rsect \"", text_seg_name, "\"", NULL);
+  rsect_data = concat (".rsect \"", data_seg_name, "\"", NULL);
+  rsect_bss = concat (".rsect \"", bss_seg_name, "\"", NULL);
+  rsect_const = concat (".rsect \"", const_seg_name, "\"", NULL);
 }
 
 int

@@ -109,16 +109,11 @@ preprocess_args (p_argc, argv)
       if (strcmp (argv[i], "-o") == 0)
 	{
 	  char *buff, *ptr;
-	  int out_len;
 
 	  i++;
 	  ptr = to_host_file_spec (argv[i]);
 	  objfilename = xstrdup (ptr);
-	  out_len = strlen (ptr);
-	  buff = xmalloc (out_len + 6);
-
-	  strcpy (buff, "/obj=");
-	  strcat (buff, ptr);
+	  buff = concat ("/obj=", ptr, NULL);
 	  addarg (buff);
 	}
     }
@@ -202,11 +197,8 @@ main (argc, argv)
   strncpy (cwdev, cwd, devlen);
   cwdev [devlen] = '\0';
 
-  search_dirs = xmalloc (strlen (system_search_dirs) + 1);
-  strcpy (search_dirs, system_search_dirs);
-
-  defines = xmalloc (strlen (default_defines) + 1);
-  strcpy (defines, default_defines);
+  search_dirs = xstrdup (system_search_dirs);
+  defines = xstrdup (default_defines);
 
   addarg ("cc");
   preprocess_args (&argc , argv);
@@ -251,7 +243,6 @@ main (argc, argv)
 	{
 	  /* Assume filename arg */
 	  char buff [256], *ptr;
-	  int buff_len;
 
 	  ptr = to_host_file_spec (argv[i]);
 	  arg_len = strlen (ptr);
@@ -263,10 +254,7 @@ main (argc, argv)
 	  else
 	    sprintf (buff, "%s%s", cwd, ptr);
 
-	  buff_len = strlen (buff);
-	  ptr = xmalloc (buff_len + 1);
-
-	  strcpy (ptr, buff);
+	  ptr = xstrdup (buff);
 	  addarg (ptr);
 	}
     }

@@ -1,3 +1,15 @@
+2002-07-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alpha/vms-cc.c (preprocess_args, main): Use xstrdup and/or
+	concat in lieu of xmalloc/strcpy/memcpy/sprintf.
+	* alpha/vms-ld.c (main): Likewise.
+	* dsp16xx.c (double_reg_to_memory): Likewise.
+	* mcore.c (mcore_expand_prolog): Likewise.
+	* cppfiles.c (read_name_map): Likewise.
+	* gensupport.c (process_rtx, identify_predicable_attribute,
+	alter_test_for_insn): Likewise.
+	* vmsdbgout.c (write_rtnbeg, vmsdbgout_init): Likewise.
+
 2002-07-29  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin):  Change the default behavior to

@@ -227,10 +227,9 @@ gnat_decode_option (argc, argv)
 
   else if (!strncmp (p, "-gant", 5))
     {
-      char *q = (char *) xmalloc (strlen (p) + 1);
+      char *q = xstrdup (p);
 
       warning ("`-gnat' misspelled as `-gant'");
-      strcpy (q, p);
       q[2] = 'n', q[3] = 'a';
       p = q;
       return 1;

@@ -793,7 +793,7 @@ write_rtnbeg (rtnnum, dosizeonly)
      int dosizeonly;
 {
   char *rtnname;
-  int rtnnamelen, rtnentrynamelen;
+  int rtnnamelen;
   char *rtnentryname;
   int totsize = 0;
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -802,10 +802,7 @@ write_rtnbeg (rtnnum, dosizeonly)
 
   rtnname = func_table[rtnnum];
   rtnnamelen = strlen (rtnname);
-  rtnentrynamelen = rtnnamelen + 4; /* "..en" */
-  rtnentryname = (char *) xmalloc (rtnentrynamelen + 1);
-  strcpy (rtnentryname, rtnname);
-  strcat (rtnentryname, "..en");
+  rtnentryname = concat (rtnname, "..en", NULL);
 
   if (!strcmp (rtnname, "main"))
     {
@@ -1633,10 +1630,7 @@ vmsdbgout_init (main_input_filename)
   else
     module_language = DST_K_UNKNOWN;
 
-  module_producer
-    = (char *) xmalloc (strlen (language_string) + 1
-			+ strlen (version_string) + 1);
-  sprintf (module_producer, "%s %s", language_string, version_string);
+  module_producer = concat (language_string, " ", version_string, NULL);
 
   ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
 

@@ -310,18 +310,7 @@ process_rtx (desc, lineno)
 	   insn condition to create the new split condition.  */
 	split_cond = XSTR (desc, 4);
 	if (split_cond[0] == '&' && split_cond[1] == '&')
-	  {
-	    const char *insn_cond = XSTR (desc, 2);
-	    size_t insn_cond_len = strlen (insn_cond);
-	    size_t split_cond_len = strlen (split_cond);
-	    char *combined;
-
-	    combined = (char *) xmalloc (insn_cond_len + split_cond_len + 1);
-	    memcpy (combined, insn_cond, insn_cond_len);
-	    memcpy (combined + insn_cond_len, split_cond, split_cond_len + 1);
-
-	    split_cond = combined;
-	  }
+	  split_cond = concat (XSTR (desc, 2), split_cond, NULL);
 	XSTR (split, 1) = split_cond;
 	XVEC (split, 2) = XVEC (desc, 5);
 	XSTR (split, 3) = XSTR (desc, 6);
@@ -441,7 +430,6 @@ identify_predicable_attribute ()
   struct queue_elem *elem;
   char *p_true, *p_false;
   const char *value;
-  size_t len;
 
   /* Look for the DEFINE_ATTR for `predicable', which must exist.  */
   for (elem = define_attr_queue; elem ; elem = elem->next)
@@ -455,10 +443,7 @@ identify_predicable_attribute ()
 
  found:
   value = XSTR (elem->data, 1);
-  len = strlen (value);
-  p_false = (char *) xmalloc (len + 1);
-  memcpy (p_false, value, len + 1);
-
+  p_false = xstrdup (value);
   p_true = strchr (p_false, ',');
   if (p_true == NULL || strchr (++p_true, ',') != NULL)
     {
@@ -676,8 +661,6 @@ alter_test_for_insn (ce_elem, insn_elem)
      struct queue_elem *ce_elem, *insn_elem;
 {
   const char *ce_test, *insn_test;
-  char *new_test;
-  size_t len, ce_len, insn_len;
 
   ce_test = XSTR (ce_elem->data, 1);
   insn_test = XSTR (insn_elem->data, 2);
@@ -686,14 +669,7 @@ alter_test_for_insn (ce_elem, insn_elem)
   if (!insn_test || *insn_test == '\0')
     return ce_test;
 
-  ce_len = strlen (ce_test);
-  insn_len = strlen (insn_test);
-  len = 1 + ce_len + 1 + 4 + 1 + insn_len + 1 + 1;
-  new_test = (char *) xmalloc (len);
-
-  sprintf (new_test, "(%s) && (%s)", ce_test, insn_test);
-
-  return new_test;
+  return concat ("(", ce_test, ") && (", insn_test, ")", NULL);
 }
 
 /* Adjust all of the operand numbers in OLD to match the shift they'll

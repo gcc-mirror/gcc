@@ -1,3 +1,7 @@
+Mon Jul 29 22:05:35 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (read_name_map): Use concat in lieu of xmalloc/strcpy.
+
 2002-07-25  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* news.texi: Document better handling of (no-)alias

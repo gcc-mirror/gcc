@@ -1,3 +1,9 @@
+2002-07-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* adadecode.c (ada_demangle): Use xstrdup in lieu of
+	xmalloc/strcpy.
+	* misc.c (gnat_decode_option): Likewise.
+
 2002-07-15  Florian Weimer  <fw@deneb.enyo.de>
 
 	* make.adb (Add_Switch): Make Generic_Position a procedure.  The
