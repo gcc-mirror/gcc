@@ -5809,16 +5809,17 @@ pa_reorg (insns)
   /* This is fairly cheap, so always run it if optimizing.  */
   if (optimize > 0 && !TARGET_BIG_SWITCH)
     {
-      /* Find and explode all ADDR_VEC insns.  */
+      /* Find and explode all ADDR_VEC or ADDR_DIFF_VEC insns.  */
       insns = get_insns ();
       for (insn = insns; insn; insn = NEXT_INSN (insn))
 	{
 	  rtx pattern, tmp, location;
 	  unsigned int length, i;
 
-	  /* Find an ADDR_VEC insn to explode.  */
+	  /* Find an ADDR_VEC or ADDR_DIFF_VEC insn to explode.  */
 	  if (GET_CODE (insn) != JUMP_INSN
-	      || GET_CODE (PATTERN (insn)) != ADDR_VEC)
+	      || (GET_CODE (PATTERN (insn)) != ADDR_VEC
+		  && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC))
 	    continue;
 
 	  /* If needed, emit marker for the beginning of the branch table.  */
@@ -5827,7 +5828,7 @@ pa_reorg (insns)
 
 	  pattern = PATTERN (insn);
 	  location = PREV_INSN (insn);
-          length = XVECLEN (pattern, 0);
+          length = XVECLEN (pattern, GET_CODE (pattern) == ADDR_DIFF_VEC);
 
 	  for (i = 0; i < length; i++)
 	    {
@@ -5838,12 +5839,24 @@ pa_reorg (insns)
 	      emit_label_after (tmp, location);
 	      location = NEXT_INSN (location);
 
-	      /* Emit the jump itself.  */
-	      tmp = gen_switch_jump (XEXP (XVECEXP (pattern, 0, i), 0));
-	      tmp = emit_jump_insn_after (tmp, location);
-	      JUMP_LABEL (tmp) = XEXP (XVECEXP (pattern, 0, i), 0);
-	      LABEL_NUSES (JUMP_LABEL (tmp))++;
-	      location = NEXT_INSN (location);
+	      if (GET_CODE (pattern) == ADDR_VEC)
+		{
+		  /* Emit the jump itself.  */
+		  tmp = gen_switch_jump (XEXP (XVECEXP (pattern, 0, i), 0));
+		  tmp = emit_jump_insn_after (tmp, location);
+		  JUMP_LABEL (tmp) = XEXP (XVECEXP (pattern, 0, i), 0);
+		  LABEL_NUSES (JUMP_LABEL (tmp))++;
+		  location = NEXT_INSN (location);
+		}
+	      else
+		{
+		  /* Emit the jump itself.  */
+		  tmp = gen_switch_jump (XEXP (XVECEXP (pattern, 1, i), 0));
+		  tmp = emit_jump_insn_after (tmp, location);
+		  JUMP_LABEL (tmp) = XEXP (XVECEXP (pattern, 1, i), 0);
+		  LABEL_NUSES (JUMP_LABEL (tmp))++;
+		  location = NEXT_INSN (location);
+		}
 
 	      /* Emit a BARRIER after the jump.  */
 	      emit_barrier_after (location);
@@ -5858,7 +5871,7 @@ pa_reorg (insns)
 	      emit_barrier_after (location);
 	    }
 
-	  /* Delete the ADDR_VEC.  */
+	  /* Delete the ADDR_VEC or ADDR_DIFF_VEC.  */
 	  delete_insn (insn);
 	}
     }
@@ -5870,7 +5883,8 @@ pa_reorg (insns)
 	{
 	  /* Find an ADDR_VEC insn.  */
 	  if (GET_CODE (insn) != JUMP_INSN
-	      || GET_CODE (PATTERN (insn)) != ADDR_VEC)
+	      || (GET_CODE (PATTERN (insn)) != ADDR_VEC
+		  && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC))
 	    continue;
 
 	  /* Now generate markers for the beginning and end of the
