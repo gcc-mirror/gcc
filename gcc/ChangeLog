@@ -118,6 +118,11 @@ Tue Nov 25 23:33:29 1997  scott snyder  <snyder@d0sgif.fnal.gov>
 
 	* libgcc2.c (__throw): Initialize HANDLER.
 
+Tue Nov 25 14:08:12 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* mips.md (fix_truncdfsi2, fix_truncsfsi2, fix_truncdfdi2,
+	fix_truncsfdi2): Change *X to ?*X.
+
 Tue Nov 25 10:00:42 1997  Richard Henderson  (rth@cygnus.com)
 
 	* alpha.h (CONST_OK_FOR_LETTER): Fix 'L' handling.
