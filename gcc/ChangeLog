@@ -1,3 +1,9 @@
+2002-10-08  Nick Clifton  <nickc@redhat.com>
+
+	* config/rs6000/spe.h (__ev_set_acc_u64): Use __ev_create_u64 to
+	convert uint64_t into __ev64_opaque__.
+	(__ev_set_acc_s64): Likewise, but using signed types.
+
 2002-10-08  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("*doloop_si_long"): Add missing operand.
