@@ -211,8 +211,24 @@ rtl_make_eh_edge (sbitmap edge_cache, basic_block src, rtx insn)
   free_INSN_LIST_list (&handlers);
 }
 
-/* State of basic block as seen by find_many_sub_basic_blocks.  */
-enum state {BLOCK_NEW = 0, BLOCK_ORIGINAL, BLOCK_TO_SPLIT};
+/* States of basic block as seen by find_many_sub_basic_blocks.  */
+enum state {
+  /* Basic blocks created via split_block belong to this state.
+     make_edges will examine these basic blocks to see if we need to
+     create edges going out of them.  */
+  BLOCK_NEW = 0,
+
+  /* Basic blocks that do not need examining belong to this state.
+     These blocks will be left intact.  In particular, make_edges will
+     not create edges going out of these basic blocks.  */
+  BLOCK_ORIGINAL,
+
+  /* Basic blocks that may need splitting (due to a label appearing in
+     the middle, etc) belong to this state.  After splitting them,
+     make_edges will create create edges going out of them as
+     needed.  */
+  BLOCK_TO_SPLIT
+};
 
 #define STATE(BB) (enum state) ((size_t) (BB)->aux)
 #define SET_STATE(BB, STATE) ((BB)->aux = (void *) (size_t) (STATE))
@@ -221,13 +237,12 @@ enum state {BLOCK_NEW = 0, BLOCK_ORIGINAL, BLOCK_TO_SPLIT};
 #define BLOCK_USED_BY_TABLEJUMP		32
 #define FULL_STATE(BB) ((size_t) (BB)->aux)
 
-/* Identify the edges between basic blocks MIN to MAX.
+/* Identify the edges going out of basic blocks between MIN and MAX,
+   inclusive, that have their states set to BLOCK_NEW or
+   BLOCK_TO_SPLIT.
 
-   NONLOCAL_LABEL_LIST is a list of non-local labels in the function.  Blocks
-   that are otherwise unreachable may be reachable with a non-local goto.
-
-   BB_EH_END is an array indexed by basic block number in which we record
-   the list of exception regions active at the end of the basic block.  */
+   UPDATE_P should be nonzero if we are updating CFG and zero if we
+   are building CFG from scratch.  */
 
 static void
 make_edges (basic_block min, basic_block max, int update_p)
@@ -533,6 +548,7 @@ find_basic_blocks (rtx f)
 
   profile_status = PROFILE_ABSENT;
 
+  /* Tell make_edges to examine every block for out-going edges.  */
   FOR_EACH_BB (bb)
     SET_STATE (bb, BLOCK_NEW);
 
@@ -717,8 +733,9 @@ compute_outgoing_frequencies (basic_block b)
 		  / REG_BR_PROB_BASE);
 }
 
-/* Assume that someone emitted code with control flow instructions to the
-   basic block.  Update the data structure.  */
+/* Assume that some pass has inserted labels or control flow
+   instructions within a basic block.  Split basic blocks as needed
+   and create edges.  */
 
 void
 find_many_sub_basic_blocks (sbitmap blocks)
