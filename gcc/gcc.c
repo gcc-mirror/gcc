@@ -5135,7 +5135,7 @@ extern int main PARAMS ((int, const char **));
 int
 main (argc, argv)
      int argc;
-     const char **argv;
+     char **argv;
 {
   register size_t i;
   size_t j;

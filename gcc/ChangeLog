@@ -1,5 +1,8 @@
 2000-06-14  David O'Brien  <obrien@FreeBSD.org>
 
+	* gcc.c (main): Quiet compiler warnings.  argv is assumed to be
+	writable in parts of the GCC code.
+
 	* config/elfos.h (ASM_GENERATE_INTERNAL_LABEL): Make printf
 	specification match cast.
 
