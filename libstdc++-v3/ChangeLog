@@ -1,6 +1,14 @@
+2001-06-04  Phil Edwards  <pme@sources.redhat.com>
+
+	PR libstdc++/3034
+	* include/bits/stl_multiset.h (find, lower_bound, upper_bound,
+	equal_range):  Add const overloads as per LWG DR 214.
+	* include/bits/stl_set.h:  Likewise.
+
 2001-06-04  Brendan Kehoe  <brendan@zen.org>
             Phil Edwards  <pme@sources.redhat.com>
 
+	PR libstdc++/3018
 	* include/bits/std_bitset.h (bitset::test):  Fix __pos >= _Nb
 	comparison; all positions must be < _Nb.
 	* testsuite/23_containers/bitset_members.cc:  New file.
