@@ -432,6 +432,7 @@ push_function_context ()
   init_emit ();
   save_expr_status (p);
   save_stmt_status (p);
+  save_varasm_status (p);
 }
 
 /* Restore the last saved context, at the end of a nested function.
@@ -491,6 +492,7 @@ pop_function_context ()
   restore_expr_status (p);
   restore_emit_status (p);
   restore_stmt_status (p);
+  restore_varasm_status (p);
 
   /* Finish doing put_var_into_stack for any of our variables
      which became addressable during the nested function.  */
