@@ -1,117 +1,117 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
-<HTML>
-<HEAD>
-   <META NAME="AUTHOR" CONTENT="pme@sources.redhat.com (Phil Edwards)">
-   <META NAME="KEYWORDS" CONTENT="libstdc++, libstdc++-v3, GCC, g++">
-   <META NAME="DESCRIPTION" CONTENT="Configuration options for libstdc++-v3.">
-   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
-   <TITLE>libstdc++-v3 configure options</TITLE>
-<LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.12 2001/07/09 21:47:35 pme Exp $ -->
-</HEAD>
-<BODY>
+<html>
+<head>
+   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
+   <meta NAME="KEYWORDS" CONTENT="libstdc++, libstdc++-v3, GCC, g++">
+   <meta NAME="DESCRIPTION" CONTENT="Configuration options for libstdc++-v3.">
+   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <title>libstdc++-v3 configure options</title>
+<link REL=StyleSheet HREF="lib3styles.css">
+<!-- $Id: configopts.html,v 1.13 2001/08/08 02:48:58 bkoz Exp $ -->
+</head>
+<body>
 
-<H1 CLASS="centered"><A NAME="top">Interesting <TT>configure</TT>
-options</A></H1>
+<h1 CLASS="centered"><a name="top">Interesting <code>configure</code>
+options</a></h1>
 
-<P>The latest version of this document is always available at
-   <A HREF="http://gcc.gnu.org/onlinedocs/libstdc++/configopts.html">
-   http://gcc.gnu.org/onlinedocs/libstdc++/configopts.html</A>.
-</P>
+<p>The latest version of this document is always available at
+   <a href="http://gcc.gnu.org/onlinedocs/libstdc++/configopts.html">
+   http://gcc.gnu.org/onlinedocs/libstdc++/configopts.html</a>.
+</p>
 
-<P>To the <A HREF="http://gcc.gnu.org/libstdc++/">libstdc++-v3 homepage</A>.
+<p>To the <a href="http://gcc.gnu.org/libstdc++/">libstdc++-v3 homepage</a>.
 
 
 <!-- ####################################################### -->
-<HR>
-<P>Here are some of the non-obvious options to libstdc++'s configure.
+<hr>
+<p>Here are some of the non-obvious options to libstdc++'s configure.
    Keep in mind that
    <!-- This SECnn should be the "Choosing Package Options" section. -->
-   <A HREF="http://sources.redhat.com/autoconf/autoconf.html#SEC74">they
-   all have opposite forms as well</A>
+   <a href="http://sources.redhat.com/autoconf/autoconf.html#SEC74">they
+   all have opposite forms as well</a>
    (enable/disable and with/without).  The defaults are for current
    development sources.
-</P>
-<P>The canonical way to find out the configure options that are
+</p>
+<p>The canonical way to find out the configure options that are
    available for a given set of libstdc++ sources is to go to the
-   source directory and then type:<TT>  ./configure --help</TT>
+   source directory and then type:<code>  ./configure --help</code>
 
-<DL>
- <DT><TT>--enable-multilib  </TT>[default]
- <DD><P>This is part of the generic multilib support for building cross
+<dl>
+ <dt><code>--enable-multilib  </code>[default]
+ <dd><p>This is part of the generic multilib support for building cross
         compilers.  As such, targets like &quot;powerpc-elf&quot; will have
         libstdc++ built many different ways:  &quot;-msoft-float&quot;
         and not, etc.  A different libstdc++ will be built for each of
         the different multilib versions.  This option is on by default.
-     </P>
+     </p>
 
- <DT><TT>--enable-debug  </TT>
- <DD><P>The configure script will automatically detect the highest
+ <dt><code>--enable-debug  </code>
+ <dd><p>The configure script will automatically detect the highest
         level of optimization that the compiler in use can use
-        (certain versions of g++ will ICE if given the <TT>-O2</TT>
+        (certain versions of g++ will ICE if given the <code>-O2</code>
         option, but this is fixed in later versions of the compiler).
         This --enable flag will disable all optimizations and instruct
         the compiler to emit as much extra debugging information as it
         can, for use inside GDB. Note this make command, executed in
         the build directory, will do much the same thing, without the
-        configuration difference:<TT>make CXXFLAGS='-g -O0' all</TT>
-     </P>
+        configuration difference:<code>make CXXFLAGS='-g -O0' all</code>
+     </p>
 
- <DT><TT>--enable-cstdio  </TT>
- <DD><P>This is an abbreviated form of <TT>'--enable-cstdio=stdio'</TT>
+ <dt><code>--enable-cstdio  </code>
+ <dd><p>This is an abbreviated form of <code>'--enable-cstdio=stdio'</code>
         (described next).
-     </P>
+     </p>
 
- <DT><TT>--enable-cstdio=LIB  </TT>
- <DD><P>Select a target-specific I/O package.  As of libstdc++-v3
+ <dt><code>--enable-cstdio=LIB  </code>
+ <dd><p>Select a target-specific I/O package.  As of libstdc++-v3
         snapshot 2.91, the choices are 'libio' to specify the GNU
         I/O package (from
-        <A HREF="http://sources.redhat.com/glibc/">glibc</A>, the
+        <a href="http://sources.redhat.com/glibc/">glibc</a>, the
         GNU C library), or 'stdio' to use a generic &quot;C&quot;
         abstraction.  The default is 'stdio'.  A longer explanation
-        is <A HREF="explanations.html#cstdio">here</A>.
-     </P>
+        is <a href="explanations.html#cstdio">here</a>.
+     </p>
 
- <DT><TT>--enable-sjlj-exceptions  </TT>
- <DD><P>Forces old, set-jump/long-jump exception handling model.  If
+ <dt><code>--enable-sjlj-exceptions  </code>
+ <dd><p>Forces old, set-jump/long-jump exception handling model.  If
         at all possible, the new, frame unwinding exception handling routines
         should be used instead, as they significantly reduce both runtime
         memory usage and executable size.
-     </P>
+     </p>
 
- <DT><TT>--enable-clocale  </TT>
- <DD><P>This is an abbreviated form of <TT>'--enable-clocale=generic'</TT>
+ <dt><code>--enable-clocale  </code>
+ <dd><p>This is an abbreviated form of <code>'--enable-clocale=generic'</code>
         (described next).
-     </P>
+     </p>
 
- <DT><TT>--enable-clocale=MODEL  </TT>
- <DD><P>Select a target-specific underlying locale package.  The
+ <dt><code>--enable-clocale=MODEL  </code>
+ <dd><p>Select a target-specific underlying locale package.  The
         choices are 'ieee_1003.1' to specify an X/Open, Standard Unix
         (IEEE Std. 1003.1-200x) model based on langinfo/iconv/catgets,
         'gnu' to specify a model based on functionality from the GNU C
         library (langinfo/iconv/gettext) (from <A
-        HREF="http://sources.redhat.com/glibc/">glibc</A>, the GNU C
+        HREF="http://sources.redhat.com/glibc/">glibc</a>, the GNU C
         library), or 'generic' to use a generic &quot;C&quot;
         abstraction which consists of &quot;C&quot; locale info.  The
         default is 'generic'.
-     </P>
+     </p>
 
- <DT><TT>--enable-c99  </TT>
- <DD><P>The &quot;long long&quot; type was introduced in C99, along
+ <dt><code>--enable-c99  </code>
+ <dd><p>The &quot;long long&quot; type was introduced in C99, along
         with many other functions for wide characters, and math
         classification macros, etc.  If enabled, all C99 functions not
-        specified by the C++ standard will be put into <TT>namespace
-        __gnu_cxx</TT>, and then all these names will
+        specified by the C++ standard will be put into <code>namespace
+        __gnu_cxx</code>, and then all these names will
         be injected into namespace std, so that C99 functions can be
         used &quot;as if&quot; they were in the C++ standard (as they
         will eventually be in some future revision of the standard,
         without a doubt).  By default, C99 support is on, assuming the
         configure probes find all the necessary functions and bits
         necessary.
-    </P>
+    </p>
 
- <DT><TT>--enable-long-long  </TT>
- <DD><P>The &quot;long long&quot; type was introduced in C99.  It is
+ <dt><code>--enable-long-long  </code>
+ <dd><p>The &quot;long long&quot; type was introduced in C99.  It is
         provided as a GNU extension to C++98 in g++.  This flag builds
         support for &quot;long long&quot; into the library (specialized
         templates and the like for iostreams).  This option is on by default:
@@ -121,22 +121,22 @@ options</A></H1>
         allow &quot;C&quot; visibility of this feature (on GNU/Linux,
         the flag is -D_ISOC99_SOURCE, which is added automatically via
         CPLUSPLUS_CPP_SPEC's addition of _GNU_SOURCE).
-     </P>
+     </p>
 
- <DT><TT>--enable-cheaders=OPTION  </TT>
- <DD><P>This allows the user to define what kind of C headers are
+ <dt><code>--enable-cheaders=OPTION  </code>
+ <dd><p>This allows the user to define what kind of C headers are
         used.  Options are: c, c_std, and c_shadow. These correspond
         to the source directory's include/c, include/c_std, and
         include/c_shadow directories.  The default is c_std.
-     </P>
+     </p>
 
- <DT><TT>--enable-threads  </TT>
- <DD><P>This is an abbreviated form of <TT>'--enable-threads=yes'</TT>
+ <dt><code>--enable-threads  </code>
+ <dd><p>This is an abbreviated form of <code>'--enable-threads=yes'</code>
         (described next).
-     </P>
+     </p>
 
- <DT><TT>--enable-threads=LIB  </TT>
- <DD><P>Select a threading library.  As of libstdc++-v3 snapshot 2.91,
+ <dt><code>--enable-threads=LIB  </code>
+ <dd><p>Select a threading library.  As of libstdc++-v3 snapshot 2.91,
         the choices are:
         'yes' for some kind of default (hmmmmm);
         'decosf1', 'irix', 'mach', 'os2', 'posix'/'pthreads'
@@ -145,35 +145,35 @@ options</A></H1>
         corresponding interface;
         and 'single', 'no', or 'none' for the null-case,
         single-threaded library.
-     </P>
-     <P>All of this is currently undergoing a lot of changes.  As of
+     </p>
+     <p>All of this is currently undergoing a lot of changes.  As of
         2.91, 'single' and 'posix' are the only implemented
         models.  Default is single.
-     </P>
+     </p>
 
- <DT><TT>--enable-version-specific-runtime-libs  </TT>
- <DD><P>Specify that run-time libraries should be installed in the
+ <dt><code>--enable-version-specific-runtime-libs  </code>
+ <dd><p>Specify that run-time libraries should be installed in the
         compiler-specific subdirectory (i.e.,
-        <TT>${libdir}/gcc-lib/${target_alias}/${gcc_version}</TT>)
-        instead of <TT>${libdir}</TT>.  This option is useful if you
+        <code>${libdir}/gcc-lib/${target_alias}/${gcc_version}</code>)
+        instead of <code>${libdir}</code>.  This option is useful if you
         intend to use several versions of gcc in parallel.  In addition,
         libstdc++'s include files will be installed in
-        <TT>${libdir}/gcc-lib/${target_alias}/${gcc_version}/include/g++</TT>,
+        <code>${libdir}/gcc-lib/${target_alias}/${gcc_version}/include/g++</code>,
         unless you also specify
-       <TT>--with-gxx-include-dir=<EM>dirname</EM></TT> during configuration.
-     </P>
+       <code>--with-gxx-include-dir=<em>dirname</em></code> during configuration.
+     </p>
 
- <DT><TT>--with-gxx-include-dir=&lt;include-files dir&gt;</TT>
- <DD><P>Adds support for named libstdc++ include directory.  For instance,
+ <dt><code>--with-gxx-include-dir=&lt;include-files dir&gt;</code>
+ <dd><p>Adds support for named libstdc++ include directory.  For instance,
         the following puts all the libstdc++ headers into a directory
         called &quot;2.97-20001008&quot; instead of the usual
         &quot;g++-v3&quot;.
         <PRE>
    --with-gxx-include-dir=/foo/H-x86-gcc-3-c-gxx-inc/include/2.97-20001008</PRE>
-     </P>
+     </p>
 
- <DT><TT>--enable-cxx-flags=FLAGS</TT>
- <DD><P>With this option, you can pass a string of -f (functionality)
+ <dt><code>--enable-cxx-flags=FLAGS</code>
+ <dd><p>With this option, you can pass a string of -f (functionality)
         flags to the compiler to use when building libstdc++.  FLAGS
         is a quoted string of options, like
         <PRE>
@@ -181,13 +181,13 @@ options</A></H1>
         Note that the flags don't necessarily have to all be -f flags,
         as shown, but usually those are the ones that will make sense
         for experimentation and configure-time overriding.
-     </P>
-     <P>The advantage of --enable-cxx-flags over setting CXXFLAGS in
+     </p>
+     <p>The advantage of --enable-cxx-flags over setting CXXFLAGS in
         the 'make' environment is that, if files are automatically
         rebuilt, the same flags will be used when compiling those files
         as well, so that everything matches.
-     </P>
-     <P>Fun flags to try might include combinations of
+     </p>
+     <p>Fun flags to try might include combinations of
         <PRE>
   -fstrict-aliasing
   -fno-exceptions
@@ -195,30 +195,30 @@ options</A></H1>
   -fvtable-gc</PRE>
         and opposite forms (-fno-) of the same.  Tell us (the mailing
         list) if you discover more!
-     </P>
+     </p>
 
- <DT><TT>--enable-c-mbchar  </TT>[default]
- <DD><P>Certain template specializations are required for wide
+ <dt><code>--enable-c-mbchar  </code>[default]
+ <dd><p>Certain template specializations are required for wide
         character conversion support.  This is tricky and currently
         changing rapidly, and can cause problems on new platforms.
         Disabling wide character specializations is useful for initial
         porting steps, but builds only a subset of what is required by
         ISO.  By default, this option is on.
-     </P>
-</DL>
-</P>
-<P>Return <A HREF="#top">to the top of the page</A> or
-   <A HREF="http://gcc.gnu.org/libstdc++/">to the homepage</A>.
-</P>
+     </p>
+</dl>
+</p>
+<p>Return <a href="#top">to the top of the page</a> or
+   <a href="http://gcc.gnu.org/libstdc++/">to the homepage</a>.
+</p>
 
 
 <!-- ####################################################### -->
 
-<HR>
-<P CLASS="fineprint"><EM>
-$Id: configopts.html,v 1.12 2001/07/09 21:47:35 pme Exp $
-</EM></P>
+<hr>
+<P CLASS="fineprint"><em>
+$Id: configopts.html,v 1.13 2001/08/08 02:48:58 bkoz Exp $
+</em></p>
 
 
-</BODY>
-</HTML>
+</body>
+</html>

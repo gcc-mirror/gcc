@@ -1,3 +1,28 @@
+2001-09-17  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/configopts.html:  HTML to XHTML change.  Lowercase tags.
+	* docs/html/documentation.html:  Likewise.
+	* docs/html/explanations.html:  Likewise.
+	* docs/html/install.html:  Likewise.
+	* docs/html/17_intro/howto.html:  Likewise.
+	* docs/html/18_support/howto.html:  Likewise.
+	* docs/html/19_diagnostics/howto.html:  Likewise.
+	* docs/html/20_util/howto.html:  Likewise.
+	* docs/html/21_strings/howto.html:  Likewise.
+	* docs/html/22_locale/codecvt.html:  Likewise.
+	* docs/html/22_locale/ctype.html:  Likewise.
+	* docs/html/22_locale/howto.html:  Likewise.
+	* docs/html/22_locale/locale.html:  Likewise.
+	* docs/html/22_locale/messages.html:  Likewise.
+	* docs/html/23_containers/howto.html:  Likewise.
+	* docs/html/24_iterators/howto.html:  Likewise.
+	* docs/html/25_algorithms/howto.html:  Likewise.
+	* docs/html/26_numerics/howto.html:  Likewise.
+	* docs/html/27_io/howto.html:  Likewise.
+	* docs/html/ext/howto.html:  Likewise.
+	* docs/html/faq/index.html:  Likewise.
+	* docs/html/faq/index.txt:  Regenerated.
+
 2001-09-14  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/html/17_intro/headers_cc.txt:  "Sync"/copy real file over.

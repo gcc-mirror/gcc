@@ -1,52 +1,52 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
-<HTML>
-<HEAD>
-   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <META NAME="AUTHOR" CONTENT="pme@sources.redhat.com (Phil Edwards)">
-   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <META NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 24.">
-   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
-   <TITLE>libstdc++-v3 HOWTO:  Chapter 24</TITLE>
-<LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.2 2001/04/03 00:26:56 pme Exp $ -->
-</HEAD>
-<BODY>
+<html>
+<head>
+   <meta HcodeP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
+   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 24.">
+   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <title>libstdc++-v3 HOWTO:  Chapter 24</title>
+<link REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.3 2001/05/30 21:55:01 pme Exp $ -->
+</head>
+<body>
 
-<H1 CLASS="centered"><A NAME="top">Chapter 24:  Iterators</A></H1>
+<h1 CLASS="centered"><a name="top">Chapter 24:  Iterators</a></h1>
 
-<P>Chapter 24 deals with the FORTRAN subroutines for automatically
+<p>Chapter 24 deals with the FORTRAN subroutines for automatically
    transforming lemmings into gold.
-</P>
+</p>
 
 
 <!-- ####################################################### -->
-<HR>
-<H1>Contents</H1>
-<UL>
-   <LI><A HREF="#1">They ain't pointers!</A>
-   <LI><A HREF="#2">It ends <EM>where?</EM></A>
-</UL>
+<hr>
+<h1>Contents</h1>
+<ul>
+   <li><a href="#1">They ain't pointers!</a>
+   <li><a href="#2">It ends <em>where?</em></a>
+</ul>
 
-<HR>
+<hr>
 
 <!-- ####################################################### -->
 
-<H2><A NAME="1">They ain't pointers!</A></H2>
-   <P><A HREF="../faq/index.html#5_1">FAQ 5.1</A> points out that iterators
+<h2><a name="1">They ain't pointers!</a></h2>
+   <p><a href="../faq/index.html#5_1">FAQ 5.1</a> points out that iterators
       are not implemented as pointers.  They are a generalization of
       pointers, but they are implemented in libstdc++-v3 as separate classes.
-   </P>
-   <P>Keeping that simple fact in mind as you design your code will
+   </p>
+   <p>Keeping that simple fact in mind as you design your code will
       prevent a whole lot of difficult-to-understand bugs.
-   </P>
-   <P>You can think of it the other way 'round, even.  Since iterators
-      are a generalization, that means that <EM>pointers</EM> are
-      <EM>iterators</EM>, and that pointers can be used whenever an
+   </p>
+   <p>You can think of it the other way 'round, even.  Since iterators
+      are a generalization, that means that <em>pointers</em> are
+      <em>iterators</em>, and that pointers can be used whenever an
       iterator would be.  All those functions in the Algorithms chapter
       of the Standard will work just as well on plain arrays and their
       pointers.
-   </P>
-   <P>That doesn't mean that when you pass in a pointer, it gets wrapped
+   </p>
+   <p>That doesn't mean that when you pass in a pointer, it gets wrapped
       into some special delegating iterator-to-pointer class with a layer
       of overhead.  (If you think that's the case anywhere, you don't
       understand templates to begin with...)  Oh, no; if you pass
@@ -55,53 +55,53 @@
       its operations, so the resulting code will be doing exactly the same
       things as it would be doing if you had hand-coded it yourself (for
       the 273rd time).
-   </P>
-   <P>How much overhead <EM>is</EM> there when using an interator class?
+   </p>
+   <p>How much overhead <em>is</em> there when using an interator class?
       Very little.  Most of the layering classes contain nothing but
       typedefs, and typedefs are &quot;meta-information&quot; that simply
       tell the compiler some nicknames; they don't create code.  That
       information gets passed down through inheritance, so while the
       compiler has to do work looking up all the names, your runtime code
       does not.  (This has been a prime concern from the beginning.)
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="2">It ends <EM>where?</EM></A></H2>
-   <P>This starts off sounding complicated, but is actually very easy,
+<hr>
+<h2><a name="2">It ends <em>where?</em></a></h2>
+   <p>This starts off sounding complicated, but is actually very easy,
       especially towards the end.  Trust me.
-  </P>
-   <P>Beginners usually have a little trouble understand the whole
+  </p>
+   <p>Beginners usually have a little trouble understand the whole
       'past-the-end' thing, until they remember their early algebra classes
-      (see, they </EM>told</EM> you that stuff would come in handy!) and
+      (see, they </em>told</em> you that stuff would come in handy!) and
       the concept of half-open ranges.
-   </P>
-   <P>First, some history, and a reminder of some of the funkier rules in
+   </p>
+   <p>First, some history, and a reminder of some of the funkier rules in
       C and C++ for builtin arrays.  The following rules have always been
       true for both languages:
-      <OL>
-       <LI>You can point anywhere in the array, <EM>or to the first element
-           past the end of the array</EM>.  A pointer that points to one
+      <ol>
+       <li>You can point anywhere in the array, <em>or to the first element
+           past the end of the array</em>.  A pointer that points to one
            past the end of the array is guaranteed to be as unique as a
            pointer to somewhere inside the array, so that you can compare
            such pointers safely.
-       <LI>You can only dereference a pointer that points into an array.
+       <li>You can only dereference a pointer that points into an array.
            If your array pointer points outside the array -- even to just
            one past the end -- and you dereference it, Bad Things happen.
-       <LI>Strictly speaking, simply pointing anywhere else invokes
+       <li>Strictly speaking, simply pointing anywhere else invokes
            undefined behavior.  Most programs won't puke until such a
            pointer is actually dereferenced, but the standards leave that
            up to the platform.
-      </OL>
+      </ol>
       The reason this past-the-end addressing was allowed is to make it
       easy to write a loop to go over an entire array, e.g.,
       while (*d++ = *s++);.
-   </P>
-   <P>So, when you think of two pointers delimiting an array, don't think
-      of them as indexing 0 through n-1.  Think of them as <EM>boundary
-      markers</EM>:
+   </p>
+   <p>So, when you think of two pointers delimiting an array, don't think
+      of them as indexing 0 through n-1.  Think of them as <em>boundary
+      markers</em>:
       <PRE>
 
    beginning            end
@@ -125,60 +125,60 @@
       </PRE>
       See?  Everything between the boundary markers is part of the array.
       Simple.
-   </P>
-   <P>Now think back to your junior-high school algebra course, when you
+   </p>
+   <p>Now think back to your junior-high school algebra course, when you
       were learning how to draw graphs.  Remember that a graph terminating
       with a solid dot meant, &quot;Everything up through this point,&quot;
       and a graph terminating with an open dot meant, &quot;Everything up
       to, but not including, this point,&quot; respectively called closed
       and open ranges?  Remember how closed ranges were written with
-      brackets, <EM>[a,b]</EM>, and open ranges were written with parentheses,
-      <EM>(a,b)</EM>?
-   </P>
-   <P>The boundary markers for arrays describe a <EM>half-open range</EM>,
+      brackets, <em>[a,b]</em>, and open ranges were written with parentheses,
+      <em>(a,b)</em>?
+   </p>
+   <p>The boundary markers for arrays describe a <em>half-open range</em>,
       starting with (and including) the first element, and ending with (but
-      not including) the last element:  <EM>[beginning,end)</EM>.  See, I
+      not including) the last element:  <em>[beginning,end)</em>.  See, I
       told you it would be simple in the end.
-   </P>
-   <P>Iterators, and everything working with iterators, follows this same
-      time-honored tradition.  A container's <TT>begin()</TT> method returns
-      an iterator referring to the first element, and its <TT>end()</TT>
+   </p>
+   <p>Iterators, and everything working with iterators, follows this same
+      time-honored tradition.  A container's <code>begin()</code> method returns
+      an iterator referring to the first element, and its <code>end()</code>
       method returns a past-the-end iterator, which is guaranteed to be
       unique and comparable against any other iterator pointing into the
       middle of the container.
-   </P>
-   <P>Container constructors, container methods, and algorithms, all take
+   </p>
+   <p>Container constructors, container methods, and algorithms, all take
       pairs of iterators describing a range of values on which to operate.
       All of these ranges are half-open ranges, so you pass the beginning
       iterator as the starting parameter, and the one-past-the-end iterator
       as the finishing parameter.
-   </P>
-   <P>This generalizes very well.  You can operate on sub-ranges quite
-      easily this way; functions accepting a <EM>[first,last)</EM> range
+   </p>
+   <p>This generalizes very well.  You can operate on sub-ranges quite
+      easily this way; functions accepting a <em>[first,last)</em> range
       don't know or care whether they are the boundaries of an entire {array,
       sequence, container, whatever}, or whether they only enclose a few
       elements from the center.  This approach also makes zero-length
       sequences very simple to recognize:  if the two endpoints compare
       equal, then the {array, sequence, container, whatever} is empty.
-   </P>
-   <P>Just don't dereference <TT>end()</TT>.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Just don't dereference <code>end()</code>.
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
 
 
 
 <!-- ####################################################### -->
 
-<HR>
-<P CLASS="fineprint"><EM>
+<hr>
+<P CLASS="fineprint"><em>
 Comments and suggestions are welcome, and may be sent to
-<A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.2 2001/04/03 00:26:56 pme Exp $
-</EM></P>
+<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<br> $Id: howto.html,v 1.3 2001/05/30 21:55:01 pme Exp $
+</em></p>
 
 
-</BODY>
-</HTML>
+</body>
+</html>

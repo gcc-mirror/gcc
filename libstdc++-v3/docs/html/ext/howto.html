@@ -1,53 +1,53 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
-<HTML>
-<HEAD>
-   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <META NAME="AUTHOR" CONTENT="pme@sources.redhat.com (Phil Edwards)">
-   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <META NAME="DESCRIPTION" CONTENT="Notes for the libstdc++ extensions.">
-   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
-   <TITLE>libstdc++-v3 HOWTO:  Extensions</TITLE>
-<LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.4 2001/05/02 01:39:03 pme Exp $ -->
-</HEAD>
-<BODY>
+<html>
+<head>
+   <meta HcodeP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
+   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta NAME="DESCRIPTION" CONTENT="Notes for the libstdc++ extensions.">
+   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <title>libstdc++-v3 HOWTO:  Extensions</title>
+<link REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.5 2001/05/30 21:55:04 pme Exp $ -->
+</head>
+<body>
 
-<H1 CLASS="centered"><A NAME="top">Extensions</A></H1>
+<h1 CLASS="centered"><a name="top">Extensions</a></h1>
 
-<P>Here we will make an attempt at describing the non-Standard extensions to
+<p>Here we will make an attempt at describing the non-Standard extensions to
    the library.  Some of these are from SGI's STL, some of these are GNU's,
    and some just seemed to appear on the doorstep.
-</P>
-<P><B>Before you leap in and use these</B>, be aware of two things:
-   <OL>
-    <LI>Non-Standard means exactly that.  The behavior, and the very
+</p>
+<p><B>Before you leap in and use these</B>, be aware of two things:
+   <ol>
+    <li>Non-Standard means exactly that.  The behavior, and the very
         existence, of these extensions may change with little or no
         warning.  (Ideally, the really good ones will appear in the next
         revision of C++.)  Also, other platforms, other compilers, other
         versions of g++ or libstdc++-v3 may not recognize these names, or
         treat them differently, or...
-    <LI>You should know how to <A HREF="../faq/index.html#5_4">access
-        these headers properly</A>.
-   </OL>
-</P>
+    <li>You should know how to <a href="../faq/index.html#5_4">access
+        these headers properly</a>.
+   </ol>
+</p>
 
 
 <!-- ####################################################### -->
-<HR>
-<H1>Contents</H1>
-<UL>
-   <LI><A HREF="#1">Ropes and trees and hashes, oh my!</A>
-   <LI><A HREF="#2">Added members</A>
-   <LI><A HREF="#3">Allocators</A>
-   <LI><A HREF="#4">Compile-time checks</A>
-</UL>
+<hr>
+<h1>Contents</h1>
+<ul>
+   <li><a href="#1">Ropes and trees and hashes, oh my!</a>
+   <li><a href="#2">Added members</a>
+   <li><a href="#3">Allocators</a>
+   <li><a href="#4">Compile-time checks</a>
+</ul>
 
-<HR>
+<hr>
 
 <!-- ####################################################### -->
 
-<H2><A NAME="1">Ropes and trees and hashes, oh my!</A></H2>
-   <P>The SGI headers
+<h2><a name="1">Ropes and trees and hashes, oh my!</a></h2>
+   <p>The SGI headers
      <PRE>
      &lt;bvector&gt;
      &lt;hash_map&gt;
@@ -55,120 +55,120 @@
      &lt;rope&gt;
      &lt;slist&gt;
      &lt;tree&gt;
-     </PRE> are all here; <TT>&lt;bvector&gt;</TT> exposes the old bit_vector
+     </PRE> are all here; <code>&lt;bvector&gt;</code> exposes the old bit_vector
       class that was used before specialization of vector&lt;bool&gt; was
       available (it's actually a typedef for the specialization now).
-      <TT>&lt;hash_map&gt;</TT> and <TT>&lt;hash_set&gt;</TT>
-      are discussed further below.  <TT>&lt;rope&gt;</TT> is the SGI
+      <code>&lt;hash_map&gt;</code> and <code>&lt;hash_set&gt;</code>
+      are discussed further below.  <code>&lt;rope&gt;</code> is the SGI
       specialization for large strings (&quot;rope,&quot; &quot;large
       strings,&quot; get it?  love those SGI folks).
-      <TT>&lt;slist&gt;</TT> is a singly-linked list, for when the
-      doubly-linked <TT>list&lt;&gt;</TT> is too much space overhead, and
-      <TT>&lt;tree&gt;</TT> exposes the red-black tree classes used in the
+      <code>&lt;slist&gt;</code> is a singly-linked list, for when the
+      doubly-linked <code>list&lt;&gt;</code> is too much space overhead, and
+      <code>&lt;tree&gt;</code> exposes the red-black tree classes used in the
       implementation of the standard maps and sets.
-   </P>
-   <P>Okay, about those hashing classes...  I'm going to foist most of the
+   </p>
+   <p>Okay, about those hashing classes...  I'm going to foist most of the
       work off onto SGI's own site.
-   </P>
-   <P>Each of the associative containers map, multimap, set, and multiset
+   </p>
+   <p>Each of the associative containers map, multimap, set, and multiset
       have a counterpart which uses a
-      <A HREF="http://www.sgi.com/Technology/STL/HashFunction.html">hashing
-      function</A> to do the arranging, instead of a strict weak ordering
+      <a href="http://www.sgi.com/Technology/STL/HashFunction.html">hashing
+      function</a> to do the arranging, instead of a strict weak ordering
       function.  The classes take as one of their template parameters a
       function object that will return the hash value; by default, an
       instantiation of
-      <A HREF="http://www.sgi.com/Technology/STL/hash.html">hash</A>.
+      <a href="http://www.sgi.com/Technology/STL/hash.html">hash</a>.
       You should specialize this functor for your class, or define your own,
       before trying to use one of the hashing classes.
-   </P>
-   <P>The hashing classes support all the usual associative container
+   </p>
+   <p>The hashing classes support all the usual associative container
       functions, as well as some extra constructors specifying the number
       of buckets, etc.
-   </P>
-   <P>Why would you want to use a hashing class instead of the
+   </p>
+   <p>Why would you want to use a hashing class instead of the
       &quot;normal&quot; implementations?  Matt Austern writes:
-      <BLOCKQUOTE><EM>[W]ith a well chosen hash function, hash tables
+      <BLOCKQUOTE><em>[W]ith a well chosen hash function, hash tables
       generally provide much better average-case performance than binary
       search trees, and much worse worst-case performance.  So if your
       implementation has hash_map, if you don't mind using nonstandard
       components, and if you aren't scared about the possibility of
       pathological cases, you'll probably get better performance from
-      hash_map.</EM></BLOCKQUOTE>
-   </P>
-   <P>(Side note:  for those of you wondering, <B>&quot;Why wasn't a hash
+      hash_map.</em></BLOCKQUOTE>
+   </p>
+   <p>(Side note:  for those of you wondering, <B>&quot;Why wasn't a hash
       table included in the Standard in the first #!$@ place?&quot;</B> I'll
       give a quick answer:  it was proposed, but too late and in too
       unorganized a fashion.  Some sort of hashing will undoubtedly be
       included in a future Standard.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="2">Added members</A></H2>
-   <P>Some of the classes in the Standard Library have additional
+<hr>
+<h2><a name="2">Added members</a></h2>
+   <p>Some of the classes in the Standard Library have additional
       publicly-available members.  Of those, some are intended purely for
       the implementors, for example, additional typedefs.  Those won't be
       described here (or anywhere else).  This list will grow slowly, since
       we expect it to be rare -- most extensions will be self-contained.
-   </P>
-   <P>
-    <UL>
-     <LI><TT>filebuf</TT>s have another ctor with this signature:<BR>
-<TT>basic_filebuf(__c_file_type*, ios_base::openmode, int_type);</TT>
-         <BR>This comes in very handy in a number of places, such as
+   </p>
+   <p>
+    <ul>
+     <li><code>filebuf</code>s have another ctor with this signature:<br>
+<code>basic_filebuf(__c_file_type*, ios_base::openmode, int_type);</code>
+         <br>This comes in very handy in a number of places, such as
          attaching Unix sockets, pipes, and anything else which uses file
          descriptors, into the IOStream buffering classes.  The three
          arguments are as follows:
-         <UL>
-          <LI><TT>__c_file_type*      F   </TT>
+         <ul>
+          <li><code>__c_file_type*      F   </code>
               // the __c_file_type typedef usually boils down to stdio's FILE
-          <LI><TT>ios_base::openmode  M   </TT>
+          <li><code>ios_base::openmode  M   </code>
               // same as all the other uses of openmode
-          <LI><TT>int_type            B   </TT>
+          <li><code>int_type            B   </code>
               // buffer size, defaults to BUFSIZ
-         </UL>
+         </ul>
          For those wanting to use file descriptors instead of FILE*'s, I
-         invite you to contemplate the mysteries of C's <TT>fdopen()</TT>.
-    </UL>
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+         invite you to contemplate the mysteries of C's <code>fdopen()</code>.
+    </ul>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="3">Allocators</A></H2>
-   <P>This will be blank for a while.  It will describe all of the different
+<hr>
+<h2><a name="3">Allocators</a></h2>
+   <p>This will be blank for a while.  It will describe all of the different
       memory allocators, most inherited from SGI's code.  Input is solicited.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="4">Compile-time checks</A></H2>
-   <P>Currently libstdc++-v3 uses the concept checkers from the Boost
-      library to perform <A HREF="../19_diagnostics/howto.html#3">optional
-      compile-time checking</A> of template instantiations of the standard
+<hr>
+<h2><a name="4">Compile-time checks</a></h2>
+   <p>Currently libstdc++-v3 uses the concept checkers from the Boost
+      library to perform <a href="../19_diagnostics/howto.html#3">optional
+      compile-time checking</a> of template instantiations of the standard
       containers.  They are described in the linked-to page.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
 
 
 
 <!-- ####################################################### -->
 
-<HR>
-<P CLASS="fineprint"><EM>
+<hr>
+<P CLASS="fineprint"><em>
 Comments and suggestions are welcome, and may be sent to
-<A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.4 2001/05/02 01:39:03 pme Exp $
-</EM></P>
+<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<br> $Id: howto.html,v 1.5 2001/05/30 21:55:04 pme Exp $
+</em></p>
 
 
-</BODY>
-</HTML>
+</body>
+</html>

@@ -1,61 +1,61 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
-<HTML>
-<HEAD>
-   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <META NAME="AUTHOR" CONTENT="pme@sources.redhat.com (Phil Edwards)">
-   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <META NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 18.">
-   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
-   <TITLE>libstdc++-v3 HOWTO:  Chapter 18</TITLE>
-<LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.3 2001/05/30 21:54:58 pme Exp $ -->
-</HEAD>
-<BODY>
+<html>
+<head>
+   <meta HcodeP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
+   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 18.">
+   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <title>libstdc++-v3 HOWTO:  Chapter 18</title>
+<link REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.4 2001/09/15 00:41:11 pme Exp $ -->
+</head>
+<body>
 
-<H1 CLASS="centered"><A NAME="top">Chapter 18:  Library Support</A></H1>
+<h1 CLASS="centered"><a name="top">Chapter 18:  Library Support</a></h1>
 
-<P>Chapter 18 deals with the functions called and objects created
+<p>Chapter 18 deals with the functions called and objects created
    automatically during the course of a program's existence.
-</P>
-<P>While we can't reproduce the contents of the Standard here (you need to
+</p>
+<p>While we can't reproduce the contents of the Standard here (you need to
    get your own copy from your nation's member body; see our homepage for
    help), we can mention a couple of changes in what kind of support a C++
    program gets from the Standard Library.
-</P>
+</p>
 
 
 <!-- ####################################################### -->
-<HR>
-<H1>Contents</H1>
-<UL>
-   <LI><A HREF="#1">Types</A>
-   <LI><A HREF="#2">Implementation properties</A>
-   <LI><A HREF="#3">Start and Termination</A>
-   <LI><A HREF="#4">Dynamic memory management</A>
-</UL>
+<hr>
+<h1>Contents</h1>
+<ul>
+   <li><a href="#1">Types</a>
+   <li><a href="#2">Implementation properties</a>
+   <li><a href="#3">Start and Termination</a>
+   <li><a href="#4">Dynamic memory management</a>
+</ul>
 
-<HR>
+<hr>
 
 <!-- ####################################################### -->
 
-<H2><A NAME="1">Types</A></H2>
-   <P>All the types that you're used to in C are here in one form or
+<h2><a name="1">Types</a></h2>
+   <p>All the types that you're used to in C are here in one form or
       another.  The only change that might affect people is the type of
       NULL:  while it is required to be a macro, the definition of that
-      macro is <EM>not</EM> allowed to be <TT>(void*)0</TT>, which is
+      macro is <em>not</em> allowed to be <code>(void*)0</code>, which is
       often used in C.
-   </P>
-   <P>In g++, NULL is #define'd to be <TT>__null</TT>, a magic keyword
+   </p>
+   <p>In g++, NULL is #define'd to be <code>__null</code>, a magic keyword
       extension of g++.
-   </P>
-   <P>The biggest problem of #defining NULL to be something like
+   </p>
+   <p>The biggest problem of #defining NULL to be something like
       &quot;0L&quot; is that the compiler will view that as a long integer
       before it views it as a pointer, so overloading won't do what you
       expect.  (This is why g++ has a magic extension, so that NULL is
       always a pointer.)
-   </P>
-   <P>In his book
-      <A HREF="http://cseng.aw.com/bookdetail.qry?ISBN=0-201-92488-9&ptype=0"><EM>Effective C++</EM></A>,
+   </p>
+   <p>In his book
+      <a href="http://cseng.aw.com/bookdetail.qry?ISBN=0-201-92488-9&ptype=0"><em>Effective C++</em></a>,
       Scott Meyers points out that the best way to solve this problem is to
       not overload on pointer-vs-integer types to begin with.  He also
       offers a way to make your own magic NULL that will match pointers
@@ -78,36 +78,36 @@
 
    } NULL;                           // and whose name is NULL
       </PRE>(Cribbed from the published version of
-      <A HREF="http://www.awlonline.com/cseng/meyerscddemo/">the
-      Effective C++ CD</A>, reproduced here with permission.)
-   </P>
-   <P>If you aren't using g++ (why?), but you do have a compiler which
+      <a href="http://www.awlonline.com/cseng/meyerscddemo/">the
+      Effective C++ CD</a>, reproduced here with permission.)
+   </p>
+   <p>If you aren't using g++ (why?), but you do have a compiler which
       supports member function templates, then you can use this definition
       of NULL (be sure to #undef any existing versions).  It only helps if
       you actually use NULL in function calls, though; if you make a call of
-      <TT>foo(0);</TT> instead of <TT>foo(NULL);</TT>, then you're back
+      <code>foo(0);</code> instead of <code>foo(NULL);</code>, then you're back
       where you started.
-   </P>
-   <P><B>Added Note:</B>  When we contacted Dr. Meyers to ask permission to
+   </p>
+   <p><B>Added Note:</B>  When we contacted Dr. Meyers to ask permission to
       print this stuff, it prompted him to run this code through current
       compilers to see what the state of the art is with respect to member
       template functions.  He posted
-      <A HREF="http://www.deja.com/threadmsg_md.xp?AN=644660779.1&CONTEXT=964036823.871301239">an
-      article to Usenet</A> after discovering that the code above is not
+      <a href="http://www.deja.com/threadmsg_md.xp?AN=644660779.1&CONTEXT=964036823.871301239">an
+      article to Usenet</a> after discovering that the code above is not
       valid!  Even though it has no data members, it still needs a
       user-defined constructor (which means that the class needs a type name
       after all).  The ctor can have an empty body; it just needs to be
       there.  (Stupid requirement?  We think so too, and this will probably
       be changed in the language itself.)
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="2">Implementation properties</A></H2>
-   <P>
-   <H3><CODE>&lt;limits&gt;</CODE></H3>
+<hr>
+<h2><a name="2">Implementation properties</a></h2>
+   <p>
+   <h3><CODE>&lt;limits&gt;</CODE></h3>
    This header mainly defines traits classes to give access to various
    implementation defined-aspects of the fundamental types.  The
    traits classes -- fourteen in total -- are all specilizations of the 
@@ -149,28 +149,28 @@
       static const bool tinyness_before;
       static const float_round_style round_style;
    };</PRE>
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="3">Start and Termination</A></H2>
-   <P>Not many changes here to <TT>&lt;cstdlib&gt;</TT> (the old stdlib.h).
-      You should note that the <TT>abort()</TT> function does not call
+<hr>
+<h2><a name="3">Start and Termination</a></h2>
+   <p>Not many changes here to <code>&lt;cstdlib&gt;</code> (the old stdlib.h).
+      You should note that the <code>abort()</code> function does not call
       the destructors of automatic nor static objects, so if you're depending
       on those to do cleanup, it isn't going to happen.  (The functions
-      registered with <TT>atexit()</TT> don't get called either, so you
+      registered with <code>atexit()</code> don't get called either, so you
       can forget about that possibility, too.)
-   </P>
-   <P>The good old <TT>exit()</TT> function can be a bit funky, too, until
+   </p>
+   <p>The good old <code>exit()</code> function can be a bit funky, too, until
       you look closer.  Basically, three points to remember are:
-      <OL>
-        <LI>Static objects are destroyed in reverse order of their creation.
-        <LI>Functions registered with <TT>atexit()</TT> are called in
+      <ol>
+        <li>Static objects are destroyed in reverse order of their creation.
+        <li>Functions registered with <code>atexit()</code> are called in
             reverse order of registration, once per registration call.
             (This isn't actually new.)
-        <LI>The previous two actions are &quot;interleaved,&quot; that is,
+        <li>The previous two actions are &quot;interleaved,&quot; that is,
             given this pseudocode:
             <PRE>
               extern "C or C++" void  f1 (void);
@@ -180,50 +180,50 @@
               atexit(f1);
               static Thing obj2;
               atexit(f2);
-            </PRE>then at a call of <TT>exit()</TT>, f2 will be called, then
+            </PRE>then at a call of <code>exit()</code>, f2 will be called, then
             obj2 will be destroyed, then f1 will be called, and finally obj1
             will be destroyed.  If f1 or f2 allow an exception to propogate
             out of them, Bad Things happen.
-      </OL>
-   </P>
-   <P>Note also that <TT>atexit()</TT> is only required to store 32
+      </ol>
+   </p>
+   <p>Note also that <code>atexit()</code> is only required to store 32
       functions, and the compiler/library might already be using some of
       those slots.  If you think you may run out, we recommend using
       the xatexit/xexit combination from libiberty, which has no such limit.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="4">Dynamic memory management</A></H2>
-   <P>There are six flavors each of <TT>new</TT> and <TT>delete</TT>, so
+<hr>
+<h2><a name="4">Dynamic memory management</a></h2>
+   <p>There are six flavors each of <code>new</code> and <code>delete</code>, so
       make certain that you're using the right ones!  Here are quickie
-      descriptions of <TT>new</TT>:
-      <UL>
-        <LI>single object form, throwing a <TT>bad_alloc</TT> on errors;
+      descriptions of <code>new</code>:
+      <ul>
+        <li>single object form, throwing a <code>bad_alloc</code> on errors;
             this is what most people are used to using
-        <LI>single object &quot;nothrow&quot; form, returning NULL on errors
-        <LI>array new, throwing <TT>bad_alloc</TT> on errors
-        <LI>array nothrow new, returning NULL on errors
-        <LI>placement new, which does nothing (like it's supposed to)
-        <LI>placement array new, which also does nothing
-      </UL>
+        <li>single object &quot;nothrow&quot; form, returning NULL on errors
+        <li>array new, throwing <code>bad_alloc</code> on errors
+        <li>array nothrow new, returning NULL on errors
+        <li>placement new, which does nothing (like it's supposed to)
+        <li>placement array new, which also does nothing
+      </ul>
       They are distinguished by the parameters that you pass to them, like
-      any other overloaded function.  The six flavors of <TT>delete</TT>
+      any other overloaded function.  The six flavors of <code>delete</code>
       are distinguished the same way, but none of them are allowed to throw
       an exception under any circumstances anyhow.  (They match up for
       completeness' sake.)
-   </P>
-   <P>Remember that it is perfectly okay to call <TT>delete</TT> on a
+   </p>
+   <p>Remember that it is perfectly okay to call <code>delete</code> on a
       NULL pointer!  Nothing happens, by definition.  That is not the
       same thing as deleting a pointer twice.
-   </P>
-   <P>By default, if one of the &quot;throwing <TT>new</TT>s&quot; can't
+   </p>
+   <p>By default, if one of the &quot;throwing <code>new</code>s&quot; can't
       allocate the memory requested, it tosses an instance of a
-      <TT>bad_alloc</TT> exception (or, technically, some class derived
+      <code>bad_alloc</code> exception (or, technically, some class derived
       from it).  You can change this by writing your own function (called
-      a new-handler) and then registering it with <TT>set_new_handler()</TT>:
+      a new-handler) and then registering it with <code>set_new_handler()</code>:
       <PRE>
    typedef void (*PFV)(void);
 
@@ -247,13 +247,13 @@
        ...
    }
       </PRE>
-   </P>
-   <P><TT>bad_alloc</TT> is derived from the base <TT>exception</TT>
+   </p>
+   <p><code>bad_alloc</code> is derived from the base <code>exception</code>
       class defined in Chapter 19.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
 
 
@@ -261,13 +261,13 @@
 
 <!-- ####################################################### -->
 
-<HR>
-<P CLASS="fineprint"><EM>
+<hr>
+<P CLASS="fineprint"><em>
 Comments and suggestions are welcome, and may be sent to
-<A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.3 2001/05/30 21:54:58 pme Exp $
-</EM></P>
+<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<br> $Id: howto.html,v 1.4 2001/09/15 00:41:11 pme Exp $
+</em></p>
 
 
-</BODY>
-</HTML>
+</body>
+</html>
