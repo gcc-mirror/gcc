@@ -33,6 +33,10 @@ Boston, MA 02111-1307, USA. */
   -D__cdecl=__attribute__((__cdecl__)) \
   -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
 
+/* Specific a different directory for the standard include files.  */
+#undef STANDARD_INCLUDE_DIR
+#define STANDARD_INCLUDE_DIR "/usr/mingw32/include"
+
 /* For Windows applications, include more libraries, but always include
    kernel32.  */
 #undef LIB_SPEC
@@ -45,3 +49,11 @@ Boston, MA 02111-1307, USA. */
 /* Specify a different entry point when linking a DLL */
 #undef LINK_SPEC
 #define LINK_SPEC "%{windows:--subsystem windows} %{dll:--dll -e _DllMainCRTStartup@12}"
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "crt1%O%s"
+
+#undef PATH_SEPARATOR
+#define PATH_SEPARATOR ';'
+
+
