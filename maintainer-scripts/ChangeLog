@@ -1,3 +1,7 @@
+2001-11-06  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc_release: Don't require a username if running locally.
+
 2001-11-05  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* update_web_docs: Eliminate warnings about keeping files from web

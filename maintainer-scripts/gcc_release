@@ -470,7 +470,7 @@ done
 shift `expr ${OPTIND} - 1`
 
 # Perform consistency checking.
-if [ -z ${CVS_USERNAME} ]; then
+if [ ${LOCAL} -eq 0 ] && [ -z ${CVS_USERNAME} ]; then
   error "No username specified"
 fi
 
