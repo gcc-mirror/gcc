@@ -1054,12 +1054,12 @@ i[34567]86-*-solaris2*)
 		tmake_file="$tmake_file t-slibgcc-sld"
 	fi
 	case ${target} in
-	*-*-solaris2.[789] | *-*-solaris2.1[0-9])
+	*-*-solaris2.[789] | *-*-solaris2.1[0-9]*)
 		tm_file="$tm_file tm-dwarf2.h"
 		;;
 	esac
 	case ${target} in
-	*-*-solaris2.1[0-9])
+	*-*-solaris2.1[0-9]*)
 		tm_file="${tm_file} i386/x86-64.h i386/sol2-10.h"
 		tm_defines="${tm_defines} TARGET_BI_ARCH=1"
 		tmake_file="$tmake_file i386/t-sol2-10"
@@ -1964,7 +1964,7 @@ sparc-*-solaris2*)
 			tm_file="${tm_file} sparc/sol26-sld.h"
 		fi
 		;;
-	*-*-solaris2.[789] | *-*-solaris2.1[0-9])
+	*-*-solaris2.[789] | *-*-solaris2.1[0-9]*)
 		tm_file="sparc/biarch64.h ${tm_file} sparc/sol2-bi.h tm-dwarf2.h"
 		if test x$gnu_ld = xyes; then
 			tm_file="${tm_file} sparc/sol2-gld-bi.h"

@@ -1,3 +1,9 @@
+2005-03-19  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* configure.ac: Consistently use solaris2.1[0-9]* instead of
+	solaris2.1[0-9].
+	* configure: Regenerate.
+
 2005-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/20282
