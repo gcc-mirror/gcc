@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "except.h"
 #include "expr.h"
+#include "defaults.h"
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
@@ -2499,6 +2500,9 @@ comdat_linkage (decl)
     make_decl_one_only (decl);
   else
     TREE_PUBLIC (decl) = 0;
+
+  if (DECL_LANG_SPECIFIC (decl))
+    DECL_COMDAT (decl) = 1;
 }
 
 /* Set TREE_PUBLIC and/or DECL_EXTERN on the vtable DECL,
@@ -2528,6 +2532,12 @@ import_export_vtable (decl, type, final)
       TREE_PUBLIC (decl) = 1;
       DECL_EXTERNAL (decl) = ! CLASSTYPE_VTABLE_NEEDS_WRITING (type);
       DECL_INTERFACE_KNOWN (decl) = 1;
+
+      /* For WIN32 we also want to put explicit instantiations in
+	 linkonce sections.  */
+      if (CLASSTYPE_EXPLICIT_INSTANTIATION (type)
+	  && supports_one_only () && ! SUPPORTS_WEAK)
+	make_decl_one_only (decl);
     }
   else
     {
@@ -2619,6 +2629,7 @@ finish_vtable_vardecl (prev, vars)
   if (write_virtuals >= 0
       && ! DECL_EXTERNAL (vars)
       && ((TREE_PUBLIC (vars) && ! DECL_WEAK (vars) && ! DECL_ONE_ONLY (vars))
+	  || CLASSTYPE_EXPLICIT_INSTANTIATION (DECL_CONTEXT (vars))
 	  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars))
 	  || (hack_decl_function_context (vars) && TREE_USED (vars)))
       && ! TREE_ASM_WRITTEN (vars))
@@ -2798,6 +2809,12 @@ import_export_decl (decl)
 	  DECL_NOT_REALLY_EXTERN (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
 		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines));
+
+	  /* For WIN32 we also want to put explicit instantiations in
+	     linkonce sections.  */
+	  if (CLASSTYPE_EXPLICIT_INSTANTIATION (ctype)
+	      && supports_one_only () && ! SUPPORTS_WEAK)
+	    make_decl_one_only (decl);
 	}
       else if (TYPE_BUILT_IN (ctype) && ctype == TYPE_MAIN_VARIANT (ctype))
 	DECL_NOT_REALLY_EXTERN (decl) = 0;
@@ -2949,18 +2966,6 @@ finish_file ()
      that we can pick up any other tdecls that those routines need.  */
   walk_vtables ((void (*) PROTO ((tree, tree))) 0,
 		finish_prevtable_vardecl);
-
-  for (vars = pending_statics; vars; vars = TREE_CHAIN (vars))
-    {
-      tree decl = TREE_VALUE (vars);
-
-      if (DECL_TEMPLATE_INSTANTIATION (decl)
-	  && ! DECL_IN_AGGR_P (decl))
-	{
-	  import_export_decl (decl);
-	  DECL_EXTERNAL (decl) = ! DECL_NOT_REALLY_EXTERN (decl);
-	}
-    }
 
   for (vars = static_aggregates; vars; vars = TREE_CHAIN (vars))
     if (! TREE_ASM_WRITTEN (TREE_VALUE (vars)))
@@ -3244,8 +3249,7 @@ finish_file ()
 	      *p = TREE_CHAIN (*p);
 	    else if (DECL_INITIAL (decl) == 0)
 	      p = &TREE_CHAIN (*p);
-	    else if ((TREE_PUBLIC (decl) && ! DECL_WEAK (decl)
-		      && ! DECL_ONE_ONLY (decl))
+	    else if ((TREE_PUBLIC (decl) && ! DECL_COMDAT (decl))
 		     || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
 		     || flag_keep_inline_functions)
 	      {

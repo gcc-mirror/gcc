@@ -1,3 +1,21 @@
+Thu Dec 11 22:18:37 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (comdat_linkage): Also set DECL_COMDAT.
+	(finish_file): Check DECL_COMDAT instead of weak|one_only.
+	(import_export_vtable): Use make_decl_one_only instead of
+ 	comdat_linkage for win32 tweak.
+	(import_export_decl): Likewise.
+	* pt.c (mark_decl_instantiated): Likewise.
+
+Wed Nov 26 20:28:49 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (import_export_vtable): If we support one_only but not
+	weak symbols, mark instantiated template vtables one_only.
+	(import_export_decl): Likewise for tinfo functions.
+	(finish_vtable_vardecl): Also write out vtables from explicitly 
+	instantiated template classes.
+	* pt.c (mark_class_instantiated): Revert last change.
+
 Tue Feb 10 20:36:52 1998  Jason Merrill  <jason@yorick.cygnus.com>
 			  Manfred Hollstein  <manfred@s-direktnet.de>
 
