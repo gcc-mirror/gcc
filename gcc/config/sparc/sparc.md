@@ -5284,7 +5284,6 @@
   emit_insn (gen_rtx (USE, VOIDmode, frame_pointer_rtx));
   emit_insn (gen_rtx (USE, VOIDmode, stack_pointer_rtx));
   emit_insn (gen_rtx (USE, VOIDmode, static_chain_rtx));
-  emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, Pmode, 8)));
   /* Return, restoring reg window and jumping to goto handler.  */
   emit_insn (gen_goto_handler_and_restore ());
   DONE;
@@ -5299,7 +5298,8 @@
   [(set_attr "type" "misc")])
 
 (define_insn "goto_handler_and_restore"
-  [(unspec_volatile [(const_int 0)] 2)]
+  [(unspec_volatile [(const_int 0)] 2)
+   (use (reg:SI 8))]
   ""
   "jmp %%o0+0\;restore"
   [(set_attr "type" "misc")
