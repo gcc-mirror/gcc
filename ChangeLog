@@ -1,3 +1,7 @@
+Tue Mar 19 09:05:08 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* MAINTAINERS:  Update my email address.
+
 2002-03-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* ltmain.sh (relink_command): Fix typo in previous change.
