@@ -1,4 +1,10 @@
 2002-06-23  Jan Hubicka  <jh@suse.cz>
+	    Jeff Law <law@redhat.com>
+
+	* function.h (struct emit_status): Clarify potential contents
+	of regno_reg_rtx array.
+	* integrate.c (copy_rtx_and_substitute): Update comments.  Make
+	sure entry in regno_reg_rtx is a REG before checking REG_POINTER.
 
 	* reg-stack.c (convert_regs_exit): Push the registers to stack in
 	proper order.

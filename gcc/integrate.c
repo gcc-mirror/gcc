@@ -2062,7 +2062,17 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 	  RTX_UNCHANGING_P (map->reg_map[regno]) = RTX_UNCHANGING_P (temp);
 	  /* A reg with REG_FUNCTION_VALUE_P true will never reach here.  */
 
-	  if (REG_POINTER (map->x_regno_reg_rtx[regno]))
+	  /* Objects may initially be represented as registers, but
+	     but turned into a MEM if their address is taken by
+	     put_var_into_stack.  Therefore, the register table may have
+	     entries which are MEMs.
+
+	     We briefly tried to clear such entries, but that ended up
+	     cascading into many changes due to the optimizers not being
+	     prepared for empty entries in the register table.  So we've
+	     decided to allow the MEMs in the register table for now.  */
+	  if (REG_P (map->x_regno_reg_rtx[regno])
+	      && REG_POINTER (map->x_regno_reg_rtx[regno]))
 	    mark_reg_pointer (map->reg_map[regno],
 			      map->regno_pointer_align[regno]);
 	  regno = REGNO (map->reg_map[regno]);
