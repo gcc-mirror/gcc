@@ -4820,7 +4820,6 @@ ia64_safe_type (rtx insn)
    never explicitly used in gcc generated code, it seems wasteful to
    do so (plus it would make the call and return patterns needlessly
    complex).  */
-#define REG_GP		(GR_REG (1))
 #define REG_RP		(BR_REG (0))
 #define REG_AR_CFM	(FIRST_PSEUDO_REGISTER + 1)
 /* This is used for volatile asms which may require a stop bit immediately

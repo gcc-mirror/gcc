@@ -1,3 +1,7 @@
+2004-02-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/ia64/ia64.c (REG_GP): Remove.
+
 2004-02-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/iris5gas.h (PREFERRED_DEBUGGING_TYPE): Define.
