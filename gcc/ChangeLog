@@ -1,3 +1,8 @@
+2005-03-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config.gcc (alpha*-dec-osf[45]*): Remove target_cpu_default.
+	Define TARGET_SUPPORT_ARCH except on Tru64 UNIX V4.0A.
+
 2005-03-23  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/tm.texi (TARGET_MD_ASM_CLOBBERS): Adjust wording to not

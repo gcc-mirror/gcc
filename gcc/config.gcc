@@ -592,15 +592,15 @@ alpha*-dec-osf[45]*)
 	extra_headers=va_list.h
 	case ${target} in
 	  *-*-osf4*)
-	    # Set target_cpu_default except on 4.0a.
+	    # Define TARGET_SUPPORT_ARCH except on 4.0a.
 	    case ${target} in
 		*-*-osf4.0a) ;;
-		*) target_cpu_default=MASK_SUPPORT_ARCH
+		*) tm_defines="TARGET_SUPPORT_ARCH=1"
 	    esac
 	    ;;
 	  *-*-osf5*)
 	    tm_file="${tm_file} alpha/osf5.h"
-	    target_cpu_default=MASK_SUPPORT_ARCH
+	    tm_defines="TARGET_SUPPORT_ARCH=1"
 	    ;;
 	esac
 	case ${enable_threads} in
