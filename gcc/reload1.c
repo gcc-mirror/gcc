@@ -8282,7 +8282,13 @@ reload_cse_simplify_set (set, insn)
 	{
 #ifdef LOAD_EXTEND_OP
 	  if (GET_MODE_BITSIZE (GET_MODE (SET_DEST (set))) < BITS_PER_WORD
-	      && extend_op != NIL)
+	      && extend_op != NIL
+#ifdef CANNOT_CHANGE_MODE_CLASS
+	      && !CANNOT_CHANGE_MODE_CLASS (GET_MODE (SET_DEST (set)),
+					    word_mode,
+					    REGNO_REG_CLASS (REGNO (SET_DEST (set))))
+#endif
+	      )
 	    {
 	      rtx wide_dest = gen_rtx_REG (word_mode, REGNO (SET_DEST (set)));
 	      ORIGINAL_REGNO (wide_dest) = ORIGINAL_REGNO (SET_DEST (set));
