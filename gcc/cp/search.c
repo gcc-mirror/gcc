@@ -80,7 +80,7 @@ struct vbase_info
   tree inits;
 };
 
-static tree lookup_field_1 PARAMS ((tree, tree));
+static tree lookup_field_1 PARAMS ((tree, tree, bool));
 static int is_subobject_of_p PARAMS ((tree, tree, tree));
 static int is_subobject_of_p_1 PARAMS ((tree, tree, tree));
 static tree dfs_check_overlap PARAMS ((tree, void *));
@@ -454,8 +454,7 @@ get_dynamic_cast_base_type (subtype, target)
    level, this is reasonable.)  */
 
 static tree
-lookup_field_1 (type, name)
-     tree type, name;
+lookup_field_1 (tree type, tree name, bool want_type)
 {
   register tree field;
 
@@ -492,14 +491,24 @@ lookup_field_1 (type, name)
 	    lo = i + 1;
 	  else
 	    {
+	      field = NULL_TREE;
+
 	      /* We might have a nested class and a field with the
 		 same name; we sorted them appropriately via
 		 field_decl_cmp, so just look for the last field with
 		 this name.  */
-	      while (i + 1 < hi
-		     && DECL_NAME (fields[i+1]) == name)
-		++i;
-	      return fields[i];
+	      while (true)
+		{
+		  if (!want_type 
+		      || TREE_CODE (fields[i]) == TYPE_DECL
+		      || DECL_CLASS_TEMPLATE_P (fields[i]))
+		    field = fields[i];
+		  if (i + 1 == hi || DECL_NAME (fields[i+1]) != name)
+		    break;
+		  i++;
+		}
+
+	      return field;
 	    }
 	}
       return NULL_TREE;
@@ -510,7 +519,7 @@ lookup_field_1 (type, name)
 #ifdef GATHER_STATISTICS
   n_calls_lookup_field_1++;
 #endif /* GATHER_STATISTICS */
-  while (field)
+  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
     {
 #ifdef GATHER_STATISTICS
       n_fields_searched++;
@@ -519,7 +528,7 @@ lookup_field_1 (type, name)
       if (DECL_NAME (field) == NULL_TREE
 	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
 	{
-	  tree temp = lookup_field_1 (TREE_TYPE (field), name);
+	  tree temp = lookup_field_1 (TREE_TYPE (field), name, want_type);
 	  if (temp)
 	    return temp;
 	}
@@ -529,10 +538,13 @@ lookup_field_1 (type, name)
 	   to return a USING_DECL, and the rest of the compiler can't
 	   handle it.  Once the class is defined, these are purged
 	   from TYPE_FIELDS anyhow; see handle_using_decl.  */
-	;
-      else if (DECL_NAME (field) == name)
+	continue;
+
+      if (DECL_NAME (field) == name
+	  && (!want_type 
+	      || TREE_CODE (field) == TYPE_DECL
+	      || DECL_CLASS_TEMPLATE_P (field)))
 	return field;
-      field = TREE_CHAIN (field);
     }
   /* Not found.  */
   if (name == vptr_identifier)
@@ -1288,7 +1300,7 @@ lookup_field_r (binfo, data)
 
   if (!nval)
     /* Look for a data member or type.  */
-    nval = lookup_field_1 (type, lfi->name);
+    nval = lookup_field_1 (type, lfi->name, lfi->want_type);
 
   /* If there is no declaration with the indicated name in this type,
      then there's nothing to do.  */

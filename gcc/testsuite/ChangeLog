@@ -1,3 +1,8 @@
+2003-03-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7647
+	* g++.dg/lookup-class-member-2.C: New test.
+
 2003-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/ultrasp8.c: New test.

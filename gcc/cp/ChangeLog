@@ -1,3 +1,9 @@
+2003-03-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7647
+	* search.c (lookup_field_1): Add want_type parameter.
+	(lookup_field_r): Adjust call to lookup_field_1.
+
 2003-03-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/10245
