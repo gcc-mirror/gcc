@@ -6033,7 +6033,7 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
      nop
      ba .LC29  */
 
-  far = get_attr_length (insn) >= 3;
+  far = TARGET_V9 && (get_attr_length (insn) >= 3);
   if (reversed ^ far)
     {
       /* Reversal of FP compares takes care -- an ordered compare
@@ -6163,9 +6163,7 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
       spaces -= 2;
     }
 
-  if (! TARGET_V9)
-    labelno = "";
-  else
+  if (TARGET_V9)
     {
       rtx note;
       int v8 = 0;
@@ -6215,6 +6213,9 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
 	  spaces -= 3;
 	}
     }
+  else
+    labelno = "";
+
   if (spaces > 0)
     *p++ = '\t';
   else
