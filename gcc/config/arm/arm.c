@@ -130,6 +130,14 @@ static enum arm_cond_code get_arm_condition_code ();
 
 /* Initialization code */
 
+struct arm_cpu_select arm_select[3] =
+{
+  /* switch	name,		tune	arch */
+  { (char *)0,	"--with-cpu=",	1,	1 },
+  { (char *)0,	"-mcpu=",	1,	1 },
+  { (char *)0,	"-mtune=",	1,	0 },
+};
+
 #define FL_CO_PROC    0x01            /* Has external co-processor bus */
 #define FL_FAST_MULT  0x02            /* Fast multiply */
 #define FL_MODE26     0x04            /* 26-bit mode support */
@@ -167,6 +175,7 @@ static struct processors all_procs[] =
   {"arm700i",	PROCESSOR_ARM7, FL_CO_PROC | FL_MODE32 | FL_MODE26},
   {"arm710",	PROCESSOR_ARM7, FL_MODE32 | FL_MODE26},
   {"arm710c",	PROCESSOR_ARM7, FL_MODE32 | FL_MODE26},
+  {"arm7100",	PROCESSOR_ARM7, FL_MODE32 | FL_MODE26},
   {"arm7500",	PROCESSOR_ARM7, FL_MODE32 | FL_MODE26},
   {"arm7tdmi",	PROCESSOR_ARM7, (FL_CO_PROC | FL_FAST_MULT | FL_MODE32
 				 | FL_ARCH4 | FL_THUMB)},
@@ -179,6 +188,35 @@ void
 arm_override_options ()
 {
   int arm_thumb_aware = 0;
+  int flags = 0;
+  int i;
+  struct arm_cpu_select *ptr;
+
+  arm_cpu = PROCESSOR_DEFAULT;
+  arm_select[0].string = TARGET_CPU_DEFAULT;
+
+  for (i = 0; i < sizeof (arm_select) / sizeof (arm_select[0]); i++)
+    {
+      ptr = &arm_select[i];
+      if (ptr->string != (char *)0 && ptr->string[0] != '\0')
+        {
+	  struct processors *sel;
+
+          for (sel = all_procs; sel->name != NULL; sel++)
+            if (! strcmp (ptr->string, sel->name))
+              {
+                if (ptr->set_tune_p)
+                  arm_cpu = sel->type;
+
+                if (ptr->set_arch_p)
+		  flags = sel->flags;
+                break;
+              }
+
+          if (sel->name == NULL)
+            error ("bad value (%s) for %s switch", ptr->string, ptr->name);
+        }
+    }
 
   if (write_symbols != NO_DEBUG && flag_omit_frame_pointer)
     warning ("-g with -fomit-frame-pointer may not give sensible debugging");
@@ -188,21 +226,17 @@ arm_override_options ()
 
   if (TARGET_6)
     {
-      warning ("Option '-m6' deprecated.  Use: '-mapcs-32' or -mcpu-<proc>");
+      warning ("Option '-m6' deprecated.  Use: '-mapcs-32' or -mcpu=<proc>");
       target_flags |= ARM_FLAG_APCS_32;
       arm_cpu = PROCESSOR_ARM6;
     }
 
   if (TARGET_3)
     {
-      warning ("Option '-m3' deprecated.  Use: '-mapcs-26' or -mcpu-<proc>");
+      warning ("Option '-m3' deprecated.  Use: '-mapcs-26' or -mcpu=<proc>");
       target_flags &= ~ARM_FLAG_APCS_32;
       arm_cpu = PROCESSOR_ARM2;
     }
-
-  if ((TARGET_3 || TARGET_6) && target_cpu_name != NULL)
-    fatal ("Incompatible mix of old and new options.  -m%d and -mcpu-%s",
-	   TARGET_3 ? 3 : 6, target_cpu_name);
 
   if (TARGET_APCS_REENT && flag_pic)
     fatal ("-fpic and -mapcs-reent are incompatible");
@@ -222,43 +256,18 @@ arm_override_options ()
       target_flags |= ARM_FLAG_APCS_FRAME;
     }
 
-  arm_cpu = TARGET_6 ? PROCESSOR_ARM6: PROCESSOR_ARM2;
   arm_fpu = FP_HARD;
 
-  if (target_cpu_name != NULL)
-    {
-      char *c = target_cpu_name;
-      struct processors *proc;
-
-      /* Match against the supported types.  */
-      for (proc = all_procs; proc->name != NULL; proc++)
-	{
-	  if (strcmp (proc->name, c) == 0)
-	    break;
-	}
-
-      if (proc->name)
-	{
-	  arm_cpu = proc->type;
-
-	  /* Default value for floating point code... if no co-processor
-	     bus, then schedule for emulated floating point.  Otherwise,
-	     assume the user has an FPA, unless overridden with -mfpe-...  */
-	  if (proc->flags & FL_CO_PROC == 0)
-	    arm_fpu = FP_SOFT3;
-	  else
-	    arm_fpu = FP_HARD;
-	  arm_fast_multiply = (proc->flags & FL_FAST_MULT) != 0;
-	  arm_arch4 = (proc->flags & FL_ARCH4) != 0;
-	  arm_thumb_aware = (proc->flags & FL_THUMB) != 0;
-	  /* Processors with a load delay slot can load constants faster,
-	     from the pool than it takes to construct them, so reduce the
-	     complexity of the constant that we will try to generate
-	     inline.  */
-	}
-      else
-	fatal ("Unrecognized cpu type: %s", target_cpu_name);
-    }
+  /* Default value for floating point code... if no co-processor
+     bus, then schedule for emulated floating point.  Otherwise,
+     assume the user has an FPA, unless overridden with -mfpe-...  */
+  if (flags & FL_CO_PROC == 0)
+    arm_fpu = FP_SOFT3;
+  else
+    arm_fpu = FP_HARD;
+  arm_fast_multiply = (flags & FL_FAST_MULT) != 0;
+  arm_arch4 = (flags & FL_ARCH4) != 0;
+  arm_thumb_aware = (flags & FL_THUMB) != 0;
 
   if (target_fpe_name)
     {
@@ -287,6 +296,97 @@ arm_override_options ()
 
   arm_prog_mode = TARGET_APCS_32 ? PROG_MODE_PROG32 : PROG_MODE_PROG26;
 }
+
+#define MAX_LINE 79
+
+struct asm_option
+{
+  char *string;
+  int *variable;
+  int on_value;
+};
+
+static int
+output_option (file, type, name, pos)
+     FILE *file;
+     char *type;
+     char *name;
+     int pos;
+{
+  int type_len = strlen (type);
+  int name_len = strlen (name);
+
+  if (1 + type_len + name_len + pos > MAX_LINE)
+    {
+      fprintf (file, "\n%s %s%s", ASM_COMMENT_START, type, name);
+      return 3 + type_len + name_len;
+    }
+  fprintf (file, " %s%s", type, name);
+  return pos + 1 + type_len + name_len;
+}
+
+static struct { char *name; int value; } m_options[] = TARGET_SWITCHES;
+extern char *version_string, *language_string;
+
+void
+output_options (file, f_options, f_len, W_options, W_len)
+     FILE *file;
+     struct asm_option *f_options;
+     int f_len;
+     struct asm_option *W_options;
+     int W_len;
+{
+  int j;
+  int flags = target_flags;
+  int pos = 32767;
+
+  fprintf (file, "%s %s %s", ASM_COMMENT_START, language_string,
+	   version_string);
+
+  if (optimize)
+    {
+      char opt_string[20];
+      sprintf (opt_string, "%d", optimize);
+      pos = output_option (file, "-O", opt_string, pos);
+    }
+
+  if (profile_flag)
+    pos = output_option (file, "-p", "", pos);
+
+  if (inhibit_warnings)
+    pos = output_option (file, "-w", "", pos);
+
+  for (j = 0; j < f_len; j++)
+    {
+      if (*f_options[j].variable == f_options[j].on_value)
+	pos = output_option (file, "-f", f_options[j].string, pos);
+    }
+
+  for (j = 0; j < W_len; j++)
+    {
+      if (*W_options[j].variable == W_options[j].on_value)
+	pos = output_option (file, "-W", W_options[j].string, pos);
+    }
+
+  for (j = 0; j < sizeof m_options / sizeof m_options[0]; j++)
+    {
+      if (m_options[j].name[0] != '\0'
+	  && m_options[j].value > 0
+	  && ((m_options[j].value & flags) == m_options[j].value))
+	{
+	  pos = output_option (file, "-m", m_options[j].name, pos);
+	  flags &= ~ m_options[j].value;
+	}
+    }
+
+  for (j = 0; j < sizeof (arm_select) / sizeof(arm_select[0]); j++)
+    if (arm_select[j].string != (char *)0)
+      pos = output_option (file, arm_select[j].name, arm_select[j].string,
+			   pos);
+
+  fputs ("\n\n", file);
+}
+
 
 
 /* Return 1 if it is possible to return using a single instruction */
@@ -959,6 +1059,70 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
   }
   return insns;
 }
+
+/* Canonicalize a comparison so that we are more likely to recognize it.
+   This can be done for a few constant compares, where we can make the
+   immediate value easier to load.  */
+enum rtx_code
+arm_canonicalize_comparison (code, op1)
+     enum rtx_code code;
+     rtx *op1;
+{
+  HOST_WIDE_INT i = INTVAL (*op1);
+
+  switch (code)
+    {
+    case EQ:
+    case NE:
+      return code;
+
+    case GT:
+    case LE:
+      if (i != (1 << (HOST_BITS_PER_WIDE_INT - 1) - 1)
+	  && (const_ok_for_arm (i+1) || const_ok_for_arm (- (i+1))))
+	{
+	  *op1 = GEN_INT (i+1);
+	  return code == GT ? GE : LT;
+	}
+      break;
+
+    case GE:
+    case LT:
+      if (i != (1 << (HOST_BITS_PER_WIDE_INT - 1))
+	  && (const_ok_for_arm (i-1) || const_ok_for_arm (- (i-1))))
+	{
+	  *op1 = GEN_INT (i-1);
+	  return code == GE ? GT : LE;
+	}
+      break;
+
+    case GTU:
+    case LEU:
+      if (i != ~0
+	  && (const_ok_for_arm (i+1) || const_ok_for_arm (- (i+1))))
+	{
+	  *op1 = GEN_INT (i + 1);
+	  return code == GTU ? GEU : LTU;
+	}
+      break;
+
+    case GEU:
+    case LTU:
+      if (i != 0
+	  && (const_ok_for_arm (i - 1) || const_ok_for_arm (- (i - 1))))
+	{
+	  *op1 = GEN_INT (i - 1);
+	  return code == GEU ? GTU : LEU;
+	}
+      break;
+
+    default:
+      abort ();
+    }
+
+  return code;
+}
+	
 
 /* Handle aggregates that are not laid out in a BLKmode element.
    This is a sub-element of RETURN_IN_MEMORY.  */
@@ -2491,20 +2655,27 @@ arm_gen_movstrqi (operands)
 
   for (i = 0; in_words_to_go >= 2; i+=4)
     {
-      emit_insn (arm_gen_load_multiple (0, (in_words_to_go > 4 
-					    ? 4 : in_words_to_go),
-                                        src, TRUE, TRUE));
+      if (in_words_to_go > 4)
+	emit_insn (arm_gen_load_multiple (0, 4, src, TRUE, TRUE));
+      else
+	emit_insn (arm_gen_load_multiple (0, in_words_to_go, src, TRUE, 
+					  FALSE));
+
       if (out_words_to_go)
 	{
-	  if (out_words_to_go != 1)
-	    emit_insn (arm_gen_store_multiple (0, (out_words_to_go > 4
-						   ? 4 : out_words_to_go),
-					       dst, TRUE, TRUE));
+	  if (out_words_to_go > 4)
+	    emit_insn (arm_gen_store_multiple (0, 4, dst, TRUE, TRUE));
+	  else if (out_words_to_go != 1)
+	    emit_insn (arm_gen_store_multiple (0, out_words_to_go,
+					       dst, TRUE, 
+					       (last_bytes == 0
+						? FALSE : TRUE)));
 	  else
 	    {
 	      emit_move_insn (gen_rtx (MEM, SImode, dst),
 			      gen_rtx (REG, SImode, 0));
-	      emit_insn (gen_addsi3 (dst, dst, GEN_INT (4)));
+	      if (last_bytes != 0)
+		emit_insn (gen_addsi3 (dst, dst, GEN_INT (4)));
 	    }
 	}
 
@@ -2533,7 +2704,6 @@ arm_gen_movstrqi (operands)
 	abort ();
 
       part_bytes_reg = copy_to_mode_reg (SImode, gen_rtx (MEM, SImode, src));
-      emit_insn (gen_addsi3 (src, src, GEN_INT (4)));
     }
 
   if (BYTES_BIG_ENDIAN && last_bytes)
@@ -2571,10 +2741,11 @@ arm_gen_movstrqi (operands)
 
 	  emit_move_insn (gen_rtx (MEM, QImode, dst),
 			  gen_rtx (SUBREG, QImode, part_bytes_reg, 0));
-	  emit_insn (gen_addsi3 (dst, dst, const1_rtx));
 	  if (--last_bytes)
 	    {
 	      rtx tmp = gen_reg_rtx (SImode);
+
+	      emit_insn (gen_addsi3 (dst, dst, const1_rtx));
 	      emit_insn (gen_lshrsi3 (tmp, part_bytes_reg, GEN_INT (8)));
 	      part_bytes_reg = tmp;
 	    }
@@ -2786,6 +2957,11 @@ arm_select_cc_mode (op, x, y)
 
   if (GET_MODE (x) == QImode && (op == EQ || op == NE))
     return CC_Zmode;
+
+  if (GET_MODE (x) == SImode && (op == LTU || op == GEU)
+      && GET_CODE (x) == PLUS
+      && (rtx_equal_p (XEXP (x, 0), y) || rtx_equal_p (XEXP (x, 1), y)))
+    return CC_Cmode;
 
   return CCmode;
 }
@@ -4845,18 +5021,15 @@ arm_asm_output_label (stream, name)
    define STATIC COMMON space but merely STATIC BSS space.  */
 
 void
-output_lcomm_directive (stream, name, size, rounded)
+output_lcomm_directive (stream, name, size, align)
      FILE *stream;
      char *name;
-     int size, rounded;
+     int size, align;
 {
-  fprintf (stream, "\n\t.bss\t%s .lcomm\n", ASM_COMMENT_START);
-  assemble_name (stream, name);
-  fprintf (stream, ":\t.space\t%d\n", rounded);
-  if (in_text_section ())
-    fputs ("\n\t.text\n", stream);
-  else
-    fputs ("\n\t.data\n", stream);
+  bss_section ();
+  ASM_OUTPUT_ALIGN (stream, floor_log2 (align / BITS_PER_UNIT));
+  ARM_OUTPUT_LABEL (stream, name);
+  fprintf (stream, "\t.space\t%d\n", size);
 }
 
 /* A finite state machine takes care of noticing whether or not instructions
@@ -4972,6 +5145,14 @@ get_arm_condition_code (comparison)
 	default: abort ();
 	}
 
+    case CC_Cmode:
+      switch (comp_code)
+      {
+      case LTU: return ARM_CS;
+      case GEU: return ARM_CC;
+      default: abort ();
+      }
+      
     case CCmode:
       switch (comp_code)
 	{
@@ -5096,7 +5277,8 @@ final_prescan_insn (insn, opvec, noperands)
       || (GET_CODE (body) == SET && GET_CODE (SET_DEST (body)) == PC
 	  && GET_CODE (SET_SRC (body)) == IF_THEN_ELSE))
     {
-      int insns_skipped = 0, fail = FALSE, succeed = FALSE;
+      int insns_skipped;
+      int fail = FALSE, succeed = FALSE;
       /* Flag which part of the IF_THEN_ELSE is the LABEL_REF.  */
       int then_not_else = TRUE;
       rtx this_insn = start_insn, label = 0;
@@ -5137,8 +5319,7 @@ final_prescan_insn (insn, opvec, noperands)
 	 insns are okay, and the label or unconditional branch to the same
 	 label is not too far away, succeed.  */
       for (insns_skipped = 0;
-	   !fail && !succeed && insns_skipped < MAX_INSNS_SKIPPED;
-	   insns_skipped++)
+	   !fail && !succeed && insns_skipped++ < MAX_INSNS_SKIPPED;)
 	{
 	  rtx scanbody;
 
@@ -5193,7 +5374,29 @@ final_prescan_insn (insn, opvec, noperands)
 	      /* If using 32-bit addresses the cc is not preserved over
 		 calls */
 	      if (TARGET_APCS_32)
-		fail = TRUE;
+		{
+		  /* Succeed if the following insn is the target label,
+		     or if the following two insns are a barrier and
+		     the target label.  */
+		  this_insn = next_nonnote_insn (this_insn);
+		  if (this_insn && GET_CODE (this_insn) == BARRIER)
+		    this_insn = next_nonnote_insn (this_insn);
+
+		  if (this_insn && this_insn == label
+		      && insns_skipped < MAX_INSNS_SKIPPED)
+		    {
+		      if (jump_clobbers)
+			{
+			  arm_ccfsm_state = 2;
+			  this_insn = next_nonnote_insn (this_insn);
+			}
+		      else
+			arm_ccfsm_state = 1;
+		      succeed = TRUE;
+		    }
+		  else
+		    fail = TRUE;
+		}
 	      break;
 
 	    case JUMP_INSN:
