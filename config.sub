@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
-timestamp='2004-08-29'
+timestamp='2004-11-12'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -488,6 +488,10 @@ case $basic_machine in
 	delta88)
 		basic_machine=m88k-motorola
 		os=-sysv3
+		;;
+	djgpp)
+		basic_machine=i586-pc
+		os=-msdosdjgpp
 		;;
 	dpx20 | dpx20-*)
 		basic_machine=rs6000-bull
@@ -1296,6 +1300,9 @@ case $os in
 		;;
 	-kaos*)
 		os=-kaos
+		;;
+	-zvmoe)
+		os=-zvmoe
 		;;
 	-none)
 		;;
