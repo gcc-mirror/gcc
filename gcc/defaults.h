@@ -164,3 +164,8 @@ do { fprintf (FILE, "\t%s\t", ASM_LONG);				\
 #ifndef DWARF2_GENERATE_TEXT_SECTION_LABEL
 #define DWARF2_GENERATE_TEXT_SECTION_LABEL 1
 #endif
+
+/* Supply a default definition for PROMOTE_PROTOTYPES.  */
+#ifndef PROMOTE_PROTOTYPES
+#define PROMOTE_PROTOTYPES	0
+#endif
