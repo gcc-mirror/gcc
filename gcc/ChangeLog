@@ -1,3 +1,10 @@
+2003-05-07  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/spe.h: Reverse arguments for __ev_subfw.
+        Unreverse arguments for __ev_subw.
+
+        * config/rs6000/spe.md (evsubfw): Reverse arguments of assembly.
+
 2003-05-07  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy-abi: Update to include

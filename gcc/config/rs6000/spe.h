@@ -52,8 +52,8 @@ typedef int 			__vector __ev64_opaque__;
 
 #define __ev_addw __builtin_spe_evaddw
 #define __ev_addiw __builtin_spe_evaddiw
-#define __ev_subfw __builtin_spe_evsubfw
-#define __ev_subw(a,b) __builtin_spe_evsubfw ((b), (a))
+#define __ev_subfw(a,b) __builtin_spe_evsubfw ((b), (a))
+#define __ev_subw __builtin_spe_evsubfw
 #define __ev_subifw(a,b) __builtin_spe_evsubifw ((b), (a))
 #define __ev_subiw __builtin_spe_evsubifw
 #define __ev_abs __builtin_spe_evabs
