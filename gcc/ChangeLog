@@ -1,5 +1,8 @@
 Tue Feb  6 07:54:51 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* print-tree.c (print_node, case PARM_DECL):
+	Print DECL_ARG_TYPE and DECL_ARG_TYPE_AS_WRITTEN.
+
 	* stor-layout.c (reference_types_internal): New variable.
 	(internal_reference_types): New function.
 	(layout_type, case REFERENCE_TYPE): Make Pmode if internal.

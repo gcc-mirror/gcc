@@ -447,11 +447,18 @@ print_node (file, prefix, node, indent)
 	  print_rtl (file, DECL_RTL (node));
 	}
 
-      if (TREE_CODE (node) == PARM_DECL && DECL_INCOMING_RTL (node) != 0)
+      if (TREE_CODE (node) == PARM_DECL)
 	{
-	  indent_to (file, indent + 4);
-	  fprintf (file, "incoming-rtl ");
-	  print_rtl (file, DECL_INCOMING_RTL (node));
+	  print_node (file, "arg-type", DECL_ARG_TYPE (node), indent + 4);
+	  print_node (file, "arg-type-as-written",
+		      DECL_ARG_TYPE_AS_WRITTEN (node), indent + 4);
+
+	  if (DECL_INCOMING_RTL (node) != 0)
+	    {
+	      indent_to (file, indent + 4);
+	      fprintf (file, "incoming-rtl ");
+	      print_rtl (file, DECL_INCOMING_RTL (node));
+	    }
 	}
       else if (TREE_CODE (node) == FUNCTION_DECL
 	       && DECL_SAVED_INSNS (node) != 0)
