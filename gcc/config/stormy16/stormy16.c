@@ -545,6 +545,29 @@ xstormy16_carry_plus_operand (x, mode)
 	  && (INTVAL (XEXP (x, 1)) < -4 || INTVAL (XEXP (x, 1)) > 4));
 }
 
+/* Detect and error out on out-of-range constants for movhi.  */
+int
+xs_hi_general_operand (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  if ((GET_CODE (x) == CONST_INT) 
+   && ((INTVAL (x) >= 32768) || (INTVAL (x) < -32768)))
+    error ("Constant halfword load operand out of range.");
+  return general_operand (x, mode);
+}
+
+/* Detect and error out on out-of-range constants for addhi and subhi.  */
+int
+xs_hi_nonmemory_operand (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  if ((GET_CODE (x) == CONST_INT) 
+   && ((INTVAL (x) >= 32768) || (INTVAL (x) < -32768)))
+    error ("Constant arithmetic operand out of range.");
+  return nonmemory_operand (x, mode);
+}
 
 enum reg_class
 xstormy16_preferred_reload_class (x, class)
@@ -581,7 +604,9 @@ xstormy16_legitimate_address_p (mode, x, strict)
       && LEGITIMATE_ADDRESS_INTEGER_P (XEXP (x, 1), 0))
     x = XEXP (x, 0);
   
-  if (GET_CODE (x) == POST_INC
+  if ((GET_CODE (x) == PRE_MODIFY
+       && GET_CODE (XEXP (XEXP (x, 1), 1)) == CONST_INT)
+      || GET_CODE (x) == POST_INC
       || GET_CODE (x) == PRE_DEC)
     x = XEXP (x, 0);
   
@@ -855,6 +880,29 @@ xstormy16_expand_move (mode, dest, src)
      rtx dest;
      rtx src;
 {
+  if ((GET_CODE (dest) == MEM) && (GET_CODE (XEXP (dest, 0)) == PRE_MODIFY))
+    {
+      rtx pmv      = XEXP (dest, 0);
+      rtx dest_reg = XEXP (pmv, 0);
+      rtx dest_mod = XEXP (pmv, 1);
+      rtx set      = gen_rtx_SET (Pmode, dest_reg, dest_mod);
+      rtx clobber  = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, 16));
+    
+      dest = gen_rtx_MEM (mode, dest_reg);
+      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set, clobber)));
+    }
+  else if ((GET_CODE (src) == MEM) && (GET_CODE (XEXP (src, 0)) == PRE_MODIFY))
+    {
+      rtx pmv     = XEXP (src, 0);
+      rtx src_reg = XEXP (pmv, 0);
+      rtx src_mod = XEXP (pmv, 1);
+      rtx set     = gen_rtx_SET (Pmode, src_reg, src_mod);
+      rtx clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, 16));
+    
+      src = gen_rtx_MEM (mode, src_reg);
+      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set, clobber)));
+    }
+   
   /* There are only limited immediate-to-memory move instructions.  */
   if (! reload_in_progress
       && ! reload_completed
@@ -915,6 +963,7 @@ struct xstormy16_stack_layout
 #define REG_NEEDS_SAVE(REGNUM, IFUN)					\
   ((regs_ever_live[REGNUM] && ! call_used_regs[REGNUM])			\
    || (IFUN && ! fixed_regs[REGNUM] && call_used_regs[REGNUM]		\
+       && (REGNO_REG_CLASS (REGNUM) != CARRY_REGS)			\
        && (regs_ever_live[REGNUM] || ! current_function_is_leaf)))
 
 /* Compute the stack layout.  */
@@ -1014,15 +1063,15 @@ xstormy16_expand_prologue ()
   int regno;
   rtx insn;
   rtx mem_push_rtx;
-  rtx mem_fake_push_rtx;
   const int ifun = xstormy16_interrupt_function_p ();
   
   mem_push_rtx = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
   mem_push_rtx = gen_rtx_MEM (HImode, mem_push_rtx);
-  mem_fake_push_rtx = gen_rtx_PRE_INC (Pmode, stack_pointer_rtx);
-  mem_fake_push_rtx = gen_rtx_MEM (HImode, mem_fake_push_rtx);
     
   layout = xstormy16_compute_stack_layout ();
+
+  if (layout.locals_size >= 32768)
+    error ("Local variable memory requirements exceed capacity.");
 
   /* Save the argument registers if necessary.  */
   if (layout.stdarg_save_size)
@@ -1030,28 +1079,50 @@ xstormy16_expand_prologue ()
 	 regno < FIRST_ARGUMENT_REGISTER + NUM_ARGUMENT_REGISTERS;
 	 regno++)
       {
+	rtx dwarf;
 	rtx reg = gen_rtx_REG (HImode, regno);
+
 	insn = emit_move_insn (mem_push_rtx, reg);
 	RTX_FRAME_RELATED_P (insn) = 1;
+
+	dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (2));
+	
+	XVECEXP (dwarf, 0, 0) = gen_rtx_SET (VOIDmode,
+					     gen_rtx_MEM (Pmode, stack_pointer_rtx),
+					     reg);
+	XVECEXP (dwarf, 0, 1) = gen_rtx_SET (Pmode, stack_pointer_rtx,
+					     plus_constant (stack_pointer_rtx,
+							    GET_MODE_SIZE (Pmode)));
 	REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-					      gen_rtx_SET (VOIDmode,
-							   mem_fake_push_rtx,
-							   reg),
+					      dwarf,
 					      REG_NOTES (insn));
+	RTX_FRAME_RELATED_P (XVECEXP (dwarf, 0, 0)) = 1;
+	RTX_FRAME_RELATED_P (XVECEXP (dwarf, 0, 1)) = 1;
       }
   
   /* Push each of the registers to save.  */
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (REG_NEEDS_SAVE (regno, ifun))
       {
+	rtx dwarf;
 	rtx reg = gen_rtx_REG (HImode, regno);
+
 	insn = emit_move_insn (mem_push_rtx, reg);
 	RTX_FRAME_RELATED_P (insn) = 1;
+
+	dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (2));
+	
+	XVECEXP (dwarf, 0, 0) = gen_rtx_SET (VOIDmode,
+					     gen_rtx_MEM (Pmode, stack_pointer_rtx),
+					     reg);
+	XVECEXP (dwarf, 0, 1) = gen_rtx_SET (Pmode, stack_pointer_rtx,
+					     plus_constant (stack_pointer_rtx,
+							    GET_MODE_SIZE (Pmode)));
 	REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-					      gen_rtx_SET (VOIDmode,
-							   mem_fake_push_rtx,
-							   reg),
+					      dwarf,
 					      REG_NOTES (insn));
+	RTX_FRAME_RELATED_P (XVECEXP (dwarf, 0, 0)) = 1;
+	RTX_FRAME_RELATED_P (XVECEXP (dwarf, 0, 1)) = 1;
       }
 
   /* It's just possible that the SP here might be what we need for
