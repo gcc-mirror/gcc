@@ -1,3 +1,8 @@
+2001-12-20  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* expr.c (build_java_array_length_access): Don't force null pointer
+	check unless flag_check_references is set.
+
 2001-12-20  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR java/3417:
