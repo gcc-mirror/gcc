@@ -12033,8 +12033,9 @@ dependent_template_p (tree tmpl)
   if (DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl)
       || TREE_CODE (tmpl) == TEMPLATE_TEMPLATE_PARM)
     return true;
-  /* So are qualified names that have not been looked up.  */
-  if (TREE_CODE (tmpl) == SCOPE_REF)
+  /* So arenames that have not been looked up.  */
+  if (TREE_CODE (tmpl) == SCOPE_REF
+      || TREE_CODE (tmpl) == IDENTIFIER_NODE)
     return true;
   /* So are member templates of dependent classes.  */
   if (TYPE_P (CP_DECL_CONTEXT (tmpl)))

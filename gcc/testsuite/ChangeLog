@@ -1,3 +1,8 @@
+2004-08-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17068
+	* g++.dg/template/operator4.C: New test.
+
 2004-08-18  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/20040206-1.c: XFAIL.
