@@ -1,3 +1,14 @@
+2000-03-15  Tom Tromey  <tromey@cygnus.com>
+
+	* decl.c (init_decl_processing): Set type of `sync_info' to be
+	pointer to Object.
+
+	* boehm.c (get_boehm_type_descriptor): Correctly compute `bits'.
+	Correctly compute bit number for current slot.  Zero `high' and
+	`low' in DS_LENGTH case.  Don't skip inherited fields.  Use
+	mark_reference_fields.
+	(mark_reference_fields): New function.
+
 Tue Mar 14 17:15:41 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (register_incomplete_type): Fixed initialization of

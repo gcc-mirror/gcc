@@ -58,6 +58,50 @@ set_bit (unsigned HOST_WIDE_INT *low, unsigned HOST_WIDE_INT *high,
   *which |= (HOST_WIDE_INT) 1 << n;
 }
 
+/* Recursively mark reference fields.  */
+static unsigned int
+mark_reference_fields (field, low, high, ubit,
+		       pointer_after_end, all_bits_set, last_set_index)
+     tree field;
+     unsigned HOST_WIDE_INT *low, *high;
+     unsigned int ubit;
+     int *pointer_after_end, *all_bits_set, *last_set_index;
+{
+  unsigned int count = 0;
+
+  /* See if we have fields from our superclass.  */
+  if (DECL_NAME (field) == NULL_TREE)
+    {
+      count += mark_reference_fields (TYPE_FIELDS (TREE_TYPE (field)),
+				      low, high, ubit,
+				      pointer_after_end, all_bits_set,
+				      last_set_index);
+      field = TREE_CHAIN (field);
+    }
+
+  for (; field != NULL_TREE; field = TREE_CHAIN (field))
+    {
+      if (FIELD_STATIC (field))
+	continue;
+
+      if (JREFERENCE_TYPE_P (TREE_TYPE (field)))
+	{
+	  *last_set_index = count;
+	  /* First word in object corresponds to most significant byte
+	     of bitmap.  */
+	  set_bit (low, high, ubit - count - 1);
+	  if (count > ubit - 2)
+	    *pointer_after_end = 1;
+	}
+      else
+	*all_bits_set = 0;
+
+      ++count;
+    }
+
+  return count;
+}
+
 /* Return the marking bitmap for the class TYPE.  For now this is a
    single word describing the type.  */
 tree
@@ -79,7 +123,7 @@ get_boehm_type_descriptor (tree type)
   if (int_size_in_bytes (type) == -1)
     return PROCEDURE_OBJECT_DESCRIPTOR;
 
-  bit = POINTER_SIZE;
+  bit = POINTER_SIZE / BITS_PER_UNIT;
   /* The size of this node has to be known.  And, we only support 32
      and 64 bit targets, so we need to know that the log2 is one of
      our values.  */
@@ -97,27 +141,9 @@ get_boehm_type_descriptor (tree type)
   ubit = (unsigned int) bit;
 
   field = TYPE_FIELDS (type);
-  if (DECL_NAME (field) == NULL_TREE)
-    field = TREE_CHAIN (field);  /* Skip dummy field for inherited data. */
-  for (count = 0; field != NULL_TREE; field = TREE_CHAIN (field))
-    {
-      if (FIELD_STATIC (field))
-	continue;
-
-      if (JREFERENCE_TYPE_P (TREE_TYPE (field)))
-	{
-	  last_set_index = count;
-	  /* First word in object corresponds to most significant byte
-	     of bitmap.  */
-	  set_bit (&low, &high, ubit - count);
-	  if (count > ubit - 2)
-	    pointer_after_end = 1;
-	}
-      else
-	all_bits_set = 0;
-
-      ++count;
-    }
+  count = mark_reference_fields (field, &low, &high, ubit,
+				 &pointer_after_end, &all_bits_set,
+				 &last_set_index);
 
   /* If the object is all pointers, or if the part with pointers fits
      in our bitmap, then we are ok.  Otherwise we have to allocate it
@@ -129,6 +155,8 @@ get_boehm_type_descriptor (tree type)
 	 DS_LENGTH is 0.
 	 WORDS_TO_BYTES shifts by log2(bytes-per-pointer).  */
       count = 0;
+      low = 0;
+      high = 0;
       ++last_set_index;
       while (last_set_index)
 	{
