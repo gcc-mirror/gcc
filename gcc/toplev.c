@@ -2590,7 +2590,9 @@ rest_of_compilation (decl)
   delete_unreachable_blocks ();
 
   /* Turn NOTE_INSN_PREDICTIONs into branch predictions.  */
+  timevar_push (TV_BRANCH_PROB);
   note_prediction_to_br_prob ();
+  timevar_pop (TV_BRANCH_PROB);
 
   /* We may have potential sibling or tail recursion sites.  Select one
      (of possibly multiple) methods of performing the call.  */
