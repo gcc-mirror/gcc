@@ -23,6 +23,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "config.h"
 #include "system.h"
+#include <string.h>
 #include "tree.h"
 #include "java-tree.h"
 #include "jcf.h"
@@ -112,6 +113,8 @@ struct jcf_block
 
   int linenumber;
 
+  /* After finish_jcf_block is called, The actual instructions contained in this block.
+     Before than NULL, and the instructions are in state->bytecode. */
   struct chunk *chunk;
 
   union {
@@ -124,26 +127,59 @@ struct jcf_block
   } u;
 };
 
+#define SWITCH_ALIGN_RELOC 4
+#define BLOCK_START_RELOC 1
+
 struct jcf_relocation
 {
   /* Next relocation for the current jcf_block. */
   struct jcf_relocation *next;
 
   /* The (byte) offset within the current block that needs to be relocated. */
-  int offset;
+  HOST_WIDE_INT offset;
 
   /* 0 if offset is a 4-byte relative offset.
+     4 (SWITCH_ALIGN_RELOC) if offset points to 0-3 padding bytes inserted
+     for proper alignment in tableswitch/lookupswitch instructions.
+     1 (BLOCK_START_RELOC) if offset points to a 4-byte offset relative
+     to the start of the containing block.
      -1 if offset is a 2-byte relative offset.
-     < 0 if offset is the address of an instruction with a 2-byte offset
+     < -1 if offset is the address of an instruction with a 2-byte offset
      that does not have a corresponding 4-byte offset version, in which
      case the absolute value of kind is the inverted opcode.
-     > 0 if offset is the address of an instruction (such as jsr) with a
+     > 4 if offset is the address of an instruction (such as jsr) with a
      2-byte offset that does have a corresponding 4-byte offset version,
      in which case kind is the opcode of the 4-byte version (such as jsr_w). */
   int kind;
 
   /* The label the relocation wants to actually transfer to. */
   struct jcf_block *label;
+};
+
+/* State for single catch clause. */
+
+struct jcf_handler
+{
+  struct jcf_handler *next;
+
+  struct jcf_block *start_label;
+  struct jcf_block *end_label;
+  struct jcf_block *handler_label;
+
+  /* The sub-class of Throwable handled, or NULL_TREE (for finally). */
+  tree type;
+};
+
+/* State for the current switch statement. */
+
+struct jcf_switch_state
+{
+  struct jcf_switch_state *prev;
+  struct jcf_block *default_label;
+
+  struct jcf_relocation *cases;
+  int num_cases;
+  HOST_WIDE_INT min_case, max_case;
 };
 
 /* This structure is used to contain the various pieces that will
@@ -186,6 +222,18 @@ struct jcf_partial
 
   /* The buffer allocated for bytecode for the current jcf_block. */
   struct buffer bytecode;
+
+  /* Chain of exception handlers for the current method. */
+  struct jcf_handler *handlers;
+
+  /* Last element in handlers chain. */
+  struct jcf_handler *last_handler;
+
+  /* Number of exception handlers for the current method. */
+  int num_handlers;
+
+  /* Information about the current switch statemenet. */
+  struct jcf_switch_state *sw_state;
 };
 
 static void generate_bytecode_insns PROTO ((tree, int, struct jcf_partial *));
@@ -197,7 +245,7 @@ static void generate_bytecode_insns PROTO ((tree, int, struct jcf_partial *));
 #define PUT1(X)  (*ptr++ = (X))
 #define PUT2(X)  (PUT1((X) >> 8), PUT1((X) & 0xFF))
 #define PUT4(X)  (PUT2((X) >> 16), PUT2((X) & 0xFFFF))
-#define PUTN(P, N)  (bcopy(P, ptr, N), ptr += (N))
+#define PUTN(P, N)  (memcpy(ptr, P, N), ptr += (N))
 
 
 /* Allocate a new chunk on obstack WORK, and link it in after LAST.
@@ -244,7 +292,7 @@ append_chunk_copy (data, size, state)
      struct jcf_partial *state;
 {
   unsigned char *ptr = append_chunk (NULL, size, state);
-  bcopy (data, ptr, size);
+  memcpy (ptr, data, size);
 }
 
 struct jcf_block *
@@ -265,9 +313,9 @@ finish_jcf_block (state)
 {
   struct jcf_block *block = state->last_block;
   struct jcf_relocation *reloc;
+  int code_length = BUFFER_LENGTH (&state->bytecode);
   int pc = state->code_length;
-  append_chunk_copy (state->bytecode.data, BUFFER_LENGTH (&state->bytecode),
-		     state);
+  append_chunk_copy (state->bytecode.data, code_length, state);
   BUFFER_RESET (&state->bytecode);
   block->chunk = state->chunk;
 
@@ -276,7 +324,9 @@ finish_jcf_block (state)
   for (reloc = block->u.relocations;  reloc != NULL;  reloc = reloc->next)
     {
       int kind = reloc->kind;
-      if (kind > 0)
+      if (kind == SWITCH_ALIGN_RELOC)
+	pc += 3;
+      else if (kind > BLOCK_START_RELOC)
 	pc += 2; /* 2-byte offset may grow to 4-byte offset */
       else if (kind < -1)
 	pc += 5; /* May need to add a goto_w. */
@@ -326,6 +376,30 @@ put_linenumber (line, state)
   state->linenumber_count++;
 }
 
+/* Allocate a new jcf_handler, for a catch clause that catches exceptions
+   in the range (START_LABEL, END_LABEL). */
+
+static struct jcf_handler *
+alloc_handler (start_label, end_label, state)
+     struct jcf_block *start_label;
+     struct jcf_block *end_label;
+     struct jcf_partial *state;
+{
+  struct jcf_handler *handler = (struct jcf_handler *)
+    obstack_alloc (state->chunk_obstack, sizeof (struct jcf_handler));
+  handler->start_label = start_label;
+  handler->end_label = end_label;
+  handler->handler_label = get_jcf_label_here (state);
+  if (state->handlers == NULL)
+    state->handlers = handler;
+  else
+    state->last_handler->next = handler;
+  state->last_handler = handler;
+  handler->next = NULL;
+  state->num_handlers++;
+  return handler;
+}
+
 
 /* The index of jvm local variable allocated for this DECL.
    This is assigned when generating .class files;
@@ -347,7 +421,7 @@ struct localvar_info
 #define localvar_max \
   ((struct localvar_info**) state->localvars.ptr - localvar_buffer)
 
-void
+int
 localvar_alloc (decl, state)
      tree decl;
      struct jcf_partial *state;
@@ -403,6 +477,7 @@ localvar_free (decl, state)
   register struct localvar_info **ptr = &localvar_buffer [index];
   register struct localvar_info *info = *ptr;
   int wide = TYPE_IS_WIDE (TREE_TYPE (decl));
+  int i;
 
   info->end_label = end_label;
 
@@ -493,6 +568,7 @@ push_constant1 (index, state)
      int index;
      struct jcf_partial *state;
 {
+  RESERVE (3);
   if (index < 256)
     {
       OP1 (OPCODE_ldc);
@@ -540,7 +616,7 @@ push_int_const (i, state)
   else
     {
       i = find_constant1 (&state->cpool, CONSTANT_Integer, i & 0xFFFFFFFF);
-      push_constant1 (i);
+      push_constant1 (i, state);
     }
 }
 
@@ -557,21 +633,19 @@ push_long_const (lo, hi, state)
       RESERVE(1);
       OP1(OPCODE_lconst_0 + lo);
     }
-#if 0
-    else if ((jlong) (jint) i == i)
+  else if ((hi == 0 && lo < 32768) || (hi == -1 && lo >= -32768))
       {
-        push_int_const ((jint) i, state);
+        push_int_const (lo, state);
         RESERVE (1);
         OP1 (OPCODE_i2l);
       }
-#endif
   else
     {
       HOST_WIDE_INT w1, w2;
       lshift_double (lo, hi, -32, 64, &w1, &w2, 1);
-      hi = find_constant1 (&state->cpool, CONSTANT_Long,
+      hi = find_constant2 (&state->cpool, CONSTANT_Long,
 			   w1 & 0xFFFFFFFF, lo & 0xFFFFFFFF);
-      push_constant2 (hi);
+      push_constant2 (hi, state);
     }
 }
 
@@ -592,22 +666,23 @@ field_op (field, opcode, state)
    opcodes typically depend on the operand type. */
 
 int
-adjust_typed_op (type)
+adjust_typed_op (type, max)
      tree type;
+     int max;
 {
   switch (TREE_CODE (type))
     {
     case POINTER_TYPE:
     case RECORD_TYPE:   return 4;
     case BOOLEAN_TYPE:
-      return TYPE_PRECISION (type) == 32 ? 0 : 5;
+      return TYPE_PRECISION (type) == 32 || max < 5 ? 0 : 5;
     case CHAR_TYPE:
-      return TYPE_PRECISION (type) == 32 ? 0 : 6;
+      return TYPE_PRECISION (type) == 32 || max < 6 ? 0 : 6;
     case INTEGER_TYPE:
       switch (TYPE_PRECISION (type))
 	{
-	case  8:       return 5;
-	case 16:       return 7;
+	case  8:       return max < 5 ? 0 : 5;
+	case 16:       return max < 7 ? 0 : 7;
 	case 32:       return 0;
 	case 64:       return 1;
 	}
@@ -618,6 +693,8 @@ adjust_typed_op (type)
 	case 32:       return 2;
 	case 64:       return 3;
 	}
+      break;
+    default:
       break;
     }
   abort ();
@@ -705,11 +782,12 @@ emit_iinc (var, value, state)
 
 static void
 emit_load_or_store (var, opcode, state)
-     tree var;
+     tree var;    /* Variable to load from or store into. */
+     int opcode;  /* Either OPCODE_iload or OPCODE_istore. */
      struct jcf_partial *state;
 {
   tree type = TREE_TYPE (var);
-  int kind = adjust_typed_op (type);
+  int kind = adjust_typed_op (type, 4);
   int index = DECL_LOCAL_INDEX (var);
   if (index <= 3)
     {
@@ -717,7 +795,7 @@ emit_load_or_store (var, opcode, state)
       OP1 (opcode + 5 + 4 * kind + index);    /* [ilfda]{load,store}_[0123] */
     }
   else
-    maybe_wide (opcode + kind, index);  /* [ilfda]{load,store} */
+    maybe_wide (opcode + kind, index, state);  /* [ilfda]{load,store} */
 }
 
 static void
@@ -739,6 +817,17 @@ emit_store (var, state)
 }
 
 static void
+emit_unop (opcode, type, state)
+     enum java_opcode opcode;
+     tree type;
+     struct jcf_partial *state;
+{
+  int size = TYPE_IS_WIDE (type) ? 2 : 1;
+  RESERVE(1);
+  OP1 (opcode);
+}
+
+static void
 emit_binop (opcode, type, state)
      enum java_opcode opcode;
      tree type;
@@ -750,6 +839,51 @@ emit_binop (opcode, type, state)
   NOTE_POP (size);
 }
 
+static struct jcf_relocation *
+emit_reloc (value, kind, target, state)
+     HOST_WIDE_INT value;
+     int kind;
+     struct jcf_block *target;
+     struct jcf_partial *state;
+{
+  struct jcf_relocation *reloc = (struct jcf_relocation *)
+    obstack_alloc (state->chunk_obstack, sizeof (struct jcf_relocation));
+  struct jcf_block *block = state->last_block;
+  reloc->next = block->u.relocations;
+  block->u.relocations = reloc;
+  reloc->offset = BUFFER_LENGTH (&state->bytecode);
+  reloc->label = target;
+  reloc->kind = kind;
+  if (kind == 0 || kind == BLOCK_START_RELOC)
+    OP4 (value);
+  else if (kind != SWITCH_ALIGN_RELOC)
+    OP2 (value);
+}
+
+static void
+emit_switch_reloc (label, state)
+     struct jcf_block *label;
+     struct jcf_partial *state;
+{
+  emit_reloc (0, BLOCK_START_RELOC, label, state);
+}
+
+/* Similar to emit_switch_reloc,
+   but re-uses an existing case reloc. */
+
+static void
+emit_case_reloc (reloc, state)
+     struct jcf_relocation *reloc;
+     struct jcf_partial *state;
+{
+  struct jcf_block *block = state->last_block;
+  reloc->next = block->u.relocations;
+  block->u.relocations = reloc;
+  reloc->offset = BUFFER_LENGTH (&state->bytecode);
+  reloc->kind = BLOCK_START_RELOC;
+  OP4 (0);
+}
+
 /* Emit a conditional jump to TARGET with a 2-byte relative jump offset
    The opcode is OPCODE, the inverted opcode is INV_OPCODE. */
 
@@ -759,34 +893,9 @@ emit_if (target, opcode, inv_opcode, state)
      int opcode, inv_opcode;
      struct jcf_partial *state;
 {
-  struct jcf_relocation *reloc = (struct jcf_relocation *)
-    obstack_alloc (state->chunk_obstack, sizeof (struct jcf_relocation));
-  struct jcf_block *block = state->last_block;
-  reloc->next = block->u.relocations;
-  block->u.relocations = reloc;
   OP1 (opcode);
-  reloc->offset = BUFFER_LENGTH (&state->bytecode);
-  OP2 (1); // 1 byte from reloc back to start of instruction.
-  reloc->kind = - inv_opcode;
-  reloc->label = target;
-}
-
-static void
-emit_goto_or_jsr (target, opcode, opcode_w, state)
-     struct jcf_block *target;
-     int opcode, opcode_w;
-     struct jcf_partial *state;
-{
-  struct jcf_relocation *reloc = (struct jcf_relocation *)
-    obstack_alloc (state->chunk_obstack, sizeof (struct jcf_relocation));
-  struct jcf_block *block = state->last_block;
-  reloc->next = block->u.relocations;
-  block->u.relocations = reloc;
-  OP1 (opcode);
-  reloc->offset = BUFFER_LENGTH (&state->bytecode);
-  OP2 (1); // 1 byte from reloc back to start of instruction.
-  reloc->kind = opcode_w;
-  reloc->label = target;
+  // value is 1 byte from reloc back to start of instruction.
+  emit_reloc (1, - inv_opcode, target, state);
 }
 
 static void
@@ -794,7 +903,9 @@ emit_goto (target, state)
      struct jcf_block *target;
      struct jcf_partial *state;
 {
-  emit_goto_or_jsr (target, OPCODE_goto, OPCODE_goto_w, state);
+  OP1 (OPCODE_goto);
+ // Value is 1 byte from reloc back to start of instruction.
+  emit_reloc (1, OPCODE_goto_w, target, state);
 }
 
 static void
@@ -802,7 +913,9 @@ emit_jsr (target, state)
      struct jcf_block *target;
      struct jcf_partial *state;
 {
-  emit_goto_or_jsr (target, OPCODE_jsr, OPCODE_jsr_w, state);
+  OP1 (OPCODE_jsr);
+ // Value is 1 byte from reloc back to start of instruction.
+  emit_reloc (1, OPCODE_jsr_w, target, state);
 }
 
 /* Generate code to evaluate EXP.  If the result is true,
@@ -849,6 +962,10 @@ generate_bytecode_conditional (exp, true_label, false_label,
 	if (state->code_SP != save_SP_after)
 	  fatal ("internal error  non-matching SP");
       }
+      break;
+    case TRUTH_NOT_EXPR:
+      generate_bytecode_conditional (TREE_OPERAND (exp, 0), false_label, true_label,
+				     ! true_branch_first, state);
       break;
     case TRUTH_ANDIF_EXPR:
       {
@@ -915,6 +1032,7 @@ generate_bytecode_conditional (exp, true_label, false_label,
       type = TREE_TYPE (exp0);
       switch (TREE_CODE (type))
 	{
+	  int opf;
 	case POINTER_TYPE:  case RECORD_TYPE:
 	  switch (TREE_CODE (exp))
 	    {
@@ -936,7 +1054,22 @@ generate_bytecode_conditional (exp, true_label, false_label,
 	  NOTE_POP (2);
 	  goto compare_2;
 	case REAL_TYPE:
-	  fatal ("float comparison not implemented");
+	  generate_bytecode_insns (exp0, STACK_TARGET, state);
+	  generate_bytecode_insns (exp1, STACK_TARGET, state);
+	  if (op == OPCODE_if_icmplt || op == op == OPCODE_if_icmple)
+	    opf = OPCODE_fcmpg;
+	  else
+	    opf = OPCODE_fcmpl;
+	  if (TYPE_PRECISION (type) > 32)
+	    {
+	      opf += 2;
+	      NOTE_POP (4);
+	    }
+	  else
+	    NOTE_POP (2);
+	  RESERVE (1);
+	  OP1 (opf);
+	  goto compare_1;
 	case INTEGER_TYPE:
 	  if (TYPE_PRECISION (type) > 32)
 	    {
@@ -967,6 +1100,8 @@ generate_bytecode_conditional (exp, true_label, false_label,
 		case OPCODE_if_icmple:
 		  op -= 2;
 		  break;
+		default:
+		  break;
 		}
 	      generate_bytecode_insns (exp1, STACK_TARGET, state);
 	      NOTE_POP (1);
@@ -994,7 +1129,7 @@ generate_bytecode_conditional (exp, true_label, false_label,
       break;
     }
   if (save_SP != state->code_SP)
-    fatal ("inetrnal error - SP mismatch");
+    fatal ("internal error - SP mismatch");
 }
 
 /* Generate bytecode for sub-expression EXP of METHOD.
@@ -1025,13 +1160,20 @@ generate_bytecode_insns (exp, target, state)
       if (BLOCK_EXPR_BODY (exp))
 	{
 	  tree local;
+	  tree body = BLOCK_EXPR_BODY (exp);
 	  for (local = BLOCK_EXPR_DECLS (exp); local; )
 	    {
 	      tree next = TREE_CHAIN (local);
 	      localvar_alloc (local, state);
 	      local = next;
 	    }
-	  generate_bytecode_insns (BLOCK_EXPR_BODY (exp), target, state);
+	  /* Avoid deep recursion for long blocks. */
+	  while (TREE_CODE (body) == COMPOUND_EXPR)
+	    {
+	      generate_bytecode_insns (TREE_OPERAND (body, 0), target, state);
+	      body = TREE_OPERAND (body, 1);
+	    }
+	  generate_bytecode_insns (body, target, state);
 	  for (local = BLOCK_EXPR_DECLS (exp); local; )
 	    {
 	      tree next = TREE_CHAIN (local);
@@ -1079,6 +1221,32 @@ generate_bytecode_insns (exp, target, state)
 	  NOTE_PUSH (2);
 	}
       break;
+    case REAL_CST:
+      switch (TYPE_PRECISION (type))
+	{
+	  long words[2];
+	  int index;
+	case 32:
+	  words[0] = etarsingle (TREE_REAL_CST (exp)) & 0xFFFFFFFF;
+	  index = find_constant1 (&state->cpool, CONSTANT_Float, words[0]);
+	  push_constant1 (index, state);
+	  NOTE_PUSH (1);
+	  break;
+	case 64:
+	  etardouble (TREE_REAL_CST (exp), words);
+	  index = find_constant2 (&state->cpool, CONSTANT_Double,
+				  words[1-FLOAT_WORDS_BIG_ENDIAN] & 0xFFFFFFFF,
+				  words[FLOAT_WORDS_BIG_ENDIAN] & 0xFFFFFFFF);
+	  push_constant2 (index, state);
+	  NOTE_PUSH (2);
+	  break;
+	default:
+	  abort ();
+	}
+      break;
+    case STRING_CST:
+      push_constant1 (find_string_constant (&state->cpool, exp), state);
+      break;
     case VAR_DECL:
       if (TREE_STATIC (exp))
 	{
@@ -1090,6 +1258,7 @@ generate_bytecode_insns (exp, target, state)
     case PARM_DECL:
       emit_load (exp, state);
       break;
+    case NON_LVALUE_EXPR:
     case INDIRECT_REF:
       generate_bytecode_insns (TREE_OPERAND (exp, 0), target, state);
       break;
@@ -1098,10 +1267,11 @@ generate_bytecode_insns (exp, target, state)
       generate_bytecode_insns (TREE_OPERAND (exp, 1), target, state);
       if (target != IGNORE_TARGET)
 	{
-	  jopcode = OPCODE_iaload + adjust_typed_op (type);
+	  jopcode = OPCODE_iaload + adjust_typed_op (type, 7);
 	  RESERVE(1);
 	  OP1 (jopcode);
-	  NOTE_POP (2);
+	  if (! TYPE_IS_WIDE (type))
+	    NOTE_POP (1);
 	}
       break;
     case COMPONENT_REF:
@@ -1162,12 +1332,186 @@ generate_bytecode_insns (exp, target, state)
 				       then_label, else_label, 1, state);
 	define_jcf_label (then_label, state);
 	generate_bytecode_insns (TREE_OPERAND (exp, 1), target, state);
-	emit_goto (end_label, state);
+	if (CAN_COMPLETE_NORMALLY (TREE_OPERAND (exp, 1))
+	    /* Not all expressions have CAN_COMPLETE_NORMALLY set properly. */
+	    || TREE_CODE (TREE_TYPE (exp)) != VOID_TYPE)
+	  emit_goto (end_label, state);
 	define_jcf_label (else_label, state);
 	generate_bytecode_insns (TREE_OPERAND (exp, 2), target, state);
 	define_jcf_label (end_label, state);
       }
       break;
+    case CASE_EXPR:
+      {
+	struct jcf_switch_state *sw_state = state->sw_state;
+	struct jcf_relocation *reloc = (struct jcf_relocation *)
+	  obstack_alloc (state->chunk_obstack, sizeof (struct jcf_relocation));
+	HOST_WIDE_INT case_value = TREE_INT_CST_LOW (TREE_OPERAND (exp, 0));
+	reloc->kind = 0;
+	reloc->label = get_jcf_label_here (state);
+	reloc->offset = case_value;
+	reloc->next = sw_state->cases;
+	sw_state->cases = reloc;
+	if (sw_state->num_cases == 0)
+	  {
+	    sw_state->min_case = case_value;
+	    sw_state->max_case = case_value;
+	  }
+	else
+	  {
+	    if (case_value < sw_state->min_case)
+	      sw_state->min_case = case_value;
+	    if (case_value > sw_state->max_case)
+	      sw_state->max_case = case_value;
+	  }
+	sw_state->num_cases++;
+      }
+      break;
+    case DEFAULT_EXPR:
+      state->sw_state->default_label = get_jcf_label_here (state);
+      break;
+
+    case SWITCH_EXPR:
+      {
+	/* The SWITCH_EXPR has three parts, generated in the following order:
+	   1.  the switch_expression (the value used to select the correct case);
+	   2.  the switch_body;
+	   3.  the switch_instruction (the tableswitch/loopupswitch instruction.).
+	   After code generation, we will re-order then in the order 1, 3, 2.
+	   This is to avoid an extra GOTOs. */
+	struct jcf_switch_state sw_state;
+	struct jcf_block *expression_last; /* Last block of the switch_expression. */
+	struct jcf_block *body_last; /* Last block of the switch_body. */
+	struct jcf_block *switch_instruction;  /* First block of switch_instruction. */
+	struct jcf_block *instruction_last; /* Last block of the switch_instruction. */
+	struct jcf_block *body_block;
+	int switch_length;
+	sw_state.prev = state->sw_state;
+	state->sw_state = &sw_state;
+	sw_state.cases = NULL;
+	sw_state.num_cases = 0;
+	sw_state.default_label = NULL;
+	generate_bytecode_insns (TREE_OPERAND (exp, 0), STACK_TARGET, state);
+	expression_last = state->last_block;
+	body_block = get_jcf_label_here (state);  /* Force a new block here. */
+	generate_bytecode_insns (TREE_OPERAND (exp, 1), IGNORE_TARGET, state);
+	body_last = state->last_block;
+
+	if (sw_state.default_label == NULL)
+	  sw_state.default_label = gen_jcf_label (state);
+	switch_instruction = get_jcf_label_here (state);
+
+	if (sw_state.num_cases <= 1)
+	  {
+	    if (sw_state.num_cases == 0)
+	      {
+		emit_pop (1, state);
+		NOTE_POP (1);
+	      }
+	    else
+	      {
+		push_int_const (sw_state.cases->offset, state);
+		emit_if (sw_state.cases->label,
+			 OPCODE_ifeq, OPCODE_ifne, state);
+	      }
+	    emit_goto (sw_state.default_label, state);
+	  }
+	else
+	  {
+	    HOST_WIDE_INT i;
+	    /* Copy the chain of relocs into a sorted array. */
+	    struct jcf_relocation **relocs = (struct jcf_relocation **)
+	      xmalloc (sw_state.num_cases * sizeof (struct jcf_relocation *));
+	    /* The relocs arrays is a buffer with a gap.
+	       The assumption is that cases will normally come in "runs". */
+	    int gap_start = 0;
+	    int gap_end = sw_state.num_cases;
+	    struct jcf_relocation *reloc;
+	    for (reloc = sw_state.cases;  reloc != NULL;  reloc = reloc->next)
+	      {
+		HOST_WIDE_INT case_value = reloc->offset;
+		while (gap_end < sw_state.num_cases)
+		  {
+		    struct jcf_relocation *end = relocs[gap_end];
+		    if (case_value <= end->offset)
+		      break;
+		    relocs[gap_start++] = end;
+		    gap_end++;
+		  }
+		while (gap_start > 0)
+		  {
+		    struct jcf_relocation *before = relocs[gap_start-1];
+		    if (case_value >= before->offset)
+		      break;
+		    relocs[--gap_end] = before;
+		    gap_start--;
+		  }
+		relocs[gap_start++] = reloc;
+		/* Note we don't check for duplicates.  FIXME! */
+	      }
+
+	    if (2 * sw_state.num_cases
+		>= sw_state.max_case - sw_state.min_case)
+	      { /* Use tableswitch. */
+		int index = 0;
+		RESERVE (13 + 4 * (sw_state.max_case - sw_state.min_case + 1));
+		OP1 (OPCODE_tableswitch);
+		emit_reloc (0, SWITCH_ALIGN_RELOC, NULL, state);
+		emit_switch_reloc (sw_state.default_label, state);
+		OP4 (sw_state.min_case);
+		OP4 (sw_state.max_case);
+		for (i = sw_state.min_case; ; )
+		  {
+		    if (i == sw_state.min_case + index)
+		      emit_case_reloc (relocs[index++], state);
+		    else
+		      emit_switch_reloc (sw_state.default_label, state);
+		    if (i == sw_state.max_case)
+		      break;
+		    i++;
+		  }
+	      }
+	    else
+	      { /* Use lookupswitch. */
+		RESERVE(9 + 8 * sw_state.num_cases);
+		OP1 (OPCODE_lookupswitch);
+		emit_reloc (0, SWITCH_ALIGN_RELOC, NULL, state);
+		emit_switch_reloc (sw_state.default_label, state);
+		OP4 (sw_state.num_cases);
+		for (i = 0;  i < sw_state.num_cases;  i++)
+		  {
+		    struct jcf_relocation *reloc = relocs[i];
+		    OP4 (reloc->offset);
+		    emit_case_reloc (reloc, state);
+		  }
+	      }
+	    free (relocs);
+	  }
+
+	instruction_last = state->last_block;
+	if (sw_state.default_label->pc < 0)
+	  define_jcf_label (sw_state.default_label, state);
+	else /* Force a new block. */
+	  sw_state.default_label = get_jcf_label_here (state);
+	/* Now re-arrange the blocks so the switch_instruction
+	   comes before the switch_body. */
+	switch_length = state->code_length - switch_instruction->pc;
+	switch_instruction->pc = body_block->pc;
+	instruction_last->next = body_block;
+	instruction_last->chunk->next = body_block->chunk;
+	expression_last->next = switch_instruction;
+	expression_last->chunk->next = switch_instruction->chunk;
+	body_last->next = sw_state.default_label;
+	body_last->chunk->next = NULL;
+	state->chunk = body_last->chunk;
+	for (;  body_block != sw_state.default_label;  body_block = body_block->next)
+	  body_block->pc += switch_length;
+
+	free (sw_state.cases);
+	state->sw_state = sw_state.prev;
+	break;
+      }
+
     case RETURN_EXPR:
       if (!TREE_OPERAND (exp, 0))
 	op = OPCODE_return;
@@ -1177,7 +1521,7 @@ generate_bytecode_insns (exp, target, state)
 	  if (TREE_CODE (exp) != MODIFY_EXPR)
 	    abort ();
 	  exp = TREE_OPERAND (exp, 1);
-	  op = OPCODE_ireturn + adjust_typed_op (TREE_TYPE (exp));
+	  op = OPCODE_ireturn + adjust_typed_op (TREE_TYPE (exp), 4);
 	  generate_bytecode_insns (exp, STACK_TARGET, state);
 	}
       RESERVE (1);
@@ -1288,7 +1632,7 @@ generate_bytecode_insns (exp, target, state)
 	  generate_bytecode_insns (TREE_OPERAND (exp, 1), STACK_TARGET, state);
 	  emit_dup (2, 0, state);
 	  /* Stack:  ..., array, index, array, index. */
-	  jopcode = OPCODE_iaload + adjust_typed_op (TREE_TYPE (exp));
+	  jopcode = OPCODE_iaload + adjust_typed_op (TREE_TYPE (exp), 7);
 	  RESERVE(1);
 	  OP1 (jopcode);
 	  NOTE_POP (2-size);
@@ -1311,7 +1655,7 @@ generate_bytecode_insns (exp, target, state)
       /* Stack, otherwise:  ..., [result, ] oldvalue. */
       push_int_const (value, state); /* FIXME - assumes int! */
       NOTE_PUSH (1);
-      emit_binop (OPCODE_iadd + adjust_typed_op (type), type, state);
+      emit_binop (OPCODE_iadd + adjust_typed_op (type, 3), type, state);
       if (target != IGNORE_TARGET && ! post_op)
 	emit_dup (size, offset, state);
       /* Stack:  ..., [result,] newvalue. */
@@ -1399,7 +1743,7 @@ generate_bytecode_insns (exp, target, state)
       else if (TREE_CODE (exp) == ARRAY_REF)
 	{
 	  NOTE_POP (2);
-	  jopcode = OPCODE_iastore + adjust_typed_op (TREE_TYPE (exp));
+	  jopcode = OPCODE_iastore + adjust_typed_op (TREE_TYPE (exp), 7);
 	  RESERVE(1);
 	  OP1 (jopcode);
 	  NOTE_PUSH (TYPE_IS_WIDE (TREE_TYPE (exp)) ? 2 : 1);
@@ -1408,49 +1752,289 @@ generate_bytecode_insns (exp, target, state)
 	fatal ("internal error (bad lhs to MODIFY_EXPR)");
       break;
     case PLUS_EXPR:
-      jopcode = OPCODE_iadd + adjust_typed_op (type);
+      jopcode = OPCODE_iadd;
       goto binop;
     case MINUS_EXPR:
-      jopcode = OPCODE_isub + adjust_typed_op (type);
+      jopcode = OPCODE_isub;
       goto binop;
     case MULT_EXPR:
-      jopcode = OPCODE_imul + adjust_typed_op (type);
+      jopcode = OPCODE_imul;
       goto binop;
     case TRUNC_DIV_EXPR:
     case RDIV_EXPR:
-      jopcode = OPCODE_idiv + adjust_typed_op (type);
+      jopcode = OPCODE_idiv;
       goto binop;
+    case TRUNC_MOD_EXPR:
+      jopcode = OPCODE_irem;
+      goto binop;
+    case LSHIFT_EXPR:   jopcode = OPCODE_ishl;   goto binop;
+    case RSHIFT_EXPR:   jopcode = OPCODE_ishr;   goto binop;
+    case URSHIFT_EXPR:  jopcode = OPCODE_iushr;  goto binop;
+    case BIT_AND_EXPR:  jopcode = OPCODE_iand;   goto binop;
+    case BIT_IOR_EXPR:  jopcode = OPCODE_ior;    goto binop;
+    case BIT_XOR_EXPR:  jopcode = OPCODE_ixor;   goto binop;
     binop:
-      generate_bytecode_insns (TREE_OPERAND (exp, 0), target, state);
-      generate_bytecode_insns (TREE_OPERAND (exp, 1), target, state);
+    {
+      tree arg0 = TREE_OPERAND (exp, 0);
+      tree arg1 = TREE_OPERAND (exp, 1);
+      jopcode += adjust_typed_op (type, 3);
+      if (arg0 == arg1 && TREE_CODE (arg0) == SAVE_EXPR)
+	{
+	  /* fold may (e.g) convert 2*x to x+x. */
+	  generate_bytecode_insns (TREE_OPERAND (arg0, 0), target, state);
+	  emit_dup (TYPE_PRECISION (TREE_TYPE (arg0)) > 32 ? 2 : 1, 0, state);
+	}
+      else
+	{
+	  generate_bytecode_insns (arg0, target, state);
+	  generate_bytecode_insns (arg1, target, state);
+	}
       if (target == STACK_TARGET)
 	emit_binop (jopcode, type, state);
       break;
+    }
+    case TRUTH_NOT_EXPR:
+    case BIT_NOT_EXPR:
+      generate_bytecode_insns (TREE_OPERAND (exp, 0), target, state);
+      if (target == STACK_TARGET)
+	{
+	  int is_long = TYPE_PRECISION (TREE_TYPE (exp)) > 32;
+	  push_int_const (TREE_CODE (exp) == BIT_NOT_EXPR ? -1 : 1, state); 
+	  RESERVE (2);
+	  if (is_long)
+	    OP1 (OPCODE_i2l);
+	  OP1 (OPCODE_ixor + is_long);
+	}
+      break;
+    case NEGATE_EXPR:
+      jopcode = OPCODE_ineg;
+      jopcode += adjust_typed_op (type, 3);
+      generate_bytecode_insns (TREE_OPERAND (exp, 0), target, state);
+      if (target == STACK_TARGET)
+	emit_unop (jopcode, type, state);
+      break;
+    case INSTANCEOF_EXPR:
+      {
+	int index = find_class_constant (&state->cpool, TREE_OPERAND (exp, 1));
+	generate_bytecode_insns (TREE_OPERAND (exp, 0), target, state);
+	RESERVE (3);
+	OP1 (OPCODE_instanceof);
+	OP2 (index);
+      }
+      break;
+    case CONVERT_EXPR:
+    case NOP_EXPR:
+    case FLOAT_EXPR:
+    case FIX_TRUNC_EXPR:
+      {
+	tree src = TREE_OPERAND (exp, 0);
+	tree src_type = TREE_TYPE (src);
+	tree dst_type = TREE_TYPE (exp);
+	generate_bytecode_insns (TREE_OPERAND (exp, 0), target, state);
+	if (target == IGNORE_TARGET || src_type == dst_type)
+	  break;
+	if (TREE_CODE (dst_type) == POINTER_TYPE)
+	  {
+	    if (TREE_CODE (exp) == CONVERT_EXPR)
+	      {
+		int index = find_class_constant (&state->cpool, TREE_TYPE (dst_type));
+		RESERVE (3);
+		OP1 (OPCODE_checkcast);
+		OP2 (index);
+	      }
+	  }
+	else /* Convert numeric types. */
+	  {
+	    int wide_src = TYPE_PRECISION (src_type) > 32;
+	    int wide_dst = TYPE_PRECISION (dst_type) > 32;
+	    NOTE_POP (1 + wide_src);
+	    RESERVE (1);
+	    if (TREE_CODE (dst_type) == REAL_TYPE)
+	      {
+		if (TREE_CODE (src_type) == REAL_TYPE)
+		  OP1 (wide_dst ? OPCODE_f2d : OPCODE_d2f);
+		else if (TYPE_PRECISION (src_type) == 64)
+		  OP1 (OPCODE_l2f + wide_dst);
+		else
+		  OP1 (OPCODE_i2f + wide_dst);
+	      }
+	    else /* Convert to integral type. */
+	      {
+		if (TREE_CODE (src_type) == REAL_TYPE)
+		  OP1 (OPCODE_f2i + wide_dst + 3 * wide_src);
+		else if (wide_dst)
+		  OP1 (OPCODE_i2l);
+		else if (wide_src)
+		  OP1 (OPCODE_l2i);
+		if (TYPE_PRECISION (dst_type) < 32)
+		  {
+		    RESERVE (1);
+		    /* Already converted to int, if needed. */
+		    if (TYPE_PRECISION (dst_type) <= 8)
+		      OP1 (OPCODE_i2b);
+		    else if (TREE_UNSIGNED (dst_type))
+		      OP1 (OPCODE_i2c);
+		    else
+		      OP1 (OPCODE_i2s);
+		  }
+	      }
+	    NOTE_PUSH (1 + wide_dst);
+	  }
+      }
+      break;
+    case TRY_EXPR:
+      {
+	tree try_clause = TREE_OPERAND (exp, 0);
+	tree finally = TREE_OPERAND (exp, 2);
+	struct jcf_block *start_label = get_jcf_label_here (state);
+	struct jcf_block *end_label;  /* End of try clause. */
+	struct jcf_block *finally_label;  /* Finally subroutine. */
+	struct jcf_block *finished_label = gen_jcf_label (state);
+	tree clause = TREE_OPERAND (exp, 1);
+	if (finally)
+	  {
+	    finally = FINALLY_EXPR_BLOCK (finally);
+	    finally_label = gen_jcf_label (state);
+	  }
+	if (target != IGNORE_TARGET)
+	  abort ();
+	generate_bytecode_insns (try_clause, IGNORE_TARGET, state);
+	end_label = get_jcf_label_here (state);
+	if (CAN_COMPLETE_NORMALLY (try_clause))
+	  emit_goto (finished_label, state);
+	for ( ; clause != NULL_TREE;  clause = TREE_CHAIN (clause))
+	  {
+	    tree catch_clause = TREE_OPERAND (clause, 0);
+	    tree exception_decl = BLOCK_EXPR_DECLS (catch_clause);
+	    struct jcf_handler *handler = alloc_handler (start_label, end_label, state);
+	    handler->type = TREE_TYPE (TREE_TYPE (exception_decl));
+	    generate_bytecode_insns (catch_clause, IGNORE_TARGET, state);
+	    if (CAN_COMPLETE_NORMALLY (catch_clause))
+	      emit_goto (finished_label, state);
+	  }
+	if (finally)
+	  {
+	    tree return_link;
+	    tree exception_type = build_pointer_type (throwable_type_node);
+	    tree exception_decl = build_decl (VAR_DECL, NULL_TREE,
+					      exception_type);
+	    struct jcf_handler *handler
+	      = alloc_handler (start_label, NULL_TREE, state);
+	    handler->end_label = handler->handler_label;
+	    handler->type = NULL_TREE;
+	    localvar_alloc (exception_decl, state);
+	    NOTE_PUSH (1);
+            emit_store (exception_decl, state);
+	    emit_jsr (finally_label, state);
+	    emit_load (exception_decl, state);
+	    RESERVE (1);
+	    OP1 (OPCODE_athrow);
+	    NOTE_POP (1);
+	    localvar_free (exception_decl, state);
+
+	    /* The finally block. */
+	    return_link = build_decl (VAR_DECL, NULL_TREE,
+				      return_address_type_node);
+	    define_jcf_label (finally_label, state);
+	    NOTE_PUSH (1);
+	    localvar_alloc (return_link, state);
+	    emit_store (return_link, state);
+	    generate_bytecode_insns (finally, IGNORE_TARGET, state);
+	    maybe_wide (OPCODE_ret, DECL_LOCAL_INDEX (return_link), state);
+	    localvar_free (return_link, state);
+	  }
+	define_jcf_label (finished_label, state);
+	if (finally)
+	  emit_jsr (finally_label, state);
+      }
+      break;
+    case THROW_EXPR:
+      generate_bytecode_insns (TREE_OPERAND (exp, 0), STACK_TARGET, state);
+      RESERVE (1);
+      OP1 (OPCODE_athrow);
+      break;
+    case NEW_CLASS_EXPR:
+      {
+	tree class = TREE_TYPE (TREE_TYPE (exp));
+	int index = find_class_constant (&state->cpool, class);
+	RESERVE (4);
+	OP1 (OPCODE_new);
+	OP2 (index);
+	OP1 (OPCODE_dup);
+	NOTE_PUSH (1);
+      }
+      /* ... fall though ... */
     case CALL_EXPR:
       {
-	tree t;
+	tree f = TREE_OPERAND (exp, 0);
+	tree x = TREE_OPERAND (exp, 1);
 	int save_SP = state->code_SP;
-	for (t = TREE_OPERAND (exp, 1);  t != NULL_TREE;  t = TREE_CHAIN (t))
+	if (TREE_CODE (f) == ADDR_EXPR)
+	  f = TREE_OPERAND (f, 0);
+	if (f == soft_newarray_node)
 	  {
-	    generate_bytecode_insns (TREE_VALUE (t), STACK_TARGET, state);
+	    int type_code = TREE_INT_CST_LOW (TREE_VALUE (x));
+	    generate_bytecode_insns (TREE_VALUE (TREE_CHAIN (x)),
+				     STACK_TARGET, state);
+	    RESERVE (2);
+	    OP1 (OPCODE_newarray);
+	    OP1 (type_code);
+	    break;
 	  }
-	t = TREE_OPERAND (exp, 0);
-	state->code_SP = save_SP;
-	if (TREE_CODE (t) == FUNCTION_DECL)
+	else if (f == soft_multianewarray_node)
 	  {
-	    int index = find_methodref_index (&state->cpool, t);
+	    int ndims;
+	    int idim;
+	    int index = find_class_constant (&state->cpool,
+					     TREE_TYPE (TREE_TYPE (exp)));
+	    x = TREE_CHAIN (x);  /* Skip class argument. */
+	    ndims = TREE_INT_CST_LOW (TREE_VALUE (x));
+	    for (idim = ndims;  --idim >= 0; )
+	      {
+		x = TREE_CHAIN (x);
+		generate_bytecode_insns (TREE_VALUE (x), STACK_TARGET, state);
+	      }
+	    RESERVE (4);
+	    OP1 (OPCODE_multianewarray);
+	    OP2 (index);
+	    OP1 (ndims);
+	    break;
+	  }
+	else if (f == soft_anewarray_node)
+	  {
+	    tree cl = TYPE_ARRAY_ELEMENT (TREE_TYPE (TREE_TYPE (exp)));
+	    int index = find_class_constant (&state->cpool, TREE_TYPE (cl));
+	    generate_bytecode_insns (TREE_VALUE (x), STACK_TARGET, state);
 	    RESERVE (3);
-	    if (DECL_CONSTRUCTOR_P (t))
+	    OP1 (OPCODE_anewarray);
+	    OP2 (index);
+	    break;
+	  }
+	else if (exp == soft_exceptioninfo_call_node)
+	  {
+	    NOTE_PUSH (1);  /* Pushed by exception system. */
+	    break;
+	  }
+	for ( ;  x != NULL_TREE;  x = TREE_CHAIN (x))
+	  {
+	    generate_bytecode_insns (TREE_VALUE (x), STACK_TARGET, state);
+	  }
+	state->code_SP = save_SP;
+	if (TREE_CODE (f) == FUNCTION_DECL && DECL_CONTEXT (f) != NULL_TREE)
+	  {
+	    int index = find_methodref_index (&state->cpool, f);
+	    RESERVE (3);
+	    if (DECL_CONSTRUCTOR_P (f))
 	      OP1 (OPCODE_invokespecial);
-	    else if (METHOD_STATIC (t))
+	    else if (METHOD_STATIC (f))
 	      OP1 (OPCODE_invokestatic);
 	    else
 	      OP1 (OPCODE_invokevirtual);
 	    OP2 (index);
-	    t = TREE_TYPE (TREE_TYPE (t));
-	    if (TREE_CODE (t) != VOID_TYPE)
+	    f = TREE_TYPE (TREE_TYPE (f));
+	    if (TREE_CODE (f) != VOID_TYPE)
 	      {
-		int size = TYPE_IS_WIDE (t) ? 2 : 1;
+		int size = TYPE_IS_WIDE (f) ? 2 : 1;
 		if (target == IGNORE_TARGET)
 		  emit_pop (size, state);
 		else
@@ -1476,7 +2060,13 @@ perform_relocations (state)
   int pc;
   int shrink;
 
-  /* Figure out the actual locations of each block. */
+  /* Before we start, the pc field of each block is an upper bound on
+     the block's start pc (it may be less, if previous blocks need less
+     than their maximum).
+
+     The minimum size of each block is in the block's chunk->size. */
+
+  /* First, figure out the actual locations of each block. */
   pc = 0;
   shrink = 0;
   for (block = state->blocks;  block != NULL;  block = block->next)
@@ -1489,9 +2079,9 @@ perform_relocations (state)
 	 Assumes relocations are in reverse order. */
       reloc = block->u.relocations;
       while (reloc != NULL
+	     && reloc->kind == OPCODE_goto_w
 	     && reloc->label->pc == block->next->pc
-	     && reloc->offset + 2 == block_size
-	     && reloc->kind == OPCODE_goto_w)
+	     && reloc->offset + 2 == block_size)
 	{
 	  reloc = reloc->next;
 	  block->u.relocations = reloc;
@@ -1502,7 +2092,15 @@ perform_relocations (state)
 
       for (reloc = block->u.relocations;  reloc != NULL;  reloc = reloc->next)
 	{
-	  if (reloc->kind < -1 || reloc->kind > 0)
+	  if (reloc->kind == SWITCH_ALIGN_RELOC)
+	    {
+	      /* We assume this is the first relocation in this block,
+		 so we know its final pc. */
+	      int where = pc + reloc->offset;
+	      int pad = ((where + 3) & ~3) - where;
+	      block_size += pad;
+	    }
+	  else if (reloc->kind < -1 || reloc->kind > BLOCK_START_RELOC)
 	    {
 	      int delta = reloc->label->pc - (pc + reloc->offset - 1);
 	      int expand = reloc->kind > 0 ? 2 : 5;
@@ -1536,16 +2134,26 @@ perform_relocations (state)
 	{
 	  chunk->data = (unsigned char *)
 	    obstack_alloc (state->chunk_obstack, new_size);
+	  chunk->size = new_size;
 	}
       new_ptr = chunk->data + new_size;
 
       /* We do the relocations from back to front, because
-	 thre relocations are in reverse order. */
+	 the relocations are in reverse order. */
       for (reloc = block->u.relocations; ; reloc = reloc->next)
 	{
-	  /* Lower old index of piece to be copied with no relocation. */
+	  /* new_ptr and old_ptr point into the old and new buffers,
+	     respectively.  (If no relocations cause the buffer to
+	     grow, the buffer will be the same buffer, and new_ptr==old_ptr.)
+	     The bytes at higher adress have been copied and relocations
+	     handled; those at lower addresses remain to process. */
+
+	  /* Lower old index of piece to be copied with no relocation.
+	     I.e. high index of the first piece that does need relocation. */
 	  int start = reloc == NULL ? 0
-	    : reloc->kind == 0 ? reloc->offset + 4
+	    : reloc->kind == SWITCH_ALIGN_RELOC ? reloc->offset
+	    : (reloc->kind == 0 || reloc->kind == BLOCK_START_RELOC)
+	    ? reloc->offset + 4
 	    : reloc->offset + 2;
 	  int32 value;
 	  int new_offset;
@@ -1553,21 +2161,36 @@ perform_relocations (state)
 	  new_ptr -= n;
 	  old_ptr -= n;
 	  if (n > 0)
-	    bcopy (old_ptr, new_ptr, n);
+	    memcpy (new_ptr, old_ptr, n);
 	  if (old_ptr == old_buffer)
 	    break;
 
+	  new_offset = new_ptr - chunk->data;
+	  new_offset -= (reloc->kind == -1 ? 2 : 4);
 	  if (reloc->kind == 0)
 	    {
 	      old_ptr -= 4;
 	      value = GET_u4 (old_ptr);
+	    }
+	  else if (reloc->kind == BLOCK_START_RELOC)
+	    {
+	      old_ptr -= 4;
+	      value = 0;
+	      new_offset = 0;
+	    }
+	  else if (reloc->kind == SWITCH_ALIGN_RELOC)
+	    {
+	      int where = block->pc + reloc->offset;
+	      int pad = ((where + 3) & ~3) - where;
+	      while (--pad >= 0)
+		*--new_ptr = 0;
+	      continue;
 	    }
 	  else
 	    {
 	      old_ptr -= 2;
 	      value = GET_u2 (old_ptr);
 	    }
-	  new_offset = new_ptr - chunk->data - (reloc->kind == -1 ? 2 : 4);
 	  value += reloc->label->pc - (block->pc + new_offset);
 	  *--new_ptr = (unsigned char) value;  value >>= 8;
 	  *--new_ptr = (unsigned char) value;  value >>= 8;
@@ -1576,7 +2199,7 @@ perform_relocations (state)
 	      *--new_ptr = (unsigned char) value;  value >>= 8;
 	      *--new_ptr = (unsigned char) value;
 	    }
-	  if (reloc->kind > 0)
+	  if (reloc->kind > BLOCK_START_RELOC)
 	    {
 	      /* Convert: OP TARGET to: OP_w TARGET;  (OP is goto or jsr). */
 	      --old_ptr;
@@ -1624,6 +2247,9 @@ init_jcf_method (state, method)
   BUFFER_RESET (&state->localvars);
   state->code_SP = 0;
   state->code_SP_max = 0;
+  state->handlers = NULL;
+  state->last_handler = NULL;
+  state->num_handlers = 0;
 }
 
 void
@@ -1731,6 +2357,7 @@ generate_classfile (clas, state)
 	  static tree Code_node = NULL_TREE;
 	  tree t;
 	  char *attr_len_ptr;
+	  struct jcf_handler *handler;
 	  if (Code_node == NULL_TREE)
 	    Code_node = get_identifier ("Code");
 	  ptr = append_chunk (NULL, 14, state);
@@ -1741,13 +2368,20 @@ generate_classfile (clas, state)
 	  for (t = DECL_ARGUMENTS (part);  t != NULL_TREE;  t = TREE_CHAIN (t))
 	    localvar_alloc (t, state);
 	  generate_bytecode_insns (body, IGNORE_TARGET, state);
+	  if (CAN_COMPLETE_NORMALLY (body))
+	    {
+	      if (TREE_CODE (TREE_TYPE (type)) != VOID_TYPE)
+		abort();
+	      RESERVE (1);
+	      OP1 (OPCODE_return);
+	    }
 	  for (t = DECL_ARGUMENTS (part);  t != NULL_TREE;  t = TREE_CHAIN (t))
 	    localvar_free (t, state);
 	  finish_jcf_block (state);
 	  perform_relocations (state);
 
 	  ptr = attr_len_ptr;
-	  i = 8 + state->code_length + 4;
+	  i = 8 + state->code_length + 4 + 8 * state->num_handlers;
 	  if (state->linenumber_count > 0)
 	    {
 	      code_attributes_count++;
@@ -1762,8 +2396,26 @@ generate_classfile (clas, state)
 	  PUT2 (state->code_SP_max);  /* max_stack */
 	  PUT2 (localvar_max);  /* max_locals */
 	  PUT4 (state->code_length);
-	  ptr = append_chunk (NULL, 4, state);
-	  PUT2 (0);  /* exception_table_length */
+
+	  /* Emit the exception table. */
+	  ptr = append_chunk (NULL, 2 + 8 * state->num_handlers, state);
+	  PUT2 (state->num_handlers);  /* exception_table_length */
+	  handler = state->handlers;
+	  for (; handler != NULL;  handler = handler->next)
+	    {
+	      int type_index;
+	      PUT2 (handler->start_label->pc);
+	      PUT2 (handler->end_label->pc);
+	      PUT2 (handler->handler_label->pc);
+	      if (handler->type == NULL_TREE)
+		type_index = 0;
+	      else
+		type_index = find_class_constant (&state->cpool,
+						  handler->type);
+	      PUT2 (type_index);
+	    }
+
+	  ptr = append_chunk (NULL, 2, state);
 	  PUT2 (code_attributes_count);
 
 	  /* Write the LineNumberTable attribute. */
@@ -1877,3 +2529,8 @@ write_classfile (clas)
     fatal ("failed to close after writing `%s'", class_file_name);
   release_jcf_state (state);
 }
+
+/* TODO:
+   string concatenation
+   synchronized statement
+   */
