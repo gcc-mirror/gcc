@@ -4140,10 +4140,13 @@ fold_builtin_inf (type, warn)
      tree type;
      int warn;
 {
+  REAL_VALUE_TYPE real;
+
   if (!MODE_HAS_INFINITIES (TYPE_MODE (type)) && warn)
     warning ("target format does not support infinity");
 
-  return build_real (type, ereal_inf (TYPE_MODE (type)));
+  real_inf (&real);
+  return build_real (type, real);
 }
 
 /* Used by constant folding to eliminate some builtin calls early.  EXP is

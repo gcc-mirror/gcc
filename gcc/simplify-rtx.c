@@ -22,8 +22,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
-
 #include "rtl.h"
+#include "tree.h"
 #include "tm_p.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -603,8 +603,6 @@ simplify_unary_operation (code, mode, op, op_mode)
 	case NEG:	      d = REAL_VALUE_NEGATE (d);		break;
 	case FLOAT_TRUNCATE:  d = real_value_truncate (mode, d);	break;
 	case FLOAT_EXTEND:    /* All this does is change the mode.  */  break;
-	case FIX:	      d = REAL_VALUE_RNDZINT (d);		break;
-	case UNSIGNED_FIX:    d = REAL_VALUE_UNSIGNED_RNDZINT (d);	break;
 	default:
 	  abort ();
 	}

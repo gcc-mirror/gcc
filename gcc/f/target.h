@@ -331,54 +331,30 @@ typedef ? ffetargetLogical8;
 ?
 #endif
 #if FFETARGET_okREAL1
-#ifdef FFETARGET_32bit_longs
-typedef long int ffetargetReal1;
-#define ffetargetReal1_f "l"
-#define ffetarget_cvt_r1_to_rv_ REAL_VALUE_UNTO_TARGET_SINGLE
-#define ffetarget_cvt_rv_to_r1_ REAL_VALUE_TO_TARGET_SINGLE
-#else
 typedef int ffetargetReal1;
 #define ffetargetReal1_f ""
-#define ffetarget_cvt_r1_to_rv_(in) \
-  ({ REAL_VALUE_TYPE _rv; \
-     _rv = REAL_VALUE_UNTO_TARGET_SINGLE ((long) (in)); \
+#define ffetarget_cvt_r1_to_rv_(in)					\
+  ({ REAL_VALUE_TYPE _rv;						\
+     long _in = (in);							\
+     real_from_target (&_rv, &_in, mode_for_size (32, MODE_FLOAT, 0));	\
      _rv; })
 #define ffetarget_cvt_rv_to_r1_(in, out) \
   ({ long _tmp; \
      REAL_VALUE_TO_TARGET_SINGLE ((in), _tmp); \
      (out) = (ffetargetReal1) _tmp; })
 #endif
-#endif
 #if FFETARGET_okREAL2
-#ifdef FFETARGET_32bit_longs
-typedef struct
-  {
-    long int v[2];
-  }
-ffetargetReal2;
-#define ffetargetReal2_f "l"
-#define ffetarget_cvt_r2_to_rv_ REAL_VALUE_UNTO_TARGET_DOUBLE
-#define ffetarget_cvt_rv_to_r2_ REAL_VALUE_TO_TARGET_DOUBLE
-#else
-typedef struct
-  {
-    int v[2];
-  }
-ffetargetReal2;
+typedef struct { int v[2]; } ffetargetReal2;
 #define ffetargetReal2_f ""
-#define ffetarget_cvt_r2_to_rv_(in) \
-  ({ REAL_VALUE_TYPE _rv; \
-     long _tmp[2]; \
-     _tmp[0] = (in)[0]; \
-     _tmp[1] = (in)[1]; \
-     _rv = REAL_VALUE_UNTO_TARGET_DOUBLE (_tmp); \
+#define ffetarget_cvt_r2_to_rv_(in)					\
+  ({ REAL_VALUE_TYPE _rv; long _tmp[2];					\
+     _tmp[0] = (in)[0]; _tmp[1] = (in)[1];				\
+     real_from_target (&_rv, _tmp, mode_for_size (64, MODE_FLOAT, 0));	\
      _rv; })
-#define ffetarget_cvt_rv_to_r2_(in, out) \
-  ({ long _tmp[2]; \
-     REAL_VALUE_TO_TARGET_DOUBLE ((in), _tmp); \
-     (out)[0] = (int) (_tmp[0]); \
-     (out)[1] = (int) (_tmp[1]); })
-#endif
+#define ffetarget_cvt_rv_to_r2_(in, out)				\
+  ({ long _tmp[2];							\
+     REAL_VALUE_TO_TARGET_DOUBLE ((in), _tmp);				\
+     (out)[0] = (int)_tmp[0]; (out)[1] = (int)_tmp[1]; })
 #endif
 #if FFETARGET_okREAL3
 typedef long ffetargetReal3[?];

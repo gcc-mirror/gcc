@@ -1,3 +1,10 @@
+2002-09-16  Richard Henderson  <rth@redhat.com>
+
+	* jcf-parse.c (get_constant): Runtime check for IEEE format;
+	use new real.h interface.
+	* jcf-write.c (find_constant_index): Use new real.h interface.
+	* lex.c (IS_ZERO): Use REAL_VALUES_EQUAL.
+
 2002-09-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* lang.c: Follow spelling conventions.

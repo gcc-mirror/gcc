@@ -2277,9 +2277,11 @@ ffetarget_real1 (ffetargetReal1 *value, ffelexToken integer,
 
   *p = '\0';
 
-  ffetarget_make_real1 (value,
-			FFETARGET_ATOF_ (ptr,
-					 SFmode));
+  {
+    REAL_VALUE_TYPE rv;
+    rv = FFETARGET_ATOF_ (ptr, SFmode);
+    ffetarget_make_real1 (value, rv);
+  }
 
   if (sz > ARRAY_SIZE (ffetarget_string_))
     malloc_kill_ks (malloc_pool_image (), ptr, sz);
@@ -2363,9 +2365,11 @@ ffetarget_real2 (ffetargetReal2 *value, ffelexToken integer,
 
   *p = '\0';
 
-  ffetarget_make_real2 (value,
-			FFETARGET_ATOF_ (ptr,
-					 DFmode));
+  {
+    REAL_VALUE_TYPE rv;
+    rv = FFETARGET_ATOF_ (ptr, DFmode);
+    ffetarget_make_real2 (value, rv);
+  }
 
   if (sz > ARRAY_SIZE (ffetarget_string_))
     malloc_kill_ks (malloc_pool_image (), ptr, sz);

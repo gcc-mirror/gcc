@@ -1,3 +1,11 @@
+2002-09-16  Richard Henderson  <rth@redhat.com>
+
+	* target.c (ffetarget_real1): Don't pass FFETARGET_ATOF_
+	directly to ffetarget_make_real1.
+	(ffetarget_real2): Similarly.
+	* target.h (ffetarget_cvt_r1_to_rv_, ffetarget_cvt_rv_to_r2_,
+	ffetarget_cvt_r2_to_rv_): Use new real.h interface and simplify.
+
 2002-09-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* intdoc.texi: Regenerate.
