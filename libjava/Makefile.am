@@ -1855,6 +1855,15 @@ java/util/TreeSet.java \
 java/util/TooManyListenersException.java \
 java/util/Vector.java \
 java/util/WeakHashMap.java \
+java/util/prefs/NodeChangeListener.java \
+java/util/prefs/Preferences.java \
+java/util/prefs/PreferenceChangeListener.java \
+java/util/prefs/NodeChangeEvent.java \
+java/util/prefs/InvalidPreferencesFormatException.java \
+java/util/prefs/AbstractPreferences.java \
+java/util/prefs/BackingStoreException.java \
+java/util/prefs/PreferenceChangeEvent.java \
+java/util/prefs/PreferencesFactory.java \
 java/util/regex/Matcher.java \
 java/util/regex/Pattern.java \
 java/util/regex/PatternSyntaxException.java
@@ -2075,6 +2084,11 @@ gnu/java/text/SentenceBreakIterator.java \
 gnu/java/text/WordBreakIterator.java \
 gnu/java/util/DoubleEnumeration.java \
 gnu/java/util/EmptyEnumeration.java \
+gnu/java/util/prefs/MemoryBasedFactory.java \
+gnu/java/util/prefs/NodeReader.java \
+gnu/java/util/prefs/MemoryBasedPreferences.java \
+gnu/java/util/prefs/FileBasedFactory.java \
+gnu/java/util/prefs/NodeWriter.java \
 java/lang/ref/PhantomReference.java \
 java/lang/ref/Reference.java \
 java/lang/ref/ReferenceQueue.java \
