@@ -55,6 +55,8 @@ int rs6000_trunc_used;
 
 static int trunc_defined;
 
+/* Set to non-zero once AIX common-mode calls have been defined.  */
+static int common_mode_defined;
 /* Save information from a "cmpxx" operation until the branch or scc is
    emitted.  */
 
@@ -1421,6 +1423,18 @@ output_prolog (file, size)
       fprintf (file, "\t.extern .%s\n\t.extern .%s\n",
 	       RS6000_ITRUNC, RS6000_UITRUNC);
       trunc_defined = 1;
+    }
+  /* Write .extern for AIX common mode routines, if needed.  */
+  if (! TARGET_POWER && ! TARGET_POWERPC && ! common_mode_defined)
+    {
+      fputs ("\t.extern __mulh\n"
+	     "\t.extern __mull\n"
+	     "\t.extern __divss\n"
+	     "\t.extern __divus\n"
+	     "\t.extern __quoss\n"
+	     "\t.extern __quous\n",
+	     file);
+      common_mode_defined = 1;
     }
 
   /* If we have to call a function to save fpr's, or if we are doing profiling,
