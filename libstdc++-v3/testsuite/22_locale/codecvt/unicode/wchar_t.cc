@@ -1,6 +1,6 @@
 // 2000-08-23 Benjamin Kosnik <bkoz@cygnus.com>
 
-// Copyright (C) 2000, 2001, 2002 Free Software Foundation
+// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,7 +24,6 @@
 #include <testsuite_hooks.h>
 
 #ifdef _GLIBCPP_USE___ENC_TRAITS
-#ifdef _GLIBCPP_USE_WCHAR_T
 
 // Need some char_traits specializations for this to work.
 typedef unsigned short			unicode_t;
@@ -142,7 +141,8 @@ void test01()
   const unicode_codecvt&	cvt = use_facet<unicode_codecvt>(loc); 
 
   // in
-  unicode_codecvt::state_type state01("UCS-2BE", "UCS-4BE", 0xfeff, 0);
+  //  unicode_codecvt::state_type state01("UCS-2BE", "UCS-4BE", 0xfeff, 0);
+  unicode_codecvt::state_type state01("UCS-2BE", "UCS-4BE", 0, 0);
   initialize_state(state01);
   result r1 = cvt.in(state01, e_lit, e_lit + size, efrom_next, 
 		     i_arr, i_arr + size + 1, ito_next);
@@ -152,7 +152,7 @@ void test01()
   VERIFY( ito_next == i_arr + size );
 
   // out
-  unicode_codecvt::state_type state02("UCS-2BE", "UCS-4BE", 0xfeff, 0);
+  unicode_codecvt::state_type state02("UCS-2BE", "UCS-4BE", 0, 0);
   initialize_state(state02);  
   result r2 = cvt.out(state02, i_lit, i_lit + size, ifrom_next, 
 		       e_arr, e_arr + size, eto_next);
@@ -163,7 +163,7 @@ void test01()
 
   // unshift
   ext_traits::copy(e_arr, e_lit, size);
-  unicode_codecvt::state_type state03("UCS-2BE", "UCS-4BE", 0xfeff, 0);
+  unicode_codecvt::state_type state03("UCS-2BE", "UCS-4BE", 0, 0);
   initialize_state(state03);
   result r3 = cvt.unshift(state03, e_arr, e_arr + size, eto_next);
   VERIFY( r3 == codecvt_base::noconv );
@@ -175,7 +175,7 @@ void test01()
 
   VERIFY( !cvt.always_noconv() );
 
-  unicode_codecvt::state_type state04("UCS-2BE", "UCS-4BE", 0xfeff, 0);
+  unicode_codecvt::state_type state04("UCS-2BE", "UCS-4BE", 0, 0);
   initialize_state(state04);
   int j = cvt.length(state03, e_lit, e_lit + size, 5);
   VERIFY( j == 5 );
@@ -186,15 +186,12 @@ void test01()
   delete [] e_arr;
   delete [] i_arr;
 }
-#endif // _GLIBCPP_USE_WCHAR_T
 #endif // _GLIBCPP_USE___ENC_TRAITS
 
 int main ()
 {
 #ifdef _GLIBCPP_USE___ENC_TRAITS
-#ifdef _GLIBCPP_USE_WCHAR_T
   test01();
-#endif
 #endif 
   return 0;
 }
