@@ -415,6 +415,14 @@ char __EH_FRAME_BEGIN__[]
      = { };
 #endif /* EH_FRAME_SECTION_NAME */
 
+#ifdef JCR_SECTION_NAME
+/* Stick a label at the beginning of the java class registration info
+   so we can register them properly.  */
+
+STATIC void *__JCR_LIST__[] __attribute__ ((unused, section(JCR_SECTION_NAME)))
+  = { 0 };
+#endif /* JCR_SECTION_NAME */
+
 #endif /* defined(CRT_BEGIN) */
 
 #ifdef CRT_END
@@ -423,11 +431,25 @@ char __EH_FRAME_BEGIN__[]
 
 #ifdef OBJECT_FORMAT_ELF
 
+#ifdef JCR_SECTION_NAME
+extern void _Jv_RegisterClasses (void *) __attribute__((weak));
+static void *__JCR_END__[];
+#endif
+
 static func_ptr __CTOR_END__[];
 static void
 __do_global_ctors_aux (void)
 {
   func_ptr *p;
+#ifdef JCR_SECTION_NAME
+  void **jcr;
+  if (_Jv_RegisterClasses)
+    {
+      for (jcr = __JCR_END__ - 1; *jcr != NULL; jcr--);
+      if (*(jcr + 1))
+	_Jv_RegisterClasses (jcr + 1);
+    }
+#endif
   for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)
     (*p) ();
 }
@@ -542,6 +564,14 @@ STATIC int __FRAME_END__[]
      __attribute__ ((unused, mode(SI), section(EH_FRAME_SECTION_NAME)))
      = { 0 };
 #endif /* EH_FRAME_SECTION */
+
+#ifdef JCR_SECTION_NAME
+/* Stick a label at the beginning of the java class registration info
+   so we can register them properly.  */
+
+STATIC void *__JCR_END__[1] 
+     __attribute__ ((unused, section(JCR_SECTION_NAME))) = { 0 };
+#endif /* JCR_SECTION_NAME */
 
 #endif /* defined(CRT_END) */
 

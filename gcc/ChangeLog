@@ -1,3 +1,15 @@
+2001-08-08  Anthony Green  <green@redhat.com>
+
+	* java/class.c (emit_register_classes): Use assemble_jcr if
+	possible.  Keep the original mechanism as a fallback.
+	* defaults.h (JCR_SECTION_NAME): Define if we have named section
+	and weak symbol support.
+	* crtstuff.c (__JCR_LIST__): Define.
+	(__JCR_END__): Define.
+	(_Jv_RegiserClasses): Define weak symbol if possible.
+	(__do_global_ctors_aux): Register classes for ELF targets with
+	weak symbol support.
+
 2001-08-08  Kazu Hirata  <kazu@hxi.com>
 
 	* dbxout.c: Fix comment formatting.

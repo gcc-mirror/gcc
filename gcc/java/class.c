@@ -37,6 +37,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "output.h"
 #include "parse.h"
 #include "ggc.h"
+#include "target.h"
 
 static tree make_method_value PARAMS ((tree));
 static tree build_java_method_type PARAMS ((tree, tree, int));
@@ -848,7 +849,6 @@ build_utf8_ref (name)
   sprintf(buf, "_Utf%d", ++utf8_count);
 
   decl = build_decl (VAR_DECL, get_identifier (buf), utf8const_type);
-  /* FIXME get some way to force this into .text, not .data. */
   TREE_STATIC (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
@@ -1865,45 +1865,62 @@ register_class ()
   end = current;
 }
 
-/* Generate a function that gets called at start-up (static contructor) time,
-   which calls registerClass for all the compiled classes. */
+/* Emit something to register classes at start-up time.
+
+   The preferred mechanism is through the .jcr section, which contain
+   a list of pointers to classes which get registered during
+   constructor invoction time.  The fallback mechanism is to generate
+   a `constructor' function which calls _Jv_RegisterClass for each
+   class in this file.  */
 
 void
 emit_register_classes ()
 {
-  extern tree get_file_function_name PARAMS ((int));
-  tree init_name = get_file_function_name ('I');
-  tree init_type = build_function_type (void_type_node, end_params_node);
-  tree init_decl;
-  tree t;
-
-  init_decl = build_decl (FUNCTION_DECL, init_name, init_type);
-  SET_DECL_ASSEMBLER_NAME (init_decl, init_name);
-  TREE_STATIC (init_decl) = 1;
-  current_function_decl = init_decl;
-  DECL_RESULT (init_decl) = build_decl(RESULT_DECL, NULL_TREE, void_type_node);
-  /*  DECL_EXTERNAL (init_decl) = 1;*/
-  TREE_PUBLIC (init_decl) = 1;
-  pushlevel (0);
-  make_decl_rtl (init_decl, NULL);
-  init_function_start (init_decl, input_filename, 0);
-  expand_function_start (init_decl, 0);
-
-  for ( t = registered_class; t; t = TREE_CHAIN (t))
-    emit_library_call (registerClass_libfunc, 0, VOIDmode, 1,
-		       XEXP (DECL_RTL (t), 0), Pmode);
-
-  expand_function_end (input_filename, 0, 0);
-  poplevel (1, 0, 1);
-  { 
-    /* Force generation, even with -O3 or deeper. Gross hack. FIXME */
-    int saved_flag = flag_inline_functions;
-    flag_inline_functions = 0;	
-    rest_of_compilation (init_decl);
-    flag_inline_functions = saved_flag;
-  }
-  current_function_decl = NULL_TREE;
-  assemble_constructor (XEXP (DECL_RTL (init_decl), 0), DEFAULT_INIT_PRIORITY);
+  if (SUPPORTS_WEAK && targetm.have_named_sections)
+    {
+      tree t;
+      named_section_flags (JCR_SECTION_NAME, SECTION_WRITE,
+			   POINTER_SIZE / BITS_PER_UNIT);
+      for (t = registered_class; t; t = TREE_CHAIN (t))
+	assemble_integer (XEXP (DECL_RTL (t), 0),
+			  POINTER_SIZE / BITS_PER_UNIT, 1);
+    }
+  else
+    {
+      extern tree get_file_function_name PARAMS ((int));
+      tree init_name = get_file_function_name ('I');
+      tree init_type = build_function_type (void_type_node, end_params_node);
+      tree init_decl;
+      tree t;
+      
+      init_decl = build_decl (FUNCTION_DECL, init_name, init_type);
+      SET_DECL_ASSEMBLER_NAME (init_decl, init_name);
+      TREE_STATIC (init_decl) = 1;
+      current_function_decl = init_decl;
+      DECL_RESULT (init_decl) = build_decl(RESULT_DECL, NULL_TREE, void_type_node);
+      /*  DECL_EXTERNAL (init_decl) = 1;*/
+      TREE_PUBLIC (init_decl) = 1;
+      pushlevel (0);
+      make_decl_rtl (init_decl, NULL);
+      init_function_start (init_decl, input_filename, 0);
+      expand_function_start (init_decl, 0);
+      
+      for ( t = registered_class; t; t = TREE_CHAIN (t))
+	emit_library_call (registerClass_libfunc, 0, VOIDmode, 1,
+			   XEXP (DECL_RTL (t), 0), Pmode);
+      
+      expand_function_end (input_filename, 0, 0);
+      poplevel (1, 0, 1);
+      { 
+	/* Force generation, even with -O3 or deeper. Gross hack. FIXME */
+	int saved_flag = flag_inline_functions;
+	flag_inline_functions = 0;	
+	rest_of_compilation (init_decl);
+	flag_inline_functions = saved_flag;
+      }
+      current_function_decl = NULL_TREE;
+      assemble_constructor (XEXP (DECL_RTL (init_decl), 0), DEFAULT_INIT_PRIORITY);
+    }
 }
 
 void
