@@ -1,6 +1,6 @@
-// 2000-08-17 Benjamin Kosnik <bkoz@cygnus.com>
+// 2003-02-06  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2000, 2002, 2003 Free Software Foundation
+// Copyright (C) 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,9 +23,27 @@
 #include <locale>
 #include <testsuite_hooks.h>
 
+bool length_called = false;
+
+class length_codecvt : public std::codecvt<char, char, std::mbstate_t>
+{
+  typedef std::codecvt<char, char, std::mbstate_t> c_codecvt;
+
+public:
+  // DR75: type of first argument of do_length is state_type&
+  virtual int do_length(state_type& state, const extern_type* from,
+                        const extern_type* end, std::size_t max) const
+  {
+    length_called = true;
+    return c_codecvt::do_length(state, from, end, max);
+  }
+};
+
 // Required instantiation, degenerate conversion.
 // codecvt<char, char, mbstate_t>
-void test01()
+//
+// libstdc++/9224
+void test02()
 {
   using namespace std;
   typedef codecvt_base::result			result;
@@ -35,16 +53,17 @@ void test01()
   const char* 		c_lit = "black pearl jasmine tea";
   int 			size = 25;
 
-  locale 		loc = locale::classic();
+  locale 		loc (locale::classic(), new length_codecvt);
   c_codecvt::state_type state;
   const c_codecvt* 	cvt = &use_facet<c_codecvt>(loc); 
 
-  int j = cvt->length(state, c_lit, c_lit + size, 5);
-  VERIFY( j == 5 );
+  length_called = false;
+  cvt->length(state, c_lit, c_lit + size, 5);
+  VERIFY( length_called );
 }
 
 int main ()
 {
-  test01();
+  test02();
   return 0;
 }

@@ -106,7 +106,7 @@
       { return this->do_always_noconv(); }
 
       int
-      length(const state_type& __state, const extern_type* __from,
+      length(state_type& __state, const extern_type* __from,
 	     const extern_type* __end, size_t __max) const
       { return this->do_length(__state, __from, __end, __max); }
 
@@ -144,7 +144,7 @@
       do_always_noconv() const throw() = 0;
 
       virtual int 
-      do_length(const state_type&, const extern_type* __from, 
+      do_length(state_type&, const extern_type* __from, 
 		const extern_type* __end, size_t __max) const = 0;
 
       virtual int 
@@ -204,7 +204,7 @@
       do_always_noconv() const throw();
 
       virtual int 
-      do_length(const state_type&, const extern_type* __from, 
+      do_length(state_type&, const extern_type* __from, 
 		const extern_type* __end, size_t __max) const;
 
       virtual int 
@@ -264,7 +264,7 @@
       do_always_noconv() const throw();
 
       virtual int 
-      do_length(const state_type&, const extern_type* __from, 
+      do_length(state_type&, const extern_type* __from, 
 		const extern_type* __end, size_t __max) const;
 
       virtual int 
@@ -324,7 +324,7 @@
       bool do_always_noconv() const throw();
 
       virtual 
-      int do_length(const state_type&, const extern_type* __from,
+      int do_length(state_type&, const extern_type* __from,
 		    const extern_type* __end, size_t __max) const;
 
       virtual int 

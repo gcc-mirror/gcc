@@ -45,42 +45,15 @@ void test01()
   typedef codecvt_base::result			result;
   typedef wchar_t				int_type;
   typedef char					ext_type;
-  typedef char_traits<wchar_t>			int_traits;
-  typedef char_traits<char>			ext_traits;
 
   bool 			test = true;
   const ext_type* 	e_lit = "black pearl jasmine tea";
-  const ext_type*       efrom_next;
-  const int_type* 	i_lit = L"black pearl jasmine tea";
-  const int_type*       ifrom_next;
   int 			size = strlen(e_lit);
   ext_type* 		e_arr = new ext_type[size + 1];
   ext_type*		eto_next;
-  int_type* 		i_arr = new int_type[size + 1];
-  int_type*		ito_next;
 
   locale 		loc;
   const w_codecvt* 	cvt = &use_facet<w_codecvt>(loc); 
-
-  // in
-  w_codecvt::state_type state01;
-  zero_state(state01);
-  result r1 = cvt->in(state01, e_lit, e_lit + size, efrom_next, 
-		      i_arr, i_arr + size, ito_next);
-  VERIFY( r1 == codecvt_base::ok );
-  VERIFY( !int_traits::compare(i_arr, i_lit, size) ); 
-  VERIFY( efrom_next == e_lit + size );
-  VERIFY( ito_next == i_arr + size );
-
-  // out
-  w_codecvt::state_type state02;
-  zero_state(state02);  
-  result r2 = cvt->out(state02, i_lit, i_lit + size, ifrom_next, 
-		       e_arr, e_arr + size, eto_next);
-  VERIFY( r2 == codecvt_base::ok );
-  VERIFY( !ext_traits::compare(e_arr, e_lit, size) ); 
-  VERIFY( ifrom_next == i_lit + size );
-  VERIFY( eto_next == e_arr + size );
 
   // unshift
   strcpy(e_arr, e_lit);
@@ -90,6 +63,8 @@ void test01()
   VERIFY( r3 == codecvt_base::noconv );
   VERIFY( !strcmp(e_arr, e_lit) ); 
   VERIFY( eto_next == e_arr );
+
+  delete [] e_arr;
 }
 
 int main ()

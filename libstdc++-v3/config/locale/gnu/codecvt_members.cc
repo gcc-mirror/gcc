@@ -47,31 +47,50 @@ namespace std
 	 extern_type* __to, extern_type* __to_end,
 	 extern_type*& __to_next) const
   {
-    result __ret = error;
-    size_t __len = std::min(__from_end - __from, __to_end - __to);
+    result __ret = ok;
+    // The conversion must be done using a temporary destination buffer
+    // since it is not possible to pass the size of the buffer to wcrtomb
+    extern_type __buf[MB_LEN_MAX];
+    // A temporary state must be used since the result of the last
+    // conversion may be thrown away.
+    state_type __tmp_state(__state);
+    
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __c_locale __old = __uselocale(_M_c_locale_codecvt);
 #endif
-    size_t __conv = wcsrtombs(__to, &__from, __len, &__state);
+
+    // The conversion must be done by calling wcrtomb in a loop rather
+    // than using wcsrtombs because wcsrtombs assumes that the input is
+    // zero-terminated.
+    while (__from < __from_end && __to < __to_end)
+      {
+	size_t __conv = wcrtomb(__buf, *__from, &__tmp_state);
+	if (__conv == static_cast<size_t>(-1))
+	  {
+	    __ret = error;
+	    break;
+	  }
+	else if (__conv > static_cast<size_t>(__to_end - __to))
+	  {
+	    __ret = partial;
+	    break;
+	  }
+
+	memcpy(__to, __buf, __conv);
+	__state = __tmp_state;
+	__to += __conv;
+	__from++;
+      }
+
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __uselocale(__old);
 #endif
 
-    if (__conv == __len)
-      {
-	__from_next = __from;
-	__to_next = __to + __conv;
-	__ret = ok;
-      }
-    else if (__conv > 0 && __conv < __len)
-      {
-	__from_next = __from;
-	__to_next = __to + __conv;
-	__ret = partial;
-      }
-    else
-      __ret = error;
-	
+    if (__ret == ok && __from < __from_end)
+      __ret = partial;
+
+    __from_next = __from;
+    __to_next = __to;
     return __ret; 
   }
   
@@ -82,31 +101,131 @@ namespace std
 	intern_type* __to, intern_type* __to_end,
 	intern_type*& __to_next) const
   {
-    result __ret = error;
-    size_t __len = std::min(__from_end - __from, __to_end - __to);
+    result __ret = ok;
+    // This temporary state object is neccessary so __state won't be modified
+    // if [__from, __from_end) is a partial multibyte character.
+    state_type __tmp_state(__state);
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __c_locale __old = __uselocale(_M_c_locale_codecvt);
 #endif
-    size_t __conv = mbsrtowcs(__to, &__from, __len, &__state);
+
+    // Conversion must be done by calling mbrtowc in a loop rather than
+    // by calling mbsrtowcs because mbsrtowcs assumes that the input
+    // sequence is zero-terminated.
+    while (__from < __from_end && __to < __to_end)
+      {
+	size_t __conv = mbrtowc(__to, __from, __from_end - __from,
+				&__tmp_state);
+	if (__conv == static_cast<size_t>(-1))
+	  {
+	    __ret = error;
+	    break;
+	  }
+	else if (__conv == static_cast<size_t>(-2))
+	  {
+	    // It is unclear what to return in this case (see DR 382).
+	    __ret = partial;
+	    break;
+	  }
+	else if (__conv == 0)
+	  {
+	    // XXX Probably wrong for stateful encodings
+	    __conv = 1;
+	    *__to = L'\0';
+	  }
+
+	__state = __tmp_state;
+	__to++;
+	__from += __conv;
+      }
+
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __uselocale(__old);
 #endif
 
-    if (__conv == __len)
+    // It is not clear that __from < __from_end implies __ret != ok
+    // (see DR 382).
+    if (__ret == ok && __from < __from_end)
+      __ret = partial;
+
+    __from_next = __from;
+    __to_next = __to;
+    return __ret; 
+  }
+
+  int 
+  codecvt<wchar_t, char, mbstate_t>::
+  do_encoding() const throw()
+  {
+    // XXX This implementation assumes that the encoding is
+    // stateless and is either single-byte or variable-width.
+    int __ret = 0;
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+    __c_locale __old = __uselocale(_M_c_locale_codecvt);
+#endif
+    if (MB_CUR_MAX == 1)
+      __ret = 1;
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+    __uselocale(__old);
+#endif
+    return __ret;
+  }  
+
+  int 
+  codecvt<wchar_t, char, mbstate_t>::
+  do_max_length() const throw()
+  {
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+    __c_locale __old = __uselocale(_M_c_locale_codecvt);
+#endif
+    // XXX Probably wrong for stateful encodings.
+    int __ret = MB_CUR_MAX;
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+    __uselocale(__old);
+#endif
+    return __ret;
+  }
+  
+  int 
+  codecvt<wchar_t, char, mbstate_t>::
+  do_length(state_type& __state, const extern_type* __from,
+	    const extern_type* __end, size_t __max) const
+  {
+    int __ret = 0;
+    state_type __tmp_state(__state);
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+    __c_locale __old = __uselocale(_M_c_locale_codecvt);
+#endif
+
+    while (__from < __end && __max)
       {
-	__from_next = __from;
-	__to_next = __to + __conv;
-	__ret = ok;
+	size_t __conv = mbrtowc(NULL, __from, __end - __from, &__tmp_state);
+	if (__conv == static_cast<size_t>(-1))
+	  {
+	    // Invalid source character
+	    break;
+	  }
+	else if (__conv == static_cast<size_t>(-2))
+	  {
+	    // Remainder of input does not form a complete destination
+	    // character.
+	    break;
+	  }
+	else if (__conv == 0)
+	  {
+	    // XXX Probably wrong for stateful encodings
+	    __conv = 1;
+	  }
+
+	__state = __tmp_state;
+	__from += __conv;
+	__ret += __conv;
+	__max--;
       }
-    else if (__conv > 0 && __conv < __len)
-      {
-	__from_next = __from;
-	__to_next = __to + __conv;
-	__ret = partial;
-      }
-    else
-      __ret = error;
-	
+
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+    __uselocale(__old);
+#endif
     return __ret; 
   }
 #endif
