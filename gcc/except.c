@@ -1046,7 +1046,18 @@ remove_unreachable_regions (rtx insns)
     }
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
-    reachable[uid_region_num[INSN_UID (insn)]] = true;
+    {
+      reachable[uid_region_num[INSN_UID (insn)]] = true;
+
+      if (GET_CODE (insn) == CALL_INSN
+	  && GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
+	for (i = 0; i < 3; i++)
+	  {
+	    rtx sub = XEXP (PATTERN (insn), i);
+	    for (; sub ; sub = NEXT_INSN (sub))
+	      reachable[uid_region_num[INSN_UID (sub)]] = true;
+	  }
+    }
 
   for (i = cfun->eh->last_region_number; i > 0; --i)
     {
