@@ -1,3 +1,8 @@
+2005-03-05  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config.gcc (hppa*64*-*-hpux11*): Use pa/pa-hpux1111.h for
+	*-*-hpux11.[1-9]*, not just for *-*-hpux11.11.
+
 2005-03-05  John David Anglin  <dave.danglin@nrc-cnrc.gc.ca>
 	    Joseph S. Myers  <joseph@codesourcery.com>
 

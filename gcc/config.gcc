@@ -857,7 +857,7 @@ hppa*64*-*-hpux11*)
 			 pa/pa64-regs.h pa/pa-hpux.h pa/pa-hpux11.h"
 	fi
 	case ${target} in
-	*-*-hpux11.11)
+	*-*-hpux11.[1-9]*)
 		tm_file="${tm_file} pa/pa-hpux1111.h pa/pa-64.h pa/pa64-hpux.h"
 		;;
 	*)
