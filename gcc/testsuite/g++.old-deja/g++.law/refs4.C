@@ -2,8 +2,7 @@
 
 // execution test
 
-#include <stdio.h>
-#include <stdlib.h>
+int r;
 
 const int& min(const int& tX, const int& tY)
 {
@@ -13,13 +12,13 @@ const int& min(const int& tX, const int& tY)
 void foo(const int m, const int n)
 {
 	if (m == 1 && n == 100)
-	  printf("PASS\n");
+	  /* OK */;
 	else
-	  abort ();
+	  r = 1;
 }
 
 int main()
 {
         foo(min(2, 1), min(100, 200));
-        return 0;
+        return r;
 }
