@@ -27,14 +27,12 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "line-map.h"
 #include "intl.h"
 
-static void trace_include
-  PARAMS ((const struct line_maps *, const struct line_map *));
+static void trace_include (const struct line_maps *, const struct line_map *);
 
 /* Initialize a line map set.  */
 
 void
-init_line_maps (set)
-     struct line_maps *set;
+init_line_maps (struct line_maps *set)
 {
   set->maps = 0;
   set->allocated = 0;
@@ -47,8 +45,7 @@ init_line_maps (set)
 /* Free a line map set.  */
 
 void
-free_line_maps (set)
-     struct line_maps *set;
+free_line_maps (struct line_maps *set)
 {
   if (set->maps)
     {
@@ -73,13 +70,9 @@ free_line_maps (set)
    function.  */
 
 const struct line_map *
-add_line_map (set, reason, sysp, from_line, to_file, to_line)
-     struct line_maps *set;
-     enum lc_reason reason;
-     unsigned int sysp;
-     unsigned int from_line;
-     const char *to_file;
-     unsigned int to_line;
+add_line_map (struct line_maps *set, enum lc_reason reason,
+	      unsigned int sysp, unsigned int from_line,
+	      const char *to_file, unsigned int to_line)
 {
   struct line_map *map;
 
@@ -161,9 +154,7 @@ add_line_map (set, reason, sysp, from_line, to_file, to_line)
    the list is sorted and we can use a binary search.  */
 
 const struct line_map *
-lookup_line (set, line)
-     struct line_maps *set;
-     unsigned int line;
+lookup_line (struct line_maps *set, unsigned int line)
 {
   unsigned int md, mn = 0, mx = set->used;
 
@@ -187,9 +178,7 @@ lookup_line (set, line)
    the most recently listed stack is the same as the current one.  */
 
 void
-print_containing_files (set, map)
-     struct line_maps *set;
-     const struct line_map *map;
+print_containing_files (struct line_maps *set, const struct line_map *map)
 {
   if (MAIN_FILE_P (map) || set->last_listed == map->included_from)
     return;
@@ -225,9 +214,7 @@ print_containing_files (set, map)
 /* Print an include trace, for e.g. the -H option of the preprocessor.  */
 
 static void
-trace_include (set, map)
-     const struct line_maps *set;
-     const struct line_map *map;
+trace_include (const struct line_maps *set, const struct line_map *map)
 {
   unsigned int i = set->depth;
 

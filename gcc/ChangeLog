@@ -1,3 +1,7 @@
+2003-06-20  Neil Booth  <neil@daikokuya.co.uk>
+
+	* line-map.c, line-map.h: Convert to ISO prototypes.
+
 2003-06-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* gcse.c (store_killed_in_insn): Fix.
