@@ -962,6 +962,12 @@ decl_attributes (node, attributes, prefix_attributes)
 		  }
 	      }
 
+	    if (format_type == strftime_format_type && first_arg_num != 0)
+	      {
+		error ("strftime formats cannot format arguments");
+		continue;
+	      }
+
 	    record_function_format (DECL_NAME (decl),
 				    DECL_ASSEMBLER_NAME (decl),
 				    format_type, format_num, first_arg_num);
@@ -2754,6 +2760,8 @@ check_format_info (status, info, params)
 	    status_warning (status, "no closing `]' for `%%[' format");
 	}
 
+      wanted_type = 0;
+      wanted_type_name = 0;
       if (fki->flags & FMT_FLAG_ARG_CONVERT)
 	{
 	  wanted_type = (fci->types[length_chars_val].type

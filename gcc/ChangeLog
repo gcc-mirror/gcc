@@ -1,5 +1,12 @@
 2000-10-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (decl_attributes): Don't allow strftime formats with
+	first_arg_num nonzero.
+	(check_format_info): Set wanted_type and wanted_type_name to zero
+	before they are possibly assigned and used.
+
+2000-10-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-common.c (scanf_flag_specs): Add flags ' and I.
 	(strftime_flag_pairs): Disallow any pair of the _, - and 0 flags,
 	or the ^ and # flags together.
