@@ -1,3 +1,8 @@
+2001-08-30  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gcc.c-torture/execute/longlong.c (alpha_ep_extbl_i_eq_0): Allow
+	for 16-bit 'unsigned int'.
+
 2001-08-29  Kazu Hirata  <kazu@hxi.com>
 
 	* gcc.c-torture/compile/981006-1.x: Do not use -fpic on h8300.
