@@ -1894,7 +1894,7 @@ typedef struct rs6000_args
 {{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
  { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
  { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},	\
- { 30, 30} }
+ { RS6000_PIC_OFFSET_TABLE_REGNUM, RS6000_PIC_OFFSET_TABLE_REGNUM } }
 
 /* Given FROM and TO register numbers, say whether this elimination is allowed.
    Frame pointer elimination is automatically handled.
@@ -1905,10 +1905,11 @@ typedef struct rs6000_args
    We need r30 if -mminimal-toc was specified, and there are constant pool
    references.  */
 
-#define CAN_ELIMINATE(FROM, TO)					\
- ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM	\
-  ? ! frame_pointer_needed					\
-  : (FROM) == 30 ? ! TARGET_MINIMAL_TOC || TARGET_NO_TOC || get_pool_size () == 0 \
+#define CAN_ELIMINATE(FROM, TO)						\
+ ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM		\
+  ? ! frame_pointer_needed						\
+  : (FROM) == RS6000_PIC_OFFSET_TABLE_REGNUM 				\
+  ? ! TARGET_MINIMAL_TOC || TARGET_NO_TOC || get_pool_size () == 0	\
   : 1)
 
 /* Define the offset between two registers, one to be eliminated, and the other
@@ -1923,7 +1924,7 @@ typedef struct rs6000_args
    (OFFSET) = info->total_size;						\
  else if ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	\
    (OFFSET) = (info->push_p) ? info->total_size : 0;			\
-  else if ((FROM) == 30)						\
+  else if ((FROM) == RS6000_PIC_OFFSET_TABLE_REGNUM)			\
     (OFFSET) = 0;							\
   else									\
     abort ();								\
@@ -2188,7 +2189,7 @@ do {									     \
 #define RS6000_PIC_OFFSET_TABLE_REGNUM 30
 #define PIC_OFFSET_TABLE_REGNUM (flag_pic ? RS6000_PIC_OFFSET_TABLE_REGNUM : INVALID_REGNUM)
 
-#define TOC_REGISTER (TARGET_MINIMAL_TOC ? 30 : 2)
+#define TOC_REGISTER (TARGET_MINIMAL_TOC ? RS6000_PIC_OFFSET_TABLE_REGNUM : 2)
 
 /* Define this macro if the register defined by
    `PIC_OFFSET_TABLE_REGNUM' is clobbered by calls.  Do not define
