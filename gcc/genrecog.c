@@ -1597,7 +1597,7 @@ change_state (oldpos, newpos, afterward, indent)
   for (old_has_insn = odepth - 1; old_has_insn >= 0; --old_has_insn)
     if (oldpos[old_has_insn] >= 'A' && oldpos[old_has_insn] <= 'Z')
       break;
-  for (new_has_insn = odepth - 1; new_has_insn >= 0; --new_has_insn)
+  for (new_has_insn = ndepth - 1; new_has_insn >= 0; --new_has_insn)
     if (newpos[new_has_insn] >= 'A' && newpos[new_has_insn] <= 'Z')
       break;
 
