@@ -537,7 +537,6 @@ expand_computed_goto (exp)
   rtx x = expand_expr (exp, 0, VOIDmode, 0);
   emit_queue ();
   emit_indirect_jump (x);
-  emit_barrier ();
 }
 
 /* Handle goto statements and the labels that they can go to.  */
@@ -645,9 +644,8 @@ expand_goto (label)
 	  /* Restore the stack pointer.  Note this uses fp just restored.  */
 	  addr = p->nonlocal_goto_stack_level;
 	  if (addr)
-	    addr = replace_rtx (copy_rtx (p->nonlocal_goto_stack_level),
-				replace_rtx (addr, virtual_stack_vars_rtx,
-					     frame_pointer_rtx));
+	    addr = replace_rtx (copy_rtx (addr),
+				virtual_stack_vars_rtx, frame_pointer_rtx);
 
 	  emit_stack_restore (SAVE_NONLOCAL, addr, 0);
 
