@@ -34,7 +34,6 @@
 // Information as gleaned from /usr/include/ctype.h on FreeBSD 3.4,
 // 4.0 and all versions of the CVS managed file at:
 // :pserver:anoncvs@anoncvs.freebsd.org:/home/ncvs/src/include/ctype.h
-// which should cover most classic BSD configurations
   
   struct ctype_base
   {
@@ -58,7 +57,7 @@
       alnum = _CTYPE_A | _CTYPE_D,
       graph = _CTYPE_G
 #else
-      // Other BSD's, including Free BSD 3.4, uses this style of define.
+      // Older versions, including Free BSD 3.4, use this style of define.
       space = _S,
       print = _R,
       cntrl = _C,

@@ -1,5 +1,10 @@
 2000-12-05  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/os/freebsd/bits/ctype_base.h: Update comments about other
+	BSD variants.
+
+2000-12-05  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/os/freebsd/bits/*.h: Move here from config/os/bsd/bits.
 	* aclocal.m4: Adjust accordingly.
 	* configure.target: Likewise.
