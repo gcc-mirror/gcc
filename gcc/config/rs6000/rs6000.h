@@ -25,7 +25,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-D_IBMR2 -D_AIX -D_AIX32 -Asystem(unix) -Asystem(aix) -Acpu(rs6000) -Amachine(rs6000)"
+#define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 \
+-Asystem(unix) -Asystem(aix) -Acpu(rs6000) -Amachine(rs6000)"
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION ;
@@ -39,6 +40,34 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    will no longer be needed.  */
 
 /* #define ASM_SPEC "-u" */
+
+/* Define appropriate architecture macros for preprocessor depending on
+   target switches.  */
+
+#define CPP_SPEC "\
+%{!mcpu*: \
+  %{mpower: %{!mpower2: -D_ARCH_PWR}} \
+  %{mpower2: -D_ARCH_PWR2} \
+  %{mpowerpc*: -D_ARCH_PPC} \
+  %{mno-power: %{!mpowerpc*: -D_ARCH_COM}} \
+  %{!mno-power: %{!mpower2: -D_ARCH_PWR}}} \
+%{mcpu=common: -D_ARCH_COM} \
+%{mcpu=power: -D_ARCH_PWR} \
+%{mcpu=powerpc: -D_ARCH_PPC} \
+%{mcpu=rios: -D_ARCH_PWR} \
+%{mcpu=rios1: -D_ARCH_PWR} \
+%{mcpu=rios2: -D_ARCH_PWR2} \
+%{mcpu=rsc: -D_ARCH_PWR} \
+%{mcpu=rsc1: -D_ARCH_PWR} \
+%{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
+%{mcpu=mpc601: -D_ARCH_PPC -D_ARCH_PWR} \
+%{mcpu=ppc601: -D_ARCH_PPC -D_ARCH_PWR} \
+%{mcpu=603: -D_ARCH_PPC} \
+%{mcpu=mpc603: -D_ARCH_PPC} \
+%{mcpu=ppc603: -D_ARCH_PPC} \
+%{mcpu=604: -D_ARCH_PPC} \
+%{mcpu=mpc604: -D_ARCH_PPC} \
+%{mcpu=ppc604: -D_ARCH_PPC}"
 
 /* Define the options for the binder: Start text at 512, align all segments
    to 512 bytes, and warn if there is text relocation.
