@@ -96,11 +96,26 @@ reg_or_0_operand (op, mode)
 {
   if (op == const0_rtx || register_operand (op, mode))
     return 1;
-  if (GET_CODE (op) == CONST_DOUBLE
+  if (GET_MODE (op) == DImode && GET_CODE (op) == CONST_DOUBLE
       && CONST_DOUBLE_HIGH (op) == 0
       && CONST_DOUBLE_LOW (op) == 0)
     return 1;
+  if (GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT
+      && GET_CODE (op) == CONST_DOUBLE
+      && fp_zero_operand (op))
+    return 1;
   return 0;
+}
+
+/* Nonzero if OP is a floating point value with value 0.0.  */
+int
+fp_zero_operand (op)
+     rtx op;
+{
+  REAL_VALUE_TYPE r;
+
+  REAL_VALUE_FROM_CONST_DOUBLE (r, op);
+  return REAL_VALUES_EQUAL (r, dconst0);
 }
 
 /* Nonzero if OP can appear as the dest of a RESTORE insn.  */
