@@ -505,7 +505,7 @@ execute_one_pass (struct tree_opt_pass *pass)
   if (dump_file
       && (pass->properties_provided & (PROP_cfg | PROP_rtl))
 	  == (PROP_cfg | PROP_rtl))
-    print_rtl_graph_with_bb (dump_file_name, get_insns ());
+    print_rtl_with_bb (dump_file, get_insns ());
 
   /* Run post-pass cleanup and verification.  */
   todo = pass->todo_flags_finish;

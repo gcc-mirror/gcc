@@ -1,3 +1,14 @@
+2004-10-09  Steven Bosscher  <stevenb@suse.de>
+
+	* cfgexpand.c (maybe_dump_rtl_for_tree_stmt): New function.
+	(expand_gimple_cond_expr, expand_gimple_tailcall,
+	expand_gimple_basic_block): Use it to dump RTL for each stmt.
+	(tree_expand_cfg): Announce full RTL function dump.
+	* tree-optimize.c (execute_one_pass): Use normal RTL printing,
+	not the graph version.
+	* tree-pretty-print.c (dump_generic_node): Allow empty statements
+	in the arms of a COND_EXPR for lowered nodes.
+
 2004-10-08  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/spe.h (atosfix16, atosfix32, atosfix64, atoufix16,
@@ -192,21 +203,21 @@
 
 2004-10-07  Devang Patel  <dpatel@apple.com>
 
-        * rs6000/altivec.md (UNSPEC_VCMPBFP, UNSPEC_VCMPEQUB, UNSPEC_VCMPEQUH,
-        UNSPEC_VCMPEQUW, UNSPEC_VCMPGEFP, UNSPEC_VCMPGTUB, UNSPEC_VCMPGTSB,
-        UNSPEC_VCMPGTUH, UNSPEC_VCMPGTSH, UNSPEC_VCMPGTUW, UNSPEC_VCMPGTSW,
-        UNSPEC_VCMPGTFP, UNSPEC_VSEL4SI, UNSPEC_VSEL4SF, UNSPEC_VSEL8HI,
-        UNSPEC_VSEL16QI, UNSPEC_VCOND_V4SI, UNSPEC_VCOND_V4SF, UNSPEC_VCOND_V8HI,
-        UNSPEC_VCOND_V16QI, UNSPEC_VCONDU_V4SI, UNSPEC_VCONDU_V8HI, 
+	* rs6000/altivec.md (UNSPEC_VCMPBFP, UNSPEC_VCMPEQUB, UNSPEC_VCMPEQUH,
+	UNSPEC_VCMPEQUW, UNSPEC_VCMPGEFP, UNSPEC_VCMPGTUB, UNSPEC_VCMPGTSB,
+	UNSPEC_VCMPGTUH, UNSPEC_VCMPGTSH, UNSPEC_VCMPGTUW, UNSPEC_VCMPGTSW,
+	UNSPEC_VCMPGTFP, UNSPEC_VSEL4SI, UNSPEC_VSEL4SF, UNSPEC_VSEL8HI,
+	UNSPEC_VSEL16QI, UNSPEC_VCOND_V4SI, UNSPEC_VCOND_V4SF, UNSPEC_VCOND_V8HI,
+	UNSPEC_VCOND_V16QI, UNSPEC_VCONDU_V4SI, UNSPEC_VCONDU_V8HI, 
 	UNSPEC_VCONDU_V16QI): New constant defines.
-        (vcondv4si, vcondv4sf, vcondv8hi, vcondv16qi, vconduv4si, vconduv8hi,
+	(vcondv4si, vcondv4sf, vcondv8hi, vcondv16qi, vconduv4si, vconduv8hi,
 	vconduv16qi): New patterns.
-        * rs6000/rs6000-protos.h (rs6000_emit_vector_cond_expr): New function.
-        * rs6000/rs6000.c (rs6000_emit_vector_cond_expr): New function.
-        (get_vec_cmp_insn): Same.
-        (get_vsel_insn): Same.
-        (rs6000_emit_vector_compare): Same.
-        (rs6000_emit_vector_select): Same.
+	* rs6000/rs6000-protos.h (rs6000_emit_vector_cond_expr): New function.
+	* rs6000/rs6000.c (rs6000_emit_vector_cond_expr): New function.
+	(get_vec_cmp_insn): Same.
+	(get_vsel_insn): Same.
+	(rs6000_emit_vector_compare): Same.
+	(rs6000_emit_vector_select): Same.
 	(INSN_NOT_AVAILABLE): New.
 	
 2004-10-07  Zdenek Dvorak  <dvorakz@suse.cz>

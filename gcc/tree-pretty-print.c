@@ -845,9 +845,11 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  pp_character (buffer, ')');
 	  /* The lowered cond_exprs should always be printed in full.  */
 	  if (COND_EXPR_THEN (node)
-	      && TREE_CODE (COND_EXPR_THEN (node)) == GOTO_EXPR
+	      && (IS_EMPTY_STMT (COND_EXPR_THEN (node))
+		  || TREE_CODE (COND_EXPR_THEN (node)) == GOTO_EXPR)
 	      && COND_EXPR_ELSE (node)
-	      && TREE_CODE (COND_EXPR_ELSE (node)) == GOTO_EXPR)
+	      && (IS_EMPTY_STMT (COND_EXPR_ELSE (node))
+		  || TREE_CODE (COND_EXPR_ELSE (node)) == GOTO_EXPR))
 	    {
 	      pp_space (buffer);
 	      dump_generic_node (buffer, COND_EXPR_THEN (node), 0, flags, true);
