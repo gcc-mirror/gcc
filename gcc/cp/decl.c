@@ -50,6 +50,7 @@ Boston, MA 02111-1307, USA.  */
 #include "diagnostic.h"
 #include "debug.h"
 #include "timevar.h"
+#include "input.h"
 
 static tree grokparms				PARAMS ((tree));
 static const char *redeclaration_error_message	PARAMS ((tree, tree));
@@ -8744,8 +8745,6 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
       return;
     }
 
-  my_friendly_assert (TREE_CODE (decl) != RESULT_DECL, 20030619);
-
   /* If a name was specified, get the string.  */
   if (global_scope_p (current_binding_level))
     asmspec_tree = maybe_apply_renaming_pragma (decl, asmspec_tree);
@@ -8786,7 +8785,8 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
   if (processing_template_decl)
     {
       /* Add this declaration to the statement-tree.  */
-      if (at_function_scope_p ())
+      if (at_function_scope_p ()
+	  && TREE_CODE (decl) != RESULT_DECL)
 	add_decl_stmt (decl);
 
       if (init && DECL_INITIAL (decl))
@@ -8843,6 +8843,8 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
       SET_DECL_ASSEMBLER_NAME (decl, get_identifier (asmspec));
       make_decl_rtl (decl, asmspec);
     }
+  else if (TREE_CODE (decl) == RESULT_DECL)
+    init = check_initializer (decl, init, flags);
   else if (TREE_CODE (decl) == VAR_DECL)
     {
       /* Only PODs can have thread-local storage.  Other types may require
@@ -8898,7 +8900,9 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
   /* Add this declaration to the statement-tree.  This needs to happen
      after the call to check_initializer so that the DECL_STMT for a
      reference temp is added before the DECL_STMT for the reference itself.  */
-  if (at_function_scope_p ())
+  if (building_stmt_tree ()
+      && at_function_scope_p ()
+      && TREE_CODE (decl) != RESULT_DECL)
     add_decl_stmt (decl);
 
   if (TREE_CODE (decl) == VAR_DECL)
@@ -8907,7 +8911,8 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
   /* Output the assembler code and/or RTL code for variables and functions,
      unless the type is an undefined structure or union.
      If not, it will get done when the type is completed.  */
-  if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == FUNCTION_DECL)
+  if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == FUNCTION_DECL
+      || TREE_CODE (decl) == RESULT_DECL)
     {
       if (TREE_CODE (decl) == VAR_DECL)
 	maybe_commonize_var (decl);

@@ -6037,6 +6037,10 @@ tsubst_decl (t, args, type, complain)
 	  {
 	    tree spec;
 
+	    /* If T is not dependent, just return it.  */
+	    if (!uses_template_parms (DECL_TI_ARGS (t)))
+	      return t;
+
 	    /* Calculate the most general template of which R is a
 	       specialization, and the complete set of arguments used to
 	       specialize R.  */

@@ -1,5 +1,15 @@
 2003-06-19  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10939
+	* Make-lang.in (decl.o): Depend on input.h.
+	* decl.c (input.h): Include it.
+	(cp_finish_decl): Revert previous change: 
+	  2003-06-19  Mark Mitchell  <mark@codesourcery.com>
+	  * decl.c (cp_finish_decl): Remove support for RESULT_DECLs.
+	  Don't check building_stmt_tree.
+	* pt.c (tsubst_decl): Do not try to substitute into non-dependent
+	functions.
+
 	PR c++/9649
 	* cp-tree.h (pushdecl_class_level): Change prototype.
 	(push_class_level_binding): Likewise.
