@@ -1,3 +1,7 @@
+2003-09-02  Andreas Jaeger  <aj@suse.de>
+
+	* langhooks-def.h (LANG_HOOKS_RTL_EXPAND_STMT): Cast properly.
+
 2003-09-02  Josef Zlomek  <zlomekj@suse.cz>
 
 	* cfgbuild.c (compute_outgoing_frequencies): Use NOTE instead of
@@ -1999,7 +2003,7 @@ Wed Aug 20 12:08:55 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(get_identifier_with_length): Change  type of second argument to
 	size_t in function definition.
 	* hashtable.c (calc_hash): Change type of second argument to size_t.
-  	(ht_lookup): Change type of third argument to size_t.  Reorganize
+	(ht_lookup): Change type of third argument to size_t.  Reorganize
 	to speed-up the cases where the hash table slot is empty, or the
 	first probe matches (i.e. there isn't a collision).
 	* hashtable.h (ht_lookup): Adjust function prototype.
@@ -4082,7 +4086,7 @@ objc:
 
 	* config/mmix/mmix-protos.h: Convert prototypes to ISO C90.
 	* config/mmix/mmix.c: Convert functions to ISO C90.
-  	(mmix_eh_return_handler_rtx, mmix_output_shifted_value): Tweak
+	(mmix_eh_return_handler_rtx, mmix_output_shifted_value): Tweak
 	formatting.
 	(mmix_get_hard_reg_initial_val): Tweak section head comment.
 
