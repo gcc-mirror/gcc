@@ -999,16 +999,6 @@ mostly_true_jump (rtx jump_insn, rtx condition)
 	   insn = PREV_INSN (insn))
 	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
 	  return 2;
-
-      /* If this is a jump to the test of a loop, it is likely true.  We scan
-	 forwards from the target label.  If we find a NOTE_INSN_LOOP_VTOP
-	 before the next real insn, we assume the branch is to the loop branch
-	 test.  */
-      for (insn = NEXT_INSN (target_label);
-	   insn && NOTE_P (insn);
-	   insn = PREV_INSN (insn))
-	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_VTOP)
-	  return 1;
     }
 
   /* Look at the relative rarities of the fallthrough and destination.  If

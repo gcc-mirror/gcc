@@ -246,9 +246,7 @@ squeeze_notes (rtx* startp, rtx* endp)
 	  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_CONT
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_VTOP))
+	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END))
 	{
 	  if (insn == start)
 	    start = next;
