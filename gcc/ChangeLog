@@ -1,3 +1,8 @@
+Sun Aug 29 05:06:43 1999  Russ Allbery  <rra@stanford.edu>
+
+	* gcc.texi (External Bugs): Remove obsolete note about Perl on
+	SunOS.
+
 1999-08-29 08:38 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* stdbool.h: Make the typedef name _Bool, with bool a #defined
