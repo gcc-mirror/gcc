@@ -475,6 +475,8 @@ print_node (file, prefix, node, indent)
 	fputs (" needs-constructing", file);
       if (TYPE_TRANSPARENT_UNION (node))
 	fputs (" transparent-union", file);
+      if (TYPE_PACKED (node))
+	fputs (" packed", file);
 
       if (TYPE_LANG_FLAG_0 (node))
 	fputs (" type_0", file);
