@@ -4013,13 +4013,8 @@ expand_decl (tree decl)
       do_pending_stack_adjust ();
       save_stack_pointer ();
 
-      /* In function-at-a-time mode, variable_size doesn't expand this,
-	 so do it now.  */
-      if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
-	expand_expr (TYPE_MAX_VALUE (TYPE_DOMAIN (type)),
-		     const0_rtx, VOIDmode, 0);
-
-      /* Compute the variable's size, in bytes.  */
+      /* Compute the variable's size, in bytes.  This will expand any
+	 needed SAVE_EXPRs for the first time.  */
       size = expand_expr (DECL_SIZE_UNIT (decl), NULL_RTX, VOIDmode, 0);
       free_temp_slots ();
 

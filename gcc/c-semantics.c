@@ -389,6 +389,8 @@ genrtl_decl_stmt (tree t)
   else if (TREE_CODE (decl) == LABEL_DECL
 	   && C_DECLARED_LABEL_FLAG (decl))
     declare_nonlocal_label (decl);
+  else if (TREE_CODE (decl) == TYPE_DECL)
+    force_type_save_exprs (TREE_TYPE (decl));
   else if (lang_expand_decl_stmt)
     (*lang_expand_decl_stmt) (t);
 }

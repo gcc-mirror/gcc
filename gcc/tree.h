@@ -2768,6 +2768,11 @@ extern tree substitute_placeholder_in_expr (tree, tree);
 
 extern tree variable_size (tree);
 
+/* Given a type T, force elaboration of any SAVE_EXPRs used in the definition
+   of that type.  */
+
+extern void force_type_save_exprs (tree);
+
 /* stabilize_reference (EXP) returns a reference equivalent to EXP
    but it can be used multiple times
    and only evaluate the subexpressions once.  */

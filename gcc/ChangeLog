@@ -1,3 +1,19 @@
+2004-04-12  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* c-decl.c (finish_decl): Make a decl_stmt for a variable-sized
+	TYPE_DECL.
+	* c-semantics.c (genrtl_decl_stmt): Handle TYPE_DECL.
+	* stmt.c (expand_decl): Remove redundant expansion of TYPE_DOMAIN.
+	* stor-layout.c (variable_size): Don't check for MINUS_EXPR.
+	Use skip_simple_arithmetic to find SAVE_EXPR.
+	(force_type_save_exprs, force_type_save_exprs_1): New functions.
+	* tree-inline.c (remap_type, case POINTER_TYPE, case REFERENCE_TYPE):
+	Properly chain multiple pointers.
+	(copy_tree_r): Copy a TYPE_DECL.
+	* tree.c (variably_modified_type_p): Add some missing tests and
+	make some other minor changes.
+	* tree.h (force_type_save_exprs): New declaration.
+
 2004-04-12  Roger Sayle  <roger@eyesopen.com>
 
 	* simplify-rtx.c (simplify_binary_operation) <UDIV, DIV, UMOD, MOD>:
