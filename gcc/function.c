@@ -4819,8 +4819,7 @@ assign_parms (tree fndecl)
 		  PUT_MODE (stack_parm, GET_MODE (entry_parm));
 		  set_mem_attributes (stack_parm, parm, 1);
 		}
-	      else if (GET_CODE (entry_parm) == PARALLEL 
-		       && GET_MODE(entry_parm) == BLKmode)
+	      else if (GET_CODE (entry_parm) == PARALLEL)
 		;
 	      else if (PARM_BOUNDARY % BITS_PER_WORD != 0)
 		abort ();
