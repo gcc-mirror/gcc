@@ -1,3 +1,8 @@
+2005-01-21  J"orn Rennecke <joern.rennecke@st.com>
+
+	* passes.c (rest_of_handle_flow2): Close / open the flow2 dump file
+	around the call to rest_of_handle_branch_target_load_optimize.
+
 2005-01-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config.gcc (sparc-*-netbsdelf*): Include dbxelf.h
