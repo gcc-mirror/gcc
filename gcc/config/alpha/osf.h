@@ -38,6 +38,8 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define_std ("SYSTYPE_BSD");		\
 	builtin_define ("_SYSTYPE_BSD");		\
 	builtin_define ("__osf__");			\
+	builtin_define ("__digital__");			\
+	builtin_define ("__arch64__");			\
 	builtin_define ("_LONGLONG");			\
 	builtin_define ("__PRAGMA_EXTERN_PREFIX");	\
 	builtin_assert ("system=unix");			\
