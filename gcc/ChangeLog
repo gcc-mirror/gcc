@@ -1,3 +1,9 @@
+Tue Jan  2 20:27:07 MET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* dwarf2out.c (stack_adjust_offset): Handle PRE_MODIFY.
+	(dwarf2out_frame_debug_expr): Likewise.
+	(mem_loc_descriptor): Handle PRE and POST_MODIFY.
+
 Tue Jan  2 20:21:31 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_split_to_parts): Return number of part required;

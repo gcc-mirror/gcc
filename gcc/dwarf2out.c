@@ -1130,11 +1130,21 @@ stack_adjust_offset (pattern)
       src = XEXP (dest, 0);
       code = GET_CODE (src);
 
-      if (! (code == PRE_DEC || code == PRE_INC)
+      if (! (code == PRE_DEC || code == PRE_INC
+	     || code == PRE_MODIFY)
 	  || XEXP (src, 0) != stack_pointer_rtx)
 	return 0;
 
-      offset = GET_MODE_SIZE (GET_MODE (dest));
+      if (code == PRE_MODIFY)
+	{
+	  rtx val = XEXP (XEXP (src, 1), 1);
+	  /* We handle only adjustments by constant amount.  */
+	  if (GET_CODE (XEXP (src, 1)) != PLUS ||
+	      GET_CODE (val) != CONST_INT)
+	    abort();
+	  offset = -INTVAL (val);
+	}
+      else offset = GET_MODE_SIZE (GET_MODE (dest));
     }
   else
     return 0;
@@ -1418,6 +1428,21 @@ dwarf2out_frame_debug_expr (expr, label)
       switch (GET_CODE (XEXP (dest, 0)))
 	{
 	  /* With a push.  */
+	case PRE_MODIFY:
+	  /* We can't handle variable size modifications.  */
+	  if (GET_CODE (XEXP (XEXP (XEXP (dest, 0), 1), 1)) != CONST_INT)
+	    abort();
+	  offset = -INTVAL (XEXP (XEXP (XEXP (dest, 0), 1), 1));
+
+	  if (REGNO (XEXP (XEXP (dest, 0), 0)) != STACK_POINTER_REGNUM
+	      || cfa_store.reg != STACK_POINTER_REGNUM)
+	    abort ();
+	  cfa_store.offset += offset;
+	  if (cfa.reg == STACK_POINTER_REGNUM)
+	    cfa.offset = cfa_store.offset;
+
+	  offset = -cfa_store.offset;
+	  break;
 	case PRE_INC:
 	case PRE_DEC:
 	  offset = GET_MODE_SIZE (GET_MODE (dest));
@@ -7590,6 +7615,7 @@ mem_loc_descriptor (rtl, mode)
     {
     case POST_INC:
     case POST_DEC:
+    case POST_MODIFY:
       /* POST_INC and POST_DEC can be handled just like a SUBREG.  So we
 	 just fall into the SUBREG code.  */
 
@@ -7648,6 +7674,12 @@ mem_loc_descriptor (rtl, mode)
       mem_loc_result->dw_loc_oprnd1.v.val_addr = save_rtx (rtl);
       break;
 
+    case PRE_MODIFY:
+      /* Extract the PLUS expression nested inside and fall into
+         PLUS code bellow.  */
+      rtl = XEXP (rtl, 1);
+      goto plus;
+
     case PRE_INC:
     case PRE_DEC:
       /* Turn these into a PLUS expression and fall into the PLUS code
@@ -7660,6 +7692,7 @@ mem_loc_descriptor (rtl, mode)
       /* Fall through.  */
 
     case PLUS:
+    plus:
       if (is_based_loc (rtl))
 	mem_loc_result = based_loc_descr (reg_number (XEXP (rtl, 0)),
 					  INTVAL (XEXP (rtl, 1)));
