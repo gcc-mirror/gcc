@@ -399,6 +399,7 @@ coverage_counter_ref (unsigned counter, unsigned no)
   ref = plus_constant (ctr_labels[counter], gcov_size / BITS_PER_UNIT * no);
   ref = gen_rtx_MEM (mode, ref);
   set_mem_alias_set (ref, new_alias_set ());
+  MEM_NOTRAP_P (ref) = 1;
 
   return ref;
 }
