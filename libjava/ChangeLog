@@ -1,3 +1,7 @@
+2003-01-28  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* libjava/configure.host: Disable can_unwind_signal on darwin.
+
 2003-01-28  Ranjit Mathew  <rmathew@hotmail.com>
 
 	Fixes PR java/9254:
