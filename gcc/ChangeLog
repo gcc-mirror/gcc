@@ -11,6 +11,7 @@
 	(RTX_COSTS): Add POWER4.
 	(CPP_CPU_SPEC): Similar additions.
 	* config/rs6000/linux64.h (PROCESSOR_DEFAULT): Define.
+	(PROCESSOR_DEFAULT64): Define.
 	* config/rs6000/rs6000.c (rs6000_override_options): Add power4.
 	(rs6000_adjust_cost): Add 603, 604, 604e, 620, 630, Power4 to
 	branch adjustment.
