@@ -1,3 +1,14 @@
+2004-01-17  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/10781
+	* config/rs6000/rs6000-protos.h (rs6000_special_round_type_align):
+	Prototype.
+	* config/rs6000/rs6000.c (rs6000_special_round_type_align):
+	New function.
+	* config/rs6000/linux64.h (ROUND_TYPE_ALIGN): Use it.
+	* config/rs6000/aix.h (ROUND_TYPE_ALIGN): Likewise.
+	* config/rs6000/darwin.h (ROUND_TYPE_ALIGN): Likewise.
+
 2004-01-17  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_handle_reorder_blocks): Fix pasto in previous
