@@ -1,3 +1,8 @@
+2003-02-07  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h (LIBGCC2_WORDS_BIG_ENDIAN): Set this
+	based on preprocessor flag.
+
 2003-02-07  Roger Sayle  <roger@eyesopen.com>
 	    Richard Henderson  <rth@redhat.com>
 

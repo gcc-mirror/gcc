@@ -208,9 +208,11 @@ extern unsigned xtensa_current_frame_size;
       }									\
   } while (0)
 
-/* Define this to set the endianness to use in libgcc2.c, which can
-   not depend on target_flags.  */
-#define LIBGCC2_WORDS_BIG_ENDIAN XCHAL_HAVE_BE
+#ifdef __XTENSA_EB__
+#define LIBGCC2_WORDS_BIG_ENDIAN 1
+#else
+#define LIBGCC2_WORDS_BIG_ENDIAN 0
+#endif
 
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
