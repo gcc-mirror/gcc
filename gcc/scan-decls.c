@@ -34,7 +34,9 @@ int brace_nesting = 0;
    indicate the (brace nesting levels of) left braces that were
    prefixed by extern "C".  */
 int extern_C_braces_length = 0;
-char extern_C_braces[20];
+/* 20 is not enough anymore on Solaris 9.  */
+#define MAX_EXTERN_C_BRACES  200
+char extern_C_braces[MAX_EXTERN_C_BRACES];
 #define in_extern_C_brace (extern_C_braces_length>0)
 
 /* True if the function declaration currently being scanned is
@@ -220,6 +222,12 @@ scan_decls (cpp_reader *pfile, int argc ATTRIBUTE_UNUSED,
 		      brace_nesting++;
 		      extern_C_braces[extern_C_braces_length++]
 			= brace_nesting;
+		      if (extern_C_braces_length >= MAX_EXTERN_C_BRACES)
+			{
+			  fprintf (stderr,
+			  	   "Internal error: out-of-bounds index\n");
+			  exit (FATAL_EXIT_CODE);
+			}
 		      goto new_statement;
 		    }
 		}
