@@ -1958,7 +1958,7 @@ output_scc_insn (operands, insn)
 #define T_MODES (~C_MODES)
 
 /* Modes for single-float quantities.  */
-#define SF_MODES ((1 << (int) SFmode))
+#define SF_MODES ((1 << (int) SFmode) | (1 << (int) SImode))
 
 /* Modes for double-float quantities.  */
 #define DF_MODES (SF_MODES | (1 << (int) DFmode) | (1 << (int) SCmode))
@@ -2473,45 +2473,6 @@ output_return (operands)
       else
 	return "ret\n\trestore";
     }
-}
-
-/* Output assembler code for a SImode to SFmode conversion.  */
-
-char *
-output_floatsisf2 (operands)
-     rtx *operands;
-{
-  if (GET_CODE (operands[1]) == MEM)
-    return "ld %1,%0\n\tfitos %0,%0";
-  else if (FP_REG_P (operands[1]))
-    return "fitos %1,%0";
-  return "st %r1,[%%fp-4]\n\tld [%%fp-4],%0\n\tfitos %0,%0";
-}
-
-/* Output assembler code for a SImode to DFmode conversion.  */
-
-char *
-output_floatsidf2 (operands)
-     rtx *operands;
-{
-  if (GET_CODE (operands[1]) == MEM)
-    return "ld %1,%0\n\tfitod %0,%0";
-  else if (FP_REG_P (operands[1]))
-    return "fitod %1,%0";
-  return "st %r1,[%%fp-4]\n\tld [%%fp-4],%0\n\tfitod %0,%0";
-}
-
-/* Output assembler code for a SImode to TFmode conversion.  */
-
-char *
-output_floatsitf2 (operands)
-     rtx *operands;
-{
-  if (GET_CODE (operands[1]) == MEM)
-    return "ld %1,%0\n\tfitoq %0,%0";
-  else if (FP_REG_P (operands[1]))
-    return "fitoq %1,%0";
-  return "st %r1,[%%fp-4]\n\tld [%%fp-4],%0\n\tfitoq %0,%0";
 }
 
 /* Leaf functions and non-leaf functions have different needs.  */
