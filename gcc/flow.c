@@ -2662,8 +2662,6 @@ verify_local_live_at_start (new_live_at_start, bb)
    generates subregs of a multi-word pseudo, current life analysis will
    lose the kill.  So we _can_ have a pseudo go live.  How irritating.
 
-   BLOCK_FOR_INSN is assumed to be correct.
-
    Including PROP_REG_INFO does not properly refresh regs_ever_live
    unless the caller resets it to zero.  */
 
@@ -4336,16 +4334,15 @@ find_auto_inc (pbi, x, insn)
 		 Change it to q = p, ...*q..., q = q+size.
 		 Then fall into the usual case.  */
 	      rtx insns, temp;
-	      basic_block bb;
 
 	      start_sequence ();
 	      emit_move_insn (q, addr);
 	      insns = get_insns ();
 	      end_sequence ();
 
-	      bb = BLOCK_FOR_INSN (insn);
-	      for (temp = insns; temp; temp = NEXT_INSN (temp))
-		set_block_for_insn (temp, bb);
+	      if (basic_block_for_insn)
+		for (temp = insns; temp; temp = NEXT_INSN (temp))
+		  set_block_for_insn (temp, pbi->bb);
 
 	      /* If we can't make the auto-inc, or can't make the
 		 replacement into Y, exit.  There's no point in making
@@ -4363,8 +4360,8 @@ find_auto_inc (pbi, x, insn)
 		 new insn(s) and do the updates.  */
 	      emit_insns_before (insns, insn);
 
-	      if (BLOCK_FOR_INSN (insn)->head == insn)
-		BLOCK_FOR_INSN (insn)->head = insns;
+	      if (pbi->bb->head == insn)
+		pbi->bb->head = insns;
 
 	      /* INCR will become a NOTE and INSN won't contain a
 		 use of ADDR.  If a use of ADDR was just placed in
