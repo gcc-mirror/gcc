@@ -51,6 +51,7 @@
 #include "langhooks.h"
 #include "reload.h"
 #include "cfglayout.h"
+#include "sched-int.h"
 #if TARGET_XCOFF
 #include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
 #endif
@@ -79,6 +80,11 @@ struct rs6000_cpu_select rs6000_select[3] =
   { (const char *)0,	"-mcpu=",		1,	1 },
   { (const char *)0,	"-mtune=",		1,	0 },
 };
+
+/* Support adjust_priority scheduler hook 
+   and -mprioritize-restricted-insns= option.  */
+const char *rs6000_sched_restricted_insns_priority_str;
+int rs6000_sched_restricted_insns_priority;
 
 /* Size of long double */
 const char *rs6000_long_double_size_string;
@@ -268,6 +274,7 @@ static int rs6000_use_dfa_pipeline_interface (void);
 static int rs6000_variable_issue (FILE *, int, rtx, int);
 static bool rs6000_rtx_costs (rtx, int, int, int *);
 static int rs6000_adjust_cost (rtx, rtx, rtx, int);
+static int is_dispatch_slot_restricted (rtx);
 static int rs6000_adjust_priority (rtx, int);
 static int rs6000_issue_rate (void);
 static int rs6000_use_sched_lookahead (void);
@@ -823,6 +830,12 @@ rs6000_override_options (const char *default_cpu)
 	error ("invalid option `%s'", base);
       rs6000_default_long_calls = (base[0] != 'n');
     }
+
+  /* Handle -mprioritize-restrcted-insns option.  */
+  rs6000_sched_restricted_insns_priority = DEFAULT_RESTRICTED_INSNS_PRIORITY;
+  if (rs6000_sched_restricted_insns_priority_str)
+    rs6000_sched_restricted_insns_priority =
+      atoi (rs6000_sched_restricted_insns_priority_str);
 
 #ifdef TARGET_REGNAMES
   /* If the user desires alternate register names, copy in the
@@ -13097,9 +13110,50 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn ATTRIBUTE_UNUSED,
   return cost;
 }
 
+/* The function returns a non-zero value if INSN can be scheduled only
+   as the first insn in a dispatch group ("dispatch-slot restricted"). 
+   In this case, the returned value indicates how many dispatch slots 
+   the insn occupies (at the beginning of the group). 
+   Return 0 otherwise.  */
+
+static int 
+is_dispatch_slot_restricted (rtx insn)
+{
+  enum attr_type type;
+
+  if (rs6000_cpu != PROCESSOR_POWER4)
+    return 0;
+
+  if (!insn
+      || insn == NULL_RTX
+      || GET_CODE (insn) == NOTE
+      || GET_CODE (PATTERN (insn)) == USE
+      || GET_CODE (PATTERN (insn)) == CLOBBER)
+    return 0;
+
+  type = get_attr_type (insn);
+
+  switch (type){
+  case TYPE_MFCR:
+  case TYPE_MFCRF:
+  case TYPE_MTCR:
+  case TYPE_DELAYED_CR:
+  case TYPE_CR_LOGICAL:
+  case TYPE_MTJMPR:
+  case TYPE_MFJMPR:
+    return 1;
+  case TYPE_IDIV:
+  case TYPE_LDIV:
+    return 2;
+  default:
+    return 0;
+  }
+}
+
+
 /* A C statement (sans semicolon) to update the integer scheduling
-   priority INSN_PRIORITY (INSN).  Reduce the priority to execute the
-   INSN earlier, increase the priority to execute INSN later.  Do not
+   priority INSN_PRIORITY (INSN). Increase the priority to execute the
+   INSN earlier, reduce the priority to execute INSN later.  Do not
    define this macro if you do not need to adjust the scheduling
    priorities of insns.  */
 
@@ -13135,6 +13189,25 @@ rs6000_adjust_priority (rtx insn ATTRIBUTE_UNUSED, int priority)
       }
   }
 #endif
+
+  if (is_dispatch_slot_restricted (insn)
+      && reload_completed
+      && current_sched_info->sched_max_insns_priority 
+      && rs6000_sched_restricted_insns_priority)
+    {
+
+      /* Prioritize insns that can be dispatched only in the first dispatch slot.  */
+      if (rs6000_sched_restricted_insns_priority == 1)
+	/* Attach highest priority to insn. This means that in 
+	   haifa-sched.c:ready_sort(), dispatch-slot restriction considerations 
+	   precede 'priority' (critical path) considerations.  */
+	return current_sched_info->sched_max_insns_priority; 
+      else if (rs6000_sched_restricted_insns_priority == 2)
+	/* Increase priority of insn by a minimal amount. This means that in 
+	   haifa-sched.c:ready_sort(), only 'priority' (critical path) considerations
+	   precede dispatch-slot restriction considerations.  */
+	return (priority + 1); 
+    } 
 
   return priority;
 }

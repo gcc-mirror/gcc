@@ -167,6 +167,9 @@ struct sched_info
      has completed, e.g. if we're using it to initialize state for successor
      blocks in region scheduling.  */
   unsigned int use_cselib:1;
+
+  /* Maximum priority that has been assigned to an insn.  */
+  int sched_max_insns_priority;
 };
 
 extern struct sched_info *current_sched_info;

@@ -2517,7 +2517,8 @@ set_priorities (rtx head, rtx tail)
 {
   rtx insn;
   int n_insn;
-
+  int sched_max_insns_priority = 
+	current_sched_info->sched_max_insns_priority;
   rtx prev_head;
 
   prev_head = PREV_INSN (head);
@@ -2526,6 +2527,7 @@ set_priorities (rtx head, rtx tail)
     return 0;
 
   n_insn = 0;
+  sched_max_insns_priority = 0;
   for (insn = tail; insn != prev_head; insn = PREV_INSN (insn))
     {
       if (GET_CODE (insn) == NOTE)
@@ -2533,7 +2535,14 @@ set_priorities (rtx head, rtx tail)
 
       n_insn++;
       (void) priority (insn);
+
+      if (INSN_PRIORITY_KNOWN (insn))
+	sched_max_insns_priority =
+	  MAX (sched_max_insns_priority, INSN_PRIORITY (insn)); 
     }
+  sched_max_insns_priority += 1;
+  current_sched_info->sched_max_insns_priority =
+	sched_max_insns_priority;
 
   return n_insn;
 }

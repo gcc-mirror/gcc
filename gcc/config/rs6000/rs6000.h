@@ -404,6 +404,8 @@ extern enum processor_type rs6000_cpu;
    {"no-longcall", &rs6000_longcall_switch, "", 0},			\
    {"align-", &rs6000_alignment_string,					\
     N_("Specify alignment of structure fields default/natural"), 0},	\
+   {"prioritize-restricted-insns=", &rs6000_sched_restricted_insns_priority_str, \
+    N_("Specify scheduling priority for dispatch slot restricted insns"), 0}, \
    SUBTARGET_OPTIONS							\
 }
 
@@ -457,6 +459,8 @@ extern const char *rs6000_longcall_switch;
 extern int rs6000_default_long_calls;
 extern const char* rs6000_alignment_string;
 extern int rs6000_alignment_flags;
+extern const char *rs6000_sched_restricted_insns_priority_str;
+extern int rs6000_sched_restricted_insns_priority;
 
 /* Alignment options for fields in structures for sub-targets following
    AIX-like ABI.
@@ -474,6 +478,9 @@ extern int rs6000_alignment_flags;
 #else
 #define TARGET_ALIGN_NATURAL 0
 #endif
+
+/* Define if the target has restricted dispatch slot instructions.  */
+#define DEFAULT_RESTRICTED_INSNS_PRIORITY (rs6000_cpu == PROCESSOR_POWER4 ? 1 : 0)
 
 /* Define TARGET_MFCRF if the target assembler supports the optional
    field operand for mfcr and the target processor supports the
