@@ -23,9 +23,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* TODO: Implement .debug_str handling, and share entries somehow.
-	 Eliminate duplicates by putting common info in a separate section
-	   to be collected by the linker and referring to it with
-	   DW_FORM_ref_addr.
 	 Emit .debug_line header even when there are no functions, since
 	   the file numbers are used by .debug_info.  Alternately, leave
 	   out locations for types and decls.
@@ -56,6 +53,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "varray.h"
 #include "ggc.h"
+#include "md5.h"
 #include "tm_p.h"
 
 /* Decide whether we want to emit frame unwind information for the current
@@ -303,6 +301,7 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 #define FDE_AFTER_SIZE_LABEL	"LSFDE"
 #define FDE_END_LABEL		"LEFDE"
 #define FDE_LENGTH_LABEL	"LLFDE"
+#define DIE_LABEL_PREFIX	"DW"
 
 /* Definitions of defaults for various types of primitive assembly language
    output operations.  These may be overridden from within the tm.h file,
@@ -2124,7 +2123,10 @@ typedef struct dw_val_struct
       long unsigned val_unsigned;
       dw_long_long_const val_long_long;
       dw_float_const val_float;
-      dw_die_ref val_die_ref;
+      struct {
+	dw_die_ref die;
+	int external;
+      } val_die_ref;
       unsigned val_fde_index;
       char *val_str;
       char *val_lbl_id;
@@ -2995,6 +2997,7 @@ dw_attr_node;
 typedef struct die_struct
 {
   enum dwarf_tag die_tag;
+  char *die_symbol;
   dw_attr_ref die_attr;
   dw_die_ref die_parent;
   dw_die_ref die_child;
@@ -3338,20 +3341,38 @@ static void equate_decl_number_to_die	PARAMS ((tree, dw_die_ref));
 static void print_spaces		PARAMS ((FILE *));
 static void print_die			PARAMS ((dw_die_ref, FILE *));
 static void print_dwarf_line_table	PARAMS ((FILE *));
+static void reverse_die_lists		PARAMS ((dw_die_ref));
+static void reverse_all_dies		PARAMS ((dw_die_ref));
+static dw_die_ref push_new_compile_unit PARAMS ((dw_die_ref, dw_die_ref));
+static dw_die_ref pop_compile_unit	PARAMS ((dw_die_ref));
+static void loc_checksum	 PARAMS ((dw_loc_descr_ref, struct md5_ctx *));
+static void attr_checksum 	      PARAMS ((dw_attr_ref, struct md5_ctx *));
+static void die_checksum	       PARAMS ((dw_die_ref, struct md5_ctx *));
+static void compute_section_prefix	PARAMS ((dw_die_ref));
+static int is_type_die			PARAMS ((dw_die_ref));
+static int is_comdat_die 		PARAMS ((dw_die_ref));
+static int is_symbol_die 		PARAMS ((dw_die_ref));
+static char *gen_internal_sym 		PARAMS ((void));
+static void assign_symbol_names		PARAMS ((dw_die_ref));
+static void break_out_includes		PARAMS ((dw_die_ref));
 static void add_sibling_attributes	PARAMS ((dw_die_ref));
 static void build_abbrev_table		PARAMS ((dw_die_ref));
 static unsigned long size_of_string	PARAMS ((const char *));
 static int constant_size		PARAMS ((long unsigned));
 static unsigned long size_of_die	PARAMS ((dw_die_ref));
 static void calc_die_sizes		PARAMS ((dw_die_ref));
+static void clear_die_sizes		PARAMS ((dw_die_ref));
 static unsigned long size_of_line_prolog PARAMS ((void));
 static unsigned long size_of_pubnames	PARAMS ((void));
 static unsigned long size_of_aranges	PARAMS ((void));
 static enum dwarf_form value_format	PARAMS ((dw_attr_ref));
 static void output_value_format		PARAMS ((dw_attr_ref));
 static void output_abbrev_section	PARAMS ((void));
+static void output_die_symbol		PARAMS ((dw_die_ref));
+static void output_symbolic_ref		PARAMS ((dw_die_ref));
 static void output_die			PARAMS ((dw_die_ref));
 static void output_compilation_unit_header PARAMS ((void));
+static void output_comp_unit		PARAMS ((dw_die_ref));
 static const char *dwarf2_name		PARAMS ((tree, int));
 static void add_pubname			PARAMS ((tree, dw_die_ref));
 static void output_pubnames		PARAMS ((void));
@@ -3441,7 +3462,6 @@ static void gen_type_die_for_member	PARAMS ((tree, tree, dw_die_ref));
 static void gen_abstract_function	PARAMS ((tree));
 static rtx save_rtx			PARAMS ((rtx));
 static void splice_child_die		PARAMS ((dw_die_ref, dw_die_ref));
-static void reverse_die_lists		PARAMS ((dw_die_ref));
 
 /* Section names used to hold DWARF debugging information.  */
 #ifndef DEBUG_INFO_SECTION
@@ -3728,6 +3748,10 @@ dwarf_tag_name (tag)
       return "DW_TAG_function_template";
     case DW_TAG_class_template:
       return "DW_TAG_class_template";
+    case DW_TAG_GNU_BINCL:
+      return "DW_TAG_GNU_BINCL";
+    case DW_TAG_GNU_EINCL:
+      return "DW_TAG_GNU_EINCL";
     default:
       return "DW_TAG_<unknown>";
     }
@@ -4079,7 +4103,7 @@ decl_class_context (decl)
 }
 
 /* Add an attribute/value pair to a DIE.  We build the lists up in reverse
-   addition order, and correct that in add_sibling_attributes.  */
+   addition order, and correct that in reverse_all_dies.  */
 
 static inline void
 add_dwarf_attr (die, attr)
@@ -4264,7 +4288,8 @@ add_AT_die_ref (die, attr_kind, targ_die)
   attr->dw_attr_next = NULL;
   attr->dw_attr = attr_kind;
   attr->dw_attr_val.val_class = dw_val_class_die_ref;
-  attr->dw_attr_val.v.val_die_ref = targ_die;
+  attr->dw_attr_val.v.val_die_ref.die = targ_die;
+  attr->dw_attr_val.v.val_die_ref.external = 0;
   add_dwarf_attr (die, attr);
 }
 
@@ -4274,9 +4299,32 @@ AT_ref (a)
      register dw_attr_ref a;
 {
   if (a && AT_class (a) == dw_val_class_die_ref)
-    return a->dw_attr_val.v.val_die_ref;
+    return a->dw_attr_val.v.val_die_ref.die;
 
   abort ();
+}
+
+static inline int AT_ref_external PARAMS ((dw_attr_ref));
+static inline int
+AT_ref_external (a)
+     register dw_attr_ref a;
+{
+  if (a && AT_class (a) == dw_val_class_die_ref)
+    return a->dw_attr_val.v.val_die_ref.external;
+
+  return 0;
+}
+
+static inline void set_AT_ref_external PARAMS ((dw_attr_ref, int));
+static inline void
+set_AT_ref_external (a, i)
+     register dw_attr_ref a;
+     int i;
+{
+  if (a && AT_class (a) == dw_val_class_die_ref)
+    a->dw_attr_val.v.val_die_ref.external = i;
+  else
+    abort ();
 }
 
 /* Add an FDE reference attribute value to a DIE.  */
@@ -4611,7 +4659,7 @@ remove_children (die)
 }
 
 /* Add a child DIE below its parent.  We build the lists up in reverse
-   addition order, and correct that in add_sibling_attributes.  */
+   addition order, and correct that in reverse_all_dies.  */
 
 static inline void
 add_child_die (die, child_die)
@@ -4677,6 +4725,7 @@ new_die (tag_value, parent_die)
   die->die_parent = NULL;
   die->die_sib = NULL;
   die->die_attr = NULL;
+  die->die_symbol = NULL;
 
   if (parent_die != NULL)
     add_child_die (parent_die, die);
@@ -4822,7 +4871,12 @@ print_die (die, outfile)
 	  break;
 	case dw_val_class_die_ref:
 	  if (AT_ref (a) != NULL)
-	    fprintf (outfile, "die -> %lu", AT_ref (a)->die_offset);
+	    {
+	      if (AT_ref (a)->die_offset == 0)
+		fprintf (outfile, "die -> label: %s", AT_ref (a)->die_symbol);
+	      else
+		fprintf (outfile, "die -> %lu", AT_ref (a)->die_offset);
+	    }
 	  else
 	    fprintf (outfile, "die -> <null>");
 	  break;
@@ -4851,6 +4905,8 @@ print_die (die, outfile)
 
       print_indent -= 4;
     }
+  if (print_indent == 0)
+    fprintf (outfile, "\n");
 }
 
 /* Print the contents of the source code line number correspondence table.
@@ -4925,10 +4981,370 @@ reverse_die_lists (die)
   die->die_child = cp;
 }
 
-/* Traverse the DIE, reverse its lists of attributes and children, and
-   add a sibling attribute if it may have the effect of speeding up
-   access to siblings.  To save some space, avoid generating sibling
-   attributes for DIE's without children.  */
+/* reverse_die_lists only reverses the single die you pass it. Since
+   we used to reverse all dies in add_sibling_attributes, which runs
+   through all the dies, it would reverse all the dies.  Now, however,
+   since we don't call reverse_die_lists in add_sibling_attributes, we
+   need a routine to recursively reverse all the dies. This is that
+   routine.  */
+
+static void
+reverse_all_dies (die)
+     register dw_die_ref die;
+{
+  register dw_die_ref c;
+
+  reverse_die_lists (die);
+
+  for (c = die->die_child; c; c = c->die_sib)
+    reverse_all_dies (c);
+}
+
+/* Start a new compilation unit DIE for an include file.  OLD_UNIT is
+   the CU for the enclosing include file, if any.  BINCL_DIE is the
+   DW_TAG_GNU_BINCL DIE that marks the start of the DIEs for this
+   include file.  */
+
+static dw_die_ref
+push_new_compile_unit (old_unit, bincl_die)
+     dw_die_ref old_unit, bincl_die;
+{
+  const char *filename = get_AT_string (bincl_die, DW_AT_name);
+  dw_die_ref new_unit = gen_compile_unit_die (filename);
+  new_unit->die_sib = old_unit;
+  return new_unit;
+}
+
+/* Close an include-file CU and reopen the enclosing one.  */
+
+static dw_die_ref
+pop_compile_unit (old_unit)
+     dw_die_ref old_unit;
+{
+  dw_die_ref new_unit = old_unit->die_sib;
+  old_unit->die_sib = NULL;
+  return new_unit;
+}
+
+#define PROCESS(FOO) md5_process_bytes (&(FOO), sizeof (FOO), ctx)
+#define PROCESS_STRING(FOO) md5_process_bytes ((FOO), strlen (FOO), ctx)
+
+/* Calculate the checksum of a location expression.  */
+
+static inline void
+loc_checksum (loc, ctx)
+     dw_loc_descr_ref loc;
+     struct md5_ctx *ctx;
+{
+  PROCESS (loc->dw_loc_opc);
+  PROCESS (loc->dw_loc_oprnd1);
+  PROCESS (loc->dw_loc_oprnd2);
+}
+
+/* Calculate the checksum of an attribute.  */
+
+static void
+attr_checksum (at, ctx)
+     dw_attr_ref at;
+     struct md5_ctx *ctx;
+{
+  dw_loc_descr_ref loc;
+  rtx r;
+
+  PROCESS (at->dw_attr);
+
+  /* We don't care about differences in file numbering.  */
+  if (at->dw_attr == DW_AT_decl_file)
+    return;
+
+  switch (AT_class (at))
+    {
+    case dw_val_class_const:
+      PROCESS (at->dw_attr_val.v.val_int);
+      break;
+    case dw_val_class_unsigned_const:
+      PROCESS (at->dw_attr_val.v.val_unsigned);
+      break;
+    case dw_val_class_long_long:
+      PROCESS (at->dw_attr_val.v.val_long_long);
+      break;
+    case dw_val_class_float:
+      PROCESS (at->dw_attr_val.v.val_float);
+      break;
+    case dw_val_class_flag:
+      PROCESS (at->dw_attr_val.v.val_flag);
+      break;
+
+    case dw_val_class_str:
+      PROCESS_STRING (AT_string (at));
+      break;
+    case dw_val_class_addr:
+      r = AT_addr (at);
+      switch (GET_CODE (r))
+	{
+	case SYMBOL_REF:
+	  PROCESS_STRING (XSTR (r, 0));
+	  break;
+
+	default:
+	  abort ();
+	}
+      break;
+
+    case dw_val_class_loc:
+      for (loc = AT_loc (at); loc; loc = loc->dw_loc_next)
+	loc_checksum (loc, ctx);
+      break;
+
+    case dw_val_class_die_ref:
+      if (AT_ref (at)->die_offset)
+	PROCESS (AT_ref (at)->die_offset);
+      /* FIXME else use target die name or something.  */
+
+    case dw_val_class_fde_ref:
+    case dw_val_class_lbl_id:
+    case dw_val_class_lbl_offset:
+
+    default:
+      break;
+    }
+}
+
+/* Calculate the checksum of a DIE.  */
+
+static void
+die_checksum (die, ctx)
+     dw_die_ref die;
+     struct md5_ctx *ctx;
+{
+  dw_die_ref c;
+  dw_attr_ref a;
+
+  PROCESS (die->die_tag);
+
+  for (a = die->die_attr; a; a = a->dw_attr_next)
+    attr_checksum (a, ctx);
+
+  for (c = die->die_child; c; c = c->die_sib)
+    die_checksum (c, ctx);
+}
+
+#undef PROCESS
+#undef PROCESS_STRING
+
+/* The prefix to attach to symbols on DIEs in the current comdat debug
+   info section.  */
+static char *comdat_symbol_id;
+
+/* The index of the current symbol within the current comdat CU.  */
+static unsigned int comdat_symbol_number;
+
+/* Calculate the MD5 checksum of the compilation unit DIE UNIT_DIE and its
+   children, and set comdat_symbol_id accordingly.  */
+
+static void
+compute_section_prefix (unit_die)
+     dw_die_ref unit_die;
+{
+  char *p, *name;
+  int i;
+  unsigned char checksum[16];
+  struct md5_ctx ctx;
+
+  md5_init_ctx (&ctx);
+  die_checksum (unit_die, &ctx);
+  md5_finish_ctx (&ctx, checksum);
+
+  p = file_name_nondirectory (get_AT_string (unit_die, DW_AT_name));
+  name = (char *) alloca (strlen (p) + 64);
+  sprintf (name, "%s.", p);
+
+  clean_symbol_name (name);
+
+  p = name + strlen (name);
+  for (i = 0; i < 4; ++i)
+    {
+      sprintf (p, "%.2x", checksum[i]);
+      p += 2;
+    }
+
+  comdat_symbol_id = unit_die->die_symbol = xstrdup (name);
+  comdat_symbol_number = 0;
+}
+
+/* Returns nonzero iff DIE represents a type, in the sense of TYPE_P.  */
+
+static int
+is_type_die (die)
+     dw_die_ref die;
+{
+  switch (die->die_tag)
+    {
+    case DW_TAG_array_type:
+    case DW_TAG_class_type:
+    case DW_TAG_enumeration_type:
+    case DW_TAG_pointer_type:
+    case DW_TAG_reference_type:
+    case DW_TAG_string_type:
+    case DW_TAG_structure_type:
+    case DW_TAG_subroutine_type:
+    case DW_TAG_union_type:
+    case DW_TAG_ptr_to_member_type:
+    case DW_TAG_set_type:
+    case DW_TAG_subrange_type:
+    case DW_TAG_base_type:
+    case DW_TAG_const_type:
+    case DW_TAG_file_type:
+    case DW_TAG_packed_type:
+    case DW_TAG_volatile_type:
+      return 1;
+    default:
+      return 0;
+    }
+}
+
+/* Returns 1 iff C is the sort of DIE that should go into a COMDAT CU.
+   Basically, we want to choose the bits that are likely to be shared between
+   compilations (types) and leave out the bits that are specific to individual
+   compilations (functions).  */
+
+static int
+is_comdat_die (c)
+     dw_die_ref c;
+{
+#if 1
+  /* I think we want to leave base types and __vtbl_ptr_type in the
+     main CU, as we do for stabs.  The advantage is a greater
+     likelihood of sharing between objects that don't include headers
+     in the same order (and therefore would put the base types in a
+     different comdat).  jason 8/28/00 */
+  if (c->die_tag == DW_TAG_base_type)
+    return 0;
+
+  if (c->die_tag == DW_TAG_pointer_type
+      || c->die_tag == DW_TAG_reference_type
+      || c->die_tag == DW_TAG_const_type
+      || c->die_tag == DW_TAG_volatile_type)
+    {
+      dw_die_ref t = get_AT_ref (c, DW_AT_type);
+      return t ? is_comdat_die (t) : 0;
+    }
+#endif
+
+  return is_type_die (c);
+}
+
+/* Returns 1 iff C is the sort of DIE that might be referred to from another
+   compilation unit.  */
+
+static int
+is_symbol_die (c)
+     dw_die_ref c;
+{
+  if (is_type_die (c))
+    return 1;
+  if (get_AT (c, DW_AT_declaration)
+      && ! get_AT (c, DW_AT_specification))
+    return 1;
+  return 0;
+}
+
+static char *
+gen_internal_sym ()
+{
+  char buf[256];
+  static int label_num;
+  ASM_GENERATE_INTERNAL_LABEL (buf, "LDIE", label_num++);
+  return xstrdup (buf);
+}
+
+/* Assign symbols to all worthy DIEs under DIE.  */
+
+static void
+assign_symbol_names (die)
+     register dw_die_ref die;
+{
+  register dw_die_ref c;
+
+  if (is_symbol_die (die))
+    {
+      if (comdat_symbol_id)
+	{
+	  char *p = alloca (strlen (comdat_symbol_id) + 64);
+	  sprintf (p, "%s.%s.%x", DIE_LABEL_PREFIX,
+		   comdat_symbol_id, comdat_symbol_number++);
+	  die->die_symbol = xstrdup (p);
+	}
+      else
+	die->die_symbol = gen_internal_sym ();
+    }
+
+  for (c = die->die_child; c != NULL; c = c->die_sib)
+    assign_symbol_names (c);
+}
+
+/* Traverse the DIE (which is always comp_unit_die), and set up
+   additional compilation units for each of the include files we see
+   bracketed by BINCL/EINCL.  */
+
+static void
+break_out_includes (die)
+     register dw_die_ref die;
+{
+  dw_die_ref *ptr;
+  register dw_die_ref unit = NULL;
+  limbo_die_node *node;
+
+  for (ptr = &(die->die_child); *ptr; )
+    {
+      register dw_die_ref c = *ptr;
+
+      if (c->die_tag == DW_TAG_GNU_BINCL
+	  || c->die_tag == DW_TAG_GNU_EINCL
+	  || (unit && is_comdat_die (c)))
+	{
+	  /* This DIE is for a secondary CU; remove it from the main one.  */
+	  *ptr = c->die_sib;
+
+	  if (c->die_tag == DW_TAG_GNU_BINCL)
+	    {
+	      unit = push_new_compile_unit (unit, c);
+	      free_die (c);
+	    }
+	  else if (c->die_tag == DW_TAG_GNU_EINCL)
+	    {
+	      unit = pop_compile_unit (unit);
+	      free_die (c);
+	    }
+	  else
+	    add_child_die (unit, c);
+	}
+      else
+	{
+	  /* Leave this DIE in the main CU.  */
+	  ptr = &(c->die_sib);
+	  continue;
+	}
+    }
+
+#if 0
+  /* We can only use this in debugging, since the frontend doesn't check
+     to make sure that we leave every include file we enter.  */     
+  if (unit != NULL)
+    abort ();
+#endif
+
+  assign_symbol_names (die);
+  for (node = limbo_die_list; node; node = node->next)
+    {
+      compute_section_prefix (node->die);
+      assign_symbol_names (node->die);
+    }
+}
+
+/* Traverse the DIE and add a sibling attribute if it may have the
+   effect of speeding up access to siblings.  To save some space,
+   avoid generating sibling attributes for DIE's without children.  */
 
 static void
 add_sibling_attributes (die)
@@ -4936,9 +5352,8 @@ add_sibling_attributes (die)
 {
   register dw_die_ref c;
 
-  reverse_die_lists (die);
-
-  if (die != comp_unit_die && die->die_sib && die->die_child != NULL)
+  if (die->die_tag != DW_TAG_compile_unit
+      && die->die_sib && die->die_child != NULL)
     /* Add the sibling link to the front of the attribute list.  */
     add_AT_die_ref (die, DW_AT_sibling, die->die_sib);
 
@@ -4960,6 +5375,20 @@ build_abbrev_table (die)
   register unsigned long n_alloc;
   register dw_die_ref c;
   register dw_attr_ref d_attr, a_attr;
+
+  /* Scan the DIE references, and mark as external any that refer to
+     DIEs from other CUs (i.e. those with cleared die_offset).  */
+  for (d_attr = die->die_attr; d_attr; d_attr = d_attr->dw_attr_next)
+    {
+      if (AT_class (d_attr) == dw_val_class_die_ref
+	  && AT_ref (d_attr)->die_offset == 0)
+	{
+	  if (AT_ref (d_attr)->die_symbol == 0)
+	    abort ();
+	  set_AT_ref_external (d_attr, 1);
+	}
+    }
+
   for (abbrev_id = 1; abbrev_id < abbrev_die_table_in_use; ++abbrev_id)
     {
       register dw_die_ref abbrev = abbrev_die_table[abbrev_id];
@@ -5130,6 +5559,20 @@ calc_die_sizes (die)
     next_die_offset += 1;
 }
 
+/* Clear the offsets and sizes for a die and its children.  We do this so
+   that we know whether or not a reference needs to use FORM_ref_addr; only
+   DIEs in the same CU will have non-zero offsets available.  */
+
+static void
+clear_die_sizes (die)
+     dw_die_ref die;
+{
+  register dw_die_ref c;
+  die->die_offset = 0;
+  for (c = die->die_child; c; c = c->die_sib)
+    clear_die_sizes (c);
+}
+
 /* Return the size of the line information prolog generated for the
    compilation unit.  */
 
@@ -5250,7 +5693,10 @@ value_format (a)
     case dw_val_class_flag:
       return DW_FORM_flag;
     case dw_val_class_die_ref:
-      return DW_FORM_ref;
+      if (AT_ref_external (a))
+	return DW_FORM_ref_addr;
+      else
+	return DW_FORM_ref;
     case dw_val_class_fde_ref:
       return DW_FORM_data;
     case dw_val_class_lbl_id:
@@ -5333,6 +5779,39 @@ output_abbrev_section ()
   fprintf (asm_out_file, "\t%s\t0\n", ASM_BYTE_OP);
 }
 
+/* Output a symbol we can use to refer to this DIE from another CU.  */
+
+static inline void
+output_die_symbol (die)
+     register dw_die_ref die;
+{
+  char *sym = die->die_symbol;
+
+  if (sym == 0)
+    return;
+
+  if (strncmp (sym, DIE_LABEL_PREFIX, sizeof (DIE_LABEL_PREFIX) - 1) == 0)
+    /* We make these global, not weak; if the target doesn't support
+       .linkonce, it doesn't support combining the sections, so debugging
+       will break.  */
+    ASM_GLOBALIZE_LABEL (asm_out_file, sym);
+  ASM_OUTPUT_LABEL (asm_out_file, sym);
+}
+
+/* Output a symbolic (i.e. FORM_ref_addr) reference to TARGET_DIE.  */
+
+static inline void
+output_symbolic_ref (target_die)
+     dw_die_ref target_die;
+{
+  char *sym = target_die->die_symbol;
+
+  if (sym == 0)
+    abort ();
+
+  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, sym);
+}
+
 /* Output the DIE and its attributes.  Called recursively to generate
    the definitions of each child DIE.  */
 
@@ -5343,6 +5822,11 @@ output_die (die)
   register dw_attr_ref a;
   register dw_die_ref c;
   register unsigned long size;
+
+  /* If someone in another CU might refer to us, set up a symbol for
+     them to point to.  */
+  if (die->die_symbol)
+    output_die_symbol (die);
 
   output_uleb128 (die->die_abbrev);
   if (flag_debug_asm)
@@ -5457,7 +5941,10 @@ output_die (die)
 	  break;
 
 	case dw_val_class_die_ref:
-	  ASM_OUTPUT_DWARF_DATA (asm_out_file, AT_ref (a)->die_offset);
+	  if (AT_ref_external (a))
+	    output_symbolic_ref (AT_ref (a));
+	  else
+	    ASM_OUTPUT_DWARF_DATA (asm_out_file, AT_ref (a)->die_offset);
 	  break;
 
 	case dw_val_class_fde_ref:
@@ -5547,6 +6034,44 @@ output_compilation_unit_header ()
   fputc ('\n', asm_out_file);
 }
 
+/* Output the compilation unit DIE and its children.  */
+
+static void
+output_comp_unit (die)
+     dw_die_ref die;
+{
+  char *secname;
+
+  if (die->die_child == 0)
+    return;
+
+  /* Initialize the beginning DIE offset - and calculate sizes/offsets.   */
+  next_die_offset = DWARF_COMPILE_UNIT_HEADER_SIZE;
+  calc_die_sizes (die);
+
+  build_abbrev_table (die);
+
+  if (die->die_symbol)
+    {
+      secname = (char *) alloca (strlen (die->die_symbol) + 24);
+      sprintf (secname, ".gnu.linkonce.wi.%s", die->die_symbol);
+      die->die_symbol = NULL;
+    }
+  else
+    secname = (char *) DEBUG_INFO_SECTION;
+
+  /* Output debugging information.  */
+  fputc ('\n', asm_out_file);
+  ASM_OUTPUT_SECTION (asm_out_file, secname);
+  output_compilation_unit_header ();
+  output_die (die);
+
+  /* Leave the sizes on the main CU, since we do it last and we use the
+     sizes in output_pubnames.  */
+  if (die->die_symbol)
+    clear_die_sizes (die);
+}
+
 /* The DWARF2 pubname for a nested thingy looks like "A::f".  The output
    of decl_printable_name for C++ looks like "A::f(int)".  Let's drop the
    argument list, and maybe the scope.  */
@@ -5621,6 +6146,10 @@ output_pubnames ()
   for (i = 0; i < pubname_table_in_use; ++i)
     {
       register pubname_ref pub = &pubname_table[i];
+
+      /* We shouldn't see pubnames for DIEs outside of the main CU.  */
+      if (pub->die->die_offset == 0)
+	abort ();
 
       ASM_OUTPUT_DWARF_DATA (asm_out_file, pub->die->die_offset);
       if (flag_debug_asm)
@@ -5734,6 +6263,10 @@ output_aranges ()
   for (i = 0; i < arange_table_in_use; ++i)
     {
       dw_die_ref die = arange_table[i];
+
+      /* We shouldn't see aranges for DIEs outside of the main CU.  */
+      if (die->die_offset == 0)
+	abort ();
 
       if (die->die_tag == DW_TAG_subprogram)
 	ASM_OUTPUT_DWARF_ADDR (asm_out_file, get_AT_low_pc (die));
@@ -10134,6 +10667,12 @@ void
 dwarf2out_start_source_file (filename)
      register const char *filename ATTRIBUTE_UNUSED;
 {
+  if (flag_eliminate_dwarf2_dups)
+    {
+      /* Record the beginning of the file for break_out_includes.  */
+      dw_die_ref bincl_die = new_die (DW_TAG_GNU_BINCL, comp_unit_die);
+      add_AT_string (bincl_die, DW_AT_name, filename);
+    }
 }
 
 /* Record the end of a source file, for later output
@@ -10142,6 +10681,11 @@ dwarf2out_start_source_file (filename)
 void
 dwarf2out_end_source_file ()
 {
+  if (flag_eliminate_dwarf2_dups)
+    {
+      /* Record the end of the file for break_out_includes.  */
+      new_die (DW_TAG_GNU_EINCL, comp_unit_die);
+    }      
 }
 
 /* Called from check_newline in c-parse.y.  The `buffer' parameter contains
@@ -10291,9 +10835,19 @@ dwarf2out_finish ()
      emit full debugging info for them.  */
   retry_incomplete_types ();
 
-  /* Traverse the DIE's, reverse their lists of attributes and children,
-     and add add sibling attributes to those DIE's that have children.  */
+  /* We need to reverse all the dies before break_out_includes, or
+     we'll see the end of an include file before the beginning.  */
+  reverse_all_dies (comp_unit_die);
+
+  /* Generate separate CUs for each of the include files we've seen.
+     They will go into limbo_die_list.  */
+  break_out_includes (comp_unit_die);
+
+  /* Traverse the DIE's and add add sibling attributes to those DIE's
+     that have children.  */
   add_sibling_attributes (comp_unit_die);
+  for (node = limbo_die_list; node; node = node->next)
+    add_sibling_attributes (node->die);
 
   /* Output a terminator label for the .text section.  */
   fputc ('\n', asm_out_file);
@@ -10339,21 +10893,16 @@ dwarf2out_finish ()
     add_AT_unsigned (die, DW_AT_macro_info, 0);
 #endif
 
+  /* Output all of the compilation units.  We put the main one last so that
+     the offsets are available to output_pubnames.  */
+  for (node = limbo_die_list; node; node = node->next)
+    output_comp_unit (node->die);
+  output_comp_unit (comp_unit_die);
+
   /* Output the abbreviation table.  */
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_SECTION (asm_out_file, ABBREV_SECTION);
-  build_abbrev_table (comp_unit_die);
   output_abbrev_section ();
-
-  /* Initialize the beginning DIE offset - and calculate sizes/offsets.   */
-  next_die_offset = DWARF_COMPILE_UNIT_HEADER_SIZE;
-  calc_die_sizes (comp_unit_die);
-
-  /* Output debugging information.  */
-  fputc ('\n', asm_out_file);
-  ASM_OUTPUT_SECTION (asm_out_file, DEBUG_INFO_SECTION);
-  output_compilation_unit_header ();
-  output_die (comp_unit_die);
 
   if (pubname_table_in_use)
     {

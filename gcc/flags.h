@@ -577,3 +577,7 @@ extern enum graph_dump_types graph_dump_format;
    string identifying the compiler.  */
 
 extern int flag_no_ident;
+
+/* Nonzero means we should do dwarf2 duplicate elimination.  */
+
+extern int flag_eliminate_dwarf2_dups;

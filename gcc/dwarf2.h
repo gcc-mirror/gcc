@@ -88,7 +88,9 @@ enum dwarf_tag
     /* GNU extensions */
     DW_TAG_format_label = 0x4101,	/* for FORTRAN 77 and Fortran 90 */
     DW_TAG_function_template = 0x4102,	/* for C++ */
-    DW_TAG_class_template = 0x4103	/* for C++ */
+    DW_TAG_class_template = 0x4103,	/* for C++ */
+    DW_TAG_GNU_BINCL = 0x4104,
+    DW_TAG_GNU_EINCL = 0x4105
   };
 
 #define DW_TAG_lo_user	0x4080

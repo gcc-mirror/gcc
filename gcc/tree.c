@@ -5386,6 +5386,26 @@ append_random_chars (template)
   template[6] = '\0';
 }
 
+/* P is a string that will be used in a symbol.  Mask out any characters
+   that are not valid in that context.  */
+
+void
+clean_symbol_name (p)
+     char *p;
+{
+  for (; *p; p++)
+    if (! ( ISDIGIT(*p)
+#ifndef NO_DOLLAR_IN_LABEL	/* this for `$'; unlikely, but... -- kr */
+	    || *p == '$'
+#endif
+#ifndef NO_DOT_IN_LABEL		/* this for `.'; unlikely, but...  */
+	    || *p == '.'
+#endif
+	    || ISUPPER(*p)
+	    || ISLOWER(*p)))
+      *p = '_';
+}
+  
 /* Generate a name for a function unique to this translation unit.
    TYPE is some string to identify the purpose of this function to the
    linker or collect2.  */
@@ -5431,19 +5451,7 @@ get_file_function_name_long (type)
 
   /* Don't need to pull weird characters out of global names.  */
   if (p != first_global_object_name)
-    {
-      for (q = buf+11; *q; q++)
-	if (! ( ISDIGIT(*q)
-#ifndef NO_DOLLAR_IN_LABEL	/* this for `$'; unlikely, but... -- kr */
-	       || *q == '$'
-#endif
-#ifndef NO_DOT_IN_LABEL		/* this for `.'; unlikely, but...  */
-	       || *q == '.'
-#endif
-	       || ISUPPER(*q)
-	       || ISLOWER(*q)))
-	  *q = '_';
-    }
+    clean_symbol_name (buf + 11);
 
   return get_identifier (buf);
 }

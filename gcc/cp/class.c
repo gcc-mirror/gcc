@@ -5200,7 +5200,7 @@ finish_struct_1 (t)
   maybe_suppress_debug_info (t);
 
   /* Finish debugging output for this type.  */
-  rest_of_type_compilation (t, toplevel_bindings_p ());
+  rest_of_type_compilation (t, ! LOCAL_CLASS_P (t));
 }
 
 /* When T was built up, the member declarations were added in reverse
