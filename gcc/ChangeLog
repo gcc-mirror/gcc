@@ -1,5 +1,8 @@
 Tue Mar 10 14:27:51 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* combine.c (make_field_assignment): Don't get confused if OTHER
+	has VOIDmode and don't do anything if DEST is wider than a host word.
+
 	* vax.c (check_float_value): Cast bcopy args to char *.
 
 Tue Mar 10 13:56:12 1998  Jim Wilson  <wilson@cygnus.com>
