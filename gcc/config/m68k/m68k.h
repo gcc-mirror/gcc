@@ -677,8 +677,9 @@ extern enum reg_class regno_reg_class[];
    On the 68000 series, use a data reg if possible when the
    value is a constant in the range where moveq could be used
    and we ensure that QImodes are reloaded into data regs.
-   Also, if a floating constant needs reloading, put it in memory
-   if possible.  */
+   Also, if a floating constant needs reloading, put it in memory.
+   Don't do this for !G constants, since all patterns in the md file
+   expect them to be loaded into a register via fpmovecr.  See above.  */
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS)  \
   ((GET_CODE (X) == CONST_INT			\
@@ -689,7 +690,9 @@ extern enum reg_class regno_reg_class[];
    ? DATA_REGS					\
    : (GET_CODE (X) == CONST_DOUBLE		\
       && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT) \
-   ? NO_REGS					\
+   ? (! CONST_DOUBLE_OK_FOR_LETTER_P (X, 'G')	\
+      && CLASS == FP_REGS			\
+      ? FP_REGS : NO_REGS)			\
    : (CLASS))
 
 /* Return the maximum number of consecutive registers
