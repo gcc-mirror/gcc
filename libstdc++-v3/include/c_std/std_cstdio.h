@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -152,11 +152,24 @@ namespace std
 
 namespace __gnu_cxx
 {
+#if _GLIBCPP_USE_C99_CHECK || _GLIBCPP_USE_C99_DYNAMIC
+  extern "C" int
+    (snprintf)(char * restrict, size_t, const char * restrict, ...);
+  extern "C" int
+    (vfscanf)(FILE * restrict, const char * restrict, __gnuc_va_list);
+  extern "C" int (vscanf)(const char * restrict, __gnuc_va_list);
+  extern "C" int
+    (vsnprintf)(char * restrict, size_t, const char * restrict, __gnuc_va_list);
+  extern "C" int
+    (vsscanf)(const char * restrict, const char * restrict, __gnuc_va_list);
+#endif
+#if !_GLIBCPP_USE_C99_DYNAMIC
   using ::snprintf;
   using ::vfscanf;
   using ::vscanf;
   using ::vsnprintf;
   using ::vsscanf;
+#endif
 }
 
 namespace std
