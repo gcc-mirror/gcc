@@ -170,7 +170,7 @@ typedef const char *status_t;
 #define STATUS_INTERNAL_ERROR           "Internal error."
 
 /* This status code indicates a failure in malloc or realloc.  */
-static const char* const status_allocation_failed = "Allocation failed.";
+static const char *const status_allocation_failed = "Allocation failed.";
 #define STATUS_ALLOCATION_FAILED        status_allocation_failed
 
 /* Non-zero if STATUS indicates that no error has occurred.  */
@@ -2284,10 +2284,31 @@ demangle_type (dm)
 	      is_substitution_candidate = 0;
 	  }
 	else
-	  /* While the special substitution token itself is not a
-	     substitution candidate, the <class-enum-type> is, so
-	     don't clear is_substitution_candidate.  */
-	  RETURN_IF_ERROR (demangle_class_enum_type (dm, &encode_return_type));
+	  {
+	    /* Now some trickiness.  We have a special substitution
+	       here.  Often, the special substitution provides the
+	       name of a template that's subsequently instantiated,
+	       for instance `SaIcE' => std::allocator<char>.  In these
+	       cases we need to add a substitution candidate for the
+	       entire <class-enum-type> and thus don't want to clear
+	       the is_substitution_candidate flag.
+
+	       However, it's possible that what we have here is a
+	       substitution token representing an entire type, such as
+	       `Ss' => std::string.  In this case, we mustn't add a
+	       new substitution candidate for this substitution token.
+	       To detect this case, remember where the start of the
+	       substitution token is.  */
+ 	    const char *next = dm->next;
+	    /* Now demangle the <class-enum-type>.  */
+	    RETURN_IF_ERROR 
+	      (demangle_class_enum_type (dm, &encode_return_type));
+	    /* If all that was just demangled is the two-character
+	       special substitution token, supress the addition of a
+	       new candidate for it.  */
+	    if (dm->next == next + 2)
+	      is_substitution_candidate = 0;
+	  }
 
 	break;
 
