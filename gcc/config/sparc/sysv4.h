@@ -179,7 +179,7 @@ do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
    This is currently only used to support section attributes.  */
 
 #define ASM_OUTPUT_SECTION_NAME(FILE, NAME) \
-   fprintf (FILE, ".section\t\"%s\"\n", NAME)
+   fprintf (FILE, ".section\t\"%s\",#alloc\n", NAME)
 
 /* If the host and target formats match, output the floats as hex.  */
 #if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
