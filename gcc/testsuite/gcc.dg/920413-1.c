@@ -5,6 +5,6 @@ int
 x (b)
 {
   return
-  4294967295U   /* { dg-warning "width of integer constant" } */
+  4294967295U   /* { dg-warning "width of integer|traditional C rejects" } */
    / (unsigned long) b;
 }

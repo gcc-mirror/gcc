@@ -1,3 +1,8 @@
+2000-08-10  Geoff Keating  <geoffk@cygnus.com>
+
+	* gcc.dg/920413-1.c: Allow for 'traditional C rejects 'U' suffix'
+	warning.
+
 2000-08-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/array3.C: New test.
