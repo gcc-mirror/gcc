@@ -1961,11 +1961,11 @@ stmp-headers:
 	touch $@
 
 fixinc.sh :
-	INSTALLDIR=`cd $(srcdir) ; pwd` \
-	CC=$(CC) MAKE=$(MAKE) CFLAGS="$(CFLAGS)" ; \
-	export INSTALLDIR CC MAKE CFLAGS ; \
-		( cd ../contrib/fixinc ; \
-		$(SHELL) mkfixinc.sh $(target) $$INSTALLDIR )
+	DEST=`cd $(srcdir) ; pwd`/$@ CC=$(CC) MAKE=$(MAKE) CFLAGS="$(CFLAGS)" \
+	export DEST CC MAKE CFLAGS ; \
+	echo DEST=$$DEST CC=$$CC MAKE=$$MAKE CFLAGS=$$CFLAGS ; \
+	cd ../contrib/fixinc ;  \
+	$(SHELL) mkfixinc.sh $(target) $$DEST
 
 # Build fixed copies of system files.
 stmp-fixinc: $(FIXINCLUDES) gsyslimits.h
