@@ -908,7 +908,7 @@ special_symbol (hp, pfile)
       if (!buf)
 	return;
       if (*buf == '\0')
-	buf = "\r ";
+	buf = "\r \r ";
 
       CPP_PUTS (pfile, buf, strlen (buf));
       return;
@@ -1075,14 +1075,14 @@ _cpp_macroexpand (pfile, hp)
       if (token != CPP_RPAREN)
 	return;
 
-      /* If we got one arg but it was just whitespace, call that 0 args.  */
-      if (i == 1)
+      /* foo ( ) is equivalent to foo () unless foo takes exactly one
+	 argument, in which case the former is allowed and the latter
+	 is not.  XXX C99 is silent on this rule, but it seems
+	 inconsistent to me.  */
+      if (i == 1 && nargs != 1)
 	{
 	  register U_CHAR *bp = ARG_BASE + args[0].raw;
 	  register U_CHAR *lim = bp + args[0].raw_length;
-	  /* cpp.texi says for foo ( ) we provide one argument.
-	     However, if foo wants just 0 arguments, treat this as 0.  */
-	  if (nargs == 0)
 	    while (bp != lim && is_space(*bp))
 	      bp++;
 	  if (bp == lim)
@@ -1410,6 +1410,10 @@ unsafe_chars (pfile, c1, c2)
      cpp_reader *pfile;
      int c1, c2;
 {
+  /* If c2 is EOF, that's always safe.  */
+  if (c2 == EOF)
+    return 0;
+
   switch (c1)
     {
     case EOF:
@@ -1491,14 +1495,13 @@ push_macro_expansion (pfile, xbuf, len, hp)
   /* Likewise, avoid the extra space at the end of the macro expansion
      if this is safe.  We can do a better job here since we can know
      what the next char will be.  */
-  if (len >= 3
-      && xbuf[len-2] == '\r'
-      && xbuf[len-1] == ' ')
-    {
-      int c = CPP_BUF_PEEK (CPP_BUFFER (pfile));
-      if (c == EOF || !unsafe_chars (pfile, xbuf[len-3], c))
-	len -= 2;
-    }
+  if (len >= 3 && xbuf[len-2] == '\r' && xbuf[len-1] == ' '
+      && !unsafe_chars (pfile, xbuf[len-3], CPP_BUF_PEEK (CPP_BUFFER (pfile))))
+    len -= 2;
+
+  /* If the total expansion is "\r \r", we must not trim both escapes.  */
+  if (len == 2 && advance_cur)
+    advance_cur = 0;
 
   mbuf = cpp_push_buffer (pfile, xbuf, len);
   if (mbuf == NULL)

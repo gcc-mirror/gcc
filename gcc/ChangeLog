@@ -1,3 +1,13 @@
+2000-04-19  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.c (special_symbol): Represent an empty macro with
+	"\r \r " not just "\r ".
+	(_cpp_macroexpand): Correct condition for the foo ( ) special
+	case.
+	(unsafe_chars): Handle EOF as second argument.
+	(push_macro_expansion): Simplify test for removing escape at
+	end.  Do not trim both escapes if there is no text in between.
+
 2000-04-19  Jim Blandy  <jimb@redhat.com>
 
 	* dwarf2out.c (DWARF2_ADDR_SIZE): New macro.  Use it instead
