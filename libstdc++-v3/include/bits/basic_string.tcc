@@ -315,6 +315,9 @@ namespace std
         {
 	  if (__res > this->max_size())
 	    __throw_length_error("basic_string::reserve");
+	  // Make sure we don't shrink below the current size
+	  if (__res < this->size())
+	    __res = this->size();
 	  allocator_type __a = get_allocator();
 	  _CharT* __tmp = _M_rep()->_M_clone(__a, __res - this->size());
 	  _M_rep()->_M_dispose(__a);
