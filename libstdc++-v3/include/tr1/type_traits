@@ -43,49 +43,49 @@ namespace tr1
     };
   typedef integral_constant<bool, true>     true_type;
   typedef integral_constant<bool, false>    false_type;
-  
-#define _DEFINE_PRIMARY_SPEC_HELPER(_Primary, _Type)           \
-  template<>                                                   \
-    struct _Primary<_Type>                                     \
-    : public true_type { };                            
 
-#define _DEFINE_PRIMARY_SPEC(_Primary, _Type)                  \
-  _DEFINE_PRIMARY_SPEC_HELPER(_Primary, _Type)                 \
-  _DEFINE_PRIMARY_SPEC_HELPER(_Primary, _Type const)           \
-  _DEFINE_PRIMARY_SPEC_HELPER(_Primary, _Type volatile)        \
-  _DEFINE_PRIMARY_SPEC_HELPER(_Primary, _Type const volatile)
-  
+#define _DEFINE_SPEC_HELPER(_Header, _Spec)                      \
+  template _Header                                               \
+    struct _Spec                                                 \
+    : public true_type { };
+      
+#define _DEFINE_SPEC(_Header, _Primary, _Type)                   \
+  _DEFINE_SPEC_HELPER(_Header, _Primary<_Type>)                  \
+  _DEFINE_SPEC_HELPER(_Header, _Primary<_Type const>)            \
+  _DEFINE_SPEC_HELPER(_Header, _Primary<_Type volatile>)         \
+  _DEFINE_SPEC_HELPER(_Header, _Primary<_Type const volatile>)
+
   /// @brief  primary type categories [4.5.1].
   template<typename>
     struct is_void
     : public false_type { };
-  _DEFINE_PRIMARY_SPEC(is_void, void)
+  _DEFINE_SPEC(<>, is_void, void)
 
   template<typename>
     struct is_integral
     : public false_type { };
-  _DEFINE_PRIMARY_SPEC(is_integral, bool)
-  _DEFINE_PRIMARY_SPEC(is_integral, char)
-  _DEFINE_PRIMARY_SPEC(is_integral, signed char)
-  _DEFINE_PRIMARY_SPEC(is_integral, unsigned char)
+  _DEFINE_SPEC(<>, is_integral, bool)
+  _DEFINE_SPEC(<>, is_integral, char)
+  _DEFINE_SPEC(<>, is_integral, signed char)
+  _DEFINE_SPEC(<>, is_integral, unsigned char)
 #ifdef _GLIBCXX_USE_WCHAR_T
-  _DEFINE_PRIMARY_SPEC(is_integral, wchar_t)
+  _DEFINE_SPEC(<>, is_integral, wchar_t)
 #endif
-  _DEFINE_PRIMARY_SPEC(is_integral, short)
-  _DEFINE_PRIMARY_SPEC(is_integral, unsigned short)
-  _DEFINE_PRIMARY_SPEC(is_integral, int)
-  _DEFINE_PRIMARY_SPEC(is_integral, unsigned int)
-  _DEFINE_PRIMARY_SPEC(is_integral, long)
-  _DEFINE_PRIMARY_SPEC(is_integral, unsigned long)
-  _DEFINE_PRIMARY_SPEC(is_integral, long long)
-  _DEFINE_PRIMARY_SPEC(is_integral, unsigned long long)
+  _DEFINE_SPEC(<>, is_integral, short)
+  _DEFINE_SPEC(<>, is_integral, unsigned short)
+  _DEFINE_SPEC(<>, is_integral, int)
+  _DEFINE_SPEC(<>, is_integral, unsigned int)
+  _DEFINE_SPEC(<>, is_integral, long)
+  _DEFINE_SPEC(<>, is_integral, unsigned long)
+  _DEFINE_SPEC(<>, is_integral, long long)
+  _DEFINE_SPEC(<>, is_integral, unsigned long long)
 
   template<typename>
     struct is_floating_point
     : public false_type { };
-  _DEFINE_PRIMARY_SPEC(is_floating_point, float)
-  _DEFINE_PRIMARY_SPEC(is_floating_point, double)
-  _DEFINE_PRIMARY_SPEC(is_floating_point, long double)
+  _DEFINE_SPEC(<>, is_floating_point, float)
+  _DEFINE_SPEC(<>, is_floating_point, double)
+  _DEFINE_SPEC(<>, is_floating_point, long double)
 
   template<typename>
     struct is_array
@@ -99,9 +99,11 @@ namespace tr1
     struct is_array<_Tp[]>
     : public true_type { };
   
-  template<typename _Tp>
-    struct is_pointer;
-  
+  template<typename>
+    struct is_pointer
+    : public false_type { };
+  _DEFINE_SPEC(<typename _Tp>, is_pointer, _Tp*)
+ 
   template<typename>
     struct is_reference
     : public false_type { };
@@ -127,9 +129,6 @@ namespace tr1
   
   template<typename _Tp>
     struct is_function;
-
-#undef _DEFINE_PRIMARY_SPEC_HELPER
-#undef _DEFINE_PRIMARY_SPEC
 
   /// @brief  composite type traits [4.5.2].
   template<typename _Tp>
@@ -266,27 +265,19 @@ namespace tr1
   /// @brief  const-volatile modifications [4.7.1].
   template<typename _Tp>
     struct remove_const
-    {
-      typedef _Tp     type;
-    };
+    { typedef _Tp     type; };
 
   template<typename _Tp>
     struct remove_const<_Tp const>
-    {
-      typedef _Tp     type;
-    };
+    { typedef _Tp     type; };
   
   template<typename _Tp>
     struct remove_volatile
-    {
-      typedef _Tp     type;
-    };
+    { typedef _Tp     type; };
 
   template<typename _Tp>
     struct remove_volatile<_Tp volatile>
-    {
-      typedef _Tp     type;
-    };
+    { typedef _Tp     type; };
   
   template<typename _Tp>
     struct remove_cv
@@ -307,75 +298,68 @@ namespace tr1
   /// @brief  reference modifications [4.7.2].
   template<typename _Tp>
     struct remove_reference
-    {
-      typedef _Tp     type;
-    };
+    { typedef _Tp     type; };
 
   template<typename _Tp>
     struct remove_reference<_Tp&>
-    {
-      typedef _Tp     type;
-    };
+    { typedef _Tp     type; };
   
   template<typename _Tp>
     struct add_reference
-    {
-      typedef _Tp&    type;
-    };
+    { typedef _Tp&    type; };
 
   template<typename _Tp>
     struct add_reference<_Tp&>
-    {
-      typedef _Tp&    type;
-    };
+    { typedef _Tp&    type; };
 
   /// @brief  array modififications [4.7.3].
   template<typename _Tp>
     struct remove_extent
-    {
-      typedef _Tp     type;
-    };
+    { typedef _Tp     type; };
 
   template<typename _Tp, std::size_t _Size>
     struct remove_extent<_Tp[_Size]>
-    {
-      typedef _Tp     type;
-    };
+    { typedef _Tp     type; };
 
   template<typename _Tp>
     struct remove_extent<_Tp[]>
-    {
-      typedef _Tp     type;
-    };
+    { typedef _Tp     type; };
 
   template<typename _Tp>
     struct remove_all_extents
-    {
-      typedef _Tp     type;
-    };
+    { typedef _Tp     type; };
 
   template<typename _Tp, std::size_t _Size>
     struct remove_all_extents<_Tp[_Size]>
-    {
-      typedef typename remove_all_extents<_Tp>::type   type;
-    };
+    { typedef typename remove_all_extents<_Tp>::type     type; };
 
   template<typename _Tp>
     struct remove_all_extents<_Tp[]>
-    {
-      typedef typename remove_all_extents<_Tp>::type   type;
-    };
+    { typedef typename remove_all_extents<_Tp>::type     type; };
 
   /// @brief  pointer modifications [4.7.4].
+#undef _DEFINE_SPEC_HELPER
+#define _DEFINE_SPEC_HELPER(_Header, _Spec)                      \
+  template _Header                                               \
+    struct _Spec                                                 \
+    { typedef _Tp     type; };
+
   template<typename _Tp>
-    struct remove_pointer;
+    struct remove_pointer
+    { typedef _Tp     type; };
+  _DEFINE_SPEC(<typename _Tp>, remove_pointer, _Tp*)
   
   template<typename _Tp>
-    struct add_pointer;
+    struct add_pointer
+    { typedef typename remove_reference<_Tp>::type*     type; };
 
   /// @brief  other transformations [4.8].
   template<std::size_t _Len, std::size_t _Align>
     struct aligned_storage;
+
+#undef _DEFINE_SPEC_HELPER
+#undef _DEFINE_SPEC
+
 }
 }
 

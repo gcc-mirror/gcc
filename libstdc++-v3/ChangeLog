@@ -1,3 +1,21 @@
+2004-12-12  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Implement is_pointer, remove_pointer,
+	and add_pointer; reformat. 
+	(_DEFINE_PRIMARY_SPEC_HELPER, _DEFINE_PRIMARY_SPEC): Generalize
+	and rename to _DEFINE_SPEC_HELPER and _DEFINE_SPEC; update uses.
+	* testsuite/tr1/4_metaprogramming/pointer_modifications/
+	add_pointer.cc: New.
+	* testsuite/tr1/4_metaprogramming/pointer_modifications/
+	remove_pointer.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_pointer/is_pointer.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_pointer/typedefs.cc: Likewise.
+
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_reference/is_reference.cc: Slightly tweak consistently.
+
 2004-12-11  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Implement rank.

@@ -1,4 +1,4 @@
-// 2004-12-06  Paolo Carlini  <pcarlini@suse.de>
+// 2004-12-12  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2004 Free Software Foundation, Inc.
 //
@@ -27,15 +27,15 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  using std::tr1::is_reference;
+  using std::tr1::is_pointer;
   using namespace __gnu_test;
 
-  VERIFY( (test_category<is_reference, int&>(true)) );
-  VERIFY( (test_category<is_reference, ClassType&>(true)) );
-  VERIFY( (test_category<is_reference, int(&)(int)>(true)) );
+  VERIFY( (test_category<is_pointer, int*>(true)) );
+  VERIFY( (test_category<is_pointer, ClassType*>(true)) );
+  VERIFY( (test_category<is_pointer, int(*)(int)>(true)) );
 
   // Sanity check.
-  VERIFY( (test_category<is_reference, ClassType>(false)) );
+  VERIFY( (test_category<is_pointer, ClassType>(false)) );
 }
 
 int main()

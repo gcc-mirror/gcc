@@ -1,4 +1,4 @@
-// 2004-12-06  Paolo Carlini  <pcarlini@suse.de>
+// 2004-12-12  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2004 Free Software Foundation, Inc.
 //
@@ -18,7 +18,7 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 4.5.1 Primary type categories
+// 4.7.2 Reference modifications
 
 #include <tr1/type_traits>
 #include <testsuite_hooks.h>
@@ -27,15 +27,16 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  using std::tr1::is_reference;
+  using std::tr1::remove_pointer;
+  using std::tr1::is_same;
   using namespace __gnu_test;
 
-  VERIFY( (test_category<is_reference, int&>(true)) );
-  VERIFY( (test_category<is_reference, ClassType&>(true)) );
-  VERIFY( (test_category<is_reference, int(&)(int)>(true)) );
-
-  // Sanity check.
-  VERIFY( (test_category<is_reference, ClassType>(false)) );
+  VERIFY( (is_same<remove_pointer<int*>::type, int>::value) );
+  VERIFY( (is_same<remove_pointer<int>::type, int>::value) );
+  VERIFY( (is_same<remove_pointer<const int*>::type, const int>::value) );
+  VERIFY( (is_same<remove_pointer<int**>::type, int*>::value) );
+  VERIFY( (is_same<remove_pointer<ClassType*>::type, ClassType>::value) );
+  VERIFY( (is_same<remove_pointer<ClassType>::type, ClassType>::value) );
 }
 
 int main()
