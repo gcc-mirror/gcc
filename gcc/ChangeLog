@@ -1,3 +1,8 @@
+2001-09-27  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (dwarf2out_frame_finish): Never elide .debug_frame
+	in favour of .eh_frame.
+
 2001-09-27  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.h (FUNCTION_VALUE): Change hardcoded 33 and 3 
