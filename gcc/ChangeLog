@@ -1,5 +1,10 @@
 2001-04-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* reg-stack.c (check_asm_stack_operands): Issue error if "=t" resp.
+	"=u" is used together with "st" resp. "st(1)" clobber.
+
+2001-04-20  Jakub Jelinek  <jakub@redhat.com>
+
 	* gcse.c (gcse_main): Fix comment typo.
 	(delete_null_pointer_check): Likewise.
 	(hash_scan_set): Don't consider sets with REG_EQUIV MEM notes.

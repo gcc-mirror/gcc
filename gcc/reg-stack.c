@@ -662,7 +662,20 @@ check_asm_stack_operands (insn)
 	    malformed_asm = 1;
 	  }
         else
-	  reg_used_as_output[REGNO (recog_data.operand[i])] = 1;
+	  {
+	    int j;
+
+	    for (j = 0; j < n_clobbers; j++)
+	      if (REGNO (recog_data.operand[i]) == REGNO (clobber_reg[j]))
+		{
+		  error_for_asm (insn, "Output constraint %d cannot be specified together with \"%s\" clobber",
+				 i, reg_names [REGNO (clobber_reg[j])]);
+		  malformed_asm = 1;
+		  break;
+		}
+	    if (j == n_clobbers)
+	      reg_used_as_output[REGNO (recog_data.operand[i])] = 1;
+	  }
       }
 
 
