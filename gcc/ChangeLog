@@ -1,3 +1,12 @@
+2004-08-18  Zack Weinberg  <zack@codesourcery.com>
+
+	* insn-notes.def, reg-notes.def: New files.
+	* rtl.h: Use them to define enum insn_note and enum reg_note.
+	* rtl.c: Use them to define note_insn_name and reg_note_name.
+
+	* modulo-sched.c, sched-rgn.c, final.c: NOTE_DISABLE_SCHED_OF_BLOCK
+	renamed to NOTE_INSN_DISABLE_SCHED_OF_BLOCK.
+
 2004-08-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_size_rtx_costs): New function.
@@ -74,26 +83,26 @@
 
 2004-08-18  Andrew Pinski  <apinski@apple.com>
 
-	* config/rs6000/darwin.md: Delete the altivec patterns which are 
+	* config/rs6000/darwin.md: Delete the altivec patterns which are
 	handled differently now.
 	(load_macho_picbase_di): Make sure that is only happens for TARGET_64BIT
 	(macho_correct_pic_di): Likewise.
 	(call_indirect_nonlocal_darwin64): Likewise.
 	Delete the save world/saveFP/saveVec patterns.
-	
+
 	Revert the reversion of: 2004-08-16  Stan Shebs  <shebs@apple.com>
-        * config/darwin.c (macho_indirect_data_reference): Add DImode case.
-        * config/rs6000/rs6000.md: Include darwin.md.
-        (builtin_setjmp_receiver): Add DImode case.
-        * config/rs6000/rs6000.c (rs6000_emit_move): Add DImode case to
-        Darwin bits.
+	* config/darwin.c (macho_indirect_data_reference): Add DImode case.
+	* config/rs6000/rs6000.md: Include darwin.md.
+	(builtin_setjmp_receiver): Add DImode case.
+	* config/rs6000/rs6000.c (rs6000_emit_move): Add DImode case to
+	Darwin bits.
 
 2004-08-18  Matt Austern  <austern@apple.com>
 
 	Dead code stripping
 	* darwin.h (EH_FRAME_SECTION_ATTR): Mark so it doesn't get stripped.
 	* darwin.c (darwin_file_end): Mark file as potentially strippable.
-	
+
 2004-08-18  Richard Henderson  <rth@redhat.com>
 
 	* alias.c (readonly_fields_p): Remove.
@@ -152,7 +161,7 @@
 
 2004-08-18  Andrew Pinski  <apinski@apple.com>
 
-	* config/darwin.c (machopic_legitimize_pic_address): Only set 
+	* config/darwin.c (machopic_legitimize_pic_address): Only set
 	MEM_READONLY_P in the non TARGET_TOC case.
 
 2004-08-18  Zack Weinberg  <zack@codesourcery.com>
