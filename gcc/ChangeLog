@@ -1,3 +1,8 @@
+Sun Oct 26 11:52:01 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alias.c (memrefs_conflict_p): Treat arg_pointer_rtx just
+	like stack_pointer_rtx.
+
 Sun Oct 26 11:32:16 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (bootstrap-lean): Combined with `normal' bootstrap

@@ -622,7 +622,7 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
     }
 
   if (y == frame_pointer_rtx || y == hard_frame_pointer_rtx
-      || y == stack_pointer_rtx)
+      || y == stack_pointer_rtx || y == arg_pointer_rtx)
     {
       rtx t = y;
       int tsize = ysize;
@@ -631,7 +631,7 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
     }
 
   if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
-      || x == stack_pointer_rtx)
+      || x == stack_pointer_rtx || x == arg_pointer_rtx)
     {
       rtx y1;
 
