@@ -1545,11 +1545,14 @@ const_hash (exp)
       /* For record type, include the type in the hashing.
 	 We do not do so for array types
 	 because (1) the sizes of the elements are sufficient
-	 and (2) distinct array types can have the same constructor.  */
+	 and (2) distinct array types can have the same constructor.
+	 Instead, we include the array size because the constructor could
+	 be shorter.  */
       if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
 	hi = ((int) TREE_TYPE (exp) & ((1 << HASHBITS) - 1)) % MAX_HASH_TABLE;
       else
-	hi = 5;
+	hi = ((5 + int_size_in_bytes (TREE_TYPE (exp)))
+	       & ((1 << HASHBITS) - 1)) % MAX_HASH_TABLE;
 
       for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
 	hi = (hi * 603 + const_hash (TREE_VALUE (link))) % MAX_HASH_TABLE;
@@ -1678,6 +1681,15 @@ compare_constant_1 (exp, p)
 	return 0;
       p += sizeof type;
 
+      /* For arrays, insist that the size in bytes match.  */
+      if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+	{
+	  int size = int_size_in_bytes (TREE_TYPE (exp));
+	  if (bcmp (&size, p, sizeof size))
+	    return 0;
+	  p += sizeof size;
+	}
+
       for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
 	if ((p = compare_constant_1 (TREE_VALUE (link), p)) == 0)
 	  return 0;
@@ -1791,6 +1803,13 @@ record_constant_1 (exp)
       else
 	type = 0;
       obstack_grow (&permanent_obstack, (char *) &type, sizeof type);
+
+      /* For arrays, insist that the size in bytes match.  */
+      if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+	{
+	  int size = int_size_in_bytes (TREE_TYPE (exp));
+	  obstack_grow (&permanent_obstack, (char *) &size, sizeof size);
+	}
 
       for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
 	record_constant_1 (TREE_VALUE (link));
