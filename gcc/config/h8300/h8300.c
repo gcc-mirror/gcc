@@ -68,18 +68,18 @@ int cpu_type;
 
 /* True if the current function is an interrupt handler
    (either via #pragma or an attribute specification).  */
-int interrupt_handler;
+static int interrupt_handler;
 
 /* True if the current function is an OS Task
    (via an attribute specification).  */
-int os_task;
+static int os_task;
 
 /* True if the current function is a monitor
    (via an attribute specification).  */
-int monitor;
+static int monitor;
 
 /* True if a #pragma saveall has been seen for the current function.  */
-int pragma_saveall;
+static int pragma_saveall;
 
 static const char *const names_big[] =
 { "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7" };
