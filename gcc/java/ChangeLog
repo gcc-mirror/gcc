@@ -1,3 +1,18 @@
+2002-02-20  Nic Ferrier  <nferrier@tapsellferrier.co.uk>
+
+	* gcj.texi: Option `--classpath' becomes `--CLASSPATH.'Option 
+	`--CLASSPATH' becomes `--classpath.' 
+	* gjavah.c: Likewise. 
+	* jcf-dump.c: Likewise. 
+	* lang-options.h: Likewise. 
+	* lang.c: Likewise. 
+	* jcf-path.c: Updated comment. 
+	(jcf_path_classpath_arg): Renamed `jcf_path_CLASSPATH_arg.' 
+	(jcf_path_CLASSPATH_arg): Renamed `jcf_path_classpath_arg.' 
+	* jcf.h (jcf_path_CLASSPATH_arg): Ditto. 
+	(jcf_path_CLASSPATH_arg): Ditto. 
+	(classpath_u): Updated leading comment. 
+
 2002-02-20  Per Bothner  <per@bothner.com>
 
 	* builtins.c (check_for_builtin):  New function.
