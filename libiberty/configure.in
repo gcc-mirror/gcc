@@ -5,14 +5,19 @@ AC_INIT(pexecute.c)
 
 dnl We use these options to decide which functions to include.
 AC_ARG_WITH(target-subdir,
-[  --with-target-subdir=SUBDIR      Configuring in a subdirectory])
+[  --with-target-subdir=SUBDIR      Configuring in a subdirectory for target])
+AC_ARG_WITH(build-subdir,
+[  --with-build-subdir=SUBDIR       Configuring in a subdirectory for build])
 AC_ARG_WITH(cross-host,
 [  --with-cross-host=HOST           Configuring with a cross compiler])
 AC_ARG_WITH(newlib,
 [  --with-newlib                    Configuring with newlib])
 
 if test "${srcdir}" = "."; then
-  if test -z "${with_target_subdir}"; then
+  if test -n "${with_build_subdir}"; then
+    libiberty_topdir="${srcdir}/../.."
+    with_target_subdir=
+  elif test -z "${with_target_subdir}"; then
     libiberty_topdir="${srcdir}/.."
   else
     if test "${with_target_subdir}" != "."; then
@@ -417,7 +422,7 @@ AC_SUBST(INSTALL_DEST)
 AC_OUTPUT(Makefile testsuite/Makefile,
 [test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
 if test -n "$CONFIG_FILES"; then
-  if test -n "${with_target_subdir}"; then
+  if test -n "${with_build_subdir}" || test -n "${with_target_subdir}"; then
     # FIXME: We shouldn't need to set ac_file
     ac_file=Makefile
     . ${libiberty_topdir}/config-ml.in
@@ -427,6 +432,7 @@ srcdir=${srcdir}
 host=${host}
 target=${target}
 with_target_subdir=${with_target_subdir}
+with_build_subdir=${with_build_subdir}
 with_multisubdir=${with_multisubdir}
 ac_configure_args="--enable-multilib ${ac_configure_args}"
 CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
