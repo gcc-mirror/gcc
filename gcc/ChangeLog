@@ -1,3 +1,8 @@
+2004-02-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/mcore/mcore.c (block_move_sequence): Replace
+	gen_rtx_CONST_INT with GEN_INT.
+
 2004-02-02  Jan Hubicka  <jh@suse.cz>
 
 	* alias.c (record_set): Use hard_regno_nregs.

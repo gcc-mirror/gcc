@@ -1876,8 +1876,7 @@ block_move_sequence (rtx dest, rtx dst_mem, rtx src, rtx src_mem,
 #else
 			  mode[next],
 #endif
-			  gen_rtx_PLUS (Pmode, src,
-					gen_rtx_CONST_INT (SImode, offset_ld)));
+			  gen_rtx_PLUS (Pmode, src, GEN_INT (offset_ld)));
 	  
 	  RTX_UNCHANGING_P (srcp) = RTX_UNCHANGING_P (src_mem);
 	  MEM_VOLATILE_P (srcp) = MEM_VOLATILE_P (src_mem);
@@ -1897,8 +1896,7 @@ block_move_sequence (rtx dest, rtx dst_mem, rtx src, rtx src_mem,
 #else
 			  mode[phase],
 #endif
-			  gen_rtx_PLUS (Pmode, dest,
-					gen_rtx_CONST_INT (SImode, offset_st)));
+			  gen_rtx_PLUS (Pmode, dest, GEN_INT (offset_st)));
 	  
 	  RTX_UNCHANGING_P (dstp) = RTX_UNCHANGING_P (dst_mem);
 	  MEM_VOLATILE_P (dstp) = MEM_VOLATILE_P (dst_mem);
