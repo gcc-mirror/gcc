@@ -260,7 +260,7 @@ package body Make is
    Current_Ada_Include_Path  : String_Access := null;
    Current_Ada_Objects_Path  : String_Access := null;
 
-   Max_Line_Length           : constant      := 127;
+   Max_Line_Length : constant := 127;
    --  Maximum number of characters per line, when displaying a path
 
    ----------------------
