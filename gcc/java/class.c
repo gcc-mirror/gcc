@@ -1402,8 +1402,9 @@ push_super_field (this_class, super_class)
 /* Handle the different manners we may have to lay out a super class.  */
 
 static tree
-maybe_layout_super_class (super_class)
+maybe_layout_super_class (super_class, this_class)
      tree super_class;
+     tree this_class;
 {
   if (TREE_CODE (super_class) == RECORD_TYPE)
     {
@@ -1415,14 +1416,17 @@ maybe_layout_super_class (super_class)
     }
   /* We might have to layout the class before its dependency on
      the super class gets resolved by java_complete_class  */
-  else if (TREE_CODE (super_class) == TREE_LIST)
+  else if (TREE_CODE (super_class) == POINTER_TYPE)
     {
-      tree name = TYPE_NAME (TREE_PURPOSE (super_class));
-      load_class (name, 1);
-      super_class = IDENTIFIER_CLASS_VALUE (name);
-      if (!super_class)
-	return NULL_TREE;	/* FIXME, NULL_TREE not checked by caller. */
-      super_class = TREE_TYPE (super_class);
+      if (TREE_TYPE (super_class) != NULL_TREE)
+	super_class = TREE_TYPE (super_class);
+      else
+	{
+	  super_class = do_resolve_class (super_class, NULL_TREE, this_class);
+	  if (!super_class)
+	    return NULL_TREE;	/* FIXME, NULL_TREE not checked by caller. */
+	  super_class = TREE_TYPE (super_class);
+	}
     }
   if (!TYPE_SIZE (super_class))
     safe_layout_class (super_class);
@@ -1439,7 +1443,7 @@ layout_class (this_class)
 
   if (super_class)
     {
-      super_class = maybe_layout_super_class (super_class);
+      super_class = maybe_layout_super_class (super_class, this_class);
       if (TREE_CODE (TYPE_SIZE (super_class)) == ERROR_MARK)
 	{
 	  TYPE_SIZE (this_class) = error_mark_node;
@@ -1478,7 +1482,7 @@ layout_class_methods (this_class)
 
   if (super_class)
     {
-      super_class = maybe_layout_super_class (super_class);
+      super_class = maybe_layout_super_class (super_class, this_class);
       if (!TYPE_NVIRTUALS (super_class))
 	layout_class_methods (super_class);
       dtable_count = TYPE_NVIRTUALS (super_class);
