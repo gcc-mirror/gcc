@@ -259,7 +259,7 @@ jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert -nodefaultlibs \
 jv_convert_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
 	-o jv-convert
 jv_convert_LDADD = $(convert_source_files:.java=.lo) libgcj.la \
-	$(GCLIBS) $(THREADLIBS) -lm -lc
+	$(GCLIBS) $(THREADLIBS) -lm -lgcc -lc -lgcc
 jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
 	$(GCDEPS) $(THREADDEPS) libgcj.la
 
