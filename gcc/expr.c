@@ -9086,7 +9086,8 @@ preexpand_calls (exp)
       /* Do nothing if already expanded.  */
       if (CALL_EXPR_RTL (exp) != 0
 	  /* Do nothing if the call returns a variable-sized object.  */
-	  || TREE_CODE (TYPE_SIZE (TREE_TYPE(exp))) != INTEGER_CST
+	  || (TREE_CODE (TREE_TYPE (exp)) != VOID_TYPE
+	      && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) != INTEGER_CST)
 	  /* Do nothing to built-in functions.  */
 	  || (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
 	      && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))

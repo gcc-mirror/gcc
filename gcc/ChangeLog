@@ -1,3 +1,8 @@
+Sat Apr 22 06:45:04 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (preexpand_calls, case CALL_EXPR): Don't look at TYPE_SIZE
+	of VOID_TYPE.
+
 Fri Apr 21 18:33:09 2000  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.h (REGNO_REG_CLASS): Use NO_REGS instead
