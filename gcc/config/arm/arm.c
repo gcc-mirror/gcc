@@ -4571,6 +4571,12 @@ adjacent_mem_locations (a, b)
       else
 	reg1 = REGNO (XEXP (b, 0));
 
+      /* Don't accept any offset that will require multiple instructions to handle,
+	 since this would cause the arith_adjacentmem pattern to output an overlong
+	 sequence.  */
+      if (!const_ok_for_op (PLUS, val0) || !const_ok_for_op (PLUS, val1))
+	return 0;
+      
       return (reg0 == reg1) && ((val1 - val0) == 4 || (val0 - val1) == 4);
     }
   return 0;

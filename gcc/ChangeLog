@@ -1,3 +1,9 @@
+2003-05-15  Philip Blundell  <philb@gnu.org>
+
+	PR target/10730
+	* config/arm/arm.c (adjacent_mem_locations): Reject offsets
+	involving invalid constants.
+
 2003-05-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (hppa_expand_prologue): Remove blockage.
