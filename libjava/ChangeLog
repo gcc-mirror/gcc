@@ -1,3 +1,9 @@
+2000-04-16  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/io/natFileDescriptorPosix.cc (open): Use mode 0666. Fix for PR
+	libgcj/202.
+	(available): Initialize `where' to prevent bogus compiler warning.
+
 2000-04-12  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natString.cc (intern): Temporarily disable finalizer

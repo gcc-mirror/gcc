@@ -83,7 +83,7 @@ java::io::FileDescriptor::open (jstring path, jint jflags)
 #endif
 
   JvAssert ((jflags & READ) || (jflags & WRITE));
-  int mode = 0644;
+  int mode = 0666;
   if ((jflags & READ) && (jflags & WRITE))
     flags |= O_RDWR;
   else if ((jflags & READ))
@@ -281,7 +281,7 @@ java::io::FileDescriptor::available (void)
   if (! num_set)
     {
       struct stat sb;
-      off_t where;
+      off_t where = 0;
       if (fstat (fd, &sb) != -1
 	  && S_ISREG (sb.st_mode)
 	  && (where = lseek (fd, SEEK_CUR, 0)) != (off_t) -1)
