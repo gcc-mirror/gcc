@@ -67,11 +67,13 @@ esac
 
 if [ "${shared}" = "yes" ]; then
   case "${target}" in
-    hppa*-*)	 frags="${frags} ../../config/mh-papic" ;;
-    i[3456]86-*) frags="${frags} ../../config/mh-x86pic" ;;
-    alpha*-*-linux*)
-		 frags="${frags} ../../config/mh-elfalphapic" ;;
-    *)	         frags="${frags} ../../config/mh-${target_cpu}pic" ;;
+    alpha*-*-linux*)	frags="${frags} ../../config/mh-elfalphapic" ;;
+    arm*-*-*)		frags="${frags} ../../config/mh-armpic" ;;
+    hppa*-*-*)		frags="${frags} ../../config/mh-papic" ;;
+    i[3456]86-*-*)	frags="${frags} ../../config/mh-x86pic" ;;
+    powerpc*-*-aix*)	;;
+    powerpc*-*-*)	frags="${frags} ../../config/mh-ppcpic" ;;
+    *-*-*)		frags="${frags} ../../config/mh-${target_cpu}pic" ;;
   esac
 fi
 

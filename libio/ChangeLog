@@ -1,3 +1,7 @@
+Thu Mar 11 01:07:55 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+
+	* configure.in: Cleanup and add mh-*pic handling for arm, powerpc
+
 Fri Mar  5 01:15:15 1999  H.J. Lu  (hjl@gnu.org)
 
         * config/linuxlibc1.mt (MT_CFLAGS): Add -D_G_STDIO_USES_LIBIO
