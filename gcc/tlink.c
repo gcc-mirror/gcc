@@ -125,8 +125,6 @@ symbol_hash_newfunc (entry, table, string)
       if (ret == NULL)
 	return NULL;
     }
-  ret = ((struct symbol_hash_entry *)
-     	 hash_newfunc ((struct hash_entry *) ret, table, string));
   ret->file = NULL;
   ret->chosen = 0;
   ret->tweaking = 0;
@@ -165,8 +163,6 @@ file_hash_newfunc (entry, table, string)
       if (ret == NULL)
 	return NULL;
     }
-  ret = ((struct file_hash_entry *)
-     	 hash_newfunc ((struct hash_entry *) ret, table, string));
   ret->args = NULL;
   ret->dir = NULL;
   ret->main = NULL;
@@ -204,8 +200,6 @@ demangled_hash_newfunc (entry, table, string)
       if (ret == NULL)
 	return NULL;
     }
-  ret = ((struct demangled_hash_entry *)
-     	 hash_newfunc ((struct hash_entry *) ret, table, string));
   ret->mangled = NULL;
   return (struct hash_entry *) ret;
 }
