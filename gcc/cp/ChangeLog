@@ -1,3 +1,8 @@
+1997-09-22  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl.c (start_function): Up warning of no return type to be a
+	pedwarn.
+
 Sat Sep 20 15:31:00 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (build_over_call): Do require_complete_type before
