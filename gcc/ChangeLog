@@ -1,3 +1,9 @@
+2002-03-19 Dale Johannesen  <dalej@apple.com>
+
+	PR optimization/5999, middle-end/5731
+	* expr.c (expand_expr) [RDIV_EXPR]: Only convert real divisions into
+	multiplications by reciprocals.
+
 2002-03-20  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in: Update.
