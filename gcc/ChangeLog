@@ -1,3 +1,9 @@
+Tue May 23 15:08:31 2000  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/sh/sh.c (gen_far_branch, split_branches): Update
+	to reflect new prototypes for redirect_jump and invert_jump.
+	(sh_insn_length_adjustment): Get rid of const warnings.
+
 2000-05-23  Kazu Hirata  <kazu@hxi.com>
 
 	* invoke.texi (Options for Debugging Your Program or GCC): Update
