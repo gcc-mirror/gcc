@@ -170,6 +170,9 @@ add_friend (tree type, tree decl)
       list = TREE_CHAIN (list);
     }
 
+  if (DECL_CLASS_SCOPE_P (decl))
+    perform_or_defer_access_check (TYPE_BINFO (DECL_CONTEXT (decl)), decl);
+
   maybe_add_class_template_decl_list (type, decl, /*friend_p=*/1);
 
   DECL_FRIENDLIST (typedecl)

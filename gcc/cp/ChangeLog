@@ -1,3 +1,8 @@
+2003-07-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/7809
+	* g++.dg/parse/access3.C: New test.
+
 2003-07-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/10668
