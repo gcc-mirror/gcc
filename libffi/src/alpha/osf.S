@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   osf.S - Copyright (c) 1998 Cygnus Solutions
+   osf.S - Copyright (c) 1998, 2001 Red Hat
    
    Alpha/OSF Foreign Function Interface 
 
@@ -44,12 +44,16 @@
 ffi_call_osf:
 	.frame	$15, 32, $26, 0
 	.mask   0x4008000, -32
+$LFB1:
 	addq	$16,$17,$1
 	mov	$16, $30
 	stq	$26, 0($1)
+$LCFI0:
 	stq	$15, 8($1)
+$LCFI1:
 	stq	$18, 16($1)
 	mov	$1, $15
+$LCFI2:
 	.prologue 0
 
 	stq	$19, 24($1)
@@ -110,6 +114,7 @@ $retdouble:
 	nop
 	ldq	$15, 8($15)
 	ret
+$LFE1:
 
 	.end	ffi_call_osf
 
@@ -123,9 +128,12 @@ $retdouble:
 ffi_closure_osf:
 	.frame	$30, 16*8, $26, 0
 	.mask	0x4000000, -16*8
+$LFB2:
 	ldgp	$29, 0($27)
 	subq	$30, 16*8, $30
+$LCFI5:
 	stq	$26, 0($30)
+$LCFI6:
 	.prologue 1
 
 	# Store all of the potential argument registers in va_list format.
@@ -239,6 +247,7 @@ $load_64:
 	nop
 	addq	$30, 16*8, $30
 	ret
+$LFE2:
 
 	.end	ffi_closure_osf
 
@@ -277,3 +286,63 @@ $load_table:
 	|| FFI_TYPE_LAST != 14
 #error "osf.S out of sync with ffi.h"
 #endif
+
+	.section	.eh_frame,"aw",@progbits
+__FRAME_BEGIN__:
+	.4byte	$LECIE1-$LSCIE1	 # Length of Common Information Entry
+$LSCIE1:
+	.4byte	0x0	 # CIE Identifier Tag
+	.byte	0x1	 # CIE Version
+	.ascii "zR\0"	 # CIE Augmentation
+	.byte	0x1	 # uleb128 0x1; CIE Code Alignment Factor
+	.byte	0x78	 # sleb128 -8; CIE Data Alignment Factor
+	.byte	0x1a	 # CIE RA Column
+	.byte	0x1	 # uleb128 0x1; Augmentation size
+	.byte	0x1b	 # FDE Encoding (pcrel sdata4)
+	.byte	0xc	 # DW_CFA_def_cfa
+	.byte	0x1e	 # uleb128 0x1e
+	.byte	0x0	 # uleb128 0x0
+	.align 3
+$LECIE1:
+$LSFDE1:
+	.4byte	$LEFDE1-$LASFDE1	 # FDE Length
+$LASFDE1:
+	.4byte	$LASFDE1-__FRAME_BEGIN__	 # FDE CIE offset
+	.4byte	$LFB1-.	 # FDE initial location
+	.4byte	$LFE1-$LFB1	 # FDE address range
+	.byte	0x0	 # uleb128 0x0; Augmentation size
+	.byte	0x4	 # DW_CFA_advance_loc4
+	.4byte	$LCFI0-$LFB1
+	.byte	0xe	 # DW_CFA_def_cfa_offset
+	.byte	0x30	 # uleb128 0x30
+	.byte	0x4	 # DW_CFA_advance_loc4
+	.4byte	$LCFI1-$LCFI0
+	.byte	0x9a	 # DW_CFA_offset, column 0x1a
+	.byte	0x6	 # uleb128 0x6
+	.byte	0x8f	 # DW_CFA_offset, column 0xf
+	.byte	0x5	 # uleb128 0x5
+	.byte	0x4	 # DW_CFA_advance_loc4
+	.4byte	$LCFI2-$LCFI1
+	.byte	0xc	 # DW_CFA_def_cfa
+	.byte	0xf	 # uleb128 0xf
+	.byte	0x30	 # uleb128 0x30
+	.align 3
+$LEFDE1:
+
+$LSFDE3:
+	.4byte	$LEFDE3-$LASFDE3	 # FDE Length
+$LASFDE3:
+	.4byte	$LASFDE3-__FRAME_BEGIN__	 # FDE CIE offset
+	.4byte	$LFB2-.	 # FDE initial location
+	.4byte	$LFE2-$LFB2	 # FDE address range
+	.byte	0x0	 # uleb128 0x0; Augmentation size
+	.byte	0x4	 # DW_CFA_advance_loc4
+	.4byte	$LCFI5-$LFB2
+	.byte	0xe	 # DW_CFA_def_cfa_offset
+	.byte	0x90,0x1	 # uleb128 0x90
+	.byte	0x4	 # DW_CFA_advance_loc4
+	.4byte	$LCFI6-$LCFI5
+	.byte	0x9a	 # DW_CFA_offset, column 0x1a
+	.byte	0x12	 # uleb128 0x12
+	.align 3
+$LEFDE3:

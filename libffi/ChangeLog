@@ -1,3 +1,9 @@
+2001-06-03  Andrew Haley  <aph@redhat.com>
+
+	* src/alpha/osf.S: Add unwind info.
+	* src/powerpc/sysv.S: Add unwind info.
+	* src/powerpc/ppc_closure.S: Likewise.
+
 2001-05-06  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* configure.in: Remove warning about beta code.
