@@ -1,3 +1,9 @@
+2004-03-03  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.c (m68hc11_override_options): Disable -fweb
+	because it breaks the 32-bit shift patterns that rely on a match_dup.
+	(print_operand): Don't print a * before the base address.
+
 2003-03-03  Richard Henderson  <rth@redhat.com>
 
         PR opt/13862
