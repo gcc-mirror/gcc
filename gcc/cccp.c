@@ -47,11 +47,13 @@ typedef unsigned char U_CHAR;
 #define LOCAL_INCLUDE_DIR "/usr/local/include"
 #endif
 
+#if 0 /* We can't get ptrdiff_t, so I arranged not to need PTR_INT_TYPE.  */
 #ifdef __STDC__
 #define PTR_INT_TYPE ptrdiff_t
 #else
 #define PTR_INT_TYPE long
 #endif
+#endif /* 0 */
 
 #include "pcp.h"
 
@@ -161,7 +163,6 @@ extern char *getenv ();
 extern FILE *fdopen ();
 extern char *version_string;
 extern struct tm *localtime ();
-extern char *malloc (), *realloc ();
 extern int sys_nerr;
 extern char *sys_errlist[];
 
@@ -3814,8 +3815,11 @@ get_filename:
 
     strncpy (fname, fbeg, flen);
     fname[flen] = 0;
-    error_from_errno (fname);
-
+    if (search_start)
+      error_from_errno (fname);
+    else
+      error ("No include path in which to find %s", fname);
+    
     /* For -M, add this file to the dependencies.  */
     if (print_deps > (angle_brackets || (system_include_depth > 0))) {
       /* Break the line before this.  */
@@ -4380,8 +4384,11 @@ pcfinclude (buf, limit, name, op)
 
     /* First skip to a longword boundary */
     /* ??? Why a 4-byte boundary?  On all machines? */
-    if ((PTR_INT_TYPE) cp & 3)
-      cp += 4 - ((PTR_INT_TYPE) cp & 3);
+    /* NOTE: while int may not be as wide as a pointer on some machins,
+       this is correct nonethelesss works anyway.
+       Do not try risky measures here to get another type to use!  */
+    if ((int) cp & 3)
+      cp += 4 - ((int) cp & 3);
     
     /* Now get the string. */
     str = (STRINGDEF *) cp;
