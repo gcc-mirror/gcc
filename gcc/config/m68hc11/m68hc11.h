@@ -815,9 +815,6 @@ extern enum reg_class m68hc11_tmp_regs_class;
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS)	preferred_reload_class(X,CLASS)
 
-
-#define LIMIT_RELOAD_CLASS(MODE, CLASS) limit_reload_class(MODE,CLASS)
-
 #define SMALL_REGISTER_CLASSES 1
 
 /* A C expression whose value is nonzero if pseudos that have been

@@ -213,28 +213,11 @@ static void m68hc11_add_gc_roots PARAMS ((void));
 
 static int nb_soft_regs;
 
-#if GCC_VERSION > 2095
-/* Flag defined in c-decl.c
-
-   Nonzero means don't recognize the non-ANSI builtin functions.
-   -ansi sets this.
-
-   It is set by 'm68hc11_override_options' to ensure that bcmp() and
-   bzero() are not defined.  Their prototype are wrong and they
-   conflict with newlib definition.  Don't define as external to
-   avoid a link problem for f77.  */
-int flag_no_nonansi_builtin;
-#endif
-
 int
 m68hc11_override_options ()
 {
   m68hc11_add_gc_roots ();
 
-#if GCC_VERSION > 2095
-  flag_no_nonansi_builtin = 1;
-#endif
-  
   memset (m68hc11_reg_valid_for_index, 0,
 	  sizeof (m68hc11_reg_valid_for_index));
   memset (m68hc11_reg_valid_for_base, 0, sizeof (m68hc11_reg_valid_for_base));
@@ -265,7 +248,7 @@ m68hc11_override_options ()
   if (TARGET_M6812)
     {
       m68hc11_cost = &m6812_cost;
-      m68hc11_min_offset = 0;
+      m68hc11_min_offset = -65536;
       m68hc11_max_offset = 65536;
       m68hc11_index_reg_class = D_REGS;
       m68hc11_base_reg_class = A_OR_SP_REGS;
@@ -364,29 +347,6 @@ hard_regno_mode_ok (regno, mode)
     default:
       return 0;
     }
-}
-
-enum reg_class
-limit_reload_class (mode, class)
-     enum machine_mode mode;
-     enum reg_class class;
-{
-  if (mode == Pmode)
-    {
-      if (class == m68hc11_base_reg_class || class == SP_REGS
-	  || class == Y_REGS || class == X_REGS
-	  || class == X_OR_SP_REGS || class == Y_OR_S_REGS
-	  || class == A_OR_SP_REGS)
-	return class;
-
-      if (debug_m6811)
-	{
-	  printf ("Forcing to A_REGS\n");
-	  fflush (stdout);
-	}
-      return m68hc11_base_reg_class;
-    }
-  return class;
 }
 
 enum reg_class
@@ -2218,9 +2178,19 @@ print_operand (file, op, letter)
     }
   else
     {
+      int need_parenthesize = 0;
+
       if (letter != 'i')
 	asm_fprintf (file, "%0I");
+      else
+        need_parenthesize = must_parenthesize (op);
+
+      if (need_parenthesize)
+        asm_fprintf (file, "(");
+
       output_addr_const (file, op);
+      if (need_parenthesize)
+        asm_fprintf (file, ")");
     }
 }
 
@@ -4055,7 +4025,7 @@ m68hc11_check_z_replacement (insn, info)
 	    }
 	  info->x_used = 1;
 	  if (z_dies_here && !reg_mentioned_p (src, ix_reg)
-	      && GET_CODE (src) == REG && REGNO (src) == HARD_X_REGNUM)
+	      && GET_CODE (dst) == REG && REGNO (dst) == HARD_X_REGNUM)
 	    {
 	      info->need_save_z = 0;
 	      info->z_died = 1;
@@ -4126,7 +4096,7 @@ m68hc11_check_z_replacement (insn, info)
 	    }
 	  info->y_used = 1;
 	  if (z_dies_here && !reg_mentioned_p (src, iy_reg)
-	      && GET_CODE (src) == REG && REGNO (src) == HARD_Y_REGNUM)
+	      && GET_CODE (dst) == REG && REGNO (dst) == HARD_Y_REGNUM)
 	    {
 	      info->need_save_z = 0;
 	      info->z_died = 1;
@@ -4500,6 +4470,8 @@ m68hc11_z_replacement (insn)
 	       && INTVAL (src) == 0)
 	{
 	  XEXP (body, 0) = gen_rtx (REG, GET_MODE (dst), SOFT_Z_REGNUM);
+          /* Force it to be re-recognized.  */
+          INSN_CODE (insn) = -1;
 	  return;
 	}
     }
@@ -4764,6 +4736,7 @@ m68hc11_reorg (first)
      rtx first;
 {
   int split_done = 0;
+  rtx insn;
 
   z_replacement_completed = 0;
   z_reg = gen_rtx (REG, HImode, HARD_Z_REGNUM);
@@ -4795,6 +4768,28 @@ m68hc11_reorg (first)
      description to use the best assembly directives.  */
   if (optimize)
     {
+      /* Before recomputing the REG_DEAD notes, remove all of them.
+         This is necessary because the reload_cse_regs() pass can
+         have replaced some (MEM) with a register.  In that case,
+         the REG_DEAD that could exist for that register may become
+         wrong.  */
+      for (insn = first; insn; insn = NEXT_INSN (insn))
+        {
+          if (INSN_P (insn))
+            {
+              rtx *pnote;
+
+              pnote = &REG_NOTES (insn);
+              while (*pnote != 0)
+                {
+                  if (REG_NOTE_KIND (*pnote) == REG_DEAD)
+                    *pnote = XEXP (*pnote, 1);
+                  else
+                    pnote = &XEXP (*pnote, 1);
+                }
+            }
+        }
+
 #if GCC_VERSION > 2095
       find_basic_blocks (first, max_reg_num (), 0);
       life_analysis (first, 0, PROP_REG_INFO | PROP_DEATH_NOTES);
