@@ -1,3 +1,10 @@
+2004-10-31  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Convert diagnostics to use quoting flag q 8/n
+	* cvt.c (cp_convert_to_pointer, warn_ref_binding, 
+	convert_to_reference, ocp_convert, convert_to_void 
+	cp_convert_to_pointer): 
+
 2004-10-31  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15172
