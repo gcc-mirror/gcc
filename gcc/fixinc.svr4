@@ -1509,10 +1509,10 @@ cat <<'__EOF__' >${LIB}/sys/byteorder.h
 #endif
 
 #ifdef __STDC__
-extern __inline__ unsigned long htonl (unsigned long);
-extern __inline__ unsigned short htons (unsigned int);
-extern __inline__ unsigned long ntohl (unsigned long);
-extern __inline__ unsigned short ntohs (unsigned int);
+static __inline__ unsigned long htonl (unsigned long);
+static __inline__ unsigned short htons (unsigned int);
+static __inline__ unsigned long ntohl (unsigned long);
+static __inline__ unsigned short ntohs (unsigned int);
 #endif /* defined (__STDC__) */
 
 #if defined (__i386__)
@@ -1525,7 +1525,7 @@ extern __inline__ unsigned short ntohs (unsigned int);
 
 /* We must use a new-style function definition, so that this will also
    be valid for C++.  */
-extern __inline__ unsigned long
+static __inline__ unsigned long
 htonl (unsigned long __arg)
 {
   register unsigned long __result;
@@ -1538,7 +1538,7 @@ htonl (unsigned long __arg)
 
 /* Convert a host short to a network short.  */
 
-extern __inline__ unsigned short
+static __inline__ unsigned short
 htons (unsigned int __arg)
 {
   register unsigned short __result;
@@ -1560,7 +1560,7 @@ htons (unsigned int __arg)
 
 /* Convert a host long to a network long.  */
 
-extern __inline__ unsigned long
+static __inline__ unsigned long
 htonl (unsigned long __arg)
 {
   register unsigned long __result;
@@ -1574,7 +1574,7 @@ htonl (unsigned long __arg)
 
 /* Convert a host short to a network short.  */
 
-extern __inline__ unsigned short
+static __inline__ unsigned short
 htons (unsigned int __arg)
 {
   register unsigned short __result;
@@ -1592,7 +1592,7 @@ htons (unsigned int __arg)
 
 /* Convert a host long to a network long.  */
 
-extern __inline__ unsigned long
+static __inline__ unsigned long
 htonl (unsigned long __arg)
 {
   return __arg;
@@ -1600,7 +1600,7 @@ htonl (unsigned long __arg)
 
 /* Convert a host short to a network short.  */
 
-extern __inline__ unsigned short
+static __inline__ unsigned short
 htons (unsigned int __arg)
 {
   return __arg;
@@ -1610,7 +1610,7 @@ htons (unsigned int __arg)
 
 /* Convert a network long to a host long.  */
 
-extern __inline__ unsigned long
+static __inline__ unsigned long
 ntohl (unsigned long __arg)
 {
   return htonl (__arg);
@@ -1618,7 +1618,7 @@ ntohl (unsigned long __arg)
 
 /* Convert a network short to a host short.  */
 
-extern __inline__ unsigned short
+static __inline__ unsigned short
 ntohs (unsigned int __arg)
 {
   return htons (__arg);
