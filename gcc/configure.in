@@ -242,8 +242,6 @@ host_xm_defines=
 host_xmake_file=
 host_truncate_target=
 host_exeext=
-
-# It is relative to $prefix.
 cpp_install_dir=
 
 # Decode the host machine, then the target machine.
@@ -3123,6 +3121,13 @@ fi
 if [[ x$enable_cpp != x ]]
 then
   tmake_file="$tmake_file t-install-cpp"
+  case x$enable_cpp in
+    xyes | xno) ;;
+    x/*) cpp_install_dir=$enable_cpp ;;
+    x.*) echo "alternate cpp script installation directory must be an absolute path" 1>&2
+	exit 1
+	;;
+  esac
 fi
 
 # Say what files are being used for the output code and MD file.

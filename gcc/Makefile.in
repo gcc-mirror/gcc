@@ -2283,8 +2283,8 @@ install-cpp: cpp.sh
 	-rm -f $(bindir)/cpp
 	$(INSTALL_PROGRAM) -m 755 cpp.sh $(bindir)/cpp
 	if [ x$(cpp_install_dir) != x ]; then \
-	  rm -f $(prefix)/$(cpp_install_dir)/cpp; \
-	  $(INSTALL_PROGRAM) -m 755 cpp.sh $(prefix)/$(cpp_install_dir)/cpp; \
+	  rm -f $(cpp_install_dir)/cpp; \
+	  $(INSTALL_PROGRAM) -m 755 cpp.sh $(cpp_install_dir)/cpp; \
 	else true; fi
 
 cpp.sh: $(srcdir)/cpp.in Makefile
@@ -2294,7 +2294,7 @@ cpp.sh: $(srcdir)/cpp.in Makefile
 uninstall-cpp:
 	-rm -f $(bindir)/cpp
 	-if [ x$(cpp_install_dir) != x ]; then \
-	  rm -f $(prefix)/$(cpp_install_dir)/cpp; \
+	  rm -f $(cpp_install_dir)/cpp; \
 	else true; fi
 
 # Install float.h for cross compiler.

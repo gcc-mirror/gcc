@@ -1,3 +1,13 @@
+Mon Mar  8 01:16:30 1999  Manfred Hollstein  <manfred@s-direktnet.de>
+			  Jeff Law <law@cygnus.com>
+
+	* configure.in (cpp_install_dir): Initialize from $enable_cpp
+	if that's looking like a pathname.
+	* configure: Rebuilt.
+
+	* Makefile.in (install-cpp, uninstall-cpp): cpp_install_dir is an
+	absolute pathname, not a $prefix relative pathname.
+
 Fri Mar  5 01:19:22 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Thu Dec 17 18:21:49 1998  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
