@@ -40,6 +40,24 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define REAL_INFINITY
 #endif
 
+/* If FLOAT_WORDS_BIG_ENDIAN and HOST_FLOAT_WORDS_BIG_ENDIAN are not defined
+   in the header files, then this implies the word-endianness is the same as
+   for integers.  */
+
+/* This is defined 0 or 1, like WORDS_BIG_ENDIAN.  */
+#ifndef FLOAT_WORDS_BIG_ENDIAN
+#define FLOAT_WORDS_BIG_ENDIAN WORDS_BIG_ENDIAN
+#endif
+
+/* This is defined 0 or 1, unlike HOST_WORDS_BIG_ENDIAN.  */
+#ifndef HOST_FLOAT_WORDS_BIG_ENDIAN
+#ifdef HOST_WORDS_BIG_ENDIAN
+#define HOST_FLOAT_WORDS_BIG_ENDIAN 1
+#else
+#define HOST_FLOAT_WORDS_BIG_ENDIAN 0
+#endif
+#endif
+
 /* Defining REAL_ARITHMETIC invokes a floating point emulator
    that can produce a target machine format differing by more
    than just endian-ness from the host's format.  The emulator
@@ -108,8 +126,9 @@ typedef struct {
 /* Declare functions in real.c that are referenced here. */
 void earith (), ereal_from_uint (), ereal_from_int (), ereal_to_int ();
 void etarldouble (), etartdouble (), etardouble ();
-long etarsingle (), efixi ();
-unsigned long efixui ();
+long etarsingle ();
+HOST_WIDE_INT efixi ();
+unsigned HOST_WIDE_INT efixui ();
 int ereal_cmp (), ereal_isneg ();
 unsigned int eroundui ();
 REAL_VALUE_TYPE etrunci (), etruncui (), ereal_ldexp (), ereal_atof ();
@@ -127,7 +146,7 @@ REAL_VALUE_TYPE ereal_from_float (), ereal_from_double ();
 extern REAL_VALUE_TYPE real_value_truncate ();
 #define REAL_VALUE_TRUNCATE(mode, x)  real_value_truncate (mode, x)
 
-/* These return int: */
+/* These return HOST_WIDE_INT: */
 /* Convert a floating-point value to integer, rounding toward zero.  */
 #define REAL_VALUE_FIX(x) (efixi (x))
 /* Convert a floating-point value to unsigned integer, rounding
@@ -141,8 +160,12 @@ extern REAL_VALUE_TYPE real_value_truncate ();
  ((ereal_cmp (x, dconst0) == 0) && (ereal_isneg (x) != 0 ))
 
 #define REAL_VALUE_TO_INT ereal_to_int
-#define REAL_VALUE_FROM_INT(d, i, j) (ereal_from_int (&d, i, j))
-#define REAL_VALUE_FROM_UNSIGNED_INT(d, i, j) (ereal_from_uint (&d, i, j))
+
+/* Here the cast to HOST_WIDE_INT sign-extends arguments such as ~0.  */
+#define REAL_VALUE_FROM_INT(d, lo, hi) \
+  ereal_from_int (&d, (HOST_WIDE_INT) (lo), (HOST_WIDE_INT) (hi))
+
+#define REAL_VALUE_FROM_UNSIGNED_INT(d, lo, hi) (ereal_from_uint (&d, lo, hi))
 
 /* IN is a REAL_VALUE_TYPE.  OUT is an array of longs. */
 #if LONG_DOUBLE_TYPE_SIZE == 96
@@ -218,7 +241,7 @@ do { float f = (float) (IN);						\
    values which is its bitwise equivalent, but put the two words into
    proper word order for the target.  */
 #ifndef REAL_VALUE_TO_TARGET_DOUBLE
-#if defined (HOST_WORDS_BIG_ENDIAN) == WORDS_BIG_ENDIAN
+#if HOST_FLOAT_WORDS_BIG_ENDIAN == FLOAT_WORDS_BIG_ENDIAN
 #define REAL_VALUE_TO_TARGET_DOUBLE(IN, OUT)				\
 do { REAL_VALUE_TYPE in = (IN);  /* Make sure it's not in a register.  */\
      (OUT)[0] = ((long *) &in)[0];					\
