@@ -1,3 +1,19 @@
+2003-06-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtin-attrs.def (gcc_diag, gcc_cdiag, gcc_cxxdiag): New
+	format attributes.
+	* c-format.c (enum format_type): Add gcc_diag_format_type,
+	gcc_cdiag_format_type, and gcc_cxxdiag_format_type.
+	(gcc_diag_length_specs, gcc_cdiag_length_specs,
+	gcc_cxxdiag_length_specs, gcc_diag_flag_pairs,
+	gcc_cdiag_flag_pairs, gcc_cxxdiag_flag_pairs, gcc_diag_flag_specs,
+	gcc_cdiag_flag_specs, gcc_cxxdiag_flag_specs, gcc_diag_char_table,
+	gcc_cdiag_char_table, gcc_cxxdiag_char_table): New.
+	(format_types_orig): Add new data.
+	(find_char_info_specifier_index, init_dynamic_diag_info): New
+	functions.
+	(handle_format_attribute): Update to handle new format attributes.
+
 2003-06-29  Aaron W. LaFramboise  <awlaframboise@aol.com>
 
 	* config/i386/mingw32.h (__GTHREAD_HIDE_WIN32API): Define to 1.
