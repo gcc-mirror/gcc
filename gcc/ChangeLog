@@ -1,3 +1,9 @@
+2001-10-17  Stan Shebs  <shebs@apple.com>
+
+	* config/rs6000/rs6000.c: Make assorted mechanical formatting and
+	typo fixes throughout.
+	(machopic_output_stub): Remove some dead code.
+
 2001-10-17  Richard Earnshaw <rearnsha@arm.com>
 
 	* cpplex.c (_cpp_get_buff): Fix off-by-one error that caused memory

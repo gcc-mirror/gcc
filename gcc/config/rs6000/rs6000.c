@@ -309,12 +309,12 @@ rs6000_override_options (default_cpu)
 	 {"750", PROCESSOR_PPC750,
  	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
  	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
-       {"7400", PROCESSOR_PPC7400,
-          MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
-          POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
-       {"7450", PROCESSOR_PPC7450,
-          MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
-          POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
+	 {"7400", PROCESSOR_PPC7400,
+            MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
+            POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
+	 {"7450", PROCESSOR_PPC7450,
+            MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
+            POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
 	 {"801", PROCESSOR_MPCCORE,
 	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
@@ -330,12 +330,14 @@ rs6000_override_options (default_cpu)
 
   size_t ptt_size = sizeof (processor_target_table) / sizeof (struct ptt);
 
-  int multiple = TARGET_MULTIPLE;	/* save current -mmultiple/-mno-multiple status */
-  int string   = TARGET_STRING;		/* save current -mstring/-mno-string status */
+  /* Save current -mmultiple/-mno-multiple status.  */
+  int multiple = TARGET_MULTIPLE;
+  /* Save current -mstring/-mno-string status.  */
+  int string = TARGET_STRING;
 
   profile_block_flag = 0;
 
-  /* Identify the processor type */
+  /* Identify the processor type.  */
   rs6000_select[0].string = default_cpu;
   rs6000_cpu = TARGET_POWERPC64 ? PROCESSOR_DEFAULT64 : PROCESSOR_DEFAULT;
 
@@ -363,8 +365,8 @@ rs6000_override_options (default_cpu)
 	}
     }
 
-  /* If we are optimizing big endian systems for space, use the
-     store multiple instructions.  */
+  /* If we are optimizing big endian systems for space, use the store
+     multiple instructions.  */
   if (BYTES_BIG_ENDIAN && optimize_size)
     target_flags |= MASK_MULTIPLE;
 
@@ -373,15 +375,16 @@ rs6000_override_options (default_cpu)
   if (TARGET_MULTIPLE_SET)
     target_flags = (target_flags & ~MASK_MULTIPLE) | multiple;
 
-  /* If -mstring or -mno-string was explicitly used, don't
-     override with the processor default */
+  /* If -mstring or -mno-string was explicitly used, don't override
+     with the processor default.  */
   if (TARGET_STRING_SET)
     target_flags = (target_flags & ~MASK_STRING) | string;
 
-  /* Don't allow -mmultiple or -mstring on little endian systems unless the cpu
-     is a 750, because the hardware doesn't support the instructions used in
-     little endian mode, and causes an alignment trap.  The 750 does not cause
-     an alignment trap (except when the target is unaligned).  */
+  /* Don't allow -mmultiple or -mstring on little endian systems
+     unless the cpu is a 750, because the hardware doesn't support the
+     instructions used in little endian mode, and causes an alignment
+     trap.  The 750 does not cause an alignment trap (except when the
+     target is unaligned).  */
 
   if (! BYTES_BIG_ENDIAN && rs6000_cpu != PROCESSOR_PPC750)
     {
@@ -436,8 +439,8 @@ rs6000_override_options (default_cpu)
     }
 
 #ifdef TARGET_REGNAMES
-  /* If the user desires alternate register names, copy in the alternate names
-     now.  */
+  /* If the user desires alternate register names, copy in the
+     alternate names now.  */
   if (TARGET_REGNAMES)
     memcpy (rs6000_reg_names, alt_reg_names, sizeof (rs6000_reg_names));
 #endif
@@ -558,9 +561,9 @@ any_operand (op, mode)
   return 1;
 }
 
-/* Returns 1 if op is the count register */
+/* Returns 1 if op is the count register.  */
 int
-count_register_operand(op, mode)
+count_register_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
@@ -577,7 +580,7 @@ count_register_operand(op, mode)
 }
 
 int
-xer_operand(op, mode)
+xer_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
@@ -679,9 +682,9 @@ cc_reg_not_cr0_operand (op, mode)
 	      || CR_REGNO_NOT_CR0_P (REGNO (op))));
 }
 
-/* Returns 1 if OP is either a constant integer valid for a D-field or a
-   non-special register.  If a register, it must be in the proper mode unless
-   MODE is VOIDmode.  */
+/* Returns 1 if OP is either a constant integer valid for a D-field or
+   a non-special register.  If a register, it must be in the proper
+   mode unless MODE is VOIDmode.  */
 
 int
 reg_or_short_operand (op, mode)
@@ -691,8 +694,8 @@ reg_or_short_operand (op, mode)
   return short_cint_operand (op, mode) || gpc_reg_operand (op, mode);
 }
 
-/* Similar, except check if the negation of the constant would be valid for
-   a D-field.  */
+/* Similar, except check if the negation of the constant would be
+   valid for a D-field.  */
 
 int
 reg_or_neg_short_operand (op, mode)
@@ -705,8 +708,8 @@ reg_or_neg_short_operand (op, mode)
   return gpc_reg_operand (op, mode);
 }
 
-/* Return 1 if the operand is either a register or an integer whose high-order
-   16 bits are zero.  */
+/* Return 1 if the operand is either a register or an integer whose
+   high-order 16 bits are zero.  */
 
 int
 reg_or_u_short_operand (op, mode)
@@ -724,7 +727,7 @@ reg_or_cint_operand (op, mode)
     rtx op;
     enum machine_mode mode;
 {
-     return (GET_CODE (op) == CONST_INT || gpc_reg_operand (op, mode));
+  return (GET_CODE (op) == CONST_INT || gpc_reg_operand (op, mode));
 }
 
 /* Return 1 is the operand is either a non-special register or ANY
@@ -735,13 +738,13 @@ reg_or_arith_cint_operand (op, mode)
     rtx op;
     enum machine_mode mode;
 {
-     return (gpc_reg_operand (op, mode)
-	     || (GET_CODE (op) == CONST_INT
+  return (gpc_reg_operand (op, mode)
+	  || (GET_CODE (op) == CONST_INT
 #if HOST_BITS_PER_WIDE_INT != 32
-		 && ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80000000)
-		     < (unsigned HOST_WIDE_INT) 0x100000000ll)
+	      && ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80000000)
+		  < (unsigned HOST_WIDE_INT) 0x100000000ll)
 #endif
-		 ));
+	      ));
 }
 
 /* Return 1 is the operand is either a non-special register or a 32-bit
@@ -752,14 +755,14 @@ reg_or_add_cint64_operand (op, mode)
     rtx op;
     enum machine_mode mode;
 {
-     return (gpc_reg_operand (op, mode)
-	     || (GET_CODE (op) == CONST_INT
-		 && INTVAL (op) < 0x7fff8000
+  return (gpc_reg_operand (op, mode)
+	  || (GET_CODE (op) == CONST_INT
+	      && INTVAL (op) < 0x7fff8000
 #if HOST_BITS_PER_WIDE_INT != 32
-		 && ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80008000)
-		     < 0x100000000ll)
+	      && ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80008000)
+		  < 0x100000000ll)
 #endif
-		 ));
+	      ));
 }
 
 /* Return 1 is the operand is either a non-special register or a 32-bit
@@ -770,14 +773,14 @@ reg_or_sub_cint64_operand (op, mode)
     rtx op;
     enum machine_mode mode;
 {
-     return (gpc_reg_operand (op, mode)
-	     || (GET_CODE (op) == CONST_INT
-		 && (- INTVAL (op)) < 0x7fff8000
+  return (gpc_reg_operand (op, mode)
+	  || (GET_CODE (op) == CONST_INT
+	      && (- INTVAL (op)) < 0x7fff8000
 #if HOST_BITS_PER_WIDE_INT != 32
-		 && ((unsigned HOST_WIDE_INT) ((- INTVAL (op)) + 0x80008000)
-		     < 0x100000000ll)
+	      && ((unsigned HOST_WIDE_INT) ((- INTVAL (op)) + 0x80008000)
+		  < 0x100000000ll)
 #endif
-		 ));
+	      ));
 }
 
 /* Return 1 is the operand is either a non-special register or ANY
@@ -793,7 +796,7 @@ reg_or_logical_cint_operand (op, mode)
       if (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT)
 	{
 	  if (GET_MODE_BITSIZE (mode) <= 32)
-	    abort();
+	    abort ();
 
 	  if (INTVAL (op) < 0)
 	    return 0;
@@ -806,7 +809,7 @@ reg_or_logical_cint_operand (op, mode)
     {
       if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
 	  || mode != DImode)
-	abort();
+	abort ();
 
       return CONST_DOUBLE_HIGH (op) == 0;
     }
@@ -954,9 +957,9 @@ num_insns_constant (op, mode)
     abort ();
 }
 
-/* Return 1 if the operand is a CONST_DOUBLE and it can be put into a register
-   with one instruction per word.  We only do this if we can safely read
-   CONST_DOUBLE_{LOW,HIGH}.  */
+/* Return 1 if the operand is a CONST_DOUBLE and it can be put into a
+   register with one instruction per word.  We only do this if we can
+   safely read CONST_DOUBLE_{LOW,HIGH}.  */
 
 int
 easy_fp_constant (op, mode)
@@ -968,16 +971,17 @@ easy_fp_constant (op, mode)
       || (GET_MODE_CLASS (mode) != MODE_FLOAT && mode != DImode))
     return 0;
 
-  /* Consider all constants with -msoft-float to be easy */
+  /* Consider all constants with -msoft-float to be easy.  */
   if (TARGET_SOFT_FLOAT && mode != DImode)
     return 1;
 
-  /* If we are using V.4 style PIC, consider all constants to be hard */
+  /* If we are using V.4 style PIC, consider all constants to be hard.  */
   if (flag_pic && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))
     return 0;
 
 #ifdef TARGET_RELOCATABLE
-  /* Similarly if we are using -mrelocatable, consider all constants to be hard */
+  /* Similarly if we are using -mrelocatable, consider all constants
+     to be hard.  */
   if (TARGET_RELOCATABLE)
     return 0;
 #endif
@@ -1025,8 +1029,8 @@ zero_fp_constant (op, mode)
   return GET_MODE_CLASS (mode) == MODE_FLOAT && op == CONST0_RTX (mode);
 }
 
-/* Return 1 if the operand is in volatile memory.  Note that during the
-   RTL generation phase, memory_operand does not return TRUE for
+/* Return 1 if the operand is in volatile memory.  Note that during
+   the RTL generation phase, memory_operand does not return TRUE for
    volatile memory references.  So this function allows us to
    recognize volatile references where its safe.  */
 
@@ -1265,7 +1269,7 @@ and64_operand (op, mode)
     rtx op;
     enum machine_mode mode;
 {
-  if (fixed_regs[CR0_REGNO])	/* CR0 not available, don't do andi./andis. */
+  if (fixed_regs[CR0_REGNO])	/* CR0 not available, don't do andi./andis.  */
     return (gpc_reg_operand (op, mode) || mask64_operand (op, mode));
 
   return (logical_operand (op, mode) || mask64_operand (op, mode));
@@ -1279,7 +1283,7 @@ and_operand (op, mode)
     rtx op;
     enum machine_mode mode;
 {
-  if (fixed_regs[CR0_REGNO])	/* CR0 not available, don't do andi./andis. */
+  if (fixed_regs[CR0_REGNO])	/* CR0 not available, don't do andi./andis.  */
     return (gpc_reg_operand (op, mode) || mask_operand (op, mode));
 
   return (logical_operand (op, mode) || mask_operand (op, mode));
@@ -1336,9 +1340,8 @@ call_operand (op, mode)
 	  || (GET_CODE (op) == REG && REGNO (op) >= FIRST_PSEUDO_REGISTER));
 }
 
-
 /* Return 1 if the operand is a SYMBOL_REF for a function known to be in
-   this file and the function is not weakly defined. */
+   this file and the function is not weakly defined.  */
 
 int
 current_file_function_operand (op, mode)
@@ -1350,7 +1353,6 @@ current_file_function_operand (op, mode)
 	      || (op == XEXP (DECL_RTL (current_function_decl), 0)
 	          && ! DECL_WEAK (current_function_decl))));
 }
-
 
 /* Return 1 if this operand is a valid input for a move insn.  */
 
@@ -1409,7 +1411,7 @@ input_operand (op, mode)
   return 0;
 }
 
-/* Return 1 for an operand in small memory on V.4/eabi */
+/* Return 1 for an operand in small memory on V.4/eabi.  */
 
 int
 small_data_operand (op, mode)
@@ -1467,33 +1469,33 @@ constant_pool_expr_1 (op, have_sym, have_toc)
   switch (GET_CODE(op)) 
     {
     case SYMBOL_REF:
-	if (CONSTANT_POOL_ADDRESS_P (op))
-	  {
-	   if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (op), Pmode))
-	     {
-	       *have_sym = 1;
-	       return 1;
-	     }
-	   else
-	     return 0;
-	  }
-	else if (! strcmp (XSTR (op, 0), toc_label_name))
-	  {
-	    *have_toc = 1;
-	    return 1;
-	  }
-	else
-	  return 0;
+      if (CONSTANT_POOL_ADDRESS_P (op))
+	{
+	  if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (op), Pmode))
+	    {
+	      *have_sym = 1;
+	      return 1;
+	    }
+	  else
+	    return 0;
+	}
+      else if (! strcmp (XSTR (op, 0), toc_label_name))
+	{
+	  *have_toc = 1;
+	  return 1;
+	}
+      else
+	return 0;
     case PLUS:
     case MINUS:
-	return constant_pool_expr_1 (XEXP (op, 0), have_sym, have_toc) &&
-	    	constant_pool_expr_1 (XEXP (op, 1), have_sym, have_toc);
+      return constant_pool_expr_1 (XEXP (op, 0), have_sym, have_toc) &&
+	constant_pool_expr_1 (XEXP (op, 1), have_sym, have_toc);
     case CONST:
-	return constant_pool_expr_1 (XEXP (op, 0), have_sym, have_toc);
+      return constant_pool_expr_1 (XEXP (op, 0), have_sym, have_toc);
     case CONST_INT:
-	return 1;
+      return 1;
     default:
-	return 0;
+      return 0;
     }
 }
 
@@ -1519,13 +1521,14 @@ toc_relative_expr_p (op)
    to be legitimate.  If we find one, return the new, valid address.
    This is used from only one place: `memory_address' in explow.c.
 
-   OLDX is the address as it was before break_out_memory_refs was called.
-   In some cases it is useful to look at this to decide what needs to be done.
+   OLDX is the address as it was before break_out_memory_refs was
+   called.  In some cases it is useful to look at this to decide what
+   needs to be done.
 
-   MODE is passed so that this macro can use GO_IF_LEGITIMATE_ADDRESS.
+   MODE is passed so that this function can use GO_IF_LEGITIMATE_ADDRESS.
 
-   It is always safe for this macro to do nothing.  It exists to recognize
-   opportunities to optimize the output.
+   It is always safe for this function to do nothing.  It exists to
+   recognize opportunities to optimize the output.
 
    On RS/6000, first check for the sum of a register with a constant
    integer that is out of range.  If so, generate code to add the
@@ -1654,11 +1657,11 @@ rs6000_legitimate_address (mode, x, reg_ok_strict)
   return 0;
 }
 
-/* Try to output insns to set TARGET equal to the constant C if it can be
-   done in less than N insns.  Do all computations in MODE.  Returns the place
-   where the output has been placed if it can be done and the insns have been
-   emitted.  If it would take more than N insns, zero is returned and no
-   insns and emitted.  */
+/* Try to output insns to set TARGET equal to the constant C if it can
+   be done in less than N insns.  Do all computations in MODE.
+   Returns the place where the output has been placed if it can be
+   done and the insns have been emitted.  If it would take more than N
+   insns, zero is returned and no insns and emitted.  */
 
 rtx
 rs6000_emit_set_const (dest, mode, source, n)
@@ -1692,7 +1695,7 @@ rs6000_emit_set_const (dest, mode, source, n)
 #endif
     }
   else
-    abort();
+    abort ();
 
   return rs6000_emit_set_long_const (dest, c0, c1);
 }
@@ -1961,7 +1964,7 @@ rs6000_emit_move (dest, source, mode)
 
 	      operands[1] =
 		rs6000_machopic_legitimize_pic_address (operands[1], mode,
-								    temp_reg);
+							temp_reg);
 #endif
 	      emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
 	      return;
@@ -1979,7 +1982,8 @@ rs6000_emit_move (dest, source, mode)
 		  || GET_CODE (XEXP (XEXP (operands[1], 0), 0)) == SYMBOL_REF)
 	      && ! side_effects_p (operands[0]))
 	    {
-	      rtx sym = force_const_mem (mode, XEXP (XEXP (operands[1], 0), 0));
+	      rtx sym =
+		force_const_mem (mode, XEXP (XEXP (operands[1], 0), 0));
 	      rtx other = XEXP (XEXP (operands[1], 0), 1);
 
 	      sym = force_reg (mode, sym);
@@ -2214,6 +2218,7 @@ function_arg_advance (cum, mode, type, named)
     {
       int align = (TARGET_32BIT && (cum->words & 1) != 0
 		   && function_arg_boundary (mode, type) == 64) ? 1 : 0;
+
       cum->words += align + RS6000_ARG_SIZE (mode, type);
 
       if (GET_MODE_CLASS (mode) == MODE_FLOAT && TARGET_HARD_FLOAT)
@@ -2262,10 +2267,10 @@ function_arg (cum, mode, type, named)
 {
   enum rs6000_abi abi = DEFAULT_ABI;
 
-  /* Return a marker to indicate whether CR1 needs to set or clear the bit
-     that V.4 uses to say fp args were passed in registers.  Assume that we
-     don't need the marker for software floating point, or compiler generated
-     library calls.  */
+  /* Return a marker to indicate whether CR1 needs to set or clear the
+     bit that V.4 uses to say fp args were passed in registers.
+     Assume that we don't need the marker for software floating point,
+     or compiler generated library calls.  */
   if (mode == VOIDmode)
     {
       if ((abi == ABI_V4 || abi == ABI_SOLARIS)
@@ -2746,9 +2751,7 @@ rs6000_va_arg (valist, type)
       sav_scale = 4;
     }
 
-  /*
-   * Pull the value out of the saved registers ...
-   */
+  /* Pull the value out of the saved registers ...  */
 
   lab_false = gen_label_rtx ();
   lab_over = gen_label_rtx ();
@@ -2794,9 +2797,7 @@ rs6000_va_arg (valist, type)
   emit_barrier ();
   emit_label (lab_false);
 
-  /*
-   * ... otherwise out of the overflow area.
-   */
+  /* ... otherwise out of the overflow area.  */
 
   /* Make sure we don't find reg 7 for the next int arg.  */
   if (n_reg > 1)
@@ -2986,8 +2987,9 @@ expand_block_move (operands)
 					    align_rtx));
 	    }
 	  else if (bytes >= 8 && TARGET_POWERPC64
-	      /* 64-bit loads and stores require word-aligned displacements. */
-	      && (align >= 8 || (! STRICT_ALIGNMENT && align >= 4)))
+		   /* 64-bit loads and stores require word-aligned
+                      displacements. */
+		   && (align >= 8 || (! STRICT_ALIGNMENT && align >= 4)))
 	    {
 	      move_bytes = 8;
 	      tmp_reg = gen_reg_rtx (DImode);
@@ -3096,7 +3098,8 @@ expand_block_move (operands)
 	  /* Generate the appropriate load and store, saving the stores
 	     for later.  */
 	  if (bytes >= 8 && TARGET_POWERPC64
-	      /* 64-bit loads and stores require word-aligned displacements. */
+	      /* 64-bit loads and stores require word-aligned
+                 displacements.  */
 	      && (align >= 8 || (! STRICT_ALIGNMENT && align >= 4)))
 	    {
 	      move_bytes = 8;
@@ -3147,7 +3150,7 @@ expand_block_move (operands)
 	      stores[num_reg++] = gen_movqi (expand_block_move_mem (QImode,
 								    dest_addr,
 								    orig_dest),
-					       tmp_reg);
+					     tmp_reg);
 	    }
 
 	  if (num_reg >= MAX_MOVE_REG)
@@ -3252,7 +3255,7 @@ store_multiple_operation (op, mode)
   return 1;
 }
 
-/* Return 1 for an PARALLEL suitable for mtcrf. */
+/* Return 1 for an PARALLEL suitable for mtcrf.  */
 
 int
 mtcrf_operation (op, mode)
@@ -3301,7 +3304,7 @@ mtcrf_operation (op, mode)
   return 1;
 }
 
-/* Return 1 for an PARALLEL suitable for lmw. */
+/* Return 1 for an PARALLEL suitable for lmw.  */
 
 int
 lmw_operation (op, mode)
@@ -3379,7 +3382,7 @@ lmw_operation (op, mode)
   return 1;
 }
 
-/* Return 1 for an PARALLEL suitable for stmw. */
+/* Return 1 for an PARALLEL suitable for stmw.  */
 
 int
 stmw_operation (op, mode)
@@ -3457,10 +3460,10 @@ stmw_operation (op, mode)
   return 1;
 }
 
+/* A validation routine: say whether CODE, a condition code, and MODE
+   match.  The other alternatives either don't make sense or should
+   never be generated.  */
 
-/* A validation routine:  say whether CODE, a condition code,
-   and MODE match.  The other alternatives either don't make
-   sense or should never be generated.  */
 static void
 validate_condition_mode (code, mode)
      enum rtx_code code;
@@ -3484,7 +3487,7 @@ validate_condition_mode (code, mode)
 	  || code == UNEQ || code == LTGT
 	  || code == UNGT || code == UNLT
 	  || code == UNGE || code == UNLE))
-    abort();
+    abort ();
   
   /* These should never be generated except for 
      flag_unsafe_math_optimizations.  */
@@ -3543,7 +3546,6 @@ branch_positive_comparison_operator (op, mode)
 	  || code == LTU || code == GTU
 	  || code == UNORDERED);
 }
-
 
 /* Return 1 if OP is a comparison operation that is valid for an scc insn.
    We check the opcode against the mode of the CC value and disallow EQ or
@@ -3758,7 +3760,7 @@ includes_rldicr_lshift_p (shiftop, andop)
       lsb = c & -c;
 
       /* It must be covered by the shift mask.
-	 This test also rejects c == 0. */
+	 This test also rejects c == 0.  */
       if ((lsb & shift_mask) == 0)
 	return 0;
 
@@ -3826,8 +3828,9 @@ registers_ok_for_quad_peep (reg1, reg2)
   return (REGNO (reg1) == REGNO (reg2) - 1);
 }
 
-/* Return 1 if addr1 and addr2 are suitable for lfq or stfq insn.  addr1 and
-   addr2 must be in consecutive memory locations (addr2 == addr1 + 8).  */
+/* Return 1 if addr1 and addr2 are suitable for lfq or stfq insn.
+   addr1 and addr2 must be in consecutive memory locations
+   (addr2 == addr1 + 8).  */
 
 int
 addrs_ok_for_quad_peep (addr1, addr2)
@@ -4016,9 +4019,9 @@ struct rtx_def *
 rs6000_got_register (value)
      rtx value ATTRIBUTE_UNUSED;
 {
-  /* The second flow pass currently (June 1999) can't update regs_ever_live
-     without disturbing other parts of the compiler, so update it here to
-     make the prolog/epilogue code happy. */
+  /* The second flow pass currently (June 1999) can't update
+     regs_ever_live without disturbing other parts of the compiler, so
+     update it here to make the prolog/epilogue code happy.  */
   if (no_new_pseudos && ! regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
     regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
 
@@ -4187,8 +4190,8 @@ print_operand (file, x, code)
       return;
 
     case 'h':
-      /* If constant, output low-order five bits.  Otherwise,
-	 write normally. */
+      /* If constant, output low-order five bits.  Otherwise, write
+	 normally.  */
       if (INT_P (x))
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INT_LOWPART (x) & 31);
       else
@@ -4196,8 +4199,8 @@ print_operand (file, x, code)
       return;
 
     case 'H':
-      /* If constant, output low-order six bits.  Otherwise,
-	 write normally. */
+      /* If constant, output low-order six bits.  Otherwise, write
+	 normally.  */
       if (INT_P (x))
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INT_LOWPART (x) & 63);
       else
@@ -4388,7 +4391,7 @@ print_operand (file, x, code)
 
     case 'P':
       /* The operand must be an indirect memory reference.  The result
-	 is the register number. */
+	 is the register number.  */
       if (GET_CODE (x) != MEM || GET_CODE (XEXP (x, 0)) != REG
 	  || REGNO (XEXP (x, 0)) >= 32)
 	output_operand_lossage ("invalid %%P value");
@@ -4627,7 +4630,7 @@ print_operand (file, x, code)
 	  val = CONST_DOUBLE_LOW (x);
 
 	  if (val == 0)
-	    abort();
+	    abort ();
 	  else if (val < 0)
 	    --i;
 	  else
@@ -4756,7 +4759,7 @@ print_operand_address (file, x)
 	fprintf (file, "@%s(%s)", SMALL_DATA_RELOC,
 		 reg_names[SMALL_DATA_REG]);
       else if (TARGET_TOC)
-	abort();
+	abort ();
     }
   else if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == REG)
     {
@@ -4789,7 +4792,7 @@ print_operand_address (file, x)
 	  const char *name;
 	  
 	  /* Find the (minus (sym) (toc)) buried in X, and temporarily
-	     turn it into (sym) for output_addr_const. */
+	     turn it into (sym) for output_addr_const.  */
 	  while (GET_CODE (XEXP (contains_minus, 0)) != MINUS)
 	    contains_minus = XEXP (contains_minus, 0);
 
@@ -4833,9 +4836,9 @@ rs6000_reverse_condition (mode, code)
     return reverse_condition (code);
 }
 
-
 /* Generate a compare for CODE.  Return a brand-new rtx that
    represents the result of the compare.  */
+
 static rtx
 rs6000_generate_compare (code)
      enum rtx_code code;
@@ -4927,7 +4930,6 @@ rs6000_emit_sCOND (code, result)
     }
 }
 
-
 /* Emit a branch of kind CODE to location LOC.  */
 
 void
@@ -4943,7 +4945,6 @@ rs6000_emit_cbranch (code, loc)
 			       gen_rtx_IF_THEN_ELSE (VOIDmode, condition_rtx,
 						     loc_ref, pc_rtx)));
 }
-
 
 /* Return the string to output a conditional branch to LABEL, which is
    the operand number of the label, or -1 if the branch is really a
@@ -5005,7 +5006,7 @@ output_cbranch (op, label, reversed, insn)
     case UNGE: ccode = "nl"; break;
     case UNLE: ccode = "ng"; break;
     default:
-      abort();
+      abort ();
     }
   
   /* Maybe we have a guess as to how likely the branch is.  
@@ -5053,6 +5054,7 @@ output_cbranch (op, label, reversed, insn)
 /* Emit a conditional move: move TRUE_COND to DEST if OP of the
    operands of the last comparison is nonzero/true, FALSE_COND if it
    is zero/false.  Return 0 if the hardware has no such operation.  */
+
 int
 rs6000_emit_cmove (dest, op, true_cond, false_cond)
      rtx dest;
@@ -5225,11 +5227,11 @@ rs6000_emit_minmax (dest, code, op0, op1)
     emit_move_insn (dest, target);
 }
 
-/* This page contains routines that are used to determine what the function
-   prologue and epilogue code will do and write them out.  */
+/* This page contains routines that are used to determine what the
+   function prologue and epilogue code will do and write them out.  */
 
-/*  Return the first fixed-point register that is required to be saved. 32 if
-    none.  */
+/* Return the first fixed-point register that is required to be
+   saved. 32 if none.  */
 
 int
 first_reg_to_save ()
@@ -5389,7 +5391,6 @@ first_fp_reg_to_save ()
    align the stack at program startup.  A happy side-effect is that
    -mno-eabi libraries can be used with -meabi programs.)
 
-
    The EABI configuration defaults to the V.4 layout, unless
    -mcall-aix is used, in which case the AIX layout is used.  However,
    the stack alignment requirements may differ.  If -mno-eabi is not
@@ -5411,13 +5412,13 @@ rs6000_stack_info ()
   int ehrd_size;
   int total_raw_size;
 
-  /* Zero all fields portably */
+  /* Zero all fields portably.  */
   info = zero_info;
 
-  /* Select which calling sequence */
+  /* Select which calling sequence.  */
   info_ptr->abi = abi = DEFAULT_ABI;
 
-  /* Calculate which registers need to be saved & save area size */
+  /* Calculate which registers need to be saved & save area size.  */
   info_ptr->first_gp_reg_save = first_reg_to_save ();
   /* Assume that we will have to save PIC_OFFSET_TABLE_REGNUM, 
      even if it currently looks like we won't.  */
@@ -5438,7 +5439,7 @@ rs6000_stack_info ()
   info_ptr->calls_p = (! current_function_is_leaf
 		       || cfun->machine->ra_needs_full_frame);
 
-  /* Determine if we need to save the link register */
+  /* Determine if we need to save the link register.  */
   if (rs6000_ra_ever_killed ()
       || (DEFAULT_ABI == ABI_AIX && profile_flag)
 #ifdef TARGET_RELOCATABLE
@@ -5448,7 +5449,9 @@ rs6000_stack_info ()
 	  && !FP_SAVE_INLINE (info_ptr->first_fp_reg_save))
       || (abi == ABI_V4 && current_function_calls_alloca)
       || (abi == ABI_SOLARIS && current_function_calls_alloca)
-      || (DEFAULT_ABI == ABI_DARWIN && flag_pic && current_function_uses_pic_offset_table)
+      || (DEFAULT_ABI == ABI_DARWIN
+	  && flag_pic
+	  && current_function_uses_pic_offset_table)
       || info_ptr->calls_p)
     {
       info_ptr->lr_save_p = 1;
@@ -5483,13 +5486,14 @@ rs6000_stack_info ()
   info_ptr->fixed_size   = RS6000_SAVE_AREA;
   info_ptr->varargs_size = RS6000_VARARGS_AREA;
   info_ptr->vars_size    = RS6000_ALIGN (get_frame_size (), 8);
-  info_ptr->parm_size    = RS6000_ALIGN (current_function_outgoing_args_size, 8);
+  info_ptr->parm_size    = RS6000_ALIGN (current_function_outgoing_args_size,
+					 8);
   info_ptr->save_size    = RS6000_ALIGN (info_ptr->fp_size
-				  + info_ptr->gp_size
-				  + ehrd_size
-				  + info_ptr->cr_size
-				  + info_ptr->lr_size
-				  + info_ptr->toc_size, 8);
+					 + info_ptr->gp_size
+					 + ehrd_size
+					 + info_ptr->cr_size
+					 + info_ptr->lr_size
+					 + info_ptr->toc_size, 8);
   if (DEFAULT_ABI == ABI_DARWIN)
     info_ptr->save_size = RS6000_ALIGN (info_ptr->save_size, 16);
 
@@ -5527,18 +5531,20 @@ rs6000_stack_info ()
 			    + info_ptr->varargs_size
 			    + info_ptr->fixed_size);
 
-  info_ptr->total_size   = RS6000_ALIGN (total_raw_size, ABI_STACK_BOUNDARY / BITS_PER_UNIT);
+  info_ptr->total_size =
+    RS6000_ALIGN (total_raw_size, ABI_STACK_BOUNDARY / BITS_PER_UNIT);
 
   /* Determine if we need to allocate any stack frame:
 
-     For AIX we need to push the stack if a frame pointer is needed (because
-     the stack might be dynamically adjusted), if we are debugging, if we
-     make calls, or if the sum of fp_save, gp_save, and local variables
-     are more than the space needed to save all non-volatile registers:
-     32-bit: 18*8 + 19*4 = 220 or 64-bit: 18*8 + 18*8 = 288 (GPR13 reserved).
+     For AIX we need to push the stack if a frame pointer is needed
+     (because the stack might be dynamically adjusted), if we are
+     debugging, if we make calls, or if the sum of fp_save, gp_save,
+     and local variables are more than the space needed to save all
+     non-volatile registers: 32-bit: 18*8 + 19*4 = 220 or 64-bit: 18*8
+     + 18*8 = 288 (GPR13 reserved).
 
-     For V.4 we don't have the stack cushion that AIX uses, but assume that
-     the debugger can handle stackless frames.  */
+     For V.4 we don't have the stack cushion that AIX uses, but assume
+     that the debugger can handle stackless frames.  */
 
   if (info_ptr->calls_p)
     info_ptr->push_p = 1;
@@ -5553,7 +5559,7 @@ rs6000_stack_info ()
 			|| ((total_raw_size - info_ptr->fixed_size)
 			    > (TARGET_32BIT ? 220 : 288)));
 
-  /* Zero offsets if we're not saving those registers */
+  /* Zero offsets if we're not saving those registers.  */
   if (info_ptr->fp_size == 0)
     info_ptr->fp_save_offset = 0;
 
@@ -5659,13 +5665,13 @@ debug_stack_info (info)
   if (info->fp_size)
     fprintf (stderr, "\tfp_size             = %5d\n", info->fp_size);
 
- if (info->lr_size)
+  if (info->lr_size)
     fprintf (stderr, "\tlr_size             = %5d\n", info->lr_size);
 
   if (info->cr_size)
     fprintf (stderr, "\tcr_size             = %5d\n", info->cr_size);
 
- if (info->toc_size)
+  if (info->toc_size)
     fprintf (stderr, "\ttoc_size            = %5d\n", info->toc_size);
 
   if (info->save_size)
@@ -5682,21 +5688,21 @@ rs6000_return_addr (count, frame)
      int count;
      rtx frame;
 {
-  /* Currently we don't optimize very well between prolog and body code and
-     for PIC code the code can be actually quite bad, so don't try to be
-     too clever here.  */
+  /* Currently we don't optimize very well between prolog and body
+     code and for PIC code the code can be actually quite bad, so
+     don't try to be too clever here.  */
   if (count != 0
       || flag_pic != 0
       || DEFAULT_ABI == ABI_AIX
       || DEFAULT_ABI == ABI_AIX_NODESC)
     {
       cfun->machine->ra_needs_full_frame = 1;
-      return
-	gen_rtx_MEM (Pmode,
-          memory_address (Pmode,
-			  plus_constant (copy_to_reg (gen_rtx_MEM (Pmode,
-								   memory_address (Pmode, frame))),
-					 RETURN_ADDRESS_OFFSET)));
+      return gen_rtx_MEM (Pmode,
+	       memory_address (Pmode,
+		 plus_constant (copy_to_reg
+				(gen_rtx_MEM (Pmode,
+					      memory_address (Pmode, frame))),
+				RETURN_ADDRESS_OFFSET)));
     }
 
   return get_hard_reg_initial_val (Pmode, LINK_REGISTER_REGNUM);
@@ -5821,7 +5827,7 @@ rs6000_emit_load_toc_table (fromprolog)
 	  rs6000_maybe_dead (emit_insn (gen_elf_low (dest, dest, realsym)));
 	}
       else
-        abort();
+        abort ();
     }
   else
     {
@@ -5844,6 +5850,7 @@ get_TOC_alias_set ()
 /* This retuns nonzero if the current function uses the TOC.  This is
    determined by the presence of (unspec ... 7), which is generated by
    the various load_toc_* patterns.  */
+
 int
 uses_TOC () 
 {
@@ -5865,7 +5872,7 @@ uses_TOC ()
 }
 
 rtx
-create_TOC_reference(symbol) 
+create_TOC_reference (symbol) 
     rtx symbol;
 {
   return gen_rtx_PLUS (Pmode, 
@@ -5886,7 +5893,7 @@ create_TOC_reference(symbol)
    Most of this code should be removed by CSE.  */
 static rtx insn_after_throw;
 
-/* This does the saving... */
+/* This does the saving...  */
 void
 rs6000_aix_emit_builtin_unwind_init ()
 {
@@ -5906,14 +5913,14 @@ rs6000_aix_emit_builtin_unwind_init ()
   emit_move_insn (insn_after_throw, gen_rtx_MEM (SImode, opcode_addr));
 }
 
-/* Emit insns to _restore_ the TOC register, at runtime (specifically in _eh.o).
-   Only used on AIX.
+/* Emit insns to _restore_ the TOC register, at runtime (specifically
+   in _eh.o).  Only used on AIX.
 
    The idea is that on AIX, function calls look like this:
 	bl  somefunction-trampoline
 	lwz r2,20(sp)
 
-    and later,
+   and later,
 	somefunction-trampoline:
 	stw r2,20(sp)
 	 ... load function address in the count register ...
@@ -5941,6 +5948,7 @@ rs6000_aix_emit_builtin_unwind_init ()
    the amount to be popped off the stack in addition to the stack frame
    of this routine (which will be __throw or __rethrow, and so is
    guaranteed to have a stack frame).  */
+
 void
 rs6000_emit_eh_toc_restore (stacksize)
      rtx stacksize;
@@ -5969,7 +5977,7 @@ rs6000_emit_eh_toc_restore (stacksize)
 					       : 0xE8410028, SImode)));
 
   if (insn_after_throw == NULL_RTX)
-    abort();
+    abort ();
   emit_move_insn (opcode, insn_after_throw);
   
   emit_note (NULL, NOTE_INSN_LOOP_BEG);
@@ -6108,11 +6116,11 @@ rs6000_emit_allocate_stack (size, copy_r12)
 		       REG_NOTES (insn));
 }
 
-/* Add to 'insn' a note which is PATTERN (INSN) but with REG replaced with
-   (plus:P (reg 1) VAL), and with REG2 replaced with RREG if REG2 is not 
-   NULL.  
-   It would be nice if dwarf2out_frame_debug_expr could deduce these
-   equivalences by itself so it wasn't necessary to hold its hand so much.  */
+/* Add to 'insn' a note which is PATTERN (INSN) but with REG replaced
+   with (plus:P (reg 1) VAL), and with REG2 replaced with RREG if REG2
+   is not NULL.  It would be nice if dwarf2out_frame_debug_expr could
+   deduce these equivalences by itself so it wasn't necessary to hold
+   its hand so much.  */
 
 static void
 rs6000_frame_related (insn, reg, val, reg2, rreg)
@@ -6176,7 +6184,7 @@ rs6000_frame_related (insn, reg, val, reg2, rreg)
 	  }
     }
   else
-    abort();
+    abort ();
   
   if (reg2 != NULL_RTX)
     real = replace_rtx (real, reg2, rreg);
@@ -6239,8 +6247,8 @@ rs6000_emit_prologue ()
       emit_insn (gen_movesi_from_cr (cr_save_rtx));
     }
 
-  /* Do any required saving of fpr's.  If only one or two to save, do it
-     ourself.  Otherwise, call function.  */
+  /* Do any required saving of fpr's.  If only one or two to save, do
+     it ourselves.  Otherwise, call function.  */
   if (saving_FPRs_inline)
     {
       int i;
@@ -6253,7 +6261,7 @@ rs6000_emit_prologue ()
 	    addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
 				 GEN_INT (info->fp_save_offset 
 					  + sp_offset 
-					  + 8*i));
+					  + 8 * i));
 	    mem = gen_rtx_MEM (DFmode, addr);
 	    set_mem_alias_set (mem, rs6000_sr_alias_set);
 
@@ -6467,8 +6475,8 @@ rs6000_emit_prologue ()
     }
 }
 
-
 /* Write function prologue.  */
+
 static void
 rs6000_output_function_prologue (file, size)
      FILE *file;
@@ -6479,12 +6487,14 @@ rs6000_output_function_prologue (file, size)
   if (TARGET_DEBUG_STACK)
     debug_stack_info (info);
 
-  /* Write .extern for any function we will call to save and restore fp
-     values.  */
-  if (info->first_fp_reg_save < 64 && !FP_SAVE_INLINE (info->first_fp_reg_save))
+  /* Write .extern for any function we will call to save and restore
+     fp values.  */
+  if (info->first_fp_reg_save < 64
+      && !FP_SAVE_INLINE (info->first_fp_reg_save))
     fprintf (file, "\t.extern %s%d%s\n\t.extern %s%d%s\n",
 	     SAVE_FP_PREFIX, info->first_fp_reg_save - 32, SAVE_FP_SUFFIX,
-	     RESTORE_FP_PREFIX, info->first_fp_reg_save - 32, RESTORE_FP_SUFFIX);
+	     RESTORE_FP_PREFIX, info->first_fp_reg_save - 32,
+	     RESTORE_FP_SUFFIX);
 
   /* Write .extern for AIX common mode routines, if needed.  */
   if (! TARGET_POWER && ! TARGET_POWERPC && ! common_mode_defined)
@@ -6502,15 +6512,15 @@ rs6000_output_function_prologue (file, size)
     {
       start_sequence ();
       
-      /* A NOTE_INSN_DELETED is supposed to be at the start
-	 and end of the "toplevel" insn chain.  */
+      /* A NOTE_INSN_DELETED is supposed to be at the start and end of
+	 the "toplevel" insn chain.  */
       emit_note (0, NOTE_INSN_DELETED);
       rs6000_emit_prologue ();
       emit_note (0, NOTE_INSN_DELETED);
       
       if (TARGET_DEBUG_STACK)
-	debug_rtx_list (get_insns(), 100);
-      final (get_insns(), file, FALSE, FALSE);
+	debug_rtx_list (get_insns (), 100);
+      final (get_insns (), file, FALSE, FALSE);
       end_sequence ();
     }
 
@@ -6691,7 +6701,7 @@ rs6000_emit_epilogue (sibcall)
 	  addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
 			       GEN_INT (info->fp_save_offset 
 					+ sp_offset 
-					+ 8*i));
+					+ 8 * i));
 	  mem = gen_rtx_MEM (DFmode, addr);
 	  set_mem_alias_set (mem, rs6000_sr_alias_set);
 
@@ -6857,8 +6867,8 @@ rs6000_output_function_epilogue (file, size)
 	  emit_note (0, NOTE_INSN_DELETED);
 
 	  if (TARGET_DEBUG_STACK)
-	    debug_rtx_list (get_insns(), 100);
-	  final (get_insns(), file, FALSE, FALSE);
+	    debug_rtx_list (get_insns (), 100);
+	  final (get_insns (), file, FALSE, FALSE);
 	  end_sequence ();
 	}
     }
@@ -7073,35 +7083,37 @@ rs6000_output_function_epilogue (file, size)
     }
 }
 
-/* A C compound statement that outputs the assembler code for a thunk function,
-   used to implement C++ virtual function calls with multiple inheritance.  The
-   thunk acts as a wrapper around a virtual function, adjusting the implicit
-   object parameter before handing control off to the real function.
+/* A C compound statement that outputs the assembler code for a thunk
+   function, used to implement C++ virtual function calls with
+   multiple inheritance.  The thunk acts as a wrapper around a virtual
+   function, adjusting the implicit object parameter before handing
+   control off to the real function.
 
-   First, emit code to add the integer DELTA to the location that contains the
-   incoming first argument.  Assume that this argument contains a pointer, and
-   is the one used to pass the `this' pointer in C++.  This is the incoming
-   argument *before* the function prologue, e.g. `%o0' on a sparc.  The
-   addition must preserve the values of all other incoming arguments.
+   First, emit code to add the integer DELTA to the location that
+   contains the incoming first argument.  Assume that this argument
+   contains a pointer, and is the one used to pass the `this' pointer
+   in C++.  This is the incoming argument *before* the function
+   prologue, e.g. `%o0' on a sparc.  The addition must preserve the
+   values of all other incoming arguments.
 
    After the addition, emit code to jump to FUNCTION, which is a
-   `FUNCTION_DECL'.  This is a direct pure jump, not a call, and does not touch
-   the return address.  Hence returning from FUNCTION will return to whoever
-   called the current `thunk'.
+   `FUNCTION_DECL'.  This is a direct pure jump, not a call, and does
+   not touch the return address.  Hence returning from FUNCTION will
+   return to whoever called the current `thunk'.
 
-   The effect must be as if FUNCTION had been called directly with the adjusted
-   first argument.  This macro is responsible for emitting all of the code for
-   a thunk function; output_function_prologue() and output_function_epilogue()
-   are not invoked.
+   The effect must be as if FUNCTION had been called directly with the
+   adjusted first argument.  This macro is responsible for emitting
+   all of the code for a thunk function; output_function_prologue()
+   and output_function_epilogue() are not invoked.
 
-   The THUNK_FNDECL is redundant.  (DELTA and FUNCTION have already been
-   extracted from it.)  It might possibly be useful on some targets, but
-   probably not.
+   The THUNK_FNDECL is redundant.  (DELTA and FUNCTION have already
+   been extracted from it.)  It might possibly be useful on some
+   targets, but probably not.
 
-   If you do not define this macro, the target-independent code in the C++
-   frontend will generate a less efficient heavyweight thunk that calls
-   FUNCTION instead of jumping to it.  The generic approach does not support
-   varargs.  */
+   If you do not define this macro, the target-independent code in the
+   C++ frontend will generate a less efficient heavyweight thunk that
+   calls FUNCTION instead of jumping to it.  The generic approach does
+   not support varargs.  */
 
 void
 output_mi_thunk (file, thunk_fndecl, delta, function)
@@ -7110,7 +7122,8 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
      int delta;
      tree function;
 {
-  const char *this_reg = reg_names[ aggregate_value_p (TREE_TYPE (TREE_TYPE (function))) ? 4 : 3 ];
+  const char *this_reg =
+    reg_names[ aggregate_value_p (TREE_TYPE (TREE_TYPE (function))) ? 4 : 3 ];
   const char *prefix;
   const char *fname;
   const char *r0	 = reg_names[0];
@@ -7120,7 +7133,7 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
   char buf[512];
   static int labelno = 0;
 
-  /* Small constants that can be done by one add instruction */
+  /* Small constants that can be done by one add instruction.  */
   if (delta >= -32768 && delta <= 32767)
     {
       if (! TARGET_NEW_MNEMONICS)
@@ -7129,7 +7142,7 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	fprintf (file, "\taddi %s,%s,%d\n", this_reg, this_reg, delta);
     }
 
-  /* Large constants that can be done by one addis instruction */
+  /* Large constants that can be done by one addis instruction.  */
   else if ((delta & 0xffff) == 0 && num_insns_constant_wide (delta) == 1)
     asm_fprintf (file, "\t{cau|addis} %s,%s,%d\n", this_reg, this_reg,
 		 delta >> 16);
@@ -7137,8 +7150,8 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
   /* 32-bit constants that can be done by an add and addis instruction.  */
   else if (TARGET_32BIT || num_insns_constant_wide (delta) == 1)
     {
-      /* Break into two pieces, propagating the sign bit from the low word to
-	 the upper word.  */
+      /* Break into two pieces, propagating the sign bit from the low
+	 word to the upper word.  */
       int delta_high = delta >> 16;
       int delta_low  = delta & 0xffff;
       if ((delta_low & 0x8000) != 0)
@@ -7206,8 +7219,9 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	  ASM_OUTPUT_INTERNAL_LABEL (file, "Lthunk", labelno);
 	  labelno++;
 
-	  /* Note, MINIMAL_TOC doesn't make sense in the case of a thunk, since
-	     there will be only one TOC entry for this function.  */
+	  /* Note, MINIMAL_TOC doesn't make sense in the case of a
+	     thunk, since there will be only one TOC entry for this
+	     function.  */
 	  fputs ("\t.tc\t", file);
 	  assemble_name (file, buf);
 	  fputs ("[TC],", file);
@@ -7351,7 +7365,7 @@ rs6000_hash_constant (k)
 	  }
 	break;
       default:
-	abort();
+	abort ();
       }
   return result;
 }
@@ -7381,7 +7395,7 @@ toc_hash_eq (h1, h2)
 
   /* Gotcha:  One of these const_doubles will be in memory.
      The other may be on the constant-pool chain.
-     So rtx_equal_p will think they are different... */
+     So rtx_equal_p will think they are different...  */
   if (r1 == r2)
     return 1;
   if (GET_CODE (r1) != GET_CODE (r2)
@@ -7415,7 +7429,7 @@ toc_hash_mark_entry (hash_slot, unused)
     *(const struct toc_hash_struct **) hash_slot;
   rtx r = hash_entry->key;
   ggc_set_mark (hash_entry);
-  /* For CODE_LABELS, we don't want to drag in the whole insn chain... */
+  /* For CODE_LABELS, we don't want to drag in the whole insn chain...  */
   if (GET_CODE (r) == LABEL_REF)
     {
       ggc_set_mark (r);
@@ -7469,8 +7483,8 @@ rs6000_output_symbol_ref (file, x)
     assemble_name (file, name);
 }
 
-/* Output a TOC entry.  We derive the entry name from what is
-   being written.  */
+/* Output a TOC entry.  We derive the entry name from what is being
+   written.  */
 
 void
 output_toc (file, x, labelno, mode)
@@ -7716,7 +7730,7 @@ output_toc (file, x, labelno, mode)
    On the RS/6000, we have to do this using the .byte operation and
    write out special characters outside the quoted string.
    Also, the assembler is broken; very long strings are truncated,
-   so we must artificially break them up early. */
+   so we must artificially break them up early.  */
 
 void
 output_ascii (file, p, n)
@@ -7835,8 +7849,8 @@ rs6000_gen_section_name (buf, filename, section_desc)
     *p = '\0';
 }
 
+/* Emit profile function.  */
 
-/* Emit profile function. */
 void
 output_profile_hook (labelno)
      int labelno;
@@ -7880,7 +7894,7 @@ output_profile_hook (labelno)
     }
 }
 
-/* Write function profiler code. */
+/* Write function profiler code.  */
 
 void
 output_function_profiler (file, labelno)
@@ -7946,7 +7960,7 @@ output_function_profiler (file, labelno)
 
     case ABI_AIX:
     case ABI_DARWIN:
-      /* Don't do anything, done in output_profile_hook (). */
+      /* Don't do anything, done in output_profile_hook ().  */
       break;
 
     }
@@ -8003,20 +8017,21 @@ rs6000_adjust_cost (insn, link, dep_insn, cost)
   return cost;
 }
 
-/* A C statement (sans semicolon) to update the integer scheduling priority
-   INSN_PRIORITY (INSN).  Reduce the priority to execute the INSN earlier,
-   increase the priority to execute INSN later.  Do not define this macro if
-   you do not need to adjust the scheduling priorities of insns.  */
+/* A C statement (sans semicolon) to update the integer scheduling
+   priority INSN_PRIORITY (INSN).  Reduce the priority to execute the
+   INSN earlier, increase the priority to execute INSN later.  Do not
+   define this macro if you do not need to adjust the scheduling
+   priorities of insns.  */
 
 static int
 rs6000_adjust_priority (insn, priority)
      rtx insn ATTRIBUTE_UNUSED;
      int priority;
 {
-  /* On machines (like the 750) which have asymmetric integer units, where one
-     integer unit can do multiply and divides and the other can't, reduce the
-     priority of multiply/divide so it is scheduled before other integer
-     operations.  */
+  /* On machines (like the 750) which have asymmetric integer units,
+     where one integer unit can do multiply and divides and the other
+     can't, reduce the priority of multiply/divide so it is scheduled
+     before other integer operations.  */
 
 #if 0
   if (! INSN_P (insn))
@@ -8046,7 +8061,8 @@ rs6000_adjust_priority (insn, priority)
   return priority;
 }
 
-/* Return how many instructions the machine can issue per cycle */
+/* Return how many instructions the machine can issue per cycle.  */
+
 static int
 rs6000_issue_rate ()
 {
@@ -8153,6 +8169,7 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
 
 
 /* Table of valid machine attributes.  */
+
 const struct attribute_spec rs6000_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
@@ -8160,8 +8177,9 @@ const struct attribute_spec rs6000_attribute_table[] =
   { NULL,       0, 0, false, false, false, NULL }
 };
 
-/* Handle a "longcall" attribute;
-   arguments as in struct attribute_spec.handler.  */
+/* Handle a "longcall" attribute; arguments as in struct
+   attribute_spec.handler.  */
+
 static tree
 rs6000_handle_longcall_attribute (node, name, args, flags, no_add_attrs)
      tree *node;
@@ -8184,6 +8202,7 @@ rs6000_handle_longcall_attribute (node, name, args, flags, no_add_attrs)
 
 /* Return a reference suitable for calling a function with the
    longcall attribute.  */
+
 struct rtx_def *
 rs6000_longcall_ref (call_ref)
      rtx call_ref;
@@ -8529,10 +8548,12 @@ add_compiler_stub (label_name, function_name, line_number)
 #define STUB_FUNCTION_NAME(STUB)  TREE_PURPOSE (STUB)
 #define STUB_LINE_NUMBER(STUB)    TREE_INT_CST_LOW (TREE_TYPE (STUB))
 
-/* OUTPUT_COMPILER_STUB outputs the compiler generated stub for handling 
-   procedure calls from the linked list and initializes the linked list.  */
+/* OUTPUT_COMPILER_STUB outputs the compiler generated stub for
+   handling procedure calls from the linked list and initializes the
+   linked list.  */
 
-void output_compiler_stub ()
+void
+output_compiler_stub ()
 {
   char tmp_buf[256];
   char label_buf[256];
@@ -8579,7 +8600,8 @@ void output_compiler_stub ()
 /* NO_PREVIOUS_DEF checks in the link list whether the function name is
    already there or not.  */
 
-int no_previous_def (function_name)
+int
+no_previous_def (function_name)
      tree function_name;
 {
   tree stub;
@@ -8592,7 +8614,8 @@ int no_previous_def (function_name)
 /* GET_PREV_LABEL gets the label name from the previous definition of
    the function.  */
 
-tree get_prev_label (function_name)
+tree
+get_prev_label (function_name)
      tree function_name;
 {
   tree stub;
@@ -8676,18 +8699,14 @@ machopic_output_stub (file, symb, stub)
      const char *symb, *stub;
 {
   unsigned int length;
-  char *binder_name, *symbol_name, *lazy_ptr_name;
-  char *local_label_0, *local_label_1, *local_label_2;
+  char *symbol_name, *lazy_ptr_name;
+  char *local_label_0;
   static int label = 0;
 
   /* Lose our funky encoding stuff so it doesn't contaminate the stub.  */
   STRIP_NAME_ENCODING (symb, symb);
 
   label += 1;
-
-  length = strlen (stub);
-  binder_name = alloca (length + 32);
-  GEN_BINDER_NAME_FOR_STUB (binder_name, stub, length);
 
   length = strlen (symb);
   symbol_name = alloca (length + 32);
@@ -8698,12 +8717,6 @@ machopic_output_stub (file, symb, stub)
 
   local_label_0 = alloca (length + 32);
   GEN_LOCAL_LABEL_FOR_SYMBOL (local_label_0, symb, length, 0);
-
-  local_label_1 = alloca (length + 32);
-  GEN_LOCAL_LABEL_FOR_SYMBOL (local_label_1, symb, length, 1);
-
-  local_label_2 = alloca (length + 32);
-  GEN_LOCAL_LABEL_FOR_SYMBOL (local_label_2, symb, length, 2);
 
   if (flag_pic == 2)
     machopic_picsymbol_stub_section ();
@@ -8763,10 +8776,12 @@ rs6000_machopic_legitimize_pic_address (orig, mode, reg)
 
       if (GET_CODE (XEXP (orig, 0)) == PLUS)
 	{
-	  base = rs6000_machopic_legitimize_pic_address (XEXP (XEXP (orig, 0), 0),
-							 Pmode, reg);
-	  offset = rs6000_machopic_legitimize_pic_address (XEXP (XEXP (orig, 0), 1),
-							   Pmode, reg);
+	  base =
+	    rs6000_machopic_legitimize_pic_address (XEXP (XEXP (orig, 0), 0),
+						    Pmode, reg);
+	  offset =
+	    rs6000_machopic_legitimize_pic_address (XEXP (XEXP (orig, 0), 1),
+						    Pmode, reg);
 	}
       else
 	abort ();
