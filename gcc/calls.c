@@ -4656,3 +4656,48 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 
   return sibcall_failure;
 }
+
+
+/* Nonzero if we do not know how to pass TYPE solely in registers.
+   We cannot do so in the following cases:
+
+   - if the type has variable size
+   - if the type is marked as addressable (it is required to be constructed
+     into the stack)
+   - if the padding and mode of the type is such that a copy into a register
+     would put it into the wrong part of the register.
+
+   Which padding can't be supported depends on the byte endianness.
+
+   A value in a register is implicitly padded at the most significant end.
+   On a big-endian machine, that is the lower end in memory.
+   So a value padded in memory at the upper end can't go in a register.
+   For a little-endian machine, the reverse is true.  */
+
+bool
+default_must_pass_in_stack (mode, type)
+     enum machine_mode mode;
+     tree type;
+{
+  if (!type)
+    return true;
+
+  /* If the type has variable size...  */
+  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+    return true;
+
+  /* If the type is marked as addressable (it is required
+     to be constructed into the stack)...  */
+  if (TREE_ADDRESSABLE (type))
+    return true;
+
+  /* If the padding and mode of the type is such that a copy into
+     a register would put it into the wrong part of the register.  */
+  if (mode == BLKmode
+      && int_size_in_bytes (type) % (PARM_BOUNDARY / BITS_PER_UNIT)
+      && (FUNCTION_ARG_PADDING (mode, type)
+	  == (BYTES_BIG_ENDIAN ? upward : downward)))
+    return true;
+
+  return false;
+}
