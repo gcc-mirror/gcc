@@ -111,13 +111,15 @@ DEFTREECODE (BLOCK, "block", "b", 0)
     will point to a BLOCK node or a FUNCTION_DECL node, but it could also
     point to a FUNCTION_TYPE node (for types whose scope is limited to the
     formal parameter list of some function type specification) or it
-    could point to a RECORD_TYPE or UNION_TYPE node (for C++ "member" types).
+    could point to a RECORD_TYPE, UNION_TYPE or QUAL_UNION_TYPE node
+    (for C++ "member" types).
     For non-tagged-types, TYPE_CONTEXT need not be set to anything in
     particular, since any type which is of some type category  (e.g.
     an array type or a function type) which cannot either have a name
-    itself or have named members doesn't really have a "scope" per se.  */
-/* TREE_CHAIN is used for ENUMERAL_TYPE, RECORD_TYPE and UNION_TYPE
-   nodes used as forward-references to names; see below.  */
+    itself or have named members doesn't really have a "scope" per se.
+  The TREE_CHAIN field is used as a forward-references to names for
+    ENUMERAL_TYPE, RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE nodes;
+    see below.  */
 
 DEFTREECODE (VOID_TYPE, "void_type", "t", 0)	/* The void type in C */
 
@@ -148,7 +150,8 @@ DEFTREECODE (COMPLEX_TYPE, "complex_type", "t", 0)
    has zero (a null pointer) in its TYPE_SIZE.  The tag name is in
    the TYPE_NAME field.  If the type is later defined, the normal
    fields are filled in.
-   RECORD_TYPE and UNION_TYPE forward refs are treated similarly.  */
+   RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE forward refs are
+   treated similarly.  */
 DEFTREECODE (ENUMERAL_TYPE, "enumeral_type", "t", 0)
 
 /* Pascal's boolean type (true or false are the only values);
@@ -216,6 +219,12 @@ DEFTREECODE (RECORD_TYPE, "record_type", "t", 0)
    forward references to union tags are handled in C.  */
 DEFTREECODE (UNION_TYPE, "union_type", "t", 0)	/* C union type */
 
+/* Similar to UNION_TYPE, except that the expressions in DECL_QUALIFIER
+   in each FIELD_DECL determine what the union contains.  The first
+   field whose DECL_QUALIFIER expression is true is deemed to occupy
+   the union.  */
+DEFTREECODE (QUAL_UNION_TYPE, "qual_union_type", "t", 0)
+
 /* Type of functions.  Special fields:
    TREE_TYPE		    type of value returned.
    TYPE_ARG_TYPES      list of types of arguments expected.
@@ -259,10 +268,11 @@ DEFTREECODE (STRING_CST, "string_cst", "c", 3)
     (Some decls, most often labels, may have zero as the DECL_NAME).
    DECL_CONTEXT points to the node representing the context in which
     this declaration has its scope.  For FIELD_DECLs, this is the
-    RECORD_TYPE or UNION_TYPE node that the field is a member of.  For
-    VAR_DECL, PARM_DECL, FUNCTION_DECL, LABEL_DECL, and CONST_DECL nodes,
-    this points to the FUNCTION_DECL for the containing function, or else
-    yields NULL_TREE if the given decl has "file scope".
+    RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE node that the field
+    is a member of.  For VAR_DECL, PARM_DECL, FUNCTION_DECL, LABEL_DECL,
+    and CONST_DECL nodes, this points to the FUNCTION_DECL for the
+    containing function, or else yields NULL_TREE if the given decl
+    has "file scope".
    DECL_ABSTRACT_ORIGIN, if non-NULL, points to the original (abstract)
     ..._DECL node of which this decl is an (inlined or template expanded)
     instance.
