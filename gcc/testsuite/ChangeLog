@@ -1,5 +1,8 @@
 2004-03-09  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/14230
+	* g++.dg/init/ref11.C: New test.
+
 	PR c++/14432
 	* g++.dg/parse/builtin2.C: New test.
 

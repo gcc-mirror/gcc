@@ -1,5 +1,9 @@
 2004-03-09  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/14230
+	* call.c (initialize_reference): Handle initializers that are
+	class-member access expressions applies to rvalues.
+
 	PR c++/14432
 	* name-lookup.c (supplement_binding): Ignore functions that are
 	marked DECL_ANTICIPATED.
