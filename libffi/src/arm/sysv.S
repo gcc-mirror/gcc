@@ -97,19 +97,13 @@ ENTRY(ffi_call_SYSV)
 	beq   epilogue
 
 # return FLOAT
-	cmp   a4, #FFI_TYPE_FLOAT
-        bne   retdouble
-	stfs  f0, [a3]
-	b     epilogue
+	cmp     a4, #FFI_TYPE_FLOAT
+	stfeqs  f0, [a3]
+	beq     epilogue
 
 # return DOUBLE or LONGDOUBLE
-retdouble:
-	cmp   a4, #FFI_TYPE_DOUBLE
-	bne   epilogue
-
-	stfs  f0, [a3, #0]
-	stfs  f1, [a3, #4]
-	b     epilogue
+	cmp     a4, #FFI_TYPE_DOUBLE
+	stfeqd  f0, [a3]
 
 epilogue:
         ldmfd sp!, {a1-a4, fp, pc}
