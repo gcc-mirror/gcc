@@ -1,3 +1,9 @@
+2004-05-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/15046
+	* crossconfig.m4: Add C99 math bits for linux crosses.
+	* configure: Regenerate.
+
 2004-05-15  Simon Marshall <simon.marshall@misys.com>
             Benjamin Kosnik  <bkoz@redhat.com>
  
