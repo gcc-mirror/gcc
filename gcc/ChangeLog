@@ -1,3 +1,8 @@
+2003-05-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Add 440 support.
+	* config/rs6000/vxworks.h (CC1_SPEC): Use -mcpu=440 for t440.
+
 2003-05-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* libgcov.c (__gcov_merge_add): Do not use gcov_type when inhibit_libc

@@ -52,12 +52,10 @@
    fPIC: -D__PIC__=2 -D__pic__=2 } \
  %(cpp_cpu)"
 
-/* N.B. GCC does not currently support the 440 processor as distinct
-   from the 405 series.  */
 #define CC1_SPEC \
 "%{t403: -mcpu=403 -mstrict-align ;				\
    t405: -mcpu=405 -mstrict-align ;				\
-   t440: -mcpu=405 -mstrict-align ;				\
+   t440: -mcpu=440 -mstrict-align ;				\
    t603: -mcpu=603 -mstrict-align ;				\
    t604: -mcpu=604 -mstrict-align ;				\
    t860: -mcpu=860                ;                             \
