@@ -23,7 +23,7 @@
 typedef long _Atomic_word;
 
 static inline _Atomic_word
-__attribute__ ((unused))
+__attribute__ ((__unused__))
 __exchange_and_add (volatile _Atomic_word *__mem, int __val)
 {
   _Atomic_word __tmp1, __tmp2;
@@ -41,7 +41,7 @@ __exchange_and_add (volatile _Atomic_word *__mem, int __val)
 }
 
 static inline void
-__attribute__ ((unused))
+__attribute__ ((__unused__))
 __atomic_add (volatile _Atomic_word* __mem, int __val)
 {
   _Atomic_word __tmp1, __tmp2;
@@ -58,7 +58,7 @@ __atomic_add (volatile _Atomic_word* __mem, int __val)
 }
 
 static inline int
-__attribute__ ((unused))
+__attribute__ ((__unused__))
 __compare_and_swap (volatile long *__p, long __oldval, long __newval)
 {
   register int __tmp, 

@@ -35,7 +35,7 @@ __exchange_and_add (volatile _Atomic_word *__mem, int __val)
 }
 
 static inline void
-__attribute__ ((unused))
+__attribute__ ((__unused__))
 __atomic_add (volatile _Atomic_word* __mem, int __val)
 {
   __asm__ __volatile__ ("lock; addl %0,%1"

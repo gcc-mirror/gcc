@@ -23,7 +23,7 @@
 typedef int _Atomic_word;
 
 static inline _Atomic_word
-__attribute__ ((unused))
+__attribute__ ((__unused__))
 __exchange_and_add (_Atomic_word* __mem, int __val)
 {
   _Atomic_word __result = *__mem;
@@ -32,14 +32,14 @@ __exchange_and_add (_Atomic_word* __mem, int __val)
 }
 
 static inline void
-__attribute__ ((unused))
+__attribute__ ((__unused__))
 __atomic_add (_Atomic_word* __mem, int __val)
 {
   *__mem += __val;
 }
 
 static inline int
-__attribute__ ((unused))
+__attribute__ ((__unused__))
 __compare_and_swap (long *__p, long __oldval, long __newval)
 {
   if (*__p != __oldval)
