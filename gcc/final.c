@@ -140,7 +140,8 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Last insn processed by final_scan_insn.  */
-static rtx debug_insn = 0;
+static rtx debug_insn;
+rtx current_output_insn;
 
 /* Line number of last NOTE.  */
 static int last_linenum;
@@ -2925,7 +2926,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	NOTICE_UPDATE_CC (body, insn);
 #endif
 
-	debug_insn = insn;
+	current_output_insn = debug_insn = insn;
 
 #if defined (DWARF2_UNWIND_INFO)
 	/* If we push arguments, we want to know where the calls are.  */
@@ -3007,7 +3008,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	INSN_DELETED_P (insn) = 1;
 #endif
 
-	debug_insn = 0;
+	current_output_insn = debug_insn = 0;
       }
     }
   return NEXT_INSN (insn);
