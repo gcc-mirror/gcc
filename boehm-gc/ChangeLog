@@ -1,6 +1,10 @@
 1999-04-14  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.
+	* configure.in: Don't use sparc_mach_dep.o for Solaris.  Reverts
+	incorrect patch of 199-04-09.
+
+	* configure: Rebuilt.
 	* configure.in: Added support for alpha.
 	From David Pettersson <dapet@mai.liu.se>.
 
