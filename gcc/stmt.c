@@ -3599,7 +3599,9 @@ expand_decl (decl)
 		&& TREE_CODE (type) == REAL_TYPE)
 	   && ! TREE_THIS_VOLATILE (decl)
 	   && ! TREE_ADDRESSABLE (decl)
-	   && (DECL_REGISTER (decl) || ! obey_regdecls))
+	   && (DECL_REGISTER (decl) || ! obey_regdecls)
+	   /* if -fcheck-memory-usage, check all variables.  */
+	   && ! flag_check_memory_usage)
     {
       /* Automatic variable that can go in a register.  */
       int unsignedp = TREE_UNSIGNED (type);
