@@ -90,7 +90,6 @@ extern struct rtx_def *mmix_compare_op1;
    mmix.md too.  */
 struct machine_function
  {
-   int has_call_without_parameters;
    int has_landing_pad;
  };
 
@@ -157,7 +156,6 @@ extern int target_flags;
 #define TARGET_MASK_KNUTH_DIVISION 16
 #define TARGET_MASK_TOPLEVEL_SYMBOLS 32
 #define TARGET_MASK_BRANCH_PREDICT 64
-#define TARGET_MASK_REG_STACK_FILL_BUG 128
 
 /* FIXME: Get rid of this one.  */
 #define TARGET_LIBFUNC (target_flags & TARGET_MASK_LIBFUNCS)
@@ -167,11 +165,9 @@ extern int target_flags;
 #define TARGET_KNUTH_DIVISION (target_flags & TARGET_MASK_KNUTH_DIVISION)
 #define TARGET_TOPLEVEL_SYMBOLS (target_flags & TARGET_MASK_TOPLEVEL_SYMBOLS)
 #define TARGET_BRANCH_PREDICT (target_flags & TARGET_MASK_BRANCH_PREDICT)
-#define TARGET_REG_STACK_FILL_BUG \
- (target_flags & TARGET_MASK_REG_STACK_FILL_BUG)
 
 #define TARGET_DEFAULT \
- (TARGET_MASK_BRANCH_PREDICT | TARGET_MASK_REG_STACK_FILL_BUG)
+ (TARGET_MASK_BRANCH_PREDICT)
 
 /* FIXME: Provide a way to *load* the epsilon register.  */
 #define TARGET_SWITCHES							\
@@ -202,12 +198,6 @@ extern int target_flags;
    N_("Use P-mnemonics for branches statically predicted as taken")},	\
   {"no-branch-predict",	-TARGET_MASK_BRANCH_PREDICT,			\
    N_("Don't use P-mnemonics for branches")},				\
-  {"reg-stack-fill-bug-workaround",	TARGET_MASK_REG_STACK_FILL_BUG,	\
-   N_("Work around inconsistent behavior when a PUSHJ or PUSHGO\
- instruction fills the register stack")},				\
-  {"no-reg-stack-fill-bug-workaround",	-TARGET_MASK_REG_STACK_FILL_BUG,\
-   N_("Don't work around inconsistent behavior when a PUSHJ or PUSHGO\
- instruction fills the register stack")},	\
   {"",			TARGET_DEFAULT, ""}}
 
 /* Unfortunately, this must not reference anything in "mmix.c".  */

@@ -593,8 +593,7 @@ in the following sections.
 @gccoptlist{
 -mlibfuncs -mno-libfuncs -mepsilon -mno-epsilon -mabi=gnu @gol
 -mabi=mmixware -mzero-extend -mknuthdiv -mtoplevel-symbols @gol
--melf -mbranch-predict -mreg-stack-fill-bug-workaround @gol
--mno-branch-predict -mno-reg-stack-fill-bug-workaround}
+-melf -mbranch-predict -mno-branch-predict}
 
 @emph{IA-64 Options}
 @gccoptlist{
@@ -9486,15 +9485,6 @@ Generate an executable in the ELF format, rather than the default
 @opindex mno-branch-predict
 Use (do not use) the probable-branch instructions, when static branch
 prediction indicates a probable branch.
-
-@item -mreg-stack-fill-bug-workaround
-@itemx -mno-reg-stack-fill-bug-workaround
-@opindex mreg-stack-fill-bug-workaround
-@opindex mno-reg-stack-fill-bug-workaround
-Work around (do not work around) an inconsistency in the circular
-register stack mechanism in the @command{mmix} simulator, which
-causes entries in the register stack to not be flushed to memory if
-the instruction causing the fill-up is @code{PUSHJ} or @code{PUSHGO}.
 @end table
 
 @node PDP-11 Options
