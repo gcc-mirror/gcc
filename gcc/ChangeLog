@@ -1,3 +1,8 @@
+2004-11-12  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
+	* config/rs6000/t-rtems (MULTILIB_NEW_EXCEPTIONS_ONLY):
+	Remove m505/roe multilib variant.
+
 2004-11-12  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	Backport from mainline:

@@ -33,6 +33,7 @@ MULTILIB_MATCHES  	= ${MULTILIB_MATCHES_ENDIAN} \
 
 # Cpu-variants supporting new exception processing only
 MULTILIB_NEW_EXCEPTIONS_ONLY = \
+*mcpu=505*/*D_OLD_EXCEPTIONS* \
 *mcpu=604*/*D_OLD_EXCEPTIONS* \
 *mcpu=750*/*D_OLD_EXCEPTIONS* \
 *mcpu=821*/*D_OLD_EXCEPTIONS* \
