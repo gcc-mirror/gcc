@@ -1614,7 +1614,7 @@ fixhdr.ready: fix-header
 	fi
 
 # stmp-headers is to make sure fixincludes has already finished.
-stmp-fixproto: fixhdr.ready xsys-protos.h fixproto stmp-headers
+stmp-fixproto: fixhdr.ready fixproto stmp-headers
 	@echo "Various warnings and error messages from fixproto are normal"
 	CPP="$(GCC_FOR_TARGET) -E"; export CPP; \
 	  ${srcdir}/fixproto include include $(SYSTEM_HEADER_DIR)
