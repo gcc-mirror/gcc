@@ -5716,13 +5716,13 @@ debug_reload()
 
       if (reload_in[r])
 	{
-	  fprintf (stderr, "\nreload_in (%s) = ", mode_name[reload_inmode[r]]);
+	  fprintf (stderr, "\nreload_in (%s) = ", GET_MODE_NAME(reload_inmode[r]));
 	  debug_rtx (reload_in[r]);
 	}
 
       if (reload_out[r])
 	{
-	  fprintf (stderr, "\nreload_out (%s) = ", mode_name[reload_outmode[r]]);
+	  fprintf (stderr, "\nreload_out (%s) = ", GET_MODE_NAME (reload_outmode[r]));
 	  debug_rtx (reload_out[r]);
 	}
 
