@@ -788,11 +788,11 @@ extern int current_function_calls_alloca;
 /* All registers except gr0 OK as index or base registers.  */
 
 #define REGNO_OK_FOR_BASE_P(regno) \
-((regno) < FIRST_PSEUDO_REGISTER || reg_renumber[regno] < FIRST_PSEUDO_REGISTER)
+((regno) < FIRST_PSEUDO_REGISTER || reg_renumber[regno] >= 0)
 
 #define REGNO_OK_FOR_INDEX_P(regno)  \
 ((unsigned) (regno) - 1 < FIRST_PSEUDO_REGISTER - 1 \
- || (unsigned) reg_renumber[regno] - 1 < FIRST_PSEUDO_REGISTER - 1)
+ || reg_renumber[regno] > 0)
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 
