@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SPARClite w/o FPU, COFF.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996 Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com).
 
 This file is part of GNU CC.
@@ -32,47 +32,11 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dsparc -Dsparclite -Acpu(sparc) -Amachine(sparc)"
 
-/* just in case */
-#undef DBX_DEBUGGING_INFO
-#undef PREFERRED_DEBUGGING_TYPE
-#define DBX_DEBUGGING_INFO
+/* Default to stabs in COFF.  */
+
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-/* These are all necessary because this is how gdb expects gcc to output
-   stabs in coff.  */
-
-/* Be function-relative for block and source line stab directives.  */
-
-#define DBX_BLOCKS_FUNCTION_RELATIVE 1
-
-/* but, to make this work, functions must appear prior to line info.  */
-
-#define DBX_FUNCTION_FIRST
-
-/* Generate a blank trailing N_SO to mark the end of the .o file, since
-   we can't depend upon the linker to mark .o file boundaries with
-   embedded stabs.  */
-
-#define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
-  fprintf (FILE,							\
-	   "\t.text\n\t.stabs \"\",%d,0,0,Letext\nLetext:\n", N_SO)
-
-/* This is copied from final.c and sparc.h.  */
-#undef ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(FILE, LINE)			\
-{ if (write_symbols == SDB_DEBUG) {				\
-    fprintf ((FILE), "\t.ln\t%d\n",				\
-	     ((sdb_begin_function_line > -1)			\
-	      ? (LINE) - sdb_begin_function_line : 1));		\
-  } else if (write_symbols == DBX_DEBUG) {			\
-    static int sym_lineno = 1;					\
-    fprintf (FILE, ".stabn 68,0,%d,.LM%d-",			\
-	     LINE, sym_lineno);					\
-    assemble_name (FILE,					\
-		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0)); \
-    fprintf (FILE, "\n.LM%d:\n", sym_lineno);			\
-    sym_lineno += 1;						\
-  } }
+#include "dbxcoff.h"
 
 /* Support the ctors and dtors sections for g++.  */
 

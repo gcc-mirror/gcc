@@ -1,7 +1,7 @@
 /* Definitions for "naked" Motorola 88k using coff object format files
    and coff debugging info.
 
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -25,14 +25,10 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dm88000 -Dm88k -Acpu(m88k) -Amachine(m88k)"
 
-#undef DBX_DEBUGGING_INFO
 #define SDB_DEBUGGING_INFO
 
 /* Output DBX (stabs) debugging information if using -gstabs.  */
 
-#define DBX_DEBUGGING_INFO
-
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
+#include "dbxcoff.h"
 
 /* end of m88k-coff.h */
