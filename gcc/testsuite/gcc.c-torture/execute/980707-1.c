@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
 
 char **
@@ -10,12 +9,12 @@ buildargv (char *input)
 
   while (1)
     {
-      while (isspace ((unsigned char)*input) && *input != 0)
+      while (*input == ' ')
 	input++;
       if (*input == 0)
 	break;
       arglist [numargs++] = input;
-      while (!isspace ((unsigned char)*input) && *input != 0)
+      while (*input != ' ' && *input != 0)
 	input++;
       if (*input == 0)
 	break;
