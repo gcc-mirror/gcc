@@ -553,6 +553,11 @@ optimize_reg_copy_3 (insn, dest, src)
       || SET_DEST (set) != src_reg)
     return;
 
+  /* Be conserative: although this optimization is also valid for
+     volatile memory references, that could cause trouble in later passes.  */
+  if (MEM_VOLATILE_P (SET_SRC (set)))
+    return;
+
   /* Do not use a SUBREG to truncate from one mode to another if truncation
      is not a nop.  */
   if (GET_MODE_BITSIZE (GET_MODE (src_reg)) <= GET_MODE_BITSIZE (GET_MODE (src))
