@@ -27,7 +27,8 @@ AC_ARG_ENABLE(multilib,
 dnl We may get other options which we dont document:
 dnl --with-target-subdir, --with-multisrctop, --with-multisubdir
 
-if test "[$]{srcdir}" = "."; then
+if test "x[$]{with_target_subdir}" != x && \
+   test "[$]{srcdir}" = "."; then
   if test "[$]{with_target_subdir}" != "."; then
     zlib_basedir="[$]{srcdir}/[$]{with_multisrctop}../"
   else
