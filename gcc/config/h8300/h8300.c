@@ -891,8 +891,6 @@ jump_address_operand (rtx op, enum machine_mode mode)
 
 /* Recognize valid operands for bit-field instructions.  */
 
-extern int rtx_equal_function_value_matters;
-
 int
 bit_operand (rtx op, enum machine_mode mode)
 {
