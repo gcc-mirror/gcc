@@ -1296,12 +1296,14 @@ compute_record_mode (tree type)
 #endif /* MEMBER_TYPE_FORCES_BLK  */
     }
 
-  /* If we only have one real field; use its mode.  This only applies to
-     RECORD_TYPE.  This does not apply to unions.  */
-  if (TREE_CODE (type) == RECORD_TYPE && mode != VOIDmode)
+  TYPE_MODE (type) = mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1);
+
+  /* If we only have one real field; use its mode if that mode's size
+     matches the type's size.  This only applies to RECORD_TYPE.  This
+     does not apply to unions.  */
+  if (TREE_CODE (type) == RECORD_TYPE && mode != VOIDmode
+      && GET_MODE_SIZE (mode) == GET_MODE_SIZE (TYPE_MODE (type)))
     TYPE_MODE (type) = mode;
-  else
-    TYPE_MODE (type) = mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1);
 
   /* If structure's known alignment is less than what the scalar
      mode would need, and it matters, then stick with BLKmode.  */
