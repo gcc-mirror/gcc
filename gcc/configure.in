@@ -761,7 +761,7 @@ changequote([,])dnl
 	arm*-*-netbsd*)
 		tm_file=arm/netbsd.h
 		tmake_file="t-netbsd arm/t-netbsd"
-       use_collect2=yes
+		use_collect2=yes
 		;;
 	arm*-*-linux-gnuaout*)		# ARM GNU/Linux with a.out
 		cpu_type=arm
@@ -836,6 +836,8 @@ changequote([,])dnl
 		tm_file=arm/pe.h
 		tmake_file=arm/t-pe
 		extra_objs=pe.o
+		;;
+	avr-*-*)
 		;;
 	c1-convex-*)			# Convex C1
 		target_cpu_default=1
@@ -1330,7 +1332,7 @@ changequote(,)dnl
 changequote([,])dnl
 		tm_file=i386/netbsd.h
 		tmake_file=t-netbsd
-       use_collect2=yes
+		use_collect2=yes
 		;;
 changequote(,)dnl
 	i[34567]86-*-openbsd*)
@@ -2221,7 +2223,7 @@ changequote([,])dnl
 		tm_file=m68k/netbsd.h
 		tmake_file=t-netbsd
 		float_format=m68k
-       use_collect2=yes
+		use_collect2=yes
 		;;
 	m68k*-*-openbsd*)
 		float_format=m68k
@@ -2918,7 +2920,7 @@ changequote([,])dnl
 		xm_file="ns32k/xm-netbsd.h ${xm_file}"
 		# On NetBSD, the headers are already okay, except for math.h.
 		tmake_file=t-netbsd
-       use_collect2=yes
+		use_collect2=yes
 		;;
         pdp11-*-bsd)
 		tm_file="${tm_file} pdp11/2bsd.h"
@@ -3237,7 +3239,7 @@ changequote([,])dnl
 	sparc-*-netbsd*)
 		tm_file=sparc/netbsd.h
 		tmake_file=t-netbsd
-       use_collect2=yes
+		use_collect2=yes
 		;;
 	sparc-*-openbsd*)
 		# we need collect2 until our bug is fixed...
@@ -3572,7 +3574,7 @@ changequote([,])dnl
 		tm_file="${tm_file} netbsd.h vax/netbsd.h"
 		tmake_file=t-netbsd
 		float_format=vax
-       use_collect2=yes
+		use_collect2=yes
 		;;
 	vax-*-openbsd*)
 		tmake_file="${tmake_file} vax/t-openbsd"
