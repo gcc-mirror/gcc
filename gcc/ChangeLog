@@ -1,5 +1,8 @@
 2004-07-07  Andrew Pinski  <apinski@apple.com>
 
+	PR tree-optimization/15777
+	* fold-const.c (fold_single_bit_test): Fold the x^1 expression.
+
 	* expr.c (expand_expr_real_1): Fix formating.
 	BUFFER_REF and IN_EXPR are dead.
 	* fold-const.c (non_lvalue): BUFFER_REF is dead.

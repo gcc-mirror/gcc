@@ -5849,8 +5849,8 @@ fold_single_bit_test (enum tree_code code, tree arg0, tree arg1,
 			inner, size_int (bitnum));
 
       if (code == EQ_EXPR)
-	inner = build2 (BIT_XOR_EXPR, intermediate_type,
-			inner, integer_one_node);
+	inner = fold (build2 (BIT_XOR_EXPR, intermediate_type,
+			      inner, integer_one_node));
 
       /* Put the AND last so it can combine with more things.  */
       inner = build2 (BIT_AND_EXPR, intermediate_type,
