@@ -35,11 +35,27 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
-/**
- * STUBBED
- */
+
+import java.awt.Component;
+import java.awt.Container;
+import javax.accessibility.Accessible;
+
 public class JInternalFrame extends JComponent
 /*implements Accessible, WindowConstants, RootPaneContainer*/
 {
+  private static final long serialVersionUID = -5425177187760785402L;
+
+  public static final String CONTENT_PANE_PROPERTY = "contentPane";
+  public static final String MENU_BAR_PROPERTY = "JMenuBar";
+  public static final String TITLE_PROPERTY = "title";
+  public static final String LAYERED_PANE_PROPERTY = "layeredPane";
+  public static final String ROOT_PANE_PROPERTY = "rootPane";
+  public static final String GLASS_PANE_PROPERTY = "glassPane";
+  public static final String FRAME_ICON_PROPERTY = "frameIcon";
+  public static final String IS_SELECTED_PROPERTY = "selected";
+  public static final String IS_CLOSED_PROPERTY = "closed";
+  public static final String IS_MAXIMUM_PROPERTY = "maximum";
+  public static final String IS_ICON_PROPERTY = "icon";
 } // class JInternalFrame

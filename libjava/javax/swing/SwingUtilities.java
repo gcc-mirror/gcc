@@ -35,20 +35,34 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.Window;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.lang.reflect.InvocationTargetException;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleStateSet;
 
-
-public class SwingUtilities
+public class SwingUtilities implements SwingConstants
 {
-    
-    public static FontMetrics getFontMetrics ( Font font ) {
+  public static FontMetrics getFontMetrics (Font font)
+{
 	return Toolkit.getDefaultToolkit().getFontMetrics(font);
     }
 
-
-    static JRootPane getRootPane(Component a)
+  public static JRootPane getRootPane (Component a)
     {
 	if (a instanceof JRootPane)
 	    return (JRootPane) a;
@@ -63,11 +77,11 @@ public class SwingUtilities
 	return null;
     }
 
-    static void updateComponentTreeUI(JFrame comp)
+  public static void updateComponentTreeUI(JFrame comp)
     {
     }
 
-    static public String layoutCompoundLabel(JComponent c, 
+  public static String layoutCompoundLabel(JComponent c, 
 					     FontMetrics fm,
 					     String text,
 					     Icon i,

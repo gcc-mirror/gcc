@@ -66,7 +66,6 @@ import java.util.Hashtable;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleExtendedComponent;
-import javax.accessibility.AccessibleKeyBinding;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleStateSet;
 import javax.swing.event.AncestorListener;
@@ -116,16 +115,6 @@ public abstract class JComponent extends Container implements Serializable
 		 * AccessibleFocusHandler
 		 */
 		protected class AccessibleFocusHandler implements FocusListener {
-
-			//-------------------------------------------------------------
-			// Variables --------------------------------------------------
-			//-------------------------------------------------------------
-
-
-			//-------------------------------------------------------------
-			// Initialization ---------------------------------------------
-			//-------------------------------------------------------------
-
 			/**
 			 * Constructor AccessibleFocusHandler
 			 * @param component TODO
@@ -133,11 +122,6 @@ public abstract class JComponent extends Container implements Serializable
 			protected AccessibleFocusHandler(AccessibleJComponent component) {
 				// TODO
 			} // AccessibleFocusHandler()
-
-
-			//-------------------------------------------------------------
-			// Methods ----------------------------------------------------
-			//-------------------------------------------------------------
 
 			/**
 			 * focusGained
@@ -154,24 +138,12 @@ public abstract class JComponent extends Container implements Serializable
 			public void focusLost(FocusEvent valevent) {
 				// TODO
 			} // focusLost()
-
-
 		} // AccessibleFocusHandler
 
 		/**
 		 * AccessibleContainerHandler
 		 */
 		protected class AccessibleContainerHandler implements ContainerListener {
-
-			//-------------------------------------------------------------
-			// Variables --------------------------------------------------
-			//-------------------------------------------------------------
-
-
-			//-------------------------------------------------------------
-			// Initialization ---------------------------------------------
-			//-------------------------------------------------------------
-
 			/**
 			 * Constructor AccessibleContainerHandler
 			 * @param component TODO
@@ -179,11 +151,6 @@ public abstract class JComponent extends Container implements Serializable
 			protected AccessibleContainerHandler(AccessibleJComponent component) {
 				// TODO
 			} // AccessibleContainerHandler()
-
-
-			//-------------------------------------------------------------
-			// Methods ----------------------------------------------------
-			//-------------------------------------------------------------
 
 			/**
 			 * componentAdded
@@ -200,14 +167,7 @@ public abstract class JComponent extends Container implements Serializable
 			public void componentRemoved(ContainerEvent valevent) {
 				// TODO
 			} // componentRemoved()
-
-
 		} // AccessibleContainerHandler
-
-
-		//-------------------------------------------------------------
-		// Variables --------------------------------------------------
-		//-------------------------------------------------------------
 
 		/**
 		 * accessibleContainerHandler
@@ -219,11 +179,6 @@ public abstract class JComponent extends Container implements Serializable
 		 */
 		protected FocusListener accessibleFocusHandler;
 
-
-		//-------------------------------------------------------------
-		// Initialization ---------------------------------------------
-		//-------------------------------------------------------------
-
 		/**
 		 * Constructor AccessibleJComponent
 		 * @param component TODO
@@ -232,11 +187,6 @@ public abstract class JComponent extends Container implements Serializable
 //			super((Container)component);
 			// TODO
 		} // AccessibleJComponent()
-
-
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
 
 		/**
 		 * addPropertyChangeListener
@@ -327,7 +277,6 @@ public abstract class JComponent extends Container implements Serializable
 		//updateUI(); // get a proper ui
 	}
 
-
 	// protected EventListenerList listenerList
 	public boolean contains(int x, int y)
 	{
@@ -335,13 +284,11 @@ public abstract class JComponent extends Container implements Serializable
 		return super.contains(x,y);
 	}
 
-
 	public  void addNotify()
 	{
 		//Notification to this component that it now has a parent component.
 		super.addNotify();
 	}
-
 
 	Hashtable get_prop_hash()
 	{
@@ -374,7 +321,6 @@ public abstract class JComponent extends Container implements Serializable
 	public void putClientProperty(Object key, Object value)
 	{    get_prop_hash().put(key, value);   }
 
-
 	public void removeAncestorListener(AncestorListener listener)
 	{  get_ancestor_list().removeElement(listener);  }
 
@@ -404,7 +350,6 @@ public abstract class JComponent extends Container implements Serializable
 		//Returns the Component's "visible rect rectangle" - the intersection of the visible rectangles for this component and all of its ancestors.
 		//super.computeVisibleRect(rect);
 	}
-
 
 	public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue)
 	{
@@ -445,7 +390,6 @@ public abstract class JComponent extends Container implements Serializable
 	{
 		//       Reports a bound property change.
 	}
-
 
 	protected  void fireVetoableChange(String propertyName, Object oldValue, Object newValue)
 	{
@@ -658,16 +602,6 @@ public abstract class JComponent extends Container implements Serializable
 		}
 	}
 
-
-
-	/*********************************************************************
-	 *
-	 *
-	 *  tooltips:
-	 *
-	 *
-	 **************************************/
-
 	public JToolTip createToolTip()
 	{
 		if (tooltip == null)
@@ -686,15 +620,6 @@ public abstract class JComponent extends Container implements Serializable
 
 	public String getToolTipText(MouseEvent event)
 	{	return tool_tip_text;    }
-
-	/*********************************************************************
-	 *
-	 *
-	 *    things to do with visibility:
-	 *
-	 *
-	 **************************************/
-
 
 	public Container getTopLevelAncestor()
 	{
@@ -953,7 +878,6 @@ public abstract class JComponent extends Container implements Serializable
 		//      If true this component will automatically scroll its contents when dragged, if contained in a component that supports scrolling, such as JViewport
 	}
 
-
 	public void setDebugGraphicsOptions(int debugOptions)
 	{
 		//      Enables or disables diagnostic information about every graphics operation performed within the component or one of its children.
@@ -977,6 +901,7 @@ public abstract class JComponent extends Container implements Serializable
 		revalidate();
 		repaint();
 	}
+
 	public void setBackground(Color bg)
 	{
 		super.setBackground(bg);
@@ -1042,16 +967,6 @@ public abstract class JComponent extends Container implements Serializable
 	{
 		paint(g);
 	}
-
-
-
-	/******************************************
-	 *
-	 *
-	 *  UI management
-	 * 
-	 *
-	 *********/
 
         public String getUIClassID()
 	{
