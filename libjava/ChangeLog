@@ -1,3 +1,9 @@
+2001-01-08  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* Makefile.am: Use the new "-M -MF" option for generating dependencies
+	from the c++ compiler.
+	* Makefile.in: Rebuilt.
+
 2001-01-07  Anthony Green  <green@redhat.com>
 
 	* Makefile.am (texinfo): Add texinfo target for generating texinfo
