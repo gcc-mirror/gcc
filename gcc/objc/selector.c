@@ -88,6 +88,71 @@ register_selectors_from_list (MethodList_t method_list)
 }
 
 
+/* Register instance methods as class methods for root classes */
+void __objc_register_instance_methods_to_class(Class class)
+{
+  MethodList_t method_list;
+  MethodList_t class_method_list;
+  int max_methods_no = 16;
+  MethodList_t new_list;
+  Method_t curr_method;
+
+  /* Only if a root class. */
+  if(class->super_class)
+    return;
+
+  /* Allocate a method list to hold the new class methods */
+  new_list = objc_calloc(sizeof(struct objc_method_list)
+			    + sizeof(struct objc_method[max_methods_no]), 1);
+  method_list = class->methods;
+  class_method_list = class->class_pointer->methods;
+  curr_method = &new_list->method_list[0];
+
+  /* Iterate through the method lists for the class */
+  while (method_list)
+    {
+      int i;
+
+      /* Iterate through the methods from this method list */
+      for (i = 0; i < method_list->method_count; i++)
+	{
+	  Method_t mth = &method_list->method_list[i];
+	  if (mth->method_name
+	      && !search_for_method_in_list (class_method_list,
+					      mth->method_name))
+	    {
+	      /* This instance method isn't a class method. 
+		  Add it into the new_list. */
+	      *curr_method = *mth;
+  
+	      /* Reallocate the method list if necessary */
+	      if(++new_list->method_count == max_methods_no)
+		new_list =
+		  objc_realloc(new_list, sizeof(struct objc_method_list)
+				+ sizeof(struct 
+					objc_method[max_methods_no += 16]));
+	      curr_method = &new_list->method_list[new_list->method_count];
+	    }
+	}
+
+      method_list = method_list->method_next;
+    }
+
+  /* If we created any new class methods
+     then attach the method list to the class */
+  if (new_list->method_count)
+    {
+      new_list =
+ 	objc_realloc(new_list, sizeof(struct objc_method_list)
+		     + sizeof(struct objc_method[new_list->method_count]));
+      new_list->method_next = class->class_pointer->methods;
+      class->class_pointer->methods = new_list;
+    }
+
+    __objc_update_dispatch_table_for_class (class->class_pointer);
+}
+
+
 /* Returns YES iff t1 and t2 have same method types, but we ignore
    the argframe layout */
 BOOL
