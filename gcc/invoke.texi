@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,95,96,97,98,1999 Free Software Foundation, Inc.
+@c Copyright (C) 1988, 89, 92-98, 1999 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1548,6 +1548,10 @@ the block.
 
 @item
 A @code{switch} statement has an operand of type @code{long}.
+
+@item
+A non-@code{static} function declaration follows a @code{static} one.
+This construct is not accepted by some traditional C compilers.
 @end itemize
 
 @item -Wundef
