@@ -864,6 +864,10 @@ expand_call_inline (tp, walk_subtrees, data)
   id->ret_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
   DECL_CONTEXT (id->ret_label) = VARRAY_TREE (id->fns, 0);
 
+  if (! DECL_INITIAL (fn)
+      || TREE_CODE (DECL_INITIAL (fn)) != BLOCK)
+    abort ();
+
   /* Create a block to put the parameters in.  We have to do this
      after the parameters have been remapped because remapping
      parameters is different from remapping ordinary variables.  */
@@ -894,9 +898,6 @@ expand_call_inline (tp, walk_subtrees, data)
   /* Close the block for the parameters.  */
   scope_stmt = build_stmt (SCOPE_STMT, DECL_INITIAL (fn));
   SCOPE_NO_CLEANUPS_P (scope_stmt) = 1;
-  if (! DECL_INITIAL (fn)
-      || TREE_CODE (DECL_INITIAL (fn)) != BLOCK)
-    abort ();
   remap_block (scope_stmt, NULL_TREE, id);
   STMT_EXPR_STMT (expr)
     = chainon (STMT_EXPR_STMT (expr), scope_stmt);

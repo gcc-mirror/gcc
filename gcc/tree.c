@@ -4378,7 +4378,14 @@ get_callee_fndecl (call)
      that `f' is being called.  */
   if (TREE_CODE (addr) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (addr, 0)) == FUNCTION_DECL)
-    return TREE_OPERAND (addr, 0);
+    {
+      addr = TREE_OPERAND (addr, 0);
+
+      if (! DECL_INITIAL (addr) && DECL_ABSTRACT_ORIGIN (addr))
+	addr = DECL_ABSTRACT_ORIGIN (addr);
+
+      return addr;
+    }
 
   /* We couldn't figure out what was being called.  */
   return NULL_TREE;
