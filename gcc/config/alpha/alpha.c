@@ -6178,6 +6178,48 @@ set_frame_related_p (void)
 
 #define FRP(exp)  (start_sequence (), exp, set_frame_related_p ())
 
+/* Generates a store with the proper unwind info attached.  VALUE is
+   stored at BASE_REG+BASE_OFS.  If FRAME_BIAS is non-zero, then BASE_REG
+   contains SP+FRAME_BIAS, and that is the unwind info that should be
+   generated.  If FRAME_REG != VALUE, then VALUE is being stored on
+   behalf of FRAME_REG, and FRAME_REG should be present in the unwind.  */
+
+static void
+emit_frame_store_1 (rtx value, rtx base_reg, HOST_WIDE_INT frame_bias,
+		    HOST_WIDE_INT base_ofs, rtx frame_reg)
+{
+  rtx addr, mem, insn;
+
+  addr = plus_constant (base_reg, base_ofs);
+  mem = gen_rtx_MEM (DImode, addr);
+  set_mem_alias_set (mem, alpha_sr_alias_set);
+
+  insn = emit_move_insn (mem, value);
+  RTX_FRAME_RELATED_P (insn) = 1;
+
+  if (frame_bias || value != frame_reg)
+    {
+      if (frame_bias)
+	{
+	  addr = plus_constant (stack_pointer_rtx, frame_bias + base_ofs);
+	  mem = gen_rtx_MEM (DImode, addr);
+	}
+
+      REG_NOTES (insn)
+	= gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+			     gen_rtx_SET (VOIDmode, mem, frame_reg),
+			     REG_NOTES (insn));
+    }
+}
+
+static void
+emit_frame_store (unsigned int regno, rtx base_reg,
+		  HOST_WIDE_INT frame_bias, HOST_WIDE_INT base_ofs)
+{
+  rtx reg = gen_rtx_REG (DImode, regno);
+  emit_frame_store_1 (reg, base_reg, frame_bias, base_ofs, reg);
+}
+
 /* Write function prologue.  */
 
 /* On vms we have two kinds of functions:
@@ -6207,7 +6249,7 @@ alpha_expand_prologue (void)
   HOST_WIDE_INT frame_size;
   /* Offset from base reg to register save area.  */
   HOST_WIDE_INT reg_offset;
-  rtx sa_reg, mem;
+  rtx sa_reg;
   int i;
 
   sa_size = alpha_sa_size ();
@@ -6357,37 +6399,40 @@ alpha_expand_prologue (void)
 
   if (!TARGET_ABI_UNICOSMK)
     {
+      HOST_WIDE_INT sa_bias = 0;
+
       /* Cope with very large offsets to the register save area.  */
       sa_reg = stack_pointer_rtx;
       if (reg_offset + sa_size > 0x8000)
 	{
 	  int low = ((reg_offset & 0xffff) ^ 0x8000) - 0x8000;
-	  HOST_WIDE_INT bias;
+	  rtx sa_bias_rtx;
 
 	  if (low + sa_size <= 0x8000)
-	    bias = reg_offset - low, reg_offset = low;
+	    sa_bias = reg_offset - low, reg_offset = low;
 	  else
-	    bias = reg_offset, reg_offset = 0;
+	    sa_bias = reg_offset, reg_offset = 0;
 
 	  sa_reg = gen_rtx_REG (DImode, 24);
-	  FRP (emit_insn (gen_adddi3 (sa_reg, stack_pointer_rtx,
-				      GEN_INT (bias))));
+	  sa_bias_rtx = GEN_INT (sa_bias);
+
+	  if (add_operand (sa_bias_rtx, DImode))
+	    emit_insn (gen_adddi3 (sa_reg, stack_pointer_rtx, sa_bias_rtx));
+	  else
+	    {
+	      emit_move_insn (sa_reg, sa_bias_rtx);
+	      emit_insn (gen_adddi3 (sa_reg, stack_pointer_rtx, sa_reg));
+	    }
 	}
 
       /* Save regs in stack order.  Beginning with VMS PV.  */
       if (TARGET_ABI_OPEN_VMS && alpha_procedure_type == PT_STACK)
-	{
-	  mem = gen_rtx_MEM (DImode, stack_pointer_rtx);
-	  set_mem_alias_set (mem, alpha_sr_alias_set);
-	  FRP (emit_move_insn (mem, gen_rtx_REG (DImode, REG_PV)));
-	}
+	emit_frame_store (REG_PV, stack_pointer_rtx, 0, 0);
 
       /* Save register RA next.  */
       if (imask & (1UL << REG_RA))
 	{
-	  mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
-	  set_mem_alias_set (mem, alpha_sr_alias_set);
-	  FRP (emit_move_insn (mem, gen_rtx_REG (DImode, REG_RA)));
+	  emit_frame_store (REG_RA, sa_reg, sa_bias, reg_offset);
 	  imask &= ~(1UL << REG_RA);
 	  reg_offset += 8;
 	}
@@ -6396,36 +6441,22 @@ alpha_expand_prologue (void)
       for (i = 0; i < 31; i++)
 	if (imask & (1UL << i))
 	  {
-	    mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
-	    set_mem_alias_set (mem, alpha_sr_alias_set);
-	    FRP (emit_move_insn (mem, gen_rtx_REG (DImode, i)));
+	    emit_frame_store (i, sa_reg, sa_bias, reg_offset);
 	    reg_offset += 8;
 	  }
 
       /* Store a zero if requested for unwinding.  */
       if (imask & (1UL << 31))
 	{
-	  rtx insn, t;
-
-	  mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
-	  set_mem_alias_set (mem, alpha_sr_alias_set);
-	  insn = emit_move_insn (mem, const0_rtx);
-
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	  t = gen_rtx_REG (Pmode, 31);
-	  t = gen_rtx_SET (VOIDmode, mem, t);
-	  t = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, t, REG_NOTES (insn));
-	  REG_NOTES (insn) = t;
-
+	  emit_frame_store_1 (const0_rtx, sa_reg, sa_bias, reg_offset,
+			      gen_rtx_REG (Pmode, 31));
 	  reg_offset += 8;
 	}
 
       for (i = 0; i < 31; i++)
 	if (fmask & (1UL << i))
 	  {
-	    mem = gen_rtx_MEM (DFmode, plus_constant (sa_reg, reg_offset));
-	    set_mem_alias_set (mem, alpha_sr_alias_set);
-	    FRP (emit_move_insn (mem, gen_rtx_REG (DFmode, i+32)));
+	    emit_frame_store (i+32, sa_reg, sa_bias, reg_offset);
 	    reg_offset += 8;
 	  }
     }
@@ -6439,19 +6470,13 @@ alpha_expand_prologue (void)
       for (i = 9; i < 15; i++)
 	if (imask & (1UL << i))
 	  {
-	    mem = gen_rtx_MEM (DImode, plus_constant(hard_frame_pointer_rtx,
-						     reg_offset));
-	    set_mem_alias_set (mem, alpha_sr_alias_set);
-	    FRP (emit_move_insn (mem, gen_rtx_REG (DImode, i)));
+	    emit_frame_store (i, hard_frame_pointer_rtx, 0, reg_offset);
 	    reg_offset -= 8;
 	  }
       for (i = 2; i < 10; i++)
 	if (fmask & (1UL << i))
 	  {
-	    mem = gen_rtx_MEM (DFmode, plus_constant (hard_frame_pointer_rtx,
-						      reg_offset));
-	    set_mem_alias_set (mem, alpha_sr_alias_set);
-	    FRP (emit_move_insn (mem, gen_rtx_REG (DFmode, i+32)));
+	    emit_frame_store (i+32, hard_frame_pointer_rtx, 0, reg_offset);
 	    reg_offset -= 8;
 	  }
     }
