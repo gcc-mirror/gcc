@@ -172,6 +172,7 @@ extern void finish_file				PARAMS ((void));
 extern int objc_comptypes                 	PARAMS ((tree, tree, int));
 extern tree objc_message_selector		PARAMS ((void));
 extern tree lookup_objc_ivar			PARAMS ((tree));
+extern void c_expand_body			PARAMS ((tree));
 
 
 /* in c-parse.in */

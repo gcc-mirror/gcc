@@ -652,6 +652,8 @@ extern int flag_zero_initialized_in_bss;
 /* Nonzero means disable transformations observable by signaling NaNs.  */
 extern int flag_signaling_nans;
 
+extern int flag_unit_at_a_time;
+
 /* True if the given mode has a NaN representation and the treatment of
    NaN operands is important.  Certain optimizations, such as folding
    x * 0 into x, are not correct for NaN operands, and are normally

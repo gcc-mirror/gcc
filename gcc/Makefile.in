@@ -416,7 +416,7 @@ TARGET_LIBGCC2_CFLAGS =
 # Options to use when compiling crtbegin/end.
 CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
   -finhibit-size-directive -fno-inline-functions -fno-exceptions \
-  -fno-zero-initialized-in-bss
+  -fno-zero-initialized-in-bss -fno-unit-at-a-time
 
 # Additional sources to handle exceptions; overridden by targets as needed.
 LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
@@ -785,7 +785,7 @@ OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	   \
  sibcall.o simplify-rtx.o sreal.o ssa.o ssa-ccp.o ssa-dce.o stmt.o	   \
  stor-layout.o stringpool.o timevar.o toplev.o tracer.o tree.o tree-dump.o \
  tree-inline.o unroll.o varasm.o varray.o version.o vmsdbgout.o xcoffout.o \
- alloc-pool.o et-forest.o						   \
+ alloc-pool.o et-forest.o cgraph.o					   \
  $(GGC) $(out_object_file) $(EXTRA_OBJS) $(host_hook_obj)
 
 BACKEND = main.o libbackend.a
@@ -1530,6 +1530,8 @@ jump.o : jump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h \
 simplify-rtx.o : simplify-rtx.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(REGS_H) hard-reg-set.h flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h \
    output.h function.h $(GGC_H) $(OBSTACK_H) $(TM_P_H) $(TREE_H) $(TARGET_H)
+cgraph.o : cgraph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+   langhooks.h tree-inline.h toplev.h flags.h ggc.h  $(TARGET_H)
 cselib.o : cselib.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
    hard-reg-set.h flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h \
    output.h function.h cselib.h $(GGC_H) $(TM_P_H) gt-cselib.h

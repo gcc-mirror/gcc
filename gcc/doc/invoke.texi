@@ -290,7 +290,7 @@ in the following sections.
 -fsched-spec-load-dangerous  -fsignaling-nans @gol
 -fsingle-precision-constant  -fssa -fssa-ccp -fssa-dce @gol
 -fstrength-reduce  -fstrict-aliasing  -ftracer -fthread-jumps @gol
--funroll-all-loops  -funroll-loops  -funswitch-loops @gol
+-funit-at-a-time -funroll-all-loops  -funroll-loops  -funswitch-loops @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
 
@@ -4260,6 +4260,11 @@ for testing, so we are interested to hear about miscompilations with
 Perform tail duplication to enlarge superblock size. This transformation
 simplifies the control flow of the function allowing other optimizations to do
 better job.
+
+@item -funit-at-a-time
+@opindex funit-at-a-time
+Parse the whole compilation unit before starting to produce code.  This allows some
+extra optimizations to take place but consumes more memory.
 
 @item -funroll-loops
 @opindex funroll-loops

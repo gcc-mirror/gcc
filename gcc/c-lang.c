@@ -99,6 +99,9 @@ static void c_init_options PARAMS ((void));
 #undef LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN
 #define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN c_dump_tree
 
+#undef LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
+#define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION c_expand_body
+
 #undef LANG_HOOKS_TYPE_FOR_MODE
 #define LANG_HOOKS_TYPE_FOR_MODE c_common_type_for_mode
 #undef LANG_HOOKS_TYPE_FOR_SIZE
