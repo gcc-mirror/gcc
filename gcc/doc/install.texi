@@ -1017,9 +1017,9 @@ addition, @samp{libstdc++}'s include files will be installed into
 @file{@var{libdir}} unless you overruled it by using
 @option{--with-gxx-include-dir=@var{dirname}}.  Using this option is
 particularly useful if you intend to use several versions of GCC in
-parallel. This is currently supported by @samp{libf2c} and
-@samp{libstdc++}, and is the default for @samp{libobjc} which cannot be
-changed in this case.
+parallel. This is currently supported by @samp{libgfortran},
+@samp{libjava}, @samp{libmudflap}, @samp{libstdc++}, and @samp{libobjc}.
+
 
 @item --enable-languages=@var{lang1},@var{lang2},@dots{}
 Specify that only a particular subset of compilers and
