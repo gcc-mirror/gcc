@@ -1,3 +1,7 @@
+2002-10-21  Janis Johnson  <janis187@us.ibm.com>
+
+	* g++.dg/README: Describe more test directories.
+
 2002-10-21  Mark Mitchell  <mark@codesourcery.com>
 
  	* g++.dg/init/array6.C: Add additional tests.
