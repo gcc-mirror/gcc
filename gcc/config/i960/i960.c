@@ -1459,9 +1459,11 @@ i960_output_function_prologue (file, size)
   if (actual_fsize > 0)
     {
       if (actual_fsize < 32)
-	fprintf (file, "\taddo	%d,sp,sp\n", actual_fsize);
+	fprintf (file, "\taddo	" HOST_WIDE_INT_PRINT_DEC ",sp,sp\n",
+		 actual_fsize);
       else
-	fprintf (file, "\tlda\t%d(sp),sp\n", actual_fsize);
+	fprintf (file, "\tlda\t" HOST_WIDE_INT_PRINT_DEC "(sp),sp\n",
+		 actual_fsize);
     }
 
   /* Take hardware register save area created by the call instruction
@@ -1488,12 +1490,12 @@ i960_output_function_prologue (file, size)
       if (nr == 3 && regs[i+3] == -1)
 	nr = 4;
 
-      fprintf (file,"\tst%s	%s,%d(fp)\n",
+      fprintf (file,"\tst%s	%s," HOST_WIDE_INT_PRINT_DEC "(fp)\n",
 	       ((nr == 4) ? "q" :
 		(nr == 3) ? "t" :
 		(nr == 2) ? "l" : ""),
 	       reg_names[i], offset);
-      sprintf (tmpstr,"\tld%s	%d(fp),%s\n",
+      sprintf (tmpstr,"\tld%s	" HOST_WIDE_INT_PRINT_DEC "(fp),%s\n",
 	       ((nr == 4) ? "q" :
 		(nr == 3) ? "t" :
 		(nr == 2) ? "l" : ""),
@@ -1508,10 +1510,12 @@ i960_output_function_prologue (file, size)
     return;
 
   fprintf (file, "\t#Prologue stats:\n");
-  fprintf (file, "\t#  Total Frame Size: %d bytes\n", actual_fsize);
+  fprintf (file, "\t#  Total Frame Size: " HOST_WIDE_INT_PRINT_DEC " bytes\n",
+	   actual_fsize);
 
   if (lvar_size)
-    fprintf (file, "\t#  Local Variable Size: %d bytes\n", lvar_size);
+    fprintf (file, "\t#  Local Variable Size: " HOST_WIDE_INT_PRINT_DEC
+	     " bytes\n", lvar_size);
   if (n_saved_regs)
     fprintf (file, "\t#  Register Save Size: %d regs, %d bytes\n",
 	     n_saved_regs, n_saved_regs * 4);
@@ -1792,9 +1796,9 @@ i960_print_operand (file, x, code)
       if (code == 'C')
 	val = ~val;
       if (val > 9999 || val < -999)
-	fprintf (file, "0x%x", val);
+	fprintf (file, HOST_WIDE_INT_PRINT_HEX, val);
       else
-	fprintf (file, "%d", val);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, val);
       return;
     }
   else if (rtxcode == CONST_DOUBLE)
@@ -1988,7 +1992,8 @@ i960_print_operand_addr (file, addr)
   if (breg)
     fprintf (file, "(%s)", reg_names[REGNO (breg)]);
   if (ireg)
-    fprintf (file, "[%s*%d]", reg_names[REGNO (ireg)], INTVAL (scale));
+    fprintf (file, "[%s*" HOST_WIDE_INT_PRINT_DEC "]",
+	     reg_names[REGNO (ireg)], INTVAL (scale));
 }
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression

@@ -1,5 +1,8 @@
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* i960.c (i960_output_function_prologue, i960_print_operand,
+	i960_print_operand_addr): Fix format specifier warnings.
+
 	* i370.c (ascebc, ebcasc): Wrap in macros controlling usage.
 	(i370_output_function_prologue): Fix format specifier warnings.
 	* i370.h (PRINT_OPERAND): Likewise.
