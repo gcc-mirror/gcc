@@ -1,3 +1,9 @@
+2003-07-01  Phil Edwards  <pme@gcc.gnu.org>
+
+	* testsuite/Makefile.am (AM_MAKEFLAGS):  Set to -j1 (affects
+	check* targets, but not libs/programs).
+	* testsuite/Makefile.in:  Regenerate.
+
 2003-07-01  Roger Sayle  <roger@eyesopen.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_STDLIB_SUPPORT): Fix typo in CXXFLAGS.
