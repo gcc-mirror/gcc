@@ -246,7 +246,7 @@
   "(register_operand (operands[0],HImode)
     || register_operand (operands[1],HImode) || const0_rtx == operands[1])"
   "* return output_movhi (insn, operands, NULL);"
-  [(set_attr "length" "2,4,4,2,6,5,2")
+  [(set_attr "length" "2,6,7,2,6,5,2")
    (set_attr "cc" "none,clobber,clobber,none,clobber,none,none")])
 
 ;;==========================================================================
@@ -295,7 +295,7 @@
   "(register_operand (operands[0],SImode)
     || register_operand (operands[1],SImode) || const0_rtx == operands[1])"
   "* return output_movsisf (insn, operands, NULL);"
-  [(set_attr "length" "4,4,8,8,4,10")
+  [(set_attr "length" "4,4,8,9,4,10")
    (set_attr "cc" "none,set_zn,clobber,clobber,none,clobber")])
 
 ;; fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
@@ -321,7 +321,7 @@
   "register_operand (operands[0], SFmode)
    || register_operand (operands[1], SFmode)"
   "* return output_movsisf (insn, operands, NULL);"
-  [(set_attr "length" "4,4,8,8,4,10")
+  [(set_attr "length" "4,4,8,9,4,10")
    (set_attr "cc" "none,set_zn,clobber,clobber,none,clobber")])
 
 ;;=========================================================================

@@ -1,3 +1,11 @@
+2000-12-20  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* config/avr/avr.c (out_movsi_r_mr, out_movsi_mr_r, out_movhi_mr_r):
+	Do not output undefined opcodes where source or destination register
+	overlaps with modified pointer register.  Handle (X + d) addresses.
+	* config/avr/avr.md (*movhi, *movsi, *movsf): Correct insn length
+	in alternatives with memory operand.
+
 2000-12-20  Richard Henderson  <rth@redhat.com>
 
         * c-typeck.c (build_asm_stmt): New, broken out from ...
