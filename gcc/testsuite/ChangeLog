@@ -1,3 +1,7 @@
+2003-07-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/parse/crash10: New test.
+
 2003-07-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/ext/flexary1.C: New test.
