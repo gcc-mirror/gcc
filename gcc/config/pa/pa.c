@@ -2439,8 +2439,15 @@ hppa_expand_epilogue ()
       set_reg_plus_d (STACK_POINTER_REGNUM,
 		      STACK_POINTER_REGNUM,
 		      - actual_fsize);
-      /* Uses value left over in %r1 by set_reg_plus_d.  */
-      load_reg (2, - (actual_fsize + 20 + ((- actual_fsize) & ~0x7ff)), 1);
+
+      /* This used to try and be clever by not depending on the value in
+	 %r30 and instead use the value held in %r1 (so that the 2nd insn
+	 which sets %r30 could be put in the delay slot of the return insn).
+	
+	 That won't work since if the stack is exactly 8k set_reg_plus_d
+	 doesn't set %r1, just %r30.  */
+      load_reg (2, - (actual_fsize + 20 + ((- actual_fsize) & ~0x7ff)),
+		STACK_POINTER_REGNUM);
     }
 
   /* Reset stack pointer (and possibly frame pointer).  The stack */
