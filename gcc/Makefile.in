@@ -177,6 +177,7 @@ build_xm_file= ... `configure' substitutes actual build xm- file name here.
 host_xm_file= ... `configure' substitutes actual host xm- file name here.
 lang_specs_files= ... `configure' substitutes actual lang spec file names here.
 lang_options_files= ... `configure' puts actual lang options file names here.
+OBJC_THREAD_FILE= ... `configure' puts actual objc thread file name here.
 version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < $(srcdir)/version.c`
 mainversion=`sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/' < $(srcdir)/version.c`
 
@@ -1013,7 +1014,7 @@ libobjc.a: cc1obj specs stmp-int-hdrs libgcc2.ready $(USE_COLLECT2) $(EXTRA_PART
 	$(MAKE) -f $${srcdir1}/objc/Makefile libobjc.a \
 	  srcdir=$${srcdir1} tooldir=$(tooldir) AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
 	  GCC_FOR_TARGET="$${thisdir1}/xgcc -B$${thisdir1}/" \
-	  GCC_CFLAGS="$(GCC_CFLAGS)"
+	  GCC_CFLAGS="$(GCC_CFLAGS)" OBJC_THREAD_FILE="$(OBJC_THREAD_FILE)"
 	-rm -f libobjc.a
 	ln objc/libobjc.a . >/dev/null 2>&1 || cp objc/libobjc.a .
 	-if $(RANLIB_TEST) ; then $(RANLIB) libobjc.a; else true; fi
@@ -1026,7 +1027,7 @@ sublibobjc.a: cc1obj specs stmp-int-hdrs libgcc2.ready
 	$(MAKE) -f $$srcdir1/objc/Makefile libobjc.a \
 	  srcdir=$$srcdir1 tooldir=$(tooldir) AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
 	  GCC_FOR_TARGET="$$thisdir1/xgcc -B$$thisdir1/" \
-	  GCC_CFLAGS="$(GCC_CFLAGS)"
+	  GCC_CFLAGS="$(GCC_CFLAGS)" OBJC_THREAD_FILE="$(OBJC_THREAD_FILE)"
 
 # Compile two additional files that are linked with every program
 # linked using GCC on systems using COFF or ELF, for the sake of C++
