@@ -139,13 +139,13 @@ static rtx loop_continue;
    Therefore, at all times, == 0 indicates an invariant register;
    < 0 a conditionally invariant one.  */
 
-static short *n_times_set;
+static int *n_times_set;
 
 /* Original value of n_times_set; same except that this value
    is not set negative for a reg whose sets have been made candidates
    and not set to 0 for a reg that is moved.  */
 
-static short *n_times_used;
+static int *n_times_used;
 
 /* Index by register number, 1 indicates that the register
    cannot be moved or strength reduced.  */
@@ -497,8 +497,8 @@ scan_loop (loop_start, end, nregs)
   /* Nonzero if we are scanning instructions in a sub-loop.  */
   int loop_depth = 0;
 
-  n_times_set = (short *) alloca (nregs * sizeof (short));
-  n_times_used = (short *) alloca (nregs * sizeof (short));
+  n_times_set = (int *) alloca (nregs * sizeof (int));
+  n_times_used = (int *) alloca (nregs * sizeof (int));
   may_not_optimize = (char *) alloca (nregs);
 
   /* Determine whether this loop starts with a jump down to a test at
@@ -581,7 +581,7 @@ scan_loop (loop_start, end, nregs)
      the setting of register I.  If this loop has calls, set
      reg_single_usage[I].  */
 
-  bzero ((char *) n_times_set, nregs * sizeof (short));
+  bzero ((char *) n_times_set, nregs * sizeof (int));
   bzero (may_not_optimize, nregs);
 
   if (loop_has_call)
@@ -595,7 +595,7 @@ scan_loop (loop_start, end, nregs)
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     may_not_optimize[i] = 1, n_times_set[i] = 1;
-  bcopy ((char *) n_times_set, (char *) n_times_used, nregs * sizeof (short));
+  bcopy ((char *) n_times_set, (char *) n_times_used, nregs * sizeof (int));
 
   if (loop_dump_stream)
     {

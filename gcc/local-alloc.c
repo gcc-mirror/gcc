@@ -453,9 +453,8 @@ local_alloc ()
   reg_offset = (char *) alloca (max_regno * sizeof (char));
   reg_next_in_qty = (int *) alloca (max_regno * sizeof (int));
 
-  reg_renumber = (short *) oballoc (max_regno * sizeof (short));
-  for (i = 0; i < max_regno; i++)
-    reg_renumber[i] = -1;
+  /* Allocate the reg_renumber array */
+  allocate_reg_info (max_regno, FALSE, TRUE);
 
   /* Determine which pseudo-registers can be allocated by local-alloc.
      In general, these are the registers used only in a single block and

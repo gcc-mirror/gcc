@@ -1,5 +1,5 @@
 /* Define per-register tables for data flow info and register allocation.
-   Copyright (C) 1987, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994, 1995, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -124,7 +124,7 @@ extern reg_info *reg_n_info;
 
    This can't be folded into reg_n_info without changing all of the
    machine dependent directories, since the reload functions
-   access it.  */
+   in the machine dependent files access it.  */
 
 extern short *reg_renumber;
 
@@ -214,4 +214,4 @@ extern int *scratch_block;
 extern int scratch_list_length;
 
 /* Allocate reg_n_info tables */
-extern void allocate_reg_info PROTO((int, int));
+extern void allocate_reg_info PROTO((int, int, int));

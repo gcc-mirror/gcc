@@ -135,7 +135,6 @@ Boston, MA 02111-1307, USA.  */
 
    Values of these arrays are copied at the end of this pass into the
    arrays set up by flow analysis.  */
-static short *sched_reg_n_deaths;
 static int *sched_reg_n_calls_crossed;
 static int *sched_reg_live_length;
 
@@ -290,8 +289,10 @@ static int *insn_tick;
 
 struct sometimes
 {
-  short offset; short bit;
-  short live_length; short calls_crossed;
+  int offset;
+  int bit;
+  int live_length;
+  int calls_crossed;
 };
 
 /* Forward declarations.  */
@@ -4872,20 +4873,16 @@ schedule_insns (dump_file)
 
   if (reload_completed == 0)
     {
-      sched_reg_n_deaths = (short *) alloca (max_regno * sizeof (short));
       sched_reg_n_calls_crossed = (int *) alloca (max_regno * sizeof (int));
       sched_reg_live_length = (int *) alloca (max_regno * sizeof (int));
       bb_dead_regs = (regset) alloca (regset_bytes);
       bb_live_regs = (regset) alloca (regset_bytes);
       bzero ((char *) sched_reg_n_calls_crossed, max_regno * sizeof (int));
       bzero ((char *) sched_reg_live_length, max_regno * sizeof (int));
-      for (i = 0; i < max_regno; i++)
-	sched_reg_n_deaths[i] = REG_N_DEATHS (i);
       init_alias_analysis ();
     }
   else
     {
-      sched_reg_n_deaths = 0;
       sched_reg_n_calls_crossed = 0;
       sched_reg_live_length = 0;
       bb_dead_regs = 0;
