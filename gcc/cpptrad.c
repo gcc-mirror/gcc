@@ -21,9 +21,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 
-/* Lexing TODO: Handle -Wcomment, -C, maybe -CC, and space in escaped
-   newlines.  Stop cpplex.c from recognizing comments, trigraphs and
-   directives during its lexing pass.  */
+/* Lexing TODO: Handle -C, maybe -CC, and space in escaped newlines.
+   Stop cpplex.c from recognizing comments and directives during its
+   lexing pass.  */
 
 static const uchar *handle_newline PARAMS ((cpp_reader *, const uchar *));
 static const uchar *skip_escaped_newlines PARAMS ((cpp_reader *,
@@ -64,6 +64,7 @@ handle_newline (pfile, cur)
   pfile->line++;
   if (cur[0] + cur[1] == '\r' + '\n')
     cur++;
+  pfile->buffer->line_base = cur + 1;
   return cur + 1;
 }
 
@@ -89,29 +90,30 @@ skip_comment (pfile, cur)
      const uchar *cur;
 {
   unsigned int from_line = pfile->line;
+  unsigned int c = 0, prevc;
+  const uchar *limit = pfile->buffer->rlimit;
 
-  for (;;)
+  while (cur < limit)
     {
-      unsigned int c = *cur++;
-      if (c == '*')
+      prevc = c;
+      c = *cur++;
+
+      if (c == '/')
 	{
-	  cur = skip_escaped_newlines (pfile, cur);
-	  if (*cur == '/')
-	    {
-	      cur++;
-	      break;
-	    }
+	  if (prevc == '*')
+	    break;
+	  if (*cur == '*' && cur[1] != '/'
+	      && CPP_OPTION (pfile, warn_comments))
+	    cpp_error_with_line (pfile, DL_WARNING, pfile->line, 0,
+				 "\"/*\" within comment");
 	}
       else if (is_vspace (c))
 	cur = handle_newline (pfile, cur - 1);
-      else if (c == '\0' && cur - 1 == pfile->buffer->rlimit)
-	{
-	  cur--;
-	  cpp_error_with_line (pfile, DL_ERROR, from_line, 0,
-			       "unterminated comment");
-	  break;
-	}
     }
+
+  if (c != '/' || prevc != '*')
+    cpp_error_with_line (pfile, DL_ERROR, from_line, 0,
+			 "unterminated comment");
 
   return cur;
 }

@@ -1774,9 +1774,16 @@ cpp_post_options (pfile)
     CPP_OPTION (pfile, warn_traditional) = 0;
 
   /* Permanently disable macro expansion if we are rescanning
-     preprocessed text.  */
+     preprocessed text.  Read preprocesed source in ISO mode.  */
   if (CPP_OPTION (pfile, preprocessed))
-    pfile->state.prevent_expansion = 1;
+    {
+      pfile->state.prevent_expansion = 1;
+      CPP_OPTION (pfile, traditional) = 0;
+    }
+
+  /* Traditional CPP does not accurately track column information.  */
+  if (CPP_OPTION (pfile, traditional))
+    CPP_OPTION (pfile, show_column) = 0;
 
   /* -dM makes no normal output.  This is set here so that -dM -dD
      works as expected.  */
