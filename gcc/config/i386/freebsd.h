@@ -56,6 +56,11 @@ Boston, MA 02111-1307, USA.  */
 
 #define HAVE_ATEXIT
 
+/* Override the default comment-starter of "/".  */
+
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START "#"
+
 #undef ASM_APP_ON
 #define ASM_APP_ON "#APP\n"
 

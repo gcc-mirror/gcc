@@ -1,3 +1,7 @@
+Sat Oct 18 00:43:59 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* i386/freebsd.h (ASM_COMMENT_START): Fix.
+
 Fri Oct 17 23:48:52 1997  Jim Wilson  (wilson@cygnus.com)
 
 	* v850.c (ep_memory_offset): New function.
