@@ -455,8 +455,7 @@
     {
       arm_split_constant (PLUS, SImode, INTVAL (operands[2]), operands[0],
 			  operands[1],
-			  (reload_in_progress || reload_completed ? 0
-			   : preserve_subexpressions_p ()));
+			  (no_new_pseudos ? 0 : preserve_subexpressions_p ()));
       DONE;
     }
   "
@@ -951,7 +950,7 @@
         {
           arm_split_constant (MINUS, SImode, INTVAL (operands[1]), operands[0],
 	  		      operands[2],
-			      (reload_in_progress || reload_completed ? 0
+			      (no_new_pseudos ? 0
 			       :  preserve_subexpressions_p ()));
           DONE;
 	}
@@ -1647,7 +1646,7 @@
         {
           arm_split_constant (AND, SImode, INTVAL (operands[2]), operands[0],
 			      operands[1],
-			      (reload_in_progress || reload_completed
+			      (no_new_pseudos
 			       ? 0 : preserve_subexpressions_p ()));
           DONE;
         }
@@ -2063,7 +2062,7 @@
         {
           arm_split_constant (IOR, SImode, INTVAL (operands[2]), operands[0],
 		 	      operands[1],
-			      (reload_in_progress || reload_completed
+			      (no_new_pseudos
 			      ? 0 : preserve_subexpressions_p ()));
           DONE;
 	}
@@ -3698,7 +3697,7 @@
   "
   if (TARGET_THUMB)
     {
-      if (! (reload_in_progress || reload_completed))
+      if (! no_new_pseudos)
         {
           if (GET_CODE (operands[0]) != REG)
 	    operands[1] = force_reg (DImode, operands[1]);
@@ -3781,14 +3780,14 @@
         {
            arm_split_constant (SET, SImode, INTVAL (operands[1]), operands[0],
 		    	      NULL_RTX,
-			      (reload_in_progress || reload_completed ? 0
+			      (no_new_pseudos ? 0
 			       : preserve_subexpressions_p ()));
           DONE;
         }
     }
   else /* TARGET_THUMB.... */
     {
-      if (! (reload_in_progress || reload_completed))
+      if (! no_new_pseudos)
         {
           if (GET_CODE (operands[0]) != REG)
 	    operands[1] = force_reg (SImode, operands[1]);
@@ -3800,9 +3799,7 @@
 	 || symbol_mentioned_p (operands[1])
 	 || label_mentioned_p (operands[1])))
     operands[1] = legitimize_pic_address (operands[1], SImode,
-					  ((reload_in_progress
-					    || reload_completed)
-					   ? operands[0] : 0));
+					  (no_new_pseudos ? operands[0] : 0));
 ")
 
 (define_insn "*arm_movsi_insn"
@@ -4125,7 +4122,7 @@
   "
   if (TARGET_ARM)
     {
-      if (! (reload_in_progress || reload_completed))
+      if (! no_new_pseudos)
         {
           if (GET_CODE (operands[0]) == MEM)
 	    {
@@ -4268,7 +4265,7 @@
     }
   else /* TARGET_THUMB */
     {
-      if (! (reload_in_progress || reload_completed))
+      if (! no_new_pseudos)
         {
           if (GET_CODE (operands[0]) != REG)
 	    operands[1] = force_reg (HImode, operands[1]);
@@ -4544,7 +4541,7 @@
     {
       /* Everything except mem = const or mem = mem can be done easily */
 
-      if (!(reload_in_progress || reload_completed))
+      if (!no_new_pseudos)
         {
           if (GET_CODE (operands[1]) == CONST_INT)
 	    {
@@ -4559,7 +4556,7 @@
     }
   else /* TARGET_THUMB */
     {
-      if (! (reload_in_progress || reload_completed))
+      if (! no_new_pseudos)
         {
           if (GET_CODE (operands[0]) != REG)
 	    operands[1] = force_reg (QImode, operands[1]);
@@ -4649,7 +4646,7 @@
     }
   else /* TARGET_THUMB */
     {
-      if (! (reload_in_progress || reload_completed))
+      if (! no_new_pseudos)
         {
            if (GET_CODE (operands[0]) != REG)
 	     operands[1] = force_reg (SFmode, operands[1]);
@@ -4748,7 +4745,7 @@
     }
   else /* TARGET_THUMB */
     {
-      if (! (reload_in_progress || reload_completed))
+      if (! no_new_pseudos)
         {
           if (GET_CODE (operands[0]) != REG)
 	    operands[1] = force_reg (DFmode, operands[1]);

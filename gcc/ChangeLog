@@ -1,5 +1,8 @@
 2000-08-31  Jeff Law <law@cygnus.com>
 
+	* arm.md: Use no_new_pseudos to determine when it is safe
+	to create new pseudo registers.
+
         * arm.c (legitimize_pic_address): Use no_new_pseudos to determine
         when we can safely allocate new registers.
 
