@@ -59,6 +59,10 @@ Boston, MA 02111-1307, USA.  */
 #include "diagnostic.h"
 #include "debug.h"
 
+#ifdef DWARF2_DEBUGGING_INFO
+static void dwarf2out_source_line	PARAMS ((unsigned int, const char *));
+#endif
+
 /* DWARF2 Abbreviation Glossary:
    CFA = Canonical Frame Address
 	   a fixed address on the stack which identifies a call frame.
@@ -1999,7 +2003,9 @@ output_call_frame_info (for_eh)
    the prologue.  */
 
 void
-dwarf2out_begin_prologue ()
+dwarf2out_begin_prologue (line, file)
+     unsigned int line ATTRIBUTE_UNUSED;
+     const char *file ATTRIBUTE_UNUSED;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   register dw_fde_ref fde;
@@ -2056,6 +2062,13 @@ dwarf2out_begin_prologue ()
   fde->uses_eh_lsda = cfun->uses_eh_lsda;
 
   args_size = old_args_size = 0;
+
+  /* We only want to output line number information for the genuine
+     dwarf2 prologue case, not the eh frame case.  */
+#ifdef DWARF2_DEBUGGING_INFO
+  if (file)
+    dwarf2out_source_line (line, file);
+#endif
 }
 
 /* Output a marker (i.e. a label) for the absolute end of the generated code
@@ -3009,7 +3022,6 @@ static void dwarf2out_start_source_file	PARAMS ((unsigned, const char *));
 static void dwarf2out_end_source_file	PARAMS ((unsigned));
 static void dwarf2out_begin_block	PARAMS ((unsigned, unsigned));
 static void dwarf2out_end_block		PARAMS ((unsigned, unsigned));
-static void dwarf2out_source_line	PARAMS ((const char *, rtx));
 
 /* The debug hooks structure.  */
 
@@ -3024,7 +3036,10 @@ struct gcc_debug_hooks dwarf2_debug_hooks =
   dwarf2out_begin_block,
   dwarf2out_end_block,
   dwarf2out_source_line,
+  dwarf2out_begin_prologue,
+  debug_nothing_int,		/* end_prologue */
   dwarf2out_end_epilogue,
+  debug_nothing_tree,		/* begin_function */
   debug_nothing_int		/* end_function */
 };
 
@@ -11224,12 +11239,10 @@ init_file_table ()
    'line_info_table' for later output of the .debug_line section.  */
 
 static void
-dwarf2out_source_line (filename, note)
+dwarf2out_source_line (line, filename)
+     unsigned int line;
      register const char *filename;
-     rtx note;
 {
-  unsigned int line = NOTE_LINE_NUMBER (note);
-
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
     {
       function_section (current_function_decl);

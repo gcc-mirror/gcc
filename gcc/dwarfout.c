@@ -798,7 +798,8 @@ static void dwarfout_end_source_file_check PARAMS ((unsigned));
 static void dwarfout_begin_block	PARAMS ((unsigned, unsigned));
 static void dwarfout_end_block		PARAMS ((unsigned, unsigned));
 static void dwarfout_end_epilogue	PARAMS ((void));
-static void dwarfout_source_line	PARAMS (( const char *, rtx));
+static void dwarfout_source_line	PARAMS ((unsigned int, const char *));
+static void dwarfout_end_prologue	PARAMS ((unsigned int));
 static void dwarfout_end_function	PARAMS ((unsigned int));
 static const char *dwarf_tag_name	PARAMS ((unsigned));
 static const char *dwarf_attr_name	PARAMS ((unsigned));
@@ -1383,8 +1384,11 @@ struct gcc_debug_hooks dwarf_debug_hooks =
   dwarfout_end_source_file_check,
   dwarfout_begin_block,
   dwarfout_end_block,
-  dwarfout_source_line,
+  dwarfout_source_line,		/* source_line */
+  dwarfout_source_line,		/* begin_prologue */
+  dwarfout_end_prologue,
   dwarfout_end_epilogue,
+  debug_nothing_tree,		/* begin_function */
   dwarfout_end_function
 };
 
@@ -5874,13 +5878,15 @@ dwarfout_end_block (line, blocknum)
    the real body of the function begins (after parameters have been moved
    to their home locations).  */
 
-void
-dwarfout_begin_function ()
+static void
+dwarfout_end_prologue (line)
+     unsigned int line ATTRIBUTE_UNUSED;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
   if (! use_gnu_debug_info_extensions)
     return;
+
   function_section (current_function_decl);
   sprintf (label, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
   ASM_OUTPUT_LABEL (asm_out_file, label);
@@ -6059,12 +6065,10 @@ generate_srcinfo_entry (line_entry_num, files_entry_num)
 }
 
 static void
-dwarfout_source_line (filename, note)
+dwarfout_source_line (line, filename)
+     unsigned int line;
      const char *filename;
-     rtx note;
 {
-  unsigned int line = NOTE_LINE_NUMBER (note);
-
   if (debug_info_level >= DINFO_LEVEL_NORMAL
       /* We can't emit line number info for functions in separate sections,
 	 because the assembler can't subtract labels in different sections.  */

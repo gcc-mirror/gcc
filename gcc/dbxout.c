@@ -288,7 +288,7 @@ static void dbxout_init			PARAMS ((const char *));
 static void dbxout_finish		PARAMS ((const char *));
 static void dbxout_start_source_file	PARAMS ((unsigned, const char *));
 static void dbxout_end_source_file	PARAMS ((unsigned));
-static void dbxout_source_line		PARAMS ((const char *, rtx));
+static void dbxout_source_line		PARAMS ((unsigned int, const char *));
 #if defined(ASM_OUTPUT_SECTION_NAME)
 static void dbxout_function_end		PARAMS ((void));
 #endif
@@ -310,7 +310,7 @@ static void dbxout_symbol_name		PARAMS ((tree, const char *, int));
 static void dbxout_prepare_symbol	PARAMS ((tree));
 static void dbxout_finish_symbol	PARAMS ((tree));
 static void dbxout_block		PARAMS ((tree, int, tree));
-static void dbxout_really_begin_function PARAMS ((tree));
+static void dbxout_begin_function	PARAMS ((tree));
 
 /* The debug hooks structure.  */
 #if defined (DBX_DEBUGGING_INFO)
@@ -328,9 +328,16 @@ struct gcc_debug_hooks dbx_debug_hooks =
   dbxout_end_source_file,
   dbxout_begin_block,
   dbxout_end_block,
-  dbxout_source_line,
+  dbxout_source_line,		/* source_line */
+  dbxout_source_line,		/* begin_prologue: just output line info */
+  debug_nothing_int,		/* end_prologue */
   debug_nothing_void,		/* end_epilogue */
-  debug_nothing_int		/* end function */
+#ifdef DBX_FUNCTION_FIRST
+  dbxout_begin_function,
+#else
+  debug_nothing_tree,		/* begin_function */
+#endif
+  debug_nothing_int		/* end_function */
 };
 #endif /* DBX_DEBUGGING_INFO  */
 
@@ -346,7 +353,10 @@ struct gcc_debug_hooks xcoff_debug_hooks =
   xcoffout_begin_block,
   xcoffout_end_block,
   xcoffout_source_line,
+  xcoffout_begin_prologue,	/* begin_prologue */
+  debug_nothing_int,		/* end_prologue */
   xcoffout_end_epilogue,
+  debug_nothing_tree,		/* begin_function */
   xcoffout_end_function
 };
 #endif /* XCOFF_DEBUGGING_INFO  */
@@ -559,16 +569,14 @@ dbxout_source_file (file, filename)
     }
 }
 
-/* Output a line number symbol entry into output stream FILE, 
-   for source file FILENAME and line number LINENO.  */
+/* Output a line number symbol entry for source file FILENAME and line
+   number LINENO.  */
 
 static void
-dbxout_source_line (filename, note)
+dbxout_source_line (lineno, filename)
+     unsigned int lineno;
      const char *filename;
-     rtx note;
 {
-  unsigned int lineno = NOTE_LINE_NUMBER (note);
-
   dbxout_source_file (asmfile, filename);
 
 #ifdef ASM_OUTPUT_SOURCE_LINE
@@ -2716,24 +2724,13 @@ dbxout_block (block, depth, args)
    but on some systems, it comes before.  */
 
 static void
-dbxout_really_begin_function (decl)
+dbxout_begin_function (decl)
      tree decl;
 {
   dbxout_symbol (decl, 0);
   dbxout_parms (DECL_ARGUMENTS (decl));
   if (DECL_NAME (DECL_RESULT (decl)) != 0)
     dbxout_symbol (DECL_RESULT (decl), 1);
-}
-
-/* Called at beginning of output of function definition.  */
-
-void
-dbxout_begin_function (decl)
-     tree decl ATTRIBUTE_UNUSED;
-{
-#ifdef DBX_FUNCTION_FIRST
-  dbxout_really_begin_function (decl);
-#endif
 }
 
 /* Output dbx data for a function definition.
@@ -2747,7 +2744,7 @@ dbxout_function (decl)
      tree decl;
 {
 #ifndef DBX_FUNCTION_FIRST
-  dbxout_really_begin_function (decl);
+  dbxout_begin_function (decl);
 #endif
   dbxout_block (DECL_INITIAL (decl), 0, DECL_ARGUMENTS (decl));
 #ifdef DBX_OUTPUT_FUNCTION_END
