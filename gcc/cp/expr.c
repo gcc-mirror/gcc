@@ -226,14 +226,6 @@ cplus_expand_expr (exp, target, tmode, modifier)
       expand_throw (TREE_OPERAND (exp, 0));
       return NULL;
 
-    case UNSAVE_EXPR:
-      {
-	rtx temp;
-	temp = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
-	TREE_OPERAND (exp, 0) = unsave_expr_now (TREE_OPERAND (exp, 0));
-	return temp;
-      }
-
     case VEC_INIT_EXPR:
       return expand_expr
 	(expand_vec_init

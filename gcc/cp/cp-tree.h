@@ -2151,7 +2151,6 @@ extern tree start_anon_func			PROTO((void));
 /* skip cplus_expand_expr */
 extern void init_cplus_expand			PROTO((void));
 extern void fixup_result_decl			PROTO((tree, struct rtx_def *));
-extern tree unsave_expr_now			PROTO((tree));
 
 /* in repo.c */
 extern void init_repo				PROTO((char*));
@@ -2404,8 +2403,6 @@ extern void print_lang_statistics		PROTO((void));
 extern tree array_type_nelts_total		PROTO((tree));
 extern tree array_type_nelts_top		PROTO((tree));
 extern tree break_out_target_exprs		PROTO((tree));
-extern tree build_unsave_expr			PROTO((tree));
-extern tree unsave_expr				PROTO((tree));
 extern int cp_expand_decl_cleanup		PROTO((tree, tree));
 extern tree get_type_decl			PROTO((tree));
 extern tree vec_binfo_member			PROTO((tree, tree));
