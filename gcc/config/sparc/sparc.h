@@ -30,7 +30,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Special flags to the Sun-4 assembler when using pipe for input.  */
 
-#define ASM_SPEC " %| %{fpic:-k} %{fPIC:-k}"
+#define ASM_SPEC " %| %{!pg:%{!p:%{fpic:-k} %{fPIC:-k}}}"
 
 /* Define macros to distinguish architectures.  */
 #define CPP_SPEC "%{msparclite:-D__sparclite__} %{mf930:-D__sparclite__} \
@@ -56,11 +56,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    the frame pointer (because the return address will get smashed).  */
 
 #define OVERRIDE_OPTIONS \
-{						\
-  if (profile_flag || profile_block_flag)	\
-    flag_omit_frame_pointer = 0, flag_pic = 0;	\
-  SUBTARGET_OVERRIDE_OPTIONS			\
-  }
+{									\
+  if (profile_flag || profile_block_flag)				\
+    {									\
+      if (flag_pic)							\
+        {								\
+	  char *pic_string = (flag_pic == 1) ? "-fpic" : "-fPIC";	\
+	  warning ("%s and profiling conflict: disabling %s", pic_string,\
+		   pic_string);						\
+	  flag_pic = 0;							\
+	}								\
+      flag_omit_frame_pointer = 0;					\
+    }									\
+  SUBTARGET_OVERRIDE_OPTIONS						\
+}
 
 /* This is meant to be redefined in the host dependent files */
 #define SUBTARGET_OVERRIDE_OPTIONS
