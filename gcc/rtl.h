@@ -1,5 +1,5 @@
 /* Register Transfer Language (RTL) definitions for GNU C-Compiler
-   Copyright (C) 1987, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -641,7 +641,7 @@ extern char *note_insn_name[];
 extern rtx plus_constant_wide		 PROTO((rtx, HOST_WIDE_INT));
 extern rtx plus_constant_for_output_wide PROTO((rtx, HOST_WIDE_INT));
 
-#define GEN_INT(N) gen_rtx (CONST_INT, VOIDmode, (N))
+#define GEN_INT(N) gen_rtx (CONST_INT, VOIDmode, (HOST_WIDE_INT) (N))
 
 #if 0
 /* We cannot define prototypes for the variable argument functions,
