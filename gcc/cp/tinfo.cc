@@ -667,7 +667,7 @@ do_catch (const type_info *thr_type, void **thr_obj,
 bool __class_type_info::
 do_upcast (const __class_type_info *dst_type, void **obj_ptr) const
 {
-  upcast_result result (__vmi_class_type_info::details_unknown_mask);
+  upcast_result result (__vmi_class_type_info::flags_unknown_mask);
   
   if (do_upcast (contained_public, dst_type, *obj_ptr, result))
     return false;
@@ -721,14 +721,14 @@ do_find_public_src (ptrdiff_t src2dst,
   if (obj_ptr == src_ptr && *this == *src_type)
     return contained_public;
   
-  for (size_t i = n_bases; i--;)
+  for (size_t i = vmi_base_count; i--;)
     {
-      if (!base_list[i].is_public_p ())
+      if (!vmi_bases[i].is_public_p ())
         continue; // Not public, can't be here.
       
       const void *base = obj_ptr;
-      ptrdiff_t offset = base_list[i].offset ();
-      bool is_virtual = base_list[i].is_virtual_p ();
+      ptrdiff_t offset = vmi_bases[i].offset ();
+      bool is_virtual = vmi_bases[i].is_virtual_p ();
       
       if (is_virtual)
         {
@@ -737,7 +737,7 @@ do_find_public_src (ptrdiff_t src2dst,
         }
       base = convert_to_base (base, is_virtual, offset);
       
-      sub_kind base_kind = base_list[i].base->do_find_public_src
+      sub_kind base_kind = vmi_bases[i].base->do_find_public_src
                               (src2dst, base, src_type, src_ptr);
       if (contained_p (base_kind))
         {
@@ -844,23 +844,23 @@ do_dyncast (ptrdiff_t src2dst,
       return false;
     }
   bool result_ambig = false;
-  for (size_t i = n_bases; i--;)
+  for (size_t i = vmi_base_count; i--;)
     {
       dyncast_result result2;
       void const *base = obj_ptr;
       sub_kind base_access = access_path;
-      ptrdiff_t offset = base_list[i].offset ();
-      bool is_virtual = base_list[i].is_virtual_p ();
+      ptrdiff_t offset = vmi_bases[i].offset ();
+      bool is_virtual = vmi_bases[i].is_virtual_p ();
       
       if (is_virtual)
         base_access = sub_kind (base_access | contained_virtual_mask);
       base = convert_to_base (base, is_virtual, offset);
 
-      if (!base_list[i].is_public_p ())
+      if (!vmi_bases[i].is_public_p ())
         base_access = sub_kind (base_access & ~contained_public_mask);
       
       bool result2_ambig
-          = base_list[i].base->do_dyncast (src2dst, base_access,
+          = vmi_bases[i].base->do_dyncast (src2dst, base_access,
                                            dst_type, base,
                                            src_type, src_ptr, result2);
       result.whole2src = sub_kind (result.whole2src | result2.whole2src);
@@ -1028,18 +1028,18 @@ do_upcast (sub_kind access_path,
     }
   
   int src_details = result.src_details;
-  if (src_details & details_unknown_mask)
-    src_details = details;
+  if (src_details & flags_unknown_mask)
+    src_details = vmi_flags;
   
-  for (size_t i = n_bases; i--;)
+  for (size_t i = vmi_base_count; i--;)
     {
       upcast_result result2 (src_details);
       const void *base = obj_ptr;
       sub_kind sub_access = access_path;
-      ptrdiff_t offset = base_list[i].offset ();
-      bool is_virtual = base_list[i].is_virtual_p ();
+      ptrdiff_t offset = vmi_bases[i].offset ();
+      bool is_virtual = vmi_bases[i].is_virtual_p ();
       
-      if (!base_list[i].is_public_p ())
+      if (!vmi_bases[i].is_public_p ())
         {
           if (!(src_details & non_diamond_repeat_mask))
             // original cannot have an ambiguous base
@@ -1051,16 +1051,16 @@ do_upcast (sub_kind access_path,
       if (base)
         base = convert_to_base (base, is_virtual, offset);
       
-      if (base_list[i].base->do_upcast (sub_access, dst, base, result2))
+      if (vmi_bases[i].base->do_upcast (sub_access, dst, base, result2))
         return true; // must fail
       if (result2.base_type)
         {
           if (result2.base_type == nonvirtual_base_type && is_virtual)
-            result2.base_type = base_list[i].base;
+            result2.base_type = vmi_bases[i].base;
           if (!result.base_type)
             {
               result = result2;
-              if (!(details & non_diamond_repeat_mask))
+              if (!(vmi_flags & non_diamond_repeat_mask))
                 // cannot have an ambiguous other base
                 return false;
             }
