@@ -39,7 +39,7 @@ static void *thread_local_storage = NULL;
 
 /* Initialize the threads subsystem.  */
 int
-__gthread_objc_init_thread_system(void)
+__gthread_objc_init_thread_system (void)
 {
   /* No thread support available */
   return -1;
@@ -47,7 +47,7 @@ __gthread_objc_init_thread_system(void)
 
 /* Close the threads subsystem.  */
 int
-__gthread_objc_close_thread_system(void)
+__gthread_objc_close_thread_system (void)
 {
   /* No thread support available */
   return -1;
@@ -57,7 +57,7 @@ __gthread_objc_close_thread_system(void)
 
 /* Create a new thread of execution.  */
 objc_thread_t
-__gthread_objc_thread_detach(void (*func)(void *arg), void *arg)
+__gthread_objc_thread_detach (void (*func)(void *arg), void *arg)
 {
   /* No thread support available */
   return NULL;
@@ -65,7 +65,7 @@ __gthread_objc_thread_detach(void (*func)(void *arg), void *arg)
 
 /* Set the current thread's priority.  */
 int
-__gthread_objc_thread_set_priority(int priority)
+__gthread_objc_thread_set_priority (int priority)
 {
   /* No thread support available */
   return -1;
@@ -73,39 +73,39 @@ __gthread_objc_thread_set_priority(int priority)
 
 /* Return the current thread's priority.  */
 int
-__gthread_objc_thread_get_priority(void)
+__gthread_objc_thread_get_priority (void)
 {
   return OBJC_THREAD_INTERACTIVE_PRIORITY;
 }
 
 /* Yield our process time to another thread.  */
 void
-__gthread_objc_thread_yield(void)
+__gthread_objc_thread_yield (void)
 {
   return;
 }
 
 /* Terminate the current thread.  */
 int
-__gthread_objc_thread_exit(void)
+__gthread_objc_thread_exit (void)
 {
   /* No thread support available */
   /* Should we really exit the program */
-  /* exit(&__objc_thread_exit_status); */
+  /* exit (&__objc_thread_exit_status); */
   return -1;
 }
 
 /* Returns an integer value which uniquely describes a thread.  */
 objc_thread_t
-__gthread_objc_thread_id(void)
+__gthread_objc_thread_id (void)
 {
   /* No thread support, use 1.  */
-  return (objc_thread_t)1;
+  return (objc_thread_t) 1;
 }
 
 /* Sets the thread's local storage pointer.  */
 int
-__gthread_objc_thread_set_data(void *value)
+__gthread_objc_thread_set_data (void *value)
 {
   thread_local_storage = value;
   return 0;
@@ -113,7 +113,7 @@ __gthread_objc_thread_set_data(void *value)
 
 /* Returns the thread's local storage pointer.  */
 void *
-__gthread_objc_thread_get_data(void)
+__gthread_objc_thread_get_data (void)
 {
   return thread_local_storage;
 }
@@ -122,21 +122,21 @@ __gthread_objc_thread_get_data(void)
 
 /* Allocate a mutex.  */
 int
-__gthread_objc_mutex_allocate(objc_mutex_t mutex)
+__gthread_objc_mutex_allocate (objc_mutex_t mutex)
 {
   return 0;
 }
 
 /* Deallocate a mutex.  */
 int
-__gthread_objc_mutex_deallocate(objc_mutex_t mutex)
+__gthread_objc_mutex_deallocate (objc_mutex_t mutex)
 {
   return 0;
 }
 
 /* Grab a lock on a mutex.  */
 int
-__gthread_objc_mutex_lock(objc_mutex_t mutex)
+__gthread_objc_mutex_lock (objc_mutex_t mutex)
 {
   /* There can only be one thread, so we always get the lock */
   return 0;
@@ -144,7 +144,7 @@ __gthread_objc_mutex_lock(objc_mutex_t mutex)
 
 /* Try to grab a lock on a mutex.  */
 int
-__gthread_objc_mutex_trylock(objc_mutex_t mutex)
+__gthread_objc_mutex_trylock (objc_mutex_t mutex)
 {
   /* There can only be one thread, so we always get the lock */
   return 0;
@@ -152,7 +152,7 @@ __gthread_objc_mutex_trylock(objc_mutex_t mutex)
 
 /* Unlock the mutex */
 int
-__gthread_objc_mutex_unlock(objc_mutex_t mutex)
+__gthread_objc_mutex_unlock (objc_mutex_t mutex)
 {
   return 0;
 }
@@ -161,35 +161,35 @@ __gthread_objc_mutex_unlock(objc_mutex_t mutex)
 
 /* Allocate a condition.  */
 int
-__gthread_objc_condition_allocate(objc_condition_t condition)
+__gthread_objc_condition_allocate (objc_condition_t condition)
 {
   return 0;
 }
 
 /* Deallocate a condition.  */
 int
-__gthread_objc_condition_deallocate(objc_condition_t condition)
+__gthread_objc_condition_deallocate (objc_condition_t condition)
 {
   return 0;
 }
 
 /* Wait on the condition */
 int
-__gthread_objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex)
+__gthread_objc_condition_wait (objc_condition_t condition, objc_mutex_t mutex)
 {
   return 0;
 }
 
 /* Wake up all threads waiting on this condition.  */
 int
-__gthread_objc_condition_broadcast(objc_condition_t condition)
+__gthread_objc_condition_broadcast (objc_condition_t condition)
 {
   return 0;
 }
 
 /* Wake up one thread waiting on this condition.  */
 int
-__gthread_objc_condition_signal(objc_condition_t condition)
+__gthread_objc_condition_signal (objc_condition_t condition)
 {
   return 0;
 }
@@ -229,12 +229,12 @@ static void
 __ehdtor (void *pTcb)
 {
   int tid = (int) pTcb;
-  void *p = (void*)taskVarGet(tid, &eh_context_key);
-  if (p != (void*)-1)
+  void *p = (void *) taskVarGet (tid, &eh_context_key);
+  if (p != (void *) -1)
     {
       if (p)
 	free (p);
-      taskVarSet(tid, &eh_context_key, 0);
+      taskVarSet (tid, &eh_context_key, 0);
     }
 }
 
@@ -248,7 +248,7 @@ __gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
   /* Do this first so that the task variables are visible during the
      running of the delete hook.  */
 
-  taskVarInit();
+  taskVarInit ();
 
   /* We don't have a way to track dtor here, so instead, we
      register a generic routine that can cleanup any task.  */
@@ -277,9 +277,9 @@ __gthread_key_dtor (__gthread_key_t key, void *ptr)
 #define __gthread_getspecific(key)			\
      ((key == 0)					\
       ? ((taskVarAdd (taskIdSelf (), &key) != OK)	\
-	 ? (__terminate (), (void*)0)			\
-	 : (void*)0)					\
-      : (void*)key)
+	 ? (__terminate (), (void *) 0)			\
+	 : (void *) 0)					\
+      : (void *) key)
 #endif
 
 static inline int
