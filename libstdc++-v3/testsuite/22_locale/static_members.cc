@@ -74,7 +74,6 @@ void test02()
   const locale loc_mx(mx.c_str());
 
   // Get underlying current locale and environment settings.
-  const string lc_all_orig = std::setlocale(LC_ALL, NULL);
   const locale env_orig("");
 
   // setlocale to en_PH
@@ -84,8 +83,9 @@ void test02()
   VERIFY( loc_env == env_orig );
 
   locale global_orig = locale::global(loc_mx);
-  string lc_all_mx = std::setlocale(LC_ALL, NULL);
-  VERIFY( lc_all_mx == mx.c_str() );
+  const char* lc_all_mx = std::setlocale(LC_ALL, NULL);
+  if (lc_all_mx)
+    VERIFY( mx == lc_all_mx );
 
   // Restore global settings.
   locale::global(global_orig);

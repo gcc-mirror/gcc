@@ -1,3 +1,12 @@
+2002-10-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/abi_check.cc (hash<string>): Specialize.
+	Simplify. Check compatible symbol versions.
+	* config/linker-map.gnu: Clarify, explicitly export
+	std::codecvt::c* symbols.
+
+	* testsuite/22_locale/static_members.cc (test02): Avoid null strings.
+
 2002-10-12  Jonathan Wakely  <jw@kayari.org>
             Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
