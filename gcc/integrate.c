@@ -988,11 +988,14 @@ copy_for_inline (orig)
       break;
 
     case LABEL_REF:
-      {
-	/* Must point to the new insn.  */
-	return gen_rtx (LABEL_REF, GET_MODE (orig),
-			label_map[CODE_LABEL_NUMBER (XEXP (orig, 0))]);
-      }
+      /* If this is a non-local label, just make a new LABEL_REF.
+	 Otherwise, use the new label as well.  */
+      x = gen_rtx (LABEL_REF, GET_MODE (orig),
+		   LABEL_REF_NONLOCAL_P (orig) ? XEXP (orig, 0)
+		   : label_map[CODE_LABEL_NUMBER (XEXP (orig, 0))]);
+      LABEL_REF_NONLOCAL_P (x) = LABEL_REF_NONLOCAL_P (orig);
+      LABEL_OUTSIDE_LOOP_P (x) = LABEL_OUTSIDE_LOOP_P (orig);
+      return x;
 
     case REG:
       if (REGNO (x) > LAST_VIRTUAL_REGISTER)
@@ -2037,10 +2040,18 @@ copy_rtx_and_substitute (orig, map)
       return map->label_map[CODE_LABEL_NUMBER (orig)];
 
     case LABEL_REF:
-      copy = rtx_alloc (LABEL_REF);
-      PUT_MODE (copy, mode);
-      XEXP (copy, 0) = map->label_map[CODE_LABEL_NUMBER (XEXP (orig, 0))];
+      copy = gen_rtx (LABEL_REF, mode,
+		      LABEL_REF_NONLOCAL_P (orig) ? XEXP (orig, 0)
+		      : map->label_map[CODE_LABEL_NUMBER (XEXP (orig, 0))]);
       LABEL_OUTSIDE_LOOP_P (copy) = LABEL_OUTSIDE_LOOP_P (orig);
+
+      /* The fact that this label was previously nonlocal does not mean
+	 it still is, so we must check if it is within the range of
+	 this function's labels.  */
+      LABEL_REF_NONLOCAL_P (copy)
+	= (LABEL_REF_NONLOCAL_P (orig)
+	   && ! (CODE_LABEL_NUMBER (XEXP (copy, 0)) >= get_first_label_num ()
+		 && CODE_LABEL_NUMBER (XEXP (copy, 0)) < max_label_num ()));
       return copy;
 
     case PC:
@@ -2056,16 +2067,12 @@ copy_rtx_and_substitute (orig, map)
 	{
 	  rtx constant = get_pool_constant (orig);
 	  if (GET_CODE (constant) == LABEL_REF)
-	    {
-	      copy = rtx_alloc (LABEL_REF);
-	      PUT_MODE (copy, mode);
-	      XEXP (copy, 0)
-		= map->label_map[CODE_LABEL_NUMBER (XEXP (constant, 0))];
-	      LABEL_OUTSIDE_LOOP_P (copy) = LABEL_OUTSIDE_LOOP_P (orig);
-	      copy = force_const_mem (Pmode, copy);
-	      return XEXP (copy, 0);
-	    }
+	    return XEXP (force_const_mem (Pmode, 
+					  copy_rtx_and_substitute (constant,
+								   map)),
+			 0);
 	}
+
       return orig;
 
     case CONST_DOUBLE:
