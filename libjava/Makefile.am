@@ -1,9 +1,68 @@
 ## Process this file with automake to produce Makefile.in.
 
-AUTOMAKE_OPTIONS = foreign
+AUTOMAKE_OPTIONS = foreign subdir-objects
 
 ACLOCAL_AMFLAGS = -I .
 
+## Garbage collector conditionals.
+if USING_BOEHMGC
+BOEHMGC_SRC = boehm.cc
+else
+BOEHMGC_SRC =
+endif
+
+if USING_NOGC
+NOGC_SRC = nogc.cc
+else
+NOGC_SRC =
+endif
+
+## Broken backtrace conditional.
+if SUPPLY_BACKTRACE
+BACKTRACE_SRC = sysdep/dwarf2-backtrace.cc
+else
+BACKTRACE_SRC =
+endif
+
+## Conditionals for platform-specific helper functions.
+if USING_POSIX_PLATFORM
+POSIX_PLATFORM_SRC = posix.cc
+else
+POSIX_PLATFORM_SRC =
+endif
+
+if USING_WIN32_PLATFORM
+WIN32_PLATFORM_SRC = win32.cc
+else
+WIN32_PLATFORM_SRC =
+endif
+
+if USING_ECOS_PLATFORM
+ECOS_PLATFORM_SRC = posix.cc
+else
+ECOS_PLATFORM_SRC =
+endif
+
+## Conditionals for platform-specific thread support.
+if USING_POSIX_THREADS
+POSIX_THREAD_SRC = posix-threads.cc
+else
+POSIX_THREAD_SRC =
+endif
+
+if USING_WIN32_THREADS
+WIN32_THREAD_SRC = win32-threads.cc
+else
+WIN32_THREAD_SRC =
+endif
+
+if USING_NO_THREADS
+NO_THREAD_SRC = no-threads.cc
+else
+NO_THREAD_SRC =
+endif
+
+## Testsuite conditional.
 if TESTSUBDIR
 SUBDIRS = $(DIRLTDL) testsuite gcj include
 else
@@ -82,12 +141,6 @@ GCJCOMPILE = $(LIBTOOL) --tag=GCJ --mode=compile $(GCJ_WITH_FLAGS) -fclasspath= 
 GCJLINK = $(LIBTOOL) --tag=GCJ --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
 LIBLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXX) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
 
-## We define this because otherwise libtool can be run with different
-## values of `CXX' and will then get confused and fail to work.  So,
-## we use --tag explicitly.  Someday automake will be changed to do
-## this automatically.
-LTCXXCOMPILE = $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-
 JAVAC = $(GCJ_WITH_FLAGS) -C
 
 GCC_UNWIND_INCLUDE = @GCC_UNWIND_INCLUDE@
@@ -114,6 +167,11 @@ AM_CXXFLAGS = \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DBOOT_CLASS_PATH="\"$(jardir)/$(jar_DATA)\"" \
 	-DJAVA_EXT_DIRS="\"$(jardir)/ext\""
+
+AM_GCJFLAGS = \
+	--encoding=UTF-8 \
+	-Wno-deprecated
+
 if USING_GCC
 AM_CFLAGS = @LIBGCJ_CFLAGS@ $(WARNINGS)
 else
@@ -138,40 +196,29 @@ INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 ## How to build libgcj.a and libgcj.jar
 ##
 
-## Objects from C++ sources in subdirs.
-nat_files = $(nat_source_files:.cc=.lo)
-xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
-## Objects from C sources in subdirs.
-math_c_files = $(math_c_source_files:.c=.lo)
-extra_cc_files = $(extra_cc_source_files:.cc=.lo)
-## Objects from gtk-related C sources in subdirs.
-gtk_c_files = $(gtk_c_source_files:.c=.lo)
-## Objects from Java sources in subdirs.
-javao_files = $(java_source_files:.java=.lo) \
-	$(built_java_source_files:.java=.lo)
-xlib_javao_files = $(xlib_java_source_files:.java=.lo)
-
 libgij_la_SOURCES = gij.cc
+libgij_la_LIBADD = libgcj.la
+libgij_la_DEPENDENCIES = libgcj.la libgcj.spec
 
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
 	resolve.cc defineclass.cc interpret.cc verify.cc \
-	$(nat_source_files)
-EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
-	win32-threads.cc posix.cc win32.cc $(math_c_source_files) \
-	$(extra_cc_source_files) $(java_source_files) $(built_java_source_files)
-libgcj_la_DEPENDENCIES = libgcj-@gcc_version@.jar $(javao_files) \
-	$(math_c_files) $(extra_cc_files) $(GCOBJS) $(THREADOBJS) \
-	$(PLATFORMOBJS) $(LIBLTDL) $(LIBFFI) $(ZLIBS) $(GCLIBS) \
-	$(propertyo_files)
+	$(nat_source_files) $(math_c_source_files) $(java_source_files) \
+	$(built_java_source_files) \
+	$(BOEHMGC_SRC) $(NOGC_SRC) \
+	$(BACKTRACE_SRC) \
+	$(POSIX_PLATFORM_SRC) $(WIN32_PLATFORM_SRC) $(ECOS_PLATFORM_SRC) \
+	$(POSIX_THREAD_SRC) $(WIN32_THREAD_SRC) $(NO_THREAD_SRC)
+libgcj_la_DEPENDENCIES = libgcj-@gcc_version@.jar \
+	java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h \
+	$(LIBLTDL) $(LIBFFI) $(ZLIBS) $(GCLIBS) $(propertyo_files)
 
-libgcj_la_LIBADD = $(javao_files) $(math_c_files) $(extra_cc_files) $(GCOBJS) \
-	$(THREADOBJS) $(PLATFORMOBJS) $(propertyo_files)
 # Include THREADLIBS here to ensure that the correct version of
 # certain linuxthread functions get linked:
 ## The mysterious backslash in the grep pattern is consumed by make.
 libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLDFLAGS) $(THREADLIBS) \
 	$(LIBLTDL) $(SYS_ZLIBS) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
+libgcj_la_LIBADD = $(LIBFFI) $(ZLIBS) $(GCLIBS) $(propertyo_files)
 libgcj_la_LINK = $(LIBLINK)
 
 # Gtk/Cairo JNI sources.
@@ -280,6 +327,10 @@ $(gtk_jni_headers): $(gtk_awt_peer_sources)
 	echo "$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input"; \
 	$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input
 
+## For the peer library, DEPENDENCIES need to come before OBJECTS so
+## that JNI headers are built before JNI C files.
+$(lib_gnu_java_awt_peer_gtk_la_OBJECTS): $(lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES)
+
 lib_gnu_java_awt_peer_gtk_la_SOURCES = \
 $(gtk_awt_peer_sources) \
 $(gtk_c_source_files) \
@@ -290,8 +341,12 @@ jni/classpath/jnilink.h	\
 jni/classpath/native_state.h \
 jni/classpath/primlib.h
 
+lib_gnu_java_awt_peer_gtk_la_CFLAGS = \
+	-Ijniinclude -I$(srcdir)/jni/classpath \
+	-I$(srcdir)/jni/gtk-peer $(GTK_CFLAGS) $(LIBART_CFLAGS)
+lib_gnu_java_awt_peer_gtk_la_GCJFLAGS = $(AM_GCJFLAGS) -fjni
 lib_gnu_java_awt_peer_gtk_la_LIBADD = $(GTK_LIBS) $(GLIB_LIBS) $(LIBART_LIBS) $(CAIRO_LIBS) $(PANGOFT2_LIBS)
-lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = $(gtk_jni_headers)
+lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = $(gtk_jni_headers) libgcj-@gcc_version@.jar libgcj.la libgcj.spec
 ## The mysterious backslash in the grep pattern is consumed by make.
 lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version`
@@ -363,9 +418,10 @@ lib_org_xml_sax_la_LIBADD = -L$(here)/.libs libgcj.la
 lib_org_xml_sax_la_LDFLAGS = -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
-lib_gnu_awt_xlib_la_SOURCES = $(xlib_nat_source_files)
-EXTRA_lib_gnu_awt_xlib_la_SOURCES = $(xlib_java_source_files)
-lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-@gcc_version@.jar $(xlib_javao_files)
+lib_gnu_awt_xlib_la_SOURCES = \
+	$(xlib_java_source_files) \
+	$(xlib_nat_source_files)
+lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-@gcc_version@.jar libgcj.la libgcj.spec
 lib_gnu_awt_xlib_la_LIBADD = $(xlib_javao_files)
 ## The mysterious backslash in the grep pattern is consumed by make.
 lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
@@ -455,40 +511,6 @@ clean-nat:
 
 SUFFIXES = .class .java .h .properties
 
-.class.lo:
-	$(GCJCOMPILE) -o $@ $<
-
-.java.lo:
-	$(GCJCOMPILE) -o $@ $<
-
-## FIXME: For the .o files in subdirs, use a special rule.  The
-## standard automake rule can't be overridden (this is a bug in
-## automake), and it also won't put the .o files into subdirs.
-$(nat_files) $(xlib_nat_files): %.lo: %.cc
-	@echo '$(LTCXXCOMPILE) -MD -MT $@ -MF $(@:.lo=.pp) -c -o $@ $<'; \
-	$(LTCXXCOMPILE) -MD -MT $@ -MF $(@:.lo=.pp) -c -o $@ $<
-	@-mv $(@:.lo=.pp) $(@:.lo=.d)
-
-## FIXME: see above
-$(math_c_files): %.lo: %.c
-	$(LTCOMPILE) -c -o $@ $<
-
-$(extra_cc_files): %.lo: %.cc
-	$(LTCXXCOMPILE) -c -o $@ $<
-
-$(math_c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
-
-## FIXME: see above
-## These JNI C files are shared with GNU Classpath which needs PEDANTIC_CFLAGS.
-$(gtk_c_files): %.lo: %.c
-	$(LTCOMPILE) -c -Ijniinclude -I$(srcdir)/jni/classpath -I$(srcdir)/jni/gtk-peer \
-	$(PEDANTIC_CFLAGS) $(GTK_CFLAGS) $(LIBART_CFLAGS) \
-	$(CAIRO_LIBS) $(PANGOFT2_LIBS) -o $@ $<
-
-$(gtk_c_files): $(gtk_jni_headers)
-
-## FIXME: see above.
-
 ## Note: we omit StackTrace here, since it has an explicit rule a bit
 ## later, and GNU make will warn in this case.
 $(filter-out gnu/gcj/runtime/StackTrace.lo, $(javao_files)) $(xlib_javao_files) $(lib_org_w3c_dom_la_OBJECTS) $(lib_org_xml_sax_la_OBJECTS): %.lo: %.java
@@ -502,15 +524,6 @@ $(gtk_awt_peer_sources:.java=.lo): %.lo: %.java
 ## number.
 gnu/gcj/runtime/StackTrace.lo: gnu/gcj/runtime/StackTrace.java
 	$(GCJCOMPILE) -fno-optimize-sibling-calls -o $@ $<
-
-## Pass the list of object files to libtool in a temporary file to 
-## avoid tripping platform command line length limits.
-libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
-	@echo Creating list of files to link...
-	@: $(call write_entries_to_file,$(libgcj_la_OBJECTS) $(libgcj_la_LIBADD),libgcj.objectlist)
-	$(libgcj_la_LINK) -objectlist libgcj.objectlist \
-	@GCLIBS@ @LIBFFI@ @ZLIBS@ \
-	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
 
 lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPENDENCIES)
 	@echo Creating list of files to link...
@@ -754,13 +767,63 @@ write-entries-to-file-check:
 if NATIVE
 if MAINTAINER_MODE
 noinst_PROGRAMS = gen-from-JIS
+
+gen_from_JIS_SOURCES = \
+	gnu/gcj/convert/gen-from-JIS.c \
+	gnu/gcj/convert/make-trie.c
+
+gen_from_JIS_DEPENDENCIES = \
+	gnu/gcj/convert/JIS0201.h \
+	gnu/gcj/convert/JIS0208.h \
+	gnu/gcj/convert/JIS0212.h
+
+$(srcdir)/gnu/gcj/convert/JIS0208_to_Unicode.cc: ./gen-from-JIS$(EXEEXT)
+	 ./gen-from-JIS JIS0208 >$(srcdir)/gnu/gcj/convert/JIS0208_to_Unicode.cc
+
+$(srcdir)/gnu/gcj/convert/JIS0212_to_Unicode.cc: ./gen-from-JIS$(EXEEXT)
+	 ./gen-from-JIS JIS0212 >$(srcdir)/gnu/gcj/convert/JIS0212_to_Unicode.cc
+
+$(srcdir)/gnu/gcj/convert/Unicode_to_JIS.cc: ./gen-from-JIS$(EXEEXT)
+	 ./gen-from-JIS toJIS >$(srcdir)/gnu/gcj/convert/Unicode_to_JIS.cc
+
+# The Unicode consortium does not permit re-distributing the file JIS0201.TXT.
+# You can get it from
+# ftp://ftp.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/
+
+$(srcdir)/gnu/gcj/convert/JIS0201.h: # gnu/gcj/convert/JIS0201.TXT
+	echo '/* This file is automatically generated from Unicode tables */' > tmp-0201; \
+	tr  -d '\r' <$(srcdir)/gnu/gcj/convert/JIS0201.TXT \
+	| sed -n -e 's|\(0x..\).*\(0x....\).*#\(.*\)$$|MAP(0x00, \1, \2)  /*\3 */|p' \
+	>> tmp-0201; \
+	mv tmp-0201 $(srcdir)/gnu/gcj/convert/JIS0201.h
+
+# The Unicode consortium does not permit re-distributing the file JIS0208.TXT.
+# You can get it from
+# ftp://ftp.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/
+
+$(srcdir)/gnu/gcj/convert/JIS0208.h: # gnu/gcj/convert/JIS0208.TXT
+	echo '/* This file is automatically generated from Unicode tables */' > tmp-0208; \
+	tr  -d '\r' <$(srcdir)/gnu/gcj/convert/JIS0208.TXT \
+	| sed -n -e 's|\(0x....\).*0x\(..\)\(..\).*\(0x....\).*#\(.*\)$$|MAP(0x\2, 0x\3, \4)  /*\5 */|p' \
+	>> tmp-0208; \
+	mv tmp-0208 $(srcdir)/gnu/gcj/convert/JIS0208.h
+
+# The Unicode consortium does not permit re-distributing the file JIS0212.TXT.
+# You can get it from
+# ftp://ftp.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/
+
+$(srcdir)/gnu/gcj/convert/JIS0212.h: # gnu/gcj/convert/JIS0212.TXT
+	echo '/* This file is automatically generated from Unicode tables */' > tmp-0212; \
+	tr  -d '\r' <$(srcdir)/gnu/gcj/convert/JIS0212.TXT \
+	| sed -n -e 's|0x\(..\)\(..\).*\(0x....\).*#\(.*\)$$|MAP(0x\1, 0x\2, \3)  /*\4 */|p' \
+	>> tmp-0212; \
+	mv tmp-0212 $(srcdir)/gnu/gcj/convert/JIS0212.h
+
 endif
 endif 
 
-CONVERT_DIR = gnu/gcj/convert
 
 jv_convert_SOURCES =
-EXTRA_jv_convert_SOURCES = $(convert_source_files)
 ## We need -nodefaultlibs because we want to avoid gcj's `-lgcj'.  We
 ## need this because we are explicitly using libtool to link using the
 ## `.la' file.
@@ -777,24 +840,22 @@ jv_convert_LINK = $(GCJLINK)
 jv_convert_LDADD = -L$(here)/.libs libgcj.la
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
-jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
-	libgcj.la libgcj.spec
+jv_convert_DEPENDENCIES = libgcj.la libgcj.spec
 
-gij_SOURCES = gij.cc
+gij_SOURCES = 
 ## We need -nodefaultlibs because we want to avoid gcj's `-lgcj'.  We
 ## need this because we are explicitly using libtool to link using the
 ## `.la' file.
 gij_LDFLAGS = -rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
 gij_LINK = $(GCJLINK)
 ## See jv_convert_LDADD.
-gij_LDADD = -L$(here)/.libs libgcj.la
+gij_LDADD = -L$(here)/.libs libgij.la
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
-gij_DEPENDENCIES = libgcj.la libgcj.spec
+gij_DEPENDENCIES = libgij.la
 
-grmic_SOURCES =
 ## This is a dummy definition.
-EXTRA_grmic_SOURCES = $(rmi_java_source_files)
+grmic_SOURCES =
 grmic_LDFLAGS = --main=gnu.java.rmi.rmic.RMIC \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
 grmic_LINK = $(GCJLINK)
@@ -804,9 +865,8 @@ grmic_LDADD = -L$(here)/.libs libgcj.la
 ## linking this program.
 grmic_DEPENDENCIES = libgcj.la libgcj.spec
 
-grmiregistry_SOURCES =
 ## This is a dummy definition.
-EXTRA_grmiregistry_SOURCES = $(rmi_java_source_files)
+grmiregistry_SOURCES =
 grmiregistry_LDFLAGS = --main=gnu.java.rmi.registry.RegistryImpl \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
 grmiregistry_LINK = $(GCJLINK)
@@ -815,74 +875,6 @@ grmiregistry_LDADD = -L$(here)/.libs libgcj.la
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 grmiregistry_DEPENDENCIES = libgcj.la libgcj.spec
-
-# The Unicode consortium does not permit re-distributing the file JIS0201.TXT.
-# You can get it from ftp://ftp.unicode.org/Public/MAPPINGS/EASTASIA/JIS/.
-
-$(srcdir)/$(CONVERT_DIR)/JIS0201.h:  # $(CONVERT_DIR)/JIS0201.TXT
-	echo '/* This file is automatically generated from Unicode tables */' > tmp-0201; \
-	tr  -d '\r' <$(CONVERT_DIR)/JIS0201.TXT \
-	| sed -n -e 's|\(0x..\).*\(0x....\).*#\(.*\)$$|MAP(0x00, \1, \2)  /*\3 */|p' \
-	>> tmp-0201; \
-	mv tmp-0201 $(srcdir)/$(CONVERT_DIR)/JIS0201.h
-
-# The Unicode consortium does not permit re-distributing the file JIS0208.TXT.
-# You can get it from ftp://ftp.unicode.org/Public/MAPPINGS/EASTASIA/JIS/.
-
-$(srcdir)/$(CONVERT_DIR)/JIS0208.h:  # $(CONVERT_DIR)/JIS0208.TXT
-	echo '/* This file is automatically generated from Unicode tables */' > tmp-0208; \
-	tr  -d '\r' <$(CONVERT_DIR)/JIS0208.TXT \
-	| sed -n -e 's|\(0x....\).*0x\(..\)\(..\).*\(0x....\).*#\(.*\)$$|MAP(0x\2, 0x\3, \4)  /*\5 */|p' \
-	>> tmp-0208; \
-	mv tmp-0208 $(srcdir)/$(CONVERT_DIR)/JIS0208.h
-
-# The Unicode consortium does not permit re-distributing the file JIS0212.TXT.
-# You can get it from ftp://ftp.unicode.org/Public/MAPPINGS/EASTASIA/JIS/.
-
-$(srcdir)/$(CONVERT_DIR)/JIS0212.h:  # $(CONVERT_DIR)/JIS0212.TXT
-	echo '/* This file is automatically generated from Unicode tables */' > tmp-0212; \
-	tr  -d '\r' <$(CONVERT_DIR)/JIS0212.TXT \
-	| sed -n -e 's|0x\(..\)\(..\).*\(0x....\).*#\(.*\)$$|MAP(0x\1, 0x\2, \3)  /*\4 */|p' \
-	>> tmp-0212; \
-	mv tmp-0212 $(srcdir)/$(CONVERT_DIR)/JIS0212.h
-
-
-gen_from_JIS_SOURCES =
-EXTRA_gen_from_JIS_SOURCES = $(srcdir)/$(CONVERT_DIR)/gen-from-JIS.c \
-		$(srcdir)/$(CONVERT_DIR)/make-trie.c \
-		$(srcdir)/$(CONVERT_DIR)/JIS0201.h \
-		$(srcdir)/$(CONVERT_DIR)/JIS0208.h \
-		$(srcdir)/$(CONVERT_DIR)/JIS0212.h
-gen_from_JIS_LDADD = $(CONVERT_DIR)/gen-from-JIS.o $(CONVERT_DIR)/make-trie.o
-gen_from_JIS_DEPENDENCIES = $(CONVERT_DIR)/gen-from-JIS.o \
-		$(CONVERT_DIR)/make-trie.o
-
-$(CONVERT_DIR)/gen-from-JIS.o: $(srcdir)/$(CONVERT_DIR)/gen-from-JIS.c \
-		$(srcdir)/$(CONVERT_DIR)/JIS0201.h \
-		$(srcdir)/$(CONVERT_DIR)/JIS0208.h \
-		$(srcdir)/$(CONVERT_DIR)/JIS0212.h
-	$(COMPILE) -c -o $(CONVERT_DIR)/gen-from-JIS.o \
-		$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.c
-
-$(CONVERT_DIR)/make-trie.o: $(srcdir)/$(CONVERT_DIR)/make-trie.c
-	$(COMPILE) -c -o $(CONVERT_DIR)/make-trie.o \
-		$(srcdir)/$(CONVERT_DIR)/make-trie.c
-
-if NATIVE
-if MAINTAINER_MODE
-
-$(srcdir)/$(CONVERT_DIR)/JIS0208_to_Unicode.cc: ./gen-from-JIS$(EXEEXT)
-	 ./gen-from-JIS JIS0208>$(srcdir)/$(CONVERT_DIR)/JIS0208_to_Unicode.cc
-
-$(srcdir)/$(CONVERT_DIR)/JIS0212_to_Unicode.cc: ./gen-from-JIS$(EXEEXT)
-	 ./gen-from-JIS JIS0212>$(srcdir)/$(CONVERT_DIR)/JIS0212_to_Unicode.cc
-
-$(srcdir)/$(CONVERT_DIR)/Unicode_to_JIS.cc: ./gen-from-JIS$(EXEEXT)
-	 ./gen-from-JIS toJIS>$(srcdir)/$(CONVERT_DIR)/Unicode_to_JIS.cc
-
-endif # MAINTAINER_MODE
-endif # NATIVE
-
 
 ## ################################################################
 
@@ -2951,7 +2943,6 @@ math_c_source_files = \
   java/lang/e_sqrt.c      java/lang/s_scalbn.c    java/lang/sf_rint.c     \
   java/lang/k_cos.c       java/lang/s_sin.c       java/lang/sf_fabs.c
 
-extra_cc_source_files = $(EXTRA_CC_FILES)
 
 ## This lists all the C++ source files in subdirectories.
 nat_source_files = \
