@@ -2003,3 +2003,6 @@ do {							\
 /* Align ecoff symbol tables to avoid OSF1/1.3 nm complaints.  */
 
 #define ALIGN_SYMTABLE_OFFSET(OFFSET) (((OFFSET) + 7) & ~7)
+
+/* The system headers under OSF/1 are C++-aware.  */
+#define NO_IMPLICIT_EXTERN_C
