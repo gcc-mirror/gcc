@@ -2731,16 +2731,14 @@ CHECK_TARGETS = check-gcc check-g++ check-g77 check-objc @CHECK_PO@
 
 check: $(CHECK_TARGETS)
 
-PAR_CHECK_TARGETS = $(CHECK_TARGETS:check-%=check/%)
-
 # The idea is to parallelize testing of multilibs, for example:
-#   make -j3 check/gcc/sh-hms-sim/{-m1,-m2,-m3,-m3e,-m4}/{,-nofpu}
+#   make -j3 check-gcc//sh-hms-sim/{-m1,-m2,-m3,-m3e,-m4}/{,-nofpu}
 # will run 3 concurrent sessions of check-gcc, eventually testing
 # all 10 combinations.  GNU make is required, as is a shell that expands
 # alternations within braces.
-$(PAR_CHECK_TARGETS:=/%): site.exp
-	target=`echo "$@" | sed 's,/,-,;s,/.*,,'`; \
-	variant=`echo "$@" | sed 's,/,-,;s,^[^/]*/,,'`; \
+check-gcc//% check-g++//% check-g77//% check-objc//%: site.exp
+	target=`echo "$@" | sed 's,//.*,,'`; \
+	variant=`echo "$@" | sed 's,^[^/]*//,,'`; \
 	vardots=`echo "$$variant" | sed 's,/,.,g'`; \
 	$(MAKE) TESTSUITEDIR="testsuite.$$vardots" \
 	  RUNTESTFLAGS="--target_board=$$variant $(RUNTESTFLAGS)" \
