@@ -1,6 +1,6 @@
 /*
   jartool.c - main functions for fastjar utility
-  Copyright (C) 1999, 2000  Bryan Burns
+  Copyright (C) 1999, 2000, 2001  Bryan Burns
   
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -17,9 +17,14 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/* $Id: jartool.c,v 1.3 2000/12/14 18:45:35 ghazi Exp $
+/* $Id: jartool.c,v 1.4 2000/12/28 21:47:37 robertl Exp $
 
    $Log: jartool.c,v $
+   Revision 1.4  2000/12/28 21:47:37  robertl
+   2000-12-28  Robert Lipe <robertl@sco.com>
+
+           * jartool.c (MAXPATHLEN): Provide if not defined.
+
    Revision 1.3  2000/12/14 18:45:35  ghazi
    Warning fixes:
 
@@ -218,6 +223,7 @@ int create_central_header(int);
 int make_manifest(int, const char*);
 static void init_args(char **, int);
 static char *get_next_arg (void);
+static char *jt_strdup (char*);
 
 /* global variables */
 ub1 file_header[30];
@@ -531,7 +537,7 @@ get_next_arg ()
       if (pos)
 	{
 	  s [pos] = '\0';
-	  return strdup (s);
+	  return jt_strdup (s);
 	}
       else
 	return NULL;
@@ -1820,4 +1826,15 @@ Example 2: use an existing manifest file 'mymanifest' and archive all the\n\
 ");
 
   exit(1);
+}
+
+static char *
+jt_strdup(s)
+     char *s;
+{
+  char *result = (char*)malloc(strlen(s) + 1);
+  if (result == (char*)0)
+    return (char*)0;
+  strcpy(result, s);
+  return result;
 }
