@@ -1266,7 +1266,7 @@ _mm_insert_epi16 (__m128i const __A, int const __D, int const __N)
 }
 #else
 #define _mm_extract_epi16(A, N) \
-  ((int) __builtin_ia32_vec_ext_v8hi ((__v8hi)(A), (N))
+  ((int) __builtin_ia32_vec_ext_v8hi ((__v8hi)(A), (N)))
 #define _mm_insert_epi16(A, D, N) \
   ((__m128i) __builtin_ia32_vec_set_v8hi ((__v8hi)(A), (D), (N)))
 #endif
