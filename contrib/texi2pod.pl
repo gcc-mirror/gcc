@@ -4,8 +4,6 @@
 # markup to Perl POD format.  It's intended to be used to extract
 # something suitable for a manpage from a Texinfo document.
 
-use v5.6.0;
-
 $output = 0;
 $skipping = 0;
 %sects = ();
@@ -262,7 +260,7 @@ sub postprocess
     s/\@(?:dmn|math)\{([^\}]*)\}/$1/g;
 
     # Handle @r inside bold.
-    1 while s/B<((?:[^<>]*|I<[^<>*]*>)*)R<([^>]*)>/B<$1>${2}B</g;
+    1 while s/B<((?:[^<>]|I<[^<>]*>)*)R<([^>]*)>/B<$1>${2}B</g;
 
     # Cross references are thrown away, as are @noindent and @refill.
     # (@noindent is impossible in .pod, and @refill is unnecessary.)

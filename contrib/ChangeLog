@@ -1,3 +1,9 @@
+2001-01-15  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* texi2pod.pl: Fix regular expression for @r to avoid exponential
+	recursion.  From Russ Allbery <rra@stanford.edu>.  Remove perl
+	version check.
+
 2001-01-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* warn_summary (stageNfilter): Update for recent changes in
