@@ -1,5 +1,13 @@
 2001-03-24  Phil Edwards  <pme@sources.redhat.com>
 
+	* docs/html/19_diagnostics/howto.html:  HTML fixup.  Describe
+	concept-checking code and current status of same.
+	* docs/html/ext/howto.html:  Ditto.
+	* docs/html/faq/index.html:  Ditto.
+	* docs/html/faq/index.txt:  Regenerated.
+
+2001-03-24  Phil Edwards  <pme@sources.redhat.com>
+
 	* include/bits/std_bitset.h:  Include ostream and istream headers
 	instead of iostream.
 

@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 19</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.5 2000/12/03 23:47:47 jsm28 Exp $ -->
+<!-- $Id: howto.html,v 1.1 2000/12/10 04:04:54 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -44,7 +44,7 @@
    struct My_Exception : public runtime_error
    {
      public:
-       My_Exception (const string& whatarg)
+       My_Exception (const string&amp; whatarg)
            : runtime_error(whatarg), e(errno), id(GetDataBaseID()) { }
        int  errno_at_time_of_throw() const { return e; }
        DBID id_of_thing_that_threw() const { return id; }
@@ -68,7 +68,9 @@
 
 <HR>
 <H2><A NAME="3">Concept checkers</A></H2>
-   <P>As part of their 3.3 release, SGI added some nifty macros which
+   <P>First the good news, then the bad news.</P>
+   <P><STRONG>Good news:</STRONG>  As part of their 3.3 release, SGI
+      added some nifty macros which
       perform assertions on type properties.  For example, the Standard
       requires that types passed as template parameters to <TT>vector</TT>
       be &quot;Assignable&quot; (which means what you think it means).
@@ -83,13 +85,43 @@
       <TT>vector&lt;MyType&gt;</TT>, compile-time checking can be done on
       whether MyType meets the requirements for vectors.
    </P>
-<P>This is an extension to the library.  This documentation needs updating.</P>
+   <P>Most (all?) of the containers and sequences are capable of performing
+      concept checking during compilation, not just vector.
+   </P>
+   <P>If a concept is violated (thus causing a compilation failure), the
+      error messages printed by the compiler will be of the form
+      <PRE>
+   _STL_ERROR::__<EM>foo</EM>_violation
+      </PRE> where <EM>foo</EM> is a description of the precise violation.
+      For example, if a type is required to support the preincrement
+      operator but doesn't, then you will see
+      _STL_ERROR::__postincrement_operator_requirement_violation, which
+      should give you a hint as to the nature of the problem.
+   </P>
+   <P>Other names might be seen for more specific errors, for example,
+      _ERROR_IN_STL_CONTAINER::__begin_iterator_accessor_requirement_violation.
+   </P>
+   <P>You will probably also see other errors as the malformed code is
+      actually used.  The concept checking error messages should be printed
+      before the others, so start at the top and work your way down.
+   </P>
+   <P><STRONG>Bad news:</STRONG>  The current checking code is somewhat
+      messy.  It results in no runtime overhead, but there is a space
+      penalty (sometimes a very large one) in the generated code.  And the
+      code itself has bugs.
+   </P>
+   <P>Concept checking can be disabled when you build your code.  Just
+      define (via -D or #define) the macro
+      <TT>_STL_NO_CONCEPT_CHECKS</TT> (yes, with the leading underscore).
+      In fact, this may already be defined in the library by default,
+      depending on what decision we come to.
+   </P>
+   <P><STRONG>More good news:</STRONG>  Replacement code has already been
+      written by the same author of the original code.  It's available at
+      Boost and we hope to integrate it into the library.
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
    </P>
-
-
-
 
 
 <!-- ####################################################### -->
@@ -99,7 +131,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@gcc.gnu.org">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.5 2000/12/03 23:47:47 jsm28 Exp $
+<BR> $Id: howto.html,v 1.1 2000/12/10 04:04:54 pme Exp $
 </EM></P>
 
 
