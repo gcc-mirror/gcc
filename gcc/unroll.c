@@ -1830,7 +1830,14 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	      /* If this is now a no-op, delete it.  */
 	      if (map->last_pc_value == pc_rtx)
 		{
+		  /* Don't let delete_insn delete the label referenced here,
+		     because we might possibly need it later for some other
+		     instruction in the loop.  */
+		  if (JUMP_LABEL (copy))
+		    LABEL_NUSES (JUMP_LABEL (copy))++;
 		  delete_insn (copy);
+		  if (JUMP_LABEL (copy))
+		    LABEL_NUSES (JUMP_LABEL (copy))--;
 		  copy = 0;
 		}
 	      else
