@@ -1,3 +1,9 @@
+Thu Jul  9 18:12:49 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (emit_reload_insns): If an output reload copies only
+	to a secondary reload register, indicate that the secondary reload
+	does the actual store.
+
 Thu Jul  9 18:01:05 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload.c (find_equiv_reg): If need_stable_sp is set,
