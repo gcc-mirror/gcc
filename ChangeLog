@@ -1,3 +1,8 @@
+2002-12-24  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.tpl (multilib.out): Fix missing space.
+	* Makefile.in: Regenerate.
+
 2002-12-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Use shared multilib.out.  Use move-if-change for it.
