@@ -27,13 +27,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "coretypes.h"
 #include "tree.h"
 #include "convert.h"
-#include <stdio.h>
 #include "ggc.h"
 #include "toplev.h"
 #include "real.h"
 #include "tree-gimple.h"
 #include "flags.h"
-#include <gmp.h>
 #include "gfortran.h"
 #include "trans.h"
 #include "trans-const.h"

@@ -23,9 +23,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "config.h"
 #include "system.h"
 #include "flags.h"
-
-#include <string.h>
-
 #include "gfortran.h"
 #include "arith.h"
 #include "intrinsic.h"

@@ -20,10 +20,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 #include "config.h"
+#include "system.h"
 #include "gfortran.h"
 #include "match.h"
-
-#include <string.h>
 
 /* This parameter is the size of the largest array constructor that we
    will expand to an array constructor without iterators.

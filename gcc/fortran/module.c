@@ -64,12 +64,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    particular order.  */
 
 #include "config.h"
-#include <string.h>
-#include <stdio.h>
-#include <errno.h>
-#include <unistd.h>
-#include <time.h>
-
+#include "system.h"
 #include "gfortran.h"
 #include "arith.h"
 #include "match.h"

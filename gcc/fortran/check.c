@@ -26,10 +26,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    has been sorted into the right order and has NULL arguments in the
    correct places for missing optional arguments.  */
 
-
-#include <stdlib.h>
-#include <stdarg.h>
-
 #include "config.h"
 #include "system.h"
 #include "flags.h"
