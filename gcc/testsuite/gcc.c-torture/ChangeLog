@@ -1,3 +1,7 @@
+Wed Feb 23 14:16:06 2000  Donald Lindsay  <dlindsay@cygnus.com>
+
+	* execute/va-arg-12.c: New test.
+
 2000-02-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* execute/20000223-1.c: New test.
