@@ -328,13 +328,12 @@ extern int target_flags;
    when one has mode MODE1 and one has mode MODE2.
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
    for any hard reg, then this must be 0 for correct output.  */
-#define MODES_TIEABLE_P(MODE1, MODE2)					\
-  ((MODE1) == (MODE2)							\
-   || ((MODE1) == HImode && (MODE2) == QImode)				\
-   || ((MODE1) == QImode && (MODE2) == HImode)				\
-   || ((TARGET_H8300H || TARGET_H8300S)					\
-       && (((MODE1) == SImode && (MODE2) == HImode)			\
-	   || ((MODE1) == HImode && (MODE2) == SImode))))
+#define MODES_TIEABLE_P(MODE1, MODE2)					  \
+  ((MODE1) == (MODE2)							  \
+   || (((MODE1) == QImode || (MODE1) == HImode				  \
+	|| ((TARGET_H8300H || TARGET_H8300S) && (MODE1) == SImode))	  \
+       &&  ((MODE2) == QImode || (MODE2) == HImode			  \
+	    || ((TARGET_H8300H || TARGET_H8300S) && (MODE2) == SImode))))
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
