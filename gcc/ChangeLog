@@ -1,3 +1,8 @@
+2003-09-27  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc (powerpc-*-eabispe*, powerpc-*-eabisimaltivec*,
+	powerpc-*-eabialtivec*): Disable fixproto.
+
 2003-09-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/12340
