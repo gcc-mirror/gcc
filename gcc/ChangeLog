@@ -1,3 +1,8 @@
+2004-01-03  Steven Bosscher  <stevenb@suse.de>
+
+	* passes.c (rest_of_compilation): Don't run regmove if only
+	flag_expensive_optimizations, require flag_regmove instead.
+
 2005-01-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/litecoff.h (TARGET_OS_CPP_BUILTINS): Do not
