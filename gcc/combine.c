@@ -4542,9 +4542,9 @@ expand_field_assignment (x)
   return x;
 }
 
-/* Return an RTX for a reference to LEN bits of INNER.  POS is the starting
-   bit position (counted from the LSB) if >= 0; otherwise POS_RTX represents
-   the starting bit position.
+/* Return an RTX for a reference to LEN bits of INNER.  If POS_RTX is nonzero,
+   it is an RTX that represents a variable starting position; otherwise,
+   POS is the (constant) starting bit position (counted from the LSB).
 
    INNER may be a USE.  This will occur when we started with a bitfield
    that went outside the boundary of the object in memory, which is
@@ -4588,6 +4588,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
   enum machine_mode tmode = mode_for_size (len, MODE_INT, 1);
   int spans_byte = 0;
   rtx new = 0;
+  rtx orig_pos_rtx = pos_rtx;
 
   /* Get some information about INNER and get the innermost object.  */
   if (GET_CODE (inner) == USE)
@@ -4610,7 +4611,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
   inner_mode = GET_MODE (inner);
 
   if (pos_rtx && GET_CODE (pos_rtx) == CONST_INT)
-    pos = INTVAL (pos_rtx);
+    pos = INTVAL (pos_rtx), pos_rtx = 0;
 
   /* See if this can be done without an extraction.  We never can if the
      width of the field is not the same as that of some integer mode. For
@@ -4627,12 +4628,12 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 
   if (tmode != BLKmode
       && ! (spans_byte && inner_mode != tmode)
-      && ((pos == 0 && GET_CODE (inner) != MEM
+      && ((pos_rtx == 0 && pos == 0 && GET_CODE (inner) != MEM
 	   && (! in_dest
 	       || (GET_CODE (inner) == REG
 		   && (movstrict_optab->handlers[(int) tmode].insn_code
 		       != CODE_FOR_nothing))))
-	  || (GET_CODE (inner) == MEM && pos >= 0
+	  || (GET_CODE (inner) == MEM && pos_rtx == 0
 	      && (pos
 		  % (STRICT_ALIGNMENT ? GET_MODE_ALIGNMENT (tmode)
 		     : BITS_PER_UNIT)) == 0
@@ -4696,7 +4697,8 @@ make_extraction (mode, inner, pos, pos_rtx, len,
   /* Unless this is a COMPARE or we have a funny memory reference,
      don't do anything with zero-extending field extracts starting at
      the low-order bit since they are simple AND operations.  */
-  if (pos == 0 && ! in_dest && ! in_compare && ! spans_byte && unsignedp)
+  if (pos_rtx == 0 && pos == 0 && ! in_dest
+      && ! in_compare && ! spans_byte && unsignedp)
     return 0;
 
   /* Get the mode to use should INNER be a MEM, the mode for the position,
@@ -4749,7 +4751,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 #if BITS_BIG_ENDIAN
   /* If position is constant, compute new position.  Otherwise, build
      subtraction.  */
-  if (pos >= 0)
+  if (pos_rtx == 0)
     pos = (MAX (GET_MODE_BITSIZE (is_mode), GET_MODE_BITSIZE (wanted_mem_mode))
 	   - len - pos);
   else
@@ -4792,7 +4794,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 #endif
 
       /* If this is a constant position, we can move to the desired byte.  */
-      if (pos >= 0)
+      if (pos_rtx == 0)
 	{
 	  offset += pos / BITS_PER_UNIT;
 	  pos %= GET_MODE_BITSIZE (wanted_mem_mode);
@@ -4818,15 +4820,20 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 
   /* Adjust mode of POS_RTX, if needed.  If we want a wider mode, we
      have to zero extend.  Otherwise, we can just use a SUBREG.  */
-  if (pos < 0
+  if (pos_rtx != 0
       && GET_MODE_SIZE (pos_mode) > GET_MODE_SIZE (GET_MODE (pos_rtx)))
     pos_rtx = gen_rtx_combine (ZERO_EXTEND, pos_mode, pos_rtx);
-  else if (pos < 0
+  else if (pos_rtx != 0
 	   && GET_MODE_SIZE (pos_mode) < GET_MODE_SIZE (GET_MODE (pos_rtx)))
     pos_rtx = gen_lowpart_for_combine (pos_mode, pos_rtx);
 
-  /* Make POS_RTX unless we already have it and it is correct.  */
-  if (pos_rtx == 0 || (pos >= 0 && INTVAL (pos_rtx) != pos))
+  /* Make POS_RTX unless we already have it and it is correct.  If we don't
+     have a POS_RTX but we do have an ORIG_POS_RTX, the latter must
+     be a CONST_INT. */
+  if (pos_rtx == 0 && orig_pos_rtx != 0 && INTVAL (orig_pos_rtx) == pos)
+    pos_rtx = orig_pos_rtx;
+
+  else if (pos_rtx == 0)
     pos_rtx = GEN_INT (pos);
 
   /* Make the required operation.  See if we can use existing rtx.  */
@@ -4905,7 +4912,7 @@ make_compound_operation (x, in_code)
 	 is a logical right shift, make an extraction.  */
       if (GET_CODE (XEXP (x, 0)) == LSHIFTRT
 	  && (i = exact_log2 (INTVAL (XEXP (x, 1)) + 1)) >= 0)
-	new = make_extraction (mode, XEXP (XEXP (x, 0), 0), -1,
+	new = make_extraction (mode, XEXP (XEXP (x, 0), 0), 0,
 			       XEXP (XEXP (x, 0), 1), i, 1,
 			       0, in_code == COMPARE);
 
@@ -4915,7 +4922,7 @@ make_compound_operation (x, in_code)
 	       && GET_CODE (SUBREG_REG (XEXP (x, 0))) == LSHIFTRT
 	       && (i = exact_log2 (INTVAL (XEXP (x, 1)) + 1)) >= 0)
 	new = make_extraction (GET_MODE (SUBREG_REG (XEXP (x, 0))),
-			       XEXP (SUBREG_REG (XEXP (x, 0)), 0), -1,
+			       XEXP (SUBREG_REG (XEXP (x, 0)), 0), 0,
 			       XEXP (SUBREG_REG (XEXP (x, 0)), 1), i, 1,
 			       0, in_code == COMPARE);
 
@@ -5425,7 +5432,7 @@ make_field_assignment (x)
 	  || rtx_equal_p (dest, get_last_value (XEXP (src, 1)))
 	  || rtx_equal_p (get_last_value (dest), XEXP (src, 1))))
     {
-      assign = make_extraction (VOIDmode, dest, -1, XEXP (XEXP (src, 0), 1),
+      assign = make_extraction (VOIDmode, dest, 0, XEXP (XEXP (src, 0), 1),
 				1, 1, 1, 0);
       return gen_rtx (SET, VOIDmode, assign, const0_rtx);
     }
@@ -5440,7 +5447,7 @@ make_field_assignment (x)
 	       || rtx_equal_p (dest, get_last_value (XEXP (src, 1)))
 	       || rtx_equal_p (get_last_value (dest), XEXP (src, 1))))
     {
-      assign = make_extraction (VOIDmode, dest, -1,
+      assign = make_extraction (VOIDmode, dest, 0,
 				XEXP (SUBREG_REG (XEXP (src, 0)), 1),
 				1, 1, 1, 0);
       return gen_rtx (SET, VOIDmode, assign, const0_rtx);
@@ -5454,7 +5461,7 @@ make_field_assignment (x)
 	       || rtx_equal_p (dest, get_last_value (XEXP (src, 1)))
 	       || rtx_equal_p (get_last_value (dest), XEXP (src, 1))))
     {
-      assign = make_extraction (VOIDmode, dest, -1, XEXP (XEXP (src, 0), 1),
+      assign = make_extraction (VOIDmode, dest, 0, XEXP (XEXP (src, 0), 1),
 				1, 1, 1, 0);
       return gen_rtx (SET, VOIDmode, assign, const1_rtx);
     }
