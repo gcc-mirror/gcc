@@ -1,3 +1,22 @@
+2000-05-27  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppfiles.c: Read files in, using mmap if possible, then
+	prescan them separately.
+	(read_file, read_with_read): New functions.
+	* cpplex.c: Don't define UCHAR_MAX.
+	(_cpp_read_and_prescan): Rename to _cpp_prescan.  Don't read
+	the file here.
+
+	* cppinit.c (handle_option): Automatically define __cplusplus,
+	__OBJC__, __ASEEMBLER__, _LANGUAGE_FORTRAN here when we see
+	the respective -lang switch.
+
+	* cpphash.h (enum node_type, struct hashnode, _cpp_lookup
+	prototype): Move to...
+	* cpplib.h: ... here.  Rename struct hashnode to struct
+	cpp_hashnode and give it a typedef.  Rename _cpp_lookup to
+	cpp_lookup.  Add 'fe_value' slot, a union tree_node *.
+
 2000-05-27  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/rs6000.md (movsi): Constify 'name'.
