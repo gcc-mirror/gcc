@@ -1,3 +1,7 @@
+Mon Apr  6 07:17:52 1998  Catherine Moore  <clm@cygnus.com>
+
+        * combine.c (can_combine_p):  Include successor in volatile test.
+
 Mon Apr  6 14:16:33 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (CASE_VECTOR_SHORTEN_MODE): Fix logic when to set
