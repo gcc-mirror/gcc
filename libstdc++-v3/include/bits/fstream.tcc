@@ -201,6 +201,7 @@ namespace std
 	  bool __got_eof = false;
 	  // Number of internal characters produced.
 	  streamsize __ilen = 0;
+	  codecvt_base::result __r = codecvt_base::ok;	  
 	  if (__check_facet(_M_codecvt).always_noconv())
 	    {
 	      __ilen = _M_file.xsgetn(reinterpret_cast<char*>(this->eback()), 
@@ -261,9 +262,8 @@ namespace std
 			__got_eof = true;
 		      _M_ext_end += __elen;
 		    }
-		  
+
 		  char_type* __iend;
-		  codecvt_base::result __r;
 		  __r = _M_codecvt->in(_M_state_cur, _M_ext_next,
 				       _M_ext_end, _M_ext_next, this->eback(), 
 				       this->eback() + __buflen, __iend);
@@ -277,7 +277,7 @@ namespace std
 		    }
 		  else
 		    __ilen = __iend - this->eback();
-		  
+
 		  // _M_codecvt->in may return error while __ilen > 0: this is
 		  // ok, and actually occurs in case of mixed encodings (e.g.,
 		  // XML files).
@@ -302,7 +302,13 @@ namespace std
 	      // intervening seek.
 	      _M_set_buffer(-1);
 	      _M_reading = false;
+	      // However, reaching it while looping on partial means that
+	      // the file has got an incomplete character.
+	      if (__r == codecvt_base::partial)
+		__throw_ios_failure("incomplete character in file");
 	    }
+	  else if (__r == codecvt_base::error)
+	    __throw_ios_failure("invalid byte sequence in file");
 	}
       return __ret;
     }
