@@ -81,7 +81,7 @@ convert (tree type, tree expr)
     return expr;
 
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr)))
-    return fold (build1 (NOP_EXPR, type, expr));
+    return fold_build1 (NOP_EXPR, type, expr);
   if (TREE_CODE (TREE_TYPE (expr)) == ERROR_MARK)
     return error_mark_node;
   if (TREE_CODE (TREE_TYPE (expr)) == VOID_TYPE)
@@ -106,9 +106,9 @@ convert (tree type, tree expr)
       /* If we have a NOP_EXPR, we must fold it here to avoid
          infinite recursion between fold () and convert ().  */
       if (TREE_CODE (e) == NOP_EXPR)
-	return fold (build1 (NOP_EXPR, type, TREE_OPERAND (e, 0)));
+	return fold_build1 (NOP_EXPR, type, TREE_OPERAND (e, 0));
       else
-	return fold (build1 (NOP_EXPR, type, e));
+	return fold_build1 (NOP_EXPR, type, e);
     }
   if (code == POINTER_TYPE || code == REFERENCE_TYPE)
     return fold (convert_to_pointer (type, e));

@@ -926,8 +926,8 @@ gfc_get_dtype (tree type)
   if (size && !INTEGER_CST_P (size))
     {
       tmp = build_int_cst (gfc_array_index_type, GFC_DTYPE_SIZE_SHIFT);
-      tmp  = fold (build2 (LSHIFT_EXPR, gfc_array_index_type, size, tmp));
-      dtype = fold (build2 (PLUS_EXPR, gfc_array_index_type, tmp, dtype));
+      tmp  = fold_build2 (LSHIFT_EXPR, gfc_array_index_type, size, tmp);
+      dtype = fold_build2 (PLUS_EXPR, gfc_array_index_type, tmp, dtype);
     }
   /* If we don't know the size we leave it as zero.  This should never happen
      for anything that is actually used.  */
@@ -1160,11 +1160,11 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
 
       if (upper != NULL_TREE && lower != NULL_TREE && stride != NULL_TREE)
 	{
-	  tmp = fold (build2 (MINUS_EXPR, gfc_array_index_type, upper, lower));
-	  tmp = fold (build2 (PLUS_EXPR, gfc_array_index_type, tmp,
-			      gfc_index_one_node));
+	  tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type, upper, lower);
+	  tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type, tmp,
+			     gfc_index_one_node);
 	  stride =
-	    fold (build2 (MULT_EXPR, gfc_array_index_type, tmp, stride));
+	    fold_build2 (MULT_EXPR, gfc_array_index_type, tmp, stride);
 	  /* Check the folding worked.  */
 	  gcc_assert (INTEGER_CST_P (stride));
 	}

@@ -513,7 +513,7 @@ gfc_conv_powi (gfc_se * se, int n, tree * tmpvar)
       op1 = op0;
     }
 
-  tmp = fold (build2 (MULT_EXPR, TREE_TYPE (op0), op0, op1));
+  tmp = fold_build2 (MULT_EXPR, TREE_TYPE (op0), op0, op1);
   tmp = gfc_evaluate_now (tmp, &se->pre);
 
   if (n < POWI_TABLE_SIZE)
@@ -738,9 +738,8 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
   if (gfc_can_put_var_on_stack (len))
     {
       /* Create a temporary variable to hold the result.  */
-      tmp = fold (build2 (MINUS_EXPR, gfc_charlen_type_node, len,
-			  convert (gfc_charlen_type_node,
-				   integer_one_node)));
+      tmp = fold_build2 (MINUS_EXPR, gfc_charlen_type_node, len,
+			 convert (gfc_charlen_type_node, integer_one_node));
       tmp = build_range_type (gfc_array_index_type, gfc_index_zero_node, tmp);
       tmp = build_array_type (gfc_character1_type_node, tmp);
       var = gfc_create_var (tmp, "str");
@@ -797,8 +796,8 @@ gfc_conv_concat_op (gfc_se * se, gfc_expr * expr)
   len = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
   if (len == NULL_TREE)
     {
-      len = fold (build2 (PLUS_EXPR, TREE_TYPE (lse.string_length),
-			  lse.string_length, rse.string_length));
+      len = fold_build2 (PLUS_EXPR, TREE_TYPE (lse.string_length),
+			 lse.string_length, rse.string_length);
     }
 
   type = build_pointer_type (type);
@@ -990,11 +989,11 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
   if (lop)
     {
       /* The result of logical ops is always boolean_type_node.  */
-      tmp = fold (build2 (code, type, lse.expr, rse.expr));
+      tmp = fold_build2 (code, type, lse.expr, rse.expr);
       se->expr = convert (type, tmp);
     }
   else
-    se->expr = fold (build2 (code, type, lse.expr, rse.expr));
+    se->expr = fold_build2 (code, type, lse.expr, rse.expr);
 
   /* Add the post blocks.  */
   gfc_add_block_to_block (&se->post, &rse.post);
