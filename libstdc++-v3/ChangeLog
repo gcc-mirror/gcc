@@ -1,3 +1,13 @@
+2001-05-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* porting.texi: Correct documentation about handling
+	_LARRGEFILE_SOURCE and its ilk.
+	* config/os/solaris/solaris2.5/bits/os_defines.h: Remove
+	definitions of _XOPEN_SOURCE, _LARGEFILE64_SOURCE, and 
+	__EXTENSIONS__.
+	* config/os/solaris/solaris2.6/bits/os_defines.h: Likewise.
+	* config/os/solaris/solaris2.7/bits/os_defines.h: Likewise.
+
 2001-05-15  Zack Weinberg  <zackw@stanford.edu>
 	
         * testsuite/21_strings/inserters_extractors.cc,

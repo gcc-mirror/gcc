@@ -35,6 +35,28 @@ Boston, MA 02111-1307, USA.  */
 %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude} \
 "
 
+/* For C++ we need to add some additional macro definitions required
+   by the C++ standard library.  */
+#define CPLUSPLUS_CPP_SPEC "\
+-D_XOPEN_SOURCE=500 -D_LARGEFILE_SOURCE=1 -D_LARGEFILE64_SOURCE=1 \
+-D__EXTENSIONS__ \
+%{mcypress:} \
+%{msparclite:-D__sparclite__} \
+%{mf930:-D__sparclite__} %{mf934:-D__sparclite__} \
+%{mv8:-D__sparc_v8__} \
+%{msupersparc:-D__supersparc__ -D__sparc_v8__} \
+%{mcpu=sparclet:-D__sparclet__} %{mcpu=tsc701:-D__sparclet__} \
+%{mcpu=sparclite:-D__sparclite__} \
+%{mcpu=f930:-D__sparclite__} %{mcpu=f934:-D__sparclite__} \
+%{mcpu=v8:-D__sparc_v8__} \
+%{mcpu=supersparc:-D__supersparc__ -D__sparc_v8__} \
+%{mcpu=hypersparc:-D__hypersparc__ -D__sparc_v8__} \
+%{mcpu=sparclite86x:-D__sparclite86x__} \
+%{mcpu=v9:-D__sparc_v9__} \
+%{mcpu=ultrasparc:-D__sparc_v9__} \
+%{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(cpp_cpu_default)}}}}}}} \
+"
+
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
    It's safe to pass -s always, even if -g is not used. */
 #undef ASM_SPEC
