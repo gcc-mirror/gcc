@@ -40,6 +40,11 @@ Boston, MA 02111-1307, USA.  */
 
 #include "objc/objc.h"
 
+/*************************************************************************
+ *  Universal static variables:
+ */
+extern int __objc_thread_exit_status;      /* Global exit status.   */
+
 /********
  *  Thread safe implementation types and functions.  
  */
