@@ -383,7 +383,6 @@ int main(void)
         exit(0);
 
 }, gcc_cv_enum_bf_unsigned=yes, gcc_cv_enum_bf_unsigned=no, gcc_cv_enum_bf_unsigned=yes)])
-AC_MSG_RESULT($gcc_cv_enum_bf_unsigned)
 if test $gcc_cv_enum_bf_unsigned = yes; then
   AC_DEFINE(ENUM_BITFIELDS_ARE_UNSIGNED, 1,
     [Define if enumerated bitfields are treated as unsigned values.])
