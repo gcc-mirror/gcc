@@ -20,7 +20,7 @@
 
 	* semantics.c (finish_id_expression): Refactor the code to handle
 	template parameters, and emit a more informative error message
-	when they are used within non integral constant expressions.
+	when they are used within an integral constant expression.
 
 2003-12-16  Nathan Sidwell  <nathan@codesourcery.com>
 
