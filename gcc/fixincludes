@@ -795,6 +795,7 @@ if [ -r ${LIB}/$file ]; then
   # Don't claim to have defined va_list.
   sed -e 's@ va_list @ __gnuc_va_list @' \
       -e 's@ va_list@ __va_list__@' \
+      -e 's@\*va_list@*__va_list__@' \
       -e 's@VA_LIST@DUMMY_VA_LIST@' \
     ${LIB}/$file >> ${LIB}/${file}.sed
   
