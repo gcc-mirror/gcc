@@ -1,3 +1,12 @@
+2001-10-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* Update entire directory from gettext 0.10.40.
+	* cat-compat.c, linux-msg.sed, po2tbl.sed.in, xopen-msg.sed:
+	Removed.
+	* config.charset, dcigettext.c, dcngettext.c, libgnuintl.h,
+	localcharset.c, locale.alias, ngettext.c, plural.c, plural.y,
+	ref-add.sin, ref-del.sin: New.
+
 2001-07-06  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
 
 	* gettextP.h (SWAP): Change parameter type to unsigned int.

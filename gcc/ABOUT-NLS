@@ -8,7 +8,7 @@ A few packages already provide translations for their messages.
 
    If you found this `ABOUT-NLS' file inside a distribution, you may
 assume that the distributed package does use GNU `gettext' internally,
-itself available at your nearest GNU archive site.  But you do *not*
+itself available at your nearest GNU archive site.  But you do _not_
 need to install GNU `gettext' prior to configuring, installing or using
 this package with messages translated.
 
@@ -22,8 +22,8 @@ related to internationalization, you should tell about the version of
 `gettext' which is used.  The information can be found in the
 `intl/VERSION' file, in internationalized packages.
 
-One advise in advance
-=====================
+Quick configuration advice
+==========================
 
    If you want to exploit the full power of internationalization, you
 should configure it using
@@ -34,13 +34,14 @@ to force usage of internationalizing routines provided within this
 package, despite the existence of internationalizing capabilities in the
 operating system where this package is being installed.  So far, only
 the `gettext' implementation in the GNU C library version 2 provides as
-many features (such as locale alias or message inheritance) as the
-implementation here.  It is also not possible to offer this additional
-functionality on top of a `catgets' implementation.  Future versions of
-GNU `gettext' will very likely convey even more functionality.  So it
-might be a good idea to change to GNU `gettext' as soon as possible.
+many features (such as locale alias, message inheritance, automatic
+charset conversion or plural form handling) as the implementation here.
+It is also not possible to offer this additional functionality on top
+of a `catgets' implementation.  Future versions of GNU `gettext' will
+very likely convey even more functionality.  So it might be a good idea
+to change to GNU `gettext' as soon as possible.
 
-   So you need not provide this option if you are using GNU libc 2 or
+   So you need _not_ provide this option if you are using GNU libc 2 or
 you have installed a recent copy of the GNU gettext package with the
 included `libintl'.
 
@@ -53,23 +54,20 @@ Most such packages use GNU `gettext'.  Other packages have their own
 ways to internationalization, predating GNU `gettext'.
 
    By default, this package will be installed to allow translation of
-messages.  It will automatically detect whether the system provides
-usable `catgets' (if using this is selected by the installer) or
-`gettext' functions.  If neither is available, the GNU `gettext' own
+messages.  It will automatically detect whether the system already
+provides the GNU `gettext' functions.  If not, the GNU `gettext' own
 library will be used.  This library is wholly contained within this
 package, usually in the `intl/' subdirectory, so prior installation of
-the GNU `gettext' package is *not* required.  Installers may use
+the GNU `gettext' package is _not_ required.  Installers may use
 special options at configuration time for changing the default
 behaviour.  The commands:
 
      ./configure --with-included-gettext
-     ./configure --with-catgets
      ./configure --disable-nls
 
-will respectively bypass any pre-existing `catgets' or `gettext' to use
-the internationalizing routines provided within this package, enable
-the use of the `catgets' functions (if found on the locale system), or
-else, *totally* disable translation of messages.
+will respectively bypass any pre-existing `gettext' to use the
+internationalizing routines provided within this package, or else,
+_totally_ disable translation of messages.
 
    When you already have GNU `gettext' installed on your system and run
 configure without an option for your new package, `configure' will
@@ -83,18 +81,10 @@ package is more recent, you should use
 
 to prevent auto-detection.
 
-   By default the configuration process will not test for the `catgets'
-function and therefore they will not be used.  The reasons are already
-given above: the emulation on top of `catgets' cannot provide all the
-extensions provided by the GNU `gettext' library.  If you nevertheless
-want to use the `catgets' functions use
-
-     ./configure --with-catgets
-
-to enable the test for `catgets' (this causes no harm if `catgets' is
-not available on your system).  If you really select this option we
-would like to hear about the reasons because we cannot think of any
-good one ourself.
+   The configuration process will not test for the `catgets' function
+and therefore it will not be used.  The reason is that even an
+emulation of `gettext' on top of `catgets' could not provide all the
+extensions of the GNU `gettext' library.
 
    Internationalized packages have usually many `po/LL.po' files, where
 LL gives an ISO 639 two-letter code identifying the language.  Unless
@@ -110,22 +100,35 @@ Using This Package
 
    As a user, if your language has been installed for this package, you
 only have to set the `LANG' environment variable to the appropriate
-ISO 639 `LL' two-letter code prior to using the programs in the
-package.  For example, let's suppose that you speak German.  At the
-shell prompt, merely execute `setenv LANG de' (in `csh'),
-`export LANG; LANG=de' (in `sh') or `export LANG=de' (in `bash').  This
-can be done from your `.login' or `.profile' file, once and for all.
+`LL_CC' combination.  Here `LL' is an ISO 639 two-letter language code,
+and `CC' is an ISO 3166 two-letter country code.  For example, let's
+suppose that you speak German and live in Germany.  At the shell
+prompt, merely execute `setenv LANG de_DE' (in `csh'),
+`export LANG; LANG=de_DE' (in `sh') or `export LANG=de_DE' (in `bash').
+This can be done from your `.login' or `.profile' file, once and for
+all.
 
-   An operating system might already offer message localization for
-many of its programs, while other programs have been installed locally
-with the full capabilities of GNU `gettext'.  Just using `gettext'
-extended syntax for `LANG' would break proper localization of already
-available operating system programs.  In this case, users should set
-both `LANGUAGE' and `LANG' variables in their environment, as programs
-using GNU `gettext' give preference to `LANGUAGE'.  For example, some
-Swedish users would rather read translations in German than English for
-when Swedish is not available.  This is easily accomplished by setting
-`LANGUAGE' to `sv:de' while leaving `LANG' to `sv'.
+   You might think that the country code specification is redundant.
+But in fact, some languages have dialects in different countries.  For
+example, `de_AT' is used for Austria, and `pt_BR' for Brazil.  The
+country code serves to distinguish the dialects.
+
+   Not all programs have translations for all languages.  By default, an
+English message is shown in place of a nonexistent translation.  If you
+understand other languages, you can set up a priority list of languages.
+This is done through a different environment variable, called
+`LANGUAGE'.  GNU `gettext' gives preference to `LANGUAGE' over `LANG'
+for the purpose of message handling, but you still need to have `LANG'
+set to the primary language; this is required by other parts of the
+system libraries.  For example, some Swedish users who would rather
+read translations in German than English for when Swedish is not
+available, set `LANGUAGE' to `sv:de' while leaving `LANG' to `sv_SE'.
+
+   In the `LANGUAGE' environment variable, but not in the `LANG'
+environment variable, `LL_CC' combinations can be abbreviated as `LL'
+to denote the language's main dialect.  For example, `de' is equivalent
+to `de_DE' (German as spoken in Germany), and `pt' to `pt_PT'
+(Portuguese as spoken in Portugal) in this context.
 
 Translating Teams
 =================
@@ -133,33 +136,21 @@ Translating Teams
    For the Free Translation Project to be a success, we need interested
 people who like their own language and write it well, and who are also
 able to synergize with other translators speaking the same language.
-Each translation team has its own mailing list, courtesy of Linux
-International.  You may reach your translation team at the address
-`LL@li.org', replacing LL by the two-letter ISO 639 code for your
-language.  Language codes are *not* the same as the country codes given
-in ISO 3166.  The following translation teams exist, as of December
-1997:
+Each translation team has its own mailing list.  The up-to-date list of
+teams can be found at the Free Translation Project's homepage,
+`http://www.iro.umontreal.ca/contrib/po/HTML/', in the "National teams"
+area.
 
-     Chinese `zh', Czech `cs', Danish `da', Dutch `nl', English `en',
-     Esperanto `eo', Finnish `fi', French `fr', German `de', Hungarian
-     `hu', Irish `ga', Italian `it', Indonesian `id', Japanese `ja',
-     Korean `ko', Latin `la', Norwegian `no', Persian `fa', Polish
-     `pl', Portuguese `pt', Russian `ru', Slovenian `sl', Spanish `es',
-     Swedish `sv', and Turkish `tr'.
-
-For example, you may reach the Chinese translation team by writing to
-`zh@li.org'.
-
-   If you'd like to volunteer to *work* at translating messages, you
+   If you'd like to volunteer to _work_ at translating messages, you
 should become a member of the translating team for your own language.
-The subscribing address is *not* the same as the list itself, it has
+The subscribing address is _not_ the same as the list itself, it has
 `-request' appended.  For example, speakers of Swedish can send a
 message to `sv-request@li.org', having this message body:
 
      subscribe
 
    Keep in mind that team members are expected to participate
-*actively* in translations, or at solving translational difficulties,
+_actively_ in translations, or at solving translational difficulties,
 rather than merely lurking around.  If your team does not exist yet and
 you want to start one, or if you are unsure about what to do or how to
 get started, please write to `translation@iro.umontreal.ca' to reach the
@@ -173,42 +164,128 @@ Available Packages
 ==================
 
    Languages are not equally supported in all packages.  The following
-matrix shows the current state of internationalization, as of December
-1997.  The matrix shows, in regard of each package, for which languages
-PO files have been submitted to translation coordination.
+matrix shows the current state of internationalization, as of September
+2001.  The matrix shows, in regard of each package, for which languages
+PO files have been submitted to translation coordination, with a
+translation percentage of at least 50%.
 
-     Ready PO files    cs da de en es fi fr it ja ko nl no pl pt ru sl sv
-                     .----------------------------------------------------.
-     bash            |       []          []          []                   |  3
-     bison           |       []          []          []                   |  3
-     clisp           |       [] [] []    []                               |  4
-     cpio            |       []    []    []       [] []    []             |  6
-     diffutils       |       []    []    []                []          [] |  5
-     enscript        |       []    [] [] []          []             []    |  6
-     fileutils       | []    []    []    []       [] []    [] []    [] [] | 10
-     findutils       |       []    []    [] []    [] []    []    []    [] |  9
-     flex            |             []    []       []                   [] |  4
-     gcal            |       []          []          []    []          [] |  5
-     gettext         |    [] []    []    []       [] [] [] [] []    [] [] | 12
-     grep            |       []    []    []       [] [] [] []    [] [] [] | 10
-     hello           |    [] []    []    []       [] [] [] [] []    [] [] | 11
-     id-utils        |       []          []                []             |  3
-     indent          |    [] []                   []       []    []       |  5
-     libc            |       []    []    []       [] []    []          [] |  7
-     m4              |       []          []    []    []          []    [] |  6
-     make            |       []    []    []       [] []    []             |  6
-     music           |                   []                []             |  2
-     ptx             |       []    []    []          [] [] [] []       [] |  8
-     recode          |    [] []    []    []          []    [] []    [] [] |  9
-     sh-utils        |       []    []    []          [] [] [] []       [] |  8
-     sharutils       | []    []    []    []          []                [] |  6
-     tar             | []    []          [] []    [] [] [] [] []    [] [] | 11
-     texinfo         | []    []          []                               |  3
-     textutils       | []    []    []    []       [] [] [] []          [] |  9
-     wdiff           | []    []    []    []          [] [] []          [] |  8
-                     `----------------------------------------------------'
-       17 languages    cs da de en es fi fr it ja ko nl no pl pt ru sl sv
-       27 packages      6  4 25  1 18  1 26  2  1 12 20  9 19  7  4  7 17  179
+     Ready PO files    bg cs da de el en eo es et fi fr gl he hr id it ja
+                     +----------------------------------------------------+
+     a2ps            |          []             []    []                   |
+     bash            |          []       [] []       []                   |
+     bfd             |                                                    |
+     binutils        |                               []                   |
+     bison           |          []          [] []    []                [] |
+     clisp           |          []    []    []       []                   |
+     cpio            |       [] []          []       [] []                |
+     diffutils       |       [] []       [] []       [] []       []       |
+     enscript        |          []                   []                   |
+     error           |                      []       []                   |
+     fetchmail       |                                                    |
+     fileutils       |    [] [] [] []       []       [] []             [] |
+     findutils       |       [] []          [] []    [] []       [] []    |
+     flex            |       []             []       []                   |
+     freetype        |                                                    |
+     gas             |                                                    |
+     gawk            |                               []    []             |
+     gcal            |                                                    |
+     gcc             |                                                    |
+     gettext         |    [] [] [] []       []       [] []       [] [] [] |
+     gnupg           |          []       []    []    [] []          [] [] |
+     gprof           |                                                    |
+     grep            |    []    []       [] [] []    [] []          []    |
+     hello           |       [] [] []    [] [] [] [] [] []          [] [] |
+     id-utils        |       [] []                   []                   |
+     indent          |       [] []             []    [] []                |
+     jpilot          |                               []                   |
+     kbd             |                                                    |
+     ld              |                               []                   |
+     libc            |    [] [] [] []       []       [] []             [] |
+     lilypond        |                                                 [] |
+     lynx            |    [] [] []                                     [] |
+     m4              |    [] [] [] []                [] []       []    [] |
+     make            |       [] []          []       [] []             [] |
+     mysecretdiary   |          []                                        |
+     nano            |                      []          []       []       |
+     opcodes         |                                                    |
+     parted          |          []                      []             [] |
+     ptx             |       [] []          [] []    [] []       []       |
+     python          |                                                    |
+     recode          |       [] [] []    [] []       [] [] []       []    |
+     sed             |    [] [] [] []    []    []    [] [] []    [] [] [] |
+     sh-utils        |    [] [] [] []       [] []    [] []          [] [] |
+     sharutils       |    [] [] [] []       []       [] []             [] |
+     sketch          |                                                    |
+     soundtracker    |          []          []          []                |
+     sp              |                                                    |
+     tar             |    [] [] []          [] []    []             [] [] |
+     texinfo         |    [] [] []       []          []                [] |
+     textutils       |    [] [] [] []       []       [] []             [] |
+     util-linux      |    [] []                                           |
+     wdiff           |       [] []             []                         |
+     wget            |    [] [] [] []       [] []    [] [] []          [] |
+                     +----------------------------------------------------+
+                       bg cs da de el en eo es et fi fr gl he hr id it ja
+                        0 14 24 32 11  1  8 23 13  1 33 22  4  0  7  9 18
+     
+                       ko lv nb nl nn no pl pt pt_BR ru sk sl sv tr uk zh
+                     +----------------------------------------------------+
+     a2ps            |          []                   []    []             |  6
+     bash            |                                                    |  4
+     bfd             |                                                    |  0
+     binutils        |                                                    |  1
+     bison           |                               []                   |  6
+     clisp           |          []                                        |  5
+     cpio            | []       []       []     []   []                   | 10
+     diffutils       |                   []          []       [] []       | 11
+     enscript        |          []              []   []                   |  5
+     error           |                                  []       []       |  4
+     fetchmail       |                                                    |  0
+     fileutils       | []       []       []     []   [] [] [] [] []       | 17
+     findutils       | []       []       []     []   []    [] [] []       | 16
+     flex            | []                            []       []          |  6
+     freetype        |                                                    |  0
+     gas             |                                                    |  0
+     gawk            |                                           []       |  3
+     gcal            |                                                    |  0
+     gcc             |                                                    |  0
+     gettext         | []                []     []   []    [] [] []    [] | 18
+     gnupg           |                   []                   [] []       | 10
+     gprof           |                                                    |  0
+     grep            |                   []                [] [] []       | 12
+     hello           | [] [] [] []    [] []          [] []    [] [] []    | 22
+     id-utils        |          []                   []       []          |  6
+     indent          | []       []       []          [] []    [] []       | 12
+     jpilot          |                                                    |  1
+     kbd             |                                           []       |  1
+     ld              |                                                    |  1
+     libc            | []    []       [] []     []      []    [] []       | 16
+     lilypond        |          []                            []          |  3
+     lynx            |          []              []   []       []          |  8
+     m4              |          []       []          []       []          | 12
+     make            | []       []       []     []   []          []       | 12
+     mysecretdiary   |                                                    |  1
+     nano            |                                        []          |  4
+     opcodes         |                                           []       |  1
+     parted          |          []                   []                   |  5
+     ptx             |       [] []    [] [] []       []       [] []       | 15
+     python          |                                                    |  0
+     recode          |                   []          []    [] []          | 13
+     sed             |          []              []   [] [] [] [] []       | 19
+     sh-utils        |       [] []    [] []     []   [] [] [] [] []    [] | 21
+     sharutils       |          []                   []       []          | 11
+     sketch          |                                                    |  0
+     soundtracker    |                                                    |  3
+     sp              |                                                    |  0
+     tar             |       []       [] []     []         [] [] []       | 15
+     texinfo         |                               []                   |  7
+     textutils       |       [] []    [] []     []   [] [] []             | 16
+     util-linux      |                          []               []       |  4
+     wdiff           |                               [] []    [] []       |  7
+     wget            |          []                   [] [] [] [] [] []    | 17
+                     +----------------------------------------------------+
+       33 teams        ko lv nb nl nn no pl pt pt_BR ru sk sl sv tr uk zh
+       53 domains       9  1  6 20  0  6 17  1  13   25 10 11 23 21  2  2  387
 
    Some counters in the preceding matrix are higher than the number of
 visible blocks let us expect.  This is because a few extra PO files are
@@ -221,6 +298,27 @@ distributed as such by its maintainer.  There might be an observable
 lag between the mere existence a PO file and its wide availability in a
 distribution.
 
-   If December 1997 seems to be old, you may fetch a more recent copy
-of this `ABOUT-NLS' file on most GNU archive sites.
+   If September 2001 seems to be old, you may fetch a more recent copy
+of this `ABOUT-NLS' file on most GNU archive sites.  The most
+up-to-date matrix with full percentage details can be found at
+`http://www.iro.umontreal.ca/contrib/po/HTML/matrix.html'.
+
+Using `gettext' in new packages
+===============================
+
+   If you are writing a freely available program and want to
+internationalize it you are welcome to use GNU `gettext' in your
+package.  Of course you have to respect the GNU Library General Public
+License which covers the use of the GNU `gettext' library.  This means
+in particular that even non-free programs can use `libintl' as a shared
+library, whereas only free software can use `libintl' as a static
+library or use modified versions of `libintl'.
+
+   Once the sources are changed appropriately and the setup can handle
+to use of `gettext' the only thing missing are the translations.  The
+Free Translation Project is also available for packages which are not
+developed inside the GNU project.  Therefore the information given above
+applies also for every other Free Software Project.  Contact
+`translation@iro.umontreal.ca' to make the `.pot' files available to
+the translation teams.
 
