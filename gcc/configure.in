@@ -371,7 +371,8 @@ fi
 
 AC_CHECK_FUNCS(strtoul bsearch strerror putenv popen bcopy bzero bcmp \
 	index rindex strchr strrchr kill getrlimit setrlimit atoll atoq \
-	sysconf isascii gettimeofday strsignal)
+	sysconf isascii gettimeofday strsignal putc_unlocked fputc_unlocked \
+	fputs_unlocked)
 
 # Make sure wchar_t is available
 #AC_CHECK_TYPE(wchar_t, unsigned int)

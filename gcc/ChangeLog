@@ -1,3 +1,12 @@
+1998-12-08  Ulrich Drepper  <drepper@cygnus.com>
+
+	* configure.in: Test for availability of putc_unlocked, fputc_unlocked,
+	and fputs_unlocked.
+	* configure: Rebuilt.
+	* system.h: If the *_unlocked functions are available use them
+	instead of the locked counterparts by defining macros.
+	* config.in: Regenerated.
+
 Tue Dec  8 00:34:05 1998  Mike Stump  <mrs@wrs.com>
 
 	* i386/bsd.h (ASM_FILE_START): Don't use dump_base_name, it is
