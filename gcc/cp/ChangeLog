@@ -1,3 +1,8 @@
+1997-09-25  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* decl.c (init_decl_processing): Declare __builtin_constant_p as
+	accepting any kind of type, not only int.
+
 Fri Sep 26 00:22:56 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* search.c (get_matching_virtual): Notice virtual bases when sorrying
