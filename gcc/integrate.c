@@ -1227,7 +1227,9 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	  /* If they are block mode, the types should match exactly.
 	     They don't match exactly if TREE_TYPE (FORMAL) == ERROR_MARK_NODE,
 	     which could happen if the parameter has incomplete type.  */
-	  || (mode == BLKmode && TREE_TYPE (arg) != TREE_TYPE (formal)))
+	  || (mode == BLKmode
+	      && (TYPE_MAIN_VARIANT (TREE_TYPE (arg))
+		  != TYPE_MAIN_VARIANT (TREE_TYPE (formal)))))
 	return (rtx) (HOST_WIDE_INT) -1;
     }
 
