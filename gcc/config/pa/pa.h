@@ -1396,12 +1396,21 @@ extern struct rtx_def *hppa_builtin_saveregs ();
    && (reload_in_progress || reload_completed || ! symbolic_expression_p (X)))
 
 /* Include all constant integers and constant doubles, but not
-   floating-point, except for floating-point zero.  */
+   floating-point, except for floating-point zero.
 
+   Reject LABEL_REFs if we're not using gas or the new HP assembler.  */
+#ifdef NEW_HP_ASSEMBLER
 #define LEGITIMATE_CONSTANT_P(X)  		\
   ((GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT	\
     || (X) == CONST0_RTX (GET_MODE (X)))	\
    && !function_label_operand (X, VOIDmode))
+#else
+#define LEGITIMATE_CONSTANT_P(X)  		\
+  ((GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT	\
+    || (X) == CONST0_RTX (GET_MODE (X)))	\
+   && (GET_CODE (X) != LABEL_REF || TARGET_GAS)\
+   && !function_label_operand (X, VOIDmode))
+#endif
 
 /* Subroutine for EXTRA_CONSTRAINT.
 

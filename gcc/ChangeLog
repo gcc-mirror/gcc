@@ -1,3 +1,9 @@
+Sat Nov 22 18:58:20 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* pa-hpux10.h (NEW_HP_ASSEMBLER): Define.
+	* pa.h (LEGITIMATE_CONSTANT_P): Reject LABEL_REFs if not using
+	gas and not using the new HP assembler.
+
 Fri Nov 21 15:20:05 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (program_transform_cross_name): Clean up "-e" confusion.
