@@ -1,3 +1,8 @@
+2001-08-10  Richard Henderson  <rth@redhat.com>
+
+	* doc/extend.texi (C Implementation): New chapter.
+	* doc/gcc.texi (Top): Link it in.
+
 2001-08-10  Andrew Cagney  <ac131313@redhat.com>
 
 	* doc/install.texi (Specific): Fix CVS merge botch.
