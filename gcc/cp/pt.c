@@ -157,6 +157,7 @@ static tree determine_specialization PROTO((tree, tree, tree *, int));
 static int template_args_equal PROTO((tree, tree));
 static void print_template_context PROTO((int));
 static void tsubst_default_arguments PROTO((tree));
+static tree for_each_template_parm_r PROTO((tree *, int *, void *));
 
 /* Called once to initialize pt.c.  */
 
