@@ -1293,7 +1293,6 @@ reload (first, global, dumpfile)
 		  int nregs
 		    = HARD_REGNO_NREGS (regno, GET_MODE (avoid_return_reg));
 		  int r;
-		  int inc_groups = 0;
 		  for (r = regno; r < regno + nregs; r++)
 		    if (spill_reg_order[r] >= 0)
 		      for (i = 0; i < N_REG_CLASSES; i++)
