@@ -80,8 +80,6 @@ rtx sparc_compare_op0, sparc_compare_op1;
    sparc_nonflat_function_epilogue.  */
 bool sparc_emitting_epilogue;
 
-#ifdef LEAF_REGISTERS
-
 /* Vector to say how input registers are mapped to output registers.
    HARD_FRAME_POINTER_REGNUM cannot be remapped by this function to
    eliminate it.  You must use -fomit-frame-pointer to get that.  */
@@ -118,8 +116,6 @@ char sparc_leaf_regs[] =
   1, 1, 1, 1, 1, 1, 1, 1,
   1, 1, 1, 1, 1, 1, 1, 1,
   1, 1, 1, 1, 1};
-
-#endif
 
 /* Name of where we pretend to think the frame pointer points.
    Normally, this is "%fp", but if we are in a leaf procedure,
