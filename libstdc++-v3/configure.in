@@ -147,7 +147,6 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
       GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
       GLIBCPP_CHECK_WCHAR_T_SUPPORT
       os_include_dir="config/os/mingw32"
-      is_mingw32=yes;
       ;;
     *)
       os_include_dir="config/os/newlib"

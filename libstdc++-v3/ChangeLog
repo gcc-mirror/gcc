@@ -1,3 +1,8 @@
+Fri Mar 15 09:55:49 2002  Anthony Green  <green@redhat.com>
+
+	* configure.in: Remove useless is_mingw32.
+	* configure: Rebuilt.
+
 2002-03-15  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/22_locale/collate_members_char.cc
