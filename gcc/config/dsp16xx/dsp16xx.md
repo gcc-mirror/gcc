@@ -117,6 +117,8 @@
 
 	   case 2:
    	      return \"%0&%H1\";
+           default:
+              abort();
          }
 }"
   [(set_attr "type" "f3_alu,malu,f3_alu_i")])
@@ -405,6 +407,8 @@
 
     case 7:
       return \"%3=%2\;*%0++%3\";
+    default:
+      abort();
     }
 }")
 
@@ -485,6 +489,8 @@
     case 3:
     case 4:
       return \"%m0=%m1-%m2\";
+    default:
+      abort();
     }
 }")
 
@@ -921,6 +927,8 @@
 		case 8:
 		case 9:
 		   return \"\";
+                default:
+                   abort();
         }
 }"
 [(set_attr "type" "move,move,load_i,load_i,load,store,load,store,move,move")])
@@ -986,6 +994,8 @@
 
                 case 9: case 10:
 		   return \"%0=%1\";
+                default:
+                   abort();
 	}
 }")
 
@@ -1032,6 +1042,8 @@
 
                 case 9: case 10:
 		   return \"%0=%1\";
+                default:
+                   abort();
 	}
 }")
 
@@ -1187,6 +1199,8 @@
 		case 5:
 		case 6:
 		   return \"%u0=%u1\;%w0=%w1\";
+                default:
+                   abort();
         }
 }"
 [(set_attr "type" "move,move,load_i,load,store,load,store")])
