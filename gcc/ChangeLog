@@ -1,3 +1,8 @@
+2000-07-27  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (gen_typedef_die): Abort if we get identical
+	TREE_TYPE and DECL_ORIGINAL_TYPE on a typedef.
+
 2000-07-27  RodneyBrown  <RodneyBrown@pmsc.com>
 
 	* expr.h (get_alias_set, lang_get_alias_set): Delete prototypes.

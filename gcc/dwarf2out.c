@@ -9276,7 +9276,11 @@ gen_typedef_die (decl, context_die)
       if (DECL_ORIGINAL_TYPE (decl))
 	{
 	  type = DECL_ORIGINAL_TYPE (decl);
-	  equate_type_number_to_die (TREE_TYPE (decl), type_die);
+
+	  if (type == TREE_TYPE (decl))
+	    abort ();
+	  else
+	    equate_type_number_to_die (TREE_TYPE (decl), type_die);
 	}
       else
 	type = TREE_TYPE (decl);
