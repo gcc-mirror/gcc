@@ -3489,10 +3489,20 @@ assign_parms (fndecl, second_time)
 	    {
 	      enum machine_mode submode = GET_MODE (XEXP (parmreg, 0));
 
-	      parm_reg_stack_loc[REGNO (gen_lowpart (submode, parmreg))]
-	        = gen_lowpart (submode, stack_parm);
-	      parm_reg_stack_loc[REGNO (gen_highpart (submode, parmreg))]
-		= gen_highpart (submode, stack_parm);
+	      if (stack_parm != 0)
+		{
+		  parm_reg_stack_loc[REGNO (gen_lowpart (submode, parmreg))]
+		    = gen_lowpart (submode, stack_parm);
+		  parm_reg_stack_loc[REGNO (gen_highpart (submode, parmreg))]
+		    = gen_highpart (submode, stack_parm);
+		}
+	      else
+		{
+		  parm_reg_stack_loc[REGNO (gen_lowpart (submode, parmreg))]
+		    = 0;
+		  parm_reg_stack_loc[REGNO (gen_highpart (submode, parmreg))]
+		    = 0;
+		}
 	    }
 	  else
 	    parm_reg_stack_loc[REGNO (parmreg)] = stack_parm;
