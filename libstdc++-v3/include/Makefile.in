@@ -85,6 +85,7 @@ CNUMERIC_CC = @CNUMERIC_CC@
 CPP = @CPP@
 CSTDIO_H = @CSTDIO_H@
 CTIME_CC = @CTIME_CC@
+CTIME_H = @CTIME_H@
 CXXCPP = @CXXCPP@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
 DEBUG_FLAGS = @DEBUG_FLAGS@
@@ -439,6 +440,7 @@ target_headers_extra = \
 	${target_builddir}/c++io.h \
 	${target_builddir}/c++locale.h \
 	${target_builddir}/messages_members.h \
+	${target_builddir}/time_members.h \
 	${target_builddir}/codecvt_specializations.h
 
 
@@ -646,6 +648,7 @@ stamp-target: ${target_headers} ${target_headers_noinst} stamp-${target_alias}
 	  @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CLOCALE_INTERNAL_H@ . || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CMESSAGES_H@ messages_members.h || true ;\
+	  @LN_S@ ${glibcpp_srcdir}/@CTIME_H@ time_members.h || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CCODECVT_H@ codecvt_specializations.h || true);\
 	  echo `date` > stamp-target ; \
 	fi
