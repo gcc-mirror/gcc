@@ -1,3 +1,47 @@
+2003-06-07  Andreas Jaeger  <aj@suse.de>
+
+	* symbol.c (ffesymbol_new_): Remove tests for macro
+	FFECOM_symbolHOOK.
+	* symbol.h: Likewise.
+
+	* storag.c (ffestorag_new): Remove tests for macro
+	FFECOM_storageHOOK.
+	* storag.h: Likewise.
+
+	* lab.c (ffelab_new): Remove tests for macro FFECOM_labelHOOK.
+	* lab.h: Likewise.
+
+	* global.c: Remove tests for macro FFECOM_globalHOOK.
+	* global.h (struct _ffeglobal_): Likewise.
+
+	* bld.h: Remove tests for macros FFECOM_constantHOOK,
+	FFECOM_nonterHOOK, FFECOM_globalHOOK, FFECOM_labelHOOK,
+	FFECOM_storageHOOK, FFECOM_symbolHOOK.
+	Remove code dependend on FFECOM_itemHOOK.
+	* bld.c: Likewise.
+
+	* com.h (FFECOM_constantHOOK): Remove define.
+	(FFECOM_nonterHOOK): Remove.
+	(FFECOM_globalHOOK): Remove.
+	(FFECOM_labelHOOK): Remove.
+	(FFECOM_storageHOOK): Remove.
+	(FFECOM_symbolHOOK): Remove.
+
+	* com.c (ffecom_get_external_identifier_): Remove usage of
+	FFETARGET_isENFORCED_MAIN_NAME.
+
+	* bld.c: Remove code dependend on FFEBLD_BLANK_, FFECOM_itemHOOK.
+	(ffebld_new_accter): Likewise.
+	(ffebld_new_arrter): Likewise.
+	(ffebld_new_conter_with_orig): Likewise.
+	(ffebld_new_item): Likewise.
+	(ffebld_new_labter): Likewise.
+	(ffebld_new_labtok): Likewise.
+	(ffebld_new_none): Likewise.
+	(ffebld_new_one): Likewise.
+	(ffebld_new_symter): Likewise.
+	(ffebld_new_two): Likewise.
+
 Sat Jun  7 12:10:41 2003  Neil Booth  <neil@daikokuya.co.uk>
 
 	* com.c (ffe_init_options): Update.

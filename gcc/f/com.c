@@ -6047,11 +6047,7 @@ ffecom_get_external_identifier_ (ffesymbol s)
 
   if (!ffe_is_underscoring ()
       || (strcmp (name, FFETARGET_nameBLANK_COMMON) == 0)
-#if FFETARGET_isENFORCED_MAIN_NAME
-      || (strcmp (name, FFETARGET_nameENFORCED_NAME) == 0)
-#else
       || (strcmp (name, FFETARGET_nameUNNAMED_MAIN) == 0)
-#endif
       || (strcmp (name, FFETARGET_nameUNNAMED_BLOCK_DATA) == 0))
     return get_identifier (name);
 

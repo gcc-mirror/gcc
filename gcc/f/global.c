@@ -1,5 +1,5 @@
 /* global.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1997, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -110,9 +110,7 @@ ffeglobal_new_ (ffename n)
   g = (ffeglobal) malloc_new_ks (malloc_pool_image (), "FFEGLOBAL",
 				 sizeof (*g));
   g->n = n;
-#ifdef FFECOM_globalHOOK
   g->hook = FFECOM_globalNULL;
-#endif
   g->tick = 0;
 
   ffename_set_global (n, g);
@@ -1430,9 +1428,7 @@ ffeglobal_ref_progunit_ (ffesymbol s, ffelexToken t, ffeglobalType type)
       /* We've learned more, so point to where we learned it.  */
       g->t = ffelex_token_use (t);
       g->type = type;
-#ifdef FFECOM_globalHOOK
       g->hook = FFECOM_globalNULL;	/* Discard previous _DECL. */
-#endif
       g->u.proc.n_args = -1;
     }
 

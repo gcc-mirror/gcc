@@ -1,5 +1,6 @@
 /* com.h -- Public #include File (module.h template V1.0)
-   Copyright (C) 1995, 1996, 1997, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 2000, 2003
+   Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -128,17 +129,11 @@ typedef enum
 #endif
 
 typedef tree ffecomConstant;
-#define FFECOM_constantHOOK
 typedef tree ffecomNonter;
-#define FFECOM_nonterHOOK
 typedef tree ffecomLabel;
-#define FFECOM_globalHOOK
 typedef tree ffecomGlobal;
-#define FFECOM_labelHOOK
 typedef tree ffecomStorage;
-#define FFECOM_storageHOOK
 typedef struct _ffecom_symbol_ ffecomSymbol;
-#define FFECOM_symbolHOOK
 
 struct _ffecom_symbol_
   {

@@ -1,5 +1,5 @@
 /* bld.h -- Public #include File (module.h template V1.0)
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -400,18 +400,13 @@ struct _ffebld_
 	  {
 	    ffebld left;
 	    ffebld right;
-#ifdef FFECOM_nonterHOOK
 	    ffecomNonter hook;	/* Whatever the compiler/backend wants! */
-#endif
 	  }
 	nonter;
 	struct
 	  {
 	    ffebld head;
 	    ffebld trail;
-#ifdef FFECOM_itemHOOK
-	    ffecomItem hook;	/* Whatever the compiler/backend wants! */
-#endif
 	  }
 	item;
 	struct
@@ -459,9 +454,7 @@ struct _ffebld_constant_
 					   real. */
     ffebldConstant negated;	/* We point to each other through here. */
     ffebldConst consttype;
-#ifdef FFECOM_constantHOOK
     ffecomConstant hook;	/* Whatever the compiler/backend wants! */
-#endif
     bool numeric;		/* A numeric kind of constant. */
     ffebldConstantUnion u;
   };
