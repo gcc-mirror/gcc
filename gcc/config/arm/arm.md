@@ -2036,7 +2036,7 @@
   "TARGET_ARM
    && reload_completed
    && operands[0] != operands[1]"
-  [(set (match_dup 0) (and:SI (not:SI (match_dup 1)) (match_dup 2)))
+  [(set (match_dup 0) (and:SI (not:SI (match_dup 2)) (match_dup 1)))
    (set (match_dup 3) (match_dup 4))]
   "
   {
@@ -2053,11 +2053,11 @@
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(and:DI (not:DI (sign_extend:DI
 			 (match_operand:SI 2 "s_register_operand" "r,r")))
-		(match_operand:DI 1 "s_register_operand" "?r,0")))]
+		(match_operand:DI 1 "s_register_operand" "0,r")))]
   "TARGET_ARM"
   "#"
   "TARGET_ARM && reload_completed"
-  [(set (match_dup 0) (and:SI (not:SI (match_dup 1)) (match_dup 2)))
+  [(set (match_dup 0) (and:SI (not:SI (match_dup 2)) (match_dup 1)))
    (set (match_dup 3) (and:SI (not:SI
 				(ashiftrt:SI (match_dup 2) (const_int 31)))
 			       (match_dup 4)))]
