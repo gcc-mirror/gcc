@@ -1,3 +1,10 @@
+1999-12-13  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* lex.c (saving_parse_to_obstack): New global.
+	(reinit_parse_for_block): Use.
+	(reinit_parse_for_expr): Use.
+	(check_newline): Use.
+
 1999-12-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* optimize.c (initialize_inlined_parameters): Take FN to which the

@@ -113,6 +113,9 @@ file_name_nondirectory (x)
 struct obstack inline_text_obstack;
 char *inline_text_firstobj;
 
+/* Nonzero if parse output is being saved to an obstack for later parsing. */
+static int saving_parse_to_obstack = 0;
+
 #if USE_CPPLIB
 #include "cpplib.h"
 extern cpp_reader  parse_in;
@@ -1618,7 +1621,9 @@ reinit_parse_for_block (pyychar, obstackp)
     {
       int this_lineno = lineno;
 
+      saving_parse_to_obstack = 1;
       c = skip_white_space (c);
+      saving_parse_to_obstack = 0;
 
       /* Don't lose our cool if there are lots of comments.  */
       if (lineno == this_lineno + 1)
@@ -1747,7 +1752,9 @@ reinit_parse_for_expr (obstackp)
     {
       int this_lineno = lineno;
 
+      saving_parse_to_obstack = 1;
       c = skip_white_space (c);
+      saving_parse_to_obstack = 0;
 
       /* Don't lose our cool if there are lots of comments.  */
       if (lineno == this_lineno + 1)
@@ -2489,10 +2496,11 @@ linenum:
      (2) I don't know how well that would work in the presense
      of filenames that contain wide characters.  */
 
-  if (saw_line)
+  if (saw_line || saving_parse_to_obstack)
     {
       /* Don't treat \ as special if we are processing #line 1 "...".
-	 If you want it to be treated specially, use # 1 "...".  */
+	 If you want it to be treated specially, use # 1 "...". Also
+	 ignore these if saving to an obstack for later parsing. */
       ignore_escape_flag = 1;
     }
 
