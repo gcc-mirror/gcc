@@ -589,7 +589,7 @@ finish_try_block (try_block)
   else
     {
       expand_start_all_catch ();  
-      expand_start_catch (NULL);
+      start_catch_handler (NULL);
     }
 }
 
@@ -604,7 +604,6 @@ finish_handler_sequence (try_block)
     RECHAIN_STMTS_FROM_CHAIN (try_block, TRY_HANDLERS (try_block));
   else
     {
-      expand_end_catch ();
       expand_end_all_catch ();
     }
 }

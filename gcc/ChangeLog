@@ -1,3 +1,12 @@
+Tue Jun  9 16:23:13 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* except.c (expand_start_catch): Rename to start_catch_handler.
+	(expand_end_catch): Delete function.
+	(expand_end_all_catch): Remove catch status that expand_end_catch
+	use to do.
+	* except.h (expand_start_catch): Rename prototype.
+	(expand_end_catch): Delete prototype.
+
 Tue Jun  9 12:57:32 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* invoke.texi: Add documentation for -mips4 and -mabi=*.

@@ -1,3 +1,12 @@
+1998-06-09  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* semantics.c (finish_try_block): Rename expand_start_catch, and delete
+	expand_end_catch.
+	* parse.y (function_try_block): Rename expand_start_catch, and delete
+	expand_end_catch.
+	* except.c (expand_end_eh_spec): Rename expand_start_catch, and delete
+	expand_end_catch.
+
 1998-06-09  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* search.c (lookup_member): New fn.

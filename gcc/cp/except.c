@@ -686,7 +686,7 @@ expand_end_eh_spec (raises)
   int count = 0;
 
   expand_start_all_catch ();
-  expand_start_catch (NULL);
+  start_catch_handler (NULL);
   expand_start_catch_block (NULL_TREE, NULL_TREE);
 
   /* Build up an array of type_infos.  */
@@ -739,7 +739,6 @@ expand_end_eh_spec (raises)
   expand_expr (tmp, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   expand_end_catch_block ();
-  expand_end_catch ();
   expand_end_all_catch ();
 }
 
