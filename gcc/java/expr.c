@@ -2129,12 +2129,13 @@ expand_invoke (opcode, method_ref_index, nargs)
 	 method's `this'.  In other cases we just rely on an
 	 optimization pass to eliminate redundant checks.  FIXME:
 	 Unfortunately there doesn't seem to be a way to determine
-	 what the current method is right now.  */
+	 what the current method is right now.
+	 We do omit the check if we're calling <init>.  */
       /* We use a SAVE_EXPR here to make sure we only evaluate
 	 the new `self' expression once.  */
       tree save_arg = save_expr (TREE_VALUE (arg_list));
       TREE_VALUE (arg_list) = save_arg;
-      check = java_check_reference (save_arg, 1);
+      check = java_check_reference (save_arg, ! DECL_INIT_P (method));
       func = build_known_method_ref (method, method_type, self_type,
 				     method_signature, arg_list);
     }
