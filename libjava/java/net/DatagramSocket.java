@@ -28,12 +28,12 @@ public class DatagramSocket
 
   public DatagramSocket() throws SocketException
   {
-    this(0, null);
+    this(0, ServerSocket.ANY_IF);
   }
 
   public DatagramSocket(int port) throws SocketException
   {
-    this(port, null);
+    this(port, ServerSocket.ANY_IF);
   }
 
   public DatagramSocket(int port, InetAddress laddr) throws SocketException

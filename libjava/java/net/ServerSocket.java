@@ -25,6 +25,10 @@ public class ServerSocket
   static SocketImplFactory factory;
   SocketImpl impl;
 
+  static final byte[] zeros = {0,0,0,0};
+  /* dummy InetAddress, used to bind socket to any (all) network interfaces */
+  static final InetAddress ANY_IF = new InetAddress(zeros, null);
+
   public ServerSocket (int port)
     throws java.io.IOException
   {
@@ -34,7 +38,7 @@ public class ServerSocket
   public ServerSocket (int port, int backlog)
     throws java.io.IOException
   {
-    this(port, backlog, null);
+    this(port, backlog, ANY_IF);
   }
 
   public ServerSocket (int port, int backlog, InetAddress bindAddr)

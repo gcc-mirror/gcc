@@ -101,16 +101,10 @@ java::net::PlainDatagramSocketImpl::bind (jint lport,
   // FIXME: prob. need to do a setsockopt with SO_BROADCAST to allow multicast.
   union SockAddr u;
   struct sockaddr *ptr = (struct sockaddr *) &u.address;
-  jbyte *bytes = NULL;
   // FIXME: Use getaddrinfo() to get actual protocol instead of assuming ipv4.
-  int len = 4;	// Initialize for INADDR_ANY in case host is NULL.
-
-  if (host != NULL)
-    {
-      jbyteArray haddress = host->address;
-      bytes = elements (haddress);
-      len = haddress->length;
-    }
+  jbyteArray haddress = host->address;
+  jbyte *bytes = elements (haddress);
+  int len = haddress->length;
 
   if (len == 4)
     {

@@ -2,6 +2,14 @@
 
 	* boehm.cc (_Jv_RegisterFinalizer): Cast `meth' to GC_PTR.
 	* exception.cc (_Jv_Throw): Cast `_Jv_type_matcher' to __eh_matcher.
+	* java/net/ServerSocket.java: Define ANY_IF.
+	(ServerSocket (int,int)): Use ANY_IF instead of null to bind to
+	all network interfaces.
+	* java/net/DatagramSocket.java (DatagramSocket): ditto.
+	* java/net/natPlainSocketImpl.cc (bind): Expect `0.0.0.0' instead of
+	null.
+	* java/net/natPlainDatagramSocketImpl (bind): Expect `0.0.0.0'
+	instead of null.
 
 1999-08-01  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
