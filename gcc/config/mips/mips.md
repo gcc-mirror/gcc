@@ -4504,7 +4504,7 @@ move\\t%0,%z4\\n\\
   rtx reg3 = gen_reg_rtx (SImode);
   rtx label1 = gen_label_rtx ();
   rtx label2 = gen_label_rtx ();
-  REAL_VALUE_TYPE offset = REAL_VALUE_LDEXP (1.0, 31);
+  REAL_VALUE_TYPE offset = REAL_VALUE_LDEXP (dconst1, 31);
 
   if (reg1)			/* turn off complaints about unreached code */
     {
@@ -4548,7 +4548,7 @@ move\\t%0,%z4\\n\\
   rtx reg3 = gen_reg_rtx (DImode);
   rtx label1 = gen_label_rtx ();
   rtx label2 = gen_label_rtx ();
-  REAL_VALUE_TYPE offset = REAL_VALUE_LDEXP (1.0, 63);
+  REAL_VALUE_TYPE offset = REAL_VALUE_LDEXP (dconst1, 63);
 
   if (reg1)			/* turn off complaints about unreached code */
     {
@@ -4592,7 +4592,7 @@ move\\t%0,%z4\\n\\
   rtx reg3 = gen_reg_rtx (SImode);
   rtx label1 = gen_label_rtx ();
   rtx label2 = gen_label_rtx ();
-  REAL_VALUE_TYPE offset = REAL_VALUE_LDEXP (1.0, 31);
+  REAL_VALUE_TYPE offset = REAL_VALUE_LDEXP (dconst1, 31);
 
   if (reg1)			/* turn off complaints about unreached code */
     {
@@ -4636,7 +4636,7 @@ move\\t%0,%z4\\n\\
   rtx reg3 = gen_reg_rtx (DImode);
   rtx label1 = gen_label_rtx ();
   rtx label2 = gen_label_rtx ();
-  REAL_VALUE_TYPE offset = REAL_VALUE_LDEXP (1.0, 63);
+  REAL_VALUE_TYPE offset = REAL_VALUE_LDEXP (dconst1, 63);
 
   if (reg1)			/* turn off complaints about unreached code */
     {
@@ -10616,12 +10616,12 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   "TARGET_MIPS16"
   "*
 {
-  union real_extract u;
+  REAL_VALUE_TYPE d;
 
   if (GET_CODE (operands[0]) != CONST_DOUBLE)
     abort ();
-  memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
-  assemble_real (u.d, SFmode, GET_MODE_ALIGNMENT (SFmode));
+  REAL_VALUE_FROM_CONST_DOUBLE (d, operands[0]);
+  assemble_real (d, SFmode, GET_MODE_ALIGNMENT (SFmode));
   return \"\";
 }"
   [(set_attr "type"	"unknown")
@@ -10633,12 +10633,12 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   "TARGET_MIPS16"
   "*
 {
-  union real_extract u;
+  REAL_VALUE_TYPE d;
 
   if (GET_CODE (operands[0]) != CONST_DOUBLE)
     abort ();
-  memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
-  assemble_real (u.d, DFmode, GET_MODE_ALIGNMENT (DFmode));
+  REAL_VALUE_FROM_CONST_DOUBLE (d, operands[0]);
+  assemble_real (d, DFmode, GET_MODE_ALIGNMENT (DFmode));
   return \"\";
 }"
   [(set_attr "type"	"unknown")

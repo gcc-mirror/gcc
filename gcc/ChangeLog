@@ -1,3 +1,8 @@
+2002-03-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* mips.md: Use dconst1, not 1.0, as first argument of
+	REAL_VALUE_LDEXP.  Don't use union real_extract.
+
 2002-03-28  Alan Modra  <amodra@bigpond.net.au>
 
 	* configure.in (gcc_cv_as): Use $target_alias in directory searchs
