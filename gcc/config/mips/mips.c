@@ -4936,7 +4936,7 @@ mips_expand_prologue ()
       enum machine_mode passed_mode = TYPE_MODE (passed_type);
       rtx entry_parm;
 
-      if (TYPE_NEEDS_CONSTRUCTING (passed_type))
+      if (TREE_ADDRESSABLE (passed_type))
 	{
 	  passed_type = build_pointer_type (passed_type);
 	  passed_mode = Pmode;
