@@ -1,3 +1,10 @@
+2000-12-09  Neil Booth  <neilb@earthling.net>
+
+        * gcc.dg/cpp/lineflags.c: New tests.
+        * gcc.dg/cpp/poison.c: Update.
+        * gcc.dg/cpp/redef2.c: Update.   
+        * gcc.dg/cpp/skipping.c: New test. 
+
 2000-12-07  Geoffrey Keating  <geoffk@redhat.com>
 
 	* g++.old-deja/g++.other/eh3.C: New testcase.
