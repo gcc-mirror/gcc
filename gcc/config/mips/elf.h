@@ -358,7 +358,7 @@ func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
 #define LIB_SPEC ""
 
 #undef  STARTFILE_SPEC
-#define STARTFILE_SPEC "crtbegin%O%s crt0%O%s"
+#define STARTFILE_SPEC "crtbegin%O%s %{!mno-crt0:crt0%O%s}"
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend%O%s"
