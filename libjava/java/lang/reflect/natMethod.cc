@@ -1,6 +1,6 @@
 // natMethod.cc - Native code for Method class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001 , 2002 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -9,10 +9,6 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 #include <config.h>
-
-#if HAVE_ALLOCA_H
-#include <alloca.h>
-#endif
 
 #include <gcj/cni.h>
 #include <jvm.h>
@@ -348,8 +344,8 @@ _Jv_CallAnyMethodA (jobject obj,
     rtype = &ffi_type_void;
   else
     rtype = get_ffi_type (return_type);
-  ffi_type **argtypes = (ffi_type **) alloca (param_count
-					      * sizeof (ffi_type *));
+  ffi_type **argtypes = (ffi_type **) __builtin_alloca (param_count
+							* sizeof (ffi_type *));
 
   jclass *paramelts = elements (parameter_types);
 
@@ -392,8 +388,8 @@ _Jv_CallAnyMethodA (jobject obj,
       // FIXME: throw some kind of VirtualMachineError here.
     }
 
-  char *p = (char *) alloca (size);
-  void **values = (void **) alloca (param_count * sizeof (void *));
+  char *p = (char *) __builtin_alloca (size);
+  void **values = (void **) __builtin_alloca (param_count * sizeof (void *));
 
   i = 0;
   if (needs_this)
