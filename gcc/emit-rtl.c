@@ -1987,7 +1987,7 @@ widen_memory_access (memref, mode, offset)
 
   /* If we don't know what offset we were at within the expression, then
      we can't know if we've overstepped the bounds.  */
-  if (! memoffset && offset != 0)
+  if (! memoffset)
     expr = NULL_TREE;
 
   while (expr)
