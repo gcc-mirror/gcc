@@ -1039,7 +1039,7 @@ push_reload (in, out, inloc, outloc, class,
 	 order as the reloads.  Thus if the outer reload is also of type
 	 RELOAD_OTHER, we are guaranteed that this inner reload will be
 	 output before the outer reload.  */
-      push_reload (SUBREG_REG (in), NULL_RTX, &SUBREG_REG (in), NULL_RTX,
+      push_reload (SUBREG_REG (in), NULL_RTX, &SUBREG_REG (in), (rtx *)0,
 		   in_class, VOIDmode, VOIDmode, 0, 0, opnum, type);
       dont_remove_subreg = 1;
     }
@@ -6698,14 +6698,14 @@ regno_clobbered_p (regno, insn, mode, sets)
      enum machine_mode mode;
      int sets;
 {
-  int nregs = HARD_REGNO_NREGS (regno, mode);
-  int endregno = regno + nregs;
+  unsigned int nregs = HARD_REGNO_NREGS (regno, mode);
+  unsigned int endregno = regno + nregs;
 
   if ((GET_CODE (PATTERN (insn)) == CLOBBER
        || (sets && GET_CODE (PATTERN (insn)) == SET))
       && GET_CODE (XEXP (PATTERN (insn), 0)) == REG)
     {
-      int test = REGNO (XEXP (PATTERN (insn), 0));
+      unsigned int test = REGNO (XEXP (PATTERN (insn), 0));
 
       return test >= regno && test < endregno;
     }
@@ -6721,7 +6721,7 @@ regno_clobbered_p (regno, insn, mode, sets)
 	       || (sets && GET_CODE (PATTERN (insn)) == SET))
 	      && GET_CODE (XEXP (elt, 0)) == REG)
 	    {
-	      int test = REGNO (XEXP (elt, 0));
+	      unsigned int test = REGNO (XEXP (elt, 0));
 	      
 	      if (test >= regno && test < endregno)
 		return 1;

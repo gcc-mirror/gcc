@@ -1,6 +1,6 @@
 /* Definitions for CHILL parsing and type checking.
    Copyright (C) 1992, 1993, 1994, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -669,7 +669,6 @@ extern tree c_build_type_variant                PARAMS ((tree, int, int));
 extern int  c_decode_option                     PARAMS ((int, char **));
 extern void c_mark_varargs                      PARAMS ((void));
 extern void clear_parm_order                    PARAMS ((void));
-extern tree combine_parm_decls                  PARAMS ((tree, tree, int));
 extern int  complete_array_type                 PARAMS ((tree, tree, int));
 extern void declare_parm_level                  PARAMS ((int));
 extern tree define_label                        PARAMS ((const char *, int, tree));

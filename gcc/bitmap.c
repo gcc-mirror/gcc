@@ -1,5 +1,5 @@
 /* Functions to support general ended bitmaps.
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -38,7 +38,7 @@ static int bitmap_obstack_init = FALSE;
 #endif
 
 /* Global data */
-bitmap_element bitmap_zero;		/* An element of all zero bits. */
+bitmap_element bitmap_zero_bits;	/* An element of all zero bits. */
 bitmap_element *bitmap_free;		/* Freelist of bitmap elements. */
 
 static void bitmap_element_free		PARAMS ((bitmap, bitmap_element *));
@@ -572,14 +572,14 @@ bitmap_operation (to, from1, from2, operation)
 	{
 	  indx = indx1;
 	  from1_tmp = from1_ptr;
-	  from2_tmp = &bitmap_zero;
+	  from2_tmp = &bitmap_zero_bits;
 	  from1_ptr = from1_ptr->next;
 	  indx1 = (from1_ptr) ? from1_ptr->indx : HIGHEST_INDEX;
 	}
       else
 	{
 	  indx = indx2;
-	  from1_tmp = &bitmap_zero;
+	  from1_tmp = &bitmap_zero_bits;
 	  from2_tmp = from2_ptr;
 	  from2_ptr = from2_ptr->next;
 	  indx2 = (from2_ptr) ? from2_ptr->indx : HIGHEST_INDEX;

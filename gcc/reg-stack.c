@@ -1026,14 +1026,15 @@ emit_swap_insn (insn, regstack, reg)
 	 swap with, omit the swap.  */
 
       if (GET_CODE (i1dest) == REG && REGNO (i1dest) == FIRST_STACK_REG
-	  && GET_CODE (i1src) == REG && REGNO (i1src) == hard_regno - 1
+	  && GET_CODE (i1src) == REG
+	  && REGNO (i1src) == (unsigned) hard_regno - 1
 	  && find_regno_note (i1, REG_DEAD, FIRST_STACK_REG) == NULL_RTX)
 	return;
 
       /* If the previous insn wrote to the reg we are to swap with,
 	 omit the swap.  */
 
-      if (GET_CODE (i1dest) == REG && REGNO (i1dest) == hard_regno
+      if (GET_CODE (i1dest) == REG && REGNO (i1dest) == (unsigned) hard_regno
 	  && GET_CODE (i1src) == REG && REGNO (i1src) == FIRST_STACK_REG
 	  && find_regno_note (i1, REG_DEAD, FIRST_STACK_REG) == NULL_RTX)
 	return;
@@ -1969,7 +1970,7 @@ subst_asm_stack_regs (insn, regstack)
 	if (regno < 0)
 	  abort ();
 
-	if (regno != REGNO (recog_data.operand[i]))
+	if ((unsigned int) regno != REGNO (recog_data.operand[i]))
 	  {
 	    /* recog_data.operand[i] is not in the right place.  Find
 	       it and swap it with whatever is already in I's place.
@@ -2071,7 +2072,7 @@ subst_asm_stack_regs (insn, regstack)
 
       for (j = 0; j < n_outputs; j++)
 	if (STACK_REG_P (recog_data.operand[j])
-	    && REGNO (recog_data.operand[j]) == i)
+	    && REGNO (recog_data.operand[j]) == (unsigned) i)
 	  {
 	    regstack->reg[++regstack->top] = i;
 	    SET_HARD_REG_BIT (regstack->reg_set, i);

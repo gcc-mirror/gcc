@@ -2196,7 +2196,7 @@ simplify_subreg (outermode, op, innermode, byte)
   if (CONSTANT_P (op))
     {
       int offset, part;
-      unsigned HOST_WIDE_INT val;
+      unsigned HOST_WIDE_INT val = 0;
 
       /* ??? This code is partly redundant with code bellow, but can handle
 	 the subregs of floats and similar corner cases.
@@ -2231,7 +2231,7 @@ simplify_subreg (outermode, op, innermode, byte)
 
 	  /* We can't handle this case yet.  */
 	  if (GET_MODE_BITSIZE (outermode) >= HOST_BITS_PER_WIDE_INT)
-	    return NULL;
+	    return NULL_RTX;
 
 	  part = offset >= HOST_BITS_PER_WIDE_INT;
 	  if ((BITS_PER_WORD > HOST_BITS_PER_WIDE_INT
@@ -2253,7 +2253,7 @@ simplify_subreg (outermode, op, innermode, byte)
 
 	  /* We don't handle synthetizing of non-integral constants yet.  */
 	  if (GET_MODE_CLASS (outermode) != MODE_INT)
-	    return NULL;
+	    return NULL_RTX;
 
 	  if (BYTES_BIG_ENDIAN || WORDS_BIG_ENDIAN)
 	    {
@@ -2322,8 +2322,8 @@ simplify_subreg (outermode, op, innermode, byte)
 	    return NULL_RTX;
 	  /* Bail out in case resulting subreg would be incorrect.  */
 	  if (final_offset % GET_MODE_SIZE (outermode)
-	      || final_offset >= GET_MODE_SIZE (innermostmode))
-	    return NULL;
+	      || (unsigned) final_offset >= GET_MODE_SIZE (innermostmode))
+	    return NULL_RTX;
 	}
       else
 	{
@@ -2339,7 +2339,7 @@ simplify_subreg (outermode, op, innermode, byte)
 	  if (offset == final_offset)
 	    final_offset = 0;
 	  else
-	    return NULL;
+	    return NULL_RTX;
 	}
 
       /* Recurse for futher possible simplifications.  */

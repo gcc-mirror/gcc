@@ -1,7 +1,7 @@
 /* Instruction scheduling pass.  This file computes dependencies between
    instructions.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -197,7 +197,6 @@ add_dependence (insn, elem, dep_type)
 {
   rtx link, next;
   int present_p;
-  enum reg_note present_dep_type;
   rtx cond1, cond2;
 
   /* Don't depend an insn on itself.  */
@@ -271,10 +270,13 @@ add_dependence (insn, elem, dep_type)
      dramatically for some code.  */
   if (true_dependency_cache != NULL)
     {
+      enum reg_note present_dep_type = 0;
+
       if (anti_dependency_cache == NULL || output_dependency_cache == NULL)
 	abort ();
       if (TEST_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem)))
-	present_dep_type = 0;
+	/* Do nothing (present_set_type is already 0).  */
+	;
       else if (TEST_BIT (anti_dependency_cache[INSN_LUID (insn)],
 			 INSN_LUID (elem)))
 	present_dep_type = REG_DEP_ANTI;

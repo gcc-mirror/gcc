@@ -3773,7 +3773,7 @@ static void
 mark_regs_live_at_end (set)
      regset set;
 {
-  int i;
+  unsigned int i;
 
   /* If exiting needs the right stack value, consider the stack pointer
      live at the end of the function.  */

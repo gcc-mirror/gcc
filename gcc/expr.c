@@ -1566,7 +1566,7 @@ move_by_pieces_1 (genfun, mode, data)
      struct move_by_pieces *data;
 {
   unsigned int size = GET_MODE_SIZE (mode);
-  rtx to1, from1;
+  rtx to1 = NULL_RTX, from1;
 
   while (data->len >= size)
     {
@@ -4699,8 +4699,8 @@ store_constructor (exp, target, align, cleared, size)
       tree elttype = TREE_TYPE (type);
       int const_bounds_p = (host_integerp (TYPE_MIN_VALUE (domain), 0)
 			    && host_integerp (TYPE_MAX_VALUE (domain), 0));
-      HOST_WIDE_INT minelt;
-      HOST_WIDE_INT maxelt;
+      HOST_WIDE_INT minelt = 0;
+      HOST_WIDE_INT maxelt = 0;
 
       /* If we have constant bounds for the range of the type, get them.  */
       if (const_bounds_p)

@@ -1,5 +1,5 @@
 /* Functions to support general ended bitmaps.
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -66,7 +66,7 @@ enum bitmap_bits {
 
 /* Global data */
 extern bitmap_element *bitmap_free;	/* Freelist of bitmap elements */
-extern bitmap_element bitmap_zero;	/* Zero bitmap element */
+extern bitmap_element bitmap_zero_bits;	/* Zero bitmap element */
 
 /* Clear a bitmap by freeing up the linked list.  */
 extern void bitmap_clear PARAMS ((bitmap));
@@ -247,7 +247,7 @@ do {									\
 	ptr2_ = ptr2_->next;						\
 									\
       tmp2_ = ((ptr2_ != 0 && ptr2_->indx == ptr1_->indx)		\
-	       ? ptr2_ : &bitmap_zero); 				\
+	       ? ptr2_ : &bitmap_zero_bits); 				\
 									\
       for (; word_num_ < BITMAP_ELEMENT_WORDS; word_num_++)		\
 	{								\
