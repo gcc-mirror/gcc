@@ -322,32 +322,3 @@ TAGS: force
 .PHONY: TAGS
 
 force:
-
-g++FAQ.info:	$(srcdir)/g++FAQ.texi
-	$(MAKEINFO) --no-split -o ./g++FAQ.info $(srcdir)/g++FAQ.texi
-
-# Preprocess the texi file so that the final document will have
-# hyperlinks.
-# It would be nice if texi2html could do something like this itself.
-
-# Assumption 1: the FAQ puts all http: and ftp: links in a @file{...}.
-# Assumption 2: newsgroups are like @file{comp.foo}
-# Assumption 3: email addresses match the regexp shown.
-
-g++FAQ.html:	$(srcdir)/g++FAQ.texi
-	mkdir work
-	sed -e 's?@file{\([fth]*p://[^}]*\)}?@strong{<A HREF="\1">\1</A>}?' \
-	    -e 's?@file{\(comp\.[-a-z+.]*\)}?<A HREF="news:\1">\1</A>?' \
-	    -e 's?@file{\(gnu\.[-a-z+.]*\)}?<A HREF="news:\1">\1</A>?' \
-	    -e 's?\([.+a-zA-Z0-9-]*@@[.a-zA-Z0-9-]*[a-zA-Z0-9]\)?<A HREF="mailto:\1">\1</A>?' \
-	    $(srcdir)/g++FAQ.texi > work/g++FAQ.texi
-	cd work; texi2html g++FAQ.texi
-	mv work/*.html .
-	rm -r work
-
-# Make plain-text form.
-
-g++FAQ.txt:	$(srcdir)/g++FAQ.texi
-	$(MAKEINFO) --no-split --no-headers -o - $(srcdir)/g++FAQ.texi |\
-		sed '/^Concept Index/,$$d' > g++FAQ.txt
-

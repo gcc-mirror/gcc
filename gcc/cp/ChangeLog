@@ -1,3 +1,8 @@
+Sun Jul 25 15:24:21 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* g++FAQ.texi: Deleted per Joe Buck's request.
+	* Makefile.in: Corresponding changes.
+
 Sat Jul 17 23:50:47 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (INTERFACE): Bump to 2.
