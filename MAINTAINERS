@@ -117,6 +117,7 @@ libiberty		DJ Delorie		dj@redhat.com
 build machinery (*.in)	DJ Delorie		dj@redhat.com
 build machinery (*.in)	Alexandre Oliva		aoliva@redhat.com
 docs co-maintainer	Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
+docs co-maintainer	Joseph Myers		jsm28@cam.ac.uk
 Pico-Java port		Steve Chamberlain	sac@transmeta.com
 RTEMS Ports		Joel Sherrill
 predict.def		Jan Hubicka		jh@suse.cz
