@@ -329,7 +329,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   value = protect_from_queue (value, 0);
 
-  /* Use vec_extract patterns for extracting parts of vectors whenever
+  /* Use vec_set patterns for inserting parts of vectors whenever
      available.  */
   if (VECTOR_MODE_P (GET_MODE (op0))
       && !MEM_P (op0)
@@ -1102,13 +1102,13 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && !MEM_P (op0)
       && (vec_extract_optab->handlers[GET_MODE (op0)].insn_code
 	  != CODE_FOR_nothing)
-      && ((bitsize + bitnum) / GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (op0)))
-	  == bitsize / GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (op0)))))
+      && ((bitnum + bitsize - 1) / GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (op0)))
+	  == bitnum / GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (op0)))))
     {
       enum machine_mode outermode = GET_MODE (op0);
       enum machine_mode innermode = GET_MODE_INNER (outermode);
       int icode = (int) vec_extract_optab->handlers[outermode].insn_code;
-      int pos = bitnum / GET_MODE_BITSIZE (innermode);
+      unsigned HOST_WIDE_INT pos = bitnum / GET_MODE_BITSIZE (innermode);
       rtx rtxpos = GEN_INT (pos);
       rtx src = op0;
       rtx dest = NULL, pat, seq;

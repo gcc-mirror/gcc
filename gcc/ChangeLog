@@ -1,3 +1,10 @@
+2004-07-08  Jan Beulich  <jbeulich@novell.com>
+
+	* expmed.c (extract_bit_field): Correct condition to use vec_extract
+	patterns also on vector elements other than the first one.
+	* config/i386/i386.md (vec_extractv2df, vec_extractv4sf): Add missing
+	break statements.
+
 2004-07-08  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/darwin-ldouble.c: Correct reference
