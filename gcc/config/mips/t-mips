@@ -1,6 +1,3 @@
-# It is not a good idea for particlar targets to do peculiar things with ALL.
-# --rms.
-#ALL		= Makefile start.encap libgcc.a
 EXTRA_PASSES	= mips-tfile mips-tdump ld
 CCLIBFLAGS	= -O -G 0
 LIBGCC2_CFLAGS	= -O2 $(GCC_CFLAGS) -g1 -G 0
