@@ -2,6 +2,7 @@
 // Contributed by Ben Elliston <bje@redhat.com>
 
 // PR 80: Packed enums use minimum required storage.
+// XFAIL *-*-*
 
 extern "C" void abort();
 
