@@ -130,6 +130,7 @@ static tree parse_scoped_id PARAMS ((tree));
 static tree parse_xref_tag (tree, tree, int);
 static tree parse_handle_class_head (tree, tree, tree, int, int *);
 static void parse_decl_instantiation (tree, tree, tree);
+static int parse_begin_function_definition (tree, tree);
 
 /* Cons up an empty parameter list.  */
 static inline tree
@@ -856,19 +857,19 @@ constructor_declarator:
 fn.def1:
 	  typed_declspecs declarator
 		{ check_for_new_type ("return type", $1);
-		  if (!begin_function_definition ($1.t, $2))
+		  if (!parse_begin_function_definition ($1.t, $2))
 		    YYERROR1; }
 	| declmods notype_declarator
-		{ if (!begin_function_definition ($1.t, $2))
+		{ if (!parse_begin_function_definition ($1.t, $2))
 		    YYERROR1; }
 	| notype_declarator
-		{ if (!begin_function_definition (NULL_TREE, $1))
+		{ if (!parse_begin_function_definition (NULL_TREE, $1))
 		    YYERROR1; }
 	| declmods constructor_declarator
-		{ if (!begin_function_definition ($1.t, $2))
+		{ if (!parse_begin_function_definition ($1.t, $2))
 		    YYERROR1; }
 	| constructor_declarator
-		{ if (!begin_function_definition (NULL_TREE, $1))
+		{ if (!parse_begin_function_definition (NULL_TREE, $1))
 		    YYERROR1; }
 	;
 
@@ -4083,6 +4084,19 @@ parse_decl_instantiation (tree declspecs, tree declarator, tree storage)
 {
   tree decl = grokdeclarator (declarator, declspecs, NORMAL, 0, NULL);
   do_decl_instantiation (decl, storage);
+}
+
+/* Like begin_function_definition, but SPECS_ATTRS is a combined list
+   containing both a decl-specifier-seq and attributes.  */
+
+static int
+parse_begin_function_definition (tree specs_attrs, tree declarator)
+{
+  tree specs;
+  tree attrs;
+  
+  split_specs_attrs (specs_attrs, &specs, &attrs);
+  return begin_function_definition (specs, attrs, declarator);
 }
 
 #include "gt-cp-parse.h"

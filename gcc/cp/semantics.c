@@ -1517,20 +1517,17 @@ reset_type_access_control ()
   current_type_lookups = NULL_TREE;
 }
 
-/* Begin a function definition declared with DECL_SPECS and
-   DECLARATOR.  Returns non-zero if the function-declaration is
+/* Begin a function definition declared with DECL_SPECS, ATTRIBUTES,
+   and DECLARATOR.  Returns non-zero if the function-declaration is
    legal.  */
 
 int
-begin_function_definition (decl_specs, declarator)
+begin_function_definition (decl_specs, attributes, declarator)
      tree decl_specs;
+     tree attributes;
      tree declarator;
 {
-  tree specs;
-  tree attrs;
-
-  split_specs_attrs (decl_specs, &specs, &attrs);
-  if (!start_function (specs, declarator, attrs, SF_DEFAULT))
+  if (!start_function (decl_specs, declarator, attributes, SF_DEFAULT))
     return 0;
 
   deferred_type_access_control ();

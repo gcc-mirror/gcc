@@ -1,3 +1,15 @@
+2002-07-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (unqualified_name_lookup_error): Declare it.
+	(begin_function_definition): Adjust prototype.
+	* lex.c (unqualified_name_lookup_error): New function, split out
+	from ...
+	(do_identifier): ... here.
+	* parse.y (parse_begin_function_definition): New function.
+	(fn.def1): Use it.
+	* semantics.c (begin_function_definition): Accept decl-specifiers
+	and attributes as separate parameters.
+
 2002-07-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/6255
