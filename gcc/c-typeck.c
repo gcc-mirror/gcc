@@ -3737,8 +3737,7 @@ valid_compound_expr_initializer (tree value, tree endtype)
       return valid_compound_expr_initializer (TREE_OPERAND (value, 1),
 					      endtype);
     }
-  else if (! TREE_CONSTANT (value)
-	   && ! initializer_constant_valid_p (value, endtype))
+  else if (!initializer_constant_valid_p (value, endtype))
     return error_mark_node;
   else
     return value;
@@ -4166,16 +4165,8 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
 	    inside_init = error_mark_node;
 	}
       else if (require_constant
-	       && (!TREE_CONSTANT (inside_init)
-		   /* This test catches things like `7 / 0' which
-		      result in an expression for which TREE_CONSTANT
-		      is true, but which is not actually something
-		      that is a legal constant.  We really should not
-		      be using this function, because it is a part of
-		      the back-end.  Instead, the expression should
-		      already have been turned into ERROR_MARK_NODE.  */
-		   || !initializer_constant_valid_p (inside_init,
-						     TREE_TYPE (inside_init))))
+	       && !initializer_constant_valid_p (inside_init,
+						 TREE_TYPE (inside_init)))
 	{
 	  error_init ("initializer element is not constant");
 	  inside_init = error_mark_node;
@@ -4203,7 +4194,8 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
 	  inside_init = error_mark_node;
 	}
       else if (require_constant
-	       && initializer_constant_valid_p (inside_init, TREE_TYPE (inside_init)) == 0)
+	       && !initializer_constant_valid_p (inside_init,
+						 TREE_TYPE (inside_init)))
 	{
 	  error_init ("initializer element is not computable at load time");
 	  inside_init = error_mark_node;
@@ -5585,21 +5577,23 @@ output_init_element (tree value, bool strict_string, tree type, tree field,
     constructor_erroneous = 1;
   else if (!TREE_CONSTANT (value))
     constructor_constant = 0;
-  else if (initializer_constant_valid_p (value, TREE_TYPE (value)) == 0
+  else if (!initializer_constant_valid_p (value, TREE_TYPE (value))
 	   || ((TREE_CODE (constructor_type) == RECORD_TYPE
 		|| TREE_CODE (constructor_type) == UNION_TYPE)
 	       && DECL_C_BIT_FIELD (field)
 	       && TREE_CODE (value) != INTEGER_CST))
     constructor_simple = 0;
 
-  if (require_constant_value && ! TREE_CONSTANT (value))
+  if (!initializer_constant_valid_p (value, TREE_TYPE (value)))
     {
-      error_init ("initializer element is not constant");
-      value = error_mark_node;
+      if (require_constant_value)
+	{
+	  error_init ("initializer element is not constant");
+	  value = error_mark_node;
+	}
+      else if (require_constant_elements)
+	pedwarn ("initializer element is not computable at load time");
     }
-  else if (require_constant_elements
-	   && initializer_constant_valid_p (value, TREE_TYPE (value)) == 0)
-    pedwarn ("initializer element is not computable at load time");
 
   /* If this field is empty (and not at the end of structure),
      don't do anything other than checking the initializer.  */
