@@ -1,3 +1,7 @@
+1998-09-06  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.f-torture/execute/io0.f: Test formatted direct i/o too.
+
 1998-09-04  Reid M. Pinchback  <reidmp@MIT.EDU>, Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.pt/explicit72.C: ensure that char and
