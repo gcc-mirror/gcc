@@ -1062,21 +1062,27 @@ static int
 is_subobject_of_p (parent, binfo)
      tree parent, binfo;
 {
-  tree binfos = BINFO_BASETYPES (binfo);
-  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+  tree binfos;
+  int i, n_baselinks;
 
-  if (TREE_VIA_VIRTUAL (parent))
-    parent = TYPE_BINFO (TREE_TYPE (parent));
-  if (TREE_VIA_VIRTUAL (binfo))
-    binfo = TYPE_BINFO (TREE_TYPE (binfo));
+  parent = canonical_binfo (parent);
+  binfo = canonical_binfo (binfo);
 
   if (parent == binfo)
     return 1;
 
+  binfos = BINFO_BASETYPES (binfo);
+  n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+
   /* Process and/or queue base types.  */
   for (i = 0; i < n_baselinks; i++)
     {
-      tree base_binfo = canonical_binfo (TREE_VEC_ELT (binfos, i));
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      if (!CLASS_TYPE_P (TREE_TYPE (base_binfo)))
+	/* If we see a TEMPLATE_TYPE_PARM, or some such, as a base
+	   class there's no way to descend into it.  */
+	continue;
+
       if (is_subobject_of_p (parent, base_binfo))
 	return 1;
     }
