@@ -17,14 +17,14 @@ int main()
       char j;
     }
 
-  while (int i = 0)		// { dg-error "" "" { xfail *-*-* } } 
+  while (int i = 0)		// { dg-error "" }
     {
-      int i;			// { dg-error "" "" { xfail *-*-* } } 
+      int i;			// { dg-error "" }
     }
 
-  for (; int i = 0; )		// { dg-error "" "" { xfail *-*-* } } 
+  for (; int i = 0; )		// { dg-error "" }
     {
-      int i;			// { dg-error "" "" { xfail *-*-* } } 
+      int i;			// { dg-error "" }
     }
 
   switch (int i = 0)		// { dg-error "" "" { xfail *-*-* } } 
