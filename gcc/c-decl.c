@@ -6818,7 +6818,7 @@ stmts_are_full_exprs_p ()
 
 int 
 anon_aggr_type_p (node)
-     tree node;
+     tree node ATTRIBUTE_UNUSED;
 {
   return 0;
 }
@@ -6904,7 +6904,7 @@ do_case (low_value, high_value)
 
 tree
 lang_expand_stmt (t)
-     tree t;
+     tree t ATTRIBUTE_UNUSED;
 {
   abort ();
   return NULL_TREE;
@@ -6914,7 +6914,7 @@ lang_expand_stmt (t)
 
 void
 set_current_function_name_declared (i)
-     int i;
+     int i ATTRIBUTE_UNUSED;
 {
   abort ();
 }

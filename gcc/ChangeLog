@@ -1,3 +1,16 @@
+2000-07-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-decl.c (set_current_function_name_declared, anon_aggr_type_p,
+	lang_expand_stmt): Mark parameters with ATTRIBUTE_UNUSED.
+	
+	* c-parse.in (stmt): Delete unused variables.
+
+	* convert.c (convert_to_vector): Likewise.
+
+	* gensupport.c (process_rtx): Declare attr as `rtvec' not `rtx'.
+
+	* tree.c (finish_vector_type): Prototype.
+
 2000-07-12  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/fixfixes.c: use xmalloc
