@@ -95,13 +95,13 @@ _mm_hsub_pd (__m128d __X, __m128d __Y)
 static __inline __m128d
 _mm_loaddup_pd (double const *__P)
 {
-  return (__m128d) __builtin_ia32_loadddup (__P);
+  return _mm_load1_pd (__P);
 }
 
 static __inline __m128d
 _mm_movedup_pd (__m128d __X)
 {
-  return (__m128d) __builtin_ia32_movddup ((__v2df)__X);
+  return _mm_shuffle_pd (__X, __X, _MM_SHUFFLE2 (0,0));
 }
 
 static __inline __m128i

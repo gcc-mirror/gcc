@@ -40,69 +40,25 @@ typedef int __v4si __attribute__ ((__vector_size__ (16)));
 typedef short __v8hi __attribute__ ((__vector_size__ (16)));
 typedef char __v16qi __attribute__ ((__vector_size__ (16)));
 
+typedef __v2di __m128i;
+typedef __v2df __m128d;
+
 /* Create a selector for use with the SHUFPD instruction.  */
 #define _MM_SHUFFLE2(fp1,fp0) \
  (((fp1) << 1) | (fp0))
-
-#define __m128i __v2di
-#define __m128d __v2df
-
-/* Create a vector with element 0 as *P and the rest zero.  */
-static __inline __m128d
-_mm_load_sd (double const *__P)
-{
-  return (__m128d) __builtin_ia32_loadsd (__P);
-}
-
-/* Create a vector with all two elements equal to *P.  */
-static __inline __m128d
-_mm_load1_pd (double const *__P)
-{
-  __v2df __tmp = __builtin_ia32_loadsd (__P);
-  return (__m128d) __builtin_ia32_shufpd (__tmp, __tmp, _MM_SHUFFLE2 (0,0));
-}
-
-static __inline __m128d
-_mm_load_pd1 (double const *__P)
-{
-  return _mm_load1_pd (__P);
-}
-
-/* Load two DPFP values from P.  The address must be 16-byte aligned.  */
-static __inline __m128d
-_mm_load_pd (double const *__P)
-{
-  return (__m128d) __builtin_ia32_loadapd (__P);
-}
-
-/* Load two DPFP values from P.  The address need not be 16-byte aligned.  */
-static __inline __m128d
-_mm_loadu_pd (double const *__P)
-{
-  return (__m128d) __builtin_ia32_loadupd (__P);
-}
-
-/* Load two DPFP values in reverse order.  The address must be aligned.  */
-static __inline __m128d
-_mm_loadr_pd (double const *__P)
-{
-  __v2df __tmp = __builtin_ia32_loadapd (__P);
-  return (__m128d) __builtin_ia32_shufpd (__tmp, __tmp, _MM_SHUFFLE2 (0,1));
-}
 
 /* Create a vector with element 0 as F and the rest zero.  */
 static __inline __m128d
 _mm_set_sd (double __F)
 {
-  return (__m128d) __builtin_ia32_loadsd (&__F);
+  return (__m128d){ __F, 0 };
 }
 
-/* Create a vector with all two elements equal to F.  */
+/* Create a vector with both elements equal to F.  */
 static __inline __m128d
 _mm_set1_pd (double __F)
 {
-  __v2df __tmp = __builtin_ia32_loadsd (&__F);
-  return (__m128d) __builtin_ia32_shufpd (__tmp, __tmp, _MM_SHUFFLE2 (0,0));
+  return (__m128d){ __F, __F };
 }
 
 static __inline __m128d
@@ -111,41 +67,116 @@ _mm_set_pd1 (double __F)
   return _mm_set1_pd (__F);
 }
 
-/* Create the vector [Z Y].  */
+/* Create a vector with the lower value X and upper value W.  */
 static __inline __m128d
-_mm_set_pd (double __Z, double __Y)
+_mm_set_pd (double __W, double __X)
 {
-  return (__v2df) {__Y, __Z};
+  return (__m128d){ __X, __W };
 }
 
-/* Create the vector [Y Z].  */
+/* Create a vector with the lower value W and upper value X.  */
 static __inline __m128d
-_mm_setr_pd (double __Z, double __Y)
+_mm_setr_pd (double __W, double __X)
 {
-  return _mm_set_pd (__Y, __Z);
+  return (__m128d){ __W, __X };
 }
 
 /* Create a vector of zeros.  */
 static __inline __m128d
 _mm_setzero_pd (void)
 {
-  return (__m128d) __builtin_ia32_setzeropd ();
+  return (__m128d){ 0.0, 0.0 };
+}
+
+/* Sets the low DPFP value of A from the low value of B.  */
+static __inline __m128d
+_mm_move_sd (__m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_movsd ((__v2df)__A, (__v2df)__B);
+}
+
+/* Load two DPFP values from P.  The address must be 16-byte aligned.  */
+static __inline __m128d
+_mm_load_pd (double const *__P)
+{
+  return *(__m128d *)__P;
+}
+
+/* Load two DPFP values from P.  The address need not be 16-byte aligned.  */
+static __inline __m128d
+_mm_loadu_pd (double const *__P)
+{
+  return __builtin_ia32_loadupd (__P);
+}
+
+/* Create a vector with all two elements equal to *P.  */
+static __inline __m128d
+_mm_load1_pd (double const *__P)
+{
+  return _mm_set1_pd (*__P);
+}
+
+/* Create a vector with element 0 as *P and the rest zero.  */
+static __inline __m128d
+_mm_load_sd (double const *__P)
+{
+  return _mm_set_sd (*__P);
+}
+
+static __inline __m128d
+_mm_load_pd1 (double const *__P)
+{
+  return _mm_load1_pd (__P);
+}
+
+/* Load two DPFP values in reverse order.  The address must be aligned.  */
+static __inline __m128d
+_mm_loadr_pd (double const *__P)
+{
+  __m128d __tmp = _mm_load_pd (__P);
+  return __builtin_ia32_shufpd (__tmp, __tmp, _MM_SHUFFLE2 (0,1));
+}
+
+/* Store two DPFP values.  The address must be 16-byte aligned.  */
+static __inline void
+_mm_store_pd (double *__P, __m128d __A)
+{
+  *(__m128d *)__P = __A;
+}
+
+/* Store two DPFP values.  The address need not be 16-byte aligned.  */
+static __inline void
+_mm_storeu_pd (double *__P, __m128d __A)
+{
+  __builtin_ia32_storeupd (__P, __A);
 }
 
 /* Stores the lower DPFP value.  */
 static __inline void
 _mm_store_sd (double *__P, __m128d __A)
 {
-  __builtin_ia32_storesd (__P, (__v2df)__A);
+  *__P = __builtin_ia32_vec_ext_v2df (__A, 0);
 }
 
-/* Store the lower DPFP value across two words.  */
+static __inline void
+_mm_storel_pd (double *__P, __m128d __A)
+{
+  _mm_store_sd (__P, __A);
+}
+
+/* Stores the upper DPFP value.  */
+static __inline void
+_mm_storeh_pd (double *__P, __m128d __A)
+{
+  *__P = __builtin_ia32_vec_ext_v2df (__A, 1);
+}
+
+/* Store the lower DPFP value across two words.
+   The address must be 16-byte aligned.  */
 static __inline void
 _mm_store1_pd (double *__P, __m128d __A)
 {
-  __v2df __va = (__v2df)__A;
-  __v2df __tmp = __builtin_ia32_shufpd (__va, __va, _MM_SHUFFLE2 (0,0));
-  __builtin_ia32_storeapd (__P, __tmp);
+  _mm_store_pd (__P, __builtin_ia32_shufpd (__A, __A, _MM_SHUFFLE2 (0,0)));
 }
 
 static __inline void
@@ -154,27 +185,11 @@ _mm_store_pd1 (double *__P, __m128d __A)
   _mm_store1_pd (__P, __A);
 }
 
-/* Store two DPFP values.  The address must be 16-byte aligned.  */
-static __inline void
-_mm_store_pd (double *__P, __m128d __A)
-{
-  __builtin_ia32_storeapd (__P, (__v2df)__A);
-}
-
-/* Store two DPFP values.  The address need not be 16-byte aligned.  */
-static __inline void
-_mm_storeu_pd (double *__P, __m128d __A)
-{
-  __builtin_ia32_storeupd (__P, (__v2df)__A);
-}
-
 /* Store two DPFP values in reverse order.  The address must be aligned.  */
 static __inline void
 _mm_storer_pd (double *__P, __m128d __A)
 {
-  __v2df __va = (__v2df)__A;
-  __v2df __tmp = __builtin_ia32_shufpd (__va, __va, _MM_SHUFFLE2 (0,1));
-  __builtin_ia32_storeapd (__P, __tmp);
+  _mm_store_pd (__P, __builtin_ia32_shufpd (__A, __A, _MM_SHUFFLE2 (0,1)));
 }
 
 static __inline int
@@ -192,13 +207,6 @@ _mm_cvtsi128_si64x (__m128i __A)
   return __builtin_ia32_movdq2q ((__v2di)__A);
 }
 #endif
-
-/* Sets the low DPFP value of A from the low value of B.  */
-static __inline __m128d
-_mm_move_sd (__m128d __A, __m128d __B)
-{
-  return (__m128d) __builtin_ia32_movsd ((__v2df)__A, (__v2df)__B);
-}
 
 
 static __inline __m128d
@@ -543,12 +551,116 @@ _mm_ucomineq_sd (__m128d __A, __m128d __B)
   return __builtin_ia32_ucomisdneq ((__v2df)__A, (__v2df)__B);
 }
 
+/* Create a vector of Qi, where i is the element number.  */
+
+static __inline __m128i
+_mm_set_epi64x (long long __q1, long long __q0)
+{
+  return (__m128i)(__v2di){ __q0, __q1 };
+}
+
+static __inline __m128i
+_mm_set_epi64 (__m64 __q1,  __m64 __q0)
+{
+  return _mm_set_epi64x ((long long)__q1, (long long)__q0);
+}
+
+static __inline __m128i
+_mm_set_epi32 (int __q3, int __q2, int __q1, int __q0)
+{
+  return (__m128i)(__v4si){ __q0, __q1, __q2, __q3 };
+}
+
+static __inline __m128i
+_mm_set_epi16 (short __q7, short __q6, short __q5, short __q4,
+	       short __q3, short __q2, short __q1, short __q0)
+{
+  return (__m128i)(__v8hi){ __q0, __q1, __q2, __q3, __q4, __q5, __q6, __q7 };
+}
+
+static __inline __m128i
+_mm_set_epi8 (char __q15, char __q14, char __q13, char __q12,
+	      char __q11, char __q10, char __q09, char __q08,
+	      char __q07, char __q06, char __q05, char __q04,
+	      char __q03, char __q02, char __q01, char __q00)
+{
+  return (__m128i)(__v16qi){
+    __q00, __q01, __q02, __q03, __q04, __q05, __q06, __q07,
+    __q08, __q09, __q10, __q11, __q12, __q13, __q14, __q15
+  };
+}
+
+/* Set all of the elements of the vector to A.  */
+
+static __inline __m128i
+_mm_set1_epi64x (long long __A)
+{
+  return _mm_set_epi64x (__A, __A);
+}
+
+static __inline __m128i
+_mm_set1_epi64 (__m64 __A)
+{
+  return _mm_set_epi64 (__A, __A);
+}
+
+static __inline __m128i
+_mm_set1_epi32 (int __A)
+{
+  return _mm_set_epi32 (__A, __A, __A, __A);
+}
+
+static __inline __m128i
+_mm_set1_epi16 (short __A)
+{
+  return _mm_set_epi16 (__A, __A, __A, __A, __A, __A, __A, __A);
+}
+
+static __inline __m128i
+_mm_set1_epi8 (char __A)
+{
+  return _mm_set_epi8 (__A, __A, __A, __A, __A, __A, __A, __A,
+		       __A, __A, __A, __A, __A, __A, __A, __A);
+}
+
+/* Create a vector of Qi, where i is the element number.
+   The parameter order is reversed from the _mm_set_epi* functions.  */
+
+static __inline __m128i
+_mm_setr_epi64 (__m64 __q0, __m64 __q1)
+{
+  return _mm_set_epi64 (__q1, __q0);
+}
+
+static __inline __m128i
+_mm_setr_epi32 (int __q0, int __q1, int __q2, int __q3)
+{
+  return _mm_set_epi32 (__q3, __q2, __q1, __q0);
+}
+
+static __inline __m128i
+_mm_setr_epi16 (short __q0, short __q1, short __q2, short __q3,
+	        short __q4, short __q5, short __q6, short __q7)
+{
+  return _mm_set_epi16 (__q7, __q6, __q5, __q4, __q3, __q2, __q1, __q0);
+}
+
+static __inline __m128i
+_mm_setr_epi8 (char __q00, char __q01, char __q02, char __q03,
+	       char __q04, char __q05, char __q06, char __q07,
+	       char __q08, char __q09, char __q10, char __q11,
+	       char __q12, char __q13, char __q14, char __q15)
+{
+  return _mm_set_epi8 (__q15, __q14, __q13, __q12, __q11, __q10, __q09, __q08,
+		       __q07, __q06, __q05, __q04, __q03, __q02, __q01, __q00);
+}
+
 /* Create a vector with element 0 as *P and the rest zero.  */
 
 static __inline __m128i
 _mm_load_si128 (__m128i const *__P)
 {
-  return (__m128i) __builtin_ia32_loaddqa ((char const *)__P);
+  return *__P;
 }
 
 static __inline __m128i
@@ -560,13 +672,13 @@ _mm_loadu_si128 (__m128i const *__P)
 static __inline __m128i
 _mm_loadl_epi64 (__m128i const *__P)
 {
-  return (__m128i) __builtin_ia32_movq2dq (*(unsigned long long *)__P);
+  return _mm_set_epi64 ((__m64)0LL, *(__m64 *)__P);
 }
 
 static __inline void
 _mm_store_si128 (__m128i *__P, __m128i __B)
 {
-  __builtin_ia32_storedqa ((char *)__P, (__v16qi)__B);
+  *__P = __B;
 }
 
 static __inline void
@@ -578,242 +690,32 @@ _mm_storeu_si128 (__m128i *__P, __m128i __B)
 static __inline void
 _mm_storel_epi64 (__m128i *__P, __m128i __B)
 {
-  *(long long *)__P = __builtin_ia32_movdq2q ((__v2di)__B);
+  *(long long *)__P = __builtin_ia32_vec_ext_v2di ((__v2di)__B, 0);
 }
 
 static __inline __m64
 _mm_movepi64_pi64 (__m128i __B)
 {
-  return (__m64) __builtin_ia32_movdq2q ((__v2di)__B);
+  return (__m64) __builtin_ia32_vec_ext_v2di ((__v2di)__B, 0);
+}
+
+static __inline __m128i
+_mm_movpi64_epi64 (__m64 __A)
+{
+  return _mm_set_epi64 ((__m64)0LL, __A);
 }
 
 static __inline __m128i
 _mm_move_epi64 (__m128i __A)
 {
-  return (__m128i) __builtin_ia32_movq ((__v2di)__A);
+  return _mm_set_epi64 ((__m64)0LL, _mm_movepi64_pi64 (__A));
 }
 
 /* Create a vector of zeros.  */
 static __inline __m128i
 _mm_setzero_si128 (void)
 {
-  return (__m128i) __builtin_ia32_setzero128 ();
-}
-
-static __inline __m128i
-_mm_set_epi64 (__m64 __A,  __m64 __B)
-{
-  __v2di __tmp = (__v2di)__builtin_ia32_movq2dq ((unsigned long long)__A);
-  __v2di __tmp2 = (__v2di)__builtin_ia32_movq2dq ((unsigned long long)__B);
-  return (__m128i)__builtin_ia32_punpcklqdq128 (__tmp2, __tmp);
-}
-
-/* Create the vector [Z Y X W].  */
-static __inline __m128i
-_mm_set_epi32 (int __Z, int __Y, int __X, int __W)
-{
-  union {
-    int __a[4];
-    __m128i __v;
-  } __u;
-
-  __u.__a[0] = __W;
-  __u.__a[1] = __X;
-  __u.__a[2] = __Y;
-  __u.__a[3] = __Z;
-
-  return __u.__v;
-}
-
-#ifdef __x86_64__
-/* Create the vector [Z Y].  */
-static __inline __m128i
-_mm_set_epi64x (long long __Z, long long __Y)
-{
-  union {
-    long __a[2];
-    __m128i __v;
-  } __u;
-
-  __u.__a[0] = __Y;
-  __u.__a[1] = __Z;
-
-  return __u.__v;
-}
-#endif
-
-/* Create the vector [S T U V Z Y X W].  */
-static __inline __m128i
-_mm_set_epi16 (short __Z, short __Y, short __X, short __W,
-	       short __V, short __U, short __T, short __S)
-{
-  union {
-    short __a[8];
-    __m128i __v;
-  } __u;
-
-  __u.__a[0] = __S;
-  __u.__a[1] = __T;
-  __u.__a[2] = __U;
-  __u.__a[3] = __V;
-  __u.__a[4] = __W;
-  __u.__a[5] = __X;
-  __u.__a[6] = __Y;
-  __u.__a[7] = __Z;
-
-  return __u.__v;
-}
-
-/* Create the vector [S T U V Z Y X W].  */
-static __inline __m128i
-_mm_set_epi8 (char __Z, char __Y, char __X, char __W,
-	      char __V, char __U, char __T, char __S,
-	      char __Z1, char __Y1, char __X1, char __W1,
-	      char __V1, char __U1, char __T1, char __S1)
-{
-  union {
-    char __a[16];
-    __m128i __v;
-  } __u;
-
-  __u.__a[0] = __S1;
-  __u.__a[1] = __T1;
-  __u.__a[2] = __U1;
-  __u.__a[3] = __V1;
-  __u.__a[4] = __W1;
-  __u.__a[5] = __X1;
-  __u.__a[6] = __Y1;
-  __u.__a[7] = __Z1;
-  __u.__a[8] = __S;
-  __u.__a[9] = __T;
-  __u.__a[10] = __U;
-  __u.__a[11] = __V;
-  __u.__a[12] = __W;
-  __u.__a[13] = __X;
-  __u.__a[14] = __Y;
-  __u.__a[15] = __Z;
-
-  return __u.__v;
-}
-
-static __inline __m128i
-_mm_set1_epi64 (__m64 __A)
-{
-  __v2di __tmp = (__v2di)__builtin_ia32_movq2dq ((unsigned long long)__A);
-  return (__m128i)__builtin_ia32_punpcklqdq128 (__tmp, __tmp);
-}
-
-static __inline __m128i
-_mm_set1_epi32 (int __A)
-{
-  __v4si __tmp = (__v4si)__builtin_ia32_loadd (&__A);
-  return (__m128i) __builtin_ia32_pshufd ((__v4si)__tmp, _MM_SHUFFLE (0,0,0,0));
-}
-
-#ifdef __x86_64__
-static __inline __m128i
-_mm_set1_epi64x (long long __A)
-{
-  __v2di __tmp = (__v2di)__builtin_ia32_movq2dq ((unsigned long long)__A);
-  return (__m128i) __builtin_ia32_shufpd ((__v2df)__tmp, (__v2df)__tmp, _MM_SHUFFLE2 (0,0));
-}
-#endif
-
-static __inline __m128i
-_mm_set1_epi16 (short __A)
-{
-  int __Acopy = (unsigned short)__A;
-  __v4si __tmp = (__v4si)__builtin_ia32_loadd (&__Acopy);
-  __tmp = (__v4si)__builtin_ia32_punpcklwd128 ((__v8hi)__tmp, (__v8hi)__tmp);
-  return (__m128i) __builtin_ia32_pshufd ((__v4si)__tmp, _MM_SHUFFLE (0,0,0,0));
-}
-
-static __inline __m128i
-_mm_set1_epi8 (char __A)
-{
-  int __Acopy = (unsigned char)__A;
-  __v4si __tmp = (__v4si)__builtin_ia32_loadd (&__Acopy);
-  __tmp = (__v4si)__builtin_ia32_punpcklbw128 ((__v16qi)__tmp, (__v16qi)__tmp);
-  __tmp = (__v4si)__builtin_ia32_punpcklbw128 ((__v16qi)__tmp, (__v16qi)__tmp);
-  return (__m128i) __builtin_ia32_pshufd ((__v4si)__tmp, _MM_SHUFFLE (0,0,0,0));
-}
-
-static __inline __m128i
-_mm_setr_epi64 (__m64 __A,  __m64 __B)
-{
-  __v2di __tmp = (__v2di)__builtin_ia32_movq2dq ((unsigned long long)__A);
-  __v2di __tmp2 = (__v2di)__builtin_ia32_movq2dq ((unsigned long long)__B);
-  return (__m128i)__builtin_ia32_punpcklqdq128 (__tmp, __tmp2);
-}
-
-/* Create the vector [Z Y X W].  */
-static __inline __m128i
-_mm_setr_epi32 (int __W, int __X, int __Y, int __Z)
-{
-  union {
-    int __a[4];
-    __m128i __v;
-  } __u;
-
-  __u.__a[0] = __W;
-  __u.__a[1] = __X;
-  __u.__a[2] = __Y;
-  __u.__a[3] = __Z;
-
-  return __u.__v;
-}
-/* Create the vector [S T U V Z Y X W].  */
-static __inline __m128i
-_mm_setr_epi16 (short __S, short __T, short __U, short __V,
-	        short __W, short __X, short __Y, short __Z)
-{
-  union {
-    short __a[8];
-    __m128i __v;
-  } __u;
-
-  __u.__a[0] = __S;
-  __u.__a[1] = __T;
-  __u.__a[2] = __U;
-  __u.__a[3] = __V;
-  __u.__a[4] = __W;
-  __u.__a[5] = __X;
-  __u.__a[6] = __Y;
-  __u.__a[7] = __Z;
-
-  return __u.__v;
-}
-
-/* Create the vector [S T U V Z Y X W].  */
-static __inline __m128i
-_mm_setr_epi8 (char __S1, char __T1, char __U1, char __V1,
-	       char __W1, char __X1, char __Y1, char __Z1,
-	       char __S, char __T, char __U, char __V,
-	       char __W, char __X, char __Y, char __Z)
-{
-  union {
-    char __a[16];
-    __m128i __v;
-  } __u;
-
-  __u.__a[0] = __S1;
-  __u.__a[1] = __T1;
-  __u.__a[2] = __U1;
-  __u.__a[3] = __V1;
-  __u.__a[4] = __W1;
-  __u.__a[5] = __X1;
-  __u.__a[6] = __Y1;
-  __u.__a[7] = __Z1;
-  __u.__a[8] = __S;
-  __u.__a[9] = __T;
-  __u.__a[10] = __U;
-  __u.__a[11] = __V;
-  __u.__a[12] = __W;
-  __u.__a[13] = __X;
-  __u.__a[14] = __Y;
-  __u.__a[15] = __Z;
-
-  return __u.__v;
+  return (__m128i)(__v4si){ 0, 0, 0, 0 };
 }
 
 static __inline __m128d
@@ -956,22 +858,10 @@ _mm_loadh_pd (__m128d __A, double const *__B)
   return (__m128d)__builtin_ia32_loadhpd ((__v2df)__A, __B);
 }
 
-static __inline void
-_mm_storeh_pd (double *__A, __m128d __B)
-{
-  __builtin_ia32_storehpd (__A, (__v2df)__B);
-}
-
 static __inline __m128d
 _mm_loadl_pd (__m128d __A, double const *__B)
 {
   return (__m128d)__builtin_ia32_loadlpd ((__v2df)__A, __B);
-}
-
-static __inline void
-_mm_storel_pd (double *__A, __m128d __B)
-{
-  __builtin_ia32_storelpd (__A, (__v2df)__B);
 }
 
 static __inline int
@@ -1365,9 +1255,24 @@ _mm_cmpgt_epi32 (__m128i __A, __m128i __B)
   return (__m128i)__builtin_ia32_pcmpgtd128 ((__v4si)__A, (__v4si)__B);
 }
 
-#define _mm_extract_epi16(__A, __B) __builtin_ia32_pextrw128 ((__v8hi)__A, __B)
+#if 0
+static __inline int __attribute__((__always_inline__))
+_mm_extract_epi16 (__m128i const __A, int const __N)
+{
+  return __builtin_ia32_vec_ext_v8hi ((__v8hi)__A, __N);
+}
 
-#define _mm_insert_epi16(__A, __B, __C) ((__m128i)__builtin_ia32_pinsrw128 ((__v8hi)__A, __B, __C))
+static __inline __m128i __attribute__((__always_inline__))
+_mm_insert_epi16 (__m128i const __A, int const __D, int const __N)
+{
+  return (__m128i) __builtin_ia32_vec_set_v8hi ((__v8hi)__A, __D, __N);
+}
+#else
+#define _mm_extract_epi16(A, N) \
+  ((int) __builtin_ia32_vec_ext_v8hi ((__v8hi)(A), (N))
+#define _mm_insert_epi16(A, D, N) \
+  ((__m128i) __builtin_ia32_vec_set_v8hi ((__v8hi)(A), (D), (N)))
+#endif
 
 static __inline __m128i
 _mm_max_epi16 (__m128i __A, __m128i __B)
@@ -1449,12 +1354,6 @@ static __inline void
 _mm_stream_pd (double *__A, __m128d __B)
 {
   __builtin_ia32_movntpd (__A, (__v2df)__B);
-}
-
-static __inline __m128i
-_mm_movpi64_epi64 (__m64 __A)
-{
-  return (__m128i)__builtin_ia32_movq2dq ((unsigned long long)__A);
 }
 
 static __inline void

@@ -86,6 +86,13 @@ enum _mm_hint
 #define _MM_FLUSH_ZERO_ON     0x8000
 #define _MM_FLUSH_ZERO_OFF    0x0000
 
+/* Create a vector of zeros.  */
+static __inline __m128
+_mm_setzero_ps (void)
+{
+  return (__m128){ 0.0f, 0.0f, 0.0f, 0.0f };
+}
+
 /* Perform the respective operation on the lower SPFP (single-precision
    floating-point) values of A and B; the upper three SPFP values are
    passed through from A.  */
@@ -590,15 +597,14 @@ _mm_cvtpi16_ps (__m64 __A)
   /* This comparison against zero gives us a mask that can be used to
      fill in the missing sign bits in the unpack operations below, so
      that we get signed values after unpacking.  */
-  __sign = (__v4hi) __builtin_ia32_mmx_zero ();
-  __sign = __builtin_ia32_pcmpgtw (__sign, (__v4hi)__A);
+  __sign = __builtin_ia32_pcmpgtw ((__v4hi)0LL, (__v4hi)__A);
 
   /* Convert the four words to doublewords.  */
   __hisi = (__v2si) __builtin_ia32_punpckhwd ((__v4hi)__A, __sign);
   __losi = (__v2si) __builtin_ia32_punpcklwd ((__v4hi)__A, __sign);
 
   /* Convert the doublewords to floating point two at a time.  */
-  __r = (__v4sf) __builtin_ia32_setzerops ();
+  __r = (__v4sf) _mm_setzero_ps ();
   __r = __builtin_ia32_cvtpi2ps (__r, __hisi);
   __r = __builtin_ia32_movlhps (__r, __r);
   __r = __builtin_ia32_cvtpi2ps (__r, __losi);
@@ -610,16 +616,15 @@ _mm_cvtpi16_ps (__m64 __A)
 static __inline __m128
 _mm_cvtpu16_ps (__m64 __A)
 {
-  __v4hi __zero = (__v4hi) __builtin_ia32_mmx_zero ();
   __v2si __hisi, __losi;
   __v4sf __r;
 
   /* Convert the four words to doublewords.  */
-  __hisi = (__v2si) __builtin_ia32_punpckhwd ((__v4hi)__A, __zero);
-  __losi = (__v2si) __builtin_ia32_punpcklwd ((__v4hi)__A, __zero);
+  __hisi = (__v2si) __builtin_ia32_punpckhwd ((__v4hi)__A, (__v4hi)0LL);
+  __losi = (__v2si) __builtin_ia32_punpcklwd ((__v4hi)__A, (__v4hi)0LL);
 
   /* Convert the doublewords to floating point two at a time.  */
-  __r = (__v4sf) __builtin_ia32_setzerops ();
+  __r = (__v4sf) _mm_setzero_ps ();
   __r = __builtin_ia32_cvtpi2ps (__r, __hisi);
   __r = __builtin_ia32_movlhps (__r, __r);
   __r = __builtin_ia32_cvtpi2ps (__r, __losi);
@@ -636,8 +641,7 @@ _mm_cvtpi8_ps (__m64 __A)
   /* This comparison against zero gives us a mask that can be used to
      fill in the missing sign bits in the unpack operations below, so
      that we get signed values after unpacking.  */
-  __sign = (__v8qi) __builtin_ia32_mmx_zero ();
-  __sign = __builtin_ia32_pcmpgtb (__sign, (__v8qi)__A);
+  __sign = __builtin_ia32_pcmpgtb ((__v8qi)0LL, (__v8qi)__A);
 
   /* Convert the four low bytes to words.  */
   __A = (__m64) __builtin_ia32_punpcklbw ((__v8qi)__A, __sign);
@@ -649,8 +653,7 @@ _mm_cvtpi8_ps (__m64 __A)
 static __inline __m128
 _mm_cvtpu8_ps(__m64 __A)
 {
-  __v8qi __zero = (__v8qi) __builtin_ia32_mmx_zero ();
-  __A = (__m64) __builtin_ia32_punpcklbw ((__v8qi)__A, __zero);
+  __A = (__m64) __builtin_ia32_punpcklbw ((__v8qi)__A, (__v8qi)0LL);
   return _mm_cvtpu16_ps(__A);
 }
 
@@ -658,7 +661,7 @@ _mm_cvtpu8_ps(__m64 __A)
 static __inline __m128
 _mm_cvtpi32x2_ps(__m64 __A, __m64 __B)
 {
-  __v4sf __zero = (__v4sf) __builtin_ia32_setzerops ();
+  __v4sf __zero = (__v4sf) _mm_setzero_ps ();
   __v4sf __sfa = __builtin_ia32_cvtpi2ps (__zero, (__v2si)__A);
   __v4sf __sfb = __builtin_ia32_cvtpi2ps (__zero, (__v2si)__B);
   return (__m128) __builtin_ia32_movlhps (__sfa, __sfb);
@@ -680,8 +683,7 @@ static __inline __m64
 _mm_cvtps_pi8(__m128 __A)
 {
   __v4hi __tmp = (__v4hi) _mm_cvtps_pi16 (__A);
-  __v4hi __zero = (__v4hi) __builtin_ia32_mmx_zero ();
-  return (__m64) __builtin_ia32_packsswb (__tmp, __zero);
+  return (__m64) __builtin_ia32_packsswb (__tmp, (__v4hi)0LL);
 }
 
 /* Selects four specific SPFP values from A and B based on MASK.  */
@@ -826,19 +828,38 @@ _MM_SET_FLUSH_ZERO_MODE (unsigned int __mode)
   _mm_setcsr((_mm_getcsr() & ~_MM_FLUSH_ZERO_MASK) | __mode);
 }
 
+/* Create a vector with element 0 as F and the rest zero.  */
+static __inline __m128
+_mm_set_ss (float __F)
+{
+  return (__m128)(__v4sf){ __F, 0, 0, 0 };
+}
+
+/* Create a vector with all four elements equal to F.  */
+static __inline __m128
+_mm_set1_ps (float __F)
+{
+  return (__m128)(__v4sf){ __F, __F, __F, __F };
+}
+
+static __inline __m128
+_mm_set_ps1 (float __F)
+{
+  return _mm_set1_ps (__F);
+}
+
 /* Create a vector with element 0 as *P and the rest zero.  */
 static __inline __m128
 _mm_load_ss (float const *__P)
 {
-  return (__m128) __builtin_ia32_loadss (__P);
+  return _mm_set_ss (*__P);
 }
 
 /* Create a vector with all four elements equal to *P.  */
 static __inline __m128
 _mm_load1_ps (float const *__P)
 {
-  __v4sf __tmp = __builtin_ia32_loadss (__P);
-  return (__m128) __builtin_ia32_shufps (__tmp, __tmp, _MM_SHUFFLE (0,0,0,0));
+  return _mm_set1_ps (*__P);
 }
 
 static __inline __m128
@@ -851,7 +872,7 @@ _mm_load_ps1 (float const *__P)
 static __inline __m128
 _mm_load_ps (float const *__P)
 {
-  return (__m128) __builtin_ia32_loadaps (__P);
+  return (__m128) *(__v4sf *)__P;
 }
 
 /* Load four SPFP values from P.  The address need not be 16-byte aligned.  */
@@ -865,79 +886,36 @@ _mm_loadu_ps (float const *__P)
 static __inline __m128
 _mm_loadr_ps (float const *__P)
 {
-  __v4sf __tmp = __builtin_ia32_loadaps (__P);
+  __v4sf __tmp = *(__v4sf *)__P;
   return (__m128) __builtin_ia32_shufps (__tmp, __tmp, _MM_SHUFFLE (0,1,2,3));
-}
-
-/* Create a vector with element 0 as F and the rest zero.  */
-static __inline __m128
-_mm_set_ss (float __F)
-{
-  return (__m128) __builtin_ia32_loadss (&__F);
-}
-
-/* Create a vector with all four elements equal to F.  */
-static __inline __m128
-_mm_set1_ps (float __F)
-{
-  __v4sf __tmp = __builtin_ia32_loadss (&__F);
-  return (__m128) __builtin_ia32_shufps (__tmp, __tmp, _MM_SHUFFLE (0,0,0,0));
-}
-
-static __inline __m128
-_mm_set_ps1 (float __F)
-{
-  return _mm_set1_ps (__F);
 }
 
 /* Create the vector [Z Y X W].  */
 static __inline __m128
 _mm_set_ps (const float __Z, const float __Y, const float __X, const float __W)
 {
-  return (__v4sf) {__W, __X, __Y, __Z};
+  return (__m128)(__v4sf){ __W, __X, __Y, __Z };
 }
 
 /* Create the vector [W X Y Z].  */
 static __inline __m128
 _mm_setr_ps (float __Z, float __Y, float __X, float __W)
 {
-  return _mm_set_ps (__W, __X, __Y, __Z);
-}
-
-/* Create a vector of zeros.  */
-static __inline __m128
-_mm_setzero_ps (void)
-{
-  return (__m128) __builtin_ia32_setzerops ();
+  return (__m128)(__v4sf){ __Z, __Y, __X, __W };
 }
 
 /* Stores the lower SPFP value.  */
 static __inline void
 _mm_store_ss (float *__P, __m128 __A)
 {
-  __builtin_ia32_storess (__P, (__v4sf)__A);
-}
-
-/* Store the lower SPFP value across four words.  */
-static __inline void
-_mm_store1_ps (float *__P, __m128 __A)
-{
-  __v4sf __va = (__v4sf)__A;
-  __v4sf __tmp = __builtin_ia32_shufps (__va, __va, _MM_SHUFFLE (0,0,0,0));
-  __builtin_ia32_storeaps (__P, __tmp);
-}
-
-static __inline void
-_mm_store_ps1 (float *__P, __m128 __A)
-{
-  _mm_store1_ps (__P, __A);
+  *__P = __builtin_ia32_vec_ext_v4sf ((__v4sf)__A, 0);
 }
 
 /* Store four SPFP values.  The address must be 16-byte aligned.  */
 static __inline void
 _mm_store_ps (float *__P, __m128 __A)
 {
-  __builtin_ia32_storeaps (__P, (__v4sf)__A);
+  *(__v4sf *)__P = (__v4sf)__A;
 }
 
 /* Store four SPFP values.  The address need not be 16-byte aligned.  */
@@ -947,13 +925,28 @@ _mm_storeu_ps (float *__P, __m128 __A)
   __builtin_ia32_storeups (__P, (__v4sf)__A);
 }
 
+/* Store the lower SPFP value across four words.  */
+static __inline void
+_mm_store1_ps (float *__P, __m128 __A)
+{
+  __v4sf __va = (__v4sf)__A;
+  __v4sf __tmp = __builtin_ia32_shufps (__va, __va, _MM_SHUFFLE (0,0,0,0));
+  _mm_storeu_ps (__P, __tmp);
+}
+
+static __inline void
+_mm_store_ps1 (float *__P, __m128 __A)
+{
+  _mm_store1_ps (__P, __A);
+}
+
 /* Store four SPFP values in reverse order.  The address must be aligned.  */
 static __inline void
 _mm_storer_ps (float *__P, __m128 __A)
 {
   __v4sf __va = (__v4sf)__A;
   __v4sf __tmp = __builtin_ia32_shufps (__va, __va, _MM_SHUFFLE (0,1,2,3));
-  __builtin_ia32_storeaps (__P, __tmp);
+  _mm_store_ps (__P, __tmp);
 }
 
 /* Sets the low SPFP value of A from the low value of B.  */
@@ -965,40 +958,39 @@ _mm_move_ss (__m128 __A, __m128 __B)
 
 /* Extracts one of the four words of A.  The selector N must be immediate.  */
 #if 0
-static __inline int
-_mm_extract_pi16 (__m64 __A, int __N)
+static __inline int __attribute__((__always_inline__))
+_mm_extract_pi16 (__m64 const __A, int const __N)
 {
-  return __builtin_ia32_pextrw ((__v4hi)__A, __N);
+  return __builtin_ia32_vec_ext_v4hi ((__v4hi)__A, __N);
 }
 
-static __inline int
-_m_pextrw (__m64 __A, int __N)
+static __inline int __attribute__((__always_inline__))
+_m_pextrw (__m64 const __A, int const __N)
 {
   return _mm_extract_pi16 (__A, __N);
 }
 #else
-#define _mm_extract_pi16(A, N) \
-  __builtin_ia32_pextrw ((__v4hi)(A), (N))
+#define _mm_extract_pi16(A, N)	__builtin_ia32_vec_ext_v4hi ((__v4hi)(A), (N))
 #define _m_pextrw(A, N)		_mm_extract_pi16((A), (N))
 #endif
 
 /* Inserts word D into one of four words of A.  The selector N must be
    immediate.  */
 #if 0
-static __inline __m64
-_mm_insert_pi16 (__m64 __A, int __D, int __N)
+static __inline __m64 __attribute__((__always_inline__))
+_mm_insert_pi16 (__m64 const __A, int const __D, int const __N)
 {
-  return (__m64)__builtin_ia32_pinsrw ((__v4hi)__A, __D, __N);
+  return (__m64) __builtin_ia32_vec_set_v4hi ((__v4hi)__A, __D, __N);
 }
 
-static __inline __m64
-_m_pinsrw (__m64 __A, int __D, int __N)
+static __inline __m64 __attribute__((__always_inline__))
+_m_pinsrw (__m64 const __A, int const __D, int const __N)
 {
   return _mm_insert_pi16 (__A, __D, __N);
 }
 #else
 #define _mm_insert_pi16(A, D, N) \
-  ((__m64) __builtin_ia32_pinsrw ((__v4hi)(A), (D), (N)))
+  ((__m64) __builtin_ia32_vec_set_v4hi ((__v4hi)(A), (D), (N)))
 #define _m_pinsrw(A, D, N)	 _mm_insert_pi16((A), (D), (N))
 #endif
 
