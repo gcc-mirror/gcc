@@ -822,7 +822,7 @@ static char *link_command_spec = "\
 %{!fsyntax-only: \
  %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{t} %{u*} %{x} %{z} %{Z}\
-			%{!A:%{!nostartfiles:%{!nostdlib:%S}}} %{static:}\
+			%{!A:%{!nostartfiles:%S}} %{static:}\
 			%{L*} %{T*} %o %{!nostdlib:%G %L %G %{!A:%E}}\n }}}}}}";
 #else
 /* Use -L.  */
@@ -830,7 +830,7 @@ static char *link_command_spec = "\
 %{!fsyntax-only: \
  %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{t} %{u*} %{x} %{z} %{Z}\
-			%{!A:%{!nostartfiles:%{!nostdlib:%S}}} %{static:}\
+			%{!A:%{!nostartfiles:%S}} %{static:}\
 			%{L*} %D %{T*} %o %{!nostdlib:%G %L %G %{!A:%E}}\n }}}}}}";
 #endif
 
