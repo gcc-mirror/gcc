@@ -1,3 +1,8 @@
+2004-09-10  Ziemowit Laski  <zlaski@apple.com>
+
+	* decl.c (objc_get_current_scope, objc_mark_locals_volatile):
+	New functions, to be called from ObjC++.
+
 2004-09-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* class.c, cp-tree.h, decl.c, decl2.c, mangle.c,
