@@ -66,12 +66,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    statements.  We handle "range" labels; for a single-value label
    as in C, the high and low limits are the same.
 
-   An AVL tree of case nodes is initially created, and later transformed
-   to a list linked via the RIGHT fields in the nodes.  Nodes with
-   higher case values are later in the list.
+   We start with a vector of case nodes sorted in ascending order, and
+   the default label as the last element in the vector.  Before expanding
+   to RTL, we transform this vector into a list linked via the RIGHT
+   fields in the case_node struct.  Nodes with higher case values are
+   later in the list.
 
-   Switch statements can be output in one of two forms.  A branch table
-   is used if there are more than a few labels and the labels are dense
+   Switch statements can be output in three forms.  A branch table is
+   used if there are more than a few labels and the labels are dense
    within the range between the smallest and largest case value.  If a
    branch table is used, no further manipulations are done with the case
    node chain.
@@ -82,7 +84,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    totally unbalanced, with everything on the right.  We balance the tree
    with nodes on the left having lower case values than the parent
    and nodes on the right having higher values.  We then output the tree
-   in order.  */
+   in order.
+
+   For very small, suitable switch statements, we can generate a series
+   of simple bit test and branches instead.  */
 
 struct case_node GTY(())
 {
@@ -92,7 +97,6 @@ struct case_node GTY(())
   tree			low;	/* Lowest index value for this label */
   tree			high;	/* Highest index value for this label */
   tree			code_label; /* Label to jump to when node matches */
-  int			balance;
 };
 
 typedef struct case_node case_node;
@@ -274,7 +278,6 @@ static int node_has_low_bound (case_node_ptr, tree);
 static int node_has_high_bound (case_node_ptr, tree);
 static int node_is_bounded (case_node_ptr, tree);
 static void emit_case_nodes (rtx, case_node_ptr, rtx, tree);
-static struct case_node *case_tree2list (case_node *, case_node *);
 
 void
 init_stmt_for_function (void)
@@ -2727,241 +2730,42 @@ expand_start_case (tree index_expr)
 }
 
 /* Do the insertion of a case label into
-   case_stack->data.case_stmt.case_list.  Use an AVL tree to avoid
-   slowdown for large switch statements.  */
+   case_stack->data.case_stmt.case_list.  The labels are fed to us
+   in descending order from the sorted vector of case labels used
+   in the tree part of the middle end.  So the list we construct is
+   sorted in ascending order.  */
 
-int
-add_case_node (tree low, tree high, tree label, tree *duplicate)
+void
+add_case_node (tree low, tree high, tree label)
 {
-  struct case_node *p, **q, *r;
+  struct case_node *r;
 
   /* If there's no HIGH value, then this is not a case range; it's
      just a simple case label.  But that's just a degenerate case
-     range.  */
-  if (!high)
+     range.
+     If the bounds are equal, turn this into the one-value case.  */
+  if (!high || tree_int_cst_equal (low, high))
     high = low;
 
   /* Handle default labels specially.  */
   if (!high && !low)
     {
+#ifdef ENABLE_CHECKING
       if (case_stack->data.case_stmt.default_label != 0)
-	{
-	  *duplicate = case_stack->data.case_stmt.default_label;
-	  return 2;
-	}
+	abort ();
+#endif
       case_stack->data.case_stmt.default_label = label;
-      return 0;
+      return;
     }
 
-  q = &case_stack->data.case_stmt.case_list;
-  p = *q;
-
-  while ((r = *q))
-    {
-      p = r;
-
-      /* Keep going past elements distinctly greater than HIGH.  */
-      if (tree_int_cst_lt (high, p->low))
-	q = &p->left;
-
-      /* or distinctly less than LOW.  */
-      else if (tree_int_cst_lt (p->high, low))
-	q = &p->right;
-
-      else
-	{
-	  /* We have an overlap; this is an error.  */
-	  *duplicate = p->code_label;
-	  return 2;
-	}
-    }
-
-  /* Add this label to the chain, and succeed.  */
-
+  /* Add this label to the chain.  */
   r = ggc_alloc (sizeof (struct case_node));
   r->low = low;
-
-  /* If the bounds are equal, turn this into the one-value case.  */
-  if (tree_int_cst_equal (low, high))
-    r->high = r->low;
-  else
-    r->high = high;
-
+  r->high = high;
   r->code_label = label;
-
-  *q = r;
-  r->parent = p;
-  r->left = 0;
-  r->right = 0;
-  r->balance = 0;
-
-  while (p)
-    {
-      struct case_node *s;
-
-      if (r == p->left)
-	{
-	  int b;
-
-	  if (! (b = p->balance))
-	    /* Growth propagation from left side.  */
-	    p->balance = -1;
-	  else if (b < 0)
-	    {
-	      if (r->balance < 0)
-		{
-		  /* R-Rotation */
-		  if ((p->left = s = r->right))
-		    s->parent = p;
-
-		  r->right = p;
-		  p->balance = 0;
-		  r->balance = 0;
-		  s = p->parent;
-		  p->parent = r;
-
-		  if ((r->parent = s))
-		    {
-		      if (s->left == p)
-			s->left = r;
-		      else
-			s->right = r;
-		    }
-		  else
-		    case_stack->data.case_stmt.case_list = r;
-		}
-	      else
-		/* r->balance == +1 */
-		{
-		  /* LR-Rotation */
-
-		  int b2;
-		  struct case_node *t = r->right;
-
-		  if ((p->left = s = t->right))
-		    s->parent = p;
-
-		  t->right = p;
-		  if ((r->right = s = t->left))
-		    s->parent = r;
-
-		  t->left = r;
-		  b = t->balance;
-		  b2 = b < 0;
-		  p->balance = b2;
-		  b2 = -b2 - b;
-		  r->balance = b2;
-		  t->balance = 0;
-		  s = p->parent;
-		  p->parent = t;
-		  r->parent = t;
-
-		  if ((t->parent = s))
-		    {
-		      if (s->left == p)
-			s->left = t;
-		      else
-			s->right = t;
-		    }
-		  else
-		    case_stack->data.case_stmt.case_list = t;
-		}
-	      break;
-	    }
-
-	  else
-	    {
-	      /* p->balance == +1; growth of left side balances the node.  */
-	      p->balance = 0;
-	      break;
-	    }
-	}
-      else
-	/* r == p->right */
-	{
-	  int b;
-
-	  if (! (b = p->balance))
-	    /* Growth propagation from right side.  */
-	    p->balance++;
-	  else if (b > 0)
-	    {
-	      if (r->balance > 0)
-		{
-		  /* L-Rotation */
-
-		  if ((p->right = s = r->left))
-		    s->parent = p;
-
-		  r->left = p;
-		  p->balance = 0;
-		  r->balance = 0;
-		  s = p->parent;
-		  p->parent = r;
-		  if ((r->parent = s))
-		    {
-		      if (s->left == p)
-			s->left = r;
-		      else
-			s->right = r;
-		    }
-
-		  else
-		    case_stack->data.case_stmt.case_list = r;
-		}
-
-	      else
-		/* r->balance == -1 */
-		{
-		  /* RL-Rotation */
-		  int b2;
-		  struct case_node *t = r->left;
-
-		  if ((p->right = s = t->left))
-		    s->parent = p;
-
-		  t->left = p;
-
-		  if ((r->left = s = t->right))
-		    s->parent = r;
-
-		  t->right = r;
-		  b = t->balance;
-		  b2 = b < 0;
-		  r->balance = b2;
-		  b2 = -b2 - b;
-		  p->balance = b2;
-		  t->balance = 0;
-		  s = p->parent;
-		  p->parent = t;
-		  r->parent = t;
-
-		  if ((t->parent = s))
-		    {
-		      if (s->left == p)
-			s->left = t;
-		      else
-			s->right = t;
-		    }
-
-		  else
-		    case_stack->data.case_stmt.case_list = t;
-		}
-	      break;
-	    }
-	  else
-	    {
-	      /* p->balance == -1; growth of right side balances the node.  */
-	      p->balance = 0;
-	      break;
-	    }
-	}
-
-      r = p;
-      p = p->parent;
-    }
-
-  return 0;
+  r->parent = r->left = NULL;
+  r->right = case_stack->data.case_stmt.case_list;
+  case_stack->data.case_stmt.case_list = r;
 }
 
 /* Maximum number of case bit tests.  */
@@ -3173,11 +2977,6 @@ expand_end_case_type (tree orig_index, tree orig_type)
       default_label = label_rtx (thiscase->data.case_stmt.default_label);
 
       before_case = get_last_insn ();
-
-      if (thiscase->data.case_stmt.case_list
-	  && thiscase->data.case_stmt.case_list->left)
-	thiscase->data.case_stmt.case_list
-	  = case_tree2list (thiscase->data.case_stmt.case_list, 0);
 
       /* Get upper and lower bounds of case values.
 	 Also convert all the case values to the index expr's data type.  */
@@ -3444,28 +3243,6 @@ expand_end_case_type (tree orig_index, tree orig_type)
   POPSTACK (case_stack);
 
   free_temp_slots ();
-}
-
-/* Convert the tree NODE into a list linked by the right field, with the left
-   field zeroed.  RIGHT is used for recursion; it is a list to be placed
-   rightmost in the resulting list.  */
-
-static struct case_node *
-case_tree2list (struct case_node *node, struct case_node *right)
-{
-  struct case_node *left;
-
-  if (node->right)
-    right = case_tree2list (node->right, right);
-
-  node->right = right;
-  if ((left = node->left))
-    {
-      node->left = 0;
-      return case_tree2list (left, node);
-    }
-
-  return node;
 }
 
 /* Generate code to jump to LABEL if OP1 and OP2 are equal.  */

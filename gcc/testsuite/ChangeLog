@@ -1,3 +1,9 @@
+2004-07-20  Steven Bosscher  <stevenb@suse.de>
+
+	* testsuite/gcc.dg/switch-warn-1.c: New test.
+	* testsuite/gcc.dg/switch-warn-2.c: New test.
+	* gcc.c-torture/compile/pr14730.c: Update.
+
 2004-07-19  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* g++.dg/lookup/java1.C, g++.dg/lookup/java2.C, g++.dg/other/crash-2.C,

@@ -1,3 +1,10 @@
+2004-07-20  Steven Bosscher  <stevenb@suse.de>
+
+	* cp-tree.h (struct lang_decl_flags): Unify the template_info and
+	thunk_alias, and the access and virtual_offset fields.
+	(THUNK_VIRTUAL_OFFSET, THUNK_ALIAS): Adjust.
+	* decl.c (finish_case_label): Update c_add_case_node call.
+
 2004-07-19  Mark Mitchell  <mark@codesourcery.com>
 
 	Revert patch for PR c++/16623.
