@@ -1,3 +1,8 @@
+Thu Jun 11 12:40:27 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* mips.c (override_options): Replace word_mode with explicit
+	TARGET_64BIT check.
+
 Thu Jun 11 14:50:02 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* regmove.c (regmove_optimize): If we can't replace the
