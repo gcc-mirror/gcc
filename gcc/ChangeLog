@@ -1,3 +1,13 @@
+2000-12-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.in (gcc_gxx_include_dir): Simplify.
+	(libstdcxx_incdir): Export.
+	* configure: Regenerate.
+	* Makefile.in (PREPROCESSOR_DEFINES): Add in
+	GPLUSPLUS_TOOL_INCLUDE_DIR bits here..
+	(libstdcxx_incdir): Add.
+	* cppdefault.c (GPLUSPLUS_TOOL_INCLUDE_DIR): Add search path.
+
 2000-12-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * c-lex.c (lex_lineno): Remove.
