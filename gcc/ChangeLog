@@ -1,3 +1,7 @@
+2003-02-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/host-darwin.c: Fix comment.
+
 2003-02-11  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (divmodsi4): Use register_operand
