@@ -48,10 +48,8 @@ namespace std
 	{
 	  this->_M_buf_size = this->_M_buf_size_opt;
 
-	  // Allocate internal buffer...
+	  // Allocate internal buffer.
 	  this->_M_buf = new char_type[this->_M_buf_size];
-	  // ... and consistently set the end of buffer pointer.
-	  this->_M_out_end = this->_M_buf + this->_M_buf_size;
 	  _M_buf_allocated = true;
 	}
     }
@@ -255,7 +253,8 @@ namespace std
     overflow(int_type __c)
     {
       int_type __ret = traits_type::eof();
-      bool __testput = _M_out_buf_size();
+      bool __testput =
+	this->_M_out_cur && this->_M_out_cur < this->_M_out_end;
       bool __testout = this->_M_mode & ios_base::out;
       
       if (__testout)

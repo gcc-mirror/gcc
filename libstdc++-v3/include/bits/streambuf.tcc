@@ -99,7 +99,7 @@ namespace std
     sputc(char_type __c)
     {
       int_type __ret;
-      if (_M_out_buf_size())
+      if (_M_out_cur && _M_out_cur < _M_out_end)
 	{
 	  *_M_out_cur = __c;
 	  _M_out_cur_move(1);
@@ -152,7 +152,7 @@ namespace std
       streamsize __ret = 0;
       while (__ret < __n)
 	{
-	  off_type __buf_len = _M_out_buf_size();
+	  off_type __buf_len = _M_out_end - _M_out_cur;
 	  if (__buf_len > 0)
 	    {
 	      off_type __remaining = __n - __ret;
@@ -189,11 +189,12 @@ namespace std
 		      basic_streambuf<_CharT, _Traits>* __sbout) 
   {
       typedef typename _Traits::int_type	int_type;
+      typedef typename _Traits::off_type	off_type;
 
       streamsize __ret = 0;
       streamsize __bufsize = __sbin->in_avail();
       streamsize __xtrct;
-      const typename _Traits::off_type __size_opt =
+      const off_type __size_opt =
 	__sbin->_M_buf_size_opt > 0 ? __sbin->_M_buf_size_opt : 1;
 
       try 
@@ -213,7 +214,8 @@ namespace std
 		{
 		  streamsize __charsread;
 		  const streamsize __size =
-		    std::min(__size_opt, __sbout->_M_out_buf_size());
+		    std::min(__size_opt, off_type(__sbout->_M_out_end -
+						  __sbout->_M_out_cur));
 		  if (__size > 1)
 		    {
 		      _CharT* __buf =

@@ -409,13 +409,10 @@ namespace std
 	bool __testin = this->_M_mode & ios_base::in;
 	bool __testout = this->_M_mode & ios_base::out;
 	if (__testin)
-	  {
-	    this->_M_in_beg = this->_M_in_cur = this->_M_buf;
-	    this->_M_in_end = this->_M_buf + __off;
-	  }
+	  this->setg(this->_M_buf, this->_M_buf, this->_M_buf + __off);
 	if (__testout)
 	  {
-	    this->_M_out_beg = this->_M_out_cur = this->_M_buf;
+	    this->setp(this->_M_buf, this->_M_buf + this->_M_buf_size);
 	    this->_M_out_lim = this->_M_buf + __off;
 	  }
 	_M_filepos = this->_M_buf + __off;
