@@ -413,6 +413,20 @@ void test05()
   VERIFY( d == 1234.5 );
 }
 
+// http://gcc.gnu.org/ml/libstdc++/2002-05/msg00038.html
+void test06()
+{
+  bool test = true;
+
+  std::string loc1 = setlocale(LC_ALL, "ja_JP.eucjp");
+  test01();
+  test02();
+  test04();
+  test05();
+  std::string loc2 = setlocale(LC_ALL, NULL);
+  VERIFY( loc1 == loc2 );
+}
+
 int main()
 {
   test01();
@@ -420,6 +434,7 @@ int main()
   test03();
   test04();
   test05();
+  test06();
   return 0;
 }
 

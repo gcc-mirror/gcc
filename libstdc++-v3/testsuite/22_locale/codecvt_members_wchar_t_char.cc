@@ -128,6 +128,17 @@ void test02()
     }
 #endif
 }
+
+// http://gcc.gnu.org/ml/libstdc++/2002-05/msg00038.html
+void test03()
+{
+  bool test = true;
+
+  std::string loc1 = setlocale(LC_ALL, "ja_JP.eucjp");
+  test01();
+  std::string loc2 = setlocale(LC_ALL, NULL);
+  VERIFY( loc1 == loc2 );
+}
 #endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
 
 
@@ -136,6 +147,7 @@ int main ()
 #if _GLIBCPP_USE_WCHAR_T
   test01();
   test02();
+  test03();
 #endif 
 
   return 0;
