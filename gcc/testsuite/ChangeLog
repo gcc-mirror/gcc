@@ -1,5 +1,10 @@
 2004-11-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.dg/tls/alias-1.c: Remove dg-warning on the SPARC.
+	Guard with dg-require-alias and dg-require-visibility.
+
+2004-11-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* g++.dg/other/packed1.C: UnXFAIL on SPARC, PA, MIPS and PowerPC.
 
 2004-11-14  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
