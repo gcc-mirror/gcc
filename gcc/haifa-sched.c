@@ -2019,10 +2019,6 @@ schedule_block (b, rgn_n_insns)
          list.  */
       queue_to_ready (&ready);
 
-      if (sched_verbose && targetm.sched.cycle_display)
-	last_scheduled_insn
-	  = (*targetm.sched.cycle_display) (clock_var, last_scheduled_insn);
-
       if (ready.n_ready == 0)
 	abort ();
 

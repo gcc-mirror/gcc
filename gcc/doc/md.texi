@@ -3200,14 +3200,6 @@ respectively, a low or moderate degree of temporal locality.
 Targets that do not support write prefetches or locality hints can ignore
 the values of operands 1 and 2.
 
-@cindex @code{cycle_display} instruction pattern
-@item @samp{cycle_display}
-
-This pattern, if present, will be emitted by the instruction scheduler at
-the beginning of each new clock cycle.  This can be used for annotating the
-assembler output with cycle counts.  Operand 0 is a @code{const_int} that
-holds the clock cycle.
-
 @end table
 
 @node Pattern Ordering
