@@ -6721,7 +6721,7 @@ do_error (buf, limit, op, keyword)
      struct directive *keyword;
 {
   int length = limit - buf;
-  U_CHAR *copy = (U_CHAR *) xmalloc (length + 1);
+  U_CHAR *copy = (U_CHAR *) alloca (length + 1);
   bcopy ((char *) buf, (char *) copy, length);
   copy[length] = 0;
   SKIP_WHITE_SPACE (copy);
@@ -6740,7 +6740,7 @@ do_warning (buf, limit, op, keyword)
      struct directive *keyword;
 {
   int length = limit - buf;
-  U_CHAR *copy = (U_CHAR *) xmalloc (length + 1);
+  U_CHAR *copy = (U_CHAR *) alloca (length + 1);
   bcopy ((char *) buf, (char *) copy, length);
   copy[length] = 0;
   SKIP_WHITE_SPACE (copy);
