@@ -2681,9 +2681,12 @@ convert_nontype_argument (type, expr)
      
      --a pointer to member expressed as described in _expr.unary.op_.  */
 
-  /* An integral constant-expression can include const variables
-     or enumerators.  */
-  if (INTEGRAL_TYPE_P (expr_type) && TREE_READONLY_DECL_P (expr))
+  /* An integral constant-expression can include const variables or
+     enumerators.  Simplify things by folding them to their values,
+     unless we're about to bind the declaration to a reference
+     parameter.  */
+  if (INTEGRAL_TYPE_P (expr_type) && TREE_READONLY_DECL_P (expr)
+      && TREE_CODE (type) != REFERENCE_TYPE)
     expr = decl_constant_value (expr);
 
   if (is_overloaded_fn (expr))
