@@ -1453,13 +1453,6 @@ final_prescan_insn (insn, operand, num_operands)
 	       rtx_cost (PATTERN (insn), INSN));
     }
   last_insn_address = INSN_ADDRESSES (uid);
-
-  if (TARGET_RTL_DUMP)
-    {
-      fprintf (asm_out_file, "/*****************\n");
-      print_rtl_single (asm_out_file, insn);
-      fprintf (asm_out_file, "*****************/\n");
-    }
 }
 
 /* Return 0 if undefined, 1 if always true or always false.  */
