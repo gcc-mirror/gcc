@@ -84,15 +84,6 @@ Boston, MA 02111-1307, USA.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 #endif
 
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.
-
-   For most ELF systems the convention is *not* to prepend a leading
-   underscore onto user-level symbol names.  */
-
-#undef  ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE,NAME) fprintf (FILE, "%s", NAME)
-     
 /* All SVR4 targets use the ELF object file format.  */
 #define OBJECT_FORMAT_ELF
 

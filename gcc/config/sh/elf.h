@@ -1,5 +1,5 @@
 /* Definitions of target machine for gcc for Hitachi Super-H using ELF.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
    Contributed by Ian Lance Taylor <ian@cygnus.com>.
 
 This file is part of GNU CC.
@@ -75,12 +75,6 @@ Boston, MA 02111-1307, USA.  */
    again.  */
 #define DBX_REGISTER_NUMBER(REGNO)	\
   (((REGNO) >= 22 && (REGNO) <= 39) ? ((REGNO) + 1) : (REGNO))
-
-/* SH ELF, unlike most ELF implementations, uses underscores before
-   symbol names.  */
-#undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(STREAM,NAME) \
-  asm_fprintf (STREAM, "%U%s", NAME)
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM) \

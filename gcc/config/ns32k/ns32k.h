@@ -1590,12 +1590,6 @@ do {									\
 } while (0)
 #endif
 
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.  */
-
-#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fprintf (FILE, "_%s", NAME)
-
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
 
