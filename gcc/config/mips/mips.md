@@ -355,8 +355,8 @@
 (define_mode_attr store [(SI "sw") (DI "sd")])
 
 ;; Similarly for MIPS IV indexed FPR loads and stores.
-(define_mode_attr loadx [(SF "lwxc1") (DF "ldxc1")])
-(define_mode_attr storex [(SF "swxc1") (DF "sdxc1")])
+(define_mode_attr loadx [(SF "lwxc1") (DF "ldxc1") (V2SF "ldxc1")])
+(define_mode_attr storex [(SF "swxc1") (DF "sdxc1") (V2SF "sdxc1")])
 
 ;; The unextended ranges of the MIPS16 addiu and daddiu instructions
 ;; are different.  Some forms of unextended addiu have an 8-bit immediate
