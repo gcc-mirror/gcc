@@ -1,7 +1,12 @@
+Fri Apr 14 07:40:32 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/alpha/alpha.c (alpha_emit_floatuns): Ensure we pass a REG
+	and not a SUBREG to a FLOAT rtl.
+
 Thu Apr 13 19:39:56 2000  Clinton Popetz  <cpopetz@cygnus.com>
-                                                                                
-	* emit-rtl.c (try_split): Avoid infinite loop if the split              
-	results in a sequence that contains the original insn.                  
+
+	* emit-rtl.c (try_split): Avoid infinite loop if the split
+	results in a sequence that contains the original insn.
 
 2000-04-13  Andreas Jaeger  <aj@suse.de>
 
