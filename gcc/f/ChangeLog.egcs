@@ -1,3 +1,9 @@
+Sat Apr 18 15:26:57 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* g77spec.c (lang_specific_driver): New argument in_added_libraries.
+	New local added_libraries.  Increment count when add library to
+	arglist.
+
 Tue Apr 14 15:51:37 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* com.c (init_parse): Now returns char* containing filename;
