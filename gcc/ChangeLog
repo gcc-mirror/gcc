@@ -1,3 +1,10 @@
+2003-10-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Richard Henderson  <rth@redhat.com>
+
+	PR optimization/8178
+	* config/i386/i386.md (*movsi_zero): Delete.
+	(*ffs_no_cmove): Use ix86_expand_clear to zero the third operand.
+
 2003-10-19  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (fix_operator): New.
