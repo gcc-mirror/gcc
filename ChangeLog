@@ -1,3 +1,8 @@
+2005-01-03  Paolo Bonzini  <bonzini@gnu.org>
+
+	Revert 2004-12-28 Makefile changes, a better fix will be
+	applied to mainline and src after GCC 4.0 branches.
+
 2004-12-28  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/17383
