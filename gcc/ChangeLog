@@ -1,5 +1,8 @@
 2004-08-10  Richard Henderson  <rth@redhat.com>
 
+	* stor-layout.c (round_up): Check for 0/1 before dividing.
+	(round_down): Likewise.
+
 	* tree-tailcall.c (suitable_for_tail_opt_p): Also check DECL_EXTERNAL.
 
 2004-08-09  Mark Mitchell  <mark@codesourcery.com>
