@@ -41,6 +41,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "ggc.h"
 #include "diagnostic.h"
 #include "tree-inline.h"
+#include "splay-tree.h"
 
 struct string_option
 {
@@ -62,14 +63,17 @@ static void java_print_error_function PARAMS ((diagnostic_context *,
 static int process_option_with_no PARAMS ((const char *,
 					   const struct string_option *,
 					   int));
-static tree java_tree_inlining_walk_subtrees  PARAMS ((tree *,
-						       int *,
-						       walk_tree_fn,
-						       void *,
-						       void *));
+static tree java_tree_inlining_walk_subtrees PARAMS ((tree *,
+						      int *,
+						      walk_tree_fn,
+						      void *,
+						      void *));
 static int java_unsafe_for_reeval PARAMS ((tree));
+static int merge_init_test_initialization PARAMS ((void * *, 
+						   void *));
+static int inline_init_test_initialization PARAMS ((void * *, 
+						    void *));
 static bool java_can_use_bit_fields_p PARAMS ((void));
-
 
 #ifndef TARGET_OBJECT_SUFFIX
 # define TARGET_OBJECT_SUFFIX ".o"
@@ -926,6 +930,115 @@ java_unsafe_for_reeval (t)
     }
 
   return -1;
+}
+
+/* Every call to a static constructor has an associated boolean
+   variable which is in the outermost scope of the calling method.
+   This variable is used to avoid multiple calls to the static
+   constructor for each class.  
+
+   It looks somthing like this:
+
+   foo ()
+   {
+      boolean dummy = OtherClass.is_initialized;
+  
+     ...
+  
+     if (! dummy)
+       OtherClass.initialize();
+
+     ... use OtherClass.data ...
+   }
+
+   Each of these boolean variables has an entry in the
+   DECL_FUNCTION_INIT_TEST_TABLE of a method.  When inlining a method
+   we must merge the DECL_FUNCTION_INIT_TEST_TABLE from the function
+   being linlined and create the boolean variables in the outermost
+   scope of the method being inlined into.  */
+
+/* Create a mapping from a boolean variable in a method being inlined
+   to one in the scope of the method being inlined into.  */
+
+static int
+merge_init_test_initialization (entry, x)
+     void * * entry;
+     void * x;
+{
+  struct treetreehash_entry *ite = (struct treetreehash_entry *) *entry;
+  splay_tree decl_map = (splay_tree)x;
+  splay_tree_node n;
+  tree *init_test_decl;
+  
+  /* See if we have remapped this declaration.  If we haven't there's
+     a bug in the inliner.  */
+  n = splay_tree_lookup (decl_map, (splay_tree_key) ite->value);
+  if (! n)
+    abort ();
+
+  /* Create a new entry for the class and its remapped boolean
+     variable.  If we already have a mapping for this class we've
+     already initialized it, so don't overwrite the value.  */
+  init_test_decl = java_treetreehash_new
+    (DECL_FUNCTION_INIT_TEST_TABLE (current_function_decl), ite->key);
+  if (!*init_test_decl)
+    *init_test_decl = (tree)n->value;
+
+  return true;
+}
+
+/* Merge the DECL_FUNCTION_INIT_TEST_TABLE from the function we're
+   inlining.  */
+
+void
+java_inlining_merge_static_initializers (fn, decl_map)
+     tree fn;
+     void *decl_map;
+{
+  htab_traverse 
+    (DECL_FUNCTION_INIT_TEST_TABLE (fn),
+     merge_init_test_initialization, decl_map);
+}
+
+/* Lookup a DECL_FUNCTION_INIT_TEST_TABLE entry in the method we're
+   inlining into.  If we already have a corresponding entry in that
+   class we don't need to create another one, so we create a mapping
+   from the variable in the inlined class to the corresponding
+   pre-existing one.  */
+
+static int
+inline_init_test_initialization (entry, x)
+     void * * entry;
+     void * x;
+{
+  struct treetreehash_entry *ite = (struct treetreehash_entry *) *entry;
+  splay_tree decl_map = (splay_tree)x;
+  
+  tree h = java_treetreehash_find 
+    (DECL_FUNCTION_INIT_TEST_TABLE (current_function_decl), ite->key);
+  if (! h)
+    return true;
+
+  splay_tree_insert (decl_map,
+		     (splay_tree_key) ite->value,
+		     (splay_tree_value) h);
+
+  return true;
+}
+
+/* Look up the boolean variables in the DECL_FUNCTION_INIT_TEST_TABLE
+   of a method being inlined.  For each hone, if we already have a
+   variable associated with the same class in the method being inlined
+   into, create a new mapping for it.  */
+
+void
+java_inlining_map_static_initializers (fn, decl_map)
+     tree fn;
+     void *decl_map;
+{
+  htab_traverse 
+    (DECL_FUNCTION_INIT_TEST_TABLE (fn),
+     inline_init_test_initialization, decl_map);
 }
 
 #include "gt-java-lang.h"

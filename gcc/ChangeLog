@@ -1,3 +1,17 @@
+2002-10-14  Andrew Haley  <aph@redhat.com>
+
+	* tree-inline.c (remap_block): All local class initialization
+	flags go in the outermost scope.
+	(expand_call_inline): Call java_inlining_map_static_initializers.
+	(expand_call_inline): Call java_inlining_merge_static_initializers.
+	* java/lang.c (merge_init_test_initialization): New.
+	(java_inlining_merge_static_initializers): New.
+	(inline_init_test_initialization): New.
+	(java_inlining_map_static_initializers): New.
+
+	* tree-inline.c (expand_call_inline): Convert retvar to expected
+	type.
+
 2002-10-14  Graham Stott  <graham.stott@btinternet.com>
 
 	* stmt.c (decl_conflicts_with_clobbers_p): Add REG_P check.
