@@ -255,6 +255,7 @@ static void count_one_set (struct loop_regs *, rtx, rtx, rtx *);
 static void note_addr_stored (rtx, rtx, void *);
 static void note_set_pseudo_multiple_uses (rtx, rtx, void *);
 static int loop_reg_used_before_p (const struct loop *, rtx, rtx);
+static rtx find_regs_nested (rtx, rtx);
 static void scan_loop (struct loop*, int);
 #if 0
 static void replace_call_address (rtx, rtx, rtx);
@@ -573,6 +574,32 @@ next_insn_in_loop (const struct loop *loop, rtx insn)
   return insn;
 }
 
+/* Find any register references hidden inside X and add them to
+   the dependency list DEPS.  This is used to look inside CLOBBER (MEM
+   when checking whether a PARALLEL can be pulled out of a loop.  */
+
+static rtx
+find_regs_nested (rtx deps, rtx x)
+{
+  enum rtx_code code = GET_CODE (x);
+  if (code == REG)
+    deps = gen_rtx_EXPR_LIST (VOIDmode, x, deps);
+  else
+    {
+      const char *fmt = GET_RTX_FORMAT (code);
+      int i, j;
+      for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+	{
+	  if (fmt[i] == 'e')
+	    deps = find_regs_nested (deps, XEXP (x, i));
+	  else if (fmt[i] == 'E')
+	    for (j = 0; j < XVECLEN (x, i); j++)
+	      deps = find_regs_nested (deps, XVECEXP (x, i, j));
+	}
+    }
+  return deps;
+}
+
 /* Optimize one loop described by LOOP.  */
 
 /* ??? Could also move memory writes out of loops if the destination address
@@ -776,7 +803,9 @@ scan_loop (struct loop *loop, int flags)
 		}
 
 	      /* For parallels, add any possible uses to the dependencies, as
-		 we can't move the insn without resolving them first.  */
+		 we can't move the insn without resolving them first.
+		 MEMs inside CLOBBERs may also reference registers; these
+		 count as implicit uses.  */
 	      if (GET_CODE (PATTERN (p)) == PARALLEL)
 		{
 		  for (i = 0; i < XVECLEN (PATTERN (p), 0); i++)
@@ -786,6 +815,10 @@ scan_loop (struct loop *loop, int flags)
 			dependencies
 			  = gen_rtx_EXPR_LIST (VOIDmode, XEXP (x, 0),
 					       dependencies);
+		      else if (GET_CODE (x) == CLOBBER 
+			       && GET_CODE (XEXP (x, 0)) == MEM)
+			dependencies = find_regs_nested (dependencies, 
+						  XEXP (XEXP (x, 0), 0));
 		    }
 		}
 

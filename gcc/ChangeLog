@@ -1,3 +1,10 @@
+2003-12-22  Dale Johannesen  <dalej@apple.com>
+
+        PR optimization/12828
+        * loop.c:  Add find_regs_nested to look inside CLOBBER(MEM).
+        (scan_loop):  Call it.
+        * regclass.c (reg_scan_mark_regs):  Look inside CLOBBER(MEM).
+
 2003-12-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/9163
