@@ -390,7 +390,6 @@ static void init_elim_table (void);
 static void update_eliminables (HARD_REG_SET *);
 static void spill_hard_reg (unsigned int, int);
 static int finish_spills (int);
-static void ior_hard_reg_set (HARD_REG_SET *, HARD_REG_SET *);
 static void scan_paradoxical_subregs (rtx);
 static void count_pseudo (int);
 static void order_regs_for_reload (struct insn_chain *);
@@ -3534,15 +3533,6 @@ spill_hard_reg (unsigned int regno, int cant_eliminate)
       SET_REGNO_REG_SET (&spilled_pseudos, i);
 }
 
-/* I'm getting weird preprocessor errors if I use IOR_HARD_REG_SET
-   from within EXECUTE_IF_SET_IN_REG_SET.  Hence this awkwardness.  */
-
-static void
-ior_hard_reg_set (HARD_REG_SET *set1, HARD_REG_SET *set2)
-{
-  IOR_HARD_REG_SET (*set1, *set2);
-}
-
 /* After find_reload_regs has been run for all insn that need reloads,
    and/or spill_hard_regs was called, this function is used to actually
    spill pseudo registers and try to reallocate them.  It also sets up the
@@ -3607,14 +3597,14 @@ finish_spills (int global)
 	  EXECUTE_IF_SET_IN_REG_SET
 	    (&chain->live_throughout, FIRST_PSEUDO_REGISTER, i, rsi)
 	    {
-	      ior_hard_reg_set (pseudo_forbidden_regs + i,
-				&chain->used_spill_regs);
+	      IOR_HARD_REG_SET (pseudo_forbidden_regs[i],
+				chain->used_spill_regs);
 	    }
 	  EXECUTE_IF_SET_IN_REG_SET
 	    (&chain->dead_or_set, FIRST_PSEUDO_REGISTER, i, rsi)
 	    {
-	      ior_hard_reg_set (pseudo_forbidden_regs + i,
-				&chain->used_spill_regs);
+	      IOR_HARD_REG_SET (pseudo_forbidden_regs[i],
+				chain->used_spill_regs);
 	    }
 	}
 
