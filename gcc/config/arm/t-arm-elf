@@ -45,7 +45,10 @@ MULTILIB_EXCEPTIONS  =
 # 
 # MULTILIB_OPTIONS    += mcpu=arm7
 # MULTILIB_DIRNAMES   += nofmult
-# MULTILIB_EXCEPTIONS += *mthumb-interwork*/*mcpu=arm7*
+# MULTILIB_EXCEPTIONS += *mthumb*/*mcpu=arm7*
+# # Note: the multilib_exceptions matches both -mthumb and
+# # -mthumb-interwork
+# #
 # # We have to match all the arm cpu variants which do not have the
 # # multiply instruction and treat them as if the user had specified
 # # -mcpu=arm7.  Note that in the following the ? is interpreted as
