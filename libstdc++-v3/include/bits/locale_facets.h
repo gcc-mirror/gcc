@@ -591,13 +591,13 @@ namespace std
       // "C" locale, this is "-+xX0123456789abcdef0123456789ABCDEF".
       // This array contains the chars after having been passed
       // through the current locale's ctype<_CharT>.widen().
-      _CharT                    	_M_atoms_out[__num_base::_S_oend + 1];
+      char_type                    	_M_atoms_out[__num_base::_S_oend + 1];
 
       // A list of valid numeric literals for output: in the standard
       // "C" locale, this is "0123456789eEabcdfABCDF"
       // This array contains the chars after having been passed
       // through the current locale's ctype<_CharT>.widen().
-      _CharT                    	_M_atoms_in[__num_base::_S_iend + 1];
+      char_type                    	_M_atoms_in[__num_base::_S_iend + 1];
 
       bool				_M_allocated;
 
@@ -621,7 +621,7 @@ namespace std
       string __grouping = __np.grouping();
       char* __group = new char[__grouping.length() + 1];
       __grouping.copy(__group, __grouping.length());
-      __group[__grouping.length()] = _CharT();
+      __group[__grouping.length()] = char();
       _M_grouping = __group;
       
       _M_use_grouping = __grouping.length() != 0 && __grouping.data()[0] != 0;

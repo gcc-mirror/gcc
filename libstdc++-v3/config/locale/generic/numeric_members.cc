@@ -53,11 +53,11 @@ namespace std
       
       for (size_t i = 0; i < __num_base::_S_oend; ++i)
 	_M_data->_M_atoms_out[i] = __num_base::_S_atoms_out[i];
-      _M_data->_M_atoms_out[__num_base::_S_oend] = wchar_t();
+      _M_data->_M_atoms_out[__num_base::_S_oend] = char();
       
       for (size_t i = 0; i < __num_base::_S_iend; ++i)
 	_M_data->_M_atoms_in[i] = __num_base::_S_atoms_in[i];
-      _M_data->_M_atoms_in[__num_base::_S_iend] = wchar_t();
+      _M_data->_M_atoms_in[__num_base::_S_iend] = char();
 
       _M_data->_M_truename = "true";
       _M_data->_M_falsename = "false";      
