@@ -1,3 +1,14 @@
+2005-02-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/19891
+	* class.c (build_simple_base_path): Build the component_ref
+	directly.
+	(update_vtable_entry_for_fn): Walk the covariant's binfo chain
+	rather than using lookup_base.
+	* search.c (dfs_walk_once): Add non-recursive assert check.
+	* typeck.c (build_class_member_access_expr): It is possible for
+	the member type to be both const and volatile.
+
 2005-02-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/14479
