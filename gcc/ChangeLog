@@ -1,3 +1,11 @@
+2004-01-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR bootstrap/12527
+	* config.gcc (arm*-*-linux*): Don't include unknown-elf.h in tm_file.
+	Move linux-gas.h and linux-elf.h before aout.h.
+	* arm/arm.h (INITIALIZE_TRAMPOLINE): Only define if not already.
+	* arm/linux-elf.h (SUBTARGET_CPU_DEFAULT): Define.
+
 2004-01-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m32r/m32r.md: Use GEN_INT instead of gen_rtx
