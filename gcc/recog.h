@@ -219,7 +219,7 @@ struct insn_operand_data
 
   const char *constraint;
 
-  enum machine_mode mode;
+  ENUM_BITFIELD(machine_mode) mode : 16;
 
   char strict_low;
 

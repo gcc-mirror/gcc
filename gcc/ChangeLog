@@ -1,3 +1,8 @@
+2001-08-12  Zack Weinberg  <zackw@panix.com>
+
+	* recog.h (struct insn_operand_data): Shrink 'mode' field
+	to 16 bits.
+
 2001-08-12  Kazu Hirata  <kazu@hxi.com>
 
 	* gcc.c: Fix comment formatting.
