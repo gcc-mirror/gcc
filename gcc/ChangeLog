@@ -1,3 +1,8 @@
+2003-03-09  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.def: Fix typo and improve grammar.
+	* loop-unroll.c (decide_peel_completely): Tidy log message.
+
 2003-03-09  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*tstsi_upper_bit): New.
