@@ -1618,6 +1618,7 @@ stmp-fixproto: fixhdr.ready fixproto stmp-headers
 	-if [ -d include ] ; then true; else mkdir include; fi
 	if [ -f include/fixed ] ; then true; \
 	else \
+	  : This line works around a 'make' bug in BSDI 1.1.; \
 	  CPP="$(GCC_FOR_TARGET) -E"; export CPP; \
 	    $(SHELL) ${srcdir}/fixproto include include $(SYSTEM_HEADER_DIR); \
 	  touch include/fixed; \
