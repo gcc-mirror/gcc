@@ -183,6 +183,12 @@ struct gcc_target
     /* Finalize machine-dependent scheduling code.  */
     void (* md_finish) (FILE *, int);
 
+    /* Initialize machine-dependent function while scheduling code.  */
+    void (* md_init_global) (FILE *, int, int);
+
+    /* Finalize machine-dependent function wide scheduling code.  */
+    void (* md_finish_global) (FILE *, int);
+
     /* Reorder insns in a machine-dependent fashion, in two different
        places.  Default does nothing.  */
     int (* reorder) (FILE *, int, rtx *, int *, int);

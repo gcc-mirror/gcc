@@ -2856,6 +2856,9 @@ sched_init (FILE *dump_file)
      removing death notes.  */
   FOR_EACH_BB_REVERSE (b)
     find_insn_reg_weight (b->index);
+
+  if (targetm.sched.md_init_global)
+      (*targetm.sched.md_init_global) (sched_dump, sched_verbose, old_max_uid);
 }
 
 /* Free global data used during insn scheduling.  */
@@ -2875,5 +2878,8 @@ sched_finish (void)
   end_alias_analysis ();
   if (write_symbols != NO_DEBUG)
     free (line_note_head);
+
+  if (targetm.sched.md_finish_global)
+      (*targetm.sched.md_finish_global) (sched_dump, sched_verbose);
 }
 #endif /* INSN_SCHEDULING */

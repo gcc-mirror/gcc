@@ -49,6 +49,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ra.h"
 #include "cfglayout.h"
 #include "intl.h"
+#include "sched-int.h"
 #include "ggc.h"
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
@@ -100,6 +101,21 @@ int current_function_anonymous_args;
 
 /* Which cpu are we scheduling for.  */
 enum processor_type sh_cpu;
+
+/* Definitions used in ready queue reordering for first scheduling pass.  */
+
+/* Reg weights arrays for modes SFmode and SImode, indexed by insn LUID.  */
+static short *regmode_weight[2];
+
+/* Total SFmode and SImode weights of scheduled insns.  */
+static int curr_regmode_pressure[2];
+
+/* If true, skip cycles for Q -> R movement.  */
+static int skip_cycles = 0;
+
+/* Cached value of can_issue_more. This is cached in sh_variable_issue hook
+   and returned from sh_reorder2.  */
+static short cached_can_issue_more;
 
 /* Saved operands from the last compare to use when we generate an scc
    or bcc insn.  */
@@ -211,6 +227,21 @@ static void sh_insert_attributes (tree, tree *);
 static int sh_adjust_cost (rtx, rtx, rtx, int);
 static int sh_use_dfa_interface (void);
 static int sh_issue_rate (void);
+static int sh_dfa_new_cycle (FILE *, int, rtx, int, int, int *sort_p);
+static short find_set_regmode_weight (rtx, enum machine_mode);
+static short find_insn_regmode_weight (rtx, enum machine_mode);
+static void find_regmode_weight (int, enum machine_mode);
+static void  sh_md_init_global (FILE *, int, int);
+static void  sh_md_finish_global (FILE *, int);
+static int rank_for_reorder (const void *, const void *);
+static void swap_reorder (rtx *, int);
+static void ready_reorder (rtx *, int);
+static short high_pressure (enum machine_mode);
+static int sh_reorder (FILE *, int, rtx *, int *, int);
+static int sh_reorder2 (FILE *, int, rtx *, int *, int);
+static void sh_md_init (FILE *, int, int);
+static int sh_variable_issue (FILE *, int, rtx, int);
+  
 static bool sh_function_ok_for_sibcall (tree, tree);
 
 static bool sh_cannot_modify_jumps_p (void);
@@ -293,6 +324,62 @@ static tree sh_build_builtin_va_list (void);
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE sh_issue_rate
 
+/* The next 5 hooks have been implemented for reenabling sched1.  With the
+   help of these macros we are limiting the movement of insns in sched1 to
+   reduce the register pressure.  The overall idea is to keep count of SImode 
+   and SFmode regs required by already scheduled insns. When these counts
+   cross some threshold values; give priority to insns that free registers.
+   The insn that frees registers is most likely to be the insn with lowest
+   LUID (original insn order); but such an insn might be there in the stalled 
+   queue (Q) instead of the ready queue (R).  To solve this, we skip cycles
+   upto a max of 8 cycles so that such insns may move from Q -> R.
+
+   The description of the hooks are as below:
+
+   TARGET_SCHED_INIT_GLOBAL: Added a new target hook in the generic
+   scheduler; it is called inside the sched_init function just after
+   find_insn_reg_weights function call. It is used to calculate the SImode
+   and SFmode weights of insns of basic blocks; much similiar to what
+   find_insn_reg_weights does. 
+   TARGET_SCHED_FINISH_GLOBAL: Corresponding cleanup hook.
+
+   TARGET_SCHED_DFA_NEW_CYCLE: Skip cycles if high register pressure is
+   indicated by TARGET_SCHED_REORDER2; doing this may move insns from
+   (Q)->(R).
+
+   TARGET_SCHED_REORDER: If the register pressure for SImode or SFmode is
+   high; reorder the ready queue so that the insn with lowest LUID will be
+   issued next.
+
+   TARGET_SCHED_REORDER2: If the register pressure is high, indicate to
+   TARGET_SCHED_DFA_NEW_CYCLE to skip cycles.
+
+   TARGET_SCHED_VARIABLE_ISSUE: Cache the value of can_issue_more so that it
+   can be returned from TARGET_SCHED_REORDER2.
+
+   TARGET_SCHED_INIT: Reset the register pressure counting variables.  */
+
+#undef TARGET_SCHED_DFA_NEW_CYCLE
+#define TARGET_SCHED_DFA_NEW_CYCLE sh_dfa_new_cycle
+
+#undef TARGET_SCHED_INIT_GLOBAL
+#define TARGET_SCHED_INIT_GLOBAL sh_md_init_global
+
+#undef TARGET_SCHED_FINISH_GLOBAL
+#define TARGET_SCHED_FINISH_GLOBAL sh_md_finish_global
+
+#undef TARGET_SCHED_VARIABLE_ISSUE
+#define TARGET_SCHED_VARIABLE_ISSUE sh_variable_issue
+
+#undef TARGET_SCHED_REORDER
+#define TARGET_SCHED_REORDER sh_reorder
+
+#undef TARGET_SCHED_REORDER2
+#define TARGET_SCHED_REORDER2 sh_reorder2
+
+#undef TARGET_SCHED_INIT
+#define TARGET_SCHED_INIT sh_md_init
+
 #undef TARGET_CANNOT_MODIFY_JUMPS_P
 #define TARGET_CANNOT_MODIFY_JUMPS_P sh_cannot_modify_jumps_p
 #undef TARGET_BRANCH_TARGET_REGISTER_CLASS
@@ -353,6 +440,12 @@ static tree sh_build_builtin_va_list (void);
 
 #undef TARGET_PCH_VALID_P
 #define TARGET_PCH_VALID_P sh_pch_valid_p
+
+/* Return regmode weight for insn.  */
+#define INSN_REGMODE_WEIGHT(INSN, MODE)  regmode_weight[((MODE) == SImode) ? 0 : 1][INSN_UID (INSN)]
+
+/* Return current register pressure for regmode.  */
+#define CURR_REGMODE_PRESSURE(MODE) 	curr_regmode_pressure[((MODE) == SImode) ? 0 : 1]
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -8262,6 +8355,323 @@ sh_issue_rate(void)
     return 2;
   else
     return 1;
+}
+
+/* Functions for ready queue reordering for sched1.  */
+
+/* Get weight for mode for a set x.  */
+static short
+find_set_regmode_weight (x, mode)
+     rtx x;
+     enum machine_mode mode;
+{
+  if (GET_CODE (x) == CLOBBER && register_operand (SET_DEST (x), mode))
+    return 1;
+  if (GET_CODE (x) == SET && register_operand (SET_DEST (x), mode))
+    {
+      if (GET_CODE (SET_DEST (x)) == REG)
+	{
+	  if (!reg_mentioned_p (SET_DEST (x), SET_SRC (x)))
+	    return 1;
+	  else
+	    return 0;
+	}
+      return 1;
+    }
+  return 0;
+}
+
+/* Get regmode weight for insn.  */
+static short
+find_insn_regmode_weight (insn, mode)
+     rtx insn;
+     enum machine_mode mode;
+{
+  short reg_weight = 0;
+  rtx x;
+
+  /* Increment weight for each register born here.  */
+  x = PATTERN (insn);
+  reg_weight += find_set_regmode_weight (x, mode);
+  if (GET_CODE (x) == PARALLEL)
+    {
+      int j;
+      for (j = XVECLEN (x, 0) - 1; j >= 0; j--)
+	{
+	  x = XVECEXP (PATTERN (insn), 0, j);
+	  reg_weight += find_set_regmode_weight (x, mode);
+	}
+    }
+  /* Decrement weight for each register that dies here.  */
+  for (x = REG_NOTES (insn); x; x = XEXP (x, 1))
+    {
+      if (REG_NOTE_KIND (x) == REG_DEAD || REG_NOTE_KIND (x) == REG_UNUSED)
+	{
+	  rtx note = XEXP (x, 0);
+	  if (GET_CODE (note) == REG && GET_MODE (note) == mode)
+	    reg_weight--;
+	}
+    }
+  return reg_weight;
+}
+
+/* Calculate regmode weights for all insns of a basic block.  */
+static void
+find_regmode_weight (b, mode)
+     int b;
+     enum machine_mode mode;
+{
+  rtx insn, next_tail, head, tail;
+
+  get_block_head_tail (b, &head, &tail);
+  next_tail = NEXT_INSN (tail);
+
+  for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
+    {
+      /* Handle register life information.  */
+      if (!INSN_P (insn))
+	continue;
+
+      if (mode == SFmode)
+	INSN_REGMODE_WEIGHT (insn, mode) =
+	  find_insn_regmode_weight (insn, mode) + 2 * find_insn_regmode_weight (insn, DFmode);
+      else if (mode == SImode)
+	INSN_REGMODE_WEIGHT (insn, mode) =
+	  find_insn_regmode_weight (insn, mode) + 2 * find_insn_regmode_weight (insn, DImode);
+    }
+}
+
+/* Comparison function for ready queue sorting.  */
+static int
+rank_for_reorder (x, y)
+     const void *x;
+     const void *y;
+{
+  rtx tmp = *(const rtx *) y;
+  rtx tmp2 = *(const rtx *) x;
+
+  /* The insn in a schedule group should be issued the first.  */
+  if (SCHED_GROUP_P (tmp) != SCHED_GROUP_P (tmp2))
+    return SCHED_GROUP_P (tmp2) ? 1 : -1;
+
+  /* If insns are equally good, sort by INSN_LUID (original insn order), This 
+     minimizes instruction movement, thus minimizing sched's effect on
+     register pressure.  */
+  return INSN_LUID (tmp) - INSN_LUID (tmp2);
+}
+
+/* Resort the array A in which only element at index N may be out of order.  */
+static void
+swap_reorder (a, n)
+     rtx *a;
+     int n;
+{
+  rtx insn = a[n - 1];
+  int i = n - 2;
+
+  while (i >= 0 && rank_for_reorder (a + i, &insn) >= 0)
+    {
+      a[i + 1] = a[i];
+      i -= 1;
+    }
+  a[i + 1] = insn;
+}
+
+#define SCHED_REORDER(READY, N_READY)                                \
+do { if ((N_READY) == 2)                                             \
+       swap_reorder (READY, N_READY);                                \
+     else if ((N_READY) > 2)                                         \
+       qsort (READY, N_READY, sizeof (rtx), rank_for_reorder); }     \
+while (0)
+
+/* Sort the ready list READY by ascending priority, using the SCHED_REORDER
+   macro.  */
+static void
+ready_reorder (ready, nready)
+     rtx *ready;
+     int nready;
+{
+  SCHED_REORDER (ready, nready);
+}
+
+/* Calculate regmode weights for all insns of all basic block.  */
+static void
+sh_md_init_global (dump, verbose, old_max_uid)
+     FILE *dump ATTRIBUTE_UNUSED;
+     int verbose ATTRIBUTE_UNUSED;
+     int old_max_uid;
+{
+  basic_block b;
+
+  regmode_weight[0] = (short *) xcalloc (old_max_uid, sizeof (short));
+  regmode_weight[1] = (short *) xcalloc (old_max_uid, sizeof (short));
+
+  FOR_EACH_BB_REVERSE (b)
+  {
+    find_regmode_weight (b->index, SImode);
+    find_regmode_weight (b->index, SFmode);
+  }
+
+  CURR_REGMODE_PRESSURE (SImode) = 0;
+  CURR_REGMODE_PRESSURE (SFmode) = 0;
+
+}
+
+/* Cleanup.  */
+static void
+sh_md_finish_global (dump, verbose)
+     FILE *dump ATTRIBUTE_UNUSED;
+     int verbose ATTRIBUTE_UNUSED;
+{
+  if (regmode_weight[0])
+    {
+      free (regmode_weight[0]);
+      regmode_weight[0] = NULL;
+    }
+  if (regmode_weight[1])
+    {
+      free (regmode_weight[1]);
+      regmode_weight[1] = NULL;
+    }
+}
+
+/* Cache the can_issue_more so that we can return it from reorder2. Also,
+   keep count of register pressures on SImode and SFmode. */
+static int
+sh_variable_issue (dump, sched_verbose, insn, can_issue_more)
+     FILE *dump ATTRIBUTE_UNUSED;
+     int sched_verbose ATTRIBUTE_UNUSED;
+     rtx insn;
+     int can_issue_more;
+{
+  if (GET_CODE (PATTERN (insn)) != USE
+      && GET_CODE (PATTERN (insn)) != CLOBBER)
+    cached_can_issue_more = can_issue_more - 1;
+  else
+    cached_can_issue_more = can_issue_more;
+
+  if (reload_completed)
+    return cached_can_issue_more;
+
+  CURR_REGMODE_PRESSURE (SImode) += INSN_REGMODE_WEIGHT (insn, SImode);
+  CURR_REGMODE_PRESSURE (SFmode) += INSN_REGMODE_WEIGHT (insn, SFmode);
+
+  return cached_can_issue_more;
+}
+
+static void
+sh_md_init (dump, verbose, veclen)
+     FILE *dump ATTRIBUTE_UNUSED;
+     int verbose ATTRIBUTE_UNUSED;
+     int veclen ATTRIBUTE_UNUSED;
+{
+  CURR_REGMODE_PRESSURE (SImode) = 0;
+  CURR_REGMODE_PRESSURE (SFmode) = 0;
+}
+
+/* Some magic numbers.  */
+/* Pressure on register r0 can lead to spill failures. so avoid sched1 for
+   functions that already have high pressure on r0. */
+#define R0_MAX_LIFE_REGIONS 2
+#define R0_MAX_LIVE_LENGTH 12
+/* Register Pressure threshols for SImode and SFmode registers.  */
+#define SIMODE_MAX_WEIGHT 5
+#define SFMODE_MAX_WEIGHT 10
+
+/* Return true if the pressure is high for MODE.  */
+static short
+high_pressure (mode)
+     enum machine_mode mode;
+{
+  /* Pressure on register r0 can lead to spill failures. so avoid sched1 for
+     functions that already have high pressure on r0. */
+  if ((REG_N_SETS (0) - REG_N_DEATHS (0)) >= R0_MAX_LIFE_REGIONS
+      && REG_LIVE_LENGTH (0) >= R0_MAX_LIVE_LENGTH)
+    return 1;
+
+  if (mode == SFmode)
+    return (CURR_REGMODE_PRESSURE (SFmode) > SFMODE_MAX_WEIGHT);
+  else
+    return (CURR_REGMODE_PRESSURE (SImode) > SIMODE_MAX_WEIGHT);
+}
+
+/* Reorder ready queue if register pressure is high.  */
+static int
+sh_reorder (dump, sched_verbose, ready, n_readyp, clock_var)
+     FILE *dump ATTRIBUTE_UNUSED;
+     int sched_verbose ATTRIBUTE_UNUSED;
+     rtx *ready;
+     int *n_readyp;
+     int clock_var ATTRIBUTE_UNUSED;
+{
+  if (reload_completed)
+    return sh_issue_rate ();
+
+  if (high_pressure (SFmode) || high_pressure (SImode))
+    {
+      ready_reorder (ready, *n_readyp);
+    }
+
+  return sh_issue_rate ();
+}
+
+/* Skip cycles if the current register pressure is high.  */
+static int 
+sh_reorder2 (dump, sched_verbose, ready, n_readyp, clock_var)
+     FILE *dump ATTRIBUTE_UNUSED;
+     int sched_verbose ATTRIBUTE_UNUSED;
+     rtx *ready ATTRIBUTE_UNUSED;
+     int *n_readyp ATTRIBUTE_UNUSED;
+     int clock_var ATTRIBUTE_UNUSED;
+{
+  if (reload_completed)
+    return cached_can_issue_more;
+
+  if (high_pressure(SFmode) || high_pressure (SImode)) 
+    skip_cycles = 1;
+
+  return cached_can_issue_more;
+}
+
+/* Skip cycles without sorting the ready queue. This will move insn from
+   Q->R. If this is the last cycle we are skipping; allow sorting of ready
+   queue by sh_reorder.  */ 
+
+/* Generally, skipping these many cycles are sufficient for all insns to move 
+   from Q -> R.  */ 
+#define MAX_SKIPS 8 
+
+static int
+sh_dfa_new_cycle (sched_dump, sched_verbose, insn, last_clock_var, 
+		clock_var, sort_p)
+     FILE *sched_dump ATTRIBUTE_UNUSED;
+     int sched_verbose ATTRIBUTE_UNUSED;
+     rtx insn ATTRIBUTE_UNUSED;
+     int last_clock_var;
+     int clock_var;
+     int *sort_p;
+{
+  if (reload_completed)
+	  return 0;
+
+  if (skip_cycles) 
+  {
+    if ((clock_var - last_clock_var) < MAX_SKIPS)
+    {
+      *sort_p = 0;
+      return 1;
+    }
+    /* If this is the last cycle we are skipping, allow reordering of R.  */
+    if ((clock_var - last_clock_var) == MAX_SKIPS)
+    {
+      *sort_p = 1;
+      return 1;
+    }
+  }
+
+  skip_cycles = 0;
+
+  return 0;
 }
 
 /* SHmedia requires registers for branches, so we can't generate new

@@ -5571,6 +5571,19 @@ to.  @var{verbose} is the verbose level provided by
 @option{-fsched-verbose-@var{n}}.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_SCHED_INIT_GLOBAL (FILE *@var{file}, int @var{verbose}, int @var{old_max_uid})
+This hook is executed by the scheduler after function level initializations.
+@var{file} is either a null pointer, or a stdio stream to write any debug output to.
+@var{verbose} is the verbose level provided by @option{-fsched-verbose-@var{n}}.
+@var{old_max_uid} is the maximum insn uid when scheduling begins.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SCHED_FINISH_GLOBAL (FILE *@var{file}, int @var{verbose})
+This is the cleanup hook corresponding to TARGET_SCHED_INIT_GLOBAL.
+@var{file} is either a null pointer, or a stdio stream to write any debug output to.
+@var{verbose} is the verbose level provided by @option{-fsched-verbose-@var{n}}.
+@end deftypefn
+
 @deftypefn {Target Hook} int TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE (void)
 This hook is called many times during insn scheduling.  If the hook
 returns nonzero, the automaton based pipeline description is used for
