@@ -1,3 +1,8 @@
+2003-07-11  Matthias Klose  <doko@debian.org>
+
+	* test_installed: Add options to run objc tests.
+	In generated site.exp, initialize rootme, CFLAGS, CXXFLAGS.
+
 2003-07-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc_update: Remove gcc/intl/plural.c from list.

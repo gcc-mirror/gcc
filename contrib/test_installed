@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# (C) 1998, 2000, 2002 Free Software Foundation
+# (C) 1998, 2000, 2002, 2003 Free Software Foundation
 # Originally by Alexandre Oliva <oliva@dcc.unicamp.br>
 
 # This script is Free Software, and it can be copied, distributed and
@@ -54,11 +54,12 @@ while true; do
   --without-gcc) GCC_UNDER_TEST=no; shift;;
   --without-g++) GXX_UNDER_TEST=no; shift;;
   --without-g77) G77_UNDER_TEST=no; shift;;
+  --without-objc) OBJC_UNDER_TEST=no; shift;;
 
   --tmpdir=*) tmpdir=`echo "$1" | sed 's/[^=]*=//'`; shift;;
 
   --help) cat <<\EOF
-Runs the testsuite for an installed version of gcc/g++/g77
+Runs the testsuite for an installed version of gcc/g++/g77/objc
 Copyright (C) 1998  Free Software Foundation
 by Alexandre Oliva <oliva@dcc.unicamp.br>
 
@@ -77,6 +78,7 @@ Supported arguments:
 --without-gcc                 do not run gcc testsuite
 --without-g++                 do not run g++ testsuite
 --without-g77                 do not run g77 testsuite
+--without-objc                do not run objc testsuite
 
 --tmpdir=/some/dir            create temporaries and leave failed programs
                               at specified directory [.]
@@ -100,15 +102,20 @@ if test x"${testsuite+set}" != x"set" && test x"${srcdir+set}" != x"set"; then
 fi
 
 cat >site.exp <<EOF
+set rootme "."
 set tmpdir "${tmpdir-`${PWDCMD-pwd}`}"
 set srcdir "${testsuite-${srcdir}/gcc/testsuite}"
+set CFLAGS ""
+set CXXFLAGS ""
 set GCC_UNDER_TEST "${GCC_UNDER_TEST-${prefix}${prefix+/bin/}gcc}"
 set GXX_UNDER_TEST "${GXX_UNDER_TEST-${prefix}${prefix+/bin/}g++}"
 set G77_UNDER_TEST "${G77_UNDER_TEST-${prefix}${prefix+/bin/}g77}"
+set OBJC_UNDER_TEST "${OBJC_UNDER_TEST-${prefix}${prefix+/bin/}gcc}"
 EOF
 
 test x"${GCC_UNDER_TEST}" = x"no" || runtest --tool gcc ${1+"$@"}
 test x"${GXX_UNDER_TEST}" = x"no" || runtest --tool g++ ${1+"$@"}
 test x"${G77_UNDER_TEST}" = x"no" || runtest --tool g77 ${1+"$@"}
+test x"${OBJC_UNDER_TEST}" = x"no" || runtest --tool objc ${1+"$@"}
 
 exit 0
