@@ -1,3 +1,7 @@
+2002-06-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/stl_alloc.h: Additional formatting.
+
 2002-06-24  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/stl_alloc.h:  Reformat as per C++STYLE.
