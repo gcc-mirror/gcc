@@ -1,3 +1,7 @@
+2004-06-10  Aaron W. LaFramboise  <aaronraolete36@aaronwl.com>
+
+	* include/bits/istream.tcc (istream::ignore): Fix for -Wuninitialized.
+
 2004-06-10  Jan van Dijk  <jan@etpmod.phys.tue.nl>
 
 	* include/std/std_complex.h (sin(const complex<_Tp>& __z)): Make
