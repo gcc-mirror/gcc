@@ -6432,7 +6432,8 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       else
 	{
 	  tree type = TREE_TYPE (o[i]);
-	  if (TYPE_READONLY (type)
+	  if (TREE_READONLY (o[i])
+	      || TYPE_READONLY (type)
 	      || ((TREE_CODE (type) == RECORD_TYPE
 		   || TREE_CODE (type) == UNION_TYPE)
 		  && C_TYPE_FIELDS_READONLY (type)))
