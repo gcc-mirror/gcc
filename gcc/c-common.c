@@ -42,7 +42,7 @@ enum cpp_token cpp_token;
 #define WCHAR_TYPE_SIZE TYPE_PRECISION (wchar_type_node)
 
 /* The following symbols are subsumed in the c_global_trees array, and
-   listed here individually for documentation purposes. 
+   listed here individually for documentation purposes.
 
    INTEGER_TYPE and REAL_TYPE nodes for the standard data types.
 
@@ -537,11 +537,11 @@ decl_attributes (node, attributes, prefix_attributes)
      anything done here.  */
   PRAGMA_INSERT_ATTRIBUTES (node, & attributes, & prefix_attributes);
 #endif
-  
+
 #ifdef INSERT_ATTRIBUTES
   INSERT_ATTRIBUTES (node, & attributes, & prefix_attributes);
 #endif
-  
+
   attributes = chainon (prefix_attributes, attributes);
 
   for (a = attributes; a; a = TREE_CHAIN (a))
@@ -775,7 +775,7 @@ decl_attributes (node, attributes, prefix_attributes)
 	      = (args ? TREE_VALUE (args)
 		 : size_int (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
 	    int align;
-	    
+
 	    /* Strip any NOPs of any kind.  */
 	    while (TREE_CODE (align_expr) == NOP_EXPR
 		   || TREE_CODE (align_expr) == CONVERT_EXPR
@@ -821,7 +821,7 @@ decl_attributes (node, attributes, prefix_attributes)
 			 "argument format specified for non-function `%s'");
 		continue;
 	      }
-	
+
 	    if (TREE_CODE (format_type_id) != IDENTIFIER_NODE)
 	      {
 		error ("unrecognized format specifier");
@@ -830,7 +830,7 @@ decl_attributes (node, attributes, prefix_attributes)
 	    else
 	      {
 		const char *p = IDENTIFIER_POINTER (format_type_id);
-		
+
 		if (!strcmp (p, "printf") || !strcmp (p, "__printf__"))
 		  format_type = printf_format_type;
 		else if (!strcmp (p, "scanf") || !strcmp (p, "__scanf__"))
@@ -1195,7 +1195,7 @@ typedef struct {
   /* Type of argument if length modifier `L' is used.
      If NULL, then this modifier is not allowed.  */
   tree *bigllen;
-  /* Type of argument if length modifier `Z' is used.
+  /* Type of argument if length modifiers 'z' or `Z' is used.
      If NULL, then this modifier is not allowed.  */
   tree *zlen;
   /* List of other modifier characters allowed with these options.  */
@@ -1250,7 +1250,7 @@ static format_char_info time_char_table[] = {
   { "HIMSUWdemw",	0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Ow" },
   { "Vju",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Oow" },
   { "Gklsz",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0OGw" },
-  { "ABZa",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^#" },
+  { "ABZza",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^#" },
   { "p",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "#" },
   { "bh",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^" },
   { "CY",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0EOw" },
@@ -1764,26 +1764,25 @@ check_format_info (info, params)
 		warning ("ANSI C does not support the `%c' length modifier",
 			 length_char);
 	    }
-	  else if (*format_chars == 'Z')
+	  else if (*format_chars == 'Z' || *format_chars == 'z')
 	    {
 	      length_char = *format_chars++;
-	      if (pedantic)
-		warning ("ANSI C does not support the `Z' length modifier");
+	      if (pedantic && (length_char == 'Z' || !flag_isoc9x))
+		warning ("ANSI C does not support the `%c' length modifier",
+			 length_char);
 	    }
 	  else
 	    length_char = 0;
 	  if (length_char == 'l' && *format_chars == 'l')
 	    {
 	      length_char = 'q', format_chars++;
-	      /* FIXME: Is allowed in ISO C 9x.  */
-	      if (pedantic)
+	      if (pedantic && !flag_isoc9x)
 		warning ("ANSI C does not support the `ll' length modifier");
 	    }
 	  else if (length_char == 'h' && *format_chars == 'h')
 	    {
 	      length_char = 'H', format_chars++;
-	      /* FIXME: Is allowed in ISO C 9x.  */
-	      if (pedantic)
+	      if (pedantic && !flag_isoc9x)
 		warning ("ANSI C does not support the `hh' length modifier");
 	    }
 	  if (*format_chars == 'a' && info->format_type == scanf_format_type)
@@ -1810,10 +1809,10 @@ check_format_info (info, params)
       if (pedantic && info->format_type != strftime_format_type
 	  && (format_char == 'm' || format_char == 'C' || format_char == 'S'))
 	warning ("ANSI C does not support the `%c' format", format_char);
-      /* ??? The a and A formats are C9X extensions, and should be allowed
-	 when a C9X option is added.  */
+      /* The a and A formats are C99 extensions.  */
       if (pedantic && info->format_type != strftime_format_type
-	  && (format_char == 'a' || format_char == 'A'))
+	  && (format_char == 'a' || format_char == 'A')
+	  && !flag_isoc9x)
 	warning ("ANSI C does not support the `%c' format", format_char);
       format_chars++;
       switch (info->format_type)
@@ -1912,7 +1911,7 @@ check_format_info (info, params)
 	case 'l': wanted_type = fci->llen ? *(fci->llen) : 0; break;
 	case 'q': wanted_type = fci->qlen ? *(fci->qlen) : 0; break;
 	case 'L': wanted_type = fci->bigllen ? *(fci->bigllen) : 0; break;
-	case 'Z': wanted_type = fci->zlen ? *fci->zlen : 0; break;
+	case 'z': case 'Z': wanted_type = fci->zlen ? *fci->zlen : 0; break;
 	}
       if (wanted_type == 0)
 	warning ("use of `%c' length character with `%c' type character",
@@ -2259,7 +2258,7 @@ type_for_mode (mode, unsignedp)
     return unsignedp ? long_long_unsigned_type_node : long_long_integer_type_node;
 
   if (mode == TYPE_MODE (widest_integer_literal_type_node))
-    return unsignedp ? widest_unsigned_literal_type_node 
+    return unsignedp ? widest_unsigned_literal_type_node
                      : widest_integer_literal_type_node;
 
   if (mode == TYPE_MODE (intQI_type_node))
@@ -2380,16 +2379,16 @@ signed_or_unsigned_type (unsignedp, type)
 
   if (TYPE_PRECISION (type) == TYPE_PRECISION (signed_char_type_node))
     return unsignedp ? unsigned_char_type_node : signed_char_type_node;
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)) 
+  if (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node))
     return unsignedp ? unsigned_type_node : integer_type_node;
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (short_integer_type_node)) 
+  if (TYPE_PRECISION (type) == TYPE_PRECISION (short_integer_type_node))
     return unsignedp ? short_unsigned_type_node : short_integer_type_node;
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (long_integer_type_node)) 
+  if (TYPE_PRECISION (type) == TYPE_PRECISION (long_integer_type_node))
     return unsignedp ? long_unsigned_type_node : long_integer_type_node;
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (long_long_integer_type_node)) 
+  if (TYPE_PRECISION (type) == TYPE_PRECISION (long_long_integer_type_node))
     return (unsignedp ? long_long_unsigned_type_node
 	    : long_long_integer_type_node);
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (widest_integer_literal_type_node)) 
+  if (TYPE_PRECISION (type) == TYPE_PRECISION (widest_integer_literal_type_node))
     return (unsignedp ? widest_unsigned_literal_type_node
 	    : widest_integer_literal_type_node);
   return type;
@@ -3265,9 +3264,9 @@ c_apply_type_quals_to_decl (type_quals, decl)
 	     alias set for the type pointed to by the type of the
 	     decl.  */
 
-	  int pointed_to_alias_set 
+	  int pointed_to_alias_set
 	    = get_alias_set (TREE_TYPE (TREE_TYPE (decl)));
-	  
+
 	  if (!pointed_to_alias_set)
 	    /* It's not legal to make a subset of alias set zero.  */
 	    ;
@@ -3301,7 +3300,7 @@ c_find_base_decl (t)
 
   decl = NULL_TREE;
 
-  if (TREE_CODE (t) == FIELD_DECL 
+  if (TREE_CODE (t) == FIELD_DECL
       || TREE_CODE (t) == PARM_DECL
       || TREE_CODE (t) == VAR_DECL)
     /* Aha, we found a pointer-typed declaration.  */
@@ -3397,7 +3396,7 @@ c_get_alias_set (t)
       && DECL_BIT_FIELD_TYPE (TREE_OPERAND (t, 1)))
     /* Since build_modify_expr calls get_unwidened for stores to
        component references, the type of a bit field can be changed
-       from (say) `unsigned int : 16' to `unsigned short' or from 
+       from (say) `unsigned int : 16' to `unsigned short' or from
        `enum E : 16' to `short'.  We want the real type of the
        bit-field in this case, not some the integral equivalent.  */
     type = DECL_BIT_FIELD_TYPE (TREE_OPERAND (t, 1));
@@ -3434,7 +3433,7 @@ c_get_alias_set (t)
   else if (TREE_CODE (type) == FUNCTION_TYPE)
     /* There are no objects of FUNCTION_TYPE, so there's no point in
        using up an alias set for them.  (There are, of course,
-       pointers and references to functions, but that's 
+       pointers and references to functions, but that's
        different.)  */
     TYPE_ALIAS_SET (type) = 0;
   else if (TREE_CODE (type) == RECORD_TYPE
@@ -3454,7 +3453,7 @@ c_get_alias_set (t)
 	 In particular, if we have `typedef int I', then `int *', and
 	 `I *' are different types.  So, we have to pick a canonical
 	 representative.  We do this below.
-	 
+
 	 Technically, this approach is actually more conservative that
 	 it needs to be.  In particular, `const int *' and `int *'
 	 chould be in different alias sets, according to the C and C++
@@ -3480,7 +3479,7 @@ c_get_alias_set (t)
 	TYPE_ALIAS_SET (type) = c_get_alias_set (t);
     }
 
-  if (!TYPE_ALIAS_SET_KNOWN_P (type)) 
+  if (!TYPE_ALIAS_SET_KNOWN_P (type))
     {
       /* Types that are not allocated on the permanent obstack are not
 	 placed in the type hash table.  Thus, there can be multiple
@@ -3498,9 +3497,9 @@ c_get_alias_set (t)
 }
 
 /* Build tree nodes and builtin functions common to both C and C++ language
-   frontends.  
+   frontends.
    CPLUS_MODE is nonzero if we are called from the C++ frontend, we generate
-   some stricter prototypes in that case. 
+   some stricter prototypes in that case.
    NO_BUILTINS and NO_NONANSI_BUILTINS contain the respective values of
    the language frontend flags flag_no_builtin and
    flag_no_nonansi_builtin.  */
@@ -3761,23 +3760,23 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 		    BUILT_IN_STRCPY, BUILT_IN_NORMAL, "strcpy");
   builtin_function ("__builtin_strlen", strlen_ftype,
 		    BUILT_IN_STRLEN, BUILT_IN_NORMAL, "strlen");
-  builtin_function ("__builtin_sqrtf", float_ftype_float, 
+  builtin_function ("__builtin_sqrtf", float_ftype_float,
 		    BUILT_IN_FSQRT, BUILT_IN_NORMAL, "sqrtf");
   builtin_function ("__builtin_fsqrt", double_ftype_double,
 		    BUILT_IN_FSQRT, BUILT_IN_NORMAL, "sqrt");
   builtin_function ("__builtin_sqrtl", ldouble_ftype_ldouble,
 		    BUILT_IN_FSQRT, BUILT_IN_NORMAL, "sqrtl");
-  builtin_function ("__builtin_sinf", float_ftype_float, 
+  builtin_function ("__builtin_sinf", float_ftype_float,
 		    BUILT_IN_SIN, BUILT_IN_NORMAL, "sinf");
-  builtin_function ("__builtin_sin", double_ftype_double, 
+  builtin_function ("__builtin_sin", double_ftype_double,
 		    BUILT_IN_SIN, BUILT_IN_NORMAL, "sin");
-  builtin_function ("__builtin_sinl", ldouble_ftype_ldouble, 
+  builtin_function ("__builtin_sinl", ldouble_ftype_ldouble,
 		    BUILT_IN_SIN, BUILT_IN_NORMAL, "sinl");
-  builtin_function ("__builtin_cosf", float_ftype_float, 
+  builtin_function ("__builtin_cosf", float_ftype_float,
 		    BUILT_IN_COS, BUILT_IN_NORMAL, "cosf");
-  builtin_function ("__builtin_cos", double_ftype_double, 
+  builtin_function ("__builtin_cos", double_ftype_double,
 		    BUILT_IN_COS, BUILT_IN_NORMAL, "cos");
-  builtin_function ("__builtin_cosl", ldouble_ftype_ldouble, 
+  builtin_function ("__builtin_cosl", ldouble_ftype_ldouble,
 		    BUILT_IN_COS, BUILT_IN_NORMAL, "cosl");
 
   if (! no_builtins)
@@ -3883,9 +3882,9 @@ build_va_arg (expr, type)
 
 /* Given a type, apply default promotions wrt unnamed function arguments
    and return the new type.  Return NULL_TREE if no change.  */
-/* ??? There is a function of the same name in the C++ front end that 
+/* ??? There is a function of the same name in the C++ front end that
    does something similar, but is more thorough and does not return NULL
-   if no change.  We could perhaps share code, but it would make the 
+   if no change.  We could perhaps share code, but it would make the
    self_promoting_type property harder to identify.  */
 
 tree
