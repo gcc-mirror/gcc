@@ -13834,8 +13834,8 @@ build_string_concatenation (op1, op2)
     op2 = patch_string_cst (op2);
 
   /* If either one of the constant is null and the other non null
-     operand is a String object, return it. */
-  if (JSTRING_TYPE_P (TREE_TYPE (op1)) && !op2)
+     operand is a String constant, return it. */
+  if ((TREE_CODE (op1) == STRING_CST) && !op2)
     return op1;
 
   /* If OP1 isn't already a StringBuffer, create and
