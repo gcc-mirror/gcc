@@ -180,11 +180,36 @@ Boston, MA 02111-1307, USA.  */
    -z* options (for the linker) (comming from svr4).
    We also have -R (alias --rpath), no -z, --soname (-h), --assert etc. */
 
+#undef SWITCH_TAKES_ARG
 #define SWITCH_TAKES_ARG(CHAR) \
   (DEFAULT_SWITCH_TAKES_ARG (CHAR) \
    || (CHAR) == 'h' \
    || (CHAR) == 'z' \
    || (CHAR) == 'R')
+
+/* Provide a STARTFILE_SPEC appropriate for FreeBSD.  Here we add
+   the magical crtbegin.o file (see crtstuff.c) which provides part 
+	of the support for getting C++ file-scope static object constructed 
+	before entering `main'. */
+   
+#undef	STARTFILE_SPEC
+#define STARTFILE_SPEC \
+  "%{!shared: \
+     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} \
+		       %{!p:%{profile:gcrt1.o%s} \
+			 %{!profile:crt1.o%s}}}} \
+   crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+
+/* Provide a ENDFILE_SPEC appropriate for FreeBSD.  Here we tack on
+   the magical crtend.o file (see crtstuff.c) which provides part of 
+	the support for getting C++ file-scope static object constructed 
+	before entering `main', followed by a normal "finalizer" file, 
+	`crtn.o'.  */
+
+#undef	ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
+
 
 #undef	LIB_SPEC
 #if 1
