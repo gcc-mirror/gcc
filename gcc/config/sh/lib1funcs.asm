@@ -1968,11 +1968,13 @@ LOCAL(set_fpscr_L1):
 	.long GLOBAL(fpscr_values)
 
 	ENDFUNC(GLOBAL(set_fpscr))
+#ifndef NO_FPSCR_VALUES
 #ifdef __ELF__
         .comm   GLOBAL(fpscr_values),8,4
 #else
         .comm   GLOBAL(fpscr_values),8
 #endif /* ELF */
+#endif /* NO_FPSCR_VALUES */
 #endif /* SH3E / SH4 */
 #endif /* L_set_fpscr */
 #ifdef L_ic_invalidate

@@ -1,3 +1,9 @@
+2002-12-21  Kaz kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/lib1funcs.asm (__fpscr_values): Conditionalize with
+	NO_FPSCR_VALUES.
+	* config/sh/t-linux (TARGET_LIBGCC2_CFLAGS): Add -DNO_FPSCR_VALUES.
+
 2002-12-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (zero_extendqisi2): Correct the
