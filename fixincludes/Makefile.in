@@ -174,8 +174,8 @@ install : all
 	$(INSTALL_DATA) $(srcdir)/README-fixinc \
 	  $(DESTDIR)$(itoolsdatadir)/include/README
 	$(INSTALL_SCRIPT) fixinc.sh $(DESTDIR)$(itoolsdir)/fixinc.sh
-	$(INSTALL_PROGRAM) fixincl$(build_exeext) \
-	  $(DESTDIR)$(itoolsdir)/fixincl
+	$(INSTALL_PROGRAM) fixincl@EXEEXT@ \
+	  $(DESTDIR)$(itoolsdir)/fixincl@EXEEXT@
 	$(INSTALL_SCRIPT) mkheaders $(DESTDIR)$(itoolsdir)/mkheaders
 
 dvi :
