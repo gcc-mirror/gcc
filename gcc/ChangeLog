@@ -1,3 +1,7 @@
+2001-10-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/contrib.texi: Add note about CRIS port to my entry.
+
 2001-10-11  Kazu Hirata  <kazu@hxi.com>
 
 	* basic-block.h: Fix formatting.
