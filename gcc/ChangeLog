@@ -1,3 +1,8 @@
+2004-07-07  Alexandre Oliva  <aoliva@redhat.com>
+
+	* function.c (assign_parm_find_data_types): Call
+	FUNCTION_ARG_PASS_BY_REFERENCE only if it's defined.
+
 2004-07-07  Steven Bosscher  <stevenb@suse.de>
 
 	* tree-cfg.c (group_case_labels): Remove case labels that have
