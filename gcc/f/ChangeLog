@@ -1,3 +1,7 @@
+Thu Dec 30 13:14:31 1999  Richard Henderson  <rth@cygnus.com>
+
+	* stw.h (struct _ffestw_): Change type of uses_ to int.
+
 Thu Dec 30 11:42:05 1999  Geoff Keating  <geoffk@cygnus.com>
 
 	* com.c (ffecom_init_0): Make double_ftype_double,
