@@ -74,6 +74,7 @@ static sbitmap *output_dependency_cache;
 static sbitmap *forward_dependency_cache;
 #endif
 
+static int deps_may_trap_p PARAMS ((rtx));
 static void remove_dependence PARAMS ((rtx, rtx));
 static void set_sched_group_p PARAMS ((rtx));
 
@@ -85,6 +86,21 @@ static rtx group_leader PARAMS ((rtx));
 
 static rtx get_condition PARAMS ((rtx));
 static int conditions_mutex_p PARAMS ((rtx, rtx));
+
+/* Return nonzero if a load of the memory reference MEM can cause a trap.  */
+
+static int
+deps_may_trap_p (mem)
+     rtx mem;
+{
+  rtx addr = XEXP (mem, 0);
+
+  if (REG_P (addr)
+      && ORIGINAL_REGNO (addr) >= FIRST_PSEUDO_REGISTER
+      && reg_known_value[ORIGINAL_REGNO (addr)])
+    addr = reg_known_value[ORIGINAL_REGNO (addr)];
+  return rtx_addr_can_trap_p (addr);
+}
 
 /* Return the INSN_LIST containing INSN in LIST, or NULL
    if LIST does not contain INSN.  */
@@ -817,7 +833,9 @@ sched_analyze_2 (deps, x, insn)
 	  }
 
 	for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
-	  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+	  if (GET_CODE (XEXP (u, 0)) != JUMP_INSN
+	      || deps_may_trap_p (x))
+	    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
 	/* Always add these dependencies to pending_reads, since
 	   this insn may be followed by a write.  */

@@ -16,6 +16,12 @@ Wed Jan  3 08:53:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* cse.c (cse_rtx_varies_p): Accept additional FROM_ALIAS arg.  All
 	callers changed.
 
+	* alias.c (throughout): Use ORIGINAL_REGNO when accessing
+	reg_base_value and reg_known_value arrays.
+	(init_alias_analysis): Add more cases to detect known values.
+	* sched-deps.c (deps_may_trap_p): New function.
+	(sched_analyze_2): Use it.
+
 2001-01-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* combine.c (simplify_shift_const): Even if we're sign-extracting,
