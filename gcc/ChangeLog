@@ -1,3 +1,9 @@
+2003-02-17  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/spe.h (__ev_stdd): Cast 2nd arg.
+        (__ev_stdw): Same.
+        (__ev_stdh): Same.
+
 Mon Feb 17 16:16:54 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* recog.c (split_all_insns):  Fix memory overflow.
