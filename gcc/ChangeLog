@@ -1,3 +1,8 @@
+Wed Jun 24 22:44:22 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* local-alloc.c (block_alloc): Do not try to avoid false dependencies
+	when SMALL_REGISTER_CLASSES is nonzero.
+
 Wed Jun 24 17:55:15 1998  Klaus Kaempf  <kkaempf@progis.de>
 
 	* alpha.md (call_vms, call_value_vms): Strip leading * from symbol.

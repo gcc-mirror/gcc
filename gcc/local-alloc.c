@@ -1448,7 +1448,9 @@ block_alloc (b)
 		 This optimization is only appropriate when we will run
 		 a scheduling pass after reload and we are not optimizing
 		 for code size.  */
-	      if (flag_schedule_insns_after_reload && !optimize_size)
+	      if (flag_schedule_insns_after_reload
+		  && !optimize_size
+		  && !SMALL_REGISTER_CLASSES)
 		{
 		
 		  qty_phys_reg[q] = find_free_reg (qty_min_class[q], 
@@ -1467,7 +1469,9 @@ block_alloc (b)
 
 #ifdef INSN_SCHEDULING
 	  /* Similarly, avoid false dependencies.  */
-	  if (flag_schedule_insns_after_reload && !optimize_size
+	  if (flag_schedule_insns_after_reload
+	      && !optimize_size
+	      && !SMALL_REGISTER_CLASSES
 	      && qty_alternate_class[q] != NO_REGS)
 	    qty_phys_reg[q] = find_free_reg (qty_alternate_class[q],
 					     qty_mode[q], q, 0, 0,
