@@ -1,5 +1,9 @@
 2003-11-11  Tom Tromey  <tromey@redhat.com>
 
+	For PR java/12915:
+	* libjava.lang/PR12915.java: New file.
+	* libjava.lang/PR12915.out: New file.
+
 	* libjava.jacks/jacks.exp (gcj_jacks_write): Enable "assert"
 	constraint.
 	* libjava.jacks/jacks.xfail: Added new xfails.
