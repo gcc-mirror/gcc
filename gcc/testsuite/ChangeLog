@@ -1,3 +1,7 @@
+2003-01-15  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/tls/init-2.C: Update error message string.
+
 2003-01-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/builtin-constant.x: XFAIL the test.
