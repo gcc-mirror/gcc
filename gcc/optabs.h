@@ -504,7 +504,7 @@ extern void expand_float (rtx, rtx, int);
 /* Generate code for a FIX_EXPR.  */
 extern void expand_fix (rtx, rtx, int);
 
-/* Return tree if target supports vector operatiosn for COND_EXPR.  */
+/* Return tree if target supports vector operations for COND_EXPR.  */
 bool expand_vec_cond_expr_p (tree, enum machine_mode);
 
 /* Generate code for VEC_COND_EXPR.  */

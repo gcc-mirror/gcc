@@ -5145,7 +5145,7 @@ expand_vec_cond_expr (tree vec_cond_expr, rtx target)
   if (!target)
     target = gen_reg_rtx (mode);
 
-  /* Get comparision rtx. First expand both cond expr operands.  */
+  /* Get comparison rtx.  First expand both cond expr operands.  */
   comparison = vector_compare_rtx (TREE_OPERAND (vec_cond_expr, 0), 
 				   unsignedp, icode);
   cc_op0 = XEXP (comparison, 0);
