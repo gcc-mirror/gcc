@@ -835,9 +835,6 @@ struct cumulative_args { int ints, floats; };
    Do not define this if the table should contain absolute addresses. */
 /* #define CASE_VECTOR_PC_RELATIVE 1 */
 
-/* Must pass floats to libgcc functions as doubles.  */
-/* #define LIBGCC_NEEDS_DOUBLE 1 */
-
 #define DIVSI3_LIBCALL "*.div"
 #define UDIVSI3_LIBCALL "*.udiv"
 #define MODSI3_LIBCALL "*.rem"
