@@ -572,8 +572,9 @@ extern struct rs6000_cpu_select rs6000_select[];
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 64
 
-/* AIX aligns internal doubles in structures on word boundaries.  */
-#define BIGGEST_FIELD_ALIGNMENT 32
+/* AIX word-aligns FP doubles but doubleword-aligns 64-bit ints.  */
+#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
+  (DECL_MODE (FIELD) != DFmode ? (COMPUTED) : MIN ((COMPUTED), 32))
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
@@ -583,6 +584,16 @@ extern struct rs6000_cpu_select rs6000_select[];
 
 /* A bitfield declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
+
+/* AIX increases natural record alignment to doubleword if the first
+   field is an FP double while the FP fields remain word aligned.  */
+#define ROUND_TYPE_ALIGN(STRUCT, COMPUTED, SPECIFIED)	\
+  ((TREE_CODE (STRUCT) == RECORD_TYPE			\
+    || TREE_CODE (STRUCT) == UNION_TYPE			\
+    || TREE_CODE (STRUCT) == QUAL_UNION_TYPE)		\
+   && DECL_MODE (TYPE_FIELDS (STRUCT)) == DFmode	\
+   ? MAX (MAX ((COMPUTED), (SPECIFIED)), BIGGEST_ALIGNMENT) \
+   : MAX ((COMPUTED), (SPECIFIED)))
 
 /* Make strings word-aligned so strcpy from constants will be faster.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
