@@ -12781,8 +12781,8 @@ dwarf2out_imported_module_or_decl (tree decl, tree context)
   else
     scope_die = force_decl_die (context);
 
-  /* For TYPE_DECL, lookup TREE_TYPE.  */
-  if (TREE_CODE (decl) == TYPE_DECL)
+  /* For TYPE_DECL or CONST_DECL, lookup TREE_TYPE.  */
+  if (TREE_CODE (decl) == TYPE_DECL || TREE_CODE (decl) == CONST_DECL)
     at_import_die = force_type_die (TREE_TYPE (decl));
   else
     at_import_die = force_decl_die (decl);

@@ -1,3 +1,9 @@
+2004-05-03  Graham Stott  <graham.stott@btinternet.com>
+
+	PR 14718
+	* dwarf2out.c (dwarf2out_imported_module_or_decl): Use
+	force_type_die for CONST_DECL.
+
 2004-05-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
