@@ -1,3 +1,8 @@
+2004-08-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.h (BINFO_PRIMARY_BASE_OF): Remove.
+	(struct tree_binfo): Remove primary field.
+
 2004-08-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac: Do not run fixincludes after stage1 during
@@ -8,6 +13,12 @@
 
 	* sched-deps.c (get_condition): Partially revert previous, by never
 	trying to extract the condition from a condjump.
+
+2004-08-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-common.c (c_sizeof_or_alignof_type): Use gcc_assert.
+	(handle_visibility_attribute, c_determine_visibility): Likewise.
+	* c-common.h (my_friendly_assert): Remove.
 
 2004-08-30  Richard Sandiford  <rsandifo@redhat.com>
 

@@ -119,7 +119,7 @@ static void handle_using_decl (tree, tree);
 static void check_for_override (tree, tree);
 static tree dfs_modify_vtables (tree, void *);
 static tree modify_all_vtables (tree, tree);
-static void determine_primary_base (tree);
+static void determine_primary_bases (tree);
 static void finish_struct_methods (tree);
 static void maybe_warn_about_overly_private_class (tree);
 static int method_name_cmp (const void *, const void *);
@@ -147,7 +147,6 @@ static void include_empty_classes (record_layout_info);
 static void layout_class_type (tree, tree *);
 static void fixup_pending_inline (tree);
 static void fixup_inline_methods (tree);
-static void set_primary_base (tree, tree);
 static void propagate_binfo_offsets (tree, tree);
 static void layout_virtual_bases (record_layout_info, splay_tree);
 static void build_vbase_offset_vtbl_entries (tree, vtbl_init_data *);
@@ -182,7 +181,6 @@ static tree dfs_accumulate_vtbl_inits (tree, tree, tree, tree,
 static void build_rtti_vtbl_entries (tree, vtbl_init_data *);
 static void build_vcall_and_vbase_vtbl_entries (tree, 
 							vtbl_init_data *);
-static void mark_primary_bases (tree);
 static void clone_constructors_and_destructors (tree);
 static tree build_clone (tree, tree);
 static void update_vtable_entry_for_fn (tree, tree, tree, tree *, unsigned);
@@ -415,14 +413,8 @@ static tree
 build_simple_base_path (tree expr, tree binfo)
 {
   tree type = BINFO_TYPE (binfo);
-  tree d_binfo;
+  tree d_binfo = BINFO_INHERITANCE_CHAIN (binfo);
   tree field;
-
-  /* For primary virtual bases, we can't just follow
-     BINFO_INHERITANCE_CHAIN.  */
-  d_binfo = BINFO_PRIMARY_BASE_OF (binfo);
-  if (d_binfo == NULL_TREE)
-    d_binfo = BINFO_INHERITANCE_CHAIN (binfo);
 
   if (d_binfo == NULL_TREE)
     {
@@ -1254,170 +1246,132 @@ check_bases (tree t,
     }
 }
 
-/* Set BINFO_PRIMARY_BASE_OF for all binfos in the hierarchy
-   dominated by TYPE that are primary bases.  */
+/* Determine all the primary bases within T.  Sets BINFO_PRIMARY_BASE_P for
+   those that are primaries.  Sets BINFO_LOST_PRIMARY_P for those
+   that have had a nearly-empty virtual primary base stolen by some
+   other base in the heirarchy.  Determines CLASSTYPE_PRIMARY_BASE for
+   T.  */
 
 static void
-mark_primary_bases (tree type)
+determine_primary_bases (tree t)
 {
-  tree binfo;
-  
-  /* Walk the bases in inheritance graph order.  */
-  for (binfo = TYPE_BINFO (type); binfo; binfo = TREE_CHAIN (binfo))
-    {
-      tree base_binfo = get_primary_binfo (binfo);
+  unsigned i;
+  tree primary = NULL_TREE;
+  tree type_binfo = TYPE_BINFO (t);
+  tree base_binfo;
 
-      if (!base_binfo)
-	/* Not a dynamic base.  */;
-      else if (BINFO_PRIMARY_P (base_binfo))
-	BINFO_LOST_PRIMARY_P (binfo) = 1;
-      else
+  /* Determine the primary bases of our bases.  */
+  for (base_binfo = TREE_CHAIN (type_binfo); base_binfo;
+       base_binfo = TREE_CHAIN (base_binfo))
+    {
+      tree primary = CLASSTYPE_PRIMARY_BINFO (BINFO_TYPE (base_binfo));
+
+      /* See if we're the non-virtual primary of our inheritance
+	 chain.  */
+      if (!BINFO_VIRTUAL_P (base_binfo))
 	{
-	  BINFO_PRIMARY_BASE_OF (base_binfo) = binfo;
-	  /* A virtual binfo might have been copied from within
-  	     another hierarchy. As we're about to use it as a primary
-  	     base, make sure the offsets match.  */
-	  if (BINFO_VIRTUAL_P (base_binfo))
-	    {
-	      tree delta = size_diffop (convert (ssizetype,
-						 BINFO_OFFSET (binfo)),
-					convert (ssizetype,
-						 BINFO_OFFSET (base_binfo)));
+	  tree parent = BINFO_INHERITANCE_CHAIN (base_binfo);
+	  tree parent_primary = CLASSTYPE_PRIMARY_BINFO (BINFO_TYPE (parent));
 	  
-	      propagate_binfo_offsets (base_binfo, delta);
+	  if (parent_primary
+	      && BINFO_TYPE (base_binfo) == BINFO_TYPE (parent_primary))
+	    /* We are the primary binfo.  */
+	    BINFO_PRIMARY_P (base_binfo) = 1;
+	}
+      /* Determine if we have a virtual primary base, and mark it so.
+       */
+      if (primary && BINFO_VIRTUAL_P (primary))
+	{
+	  tree this_primary = copied_binfo (primary, base_binfo);
+
+	  if (BINFO_PRIMARY_P (this_primary))
+	    /* Someone already claimed this base.  */
+	    BINFO_LOST_PRIMARY_P (base_binfo) = 1;
+	  else
+	    {
+	      tree delta;
+	      
+	      BINFO_PRIMARY_P (this_primary) = 1;
+	      BINFO_INHERITANCE_CHAIN (this_primary) = base_binfo;
+	      
+	      /* A virtual binfo might have been copied from within
+  	         another hierarchy. As we're about to use it as a
+  	         primary base, make sure the offsets match.  */
+	      delta = size_diffop (convert (ssizetype,
+					    BINFO_OFFSET (base_binfo)),
+				   convert (ssizetype,
+					    BINFO_OFFSET (this_primary)));
+	  
+	      propagate_binfo_offsets (this_primary, delta);
 	    }
 	}
     }
-}
 
-/* Make the BINFO the primary base of T.  */
-
-static void
-set_primary_base (tree t, tree binfo)
-{
-  tree basetype;
-
-  CLASSTYPE_PRIMARY_BINFO (t) = binfo;
-  basetype = BINFO_TYPE (binfo);
-  BINFO_VTABLE (TYPE_BINFO (t)) = BINFO_VTABLE (TYPE_BINFO (basetype));
-  BINFO_VIRTUALS (TYPE_BINFO (t)) = BINFO_VIRTUALS (TYPE_BINFO (basetype));
-  TYPE_VFIELD (t) = TYPE_VFIELD (basetype);
-}
-
-/* Determine the primary class for T.  */
-
-static void
-determine_primary_base (tree t)
-{
-  unsigned i, n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (t));
-  tree type_binfo = TYPE_BINFO (t);
-  tree vbase_binfo;
-  tree base_binfo;
-  VEC(tree) *vbases;
-
-  /* If there are no baseclasses, there is certainly no primary base.  */
-  if (n_baseclasses == 0)
-    return;
-
+  /* First look for a dynamic direct non-virtual base.  */
   for (i = 0; BINFO_BASE_ITERATE (type_binfo, i, base_binfo); i++)
     {
       tree basetype = BINFO_TYPE (base_binfo);
 
-      if (TYPE_CONTAINS_VPTR_P (basetype))
+      if (TYPE_CONTAINS_VPTR_P (basetype) && !BINFO_VIRTUAL_P (base_binfo))
 	{
-	  /* We prefer a non-virtual base, although a virtual one will
-	     do.  */
-	  if (BINFO_VIRTUAL_P (base_binfo))
-	    continue;
-
-	  if (!CLASSTYPE_HAS_PRIMARY_BASE_P (t))
-	    set_primary_base (t, base_binfo);
-	}
-    }
-
-  if (!TYPE_VFIELD (t))
-    CLASSTYPE_PRIMARY_BINFO (t) = NULL_TREE;
-
-  /* Find the indirect primary bases - those virtual bases which are primary
-     bases of something else in this hierarchy.  */
-  for (vbases = CLASSTYPE_VBASECLASSES (t), i = 0;
-       VEC_iterate (tree, vbases, i, vbase_binfo); i++)
-    {
-      unsigned j;
-
-      /* See if this virtual base is an indirect primary base.  To be
-         so, it must be a primary base within the hierarchy of one of
-         our direct bases.  */
-      for (j = 0; BINFO_BASE_ITERATE (type_binfo, j, base_binfo); j++)
-	{
-	  unsigned k;
-	  VEC (tree) *base_vbases;
-	  tree base_vbase_binfo;
-	  tree basetype = BINFO_TYPE (base_binfo);
-	  
-	  for (base_vbases = CLASSTYPE_VBASECLASSES (basetype), k = 0;
-	       VEC_iterate (tree, base_vbases, k, base_vbase_binfo); k++)
-	    {
-	      if (BINFO_PRIMARY_P (base_vbase_binfo)
-		  && same_type_p (BINFO_TYPE (base_vbase_binfo),
-				  BINFO_TYPE (vbase_binfo)))
-		{
-		  BINFO_INDIRECT_PRIMARY_P (vbase_binfo) = 1;
-		  break;
-		}
-	    }
-
-	  /* If we've discovered that this virtual base is an indirect
-	     primary base, then we can move on to the next virtual
-	     base.  */
-	  if (BINFO_INDIRECT_PRIMARY_P (vbase_binfo))
-	    break;
+	  primary = base_binfo;
+	  goto found;
 	}
     }
 
   /* A "nearly-empty" virtual base class can be the primary base
-     class, if no non-virtual polymorphic base can be found.  */
-  if (!CLASSTYPE_HAS_PRIMARY_BASE_P (t))
+     class, if no non-virtual polymorphic base can be found.  Look for
+     a nearly-empty virtual dynamic base that is not already a primary
+     base of something in the heirarchy.  If there is no such base,
+     just pick the first nearly-empty virtual base.  */
+
+  for (base_binfo = TREE_CHAIN (type_binfo); base_binfo;
+       base_binfo = TREE_CHAIN (base_binfo))
+    if (BINFO_VIRTUAL_P (base_binfo)
+	&& CLASSTYPE_NEARLY_EMPTY_P (BINFO_TYPE (base_binfo)))
+      {
+	if (!BINFO_PRIMARY_P (base_binfo))
+	  {
+	    /* Found one that is not primary.  */
+	    primary = base_binfo;
+	    goto found;
+	  }
+	else if (!primary)
+	  /* Remember the first candidate.  */
+	  primary = base_binfo;
+      }
+  
+ found:
+  /* If we've got a primary base, use it.  */
+  if (primary)
     {
-      /* If not NULL, this is the best primary base candidate we have
-         found so far.  */
-      tree candidate = NULL_TREE;
-      tree base_binfo;
-
-      /* Loop over the baseclasses.  */
-      for (base_binfo = TYPE_BINFO (t);
-	   base_binfo;
-	   base_binfo = TREE_CHAIN (base_binfo))
+      tree basetype = BINFO_TYPE (primary);
+      
+      CLASSTYPE_PRIMARY_BINFO (t) = primary;
+      if (BINFO_PRIMARY_P (primary))
+	/* We are stealing a primary base.  */
+	BINFO_LOST_PRIMARY_P (BINFO_INHERITANCE_CHAIN (primary)) = 1;
+      BINFO_PRIMARY_P (primary) = 1;
+      if (BINFO_VIRTUAL_P (primary))
 	{
-	  tree basetype = BINFO_TYPE (base_binfo);
+	  tree delta;
 
-	  if (BINFO_VIRTUAL_P (base_binfo) 
-	      && CLASSTYPE_NEARLY_EMPTY_P (basetype))
-	    {
-	      /* If this is not an indirect primary base, then it's
-		 definitely our primary base.  */
-	      if (!BINFO_INDIRECT_PRIMARY_P (base_binfo))
-		{
-		  candidate = base_binfo;
-		  break;
-		}
-
-	      /* If this is an indirect primary base, it still could be
-	         our primary base -- unless we later find there's another
-	         nearly-empty virtual base that isn't an indirect
-	         primary base.  */
-	      if (!candidate)
-		candidate = base_binfo;
-	    }
+	  BINFO_INHERITANCE_CHAIN (primary) = type_binfo;
+	  /* A virtual binfo might have been copied from within
+  	     another hierarchy. As we're about to use it as a primary
+  	     base, make sure the offsets match.  */
+	  delta = size_diffop (ssize_int (0),
+			       convert (ssizetype, BINFO_OFFSET (primary)));
+	  
+	  propagate_binfo_offsets (primary, delta);
 	}
-
-      /* If we've got a primary base, use it.  */
-      if (candidate)
-	set_primary_base (t, candidate);
+      
+      primary = TYPE_BINFO (basetype);
+      
+      TYPE_VFIELD (t) = TYPE_VFIELD (basetype);
+      BINFO_VTABLE (type_binfo) = BINFO_VTABLE (primary);
+      BINFO_VIRTUALS (type_binfo) = BINFO_VIRTUALS (primary);
     }
-
-  /* Mark the primary base classes at this point.  */
-  mark_primary_bases (t);
 }
 
 /* Set memoizing fields and bits of T (and its variants) for later
@@ -3324,7 +3278,8 @@ walk_subobject_offsets (tree type,
 	      tree vbase = get_primary_binfo (type_binfo);
 	      
 	      if (vbase && BINFO_VIRTUAL_P (vbase)
-		  && BINFO_PRIMARY_BASE_OF (vbase) == type_binfo)
+		  && BINFO_PRIMARY_P (vbase)
+		  && BINFO_INHERITANCE_CHAIN (vbase) == type_binfo)
 		{
 		  r = (walk_subobject_offsets 
 		       (vbase, f, offset,
@@ -4346,7 +4301,7 @@ propagate_binfo_offsets (tree binfo, tree offset)
   /* Find the primary base class.  */
   primary_binfo = get_primary_binfo (binfo);
 
-  if (primary_binfo && BINFO_PRIMARY_BASE_OF (primary_binfo) == binfo)
+  if (primary_binfo && BINFO_INHERITANCE_CHAIN (primary_binfo) == binfo)
     propagate_binfo_offsets (primary_binfo, offset);
   
   /* Scan all of the bases, pushing the BINFO_OFFSET adjust
@@ -4477,8 +4432,9 @@ end_of_class (tree t, int include_virtuals_p)
        BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
     {
       if (!include_virtuals_p
-	  && BINFO_VIRTUAL_P (base_binfo) 
-	  && BINFO_PRIMARY_BASE_OF (base_binfo) != TYPE_BINFO (t))
+	  && BINFO_VIRTUAL_P (base_binfo)
+	  && (!BINFO_PRIMARY_P (base_binfo)
+	      || BINFO_INHERITANCE_CHAIN (base_binfo) != TYPE_BINFO (t)))
 	continue;
 
       offset = end_of_base (base_binfo);
@@ -4620,9 +4576,8 @@ layout_class_type (tree t, tree *virtuals_p)
   /* Start laying out the record.  */
   rli = start_record_layout (t);
 
-  /* If possible, we reuse the virtual function table pointer from one
-     of our base classes.  */
-  determine_primary_base (t);
+  /* Mark all the primary bases in the hierarchy.  */
+  determine_primary_bases (t);
 
   /* Create a pointer to our virtual function table.  */
   vptr = create_vtable_ptr (t, virtuals_p);
@@ -6452,7 +6407,7 @@ dump_class_hierarchy_r (FILE *stream,
   
   indented = maybe_indent_hierarchy (stream, indent, 0);
   fprintf (stream, "%s (0x%lx) ",
-	   type_as_string (binfo, TFF_PLAIN_IDENTIFIER),
+	   type_as_string (BINFO_TYPE (binfo), TFF_PLAIN_IDENTIFIER),
 	   (unsigned long) binfo);
   if (binfo != igo)
     {
@@ -6472,13 +6427,13 @@ dump_class_hierarchy_r (FILE *stream,
   fprintf (stream, "\n");
 
   indented = 0;
-  if (BINFO_PRIMARY_BASE_OF (binfo))
+  if (BINFO_PRIMARY_P (binfo))
     {
       indented = maybe_indent_hierarchy (stream, indent + 3, indented);
       fprintf (stream, " primary-for %s (0x%lx)",
-	       type_as_string (BINFO_PRIMARY_BASE_OF (binfo),
+	       type_as_string (BINFO_TYPE (BINFO_INHERITANCE_CHAIN (binfo)),
 			       TFF_PLAIN_IDENTIFIER),
-	       (unsigned long)BINFO_PRIMARY_BASE_OF (binfo));
+	       (unsigned long)BINFO_INHERITANCE_CHAIN (binfo));
     }
   if (BINFO_LOST_PRIMARY_P (binfo))
     {
@@ -6607,7 +6562,7 @@ dump_vtable (tree t, tree binfo, tree vtable)
       
       fprintf (stream, "%s for %s",
 	       ctor_vtbl_p ? "Construction vtable" : "Vtable",
-	       type_as_string (binfo, TFF_PLAIN_IDENTIFIER));
+	       type_as_string (BINFO_TYPE (binfo), TFF_PLAIN_IDENTIFIER));
       if (ctor_vtbl_p)
 	{
 	  if (!BINFO_VIRTUAL_P (binfo))
@@ -6962,8 +6917,8 @@ dfs_build_secondary_vptr_vtt_inits (tree binfo, void *data)
       /* It's a primary virtual base, and this is not the construction
          vtable. Find the base this is primary of in the inheritance graph,
          and use that base's vtable now.  */
-      while (BINFO_PRIMARY_BASE_OF (binfo))
-        binfo = BINFO_PRIMARY_BASE_OF (binfo);
+      while (BINFO_PRIMARY_P (binfo))
+        binfo = BINFO_INHERITANCE_CHAIN (binfo);
     }
   init = binfo_ctor_vtable (binfo);
   TREE_VALUE (l) = tree_cons (NULL_TREE, init, TREE_VALUE (l));
@@ -7155,24 +7110,26 @@ dfs_accumulate_vtbl_inits (tree binfo,
 	 RTTI_BINFO.
 	 3) We are primary to something not a base of RTTI_BINFO.  */
 	  
-      tree b = BINFO_PRIMARY_BASE_OF (binfo);
+      tree b;
       tree last = NULL_TREE;
 
       /* First, look through the bases we are primary to for RTTI_BINFO
 	 or a virtual base.  */
-      for (; b; b = BINFO_PRIMARY_BASE_OF (b))
+      b = binfo;
+      while (BINFO_PRIMARY_P (b))
 	{
+	  b = BINFO_INHERITANCE_CHAIN (b);
 	  last = b;
 	  if (BINFO_VIRTUAL_P (b) || b == rtti_binfo)
-	    break;
+	    goto found;
 	}
       /* If we run out of primary links, keep looking down our
 	 inheritance chain; we might be an indirect primary.  */
-      if (b == NULL_TREE)
-	for (b = last; b; b = BINFO_INHERITANCE_CHAIN (b))
-	  if (BINFO_VIRTUAL_P (b) || b == rtti_binfo)
-	    break;
-
+      for (b = last; b; b = BINFO_INHERITANCE_CHAIN (b))
+	if (BINFO_VIRTUAL_P (b) || b == rtti_binfo)
+	  break;
+    found:
+      
       /* If we found RTTI_BINFO, this is case 1.  If we found a virtual
 	 base B and it is a base of RTTI_BINFO, this is case 2.  In
 	 either case, we share our vtable with LAST, i.e. the
@@ -7790,7 +7747,8 @@ build_rtti_vtbl_entries (tree binfo, vtbl_init_data* vid)
       tree primary_base;
 
       primary_base = get_primary_binfo (b);
-      gcc_assert (BINFO_PRIMARY_BASE_OF (primary_base) == b);
+      gcc_assert (BINFO_PRIMARY_P (primary_base)
+		  && BINFO_INHERITANCE_CHAIN (primary_base) == b);
       b = primary_base;
     }
   offset = size_diffop (BINFO_OFFSET (vid->rtti_binfo), BINFO_OFFSET (b));

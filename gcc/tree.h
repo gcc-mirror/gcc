@@ -1706,15 +1706,10 @@ struct tree_type GTY(())
    found.  NULL_TREE if there is no secondary vptr in the VTT.  */
 #define BINFO_VPTR_INDEX(NODE) (TREE_BINFO_CHECK(NODE)->binfo.vtt_vptr)
 
-/* The binfo of which NODE is a primary base.  (This is different from
-   BINFO_INHERITANCE_CHAIN for virtual base because a virtual base is
-   sometimes a primary base for a class for which it is not an
-   immediate base.)  */
-#define BINFO_PRIMARY_BASE_OF(NODE) (TREE_BINFO_CHECK(NODE)->binfo.primary)
-
 /* The BINFO_INHERITANCE_CHAIN points at the binfo for the base
    inheriting this base for non-virtual bases. For virtual bases it
-   points to the binfo of the most derived type.  */
+   points either to the binfo for which this is a primary binfo, or to
+   the binfo of the most derived type.  */
 #define BINFO_INHERITANCE_CHAIN(NODE) \
 	(TREE_BINFO_CHECK(NODE)->binfo.inheritance)
 
@@ -1731,7 +1726,6 @@ struct tree_binfo GTY (())
 
   tree vtt_subvtt;
   tree vtt_vptr;
-  tree primary;
 
   VEC(tree) base_binfos;
 };

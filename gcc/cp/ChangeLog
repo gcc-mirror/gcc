@@ -1,5 +1,20 @@
 2004-08-30  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (BINFO_PRIMARY_P): Use a binfo flag.
+	(BINFO_INDIRECT_PRIMARY_P): Remove.
+	* class.c (determine_primary_base): Rename to ...
+	(determine_primary_bases): ... here.  Set all primary bases.
+	(set_primary_base): Remove.
+	(mark_primary_bases): Remove.
+	(build_simple_base_path, walk_subobject_offsets,
+	propagate_binfo_offsets, end_of_class): Adjust.
+	(layout_class_type): Rename determine_primary_base call.
+	(dump_class_hierarchy_r, dump_vtable): Adjust. Don't pass a binfo
+	to type_as_string.
+	(dfs_build_secondary_vptr_vtt_inits, dfs_accumulate_vtbl_inits,
+	build_rtti_vtbl_entries): Adjust.
+	* init.c (build_vtbl_address): Adjust.
+
 	* cp-tree.h (SET_BINFO_NEW_VTABLE_MARKED): Use gcc_assert.
 
 2004-08-28  Ziemowit Laski  <zlaski@apple.com>

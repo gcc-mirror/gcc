@@ -1405,14 +1405,6 @@ struct lang_type GTY(())
 
 /* Additional macros for inheritance information.  */
 
-/* The BINFO_INHERITANCE_CHAIN is used opposite to the description in
-   gcc/tree.h.  In particular if D is non-virtually derived from B
-   then the BINFO for B (in D) will have a BINFO_INHERITANCE_CHAIN
-   pointing to D.  If D is virtually derived, its
-   BINFO_INHERITANCE_CHAIN will point to the most derived binfo. In
-   tree.h, this pointer is described as pointing in other
-   direction.  The binfos of virtual bases are shared.  */
-
 /* Nonzero means that this class is on a path leading to a new vtable.  */
 #define BINFO_VTABLE_PATH_MARKED(NODE) BINFO_FLAG_1 (NODE)
 
@@ -1428,11 +1420,6 @@ struct lang_type GTY(())
    gcc_assert (!BINFO_PRIMARY_P (B) || BINFO_VIRTUAL_P (B)),		 \
    gcc_assert (TYPE_VFIELD (BINFO_TYPE (B))))
 
-/* Nonzero if this BINFO is a primary base class.  */
-
-#define BINFO_PRIMARY_P(NODE) \
-  (BINFO_PRIMARY_BASE_OF (NODE) != NULL_TREE)
-
 /* Nonzero if this binfo is for a dependent base - one that should not
    be searched.  */
 #define BINFO_DEPENDENT_BASE_P(NODE) BINFO_FLAG_3 (NODE)
@@ -1442,10 +1429,8 @@ struct lang_type GTY(())
    base in the complete hierarchy.  */
 #define BINFO_LOST_PRIMARY_P(NODE) BINFO_FLAG_4 (NODE)
 
-/* Nonzero if this binfo is an indirect primary base, i.e. a virtual
-   base that is a primary base of some of other class in the
-   hierarchy.  */
-#define BINFO_INDIRECT_PRIMARY_P(NODE) BINFO_FLAG_5 (NODE)
+/* Nonzero if this BINFO is a primary base class.  */
+#define BINFO_PRIMARY_P(NODE) BINFO_FLAG_5(NODE)
 
 /* Used by various search routines.  */
 #define IDENTIFIER_MARKED(NODE) TREE_LANG_FLAG_0 (NODE)
