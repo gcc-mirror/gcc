@@ -9,7 +9,7 @@
    Please keep changes to arith-2.c and arith-3.c in sync.  */
 
 /* { dg-do preprocess } */
-/* { dg-options "-std=c99 -fno-show-column" } */
+/* { dg-options "-fno-show-column" } */
 
 #include <limits.h>
 

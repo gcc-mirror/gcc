@@ -4488,10 +4488,7 @@ c_common_init (filename)
 
   /* Set up preprocessor arithmetic.  Must be done after call to
      c_common_nodes_and_builtins for wchar_type_node to be good.  */
-  if (flag_isoc99 || 1)
-    options->precision = TYPE_PRECISION (intmax_type_node);
-  else
-    options->precision = TYPE_PRECISION (long_integer_type_node);
+  options->precision = TYPE_PRECISION (intmax_type_node);
   options->char_precision = TYPE_PRECISION (char_type_node);
   options->int_precision = TYPE_PRECISION (integer_type_node);
   options->wchar_precision = TYPE_PRECISION (wchar_type_node);
