@@ -28,8 +28,6 @@
 void test04()
 {
   using namespace std;
-  typedef money_base::part part;
-  typedef money_base::pattern pattern;
   typedef istreambuf_iterator<char> iterator_type;
 
   bool test __attribute__((unused)) = true;
@@ -64,7 +62,7 @@ void test04()
   ios_base::iostate err03 = ios_base::goodbit;
   mon_get.get(is_it03, end, true, iss, err03, result3);
   VERIFY( result3 == digits4 );
-  VERIFY( err03 == ios_base::goodbit );
+  VERIFY( err03 == ios_base::eofbit );
 }
 
 int main()

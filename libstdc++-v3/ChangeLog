@@ -1,3 +1,20 @@
+2004-02-16  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (money_get::do_get(string_type&)):
+	Fix parsing of the remaining sign characters.
+	* 22_locale/money_get/get/char/2.cc: Tweak: now, correctly,
+	the input is scanned 'til eof.
+	* 22_locale/money_get/get/char/4.cc: Likewise.
+	* 22_locale/money_get/get/wchar_t/2.cc: Likewise.
+	* 22_locale/money_get/get/wchar_t/4.cc: Likewise.
+	* 22_locale/money_get/get/char/8.cc: Tweak: override do_neg_format,
+	not do_pos_format: the former is the only one that matters during
+	input.
+	* 22_locale/money_get/get/wchar_t/8.cc: Likewise.
+
+	* 22_locale/money_get/get/char/6.cc: Minor tweak.
+	* 22_locale/money_get/get/wchar_t/6.cc: Likewise.
+
 2004-02-15  David Asher  <david.asher@cavium.com>
 
 	PR libstdc++/11352

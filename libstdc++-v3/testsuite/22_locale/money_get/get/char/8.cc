@@ -34,7 +34,7 @@ struct My_money_io_a : public std::moneypunct<char,false>
   
   int do_frac_digits() const { return 2; }
 
-  pattern do_pos_format() const
+  pattern do_neg_format() const
   {
     pattern pat = { { sign, value, space, symbol } };
     return pat;
@@ -51,7 +51,7 @@ struct My_money_io_b : public std::moneypunct<char,false>
   
   int do_frac_digits() const { return 2; }
 
-  pattern do_pos_format() const
+  pattern do_neg_format() const
   {
     pattern pat = { { sign, value, symbol, none } };
     return pat;

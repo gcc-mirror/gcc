@@ -81,7 +81,7 @@ void test02()
   ios_base::iostate err10 = ios_base::goodbit;
   mon_get.get(is_it10, end, true, iss, err10, result10);
   VERIFY( result10 == digits2 );
-  VERIFY( err10 == ios_base::goodbit );
+  VERIFY( err10 == ios_base::eofbit );
 
   iss.str("(HKD .01)"); 
   iterator_type is_it11(iss);
@@ -89,7 +89,7 @@ void test02()
   ios_base::iostate err11 = ios_base::goodbit;
   mon_get.get(is_it11, end, true, iss, err11, result11);
   VERIFY( result11 == digits4 );
-  VERIFY( err11 == ios_base::goodbit );
+  VERIFY( err11 == ios_base::eofbit );
 
   // for the "en_HK" locale the parsing of the very same input streams must
   // be successful without showbase too, since the symbol field appears in
@@ -111,7 +111,7 @@ void test02()
   ios_base::iostate err13 = ios_base::goodbit;
   mon_get.get(is_it13, end, true, iss, err13, result13);
   VERIFY( result13 == digits2 );
-  VERIFY( err13 == ios_base::goodbit );
+  VERIFY( err13 == ios_base::eofbit );
 
   iss.str("(HKD .01)"); 
   iterator_type is_it14(iss);
@@ -119,7 +119,7 @@ void test02()
   ios_base::iostate err14 = ios_base::goodbit;
   mon_get.get(is_it14, end, true, iss, err14, result14);
   VERIFY( result14 == digits4 );
-  VERIFY( err14 == ios_base::goodbit );
+  VERIFY( err14 == ios_base::eofbit );
 }
 
 int main()
