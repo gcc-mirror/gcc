@@ -1,3 +1,8 @@
+2002-09-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/localefwd.h: Tweak formatting.
+	* docs/html/abi.txt: Add.
+
 2002-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.target: Use cpu_include_dir="config/cpu/sparc" for all
