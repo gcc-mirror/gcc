@@ -51,7 +51,7 @@ static tree build_new_method_call		PROTO((tree, tree, tree, tree, int));
 static int rank_for_ideal PROTO((struct candidate *,
 				 struct candidate *));
 static int user_harshness PROTO((tree, tree));
-static int strictly_better PROTO((unsigned short, unsigned short));
+static int strictly_better PROTO((unsigned int, unsigned int));
 static struct candidate * ideal_candidate PROTO((struct candidate *,
 						 int, int));
 static int may_be_remote PROTO((tree));
@@ -1086,7 +1086,7 @@ compute_conversion_costs (function, tta_in, cp, arglen)
 
 static int
 strictly_better (x, y)
-     unsigned short x, y;
+     unsigned int x, y;
 {
   unsigned short xor;
 

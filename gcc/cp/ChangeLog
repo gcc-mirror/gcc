@@ -1,3 +1,7 @@
+Sat Aug 23 17:47:22 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* call.c (strictly_better): Make arguments unsigned ints.
+
 Thu Aug 21 18:48:44 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* lex.c (real_yylex): Refer to __complex instead of complex.
