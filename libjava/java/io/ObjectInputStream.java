@@ -27,6 +27,8 @@ executable file might be covered by the GNU General Public License. */
 
 package java.io;
 
+import gnu.classpath.Configuration;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -61,6 +63,21 @@ public class ObjectInputStream extends InputStream
   public ObjectInputStream (InputStream in)
     throws IOException, StreamCorruptedException
   {
+    if (Configuration.DEBUG)
+      {
+	String val = System.getProperty("gcj.dumpobjects");
+	if (dump == false && val != null && !val.equals(""))
+	  {
+	    dump = true;
+	    System.out.println ("Serialization debugging enabled");
+	  }
+	else if (dump == true && (val == null || val.equals("")))
+	  {
+	    dump = false;
+	    System.out.println ("Serialization debugging disabled");
+	  }
+      }
+
     this.resolveEnabled = false;
     this.isDeserializing = false;
     this.blockDataPosition = 0;
@@ -1510,24 +1527,19 @@ public class ObjectInputStream extends InputStream
   private boolean fieldsAlreadyRead;
   private Vector validators;
 
-  private static boolean dump;
-  public native static void setDump (boolean dump);
-  private native void dumpElement (String msg);
-  private native void dumpElementln (String msg);
+  private static boolean dump;  
 
-
-/* FIXME: These 2 methods cause a build error on i686-pc-linux-gnu.
-  private void DEBUG (String msg)
+  private void dumpElement (String msg)
   {
-    System.out.print (msg);
+    if (Configuration.DEBUG && dump)  
+      System.out.print(msg);
   }
-
-
-  private void DEBUGln (String msg)
+  
+  private void dumpElementln (String msg)
   {
-    System.out.println (msg);
+    if (Configuration.DEBUG && dump)
+      System.out.println(msg);
   }
-* end FIXME */
 }
 
 

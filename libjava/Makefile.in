@@ -87,6 +87,7 @@ GCTESTSPEC = @GCTESTSPEC@
 INCLTDL = @INCLTDL@
 JC1GCSPEC = @JC1GCSPEC@
 LIBDATASTARTSPEC = @LIBDATASTARTSPEC@
+LIBGCJDEBUG = @LIBGCJDEBUG@
 LIBGCJTESTSPEC = @LIBGCJTESTSPEC@
 LIBGCJ_CFLAGS = @LIBGCJ_CFLAGS@
 LIBGCJ_CXXFLAGS = @LIBGCJ_CXXFLAGS@
@@ -510,7 +511,9 @@ java/beans/VetoableChangeSupport.java \
 java/beans/Visibility.java
 
 
-built_java_source_files = java/lang/ConcreteProcess.java
+built_java_source_files = java/lang/ConcreteProcess.java \
+                          gnu/classpath/Configuration.java
+
 
 core_java_source_files = \
 java/lang/AbstractMethodError.java \
@@ -1181,8 +1184,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/awt/xlib/XGraphics.P \
 .deps/gnu/awt/xlib/XGraphicsConfiguration.P \
 .deps/gnu/awt/xlib/XPanelPeer.P .deps/gnu/awt/xlib/XToolkit.P \
-.deps/gnu/gcj/RawData.P .deps/gnu/gcj/awt/BitMaskExtent.P \
-.deps/gnu/gcj/awt/Buffers.P .deps/gnu/gcj/awt/ComponentDataBlitOp.P \
+.deps/gnu/classpath/Configuration.P .deps/gnu/gcj/RawData.P \
+.deps/gnu/gcj/awt/BitMaskExtent.P .deps/gnu/gcj/awt/Buffers.P \
+.deps/gnu/gcj/awt/ComponentDataBlitOp.P \
 .deps/gnu/gcj/awt/GLightweightPeer.P \
 .deps/gnu/gcj/convert/BytesToUnicode.P .deps/gnu/gcj/convert/Convert.P \
 .deps/gnu/gcj/convert/IOConverter.P \
