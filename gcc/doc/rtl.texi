@@ -194,15 +194,31 @@ chain, such as @code{NOTE}, @code{BARRIER}, and @code{CODE_LABEL}.
 @end table
 
 @cindex RTL format
-For each expression type @file{rtl.def} specifies the number of
-contained objects and their kinds, with four possibilities: @samp{e} for
-expression (actually a pointer to an expression), @samp{i} for integer,
-@samp{w} for wide integer, @samp{s} for string, and @samp{E} for vector
-of expressions.  The sequence of letters for an expression code is
-called its @dfn{format}.  For example, the format of @code{subreg} is
-@samp{ei}.
+For each expression code, @file{rtl.def} specifies the number of
+contained objects and their kinds using a sequence of characters
+called the @dfn{format} of the expression code.  For example,
+the format of @code{subreg} is @samp{ei}.
 
 @cindex RTL format characters
+These are the most commonly used format characters:
+
+@table @code
+@item e
+An expression (actually a pointer to an expression).
+
+@item i
+An integer.
+
+@item w
+A wide integer.
+
+@item s
+A string.
+
+@item E
+A vector of expressions.
+@end table
+
 A few other format characters are used occasionally:
 
 @table @code

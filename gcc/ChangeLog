@@ -1,3 +1,7 @@
+2001-10-26  Steve Christiansen  <smc@us.ibm.com>
+
+	* doc/rtl.texi: Use a table to display RTL format characters.
+
 2001-12-06  Bo Thorsen  <bo@suse.co.uk>
 
 	* config/i386/linux64.h (LINK_SPEC): Correct name of dynamic linker.
