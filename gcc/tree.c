@@ -2690,7 +2690,7 @@ build_index_type (maxval)
 }
 
 /* Create a range of some discrete type TYPE (an INTEGER_TYPE,
-   ENUMERAL_TYPE, BOOLEAN_TYPE, or VHAR_TYPE), with
+   ENUMERAL_TYPE, BOOLEAN_TYPE, or CHAR_TYPE), with
    low bound LOWVAL and high bound HIGHVAL.
    if TYPE==NULL_TREE, sizetype is used. */
 
