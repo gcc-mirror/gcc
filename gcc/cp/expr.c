@@ -62,9 +62,10 @@ cplus_expand_constant (cst)
 	  {
 	    tree delta;
 	    tree pfn;
+	    tree flag;
 
-	    expand_ptrmemfunc_cst (cst, &delta, &pfn);
-	    cst = build_ptrmemfunc1 (type, delta, pfn);
+	    expand_ptrmemfunc_cst (cst, &delta, &pfn, &flag);
+	    cst = build_ptrmemfunc1 (type, delta, pfn, flag);
 	  }
       }
       break;
