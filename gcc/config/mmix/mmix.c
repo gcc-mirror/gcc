@@ -1909,19 +1909,43 @@ mmix_assemble_integer (x, size, aligned_p)
   if (aligned_p)
     switch (size)
       {
+	/* We handle a limited number of types of operands in here.  But
+	   that's ok, because we can punt to generic functions.  We then
+	   pretend that we don't emit aligned data is needed, so the usual
+	   .pseudo syntax is used (which work for aligned data too).  We
+	   actually *must* do that, since we say we don't have simple
+	   aligned pseudos, causing this function to be called.  We just
+	   try and keep as much compatibility as possible with mmixal
+	   syntax for normal cases (i.e. without GNU extensions and C
+	   only).  */
       case 1:
+	if (GET_CODE (x) != CONST_INT)
+	  {
+	    aligned_p = 0;
+	    break;
+	  }
 	fputs ("\tBYTE\t", asm_out_file);
 	mmix_print_operand (asm_out_file, x, 'B');
 	fputc ('\n', asm_out_file);
 	return true;
 
       case 2:
+	if (GET_CODE (x) != CONST_INT)
+	  {
+	    aligned_p = 0;
+	    break;
+	  }
 	fputs ("\tWYDE\t", asm_out_file);
 	mmix_print_operand (asm_out_file, x, 'W');
 	fputc ('\n', asm_out_file);
 	return true;
 
       case 4:
+	if (GET_CODE (x) != CONST_INT && GET_CODE (x) != SYMBOL_REF)
+	  {
+	    aligned_p = 0;
+	    break;
+	  }
 	fputs ("\tTETRA\t", asm_out_file);
 	mmix_print_operand (asm_out_file, x, 'L');
 	fputc ('\n', asm_out_file);
@@ -1929,9 +1953,11 @@ mmix_assemble_integer (x, size, aligned_p)
 
       case 8:
 	if (GET_CODE (x) == CONST_DOUBLE)
-	  mmix_output_octa (asm_out_file, mmix_intval (x), 0);
-	else
-	  assemble_integer_with_op ("\tOCTA\t", x);
+	  /* We don't get here anymore for CONST_DOUBLE, because DImode
+	     isn't expressed as CONST_DOUBLE, and DFmode is handled
+	     elsewhere.  */
+	  abort ();
+	assemble_integer_with_op ("\tOCTA\t", x);
 	return true;
       }
   return default_assemble_integer (x, size, aligned_p);

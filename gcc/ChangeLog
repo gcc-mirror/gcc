@@ -1,3 +1,10 @@
+2002-02-11  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.c (mmix_assemble_integer) <case 1, 2>: Handle
+	non-CONST_INT through default_assemble_integer.
+	<case 4>: Likewise, for non-CONST_INT, non-SYMBOL_REF.
+	<case 8>: Abort for CONST_DOUBLE.
+
 2002-02-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* gcc.c (init_gcc_specs): Add static libgcc to link when "-shared"
