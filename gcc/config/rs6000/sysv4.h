@@ -554,8 +554,9 @@ do {									\
 #define SWITCH_TAKES_ARG(CHAR)						\
   ((CHAR) == 'D' || (CHAR) == 'U' || (CHAR) == 'o'			\
    || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u'			\
-   || (CHAR) == 'I' || (CHAR) == 'm'					\
-   || (CHAR) == 'L' || (CHAR) == 'A' || (CHAR) == 'G')
+   || (CHAR) == 'I' || (CHAR) == 'm' || (CHAR) == 'x'			\
+   || (CHAR) == 'L' || (CHAR) == 'A' || (CHAR) == 'V'			\
+   || (CHAR) == 'B' || (CHAR) == 'b' || (CHAR) == 'G')
 
 /* Output .file and comments listing what options there are */
 #undef ASM_FILE_START
