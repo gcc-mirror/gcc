@@ -1,3 +1,8 @@
+Mon Nov  6 20:08:13 2000  J"orn Rennecke <amylaar@redhat.com>
+
+	* reload1.c (eliminate_regs_in_insn): Allow a set to be a PARALLEL
+	with (clobber (match_scratch...)).
+
 2000-11-06  Neil Booth  <neilb@earthling.net>
 
 	* c-lex.c (init_c_lex): If cpp_start_read fails, exit with
