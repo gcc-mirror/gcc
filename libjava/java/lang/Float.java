@@ -1,5 +1,6 @@
 /* Float.java -- object wrapper for float
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -239,11 +240,11 @@ public final class Float extends Number implements Comparable
    * @see #NEGATIVE_INFINITY
    * @since 1.2
    */
-  public static float parseFloat(String s)
+  public static float parseFloat(String str)
   {
     // XXX Rounding parseDouble() causes some errors greater than 1 ulp from
     // the infinitely precise decimal.
-    return (float) Double.parseDouble(s);
+    return (float) Double.parseDouble(str);
   }
 
   /**
@@ -390,9 +391,9 @@ public final class Float extends Number implements Comparable
    * <code>Float.NaN</code> as equal, but treats <code>0.0</code> and
    * <code>-0.0</code> as unequal.
    *
-   * <p>Note that <code>f1.equals(f2)<code> is identical to
+   * <p>Note that <code>f1.equals(f2)</code> is identical to
    * <code>floatToIntBits(f1.floatValue()) ==
-   *    floatToIntBits(f2.floatValue())<code>.
+   *    floatToIntBits(f2.floatValue())</code>.
    *
    * @param obj the object to compare
    * @return whether the objects are semantically equal

@@ -310,51 +310,53 @@ public final class System
    *
    * <p>The required properties include:
    * <dl>
-   * <dt>java.version         <dd>Java version number
-   * <dt>java.vendor          <dd>Java vendor specific string
-   * <dt>java.vendor.url      <dd>Java vendor URL
-   * <dt>java.home            <dd>Java installation directory
-   * <dt>java.vm.specification.version <dd>VM Spec version
-   * <dt>java.vm.specification.vendor  <dd>VM Spec vendor
-   * <dt>java.vm.specification.name    <dd>VM Spec name
-   * <dt>java.vm.version      <dd>VM implementation version
-   * <dt>java.vm.vendor       <dd>VM implementation vendor
-   * <dt>java.vm.name         <dd>VM implementation name
-   * <dt>java.specification.version    <dd>Java Runtime Environment version
-   * <dt>java.specification.vendor     <dd>Java Runtime Environment vendor
-   * <dt>java.specification.name       <dd>Java Runtime Environment name
-   * <dt>java.class.version   <dd>Java class version number
-   * <dt>java.class.path      <dd>Java classpath
-   * <dt>java.library.path    <dd>Path for finding Java libraries
-   * <dt>java.io.tmpdir       <dd>Default temp file path
-   * <dt>java.compiler        <dd>Name of JIT to use
-   * <dt>java.ext.dirs        <dd>Java extension path
-   * <dt>os.name              <dd>Operating System Name
-   * <dt>os.arch              <dd>Operating System Architecture
-   * <dt>os.version           <dd>Operating System Version
-   * <dt>file.separator       <dd>File separator ("/" on Unix)
-   * <dt>path.separator       <dd>Path separator (":" on Unix)
-   * <dt>line.separator       <dd>Line separator ("\n" on Unix)
-   * <dt>user.name            <dd>User account name
-   * <dt>user.home            <dd>User home directory
-   * <dt>user.dir             <dd>User's current working directory
+   * <dt>java.version</dt>         <dd>Java version number</dd>
+   * <dt>java.vendor</dt>          <dd>Java vendor specific string</dd>
+   * <dt>java.vendor.url</dt>      <dd>Java vendor URL</dd>
+   * <dt>java.home</dt>            <dd>Java installation directory</dd>
+   * <dt>java.vm.specification.version</dt> <dd>VM Spec version</dd>
+   * <dt>java.vm.specification.vendor</dt>  <dd>VM Spec vendor</dd>
+   * <dt>java.vm.specification.name</dt>    <dd>VM Spec name</dd>
+   * <dt>java.vm.version</dt>      <dd>VM implementation version</dd>
+   * <dt>java.vm.vendor</dt>       <dd>VM implementation vendor</dd>
+   * <dt>java.vm.name</dt>         <dd>VM implementation name</dd>
+   * <dt>java.specification.version</dt>    <dd>Java Runtime Environment version</dd>
+   * <dt>java.specification.vendor</dt>     <dd>Java Runtime Environment vendor</dd>
+   * <dt>java.specification.name</dt>       <dd>Java Runtime Environment name</dd>
+   * <dt>java.class.version</dt>   <dd>Java class version number</dd>
+   * <dt>java.class.path</dt>      <dd>Java classpath</dd>
+   * <dt>java.library.path</dt>    <dd>Path for finding Java libraries</dd>
+   * <dt>java.io.tmpdir</dt>       <dd>Default temp file path</dd>
+   * <dt>java.compiler</dt>        <dd>Name of JIT to use</dd>
+   * <dt>java.ext.dirs</dt>        <dd>Java extension path</dd>
+   * <dt>os.name</dt>              <dd>Operating System Name</dd>
+   * <dt>os.arch</dt>              <dd>Operating System Architecture</dd>
+   * <dt>os.version</dt>           <dd>Operating System Version</dd>
+   * <dt>file.separator</dt>       <dd>File separator ("/" on Unix)</dd>
+   * <dt>path.separator</dt>       <dd>Path separator (":" on Unix)</dd>
+   * <dt>line.separator</dt>       <dd>Line separator ("\n" on Unix)</dd>
+   * <dt>user.name</dt>            <dd>User account name</dd>
+   * <dt>user.home</dt>            <dd>User home directory</dd>
+   * <dt>user.dir</dt>             <dd>User's current working directory</dd>
    * </dl>
    *
    * In addition, gnu defines several other properties, where ? stands for
    * each character in '0' through '9':
    * <dl>
-   * <dl> gnu.classpath.vm.shortname <dd> Succinct version of the VM name;
-   *      used for finding property files in file system
-   * <dl> gnu.classpath.home.url <dd> Base URL; used for finding
-   *      property files in file system
-   * <dt> gnu.cpu.endian      <dd>big or little
-   * <dt> gnu.java.io.encoding_scheme_alias.ISO-8859-?   <dd>8859_?
-   * <dt> gnu.java.io.encoding_scheme_alias.iso-8859-?   <dd>8859_?
-   * <dt> gnu.java.io.encoding_scheme_alias.iso8859_?    <dd>8859_?
-   * <dt> gnu.java.io.encoding_scheme_alias.iso-latin-_? <dd>8859_?
-   * <dt> gnu.java.io.encoding_scheme_alias.latin?       <dd>8859_?
-   * <dt> gnu.java.io.encoding_scheme_alias.UTF-8        <dd>UTF8
-   * <dt> gnu.java.io.encoding_scheme_alias.utf-8        <dd>UTF8
+   * <dt>gnu.classpath.home</dt>         <dd>Path to the classpath libraries.</dd>
+   * <dt>gnu.classpath.version</dt>      <dd>Version of the classpath libraries.</dd>
+   * <dt>gnu.classpath.vm.shortname</dt> <dd>Succinct version of the VM name;
+   *     used for finding property files in file system</dd>
+   * <dt>gnu.classpath.home.url</dt>     <dd> Base URL; used for finding
+   *     property files in file system</dd>
+   * <dt>gnu.cpu.endian</dt>             <dd>big or little</dd>
+   * <dt>gnu.java.io.encoding_scheme_alias.ISO-8859-?</dt>   <dd>8859_?</dd>
+   * <dt>gnu.java.io.encoding_scheme_alias.iso-8859-?</dt>   <dd>8859_?</dd>
+   * <dt>gnu.java.io.encoding_scheme_alias.iso8859_?</dt>    <dd>8859_?</dd>
+   * <dt>gnu.java.io.encoding_scheme_alias.iso-latin-_?</dt> <dd>8859_?</dd>
+   * <dt>gnu.java.io.encoding_scheme_alias.latin?</dt>       <dd>8859_?</dd>
+   * <dt>gnu.java.io.encoding_scheme_alias.UTF-8</dt>        <dd>UTF8</dd>
+   * <dt>gnu.java.io.encoding_scheme_alias.utf-8</dt>        <dd>UTF8</dd>
    * </dl>
    *
    * @return the system properties, will never be null

@@ -564,7 +564,7 @@ public final class Math
 
   /**
    * Take the nearest integer to the argument.  This is equivalent to
-   * <code>(int) Math.floor(a + 0.5f). If the argument is NaN, the result
+   * <code>(int) Math.floor(a + 0.5f)</code>. If the argument is NaN, the result
    * is 0; otherwise if the argument is outside the range of int, the result
    * will be Integer.MIN_VALUE or Integer.MAX_VALUE, as appropriate.
    *

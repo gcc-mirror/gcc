@@ -49,37 +49,38 @@ package java.lang.reflect;
  * interface.  But in order for the proxy instance to do any good, it
  * needs to know what to do when interface methods are invoked!  So,
  * this interface is basically a cool wrapper that provides runtime
- * code generation needed by proxy instances.<p>
+ * code generation needed by proxy instances.
  *
- * While this interface was designed for use by Proxy, it will also
- * work on any object in general.<p>
+ * <p>While this interface was designed for use by Proxy, it will also
+ * work on any object in general.</p>
  *
- * Hints for implementing this class:<br>
+ * <p>Hints for implementing this class:</p>
+ * 
  * <ul>
- *  <li>Don't forget that Object.equals, Object.hashCode, and
- *      Object.toString will call this handler.  In particular,
- *      a naive call to proxy.equals, proxy.hashCode, or proxy.toString
- *      will put you in an infinite loop.  And remember that string
- *      concatenation also invokes toString.</li>
- *  <li>Obey the contract of the Method object you are handling, or
- *      the proxy instance will be forced to throw a
- *      {@link NullPointerException}, {@link ClassCastException},
- *      or {@link UndeclaredThrowableException}.</li>
- *  <li>Be prepared to wrap/unwrap primitives as necessary.</li>
- *  <li>The Method object may be owned by a different interface than
- *      what was actually used as the qualifying type of the method
- *      invocation in the Java source code. This means that it might
- *      not always be safe to throw an exception listed as belonging
- *      to the method's throws clause.</li>
+ * <li>Don't forget that Object.equals, Object.hashCode, and
+ *     Object.toString will call this handler.  In particular,
+ *     a naive call to proxy.equals, proxy.hashCode, or proxy.toString
+ *     will put you in an infinite loop.  And remember that string
+ *     concatenation also invokes toString.</li>
+ * <li>Obey the contract of the Method object you are handling, or
+ *     the proxy instance will be forced to throw a
+ *     {@link NullPointerException}, {@link ClassCastException},
+ *     or {@link UndeclaredThrowableException}.</li>
+ * <li>Be prepared to wrap/unwrap primitives as necessary.</li>
+ * <li>The Method object may be owned by a different interface than
+ *     what was actually used as the qualifying type of the method
+ *     invocation in the Java source code. This means that it might
+ *     not always be safe to throw an exception listed as belonging
+ *     to the method's throws clause.</li>
  * </ul>
  *
  * <p><small>For a fun time, create an InvocationHandler that handles the
- * methods of a proxy instance of the InvocationHandler interface!</small>
+ * methods of a proxy instance of the InvocationHandler interface!</small></p>
  *
  * @see Proxy
  * @see UndeclaredThrowableException
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.3
  * @status updated to 1.4
  */

@@ -118,7 +118,7 @@ import java.security.BasicPermission;
  *       access to in the system</td>
  *   <td>rogue code can stop arbitrary threads</td></tr>
  * <tr>
- *   <td><code>modifyThreadGroup</td>
+ *   <td><code>modifyThreadGroup</code></td>
  *   <td>allows the application to modify thread groups using any of the
  *       methods <code>destroy</code>, <code>resume</code>,
  *       <code>setDaemon</code>, <code>setMaxPriority</code>,
@@ -141,7 +141,7 @@ import java.security.BasicPermission;
  *   <td>rogue code can write files, including viruses, and can modify the
  *       virtual machine binary; if not just fill up the disk</td></tr>
  * <tr>
- *   <td><code>loadLibrary.<code><em>library name</em></td>
+ *   <td><code>loadLibrary.</code><em>library name</em></td>
  *   <td>dynamic linking of the named library</td>
  *   <td>native code can bypass many security checks of pure Java</td></tr>
  * <tr>
