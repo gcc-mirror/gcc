@@ -353,13 +353,17 @@ tree intQI_type_node;
 tree intHI_type_node;
 tree intSI_type_node;
 tree intDI_type_node;
+#if HOST_BITS_PER_WIDE_INT >= 64
 tree intTI_type_node;
+#endif
 
 tree unsigned_intQI_type_node;
 tree unsigned_intHI_type_node;
 tree unsigned_intSI_type_node;
 tree unsigned_intDI_type_node;
+#if HOST_BITS_PER_WIDE_INT >= 64
 tree unsigned_intTI_type_node;
+#endif
 
 /* a VOID_TYPE node.  */
 
@@ -3531,12 +3535,16 @@ init_decl_processing ()
   intHI_type_node = make_signed_type (GET_MODE_BITSIZE (HImode));
   intSI_type_node = make_signed_type (GET_MODE_BITSIZE (SImode));
   intDI_type_node = make_signed_type (GET_MODE_BITSIZE (DImode));
+#if HOST_BITS_PER_WIDE_INT >= 64
   intTI_type_node = make_signed_type (GET_MODE_BITSIZE (TImode));
+#endif
   unsigned_intQI_type_node = make_unsigned_type (GET_MODE_BITSIZE (QImode));
   unsigned_intHI_type_node = make_unsigned_type (GET_MODE_BITSIZE (HImode));
   unsigned_intSI_type_node = make_unsigned_type (GET_MODE_BITSIZE (SImode));
   unsigned_intDI_type_node = make_unsigned_type (GET_MODE_BITSIZE (DImode));
+#if HOST_BITS_PER_WIDE_INT >= 64
   unsigned_intTI_type_node = make_unsigned_type (GET_MODE_BITSIZE (TImode));
+#endif
 
   float_type_node = make_node (REAL_TYPE);
   TYPE_PRECISION (float_type_node) = FLOAT_TYPE_SIZE;
