@@ -906,14 +906,14 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(neg:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "cpysn %1,%R1,%0"
+  "cpysn %R1,%R1,%0"
   [(set_attr "type" "fpop")])
 
 (define_insn "negdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(neg:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "cpysn %1,%R1,%0"
+  "cpysn %R1,%R1,%0"
   [(set_attr "type" "fpop")])
 
 (define_insn "addsf3"
