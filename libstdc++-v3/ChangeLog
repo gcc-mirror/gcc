@@ -1,5 +1,12 @@
 2002-09-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/locale/gnu/monetary_members.cc
+	(moneypunct<wchar_t, true>::_M_initialize_moneypunct,
+	moneypunct<wchar_t, false>::_M_initialize_moneypunct): Use
+	__uselocale instead of setlocale for glibc 2.3.
+
+2002-09-05  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/locale/generic/c++locale_internal.h: New header.
 	* config/locale/gnu/c++locale_internal.h: New header.
 	* config/locale/gnu/c_locale.cc: Include it.
