@@ -3246,7 +3246,8 @@ redirect_jump (jump, nlabel, delete_unused)
 
   /* If we're eliding the jump over exception cleanups at the end of a
      function, move the function end note so that -Wreturn-type works.  */
-  if (olabel && NEXT_INSN (olabel)
+  if (olabel && nlabel
+      && NEXT_INSN (olabel)
       && GET_CODE (NEXT_INSN (olabel)) == NOTE
       && NOTE_LINE_NUMBER (NEXT_INSN (olabel)) == NOTE_INSN_FUNCTION_END)
     emit_note_after (NOTE_INSN_FUNCTION_END, nlabel);
