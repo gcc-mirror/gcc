@@ -335,6 +335,18 @@ output_long_hexadecimal (output_buffer *buffer, long unsigned int i)
 }
 
 static inline void
+output_long_long_decimal (output_buffer *buffer, long long int i)
+{
+  output_formatted_scalar (buffer, "%lld", i);
+}
+
+void
+output_host_wide_integer (output_buffer *buffer, HOST_WIDE_INT i)
+{
+  output_formatted_scalar (buffer, HOST_WIDE_INT_PRINT_DEC, i);
+}
+
+static inline void
 output_pointer (output_buffer *buffer, void *p)
 {
   output_formatted_scalar (buffer, HOST_PTR_PRINTF, p);
@@ -457,6 +469,8 @@ output_buffer_to_stream (output_buffer *buffer)
    %o: unsigned integer in base eight.
    %x: unsigned integer in base sixteen.
    %ld, %li, %lo, %lu, %lx: long versions of the above.
+   %ll: long long int.
+   %w: and integer of type HOST_WIDE_INT.
    %c: character.
    %s: string.
    %p: pointer.
@@ -542,6 +556,15 @@ output_format (output_buffer *buffer, text_info *text)
               (buffer, va_arg (*text->args_ptr, unsigned int));
 	  break;
 
+        case 'l':
+          if (long_integer)
+            output_long_long_decimal
+              (buffer, va_arg (*text->args_ptr, long long));
+          else
+            /* Sould not happen. */
+            abort();
+          break;
+
 	case 'm':
 	  output_add_string (buffer, xstrerror (text->err_no));
 	  break;
@@ -574,6 +597,11 @@ output_format (output_buffer *buffer, text_info *text)
 	    output_append (buffer, s, s + n);
 	  }
 	  break;
+
+        case 'w':
+          output_host_wide_integer
+            (buffer, va_arg (*text->args_ptr, HOST_WIDE_INT));
+          break;                                   
 
 	default:
 	  if (!buffer->format_decoder
