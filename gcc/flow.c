@@ -485,6 +485,7 @@ static int flow_loop_level_compute	PARAMS ((struct loop *, int));
 static int flow_loops_level_compute	PARAMS ((struct loops *));
 static void delete_dead_jumptables	PARAMS ((void));
 static bool back_edge_of_syntactic_loop_p PARAMS ((basic_block, basic_block));
+static bool need_fake_edge_p		PARAMS ((rtx));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register
@@ -2500,9 +2501,35 @@ commit_edge_insertions ()
     }
 }
 
-/* Add fake edges to the function exit for any non constant calls in
-   the bitmap of blocks specified by BLOCKS or to the whole CFG if
-   BLOCKS is zero.  Return the nuber of blocks that were split.  */
+/* Return true if we need to add fake edge to exit.
+   Helper function for the flow_call_edges_add.  */
+static bool
+need_fake_edge_p (insn)
+     rtx insn;
+{
+  if (!INSN_P (insn))
+    return false;
+
+  if ((GET_CODE (insn) == CALL_INSN
+       && !SIBLING_CALL_P (insn)
+       && !find_reg_note (insn, REG_NORETURN, NULL) && !CONST_CALL_P (insn)))
+    return true;
+
+  return ((GET_CODE (PATTERN (insn)) == ASM_OPERANDS
+	   && MEM_VOLATILE_P (PATTERN (insn)))
+	  || (GET_CODE (PATTERN (insn)) == PARALLEL
+	      && asm_noperands (insn) != -1
+	      && MEM_VOLATILE_P (XVECEXP (PATTERN (insn), 0, 0)))
+	  || GET_CODE (PATTERN (insn)) == ASM_INPUT);
+}
+
+/* Add fake edges to the function exit for any non constant and non noreturn
+   calls, volatile inline assembly in the bitmap of blocks specified by
+   BLOCKS or to the whole CFG if BLOCKS is zero.  Return the nuber of blocks
+   that were split. 
+
+   The goal is to expose cases in which entering a basic block does not imply
+   that all subsequent instructions must be executed.  */
 
 int
 flow_call_edges_add (blocks)
@@ -2512,6 +2539,7 @@ flow_call_edges_add (blocks)
   int blocks_split = 0;
   int bb_num = 0;
   basic_block *bbs;
+  bool check_last_block = false;
 
   /* Map bb indicies into basic block pointers since split_block
      will renumber the basic blocks.  */
@@ -2522,13 +2550,39 @@ flow_call_edges_add (blocks)
     {
       for (i = 0; i < n_basic_blocks; i++)
 	bbs[bb_num++] = BASIC_BLOCK (i);
+      check_last_block = true;
     }
   else
     {
       EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i, 
       {
 	bbs[bb_num++] = BASIC_BLOCK (i);
+	if (i == n_basic_blocks - 1)
+	  check_last_block = true;
       });
+    }
+
+  /* In the last basic block, before epilogue generation, there will be
+     a fallthru edge to EXIT.  Special care is required if the last insn
+     of the last basic block is a call because make_edge folds duplicate
+     edges, which would result in the fallthru edge also being marked
+     fake, which would result in the fallthru edge being removed by 
+     remove_fake_edges, which would result in an invalid CFG.
+
+     Moreover, we can't elide the outgoing fake edge, since the block
+     profiler needs to take this into account in order to solve the minimal
+     spanning tree in the case that the call doesn't return.
+
+     Handle this by adding a dummy instruction in a new last basic block.  */
+  if (check_last_block
+      && need_fake_edge_p (BASIC_BLOCK (n_basic_blocks - 1)->end))
+    {
+       edge e;
+       for (e = BASIC_BLOCK (n_basic_blocks - 1)->succ; e; e = e->succ_next)
+	 if (e->dest == EXIT_BLOCK_PTR)
+	    break;
+       insert_insn_on_edge (gen_rtx_USE (VOIDmode, const0_rtx), e);
+       commit_edge_insertions ();
     }
 
 
@@ -2545,9 +2599,20 @@ flow_call_edges_add (blocks)
       for (insn = bb->end; ; insn = prev_insn)
 	{
 	  prev_insn = PREV_INSN (insn);
-	  if (GET_CODE (insn) == CALL_INSN && ! CONST_CALL_P (insn))
+	  if (need_fake_edge_p (insn))
 	    {
 	      edge e;
+
+	      /* The above condition should be enought to verify that there is
+		 no edge to the exit block in CFG already.  Calling make_edge in
+		 such case would make us to mark that edge as fake and remove it
+		 later.  */
+#ifdef ENABLE_CHECKING
+	      if (insn == bb->end)
+		for (e = bb->succ; e; e = e->succ_next)
+		  if (e->dest == EXIT_BLOCK_PTR)
+		    abort ();
+#endif
 
 	      /* Note that the following may create a new basic block
 		 and renumber the existing basic blocks.  */

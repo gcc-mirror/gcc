@@ -9289,7 +9289,16 @@ try_copy_prop (loop, replacement, regno)
 	  arg.set_seen = 0;
 	  note_stores (PATTERN (insn), note_reg_stored, &arg);
 	  if (arg.set_seen)
-	    break;
+	    {
+	      rtx note = find_reg_note (insn, REG_EQUAL, NULL);
+
+	      /* It is possible that we've turned previously valid REG_EQUAL to
+	         invalid, as we change the REGNO to REPLACEMENT and unlike REGNO,
+	         REPLACEMENT is modified, we get different meaning.  */
+	      if (note && reg_mentioned_p (replacement, XEXP (note, 0)))
+		remove_note (insn, note);
+	      break;
+	    }
 	}
     }
   if (! init_insn)
