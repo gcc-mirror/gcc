@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 1987, 91, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91-95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -17,13 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-
-#ifndef __STDC__
-#ifndef const
-#define const
-#endif
-#endif
 
 /* The default branch cost is 1.  */
 #ifndef BRANCH_COST
