@@ -1,3 +1,8 @@
+2001-06-11  Richard Henderson  <rth@redhat.com>
+
+	* config/linux.h (CPLUSPLUS_CPP_SPEC): Use %(cpp) not $(cpp_cpu).
+	* config/alpha/linux.h (CPLUSPLUS_CPP_SPEC): Likewise.
+
 2001-06-11  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config/rs6000/linux.h (CPLUSPLUS_CPP_SPEC): New.
