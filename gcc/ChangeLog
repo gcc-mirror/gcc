@@ -1,3 +1,11 @@
+2004-06-09  Steven Bosscher  <stevenb@suse.de>
+
+	* config/i386/k6.md: Rewrite using the DFA model.
+	* config/i386/i386.c (ix86_adjust_cost): Don't increase the
+	cost of load-operation insns for the K6.
+	(ia32_use_dfa_pipeline_interface): Add TARGET_K6.
+	(ia32_multipass_dfa_lookahead): Likewise.
+
 2004-06-09  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_gimplify_va_arg_1,
@@ -131,8 +139,8 @@
 
 2004-06-08  Jeff Law  <law@redhat.com>
 
-        * doc/contrib.texi: Add entries for Stefan Olsson and
-        Ola Ronnerup.
+	* doc/contrib.texi: Add entries for Stefan Olsson and
+	Ola Ronnerup.
 
 2004-06-08  DJ Delorie  <dj@redhat.com>
 
@@ -155,13 +163,13 @@
 
 2004-06-08  Richard Henderson  <rth@redhat.com>
 
-        * gimple-low.c (struct lower_data): Replace the_return_label and
-        one_return_stmt with return_statements.
-        (lower_function_body): Process the entire list of return_statements.
-        (lower_return_expr): Check source value before unifying return_exprs.   
-        * gimplify.c (gimplify_return_expr): Force the use of a temporary
-        for !aggregate_value_p.
-        * tree-gimple.c: Update RETURN_EXPR grammer.
+	* gimple-low.c (struct lower_data): Replace the_return_label and
+	one_return_stmt with return_statements.
+	(lower_function_body): Process the entire list of return_statements.
+	(lower_return_expr): Check source value before unifying return_exprs.   
+	* gimplify.c (gimplify_return_expr): Force the use of a temporary
+	for !aggregate_value_p.
+	* tree-gimple.c: Update RETURN_EXPR grammer.
 
 2004-06-08  Vladimir Makarov  <vmakarov@redhat.com>
 
