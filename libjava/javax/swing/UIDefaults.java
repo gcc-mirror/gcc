@@ -128,7 +128,7 @@ public class UIDefaults extends Hashtable
     throw new Error("not implemented");
   }
 
-  void putDefaults(Object[] list)
+  public void putDefaults(Object[] list)
   {
     throw new Error("not implemented");
   }

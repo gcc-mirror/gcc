@@ -1,3 +1,8 @@
+2003-10-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/UIDefaults.java (putDefaults):
+	Readded accidently removed "public" modifier.
+
 2003-10-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	* interpret.cc (_Jv_InterpMethod::run): Don't
