@@ -106,7 +106,7 @@ static struct operation lex PARAMS ((cpp_reader *, int));
 struct operation
 {
   short op;
-  U_CHAR rprio; /* Priority of op (relative to it right operand).  */
+  U_CHAR prio; /* Priority of op (relative to it right operand).  */
   U_CHAR flags;
   U_CHAR unsignedp;    /* true if value should be treated as unsigned */
   HOST_WIDEST_INT value;        /* The value logically "right" of op.  */
@@ -636,32 +636,60 @@ right_shift (pfile, a, unsignedp, b)
     return a >> b;
 }
 
-/* These priorities are all even, so we can handle associatively.  */
-#define PAREN_INNER_PRIO 2
-#define COMMA_PRIO 4
-#define COND_PRIO (COMMA_PRIO+2)
-#define OROR_PRIO (COND_PRIO+2)
-#define ANDAND_PRIO (OROR_PRIO+2)
-#define OR_PRIO (ANDAND_PRIO+2)
-#define XOR_PRIO (OR_PRIO+2)
-#define AND_PRIO (XOR_PRIO+2)
-#define EQUAL_PRIO (AND_PRIO+2)
-#define LESS_PRIO (EQUAL_PRIO+2)
-#define SHIFT_PRIO (LESS_PRIO+2)
-#define PLUS_PRIO (SHIFT_PRIO+2)
-#define MUL_PRIO (PLUS_PRIO+2)
-#define UNARY_PRIO (MUL_PRIO+2)
-#define PAREN_OUTER_PRIO (UNARY_PRIO+2)
+/* Operator precedence table.
+
+After an operator is returned from the lexer, if it has priority less
+than or equal to the operator on the top of the stack, we reduce the
+stack one operator and repeat the test.  As equal priorities reduce,
+this is naturally left-associative.
+
+We handle right-associative operators by clearing the lower bit of all
+left-associative operators, and setting it for right-associative ones.
+After the reduction phase, when an operator is pushed onto the stack,
+its RIGHT_ASSOC bit is cleared.  This means that at reduction time, a
+right-associative operator of otherwise equal precedence to the
+operator on the top of the stack will have a greater priority by 1,
+avoiding a reduction pass and making the logic right-associative.
+
+The remaining cases are '(' and ')'.  We handle '(' by skipping the
+reduction phase completely.  ')' is given lower priority than
+everything else, including '(', effectively forcing a reduction of the
+parenthesised expression.  If there is no matching '(', the expression
+will be reduced to the beginning, the ')' pushed, and the reduction
+pass forced by the next ')', or the end of the expression, will meet
+it and output an appropriate error message.  */
+
+#define RIGHT_ASSOC               1
+#define PREVENT_REDUCE_PRIO (0 << 1)
+#define FORCE_REDUCE_PRIO   (1 << 1)
+#define CLOSE_PAREN_PRIO    (2 << 1)
+#define OPEN_PAREN_PRIO     (3 << 1)
+#define COMMA_PRIO          (4 << 1)
+#define COND_PRIO          ((5 << 1) + RIGHT_ASSOC)
+#define COLON_PRIO          (6 << 1)
+#define OROR_PRIO           (7 << 1)
+#define ANDAND_PRIO         (8 << 1)
+#define OR_PRIO             (9 << 1)
+#define XOR_PRIO           (10 << 1)
+#define AND_PRIO           (11 << 1)
+#define EQUAL_PRIO         (12 << 1)
+#define LESS_PRIO          (13 << 1)
+#define SHIFT_PRIO         (14 << 1)
+#define PLUS_PRIO          (15 << 1)
+#define MUL_PRIO           (16 << 1)
+#define UNARY_PRIO        ((17 << 1) + RIGHT_ASSOC)
 
 #define LEFT_OPERAND_REQUIRED 1
 #define RIGHT_OPERAND_REQUIRED 2
 #define HAVE_VALUE 4
-#define SIGN_QUALIFIED 8
 
 #define COMPARE(OP) \
   top->unsignedp = 0;\
   top->value = (unsigned1 || unsigned2) \
   ? (unsigned HOST_WIDEST_INT) v1 OP (unsigned HOST_WIDEST_INT) v2 : (v1 OP v2)
+#define LOGICAL(OP) \
+	      top->value = v1 OP v2;\
+	      top->unsignedp = unsigned1 || unsigned2;
 
 /* Parse and evaluate a C expression, reading from PFILE.
    Returns the truth value of the expression.  */
@@ -685,16 +713,16 @@ _cpp_parse_expr (pfile)
   struct operation *stack = init_stack;
   struct operation *limit = stack + INIT_STACK_SIZE;
   register struct operation *top = stack;
-  unsigned int lprio, rprio = 0;
   int skip_evaluation = 0;
   long old_written = CPP_WRITTEN (pfile);
   int result;
 
   pfile->parsing_if_directive++;
-  top->rprio = 0;
+  top->prio = PREVENT_REDUCE_PRIO;
   top->flags = 0;
   for (;;)
     {
+      unsigned int prio;
       struct operation op;
       U_CHAR flags = 0;
 
@@ -730,59 +758,47 @@ _cpp_parse_expr (pfile)
 	  continue;
 
 	case '+':  case '-':
-	  lprio = PLUS_PRIO;
+	  prio = PLUS_PRIO;
 	  if (top->flags & HAVE_VALUE)
 	      break;
-	  if (top->flags & SIGN_QUALIFIED)
-	    {
-	      cpp_error (pfile, "more than one sign operator given");
-	      goto syntax_error;
-	    }
-	  flags = SIGN_QUALIFIED;
 	  /* else fall through */
 	case '!':  case '~':
 	  flags |= RIGHT_OPERAND_REQUIRED;
-	  rprio = UNARY_PRIO;  lprio = rprio + 1;  goto maybe_reduce;
+	  prio = UNARY_PRIO;  goto maybe_reduce;
 
-	case '*':  case '/':  case '%':
-	  lprio = MUL_PRIO;  break;
-	case '<':  case '>':  case LEQ:  case GEQ:
-	  lprio = LESS_PRIO;  break;
-	case EQUAL:  case NOTEQUAL:
-	  lprio = EQUAL_PRIO;  break;
-	case LSH:  case RSH:
-	  lprio = SHIFT_PRIO;  break;
-	case '&':  lprio = AND_PRIO;  break;
-	case '^':  lprio = XOR_PRIO;  break;
-	case '|':  lprio = OR_PRIO;  break;
-	case ANDAND:  lprio = ANDAND_PRIO;  break;
-	case OROR:  lprio = OROR_PRIO;  break;
-	case ',':
-	  lprio = COMMA_PRIO;  break;
-	case '(':
-	  lprio = PAREN_OUTER_PRIO;  rprio = PAREN_INNER_PRIO + 1;
-	  goto skip_reduction;
+	case '*':
+	case '/':
+	case '%':    prio = MUL_PRIO;  break;
+	case '<':
+	case '>':
+	case LEQ:
+	case GEQ:    prio = LESS_PRIO;  break;
+	case NOTEQUAL:
+	case EQUAL:  prio = EQUAL_PRIO;  break;
+	case LSH:
+	case RSH:    prio = SHIFT_PRIO;  break;
+	case '&':    prio = AND_PRIO;  break;
+	case '^':    prio = XOR_PRIO;  break;
+	case '|':    prio = OR_PRIO;  break;
+	case ANDAND: prio = ANDAND_PRIO;  break;
+	case OROR:   prio = OROR_PRIO;  break;
+	case ',':    prio = COMMA_PRIO;  break;
+	case '(':    prio = OPEN_PAREN_PRIO;  goto skip_reduction;
 	case ')':
-	  lprio = PAREN_INNER_PRIO;  rprio = PAREN_OUTER_PRIO;
+	  prio = CLOSE_PAREN_PRIO;
 	  flags = HAVE_VALUE;	/* At least, we will have after reduction.  */
 	  goto maybe_reduce;
-        case ':':
-	  lprio = COND_PRIO;  rprio = COND_PRIO + 1;
-	  goto maybe_reduce;
-        case '?':
-	  lprio = COND_PRIO;  rprio = COND_PRIO;
-	  goto maybe_reduce;
-	case 0:
-	  lprio = 0;  goto maybe_reduce;
+        case ':':    prio = COLON_PRIO;  goto maybe_reduce;
+        case '?':    prio = COND_PRIO;   goto maybe_reduce;
+	case 0:      prio = FORCE_REDUCE_PRIO;  goto maybe_reduce;
 	}
 
       /* Binary operation.  */
       flags = LEFT_OPERAND_REQUIRED|RIGHT_OPERAND_REQUIRED;
-      rprio = lprio + 1;
 
     maybe_reduce:
-      /* Push an operator, and check if we can reduce now.  */
-      while (top->rprio > lprio)
+      /* Check for reductions.  Then push the operator.  */
+      while (prio <= top->prio)
 	{
 	  HOST_WIDEST_INT v1 = top[-1].value, v2 = top[0].value;
 	  unsigned int unsigned1 = top[-1].unsignedp;
@@ -932,9 +948,6 @@ _cpp_parse_expr (pfile)
 	      else
 		top->value = right_shift (pfile, v1, unsigned1, v2);
 	      break;
-#define LOGICAL(OP) \
-	      top->value = v1 OP v2;\
-	      top->unsignedp = unsigned1 || unsigned2;
 	    case '&':  LOGICAL(&); break;
 	    case '^':  LOGICAL(^);  break;
 	    case '|':  LOGICAL(|);  break;
@@ -953,7 +966,7 @@ _cpp_parse_expr (pfile)
 	      top->unsignedp = unsigned2;
 	      break;
 	    case '?':
-	      cpp_error (pfile, "syntax error in #if");
+	      cpp_error (pfile, "syntax error '?' without following ':'");
 	      goto syntax_error;
 	    case ':':
 	      if (top[0].op != '?')
@@ -1027,7 +1040,7 @@ _cpp_parse_expr (pfile)
 	}
       
       top->flags = flags;
-      top->rprio = rprio;
+      top->prio = prio & ~RIGHT_ASSOC;
       top->op = op.op;
 
       /* Handle short circuiting.  */
