@@ -8834,6 +8834,7 @@ simplify_comparison (code, pop0, pop1)
 	    {
 	      const_op = 0, op1 = const0_rtx;
 	      code = LT;
+	      break;
 	    }
 	  else
 	    break;
