@@ -1,5 +1,36 @@
 2005-03-30  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/c4x/c4x-protos.h (c4x_rpts_cycles, c4x_cpu_version): Delete.
+	* config/c4x/c4x.h (SMALL_MEMORY_FLAG, MPYI_FLAG, FAST_FIX_FLAG)
+	(RPTS_FLAG, C3X_FLAG, TI_FLAG, PARANOID_FLAG, MEMPARM_FLAG, DEVEL_FLAG)
+	(RPTB_FLAG, BK_FLAG, DB_FLAG, DEBUG_FLAG, HOIST_FLAG)
+	(LOOP_UNSIGNED_FLAG, FORCE_FLAG, PRESERVE_FLOAT_FLAG)
+	(PARALLEL_INSN_FLAG, PARALLEL_MPY_FLAG, ALIASES_FLAG, C30_FLAG)
+	(C31_FLAG, C32_FLAG, C33_FLAG, C40_FLAG, C44_FLAG, TARGET_SWITCHES)
+	(TARGET_DEFAULT, TARGET_SMALL, TARGET_MPYI, TARGET_FAST_FIX)
+	(TARGET_RPTS, TARGET_TI, TARGET_PARANOID, TARGET_MEMPARM, TARGET_DEVEL)
+	(TARGET_RPTB, TARGET_BK, TARGET_DB, TARGET_DEBUG, TARGET_HOIST)
+	(TARGET_LOOP_UNSIGNED, TARGET_FORCE, TARGET_PRESERVE_FLOAT)
+	(TARGET_PARALLEL, TARGET_PARALLEL_MPY, TARGET_ALIASES)
+	(c4x_rpts_cycles_string, c4x_cpu_version_string)
+	(TARGET_OPTIONS): Delete.
+	(c4x_rpts_cycles, c4x_cpu_version): Declare.
+	(TARGET_C3X, TARGET_C30, TARGET_C31, TARGET_C32, TARGET_C33)
+	(TARGET_C40, TARGET_C44): Redefine in terms of c4x_cpu_version.
+	* config/c4x/c4x.c (c4x_rpts_cycles_string): Delete.
+	(c4x_cpu_version_string): Delete.
+	(TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION): Override defaults.
+	(c4x_handle_option): New function.  Map -m3x and -m4x options to the
+	equivalent -mcpu= option.
+	(c4x_override_options): Remove -mrpts= and -mcpu= handling from here.
+	Deal with the extra conditions in the old TARGET_MPYI, TARGET_RPTB,
+	TARGET_DB, TARGET_PARALLEL and TARGET_PARALLEL_MPY macros by setting
+	or clearing the appropriate MASK_* bit.
+	(c4x_file_start): Use c4x_cpu_version.
+	* config/c4x/c4x.opt: New file.
+
+2005-03-30  Richard Sandiford  <rsandifo@redhat.com>
+
 	* doc/options.texi: Document the new MaskExists flag.
 	* opth-gen.awk: Don't output MASK and TARGET macros for Mask(...)
 	if the option has the MaskExists flag.

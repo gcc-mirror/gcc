@@ -274,9 +274,6 @@ extern GTY(()) rtx c4x_compare_op1;	/* Operand 1 for comparisons.  */
 extern enum reg_class c4x_regclass_map[FIRST_PSEUDO_REGISTER];
 extern enum machine_mode c4x_caller_save_map[FIRST_PSEUDO_REGISTER];
 
-extern int c4x_rpts_cycles;	        /* Max cycles for RPTS.  */
-extern int c4x_cpu_version;		/* Cpu version C30/31/32/40/44.  */
-
 extern void c4x_pr_CODE_SECTION (struct cpp_reader *);
 extern void c4x_pr_DATA_SECTION (struct cpp_reader *);
 extern void c4x_pr_FUNC_IS_PURE (struct cpp_reader *);
