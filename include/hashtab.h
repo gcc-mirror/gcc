@@ -1,5 +1,5 @@
 /* An expandable hash tables datatype.  
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov (vmakarov@cygnus.com).
 
 This program is free software; you can redistribute it and/or modify
@@ -38,10 +38,13 @@ extern "C" {
 
 #include <ansidecl.h>
 
+/* The type for a hash code.  */
+typedef unsigned int hashval_t;
+
 /* Callback function pointer types.  */
 
 /* Calculate hash of a table entry.  */
-typedef unsigned int (*htab_hash) PARAMS ((const void *));
+typedef hashval_t (*htab_hash) PARAMS ((const void *));
 
 /* Compare a table entry with a possible entry.  The entry already in
    the table always comes first, so the second element can be of a
@@ -109,9 +112,9 @@ extern void	htab_empty	PARAMS ((htab_t));
 extern void    *htab_find	PARAMS ((htab_t, const void *));
 extern void   **htab_find_slot	PARAMS ((htab_t, const void *, int));
 extern void    *htab_find_with_hash		PARAMS ((htab_t, const void *,
-							 unsigned int));
+							 hashval_t));
 extern void   **htab_find_slot_with_hash	PARAMS ((htab_t, const void *,
-							 unsigned int, int));
+							 hashval_t, int));
 extern void	htab_clear_slot	PARAMS ((htab_t, void **));
 extern void	htab_remove_elt	PARAMS ((htab_t, void *));
 

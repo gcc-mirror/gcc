@@ -1,3 +1,10 @@
+2000-03-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* hashtab.c (find_empty_slot_for_expand): Use hashval_t for hash
+	codes.
+	(htab_find_with_hash): Likewise.
+	(htab_find_slot_with_hash): Likewise.
+	
 2000-03-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* hashtab.c (htab_find_with_hash): Avoid calculating hash2

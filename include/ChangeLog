@@ -1,3 +1,9 @@
+2000-03-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* hashtab.h (hashval_t): New type.
+	(htab_find_with_hash): Use it as an argument.
+	(htab_find_slot_with_hash): Likewise.
+
 2000-03-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* hashtab.h (htab_trav): Modify type so that first arg is of type
