@@ -1,3 +1,12 @@
+2004-07-18  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/16465
+	* gfortran.dg/g77//ffixed-line-length-0.f,
+	gfortran.dg/g77/ffixed-line-length-132.f,
+	gfortran.dg/g77/ffixed-line-length-72.f,
+	gfortran.dg/g77/ffixed-line-length-none.f: Copy from g77.dg.
+	gfortran.dg/g77/README: Update.
+
 2004-07-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13092
