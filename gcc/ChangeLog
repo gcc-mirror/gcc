@@ -1,5 +1,11 @@
 2002-11-29  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (movsi_h8300hs): Change the order of
+	alternatives to correct the length when the memory operand is
+	either pre_dec or post_inc.
+
+2002-11-29  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (an anonymous pattern): Give an
 	internal name *tst_extzv_bitqi_1_n.
 	Accept bit_operand instead of bit_memory_operand.
