@@ -1,3 +1,8 @@
+2003-11-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md: Fix warnings by replacing -2147483648
+	with -2147483647 - 1.
+
 2003-11-16  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	Fix links in online manuals.
