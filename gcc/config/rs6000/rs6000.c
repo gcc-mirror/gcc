@@ -5177,6 +5177,23 @@ rs6000_darwin64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	  }
       break;
 
+    case UNION_TYPE:
+      tot = rs6000_arg_size (mode, type);
+      if (tot <= 0)
+	return NULL_RTX;
+      bytepos = 0;
+
+      for (j = 0; j < tot; ++j)
+	{
+	  sub = gen_rtx_REG ((TARGET_64BIT ? DImode : SImode), GP_ARG_MIN_REG + cum->words++);
+	  roffset = gen_rtx_CONST_INT (SImode, bytepos);
+	  rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, sub, roffset);
+	  if (cum->words >= GP_ARG_NUM_REG)
+	    break;
+	  bytepos += (TARGET_64BIT ? 8 : 4);
+	}
+      break;
+
     case ARRAY_TYPE:
       tot = int_size_in_bytes (type);
       if (tot <= 0)
@@ -5340,6 +5357,18 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       return GEN_INT (cum->call_cookie);
     }
 
+  if (mode == BLKmode
+      && rs6000_darwin64_abi
+      && (TREE_CODE (type) == RECORD_TYPE
+	  || TREE_CODE (type) == UNION_TYPE
+	  || TREE_CODE (type) == ARRAY_TYPE))
+    {
+      rtx rslt = rs6000_darwin64_function_arg (cum, mode, type, named);
+      if (rslt != NULL_RTX)
+	return rslt;
+      /* Else fall through to usual handling.  */
+    }
+
   if (USE_ALTIVEC_FOR_ARG_P (cum, mode, type, named))
     if (TARGET_64BIT && ! cum->prototype)
       {
@@ -5413,12 +5442,6 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	       || (TARGET_E500_DOUBLE && (mode == DFmode
 					  || mode == DCmode))))
     return rs6000_spe_function_arg (cum, mode, type);
-
-  else if (rs6000_darwin64_abi
-	   && mode == BLKmode
-	   && (TREE_CODE (type) == RECORD_TYPE
-	       || TREE_CODE (type) == ARRAY_TYPE))
-    return rs6000_darwin64_function_arg (cum, mode, type, named);
 
   else if (abi == ABI_V4)
     {
