@@ -5200,10 +5200,12 @@ register_incomplete_type (kind, wfl, decl, ptr)
   JDEP_MISC (new) = NULL_TREE;
   /* For some dependencies, set the enclosing class of the current
      class to be the enclosing context */
-  if ((kind == JDEP_SUPER || kind == JDEP_INTERFACE 
-       || kind == JDEP_ANONYMOUS)
+  if ((kind == JDEP_INTERFACE  || kind == JDEP_ANONYMOUS)
       && GET_ENCLOSING_CPC ())
     JDEP_ENCLOSING (new) = TREE_VALUE (GET_ENCLOSING_CPC ());
+  else if (kind == JDEP_SUPER)
+    JDEP_ENCLOSING (new) = (GET_ENCLOSING_CPC () ? 
+			    TREE_VALUE (GET_ENCLOSING_CPC ()) : NULL_TREE);
   else
     JDEP_ENCLOSING (new) = GET_CPC ();
   JDEP_GET_PATCH (new) = (tree *)NULL;
@@ -10255,7 +10257,8 @@ patch_method_invocation (patch, primary, where, from_super,
       /* Check for inner classes creation from illegal contexts */
       if (lc && (INNER_CLASS_TYPE_P (class_to_search)
 		 && !CLASS_STATIC (TYPE_NAME (class_to_search)))
-	  && INNER_ENCLOSING_SCOPE_CHECK (class_to_search))
+	  && INNER_ENCLOSING_SCOPE_CHECK (class_to_search)
+	  && !DECL_INIT_P (current_function_decl))
 	{
 	  parse_error_context 
 	    (wfl, "No enclosing instance for inner class `%s' is in scope%s",
@@ -14437,9 +14440,14 @@ patch_cast (node, wfl_op)
      tree wfl_op;
 {
   tree op = TREE_OPERAND (node, 0);
-  tree op_type = TREE_TYPE (op);
   tree cast_type = TREE_TYPE (node);
+  tree patched, op_type;
   char *t1;
+
+  /* Some string patching might be necessary at this stage */
+  if ((patched = patch_string (op)))
+    TREE_OPERAND (node, 0) = op = patched;
+  op_type = TREE_TYPE (op);
 
   /* First resolve OP_TYPE if unresolved */
   if (!(cast_type = resolve_type_during_patch (cast_type)))
