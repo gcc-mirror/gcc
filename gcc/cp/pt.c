@@ -5318,7 +5318,11 @@ instantiate_class_template (tree type)
 		     restore these.  */
 		  input_location = DECL_SOURCE_LOCATION (t);
 
+		  if (TREE_CODE (t) == TEMPLATE_DECL)
+		    processing_template_decl++;
 		  r = tsubst (t, args, tf_error | tf_warning, NULL_TREE);
+		  if (TREE_CODE (t) == TEMPLATE_DECL)
+		    processing_template_decl--;
 		  if (TREE_CODE (r) == VAR_DECL)
 		    {
 		      tree init;
@@ -7140,22 +7144,13 @@ tsubst_qualified_id (tree qualified_id, tree args,
   else
     expr = name;
 
-  /* This case can occur while determining which of two templates is
-     the more specialized.  After performing argument deduction, we
-     check that no invalid types are created.  During that phase, we
-     may seem uninstantiated template parameters.  */
-  if (TREE_CODE (scope) == BOUND_TEMPLATE_TEMPLATE_PARM)
-    {
-      if (is_template)
-	expr = lookup_template_function (expr, template_args);
-      return build_nt (SCOPE_REF, scope, expr);
-    }
-
+  my_friendly_assert (!dependent_type_p (scope), 20030729);
+  
   if (!BASELINK_P (name) && !DECL_P (expr))
     expr = lookup_qualified_name (scope, expr, /*is_type_p=*/0, false);
+  
   if (DECL_P (expr))
-    check_accessibility_of_qualified_id (expr, 
-					 /*object_type=*/NULL_TREE,
+    check_accessibility_of_qualified_id (expr, /*object_type=*/NULL_TREE,
 					 scope);
   
   /* Remember that there was a reference to this entity.  */
