@@ -1,3 +1,10 @@
+Sun Apr 19 17:58:01 1998  Peter Jeremy  <peter.jeremy@alcatel.com.au>
+
+	* expr.c (do_jump_by_parts_equality_rtx): Now public.
+	* expmed.c (do_cmp_and_jump): New function.
+	(expand_divmod): Use do_cmp_and_jmp instead of emit_cmp_insn and
+	emit_jump_insn.
+
 Sun Apr 19 07:48:37 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-decl.c (pushdecl): Avoid duplicate warning about implicit redecl.
