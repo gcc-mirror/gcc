@@ -230,6 +230,9 @@
 /* Define if you have the mkdir function.  */
 #undef HAVE_MKDIR
 
+/* Define if you have the nl_langinfo function.  */
+#undef HAVE_NL_LANGINFO
+
 /* Define if you have the open function.  */
 #undef HAVE_OPEN
 
@@ -298,6 +301,9 @@
 
 /* Define if you have the <inttypes.h> header file.  */
 #undef HAVE_INTTYPES_H
+
+/* Define if you have the <langinfo.h> header file.  */
+#undef HAVE_LANGINFO_H
 
 /* Define if you have the <netdb.h> header file.  */
 #undef HAVE_NETDB_H

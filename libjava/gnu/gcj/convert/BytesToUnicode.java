@@ -52,7 +52,14 @@ public abstract class BytesToUnicode extends IOConverter
       }
     catch (Throwable ex)
       {
-	return new Input_8859_1();
+	try
+	  {
+	    return new Input_iconv (System.getProperty ("file.encoding"));
+	  }
+	catch (Throwable ex2)
+	  {
+	    return new Input_8859_1();
+	  }
       }
   }
 
