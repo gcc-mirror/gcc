@@ -18,7 +18,8 @@ struct A {
     template<int N2, class T, int N3>
     static void f(B<N2,T>, B<N3,T> b)
     {
-        D<N2,N3,N>::E::f(b);
+        typedef typename D<N2,N3,N>::E E;
+	E::f(b);
     }
 };
 
