@@ -1,3 +1,8 @@
+2001-09-17  Jeff Sturm  <jsturm@one-point.com>
+
+	* gnu/gcj/convert/UnicodeToBytes.java (write): Write work buffer
+	starting from zero offset.
+
 2001-08-19  Release Manager
 
 	* GCC 3.0.1 Released.

@@ -120,6 +120,6 @@ public abstract class UnicodeToBytes extends IOConverter
       work = new char[inlength];
     int srcEnd = inpos + (inlength > work.length ? work.length : inlength);
     str.getChars(inpos, srcEnd, work, 0);
-    return write(work, inpos, inlength);
+    return write(work, 0, srcEnd - inpos);
   }
 }
