@@ -1,3 +1,8 @@
+2001-03-19  Per Bothner  <per@bothner.com>
+
+	* java/net/URLStreamHandler.java (parseURL):  Fix bug which would
+	"canonicalize" "../../xxx" to "/xxx".
+
 2001-03-17  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natString.cc (rehash): Don't bother with memset;
