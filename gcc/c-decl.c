@@ -2385,6 +2385,15 @@ redeclaration_error_message (newdecl, olddecl)
     {
       if (flag_traditional && TREE_TYPE (newdecl) == TREE_TYPE (olddecl))
 	return 0;
+      /* pushdecl creates distinct types for TYPE_DECLs by calling
+	 build_type_copy, so the above comparison generally fails.  We do
+	 another test against the TYPE_MAIN_VARIANT of the olddecl, which
+	 is equivalent to what this code used to do before the build_type_copy
+	 call.  The variant type distinction should not matter for traditional
+	 code, because it doesn't have type qualifiers.  */
+      if (flag_traditional 
+	  && TYPE_MAIN_VARIANT (TREE_TYPE (olddecl)) == TREE_TYPE (newdecl))
+	return 0;
       if (DECL_IN_SYSTEM_HEADER (olddecl) || DECL_IN_SYSTEM_HEADER (newdecl))
 	return 0;
       return "redefinition of `%s'";
