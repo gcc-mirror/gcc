@@ -1,3 +1,9 @@
+2001-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* crtstuff.c (init_dummy): Use CRT_END_INIT_DUMMY if defined.
+	Remove ia32 linux PIC kludge and move it...
+	* config/i386/linux.h (CRT_END_INIT_DUMMY): ...here.
+
 Mon Mar 19 18:53:54 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (absdf2 expander): Fix 64bit case.

@@ -414,20 +414,8 @@ init_dummy (void)
   FORCE_INIT_SECTION_ALIGN;
 #endif
   asm (TEXT_SECTION_ASM_OP);
-
-/* This is a kludge. The i386 GNU/Linux dynamic linker needs ___brk_addr,
-   __environ and atexit (). We have to make sure they are in the .dynsym
-   section. We accomplish it by making a dummy call here. This
-   code is never reached.  */
- 
-#if defined(__linux__) && defined(__PIC__) && defined(__i386__)
-  {
-    extern void *___brk_addr;
-    extern char **__environ;
-
-    ___brk_addr = __environ;
-    atexit (0);
-  }
+#ifdef CRT_END_INIT_DUMMY
+  CRT_END_INIT_DUMMY;
 #endif
 }
 
