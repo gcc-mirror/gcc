@@ -1,3 +1,7 @@
+2002-11-18  Release Manager
+
+	* GCC 3.2.1 Released.
+
 Sat Nov 16 02:54:29 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* jump.c (tablejump_p): New.
