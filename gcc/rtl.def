@@ -355,8 +355,9 @@ DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "iuueiee0", 'i')
 /* An instruction that can possibly call a subroutine
    but which will not change which instruction comes next
    in the current function.
-   Fields ( rtx->fld[] ) have exact same meaning as INSN's.  */
-DEF_RTL_EXPR(CALL_INSN, "call_insn", "iuueiee", 'i')
+   Field ( rtx->fld[7] ) is CALL_INSN_FUNCTION_USAGE.
+   All other fields ( rtx->fld[] ) have exact same meaning as INSN's.  */
+DEF_RTL_EXPR(CALL_INSN, "call_insn", "iuueieee", 'i')
 
 /* A marker that indicates that control will not flow through.  */
 DEF_RTL_EXPR(BARRIER, "barrier", "iuu", 'x')
