@@ -15,7 +15,8 @@ toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
 
 ## We don't use `libz.la' because we don't want to conflict with a
 ## system library of that name.
-toolexeclib_LTLIBRARIES = libzgcj.la
+toolexeclib_LTLIBRARIES = @target_all@
+EXTRA_LTLIBRARIES = libzgcj.la
 
 libzgcj_la_SOURCES = adler32.c compress.c crc32.c deflate.c deflate.h \
 gzio.c infblock.c infblock.h infcodes.c infcodes.h inffast.c inffast.h \

@@ -79,6 +79,7 @@ PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 USE_SYMBOL_UNDERSCORE = @USE_SYMBOL_UNDERSCORE@
 VERSION = @VERSION@
+target_all = @target_all@
 zlib_basedir = @zlib_basedir@
 
 AUTOMAKE_OPTIONS = cygnus
@@ -94,7 +95,8 @@ MULTICLEAN = true
 toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
 
-toolexeclib_LTLIBRARIES = libzgcj.la
+toolexeclib_LTLIBRARIES = @target_all@
+EXTRA_LTLIBRARIES = libzgcj.la
 
 libzgcj_la_SOURCES = adler32.c compress.c crc32.c deflate.c deflate.h \
 gzio.c infblock.c infblock.h infcodes.c infcodes.h inffast.c inffast.h \
@@ -215,7 +217,7 @@ distclean-libtool:
 maintainer-clean-libtool:
 
 libzgcj.la: $(libzgcj_la_OBJECTS) $(libzgcj_la_DEPENDENCIES)
-	$(LINK) -rpath $(toolexeclibdir) $(libzgcj_la_LDFLAGS) $(libzgcj_la_OBJECTS) $(libzgcj_la_LIBADD) $(LIBS)
+	$(LINK)  $(libzgcj_la_LDFLAGS) $(libzgcj_la_OBJECTS) $(libzgcj_la_LIBADD) $(LIBS)
 
 tags: TAGS
 
