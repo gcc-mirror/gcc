@@ -1,3 +1,8 @@
+2002-06-22  Peter Breitenlohner <peb@mppmu.mpg.de>
+
+	* Makefile.in (install_to_libdir): Add $(DESTDIR).
+	(install_to_tooldir): Likewise.
+
 2002-06-17  Douglas Rupp  <rupp@gnat.com>
 
 	* lbasename.c: Add 2002 to copyright.
