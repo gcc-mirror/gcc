@@ -1,3 +1,9 @@
+Fri Jul  9 10:48:28 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* loop.c (check_dbra_loop): When reversing a loop, delete all
+	REG_EQUAL notes referencing the reversed biv except those which are
+	for a giv based on it.
+
 Fri Jul  9 03:51:52 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Drop "gcc-" prefix from version #.
