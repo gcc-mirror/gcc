@@ -57,6 +57,7 @@ static void expand_java_array_length PARAMS ((void));
 static tree build_java_monitor PARAMS ((tree, tree));
 static void expand_java_pushc PARAMS ((int, tree));
 static void expand_java_return PARAMS ((tree));
+static void expand_load_internal PARAMS ((int, tree, int));
 static void expand_java_NEW PARAMS ((tree));
 static void expand_java_INSTANCEOF PARAMS ((tree));
 static void expand_java_CHECKCAST PARAMS ((tree));
@@ -1084,6 +1085,32 @@ expand_java_return (type)
       TREE_SIDE_EFFECTS (retval) = 1;
       expand_return (retval);
     }
+}
+
+static void
+expand_load_internal (index, type, pc)
+     int index;
+     tree type;
+     int pc;
+{
+  tree copy;
+  tree var = find_local_variable (index, type, pc);
+
+  /* Now VAR is the VAR_DECL (or PARM_DECL) that we are going to push
+     on the stack.  If there is an assignment to this VAR_DECL between
+     the stack push and the use, then the wrong code could be
+     generated.  To avoid this we create a new local and copy our
+     value into it.  Then we push this new local on the stack.
+     Hopefully this all gets optimized out.  */
+  copy = build_decl (VAR_DECL, NULL_TREE, type);
+  DECL_CONTEXT (copy) = current_function_decl;
+  layout_decl (copy, 0);
+  DECL_REGISTER (copy) = 1;
+  expand_decl (copy);
+  MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (copy);
+  DECL_INITIAL (copy) = var;
+  expand_decl_init (copy);
+  push_value (copy);
 }
 
 tree
@@ -2841,7 +2868,7 @@ process_jvm_instruction (PC, byte_ops, length)
 
 /* internal macro added for use by the WIDE case */
 #define LOAD_INTERNAL(OPTYPE, OPVALUE) \
-  push_value (find_local_variable (OPVALUE, type_map[OPVALUE], oldpc));
+  expand_load_internal (OPVALUE, type_map[OPVALUE], oldpc);
 
 /* Push local variable onto the opcode stack. */
 #define LOAD(OPERAND_TYPE, OPERAND_VALUE) \
