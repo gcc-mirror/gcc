@@ -6,8 +6,6 @@
    Darwin ABI support (c) 2001 John Hornkvist
    AIX ABI support (c) 2002 Free Software Foundation, Inc.
 
-   $Id: ffi_darwin.c,v 1.4 2002/03/07 18:24:42 dje Exp $
-
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
    ``Software''), to deal in the Software without restriction, including
@@ -412,38 +410,40 @@ typedef struct aix_fd_struct {
                   +---------------------------------------+ 20
                   | saved TOC pointer 4                   | 
                   +---------------------------------------+ 24
-                  | always reserved 8*4=32  (revious GPRs)| 
+                  | always reserved 8*4=32 (previous GPRs)| 
                   | according to the linkage convention   |
-                  | from AIX			          |
+                  | from AIX                              |
                   +---------------------------------------+ 56
-                  | our FPR area 13*8=104   		  |
-                  | f1				   	  |
-                  | .	       				  |
-                  | f13    	        		  | 
+                  | our FPR area 13*8=104                 |
+                  | f1                                    |
+                  | .                                     |
+                  | f13                                   | 
                   +---------------------------------------+ 160
-                  | result area 4                         | 
-SP current -->    +---------------------------------------+ 164 <- parent frame
-                  | back chain to caller 4                | 
+                  | result area 8                         |
                   +---------------------------------------+ 168
-                  | saved CR 4                            | 
-                  +---------------------------------------+ 172
-                  | saved LR 4                            | 
-                  +---------------------------------------+ 176
-                  | reserved for compilers 4              | 
+                  | alignement to the next multiple of 16 |
+SP current -->    +---------------------------------------+ 176 <- parent frame
+                  | back chain to caller 4                | 
                   +---------------------------------------+ 180
-                  | reserved for binders 4                | 
+                  | saved CR 4                            | 
                   +---------------------------------------+ 184
-                  | saved TOC pointer 4                   | 
+                  | saved LR 4                            | 
                   +---------------------------------------+ 188
+                  | reserved for compilers 4              | 
+                  +---------------------------------------+ 192
+                  | reserved for binders 4                | 
+                  +---------------------------------------+ 196
+                  | saved TOC pointer 4                   | 
+                  +---------------------------------------+ 200
                   | always reserved 8*4=32  we store our  |
-                  | GPRs here	        		  |
-                  | r3		       			  |
-                  | .	        			  |
-                  | r10      				  |
-                  +---------------------------------------+ 220
-                  | PST area, overflow part	          | 
+                  | GPRs here                             |
+                  | r3                                    |
+                  | .                                     |
+                  | r10                                   |
+                  +---------------------------------------+ 232
+                  | PST area, overflow part               | 
                   +---------------------------------------+ xxx
-                  | ????				  | 
+                  | ????                                  | 
                   +---------------------------------------+ xxx
 
 */
@@ -455,6 +455,7 @@ ffi_prep_closure (ffi_closure* closure,
 {
   unsigned int *tramp;
   struct ffi_aix_trampoline_struct *tramp_aix;
+  aix_fd *fd;
  
   switch (cif->abi)
     {  
@@ -486,7 +487,7 @@ ffi_prep_closure (ffi_closure* closure,
     case FFI_AIX:
 
       tramp_aix = (struct ffi_aix_trampoline_struct *) (closure->tramp);
-      aix_fd *fd = (aix_fd *)(void *)ffi_closure_ASM;
+      fd = (aix_fd *)(void *)ffi_closure_ASM;
 
       FFI_ASSERT (cif->abi == FFI_AIX);
 
