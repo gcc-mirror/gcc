@@ -6,6 +6,8 @@
 	(replace): Reimplemented. Fix javadoc.
 	(reverse): Call ensureCapacity_unsynchronized().
 	(StringBuffer (String)): Use DEFAULT_CAPACITY.
+
+	(replace): Calculate length for arraycopy() correctly.
 	
 2000-05-09  Tom Tromey  <tromey@cygnus.com>
 
