@@ -8206,7 +8206,7 @@ fold_builtin_1 (tree exp, bool ignore)
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
 
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
-    return 0;
+    return targetm.fold_builtin (exp, ignore);
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
