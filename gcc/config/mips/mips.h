@@ -1216,11 +1216,14 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define DBX_REGISTER_NUMBER(REGNO) mips_dbx_regno[ (REGNO) ]
 
 /* The mapping from gcc register number to DWARF 2 CFA column number.  */
-#define DWARF_FRAME_REGNUM(REG)				\
-  (REG == GP_REG_FIRST + 31 ? DWARF_FRAME_RETURN_COLUMN : REG)
+#define DWARF_FRAME_REGNUM(REG)	(REG)
 
 /* The DWARF 2 CFA column which tracks the return address.  */
-#define DWARF_FRAME_RETURN_COLUMN (FP_REG_LAST + 1)
+#define DWARF_FRAME_RETURN_COLUMN (GP_REG_FIRST + 31)
+
+/* The DWARF 2 CFA column which tracks the return address from a
+   signal handler context.  */
+#define SIGNAL_UNWIND_RETURN_COLUMN (FP_REG_LAST + 1)
 
 /* Before the prologue, RA lives in r31.  */
 #define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (VOIDmode, GP_REG_FIRST + 31)
