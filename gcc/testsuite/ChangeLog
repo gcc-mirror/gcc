@@ -1,3 +1,7 @@
+2003-05-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.dg/const-elim-1.c: Tighten scan-assembler-not regexp.
+
 2003-05-12  David Edelsohn  <edelsohn@gnu.org>
 
 	* debug/debug.exp: Skip debug-[12].c at -O3 on non-Dwarf targets.
