@@ -1,3 +1,9 @@
+2005-02-18  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* genautomata.c (output_get_cpu_unit_code_func,
+	output_cpu_unit_reservation_p): Don't generate old-style function
+	definitions.
+
 2005-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/20023
