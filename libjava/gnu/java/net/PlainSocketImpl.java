@@ -1,5 +1,5 @@
 /* PlainSocketImpl.java -- Default socket implementation
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -200,8 +200,20 @@ public final class PlainSocketImpl extends SocketImpl
    */
   public native Object getOption(int optID) throws SocketException;
 
+  /**
+   * Flushes the input stream and closes it. If you read from the input stream
+   * after calling this method a <code>IOException</code> will be thrown.
+   * 
+   * @throws IOException if an error occurs
+   */
   public native void shutdownInput() throws IOException;
 
+  /**
+   * Flushes the output stream and closes it. If you write to the output stream
+   * after calling this method a <code>IOException</code> will be thrown.
+   * 
+   * @throws IOException if an error occurs
+   */
   public native void shutdownOutput() throws IOException;
 
   /**
