@@ -1,3 +1,37 @@
+2002-05-25  Richard Henderson  <rth@redhat.com>
+
+	* configure.in (HAVE_AS_TLS): Add ia64 test.
+	* configure: Rebuild.
+	* config/ia64/ia64.c (ia64_tls_size_string, ia64_tls_size): New.
+	(override_options): Set it.
+	(TARGET_HAVE_TLS): New.
+	(sdata_symbolic_operand): Look for 's'.
+	(tls_symbolic_operand): New.
+	(ia64_expand_load_address): Abort for tls symbols.
+	(gen_tls_get_addr): New.
+	(gen_thread_pointer): New.
+	(ia64_expand_move): Split out from movdi.  Handle tls symbols.
+	(rtx_needs_barrier): Add new unspecs.
+	(ia64_encode_section_info): Handle tls symbols.
+	(ia64_strip_name_encoding): Strip two encoding chars.
+	* config/ia64/ia64.h (ia64_tls_size, ia64_tls_size_string): New.
+	(TARGET_TLS14, TARGET_TLS22, TARGET_TLS64): New.
+	(TARGET_OPTIONS): Add tls-size.
+	(ENCODE_SECTION_INFO_CHAR): Rename from SDATA_NAME_FLAG_CHAR.
+	* config/ia64/ia64.md (UNSPEC_LTOFF_DTPMOD, UNSPEC_LTOFF_DTPREL,
+	UNSPEC_DTPREL, UNSPEC_LTOFF_TPREL, UNSPEC_TPREL, UNSPEC_LD_BASE): New.
+	(movqi, movhi, movsi, movdi, movti): Use ia64_expand_move.
+	(movsf, movdf): Likewise.
+	(movdi_symbolic): Use match_scratch.  Don't split if we won't
+	have a scratch availiable.
+	(load_ltoff_dtpmod, load_dtprel, load_dtprel64, load_dtprel22,
+	add_dtprel, add_dtprel14, add_dtprel22, load_ltoff_tprel, load_tprel,
+	load_tprel64, load_tprel22, add_tprel, add_tprel14, add_tprel22): New.
+	* config/ia64/ia64-protos.h: Update.
+	* config/ia64/sysv4.h (ASM_OUTPUT_ALIGNED_DECL_LOCAL): Use
+	sdata_symbolic_operand.
+	(ASM_OUTPUT_LABELREF): Strip two characters.
+
 2002-05-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* combine.c (simplify_set): Remove an unnecessary subreg.
