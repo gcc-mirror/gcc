@@ -1,3 +1,8 @@
+Tue Sep 14 18:14:03 1999  Richard Henderson  <rth@cygnus.com>
+
+	* ggc-common.c (ggc_mark_tree): Mark DECL_SOURCE_FILE and
+	DECL_LIVE_RANGE_RTL.
+
 Tue Sep 14 16:47:08 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.c (expand_eh_region_start_for_decl): Use NOTE_EH_HANDLER,
