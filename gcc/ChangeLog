@@ -1,3 +1,9 @@
+Tue Jul 23 20:56:03 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* simplify-rtx.x (simplify_subreg): When constructing a CONST_VECTOR
+	from individual subregs, check that each subreg has been generated
+	sucessfully.
+
 2002-07-23  Neil Booth  <neil@daikokuya.co.uk>
 
 	* genautomata.c (VLA_HWINT_SHORTEN, VLA_HWINT_LAST): Remove.
