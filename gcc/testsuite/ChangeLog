@@ -1,5 +1,7 @@
 2003-08-12  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/init/new8.C: Use __SIZE_TYPE__ to get the type of size_t.
+
 	* g++.dg/parse/ret-type2.C: New test.
 
 	PR c++/11703
