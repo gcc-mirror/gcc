@@ -1,3 +1,9 @@
+2003-10-25  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* be.po, da.po, de.po, el.po, es.po, fr.po, ja.po, nl.po, sv.po,
+	tr.po: Update.
+	* gcc.pot: Regenerate.
+
 2003-09-27  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* sv.po: GNU CC -> GCC.
