@@ -1,5 +1,5 @@
 /* InitialLdapContext.java --
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,7 @@ exception statement from your version. */
 package javax.naming.ldap;
 
 import java.util.Hashtable;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.NoInitialContextException;
@@ -46,7 +47,7 @@ import javax.naming.NotContextException;
 import javax.naming.directory.InitialDirContext;
 
 /**
- * @author Tom Tromey <tromey@redhat.com>
+ * @author Tom Tromey (tromey@redhat.com)
  * @date June 21, 2001
  */
 public class InitialLdapContext

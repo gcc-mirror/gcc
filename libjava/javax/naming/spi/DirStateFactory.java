@@ -39,16 +39,16 @@ exception statement from your version. */
 package javax.naming.spi;
 
 import java.util.Hashtable;
+
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
  
 /**
- * @author Warren Levy <warrenl@redhat.com>
+ * @author Warren Levy (warrenl@redhat.com)
  * @date June 1, 2001
  */
-
 public interface DirStateFactory extends StateFactory
 {
   // Inner class

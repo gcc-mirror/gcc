@@ -1,5 +1,5 @@
 /* InitialContextFactory.java --
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,7 @@ exception statement from your version. */
 package javax.naming.spi;
 
 import java.util.Hashtable;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 

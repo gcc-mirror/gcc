@@ -1,5 +1,5 @@
 /* DirectoryManager.java --
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,7 @@ package javax.naming.spi;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
+
 import javax.naming.CannotProceedException;
 import javax.naming.Context;
 import javax.naming.Name;
