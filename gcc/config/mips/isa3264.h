@@ -33,9 +33,13 @@ Boston, MA 02111-1307, USA.  */
 
 #include "mips/elf.h"
 
+#ifndef HAVE_MIPS_LIBGLOSS_STARTUP_DIRECTIVES
+/* Once HAVE_MIPS_LIBGLOSS_STARTUP_DIRECTIVES is always true, this code
+   can be GC'd.  */
 #if MIPS_ABI_DEFAULT == ABI_MEABI
 /* For MEABI, don't link with crt0 files, let the linker start files specify
    the appropriate crt0 file.  */
 #undef  STARTFILE_SPEC
-#define STARTFILE_SPEC "crti%O%s crtbegin%O%s %{!mno-crt0: }"
+#define STARTFILE_SPEC "crti%O%s crtbegin%O%s"
+#endif
 #endif
