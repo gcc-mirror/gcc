@@ -1,3 +1,15 @@
+1998-11-11  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (try_one_overload): Take orig_targs again.  Only check for
+	mismatches against them; we don't care what a previous call found.
+	(resolve_overloaded_unification): Adjust.
+
+	* search.c (lookup_field): Don't return anything for a non-type
+	field from a dependent type.
+	* decl.c (grokdeclarator): Resolve SCOPE_REFs of the current class
+	in an array declarator.
+	(start_decl): Push into the class before looking for the field.
+
 1998-11-08  Mark Mitchell  <mark@markmitchell.com>
 
 	* method.c (build_overload_value): Handle REFERENCE_TYPE.
