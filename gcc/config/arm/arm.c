@@ -3534,6 +3534,7 @@ find_barrier (from, max_count)
 {
   int count = 0;
   rtx found_barrier = 0;
+  rtx last = from;
 
   while (from && count < max_count)
     {
@@ -3547,11 +3548,12 @@ find_barrier (from, max_count)
 	  && CONSTANT_POOL_ADDRESS_P (SET_SRC (PATTERN (from))))
 	{
 	  rtx src = SET_SRC (PATTERN (from));
-	  count += 2;
+	  count += 8;
 	}
       else
 	count += get_attr_length (from);
 
+      last = from;
       from = NEXT_INSN (from);
     }
 
@@ -3562,7 +3564,7 @@ find_barrier (from, max_count)
       rtx label = gen_label_rtx ();
 
       if (from)
-	from = PREV_INSN (from);
+	from = PREV_INSN (last);
       else
 	from = get_last_insn ();
 
