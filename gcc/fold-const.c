@@ -1392,7 +1392,7 @@ int_const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
       && ((hi == 0 && (HOST_WIDE_INT) low >= 0)
 	  || (hi == -1 && (HOST_WIDE_INT) low < 0))
       && overflow == 0 && ! TREE_OVERFLOW (arg1) && ! TREE_OVERFLOW (arg2))
-    return size_int_type (low, type);
+    return size_int_type_wide (low, type);
   else
     {
       t = build_int_2 (low, hi);
@@ -1598,7 +1598,7 @@ size_htab_eq (const void *x, const void *y)
 tree
 size_int_wide (HOST_WIDE_INT number, enum size_type_kind kind)
 {
-  return size_int_type (number, sizetype_tab[(int) kind]);
+  return size_int_type_wide (number, sizetype_tab[(int) kind]);
 }
 
 /* Likewise, but the desired type is specified explicitly.  */
@@ -1608,7 +1608,7 @@ static GTY ((if_marked ("ggc_marked_p"), param_is (union tree_node)))
      htab_t size_htab;
 
 tree
-size_int_type_wide (HOST_WIDE_INT high, HOST_WIDE_INT low, tree type)
+size_int_type_wide (HOST_WIDE_INT number, tree type)
 {
   void **slot;
 
@@ -1621,8 +1621,8 @@ size_int_type_wide (HOST_WIDE_INT high, HOST_WIDE_INT low, tree type)
   /* Adjust NEW_CONST to be the constant we want.  If it's already in the
      hash table, we return the value from the hash table.  Otherwise, we
      place that in the hash table and make a new node for the next time.  */
-  TREE_INT_CST_LOW (new_const) = low;
-  TREE_INT_CST_HIGH (new_const) = high;
+  TREE_INT_CST_LOW (new_const) = number;
+  TREE_INT_CST_HIGH (new_const) = number < 0 ? -1 : 0;
   TREE_TYPE (new_const) = type;
   TREE_OVERFLOW (new_const) = TREE_CONSTANT_OVERFLOW (new_const)
     = force_fit_type (new_const, 0);
@@ -1745,7 +1745,7 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
 	  if (TREE_CODE (type) == INTEGER_TYPE && TYPE_IS_SIZETYPE (type)
 	      && !TREE_CONSTANT_OVERFLOW (arg1)
 	      && compare_tree_int (arg1, 10000) < 0)
-	    return size_int_type (TREE_INT_CST_LOW (arg1), type);
+	    return size_int_type_wide (TREE_INT_CST_LOW (arg1), type);
 
 	  /* Given an integer constant, make new constant with new type,
 	     appropriately sign-extended or truncated.  */
