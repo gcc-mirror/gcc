@@ -52,4 +52,6 @@ do {									\
 #define PATH_SEPARATOR ';'
 
 /* This is needed so that protoize will compile.  */
+#ifndef POSIX
 #define POSIX
+#endif
