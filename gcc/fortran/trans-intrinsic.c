@@ -2973,6 +2973,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_GETGID:
     case GFC_ISYM_GETPID:
     case GFC_ISYM_GETUID:
+    case GFC_ISYM_SYSTEM:
       gfc_conv_intrinsic_funcall (se, expr);
       break;
 

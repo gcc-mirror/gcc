@@ -122,11 +122,11 @@ am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
 	c99_functions.lo cpu_time.lo cshift0.lo date_and_time.lo \
 	env.lo erf.lo eoshift0.lo eoshift2.lo etime.lo getcwd.lo \
 	getXid.lo ishftc.lo mvbits.lo pack_generic.lo size.lo \
-	spread_generic.lo string_intrinsics.lo rand.lo random.lo \
-	reshape_generic.lo reshape_packed.lo selected_int_kind.lo \
-	selected_real_kind.lo system_clock.lo transpose_generic.lo \
-	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo \
-	normalize.lo
+	spread_generic.lo string_intrinsics.lo system.lo rand.lo \
+	random.lo reshape_generic.lo reshape_packed.lo \
+	selected_int_kind.lo selected_real_kind.lo system_clock.lo \
+	transpose_generic.lo unpack_generic.lo in_pack_generic.lo \
+	in_unpack_generic.lo normalize.lo
 am__objects_34 =
 am__objects_35 = _abs_c4.lo _abs_c8.lo _abs_i4.lo _abs_i8.lo \
 	_abs_r4.lo _abs_r8.lo _exp_r4.lo _exp_r8.lo _exp_c4.lo \
@@ -330,6 +330,7 @@ intrinsics/pack_generic.c \
 intrinsics/size.c \
 intrinsics/spread_generic.c \
 intrinsics/string_intrinsics.c \
+intrinsics/system.c \
 intrinsics/rand.c \
 intrinsics/random.c \
 intrinsics/reshape_generic.c \
@@ -2160,6 +2161,15 @@ string_intrinsics.obj: intrinsics/string_intrinsics.c
 
 string_intrinsics.lo: intrinsics/string_intrinsics.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o string_intrinsics.lo `test -f 'intrinsics/string_intrinsics.c' || echo '$(srcdir)/'`intrinsics/string_intrinsics.c
+
+system.o: intrinsics/system.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o system.o `test -f 'intrinsics/system.c' || echo '$(srcdir)/'`intrinsics/system.c
+
+system.obj: intrinsics/system.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o system.obj `if test -f 'intrinsics/system.c'; then $(CYGPATH_W) 'intrinsics/system.c'; else $(CYGPATH_W) '$(srcdir)/intrinsics/system.c'; fi`
+
+system.lo: intrinsics/system.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o system.lo `test -f 'intrinsics/system.c' || echo '$(srcdir)/'`intrinsics/system.c
 
 rand.o: intrinsics/rand.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rand.o `test -f 'intrinsics/rand.c' || echo '$(srcdir)/'`intrinsics/rand.c

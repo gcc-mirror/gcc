@@ -24,7 +24,21 @@
 	(parse_do_block): Generate possible END DO label inside END DO
 	block.
 
-	
+	PR fortran/17776
+	* check.c (gfc_check_system_sub): New function.
+	* gfortran.h (gfc_generic_isym_id): Add GFC_ISYM_SYSTEM.
+	* intrinsic.c (add_functions): Add 'system'.
+	(add_subroutines): Add 'system'.
+	* intrinsic.h (gfc_check_etime_sub, gfc_check_getcwd_sub):
+	Move prototypes to other suborutines.
+	(gfc_check_system_sub, gfc_resolve_system, gfc_resolve_system_sub):
+	Add prototype.
+	(gfc_resolve_system_clock): Fix formatting of prototype.
+	* iresolve.c (gfc_resolve_system, gfc_resolve_system_sub): New
+	functions.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Deal with
+	GFC_ISYM_SYSTEM.
+
 2004-10-04  Erik Schnetter  <schnetter@aei.mpg.de>
 
 	* scanner.c (preprocessor_line): Accept preprocessor lines without

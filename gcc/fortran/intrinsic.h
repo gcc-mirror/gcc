@@ -47,8 +47,6 @@ try gfc_check_digits (gfc_expr *);
 try gfc_check_dot_product (gfc_expr *, gfc_expr *);
 try gfc_check_eoshift (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_etime (gfc_expr *);
-try gfc_check_etime_sub (gfc_expr *, gfc_expr *);
-try gfc_check_getcwd_sub (gfc_expr *, gfc_expr *);
 try gfc_check_g77_math1 (gfc_expr *);
 try gfc_check_huge (gfc_expr *);
 try gfc_check_i (gfc_expr *);
@@ -115,6 +113,9 @@ try gfc_check_mvbits (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
 		      gfc_expr *);
 try gfc_check_random_number (gfc_expr *);
 try gfc_check_random_seed (gfc_expr *, gfc_expr *, gfc_expr *);
+try gfc_check_etime_sub (gfc_expr *, gfc_expr *);
+try gfc_check_getcwd_sub (gfc_expr *, gfc_expr *);
+try gfc_check_system_sub (gfc_expr *, gfc_expr *);
 
 
 /* Simplification functions.  */
@@ -311,6 +312,7 @@ void gfc_resolve_spread (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_sqrt (gfc_expr *, gfc_expr *);
 void gfc_resolve_srand (gfc_code *);
 void gfc_resolve_sum (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
+void gfc_resolve_system (gfc_expr *, gfc_expr *);
 void gfc_resolve_tan (gfc_expr *, gfc_expr *);
 void gfc_resolve_tanh (gfc_expr *, gfc_expr *);
 void gfc_resolve_transfer (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
@@ -323,8 +325,9 @@ void gfc_resolve_verify (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 
 /* Intrinsic subroutine resolution.  */
 void gfc_resolve_cpu_time (gfc_code *);
+void gfc_resolve_system_sub (gfc_code *);
+void gfc_resolve_system_clock (gfc_code *);
 void gfc_resolve_mvbits (gfc_code *);
-void gfc_resolve_system_clock(gfc_code *);
 void gfc_resolve_random_number (gfc_code *);
 void gfc_resolve_getarg (gfc_code *);
 void gfc_resolve_getcwd_sub (gfc_code *);
