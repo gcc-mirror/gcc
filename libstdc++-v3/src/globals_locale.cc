@@ -25,14 +25,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include "bits/c++config.h"
-#include "bits/gthr.h"
-#include <fstream>
-#include <istream>
-#include <ostream>
 #include <locale>
-#include <ext/stdio_filebuf.h>
-#include <ext/stdio_sync_filebuf.h>
 
 // On AIX, and perhaps other systems, library initialization order is
 // not guaranteed.  For example, the static initializers for the main
@@ -50,62 +43,9 @@
 // In macro form:
 // _GLIBCXX_ASM_SYMVER(currentname, oldname, GLIBCXX_3.2)
 
-namespace std
-{
-  // Standard stream objects.
-  // NB: Iff <iostream> is included, these definitions become wonky.
-  typedef char fake_istream[sizeof(istream)]
-  __attribute__ ((aligned(__alignof__(istream))));
-  typedef char fake_ostream[sizeof(ostream)] 
-  __attribute__ ((aligned(__alignof__(ostream))));
-  fake_istream cin;
-  fake_ostream cout;
-  fake_ostream cerr;
-  fake_ostream clog;
-
-#ifdef _GLIBCXX_USE_WCHAR_T
-  typedef char fake_wistream[sizeof(wistream)] 
-  __attribute__ ((aligned(__alignof__(wistream))));
-  typedef char fake_wostream[sizeof(wostream)] 
-  __attribute__ ((aligned(__alignof__(wostream))));
-  fake_wistream wcin;
-  fake_wostream wcout;
-  fake_wostream wcerr;
-  fake_wostream wclog;
-#endif
-} // namespace std
-
 namespace __gnu_cxx
 {
   using namespace std;
-
-  // We use different stream buffer types depending on whether
-  // ios_base::sync_with_stdio(false) has been called.
-  typedef char fake_stdiobuf[sizeof(stdio_sync_filebuf<char>)]
-  __attribute__ ((aligned(__alignof__(stdio_sync_filebuf<char>))));
-  fake_stdiobuf buf_cout_sync;
-  fake_stdiobuf buf_cin_sync;
-  fake_stdiobuf buf_cerr_sync;
-
-  typedef char fake_filebuf[sizeof(stdio_filebuf<char>)]
-  __attribute__ ((aligned(__alignof__(stdio_filebuf<char>))));
-  fake_filebuf buf_cout;
-  fake_filebuf buf_cin;
-  fake_filebuf buf_cerr;
-
-#ifdef _GLIBCXX_USE_WCHAR_T
-  typedef char fake_wstdiobuf[sizeof(stdio_sync_filebuf<wchar_t>)]
-  __attribute__ ((aligned(__alignof__(stdio_sync_filebuf<wchar_t>))));
-  fake_wstdiobuf buf_wcout_sync;
-  fake_wstdiobuf buf_wcin_sync;
-  fake_wstdiobuf buf_wcerr_sync;
-
-  typedef char fake_wfilebuf[sizeof(stdio_filebuf<wchar_t>)]
-  __attribute__ ((aligned(__alignof__(stdio_filebuf<wchar_t>))));
-  fake_wfilebuf buf_wcout;
-  fake_wfilebuf buf_wcin;
-  fake_wfilebuf buf_wcerr;
-#endif
 
   typedef char fake_locale_Impl[sizeof(locale::_Impl)]
   __attribute__ ((aligned(__alignof__(locale::_Impl))));
@@ -266,25 +206,5 @@ namespace __gnu_cxx
   typedef char fake_time_cache_w[sizeof(std::__timepunct_cache<wchar_t>)]
   __attribute__ ((aligned(__alignof__(std::__timepunct_cache<wchar_t>))));
   fake_time_cache_w timepunct_cache_w;
-#endif
-
-  // Globals for once-only runtime initialization of mutex objects.  This
-  // allows static initialization of these objects on systems that need a
-  // function call to initialize a mutex.  For example, see stl_threads.h.
-#ifdef __GTHREAD_MUTEX_INIT
-#elif defined(__GTHREAD_MUTEX_INIT_FUNCTION)
-  __gthread_once_t _GLIBCXX_once = __GTHREAD_ONCE_INIT;
-  __gthread_mutex_t _GLIBCXX_mutex;
-  __gthread_mutex_t *_GLIBCXX_mutex_address;
-  
-  // Once-only initializer function for _GLIBCXX_mutex.  
-  void
-  _GLIBCXX_mutex_init ()
-  { __GTHREAD_MUTEX_INIT_FUNCTION (&_GLIBCXX_mutex); }
-
-  // Once-only initializer function for _GLIBCXX_mutex_address.  
-  void
-  _GLIBCXX_mutex_address_init ()
-  { __GTHREAD_MUTEX_INIT_FUNCTION (_GLIBCXX_mutex_address); }
 #endif
 } // namespace __gnu_cxx

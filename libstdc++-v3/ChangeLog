@@ -1,3 +1,21 @@
+2003-10-17  Benjamin Kosnik  <bkoz@redhat.com>
+ 
+	* src/Makefile.am: Add new files.
+	* src/Makefile.in: Regenerate.
+	* src/globals.cc: Split into..
+	* src/globals_io.cc: New.
+	* src/globals_locale.cc: New.
+	* src/ios.cc: Split into...
+	* src/ios_init.cc: New.
+	* src/ios_locale.cc: New.
+	* src/locale-inst.cc: Split into..
+	* src/wlocale-inst.cc: New.
+	* src/locale-misc-inst.cc: New.
+	* src/locale.cc, src/localename: Split into...
+	* src/locale_facets.cc: New.
+	* src/locale_init.cc: New.
+	* src/wstring-inst.cc: Add copyright info.
+
 2003-10-16  Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/11450
