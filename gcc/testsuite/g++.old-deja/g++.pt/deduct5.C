@@ -7,7 +7,7 @@
 
 template <typename T> int Foo (T const *ptr)
 {
-  static int count = 0;
+  static int count;
   
   printf ("%s\n", __PRETTY_FUNCTION__);
   count++;
