@@ -160,6 +160,8 @@ static void jni_print_float (FILE *, jfloat);
 static void jni_print_double (FILE *, jdouble);
 static void decompile_return_statement (FILE *, JCF *, int, int, int);
 
+static void handle_inner_classes (int);
+
 JCF_u2 current_field_name;
 JCF_u2 current_field_value;
 JCF_u2 current_field_signature;
@@ -240,6 +242,8 @@ static int decompiled = 0;
 #define HANDLE_END_METHOD()				\
   if (out && method_printed && !method_synthetic) 	\
     fputs (decompiled || stubs ? "\n" : ";\n", out);
+
+#define HANDLE_INNERCLASSES_ATTRIBUTE(COUNT) handle_inner_classes (COUNT)
 
 /* We're going to need {peek,skip}_attribute, enable their definition.   */
 #define NEED_PEEK_ATTRIBUTE
@@ -1672,6 +1676,34 @@ super_class_name (JCF *derived_jcf, int *len)
     *len = supername_length;
 
   return supername;
+}
+
+static void
+handle_inner_classes (int count)
+{
+  int i;
+
+  if (out && ! flag_jni && ! stubs && count > 0)
+    fprintf (out, "\n");
+
+  for (i = 0; i < count; ++i)
+    {
+      JCF_u2 inner_info_index = JCF_readu2 (current_jcf);
+
+      /* There are a few more values here, but we don't care about
+	 them.  The (void) cast is apparently the only way to avoid a
+	 warning here.  */
+      (void) JCF_readu2 (current_jcf);
+      (void) JCF_readu2 (current_jcf);
+      (void) JCF_readu2 (current_jcf);
+
+      if (out && ! flag_jni && ! stubs)
+	{
+	  print_mangled_classname (out, current_jcf, "  friend class ",
+				   inner_info_index);
+	  fprintf (out, ";\n");
+	}
+    }
 }
 
 
