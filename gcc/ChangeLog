@@ -1,3 +1,8 @@
+2004-11-03 Jeff Law  <law@redhat.com>
+
+	* stmt.c (expand_case): Speed up code to detect duplicate case
+	label targets and count unique case label targets.
+
 2004-11-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cppdefault.c, cppdefault.h, timevar.h: Update copyright.
