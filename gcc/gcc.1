@@ -20,7 +20,7 @@
 .if n .sp
 .if t .sp 0.4
 ..
-.Id $Id: gcc.1,v 1.14 2000/04/11 06:01:52 loewis Exp $
+.Id $Id: gcc.1,v 1.15 2000/05/17 08:15:25 cagney Exp $
 .TH GCC 1 "\*(Dt" "GNU Tools" "GNU Tools"
 .SH NAME
 gcc, g++ \- GNU project C and C++ Compiler (gcc-2.96)
@@ -329,6 +329,14 @@ in the following sections.
 \-mrtd
 \-mshort
 \-msoft\-float
+.Sp
+.I M68hc1x\ Options
+.br
+\-m68hc11
+\-m68hc12
+\-mshort
+\-msoft\-reg\-count \fInum\fP
+\-mauto-incdec
 .Sp
 .I VAX Options
 .br
@@ -2874,6 +2882,35 @@ The \c
 .B rtd\c
 \& instruction is supported by the 68010 and 68020
 processors, but not by the 68000.
+.PP
+These `\|\c
+.B \-m\c
+\&\|' options are defined for the Motorola 68HC11 and 68HC12:
+.TP
+.B \-m68hc11
+Generate output for a 68HC11.  This is the default when the compiler
+is configured for a 68HC11-based target.
+.TP
+.B \-m68hc12
+Generate output for a 68HC12.  This is the default when the compiler
+is configured for a 68HC12-based target.
+.TP
+.B \-mshort
+Consider type \c
+.B int\c
+\& to be 16 bits wide, like \c
+.B short int\c
+\&.
+.TP
+.B \-msoft-reg-count=\fInum\fP
+Specify the number of pseudo-soft registers which are used for the
+code generation.  The maximum number is 32.  Using more pseudo-soft
+register may or may not result in better code depending on the program.
+The default is 4 for 68HC11 and 2 for 68HC12.
+.TP
+.B \-mauto-incdec
+Enable the use of 68HC12 pre and post auto-increment and auto-decrement
+addressing modes.
 .PP
 These `\|\c
 .B \-m\c

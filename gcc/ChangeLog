@@ -1,3 +1,7 @@
+2000-09-10  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* gcc.1: Document 68hc11 specific options.
+
 2000-09-10  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/sysv4.h (MASK_LONG_DOUBLE_128): Define.
