@@ -30,10 +30,11 @@ MULTILIB_DIRNAMES	= nof
 MULTILIB_MATCHES	=
 MULTILIB_EXCEPTIONS	=
 
-LIBGCC = stmp-multilib stmp-crt
-INSTALL_LIBGCC = install-multilib install-crt
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib
+EXTRA_MULTILIB_PARTS = ecrti$(objext) ecrtn$(objext) scrt0$(objext) scrti$(objext) scrtn$(objext)
 
-# For eabi we build crti.o and crtn.o which serve to add begin and
+# For eabigas we build {e,s}crti.o and {e,s}crtn.o which serve to add begin and
 # end labels to all of the special sections used when we link using gcc.
 
 # Assemble startup files.
@@ -52,34 +53,18 @@ scrtn.S: $(srcdir)/config/rs6000/sol-cn.asm
 scrt0.c: $(srcdir)/config/rs6000/sol-c0.c
 	cat $(srcdir)/config/rs6000/sol-c0.c >scrt0.c
 
-# Build multiple copies of crt{i,n}.o, one for each target switch.
-stmp-crt: ecrti.S ecrtn.S scrti.S scrtn.S scrt0.c $(GCC_PASSES) $(EXTRA_HEADERS) stmp-multilib config.status
-	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
-	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
-	  flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
-	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	    LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS) $${flags}" \
-	    dir="$${dir}" stmp-crt-sub; \
-	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	done
-	touch stmp-crt
-
-# Subroutine of stmp-crt so make -n works.
-stmp-crt-sub:
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o $(dir)/ecrti.o ecrti.S
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o $(dir)/ecrtn.o ecrtn.S
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o $(dir)/scrti.o scrti.S
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o $(dir)/scrtn.o scrtn.S
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o $(dir)/scrt0.o scrt0.c
-
-# Install multiple versions of crt[in].o
-install-crt: stmp-crt installdirs install-multilib
-	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
-	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
-	  rm -f $(libsubdir)/$${dir}/[es]crt[in0].o; \
-	  $(INSTALL_DATA) $${dir}/ecrti.o $(libsubdir)/$${dir}/ecrti.o; \
-	  $(INSTALL_DATA) $${dir}/ecrtn.o $(libsubdir)/$${dir}/ecrtn.o; \
-	  $(INSTALL_DATA) $${dir}/scrti.o $(libsubdir)/$${dir}/scrti.o; \
-	  $(INSTALL_DATA) $${dir}/scrtn.o $(libsubdir)/$${dir}/scrtn.o; \
-	  $(INSTALL_DATA) $${dir}/scrt0.o $(libsubdir)/$${dir}/scrt0.o; \
-	done
+# Build multiple copies of ?crt{i,n}.o, one for each target switch.
+$(T)ecrti$(objext): ecrti.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c ecrti.S -o $(T)ecrti$(objext)
+								         
+$(T)ecrtn$(objext): ecrtn.S					         
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c ecrtn.S -o $(T)ecrtn$(objext)
+								         
+$(T)scrti$(objext): scrti.S					         
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c ecrti.S -o $(T)scrti$(objext)
+								         
+$(T)scrtn$(objext): scrtn.S					         
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c ecrti.S -o $(T)scrtn$(objext)
+								         
+$(T)scrt0$(objext): scrt0.c					         
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c ecrti.S -o $(T)scrt0$(objext)
