@@ -1,6 +1,7 @@
 2000-11-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/operator1.C: New test.
+	* g++.old-deja/g++.brendan/err-msg8.C: Adjust error line.
 
 2000-11-09  Jakub Jelinek  <jakub@redhat.com>
 
