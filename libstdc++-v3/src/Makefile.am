@@ -37,15 +37,26 @@ toolexeclib_LTLIBRARIES = libstdc++.la
 EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 
 
-WERROR = @WERROR@
-# OPTIMIZE_CXXFLAGS =  -O3 -fstrict-aliasing -fsquangle -fnew-exceptions \
-#                      -fdata-sections -ffunction-sections \
-#		       -fvtable-gc -Wl,--gc-sections
-# AC_CXXFLAGS = @OPTLEVEL@ @CPUFLAGS@ @EXTRA_CXX_FLAGS@ @DEBUGFLAGS@ 
-AC_CXXFLAGS = @CPUFLAGS@ @EXTRA_CXX_FLAGS@ @DEBUGFLAGS@
-AM_CXXFLAGS = -fno-implicit-templates \
-	      -Wall -Wno-format -W -Wwrite-strings -Winline $(WERROR) \
-	      $(OPTIMIZE_CXXFLAGS) $(AC_CXXFLAGS) 
+# Using these options is probably a good idea for thrill-seekers. Just
+# uncomment the lines below and make, everything else is ready to go...
+# OPTIMIZE_CXXFLAGS = \
+#	-O3 -fstrict-aliasing \
+#	-fdata-sections -ffunction-sections -fvtable-gc -Wl,--gc-sections
+
+# These bits are all figured out from configure. Look in acinclude.m4
+# or configure.in to see how they are set.
+AC_CXXFLAGS = \
+	@WERROR@ @FMTFLAGS@ @CPUFLAGS@ @EXTRA_CXX_FLAGS@ @DEBUGFLAGS@ 
+
+# Need to manually set this option because AC_CXXFLAGS has to be at
+# the end of the compile line so that -O2 can be over-riden as the
+# occasion call for it. (ie, --enable-debug)
+AM_CXXFLAGS = \
+	$(FORMAT_CXXFLAGS) \
+	-fno-implicit-templates \
+	-Wall -Wno-format -W -Wwrite-strings -Winline \
+	$(OPTIMIZE_CXXFLAGS) $(AC_CXXFLAGS) 
+
 
 # Need to explicitly set this so that AM_CXXFLAGS is last. (That way,
 # things like -O2 passed down from the toplevel can be overridden by
@@ -62,7 +73,9 @@ LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) \
 # course is impossible.
 CXXLINK = $(LIBTOOL) --mode=link "$(CC)" $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
+
 TOPLEVEL_INCLUDES = -I$(includedir)
+
 LIBIO_INCLUDES = @BUILD_LIBIO_INCLUDE@ -I$(top_srcdir)/libio 
 
 CONFIG_INCLUDES = \

@@ -4,7 +4,7 @@
 
 <H3>Getting the sources by FTP or CVS</H3>
 
-<P>Get the snapshot archive from
+<P>Get the snapshot archive via FTP from
 <BLOCKQUOTE>
   <A HREF="ftp://sourceware.cygnus.com/pub/libstdc++/">
            ftp://sourceware.cygnus.com/pub/libstdc++/
@@ -15,28 +15,29 @@
    due to the heavy load on the main server.
 </P>
 
-<P>CVS repository available by anonymous CVS.
-  <UL>
-   <LI>cvs -z9 -d :pserver:anoncvs@sourceware.cygnus.com:/cvs/libstdc++ login
-   <LI>enter ``anoncvs'' for the password
-   <LI>cvs -z9 -d :pserver:anoncvs@sourceware.cygnus.com:/cvs/libstdc++ co libstdc++
+<P> The master CVS repository for libstdc++-v3 is now a part of the
+  gcc repository. As such, checking out the <TT>gcc</TT> module includes the
+  current libstdc++-v3 development sources. To check out libstdc++-v3
+  only, use <TT>libstdc++-v3</TT> instead of <TT>gcc</TT> as the module.
 
-   <LI>You only need to specify the repository root the first time; after
-       that cvs will go to the correct place automatically.  Using '-z9' is
-       <B>highly</B> recommended, as it will reduce the bandwidth required.
+   <UL>
+   <LI>Read only CVS repository available by anonymous CVS. Directions 
+   <A HREF="http://gcc.gnu.org/cvs.html"> here.
+   </A>
 
-   <LI>You can 
-<A HREF="http://gcc.gnu.org/cgi-bin/cvsweb.cgi/libstdc++-v3?cvsroot=gcc">browse 
-       the CVS repository over the web</A>.
+   <P>
+
+   <LI>Read-Write CVS repository available by anonymous CVS. Directions 
+   <A HREF="http://gcc.gnu.org/cvswrite.html"> here.
+   </A>
   </UL>
 </P>
 
-<P>For those of you using Cygwin or Mingw32, you can avoid various
-   <A HREF="faq/index.html#3_2">problems building the library</A> by using
-   prebuilt binaries of snapshots from Mumit Khan's
-   <A HREF="http://www.xraylith.wisc.edu/~khan/software/gnu-win32/libstdc++-v3.html">Cygwin pages</A>.
-</P>
+<p>You can also
+<A HREF="http://gcc.gnu.org/cgi-bin/cvsweb.cgi/libstdc++-v3?cvsroot=gcc">browse 
+       the CVS repository over the web</A>.
 
+</P>
 
 
 <!--#include virtual="/libstdc++/footer.html"-->

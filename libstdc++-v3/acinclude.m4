@@ -155,9 +155,12 @@ AC_SUBST(GLIBCPP_CXXFLAGS)
 
 dnl
 dnl Check to see if g++ can compile this library, and if so, if any version-
-dnl specific precautions need to be taken.
+dnl specific precautions need to be taken. In particular, test for
+dnl newer compiler features, or features that are present in newer
+dnl compiler version but not older compiler versions should be placed
+dnl here.
 dnl
-dnl Define OPTLEVEL='-O2' if new inlining code present.
+dnl Define FMTFLAGS='-fdiagnostics-show-location=once' if possible
 dnl Define WERROR='-Werror' if possible; g++'s that lack the new inlining
 dnl    code or the new system_header pragma will die.  Other options dealing
 dnl    with warnings, errors, and compiler complaints may be folded into
@@ -174,6 +177,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
   ac_save_CXXFLAGS="$CXXFLAGS"
   WERROR='-Werror'
 
+  # Sanity check that g++ is capable of dealing with v-3.
   AC_MSG_CHECKING([for g++ that will successfullly compile this code])
   AC_EGREP_CPP([ok], [
   #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95) 
@@ -182,7 +186,8 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
   ], gpp_satisfactory=yes, AC_MSG_ERROR("please upgrade to gcc-2.95 or above"))
   AC_MSG_RESULT($gpp_satisfactory)
 
-  AC_MSG_CHECKING([for g++ that supports new system_header pragma])
+  # Check for pragma system_header.
+  AC_MSG_CHECKING([for g++ that supports pragma system_header])
   CXXFLAGS='-Wunknown-pragmas -Werror'
   AC_TRY_COMPILE([#pragma system_header], [int foo;
   ], [ac_newpragma=yes], [ac_newpragma=no])
@@ -197,7 +202,8 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
   fi
   AC_MSG_RESULT($ac_newpragma)
 
-  AC_MSG_CHECKING([for g++ that supports new warning options])
+  # Check for more sophisticated diagnostic control.
+  AC_MSG_CHECKING([for g++ that supports -fdiagnostics-show-location=once])
   CXXFLAGS='-fdiagnostics-show-location=once'
   AC_TRY_COMPILE(, [int foo;
   ], [ac_gabydiags=yes], [ac_gabydiags=no])
@@ -208,27 +214,13 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
     CXXFLAGS=''
   fi
   if test "$ac_gabydiags" = "yes"; then
-    WERROR="$WERROR -fdiagnostics-show-location=once"
+    FMTFLAGS='-fdiagnostics-show-location=once'
   fi
   AC_MSG_RESULT($ac_gabydiags)
 
-  AC_MSG_CHECKING([for g++ that supports new inlining mechanism])
-  AC_EGREP_CPP([ok], [
-  #if  __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 95)
-    ok
-  #endif
-  ], [OPTLEVEL='-O2'], [OPTLEVEL=''])
-  if test "$OPTLEVEL" = ""; then
-    AC_MSG_RESULT(no)
-    # something of a hack here
-    WERROR=''
-  else
-    AC_MSG_RESULT(yes)
-  fi
-
   AC_LANG_RESTORE
-  AC_SUBST(OPTLEVEL)
   AC_SUBST(WERROR)
+  AC_SUBST(FMTFLAGS)
 ])
 
 

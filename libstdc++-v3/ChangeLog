@@ -1,3 +1,21 @@
+2000-05-24  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_COMPILER_VERSION): Remove
+	OPTLEVEL. Add FMTFLAGS.
+	* aclocal.m4: Regenerate.
+	* src/Makefile.am (AC_CXXFLAGS): Take out OPTLEVEL, as this is has
+	been disabled due to higher-level makefiles running amuck over
+	this bit, and add in FMTFLAGS so that formatting is clear. 
+	* src/Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+	* src/ios.cc (ios_base::sync_with_stdio): Cleanup buffers from
+	initialization.
+
+	* docs/download.html: Remove references to Cygwin-specific bits,
+	as this can now be built natively.
+	Update with current information.
+
 2000-05-24  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_COMPILER_VERSION):  If we can use
@@ -9,7 +27,7 @@
 	* docs/faq/index.html:  Update location of libg++ FAQ.
 	* docs/faq/index.txt:  Regenerate.
 
-2000-05-22  Benjamin Kosnik  <bkoz@purist.redhat.soma.com>
+2000-05-22  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* docs/17_intro/libstdc++-assign.txt: Change Cygnus to FSF.
 
