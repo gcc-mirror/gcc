@@ -154,7 +154,8 @@ libsubdir = $(libdir)/gcc-lib/$(target)/$(version)
 # Directory for header file assert.h.
 includedir = $(local_prefix)/include
 # assertdir is overridden in cross-make.
-assertdir = $(includedir)
+# (But this currently agrees with what is in cross-make.)
+assertdir = $(tooldir)/include
 # where the info files go
 infodir = $(prefix)/info
 # Extension (if any) to put in installed man-page filename.
@@ -1548,12 +1549,8 @@ install-dir:
 	-if [ -d $(libdir)/gcc-lib/$(target)/$(version)/include ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target)/$(version)/include ; fi
 	-if [ -d $(bindir) ] ; then true ; else mkdir $(bindir) ; fi
 	-if [ -d $(includedir) ] ; then true ; else mkdir $(includedir) ; fi
-	-if [ -f gcc-cross ] ; \
-	then \
-	  if [ -d $(tooldir) ] ; then true ; else mkdir $(tooldir) ; fi ; \
-	  if [ -d $(assertdir) ] ; then true ; else mkdir $(assertdir) ; fi ; \
-	else true; \
-	fi
+	-if [ -d $(assertdir) ] ; then true ; else mkdir $(assertdir) ; fi
+	-if [ -d $(tooldir) ] ; then true ; else mkdir $(tooldir) ; fi ; \
 	-if [ -d $(infodir) ] ; then true ; else mkdir $(infodir) ; fi
 # We don't use mkdir -p to create the parents of mandir,
 # because some systems don't support it.
