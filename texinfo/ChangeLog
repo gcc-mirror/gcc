@@ -1,3 +1,8 @@
+Wed Sep 17 23:56:11 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* util/install-info.c: Only provide an external decl for strrchr
+	if HAVE_STRCHR is not defined.
+
 Mon Sep 15 22:53:01 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* aclocal.m4: Add replacement for AC_PROG_INSTALL.
