@@ -4066,6 +4066,7 @@ schedule_block (b, file)
 		notes++;
 		new = emit_note_after (NOTE_LINE_NUMBER (note), prev);
 		NOTE_SOURCE_FILE (new) = NOTE_SOURCE_FILE (note);
+		RTX_INTEGRATED_P (new) = RTX_INTEGRATED_P (note);
 	      }
 	  }
       if (file && notes)
