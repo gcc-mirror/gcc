@@ -91,6 +91,7 @@ function_cannot_inline_p (fndecl)
   int max_insns = INTEGRATE_THRESHOLD (fndecl);
   register int ninsns = 0;
   register tree parms;
+  rtx result;
 
   /* No inlines with varargs.  `grokdeclarator' gives a warning
      message about that if `inline' is specified.  This code
@@ -183,6 +184,11 @@ function_cannot_inline_p (fndecl)
 	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
 	return "function with complex parameters cannot be inline";
     }
+
+  /* We can't inline functions that return a PARALLEL rtx.  */
+  result = DECL_RTL (DECL_RESULT (fndecl));
+  if (result && GET_CODE (result) == PARALLEL)
+    return "inline functions not supported for this return value type";
 
   return 0;
 }
@@ -1698,6 +1704,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
       else
 	map->reg_map[REGNO (loc)] = reg_to_map;
     }
+  else
+    abort ();
 
   /* Make new label equivalences for the labels in the called function.  */
   for (i = min_labelno; i < max_labelno; i++)
