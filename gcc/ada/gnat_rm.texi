@@ -8,7 +8,7 @@
 @c                                                                            o
 @c                              G N A T _ RM                                  o
 @c                                                                            o
-@c                            $Revision: 1.3 $
+@c                            $Revision: 1.3.12.1 $
 @c                                                                            o
 @c          Copyright (C) 1992-2001 Ada Core Technologies, Inc.               o
 @c                                                                            o
@@ -38,8 +38,8 @@
 @title GNAT Reference Manual
 @subtitle GNAT, The GNU Ada 95 Compiler
 @subtitle Version 3.15w
-@subtitle Document revision level $Revision: 1.3 $
-@subtitle Date: $Date: 2001/12/18 00:03:37 $
+@subtitle Document revision level $Revision: 1.3.12.1 $
+@subtitle Date: $Date: 2002/04/21 07:05:08 $
 @author Ada Core Technologies, Inc.
 
 @page
@@ -72,7 +72,7 @@ The following are trademarks of Digital Equipment Corporation:
 DEC, DEC Ada, DECthreads, Digital, OpenVMS, and VAX@.
 
 @end titlepage
-@ifinfo
+@ifnottex
 @node Top, About This Guide, (dir), (dir)
 @top GNAT Reference Manual
 
@@ -83,7 +83,7 @@ GNAT, The GNU Ada 95 Compiler
 
 Version 3.14a
 
-Date: $Date: 2001/12/18 00:03:37 $
+Date: $Date: 2002/04/21 07:05:08 $
 
 Ada Core Technologies, Inc.
 
@@ -254,7 +254,7 @@ GNAT Implementation of Tasking
 * Ensuring Compliance with the Real-Time Annex::
 @end menu
 
-@end ifinfo
+@end ifnottex
 
 @node About This Guide
 @unnumbered About This Guide
