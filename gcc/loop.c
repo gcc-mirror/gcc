@@ -135,6 +135,10 @@ static int loop_has_call;
 
 static int loop_has_volatile;
 
+/* Nonzero if there is a tablejump in the current loop.  */
+
+static int loop_has_tablejump;
+
 /* Added loop_continue which is the NOTE_INSN_LOOP_CONT of the
    current loop.  A continue statement will generate a branch to
    NEXT_INSN (loop_continue).  */
@@ -2367,9 +2371,9 @@ constant_high_bytes (p, loop_start)
 #endif
 
 /* Scan a loop setting the variables `unknown_address_altered',
-   `num_mem_sets', `loop_continue', loops_enclosed', `loop_has_call',
-   and `loop_has_volatile'.  Also, fill in the arrays `loop_mems' and
-   `loop_store_mems'.  */
+   `num_mem_sets', `loop_continue', `loops_enclosed', `loop_has_call',
+   `loop_has_volatile', and `loop_has_tablejump'.
+   Also, fill in the arrays `loop_mems' and `loop_store_mems'.  */
 
 static void
 prescan_loop (start, end)
@@ -2389,6 +2393,7 @@ prescan_loop (start, end)
   unknown_address_altered = 0;
   loop_has_call = 0;
   loop_has_volatile = 0;
+  loop_has_tablejump = 0;
   loop_store_mems_idx = 0;
   loop_mems_idx = 0;
 
@@ -2435,10 +2440,15 @@ prescan_loop (start, end)
 
 	  if (volatile_refs_p (PATTERN (insn)))
 	    loop_has_volatile = 1;
+
+	  if (GET_CODE (insn) == JUMP_INSN
+	      && (GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
+		  || GET_CODE (PATTERN (insn)) == ADDR_VEC))
+	    loop_has_tablejump = 1;
 	  
 	  note_stores (PATTERN (insn), note_addr_stored);
 
-	  if (!loop_has_multiple_exit_targets
+	  if (! loop_has_multiple_exit_targets
 	      && GET_CODE (insn) == JUMP_INSN
 	      && GET_CODE (PATTERN (insn)) == SET
 	      && SET_DEST (PATTERN (insn)) == pc_rtx)
@@ -7948,7 +7958,6 @@ insert_bct (loop_start, loop_end)
 {
   int i;
   unsigned HOST_WIDE_INT n_iterations;
-  rtx insn;
 
   int increment_direction, compare_direction;
 
@@ -8009,18 +8018,13 @@ insert_bct (loop_start, loop_end)
 
   /* Make sure that the loop does not jump via a table.
      (the count register might be used to perform the branch on table).  */
-  for (insn = loop_start; insn && insn != loop_end; insn = NEXT_INSN (insn))
+  if (loop_has_tablejump)
     {
-      if (GET_CODE (insn) == JUMP_INSN
-	  && (GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
-	      || GET_CODE (PATTERN (insn)) == ADDR_VEC))
-	{
-	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream,
-		     "insert_bct %d: BCT instrumentation failed: computed branch in the loop\n",
-		     loop_num);
-	  return;
-	}
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "insert_bct %d: BCT instrumentation failed: computed branch in the loop\n",
+		 loop_num);
+      return;
     }
 
   /* Account for loop unrolling in instrumented iteration count.  */
@@ -8045,7 +8049,7 @@ insert_bct (loop_start, loop_end)
   if (n_iterations > 0)
     {
       /* Mark all enclosing loops that they cannot use count register.  */
-      for (i=loop_num; i != -1; i = loop_outer_loop[i])
+      for (i = loop_num; i != -1; i = loop_outer_loop[i])
 	loop_used_count_register[i] = 1;
       instrument_loop_bct (loop_start, loop_end, GEN_INT (n_iterations));
       return;
