@@ -4291,7 +4291,8 @@
 		     ? REGNO (operands[2]) + 1 : REGNO (operands[2]));
 
   /* We must be careful to make sure that the new rtx won't need reloading.  */
-  if (! strict_memory_address_p (DImode, XEXP (operands[1], 0)))
+  if (GET_CODE (operands[1]) == MEM &&
+      ! strict_memory_address_p (DImode, XEXP (operands[1], 0)))
     {
       tmp = gen_rtx (REG, Pmode, REGNO (operands[0]));
       emit_insn (gen_move_insn (tmp, XEXP (operands[1], 0)));
@@ -4324,7 +4325,8 @@
 		     ? REGNO (operands[2]) + 1 : REGNO (operands[2]));
 
   /* We must be careful to make sure that the new rtx won't need reloading.  */
-  if (!strict_memory_address_p (DImode, XEXP (operands[1], 0)))
+  if (GET_CODE (operands[1]) == MEM &&
+      ! strict_memory_address_p (DImode, XEXP (operands[1], 0)))
     {
       tmp = gen_rtx (REG, Pmode, REGNO (operands[0]));
       emit_insn (gen_move_insn (tmp, XEXP (operands[1], 0)));
@@ -4348,7 +4350,9 @@
   "
 { extern rtx get_unaligned_address ();
 
-  if (!strict_memory_address_p (DImode, XEXP (operands[0], 0)))
+  /* Note that any_memory_operand allows pseudos during reload.  */
+  if (GET_CODE (operands[0]) == MEM &&
+      ! strict_memory_address_p (DImode, XEXP (operands[0], 0)))
     {
       rtx scratch1 = gen_rtx (REG, DImode, REGNO (operands[2]));
       emit_insn (gen_move_insn (scratch1, XEXP (operands[0], 0)));
@@ -4394,7 +4398,9 @@
   "
 { extern rtx get_unaligned_address ();
 
-  if (!strict_memory_address_p (DImode, XEXP (operands[0], 0)))
+  /* Note that any_memory_operand allows pseudos during reload.  */
+  if (GET_CODE (operands[0]) == MEM &&
+      ! strict_memory_address_p (DImode, XEXP (operands[0], 0)))
     {
       rtx scratch1 = gen_rtx (REG, DImode, REGNO (operands[2]));
       emit_insn (gen_move_insn (scratch1, XEXP (operands[0], 0)));
