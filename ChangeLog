@@ -1,3 +1,7 @@
+2001-05-31  Graham Stott  <grahams@redhat.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2001-05-28  Simon Patarin <simon.patarin@inria.fr>
 
 	* ltcf-cxx.sh (osf3/osf4/osf5): Support creation of C++  shared
