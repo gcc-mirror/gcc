@@ -1,3 +1,52 @@
+1999-12-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (toplev.o): Depend on loop.h.
+
+	* dwarfout.c: Include tm_p.h.
+
+	* emit-rtl.c (restore_emit_status): Mark parameter with
+	ATTRIBUTE_UNUSED.
+
+	* final.c (final_scan_insn): Likewise.
+
+	* flow.c (flow_nodes_print, flow_exits_print, flow_loops_cfg_dump,
+	flow_loop_nested_p, flow_loop_exits_find, flow_loop_nodes_find,
+	flow_depth_first_order_compute, flow_loop_pre_header_find,
+	flow_loop_tree_node_add, flow_loops_tree_build,
+	flow_loop_level_compute, flow_loops_level_compute,
+	flow_loop_outside_edge_p): Add prototypes.
+	(recompute_reg_usage): Mark parameters with ATTRIBUTE_UNUSED.
+
+	* ggc-callbacks.c (lang_mark_tree, lang_mark_false_label_stack):
+	Mark with ATTRIBUTE_NORETURN.
+
+	* hash.c (hash_newfunc): Mark parameter with ATTRIBUTE_UNUSED.
+
+	* local-alloc.c (no_conflict_p): Likewise.
+
+	* loop.c (insert_bct): Hide definitions of variables with hidden
+	usage.
+	(note_reg_stored): Mark parameter with ATTRIBUTE_UNUSED.
+
+	* regclass.c (memory_move_secondary_cost): Mark variable `mem'
+	with ATTRIBUTE_UNUSED.
+	(record_reg_classes): Mark parameter with ATTRIBUTE_UNUSED.
+	(reg_scan): Likewise.
+	
+	* reload.c (find_reloads): Remove unused variables `changed'.
+
+	* reload1.c (reload_reg_class_lower): Don't unnecessarily cast
+	away const-ness.
+	(allocate_reload_reg): Mark parameter with ATTRIBUTE_UNUSED.
+	Remove unused variable `insn'.
+	
+	* toplev.c: Include loop.h.
+	(report_file_and_line): Remove unnecessary prototype.
+
+	* tree.c (build_block): Mark parameter with ATTRIBUTE_UNUSED.
+
+	* unroll.c (biv_total_increment): Likewise.
+	
 Thu Dec 23 23:15:22 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (emit_input_reload_insns): Restore old behaviour

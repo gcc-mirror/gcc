@@ -2393,7 +2393,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   int goal_alternative_swapped;
   int best;
   int commutative;
-  int changed;
   char operands_match[MAX_RECOG_OPERANDS][MAX_RECOG_OPERANDS];
   rtx substed_operand[MAX_RECOG_OPERANDS];
   rtx body = PATTERN (insn);

@@ -140,7 +140,7 @@ struct hash_entry *
 hash_newfunc (entry, table, p)
      struct hash_entry *entry;
      struct hash_table *table;
-     hash_table_key p;
+     hash_table_key p ATTRIBUTE_UNUSED;
 {
   if (entry == (struct hash_entry *) NULL)
     entry = ((struct hash_entry *)

@@ -2148,7 +2148,7 @@ post_mark_life (regno, mode, life, birth, death)
 
 static int
 no_conflict_p (insn, r0, r1)
-     rtx insn, r0, r1;
+     rtx insn, r0 ATTRIBUTE_UNUSED, r1;
 {
   int ok = 0;
   rtx note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
