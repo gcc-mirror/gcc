@@ -22,8 +22,15 @@ Boston, MA 02111-1307, USA.  */
 
 #define MOTOROLA       /* Use Motorola syntax rather than MIT.  */
 
-/* Specify predefined symbols in preprocessor.  */
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmc68000 -D__rtems__ -D__ELF__ -D__USE_INIT_FINI__ \
-   -Asystem=rtems -Acpu=mc68000 -Acpu=m68k -Amachine=m68k"
+/* Target OS builtins.  */
+#undef TARGET_OS_CPP_BUILTINS	/* Defined in m68kemb.h.  */
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("mc68000");		\
+	builtin_define ("__USE_INIT_FINI__");	\
+	builtin_define ("__rtems__");		\
+	builtin_define ("__ELF__");		\
+	builtin_assert ("system=rtems");	\
+    }						\
+  while (0)

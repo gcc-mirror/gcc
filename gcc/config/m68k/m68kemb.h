@@ -41,9 +41,14 @@
 #undef NEEDS_UNTYPED_CALL
 #define NEEDS_UNTYPED_CALL 1
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmc68000 -D__embedded__ -Asystem=embedded \
-  -Amachine=mc68000"
+/* Target OS builtins.  */
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("mc68000");		\
+	builtin_define ("__embedded__");	\
+   }						\
+  while (0)
 
 /* Override the default LIB_SPEC from gcc.c.  We don't currently support
    profiling, or libg.a.  */

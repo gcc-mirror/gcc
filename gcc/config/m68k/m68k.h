@@ -24,6 +24,18 @@ Boston, MA 02111-1307, USA.  */
 /* Note that some other tm.h files include this one and then override
    many of the definitions that relate to assembler syntax.  */
 
+/* Target CPU builtins.  */
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define ("__mc68000__");		\
+	builtin_define ("__mc68020__");		\
+	builtin_define ("__m68k__");		\
+	builtin_assert ("cpu=m68k");		\
+	builtin_assert ("machine=m68k");	\
+    }						\
+  while (0)
+
 
 /* Classify the groups of pseudo-ops used to assemble QI, HI and SI
    quantities.  */
@@ -34,10 +46,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Set the default */
 #define INT_OP_GROUP INT_OP_DOT_WORD
-
-/* Names to predefine in the preprocessor for this target machine.  */
-
-/* See sun3.h, sun2.h, isi.h for different CPP_PREDEFINES.  */
 
 /* Print subsidiary information on the compiler version in use.  */
 #ifdef MOTOROLA
