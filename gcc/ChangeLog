@@ -8,6 +8,8 @@ Tue Dec 29 11:58:53 1998  Richard Henderson  <rth@cygnus.com>
 	(small_int_or_double, uns_small_int, zero_operand): Likewise.
 	* sparc.h (PREDICATE_CODES): Likewise.
 
+	* rtl.h (CONSTANT_P): Remove CONSTANT_P_RTX.
+
 Tue Dec 29 11:32:54 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>:
 
 	* rtl.def (CONSTANT_P_RTX): Clarify commentary.
