@@ -130,7 +130,7 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
     try
       {
 	res = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-		loc, DecimalFormatSymbols.class.getClassLoader());
+		loc, ClassLoader.getSystemClassLoader());
       }
     catch (MissingResourceException x)
       {

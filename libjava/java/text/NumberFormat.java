@@ -310,7 +310,7 @@ public abstract class NumberFormat extends Format implements Cloneable
     try
       {
 	res = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-		loc, NumberFormat.class.getClassLoader());
+		loc, ClassLoader.getSystemClassLoader());
       }
     catch (MissingResourceException x)
       {

@@ -303,7 +303,7 @@ public abstract class Collator implements Comparator, Cloneable
     try
       {
 	res = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-				       loc, Collator.class.getClassLoader());
+				       loc, ClassLoader.getSystemClassLoader());
 	pattern = res.getString("collation_rules");
       }
     catch (MissingResourceException x)
