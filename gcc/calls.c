@@ -901,15 +901,18 @@ expand_call (exp, target, ignore)
      as if it were an extra parameter.  */
   if (structure_value_addr && struct_value_rtx == 0)
     {
+      /* If structure_value_addr is a REG other than
+	 virtual_outgoing_args_rtx, we can use always use it.  If it
+	 is not a REG, we must always copy it into a register.
+	 If it is virtual_outgoing_args_rtx, we must copy it to another
+	 register in some cases.  */
+      rtx temp = (GET_CODE (structure_value_addr) != REG
 #ifdef ACCUMULATE_OUTGOING_ARGS
-      /* If the stack will be adjusted, make sure the structure address
-	 does not refer to virtual_outgoing_args_rtx.  */
-      rtx temp = (stack_arg_under_construction
-		  ? copy_addr_to_reg (structure_value_addr)
-		  : force_reg (Pmode, structure_value_addr));
-#else
-      rtx temp = force_reg (Pmode, structure_value_addr);
+		  || (stack_arg_under_construction
+		      && structure_value_addr == virtual_outgoing_args_rtx)
 #endif
+		  ? copy_addr_to_reg (structure_value_addr)
+		  : structure_value_addr);
 
       actparms
 	= tree_cons (error_mark_node,
