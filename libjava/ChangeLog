@@ -2,6 +2,8 @@
 
 	* configure.in: Remove check for -fuse-divide-subroutine.
 	* configure: Rebuilt.
+	
+	* java/util/Hashtable.java (Enumerator.nextElement): Initialize `e'.
 
 2000-12-11  Bryce McKinlay  <bryce@albatross.co.nz>
 
