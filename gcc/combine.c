@@ -666,10 +666,18 @@ set_nonzero_bits_and_sign_copies (x, set)
       && REGNO (x) >= FIRST_PSEUDO_REGISTER
       && reg_n_sets[REGNO (x)] > 1
       && reg_basic_block[REGNO (x)] < 0
+      /* If this register is undefined at the start of the file, we can't
+	 say what its contents were.  */
+      && ! (basic_block_live_at_start[0][REGNO (x) / REGSET_ELT_BITS]
+	    & ((REGSET_ELT_TYPE) 1 << (REGNO (x) % REGSET_ELT_BITS)))
       && GET_MODE_BITSIZE (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT)
     {
       if (GET_CODE (set) == CLOBBER)
-	return;
+	{
+	  reg_nonzero_bits[REGNO (x)] = GET_MODE_MASK (GET_MODE (x));
+	  reg_sign_bit_copies[REGNO (x)] = 0;
+	  return;
+	}
 
       /* If this is a complex assignment, see if we can convert it into a
 	 simple assignment.  */
