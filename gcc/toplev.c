@@ -2859,24 +2859,30 @@ rest_of_compilation (decl)
 		   && ! flag_keep_inline_functions)
 		  || DECL_EXTERNAL (decl))))
 	{
-#ifdef DWARF_DEBUGGING_INFO
-	  /* Generate the DWARF info for the "abstract" instance
-	     of a function which we may later generate inlined and/or
-	     out-of-line instances of.  */
-	  if (write_symbols == DWARF_DEBUG)
+	  DECL_DEFER_OUTPUT (decl) = 1;
+
+	  /* If -Wreturn-type, we have to do a bit of compilation.  */
+	  if (! warn_return_type)
 	    {
-	      set_decl_abstract_flags (decl, 1);
-	      TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 0));
-	      set_decl_abstract_flags (decl, 0);
-	    }
+#ifdef DWARF_DEBUGGING_INFO
+	      /* Generate the DWARF info for the "abstract" instance
+		 of a function which we may later generate inlined and/or
+		 out-of-line instances of.  */
+	      if (write_symbols == DWARF_DEBUG)
+		{
+		  set_decl_abstract_flags (decl, 1);
+		  TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 0));
+		  set_decl_abstract_flags (decl, 0);
+		}
 #endif
-	  TIMEVAR (integration_time, save_for_inline_nocopy (decl));
-	  goto exit_rest_of_compilation;
+	      TIMEVAR (integration_time, save_for_inline_nocopy (decl));
+	      goto exit_rest_of_compilation;
+	    }
 	}
 
       /* If we have to compile the function now, save its rtl and subdecls
 	 so that its compilation will not affect what others get.  */
-      if (DECL_INLINE (decl))
+      if (DECL_INLINE (decl) || DECL_DEFER_OUTPUT (decl))
 	{
 #ifdef DWARF_DEBUGGING_INFO
 	  /* Generate the DWARF info for the "abstract" instance of
@@ -2901,7 +2907,8 @@ rest_of_compilation (decl)
 	goto exit_rest_of_compilation;
     }
 
-  TREE_ASM_WRITTEN (decl) = 1;
+  if (! DECL_DEFER_OUTPUT (decl))
+    TREE_ASM_WRITTEN (decl) = 1;
 
   /* Now that integrate will no longer see our rtl, we need not distinguish
      between the return value of this function and the return value of called
@@ -2958,7 +2965,7 @@ rest_of_compilation (decl)
     }
 
   /* Now is when we stop if -fsyntax-only and -Wreturn-type.  */
-  if (rtl_dump_and_exit || flag_syntax_only)
+  if (rtl_dump_and_exit || flag_syntax_only || DECL_DEFER_OUTPUT (decl))
     goto exit_rest_of_compilation;
 
   /* Dump rtl code after jump, if we are doing that.  */
