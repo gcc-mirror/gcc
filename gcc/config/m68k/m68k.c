@@ -1372,7 +1372,7 @@ output_move_simode_const (operands)
 	  || GET_CODE (operands[0]) == MEM)
       /* clr insns on 68000 read before writing.
 	 This isn't so on the 68010, but we have no TARGET_68010.  */
-      && (TARGET_68020
+      && ((TARGET_68020 || TARGET_5200)
 	  || !(GET_CODE (operands[0]) == MEM
 	       && MEM_VOLATILE_P (operands[0]))))
     return "clr%.l %0";
