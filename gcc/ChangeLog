@@ -1,3 +1,9 @@
+2000-03-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libgcc2.h: Move prototypes above macros with the same name.
+	Wrap some function prototypes in the conditional which indicates
+	whether they are supported, i.e. "BITS_PER_UNIT == 8".
+
 2000-03-16  Richard Henderson  <rth@cygnus.com>
 
 	* calls.c: Revert last two changes.
