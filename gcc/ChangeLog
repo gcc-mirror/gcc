@@ -1,5 +1,7 @@
 Tue Dec 11 07:08:57 2001  Douglas B. Rupp  <rupp@gnat.com>
 
+	* config/alpha/x-vms (version): Change "." to "_".
+
 	* configure.in: Hardcode that vfork works on VMS host.
 	* configure: Regenerated.
 
