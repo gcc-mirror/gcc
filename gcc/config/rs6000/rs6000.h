@@ -715,13 +715,16 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
    and the rest are pushed.  The first 13 FP args are in registers.
 
    If this is floating-point and no prototype is specified, we use
-   both an FP and integer register (or possibly FP reg and stack).  */
+   both an FP and integer register (or possibly FP reg and stack).  Library
+   functions (when TYPE is zero) always have the proper types for args,
+   so we can pass the FP value just in one register.  emit_library_function
+   doesn't support EXPR_LIST anyway.  */
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)				\
   (! (NAMED) ? 0							\
    : ((TYPE) != 0 && TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST) ? 0	\
    : USE_FP_FOR_ARG_P (CUM, MODE, TYPE)					\
-   ? ((CUM).nargs_prototype > 0						\
+   ? ((CUM).nargs_prototype > 0 || (TYPE) == 0				\
       ? gen_rtx (REG, MODE, (CUM).fregno)				\
       : ((CUM).words < 8						\
 	 ? gen_rtx (EXPR_LIST, VOIDmode,				\
