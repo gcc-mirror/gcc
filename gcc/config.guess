@@ -62,6 +62,9 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     21064:Windows_NT:50:3)
 	echo alpha-dec-winnt3.5
 	exit 0 ;;
+    Amiga*:UNIX_System_V:4.0:*)
+	echo m68k-cbm-sysv4
+	exit 0;;
     amiga:NetBSD:*:*)
       echo m68k-cbm-netbsd${UNAME_RELEASE}
       exit 0 ;;
@@ -327,12 +330,16 @@ EOF
 	# The BFD linker knows what the default object file format is, so
 	# first see if it will tell us.
 	ld_help_string=`ld --help 2>&1`
-	if echo $ld_help_string | grep >/dev/null 2>&1 "supported emulations: elf_i[345]86"; then
+	if echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: elf_i[345]86"; then
 	  echo "${UNAME_MACHINE}-unknown-linux" ; exit 0
-	elif echo $ld_help_string | grep >/dev/null 2>&1 "supported emulations: i[345]86linux"; then
+	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: i[345]86linux"; then
 	  echo "${UNAME_MACHINE}-unknown-linuxaout" ; exit 0
-	elif echo $ld_help_string | grep >/dev/null 2>&1 "supported emulations: i[345]86coff"; then
+	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: i[345]86coff"; then
 	  echo "${UNAME_MACHINE}-unknown-linuxcoff" ; exit 0
+	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: m68kelf"; then
+	  echo "${UNAME_MACHINE}-unknown-linux" ; exit 0
+	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: m68klinux"; then
+	  echo "${UNAME_MACHINE}-unknown-linuxaout" ; exit 0
 	elif test "${UNAME_MACHINE}" = "alpha" ; then
 	  echo alpha-unknown-linux ; exit 0
 	else
