@@ -1,6 +1,6 @@
 #!/bin/sh 
 # Generates multilib.h.
-#   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+#   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -45,6 +45,9 @@
 # The optional fourth argument is a list of multilib directory 
 # combinations that should not be built.
 
+# The optional fifth argument is a list of options that should be
+# used whenever building multilib libraries.
+
 # The output looks like
 #   #define MULTILIB_MATCHES "\
 #   SUBDIRECTORY OPTIONS;\
@@ -81,6 +84,9 @@ options=$1
 dirnames=$2
 matches=$3
 exceptions=$4
+extra=$5
+
+echo "static char *multilib_raw[] = {"
 
 # What we want to do is select all combinations of the sets in
 # options.  Each combination which includes a set of mutually
@@ -158,16 +164,6 @@ if [ -n "${dirnames}" ]; then
   done
 fi
 
-# Construct a sed pattern which will add negations based on the
-# matches.  The semicolons are easier than getting the shell to accept
-# quoted spaces when expanding a variable.
-matchnegations=
-for i in ${matches}; do
-  l=`echo $i | sed -e 's/=.*$//' -e 's/?/=/g'`
-  r=`echo $i | sed -e 's/^.*=//' -e 's/?/=/g'`
-  matchnegations="${matchnegations} -e s/;!${l};/;!${l};!${r};/"
-done
-
 # We need another recursive shell script to correctly handle positive
 # matches.  If we are invoked as
 #   genmultilib "opt1 opt2" "" "opt1=nopt1 opt2=nopt2"
@@ -207,9 +203,6 @@ for set in ${options}; do
   done
 done
 optout=`echo ${optout} | sed -e 's/^ //'`
-if [ -n "${matchnegations}" ]; then
-  optout=`echo ";${optout};" | sed -e 's/ /;/g' ${matchnegations} -e 's/^;//' -e 's/;$//' -e 's/;/ /g'`
-fi
 echo "\". ${optout};\","
 
 # Work over the list of combinations.  We have to translate each one
@@ -241,18 +234,36 @@ for combo in ${combinations}; do
   done
   optout=`echo ${optout} | sed -e 's/^ //'`
 
-  # Add any negations of matches.
-  if [ -n "${matchnegations}" ]; then
-    optout=`echo ";${optout};" | sed -e 's/ /;/g' ${matchnegations} -e 's/^;//' -e 's/;$//' -e 's/;/ /g'`
-  fi
-
   # Output the line with all appropriate matches.
-  dirout="${dirout}" optout="${optout}" ./tmpmultilib2 ${matches}
+  dirout="${dirout}" optout="${optout}" ./tmpmultilib2
 done
 
 # Terminate the list of string.
 echo "NULL"
+echo "};"
 
+# Output all of the matches now as option and that is the same as that, with
+# a semicolan trailer.  Include all of the normal options as well.
+# Note, the format of the matches is reversed compared
+# to what we want, so switch them around.
+echo ""
+echo "static char *multilib_matches_raw[] = {"
+for match in ${matches}; do
+  l=`echo ${match} | sed -e 's/=.*$//' -e 's/?/=/g'`
+  r=`echo ${match} | sed -e 's/^.*=//' -e 's/?/=/g'`
+  echo "\"${r} ${l};\","
+done
+for set in ${options}; do
+  for opt in `echo ${set} | sed -e 's|/| |'g`; do
+    echo "\"${opt} ${opt};\","
+  done
+done
+echo "NULL"
+echo "};"
+
+# Output the default options now
+echo ""
+echo "static char *multilib_extra = \"${extra}\";"
 rm -f tmpmultilib2
 
 exit 0
