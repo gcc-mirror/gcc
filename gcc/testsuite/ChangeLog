@@ -1,3 +1,11 @@
+2003-04-16  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+        Backport from mainline.
+
+        2003-03-17  Zack Weinberg  <zack@codesourcery.com>
+
+	        * objc.dg/naming-1.m: Use "(parse|syntax) error".
+	        * objc.dg/naming-2.m: Likewise.
+
 2003-04-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/10377
