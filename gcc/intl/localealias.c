@@ -244,21 +244,21 @@ read_alias_file (fname, fname_len)
 
       cp = buf;
       /* Ignore leading white space.  */
-      while (isspace (cp[0]))
+      while (isspace ((unsigned char)cp[0]))
 	++cp;
 
       /* A leading '#' signals a comment line.  */
       if (cp[0] != '\0' && cp[0] != '#')
 	{
 	  alias = cp++;
-	  while (cp[0] != '\0' && !isspace (cp[0]))
+	  while (cp[0] != '\0' && !isspace ((unsigned char)cp[0]))
 	    ++cp;
 	  /* Terminate alias name.  */
 	  if (cp[0] != '\0')
 	    *cp++ = '\0';
 
 	  /* Now look for the beginning of the value.  */
-	  while (isspace (cp[0]))
+	  while (isspace ((unsigned char)cp[0]))
 	    ++cp;
 
 	  if (cp[0] != '\0')
@@ -267,7 +267,7 @@ read_alias_file (fname, fname_len)
 	      size_t value_len;
 
 	      value = cp++;
-	      while (cp[0] != '\0' && !isspace (cp[0]))
+	      while (cp[0] != '\0' && !isspace ((unsigned char)cp[0]))
 		++cp;
 	      /* Terminate value.  */
 	      if (cp[0] == '\n')
@@ -390,8 +390,8 @@ alias_compare (map1, map2)
     {
       /* I know this seems to be odd but the tolower() function in
 	 some systems libc cannot handle nonalpha characters.  */
-      c1 = isupper (*p1) ? tolower (*p1) : *p1;
-      c2 = isupper (*p2) ? tolower (*p2) : *p2;
+      c1 = isupper ((unsigned char)*p1) ? tolower ((unsigned char)*p1) : *p1;
+      c2 = isupper ((unsigned char)*p2) ? tolower ((unsigned char)*p2) : *p2;
       if (c1 == '\0')
 	break;
       ++p1;

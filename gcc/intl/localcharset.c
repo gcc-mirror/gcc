@@ -55,6 +55,8 @@
 # include <windows.h>
 #endif
 
+#include "gettextP.h"
+
 #ifndef DIRECTORY_SEPARATOR
 # define DIRECTORY_SEPARATOR '/'
 #endif

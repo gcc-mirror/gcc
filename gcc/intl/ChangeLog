@@ -1,3 +1,14 @@
+2001-11-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* l10nflist.c (_nl_normalize_codeset): Cast argument of ctype
+	function to `unsigned char'.
+	* loadmsgcat.c (_nl_load_domain): Likewise.
+	* localealias.c (read_alias_file, alias_compare): Likewise.
+	* localcharset.c: Include "gettextP.h".
+	* plural.y (__attribute__): Define.
+	(yyerror): Mark parameter with __attribute__ ((__unused__)).
+	* plural.c: Regenerate.
+
 2001-10-24  Zack Weinberg  <zack@codesourcery.com>
 
 	* loadmsgcat.c (INTTYPE_SIGNED, INTTYPE_MINIMUM,
