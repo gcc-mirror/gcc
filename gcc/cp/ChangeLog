@@ -1,3 +1,8 @@
+2003-04-30  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9432, c++/9528
+	* decl2.c (validate_nonmember_using_decl): Handle SCOPE_REF.
+
 2003-04-30  Garbiel Dos Reis  <gcc@integrable-solutions.net>
 
 	* decl.c (check_previous_goto_1): Adjust prototype.

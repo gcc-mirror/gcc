@@ -4236,6 +4236,14 @@ validate_nonmember_using_decl (tree decl, tree *scope, tree *name)
       return NULL_TREE;
     }
 
+  if (TREE_CODE (decl) == SCOPE_REF)
+    {
+      /* It's a nested name with template parameter dependent scope.
+	 This can only be using-declaration for class member.  */
+      error ("`%T' is not a namespace", TREE_OPERAND (decl, 0));
+      return NULL_TREE;
+    }
+
   if (is_overloaded_fn (decl))
     decl = get_first_fn (decl);
 
