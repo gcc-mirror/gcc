@@ -308,9 +308,7 @@ make_node (code)
 	DECL_ALIGN (t) = 1;
       DECL_USER_ALIGN (t) = 0;
       DECL_IN_SYSTEM_HEADER (t) = in_system_header;
-      DECL_SOURCE_LINE (t) = input_line;
-      DECL_SOURCE_FILE (t) =
-	(input_filename) ? input_filename : "<built-in>";
+      DECL_SOURCE_LOCATION (t) = input_location;
       DECL_UID (t) = next_decl_uid++;
 
       /* We have not yet computed the alias set for this declaration.  */
