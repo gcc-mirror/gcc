@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SPARC using a.out.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
 
 This file is part of GNU CC.
@@ -19,8 +19,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "aoutos.h"		/* A.out definitions */
 #include "sparc/sparc.h"	/* SPARC definitions */
+#include "aoutos.h"		/* A.out definitions */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dsparc -D__GCC_NEW_VARARGS__"
+#define CPP_PREDEFINES "-Dsparc -Acpu(sparc) -Amachine(sparc)"
