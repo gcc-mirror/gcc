@@ -1,3 +1,9 @@
+2001-07-30  Jeff Sturm  <jsturm@one-point.com>
+
+	* libjava.lang/SyncTest.java: New file.
+	* libjava.lang/SyncTest.out: New file.
+	* libjava.lang/SyncTest.xfail: New file.
+
 2001-07-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* lib/libjava.exp (${tool}_set_ld_library_path): New, copied from
