@@ -321,7 +321,8 @@ try when searching for the executable files of the compiler.
 If defined, this macro is an additional prefix to try after
 @code{STANDARD_EXEC_PREFIX}.  @code{MD_EXEC_PREFIX} is not searched
 when the @samp{-b} option is used, or the compiler is built as a cross
-compiler.
+compiler.  If you define @code{MD_EXEC_PREFIX}, then be sure to add it
+to the list of directories used to find the assembler in @file{configure.in}.
 
 @findex STANDARD_STARTFILE_PREFIX
 @item STANDARD_STARTFILE_PREFIX
