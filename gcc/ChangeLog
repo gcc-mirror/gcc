@@ -1,3 +1,7 @@
+Wed Jun  9 23:01:17 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* invoke.texi: Add C4x invocation docs.
+
 Wed Jun  9 22:42:49 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (TARGET_EXPOSE_LDP, LEGITIMIZE_RELOAD_ADDRESS):

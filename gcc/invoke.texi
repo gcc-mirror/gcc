@@ -393,6 +393,12 @@ in the following sections.
 -mmangle-cpu  -mcpu=@var{cpu}  -mtext=@var{text section}
 -mdata=@var{data section}  -mrodata=@var{readonly data section}
 
+@emph{TMS320C3x/C4x Options}
+-mcpu=@var{cpu} -mbig -msmall -mregparm -mmemparm
+-mfast-fix -mmpyi -mbk -mti -mdp-isr-reload
+-mrpts=@var{count}  -mrptb -mdb -mloop-unsigned
+-mparallel-insns -mparallel-mpy -mpreserve-float
+
 @emph{V850 Options}
 -mlong-calls -mno-long-calls -mep -mno-ep
 -mprolog-function -mno-prolog-function -mspace
@@ -2088,7 +2094,8 @@ Print statistics on memory usage, at the end of the run, to
 standard error.
 @item p
 Annotate the assembler output with a comment indicating which
-pattern and alternative was used.
+pattern and alternative was used.  The length of each instruction is
+also printed.
 @item x
 Just generate RTL for a function instead of compiling it.  Usually used
 with @samp{r}.
@@ -3109,6 +3116,7 @@ that macro, which enables you to change the defaults.
 * H8/300 Options::
 * SH Options::
 * System V Options::
+* TMS320C3x/C4x Options::
 * V850 Options::
 * ARC Options::
 * NS32K Options::
@@ -5746,6 +5754,130 @@ Look in the directory @var{dir} to find the M4 preprocessor.
 The assembler uses this option.
 @c This is supposed to go with a -Yd for predefined M4 macro files, but
 @c the generic assembler that comes with Solaris takes just -Ym.
+@end table
+
+@node TMS320C3x/C4x Options
+@subsection TMS320C3x/C4x Options
+@cindex TMS320C3x/C4x Options
+
+These @samp{-m} options are defined for TMS320C3x/C4x implementations:
+
+@table @code
+
+@item -mcpu=@var{cpu_type}
+Set the instruction set, register set, and instruction scheduling
+parameters for machine type @var{cpu_type}.  Supported values for
+@var{cpu_type} are @samp{c30}, @samp{c31}, @samp{c32}, @samp{c40}, and
+@samp{c44}.  The default is @samp{c40} to generate code for the
+TMS320C40.
+
+@item -mbig-memory
+@item -mbig
+@itemx -msmall-memory
+@itemx -msmall
+Generates code for the big or small memory model.  The small memory
+model assumed that all data fits into one 64K word page.  At run-time
+the data page (DP) register must be set to point to the 64K page
+containing the .bss and .data program sections.  The big memory model is
+the default and requires reloading of the DP register for every direct
+memory access.
+
+@item -mbk
+@itemx -mno-bk
+Allow (disallow) allocation of general integer operands into the block
+count register BK. 
+
+@item -mdb
+@itemx -mno-db
+Enable (disable) generation of code using decrement and branch,
+DBcond(D), instructions.  This is enabled by default for the C4x.  To be
+on the safe side, this is disabled for the C3x, since the maximum
+iteration count on the C3x is 2^23 + 1 (but who iterates loops more than
+2^23 times on the C3x?).  Note that GCC will try to reverse a loop so
+that it can utilise the decrement and branch instruction, but will give
+up if there is more than one memory reference in the loop.  Thus a loop
+where the loop counter is decremented can generate slightly more
+efficient code, in cases where the RPTB instruction cannot be utilised.
+
+@item -mdp-isr-reload
+@itemx -mparanoid
+Force the DP register to be saved on entry to an interrupt service
+routine (ISR), reloaded to point to the data section, and restored on
+exit from the ISR.  This should not be required unless someone has
+violated the small memory model by modifying the DP register, say within
+an object library.
+
+@item -mmpyi
+@itemx -mno-mpyi
+For the C3x use the 24-bit MPYI instruction for integer multiplies
+instead of a library call to guarantee 32-bit results.  Note that if one
+of the operands is a constant, then the multiplication will be performed
+using shifts and adds.  If the -mmpyi option is not specified for the C3x,
+then squaring operations are performed inline instead of a library call.
+
+@item -mfast-fix
+@itemx -mno-fast-fix
+The C3x/C4x FIX instruction to convert a floating point value to an
+integer value chooses the nearest integer less than or equal to the
+floating point value rather than to the nearest integer.  Thus if the
+floating point number is negative, the result will be incorrectly
+truncated an additional code is necessary to detect and correct this
+case.  This option can be used to disable generation of the additional
+code required to correct the result.
+
+@item -mrptb
+@itemx -mno-rptb
+Enable (disable) generation of repeat block sequences using the RPTB
+instruction for zero overhead looping.  The RPTB construct is only used
+for innermost loops that do not call functions or jump across the loop
+boundaries.  There is no advantage having nested RPTB loops due to the
+overhead required to save and restore the RC, RS, and RE registers.
+This is enabled by default with -O2.
+
+@item -mrpts=@var{count}
+@itemx -mno-rpts
+Enable (disable) the use of the single instruction repeat instruction
+RPTS.  If a repeat block contains a single instruction, and the loop
+count can be guaranteed to be less than the value @var{count}, GCC will
+emit a RPTS instruction instead of a RPTB.  If no value is specified,
+then a RPTS will be emitted even if the loop count cannot be determined
+at compile time.  Note that the repeated instruction following RPTS does
+not have to be reloaded from memory each iteration, thus freeing up the
+CPU buses for oeprands.  However, since interrupts are blocked by this
+instruction, it is disabled by default.
+
+@item -mloop-unsigned
+@itemx -mno-loop-unsigned
+The maximum iteration count when using RPTS and RPTB (and DB on the C40)
+is 2^31 + 1 since these instructions test if the iteration count is
+negative to terminate the loop.  If the iteration count is unsigned
+there is a possibility than the 2^31 + 1 maximum iteration count may be
+exceeded.  This switch allows an unsigned iteration count.
+
+@item -mti
+Try to emit an assembler syntax that the TI assembler (asm30) is happy
+with.  This also enforces compatibility with the API employed by the TI
+C3x C compiler.  For example, long doubles are passed as structures
+rather than in floating point registers.
+
+@item -mregparm
+@itemx -mmemparm
+Generate code that uses registers (stack) for passing arguments to functions.
+By default, arguments are passed in registers where possible rather
+than by pushing arguments on to the stack.
+
+@item -mparallel-insns
+@itemx -mno-parallel-insns
+Allow the generation of parallel instructions.  This is enabled by
+default with -O2.
+
+@item -mparallel-mpy
+@itemx -mno-parallel-mpy
+Allow the generation of MPY||ADD and MPY||SUB parallel instructions,
+provided -mparallel-insns is also specified.  These instructions have
+tight register constraints which can pessimize the code generation
+of large functions.
+
 @end table
 
 @node V850 Options
