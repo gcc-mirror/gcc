@@ -1,5 +1,9 @@
 2000-03-09  Bernd Schmidt  <bernds@cygnus.co.uk>
 
+	* recog.c (preprocess_constraints): Matching constraints affect
+	same alternative/different operand, not same operand/different
+	alternative.
+	
 	* reload1.c (eliminate_regs_in_insn): Handle additions of eliminable
 	register and a constant specially.
 
