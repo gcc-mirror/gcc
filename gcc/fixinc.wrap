@@ -1,9 +1,11 @@
 #! /bin/sh
-# Fix struct exception in /usr/include/math.h.
+# Create wrappers for include files instead of replacing them.
 #
-# We expect several systems which did not need fixincludes in the past
-# to need to fix just math.h.  So we created a separate fixinc.math
-# script to fix just that problem.
+# This script is designed for systems whose include files can be fixed
+# by creating small wrappers around them.
+# An advantage of this method is that if the system include files are changed
+# (e.g. by OS upgrade), you need not re-run fixincludes.
+#
 # See README-fixinc for more information.
 
 # Directory containing the original header files.
@@ -50,4 +52,35 @@ __EOF__
     chmod a+r $LIB/$file
   fi
 fi
+
+# Avoid the definition of the bool type in the Solaris 2.x curses.h when using
+# g++, since it's now an official type in the C++ language.
+file=curses.h
+if [ -r $INPUT/$file ]; then
+  echo Checking $INPUT/$file
+  w='[	 ]'
+  if grep "typedef$w$w*char$w$w*bool$w*;" $INPUT/$file >/dev/null
+  then
+    echo Fixed $file
+    rm -f $LIB/$file
+    cat <<'__EOF__' >$LIB/$file
+#ifndef _CURSES_H_WRAPPER
+#ifdef __cplusplus
+# define bool __curses_bool_t
+#endif
+#include_next <curses.h>
+#ifdef __cplusplus
+# undef bool
+#endif
+#define _CURSES_H_WRAPPER
+#endif /* _CURSES_H_WRAPPER */
+__EOF__
+    # Define _CURSES_H_WRAPPER at the end of the wrapper, not the start,
+    # so that if #include_next gets another instance of the wrapper,
+    # this will follow the #include_next chain until we arrive at
+    # the real <curses.h>.
+    chmod a+r $LIB/$file
+  fi
+fi
+
 exit 0
