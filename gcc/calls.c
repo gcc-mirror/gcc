@@ -949,11 +949,11 @@ expand_call (exp, target, ignore)
 
   /* Compute number of named args.
      Normally, don't include the last named arg if anonymous args follow.
-     We do include the last named arg if STRICT_ARGUMENT_NAMING is defined.
+     We do include the last named arg if STRICT_ARGUMENT_NAMING is nonzero.
      (If no anonymous args follow, the result of list_length is actually
      one too large.  This is harmless.)
 
-     If SETUP_INCOMING_VARARGS is defined and STRICT_ARGUMENT_NAMING is not,
+     If SETUP_INCOMING_VARARGS is defined and STRICT_ARGUMENT_NAMING is zero,
      this machine will be able to place unnamed args that were passed in
      registers into the stack.  So treat all args as named.  This allows the
      insns emitting for a specific argument list to be independent of the
@@ -962,18 +962,20 @@ expand_call (exp, target, ignore)
      If SETUP_INCOMING_VARARGS is not defined, we do not have any reliable
      way to pass unnamed args in registers, so we must force them into
      memory.  */
-#if !defined(SETUP_INCOMING_VARARGS) || defined(STRICT_ARGUMENT_NAMING)
-  if (TYPE_ARG_TYPES (funtype) != 0)
+
+  if ((STRICT_ARGUMENT_NAMING
+#ifndef SETUP_INCOMING_VARARGS
+       || 1
+#endif
+       )
+      && TYPE_ARG_TYPES (funtype) != 0)
     n_named_args
       = (list_length (TYPE_ARG_TYPES (funtype))
-#ifndef STRICT_ARGUMENT_NAMING
 	 /* Don't include the last named arg.  */
-	 - 1
-#endif
+	 - STRICT_ARGUMENT_NAMING ? -1 : 0
 	 /* Count the struct value address, if it is passed as a parm.  */
 	 + structure_value_addr_parm);
   else
-#endif
     /* If we know nothing, treat all args as named.  */
     n_named_args = num_actuals;
 
