@@ -1,3 +1,7 @@
+2005-03-07  Tom Tromey  <tromey@redhat.com>
+
+	* gcj.texi (Invoking gcj-dbtool): Document '-f'.
+
 2005-03-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* jcf-dump.c, jcf-io.c, jcf-reader.c, lang.c, parse.h,
