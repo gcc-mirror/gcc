@@ -1,3 +1,9 @@
+Thu Sep 16 14:03:32 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* haifa-sched.c (sched_analyze): Keep the list of notes organized
+	in pairs.
+	(reemit_notes): Likewise.
+
 Thu Sep 16 11:50:52 1999  Alex Samuel  <samuel@codesourcery.com>
 
 	* ggc.h (ggc_root): Move to ggc-common.c.
