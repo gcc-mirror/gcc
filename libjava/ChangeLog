@@ -1,5 +1,9 @@
 2002-03-10  Adam Megacz <adam@xwt.org>
 
+	* java/net/natPlainSocketImpl.cc: Removed #include "posix.h".
+
+2002-03-10  Adam Megacz <adam@xwt.org>
+
 	* java/net/natPlainSocketImpl.cc: Added #include <platform.h>.
 
 2002-03-10  Tom Tromey  <tromey@redhat.com>

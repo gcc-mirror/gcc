@@ -45,7 +45,6 @@ read(int s, void *buf, int len)
 #define ENOPROTOOPT 109
 #endif
 #else /* WIN32 */
-#include "posix.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
