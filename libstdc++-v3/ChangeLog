@@ -1,3 +1,27 @@
+2000-07-20  Benjamin Kosnik  <bkoz@cygnus.com>
+
+	* bits/std_streambuf.h: Add bits for pback buffers here, so that
+	in_avail, etc can use them.
+	* bits/std_fstream.h: Ditto.
+	* bits/fstream.tcc: Ditto.
+	* testsuite/27_io/filebuf.cc: Tweaks.
+	* testsuite/27_io/filebuf-3.tst: Correct for pbackfail bits.
+
+2000-07-19  Benjamin Kosnik  <bkoz@cygnus.com>
+
+	* src/localename.cc: Same.
+	* src/locale.cc: Same.
+	* bits/localefwd.h: _M_init_facet to _M_facet_init.
+
+	* bits/locale_facets.h: _M_init_boolnames to _M_boolnames_init.
+
+	* bits/std_sstream.h: Change _M_init_stringbuf to _M_stringbuf_init.
+
+	* bits/fstream.tcc: Change _M_init_filebuf to _M_filebuf_init.
+	* bits/std_fstream.h: Same.
+
+	* bits/basic_string.h: Tweaks.
+	
 2000-07-19  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* docs/18_support/howto.html:  Update.

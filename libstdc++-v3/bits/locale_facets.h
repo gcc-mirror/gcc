@@ -1268,7 +1268,7 @@ namespace std
     protected:
       // For use only during construction
       void 
-      _M_init_boolnames(const string_type& __t, const string_type& __f)
+      _M_boolnames_init(const string_type& __t, const string_type& __f)
       {
 	_M_truename = __t;
 	_M_falsename = __f;
@@ -1297,7 +1297,7 @@ namespace std
     numpunct<char>::numpunct(size_t __refs): _Numpunct<char>(__refs)
     {
       _M_init('.', ',', "");
-      _M_init_boolnames("true", "false");
+      _M_boolnames_init("true", "false");
     }
 
 #ifdef _GLIBCPP_USE_WCHAR_T
@@ -1305,7 +1305,7 @@ namespace std
     numpunct<wchar_t>::numpunct(size_t __refs): _Numpunct<wchar_t>(__refs)
     {
       _M_init(L'.', L',', "");
-      _M_init_boolnames(L"true", L"false");
+      _M_boolnames_init(L"true", L"false");
     }
 #endif
 

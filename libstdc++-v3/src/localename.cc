@@ -147,8 +147,8 @@ namespace std {
   locale::_Impl::_M_construct_collate(const char* /*name*/)
   {
 #if 0
-    _M_init_facet(new std::collate_byname<char>(name));
-    _M_init_facet(new std::collate_byname<wchar_t>(name));
+    _M_facet_init(new std::collate_byname<char>(name));
+    _M_facet_init(new std::collate_byname<wchar_t>(name));
 #endif
   }
 
@@ -156,10 +156,10 @@ namespace std {
   locale::_Impl::_M_construct_ctype(const char* /*name*/)
   {
 #if 0
-    _M_init_facet(new std::ctype_byname<char>(name));
-    _M_init_facet(new std::ctype_byname<wchar_t>(name));
-    _M_init_facet(new std::codecvt_byname<char,char,mbstate_t>(name));
-    _M_init_facet(new std::codecvt_byname<wchar_t,char,mbstate_t>(name));
+    _M_facet_init(new std::ctype_byname<char>(name));
+    _M_facet_init(new std::ctype_byname<wchar_t>(name));
+    _M_facet_init(new std::codecvt_byname<char,char,mbstate_t>(name));
+    _M_facet_init(new std::codecvt_byname<wchar_t,char,mbstate_t>(name));
 #endif
   }
     
@@ -167,10 +167,10 @@ namespace std {
   locale::_Impl::_M_construct_monetary(const char* /*name*/)
   {
 #if 0
-    _M_init_facet(new std::moneypunct_byname<char,false>(name));
-    _M_init_facet(new std::moneypunct_byname<wchar_t,false>(name));
-    _M_init_facet(new std::moneypunct_byname<char,true >(name));
-    _M_init_facet(new std::moneypunct_byname<wchar_t,true >(name));
+    _M_facet_init(new std::moneypunct_byname<char,false>(name));
+    _M_facet_init(new std::moneypunct_byname<wchar_t,false>(name));
+    _M_facet_init(new std::moneypunct_byname<char,true >(name));
+    _M_facet_init(new std::moneypunct_byname<wchar_t,true >(name));
 
     locale::_M_initialize();
     _M_replace_facet(locale::_S_classic, &std::money_get<char>(name)::id);
@@ -184,8 +184,8 @@ namespace std {
   locale::_Impl::_M_construct_numeric(const char* /*name*/)
   {
 #if 0
-    _M_init_facet(new std::numpunct_byname<char>(name));
-    _M_init_facet(new std::numpunct_byname<wchar_t>(name));
+    _M_facet_init(new std::numpunct_byname<char>(name));
+    _M_facet_init(new std::numpunct_byname<wchar_t>(name));
 
     locale::_M_initialize();
     _M_replace_facet(locale::_S_classic, &std::num_get<char>::id);
@@ -199,10 +199,10 @@ namespace std {
   locale::_Impl::_M_construct_time(const char* /*name*/)
   {
 #if 0
-    _M_init_facet(new std::time_get_byname<char>(name));
-    _M_init_facet(new std::time_get_byname<wchar_t>(name));
-    _M_init_facet(new std::time_put_byname<char>(name));
-    _M_init_facet(new std::time_put_byname<wchar_t>(name));
+    _M_facet_init(new std::time_get_byname<char>(name));
+    _M_facet_init(new std::time_get_byname<wchar_t>(name));
+    _M_facet_init(new std::time_put_byname<char>(name));
+    _M_facet_init(new std::time_put_byname<wchar_t>(name));
 #endif
   }
     
@@ -210,8 +210,8 @@ namespace std {
   locale::_Impl::_M_construct_messages(const char* /*name*/)
   {
 #if 0
-    _M_init_facet(new std::messages_byname<char>(name));
-    _M_init_facet(new std::messages_byname<wchar_t>(name));
+    _M_facet_init(new std::messages_byname<char>(name));
+    _M_facet_init(new std::messages_byname<wchar_t>(name));
 #endif
   }
 

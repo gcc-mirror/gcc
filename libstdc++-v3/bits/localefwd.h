@@ -370,7 +370,7 @@ namespace std
 
     template<typename _Facet>
       inline void 
-      _M_init_facet(_Facet* __facet)
+      _M_facet_init(_Facet* __facet)
       { _M_install_facet(&_Facet::id, __facet);  }
 
     void 

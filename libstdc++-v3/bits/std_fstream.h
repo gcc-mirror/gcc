@@ -52,7 +52,7 @@ namespace std {
       typedef typename traits_type::int_type 		int_type;
       typedef typename traits_type::pos_type 		pos_type;
       typedef typename traits_type::off_type 		off_type;
-
+      
       // Non-standard Types:
       typedef basic_streambuf<char_type, traits_type>  	__streambuf_type;
       typedef basic_filebuf<char_type, traits_type>     __filebuf_type;
@@ -65,13 +65,22 @@ namespace std {
 
     private:
       // Data Members:
+      // External buffer.
       __file_type* 		_M_file;
-      __state_type		_M_state_cur;// Current state type for codecvt.
+
+      // Current and beginning state type for codecvt.
+      __state_type		_M_state_cur;
       __state_type 		_M_state_beg; 	
-      const __codecvt_type*	_M_fcvt;       // Cached value from use_facet.
+
+      // Cached value from use_facet.
+      const __codecvt_type*	_M_fcvt;       
+      
+      // MT lock inherited from libio or other low-level io library.
       __c_lock          	_M_lock;
-      bool			_M_last_overflowed;  // XXX Needed?
- 
+
+      // XXX Needed? 
+      bool			_M_last_overflowed;  
+  
     public:
       // Constructors/destructor:
       basic_filebuf();
@@ -98,9 +107,13 @@ namespace std {
       close(void);
 
     protected:
-      // Common initialization code for both ctors goes here.
+      // Allocate up pback and internal buffers.
+      void 
+      _M_allocate_buffers();
+
+      // Create __file_type object and initialize it properly.
       void
-      _M_init_filebuf(void);
+      _M_filebuf_init();
 
       // Overridden virtual functions:
       virtual streamsize 
@@ -173,7 +186,7 @@ namespace std {
 	    // (_M_out_beg - _M_out_cur)
 	    streamoff __cur = _M_file->seekoff(0, ios_base::cur);
 	    off_type __off = _M_out_cur - _M_out_beg;
-	    this->_M_really_overflow();
+	    _M_really_overflow();
 	    _M_file->seekpos(__cur + __off);
 	  }
 	_M_last_overflowed = false;	
@@ -183,6 +196,34 @@ namespace std {
       virtual void 
       imbue(const locale& __loc);
 
+      virtual streamsize 
+      xsgetn(char_type* __s, streamsize __n)
+      {
+	streamsize __retval = 0;
+	// Clear out pback buffer before going on to the real deal...
+	if (_M_pback_init)
+	  {
+	    while (__retval < __n && _M_in_cur < _M_in_end)
+	      {
+		*__s = *_M_in_cur;
+		++__retval;
+		++__s;
+		++_M_in_cur;
+	      }
+	    _M_pback_destroy();
+	  }
+	if (__retval < __n)
+	  __retval += __streambuf_type::xsgetn(__s, __n - __retval);
+	return __retval;
+      }
+ 
+      virtual streamsize 
+      xsputn(const char_type* __s, streamsize __n)
+      {
+	_M_pback_destroy();
+	return __streambuf_type::xsputn(__s, __n);
+      }
+       
       void
       _M_output_unshift();
     };
