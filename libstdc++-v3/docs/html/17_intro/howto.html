@@ -28,6 +28,7 @@
    <li><a href="#3">The Standard C++ library and multithreading</a>
    <li><a href="#4"><code>&lt;foo&gt;</code> vs <code>&lt;foo.h&gt;</code></a>
    <li><a href="porting-howto.html">Porting HOWTO</a>
+   <li><a href="#5">Behavior specific to libstdc++-v3</a>
 </ul>
 
 <hr>
@@ -157,6 +158,69 @@
       really have new names.  Marshall Cline's C++ FAQ Lite has a good
       explanation in
 <a href="http://www.cerfnet.com/~mpcline/On-Line-C++-FAQ/coding-standards.html#[25.4]">item [25.4]</a>.
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
+
+<hr>
+<h2><a name="5">Behavior specific to libstdc++-v3</a></h2>
+   <p>The ISO standard defines the following:
+     <blockquote><dl>
+     <dt><code>[1.3.5] implementation-defined behavior</code>
+     <dd>behavior, for a well-formed program construct and correct data, that
+         depends on the implementation <strong>and that each implementation
+	 shall document</strong>.
+     </dl></blockquote>
+      We do so here, for the C++ library only.  Behavior of the compiler,
+      linker, runtime loader, and other elements of &quot;the
+      implementation&quot; are documented elsewhere.
+   </p>
+   <p>For each entry, we give the section number of the standard, when
+      applicable.  This list is known to be incomplet and inkorrekt.
+   </p>
+   <p><strong>[17.4.4.5]</strong> Non-reentrant functions are probably best
+      discussed in the various sections on multithreading (see above).
+   </p>
+   <!-- [17.4.4.8]/3 says any function that doesn't have an exception-spec
+        can throw whatever we want; see also its footnote.  Let's list those
+	in the sections where the function itself occurs.
+   -->
+   <p><strong>[18.1]/4</strong> The type of <code>NULL</code> is described
+      <a href="../18_support/howto.html#1">here</a>.
+   </p>
+   <p><strong>[18.3]/8</strong> Even though it's listed in the library
+      sections, libstdc++-v3 has zero control over what the cleanup code hands
+      back to the runtime loader.  Talk to the compiler people.  :-)
+   </p>
+   <p><strong>[18.4.2.1]/5</strong> (bad_alloc),<br>
+      <strong>[18.5.2]/5</strong> (bad_cast),<br>
+      <strong>[18.5.3]/5</strong> (bad_typeid),<br>
+      <strong>[18.6.1]/8</strong> (exception),<br>
+      <strong>[18.6.2.1]/5</strong> (bad_exception):  The <code>what()</code>
+      member function of class <code>std::exception</code>, and these other
+      classes publicly derived from it, simply returns the name of the
+      class.  But they are the <em>mangled</em> names.
+<!-- demangler bug fixed yet? -->
+      (The classes in <code>&lt;stdexcept&gt;</code> have constructors which
+      require a string argument to use in <code>what()</code> calls, so the
+      question does not arise in most user-defined exceptions.)
+   </p>
+   <p><strong></strong>
+   </p>
+   <p><strong></strong>
+   </p>
+   <p><strong></strong>
+   </p>
+   <p><strong></strong>
+   </p>
+   <p><strong></strong>
+   </p>
+   <p><strong></strong>
+   </p>
+   <p><strong></strong>
+   </p>
+   <p><strong></strong>
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.

@@ -1,3 +1,11 @@
+2002-02-01  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/documentation.html:  Update for 3.0.96.
+	* docs/html/faq/index.html:  Update for 3.0.96.
+	* docs/html/faq/index.txt:  Regenerated.
+	* docs/doxygen/TODO:  Update notes.
+	* docs/html/17_intro/howto.html:  Initial impl-specific listing.
+
 2002-01-31  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/locale/codecvt_specializations_ieee_1003.1-200x.h:

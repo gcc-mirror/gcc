@@ -23,18 +23,19 @@ c25             stl_algo.h (lots of stuff)
 c26             <complex>, <valarray>, stl_numeric.h[26.4], Note A
 c27             Untouched
 
-backward/       Not scanned by doxygen.  Should it be?
+backward/*      Not scanned by doxygen.  Should it be?  Doubtful.
 
-ext/            Some of the SGI algorithm/functional extensions.
+ext/*           Some of the SGI algorithm/functional extensions.
                 All of rope/hashing/slist need docs.
 
-__gnu_cxx       Tricky.
+__gnu_cxx       Tricky.  Right now ext/* are in this namespace.
 
 [1.3.5]         "implementation-defined behavior:  behavior ... that depends
                 on the implementation *and that each implementation shall
                 document*."  [my emphasis]  Not all implementation choices
                 have been thus described; doxygen is not necessarily the
-                appropriate place for such descriptions, either.
+                appropriate place for such descriptions, either.  I suggest
+                adding this list to the Chapter 17 HOWTO.
 
 -----------------------------------------------------------
 
@@ -46,8 +47,11 @@ do not have the C code (to which the doxygen comments would be attached),
 this would need to be done in entirely separate files, a la doxygroups.cc.
 
 B)  Huge chunks of containers and strings are described in common "Tables"
-in the standard.  How to reproduce this information?
-
+in the standard.  How to reproduce this information?  I suspect we should
+simply write some HTML tables (say, one <table> per Table per file), and
+use doxygen hooks like @pre and @see to reference the tables.  Then the
+individual classes would do like the standard does, and only document
+members for which additional info is available.
 
 
 STYLE:
