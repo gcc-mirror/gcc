@@ -1,3 +1,8 @@
+2003-11-22  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* flow.c (update_life_info): Amend comment about when a register
+	can become dead.
+
 2003-11-21  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* doc/.cvsignore: Delete.

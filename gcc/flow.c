@@ -594,6 +594,9 @@ verify_local_live_at_start (regset new_live_at_start, basic_block bb)
    generates subregs of a multi-word pseudo, current life analysis will
    lose the kill.  So we _can_ have a pseudo go live.  How irritating.
 
+   It is also not true when a peephole decides that it doesn't need one
+   or more of the inputs.
+
    Including PROP_REG_INFO does not properly refresh regs_ever_live
    unless the caller resets it to zero.  */
 
