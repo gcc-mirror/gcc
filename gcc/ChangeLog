@@ -1,3 +1,8 @@
+2000-05-05  Geoff Berry  <geoffb@bops.com>
+
+	* extend.texi (Extended Asm): Document inability to give asm
+	statements access to condition codes.
+
 2000-05-05  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* varasm.c (asm_emit_uninitialised): Use 0, not NULL
