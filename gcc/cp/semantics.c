@@ -2618,9 +2618,19 @@ simplify_aggr_init_exprs_r (tp, walk_subtrees, data)
   tree call_type;
   int copy_from_buffer_p;
 
-  /* Only AGGR_INIT_EXPRs are interesting.  */
   aggr_init_expr = *tp;
-  if (TREE_CODE (aggr_init_expr) != AGGR_INIT_EXPR)
+  /* We don't need to walk into types; there's nothing in a type that
+     needs simplification.  (And, furthermore, there are places we
+     actively don't want to go.  For example, we don't want to wander
+     into the default arguments for a FUNCTION_DECL that appears in a
+     CALL_EXPR.)  */
+  if (TYPE_P (aggr_init_expr))
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+  /* Only AGGR_INIT_EXPRs are interesting.  */
+  else if (TREE_CODE (aggr_init_expr) != AGGR_INIT_EXPR)
     return NULL_TREE;
 
   /* Form an appropriate CALL_EXPR.  */
