@@ -1,3 +1,8 @@
+2003-05-07  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/invoke.texi (Warning Options): Mark -Wmissing-declarations
+	as a C only option.
+
 2003-05-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcov-io.h (GCOV_LOCKED): New #define.
