@@ -1,3 +1,8 @@
+2002-11-26  Geoffrey Keating  <geoffk@apple.com>
+
+	* decl.c (check_initializer): Don't error on initialisation of
+	a scalar with a brace-enclosed expression.
+
 2002-11-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (DECL_LANG_FLAG_4): Document more uses.
