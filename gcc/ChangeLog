@@ -70,6 +70,12 @@ Mon Nov  1 08:03:15 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* regclass.c (record_reg_classes): In matching case, recompute
 	costs since the direction of movement is different.
 
+Sun Oct 31 21:59:34 MST 1999    Diego Novillo <dnovillo@cygnus.com>
+
+	* resource.c (mark_target_live_regs): For unconditional branches,
+	the resources found at the branch target should be added to the
+	resources found so far, not intersected.
+
 Sun Oct 31 15:48:49 1999  Philippe De Muyter  <phdm@macqel.be>
 
 	* fixinc/fixtests.c, fixinc/fixfixes.c : Keep `#' in first column for
