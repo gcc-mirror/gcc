@@ -2825,7 +2825,7 @@ summarize_insn (x, sum, set)
       break;
 
     case SUBREG:
-      summarize_insn (SUBREG_REG (x), sum, 0);
+      summarize_insn (SUBREG_REG (x), sum, set);
       break;
 
     case CONST_INT:   case CONST_DOUBLE:
