@@ -1,3 +1,7 @@
+1999-08-02  Tom Tromey  <tromey@cygnus.com>
+
+	* aclocal.m4, configure: Rebuilt for new libtool.
+
 1999-07-19  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* Makefile.am (*-recursive, *-am, *-multi): Automake does not
