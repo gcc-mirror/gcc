@@ -46,17 +46,9 @@ Some rules have been modified to support JDK1.1 inner classes
 definitions and other extensions.  */
 
 %{
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <dirent.h>
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
 #include "config.h"
+#include "system.h"
+#include <dirent.h>
 #include "tree.h"
 #include "rtl.h"
 #include "obstack.h"
