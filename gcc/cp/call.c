@@ -1,6 +1,6 @@
 /* Functions related to invoking methods and overloaded functions.
    Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    modified by Brendan Kehoe (brendan@cygnus.com).
 
@@ -3247,6 +3247,10 @@ build_new_op (code, flags, arg1, arg2, arg3)
   if (TREE_CODE (arg1) == OFFSET_REF)
     arg1 = resolve_offset_ref (arg1);
   arg1 = convert_from_reference (arg1);
+  if (CLASS_TYPE_P (TREE_TYPE (arg1))
+      && CLASSTYPE_TEMPLATE_INSTANTIATION (TREE_TYPE (arg1)))
+    /* Make sure the template type is instantiated now.  */
+    instantiate_class_template (TYPE_MAIN_VARIANT (TREE_TYPE (arg1)));
   
   switch (code)
     {
@@ -3269,12 +3273,18 @@ build_new_op (code, flags, arg1, arg2, arg3)
       if (TREE_CODE (arg2) == OFFSET_REF)
 	arg2 = resolve_offset_ref (arg2);
       arg2 = convert_from_reference (arg2);
+      if (CLASS_TYPE_P (TREE_TYPE (arg2))
+	  && CLASSTYPE_TEMPLATE_INSTANTIATION (TREE_TYPE (arg2)))
+	instantiate_class_template (TYPE_MAIN_VARIANT (TREE_TYPE (arg2)));
     }
   if (arg3)
     {
       if (TREE_CODE (arg3) == OFFSET_REF)
 	arg3 = resolve_offset_ref (arg3);
       arg3 = convert_from_reference (arg3);
+      if (CLASS_TYPE_P (TREE_TYPE (arg3))
+	  && CLASSTYPE_TEMPLATE_INSTANTIATION (TREE_TYPE (arg3)))
+	instantiate_class_template (TYPE_MAIN_VARIANT (TREE_TYPE (arg3)));
     }
   
   if (code == COND_EXPR)
@@ -3293,13 +3303,12 @@ build_new_op (code, flags, arg1, arg2, arg3)
   if (code == POSTINCREMENT_EXPR || code == POSTDECREMENT_EXPR)
     arg2 = integer_zero_node;
 
-  if (arg2 && arg3)
-    arglist = tree_cons (NULL_TREE, arg1, tree_cons
-		      (NULL_TREE, arg2, build_tree_list (NULL_TREE, arg3)));
-  else if (arg2)
-    arglist = tree_cons (NULL_TREE, arg1, build_tree_list (NULL_TREE, arg2));
-  else
-    arglist = build_tree_list (NULL_TREE, arg1);
+  arglist = NULL_TREE;
+  if (arg3)
+    arglist = tree_cons (NULL_TREE, arg3, arglist);
+  if (arg2)
+    arglist = tree_cons (NULL_TREE, arg2, arglist);
+  arglist = tree_cons (NULL_TREE, arg1, arglist);
 
   fns = lookup_function_nonclass (fnname, arglist);
 
