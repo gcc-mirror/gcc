@@ -28,7 +28,9 @@ See the next chapter for information on the C header file.
                           from such an insn.
 * Output Statement::    For more generality, write C code to output
                           the assembler code.
-* Constraints::         When not all operands are general operands.
+* Predicates::          Controlling what kinds of operands can be used
+                          for an insn.
+* Constraints::         Fine-tuning operand selection.
 * Standard Names::      Names mark patterns to use for code generation.
 * Pattern Ordering::    When the order of patterns makes a difference.
 * Dependent Patterns::  Having one pattern may make you need another.
@@ -258,14 +260,16 @@ expressions.  In the case of a @code{define_expand}, any operand numbers
 used only in @code{match_dup} expressions have higher values than all
 other operand numbers.
 
-@var{predicate} is a string that is the name of a C function that accepts two
-arguments, an expression and a machine mode.  During matching, the
-function will be called with the putative operand as the expression and
-@var{m} as the mode argument (if @var{m} is not specified,
-@code{VOIDmode} will be used, which normally causes @var{predicate} to accept
-any mode).  If it returns zero, this instruction pattern fails to match.
-@var{predicate} may be an empty string; then it means no test is to be done
-on the operand, so anything which occurs in this position is valid.
+@var{predicate} is a string that is the name of a function that
+accepts two arguments, an expression and a machine mode.
+@xref{Predicates}.  During matching, the function will be called with
+the putative operand as the expression and @var{m} as the mode
+argument (if @var{m} is not specified, @code{VOIDmode} will be used,
+which normally causes @var{predicate} to accept any mode).  If it
+returns zero, this instruction pattern fails to match.
+@var{predicate} may be an empty string; then it means no test is to be
+done on the operand, so anything which occurs in this position is
+valid.
 
 Most of the time, @var{predicate} will reject modes other than @var{m}---but
 not always.  For example, the predicate @code{address_operand} uses
@@ -275,35 +279,12 @@ Many predicates accept @code{const_int} nodes even though their mode is
 
 @var{constraint} controls reloading and the choice of the best register
 class to use for a value, as explained later (@pxref{Constraints}).
+If the constraint would be an empty string, it can be omitted.
 
 People are often unclear on the difference between the constraint and the
 predicate.  The predicate helps decide whether a given insn matches the
 pattern.  The constraint plays no role in this decision; instead, it
 controls various decisions in the case of an insn which does match.
-
-@findex general_operand
-On CISC machines, the most common @var{predicate} is
-@code{"general_operand"}.  This function checks that the putative
-operand is either a constant, a register or a memory reference, and that
-it is valid for mode @var{m}.
-
-@findex register_operand
-For an operand that must be a register, @var{predicate} should be
-@code{"register_operand"}.  Using @code{"general_operand"} would be
-valid, since the reload pass would copy any non-register operands
-through registers, but this would make GCC do extra work, it would
-prevent invariant operands (such as constant) from being removed from
-loops, and it would prevent the register allocator from doing the best
-possible job.  On RISC machines, it is usually most efficient to allow
-@var{predicate} to accept only objects that the constraints allow.
-
-@findex immediate_operand
-For an operand that must be a constant, you must be sure to either use
-@code{"immediate_operand"} for @var{predicate}, or make the instruction
-pattern's extra condition require a constant, or both.  You cannot
-expect the constraints to do this work!  If the constraints allow only
-constants, but the predicate allows something else, the compiler will
-crash when that case arises.
 
 @findex match_scratch
 @item (match_scratch:@var{m} @var{n} @var{constraint})
@@ -681,6 +662,333 @@ as follows, having the output control string start with a @samp{@@}:
    clrmem %0")
 @end group
 @end smallexample
+
+@node Predicates
+@section Predicates
+@cindex predicates
+@cindex operand predicates
+@cindex operator predicates
+
+A predicate determines whether a @code{match_operand} or
+@code{match_operator} expression matches, and therefore whether the
+surrounding instruction pattern will be used for that combination of
+operands.  GCC has a number of machine-independent predicates, and you
+can define machine-specific predicates as needed.  By convention,
+predicates used with @code{match_operand} have names that end in
+@samp{_operand}, and those used with @code{match_operator} have names
+that end in @samp{_operator}.
+
+All predicates are Boolean functions (in the mathematical sense) of
+two arguments: the RTL expression that is being considered at that
+position in the instruction pattern, and the machine mode that the
+@code{match_operand} or @code{match_operator} specifies.  In this
+section, the first argument is called @var{op} and the second argument
+@var{mode}.  Predicates can be called from C as ordinary two-argument
+functions; this can be useful in output templates or other
+machine-specific code.
+
+Operand predicates can allow operands that are not actually acceptable
+to the hardware, as long as the constraints give reload the ability to
+fix them up (@pxref{Constraints}).  However, GCC will usually generate
+better code if the predicates specify the requirements of the machine
+instructions as closely as possible.  Reload cannot fix up operands
+that must be constants (``immediate operands''); you must use a
+predicate that allows only constants, or else enforce the requirement
+in the extra condition.
+
+@cindex predicates and machine modes
+@cindex normal predicates
+@cindex special predicates
+Most predicates handle their @var{mode} argument in a uniform manner.
+If @var{mode} is @code{VOIDmode} (unspecified), then @var{op} can have
+any mode.  If @var{mode} is anything else, then @var{op} must have the
+same mode, unless @var{op} is a @code{CONST_INT} or integer
+@code{CONST_DOUBLE}.  These RTL expressions always have
+@code{VOIDmode}, so it would be counterproductive to check that their
+mode matches.  Instead, predicates that accept @code{CONST_INT} and/or
+integer @code{CONST_DOUBLE} check that the value stored in the
+constant will fit in the requested mode.
+
+Predicates with this behavior are called @dfn{normal}.
+@command{genrecog} can optimize the instruction recognizer based on
+knowledge of how normal predicates treat modes.  It can also diagnose
+certain kinds of common errors in the use of normal predicates; for
+instance, it is almost always an error to use a normal predicate
+without specifying a mode.
+
+Predicates that do something different with their @var{mode} argument
+are called @dfn{special}.  The generic predicates
+@code{address_operand} and @code{pmode_register_operand} are special
+predicates.  @command{genrecog} does not do any optimizations or
+diagnosis when special predicates are used.
+
+@menu
+* Machine-Independent Predicates::  Predicates available to all back ends.
+* Defining Predicates::             How to write machine-specific predicate
+                                    functions.
+@end menu
+
+@node Machine-Independent Predicates
+@subsection Machine-Independent Predicates
+@cindex machine-independent predicates
+@cindex generic predicates
+
+These are the generic predicates available to all back ends.  They are
+defined in @file{recog.c}.  The first category of predicates allow
+only constant, or @dfn{immediate}, operands.
+
+@defun immediate_operand
+This predicate allows any sort of constant that fits in @var{mode}.
+It is an appropriate choice for instructions that take operands that
+must be constant.
+@end defun
+
+@defun const_int_operand
+This predicate allows any @code{CONST_INT} expression that fits in
+@var{mode}.  It is an appropriate choice for an immediate operand that
+does not allow a symbol or label.
+@end defun
+
+@defun const_double_operand
+This predicate accepts any @code{CONST_DOUBLE} expression that has
+exactly @var{mode}.  If @var{mode} is @code{VOIDmode}, it will also
+accept @code{CONST_INT}.  It is intended for immediate floating point
+constants.
+@end defun
+
+@noindent
+The second category of predicates allow only some kind of machine
+register.
+
+@defun register_operand
+This predicate allows any @code{REG} or @code{SUBREG} expression that
+is valid for @var{mode}.  It is often suitable for arithmetic
+instruction operands on a RISC machine.
+@end defun
+
+@defun pmode_register_operand
+This is a slight variant on @code{register_operand} which works around
+a limitation in the machine-description reader.
+
+@example
+(match_operand @var{n} "pmode_register_operand" @var{constraint})
+@end example
+
+@noindent
+means exactly what
+
+@example
+(match_operand:P @var{n} "register_operand" @var{constraint})
+@end example
+
+@noindent
+would mean, if the machine-description reader accepted @samp{:P}
+mode suffixes.  Unfortunately, it cannot, because @code{Pmode} is an
+alias for some other mode, and might vary with machine-specific
+options. @xref{Misc}.
+@end defun
+
+@defun scratch_operand
+This predicate allows hard registers and @code{SCRATCH} expressions,
+but not pseudo-registers.  It is used internally by @code{match_scratch};
+it should not be used directly.
+@end defun
+
+@noindent
+The third category of predicates allow only some kind of memory reference.
+
+@defun memory_operand
+This predicate allows any valid reference to a quantity of mode
+@var{mode} in memory, as determined by the weak form of
+@code{GO_IF_LEGITIMATE_ADDRESS} (@pxref{Addressing Modes}).
+@end defun
+
+@defun address_operand
+This predicate is a little unusual; it allows any operand that is a
+valid expression for the @emph{address} of a quantity of mode
+@var{mode}, again determined by the weak form of
+@code{GO_IF_LEGITIMATE_ADDRESS}.  To first order, if
+@samp{@w{(mem:@var{mode} (@var{exp}))}} is acceptable to
+@code{memory_operand}, then @var{exp} is acceptable to
+@code{address_operand}.  Note that @var{exp} does not necessarily have
+the mode @var{mode}.
+@end defun
+
+@defun indirect_operand
+This is a stricter form of @code{memory_operand} which allows only
+memory references with a @code{general_operand} as the address
+expression.  New uses of this predicate are discouraged, because
+@code{general_operand} is very permissive, so it's hard to tell what
+an @code{indirect_operand} does or does not allow.  If a target has
+different requirements for memory operands for different instructions,
+it is better to define target-specific predicates which enforce the
+hardware's requirements explicitly.
+@end defun
+
+@defun push_operand
+This predicate allows a memory reference suitable for pushing a value
+onto the stack.  This will be a @code{MEM} which refers to
+@code{stack_pointer_rtx}, with a side-effect in its address expression
+(@pxref{Incdec}); which one is determined by the
+@code{STACK_PUSH_CODE} macro (@pxref{Frame Layout}).
+@end defun
+
+@defun pop_operand
+This predicate allows a memory reference suitable for popping a value
+off the stack.  Again, this will be a @code{MEM} referring to
+@code{stack_pointer_rtx}, with a side-effect in its address
+expression.  However, this time @code{STACK_POP_CODE} is expected.
+@end defun
+
+@noindent
+The fourth category of predicates allow some combination of the above
+operands.
+
+@defun nonmemory_operand
+This predicate allows any immediate or register operand valid for @var{mode}.
+@end defun
+
+@defun nonimmediate_operand
+This predicate allows any register or memory operand valid for @var{mode}.
+@end defun
+
+@defun general_operand
+This predicate allows any immediate, register, or memory operand
+valid for @var{mode}.
+@end defun
+
+@noindent
+Finally, there is one generic operator predicate.
+
+@defun comparison_operator
+This predicate matches any expression which performs an arithmetic
+comparison in @var{mode}; that is, @code{COMPARISON_P} is true for the
+expression code.
+@end defun
+
+@node Defining Predicates
+@subsection Defining Machine-Specific Predicates
+@cindex defining predicates
+@findex define_predicate
+@findex define_special_predicate
+
+Many machines have requirements for their operands that cannot be
+expressed precisely using the generic predicates.  You can define
+additional predicates using @code{define_predicate} and
+@code{define_special_predicate} expressions.  These expressions have
+three operands:
+
+@itemize @bullet
+@item
+The name of the predicate, as it will be referred to in
+@code{match_operand} or @code{match_operator} expressions.
+
+@item
+An RTL expression which evaluates to true if the predicate allows the
+operand @var{op}, false if it does not.  This expression can only use
+the following RTL codes:
+
+@table @code
+@item MATCH_OPERAND
+When written inside a predicate expression, a @code{MATCH_OPERAND}
+expression evaluates to true if the predicate it names would allow
+@var{op}.  The operand number and constraint are ignored.  Due to
+limitations in @command{genrecog}, you can only refer to generic
+predicates and predicates that have already been defined.
+
+@item MATCH_CODE
+This expression has one operand, a string constant containing a
+comma-separated list of RTX code names (in lower case).  It evaluates
+to true if @var{op} has any of the listed codes.
+
+@item MATCH_TEST
+This expression has one operand, a string constant containing a C
+expression.  The predicate's arguments, @var{op} and @var{mode}, are
+available with those names in the C expression.  The @code{MATCH_TEST}
+evaluates to true if the C expression evaluates to a nonzero value.
+@code{MATCH_TEST} expressions must not have side effects.
+
+@item  AND
+@itemx IOR
+@itemx NOT
+@itemx IF_THEN_ELSE
+The basic @samp{MATCH_} expressions can be combined using these
+logical operators, which have the semantics of the C operators
+@samp{&&}, @samp{||}, @samp{!}, and @samp{@w{? :}} respectively.
+@end table
+
+@item
+An optional block of C code, which should execute 
+@samp{@w{return true}} if the predicate is found to match and
+@samp{@w{return false}} if it does not.  It must not have any side
+effects.  The predicate arguments, @var{op} and @var{mode}, are
+available with those names.
+
+If a code block is present in a predicate definition, then the RTL
+expression must evaluate to true @emph{and} the code block must
+execute @samp{@w{return true}} for the predicate to allow the operand.
+The RTL expression is evaluated first; do not re-check anything in the
+code block that was checked in the RTL expression.
+@end itemize
+
+The program @command{genrecog} scans @code{define_predicate} and
+@code{define_special_predicate} expressions to determine which RTX
+codes are possibly allowed.  You should always make this explicit in
+the RTL predicate expression, using @code{MATCH_OPERAND} and
+@code{MATCH_CODE}.
+
+Here is an example of a simple predicate definition, from the IA64
+machine description:
+
+@smallexample
+@group
+;; @r{True if @var{op} is a @code{SYMBOL_REF} which refers to the sdata section.}
+(define_predicate "small_addr_symbolic_operand"
+  (and (match_code "symbol_ref")
+       (match_test "SYMBOL_REF_SMALL_ADDR_P (op)")))
+@end group
+@end smallexample
+
+@noindent
+And here is another, showing the use of the C block.
+
+@smallexample
+@group
+;; @r{True if @var{op} is a register operand that is (or could be) a GR reg.}
+(define_predicate "gr_register_operand"
+  (match_operand 0 "register_operand")
+@{
+  unsigned int regno;
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  regno = REGNO (op);
+  return (regno >= FIRST_PSEUDO_REGISTER || GENERAL_REGNO_P (regno));
+@})
+@end group
+@end smallexample
+
+Predicates written with @code{define_predicate} automatically include
+a test that @var{mode} is @code{VOIDmode}, or @var{op} has the same
+mode as @var{mode}, or @var{op} is a @code{CONST_INT} or
+@code{CONST_DOUBLE}.  They do @emph{not} check specifically for
+integer @code{CONST_DOUBLE}, nor do they test that the value of either
+kind of constant fits in the requested mode.  This is because
+target-specific predicates that take constants usually have to do more
+stringent value checks anyway.  If you need the exact same treatment
+of @code{CONST_INT} or @code{CONST_DOUBLE} that the generic predicates
+provide, use a @code{MATCH_OPERAND} subexpression to call
+@code{const_int_operand}, @code{const_double_operand}, or
+@code{immediate_operand}.
+
+Predicates written with @code{define_special_predicate} do not get any
+automatic mode checks, and are treated as having special mode handling
+by @command{genrecog}.
+
+The program @command{genpreds} is responsible for generating code to
+test predicates.  It also writes a header file containing function
+declarations for all machine-specific predicates.  It is not necessary
+to declare these predicates in @file{@var{cpu}-protos.h}.
 @end ifset
 
 @c Most of this node appears by itself (in a different place) even
@@ -692,8 +1000,11 @@ as follows, having the output control string start with a @samp{@@}:
 @cindex operand constraints
 @cindex constraints
 
-Each @code{match_operand} in an instruction pattern can specify a
-constraint for the type of operands allowed.
+Each @code{match_operand} in an instruction pattern can specify
+constraints for the operands allowed.  The constraints allow you to
+fine-tune matching within the set of operands allowed by the
+predicate.
+
 @end ifset
 @ifclear INTERNALS
 @node Constraints

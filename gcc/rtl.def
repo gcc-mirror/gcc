@@ -182,6 +182,17 @@ DEF_RTL_EXPR(MATCH_OP_DUP, "match_op_dup", "iE", RTX_MATCH)
    at the index specified by the argument.  For MATCH_PARALLEL.  */
 DEF_RTL_EXPR(MATCH_PAR_DUP, "match_par_dup", "iE", RTX_MATCH)
 
+/* Appears only in define_predicate/define_special predicate
+   expressions in a machine description.  Evaluates true only if the
+   operand has an RTX code from the set given by the argument (a
+   comma-separated list).  */
+DEF_RTL_EXPR(MATCH_CODE, "match_code", "s", RTX_MATCH)
+
+/* Appears only in define_predicate/define_special_predicate expressions
+   in a machine description.  The argument is a C expression to be injected
+   at this point in the predicate formula.  */
+DEF_RTL_EXPR(MATCH_TEST, "match_test", "s", RTX_MATCH)
+
 /* Appears only in machine descriptions.
    Defines the pattern for one kind of instruction.
    Operand:
@@ -296,6 +307,23 @@ DEF_RTL_EXPR(DEFINE_ASM_ATTRIBUTES, "define_asm_attributes", "V", RTX_EXTRA)
       the generated pattern.
    2: A template or C code to produce assembler output.  */
 DEF_RTL_EXPR(DEFINE_COND_EXEC, "define_cond_exec", "Ess", RTX_EXTRA)
+
+/* Definition of an operand predicate.  The difference between
+   DEFINE_PREDICATE and DEFINE_SPECIAL_PREDICATE is that genrecog will
+   not warn about a match_operand with no mode if it has a predicate
+   defined with DEFINE_SPECIAL_PREDICATE.
+
+   Operand:
+   0: The name of the predicate.
+   1: A boolean expression which computes whether or not the predicate
+      matches.  This expression can use IOR, AND, NOT, MATCH_OPERAND,
+      MATCH_CODE, and MATCH_TEST.  It must be specific enough that genrecog
+      can calculate the set of RTX codes that can possibly match.
+   2: A C function body which must return true for the predicate to match.
+      Optional.  Use this when the test is too complicated to fit into a
+      match_test expression.  */
+DEF_RTL_EXPR(DEFINE_PREDICATE, "define_predicate", "ses", RTX_EXTRA)
+DEF_RTL_EXPR(DEFINE_SPECIAL_PREDICATE, "define_special_predicate", "ses", RTX_EXTRA)
 
 /* SEQUENCE appears in the result of a `gen_...' function
    for a DEFINE_EXPAND that wants to make several insns.

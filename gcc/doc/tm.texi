@@ -8539,6 +8539,29 @@ patterns.
 
 For each predicate function named in @code{PREDICATE_CODES}, a
 declaration will be generated in @file{insn-codes.h}.
+
+Use of this macro is deprecated; use @code{define_predicate} instead.
+@xref{Defining Predicates}.
+@end defmac
+
+@defmac SPECIAL_MODE_PREDICATES
+Define this if you have special predicates that know special things
+about modes.  Genrecog will warn about certain forms of
+@code{match_operand} without a mode; if the operand predicate is
+listed in @code{SPECIAL_MODE_PREDICATES}, the warning will be
+suppressed.
+
+Here is an example from the IA-32 port (@code{ext_register_operand}
+specially checks for @code{HImode} or @code{SImode} in preparation
+for a byte extraction from @code{%ah} etc.).
+
+@smallexample
+#define SPECIAL_MODE_PREDICATES \
+  "ext_register_operand",
+@end smallexample
+
+Use of this macro is deprecated; use @code{define_special_predicate}
+instead.  @xref{Defining Predicates}.
 @end defmac
 
 @defmac HAS_LONG_COND_BRANCH
@@ -8557,23 +8580,6 @@ conjunction with an optimization that partitions hot and cold basic
 blocks into separate sections of the executable.  If this macro is
 set to false, gcc will convert any unconditional branches that attempt
 to cross between sections into indirect jumps.
-@end defmac
-
-@defmac SPECIAL_MODE_PREDICATES
-Define this if you have special predicates that know special things
-about modes.  Genrecog will warn about certain forms of
-@code{match_operand} without a mode; if the operand predicate is
-listed in @code{SPECIAL_MODE_PREDICATES}, the warning will be
-suppressed.
-
-Here is an example from the IA-32 port (@code{ext_register_operand}
-specially checks for @code{HImode} or @code{SImode} in preparation
-for a byte extraction from @code{%ah} etc.).
-
-@smallexample
-#define SPECIAL_MODE_PREDICATES \
-  "ext_register_operand",
-@end smallexample
 @end defmac
 
 @defmac CASE_VECTOR_MODE
