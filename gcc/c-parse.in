@@ -30,7 +30,7 @@ ifobjc
 %expect 22
 end ifobjc
 ifc
-%expect 10
+%expect 23
 
 /* These are the 10 conflicts you should get in parse.output;
    the state numbers may vary if minor changes in the grammar are made.
@@ -227,6 +227,7 @@ static int if_stmt_line;
 
 /* List of types and structure classes of the current declaration.  */
 static tree current_declspecs;
+static tree prefix_attributes = NULL_TREE;
 
 /* Stack of saved values of current_declspecs.  */
 static tree declspec_stack;
@@ -879,7 +880,12 @@ setspecs: /* empty */
 		  pending_xref_error ();
 		  declspec_stack = tree_cons (NULL_TREE, current_declspecs,
 					      declspec_stack);
-		  current_declspecs = $<ttype>0; }
+		  current_declspecs = $<ttype>0; 
+		  prefix_attributes = NULL_TREE; }
+	;
+
+setattrs: /* empty */
+		{ prefix_attributes = $<ttype>0; }
 	;
 
 decl:
@@ -1017,32 +1023,33 @@ maybeasm:
 initdcl:
 	  declarator maybeasm maybe_attribute '='
 		{ $<ttype>$ = start_decl ($1, current_declspecs, 1);
-		  decl_attributes ($<ttype>$, $3);
+		  decl_attributes ($<ttype>$, $3, prefix_attributes);
 		  start_init ($<ttype>$, $2, global_bindings_p ()); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_init ();
-		  decl_attributes ($<ttype>5, $3);
+		  decl_attributes ($<ttype>5, $3, prefix_attributes);
 		  finish_decl ($<ttype>5, $6, $2); }
 	| declarator maybeasm maybe_attribute
 		{ tree d = start_decl ($1, current_declspecs, 0);
-		  decl_attributes (d, $3);
-		  finish_decl (d, NULL_TREE, $2); }
+		  decl_attributes (d, $3, prefix_attributes);
+		  finish_decl (d, NULL_TREE, $2); 
+                }
 	;
 
 notype_initdcl:
 	  notype_declarator maybeasm maybe_attribute '='
 		{ $<ttype>$ = start_decl ($1, current_declspecs, 1);
-		  decl_attributes ($<ttype>$, $3);
+		  decl_attributes ($<ttype>$, $3, prefix_attributes);
 		  start_init ($<ttype>$, $2, global_bindings_p ()); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_init ();
-		  decl_attributes ($<ttype>5, $3);
+		  decl_attributes ($<ttype>5, $3, prefix_attributes);
 		  finish_decl ($<ttype>5, $6, $2); }
 	| notype_declarator maybeasm maybe_attribute
 		{ tree d = start_decl ($1, current_declspecs, 0);
-		  decl_attributes (d, $3);
+		  decl_attributes (d, $3, prefix_attributes);
 		  finish_decl (d, NULL_TREE, $2); }
 	;
 /* the * rules are dummies to accept the Apollo extended syntax
@@ -1230,6 +1237,8 @@ after_type_declarator:
 		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE); }
 	| '*' type_quals after_type_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
+	| attributes setattrs after_type_declarator
+		{ $$ = $3; }
 	| TYPENAME
 ifobjc
 	| OBJECTNAME
@@ -1253,6 +1262,8 @@ parm_declarator:
 		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE); }
 	| '*' type_quals parm_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
+	| attributes setattrs parm_declarator
+		{ $$ = $3; }
 	| TYPENAME
 	;
 
@@ -1273,6 +1284,8 @@ notype_declarator:
 		{ $$ = build_nt (ARRAY_REF, $1, $3); }
 	| notype_declarator '[' ']'  %prec '.'
 		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE); }
+	| attributes setattrs notype_declarator
+		{ $$ = $3; }
 	| IDENTIFIER
 	;
 
@@ -1402,14 +1415,14 @@ components:
 component_declarator:
 	  save_filename save_lineno declarator maybe_attribute
 		{ $$ = grokfield ($1, $2, $3, current_declspecs, NULL_TREE);
-		  decl_attributes ($$, $4); }
+		  decl_attributes ($$, $4, prefix_attributes); }
 	| save_filename save_lineno
 	  declarator ':' expr_no_commas maybe_attribute
 		{ $$ = grokfield ($1, $2, $3, current_declspecs, $5);
-		  decl_attributes ($$, $6); }
+		  decl_attributes ($$, $6, prefix_attributes); }
 	| save_filename save_lineno ':' expr_no_commas maybe_attribute
 		{ $$ = grokfield ($1, $2, NULL_TREE, current_declspecs, $4);
-		  decl_attributes ($$, $5); }
+		  decl_attributes ($$, $5, prefix_attributes); }
 	;
 
 /* We chain the enumerators in reverse order.
@@ -1480,6 +1493,8 @@ absdcl1:  /* a nonempty absolute declarator */
 		{ $$ = build_nt (ARRAY_REF, NULL_TREE, $2); }
 	| '[' ']'  %prec '.'
 		{ $$ = build_nt (ARRAY_REF, NULL_TREE, NULL_TREE); }
+	| attributes setattrs absdcl1
+		{ $$ = $3; }
 	;
 
 /* at least one statement, the first of which parses without error.  */
