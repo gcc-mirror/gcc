@@ -345,10 +345,13 @@ output_move_double (operands)
 	  operands[1] = gen_rtx (MEM, DImode, op0);
 	  latehalf[1] = adj_offsettable_operand (operands[1], 4);
 	}
-      /* Do the late half first.  */
-      output_asm_insn (singlemove_string (latehalf), latehalf);
-      /* Then clobber.  */
-      return singlemove_string (operands);
+      if (reg_mentioned_p (op0, XEXP (op1, 0)))
+	{
+	  /* The first half has the overlap, Do the late half first.  */
+	  output_asm_insn (singlemove_string (latehalf), latehalf);
+	  /* Then clobber.  */
+	  return singlemove_string (operands);
+	}
     }
 
   /* Normal case.  Do the two words, low-numbered first.  */
