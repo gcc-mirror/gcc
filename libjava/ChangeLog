@@ -5,6 +5,19 @@
 	javax/print/attribute/PrintRequestAttributeSet.java:
 	New files.
 	* Makefile.am
+	(javax_source_files): Added new files:
+	javax/print/attribute/Attribute.java
+	javax/print/attribute/AttributeSet.java
+	javax/print/attribute/PrintRequestAttributeSet.java
+	* Makefile.in: Regenerated.
+
+2003-03-17  Michael Koch
+
+	* javax/print/attribute/Attribute.java,
+	javax/print/attribute/AttributeSet.java,
+	javax/print/attribute/PrintRequestAttributeSet.java:
+	New files.
+	* Makefile.am
 	(awt_java_source_files): Added new files:
 	javax/print/attribute/Attribute.java
 	javax/print/attribute/AttributeSet.java
