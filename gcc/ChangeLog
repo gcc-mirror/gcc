@@ -1,3 +1,7 @@
+Mon Nov 22 22:58:01 1999  "R. Kelley Cook" <KelleyCook@attglobal.net>
+
+	* invoke.texi (ARM Options): Add in -mno-alignment-traps
+
 1999-11-22  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (die_struct): Remove die_attr_last and die_child_last.
