@@ -40,8 +40,8 @@ Behavior is undefined if the pathname ends in a directory separator.
 @deftypefn Supplemental int bcmp (char *@var{x}, char *@var{y}, int @var{count})
 
 Compares the first @var{count} bytes of two areas of memory.  Returns
-zero if they are the same, non-zero otherwise.  Returns zero if
-@var{count} is zero.  A non-zero result only indicates a difference,
+zero if they are the same, nonzero otherwise.  Returns zero if
+@var{count} is zero.  A nonzero result only indicates a difference,
 it does not indicate any sorting order (say, by having a positive
 result mean @var{x} sorts before @var{y}).
 
@@ -234,7 +234,7 @@ deprecated in new programs in favor of @code{strrchr}.
 
 @code{setenv} adds @var{name} to the environment with value
 @var{value}.  If the name was already present in the environment,
-the new value will be stored only if @var{overwrite} is non-zero.
+the new value will be stored only if @var{overwrite} is nonzero.
 The companion @code{unsetenv} function removes @var{name} from the
 environment.  This implementation is not safe for multithreaded code.
 
@@ -352,7 +352,7 @@ length, the function returns @var{string}.
 @c strtod.c:27
 @deftypefn Supplemental double strtod (const char *@var{string}, char **@var{endptr})
 
-This ANSI C function converts the initial portion of @var{string} to a
+This ISO C function converts the initial portion of @var{string} to a
 @code{double}.  If @var{endptr} is not @code{NULL}, a pointer to the
 character after the last character used in the conversion is stored in
 the location referenced by @var{endptr}.  If no conversion is

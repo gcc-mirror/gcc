@@ -24,7 +24,7 @@
 
 @code{setenv} adds @var{name} to the environment with value
 @var{value}.  If the name was already present in the environment,
-the new value will be stored only if @var{overwrite} is non-zero.
+the new value will be stored only if @var{overwrite} is nonzero.
 The companion @code{unsetenv} function removes @var{name} from the
 environment.  This implementation is not safe for multithreaded code.
 
