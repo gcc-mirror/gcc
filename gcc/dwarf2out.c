@@ -4280,6 +4280,10 @@ size_of_line_info ()
   register long line_delta;
   register unsigned long current_file;
   register unsigned long function;
+  unsigned long size_of_set_address;
+
+  /* Size of a DW_LNE_set_address instruction.  */
+  size_of_set_address = 1 + size_of_uleb128 (1 + PTR_SIZE) + 1 + PTR_SIZE;
 
   /* Version number.  */
   size = 2;
@@ -4291,7 +4295,7 @@ size_of_line_info ()
   size += size_of_line_prolog ();
 
   /* Set address register instruction.  */
-  size += 1 + size_of_uleb128 (1 + PTR_SIZE) + 1 + PTR_SIZE;
+  size += size_of_set_address;
 
   current_file = 1;
   current_line = 1;
@@ -4300,7 +4304,12 @@ size_of_line_info ()
       register dw_line_info_ref line_info;
 
       /* Advance pc instruction.  */
-      size += 1 + 2;
+      /* ??? See the DW_LNS_advance_pc comment in output_line_info.  */
+      if (0)
+	size += 1 + 2;
+      else
+	size += size_of_set_address;
+
       line_info = &line_info_table[lt_index];
       if (line_info->dw_file_num != current_file)
 	{
@@ -4330,7 +4339,10 @@ size_of_line_info ()
     }
 
   /* Advance pc instruction.  */
-  size += 1 + 2;
+  if (0)
+    size += 1 + 2;
+  else
+    size += size_of_set_address;
 
   /* End of line number info. marker.  */
   size += 1 + size_of_uleb128 (1) + 1;
@@ -4346,11 +4358,16 @@ size_of_line_info ()
 	{
 	  function = line_info->function;
 	  /* Set address register instruction.  */
-	  size += 1 + size_of_uleb128 (1 + PTR_SIZE) + 1 + PTR_SIZE;
+	  size += size_of_set_address;
 	}
       else
-	/* Advance pc instruction.  */
-	size += 1 + 2;
+	{
+	  /* Advance pc instruction.  */
+	  if (0)
+	    size += 1 + 2;
+	  else
+	    size += size_of_set_address;
+	}
 
       if (line_info->dw_file_num != current_file)
 	{
@@ -4389,7 +4406,10 @@ size_of_line_info ()
 	  current_line = 1;
 
 	  /* Advance pc instruction.  */
-	  size += 1 + 2;
+	  if (0)
+	    size += 1 + 2;
+	  else
+	    size += size_of_set_address;
 
 	  /* End of line number info. marker.  */
 	  size += 1 + size_of_uleb128 (1) + 1;
@@ -5135,7 +5155,10 @@ output_aranges ()
 }
 
 /* Output the source line number correspondence information.  This
-   information goes into the .debug_line section.  */
+   information goes into the .debug_line section.
+
+   If the format of this data changes, then the function size_of_line_info
+   must also be adjusted the same way.  */
 
 static void
 output_line_info ()
@@ -5276,15 +5299,48 @@ output_line_info ()
     {
       register dw_line_info_ref line_info;
 
-      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
-      if (flag_verbose_asm)
-	fprintf (asm_out_file, "\t%s DW_LNS_fixed_advance_pc",
-		 ASM_COMMENT_START);
-
-      fputc ('\n', asm_out_file);
+      /* Emit debug info for the address of the current line, choosing
+	 the encoding that uses the least amount of space.  */
+      /* ??? Unfortunately, we have little choice here currently, and must
+	 always use the most general form.  Gcc does not know the address
+	 delta itself, so we can't use DW_LNS_advance_pc.  There are no known
+	 dwarf2 aware assemblers at this time, so we can't use any special
+	 pseudo ops that would allow the assembler to optimally encode this for
+	 us.  Many ports do have length attributes which will give an upper
+	 bound on the address range.  We could perhaps use length attributes
+	 to determine when it is safe to use DW_LNS_fixed_advance_pc.  */
       ASM_GENERATE_INTERNAL_LABEL (line_label, LINE_CODE_LABEL, lt_index);
-      ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, line_label, prev_line_label);
-      fputc ('\n', asm_out_file);
+      if (0)
+	{
+	  /* This can handle deltas up to 0xffff.  This takes 3 bytes.  */
+	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
+	  if (flag_verbose_asm)
+	    fprintf (asm_out_file, "\t%s DW_LNS_fixed_advance_pc",
+		     ASM_COMMENT_START);
+
+	  fputc ('\n', asm_out_file);
+	  ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, line_label, prev_line_label);
+	  fputc ('\n', asm_out_file);
+	}
+      else
+	{
+	  /* This can handle any delta.  This takes 4+PTR_SIZE bytes.  */
+	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
+	  if (flag_verbose_asm)
+	    fprintf (asm_out_file, "\t%s DW_LNE_set_address",
+		     ASM_COMMENT_START);
+	  fputc ('\n', asm_out_file);
+	  output_uleb128 (1 + PTR_SIZE);
+	  fputc ('\n', asm_out_file);
+	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_set_address);
+	  fputc ('\n', asm_out_file);
+	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, line_label);
+	  fputc ('\n', asm_out_file);
+	}
+      strcpy (prev_line_label, line_label);
+
+      /* Emit debug info for the source file of the current line, if
+	 different from the previous line.  */
       line_info = &line_info_table[lt_index];
       if (line_info->dw_file_num != current_file)
 	{
@@ -5301,11 +5357,16 @@ output_line_info ()
 	  fputc ('\n', asm_out_file);
 	}
 
+      /* Emit debug info for the current line number, choosing the encoding
+	 that uses the least amount of space.  */
       line_offset = line_info->dw_line_num - current_line;
       line_delta = line_offset - DWARF_LINE_BASE;
       current_line = line_info->dw_line_num;
       if (line_delta >= 0 && line_delta < (DWARF_LINE_RANGE - 1))
 	{
+	  /* This can handle deltas from -10 to 234, using the current
+	     definitions of DWARF_LINE_BASE and DWARF_LINE_RANGE.  This
+	     takes 1 byte.  */
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file,
 				  DWARF_LINE_OPCODE_BASE + line_delta);
 	  if (flag_verbose_asm)
@@ -5316,6 +5377,8 @@ output_line_info ()
 	}
       else
 	{
+	  /* This can handle any delta.  This takes at least 4 bytes, depending
+	     on the value being encoded.  */
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_advance_line);
 	  if (flag_verbose_asm)
 	    fprintf (asm_out_file, "\t%s advance to line %d",
@@ -5327,17 +5390,33 @@ output_line_info ()
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_copy);
 	  fputc ('\n', asm_out_file);
 	}
-
-      strcpy (prev_line_label, line_label);
     }
 
-  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
-  if (flag_verbose_asm)
-    fprintf (asm_out_file, "\t%s DW_LNS_fixed_advance_pc", ASM_COMMENT_START);
+  /* Emit debug info for the address of the end of the function.  */
+  if (0)
+    {
+      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
+      if (flag_verbose_asm)
+	fprintf (asm_out_file, "\t%s DW_LNS_fixed_advance_pc",
+		 ASM_COMMENT_START);
 
-  fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, text_end_label, prev_line_label);
-  fputc ('\n', asm_out_file);
+      fputc ('\n', asm_out_file);
+      ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, text_end_label, prev_line_label);
+      fputc ('\n', asm_out_file);
+    }
+  else
+    {
+      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
+      if (flag_verbose_asm)
+	fprintf (asm_out_file, "\t%s DW_LNE_set_address", ASM_COMMENT_START);
+      fputc ('\n', asm_out_file);
+      output_uleb128 (1 + PTR_SIZE);
+      fputc ('\n', asm_out_file);
+      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_set_address);
+      fputc ('\n', asm_out_file);
+      ASM_OUTPUT_DWARF_ADDR (asm_out_file, text_end_label);
+      fputc ('\n', asm_out_file);
+    }
 
   /* Output the marker for the end of the line number info.  */
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
@@ -5358,6 +5437,9 @@ output_line_info ()
       register dw_separate_line_info_ref line_info
 	= &separate_line_info_table[lt_index];
 
+      /* Emit debug info for the address of the current line.  If this is
+	 a new function, or the first line of a function, then we need
+	 to handle it differently.  */
       ASM_GENERATE_INTERNAL_LABEL (line_label, SEPARATE_LINE_CODE_LABEL,
 				   lt_index);
       if (function != line_info->function)
@@ -5380,16 +5462,38 @@ output_line_info ()
 	}
       else
 	{
-	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
-	  if (flag_verbose_asm)
-	    fprintf (asm_out_file, "\t%s DW_LNS_fixed_advance_pc",
-		     ASM_COMMENT_START);
+	  /* ??? See the DW_LNS_advance_pc comment above.  */
+	  if (0)
+	    {
+	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
+	      if (flag_verbose_asm)
+		fprintf (asm_out_file, "\t%s DW_LNS_fixed_advance_pc",
+			 ASM_COMMENT_START);
 
-	  fputc ('\n', asm_out_file);
-	  ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, line_label, prev_line_label);
-	  fputc ('\n', asm_out_file);
+	      fputc ('\n', asm_out_file);
+	      ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, line_label,
+				       prev_line_label);
+	      fputc ('\n', asm_out_file);
+	    }
+	  else
+	    {
+	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
+	      if (flag_verbose_asm)
+		fprintf (asm_out_file, "\t%s DW_LNE_set_address",
+			 ASM_COMMENT_START);
+	      fputc ('\n', asm_out_file);
+	      output_uleb128 (1 + PTR_SIZE);
+	      fputc ('\n', asm_out_file);
+	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_set_address);
+	      fputc ('\n', asm_out_file);
+	      ASM_OUTPUT_DWARF_ADDR (asm_out_file, line_label);
+	      fputc ('\n', asm_out_file);
+	    }
 	}
+      strcpy (prev_line_label, line_label);
 
+      /* Emit debug info for the source file of the current line, if
+	 different from the previous line.  */
       if (line_info->dw_file_num != current_file)
 	{
 	  current_file = line_info->dw_file_num;
@@ -5405,6 +5509,8 @@ output_line_info ()
 	  fputc ('\n', asm_out_file);
 	}
 
+      /* Emit debug info for the current line number, choosing the encoding
+	 that uses the least amount of space.  */
       if (line_info->dw_line_num != current_line)
 	{
 	  line_offset = line_info->dw_line_num - current_line;
@@ -5436,7 +5542,6 @@ output_line_info ()
 	}
 
       ++lt_index;
-      strcpy (prev_line_label, line_label);
 
       /* If we're done with a function, end its sequence.  */
       if (lt_index == separate_line_info_table_in_use
@@ -5444,15 +5549,35 @@ output_line_info ()
 	{
 	  current_file = 1;
 	  current_line = 1;
-	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
-	  if (flag_verbose_asm)
-	    fprintf (asm_out_file, "\t%s DW_LNS_fixed_advance_pc",
-		     ASM_COMMENT_START);
 
-	  fputc ('\n', asm_out_file);
+	  /* Emit debug info for the address of the end of the function.  */
 	  ASM_GENERATE_INTERNAL_LABEL (line_label, FUNC_END_LABEL, function);
-	  ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, line_label, prev_line_label);
-	  fputc ('\n', asm_out_file);
+	  if (0)
+	    {
+	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
+	      if (flag_verbose_asm)
+		fprintf (asm_out_file, "\t%s DW_LNS_fixed_advance_pc",
+			 ASM_COMMENT_START);
+
+	      fputc ('\n', asm_out_file);
+	      ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, line_label,
+				       prev_line_label);
+	      fputc ('\n', asm_out_file);
+	    }
+	  else
+	    {
+	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
+	      if (flag_verbose_asm)
+		fprintf (asm_out_file, "\t%s DW_LNE_set_address",
+			 ASM_COMMENT_START);
+	      fputc ('\n', asm_out_file);
+	      output_uleb128 (1 + PTR_SIZE);
+	      fputc ('\n', asm_out_file);
+	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_set_address);
+	      fputc ('\n', asm_out_file);
+	      ASM_OUTPUT_DWARF_ADDR (asm_out_file, line_label);
+	      fputc ('\n', asm_out_file);
+	    }
 
 	  /* Output the marker for the end of this sequence.  */
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
