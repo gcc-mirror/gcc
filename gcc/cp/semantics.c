@@ -2310,7 +2310,8 @@ simplify_aggr_init_exprs_r (tp, walk_subtrees, data)
       int old_ac = flag_access_control;
 
       flag_access_control = 0;
-      call_expr = build_aggr_init (slot, call_expr, LOOKUP_ONLYCONVERTING);
+      call_expr = build_aggr_init (slot, call_expr,
+				   DIRECT_BIND | LOOKUP_ONLYCONVERTING);
       flag_access_control = old_ac;
       copy_from_buffer_p = 1;
     }

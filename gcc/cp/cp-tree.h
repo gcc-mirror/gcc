@@ -3508,7 +3508,10 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
    LOOKUP_ONLYCONVERTING means that non-conversion constructors are not tried.
    DIRECT_BIND means that if a temporary is created, it should be created so
      that it lives as long as the current variable bindings; otherwise it
-     only lives until the end of the complete-expression.
+     only lives until the end of the complete-expression.  It also forces
+     direct-initialization in cases where other parts of the compiler have
+     already generated a temporary, such as reference initialization and the
+     catch parameter.
    LOOKUP_SPECULATIVELY means return NULL_TREE if we cannot find what we are
      after.  Note, LOOKUP_COMPLAIN is checked and error messages printed
      before LOOKUP_SPECULATIVELY is checked.

@@ -1,3 +1,9 @@
+2001-12-08  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* semantics.c (simplify_aggr_init_exprs_r): Add DIRECT_BIND flag in
+	call to build_aggr_init.
+	* cp-tree.h (DIRECT_BIND): Document new use of DIRECT_BIND.
+
 2001-12-05  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (push_tinst_level): No longer static.
