@@ -1,3 +1,7 @@
+Wed Jun 21 11:05:48 2000  Martin Buchholz <martin@xemacs.org>
+
+	* invoke.texi (g++): "g++" is not a script anymore.
+
 2000-06-20  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* function.c (round_down): Delete obsolete prototype.
