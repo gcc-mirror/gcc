@@ -11,8 +11,7 @@
 
 #if defined(__hppa) && defined(__hpux)
 /* PA HP-UX doesn't have the entire C99 runtime.  */
-#else
-#if defined(sun)
+#elif defined(sun)
 /* Solaris doesn't have the entire C99 runtime.  */
 #else
 /* Newlib has the "f" variants of the math functions, but not the "l"
@@ -28,6 +27,5 @@
 #ifdef _NEWLIB_VERSION
 #else
 #define HAVE_C99_RUNTIME
-#endif
 #endif
 #endif
