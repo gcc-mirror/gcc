@@ -1092,16 +1092,16 @@ extern int fixuplabelno;
 
 #define LINK_OS_FREEBSD_SPEC "\
   %{p:%e`-p' not supported; use `-pg' and gprof(1)} \
-    %{Wl,*:%*} \
-    %{v:-V} \
-    %{assert*} %{R*} %{rpath*} %{defsym*} \
-    %{shared:-Bshareable %{h*} %{soname*}} \
-    %{!shared: \
-      %{!static: \
-	%{rdynamic: -export-dynamic} \
-	%{!dynamic-linker: -dynamic-linker /usr/libexec/ld-elf.so.1}} \
-      %{static:-Bstatic}} \
-    %{symbolic:-Bsymbolic}"
+  %{Wl,*:%*} \
+  %{v:-V} \
+  %{assert*} %{R*} %{rpath*} %{defsym*} \
+  %{shared:-Bshareable %{h*} %{soname*}} \
+  %{!shared: \
+    %{!static: \
+      %{rdynamic: -export-dynamic} \
+      %{!dynamic-linker:-dynamic-linker %(fbsd_dynamic_linker) }} \
+    %{static:-Bstatic}} \
+  %{symbolic:-Bsymbolic}"
 
 /* GNU/Linux support.  */
 #define LIB_LINUX_SPEC "%{mnewlib: --start-group -llinux -lc --end-group } \
@@ -1314,6 +1314,7 @@ ncrtn.o%s"
   { "cpp_os_openbsd",		CPP_OS_OPENBSD_SPEC },			\
   { "cpp_os_windiss",           CPP_OS_WINDISS_SPEC },                  \
   { "cpp_os_default",		CPP_OS_DEFAULT_SPEC },			\
+  { "fbsd_dynamic_linker",	FBSD_DYNAMIC_LINKER },			\
   SUBSUBTARGET_EXTRA_SPECS
 
 #define	SUBSUBTARGET_EXTRA_SPECS
