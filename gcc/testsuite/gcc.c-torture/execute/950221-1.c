@@ -5,7 +5,11 @@ struct parsefile
 };
 struct parsefile basepf;
 struct parsefile *parsefile = &basepf;
+#ifdef STACK_SIZE
+int filler[STACK_SIZE / (2*sizeof(int))];
+#else
 int filler[0x3000];
+#endif
 int el;
 
 char *
