@@ -1136,36 +1136,6 @@
   return \"mtstw %1,%0\";
 ")
 
-;; Same for HI and QI mode move-test as well.
-
-(define_peephole
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(match_operand:HI 1 "nonimmediate_operand" "rm"))
-   (set (match_operand:SI 2 "register_operand" "=r")
-	(sign_extend:SI (match_operand:HI 3 "nonimmediate_operand" "rm")))
-   (set (cc0) (match_dup 2))]
-  "dead_or_set_p (insn, operands[2])
-   && (rtx_equal_p (operands[3], operands[0])
-       || rtx_equal_p (operands[3], operands[1]))"
-  "*
-  cc_status.flags |= CC_NO_OVERFLOW;
-  return \"cvthw %1,%0\";
-")
-
-(define_peephole
-  [(set (match_operand:QI 0 "register_operand" "=r")
-	(match_operand:QI 1 "nonimmediate_operand" "rm"))
-   (set (match_operand:SI 2 "register_operand" "=r")
-	(sign_extend:SI (match_operand:QI 3 "nonimmediate_operand" "rm")))
-   (set (cc0) (match_dup 2))]
-  "dead_or_set_p (insn, operands[2])
-   && (rtx_equal_p (operands[3], operands[0])
-       || rtx_equal_p (operands[3], operands[1]))"
-  "*
-  cc_status.flags |= CC_NO_OVERFLOW;
-  return \"cvtbw %1,%0\";
-")
-
 ;; Optimize loops with an incremented/decremented variable.
 
 (define_peephole
