@@ -1,3 +1,7 @@
+Sun Apr 19 18:30:11 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* m68k.md ({add,sub}di3): Optimize for constant operand.
+
 Sun Apr 19 18:27:11 1998  Alan Modra <alan@spri.levels.unisa.edu.au>
 
 	* i386.c (output_387_binary_op): Swap operands when popping if result
