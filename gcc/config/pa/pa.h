@@ -518,9 +518,11 @@ extern struct rtx_def *hppa_pic_save_rtx PARAMS ((void));
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 /* SOM ABI says that objects larger than 64 bits are returned in memory.
-   PA64 ABI says that objects larger than 128 bits are returned in memory. */
+   PA64 ABI says that objects larger than 128 bits are returned in memory.
+   Note that int_size_in_bytes can return -1 if the size is variable
+   or larger than an integer.  */
 #define RETURN_IN_MEMORY(TYPE)	\
-  (TARGET_64BIT ? int_size_in_bytes (TYPE) > 16 : int_size_in_bytes (TYPE) > 8)
+  ((unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) > (TARGET_64BIT ? 16 : 8))
 
 /* Register in which address to store a structure value
    is passed to a function.  */
