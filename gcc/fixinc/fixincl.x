@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 153 fixup descriptions.
+ * This file contains 156 fixup descriptions.
  *
  * See README for more information.
  *
@@ -2617,6 +2617,88 @@ static const char* apzIrix_Limits_ConstPatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Irix___Restrict fix
+ */
+tSCC zIrix___RestrictName[] =
+     "irix___restrict";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zIrix___RestrictList[] =
+  "|internal/sgimacros.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzIrix___RestrictMachs[] = {
+        "mips-sgi-irix6.5",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zIrix___RestrictSelect0[] =
+       "(#ifdef __c99\n\
+)(#[ \t]*define __restrict restrict)";
+
+#define    IRIX___RESTRICT_TEST_CT  1
+static tTestDesc aIrix___RestrictTests[] = {
+  { TT_EGREP,    zIrix___RestrictSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Irix___Restrict
+ */
+static const char* apzIrix___RestrictPatch[] = {
+    "format",
+    "%1#  ifndef __cplusplus\n\
+%2\n\
+#  endif",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Irix_Socklen_T fix
+ */
+tSCC zIrix_Socklen_TName[] =
+     "irix_socklen_t";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zIrix_Socklen_TList[] =
+  "|sys/socket.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzIrix_Socklen_TMachs[] = {
+        "mips-sgi-irix6.5",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zIrix_Socklen_TSelect0[] =
+       "(#define _SOCKLEN_T\n\
+)(typedef u_int32_t socklen_t;)";
+
+#define    IRIX_SOCKLEN_T_TEST_CT  1
+static tTestDesc aIrix_Socklen_TTests[] = {
+  { TT_EGREP,    zIrix_Socklen_TSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Irix_Socklen_T
+ */
+static const char* apzIrix_Socklen_TPatch[] = {
+    "format",
+    "%1#if _NO_XOPEN4 && _NO_XOPEN5\n\
+typedef int socklen_t;\n\
+#else\n\
+%2\n\
+#endif /* _NO_XOPEN4 && _NO_XOPEN5 */",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Irix_Stdio_Va_List fix
  */
 tSCC zIrix_Stdio_Va_ListName[] =
@@ -2648,6 +2730,45 @@ static tTestDesc aIrix_Stdio_Va_ListTests[] = {
 static const char* apzIrix_Stdio_Va_ListPatch[] = {
     "format",
     "%1, __gnuc_va_list",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Irix_Wcsftime fix
+ */
+tSCC zIrix_WcsftimeName[] =
+     "irix_wcsftime";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zIrix_WcsftimeList[] =
+  "|internal/wchar_core.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzIrix_WcsftimeMachs[] = {
+        "mips-sgi-irix6.5",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zIrix_WcsftimeSelect0[] =
+       "#if _NO_XOPEN5\n\
+(extern size_t[ \t]+wcsftime.*const char *.*)";
+
+#define    IRIX_WCSFTIME_TEST_CT  1
+static tTestDesc aIrix_WcsftimeTests[] = {
+  { TT_EGREP,    zIrix_WcsftimeSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Irix_Wcsftime
+ */
+static const char* apzIrix_WcsftimePatch[] = {
+    "format",
+    "#if _NO_XOPEN5 && !defined(__c99)\n\
+%1",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -6012,9 +6133,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          163
+#define REGEX_COUNT          166
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            153
+#define FIX_COUNT            156
 
 /*
  *  Enumerate the fixes
@@ -6084,7 +6205,10 @@ typedef enum {
     IP_MISSING_SEMI_FIXIDX,
     IRIX_ASM_APOSTROPHE_FIXIDX,
     IRIX_LIMITS_CONST_FIXIDX,
+    IRIX___RESTRICT_FIXIDX,
+    IRIX_SOCKLEN_T_FIXIDX,
     IRIX_STDIO_VA_LIST_FIXIDX,
+    IRIX_WCSFTIME_FIXIDX,
     ISC_FMOD_FIXIDX,
     ISC_OMITS_WITH_STDC_FIXIDX,
     KANDR_CONCAT_FIXIDX,
@@ -6496,10 +6620,25 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      IRIX_LIMITS_CONST_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aIrix_Limits_ConstTests,   apzIrix_Limits_ConstPatch, 0 },
 
+  {  zIrix___RestrictName,    zIrix___RestrictList,
+     apzIrix___RestrictMachs,
+     IRIX___RESTRICT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aIrix___RestrictTests,   apzIrix___RestrictPatch, 0 },
+
+  {  zIrix_Socklen_TName,    zIrix_Socklen_TList,
+     apzIrix_Socklen_TMachs,
+     IRIX_SOCKLEN_T_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aIrix_Socklen_TTests,   apzIrix_Socklen_TPatch, 0 },
+
   {  zIrix_Stdio_Va_ListName,    zIrix_Stdio_Va_ListList,
      apzIrix_Stdio_Va_ListMachs,
      IRIX_STDIO_VA_LIST_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aIrix_Stdio_Va_ListTests,   apzIrix_Stdio_Va_ListPatch, 0 },
+
+  {  zIrix_WcsftimeName,    zIrix_WcsftimeList,
+     apzIrix_WcsftimeMachs,
+     IRIX_WCSFTIME_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aIrix_WcsftimeTests,   apzIrix_WcsftimePatch, 0 },
 
   {  zIsc_FmodName,    zIsc_FmodList,
      apzIsc_FmodMachs,

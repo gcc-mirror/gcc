@@ -1513,6 +1513,48 @@ fix = {
 
 
 /*
+ *  IRIX 6.5.1[89] <internal/sgimacros.h> unconditionally defines
+ *  __restrict as restrict iff __c99.  This is wrong for C++, which
+ *  needs many C99 features, but only supports __restrict.
+ */
+fix = {
+    hackname  = irix___restrict;
+    files     = internal/sgimacros.h;
+    select    = "(#ifdef __c99\n)(#[ \t]*define __restrict restrict)";
+
+    mach      = "mips-sgi-irix6.5";
+    c_fix     = format;
+    c_fix_arg = "%1"
+		"#  ifndef __cplusplus\n%2\n#  endif";
+
+    test_text = "#ifdef __c99\n#  define __restrict restrict";
+};
+
+/*
+ *  IRIX 6.5.1[78] <sys/socket.h> has a broken definition of socklen_t.
+ *  Various socket function prototypes use different types instead,
+ *  depending on the API in use (BSD, XPG4/5), but the socklen_t
+ *  definition doesn't reflect this (SGI Bug Id 864477, fixed in
+ *  IRIX 6.5.19).
+ */
+fix = {
+    hackname  = irix_socklen_t;
+    files     = sys/socket.h;
+    select    = "(#define _SOCKLEN_T\n)(typedef u_int32_t socklen_t;)";
+
+    mach      = "mips-sgi-irix6.5";
+    c_fix     = format;
+    c_fix_arg = "%1"
+    		"#if _NO_XOPEN4 && _NO_XOPEN5\n"
+    		"typedef int socklen_t;\n"
+		"#else\n"
+    		"%2\n"
+    		"#endif /* _NO_XOPEN4 && _NO_XOPEN5 */";
+
+    test_text = "#define _SOCKLEN_T\ntypedef u_int32_t socklen_t;";
+};
+
+/*
  *  IRIX 5.x's stdio.h declares some functions that take a va_list as
  *  taking char *.  However, GCC uses void * for va_list, so
  *  calling vfprintf with a va_list fails in C++.  */
@@ -1527,6 +1569,23 @@ fix = {
     "extern int printf( const char *, /* va_list */ char * );";
 };
 
+
+/*
+ *  IRIX 6.5.19 <internal/wchar_core.h> provides the XPG4 variant of
+ *  wcsftime by default.  ISO C99 requires the XPG5 variant instead.
+ */
+fix = {
+    hackname  = irix_wcsftime;
+    files     = internal/wchar_core.h;
+    select    = "#if _NO_XOPEN5\n(extern size_t[ \t]+wcsftime.*const char \*.*)";
+
+    mach      = "mips-sgi-irix6.5";
+    c_fix     = format;
+    c_fix_arg = "#if _NO_XOPEN5 && !defined(__c99)\n%1";
+
+    test_text = "#if _NO_XOPEN5\n"
+		"extern size_t          wcsftime(wchar_t *, __SGI_LIBC_NAMESPACE_QUALIFIER size_t, const char *, const struct tm *);";
+};
 
 /*
  * Fixing ISC fmod declaration

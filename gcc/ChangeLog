@@ -1,5 +1,23 @@
 2003-02-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* config/mips/iris6.h (TARGET_OS_CPP_BUILTINS): Define __c99 for
+	ISO C99 and C++.
+
+	* fixinc/inclhack.def (irix___restrict): Don't change __restrict
+	for C++ on IRIX 6.5.1[89].
+	* fixinc/tests/base/internal/sgimacros.h: New file.
+
+	* fixinc/inclhack.def (irix_wcsftime): Use XPG5 variant for C99.
+	* fixinc/tests/base/internal/wchar_core.h: New file.
+
+	* fixinc/inclhack.def (irix_socklen_t): Fix broken IRIX 6.5.1[78]
+	socklen_t definition.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/sys/socket.h: New file.
+	Fixes PR libgcj/9652.
+
+2003-02-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* config/alpha/osf.h (TARGET_OS_CPP_BUILTINS): Rename
 	__EXTERN_PREFIX to __PRAGMA_EXTERN_PREFIX.
 	* doc/extend.texi (Tru64 Pragmas): Reflect this.
