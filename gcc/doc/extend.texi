@@ -2866,11 +2866,6 @@ struct foo @{ int x[2] __attribute__ ((aligned (8))); @};
 This is an alternative to creating a union with a @code{double} member
 that forces the union to be double-word aligned.
 
-It is not possible to specify the alignment of functions; the alignment
-of functions is determined by the machine's requirements and cannot be
-changed.  You cannot specify alignment for a typedef name because such a
-name is just an alias, not a distinct type.
-
 As in the preceding examples, you can explicitly specify the alignment
 (in bytes) that you wish the compiler to use for a given variable or
 structure field.  Alternatively, you can leave out the alignment factor
