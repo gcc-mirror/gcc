@@ -714,6 +714,8 @@ extern cpp_hashnode *cpp_lookup		PARAMS ((cpp_reader *,
 /* In cppfiles.c */
 extern int cpp_included			PARAMS ((cpp_reader *, const char *));
 extern int cpp_read_file		PARAMS ((cpp_reader *, const char *));
+extern void cpp_make_system_header	PARAMS ((cpp_reader *,
+						 cpp_buffer *, int));
 
 #ifdef __cplusplus
 }

@@ -603,23 +603,23 @@ do_line (pfile)
 	  if (action_number == 1)
 	    {
 	      pfile->buffer_stack_depth++;
-	      ip->inc->sysp = 0;
+	      cpp_make_system_header (pfile, ip, 0);
 	      read_line_number (pfile, &action_number);
 	    }
 	  else if (action_number == 2)
 	    {
 	      pfile->buffer_stack_depth--;
-	      ip->inc->sysp = 0;
+	      cpp_make_system_header (pfile, ip, 0);
 	      read_line_number (pfile, &action_number);
 	    }
 	  if (action_number == 3)
 	    {
-	      ip->inc->sysp = 1;
+	      cpp_make_system_header (pfile, ip, 1);
 	      read_line_number (pfile, &action_number);
 	    }
 	  if (action_number == 4)
 	    {
-	      ip->inc->sysp = 2;
+	      cpp_make_system_header (pfile, ip, 2);
 	      read_line_number (pfile, &action_number);
 	    }
 	}
@@ -978,7 +978,7 @@ do_pragma_system_header (pfile)
   if (CPP_PREV_BUFFER (ip) == NULL)
     cpp_warning (pfile, "#pragma system_header outside include file");
   else
-    ip->inc->sysp = 1;
+    cpp_make_system_header (pfile, ip, 1);
 
   return 1;
 }
