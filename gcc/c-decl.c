@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -277,20 +277,20 @@ tree static_ctors, static_dtors;
 
 /* Forward declarations.  */
 
-static struct binding_level * make_binding_level	PROTO((void));
-static void mark_binding_level		PROTO((void *));
-static void clear_limbo_values		PROTO((tree));
-static int duplicate_decls		PROTO((tree, tree, int));
-static int redeclaration_error_message	PROTO((tree, tree));
-static void storedecls			PROTO((tree));
-static void storetags			PROTO((tree));
-static tree lookup_tag			PROTO((enum tree_code, tree,
-					       struct binding_level *, int));
-static tree lookup_tag_reverse		PROTO((tree));
-static tree grokdeclarator		PROTO((tree, tree, enum decl_context,
-					       int));
-static tree grokparms			PROTO((tree, int));
-static void layout_array_type		PROTO((tree));
+static struct binding_level * make_binding_level	PARAMS ((void));
+static void mark_binding_level		PARAMS ((void *));
+static void clear_limbo_values		PARAMS ((tree));
+static int duplicate_decls		PARAMS ((tree, tree, int));
+static int redeclaration_error_message	PARAMS ((tree, tree));
+static void storedecls			PARAMS ((tree));
+static void storetags			PARAMS ((tree));
+static tree lookup_tag			PARAMS ((enum tree_code, tree,
+						 struct binding_level *, int));
+static tree lookup_tag_reverse		PARAMS ((tree));
+static tree grokdeclarator		PARAMS ((tree, tree, enum decl_context,
+						 int));
+static tree grokparms			PARAMS ((tree, int));
+static void layout_array_type		PARAMS ((tree));
 
 /* C-specific option variables.  */
 

@@ -147,15 +147,15 @@ enum attrs {A_PACKED, A_NOCOMMON, A_COMMON, A_NORETURN, A_CONST, A_T_UNION,
 enum format_type { printf_format_type, scanf_format_type,
 		   strftime_format_type };
 
-static void declare_hidden_char_array	PROTO((const char *, const char *));
-static void add_attribute		PROTO((enum attrs, const char *,
-					       int, int, int));
-static void init_attributes		PROTO((void));
-static void record_function_format	PROTO((tree, tree, enum format_type,
-					       int, int));
-static void record_international_format	PROTO((tree, tree, int));
-static tree c_find_base_decl            PROTO((tree));
-static int default_valid_lang_attribute PROTO ((tree, tree, tree, tree));
+static void declare_hidden_char_array	PARAMS ((const char *, const char *));
+static void add_attribute		PARAMS ((enum attrs, const char *,
+						 int, int, int));
+static void init_attributes		PARAMS ((void));
+static void record_function_format	PARAMS ((tree, tree, enum format_type,
+						 int, int));
+static void record_international_format	PARAMS ((tree, tree, int));
+static tree c_find_base_decl            PARAMS ((tree));
+static int default_valid_lang_attribute PARAMS ((tree, tree, tree, tree));
 
 /* Keep a stack of if statements.  We record the number of compound
    statements seen up to the if keyword, as well as the line number
@@ -169,7 +169,7 @@ typedef struct
   const char *file;
   int needs_warning;
 } if_elt;
-static void tfaff			PROTO((void));
+static void tfaff			PARAMS ((void));
 
 static if_elt *if_stack;
 
@@ -503,7 +503,7 @@ default_valid_lang_attribute (attr_name, attr_args, decl, type)
 /* Return a 1 if ATTR_NAME and ATTR_ARGS denote a valid language-specific
    attribute for either declaration DECL or type TYPE and 0 otherwise.  */
 
-int (*valid_lang_attribute) PROTO ((tree, tree, tree, tree))
+int (*valid_lang_attribute) PARAMS ((tree, tree, tree, tree))
      = default_valid_lang_attribute;
 
 /* Process the attributes listed in ATTRIBUTES and PREFIX_ATTRIBUTES
@@ -1280,7 +1280,7 @@ typedef struct international_format_info
 
 static international_format_info *international_format_list = NULL;
 
-static void check_format_info		PROTO((function_format_info *, tree));
+static void check_format_info	PARAMS ((function_format_info *, tree));
 
 /* Initialize the table of functions to perform format checking on.
    The ANSI functions are always checked (whether <stdio.h> is

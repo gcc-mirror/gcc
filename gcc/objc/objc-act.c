@@ -1,5 +1,5 @@
 /* Implement classes and message passing for Objective C.
-   Copyright (C) 1992, 93-95, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-95, 97-99, 2000 Free Software Foundation, Inc.
    Contributed by Steve Naroff.
 
 This file is part of GNU CC.
@@ -153,57 +153,57 @@ static tree static_instances_decl = NULL_TREE;
 
 /* Used by compile_file.  */
 
-static void init_objc				PROTO((void));
-static void finish_objc				PROTO((void));
+static void init_objc				PARAMS ((void));
+static void finish_objc				PARAMS ((void));
 
 /* Code generation.  */
 
-static void synth_module_prologue		PROTO((void));
-static tree build_constructor			PROTO((tree, tree));
-static char *build_module_descriptor		PROTO((void));
-static tree init_module_descriptor		PROTO((tree));
-static tree build_objc_method_call		PROTO((int, tree, tree,
+static void synth_module_prologue		PARAMS ((void));
+static tree build_constructor			PARAMS ((tree, tree));
+static char *build_module_descriptor		PARAMS ((void));
+static tree init_module_descriptor		PARAMS ((tree));
+static tree build_objc_method_call		PARAMS ((int, tree, tree,
 						       tree, tree, tree));
-static void generate_strings			PROTO((void));
-static tree get_proto_encoding 			PROTO((tree));
-static void build_selector_translation_table	PROTO((void));
-static tree build_ivar_chain			PROTO((tree, int));
+static void generate_strings			PARAMS ((void));
+static tree get_proto_encoding 			PARAMS ((tree));
+static void build_selector_translation_table	PARAMS ((void));
+static tree build_ivar_chain			PARAMS ((tree, int));
 
-static tree objc_add_static_instance		PROTO((tree, tree));
+static tree objc_add_static_instance		PARAMS ((tree, tree));
 
-static tree build_ivar_template			PROTO((void));
-static tree build_method_template		PROTO((void));
-static tree build_private_template		PROTO((tree));
-static void build_class_template		PROTO((void));
-static void build_selector_template		PROTO((void));
-static void build_category_template		PROTO((void));
-static tree build_super_template		PROTO((void));
-static tree build_category_initializer		PROTO((tree, tree, tree,
+static tree build_ivar_template			PARAMS ((void));
+static tree build_method_template		PARAMS ((void));
+static tree build_private_template		PARAMS ((tree));
+static void build_class_template		PARAMS ((void));
+static void build_selector_template		PARAMS ((void));
+static void build_category_template		PARAMS ((void));
+static tree build_super_template		PARAMS ((void));
+static tree build_category_initializer		PARAMS ((tree, tree, tree,
 						       tree, tree, tree));
-static tree build_protocol_initializer		PROTO((tree, tree, tree,
+static tree build_protocol_initializer		PARAMS ((tree, tree, tree,
 						       tree, tree));
 
-static void synth_forward_declarations		PROTO((void));
-static void generate_ivar_lists			PROTO((void));
-static void generate_dispatch_tables		PROTO((void));
-static void generate_shared_structures		PROTO((void));
-static tree generate_protocol_list		PROTO((tree));
-static void generate_forward_declaration_to_string_table PROTO((void));
-static void build_protocol_reference		PROTO((tree));
+static void synth_forward_declarations		PARAMS ((void));
+static void generate_ivar_lists			PARAMS ((void));
+static void generate_dispatch_tables		PARAMS ((void));
+static void generate_shared_structures		PARAMS ((void));
+static tree generate_protocol_list		PARAMS ((tree));
+static void generate_forward_declaration_to_string_table PARAMS ((void));
+static void build_protocol_reference		PARAMS ((tree));
 
 #if 0
-static tree init_selector			PROTO((int));
+static tree init_selector			PARAMS ((int));
 #endif
-static tree build_keyword_selector		PROTO((tree));
-static tree synth_id_with_class_suffix		PROTO((const char *, tree));
+static tree build_keyword_selector		PARAMS ((tree));
+static tree synth_id_with_class_suffix		PARAMS ((const char *, tree));
 
-static void generate_static_references		PROTO((void));
-static int check_methods_accessible		PROTO((tree, tree,
+static void generate_static_references		PARAMS ((void));
+static int check_methods_accessible		PARAMS ((tree, tree,
 						       int));
-static void encode_aggregate_within		PROTO((tree, int, int,
+static void encode_aggregate_within		PARAMS ((tree, int, int,
 					               int, int));
-static const char *objc_demangle		PROTO((const char *));
-static const char *objc_printable_name		PROTO((tree, int));
+static const char *objc_demangle		PARAMS ((const char *));
+static const char *objc_printable_name		PARAMS ((tree, int));
 
 /* Misc. bookkeeping */
 
@@ -222,15 +222,15 @@ struct hashed_entry
   tree key;
 };
 
-static void hash_init				PROTO((void));
-static void hash_enter				PROTO((hash *, tree));
-static hash hash_lookup				PROTO((hash *, tree));
-static void hash_add_attr			PROTO((hash, tree));
-static tree lookup_method			PROTO((tree, tree));
-static tree lookup_instance_method_static	PROTO((tree, tree));
-static tree lookup_class_method_static		PROTO((tree, tree));
-static tree add_class				PROTO((tree));
-static void add_category			PROTO((tree, tree));
+static void hash_init				PARAMS ((void));
+static void hash_enter				PARAMS ((hash *, tree));
+static hash hash_lookup				PARAMS ((hash *, tree));
+static void hash_add_attr			PARAMS ((hash, tree));
+static tree lookup_method			PARAMS ((tree, tree));
+static tree lookup_instance_method_static	PARAMS ((tree, tree));
+static tree lookup_class_method_static		PARAMS ((tree, tree));
+static tree add_class				PARAMS ((tree));
+static void add_category			PARAMS ((tree, tree));
 
 enum string_section
 {
@@ -239,110 +239,110 @@ enum string_section
   meth_var_types	/* method and variable type descriptors */
 };
 
-static tree add_objc_string			PROTO((tree,
+static tree add_objc_string			PARAMS ((tree,
 						       enum string_section));
-static tree get_objc_string_decl		PROTO((tree,
+static tree get_objc_string_decl		PARAMS ((tree,
 						       enum string_section));
-static tree build_objc_string_decl		PROTO((enum string_section));
-static tree build_selector_reference_decl	PROTO((void));
+static tree build_objc_string_decl		PARAMS ((enum string_section));
+static tree build_selector_reference_decl	PARAMS ((void));
 
 /* Protocol additions.  */
 
-static tree add_protocol			PROTO((tree));
-static tree lookup_protocol			PROTO((tree));
-static tree lookup_and_install_protocols	PROTO((tree));
+static tree add_protocol			PARAMS ((tree));
+static tree lookup_protocol			PARAMS ((tree));
+static tree lookup_and_install_protocols	PARAMS ((tree));
 
 /* Type encoding.  */
 
-static void encode_type_qualifiers		PROTO((tree));
-static void encode_pointer			PROTO((tree, int, int));
-static void encode_array			PROTO((tree, int, int));
-static void encode_aggregate			PROTO((tree, int, int));
-static void encode_bitfield			PROTO((int));
-static void encode_type				PROTO((tree, int, int));
-static void encode_field_decl			PROTO((tree, int, int));
+static void encode_type_qualifiers		PARAMS ((tree));
+static void encode_pointer			PARAMS ((tree, int, int));
+static void encode_array			PARAMS ((tree, int, int));
+static void encode_aggregate			PARAMS ((tree, int, int));
+static void encode_bitfield			PARAMS ((int));
+static void encode_type				PARAMS ((tree, int, int));
+static void encode_field_decl			PARAMS ((tree, int, int));
 
-static void really_start_method			PROTO((tree, tree));
-static int comp_method_with_proto		PROTO((tree, tree));
-static int comp_proto_with_proto		PROTO((tree, tree));
-static tree get_arg_type_list			PROTO((tree, int, int));
-static tree expr_last				PROTO((tree));
+static void really_start_method			PARAMS ((tree, tree));
+static int comp_method_with_proto		PARAMS ((tree, tree));
+static int comp_proto_with_proto		PARAMS ((tree, tree));
+static tree get_arg_type_list			PARAMS ((tree, int, int));
+static tree expr_last				PARAMS ((tree));
 
 /* Utilities for debugging and error diagnostics.  */
 
-static void warn_with_method			PROTO((const char *, int, tree));
-static void error_with_ivar			PROTO((const char *, tree, tree));
-static char *gen_method_decl			PROTO((tree, char *));
-static char *gen_declaration			PROTO((tree, char *));
-static char *gen_declarator			PROTO((tree, char *,
+static void warn_with_method			PARAMS ((const char *, int, tree));
+static void error_with_ivar			PARAMS ((const char *, tree, tree));
+static char *gen_method_decl			PARAMS ((tree, char *));
+static char *gen_declaration			PARAMS ((tree, char *));
+static char *gen_declarator			PARAMS ((tree, char *,
 						       const char *));
-static int is_complex_decl			PROTO((tree));
-static void adorn_decl				PROTO((tree, char *));
-static void dump_interface			PROTO((FILE *, tree));
+static int is_complex_decl			PARAMS ((tree));
+static void adorn_decl				PARAMS ((tree, char *));
+static void dump_interface			PARAMS ((FILE *, tree));
 
 /* Everything else.  */
 
-static void objc_fatal				PROTO((void))
+static void objc_fatal				PARAMS ((void))
   ATTRIBUTE_NORETURN;
-static tree define_decl				PROTO((tree, tree));
-static tree lookup_method_in_protocol_list	PROTO((tree, tree, int));
-static tree lookup_protocol_in_reflist		PROTO((tree, tree));
-static tree create_builtin_decl			PROTO((enum tree_code,
+static tree define_decl				PARAMS ((tree, tree));
+static tree lookup_method_in_protocol_list	PARAMS ((tree, tree, int));
+static tree lookup_protocol_in_reflist		PARAMS ((tree, tree));
+static tree create_builtin_decl			PARAMS ((enum tree_code,
 						       tree, const char *));
-static tree my_build_string			PROTO((int, const char *));
-static void build_objc_symtab_template		PROTO((void));
-static tree init_def_list			PROTO((tree));
-static tree init_objc_symtab			PROTO((tree));
-static void forward_declare_categories		PROTO((void));
-static void generate_objc_symtab_decl		PROTO((void));
-static tree build_selector			PROTO((tree));
+static tree my_build_string			PARAMS ((int, const char *));
+static void build_objc_symtab_template		PARAMS ((void));
+static tree init_def_list			PARAMS ((tree));
+static tree init_objc_symtab			PARAMS ((tree));
+static void forward_declare_categories		PARAMS ((void));
+static void generate_objc_symtab_decl		PARAMS ((void));
+static tree build_selector			PARAMS ((tree));
 #if 0
-static tree build_msg_pool_reference		PROTO((int));
+static tree build_msg_pool_reference		PARAMS ((int));
 #endif
-static tree build_typed_selector_reference     	PROTO((tree, tree));
-static tree build_selector_reference		PROTO((tree));
-static tree build_class_reference_decl		PROTO((void));
-static void add_class_reference			PROTO((tree));
-static tree objc_copy_list			PROTO((tree, tree *));
-static tree build_protocol_template		PROTO((void));
-static tree build_descriptor_table_initializer	PROTO((tree, tree));
-static tree build_method_prototype_list_template PROTO((tree, int));
-static tree build_method_prototype_template	PROTO((void));
-static int forwarding_offset			PROTO((tree));
-static tree encode_method_prototype		PROTO((tree, tree));
-static tree generate_descriptor_table		PROTO((tree, const char *,
+static tree build_typed_selector_reference     	PARAMS ((tree, tree));
+static tree build_selector_reference		PARAMS ((tree));
+static tree build_class_reference_decl		PARAMS ((void));
+static void add_class_reference			PARAMS ((tree));
+static tree objc_copy_list			PARAMS ((tree, tree *));
+static tree build_protocol_template		PARAMS ((void));
+static tree build_descriptor_table_initializer	PARAMS ((tree, tree));
+static tree build_method_prototype_list_template PARAMS ((tree, int));
+static tree build_method_prototype_template	PARAMS ((void));
+static int forwarding_offset			PARAMS ((tree));
+static tree encode_method_prototype		PARAMS ((tree, tree));
+static tree generate_descriptor_table		PARAMS ((tree, const char *,
 						       int, tree, tree));
-static void generate_method_descriptors		PROTO((tree));
-static tree build_tmp_function_decl		PROTO((void));
-static void hack_method_prototype		PROTO((tree, tree));
-static void generate_protocol_references	PROTO((tree));
-static void generate_protocols			PROTO((void));
-static void check_ivars				PROTO((tree, tree));
-static tree build_ivar_list_template		PROTO((tree, int));
-static tree build_method_list_template		PROTO((tree, int));
-static tree build_ivar_list_initializer		PROTO((tree, tree));
-static tree generate_ivars_list			PROTO((tree, const char *,
+static void generate_method_descriptors		PARAMS ((tree));
+static tree build_tmp_function_decl		PARAMS ((void));
+static void hack_method_prototype		PARAMS ((tree, tree));
+static void generate_protocol_references	PARAMS ((tree));
+static void generate_protocols			PARAMS ((void));
+static void check_ivars				PARAMS ((tree, tree));
+static tree build_ivar_list_template		PARAMS ((tree, int));
+static tree build_method_list_template		PARAMS ((tree, int));
+static tree build_ivar_list_initializer		PARAMS ((tree, tree));
+static tree generate_ivars_list			PARAMS ((tree, const char *,
 						       int, tree));
-static tree build_dispatch_table_initializer	PROTO((tree, tree));
-static tree generate_dispatch_table		PROTO((tree, const char *,
+static tree build_dispatch_table_initializer	PARAMS ((tree, tree));
+static tree generate_dispatch_table		PARAMS ((tree, const char *,
 						       int, tree));
-static tree build_shared_structure_initializer	PROTO((tree, tree, tree, tree,
+static tree build_shared_structure_initializer	PARAMS ((tree, tree, tree, tree,
 						       tree, int, tree, tree,
 						       tree));
-static void generate_category			PROTO((tree));
-static int is_objc_type_qualifier		PROTO((tree));
-static tree adjust_type_for_id_default		PROTO((tree));
-static tree check_duplicates			PROTO((hash));
-static tree receiver_is_class_object		PROTO((tree));
-static int check_methods			PROTO((tree, tree, int));
-static int conforms_to_protocol			PROTO((tree, tree));
-static void check_protocols			PROTO((tree, const char *,
+static void generate_category			PARAMS ((tree));
+static int is_objc_type_qualifier		PARAMS ((tree));
+static tree adjust_type_for_id_default		PARAMS ((tree));
+static tree check_duplicates			PARAMS ((hash));
+static tree receiver_is_class_object		PARAMS ((tree));
+static int check_methods			PARAMS ((tree, tree, int));
+static int conforms_to_protocol			PARAMS ((tree, tree));
+static void check_protocols			PARAMS ((tree, const char *,
 						       const char *));
-static tree encode_method_def			PROTO((tree));
-static void gen_declspecs			PROTO((tree, char *, int));
-static void generate_classref_translation_entry	PROTO((tree));
-static void handle_class_ref			PROTO((tree));
-static void generate_struct_by_value_array	PROTO((void))
+static tree encode_method_def			PARAMS ((tree));
+static void gen_declspecs			PARAMS ((tree, char *, int));
+static void generate_classref_translation_entry	PARAMS ((tree));
+static void handle_class_ref			PARAMS ((tree));
+static void generate_struct_by_value_array	PARAMS ((void))
      ATTRIBUTE_NORETURN;
 
 /*** Private Interface (data) ***/
@@ -456,7 +456,7 @@ struct imp_entry
   tree meta_decl;		/* _OBJC_METACLASS_<my_name>; */
 };
 
-static void handle_impent			PROTO((struct imp_entry *));
+static void handle_impent			PARAMS ((struct imp_entry *));
 
 static struct imp_entry *imp_list = 0;
 static int imp_count = 0;	/* `@implementation' */
