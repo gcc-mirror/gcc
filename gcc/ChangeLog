@@ -1,3 +1,36 @@
+2002-06-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in: Update cppmain.o.
+	* cpphash.h (struct cpp_reader): Move some members to a
+	nested structure.
+	(trad_line): Rename saved_line.
+	(_cpp_read_logical_line_trad): Update.
+	(_cpp_remove_overlay): New.
+	* cppinit.c (cpp_create_reader): No need to set saved_line.
+	(cpp_destroy): Update.
+	(cpp_read_main_file): Only overlay if compiling.
+	* cpplex.c (continue_after_nul): Return false if in directive.
+	* cpplib.c (EXPAND): New.
+	(directive_table, SEEN_EOL): Update.
+	(end_directive): Remove overlay if traditional; don't skip
+	line in traditional #define.
+	(prepare_directive_trad): New.
+	(_cpp_handle_directive, run_directive): Update for traditional
+	directives.
+	(lex_macro_node): Simplify, don't use lex_identifier_trad.
+	* cpplib.h (struct options): Add preprocess_only.
+	* cppmain.c: Don't include intl.h.
+	(cpp_preprocess_file): Set options->preprocess_only.
+	(scan_translation_unit_trad): Fix, and print line numbers.
+	* cpptrad.c (check_output_buffer, lex_identifier, scan_parameters,
+	maybe_start_funlike, scan_out_logical_line, replace_args_and_push,
+	save_replacement_text, _cpp_create_trad_definition): Update for
+	variable renaming.
+	(_cpp_overlay_buffer): Save line number.
+	(_cpp_remove_overlay): Rename from restore_buff, restore line.
+	(_cpp_read_logical_line_trad): Don't handle overlays here.
+	(scan_out_logical_line): Process directives.
+
 2002-06-11  Danny Smith  <dannysmith@users.sourforge.net>
 
 	* gthr-win32.h: Wrap functions in extern "C".
