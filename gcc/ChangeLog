@@ -1,3 +1,8 @@
+2000-10-25  Neil Booth  <neilb@earthling.net>
+
+        * cpp.texi: Update with implementation-defined behavior and
+        internal limits.
+
 2000-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* stor-layout.c (layout_type): If TYPE_ALIAS_SET was already set on the
