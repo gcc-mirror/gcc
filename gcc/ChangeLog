@@ -1,3 +1,9 @@
+Mon Jan  5 13:00:18 1998  John F. Carr  <jfc@mit.edu>
+
+	* alias.c (*_dependence): Call base_alias_check before canon_rtx.
+	(base_alias_check): If no base found for address call canon_rtx and
+	try again.
+
 Mon Jan  5 11:39:49 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mips.c (mips_expand_prologue): Handle large frame with no outgoing
