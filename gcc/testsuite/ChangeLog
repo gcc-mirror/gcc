@@ -1,3 +1,8 @@
+2002-11-02  Diego Novillo  <dnovillo@redhat.com>
+
+	PR optimization/8423
+	* gcc.c-torture/execute/builtin-constant.c: New test.
+
 2002-11-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* g++.dg/ext/typedef-init.C, gcc.dg/typedef-init.C:
