@@ -1,3 +1,7 @@
+2003-09-25  Loren James Rittle  <ljrittle@acm.org>
+
+	* config/i386/i386.h (ix86_return_in_memory): Add prototype.
+
 2003-09-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_emit_prologue): Simplify accesses to

@@ -1245,6 +1245,7 @@ do {									\
    should always be returned in memory.  You should instead use
    `DEFAULT_PCC_STRUCT_RETURN' to indicate this.  */
 
+int ix86_return_in_memory (tree type);
 #define RETURN_IN_MEMORY(TYPE) \
   ix86_return_in_memory (TYPE)
 
