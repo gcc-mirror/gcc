@@ -53,12 +53,16 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Values of TARGET_CPU_DEFAULT, set via -D in the Makefile.  */
-#define TARGET_CPU_sparc     0
-#define TARGET_CPU_sparclet  1
-#define TARGET_CPU_sparclite 2
-#define TARGET_CPU_sparc64   3
+#define TARGET_CPU_sparc	0
+#define TARGET_CPU_v7		0	/* alias for previous */
+#define TARGET_CPU_sparclet	1
+#define TARGET_CPU_sparclite	2
+#define TARGET_CPU_v8		3
+#define TARGET_CPU_supersparc	4
+#define TARGET_CPU_ultrasparc	5
+#define TARGET_CPU_sparc64	5	/* alias for ultrasparc */
 
-#if TARGET_CPU_DEFAULT == TARGET_CPU_sparc
+#if TARGET_CPU_DEFAULT == TARGET_CPU_sparc || TARGET_CPU_DEFAULT == TARGET_CPU_v8 || TARGET_CPU_DEFAULT == TARGET_CPU_supersparc
 #define CPP_DEFAULT_SPEC ""
 #define ASM_DEFAULT_SPEC ""
 #else
