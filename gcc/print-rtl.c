@@ -272,7 +272,7 @@ print_rtx (in_rtx)
 #if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT && LONG_DOUBLE_TYPE_SIZE == 64
   if (GET_CODE (in_rtx) == CONST_DOUBLE && FLOAT_MODE_P (GET_MODE (in_rtx)))
     {
-      REAL_VALUE_TYPE val;
+      double val;
       REAL_VALUE_FROM_CONST_DOUBLE (val, in_rtx);
       fprintf (outfile, " [%.16g]", val);
     }
