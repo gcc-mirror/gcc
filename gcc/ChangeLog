@@ -1,3 +1,47 @@
+Sat Jul 31 11:10:07 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* c-pragma.c: Don't include "except.h".
+	* emit-rtl.c: Likewise.
+	* stor-layout.c: Likewise.
+	* tree.c: Likewise.
+	* varasm.c: Likewise.
+
+	* flow.c: Include "function.h".
+	* tree.h (init_dummy_function_start): Declare new function.
+	
+	* except.h (struct eh_status): New structure.
+	(struct label_node, struct eh_entry): Declare even if tree.h hasn't
+	been included.
+	(eh_return_stub_label, ehstack, catchstack, ehqueue,
+	catch_clauses, false_label_stack, caught_return_label_stack,
+	protect_list, current_function_ehc): Add accessor macros for the
+	corresponding fields in current_function->eh; delete declarations
+	for all items that used to be declared here.
+	* except.c (eh_return_stub_label, ehstack, catchstack, ehqueue,
+	catch_clauses, false_label_stack, caught_return_label_stack,
+	protect_list, current_function_ehc): Delete variables.
+	(init_eh_for_function): Allocate current_function->eh.
+	(save_eh_status, restore_eh_status): Delete functions.
+
+	* function.h (struct function): Add fields next_global and eh.
+	Delete all exception handling related fields.
+	* function.c (current_function): New variable.
+	(all_functions): New variable.
+	(push_function_context_to): Don't allocate a struct function,
+	use current_function instead.  Call init_dummy_function_start when
+	outside a function.  Clear current_function before returning.
+	(pop_function_context_from): Restore current_function.
+	Don't free the restored struct function.	
+	(prepare_function_start): New function.
+	(init_dummy_function_start): New function.
+	(init_function_start): Break out some code into prepare_function_start
+	and call it here.
+
+	* stmt.c (save_stmt_status): Don't call save_eh_status.
+	(restore_stmt_status): Don't call restore_eh_status.
+
+	* Makefile.in: Update dependencies.
+
 Sat Jul 31 04:10:01 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (compute_frame_size): Use STARTINg_FRAME_OFFSET instead

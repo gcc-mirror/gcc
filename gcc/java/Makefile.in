@@ -273,7 +273,8 @@ clean:  mostlyclean
 
 force:
 
-parse.o : $(PARSE_C) jcf-reader.c $(CONFIG_H) $(srcdir)/../system.h
+parse.o : $(PARSE_C) jcf-reader.c $(CONFIG_H) $(srcdir)/../system.h \
+  $(srcdir)/../function.h
 jcf-dump.o : $(CONFIG_H) $(srcdir)/../system.h $(JAVA_TREE_H) jcf-dump.c \
   jcf-reader.c jcf.h javaop.h javaop.def
 gjavah.o : $(CONFIG_H) $(srcdir)/../system.h $(JAVA_TREE_H) gjavah.c \
@@ -289,10 +290,11 @@ class.o : class.c $(CONFIG_H) $(JAVA_TREE_H) $(RTL_H) jcf.h $(PARSE_H) \
 constants.o : constants.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h \
   $(srcdir)/../toplev.h $(srcdir)/../system.h
 decl.o : decl.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h \
-  $(srcdir)/../toplev.h $(srcdir)/../system.h
+  $(srcdir)/../toplev.h $(srcdir)/../system.h $(srcdir)/../function.h
 except.o : except.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(srcdir)/../real.h \
   $(RTL_H) javaop.h java-opcodes.h $(srcdir)/../except.h java-except.h \
-  $(srcdir)/../eh-common.h $(srcdir)/../toplev.h $(srcdir)/../system.h
+  $(srcdir)/../eh-common.h $(srcdir)/../toplev.h $(srcdir)/../system.h \
+  $(srcdir)/../function.h
 expr.o : expr.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(srcdir)/../real.h \
   $(RTL_H) $(EXPR_H) javaop.h java-opcodes.h $(srcdir)/../except.h \
   java-except.h java-except.h parse.h $(srcdir)/../toplev.h \

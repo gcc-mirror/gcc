@@ -32,6 +32,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-tree.h"
 #include "jcf.h"
 #include "toplev.h"
+#include "function.h"
 #include "except.h"
 
 static tree push_jvm_slot PROTO ((int, tree));

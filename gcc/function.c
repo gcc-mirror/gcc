@@ -370,6 +370,12 @@ void (*restore_machine_status) PROTO((struct function *));
 
 extern int rtx_equal_function_value_matters;
 extern tree sequence_rtl_expr;
+
+/* The currently compiled function.  */
+struct function *current_function = 0;
+
+/* Global list of all compiled functions.  */
+struct function *all_functions = 0;
 
 /* In order to evaluate some expressions, such as function calls returning
    structures in memory, we need to temporarily allocate stack locations.
@@ -551,7 +557,11 @@ void
 push_function_context_to (context)
      tree context;
 {
-  struct function *p = (struct function *) xmalloc (sizeof (struct function));
+  struct function *p;
+
+  if (current_function == 0)
+    init_dummy_function_start ();
+  p = current_function;
 
   p->next = outer_function_chain;
   outer_function_chain = p;
@@ -620,6 +630,8 @@ push_function_context_to (context)
   save_varasm_status (p, context);
   if (save_machine_status)
     (*save_machine_status) (p);
+
+  current_function = 0;
 }
 
 void
@@ -638,6 +650,7 @@ pop_function_context_from (context)
   struct function *p = outer_function_chain;
   struct var_refs_queue *queue;
 
+  current_function = p;
   outer_function_chain = p->next;
 
   current_function_contains_functions
@@ -713,8 +726,6 @@ pop_function_context_from (context)
   for (queue = p->fixup_var_refs_queue; queue; queue = queue->next)
     fixup_var_refs (queue->modified, queue->promoted_mode,
 		    queue->unsignedp, 0);
-
-  free (p);
 
   /* Reset variables that have known state during rtx generation.  */
   rtx_equal_function_value_matters = 1;
@@ -5869,16 +5880,12 @@ all_blocks (block, vector)
   return n_blocks;
 }
 
-/* Generate RTL for the start of the function SUBR (a FUNCTION_DECL tree node)
-   and initialize static variables for generating RTL for the statements
-   of the function.  */
-
-void
-init_function_start (subr, filename, line)
-     tree subr;
-     char *filename;
-     int line;
+/* Allocate a function structure and reset its contents to the defaults.  */
+static void
+prepare_function_start ()
 {
+  current_function = (struct function *) xcalloc (1, sizeof (struct function));
+  
   init_stmt_for_function ();
 
   cse_not_expected = ! optimize;
@@ -5888,6 +5895,9 @@ init_function_start (subr, filename, line)
 
   /* No stack slots have been made yet.  */
   stack_slot_list = 0;
+
+  current_function_has_nonlocal_label = 0;
+  current_function_has_nonlocal_goto = 0;
 
   /* There is no stack slot for handling nonlocal gotos.  */
   nonlocal_goto_handler_slots = 0;
@@ -5910,19 +5920,11 @@ init_function_start (subr, filename, line)
   /* Initialize the queue of pending postincrement and postdecrements,
      and some other info in expr.c.  */
   init_expr ();
-
+  
   /* We haven't done register allocation yet.  */
   reg_renumber = 0;
 
   init_const_rtx_hash_table ();
-
-  current_function_name = (*decl_printable_name) (subr, 2);
-
-  /* Nonzero if this is a nested function that uses a static chain.  */
-
-  current_function_needs_context
-    = (decl_function_context (current_function_decl) != 0
-       && ! DECL_NO_STATIC_CHAIN (current_function_decl));
 
   /* Set if a call to setjmp is seen.  */
   current_function_calls_setjmp = 0;
@@ -5931,8 +5933,6 @@ init_function_start (subr, filename, line)
   current_function_calls_longjmp = 0;
 
   current_function_calls_alloca = 0;
-  current_function_has_nonlocal_label = 0;
-  current_function_has_nonlocal_goto = 0;
   current_function_contains_functions = 0;
   current_function_is_leaf = 0;
   current_function_sp_is_unchanging = 0;
@@ -5951,7 +5951,6 @@ init_function_start (subr, filename, line)
   tail_recursion_label = 0;
 
   /* We haven't had a need to make a save area for ap yet.  */
-
   arg_pointer_save_area = 0;
 
   /* No stack slots allocated yet.  */
@@ -5966,8 +5965,19 @@ init_function_start (subr, filename, line)
   /* Set up to allocate temporaries.  */
   init_temp_slots ();
 
-  /* Within function body, compute a type's size as soon it is laid out.  */
-  immediate_size_expand++;
+  /* Indicate that we need to distinguish between the return value of the
+     present function and the return value of a function being called.  */
+  rtx_equal_function_value_matters = 1;
+
+  /* Indicate that we have not instantiated virtual registers yet.  */
+  virtuals_instantiated = 0;
+
+  /* Indicate we have no need of a frame pointer yet.  */
+  frame_pointer_needed = 0;
+
+  /* By default assume not varargs or stdarg.  */
+  current_function_varargs = 0;
+  current_function_stdarg = 0;
 
   /* We haven't made any trampolines for this function yet.  */
   trampoline_list = 0;
@@ -5976,6 +5986,43 @@ init_function_start (subr, filename, line)
   inhibit_defer_pop = 0;
 
   current_function_outgoing_args_size = 0;
+}
+
+/* Initialize the rtl expansion mechanism so that we can do simple things
+   like generate sequences.  This is used to provide a context during global
+   initialization of some passes.  */
+void
+init_dummy_function_start ()
+{
+  prepare_function_start ();
+}
+
+/* Generate RTL for the start of the function SUBR (a FUNCTION_DECL tree node)
+   and initialize static variables for generating RTL for the statements
+   of the function.  */
+
+void
+init_function_start (subr, filename, line)
+     tree subr;
+     char *filename;
+     int line;
+{
+  prepare_function_start ();
+
+  /* Remember this function for later.  */
+  current_function->next_global = all_functions;
+  all_functions = current_function;
+
+  current_function_name = (*decl_printable_name) (subr, 2);
+
+  /* Nonzero if this is a nested function that uses a static chain.  */
+
+  current_function_needs_context
+    = (decl_function_context (current_function_decl) != 0
+       && ! DECL_NO_STATIC_CHAIN (current_function_decl));
+
+  /* Within function body, compute a type's size as soon it is laid out.  */
+  immediate_size_expand++;
 
   /* Prevent ever trying to delete the first instruction of a function.
      Also tell final how to output a linenum before the function prologue.
@@ -6005,20 +6052,6 @@ init_function_start (subr, filename, line)
 
   current_function_returns_pointer
     = POINTER_TYPE_P (TREE_TYPE (DECL_RESULT (subr)));
-
-  /* Indicate that we need to distinguish between the return value of the
-     present function and the return value of a function being called.  */
-  rtx_equal_function_value_matters = 1;
-
-  /* Indicate that we have not instantiated virtual registers yet.  */
-  virtuals_instantiated = 0;
-
-  /* Indicate we have no need of a frame pointer yet.  */
-  frame_pointer_needed = 0;
-
-  /* By default assume not varargs or stdarg.  */
-  current_function_varargs = 0;
-  current_function_stdarg = 0;
 }
 
 /* Indicate that the current function uses extra args

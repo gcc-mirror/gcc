@@ -64,7 +64,10 @@ struct simple_obstack_stack
 
 struct function
 {
+  struct function *next_global;
   struct function *next;
+
+  struct eh_status *eh;
 
   /* For function.c.  */
   char *name;
@@ -137,17 +140,6 @@ struct function
   int emit_lineno;
   struct goto_fixup *goto_fixup_chain;
 
-  /* For exception handling information.  */
-  struct eh_stack ehstack;
-  struct eh_stack catchstack;
-  struct eh_queue ehqueue;
-  rtx catch_clauses;
-  struct label_node *false_label_stack;
-  struct label_node *caught_return_label_stack;
-  tree protect_list;
-  rtx ehc;
-  rtx eh_return_stub_label;
-
   /* For expr.c.  */
   rtx pending_chain;
   int pending_stack_adjust;
@@ -213,6 +205,9 @@ struct function
   int pool_offset;
   rtx const_double_chain;
 };
+
+extern struct function *current_function;
+extern struct function *all_functions;
 
 /* The FUNCTION_DECL for an inline function currently being expanded.  */
 extern tree inline_function_decl;

@@ -62,6 +62,7 @@ definitions and other extensions.  */
 #include "convert.h"
 #include "buffer.h"
 #include "xref.h"
+#include "function.h"
 #include "except.h"
 
 #ifndef DIR_SEPARATOR

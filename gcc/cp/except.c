@@ -169,17 +169,6 @@ static tree Unwind;
 
 /* ========================================================================= */
 
-
-
-/* local globals - these local globals are for storing data necessary for
-   generating the exception table and code in the correct order.
-
-   ========================================================================= */
-
-extern rtx catch_clauses;
-
-/* ========================================================================= */
-
 /* sets up all the global eh stuff that needs to be initialized at the
    start of compilation.
 

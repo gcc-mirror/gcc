@@ -31,6 +31,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "javaop.h"
 #include "java-opcodes.h"
 #include "jcf.h"
+#include "function.h"
 #include "except.h"
 #include "java-except.h"
 #include "eh-common.h"
