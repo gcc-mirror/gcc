@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.186 1996/10/25 19:02:12 karl Exp $
+%% $Id: texinfo.tex,v 2.186 1996/11/05 19:51:16 karl Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 1996 Free Software Foundation, Inc.
@@ -137,24 +137,39 @@
 %
 %---------------------End change-----------------------
 
+% Main output routine.
+\chardef\PAGE = 255
+\output = {\onepageout{\pagecontents\PAGE}}
+
+\newbox\headlinebox  \newbox\footlinebox
+
 % \onepageout takes a vbox as an argument.  Note that \pagecontents
 % does insertions, but you have to call it yourself.
-\chardef\PAGE=255  \output={\onepageout{\pagecontents\PAGE}}
 \def\onepageout#1{%
   \hoffset=\normaloffset
   \ifodd\pageno  \advance\hoffset by \bindingoffset
   \else \advance\hoffset by -\bindingoffset\fi
+  %
+  % Do this outside of the \shipout so @code etc. will be expanded in
+  % the headline as they should be, not taken literally (outputting ''code).
+  \setbox\headlinebox = \vbox{\let\hsize=\pagewidth \makeheadline}%
+  \setbox\footlinebox = \vbox{\let\hsize=\pagewidth \makefootline}%
+  %
   {%
+    % Have to do this stuff outside the \shipout because we want it to
+    % take effect in \write's, yet the group defined by the \vbox ends
+    % before the \shipout runs.
+    %
     \escapechar = `\\     % use backslash in output files.
     \indexdummies         % don't expand commands in the output.
     \normalturnoffactive  % \ in index entries must not stay \, e.g., if
                    % the page break happens to be in the middle of an example.
     \shipout\vbox{%
-      {\let\hsize=\pagewidth \makeheadline}%
+      \unvbox\headlinebox
       \pagebody{#1}%
-      {\let\hsize=\pagewidth \makefootline}%
+      \unvbox\footlinebox
     }%
-  }%
+    }%
   \advancepageno
   \ifnum\outputpenalty>-20000 \else\dosupereject\fi
 }
@@ -2045,7 +2060,10 @@ July\or August\or September\or October\or November\or December\fi
  % The table preamble
  % looks at the current \colcount to find the correct column width.
 \global\everycr{\noalign{%
-\filbreak%% keeps underfull box messages off when table breaks over pages.
+% \filbreak%% keeps underfull box messages off when table breaks over pages.
+% Maybe so, but it also creates really weird page breaks when the table
+% breaks over pages Wouldn't \vfil be better?  Wait until the problem
+% manifests itself, so it can be fixed for real --karl.
 \global\colcount=0\relax}}
 }
 
@@ -2299,7 +2317,7 @@ width0pt\relax} \fi
       \indexdummies % Must do this here, since \bf, etc expand at this stage
       \escapechar=`\\
       {%
-        \let\folio=0 % We will expand all macros now EXCEPT \folio.
+        \let\folio=0% We will expand all macros now EXCEPT \folio.
         \def\rawbackslashxx{\indexbackslash}% \indexbackslash isn't defined now
         % so it will be output as is; and it will print as backslash.
         %
