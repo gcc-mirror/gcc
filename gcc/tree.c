@@ -2944,9 +2944,9 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
   if (decl != 0
       && VALID_MACHINE_DECL_ATTRIBUTE (decl, decl_attr_list, attr_name))
     {
-      if (! attribute_in_list (new_attr, decl_attr_list))
+      if (! attribute_in_list (attr_name, decl_attr_list))
 	{
-	  decl_attr_list = tree_cons (NULL_TREE, new_attr, decl_attr_list);
+	  decl_attr_list = tree_cons (NULL_TREE, attr_name, decl_attr_list);
 
 	  /* Declarations are unique, build_decl_attribute_variant modifies
 	     the existing decl in situ.  */
@@ -2960,9 +2960,9 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
 #ifdef VALID_MACHINE_TYPE_ATTRIBUTE
   if (VALID_MACHINE_TYPE_ATTRIBUTE (type, type_attr_list, attr_name))
     {
-      if (! attribute_in_list (new_attr, type_attr_list))
+      if (! attribute_in_list (attr_name, type_attr_list))
 	{
-	  type_attr_list = tree_cons (NULL_TREE, new_attr, type_attr_list);
+	  type_attr_list = tree_cons (NULL_TREE, attr_name, type_attr_list);
 	  type = build_type_attribute_variant (type, type_attr_list);
 	}
       if (decl != 0)
