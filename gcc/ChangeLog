@@ -1,3 +1,9 @@
+2001-10-26  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-typeck.c (convert_arguments): When comparing for enumeral
+	type equality, use TYPE_MAIN_VARIANT.
+	* gcc.dg/Wconversion.c: New tests.
+
 2001-10-26  Kazu Hirata  <kazu@hxi.com>
 
 	* s390/s390.c: Fix comment typos.
