@@ -1,8 +1,8 @@
 /* This file contains the definitions and documentation for the common
    tree codes used in the GNU C and C++ compilers (see c-common.def
    for the standard codes).  
-   Copyright (C) 2000 Free Software Foundation, Inc.  Written by
-   Benjamin Chelf (chelf@codesourcery.com).
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Written by Benjamin Chelf (chelf@codesourcery.com).
 
 This file is part of GNU CC.
 
@@ -717,12 +717,13 @@ genrtl_compound_stmt (t)
 
 void
 genrtl_asm_stmt (cv_qualifier, string, output_operands,
-		 input_operands, clobbers)
+		 input_operands, clobbers, asm_input_p)
      tree cv_qualifier;
      tree string;
      tree output_operands;
      tree input_operands;
      tree clobbers;
+     int asm_input_p;
 {
   if (cv_qualifier != NULL_TREE
       && cv_qualifier != ridpointers[(int) RID_VOLATILE])
@@ -733,15 +734,12 @@ genrtl_asm_stmt (cv_qualifier, string, output_operands,
     }
 
   emit_line_note (input_filename, lineno);
-  if (output_operands != NULL_TREE || input_operands != NULL_TREE
-      || clobbers != NULL_TREE)
-      c_expand_asm_operands (string, output_operands,
-			     input_operands, 
-			     clobbers,
-			     cv_qualifier != NULL_TREE,
-			     input_filename, lineno);
-  else
+  if (asm_input_p)
     expand_asm (string);
+  else
+    c_expand_asm_operands (string, output_operands, input_operands, 
+			   clobbers, cv_qualifier != NULL_TREE,
+			   input_filename, lineno);
 }
 
 /* Generate the RTL for a DECL_CLEANUP. */
@@ -842,7 +840,8 @@ expand_stmt (t)
 
 	case ASM_STMT:
 	  genrtl_asm_stmt (ASM_CV_QUAL (t), ASM_STRING (t),
-			   ASM_OUTPUTS (t), ASM_INPUTS (t), ASM_CLOBBERS (t));
+			   ASM_OUTPUTS (t), ASM_INPUTS (t),
+			   ASM_CLOBBERS (t), ASM_INPUT_P (t));
 	  break;
 
 	case SCOPE_STMT:

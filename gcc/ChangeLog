@@ -1,3 +1,10 @@
+2001-01-02  Richard Henderson  <rth@redhat.com>
+
+	* c-common.h (ASM_INPUT_P): New.
+	* c-parse.in (asm): Set it when needed.
+	* c-semantics.c (genrtl_asm_stmt): Test it instead of the 
+	existance of an operand.
+
 Tue Jan  2 20:27:07 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* dwarf2out.c (stack_adjust_offset): Handle PRE_MODIFY.

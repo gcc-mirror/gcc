@@ -1,3 +1,7 @@
+2001-01-02  Richard Henderson  <rth@redhat.com>
+
+	* parse.y (asm): Set ASM_INPUT_P.
+
 2001-01-02  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (cp_valid_lang_attribute): Don't set CLASSTYPE_COM_INTERFACE
