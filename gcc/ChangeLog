@@ -1,3 +1,8 @@
+2003-03-04  Kevin Buettner  <kevinb@redhat.com>
+
+	* dwarf2out.c (rtl_for_decl_location): Don't return NULL_RTX for
+	global register variables.
+
 2003-03-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* reload.c (reload_adjust_reg_for_mode): New function.
