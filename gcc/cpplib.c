@@ -1266,7 +1266,10 @@ do_elif (pfile)
     }
 
   if (pfile->if_stack->if_succeeded)
-    return skip_if_group (pfile);
+    {
+      _cpp_skip_rest_of_line (pfile);
+      return skip_if_group (pfile);
+    }
   if (_cpp_parse_expr (pfile) == 0)
     return skip_if_group (pfile);
 
@@ -1498,11 +1501,24 @@ skip_if_group (pfile)
   long old_written;
   int ret = 0;
 
+  /* We are no longer at the start of the file.  */
+  pfile->only_seen_white = 0;
+
   old_written = CPP_WRITTEN (pfile);
   pfile->no_macro_expand++;
   CPP_OPTION (pfile, no_line_commands)++;
   for (;;)
     {
+      /* We are at the end of a line.  Only cpp_get_token knows how to
+	 advance the line number correctly.  */
+      token = cpp_get_token (pfile);
+      if (token == CPP_POP)
+	break;  /* Caller will issue error.  */
+      
+      else if (token != CPP_VSPACE)
+	cpp_ice (pfile, "cpp_get_token returned %d in skip_if_group", token);
+      CPP_SET_WRITTEN (pfile, old_written);
+
       token = _cpp_get_directive_token (pfile);
 
       if (token == CPP_DIRECTIVE)
@@ -1514,16 +1530,6 @@ skip_if_group (pfile)
 
       if (token != CPP_VSPACE)
 	_cpp_skip_rest_of_line (pfile);
-
-      /* Only cpp_get_token knows how to advance the line number
-	 properly.  */
-      token = cpp_get_token (pfile);
-      if (token == CPP_POP)
-	break;  /* Caller will issue error.  */
-      
-      else if (token != CPP_VSPACE)
-	cpp_ice (pfile, "cpp_get_token returned %d in skip_if_group", token);
-      CPP_SET_WRITTEN (pfile, old_written);
     }
   CPP_SET_WRITTEN (pfile, old_written);
   pfile->no_macro_expand--;

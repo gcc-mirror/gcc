@@ -1,3 +1,10 @@
+2000-04-07  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.c (do_elif): Skip the rest of the line if we're
+	not going to bother evaluating it.
+	(skip_if_group): Clear pfile->only_seen_white.  Reorder loop
+	to avoid pointless calls to the lexer.
+
 Fri Apr  7 11:50:54 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.c: Delete stdio.h and ctype.h includes.
