@@ -1,3 +1,9 @@
+Tue Jun  9 12:12:34 1998  Klaus Kaempf (kkaempf@progis.de)
+
+	* alpha/vms.h (EXTRA_SECTIONS): Add in_ctors and in_dtors.
+	(EXTRA_SECTION_FUNCTIONS): Add ctors_section and dtors_section.       
+	(ASM_OUTPUT_CONSTRUCTOR, ASM_OUTPUT_DESTRUCTOR): Define.                
+
 Tue Jun  9 12:10:27 1998  John Carr  <jfc@mit.edu>
 
         * haifa-sched.c (update_flow_info): Use UNITS_PER_WORD, not MOVE_MAX,

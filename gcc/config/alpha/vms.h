@@ -289,9 +289,11 @@ extern struct rtx_def *alpha_arg_info_reg_val ();
 #define LINK_SECTION_ASM_OP ".link"
 #define READONLY_SECTION_ASM_OP ".rdata"
 #define LITERALS_SECTION_ASM_OP ".literals"
+#define CTORS_SECTION_ASM_OP ".ctors"
+#define DTORS_SECTION_ASM_OP ".dtors"
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS	in_link, in_rdata, in_literals
+#define EXTRA_SECTIONS	in_link, in_rdata, in_literals, in_ctors, in_dtors
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS					\
@@ -320,6 +322,24 @@ literals_section ()						\
     {								\
       fprintf (asm_out_file, "%s\n", LITERALS_SECTION_ASM_OP); 	\
       in_section = in_literals;					\
+    }								\
+}								\
+void								\
+ctors_section ()						\
+{								\
+  if (in_section != in_ctors)					\
+    {								\
+      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);	\
+      in_section = in_ctors;					\
+    }								\
+}								\
+void								\
+dtors_section ()						\
+{								\
+  if (in_section != in_dtors)					\
+    {								\
+      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);	\
+      in_section = in_dtors;					\
     }								\
 }
 
@@ -398,6 +418,26 @@ do {									\
 }
 
 #undef TRANSFER_FROM_TRAMPOLINE
+
+/* A C statement (sans semicolon) to output an element in the table of
+   global constructors.  */
+#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)		\
+  do {							\
+    ctors_section ();					\
+    fprintf (FILE, "\t.quad "); 			\
+    assemble_name (FILE, NAME); 			\
+    fprintf (FILE, "\n");				\
+  } while (0)
+
+/* A C statement (sans semicolon) to output an element in the table of
+   global destructors.	*/
+#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)		\
+  do {							\
+    dtors_section ();					\
+    fprintf (FILE, "\t.quad "); 			\
+    assemble_name (FILE, NAME); 			\
+    fprintf (FILE, "\n");				\
+  } while (0)
 
 #define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, NAME, ARGS) \
   (vms_valid_decl_attribute_p (DECL, ATTRIBUTES, NAME, ARGS))
