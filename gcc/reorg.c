@@ -1758,71 +1758,35 @@ find_basic_block (insn)
   return -1;
 }
 
-/* Used for communication between the following two routines, contains
-   the block number that insn was in.  */
-
-static int current_block_number;
-
-/* Called via note_stores from update_block_status.  It marks the
-   registers set in this insn as live at the start of the block whose
-   number is in current_block_number.  */
-
-static void
-update_block_from_store (dest, x)
-     rtx dest;
-     rtx x;
-{
-  int first_regno, last_regno;
-  int offset = 0;
-  int i;
-
-  if (GET_CODE (x) != SET
-      || (GET_CODE (dest) != REG && (GET_CODE (dest) != SUBREG
-				     || GET_CODE (SUBREG_REG (dest)) != REG)))
-    return;
-
-  if (GET_CODE (dest) == SUBREG)
-    first_regno = REGNO (SUBREG_REG (dest)) + SUBREG_WORD (dest);
-  else
-    first_regno = REGNO (dest);
-
-  last_regno = first_regno + HARD_REGNO_NREGS (first_regno, GET_MODE (dest));
-  for (i = first_regno; i < last_regno; i++)
-    basic_block_live_at_start[current_block_number][i / HOST_BITS_PER_INT]
-      |= (1 << (i % HOST_BITS_PER_INT));
-}
-
 /* Called when INSN is being moved from a location near the target of a jump.
-   If WHERE is the first active insn at the start of its basic block, we can
-   just mark the registers set in INSN as live at the start of the basic block
-   that starts immediately before INSN.
-
-   Otherwise, we leave a marker of the form (use (INSN)) immediately in front
+   We leave a marker of the form (use (INSN)) immediately in front
    of WHERE for mark_target_live_regs.  These markers will be deleted when
-   reorg finishes.  */
+   reorg finishes.
+
+   We used to try to update the live status of registers if WHERE is at
+   the start of a basic block, but that can't work since we may remove a
+   BARRIER in relax_delay_slots.  */
 
 static void
 update_block (insn, where)
      rtx insn;
      rtx where;
 {
+  int b;
+
   /* Ignore if this was in a delay slot and it came from the target of 
      a branch.  */
   if (INSN_FROM_TARGET_P (insn))
     return;
 
-  current_block_number = find_basic_block (insn);
-  if (current_block_number == -1)
-    return;
-
-  if (where == next_active_insn (basic_block_head[current_block_number]))
-    note_stores (PATTERN (insn), update_block_from_store);
-  else
-    emit_insn_before (gen_rtx (USE, VOIDmode, insn), where);
+  emit_insn_before (gen_rtx (USE, VOIDmode, insn), where);
 
   /* INSN might be making a value live in a block where it didn't use to
      be.  So recompute liveness information for this block.  */
-  bb_ticks[current_block_number]++;
+
+  b = find_basic_block (insn);
+  if (b != -1)
+    bb_ticks[b]++;
 }
 
 /* Marks registers possibly live at the current place being scanned by
