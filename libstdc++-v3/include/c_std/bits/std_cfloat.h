@@ -35,6 +35,6 @@
 #define _CPP_CFLOAT 1
 
 #pragma GCC system_header
-#include_next <float.h>
+#include <float.h>
 
 #endif

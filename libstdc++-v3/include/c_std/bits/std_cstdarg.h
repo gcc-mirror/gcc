@@ -35,7 +35,7 @@
 #define _CPP_CSTDARG 1
 
 #pragma GCC system_header
-#include_next <stdarg.h>
+#include <stdarg.h>
 
 // Adhere to section 17.4.1.2 clause 5 of ISO 14882:1998
 #ifndef va_end

@@ -35,6 +35,6 @@
 #define _CPP_CLIMITS	1
 
 #pragma GCC system_header
-#include_next <limits.h>
+#include <limits.h>
 
 #endif

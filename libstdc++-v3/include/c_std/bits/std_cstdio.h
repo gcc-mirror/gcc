@@ -38,7 +38,7 @@
 #include <bits/std_cstddef.h>
 
 #pragma GCC system_header
-#include_next <stdio.h>
+#include <stdio.h>
 
 // Get rid of those macros defined in <stdio.h> in lieu of real functions.
 #undef clearerr

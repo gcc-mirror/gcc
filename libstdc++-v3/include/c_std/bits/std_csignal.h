@@ -35,7 +35,7 @@
 #define _CPP_CSIGNAL 1
 
 #pragma GCC system_header
-#include_next <signal.h>
+#include <signal.h>
 
 // Get rid of those macros defined in <signal.h> in lieu of real functions.
 #undef raise
