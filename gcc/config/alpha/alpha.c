@@ -2071,7 +2071,7 @@ output_prolog (file, size)
   /* Offset during register save.  */
   int reg_offset;
   /* Label for the procedure entry.  */
-  char *entry_label = (char *) alloca (strlen (alpha_function_name) + 5);
+  char *entry_label = (char *) alloca (strlen (alpha_function_name) + 6);
   int i;
 
   sa_size = alpha_sa_size ();
@@ -2084,7 +2084,7 @@ output_prolog (file, size)
   fprintf (file, "\t.ent ");
   assemble_name (file, alpha_function_name);
   fprintf (file, "\n");
-  sprintf (entry_label, "%s..en", alpha_function_name);
+  sprintf (entry_label, "$%s..en", alpha_function_name);
   ASM_OUTPUT_LABEL (file, entry_label);
   inside_function = TRUE;
 
@@ -2138,6 +2138,7 @@ output_prolog (file, size)
 
       fprintf (file, "\tlda $22,4096($30)\n");
 
+      fputc ('$', file);
       assemble_name (file, alpha_function_name);
       fprintf (file, "..sc:\n");
 
@@ -2145,7 +2146,7 @@ output_prolog (file, size)
       fprintf (file, "\tsubq $23,1,$23\n");
       fprintf (file, "\tlda $22,-8192($22)\n");
 
-      fprintf (file, "\tbne $23,");
+      fprintf (file, "\tbne $23,$");
       assemble_name (file, alpha_function_name);
       fprintf (file, "..sc\n");
 
@@ -2220,7 +2221,7 @@ output_prolog (file, size)
   link_section ();
   fprintf (file, "\t.align 3\n");
   ASM_OUTPUT_LABEL (file, alpha_function_name);
-  fprintf (file, "\t.pdesc ");
+  fprintf (file, "\t.pdesc $");
   assemble_name (file, alpha_function_name);
   fprintf (file, "..en,%s\n", is_stack_procedure ? "stack" : "reg");
   alpha_need_linkage (alpha_function_name, 1);
@@ -2446,6 +2447,7 @@ output_prolog (file, size)
 	fprintf (file, "\tldgp $29,0($27)\n");
 
       /* Put a label after the GP load so we can enter the function at it.  */
+      fputc ('$', file);
       assemble_name (file, alpha_function_name);
       fprintf (file, "..ng:\n");
     }
@@ -2493,6 +2495,7 @@ output_prolog (file, size)
 
       fprintf (file, "\tlda $4,4096($30)\n");
 
+      fputc ('$', file);
       assemble_name (file, alpha_function_name);
       fprintf (file, "..sc:\n");
 
@@ -2500,7 +2503,7 @@ output_prolog (file, size)
       fprintf (file, "\tsubq $5,1,$5\n");
       fprintf (file, "\tlda $4,-8192($4)\n");
 
-      fprintf (file, "\tbne $5,");
+      fprintf (file, "\tbne $5,$");
       assemble_name (file, alpha_function_name);
       fprintf (file, "..sc\n");
 
@@ -3310,11 +3313,11 @@ alpha_write_linkage (stream)
 	  || ! TREE_SYMBOL_REFERENCED (get_identifier (lptr->name)))
 	continue;
 
-      fprintf (stream, "%s..lk:\n", lptr->name);
+      fprintf (stream, "$%s..lk:\n", lptr->name);
       if (lptr->kind == KIND_LOCAL)   
 	{
 	  /*  Local and used, build linkage pair.  */
-	  fprintf (stream, "\t.quad %s..en\n", lptr->name);
+	  fprintf (stream, "\t.quad $%s..en\n", lptr->name);
 	  fprintf (stream, "\t.quad %s\n", lptr->name);
 	}
       else

@@ -1850,10 +1850,7 @@ literal_section ()						\
    PREFIX is the class of label and NUM is the number within the class.  */
 
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  if ((PREFIX)[0] == 'L')				\
-    fprintf (FILE, "$%s%d:\n", & (PREFIX)[1], NUM + 32); \
-  else							\
-    fprintf (FILE, "%s%d:\n", PREFIX, NUM);
+  fprintf (FILE, "$%s%d:\n", PREFIX, NUM)
 
 /* This is how to output a label for a jump table.  Arguments are the same as
    for ASM_OUTPUT_INTERNAL_LABEL, except the insn for the jump table is
@@ -1868,10 +1865,7 @@ literal_section ()						\
    This is suitable for output with `assemble_name'.  */
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  if ((PREFIX)[0] == 'L')				\
-    sprintf (LABEL, "*$%s%d", & (PREFIX)[1], NUM + 32);	\
-  else							\
-    sprintf (LABEL, "*%s%d", PREFIX, NUM)
+  sprintf (LABEL, "*$%s%d", PREFIX, NUM)
 
 /* Check a floating-point value for validity for a particular machine mode.  */
 
