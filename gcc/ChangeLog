@@ -1,3 +1,8 @@
+Wed Oct  7 10:07:29 1998  Richard Henderson  <rth@cygnus.com>
+
+	* gcse.c (pre_insert_insn): When a call ends a bb, insert
+	the new insns before the argument regs are loaded.
+
 Wed Oct  7 12:55:26 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (c-gperf.h): Add -L KR-C -F ', 0, 0' flags to gperf.
