@@ -6460,8 +6460,13 @@ finish_function (nested, can_defer_p)
 	     function completely.  */
 	  timevar_push (TV_INTEGRATION);
 	  uninlinable = ! tree_inlinable_function_p (fndecl, 0);
-	  
-	  if (! uninlinable && can_defer_p
+
+	  if (can_defer_p
+	      /* We defer functions marked inline *even if* the function
+		 itself is not inlinable.  This is because we don't yet
+		 know if the function will actually be used; we may be
+		 able to avoid emitting it entirely.  */
+	      && (! uninlinable || DECL_DECLARED_INLINE_P (fndecl))
 	      /* Save function tree for inlining.  Should return 0 if the
 		 language does not support function deferring or the
 		 function could not be deferred.  */
