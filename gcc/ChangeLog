@@ -1,5 +1,13 @@
 Sat Feb 24 06:45:21 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree.h (BLOCK_DEAD): New macro.
+	(struct tree_block): New flag, dead_flag.
+	* print-tree.c (print_node, case 'b'): Print missing fields.
+	* emit-rtl.c (remove_unnecessary_notes): Set BLOCK_DEAD.
+	* function.c (identify_blocks): Enable test for misplaced notes.
+	(all_blocks): Skip BLOCK_DEAD blocks.
+	* integrate.c (integrate_decl_tree): Likewise.
+
 	* errors.c (internal_error, trim_filename): New functions.
 	(fancy_abort): Call internal_error.
 	* errors.h (internal_error, trim_filename): New declarations.

@@ -829,6 +829,10 @@ struct tree_exp
    listed in the BLOCK_VARS slot.  */
 #define BLOCK_HANDLER_BLOCK(NODE) (BLOCK_CHECK (NODE)->block.handler_block_flag)
 
+/* Nonzero means the block was deleted as dead and should not be copied
+   when a function is inlined.  */
+#define BLOCK_DEAD(NODE) (BLOCK_CHECK (NODE)->block.dead_flag)
+
 /* An index number for this block.  These values are not guaranteed to
    be unique across functions -- whether or not they are depends on
    the debugging output format in use.  */
@@ -840,7 +844,8 @@ struct tree_block
 
   unsigned handler_block_flag : 1;
   unsigned abstract_flag : 1;
-  unsigned block_num : 30;
+  unsigned dead_flag : 1;
+  unsigned block_num : 29;
 
   union tree_node *vars;
   union tree_node *subblocks;
