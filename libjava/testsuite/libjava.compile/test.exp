@@ -5,6 +5,13 @@ verbose "srcfiles are $srcfiles"
 
 set prefix ""
 foreach x $srcfiles {
-    test_libjava $options "$x" "" "" "" "no-exec"
-    test_libjava $options "$x" "-O" "" "" "no-exec"
+    set args [libjava_read_xfail [file rootname $x].xfail]
+    lappend args no-exec
+
+    test_libjava $options "$x" "" "" "" $args
+    test_libjava $options "$x" "-O" "" "" $args
 }
+
+# Local Variables:
+# tcl-indent-level:4
+# End:
