@@ -729,7 +729,7 @@
 ;; going in to or out of float point registers.
 
 (define_expand "reload_insi"
-  [(set (match_operand:SI 0 "register_operand" "=z")
+  [(set (match_operand:SI 0 "register_operand" "=Z")
 	(match_operand:SI 1 "general_operand" ""))
    (clobber (match_operand:SI 2 "register_operand" "=&r"))]
   ""
@@ -745,7 +745,7 @@
 
 (define_expand "reload_outsi"
   [(set (match_operand:SI 0 "general_operand" "")
-	(match_operand:SI 1  "register_operand""z"))
+	(match_operand:SI 1  "register_operand" "Z"))
    (clobber (match_operand:SI 2 "register_operand" "=&r"))]
   ""
   "
@@ -895,37 +895,34 @@
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=a,&?*r")
-	(plus:SI (match_operand:SI 1 "register_operand" "r,r")
-		 (high:SI (match_operand 2 "" ""))))]
-  "!TARGET_KERNEL"
-  "@
-   addil L'%G2,%1
-   ldil L'%G2,%0\;add %0,%1,%0"
-  [(set_attr "type" "binary,binary")
-   (set_attr "length" "1,2")])
-
+;; For kernel code always use addil; else we can lose due to a linker
+;; bug involving absolute symbols and "ldil;add" style relocations
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(plus:SI (match_operand:SI 1 "register_operand" "r")
-		 (high:SI (match_operand 2 "" ""))))]
-  "TARGET_KERNEL"
+	(high:SI (match_operand 1 "" "")))]
+  "TARGET_KERNEL && symbolic_operand(operands[1], Pmode)
+   && ! function_label_operand (operands[1])
+   && ! read_only_operand (operands[1])"
   "@
-   addil L'%G2,%1"
+   addil L'%G1,%%r27"
   [(set_attr "type" "binary")
    (set_attr "length" "1")])
 
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(plus:SI (match_operand:SI 1 "register_operand" "")
-		 (high:SI (match_operand 2 "" ""))))
-   (clobber (match_scratch:SI 3 ""))]
-  "reload_completed && REGNO (operands[0]) != 1"
-  [(set (match_dup 3) (high:SI (match_dup 2)))
-   (set (match_dup 0) (plus:SI (match_dup 3) (match_dup 1)))]
-  "")
+;; For all symbolic operands *except* function addresses and read-only
+;; operands (which live in TEXT space and do not require relocation).  
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=a,!*r")
+	(high:SI (match_operand 1 "" "")))]
+  "! TARGET_KERNEL && symbolic_operand(operands[1], Pmode)
+   && ! function_label_operand (operands[1])
+   && ! read_only_operand (operands[1])"
+  "@
+   addil L'%G1,%%r27
+   ldil L'%G1,%0\;add %0,%%r27,%0"
+  [(set_attr "type" "binary,binary")
+   (set_attr "length" "1,2")])
 
+;; For function addresses when TARGET_SHARED_LIBS
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(high:SI (match_operand:SI 1 "function_label_operand" "")))]
@@ -934,6 +931,8 @@
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
+;; The following two patterns should be for using ldil to load constants
+;; (which include addresses of read_only_operands)
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(high:SI (match_operand 1 "" "")))]
@@ -950,6 +949,7 @@
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
+;; lo_sum of a function address when TARGET_SHARED_LIBS
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
