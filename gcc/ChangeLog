@@ -1,3 +1,8 @@
+2004-12-17  Dale Johannesen  <dalej@apple.com>
+
+	* c-decl.c (diagnose_mismatched_decls):  Accept mismatched
+	function types: void with previous implicit int.
+
 2004-12-17  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_gimplify_va_arg): Set alias set to 
