@@ -1,3 +1,7 @@
+Wed Sep 30 10:13:39 1998  Catherine Moore  <clm@cygnus.com>
+
+        * toplev.c:  Fix last patch.
+
 Tue Sep 29 20:03:18 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* loop.c (get_condition): Fix typo in May 9 change.
