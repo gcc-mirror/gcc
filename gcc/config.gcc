@@ -283,6 +283,9 @@ sparc*-*-*)
 sh[123456789l]*-*-*)
 	cpu_type=sh
 	;;
+tic4x-*-*)
+        cpu_type=c4x
+        ;;
 esac
 
 tm_file=${cpu_type}/${cpu_type}.h
@@ -685,7 +688,7 @@ arm-*-pe*)
 	;;
 avr-*-*)
 	;;
-c4x-*-rtems*)
+c4x-*-rtems* | tic4x-*-rtems*)
 	xm_defines=POSIX
 	tmake_file="c4x/t-c4x t-rtems"
 	tm_file="c4x/c4x.h c4x/rtems.h rtems.h"
@@ -695,7 +698,7 @@ c4x-*-rtems*)
 	c_target_objs="c4x-c.o"
 	cxx_target_objs="c4x-c.o"
 	;;
-c4x-*)
+c4x-* | tic4x-*)
 	tmake_file=c4x/t-c4x
 	c_target_objs="c4x-c.o"
 	cxx_target_objs="c4x-c.o"

@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002 Free Software Foundation, Inc.
 
-timestamp='2002-08-19'
+timestamp='2002-11-30'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -109,7 +109,7 @@ trap '"'"'rm -f $files; rmdir $tmpdir; exit 1'"'"' 1 2 15 ;
 case $CC_FOR_BUILD,$HOST_CC,$CC in
  ,,)    echo "int x;" > $dummy.c ;
 	for c in cc gcc c89 c99 ; do
-	  if ($c $dummy.c -c -o $dummy.o) >/dev/null 2>&1 ; then
+	  if ($c -c -o $dummy.o $dummy.c) >/dev/null 2>&1 ; then
 	     CC_FOR_BUILD="$c"; break ;
 	  fi ;
 	done ;
@@ -178,7 +178,18 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 		;;
 	esac
 	# The OS release
-	release=`echo ${UNAME_RELEASE}|sed -e 's/[-_].*/\./'`
+	# Debian GNU/NetBSD machines have a different userland, and
+	# thus, need a distinct triplet. However, they do not need
+	# kernel version information, so it can be replaced with a
+	# suitable tag, in the style of linux-gnu.
+	case "${UNAME_VERSION}" in
+	    Debian*)
+		release='-gnu'
+		;;
+	    *)
+		release=`echo ${UNAME_RELEASE}|sed -e 's/[-_].*/\./'`
+		;;
+	esac
 	# Since CPU_TYPE-MANUFACTURER-KERNEL-OPERATING_SYSTEM:
 	# contains redundant information, the shorter form:
 	# CPU_TYPE-MANUFACTURER-OPERATING_SYSTEM is used.
@@ -257,7 +268,7 @@ main:
 	jsr \$26,exit
 	.end main
 EOF
-	$CC_FOR_BUILD $dummy.s -o $dummy 2>/dev/null
+	$CC_FOR_BUILD -o $dummy $dummy.s 2>/dev/null
 	if test "$?" = 0 ; then
 		case `$dummy` in
 			0-0)
@@ -437,7 +448,7 @@ EOF
 	  exit (-1);
 	}
 EOF
-	$CC_FOR_BUILD $dummy.c -o $dummy \
+	$CC_FOR_BUILD -o $dummy $dummy.c \
 	  && $dummy `echo "${UNAME_RELEASE}" | sed -n 's/\([0-9]*\).*/\1/p'` \
 	  && rm -f $dummy.c $dummy && rmdir $tmpdir && exit 0
 	rm -f $dummy.c $dummy && rmdir $tmpdir
@@ -446,7 +457,10 @@ EOF
     Motorola:PowerMAX_OS:*:*)
 	echo powerpc-motorola-powermax
 	exit 0 ;;
-    Night_Hawk:*:*:PowerMAX_OS)
+    Motorola:*:4.3:PL8-*)
+	echo powerpc-harris-powermax
+	exit 0 ;;
+    Night_Hawk:*:*:PowerMAX_OS | Synergy:PowerMAX_OS:*:*)
 	echo powerpc-harris-powermax
 	exit 0 ;;
     Night_Hawk:Power_UNIX:*:*)
@@ -521,7 +535,7 @@ EOF
 			exit(0);
 			}
 EOF
-		$CC_FOR_BUILD $dummy.c -o $dummy && $dummy && rm -f $dummy.c $dummy && rmdir $tmpdir && exit 0
+		$CC_FOR_BUILD -o $dummy $dummy.c && $dummy && rm -f $dummy.c $dummy && rmdir $tmpdir && exit 0
 		rm -f $dummy.c $dummy && rmdir $tmpdir
 		echo rs6000-ibm-aix3.2.5
 	elif grep bos324 /usr/include/stdio.h >/dev/null 2>&1; then
@@ -620,7 +634,7 @@ EOF
                   exit (0);
               }
 EOF
-		    (CCOPTS= $CC_FOR_BUILD $dummy.c -o $dummy 2>/dev/null) && HP_ARCH=`$dummy`
+		    (CCOPTS= $CC_FOR_BUILD -o $dummy $dummy.c 2>/dev/null) && HP_ARCH=`$dummy`
 		    if test -z "$HP_ARCH"; then HP_ARCH=hppa; fi
 		    rm -f $dummy.c $dummy && rmdir $tmpdir
 		fi ;;
@@ -658,7 +672,7 @@ EOF
 	  exit (0);
 	}
 EOF
-	$CC_FOR_BUILD $dummy.c -o $dummy && $dummy && rm -f $dummy.c $dummy && rmdir $tmpdir && exit 0
+	$CC_FOR_BUILD -o $dummy $dummy.c && $dummy && rm -f $dummy.c $dummy && rmdir $tmpdir && exit 0
 	rm -f $dummy.c $dummy && rmdir $tmpdir
 	echo unknown-hitachi-hiuxwe2
 	exit 0 ;;
@@ -766,13 +780,16 @@ EOF
 	echo ${UNAME_MACHINE}-pc-pw32
 	exit 0 ;;
     x86:Interix*:3*)
-	echo i386-pc-interix3
+	echo i586-pc-interix3
+	exit 0 ;;
+    [345]86:Windows_95:* | [345]86:Windows_98:* | [345]86:Windows_NT:*)
+	echo i${UNAME_MACHINE}-pc-mks
 	exit 0 ;;
     i*:Windows_NT*:* | Pentium*:Windows_NT*:*)
 	# How do we know it's Interix rather than the generic POSIX subsystem?
 	# It also conflicts with pre-2.0 versions of AT&T UWIN. Should we
 	# UNAME_MACHINE based on the output of uname instead of i386?
-	echo i386-pc-interix
+	echo i586-pc-interix
 	exit 0 ;;
     i*:UWIN*:*)
 	echo ${UNAME_MACHINE}-pc-uwin
@@ -816,7 +833,27 @@ EOF
 EOF
 	eval `$CC_FOR_BUILD -E $dummy.c 2>/dev/null | grep ^CPU=`
 	rm -f $dummy.c && rmdir $tmpdir
-	test x"${CPU}" != x && echo "${CPU}-pc-linux-gnu" && exit 0
+	test x"${CPU}" != x && echo "${CPU}-unknown-linux-gnu" && exit 0
+	;;
+    mips64:Linux:*:*)
+	eval $set_cc_for_build
+	sed 's/^	//' << EOF >$dummy.c
+	#undef CPU
+	#undef mips64
+	#undef mips64el
+	#if defined(__MIPSEL__) || defined(__MIPSEL) || defined(_MIPSEL) || defined(MIPSEL)
+	CPU=mips64el
+	#else
+	#if defined(__MIPSEB__) || defined(__MIPSEB) || defined(_MIPSEB) || defined(MIPSEB)
+	CPU=mips64
+	#else
+	CPU=
+	#endif
+	#endif
+EOF
+	eval `$CC_FOR_BUILD -E $dummy.c 2>/dev/null | grep ^CPU=`
+	rm -f $dummy.c && rmdir $tmpdir
+	test x"${CPU}" != x && echo "${CPU}-unknown-linux-gnu" && exit 0
 	;;
     ppc:Linux:*:*)
 	echo powerpc-unknown-linux-gnu
@@ -929,6 +966,23 @@ EOF
         # Use sysv4.2uw... so that sysv4* matches it.
 	echo ${UNAME_MACHINE}-pc-sysv4.2uw${UNAME_VERSION}
 	exit 0 ;;
+    i*86:OS/2:*:*)
+	# If we were able to find `uname', then EMX Unix compatibility
+	# is probably installed.
+	echo ${UNAME_MACHINE}-pc-os2-emx
+	exit 0 ;;
+    i*86:XTS-300:*:STOP)
+	echo ${UNAME_MACHINE}-unknown-stop
+	exit 0 ;;
+    i*86:atheos:*:*)
+	echo ${UNAME_MACHINE}-unknown-atheos
+	exit 0 ;;
+    i*86:LynxOS:2.*:* | i*86:LynxOS:3.[01]*:* | i*86:LynxOS:4.0*:*)
+	echo i386-unknown-lynxos${UNAME_RELEASE}
+	exit 0 ;;
+    i*86:*DOS:*:*)
+	echo ${UNAME_MACHINE}-pc-msdosdjgpp
+	exit 0 ;;
     i*86:*:4.*:* | i*86:SYSTEM_V:4.*:*)
 	UNAME_REL=`echo ${UNAME_RELEASE} | sed 's/\/MP$//'`
 	if grep Novell /usr/include/link.h >/dev/null 2>/dev/null; then
@@ -963,9 +1017,6 @@ EOF
 		echo ${UNAME_MACHINE}-pc-sysv32
 	fi
 	exit 0 ;;
-    i*86:*DOS:*:*)
-	echo ${UNAME_MACHINE}-pc-msdosdjgpp
-	exit 0 ;;
     pc:*:*:*)
 	# Left here for compatibility:
         # uname -m prints for DJGPP always 'pc', but it prints nothing about
@@ -989,9 +1040,15 @@ EOF
 	# "miniframe"
 	echo m68010-convergent-sysv
 	exit 0 ;;
+    mc68k:UNIX:SYSTEM5:3.51m)
+	echo m68k-convergent-sysv
+	exit 0 ;;
+    M680?0:D-NIX:5.3:*)
+	echo m68k-diab-dnix
+	exit 0 ;;
     M68*:*:R3V[567]*:*)
 	test -r /sysV68 && echo 'm68k-motorola-sysv' && exit 0 ;;
-    3[34]??:*:4.0:3.0 | 3[34]??A:*:4.0:3.0 | 3[34]??,*:*:4.0:3.0 | 3[34]??/*:*:4.0:3.0 | 4400:*:4.0:3.0 | 4850:*:4.0:3.0 | SKA40:*:4.0:3.0)
+    3[34]??:*:4.0:3.0 | 3[34]??A:*:4.0:3.0 | 3[34]??,*:*:4.0:3.0 | 3[34]??/*:*:4.0:3.0 | 4400:*:4.0:3.0 | 4850:*:4.0:3.0 | SKA40:*:4.0:3.0 | SDS2:*:4.0:3.0)
 	OS_REL=''
 	test -r /etc/.relid \
 	&& OS_REL=.`sed -n 's/[^ ]* [^ ]* \([0-9][0-9]\).*/\1/p' < /etc/.relid`
@@ -1007,9 +1064,6 @@ EOF
 	exit 0 ;;
     mc68030:UNIX_System_V:4.*:*)
 	echo m68k-atari-sysv4
-	exit 0 ;;
-    i*86:LynxOS:2.*:* | i*86:LynxOS:3.[01]*:* | i*86:LynxOS:4.0*:*)
-	echo i386-unknown-lynxos${UNAME_RELEASE}
 	exit 0 ;;
     TSUNAMI:LynxOS:2.*:*)
 	echo sparc-unknown-lynxos${UNAME_RELEASE}
@@ -1105,7 +1159,7 @@ EOF
     *:QNX:*:4*)
 	echo i386-pc-qnx
 	exit 0 ;;
-    NSR-[GKLNPTVW]:NONSTOP_KERNEL:*:*)
+    NSR-[DGKLNPTVW]:NONSTOP_KERNEL:*:*)
 	echo nsr-tandem-nsk${UNAME_RELEASE}
 	exit 0 ;;
     *:NonStop-UX:*:*)
@@ -1128,11 +1182,6 @@ EOF
 	fi
 	echo ${UNAME_MACHINE}-unknown-plan9
 	exit 0 ;;
-    i*86:OS/2:*:*)
-	# If we were able to find `uname', then EMX Unix compatibility
-	# is probably installed.
-	echo ${UNAME_MACHINE}-pc-os2-emx
-	exit 0 ;;
     *:TOPS-10:*:*)
 	echo pdp10-unknown-tops10
 	exit 0 ;;
@@ -1150,12 +1199,6 @@ EOF
 	exit 0 ;;
     *:ITS:*:*)
 	echo pdp10-unknown-its
-	exit 0 ;;
-    i*86:XTS-300:*:STOP)
-	echo ${UNAME_MACHINE}-unknown-stop
-	exit 0 ;;
-    i*86:atheos:*:*)
-	echo ${UNAME_MACHINE}-unknown-atheos
 	exit 0 ;;
 esac
 
@@ -1277,7 +1320,7 @@ main ()
 }
 EOF
 
-$CC_FOR_BUILD $dummy.c -o $dummy 2>/dev/null && $dummy && rm -f $dummy.c $dummy && rmdir $tmpdir && exit 0
+$CC_FOR_BUILD -o $dummy $dummy.c 2>/dev/null && $dummy && rm -f $dummy.c $dummy && rmdir $tmpdir && exit 0
 rm -f $dummy.c $dummy && rmdir $tmpdir
 
 # Apollos put the system type in the environment.
