@@ -1507,22 +1507,35 @@ output_function_prologue (file, size, leaf_function)
 	      ? (VAL_14_BITS_P (actual_fsize) ? 12 : 20)
 	      : (VAL_14_BITS_P (actual_fsize) ? 4 : 8)));
       int i, arg_offset;
+      int basereg, offsetadj;
 
-      for (i = 26, arg_offset = -36; i >= 23; i--, arg_offset -= 4)
+      /* When the function has a frame pointer, use that as the base 
+	 register for saving/restoring registers.  Else use the stack
+	 pointer.  Adjust the offset according to the frame size if this
+	 function does not have a frame pointer.  */
+
+      basereg = frame_pointer_needed ? FRAME_POINTER_REGNUM
+				     : STACK_POINTER_REGNUM;
+      offsetadj = frame_pointer_needed ? 0 : actual_fsize;
+
+      for (i = 26, arg_offset = -36 - offsetadj; i >= 23; i--, arg_offset -= 4)
 	if (regs_ever_live[i])
 	  {
-	    print_stw (file, i, arg_offset, 4);
-	    pc_offset += 4;
+	    print_stw (file, i, arg_offset, basereg);
+	    /* It is possible for the arg_offset not to fit in 14 bits 
+               when profiling a function without a frame pointer.  Deal
+	       with such cases.  */
+	    pc_offset += VAL_14_BITS_P (arg_offset) ? 4 : 8;
 	  }
       fprintf (file,
 	       "\tcopy %%r2,%%r26\n\taddil L'LP$%04d-$global$,%%r27\n\
 \tldo R'LP$%04d-$global$(%%r1),%%r24\n\tbl _mcount,%%r2\n\
 \tldo %d(%%r2),%%r25\n",
 	       hp_profile_labelno, hp_profile_labelno, -pc_offset - 12 - 8);
-      for (i = 26, arg_offset = -36; i >= 23; i--, arg_offset -= 4)
+      for (i = 26, arg_offset = -36 - offsetadj; i >= 23; i--, arg_offset -= 4)
 	if (regs_ever_live[i])
-	  print_ldw (file, i, arg_offset, 4);
-      print_ldw (file, 2, -20, 4);
+	  print_ldw (file, i, arg_offset, basereg);
+      print_ldw (file, 2, -20 - offsetadj, basereg);
     }
 
   /* Normal register save. */
@@ -2122,12 +2135,12 @@ output_mul_insn (unsignedp)
   if (unsignedp)
     {
       import_milli (mulU);
-      return "bl $$mulU,31\n\tnop";
+      return "bl $$mulU,31%#";
     }
   else
     {
       import_milli (mulI);
-      return "bl $$mulI,31\n\tnop";
+      return "bl $$mulI,31%#";
     }
 }
 
