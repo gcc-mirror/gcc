@@ -1,1 +1,0 @@
-CONFIG2_H	= $(srcdir)/config/mips/mips.h
