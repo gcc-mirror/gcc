@@ -323,6 +323,9 @@ do {									\
 
 #undef ASM_OUTPUT_EXTERNAL
 
+/* Put jump tables in read-only memory, rather than in .text.  */
+#undef JUMP_TABLES_IN_TEXT_SECTION
+
 /* Undefine some things which are defined by the generic svr4.h.  */
 
 #undef ASM_FILE_END
