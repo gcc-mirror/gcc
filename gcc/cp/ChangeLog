@@ -1,5 +1,126 @@
 1998-10-06  Mark Mitchell  <mark@markmitchell.com>
 
+	* cp-tree.def (PTRMEM_CST): New tree node.
+	* cp-tree.h (ptrmem_cst): New type.
+	(lang_type): Remove local_typedecls.
+	(dummy): Increase to 12 bits from 11.
+	(CLASSTYPE_LOCAL_TYPEDECLS): Remove.
+	(PTRMEM_CST_CLASS): New macro.
+	(PTRMEM_CST_MEMBER): Likewise.
+	(current_access_specifier): New variable.
+	(current_class_type): Remove duplicate declaration.
+	(finish_struct): Change prototype.
+	(unreverse_member_declarations): New function.
+	(pushdecl_class_level): Change prototype.
+	(grok_enum_decls): Remove.
+	(fixup_anonymous_union): New function.
+	(grok_x_components): Change prototype.
+	(tsubst_chain): Remove.
+	(finish_member_template_decl): Likewise.
+	(check_explicit_specialization): Fix indentation.
+	(finish_class_definition): Change prototype.
+	(finish_member_class_template): Likewise.
+	(finish_member_declaration): New function.
+	(check_multiple_declarators): Likewise.
+	* class.c (class_stack_node_t): New type.
+	(current_class_base): Remove.
+	(current_class_stack): Change type.
+	(current_access_specifier): New variable.
+	(grow_method): Remove.
+	(check_member_decl_is_same_in_complete_scope): Break out from
+	finish_struct.
+	(make_method_vec): New function.
+	(free_method_vec): Likewise.
+	(add_implicitly_declared_members): Break out from finish_struct_1.
+	(free_method_vecs): New variable.
+	(add_method): Rework for direct use from parser.
+	(handle_using_decl): Watch for NULL_TREE while iterating through
+	CLASSTYPE_METHOD_VEC.
+	(finish_struct_methods): Don't build CLASSTYPE_METHOD_VEC here;
+	just do some error-checking.
+	(warn_hidden): Change iteration through CLASSTYPE_METHOD_VEC.
+	(finish_struct_1): Simplify.  Use add_implicitly_declared_members.
+	(finish_struct): Change prototype.  Simplify; fields and methods
+	are already set up at this point.
+	(init_class_processing): Set up current_class_stack.
+	(pushclass): Save current_access_specifier.
+	(popclass): Restore it.
+	(currently_open_class): Simplify.
+	(build_self_reference): Remove use of CLASSTYPE_LOCAL_TYPEDECLS.
+	* decl.c (saved_scope): Add access_specifier.
+	(maybe_push_to_top_level): Save it.
+	(pop_from_top_level): Restore it.
+	(maybe_process_template_type_declaration): Use
+	finish_member_declaration. 
+	(pushtag): Likewise.
+	(pushdecl_class_level): Don't return a value.
+	(fixup_anonymous_union): Break out from grok_x_components.
+	(shadow_tag): Use it.
+	(xref_tag): Complain about using an elaborated type specifier to
+	reference a template type parameter or typedef name.
+	(xref_basetypes): Don't set CLASSTYPE_LOCAL_TYPEDECLS.
+	(current_local_enum): Remove.
+	(build_enumerator): Call finish_member_declaration.
+	(grok_enum_decls): Remove.
+	* decl2.c (grok_x_components): Simplify.
+	(check_classfn): Change iteration through CLASSTYPE_METHOD_VEC.
+	(grokfield): Don't set CLASSTYPE_LOCAL_TYPEDECLS.
+	(merge_functions): Add to comment.
+	(arg_assoc_type): Prototype.
+	(arg_assoc): Pass as many arguments as there are parameters.
+	* error.c (dump_expr): Handle PTRMEM_CST.  Improve handling of
+	OFFSET_REF.
+	* expr.c (cpls_expand_expr): Remove dead code.  Handle
+	PTRMEM_CST.
+	* friend.c (do_friend): Lookup friends when in nested classes.
+	Change comments.
+	* init.c (build_offset_ref): Do lookup even for classes that are
+	only partially defined.
+	(decl_constant_value): Remove dead code.
+	* method.c (build_overload_value): Remove hack where by TYPE was
+	not a TYPE.  Handle PTRMEM_CST.
+	(build_template_parm_names): Don't pass a PARM_DECL where a TYPE
+	should go.
+	* parse.y (components, notype_components, component_decl,
+	component_decl_1, component_declarator, component_declarator0):
+	Now all are itype rather than ttype.  Rework to add members to
+	classes on the fly.
+	(typesqpecqual_reserved): Use check_multiple_declarators.
+	(structsp): Update class to finish_class_definition.
+	(do_xref_defn): Unsplit into named_class_head.
+	(access_specifier): Set current_access_specifier.
+	* pt.c (set_current_access_from_decl): New function.
+	(finish_member_template_decl): Don't take the parameters.
+	(comp_template_args): Make more robust.
+	(lookup_template_class): Don't use current_local_enum.
+	(for_each_template_parm): Handle PTRMEM_CST.
+	(instantiate_class_template): Use set_current_access_from_decl,
+	finish_member_declaration and unreverse_member_declarations.  Set
+	lineno/input_filename before generating implicit member functions.  
+	(type_unification_real): Don't assume back-unification happens
+	only for the last argument.
+	(regenerate_decl_from_template): Call pushclass a bit earlier.
+	(tsubst_chain): Remove.
+	(tsubst_enum): Use set_current_access_from_decl.
+	(set_mangled_name_for_template_decl): Fix indentation.
+	* search.c (lookup_fnfields_1): Change iteration through
+	CLASSTYPE_METHOD_VEC.
+	(dfs_pushdecls): Likewise.
+	(dfs_compress_decls): Likewise.
+	(add_conversions): Likewise.
+	* semantics.c (finish_class_definition): Don't take components.
+	Change call to finish_struct.
+	(finish_member_declaration): New function.
+	(finish_member_class_template): Don't take template parameters.
+	Change call to grok_x_components.  Call finish_member_template_decl.
+	(check_multiple_declarators): New function.
+	* sig.c (append_signature_fields): Work from the TYPE_METHODS, not
+	a passed in fieldlist.
+	* tree.c (search_tree): Handle PTRMEM_CST.
+	(mapcar): Likewise.
+	* typeck.c (unary_complex_lvalue): Build PTRMEM_CSTs, not
+	INTEGER_CSTs, for pointer-to-data members.
+	
 	* call.c (resolve_args): Resolve template specializations, if
 	possible.
 

@@ -1581,6 +1581,10 @@ search_tree (t, func)
     case DEFAULT_ARG:
       break;
 
+    case PTRMEM_CST:
+      TRY (TREE_TYPE (t));
+      break;
+
     case COND_EXPR:
     case TARGET_EXPR:
     case AGGR_INIT_EXPR:
@@ -1845,6 +1849,12 @@ mapcar (t, func)
     case STRING_CST:
       return copy_node (t);
 
+    case PTRMEM_CST:
+      t = copy_node (t);
+      TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
+      PTRMEM_CST_MEMBER (t) = mapcar (PTRMEM_CST_MEMBER (t), func);
+      return t;
+
     case COND_EXPR:
     case TARGET_EXPR:
     case AGGR_INIT_EXPR:
@@ -1908,7 +1918,7 @@ mapcar (t, func)
       TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
 
       /* tree.def says that operand two is RTL, but
-	 build_call_declarator puts trees in there.  */
+	 make_call_declarator puts trees in there.  */
       if (TREE_OPERAND (t, 2)
 	  && TREE_CODE (TREE_OPERAND (t, 2)) == TREE_LIST)
 	TREE_OPERAND (t, 2) = mapcar (TREE_OPERAND (t, 2), func);
@@ -2448,6 +2458,13 @@ cp_tree_equal (t1, t2)
       if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t1, 0))) == 't')
 	return comptypes (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0), 1);
       break;
+
+    case PTRMEM_CST:
+      /* Two pointer-to-members are the same if they point to the same
+	 field or function in the same class.  */
+      return (PTRMEM_CST_MEMBER (t1) == PTRMEM_CST_MEMBER (t2)
+	      && comptypes (PTRMEM_CST_CLASS (t1), PTRMEM_CST_CLASS (t2),
+			    1));
 
     default:
       break;

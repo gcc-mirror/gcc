@@ -1265,6 +1265,13 @@ dump_expr (t, nop)
       OB_PUTCP (digit_buffer);
       break;
 
+    case PTRMEM_CST:
+      OB_PUTC ('&');
+      dump_type (PTRMEM_CST_CLASS (t), 0);
+      OB_PUTS ("::");
+      OB_PUTID (DECL_NAME (PTRMEM_CST_MEMBER (t)));
+      break;
+
     case STRING_CST:
       {
 	char *p = TREE_STRING_POINTER (t);
@@ -1571,10 +1578,14 @@ dump_expr (t, nop)
       {
 	tree ob = TREE_OPERAND (t, 0);
 	if (TREE_CODE (ob) == NOP_EXPR
-	    && TREE_OPERAND (ob, 0) == error_mark_node
-	    && TREE_CODE (TREE_OPERAND (t, 1)) == FUNCTION_DECL)
-	    /* A::f */
-	  dump_expr (TREE_OPERAND (t, 1), 0);
+	    && TREE_OPERAND (ob, 0) == error_mark_node)
+	  {
+	    if (TREE_CODE (TREE_OPERAND (t, 1)) == FUNCTION_DECL)
+	      /* A::f */
+	      dump_expr (TREE_OPERAND (t, 1), 0);
+	    else
+	      dump_decl (TREE_OPERAND (t, 1), 0);
+	  }
 	else
 	  {
 	    dump_expr (TREE_OPERAND (t, 0), 0);

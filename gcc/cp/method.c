@@ -628,14 +628,11 @@ build_overload_value (type, value, in_template)
      tree type, value;
      int in_template;
 {
+  my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (type)) == 't', 0);
+
   while (TREE_CODE (value) == NON_LVALUE_EXPR
 	 || TREE_CODE (value) == NOP_EXPR)
     value = TREE_OPERAND (value, 0);
-
-  if (TREE_CODE (type) == PARM_DECL)
-    type = TREE_TYPE (type);
-
-  my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (type)) == 't', 0);
 
   if (numeric_output_need_bar)
     {
@@ -649,17 +646,20 @@ build_overload_value (type, value, in_template)
       return;
     }
 
-  if (TREE_CODE (type) == POINTER_TYPE
-      && TREE_CODE (TREE_TYPE (type)) == OFFSET_TYPE)
+  if (TYPE_PTRMEM_P (type))
     {
-      /* Handle a pointer to data member as a template instantiation
-	 parameter, boy, what fun!  */
-      type = integer_type_node;
-      if (TREE_CODE (value) != INTEGER_CST)
-	{
-	  sorry ("unknown pointer to member constant");
-	  return;
-	}
+      if (TREE_CODE (value) != PTRMEM_CST)
+	/* We should have already rejected this pointer to member,
+	   since it is not a constant.  */
+	my_friendly_abort (0);
+
+      /* Get the actual FIELD_DECL.  */
+      value = PTRMEM_CST_MEMBER (value);
+      my_friendly_assert (TREE_CODE (value) == FIELD_DECL, 0);
+
+      /* Output the name of the field.  */
+      build_overload_identifier (DECL_NAME (value));
+      return;
     }
 
   if (TYPE_PTRMEMFUNC_P (type))
@@ -898,7 +898,8 @@ build_template_parm_names (parmlist, arglist)
 	  parm = tsubst (parm, arglist, NULL_TREE);
 	  /* It's a PARM_DECL.  */
 	  build_mangled_name_for_type (TREE_TYPE (parm));
-	  build_overload_value (parm, arg, uses_template_parms (arglist));
+	  build_overload_value (TREE_TYPE (parm), arg, 
+				uses_template_parms (arglist));
 	}
     }
  }

@@ -1896,7 +1896,9 @@ struct saved_scope {
   tree old_bindings;
   tree old_namespace;
   struct saved_scope *prev;
-  tree class_name, class_type, function_decl;
+  tree class_name, class_type;
+  tree access_specifier;
+  tree function_decl;
   struct binding_level *class_bindings;
   tree *lang_base, *lang_stack, lang_name;
   int lang_stacksize;
@@ -2010,6 +2012,7 @@ maybe_push_to_top_level (pseudo)
   s->old_namespace = current_namespace;
   s->class_name = current_class_name;
   s->class_type = current_class_type;
+  s->access_specifier = current_access_specifier;
   s->function_decl = current_function_decl;
   s->class_bindings = class_binding_level;
   s->lang_stack = current_lang_stack;
@@ -2091,6 +2094,7 @@ pop_from_top_level ()
   current_namespace = s->old_namespace;
   current_class_name = s->class_name;
   current_class_type = s->class_type;
+  current_access_specifier = s->access_specifier;
   current_function_decl = s->function_decl;
   class_binding_level = s->class_bindings;
   free (current_lang_base);
@@ -2297,6 +2301,7 @@ maybe_process_template_type_declaration (type, globalize, b)
 	    {
 	      pushdecl_with_scope (CLASSTYPE_TI_TEMPLATE (type),
 				   b->level_chain);
+	      finish_member_declaration (CLASSTYPE_TI_TEMPLATE (type));
 	      /* Put this tag on the list of tags for the class, since
 		 that won't happen below because B is not the class
 		 binding level, but is instead the pseudo-global level.  */
@@ -2391,7 +2396,15 @@ pushtag (name, type, globalize)
 						       globalize, b);
 
 	  if (b->parm_flag == 2)
-	    d = pushdecl_class_level (d);
+	    {
+	      pushdecl_class_level (d);
+	      if (newdecl && !PROCESSING_REAL_TEMPLATE_DECL_P ())
+		/* Put this TYPE_DECL on the TYPE_FIELDS list for the
+		   class.  But if it's a member template class, we
+		   want the TEMPLATE_DECL, not the TYPE_DECL, so this
+		   is done later.  */
+		finish_member_declaration (d);
+	    }
 	  else
 	    d = pushdecl_with_scope (d, b);
 
@@ -3788,7 +3801,7 @@ pushdecl_top_level (x)
 
 /* Make the declaration of X appear in CLASS scope.  */
 
-tree
+void
 pushdecl_class_level (x)
      tree x;
 {
@@ -3839,7 +3852,6 @@ pushdecl_class_level (x)
 	  set_identifier_type_value (name, TREE_TYPE (x));
 	}
     }
-  return x;
 }
 
 #if 0
@@ -6291,6 +6303,48 @@ define_function (name, type, function_code, pfn, library_name)
   return decl;
 }
 
+/* When we call finish_struct for an anonymous union, we create
+   default copy constructors and such.  But, an anonymous union
+   shouldn't have such things; this function undoes the damage to the
+   anonymous union type T.
+
+   (The reason that we create the synthesized methods is that we don't
+   distinguish `union { int i; }' from `typedef union { int i; } U'.
+   The first is an anonymous union; the second is just an ordinary
+   union type.)  */
+
+void
+fixup_anonymous_union (t)
+     tree t;
+{
+  tree *q;
+
+  /* Wipe out memory of synthesized methods */
+  TYPE_HAS_CONSTRUCTOR (t) = 0;
+  TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 0;
+  TYPE_HAS_INIT_REF (t) = 0;
+  TYPE_HAS_CONST_INIT_REF (t) = 0;
+  TYPE_HAS_ASSIGN_REF (t) = 0;
+  TYPE_HAS_ASSIGNMENT (t) = 0;
+  TYPE_HAS_CONST_ASSIGN_REF (t) = 0;
+
+  /* Splice the implicitly generated functions out of the TYPE_METHODS
+     list.  */
+  q = &TYPE_METHODS (t);
+  while (*q)
+    {
+      if (DECL_ARTIFICIAL (*q))
+	*q = TREE_CHAIN (*q);
+      else
+	q = &TREE_CHAIN (*q);
+    }
+
+  /* ANSI C++ June 5 1992 WP 9.5.3.  Anonymous unions may not have
+     function members.  */
+  if (TYPE_METHODS (t))
+    error ("an anonymous union cannot have function members");
+}
+
 /* Called when a declaration is seen that contains no names to declare.
    If its type is a reference to a structure, union or enum inherited
    from a containing scope, shadow that tag name for the current scope
@@ -6349,31 +6403,7 @@ shadow_tag (declspecs)
 	  || (TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
 	      && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))))
     {
-      /* See also grok_x_components.  */
-      tree *q;
-
-      /* Wipe out memory of synthesized methods */
-      TYPE_HAS_CONSTRUCTOR (t) = 0;
-      TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 0;
-      TYPE_HAS_INIT_REF (t) = 0;
-      TYPE_HAS_CONST_INIT_REF (t) = 0;
-      TYPE_HAS_ASSIGN_REF (t) = 0;
-      TYPE_HAS_ASSIGNMENT (t) = 0;
-      TYPE_HAS_CONST_ASSIGN_REF (t) = 0;
-
-      q = &TYPE_METHODS (t);
-      while (*q)
-	{
-	  if (DECL_ARTIFICIAL (*q))
-	    *q = TREE_CHAIN (*q);
-	  else
-	    q = &TREE_CHAIN (*q);
-	}
-
-      /* ANSI C++ June 5 1992 WP 9.5.3.  Anonymous unions may not have
-	 function members.  */
-      if (TYPE_METHODS (t))
-	error ("an anonymous union cannot have function members");
+      fixup_anonymous_union (t);
 
       if (TYPE_FIELDS (t))
 	{
@@ -9714,6 +9744,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      type = TREE_TYPE (type);
 	    }
 
+	  /* Merge any constancy or volatility into the target type
+	     for the pointer.  */
+
 	  /* We now know that constp and volatilep don't apply to the
 	     decl, but to the target of the pointer.  */
 	  constp = volatilep = 0;
@@ -10040,6 +10073,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	  && ANON_AGGRNAME_P (TYPE_IDENTIFIER (type)))
 	{
+	  /* FIXME: This is bogus; we should not be doing this for
+	            cv-qualified types.  */
+
 	  /* For anonymous structs that are cv-qualified, need to use
              TYPE_MAIN_VARIANT so that name will mangle correctly. As
              type not referenced after this block, don't bother
@@ -10094,9 +10130,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	C_TYPEDEF_EXPLICITLY_SIGNED (decl) = 1;
 
       if (RIDBIT_SETP (RID_MUTABLE, specbits))
-	{
-	  error ("non-object member `%s' cannot be declared mutable", name);
-	}
+	error ("non-object member `%s' cannot be declared mutable", name);
 
       bad_specifiers (decl, "type", virtualp, quals != NULL_TREE,
 		      inlinep, friendp, raises != NULL_TREE);
@@ -11477,6 +11511,7 @@ xref_tag (code_type_node, name, globalize)
     }
   else
     t = IDENTIFIER_TYPE_VALUE (name);
+
   if (t && TREE_CODE (t) != code && TREE_CODE (t) != TEMPLATE_TYPE_PARM
       && TREE_CODE (t) != TEMPLATE_TEMPLATE_PARM)
     t = NULL_TREE;
@@ -11651,6 +11686,19 @@ xref_tag (code_type_node, name, globalize)
 
   TREE_TYPE (ref) = attributes;
 
+  if (ref && TYPE_P (ref))
+    {
+      /* [dcl.type.elab]
+	     
+	 If the identifier resolves to a typedef-name or a template
+	 type-parameter, the elaborated-type-specifier is
+	 ill-formed.  */
+      if (TYPE_LANG_SPECIFIC (ref) && TYPE_WAS_ANONYMOUS (ref))
+	cp_error ("`%T' is a typedef name", ref);
+      else if (TREE_CODE (ref) == TEMPLATE_TYPE_PARM)
+	cp_error ("`%T' is a template type paramter", ref);
+    }
+
   return ref;
 }
 
@@ -11791,7 +11839,6 @@ xref_basetypes (code_type_node, name, ref, binfo)
 
 	  TYPE_GETS_NEW (ref) |= TYPE_GETS_NEW (basetype);
 	  TYPE_GETS_DELETE (ref) |= TYPE_GETS_DELETE (basetype);
-	  CLASSTYPE_LOCAL_TYPEDECLS (ref) |= CLASSTYPE_LOCAL_TYPEDECLS (basetype);
 	  i += 1;
 	}
     }
@@ -11817,8 +11864,6 @@ xref_basetypes (code_type_node, name, ref, binfo)
 }
   
 
-tree current_local_enum = NULL_TREE;
-
 /* Begin compiling the definition of an enumeration type.
    NAME is its name (or null if anonymous).
    Returns the type object, as yet incomplete.
@@ -11857,8 +11902,6 @@ start_enum (name)
 
   if (current_class_type)
     TREE_ADDRESSABLE (b->tags) = 1;
-
-  current_local_enum = NULL_TREE;
 
   /* We don't copy this value because build_enumerator needs to do it.  */
   enum_next_value = integer_zero_node;
@@ -12079,8 +12122,10 @@ build_enumerator (name, value, type)
  if (context && context == current_class_type)
    {
      pushdecl_class_level (decl);
-     TREE_CHAIN (decl) = current_local_enum;
-     current_local_enum = decl;
+     /* In something like `struct S { enum E { i = 7 }; };' we put `i'
+	on the TYPE_FIELDS list for `S'.  (That's so that you can say
+	things like `S::i' later.)  */
+     finish_member_declaration (decl);
    }
  else
    {
@@ -12100,47 +12145,6 @@ build_enumerator (name, value, type)
   return result;
 }
 
-/* Called after we have finished the declaration of an enumeration
-   type, and, perhaps, some objects whose type involves the
-   enumeration type.  DECL, if non-NULL, is the declaration of the
-   first such object.  
-
-   If CURRENT_LOCAL_ENUM is NULL, the DECL is returned. 
-
-   If CURRENT_LOCAL_ENUM is non-NULL, it should be the CONST_DECL for
-   the last enumeration constant of an enumeration type that is a
-   member of a class.  The enumeration constants are already chained
-   together through their TREE_CHAIN fields.  This function sets the
-   TREE_CHAIN of the last enumeration constant to DECL.  The
-   CONST_DECL for the last enumeration constant is returned.  
-
-   CURRENT_LOCAL_ENUM will always be NULL when this function 
-   returns.  */
-
-tree
-grok_enum_decls (decl)
-     tree decl;
-{
-  tree d = current_local_enum;
-  
-  if (d == NULL_TREE)
-    return decl;
-  
-  while (1)
-    {
-      if (TREE_CHAIN (d) == NULL_TREE)
-	{
-	  TREE_CHAIN (d) = decl;
-	  break;
-	}
-      d = TREE_CHAIN (d);
-    }
-
-  decl = current_local_enum;
-  current_local_enum = NULL_TREE;
-  
-  return decl;
-}
 
 static int function_depth;
 

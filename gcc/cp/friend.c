@@ -372,21 +372,22 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	  if (is_friend_template)
 	    decl = DECL_TI_TEMPLATE (push_template_decl (decl));
 
-	  if (TYPE_SIZE (ctype) != 0 && template_class_depth (ctype) == 0)
-	    decl = check_classfn (ctype, decl);
-
-	  /* TYPE_BEING_DEFINED is a hack for nested classes having
-             member functions of the enclosing class as friends. Will
-             go away as parsing of classes gets rewritten. */
-	  if (TREE_TYPE (decl) != error_mark_node)
+	  /* A nested class may declare a member of an enclosing class
+	     to be a friend, so we do lookup here even if CTYPE is in
+	     the process of being defined.  */
+	  if (TYPE_SIZE (ctype) != 0 || TYPE_BEING_DEFINED (ctype))
 	    {
-	      if (TYPE_BEING_DEFINED (ctype) ||
-		  TYPE_SIZE (ctype) || template_class_depth (ctype) > 0)
+	      /* But, we defer looup in template specializations until
+		 they are fully specialized.  */
+	      if (template_class_depth (ctype) == 0)
+		decl = check_classfn (ctype, decl);
+
+	      if (decl)
 		add_friend (current_class_type, decl);
-	      else
-		cp_error ("member `%D' declared as friend before type `%T' defined",
-			  decl, ctype);
 	    }
+	  else
+	    cp_error ("member `%D' declared as friend before type `%T' defined",
+		      decl, ctype);
 	}
       else
 	{

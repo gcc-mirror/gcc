@@ -1289,7 +1289,7 @@ lookup_fnfields_1 (type, name)
       if (*++methods && name == dtor_identifier)
 	return 1;
 
-      while (++methods != end)
+      while (++methods != end && *methods)
 	{
 #ifdef GATHER_STATISTICS
 	  n_outer_fields_searched++;
@@ -1301,20 +1301,28 @@ lookup_fnfields_1 (type, name)
       /* If we didn't find it, it might have been a template
 	 conversion operator.  (Note that we don't look for this case
 	 above so that we will always find specializations first.)  */
-      if (methods == end 
+      if ((methods == end || !*methods)
 	  && IDENTIFIER_TYPENAME_P (name)) 
 	{
 	  methods = &TREE_VEC_ELT (method_vec, 0) + 1;
 	  
-	  while (++methods != end)
+	  while (++methods != end && *methods)
 	    {
-	      if (TREE_CODE (OVL_CURRENT (*methods)) == TEMPLATE_DECL 
-		  && IDENTIFIER_TYPENAME_P (DECL_NAME (OVL_CURRENT (*methods))))
+	      tree method_name = DECL_NAME (OVL_CURRENT (*methods));
+
+	      if (!IDENTIFIER_TYPENAME_P (method_name))
+		{
+		  /* Since all conversion operators come first, we know
+		     there is no such operator.  */
+		  methods = end;
+		  break;
+		}
+	      else if (TREE_CODE (OVL_CURRENT (*methods)) == TEMPLATE_DECL)
 		break;
 	    }
 	}
 
-      if (methods != end)
+      if (methods != end && *methods)
 	return methods - &TREE_VEC_ELT (method_vec, 0);
     }
 
@@ -2962,7 +2970,7 @@ dfs_pushdecls (binfo)
      tree binfo;
 {
   tree type = BINFO_TYPE (binfo);
-  tree fields, *methods, *end;
+  tree fields;
   tree method_vec;
   int dummy = 0;
 
@@ -3015,16 +3023,24 @@ dfs_pushdecls (binfo)
   method_vec = CLASSTYPE_METHOD_VEC (type);
   if (method_vec && ! dummy)
     {
+      tree *methods;
+      tree *end;
+
       /* Farm out constructors and destructors.  */
-      methods = &TREE_VEC_ELT (method_vec, 2);
       end = TREE_VEC_END (method_vec);
 
-      while (methods != end)
+      for (methods = &TREE_VEC_ELT (method_vec, 2);
+	   *methods && methods != end;
+	   methods++)
 	{
 	  /* This will cause lookup_name to return a pointer
 	     to the tree_list of possible methods of this name.  */
-	  tree name = DECL_NAME (OVL_CURRENT (*methods));
-	  tree class_value = IDENTIFIER_CLASS_VALUE (name);
+	  tree name;
+	  tree class_value;
+
+	  
+	  name = DECL_NAME (OVL_CURRENT (*methods));
+	  class_value = IDENTIFIER_CLASS_VALUE (name);
 
 	  /* If the class value is not an envelope of the kind described in
 	     the comment above, we create a new envelope.  */
@@ -3049,8 +3065,6 @@ dfs_pushdecls (binfo)
 	  envelope_add_decl (type, OVL_CURRENT (*methods),
 			     &TREE_PURPOSE (class_value));
 	  pop_obstacks ();
-
-	  methods++;
 	}
     }
 
@@ -3074,10 +3088,11 @@ dfs_compress_decls (binfo)
   else if (method_vec != 0)
     {
       /* Farm out constructors and destructors.  */
-      tree *methods = &TREE_VEC_ELT (method_vec, 2);
+      tree *methods;
       tree *end = TREE_VEC_END (method_vec);
 
-      for (; methods != end; methods++)
+      for (methods = &TREE_VEC_ELT (method_vec, 2); 
+	   methods != end && *methods; methods++)
 	{
 	  /* This is known to be an envelope of the kind described before
 	     dfs_pushdecls.  */
@@ -3269,7 +3284,9 @@ add_conversions (binfo)
   for (i = 2; i < TREE_VEC_LENGTH (method_vec); ++i)
     {
       tree tmp = TREE_VEC_ELT (method_vec, i);
-      if (! IDENTIFIER_TYPENAME_P (DECL_NAME (OVL_CURRENT (tmp))))
+
+      if (!tmp
+	  || !IDENTIFIER_TYPENAME_P (DECL_NAME (OVL_CURRENT (tmp))))
 	break;
       conversions = scratch_tree_cons (binfo, tmp, conversions);
     }
