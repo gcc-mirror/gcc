@@ -1,3 +1,8 @@
+2001-01-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in: Reverted yesterday's wrong patch.  Installed the
+	right version.
+
 2001-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/alpha/alpha.c (alpha_expand_block_move): GET_MODE of tmp,
