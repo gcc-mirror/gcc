@@ -1,3 +1,8 @@
+Wed Apr 14 21:29:18 1999  Andrew Haley  <aph@cygnus.com>
+
+	* flow.c: (make_edges): Always make edges from a basic block
+	to its exception handlers, even if the block ends with a jump.
+
 1999-04-14 23:26 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* graph.c (node_data): Return void.  Ignore result of
