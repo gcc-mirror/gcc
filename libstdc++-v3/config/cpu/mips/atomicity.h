@@ -44,14 +44,15 @@ namespace __gnu_cxx
 #if _MIPS_SIM == _ABIO32
        ".set	mips2\n\t"
 #endif
-       "ll	%0,%3\n\t"
-       "addu	%1,%4,%0\n\t"
-       "sc	%1,%2\n\t"
+       "ll	%0,0(%2)\n\t"
+       "addu	%1,%3,%0\n\t"
+       "sc	%1,0(%2)\n\t"
        ".set	pop\n\t"
        "beqz	%1,1b\n\t"
        "/* End exchange & add */"
-       : "=&r"(__result), "=&r"(__tmp), "=m"(*__mem)
-       : "m" (*__mem), "r"(__val));
+       : "=&r"(__result), "=&r"(__tmp)
+       : "r"(__mem), "r"(__val)
+       :  "memory" );
     
     return __result;
   }
@@ -69,13 +70,14 @@ namespace __gnu_cxx
 #if _MIPS_SIM == _ABIO32
        ".set	mips2\n\t"
 #endif
-       "ll	%0,%2\n\t"
-       "addu	%0,%3,%0\n\t"
-       "sc	%0,%1\n\t"
+       "ll	%0,0(%1)\n\t"
+       "addu	%0,%2,%0\n\t"
+       "sc	%0,0(%1)\n\t"
        ".set	pop\n\t"
        "beqz	%0,1b\n\t"
        "/* End atomic add */"
-       : "=&r"(__result), "=m"(*__mem)
-     : "m" (*__mem), "r"(__val));
+       : "=&r"(__result)
+       : "r"(__mem), "r"(__val)
+       : "memory" );
   }
 } // namespace __gnu_cxx
