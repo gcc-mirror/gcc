@@ -1,3 +1,9 @@
+2002-05-05  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* configure.in (sparc64-*-netbsd*): Add target.
+	(sparc-*-netbsdelf*): Likewise.
+	* configure: Regenerate.
+
 2002-04-28  David S. Miller  <davem@redhat.com>
 
 	* configure.in, configure: Fix SPARC test in previous change.
