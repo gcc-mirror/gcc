@@ -1921,11 +1921,11 @@ build_push_scope (cname, name)
   return rval;
 }
 
-void cplus_decl_attributes (decl, attributes)
-     tree decl, attributes;
+void cplus_decl_attributes (decl, attributes, prefix_attributes)
+     tree decl, attributes, prefix_attributes;
 {
   if (decl && decl != void_type_node)
-    decl_attributes (decl, attributes, NULL_TREE);
+    decl_attributes (decl, attributes, prefix_attributes);
 }
 
 /* CONSTRUCTOR_NAME:

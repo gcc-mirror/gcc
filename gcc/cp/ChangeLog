@@ -1,3 +1,15 @@
+Tue Mar  7 10:14:29 1995  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* parse.y: New rules to allow attributes in a prefix position.
+	(prefix_attributes): New variable.  Pass it into cplus_decl_attributes.
+	(setattr): New rule.
+	(reserved_declspecs, declmods): Catch attributes here.
+	* decl2.c (cplus_decl_attributes): Add PREFIX_ATTRIBUTES argument.
+	* decl.c (duplicate_decls): Pass DECL_MACHINE_ATTRIBUTES to
+	descendent typedef.
+	(grokdeclarator): Added code to support machine attributes.
+	* Makefile.in (stamp-parse): Expect 5 shift/reduce failures.
+
 Tue Feb 21 18:43:48 1995  Douglas Rupp  (drupp@cs.washington.edu)
 
 	* Make-lang.in, config-lang.in: ($exeext): New macro.

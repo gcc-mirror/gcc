@@ -2122,6 +2122,9 @@ duplicate_decls (newdecl, olddecl)
   int new_defines_function;
   tree previous_c_decl = NULL_TREE;
 
+  if (TREE_CODE_CLASS (TREE_CODE (olddecl)) == 'd')
+    DECL_MACHINE_ATTRIBUTES (newdecl) = DECL_MACHINE_ATTRIBUTES (olddecl);
+
   types_match = decls_match (newdecl, olddecl);
 
   if (TREE_CODE (olddecl) != TREE_LIST)
@@ -7157,6 +7160,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
   enum tree_code innermost_code = ERROR_MARK;
   int bitfield = 0;
   int size_varies = 0;
+  tree decl_machine_attr = NULL_TREE;
   /* Set this to error_mark_node for FIELD_DECLs we could not handle properly.
      All FIELD_DECLs we build here have `init' put into their DECL_INITIAL.  */
   tree init = NULL_TREE;
@@ -7530,6 +7534,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	  else
 	    {
 	      type = TREE_TYPE (t);
+	      decl_machine_attr = DECL_MACHINE_ATTRIBUTES (id);
 	      typedef_decl = t;
 	    }
 	}
@@ -9001,6 +9006,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	    decl = grokfndecl (ctype, type, declarator,
 			       virtualp, flags, quals,
 			       raises, friendp ? -1 : 0, publicp);
+	    decl = build_decl_attribute_variant (decl, decl_machine_attr);
 	    if (decl == NULL_TREE)
 	      return NULL_TREE;
 
