@@ -138,7 +138,7 @@ while(<$inf>) {
 	# Ignore @end foo, where foo is not an operation which may
 	# cause us to skip, if we are presently skipping.
 	my $ended = $1;
-	next if $skipping && $ended !~ /^(?:ifset|ifclear|ignore|menu|iftex)$/;
+	next if $skipping && $ended !~ /^(?:ifset|ifclear|ignore|menu|iftex|copying)$/;
 
 	die "\@end $ended without \@$ended at line $.\n" unless defined $endw;
 	die "\@$endw ended by \@end $ended at line $.\n" unless $ended eq $endw;
@@ -178,7 +178,7 @@ while(<$inf>) {
 	next;
     };
 
-    /^\@(ignore|menu|iftex)\b/ and do {
+    /^\@(ignore|menu|iftex|copying)\b/ and do {
 	push @endwstack, $endw;
 	push @skstack, $skipping;
 	$endw = $1;
