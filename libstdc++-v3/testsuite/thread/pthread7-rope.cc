@@ -107,7 +107,6 @@ main()
 	pthread_join (tid[i], NULL);
     }
 
-  // Nothing says the data will be trashed at this point...
   VERIFY( !std::strcmp (data, "barbazbongle") );
   VERIFY( !std::strcmp (data2, "bar2baz2bongle2") );
 
