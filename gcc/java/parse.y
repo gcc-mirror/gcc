@@ -69,6 +69,171 @@ definitions and other extensions.  */
 #include "zipfile.h"
 #include "convert.h"
 
+/* Local function prototypes */
+static char *java_accstring_lookup PROTO ((int));
+static void  classitf_redefinition_error PROTO ((char *,tree, tree, tree));
+static void  variable_redefinition_error PROTO ((tree, tree, tree, int));
+static void  check_modifiers PROTO ((char *, int, int));
+static tree  create_class PROTO ((int, tree, tree, tree));
+static tree  create_interface PROTO ((int, tree, tree));
+static tree  find_field PROTO ((tree, tree));
+static tree lookup_field_wrapper PROTO ((tree, tree));
+static int   duplicate_declaration_error_p PROTO ((tree, tree, tree));
+static void  register_fields PROTO ((int, tree, tree));
+static tree parser_qualified_classname PROTO ((tree));
+static int  parser_check_super PROTO ((tree, tree, tree));
+static int  parser_check_super_interface PROTO ((tree, tree, tree));
+static void check_modifiers_consistency PROTO ((int));
+static tree lookup_cl PROTO ((tree));
+static tree lookup_java_method2 PROTO ((tree, tree, int));
+static tree method_header PROTO ((int, tree, tree, tree));
+static void fix_method_argument_names PROTO ((tree ,tree));
+static tree method_declarator PROTO ((tree, tree));
+static void parse_warning_context VPROTO ((tree cl, char *msg, ...));
+static void issue_warning_error_from_context PROTO ((tree, char *msg, va_list));
+static tree parse_jdk1_1_error PROTO ((char *));
+static void complete_class_report_errors PROTO ((jdep *));
+static int process_imports PROTO ((void));
+static void read_import_dir PROTO ((tree));
+static int find_in_imports_on_demand PROTO ((tree));
+static int find_in_imports PROTO ((tree));
+static int check_pkg_class_access PROTO ((tree, tree));
+static tree resolve_package PROTO ((tree, tree *));
+static tree lookup_package_type PROTO ((char *, int));
+static tree resolve_class PROTO ((tree, tree, tree));
+static tree do_resolve_class PROTO ((tree, tree, tree));
+static void declare_local_variables PROTO ((int, tree, tree));
+static void source_start_java_method PROTO ((tree));
+static void source_end_java_method PROTO ((void));
+static void expand_start_java_method PROTO ((tree));
+static tree find_name_in_single_imports PROTO ((tree));
+static void check_abstract_method_header PROTO ((tree));
+static tree lookup_java_interface_method2 PROTO ((tree, tree));
+static tree resolve_expression_name PROTO ((tree, tree *));
+static tree maybe_create_class_interface_decl PROTO ((tree, tree, tree));
+static int check_class_interface_creation PROTO ((int, int, tree, 
+						  tree, tree, tree));
+static tree patch_method_invocation PROTO ((tree, tree, tree, 
+					    int *, tree *, int));
+static int breakdown_qualified PROTO ((tree *, tree *, tree));
+static tree resolve_and_layout PROTO ((tree, tree));
+static tree resolve_no_layout PROTO ((tree, tree));
+static int invocation_mode PROTO ((tree, int));
+static tree find_applicable_accessible_methods_list PROTO ((int, tree, 
+							    tree, tree));
+static tree find_most_specific_methods_list PROTO ((tree));
+static int argument_types_convertible PROTO ((tree, tree));
+static tree patch_invoke PROTO ((tree, tree, tree, int));
+static tree lookup_method_invoke PROTO ((int, tree, tree, tree, tree));
+static tree register_incomplete_type PROTO ((int, tree, tree, tree));
+static tree obtain_incomplete_type PROTO ((tree));
+static tree java_complete_tree PROTO ((tree));
+static void java_complete_expand_method PROTO ((tree));
+static int  unresolved_type_p PROTO ((tree, tree *));
+static void create_jdep_list PROTO ((struct parser_ctxt *));
+static tree build_expr_block PROTO ((tree, tree));
+static tree enter_block PROTO ((void));
+static tree enter_a_block PROTO ((tree));
+static tree exit_block PROTO ((void));
+static tree lookup_name_in_blocks PROTO ((tree));
+static void maybe_absorb_scoping_blocks PROTO ((void));
+static tree build_method_invocation PROTO ((tree, tree));
+static tree build_new_invocation PROTO ((tree, tree));
+static tree build_assignment PROTO ((int, int, tree, tree));
+static tree build_binop PROTO ((enum tree_code, int, tree, tree));
+static int check_final_assignment PROTO ((tree ,tree));
+static tree patch_assignment PROTO ((tree, tree, tree ));
+static tree patch_binop PROTO ((tree, tree, tree));
+static tree build_unaryop PROTO ((int, int, tree));
+static tree build_incdec PROTO ((int, int, tree, int));
+static tree patch_unaryop PROTO ((tree, tree));
+static tree build_cast PROTO ((int, tree, tree));
+static tree build_null_of_type PROTO ((tree));
+static tree patch_cast PROTO ((tree, tree));
+static int valid_ref_assignconv_cast_p PROTO ((tree, tree, int));
+static int valid_builtin_assignconv_identity_widening_p PROTO ((tree, tree));
+static int valid_cast_to_p PROTO ((tree, tree));
+static int valid_method_invocation_conversion_p PROTO ((tree, tree));
+static tree try_builtin_assignconv PROTO ((tree, tree, tree));
+static tree try_reference_assignconv PROTO ((tree, tree));
+static tree build_unresolved_array_type PROTO ((tree));
+static tree build_array_from_name PROTO ((tree, tree, tree, tree *));
+static tree build_array_ref PROTO ((int, tree, tree));
+static tree patch_array_ref PROTO ((tree));
+static tree make_qualified_name PROTO ((tree, tree, int));
+static tree merge_qualified_name PROTO ((tree, tree));
+static tree make_qualified_primary PROTO ((tree, tree, int));
+static int resolve_qualified_expression_name PROTO ((tree, tree *, 
+						     tree *, tree *));
+static void qualify_ambiguous_name PROTO ((tree));
+static void maybe_generate_clinit PROTO ((void));
+static tree resolve_field_access PROTO ((tree, tree *, tree *));
+static tree build_newarray_node PROTO ((tree, tree, int));
+static tree patch_newarray PROTO ((tree));
+static tree resolve_type_during_patch PROTO ((tree));
+static tree build_this PROTO ((int));
+static tree build_return PROTO ((int, tree));
+static tree patch_return PROTO ((tree));
+static tree maybe_access_field PROTO ((tree, tree, tree));
+static int complete_function_arguments PROTO ((tree));
+static int check_for_static_method_reference PROTO ((tree, tree, tree, tree, tree));
+static int not_accessible_p PROTO ((tree, tree, int));
+static void check_deprecation PROTO ((tree, tree));
+static int class_in_current_package PROTO ((tree));
+static tree build_if_else_statement PROTO ((int, tree, tree, tree));
+static tree patch_if_else_statement PROTO ((tree));
+static tree add_stmt_to_compound PROTO ((tree, tree, tree));
+static tree add_stmt_to_block PROTO ((tree, tree, tree));
+static tree patch_exit_expr PROTO ((tree));
+static tree build_labeled_block PROTO ((int, tree));
+static tree generate_labeled_block PROTO (());
+static tree complete_labeled_statement PROTO ((tree, tree));
+static tree build_bc_statement PROTO ((int, int, tree));
+static tree patch_bc_statement PROTO ((tree));
+static tree patch_loop_statement PROTO ((tree));
+static tree build_new_loop PROTO ((tree));
+static tree build_loop_body PROTO ((int, tree, int));
+static tree complete_loop_body PROTO ((int, tree, tree, int));
+static tree build_debugable_stmt PROTO ((int, tree));
+static tree complete_for_loop PROTO ((int, tree, tree, tree));
+static tree patch_switch_statement PROTO ((tree));
+static tree string_constant_concatenation PROTO ((tree, tree));
+static tree build_string_concatenation PROTO ((tree, tree));
+static tree patch_string_cst PROTO ((tree));
+static tree patch_string PROTO ((tree));
+static tree build_jump_to_finally PROTO ((tree, tree, tree, tree));
+static tree build_try_statement PROTO ((int, tree, tree, tree));
+static tree patch_try_statement PROTO ((tree));
+static tree patch_synchronized_statement PROTO ((tree, tree));
+static tree patch_throw_statement PROTO ((tree, tree));
+static void check_thrown_exceptions PROTO ((int, tree));
+static int check_thrown_exceptions_do PROTO ((tree));
+static void purge_unchecked_exceptions PROTO ((tree));
+static void check_throws_clauses PROTO ((tree, tree, tree));
+static void complete_method_declaration PROTO ((tree));
+static tree build_super_invocation PROTO (());
+static int verify_constructor_circularity PROTO ((tree, tree));
+static char *constructor_circularity_msg PROTO ((tree, tree));
+static tree build_this_super_qualified_invocation PROTO ((int, tree, tree,
+							  int, int));
+static char *get_printable_method_name PROTO ((tree));
+static tree patch_conditional_expr PROTO ((tree, tree, tree));
+static void maybe_generate_finit PROTO (());
+static void fix_constructors PROTO ((tree));
+static int verify_constructor_super PROTO (());
+static tree create_artificial_method PROTO ((tree, int, tree, tree, tree));
+static void start_artificial_method_body PROTO ((tree));
+static void end_artificial_method_body PROTO ((tree));
+static tree generate_field_initialization_code PROTO ((tree));
+static int check_method_redefinition PROTO ((tree, tree));
+static int reset_method_name PROTO ((tree));
+static void java_check_regular_methods PROTO ((tree));
+static void java_check_abstract_methods PROTO ((tree));
+static tree maybe_build_primttype_type_ref PROTO ((tree, tree));
+static void unreachable_stmt_error PROTO ((tree));
+static tree find_expr_with_wfl PROTO ((tree));
+static void missing_return_error PROTO ((tree));
+
 /* Number of error found so far. */
 int java_error_count; 
 /* Number of warning found so far. */
@@ -2249,7 +2414,8 @@ issue_warning_error_from_context (cl, msg, ap)
   force_error = 1;
 
   ctxp->elc.line = EXPR_WFL_LINENO (cl);
-  ctxp->elc.col  = (EXPR_WFL_COLNO (cl) == 0xfff ? -1 : EXPR_WFL_COLNO (cl));
+  ctxp->elc.col  = (EXPR_WFL_COLNO (cl) == 0xfff ? -1 : 
+		    (EXPR_WFL_COLNO (cl) == 0xffe ? -2 : EXPR_WFL_COLNO (cl)));
 
   /* We have a CL, that's a good reason for using it if it contains data */
   saved = ctxp->filename;
@@ -2302,6 +2468,75 @@ parse_warning_context VPROTO ((tree cl, char *msg, ...))
   issue_warning_error_from_context (cl, msg, ap);
   do_warning = force_error = 0;
   va_end (ap);
+}
+
+static tree
+find_expr_with_wfl (node)
+     tree node;
+{
+  while (node)
+    {
+      char code;
+      tree to_return;
+
+      switch (TREE_CODE (node))
+	{
+	case BLOCK:
+	  return find_expr_with_wfl (BLOCK_EXPR_BODY (node));
+
+	case COMPOUND_EXPR:
+	  to_return = find_expr_with_wfl (TREE_OPERAND (node, 0));
+	  if (to_return)
+	    return to_return;
+	  to_return = find_expr_with_wfl (TREE_OPERAND (node, 1));
+	  return to_return;
+
+	case LOOP_EXPR:
+	  return find_expr_with_wfl (TREE_OPERAND (node, 0));
+	  
+	case LABELED_BLOCK_EXPR:
+	  return find_expr_with_wfl (TREE_OPERAND (node, 1));
+	default:
+	  code = TREE_CODE_CLASS (TREE_CODE (node));
+	  if (((code == '1') || (code == '2') || (code == 'e'))
+	      && EXPR_WFL_LINECOL (node))
+	    return node;
+	}
+    }
+  return NULL_TREE;
+}
+
+/* Issue a missing return statement error. Uses METHOD to figure the
+   last line of the method the error occurs in.  */
+
+static void
+missing_return_error (method)
+     tree method;
+{
+  EXPR_WFL_SET_LINECOL (wfl_operator, DECL_SOURCE_LINE_LAST (method), -2);
+  parse_error_context (wfl_operator, "Missing return statement");
+}
+
+/* Issue an unreachable statement error. From NODE, find the next
+   statement to report appropriately.  */
+static void
+unreachable_stmt_error (node)
+     tree node;
+{
+  /* Browse node to find the next expression node that has a WFL. Use
+     the location to report the error */
+  if (TREE_CODE (node) == COMPOUND_EXPR)
+    node = find_expr_with_wfl (TREE_OPERAND (node, 1));
+  else
+    node = find_expr_with_wfl (node);
+
+  if (node)
+    {
+      EXPR_WFL_SET_LINECOL (wfl_operator, EXPR_WFL_LINENO (node), -2);
+      parse_error_context (wfl_operator, "Unreachable statement");
+    }
+  else
+    fatal ("Can't get valid statement - unreachable_stmt_error");
 }
 
 int
@@ -4103,9 +4338,15 @@ java_get_real_method_name (method_decl)
   tree method_name = DECL_NAME (method_decl);
   if (DECL_CONSTRUCTOR_P (method_decl))
     return init_identifier_node;
+
+  /* Explain here why METHOD_DECL doesn't have the DECL_CONSTRUCTUR_P
+     and still can be a constructor. FIXME */
+
   /* Don't confuse method only bearing the name of their class as
      constructors */
-  else if (ctxp && ctxp->current_parsed_class_un == EXPR_WFL_NODE (method_name)
+  else if (!CLASS_FROM_SOURCE_P (DECL_CONTEXT (method_decl))
+	   && ctxp
+	   && ctxp->current_parsed_class_un == EXPR_WFL_NODE (method_name)
 	   && get_access_flags_from_decl (method_decl) <= ACC_PROTECTED
 	   && TREE_TYPE (TREE_TYPE (method_decl)) == void_type_node)
     return init_identifier_node;
@@ -5382,9 +5623,7 @@ java_complete_expand_method (mdecl)
 
       if ((block_body == NULL_TREE || CAN_COMPLETE_NORMALLY (block_body))
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (mdecl))) != VOID_TYPE)
-	{
-	  parse_error_context (fbody, "Missing return statement");
-	}
+	missing_return_error (current_function_decl);
       
       /* Don't go any further if we've found error(s) during the
          expansion */
@@ -6669,7 +6908,7 @@ invocation_mode (method, super)
   if (super)
     return INVOKE_SUPER;
 
-  if (access & ACC_STATIC || access & ACC_FINAL)
+  if (access & ACC_STATIC || access & ACC_FINAL || access & ACC_PRIVATE)
     return INVOKE_STATIC;
 
   if (CLASS_FINAL (TYPE_NAME (DECL_CONTEXT (method))))
@@ -7172,11 +7411,7 @@ java_complete_tree (node)
 		    }
 		  if (TREE_CODE (wfl_op2) != CASE_EXPR
 		      && TREE_CODE (wfl_op2) != DEFAULT_EXPR)
-		    {
-		      SET_WFL_OPERATOR (wfl_operator, *ptr, wfl_op2);
-		      parse_error_context (wfl_operator, 
-					   "Unreachable statement");
-		    }
+		    unreachable_stmt_error (*ptr);
 		}
 	      ptr = next;
 	    }

@@ -1315,11 +1315,14 @@ java_get_line_col (filename, line, col)
   /* Dumb implementation. Doesn't try to cache or optimize things. */
   /* First line of the file is line 1, first column is 1 */
 
-  /* COL <= 0 means, at the CR/LF in LINE */
+  /* COL == -1 means, at the CR/LF in LINE */
+  /* COL == -2 means, at the first non space char in LINE */
 
   FILE *fp;
   int c, ccol, cline = 1;
   int current_line_col = 0;
+  int first_non_space = 0;
+  char *base;
 
   if (!(fp = fopen (filename, "r")))
     fatal ("Can't open file - java_display_line_col");
@@ -1343,6 +1346,8 @@ java_get_line_col (filename, line, col)
       c = getc (fp);
       if (c < 0 || java_is_eol (fp, c))
 	break;
+      if (!first_non_space && !JAVA_WHITE_SPACE_P (c))
+	first_non_space = current_line_col;
       obstack_1grow (&temporary_obstack, c);
       current_line_col++;
     }
@@ -1350,12 +1355,25 @@ java_get_line_col (filename, line, col)
 
   obstack_1grow (&temporary_obstack, '\n');
 
-  if (col < 0)
-    col = current_line_col;
+  if (col == -1)
+    {
+      col = current_line_col;
+      first_non_space = 0;
+    }
+  else if (col == -2)
+    col = first_non_space;
+  else
+    first_non_space = 0;
 
   /* Place the '^' a the right position */
+  base = obstack_base (&temporary_obstack);
   for (ccol = 1; ccol <= col; ccol++)
-    obstack_1grow (&temporary_obstack, ' ');
+    {
+      /* Compute \t when reaching first_non_space */
+      char c = (first_non_space ?
+		(base [ccol-1] == '\t' ? '\t' : ' ') : ' ');
+      obstack_1grow (&temporary_obstack, c);
+    }
   obstack_grow0 (&temporary_obstack, "^", 1);
 
   fclose (fp);

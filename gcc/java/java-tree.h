@@ -561,6 +561,7 @@ extern char *print_int_node PROTO ((tree));
 extern void parse_error_context VPROTO ((tree cl, char *msg, ...));
 extern tree build_primtype_type_ref PROTO ((char *));
 extern tree java_get_real_method_name PROTO ((tree));
+extern void finish_class PROTO ((tree));
 
 /* Access flags etc for a method (a FUNCTION_DECL): */
 
