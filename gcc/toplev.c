@@ -4955,7 +4955,6 @@ parse_options_and_default_flags (argc, argv)
       flag_cse_skip_blocks = 1;
       flag_gcse = 1;
       flag_expensive_optimizations = 1;
-      flag_unit_at_a_time = 1;
       flag_strength_reduce = 1;
       flag_rerun_cse_after_loop = 1;
       flag_rerun_loop_opt = 1;

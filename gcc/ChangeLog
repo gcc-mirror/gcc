@@ -1,3 +1,7 @@
+Fri Feb 21 10:29:52 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (parse_options_and_default_flags): Undo accidental commit.
+
 2003-02-21  Glen Nakamura  <glen@imodulo.com>
 
 	PR optimization/8613
