@@ -1,3 +1,14 @@
+2000-05-14  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/fixfixes.c(wrap_fix): new fix - inserts text before
+	and/or after current text of file
+	* fixinc/fixlib.c(must_malloc):
+	* fixinc/fixlib.h(must_malloc): + reformatting
+	* fixinc/inclhack.def: replace the "1i" and "$a" sed commands
+	with usages of ``c_fix = wrap;''
+	* fixinc/fixincl.x: regen
+	* fixinc/check.diff: regen
+
 Sun May 14 17:58:59 2000  Hans-Peter Nilsson  <hp@axis.com>
 
 	* mklibgcc.in (building libgcc1) [Xlibgcc1.a]: Do not use unset

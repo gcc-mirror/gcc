@@ -138,14 +138,14 @@ typedef struct patch_desc tPatchDesc;
 typedef struct fix_desc tFixDesc;
 struct fix_desc
 {
-  const char*   fix_name;       /* Name of the fix */
-  const char*   file_list;      /* List of files it applies to */
-  const char**  papz_machs;     /* List of machine/os-es it applies to */
-  int           test_ct;
-  int           fd_flags;
-  tTestDesc*    p_test_desc;
-  const char**  patch_args;
-  long          unused;
+  tCC*        fix_name;       /* Name of the fix */
+  tCC*        file_list;      /* List of files it applies to */
+  tCC**       papz_machs;     /* List of machine/os-es it applies to */
+  int         test_ct;
+  int         fd_flags;
+  tTestDesc*  p_test_desc;
+  tCC**       patch_args;
+  long        unused;
 };
 
 /*
@@ -155,6 +155,7 @@ char * load_file_data _P_(( FILE* fp ));
 t_bool is_cxx_header  _P_(( tCC* filename, tCC* filetext ));
 void   compile_re     _P_(( tCC* pat, regex_t* re, int match,
 			    tCC *e1, tCC *e2 ));
+void*  must_malloc    _P_(( size_t ));
 
 void apply_fix _P_(( tFixDesc* p_fixd, tCC* filname ));
 apply_fix_p_t run_test _P_((tCC* t_name, tCC* f_name, tCC* text ));

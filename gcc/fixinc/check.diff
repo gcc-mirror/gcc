@@ -85,14 +85,30 @@
 --- res/assert.h
 ***************
 *** 1,3 ****
---- 1,7 ----
+--- 1,13 ----
++ #ifndef FIXINC_BROKEN_ASSERT_STDLIB_CHECK
++ #define FIXINC_BROKEN_ASSERT_STDLIB_CHECK 1
++ 
 + #ifdef __cplusplus
 + #include <stdlib.h>
-+ #endif /* BROKEN_ASSERT_STDLIB_CHECK fix stamp */
++ #endif
++ #ifndef FIXINC_BROKEN_ASSERT_STDIO_CHECK
++ #define FIXINC_BROKEN_ASSERT_STDIO_CHECK 1
++ 
 + #include <stdio.h>
   
   
   #ifndef BROKEN_ASSERT_STDIO_CHECK
+***************
+*** 8,10 ****
+--- 18,24 ----
+  #ifndef BROKEN_ASSERT_STDLIB_CHECK
+  extern void exit ( int );
+  #endif  /* BROKEN_ASSERT_STDLIB_CHECK */
++ 
++ #endif  /* FIXINC_BROKEN_ASSERT_STDIO_CHECK */
++ 
++ #endif  /* FIXINC_BROKEN_ASSERT_STDLIB_CHECK */
 *** inc/c_asm.h
 --- res/c_asm.h
 ***************
@@ -140,10 +156,28 @@
   #ifndef BAD_STRUCT_TERM_CHECK
 ! struct term;
   #endif  /* BAD_STRUCT_TERM_CHECK */
+*** inc/libgen.h
+--- res/libgen.h
+***************
+*** 2,7 ****
+  
+  #ifndef BAD_LVAL_CHECK
+  #pragma extern_prefix "_FOO"
+! #define something(x,y,z) _FOOsomething(x,y,z)
+  #define mumble _FOOmumble
+  #endif  /* BAD_LVAL_CHECK */
+--- 2,7 ----
+  
+  #ifndef BAD_LVAL_CHECK
+  #pragma extern_prefix "_FOO"
+! #define something _FOOsomething
+  #define mumble _FOOmumble
+  #endif  /* BAD_LVAL_CHECK */
 *** inc/math.h
 --- res/math.h
 ***************
-*** 2,9 ****
+*** 1,10 ****
+  
   
   #ifndef BROKEN_CABS_CHECK
   #ifdef __STDC__
@@ -152,7 +186,33 @@
 - extern double cabs();
   #endif
   #endif  /* BROKEN_CABS_CHECK */
---- 2,7 ----
+  
+--- 1,14 ----
++ #ifndef FIXINC_MATH_EXCEPTION_CHECK
++ #define FIXINC_MATH_EXCEPTION_CHECK 1
++ 
++ #ifdef __cplusplus
++ #define exception __math_exception
++ #endif
+  
+  
+  #ifndef BROKEN_CABS_CHECK
+  #ifdef __STDC__
+  #else
+  #endif
+  #endif  /* BROKEN_CABS_CHECK */
+  
+***************
+*** 12,14 ****
+--- 16,23 ----
+  #ifndef MATH_EXCEPTION_CHECK
+  typedef struct exception t_math_exception;
+  #endif  /* MATH_EXCEPTION_CHECK */
++ #ifdef __cplusplus
++ #undef exception
++ #endif
++ 
++ #endif  /* FIXINC_MATH_EXCEPTION_CHECK */
 *** inc/stdio.h
 --- res/stdio.h
 ***************
@@ -169,7 +229,10 @@
   int foo;
   #endif
   #endif  /* ISC_OMITS_WITH_STDC_CHECK */
---- 1,14 ----
+--- 1,17 ----
++ #ifndef FIXINC_STDIO_STDARG_H_CHECK
++ #define FIXINC_STDIO_STDARG_H_CHECK 1
++ 
 + #define __need___va_list
 + #include <stdarg.h>
   
@@ -184,6 +247,14 @@
   int foo;
   #endif
   #endif  /* ISC_OMITS_WITH_STDC_CHECK */
+***************
+*** 15,17 ****
+--- 20,24 ----
+  #ifndef STDIO_STDARG_H_CHECK
+  
+  #endif  /* STDIO_STDARG_H_CHECK */
++ 
++ #endif  /* FIXINC_STDIO_STDARG_H_CHECK */
 *** inc/stdlib.h
 --- res/stdlib.h
 ***************
@@ -275,11 +346,13 @@
 --- res/sys/mman.h
 ***************
 *** 1,5 ****
---- 1,12 ----
+--- 1,16 ----
++ #ifndef FIXINC_CXX_UNREADY_CHECK
++ #define FIXINC_CXX_UNREADY_CHECK 1
++ 
 + #ifdef __cplusplus
 + extern "C" {
-+ #endif /* CXX_UNREADY_CHECK */
-+ 
++ #endif
   
   
   #ifndef CXX_UNREADY_CHECK
@@ -287,7 +360,9 @@
   #endif  /* CXX_UNREADY_CHECK */
 + #ifdef __cplusplus
 + }
-+ #endif /* CXX_UNREADY_CHECK */
++ #endif
++ 
++ #endif  /* FIXINC_CXX_UNREADY_CHECK */
 *** inc/sys/param.h
 --- res/sys/param.h
 ***************
