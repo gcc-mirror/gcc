@@ -715,24 +715,6 @@ verify_ssa (void)
 	    }
 	}
 
-      /* Verify the uses in arguments of PHI nodes at the exits from the
-	 block.  */
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	{
-	  for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
-	    {
-	      bool virtual = !is_gimple_reg (PHI_RESULT (phi));
-	      op = PHI_ARG_DEF_FROM_EDGE (phi, e);
-	      if (TREE_CODE (op) != SSA_NAME)
-		continue;
-
-	      if (verify_use (bb, definition_block[SSA_NAME_VERSION (op)],
-			      op, phi, false, virtual,
-			      names_defined_in_bb))
-		goto err;
-	    }
-	}
-
       bitmap_clear (names_defined_in_bb);
     }
 
