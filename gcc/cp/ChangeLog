@@ -1,4 +1,19 @@
-2000-12-20  Jason Merrill  <jason@redhat.com>
+2000-12-22  Jason Merrill  <jason@redhat.com>
+
+	In partial ordering for a call, ignore parms for which we don't have
+	a real argument.
+	* call.c (joust): Pass len to more_specialized.
+	(add_template_candidate_real): Strip 'this', pass len.
+	* pt.c (more_specialized): Pass len down.  Lose explicit_args parm.
+	(get_bindings_order): New fn.  Pass len down.
+	(get_bindings_real): Strip 'this', pass len.
+	(fn_type_unification): Likewise.
+	(type_unification_real): Succeed after checking 'len' args.
+	(most_specialized_instantiation): Lose explicit_args parm.
+	* class.c (resolve_address_of_overloaded_function): Strip 'this', 
+	pass len.
+
+2000-12-21  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst_decl): A FUNCTION_DECL has DECL_RESULT, not
 	DECL_TEMPLATE_RESULT.

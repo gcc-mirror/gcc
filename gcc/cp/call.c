@@ -2147,26 +2147,24 @@ add_template_candidate_real (candidates, tmpl, ctype, explicit_targs,
 {
   int ntparms = DECL_NTPARMS (tmpl);
   tree targs = make_tree_vec (ntparms);
-  tree args_without_in_chrg;
+  tree args_without_in_chrg = arglist;
   struct z_candidate *cand;
   int i;
   tree fn;
 
-  /* TEMPLATE_DECLs do not have the in-charge parameter, nor the VTT
-     parameter.  So, skip it here before attempting to perform
-     argument deduction.  */
+  /* We don't do deduction on the in-charge parameter, the VTT
+     parameter or 'this'.  */
+  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (tmpl))
+    args_without_in_chrg = TREE_CHAIN (args_without_in_chrg);
+
   if ((DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (tmpl)
        || DECL_BASE_CONSTRUCTOR_P (tmpl))
       && TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (tmpl)))
-    args_without_in_chrg = tree_cons (NULL_TREE, 
-				      TREE_VALUE (arglist),
-				      TREE_CHAIN (TREE_CHAIN (arglist)));
-  else
-    args_without_in_chrg = arglist;
+    args_without_in_chrg = TREE_CHAIN (args_without_in_chrg);
 
   i = fn_type_unification (tmpl, explicit_targs, targs,
 			   args_without_in_chrg,
-			   return_type, strict);
+			   return_type, strict, -1);
 
   if (i != 0)
     return candidates;
@@ -5156,7 +5154,8 @@ joust (cand1, cand2, warn)
   else if (cand1->template && cand2->template)
     winner = more_specialized
       (TI_TEMPLATE (cand1->template), TI_TEMPLATE (cand2->template),
-       NULL_TREE);
+       /* Never do unification on the 'this' parameter.  */
+       TREE_VEC_LENGTH (cand1->convs) - !DECL_STATIC_FUNCTION_P (cand1->fn));
 
   /* or, if not that,
      the  context  is  an  initialization by user-defined conversion (see

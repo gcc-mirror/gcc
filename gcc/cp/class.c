@@ -5953,6 +5953,10 @@ resolve_address_of_overloaded_function (target_type,
 	target_fn_type = TREE_TYPE (target_type);
       target_arg_types = TYPE_ARG_TYPES (target_fn_type);
       target_ret_type = TREE_TYPE (target_fn_type);
+
+      /* Never do unification on the 'this' parameter.  */
+      if (TREE_CODE (target_fn_type) == METHOD_TYPE)
+	target_arg_types = TREE_CHAIN (target_arg_types);
 	  
       for (fns = overload; fns; fns = OVL_CHAIN (fns))
 	{
@@ -5975,7 +5979,7 @@ resolve_address_of_overloaded_function (target_type,
 	  targs = make_tree_vec (DECL_NTPARMS (fn));
 	  if (fn_type_unification (fn, explicit_targs, targs,
 				   target_arg_types, target_ret_type,
-				   DEDUCE_EXACT) != 0)
+				   DEDUCE_EXACT, -1) != 0)
 	    /* Argument deduction failed.  */
 	    continue;
 
@@ -5999,8 +6003,7 @@ resolve_address_of_overloaded_function (target_type,
       /* Now, remove all but the most specialized of the matches.  */
       if (matches)
 	{
-	  tree match = most_specialized_instantiation (matches, 
-						       explicit_targs);
+	  tree match = most_specialized_instantiation (matches);
 
 	  if (match != error_mark_node)
 	    matches = tree_cons (match, NULL_TREE, NULL_TREE);
