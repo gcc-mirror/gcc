@@ -244,7 +244,8 @@ _cpp_handle_directive (pfile)
 	 assembler pseudo-ops.  Don't complain about invalid directives
 	 in skipped conditional groups (6.10 p4). */
       if (!pfile->skipping && !CPP_OPTION (pfile, lang_asm))
-	cpp_error (pfile, "invalid preprocessing directive #%s", ident);
+	cpp_error (pfile, "invalid preprocessing directive #%.*s",
+		   (int) len, ident);
       return 0;
     }
   /* And anything else means the # wasn't a directive marker.   */
