@@ -1,5 +1,9 @@
 2004-05-31  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/15701
+	* friend.c (add_friend): Do not try to perform access checks for
+	functions from dependent classes.
+
 	PR c++/15742
 	* call.c (build_over_call): Set
 	current_function_returns_abnormally even in template functions.
