@@ -9,10 +9,6 @@
 	PR c/9506
 	* i386.c (override_options): Use DEFAULT_PCC_STRUCT_RETURN.
 
-2003-01-31  Loren J. Rittle <ljrittle@acm.org>
-
-	* gcc.dg/struct-ret-libc.c: New test.
-
 2003-01-30  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.md (tablejump+2): Don't sign extend an address
