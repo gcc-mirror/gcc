@@ -616,6 +616,8 @@ push_reload (in, out, inloc, outloc, class,
      really reload just the inside expression in its own mode.
      If we have (SUBREG:M1 (REG:M2 ...) ...) with M1 wider than M2 and the
      register is a pseudo, this will become the same as the above case.
+     For machines that extend byte loads, do this for any SUBREG of a pseudo
+     where both M1 and M2 are a word or smaller.
      Similar issue for (SUBREG:M1 (REG:M2 ...) ...) for a hard register R where
      either M1 is not valid for R or M2 is wider than a word but we only
      need one word to store an M2-sized quantity in R.
@@ -636,20 +638,28 @@ push_reload (in, out, inloc, outloc, class,
 	  || strict_low
 	  || (GET_CODE (SUBREG_REG (in)) == REG
 	      && REGNO (SUBREG_REG (in)) >= FIRST_PSEUDO_REGISTER
+#if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
+	      && GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
+	      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))) <= UNITS_PER_WORD
+#else
 	      && (GET_MODE_SIZE (inmode)
-		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))))
+		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))))
+#endif
+	      )
 	  || (REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
 	      /* The case where out is nonzero
 		 is handled differently in the following statement.  */
 	      && (out == 0 || SUBREG_WORD (in) == 0)
-	      && (! HARD_REGNO_MODE_OK (REGNO (SUBREG_REG (in)), inmode)
-		  || (GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
-		      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
-			  > UNITS_PER_WORD)
-		      && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
-			   / UNITS_PER_WORD)
-			  != HARD_REGNO_NREGS (REGNO (SUBREG_REG (in)),
-					       GET_MODE (SUBREG_REG (in)))))))
+	      && ((GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
+		   && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
+		       > UNITS_PER_WORD)
+		   && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
+			/ UNITS_PER_WORD)
+		       != HARD_REGNO_NREGS (REGNO (SUBREG_REG (in)),
+					    GET_MODE (SUBREG_REG (in)))))
+		  || ! HARD_REGNO_MODE_OK ((REGNO (SUBREG_REG (in))
+					    + SUBREG_WORD (in)),
+					   inmode)))
 #ifdef SECONDARY_INPUT_RELOAD_CLASS
 	  || (SECONDARY_INPUT_RELOAD_CLASS (class, inmode, in) != NO_REGS
 	      && (SECONDARY_INPUT_RELOAD_CLASS (class,
@@ -707,18 +717,26 @@ push_reload (in, out, inloc, outloc, class,
 	  || strict_low
 	  || (GET_CODE (SUBREG_REG (out)) == REG
 	      && REGNO (SUBREG_REG (out)) >= FIRST_PSEUDO_REGISTER
+#if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
+	      && GET_MODE_SIZE (outmode) <= UNITS_PER_WORD
+	      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))) <= UNITS_PER_WORD
+#else
 	      && (GET_MODE_SIZE (outmode)
-		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))))
+		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))))
+#endif
+	      )
 	  || (GET_CODE (SUBREG_REG (out)) == REG
 	      && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER
-	      && (! HARD_REGNO_MODE_OK (REGNO (SUBREG_REG (out)), outmode)
-		  || (GET_MODE_SIZE (outmode) <= UNITS_PER_WORD
-		      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))
-			  > UNITS_PER_WORD)
-		      && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))
-			   / UNITS_PER_WORD)
-			  != HARD_REGNO_NREGS (REGNO (SUBREG_REG (out)),
-					       GET_MODE (SUBREG_REG (out)))))))
+	      && ((GET_MODE_SIZE (outmode) <= UNITS_PER_WORD
+		   && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))
+		       > UNITS_PER_WORD)
+		   && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))
+			/ UNITS_PER_WORD)
+		       != HARD_REGNO_NREGS (REGNO (SUBREG_REG (out)),
+					    GET_MODE (SUBREG_REG (out)))))
+		  || ! HARD_REGNO_MODE_OK ((REGNO (SUBREG_REG (out))
+					    + SUBREG_WORD (out)),
+					   outmode)))
 #ifdef SECONDARY_OUTPUT_RELOAD_CLASS
 	  || (SECONDARY_OUTPUT_RELOAD_CLASS (class, outmode, out) != NO_REGS
 	      && (SECONDARY_OUTPUT_RELOAD_CLASS (class,
@@ -2526,30 +2544,30 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		 be a problem accessing the register in the outer mode.  */
 	      if (GET_CODE (operand) != REG
 #if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
-		  /* ??? The comment below clearly does not match the code.
-		     What the code below actually does is set force_reload
-		     for a paradoxical subreg of a pseudo.  rms and kenner
-		     can't see the point of doing this.  */
-		  /* Nonparadoxical subreg of a pseudoreg.
-		     Don't to load the full width if on this machine
-		     we expected the fetch to extend.  */
-		  || ((GET_MODE_SIZE (operand_mode[i])
-		       > GET_MODE_SIZE (GET_MODE (operand)))
-		      && REGNO (operand) >= FIRST_PSEUDO_REGISTER)
+		  /* If we have a SUBREG where both the inner and outer
+		     modes are different but no wider than a word, combine.c
+		     has made assumptions about the behavior of the machine
+		     in such register access.  If the data is, in fact, in
+		     memory we must always load using the size assumed to
+		     be in the register and let the insn do the different-sized
+		     accesses.  */
+		  || (REGNO (operand) >= FIRST_PSEUDO_REGISTER
+		      && GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
+		      && GET_MODE_SIZE (GET_MODE (operand)) <= UNITS_PER_WORD)
 #endif
 		  /* Subreg of a hard reg which can't handle the subreg's mode
 		     or which would handle that mode in the wrong number of
 		     registers for subregging to work.  */
 		  || (REGNO (operand) < FIRST_PSEUDO_REGISTER
-		      && (! HARD_REGNO_MODE_OK (REGNO (operand),
-						operand_mode[i])
-			  || (GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
-			      && (GET_MODE_SIZE (GET_MODE (operand))
-				  > UNITS_PER_WORD)
-			      && ((GET_MODE_SIZE (GET_MODE (operand))
-				   / UNITS_PER_WORD)
-				  != HARD_REGNO_NREGS (REGNO (operand),
-						       GET_MODE (operand)))))))
+		      && ((GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
+			   && (GET_MODE_SIZE (GET_MODE (operand))
+			       > UNITS_PER_WORD)
+			   && ((GET_MODE_SIZE (GET_MODE (operand))
+				/ UNITS_PER_WORD)
+			       != HARD_REGNO_NREGS (REGNO (operand),
+						    GET_MODE (operand))))
+			  || ! HARD_REGNO_MODE_OK (REGNO (operand) + offset,
+						   operand_mode[i]))))
 		force_reload = 1;
 	    }
 
