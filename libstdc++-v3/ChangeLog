@@ -1,3 +1,9 @@
+2003-03-17  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* libsupc++/Makefile.am (C_COMPILE): Remove.
+	(LTCOMPILE): Likewise.
+	* libsupc++/Makefile.in: Regenerate.
+
 2003-03-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/23_containers/bitset_members.cc: Add test variable.	

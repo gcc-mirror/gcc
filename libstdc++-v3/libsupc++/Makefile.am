@@ -102,18 +102,6 @@ libsupc__convenience_la_SOURCES = $(sources)
 glibcppinstalldir = $(gxx_include_dir)
 glibcppinstall_HEADERS = $(headers)
 
-# Use special rules for pulling things out of libiberty.  These
-# objects should be compiled with the "C" compiler, not the C++
-# compiler, and also should not use the C++ includes.
-C_COMPILE = \
-	$(CC) $(DEFS) $(GCC_INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-
-# LTCOMPILE is copied from LTCXXCOMPILE below.
-LTCOMPILE = $(LIBTOOL) --tag CC --tag disable-shared --mode=compile $(CC) \
-	    $(DEFS) $(GCC_INCLUDES) $(LIBSUPCXX_PICFLAGS) \
-            $(AM_CPPFLAGS) $(CPPFLAGS) 
-
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
 # set this option because CONFIG_CXXFLAGS has to be after
