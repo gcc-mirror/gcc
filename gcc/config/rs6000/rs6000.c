@@ -4726,6 +4726,7 @@ output_toc (file, x, labelno)
 
       REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
       REAL_VALUE_TO_TARGET_DOUBLE (rv, k);
+
       if (TARGET_64BIT)
 	{
 	  if (TARGET_MINIMAL_TOC)
@@ -4738,9 +4739,9 @@ output_toc (file, x, labelno)
       else
 	{
 	  if (TARGET_MINIMAL_TOC)
-	    fprintf (file, "\t.long %ld\n\t.long %ld\n", k[0], k[1]);
+	    fprintf (file, "\t.long 0x%lx\n\t.long 0x%lx\n", k[0], k[1]);
 	  else
-	    fprintf (file, "\t.tc FD_%lx_%lx[TC],%ld,%ld\n",
+	    fprintf (file, "\t.tc FD_%lx_%lx[TC],0x%lx,0x%lx\n",
 		     k[0], k[1], k[0], k[1]);
 	  return;
 	}
@@ -4754,11 +4755,22 @@ output_toc (file, x, labelno)
       REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
       REAL_VALUE_TO_TARGET_SINGLE (rv, l);
 
-      if (TARGET_MINIMAL_TOC)
-	fprintf (file, TARGET_32BIT ? "\t.long %ld\n" : "\t.llong %ld\n", l);
+      if (TARGET_64BIT)
+	{
+	  if (TARGET_MINIMAL_TOC)
+	    fprintf (file, "\t.llong 0x%lx00000000\n", l);
+	  else
+	    fprintf (file, "\t.tc FS_%lx[TC],0x%lx00000000\n", l, l);
+	  return;
+	}
       else
-	fprintf (file, "\t.tc FS_%lx[TC],%ld\n", l, l);
-      return;
+	{
+	  if (TARGET_MINIMAL_TOC)
+	    fprintf (file, "\t.long 0x%lx\n", l);
+	  else
+	    fprintf (file, "\t.tc FS_%lx[TC],0x%lx\n", l, l);
+	  return;
+	}
     }
   else if (GET_MODE (x) == DImode
 	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
