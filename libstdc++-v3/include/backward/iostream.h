@@ -49,6 +49,7 @@ using std::wclog;
 
 using std::endl;
 using std::ends;
+using std::flush;
 
 #endif
 
