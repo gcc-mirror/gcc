@@ -532,8 +532,10 @@ freebsd* )
   if echo __ELF__ | $CC -E - | grep __ELF__ > /dev/null; then
     case "$host_cpu" in
     i*86 )
+      # Not sure whether the presence of OpenBSD here was a mistake.
+      # Let's accept both of them until this is cleared up.
       changequote(,)dnl
-      lt_cv_deplibs_check_method=='file_magic OpenBSD/i[3-9]86 demand paged shared library'
+      lt_cv_deplibs_check_method='file_magic (FreeBSD|OpenBSD)/i[3-9]86 (compact )?demand paged shared library'
       changequote([, ])dnl
       lt_cv_file_magic_cmd=/usr/bin/file
       lt_cv_file_magic_test_file=`echo /usr/lib/libc.so.*`
@@ -579,7 +581,7 @@ irix5* | irix6*)
   ;;
 
 # This must be Linux ELF.
-linux*)
+linux-gnu*)
   case "$host_cpu" in
   alpha* | i*86 | powerpc* | sparc* | ia64* )
     lt_cv_deplibs_check_method=pass_all ;;
@@ -655,7 +657,8 @@ else
       # Check to see if the nm accepts a BSD-compat flag.
       # Adding the `sed 1q' prevents false positives on HP-UX, which says:
       #   nm: unknown option "B" ignored
-      if ($tmp_nm -B /dev/null 2>&1 | sed '1q'; exit 0) | egrep /dev/null >/dev/null; then
+      # Tru64's nm complains that /dev/null is an invalid object file
+      if ($tmp_nm -B /dev/null 2>&1 | sed '1q'; exit 0) | egrep '(/dev/null|Invalid file or object type)' >/dev/null; then
 	ac_cv_path_NM="$tmp_nm -B"
 	break
       elif ($tmp_nm -p /dev/null 2>&1 | sed '1q'; exit 0) | egrep /dev/null >/dev/null; then
@@ -822,3 +825,9 @@ AC_DEFUN(AM_PROG_NM, [indir([AC_PROG_NM])])dnl
 
 dnl This is just to silence aclocal about the macro not being used
 ifelse([AC_DISABLE_FAST_INSTALL])dnl
+
+AC_DEFUN([LT_AC_PROG_GCJ],[
+  AC_CHECK_TOOL(GCJ, gcj, no)
+  test "x${GCJFLAGS+set}" = xset || GCJFLAGS="-g -O2"
+  AC_SUBST(GCJFLAGS)
+])
