@@ -209,7 +209,7 @@ EXPR_H = $(srcdir)/../expr.h ../insn-codes.h
 
 parse.o : $(PARSE_C) $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h \
 	$(srcdir)/../except.h $(srcdir)/../output.h $(srcdir)/../system.h \
-	$(srcdir)/../toplev.h
+	$(srcdir)/../toplev.h $(srcdir)/../ggc.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(BIG_SWITCHFLAG) \
   `echo $(PARSE_C) | sed 's,^\./,,'`
 
@@ -250,7 +250,8 @@ decl2.o : decl2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   lex.h decl.h $(EXPR_H) $(srcdir)/../except.h \
   $(srcdir)/../output.h $(srcdir)/../except.h $(srcdir)/../system.h \
   $(srcdir)/../toplev.h $(srcdir)/../dwarf2out.h $(srcdir)/../dwarfout.h \
-  $(srcdir)/../../include/splay-tree.h $(srcdir)/../varray.h
+  $(srcdir)/../../include/splay-tree.h $(srcdir)/../varray.h \
+  $(srcdir)/../ggc.h
 typeck2.o : typeck2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
 typeck.o : typeck.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
@@ -263,7 +264,7 @@ call.o : call.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
 friend.o : friend.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
 init.o : init.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
-  $(EXPR_H) $(srcdir)/../system.h $(srcdir)/../toplev.h 
+  $(EXPR_H) $(srcdir)/../system.h $(srcdir)/../toplev.h $(srcdir)/../ggc.h
 method.o : method.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h \
   $(srcdir)/../toplev.h
 cvt.o : cvt.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h decl.h \

@@ -1,3 +1,24 @@
+1999-09-05  Richard Henderson  <rth@cygnus.com>
+            Bernd Schmidt <bernds@cygnus.co.uk>
+            Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (parse.o): Depend on ggc.h.
+	(decl2.o): Depend on ggc.h.
+	(init.o): Depend on ggc.h.
+	* cp-tree.h (init_decl2): Declare.
+	(cp_parse_init): Likewise.
+	* decl.c (ggc_p): Define to zero.
+	(mark_saved_scope): New function.
+	(init_decl_processing): Call cp_parse_init, and cp_decl2.
+	Register GC roots.
+	(expand_static_init): Add GC roots.
+	* decl2.c: Include ggc.h.
+	(init_decl2): New function.
+	* init.c: Include ggc.h.
+	(init_init_processing): Add GC roots.
+	* parse.y: Include ggc.h.
+	(cp_parse_init): New function.
+	
 1999-09-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (init_decl_processing): Set mark_lang_status.

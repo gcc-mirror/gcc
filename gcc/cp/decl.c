@@ -60,6 +60,10 @@ extern tree global_namespace;
 
 extern int (*valid_lang_attribute) PROTO ((tree, tree, tree, tree));
 
+/* Don't use garbage collection.  */
+
+int ggc_p = 0;
+
 /* Obstack used for remembering local class declarations (like
    enums and static (const) members.  */
 #include "stack.h"
@@ -2002,6 +2006,8 @@ wrapup_globals_for_namespace (namespace, data)
 }
 
 
+/* Mark ARG (which is really a struct binding_level **) for GC.  */
+
 static void
 mark_binding_level (arg)
      void *arg;
@@ -2446,6 +2452,36 @@ struct saved_scope {
   char *class_cache_firstobj;
 };
 static struct saved_scope *current_saved_scope;
+
+/* Mark ARG (which is really a struct saved_scoipe **) for GC.  */
+
+static void
+mark_saved_scope (arg)
+     void *arg;
+{
+  struct saved_scope *t = *(struct saved_scope **)arg;
+  while (t)
+    {
+      mark_binding_level (&t->old_binding_level);
+      mark_binding_level (&t->class_bindings);
+      ggc_mark_tree (t->old_bindings);
+      ggc_mark_tree (t->old_namespace);
+      ggc_mark_tree (t->class_name);
+      ggc_mark_tree (t->class_type);
+      ggc_mark_tree (t->access_specifier);
+      ggc_mark_tree (t->function_decl);
+      if (t->lang_base)
+	ggc_mark_tree (*t->lang_base);
+      if (t->lang_stack)
+	ggc_mark_tree (*t->lang_stack);
+      ggc_mark_tree (t->lang_name);
+      ggc_mark_tree (t->last_function_parms);
+      ggc_mark_tree (t->template_parms);
+      ggc_mark_tree (t->previous_class_type);
+      ggc_mark_tree (t->previous_class_values);
+      t = t->prev;
+    }
+}
 
 /* A chain of the binding vecs created by store_bindings.  We create a
    whole bunch of these during compilation, on permanent_obstack, so we
@@ -6207,6 +6243,9 @@ init_decl_processing ()
   restore_lang_status = &pop_cp_function_context;
   mark_lang_status = &mark_cp_function_context;
 
+  cp_parse_init ();
+  init_decl2 ();
+
   /* Create the global per-function variables.  */
   push_function_context_to (NULL_TREE);
 
@@ -6660,6 +6699,44 @@ init_decl_processing ()
      say -fwritable-strings?  */
   if (flag_writable_strings)
     flag_const_strings = 0;
+
+  /* Add GC roots for all of our global variables.  */
+  ggc_add_tree_root (c_global_trees, sizeof c_global_trees / sizeof(tree));
+  ggc_add_tree_root (cp_global_trees, sizeof cp_global_trees / sizeof(tree));
+  ggc_add_tree_root (&char_type_node, 1);
+  ggc_add_tree_root (&current_function_decl, 1);
+  ggc_add_tree_root (&error_mark_node, 1);
+  ggc_add_tree_root (&integer_type_node, 1);
+  ggc_add_tree_root (&integer_three_node, 1);
+  ggc_add_tree_root (&integer_two_node, 1);
+  ggc_add_tree_root (&integer_one_node, 1);
+  ggc_add_tree_root (&integer_zero_node, 1);
+  ggc_add_tree_root (&signed_size_zero_node, 1);
+  ggc_add_tree_root (&named_labels, 1);
+  ggc_add_tree_root (&null_pointer_node, 1);
+  ggc_add_tree_root (&size_one_node, 1);
+  ggc_add_tree_root (&size_zero_node, 1);
+  ggc_add_tree_root (&unsigned_type_node, 1);
+  ggc_add_tree_root (&void_type_node, 1);
+  ggc_add_root (&global_binding_level, 1, sizeof global_binding_level,
+		mark_binding_level);
+  ggc_add_root (&current_saved_scope, 1, sizeof current_saved_scope,
+		&mark_saved_scope);
+  ggc_add_tree_root (&static_ctors, 1);
+  ggc_add_tree_root (&static_dtors, 1);
+
+  ggc_add_tree_root (&enum_next_value, 1);
+  ggc_add_tree_root (&last_function_parms, 1);
+  ggc_add_tree_root (&last_function_parm_tags, 1);
+  ggc_add_tree_root (&current_function_return_value, 1);
+  ggc_add_tree_root (&current_function_parms, 1);
+  ggc_add_tree_root (&current_function_parm_tags, 1);
+  ggc_add_tree_root (&error_mark_list, 1);
+  ggc_add_tree_root (&void_list_node, 1);
+  ggc_add_tree_root (&global_namespace, 1);
+  ggc_add_tree_root (&current_namespace, 1);
+  ggc_add_tree_root (&global_type_node, 1);
+  ggc_add_tree_root (&anonymous_namespace_name, 1);
 }
 
 /* Function to print any language-specific context for an error message.  */
@@ -8252,6 +8329,9 @@ expand_static_init (decl, init)
 	  if (Atexit == 0)
 	    {
 	      tree atexit_fndecl, PFV, pfvlist;
+
+	      ggc_add_tree_root (&Atexit, 1);
+
 	      /* Remember this information until end of file.  */
 	      push_obstacks (&permanent_obstack, &permanent_obstack);
 	      PFV = build_pointer_type (build_function_type

@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "expr.h"
 #include "toplev.h"
+#include "ggc.h"
 
 static void expand_aggr_vbase_init_1 PROTO((tree, tree, tree, tree));
 static void construct_virtual_bases PROTO((tree, tree, tree, tree, tree));
@@ -73,6 +74,10 @@ void init_init_processing ()
   finish_builtin_type (BI_header_type, "__new_cookie", fields,
 		       0, double_type_node);
   BI_header_size = size_in_bytes (BI_header_type);
+
+  ggc_add_tree_root (&current_base_init_list, 1);
+  ggc_add_tree_root (&current_member_init_list, 1);
+  ggc_add_tree_root (&minus_one, 1);
 }
 
 /* Subroutine of emit_base_init.  For BINFO, initialize all the
