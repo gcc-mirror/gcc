@@ -1,12 +1,12 @@
 2004-02-11  Thiemo Seufer  <seufer@csv.ica.uni-stuttgart.de>
 
 	* config/mips/mips.h (TARGET_OLDABI): Define. Use TARGET_NEWABI and
-	TARGET_LODABI consistently.
+	TARGET_OLDABI consistently.
 	* config/mips/mips.c (function_arg,mips_setup_incoming_varargs,
 	mips_va_arg,override_options,compute_frame_size,
 	mips_initial_elimination_offset,mips16_fp_args,build_mips16_call_stub
 	,mips_return_in_memory,mips_strict_argument_naming): Use TARGET_NEWABI
-	and TARGET_LODABI consistently.
+	and TARGET_OLDABI consistently.
 	* config/mips/mips.md (exception_receiver): Likewise.
 	* config/mips/linux64.h: Likewise.
 
