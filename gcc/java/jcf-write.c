@@ -3422,6 +3422,15 @@ write_classfile (clas)
       write_chunks (stream, chunks);
       if (fclose (stream))
 	fatal_io_error ("error closing %s", temporary_file_name);
+
+      /* If a file named by the string pointed to by `new' exists
+         prior to the call to the `rename' function, the bahaviour
+         is implementation-defined.  ISO 9899-1990 7.9.4.2.
+
+         For example, on Win32 with MSVCRT, it is an error. */
+
+      unlink (class_file_name);
+
       if (rename (temporary_file_name, class_file_name) == -1)
 	{
 	  remove (temporary_file_name);
