@@ -2196,18 +2196,22 @@ copy_rtx_and_substitute (orig, map)
 	    {
 	      rtx loc, seq;
 	      int size = DECL_FRAME_SIZE (map->fndecl);
-	      int rounded;
 
+#ifdef FRAME_GROWS_DOWNWARD
+	      /* In this case, virtual_stack_vars_rtx points to one byte
+		 higher than the top of the frame area.  So make sure we
+		 allocate a big enough chunk to keep the frame pointer
+		 aligned like a real one.  */
+	      size = CEIL_ROUND (size, BIGGEST_ALIGNMENT / BITS_PER_UNIT);
+#endif
 	      start_sequence ();
 	      loc = assign_stack_temp (BLKmode, size, 1);
 	      loc = XEXP (loc, 0);
 #ifdef FRAME_GROWS_DOWNWARD
 	      /* In this case, virtual_stack_vars_rtx points to one byte
 		 higher than the top of the frame area.  So compute the offset
-		 to one byte higher than our substitute frame.
-		 Keep the fake frame pointer aligned like a real one.  */
-	      rounded = CEIL_ROUND (size, BIGGEST_ALIGNMENT / BITS_PER_UNIT);
-	      loc = plus_constant (loc, rounded);
+		 to one byte higher than our substitute frame.  */
+	      loc = plus_constant (loc, size);
 #endif
 	      map->reg_map[regno] = temp
 		= force_reg (Pmode, force_operand (loc, NULL_RTX));
