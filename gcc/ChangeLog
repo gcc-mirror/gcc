@@ -1,3 +1,7 @@
+2003-05-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sparc.c (print_operand): Fix uninitialized warning.
+
 2003-05-12  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* cfgloopanal.c (num_loop_insns, average_num_loop_insns): Count only

@@ -6481,7 +6481,10 @@ print_operand (file, x, code)
 	else if (GET_CODE(x) == CONST_DOUBLE)
 	  i = CONST_DOUBLE_LOW (x);
 	else
-	  output_operand_lossage ("invalid %%s operand");
+	  {
+	    output_operand_lossage ("invalid %%s operand");
+	    return;
+	  }
 	i = trunc_int_for_mode (i, SImode);
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC, i);
 	return;
