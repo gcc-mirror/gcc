@@ -1,3 +1,7 @@
+2002-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20020503-1.c: New test.
+
 2002-05-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/init/dtor1.C: Make it tougher.
