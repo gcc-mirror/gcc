@@ -1,3 +1,15 @@
+2004-01-29  Stephen M. Webb  <stephen.webb@bregmasoft.com>
+
+	* config/local/generic/c_locale.h: Change ::malloc() to new char[].
+  	* config/local/gnu/c_locale.h: Change ::malloc() to new char[].
+  	* include/bits/stl_tempbuf.h: Convert _Temporary_buffer to use
+	std::get_temporary_buffer() instead of duplicating its code.
+	Update to C++STYLE conventions.
+  	* include/std/std_memory.h (get_temporary_buffer): Use ::operator
+	new() instead of std::malloc().
+	(return_temporary_buffer): Use ::operator delete() instead of
+	std::free().
+
 2004-01-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/allocator.h: Temporary switch to new_allocator as
