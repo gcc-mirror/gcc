@@ -3123,6 +3123,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 
 	case TRUNCATE:
 	  /* This is just a change-of-mode, so do nothing.  */
+	  lv = l1, hv = h1;
 	  break;
 
 	case ZERO_EXTEND:
