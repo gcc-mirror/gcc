@@ -1,3 +1,9 @@
+2003-09-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* alias.c: Follow spelling conventions.
+	* cpphash.h: Likewise.
+	* fold-const.c: Likewise.
+
 2003-09-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	* c-ppoutput.c (cb_line_change): Revert 2003-08-04's change.

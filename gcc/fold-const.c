@@ -1842,7 +1842,7 @@ truth_value_p (enum tree_code code)
    same value in each operand/subexpression.  Hence a zero value for
    ONLY_CONST assumes isochronic (or instantaneous) tree equivalence.
    If comparing arbitrary expression trees, such as from different
-   statements, ONLY_CONST must usually be non-zero.  */
+   statements, ONLY_CONST must usually be nonzero.  */
 
 int
 operand_equal_p (tree arg0, tree arg1, int only_const)
