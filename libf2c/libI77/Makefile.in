@@ -38,7 +38,7 @@ CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
 @SET_MAKE@
 
-SHELL = /bin/sh
+SHELL = @SHELL@
 
 #### End of system configuration section. ####
 
