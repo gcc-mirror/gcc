@@ -1,3 +1,8 @@
+2003-12-17  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* predict.c (struct block_info_def, struct edge_info_def): Change
+	bit-fields of width 1 to unsigned int.
+
 2003-12-16  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 12480
