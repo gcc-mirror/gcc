@@ -1763,20 +1763,23 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
-if $LINKS; then
-  echo 'Making internal symbolic non-directory links'
-  cd ${INPUT}
-  files=`find . -type l -print`
-  for file in $files; do
-    dest=`ls -ld $file | sed -n 's/.*-> //p'`
-    if expr "$dest" : '[^/].*' > /dev/null; then    
-      target=${LIB}/`echo file | sed "s|[^/]*\$|$dest|"`
-      if [ -f $target ]; then
-        ln -s $dest ${LIB}/$file >/dev/null 2>&1
-      fi
-    fi
-  done
-fi
+# This loop does not appear to do anything, because it uses file
+# rather than $file when setting target.  It also appears to be
+# unnecessary, since the main loop processes symbolic links.
+#if $LINKS; then
+#  echo 'Making internal symbolic non-directory links'
+#  cd ${INPUT}
+#  files=`find . -type l -print`
+#  for file in $files; do
+#    dest=`ls -ld $file | sed -n 's/.*-> //p'`
+#    if expr "$dest" : '[^/].*' > /dev/null; then    
+#      target=${LIB}/`echo file | sed "s|[^/]*\$|$dest|"`
+#      if [ -f $target ]; then
+#        ln -s $dest ${LIB}/$file >/dev/null 2>&1
+#      fi
+#    fi
+#  done
+#fi
 
 # Make sure that any include files referenced using double quotes
 # exist in the fixed directory.  This comes last since otherwise
