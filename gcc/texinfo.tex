@@ -35,7 +35,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 1.1 $
+\deftexinfoversion$Revision: 1.2 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -1148,7 +1148,7 @@ where each line of input produces a line of output.}
   \let\tenrm=\indrm \let\tenit=\indit \let\tensl=\indsl
   \let\tenbf=\indbf \let\tentt=\indtt \let\smallcaps=\indsc
   \let\tensf=\indsf \let\teni=\indi \let\tensy=\indsy \let\tenttsl=\indttsl
-  \resetmathfonts \setleading{10pt}}
+  \resetmathfonts \setleading{12pt}}
 
 % Set up the default fonts, so we can use them for creating boxes.
 %
@@ -2288,26 +2288,17 @@ width0pt\relax} \fi
 
 \def\printindex{\parsearg\doprintindex}
 
-\def\doprintindex#1{%
-  \tex
-  \dobreak \chapheadingskip {10000}
-  \catcode`\%=\other\catcode`\&=\other\catcode`\#=\other
-  \catcode`\$=\other
-  \catcode`\~=\other
-  \indexbreaks
+\def\doprintindex#1{\begingroup
+  \dobreak \chapheadingskip{10000}%
   %
-  % The following don't help, since the chars were translated
-  % when the raw index was written, and their fonts were discarded
-  % due to \indexnofonts.
-  %\catcode`\"=\active
-  %\catcode`\^=\active
-  %\catcode`\_=\active
-  %\catcode`\|=\active
-  %\catcode`\<=\active
-  %\catcode`\>=\active
-  % %
-  \def\indexbackslash{\rawbackslashxx}
-  \indexfonts\rm \tolerance=9500 \advance\baselineskip -1pt
+  \indexfonts \rm
+  \tolerance = 9500
+  \indexbreaks
+  \def\indexbackslash{\rawbackslashxx}%
+  % Index files are almost Texinfo source, but we use \ as the escape
+  % character.  It would be better to use @, but that's too big a change
+  % to make right now.
+  \catcode`\\ = 0
   \begindoublecolumns
   %
   % See if the index file exists and is nonempty.
@@ -2318,7 +2309,7 @@ width0pt\relax} \fi
     % index.  The easiest way to prevent this problem is to make sure
     % there is some text.
     (Index is nonexistent)
-    \else
+  \else
     %
     % If the index file exists but is empty, then \openin leaves \ifeof
     % false.  We have to make TeX try to read something from the file, so
@@ -2332,8 +2323,7 @@ width0pt\relax} \fi
   \fi
   \closein 1
   \enddoublecolumns
-  \Etex
-}
+\endgroup}
 
 % These macros are used by the sorted index file itself.
 % Change them to control the appearance of the index.
@@ -3433,8 +3423,7 @@ width0pt\relax} \fi
   \let\Esmalllisp = \nonfillfinish
   \let\Esmallexample = \nonfillfinish
   %
-  % Smaller interline space and fonts for small examples.
-  \setleading{10pt}%
+  % Smaller fonts for small examples.
   \indexfonts \tt
   \rawbackslash % make \ output the \ character from the current font (tt)
   \gobble
