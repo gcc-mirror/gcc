@@ -246,7 +246,7 @@ extern int target_flags;
                   so is not fixed.
    Reg 1	= ADDIL target/Temporary (hardware).
    Reg 2	= Return Pointer
-   Reg 3	= Unused
+   Reg 3	= Preserved Register (Gnu).  Frame Pointer (> 8k frames HP.)
    Reg 4	= Frame Pointer (Gnu)
    Reg 5-18	= Preserved Registers
    Reg 19	= Linkage Table Register in HPUX 8.0 shared library scheme.
@@ -282,7 +282,7 @@ extern int target_flags;
  {0, 0, 1, 0, 1, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
-  0, 0, 0, 1, 0, 0, 1, 1, \
+  0, 0, 0, 1, 0, 0, 1, 0, \
   /* 1.0 fp registers */ \
   1, 1, 1, 1, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
