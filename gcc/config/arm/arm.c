@@ -1507,7 +1507,7 @@ int neg;
 void
 output_ascii_pseudo_op (stream, p, len)
      FILE *stream;
-     char *p;
+     unsigned char *p;
      int len;
 {
   int i;
