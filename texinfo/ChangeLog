@@ -1,3 +1,9 @@
+1998-11-20  Manfred Hollstein  <manfred@s-direktnet.de>
+ 
+ 	* makeinfo/Makefile.am (noinst_PROGRAMS): Renamed from bin_PROGRAMS
+	to avoid installing makeinfo.
+ 	* makeinfo/Makefile.in: Regenerate using automake-1.3.
+ 
 Thu Oct 15 20:40:34 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* Makefile.in: rebuilt with --include-deps, --build-dir and
