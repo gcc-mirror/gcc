@@ -2,6 +2,7 @@
 /* { dg-do run { target sh-*-* sh?-*-* } } */
 /* { dg-options "-O1 -mrelax" } */
 
+extern void abort (void);
 extern int qwerty (int);
 
 int
