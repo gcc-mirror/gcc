@@ -48,7 +48,7 @@ typedef SEM_ID __gthread_mutex_t;
 
 #ifndef REG_SAVED_REG
 static inline int
-__gthread_once (__gthread_once_t *once, void (*func) ())
+__gthread_once (__gthread_once_t *once, void (*func) (void))
 {
   (*func)();
   return 0;
