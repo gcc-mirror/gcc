@@ -1,5 +1,9 @@
 2002-06-18  Phil Edwards  <pme@gcc.gnu.org>
 
+	* configure.target:  Force mips to use the generic cpu routines.
+
+2002-06-18  Phil Edwards  <pme@gcc.gnu.org>
+
 	* configure.host:  Delete file.
 	* configure.target:  More documentation.  Factor out common parts of
 	script into "intelligent" settings about defaults.  Remove redundancy.
