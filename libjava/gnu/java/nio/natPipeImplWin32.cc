@@ -1,4 +1,4 @@
-// natPipeImpl.cc
+// natPipeImplWin32.cc
 
 /* Copyright (C) 2003  Free Software Foundation
 

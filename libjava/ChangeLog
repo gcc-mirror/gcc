@@ -1,3 +1,17 @@
+2003-11-11  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/natPipeImpl.cc,
+	gnu/java/nio/natSelectorImpl.cc: Removed
+	* gnu/java/nio/natPipeImplEcos.cc,
+	gnu/java/nio/natPipeImplPosix.cc,
+	gnu/java/nio/natPipeImplWin32.cc,
+	gnu/java/nio/natSelectorImplEcos.cc,
+	gnu/java/nio/natSelectorImplPosix.cc,
+	gnu/java/nio/natSelectorImplWin32.cc: New files
+	* configure.in: Create links for gnu/java/nio/natPipeImpl.cc and
+	gnu/java/nio/natSelectorImpl.cc
+	* configure: Regenerated.
+
 2003-11-11  Micheal Koch  <konqueror@gmx.de>
 
 	* java/net/URLStreamHandler.java (toExternalForm): Print port only
