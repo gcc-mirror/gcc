@@ -1,5 +1,11 @@
 2003-05-09  Diego Novillo  <dnovillo@redhat.com>
 
+	* tree-dump.c (dequeue_and_dump): Use CONSTRUCTOR_ELTS,
+	instead of TREE_OPERAND to access the operand of a
+	CONSTRUCTOR node.
+
+2003-05-09  Diego Novillo  <dnovillo@redhat.com>
+
 	* tree-dump.c (dequeue_and_dump): CONSTRUCTOR nodes contain only
 	one operand.
 
