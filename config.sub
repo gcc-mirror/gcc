@@ -175,6 +175,7 @@ case $basic_machine in
 		| arme[lb] | pyramid | mn10200 | mn10300 | tron | a29k \
 		| 580 | i960 | h8300 \
 		| hppa | hppa1.0 | hppa1.1 | hppa2.0 | hppa2.0w | hppa2.0n \
+		| hppa64 \
 		| alpha | alphaev[4-8] | alphaev56 | alphapca5[67] \
 		| alphaev6[78] \
 		| we32k | ns16k | clipper | i370 | sh | powerpc | powerpcle \
@@ -207,7 +208,8 @@ case $basic_machine in
 	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* \
 	      | power-* | none-* | 580-* | cray2-* | h8300-* | h8500-* | i960-* \
 	      | xmp-* | ymp-* \
-	      | hppa-* | hppa1.0-* | hppa1.1-* | hppa2.0-* | hppa2.0w-* | hppa2.0n-* \
+	      | hppa-* | hppa1.0-* | hppa1.1-* | hppa2.0-* | hppa2.0w-* \
+	      | hppa2.0n-* | hppa64-* \
 	      | alpha-* | alphaev[4-8]-* | alphaev56-* | alphapca5[67]-* \
 	      | alphaev6[78]-* \
 	      | we32k-* | cydra-* | ns16k-* | pn-* | np1-* | xps100-* \
