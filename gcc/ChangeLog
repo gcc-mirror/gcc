@@ -1,3 +1,9 @@
+2004-01-27  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR optimization/13567
+	* cse.c (cse_basic_block): Call cse_insn with a non-null
+	libcall_insn for the last SET insn of a no-confilict block.
+
 2004-01-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h (CHAR_BITFIELD): Delete.
