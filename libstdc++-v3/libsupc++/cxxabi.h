@@ -175,6 +175,8 @@ protected:
                                 unsigned __outer) const;
 };
 
+class __class_type_info;
+
 /* type information for a pointer to member variable */
 class __pointer_to_member_type_info
   : public __pbase_type_info
@@ -200,8 +202,6 @@ protected:
                                 void **__thr_obj,
                                 unsigned __outer) const;
 };
-
-class __class_type_info;
 
 /* helper class for __vmi_class_type */
 class __base_class_type_info
