@@ -768,6 +768,8 @@ dequeue_and_dump (di)
 	dump_string (di, "end");
       if (SCOPE_NULLIFIED_P (t))
 	dump_string (di, "null");
+      if (!SCOPE_NO_CLEANUPS_P (t))
+	dump_string (di, "clnp");
       dump_next_stmt (di, t);
       break;
 
