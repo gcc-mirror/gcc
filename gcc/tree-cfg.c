@@ -666,7 +666,11 @@ make_goto_expr_edges (basic_block bb)
       if (simple_goto_p (goto_t))
 	{
 	  edge e = make_edge (bb, label_to_block (dest), EDGE_FALLTHRU);
+#ifdef USE_MAPPED_LOCATION
+	  e->goto_locus = EXPR_LOCATION (goto_t);
+#else
 	  e->goto_locus = EXPR_LOCUS (goto_t);
+#endif
 	  bsi_remove (&last);
 	  return;
 	}
@@ -1115,9 +1119,10 @@ static void remove_useless_stmts_1 (tree *, struct rus_data *);
 static bool
 remove_useless_stmts_warn_notreached (tree stmt)
 {
-  if (EXPR_LOCUS (stmt))
+  if (EXPR_HAS_LOCATION (stmt))
     {
-      warning ("%Hwill never be executed", EXPR_LOCUS (stmt));
+      location_t loc = EXPR_LOCATION (stmt);
+      warning ("%Hwill never be executed", &loc);
       return true;
     }
 
@@ -1776,7 +1781,7 @@ static void
 remove_bb (basic_block bb)
 {
   block_stmt_iterator i;
-  location_t *loc = NULL;
+  source_locus loc = 0;
 
   if (dump_file)
     {
@@ -1799,8 +1804,12 @@ remove_bb (basic_block bb)
 	 jump threading, thus resulting in bogus warnings.  Not great,
 	 since this way we lose warnings for gotos in the original
 	 program that are indeed unreachable.  */
-      if (TREE_CODE (stmt) != GOTO_EXPR && EXPR_LOCUS (stmt) && !loc)
+      if (TREE_CODE (stmt) != GOTO_EXPR && EXPR_HAS_LOCATION (stmt) && !loc)
+#ifdef USE_MAPPED_LOCATION
+	loc = EXPR_LOCATION (stmt);
+#else
 	loc = EXPR_LOCUS (stmt);
+#endif
     }
 
   /* If requested, give a warning that the first statement in the
@@ -1808,7 +1817,11 @@ remove_bb (basic_block bb)
      loop above, so the last statement we process is the first statement
      in the block.  */
   if (warn_notreached && loc)
+#ifdef USE_MAPPED_LOCATION
+    warning ("%Hwill never be executed", &loc);
+#else
     warning ("%Hwill never be executed", loc);
+#endif
 
   remove_phi_nodes_and_edges_for_unreachable_block (bb);
 }
@@ -2641,7 +2654,11 @@ disband_implicit_edges (void)
       label = tree_block_label (e->dest);
 
       stmt = build1 (GOTO_EXPR, void_type_node, label);
+#ifdef USE_MAPPED_LOCATION
+      SET_EXPR_LOCATION (stmt, e->goto_locus);
+#else
       SET_EXPR_LOCUS (stmt, e->goto_locus);
+#endif
       bsi_insert_after (&last, stmt, BSI_NEW_STMT);
       e->flags &= ~EDGE_FALLTHRU;
     }
@@ -4759,7 +4776,11 @@ struct tree_opt_pass pass_split_crit_edges =
 static void
 execute_warn_function_return (void)
 {
+#ifdef USE_MAPPED_LOCATION
+  source_location location;
+#else
   location_t *locus;
+#endif
   tree last;
   edge e;
 
@@ -4774,17 +4795,31 @@ execute_warn_function_return (void)
   if (TREE_THIS_VOLATILE (cfun->decl)
       && EXIT_BLOCK_PTR->pred != NULL)
     {
+#ifdef USE_MAPPED_LOCATION
+      location = UNKNOWN_LOCATION;
+#else
       locus = NULL;
+#endif
       for (e = EXIT_BLOCK_PTR->pred; e ; e = e->pred_next)
 	{
 	  last = last_stmt (e->src);
 	  if (TREE_CODE (last) == RETURN_EXPR
+#ifdef USE_MAPPED_LOCATION
+	      && (location = EXPR_LOCATION (last)) != UNKNOWN_LOCATION)
+#else
 	      && (locus = EXPR_LOCUS (last)) != NULL)
+#endif
 	    break;
 	}
+#ifdef USE_MAPPED_LOCATION
+      if (location == UNKNOWN_LOCATION)
+	location = cfun->function_end_locus;
+      warning ("%H`noreturn' function does return", &location);
+#else
       if (!locus)
 	locus = &cfun->function_end_locus;
       warning ("%H`noreturn' function does return", locus);
+#endif
     }
 
   /* If we see "return;" in some basic block, then we do reach the end
@@ -4799,10 +4834,17 @@ execute_warn_function_return (void)
 	  if (TREE_CODE (last) == RETURN_EXPR
 	      && TREE_OPERAND (last, 0) == NULL)
 	    {
+#ifdef USE_MAPPED_LOCATION
+	      location = EXPR_LOCATION (last);
+	      if (location == UNKNOWN_LOCATION)
+		  location = cfun->function_end_locus;
+	      warning ("%Hcontrol reaches end of non-void function", &location);
+#else
 	      locus = EXPR_LOCUS (last);
 	      if (!locus)
 		locus = &cfun->function_end_locus;
 	      warning ("%Hcontrol reaches end of non-void function", locus);
+#endif
 	      break;
 	    }
 	}

@@ -126,7 +126,7 @@ get_lineno (tree expr)
   if (TREE_CODE (expr) == COMPOUND_EXPR)
     expr = TREE_OPERAND (expr, 0);
 
-  if (! EXPR_LOCUS (expr))
+  if (! EXPR_HAS_LOCATION (expr))
     return -1;
 
   return EXPR_LINENO (expr);
@@ -137,14 +137,15 @@ get_lineno (tree expr)
 static inline const char *
 get_filename (tree expr)
 {
+  const char *filename;
   if (expr == NULL_TREE)
     return "???";
 
   if (TREE_CODE (expr) == COMPOUND_EXPR)
     expr = TREE_OPERAND (expr, 0);
 
-  if (EXPR_LOCUS (expr) && EXPR_FILENAME (expr))
-    return EXPR_FILENAME (expr);
+  if (EXPR_HAS_LOCATION (expr) && (filename = EXPR_FILENAME (expr)))
+    return filename;
   else
     return "???";
 }

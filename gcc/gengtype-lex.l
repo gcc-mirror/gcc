@@ -88,7 +88,12 @@ ITYPE	{IWORD}({WS}{IWORD})*
   t = find_structure (xmemdup (tagstart, taglen, taglen+1), union_p);
   if (is_pointer)
     t = create_pointer (t);
-  do_typedef (xmemdup (namestart, namelen, namelen+1), t, &lexer_line);
+  namestart = xmemdup (namestart, namelen, namelen+1);
+#ifdef USE_MAPPED_LOCATION
+  /* temporary kludge - gentype doesn't handle cpp conditionals */
+  if (strcmp (namestart, "location_t") != 0)
+#endif
+  do_typedef (namestart, t, &lexer_line);
   update_lineno (yytext, yyleng);
 }
 

@@ -900,8 +900,12 @@ sms_schedule (FILE *dump_file)
 	      rtx line_note = find_line_note (tail);
 
 	      if (line_note)
-	    	fprintf (stats_file, "SMS bb %s %d (file, line)\n",
-		     	 NOTE_SOURCE_FILE (line_note), NOTE_LINE_NUMBER (line_note));
+		{
+		  expanded_location xloc;
+		  NOTE_EXPANDED_LOCATION (xloc, line_note);
+		  fprintf (stats_file, "SMS bb %s %d (file, line)\n",
+			   xloc.file, xloc.line);
+		}
 	      fprintf (stats_file, "SMS single-bb-loop\n");
 	      if (profile_info && flag_branch_probabilities)
 	    	{
@@ -996,8 +1000,12 @@ sms_schedule (FILE *dump_file)
 	  rtx line_note = find_line_note (tail);
 
 	  if (line_note)
-	    fprintf (stats_file, "SMS bb %s %d (file, line)\n",
-		     NOTE_SOURCE_FILE (line_note), NOTE_LINE_NUMBER (line_note));
+	    {
+	      expanded_location xloc;
+	      NOTE_EXPANDED_LOCATION (xloc, line_note);
+	      fprintf (stats_file, "SMS bb %s %d (file, line)\n",
+		       xloc.file, xloc.line);
+	    }
 	  fprintf (stats_file, "SMS single-bb-loop\n");
 	  if (profile_info && flag_branch_probabilities)
 	    {
