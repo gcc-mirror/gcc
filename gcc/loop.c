@@ -173,6 +173,9 @@ static char *moved_once;
 
 static rtx loop_store_mems;
 
+/* The insn where the first of these was found.  */
+static rtx first_loop_store_insn;
+
 typedef struct loop_mem_info {
   rtx mem;      /* The MEM itself.  */
   rtx reg;      /* Corresponding pseudo, if any.  */
@@ -2404,6 +2407,7 @@ prescan_loop (start, end)
   loop_has_volatile = 0;
   loop_has_tablejump = 0;
   loop_store_mems = NULL_RTX;
+  first_loop_store_insn = NULL_RTX;
   loop_mems_idx = 0;
 
   num_mem_sets = 0;
@@ -2456,6 +2460,8 @@ prescan_loop (start, end)
 	    loop_has_tablejump = 1;
 	  
 	  note_stores (PATTERN (insn), note_addr_stored);
+	  if (! first_loop_store_insn && loop_store_mems)
+	    first_loop_store_insn = insn;
 
 	  if (! loop_has_multiple_exit_targets
 	      && GET_CODE (insn) == JUMP_INSN
@@ -7682,9 +7688,26 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 	     case, the insn should have been moved out of the loop.  */
 
 	  if (num_mem_sets == 1)
-	    reversible_mem_store
-	      = (! unknown_address_altered
-		 && ! invariant_p (XEXP (loop_store_mems, 0)));
+	    {
+	      struct induction *v;
+
+	      reversible_mem_store
+		= (! unknown_address_altered
+		   && ! invariant_p (XEXP (loop_store_mems, 0)));
+
+	      /* If the store depends on a register that is set after the
+		 store, it depends on the initial value, and is thus not
+		 reversible.  */
+	      for (v = bl->giv; reversible_mem_store && v; v = v->next_iv)
+		{
+		  if (v->giv_type == DEST_REG
+		      && reg_mentioned_p (v->dest_reg,
+					  XEXP (loop_store_mems, 0))
+		      && (INSN_LUID (v->insn)
+			  > INSN_LUID (first_loop_store_insn)))
+		    reversible_mem_store = 0;
+		}
+	    }
 	}
       else
 	return 0;

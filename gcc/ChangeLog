@@ -1,3 +1,10 @@
+Fri Feb  5 07:09:29 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (first_loop_store_insn): New file-scope variable.
+	(prescan_loop): Set it.
+	(check_dbra_loop): Check if a store depends on a register
+	that is set after the store.
+
 Fri Feb  5 06:55:15 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* unroll.c (entire file): Remove tabs / spaces at end of lines.
