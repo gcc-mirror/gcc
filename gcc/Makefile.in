@@ -1580,7 +1580,7 @@ uninstall:
 TAGS: force
 	cd $(srcdir);							\
 	mkdir temp;							\
-	mv -f c-parse.c c-parse.h cp-parse.c cp-parse.h objc-parse.c cexp.c temp;	\
+	mv -f c-parse.[ch] cp-parse.[ch] objc-parse.c cexp.c =*.[chy] temp; \
 	etags *.y *.h *.c;						\
 	mv temp/* .;							\
 	rmdir temp
