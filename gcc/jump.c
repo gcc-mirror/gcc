@@ -566,6 +566,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	  rtx temp, temp1, temp2, temp3, temp4, temp5, temp6;
 	  rtx nlabel;
 	  int this_is_simplejump, this_is_condjump, reversep;
+	  int this_is_condjump_in_parallel;
 #if 0
 	  /* If NOT the first iteration, if this is the last jump pass
 	     (just before final), do the special peephole optimizations.
@@ -605,6 +606,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 
 	  this_is_simplejump = simplejump_p (insn);
 	  this_is_condjump = condjump_p (insn);
+	  this_is_condjump_in_parallel = condjump_in_parallel_p (insn);
 
 	  /* Tension the labels in dispatch tables.  */
 
@@ -1644,7 +1646,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	    }
 	  /* Detect a conditional jump jumping over an unconditional jump.  */
 
-	  else if (this_is_condjump && ! this_is_simplejump
+	  else if ((this_is_condjump || this_is_condjump_in_parallel)
+		   && ! this_is_simplejump
 		   && reallabelprev != 0
 		   && GET_CODE (reallabelprev) == JUMP_INSN
 		   && prev_active_insn (reallabelprev) == insn
@@ -2811,6 +2814,39 @@ condjump_p (insn)
      rtx insn;
 {
   register rtx x = PATTERN (insn);
+  if (GET_CODE (x) != SET)
+    return 0;
+  if (GET_CODE (SET_DEST (x)) != PC)
+    return 0;
+  if (GET_CODE (SET_SRC (x)) == LABEL_REF)
+    return 1;
+  if (GET_CODE (SET_SRC (x)) != IF_THEN_ELSE)
+    return 0;
+  if (XEXP (SET_SRC (x), 2) == pc_rtx
+      && (GET_CODE (XEXP (SET_SRC (x), 1)) == LABEL_REF
+	  || GET_CODE (XEXP (SET_SRC (x), 1)) == RETURN))
+    return 1;
+  if (XEXP (SET_SRC (x), 1) == pc_rtx
+      && (GET_CODE (XEXP (SET_SRC (x), 2)) == LABEL_REF
+	  || GET_CODE (XEXP (SET_SRC (x), 2)) == RETURN))
+    return 1;
+  return 0;
+}
+
+/* Return nonzero if INSN is a (possibly) conditional jump
+   and nothing more.  */
+
+int
+condjump_in_parallel_p (insn)
+     rtx insn;
+{
+  register rtx x = PATTERN (insn);
+
+  if (GET_CODE (x) != PARALLEL)
+    return 0;
+  else
+    x = XVECEXP (x, 0, 0);
+
   if (GET_CODE (x) != SET)
     return 0;
   if (GET_CODE (SET_DEST (x)) != PC)
