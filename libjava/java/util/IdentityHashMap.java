@@ -1,6 +1,6 @@
 /* IdentityHashMap.java -- a class providing a hashtable data structure,
    mapping Object --> Object, which uses object identity for hashing.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -153,8 +153,6 @@ public class IdentityHashMap extends AbstractMap
       max = 2;
     table = new Object[2 * max];
     Arrays.fill(table, emptyslot);
-    // This is automatically set.
-    // size = 0;
     threshold = max / 4 * 3;
   }
 
@@ -633,7 +631,7 @@ public class IdentityHashMap extends AbstractMap
     // By requiring at least 2 key/value slots, and rehashing at 75%
     // capacity, we guarantee that there will always be either an emptyslot
     // or a tombstone somewhere in the table.
-    int h = 2 * Math.abs(System.identityHashCode(key) % table.length);
+    int h = 2 * Math.abs(System.identityHashCode(key) % (table.length / 2));
     int del = -1;
     int save = h;
 
