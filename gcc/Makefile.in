@@ -1231,7 +1231,7 @@ diagnostic.o : diagnostic.c diagnostic.h \
    $(CONFIG_H) system.h $(TREE_H) $(RTL_H) tm_p.h flags.h \
    $(GGC_H) input.h insn-attr.h insn-codes.h insn-config.h toplev.h intl.h 
 toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) function.h \
-   flags.h input.h insn-attr.h xcoffout.h defaults.h output.h \
+   flags.h input.h insn-attr.h xcoffout.h defaults.h output.h diagnostic.h \
    insn-codes.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h dwarfout.h \
    dwarf2out.h sdbout.h dbxout.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) \
    graph.h loop.h  except.h regs.h $(TIMEVAR_H) $(lang_options_files)

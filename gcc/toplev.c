@@ -62,6 +62,7 @@ Boston, MA 02111-1307, USA.  */
 #include "loop.h"
 #include "regs.h"
 #include "timevar.h"
+#include "diagnostic.h"
 
 #ifndef ACCUMULATE_OUTGOING_ARGS
 #define ACCUMULATE_OUTGOING_ARGS 0
@@ -3703,6 +3704,8 @@ display_help ()
   printf ("  -fcall-used-<register>  Mark <register> as being corrupted by function calls\n");
   printf ("  -fcall-saved-<register> Mark <register> as being preserved across functions\n");
   printf ("  -finline-limit=<number> Limits the size of inlined functions to <number>\n");
+  printf ("  -fmessage-length=<number> Limits diagnostics messages lengths to <number> characters per line.  0 suppresses line-wrapping\n");
+  printf ("  -fdiagnostics-show-location=[once | never] Indicates how often source location information should be emitted, as prefix, at the beginning of diagnostics when line-wrapping\n");
 
   for (i = NUM_ELEM (f_options); i--;)
     {
@@ -3989,6 +3992,21 @@ decode_f_option (arg)
       else
 	nm = xstrdup (option_value);
       stack_limit_rtx = gen_rtx_SYMBOL_REF (Pmode, nm);
+    }
+  else if ((option_value
+            = skip_leading_substring (arg, "message-length=")))
+    diagnostic_message_length_per_line = 
+      read_integral_parameter (option_value, arg - 2,
+                               diagnostic_message_length_per_line);
+  else if ((option_value
+            = skip_leading_substring (arg, "diagnostics-show-location=")))
+    {
+      if (!strcmp (option_value, "once"))
+        set_message_prefixing_rule (DIAGNOSTICS_SHOW_PREFIX_ONCE);
+      else if (!strcmp (option_value, "every-line"))
+        set_message_prefixing_rule (DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE);
+      else
+        error ("Unrecognized option `%s'", arg - 2);
     }
   else if (!strcmp (arg, "no-stack-limit"))
     stack_limit_rtx = NULL_RTX;
@@ -4433,6 +4451,9 @@ main (argc, argv)
   ggc_add_tree_root (&current_function_decl, 1);
   ggc_add_tree_root (&current_function_func_begin_label, 1);
 
+  /* Initialize the diagnostics reporting machinery.  */
+  initialize_diagnostics();
+
   /* Perform language-specific options intialization.  */
   lang_init_options ();
 
@@ -4589,6 +4610,9 @@ main (argc, argv)
 	  i++;
 	}
     }
+  
+  /* Reflect any language-specific diagnostic option setting.  */
+  reshape_diagnostic_buffer ();
 
   /* Checker uses the frame pointer.  */
   if (flag_check_memory_usage)

@@ -1,3 +1,38 @@
+2000-06-06  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.c (output_maximum_width): Remove.
+	(doing_line_wrapping): Tweak.
+	(diagnostic_buffer): New object.
+	(global_output_buffer): New object.
+	(output_destroy_prefix): New function.
+	(default_initialize_buffer): Likewise.
+	(reshape_diagnostic_buffer): Likewise.
+	(initialize_diagnostics): Likewise.
+	(output_clear): Tweak.
+	(line_wrapper_printf): Adjust call to init_output_buffer.
+	(vline_wrapper_message_with_location): Likewise.  Use
+	output_destroy_prefix. 
+	(v_message_with_decl): Likewise.
+
+	* diagnostic.h (struct output_buffer): Constify prefix.
+	(init_output_buffer, output_get_prefix): Constify.
+	(diagnostic_message_length_per_line): Likewise.
+	(reshape_diagnostic_buffer): Declare.
+	(default_initialize_buffer): Declare.
+	(initialize_diagnostics): Declare.
+	(diagnostic_buffer): Declare new obbject.
+
+	* toplev.c: #include diagnostic.h
+	(display_help): Document diagnostic formatting options.
+	(decode_f_option): Handle diagnostic formatting options.
+	(main): Setup initialization for diagnostic messages outputter.
+
+	* toplev.h (set_message_length): Remove.
+
+	* Makefile.in (toplev.o): Depends upon diagnostic.h
+
+	* invoke.texi : Document diagnostics formatting options.
+
 Tue Jun  6 19:25:32 2000  Philippe De Muyter  <phdm@macqel.be>
 
 	* configure.in (Make the links): Typo fix : the file that must be

@@ -59,6 +59,8 @@ only one of these two forms, whichever one is not the default.
 * Invoking G++::	Compiling C++ programs.
 * C Dialect Options::   Controlling the variant of C language compiled.
 * C++ Dialect Options:: Variations on C++.
+* Language Independent Options:: Controlling how diagnostics should be
+                        formatted. 
 * Warning Options::     How picky should the compiler be?
 * Debugging Options::   Symbol tables, measurements, and debugging dumps.
 * Optimize Options::    How much optimization?
@@ -114,6 +116,13 @@ in the following sections.
 -Wno-deprecated -Weffc++ -Wno-non-template-friend -Wnon-virtual-dtor
 -Wold-style-cast -Woverloaded-virtual -Wno-pmf-conversions -Wreorder
 -Wsign-promo -Wsynth
+@end smallexample
+
+@item Language Independent Options
+@xref{Language Independent Options,,Options to Control Diagnostic Messages Formatting}.
+@smallexample
+-fmessage-length=@var{n} 
+-fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}
 @end smallexample
 
 @item Warning Options
@@ -467,6 +476,8 @@ in the following sections.
                         or preprocessed source.
 * C Dialect Options::   Controlling the variant of C language compiled.
 * C++ Dialect Options:: Variations on C++.
+* Language Independent Options:: Controlling how diagnostics should be
+                        formatted. 
 * Warning Options::     How picky should the compiler be?
 * Debugging Options::   Symbol tables, measurements, and debugging dumps.
 * Optimize Options::    How much optimization?
@@ -1120,12 +1131,6 @@ This flag is not useful when compiling with -fvtable-thunks.
 Like all options that change the ABI, all C++ code, @emph{including
 libgcc} must be built with the same setting of this option.
 
-@item -fmessage-length=@var{n}
-Try to format error messages so that they fit on lines of about @var{n}
-characters.  The default is 72 characters.  If @var{n} is zero, then no
-line-wrapping will be done; each error message will appear on a single
-line.
-
 @item -fno-implicit-templates
 Never emit code for non-inline templates which are instantiated
 implicitly (i.e. by use); only emit code for explicit instantiations.
@@ -1365,6 +1370,44 @@ main ()
 
 In this example, g++ will synthesize a default @samp{A& operator =
 (const A&);}, while cfront will use the user-defined @samp{operator =}.
+@end table
+
+@node Language Independent Options
+@section Options to Control Diagnostic Messages Formatting
+@cindex options to control diagnostics formatting
+@cindex diagnostic messages
+@cindex message formatting
+
+Traditionally, diagnostic messages have been formatted irrespetive of
+the output device's aspect (e.g. its width, ...).  The options described
+below can be used to control the diagnostic messages formatting
+algorithm, e.g. how many characters per line, how often source location
+information should be reported.  Right now, only the C++ front-end can
+honor these options.  However it is expected, in the near future, that
+the remaining front-ends would be able to digest them correctly. 
+
+@table @code
+@item -fmessage-length=@var{n}
+Try to format error messages so that they fit on lines of about @var{n}
+characters.  The default is 72 characters for g++ and 0 for the rest of
+the front-ends supported by GCC.  If @var{n} is zero, then no
+line-wrapping will be done; each error message will appear on a single 
+line.
+
+@item -fdiagnostics-show-location=once
+Only meaningful in line-wrapping mode.  Intructs the diagnostic messages
+reporter to emit @emph{once} source location information; that is, in
+case the message is too long to fit on a single physical line and has to
+be wrapped, the source location won't be emitted (as prefix) again,
+over and over, in subsequent continuation lines.  This is the default
+behaviour. 
+
+@item -fdiagnostics-show-location=every-line
+Only meaningful in line-wrapping mode.  Instructs the diagnostic
+messages reporter to emit the same source location information (as
+prefix) for physical lines that result from the process of breaking a
+a message which is too long to fit on a signe line.
+
 @end table
 
 @node Warning Options

@@ -254,7 +254,7 @@ lex.o : lex.c $(CXX_TREE_H) \
   $(PARSE_H) input.c $(srcdir)/../flags.h hash.h lex.h \
   $(srcdir)/../c-pragma.h $(srcdir)/../toplev.h \
   $(srcdir)/../output.h $(srcdir)/../mbchar.h $(GGC_H) \
-  $(srcdir)/../input.h operators.def
+  $(srcdir)/../input.h $(srcdir)/../diagnostic.h operators.def
 decl.o : decl.c $(CXX_TREE_H) $(srcdir)/../flags.h \
   lex.h decl.h $(srcdir)/../stack.h $(srcdir)/../output.h $(srcdir)/../expr.h \
   $(srcdir)/../except.h $(srcdir)/../toplev.h \

@@ -44,7 +44,7 @@ struct output_buffer
   /* The obstack where the text is built up.  */  
   struct obstack obstack;
   /* The prefix for each new line.   */
-  char *prefix;
+  const char *prefix;
   /* The amount of characters output so far.  */  
   int line_length;
   /* The real upper bound of number of characters per line, taking into
@@ -83,11 +83,24 @@ struct output_buffer
 
 extern printer_fn lang_printer;
 
+extern int diagnostic_message_length_per_line;
+
+/* This output buffer is used by front-ends that directly output
+   diagnostic messages without going through `error', `warning',
+   and simillar functions.  In general, such usage should be
+   avoided.  This global buffer will go away, once all such usage
+   has been removed.  */
+extern output_buffer *diagnostic_buffer;
+
 /* Prototypes */
-void init_output_buffer		PARAMS ((output_buffer *, char *, int));
+void initialize_diagnostics     PARAMS ((void));
+void reshape_diagnostic_buffer  PARAMS ((void));
+void default_initialize_buffer  PARAMS ((output_buffer *));
+void init_output_buffer		PARAMS ((output_buffer *, const char *, int));
 void output_clear		PARAMS ((output_buffer *));
-char *output_get_prefix		PARAMS ((const output_buffer *));
-void output_set_prefix		PARAMS ((output_buffer *, char *));
+const char *output_get_prefix	PARAMS ((const output_buffer *));
+void output_set_prefix		PARAMS ((output_buffer *, const char *));
+void output_destroy_prefix      PARAMS ((output_buffer *));
 void output_set_maximum_length  PARAMS ((output_buffer *, int));
 void output_emit_prefix		PARAMS ((output_buffer *));
 void output_add_newline		PARAMS ((output_buffer *));

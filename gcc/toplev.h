@@ -134,7 +134,6 @@ extern void fnotice			PARAMS ((FILE *, const char *, ...))
 extern int wrapup_global_declarations   PARAMS ((union tree_node **, int));
 extern void check_global_declarations   PARAMS ((union tree_node **, int));
 extern void note_deferral_of_defined_inline_function PARAMS ((union tree_node *));
-extern void set_message_length		PARAMS ((int));
 extern int errorcount;
 extern int warningcount;
 extern int sorrycount;
