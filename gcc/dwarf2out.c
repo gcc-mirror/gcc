@@ -502,6 +502,83 @@ reg_number (rtl)
   return regno;
 }
 
+struct reg_size_range
+{
+  int beg;
+  int end;
+  int size;
+};
+
+/* Given a register number in REG_TREE, return an rtx for its size in bytes.
+   We do this in kind of a roundabout way, by building up a list of
+   register size ranges and seeing where our register falls in one of those
+   ranges.  We need to do it this way because REG_TREE is not a constant,
+   and the target macros were not designed to make this task easy.  */
+
+rtx
+expand_builtin_dwarf_reg_size (reg_tree, target)
+     tree reg_tree;
+     rtx target;
+{
+  int i, n_ranges, size;
+  struct reg_size_range ranges[5];
+  tree t, t2;
+
+  ranges[0].beg = 0;
+  ranges[0].size = GET_MODE_SIZE (reg_raw_mode[0]);
+  n_ranges = 1;
+
+  for (i = 1; i < FIRST_PSEUDO_REGISTER; ++i)
+    {
+      size = GET_MODE_SIZE (reg_raw_mode[i]);
+      if (size != ranges[n_ranges-1].size)
+	{
+	  ranges[n_ranges-1].end = i-1;
+	  ranges[n_ranges].beg = i;
+	  ranges[n_ranges].size = GET_MODE_SIZE (reg_raw_mode[i]);
+	  ++n_ranges;
+	  assert (n_ranges < 5);
+	}
+    }
+  ranges[n_ranges-1].end = i-1;
+
+  /* The usual case: fp regs surrounded by general regs.  */
+  if (n_ranges == 3 && ranges[0].size == ranges[2].size)
+    {
+      assert ((DWARF_FRAME_REGNUM (ranges[1].end)
+	       - DWARF_FRAME_REGNUM (ranges[1].beg))
+	      == ranges[1].end - ranges[1].beg);
+      t  = fold (build (GE_EXPR, integer_type_node, reg_tree,
+			build_int_2 (DWARF_FRAME_REGNUM (ranges[1].beg), 0)));
+      t2 = fold (build (LE_EXPR, integer_type_node, reg_tree,
+			build_int_2 (DWARF_FRAME_REGNUM (ranges[1].end), 0)));
+      t = fold (build (TRUTH_ANDIF_EXPR, integer_type_node, t, t2));
+      t = fold (build (COND_EXPR, integer_type_node, t,
+		       build_int_2 (ranges[1].size, 0),
+		       build_int_2 (ranges[0].size, 0)));
+    }
+  else
+    {
+      --n_ranges;
+      t = build_int_2 (ranges[n_ranges].size, 0);
+      size = DWARF_FRAME_REGNUM (ranges[n_ranges].beg);
+      for (; n_ranges--; )
+	{
+	  assert ((DWARF_FRAME_REGNUM (ranges[n_ranges].end)
+		   - DWARF_FRAME_REGNUM (ranges[n_ranges].beg))
+		  == ranges[n_ranges].end - ranges[n_ranges].beg);
+	  assert (DWARF_FRAME_REGNUM (ranges[n_ranges].beg) < size);
+	  size = DWARF_FRAME_REGNUM (ranges[n_ranges].beg);
+	  t2 = fold (build (LE_EXPR, integer_type_node, reg_tree,
+			    build_int_2 (DWARF_FRAME_REGNUM
+					 (ranges[n_ranges].end), 0)));
+	  t = fold (build (COND_EXPR, integer_type_node, t2,
+			   build_int_2 (ranges[n_ranges].size, 0), t));
+	}
+    }
+  return expand_expr (t, target, Pmode, 0);
+}
+
 /* Convert a DWARF call frame info. operation to its string name */
 
 static char *
