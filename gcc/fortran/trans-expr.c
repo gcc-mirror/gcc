@@ -1379,7 +1379,6 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
   tree val;
   gfc_se cse;
   tree type;
-  tree arraytype;
 
   assert (expr->expr_type == EXPR_STRUCTURE || expr->expr_type == EXPR_NULL);
   type = gfc_typenode_for_spec (&expr->ts);
@@ -1397,32 +1396,28 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
       /* Evaluate the expression for this component.  */
       if (init)
 	{
-	  if (!cm->pointer)
+	  if (cm->dimension)
 	    {
-	      /* Initializing a non-pointer element.  */
-	      if (cm->dimension)
-		{
-		  arraytype = TREE_TYPE (cm->backend_decl);
-		  cse.expr = gfc_conv_array_initializer (arraytype, c->expr);
-		}
-	      else if (cm->ts.type == BT_DERIVED)
-		gfc_conv_structure (&cse, c->expr, 1);
-	      else
-		gfc_conv_expr (&cse, c->expr);
+	      tree arraytype;
+	      arraytype = TREE_TYPE (cm->backend_decl);
 
-	    }
-	  else
-	    {
-	      /* Pointer components may only be initialized to
-		 NULL. This should have been enforced by the frontend.  */
-	      if (cm->dimension)
-		{
-		  gfc_todo_error ("Initialization of pointer members");
-		}
+	      /* Arrays need special handling.  */
+	      if (cm->pointer)
+		cse.expr = gfc_build_null_descriptor (arraytype);
 	      else
-		cse.expr = fold_convert (TREE_TYPE (cm->backend_decl), 
-					 null_pointer_node);
+		cse.expr = gfc_conv_array_initializer (arraytype, c->expr);
 	    }
+	  else if (cm->pointer)
+	    {
+	      /* Pointer components may only be initialized to NULL.  */
+	      assert (c->expr->expr_type == EXPR_NULL);
+	      cse.expr = fold_convert (TREE_TYPE (cm->backend_decl), 
+				       null_pointer_node);
+	    }
+	  else if (cm->ts.type == BT_DERIVED)
+	    gfc_conv_structure (&cse, c->expr, 1);
+	  else
+	    gfc_conv_expr (&cse, c->expr);
 	}
       else
 	{
