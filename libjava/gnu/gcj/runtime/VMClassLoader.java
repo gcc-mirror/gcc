@@ -67,19 +67,22 @@ public final class VMClassLoader extends java.net.URLClassLoader
 	try
 	  {
 	    File dir = new File (dirname);
-	    if (! dirname.endsWith (File.separator))
-		dirname = dirname + File.separator;
-	    String files[] 
-	      = dir.list (new FilenameFilter ()
-		          { 
-			    public boolean accept (File dir, String name)
-			    {
-			      return (name.endsWith (".jar") 
-				      || name.endsWith (".zip"));
-			    }
-		          });
-	    for (int i = files.length - 1; i >= 0; i--)
-	      addURL(new URL("file", "", -1, dirname + files[i]));
+            if (dir.exists ())
+            {
+              if (! dirname.endsWith (File.separator))
+                  dirname = dirname + File.separator;
+              String files[] 
+                = dir.list (new FilenameFilter ()
+                            { 
+                              public boolean accept (File dir, String name)
+                              {
+                                return (name.endsWith (".jar") 
+                                        || name.endsWith (".zip"));
+                              }
+                            });
+              for (int i = files.length - 1; i >= 0; i--)
+                addURL(new URL("file", "", -1, dirname + files[i]));
+            }
 	  }
 	catch (Exception x)
 	  {
