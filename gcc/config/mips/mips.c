@@ -10018,7 +10018,7 @@ irix_asm_named_section (const char *name, unsigned int flags)
 /* In addition to emitting a .align directive, record the maximum
    alignment requested for the current section.  */
 
-struct GTY (()) irix_section_align_entry
+struct irix_section_align_entry GTY (())
 {
   const char *name;
   unsigned int log;
