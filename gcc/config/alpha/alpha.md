@@ -6716,6 +6716,44 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set_attr "length" "16")
    (set_attr "type" "multi")])
 
+;; Prefetch data.  
+;;
+;; On EV4, these instructions are nops -- no load occurs.
+;;
+;; On EV5, these instructions act as a normal load, and thus can trap
+;; if the address is invalid.  The OS may (or may not) handle this in
+;; the entMM fault handler and suppress the fault.  If so, then this
+;; has the effect of a read prefetch instruction.
+;;
+;; On EV6, these become official prefetch instructions.
+
+(define_insn "prefetch"
+  [(prefetch (match_operand:DI 0 "address_operand" "p")
+	     (match_operand:DI 1 "const_int_operand" "n")
+	     (match_operand:DI 2 "const_int_operand" "n"))]
+  "TARGET_FIXUP_EV5_PREFETCH || TARGET_CPU_EV6"
+{
+  /* Interpret "no temporal locality" as this data should be evicted once
+     it is used.  The "evict next" alternatives load the data into the cache
+     and leave the LRU eviction counter pointing to that block.  */
+  static const char * const alt[2][2] = {
+    { 
+      "lds $f31,%a0",		/* read, evict next */
+      "ldl $31,%a0",		/* read, evict last */
+    },
+    {
+      "ldt $f31,%a0",		/* write, evict next */
+      "ldq $31,%a0",		/* write, evict last */
+    }
+  };
+
+  bool write = INTVAL (operands[1]) != 0;
+  bool lru = INTVAL (operands[2]) != 0;
+
+  return alt[write][lru];
+}
+  [(set_attr "type" "ild")])
+
 ;; Close the trap shadow of preceding instructions.  This is generated
 ;; by alpha_reorg.
 
