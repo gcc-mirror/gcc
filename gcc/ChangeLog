@@ -1,3 +1,14 @@
+2000-10-09  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* config/avr/avr.c (out_shift_with_cnt): Use AS2 macro.
+	Correct insn length if shift count is a memory operand.
+	* config/avr/avr.md: New define_peephole2 to use *reload_inqi.
+	(*iorhi3_clobber): Change lo8 to hi8.
+	(zero_extendhisi2): Change %B0 to %A1.
+	(ashlhi3, ashrhi3): Correct insn length.
+	(andhi3, abssf2, extendqisi2, extendhisi2): Change "cc"
+	from "clobber" to "set_n" in some alternatives.
+
 2000-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* reload1.c (calculate_needs_all_insns): If deleting an instruction,
