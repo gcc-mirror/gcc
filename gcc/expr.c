@@ -1967,6 +1967,17 @@ emit_group_load (dst, orig_src, ssize, align)
 					  plus_constant (XEXP (src, 0),
 							 bytepos)));
 	}
+      else if (GET_CODE (src) == CONCAT)
+	{
+	  if (bytepos == 0
+	      && bytelen == GET_MODE_SIZE (GET_MODE (XEXP (src, 0))))
+	    tmps[i] = XEXP (src, 0);
+	  else if (bytepos == GET_MODE_SIZE (GET_MODE (XEXP (src, 0)))
+		   && bytelen == GET_MODE_SIZE (GET_MODE (XEXP (src, 1))))
+	    tmps[i] = XEXP (src, 1);
+	  else
+	    abort ();
+	}
       else
 	{
 	  tmps[i] = extract_bit_field (src, bytelen*BITS_PER_UNIT,
