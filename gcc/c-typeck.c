@@ -5828,6 +5828,23 @@ process_init_element (value)
 		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
 		       || fieldcode == UNION_TYPE))
 	    {
+	      /* Structure elements may require alignment.  Do this now
+		 if necessary for the subaggregate.  */
+	      if (constructor_incremental)
+		{
+		  /* Advance to offset of this element.  */
+		  if (! tree_int_cst_equal (constructor_bit_index,
+					    DECL_FIELD_BITPOS (constructor_fields)))
+		    {
+		      int next = (TREE_INT_CST_LOW
+				  (DECL_FIELD_BITPOS (constructor_fields))
+				  / BITS_PER_UNIT);
+		      int here = (TREE_INT_CST_LOW (constructor_bit_index)
+				  / BITS_PER_UNIT);
+
+		      assemble_zeros (next - here);
+		    }
+		}
 	      push_init_level (1);
 	      continue;
 	    }
