@@ -96,13 +96,9 @@ static gfc_symbol *changed_syms = NULL;
 
 /*********** IMPLICIT NONE and IMPLICIT statement handlers ***********/
 
-/* The following static variables hold the default types set by
-   IMPLICIT statements.  We have to store kind information because of
-   IMPLICIT DOUBLE PRECISION statements.  IMPLICIT NONE stores a
-   BT_UNKNOWN into all elements.  The arrays of flags indicate whether
-   a particular element has been explicitly set or not.  */
+/* The following static variable indicates whether a particular element has
+   been explicitly set or not.  */
 
-static gfc_typespec new_ts[GFC_LETTERS];
 static int new_flag[GFC_LETTERS];
 
 
@@ -113,48 +109,30 @@ gfc_set_implicit_none (void)
 {
   int i;
 
-  for (i = 'a'; i <= 'z'; i++)
+  for (i = 0; i < GFC_LETTERS; i++)
     {
-      gfc_clear_ts (&gfc_current_ns->default_type[i - 'a']);
-      gfc_current_ns->set_flag[i - 'a'] = 1;
+      gfc_clear_ts (&gfc_current_ns->default_type[i]);
+      gfc_current_ns->set_flag[i] = 1;
     }
 }
 
 
-/* Sets the implicit types parsed by gfc_match_implicit().  */
+/* Reset the implicit range flags.  */
 
 void
-gfc_set_implicit (void)
+gfc_clear_new_implicit (void)
 {
   int i;
 
   for (i = 0; i < GFC_LETTERS; i++)
-    if (new_flag[i])
-      {
-	gfc_current_ns->default_type[i] = new_ts[i];
-	gfc_current_ns->set_flag[i] = 1;
-      }
+    new_flag[i] = 0;
 }
 
 
-/* Wipe anything a previous IMPLICIT statement may have tried to do.  */
-void gfc_clear_new_implicit (void)
-{
-  int i;
+/* Prepare for a new implicit range.  Sets flags in new_flag[].  */
 
-  for (i = 0; i < GFC_LETTERS; i++)
-    {
-      gfc_clear_ts (&new_ts[i]);
-      if (new_flag[i])
-	new_flag[i] = 0;
-    }
-}
-
-
-/* Prepare for a new implicit range. Sets flags in new_flag[] and
-   copies the typespec to new_ts[].  */
-
-try gfc_add_new_implicit_range (int c1, int c2, gfc_typespec * ts)
+try
+gfc_add_new_implicit_range (int c1, int c2)
 {
   int i;
 
@@ -170,7 +148,6 @@ try gfc_add_new_implicit_range (int c1, int c2, gfc_typespec * ts)
 	  return FAILURE;
 	}
 
-      new_ts[i] = *ts;
       new_flag[i] = 1;
     }
 
@@ -178,27 +155,29 @@ try gfc_add_new_implicit_range (int c1, int c2, gfc_typespec * ts)
 }
 
 
-/* Add a matched implicit range for gfc_set_implicit().  An implicit
-   statement has been fully matched at this point.  We now need to
-   check if merging the new implicit types back into the existing
-   types will work.  */
+/* Add a matched implicit range for gfc_set_implicit().  Check if merging
+   the new implicit types back into the existing types will work.  */
 
 try
-gfc_merge_new_implicit (void)
+gfc_merge_new_implicit (gfc_typespec * ts)
 {
   int i;
 
   for (i = 0; i < GFC_LETTERS; i++)
-    if (new_flag[i])
-      {
-	if (gfc_current_ns->set_flag[i])
-	  {
-	    gfc_error ("Letter %c already has an IMPLICIT type at %C",
-		       i + 'A');
-	    return FAILURE;
-	  }
-      }
+    {
+      if (new_flag[i])
+	{
 
+	  if (gfc_current_ns->set_flag[i])
+	    {
+	      gfc_error ("Letter %c already has an IMPLICIT type at %C",
+			 i + 'A');
+	      return FAILURE;
+	    }
+	  gfc_current_ns->default_type[i] = *ts;
+	  gfc_current_ns->set_flag[i] = 1;
+	}
+    }
   return SUCCESS;
 }
 

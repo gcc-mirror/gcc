@@ -1435,10 +1435,9 @@ extern int gfc_index_integer_kind;
 
 /* symbol.c */
 void gfc_clear_new_implicit (void);
-try gfc_add_new_implicit_range (int, int, gfc_typespec *);
-try gfc_merge_new_implicit (void);
+try gfc_add_new_implicit_range (int, int);
+try gfc_merge_new_implicit (gfc_typespec *);
 void gfc_set_implicit_none (void);
-void gfc_set_implicit (void);
 
 gfc_typespec *gfc_get_default_type (gfc_symbol *, gfc_namespace *);
 try gfc_set_default_type (gfc_symbol *, int, gfc_namespace *);

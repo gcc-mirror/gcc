@@ -1001,7 +1001,7 @@ gfc_match_implicit_none (void)
 /* Match the letter range(s) of an IMPLICIT statement.  */
 
 static match
-match_implicit_range (gfc_typespec * ts)
+match_implicit_range (void)
 {
   int c, c1, c2, inner;
   locus cur_loc;
@@ -1068,7 +1068,7 @@ match_implicit_range (gfc_typespec * ts)
          conflicts with whatever earlier IMPLICIT statements may have
          set.  This is done when we've successfully finished matching
          the current one.  */
-      if (gfc_add_new_implicit_range (c1, c2, ts) != SUCCESS)
+      if (gfc_add_new_implicit_range (c1, c2) != SUCCESS)
 	goto bad;
     }
 
@@ -1116,11 +1116,11 @@ gfc_match_implicit (void)
       return MATCH_ERROR;
     }
 
-  /* First cleanup.  */
-  gfc_clear_new_implicit ();
-
   do
     {
+      /* First cleanup.  */
+      gfc_clear_new_implicit ();
+
       /* A basic type is mandatory here.  */
       m = match_type_spec (&ts, 1);
       if (m == MATCH_ERROR)
@@ -1129,39 +1129,56 @@ gfc_match_implicit (void)
 	goto syntax;
 
       cur_loc = gfc_current_locus;
-      m = match_implicit_range (&ts);
-
-      if (m != MATCH_YES && ts.type == BT_CHARACTER)
-	{
-	  /* looks like we are matching CHARACTER (<len>) (<range>)  */
-	  m = match_char_spec (&ts);
-	}	  
+      m = match_implicit_range ();
 
       if (m == MATCH_YES)
 	{
-	  /* Looks like we have the <TYPE> (<RANGE>).  */
+	  /* We may have <TYPE> (<RANGE>).  */
 	  gfc_gobble_whitespace ();
 	  c = gfc_next_char ();
 	  if ((c == '\n') || (c == ','))
-	    continue;
+	    {
+	      /* Check for CHARACTER with no length parameter.  */
+	      if (ts.type == BT_CHARACTER && !ts.cl)
+		{
+		  ts.kind = gfc_default_character_kind ();
+		  ts.cl = gfc_get_charlen ();
+		  ts.cl->next = gfc_current_ns->cl_list;
+		  gfc_current_ns->cl_list = ts.cl;
+		  ts.cl->length = gfc_int_expr (1);
+		}
+
+	      /* Record the Successful match.  */
+	      if (gfc_merge_new_implicit (&ts) != SUCCESS)
+		return MATCH_ERROR;
+	      continue;
+	    }
 
 	  gfc_current_locus = cur_loc;
 	}
 
-      /* Last chance -- check <TYPE> (<KIND>) (<RANGE>).  */
-      m = gfc_match_kind_spec (&ts);
+      /* Discard the (incorrectly) matched range.  */
+      gfc_clear_new_implicit ();
+
+      /* Last chance -- check <TYPE> <SELECTOR> (<RANGE>).  */
+      if (ts.type == BT_CHARACTER)
+	m = match_char_spec (&ts);
+      else
+	{
+	  m = gfc_match_kind_spec (&ts);
+	  if (m == MATCH_NO)
+	    {
+	      m = gfc_match_old_kind_spec (&ts);
+	      if (m == MATCH_ERROR)
+		goto error;
+	      if (m == MATCH_NO)
+		goto syntax;
+	    }
+	}
       if (m == MATCH_ERROR)
 	goto error;
-      if (m == MATCH_NO)
-	{
-	  m = gfc_match_old_kind_spec (&ts);
-	  if (m == MATCH_ERROR)
-	    goto error;
-	  if (m == MATCH_NO)
-	    goto syntax;
-	}
 
-      m = match_implicit_range (&ts);
+      m = match_implicit_range ();
       if (m == MATCH_ERROR)
 	goto error;
       if (m == MATCH_NO)
@@ -1172,14 +1189,12 @@ gfc_match_implicit (void)
       if ((c != '\n') && (c != ','))
 	goto syntax;
 
+      if (gfc_merge_new_implicit (&ts) != SUCCESS)
+	return MATCH_ERROR;
     }
   while (c == ',');
 
-  /* All we need to now is try to merge the new implicit types back
-     into the existing types.  This will fail if another implicit
-     type is already defined for a letter.  */
-  return (gfc_merge_new_implicit () == SUCCESS) ?
-      MATCH_YES : MATCH_ERROR;
+  return MATCH_YES;
 
 syntax:
   gfc_syntax_error (ST_IMPLICIT);
