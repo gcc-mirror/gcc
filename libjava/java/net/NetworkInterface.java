@@ -46,8 +46,6 @@ import java.util.Vector;
  */
 public final class NetworkInterface
 {
-  private static Vector networkInterfaces;
-	
   private String name;
   
   private Vector inetAddresses;
@@ -125,8 +123,7 @@ public final class NetworkInterface
   public static NetworkInterface getByName (String name)
     throws SocketException
   {
-    if (networkInterfaces == null)
-      networkInterfaces = getRealNetworkInterfaces ();
+    Vector networkInterfaces = getRealNetworkInterfaces ();
 
     for (Enumeration e = networkInterfaces.elements ();
          e.hasMoreElements (); )
@@ -151,8 +148,7 @@ public final class NetworkInterface
   public static NetworkInterface getByInetAddress (InetAddress addr)
     throws SocketException
   {
-    if (networkInterfaces == null)
-      networkInterfaces = getRealNetworkInterfaces ();
+    Vector networkInterfaces = getRealNetworkInterfaces ();
     
     for (Enumeration interfaces = networkInterfaces.elements ();
          interfaces.hasMoreElements (); )
@@ -179,10 +175,10 @@ public final class NetworkInterface
   public static Enumeration getNetworkInterfaces ()
     throws SocketException
   {
-    if (networkInterfaces == null)
-      networkInterfaces = getRealNetworkInterfaces ();
+    Vector networkInterfaces = getRealNetworkInterfaces ();
 
     Enumeration tmp = networkInterfaces.elements ();
+
     if (tmp.hasMoreElements ())
       return tmp;
 
@@ -200,6 +196,7 @@ public final class NetworkInterface
       return false;
    
     NetworkInterface tmp = (NetworkInterface) obj;
+
     return (name.equals (tmp.name)
             && inetAddresses.equals (tmp.inetAddresses));
   }
@@ -229,7 +226,7 @@ public final class NetworkInterface
          e.hasMoreElements (); )
       {
         InetAddress address = (InetAddress) e.nextElement ();
-        result += address.toString () + separator;
+        result += address.toString () + ";" + separator;
       }
 
     return result;

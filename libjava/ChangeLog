@@ -1,5 +1,15 @@
 2003-05-05  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/NetworkInterface.java
+	(networkInterfaces): Removed.
+	(getByName): Use getRealNetworkInterfaces() instead of
+	networkInterfaces.
+	(getByInetAddress): Likewise.
+	(getNetworkInterfaces): Likewise.
+	(toString): Fix output of addresses of an interface.
+
+2003-05-05  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/DataInputStream.java:
 	Merged new documentation from classpath.
 
