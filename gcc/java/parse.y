@@ -220,7 +220,7 @@ static tree build_try_finally_statement (int, tree, tree);
 static tree patch_try_statement (tree);
 static tree patch_synchronized_statement (tree, tree);
 static tree patch_throw_statement (tree, tree);
-static void check_thrown_exceptions (int, tree);
+static void check_thrown_exceptions (int, tree, tree);
 static int check_thrown_exceptions_do (tree);
 static void purge_unchecked_exceptions (tree);
 static bool ctors_unchecked_throws_clause_p (tree);
@@ -9454,7 +9454,13 @@ resolve_qualified_expression_name (tree wfl, tree *found_decl,
 	  if (location
 	      && !OUTER_FIELD_ACCESS_IDENTIFIER_P
 	            (DECL_NAME (current_function_decl)))
-	    check_thrown_exceptions (location, ret_decl);
+	    {
+	      tree arguments = NULL_TREE;
+	      if (TREE_CODE (qual_wfl) == CALL_EXPR
+		  && TREE_OPERAND (qual_wfl, 1) != NULL_TREE)
+		arguments = TREE_VALUE (TREE_OPERAND (qual_wfl, 1));
+	      check_thrown_exceptions (location, ret_decl, arguments);
+	    }
 
 	  /* If the previous call was static and this one is too,
 	     build a compound expression to hold the two (because in
@@ -11897,13 +11903,20 @@ java_complete_lhs (tree node)
 	  int in_this = CALL_THIS_CONSTRUCTOR_P (node);
 	  int from_super = (EXPR_WFL_NODE (TREE_OPERAND (node, 0)) ==
                            super_identifier_node);
+	  tree arguments;
 
 	  node = patch_method_invocation (node, NULL_TREE, NULL_TREE,
 					  from_super, 0, &decl);
 	  if (node == error_mark_node)
 	    return error_mark_node;
 
-	  check_thrown_exceptions (EXPR_WFL_LINECOL (node), decl);
+	  if (TREE_CODE (node) == CALL_EXPR
+	      && TREE_OPERAND (node, 1) != NULL_TREE)
+	    arguments = TREE_VALUE (TREE_OPERAND (node, 1));
+	  else
+	    arguments = NULL_TREE;
+	  check_thrown_exceptions (EXPR_WFL_LINECOL (node), decl,
+				   arguments);
 	  /* If we call this(...), register signature and positions */
 	  if (in_this)
 	    DECL_CONSTRUCTOR_CALLS (current_function_decl) =
@@ -15621,22 +15634,28 @@ patch_throw_statement (tree node, tree wfl_op1)
 }
 
 /* Check that exception said to be thrown by method DECL can be
-   effectively caught from where DECL is invoked.  */
-
+   effectively caught from where DECL is invoked.  THIS_EXPR is the
+   expression that computes `this' for the method call.  */
 static void
-check_thrown_exceptions (int location, tree decl)
+check_thrown_exceptions (int location, tree decl, tree this_expr)
 {
   tree throws;
-  /* For all the unchecked exceptions thrown by DECL */
+  int is_array_call = 0;
+
+  if (this_expr != NULL_TREE
+      && TREE_CODE (TREE_TYPE (this_expr)) == POINTER_TYPE
+      && TYPE_ARRAY_P (TREE_TYPE (TREE_TYPE (this_expr))))
+    is_array_call = 1;
+
+  /* For all the unchecked exceptions thrown by DECL.  */
   for (throws = DECL_FUNCTION_THROWS (decl); throws;
        throws = TREE_CHAIN (throws))
     if (!check_thrown_exceptions_do (TREE_VALUE (throws)))
       {
-#if 1
-	/* Temporary hack to suppresses errors about cloning arrays. FIXME */
-	if (DECL_NAME (decl) == get_identifier ("clone"))
+	/* Suppress errors about cloning arrays.  */
+	if (is_array_call && DECL_NAME (decl) == get_identifier ("clone"))
 	  continue;
-#endif
+
 	EXPR_WFL_LINECOL (wfl_operator) = location;
 	if (DECL_FINIT_P (current_function_decl))
 	  parse_error_context

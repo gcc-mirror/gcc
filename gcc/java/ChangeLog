@@ -1,3 +1,11 @@
+2003-08-05  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR java/11600:
+	* parse.y (java_complete_lhs): See whether we're calling a method
+	on an array.
+	(check_thrown_exceptions): Added `is_array_call' argument;
+	fixed `clone' checking; updated all callers.
+
 2003-08-05  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* java-tree.h (DECL_ESTIMATED_INSNS): Remove (moved to tree.h).
