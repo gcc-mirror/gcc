@@ -39,10 +39,6 @@
 
 @BOTTOM@
 
-/* For gettext (NLS) */
-#define _(String) gettext (String)
-#define N_(String) (String)
-
 
 /* Leave that blank line there!!  Autoheader needs it.
    If you're adding to this file, keep in mind:

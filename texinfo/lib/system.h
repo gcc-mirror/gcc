@@ -37,7 +37,11 @@
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
+
+/* For gettext (NLS).  */
 #include <libintl.h>
+#define _(String) gettext (String)
+#define N_(String) (String)
 
 /* Don't use bcopy!  Use memmove if source and destination may overlap,
    memcpy otherwise.  */
