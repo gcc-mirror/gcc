@@ -209,16 +209,21 @@ push_access_scope_real (t, args, context)
 	  if (spec)
 	    t = spec;
 	}
-
-      saved_access_scope = tree_cons
-	(NULL_TREE, current_function_decl, saved_access_scope);
-      current_function_decl = t;
     }
 
   if (!context)
     context = DECL_CONTEXT (t);
   if (context && TYPE_P (context))
     push_nested_class (context, 2);
+  else
+    push_to_top_level ();
+    
+  if (TREE_CODE (t) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (t))
+    {
+      saved_access_scope = tree_cons
+	(NULL_TREE, current_function_decl, saved_access_scope);
+      current_function_decl = t;
+    }
 }
 
 /* Like push_access_scope_real, but always uses DECL_CONTEXT.  */
@@ -237,14 +242,16 @@ void
 pop_access_scope (t)
   tree t;
 {
-  if (DECL_CLASS_SCOPE_P (t))
-    pop_nested_class ();
-
   if (TREE_CODE (t) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (t))
     {
       current_function_decl = TREE_VALUE (saved_access_scope);
       saved_access_scope = TREE_CHAIN (saved_access_scope);
     }
+
+  if (DECL_CLASS_SCOPE_P (t))
+    pop_nested_class ();
+  else
+    pop_from_top_level ();
 }
 
 /* Do any processing required when DECL (a member template
