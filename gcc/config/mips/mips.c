@@ -438,6 +438,25 @@ large_int (op, mode)
   return TRUE;
 }
 
+/* Return truth value of whether OP is an integer which can be loaded
+   with an lui instruction.  */
+
+int
+lui_int (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  long value;
+
+  if (GET_CODE (op) != CONST_INT)
+    return FALSE;
+
+  if ((value & 0x0000ffff) == 0)		/* lui reg,value>>16 */
+    return TRUE;
+
+  return FALSE;
+}
+
 /* Return truth value of whether OP is a register or the constant 0.  */
 
 int
@@ -3541,6 +3560,71 @@ mips_output_lineno (stream, line)
 	       num_source_filenames, line);
   
       LABEL_AFTER_LOC (stream);
+    }
+}
+
+
+/* If defined, a C statement to be executed just prior to the
+   output of assembler code for INSN, to modify the extracted
+   operands so they will be output differently.
+
+   Here the argument OPVEC is the vector containing the operands
+   extracted from INSN, and NOPERANDS is the number of elements of
+   the vector which contain meaningful data for this insn.  The
+   contents of this vector are what will be used to convert the
+   insn template into assembler code, so you can change the
+   assembler output by changing the contents of the vector.
+
+   We use it to check if the current insn needs a nop in front of it
+   because of load delays, and also to update the delay slot
+   statistics.  */
+
+void
+final_prescan_insn (insn, opvec, noperands)
+     rtx insn;
+     rtx opvec[];
+     int noperands;
+{
+  if (dslots_number_nops > 0)
+    {
+      enum machine_mode mode = GET_MODE (mips_load_reg);
+      rtx pattern = PATTERN (insn);
+      int length = get_attr_length (insn);
+
+      /* If this operand is really safe to fill the delay slot, such as an
+	 AND with a large constant integer as operand[2], mark the delay
+	 slot filled.  */
+      if (get_attr_safe (insn) == SAFE_YES && length > 1)
+	dslots_load_filled++;
+
+      /* Do we need to emit a NOP? */
+      else if (length == 0
+	       || (mips_load_reg  != (rtx)0 && reg_mentioned_p (mips_load_reg,  pattern))
+	       || (mips_load_reg2 != (rtx)0 && reg_mentioned_p (mips_load_reg2, pattern))
+	       || (mips_load_reg3 != (rtx)0 && reg_mentioned_p (mips_load_reg3, pattern))
+	       || (mips_load_reg4 != (rtx)0 && reg_mentioned_p (mips_load_reg4, pattern)))
+	fputs ((set_noreorder) ? "\tnop\n" : "\t#nop\n", asm_out_file);
+
+      else
+	dslots_load_filled++;
+
+      while (--dslots_number_nops > 0)
+	fputs ((set_noreorder) ? "\tnop\n" : "\t#nop\n", asm_out_file);
+
+      mips_load_reg  = (rtx)0;
+      mips_load_reg2 = (rtx)0;
+      mips_load_reg3 = (rtx)0;
+      mips_load_reg4 = (rtx)0;
+
+      if (set_noreorder && --set_noreorder == 0)
+	fputs ("\t.set\treorder\n", asm_out_file);
+    }
+
+  if (TARGET_STATS)
+    {
+      enum rtx_code code = GET_CODE (insn);
+      if (code == JUMP_INSN || code == CALL_INSN)
+	dslots_jump_total++;
     }
 }
 

@@ -125,6 +125,7 @@ extern unsigned long	compute_frame_size ();
 extern void		expand_block_move ();
 extern int		equality_op ();
 extern int		fcmp_op ();
+extern void		final_prescan_insn ();
 extern int		fpsw_register_operand ();
 extern struct rtx_def *	function_arg ();
 extern void		function_arg_advance ();
@@ -135,6 +136,7 @@ extern void		gen_conditional_branch ();
 extern struct rtx_def * gen_int_relational ();
 extern void		init_cumulative_args ();
 extern int		large_int ();
+extern int		lui_int ();
 extern int		md_register_operand ();
 extern int		mips_address_cost ();
 extern void		mips_asm_file_end ();
@@ -428,7 +430,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 19]"
+#define MIPS_VERSION "[AL 1.1, MM 20]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -2442,8 +2444,8 @@ while (0)
 #define CLASS_DIVMOD_OP		0x02	/* operator is {,U}{DIV,MOD} */
 #define CLASS_UNSIGNED_OP	0x04	/* operator is U{DIV,MOD} */
 #define CLASS_CMP_OP		0x08	/* operator is comparison */
-#define CLASS_EQUALITY_OP	0x10	/* operator is == or != */
 #define CLASS_FCMP_OP		0x08	/* operator is fp. compare */
+#define CLASS_EQUALITY_OP	0x10	/* operator is == or != */
 
 #define CLASS_UNS_CMP_OP	(CLASS_UNSIGNED_OP | CLASS_CMP_OP)
 
@@ -2504,47 +2506,7 @@ while (0)
    statistics.  */
 
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)			\
-do									\
-  {									\
-    if (dslots_number_nops > 0 && mips_load_reg != (rtx)0)		\
-      {									\
-	enum machine_mode mode = GET_MODE (mips_load_reg);		\
-	rtx pattern = PATTERN (INSN);					\
-									\
-	if (reg_mentioned_p (mips_load_reg, pattern)			\
-	    || (mips_load_reg2 != (rtx)0				\
-		&& reg_mentioned_p (mips_load_reg2, pattern))		\
-	    || (mips_load_reg3 != (rtx)0				\
-		&& reg_mentioned_p (mips_load_reg3, pattern))		\
-	    || (mips_load_reg4 != (rtx)0				\
-		&& reg_mentioned_p (mips_load_reg4, pattern))		\
-	    || get_attr_length (INSN) == 0)				\
-	  {								\
-	    fputs ((set_noreorder) ? "\tnop\n" : "\t#nop\n", asm_out_file); \
-	  }								\
-	else								\
-	  dslots_load_filled++;						\
-									\
-	while (--dslots_number_nops > 0)				\
-	  fputs ((set_noreorder) ? "\tnop\n" : "\t#nop\n", asm_out_file); \
-									\
-	mips_load_reg  = (rtx)0;					\
-	mips_load_reg2 = (rtx)0;					\
-	mips_load_reg3 = (rtx)0;					\
-	mips_load_reg4 = (rtx)0;					\
-									\
-	if (set_noreorder && --set_noreorder == 0)			\
-	  fputs ("\t.set\treorder\n", asm_out_file);			\
-      }									\
-									\
-    if (TARGET_STATS)							\
-      {									\
-	enum rtx_code code = GET_CODE (INSN);				\
-	if (code == JUMP_INSN || code == CALL_INSN)			\
-	  dslots_jump_total++;						\
-      }									\
-  }									\
-while (0)
+  final_prescan_insn (INSN, OPVEC, NOPERANDS)
 
 
 /* Tell final.c how to eliminate redundant test instructions.
