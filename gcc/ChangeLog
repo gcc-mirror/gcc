@@ -1,3 +1,8 @@
+2001-07-05  Andreas Jaeger  <aj@suse.de>
+
+	* doc/gcc.texi (GNU/Linux): Remove accidental re-add of GPL
+	section.
+
 2001-07-04  Daniel Berlin  <dan@cgsoftware.com>
 
 	* dwarf2out.c (dwarf2out_define): Update comment.
@@ -39,7 +44,7 @@ Wed Jul  4 13:40:02 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-07-04  Daniel Berlin  <dan@cgsoftware.com>
 
 	* c-lex.c (cb_file_change): Pass line number to
-	debug_start_source_file. 
+	debug_start_source_file.
 	(cb_undefine): Pass correct line number to debug_undef.
 
 	* toplev.c (debug_start_source_file): Add line number to
@@ -48,16 +53,16 @@ Wed Jul  4 13:40:02 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	we change debug formats, unless the current level is
 	none. (Before, -g3 -gdwarf-2 would use debug level 2, rather than
 	3).
-	
+
 	* toplev.h (debug_start_source_file): Add line number to
 	parameters.
-	
+
 	* dwarf2out.h (dwarf2out_start_source_file): Add line number to
 	parameters.
 
 	* dwarf2out.c (dwarf2out_start_source_file): Add line number to
 	parameters.
-	Output debug_macinfo data for starting file if requested. 
+	Output debug_macinfo data for starting file if requested.
 	(dwarf2out_end_source_file): Output debug_macinfo data for ending
 	file if requested.
 	(dwarf2out_define): Output debug_macinfo data for defining a macro
@@ -80,7 +85,7 @@ Wed Jul  4 13:40:02 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(output_loc_list): Ditto.
 	Also, fix thinko in curr not being initialized.
 	(gen_internal_sym): Ditto.
-     
+
 Wed Jul  4 13:40:02 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* emit-rtl.c (replace_equiv_address): New function.
