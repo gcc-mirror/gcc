@@ -1635,7 +1635,6 @@
 #   define CPP_WORDSZ 64
 #   define CACHE_LINE_SIZE 64
 #   define USE_GENERIC_PUSH_REGS
-#   endif
 #   ifdef LINUX
 #	define OS_TYPE "LINUX"
 #       define LINUX_STACKBOTTOM
