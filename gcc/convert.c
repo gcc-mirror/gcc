@@ -40,8 +40,6 @@ convert_to_pointer (type, expr)
   
   if (integer_zerop (expr))
     {
-      if (type == TREE_TYPE (null_pointer_node))
-	return null_pointer_node;
       expr = build_int_2 (0, 0);
       TREE_TYPE (expr) = type;
       return expr;
@@ -67,7 +65,9 @@ convert_to_pointer (type, expr)
 
   error ("cannot convert to a pointer type");
 
-  return null_pointer_node;
+  expr = build_int_2 (0, 0);
+  TREE_TYPE (expr) = type;
+  return expr;
 }
 
 /* Convert EXPR to some floating-point type TYPE.
