@@ -1,5 +1,32 @@
 2003-02-13  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/ByteBuffer.java
+	(endian): New member variable.
+	(get): New methods.
+	(equals): New method.
+	(compareTo): New method.
+	(order): New methods.
+	(compact): New method.
+	(isDirect): New method.
+	(slice): New method.
+	(duplicate): New method.
+	(asReadOnlyBuffer): New method.
+	(asCharBuffer): New method.
+	(asDoubleBuffer): New method.
+	(asFloatBuffer): New method.
+	(asIntBuffer): New method.
+	(asLongBuffer): New method.
+	(asShortBuffer): New method.
+	(get*): New methods.
+	(put*): New methods.
+	(toString): New method.
+	* java/nio/CharBuffer.java
+	(CharBuffer): Implement Comparable instead of Cloneable.
+	(get): May not be final.
+	(put): May not be final.
+
+2003-02-13  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/natSocketChannelImpl.cc
 	(SocketConnect): This is not implemented yet.
 	(SocketBind): This is not implemented yet.
