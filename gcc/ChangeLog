@@ -1,3 +1,7 @@
+Mon Mar 23 14:14:20 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* freebsd.h (ASM_OUTPUT_ALIGN): Redefine.
+
 Sat Mar 21 23:52:56 PST 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

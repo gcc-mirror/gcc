@@ -87,6 +87,13 @@ Boston, MA 02111-1307, USA.  */
    we want to retain compatibility with older gcc versions.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
+/* i386 freebsd still uses old binutils that don't insert nops by default
+   when the .align directive demands to insert extra space in the text
+   segment.  */
+#undef ASM_OUTPUT_ALIGN
+#define ASM_OUTPUT_ALIGN(FILE,LOG) \
+  if ((LOG)!=0) fprintf ((FILE), "\t.align %d,0x90\n", (LOG))
+
 /* Profiling routines, partially copied from i386/osfrose.h.  */
 
 /* Redefine this to use %eax instead of %edx.  */
