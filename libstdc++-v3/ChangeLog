@@ -1,3 +1,31 @@
+2000-10-06  benjamin kosnik  <bkoz@fillmore.constant.com>
+2000-10-06  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* src/Makefile.am: Remove OPTIMIZE_CXXFLAGS, WARN_CXXFLAGS,
+	CONFIG_CXXFLAGS from here, and move to...
+	* src/Makefile.in: Regenerate.
+	* Makefile.am: ... here. Clean.
+	(OPTIMIZE_CXXFLAGS): Move up Makefile hierarchy to here.
+	(WARN_CXXFLAGS): Same.
+	(CONFIG_CXXFLAGS): Same.
+	* Makefile.in: Regenerate.
+	* libsupc++/Makefile.am: Use top-level OPTIMIZE_CXXFLAGS,
+	WARN_CXXFLAGS, CONFIG_CXXFLAGS as part of local AM_CXXFLAGS.
+	* libsupc++/Makefile.in: Regenerate.
+		
+	Change math to libmath.
+	* math: Move to libmath, delete.
+	* libmath: New directory.
+	* libmath/*: Populate.
+	* src/Makefile.am (LIBMATH_INCLUDES): Change to libmath.
+	(libstdc___la_LIBADD): Same.
+	* src/Makefile.in: Regenerate.
+	* configure.in: Add AC_OUTPUT for libmath/Makefile.
+	* configure: Regenerate.
+	* Makefile.am (SUBDIRS): Add libmath.
+	* Makefile.in: Regenerate.
+	* README (file): Change name.
+	
 2000-10-06  Benjamin Kosnik  <bkoz@cygnus.com>
             Richard Henderson  <rth@cygnus.com>
 	    Alexandre Oliva  <aoliva@redhat.com>
@@ -13,7 +41,7 @@
 	* src/Makefile.am (libstdc___la_LIBADD): Add in libsupc++.la
 	* src/Makefile.in: Regenerate.
 	* libio/Makefile.am: Remove extraneous, confusing bits.
-	* libio/Makefile.in: Regeneate.
+	* libio/Makefile.in: Regenerate.
 	
 2000-10-05  Brent Verner  <brent@rcfile.org>
 

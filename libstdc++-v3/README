@@ -68,7 +68,6 @@ Other subdirectories contain variant versions of certain files
 that are meant to be copied or linked by the configure script.
 Currently these are:
 
-  math
   config/cpu
   config/os
 

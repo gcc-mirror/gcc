@@ -29,7 +29,28 @@ MAINT_CHARSET = latin1
 INTERFACE = v3
 gxx_include_dir=$(includedir)/g++
 
-SUBDIRS = math libio libsupc++ src
+SUBDIRS = libio libmath libsupc++ src
+
+
+# Compile flags that should be constant throughout the build, both for
+# SUBDIRS and for libstdc++-v3 in general.
+# Optimization flags that are probably a good idea for thrill-seekers. Just
+# uncomment the lines below and make, everything else is ready to go... 
+# OPTIMIZE_CXXFLAGS = -O3 -fstrict-aliasing -fvtable-gc 
+OPTIMIZE_CXXFLAGS = 
+
+# Warning flags to use.
+WARN_CXXFLAGS = \
+	-Wall -Wno-format -W -Wwrite-strings -Winline \
+	$(WERROR) @WFMT_FLAGS@
+
+# These bits are all figured out from configure. Look in acinclude.m4
+# or configure.in to see how they are set.
+# NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
+CONFIG_CXXFLAGS = \
+	@CPU_FLAGS@ @EXTRA_CXX_FLAGS@ \
+	@SECTION_FLAGS@ @CSHADOWFLAGS@ @DEBUG_FLAGS@ 
+
 
 # Use $(blddir) instead of $(top_builddir) for arguments to "mkcheck"
 # because then the paths will be full pathnames, not relative
@@ -41,28 +62,6 @@ check:  $(top_builddir)/mkcheck
 check-install: $(top_builddir)/mkcheck
 	chmod +x  $(top_builddir)/mkcheck
 	$(top_builddir)/mkcheck 1 `pwd` $(top_srcdir) $(prefix)
-
-#all-local:  stamp-rebuild
-
-# This has already been sanity-checked by configure to a certain extent
-#stamp-rebuild:  $(top_builddir)/config.status
-#	if test "$(GCC_OBJDIR)" != "no"; then \
-#	(cd "$(GCC_OBJDIR)/gcc" && \
-#	 if test -f libgcc2.ready ; then \
-#	   rm -f libgcc2.ready libgcc.a libgcc2.a ; \
-#	   $(MAKE) libgcc2.a TARGET_LIBGCC2_CFLAGS='@NAMESPACES@' ; \
-#	   $(MAKE) libgcc.a ; \
-#	 else \
-#	   echo '** There does not appear to be a previously-built' ; \
-#	   echo '** library here.  Please see' ; \
-#	   echo '** <http://sourceware.cygnus.com/libstdc++/install.html>' ; \
-#	   echo '** In particular, the "Building and Installing' ; \
-#	   echo '** the library (without GCC sources)" section.' ; \
-#	   exit 1 ; \
-#	 fi \
-#	) \
-#	fi
-#	touch stamp-rebuild
 
 # Multilib support.
 MAKEOVERRIDES=
@@ -147,11 +146,10 @@ AM_MAKEFLAGS = \
 	"NM_FOR_BUILD=$(NM_FOR_BUILD)" \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
-	"WERROR=$(WERROR)"
-
-
-
-
+	"WERROR=$(WERROR)" \
+	"OPTIMIZE_CXXFLAGS=$(OPTIMIZE_CXXFLAGS)" \
+	"WARN_CXXFLAGS=$(WARN_CXXFLAGS)" \
+	"CONFIG_CXXFLAGS=$(CONFIG_CXXFLAGS)" 
 
 
 
