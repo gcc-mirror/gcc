@@ -1,3 +1,7 @@
+2001-11-02  Graham Stott  <grahams@redhat.com>
+
+	* recog.c (decode_asm_operands):  Check that the SRC is ASM_OPERANDS.
+
 2001-11-01  Eric Christopher  <echristo@redhat.com>
 
         * config.gcc: Revert part of earlier patch.
