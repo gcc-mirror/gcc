@@ -1,3 +1,8 @@
+2004-12-30  David Edelsohn  <edelsohn@gnu.org>
+
+	* gfortran.fortran-torture/execute/read_eof.f90: Open scratch
+	file, not /dev/null.  Abort on error.
+
 2004-12-30  Alexander Malmberg  <alexander@malmberg.org>
 	    Ziemowit Laski  <zlaski@apple.com>
 
