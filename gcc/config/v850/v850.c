@@ -63,7 +63,6 @@ static void v850_insert_attributes   PARAMS ((tree, tree *));
 static void v850_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT));
 static void v850_encode_data_area    PARAMS ((tree));
 static void v850_encode_section_info PARAMS ((tree, int));
-static const char *v850_strip_name_encoding PARAMS ((const char *));
 
 /* Information about the various small memory areas.  */
 struct small_memory_info small_memory[ (int)SMALL_MEMORY_max ] =
@@ -104,8 +103,6 @@ static int v850_interrupt_p = FALSE;
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO v850_encode_section_info
-#undef TARGET_STRIP_NAME_ENCODING
-#define TARGET_STRIP_NAME_ENCODING v850_strip_name_encoding
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS v850_rtx_costs
@@ -509,20 +506,18 @@ print_operand (file, x, code)
     case 'O':
       if (special_symbolref_operand (x, VOIDmode))
         {
-          const char *name;
-
 	  if (GET_CODE (x) == SYMBOL_REF)
-	    name = XSTR (x, 0);
+	    ;
 	  else if (GET_CODE (x) == CONST)
-	    name = XSTR (XEXP (XEXP (x, 0), 0), 0);
+	    x = XEXP (XEXP (x, 0), 0);
 	  else
 	    abort ();
 
-          if (ZDA_NAME_P (name))
+          if (SYMBOL_REF_ZDA_P (x))
             fprintf (file, "zdaoff");
-          else if (SDA_NAME_P (name))
+          else if (SYMBOL_REF_SDA_P (x))
             fprintf (file, "sdaoff");
-          else if (TDA_NAME_P (name))
+          else if (SYMBOL_REF_TDA_P (x))
             fprintf (file, "tdaoff");
           else
             abort ();
@@ -539,20 +534,18 @@ print_operand (file, x, code)
     case 'Q':
       if (special_symbolref_operand (x, VOIDmode))
         {
-          const char *name;
-
 	  if (GET_CODE (x) == SYMBOL_REF)
-	    name = XSTR (x, 0);
+	    ;
 	  else if (GET_CODE (x) == CONST)
-	    name = XSTR (XEXP (XEXP (x, 0), 0), 0);
+	    x = XEXP (XEXP (x, 0), 0);
 	  else
 	    abort ();
 
-          if (ZDA_NAME_P (name))
+          if (SYMBOL_REF_ZDA_P (x))
             fprintf (file, "r0");
-          else if (SDA_NAME_P (name))
+          else if (SYMBOL_REF_SDA_P (x))
             fprintf (file, "gp");
-          else if (TDA_NAME_P (name))
+          else if (SYMBOL_REF_TDA_P (x))
             fprintf (file, "ep");
           else
             abort ();
@@ -692,55 +685,51 @@ print_operand_address (file, addr)
 	}
       break;
     case SYMBOL_REF:
-      if (ENCODED_NAME_P (XSTR (addr, 0)))
-        {
-          const char *name = XSTR (addr, 0);
-          const char *off_name;
-          const char *reg_name;
+      {
+        const char *off_name = NULL;
+        const char *reg_name = NULL;
 
-          if (ZDA_NAME_P (name))
-            {
-              off_name = "zdaoff";
-              reg_name = "r0";
-            }
-          else if (SDA_NAME_P (name))
-            {
-              off_name = "sdaoff";
-              reg_name = "gp";
-            }
-          else if (TDA_NAME_P (name))
-            {
-              off_name = "tdaoff";
-              reg_name = "ep";
-            }
-          else
-            abort ();
+	if (SYMBOL_REF_ZDA_P (addr))
+          {
+            off_name = "zdaoff";
+            reg_name = "r0";
+          }
+        else if (SYMBOL_REF_SDA_P (addr))
+          {
+            off_name = "sdaoff";
+            reg_name = "gp";
+          }
+        else if (SYMBOL_REF_TDA_P (addr))
+          {
+            off_name = "tdaoff";
+            reg_name = "ep";
+          }
 
+	if (off_name)
           fprintf (file, "%s(", off_name);
-          output_addr_const (file, addr);
-          fprintf (file, ")[%s]", reg_name);
-        }
-      else
         output_addr_const (file, addr);
+	if (reg_name)
+          fprintf (file, ")[%s]", reg_name);
+      }
       break;
     case CONST:
       if (special_symbolref_operand (addr, VOIDmode))
         {
-          const char *name = XSTR (XEXP (XEXP (addr, 0), 0), 0);
+	  rtx x = XEXP (XEXP (addr, 0), 0);
           const char *off_name;
           const char *reg_name;
 
-          if (ZDA_NAME_P (name))
+          if (SYMBOL_REF_ZDA_P (x))
             {
               off_name = "zdaoff";
               reg_name = "r0";
             }
-          else if (SDA_NAME_P (name))
+          else if (SYMBOL_REF_SDA_P (x))
             {
               off_name = "sdaoff";
               reg_name = "gp";
             }
-          else if (TDA_NAME_P (name))
+          else if (SYMBOL_REF_TDA_P (x))
             {
               off_name = "tdaoff";
               reg_name = "ep";
@@ -1051,7 +1040,7 @@ ep_memory_operand (op, mode, unsigned_load)
       break;
 
     case SYMBOL_REF:
-      return TDA_NAME_P (XSTR (addr, 0));
+      return SYMBOL_REF_TDA_P (addr);
 
     case REG:
       return REGNO (addr) == EP_REGNUM;
@@ -1067,7 +1056,7 @@ ep_memory_operand (op, mode, unsigned_load)
 	  if (GET_CODE (op0) == REG && REGNO (op0) == EP_REGNUM)
 	    return TRUE;
 
-	  if (GET_CODE (op0) == SYMBOL_REF && TDA_NAME_P (XSTR (op0, 0)))
+	  if (GET_CODE (op0) == SYMBOL_REF && SYMBOL_REF_TDA_P (op0))
 	    return TRUE;
 	}
       break;
@@ -1151,15 +1140,15 @@ special_symbolref_operand (op, mode)
      rtx op;
      enum machine_mode ATTRIBUTE_UNUSED mode;
 {
-  if (GET_CODE (op) == SYMBOL_REF)
-    return ENCODED_NAME_P (XSTR (op, 0));
+  if (GET_CODE (op) == CONST
+      && GET_CODE (XEXP (op, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT
+      && CONST_OK_FOR_K (INTVAL (XEXP (XEXP (op, 0), 1))))
+    op = XEXP (XEXP (op, 0), 0);
 
-  else if (GET_CODE (op) == CONST)
-    return (GET_CODE (XEXP (op, 0)) == PLUS
-	    && GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
-	    && ENCODED_NAME_P (XSTR (XEXP (XEXP (op, 0), 0), 0))
-	    && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT
-	    && CONST_OK_FOR_K (INTVAL (XEXP (XEXP (op, 0), 1))));
+  if (GET_CODE (op) == SYMBOL_REF)
+    return (SYMBOL_REF_FLAGS (op)
+	    & (SYMBOL_FLAG_ZDA | SYMBOL_FLAG_TDA | SYMBOL_FLAG_SDA)) != 0;
 
   return FALSE;
 }
@@ -2338,9 +2327,8 @@ static void
 v850_encode_data_area (decl)
      tree decl;
 {
-  const char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
-  int    len = strlen (str);
-  char * newstr;
+  int flags;
+  rtx symbol;
 
   /* Map explict sections into the appropriate attribute */
   if (v850_get_data_area (decl) == DATA_AREA_NORMAL)
@@ -2380,19 +2368,16 @@ v850_encode_data_area (decl)
 	return;
     }
 
-  newstr = alloca (len + 2);
-
-  strcpy (newstr + 1, str);
-
+  symbol = XEXP (DECL_RTL (decl), 0);
+  flags = SYMBOL_REF_FLAGS (symbol);
   switch (v850_get_data_area (decl))
     {
-    case DATA_AREA_ZDA: *newstr = ZDA_NAME_FLAG_CHAR; break;
-    case DATA_AREA_TDA: *newstr = TDA_NAME_FLAG_CHAR; break;
-    case DATA_AREA_SDA: *newstr = SDA_NAME_FLAG_CHAR; break;
+    case DATA_AREA_ZDA: flags |= SYMBOL_FLAG_ZDA; break;
+    case DATA_AREA_TDA: flags |= SYMBOL_FLAG_TDA; break;
+    case DATA_AREA_SDA: flags |= SYMBOL_FLAG_SDA; break;
     default: abort ();
     }
-
-  XSTR (XEXP (DECL_RTL (decl), 0), 0) = ggc_alloc_string (newstr, len + 2);
+  SYMBOL_REF_FLAGS (symbol) = flags;
 }
 
 static void
@@ -2400,16 +2385,11 @@ v850_encode_section_info (decl, first)
      tree decl;
      int first;
 {
-  if (first && TREE_CODE (decl) == VAR_DECL
+  default_encode_section_info (decl, first);
+
+  if (TREE_CODE (decl) == VAR_DECL
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     v850_encode_data_area (decl);
-}
-
-static const char *
-v850_strip_name_encoding (str)
-     const char *str;
-{
-  return str + (ENCODED_NAME_P (str) || *str == '*');
 }
 
 /* Return true if the given RTX is a register which can be restored

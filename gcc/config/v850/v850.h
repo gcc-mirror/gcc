@@ -924,15 +924,17 @@ struct cum_arg { int nbytes; int anonymous_args; };
    register class that does not include r0 on the output.  */
 
 #define EXTRA_CONSTRAINT(OP, C)						\
- ((C) == 'Q'   ? ep_memory_operand (OP, GET_MODE (OP), 0)			\
+ ((C) == 'Q'   ? ep_memory_operand (OP, GET_MODE (OP), 0)		\
   : (C) == 'R' ? special_symbolref_operand (OP, VOIDmode)		\
-  : (C) == 'S' ? (GET_CODE (OP) == SYMBOL_REF && ! ZDA_NAME_P (XSTR (OP, 0))) \
-  : (C) == 'T' ? ep_memory_operand(OP,GET_MODE(OP),TRUE)			\
-  : (C) == 'U' ? ((GET_CODE (OP) == SYMBOL_REF && ZDA_NAME_P (XSTR (OP, 0))) \
+  : (C) == 'S' ? (GET_CODE (OP) == SYMBOL_REF				\
+		  && !SYMBOL_REF_ZDA_P (OP))				\
+  : (C) == 'T' ? ep_memory_operand(OP,GET_MODE(OP),TRUE)		\
+  : (C) == 'U' ? ((GET_CODE (OP) == SYMBOL_REF				\
+		   && SYMBOL_REF_ZDA_P (OP))				\
 		  || (GET_CODE (OP) == CONST				\
 		      && GET_CODE (XEXP (OP, 0)) == PLUS		\
 		      && GET_CODE (XEXP (XEXP (OP, 0), 0)) == SYMBOL_REF \
-		      && ZDA_NAME_P (XSTR (XEXP (XEXP (OP, 0), 0), 0)))) \
+		      && SYMBOL_REF_ZDA_P (XEXP (XEXP (OP, 0), 0))))	\
   : 0)
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
@@ -1201,13 +1203,6 @@ zbss_section ()								\
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.global "
 
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.  */
-
-#undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE, NAME) \
-  asm_fprintf (FILE, "%U%s", (*targetm.strip_name_encoding) (NAME))
-
 #define ASM_PN_FORMAT "%s___%lu"
 
 /* This is how we tell the assembler that two symbols have the same value.  */
@@ -1433,18 +1428,12 @@ extern union tree_node * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_K
 
 #define EP_REGNUM 30	/* ep register number */
 
-#define ZDA_NAME_FLAG_CHAR '@'
-#define TDA_NAME_FLAG_CHAR '%'
-#define SDA_NAME_FLAG_CHAR '&'
-
-#define ZDA_NAME_P(NAME) (*(NAME) == ZDA_NAME_FLAG_CHAR)
-#define TDA_NAME_P(NAME) (*(NAME) == TDA_NAME_FLAG_CHAR)
-#define SDA_NAME_P(NAME) (*(NAME) == SDA_NAME_FLAG_CHAR)
-
-#define ENCODED_NAME_P(SYMBOL_NAME)    \
-  (   ZDA_NAME_P (SYMBOL_NAME)         \
-   || TDA_NAME_P (SYMBOL_NAME)         \
-   || SDA_NAME_P (SYMBOL_NAME))
+#define SYMBOL_FLAG_ZDA		(SYMBOL_FLAG_MACH_DEP << 0)
+#define SYMBOL_FLAG_TDA		(SYMBOL_FLAG_MACH_DEP << 1)
+#define SYMBOL_FLAG_SDA		(SYMBOL_FLAG_MACH_DEP << 2)
+#define SYMBOL_REF_ZDA_P(X)	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_ZDA) != 0)
+#define SYMBOL_REF_TDA_P(X)	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_TDA) != 0)
+#define SYMBOL_REF_SDA_P(X)	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_SDA) != 0)
 
 /* Define this if you have defined special-purpose predicates in the
    file `MACHINE.c'.  This macro is called within an initializer of an
