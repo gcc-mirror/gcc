@@ -32,6 +32,7 @@ m68k port (?)		Jeff Law		law@cygnus.com
 rs6000 port		Michael Meissner	meissner@cygnus.com
 rs6000 port		David Edelsohn		dje@watson.ibm.com
 mips port		Gavin Romig-Koch	gavin@cygnus.com
+ia64 port		Jim Wilson		wilson@cygnus.com
 i960 port		Jim Wilson		wilson@cygnus.com
 a29k port		Jim Wilson		wilson@cygnus.com
 alpha port		Richard Henderson	rth@cygnus.com
