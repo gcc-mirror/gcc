@@ -2699,14 +2699,7 @@ gfc_match_save (void)
       if (m == MATCH_NO)
 	goto syntax;
 
-      c = gfc_get_common (n);
-
-      if (c->use_assoc) 
-	{       
-	  gfc_error("COMMON block '%s' at %C is already USE associated", n);
-	  return MATCH_ERROR;
-	}
-
+      c = gfc_get_common (n, 0);
       c->saved = 1;
 
       gfc_current_ns->seen_save = 1;

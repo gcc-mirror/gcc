@@ -2825,7 +2825,7 @@ load_commons(void)
       mio_lparen ();
       mio_internal_string (name);
 
-      p = gfc_get_common (name);
+      p = gfc_get_common (name, 1);
 
       mio_symbol_ref (&p->head);
       mio_integer (&p->saved);

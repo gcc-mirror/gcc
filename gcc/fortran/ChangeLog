@@ -1,4 +1,24 @@
 2004-07-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	
+	PR fortran/16336
+	* decl.c (gfc_match_save): Use-associated common block
+	doesn't collide.
+	* gfortran.h (gfc_common_head): Add new field 'name'.
+	Fix typo in comment after #endif.
+	* match.c (gfc_get_common): Add new argument from_common,
+	mangle name if flag is set, fill in new field in structure
+	gfc_common_head.
+	(match_common): Set new arg in call to gfc_get_common,
+	use-associated common block doesn't collide.
+	* match.h (gfc_get_common): Adapt prototype.
+	* module.c (load_commons): Set new arg in call to
+	gfc_get_common.
+	* symbol.c (free_common_tree): New function.
+	(gfc_free_namespace): Call new function.
+	* trans-common.c (several functions): Remove argument
+	'name', use name from gfc_common_head instead.
+
+2004-07-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* expr.c (gfc_check_pointer_assign): Verify that rank of the LHS
 	and RHS match. Return early if the RHS is NULL().

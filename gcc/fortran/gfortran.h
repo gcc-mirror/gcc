@@ -678,6 +678,7 @@ typedef struct
 {
   locus where;
   int use_assoc, saved;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_symbol *head;
 } 
 gfc_common_head;
@@ -1697,4 +1698,4 @@ void gfc_show_namespace (gfc_namespace *);
 /* parse.c */
 try gfc_parse_file (void);
 
-#endif /* GFC_GFC_H  */
+#endif /* GCC_GFORTRAN_H  */

@@ -2139,6 +2139,22 @@ gfc_commit_symbols (void)
 }
 
 
+/* Recursive function that deletes an entire tree and all the common
+   head structures it points to.  */
+
+static void
+free_common_tree (gfc_symtree * common_tree)
+{
+  if (common_tree == NULL)
+    return;
+
+  free_common_tree (common_tree->left);
+  free_common_tree (common_tree->right);
+
+  gfc_free (common_tree);
+}  
+
+
 /* Recursive function that deletes an entire tree and all the user
    operator nodes that it contains.  */
 
@@ -2216,6 +2232,7 @@ gfc_free_namespace (gfc_namespace * ns)
 
   free_sym_tree (ns->sym_root);
   free_uop_tree (ns->uop_root);
+  free_common_tree (ns->common_root);
 
   for (cl = ns->cl_list; cl; cl = cl2)
     {

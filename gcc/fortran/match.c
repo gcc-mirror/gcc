@@ -2049,22 +2049,38 @@ cleanup:
 
 
 /* Given a name, return a pointer to the common head structure,
-   creating it if it does not exist.
+   creating it if it does not exist. If FROM_MODULE is non-zero, we
+   mangle the name so that it doesn't interfere with commons defined 
+   in the using namespace.
    TODO: Add to global symbol tree.  */
 
 gfc_common_head *
-gfc_get_common (char *name)
+gfc_get_common (const char *name, int from_module)
 {
   gfc_symtree *st;
+  static int serial = 0;
+  char mangled_name[GFC_MAX_SYMBOL_LEN+1];
 
-  st = gfc_find_symtree (gfc_current_ns->common_root, name);
-  if (st == NULL)
-    st = gfc_new_symtree (&gfc_current_ns->common_root, name);
+  if (from_module)
+    {
+      /* A use associated common block is only needed to correctly layout
+	 the variables it contains.  */
+      snprintf(mangled_name, GFC_MAX_SYMBOL_LEN, "_%d_%s", serial++, name);
+      st = gfc_new_symtree (&gfc_current_ns->common_root, mangled_name);
+    }
+  else
+    {
+      st = gfc_find_symtree (gfc_current_ns->common_root, name);
+
+      if (st == NULL)
+	st = gfc_new_symtree (&gfc_current_ns->common_root, name);
+    }
 
   if (st->n.common == NULL)
     {
       st->n.common = gfc_get_common_head ();
       st->n.common->where = gfc_current_locus;
+      strcpy (st->n.common->name, name);
     }
 
   return st->n.common;
@@ -2140,15 +2156,8 @@ gfc_match_common (void)
 	}
       else
 	{
-	  t = gfc_get_common (name);
+	  t = gfc_get_common (name, 0);
 	  head = &t->head;
-
-	  if (t->use_assoc)
-	    {
-	      gfc_error ("COMMON block '%s' at %C has already "
-			 "been USE-associated", name);
-	      goto cleanup;
-	    }
 	}
 
       if (*head == NULL)
