@@ -1,3 +1,44 @@
+2005-03-21  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa-protos.h: (xtensa_simm7, xtensa_uimm8,
+	xtensa_uimm8x2, xtensa_uimm8x4, xtensa_ai4const, xtensa_lsi4x4,
+	xtensa_b4const): Delete prototypes.
+	(xtensa_simm8, xtensa_simm8x256, xtensa_simm12b, xtensa_b4constu,
+	xtensa_mask_immediate, xtensa_mem_offset): Update prototypes.
+	(xtensa_b4const_or_zero, xtensa_const_ok_for_letter_p,
+	xtensa_extra_constraint): New prototypes.
+	(add_operand, arith_operand, nonimmed_operand, mem_operand,
+	mask_operand, extui_fldsz_operand, sext_operand, sext_fldsz_operand,
+	lsbitnum_operand, branch_operand, ubranch_operand, call_insn_operand,
+	move_operand, const_float_1_operand, fpmem_offset_operand,
+	branch_operator, ubranch_operator, boolean_operator): Delete prototypes.
+	* config/xtensa/xtensa.c (b4const_or_zero): Rename to ...
+	(xtensa_b4const_or_zero): ...this.  Change return type to bool and
+	argument type to HOST_WIDE_INT.
+	(xtensa_simm8, xtensa_simm8x256, xtensa_simm12b,
+	xtensa_mask_immediate): Likewise.
+	(xtensa_uimm8, xtensa_uimm8x2, xtensa_uimm8x4, xtensa_b4const):
+	Likewise.  Also make these functions static.
+	(xtensa_simm7, xtensa_ai4const, xtensa_lsi4x4): Delete.
+	(xtensa_const_ok_for_letter_p): New.
+	(add_operand, arith_operand, nonimmed_operand, mem_operand,
+	mask_operand, extui_fldsz_operand, sext_operand, sext_fldsz_operand,
+	lsbitnum_operand, branch_operand, ubranch_operand, call_insn_operand,
+	move_operand, const_float_1_operand, fpmem_offset_operand,
+	branch_operator, ubranch_operator, boolean_operator): Move to
+	predicates.md.
+	(smalloffset_mem_p): Inline code from xtensa_lsi4x4.
+	(xtensa_mem_offset): Change return type to bool.
+	(xtensa_extra_constraint): New.
+	(gen_int_relational): Update type of const_range_p function pointer.
+	Use xtensa_b4const_or_zero.
+	* config/xtensa/xtensa.h (CONST_OK_FOR_LETTER_P): Define to
+	xtensa_const_ok_for_letter_p.  Update comments.
+	(EXTRA_CONSTRAINT): Define to xtensa_extra_constraint.
+	(PREDICATE_CODES): Delete.
+	* config/xtensa/xtensa.md: Include predicates.md.
+	* config/xtensa/predicates.md: New file.
+
 2005-03-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/v850/v850-protos.h: Remove the prototypes for
