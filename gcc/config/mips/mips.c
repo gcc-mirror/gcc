@@ -590,34 +590,6 @@ simple_memory_operand (op, mode)
   return FALSE;
 }
 
-/* Return true if the address is suitable for function call.  */
-
-int
-call_memory_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  rtx addr;
-  enum rtx_code code;
-
-  if (GET_CODE (op) != MEM)
-    return FALSE;
-
-  addr = XEXP (op, 0);
-  code = GET_CODE (addr);
-
-  if (GET_MODE (addr) != FUNCTION_MODE)
-    return FALSE;
-
-  if (code == REG || code == SUBREG)
-    return TRUE;
-
-  if (CONSTANT_ADDRESS_P (addr))
-    return TRUE;
-
-  return FALSE;
-}
-
 /* Return true if the code of this rtx pattern is EQ or NE.  */
 
 int

@@ -3540,7 +3540,7 @@ move\\t%0,%z4\\n\\
 ;; calls.c now passes a third argument, make saber happy
 
 (define_expand "call"
-  [(parallel [(call (match_operand 0 "call_memory_operand" "m")
+  [(parallel [(call (match_operand 0 "memory_operand" "m")
 		    (match_operand 1 "" "i"))
 	      (clobber (match_operand 2 "" ""))])]	;; overwrite op2 with $31
   ""
@@ -3551,12 +3551,12 @@ move\\t%0,%z4\\n\\
   operands[2] = gen_rtx (REG, SImode, GP_REG_FIRST + 31);
 
   addr = XEXP (operands[0], 0);
-  if (! call_memory_operand (addr, VOIDmode))
+  if (GET_CODE (addr) != REG && !CONSTANT_ADDRESS_P (addr))
     XEXP (operands[0], 0) = force_reg (FUNCTION_MODE, addr);
 }")
 
 (define_insn "call_internal"
-  [(call (match_operand 0 "call_memory_operand" "m")
+  [(call (match_operand 0 "memory_operand" "m")
 	 (match_operand 1 "" "i"))
    (clobber (match_operand:SI 2 "register_operand" "=d"))]
   ""
@@ -3582,7 +3582,7 @@ move\\t%0,%z4\\n\\
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "register_operand" "=df")
-		   (call (match_operand 1 "call_memory_operand" "m")
+		   (call (match_operand 1 "memory_operand" "m")
 			 (match_operand 2 "" "i")))
 	      (clobber (match_operand 3 "" ""))])]	;; overwrite op3 with $31
   ""
@@ -3593,13 +3593,13 @@ move\\t%0,%z4\\n\\
   operands[3] = gen_rtx (REG, SImode, GP_REG_FIRST + 31);
 
   addr = XEXP (operands[1], 0);
-  if (! call_memory_operand (addr, VOIDmode))
+  if (GET_CODE (addr) != REG && !CONSTANT_ADDRESS_P (addr))
     XEXP (operands[1], 0) = force_reg (FUNCTION_MODE, addr);
 }")
 
 (define_insn "call_value_internal"
   [(set (match_operand 0 "register_operand" "=df")
-        (call (match_operand 1 "call_memory_operand" "m")
+        (call (match_operand 1 "memory_operand" "m")
               (match_operand 2 "" "i")))
    (clobber (match_operand:SI 3 "register_operand" "=d"))]
   ""
