@@ -2863,7 +2863,11 @@ changequote([,])dnl
 changequote(,)dnl
 	rs6000-ibm-aix4.[12]* | powerpc-ibm-aix4.[12]*)
 changequote([,])dnl
-		tm_file=rs6000/aix41.h
+		if test "$gnu_ld" = yes
+			tm_file=rs6000/aix41-gld.h
+		else
+			tm_file=rs6000/aix41.h
+		fi
 		if test x$host != x$target
 		then
 			tmake_file=rs6000/t-xnewas
