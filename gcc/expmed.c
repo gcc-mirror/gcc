@@ -347,7 +347,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, total_size)
       && (GET_CODE (op0) != MEM
 	  ? ((GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
 	     || GET_MODE_SIZE (GET_MODE (op0)) == GET_MODE_SIZE (fieldmode))
-            && byte_offset % GET_MODE_SIZE (fieldmode) == 0)
+	     && byte_offset % GET_MODE_SIZE (fieldmode) == 0)
 	  : (! SLOW_UNALIGNED_ACCESS (fieldmode, MEM_ALIGN (op0))
 	     || (offset * BITS_PER_UNIT % bitsize == 0
 		 && MEM_ALIGN (op0) % GET_MODE_BITSIZE (fieldmode) == 0))))
@@ -675,7 +675,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, total_size)
       if (pat)
 	emit_insn (pat);
       else
-        {
+	{
 	  delete_insns_since (last);
 	  store_fixed_bit_field (op0, offset, bitsize, bitpos, value);
 	}
@@ -737,8 +737,8 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value)
 
       mode = GET_MODE (op0);
       if (GET_MODE_BITSIZE (mode) == 0
-          || GET_MODE_BITSIZE (mode) > GET_MODE_BITSIZE (word_mode))
-        mode = word_mode;
+	  || GET_MODE_BITSIZE (mode) > GET_MODE_BITSIZE (word_mode))
+	mode = word_mode;
       mode = get_best_mode (bitsize, bitpos + offset * BITS_PER_UNIT,
 			    MEM_ALIGN (op0), mode, MEM_VOLATILE_P (op0));
 
@@ -1109,8 +1109,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
                 + (offset * UNITS_PER_WORD);
 
   mode1  = (VECTOR_MODE_P (tmode)
-           ? mode
-	   : mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0));
+	    ? mode
+	    : mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0));
 
   if (((GET_CODE (op0) != MEM
 	&& TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
@@ -1928,9 +1928,9 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
   if (SHIFT_COUNT_TRUNCATED)
     {
       if (GET_CODE (op1) == CONST_INT
-          && ((unsigned HOST_WIDE_INT) INTVAL (op1) >=
+	  && ((unsigned HOST_WIDE_INT) INTVAL (op1) >=
 	      (unsigned HOST_WIDE_INT) GET_MODE_BITSIZE (mode)))
-        op1 = GEN_INT ((unsigned HOST_WIDE_INT) INTVAL (op1)
+	op1 = GEN_INT ((unsigned HOST_WIDE_INT) INTVAL (op1)
 		       % GET_MODE_BITSIZE (mode));
       else if (GET_CODE (op1) == SUBREG
 	       && subreg_lowpart_p (op1))
@@ -2566,8 +2566,8 @@ expand_mult (mode, op0, op1, target, unsignedp)
      there is no difference between signed and unsigned.  */
   op0 = expand_binop (mode,
 		      ! unsignedp
-                       && flag_trapv && (GET_MODE_CLASS(mode) == MODE_INT)
-                       ? smulv_optab : smul_optab,
+		      && flag_trapv && (GET_MODE_CLASS(mode) == MODE_INT)
+		      ? smulv_optab : smul_optab,
 		      op0, op1, target, unsignedp, OPTAB_LIB_WIDEN);
   if (op0 == 0)
     abort ();
@@ -3012,9 +3012,9 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   if (! unsignedp && op1 == constm1_rtx)
     {
       if (rem_flag)
-        return const0_rtx;
+	return const0_rtx;
       return expand_unop (mode, flag_trapv && GET_MODE_CLASS(mode) == MODE_INT
-                        ? negv_optab : neg_optab, op0, target, 0);
+			  ? negv_optab : neg_optab, op0, target, 0);
     }
 
   if (target

@@ -851,11 +851,11 @@ expand_start_catch (type_or_list)
       tree type_node;
 
       if (TREE_CODE (type_or_list) != TREE_LIST)
-        type_list = tree_cons (NULL_TREE, type_or_list, NULL_TREE);
+	type_list = tree_cons (NULL_TREE, type_or_list, NULL_TREE);
 
       type_node = type_list;
       for (; type_node; type_node = TREE_CHAIN (type_node))
-        add_type_for_runtime (TREE_VALUE (type_node));
+	add_type_for_runtime (TREE_VALUE (type_node));
     }
 
   expand_eh_region_start ();
@@ -1165,7 +1165,7 @@ remove_fixup_regions ()
 
       /* Allow GC to maybe free some memory.  */
       if (fixup->type == ERT_CLEANUP)
-        fixup->u.cleanup.exp = NULL_TREE;
+	fixup->u.cleanup.exp = NULL_TREE;
 
       if (fixup->type != ERT_FIXUP)
 	continue;
@@ -1221,23 +1221,23 @@ remove_unreachable_regions (insns)
 	continue;
 
       if (r->resume)
-        {
+	{
 	  if (uid_region_num[INSN_UID (r->resume)])
 	    abort ();
 	  uid_region_num[INSN_UID (r->resume)] = i;
-        }
+	}
       if (r->label)
-        {
+	{
 	  if (uid_region_num[INSN_UID (r->label)])
 	    abort ();
 	  uid_region_num[INSN_UID (r->label)] = i;
-        }
+	}
       if (r->type == ERT_TRY && r->u.try.continue_label)
-        {
+	{
 	  if (uid_region_num[INSN_UID (r->u.try.continue_label)])
 	    abort ();
 	  uid_region_num[INSN_UID (r->u.try.continue_label)] = i;
-        }
+	}
     }
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
@@ -1415,7 +1415,7 @@ find_exception_handler_labels ()
       /* ??? The expansion factor here (3/2) must be greater than the htab
 	 occupancy factor (4/3) to avoid unnecessary resizing.  */
       exception_handler_label_map
-        = htab_create (cfun->eh->last_region_number * 3 / 2,
+	= htab_create (cfun->eh->last_region_number * 3 / 2,
 		       ehl_hash, ehl_eq, ehl_free);
     }
 
@@ -1529,9 +1529,9 @@ duplicate_eh_region_2 (o, n_array)
 
     case ERT_CATCH:
       if (o->u.catch.next_catch)
-        n->u.catch.next_catch = n_array[o->u.catch.next_catch->region_number];
+	n->u.catch.next_catch = n_array[o->u.catch.next_catch->region_number];
       if (o->u.catch.prev_catch)
-        n->u.catch.prev_catch = n_array[o->u.catch.prev_catch->region_number];
+	n->u.catch.prev_catch = n_array[o->u.catch.prev_catch->region_number];
       break;
 
     default:
@@ -2281,7 +2281,7 @@ sjlj_mark_call_sites (lp_info)
       /* Don't separate a call from it's argument loads.  */
       before = insn;
       if (GET_CODE (insn) == CALL_INSN)
-         before = find_first_parameter_load (insn, NULL_RTX);
+	before = find_first_parameter_load (insn, NULL_RTX);
 
       start_sequence ();
       mem = adjust_address (cfun->eh->sjlj_fc, TYPE_MODE (integer_type_node),
@@ -2600,7 +2600,7 @@ remove_eh_handler (region)
   if (outer)
     {
       if (!outer->aka)
-        outer->aka = BITMAP_XMALLOC ();
+	outer->aka = BITMAP_XMALLOC ();
       if (region->aka)
 	bitmap_a_or_b (outer->aka, outer->aka, region->aka);
       bitmap_set_bit (outer->aka, region->region_number);
@@ -2941,7 +2941,7 @@ reachable_next_level (region, type_thrown, info)
       if (info && info->handlers)
 	{
 	  add_reachable_handler (info, region, region);
-          return RNL_CAUGHT;
+	  return RNL_CAUGHT;
 	}
       else
 	return RNL_BLOCKED;
@@ -3061,7 +3061,7 @@ can_throw_internal (insn)
       if (how == RNL_BLOCKED)
 	return false;
       if (how != RNL_NOT_CAUGHT)
-        return true;
+	return true;
     }
 
   return false;
@@ -3965,7 +3965,7 @@ output_function_exception_table ()
 	assemble_integer (value, tt_format_size,
 			  tt_format_size * BITS_PER_UNIT, 1);
       else
-        dw2_asm_output_encoded_addr_rtx (tt_format, value, NULL);
+	dw2_asm_output_encoded_addr_rtx (tt_format, value, NULL);
     }
 
 #ifdef HAVE_AS_LEB128
