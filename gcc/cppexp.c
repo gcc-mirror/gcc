@@ -1,5 +1,5 @@
 /* Parse C expressions for CCCP.
-   Copyright (C) 1987, 92, 94, 95, 97, 98, 1999 Free Software Foundation.
+   Copyright (C) 1987, 92, 94, 95, 97, 98, 1999, 2000 Free Software Foundation.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -397,10 +397,13 @@ cpp_lex (pfile, skip_evaluation)
     case CPP_NUMBER:
       return parse_number (pfile, tok_start, tok_end);
     case CPP_STRING:
+    case CPP_WSTRING:
       cpp_error (pfile, "string constants are not allowed in #if expressions");
       op.op = ERROR;
       return op;
+
     case CPP_CHAR:
+    case CPP_WCHAR:
       return parse_charconst (pfile, tok_start, tok_end);
 
     case CPP_NAME:
