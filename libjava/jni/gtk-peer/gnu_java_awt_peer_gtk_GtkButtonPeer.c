@@ -88,6 +88,25 @@ Java_gnu_java_awt_peer_gtk_GtkButtonPeer_connectSignals
 }
 
 JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkSetLabel
+  (JNIEnv *env, jobject obj, jstring jtext)
+{
+  const char *text;
+  GtkWidget *label;
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+  label = gtk_bin_get_child (GTK_BIN(ptr));
+  text = (*env)->GetStringUTFChars (env, jtext, NULL);
+
+  gdk_threads_enter ();
+  gtk_label_set_text (GTK_LABEL(label), text);
+  gdk_threads_leave ();
+
+  (*env)->ReleaseStringUTFChars (env, jtext, text);
+}
+
+JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkSetFont
   (JNIEnv *env, jobject obj, jstring name, jint style, jint size)
 {

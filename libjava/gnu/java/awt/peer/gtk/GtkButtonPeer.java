@@ -54,6 +54,7 @@ public class GtkButtonPeer extends GtkComponentPeer
   public native void connectSignals ();
 
   native void gtkSetFont(String name, int style, int size);
+  native void gtkSetLabel(String label);
   native void gtkWidgetSetForeground (int red, int green, int blue);
 
   public GtkButtonPeer (Button b)
@@ -63,7 +64,7 @@ public class GtkButtonPeer extends GtkComponentPeer
 
   public void setLabel (String label) 
   {
-    set ("label", label);
+    gtkSetLabel(label);
   }
 
   public void handleEvent (AWTEvent e)
