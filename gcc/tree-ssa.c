@@ -463,30 +463,6 @@ verify_ssa (void)
 }
 
 
-/* Set the USED bit in the annotation for T.  */
-
-void
-set_is_used (tree t)
-{
-  while (1)
-    {
-      if (SSA_VAR_P (t))
-	break;
-
-      if (TREE_CODE (t) == REALPART_EXPR || TREE_CODE (t) == IMAGPART_EXPR)
-	t = TREE_OPERAND (t, 0);
-      else
-	while (handled_component_p (t))
-	  t = TREE_OPERAND (t, 0);
-    }
-
-  if (TREE_CODE (t) == SSA_NAME)
-    t = SSA_NAME_VAR (t);
-
-  var_ann (t)->used = 1;
-}
-
-
 /* Initialize global DFA and SSA structures.  */
 
 void

@@ -1,3 +1,17 @@
+2004-07-21  Richard Henderson  <rth@redhat.com>
+
+	* gimple-low.c (expand_var_p): Don't look at TREE_ADDRESSABLE,
+	TREE_THIS_VOLATILE, may_aliases, or optimization level.
+	(remove_useless_vars): Dump debugging info.
+	(expand_used_vars): Move ...
+	* cfgexpand.c (expand_used_vars): ... here.  Make static.
+	* tree-flow-inline.h (set_is_used): New.
+	(set_default_def): Use get_var_ann.
+	* tree-flow.h: Update decls.
+	* tree-ssa-live.c (mark_all_vars_used_1, mark_all_vars_used): New.
+	(create_ssa_var_map): Use it.
+	* tree-ssa.c (set_is_used): Remove.
+
 2004-07-22  Ben Elliston  <bje@au.ibm.com>
 
 	* gdbinit.in: Set a breakpoint on internal_error.

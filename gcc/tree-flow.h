@@ -535,7 +535,6 @@ extern tree make_rename_temp (tree, const char *);
 /* In gimple-low.c  */
 struct lower_data;
 extern void lower_stmt_body (tree, struct lower_data *);
-extern void expand_used_vars (void);
 extern void record_vars (tree);
 extern bool block_may_fallthru (tree block);
 
@@ -565,7 +564,6 @@ extern void dump_tree_ssa_stats (FILE *);
 extern void debug_tree_ssa_stats (void);
 extern void ssa_remove_edge (edge);
 extern edge ssa_redirect_edge (edge, basic_block);
-extern void set_is_used (tree);
 extern bool tree_ssa_useless_type_conversion (tree);
 extern bool tree_ssa_useless_type_conversion_1 (tree, tree);
 extern void verify_ssa (void);
@@ -647,6 +645,7 @@ bool for_each_index (tree *, bool (*) (tree, tree *, void *), void *);
 static inline int phi_arg_from_edge (tree, edge);
 static inline bool is_call_clobbered (tree);
 static inline void mark_call_clobbered (tree);
+static inline void set_is_used (tree);
 
 /* In tree-eh.c  */
 extern void make_eh_edges (tree);

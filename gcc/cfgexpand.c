@@ -37,6 +37,22 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 
 
+/* Expand variables in the unexpanded_var_list.  */
+
+static void
+expand_used_vars (void)
+{
+  tree cell;
+
+  cfun->unexpanded_var_list = nreverse (cfun->unexpanded_var_list);
+
+  for (cell = cfun->unexpanded_var_list; cell; cell = TREE_CHAIN (cell))
+    expand_var (TREE_VALUE (cell));
+
+  cfun->unexpanded_var_list = NULL_TREE;
+}
+
+
 /* A subroutine of expand_gimple_basic_block.  Expand one COND_EXPR.
    Returns a new basic block if we've terminated the current basic
    block and created a new one.  */
@@ -420,10 +436,7 @@ tree_expand_cfg (void)
   /* Prepare the rtl middle end to start recording block changes.  */
   reset_block_changes ();
 
-  /* Expand the variables recorded during gimple lowering.  This must
-     occur before the call to expand_function_start to ensure that
-     all used variables are expanded before we expand anything on the
-     PENDING_SIZES list.  */
+  /* Expand the variables recorded during gimple lowering.  */
   expand_used_vars ();
 
   /* Set up parameters and prepare for return, for the function.  */

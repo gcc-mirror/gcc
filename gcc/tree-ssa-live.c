@@ -285,6 +285,34 @@ change_partition_var (var_map map, tree var, int part)
 }
 
 
+/* Helper function for mark_all_vars_used, called via walk_tree.  */
+
+static tree
+mark_all_vars_used_1 (tree *tp, int *walk_subtrees,
+		      void *data ATTRIBUTE_UNUSED)
+{
+  tree t = *tp;
+
+  /* Only need to mark VAR_DECLS; parameters and return results are not
+     eliminated as unused.  */
+  if (TREE_CODE (t) == VAR_DECL)
+    set_is_used (t);
+
+  if (DECL_P (t) || TYPE_P (t))
+    *walk_subtrees = 0;
+
+  return NULL;
+}
+
+/* Mark all VAR_DECLS under *EXPR_P as used, so that they won't be 
+   eliminated during the tree->rtl conversion process.  */
+
+static inline void
+mark_all_vars_used (tree *expr_p)
+{
+  walk_tree (expr_p, mark_all_vars_used_1, NULL, NULL);
+}
+
 /* This function looks through the program and uses FLAGS to determine what 
    SSA versioned variables are given entries in a new partition table.  This
    new partition map is returned.  */
@@ -338,6 +366,8 @@ create_ssa_var_map (int flags)
 	      arg = PHI_ARG_DEF (phi, i);
 	      if (TREE_CODE (arg) == SSA_NAME)
 		register_ssa_partition (map, arg, true);
+
+	      mark_all_vars_used (&PHI_ARG_DEF_TREE (phi, i));
 	    }
 	}
 
@@ -377,8 +407,6 @@ create_ssa_var_map (int flags)
 	  for (x = 0; x < NUM_VUSES (vuses); x++)
 	    {
 	      tree var = VUSE_OP (vuses, x);
-	      set_is_used (var);
-
 #if defined ENABLE_CHECKING
 	      SET_BIT (used_in_virtual_ops, var_ann (SSA_NAME_VAR (var))->uid);
 #endif
@@ -388,8 +416,6 @@ create_ssa_var_map (int flags)
 	  for (x = 0; x < NUM_V_MAY_DEFS (v_may_defs); x++)
 	    {
 	      tree var = V_MAY_DEF_OP (v_may_defs, x);
-	      set_is_used (var);
-
 #if defined ENABLE_CHECKING
 	      SET_BIT (used_in_virtual_ops, var_ann (SSA_NAME_VAR (var))->uid);
 #endif
@@ -399,11 +425,12 @@ create_ssa_var_map (int flags)
 	  for (x = 0; x < NUM_V_MUST_DEFS (v_must_defs); x++)
 	    {
 	      tree var = V_MUST_DEF_OP (v_must_defs, x);
-	      set_is_used (var);
 #if defined ENABLE_CHECKING
 	      SET_BIT (used_in_virtual_ops, var_ann (SSA_NAME_VAR (var))->uid);
 #endif
 	    }	    
+
+	  mark_all_vars_used (bsi_stmt_ptr (bsi));
 	}
     }
 

@@ -475,15 +475,13 @@ expand_var_p (tree var)
   if (TREE_CODE (var) != VAR_DECL)
     return true;
 
-  /* Remove all unused, unaliased temporaries.  Also remove unused, unaliased
-     local variables during highly optimizing compilations.  */
+  /* Leave statics and externals alone.  */
+  if (TREE_STATIC (var) || DECL_EXTERNAL (var))
+    return true;
+
+  /* Remove all unused local variables.  */
   ann = var_ann (var);
-  if (ann
-      && ! ann->may_aliases
-      && ! ann->used
-      && ! TREE_ADDRESSABLE (var)
-      && ! TREE_THIS_VOLATILE (var)
-      && (DECL_ARTIFICIAL (var) || optimize >= 2))
+  if (!ann || !ann->used)
     return false;
 
   return true;
@@ -495,6 +493,13 @@ static void
 remove_useless_vars (void)
 {
   tree var, *cell;
+  FILE *df = NULL;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      df = dump_file;
+      fputs ("Discarding as unused:\n", df);
+    }
 
   for (cell = &cfun->unexpanded_var_list; *cell; )
     {
@@ -502,27 +507,22 @@ remove_useless_vars (void)
 
       if (!expand_var_p (var))
 	{
+	  if (df)
+	    {
+	      fputs ("  ", df);
+	      print_generic_expr (df, var, dump_flags);
+	      fputc ('\n', df);
+	    }
+
 	  *cell = TREE_CHAIN (*cell);
 	  continue;
 	}
 
       cell = &TREE_CHAIN (*cell);
     }
-}
 
-/* Expand variables in the unexpanded_var_list.  */
-
-void
-expand_used_vars (void)
-{
-  tree cell;
-
-  cfun->unexpanded_var_list = nreverse (cfun->unexpanded_var_list);
-
-  for (cell = cfun->unexpanded_var_list; cell; cell = TREE_CHAIN (cell))
-    expand_var (TREE_VALUE (cell));
-
-  cfun->unexpanded_var_list = NULL_TREE;
+  if (df)
+    fputc ('\n', df);
 }
 
 struct tree_opt_pass pass_remove_useless_vars = 
