@@ -1,3 +1,7 @@
+Wed Apr 12 22:54:02 2000  Hans-Peter Nilsson  <hp@axis.com>
+
+	* execute/20000412-6.c: New test.
+
 Wed Apr  5 22:51:36 2000  Hans-Peter Nilsson  <hp@axis.com>
 
 	* execute/960327-1.c (f): Add a letter to s[] to avoid stack-frame
