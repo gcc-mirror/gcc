@@ -638,14 +638,8 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 			{
 			  /* The loop has less than 4 iterations.  */
 
-			  /* Check whether there is another edge from BB.  */
-			  edge another_edge;
-			  FOR_EACH_EDGE (another_edge, ei, bb->succs)
-			    if (another_edge != best_edge)
-			      break;
-
-			  if (!another_edge && copy_bb_p (best_edge->dest,
-							  !optimize_size))
+			  if (EDGE_COUNT (bb->succs) == 1
+			      && copy_bb_p (best_edge->dest, !optimize_size))
 			    {
 			      bb = copy_bb (best_edge->dest, best_edge, bb,
 					    *n_traces);

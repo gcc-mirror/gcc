@@ -6,6 +6,9 @@
 	Replace operand_equal_p with operand_for_phi_arg_p
 	appropriately.
 
+	* bb-reorder.c (find_traces_1_round): Speed up by using
+	EDGE_COUNT instead of FOR_EACH_EDGE.
+
 2004-11-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR pch/14940
