@@ -11,12 +11,14 @@ set {gcj_verify_xfail(gij verify of subr.fail.jsr8)} 1
 
 proc gcj_verify_list_tests {srcdir} {
   set result {}
-  set here [pwd]
-  cd $srcdir
-  foreach item [lsort [glob -nocomplain */*/*.class]] {
-    lappend result [file rootname $item]
+  if {[file exists $srcdir]} {
+    set here [pwd]
+    cd $srcdir
+    foreach item [lsort [glob -nocomplain */*/*.class]] {
+      lappend result [file rootname $item]
+    }
+    cd $here
   }
-  cd $here
   return $result
 }
 
