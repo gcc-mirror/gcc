@@ -507,11 +507,15 @@ extern int leaf_function;
      fmpyadd and fmpysub are restricted.
 
      FP_OR_SNAKE_FP_REGS is for reload_{in,out}di only and isn't used
-     anywhere else.*/
+     anywhere else.
+
+     GENERAL_OR_FP_OR_SNAKE_FP_REGS is for reload_{in,out}si only and
+     isn't used anywhereelse.  */
 
 enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
   HI_SNAKE_FP_REGS, SNAKE_FP_REGS, GENERAL_OR_SNAKE_FP_REGS,
-  FP_OR_SNAKE_FP_REGS, SHIFT_REGS, ALL_REGS, LIM_REG_CLASSES}; 
+  FP_OR_SNAKE_FP_REGS, GENERAL_OR_FP_OR_SNAKE_FP_REGS, SHIFT_REGS, 
+  ALL_REGS, LIM_REG_CLASSES}; 
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
@@ -520,7 +524,8 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 #define REG_CLASS_NAMES \
   { "NO_REGS", "R1_REGS", "GENERAL_REGS", "FP_REGS", "GENERAL_OR_FP_REGS",\
     "HI_SNAKE_FP_REGS", "SNAKE_FP_REGS", "GENERAL_OR_SNAKE_FP_REGS",\
-    "FP_OR_SNAKE_FP_REGS","SHIFT_REGS", "ALL_REGS"}
+    "FP_OR_SNAKE_FP_REGS", "GENERAL_OR_FP_OR_SNAKE_FP_REGS", "SHIFT_REGS",\
+    "ALL_REGS"}
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
@@ -537,6 +542,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
   {0, 0xffff0000, ~0, 0xffff},	/* SNAKE_FP_REGS */	\
   {-2, 0xffff0000, ~0, 0xffff},	/* GENERAL_OR_SNAKE_FP_REGS */\
   {0, ~0, ~0, 0xffff},		/* FP_OR_SNAKE_FP_REGS */\
+  {-2, ~0, ~0, 0xffff},		/* GENERAL_OR_FP_OR_SNAKE_FP_REGS */\
   {0, 0, 0, 0x10000},		/* SHIFT_REGS */	\
   {-2, ~0, ~0, 0x1ffff}}	/* ALL_REGS */
 
@@ -566,7 +572,8 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
     ((C) == 'y' ? (TARGET_SNAKE ? HI_SNAKE_FP_REGS : NO_REGS) :	\
      ((C) == 'q' ? SHIFT_REGS :					\
       ((C) == 'a' ? R1_REGS :					\
-       ((C) == 'z' ? FP_OR_SNAKE_FP_REGS : NO_REGS))))))
+       ((C) == 'z' ? FP_OR_SNAKE_FP_REGS :			\
+        ((C) == 'Z' ? GENERAL_OR_FP_OR_SNAKE_FP_REGS : NO_REGS)))))))
 
 /* The letters I, J, K, L and M in a register constraint string
    can be used to stand for particular ranges of immediate operands.
@@ -1245,18 +1252,10 @@ extern union tree_node *current_function_decl;
   if (memory_address_p (MODE, X))				\
     goto WIN;							\
   if (flag_pic) (X) = legitimize_pic_address (X, MODE, gen_reg_rtx (Pmode));\
-  else if ((GET_CODE (X) == SYMBOL_REF && read_only_operand (X))\
+  else if (GET_CODE (X) == SYMBOL_REF 				\
 	    || GET_CODE (X) == LABEL_REF)			\
     (X) = gen_rtx (LO_SUM, Pmode,				\
 		   copy_to_mode_reg (Pmode, gen_rtx (HIGH, Pmode, X)), X); \
-  else if (GET_CODE (X) == SYMBOL_REF)				\
-    {								\
-      rtx temp2 = gen_reg_rtx (Pmode);				\
-      emit_insn (gen_rtx (SET, VOIDmode, temp2, 		\
-			  gen_rtx (PLUS, Pmode, gen_rtx (REG, Pmode, 27),\
-				   gen_rtx (HIGH, Pmode, X))));	\
-      (X) = gen_rtx (LO_SUM, Pmode, temp2, X);	 		\
-    }								\
   if (memory_address_p (MODE, X))				\
     goto WIN;}
 
