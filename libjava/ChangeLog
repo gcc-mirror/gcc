@@ -1,3 +1,12 @@
+2002-12-10  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_source_files): Added natVMClassLoader.cc.
+	* gnu/gcj/runtime/natVMClassLoader.cc: New file.
+	(gnu::gcj::runtime::VMClassLoader::findClass): Moved here.
+	* java/lang/natClassLoader.cc
+	(gnu::gcj::runtime::VMClassLoader::findClass): Removed.
+
 2002-12-10  Mark Wielaard  <mark@klomp.org>
             Tom Tromey  <tromey@redhat.com>
 
