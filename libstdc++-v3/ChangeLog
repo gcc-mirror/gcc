@@ -1,3 +1,9 @@
+2001-10-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Use
+	correct multilib builddir.
+	Properly locate libgcc_s.
+
 2001-09-25  Phil Edwards  <pme@gcc.gnu.org>
 
 	* testsuite/21_strings/c_strings.cc (test01, test02):  Increase

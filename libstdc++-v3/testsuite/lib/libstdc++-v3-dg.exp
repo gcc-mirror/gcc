@@ -44,10 +44,11 @@ proc libstdc++-v3-init { args } {
     global objdir
     global gluefile wrap_flags
     global ld_library_path
+    global tool_root_dir
 
-    set blddir   [lookfor_file $outdir libstdc++-v3]
+    set blddir [lookfor_file [get_multilibs] libstdc++-v3]
 
-   # By default, we assume we want to run program images.
+    # By default, we assume we want to run program images.
     global dg-do-what-default
     set dg-do-what-default run
 
@@ -56,9 +57,15 @@ proc libstdc++-v3-init { args } {
     libstdc++-v3-copy-files [glob -nocomplain "$srcdir/*/*.txt"] $outdir
 
     # set LD_LIBRARY_PATH so that libgcc_s, libstdc++ binaries can be found.
-    set gccpath [get_multilibs]
+    # locate libgcc.a so we don't need to account for different values of
+    # SHLIB_EXT on different platforms
+    set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
+    if {$gccdir != ""} {
+	set gccdir [file dirname $gccdir]
+    }
+
     set ld_library_path "."
-    append ld_library_path ":${gccpath}../gcc"
+    append ld_library_path ":${gccdir}"
     append ld_library_path ":${blddir}/src/.libs"
 
     # Do a bunch of handstands and backflips for cross compiling and
