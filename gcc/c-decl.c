@@ -6167,6 +6167,9 @@ store_parm_decls ()
   /* Nonzero if this definition is written with a prototype.  */
   int prototype = 0;
 
+  /* The function containing FNDECL, if any.  */
+  tree context = decl_function_context (fndecl);
+
   if (specparms != 0 && TREE_CODE (specparms) != TREE_LIST)
     {
       /* This case is when the function was defined with an ANSI prototype.
@@ -6534,13 +6537,27 @@ store_parm_decls ()
   gen_aux_info_record (fndecl, 1, 0, prototype);
 
   /* Initialize the RTL code for the function.  */
-
   init_function_start (fndecl, input_filename, lineno);
 
   /* Begin the statement tree for this function.  */
   DECL_LANG_SPECIFIC (current_function_decl)
-    =((struct lang_decl *) ggc_alloc (sizeof (struct lang_decl)));
+    =((struct lang_decl *) ggc_alloc_cleared (sizeof (struct lang_decl)));
   begin_stmt_tree (&DECL_SAVED_TREE (current_function_decl));
+
+  /* If this is a nested function, save away the sizes of any
+     variable-size types so that we can expand them when generating
+     RTL.  */
+  if (context)
+    {
+      tree t;
+
+      DECL_LANG_SPECIFIC (fndecl)->pending_sizes 
+	= nreverse (get_pending_sizes ());
+      for (t = DECL_LANG_SPECIFIC (fndecl)->pending_sizes;
+	   t;
+	   t = TREE_CHAIN (t))
+	SAVE_EXPR_CONTEXT (TREE_VALUE (t)) = context;
+    }
 
   /* This function is being processed in whole-function mode.  */
   cfun->x_whole_function_mode_p = 1;
@@ -6786,9 +6803,14 @@ c_expand_body (fndecl, nested_p)
   if (flag_syntax_only)
     return;
 
-  /* Squirrel away our current state.  */
   if (nested_p)
-    push_function_context ();
+    {
+      /* Make sure that we will evaluate variable-sized types involved
+	 in our function's type.  */
+      expand_pending_sizes (DECL_LANG_SPECIFIC (fndecl)->pending_sizes);
+      /* Squirrel away our current state.  */
+      push_function_context ();
+    }
 
   /* Initialize the RTL code for the function.  */
   current_function_decl = fndecl;
@@ -6823,7 +6845,7 @@ c_expand_body (fndecl, nested_p)
   /* Allow the body of the function to be garbage collected.  */
   DECL_SAVED_TREE (fndecl) = NULL_TREE;
 
-  /* We hard-wired immediate_size_expand to zero in start_function.
+  /* We hard-wired immediate_size_expand to zero above.
      expand_function_end will decrement this variable.  So, we set the
      variable to one here, so that after the decrement it will remain
      zero.  */
@@ -7116,6 +7138,7 @@ lang_mark_tree (t)
     {
       ggc_mark (DECL_LANG_SPECIFIC (t));
       c_mark_lang_decl (&DECL_LANG_SPECIFIC (t)->base);
+      ggc_mark_tree (DECL_LANG_SPECIFIC (t)->pending_sizes);
     }
 }
 

@@ -6270,6 +6270,29 @@ expand_main_function ()
 
 extern struct obstack permanent_obstack;
 
+/* The PENDING_SIZES represent the sizes of variable-sized types.
+   Create RTL for the various sizes now (using temporary variables),
+   so that we can refer to the sizes from the RTL we are generating
+   for the current function.  The PENDING_SIZES are a TREE_LIST.  The
+   TREE_VALUE of each node is a SAVE_EXPR.  */
+
+void
+expand_pending_sizes (pending_sizes)
+     tree pending_sizes;
+{
+  tree tem;
+
+  /* Evaluate now the sizes of any types declared among the arguments.  */
+  for (tem = pending_sizes; tem; tem = TREE_CHAIN (tem))
+    {
+      expand_expr (TREE_VALUE (tem), const0_rtx, VOIDmode,
+		   EXPAND_MEMORY_USE_BAD);
+      /* Flush the queue in case this parameter declaration has
+	 side-effects.  */
+      emit_queue ();
+    }
+}
+
 /* Start the RTL for a new function, and set variables used for
    emitting RTL.
    SUBR is the FUNCTION_DECL node.
@@ -6487,14 +6510,7 @@ expand_function_start (subr, parms_have_cleanups)
   tail_recursion_reentry = emit_note (NULL, NOTE_INSN_DELETED);
 
   /* Evaluate now the sizes of any types declared among the arguments.  */
-  for (tem = nreverse (get_pending_sizes ()); tem; tem = TREE_CHAIN (tem))
-    {
-      expand_expr (TREE_VALUE (tem), const0_rtx, VOIDmode,
-		   EXPAND_MEMORY_USE_BAD);
-      /* Flush the queue in case this parameter declaration has
-	 side-effects.  */
-      emit_queue ();
-    }
+  expand_pending_sizes (nreverse (get_pending_sizes ()));
 
   /* Make sure there is a line number after the function entry setup code.  */
   force_next_line_note ();
