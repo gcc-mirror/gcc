@@ -6021,7 +6021,11 @@
 	      (symbol_ref "attr_length_save_restore_dltp (insn)")))])
 
 ;; Split out the PIC register save and restore after reload.  This is
-;; done if the function doesn't return.
+;; done only if the function returns.  As the split is done after reload,
+;; there are some situations in which we unnecessarily save and restore
+;; %r4.  This happens when there is a single call and the PIC register
+;; is "dead" after the call.  This isn't easy to fix as the usage of
+;; the PIC register isn't completely determined until the reload pass.
 (define_split
   [(parallel [(call (mem:SI (match_operand 0 "call_operand_address" ""))
 		    (match_operand 1 "" ""))
@@ -6102,7 +6106,11 @@
 	      (symbol_ref "attr_length_save_restore_dltp (insn)")))])
 
 ;; Split out the PIC register save and restore after reload.  This is
-;; done if the function doesn't return.
+;; done only if the function returns.  As the split is done after reload,
+;; there are some situations in which we unnecessarily save and restore
+;; %r4.  This happens when there is a single call and the PIC register
+;; is "dead" after the call.  This isn't easy to fix as the usage of
+;; the PIC register isn't completely determined until the reload pass.
 (define_split
   [(parallel [(call (mem:SI (match_operand 0 "call_operand_address" ""))
 		    (match_operand 1 "" ""))
@@ -6200,7 +6208,11 @@
 	      (symbol_ref "attr_length_save_restore_dltp (insn)")))])
 
 ;; Split out the PIC register save and restore after reload.  This is
-;; done if the function doesn't return.
+;; done only if the function returns.  As the split is done after reload,
+;; there are some situations in which we unnecessarily save and restore
+;; %r4.  This happens when there is a single call and the PIC register
+;; is "dead" after the call.  This isn't easy to fix as the usage of
+;; the PIC register isn't completely determined until the reload pass.
 (define_split
   [(parallel [(call (mem:SI (reg:SI 22))
 		    (match_operand 0 "" ""))
@@ -6278,7 +6290,11 @@
 	      (symbol_ref "attr_length_save_restore_dltp (insn)")))])
 
 ;; Split out the PIC register save and restore after reload.  This is
-;; done if the function doesn't return.
+;; done only if the function returns.  As the split is done after reload,
+;; there are some situations in which we unnecessarily save and restore
+;; %r4.  This happens when there is a single call and the PIC register
+;; is "dead" after the call.  This isn't easy to fix as the usage of
+;; the PIC register isn't completely determined until the reload pass.
 (define_split
   [(parallel [(call (mem:SI (match_operand 0 "register_operand" ""))
 		    (match_operand 1 "" ""))
@@ -6460,7 +6476,11 @@
 	      (symbol_ref "attr_length_save_restore_dltp (insn)")))])
 
 ;; Split out the PIC register save and restore after reload.  This is
-;; done if the function doesn't return.
+;; done only if the function returns.  As the split is done after reload,
+;; there are some situations in which we unnecessarily save and restore
+;; %r4.  This happens when there is a single call and the PIC register
+;; is "dead" after the call.  This isn't easy to fix as the usage of
+;; the PIC register isn't completely determined until the reload pass.
 (define_split
   [(parallel [(set (match_operand 0 "" "")
 	      (call (mem:SI (match_operand 1 "call_operand_address" ""))
@@ -6547,7 +6567,11 @@
 	      (symbol_ref "attr_length_save_restore_dltp (insn)")))])
 
 ;; Split out the PIC register save and restore after reload.  This is
-;; done if the function doesn't return.
+;; done only if the function returns.  As the split is done after reload,
+;; there are some situations in which we unnecessarily save and restore
+;; %r4.  This happens when there is a single call and the PIC register
+;; is "dead" after the call.  This isn't easy to fix as the usage of
+;; the PIC register isn't completely determined until the reload pass.
 (define_split
   [(parallel [(set (match_operand 0 "" "")
 	      (call (mem:SI (match_operand 1 "call_operand_address" ""))
@@ -6652,7 +6676,11 @@
 	      (symbol_ref "attr_length_save_restore_dltp (insn)")))])
 
 ;; Split out the PIC register save and restore after reload.  This is
-;; done if the function doesn't return.
+;; done only if the function returns.  As the split is done after reload,
+;; there are some situations in which we unnecessarily save and restore
+;; %r4.  This happens when there is a single call and the PIC register
+;; is "dead" after the call.  This isn't easy to fix as the usage of
+;; the PIC register isn't completely determined until the reload pass.
 (define_split
   [(parallel [(set (match_operand 0 "" "")
 		   (call (mem:SI (reg:SI 22))
@@ -6736,7 +6764,11 @@
 	      (symbol_ref "attr_length_save_restore_dltp (insn)")))])
 
 ;; Split out the PIC register save and restore after reload.  This is
-;; done if the function doesn't return.
+;; done only if the function returns.  As the split is done after reload,
+;; there are some situations in which we unnecessarily save and restore
+;; %r4.  This happens when there is a single call and the PIC register
+;; is "dead" after the call.  This isn't easy to fix as the usage of
+;; the PIC register isn't completely determined until the reload pass.
 (define_split
   [(parallel [(set (match_operand 0 "" "")
 		   (call (mem:SI (match_operand:DI 1 "register_operand" ""))
