@@ -209,6 +209,11 @@ rtx fixunstfsi_libfunc;
 rtx fixunstfdi_libfunc;
 rtx fixunstfti_libfunc;
 
+rtx chkr_check_addr_libfunc;
+rtx chkr_set_right_libfunc;
+rtx chkr_copy_bitmap_libfunc;
+rtx chkr_check_exec_libfunc;
+
 /* Indexed by the rtx-code for a conditional (eg. EQ, LT,...)
    gives the gen_function to make a branch to test that condition.  */
 
@@ -4368,6 +4373,12 @@ init_optabs ()
   fixunstfsi_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixunstfsi");
   fixunstfdi_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixunstfdi");
   fixunstfti_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixunstfti");
+
+  /* For check-memory-usage.  */
+  chkr_check_addr_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_check_addr");
+  chkr_set_right_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_set_right");
+  chkr_copy_bitmap_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_copy_bitmap");
+  chkr_check_exec_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_check_exec");
 
 #ifdef INIT_TARGET_OPTABS
   /* Allow the target to add more libcalls or rename some, etc.  */
