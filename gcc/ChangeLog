@@ -1,3 +1,13 @@
+2001-05-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.h (CONST_COSTS): Make the cost of
+	constants cheap after reload.
+	* config/m68hc11/m68hc11.c (m68hc11_shift_cost): Shift by 16 and 32
+	are cheap.
+	(m68hc11_rtx_costs): Cost of multiplication by 65536 is expensive
+	so that gcc prefers a shift by 16.
+	(m6811_cost, m6812_cost): Make the shift cheap compared to an add.
+
 2001-05-04  Mark Elbrecht  <snowball3@bigfoot.com>
 
 	* config/i386/djgpp.h (CPP_PREDEFINES): Define __GO32__.
