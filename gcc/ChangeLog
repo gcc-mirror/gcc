@@ -1,4 +1,10 @@
-Thu Mar 19 13:39:52 1998  Michael Meissner  <meissner@cygnus.com>
+Thu Mar 19 14:59:32 1998  Andrew Pochinsky  <avp@ctp.mit.edu>
+
+	* sparc.h (ASM_OUTPUT_LOOP_ALIGN): Fix error in last change.
+
+Thu Mar 19 14:48:35 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* gcc.c (default_arg): Don't wander off the end of allocated memory.
 
 	* rs6000/sysv4.h (RELATIVE_PREFIX_NOT_LINKDIR): Undef for System V
 	and EABI.
