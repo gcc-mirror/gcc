@@ -1,6 +1,6 @@
 // DatagramSocket.java
 
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -10,6 +10,7 @@ details.  */
 
 package java.net;
 import java.io.IOException;
+import java.nio.channels.DatagramChannel;
 
 /**
  * @author Warren Levy <warrenl@cygnus.com>
@@ -26,9 +27,39 @@ public class DatagramSocket
 {
   DatagramSocketImpl impl;
 
+  DatagramChannel ch;
+
   public DatagramSocket() throws SocketException
   {
     this(0, null);
+  }
+
+  /**
+   * Creates a DatagramSocket from a specified DatagramSocketImpl instance
+   *
+   * @param impl The DatagramSocketImpl the socket will be created from
+   * 
+   * @since 1.4
+   */
+  protected DatagramSocket (DatagramSocketImpl impl)
+  {
+    this.impl = impl;
+  }
+
+  /**
+   * Creates a datagram socket that is bound to a given socket address
+   *
+   * @param bindaddr The socket address to bind to
+   *
+   * @exception SocketException If an error occurs
+   * 
+   * @since 1.4
+   */
+  public DatagramSocket (SocketAddress bindaddr)
+    throws SocketException
+  {
+    this (((InetSocketAddress) bindaddr).getPort (),
+          ((InetSocketAddress) bindaddr).getAddress ());
   }
 
   /**
@@ -85,11 +116,37 @@ public class DatagramSocket
   }
 
   /**
+   * Binds the socket to the given socket addres
+   *
+   * @param address The socket address to bind to
+   *
+   * @exception SocketException If an error occurs
+   *
+   * @since 1.4
+   */
+  public void bind (SocketAddress address)
+    throws SocketException
+  {
+    InetSocketAddress tmp = (InetSocketAddress) address;
+    impl.bind (tmp.getPort (), tmp.getAddress ());
+  }
+  
+  /**
    * Closes the datagram socket
    */
   public void close()
   {
     impl.close();
+  }
+
+  /**
+   * Gets a datagram channel assoziated with the socket
+   * 
+   * @since 1.4
+   */
+  public DatagramChannel getChannel()
+  {
+    return ch;
   }
 
   /**
@@ -199,7 +256,8 @@ public class DatagramSocket
 	  s.checkConnect(addr.getHostAddress(), p.getPort());
       }
 
-    // FIXME: if this is a subclass of MulticastSocket, use getTimeToLive for TTL val.
+    // FIXME: if this is a subclass of MulticastSocket,
+    // use getTimeToLive for TTL val.
     impl.send(p);
   }
 
@@ -244,6 +302,25 @@ public class DatagramSocket
   public void disconnect()
   {
     //impl.disconnect();
+  }
+
+  /**
+   * Returns the binding state of the socket
+   * 
+   * @since 1.4
+   */
+  public boolean isBound()
+  {
+    try
+      {
+        Object bindaddr = impl.getOption (SocketOptions.SO_BINDADDR);
+      }
+    catch (SocketException e)
+      {
+        return false;
+      }
+
+    return true;
   }
 
   /**

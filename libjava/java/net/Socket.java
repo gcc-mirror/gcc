@@ -38,6 +38,7 @@ exception statement from your version. */
 package java.net;
 
 import java.io.*;
+import java.nio.channels.SocketChannel;
 
 /* Written using on-line Java Platform 1.2 API Specification.
  * Status:  I believe all methods are implemented.
@@ -78,6 +79,8 @@ public class Socket
    */
   SocketImpl impl;
 
+  SocketChannel ch; // this field must have been set if created by SocketChannel
+  
   // Constructors
 
   /**
@@ -525,6 +528,21 @@ public class Socket
   }
 
   /**
+   * Sends urgent data through the socket
+   *
+   * @param data The data to send.
+   * Only the lowest eight bits of data are sent
+   *
+   * @exception IOException If an error occurs
+   *
+   * @since 1.4
+   */
+  public void sendUrgentData (int data) throws IOException
+  {
+    impl.sendUrgentData (data);
+  }
+
+  /**
    * Enables/disables the SO_OOBINLINE option
    * 
    * @param on True if SO_OOBLINE should be enabled 
@@ -818,5 +836,15 @@ public class Socket
   {
     if (impl != null)
       impl.shutdownOutput();
+  }
+
+  /**
+   * Returns the socket channel associated with this socket.
+   *
+   * It returns null if no associated socket exists.
+   */
+  public SocketChannel getChannel()
+  {
+    return ch;
   }
 }

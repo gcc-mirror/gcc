@@ -1,3 +1,29 @@
+2002-09-21  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/Socket.java
+	(sendUrgentData): New method.
+	(getChannel): New method.
+	* java/net/ServerSocket.java
+	(getChannel): New method.
+	(isBound): New method.
+	* java/net/DatagramSocket.java
+	(DatagramSocket): Two new methods.
+	(bind): New method.
+	(getChannel): New method.
+	(isBound): New method.
+	(send): Added newline to to make shorter lines.
+	* java/net/PlainDatagramSocketImpl.java
+	(mcastGrp): Added argument.
+	(join): Use new mcastGrp.
+	(leave): Use new mcastGrp.
+	(joinGroup): New method.
+	(leaveGroup): New method.
+	* java/net/natPlainDatagramSocketImpl.cc
+	(mcastGrp): Added argument, no yet really implemented.
+	(getOption): Added newline for shorter lines.
+	* java/net/natPlainSocketImpl.cc
+	(read, setOption, getOption): Added newline for shorter lines.
+
 2002-09-19  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/ClassLoader.java (resolveClass0): Set cause for
