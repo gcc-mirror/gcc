@@ -1,3 +1,8 @@
+Wed Feb 14 10:08:26 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* regclass.c (init_reg_sets_1): Reinstall the optimization of
+	move_cost together with Matt Kraai's fix.
+
 2001-02-14  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* Makefile.in (OBJS): Add params.o.
