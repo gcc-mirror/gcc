@@ -1,3 +1,22 @@
+2003-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* unwind-dw2.c (MD_FROB_UPDATE_CONTEXT): Define.
+	(uw_update_context_1): Use it.
+	* config/rs6000/rs6000.c (insn_after_throw): Remove.
+	(rs6000_aix_emit_builtin_unwind_init): Save $r2 to its location
+	in parent frame if _Unwind_* called directly instead of through
+	.plt.
+	(rs6000_emit_eh_toc_restore): Remove.
+	(rs6000_emit_prologue): Update stack pointer before doing any saving
+	if current_function_calls_eh_return.  Generate unwind info for $r2.
+	(rs6000_emit_epilogue): Restore stack pointer after doing all
+	restoring if current_function_calls_eh_return.  Restore $r2.
+	* config/rs6000/rs6000-protos.h (rs6000_emit_eh_toc_restore): Remove.
+	* config/rs6000/rs6000.md (eh_return): Remove call to
+	rs6000_emit_eh_toc_restore.
+	* config/rs6000/linux64.h (MD_FROB_UPDATE_CONTEXT): Define.
+	* config/rs6000/aix.h (MD_FROB_UPDATE_CONTEXT): Define.
+
 2003-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (emit_block_move): Don't move anything if size is const 0.
