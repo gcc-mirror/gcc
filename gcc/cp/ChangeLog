@@ -1,3 +1,17 @@
+2003-03-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (reference_binding): Remove REF_IS_VAR parameter.
+	(implicit_conversion): Adjust call to reference_binding.
+	(make_temporary_var_for_ref_to_type): Add TYPE parameter.
+	(initialize_reference): Adjust handling for references bound to
+	rvalues.
+	* cp-tree.h (make_temporary_var_for_ref_to_temp): Change
+	prototype.
+	(real_non_cast_lvalue_p): New method.
+	* cvt.c (build_up_reference): Adjust use of
+	make_temporary_var_for_ref_to_temp.
+	* tree.c (
+	 
 2003-03-07  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* except.c (init_exception_processing): Use C90 prototype style.

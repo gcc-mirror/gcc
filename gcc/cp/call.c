@@ -85,7 +85,7 @@ static struct z_candidate *add_function_candidate
 	(struct z_candidate **, tree, tree, tree, tree, tree, int);
 static tree implicit_conversion (tree, tree, tree, int);
 static tree standard_conversion (tree, tree, tree);
-static tree reference_binding (tree, tree, tree, int, bool);
+static tree reference_binding (tree, tree, tree, int);
 static tree non_reference (tree);
 static tree build_conv (enum tree_code, tree, tree);
 static bool is_subseq (tree, tree);
@@ -1133,12 +1133,10 @@ direct_reference_binding (tree type, tree conv)
    purposes of reference binding.  For lvalue binding, either pass a
    reference type to FROM or an lvalue expression to EXPR.  If the
    reference will be bound to a temporary, NEED_TEMPORARY_P is set for
-   the conversion returned.  REF_IS_VAR is true iff the reference is
-   a variable (rather than, say, a parameter declaration).  */
+   the conversion returned.  */
 
 static tree
-reference_binding (tree rto, tree rfrom, tree expr, int flags,
-		   bool ref_is_var)
+reference_binding (tree rto, tree rfrom, tree expr, int flags)
 {
   tree conv = NULL_TREE;
   tree to = TREE_TYPE (rto);
@@ -1250,22 +1248,14 @@ reference_binding (tree rto, tree rfrom, tree expr, int flags,
      -- The reference is bound to the object represented by the rvalue
         or to a sub-object within that object.  
 
-     -- A temporary of type "cv1 T2" [sic] is created, and a
-        constructor is called to copy the entire rvalue object into
-        the temporary.  The reference is bound to the temporary or to
-        a sub-object within the temporary
+     -- ...
 	
-     In general, we choose the first alternative, since it avoids the
-     copy.  However, if REF_IS_VAR is true, then we cannot do that; we
-     need to bind the reference to a temporary that wil live as long
-     as the reference itself.
-
-     In the first alternative, the implicit conversion sequence is
-     supposed to be same as we would obtain by generating a temporary.
-     Fortunately, if the types are reference compatible, then this is
-     either an identity conversion or the derived-to-base conversion,
-     just as for direct binding.  */
-  if (CLASS_TYPE_P (from) && compatible_p && !ref_is_var)
+     We use the first alternative.  The implicit conversion sequence
+     is supposed to be same as we would obtain by generating a
+     temporary.  Fortunately, if the types are reference compatible,
+     then this is either an identity conversion or the derived-to-base
+     conversion, just as for direct binding.  */
+  if (CLASS_TYPE_P (from) && compatible_p)
     {
       conv = build1 (IDENTITY_CONV, from, expr);
       return direct_reference_binding (rto, conv);
@@ -1321,7 +1311,7 @@ implicit_conversion (tree to, tree from, tree expr, int flags)
   complete_type (to);
 
   if (TREE_CODE (to) == REFERENCE_TYPE)
-    conv = reference_binding (to, from, expr, flags, /*ref_is_var=*/false);
+    conv = reference_binding (to, from, expr, flags);
   else
     conv = standard_conversion (to, from, expr);
 
@@ -5849,18 +5839,13 @@ perform_implicit_conversion (tree type, tree expr)
 
 /* DECL is a VAR_DECL whose type is a REFERENCE_TYPE.  The reference
    is being bound to a temporary.  Create and return a new VAR_DECL
-   whose type is the underlying type of the reference.  */
+   with the indicated TYPE; this variable will store the value to
+   which the reference is bound.  */
 
 tree 
-make_temporary_var_for_ref_to_temp (tree decl)
+make_temporary_var_for_ref_to_temp (tree decl, tree type)
 {
-  tree type;
   tree var;
-
-  /* Get the type to which the reference refers.  */
-  type = TREE_TYPE (decl);
-  my_friendly_assert (TREE_CODE (type) == REFERENCE_TYPE, 200302);
-  type = TREE_TYPE (type);
 
   /* Create the variable.  */
   var = build_decl (VAR_DECL, NULL_TREE, type);
@@ -5905,8 +5890,7 @@ initialize_reference (tree type, tree expr, tree decl)
   if (type == error_mark_node || error_operand_p (expr))
     return error_mark_node;
 
-  conv = reference_binding (type, TREE_TYPE (expr), expr, LOOKUP_NORMAL,
-			    decl != NULL_TREE);
+  conv = reference_binding (type, TREE_TYPE (expr), expr, LOOKUP_NORMAL);
   if (!conv || ICS_BAD_FLAG (conv))
     {
       error ("could not convert `%E' to `%T'", expr, type);
@@ -5918,7 +5902,7 @@ initialize_reference (tree type, tree expr, tree decl)
        [class.temporary]
 
        The temporary to which the reference is bound or the temporary
-       that is the complete object to which the temporary is bound
+       that is the complete object to which the reference is bound
        persists for the lifetime of the reference.
 
        The temporaries created during the evaluation of the expression
@@ -5927,22 +5911,64 @@ initialize_reference (tree type, tree expr, tree decl)
        full-expression in which they are created.
 
      In that case, we store the converted expression into a new
-     VAR_DECL in a new scope.  */
+     VAR_DECL in a new scope.  
+
+     However, we want to be careful not to create temporaries when
+     they are not required.  For example, given:
+
+       struct B {}; 
+       struct D : public B {};
+       D f();
+       const B& b = f();
+
+     there is no need to copy the return value from "f"; we can just
+     extend its lifetime.  Similarly, given:
+
+       struct S {};
+       struct T { operator S(); };
+       T t;
+       const S& s = t;
+
+    we can extend the lifetime of the returnn value of the conversion
+    operator.  */
   my_friendly_assert (TREE_CODE (conv) == REF_BIND, 20030302);
-  if (decl && NEED_TEMPORARY_P (conv))
+  if (decl)
     {
       tree var;
-      
-      /* Process the initializer for the declaration.  */
-      expr = convert_like (TREE_OPERAND (conv, 0), expr);
-      /* Create the temporary variable.  */
-      var = make_temporary_var_for_ref_to_temp (decl);
-      DECL_INITIAL (var) = expr;
-      cp_finish_decl (var, expr, NULL_TREE, 
-		      LOOKUP_ONLYCONVERTING|DIRECT_BIND);
+      tree base_conv_type;
 
-      /* Use its address to initialize the reference variable.  */
-      return build_nop (type, build_address (var));
+      /* Skip over the REF_BIND.  */
+      conv = TREE_OPERAND (conv, 0);
+      /* If the next conversion is a BASE_CONV, skip that too -- but
+	 remember that the conversion was required.  */
+      if (TREE_CODE (conv) == BASE_CONV)
+	{
+	  my_friendly_assert (!NEED_TEMPORARY_P (conv), 20030307);
+	  base_conv_type = TREE_TYPE (conv);
+	  conv = TREE_OPERAND (conv, 0);
+	}
+      else
+	base_conv_type = NULL_TREE;
+      /* Perform the remainder of the conversion.  */
+      expr = convert_like (conv, expr);
+      if (!real_non_cast_lvalue_p (expr))
+	{
+	  /* Create the temporary variable.  */
+	  var = make_temporary_var_for_ref_to_temp (decl, TREE_TYPE (expr));
+	  DECL_INITIAL (var) = expr;
+	  cp_finish_decl (var, expr, NULL_TREE, 
+		      LOOKUP_ONLYCONVERTING|DIRECT_BIND);
+	  /* Use its address to initialize the reference variable.  */
+	  expr = build_address (var);
+	}
+      else
+	/* Take the address of EXPR.  */
+	expr = build_unary_op (ADDR_EXPR, expr, 0);
+      /* If a BASE_CONV was required, perform it now.  */
+      if (base_conv_type)
+	expr = (perform_implicit_conversion 
+		(build_pointer_type (base_conv_type), expr));
+      return build_nop (type, expr);
     }
 
   /* Perform the conversion.  */
