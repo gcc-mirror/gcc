@@ -2838,9 +2838,15 @@ purge_addressof_1 (loc, insn, force)
   else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF && ! force)
     {
       rtx sub = XEXP (XEXP (x, 0), 0);
+      rtx sub2;
 
       if (GET_CODE (sub) == MEM)
-	sub = gen_rtx (MEM, GET_MODE (x), copy_rtx (XEXP (sub, 0)));
+	{
+	  sub2 = gen_rtx (MEM, GET_MODE (x), copy_rtx (XEXP (sub, 0)));
+	  MEM_IN_STRUCT_P (sub2) = MEM_IN_STRUCT_P (sub);
+	  RTX_UNCHANGING_P (sub2) = RTX_UNCHANGNG_P (sub);
+	  sub = sub2;
+	}
 
       if (GET_CODE (sub) == REG
 	  && (MEM_VOLATILE_P (x) || GET_MODE (x) == BLKmode))
@@ -2852,7 +2858,7 @@ purge_addressof_1 (loc, insn, force)
 	{
 	  if (! BYTES_BIG_ENDIAN && ! WORDS_BIG_ENDIAN)
 	    {
-	      rtx sub2 = gen_rtx (SUBREG, GET_MODE (x), sub, 0);
+	      sub2 = gen_rtx (SUBREG, GET_MODE (x), sub, 0);
 	      if (validate_change (insn, loc, sub2, 0))
 		goto restart;
 	    }
