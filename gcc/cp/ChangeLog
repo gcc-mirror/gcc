@@ -8,6 +8,10 @@
 	Remove.
 	* cp-tree.h: Remove the corresponding prototypes.
 
+	* tree.c (count_functions, bound_pmf_p, cp_is_overload_p,
+	cp_update_decl_after_saving, name_p): Remove.
+	* cp-tree.h: Remove the corresponding prototypes.
+
 2005-01-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/19472

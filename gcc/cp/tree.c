@@ -769,20 +769,6 @@ debug_binfo (tree elem)
 }
 
 int
-count_functions (tree t)
-{
-  int i;
-  
-  if (TREE_CODE (t) == FUNCTION_DECL)
-    return 1;
-  gcc_assert (TREE_CODE (t) == OVERLOAD);
-  
-  for (i = 0; t; t = OVL_CHAIN (t))
-    i++;
-  return i;
-}
-
-int
 is_overloaded_fn (tree x)
 {
   /* A baselink is also considered an overloaded function.  */
@@ -818,16 +804,6 @@ get_first_fn (tree from)
   if (BASELINK_P (from))
     from = BASELINK_FUNCTIONS (from);
   return OVL_CURRENT (from);
-}
-
-/* Returns nonzero if T is a ->* or .* expression that refers to a
-   member function.  */
-
-int
-bound_pmf_p (tree t)
-{
-  return (TREE_CODE (t) == OFFSET_REF
-	  && TYPE_PTRMEMFUNC_P (TREE_TYPE (TREE_OPERAND (t, 1))));
 }
 
 /* Return a new OVL node, concatenating it with the old one.  */
@@ -2059,16 +2035,6 @@ cp_add_pending_fn_decls (void* fns_p, tree prev_fn)
   return prev_fn;
 }
 
-/* Determine whether a tree node is an OVERLOAD node.  Used to decide
-   whether to copy a node or to preserve its chain when inlining a
-   function.  */
-
-int
-cp_is_overload_p (tree t)
-{
-  return TREE_CODE (t) == OVERLOAD;
-}
-
 /* Determine whether VAR is a declaration of an automatic variable in
    function FN.  */
 
@@ -2079,20 +2045,6 @@ cp_auto_var_in_fn_p (tree var, tree fn)
 	  && nonstatic_local_decl_p (var));
 }
 
-/* FN body has been duplicated.  Update language specific fields.  */
-
-void
-cp_update_decl_after_saving (tree fn,
-                             void* decl_map_)
-{
-  splay_tree decl_map = (splay_tree)decl_map_;
-  tree nrv = DECL_SAVED_FUNCTION_DATA (fn)->x_return_value;
-  if (nrv)
-    {
-      DECL_SAVED_FUNCTION_DATA (fn)->x_return_value
-	= (tree) splay_tree_lookup (decl_map, (splay_tree_key) nrv)->value;
-    }
-}
 /* Initialize tree.c.  */
 
 void
@@ -2129,22 +2081,6 @@ special_function_p (tree decl)
     return sfk_conversion;
 
   return sfk_none;
-}
-
-/* Returns true if and only if NODE is a name, i.e., a node created
-   by the parser when processing an id-expression.  */
-
-bool
-name_p (tree node)
-{
-  if (TREE_CODE (node) == TEMPLATE_ID_EXPR)
-    node = TREE_OPERAND (node, 0);
-  return (/* An ordinary unqualified name.  */
-	  TREE_CODE (node) == IDENTIFIER_NODE
-	  /* A destructor name.  */
-	  || TREE_CODE (node) == BIT_NOT_EXPR
-	  /* A qualified name.  */
-	  || TREE_CODE (node) == SCOPE_REF);
 }
 
 /* Returns nonzero if TYPE is a character type, including wchar_t.  */

@@ -4235,10 +4235,8 @@ extern tree build_cplus_staticfn_type		(tree, tree, tree);
 extern tree build_cplus_array_type		(tree, tree);
 extern tree hash_tree_cons			(tree, tree, tree);
 extern tree hash_tree_chain			(tree, tree);
-extern int count_functions			(tree);
 extern int is_overloaded_fn			(tree);
 extern tree get_first_fn			(tree);
-extern int bound_pmf_p				(tree);
 extern tree ovl_cons                            (tree, tree);
 extern tree build_overload                      (tree, tree);
 extern tree function_arg_chain			(tree);
@@ -4269,7 +4267,6 @@ extern tree cp_build_qualified_type_real        (tree, int, tsubst_flags_t);
 #define cp_build_qualified_type(TYPE, QUALS) \
   cp_build_qualified_type_real ((TYPE), (QUALS), tf_error | tf_warning)
 extern special_function_kind special_function_p (tree);
-extern bool name_p                              (tree);
 extern int count_trees                          (tree);
 extern int char_type_p                          (tree);
 extern void verify_stmt_tree                    (tree);
@@ -4279,9 +4276,7 @@ extern tree cp_walk_subtrees (tree*, int*, walk_tree_fn,
 				      void*, struct pointer_set_t*);
 extern int cp_cannot_inline_tree_fn (tree*);
 extern tree cp_add_pending_fn_decls (void*,tree);
-extern int cp_is_overload_p (tree);
 extern int cp_auto_var_in_fn_p (tree,tree);
-extern void cp_update_decl_after_saving (tree, void *);
 extern tree fold_if_not_in_template             (tree);
 
 /* in typeck.c */
