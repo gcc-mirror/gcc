@@ -200,7 +200,7 @@ static struct machine_function * xtensa_init_machine_status PARAMS ((void));
 static void printx PARAMS ((FILE *, signed int));
 static void xtensa_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static unsigned int xtensa_multibss_section_type_flags
-  PARAMS ((tree, const char *, int));
+  PARAMS ((tree, const char *, int)) ATTRIBUTE_UNUSED;
 static void xtensa_select_rtx_section
   PARAMS ((enum machine_mode, rtx, unsigned HOST_WIDE_INT));
 static bool xtensa_rtx_costs PARAMS ((rtx, int, int, int *));
@@ -581,8 +581,37 @@ call_insn_operand (op, mode)
   if (CONSTANT_ADDRESS_P (op))
     {
       /* Direct calls only allowed to static functions with PIC.  */
-      return (!flag_pic
-	      || (GET_CODE (op) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (op)));
+      if (flag_pic)
+	{
+	  tree callee, callee_sec, caller_sec;
+
+	  if (GET_CODE (op) != SYMBOL_REF || !SYMBOL_REF_LOCAL_P (op))
+	    return FALSE;
+
+	  /* Don't attempt a direct call if the callee is known to be in
+	     a different section, since there's a good chance it will be
+	     out of range.  */
+
+	  if (flag_function_sections
+	      || DECL_ONE_ONLY (current_function_decl))
+	    return FALSE;
+	  caller_sec = DECL_SECTION_NAME (current_function_decl);
+	  callee = SYMBOL_REF_DECL (op);
+	  if (callee)
+	    {
+	      if (DECL_ONE_ONLY (callee))
+		return FALSE;
+	      callee_sec = DECL_SECTION_NAME (callee);
+	      if (((caller_sec == NULL_TREE) ^ (callee_sec == NULL_TREE))
+		  || (caller_sec != NULL_TREE
+		      && strcmp (TREE_STRING_POINTER (caller_sec),
+				 TREE_STRING_POINTER (callee_sec)) != 0))
+		return FALSE;
+	    }
+	  else if (caller_sec != NULL_TREE)
+	    return FALSE;
+	}
+      return TRUE;
     }
 
   return FALSE;
