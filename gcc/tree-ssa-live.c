@@ -102,7 +102,7 @@ delete_var_map (var_map map)
 
 /* This function will combine the partitions in MAP for VAR1 and VAR2.  It 
    Returns the partition which represents the new partition.  If the two 
-   partitions cannot be combined, NO_PARTITION is returned. */
+   partitions cannot be combined, NO_PARTITION is returned.  */
 
 int
 var_union (var_map map, tree var1, tree var2)
@@ -1344,7 +1344,7 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
 	     This is handled specially here since we may also be interested 
 	     in copies between real variables and SSA_NAME variables.  We may
 	     be interested in trying to coalesce SSA_NAME variables with
-	     root variables in some cases.   */
+	     root variables in some cases.  */
 
 	  if (TREE_CODE (stmt) == MODIFY_EXPR)
 	    {
@@ -1821,7 +1821,7 @@ register_ssa_partitions_for_vars (bitmap vars, var_map map)
 
 	     Note we delete PHI nodes in this loop if they are 
 	     associated with virtual vars which are going to be
-	     renamed.   */
+	     renamed.  */
 	  for (phi = phi_nodes (bb); phi; phi = next)
 	    {
 	      tree result = SSA_NAME_VAR (PHI_RESULT (phi));

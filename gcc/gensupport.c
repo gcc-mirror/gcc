@@ -836,7 +836,7 @@ process_one_cond_exec (struct queue_elem *ce_elem)
 	continue;
 
       /* If the original insn came from a define_insn_and_split,
-	 generate a new split to handle the predicated insn. */
+	 generate a new split to handle the predicated insn.  */
       split = copy_rtx (insn_elem->split->data);
       /* Predicate the pattern matched by the split.  */
       pattern = rtx_alloc (COND_EXEC);

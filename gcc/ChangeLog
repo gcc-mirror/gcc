@@ -1,3 +1,16 @@
+2004-05-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* bb-reorder.c, builtins.c, c-common.c, c-gimplify.c,
+	c-incpath.c, cgraphunit.c, ddg.c, defaults.h, dwarf2out.c,
+	expmed.c, flags.h, gcc.c, gensupport.c, gimplify.c, global.c,
+	passes.c, reg-stack.c, target.h, toplev.c, tree-alias-ander.c,
+	tree-alias-common.c, tree-cfg.c, tree-complex.c, tree-dfa.c,
+	tree-eh.c, tree-mudflap.c, tree-mudflap.h, tree-outof-ssa.c,
+	tree-phinodes.c, tree-pretty-print.c, tree-ssa-alias.c,
+	tree-ssa-ccp.c, tree-ssa-live.c, tree-ssa-live.h,
+	tree-ssa-pre.c, tree.h, value-prof.h, varasm.c: Fix comment
+	formatting.
+
 2004-05-30  Steven Bosscher  <stevenb@suse.de>
 
 	* gimplify.c (sort_case_labels): New.  Split out from...

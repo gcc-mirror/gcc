@@ -3017,7 +3017,7 @@ expand_mult_highpart (enum machine_mode mode, rtx op0,
       tem = expand_mult_const (wider_mode, tem, cnst1, 0, &alg, variant);
       tem = extract_high_half (mode, tem);
 
-      /* Adjust result for signedness. */
+      /* Adjust result for signedness.  */
       if (sign_adjust)
 	tem = force_operand (gen_rtx_MINUS (mode, tem, op0), tem);
 

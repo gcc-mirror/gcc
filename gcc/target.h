@@ -78,7 +78,7 @@ struct gcc_target
        target requires such labels.  Second argument is the decl the
        unwind info is associated with, third is a boolean: true if
        this is for exception handling, fourth is a boolean: true if
-       this is only a placeholder for an omitted FDE. */
+       this is only a placeholder for an omitted FDE.  */
     void (* unwind_label) (FILE *, tree, int, int);
 
     /* Output an internal label.  */

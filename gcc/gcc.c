@@ -6423,7 +6423,7 @@ main (int argc, const char **argv)
       else
 	{
 	  /* Since there is no compiler for this input file, assume it is a
-	     linker file. */
+	     linker file.  */
 	  explicit_link_files[i] = 1;
 	  infiles[i].incompiler = NULL;
 	}

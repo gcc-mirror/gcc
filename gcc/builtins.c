@@ -1994,7 +1994,7 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
     errno_set = false;
 
   /* Check if sincos insn is available, otherwise fallback
-     to sin or cos insn. */
+     to sin or cos insn.  */
   if (builtin_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing) {
     switch (DECL_FUNCTION_CODE (fndecl))
       {
@@ -8893,7 +8893,7 @@ simplify_builtin_fputs (tree arglist, int ignore, int unlocked, tree known_len)
       {
 	tree string_arg;
 
-	/* If optimizing for size keep fputs. */
+	/* If optimizing for size keep fputs.  */
 	if (optimize_size)
 	  return 0;
 	string_arg = TREE_VALUE (arglist);

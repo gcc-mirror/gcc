@@ -685,7 +685,7 @@ make_goto_expr_edges (basic_block bb)
 	  return;
 	}
 
-      /* Nothing more to do for nonlocal gotos. */
+      /* Nothing more to do for nonlocal gotos.  */
       if (TREE_CODE (dest) == LABEL_DECL)
 	return;
 
