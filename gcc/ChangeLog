@@ -1,3 +1,7 @@
+Sun Aug 16 00:21:44 1998 Franz Sirl <Franz.Sirl-kernel@lauterbach.com> 
+
+        * rs6000/linux.h (CPP_OS_DEFAULT_SPEC): Define.
+
 Sat Aug 15 20:51:35 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (movsicc): Fix mode mismatch.
