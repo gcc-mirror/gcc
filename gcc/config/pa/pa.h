@@ -23,6 +23,8 @@ Boston, MA 02111-1307, USA.  */
 
 enum cmp_type				/* comparison type */
 {
+  /* See FUNCTION_POINTER_COMPARISON_MODE for info on CMP_PSI.  */
+  CMP_PSI,				/* For function pointers.  */
   CMP_SI,				/* compare integers */
   CMP_SF,				/* compare single precision floats */
   CMP_DF,				/* compare double precision floats */
@@ -1660,6 +1662,26 @@ while (0)
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
 #define Pmode SImode
+
+/* XXX FIXME.  The function pointer comparison code is only at the FSF
+   for documentation and merging purposes, it is _NOT_ actually used.
+
+   I've been trying to get Kenner to deal with the machine independent
+   problems for many months, and for whatever reason nothing ever seems
+   to happen.
+
+   If you want function pointer comparisons to work, first scream at
+   Kenner to deal with the MI problems, then email me for a hack that
+   will get the job done (law@cygnus.com).
+   
+  The mode in which function pointer comparisons occur.  The PA backend
+   uses this mode to identify function pointer comparisons so that special
+   code needed to compare functions can be generated.
+
+   Note, special code is not needed for function pointer comparisons
+   in the portable runtime model.  */
+#define FUNCTION_POINTER_COMPARISON_MODE \
+  (TARGET_PORTABLE_RUNTIME ? Pmode : PSImode)
 
 /* Add any extra modes needed to represent the condition code.
 
