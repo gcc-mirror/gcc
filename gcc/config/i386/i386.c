@@ -1339,7 +1339,7 @@ fcmov_comparison_operator (op, mode)
     case EQ: case NE:
       return 1;
     case LTU: case GTU: case LEU: case ORDERED: case UNORDERED: case GEU:
-      if (inmode == CCmode)
+      if (inmode == CCFPmode || inmode == CCFPUmode)
 	return 1;
       return 0;
     default:
@@ -5600,6 +5600,12 @@ ix86_expand_fp_movcc (operands)
     case LE:
     case GE:
     case GT:
+    case UNEQ:
+    case UNGE:
+    case UNGT:
+    case UNLE:
+    case UNLT:
+    case LTGT:
       tmp = gen_reg_rtx (QImode);
       ix86_expand_setcc (code, tmp);
       code = NE;
