@@ -942,10 +942,11 @@ dbxout_type (type, full, show_arg_types)
 
       if (next_type_number == typevec_len)
 	{
-	  int len = typevec_len * 2 * sizeof typevec[0];
-
-	  typevec = (enum typestatus *) xrealloc (typevec, len);
-	  bzero ((char *) (typevec + typevec_len), len);
+	  typevec =
+	    (enum typestatus *) xrealloc (typevec,
+					  typevec_len * 2 * sizeof typevec[0]);
+	  bzero ((char *) (typevec + typevec_len),
+		 typevec_len * sizeof typevec[0]);
 	  typevec_len *= 2;
 	}
     }
