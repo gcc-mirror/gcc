@@ -1,5 +1,10 @@
 2004-09-18  Diego Novillo  <dnovillo@redhat.com>
 
+	* tree-ssa-alias.c (setup_pointers_and_addressables): Don't
+	remove TREE_ADDRESSABLE from RESULT_DECL.
+
+2004-09-18  Diego Novillo  <dnovillo@redhat.com>
+
 	* tree-ssa-alias.c (dump_alias_info): Ignore NULL SSA_NAMEs.
 
 2004-09-18  Jan Hubicka  <jh@suse.cz>
