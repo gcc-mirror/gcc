@@ -1,3 +1,7 @@
+2003-01-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*iorsi3_ashift_31): New.
+
 2003-01-10  Josef Zlomek  <zlomekj@suse.cz>
 
 	* jump.c (next_nonnote_insn_in_loop): New function.
