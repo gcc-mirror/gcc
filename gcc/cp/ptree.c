@@ -95,10 +95,6 @@ print_lang_type (file, node, indent)
     fputs (" X()", file);
   if (TYPE_HAS_CONVERSION (node))
     fputs (" has-type-conversion", file);
-  if (TYPE_HAS_INT_CONVERSION (node))
-    fputs (" has-int-conversion", file);
-  if (TYPE_HAS_REAL_CONVERSION (node))
-    fputs (" has-float-conversion", file);
   if (TYPE_HAS_INIT_REF (node))
     {
       if (TYPE_HAS_CONST_INIT_REF (node))
@@ -118,8 +114,6 @@ print_lang_type (file, node, indent)
     fputs (" has=", file);
   if (TYPE_HAS_ASSIGN_REF (node))
     fputs (" this=(X&)", file);
-  if (TYPE_GETS_INIT_AGGR (node))
-    fputs (" gets X(X, ...)", file);
   if (TYPE_OVERLOADS_CALL_EXPR (node))
     fputs (" op()", file);
   if (TYPE_OVERLOADS_ARRAY_REF (node))
