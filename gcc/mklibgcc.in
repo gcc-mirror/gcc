@@ -99,7 +99,7 @@ if [ "$SHLIB_LINK" ]; then
   # overriding that with #pragmas.  The dance with @ is to prevent
   # echo from seeing anything it might take for an option.
   echo "vis_hide := \$(strip \$(subst @,-,\\"
-  echo "    \$(shell if echo 'void foo(void);' | \\"
+  echo "    \$(shell if echo 'void foo(void) {}' | \\"
   echo "          $gcc_compile -fvisibility=hidden -Werror \\"
   echo "          -c -xc - -o /dev/null 2> /dev/null; \\"
   echo "          then echo @fvisibility=hidden @DHIDE_EXPORTS; \\"
