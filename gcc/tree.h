@@ -305,7 +305,7 @@ struct tree_common
    Nonzero in a FUNCTION_DECL means that the function has been compiled.
    This is interesting in an inline function, since it might not need
    to be compiled separately.
-   Nonzero in a RECORD_TYPE, UNION_TYPE or ENUMERAL_TYPE
+   Nonzero in a RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE or ENUMERAL_TYPE
    if the sdb debugging info for the type has been written.
    In a BLOCK node, nonzero if reorder_blocks has already seen this block.  */
 #define TREE_ASM_WRITTEN(NODE) ((NODE)->common.asm_written_flag)
@@ -544,8 +544,9 @@ struct tree_block
 
 #define TYPE_STUB_DECL(NODE) (TREE_CHAIN (NODE))
 
-/* In a RECORD_TYPE or UNION_TYPE, it means the type has BLKmode
-   only because it lacks the alignment requirement for its size.  */
+/* In a RECORD_TYPE, UNION_TYPE or QUAL_UNION_TYPE, it means the type
+   has BLKmode only because it lacks the alignment requirement for
+   its size.  */
 #define TYPE_NO_FORCE_BLK(NODE) ((NODE)->type.no_force_blk_flag)
 
 /* Nonzero in a type considered volatile as a whole.  */
@@ -693,10 +694,10 @@ struct tree_type
    It is an IDENTIFIER_NODE.  */
 #define DECL_ASSEMBLER_NAME(NODE) ((NODE)->decl.assembler_name)
 /*  For FIELD_DECLs, this is the
-    RECORD_TYPE or UNION_TYPE node that the field is a member of.  For
-    VAR_DECL, PARM_DECL, FUNCTION_DECL, LABEL_DECL, and CONST_DECL nodes,
-    this points to the FUNCTION_DECL for the containing function, or else
-    yields NULL_TREE if the given decl has "file scope".  */
+    RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE node that the field is
+    a member of.  For VAR_DECL, PARM_DECL, FUNCTION_DECL, LABEL_DECL,
+    and CONST_DECL nodes, this points to the FUNCTION_DECL for the
+    containing function, or else yields NULL_TREE if the given decl has "file scope".  */
 #define DECL_CONTEXT(NODE) ((NODE)->decl.context)
 #define DECL_FIELD_CONTEXT(NODE) ((NODE)->decl.context)
 /* In a FIELD_DECL, this is the field position, counting in bits,
@@ -723,6 +724,9 @@ struct tree_type
 /* For a PARM_DECL, records the data type used to pass the argument,
    which may be different from the type seen in the program.  */
 #define DECL_ARG_TYPE(NODE) ((NODE)->decl.initial)   /* In PARM_DECL.  */
+/* For a FIELD_DECL in a QUAL_UNION_TYPE, records the expression, which
+   if nonzero, indicates that the field occupies the type.  */
+#define DECL_QUALIFIER(NODE) ((NODE)->decl.initial)
 /* These two fields describe where in the source code the declaration was.  */
 #define DECL_SOURCE_FILE(NODE) ((NODE)->decl.filename)
 #define DECL_SOURCE_LINE(NODE) ((NODE)->decl.linenum)
@@ -1291,8 +1295,8 @@ extern tree get_inner_reference		PROTO((tree, int *, int *, tree *, enum machine
    or zero if none.  */
 extern tree decl_function_context 	PROTO((tree));
 
-/* Return the RECORD_TYPE or UNION_TYPE which provides this _DECL
-   with its context, or zero if none.  */
+/* Return the RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE which provides
+   this _DECL with its context, or zero if none.  */
 extern tree decl_type_context		PROTO((tree));
 
 /* Given the FUNCTION_DECL for the current function,
