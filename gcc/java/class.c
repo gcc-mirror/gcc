@@ -1862,10 +1862,12 @@ add_miranda_methods (tree base_class, tree search_class)
 	break;
       elt = BINFO_TYPE (elt);
 
-      /* Note that order matters here.  However, all the base classes
-	 will have been laid out at this point, so the order will
-	 always be correct.  Also, this code must match similar layout
-	 code in the runtime.  */
+      /* Ensure that interface methods are seen in declared order.  */
+      layout_class_methods (elt);
+
+      /* All base classes will have been laid out at this point, so the order 
+         will be correct.  This code must match similar layout code in the 
+         runtime.  */
       for (method_decl = TYPE_METHODS (elt);
 	   method_decl; method_decl = TREE_CHAIN (method_decl))
 	{
