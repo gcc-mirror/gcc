@@ -315,7 +315,10 @@ enum reg_class {
 /* S regs use the letter 'd' because 's' is taken. */
 
 #define REG_CLASS_FROM_LETTER(C) \
-  ((C) == 'a' ? A_REGS : (C) == 'd' ? S_REGS : NO_REGS)
+  ((C) == 'a' ? A_REGS : \
+   (C) == 'd' ? S_REGS : \
+   (C) == 'A' ? INDEX_REGS : \
+   NO_REGS)
 
 /* The letters I, J, K, L and M in a register constraint string
    can be used to stand for particular ranges of immediate operands.

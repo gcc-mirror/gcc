@@ -250,6 +250,14 @@
   "")
 
 (define_insn ""
+  [(set (match_operand:SI 0 "push_operand" "=<,<")
+	(match_operand:SI 1 "general_operand" "Ad,io"))]
+  ""
+  "@
+   psh.w %1
+   pshea %a1")
+
+(define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=g,r,<")
 	(match_operand:SI 1 "general_operand" "r,g,io"))]
   "TARGET_INDIRECTS"
