@@ -563,7 +563,8 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
     return (xsize == 0 || ysize == 0 ||
 	    (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0));
 
-  if (y == frame_pointer_rtx || y == stack_pointer_rtx)
+  if (y == frame_pointer_rtx || y == hard_frame_pointer_rtx
+      || y == stack_pointer_rtx)
     {
       rtx t = y;
       int tsize = ysize;
@@ -571,7 +572,8 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
       x = t; xsize = tsize;
     }
 
-  if (x == frame_pointer_rtx || x == stack_pointer_rtx)
+  if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
+      || x == stack_pointer_rtx)
     {
       rtx y1;
 
@@ -2663,6 +2665,9 @@ attach_deaths (x, insn, set_p)
 	       STACK_POINTER_REGNUM, since these are always considered to be
 	       live.  Similarly for ARG_POINTER_REGNUM if it is fixed.  */
 	    if (regno != FRAME_POINTER_REGNUM
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+		&& ! (regno == HARD_FRAME_POINTER_REGNUM)
+#endif
 #if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
 		&& ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
 #endif
