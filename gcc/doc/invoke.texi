@@ -3170,10 +3170,11 @@ perform loop unrolling or function inlining when you specify @option{-O2}.
 As compared to @option{-O}, this option increases both compilation time
 and the performance of the generated code.
 
-@option{-O2} turns on all optional optimizations except for loop unrolling,
-function inlining, and register renaming.  It also turns on the
-@option{-fforce-mem} option on all machines and frame pointer elimination
-on machines where doing so does not interfere with debugging.
+@option{-O2} turns on all optional optimizations except for loop
+unrolling, function inlining, and register renaming.  It also turns on
+the @option{-fforce-mem} and @option{-fstrict-aliasing} option on all
+machines and frame pointer elimination on machines where doing so does
+not interfere with debugging.
 
 Please note the warning under @option{-fgcse} about
 invoking @option{-O2} on programs that use computed gotos.
@@ -3715,6 +3716,9 @@ should define a function that computes, given an @code{tree}
 node, an alias set for the node.  Nodes in different alias sets are not
 allowed to alias.  For an example, see the C front-end function
 @code{c_get_alias_set}.
+
+For all machines, optimization level 2 and higher enables this flag by
+default.
 
 @item -falign-functions
 @itemx -falign-functions=@var{n}
