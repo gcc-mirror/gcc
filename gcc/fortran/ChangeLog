@@ -1,3 +1,9 @@
+2004-05-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* Make-lang.in (trans-common.o): Remove redundant dependency.
+	(data.c): Replace object file name ...
+	(data.o): ... by the correct one.
+
 2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* dump-parse-tree.c (gfc_show_array_ref): Print colon only
