@@ -1,3 +1,13 @@
+2000-02-14  Nick Clifton  <nickc@cygnus.com>
+
+	* configure.in: Add mcore-elf and mcore-pe targets.
+	* configure: Regenerate.
+
+	* NEWS: Add note that MCore port has been contributed.
+
+	* invoke.texi: Document command line switches for MCore port.
+	* install.texi: Add MCore to list of supported targets.
+
 2000-02-14  Geoff Keating  <geoffk@cygnus.com>
 
 	* collect2.c (main) [COLLECT_EXPORT_LIST]: If we have frames,

@@ -821,6 +821,12 @@ changequote([,])dnl
 	arm*-*-elf)
 		tm_file=arm/unknown-elf.h
 		tmake_file=arm/t-arm-elf
+#		tm_file=arm2/unknown-elf.h
+#		tmake_file=arm2/t-arm-elf
+#		out_file=arm2/arm.c
+#		xm_file=arm2/xm-arm.h
+#		md_file=arm2/arm.md
+#		tm_p_file=arm2/arm-protos.h
 		;;
         arm*-*-oabi)
 		tm_file=arm/unknown-elf-oabi.h
@@ -2364,6 +2370,14 @@ changequote([,])dnl
 		extra_parts="crtbegin.o crtend.o"
 		xmake_file=m88k/x-sysv4
 		tmake_file=m88k/t-sysv4
+		;;
+	mcore-*-elf)
+		tm_file=mcore/mcore-elf.h
+		tmake_file=mcore/t-mcore
+		;;
+	mcore-*-pe*)
+		tm_file=mcore/mcore-pe.h
+		tmake_file=mcore/t-mcore-pe
 		;;
 	mips-sgi-irix6*)		# SGI System V.4., IRIX 6
 		if test "x$gnu_ld" = xyes
