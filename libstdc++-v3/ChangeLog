@@ -1,3 +1,23 @@
+2003-09-25  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/12352
+	* src/localename.cc (locale::_Impl::_Impl(const _Impl&,
+	size_t)): Don't leak if memory allocations for _M_facets,
+	_M_caches, and _M_names fail.
+	(locale::_Impl::_Impl(const char*, size_t)): Ditto.
+	(locale::_Impl::_M_replace_categories(const _Impl*,
+	category)): Ditto.
+	(locale::_Impl::_M_install_facet(const locale::id*,
+	const facet*)): Ditto.
+	* include/bits/locale_classes.h (locale::locale(const locale&,
+	_Facet*)): Don't leak memory.
+	* testsuite/22_locale/locale/cons/12352.cc: New, from the PR.
+
+	* src/localename.cc (locale::_Impl::_Impl(facet**, size_t,
+	bool)): Qualify with std:: strcpy, tweak.
+	* include/bits/locale_classes.h
+	(locale::_Impl::_M_check_same_name): Qualify strcmp.
+
 2003-09-25  Brad Spencer  <spencer@infointeractive.com>
 
 	PR libstdc++/6072

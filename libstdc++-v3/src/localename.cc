@@ -44,7 +44,7 @@ namespace __gnu_cxx
   extern numpunct<char> 			numpunct_c;
   extern num_get<char> 				num_get_c;
   extern num_put<char> 				num_put_c;  
-extern codecvt<char, char, mbstate_t>		codecvt_c;
+  extern codecvt<char, char, mbstate_t>		codecvt_c;
   extern moneypunct<char, false> 		moneypunct_cf;
   extern moneypunct<char, true> 		moneypunct_ct;
   extern money_get<char> 			money_get_c;
@@ -111,54 +111,47 @@ namespace std
   _Impl(const _Impl& __imp, size_t __refs)
   : _M_references(__refs), _M_facets_size(__imp._M_facets_size)
   {
+    _M_facets = _M_caches = 0;
+    _M_names = 0;
     try
-      { 
+      {
 	_M_facets = new const facet*[_M_facets_size]; 
-	for (size_t __i = 0; __i < _M_facets_size; ++__i)
-	  _M_facets[__i] = 0;
+	_M_caches = new const facet*[_M_facets_size];
+	_M_names = new char*[_S_categories_size];
       }
-    catch(...) 
+    catch(...)
       {
 	delete [] _M_facets;
+	delete [] _M_caches;		
 	__throw_exception_again;
       }
+
     for (size_t __i = 0; __i < _M_facets_size; ++__i)
       {
 	_M_facets[__i] = __imp._M_facets[__i];
+	_M_caches[__i] = __imp._M_caches[__i];
 	if (_M_facets[__i])
 	  _M_facets[__i]->_M_add_reference();
-      }
-
-    try 
-      {
-      	_M_caches = new const facet*[_M_facets_size];
-      }
-    catch(...)
-      {
-	delete [] _M_caches;
-	__throw_exception_again;
-      }
-    for (size_t __i = 0; __i < _M_facets_size; ++__i)
-      {
-	_M_caches[__i] = __imp._M_caches[__i];
 	if (_M_caches[__i])
-	  _M_caches[__i]->_M_add_reference(); 
+	  _M_caches[__i]->_M_add_reference(); 	
       }
 
-    try 
+    // Name all the categories.
+    for (size_t __i = 0; __i < _S_categories_size; ++__i)
+      _M_names[__i] = 0;
+    try
       {
-      	_M_names = new char*[_S_categories_size];
+	for (size_t __i = 0; __i < _S_categories_size; ++__i)
+	  {
+	    char* __new = new char[std::strlen(__imp._M_names[__i]) + 1];
+	    std::strcpy(__new, __imp._M_names[__i]);
+	    _M_names[__i] = __new;
+	  }
       }
     catch(...)
       {
-	delete [] _M_names;
+	this->~_Impl();
 	__throw_exception_again;
-      }
-    for (size_t __i = 0; __i < _S_categories_size; ++__i)
-      {
-	char* __new = new char[strlen(__imp._M_names[__i]) + 1];
-	std::strcpy(__new, __imp._M_names[__i]);
-	_M_names[__i] = __new;
       }
   }
 
@@ -172,66 +165,61 @@ namespace std
     __c_locale __cloc;
     locale::facet::_S_create_c_locale(__cloc, __s);
 
+    _M_facets = _M_caches = 0;
+    _M_names = 0;
     try
-      { 
-	_M_facets = new const facet*[_M_facets_size]; 
-	for (size_t __i = 0; __i < _M_facets_size; ++__i)
-	  _M_facets[__i] = 0;
+      {
+	_M_facets = new const facet*[_M_facets_size];
+	_M_caches = new const facet*[_M_facets_size];
+	_M_names = new char*[_S_categories_size];
       }
-    catch(...) 
+    catch(...)
       {
 	delete [] _M_facets;
-	__throw_exception_again;
-      }
-
-    try 
-      {
-      	_M_caches = new const facet*[_M_facets_size];
-	for (size_t __i = 0; __i < _M_facets_size; ++__i)
-	  _M_caches[__i] = 0;
-      }
-    catch(...)
-      {
 	delete [] _M_caches;
 	__throw_exception_again;
-      }
+      }      
+
+    for (size_t __i = 0; __i < _M_facets_size; ++__i)
+      _M_facets[__i] = _M_caches[__i] = 0;
 
     // Name all the categories.
-    try 
+    for (size_t __i = 0; __i < _S_categories_size; ++__i)
+      _M_names[__i] = 0;
+    try
       {
-      	_M_names = new char*[_S_categories_size];
+	const size_t __len = std::strlen(__s);
+	if (!std::strchr(__s, ';'))
+	  {
+	    for (size_t __i = 0; __i < _S_categories_size; ++__i)
+	      {
+		_M_names[__i] = new char[__len + 1];
+		std::strcpy(_M_names[__i], __s);
+	      }
+	  }
+	else
+	  {
+	    const char* __beg = __s;
+	    for (size_t __i = 0; __i < _S_categories_size; ++__i)
+	      {
+		__beg = std::strchr(__beg, '=') + 1;
+		const char* __end = std::strchr(__beg, ';');
+		if (!__end)
+		  __end = __s + __len;
+		char* __new = new char[__end - __beg + 1];
+		std::memcpy(__new, __beg, __end - __beg);
+		__new[__end - __beg] = '\0';
+		_M_names[__i] = __new;
+	      }
+	  }
       }
     catch(...)
       {
-	delete [] _M_names;
+	this->~_Impl();
 	__throw_exception_again;
       }
-    size_t __len = std::strlen(__s);
-    if (!std::strchr(__s, ';'))
-      {
-	for (size_t __i = 0; __i < _S_categories_size; ++__i)
-	  {
-	    _M_names[__i] = new char[__len + 1];
-	    std::strcpy(_M_names[__i], __s);
-	  }
-      }
-    else
-      {
-	const char* __beg = __s;
-	for (size_t __i = 0; __i < _S_categories_size; ++__i)
-	  {
-	    __beg = std::strchr(__beg, '=') + 1;
-	    const char* __end = std::strchr(__beg, ';');
-	    if (!__end)
-	      __end = __s + __len;
-	    char* __new = new char[__end - __beg + 1];
-	    std::memcpy(__new, __beg, __end - __beg);
-	    __new[__end - __beg] = '\0';
-	    _M_names[__i] = __new;
-	  }
-      }
 
-    // Construct all standard facets and add them to _M_facets.  
+    // Construct all standard facets and add them to _M_facets.
     _M_init_facet(new std::ctype<char>(__cloc, 0, false));
     _M_init_facet(new codecvt<char, char, mbstate_t>(__cloc));
     _M_init_facet(new numpunct<char>(__cloc));
@@ -263,6 +251,7 @@ namespace std
     _M_init_facet(new time_put<wchar_t>);
     _M_init_facet(new std::messages<wchar_t>(__cloc, __s));
 #endif	  
+
     locale::facet::_S_destroy_c_locale(__cloc);
   }
 
@@ -278,19 +267,16 @@ namespace std
 				      locale::facet::_S_c_name);
 
     _M_facets = new (&facet_vec) const facet*[_M_facets_size];
-    for (size_t __i = 0; __i < _M_facets_size; ++__i)
-      _M_facets[__i] = 0;
-
     _M_caches = new (&cache_vec) const facet*[_M_facets_size];
     for (size_t __i = 0; __i < _M_facets_size; ++__i)
-      _M_caches[__i] = 0;
+      _M_facets[__i] = _M_caches[__i] = 0;
 
     // Name all the categories.
     _M_names = new (&name_vec) char*[_S_categories_size];
     for (size_t __i = 0; __i < _S_categories_size; ++__i)
       {
 	_M_names[__i] = new (&name_c[__i]) char[2];
-	strcpy(_M_names[__i], locale::facet::_S_c_name);
+	std::strcpy(_M_names[__i], locale::facet::_S_c_name);
       }
 
     // This is needed as presently the C++ version of "C" locales
@@ -357,7 +343,7 @@ namespace std
     _M_init_facet(new (&time_put_w) time_put<wchar_t>(1));
     _M_init_facet(new (&messages_w) std::messages<wchar_t>(1));
 #endif 
-
+     
     // This locale is safe to pre-cache, after all the facets have
     // been created and installed.
     _M_caches[numpunct<char>::id._M_id()] = __npc;
@@ -388,9 +374,9 @@ namespace std
 	    if (std::strcmp(_M_names[__ix], "*") != 0 
 		&& std::strcmp(__imp->_M_names[__ix], "*") != 0)
 	      {
-		delete [] _M_names[__ix];
 		char* __new = new char[std::strlen(__imp->_M_names[__ix]) + 1];
 		std::strcpy(__new, __imp->_M_names[__ix]);
+		delete [] _M_names[__ix];
 		_M_names[__ix] = __new;
 	      }
 	  }
@@ -440,7 +426,15 @@ namespace std
 	    // New cache array.
 	    const facet** __oldc = _M_caches;
 	    const facet** __newc;
-	    __newc = new const facet*[__new_size]; 
+	    try
+	      {
+		__newc = new const facet*[__new_size];
+	      }
+	    catch(...)
+	      {
+		delete [] __newf;
+		__throw_exception_again;
+	      }
 	    for (size_t __i = 0; __i < _M_facets_size; ++__i)
 	      __newc[__i] = _M_caches[__i];
 	    for (size_t __i2 = _M_facets_size; __i2 < __new_size; ++__i2)

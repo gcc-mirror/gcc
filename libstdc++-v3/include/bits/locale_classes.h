@@ -346,7 +346,7 @@ namespace std
     {
       bool __ret = true;
       for (size_t __i = 0; __ret && __i < _S_categories_size - 1; ++__i)
-	__ret &= (strcmp(_M_names[__i], _M_names[__i + 1]) == 0);
+	__ret &= (std::strcmp(_M_names[__i], _M_names[__i + 1]) == 0);
       return __ret;
     }
 
@@ -379,13 +379,30 @@ namespace std
     locale::locale(const locale& __other, _Facet* __f)
     {
       _M_impl = new _Impl(*__other._M_impl, 1);
-      _M_impl->_M_install_facet(&_Facet::id, __f);
-      for (size_t __i = 0; __i < _S_categories_size; ++__i)
+
+      char* _M_tmp_names[_S_categories_size];
+      size_t __i = 0;
+      try
 	{
-	  delete [] _M_impl->_M_names[__i];
-	  char* __new = new char[2];
-	  std::strcpy(__new, "*");
-	  _M_impl->_M_names[__i] = __new;
+	  for (; __i < _S_categories_size; ++__i)
+	    {
+	      _M_tmp_names[__i] = new char[2];
+	      std::strcpy(_M_tmp_names[__i], "*");
+	    }
+	  _M_impl->_M_install_facet(&_Facet::id, __f);
+	}
+      catch(...)
+	{
+	  delete _M_impl;
+	  for (size_t __j = 0; __j < __i; ++__j)
+	    delete [] _M_tmp_names[__j];	  
+	  __throw_exception_again;
+	}
+
+      for (size_t __k = 0; __k < _S_categories_size; ++__k)
+	{
+	  delete [] _M_impl->_M_names[__k];
+	  _M_impl->_M_names[__k] = _M_tmp_names[__k];
 	}
     }
 } // namespace std
