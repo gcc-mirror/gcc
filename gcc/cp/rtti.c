@@ -175,6 +175,12 @@ get_tinfo_fn_dynamic (exp)
   if (exp == error_mark_node)
     return error_mark_node;
 
+  if (type_unknown_p (exp))
+    {
+      error ("typeid of overloaded function");
+      return error_mark_node;
+    }
+
   type = TREE_TYPE (exp);
 
   /* peel back references, so they match.  */
@@ -244,6 +250,10 @@ build_x_typeid (exp)
     }
 
   exp = get_tinfo_fn_dynamic (exp);
+
+  if (exp == error_mark_node)
+    return error_mark_node;
+
   exp = build_call (exp, type, NULL_TREE);
 
   if (cond)
@@ -316,8 +326,16 @@ tree
 get_tinfo_fn (type)
      tree type;
 {
-  tree name = build_overload_with_type (tinfo_fn_id, type);
+  tree name;
   tree d;
+
+  if (TREE_CODE (type) == OFFSET_TYPE)
+    type = TREE_TYPE (type);
+  if (TREE_CODE (type) == METHOD_TYPE)
+    type = build_function_type (TREE_TYPE (type),
+				TREE_CHAIN (TYPE_ARG_TYPES (type)));
+
+  name = build_overload_with_type (tinfo_fn_id, type);
 
   if (IDENTIFIER_GLOBAL_VALUE (name))
     return IDENTIFIER_GLOBAL_VALUE (name);
@@ -330,7 +348,7 @@ get_tinfo_fn (type)
   DECL_ARTIFICIAL (d) = 1;
   DECL_NOT_REALLY_EXTERN (d) = 1;
   DECL_MUTABLE_P (d) = 1;
-  TREE_TYPE (name) = type;
+  TREE_TYPE (name) = copy_to_permanent (type);
   pushdecl_top_level (d);
   make_function_rtl (d);
   assemble_external (d);

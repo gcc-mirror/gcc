@@ -873,7 +873,7 @@ modify_vtable_entry (old_entry_in_list, new_entry, fndecl)
     }
 }
 
-/* Access the virtual function table entry i.  VIRTUALS is the virtual
+/* Access the virtual function table entry N.  VIRTUALS is the virtual
    function table's initializer.  */
 
 static tree
@@ -4188,7 +4188,10 @@ finish_struct_1 (t, warn_anon)
 	 For example, if a member function is seen and we decide to
 	 write out that member function, then we can change the value
 	 of the DECL_IGNORED_P slot, and the type will be output when
-	 that member function's debug info is written out.  */
+	 that member function's debug info is written out.
+
+	 We can't do this with DWARF, which does not support name
+	 references between translation units.  */
       if (CLASSTYPE_METHOD_VEC (t))
 	{
 	  extern tree pending_vtables;
@@ -4209,10 +4212,10 @@ finish_struct_1 (t, warn_anon)
 	}
       else if (CLASSTYPE_INTERFACE_ONLY (t))
 	TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 1;
-    }
 
-  /* Finish debugging output for this type.  */
-  rest_of_type_compilation (t, toplevel_bindings_p ());
+      /* Finish debugging output for this type.  */
+      rest_of_type_compilation (t, toplevel_bindings_p ());
+    }
 
   return t;
 }

@@ -1262,6 +1262,44 @@ dump_expr (t, nop)
       break;
 
     case CONSTRUCTOR:
+      if (TREE_TYPE (t) && TYPE_PTRMEMFUNC_P (TREE_TYPE (t)))
+	{
+	  tree idx = build_component_ref (t, index_identifier, NULL_TREE, 0);
+
+	  if (integer_all_onesp (idx))
+	    {
+	      tree pfn = PFN_FROM_PTRMEMFUNC (t);
+	      dump_expr (pfn);
+	      break;
+	    }
+	  if (TREE_CODE (idx) == INTEGER_CST
+	      && TREE_INT_CST_HIGH (idx) == 0)
+	    {
+	      tree virtuals;
+	      unsigned HOST_WIDE_INT n;
+
+	      t = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (t)));
+	      t = TYPE_METHOD_BASETYPE (t);
+	      virtuals = BINFO_VIRTUALS (TYPE_BINFO (TYPE_MAIN_VARIANT (t)));
+	      
+	      n = TREE_INT_CST_LOW (idx);
+
+	      /* Map vtable index back one, to allow for the null pointer to
+		 member.  */
+	      --n;
+
+	      while (n > 0 && virtuals)
+		{
+		  --n;
+		  virtuals = TREE_CHAIN (virtuals);
+		}
+	      if (virtuals)
+		{
+		  dump_expr (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals)));
+		  break;
+		}
+	    }
+	}
       OB_PUTC ('{');
       dump_expr_list (CONSTRUCTOR_ELTS (t));
       OB_PUTC ('}');

@@ -42,7 +42,6 @@ extern tree cleanups_this_call;
 static void grok_function_init PROTO((tree, tree));
 void import_export_decl ();
 extern int current_class_depth;
-extern int symout_time;
 
 /* A list of virtual function tables we must make sure to write out.  */
 tree pending_vtables;
@@ -241,6 +240,10 @@ int warn_reorder;
 
 /* Non-zero means warn when synthesis behavior differs from Cfront's.  */
 int warn_synth;
+
+/* Non-zero means warn when we convert a pointer to member function
+   into a pointer to (void or function).  */
+int warn_pmf2ptr = 1;
 
 /* Nonzero means `$' can be in an identifier.
    See cccp.c for reasons why this breaks some obscure ANSI C programs.  */
@@ -555,6 +558,8 @@ lang_decode_option (p)
 	warn_reorder = setting;
       else if (!strcmp (p, "synth"))
 	warn_synth = setting;
+      else if (!strcmp (p, "pmf-conversions"))
+	warn_pmf2ptr = setting;
       else if (!strcmp (p, "comment"))
 	;			/* cpp handles this one.  */
       else if (!strcmp (p, "comments"))
@@ -2642,9 +2647,6 @@ extern int parse_time, varconst_time;
 extern tree pending_templates;
 extern tree maybe_templates;
 
-#define TIMEVAR(VAR, BODY)    \
-do { int otime = get_run_time (); BODY; VAR += get_run_time () - otime; } while (0)
-
 extern struct obstack permanent_obstack;
 extern tree get_id_2 ();
 
@@ -2711,7 +2713,8 @@ finish_file ()
 	  instantiate_class_template (decl);
 	  if (CLASSTYPE_TEMPLATE_INSTANTIATION (decl))
 	    for (vars = TYPE_METHODS (decl); vars; vars = TREE_CHAIN (vars))
-	      instantiate_decl (vars);
+	      if (! DECL_ARTIFICIAL (vars))
+		instantiate_decl (vars);
 	}
       else
 	instantiate_decl (decl);
@@ -2768,13 +2771,6 @@ finish_file ()
     {
       tree decl = TREE_VALUE (vars);
 
-#ifdef DWARF_DEBUGGING_INFO
-	/* Output DWARF information for file-scope tentative data object
-	   declarations.  */
-
-	if (write_symbols == DWARF_DEBUG)
-	  TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 1));
-#endif
       if (DECL_TEMPLATE_INSTANTIATION (decl)
 	  && ! DECL_IN_AGGR_P (decl))
 	{
@@ -3429,6 +3425,9 @@ build_expr_from_tree (t)
 
     case TYPEID_EXPR:
       return build_x_typeid (build_expr_from_tree (TREE_OPERAND (t, 0)));
+
+    case VAR_DECL:
+      return convert_from_reference (t);
 
     default:
       return t;

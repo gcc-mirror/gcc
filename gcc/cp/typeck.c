@@ -2822,9 +2822,9 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	    }
 	  else
 	    {
-	      parmval = convert_for_initialization (return_loc, type, val,
-						    flags|INDIRECT_BIND,
-						    "argument passing", fndecl, i);
+	      parmval = convert_for_initialization
+		(return_loc, type, val, flags,
+		 "argument passing", fndecl, i);
 #ifdef PROMOTE_PROTOTYPES
 	      if ((TREE_CODE (type) == INTEGER_TYPE
 		   || TREE_CODE (type) == ENUMERAL_TYPE)
@@ -4616,7 +4616,8 @@ mark_addressable (exp)
       case PARM_DECL:
 	if (x == current_class_ptr)
 	  {
-	    error ("address of `this' not available");
+	    if (! flag_this_is_variable)
+	      error ("address of `this' not available");
 	    TREE_ADDRESSABLE (x) = 1; /* so compiler doesn't die later */
 	    put_var_into_stack (x);
 	    return 1;
@@ -4649,8 +4650,10 @@ mark_addressable (exp)
 
       case CONST_DECL:
       case RESULT_DECL:
-	/* For C++, we don't warn about taking the address of a register
-	   variable for CONST_DECLs; ARM p97 explicitly says it's okay.  */
+	if (DECL_REGISTER (x) && !TREE_ADDRESSABLE (x)
+	    && !DECL_ARTIFICIAL (x) && extra_warnings)
+	  cp_warning ("address requested for `%D', which is declared `register'",
+		      x);
 	put_var_into_stack (x);
 	TREE_ADDRESSABLE (x) = 1;
 	return 1;
@@ -4676,6 +4679,11 @@ mark_addressable (exp)
 
       case CONSTRUCTOR:
 	TREE_ADDRESSABLE (x) = 1;
+	return 1;
+
+      case TARGET_EXPR:
+	TREE_ADDRESSABLE (x) = 1;
+	mark_addressable (TREE_OPERAND (x, 0));
 	return 1;
 
       default:
@@ -6082,7 +6090,7 @@ get_delta_difference (from, to, force)
   binfo = get_binfo (from, to, 1);
   if (binfo == error_mark_node)
     {
-      error ("   in pointer to member function conversion");
+      error ("   in pointer to member function conversiona");
       return delta;
     }
   if (binfo == 0)
@@ -6096,12 +6104,14 @@ get_delta_difference (from, to, force)
       binfo = get_binfo (to, from, 1);
       if (binfo == error_mark_node)
 	{
-	  error ("   in pointer to member conversion");
+	  if (!force)
+	    error ("   in pointer to member conversion");
 	  return delta;
 	}
       if (binfo == 0)
 	{
-	  cp_error ("cannot convert pointer to member of type %T to unrelated pointer to member of type %T", from, to);
+	  if (!force)
+	    cp_error ("cannot convert pointer to member of type %T to unrelated pointer to member of type %T", from, to);
 	  return delta;
 	}
       if (TREE_VIA_VIRTUAL (binfo))
@@ -6751,6 +6761,13 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
     }
   else if (TYPE_HAS_CONSTRUCTOR (type) || IS_AGGR_TYPE (TREE_TYPE (rhs)))
     return convert (type, rhs);
+  /* Handle anachronistic conversions from (::*)() to void* or (*)().  */
+  else if (TREE_CODE (type) == POINTER_TYPE
+	   && (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
+	       || TREE_TYPE (type) == void_type_node)
+	   && TREE_TYPE (rhs)
+	   && TYPE_PTRMEMFUNC_P (TREE_TYPE (rhs)))
+    return convert (type, rhs);
 
   cp_error ("%s to `%T' from `%T'", errtype, type, rhstype);
   return error_mark_node;
@@ -7180,7 +7197,7 @@ c_expand_return (retval)
   if (retval == result
       || DECL_CONSTRUCTOR_P (current_function_decl))
     /* It's already done for us.  */;
-  else if (TYPE_MODE (TREE_TYPE (retval)) == VOIDmode)
+  else if (TREE_TYPE (retval) == void_type_node)
     {
       pedwarn ("return of void value in function returning non-void");
       expand_expr_stmt (retval);

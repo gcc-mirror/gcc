@@ -829,7 +829,9 @@ digest_init (type, init, tail)
 	    }
 	  init = element;
 	}
-      while (TREE_CODE (init) == CONSTRUCTOR)
+      while (TREE_CODE (init) == CONSTRUCTOR
+	     && ! (TREE_TYPE (init)
+		   && TYPE_PTRMEMFUNC_P (TREE_TYPE (init))))
 	{
 	  cp_pedwarn ("braces around scalar initializer for `%T'", type);
 	  init = CONSTRUCTOR_ELTS (init);

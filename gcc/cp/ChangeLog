@@ -1,3 +1,112 @@
+Tue Nov 12 08:39:17 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+        * decl.c (cp_finish_decl): In MINIMAL_PARSE_MODE, only try to use
+        the DECL_VINDEX of DECL if it's set.
+
+        * tree.c (mapcar): Handle RTL_EXPR.
+
+Mon Nov 11 13:57:31 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (current_template_args): New fn.
+	(push_template_decl): Use it.
+	* decl.c (grokdeclarator): Use it.
+
+	* decl2.c (build_expr_from_tree): Dereference ref vars.
+
+	* decl.c (grokdeclarator): Generalize handling of TYPENAME_TYPEs in
+	the decl-specifier-seq.
+
+	* decl.c (grok_op_properties): Don't force the type of a conversion
+	op to be complete.  Don't warn about converting to the same type
+	for template instantiations.
+
+	* decl2.c (finish_file): Don't call instantiate_decl on synthesized
+	methods.
+
+Mon Nov 11 13:20:34 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* typeck.c (get_delta_difference): Remove previous bogusness.
+	Don't give errors if force is set.
+
+Fri Nov  8 17:38:44 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_file): Don't emit debug info.
+	* decl.c (start_function): Call note_debug_info_needed for context.
+	(start_decl): Likewise.
+	(cp_finish_decl): Not here.
+	(finish_function): Or here.
+	(pushdecl): Lose obsolete code.
+	(grokdeclarator): Still do the long long thing after complaining.
+	(finish_enum): Don't call rest_of_type_compilation
+	for DWARF.
+	* class.c (finish_struct_1): Don't call rest_of_type_compilation
+	for DWARF.
+	* search.c (dfs_debug_mark): For DWARF, just call
+ 	rest_of_type_compilation.
+	(note_debug_info_needed): Don't do anything if we're in a template.
+	* parse.y (named_complex_class_head_sans_basetype): Likewise.
+	* method.c (synthesize_method): For non-local classes,
+ 	push_to_top_level first.
+
+Fri Nov  8 11:52:28 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* typeck.c (get_delta_difference): Add no_error parameter.
+	(build_ptrmemfunc): Call get_delta_difference with no_error set;
+ 	we don't want error messages when converting unrelated
+ 	pointer-to-member functions.
+
+Thu Nov  7 11:16:24 1996  Mike Stump  <mrs@cygnus.com>
+
+	* error.c (dump_expr): Improve the wording on error messages that
+	involve pointer to member functions.
+
+Tue Nov  5 17:12:05 1996  Mike Stump  <mrs@cygnus.com>
+
+	* cvt.c (cp_convert_to_pointer): Move code for conversions from
+ 	(::*)() to void* or (*)() up a bit, so that we can convert from
+	METHOD_TYPEs as well.
+
+Tue Nov  5 14:54:17 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* rtti.c (get_tinfo_fn): Make sure 'type' is permanent.
+	There are no 'member' types.
+	(get_tinfo_fn_dynamic): Diagnose typeid of overloaded fn.
+	(build_x_typeid): Handle errors.
+
+Mon Nov  4 17:43:12 1996  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (convert_for_assignment): Handle anachronistic implicit
+	conversions from (::*)() to void* or (*)().
+	* cvt.c (cp_convert_to_pointer): Likewise.
+	(cp_convert_to_pointer_force): Remove cp_convert_to_pointer
+	conversions from here.
+	* decl2.c (lang_decode_option): Add -W{no-,}pmf-conversions.
+	* lang-options.h: Likewise.
+	* decl2.c (warn_pmf2ptr): Define.
+	* cp-tree.h: Declare it.
+	* typeck2.c (digest_init): Allow pmfs down into
+	convert_for_initialization.
+
+Sun Nov  3 09:43:00 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (c_expand_return): Fix for returning overloaded fn.
+
+Fri Nov  1 08:53:17 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h (DIRECT_BIND): Change from INDIRECT_BIND.
+	* decl.c (grok_reference_init): Pass DIRECT_BIND.
+	* cvt.c (build_up_reference): Don't mark 'this' addressable.  Use
+ 	DIRECT_BIND.
+	* call.c (convert_like): Don't pass INDIRECT_BIND.
+	* typeck.c (convert_arguments): Likewise.
+	* typeck.c (mark_addressable): Allow &this if flag_this_is_variable.
+
+Thu Oct 31 17:08:49 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (mark_addressable): Support TARGET_EXPR, unify with
+ 	similar code in build_up_ref.
+	* cvt.c (build_up_reference): Drastically simplify.
+
 Mon Oct 28 12:45:05 1996  Jeffrey A Law  (law@cygnus.com)
 
 	* typeck.c (signed_or_unsigned_type): If the given type already

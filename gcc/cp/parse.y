@@ -2233,7 +2233,10 @@ named_complex_class_head_sans_basetype:
 		{
 		  current_aggr = $1;
 		  if (TREE_CODE ($3) == TYPE_DECL)
-		    $$ = $3;
+		    {
+		      $$ = $3;
+		      note_debug_info_needed (DECL_CONTEXT ($$));
+		    }
 		  else
 		    {
 		      cp_error ("`%T' does not have a nested type named `%D'",

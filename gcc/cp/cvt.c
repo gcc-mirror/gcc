@@ -154,6 +154,50 @@ cp_convert_to_pointer (type, expr)
   if (TYPE_PTRMEMFUNC_P (intype))
     intype = TYPE_PTRMEMFUNC_FN_TYPE (intype);
 
+  /* Handle anachronistic conversions from (::*)() to void* or (*)().  */
+  if (TREE_CODE (type) == POINTER_TYPE
+      && (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
+	  || TREE_TYPE (type) == void_type_node))
+    {
+      /* Allow an implicit this pointer for pointer to member
+	 functions.  */
+      if (TREE_CODE (intype) == POINTER_TYPE
+	  && TREE_CODE (TREE_TYPE (intype)) == METHOD_TYPE)
+	{
+	  tree decl, basebinfo;
+	  tree fntype = TREE_TYPE (intype);
+	  tree t = TYPE_METHOD_BASETYPE (fntype);
+
+	  if (current_class_type == 0
+	      || get_base_distance (t, current_class_type, 0, &basebinfo)
+	      == -1)
+	    {
+	      decl = build1 (NOP_EXPR, t, error_mark_node);
+	    }
+	  else if (current_class_ptr == 0)
+	    decl = build1 (NOP_EXPR, t, error_mark_node);
+	  else
+	    decl = current_class_ref;
+
+	  expr = build (OFFSET_REF, fntype, decl, expr);
+	}
+
+      if (TREE_CODE (expr) == OFFSET_REF
+	  && TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE)
+	expr = resolve_offset_ref (expr);
+      if (TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE)
+	expr = build_addr_func (expr);
+      if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
+	{
+	  if (TREE_CODE (TREE_TYPE (TREE_TYPE (expr))) == METHOD_TYPE)
+	    if (pedantic || warn_pmf2ptr)
+	      cp_pedwarn ("converting from `%T' to `%T'", TREE_TYPE (expr),
+			  type);
+	  return build1 (NOP_EXPR, type, expr);
+	}
+      intype = TREE_TYPE (expr);
+    }
+
   form = TREE_CODE (intype);
 
   if (form == POINTER_TYPE || form == REFERENCE_TYPE)
@@ -282,44 +326,6 @@ convert_to_pointer_force (type, expr)
       form = TREE_CODE (intype);
     }
 
-  if (TREE_CODE (type) == POINTER_TYPE
-      && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
-    {
-      /* Allow an implicit this pointer for pointer to member
-         functions.  */
-      if (TYPE_PTRMEMFUNC_P (intype))
-	{
-	  tree decl, basebinfo;
-	  tree fntype = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (intype));
-	  tree t = TYPE_METHOD_BASETYPE (fntype);
-
-	  if (current_class_type == 0
-	      || get_base_distance (t, current_class_type, 0, &basebinfo) == -1)
-	    {
-	      decl = build1 (NOP_EXPR, t, error_mark_node);
-	    }
-	  else if (current_class_ptr == 0)
-	    decl = build1 (NOP_EXPR, t, error_mark_node);
-	  else
-	    decl = current_class_ref;
-
-	  expr = build (OFFSET_REF, fntype, decl, expr);
-	  intype = TREE_TYPE (expr);
-	}
-
-      if (TREE_CODE (expr) == OFFSET_REF && TREE_CODE (intype) == METHOD_TYPE)
-	expr = resolve_offset_ref (expr);
-      if (TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE)
-	expr = build_addr_func (expr);
-      if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
-	{
-	  if (pedantic
-	      && TREE_CODE (TREE_TYPE (TREE_TYPE (expr))) == METHOD_TYPE)
-	    cp_pedwarn ("cannot convert `%T' to `%T'", intype, type);
-	  return build1 (NOP_EXPR, type, expr);
-	}
-    }
-
   if (form == POINTER_TYPE)
     {
       intype = TYPE_MAIN_VARIANT (intype);
@@ -355,7 +361,6 @@ convert_to_pointer_force (type, expr)
 	    }
 	  return build_vbase_path (code, type, expr, path, 0);
 	}
-      return build1 (NOP_EXPR, type, expr);
     }
 
   return cp_convert_to_pointer (type, expr);
@@ -366,7 +371,7 @@ convert_to_pointer_force (type, expr)
    value we have to begin with is in ARG.
 
    FLAGS controls how we manage access checking.
-   INDIRECT_BIND in FLAGS controls how any temporarys are generated.
+   DIRECT_BIND in FLAGS controls how any temporarys are generated.
    CHECKCONST controls if we report error messages on const subversion.  */
 
 static tree
@@ -512,72 +517,20 @@ build_up_reference (type, arg, flags, checkconst)
 	 but complain if we need a reference to something declared
 	 as `register'.  */
 
-    case RESULT_DECL:
-      if (staticp (targ))
-	literal_flag = 1;
-      TREE_ADDRESSABLE (targ) = 1;
-      put_var_into_stack (targ);
-      break;
-
     case PARM_DECL:
-#if 0
-      if (targ == current_class_ptr)
-	{
-	  error ("address of `this' not available");
-/* #if 0 */	  
-	  /* This code makes the following core dump the compiler on a sun4,
-	     if the code below is used.
+      /* 'this' is not an lvalue.  */
+      if (targ == current_class_ptr && ! flag_this_is_variable)
+	break;
 
-	     class e_decl;
-	     class a_decl;
-	     typedef a_decl* a_ref;
-
-	     class a_s {
-	     public:
-	       a_s();
-	       void* append(a_ref& item);
-	     };
-	     class a_decl {
-	     public:
-	       a_decl (e_decl *parent);
-	       a_s  generic_s;
-	       a_s  decls;
-	       e_decl* parent;
-	     };
-
-	     class e_decl {
-	     public:
-	       e_decl();
-	       a_s implementations;
-	     };
-
-	     void foobar(void *);
-
-	     a_decl::a_decl(e_decl *parent) {
-	       parent->implementations.append(this);
-	     }
-	   */
-
-	  TREE_ADDRESSABLE (targ) = 1; /* so compiler doesn't die later */
-	  put_var_into_stack (targ);
-	  break;
-/* #else */
-	  return error_mark_node;
-/* #endif */	  
-	}
-#endif
-      /* Fall through.  */
+    case RESULT_DECL:
     case VAR_DECL:
     case CONST_DECL:
-      if (DECL_REGISTER (targ) && !TREE_ADDRESSABLE (targ)
-	  && !DECL_ARTIFICIAL (targ))
-	cp_warning ("address needed to build reference for `%D', which is declared `register'",
-		    targ);
-      else if (staticp (targ))
+      if (staticp (targ))
 	literal_flag = 1;
 
-      TREE_ADDRESSABLE (targ) = 1;
-      put_var_into_stack (targ);
+      /* Fall through.  */
+    case TARGET_EXPR:
+      mark_addressable (targ);
       break;
 
     case COMPOUND_EXPR:
@@ -632,75 +585,30 @@ build_up_reference (type, arg, flags, checkconst)
       TREE_REFERENCE_EXPR (rval) = 1;
       return rval;
 
-    case TARGET_EXPR:
-      TREE_ADDRESSABLE (targ) = 1;
-      put_var_into_stack (TREE_OPERAND (targ, 0));
-      break;
-
     default:
       break;
     }
 
-  if (TREE_ADDRESSABLE (targ) == 0)
+  if ((flags&DIRECT_BIND)
+      && ! real_lvalue_p (targ))
     {
-      if (! (flags&INDIRECT_BIND)
-	  && toplevel_bindings_p ())
+      if (toplevel_bindings_p ())
 	{
-	  tree temp = get_temp_name (argtype, 0);
-	  /* Give this new temp some rtl and initialize it.  */
-	  DECL_INITIAL (temp) = targ;
-	  TREE_STATIC (temp) = 1;
-	  cp_finish_decl (temp, targ, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
-	  /* Do this after declaring it static.  */
-	  rval = build_unary_op (ADDR_EXPR, temp, 0);
-	  TREE_TYPE (rval) = type;
-	  literal_flag = TREE_CONSTANT (rval);
-	  goto done;
-	}
-
-      if (TREE_CODE (targ) == CALL_EXPR && IS_AGGR_TYPE (argtype))
-	{
-	  arg = build_cplus_new (argtype, targ);
-	}
-      else if (flags&INDIRECT_BIND)
-	{
-	  /* This should be the default, not the below code.  */
-	  /* All callers except grok_reference_init should probably
-             use INDIRECT_BIND.  */
-	  tree slot = build (VAR_DECL, argtype);
-	  layout_decl (slot, 0);
-	  arg = build (TARGET_EXPR, argtype, slot, arg, NULL_TREE, NULL_TREE);
+	  arg = get_temp_name (argtype, 1);
+	  literal_flag = 1;
 	}
       else
 	{
-	  tree temp = get_temp_name (argtype, 0);
-	  rval = build_unary_op (ADDR_EXPR, temp, 0);
-	  if (binfo && !BINFO_OFFSET_ZEROP (binfo))
-	    rval = convert_pointer_to (target_type, rval);
-	  else
-	    TREE_TYPE (rval) = type;
-
-	  temp = build (MODIFY_EXPR, argtype, temp, arg);
-	  TREE_SIDE_EFFECTS (temp) = 1;
-	  return build (COMPOUND_EXPR, type, temp, rval);
+	  arg = pushdecl (build_decl (VAR_DECL, NULL_TREE, argtype));
+	  DECL_ARTIFICIAL (arg) = 1;
 	}
+      DECL_INITIAL (arg) = targ;
+      cp_finish_decl (arg, targ, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
-
-  if (! (flags&INDIRECT_BIND))
+  else if (TREE_ADDRESSABLE (targ) == 0 && !(flags&DIRECT_BIND))
     {
-      if (TREE_CODE (arg) == TARGET_EXPR)
-	{
-	  tree decl = TREE_OPERAND (arg, 0);
-	  tree cleanup;
-
-	  if (! toplevel_bindings_p () && ! DECL_RTL (decl))
-	    {
-	      expand_decl (decl);
-	      cleanup = maybe_build_cleanup (decl);
-	      if (cleanup)
-		expand_decl_cleanup (decl, cleanup);
-	    }
-	}
+      tree slot = build_decl (VAR_DECL, NULL_TREE, argtype);
+      arg = build (TARGET_EXPR, argtype, slot, arg, NULL_TREE, NULL_TREE);
     }
 
   rval = build1 (ADDR_EXPR, type, arg);

@@ -3085,20 +3085,6 @@ pushdecl (x)
               if (global_bindings_p ())
                 TYPE_NAME (type) = x;
 	    }
-	  else
-	    {
-	      tree tname = DECL_NAME (name);
-
-	      /* This is a disgusting kludge for dealing with UPTs.  */
-	      if (global_bindings_p () && ANON_AGGRNAME_P (tname))
-		{
-  		  /* do gratuitous C++ typedefing, and make sure that
-  		     we access this type either through TREE_TYPE field
-  		     or via the tags list.  */
-		  TYPE_NAME (TREE_TYPE (x)) = x;
-		  pushtag (tname, TREE_TYPE (x), 0);
-		}
-	    }
 	  my_friendly_assert (TREE_CODE (name) == TYPE_DECL, 140);
 
 	  if (type != error_mark_node
@@ -5823,6 +5809,12 @@ start_decl (declarator, declspecs, initialized)
 	  }
       }
 
+  /* Do this before the decl is actually defined so that the DWARF debug
+     info for the class reflects the declaration, rather than the
+     definition, of this decl.  */
+  if (TREE_CODE (decl) == VAR_DECL && context)
+    note_debug_info_needed (context);
+
   if (initialized)
     {
       if (! toplevel_bindings_p ()
@@ -6085,7 +6077,8 @@ grok_reference_init (decl, type, init, cleanupp)
     }
 
   tmp = convert_to_reference
-    (type, init, CONV_IMPLICIT, LOOKUP_SPECULATIVELY|LOOKUP_NORMAL, decl);
+    (type, init, CONV_IMPLICIT,
+     LOOKUP_SPECULATIVELY|LOOKUP_NORMAL|DIRECT_BIND, decl);
 
   if (tmp == error_mark_node)
     goto fail;
@@ -6218,7 +6211,8 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
     {
       if (init && DECL_INITIAL (decl))
 	DECL_INITIAL (decl) = init;
-      if (minimal_parse_mode && ! DECL_ARTIFICIAL (decl))
+      if (minimal_parse_mode && ! DECL_ARTIFICIAL (decl)
+	  && DECL_VINDEX (decl))
 	{
 	  tree stmt = DECL_VINDEX (decl);
 	  DECL_VINDEX (decl) = NULL_TREE;
@@ -6465,10 +6459,6 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       else if (!DECL_EXTERNAL (decl) && IS_AGGR_TYPE (ttype))
 	/* Let debugger know it should output info for this type.  */
 	note_debug_info_needed (ttype);
-
-      if (TREE_STATIC (decl) && DECL_CONTEXT (decl)
-	  && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (decl))) == 't')
-	note_debug_info_needed (DECL_CONTEXT (decl));
 
       if ((DECL_EXTERNAL (decl) || TREE_STATIC (decl))
 	  && DECL_SIZE (decl) != NULL_TREE
@@ -7813,7 +7803,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    {
 		      if (pedantic && ! in_system_header)
 			pedwarn ("ANSI C++ does not support `long long'");
-		      else if (longlong)
+		      if (longlong)
 			error ("`long long long' is too long for GCC");
 		      else
 			longlong = 1;
@@ -7834,18 +7824,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  else
 	    {
 	      type = TREE_TYPE (id);
-	      if (TREE_CODE (type) == TYPENAME_TYPE
-		  && TYPE_CONTEXT (type) == current_class_type)
-		{
-		  /* Members of the current class get resolved immediately;
-		     we couldn't catch this one earlier because we hadn't
-		     pushed into the class yet.  */
-		  if (TREE_TYPE (type))
-		    type = TREE_TYPE (type);
-		  else
-		    type = make_typename_type (TYPE_CONTEXT (type),
-					       TYPE_IDENTIFIER (type));
-		}
 	      TREE_VALUE (spec) = type;
 	    }
 	  goto found;
@@ -8810,6 +8788,20 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      ;
 	    else if (TREE_COMPLEXITY (declarator) == current_class_depth)
 	      {
+		/* Resolve any TYPENAME_TYPEs from the decl-specifier-seq
+		   that refer to ctype.  They couldn't be resolved earlier
+		   because we hadn't pushed into the class yet.
+		   Example: resolve 'B<T>::type' in
+		   'B<typename B<T>::type> B<T>::f () { }'.  */
+		if (current_template_parms
+		    && uses_template_parms (type)
+		    && uses_template_parms (current_class_type))
+		  {
+		    tree args = current_template_args ();
+		    type = tsubst (type, &TREE_VEC_ELT (args, 0),
+				   TREE_VEC_LENGTH (args), NULL_TREE);
+		  }
+
 		/* This pop_nested_class corresponds to the
                    push_nested_class used to push into class scope for
                    parsing the argument list of a function decl, in
@@ -8830,19 +8822,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		continue;
 	      }
 	    ctype = TREE_OPERAND (declarator, 0);
-
-	    if (TREE_CODE (ctype) == TYPENAME_TYPE
-		&& TYPE_CONTEXT (ctype) == current_class_type)
-	      {
-		/* Members of the current class get resolved immediately;
-		   we couldn't catch this one earlier because we hadn't
-		   pushed into the class yet.  */
-		if (TREE_TYPE (ctype))
-		  ctype = TREE_TYPE (ctype);
-		else
-		  ctype = make_typename_type (TYPE_CONTEXT (ctype),
-					      TYPE_IDENTIFIER (ctype));
-	      }
 
 	    if (sname == NULL_TREE)
 	      goto done_scoping;
@@ -10139,7 +10118,7 @@ grok_op_properties (decl, virtualp, friendp)
 	  || name == ansi_opname[(int) METHOD_CALL_EXPR])
 	return;			/* no restrictions on args */
 
-      if (IDENTIFIER_TYPENAME_P (name))
+      if (IDENTIFIER_TYPENAME_P (name) && ! DECL_TEMPLATE_INFO (decl))
 	{
 	  tree t = TREE_TYPE (name);
 	  if (TREE_CODE (t) == VOID_TYPE)
@@ -10153,7 +10132,9 @@ grok_op_properties (decl, virtualp, friendp)
 
 	      if (t == current_class_type)
 		what = "the same type";
+	      /* Don't force t to be complete here.  */
 	      else if (IS_AGGR_TYPE (t)
+		       && TYPE_SIZE (t)
 		       && DERIVED_FROM_P (t, current_class_type))
 		what = "a base class";
 
@@ -10735,7 +10716,8 @@ finish_enum (enumtype, values)
   }
 
   /* Finish debugging output for this type.  */
-  rest_of_type_compilation (enumtype, global_bindings_p ());
+  if (write_symbols != DWARF_DEBUG)
+    rest_of_type_compilation (enumtype, global_bindings_p ());
 
   return enumtype;
 }
@@ -11013,6 +10995,12 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	  warn_about_return_type = 0;
 	}
     }
+
+  /* Do this before the decl is actually defined so that the DWARF debug
+     info for the class reflects the declaration, rather than the
+     definition, of this decl.  */
+  if (DECL_FUNCTION_MEMBER_P (decl1))
+    note_debug_info_needed (DECL_CLASS_CONTEXT (decl1));
 
   /* Warn if function was previously implicitly declared
      (but not if we warned then).  */
@@ -11999,9 +11987,6 @@ finish_function (lineno, call_poplevel, nested)
 	  DECL_EXTERNAL (fndecl) = 1;
 	  mark_inline_for_output (fndecl);
 	}
-
-      if (ctype && TREE_ASM_WRITTEN (fndecl))
-	note_debug_info_needed (ctype);
 
       current_function_returns_null |= can_reach_end;
 
