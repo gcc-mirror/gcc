@@ -439,7 +439,18 @@ __cxa_call_unexpected (void *exc_obj_in)
     ~end_catch_protect() { __cxa_end_catch(); }
   } end_catch_protect_obj;
 
+  lsda_header_info info;
   __cxa_exception *xh = __get_exception_header_from_ue (exc_obj);
+  const unsigned char *xh_lsda;
+  _Unwind_Sword xh_switch_value;
+  std::terminate_handler xh_terminate_handler;
+
+  // If the unexpectedHandler rethrows the exception (e.g. to categorize it),
+  // it will clobber data about the current handler.  So copy the data out now.
+  xh_lsda = xh->languageSpecificData;
+  xh_switch_value = xh->handlerSwitchValue;
+  xh_terminate_handler = xh->terminateHandler;
+  info.ttype_base = (_Unwind_Ptr) xh->catchTemp;
 
   try 
     { __unexpected (xh->unexpectedHandler); } 
@@ -453,13 +464,11 @@ __cxa_call_unexpected (void *exc_obj_in)
       void *new_ptr = new_xh + 1;
       
       // We don't quite have enough stuff cached; re-parse the LSDA.
-      lsda_header_info info;
-      parse_lsda_header (0, xh->languageSpecificData, &info);
-      info.ttype_base = (_Unwind_Ptr) xh->catchTemp;
+      parse_lsda_header (0, xh_lsda, &info);
       
       // If this new exception meets the exception spec, allow it.
       if (check_exception_spec (&info, new_xh->exceptionType,
-				new_ptr, xh->handlerSwitchValue))
+				new_ptr, xh_switch_value))
 	__throw_exception_again;
       
       // If the exception spec allows std::bad_exception, throw that.
@@ -467,10 +476,10 @@ __cxa_call_unexpected (void *exc_obj_in)
       // bad_exception doesn't have virtual bases, that's OK; just pass 0.
 #ifdef __EXCEPTIONS  
       const std::type_info &bad_exc = typeid (std::bad_exception);
-      if (check_exception_spec (&info, &bad_exc, 0, xh->handlerSwitchValue))
+      if (check_exception_spec (&info, &bad_exc, 0, xh_switch_value))
 	throw std::bad_exception();
 #endif   
       // Otherwise, die.
-      __terminate(xh->terminateHandler);
+      __terminate (xh_terminate_handler);
     }
 }
