@@ -1,3 +1,14 @@
+2003-07-31  Doug Gregor  <dgregor@apple.com>
+
+	Add user specialization tests.
+	* testsuite/23_containers/deque/1.cc: New.
+	* testsuite/23_containers/list/1.cc: New.
+	* testsuite/23_containers/map/1.cc: New.
+	* testsuite/23_containers/multimap/1.cc: New.
+	* testsuite/23_containers/multiset/1.cc: New.
+	* testsuite/23_containers/set/1.cc: New.
+	* testsuite/23_containers/vector/1.cc: New.
+	
 2003-07-31  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Reshuffle 23_containers testsuite.
@@ -210,6 +221,7 @@
 	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/1.cc: 
         Same.
 	
+>>>>>>> 1.1912
 2003-07-28  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/user.cfg.in, docs/html/abi.txt, docs/html/debug.html,
