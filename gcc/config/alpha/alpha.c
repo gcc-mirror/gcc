@@ -4695,10 +4695,8 @@ alpha_expand_prologue ()
 	}
 
       if (frame_size != 0)
-	{
-	  FRP (emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
-				      GEN_INT (-frame_size))));
-	}
+	FRP (emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
+				    GEN_INT (-frame_size))));
     }
   else
     {
@@ -4822,28 +4820,24 @@ alpha_expand_prologue ()
   if (TARGET_OPEN_VMS)
     {
       if (!vms_is_stack_procedure)
-	{
-	  /* Register frame procedures fave the fp.  */
-	  FRP (emit_move_insn (gen_rtx_REG (DImode, vms_save_fp_regno),
-			       hard_frame_pointer_rtx));
-	}
+	/* Register frame procedures fave the fp.  */
+	FRP (emit_move_insn (gen_rtx_REG (DImode, vms_save_fp_regno),
+			     hard_frame_pointer_rtx));
 
       if (vms_base_regno != REG_PV)
 	FRP (emit_move_insn (gen_rtx_REG (DImode, vms_base_regno),
 			     gen_rtx_REG (DImode, REG_PV)));
 
       if (vms_unwind_regno == HARD_FRAME_POINTER_REGNUM)
-	{
-	  FRP (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx));
-	}
+	FRP (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx));
 
       /* If we have to allocate space for outgoing args, do it now.  */
       if (current_function_outgoing_args_size != 0)
-	{
-	  FRP (emit_move_insn (stack_pointer_rtx, 
-	        plus_constant (hard_frame_pointer_rtx,
-	         - ALPHA_ROUND (current_function_outgoing_args_size))));
-	}
+	FRP (emit_move_insn
+	     (stack_pointer_rtx, 
+	      plus_constant (hard_frame_pointer_rtx,
+			     - (ALPHA_ROUND
+				(current_function_outgoing_args_size)))));
     }
   else
     {
@@ -4853,12 +4847,10 @@ alpha_expand_prologue ()
 	  if (TARGET_CAN_FAULT_IN_PROLOGUE)
 	    FRP (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx));
 	  else
-	    {
-	      /* This must always be the last instruction in the
-		 prologue, thus we emit a special move + clobber.  */
+	    /* This must always be the last instruction in the
+	       prologue, thus we emit a special move + clobber.  */
 	      FRP (emit_insn (gen_init_fp (hard_frame_pointer_rtx,
 				           stack_pointer_rtx, sa_reg)));
-	    }
 	}
     }
 
@@ -5128,9 +5120,7 @@ alpha_expand_epilogue ()
       if ((TARGET_OPEN_VMS
 	   && vms_unwind_regno == HARD_FRAME_POINTER_REGNUM)
 	  || (!TARGET_OPEN_VMS && frame_pointer_needed))
-	{
-	  FRP (emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx));
-	}
+	FRP (emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx));
 
       /* Cope with very large offsets to the register save area.  */
       if (reg_offset + sa_size > 0x8000)
@@ -5235,7 +5225,7 @@ alpha_expand_epilogue ()
       if (fp_is_frame_pointer)
 	{
 	  emit_insn (gen_blockage ());
-	  mem = gen_rtx_MEM (DImode, plus_constant(sa_reg, fp_offset));
+	  mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, fp_offset));
 	  MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
 	  FRP (emit_move_insn (hard_frame_pointer_rtx, mem));
 	}

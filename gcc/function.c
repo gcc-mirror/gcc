@@ -7039,7 +7039,8 @@ keep_stack_depressed (seq)
 
   /* If the epilogue is just a single instruction, it's OK as is */
 
-  if (GET_CODE (seq) != SEQUENCE) return;
+  if (GET_CODE (seq) != SEQUENCE)
+    return;
 
   /* Scan all insns in SEQ looking for ones that modified the stack
      pointer.  Record if it modified the stack pointer by copying it
