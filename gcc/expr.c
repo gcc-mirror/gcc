@@ -5255,7 +5255,10 @@ expand_expr (exp, target, tmode, modifier)
     }
 
 #ifdef MAX_INTEGER_COMPUTATION_MODE
-  if (target && TREE_CODE (exp) != INTEGER_CST)
+  if (target
+      && TREE_CODE (exp) != INTEGER_CST
+      && TREE_CODE (exp) != PARM_DECL
+      && TREE_CODE (exp) != VAR_DECL)
     {
       enum machine_mode mode = GET_MODE (target);
 
@@ -5265,6 +5268,8 @@ expand_expr (exp, target, tmode, modifier)
     }
 
   if (TREE_CODE (exp) != INTEGER_CST
+      && TREE_CODE (exp) != PARM_DECL
+      && TREE_CODE (exp) != VAR_DECL
       && GET_MODE_CLASS (tmode) == MODE_INT
       && tmode > MAX_INTEGER_COMPUTATION_MODE)
     fatal ("unsupported wide integer operation");
