@@ -2789,6 +2789,14 @@ powerpc-*-sysv*)
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
 	xmake_file=rs6000/x-sysv4
 	;;
+powerpc-*-netbsd*)
+	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/netbsd.h"
+	xm_file=rs6000/xm-sysv4.h
+	xm_defines=POSIX
+	extra_headers=ppc-asm.h
+	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
+	xmake_file=none
+	;;
 powerpc-*-chorusos*)
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/chorus.h"
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"

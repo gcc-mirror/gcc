@@ -1415,6 +1415,8 @@ as new information becomes available.
 @item
 @uref{#powerpc-*-linux-gnu*,,powerpc-*-linux-gnu*}
 @item
+@uref{#powerpc-*-netbsd*,,powerpc-*-netbsd*}
+@item
 @uref{#powerpc-*-eabiaix,,powerpc-*-eabiaix}
 @item
 @uref{#powerpc-*-eabisim,,powerpc-*-eabisim}
@@ -2979,6 +2981,15 @@ You will need
 @uref{ftp://ftp.varesearch.com/pub/support/hjl/binutils,,binutils 2.9.4.0.8}
 or newer for a working GCC@.  It is strongly recommended to recompile binutils
 if you initially built it with gcc-2.7.2.x.
+
+@html
+</p>
+<hr>
+@end html
+@heading @anchor{powerpc-*-netbsd*}powerpc-*-netbsd*
+PowerPC system in big endian mode running NetBSD@.  To build the
+documentation you will need Texinfo version 4.0 (NetBSD 1.5.1 included
+Texinfo version 3.12).
 
 @html
 </p>

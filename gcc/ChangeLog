@@ -1,3 +1,39 @@
+2001-10-26  Andrew Cagney  <ac131313@redhat.com>
+
+	Import 2001-07-11 Andrew Cagney <ac131313@redhat.com>:
+
+	* config.gcc: Recognize powerpc-*-netbsd*.
+
+	* doc/install.texi (Host/target specific installation notes for
+	GCC): Mention powerpc-*-netbsd*.
+
+	* config/rs6000/netbsd.h: New file.
+	(STANDARD_STARTFILE_PREFIX, LINK_SHLIB_SPEC): Redefine.
+	(LIB_DEFAULT_SPEC, STARTFILE_DEFAULT_SPEC): Redefine.
+	(ENDFILE_DEFAULT_SPEC, LINK_START_DEFAULT_SPEC): Redefine.
+	(LINK_OS_DEFAULT_SPEC, CPP_OS_DEFAULT_SPEC): Redefine.
+	(TARGET_VERSION): Redefine.
+
+	* config/rs6000/t-ppccomm (MULTILIB_MATCHES_SYSV): Recognize
+	mcall-netbsd as a match for mcall-sysv.
+	(EXTRA_MULTILIB_PARTS): Add ncrti$(objext) and ncrtn$(objext).
+	(ncrti.S, ncrtn.S): New targets.
+	($(T)ncrti$(objext), $(T)ncrtn$(objext)): New targets.
+
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Recognize
+	"netbsd' as a V4 ABI.
+	(ASM_SPEC): Check for -mcall-netbsd.
+	(CC1_SPEC, CC1_SPEC, LINK_START_SPEC, LINK_OS_SPEC): Ditto.
+	(CPP_ENDIAN_SPEC, CPP_SPEC, STARTFILE_SPEC): Ditto.
+	(LIB_SPEC, ENDFILE_SPEC): Ditto.
+	(LIB_NETBSD_SPEC, STARTFILE_NETBSD_SPEC): Define.
+	(ENDFILE_NETBSD_SPEC, LINK_START_NETBSD_SPEC): Define.
+	(LINK_OS_NETBSD_SPEC, CPP_OS_NETBSD_SPEC): Define.
+	(SUBTARGET_EXTRA_SPECS): Add NetBSD specs.
+
+	* doc/invoke.texi (Option Summary): Add -mcall-netbsd.
+	(RS/6000 and PowerPC Options): Mention -mcall-netbsd.
+
 2001-10-26  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (cr_logical): Swap order of CODE and

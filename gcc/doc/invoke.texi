@@ -432,7 +432,7 @@ in the following sections.
 -mstrict-align  -mno-strict-align  -mrelocatable @gol
 -mno-relocatable  -mrelocatable-lib  -mno-relocatable-lib @gol
 -mtoc  -mno-toc -mlittle  -mlittle-endian  -mbig  -mbig-endian @gol
--mcall-aix  -mcall-sysv  -mprototype  -mno-prototype @gol
+-mcall-aix -mcall-sysv -mcall-netbsd -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb -msdata @gol
 -msdata=@var{opt}  -mvxworks -G @var{num}}
 
@@ -6732,6 +6732,11 @@ operating system.
 @opindex mcall-linux
 On System V.4 and embedded PowerPC systems compile code for the
 Linux-based GNU system.
+
+@item -mcall-netbsd
+@opindex mcall-netbsd
+On System V.4 and embedded PowerPC systems compile code for the
+NetBSD operating system.
 
 @item -mprototype
 @itemx -mno-prototype
