@@ -946,9 +946,17 @@ gfc_check_index (gfc_expr * string, gfc_expr * substring, gfc_expr * back)
 try
 gfc_check_int (gfc_expr * x, gfc_expr * kind)
 {
-  if (numeric_check (x, 0) == FAILURE
-      || kind_check (kind, 1, BT_INTEGER) == FAILURE)
+  if (numeric_check (x, 0) == FAILURE)
     return FAILURE;
+
+  if (kind != NULL)
+    {
+      if (type_check (kind, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+      if (scalar_check (kind, 1) == FAILURE)
+	return FAILURE;
+    }
 
   return SUCCESS;
 }
