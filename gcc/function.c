@@ -132,6 +132,11 @@ int current_function_has_nonlocal_goto;
 
 int current_function_contains_functions;
 
+/* Nonzero if the function being compiled has the address of its
+   labels taken. */
+
+int current_function_addresses_labels;
+
 /* Nonzero if the current function is a thunk (a lightweight function that
    just adjusts one of its arguments and forwards to another function), so
    we should try to cut corners where we can.  */
@@ -509,6 +514,7 @@ push_function_context_to (context)
   p->has_nonlocal_label = current_function_has_nonlocal_label;
   p->has_nonlocal_goto = current_function_has_nonlocal_goto;
   p->contains_functions = current_function_contains_functions;
+  p->addresses_labels = current_function_addresses_labels;
   p->is_thunk = current_function_is_thunk;
   p->args_size = current_function_args_size;
   p->pretend_args_size = current_function_pretend_args_size;
@@ -580,6 +586,7 @@ pop_function_context_from (context)
   current_function_contains_functions
     = p->contains_functions || p->inline_obstacks
       || context == current_function_decl;
+  current_function_addresses_labels = p->addresses_labels;
   current_function_name = p->name;
   current_function_decl = p->decl;
   current_function_pops_args = p->pops_args;
@@ -5381,6 +5388,7 @@ init_function_start (subr, filename, line)
   current_function_has_nonlocal_label = 0;
   current_function_has_nonlocal_goto = 0;
   current_function_contains_functions = 0;
+  current_function_addresses_labels = 0;
   current_function_is_thunk = 0;
 
   current_function_returns_pcc_struct = 0;
