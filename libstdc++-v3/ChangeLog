@@ -1,3 +1,12 @@
+2002-03-03  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/22_locale/num_get_members_char.cc (test04):
+	Use a named locale expecting grouping (de_DE).
+	* testsuite/22_locale/num_get_members_wchar_t.cc (test04):
+	Ditto.
+	* testsuite/27_io/ios_manip_basefield.cc (test01):
+	Extend coverage, uniform treatment of hexs and octs.
+
 2002-03-01  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/locale_facets.tcc (num_get::_M_extract_int):

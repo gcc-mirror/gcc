@@ -334,15 +334,6 @@ void test03()
 #endif
 }
 
-struct MyNP : std::numpunct<wchar_t>
-{
-  std::string do_grouping() const;
-  wchar_t   do_thousands_sep() const;
-};
-
-std::string MyNP::do_grouping() const { std::string s("\3"); return s; }
-wchar_t   MyNP::do_thousands_sep() const { return L' '; }
-
 // Testing the correct parsing of grouped hexadecimals and octals.
 void test04()
 {
@@ -353,49 +344,52 @@ void test04()
   unsigned long ul;
 
   wistringstream iss;
-  iss.imbue(locale(locale(), new MyNP));
+
+  // A locale that expects grouping
+  locale loc_de("de_DE");
+  iss.imbue(loc_de);
 
   const num_get<wchar_t>& ng = use_facet<num_get<wchar_t> >(iss.getloc()); 
   const ios_base::iostate goodbit = ios_base::goodbit;
   ios_base::iostate err = ios_base::goodbit;
 
   iss.setf(ios::hex, ios::basefield);
-  iss.str(L"0xbf fff 74c.");
+  iss.str(L"0xbf.fff.74c ");
   err = goodbit;
   ng.get(iss.rdbuf(), 0, iss, err, ul);
   VERIFY( err == goodbit );
   VERIFY( ul == 0xbffff74c );
 
-  iss.str(L"0Xf fff.");
+  iss.str(L"0Xf.fff ");
   err = goodbit;
   ng.get(iss.rdbuf(), 0, iss, err, ul);
   VERIFY( err == goodbit );
   VERIFY( ul == 0xffff );
 
-  iss.str(L"f ffe.");
+  iss.str(L"ffe ");
   err = goodbit;
   ng.get(iss.rdbuf(), 0, iss, err, ul);
   VERIFY( err == goodbit );
-  VERIFY( ul == 0xfffe );
+  VERIFY( ul == 0xffe );
 
   iss.setf(ios::oct, ios::basefield);
-  iss.str(L"07 654 321.");
+  iss.str(L"07.654.321 ");
   err = goodbit;
   ng.get(iss.rdbuf(), 0, iss, err, ul);
   VERIFY( err == goodbit );
   VERIFY( ul == 07654321 );
 
-  iss.str(L"07 777.");
+  iss.str(L"07.777 ");
   err = goodbit;
   ng.get(iss.rdbuf(), 0, iss, err, ul);
   VERIFY( err == goodbit );
   VERIFY( ul == 07777 );
 
-  iss.str(L"7 776.");
+  iss.str(L"776 ");
   err = goodbit;
   ng.get(iss.rdbuf(), 0, iss, err, ul);
   VERIFY( err == goodbit );
-  VERIFY( ul == 07776 );
+  VERIFY( ul == 0776 );
 }
 #endif
 
