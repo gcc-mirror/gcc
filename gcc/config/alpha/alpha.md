@@ -1654,31 +1654,13 @@
   "cmp%C1 %r2,%3,%0"
   [(set_attr "type" "icmp")])
 
-;; There are three important special-case that don't fit the above pattern
-;; but which we want to handle here.
-
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(ne:DI (match_operand:DI 1 "register_operand" "r")
-	       (const_int 0)))]
+        (match_operator:DI 1 "alpha_swapped_comparison_operator"
+			   [(match_operand:DI 2 "reg_or_8bit_operand" "rI")
+			    (match_operand:DI 3 "reg_or_0_operand" "rJ")]))]
   ""
-  "cmpult $31,%1,%0"
-  [(set_attr "type" "icmp")])
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(gt:DI (match_operand:DI 1 "register_operand" "r")
-	       (const_int 0)))]
-  ""
-  "cmplt $31,%1,%0"
-  [(set_attr "type" "icmp")])
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ge:DI (match_operand:DI 1 "register_operand" "r")
-	       (const_int 0)))]
-  ""
-  "cmple $31,%1,%0"
+  "cmp%c1 $r3,%2,%0"
   [(set_attr "type" "icmp")])
 
 ;; This pattern exists so conditional moves of SImode values are handled.
@@ -1999,6 +1981,18 @@
 	 (pc)))]
   ""
   "b%C1 %r2,%0"
+  [(set_attr "type" "ibr")])
+
+(define_insn ""
+  [(set (pc)
+	(if_then_else
+	 (match_operator 1 "signed_comparison_operator"
+			 [(const_int 0)
+			  (match_operand:DI 2 "register_operand" "r")])
+	 (label_ref (match_operand 0 "" ""))
+	 (pc)))]
+  ""
+  "b%c1 %2,%0"
   [(set_attr "type" "ibr")])
 
 (define_insn ""
