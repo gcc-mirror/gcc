@@ -1885,6 +1885,7 @@ java/net/ContentHandlerFactory.java \
 java/net/DatagramPacket.java \
 java/net/DatagramSocket.java \
 java/net/DatagramSocketImpl.java \
+java/net/DatagramSocketImplFactory.java \
 java/net/FileNameMap.java \
 java/net/HttpURLConnection.java	\
 java/net/InetAddress.java \
@@ -1918,6 +1919,9 @@ java/net/URLStreamHandler.java \
 java/net/URLStreamHandlerFactory.java \
 java/net/UnknownHostException.java \
 java/net/UnknownServiceException.java \
+java/nio/channels/DatagramChannel.java \
+java/nio/channels/ServerSocketChannel.java \
+java/nio/channels/SocketChannel.java \
 java/security/AccessControlContext.java \
 java/security/AccessControlException.java \
 java/security/AccessController.java \

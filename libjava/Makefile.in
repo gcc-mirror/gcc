@@ -1647,6 +1647,7 @@ java/net/ContentHandlerFactory.java \
 java/net/DatagramPacket.java \
 java/net/DatagramSocket.java \
 java/net/DatagramSocketImpl.java \
+java/net/DatagramSocketImplFactory.java \
 java/net/FileNameMap.java \
 java/net/HttpURLConnection.java	\
 java/net/InetAddress.java \
@@ -1680,6 +1681,9 @@ java/net/URLStreamHandler.java \
 java/net/URLStreamHandlerFactory.java \
 java/net/UnknownHostException.java \
 java/net/UnknownServiceException.java \
+java/nio/channels/DatagramChannel.java \
+java/nio/channels/ServerSocketChannel.java \
+java/nio/channels/SocketChannel.java \
 java/security/AccessControlContext.java \
 java/security/AccessControlException.java \
 java/security/AccessController.java \
@@ -2865,9 +2869,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/net/ConnectException.P .deps/java/net/ContentHandler.P \
 .deps/java/net/ContentHandlerFactory.P .deps/java/net/DatagramPacket.P \
 .deps/java/net/DatagramSocket.P .deps/java/net/DatagramSocketImpl.P \
-.deps/java/net/FileNameMap.P .deps/java/net/HttpURLConnection.P \
-.deps/java/net/InetAddress.P .deps/java/net/InetSocketAddress.P \
-.deps/java/net/JarURLConnection.P \
+.deps/java/net/DatagramSocketImplFactory.P .deps/java/net/FileNameMap.P \
+.deps/java/net/HttpURLConnection.P .deps/java/net/InetAddress.P \
+.deps/java/net/InetSocketAddress.P .deps/java/net/JarURLConnection.P \
 .deps/java/net/MalformedURLException.P .deps/java/net/MulticastSocket.P \
 .deps/java/net/NetPermission.P .deps/java/net/NoRouteToHostException.P \
 .deps/java/net/PasswordAuthentication.P \
@@ -2889,8 +2893,11 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/net/UnknownServiceException.P \
 .deps/java/net/natInetAddress.P \
 .deps/java/net/natPlainDatagramSocketImpl.P \
-.deps/java/net/natPlainSocketImpl.P .deps/java/rmi/AccessException.P \
-.deps/java/rmi/AlreadyBoundException.P \
+.deps/java/net/natPlainSocketImpl.P \
+.deps/java/nio/channels/DatagramChannel.P \
+.deps/java/nio/channels/ServerSocketChannel.P \
+.deps/java/nio/channels/SocketChannel.P \
+.deps/java/rmi/AccessException.P .deps/java/rmi/AlreadyBoundException.P \
 .deps/java/rmi/ConnectException.P .deps/java/rmi/ConnectIOException.P \
 .deps/java/rmi/MarshalException.P .deps/java/rmi/MarshalledObject.P \
 .deps/java/rmi/Naming.P .deps/java/rmi/NoSuchObjectException.P \
