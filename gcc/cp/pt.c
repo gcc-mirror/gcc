@@ -10730,9 +10730,13 @@ instantiate_decl (tree d, int defer_ok)
 
   timevar_push (TV_PARSE);
 
-  /* We may be in the middle of deferred access check.  Disable
-     it now.  */
+  /* We may be in the middle of deferred access check.  Disable it now.  */
   push_deferring_access_checks (dk_no_deferred);
+
+  /* Our caller does not expect collection to happen, which it might if
+     we decide to compile the function to rtl now.  Arrange for a new
+     gc context to be created if so.  */
+  function_depth++;
 
   /* Set TD to the template whose DECL_TEMPLATE_RESULT is the pattern
      for the instantiation.  */
@@ -10978,6 +10982,7 @@ out:
   input_location = saved_loc;
   pop_deferring_access_checks ();
   pop_tinst_level ();
+  function_depth--;
 
   timevar_pop (TV_PARSE);
 

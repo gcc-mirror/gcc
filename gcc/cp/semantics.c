@@ -2868,7 +2868,7 @@ expand_body (tree fn)
   optimize_function (fn);
   timevar_pop (TV_INTEGRATION);
 
-  tree_rest_of_compilation (fn);
+  tree_rest_of_compilation (fn, function_depth > 1);
 
   current_function_decl = saved_function;
   input_location = saved_loc;

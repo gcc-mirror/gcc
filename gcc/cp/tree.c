@@ -2026,14 +2026,7 @@ cp_cannot_inline_tree_fn (tree* fnp)
 			(template_for_substitution (fn))))
 	return 1;
 
-      /* Our caller does not expect us to call ggc_collect, but
-	 instantiate_decl can call rest_of_compilation so we must
-	 protect our caller.  */
-      ggc_push_context();
-      
       fn = *fnp = instantiate_decl (fn, /*defer_ok=*/0);
-
-      ggc_pop_context();
 
       if (TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (fn)))
 	return 1;

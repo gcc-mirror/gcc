@@ -93,20 +93,12 @@ clear_decl_rtl (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
    compilation for FNDECL.  */
 
 void
-tree_rest_of_compilation (tree fndecl)
+tree_rest_of_compilation (tree fndecl, bool nested_p)
 {
-  static int nesting = -1;
-
   timevar_push (TV_EXPAND);
-
-  ++nesting;
 
   if (flag_unit_at_a_time && !cgraph_global_info_ready)
     abort ();
-
-  if (nesting > 0)
-    /* Squirrel away our current state.  */
-    push_function_context ();
 
   /* Initialize the RTL code for the function.  */
   current_function_decl = fndecl;
@@ -162,7 +154,7 @@ tree_rest_of_compilation (tree fndecl)
 
   /* If this is a nested function, protect the local variables in the stack
      above us from being collected while we're compiling this function.  */
-  if (nesting > 0)
+  if (nested_p)
     ggc_push_context ();
 
   /* There's no need to defer outputting this function any more; we
@@ -173,7 +165,7 @@ tree_rest_of_compilation (tree fndecl)
   rest_of_compilation (fndecl);
 
   /* Undo the GC context switch.  */
-  if (nesting > 0)
+  if (nested_p)
     ggc_pop_context ();
 
   /* If requested, warn about function definitions where the function will
@@ -227,7 +219,7 @@ tree_rest_of_compilation (tree fndecl)
 				clear_decl_rtl,
 				fndecl);
 
-  if (DECL_SAVED_INSNS (fndecl) == 0 && ! nesting && ! flag_inline_trees)
+  if (DECL_SAVED_INSNS (fndecl) == 0 && !nested_p && !flag_inline_trees)
     {
       /* Stop pointing to the local nodes about to be freed.
 	 But DECL_INITIAL must remain nonzero so we know this
@@ -239,12 +231,6 @@ tree_rest_of_compilation (tree fndecl)
 
       DECL_ARGUMENTS (fndecl) = 0;
     }
-
-  if (nesting > 0)
-    /* Return to the enclosing function.  */
-    pop_function_context ();
-
-  --nesting;
 
   timevar_pop (TV_EXPAND);
 }

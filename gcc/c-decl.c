@@ -6181,9 +6181,16 @@ c_expand_body_1 (tree fndecl, int nested_p)
       /* Make sure that we will evaluate variable-sized types involved
 	 in our function's type.  */
       expand_pending_sizes (DECL_LANG_SPECIFIC (fndecl)->pending_sizes);
+
+      /* Squirrel away our current state.  */
+      push_function_context ();
     }
 
-  tree_rest_of_compilation (fndecl);
+  tree_rest_of_compilation (fndecl, nested_p);
+
+  if (nested_p)
+    /* Return to the enclosing function.  */
+    pop_function_context ();
 
   if (DECL_STATIC_CONSTRUCTOR (fndecl))
     {
