@@ -1,0 +1,3 @@
+#!/bin/sh
+make -k LANGUAGES=c $1 CC=stage2/xgcc XCFLAGS=-Bstage2/ CFLAGS="-g $2" >log3 2>&1
+
