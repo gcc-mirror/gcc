@@ -154,6 +154,7 @@ extern enum reg_class ix86_preferred_reload_class PARAMS ((rtx,
 extern int ix86_memory_move_cost PARAMS ((enum machine_mode, enum reg_class,
 					  int));
 extern void ix86_set_move_mem_attrs PARAMS ((rtx, rtx, rtx, rtx, rtx));
+extern void emit_i387_cw_initialization PARAMS ((rtx, rtx));
 
 
 #ifdef TREE_CODE

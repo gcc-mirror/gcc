@@ -445,7 +445,7 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
 struct rtx_def *ix86_compare_op0 = NULL_RTX;
 struct rtx_def *ix86_compare_op1 = NULL_RTX;
 
-#define MAX_386_STACK_LOCALS 2
+#define MAX_386_STACK_LOCALS 3
 /* Size of the register save area.  */
 #define X86_64_VARARGS_SIZE (REGPARM_MAX * UNITS_PER_WORD + SSE_REGPARM_MAX * 16)
 
@@ -4639,6 +4639,25 @@ output_387_binary_op (insn, operands)
   return buf;
 }
 
+/* Output code to initialize control word copies used by 
+   trunc?f?i patterns.  NORMAL is set to current control word, while ROUND_DOWN
+   is set to control word rounding downwards.  */
+void
+emit_i387_cw_initialization (normal, round_down)
+     rtx normal, round_down;
+{
+  rtx reg = gen_reg_rtx (HImode);
+
+  emit_insn (gen_x86_fnstcw_1 (normal));
+  emit_move_insn (reg, normal);
+  if (!TARGET_PARTIAL_REG_STALL && !optimize_size
+      && !TARGET_64BIT)
+    emit_insn (gen_movsi_insv_1 (reg, GEN_INT (0xc)));
+  else
+    emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0xc00)));
+  emit_move_insn (round_down, reg);
+}
+
 /* Output code for INSN to convert a float to a signed int.  OPERANDS
    are the insn operands.  The output may be [HSD]Imode and the input
    operand may be [SDX]Fmode.  */
@@ -4658,44 +4677,18 @@ output_fix_trunc (insn, operands)
   if (dimode_p && !stack_top_dies)
     output_asm_insn ("fld\t%y1", operands);
 
-  if (! STACK_TOP_P (operands[1]))
+  if (!STACK_TOP_P (operands[1]))
     abort ();
 
-  xops[0] = GEN_INT (12);
-  xops[1] = adj_offsettable_operand (operands[2], 1);
-  xops[1] = change_address (xops[1], QImode, NULL_RTX);
-
-  xops[2] = operands[0];
   if (GET_CODE (operands[0]) != MEM)
-    xops[2] = operands[3];
+    abort ();
 
-  output_asm_insn ("fnstcw\t%2", operands);
-  output_asm_insn ("mov{l}\t{%2, %4|%4, %2}", operands);
-  output_asm_insn ("mov{b}\t{%0, %1|%1, %0}", xops);
-  output_asm_insn ("fldcw\t%2", operands);
-  output_asm_insn ("mov{l}\t{%4, %2|%2, %4}", operands);
-
+  output_asm_insn ("fldcw\t%3", operands);
   if (stack_top_dies || dimode_p)
-    output_asm_insn ("fistp%z2\t%2", xops);
+    output_asm_insn ("fistp%z0\t%0", operands);
   else
-    output_asm_insn ("fist%z2\t%2", xops);
-
+    output_asm_insn ("fist%z0\t%0", operands);
   output_asm_insn ("fldcw\t%2", operands);
-
-  if (GET_CODE (operands[0]) != MEM)
-    {
-      if (dimode_p)
-	{
-	  split_di (operands+0, 1, xops+0, xops+1);
-	  split_di (operands+3, 1, xops+2, xops+3);
-	  output_asm_insn ("mov{l}\t{%2, %0|%0, %2}", xops);
-	  output_asm_insn ("mov{l}\t{%3, %1|%1, %3}", xops);
-	}
-      else if (GET_MODE (operands[0]) == SImode)
-	output_asm_insn ("mov{l}\t{%3, %0|%0, %3}", operands);
-      else
-	output_asm_insn ("mov{w}\t{%3, %0|%0, %3}", operands);
-    }
 
   return "";
 }
