@@ -1,3 +1,15 @@
+2000-11-18  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* config/avr/avr-protos.h (avr_output_addr_vec_elt): Prototype.
+	* config/avr/avr.c (jump_tables_size): New variable.
+	(function_prologue): Initialize it as 0.
+	(function_epilogue): Add it to function_size.
+	(avr_output_addr_vec_elt): New function.  Count words in jump
+	tables in jump_tables_size.  Move code ...
+	* config/avr/avr.h (ASM_OUTPUT_ADDR_VEC_ELT): ... from here.
+	Call avr_output_addr_vec_elt instead.
+	* config/avr/avr.md (tablejump): Remove disabled define_expand.
+
 2000-11-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.in: Make --enable-new-gxx-abi the default.

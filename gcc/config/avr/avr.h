@@ -2713,12 +2713,7 @@ sprintf (STRING, "*.%s%d", PREFIX, NUM)
    not be optimal, since this macro is used only when profiling.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)		\
-do {							\
-  if (AVR_MEGA)						\
-    fprintf (STREAM, "\t.word pm(.L%d)\n", VALUE);	\
-  else							\
-    fprintf (STREAM, "\trjmp .L%d\n", VALUE);		\
-} while (0)
+  avr_output_addr_vec_elt(STREAM, VALUE)
 /* This macro should be provided on machines where the addresses in a
    dispatch table are absolute.
 
