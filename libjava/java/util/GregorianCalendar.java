@@ -402,7 +402,11 @@ public class GregorianCalendar extends Calendar
       {
 	hour = fields[HOUR];
         if (isSet[AM_PM] && fields[AM_PM] == PM)
-	  hour += 12;
+	  if (hour != 12) /* not Noon */
+            hour += 12;
+	/* Fix the problem of the status of 12:00 AM (midnight). */
+	if (isSet[AM_PM] && fields[AM_PM] == AM && hour == 12)
+	  hour = 0;
       }
 
     int minute = isSet[MINUTE] ? fields[MINUTE] : 0;
@@ -606,7 +610,7 @@ public class GregorianCalendar extends Calendar
 	calculateDay(++day, gregorian);
       }
 
-    fields[DAY_OF_WEEK_IN_MONTH] = (fields[DAY_OF_MONTH] + 12) / 7;
+    fields[DAY_OF_WEEK_IN_MONTH] = (fields[DAY_OF_MONTH] + 6) / 7;
 
     // which day of the week are we (0..6), relative to getFirstDayOfWeek
     int relativeWeekday = (7 + fields[DAY_OF_WEEK] - getFirstDayOfWeek()) % 7;

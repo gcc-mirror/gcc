@@ -1,3 +1,17 @@
+2003-12-30 Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/util/GregorianCalendar.java
+	(computeFields): Reported by Ito Kazumitsu <kaz@maczuka.gcd.org>.
+	Fixed the computation of DAY_OF_WEEK_IN_MONTH.
+	(computeTime): 12:00 midnight is AM and 12:00 noon is PM.
+
+2003-12-30  Michael Koch  <konqueror@gmx.de>
+
+	* testsuite/libjava.mauve/xfails: Removed the following testcase
+	because it passes now:
+	FAIL: gnu.testlet.java.text.SimpleDateFormat.Test: parse() strict
+	(number 1)
+
 2003-12-30  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/ObjectInputStream.java,
