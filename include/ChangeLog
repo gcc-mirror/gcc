@@ -1,3 +1,7 @@
+2000-05-03  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* symcat.h: Remove #endif label.
+
 2000-04-28  Kenneth Block  <block@zk3.dec.com>
 	    Jason Merrill  <jason@casey.cygnus.com>
 

@@ -1,3 +1,25 @@
+2000-05-03  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.h (U): New define, to correct type of string constants.
+	(ustrcmp, ustrncmp, ustrlen, uxstrdup, ustrchr): New wrapper
+	routines, to do casts when passing unsigned strings to libc.
+	* cppexp.c, cppfiles.c, cpphash.c, cppinit.c, cpplib.c: Use them.
+
+	* cppfiles.c (_cpp_execute_include): Make filename an U_CHAR *.
+	* cpphash.c (_cpp_quote_string): Make string an U_CHAR *.
+	* cppinit.c (dump_special_to_buffer): Make macro name an U_CHAR *.
+	* cpplex.c (parse_ifdef, parse_include, validate_else): Make
+	second argument an U_CHAR *.
+
+	* cppinit.c (builtin_array): Make name and value U_CHAR *, add
+	length field, clean up initializer.
+	(ISTABLE): Add __extension__ to designated-
+	initializers version.
+	* cpplex.c (CHARTAB): Likewise.
+
+	* mbchar.c: Add dummy external declaration to the !MULTIBYTE_CHARS
+	case so the file won't be empty.
+
 Wed May  3 21:01:46 2000  Jason Eckhardt  <jle@cygnus.com>
 
         * bb-reorder.c (struct reorder_block_def): Member succ removed.
@@ -175,7 +197,6 @@ Wed May  3 12:40:53 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	* rtl.def (define_insn_and_split): New DEF_RTL_EXPR.
 	* md.texi (Insn Splitting): Document define_insn_and_split.
 
->>>>>>> 1.6464
 Tue May  2 00:20:30 2000  Jason Eckhardt  <jle@cygnus.com>
 
 	* flow.c (verify_flow_info): Added two more sanity checks. The

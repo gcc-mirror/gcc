@@ -313,7 +313,7 @@ parse_charconst (pfile, start, end)
   /* If char type is signed, sign-extend the constant.  */
   num_bits = num_chars * width;
       
-  if (cpp_defined (pfile, (const U_CHAR *)"__CHAR_UNSIGNED__",
+  if (cpp_defined (pfile, U"__CHAR_UNSIGNED__",
 		   sizeof ("__CHAR_UNSIGNED__")-1)
       || ((result >> (num_bits - 1)) & 1) == 0)
     op.value = result & ((unsigned HOST_WIDEST_INT) ~0
@@ -439,7 +439,7 @@ lex (pfile, skip_evaluation)
       return parse_charconst (pfile, tok_start, tok_end);
 
     case CPP_NAME:
-      if (!strncmp (tok_start, "defined", 7))
+      if (!ustrncmp (tok_start, U"defined", 7))
 	return parse_defined (pfile);
 
       op.op = INT;

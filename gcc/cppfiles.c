@@ -74,8 +74,8 @@ eq_IHASH (x, y)
      const void *x;
      const void *y;
 {
-  const U_CHAR *a = ((const IHASH *)x)->nshort;
-  const U_CHAR *b = ((const IHASH *)y)->nshort;
+  const char *a = ((const IHASH *)x)->nshort;
+  const char *b = ((const IHASH *)y)->nshort;
   return !strcmp (a, b);
 }
 
@@ -132,7 +132,7 @@ redundant_include_p (pfile, ihash, ilist)
 	 return (i->control_macro
 		 && (i->control_macro[0] == '\0'
 		     || cpp_defined (pfile, i->control_macro, 
-				     strlen (i->control_macro))))
+				     ustrlen (i->control_macro))))
 	     ? (IHASH *)-1 : i;
 
   return 0;
@@ -147,7 +147,7 @@ cpp_included (pfile, fname)
 {
   IHASH dummy, *ptr;
   dummy.nshort = fname;
-  dummy.hash = _cpp_calc_hash (fname, strlen (fname));
+  dummy.hash = _cpp_calc_hash ((const U_CHAR *)fname, strlen (fname));
   ptr = htab_find_with_hash (pfile->all_include_files,
 			     (const void *)&dummy, dummy.hash);
   return (ptr != NULL);
@@ -237,7 +237,7 @@ find_include_file (pfile, fname, search_start, ihash, before)
   char *name;
 
   dummy.nshort = fname;
-  dummy.hash = _cpp_calc_hash (fname, strlen (fname));
+  dummy.hash = _cpp_calc_hash ((const U_CHAR *)fname, strlen (fname));
   path = (fname[0] == '/') ? ABSOLUTE_PATH : search_start;
   slot = (IHASH **) htab_find_slot_with_hash (pfile->all_include_files,
 					      (const void *) &dummy,
@@ -308,7 +308,7 @@ _cpp_fake_ihash (pfile, fname)
   IHASH dummy;
 
   dummy.nshort = fname;
-  dummy.hash = _cpp_calc_hash (fname, strlen (fname));
+  dummy.hash = _cpp_calc_hash ((const U_CHAR *)fname, strlen (fname));
   slot = (IHASH **) htab_find_slot_with_hash (pfile->all_include_files,
 					      (const void *) &dummy,
 					      dummy.hash, INSERT);
@@ -515,14 +515,15 @@ remap_filename (pfile, name, loc)
 
 
 void
-_cpp_execute_include (pfile, fname, len, no_reinclude, search_start)
+_cpp_execute_include (pfile, f, len, no_reinclude, search_start)
      cpp_reader *pfile;
-     char *fname;
+     U_CHAR *f;
      unsigned int len;
      int no_reinclude;
      struct file_name_list *search_start;
 {
   IHASH *ihash;
+  char *fname = (char *)f;
   int fd;
   int angle_brackets = fname[0] == '<';
   int before;
@@ -615,7 +616,7 @@ _cpp_execute_include (pfile, fname, len, no_reinclude, search_start)
 
   /* Actually process the file.  */
   if (no_reinclude)
-    ihash->control_macro = (const U_CHAR *) "";
+    ihash->control_macro = U"";
   
   if (read_include_file (pfile, fd, ihash))
     {
@@ -644,7 +645,7 @@ cpp_read_file (pfile, fname)
   if (*fname == 0)
     dummy.hash = 0;
   else
-    dummy.hash = _cpp_calc_hash (fname, strlen (fname));
+    dummy.hash = _cpp_calc_hash ((const U_CHAR *)fname, strlen (fname));
   slot = (IHASH **) htab_find_slot_with_hash (pfile->all_include_files,
 					      (const void *) &dummy,
 					      dummy.hash, INSERT);
@@ -743,7 +744,7 @@ read_include_file (pfile, fd, ihash)
   if (length < 0)
     goto fail;
   if (length == 0)
-    ihash->control_macro = (const U_CHAR *) "";  /* never re-include */
+    ihash->control_macro = U"";  /* never re-include */
 
   close (fd);
   fp->rlimit = fp->buf + length;

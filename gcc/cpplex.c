@@ -1720,13 +1720,13 @@ find_position (start, limit, linep)
 #define UCHAR_MAX 255	/* assume 8-bit bytes */
 #endif
 
-#if (GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L)
+#if (GCC_VERSION >= 2007)
 #define init_chartab()  /* nothing */
-#define CHARTAB static const unsigned char chartab[UCHAR_MAX + 1] = {
+#define CHARTAB __extension__ static const U_CHAR chartab[UCHAR_MAX + 1] = {
 #define END };
 #define s(p, v) [p] = v,
 #else
-#define CHARTAB static unsigned char chartab[UCHAR_MAX + 1] = { 0 }; \
+#define CHARTAB static U_CHAR chartab[UCHAR_MAX + 1] = { 0 }; \
  static void init_chartab PARAMS ((void)) { \
  unsigned char *x = chartab;
 #define END }

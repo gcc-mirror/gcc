@@ -214,7 +214,8 @@ static void append_include_chain	PARAMS ((cpp_reader *,
 						 char *, int, int));
 static void merge_include_chains	PARAMS ((cpp_reader *));
 
-static void dump_special_to_buffer	PARAMS ((cpp_reader *, const char *));
+static void dump_special_to_buffer	PARAMS ((cpp_reader *, const U_CHAR *,
+						 size_t));
 static void initialize_dependency_output PARAMS ((cpp_reader *));
 static void initialize_standard_includes PARAMS ((cpp_reader *));
 static void new_pending_directive		PARAMS ((struct cpp_pending *,
@@ -229,13 +230,13 @@ static int handle_option		PARAMS ((cpp_reader *, int, char **));
 /* Fourth argument to append_include_chain: chain to use */
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
 
-/* If we have designated initializers (GCC >2.7, or C99) this table
-   can be initialized, constant data.  Otherwise, it has to be filled
-   in at runtime.  */
+/* If we have designated initializers (GCC >2.7) this table can be
+   initialized, constant data.  Otherwise, it has to be filled in at
+   runtime.  */
 
-#if (GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L)
+#if (GCC_VERSION >= 2007)
 #define init_IStable()  /* nothing */
-#define ISTABLE const unsigned char _cpp_IStable[256] = {
+#define ISTABLE __extension__ const unsigned char _cpp_IStable[256] = {
 #define END };
 #define s(p, v) [p] = v,
 #else
@@ -514,17 +515,17 @@ merge_include_chains (pfile)
    to PFILE's token_buffer.  */
 
 static void
-dump_special_to_buffer (pfile, macro_name)
+dump_special_to_buffer (pfile, macro_name, macro_len)
      cpp_reader *pfile;
-     const char *macro_name;
+     const U_CHAR *macro_name;
+     size_t macro_len;
 {
   static const char define_directive[] = "#define ";
-  int macro_name_length = strlen (macro_name);
-  CPP_RESERVE (pfile, sizeof(define_directive) + macro_name_length);
+  CPP_RESERVE (pfile, sizeof(define_directive) + macro_len);
   CPP_PUTS_Q (pfile, define_directive, sizeof(define_directive)-1);
-  CPP_PUTS_Q (pfile, macro_name, macro_name_length);
+  CPP_PUTS_Q (pfile, macro_name, macro_len);
   CPP_PUTC_Q (pfile, ' ');
-  _cpp_expand_to_buffer (pfile, macro_name, macro_name_length);
+  _cpp_expand_to_buffer (pfile, macro_name, macro_len);
   CPP_PUTC (pfile, '\n');
 }
 
@@ -617,39 +618,46 @@ cpp_cleanup (pfile)
 
 struct builtin
 {
-  const char *name;
-  const char *value;
+  const U_CHAR *name;
+  const U_CHAR *value;
   unsigned short type;
   unsigned short flags;
+  unsigned int len;
 };
 #define DUMP 0x01
 #define VERS 0x02
 #define ULP  0x04
 
+#define B(n, t)       { U n,   0, t,       0,      sizeof n - 1 }
+#define C(n, v)       { U n, U v, T_CONST, DUMP,   sizeof n - 1 }
+#define X(n, v, t, f) { U n, U v, t,       DUMP|f, sizeof n - 1 }
 static const struct builtin builtin_array[] =
 {
-  { "__TIME__",			0, T_TIME,		0 },
-  { "__DATE__",			0, T_DATE,		0 },
-  { "__FILE__",			0, T_FILE,		0 },
-  { "__BASE_FILE__",		0, T_BASE_FILE,		0 },
-  { "__LINE__",			0, T_SPECLINE,		0 },
-  { "__INCLUDE_LEVEL__",	0, T_INCLUDE_LEVEL,	0 },
+  B("__TIME__",		 T_TIME),
+  B("__DATE__",		 T_DATE),
+  B("__FILE__",		 T_FILE),
+  B("__BASE_FILE__",	 T_BASE_FILE),
+  B("__LINE__",		 T_SPECLINE),
+  B("__INCLUDE_LEVEL__", T_INCLUDE_LEVEL),
 
-  { "__VERSION__",		0,		 T_XCONST, DUMP|VERS },
-  { "__USER_LABEL_PREFIX__",	0,		 T_CONST,  DUMP|ULP  },
-  { "__STDC__",			"1",		 T_STDC,   DUMP },
-  { "__REGISTER_PREFIX__",	REGISTER_PREFIX, T_CONST,  DUMP },
-  { "__HAVE_BUILTIN_SETJMP__",	"1",		 T_CONST,  DUMP },
+  X("__VERSION__",		0,   T_XCONST, VERS),
+  X("__USER_LABEL_PREFIX__",	0,   T_CONST,  ULP),
+  X("__STDC__",			"1", T_STDC,   0),
+  C("__REGISTER_PREFIX__",	REGISTER_PREFIX),
+  C("__HAVE_BUILTIN_SETJMP__",	"1"),
 #ifndef NO_BUILTIN_SIZE_TYPE
-  { "__SIZE_TYPE__",		SIZE_TYPE,	 T_CONST,  DUMP },
+  C("__SIZE_TYPE__",		SIZE_TYPE),
 #endif
 #ifndef NO_BUILTIN_PTRDIFF_TYPE
-  { "__PTRDIFF_TYPE__",		PTRDIFF_TYPE,	 T_CONST,  DUMP },
+  C("__PTRDIFF_TYPE__",		PTRDIFF_TYPE),
 #endif
 #ifndef NO_BUILTIN_WCHAR_TYPE
-  { "__WCHAR_TYPE__",		WCHAR_TYPE,	 T_CONST,  DUMP },
+  C("__WCHAR_TYPE__",		WCHAR_TYPE),
 #endif
 };
+#undef B
+#undef C
+#undef X
 #define builtin_array_end \
  builtin_array + sizeof(builtin_array)/sizeof(struct builtin)
 
@@ -659,9 +667,8 @@ static void
 initialize_builtins (pfile)
      cpp_reader *pfile;
 {
-  int len;
   const struct builtin *b;
-  const char *val;
+  const U_CHAR *val;
   HASHNODE *hp;
   for(b = builtin_array; b < builtin_array_end; b++)
     {
@@ -669,22 +676,21 @@ initialize_builtins (pfile)
 	continue;
 
       if (b->flags & ULP)
-	val = user_label_prefix;
+	val = (const U_CHAR *) user_label_prefix;
       else if (b->flags & VERS)
 	{
-	  val = xmalloc (strlen (version_string) + 3);
+	  val = (const U_CHAR *) xmalloc (strlen (version_string) + 3);
 	  sprintf ((char *)val, "\"%s\"", version_string);
 	}
       else
 	val = b->value;
 
-      len = strlen (b->name);
-      hp = _cpp_lookup (pfile, b->name, len);
+      hp = _cpp_lookup (pfile, b->name, b->len);
       hp->value.cpval = val;
       hp->type = b->type;
 
       if ((b->flags & DUMP) && CPP_OPTION (pfile, debug_output))
-	dump_special_to_buffer (pfile, b->name);
+	dump_special_to_buffer (pfile, b->name, b->len);
     }
 }
 #undef DUMP
