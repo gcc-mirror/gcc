@@ -1,3 +1,7 @@
+2003-11-21  Vasiliy Fofanov  <fofanov@act-europe.fr>
+
+	* 5wsystem.ads: Enable zero cost exception.
+
 2003-11-21  Jerome Guitton  <guitton@act-europe.fr>
 
 	* 5ztiitho.adb: Remove an unreferenced variable.
