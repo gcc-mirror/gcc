@@ -1,3 +1,12 @@
+2004-08-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* config.gcc (arm*-*-symbianelf*): Do not include t-bpabi.
+	* config/arm/lib1funcs.asm: Do not include supplemental .S files
+	when compiling for Symbian.
+	* config/arm/symbian.h (RENAME_LIBRARY): New macro.
+	(TARGET_OS_CPP_BUILTINS): Likewise.
+	* config/arm/t-symbian (LIB1ASMFUNCS): Define.
+
 2004-08-31  Stan Shebs  <shebs@apple.com>
 
 	* toplev.c (process_options): Ensure debug_hooks is initialized.
