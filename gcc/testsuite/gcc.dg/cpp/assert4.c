@@ -348,6 +348,7 @@
 #  if (#cpu(powerpc) || #machine(powerpc) \
        || !#cpu(powerpc64) || !#machine(powerpc64))
 #   error
+#  endif
 # else
 #  if (!#cpu(powerpc) || !#machine(powerpc) \
        || #cpu(powerpc64) || #machine(powerpc64))
