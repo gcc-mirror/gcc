@@ -5660,7 +5660,7 @@ cp_parser_statement (cp_parser* parser)
     }
 
   /* Set the line number for the statement.  */
-  if (statement && statement_code_p (TREE_CODE (statement)))
+  if (statement && STATEMENT_CODE_P (TREE_CODE (statement)))
     STMT_LINENO (statement) = statement_line_number;
 }
 

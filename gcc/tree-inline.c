@@ -1588,7 +1588,7 @@ walk_tree (tp, func, data, htab_)
      interesting below this point in the tree.  */
   if (!walk_subtrees)
     {
-      if (statement_code_p (code) || code == TREE_LIST
+      if (STATEMENT_CODE_P (code) || code == TREE_LIST
 	  || (*lang_hooks.tree_inlining.tree_chain_matters_p) (*tp))
 	/* But we still need to check our siblings.  */
 	WALK_SUBTREE_TAIL (TREE_CHAIN (*tp));
@@ -1613,7 +1613,7 @@ walk_tree (tp, func, data, htab_)
 #ifndef INLINER_FOR_JAVA
       /* Set lineno here so we get the right instantiation context
 	 if we call instantiate_decl from inlinable_function_p.  */
-      if (statement_code_p (code) && !STMT_LINENO_FOR_FN_P (*tp))
+      if (STATEMENT_CODE_P (code) && !STMT_LINENO_FOR_FN_P (*tp))
 	lineno = STMT_LINENO (*tp);
 #endif /* not INLINER_FOR_JAVA */
 
@@ -1632,7 +1632,7 @@ walk_tree (tp, func, data, htab_)
 #ifndef INLINER_FOR_JAVA
       /* For statements, we also walk the chain so that we cover the
 	 entire statement tree.  */
-      if (statement_code_p (code))
+      if (STATEMENT_CODE_P (code))
 	{
 	  if (code == DECL_STMT
 	      && DECL_STMT_DECL (*tp)
@@ -1823,7 +1823,7 @@ copy_tree_r (tp, walk_subtrees, data)
       if (code == PARM_DECL || code == TREE_LIST
 #ifndef INLINER_FOR_JAVA
 	  || (*lang_hooks.tree_inlining.tree_chain_matters_p) (*tp)
-	  || statement_code_p (code))
+	  || STATEMENT_CODE_P (code))
 	TREE_CHAIN (*tp) = chain;
 
       /* For now, we don't update BLOCKs when we make copies.  So, we

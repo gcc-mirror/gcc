@@ -187,6 +187,11 @@ enum c_language_kind c_language;
 
 tree c_global_trees[CTI_MAX];
 
+/* TRUE if a code represents a statement.  The front end init
+   langhook should take care of initialization of this array.  */
+
+bool statement_code_p[MAX_TREE_CODES];
+
 /* Nonzero if we can read a PCH file now.  */
 
 int allow_pch = 1;
@@ -681,10 +686,6 @@ int max_tinst_depth = 500;
 tree *ridpointers;
 
 tree (*make_fname_decl)                PARAMS ((tree, int));
-
-/* If non-NULL, the address of a language-specific function that
-   returns 1 for language-specific statement codes.  */
-int (*lang_statement_code_p)           PARAMS ((enum tree_code));
 
 /* If non-NULL, the address of a language-specific function that takes
    any action required right before expand_function_end is called.  */
@@ -3927,41 +3928,6 @@ expand_tree_builtin (function, params, coerced_params)
   return NULL_TREE;
 }
 
-/* Returns nonzero if CODE is the code for a statement.  */
-
-int
-statement_code_p (code)
-     enum tree_code code;
-{
-  switch (code)
-    {
-    case CLEANUP_STMT:
-    case EXPR_STMT:
-    case COMPOUND_STMT:
-    case DECL_STMT:
-    case IF_STMT:
-    case FOR_STMT:
-    case WHILE_STMT:
-    case DO_STMT:
-    case RETURN_STMT:
-    case BREAK_STMT:
-    case CONTINUE_STMT:
-    case SCOPE_STMT:
-    case SWITCH_STMT:
-    case GOTO_STMT:
-    case LABEL_STMT:
-    case ASM_STMT:
-    case FILE_STMT:
-    case CASE_LABEL:
-      return 1;
-
-    default:
-      if (lang_statement_code_p)
-	return (*lang_statement_code_p) (code);
-      return 0;
-    }
-}
-
 /* Walk the statement tree, rooted at *tp.  Apply FUNC to all the
    sub-trees of *TP in a pre-order traversal.  FUNC is called with the
    DATA and the address of each sub-tree.  If FUNC returns a non-NULL
@@ -3997,7 +3963,7 @@ walk_stmt_tree (tp, func, data)
     return NULL_TREE;
 
   /* Skip subtrees below non-statement nodes.  */
-  if (!statement_code_p (TREE_CODE (*tp)))
+  if (!STATEMENT_CODE_P (TREE_CODE (*tp)))
     return NULL_TREE;
 
   /* Call the function.  */
@@ -4011,7 +3977,7 @@ walk_stmt_tree (tp, func, data)
   /* FUNC may have modified the tree, recheck that we're looking at a
      statement node.  */
   code = TREE_CODE (*tp);
-  if (!statement_code_p (code))
+  if (!STATEMENT_CODE_P (code))
     return NULL_TREE;
 
   /* Visit the subtrees unless FUNC decided that there was nothing
@@ -4386,7 +4352,7 @@ c_safe_from_p (target, exp)
     }
 
   /* For any statement, we must follow the statement-chain.  */
-  if (statement_code_p (TREE_CODE (exp)) && TREE_CHAIN (exp))
+  if (STATEMENT_CODE_P (TREE_CODE (exp)) && TREE_CHAIN (exp))
     return safe_from_p (target, TREE_CHAIN (exp), /*top_p=*/0);
 
   /* Assume everything else is safe.  */

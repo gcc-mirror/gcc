@@ -401,7 +401,7 @@ init_cp_pragma ()
   c_register_pragma ("GCC", "implementation", handle_pragma_implementation);
   c_register_pragma ("GCC", "java_exceptions", handle_pragma_java_exceptions);
 }
-
+
 /* Initialize the C++ front end.  This function is very sensitive to
    the exact order that things are done here.  It would be nice if the
    initialization done by this routine were moved to its subroutines,
@@ -409,6 +409,13 @@ init_cp_pragma ()
 bool
 cxx_init (void)
 {
+  static const enum tree_code stmt_codes[] = {
+    c_common_stmt_codes,
+    cp_stmt_codes
+  };
+
+  INIT_STATEMENT_CODES (stmt_codes);
+
   input_filename = "<internal>";
 
   init_reswords ();
