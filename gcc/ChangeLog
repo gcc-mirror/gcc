@@ -1,3 +1,9 @@
+2005-03-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* predict.c (apply_return_prediction): Standardize PHI chain
+	walking.
+	* tree-ssa.c (ssa_redirect_edge): Likewise.
+
 2005-03-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/invoke.texi: Document new MIPS -msym32 and -mno-sym32 options.
