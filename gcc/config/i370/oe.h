@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #define LIBGCC_SPEC ""
 #define STARTFILE_SPEC "/usr/local/lib/gccmain.o"
 
-/* Target OS preprocessor built-ins.  */	\
+/* Target OS preprocessor built-ins.  */
 #define TARGET_OS_CPP_BUILTINS()		\
     do {					\
 	builtin_define_std ("unix");		\

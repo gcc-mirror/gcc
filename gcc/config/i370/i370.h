@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_I370_H
 #define GCC_I370_H
 
-/* Target CPU builtins.  */			\
+/* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS()		\
   do						\
     {						\

@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define CPP_SPEC "-trigraphs"
 
-/* Target OS preprocessor built-ins.  */	\
+/* Target OS preprocessor built-ins.  */
 #define TARGET_OS_CPP_BUILTINS()		\
     do {					\
 	builtin_define_std ("MVS");		\

@@ -1,3 +1,11 @@
+2002-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* i370.h (TARGET_CPU_CPP_BUILTINS): Remove spurious trailing
+	backslash in comment preceeding macro definition.
+	* i370/linux.h (TARGET_OS_CPP_BUILTINS): Likewise.
+	* i370/mvs.h (TARGET_OS_CPP_BUILTINS): Likewise.
+	* i370/oe.h (TARGET_OS_CPP_BUILTINS): Likewise.
+
 2002-08-12  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* expr.c (store_expr): In condition for checking if value is
