@@ -1,5 +1,7 @@
 2005-02-13  Jason Merrill  <jason@redhat.com>
 
+	[reverted temporarily]
+
 	PR mudflap/19319
 	* gimplify.c (gimplify_modify_expr_rhs) [CALL_EXPR]: Make return
 	slot explicit.
