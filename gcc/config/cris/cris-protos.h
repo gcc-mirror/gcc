@@ -31,7 +31,6 @@ extern int cris_simple_epilogue PARAMS ((void));
 extern const char *cris_op_str PARAMS ((rtx));
 extern int cris_eligible_for_epilogue_delay PARAMS ((rtx));
 extern void cris_notice_update_cc PARAMS ((rtx, rtx));
-extern int cris_address_cost PARAMS ((rtx));
 extern void cris_print_operand PARAMS ((FILE *, rtx, int));
 extern void cris_print_operand_address PARAMS ((FILE *, rtx));
 extern int cris_side_effect_mode_ok PARAMS ((enum rtx_code, rtx *, int, int,
