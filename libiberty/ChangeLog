@@ -1,3 +1,7 @@
+2002-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* xmalloc.c (xmalloc_fail): Clarify error message.
+
 2002-02-22  Jim Blandy  <jimb@redhat.com>
 
 	* splay-tree.c (splay_tree_xmalloc_allocate,
