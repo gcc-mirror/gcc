@@ -41,6 +41,10 @@ define([AC_PROG_CC_WORKS],[])
 # For g77 we'll set CC to point at the built gcc, but this will get it into
 # the makefiles
 AC_PROG_CC
+
+LIBTOOL='$(SHELL) ../libtool'
+AC_SUBST(LIBTOOL)
+
 dnl AC_C_CROSS
 dnl Gives misleading `(cached)' message from the check.
 if test "$CROSS";then

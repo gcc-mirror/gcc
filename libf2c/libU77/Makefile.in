@@ -30,15 +30,11 @@ VPATH = @srcdir@
 DEFS = @DEFS@
 LIBS = @LIBS@
 
-LIBG2C = ../libg2c.a
-
 F2C_H_DIR = @srcdir@/..
 G2C_H_DIR = ..
 CC = @CC@
 CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
-AR = @AR@
-ARFLAGS = rc
 @SET_MAKE@
 
 SHELL = /bin/sh
@@ -57,7 +53,7 @@ G77DIR = ../../../gcc/
 .SUFFIXES: .c .o
 
 .c.o:
-	$(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) $<
+	@LIBTOOL@ --mode=compile $(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) $<
 
 OBJS =  VersionU.o gerror_.o perror_.o ierrno_.o itime_.o time_.o \
 	unlink_.o fnum_.o getpid_.o getuid_.o getgid_.o kill_.o rand_.o \
@@ -85,15 +81,19 @@ all: ../s-libu77
 ../s-libu77: $(OBJS)
 	echo timestamp > ../s-libu77
 
-archive:
-	$(AR) $(ARFLAGS) $(LIBG2C) $(OBJS)
+objlist:
+	objs="`cat ../objlist`" ; for i in $(OBJS) ; do \
+	   x=`echo $$i | sed -e "s/\.o$$/.lo/g"` ;\
+	   objs="$$objs libU77/$$x" ;\
+	done ; \
+	echo -n $$objs > ../objlist
 
 Makefile: Makefile.in config.status
 	$(SHELL) config.status
 
 config.status: configure
 	rm -f config.cache
-	CONFIG_SITE=no-such-file CC='$(CC)' AR='$(AR)' CFLAGS='$(CFLAGS)' \
+	CONFIG_SITE=no-such-file CC='$(CC)' CFLAGS='$(CFLAGS)' \
 	  CPPFLAGS='$(CPPFLAGS)' $(SHELL) config.status --recheck
 
 ${srcdir}/configure: configure.in
@@ -110,7 +110,7 @@ stamp-h: config.hin config.status
 	echo timestamp > stamp-h
 
 VersionU.o: Version.c
-	$(CC) -c $(ALL_CFLAGS) -o $@ $(srcdir)/Version.c
+	@LIBTOOL@ --mode=compile $(CC) -c $(ALL_CFLAGS) $(srcdir)/Version.c -o $@
 
 $(OBJS): $(F2C_H_DIR)/f2c.h $(G2C_H_DIR)/g2c.h config.h
 access_.o: access_.c
@@ -179,7 +179,8 @@ check:
 install uninstall install-strip dist installcheck installdirs:
 
 mostlyclean:
-	rm -f *.o a.out
+	rm -f *.o *.lo a.out
+	rm -rf .libs
 
 clean: mostlyclean
 	rm -f config.log ../s-libu77

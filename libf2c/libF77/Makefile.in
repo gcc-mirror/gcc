@@ -31,15 +31,11 @@ VPATH = @srcdir@
 # configuration.
 DEFS = @DEFS@
 
-LIBG2C = ../libg2c.a
-
 F2C_H_DIR = @srcdir@/..
 G2C_H_DIR = ..
 CC = @CC@
 CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
-AR = @AR@
-ARFLAGS = rc
 @SET_MAKE@
 
 SHELL = /bin/sh
@@ -52,9 +48,9 @@ ALL_CFLAGS = -I. -I$(srcdir) -I$(G2C_H_DIR) -I$(F2C_H_DIR) $(CPPFLAGS) $(DEFS) $
 .SUFFIXES: .c .o
 
 .c.o:
-	$(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) $<
+	@LIBTOOL@ --mode=compile $(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) $<
 
-MISC =	F77_aloc.o VersionF.o main.o s_rnge.o abort_.o getarg_.o iargc_.o\
+MISC =	F77_aloc.o VersionF.o s_rnge.o abort_.o getarg_.o iargc_.o\
 	getenv_.o signal_.o s_stop.o s_paus.o system_.o cabs.o\
 	derf_.o derfc_.o erf_.o erfc_.o sig_die.o exit_.o setarg.o setsig.o
 POW =	pow_ci.o pow_dd.o pow_di.o pow_hh.o pow_ii.o  pow_ri.o pow_zi.o pow_zz.o \
@@ -80,20 +76,24 @@ F90BIT = lbitbits.o lbitshft.o qbitbits.o qbitshft.o
 OBJS = $(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) \
 	 $(HALF) $(CMP) $(EFL) $(CHAR) $(F90BIT)
 
-all: ../s-libf77
+all: ../s-libf77 ../frtbegin.o
 
 ../s-libf77: $(OBJS)
 	echo timestamp > ../s-libf77
 
-archive:
-	$(AR) $(ARFLAGS) $(LIBG2C) $(OBJS)
+objlist:
+	objs="`cat ../objlist`" ; for i in $(OBJS) ; do \
+	   x=`echo $$i | sed -e "s/\.o$$/.lo/g"` ;\
+	   objs="$$objs libF77/$$x" ;\
+	done ; \
+	echo -n $$objs > ../objlist
 
 Makefile: Makefile.in config.status
 	$(SHELL) config.status
 
 config.status: configure
 	rm -f config.cache
-	CONFIG_SITE=no-such-file CC='$(CC)' AR='$(AR)' CFLAGS='$(CFLAGS)' \
+	CONFIG_SITE=no-such-file CC='$(CC)' CFLAGS='$(CFLAGS)' \
 	  CPPFLAGS='$(CPPFLAGS)' $(SHELL) config.status --recheck
 
 ${srcdir}/configure: configure.in
@@ -101,10 +101,12 @@ ${srcdir}/configure: configure.in
 	cd ${srcdir} && autoconf
 
 VersionF.o: Version.c
-	$(CC) -c $(ALL_CFLAGS) -o $@ $(srcdir)/Version.c
+	@LIBTOOL@ --mode=compile $(CC) -c $(ALL_CFLAGS) $(srcdir)/Version.c -o $@
+
+../frtbegin.o : main.c
+	$(CC) -c $(ALL_CFLAGS) $(srcdir)/main.c -o $@
 
 F77_aloc.o: F77_aloc.c
-main.o: main.c
 s_rnge.o: s_rnge.c
 abort_.o: abort_.c
 getarg_.o: getarg_.c
@@ -232,7 +234,8 @@ $(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) $(HALF) $(CMP) $(EFL) \
 check install uninstall install-strip dist installcheck installdirs:
 
 mostlyclean:
-	rm -f *.o
+	rm -f *.o *.lo ../frtbegin.o
+	rm -rf .libs
 
 clean: mostlyclean
 	rm -f config.log

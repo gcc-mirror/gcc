@@ -31,15 +31,11 @@ VPATH = @srcdir@
 # configuration.
 DEFS = @DEFS@
 
-LIBG2C = ../libg2c.a
-
 F2C_H_DIR = @srcdir@/..
 G2C_H_DIR = ..
 CC = @CC@
 CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
-AR = @AR@
-ARFLAGS = rc
 @SET_MAKE@
 
 SHELL = /bin/sh
@@ -53,9 +49,9 @@ ALL_CFLAGS = -I. -I$(srcdir) -I$(G2C_H_DIR) -I$(F2C_H_DIR) $(CPPFLAGS) \
 .SUFFIXES: .c .o
 
 .c.o:
-	$(CC) -c -DSkip_f2c_Undefs -DAllow_TYQUAD $(ALL_CFLAGS) $<
+	@LIBTOOL@ --mode=compile $(CC) -c -DSkip_f2c_Undefs -DAllow_TYQUAD $(ALL_CFLAGS) $<
 
-OBJ =	VersionI.o backspace.o close.o dfe.o dolio.o due.o endfile.o err.o \
+OBJS =	VersionI.o backspace.o close.o dfe.o dolio.o due.o endfile.o err.o \
 	fmt.o fmtlib.o iio.o ilnw.o inquire.o lread.o lwrite.o open.o \
 	rdfmt.o rewind.o rsfe.o rsli.o rsne.o sfe.o sue.o typesize.o uio.o \
 	util.o wref.o wrtfmt.o wsfe.o wsle.o wsne.o xwsne.o \
@@ -63,18 +59,22 @@ OBJ =	VersionI.o backspace.o close.o dfe.o dolio.o due.o endfile.o err.o \
 
 all: ../s-libi77
 
-../s-libi77: $(OBJ)
+../s-libi77: $(OBJS)
 	echo timestamp > ../s-libi77
 
-archive:
-	$(AR) $(ARFLAGS) $(LIBG2C) $(OBJ)
+objlist:
+	objs="`cat ../objlist`" ; for i in $(OBJS) ; do \
+	   x=`echo $$i | sed -e "s/\.o$$/.lo/g"` ;\
+	   objs="$$objs libI77/$$x" ;\
+	done ; \
+	echo -n $$objs > ../objlist
 
 Makefile: Makefile.in config.status
 	$(SHELL) config.status
 
 config.status: configure
 	rm -f config.cache
-	CONFIG_SITE=no-such-file CC='$(CC)' AR='$(AR)' CFLAGS='$(CFLAGS)' \
+	CONFIG_SITE=no-such-file CC='$(CC)' CFLAGS='$(CFLAGS)' \
 	  CPPFLAGS='$(CPPFLAGS)' $(SHELL) config.status --recheck
 
 ${srcdir}/configure: configure.in
@@ -94,7 +94,7 @@ stamp-h: config.h.in config.status
 	echo timestamp > stamp-h
 
 VersionI.o: Version.c
-	$(CC) -c $(ALL_CFLAGS) -o $@ $(srcdir)/Version.c
+	@LIBTOOL@ --mode=compile $(CC) -c $(ALL_CFLAGS) $(srcdir)/Version.c -o $@
 
 backspace.o:	backspace.c fio.h config.h
 close.o:	close.c fio.h config.h
@@ -153,12 +153,13 @@ xwsne.o:	lio.h
 xwsne.o:	xwsne.c fmt.h
 
 # May be pessimistic:
-$(OBJ): $(F2C_H_DIR)/f2c.h $(G2C_H_DIR)/g2c.h
+$(OBJS): $(F2C_H_DIR)/f2c.h $(G2C_H_DIR)/g2c.h
 
 check install uninstall install-strip dist installcheck installdirs:
 
 mostlyclean:
-	rm -f *.o
+	rm -f *.o *.lo
+	rm -rf .libs
 
 clean: mostlyclean
 	rm -f config.log ../s-libi77

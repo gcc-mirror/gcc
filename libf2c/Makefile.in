@@ -31,8 +31,16 @@ target_alias = @target_alias@
 gcc_version = @gcc_version@
 gcc_version_trigger = @gcc_version_trigger@
 
+top_builddir = .
+
 libdir = $(exec_prefix)/lib
 libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(gcc_version)
+#
+VERSION_MAJOR=0
+VERSION_MINOR=5
+# We'd rather had 27 here - to indicate the version at which
+# a shared libf2c was created; however, libtool doesn't accept this.
+VERSION_SUB=0
 
 # Multilib support variables.
 MULTISRCTOP =
@@ -49,11 +57,7 @@ INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 
-AR = @AR@
-AR_FLAGS = rc
-
-RANLIB = @RANLIB@
-
+LIBTOOL = @LIBTOOL@
 CC = @CC@
 CFLAGS = @CFLAGS@
 
@@ -61,9 +65,9 @@ CFLAGS = @CFLAGS@
 # Quote this way so that it can be used to set shell variables too.
 FLAGS_TO_PASS= \
 	CC='$(CC)' \
+	LIBTOOL='$(LIBTOOL)' \
 	CFLAGS='$(CFLAGS)' \
 	CPPFLAGS='$(CPPFLAGS)' \
-	AR='$(AR)' \
 	RANLIB='$(RANLIB)' \
 	prefix='$(prefix)' \
 	exec_prefix='$(exec_prefix)' \
@@ -71,7 +75,8 @@ FLAGS_TO_PASS= \
 	libsubdir='$(libsubdir)' \
 	tooldir='$(tooldir)'
 
-LIBG2C = libg2c.a
+LIBG2C_BASE = libg2c
+LIBG2C = $(LIBG2C_BASE).la
 
 SUBDIRS = libI77 libF77 libU77
 
@@ -132,14 +137,20 @@ i77 f77 u77: g2c.h
 # always have been created by a successful `all-unilib'.
 
 $(LIBG2C): s-libi77 s-libf77 s-libu77 s-libe77
-	rm -f $(LIBG2C)
+	rm -f $@ ;\
 	set -e; \
-	for i in $(SUBDIRS); \
-	  do (cd $$i && $(MAKE) $(FLAGS_TO_PASS) LIBG2C=../$(LIBG2C) archive); \
-	done
-	objs=""; for i in $(F2CEXT); do objs="$$objs libE77/L$$i.o"; done; \
-	  $(AR) $(AR_FLAGS) $(LIBG2C) $$objs
-	$(RANLIB) $(LIBG2C)
+	rm -f objlist ;\
+	touch objlist ;\
+	for i in $(SUBDIRS) ;\
+	do \
+	  (cd $$i && $(MAKE) $(FLAGS_TO_PASS) objlist) ;\
+	done ;\
+	objs="`cat objlist`" ;\
+	for i in $(F2CEXT); do objs="$$objs libE77/L$$i.lo"; done ;\
+	echo -n $$objs > objlist 
+	$(LIBTOOL) --mode=link $(CC) -o $@ \
+	  -version-info $(VERSION_MAJOR):$(VERSION_MINOR):$(VERSION_SUB) \
+	  -rpath $(prefix)/lib `cat objlist` -lc -lm
 
 i77:
 	cd libI77; $(MAKE) $(FLAGS_TO_PASS) all
@@ -151,13 +162,13 @@ u77:
 	cd libU77; $(MAKE) $(FLAGS_TO_PASS) all
 
 s-libe77: f2cext.c
-	if [ -d libE77 ]; then rm -f libE77/*.o; else mkdir libE77; fi
+	if [ -d libE77 ]; then rm -f libE77/*.o libE77/*.lo; else mkdir libE77; fi
 	for name in $(F2CEXT); \
 	do \
 	  echo $${name}; \
-	  $(CC) -c -I. -I$(srcdir) -I../../include $(CPPFLAGS) $(CFLAGS) \
-	    -DL$${name} $(srcdir)/f2cext.c \
-	    -o libE77/L$${name}.o; \
+	  $(LIBTOOL) --mode=compile $(CC) -c -I. -I$(srcdir) -I../../include \
+	    $(CPPFLAGS) $(CFLAGS) -DL$${name} $(srcdir)/f2cext.c \
+	    -o libE77/L$${name}.o ; \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	done
 	echo timestamp >s-libe77
@@ -194,9 +205,12 @@ check:
 	cd libU77; $(MAKE) G77DIR=../../../gcc/ check
 
 install: all
-	$(INSTALL_DATA) $(LIBG2C) $(libsubdir)/$(MULTISUBDIR)/$(LIBG2C).n
-	( cd $(libsubdir)/$(MULTISUBDIR) ; $(RANLIB) $(LIBG2C).n )
-	mv -f $(libsubdir)/$(MULTISUBDIR)/$(LIBG2C).n $(libsubdir)/$(MULTISUBDIR)/$(LIBG2C)
+	$(LIBTOOL) --mode=install $(INSTALL_DATA) $(LIBG2C) $(libsubdir)/$(MULTISUBDIR)
+	(cd $(libsubdir)/$(MULTISUBDIR) ; \
+	   if [ -f $(LIBG2C_BASE).so ]; then \
+	     mv $(LIBG2C_BASE).so* $(prefix)/lib ;\
+	   fi)
+	$(INSTALL_DATA) frtbegin.o $(libsubdir)
 	$(INSTALL_DATA) g2c.h $(libsubdir)/include/g2c.h
 	@if [ -f f2c-install-ok -o -f $(srcdir)/f2c-install-ok ]; then \
 	  echo ''; \
@@ -208,16 +222,18 @@ install: all
 	  echo ''; \
 	else true; fi
 	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="$@"
+	@-$(LIBTOOL) --mode=finish $(prefix)/lib
 
 install-strip:
 	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
 
 uninstall:
-	rm -f $(libsubdir)/$(MULTISUBDIR)/include/g2c.h $(libsubdir)/$(MULTISUBDIR)/$(LIBG2C)
+	rm -f $(libsubdir)/$(MULTISUBDIR)/include/g2c.h $(libsubdir)/$(MULTISUBDIR)/$(LIBG2C_BASE).*
+	rm -f $(prefix)/lib/$(LIBG2C_BASE).so*
 	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="$@"
 
 mostlyclean:
-	rm -f $(LIBG2C)
+	rm -f $(LIBG2C) objlist
 	$(MAKE) DO=$@ DODIRS="$(SUBDIRS)" $(FLAGS_TO_PASS) subdir_do; \
 	$(MULTICLEAN) multi-clean DO=$@
 	rm -fr libE77 s-libe77
@@ -226,6 +242,7 @@ clean: mostlyclean
 	rm -f config.log
 	$(MAKE) DO=$@ DODIRS="$(SUBDIRS)" $(FLAGS_TO_PASS) subdir_do; \
 	$(MULTICLEAN) multi-clean DO=$@
+	rm -rf .libs
 
 distclean: clean
 	rm -f g2c.h s-libe77

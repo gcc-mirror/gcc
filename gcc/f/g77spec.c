@@ -286,6 +286,9 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
      2 => last two args were -l<library> -lm.  */
   int saw_library = 0;
 
+  /* 0 => initial/reset state
+     1 => FORTRAN_INIT linked in */
+  int use_init = 0;
   /* By default, we throw on the math library if we have one.  */
   int need_math = (MATH_LIBRARY[0] != '\0');
 
@@ -518,7 +521,14 @@ For bug reporting instructions, please see:\n\
 	      if (saw_library == 1)
 		saw_library = 2;	/* -l<library> -lm. */
 	      else
-		append_arg (FORTRAN_LIBRARY);
+		{
+		  if (0 == use_init)
+		    {
+		      append_arg (FORTRAN_INIT);
+		      use_init = 1;
+		    }
+		  append_arg (FORTRAN_LIBRARY);
+		}
 	    }
 	  else if (strcmp (argv[i], FORTRAN_LIBRARY) == 0)
 	    saw_library = 1;	/* -l<library>. */
@@ -542,6 +552,11 @@ For bug reporting instructions, please see:\n\
       switch (saw_library)
 	{
 	case 0:
+	  if (0 == use_init)
+	    {
+	      append_arg (FORTRAN_INIT);
+	      use_init = 1;
+	    }
 	  append_arg (library);
 	case 1:
 	 if (need_math)
