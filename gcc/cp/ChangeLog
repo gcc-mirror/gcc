@@ -1,3 +1,9 @@
+2004-09-21  Matt Austern  <austern@apple.com>
+
+	PR c++/15049
+	* decl.c (grokvardecl): Accept declarations of global variables
+	using anonymous types.
+	
 2004-09-21  Roger Sayle  <roger@eyesopen.com>
 
 	PR c++/7503

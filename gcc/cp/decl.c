@@ -5931,17 +5931,29 @@ grokvardecl (tree type,
 	 or enumeration declared in a local scope) shall not be used to
 	 declare an entity with linkage.
 
-	 Only check this for public decls for now.  */
-      tree t = no_linkage_check (TREE_TYPE (decl),
-				 /*relaxed_p=*/false);
+	 Only check this for public decls for now. */
+      tree t1 = TREE_TYPE (decl);
+      tree t = no_linkage_check (t1, /*relaxed_p=*/false);
       if (t)
 	{
 	  if (TYPE_ANONYMOUS_P (t))
 	    {
 	      if (DECL_EXTERN_C_P (decl))
-		/* Allow this; it's pretty common in C.  */;
+		/* Allow this; it's pretty common in C.  */
+		  ;
+	      else if (same_type_ignoring_top_level_qualifiers_p(t1, t))
+	        /* This is something like "enum { a = 3 } x;", which is
+		   well formed.  The enum doesn't have "a name with no
+		   linkage", because it has no name.  See closed CWG issue
+		   132.
+
+		   Note that while this construct is well formed in C++03
+		   it is likely to become ill formed in C++0x.  See open
+		   CWG issue 389 and related issues. */
+		;
 	      else
 		{
+		  /* It's a typedef referring to an anonymous type. */
 		  pedwarn ("non-local variable `%#D' uses anonymous type",
 			   decl);
 		  if (DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
