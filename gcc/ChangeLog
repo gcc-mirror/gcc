@@ -1,3 +1,8 @@
+2001-12-08  David Edelsohn  <edelsohn@gnu.org>
+
+	* stor-layout.c (place_union_field): Apply ADJUST_FIELD_ALIGN
+	to unions.
+
 2001-12-08  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-parse.in: Take string literals in assembler constructs,

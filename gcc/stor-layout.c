@@ -658,6 +658,10 @@ place_union_field (rli, field)
       MIN (desired_align, (unsigned) BIGGEST_FIELD_ALIGNMENT);
 #endif
 
+#ifdef ADJUST_FIELD_ALIGN
+  desired_align = ADJUST_FIELD_ALIGN (field, desired_align);
+#endif
+
   TYPE_USER_ALIGN (rli->t) |= DECL_USER_ALIGN (field);
 
   /* Union must be at least as aligned as any field requires.  */
