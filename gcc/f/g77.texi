@@ -14,7 +14,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-up-date 1999-02-20
+@set last-up-date 1999-02-25
 @set version-g77 0.5.24
 @set email-general egcs@@egcs.cygnus.com
 @set email-bugs egcs-bugs@@egcs.cygnus.com
@@ -14457,8 +14457,16 @@ It is not worth repeating them here.
 @item
 @cindex concatenation
 @cindex CHARACTER*(*)
+@cindex run-time, dynamic allocation
 Support arbitrary operands for concatenation, even in contexts where
 run-time allocation is required.
+For example:
+
+@smallexample
+SUBROUTINE X(A)
+CHARACTER*(*) A
+CALL FOO(A // 'suffix')
+@end smallexample
 
 @item
 Consider adding a @code{NUMERIC} type to designate typeless numeric constants,
