@@ -84,58 +84,61 @@ ${srcdir}/configure: configure.in
 VersionI.o: Version.c
 	$(CC) -c $(ALL_CFLAGS) -o $@ $(srcdir)/Version.c
 
-backspace.o:	fio.h
-close.o:	fio.h
+backspace.o:	backspace.c fio.h
+close.o:	close.c fio.h
 dfe.o:		fio.h
-dfe.o:		fmt.h
-due.o:		fio.h
-endfile.o:	fio.h rawio.h
-err.o:		fio.h rawio.h
+dfe.o:		dfe.c fmt.h
+dolio.o:	dolio.c
+due.o:		due.c fio.h
+endfile.o:	endfile.c fio.h rawio.h
+err.o:		err.c fio.h rawio.h
 fmt.o:		fio.h
-fmt.o:		fmt.h
-ftell_.o:	fio.h
+fmt.o:		fmt.c fmt.h
+fmtlib.o:	fmtlib.c
+ftell_.o:	ftell_.c fio.h
 iio.o:		fio.h
-iio.o:		fmt.h
+iio.o:		iio.c fmt.h
 ilnw.o:		fio.h
-ilnw.o:		lio.h
-inquire.o:	fio.h
+ilnw.o:		ilnw.c lio.h
+inquire.o:	inquire.c fio.h
 lread.o:	fio.h
 lread.o:	fmt.h
 lread.o:	lio.h
-lread.o:	fp.h
+lread.o:	lread.c fp.h
 lwrite.o:	fio.h
 lwrite.o:	fmt.h
-lwrite.o:	lio.h
-open.o:		fio.h rawio.h
+lwrite.o:	lwrite.c lio.h
+open.o:		open.c fio.h rawio.h
 rdfmt.o:	fio.h
 rdfmt.o:	fmt.h
-rdfmt.o:	fp.h
-rewind.o:	fio.h
+rdfmt.o:	rdfmt.c fp.h
+rewind.o:	rewind.c fio.h
 rsfe.o:		fio.h
-rsfe.o:		fmt.h
+rsfe.o:		rsfe.c fmt.h
 rsli.o:		fio.h
-rsli.o:		lio.h
+rsli.o:		rsli.c lio.h
 rsne.o:		fio.h
-rsne.o:		lio.h
-sfe.o:		fio.h
-sue.o:		fio.h
-uio.o:		fio.h
-util.o:		fio.h
+rsne.o:		rsne.c lio.h
+sfe.o:		sfe.c fio.h
+sue.o:		sue.c fio.h
+typesize.o:	typesize.c
+uio.o:		uio.c fio.h
+util.o:		util.c fio.h
 wref.o:		fio.h
 wref.o:		fmt.h
-wref.o:		fp.h
+wref.o:		wref.c fp.h
 wrtfmt.o:	fio.h
-wrtfmt.o:	fmt.h
+wrtfmt.o:	wrtfmt.c fmt.h
 wsfe.o:		fio.h
-wsfe.o:		fmt.h
+wsfe.o:		wsfe.c fmt.h
 wsle.o:		fio.h
 wsle.o:		fmt.h
-wsle.o:		lio.h
+wsle.o:		wsle.c lio.h
 wsne.o:		fio.h
-wsne.o:		lio.h
+wsne.o:		wsne.c lio.h
 xwsne.o:	fio.h
 xwsne.o:	lio.h
-xwsne.o:	fmt.h
+xwsne.o:	xwsne.c fmt.h
 
 # May be pessimistic:
 $(OBJ): $(F2C_H_DIR)/f2c.h $(G2C_H_DIR)/g2c.h

@@ -164,6 +164,7 @@ rename_.o: rename_.c
 fputc_.o: fputc_.c
 fgetc_.o: fgetc_.c
 sys_clock_.o: sys_clock_.c
+date_.o: date_.c
 umask_.o: umask_.c
 flush1_.o: flush1_.c
 mclock_.o: mclock_.c
