@@ -1341,6 +1341,33 @@ dump_expr (t, nop)
       }
       break;
 
+    case NEW_EXPR:
+      {
+	tree type = TREE_OPERAND (t, 1);
+	if (NEW_EXPR_USE_GLOBAL (t))
+	  OB_PUTS ("::");
+	OB_PUTS ("new ");
+	if (TREE_OPERAND (t, 0))
+	  {
+	    OB_PUTC ('(');
+	    dump_expr_list (TREE_OPERAND (t, 0));
+	    OB_PUTS (") ");
+	  }
+	if (TREE_CODE (type) == ARRAY_REF)
+	  type = build_cplus_array_type
+	    (TREE_OPERAND (type, 0),
+	     build_index_type (size_binop (MINUS_EXPR, TREE_OPERAND (type, 1),
+					   integer_one_node)));
+	dump_type (type, 0);
+	if (TREE_OPERAND (t, 2))
+	  {
+	    OB_PUTC ('(');
+	    dump_expr_list (TREE_OPERAND (t, 2));
+	    OB_PUTC (')');
+	  }
+      }
+      break;
+
     case TARGET_EXPR:
       /* Note that this only works for G++ target exprs.  If somebody
 	 builds a general TARGET_EXPR, there's no way to represent that

@@ -4208,6 +4208,7 @@ arg_assoc_type (k, type)
     case COMPLEX_TYPE:
     case CHAR_TYPE:
     case BOOLEAN_TYPE:
+    case LANG_TYPE:
       return 0;
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (type))
