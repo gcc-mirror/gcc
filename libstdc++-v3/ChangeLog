@@ -1,3 +1,17 @@
+2004-12-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Implement is_enum (usual caveats about
+	the nasty consequences of c++/19076...).
+	* testsuite/testsuite_tr1.h: Add ConvType.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_scalar/is_scalar.cc: New.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_scalar/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_enum/is_enum.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_enum/typedefs.cc: Likewise.
+
 2004-12-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Add missing undef.

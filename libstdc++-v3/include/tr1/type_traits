@@ -33,7 +33,7 @@ namespace std
 {
 namespace tr1
 {
-  // For use in is_function and elsewhere.
+  // For use in is_enum, is_function, and elsewhere.
   struct __sfinae_types
   {
     typedef char __one;
@@ -149,14 +149,57 @@ namespace tr1
     : public false_type { };
   _DEFINE_SPEC(2, is_member_function_pointer, _Tp _Cp::*)
 
+  template<typename _Tp, bool = (is_fundamental<_Tp>::value
+				 || is_array<_Tp>::value
+				 || is_pointer<_Tp>::value
+				 || is_reference<_Tp>::value
+				 || is_member_pointer<_Tp>::value
+				 || is_function<_Tp>::value)>
+    struct __is_enum_helper
+    : public __sfinae_types
+    {
+    private:
+      static __one __test(bool);
+      static __one __test(char);
+      static __one __test(signed char);
+      static __one __test(unsigned char);
+#ifdef _GLIBCXX_USE_WCHAR_T
+      static __one __test(wchar_t);
+#endif
+      static __one __test(short);
+      static __one __test(unsigned short);
+      static __one __test(int);
+      static __one __test(unsigned int);
+      static __one __test(long);
+      static __one __test(unsigned long);
+      static __one __test(long long);
+      static __one __test(unsigned long long);
+      static __two __test(...);
+
+      template<typename _Up>
+        struct __convert
+	{ operator _Up() const; };
+
+    public:
+      static const bool __value = sizeof(__test(__convert<_Tp>())) == 1;
+    };
+
   template<typename _Tp>
+    struct __is_enum_helper<_Tp, true>
+    { static const bool __value = false; };
+
+  template<typename _Tp>
+    struct is_enum
+    : integral_constant<bool, __is_enum_helper<_Tp>::__value> { };
+
+  template<typename _Tp, bool = (is_reference<_Tp>::value
+				 || is_void<_Tp>::value)>
     struct __is_function_helper
     : public __sfinae_types
     {
     private:
       template<typename>
         static __one __test(...);
-
       template<typename _Up>
         static __two __test(_Up(*)[1]);
     
@@ -165,11 +208,12 @@ namespace tr1
     };
   
   template<typename _Tp>
+    struct __is_function_helper<_Tp, true>
+    { static const bool __value = false; };
+
+  template<typename _Tp>
     struct is_function
-    : public integral_constant<bool, (__is_function_helper<_Tp>::__value
-				      && !is_reference<_Tp>::value
-				      && !is_void<_Tp>::value)>
-    { };
+    : public integral_constant<bool, __is_function_helper<_Tp>::__value> { };
 
   /// @brief  composite type traits [4.5.2].
   template<typename _Tp>
