@@ -19,6 +19,7 @@ is inside a quoted string.
 See the next chapter for information on the C header file.
 
 @menu
+* Overview::            How the machine description is used.
 * Patterns::            How to write instruction patterns.
 * Example::             An explained example of a @code{define_insn} pattern.
 * RTL Template::        The RTL template defines what insns match a pattern.
@@ -42,6 +43,54 @@ See the next chapter for information on the C header file.
 * Constant Definitions::Defining symbolic constants that can be used in the
                         md file.
 @end menu
+
+@node Overview
+@section Overview of How the Machine Description is Used
+
+There are three main conversions that happen in the compiler:
+
+@enumerate
+
+@item
+The front end reads the source code and builds a parse tree.
+
+@item
+The parse tree is used to generate an RTL insn list based on named
+instruction patterns.
+
+@item
+The insn list is matched against the RTL templates to produce assembler
+code.
+
+@end enumerate
+
+For the generate pass, only the names of the insns matter, from either a
+named @code{define_insn} or a @code{define_expand}.  The compiler will
+choose the pattern with the right name and apply the operands according
+to the documentation later in this chapter, without regard for the RTL
+template or operand constraints.  Note that the names the compiler looks
+for are hard-coded in the compiler - it will ignore unnamed patterns and
+patterns with names it doesn't know about, but if you don't provide a
+named pattern it needs, it will abort.
+
+If a @code{define_insn} is used, the template given is inserted into the
+insn list.  If a @code{define_expand} is used, one of three things
+happens, based on the condition logic.  The condition logic may manually
+create new insns for the insn list, say via @code{emit_insn()}, and
+invoke DONE.  For certain named patterns, it may invoke FAIL to tell the
+compiler to use an alternate way of performing that task.  If it invokes
+neither @code{DONE} nor @code{FAIL}, the template given in the pattern
+is inserted, as if the @code{define_expand} were a @code{define_insn}.
+
+Once the insn list is generated, various optimization passes convert,
+replace, and rearrange the insns in the insn list.  This is where the
+@code{define_split} and @code{define_peephole} patterns get used, for
+example.
+
+Finally, the insn list's RTL is matched up with the RTL templates in the
+@code{define_insn} patterns, and those patterns are used to emit the
+final assembly code.  For this purpose, each named @code{define_insn}
+acts like it's unnamed, since the names are ignored.
 
 @node Patterns
 @section Everything about Instruction Patterns
@@ -266,6 +315,16 @@ matching, @code{match_dup} behaves differently.  It assumes that operand
 number @var{n} has already been determined by a @code{match_operand}
 appearing earlier in the recognition template, and it matches only an
 identical-looking expression.
+
+Note that @code{match_dup} should not be used to tell the compiler that
+a particular register is being used for two operands (example:
+@code{add} that adds one register to another; the second register is
+both an input operand and the output operand).  Use a matching
+constraint (@pxref{Simple Constraints}) for those.  @code{match_dup} is for the cases where one
+operand is used in two places in the template, such as an instruction
+that computes both a quotient and a remainder, where the opcode takes
+two input operands but the RTL template has to refer to each of those
+twice; once for the quotient pattern and once for the remainder pattern.
 
 @findex match_operator
 @item (match_operator:@var{m} @var{n} @var{predicate} [@var{operands}@dots{}])
@@ -3234,6 +3293,33 @@ Failure is currently supported only for binary (addition, multiplication,
 shifting, etc.) and bitfield (@code{extv}, @code{extzv}, and @code{insv})
 operations.
 @end table
+
+If the preparation falls through (invokes neither @code{DONE} nor
+@code{FAIL}), then the @code{define_expand} acts like a
+@code{define_insn} in that the RTL template is used to generate the
+insn.
+
+The RTL template is not used for matching, only for generating the
+initial insn list.  If the preparation statement always invokes
+@code{DONE} or @code{FAIL}, the RTL template may be reduced to a simple
+list of operands, such as this example:
+
+@smallexample
+@group
+(define_expand "addsi3"
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")
+   (match_operand:SI 2 "register_operand" "")]
+@end group
+@group
+  ""
+  "
+{
+  handle_add (operands[0], operands[1], operands[2]);
+  DONE;
+}")
+@end group
+@end smallexample
 
 Here is an example, the definition of left-shift for the SPUR chip:
 

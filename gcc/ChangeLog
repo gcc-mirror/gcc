@@ -1,5 +1,9 @@
 2000-12-04  DJ Delorie  <dj@redhat.com>
 
+	* md.texi: Add overview, clarify match_dup and define_expand.
+
+2000-12-04  DJ Delorie  <dj@redhat.com>
+
 	* print-tree.c (print_node): target-specific builtins print
 	numbers, not names.
 
