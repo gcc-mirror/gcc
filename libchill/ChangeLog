@@ -1,3 +1,7 @@
+1998-09-22  Ben Elliston  <bje@cygnus.com>
+
+	* configure.in: This is GNU CHILL, not GNU Fortran.
+
 1998-09-20  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in: Add dummy targets "info", "install-info", "clean-info"
