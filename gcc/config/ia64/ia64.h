@@ -1745,17 +1745,12 @@ do {									\
 /* A C string constant for text to be output before each `asm' statement or
    group of consecutive ones.  */
 
-/* ??? This won't work with the Intel assembler, because it does not accept
-   # as a comment start character.  However, //APP does not work in gas, so we
-   can't use that either.  Same problem for ASM_APP_OFF below.  */
-
-#define ASM_APP_ON "#APP\n"
+#define ASM_APP_ON (TARGET_GNU_AS ? "#APP\n" : "//APP\n")
 
 /* A C string constant for text to be output after each `asm' statement or
    group of consecutive ones.  */
 
-#define ASM_APP_OFF "#NO_APP\n"
-
+#define ASM_APP_OFF (TARGET_GNU_AS ? "#NO_APP\n" : "//NO_APP\n")
 
 /* Output of Uninitialized Variables.  */
 
@@ -2133,7 +2128,7 @@ do {									\
    add brackets around the label.  */
 
 #define ASM_OUTPUT_DEBUG_LABEL(FILE, PREFIX, NUM) \
-  fprintf (FILE, "[.%s%d:]\n", PREFIX, NUM)
+  fprintf (FILE, TARGET_GNU_AS ? "[.%s%d:]\n" : ".%s%d:\n", PREFIX, NUM)
 
 /* Use section-relative relocations for debugging offsets.  Unlike other
    targets that fake this by putting the section VMA at 0, IA-64 has

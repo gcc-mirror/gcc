@@ -46,15 +46,21 @@
 	* config/ip2k/ip2k.h, config/iq2000/iq2000.h:
 	No need to define BITS_PER_UNIT.
 
+2003-10-10  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* config/ia64/ia64.c (ia64_vms_init_libfuncs): New function.
+	(ia64_output_function_prologue): Only write .prologue if --with-gnu-as.
+	(ia64_initialize_trampoline): If not using GAS, declare trampoline
+	as global.
+	* config/ia64/ia64.h (ASM_APP_ON, ASM_APP_OFF): Add vers for not GAS.
+	(ASM_OUTPUT_DEBUG_LABEL): Likewise.
+	
 	* stor-layout.c (compute_record_mode): Don't force BLKmode if
 	field is zero-length BLKmode.
 	* expr.c (expand_expr, case COMPONENT_REF): Handle case of BLKmode
 	zero-size references.
 
 	* combine.c (distribute_links): Properly test for REG being set.
-
-2003-10-10  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/alpha/alpha.c (alpha_expand_block_mode): Don't use
 	gen_lowpart and company except for REG.
