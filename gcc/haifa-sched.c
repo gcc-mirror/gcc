@@ -7106,9 +7106,17 @@ add_branch_dependences (head, tail)
 	  CANT_MOVE (insn) = 1;
 
 	  last = insn;
-	  /* Skip over insns that are part of a group.  */
+	  /* Skip over insns that are part of a group.
+	     Make each insn explicitly depend on the previous insn.
+	     This ensures that only the group header will ever enter
+	     the ready queue (and, when scheduled, will automatically
+	     schedule the SCHED_GROUP_P block).  */
 	  while (SCHED_GROUP_P (insn))
-	    insn = prev_nonnote_insn (insn);
+	    {
+	      rtx temp = prev_nonnote_insn (insn);
+	      add_dependence (insn, temp, REG_DEP_ANTI);
+	      insn = temp;
+	    }
 	}
 
       /* Don't overrun the bounds of the basic block.  */
