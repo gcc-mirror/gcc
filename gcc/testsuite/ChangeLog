@@ -1,3 +1,9 @@
+1999-05-01  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.f-torture/execute/u77-test.f: Modify to be more like
+	libf2c/libU77 version, bringing patches to that version here.
+	Add suitable commentary.
+
 Sun Apr 25 12:28:59 1999  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.dg/990424-1.c: New test.

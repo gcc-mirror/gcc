@@ -1,3 +1,9 @@
+Sat May  1 23:35:18 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* libU77/u77-test.f: Modify to be more like testsuite
+	version, bringing patches to that version here.
+	Add suitable commentary.
+
 Sat Apr 24 11:02:48 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* Makefile.in (s-libi77, s-libf77, s-libu77): Revert
