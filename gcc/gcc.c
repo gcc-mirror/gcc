@@ -2268,7 +2268,7 @@ process_command (argc, argv)
     }
 
   temp = getenv ("LIBRARY_PATH");
-  if (temp && *cross_compile != '0')
+  if (temp && *cross_compile == '0')
     {
       char *startp, *endp;
       char *nstore = (char *) alloca (strlen (temp) + 3);
@@ -2300,7 +2300,7 @@ process_command (argc, argv)
 
   /* Use LPATH like LIBRARY_PATH (for the CMU build program).  */
   temp = getenv ("LPATH");
-  if (temp && *cross_compile != '0')
+  if (temp && *cross_compile == '0')
     {
       char *startp, *endp;
       char *nstore = (char *) alloca (strlen (temp) + 3);
@@ -4264,7 +4264,7 @@ main (argc, argv)
   /* The fact that these are done here, after reading the specs file,
      means that it cannot be found in these directories.
      But that's okay.  It should never be there anyway.  */
-  if (*cross_compile != '0')
+  if (*cross_compile == '0')
     {
 #ifdef MD_EXEC_PREFIX
       add_prefix (&exec_prefixes, md_exec_prefix, 0, 0, NULL_PTR);
