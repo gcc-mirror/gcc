@@ -1,5 +1,9 @@
 2000-12-18  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	2000-09-15  Bernd Schmidt  <bernds@redhat.co.uk>
+	* optabs.c (emit_libcall_block): If target is a user variable,
+	copy to a temporary first.
+
 	2000-04-28  Kazu Hirata  <kazu@hxi.com>
 	* h8300.c (function_epilogue): Clean up flags when the last insn
 	in a function is a barrier.
