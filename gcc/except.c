@@ -3500,7 +3500,7 @@ output_function_exception_table ()
 #endif
       tt_format_size = size_of_encoded_value (tt_format);
 
-      assemble_eh_align (tt_format_size * BITS_PER_UNIT);
+      assemble_align (tt_format_size * BITS_PER_UNIT);
     }
 
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LLSDA", funcdef_number);
@@ -3607,7 +3607,7 @@ output_function_exception_table ()
 			 (i ? NULL : "Action record table"));
 
   if (have_tt_data)
-    assemble_eh_align (tt_format_size * BITS_PER_UNIT);
+    assemble_align (tt_format_size * BITS_PER_UNIT);
 
   i = VARRAY_ACTIVE_SIZE (cfun->eh->ttype_data);
   while (i-- > 0)
