@@ -5887,20 +5887,20 @@ do_pragma (buf, limit)
     /* Be quiet about `#pragma implementation' for a file only if it hasn't
        been included yet.  */
     struct file_name_list *ptr;
-    char *p = buf + 14, *fname, *inc_fname;
+    U_CHAR *p = buf + 14, *fname, *inc_fname;
     SKIP_WHITE_SPACE (p);
     if (*p == '\n' || *p != '\"')
       return 0;
 
     fname = p + 1;
-    if (p = (char *) strchr (fname, '\"'))
+    if (p = (U_CHAR *) strchr (fname, '\"'))
       *p = '\0';
     
     for (ptr = all_include_files; ptr; ptr = ptr->next) {
-      inc_fname = (char *) strrchr (ptr->fname, '/');
+      inc_fname = (U_CHAR *) strrchr (ptr->fname, '/');
       inc_fname = inc_fname ? inc_fname + 1 : ptr->fname;
       if (inc_fname && !strcmp (inc_fname, fname))
-	warning ("`#pragma implementation' for \"%s\" appears after its #include",
+	warning ("`#pragma implementation' for `%s' appears after file is included",
 		 fname);
     }
   }
