@@ -1,3 +1,8 @@
+2004-10-06  Alan Modra  <amodra@bigpond.net.au>
+
+	PR 16406
+	* doc/tm.texi (USE_LD_AS_NEEDED, LINK_EH_SPEC): Document.
+
 2004-10-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* basic-block.h: Remove the prototype for
