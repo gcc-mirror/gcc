@@ -1,5 +1,7 @@
 Sat Jan 30 08:27:23 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* install.texi: Fix merge lossages.
+
 	* cccp.c (main): Only call setlocale (LC_MESSAGES, ...) if LC_MESSAGES
 	is defined.
 	* collect2.c (main): Likewise.
