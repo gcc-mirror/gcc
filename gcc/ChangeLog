@@ -1,3 +1,7 @@
+Sun Feb 22 20:58:19 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* vms.h (SELECT_SECTION): Use TREE_CODE_CLASS correctly.
+
 1998-02-22  Paul Eggert  <eggert@twinsun.com>
 
 	* config/sparc/sol2-sld.h (LINKER_DOES_NOT_WORK_WITH_DWARF2):
