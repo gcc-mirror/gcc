@@ -2381,7 +2381,7 @@ lex_string (str, len, wide)
       if (wide)
 	{
 	  unsigned charwidth = TYPE_PRECISION (char_type_node);
-	  unsigned bytemask = (1 << width) - 1;
+	  unsigned bytemask = (1 << charwidth) - 1;
 	  int byte;
 
 	  for (byte = 0; byte < WCHAR_BYTES; ++byte)

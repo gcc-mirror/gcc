@@ -1,3 +1,9 @@
+2000-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lex.c (lex_string): Use charwidth to compute bytemask.
+	* expr.c (expand_expr): Don't optimize constant array references
+	initialized with wide string constants.
+
 2000-09-13  Michael Hayes  <mhayes@cygnus.com>
 
         * loop.c (note_set_pseudo_multiple_uses): Correct.
