@@ -2709,15 +2709,6 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
   return ret;
 }
 
-/* Return true if T is either a valid GIMPLE operand or is an
-   INDIRECT_REF (the latter is valid since we'll strip it off).  */
-
-static bool
-is_gimple_addr_expr_arg_or_indirect (tree t)
-{
-  return (TREE_CODE (t) == INDIRECT_REF || is_gimple_addr_expr_arg (t));
-}
-
 /* Gimplify the MODIFY_EXPR node pointed by EXPR_P.
 
       modify_expr
@@ -2788,7 +2779,7 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
 
       if (TREE_CODE (from) == CONSTRUCTOR)
 	return gimplify_modify_expr_to_memset (expr_p, size, want_value);
-      if (is_gimple_addr_expr_arg (from))
+      if (is_gimple_addressable (from))
 	{
 	  *from_p = from;
 	  return gimplify_modify_expr_to_memcpy (expr_p, size, want_value);
@@ -3027,7 +3018,7 @@ gimplify_addr_expr (tree *expr_p, tree *pre_p, tree *post_p)
       /* We use fb_either here because the C frontend sometimes takes
 	 the address of a call that returns a struct.  */
       ret = gimplify_expr (&TREE_OPERAND (expr, 0), pre_p, post_p,
-			   is_gimple_addr_expr_arg_or_indirect, fb_either);
+			   is_gimple_addressable, fb_either);
       if (ret != GS_ERROR)
 	{
 	  /* The above may have made an INDIRECT ref (e.g, Ada's NULL_EXPR),
@@ -3930,7 +3921,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
      postqueue; we need to copy the value out first, which means an
      rvalue.  */
   if ((fallback & fb_lvalue) && !internal_post
-      && is_gimple_addr_expr_arg (*expr_p))
+      && is_gimple_addressable (*expr_p))
     {
       /* An lvalue will do.  Take the address of the expression, store it
 	 in a temporary, and replace the expression with an INDIRECT_REF of

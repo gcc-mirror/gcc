@@ -1,3 +1,14 @@
+2004-07-27  Richard Henderson  <rth@redhat.com>
+
+	* gimplify.c (is_gimple_addr_expr_arg_or_indirect): Remove.
+	(gimplify_modify_expr, gimplify_addr_expr, gimplify_expr): Use
+	is_gimple_addressable.
+	* tree-gimple.c (is_gimple_addressable): Rename from
+	is_gimple_addr_expr_arg; accept INDIRECT_REF.
+	(is_gimple_lvalue): Don't test INDIRECT_REF directly.
+	* tree-gimple.h, tree-sra.c, tree-ssa-loop-im.c: Update for
+	rename to is_gimple_addressable.
+
 2004-07-28  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (function_arg_padding): Pad SFmode upwards.

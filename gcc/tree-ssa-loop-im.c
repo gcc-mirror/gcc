@@ -350,7 +350,7 @@ stmt_cost (tree stmt)
   /* Hoisting memory references out should almost surely be a win.  */
   if (!is_gimple_variable (lhs))
     cost += 20;
-  if (is_gimple_addr_expr_arg (rhs) && !is_gimple_variable (rhs))
+  if (is_gimple_addressable (rhs) && !is_gimple_variable (rhs))
     cost += 20;
 
   switch (TREE_CODE (rhs))
