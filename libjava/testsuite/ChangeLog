@@ -1,5 +1,9 @@
 2001-12-17  Tom Tromey  <tromey@redhat.com>
 
+	Inspired by PR java/5057:
+	* libjava.lang/PR5057_2.java: New file.
+	* libjava.lang/PR5057_2.out: New file.
+
 	For PR java/5057:
 	* libjava.lang/PR5057.out: New file.
 	* libjava.lang/PR5057.java: New file.
