@@ -9,6 +9,7 @@ CC		= $(OLDCC)
 CLIB		= -lbsd -lld
 X_CFLAGS	= $(DEB_OPT) $(MSTATS) $(SHLIB)
 X_CFLAGS_NODEBUG = $(NO_DEBUG) $(MSTATS) $(OPT) $(PROFILE) $(SHLIB) $(XCFLAGS)
+CCLIBFLAGS	= -O -pic-extern
 CPP_ABORT	= # -Dabort=fancy_abort
 CPPFLAGS	= $(CPP_ABORT) $(SYSTEM_INCLUDES)
 DEB_OPT		= $(OPT) $(DEBUG) $(PROFILE)
@@ -16,6 +17,7 @@ DEBUG		=
 DEBUG_COLLECT	= # -DDEBUG
 GCC_CFLAGS	= $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) -B./ -DPOSIX
 INSTALL		= installbsd -c
+LIBGCC2_CFLAGS	= -O2 $(GCC_CFLAGS) -g1 -pic-extern
 LDFLAGS		=
 MSTATS		= # -mstats
 OLDCC		= /usr/ccs/gcc/gcc
