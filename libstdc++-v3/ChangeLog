@@ -1,5 +1,9 @@
 2004-05-16  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/std/std_bitset.h: Minor formatting fixes.
+
+2004-05-16  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/ext/mt_allocator.h (__mt_alloc<>::deallocate):
 	Consistently update __bin._M_free[0].
 	(__mt_alloc<>::allocate): When __bin._M_first[0] != NULL use
