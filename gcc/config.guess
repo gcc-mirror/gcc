@@ -93,6 +93,15 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     sun3*:SunOS:*:*)
 	echo m68k-sun-sunos${UNAME_RELEASE}
 	exit 0 ;;
+    atari*:NetBSD:*:*)
+	echo m68k-atari-netbsd${UNAME_RELEASE}
+	exit 0 ;;
+    sun3*:NetBSD:*:*)
+	echo m68k-sun-netbsd${UNAME_RELEASE}
+	exit 0 ;;
+    mac68k:NetBSD:*:*)
+	echo m68k-apple-netbsd${UNAME_RELEASE}
+	exit 0 ;;
     RISC*:ULTRIX:*:*)
 	echo mips-dec-ultrix${UNAME_RELEASE}
 	exit 0 ;;
