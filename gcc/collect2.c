@@ -1534,7 +1534,7 @@ main (argc, argv)
      undefined symbols from repository information.  */
 
   /* On AIX we do this later.  */
-#ifndef COLLECT_EXPORT_LIST
+#ifdef COLLECT_EXPORT_LIST
   do_tlink (ld1_argv, object_lst); 
 #endif
 
@@ -1542,11 +1542,13 @@ main (argc, argv)
      constructor or destructor list, just return now.  */
   if (rflag || ! do_collecting)
     {
+#ifdef COLLECT_EXPORT_LIST
       /* But make sure we delete the export file we may have created.  */
       if (export_file != 0 && export_file[0])
 	maybe_unlink (export_file);
       if (import_file != 0 && import_file[0])
 	maybe_unlink (import_file);
+#endif
       return 0;
     }
 
