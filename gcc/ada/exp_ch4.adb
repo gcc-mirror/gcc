@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.463 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -1818,7 +1818,10 @@ package body Exp_Ch4 is
                   --  If the context of the allocator is a declaration or
                   --  an assignment, we can generate a meaningful image for
                   --  it, even though subsequent assignments might remove
-                  --  the connection between task and entity.
+                  --  the connection between task and entity. We build this
+                  --  image when the left-hand side is a simple variable,
+                  --  a simple indexed assignment or a simple selected
+                  --  component.
 
                   if Nkind (Parent (N)) = N_Assignment_Statement then
                      declare
@@ -1832,6 +1835,13 @@ package body Exp_Ch4 is
                                  New_Occurrence_Of
                                    (Entity (Nam), Sloc (Nam)), T);
 
+                        elsif (Nkind (Nam) = N_Indexed_Component
+                                or else Nkind (Nam) = N_Selected_Component)
+                          and then Is_Entity_Name (Prefix (Nam))
+                        then
+                           Decls :=
+                             Build_Task_Image_Decls (
+                             Loc, Nam, Etype (Prefix (Nam)));
                         else
                            Decls := Build_Task_Image_Decls (Loc, T, T);
                         end if;
