@@ -1,5 +1,5 @@
 int b=1;
-main()
+int foo()
 {
   int a;
   int c;
@@ -13,4 +13,9 @@ main()
   if (c!=-1)
     abort();
   return c;
+}
+int main()
+{
+  foo();
+  return 0;
 }
