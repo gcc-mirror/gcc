@@ -1,3 +1,8 @@
+2004-07-25  Bernardo Innocenti  <bernie@develer.com>
+
+	* system.h (bool, true, false): Don't redefine as preprocessor macros
+	in C++.
+
 2004-07-24  Roger Sayle  <roger@eyesopen.com>
 
 	* expmed.c (init_expmed): A signed modulus by a power of two is
