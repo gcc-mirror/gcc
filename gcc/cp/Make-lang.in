@@ -119,7 +119,7 @@ c++.tags: force
 
 c++.info: 
 c++.dvi:
-c++.generated-manpages:
+c++.generated-manpages: cp/g++.1
 
 #
 # Install hooks:
@@ -164,15 +164,23 @@ c++.install-common: installdirs
 
 c++.install-info: 
 
-c++.install-man: installdirs $(srcdir)/cp/g++.1
+cp/g++.1:
+	-rm -f $@
+	if [ "$(ALL)" = all.cross ]; then \
+	  echo ".so man1/$(GCC_CROSS_NAME).1" > $@ ; \
+	else \
+	  echo ".so man1/$(GCC_INSTALL_NAME).1" > $@ ; \
+	fi
+
+c++.install-man: installdirs cp/g++.1
 	-if [ -f cc1plus$(exeext) ] ; then \
 	  if [ -f g++-cross$(exeext) ] ; then \
 	    rm -f $(DESTDIR)$(man1dir)/$(GXX_CROSS_NAME)$(man1ext); \
-	    $(INSTALL_DATA) $(srcdir)/cp/g++.1 $(DESTDIR)$(man1dir)/$(GXX_CROSS_NAME)$(man1ext); \
+	    $(INSTALL_DATA) cp/g++.1 $(DESTDIR)$(man1dir)/$(GXX_CROSS_NAME)$(man1ext); \
 	    chmod a-x $(DESTDIR)$(man1dir)/$(GXX_CROSS_NAME)$(man1ext); \
 	  else \
 	    rm -f $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
-	    $(INSTALL_DATA) $(srcdir)/cp/g++.1 $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
+	    $(INSTALL_DATA) cp/g++.1 $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
 	    chmod a-x $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
 	  fi; \
 	else true; fi
@@ -190,6 +198,7 @@ c++.uninstall:
 # We just have to delete files specific to us.
 
 c++.mostlyclean:
+	-rm -f cp/g++.1
 	-rm -f cp/*$(objext)
 	-rm -f cp/*$(coverageexts)
 c++.clean:
