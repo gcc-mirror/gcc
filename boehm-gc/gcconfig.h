@@ -532,6 +532,7 @@
 #     undef STACK_GRAN
 #     define STACK_GRAN 0x10000000
 	/* Stack usually starts at 0x80000000 */
+      extern int data_start;
 #     define DATASTART (&data_start)
       extern int _end;
 #     define DATAEND (&_end)
