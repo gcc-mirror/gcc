@@ -1,3 +1,11 @@
+2004-07-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* search.c (lookup_conversion_operator): Avoid two loops.
+	(add_conversions): Remove.
+	(check_hidden_convs, split_conversions,
+	lookup_conversions_r):	New.
+	(lookup_conversions): Use lookup_conversions_r.
+
 2004-07-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (get_template_base): Check type is completable.
