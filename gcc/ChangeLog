@@ -1,3 +1,8 @@
+Mon Jul 26 18:51:34 1999  Richard Henderson  <rth@cygnus.com>
+
+	* except.c (start_dynamic_cleanup): Use force_operand on the
+	buffer's address.
+
 Mon Jul 26 16:43:26 1999  Richard Henderson  <rth@cygnus.com>
 
 	* c4x.h (EXPAND_BUILTIN_VA_ARG): New.
