@@ -1353,7 +1353,7 @@ push_command_line_include (void)
       cpp_opts->warn_unused_macros = warn_unused_macros;
       /* Restore the line map from <command line>.  */
       if (!cpp_opts->preprocessed)
-	cpp_change_file (parse_in, LC_RENAME, main_input_filename);
+	cpp_change_file (parse_in, LC_RENAME, this_input_filename);
 
       /* Set this here so the client can change the option if it wishes,
 	 and after stacking the main file so we don't trace the main file.  */
