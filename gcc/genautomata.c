@@ -9437,7 +9437,7 @@ make_insn_alts_attr (void)
   make_internal_attr (attr_printf (sizeof ("*")
 				   + strlen (INSN_ALTS_FUNC_NAME) + 1,
 				   "*%s", INSN_ALTS_FUNC_NAME),
-		      condexp, 0);
+		      condexp, ATTR_NONE);
 }
 
 
@@ -9474,7 +9474,7 @@ make_internal_dfa_insn_code_attr (void)
     (attr_printf (sizeof ("*")
 		  + strlen (INTERNAL_DFA_INSN_CODE_FUNC_NAME) + 1,
 		  "*%s", INTERNAL_DFA_INSN_CODE_FUNC_NAME),
-     condexp, 0);
+     condexp, ATTR_NONE);
 }
 
 
@@ -9508,7 +9508,7 @@ make_default_insn_latency_attr (void)
   make_internal_attr (attr_printf (sizeof ("*")
 				   + strlen (INSN_DEFAULT_LATENCY_FUNC_NAME)
 				   + 1, "*%s", INSN_DEFAULT_LATENCY_FUNC_NAME),
-		      condexp, 0);
+		      condexp, ATTR_NONE);
 }
 
 
@@ -9557,7 +9557,7 @@ make_bypass_attr (void)
   make_internal_attr (attr_printf (sizeof ("*")
 				   + strlen (BYPASS_P_FUNC_NAME) + 1,
 				   "*%s", BYPASS_P_FUNC_NAME),
-		      result_rtx, 0);
+		      result_rtx, ATTR_NONE);
 }
 
 

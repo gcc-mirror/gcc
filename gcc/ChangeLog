@@ -1,3 +1,10 @@
+2003-07-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* genattrtab.h: Add new macros for attr `special' flags.
+	* genattrtab.c (attr_desc): Reorder/resize fields better.
+	Use attr `special' macros in all calls to make_internal_attr.
+	* genautomata.c: Likewise.
+
 Wed Jul  9 02:25:39 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* c-common.c (c_estimate_num_insns_1): New static function.

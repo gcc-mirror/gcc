@@ -175,6 +175,9 @@ struct attr_desc
 {
   char *name;			/* Name of attribute.  */
   struct attr_desc *next;	/* Next attribute.  */
+  struct attr_value *first_value; /* First value of this attribute.  */
+  struct attr_value *default_val; /* Default value for this attribute.  */
+  int lineno : 24;		/* Line number.  */
   unsigned is_numeric	: 1;	/* Values of this attribute are numeric.  */
   unsigned negative_ok	: 1;	/* Allow negative numeric values.  */
   unsigned unsigned_p	: 1;	/* Make the output function unsigned int.  */
@@ -182,9 +185,6 @@ struct attr_desc
   unsigned is_special	: 1;	/* Don't call `write_attr_set'.  */
   unsigned func_units_p	: 1;	/* this is the function_units attribute */
   unsigned blockage_p	: 1;	/* this is the blockage range function */
-  struct attr_value *first_value; /* First value of this attribute.  */
-  struct attr_value *default_val; /* Default value for this attribute.  */
-  int lineno;			/* Line number.  */
 };
 
 #define NULL_ATTR (struct attr_desc *) NULL
@@ -1505,7 +1505,7 @@ expand_delays (void)
 	= make_numeric_value (XVECLEN (delay->def, 1) / 3);
     }
 
-  make_internal_attr ("*num_delay_slots", condexp, 0);
+  make_internal_attr ("*num_delay_slots", condexp, ATTR_NONE);
 
   /* If more than one delay type, do the same for computing the delay type.  */
   if (num_delays > 1)
@@ -1520,7 +1520,7 @@ expand_delays (void)
 	  XVECEXP (condexp, 0, i + 1) = make_numeric_value (delay->num);
 	}
 
-      make_internal_attr ("*delay_type", condexp, 1);
+      make_internal_attr ("*delay_type", condexp, ATTR_SPECIAL);
     }
 
   /* For each delay possibility and delay slot, compute an eligibility
@@ -1538,7 +1538,7 @@ expand_delays (void)
 
 	  p = attr_printf (sizeof "*delay__" + MAX_DIGITS * 2,
 			   "*delay_%d_%d", delay->num, i / 3);
-	  make_internal_attr (p, newexp, 1);
+	  make_internal_attr (p, newexp, ATTR_SPECIAL);
 
 	  if (have_annul_true)
 	    {
@@ -1549,7 +1549,7 @@ expand_delays (void)
 				 make_numeric_value (0));
 	      p = attr_printf (sizeof "*annul_true__" + MAX_DIGITS * 2,
 			       "*annul_true_%d_%d", delay->num, i / 3);
-	      make_internal_attr (p, newexp, 1);
+	      make_internal_attr (p, newexp, ATTR_SPECIAL);
 	    }
 
 	  if (have_annul_false)
@@ -1561,7 +1561,7 @@ expand_delays (void)
 				 make_numeric_value (0));
 	      p = attr_printf (sizeof "*annul_false__" + MAX_DIGITS * 2,
 			       "*annul_false_%d_%d", delay->num, i / 3);
-	      make_internal_attr (p, newexp, 1);
+	      make_internal_attr (p, newexp, ATTR_SPECIAL);
 	    }
 	}
     }
@@ -1813,7 +1813,7 @@ expand_units (void)
 	      str = attr_printf ((strlen (unit->name) + sizeof "*_cost_"
 				  + MAX_DIGITS),
 				 "*%s_cost_%d", unit->name, op->num);
-	      make_internal_attr (str, issue_exp, 1);
+	      make_internal_attr (str, issue_exp, ATTR_SPECIAL);
 	    }
 
 	  /* Validate the condition.  */
@@ -1869,7 +1869,8 @@ expand_units (void)
       unitsmask = attr_rtx (FFS, unitsmask);
     }
 
-  make_internal_attr ("*function_units_used", unitsmask, 10);
+  make_internal_attr ("*function_units_used", unitsmask,
+		      (ATTR_NEGATIVE_OK | ATTR_FUNC_UNITS));
 
   /* Create an array of ops for each unit.  Add an extra unit for the
      result_ready_cost function that has the ops of all other units.  */
@@ -2043,7 +2044,7 @@ expand_units (void)
 	      str = attr_printf ((strlen (unit->name) + sizeof "*_block_"
 				  + MAX_DIGITS),
 				 "*%s_block_%d", unit->name, op->num);
-	      make_internal_attr (str, blockage, 1);
+	      make_internal_attr (str, blockage, ATTR_SPECIAL);
 	    }
 
 	  /* Record MAX (BLOCKAGE (*,*)).  */
@@ -2077,7 +2078,7 @@ expand_units (void)
 	      str = attr_printf ((strlen (unit->name)
 				  + sizeof "*_unit_blockage_range"),
 				 "*%s_unit_blockage_range", unit->name);
-	      make_internal_attr (str, newexp, 20);
+	      make_internal_attr (str, newexp, (ATTR_BLOCKAGE|ATTR_UNSIGNED));
 	    }
 
 	  str = attr_printf (strlen (unit->name) + sizeof "*_unit_ready_cost",
@@ -2088,7 +2089,7 @@ expand_units (void)
 
       /* Make an attribute for the ready_cost function.  Simplifying
 	 further with simplify_by_exploding doesn't win.  */
-      make_internal_attr (str, readycost, 0);
+      make_internal_attr (str, readycost, ATTR_NONE);
     }
 
   /* For each unit that requires a conflict cost function, make an attribute
@@ -2124,7 +2125,7 @@ expand_units (void)
       /* Simplifying caseexp with simplify_by_exploding doesn't win.  */
       str = attr_printf (strlen (unit->name) + sizeof "*_cases",
 			 "*%s_cases", unit->name);
-      make_internal_attr (str, caseexp, 1);
+      make_internal_attr (str, caseexp, ATTR_SPECIAL);
     }
 }
 
@@ -2366,7 +2367,7 @@ make_length_attrs (void)
       make_internal_attr (new_names[i],
 			  substitute_address (length_attr->default_val->value,
 					      no_address_fn[i], address_fn[i]),
-			  0);
+			  ATTR_NONE);
       new_attr = find_attr (new_names[i], 0);
       for (av = length_attr->first_value; av; av = av->next)
 	for (ie = av->first_insn; ie; ie = ie->next)
@@ -5612,11 +5613,11 @@ make_internal_attr (const char *name, rtx value, int special)
 
   attr->is_numeric = 1;
   attr->is_const = 0;
-  attr->is_special = (special & 1) != 0;
-  attr->negative_ok = (special & 2) != 0;
-  attr->unsigned_p = (special & 4) != 0;
-  attr->func_units_p = (special & 8) != 0;
-  attr->blockage_p = (special & 16) != 0;
+  attr->is_special = (special & ATTR_SPECIAL) != 0;
+  attr->negative_ok = (special & ATTR_NEGATIVE_OK) != 0;
+  attr->unsigned_p = (special & ATTR_UNSIGNED) != 0;
+  attr->func_units_p = (special & ATTR_FUNC_UNITS) != 0;
+  attr->blockage_p = (special & ATTR_BLOCKAGE) != 0;
   attr->default_val = get_attr_value (value, attr, -2);
 }
 
