@@ -1,4 +1,8 @@
 2000-08-26  Michael Hayes  <mhayes@cygnus.com>
+	
+	* loop.c (constant_high_bytes): Delete.
+
+2000-08-26  Michael Hayes  <mhayes@cygnus.com>
 
 	* loop.c (prescan_loop): Move checks for NOTE_INSN_LOOP_CONT
 	and NOTE_INSN_LOOP_VTOP to...

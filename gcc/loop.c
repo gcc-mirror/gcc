@@ -2328,48 +2328,6 @@ count_nonfixed_reads (loop, x)
   return value;
 }
 
-#if 0
-/* P is an instruction that sets a register to the result of a ZERO_EXTEND.
-   Replace it with an instruction to load just the low bytes
-   if the machine supports such an instruction,
-   and insert above LOOP_START an instruction to clear the register.  */
-
-static void
-constant_high_bytes (p, loop_start)
-     rtx p, loop_start;
-{
-  register rtx new;
-  register int insn_code_number;
-
-  /* Try to change (SET (REG ...) (ZERO_EXTEND (..:B ...)))
-     to (SET (STRICT_LOW_PART (SUBREG:B (REG...))) ...).  */
-
-  new
-    = gen_rtx_SET
-      (VOIDmode,
-       gen_rtx_STRICT_LOW_PART
-       (VOIDmode,
-	gen_rtx_SUBREG (GET_MODE (XEXP (SET_SRC (PATTERN (p)), 0)),
-			SET_DEST (PATTERN (p)), 0)),
-       XEXP (SET_SRC (PATTERN (p)), 0));
-
-  insn_code_number = recog (new, p);
-
-  if (insn_code_number)
-    {
-      register int i;
-
-      /* Clear destination register before the loop.  */
-      emit_insn_before (gen_rtx_SET (VOIDmode,
-				     SET_DEST (PATTERN (p)), const0_rtx),
-			loop_start);
-
-      /* Inside the loop, just load the low part.  */
-      PATTERN (p) = new;
-    }
-}
-#endif
-
 /* Scan a loop setting the elements `cont', `vtop', `loops_enclosed',
    `has_call', `has_volatile', and `has_tablejump' within LOOP.
    Set the global variables `unknown_address_altered',
