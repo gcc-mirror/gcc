@@ -6073,7 +6073,8 @@ encode_type (type, curtype, format)
 
   if (code == INTEGER_TYPE)
     {
-      if (TREE_INT_CST_LOW (TYPE_MIN_VALUE (type)) == 0)
+      if (TREE_INT_CST_LOW (TYPE_MIN_VALUE (type)) == 0
+	  && TREE_INT_CST_HIGH (TYPE_MIN_VALUE (type)) == 0)
 	{
 	  /* unsigned integer types */
 
@@ -6088,6 +6089,8 @@ encode_type (type, curtype, format)
 	      else
 		obstack_1grow (&util_obstack, 'I'); /* 'I' */
 	    }
+	  else if (TYPE_MODE (type) == DImode) /* 'Q' */
+	    obstack_1grow (&util_obstack, 'Q');
 	}
       else			/* signed integer types */
 	{
@@ -6102,6 +6105,8 @@ encode_type (type, curtype, format)
 	      else
 		obstack_1grow (&util_obstack, 'i'); /* 'i' */
 	    }
+	  else if (TYPE_MODE (type) == DImode) /* 'q' */
+	    obstack_1grow (&util_obstack, 'q');
 	}
     }
   else if (code == REAL_TYPE)
