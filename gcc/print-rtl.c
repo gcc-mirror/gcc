@@ -72,6 +72,7 @@ print_rtx (in_rtx)
   register int j;
   register const char *format_ptr;
   register int is_insn;
+  rtx tem;
 
   if (sawclose)
     {
@@ -315,8 +316,7 @@ print_rtx (in_rtx)
 	    rtx sub = XEXP (in_rtx, i);
 	    enum rtx_code subc = GET_CODE (sub);
 
-	    if (GET_CODE (in_rtx) == LABEL_REF
-		&& subc != CODE_LABEL)
+	    if (GET_CODE (in_rtx) == LABEL_REF && subc != CODE_LABEL)
 	      goto do_e;
 
 	    if (flag_dump_unnumbered)
@@ -368,11 +368,21 @@ print_rtx (in_rtx)
 
   if (GET_CODE (in_rtx) == CODE_LABEL)
     {
-      fprintf (outfile, " [num uses: %d]", LABEL_NUSES (in_rtx));
+      fprintf (outfile, " [%d uses]", LABEL_NUSES (in_rtx));
       if (LABEL_ALTERNATE_NAME (in_rtx))
-        fprintf (outfile, " [alternate name: %s]", LABEL_ALTERNATE_NAME (in_rtx));
+        fprintf (outfile, " [alternate name: %s]",
+		 LABEL_ALTERNATE_NAME (in_rtx));
     }
   
+  if (GET_CODE (in_rtx) == CALL_PLACEHOLDER)
+    for (tem = XEXP (in_rtx, 0); tem != 0; tem = NEXT_INSN (tem))
+      if (GET_CODE (tem) == CALL_INSN)
+	{
+	  fprintf (outfile, " ");
+	  print_rtx (tem);
+	  break;
+	}
+
   if (dump_for_graph
       && (is_insn || GET_CODE (in_rtx) == NOTE
 	  || GET_CODE (in_rtx) == CODE_LABEL || GET_CODE (in_rtx) == BARRIER))
@@ -515,16 +525,13 @@ print_rtl (outf, rtx_first)
       case NOTE:
       case CODE_LABEL:
       case BARRIER:
-	for (tmp_rtx = rtx_first; NULL != tmp_rtx; tmp_rtx = NEXT_INSN (tmp_rtx))
-	  {
-	    if (! flag_dump_unnumbered
-		|| GET_CODE (tmp_rtx) != NOTE
-		|| NOTE_LINE_NUMBER (tmp_rtx) < 0)
-	      {
-		print_rtx (tmp_rtx);
-		fprintf (outfile, "\n");
-	      }
-	  }
+	for (tmp_rtx = rtx_first; tmp_rtx != 0; tmp_rtx = NEXT_INSN (tmp_rtx))
+	  if (! flag_dump_unnumbered
+	      || GET_CODE (tmp_rtx) != NOTE || NOTE_LINE_NUMBER (tmp_rtx) < 0)
+	    {
+	      print_rtx (tmp_rtx);
+	      fprintf (outfile, "\n");
+	    }
 	break;
 
       default:
