@@ -1,5 +1,9 @@
 2000-08-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* gcc.dg/c99-array-nonobj-1.c: New test.
+
+2000-08-23  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* gcc.dg/c99-printf-2.c, gcc.dg/format-xopen-1.c: Add some more
 	tests.
 	* gcc.dg/format-ext-1.c: New test.
