@@ -9284,7 +9284,7 @@ xref_tag (enum tag_types tag_code, tree name,
 	  t = make_aggr_type (code);
 	  TYPE_CONTEXT (t) = context;
 	  /* pushtag only cares whether SCOPE is zero or not.  */
-	  pushtag (name, t, scope != ts_current);
+	  t = pushtag (name, t, scope != ts_current);
 	}
     }
   else
@@ -9539,7 +9539,7 @@ start_enum (tree name)
 	name = make_anon_name ();
 
       enumtype = make_node (ENUMERAL_TYPE);
-      pushtag (name, enumtype, 0);
+      enumtype = pushtag (name, enumtype, 0);
     }
 
   return enumtype;

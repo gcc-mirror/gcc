@@ -3707,7 +3707,7 @@ extern void delete_block			(tree);
 extern void add_block_current_level		(tree);
 extern void push_switch				(tree);
 extern void pop_switch				(void);
-extern void pushtag				(tree, tree, int);
+extern tree pushtag				(tree, tree, int);
 extern tree make_anon_name			(void);
 extern int decls_match				(tree, tree);
 extern tree duplicate_decls			(tree, tree);

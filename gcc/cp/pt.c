@@ -3145,7 +3145,11 @@ push_template_decl_real (tree decl, int is_friend)
      parameters of the class.  */
   if (new_template_p && !ctx 
       && !(is_friend && template_class_depth (current_class_type) > 0))
-    tmpl = pushdecl_namespace_level (tmpl);
+    {
+      tmpl = pushdecl_namespace_level (tmpl);
+      if (tmpl == error_mark_node)
+	return error_mark_node;
+    }
 
   if (primary)
     {
