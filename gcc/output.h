@@ -512,7 +512,8 @@ extern void no_asm_to_stream PARAMS ((FILE *));
 #define SECTION_MERGE	 0x08000	/* contains mergeable data */
 #define SECTION_STRINGS  0x10000	/* contains zero terminated strings without
 					   embedded zeros */
-#define SECTION_MACH_DEP 0x20000	/* subsequent bits reserved for target */
+#define SECTION_OVERRIDE 0x20000	/* allow override of default flags */
+#define SECTION_MACH_DEP 0x40000	/* subsequent bits reserved for target */
 
 extern unsigned int get_named_section_flags PARAMS ((const char *));
 extern bool set_named_section_flags	PARAMS ((const char *, unsigned int));

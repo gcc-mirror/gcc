@@ -1,3 +1,8 @@
+2002-02-04  Anthony Green  <green@redhat.com>
+
+	* output.h (SECTION_OVERRIDE): Define.
+	* varasm.c (named_section): Obey SECTION_OVERRIDE.
+
 2002-02-03  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (arm*-*-netbsdelf*): Placeholder to prevent match
