@@ -20,7 +20,8 @@
 
 #ifdef __STDC__
 
-extern void __eprintf (char *, char *, int, char *); /* Defined in libgcc.a */
+/* Defined in libgcc.a */
+extern void __eprintf (const char *, const char *, int, const char *);
 
 #define assert(expression)  \
   ((void) ((expression) ? 0 : __assert (#expression, __FILE__, __LINE__)))
