@@ -70,10 +70,10 @@ struct cpp_pending
 {
   struct pending_option *directive_head, *directive_tail;
 
-  struct file_name_list *quote_head, *quote_tail;
-  struct file_name_list *brack_head, *brack_tail;
-  struct file_name_list *systm_head, *systm_tail;
-  struct file_name_list *after_head, *after_tail;
+  struct search_path *quote_head, *quote_tail;
+  struct search_path *brack_head, *brack_tail;
+  struct search_path *systm_head, *systm_tail;
+  struct search_path *after_head, *after_tail;
 
   struct pending_option *imacros_head, *imacros_tail;
   struct pending_option *include_head, *include_tail;
@@ -100,10 +100,10 @@ static void init_library		PARAMS ((void));
 static void init_builtins		PARAMS ((cpp_reader *));
 static void append_include_chain	PARAMS ((cpp_reader *,
 						 char *, int, int));
-struct file_name_list * remove_dup_dir	PARAMS ((cpp_reader *,
-						 struct file_name_list *));
-struct file_name_list * remove_dup_dirs PARAMS ((cpp_reader *,
-						 struct file_name_list *));
+struct search_path * remove_dup_dir	PARAMS ((cpp_reader *,
+						 struct search_path *));
+struct search_path * remove_dup_dirs PARAMS ((cpp_reader *,
+						 struct search_path *));
 static void merge_include_chains	PARAMS ((cpp_reader *));
 static void do_includes			PARAMS ((cpp_reader *,
 						 struct pending_option *,
@@ -207,7 +207,7 @@ append_include_chain (pfile, dir, path, cxx_aware)
      int cxx_aware ATTRIBUTE_UNUSED;
 {
   struct cpp_pending *pend = CPP_OPTION (pfile, pending);
-  struct file_name_list *new;
+  struct search_path *new;
   struct stat st;
   unsigned int len;
 
@@ -232,9 +232,9 @@ append_include_chain (pfile, dir, path, cxx_aware)
   if (len > pfile->max_include_len)
     pfile->max_include_len = len;
 
-  new = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
+  new = (struct search_path *) xmalloc (sizeof (struct search_path));
   new->name = dir;
-  new->nlen = len;
+  new->len = len;
   new->ino  = st.st_ino;
   new->dev  = st.st_dev;
   if (path == SYSTEM)
@@ -247,7 +247,6 @@ append_include_chain (pfile, dir, path, cxx_aware)
     new->sysp = 0;
   new->name_map = NULL;
   new->next = NULL;
-  new->alloc = NULL;
 
   switch (path)
     {
@@ -260,18 +259,18 @@ append_include_chain (pfile, dir, path, cxx_aware)
 /* Handle a duplicated include path.  PREV is the link in the chain
    before the duplicate.  The duplicate is removed from the chain and
    freed.  Returns PREV.  */
-struct file_name_list *
+struct search_path *
 remove_dup_dir (pfile, prev)
      cpp_reader *pfile;
-     struct file_name_list *prev;
+     struct search_path *prev;
 {
-  struct file_name_list *cur = prev->next;
+  struct search_path *cur = prev->next;
 
   if (CPP_OPTION (pfile, verbose))
     fprintf (stderr, _("ignoring duplicate directory \"%s\"\n"), cur->name);
 
   prev->next = cur->next;
-  free (cur->name);
+  free ((PTR) cur->name);
   free (cur);
 
   return prev;
@@ -281,12 +280,12 @@ remove_dup_dir (pfile, prev)
    chain, or NULL if the chain is empty.  This algorithm is quadratic
    in the number of -I switches, which is acceptable since there
    aren't usually that many of them.  */
-struct file_name_list *
+struct search_path *
 remove_dup_dirs (pfile, head)
      cpp_reader *pfile;
-     struct file_name_list *head;
+     struct search_path *head;
 {
-  struct file_name_list *prev = NULL, *cur, *other;
+  struct search_path *prev = NULL, *cur, *other;
 
   for (cur = head; cur; cur = cur->next)
     {
@@ -315,7 +314,7 @@ static void
 merge_include_chains (pfile)
      cpp_reader *pfile;
 {
-  struct file_name_list *quote, *brack, *systm, *qtail;
+  struct search_path *quote, *brack, *systm, *qtail;
 
   struct cpp_pending *pend = CPP_OPTION (pfile, pending);
 
@@ -559,7 +558,7 @@ cpp_destroy (pfile)
      cpp_reader *pfile;
 {
   int result;
-  struct file_name_list *dir, *dirn;
+  struct search_path *dir, *dirn;
   cpp_context *context, *contextn;
 
   while (CPP_BUFFER (pfile) != NULL)
@@ -587,7 +586,7 @@ cpp_destroy (pfile)
   for (dir = CPP_OPTION (pfile, quote_include); dir; dir = dirn)
     {
       dirn = dir->next;
-      free (dir->name);
+      free ((PTR) dir->name);
       free (dir);
     }
 
@@ -910,7 +909,7 @@ cpp_start_read (pfile, fname)
   /* With -v, print the list of dirs to search.  */
   if (CPP_OPTION (pfile, verbose))
     {
-      struct file_name_list *l;
+      struct search_path *l;
       fprintf (stderr, _("#include \"...\" search starts here:\n"));
       for (l = CPP_OPTION (pfile, quote_include); l; l = l->next)
 	{

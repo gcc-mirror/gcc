@@ -72,23 +72,23 @@ struct cpp_pool
   unsigned int locks;
 };
 
-/* List of directories to look for include files in. */
-struct file_name_list
+/* List of directories to look for include files in.  */
+struct search_path
 {
-  struct file_name_list *next;
-  struct file_name_list *alloc; /* for the cache of
-				   current directory entries */
-  char *name;
-  unsigned int nlen;
+  struct search_path *next;
+
+  /* NOTE: NAME may not be null terminated for the case of the current
+     file's directory!  */
+  const char *name;
+  unsigned int len;
   /* We use these to tell if the directory mentioned here is a duplicate
-     of an earlier directory on the search path. */
+     of an earlier directory on the search path.  */
   ino_t ino;
   dev_t dev;
-  /* If the following is nonzero, it is a C-language system include
-     directory.  */
+  /* Non-zero if it is a system include directory.  */
   int sysp;
-  /* Mapping of file names for this directory.
-     Only used on MS-DOS and related platforms. */
+  /* Mapping of file names for this directory.  Only used on MS-DOS
+     and related platforms.  */
   struct file_name_map *name_map;
 };
 
@@ -180,9 +180,6 @@ struct cpp_buffer
   /* Filename specified with #line command.  */
   const char *nominal_fname;
 
-  /* Actual directory of this file, used only for "" includes */
-  struct file_name_list *actual_dir;
-
   /* Pointer into the include table.  Used for include_next and
      to record control macros. */
   struct include_file *inc;
@@ -227,6 +224,15 @@ struct cpp_buffer
 
   /* Buffer type.  */
   ENUM_BITFIELD (cpp_buffer_type) type : 8;
+
+  /* The directory of the this buffer's file.  Its NAME member is not
+     allocated, so we don't need to worry about freeing it.  */
+  struct search_path dir;
+
+  /* The directory to start searching for "" include files.  Is either
+     "dir" above, or options.quote_include, depending upon whether -I-
+     was on the command line.  */
+  struct search_path *search_from;
 };
 
 /* A cpp_reader encapsulates the "state" of a pre-processor run.
@@ -296,10 +302,6 @@ struct cpp_reader
 
   /* Tree of other included files.  See cppfiles.c.  */
   struct splay_tree_s *all_include_files;
-
-  /* Chain of `actual directory' file_name_list entries, for ""
-     inclusion.  */
-  struct file_name_list *actual_dirs;
 
   /* Current maximum length of directory names in the search path
      for include files.  (Altered as we get more of them.)  */
