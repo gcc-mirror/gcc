@@ -588,6 +588,7 @@ expand_call (exp, target, ignore)
   if (warn_aggregate_return
       && (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
 	  || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
+	  || TREE_CODE (TREE_TYPE (exp)) == QUAL_UNION_TYPE
 	  || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE))
     warning ("function call has aggregate value");
 
@@ -1798,7 +1799,8 @@ expand_call (exp, target, ignore)
 	  MEM_IN_STRUCT_P (target)
 	    = (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
 	       || TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
-	       || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE);
+	       || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
+	       || TREE_CODE (TREE_TYPE (exp)) == QUAL_UNION_TYPE);
 	}
     }
   else if (pcc_struct_value)
@@ -1810,7 +1812,8 @@ expand_call (exp, target, ignore)
 	  MEM_IN_STRUCT_P (target)
 	    = (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
 	       || TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
-	       || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE);
+	       || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
+	       || TREE_CODE (TREE_TYPE (exp)) == QUAL_UNION_TYPE);
 	}
       else if (TYPE_MODE (TREE_TYPE (exp)) != BLKmode)
 	emit_move_insn (target, gen_rtx (MEM, TYPE_MODE (TREE_TYPE (exp)),

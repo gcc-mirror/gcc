@@ -449,7 +449,9 @@ print_node (file, prefix, node, indent)
 	}
       else if (TREE_CODE (node) == REAL_TYPE)
 	fprintf (file, " precision %d", TYPE_PRECISION (node));
-      else if (TREE_CODE (node) == RECORD_TYPE || TREE_CODE (node) == UNION_TYPE)
+      else if (TREE_CODE (node) == RECORD_TYPE
+	       || TREE_CODE (node) == UNION_TYPE
+	       || TREE_CODE (node) == QUAL_UNION_TYPE)
 	print_node (file, "fields", TYPE_FIELDS (node), indent + 4);
       else if (TREE_CODE (node) == FUNCTION_TYPE || TREE_CODE (node) == METHOD_TYPE)
 	{

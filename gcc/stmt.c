@@ -2931,7 +2931,8 @@ expand_decl (decl)
       MEM_IN_STRUCT_P (DECL_RTL (decl))
 	= (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
 	   || TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
-	   || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE);
+	   || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
+	   || TREE_CODE (TREE_TYPE (decl)) == QUAL_UNION_TYPE);
 #if 0
       /* If this is in memory because of -ffloat-store,
 	 set the volatile bit, to prevent optimizations from
@@ -2981,7 +2982,8 @@ expand_decl (decl)
       MEM_IN_STRUCT_P (DECL_RTL (decl))
 	= (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
 	   || TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
-	   || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE);
+	   || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
+	   || TREE_CODE (TREE_TYPE (decl)) == QUAL_UNION_TYPE);
 
       /* Indicate the alignment we actually gave this variable.  */
 #ifdef STACK_BOUNDARY

@@ -394,7 +394,8 @@ make_decl_rtl (decl, asmspec, top_level)
 	  MEM_IN_STRUCT_P (DECL_RTL (decl))
 	    = (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
 	       || TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
-	       || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE);
+	       || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
+	       || TREE_CODE (TREE_TYPE (decl)) == QUAL_UNION_TYPE);
 
 	  /* Optionally set flags or add text to the name to record information
 	     such as that it is a function name.

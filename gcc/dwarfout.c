@@ -770,7 +770,8 @@ is_tagged_type (type)
 {
   register enum tree_code code = TREE_CODE (type);
 
-  return (code == RECORD_TYPE || code == UNION_TYPE || code == ENUMERAL_TYPE);
+  return (code == RECORD_TYPE || code == UNION_TYPE
+	  || code == QUAL_UNION_TYPE || code == ENUMERAL_TYPE);
 }
 
 static char *
@@ -1379,6 +1380,7 @@ type_is_fundamental (type)
       case ARRAY_TYPE:
       case RECORD_TYPE:
       case UNION_TYPE:
+      case QUAL_UNION_TYPE:
       case ENUMERAL_TYPE:
       case FUNCTION_TYPE:
       case METHOD_TYPE:
@@ -2390,6 +2392,7 @@ byte_size_attribute (tree_node)
       case ENUMERAL_TYPE:
       case RECORD_TYPE:
       case UNION_TYPE:
+      case QUAL_UNION_TYPE:
 	size = int_size_in_bytes (tree_node);
 	break;
 
@@ -3760,11 +3763,12 @@ pend_type (type)
    FUNCTION_DECL node (for types local to the heading of some function
    definition), or to a FUNCTION_TYPE node (for types local to the
    prototyped parameter list of a function type specification), or to a
-   RECORD_TYPE or UNION_TYPE node (in the case of C++ nested types).
+   RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE node
+   (in the case of C++ nested types).
 
    The `scope' parameter should likewise be NULL or should point to a
    BLOCK node, a FUNCTION_DECL node, a FUNCTION_TYPE node, a RECORD_TYPE
-   node, or a UNION_TYPE node.
+   node, a UNION_TYPE node, or a QUAL_UNION_TYPE node.
 
    This function is used only for deciding when to "pend" and when to
    "un-pend" types to/from the pending_types_list.
@@ -3949,15 +3953,16 @@ output_type (type, containing_scope)
       case ENUMERAL_TYPE:
       case RECORD_TYPE:
       case UNION_TYPE:
+      case QUAL_UNION_TYPE:
 
 	/* For a non-file-scope tagged type, we can always go ahead and
 	   output a Dwarf description of this type right now, even if
 	   the type in question is still incomplete, because if this
 	   local type *was* ever completed anywhere within its scope,
 	   that complete definition would already have been attached to
-	   this RECORD_TYPE, UNION_TYPE or ENUMERAL_TYPE node by the
-	   time we reach this point.  That's true because of the way the
-	   front-end does its processing of file-scope declarations (of
+	   this RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE or ENUMERAL_TYPE
+	   node by the time we reach this point.  That's true because of the
+	   way the front-end does its processing of file-scope declarations (of
 	   functions and class types) within which other types might be
 	   nested.  The C and C++ front-ends always gobble up such "local
 	   scope" things en-mass before they try to output *any* debugging
@@ -4002,6 +4007,7 @@ output_type (type, containing_scope)
 	    break;
 
 	  case UNION_TYPE:
+	  case QUAL_UNION_TYPE:
 	    output_die (output_union_type_die, type);
 	    break;
 
@@ -4066,9 +4072,9 @@ output_type (type, containing_scope)
 		}
 	    }
 
-	    /* RECORD_TYPEs and UNION_TYPEs are themselves scopes (at least
-	       in C++) so we must now output any nested pending types which
-	       are local just to this RECORD_TYPE or UNION_TYPE.  */
+	    /* RECORD_TYPEs, UNION_TYPEs, and QUAL_UNION_TYPEs are themselves
+	       scopes (at least in C++) so we must now output any nested
+	       pending types which are local just to this type.  */
 
 	    output_pending_types_for_scope (type);
 
@@ -4125,6 +4131,7 @@ output_tagged_type_instantiation (type)
 	break;
 
       case UNION_TYPE:
+      case QUAL_UNION_TYPE:
 	output_die (output_inlined_union_type_die, type);
 	break;
 
