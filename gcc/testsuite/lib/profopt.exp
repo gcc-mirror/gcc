@@ -71,10 +71,13 @@ set option_list $PROFOPT_OPTIONS
 #
 # profopt-cleanup -- remove profiling or performance results files.
 #
-# EXT is the extension of files to remove
+# TESTCASE is the name of the test
+# EXT is the extension of file to remove
 #
-proc profopt-cleanup { ext } {
-    set files [glob -nocomplain *.$ext]
+proc profopt-cleanup { testcase ext } {
+    set basename [file tail $testcase]
+    set base [file rootname $basename]
+    set files [glob -nocomplain $base.$ext]
     if { $files != "" } {
 	eval "remote_file build delete $files"
     }
@@ -112,7 +115,7 @@ proc profopt-perf-value { testcase perf_ext optstr } {
 	fail "$testcase perf check: file $base.$perf_ext has wrong format, $optstr"
     }
     close $fd
-    profopt-cleanup $perf_ext
+    profopt-cleanup $testcase $perf_ext
     return $val
 }
 
@@ -149,6 +152,12 @@ proc profopt-execute { src } {
 	remote_file build delete $execname2
 	remote_file build delete $execname3
 	verbose "Testing $testcase, $option" 1
+
+	# Remove old profiling and performance data files.
+	profopt-cleanup $testcase $prof_ext
+	if [info exists perf_ext] {
+	    profopt-cleanup $testcase $perf_ext
+	}
 
 	# Compile for profiling.
 
@@ -210,7 +219,7 @@ proc profopt-execute { src } {
 	}
 
 	# Remove the profiling data files.
-	profopt-cleanup $prof_ext
+	profopt-cleanup $testcase $prof_ext
 
 	# If the test is not expected to produce performance data then
 	# we're done now.
