@@ -4461,11 +4461,11 @@ output_cbranch (operands, nullify, length, negated, insn)
 	else
 	  strcat (buf, "%S3");
 	if (useskip)
-	  strcat (buf, " %2,%1,0");
+	  strcat (buf, " %2,%r1,0");
 	else if (nullify)
-	  strcat (buf, ",n %2,%1,%0");
+	  strcat (buf, ",n %2,%r1,%0");
 	else
-	  strcat (buf, " %2,%1,%0");
+	  strcat (buf, " %2,%r1,%0");
 	break;
 
      /* All long conditionals.  Note an short backward branch with an
@@ -4483,7 +4483,7 @@ output_cbranch (operands, nullify, length, negated, insn)
 	      strcat (buf, "%S3");
 	    else
 	      strcat (buf, "%B3");
-	    strcat (buf, ",n %2,%1,.+12\n\tbl %0,0");
+	    strcat (buf, ",n %2,%r1,.+12\n\tbl %0,0");
 	  }
 	/* Handle short backwards branch with an unfilled delay slot.
 	   Using a comb;nop rather than comiclr;bl saves 1 cycle for both
@@ -4496,9 +4496,9 @@ output_cbranch (operands, nullify, length, negated, insn)
 	  {
 	    strcpy (buf, "com%I2b,");
 	    if (negated)
-	      strcat (buf, "%B3 %2,%1,%0%#");
+	      strcat (buf, "%B3 %2,%r1,%0%#");
 	    else
-	      strcat (buf, "%S3 %2,%1,%0%#");
+	      strcat (buf, "%S3 %2,%r1,%0%#");
 	  }
 	else
 	  {
@@ -4508,9 +4508,9 @@ output_cbranch (operands, nullify, length, negated, insn)
 	    else
 	      strcat (buf, "%B3");
 	    if (nullify)
-	      strcat (buf, " %2,%1,0\n\tbl,n %0,0");
+	      strcat (buf, " %2,%r1,0\n\tbl,n %0,0");
 	    else
-	      strcat (buf, " %2,%1,0\n\tbl %0,0");
+	      strcat (buf, " %2,%r1,0\n\tbl %0,0");
 	  }
 	break;
 
@@ -4523,9 +4523,9 @@ output_cbranch (operands, nullify, length, negated, insn)
 	/* Create a reversed conditional branch which branches around
 	   the following insns.  */
 	if (negated)
-	  strcpy (buf, "com%I2b,%S3,n %2,%1,.+20");
+	  strcpy (buf, "com%I2b,%S3,n %2,%r1,.+20");
 	else
-	  strcpy (buf, "com%I2b,%B3,n %2,%1,.+20");
+	  strcpy (buf, "com%I2b,%B3,n %2,%r1,.+20");
 	output_asm_insn (buf, operands);
 
 	/* Output an insn to save %r1.  */
@@ -4548,9 +4548,9 @@ output_cbranch (operands, nullify, length, negated, insn)
 	/* Create a reversed conditional branch which branches around
 	   the following insns.  */
 	if (negated)
-	  strcpy (buf, "com%I2b,%S3,n %2,%1,.+28");
+	  strcpy (buf, "com%I2b,%S3,n %2,%r1,.+28");
 	else
-	  strcpy (buf, "com%I2b,%B3,n %2,%1,.+28");
+	  strcpy (buf, "com%I2b,%B3,n %2,%r1,.+28");
 	output_asm_insn (buf, operands);
 
 	/* Output an insn to save %r1.  */

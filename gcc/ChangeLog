@@ -1,3 +1,9 @@
+Sun Jan  3 20:40:34 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.md (branch, negated branch): Handle (const_int 0) as first
+	source operand.
+	* pa.c (output_cbranch): Likewise.
+
 Sun Jan  3 03:20:38 1999  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.c (rs6000_stack_info): Undo spurious part of last
