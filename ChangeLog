@@ -1,3 +1,8 @@
+2002-02-11  Adam Megacz <adam@xwt.org>
+
+	* gcc/Makefile.in: Removed libstdc++-v3 dependancy for libjava and
+	boehm-gc
+	
 2002-02-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config.guess: Updated to 2002-01-30's version.
