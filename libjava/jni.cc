@@ -418,6 +418,18 @@ _Jv_JNI_PopSystemFrame (JNIEnv *env)
     }
 }
 
+template<typename T> T extract_from_jvalue(jvalue const & t);
+template<> jboolean extract_from_jvalue(jvalue const & jv) { return jv.z; }
+template<> jbyte    extract_from_jvalue(jvalue const & jv) { return jv.b; }
+template<> jchar    extract_from_jvalue(jvalue const & jv) { return jv.c; }
+template<> jshort   extract_from_jvalue(jvalue const & jv) { return jv.s; }
+template<> jint     extract_from_jvalue(jvalue const & jv) { return jv.i; }
+template<> jlong    extract_from_jvalue(jvalue const & jv) { return jv.j; }
+template<> jfloat   extract_from_jvalue(jvalue const & jv) { return jv.f; }
+template<> jdouble  extract_from_jvalue(jvalue const & jv) { return jv.d; }
+template<> jobject  extract_from_jvalue(jvalue const & jv) { return jv.l; }
+
+
 // This function is used from other template functions.  It wraps the
 // return value appropriately; we specialize it so that object returns
 // are turned into local references.
@@ -430,7 +442,7 @@ wrap_value (JNIEnv *, T value)
 
 // This specialization is used for jobject, jclass, jstring, jarray,
 // etc.
-template<typename T>
+template<typename R, typename T>
 static T *
 wrap_value (JNIEnv *env, T *value)
 {
@@ -781,8 +793,7 @@ static T
 			  style == constructor,
 			  arg_types, args, &result);
 
-      // We cheat a little here.  FIXME.
-      return wrap_value (env, * (T *) &result);
+      return wrap_value (env, extract_from_jvalue<T>(result));
     }
   catch (jthrowable t)
     {
@@ -848,8 +859,7 @@ static T
 			  style == constructor,
 			  arg_types, arg_copy, &result);
 
-      // We cheat a little here.  FIXME.
-      return wrap_value (env, * (T *) &result);
+      return wrap_value (env, extract_from_jvalue<T>(result));
     }
   catch (jthrowable t)
     {
