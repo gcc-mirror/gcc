@@ -1,5 +1,14 @@
 2005-04-05  Per Bothner  <per@bothner.com>
 
+	* tree-ssa.c (execute_early_warn_uninitialized): Pass context node
+	to talk_tree as 'data' parameter, rather than EXPR_LOCUS.
+	(warn_uninit): Get EXPR_LOCUS from context now instead.
+	This fixes a USE_MAPPED_LOCATION testsuite failure.
+
+	* tree-ssa.c (warn_uninitialized_var): Remove useless local.
+
+2005-04-05  Per Bothner  <per@bothner.com>
+
 	* c-decl.c (finish_function): If USE_MAPPED_LOCATION set the location
 	of the artification 'return 0' in main() to BUILTINS_LOCATION.
 	* tree-cfg.c (remove_bb): Check that location isn't BUILTINS_LOCATION
