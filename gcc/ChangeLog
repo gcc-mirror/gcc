@@ -1,3 +1,8 @@
+2003-11-20  Bob Wilson  <bob.wilson@acm.org>
+
+	* configure.in: Add xtensa-*-* targets to test for dwarf2 debug_line.
+	* configure: Regenerate.
+
 2003-11-20  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in (Makefile): Pass along CONFIG_SHELL.
