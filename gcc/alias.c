@@ -830,7 +830,7 @@ true_dependence (mem, mem_mode, x, varies)
   if (mem_mode == VOIDmode)
     mem_mode = GET_MODE (mem);
 
-  if (! memrefs_conflict_p (SIZE_FOR_MODE (mem_mode), mem_addr,
+  if (! memrefs_conflict_p (GET_MODE_SIZE (mem_mode), mem_addr,
 			    SIZE_FOR_MODE (x), x_addr, 0))
     return 0;
 
