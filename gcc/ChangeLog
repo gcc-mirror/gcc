@@ -1,3 +1,7 @@
+2000-09-16  Richard Henderson  <rth@cygnus.com>
+
+	* cppiles.c (purge_cache): Use PTR not caddr_t.
+
 2000-09-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.c: In description for %{<S}, say the option removed is -S.
