@@ -806,7 +806,7 @@ build_base_fields (rec)
 	  base_align = MAX (base_align, DECL_ALIGN (decl));
 	  DECL_SIZE (decl)
 	    = size_int (MAX (TREE_INT_CST_LOW (DECL_SIZE (decl)),
-			     base_align));
+			     (int) base_align));
 	}
       else if (DECL_SIZE (decl) == integer_zero_node)
 	saw_empty = 1;

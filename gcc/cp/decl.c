@@ -146,7 +146,7 @@ static void resume_binding_level PROTO((struct binding_level *));
 static struct binding_level *make_binding_level PROTO((void));
 static int namespace_bindings_p PROTO((void));
 static void declare_namespace_level PROTO((void));
-static void signal_catch PROTO((int));
+static void signal_catch PROTO((int)) ATTRIBUTE_NORETURN;
 static void storedecls PROTO((tree));
 static void storetags PROTO((tree));
 static void require_complete_types_for_parms PROTO((tree));

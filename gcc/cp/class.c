@@ -1091,7 +1091,7 @@ make_method_vec (n)
 	new_vec = *t;
 	*t = TREE_CHAIN (new_vec);
 	TREE_CHAIN (new_vec) = NULL_TREE;
-	bzero (&TREE_VEC_ELT (new_vec, 0), n * sizeof (tree));
+	bzero ((PTR) &TREE_VEC_ELT (new_vec, 0), n * sizeof (tree));
 	return new_vec;
       }
 
@@ -1175,8 +1175,8 @@ add_method (type, fields, method)
 	    {
 	      /* We need a bigger method vector.  */
 	      tree new_vec = make_method_vec (2 * len);
-	      bcopy (&TREE_VEC_ELT (method_vec, 0),
-		     &TREE_VEC_ELT (new_vec, 0),
+	      bcopy ((PTR) &TREE_VEC_ELT (method_vec, 0),
+		     (PTR) &TREE_VEC_ELT (new_vec, 0),
 		     len * sizeof (tree));
 	      free_method_vec (method_vec);
 	      len = 2 * len;
@@ -1263,8 +1263,8 @@ add_method (type, fields, method)
 		  /* We know the last slot in the vector is empty
 		     because we know that at this point there's room for
 		     a new function.  */
-		  bcopy (&TREE_VEC_ELT (method_vec, i),
-			 &TREE_VEC_ELT (method_vec, i + 1),
+		  bcopy ((PTR) &TREE_VEC_ELT (method_vec, i),
+			 (PTR) &TREE_VEC_ELT (method_vec, i + 1),
 			 (len - i - 1) * sizeof (tree));
 		  TREE_VEC_ELT (method_vec, i) = NULL_TREE;
 		}
