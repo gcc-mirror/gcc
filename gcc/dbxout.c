@@ -1920,9 +1920,9 @@ dbxout_parms (parms)
 	    dbxout_finish_symbol (parms);
 	  }
 	else if (GET_CODE (DECL_RTL (parms)) == MEM
-		 && GET_CODE (XEXP (DECL_RTL (parms), 0)) == REG
-		 && rtx_equal_p (XEXP (DECL_RTL (parms), 0),
-				 DECL_INCOMING_RTL (parms)))
+		 && GET_CODE (XEXP (DECL_RTL (parms), 0)) == REG)
+/*		 && rtx_equal_p (XEXP (DECL_RTL (parms), 0),
+				 DECL_INCOMING_RTL (parms))) */
 	  {
 	    /* Parm was passed via invisible reference.
 	       That is, its address was passed in a register.
@@ -2084,6 +2084,40 @@ dbxout_reg_parms (parms)
 	    dbxout_type (TREE_TYPE (parms), 0, 0);
 	    dbxout_finish_symbol (parms);
 	  }
+#if 0
+	else if (GET_CODE (DECL_RTL (parms)) == MEM
+		 && GET_CODE (XEXP (DECL_RTL (parms), 0)) == REG)
+	  {
+	    /* Parm was passed via invisible reference.
+	       That is, its address was passed in a register.
+	       Output it as if it lived in that register.
+	       The debugger will know from the type
+	       that it was actually passed by invisible reference.  */
+
+	    current_sym_code = N_RSYM;
+
+	    /* DECL_RTL looks like (MEM (REG...).  Get the register number.  */
+	    current_sym_value = REGNO (XEXP (DECL_RTL (parms), 0));
+	    current_sym_addr = 0;
+
+	    FORCE_TEXT;
+	    if (DECL_NAME (parms))
+	      {
+		current_sym_nchars = 2 + strlen (IDENTIFIER_POINTER (DECL_NAME (parms)));
+
+		fprintf (asmfile, "%s \"%s:r", ASM_STABS_OP,
+			 IDENTIFIER_POINTER (DECL_NAME (parms)));
+	      }
+	    else
+	      {
+		current_sym_nchars = 8;
+		fprintf (asmfile, "%s \"(anon):r", ASM_STABS_OP);
+	      }
+
+	    dbxout_type (TREE_TYPE (parms), 0, 0);
+	    dbxout_finish_symbol (parms);
+	  }
+#endif
       }
 }
 
