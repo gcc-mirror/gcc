@@ -15,7 +15,7 @@ int main()
   }
 
   catch (E *&e) {
-    printf ("address of e is 0x%x\n", (long)e);
+    printf ("address of e is 0x%lx\n", (long)e);
     return !(long(e) != 5 && e->x == 5);
   }
   return 2;

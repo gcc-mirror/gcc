@@ -60,8 +60,10 @@ int main()
 
   struct Crctr
     {
+      Crctr() : goop(fighter) {}
+
       char dm[24], campaign[24], name[24], player[24];
-      goopes goop = fighter;// ERROR - .*
+      goopes goop;
       alignments alignment;
       int level, maxhit, hitpoints, ac;
       abitities scores;// ERROR - .*

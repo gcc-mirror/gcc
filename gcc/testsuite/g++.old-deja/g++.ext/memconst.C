@@ -12,7 +12,8 @@ public:
 
 class foo {
 private:
-    const unsigned char * const dummy_key = (unsigned char*)"ThisIs a dummy!";
+  static const unsigned char * const dummy_key = (unsigned char*)"ThisIs a dummy!";
+
 public:
     void bar ();
 };
