@@ -134,6 +134,16 @@ hook_get_alias_set_0 (t)
   return 0;
 }
 
+/* This is the default decl_printable_name function.  */
+
+const char *
+lhd_decl_printable_name (decl, verbosity)
+     tree decl;
+     int verbosity ATTRIBUTE_UNUSED;
+{
+  return IDENTIFIER_POINTER (DECL_NAME (decl));
+}
+
 /* lang_hooks.tree_inlining.walk_subtrees is called by walk_tree()
    after handling common cases, but before walking code-specific
    sub-trees.  If this hook is overridden for a language, it should

@@ -1,3 +1,8 @@
+2002-03-20  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (LANG_HOOKS_DECL_PRINTABLE_NAME): Redefine.
+	(gnat_init): Remove old hook.
+
 2002-03-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* misc.c (LANG_HOOKS_PARSE_FILE): Redefine.

@@ -1049,7 +1049,7 @@ cp_statement_code_p (code)
 #define PRINT_RING_SIZE 4
 
 const char *
-lang_printable_name (decl, v)
+cxx_printable_name (decl, v)
      tree decl;
      int v;
 {

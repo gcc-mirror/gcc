@@ -165,7 +165,6 @@ static int check_methods_accessible		PARAMS ((tree, tree,
 static void encode_aggregate_within		PARAMS ((tree, int, int,
 					               int, int));
 static const char *objc_demangle		PARAMS ((const char *));
-static const char *objc_printable_name		PARAMS ((tree, int));
 static void objc_expand_function_end            PARAMS ((void));
 
 /* Hash tables to manage the global pool of method prototypes.  */
@@ -476,8 +475,6 @@ objc_init (filename)
      const char *filename;
 {
   filename = c_objc_common_init (filename);
-
-  decl_printable_name = objc_printable_name;
 
   /* Force the line number back to 0; check_newline will have
      raised it to 1, which will make the builtin functions appear
@@ -8028,7 +8025,7 @@ objc_demangle (mangled)
     return mangled;             /* not an objc mangled name */
 }
 
-static const char *
+const char *
 objc_printable_name (decl, kind)
      tree decl;
      int kind ATTRIBUTE_UNUSED;

@@ -2132,7 +2132,7 @@ context_as_string (context, flags)
   return output_finalize_message (scratch_buffer);
 }
 
-/* Generate the three forms of printable names for lang_printable_name.  */
+/* Generate the three forms of printable names for cxx_printable_name.  */
 
 const char *
 lang_decl_name (decl, v)
@@ -2436,7 +2436,7 @@ cp_print_error_function (buffer, dc)
       else
         output_printf
           (buffer, "In %s `%s':", function_category (current_function_decl),
-           (*decl_printable_name) (current_function_decl, 2));
+           cxx_printable_name (current_function_decl, 2));
       output_add_newline (buffer);
 
       record_last_error_function ();

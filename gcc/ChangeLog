@@ -1,3 +1,29 @@
+2002-03-20  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in: Update.
+	* c-common.c: Include langhooks.h.
+	(inline_forbidden_p): Use new hook.
+	* diagnostic.c: Include langhooks.h.
+	(format_with_decl, announce_function,
+	default_print_error_function): Use new hook.
+	* dwarf2out.c (dwarf2_name): Use new hook.
+	* function.c: Include langhooks.h.
+	(init_function_start): Use new hook.
+	* langhooks-def.h (lhd_decl_printable_name): New.
+	(LANGHOOKS_DECL_PRINTABLE_NAME): New.
+	(LANGHOOKS_INITIALIZER): Update.
+	* langhooks.c (lhd_decl_printable_name): New.
+	* langhooks.h (struct lang_hooks): New hook.
+	* toplev.c (decl_name, decl_printable_name): Remove.
+	(open_dump_file): Use new hook.
+	(process_options): Remove old hook.
+	* tree.h (decl_printable_name): Remove.
+objc:
+	* objc-act.c (objc_init): Remove old hook.
+	(objc_printable_name): Export.
+	* objc-act.h (objc_printable_name): New.
+	* objc-lang.c (LANG_HOOKS_DECL_PRINTABLE_NAME): Redefine.
+
 2002-03-19  Jim Blandy  <jimb@redhat.com>
 
 	* c-lex.c (cb_file_change): Pass the #inclusion's line number to

@@ -1775,7 +1775,7 @@ start_java_method (fndecl)
   type_map = (tree *) xrealloc (type_map, i * sizeof (tree));
 
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
-  fprintf (stderr, "%s:\n", (*decl_printable_name) (fndecl, 2));
+  fprintf (stderr, "%s:\n", lang_printable_name (fndecl, 2));
   current_pc = 0;
 #endif /* defined(DEBUG_JAVA_BINDING_LEVELS) */
   pushlevel (1);  /* Push parameters. */

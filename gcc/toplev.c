@@ -108,7 +108,6 @@ static void init_asm_output PARAMS ((const char *));
 static void finalize PARAMS ((void));
 
 static void set_target_switch PARAMS ((const char *));
-static const char *decl_name PARAMS ((tree, int));
 
 static void float_signal PARAMS ((int)) ATTRIBUTE_NORETURN;
 static void crash_signal PARAMS ((int)) ATTRIBUTE_NORETURN;
@@ -352,16 +351,6 @@ tree current_function_decl;
 /* Set to the FUNC_BEGIN label of the current function, or NULL_TREE
    if none.  */
 tree current_function_func_begin_label;
-
-/* Pointer to function to compute the name to use to print a declaration.
-   DECL is the declaration in question.
-   VERBOSITY determines what information will be printed:
-     0: DECL_NAME, demangled as necessary.
-     1: and scope information.
-     2: and any other information that might be interesting, such as function
-        parameter types in C++.  */
-
-const char *(*decl_printable_name)	PARAMS ((tree, int));
 
 /* Pointer to function to compute rtl for a language-specific tree code.  */
 
@@ -1559,19 +1548,7 @@ read_integral_parameter (p, pname, defval)
 
   return atoi (p);
 }
-
 
-/* This is the default decl_printable_name function.  */
-
-static const char *
-decl_name (decl, verbosity)
-     tree decl;
-     int verbosity ATTRIBUTE_UNUSED;
-{
-  return IDENTIFIER_POINTER (DECL_NAME (decl));
-}
-
-
 /* This calls abort and is used to avoid problems when abort if a macro.
    It is used when we need to pass the address of abort.  */
 
@@ -1829,7 +1806,7 @@ open_dump_file (index, decl)
 
   if (decl)
     fprintf (rtl_dump_file, "\n;; Function %s\n\n",
-	     decl_printable_name (decl, 2));
+	     (*lang_hooks.decl_printable_name) (decl, 2));
 
   timevar_pop (TV_DUMP);
   return 1;
@@ -5002,7 +4979,6 @@ process_options ()
 static void
 lang_independent_init ()
 {
-  decl_printable_name = decl_name;
   lang_expand_expr = (lang_expand_expr_t) do_abort;
 
   /* Initialize the garbage-collector, and string pools.  */

@@ -1,3 +1,12 @@
+2002-03-20  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-lang.c (LANG_HOOKS_DECL_PRINTABLE_NAME): Redefine.
+	* cp-tree.h (lang_printable_name): Rename.
+	* error.c (lang_decl_name): Use new hook.
+	* lex.c (cxx_init): Remove old hook.
+	* pt.c (tsubst_decl): Use new hook.
+	* tree.c (lang_printable_name): Rename.
+
 2002-03-18  Eric Botcazou  <ebotcazou@multimania.com>
 
 	PR c++/3882

@@ -33,6 +33,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-inline.h"
 #include "varray.h"
 #include "ggc.h"
+#include "langhooks.h"
 
 static int c_tree_printer PARAMS ((output_buffer *));
 static tree inline_forbidden_p PARAMS ((tree *, int *, void *));
@@ -392,7 +393,7 @@ c_tree_printer (buffer)
     case 'T':
       {
         const char *n = DECL_NAME (t)
-          ? (*decl_printable_name) (t, 2)
+          ? (*lang_hooks.decl_printable_name) (t, 2)
           : "({anonymous})";
         output_add_string (buffer, n);
       }

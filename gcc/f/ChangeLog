@@ -1,3 +1,9 @@
+Wed Mar 20 08:03:42 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (lang_printable_name): Rename.
+	(LANG_HOOKS_DECL_PRINTABLE_NAME): Redefine.
+	(ffe_init): Don't use old hook.
+
 Sun Mar 17 18:50:15 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* com.h (ffe_parse_file): Prototype.
