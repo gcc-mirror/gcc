@@ -1,5 +1,22 @@
 #include <string.h>
 #include <stdlib.h>
+#include <float.h>
+
+#define fpsizeoff	sizeof(float)
+#define fpsizeof	sizeof(double)
+#define fpsizeofl	sizeof(long double)
+
+/* Work around the fact that with the Intel double-extended precision,
+   we've got a 10 byte type stuffed into some amount of padding.  And
+   the fact that -ffloat-store is going to stuff this value temporarily
+   into some bit of stack frame that we've no control over and can't zero.  */
+#if LDBL_MANT_DIG == 64
+# if defined(__i386__) || defined(__x86_64__) || defined (__ia64__)
+#  undef fpsizeofl
+#  define fpsizeofl	10
+# endif
+#endif
+
 
 #define TEST(TYPE, EXT)						\
 TYPE c##EXT (TYPE x, TYPE y)					\
@@ -25,12 +42,10 @@ void test##EXT (void)						\
 {								\
   int i, n = sizeof (T##EXT) / sizeof (T##EXT[0]);		\
   TYPE r;							\
-  /* Make sure to avoid comparing unused bits in the type.  */	\
-  memset (&r, 0, sizeof r);					\
   for (i = 0; i < n; ++i)					\
     {								\
       r = c##EXT (T##EXT[i].x, T##EXT[i].y);			\
-      if (memcmp (&r, &T##EXT[i].z, sizeof r) != 0)		\
+      if (memcmp (&r, &T##EXT[i].z, fpsizeof##EXT) != 0)	\
 	abort ();						\
     }								\
 }
