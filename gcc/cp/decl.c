@@ -228,10 +228,6 @@ struct named_label_list GTY(())
 
 #define named_labels cp_function_chain->x_named_labels
 
-/* The name of the anonymous namespace, throughout this translation
-   unit.  */
-tree anonymous_namespace_name;
-
 /* The number of function bodies which we are currently processing.
    (Zero if we are at namespace scope, one inside the body of a
    function, two inside the body of a function in a local class, etc.)  */

@@ -991,6 +991,8 @@ write_unqualified_name (const tree decl)
     write_special_name_constructor (decl);
   else if (DECL_LANG_SPECIFIC (decl) != NULL && DECL_DESTRUCTOR_P (decl))
     write_special_name_destructor (decl);
+  else if (DECL_NAME (decl) == NULL_TREE)
+    write_source_name (DECL_ASSEMBLER_NAME (decl));
   else if (DECL_CONV_FN_P (decl)) 
     {
       /* Conversion operator. Handle it right here.  

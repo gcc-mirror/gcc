@@ -1479,7 +1479,7 @@ static void
 pp_cxx_original_namespace_definition (cxx_pretty_printer *pp, tree t)
 {
   pp_cxx_identifier (pp, "namespace");
-  if (DECL_NAME (t) != anonymous_namespace_name)
+  if (DECL_NAME (t))
     pp_cxx_unqualified_id (pp, t);
   pp_cxx_whitespace (pp);
   pp_cxx_left_brace (pp);
