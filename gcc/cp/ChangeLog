@@ -1,3 +1,9 @@
+2003-06-21  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	PR c++/10915
+	* decl.c (grok_op_properties): Warn possible confusing conversion
+	only if -Wconversion.
+
 2003-06-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10749
