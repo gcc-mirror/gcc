@@ -150,7 +150,8 @@ struct rtx_def GTY((chain_next ("RTX_NEXT (&%h)"),
      1 in a SET that is for a return.
      In a CODE_LABEL, part of the two-bit alternate entry field.  */
   unsigned int jump : 1;
-  /* In a CODE_LABEL, part of the two-bit alternate entry field.  */
+  /* In a CODE_LABEL, part of the two-bit alternate entry field.
+     1 in a MEM if it cannot trap.  */
   unsigned int call : 1;
   /* 1 in a REG, MEM, or CONCAT if the value is set at most once, anywhere.
      1 in a SUBREG if it references an unsigned object whose mode has been
@@ -1109,6 +1110,10 @@ do {									\
 #define MEM_SCALAR_P(RTX)						\
   (RTL_FLAG_CHECK1("MEM_SCALAR_P", (RTX), MEM)->frame_related)
 
+/* 1 if RTX is a mem that cannot trap.  */
+#define MEM_NOTRAP_P(RTX) \
+  (RTL_FLAG_CHECK1("MEM_NOTRAP_P", (RTX), MEM)->call)
+
 /* If VAL is nonzero, set MEM_IN_STRUCT_P and clear MEM_SCALAR_P in
    RTX.  Otherwise, vice versa.  Use this macro only when you are
    *sure* that you know that the MEM is in a structure, or is a
@@ -1178,6 +1183,7 @@ do {						\
   (MEM_VOLATILE_P (LHS) = MEM_VOLATILE_P (RHS),			\
    MEM_IN_STRUCT_P (LHS) = MEM_IN_STRUCT_P (RHS),		\
    MEM_SCALAR_P (LHS) = MEM_SCALAR_P (RHS),			\
+   MEM_NOTRAP_P (LHS) = MEM_NOTRAP_P (RHS),			\
    RTX_UNCHANGING_P (LHS) = RTX_UNCHANGING_P (RHS),		\
    MEM_KEEP_ALIAS_SET_P (LHS) = MEM_KEEP_ALIAS_SET_P (RHS),	\
    MEM_ATTRS (LHS) = MEM_ATTRS (RHS))

@@ -630,6 +630,13 @@ In @code{mem}, @code{asm_operands}, and @code{asm_input} expressions,
 nonzero for volatile memory references.
 Stored in the @code{volatil} field and printed as @samp{/v}.
 
+@findex MEM_NOTRAP_P
+@cindex @code{mem} and @samp{/c}
+@cindex @code{call}, in @code{mem}
+@item MEM_NOTRAP_P (@var{x})
+In @code{mem}, nonzero for memory references that will not trap.
+Stored in the @code{call} field and printed as @samp{/c}.
+
 @findex REG_FUNCTION_VALUE_P
 @cindex @code{reg} and @samp{/i}
 @cindex @code{integrated}, in @code{reg}
@@ -847,7 +854,7 @@ These are the fields to which the above macros refer:
 @findex call
 @cindex @samp{/c} in RTL dump
 @item call
-This flag is currently unused.
+In a @code{mem}, 1 means that the memory reference will not trap.
 
 In an RTL dump, this flag is represented as @samp{/c}.
 

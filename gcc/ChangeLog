@@ -1,3 +1,14 @@
+2003-04-22  Richard Henderson  <rth@redhat.com>
+
+        PR 8866
+        * rtl.h (MEM_NOTRAP_P): New.
+        (MEM_COPY_ATTRIBUTES): Copy it.
+        * rtlanal.c (may_trap_p): Check it.
+        * expr.c (do_tablejump): Set it.
+	* doc/rtl.texi (Flags): Document it.
+
+        * cfgrtl.c (try_redirect_by_replacing_jump): Revert last three changes.
+
 2003-04-22  Olivier Hainque  <hainque@act-europe.fr>
 
 	* config/alpha/alpha.c (alpha_expand_prologue [OPEN_VMS_ABI]): Don't

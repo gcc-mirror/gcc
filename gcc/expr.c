@@ -10272,6 +10272,7 @@ do_tablejump (index, mode, range, table_label, default_label)
   temp = gen_reg_rtx (CASE_VECTOR_MODE);
   vector = gen_rtx_MEM (CASE_VECTOR_MODE, index);
   RTX_UNCHANGING_P (vector) = 1;
+  MEM_NOTRAP_P (vector) = 1;
   convert_move (temp, vector, 0);
 
   emit_jump_insn (gen_tablejump (temp, table_label));
