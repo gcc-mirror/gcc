@@ -1,3 +1,10 @@
+Wed Feb 21 18:57:28 CET 2001  Catherine Moore  <clm@redhat.com>
+			      Bernd Schmidt  <bernds@redhat.com>
+			      Jan Hubicka  <jh@suse.cz>
+
+        * i386.c (function_arg_advance):  Pass SSE arguments in registers.
+	(function_arg): Likewise.
+
 Wed Feb 21 18:12:41 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (mmx_lshrdi3, mmx_ashldi3): Guard by unspec.
