@@ -1,5 +1,10 @@
 2004-04-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* dbxout.c (dbxout_symbol_location): Do not output references
+	to optimized-out constant pool symbols.
+
+2004-04-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* expr.c (store_constructor): Use gen_int_mode to correctly
 	sign-extend CONST_INT value.
 

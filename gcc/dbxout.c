@@ -2461,11 +2461,27 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 	      if (GET_CODE (current_sym_addr) == SYMBOL_REF
 		  && CONSTANT_POOL_ADDRESS_P (current_sym_addr))
 		{
-		  rtx tmp = get_pool_constant (current_sym_addr);
+		  bool marked;
+		  rtx tmp = get_pool_constant_mark (current_sym_addr, &marked);
 
-		  if (GET_CODE (tmp) == SYMBOL_REF
-		      || GET_CODE (tmp) == LABEL_REF)
-		    current_sym_addr = tmp;
+		  if (GET_CODE (tmp) == SYMBOL_REF)
+		    {
+		      current_sym_addr = tmp;
+		      if (CONSTANT_POOL_ADDRESS_P (current_sym_addr))
+		        get_pool_constant_mark (current_sym_addr, &marked);
+		      else
+			marked = true;
+		    }
+		  else if (GET_CODE (tmp) == LABEL_REF)
+		    {
+		      current_sym_addr = tmp;
+		      marked = true;
+		    }
+
+		   /* If all references to the constant pool were optimized
+		      out, we just ignore the symbol.  */
+		  if (!marked)
+		    return 0;
 		}
 
 	      /* Ultrix `as' seems to need this.  */
