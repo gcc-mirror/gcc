@@ -17,8 +17,12 @@ AM_MAINTAINER_MODE
 # automake wants to see AC_EXEEXT.  But we don't need it.  And having
 # it is actually a problem, because the compiler we're passed can't
 # necessarily do a full link.  So we fool automake here.
-if test "x" = "y"; then
-   AC_EXEEXT
+if false; then
+  # autoconf 2.50 runs AC_EXEEXT by default, and the macro expands
+  # to nothing, so nothing would remain between `then' and `fi' if it
+  # were not for the `:' below.
+  :
+  AC_EXEEXT
 fi
 
 AC_MSG_CHECKING([for thread model used by GCC])
