@@ -1,3 +1,8 @@
+1998-11-08  Mark Mitchell  <mark@markmitchell.com>
+
+	* cplus-dem.c (demangle_template_value_parm): Use cplus_demangle,
+	not internal_cplus_demangle.
+
 Sat Nov  7 16:02:10 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* choose-temp.c: Don't include gansidecl.h.
