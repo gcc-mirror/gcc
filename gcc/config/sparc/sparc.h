@@ -34,13 +34,13 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define_std ("sparc");		\
 	if (TARGET_64BIT)			\
 	  { 					\
-	    builtin_assert ("cpu=sparc");	\
-	    builtin_assert ("machine=sparc");	\
+	    builtin_assert ("cpu=sparc64");	\
+	    builtin_assert ("machine=sparc64");	\
 	  }					\
 	else					\
 	  { 					\
-	    builtin_assert ("cpu=sparc64");	\
-	    builtin_assert ("machine=sparc64");	\
+	    builtin_assert ("cpu=sparc");	\
+	    builtin_assert ("machine=sparc");	\
 	  }					\
     }						\
   while (0)
