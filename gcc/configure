@@ -4067,13 +4067,6 @@ for machine in $build $host $target; do
 		tmake_file="t-netbsd arm/t-netbsd"
 		use_collect2=yes
 		;;
-	arm*-*-linux*aout*)		# ARM GNU/Linux with a.out
-		cpu_type=arm
-		xmake_file=x-linux
-		tm_file=arm/linux-aout.h
-		tmake_file=arm/t-linux
-		gnu_ld=yes
-		;;
 	arm*-*-linux*oldld*)		# ARM GNU/Linux with old ELF linker
 		xm_file=arm/xm-linux.h
 		xmake_file=x-linux
