@@ -1,3 +1,11 @@
+2002-02-25  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.md ("get_vrsave_internal"): New.
+        ("*set_vrsave_internal"): use mfspr for Darwin.
+
+        * config/rs6000/rs6000.c (rs6000_emit_prologue): Call
+        gen_get_vrsave_internal.
+
 Sun Feb 24 16:38:56 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* optabs.c (widen_operand): Properly handle CONST_INT for NO_EXTEND.
