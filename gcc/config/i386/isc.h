@@ -14,7 +14,7 @@
 
 /* Library spec */
 #undef LIB_SPEC
-#define LIB_SPEC "%{posix:-lcposix} %{shlib:-lc_s} -lc -lg"
+#define LIB_SPEC "%{shlib:-lc_s} %{posix:-lcposix} -lc -lg"
 
 /* ISC 2.2 uses `char' for `wchar_t'.  */
 #undef WCHAR_TYPE
