@@ -25,9 +25,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Written by Per Bothner <bothner@cygnus.com> */
 
-#include <stdio.h>
-#include <string.h>
 #include "config.h"
+#include "system.h"
 #include "jcf.h"
 #include "obstack.h"
 

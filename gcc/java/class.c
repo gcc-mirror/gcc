@@ -24,13 +24,14 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Written by Per Bothner <bothner@cygnus.com> */
 
-#include <stdio.h>
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "java-tree.h"
 #include "jcf.h"
 #include "obstack.h"
+#include "toplev.h"
 
 static tree mangle_class_field PROTO ((tree class));
 

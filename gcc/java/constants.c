@@ -22,10 +22,11 @@ of Sun Microsystems, Inc. in the United States and other countries.
 The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "java-tree.h"
 #include "jcf.h"
-#include "system.h"
+#include "toplev.h"
 
 extern struct obstack permanent_obstack;
 

@@ -24,8 +24,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Hacked by Per Bothner <bothner@cygnus.com> February 1996. */
 
-#include <stdio.h>
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "real.h"
 #include "rtl.h"
@@ -36,6 +36,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "java-except.h"
 #include "parse.h"
+#include "toplev.h"
 
 static tree operand_type[59];
 extern struct obstack permanent_obstack;

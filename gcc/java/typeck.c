@@ -25,11 +25,13 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 /* Written by Per Bothner <bothner@cygnus.com> */
 
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "obstack.h"
 #include "java-tree.h"
 #include "jcf.h"
 #include "convert.h"
+#include "toplev.h"
 
 tree * type_map;
 extern struct obstack permanent_obstack;

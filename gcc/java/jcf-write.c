@@ -22,10 +22,10 @@ of Sun Microsystems, Inc. in the United States and other countries.
 The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "java-tree.h"
 #include "jcf.h"
-#include <stdio.h>
 #include "obstack.h"
 #undef AND
 #include "rtl.h"
