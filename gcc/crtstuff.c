@@ -3,7 +3,7 @@
 
    Written by Ron Guilmette (rfg@netcom.com) with help from Richard Stallman.
 
-Copyright (C) 1991, 1994 Free Software Foundation, Inc.
+Copyright (C) 1991, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -157,6 +157,16 @@ void __do_global_ctors ()
 }
 
 asm (INIT_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
+
+/* On some svr4 systems, the initial .init section preamble code provided in
+   crti.o may do something, such as bump the stack, which we have to 
+   undo before we reach the function prologue code for __do_global_ctors 
+   (directly below).  For such systems, define the macro INIT_SECTION_PREAMBLE
+   to expand into the code needed to undo the actions of the crti.o file. */
+
+#ifdef INIT_SECTION_PREAMBLE
+  INIT_SECTION_PREAMBLE;
+#endif
 
 /* A routine to invoke all of the global constructors upon entry to the
    program.  We put this into the .init section (for systems that have
