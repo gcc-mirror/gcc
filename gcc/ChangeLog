@@ -1,3 +1,12 @@
+2001-04-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (gcse.o): Depend on params.h.
+	* gcse.c: Include params.h.
+	(gcse_main): Don't do GCSE if doing so will take inordinate
+	amounts of memory.
+	* params.def (PARAM_MAX_GCSE_MEMORY): New  parameter.
+	* params.h (MAX_GCSE_MEMORY): New macro.
+
 2001-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (insn-output.o): Depend on $(EXPR_H).

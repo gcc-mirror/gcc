@@ -160,6 +160,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "expr.h" 
 #include "ggc.h"
+#include "params.h"
 
 #include "obstack.h"
 #define obstack_chunk_alloc gmalloc
@@ -764,6 +765,19 @@ gcse_main (f, file)
       if (warn_disabled_optimization)
       warning ("GCSE disabled: %d > 1000 basic blocks and %d >= 20 edges/basic block",
                n_basic_blocks, n_edges / n_basic_blocks);
+      return 0;
+    }
+
+  /* If allocating memory for the cprop bitmap would take up too much
+     storage it's better just to disable the optimization.  */
+  if ((n_basic_blocks 
+       * SBITMAP_SET_SIZE (max_gcse_regno)
+       * sizeof (SBITMAP_ELT_TYPE)) > MAX_GCSE_MEMORY)
+    {
+      if (warn_disabled_optimization)
+	warning ("GCSE disabled: %d basic blocks and %d registers",
+		 n_basic_blocks, max_gcse_regno);
+
       return 0;
     }
 

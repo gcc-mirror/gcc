@@ -66,6 +66,13 @@ DEFPARAM(PARAM_MAX_DELAY_SLOT_LIVE_SEARCH,
 	 "The maximum number of instructions to consider to find accurate live register information",
 	 333)
 
+/* The GCSE optimization will be disabled if it would require
+   significantly more memory than this value.  */
+DEFPARAM(PARAM_MAX_GCSE_MEMORY,
+	 "max-gcse-memory",
+	 "The maximum amount of memory to be allocated by GCSE",
+	 50 * 1024 * 1024)
+
 /*
 Local variables:
 mode:c
