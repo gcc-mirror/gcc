@@ -1,3 +1,9 @@
+2000-10-26  David Edelsohn  <dje@watson.ibm.com> 
+        
+	* config/os/aix/bits/ctype_inline.h (is): Use __OBJ_DATA directly.
+        * config/os/aix/bits/ctype_noninline.h (do_tolower): Fix typo.
+        * config/os/aix/bits/os_defines.h: Add AIX defines.
+
 2000-10-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_LONG_DOUBLE): Remove.

@@ -57,7 +57,7 @@
 
   char
   ctype<char>::do_tolower(char __c) const
-  { return _tolower(__a); }
+  { return _tolower(__c); }
 
   const char* 
   ctype<char>::do_tolower(char* __low, const char* __high) const
