@@ -95,7 +95,7 @@ IMP
 get_imp (Class class, SEL sel)
 {
   IMP impl;
-  void* res = sarray_get (class->dtable, (size_t) sel->sel_id);
+  void* res = sarray_get_safe (class->dtable, (size_t) sel->sel_id);
   if (res == 0)
     {
       /* Not a valid method */
@@ -138,7 +138,7 @@ __objc_responds_to (id object, SEL sel)
     }
 
   /* Get the method from the dispatch table */
-  res = sarray_get (object->class_pointer->dtable, (size_t) sel->sel_id);
+  res = sarray_get_safe (object->class_pointer->dtable, (size_t) sel->sel_id);
   return (res != 0);
 }
 
@@ -152,7 +152,8 @@ objc_msg_lookup(id receiver, SEL op)
   IMP result;
   if(receiver)
     {
-      result = sarray_get(receiver->class_pointer->dtable, (sidx)op->sel_id);
+      result = sarray_get_safe (receiver->class_pointer->dtable, 
+				(sidx)op->sel_id);
       if (result == 0)
 	{
 	  /* Not a valid method */
