@@ -30,6 +30,9 @@ Sun Apr 19 17:58:01 1998  Peter Jeremy  <peter.jeremy@alcatel.com.au>
 
 Sun Apr 19 07:48:37 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* c-typeck.c (build_c_cast): Check underlying type when seeing
+	if discarding const or volatile.
+
 	* c-decl.c (pushdecl): Avoid duplicate warning about implicit redecl.
 
 	* configure.in (stab.h): Check for it.
