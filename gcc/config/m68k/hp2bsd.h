@@ -21,7 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* See m68k.h.  0 means 68000 with no 68881.  */
 
-#define TARGET_DEFAULT -0102
+#define TARGET_DEFAULT 0
 
 /* Define __HAVE_68881 in preprocessor only if -m68881 is specified.
    This will control the use of inline 68881 insns in certain macros.
