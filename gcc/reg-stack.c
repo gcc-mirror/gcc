@@ -655,7 +655,7 @@ constrain_asm_operands (n_operands, operands, operand_constraints,
 		/* Match any CONST_DOUBLE, but only if
 		   we can examine the bits of it reliably.  */
 		if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
-		     || HOST_BITS_PER_INT != BITS_PER_WORD)
+		     || HOST_BITS_PER_WIDE_INT != BITS_PER_WORD)
 		    && GET_CODE (op) != VOIDmode && ! flag_pretend_float)
 		  break;
 		if (GET_CODE (op) == CONST_DOUBLE)
@@ -1160,7 +1160,7 @@ record_reg_life (insn, block, regstack)
       int n_inputs, n_outputs;
       char **constraints = (char **) alloca (n_operands * sizeof (char *));
 
-      decode_asm_operands (body, operands, 0, constraints, 0);
+      decode_asm_operands (body, operands, NULL_PTR, constraints, NULL_PTR);
       get_asm_operand_lengths (body, n_operands, &n_inputs, &n_outputs);
       record_asm_reg_life (insn, regstack, operands, constraints,
 			   n_inputs, n_outputs);
@@ -2383,7 +2383,8 @@ subst_stack_regs (insn, regstack)
 	  char **constraints
 	    = (char **) alloca (n_operands * sizeof (char *));
 
-	  decode_asm_operands (body, operands, operands_loc, constraints, 0);
+	  decode_asm_operands (body, operands, operands_loc,
+			       constraints, NULL_PTR);
 	  get_asm_operand_lengths (body, n_operands, &n_inputs, &n_outputs);
 	  subst_asm_stack_regs (insn, regstack, operands, operands_loc,
 				constraints, n_inputs, n_outputs);
@@ -2391,7 +2392,7 @@ subst_stack_regs (insn, regstack)
 	}
 
       if (GET_CODE (PATTERN (insn)) == PARALLEL)
-	for (i = 0; i < XVECLEN (PATTERN (insn) , 0); i++)
+	for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
 	  {
 	    if (stack_regs_mentioned_p (XVECEXP (PATTERN (insn), 0, i)))
 	      subst_stack_regs_pat (insn, regstack,

@@ -86,9 +86,9 @@ variable_size (size)
     }
 
   if (immediate_size_expand)
-    expand_expr (size, 0, VOIDmode, 0);
+    expand_expr (size, NULL_PTR, VOIDmode, 0);
   else
-    pending_sizes = tree_cons (0, size, pending_sizes);
+    pending_sizes = tree_cons (NULL_TREE, size, pending_sizes);
 
   return size;
 }
@@ -280,7 +280,7 @@ layout_record (rec)
 
       if (TREE_STATIC (field))
 	{
-	  pending_statics = tree_cons (NULL, field, pending_statics);
+	  pending_statics = tree_cons (NULL_TREE, field, pending_statics);
 	  continue;
 	}
       /* Enumerators and enum types which are local to this class need not
@@ -873,14 +873,18 @@ make_signed_type (precision)
   /* Create the extreme values based on the number of bits.  */
 
   TYPE_MIN_VALUE (type)
-    = build_int_2 ((precision-HOST_BITS_PER_INT > 0 ? 0 : (-1)<<(precision-1)),
-		   (-1)<<(precision-HOST_BITS_PER_INT-1 > 0
-			  ? precision-HOST_BITS_PER_INT-1
-			  : 0));
+    = build_int_2 ((precision - HOST_BITS_PER_WIDE_INT > 0
+		    ? 0 : (HOST_WIDE_INT) (-1) << (precision - 1)),
+		   (((HOST_WIDE_INT) (-1)
+		     << (precision - HOST_BITS_PER_WIDE_INT - 1 > 0
+			 ? precision-HOST_BITS_PER_WIDE_INT - 1
+			 : 0))));
   TYPE_MAX_VALUE (type)
-    = build_int_2 ((precision-HOST_BITS_PER_INT > 0 ? -1 : (1<<(precision-1))-1),
-		   (precision-HOST_BITS_PER_INT-1 > 0
-		    ? (1<<(precision-HOST_BITS_PER_INT-1))-1
+    = build_int_2 ((precision - HOST_BITS_PER_WIDE_INT > 0 
+		    ? -1 : ((HOST_WIDE_INT) 1 << (precision - 1)) - 1),
+		   (precision - HOST_BITS_PER_WIDE_INT - 1 > 0
+		    ? (((HOST_WIDE_INT) 1
+			<< (precision - HOST_BITS_PER_INT - 1)))-1
 		    : 0));
 
   /* Give this type's extreme values this type as their type.  */
@@ -937,10 +941,12 @@ fixup_unsigned_type (type)
 
   TYPE_MIN_VALUE (type) = build_int_2 (0, 0);
   TYPE_MAX_VALUE (type)
-    = build_int_2 (precision-HOST_BITS_PER_INT >= 0 ? -1 : (1<<precision)-1,
-		   precision-HOST_BITS_PER_INT > 0
-		   ? ((unsigned) ~0
-		      >> (HOST_BITS_PER_INT - (precision - HOST_BITS_PER_INT)))
+    = build_int_2 (precision - HOST_BITS_PER_WIDE_INT >= 0
+		   ? -1 : ((HOST_WIDE_INT) 1<< precision) - 1,
+		   precision - HOST_BITS_PER_WIDE_INT > 0
+		   ? ((unsigned HOST_WIDE_INT) ~0
+		      >> (HOST_BITS_PER_WIDE_INT
+			  - (precision - HOST_BITS_PER_WIDE_INT)))
 		   : 0);
   TREE_TYPE (TYPE_MIN_VALUE (type)) = type;
   TREE_TYPE (TYPE_MAX_VALUE (type)) = type;

@@ -359,7 +359,7 @@ xcoffout_block (block, depth, args)
 	  next_block_number++;
 
 	  /* Output the subblocks.  */
-	  xcoffout_block (BLOCK_SUBBLOCKS (block), depth + 1, 0);
+	  xcoffout_block (BLOCK_SUBBLOCKS (block), depth + 1, NULL_TREE);
 	}
       block = BLOCK_CHAIN (block);
     }

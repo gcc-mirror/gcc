@@ -783,15 +783,14 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	     improperly shared rtl.  */
 
 	  diff = expand_binop (mode, sub_optab, copy_rtx (final_value),
-			       copy_rtx (initial_value), 0, 0,
+			       copy_rtx (initial_value), NULL_RTX, 0,
 			       OPTAB_LIB_WIDEN);
 
 	  /* Now calculate (diff % (unroll * abs (increment))) by using an
 	     and instruction.  */
 	  diff = expand_binop (GET_MODE (diff), and_optab, diff,
-			       gen_rtx (CONST_INT, VOIDmode,
-					unroll_number * abs_inc - 1),
-			       0, 0, OPTAB_LIB_WIDEN);
+			       GEN_INT (unroll_number * abs_inc - 1),
+			       NULL_RTX, 0, OPTAB_LIB_WIDEN);
 
 	  /* Now emit a sequence of branches to jump to the proper precond
 	     loop entry point.  */
@@ -826,9 +825,8 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	      else
 		cmp_const = i;
 
-	      emit_cmp_insn (diff, gen_rtx (CONST_INT, VOIDmode,
-					    abs_inc * cmp_const),
-			     EQ, 0, mode, 0, 0);
+	      emit_cmp_insn (diff, GEN_INT (abs_inc * cmp_const),
+			     EQ, NULL_RTX, mode, 0, 0);
 
 	      if (i == 0)
 		emit_jump_insn (gen_beq (labels[i]));
@@ -858,8 +856,8 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	      else
 		cmp_const = abs_inc * (unroll_number - 1) + 1;
 
-	      emit_cmp_insn (diff, gen_rtx (CONST_INT, VOIDmode, cmp_const),
-			     EQ, 0, mode, 0, 0);
+	      emit_cmp_insn (diff, GEN_INT (cmp_const), EQ, NULL_RTX,
+			     mode, 0, 0);
 
 	      if (neg_inc)
 		emit_jump_insn (gen_ble (labels[0]));
@@ -1178,7 +1176,7 @@ precondition_loop_p (initial_value, final_value, increment, loop_start,
     {
       *initial_value = const0_rtx;
       *increment = const1_rtx;
-      *final_value = gen_rtx (CONST_INT, VOIDmode, loop_n_iterations);
+      *final_value = GEN_INT (loop_n_iterations);
 
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
@@ -1583,8 +1581,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 #endif
 		  
 		  splittable_regs[regno]
-		    = gen_rtx (CONST_INT, VOIDmode,
-			       INTVAL (giv_inc)
+		    = GEN_INT (INTVAL (giv_inc)
 			       + INTVAL (splittable_regs[regno]));
 		  giv_inc = splittable_regs[regno];
 		  
@@ -2391,7 +2388,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	       /* Check for the case where the pseudo is set by a shift/add
 		  sequence, in which case the first insn setting the pseudo
 		  is the first insn of the shift/add sequence.  */
-	       && (! (tem = find_reg_note (v->insn, REG_RETVAL, 0))
+	       && (! (tem = find_reg_note (v->insn, REG_RETVAL, NULL_RTX))
 		   || (regno_first_uid[REGNO (v->dest_reg)]
 		       != INSN_UID (XEXP (tem, 0)))))
 	      /* Line above always fails if INSN was moved by loop opt.  */
@@ -2785,8 +2782,7 @@ final_biv_value (bl, loop_start, loop_end)
 	     case it is needed later.  */
 
 	  tem = gen_reg_rtx (bl->biv->mode);
-	  emit_iv_add_mult (increment,
-			    gen_rtx (CONST_INT, VOIDmode, loop_n_iterations),
+	  emit_iv_add_mult (increment, GEN_INT (loop_n_iterations),
 			    bl->initial_value, tem, NEXT_INSN (loop_end));
 
 	  if (loop_dump_stream)
@@ -2877,8 +2873,7 @@ final_giv_value (v, loop_start, loop_end)
 
 	  /* Put the final biv value in tem.  */
 	  tem = gen_reg_rtx (bl->biv->mode);
-	  emit_iv_add_mult (increment,
-			    gen_rtx (CONST_INT, VOIDmode, loop_n_iterations),
+	  emit_iv_add_mult (increment, GEN_INT (loop_n_iterations),
 			    bl->initial_value, tem, insert_before);
 
 	  /* Subtract off extra increments as we find them.  */
@@ -2904,7 +2899,7 @@ final_giv_value (v, loop_start, loop_end)
 		  
 		  start_sequence ();
 		  tem = expand_binop (GET_MODE (tem), sub_optab, tem,
-				      XEXP (SET_SRC (pattern), 1), 0, 0,
+				      XEXP (SET_SRC (pattern), 1), NULL_RTX, 0,
 				      OPTAB_LIB_WIDEN);
 		  seq = gen_sequence ();
 		  end_sequence ();
@@ -2947,14 +2942,15 @@ final_giv_value (v, loop_start, loop_end)
 /* Calculate the number of loop iterations.  Returns the exact number of loop
    iterations if it can be calculated, otherwise returns zero.  */
 
-unsigned long
+unsigned HOST_WIDE_INT
 loop_iterations (loop_start, loop_end)
      rtx loop_start, loop_end;
 {
   rtx comparison, comparison_value;
   rtx iteration_var, initial_value, increment, final_value;
   enum rtx_code comparison_code;
-  int i, increment_dir;
+  HOST_WIDE_INT i;
+  int increment_dir;
   int unsigned_compare, compare_dir, final_larger;
   unsigned long tempu;
   rtx last_loop_insn;
@@ -3044,7 +3040,7 @@ loop_iterations (loop_start, loop_end)
 		   && (set = single_set (insn))
 		   && (SET_DEST (set) == comparison_value))
 	    {
-	      rtx note = find_reg_note (insn, REG_EQUAL, 0);
+	      rtx note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
 
 	      if (note && GET_CODE (XEXP (note, 0)) != EXPR_LIST)
 		comparison_value = XEXP (note, 0);
@@ -3094,11 +3090,13 @@ loop_iterations (loop_start, loop_end)
   /* Final_larger is 1 if final larger, 0 if they are equal, otherwise -1.  */
   if (unsigned_compare)
     final_larger
-      = ((unsigned) INTVAL (final_value) > (unsigned) INTVAL (initial_value)) -
-	((unsigned) INTVAL (final_value) < (unsigned) INTVAL (initial_value));
+      = ((unsigned HOST_WIDE_INT) INTVAL (final_value)
+	 > (unsigned HOST_WIDE_INT) INTVAL (initial_value))
+	- ((unsigned HOST_WIDE_INT) INTVAL (final_value)
+	   < (unsigned HOST_WIDE_INT) INTVAL (initial_value));
   else
-    final_larger = (INTVAL (final_value) > INTVAL (initial_value)) -
-      (INTVAL (final_value) < INTVAL (initial_value));
+    final_larger = (INTVAL (final_value) > INTVAL (initial_value))
+      - (INTVAL (final_value) < INTVAL (initial_value));
 
   if (INTVAL (increment) > 0)
     increment_dir = 1;
