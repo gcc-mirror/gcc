@@ -1,3 +1,7 @@
+Thu Jan  9 17:23:19 2003  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (OVERRIDE_OPTIONS): Allow first scheduling pass for SH5.
+
 2003-01-09  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*extzv_1_r_h8300): Correct the insn
