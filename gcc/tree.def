@@ -51,11 +51,6 @@ DEFTREECODE (ERROR_MARK, "error_mark", 'x', 0)
    Use `get_identifier' to get it (or create it, the first time).  */
 DEFTREECODE (IDENTIFIER_NODE, "identifier_node", 'x', -1)
 
-/* Used to hold information to identify an operator (or combination
-   of two operators) considered as a `noun' rather than a `verb'.
-   The first operand is encoded in the TREE_TYPE field.  */
-DEFTREECODE (OP_IDENTIFIER, "op_identifier", 'x', 2)
-
 /* Has the TREE_VALUE and TREE_PURPOSE fields.  */
 /* These nodes are made into lists by chaining through the
    TREE_CHAIN field.  The elements of the list live in the

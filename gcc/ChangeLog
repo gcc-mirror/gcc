@@ -1,3 +1,14 @@
+2001-09-06  Ira Ruben  <ira@apple.com>
+
+	Remove OP_IDENTIFIER.
+	* tree.def (OP_IDENTIFIER): Remove.
+	* tree.c (tree_node_kind enum): Remove op_id_kind.
+	(tree_node_kind_names): Remove "op_identifiers".
+	(make_node): Remove OP_IDENTIFIER test.
+	(build_op_identifier): Removed because it isn't being used.
+	* print-tree.c (print_node): Remove OP_IDENTIFIER case.
+	* cp/pt.c (tsubst): Remove OP_IDENTIFIER case.
+
 2001-09-06  Richard Henderson  <rth@redhat.com>
 
 	* simplify-rtx.c (simplify_binary_operation): Revert last change.

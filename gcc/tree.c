@@ -99,7 +99,6 @@ typedef enum
   e_kind,
   c_kind,
   id_kind,
-  op_id_kind,
   perm_list_kind,
   temp_list_kind,
   vec_kind,
@@ -122,7 +121,6 @@ static const char * const tree_node_kind_names[] = {
   "exprs",
   "constants",
   "identifiers",
-  "op_identifiers",
   "perm_tree_lists",
   "temp_tree_lists",
   "vecs",
@@ -380,8 +378,6 @@ make_node (code)
     case 'x':  /* something random, like an identifier.  */
       if (code == IDENTIFIER_NODE)
 	kind = id_kind;
-      else if (code == OP_IDENTIFIER)
-	kind = op_id_kind;
       else if (code == TREE_VEC)
 	kind = vec_kind;
       else
@@ -2526,20 +2522,6 @@ build_nt VPARAMS ((enum tree_code code, ...))
   VA_CLOSE (p);
   return t;
 }
-
-#if 0
-/* Commented out because this wants to be done very
-   differently.  See cp-lex.c.  */
-tree
-build_op_identifier (op1, op2)
-     tree op1, op2;
-{
-  register tree t = make_node (OP_IDENTIFIER);
-  TREE_PURPOSE (t) = op1;
-  TREE_VALUE (t) = op2;
-  return t;
-}
-#endif
 
 /* Create a DECL_... node of code CODE, name NAME and data type TYPE.
    We do NOT enter this node in any sort of symbol table.

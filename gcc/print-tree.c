@@ -740,11 +740,6 @@ print_node (file, prefix, node, indent)
 	      }
 	  break;
 
-	case OP_IDENTIFIER:
-	  print_node (file, "op1", TREE_PURPOSE (node), indent + 4);
-	  print_node (file, "op2", TREE_VALUE (node), indent + 4);
-	  break;
-
 	default:
 	  if (TREE_CODE_CLASS (TREE_CODE (node)) == 'x')
 	    lang_print_xnode (file, node, indent);
