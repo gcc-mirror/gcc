@@ -3017,6 +3017,17 @@ rest_of_compilation (decl)
 	setjmp_args_warning ();
     }
 
+  if (optimize)
+    {
+      if (initialize_uninitialized_subregs ())
+	{
+	  /* Insns were inserted, so things might look a bit different.  */
+	  insns = get_insns();
+	  life_analysis (insns, rtl_dump_file, 
+			 (PROP_LOG_LINKS | PROP_REG_INFO | PROP_DEATH_NOTES));
+	}
+    }
+
   close_dump_file (DFI_life, print_rtl_with_bb, insns);
 
   ggc_collect ();

@@ -1903,10 +1903,11 @@ extern void move_by_pieces		PARAMS ((rtx, rtx,
 						 unsigned int));
 
 /* In flow.c */
-extern void recompute_reg_usage		PARAMS ((rtx, int));
+extern void recompute_reg_usage			PARAMS ((rtx, int));
+extern int initialize_uninitialized_subregs	PARAMS ((void));
 #ifdef BUFSIZ
-extern void print_rtl_with_bb		PARAMS ((FILE *, rtx));
-extern void dump_flow_info		PARAMS ((FILE *));
+extern void print_rtl_with_bb			PARAMS ((FILE *, rtx));
+extern void dump_flow_info			PARAMS ((FILE *));
 #endif
 
 /* In expmed.c */

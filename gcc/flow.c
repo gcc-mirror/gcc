@@ -306,6 +306,8 @@ static void mark_set_regs		PARAMS ((struct propagate_block_info *,
 static void mark_set_1			PARAMS ((struct propagate_block_info *,
 						 enum rtx_code, rtx, rtx,
 						 rtx, int));
+static int find_regno_partial		PARAMS ((rtx *, void *));
+
 #ifdef HAVE_conditional_execution
 static int mark_regno_cond_dead		PARAMS ((struct propagate_block_info *,
 						 int, rtx));
@@ -1290,6 +1292,112 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 
   free (queue);
 }
+
+
+/* This structure is used to pass parameters to an from the
+   the function find_regno_partial(). It is used to pass in the 
+   register number we are looking, as well as to return any rtx 
+   we find.  */
+
+typedef struct {
+  unsigned regno_to_find;
+  rtx retval;
+} find_regno_partial_param;
+
+
+/* Find the rtx for the reg numbers specified in 'data' if it is
+   part of an expression which only uses part of the register.  Return
+   it in the structure passed in.  */
+static int 
+find_regno_partial (ptr, data)
+     rtx *ptr;
+     void *data;
+{
+  find_regno_partial_param *param = (find_regno_partial_param *)data;
+  unsigned reg = param->regno_to_find;
+  param->retval = NULL_RTX;
+
+  if (*ptr == NULL_RTX)
+    return 0;
+
+  switch (GET_CODE (*ptr)) 
+    {
+      case ZERO_EXTRACT:
+      case SIGN_EXTRACT:
+      case STRICT_LOW_PART:
+        if (GET_CODE (XEXP (*ptr, 0)) == REG && REGNO (XEXP (*ptr, 0)) == reg)
+	  {
+	    param->retval = *ptr;
+	    return 1;
+	  }
+	break;
+
+      case SUBREG:
+        if (GET_CODE (SUBREG_REG (*ptr)) == REG 
+	    && REGNO (SUBREG_REG (*ptr)) == reg)
+	  {
+	    param->retval = *ptr;
+	    return 1;
+	  }
+	break;
+    }
+
+  return 0;
+}
+
+/* Process all immediate successors of the entry block looking for pseudo
+   registers which are live on entry. Find all of those whose first 
+   instance is a partial register reference of some kind, and initialize 
+   them to 0 after the entry block.  This will prevent bit sets within
+   registers whose value is unknown, and may contain some kind of sticky 
+   bits we don't want.  */
+
+int
+initialize_uninitialized_subregs () 
+{
+  rtx insn;
+  edge e;
+  int reg, did_something = 0;
+  find_regno_partial_param param;
+
+  for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
+    {
+      basic_block bb = e->dest;
+      regset map = bb->global_live_at_start;
+      EXECUTE_IF_SET_IN_REG_SET (map,
+				 FIRST_PSEUDO_REGISTER, reg,
+	{
+	  int uid = REGNO_FIRST_UID (reg);
+	  rtx i;
+
+	  /* Find an insn which mentions the register we are looking for.
+	     Its preferable to have an instance of the register's rtl since
+	     there may be various flags set which we need to duplicate.  
+	     If we can't find it, its probably an automatic whose initial
+	     value doesnt matter, or hopefully something we dont care about. */
+	  for (i = get_insns (); i && INSN_UID (i) != uid; i = NEXT_INSN (i))
+	    ;
+	  if (i != NULL_RTX)
+	    {
+	      /* Found the insn, now get the REG rtx, if we can.  */
+	      param.regno_to_find = reg;
+	      for_each_rtx (&i, find_regno_partial, &param);
+	      if (param.retval != NULL_RTX)
+		{
+		  insn = gen_move_insn (param.retval, 
+				        CONST0_RTX (GET_MODE (param.retval)));
+		  insert_insn_on_edge (insn, e);
+		  did_something = 1;
+		}
+	    }
+	});
+    }
+
+  if (did_something)
+    commit_edge_insertions ();
+  return did_something;
+}
+
 
 /* Subroutines of life analysis.  */
 
