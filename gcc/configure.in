@@ -2937,7 +2937,7 @@ changequote([,])dnl
 		use_collect2=yes
 		;;
 changequote(,)dnl
-	rs6000-ibm-aix4.[3456789].* | powerpc-ibm-aix4.[3456789].*)
+	rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 changequote([,])dnl
 		tm_file=rs6000/aix43.h
 		if test x$host != x$target

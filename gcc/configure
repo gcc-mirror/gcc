@@ -5245,7 +5245,7 @@ for machine in $build $host $target; do
 		float_format=none
 		use_collect2=yes
 		;;
-	rs6000-ibm-aix4.[3456789].* | powerpc-ibm-aix4.[3456789].*)
+	rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 		tm_file=rs6000/aix43.h
 		if test x$host != x$target
 		then
