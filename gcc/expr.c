@@ -3263,7 +3263,10 @@ expand_expr (exp, target, tmode, modifier)
   /* Use subtarget as the target for operand 0 of a binary operation.  */
   rtx subtarget = (target != 0 && GET_CODE (target) == REG ? target : 0);
   rtx original_target = target;
-  int ignore = target == const0_rtx;
+  int ignore = (target == const0_rtx
+		|| ((code == NON_LVALUE_EXPR || code == NOP_EXPR
+		     || code == CONVERT_EXPR || code == REFERENCE_EXPR)
+		    && TREE_CODE (type) == VOID_TYPE));
   tree context;
 
   /* Don't use hard regs as subtargets, because the combiner
@@ -3275,28 +3278,53 @@ expand_expr (exp, target, tmode, modifier)
   if (preserve_subexpressions_p ())
     subtarget = 0;
 
-  if (ignore) target = 0, original_target = 0;
+  /* If we are going to ignore this result, we need only do something
+     if there is a side-effect somewhere in the expression.  If there
+     is, short-circuit the most common cases here.  */
 
-  /* If will do cse, generate all results into pseudo registers
-     since 1) that allows cse to find more things
-     and 2) otherwise cse could produce an insn the machine
-     cannot support.  */
+  if (ignore)
+    {
+      if (! TREE_SIDE_EFFECTS (exp))
+	return const0_rtx;
+
+      /* Ensure we reference a volatile object even if value is ignored.  */
+      if (TREE_THIS_VOLATILE (exp)
+	  && TREE_CODE (exp) != FUNCTION_DECL
+	  && mode != VOIDmode && mode != BLKmode)
+	{
+	  temp = expand_expr (exp, NULL_RTX, VOIDmode, modifier);
+	  if (GET_CODE (temp) == MEM)
+	    temp = copy_to_reg (temp);
+	  return const0_rtx;
+	}
+
+      if (TREE_CODE_CLASS (code) == '1')
+	return expand_expr (TREE_OPERAND (exp, 0), const0_rtx,
+			    VOIDmode, modifier);
+      else if (TREE_CODE_CLASS (code) == '2'
+	       || TREE_CODE_CLASS (code) == '<')
+	{
+	  expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, modifier);
+	  expand_expr (TREE_OPERAND (exp, 1), const0_rtx, VOIDmode, modifier);
+	  return const0_rtx;
+	}
+      else if ((code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR)
+	       && ! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 1)))
+	/* If the second operand has no side effects, just evaluate
+	   the first. */
+	return expand_expr (TREE_OPERAND (exp, 0), const0_rtx,
+			    VOIDmode, modifier);
+      /* If will do cse, generate all results into pseudo registers
+	 since 1) that allows cse to find more things
+	 and 2) otherwise cse could produce an insn the machine
+	 cannot support.  */
+
+      target = 0, original_target = 0;
+    }
 
   if (! cse_not_expected && mode != BLKmode && target
       && (GET_CODE (target) != REG || REGNO (target) < FIRST_PSEUDO_REGISTER))
     target = subtarget;
-
-  /* Ensure we reference a volatile object even if value is ignored.  */
-  if (ignore && TREE_THIS_VOLATILE (exp)
-      && TREE_CODE (exp) != FUNCTION_DECL
-      && mode != VOIDmode && mode != BLKmode)
-    {
-      target = gen_reg_rtx (mode);
-      temp = expand_expr (exp, target, VOIDmode, modifier);
-      if (temp != target)
-	emit_move_insn (target, temp);
-      return target;
-    }
 
   switch (code)
     {
@@ -3596,11 +3624,23 @@ expand_expr (exp, target, tmode, modifier)
       return RTL_EXPR_RTL (exp);
 
     case CONSTRUCTOR:
+      /* If we don't need the result, just ensure we evaluate any
+	 subexpressions.  */
+      if (ignore)
+	{
+	  tree elt;
+	  for (elt = CONSTRUCTOR_ELTS (exp); elt; elt = TREE_CHAIN (elt))
+	    expand_expr (TREE_VALUE (elt), const0_rtx, VOIDmode, 0);
+	  return const0_rtx;
+	}
       /* All elts simple constants => refer to a constant in memory.  But
 	 if this is a non-BLKmode mode, let it store a field at a time
 	 since that should make a CONST_INT or CONST_DOUBLE when we
-	 fold.  */
-      if (TREE_STATIC (exp) && (mode == BLKmode || TREE_ADDRESSABLE (exp)))
+	 fold.  If we are making an initializer and all operands are
+	 constant, put it in memory as well.  */
+      else if ((TREE_STATIC (exp)
+		&& (mode == BLKmode || TREE_ADDRESSABLE (exp)))
+	       || (modifier == EXPAND_INITIALIZER && TREE_CONSTANT (exp)))
 	{
 	  rtx constructor = output_constant_def (exp);
 	  if (modifier != EXPAND_CONST_ADDRESS
@@ -3613,13 +3653,6 @@ expand_expr (exp, target, tmode, modifier)
 	  return constructor;
 	}
 
-      if (ignore)
-	{
-	  tree elt;
-	  for (elt = CONSTRUCTOR_ELTS (exp); elt; elt = TREE_CHAIN (elt))
-	    expand_expr (TREE_VALUE (elt), const0_rtx, VOIDmode, 0);
-	  return const0_rtx;
-	}
       else
 	{
 	  if (target == 0 || ! safe_from_p (target, exp))
@@ -4121,11 +4154,6 @@ expand_expr (exp, target, tmode, modifier)
     case NOP_EXPR:
     case CONVERT_EXPR:
     case REFERENCE_EXPR:
-      if (TREE_CODE (type) == VOID_TYPE || ignore)
-	{
-	  expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, modifier);
-	  return const0_rtx;
-	}
       if (mode == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
 	return expand_expr (TREE_OPERAND (exp, 0), target, VOIDmode, modifier);
       if (TREE_CODE (type) == UNION_TYPE)
@@ -4781,6 +4809,13 @@ expand_expr (exp, target, tmode, modifier)
 	    && integer_zerop (TREE_OPERAND (exp, 2))
 	    && TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 0))) == '<')
 	  {
+	    if (ignore)
+	      {
+		expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
+			     modifier);
+		return const0_rtx;
+	      }
+
 	    op0 = expand_expr (TREE_OPERAND (exp, 0), target, mode, modifier);
 	    if (GET_MODE (op0) == mode)
 	      return op0;
@@ -4795,7 +4830,7 @@ expand_expr (exp, target, tmode, modifier)
 	   intermediate target unless it is safe.  If no target, use a 
 	   temporary.  */
 
-	if (mode == VOIDmode || ignore)
+	if (ignore)
 	  temp = 0;
 	else if (original_target
 		 && safe_from_p (original_target, TREE_OPERAND (exp, 0)))
@@ -4839,7 +4874,7 @@ expand_expr (exp, target, tmode, modifier)
 	/* If we had X ? A + 1 : A and we can do the test of X as a store-flag
 	   operation, do this as A + (X != 0).  Similarly for other simple
 	   binary operators.  */
-	if (singleton && binary_op
+	if (temp && singleton && binary_op
 	    && ! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0))
 	    && (TREE_CODE (binary_op) == PLUS_EXPR
 		|| TREE_CODE (binary_op) == MINUS_EXPR
