@@ -1,3 +1,9 @@
+2005-02-28  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/20245
+	* c-parser.c (c_parser_compound_statement): Return error_mark_node
+	instead of NULL_TREE on error.
+
 2005-02-28  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (EASY_VECTOR_15): Remove.
