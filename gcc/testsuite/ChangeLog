@@ -1,5 +1,9 @@
 2000-08-06  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* gcc.dg/c99-printf-1.c: New test.
+
+2000-08-06  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* gcc.c-torture/execute/20000801-4.x: Only xfail on x86.
 
 2000-08-05  Zack Weinberg  <zack@wolery.cumb.org>

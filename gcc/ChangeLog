@@ -1,3 +1,26 @@
+2000-08-06  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.h (enum c_tree_index): Add CTI_SIGNED_SIZE_TYPE and
+	CTI_UNSIGNED_PTRDIFF_TYPE.
+	(signed_size_type_node): Define.
+	(unsigned_ptrdiff_type_node): Define.
+	* c-decl.c (init_decl_processing): Create the
+	signed_size_type_node and unsigned_ptrdiff_type_node types.
+	* c-common.c (T_SC): Define.
+	(T_SST): Define.
+	(T_UPD): Define.
+	(print_char_table): Use T_SST for %zd, %zi, %zn.  Use T_UPD for
+	%to, %tu, %tx, %tX.  Allow %hhn (T_SC).  Add "c" to the flags for
+	%s and %p.
+	(scan_char_table): Use T_SC for %hhd, %hhi, %hhn.  Use T_SST for
+	%zd, %zi, %zn.  Use T_UPD for %to, %tu, %tx, %tX.  Add "c" to the
+	flags for %c, %s and %[.
+	(check_format_info): Only allow leniency for signedness of targets
+	of character pointers (when pedantic) for formats flagged with
+	"c", so for strings but not for %hh formats.  When pedantic, don't
+	allow character pointers to substitute for void pointers if a
+	second level of indirection is present.
+
 2000-08-06  Kazu Hirata  <kazu@hxi.com>
 
 	* invoke.texi (Options for Debugging Your Program or GCC): Update

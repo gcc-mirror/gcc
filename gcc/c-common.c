@@ -1190,12 +1190,15 @@ strip_attrs (specs_attrs)
 #define T_D	&double_type_node
 #define T_LD	&long_double_type_node
 #define T_C	&char_type_node
+#define T_SC	&signed_char_type_node
 #define T_UC	&unsigned_char_type_node
 #define T_V	&void_type_node
 #define T_W	&wchar_type_node
 #define T_WI	&wint_type_node
 #define T_ST    &sizetype
+#define T_SST   &signed_size_type_node
 #define T_PD    &ptrdiff_type_node
+#define T_UPD   &unsigned_ptrdiff_type_node
 #define T_IM    NULL /* intmax_t not yet implemented.  */
 #define T_UIM   NULL /* uintmax_t not yet implemented.  */
 
@@ -1233,33 +1236,33 @@ typedef struct {
 } format_char_info;
 
 static format_char_info print_char_table[] = {
-  { "di",	0,	T_I,	T_I,	T_I,	T_L,	T_LL,	T_LL,	T_ST,	T_PD,	T_IM,	"-wp0 +'"	},
-  { "oxX",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_PD,	T_UIM,	"-wp0#"		},
-  { "u",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_PD,	T_UIM,	"-wp0'"		},
+  { "di",	0,	T_I,	T_I,	T_I,	T_L,	T_LL,	T_LL,	T_SST,	T_PD,	T_IM,	"-wp0 +'"	},
+  { "oxX",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_UPD,	T_UIM,	"-wp0#"		},
+  { "u",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_UPD,	T_UIM,	"-wp0'"		},
 /* A GNU extension.  */
   { "m",	0,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
   { "fFgG",	0,	T_D,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	NULL,	NULL,	"-wp0 +#'"	},
   { "eEaA",	0,	T_D,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	NULL,	NULL,	"-wp0 +#"	},
   { "c",	0,	T_I,	NULL,	NULL,	T_WI,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
   { "C",	0,	T_WI,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
-  { "s",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
+  { "s",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wpc"		},
   { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
-  { "p",	1,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
-  { "n",	1,	T_I,	NULL,	T_S,	T_L,	T_LL,	NULL,	T_ST,	T_PD,	T_IM,	""		},
+  { "p",	1,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wc"		},
+  { "n",	1,	T_I,	T_SC,	T_S,	T_L,	T_LL,	NULL,	T_SST,	T_PD,	T_IM,	""		},
   { NULL,	0,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL		}
 };
 
 static format_char_info scan_char_table[] = {
-  { "di",	1,	T_I,	T_C,	T_S,	T_L,	T_LL,	T_LL,	T_ST,	T_PD,	T_IM,	"*"	},
-  { "ouxX",	1,	T_UI,	T_UC,	T_US,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_PD,	T_UIM,	"*"	},
+  { "di",	1,	T_I,	T_SC,	T_S,	T_L,	T_LL,	T_LL,	T_SST,	T_PD,	T_IM,	"*"	},
+  { "ouxX",	1,	T_UI,	T_UC,	T_US,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_UPD,	T_UIM,	"*"	},
   { "efFgEGaA",	1,	T_F,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	NULL,	NULL,	"*"	},
-  { "c",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
-  { "s",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*a"	},
-  { "[",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*a"	},
+  { "c",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*c"	},
+  { "s",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*ac"	},
+  { "[",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*ac"	},
   { "C",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
   { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*a"	},
   { "p",	2,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
-  { "n",	1,	T_I,	T_C,	T_S,	T_L,	T_LL,	NULL,	T_ST,	T_PD,	T_IM,	""	},
+  { "n",	1,	T_I,	T_SC,	T_S,	T_L,	T_LL,	NULL,	T_SST,	T_PD,	T_IM,	""	},
   { NULL,	0,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL	}
 };
 
@@ -2074,8 +2077,10 @@ check_format_info (info, params)
 		      || (DECL_P (cur_param) && TREE_READONLY (cur_param))))))
 	warning ("writing into constant object (arg %d)", arg_num);
 
-      /* Check whether the argument type is a character type.  */
-      if (TREE_CODE (cur_type) != ERROR_MARK)
+      /* Check whether the argument type is a character type.  This leniency
+	 only applies to certain formats, flagged with 'c'.
+      */
+      if (TREE_CODE (cur_type) != ERROR_MARK && index (fci->flag_chars, 'c') != 0)
 	char_type_flag = (TYPE_MAIN_VARIANT (cur_type) == char_type_node
 			  || TYPE_MAIN_VARIANT (cur_type) == signed_char_type_node
 			  || TYPE_MAIN_VARIANT (cur_type) == unsigned_char_type_node);
@@ -2093,7 +2098,7 @@ check_format_info (info, params)
 		&& fci->pointer_count > 0
 		&& (! pedantic
 		    || TYPE_MAIN_VARIANT (cur_type) == void_type_node
-		    || char_type_flag))
+		    || (i == 1 && char_type_flag)))
 	  /* Don't warn about differences merely in signedness, unless
 	     -pedantic.  With -pedantic, warn if the type is a pointer
 	     target and not a character type, and for character types at
@@ -2109,8 +2114,7 @@ check_format_info (info, params)
 	     equivalent but the above test won't consider them equivalent.  */
 	  && ! (wanted_type == char_type_node
 		&& (! pedantic || i < 2)
-		&& (TYPE_MAIN_VARIANT (cur_type) == signed_char_type_node
-		    || TYPE_MAIN_VARIANT (cur_type) == unsigned_char_type_node)))
+		&& char_type_flag))
 	{
 	  register const char *this;
 	  register const char *that;
