@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a MIPS using ELF.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -24,5 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_OS_CPP_BUILTINS()	\
 do {					\
   builtin_define ("__rtems__");		\
+  builtin_define ("__USE_INIT_FINI__");	\
   builtin_assert ("system=rtems");	\
 } while (0)
