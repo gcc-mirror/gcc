@@ -1,3 +1,10 @@
+Sat Feb 13 11:53:12 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Sun Sep 20 20:57:02 1998  Robert Lipe  <robertl@dgii.com>
+	* configure.in (i*86-*-sysv5*): Use fixinc.svr4 to patch byteorder
+	problems.
+	* configure: Regenerate.
+
 Fri Feb 12 23:20:54 1999  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
 
 	* loop.c (scan_loop): Call reg_in_basic_block_p before
