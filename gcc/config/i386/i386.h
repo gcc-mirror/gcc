@@ -2595,16 +2595,21 @@ do {							\
     return flag_pic && SYMBOLIC_CONST (RTX) ? 1 : 0;		\
 								\
   case CONST_DOUBLE:						\
-    {								\
-      int code;							\
-      if (GET_MODE (RTX) == VOIDmode)				\
-	return 0;						\
-								\
-      code = standard_80387_constant_p (RTX);			\
-      return code == 1 ? 1 :					\
-	     code == 2 ? 2 :					\
-			 3;					\
-    }
+    if (GET_MODE (RTX) == VOIDmode)				\
+      return 0;							\
+    switch (standard_80387_constant_p (RTX))			\
+      {								\
+      case 1: /* 0.0 */						\
+	return 1;						\
+      case 2: /* 1.0 */						\
+	return 2;						\
+      default:							\
+	/* Start with (MEM (SYMBOL_REF)), since that's where	\
+	   it'll probably end up.  Add a penalty for size.  */	\
+	return (COSTS_N_INSNS (1) + (flag_pic != 0)		\
+		+ (GET_MODE (RTX) == SFmode ? 0			\
+		   : GET_MODE (RTX) == DFmode ? 1 : 2));	\
+      }
 
 /* Delete the definition here when TOPLEVEL_COSTS_N_INSNS gets added to cse.c */
 #define TOPLEVEL_COSTS_N_INSNS(N) \
@@ -2765,6 +2770,9 @@ do {							\
     if (!TARGET_64BIT && GET_MODE (X) == DImode)			\
       TOPLEVEL_COSTS_N_INSNS (ix86_cost->add * 2);			\
     TOPLEVEL_COSTS_N_INSNS (ix86_cost->add);				\
+									\
+  case FLOAT_EXTEND:							\
+    TOPLEVEL_COSTS_N_INSNS (0);						\
 									\
   egress_rtx_costs:							\
     break;

@@ -1,5 +1,19 @@
 2002-05-12  Richard Henderson  <rth@redhat.com>
 
+	* expr.c (compress_float_constant): New.
+	(emit_move_insn): Use it.
+	(float_extend_from_mem): New.
+	(init_expr_once): Initialize it.
+	* real.c (exact_real_truncate): New.
+
+	* config/i386/i386.h (CONST_COSTS): Assume CONST_DOUBLE gets
+	dropped into memory; penalize for size.
+	(RTX_COSTS): FLOAT_EXTEND is free.
+	* config/i386/i386.md (extendsfdf2, extendsfxf2, extendsftf2,
+	extenddfxf2, extenddftf2): Accept constants and drop them to memory.
+
+2002-05-12  Richard Henderson  <rth@redhat.com>
+
 	* profile.h (profile_info): Add missing extern to declaration.
 	* profile.c (profile_info): Define it.
 
