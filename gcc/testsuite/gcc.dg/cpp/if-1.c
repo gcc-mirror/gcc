@@ -9,22 +9,29 @@
 #error 077 != 63 /* { dg-bogus "#error" "normal conversion" } */
 #endif
 
-#if 12wrt /* { dg-error "nvalid number|missing white" "invalid number" } */
+#if 12wrt /* { dg-error "invalid suffix" "invalid number" } */
 #endif
 
-#if 0abc /* { dg-error "nvalid number|missing white" "invalid number" } */
+#if 0abc /* { dg-error "invalid suffix" "invalid number" } */
 #endif
 
-#if 42abc /* { dg-error "nvalid number|missing white" "invalid number" } */
+#if 42abc /* { dg-error "invalid suffix" "invalid number" } */
+#endif
+
+#if 0xabc != 2748
+#error 0xabc	/* { dg-bogus "#error" "normal conversion" } */
 #endif
 
 #if 1.2 /* { dg-error "loating point numbers" "floating point in #if" } */
 #endif
 
-#if 4uu /* { dg-error "too many 'u'" "too many suffixes" } */
+#if 4uu /* { dg-error "invalid suffix" "too many suffixes" } */
 #endif
 
-#if 124123231lll /* { dg-error "too many 'l'" "too many suffixes" } */
+#if 124123231lll /* { dg-error "invalid suffix" "too many suffixes" } */
+#endif
+
+#if 1234lul	/* { dg-error "invalid suffix" "u between ls" } */
 #endif
 
 #if 099 /* { dg-error "digits beyond the radix" "decimal in octal constant" } */

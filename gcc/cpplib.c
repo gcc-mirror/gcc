@@ -476,7 +476,7 @@ read_line_number (pfile, num)
     }
   else
     {
-      if (type != CPP_VSPACE && type != CPP_EOF)
+      if (type != CPP_EOF)
 	cpp_error (pfile, "invalid format #line");
       return 0;
     }
@@ -545,7 +545,7 @@ do_line (pfile)
   str = tok->val.name.text;
   len = tok->val.name.len;
 
-  if (type == CPP_VSPACE || type == CPP_EOF)
+  if (type == CPP_EOF)
     goto done;
   else if (type != CPP_STRING)
     {

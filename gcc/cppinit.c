@@ -776,11 +776,6 @@ cpp_start_read (pfile, print, fname)
   if (user_label_prefix == NULL)
     user_label_prefix = USER_LABEL_PREFIX;
 
-  /* Don't bother trying to do macro expansion if we've already done
-     preprocessing.  */
-  if (CPP_OPTION (pfile, preprocessed))
-    pfile->no_macro_expand++;
-
   /* Figure out if we need to save function macro parameter spellings.
      We don't use CPP_PEDANTIC() here because that depends on whether
      or not the current file is a system header, and there is no

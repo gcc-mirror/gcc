@@ -213,8 +213,6 @@ extern void _cpp_skip_rest_of_line	PARAMS ((cpp_reader *));
 extern void _cpp_free_temp_tokens	PARAMS ((cpp_reader *));
 extern void _cpp_init_input_buffer	PARAMS ((cpp_reader *));
 extern void _cpp_grow_token_buffer	PARAMS ((cpp_reader *, long));
-extern enum cpp_ttype _cpp_get_directive_token
-					PARAMS ((cpp_reader *));
 extern void _cpp_init_toklist		PARAMS ((cpp_toklist *, int));
 extern void _cpp_clear_toklist		PARAMS ((cpp_toklist *));
 extern void _cpp_free_toklist		PARAMS ((const cpp_toklist *));
@@ -238,6 +236,7 @@ extern unsigned int _cpp_get_line	PARAMS ((cpp_reader *,
 extern const cpp_token *_cpp_get_raw_token PARAMS ((cpp_reader *));
 extern void _cpp_push_token PARAMS ((cpp_reader *, const cpp_token*));
 extern const cpp_token *_cpp_glue_header_name PARAMS ((cpp_reader *));
+extern const U_CHAR *_cpp_spell_operator PARAMS ((enum cpp_ttype));
 
 /* In cpplib.c */
 extern const struct directive *_cpp_check_directive

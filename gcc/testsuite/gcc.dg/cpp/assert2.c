@@ -20,5 +20,5 @@
 #error		/* { dg-bogus "error" "test w/o answer" } */
 #endif
 
-#if #abc[def]	/* { dg-error "invalid char" "test with malformed answer" } */
+#if #abc[def]	/* { dg-error "is not valid" "test with malformed answer" } */
 #endif

@@ -123,10 +123,7 @@ typedef struct cpp_hashnode cpp_hashnode;
   I(CPP_COMMENT,	0)	/* Only if output comments.  */ \
   N(CPP_MACRO_ARG,      0)	/* Macro argument.  */          \
   N(CPP_EOF,		0)	/* End of file.  */		\
-  I(CPP_HEADER_NAME,	0)	/* <stdio.h> in #include */	\
-\
-  /* Obsolete - will be removed when no code uses them still.  */	\
-  T(CPP_VSPACE,		"\n")	/* End of line.  */
+  I(CPP_HEADER_NAME,	0)	/* <stdio.h> in #include */
 
 #define T(e, s) e,
 #define I(e, s) e,
@@ -542,9 +539,6 @@ struct cpp_reader
      containing files that matches the current status.  */
   unsigned char input_stack_listing_current;
 
-  /* If non-zero, macros are not expanded.  */
-  unsigned char no_macro_expand;
-
   /* We're printed a warning recommending against using #import.  */
   unsigned char import_warning;
 
@@ -555,7 +549,8 @@ struct cpp_reader
   /* True if we are skipping a failed conditional group.  */
   unsigned char skipping;
 
-  /* Do we need to save paramter spellings.  */
+  /* True if we need to save parameter spellings - only if -pedantic,
+     or we might need to write out definitions.  */
   unsigned char save_parameter_spellings;
 
   /* If we're in lex_line.  */

@@ -167,13 +167,13 @@ token_spellings [N_TTYPES + 1] = {TTYPE_TABLE {0, 0} };
 #undef N
 
 /* For debugging: the internal names of the tokens.  */
-#define T(e, s) STRINGX(e),
-#define I(e, s) STRINGX(e),
-#define S(e, s) STRINGX(e),
-#define C(e, s) STRINGX(e),
-#define N(e, s) STRINGX(e),
+#define T(e, s) U STRINGX(e) + 4,
+#define I(e, s) U STRINGX(e) + 4,
+#define S(e, s) U STRINGX(e) + 4,
+#define C(e, s) U STRINGX(e) + 4,
+#define N(e, s) U STRINGX(e) + 4,
 
-const char * const token_names[N_TTYPES] = { TTYPE_TABLE };
+const U_CHAR *const token_names[N_TTYPES] = { TTYPE_TABLE };
 
 #undef T
 #undef I
@@ -1872,10 +1872,9 @@ output_token (pfile, token, prev)
 }
 
 /* Write the spelling of a token TOKEN to BUFFER.  The buffer must
-   already contain the enough space to hold the token's spelling.  If
-   WHITESPACE is true, and the token was preceded by whitespace,
-   output a single space before the token proper.  Returns a pointer
-   to the character after the last character written.  */
+   already contain the enough space to hold the token's spelling.
+   Returns a pointer to the character after the last character
+   written.  */
 
 static unsigned char *
 spell_token (pfile, token, buffer)
@@ -1932,6 +1931,19 @@ spell_token (pfile, token, buffer)
 
   return buffer;
 }
+
+/* Return the spelling of a token known to be an operator.
+   Does not distinguish digraphs from their counterparts.  */
+const unsigned char *
+_cpp_spell_operator (type)
+     enum cpp_ttype type;
+{
+  if (token_spellings[type].type == SPELL_OPERATOR)
+    return token_spellings[type].spelling;
+  else
+    return token_names[type];
+}
+
 
 /* Macro expansion algorithm.  TODO.  */
 
@@ -2021,6 +2033,10 @@ is_macro_disabled (pfile, expansion, token)
      const cpp_token *token;
 {
   cpp_context *context = CURRENT_CONTEXT (pfile);
+
+  /* Don't expand anything if this file has already been preprocessed.  */
+  if (CPP_OPTION (pfile, preprocessed))
+    return 1;
 
   /* Arguments on either side of ## are inserted in place without
      macro expansion (6.10.3.3.2).  Conceptually, any macro expansion
@@ -3273,26 +3289,6 @@ _cpp_dump_list (pfile, list, token, flush)
 
   if (flush && pfile->printer)
     cpp_output_tokens (pfile, pfile->printer, pfile->token_list.line);
-}
-
-/* Stub function during conversion, mainly for cppexp.c's benefit.  */
-enum cpp_ttype
-_cpp_get_directive_token (pfile)
-     cpp_reader *pfile;
-{
-  const cpp_token *tok;
-
-  if (pfile->no_macro_expand)
-    tok = _cpp_get_raw_token (pfile);
-  else
-    tok = cpp_get_token (pfile);
-
-  if (tok->type == CPP_EOF)
-    return CPP_VSPACE;  /* backward compat; and don't try to spell EOF */
-
-  CPP_RESERVE (pfile, TOKEN_LEN (tok));
-  pfile->limit = spell_token (pfile, tok, pfile->limit);
-  return tok->type;
 }
 
 /* Allocate pfile->input_buffer, and initialize trigraph_map[]
