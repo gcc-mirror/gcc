@@ -6072,7 +6072,7 @@ get_block_vector (block, n_blocks_p)
   return block_vector;
 }
 
-static int next_block_index = 2;
+static GTY(()) int next_block_index = 2;
 
 /* Set BLOCK_NUMBER for all the blocks in FN.  */
 
