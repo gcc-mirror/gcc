@@ -1,3 +1,14 @@
+2004-04-22  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/charset/IllegalCharsetNameException.java
+	(charsetName): Made private.
+	(IllegalCharsetNameException): Added @param tag to javadoc.
+	(getCharsetName): Added @return tag to javadoc.
+	* java/nio/charset/MalformedInputException.java
+	(MalformedInputException): Added @param tag to javadoc.
+	(getInputLength): Revised method description, added @return tag.
+	(getMessage): Added @return tag.
+
 2004-04-22  Jerry Quinn  <jlquinn@optonline.net>
 
 	* java/awt/Font.java (deriveFont): Implement missing variants.
