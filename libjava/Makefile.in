@@ -770,6 +770,7 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/java/net/protocol/jar/Handler.java \
 	gnu/java/nio/ChannelInputStream.java \
 	gnu/java/nio/ChannelOutputStream.java \
+	gnu/java/nio/ChannelReader.java \
 	gnu/java/nio/DatagramChannelImpl.java \
 	gnu/java/nio/DatagramChannelSelectionKey.java \
 	gnu/java/nio/FileLockImpl.java \
@@ -4207,6 +4208,7 @@ am__objects_15 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/java/net/protocol/jar/Handler.lo \
 	gnu/java/nio/ChannelInputStream.lo \
 	gnu/java/nio/ChannelOutputStream.lo \
+	gnu/java/nio/ChannelReader.lo \
 	gnu/java/nio/DatagramChannelImpl.lo \
 	gnu/java/nio/DatagramChannelSelectionKey.lo \
 	gnu/java/nio/FileLockImpl.lo \
@@ -7521,6 +7523,7 @@ gnu/java/net/protocol/jar/Connection.java \
 gnu/java/net/protocol/jar/Handler.java \
 gnu/java/nio/ChannelInputStream.java \
 gnu/java/nio/ChannelOutputStream.java \
+gnu/java/nio/ChannelReader.java \
 gnu/java/nio/DatagramChannelImpl.java \
 gnu/java/nio/DatagramChannelSelectionKey.java \
 gnu/java/nio/FileLockImpl.java \
@@ -10288,6 +10291,8 @@ gnu/java/net/protocol/jar/Handler.lo:  \
 gnu/java/nio/ChannelInputStream.lo: gnu/java/nio/$(am__dirstamp) \
 	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
 gnu/java/nio/ChannelOutputStream.lo: gnu/java/nio/$(am__dirstamp) \
+	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
+gnu/java/nio/ChannelReader.lo: gnu/java/nio/$(am__dirstamp) \
 	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
 gnu/java/nio/DatagramChannelImpl.lo: gnu/java/nio/$(am__dirstamp) \
 	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
@@ -22381,6 +22386,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/jar/$(DEPDIR)/Handler.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/ChannelInputStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/ChannelOutputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/ChannelReader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/DatagramChannelImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/DatagramChannelSelectionKey.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/FileLockImpl.Plo@am__quote@
