@@ -3161,6 +3161,7 @@ conditional_conversion (tree e1, tree e2)
   tree t1 = non_reference (TREE_TYPE (e1));
   tree t2 = non_reference (TREE_TYPE (e2));
   tree conv;
+  bool good_base;
 
   /* [expr.cond]
 
@@ -3192,10 +3193,9 @@ conditional_conversion (tree e1, tree e2)
      FIXME we can't express an rvalue that refers to the original object;
      we have to create a new one.  */
   if (CLASS_TYPE_P (t1) && CLASS_TYPE_P (t2)
-      && same_or_base_type_p (TYPE_MAIN_VARIANT (t2), 
-			      TYPE_MAIN_VARIANT (t1)))
+      && ((good_base = DERIVED_FROM_P (t2, t1)) || DERIVED_FROM_P (t1, t2)))
     {
-      if (at_least_as_qualified_p (t2, t1))
+      if (good_base && at_least_as_qualified_p (t2, t1))
 	{
 	  conv = build1 (IDENTITY_CONV, t1, e1);
 	  if (!same_type_p (TYPE_MAIN_VARIANT (t1), 
@@ -3211,13 +3211,13 @@ conditional_conversion (tree e1, tree e2)
       else
 	return NULL_TREE;
     }
+  else
+    /* [expr.cond]
 
-  /* [expr.cond]
-
-     E1 can be converted to match E2 if E1 can be implicitly converted
-     to the type that expression E2 would have if E2 were converted to
-     an rvalue (or the type it has, if E2 is an rvalue).  */
-  return implicit_conversion (t2, t1, e1, LOOKUP_NORMAL);
+       Otherwise: E1 can be converted to match E2 if E1 can be implicitly
+       converted to the type that expression E2 would have if E2 were
+       converted to an rvalue (or the type it has, if E2 is an rvalue).  */
+    return implicit_conversion (t2, t1, e1, LOOKUP_NORMAL);
 }
 
 /* Implement [expr.cond].  ARG1, ARG2, and ARG3 are the three

@@ -992,18 +992,19 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 /* Nonzero iff TYPE is derived from PARENT. Ignores accessibility and
    ambiguity issues.  */
 #define DERIVED_FROM_P(PARENT, TYPE) \
-  lookup_base ((TYPE), PARENT, ba_any, NULL)
+  (lookup_base ((TYPE), PARENT, ba_any, NULL) != NULL_TREE)
 /* Nonzero iff TYPE is uniquely derived from PARENT. Ignores
    accessibility.  */
 #define UNIQUELY_DERIVED_FROM_P(PARENT, TYPE) \
-  lookup_base ((TYPE), (PARENT), ba_ignore | ba_quiet, NULL)
+  (lookup_base ((TYPE), (PARENT), ba_ignore | ba_quiet, NULL) != NULL_TREE)
 /* Nonzero iff TYPE is accessible in the current scope and uniquely
    derived from PARENT.  */
 #define ACCESSIBLY_UNIQUELY_DERIVED_P(PARENT, TYPE) \
-  lookup_base ((TYPE), (PARENT), ba_check | ba_quiet, NULL)
+  (lookup_base ((TYPE), (PARENT), ba_check | ba_quiet, NULL) != NULL_TREE)
 /* Nonzero iff TYPE is publicly & uniquely derived from PARENT.  */
 #define PUBLICLY_UNIQUELY_DERIVED_P(PARENT, TYPE) \
-  lookup_base ((TYPE), (PARENT),  ba_not_special | ba_quiet, NULL)
+  (lookup_base ((TYPE), (PARENT),  ba_not_special | ba_quiet, NULL) \
+   != NULL_TREE)
 
 /* This is a few header flags for 'struct lang_type'.  Actually,
    all but the first are used only for lang_type_class; they
@@ -3364,7 +3365,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 				   type is derived from the pointed to
 				   by the first.  */
 #define COMPARE_RELAXED       2 /* Like COMPARE_DERIVED, but in
-				   reverse.  Also treat enmeration
+				   reverse.  Also treat enumeration
 				   types as the same as integer types
 				   of the same width.  */
 #define COMPARE_REDECLARATION 4 /* The comparsion is being done when
