@@ -57,24 +57,6 @@
 %{!mcpu*:%(asm_cpu_default)} \
 "
 
-#define STARTFILE_ARCH64_SPEC "\
-%{ansi:/usr/lib/sparcv9/values-Xc.o%s} \
-%{!ansi:/usr/lib/sparcv9/values-Xa.o%s}"
- 
-#undef STARTFILE_ARCH_SPEC
-
-#if DEFAULT_ARCH32_P
-#define STARTFILE_ARCH_SPEC "\
-%{m32:" STARTFILE_ARCH32_SPEC "} \
-%{m64:" STARTFILE_ARCH64_SPEC "} \
-%{!m32:%{!m64:" STARTFILE_ARCH32_SPEC "}}"
-#else
-#define STARTFILE_ARCH_SPEC "\
-%{m32:" STARTFILE_ARCH32_SPEC "} \
-%{m64:" STARTFILE_ARCH64_SPEC "} \
-%{!m32:%{!m64:" STARTFILE_ARCH64_SPEC "}}"
-#endif
-
 #undef CPP_CPU_DEFAULT_SPEC
 #define CPP_CPU_DEFAULT_SPEC \
 (DEFAULT_ARCH32_P ? "\

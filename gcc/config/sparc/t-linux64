@@ -3,14 +3,13 @@ MULTILIB_DIRNAMES = 64 32 alt
 MULTILIB_MATCHES = mcmodel?medany=mcmodel?medmid
 MULTILIB_EXCEPTIONS = m32/mno-app-regs* m32/mcmodel=*
 MULTILIB_EXCLUSIONS = m32/!m64/mno-app-regs m32/!m64/mcmodel=medany
+MULTILIB_OSDIRNAMES = ../lib64 ../lib alt
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 
 EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o \
 	crtfastmath.o
-
-SHLIB_SLIBDIR_SUFFIXES = 64:64 32:
 
 # Override t-slibgcc-elf-ver to export some libgcc symbols with
 # the symbol versions that glibc used.

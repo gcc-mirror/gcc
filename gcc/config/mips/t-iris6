@@ -4,6 +4,7 @@
 MULTILIB_OPTIONS=mabi=n32/mabi=64
 MULTILIB_DIRNAMES=
 MULTILIB_MATCHES=
+MULTILIB_OSDIRNAMES=../lib32 ../lib64
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
@@ -13,8 +14,6 @@ INSTALL_LIBGCC = install-multilib
 
 EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o
 CRTSTUFF_T_CFLAGS=-g1
-
-SHLIB_SLIBDIR_SUFFIXES = mabi=64:/mabi=64 mabi=n32:
 
 # This is only needed in the static libgcc as a band-aid until gcc correctly
 # implements the N32/N64 ABI structure passing conventions

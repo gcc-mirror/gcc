@@ -1,3 +1,59 @@
+2002-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (print_multi_os_directory): New variable.
+	(option_map): Support --print-multi-os-directory.
+	(struct prefix_list): Add os_multilib field.
+	(multilib_os_dir): New variable.
+	(static_specs): Add multilib_options.
+	(find_a_file): Add multilib argument.  Search in GCC or OS multilib
+	subdirs if non-zero.
+	(read_specs, execute): Update callers.
+	(find_file): Likewise.  Don't prefix name with multilib_dir, instead
+	pass 1 as multilib option.
+	(display_help): Include --print-multi-os-directory.
+	(add_prefix): Add os_multilib argument.  Initialize pl->os_multilib.
+	(process_command): Update callers.  Handle --print-multi-os-directory.
+	(do_spec_1) ['D']: Use multilib_os_directory if pl->os_multilib is
+	set.
+	(main): Update find_a_file and add_prefix callers.
+	Handle print_multi_os_directory.
+	(struct mdswitchstr): New.
+	(mdswitches, n_mdswitches): New variables.
+	(used_arg): Add MULTILIB_DEFAULT switches too if they are not
+	present on the command line nor their mutually incompatible
+	switches.
+	(default_arg): Optimize.
+	(set_multilib_dir): Compute multilib_os_dir.  Initialize mdswitches
+	array.
+	(print_multilib_info): Only print GCC multilib dir name, not OS
+	multilib dirname.
+	* genmultilib: Add osdirnames parameter.  Output multilib_options
+	variable.  If osdirnames is specified, output dirnames as
+	dirname:osdirname.
+	* mklibgcc.in: Use MULTILIB_OSDIRNAMES, --print-multi-directory
+	and --print-multi-os-directory instead of SHLIB_SLIBDIR_SUFFIXES
+	to compute libgcc_s soname and install path.
+	* Makefile.in (libgcc.mk): Pass MULTILIB_OSDIRNAMES instead of
+	SHLIB_SLIBDIR_SUFFIXES to mklibgcc.
+	(s_mlib): Pass MULTILIB_OSDIRNAMES or nothing as last genmultilib
+	argument.
+
+	* config/sparc/t-linux64 (MULTILIB_OSDIRNAMES): Set.
+	(SHLIB_SLIBDIR_SUFFIXES): Remove.
+	* config/sparc/linux64.h (STARTFILE_SPEC32, STARTFILE_SPEC64,
+	ENDFILE_SPEC32, ENDFILE_SPEC64, ENDFILE_COMMON): Remove.
+	(STARTFILE_SPEC, ENDFILE_SPEC): Don't distinguish between -m32
+	and -m64.
+	* config/sparc/t-sol2-64 (MULTILIB_OSDIRNAMES): Set.
+	(SHLIB_SLIBDIR_SUFFIXES): Remove.
+	* config/sparc/sol2-bi.h (STARTFILE_ARCH64_SPEC): Remove.
+	(STARTFILE_ARCH_SPEC): Remove.
+	* config/i386/t-linux64 (MULTILIB_OSDIRNAMES): Set.
+	(SHLIB_SLIBDIR_SUFFIXES): Remove.
+	* config/i386/linux64.h (STARTFILE_PREFIX_SPEC): Remove.
+	* config/mips/t-iris6 (MULTILIB_OSDIRNAMES): Set.
+	(SHLIB_SLIBDIR_SUFFIXES): Remove.
+
 Thu Oct  3 21:42:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (choose_function_section): Avoid choice for linkonce functions.
