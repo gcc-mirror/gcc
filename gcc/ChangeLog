@@ -5,6 +5,10 @@
 	* et-forest.c (et_free_tree_force): New.
 	* et-forest.h: Add a prototype for et_free_tree_force.
 
+	* tree.c (get_set_constructor_bits,
+	get_set_constructor_bytes): Remove.
+	* tree.h: Remove the corresponding prototypes.
+
 2005-03-25  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
 
 	PR target/15491
