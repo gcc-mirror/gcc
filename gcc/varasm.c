@@ -385,7 +385,9 @@ make_decl_rtl (decl, asmspec, top_level)
 
 	  DECL_RTL (decl) = gen_rtx (MEM, DECL_MODE (decl),
 				     gen_rtx (SYMBOL_REF, Pmode, name));
-	  if (TREE_THIS_VOLATILE (decl))
+	  if (TREE_THIS_VOLATILE (decl)
+	    || (flag_volatile_global && TREE_CODE (decl) == VAR_DECL
+		&& TREE_PUBLIC (decl)))
 	    MEM_VOLATILE_P (DECL_RTL (decl)) = 1;
 	  if (TREE_READONLY (decl))
 	    RTX_UNCHANGING_P (DECL_RTL (decl)) = 1;
