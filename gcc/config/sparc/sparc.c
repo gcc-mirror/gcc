@@ -780,6 +780,30 @@ arith_operand (op, mode)
   return SPARC_SIMM13_P (val);
 }
 
+/* Return true if OP is a constant 4096  */
+
+int
+arith_4096_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  int val;
+  if (GET_CODE (op) != CONST_INT)
+    return 0;
+  val = INTVAL (op) & 0xffffffff;
+  return val == 4096;
+}
+
+/* Return true if OP is suitable as second operand for add/sub */
+
+int
+arith_add_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return arith_operand (op, mode) || arith_4096_operand (op, mode);
+}
+
 /* Return true if OP is a CONST_INT or a CONST_DOUBLE which can fit in the
    immediate field of OR and XOR instructions.  Used for 64-bit
    constant formation patterns.  */
@@ -877,6 +901,30 @@ arith_double_operand (op, mode)
 		   && (CONST_DOUBLE_LOW (op) & 0x1000) == 0x1000)
 		  || (CONST_DOUBLE_HIGH (op) == 0
 		      && (CONST_DOUBLE_LOW (op) & 0x1000) == 0))));
+}
+
+/* Return true if OP is a constant 4096 for DImode on ARCH64 */
+
+int
+arith_double_4096_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (TARGET_ARCH64 &&
+  	  ((GET_CODE (op) == CONST_INT && INTVAL (op) == 4096) ||
+  	   (GET_CODE (op) == CONST_DOUBLE &&
+  	    CONST_DOUBLE_LOW (op) == 4096 &&
+  	    CONST_DOUBLE_HIGH (op) == 0)));
+}
+
+/* Return true if OP is suitable as second operand for add/sub in DImode */
+
+int
+arith_double_add_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return arith_double_operand (op, mode) || arith_double_4096_operand (op, mode);
 }
 
 /* Return true if OP is a register, or is a CONST_INT or CONST_DOUBLE that
