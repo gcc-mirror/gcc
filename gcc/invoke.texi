@@ -2680,8 +2680,8 @@ Print the name of the configured installation directory and a list of
 program and library directories gcc will search---and don't do anything else.
 
 This is useful when gcc prints the error message
-@samp{installation problem, cannot exec cpp: No such file or directory}.
-To resolve this you either need to put @file{cpp} and the other compiler
+@samp{installation problem, cannot exec cpp0: No such file or directory}.
+To resolve this you either need to put @file{cpp0} and the other compiler
 components where gcc expects to find them, or you can set the environment
 variable @code{GCC_EXEC_PREFIX} to the directory where you installed them.
 Don't forget the trailing '/'.

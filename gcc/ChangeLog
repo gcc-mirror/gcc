@@ -1,3 +1,8 @@
+2000-12-19  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* invoke.texi (-print-search-dirs): Make references to cpp refer
+	to cpp0 instead.
+
 2000-12-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fold-const.c (tree_expr_nonnegative_p): Treat truth values as
