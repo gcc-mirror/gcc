@@ -2596,7 +2596,7 @@ long getpagesize()
 #endif
 }
 
-#ifdef i386
+#ifdef __i386__
 extern int VirtualProtect (char *, int, int, int *) __attribute__((stdcall));
 #endif
 
