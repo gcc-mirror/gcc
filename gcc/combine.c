@@ -10025,6 +10025,7 @@ simplify_comparison (code, pop0, pop1)
       /* Get the constant we are comparing against and turn off all bits
 	 not on in our mode.  */
       const_op = trunc_int_for_mode (INTVAL (op1), mode);
+      op1 = GEN_INT (const_op);
 
       /* If we are comparing against a constant power of two and the value
 	 being compared can only have that single bit nonzero (e.g., it was

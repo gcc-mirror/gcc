@@ -1145,9 +1145,16 @@ immediate_operand (op, mode)
 int
 const_int_operand (op, mode)
      register rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+     enum machine_mode mode;
 {
-  return GET_CODE (op) == CONST_INT;
+  if (GET_CODE (op) != CONST_INT)
+    return 0;
+
+  if (mode != VOIDmode
+      && trunc_int_for_mode (INTVAL (op), mode) != INTVAL (op))
+    return 0;
+
+  return 1;
 }
 
 /* Returns 1 if OP is an operand that is a constant integer or constant
