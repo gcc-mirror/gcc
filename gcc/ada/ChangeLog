@@ -1,3 +1,7 @@
+2002-11-18  Nathanael Nerode  <neroden@gcc.gnu.org>
+	* adaint.c (__gnat_tmp_name): Better, but good enough for now,
+	solution to buffer overflow bug on GNU/Linux.	
+
 2002-11-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 	Closes PR ada/5856 and PR ada/6919 !
 	* bindgen.adb: Remove all references to Public_Version.
