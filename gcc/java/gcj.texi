@@ -257,6 +257,10 @@ Deprecated synonym for @code{--classpath}.
 @item --bootclasspath=@var{path}
 Where to find the standard builtin classes, such as @code{java.lang.String}.
 
+@item --extdirs=@var{path}
+For each directory in the @var{path}, place the contents of that
+directory at the end of the class path.
+
 @item CLASSPATH
 This is an environment variable which holds a list of paths.
 @end table
@@ -274,9 +278,14 @@ then its value is appended.
 Otherwise, the current directory (@code{"."}) is appended.
 
 @item
-Finally, if @code{--bootclasspath} was specified, append its value.
+If @code{--bootclasspath} was specified, append its value.
 Otherwise, append the built-in system directory, @file{libgcj.jar}.
 @end itemize
+
+@item
+Finaly, if @code{--extdirs} was specified, append the contents of the
+specified directories at the end of the class path.  Otherwise, append
+the contents of the built-in extdirs at @code{$(prefix)/share/java/ext}.
 
 The classfile built by @command{gcj} for the class @code{java.lang.Object}
 (and placed in @code{libgcj.jar}) contains a special zero length

@@ -273,6 +273,7 @@ extern void jcf_dependency_print_dummies PARAMS ((void));
 extern void jcf_path_init PARAMS ((void));
 extern void jcf_path_classpath_arg PARAMS ((const char *));
 extern void jcf_path_bootclasspath_arg PARAMS ((const char *));
+extern void jcf_path_extdirs_arg PARAMS ((const char *));
 extern void jcf_path_include_arg PARAMS ((const char *));
 extern void jcf_path_seal PARAMS ((int));
 extern void *jcf_path_start PARAMS ((void));
