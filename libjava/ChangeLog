@@ -1,5 +1,11 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/AttributedCharacterIterator.java,
+	java/text/CharacterIterator.java:
+	Removed redundant modifiers.
+
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
 	* java/sql/Array.java,
 	java/sql/Blob.java,
 	java/sql/CallableStatement.java,
