@@ -14,3 +14,6 @@ EXTRA_DIST = INTRODUCTION dir-example
 # Do doc/ last so makeinfo will be built when we get there.
 # Others are alphabetical.
 SUBDIRS = intl lib info makeinfo po util doc
+# ??? For EGCS, only build the stuff we actually need.  This eliminates the
+# need for xgettext that exists in the po subdirectory.
+SUBDIRS = intl lib makeinfo

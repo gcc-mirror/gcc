@@ -1,3 +1,8 @@
+Fri Apr 10 01:36:24 1998  Jim Wilson <wilson@cygnus.com>
+
+	* Makefile.am (SUBDIRS): Redefine to exclude info, po, util and doc.
+	* Makefile.in: Rebuild.
+
 Thu Apr  2 18:29:26 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* info/termdep.h: If POSIX, #undef TIOCGETC for benefit of systems
