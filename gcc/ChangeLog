@@ -1,3 +1,36 @@
+2003-05-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* diagnostic.c (diagnostic_for_decl): Take a
+	diagnostic_context argument.  Restructure to be consistent
+	with diagnostic_report_diagnostic.
+	(diagnostic_count_diagnostic): Now static.  Take a
+	diagnostic_info argument, not just a diagnostic_t.  Some code
+	moved here from internal_error.  Move a case label for
+	clarity.
+	(diagnostic_action_after_output): New function.  Code moved
+	here from internal_error and fatal_error.
+	(bug_report_request): New #define so that this text appears in
+	only one place.
+	(diagnostic_report_diagnostic): Update to match changes to
+	diagnostic_count_diagnostic.  Call diagnostic_action_after_output.
+	(diagnostic_set_info): Call gettext here.
+
+	(pedwarn): Update comment.  Don't call gettext here.
+	(sorry): Use report_diagnostic.  Don't call gettext here.
+	(fatal_error): Remove final fnotice and exit, but call
+	real_abort to prevent warnings about noreturn function returning.
+	(internal_error): Likewise.  Don't do ICE suppression here nor
+	call context->internal_error.
+	(warning_with_decl): Suppress for decls in system headers.
+	Adjust call to diagnostic_for_decl.
+	(pedwarn_with_decl): Likewise.
+	(error_with_decl): Adjust call to diagnostic_for_decl.
+	(error_recursion): Use bug_report_request.
+
+	* diagnostic.h: Remove prototype of diagnostic_count_diagnostic.
+	* objc/objc-act.c (error_with_ivar, warn_with_method): Don't call
+	diagnostic_count_diagnostic.
+
 2003-05-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa64-hpux.h (ASM_OUTPUT_ALIGNED_COMMON): Correct last patch.
@@ -107,7 +140,7 @@ Mon May 12 11:32:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	asm_emit_uninitialized, assemble_zeros, assemble_static_space):
 	HOST_WIDE_INT argument
 
-2003-05-10  Steven Bosscher  <steven@gcc.gnu.org> 
+2003-05-10  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cgraphunit.c (cgraph_create_edges): Drop walk_tree in
 	favor of walk_tree_without_duplicates.  Add comments.
@@ -115,7 +148,7 @@ Mon May 12 11:32:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 2003-05-12  Josef Zlomek  <zlomekj@suse.cz>
 
 	* alloc-pool.h (ALLOC_POOL_ID_TYPE): New type.
-	(struct alloc_pool_def): New element 'id'. 
+	(struct alloc_pool_def): New element 'id'.
 	* alloc-pool.c (fancy_abort): Extern function prototype.
 	(abort): Macro which uses fancy_abort.
 	(struct allocation_object_def): New structure.
@@ -140,7 +173,7 @@ Mon May 12 11:32:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	components, components_notype): Build list in reverse order.
 	(enumlist): Clarify docs.  Use TREE_CHAIN not chainon.
 
-	* tree.c (chainon): Special case op2 null as well. 
+	* tree.c (chainon): Special case op2 null as well.
 	Reorg for clarity.
 
 2003-05-11  Roger Sayle  <roger@eyesopen.com>
@@ -156,7 +189,7 @@ Mon May 12 11:32:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-05-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-	* Makefile.in (out_object_file): Don't set -Wno-error for ${cpu}.o. 
+	* Makefile.in (out_object_file): Don't set -Wno-error for ${cpu}.o.
 
 	* sparc.c (print_operand): Fix uninitialized warning.
 
@@ -214,7 +247,7 @@ Mon May 12 11:32:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* varasm.c (copy_constant, case VIEW_CONVERT_EXPR): New case.
 
 2003-05-11  Bruno Haible  <bruno@clisp.org>
-	
+
 	* cppfiles.c (find_or_create_entry): Preserve errno.
 
 2003-05-11  Neil Booth  <neil@cat.daikokuya.co.uk>

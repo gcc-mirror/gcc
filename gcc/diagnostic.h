@@ -294,8 +294,6 @@ extern void diagnostic_initialize	PARAMS ((diagnostic_context *));
 extern void diagnostic_report_current_module PARAMS ((diagnostic_context *));
 extern void diagnostic_report_current_function PARAMS ((diagnostic_context *));
 extern void diagnostic_flush_buffer	PARAMS ((diagnostic_context *));
-extern bool diagnostic_count_diagnostic PARAMS ((diagnostic_context *,
-                                                 diagnostic_t));
 extern void diagnostic_report_diagnostic PARAMS ((diagnostic_context *,
                                                  diagnostic_info *));
 extern void diagnostic_set_info         PARAMS ((diagnostic_info *,

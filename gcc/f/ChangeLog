@@ -1,3 +1,7 @@
+2003-05-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* bad.c: Don't call diagnostic_count_diagnostic.
+
 2003-05-12  Roger Sayle  <roger@eyesopen.com>
 
 	* com.c (ffecom_init_0): Define built-in functions for atan2,
@@ -78,7 +82,7 @@
 
 	* lex.c (ffelex_file_pop_): Rename parameter from input_filename.
 	(ffelex_file_push_): Likewise.
-	
+
 	* ste.c (struct gbe_block): Rename field from input_filename.
 	(ffeste_start_block_, ffeste_start_stmt_): Likewise.
 
