@@ -2208,6 +2208,12 @@ create_reg_dead_note (reg, insn)
 					   GET_MODE (XEXP (link, 0))));
       while (reg_note_regs < regs_killed)
 	{
+	  /* LINK might be zero if we killed more registers after scheduling
+	     than before, and the last hard register we kill is actually
+	     multiple hard regs.  */
+	  if (link == NULL_RTX)
+	    abort ();
+  
 	  link = XEXP (link, 1);
 	  reg_note_regs += (REGNO (XEXP (link, 0)) >= FIRST_PSEUDO_REGISTER ? 1
 			    : HARD_REGNO_NREGS (REGNO (XEXP (link, 0)),

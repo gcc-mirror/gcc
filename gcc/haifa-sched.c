@@ -4462,6 +4462,23 @@ create_reg_dead_note (reg, insn)
       while (reg_note_regs < regs_killed)
 	{
 	  link = XEXP (link, 1);
+
+	  /* LINK might be zero if we killed more registers after scheduling
+	     than before, and the last hard register we kill is actually
+	     multiple hard regs. 
+
+	     This is normal for interblock scheduling, so deal with it in
+	     that case, else abort.  */
+	  if (link == NULL_RTX && current_nr_blocks <= 1)
+	    abort ();
+	  else if (link == NULL_RTX)
+	    {
+	      link = rtx_alloc (EXPR_LIST);
+	      PUT_REG_NOTE_KIND (link, REG_DEAD);
+	      XEXP (link, 0) = gen_rtx (REG, word_mode, 0);
+	      XEXP (link, 1) = NULL_RTX;
+	    }
+	     
 	  reg_note_regs += (REGNO (XEXP (link, 0)) >= FIRST_PSEUDO_REGISTER ? 1
 			    : HARD_REGNO_NREGS (REGNO (XEXP (link, 0)),
 						GET_MODE (XEXP (link, 0))));
