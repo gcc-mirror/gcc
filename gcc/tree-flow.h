@@ -601,7 +601,7 @@ extern bool may_propagate_copy (tree, tree);
 
 struct tree_niter_desc
 {
-  tree assumptions;	/* The boolean expression.  If this expression evalutes
+  tree assumptions;	/* The boolean expression.  If this expression evaluates
 			   to false, then the other fields in this structure
 			   should not be used; there is no guarantee that they
 			   will be correct.  */

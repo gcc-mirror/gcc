@@ -146,7 +146,7 @@ array_base_name_differ_p (struct data_reference *a,
   /* at this point we know that base_a != base_b. However, pointer accesses
      of the form x=(*p) and y=(*q), which bases are p and q, may still by pointing
      to the same base. In SSAed GIMPLE p and q will be SSA_NAMES in this case.
-     Therefore, here we check if it's really two diferent declarations.  */
+     Therefore, here we check if it's really two different declarations.  */
   if (TREE_CODE (base_a) == VAR_DECL && TREE_CODE (base_b) == VAR_DECL)
     {
       *differ_p = true;
@@ -525,7 +525,7 @@ analyze_array_indexes (struct loop *loop,
     return opnd0;
 }
 
-/* For a data reference REF contained in the statemet STMT, initialize
+/* For a data reference REF contained in the statement STMT, initialize
    a DATA_REFERENCE structure, and return it.  IS_READ flag has to be
    set to true when REF is in the right hand side of an
    assignment.  */
@@ -558,7 +558,7 @@ analyze_array (tree stmt, tree ref, bool is_read)
   return res;
 }
 
-/* For a data reference REF contained in the statemet STMT, initialize
+/* For a data reference REF contained in the statement STMT, initialize
    a DATA_REFERENCE structure, and return it.  */
 
 struct data_reference *

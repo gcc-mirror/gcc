@@ -1,3 +1,10 @@
+2004-09-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-common.c, c-pch.c, defaults.h, lambda-code.c, passes.c,
+	tree-data-ref.c, tree-flow.h, tree-ssa-operands.c,
+	tree-ssa-threadupdate.c, tree-vectorizer.c, tree-vectorizer.h,
+	value-prof.c: Fix comment typos.  Follow spelling conventions.
+
 2004-09-10  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* unroll.c (unroll_loop, calculate_giv_inc, initial_reg_note_copy,

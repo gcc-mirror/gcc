@@ -632,7 +632,7 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 #define FLOAT_LIB_COMPARE_RETURNS_BOOL(MODE, COMPARISON) false
 #endif
 
-/* True if the targets integer-comparision functions return { 0, 1, 2
+/* True if the targets integer-comparison functions return { 0, 1, 2
    } to indicate { <, ==, > }.  False if { -1, 0, 1 } is used
    instead.  The libgcc routines are biased.  */
 #ifndef TARGET_LIB_INT_CMP_BIASED

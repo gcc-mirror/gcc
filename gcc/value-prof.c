@@ -41,7 +41,7 @@ static struct value_prof_hooks *value_prof_hooks;
    following optimizations are implemented (for more detailed descriptions
    see comments at value_profile_transformations):
 
-   1) Division/modulo specialisation.  Provided that we can determine that the
+   1) Division/modulo specialization.  Provided that we can determine that the
       operands of the division have some special properties, we may use it to
       produce more effective code.
    2) Speculative prefetching.  If we are able to determine that the difference

@@ -1525,7 +1525,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
 
    Returns whether a stmt with OPERAND can be vectorized.
    Supportable operands are constants, loop invariants, and operands that are
-   defined by the current iteration of the loop. Unsupportable opernads are 
+   defined by the current iteration of the loop. Unsupportable operands are 
    those that are defined by a previous iteration of the loop (as is the case
    in reduction/induction computations).  */
 

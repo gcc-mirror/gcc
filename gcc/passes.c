@@ -1287,7 +1287,7 @@ rest_of_handle_jump (void)
   timevar_push (TV_JUMP);
   open_dump_file (DFI_sibling, current_function_decl);
 
-  /* ??? We may get caled either via tree_rest_of_compilation when the CFG
+  /* ??? We may get called either via tree_rest_of_compilation when the CFG
      is already built or directly (for instance from coverage code).
      The direct callers shall be updated.  */
   if (!basic_block_info)

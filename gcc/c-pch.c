@@ -448,7 +448,7 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
   fclose (f);
   
   /* Give the front end a chance to take action after a PCH file has
-     been loadeded.  */
+     been loaded.  */
   if (lang_post_pch_load)
     (*lang_post_pch_load) ();
 }

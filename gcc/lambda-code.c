@@ -47,7 +47,7 @@
    math.
  
  A little terminology and a general sketch of the algorithm.  See "A singular
- loop transformatrion framework based on non-singular matrices" by Wei Li and
+ loop transformation framework based on non-singular matrices" by Wei Li and
  Keshav Pingali for formal proofs that the various statements below are
  correct. 
 
@@ -74,20 +74,20 @@
 
  For a dense source space, we take the transformation matrix, decompose it
  into a lower triangular part (H) and a unimodular part (U). 
- We then compute the auxillary space from the unimodular part (source loop
- nest . U = auxillary space) , which has two important properties:
+ We then compute the auxiliary space from the unimodular part (source loop
+ nest . U = auxiliary space) , which has two important properties:
   1. It traverses the iterations in the same lexicographic order as the source
   space.
   2. It is a dense space when the source is a dense space (even if the target
   space is going to be sparse).
  
- Given the auxillary space, we use the lower triangular part to compute the
+ Given the auxiliary space, we use the lower triangular part to compute the
  bounds in the target space by simple matrix multiplication.
  The gaps in the target space (IE the new loop step sizes) will be the
  diagonals of the H matrix.
 
  Sparse source spaces require another step, because you can't directly compute
- the exact bounds of the auxillary and target space from the sparse space.
+ the exact bounds of the auxiliary and target space from the sparse space.
  Rather than try to come up with a separate algorithm to handle sparse source
  spaces directly, we just find a legal transformation matrix that gives you
  the sparse source space, from a dense space, and then transform the dense
@@ -749,7 +749,7 @@ lambda_compute_auxillary_space (lambda_loopnest nest,
 }
 
 /* Compute the loop bounds for the target space, using the bounds of
-   the auxillary nest AUXILLARY_NEST, and the triangular matrix H.  This is
+   the auxiliary nest AUXILLARY_NEST, and the triangular matrix H.  This is
    done by matrix multiplication and then transformation of the new matrix
    back into linear expression form.
    Return the target loopnest.  */
