@@ -282,6 +282,7 @@ s390_match_ccmode_set (rtx set, enum machine_mode req_mode)
     case CCLmode:
     case CCL1mode:
     case CCL2mode:
+    case CCL3mode:
     case CCT1mode:
     case CCT2mode:
     case CCT3mode:
@@ -477,6 +478,9 @@ s390_alc_comparison (rtx op, enum machine_mode mode)
   if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
 
+  while (GET_CODE (op) == ZERO_EXTEND || GET_CODE (op) == SIGN_EXTEND)
+    op = XEXP (op, 0);
+
   if (!COMPARISON_P (op))
     return 0;
 
@@ -492,6 +496,9 @@ s390_alc_comparison (rtx op, enum machine_mode mode)
 
     case CCL2mode:
       return GET_CODE (op) == LEU;
+
+    case CCL3mode:
+      return GET_CODE (op) == GEU;
 
     case CCUmode:
       return GET_CODE (op) == GTU;
@@ -519,6 +526,9 @@ s390_slb_comparison (rtx op, enum machine_mode mode)
   if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
 
+  while (GET_CODE (op) == ZERO_EXTEND || GET_CODE (op) == SIGN_EXTEND)
+    op = XEXP (op, 0);
+
   if (!COMPARISON_P (op))
     return 0;
 
@@ -534,6 +544,9 @@ s390_slb_comparison (rtx op, enum machine_mode mode)
 
     case CCL2mode:
       return GET_CODE (op) == GTU;
+
+    case CCL3mode:
+      return GET_CODE (op) == LTU;
 
     case CCUmode:
       return GET_CODE (op) == LEU;
@@ -639,6 +652,19 @@ s390_branch_condition_mask (rtx code)
 	  abort ();
         }
       break;
+
+    case CCL3mode:
+      switch (GET_CODE (code))
+	{
+	case EQ:	return CC0 | CC2;
+	case NE:	return CC1 | CC3;
+	case LTU:	return CC1;
+	case GTU:	return CC3;
+	case LEU:	return CC1 | CC2;
+	case GEU:	return CC2 | CC3;
+	default:
+	  abort ();
+	}
 
     case CCUmode:
       switch (GET_CODE (code))
@@ -3193,6 +3219,174 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
     }
 #endif
 }
+
+
+/* Expand conditional increment or decrement using alc/slb instructions.
+   Should generate code setting DST to either SRC or SRC + INCREMENT,
+   depending on the result of the comparison CMP_OP0 CMP_CODE CMP_OP1.
+   Returns true if successful, false otherwise.  */
+
+bool
+s390_expand_addcc (enum rtx_code cmp_code, rtx cmp_op0, rtx cmp_op1,
+		   rtx dst, rtx src, rtx increment)
+{
+  enum machine_mode cmp_mode;
+  enum machine_mode cc_mode;
+  rtx op_res;
+  rtx insn;
+  rtvec p;
+
+  if ((GET_MODE (cmp_op0) == SImode || GET_MODE (cmp_op0) == VOIDmode)
+      && (GET_MODE (cmp_op1) == SImode || GET_MODE (cmp_op1) == VOIDmode))
+    cmp_mode = SImode;
+  else if ((GET_MODE (cmp_op0) == DImode || GET_MODE (cmp_op0) == VOIDmode)
+	   && (GET_MODE (cmp_op1) == DImode || GET_MODE (cmp_op1) == VOIDmode))
+    cmp_mode = DImode;
+  else
+    return false;
+
+  /* Try ADD LOGICAL WITH CARRY.  */
+  if (increment == const1_rtx)
+    {
+      /* Determine CC mode to use.  */
+      if (cmp_code == EQ || cmp_code == NE)
+	{
+	  if (cmp_op1 != const0_rtx)
+	    {
+	      cmp_op0 = expand_simple_binop (cmp_mode, XOR, cmp_op0, cmp_op1,
+					     NULL_RTX, 0, OPTAB_WIDEN);
+	      cmp_op1 = const0_rtx;
+	    }
+
+	  cmp_code = cmp_code == EQ ? LEU : GTU;
+	}
+
+      if (cmp_code == LTU || cmp_code == LEU)
+	{
+	  rtx tem = cmp_op0;
+	  cmp_op0 = cmp_op1;
+	  cmp_op1 = tem;
+	  cmp_code = swap_condition (cmp_code);
+	}
+
+      switch (cmp_code)
+	{
+	  case GTU:
+	    cc_mode = CCUmode;
+	    break;
+
+	  case GEU:
+	    cc_mode = CCL3mode;
+	    break;
+
+	  default:
+	    return false;
+	}
+
+      /* Emit comparison instruction pattern. */
+      if (!register_operand (cmp_op0, cmp_mode))
+	cmp_op0 = force_reg (cmp_mode, cmp_op0);
+
+      insn = gen_rtx_SET (VOIDmode, gen_rtx_REG (cc_mode, CC_REGNUM),
+			  gen_rtx_COMPARE (cc_mode, cmp_op0, cmp_op1));
+      /* We use insn_invalid_p here to add clobbers if required.  */
+      if (insn_invalid_p (emit_insn (insn)))
+	abort ();
+
+      /* Emit ALC instruction pattern.  */
+      op_res = gen_rtx_fmt_ee (cmp_code, GET_MODE (dst),
+			       gen_rtx_REG (cc_mode, CC_REGNUM),
+			       const0_rtx);
+
+      if (src != const0_rtx)
+	{
+	  if (!register_operand (src, GET_MODE (dst)))
+	    src = force_reg (GET_MODE (dst), src);
+
+	  src = gen_rtx_PLUS (GET_MODE (dst), src, const0_rtx);
+	  op_res = gen_rtx_PLUS (GET_MODE (dst), src, op_res);
+	}
+
+      p = rtvec_alloc (2);
+      RTVEC_ELT (p, 0) = 
+        gen_rtx_SET (VOIDmode, dst, op_res);
+      RTVEC_ELT (p, 1) = 
+	gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, CC_REGNUM));
+      emit_insn (gen_rtx_PARALLEL (VOIDmode, p));
+
+      return true;
+    }
+
+  /* Try SUBTRACT LOGICAL WITH BORROW.  */
+  if (increment == constm1_rtx)
+    {
+      /* Determine CC mode to use.  */
+      if (cmp_code == EQ || cmp_code == NE)
+	{
+	  if (cmp_op1 != const0_rtx)
+	    {
+	      cmp_op0 = expand_simple_binop (cmp_mode, XOR, cmp_op0, cmp_op1,
+					     NULL_RTX, 0, OPTAB_WIDEN);
+	      cmp_op1 = const0_rtx;
+	    }
+
+	  cmp_code = cmp_code == EQ ? LEU : GTU;
+	}
+
+      if (cmp_code == GTU || cmp_code == GEU)
+	{
+	  rtx tem = cmp_op0;
+	  cmp_op0 = cmp_op1;
+	  cmp_op1 = tem;
+	  cmp_code = swap_condition (cmp_code);
+	}
+
+      switch (cmp_code)
+	{
+	  case LEU:
+	    cc_mode = CCUmode;
+	    break;
+
+	  case LTU:
+	    cc_mode = CCL3mode;
+	    break;
+
+	  default:
+	    return false;
+	}
+
+      /* Emit comparison instruction pattern. */
+      if (!register_operand (cmp_op0, cmp_mode))
+	cmp_op0 = force_reg (cmp_mode, cmp_op0);
+
+      insn = gen_rtx_SET (VOIDmode, gen_rtx_REG (cc_mode, CC_REGNUM),
+			  gen_rtx_COMPARE (cc_mode, cmp_op0, cmp_op1));
+      /* We use insn_invalid_p here to add clobbers if required.  */
+      if (insn_invalid_p (emit_insn (insn)))
+	abort ();
+
+      /* Emit SLB instruction pattern.  */
+      if (!register_operand (src, GET_MODE (dst)))
+	src = force_reg (GET_MODE (dst), src);
+
+      op_res = gen_rtx_MINUS (GET_MODE (dst), 
+			      gen_rtx_MINUS (GET_MODE (dst), src, const0_rtx), 
+			      gen_rtx_fmt_ee (cmp_code, GET_MODE (dst), 
+					      gen_rtx_REG (cc_mode, CC_REGNUM), 
+					      const0_rtx));
+      p = rtvec_alloc (2);
+      RTVEC_ELT (p, 0) = 
+        gen_rtx_SET (VOIDmode, dst, op_res);
+      RTVEC_ELT (p, 1) = 
+	gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, CC_REGNUM));
+      emit_insn (gen_rtx_PARALLEL (VOIDmode, p));
+
+      return true;
+    }
+
+  return false;
+}
+
 
 /* This is called from dwarf2out.c via ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */

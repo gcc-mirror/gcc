@@ -76,6 +76,7 @@ extern void s390_load_address (rtx, rtx);
 extern void s390_expand_movstr (rtx, rtx, rtx);
 extern void s390_expand_clrstr (rtx, rtx);
 extern void s390_expand_cmpmem (rtx, rtx, rtx, rtx);
+extern bool s390_expand_addcc (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 extern rtx s390_return_addr_rtx (int, rtx);
 extern rtx s390_emit_call (rtx, rtx, rtx, rtx);
 
