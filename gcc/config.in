@@ -122,6 +122,9 @@
 /* Whether setrlimit must be declared even if <sys/resource.h> is included.  */
 #undef NEED_DECLARATION_SETRLIMIT
 
+/* Whether getrusage must be declared even if <sys/resource.h> is included.  */
+#undef NEED_DECLARATION_GETRUSAGE
+
 /* Whether putc_unlocked must be declared even if <stdio.h> is included.  */
 #undef NEED_DECLARATION_PUTC_UNLOCKED
 
@@ -251,6 +254,9 @@
 
 /* Define if you have the getrlimit function.  */
 #undef HAVE_GETRLIMIT
+
+/* Define if you have the getrusage function.  */
+#undef HAVE_GETRUSAGE
 
 /* Define if you have the gettimeofday function.  */
 #undef HAVE_GETTIMEOFDAY

@@ -144,7 +144,7 @@ in the following sections.
 -g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-1  -gdwarf-1+  -gdwarf-2
 -ggdb  -gstabs  -gstabs+  -gxcoff  -gxcoff+
 -p  -pg  -print-file-name=@var{library}  -print-libgcc-file-name
--print-prog-name=@var{program}  -print-search-dirs  -save-temps
+-print-prog-name=@var{program}  -print-search-dirs  -save-temps  -time
 @end smallexample
 
 @item Optimization Options
@@ -2164,6 +2164,22 @@ Store the usual ``temporary'' intermediate files permanently; place them
 in the current directory and name them based on the source file.  Thus,
 compiling @file{foo.c} with @samp{-c -save-temps} would produce files
 @file{foo.i} and @file{foo.s}, as well as @file{foo.o}.
+
+@item -time
+Report the CPU time taken by each subprocess in the compilation
+sequence.  For C source files, this is the preprocessor, compiler
+proper, and assembler.  The output looks like this:
+
+@smallexample
+# cpp 0.04 0.04
+# cc1 0.12 0.01
+# as 0.00 0.01
+@end smallexample
+
+The first number on each line is the ``user time,'' that is time spent
+executing the program itself.  The second number is ``system time,''
+time spent executing operating system routines on behalf of the program.
+Both numbers are in seconds.
 
 @item -print-file-name=@var{library}
 Print the full absolute name of the library file @var{library} that

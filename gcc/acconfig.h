@@ -121,6 +121,9 @@
 /* Whether setrlimit must be declared even if <sys/resource.h> is included.  */
 #undef NEED_DECLARATION_SETRLIMIT
 
+/* Whether getrusage must be declared even if <sys/resource.h> is included.  */
+#undef NEED_DECLARATION_GETRUSAGE
+
 /* Whether putc_unlocked must be declared even if <stdio.h> is included.  */
 #undef NEED_DECLARATION_PUTC_UNLOCKED
 

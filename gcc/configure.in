@@ -333,7 +333,10 @@ AC_HEADER_STDC
 AC_HEADER_TIME
 GCC_HEADER_STRING
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h fcntl.h unistd.h stab.h sys/file.h sys/time.h sys/resource.h sys/param.h sys/times.h sys/stat.h direct.h malloc.h)
+AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h \
+		 fcntl.h unistd.h stab.h sys/file.h sys/time.h \
+		 sys/resource.h sys/param.h sys/times.h sys/stat.h \
+		 direct.h malloc.h)
 
 # Check for thread headers.
 AC_CHECK_HEADER(thread.h, [have_thread_h=yes], [have_thread_h=])
@@ -373,7 +376,7 @@ fi
 AC_CHECK_FUNCS(strtoul bsearch strerror putenv popen bcopy bzero bcmp \
 	index rindex strchr strrchr kill getrlimit setrlimit atoll atoq \
 	sysconf isascii gettimeofday strsignal putc_unlocked fputc_unlocked \
-	fputs_unlocked)
+	fputs_unlocked getrusage)
 
 # Make sure wchar_t is available
 #AC_CHECK_TYPE(wchar_t, unsigned int)
@@ -401,7 +404,7 @@ GCC_NEED_DECLARATIONS(malloc realloc calloc free, [
 #endif
 ])
 
-GCC_NEED_DECLARATIONS(getrlimit setrlimit, [
+GCC_NEED_DECLARATIONS(getrlimit setrlimit getrusage, [
 #include <sys/types.h>
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>

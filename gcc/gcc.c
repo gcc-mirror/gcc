@@ -44,6 +44,13 @@ compilation is specified by a string called a "spec".  */
 #define exit __posix_exit
 #endif
 
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
+#ifdef NEED_DECLARATION_GETRUSAGE
+extern int getrusage(int, struct rusage *);
+#endif
+
 /* By default there is no special suffix for executables.  */
 #ifdef EXECUTABLE_SUFFIX
 #define HAVE_EXECUTABLE_SUFFIX
@@ -126,6 +133,11 @@ static int print_help_list;
 
 static int verbose_flag;
 
+/* Flag indicating whether we should report subprocess execution times
+   (if this is supported by the system - see pexecute.c).  */
+
+static int report_times;
+
 /* Nonzero means write "temp" files in source directory
    and use the source file's name in them, and don't delete them.  */
 
@@ -166,6 +178,12 @@ static struct obstack obstack;
    and destructors.  */
 
 static struct obstack collect_obstack;
+
+/* These structs are used to collect resource usage information for
+   subprocesses.  */
+#ifdef HAVE_GETRUSAGE
+static struct rusage rus, prus;
+#endif
 
 extern char *version_string;
 
@@ -863,6 +881,7 @@ struct option_map option_map[] =
    {"--std", "-std=", "aj"},
    {"--symbolic", "-symbolic", 0},
    {"--target", "-b", "a"},
+   {"--time", "-time", 0},
    {"--trace-includes", "-H", 0},
    {"--traditional", "-traditional", 0},
    {"--traditional-cpp", "-traditional-cpp", 0},
@@ -2289,6 +2308,10 @@ execute ()
 
   {
     int ret_code = 0;
+#ifdef HAVE_GETRUSAGE
+    struct timeval d;
+    double ut, st;
+#endif
 
     for (i = 0; i < n_commands; )
       {
@@ -2299,6 +2322,25 @@ execute ()
 	pid = pwait (commands[i].pid, &status, 0);
 	if (pid < 0)
 	  abort ();
+
+#ifdef HAVE_GETRUSAGE
+	if (report_times)
+	  {
+	    /* getrusage returns the total resource usage of all children
+	       up to now.  Copy the previous values into prus, get the
+	       current statistics, then take the difference.  */
+
+	    prus = rus;
+	    getrusage (RUSAGE_CHILDREN, &rus);
+	    d.tv_sec = rus.ru_utime.tv_sec - prus.ru_utime.tv_sec;
+	    d.tv_usec = rus.ru_utime.tv_usec - prus.ru_utime.tv_usec;
+	    ut = (double)d.tv_sec + (double)d.tv_usec / 1.0e6;
+	    
+	    d.tv_sec = rus.ru_stime.tv_sec - prus.ru_stime.tv_sec;
+	    d.tv_usec = rus.ru_stime.tv_usec - prus.ru_stime.tv_usec;
+	    st = (double)d.tv_sec + (double)d.tv_usec / 1.0e6;
+	  }
+#endif
 
 	for (j = 0; j < n_commands; j++)
 	  if (commands[j].pid == pid)
@@ -2317,6 +2359,10 @@ execute ()
 			   && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
 		    ret_code = -1;
 		}
+#ifdef HAVE_GETRUSAGE
+	      if (report_times && ut + st != 0)
+		notice ("# %s %.2f %.2f\n", commands[j].prog, ut, st);
+#endif
 	      break;
 	    }
       }
@@ -2457,6 +2503,7 @@ display_help ()
   printf ("  -Xlinker <arg>           Pass <arg> on to the linker\n");
   printf ("  -save-temps              Do not delete intermediate files\n");
   printf ("  -pipe                    Use pipes rather than intermediate files\n");
+  printf ("  -time                    Time the execution of each subprocess\n");
   printf ("  -specs=<file>            Override builtin specs with the contents of <file>\n");
   printf ("  -std=<standard>          Assume that the input sources are for <standard>\n");
   printf ("  -B <directory>           Add <directory> to the compiler's search paths\n");
@@ -2841,6 +2888,8 @@ process_command (argc, argv)
 	    user_specs_head = user;
 	  user_specs_tail = user;
 	}
+      else if (strcmp (argv[i], "-time") == 0)
+	report_times = 1;
       else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
 	  register char *p = &argv[i][1];
@@ -3181,9 +3230,19 @@ process_command (argc, argv)
 	i++;
       else if (strncmp (argv[i], "-specs=", 7) == 0)
 	;
-      /* -save-temps overrides -pipe, so that temp files are produced */
-      else if (save_temps_flag && strcmp (argv[i], "-pipe") == 0)
-	error ("Warning: -pipe ignored since -save-temps specified");
+      else if (strcmp (argv[i], "-time") == 0)
+	;
+      else if ((save_temps_flag || report_times)
+	       && strcmp (argv[i], "-pipe") == 0)
+	{
+	  /* -save-temps overrides -pipe, so that temp files are produced */
+	  if (save_temps_flag)
+	    error ("Warning: -pipe ignored since -save-temps specified");
+          /* -time overrides -pipe because we can't get correct stats when
+	     multiple children are running at once.  */
+	  else if (report_times)
+	    error ("Warning: -pipe ignored since -time specified");
+	}
       else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
 	  register char *p = &argv[i][1];
@@ -5253,8 +5312,7 @@ pfatal_pexecute (errmsg_fmt, errmsg_arg)
   pfatal_with_name (errmsg_fmt);
 }
 
-/* More 'friendly' abort that prints the line and file.
-   config.h can #define abort fancy_abort if you like that sort of thing.  */
+/* Output an error message and exit */
 
 void
 fancy_abort ()

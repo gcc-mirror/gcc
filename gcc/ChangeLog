@@ -1,3 +1,24 @@
+1999-09-13 12:13 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* gcc.c: Include sys/resource.h.
+	(report_times): New flag.
+	(execute):  If report_times is set, calculate and report the
+	CPU time consumed by each subprocess.
+
+	(rus, prus): New globals.
+	(option_map): Add --time.
+	(display_help): Document -time.
+	(process_command): Set report_times if -time is given.
+	Turn off -pipe if -time is given.
+
+	* invoke.texi: Document new option -time.
+
+	* configure.in: Check for getrusage.  Check if we have to
+	prototype getrusage.
+	* acconfig.h: Add NEED_DECLARATION_GETRUSAGE.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 Mon Sep 13 12:57:06 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* cppinit.c (append_include_chain): Initialize 'next' and 'alloc'
