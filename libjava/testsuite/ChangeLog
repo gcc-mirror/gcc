@@ -1,3 +1,8 @@
+2001-03-20  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.compile/uesc.java: New file.
+	* libjava.compile/uesc.xfail: New file.
+
 2001-03-16  Tom Tromey  <tromey@redhat.com>
 
 	* lib/libjava.exp (libjava_arguments): Rewrote computation of
