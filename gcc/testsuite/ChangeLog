@@ -1,3 +1,8 @@
+2000-05-12  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.c-torture/execute/990208-1.c (main): Don't pass
+	constants through to doit's conditional.
+
 Thu May 11 19:02:43 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000511-1.c: New test.

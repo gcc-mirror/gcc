@@ -4,6 +4,7 @@
 
 #ifndef NO_LABEL_VALUES
 static void *ptr1, *ptr2;
+static int i = 1;
 
 static __inline__ void doit(void **pptr, int cond)
 {
@@ -27,9 +28,9 @@ static void bar(void);
 
 int main()
 {
-  f (1);
+  f (i);
   bar();
-  g (1);
+  g (i);
 
 #ifdef  __OPTIMIZE__
   if (ptr1 == ptr2)
