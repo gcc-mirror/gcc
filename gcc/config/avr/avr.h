@@ -1079,6 +1079,9 @@ enum reg_class {
    registers.  This macro must be defined if `ELIMINABLE_REGS' is
    defined.  */
 
+#define RETURN_ADDR_RTX(count, x) \
+  gen_rtx_MEM (Pmode, memory_address (Pmode, plus_constant (tem, 1)))
+
 #define PUSH_ROUNDING(NPUSHED) (NPUSHED)
 /* A C expression that is the number of bytes actually pushed onto the
    stack when an instruction attempts to push NPUSHED bytes.

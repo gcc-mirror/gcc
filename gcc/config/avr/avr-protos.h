@@ -110,7 +110,7 @@ extern char * lshrsi3_out     PARAMS ((rtx insn, rtx operands[], int *len));
 extern enum reg_class preferred_reload_class PARAMS ((rtx x,
 						     enum reg_class class));
 extern int    avr_address_cost       PARAMS ((rtx x));
-extern int    extra_constraint       PARAMS ((rtx x, char c));
+extern int    extra_constraint       PARAMS ((rtx x, int c));
 extern rtx    legitimize_address     PARAMS ((rtx x, rtx oldx,
 					     enum machine_mode mode));
 extern int    adjust_insn_length     PARAMS ((rtx insn, int len));
@@ -123,7 +123,7 @@ extern int    default_rtx_costs      PARAMS ((rtx X, RTX_CODE code,
 					     RTX_CODE outer_code));
 extern void   asm_output_char        PARAMS ((FILE *file, rtx value));
 extern void   asm_output_short       PARAMS ((FILE *file, rtx value));
-extern void   asm_output_byte        PARAMS ((FILE *file, char value));
+extern void   asm_output_byte        PARAMS ((FILE *file, int value));
 extern enum reg_class secondary_input_reload_class PARAMS ((enum reg_class,
 							   enum machine_mode,
 							   rtx));
