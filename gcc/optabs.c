@@ -57,7 +57,6 @@ optab ior_optab;
 optab xor_optab;
 optab ashl_optab;
 optab lshr_optab;
-optab lshl_optab;
 optab ashr_optab;
 optab rotl_optab;
 optab rotr_optab;
@@ -334,7 +333,6 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
   int commutative_op = 0;
   int shift_op = (binoptab->code ==  ASHIFT
 		  || binoptab->code == ASHIFTRT
-		  || binoptab->code == LSHIFT
 		  || binoptab->code == LSHIFTRT
 		  || binoptab->code == ROTATE
 		  || binoptab->code == ROTATERT);
@@ -517,8 +515,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	    if ((binoptab == ior_optab || binoptab == and_optab
 		 || binoptab == xor_optab
 		 || binoptab == add_optab || binoptab == sub_optab
-		 || binoptab == smul_optab
-		 || binoptab == ashl_optab || binoptab == lshl_optab)
+		 || binoptab == smul_optab || binoptab == ashl_optab)
 		&& class == MODE_INT)
 	      no_extend = 1;
 
@@ -526,8 +523,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	    /* The second operand of a shift must always be extended.  */
 	    xop1 = widen_operand (xop1, wider_mode, mode, unsignedp,
-				  no_extend && binoptab != ashl_optab
-				  && binoptab != lshl_optab);
+				  no_extend && binoptab != ashl_optab);
 
 	    temp = expand_binop (wider_mode, binoptab, xop0, xop1, NULL_RTX,
 				 unsignedp, OPTAB_DIRECT);
@@ -591,8 +587,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
     }
 
   /* Synthesize double word shifts from single word shifts.  */
-  if ((binoptab == lshl_optab || binoptab == lshr_optab
-       || binoptab == ashl_optab || binoptab == ashr_optab)
+  if ((binoptab == lshr_optab || binoptab == ashl_optab
+       || binoptab == ashr_optab)
       && class == MODE_INT
       && GET_CODE (op1) == CONST_INT
       && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
@@ -619,7 +615,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	 they differ depending on the direction of the shift and
 	 WORDS_BIG_ENDIAN.  */
 
-      left_shift = (binoptab == ashl_optab || binoptab == lshl_optab);
+      left_shift = binoptab == ashl_optab;
       outof_word = left_shift ^ ! WORDS_BIG_ENDIAN;
 
       outof_target = operand_subword (target, outof_word, 1, mode);
@@ -655,9 +651,6 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  /* For a shift of less then BITS_PER_WORD, to compute the carry,
 	     we must do a logical shift in the opposite direction of the
 	     desired shift.  */
-
-	  /* We use ashl_optab instead of lshl_optab, because ashl is
-	     guaranteed to exist, but lshl may or may not exist.  */
 
 	  reverse_unsigned_shift = (left_shift ? lshr_optab : ashl_optab);
 
@@ -1436,8 +1429,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	      if ((binoptab == ior_optab || binoptab == and_optab
 		   || binoptab == xor_optab
 		   || binoptab == add_optab || binoptab == sub_optab
-		   || binoptab == smul_optab
-		   || binoptab == ashl_optab || binoptab == lshl_optab)
+		   || binoptab == smul_optab || binoptab == ashl_optab)
 		  && class == MODE_INT)
 		no_extend = 1;
 
@@ -1446,8 +1438,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	      /* The second operand of a shift must always be extended.  */
 	      xop1 = widen_operand (xop1, wider_mode, mode, unsignedp,
-				    no_extend && binoptab != ashl_optab
-				    && binoptab != lshl_optab);
+				    no_extend && binoptab != ashl_optab);
 
 	      temp = expand_binop (wider_mode, binoptab, xop0, xop1, NULL_RTX,
 				   unsignedp, methods);
@@ -3588,7 +3579,6 @@ init_optabs ()
   xor_optab = init_optab (XOR);
   ashl_optab = init_optab (ASHIFT);
   ashr_optab = init_optab (ASHIFTRT);
-  lshl_optab = init_optab (LSHIFT);
   lshr_optab = init_optab (LSHIFTRT);
   rotl_optab = init_optab (ROTATE);
   rotr_optab = init_optab (ROTATERT);
@@ -3654,7 +3644,6 @@ init_optabs ()
   init_integral_libfuncs (xor_optab, "xor", '3');
   init_integral_libfuncs (ashl_optab, "ashl", '3');
   init_integral_libfuncs (ashr_optab, "ashr", '3');
-  init_integral_libfuncs (lshl_optab, "lshl", '3');
   init_integral_libfuncs (lshr_optab, "lshr", '3');
   init_integral_libfuncs (rotl_optab, "rotl", '3');
   init_integral_libfuncs (rotr_optab, "rotr", '3');
