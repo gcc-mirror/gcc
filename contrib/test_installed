@@ -1,17 +1,17 @@
 #! /bin/sh
 
-# (C) 1998 Free Software Foundation
+# (C) 1998, 2000 Free Software Foundation
 # Originally by Alexandre Oliva <oliva@dcc.unicamp.br>
 
 # This script is Free Software, and it can be copied, distributed and
 # modified as defined in the GNU General Public License.  A copy of
 # its license can be downloaded from http://www.gnu.org/copyleft/gpl.html
 
-# This scripts assumes it lives in the contrib directory of the egcs
+# This scripts assumes it lives in the contrib directory of the GCC
 # source tree, so it will find the testsuite tree from its location.
 # If you move it elsewhere, or want to use another testsuite tree, you
-# can override the defaults with --srcdir=/some/dir/egcs or
-# --testsuite=/some/dir/egcs/gcc/testsuite.  If you specify
+# can override the defaults with --srcdir=/some/dir/GCC or
+# --testsuite=/some/dir/GCC/gcc/testsuite.  If you specify
 # --testsuite, --srcdir will be ignored; otherwise, `/gcc/testsuite'
 # will be appended to the srcdir.
 

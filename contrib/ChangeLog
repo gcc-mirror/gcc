@@ -1,3 +1,7 @@
+2000-10-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* test_installed: Change EGCS references to refer to GCC.
+
 2000-09-28  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_update (touch_files): Add some informative output.
