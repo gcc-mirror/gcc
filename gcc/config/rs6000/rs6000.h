@@ -682,6 +682,7 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
 
 #define EXTRA_CONSTRAINT(OP, C)						\
   ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG	\
+   : (C) == 'R' ? GET_CODE (OP) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (OP)\
    : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -2155,7 +2156,7 @@ toc_section ()						\
 
 /* Define which CODE values are valid.  */
 
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE)  ((CODE) == '.')
+#define PRINT_OPERAND_PUNCT_VALID_P(CODE)  ((CODE) == '.' || (CODE) == '*')
 
 /* Print a memory address as an operand to reference that memory location.  */
 
@@ -2186,7 +2187,7 @@ toc_section ()						\
   {"mask_operand", {CONST_INT}},				\
   {"call_operand", {SYMBOL_REF, REG}},				\
   {"current_file_function_operand", {SYMBOL_REF}},		\
-  {"input_operand", {SUBREG, MEM, REG, CONST_INT}},		\
+  {"input_operand", {SUBREG, MEM, REG, CONST_INT, SYMBOL_REF}},	\
   {"load_multiple_operation", {PARALLEL}},			\
   {"store_multiple_operation", {PARALLEL}},			\
   {"branch_comparison_operator", {EQ, NE, LE, LT, GE,		\
