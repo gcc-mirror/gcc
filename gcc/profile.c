@@ -1428,18 +1428,11 @@ end_branch_prob ()
     {
       if (bbg_file)
 	{
-#if __GNUC__ && !CROSS_COMPILE && SUPPORTS_WEAK
-	  /* If __gcov_init has a value in the compiler, it means we
-	     are instrumenting ourselves. We should not remove the
-	     counts file, because we might be recompiling
-	     ourselves. The .da files are all removed during copying
-	     the stage1 files.  */
-	  extern void __gcov_init (void *)
-	    __attribute__ ((weak));
-	  
-	  if (!__gcov_init)
-	    unlink (da_file_name);
-#else
+#if !SELF_COVERAGE
+	  /* If the compiler is instrumented, we should not remove the
+             counts file, because we might be recompiling
+             ourselves. The .da files are all removed during copying
+             the stage1 files.  */
 	  unlink (da_file_name);
 #endif
 	  fclose (bbg_file);

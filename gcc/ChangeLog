@@ -1,3 +1,8 @@
+2002-12-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* configure.in (enable-coverage): Add SELF_COVERAGE.
+	* profile.c (end_branch_prob): Use SELF_COVERAGE.
+
 2002-12-24  Jim Wilson  <wilson@redhat.com>
 
 	* alias.c (record_set): Handle multi-reg hard registers.
