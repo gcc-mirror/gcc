@@ -306,6 +306,7 @@ extern int expand_twoval_binop PARAMS ((optab, rtx, rtx, rtx, rtx, int));
 extern rtx expand_unop PARAMS ((enum machine_mode, optab, rtx, rtx, int));
 
 /* Expand the absolute value operation.  */
+extern rtx expand_abs_nojump PARAMS ((enum machine_mode, rtx, rtx, int));
 extern rtx expand_abs PARAMS ((enum machine_mode, rtx, rtx, int, int));
 
 /* Expand the complex absolute value operation.  */
