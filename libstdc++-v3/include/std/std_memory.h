@@ -58,6 +58,7 @@
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_raw_storage_iter.h>
 #include <debug/debug.h>
+#include <limits>
 
 namespace std
 {
@@ -73,8 +74,9 @@ namespace std
     pair<_Tp*, ptrdiff_t>
     __get_temporary_buffer(ptrdiff_t __len, _Tp*)
     {
-      if (__len > ptrdiff_t(INT_MAX / sizeof(_Tp)))
-	__len = INT_MAX / sizeof(_Tp);
+      const ptrdiff_t __max = numeric_limits<ptrdiff_t>::max() / sizeof(_Tp);
+      if (__len > __max)
+	__len = __max;
       
       while (__len > 0) 
 	{
@@ -105,7 +107,7 @@ namespace std
    * Provides the nothrow exception guarantee.
    */
   template<typename _Tp>
-    inline pair<_Tp*,ptrdiff_t>
+    inline pair<_Tp*, ptrdiff_t>
     get_temporary_buffer(ptrdiff_t __len)
     { return std::__get_temporary_buffer(__len, static_cast<_Tp*>(0)); }
 

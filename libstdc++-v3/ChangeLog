@@ -1,3 +1,11 @@
+2004-10-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/std_memory.h (__get_temporary_buffer): Don't use
+	INT_MAX, prefer numeric_limits<ptrdiff_t>::max(), ok on 64-bit
+	platforms too.
+	* testsuite/20_util/memory/auto_ptr/assign_neg.cc: Adjust dg-error
+	line numbers.
+
 2004-10-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acconfig.h: Add _GLIBCXX_USE___CXA_ATEXIT.
