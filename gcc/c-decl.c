@@ -1571,7 +1571,7 @@ warn_if_shadowing (tree x, tree old)
   name = IDENTIFIER_POINTER (DECL_NAME (x));
   if (TREE_CODE (old) == PARM_DECL)
     shadow_warning (SW_PARAM, name, old);
-  else if (C_DECL_FILE_SCOPE (old))
+  else if (DECL_FILE_SCOPE_P (old))
     shadow_warning (SW_GLOBAL, name, old);
   else
     shadow_warning (SW_LOCAL, name, old);
@@ -1818,7 +1818,7 @@ implicitly_declare (tree functionid)
       if (!C_DECL_IMPLICIT (decl))
 	{
 	  implicit_decl_warning (DECL_NAME (decl));
-	  if (! C_DECL_FILE_SCOPE (decl))
+	  if (! DECL_FILE_SCOPE_P (decl))
 	    warning ("%Hprevious declaration of '%D'",
                      &DECL_SOURCE_LOCATION (decl), decl);
 	  C_DECL_IMPLICIT (decl) = 1;
@@ -1898,7 +1898,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	return 1;
       return 0;
     }
-  else if (C_DECL_FILE_SCOPE (newdecl))
+  else if (DECL_FILE_SCOPE_P (newdecl))
     {
       /* Objects declared at file scope:  */
       /* If at least one is a reference, it's ok.  */
@@ -2689,7 +2689,7 @@ start_decl (tree declarator, tree declspecs, int initialized, tree attributes)
 	 and we preserved the rtl from the previous one
 	 (which may or may not happen).  */
       && !DECL_RTL_SET_P (tem)
-      && C_DECL_FILE_SCOPE (tem))
+      && DECL_FILE_SCOPE_P (tem))
     {
       if (TREE_TYPE (tem) != error_mark_node
 	  && (COMPLETE_TYPE_P (TREE_TYPE (tem))
@@ -2794,7 +2794,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 		   Otherwise, let it through, but if it is not `extern'
 		   then it may cause an error message later.  */
 		(DECL_INITIAL (decl) != 0
-		 || !C_DECL_FILE_SCOPE (decl))
+		 || !DECL_FILE_SCOPE_P (decl))
 	      :
 		/* An automatic variable with an incomplete type
 		   is an error.  */
@@ -2865,7 +2865,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
       if (c_dialect_objc ())
 	objc_check_decl (decl);
 
-      if (C_DECL_FILE_SCOPE (decl))
+      if (DECL_FILE_SCOPE_P (decl))
 	{
 	  if (DECL_INITIAL (decl) == NULL_TREE
 	      || DECL_INITIAL (decl) == error_mark_node)
@@ -2905,7 +2905,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	    add_decl_stmt (decl);
 	}
 
-      if (!C_DECL_FILE_SCOPE (decl))
+      if (!DECL_FILE_SCOPE_P (decl))
 	{
 	  /* Recompute the RTL of a local array now
 	     if it used to be an incomplete type.  */
@@ -2930,7 +2930,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
       /* This is a no-op in c-lang.c or something real in objc-act.c.  */
       if (c_dialect_objc ())
 	objc_check_decl (decl);
-      rest_of_decl_compilation (decl, NULL, C_DECL_FILE_SCOPE (decl), 0);
+      rest_of_decl_compilation (decl, NULL, DECL_FILE_SCOPE_P (decl), 0);
     }
 
   /* At the end of a declaration, throw away any variable type sizes
@@ -6308,7 +6308,7 @@ c_expand_body_1 (tree fndecl, int nested_p)
      to run global initializers, etc.  */
   if (DECL_NAME (fndecl)
       && MAIN_NAME_P (DECL_NAME (fndecl))
-      && C_DECL_FILE_SCOPE (fndecl))
+      && DECL_FILE_SCOPE_P (fndecl))
     expand_main_function ();
 
   /* Generate the RTL for this function.  */
@@ -6640,7 +6640,7 @@ tree
 identifier_global_value	(tree t)
 {
   tree decl = IDENTIFIER_SYMBOL_VALUE (t);
-  if (decl == 0 || C_DECL_FILE_SCOPE (decl))
+  if (decl == 0 || DECL_FILE_SCOPE_P (decl))
     return decl;
 
   /* Shadowed by something else; find the true global value.  */
