@@ -1,5 +1,8 @@
 2003-06-20  Mark Mitchell  <mark@codesourcery.com>
 
+	* lib/target-supports.exp (check_alias_available): Make the test
+	program acceptable to the Solaris assembler.
+
 	PR c++/10749
 	* g++.dg/template/memclass2.C: New test.
 
