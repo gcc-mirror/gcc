@@ -1,5 +1,8 @@
 2002-01-23  Zack Weinberg  <zack@codesourcery.com>
 
+	* diagnostic.c (internal_error): Do ICE suppression only
+	when ENABLE_CHECKING is not defined.
+
 	* c-typeck.c (require_complete_type): Return error_mark_node
 	if type is error_mark_node.
 
