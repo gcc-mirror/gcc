@@ -1,3 +1,10 @@
+Sun Jul 29 23:26:50 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* rtlanal.c (parms_set, find_first_parameter_load): Break out from...;
+	handle multiple sets.
+	* except.c (sjlj_mark_call_sites): .... here.
+	* gcse.c (insert_insn_end_bb): Use find_first_parameter_load.
+
 Sun Jul 29 21:38:45 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	Suggested by Richard Henderson and Richard Kenner:
