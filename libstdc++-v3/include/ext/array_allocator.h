@@ -1,6 +1,6 @@
 // array allocator -*- C++ -*-
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -120,11 +120,11 @@ namespace __gnu_cxx
       pointer
       allocate(size_type __n, const void* = 0)
       {
-	static size_type __used;
-	if (_M_array == 0 || __used + __n > _M_array->size())
+	static size_type __array_used;
+	if (_M_array == 0 || __array_used + __n > _M_array->size())
 	  std::__throw_bad_alloc();
-	pointer __ret = _M_array->begin() + __used;
-	__used += __n;
+	pointer __ret = _M_array->begin() + __array_used;
+	__array_used += __n;
 	return __ret;
       }
     };
