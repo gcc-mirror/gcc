@@ -1,3 +1,16 @@
+2001-06-22  Diego Novillo  <dnovillo@redhat.com>
+
+	* basic-block.h (dump_edge_info): Declare.
+	(clear_edges): Declare.
+	(mark_critical_edges): Declare.
+	* flow.c (dump_edge_info): Remove static declaration.
+	(clear_edges): Ditto.
+	(mark_critical_edges): Ditto.
+	(free_basic_block_vars): Only clear edges and free basic block
+	array if basic_block_info is not NULL.
+	* ssa.c (compute_dominance_frontiers): Remove static declaration.
+	* ssa.h (compute_dominance_frontiers): Declare.
+
 2001-06-22  Toshiyasu Morita  (toshiyasu.morita@hsa.hitachi.com)
 
 	* predict.c: (expected_value_to_br_prob): Check for const_true_rtx

@@ -364,12 +364,10 @@ typedef struct depth_first_search_dsS *depth_first_search_ds;
 static int count_basic_blocks		PARAMS ((rtx));
 static void find_basic_blocks_1		PARAMS ((rtx));
 static rtx find_label_refs		PARAMS ((rtx, rtx));
-static void clear_edges			PARAMS ((void));
 static void make_edges			PARAMS ((rtx));
 static void make_label_edge		PARAMS ((sbitmap *, basic_block,
 						 rtx, int));
 static void make_eh_edge		PARAMS ((sbitmap *, basic_block, rtx));
-static void mark_critical_edges		PARAMS ((void));
 
 static void commit_one_edge_insertion	PARAMS ((edge));
 
@@ -434,7 +432,6 @@ static void mark_used_regs		PARAMS ((struct propagate_block_info *,
 						 rtx, rtx, rtx));
 void dump_flow_info			PARAMS ((FILE *));
 void debug_flow_info			PARAMS ((void));
-static void dump_edge_info		PARAMS ((FILE *, edge, int));
 static void print_rtl_and_abort_fcn	PARAMS ((const char *, int,
 						 const char *))
 					ATTRIBUTE_NORETURN;
@@ -1118,7 +1115,7 @@ compute_bb_for_insn (max)
 
 /* Free the memory associated with the edge structures.  */
 
-static void
+void
 clear_edges ()
 {
   int i;
@@ -1432,7 +1429,7 @@ make_eh_edge (edge_cache, src, insn)
 
 /* Identify critical edges and set the bits appropriately.  */
 
-static void
+void
 mark_critical_edges ()
 {
   int i, n = n_basic_blocks;
@@ -3094,8 +3091,11 @@ free_basic_block_vars (keep_head_end_p)
 
   if (! keep_head_end_p)
     {
-      clear_edges ();
-      VARRAY_FREE (basic_block_info);
+      if (basic_block_info)
+	{
+	  clear_edges ();
+	  VARRAY_FREE (basic_block_info);
+	}
       n_basic_blocks = 0;
 
       ENTRY_BLOCK_PTR->aux = NULL;
@@ -6390,7 +6390,7 @@ debug_flow_info ()
   dump_flow_info (stderr);
 }
 
-static void
+void
 dump_edge_info (file, e, do_succ)
      FILE *file;
      edge e;
