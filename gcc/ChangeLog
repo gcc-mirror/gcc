@@ -1,3 +1,8 @@
+2002-04-30  Paolo Carlini  <pcarlini@unitus.it>
+
+	* doc/contrib.texi (Contributors): Update Paolo Carlini's
+	and Benjamin Kosnik's entries.
+
 2002-04-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* combine.c (find_split_point): Use trunc_int_for_mode.

@@ -72,7 +72,7 @@ Joe Buck for his direction via the steering committee.
 Craig Burley for leadership of the Fortran effort.
 
 @item
-Paolo Carlini for his work on the C++ run time library.
+Paolo Carlini for his work on libstdc++-v3.
 
 @item
 John Carr for his alias work, SPARC hacking, infrastructure improvements,
@@ -275,7 +275,7 @@ Thomas Koenig for various bugfixes.
 Bruce Korb for the new and improved fixincludes code.
 
 @item
-Benjamin Kosnik for his g++ work.
+Benjamin Kosnik for his g++ work and for leading the libstdc++-v3 effort.
 
 @item
 Charles LaBrec contributed the support for the Integrated Solutions
