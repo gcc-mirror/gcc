@@ -3,7 +3,7 @@ static char junk[] = "\n@(#) LIBI77 VERSION pjw,dmg-mods 20001205\n";
 /*
 */
 
-char __G77_LIBI77_VERSION__[] = "0.5.26 20010530 (experimental)";
+char __G77_LIBI77_VERSION__[] = "0.5.26 20010531 (experimental)";
 
 /*
 2.01	$ format added
