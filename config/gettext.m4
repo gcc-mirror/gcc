@@ -9,7 +9,7 @@
 # small file which can be sourced as a shell script; then we produce
 # the necessary substitutions and definitions for this directory.
 
-AC_DEFUN(ZW_GNU_GETTEXT_SISTER_DIR,
+AC_DEFUN([ZW_GNU_GETTEXT_SISTER_DIR],
 [# If we haven't got the data from the intl directory,
 # assume NLS is disabled.
 USE_NLS=no	AC_SUBST(USE_NLS)
