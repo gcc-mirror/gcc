@@ -1182,6 +1182,24 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 }
 
 
+/* Generate code to copy a string.  */
+
+static void
+gfc_trans_string_copy (stmtblock_t * block, tree dlen, tree dest,
+		       tree slen, tree src)
+{
+  tree tmp;
+
+  tmp = NULL_TREE;
+  tmp = gfc_chainon_list (tmp, dlen);
+  tmp = gfc_chainon_list (tmp, dest);
+  tmp = gfc_chainon_list (tmp, slen);
+  tmp = gfc_chainon_list (tmp, src);
+  tmp = gfc_build_function_call (gfor_fndecl_copy_string, tmp);
+  gfc_add_expr_to_block (block, tmp);
+}
+
+
 /* Translate a statement function.
    The value of a statement function reference is obtained by evaluating the
    expression using the values of the actual arguments for the values of the
@@ -1196,69 +1214,98 @@ gfc_conv_statement_function (gfc_se * se, gfc_expr * expr)
   gfc_actual_arglist *args;
   gfc_se lse;
   gfc_se rse;
+  gfc_saved_var *saved_vars;
+  tree *temp_vars;
+  tree type;
+  tree tmp;
+  int n;
 
   sym = expr->symtree->n.sym;
   args = expr->value.function.actual;
   gfc_init_se (&lse, NULL);
   gfc_init_se (&rse, NULL);
 
+  n = 0;
   for (fargs = sym->formal; fargs; fargs = fargs->next)
+    n++;
+  saved_vars = (gfc_saved_var *)gfc_getmem (n * sizeof (gfc_saved_var));
+  temp_vars = (tree *)gfc_getmem (n * sizeof (tree));
+
+  for (fargs = sym->formal, n = 0; fargs; fargs = fargs->next, n++)
     {
       /* Each dummy shall be specified, explicitly or implicitly, to be
          scalar.  */
       assert (fargs->sym->attr.dimension == 0);
       fsym = fargs->sym;
-      assert (fsym->backend_decl);
 
-      /* Convert non-pointer string dummy.  */
-      if (fsym->ts.type == BT_CHARACTER && !fsym->attr.pointer)
+      /* Create a temporary to hold the value.  */
+      type = gfc_typenode_for_spec (&fsym->ts);
+      temp_vars[n] = gfc_create_var (type, fsym->name);
+
+      if (fsym->ts.type == BT_CHARACTER)
         {
-          tree len1;
-          tree len2;
-          tree arg;
-          tree tmp;
-          tree type;
-          tree var;
+	  /* Copy string arguments.  */
+          tree arglen;
 
           assert (fsym->ts.cl && fsym->ts.cl->length
                   && fsym->ts.cl->length->expr_type == EXPR_CONSTANT);
 
-          type = gfc_get_character_type (fsym->ts.kind, fsym->ts.cl);
-          len1 = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
-          var = gfc_build_addr_expr (build_pointer_type (type),
-				     fsym->backend_decl);
+          arglen = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
+          tmp = gfc_build_addr_expr (build_pointer_type (type),
+				     temp_vars[n]);
 
           gfc_conv_expr (&rse, args->expr);
           gfc_conv_string_parameter (&rse);
-          len2 = rse.string_length;
           gfc_add_block_to_block (&se->pre, &lse.pre);
           gfc_add_block_to_block (&se->pre, &rse.pre);
 
-          arg = NULL_TREE;
-          arg = gfc_chainon_list (arg, len1);
-          arg = gfc_chainon_list (arg, var);
-          arg = gfc_chainon_list (arg, len2);
-          arg = gfc_chainon_list (arg, rse.expr);
-          tmp = gfc_build_function_call (gfor_fndecl_copy_string, arg);
-          gfc_add_expr_to_block (&se->pre, tmp);
+	  gfc_trans_string_copy (&se->pre, arglen, tmp, rse.string_length,
+				 rse.expr);
           gfc_add_block_to_block (&se->pre, &lse.post);
           gfc_add_block_to_block (&se->pre, &rse.post);
         }
       else
         {
           /* For everything else, just evaluate the expression.  */
-          if (fsym->attr.pointer == 1)
-            lse.want_pointer = 1;
-
           gfc_conv_expr (&lse, args->expr);
 
           gfc_add_block_to_block (&se->pre, &lse.pre);
-          gfc_add_modify_expr (&se->pre, fsym->backend_decl, lse.expr);
+          gfc_add_modify_expr (&se->pre, temp_vars[n], lse.expr);
           gfc_add_block_to_block (&se->pre, &lse.post);
         }
+
       args = args->next;
     }
+
+  /* Use the temporary variables in place of the real ones.  */
+  for (fargs = sym->formal, n = 0; fargs; fargs = fargs->next, n++)
+    gfc_shadow_sym (fargs->sym, temp_vars[n], &saved_vars[n]);
+
   gfc_conv_expr (se, sym->value);
+
+  if (sym->ts.type == BT_CHARACTER)
+    {
+      gfc_conv_const_charlen (sym->ts.cl);
+
+      /* Force the expression to the correct length.  */
+      if (!INTEGER_CST_P (se->string_length)
+	  || tree_int_cst_lt (se->string_length,
+			      sym->ts.cl->backend_decl))
+	{
+	  type = gfc_get_character_type (sym->ts.kind, sym->ts.cl);
+	  tmp = gfc_create_var (type, sym->name);
+	  tmp = gfc_build_addr_expr (build_pointer_type (type), tmp);
+	  gfc_trans_string_copy (&se->pre, sym->ts.cl->backend_decl, tmp,
+				 se->string_length, se->expr);
+	  se->expr = tmp;
+	}
+      se->string_length = sym->ts.cl->backend_decl;
+    }
+
+  /* Resore the original variables.  */
+  for (fargs = sym->formal, n = 0; fargs; fargs = fargs->next, n++)
+    gfc_restore_sym (fargs->sym, &saved_vars[n]);
+  gfc_free (saved_vars);
 }
 
 
@@ -1617,17 +1664,12 @@ gfc_conv_string_parameter (gfc_se * se)
 tree
 gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, bt type)
 {
-  tree tmp;
-  tree args;
   stmtblock_t block;
 
   gfc_init_block (&block);
 
-
   if (type == BT_CHARACTER)
     {
-      args = NULL_TREE;
-
       assert (lse->string_length != NULL_TREE
 	      && rse->string_length != NULL_TREE);
 
@@ -1637,13 +1679,8 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, bt type)
       gfc_add_block_to_block (&block, &lse->pre);
       gfc_add_block_to_block (&block, &rse->pre);
 
-      args = gfc_chainon_list (args, lse->string_length);
-      args = gfc_chainon_list (args, lse->expr);
-      args = gfc_chainon_list (args, rse->string_length);
-      args = gfc_chainon_list (args, rse->expr);
-
-      tmp = gfc_build_function_call (gfor_fndecl_copy_string, args);
-      gfc_add_expr_to_block (&block, tmp);
+      gfc_trans_string_copy (&block, lse->string_length, lse->expr,
+			     rse->string_length, rse->expr);
     }
   else
     {

@@ -2121,8 +2121,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
   gfc_forall_iterator *fa;
   gfc_se se;
   gfc_code *c;
-  tree *saved_var_decl;
-  symbol_attribute *saved_var_attr;
+  gfc_saved_var *saved_vars;
   iter_info *this_forall, *iter_tmp;
   forall_info *info, *forall_tmp;
   temporary_list *temp;
@@ -2141,9 +2140,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
   end = (tree *) gfc_getmem (nvar * sizeof (tree));
   step = (tree *) gfc_getmem (nvar * sizeof (tree));
   varexpr = (gfc_expr **) gfc_getmem (nvar * sizeof (gfc_expr *));
-  saved_var_decl = (tree *) gfc_getmem (nvar * sizeof (tree));
-  saved_var_attr = (symbol_attribute *)
-    gfc_getmem (nvar * sizeof (symbol_attribute));
+  saved_vars = (gfc_saved_var *) gfc_getmem (nvar * sizeof (gfc_saved_var));
 
   /* Allocate the space for info.  */
   info = (forall_info *) gfc_getmem (sizeof (forall_info));
@@ -2155,20 +2152,11 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
       /* allocate space for this_forall.  */
       this_forall = (iter_info *) gfc_getmem (sizeof (iter_info));
 
-      /* Save the FORALL index's backend_decl.  */
-      saved_var_decl[n] = sym->backend_decl;
-
-      /* Save the attribute.  */
-      saved_var_attr[n] = sym->attr;
-
-      /* Set the proper attributes. */
-      gfc_clear_attr (&sym->attr);
-      sym->attr.referenced = 1;
-      sym->attr.flavor = FL_VARIABLE;
-
       /* Create a temporary variable for the FORALL index.  */
       tmp = gfc_typenode_for_spec (&sym->ts);
       var[n] = gfc_create_var (tmp, sym->name);
+      gfc_shadow_sym (sym, var[n], &saved_vars[n]);
+
       /* Record it in this_forall.  */
       this_forall->var = var[n];
 
@@ -2396,13 +2384,9 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
       c = c->next;
     }
 
-  /* Restore the index original backend_decl and the attribute.  */
-  for (fa = code->ext.forall_iterator, n=0; fa; fa = fa->next, n++)
-    {
-      gfc_symbol *sym = fa->var->symtree->n.sym;
-      sym->backend_decl = saved_var_decl[n];
-      sym->attr = saved_var_attr[n];
-    }
+  /* Restore the original index variables.  */
+  for (fa = code->ext.forall_iterator, n = 0; fa; fa = fa->next, n++)
+    gfc_restore_sym (fa->var->symtree->n.sym, &saved_vars[n]);
 
   /* Free the space for var, start, end, step, varexpr.  */
   gfc_free (var);
@@ -2410,8 +2394,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
   gfc_free (end);
   gfc_free (step);
   gfc_free (varexpr);
-  gfc_free (saved_var_decl);
-  gfc_free (saved_var_attr);
+  gfc_free (saved_vars);
 
   if (pmask)
     {

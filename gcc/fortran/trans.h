@@ -235,6 +235,16 @@ typedef struct gfc_loopinfo
 }
 gfc_loopinfo;
 
+
+/* Information about a symbol that has been shadowed by a temporary.  */
+typedef struct
+{
+  symbol_attribute attr;
+  tree decl;
+}
+gfc_saved_var;
+
+
 /* Advance the SS chain to the next term.  */
 void gfc_advance_se_ss_chain (gfc_se *);
 
@@ -363,6 +373,12 @@ void gfc_build_builtin_function_decls (void);
 
 /* Return the variable decl for a symbol.  */
 tree gfc_get_symbol_decl (gfc_symbol *);
+
+/* Substitute a temporary variable in place of the real one.  */
+void gfc_shadow_sym (gfc_symbol *, tree, gfc_saved_var *);
+
+/* Restore the original variable.  */
+void gfc_restore_sym (gfc_symbol *, gfc_saved_var *);
 
 /* Allocate the lang-spcific part of a decl node.  */
 void gfc_allocate_lang_decl (tree);
