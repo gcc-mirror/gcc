@@ -1511,7 +1511,7 @@ extern tree vt_off_identifier;
 /* A node that is a list (length 1) of error_mark_nodes.  */
 extern tree error_mark_list;
 
-extern tree ptr_type_node;
+extern tree ptr_type_node, ptr_ptr_type_node;
 extern tree class_type_node, record_type_node, union_type_node, enum_type_node;
 extern tree unknown_type_node;
 extern tree opaque_type_node, signature_type_node;

@@ -30,6 +30,17 @@ Boston, MA 02111-1307, USA.  */
   "-z %{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{shared:-b}"
 #endif
 
+/* Like the default, except no -lg.  */
+#undef LIB_SPEC
+#define LIB_SPEC \
+  "%{!shared:\
+     %{!p:\
+       %{!pg:\
+         %{!threads:-lc}\
+         %{threads:-lcma -lc_r}}\
+       %{p: -L/lib/libp/ -lc}\
+       %{pg: -L/lib/libp/ -lc}}}"
+
 /* The hpux10 assembler requires a .LEVEL pseudo-op at the start of
    the assembly file.  */
 #undef ASM_FILE_START

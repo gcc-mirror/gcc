@@ -201,6 +201,11 @@ extern void expand_internal_throw		PROTO((void));
 
 extern void expand_leftover_cleanups		PROTO((void));
 
+/* If necessary, emit insns to get EH context for the current
+   function. */
+
+extern void emit_eh_context			PROTO((void));
+
 /* If necessary, emit insns for the start of per-function unwinder for
    the current function.  */
 
@@ -240,20 +245,28 @@ extern struct label_node *false_label_stack;
 
 extern rtx exception_handler_labels;
 
-/* The rtx for the saved PC value.  */
-
-extern rtx eh_saved_pc_rtx;
-
 /* Performs optimizations for exception handling, such as removing
    unnecessary exception regions. Invoked from jump_optimize ().  */
 
 extern void exception_optimize			PROTO((void));
+
+/* Use EH context once per fn.  */
+extern rtx use_eh_context			PROTO((void));
+
+/* Get the EH contex only once per fn.  */
+extern rtx get_eh_context_once			PROTO((void));
+
+/* Get the EH contex.  */
+extern rtx get_eh_context			PROTO((void));
 
 /* Get the dynamic handler chain.  */
 extern rtx get_dynamic_handler_chain		PROTO((void));
 
 /* Get the dynamic cleanup chain.  */
 extern rtx get_dynamic_cleanup_chain		PROTO((void));
+
+/* Get the saved PC variable. */
+extern rtx get_saved_pc_ref			PROTO((void));
 
 /* Throw an exception.  */
 

@@ -3201,6 +3201,9 @@ rest_of_compilation (decl)
       goto exit_rest_of_compilation;
     }
 
+  /* Emit code to get eh context, if needed. */
+  emit_eh_context ();
+
   /* Add an unwinder for exception handling, if needed.
      This must be done before we finalize PIC code.  */
   emit_unwinder ();
