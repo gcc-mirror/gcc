@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler for Intel 80386
    running FreeBSD.
-   Copyright (C) 1988, 1992, 1994, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1994, 1996, 1997, 1999 Free Software
+   Foundation, Inc.
    Contributed by Poul-Henning Kamp <phk@login.dkuug.dk>
 
 This file is part of GNU CC.
@@ -245,3 +246,6 @@ do {                                                                    \
 #define STARTFILE_SPEC  \
   "%{shared:c++rt0.o%s} \
    %{!shared:%{pg:gcrt0.o%s}%{!pg:%{static:scrt0.o%s}%{!static:crt0.o%s}}}"
+
+/* Define this so we can compile MS code for use with WINE.  */
+#define HANDLE_PRAGMA_PACK_PUSH_POP
