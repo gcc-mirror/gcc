@@ -1,3 +1,13 @@
+Fri Oct 16 15:44:02 1998  Dave Brolley  <brolley@cygnus.com>
+
+        * cccp.c (rescan): Handle multibyte chartacters ending in backslash.
+        (rescan): Ditto.
+        (skip_if_group): Ditto.
+        (skip_to_end_of_comment): Ditto.
+        (macarg1): Ditto.
+        (discard_comments): Ditto.
+        (change_newlines): Ditto.
+
 Fri Oct 16 15:26:24 1998  Dave Brolley  <brolley@cygnus.com>
 
         * c-lex.c (yylex): Fix unaligned access of wchar_t.

@@ -3006,24 +3006,30 @@ do { ip = &instack[indepth];		\
 	  U_CHAR *before_bp = ibp;
 
 	  while (++ibp < limit) {
-	    if (*ibp == '\n') {
-	      if (ibp[-1] != '\\') {
+	    if (*ibp == '\n')
+	      {
 		if (put_out_comments) {
 		  bcopy ((char *) before_bp, (char *) obp, ibp - before_bp);
 		  obp += ibp - before_bp;
 		}
 		break;
 	      }
-	      if (warn_comments)
-		warning ("multiline `//' comment");
-	      ++ip->lineno;
-	      /* Copy the newline into the output buffer, in order to
-		 avoid the pain of a #line every time a multiline comment
-		 is seen.  */
-	      if (!put_out_comments)
-		*obp++ = '\n';
-	      ++op->lineno;
-	    }
+	    if (*ibp == '\\')
+	      {
+		if (ibp + 1 < limit && ibp[1] == '\n')
+		  {
+		    if (warn_comments)
+		      warning ("multiline `//' comment");
+		    ++ip->lineno;
+		    /* Copy the newline into the output buffer, in order to
+		       avoid the pain of a #line every time a multiline comment
+		       is seen.  */
+		    if (!put_out_comments)
+		      *obp++ = '\n';
+		    ++op->lineno;
+		    ++ibp;
+		  }
+	      }
 	    else
 	      {
 #ifdef MULTIBYTE_CHARS
@@ -3527,9 +3533,11 @@ randomchar:
 			for (ibp += 2; ; ibp++)
 			  {
 			    if (*ibp == '\n')
+			      break;
+			    if (*ibp == '\\' && ibp[1] == '\n')
 			      {
-				if (ibp[-1] != '\\')
-				  break;
+				if (put_out_comments)
+				  *obp++ = *ibp++;
 			      }
 			    else
 			      {
@@ -7606,13 +7614,15 @@ skip_if_group (ip, any, op)
 	    bp += 2;
 	  } else if (bp[1] == '/' && cplusplus_comments) {
 	    for (bp += 2; ; bp++) {
-	      if (*bp == '\n') {
-		if (bp[-1] != '\\')
-		  break;
-		if (warn_comments)
-		  warning ("multiline `//' comment");
-		ip->lineno++;
-	      }
+	      if (*bp == '\n')
+		break;
+	      if (*bp == '\\' && bp[1] == '\n')
+		{
+		  if (warn_comments)
+		    warning ("multiline `//' comment");
+		  ip->lineno++;
+		  bp++;
+		}
 	      else
 		{
 #ifdef MULTIBYTE_CHARS
@@ -7969,16 +7979,21 @@ skip_to_end_of_comment (ip, line_counter, nowarn)
   }
   if (cplusplus_comments && bp[-1] == '/') {
     for (; bp < limit; bp++) {
-      if (*bp == '\n') {
-	if (bp[-1] != '\\')
-	  break;
-	if (!nowarn && warn_comments)
-	  warning ("multiline `//' comment");
-	if (line_counter)
-	  ++*line_counter;
-	if (op)
-	  ++op->lineno;
-      }
+      if (*bp == '\n')
+	break;
+      if (*bp == '\\' && bp + 1 < limit && bp[1] == '\n')
+	{
+	  if (!nowarn && warn_comments)
+	    warning ("multiline `//' comment");
+	  if (line_counter)
+	    ++*line_counter;
+	  if (op)
+	    {
+	      ++op->lineno;
+	      *op->bufp++ = *bp;
+	    }
+	  ++bp;
+	}
       else
 	{
 #ifdef MULTIBYTE_CHARS
@@ -8951,11 +8966,15 @@ macarg1 (start, limit, macro, depthptr, newlines, comments, rest_args)
 	for (bp += 2; bp < limit; bp++) {
 	  if (*bp == '\n') {
 	    ++*newlines;
-	    if (bp[-1] != '\\')
-	      break;
-	    if (warn_comments)
-	      warning ("multiline `//' comment");
+	    break;
 	  }
+	  if (*bp == '\\' && bp + 1 < limit && bp[1] == '\n')
+	    {
+	      ++*newlines;
+	      if (warn_comments)
+		warning ("multiline `//' comment");
+	      ++bp;
+	    }
 	  else
 	    {
 #ifdef MULTIBYTE_CHARS
@@ -9077,10 +9096,9 @@ discard_comments (start, length, newlines)
 	while (ibp < limit)
 	  {
 	    if (*ibp == '\n')
-	      {
-		if (ibp[-1] != '\\')
-		  break;
-	      }
+	      break;
+	    if (*ibp == '\\' && ibp + 1 < limit && ibp[1] == '\n')
+	      ibp++;
 	    else
 	      {
 #ifdef MULTIBYTE_CHARS
@@ -9215,10 +9233,9 @@ change_newlines (start, length)
 	while (ibp < limit) {
 	  *obp++ = c = *ibp++;
 	  if (c == quotec)
-	    {
-	      if (ibp[-2] != '\\')
-		break;
-	    }
+	    break;
+	  else if (c == '\\' && ibp < limit && *ibp == '\n')
+	    *obp++ = *ibp++;
 	  else if (c == '\n')
 	    {
 	      if (quotec == '\'')
