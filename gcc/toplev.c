@@ -3568,11 +3568,6 @@ main (argc, argv, envp)
     }
 
   obey_regdecls = (optimize == 0);
-  if (optimize == 0)
-    {
-      flag_no_inline = 1;
-      warn_inline = 0;
-    }
 
   if (optimize >= 1)
     {
