@@ -428,7 +428,7 @@ java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
   else
     throw new java::net::SocketException (JvNewStringUTF ("invalid length"));
 
-  if (::setsockopt (fnum, level, opname, ptr, len) != 0)
+  if (::setsockopt (fnum, level, opname, ptr, len) == 0)
     return;
 
   char* strerr = strerror (errno);
