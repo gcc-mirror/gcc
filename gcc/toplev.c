@@ -1,3 +1,4 @@
+
 /* Top level of GNU C compiler
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002 Free Software Foundation, Inc.
@@ -1718,13 +1719,12 @@ output_clean_symbol_name (file, name)
     const char *name;
 {
   /* Make a copy of NAME.  */
-  char *id = (char *)xmalloc (strlen (name) + 1);
-  strcpy (id, name);
+  char *id = xstrdup (name);
 
   /* Make it look like a valid identifier for an assembler.  */
   clean_symbol_name (id);
   
-  fputs (file, name);
+  fputs (name, file);
   free (id);
 }
 
