@@ -1,3 +1,8 @@
+1998-10-14  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* function.c (purge_addressof_1): Force the first argument of a
+	CALL insn to memory.
+
 Wed Oct 14 00:38:40 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* rtl.h: Delete duplicate prototypes.  Add some missing
