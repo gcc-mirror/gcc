@@ -1,3 +1,8 @@
+Sat Jan 11 11:02:58 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR target/9068
+	* i386.c (output_fp_compare): Fix typo.
+
 2003-01-10  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (common_mode_defined): Mark for PCH.

@@ -7775,12 +7775,12 @@ output_fp_compare (insn, operands, eflags_p, unordered_p)
 	if (unordered_p)
 	  return "ucomiss\t{%1, %0|%0, %1}";
 	else
-	  return "comiss\t{%1, %0|%0, %y}";
+	  return "comiss\t{%1, %0|%0, %1}";
       else
 	if (unordered_p)
 	  return "ucomisd\t{%1, %0|%0, %1}";
 	else
-	  return "comisd\t{%1, %0|%0, %y}";
+	  return "comisd\t{%1, %0|%0, %1}";
     }
 
   if (! STACK_TOP_P (cmp_op0))
@@ -9612,7 +9612,7 @@ ix86_expand_int_movcc (operands)
 	  if (!rtx_equal_p (tmp, out))
 	    {
 	      if (nops == 1)
-		out = force_operand (tmp, out);
+		out = force_operand (tmp, copy_rtx (out));
 	      else
 		emit_insn (gen_rtx_SET (VOIDmode, copy_rtx (out), copy_rtx (tmp)));
 	    }
