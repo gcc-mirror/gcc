@@ -1,3 +1,10 @@
+2000-11-21  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.h: Accept TARGET_CPU_arm9tdmi,
+	TARGET_CPU_strongarm110 and TARGET_SPU_strongarm1100.
+
+	* config.gcc: Accept --with-cpu=arm9 and --with-cpu=arm9tdmi.
+	
 2000-11-21  Richard Henderson  <rth@redhat.com>
 
 	* c-common.c (c_unsafe_for_reeval): New function.
