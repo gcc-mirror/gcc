@@ -988,7 +988,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Miscelaneous
+;; Miscellaneous
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1011,7 +1011,7 @@
    && ix86_binary_operator_ok (PLUS, V8QImode, operands)"
 {
   /* These two instructions have the same operation, but their encoding
-     is different.  Prefer the one that is defacto standard.  */
+     is different.  Prefer the one that is de facto standard.  */
   if (TARGET_SSE || TARGET_3DNOW_A)
     return "pavgb\t{%2, %0|%0, %2}";
   else

@@ -1,3 +1,7 @@
+2005-01-11  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/alpha/alpha.c, config/i386/mmx.md: Fix comment typos.
+
 2005-01-11  Alan Modra  <amodra@bigpond.net.au>
 
 	* varasm.c (default_section_type_flags_1): Don't set SECTION_SMALL.
