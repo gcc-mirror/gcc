@@ -1,5 +1,11 @@
 2004-12-15  Richard Henderson  <rth@redhat.com>
 
+	PR target/19028
+	* config/i386/i386.md (sse compare splitter): Test for SF and DFmode
+	explicitly instead of using VALID_SSE_REG_MODE.
+
+2004-12-15  Richard Henderson  <rth@redhat.com>
+
 	PR target/19005
 	* config/i386/i386.md (swaphi_1): Swap with swaphi_2, allow with
 	optimize_size.
