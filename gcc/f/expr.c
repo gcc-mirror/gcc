@@ -1,5 +1,5 @@
 /* expr.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996, 1997, 1998, 2001, 2002
+   Copyright (C) 1995, 1996, 1997, 1998, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
@@ -9577,15 +9577,6 @@ static void
 ffeexpr_exprstack_push_operand_ (ffeexprExpr_ e)
 {
   ffeexpr_exprstack_push_ (e);
-#ifdef WEIRD_NONFORTRAN_RULES
-  if ((ffeexpr_stack_->exprstack != NULL)
-      && (ffeexpr_stack_->exprstack->expr->type == FFEEXPR_exprtypeBINARY_)
-      && (ffeexpr_stack_->exprstack->expr->u.operator.prec
-	  == FFEEXPR_operatorprecedenceHIGHEST_)
-      && (ffeexpr_stack_->exprstack->expr->u.operator.as
-	  == FFEEXPR_operatorassociativityL2R_))
-    ffeexpr_reduce_ ();
-#endif
 }
 
 /* ffeexpr_exprstack_push_unary_ -- Push a unary operator onto the stack
@@ -11519,7 +11510,7 @@ ffeexpr_reduced_ugly2log_ (ffebld reduced, ffeexprExpr_ l, ffeexprExpr_ op,
 				  FFETARGET_charactersizeNONE,
 				  FFEEXPR_contextLET));
   }
-  
+
   return reduced;
 }
 

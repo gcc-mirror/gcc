@@ -1028,7 +1028,6 @@ ffelex_hash_ (FILE *finput)
 	      goto skipline;
 	    }
 	}
-
       else if (c == 'd')
 	{
 	  if (getc (finput) == 'e'
@@ -1450,9 +1449,6 @@ ffelex_include_ ()
 
   if (card_length != 0)
     {
-#ifdef REDUCE_CARD_SIZE_AFTER_BIGGY	/* Define if occasional large lines. */
-#error "need to handle possible reduction of card size here!!"
-#endif
       assert (ffelex_card_size_ >= card_length);	/* It shrunk?? */
       memcpy (ffelex_card_image_, card_image, card_length);
     }
@@ -1755,18 +1751,6 @@ ffelex_file_fixed (ffewhereFile wf, FILE *f)
   /* Come here directly when last line didn't clarify the continuation issue. */
 
  beginning_of_line_again:	/* :::::::::::::::::::: */
-
-#ifdef REDUCE_CARD_SIZE_AFTER_BIGGY	/* Define if occasional large lines. */
-  if (ffelex_card_size_ != FFELEX_columnINITIAL_SIZE_)
-    {
-      ffelex_card_image_
-	= malloc_resize_ks (malloc_pool_image (),
-			    ffelex_card_image_,
-			    FFELEX_columnINITIAL_SIZE_ + 9,
-			    ffelex_card_size_ + 9);
-      ffelex_card_size_ = FFELEX_columnINITIAL_SIZE_;
-    }
-#endif
 
  first_line:			/* :::::::::::::::::::: */
 
