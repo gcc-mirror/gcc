@@ -1,3 +1,7 @@
+2002-05-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppexp.c (_cpp_expand_op_stack): Set op_limit.
+
 2002-05-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/t-iris6 (SHLIB_SLIBDIR_SUFFIXES): Define.
