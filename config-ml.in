@@ -742,7 +742,7 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
     cd ${ml_dir}/${ml_libdir}
 
     if [ -f ${ml_newsrcdir}/configure ]; then
-      ml_recprog=${ml_newsrcdir}/configure
+      ml_recprog="${ml_newsrcdir}/configure --cache-file=../config.cache"
     fi
 
     # find compiler flag corresponding to ${ml_dir}

@@ -1216,7 +1216,7 @@ else
   gxx_include_dir=${gxx_include_dir}
 fi
 
-targargs="--host=${target_alias} --build=${build_alias} ${targargs}"
+targargs="--cache-file=../config.cache --host=${target_alias} --build=${build_alias} ${targargs}"
 sed -e "s:^TARGET_CONFIGDIRS[ 	]*=.*$:TARGET_CONFIGDIRS = ${target_configdirs}:" \
     -e "s%^CONFIG_ARGUMENTS[ 	]*=.*$%CONFIG_ARGUMENTS = ${targargs}%" \
     -e "s%^TARGET_SUBDIR[ 	]*=.*$%TARGET_SUBDIR = ${target_subdir}%" \
