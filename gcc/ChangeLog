@@ -1,3 +1,11 @@
+2001-10-12  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppmain.c (struct printer): New member source.
+	(scan_translation_unit): Fix spacing at start of lines.
+	(cb_line_change): Update.
+
+	* gcc.dg/cpp/spacing2.c: New test.
+
 2001-10-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/arit.c: Use __builtin_labs, not abs.

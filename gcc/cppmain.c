@@ -33,6 +33,7 @@ struct printer
   FILE *outf;			/* Stream to write to.  */
   const struct line_map *map;	/* Logical to physical line mappings.  */
   const cpp_token *prev;	/* Previous token.  */
+  const cpp_token *source;	/* Source token for spacing.  */
   unsigned int line;		/* Line currently being written.  */
   unsigned char printed;	/* Nonzero if something output at line.  */
 };
@@ -222,8 +223,8 @@ scan_translation_unit (pfile)
      cpp_reader *pfile;
 {
   bool avoid_paste = false;
-  const cpp_token *source = NULL;
 
+  print.source = NULL;
   for (;;)
     {
       const cpp_token *token = cpp_get_token (pfile);
@@ -231,9 +232,10 @@ scan_translation_unit (pfile)
       if (token->type == CPP_PADDING)
 	{
 	  avoid_paste = true;
-	  if (source == NULL
-	      || (!(source->flags & PREV_WHITE) && token->val.source == NULL))
-	    source = token->val.source;
+	  if (print.source == NULL
+	      || (!(print.source->flags & PREV_WHITE)
+		  && token->val.source == NULL))
+	    print.source = token->val.source;
 	  continue;
 	}
 
@@ -243,9 +245,9 @@ scan_translation_unit (pfile)
       /* Subtle logic to output a space if and only if necessary.  */
       if (avoid_paste)
 	{
-	  if (source == NULL)
-	    source = token;
-	  if (source->flags & PREV_WHITE
+	  if (print.source == NULL)
+	    print.source = token;
+	  if (print.source->flags & PREV_WHITE
 	      || (print.prev && cpp_avoid_paste (pfile, print.prev, token))
 	      || (print.prev == NULL && token->type == CPP_HASH))
 	    putc (' ', print.outf);
@@ -254,7 +256,7 @@ scan_translation_unit (pfile)
 	putc (' ', print.outf);
 
       avoid_paste = false;
-      source = NULL;
+      print.source = NULL;
       print.prev = token;
       cpp_output_token (token, print.outf);
 
@@ -348,6 +350,7 @@ cb_line_change (pfile, token, parsing_args)
   maybe_print_line (print.map, token->line);
   print.printed = 1;
   print.prev = 0;
+  print.source = 0;
 
   /* Supply enough spaces to put this token in its original column,
      one space per column greater than 2, since scan_translation_unit
