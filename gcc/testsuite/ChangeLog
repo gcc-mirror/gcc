@@ -1,3 +1,7 @@
+2000-11-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.other/anon5.C: New test.
+
 2000-11-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/c90-const-expr-2.c, gcc.dg/c99-const-expr-2.c: Add more
