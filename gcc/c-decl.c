@@ -4277,10 +4277,20 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
   if (type == 0)
     {
-      if (funcdef_flag && warn_return_type
-	  && ! (specbits & ((1 << (int) RID_LONG) | (1 << (int) RID_SHORT)
-			    | (1 << (int) RID_SIGNED) | (1 << (int) RID_UNSIGNED))))
-	warn_about_return_type = 1;
+      if (! (specbits & ((1 << (int) RID_LONG) | (1 << (int) RID_SHORT)
+			 | (1 << (int) RID_SIGNED)
+			 | (1 << (int) RID_UNSIGNED))))
+	{
+	  /* C9x will probably require a diagnostic here.
+	     For now, issue a warning if -Wreturn-type and this is a function,
+	     or if -Wimplicit; prefer the former warning since it is more
+	     explicit.  */
+	  if ((warn_implicit || warn_return_type) && funcdef_flag)
+	    warn_about_return_type = 1;
+	  else if (warn_implicit)
+	    warning ("type defaults to `int' in declaration of `%s'", name);
+	}
+
       defaulted_int = 1;
       type = integer_type_node;
     }
