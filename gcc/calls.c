@@ -2712,26 +2712,26 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
 #ifdef REG_PARM_STACK_SPACE
-      if (save_area)
-	{
-	  enum machine_mode save_mode = GET_MODE (save_area);
-	  rtx stack_area
-	    = gen_rtx (MEM, save_mode,
-		       memory_address (save_mode,
+  if (save_area)
+    {
+      enum machine_mode save_mode = GET_MODE (save_area);
+      rtx stack_area
+	= gen_rtx (MEM, save_mode,
+		   memory_address (save_mode,
 #ifdef ARGS_GROW_DOWNWARD
-				       plus_constant (argblock, - high_to_save)
+				   plus_constant (argblock, - high_to_save)
 #else
-				       plus_constant (argblock, low_to_save)
+				   plus_constant (argblock, low_to_save)
 #endif
-				       ));
+				   ));
 
-	  if (save_mode != BLKmode)
-	    emit_move_insn (stack_area, save_area);
-	  else
-	    emit_block_move (stack_area, validize_mem (save_area),
-			     GEN_INT (high_to_save - low_to_save + 1),
-			     PARM_BOUNDARY / BITS_PER_UNIT);
-	}
+      if (save_mode != BLKmode)
+	emit_move_insn (stack_area, save_area);
+      else
+	emit_block_move (stack_area, validize_mem (save_area),
+			 GEN_INT (high_to_save - low_to_save + 1),
+			 PARM_BOUNDARY / BITS_PER_UNIT);
+    }
 #endif
 	  
   /* If we saved any argument areas, restore them.  */
@@ -2750,7 +2750,6 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
   highest_outgoing_arg_in_use = initial_highest_arg_in_use;
   stack_usage_map = initial_stack_usage_map;
 #endif
-
 }
 
 /* Like emit_library_call except that an extra argument, VALUE,
@@ -3306,26 +3305,26 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
 #ifdef REG_PARM_STACK_SPACE
-      if (save_area)
-	{
-	  enum machine_mode save_mode = GET_MODE (save_area);
-	  rtx stack_area
-	    = gen_rtx (MEM, save_mode,
-		       memory_address (save_mode,
+  if (save_area)
+    {
+      enum machine_mode save_mode = GET_MODE (save_area);
+      rtx stack_area
+	= gen_rtx (MEM, save_mode,
+		   memory_address (save_mode,
 #ifdef ARGS_GROW_DOWNWARD
-				       plus_constant (argblock, - high_to_save)
+				   plus_constant (argblock, - high_to_save)
 #else
-				       plus_constant (argblock, low_to_save)
+				   plus_constant (argblock, low_to_save)
 #endif
-				       ));
+				   ));
 
-	  if (save_mode != BLKmode)
-	    emit_move_insn (stack_area, save_area);
-	  else
-	    emit_block_move (stack_area, validize_mem (save_area),
-			     GEN_INT (high_to_save - low_to_save + 1),
+      if (save_mode != BLKmode)
+	emit_move_insn (stack_area, save_area);
+      else
+	emit_block_move (stack_area, validize_mem (save_area),
+			 GEN_INT (high_to_save - low_to_save + 1),
 			     PARM_BOUNDARY / BITS_PER_UNIT);
-	}
+    }
 #endif
 	  
   /* If we saved any argument areas, restore them.  */
