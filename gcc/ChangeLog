@@ -1,3 +1,9 @@
+2002-05-07  Janis Johnson  <janis187@us.ibm.com>
+
+	* config.in (ENABLE_RTL_FLAG_CHECKING): New.
+	* configure.in (ac_rtlflag_checking): New.
+	* doc/install.texi (--enable-checking): Document RTL flag checking.
+
 2002-05-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c (c_common_init): Set options->unsigned_wchar.
