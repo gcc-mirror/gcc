@@ -1,3 +1,8 @@
+2004-06-01  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14932
+	* g++.dg/parse/offsetof4.C: New test.
+
 2004-06-01  Nicola Pero  <nicola@brainstorm.co.uk>
 
  	PR objc/7993
