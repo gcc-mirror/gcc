@@ -1,3 +1,16 @@
+1999-01-20  Mark Mitchell  <mark@markmitchell.com>
+
+	* error.c (dump_function_decl): Don't print the argument types for
+	a function when the verbosity level is negative.
+	
+	* call.c (build_over_call): Check format attributes at call-time.
+
+	* pt.c (tsubst_copy): Fix comment.
+	(unify): Don't allow unification with variable-sized arrays.
+
+	* semantics.c (finish_stmt_expr): When processing a template make
+	the BIND_EXPR long-lived.
+
 1999-01-19  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (finish_vtable_vardecl): Make vtables comdat here.

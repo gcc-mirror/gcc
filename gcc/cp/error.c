@@ -958,8 +958,9 @@ dump_decl (t, v)
 }
 
 /* Pretty printing for announce_function.  T is the declaration of the
-   function we are interested in seeing.  V is non-zero if we should print
-   the type that this function returns.  */
+   function we are interested in seeing.  If V is zero, we print the
+   argument types.  If V is positive, we also print the return types.
+   If V is negative, we do not even print the argument types.  */
 
 static void
 dump_function_decl (t, v)
@@ -985,9 +986,8 @@ dump_function_decl (t, v)
   else if (TREE_CODE (fntype) == METHOD_TYPE)
     cname = TREE_TYPE (TREE_VALUE (parmtypes));
 
-  v = (v > 0);
-  
-  if (v)
+  /* Print the return type.  */
+  if (v > 0)
     {
       if (DECL_STATIC_FUNCTION_P (t))
 	OB_PUTS ("static ");
@@ -1001,6 +1001,7 @@ dump_function_decl (t, v)
 	}
     }
 
+  /* Print the function name.  */
   if (cname)
     {
       dump_type (cname, 0);
@@ -1021,7 +1022,11 @@ dump_function_decl (t, v)
     parmtypes = TREE_CHAIN (parmtypes);
   
   dump_function_name (t);
-  
+
+  /* If V is negative, we don't print the argument types.  */
+  if (v < 0)
+    return;
+
   OB_PUTC ('(');
 
   if (parmtypes)

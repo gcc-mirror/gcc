@@ -6329,7 +6329,7 @@ tsubst_copy (t, args, in_decl)
 
 	if (code == BIND_EXPR && !processing_template_decl)
 	  {
-	    /* This processing  should really occur in tsubst_expr,
+	    /* This processing should really occur in tsubst_expr,
 	       However, tsubst_expr does not recurse into expressions,
 	       since it assumes that there aren't any statements
 	       inside them.  Instead, it simply calls
@@ -7504,6 +7504,20 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 	return 0;
       else if (targ)
 	return 1;
+
+      /* Make sure that ARG is not a variable-sized array.  (Note that
+	 were talking about variable-sized arrays (like `int[n]'),
+	 rather than arrays of unknown size (like `int[]').)  We'll
+	 get very confused by such a type since the bound of the array
+	 will not be computable in an instantiation.  Besides, such
+	 types are not allowed in ISO C++, so we can do as we please
+	 here.  */
+      if (TREE_CODE (arg) == ARRAY_TYPE 
+	  && !uses_template_parms (arg)
+	  && (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (arg)))
+	      != INTEGER_CST))
+	return 1;
+
       TREE_VEC_ELT (targs, idx) = arg;
       return 0;
 

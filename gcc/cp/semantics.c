@@ -809,8 +809,8 @@ finish_stmt_expr (rtl_expr, expr)
     {
       /* Make a BIND_EXPR for the BLOCK already made.  */
       if (processing_template_decl)
-	result = build (BIND_EXPR, NULL_TREE,
-			NULL_TREE, last_tree, expr);
+	result = build_min_nt (BIND_EXPR, NULL_TREE, last_tree,
+			       NULL_TREE);
       else
 	result = build (BIND_EXPR, TREE_TYPE (rtl_expr),
 			NULL_TREE, rtl_expr, expr);
