@@ -1,3 +1,9 @@
+2004-03-10  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure.in: Rename file to ...
+	* configure.ac: .. to this. Bump AC_PREREQ to 2.59.
+	* configure: Regenerate.
+
 2003-03-02  Arnaud Charlet  <charlet@act-europe.fr>
 
 	PR ada/14350

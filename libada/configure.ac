@@ -19,7 +19,7 @@ AC_INIT
 AC_CONFIG_SRCDIR([Makefile.in])
 
 # This is an autoconf 2.5x script.
-AC_PREREQ([2.57])
+AC_PREREQ([2.59])
 
 # Very limited version of AC_MAINTAINER_MODE.
 AC_ARG_ENABLE(
