@@ -1,5 +1,12 @@
 2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
 
+	* gfortran.dg/g77/f77-edit-i-in.f: Copy from g77.dg and
+	change X to 1X in format.
+	* gfortran.dg/g77/20010216-1.f:  Copy from g77.dg and
+	add data statements to conform to standard.
+
+2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
+
 	* gfortran.dg/g77/f77-edit-s-out.f: Copy from g77.dg. XFAIL 
 	* gfortran.dg/g77/f77-edit-t-in.f: Likewise
 	* gfortran.dg/g77/f77-edit-x-out.f: Likewise
