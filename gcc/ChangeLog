@@ -1,3 +1,9 @@
+2003-07-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR debug/11279
+	* dwarf2out.c (gen_enumeration_type_die): Remember that
+	enumerators can be unsigned.
+
 2003-07-19  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* c-tree.texi: Backport changes from mainline.

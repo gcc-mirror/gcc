@@ -10383,14 +10383,15 @@ gen_enumeration_type_die (type, context_die)
 	  add_name_attribute (enum_die,
 			      IDENTIFIER_POINTER (TREE_PURPOSE (link)));
 
-	  if (host_integerp (TREE_VALUE (link), 0))
+	  if (host_integerp (TREE_VALUE (link), 
+			     TREE_UNSIGNED (TREE_TYPE (TREE_VALUE (link)))))
 	    {
 	      if (tree_int_cst_sgn (TREE_VALUE (link)) < 0)
 		add_AT_int (enum_die, DW_AT_const_value,
 			    tree_low_cst (TREE_VALUE (link), 0));
 	      else
 		add_AT_unsigned (enum_die, DW_AT_const_value,
-				 tree_low_cst (TREE_VALUE (link), 0));
+				 tree_low_cst (TREE_VALUE (link), 1));
 	    }
 	}
     }
