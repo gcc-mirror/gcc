@@ -1,3 +1,7 @@
+2002-05-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/install.texi: State GNAT version requirements.
+
 2002-05-02  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/fr30/fr30.h (GO_IF_LEGITIMATE_ADDRESS): Accept any form

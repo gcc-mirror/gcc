@@ -1037,7 +1037,8 @@ the number of processors in your machine.
 @section Building the Ada compiler
 
 In order to build GNAT, the Ada compiler, you need a working GNAT
-compiler, since the Ada front end is written in Ada (with some
+compiler (GNAT version 3.13 or later, or GCC version 3.1 or later),
+since the Ada front end is written in Ada (with some
 GNAT-specific extensions), and GNU make.
 
 However, you do not need a full installation of GNAT, just the GNAT
@@ -1048,6 +1049,10 @@ environment variable at the configure step.  @command{configure} can
 detect the driver automatically if it has got a common name such as
 @command{gcc} or @command{gnatgcc}.  Of course, you still need a working
 C compiler (the compiler driver can be different or not).
+@command{configure} does not test whether the GNAT installation works
+and has a sufficiently recent version; if too old a GNAT version is
+installed, the build will fail unless @option{--enable-languages} is
+used to disable building the Ada front end.
 
 Additional build tools (such as @command{gnatmake}) or a working GNAT
 run-time library installation are usually @emph{not} required.  However,
