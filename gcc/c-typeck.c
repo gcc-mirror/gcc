@@ -2218,7 +2218,10 @@ parser_build_binary_op (code, arg1, arg2)
   else
     {
       int flag = TREE_CONSTANT (result);
-      result = build1 (NON_LVALUE_EXPR, TREE_TYPE (result), result);
+      /* We use NOP_EXPR rather than NON_LVALUE_EXPR
+	 so that convert_for_assignment won't strip it.
+	 That way, we get warnings for things like p = (1 - 1).  */
+      result = build1 (NOP_EXPR, TREE_TYPE (result), result);
       C_SET_EXP_ORIGINAL_CODE (result, code);
       TREE_CONSTANT (result) = flag;
     }
@@ -5011,11 +5014,13 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 	({
 	  if (ofwhat)
 	    push_string (ofwhat);
+	  if (!raw_constructor)
+	    inside_init = init;
+	  /* Note that convert_for_assignment calls default_conversion
+	     for arrays and functions.  We must not call it in the
+	     case where inside_init is a null pointer constant.  */
 	  inside_init
-	    = convert_for_assignment (type,
-				      default_conversion (raw_constructor
-							  ? inside_init
-							  : init),
+	    = convert_for_assignment (type, inside_init, 
 				      &initialization_message,
 				      NULL_TREE, NULL_TREE, 0);
 	});
