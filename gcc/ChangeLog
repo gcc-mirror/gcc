@@ -1,3 +1,9 @@
+2005-04-01  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/17855
+	* gimplify.c (gimplify_expr): Create a temporary for lvalue
+	COND_EXPR and CALL_EXPR.
+
 2005-03-31  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/20632
