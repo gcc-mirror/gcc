@@ -15,6 +15,12 @@
 #define HOST_BITS_PER_INT   (CHAR_BIT * SIZEOF_INT)
 #define HOST_BITS_PER_LONG  (CHAR_BIT * SIZEOF_LONG)
 
+/* The string that should be inserted into a printf style format to
+   indicate a "long long" operand.  */
+#ifndef HOST_LONG_LONG_FORMAT 
+#define HOST_LONG_LONG_FORMAT "ll"
+#endif
+
 /* If HAVE_LONG_LONG and SIZEOF_LONG_LONG aren't defined, but
    GCC_VERSION >= 3000, assume this is the second or later stage of a
    bootstrap, we do have long long, and it's 64 bits.  (This is
@@ -77,7 +83,8 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 # define HOST_WIDE_INT_PRINT "ll"
 # define HOST_WIDE_INT_PRINT_C "LL"
   /* We can assume that 'long long' is at least 64 bits.  */
-# define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%llx%016llx"
+# define HOST_WIDE_INT_PRINT_DOUBLE_HEX \
+    "0x%" HOST_LONG_LONG_FORMAT "x%016" HOST_LONG_LONG_FORMAT "x"
 #endif /* HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG */
 
 #define HOST_WIDE_INT_PRINT_DEC "%" HOST_WIDE_INT_PRINT "d"
@@ -109,11 +116,12 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
     #error "This line should be impossible to reach"
 #  endif
 # endif
-# define HOST_WIDEST_INT_PRINT_DEC	      "%lld"
-# define HOST_WIDEST_INT_PRINT_DEC_C	      "%lldLL"
-# define HOST_WIDEST_INT_PRINT_UNSIGNED	      "%llu"
-# define HOST_WIDEST_INT_PRINT_HEX	      "0x%llx"
-# define HOST_WIDEST_INT_PRINT_DOUBLE_HEX     "0x%llx%016llx"
+# define HOST_WIDEST_INT_PRINT_DEC	      "%" HOST_LONG_LONG_FORMAT "d"
+# define HOST_WIDEST_INT_PRINT_DEC_C	      "%" HOST_LONG_LONG_FORMAT "dLL"
+# define HOST_WIDEST_INT_PRINT_UNSIGNED	      "%" HOST_LONG_LONG_FORMAT "u"
+# define HOST_WIDEST_INT_PRINT_HEX	      "0x%" HOST_LONG_LONG_FORMAT "x"
+# define HOST_WIDEST_INT_PRINT_DOUBLE_HEX     \
+    "0x%" HOST_LONG_LONG_FORMAT "x%016" HOST_LONG_LONG_FORMAT "x"
 #endif
 
 /* Define HOST_WIDEST_FAST_INT to the widest integer type supported

@@ -1,3 +1,9 @@
+2004-11-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* hwint.h (HOST_LONG_LONG_FORMAT): New macro.  Use it throughout.
+	* config/i386/xm-mingw32.h (HOST_LONG_LONG_FORMAT): Define.
+	* doc/hostconfig.texi (HOST_LONG_LONG_FORMAT): Document.
+
 2004-11-24  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/i386/i386.c (override_options): Move
