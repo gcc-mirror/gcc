@@ -610,13 +610,16 @@ static void ix86_compute_frame_layout PARAMS ((struct ix86_frame *));
 static int ix86_comp_type_attributes PARAMS ((tree, tree));
 
 /* Initialize the GCC target structure.  */
-#ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
-#undef TARGET_MERGE_DECL_ATTRIBUTES
-#define TARGET_MERGE_DECL_ATTRIBUTES merge_dllimport_decl_attributes
-#endif
-
 #undef TARGET_VALID_TYPE_ATTRIBUTE
-#define TARGET_VALID_TYPE_ATTRIBUTE ix86_valid_type_attribute_p
+#ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
+#  define TARGET_VALID_TYPE_ATTRIBUTE i386_pe_valid_type_attribute_p
+#  undef TARGET_VALID_DECL_ATTRIBUTE
+#  define TARGET_VALID_DECL_ATTRIBUTE i386_pe_valid_decl_attribute_p
+#  undef TARGET_MERGE_DECL_ATTRIBUTES
+#  define TARGET_MERGE_DECL_ATTRIBUTES merge_dllimport_decl_attributes
+#else
+#  define TARGET_VALID_TYPE_ATTRIBUTE ix86_valid_type_attribute_p
+#endif
 
 #undef TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES ix86_comp_type_attributes

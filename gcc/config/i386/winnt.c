@@ -69,7 +69,7 @@ i386_pe_valid_decl_attribute_p (decl, attributes, attr, args)
 	return TREE_CODE (decl) == VAR_DECL;
     }
 
-  return ix86_valid_decl_attribute_p (decl, attributes, attr, args);
+  return 0;
 }
 
 /* Return nonzero if ATTR is a valid attribute for TYPE.
@@ -94,7 +94,6 @@ i386_pe_valid_type_attribute_p (type, attributes, attr, args)
 
   return ix86_valid_type_attribute_p (type, attributes, attr, args);
 }
-
 
 /* Return the type that we should use to determine if DECL is
    imported or exported.  */

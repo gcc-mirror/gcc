@@ -182,26 +182,8 @@ Boston, MA 02111-1307, USA. */
 /* Enable parsing of #pragma pack(push,<n>) and #pragma pack(pop).  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP 1
 
-/* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
-   is a valid machine specific attribute for DECL.
-   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-
 union tree_node;
 #define TREE union tree_node *
-
-#undef VALID_MACHINE_DECL_ATTRIBUTE
-#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
-  i386_pe_valid_decl_attribute_p (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
-extern int i386_pe_valid_decl_attribute_p PARAMS ((TREE, TREE, TREE, TREE));
-
-/* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
-   is a valid machine specific attribute for TYPE.
-   The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
-
-#undef VALID_MACHINE_TYPE_ATTRIBUTE
-#define VALID_MACHINE_TYPE_ATTRIBUTE(TYPE, ATTRIBUTES, IDENTIFIER, ARGS) \
-  i386_pe_valid_type_attribute_p (TYPE, ATTRIBUTES, IDENTIFIER, ARGS)
-extern int i386_pe_valid_type_attribute_p PARAMS ((TREE, TREE, TREE, TREE));
 
 /* Used to implement dllexport overriding dllimport semantics.  It's also used
    to handle vtables - the first pass won't do anything because
