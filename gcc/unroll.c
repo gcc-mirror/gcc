@@ -1,5 +1,5 @@
 /* Try to unroll loops, and split induction variables.
-   Copyright (C) 1992, 93, 94, 95, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 97, 98, 1999 Free Software Foundation, Inc.
    Contributed by James E. Wilson, Cygnus Support/UC Berkeley.
 
 This file is part of GNU CC.
@@ -2925,8 +2925,11 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 			  To share a register here, the values must be
 			  equal.  */
 		       && rtx_equal_p (v->same->mult_val, v->mult_val)
-		       && rtx_equal_p (v->same->add_val, v->add_val))
-
+		       && rtx_equal_p (v->same->add_val, v->add_val)
+		       /* If the memory references have different modes,
+			  then the address may not be valid and we must
+			  not share registers.  */
+		       && verify_addresses (v, giv_inc, unroll_number))
 		{
 		  v->dest_reg = v->same->dest_reg;
 		  v->shared = 1;

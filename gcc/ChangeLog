@@ -1,5 +1,8 @@
 Fri Jan 15 01:19:42 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* unroll.c (find_splittable_givs): For a DEST_ADDR giv, do not share
+	a register with another DEST_ADDR giv if the address is not valid.
+
 	* h8300.h (ASM_OUTPUT_LABELREF): Use asm_fprintf, not fprintf.
 
 Mon Jan 11 20:23:34 1999  Richard Henderson  <rth@cygnus.com>
