@@ -2006,8 +2006,8 @@ mark_set_1 (needed, dead, x, insn, significant)
       register int offset = regno / REGSET_ELT_BITS;
       register REGSET_ELT_TYPE bit
 	= (REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS);
-      REGSET_ELT_TYPE all_needed = (needed[offset] & bit);
       REGSET_ELT_TYPE some_needed = (needed[offset] & bit);
+      REGSET_ELT_TYPE some_not_needed = (~ needed[offset]) & bit;
 
       /* Mark it as a significant register for this basic block.  */
       if (significant)
@@ -2030,17 +2030,17 @@ mark_set_1 (needed, dead, x, insn, significant)
 	  n = HARD_REGNO_NREGS (regno, GET_MODE (reg));
 	  while (--n > 0)
 	    {
+	      REGSET_ELT_TYPE n_bit
+		= (REGSET_ELT_TYPE) 1 << ((regno + n) % REGSET_ELT_BITS);
+
 	      if (significant)
-		significant[(regno + n) / REGSET_ELT_BITS]
-		  |= (REGSET_ELT_TYPE) 1 << ((regno + n) % REGSET_ELT_BITS);
-	      dead[(regno + n) / REGSET_ELT_BITS]
-		|= (REGSET_ELT_TYPE) 1 << ((regno + n) % REGSET_ELT_BITS);
+		significant[(regno + n) / REGSET_ELT_BITS] |= n_bit;
+
+	      dead[(regno + n) / REGSET_ELT_BITS] |= n_bit;
 	      some_needed
-		|= (needed[(regno + n) / REGSET_ELT_BITS]
-		    & (REGSET_ELT_TYPE) 1 << ((regno + n) % REGSET_ELT_BITS));
-	      all_needed
-		&= (needed[(regno + n) / REGSET_ELT_BITS]
-		    & (REGSET_ELT_TYPE) 1 << ((regno + n) % REGSET_ELT_BITS));
+		|= (needed[(regno + n) / REGSET_ELT_BITS] & n_bit);
+	      some_not_needed
+		|= ((~ needed[(regno + n) / REGSET_ELT_BITS]) & n_bit);
 	    }
 	}
       /* Additional data to record if this is the final pass.  */
@@ -2092,7 +2092,7 @@ mark_set_1 (needed, dead, x, insn, significant)
 	      reg_live_length[regno]++;
 	    }
 
-	  if (all_needed)
+	  if (! some_not_needed)
 	    {
 	      /* Make a logical link from the next following insn
 		 that uses this register, back to this insn.
@@ -2435,10 +2435,11 @@ mark_used_regs (needed, live, x, final, insn)
 	register int offset = regno / REGSET_ELT_BITS;
 	register REGSET_ELT_TYPE bit
 	  = (REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS);
-	REGSET_ELT_TYPE all_needed = needed[offset] & bit;
 	REGSET_ELT_TYPE some_needed = needed[offset] & bit;
+	REGSET_ELT_TYPE some_not_needed = (~ needed[offset]) & bit;
 
 	live[offset] |= bit;
+
 	/* A hard reg in a wide mode may really be multiple registers.
 	   If so, mark all of them just like the first.  */
 	if (regno < FIRST_PSEUDO_REGISTER)
@@ -2479,14 +2480,13 @@ mark_used_regs (needed, live, x, final, insn)
 	    n = HARD_REGNO_NREGS (regno, GET_MODE (x));
 	    while (--n > 0)
 	      {
-		live[(regno + n) / REGSET_ELT_BITS]
-		  |= (REGSET_ELT_TYPE) 1 << ((regno + n) % REGSET_ELT_BITS);
-		some_needed
-		  |= (needed[(regno + n) / REGSET_ELT_BITS]
-		      & (REGSET_ELT_TYPE) 1 << ((regno + n) % REGSET_ELT_BITS));
-		all_needed
-		  &= (needed[(regno + n) / REGSET_ELT_BITS]
-		      & (REGSET_ELT_TYPE) 1 << ((regno + n) % REGSET_ELT_BITS));
+		REGSET_ELT_TYPE n_bit
+		  = (REGSET_ELT_TYPE) 1 << ((regno + n) % REGSET_ELT_BITS);
+
+		live[(regno + n) / REGSET_ELT_BITS] |= n_bit;
+		some_needed |= (needed[(regno + n) / REGSET_ELT_BITS] & n_bit);
+		some_not_needed
+		  |= ((~ needed[(regno + n) / REGSET_ELT_BITS]) & n_bit);
 	      }
 	  }
 	if (final)
@@ -2530,7 +2530,7 @@ mark_used_regs (needed, live, x, final, insn)
 	       we do not make a REG_DEAD note; likewise if we already
 	       made such a note.  */
 
-	    if (! all_needed
+	    if (some_not_needed
 		&& ! dead_or_set_p (insn, x)
 #if 0
 		&& (regno >= FIRST_PSEUDO_REGISTER || ! fixed_regs[regno])
