@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.5 2001/08/13 22:26:08 mmitchel Exp $
+## $Id: Makefile.am,v 1.6 2001/08/14 01:24:28 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -276,8 +276,7 @@ thread_headers = \
 # List of all timestamp files.  By keeping only one copy of this list, both
 # CLEANFILES and all-local are kept up-to-date.
 allstamps = stamp-std stamp-bits stamp-c_base stamp-backward stamp-ext \
-	stamp-target stamp-thread stamp-file_model stamp-io \
-	stamp-locale stamp-messages_model stamp-codecvt_model
+	stamp-target stamp-thread 
 
 
 # Here are the rules for building the headers
@@ -288,7 +287,7 @@ stamp-std: ${std_headers}
 	  mkdir -p ${std_builddir} ;\
 	fi ;\
 	(cd ${std_builddir} && @LN_S@ $? .) ;\
-	echo `date` > stamp-std
+	echo `date` > stamp-std 
 
 stamp-bits: ${bits_headers}
 	@if [ ! -d "${bits_builddir}" ]; then \
@@ -304,13 +303,6 @@ stamp-c_base: ${c_base_headers}
 	(cd ${c_base_builddir} && @LN_S@ $? .) ;\
 	echo `date` > stamp-c_base
 
-stamp-c_compatibility: ${c_compatibility_headers}
-	@if [ ! -d "${c_compatibility_builddir}" ]; then \
-	  mkdir -p ${c_compatibility_builddir} ;\
-	fi ;\
-	(cd ${c_compatibility_builddir} && @LN_S@ $? .) ;\
-	echo `date` > stamp-c_compatibility
-
 stamp-backward: ${backward_headers}
 	@if [ ! -d "${backward_builddir}" ]; then \
 	  mkdir -p ${backward_builddir} ;\
@@ -325,47 +317,31 @@ stamp-ext: ${ext_headers}
 	(cd ${ext_builddir} && @LN_S@ $? .) ;\
 	echo `date` > stamp-ext
 
-# Can't use $? in command, otherwise target_builddir will trigger it, and
-# we get bizarre symlinks mazes.
-stamp-target: ${target_headers} ${target_builddir}
-	@(cd ${target_builddir} && @LN_S@ ${target_headers} .) ;\
-	echo `date` > stamp-target
-
-stamp-thread: ${thread_headers} ${thread_builddir}
-	@echo `date` > stamp-thread
-
-stamp-file_model: ${glibcpp_srcdir}/@BASIC_FILE_H@ ${target_builddir}
-	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_H@ basic_file_model.h) ;\
-	echo `date` > stamp-file_model
-
-stamp-io: ${glibcpp_srcdir}/@CSTDIO_H@ ${target_builddir}
-	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@CSTDIO_H@ c++io.h) ;\
-	echo `date` > stamp-io
-
-stamp-locale: ${glibcpp_srcdir}/@CLOCALE_H@ ${target_builddir}
-	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h) ;\
-	echo `date` > stamp-locale
-
-stamp-messages_model: ${glibcpp_srcdir}/@CMESSAGES_H@ ${target_builddir}
-	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@CMESSAGES_H@ messages_members.h) ;\
-	echo `date` > stamp-messages_model
-
-stamp-codecvt_model: ${glibcpp_srcdir}/@CCODECVT_H@ ${target_builddir}
-	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@CCODECVT_H@ codecvt_specializations.h) ;\
-	echo `date` > stamp-codecvt_model
-
 # This target is special.  The timestamp on a directory gets modified
 # whenever a file it contains gets modified, and that'll throw off all the
 # build dependencies that need this target.  On the other hand, someone
-# could delete the directory and not the stamp file, faking out the make.
+# could delete the directory and not the stamp file, faking out make.
 ${target_builddir}: stamp-${target_alias}
-
 stamp-${target_alias}:
 	@if [ ! -d ${target_builddir} ]; then \
 	  mkdir -p ${target_builddir} ;\
+	  echo `date` > stamp-${target_alias} ;\
 	fi
-	echo `date` > stamp-${target_alias}
 
+# Target includes static.
+stamp-target: ${target_headers} ${target_builddir}
+	@cd ${target_builddir} ;\
+	if [ ! -f stamp-target ]; then \
+	  @LN_S@ $? . ;\
+	  @LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_H@ basic_file_model.h ;\
+	  @LN_S@ ${glibcpp_srcdir}/@CSTDIO_H@ c++io.h ;\
+	  @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h ;\
+	  @LN_S@ ${glibcpp_srcdir}/@CMESSAGES_H@ messages_members.h ;\
+	  @LN_S@ ${glibcpp_srcdir}/@CCODECVT_H@ codecvt_specializations.h ;\
+	  echo `date` > stamp-target; \
+	fi
+
+# Target includes dynamic.
 ${target_builddir}/c++config.h: ../config.h \
 				${glibcpp_srcdir}/include/bits/c++config \
 				${target_builddir}
@@ -377,8 +353,13 @@ ${target_builddir}/c++config.h: ../config.h \
 	    < ${glibcpp_builddir}/config.h >> $@ ;\
 	echo "#endif // _CPP_CPPCONFIG_" >>$@
 
+# Target includes for threads
 glibcpp_thread_h = @glibcpp_thread_h@
 uppercase = [ABCDEFGHIJKLMNOPQRSTUVWXYZ_]
+
+stamp-thread: ${thread_headers} ${thread_builddir}
+	@echo `date` > stamp-thread
+
 
 ${thread_builddir}/gthr.h:
 	sed -e '/^#/s/\(${uppercase}${uppercase}*\)/_GLIBCPP_\1/g' \
@@ -410,4 +391,6 @@ install-data-local:
 	done
 
 # By adding these files here, automake will remove them for 'make clean'
-CLEANFILES = ${allstamps}
+#CLEANFILES = ${allstamps}
+
+
