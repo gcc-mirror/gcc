@@ -59,6 +59,7 @@ do { \
 #define LIB_SPEC \
   "%{pthread:-lpthread} \
    %{shared: -lc} \
+   %{!static:-rpath-link %R/lib:%R/usr/lib} \
    %{!shared: \
      %{mieee-fp:-lieee} \
      %{profile:-lc_p} %{!profile: -lc}}"

@@ -1,3 +1,105 @@
+2003-11-06  H.J. Lu <hongjiu.lu@intel.com>
+
+	* cppinit.c (init_standard_includes): Updated.
+
+	* Makefile.in (fixinc.sh): Updated.
+
+	Backport from 3.4-branch
+
+	2003-07-16  Daniel Jacobowitz  <drow@mvista.com>
+
+	* gcc.c (STANDARD_STARTFILE_PREFIX): Remove unnecessary definition.
+	(main): Remove unnecessary case.  Only use standard_startfile_prefix
+	if native.
+
+	2003-04-11 Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (fixinc.sh): Pass BUILD_LIBERTY as LIBERTY to
+	mkfixinc.sh.
+	* fixinc/mkfixinc.sh (defs): Add LIBERTY.
+	* configure.in (STMP_FIXINC, STMP_FIXPROTO): Don't disable on
+	build != host sysrooted builds.
+	* configure.in (SYSTEM_HEADER_DIR): Make sure it contains
+	TARGET_SYSTEM_ROOT even on sysrooted natives.
+	* configure: Rebuilt.
+
+	2003-03-04  Daniel Jacobowitz  <drow@mvista.com>
+
+	* configure.in: Don't always define TARGET_SYSTEM_ROOT.
+	* configure: Regenerated.
+	* gcc.c: Check whether TARGET_SYSTEM_ROOT is defined.
+
+	2003-01-16  Daniel Jacobowitz  <drow@mvista.com>
+
+	* Makefile.in (PREPROCESSOR_DEFINES): Add
+	@TARGET_SYSTEM_ROOT_DEFINE@.
+	* configure.in (PREFIX_INCLUDE_DIR): Don't define if $with_sysroot
+	is specified or if building a cross compiler.
+	(TARGET_SYSTEM_ROOT_DEFINE): Add TARGET_SYSTEM_ROOT_RELOCATABLE
+	if the sysroot is under $exec_prefix.
+	* configure: Regenerated.
+	* cppdefault.h: Use native include paths if TARGET_SYSTEM_ROOT is
+	defined.
+	(struct default_include): Add add_sysroot field.
+	(cpp_SYSROOT): Declare.
+	* cppdefault.c (cpp_include_defaults): Fill in add_sysroot
+	field.
+	(cpp_SYSROOT): New variable.
+	* cppinit.c (cpp_create_reader): Initialize
+	CPP_OPTION (pfile, sysroot).
+	(init_standard_includes): Handle add_sysroot.  Do not
+	add unrelocated copies of relocated directories.
+	(COMMAND_LINE_OPTIONS): Add -isysroot.
+	(cpp_handle_option): Handle -isysroot.
+	* cpplib.h (struct cpp_options): Add sysroot member.
+	* gcc.c (The Specs Language): Update description of %I.
+	(target_system_root_changed): New variable.
+	(process_command): Conditionalize make_relative_prefix call
+	on !VMS and TARGET_SYSTEM_ROOT_RELOCATABLE.  Set
+	target_system_root_changed.
+	(do_spec_1): Add -isysroot to %I.
+	* doc/invoke.texi (Spec Files): Update description of %I.
+	* doc/install.texi (--with-sysroot): Update comment about
+	relocation.
+
+	2002-10-19  Alexandre Oliva  <aoliva@redhat.com>
+		    Angela Marie Thomas  <angela@releasedominatrix.com>
+		    Brendan Kehoe  <brendan@zen.org>
+		    Nick Clifton  <nickc@redhat.com>
+		    Andrew Haley  <aph@redhat.com>
+
+	* configure.in (--with-sysroot): New.  Don't inhibit libc if
+	given.  AC_SUBST TARGET_SYSTEM_ROOT, TARGET_SYSTEM_ROOT_DEFINE
+	and CROSS_SYSTEM_HEADER_DIR.
+	* configure: Rebuilt.
+	* Makefile.in (CROSS_SYSTEM_HEADER_DIR): Set in configure.
+	(TARGET_SYSTEM_ROOT): New.
+	(DRIVER_DEFINES): Define CROSS_INCLUDE_DIR from
+	CROSS_SYSTEM_HEADER_DIR.
+	(install-gcc-tooldir): New target.
+	(stmp-fixinc): Do not create $(libsubdir), but rather bail out
+	of SYSTEM_HEADER_DIR does not exist.
+	(deduced.h, stmp-fixproto): Quote SYSTEM_HEADER_DIR properly.
+	(install-mkheaders): Likewise.
+	* gcc.c (target_system_root): New variable.
+	(add_sysrooted_prefix): New function.
+	(process_command): Recompute run-time target_system_root from
+	gcc_exec_prefix, keeping it unchanged if the relocated sysroot
+	does not exist.
+	(do_spec_1): Process 'R' spec.
+	(main): Add md_exec_prefix to exec_prefixes regardless of
+	startfile_prefix_spec.  Use add_sysrooted_prefix for
+	startfile_prefixes, and don't skip the default ones when cross
+	compiling with sysroot enabled.  Removed unused case of
+	non-absolute standard_startfile_prefix.
+	* config/interix.h: Remove the only potential, yet disabled,
+	occurrence of non-absolute (empty) standard_startfile_prefix.
+	* config/sh/linux.h (LIB_SPEC): Add -rpath-link in non-static
+	linking.
+	* config/mips/linux.h (LIB_SPEC): Define as in sh/linux.h.
+	* doc/install.texi (--with-sysroot): Document.
+	(--with-headers, --with-libs): Deprecate.
+
 2003-11-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_output_dwarf_dtprel): Declare.

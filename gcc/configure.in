@@ -177,6 +177,42 @@ changequote([, ])dnl
   fi
 fi
 
+AC_ARG_WITH(sysroot,
+[  --with-sysroot[=DIR] Search for usr/lib, usr/include, et al, within DIR.],
+[
+ case ${with_sysroot} in
+ yes) TARGET_SYSTEM_ROOT='${exec_prefix}/${target_alias}/sys-root' ;;
+ *) TARGET_SYSTEM_ROOT=$with_sysroot ;;
+ esac
+   
+ TARGET_SYSTEM_ROOT_DEFINE='-DTARGET_SYSTEM_ROOT=\"$(TARGET_SYSTEM_ROOT)\"'
+ CROSS_SYSTEM_HEADER_DIR='$(TARGET_SYSTEM_ROOT)$(NATIVE_SYSTEM_HEADER_DIR)'
+
+ if test "x$exec_prefix" = xNONE; then
+  if test "x$prefix" = xNONE; then
+   test_prefix=/usr/local
+  else
+   test_prefix=$prefix
+  fi
+ else
+  test_prefix=$exec_prefix
+ fi
+ case ${TARGET_SYSTEM_ROOT} in
+ "${test_prefix}"|"${test_prefix}/"*|\
+ '${exec_prefix}'|'${exec_prefix}/'*)
+   t="$TARGET_SYSTEM_ROOT_DEFINE -DTARGET_SYSTEM_ROOT_RELOCATABLE"
+   TARGET_SYSTEM_ROOT_DEFINE="$t"
+   ;;
+ esac
+], [
+ TARGET_SYSTEM_ROOT=
+ TARGET_SYSTEM_ROOT_DEFINE=
+ CROSS_SYSTEM_HEADER_DIR='$(gcc_tooldir)/sys-include'
+])
+AC_SUBST(TARGET_SYSTEM_ROOT)
+AC_SUBST(TARGET_SYSTEM_ROOT_DEFINE)
+AC_SUBST(CROSS_SYSTEM_HEADER_DIR)
+
 # Determine the host, build, and target systems
 AC_CANONICAL_SYSTEM
 
@@ -1214,6 +1250,9 @@ then
 	    | powerpc*-*-*,powerpc64*-*-*)
 		CROSS="$CROSS -DNATIVE_CROSS" ;;
 	esac
+elif test "x$TARGET_SYSTEM_ROOT" != x; then
+        # This is just $(TARGET_SYSTEM_ROOT)$(NATIVE_SYSTEM_HEADER_DIR)
+        SYSTEM_HEADER_DIR='$(CROSS_SYSTEM_HEADER_DIR)'
 fi
 
 # If this is a cross-compiler that does not
@@ -1224,12 +1263,9 @@ fi
 # This prevents libgcc2 from containing any code which requires libc
 # support.
 inhibit_libc=
-if [test x$host != x$target] && [test x$with_headers = x]; then
+if { test x$host != x$target && test "x$with_headers" = x &&
+     test "x$with_sysroot" = x ; } || test x$with_newlib = xyes ; then
        inhibit_libc=-Dinhibit_libc
-else
-       if [test x$with_newlib = xyes]; then
-               inhibit_libc=-Dinhibit_libc
-       fi
 fi
 AC_SUBST(inhibit_libc)
 
@@ -1256,8 +1292,10 @@ then
     HOST_CC='$(CC_FOR_BUILD)'
     HOST_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS_FOR_BUILD) $(XCFLAGS)'
 
-    STMP_FIXINC=
-    STMP_FIXPROTO=
+    if test "x$TARGET_SYSTEM_ROOT" = x; then
+	STMP_FIXINC=
+	STMP_FIXPROTO=
+    fi
 fi
 
 # Expand extra_headers to include complete path.
@@ -2417,7 +2455,8 @@ case "$target" in
     ;;
 esac
 
-if test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" ; then
+if test x$with_sysroot = x && test x$host = x$target \
+   && test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" ; then
   AC_DEFINE_UNQUOTED(PREFIX_INCLUDE_DIR, "$prefix/include")
 fi
 

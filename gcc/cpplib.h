@@ -240,6 +240,10 @@ struct cpp_options
   const char *include_prefix;
   unsigned int include_prefix_len;
 
+  /* Directory prefix for system include directories in the standard search
+     path.  */
+  const char *sysroot;
+
   /* The language we're preprocessing.  */
   enum c_lang lang;
 

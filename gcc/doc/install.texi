@@ -891,8 +891,22 @@ forward to maintain the port.
 
 Some options which only apply to building cross compilers:
 @table @code
+@item --with-sysroot
+@itemx --with-sysroot=@var{dir}
+Tells GCC to consider @var{dir} as the root of a tree that contains a
+(subset of) the root filesystem of the target operating system.
+Target system headers, libraries and run-time object files will be
+searched in there.  The specified directory is not copied into the
+install tree, unlike the options @option{--with-headers} and
+@option{--with-libs} that this option obsoletes.  The default value,
+in case @option{--with-sysroot} is not given an argument, is
+@option{$@{gcc_tooldir@}/sys-root}.  If the specified directory is a
+subdirectory of @option{$@{exec_prefix@}}, then it will be found relative to
+the GCC binaries if the installation tree is moved.
+
 @item --with-headers
 @itemx --with-headers=@var{dir}
+Deprecated in favor of @option{--with-sysroot}.
 Specifies that target headers are available when building a cross compiler.
 The @var{dir} argument specifies a directory which has the target include
 files.  These include files will be copied into the @file{gcc} install
@@ -903,6 +917,7 @@ pre-exist, the @var{dir} argument may be omitted.  @command{fixincludes}
 will be run on these files to make them compatible with GCC.
 @item --with-libs
 @itemx --with-libs=``@var{dir1} @var{dir2} @dots{} @var{dirN}''
+Deprecated in favor of @option{--with-sysroot}.
 Specifies a list of directories which contain the target runtime
 libraries.  These libraries will be copied into the @file{gcc} install
 directory.  If the directory list is omitted, this option has no

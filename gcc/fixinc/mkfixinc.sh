@@ -120,7 +120,7 @@ fi
 #  OK.  We gotta make the thing.
 #  make and install either the binary or the default script
 
-defs="SHELL=\"$SHELL\" CC=\"$CC\" CFLAGS=\"$CFLAGS\" LDFLAGS=\"$LDFLAGS\""
+defs="SHELL=\"$SHELL\" CC=\"$CC\" CFLAGS=\"$CFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBERTY=\"$LIBERTY\""
 cmd="$MAKE ${defs} install-bin"
 echo $cmd
 eval $cmd
