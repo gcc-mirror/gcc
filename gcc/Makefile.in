@@ -798,8 +798,8 @@ rtl.o : rtl.c $(CONFIG_H) $(RTL_H)
 print-rtl.o : print-rtl.c $(CONFIG_H) $(RTL_H)
 rtlanal.o : rtlanal.c $(CONFIG_H) $(RTL_H)
 
-varasm.o : varasm.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h defaults.h \
-   insn-codes.h expr.h hard-reg-set.h regs.h xcoffout.h
+varasm.o : varasm.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h function.h \
+   defaults.h insn-codes.h expr.h hard-reg-set.h regs.h xcoffout.h
 function.o : function.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-codes.h expr.h regs.h hard-reg-set.h insn-config.h \
    recog.h output.h
