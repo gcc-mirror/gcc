@@ -1,3 +1,12 @@
+2004-08-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/6749
+	* pt.c (instantiate_pending_templates): Add int parameter.  Don't
+	return anything.
+	* cp-tree.h (instantiate_pending_templates): Adjust prototype.
+	* decl2.c (finish_file): Adjust call to
+	instantiate_pending_templates.
+
 2004-08-15  Roger Sayle  <roger@eyesopen.com>
 
 	* call.c (build_vfield_ref, build_call, build_conditional_expr,
