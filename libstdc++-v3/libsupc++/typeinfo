@@ -1,5 +1,6 @@
 // RTTI support for -*- C++ -*-
-// Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001 Free Software Foundation
+// Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001, 2002
+// Free Software Foundation
 //
 // This file is part of GNU CC.
 //
@@ -129,6 +130,7 @@ namespace std
   {
   public:
     bad_cast() throw() { }
+    virtual ~bad_cast() throw();
   };
   
   /** If you use a NULL pointer in a @c typeid expression, this is thrown.  */
@@ -136,6 +138,7 @@ namespace std
   {
   public:
     bad_typeid () throw() { }
+    virtual ~bad_typeid() throw();
   };
 } // namespace std
 

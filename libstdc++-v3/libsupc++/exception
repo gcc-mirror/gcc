@@ -1,6 +1,7 @@
 // Exception Handling support header for -*- C++ -*-
 
-// Copyright (C) 1995, 1996, 1997, 1998, 2000, 2001 Free Software Foundation
+// Copyright (C) 1995, 1996, 1997, 1998, 2000, 2001, 2002
+// Free Software Foundation
 //
 // This file is part of GNU CC.
 //
@@ -62,6 +63,7 @@ namespace std
   {
   public:
     bad_exception() throw() { }
+    virtual ~bad_exception() throw();
   };
 
   /// If you write a replacement %terminate handler, it must be of this type.

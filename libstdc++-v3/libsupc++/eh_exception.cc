@@ -1,5 +1,5 @@
 // -*- C++ -*- std::exception implementation.
-// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001 
+// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002 
 // Free Software Foundation
 //
 // This file is part of GNU CC.
@@ -34,6 +34,8 @@
 #include "unwind-cxx.h"
 
 std::exception::~exception() throw() { }
+
+std::bad_exception::~bad_exception() throw() { }
 
 const char* 
 std::exception::what() const throw()
