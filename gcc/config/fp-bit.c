@@ -460,7 +460,6 @@ pack_d ( fp_number_type *  src)
   else if (fraction == 0)
     {
       exp = 0;
-      sign = 0;
     }
   else
     {
@@ -735,7 +734,7 @@ _fpadd_parts (fp_number_type * a,
 	{
 	  tfraction = a_fraction - b_fraction;
 	}
-      if (tfraction > 0)
+      if (tfraction >= 0)
 	{
 	  tmp->sign = 0;
 	  tmp->normal_exp = a_normal_exp;
