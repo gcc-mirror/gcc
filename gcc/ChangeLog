@@ -1,3 +1,11 @@
+2004-10-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-lex.c (get_nonpadding_token): Remove.
+	(c_lex_with_flags): Push timevar and eat padding here.  Improve
+	stray token diagnostic.
+	(lex_string): Replace logic with switch statement, eat padding
+	token here.
+
 2004-10-26  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 18149

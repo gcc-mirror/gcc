@@ -327,32 +327,28 @@ cb_undef (cpp_reader * ARG_UNUSED (pfile), source_location loc,
 			 (const char *) NODE_NAME (node));
 }
 
-static inline const cpp_token *
-get_nonpadding_token (void)
-{
-  const cpp_token *tok;
-  timevar_push (TV_CPP);
-  do
-    tok = cpp_get_token (parse_in);
-  while (tok->type == CPP_PADDING);
-  timevar_pop (TV_CPP);
-
-  return tok;
-}
+/* Read a token and return its type.  Fill *VALUE with its value, if
+   applicable.  Fill *CPP_FLAGS with the token's flags, if it is
+   non-NULL.  */
 
 enum cpp_ttype
 c_lex_with_flags (tree *value, unsigned char *cpp_flags)
 {
-  const cpp_token *tok;
-  location_t atloc;
   static bool no_more_pch;
+  const cpp_token *tok;
+  enum cpp_ttype type;
 
+  timevar_push (TV_CPP);
  retry:
-  tok = get_nonpadding_token ();
-
+  tok = cpp_get_token (parse_in);
+  type = tok->type;
+  
  retry_after_at:
-  switch (tok->type)
+  switch (type)
     {
+    case CPP_PADDING:
+      goto retry;
+      
     case CPP_NAME:
       *value = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node));
       break;
@@ -384,33 +380,52 @@ c_lex_with_flags (tree *value, unsigned char *cpp_flags)
 
     case CPP_ATSIGN:
       /* An @ may give the next token special significance in Objective-C.  */
-      atloc = input_location;
-      tok = get_nonpadding_token ();
       if (c_dialect_objc ())
 	{
-	  tree val;
-	  switch (tok->type)
+	  location_t atloc = input_location;
+	  
+	retry_at:
+	  tok = cpp_get_token (parse_in);
+	  type = tok->type;
+	  switch (type)
 	    {
-	    case CPP_NAME:
-	      val = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node));
-	      if (objc_is_reserved_word (val))
-		{
-		  *value = val;
-		  return CPP_AT_NAME;
-		}
-	      break;
-
+	    case CPP_PADDING:
+	      goto retry_at;
+	      
 	    case CPP_STRING:
 	    case CPP_WSTRING:
-	      return lex_string (tok, value, true);
+	      type = lex_string (tok, value, true);
+	      break;
 
-	    default: break;
+	    case CPP_NAME:
+	      *value = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node));
+	      if (objc_is_reserved_word (*value))
+		{
+		  type = CPP_AT_NAME;
+		  break;
+		}
+	      /* FALLTHROUGH */
+
+	    default:
+	      /* ... or not.  */
+	      error ("%Hstray %<@%> in program", &atloc);
+	      goto retry_after_at;
 	    }
+	  break;
 	}
 
-      /* ... or not.  */
-      error ("%Hstray '@' in program", &atloc);
-      goto retry_after_at;
+      /* FALLTHROUGH */
+    case CPP_HASH:
+    case CPP_PASTE:
+      {
+	unsigned char name[4];
+	
+	*cpp_spell_token (parse_in, tok, name) = 0;
+	
+	error ("stray %qs in program", name);
+      }
+      
+      goto retry;
 
     case CPP_OTHER:
       {
@@ -419,9 +434,9 @@ c_lex_with_flags (tree *value, unsigned char *cpp_flags)
 	if (c == '"' || c == '\'')
 	  error ("missing terminating %c character", (int) c);
 	else if (ISGRAPH (c))
-	  error ("stray '%c' in program", (int) c);
+	  error ("stray %qc in program", (int) c);
 	else
-	  error ("stray '\\%o' in program", (int) c);
+	  error ("stray %<\\%o%> in program", (int) c);
       }
       goto retry;
 
@@ -433,8 +448,12 @@ c_lex_with_flags (tree *value, unsigned char *cpp_flags)
     case CPP_STRING:
     case CPP_WSTRING:
       if (!c_lex_return_raw_strings)
-	return lex_string (tok, value, false);
-      /* else fall through */
+	{
+	  type = lex_string (tok, value, false);
+	  break;
+	}
+      
+      /* FALLTHROUGH */
 
     case CPP_PRAGMA:
       *value = build_string (tok->val.str.len, (char *) tok->val.str.text);
@@ -451,15 +470,18 @@ c_lex_with_flags (tree *value, unsigned char *cpp_flags)
       break;
     }
 
+  if (cpp_flags)
+    *cpp_flags = tok->flags;
+
   if (!no_more_pch)
     {
       no_more_pch = true;
       c_common_no_more_pch ();
     }
-
-  if (cpp_flags)
-    *cpp_flags = tok->flags;
-  return tok->type;
+  
+  timevar_pop (TV_CPP);
+  
+  return type;
 }
 
 enum cpp_ttype
@@ -690,7 +712,7 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
 {
   tree value;
   bool wide = false;
-  size_t count = 1;
+  size_t concats = 0;
   struct obstack str_ob;
   cpp_string istr;
 
@@ -702,51 +724,58 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
   if (tok->type == CPP_WSTRING)
     wide = true;
 
-  tok = get_nonpadding_token ();
-  if (c_dialect_objc () && tok->type == CPP_ATSIGN)
+ retry:
+  tok = cpp_get_token (parse_in);
+  switch (tok->type)
     {
-      objc_string = true;
-      tok = get_nonpadding_token ();
-    }
-  if (tok->type == CPP_STRING || tok->type == CPP_WSTRING)
-    {
-      gcc_obstack_init (&str_ob);
-      obstack_grow (&str_ob, &str, sizeof (cpp_string));
-
-      do
+    case CPP_PADDING:
+      goto retry;
+    case CPP_ATSIGN:
+      if (c_dialect_objc ())
 	{
-	  count++;
-	  if (tok->type == CPP_WSTRING)
-	    wide = true;
-	  obstack_grow (&str_ob, &tok->val.str, sizeof (cpp_string));
-
-	  tok = get_nonpadding_token ();
-	  if (c_dialect_objc () && tok->type == CPP_ATSIGN)
-	    {
-	      objc_string = true;
-	      tok = get_nonpadding_token ();
-	    }
+	  objc_string = true;
+	  goto retry;
 	}
-      while (tok->type == CPP_STRING || tok->type == CPP_WSTRING);
-      strs = (cpp_string *) obstack_finish (&str_ob);
+      /* FALLTHROUGH */
+      
+    default:
+      break;
+      
+    case CPP_WSTRING:
+      wide = true;
+      /* FALLTHROUGH */
+      
+    case CPP_STRING:
+      if (!concats)
+	{
+	  gcc_obstack_init (&str_ob);
+	  obstack_grow (&str_ob, &str, sizeof (cpp_string));
+	}
+	
+      concats++;
+      obstack_grow (&str_ob, &tok->val.str, sizeof (cpp_string));
+      goto retry;
     }
 
   /* We have read one more token than we want.  */
   _cpp_backup_tokens (parse_in, 1);
+  if (concats)
+    strs = (cpp_string *) obstack_finish (&str_ob);
 
-  if (count > 1 && !objc_string && warn_traditional && !in_system_header)
+  if (concats && !objc_string && warn_traditional && !in_system_header)
     warning ("traditional C rejects string constant concatenation");
 
   if ((c_lex_string_translate
        ? cpp_interpret_string : cpp_interpret_string_notranslate)
-      (parse_in, strs, count, &istr, wide))
+      (parse_in, strs, concats + 1, &istr, wide))
     {
       value = build_string (istr.len, (char *) istr.text);
       free ((void *) istr.text);
 
       if (c_lex_string_translate == -1)
 	{
-	  int xlated = cpp_interpret_string_notranslate (parse_in, strs, count,
+	  int xlated = cpp_interpret_string_notranslate (parse_in, strs,
+							 concats + 1,
 							 &istr, wide);
 	  /* Assume that, if we managed to translate the string above,
 	     then the untranslated parsing will always succeed.  */
@@ -782,7 +811,7 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
   TREE_TYPE (value) = wide ? wchar_array_type_node : char_array_type_node;
   *valp = fix_string_type (value);
 
-  if (strs != &str)
+  if (concats)
     obstack_free (&str_ob, 0);
 
   return objc_string ? CPP_OBJC_STRING : wide ? CPP_WSTRING : CPP_STRING;

@@ -1,3 +1,9 @@
+2004-10-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.dg/cpp/direct2.c: Adjust expected errors, robustify parser
+	resyncing.
+	* gcc.dg/cpp/direct2s.c: Likewise.
+
 2004-10-25  Geoffrey Keating  <geoffk@apple.com>
 
 	* objc.dg/image-info.m: Update for changes to section selection.
