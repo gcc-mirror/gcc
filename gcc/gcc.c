@@ -619,7 +619,7 @@ static const char *cc1_options =
  %{aux-info*} %{Qn:-fno-ident} %{--help:--help}\
  %{--target-help:--target-help}\
  %{!fsyntax-only:%{S:%W{o*}%{!o*:-o %b.s}}}\
- %{fsyntax-only:-o %j}";
+ %{fsyntax-only:-o %j} %{-param*}";
 
 static const char *asm_options =
 "%a %Y %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}";
@@ -674,7 +674,8 @@ static struct user_specs *user_specs_head, *user_specs_tail;
   || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info") \
   || !strcmp (STR, "idirafter") || !strcmp (STR, "iprefix") \
   || !strcmp (STR, "iwithprefix") || !strcmp (STR, "iwithprefixbefore") \
-  || !strcmp (STR, "isystem") || !strcmp (STR, "specs") \
+  || !strcmp (STR, "isystem") || !strcmp (STR, "-param") \
+  || !strcmp (STR, "specs") \
   || !strcmp (STR, "MF") || !strcmp (STR, "MT") || !strcmp (STR, "MQ"))
 
 #ifndef WORD_SWITCH_TAKES_ARG
@@ -863,6 +864,7 @@ struct option_map option_map[] =
    {"--optimize", "-O", "oj"},
    {"--output", "-o", "a"},
    {"--output-class-directory", "-foutput-class-dir=", "ja"},
+   {"--param", "--param", "a"},
    {"--pedantic", "-pedantic", 0},
    {"--pedantic-errors", "-pedantic-errors", 0},
    {"--pipe", "-pipe", 0},
@@ -2920,9 +2922,9 @@ display_help ()
 "), stdout);
 
   printf (_("\
-\nOptions starting with -g, -f, -m, -O or -W are automatically passed on to\n\
-the various sub-processes invoked by %s.  In order to pass other options\n\
-on to these processes the -W<letter> options must be used.\n\
+\nOptions starting with -g, -f, -m, -O, -W, or --param are automatically\n\
+ passed on to the various sub-processes invoked by %s.  In order to pass\n\
+ other options on to these processes the -W<letter> options must be used.\n\
 "), programname);
 
   /* The rest of the options are displayed by invocations of the various

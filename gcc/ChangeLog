@@ -1,3 +1,11 @@
+2001-02-21  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* gcc.c (cc1_options): Add "-param".
+	(DEFAULT_WORD_SWITCH_TAKES_ARG): Likewise.
+	(option_map): Likewise.
+	* toplev.c (display_help): Add entry for "--param".
+	(independent_decode_option): Fix typographical error.
+
 Wed Feb 21 18:57:28 CET 2001  Catherine Moore  <clm@redhat.com>
 			      Bernd Schmidt  <bernds@redhat.com>
 			      Jan Hubicka  <jh@suse.cz>
