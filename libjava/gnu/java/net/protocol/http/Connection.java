@@ -39,6 +39,8 @@ exception statement from your version. */
 package gnu.java.net.protocol.http;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.InputStream;
 import java.io.IOException;
@@ -106,6 +108,17 @@ public final class Connection extends HttpURLConnection
   private DataInputStream inputStream;
 
   /**
+   * The OutputStream for this connection
+   */
+  private OutputStream outputStream;
+
+  /**
+   * bufferedOutputStream is a buffer to contain content of the HTTP request,
+   * and will be written to outputStream all at once
+   */
+  private ByteArrayOutputStream bufferedOutputStream;
+
+  /**
    * This object holds the request properties.
    */
   private HashMap requestProperties = new HashMap();
@@ -153,6 +166,8 @@ public final class Connection extends HttpURLConnection
 
     inputStream =
       new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+    outputStream = new BufferedOutputStream (socket.getOutputStream());
+    bufferedOutputStream = new ByteArrayOutputStream (256); //default is too small
 
     sendRequest();
     receiveReply();
@@ -185,16 +200,32 @@ public final class Connection extends HttpURLConnection
   void sendRequest() throws IOException
   {
     // Create PrintWriter for easier sending of headers.
-    PrintWriter outputWriter = new PrintWriter(socket.getOutputStream());
+    PrintWriter outputWriter = new PrintWriter(outputStream);
     
     // Send request including any request properties that were set.
     outputWriter.print (getRequestMethod() + " " + url.getFile()
-                        + " HTTP/1.0\r\n");
+                        + " HTTP/1.1\r\n");
 
     // Set additional HTTP headers.
     if (getRequestProperty ("Host") == null)
       setRequestProperty ("Host", url.getHost());
     
+    if (getRequestProperty ("Connection") == null)
+      setRequestProperty ("Connection", "Close");
+    
+    if (getRequestProperty ("user-agent") == null)
+      setRequestProperty ("user-agent", "gnu-libgcj/"
+                          + System.getProperty ("classpath.version"));
+    
+    if (getRequestProperty ("accept") == null)
+      setRequestProperty ("accept", "*/*");
+    
+    if (getRequestProperty ("Content-type") == null)
+      setRequestProperty ("Content-type", "application/x-www-form-urlencoded");
+
+    // Set correct content length.
+    setRequestProperty ("Content-length", String.valueOf (bufferedOutputStream.size()));
+
     // Write all req_props name-value pairs to the output writer.
     Iterator itr = getRequestProperties().entrySet().iterator();
 
@@ -207,6 +238,10 @@ public final class Connection extends HttpURLConnection
     // One more CR-LF indicates end of header.
     outputWriter.print ("\r\n");
     outputWriter.flush();
+
+    // Write content
+    bufferedOutputStream.writeTo (outputStream);
+    outputStream.flush();
   }
 
   /**
@@ -352,7 +387,7 @@ public final class Connection extends HttpURLConnection
     if (!connected)
       connect();
     
-    return socket.getOutputStream();
+    return bufferedOutputStream;
   }
 
   /**
@@ -367,7 +402,9 @@ public final class Connection extends HttpURLConnection
   {
     method = method.toUpperCase();
     
-    if (method.equals("GET"))
+    if (method.equals("GET")
+        || method.equals("HEAD")
+        || method.equals("POST"))
       super.setRequestMethod (method);
     else
       throw new ProtocolException ("Unsupported or unknown request method " +
