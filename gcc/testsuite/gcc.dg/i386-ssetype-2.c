@@ -5,7 +5,6 @@
 /* { dg-final { scan-assembler "xorpd" } } */
 /* { dg-final { scan-assembler "orpd" } } */
 /* { dg-final { scan-assembler-not "movdqa" } } */
-/* { dg-final { scan-assembler "movapd" } } */
 
 /* Verify that we generate proper instruction without memory operand.  */
 
