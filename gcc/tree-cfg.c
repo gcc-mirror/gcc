@@ -4652,7 +4652,7 @@ split_critical_edges (void)
 
 struct tree_opt_pass pass_split_crit_edges = 
 {
-  NULL,                          /* name */
+  "crited",                          /* name */
   NULL,                          /* gate */
   split_critical_edges,          /* execute */
   NULL,                          /* sub */
@@ -4663,7 +4663,7 @@ struct tree_opt_pass pass_split_crit_edges =
   PROP_no_crit_edges,            /* properties_provided */
   0,                             /* properties_destroyed */
   0,                             /* todo_flags_start */
-  0,                             /* todo_flags_finish */
+  TODO_dump_func,                             /* todo_flags_finish */
 };
 
 /* Emit return warnings.  */
