@@ -2637,7 +2637,7 @@ process_command (argc, argv)
 		  value = p + 1;
 		add_prefix (&exec_prefixes, value, 1, 0, temp);
 		add_prefix (&startfile_prefixes, value, 1, 0, temp);
-		add_prefix (&include_prefixes, concat (value, "include", ""),
+		add_prefix (&include_prefixes, concat (value, "include"),
 			    1, 0, 0);
 
 		/* As a kludge, if the arg is "[foo/]stageN/", just add
