@@ -3461,9 +3461,7 @@ GCC you first have to install a pre-built compiler, see our
 The Solaris 2 @command{/bin/sh} will often fail to configure
 @file{libstdc++-v3}, @file{boehm-gc} or
 @file{libjava}.  If you encounter this problem, set @env{CONFIG_SHELL} to
-@command{/bin/ksh} in your environment and run @command{make bootstrap} again.
-Another possibility that sometimes helps is to remove
-@file{*-*-solaris2*/config.cache}.
+@command{/bin/ksh} in your environment before running @command{configure}.
 
 Solaris 2 comes with a number of optional OS packages.  Some of these
 packages are needed to use GCC fully, namely @code{SUNWarc},

@@ -312,6 +312,12 @@ Sat May 11 14:34:35 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* cse.c (rtx_cost): Remove multiplication by power of 2 special
 	casing.
 
+2002-05-14  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Specific, *-*-solaris2*): Update passus on
+	setting CONFIG_SHELL to /bin/ksh and remove alternate trick to
+	(possibly) work around broken /bin/sh.
+
 2002-05-10  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/t-iris6 (SHLIB_SLIBDIR_SUFFIXES): Use mabi=64 and
