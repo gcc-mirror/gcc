@@ -1,3 +1,7 @@
+Wed Nov 25 09:47:15 1998  Per Bothner  <bothner@cygnus.com>
+
+	* expr.c (CHECK_PC_IN_RANGE):  Add void cast to kill warnings.
+
 Wed Nov 25 00:50:58 1998  Marc Espie <espie@quatramaran.ens.fr>
 
 	* jcf-write.c (generate_bytecode_conditional): Fix typo.

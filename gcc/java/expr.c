@@ -1884,7 +1884,7 @@ expand_byte_code (jcf, method)
 #define VAR_INDEX_1 (saw_index = 1, IMMEDIATE_u1)
 #define VAR_INDEX_2 (saw_index = 1, IMMEDIATE_u2)
 
-#define CHECK_PC_IN_RANGE(PC) 1 /* Already handled by verifier. */
+#define CHECK_PC_IN_RANGE(PC) ((void)1) /* Already handled by verifier. */
 
   instruction_bits = oballoc (length + 1);
   bzero (instruction_bits, length + 1);
