@@ -1913,7 +1913,7 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
         op1 = GEN_INT ((unsigned HOST_WIDE_INT) INTVAL (op1)
 		       % GET_MODE_BITSIZE (mode));
       else if (GET_CODE (op1) == SUBREG
-	       && SUBREG_BYTE (op1) == 0)
+	       && subreg_lowpart_p (op1))
 	op1 = SUBREG_REG (op1);
     }
 #endif

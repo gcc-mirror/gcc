@@ -1,3 +1,7 @@
+2002-02-27  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gcc.c-torture/execute/20020225-2.c: New test.
+
 2002-02-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.c-torture/execute/920730-1t.c,
