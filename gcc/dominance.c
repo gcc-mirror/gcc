@@ -769,23 +769,38 @@ verify_dominators (enum cdi_direction dir)
     abort ();
 }
 
-/* Recount dominator of BB.  */
+/* Determine immediate dominator (or postdominator, according to DIR) of BB,
+   assuming that dominators of other blocks are correct.  We also use it to
+   recompute the dominators in a restricted area, by iterating it until it
+   reaches a fixpoint.  */
+
 basic_block
 recount_dominator (enum cdi_direction dir, basic_block bb)
 {
-   basic_block dom_bb = NULL;
-   edge e;
+  basic_block dom_bb = NULL;
+  edge e;
 
   if (!dom_computed[dir])
     abort ();
 
-   for (e = bb->pred; e; e = e->pred_next)
-     {
-       if (!dominated_by_p (dir, e->src, bb))
-         dom_bb = nearest_common_dominator (dir, dom_bb, e->src);
-     }
+  if (dir == CDI_DOMINATORS)
+    {
+      for (e = bb->pred; e; e = e->pred_next)
+	{
+	  if (!dominated_by_p (dir, e->src, bb))
+	    dom_bb = nearest_common_dominator (dir, dom_bb, e->src);
+	}
+    }
+  else
+    {
+      for (e = bb->succ; e; e = e->succ_next)
+	{
+	  if (!dominated_by_p (dir, e->dest, bb))
+	    dom_bb = nearest_common_dominator (dir, dom_bb, e->dest);
+	}
+    }
 
-   return dom_bb;
+  return dom_bb;
 }
 
 /* Iteratively recount dominators of BBS. The change is supposed to be local
