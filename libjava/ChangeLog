@@ -1,3 +1,11 @@
+2000-11-01  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (install-exec-hook): Only make a single symlink, and
+	remove the destination before making the link.
+	* configure: Rebuilt.
+	* configure.in: Call AC_PROG_LN_S.
+
 2000-10-31  Warren Levy  <warrenl@cygnus.com>
 
 	* jni.cc: Added include of java/lang/ThreadGroup.h.
