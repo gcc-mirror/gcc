@@ -1,3 +1,7 @@
+2004-05-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* common.opt (ftree-loop-optimize): Remove.
+
 2004-05-20  Daniel Jacobowitz  <dan@debian.org>
 
 	* Makefile.in (AR_FOR_TARGET, RANLIB_FOR_TARGET)
