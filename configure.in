@@ -48,10 +48,13 @@ if [ "${enable_gdbgui}" = "yes" ] ; then
 fi
 
 # Set up configure/Makefile variables if libstdc++-v3 is to be built.
-if [ "${enable_libstdcxx_v3}" = "yes" ] ; then
+if [ "${enable_libstdcxx_v3}" = "yes" ] && test -d $srcdir/libstdc++-v3; then
         libstdcxx_version="target-libstdc++-v3"
+	# Don't use libstdc++-v3's flags to configure/build itself.
+	libstdcxx_flags='`test "x$$dir" != xlibstdc++-v3 && test -f $$r/$(TARGET_SUBDIR)/libstdc++-v3/mkcheck && $(SHELL) $$r/$(TARGET_SUBDIR)/libstdc++-v3/mkcheck 2 $$r/$(TARGET_SUBDIR)/libstdc++-v3 $$s/libstdc++-v3 | sed -e "s/-I/-isystem /g"` -L$$r/$(TARGET_SUBDIR)/libstd++-v3/src -L$$r/$(TARGET_SUBDIR)/libstd++-v3/src/.libs'
 else
         libstdcxx_version="target-libio target-libstdc++"
+        libstdcxx_flags='-isystem $$s/libstdc++ -isystem $$s/libstdc++/std -isystem $$s/libstdc++/stl -isystem $$s/libio/ -isystem $$s/libio/stdio -L$$r/$(TARGET_SUBDIR)/libstdc++'
 fi
 
 # these tools are built for the host environment
@@ -1216,9 +1219,78 @@ else
   gxx_include_dir=${gxx_include_dir}
 fi
 
+FLAGS_FOR_TARGET=
+if test -d ${topsrcdir}/gcc; then
+  # Directories specified with -B are searched for libraries after those
+  # specified with -L, but for headers (in sub-directory `include')
+  # before those specified with -I and -isystem.  Fortunately, we don't
+  # expect include directories to exist in build_tooldir/{bin,lib} (see
+  # below), and we want gcc/include to be searched first.
+  FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$$r/gcc/'
+fi
+case " $skipdirs " in
+*" target-newlib "*) ;;
+*)
+   case "$target" in
+   i[3456]86-*-cygwin*)
+     FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/winsup -L$$r/$(TARGET_SUBDIR)/winsup/cygwin -L$$r/$(TARGET_SUBDIR)/winsup/w32api/lib -isystem $$s/winsup/include -isystem $$s/winsup/cygwin/include -isystem $$s/winsup/w32api/include -isystem $$s/newlib/libc/sys/cygwin -isystem $$s/newlib/libc/sys/cygwin32' ;;
+   esac
+
+   # If we're building newlib, use its generic headers last, but search
+   # for any libc-related directories first (so make it the last -B
+   # switch).
+   FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -nostdinc -B$$r/$(TARGET_SUBDIR)/newlib/ -isystem $$r/$(TARGET_SUBDIR)/newlib/targ-include -isystem $$s/newlib/libc/include'
+   ;;
+esac
+if test -d ${topsrcdir}/gcc; then
+  # Search for pre-installed headers if nothing else fits.
+  FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$(build_tooldir)/bin/ -B$(build_tooldir)/lib/ -isystem $(build_tooldir)/include'
+fi
+if test "x${use_gnu_ld}" = x && test "x${with_gnu_ld}" != xno &&
+   echo " ${configdirs} " | grep " ld " > /dev/null &&
+   test -d ${srcdir}/ld; then
+  # Arrange for us to find uninstalled linker scripts.
+  FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/ld'
+fi
+
+if test -d ${topsrcdir}/gcc; then
+  CC_FOR_TARGET='$$r/gcc/xgcc'
+elif test "$host" = "$target"; then
+  CC_FOR_TARGET='$(CC)'
+else
+  CC_FOR_TARGET=`echo gcc | sed -e 's/x/x/' ${program_transform_name}`
+fi
+CC_FOR_TARGET=$CC_FOR_TARGET' $(FLAGS_FOR_TARGET)'
+
+if test -d ${topsrcdir}/gcc &&
+   echo ",${enable_languages-${LANGUAGES-CHILL}}," |
+   grep ,CHILL, > /dev/null ; then
+  CHILL_FOR_TARGET='$$r/gcc/xgcc -L$$r/gcc/ch/runtime/'
+elif test "$host" = "$target"; then
+  CHILL_FOR_TARGET='$(CC)'
+else
+  CHILL_FOR_TARGET=`echo gcc | sed -e 's/x/x/' ${program_transform_name}`
+fi
+CHILL_FOR_TARGET=$CHILL_FOR_TARGET' $(FLAGS_FOR_TARGET)'
+
+if test -d ${topsrcdir}/gcc &&
+   echo ",${enable_languages-${LANGUAGES-c++}}," |
+   grep ',c[+][+],' > /dev/null ; then
+  CXX_FOR_TARGET='$$r/gcc/g++ -nostdinc++ '$libstdcxx_flags
+elif test "$host" = "$target"; then
+  CXX_FOR_TARGET='$(CXX)'
+else
+  CXX_FOR_TARGET=`echo c++ | sed -e 's/x/x/' ${program_transform_name}`
+fi
+CXX_FOR_TARGET=$CXX_FOR_TARGET' $(FLAGS_FOR_TARGET)'
+
 targargs="--cache-file=../config.cache --host=${target_alias} --build=${build_alias} ${targargs}"
 sed -e "s:^TARGET_CONFIGDIRS[ 	]*=.*$:TARGET_CONFIGDIRS = ${target_configdirs}:" \
     -e "s%^CONFIG_ARGUMENTS[ 	]*=.*$%CONFIG_ARGUMENTS = ${targargs}%" \
+    -e "s%^FLAGS_FOR_TARGET[ 	]*=.*$%FLAGS_FOR_TARGET = ${FLAGS_FOR_TARGET}%" \
+    -e "s%^CC_FOR_TARGET[ 	]*=.*$%CC_FOR_TARGET = ${CC_FOR_TARGET}%" \
+    -e "s%^CHILL_FOR_TARGET[ 	]*=.*$%CHILL_FOR_TARGET = ${CHILL_FOR_TARGET}%" \
+    -e "s%^CXX_FOR_TARGET[ 	]*=.*$%CXX_FOR_TARGET = ${CXX_FOR_TARGET}%" \
     -e "s%^TARGET_SUBDIR[ 	]*=.*$%TARGET_SUBDIR = ${target_subdir}%" \
     -e "s%^gxx_include_dir[ 	]*=.*$%gxx_include_dir=${gxx_include_dir}%" \
        Makefile > Makefile.tem
