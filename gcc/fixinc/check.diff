@@ -81,6 +81,36 @@
   };
 ! extern Wedged( Widget c_new, Widget old );
   #endif  /* X11_NEW_CHECK */
+*** inc/ansi/math.h
+--- res/ansi/math.h
+***************
+*** 1,5 ****
+  
+  
+  #if defined( NEXT_MATH_PREFIX_CHECK )
+! extern	double	__const__	mumble();
+  #endif  /* NEXT_MATH_PREFIX_CHECK */
+--- 1,5 ----
+  
+  
+  #if defined( NEXT_MATH_PREFIX_CHECK )
+! extern double mumble();
+  #endif  /* NEXT_MATH_PREFIX_CHECK */
+*** inc/ansi/stdlib.h
+--- res/ansi/stdlib.h
+***************
+*** 1,5 ****
+  
+  
+  #if defined( NEXT_VOLITILE_CHECK )
+! extern	volatile	void	abort();
+  #endif  /* NEXT_VOLITILE_CHECK */
+--- 1,5 ----
+  
+  
+  #if defined( NEXT_VOLITILE_CHECK )
+! extern void abort();
+  #endif  /* NEXT_VOLITILE_CHECK */
 *** inc/assert.h
 --- res/assert.h
 ***************
@@ -109,6 +139,21 @@
 + #endif  /* FIXINC_BROKEN_ASSERT_STDIO_CHECK */
 + 
 + #endif  /* FIXINC_BROKEN_ASSERT_STDLIB_CHECK */
+*** inc/bsd/libc.h
+--- res/bsd/libc.h
+***************
+*** 1,5 ****
+  
+  
+  #if defined( NEXT_TEMPLATE_CHECK )
+! extern mumble( char * template); /* fix */
+  #endif  /* NEXT_TEMPLATE_CHECK */
+--- 1,5 ----
+  
+  
+  #if defined( NEXT_TEMPLATE_CHECK )
+! extern mumble( char *); /* fix */
+  #endif  /* NEXT_TEMPLATE_CHECK */
 *** inc/c_asm.h
 --- res/c_asm.h
 ***************
@@ -235,10 +280,25 @@
    #	define	DBL_DIG 	 0  /* somthin' */
 + #endif
   #endif  /* LIMITS_IFNDEFS_CHECK */
+*** inc/machine/ansi.h
+--- res/machine/ansi.h
+***************
+*** 1,5 ****
+  
+  
+  #if defined( MACHINE_ANSI_H_VA_LIST_CHECK )
+!  # define _BSD_VA_LIST_	char**
+  #endif  /* MACHINE_ANSI_H_VA_LIST_CHECK */
+--- 1,5 ----
+  
+  
+  #if defined( MACHINE_ANSI_H_VA_LIST_CHECK )
+!  # define _BSD_VA_LIST_	__builtin_va_list
+  #endif  /* MACHINE_ANSI_H_VA_LIST_CHECK */
 *** inc/math.h
 --- res/math.h
 ***************
-*** 1,44 ****
+*** 1,41 ****
   
   
   #if defined( BROKEN_CABS_CHECK )
@@ -280,10 +340,7 @@
   #endif  /* M88K_BAD_HYPOT_OPT_CHECK */
   
   
-  #if defined( MATH_EXCEPTION_CHECK )
-  typedef struct exception t_math_exception;
-  #endif  /* MATH_EXCEPTION_CHECK */
---- 1,69 ----
+--- 1,61 ----
 + #ifndef FIXINC_MATH_EXCEPTION_CHECK
 + #define FIXINC_MATH_EXCEPTION_CHECK 1
 + 
@@ -345,9 +402,16 @@
   #endif  /* M88K_BAD_HYPOT_OPT_CHECK */
   
   
-  #if defined( MATH_EXCEPTION_CHECK )
-  typedef struct exception t_math_exception;
-  #endif  /* MATH_EXCEPTION_CHECK */
+***************
+*** 45,49 ****
+--- 65,76 ----
+  
+  
+  #if defined( MATH_HUGE_VAL_IFNDEF_CHECK )
++ #ifndef HUGE_VAL
+  # define	HUGE_VAL 3.4e+40
++ #endif
+  #endif  /* MATH_HUGE_VAL_IFNDEF_CHECK */
 + #ifdef __cplusplus
 + #undef exception
 + #endif
@@ -469,7 +533,7 @@
 *** inc/stdlib.h
 --- res/stdlib.h
 ***************
-*** 1,7 ****
+*** 1,12 ****
   
   
   #if defined( ARM_WCHAR_CHECK )
@@ -477,7 +541,12 @@
 ! #  define  __wchar_t  short
   # endif /* __wchar_t */
   #endif  /* ARM_WCHAR_CHECK */
---- 1,7 ----
+  
+  
+  #if defined( NEWS_OS_RECURSION_CHECK )
+  #include <stdlib.h>
+  #endif  /* NEWS_OS_RECURSION_CHECK */
+--- 1,14 ----
   
   
   #if defined( ARM_WCHAR_CHECK )
@@ -485,6 +554,13 @@
 ! #  define  _GCC_WCHAR_T  short
   # endif /* __wchar_t */
   #endif  /* ARM_WCHAR_CHECK */
+  
+  
+  #if defined( NEWS_OS_RECURSION_CHECK )
++ #ifdef BOGUS_RECURSION
+  #include <stdlib.h>
++ #endif
+  #endif  /* NEWS_OS_RECURSION_CHECK */
 *** inc/sundev/vuid_event.h
 --- res/sundev/vuid_event.h
 ***************
@@ -729,7 +805,7 @@
 *** inc/testing.h
 --- res/testing.h
 ***************
-*** 1,35 ****
+*** 1,36 ****
   
   
   #if defined( CTRL_QUOTES_DEF_CHECK )
@@ -763,7 +839,7 @@
   #define NULL	((void*)0)
   
   #endif  /* UNDEFINE_NULL_CHECK */
---- 1,39 ----
+--- 1,40 ----
   
   
   #if defined( CTRL_QUOTES_DEF_CHECK )

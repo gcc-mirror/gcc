@@ -611,8 +611,11 @@ fix = {
     hackname = arm_wchar;
     files  = stdlib.h;
     select = "#[ \t]*define[ \t]*__wchar_t";
-    sed    = "s/\\(#[ \t]*ifndef[ \t]*\\)__wchar_t/\\1_GCC_WCHAR_T/";
-    sed    = "s/\\(#[ \t]*define[ \t]*\\)__wchar_t/\\1_GCC_WCHAR_T/";
+
+    c_fix     = format;
+    c_fix_arg = "%1_GCC_WCHAR_T";
+    c_fix_arg = "(#[ \t]*(ifndef|define)[ \t]+)__wchar_t";
+
     test_text =
     "# ifndef \t __wchar_t /* we don't have wchar_t yet, ... */\n"
     "#  define  __wchar_t  short\n"
@@ -651,6 +654,7 @@ fix = {
     files     = tinfo.h;
 
     select    = "#[ \t]*define[ \t]+bool[ \t]";
+    bypass    = "we must use the C\\+\\+ compiler's type";
 
     c_fix     = format;
     c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
@@ -667,6 +671,7 @@ fix = {
     files    = tinfo.h;
 
     select    = "^[ \t]*typedef[ \t].*[ \t]bool[ \t]*;";
+    bypass    = "we must use the C\\+\\+ compiler's type";
 
     c_fix     = format;
     c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
@@ -684,6 +689,12 @@ fix = {
  *  properly in most cases, they don't allow you to take a pointer to the
  *  "something" being modified.  To get around this limitation, change these
  *  statements to be of the form '#define something _FOOsomething'.
+ *
+ *  sed ain't egrep, lesson 2463:  sed can use self-referential
+ *  regular expressions.  In the substitute expression below,
+ *  "\\1" and "\\2" refer to subexpressions found earlier in the
+ *  same match.  So, we continue to use sed.  "extern_prefix" will
+ *  be a rare match anyway...
  */
 fix = {
     hackname = bad_lval;
@@ -1096,7 +1107,10 @@ fix = {
     hackname = hpux_systime;
     files    = sys/time.h;
     select   = "^extern struct sigevent;";
-    sed      = "s/^extern struct sigevent;/struct sigevent;/";
+
+    c_fix     = format;
+    c_fix_arg = "struct sigevent;";
+
     test_text = 'extern struct sigevent;';
 };
 
@@ -1210,10 +1224,9 @@ fix = {
     bypass = "ifndef[ \t]+FLT_MIN";
 
     c_fix     = format;
-    c_fix_arg = "#ifndef %1\n%0#endif\n";
+    c_fix_arg = "#ifndef %1\n%0\n#endif";
     c_fix_arg = "^[ \t]*#[ \t]*define[ \t]+"
-                "((FLT|DBL)_(MIN|MAX|DIG))"
-                "[ \t][^\n]*\n";
+                "((FLT|DBL)_(MIN|MAX|DIG))[ \t].*";
     test_text = " #\tdefine\tDBL_DIG \t 0  /* somthin' */";
 };
 
@@ -1312,10 +1325,14 @@ fix = {
 fix = {
     hackname = machine_ansi_h_va_list;
     files    = machine/ansi.h;
-    select   = '_BSD_VA_LIST_';
+    select   = "define[ \t]+_BSD_VA_LIST_[ \t]";
     bypass   = '__builtin_va_list';
 
-    sed	     = "s/\\(_BSD_VA_LIST_[ \t][ \t]*\\).*$/\\1__builtin_va_list/";
+    c_fix     = format;
+    c_fix_arg = "%1__builtin_va_list";
+    c_fix_arg = "(define[ \t]+_BSD_VA_LIST_[ \t]+).*";
+
+    test_text = " # define _BSD_VA_LIST_\tchar**";
 };
 
 
@@ -1326,11 +1343,10 @@ fix = {
     hackname  = machine_name;
     c_test    = machine_name;
     c_fix     = machine_name;
-    test_text =
-    "#if /* MACH_DIFF: */ \\\n"
-    "\t   defined( i386 ) \\\n"
-    "\t|| defined( sparc ) /*\n"
-    "no uniform test, so be careful  :-) */";
+    test_text = "/* MACH_DIFF: */\n"
+    "#if defined( i386 )"
+    " || defined( sparc )"
+    "\n/* no uniform test, so be careful  :-) */";
 };
 
 
@@ -1347,7 +1363,7 @@ fix = {
     hackname  = math_exception;
     files     = math.h;
     select    = "struct exception";
-    bypass    = "We have a problem when using C\\+\\+";
+    bypass    = 'We have a problem when using C\+\+';
     c_fix     = wrap;
 
     c_fix_arg = "#ifdef __cplusplus\n"
@@ -1361,6 +1377,13 @@ fix = {
     test_text = "typedef struct exception t_math_exception;";
 };
 
+
+/*
+ *  This looks pretty broken to me.  ``dbl_max_def'' will contain
+ *  "define DBL_MAX " at the start, when what we really want is just
+ *  the value portion.  Can't figure out how to write a test case
+ *  for this either  :-(
+ */
 fix = {
     hackname = math_huge_val_from_dbl_max;
     files    = math.h;
@@ -1387,16 +1410,21 @@ fix = {
     "\tfi";
 };
 
+
 /*
  * In any case, put #ifndef .. #endif around #define HUGE_VAL in math.h.
  */
 fix = {
     hackname = math_huge_val_ifndef;
+    files    = math.h;
     files    = math/math.h;
-    select   = "define[ \t]*HUGE_VAL";
+    select   = "define[ \t]+HUGE_VAL";
 
-    sed      = "/define[ \t]HUGE_VAL[ \t]/i\\\n#ifndef HUGE_VAL\n";
-    sed      = "/define[ \t]HUGE_VAL[ \t]/a\\\n#endif\n";
+    c_fix     = format;
+    c_fix_arg = "#ifndef HUGE_VAL\n%0\n#endif";
+    c_fix_arg = "^[ \t]*#[ \t]*define[ \t]+HUGE_VAL[ \t].*";
+
+    test_text = "# define\tHUGE_VAL 3.4e+40";
 };
 
 
@@ -1457,11 +1485,11 @@ fix = {
 fix = {
     hackname = news_os_recursion;
     files    = stdlib.h;
-    select   = "#include <stdlib.h>";
-    sed      = "/^#include <stdlib.h>/i\\\n"
-                    "#ifdef BOGUS_RECURSION\n";
-    sed      = "/^#include <stdlib.h>/a\\\n"
-                    "#endif\n";
+    select   = '#include <stdlib\.h>';
+
+    c_fix     = format;
+    c_fix_arg = "#ifdef BOGUS_RECURSION\n%0\n#endif";
+    test_text = "#include <stdlib.h>";
 };
 
 
@@ -1470,32 +1498,32 @@ fix = {
  *  These conflict with the built-in functions.
  */
 fix = {
-    hackname = next_math_prefix;
-    files    = ansi/math.h;
-    select   = "^extern.*double.*__const__.*";
+    hackname  = next_math_prefix;
+    files     = ansi/math.h;
+    select    = "^extern[ \t]+double[ \t]+__const__[ \t]";
 
-    sed = "/^extern.*double.*__const__.*sqrt(/s/__const__//";
-    sed = "/^extern.*double.*__const__.*fabs(/s/__const__//";
-    sed = "/^extern.*double.*__const__.*cos(/s/__const__//";
-    sed = "/^extern.*double.*__const__.*hypot(/s/__const__//";
-    sed = "/^extern.*double.*__const__.*sin(/s/__const__//";
+    c_fix     = format;
+    c_fix_arg = "extern double %1(";
+    c_fix_arg = "^extern[ \t]+double[ \t]+__const__[ \t]+([a-z]+)\\(";
+
+    test_text = "extern\tdouble\t__const__\tmumble();";
 };
 
 
 /*
  *  NeXT 3.2 uses the word "template" as a parameter for some
  *  functions. GCC reports an invalid use of a reserved key word
- *  with the built-in functions. NeXT 3.2 includes the keyword
- *  volatile in the prototype for abort(). This conflicts with
- *  the built-in definition.
+ *  with the built-in functions.
  */
 fix = {
     hackname = next_template;
     files    = bsd/libc.h;
-    select   = template;
+    select   = "[ \t]template\\)";
 
-    sed = '/\(.*template\)/s/template//';
-    sed = "/extern.*volatile.*void.*abort/s/volatile//";
+    c_fix     = format;
+    c_fix_arg = "(%1)";
+    c_fix_arg = "\\(([^)]*)[ \t]template\\)";
+    test_text = "extern mumble( char * template); /* fix */";
 };
 
 
@@ -1506,10 +1534,13 @@ fix = {
 fix = {
     hackname = next_volitile;
     files    = ansi/stdlib.h;
-    select   = volatile;
+    select   = "^extern[ \t]+volatile[ \t]+void[ \t]";
 
-    sed    = "/extern.*volatile.*void.*exit/s/volatile//";
-    sed    = "/extern.*volatile.*void.*abort/s/volatile//";
+    c_fix     = format;
+    c_fix_arg = "extern void %1(";
+    c_fix_arg = "^extern[ \t]+volatile[ \t]+void[ \t]+(exit|abort)\\(";
+
+    test_text = "extern\tvolatile\tvoid\tabort();";
 };
 
 
