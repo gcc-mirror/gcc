@@ -246,7 +246,7 @@ scan_decls (pfile, argc, argv)
 	  break;
 
 	 default:
-	  prev_id_start = NULL;
+	  prev_id_start = 0;
 	}
     }
 }
