@@ -35,6 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "lex.h"
 #include "target.h"
+#include "convert.h"
 
 /* The number of nested classes being processed.  If we are not in the
    scope of any class, this is zero.  */
@@ -328,8 +329,9 @@ build_base_path (enum tree_code code,
       v_offset = build_indirect_ref (v_offset, NULL);
       TREE_CONSTANT (v_offset) = 1;
 
-      offset = cp_convert (ptrdiff_type_node,
-			   size_diffop (offset, BINFO_OFFSET (v_binfo)));
+      offset = convert_to_integer (ptrdiff_type_node,
+				   size_diffop (offset, 
+						BINFO_OFFSET (v_binfo)));
 
       if (!integer_zerop (offset))
 	v_offset = build (code, ptrdiff_type_node, v_offset, offset);

@@ -7214,8 +7214,9 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	if (DECL_TEMPLATE_PARM_P (t))
 	  return tsubst_copy (DECL_INITIAL (t), args, complain, in_decl);
-	if (!DECL_CONTEXT (t))
-	  /* This is a global enumeration constant.  */
+	/* There is no need to substitute into namespace-scope
+	   enumerators.  */
+	if (DECL_NAMESPACE_SCOPE_P (t))
 	  return t;
 
 	/* Unfortunately, we cannot just call lookup_name here.
@@ -11151,18 +11152,20 @@ tsubst_enum (tree tag, tree newtag, tree args)
   for (e = TYPE_VALUES (tag); e; e = TREE_CHAIN (e))
     {
       tree value;
-      
+      tree decl;
+
+      decl = TREE_VALUE (e);
       /* Note that in a template enum, the TREE_VALUE is the
 	 CONST_DECL, not the corresponding INTEGER_CST.  */
-      value = tsubst_expr (DECL_INITIAL (TREE_VALUE (e)), 
+      value = tsubst_expr (DECL_INITIAL (decl), 
 			   args, tf_error | tf_warning,
 			   NULL_TREE);
 
       /* Give this enumeration constant the correct access.  */
-      set_current_access_from_decl (TREE_VALUE (e));
+      set_current_access_from_decl (decl);
 
       /* Actually build the enumerator itself.  */
-      build_enumerator (TREE_PURPOSE (e), value, newtag); 
+      build_enumerator (DECL_NAME (decl), value, newtag); 
     }
 
   finish_enum (newtag);

@@ -13028,7 +13028,9 @@ start_enum (tree name)
 void
 finish_enum (tree enumtype)
 {
-  tree pair;
+  tree values;
+  tree decl;
+  tree value;
   tree minnode;
   tree maxnode;
   tree t;
@@ -13036,6 +13038,8 @@ finish_enum (tree enumtype)
   int lowprec;
   int highprec; 
   int precision;
+  integer_type_kind itk;
+  tree underlying_type;
 
   /* We built up the VALUES in reverse order.  */
   TYPE_VALUES (enumtype) = nreverse (TYPE_VALUES (enumtype));
@@ -13046,21 +13050,25 @@ finish_enum (tree enumtype)
      works.  */
   if (processing_template_decl)
     {
-      for (pair = TYPE_VALUES (enumtype); pair; pair = TREE_CHAIN (pair))
-	TREE_TYPE (TREE_VALUE (pair)) = enumtype;
+      for (values = TYPE_VALUES (enumtype); 
+	   values; 
+	   values = TREE_CHAIN (values))
+	TREE_TYPE (TREE_VALUE (values)) = enumtype;
       if (at_function_scope_p ())
 	add_stmt (build_min (TAG_DEFN, enumtype));
       return;
     }
 
+  /* Determine the minimum and maximum values of the enumerators.  */
   if (TYPE_VALUES (enumtype))
     {
       minnode = maxnode = NULL_TREE;
 
-      for (pair = TYPE_VALUES (enumtype); pair; pair = TREE_CHAIN (pair))
+      for (values = TYPE_VALUES (enumtype); 
+	   values; 
+	   values = TREE_CHAIN (values))
 	{
-	  tree decl = TREE_VALUE (pair);
-	  tree value = DECL_INITIAL (decl);
+	  decl = TREE_VALUE (values);
 
 	  /* [dcl.enum]: Following the closing brace of an enum-specifier,
 	     each enumerator has the type of its enumeration.  Prior to the
@@ -13068,6 +13076,8 @@ finish_enum (tree enumtype)
 	     initializing value.  */
 	  TREE_TYPE (decl) = enumtype;
 
+	  /* Update the minimum and maximum values, if appropriate.  */
+	  value = DECL_INITIAL (decl);
 	  /* Figure out what the minimum and maximum values of the
 	     enumerators are.  */
 	  if (!minnode)
@@ -13086,13 +13096,13 @@ finish_enum (tree enumtype)
 	      value = DECL_INITIAL (decl) = copy_node (value);
 	      TREE_TYPE (value) = enumtype;
 	    }
-
-	  /* In addition, transform the TYPE_VALUES list to contain the
-	     values, rather than the CONST_DECLs for them.  */
-	  TREE_VALUE (pair) = value;
 	}
     }
   else
+    /* [dcl.enum]
+
+       If the enumerator-list is empty, the underlying type is as if
+       the enumeration had a single enumerator with value 0.  */
     minnode = maxnode = integer_zero_node;
 
   /* Compute the number of bits require to represent all values of the
@@ -13104,35 +13114,75 @@ finish_enum (tree enumtype)
   highprec = min_precision (maxnode, unsignedp);
   precision = MAX (lowprec, highprec);
 
-  /* DR 377
-       
-     IF no integral type can represent all the enumerator values, the
-     enumeration is ill-formed.  */
-  if (precision > TYPE_PRECISION (long_long_integer_type_node))
+  /* Determine the underlying type of the enumeration.
+
+       [dcl.enum]
+
+       The underlying type of an enumeration is an integral type that
+       can represent all the enumerator values defined in the
+       enumeration.  It is implementation-defined which integral type is
+       used as the underlying type for an enumeration except that the
+       underlying type shall not be larger than int unless the value of
+       an enumerator cannot fit in an int or unsigned int.  
+
+     We use "int" or an "unsigned int" as the underlying type, even if
+     a smaller integral type would work, unless the user has
+     explicitly requested that we use the smallest possible type.  */
+  for (itk = (flag_short_enums ? itk_char : itk_int); 
+       itk != itk_none; 
+       itk++)
     {
+      underlying_type = integer_types[itk];
+      if (TYPE_PRECISION (underlying_type) >= precision
+	  && TREE_UNSIGNED (underlying_type) == unsignedp)
+	break;
+    }
+  if (itk == itk_none)
+    {
+      /* DR 377
+
+	 IF no integral type can represent all the enumerator values, the
+	 enumeration is ill-formed.  */
       error ("no integral type can represent all of the enumerator values "
 	     "for `%T'", enumtype);
       precision = TYPE_PRECISION (long_long_integer_type_node);
+      underlying_type = integer_types[itk_unsigned_long_long];
     }
 
-  /* Compute the minium and maximum values for the type, the size of
-     the type, and so forth.  */
-  TYPE_PRECISION (enumtype) = precision;
-  TYPE_SIZE (enumtype) = NULL_TREE;
-  if (unsignedp)
-    fixup_unsigned_type (enumtype);
-  else
-    fixup_signed_type (enumtype);
+  /* Compute the minium and maximum values for the type.  
 
-  /* We use "int" or "unsigned int" as the underlying type, unless all
-     the values will not fit or the user has requested that we try to
-     use shorter types where possible.  */
-  if (precision < TYPE_PRECISION (integer_type_node)
-      && !flag_short_enums)
+     [dcl.enum]
+
+     For an enumeration where emin is the smallest enumerator and emax
+     is the largest, the values of the enumeration are the values of the
+     underlying type in the range bmin to bmax, where bmin and bmax are,
+     respectively, the smallest and largest values of the smallest bit-
+     field that can store emin and emax.  */
+  TYPE_PRECISION (enumtype) = precision;
+  set_min_and_max_values_for_integral_type (enumtype, precision, unsignedp);
+
+  /* [dcl.enum]
+     
+     The value of sizeof() applied to an enumeration type, an object
+     of an enumeration type, or an enumerator, is the value of sizeof()
+     applied to the underlying type.  */
+  TYPE_SIZE (enumtype) = TYPE_SIZE (underlying_type);
+  TYPE_SIZE_UNIT (enumtype) = TYPE_SIZE_UNIT (underlying_type);
+  TYPE_MODE (enumtype) = TYPE_MODE (underlying_type);
+  TYPE_ALIGN (enumtype) = TYPE_ALIGN (underlying_type);
+  TYPE_USER_ALIGN (enumtype) = TYPE_USER_ALIGN (underlying_type);
+  TREE_UNSIGNED (enumtype) = TREE_UNSIGNED (underlying_type);
+
+  /* Convert each of the enumerators to the type of the underlying
+     type of the enumeration.  */
+  for (values = TYPE_VALUES (enumtype); values; values = TREE_CHAIN (values))
     {
-      TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);
-      TYPE_SIZE (enumtype) = NULL_TREE;
-      layout_type (enumtype);
+      decl = TREE_VALUE (values);
+      value = perform_implicit_conversion (underlying_type,
+					   DECL_INITIAL (decl));
+      TREE_TYPE (value) = enumtype;
+      DECL_INITIAL (decl) = value;
+      TREE_VALUE (values) = value;
     }
 
   /* Fix up all variant types of this enum type.  */
@@ -13215,6 +13265,8 @@ build_enumerator (tree name, tree value, tree enumtype)
 
   /* C++ associates enums with global, function, or class declarations.  */
   context = current_scope ();
+  if (!context)
+    context = current_namespace;
 
   /* Build the actual enumeration constant.  Note that the enumeration
     constants have the type of their initializers until the
@@ -13246,8 +13298,8 @@ build_enumerator (tree name, tree value, tree enumtype)
 
   if (context && context == current_class_type)
     /* In something like `struct S { enum E { i = 7 }; };' we put `i'
-      on the TYPE_FIELDS list for `S'.  (That's so that you can say
-      things like `S::i' later.)  */
+       on the TYPE_FIELDS list for `S'.  (That's so that you can say
+       things like `S::i' later.)  */
     finish_member_declaration (decl);
   else
     pushdecl (decl);

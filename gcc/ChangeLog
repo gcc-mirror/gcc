@@ -1,3 +1,14 @@
+2003-07-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11667
+	* c-common.c (shorten_compare): Take into account differences
+	between C and C++ representation for enumeration types.
+	* tree.h (set_min_and_max_values_for_integral_type): Declare.
+	* stor-layout.c (set_min_and_max_values_for_integral_type): New
+	function, broken out from ...
+	(fixup_signed_type): ... here and ...
+	(fixup_unsigned_type): ... here.
+
 2003-07-28  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c: Update commentary, adjust blank lines throughout.

@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "assert.h"
 #include "toplev.h"
+#include "convert.h"
 
 /* C++ returns type information to the user in struct type_info
    objects. We also use type information to implement dynamic_cast and
@@ -159,8 +160,8 @@ build_headof (tree exp)
 
   type = build_qualified_type (ptr_type_node, 
 			       cp_type_quals (TREE_TYPE (exp)));
-  return build (PLUS_EXPR, type, exp,
-		cp_convert (ptrdiff_type_node, offset));
+  return build (PLUS_EXPR, type, exp, 
+		convert_to_integer (ptrdiff_type_node, offset));
 }
 
 /* Get a bad_cast node for the program to throw...

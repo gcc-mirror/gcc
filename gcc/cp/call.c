@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "diagnostic.h"
 #include "intl.h"
+#include "convert.h"
 
 static tree build_field_call (tree, tree, tree);
 static struct z_candidate * tourney (struct z_candidate *);
@@ -653,8 +654,7 @@ standard_conversion (tree to, tree from, tree expr)
       conv = build_conv (STD_CONV, to, conv);
       ICS_BAD_FLAG (conv) = 1;
     }
-  else if (tcode == ENUMERAL_TYPE && fcode == INTEGER_TYPE
-	   && TYPE_PRECISION (to) == TYPE_PRECISION (from))
+  else if (tcode == ENUMERAL_TYPE && fcode == INTEGER_TYPE)
     {
       /* For backwards brain damage compatibility, allow interconversion of
 	 enums and integers with a pedwarn.  */
@@ -4201,7 +4201,7 @@ convert_arg_to_ellipsis (tree arg)
   if (TREE_CODE (TREE_TYPE (arg)) == REAL_TYPE
       && (TYPE_PRECISION (TREE_TYPE (arg))
 	  < TYPE_PRECISION (double_type_node)))
-    arg = cp_convert (double_type_node, arg);
+    arg = convert_to_real (double_type_node, arg);
   else if (INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (arg)))
     arg = perform_integral_promotions (arg);
 
