@@ -2694,7 +2694,7 @@ expand_return (retval)
       rtx *result_pseudos = (rtx *) alloca (sizeof (rtx) * n_regs);
       rtx result_reg;
       rtx result_val = expand_expr (retval_rhs, NULL_RTX, VOIDmode, 0);
-      enum machine_mode tmpmode;
+      enum machine_mode tmpmode, result_reg_mode;
 
       /* Structures smaller than a word are aligned to the least significant
 	 byte (to the right).  On a BYTES_BIG_ENDIAN machine, this means we
@@ -2751,15 +2751,23 @@ expand_return (retval)
       if (tmpmode == MAX_MACHINE_MODE)
 	abort ();
 
-      result_reg = gen_reg_rtx (tmpmode);
       PUT_MODE (DECL_RTL (DECL_RESULT (current_function_decl)), tmpmode);
+
+      if (GET_MODE_SIZE (tmpmode) < GET_MODE_SIZE (word_mode))
+	result_reg_mode = word_mode;
+      else
+	result_reg_mode = tmpmode;
+      result_reg = gen_reg_rtx (result_reg_mode);
 
       /* Now that the value is in pseudos, copy it to the result reg(s).  */
       emit_queue ();
       free_temp_slots ();
       for (i = 0; i < n_regs; i++)
-	emit_move_insn (gen_rtx (REG, word_mode, REGNO (result_reg) + i),
+	emit_move_insn (operand_subword (result_reg, i, 0, result_reg_mode),
 			result_pseudos[i]);
+
+      if (tmpmode != result_reg_mode)
+	result_reg = gen_lowpart (tmpmode, result_reg);
 
       expand_value_return (result_reg);
     }
