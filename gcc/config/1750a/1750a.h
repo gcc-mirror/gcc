@@ -833,7 +833,9 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
    strcpy(name,p);							\
    if ((p2 = strchr(name,'.')))						\
 	*p2 = '\0';							\
-   fprintf(FILE,"\tname %s\n",name); 					\
+   fputs ("\tname ", FILE);                                             \
+   output_clean_symbol_name (FILE, name);                               \
+   putc ('\n', FILE);                                                   \
    fprintf(FILE,"\tnolist\n\tinclude \"ms1750.inc\"\n\tlist\n\n");	\
    fprintf(FILE,"\tglobal\t__main\n\n");  }
 

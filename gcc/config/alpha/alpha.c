@@ -8439,9 +8439,8 @@ unicosmk_output_module_name (file)
      prefix the module name with a '$' if necessary.  */
 
   if (!ISALPHA (*name))
-    fprintf (file, "$%s", name);
-  else
-    fputs (name, file);
+    putc ('$', file);
+  output_clean_symbol_name (file, name);
 }
 
 /* Output text that to appear at the beginning of an assembler file.  */

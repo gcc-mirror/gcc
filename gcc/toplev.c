@@ -1704,11 +1704,30 @@ output_quoted_string (asm_file, string)
 	  putc (c, asm_file);
 	}
       else
-	fprintf (asm_file, "\\%03o", c);
+	fprintf (asm_file, "\\%03o", (unsigned char) c);
     }
   putc ('\"', asm_file);
 #endif
 }
+
+/* Output NAME into FILE after having turned it into something
+   usable as an identifier in a target's assembly file.  */
+void
+output_clean_symbol_name (file, name)
+    FILE *file;
+    const char *name;
+{
+  /* Make a copy of NAME.  */
+  char *id = (char *)xmalloc (strlen (name) + 1);
+  strcpy (id, name);
+
+  /* Make it look like a valid identifier for an assembler.  */
+  clean_symbol_name (id);
+  
+  fputs (file, name);
+  free (id);
+}
+
 
 /* Output a file name in the form wanted by System V.  */
 

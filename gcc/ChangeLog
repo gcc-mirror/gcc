@@ -1,3 +1,22 @@
+2002-05-23  Gabriel Dos Reis  <gdr@codesourcery.com>
+            Zack Weinberg     <zack@codesourcery.com>
+
+	* config/i386/mingw32.h (OUTPUT_QUOTED_STRING): Properly output
+	quoted strings.
+	* dwarf2out.c (lookup_filename): Properly quote filename in .file
+	directive in assembly file. 
+	* config/m68k/dpx2.h (ASM_OUTPUT_SOURCE_FILENAME): Likewise.
+	* config/m88k/m88k.h (ASM_OUTPUT_SOURCE_FILENAME): Likewise.
+	* config/pj/pj.h (ASM_FILE_START): Likewise.
+	* config/rs6000/xcoff.h (ASM_FILE_START): Likewise.
+	* config/avr/avr.c (asm_file_end): Likewise.
+	* toplev.c (output_quoted_string): Handle possibly signed plain
+	char. 
+	* toplev.h (output_clean_symbol_name): Declare
+	* toplev.c (output_clean_symbol_name): Define.
+	* config/alpha/alpha.c (unicosmk_output_module_name): Use it.
+	* config/1750a/1750a.h (ASM_FILE_START): Likewise.
+
 2002-05-24  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (output_toc): Mask longs to 32 bits.

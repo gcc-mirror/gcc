@@ -89,6 +89,7 @@ extern void warning_for_asm		PARAMS ((struct rtx_def *,
 						 const char *, ...));
 extern void warn_deprecated_use		PARAMS ((union tree_node *));
 
+extern void output_clean_symbol_name    PARAMS ((FILE *, const char *));
 #ifdef BUFSIZ
 extern void output_quoted_string	PARAMS ((FILE *, const char *));
 extern void output_file_directive	PARAMS ((FILE *, const char *));

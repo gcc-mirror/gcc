@@ -113,7 +113,11 @@ Boston, MA 02111-1307, USA.  */
 
 #undef ASM_OUTPUT_SOURCE_FILENAME
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, NA)	\
-  do { fprintf ((FILE), "\t.file\t'%s'\n", (NA)); } while (0)
+  do {                                          \
+    fprintf (FILE, "\t.file\t");                \
+    output_quoted_string (FILE, NA);            \
+    putc ('\n', FILE);                          \
+  } while (0)
 
 /* 
  * we don't seem to support any of:
