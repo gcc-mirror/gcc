@@ -1231,9 +1231,6 @@ sched_analyze (deps, head, tail)
 	  /* Clear out the stale LOG_LINKS from flow.  */
 	  free_INSN_LIST_list (&LOG_LINKS (insn));
 
-	  /* Clear out stale SCHED_GROUP_P.  */
-	  SCHED_GROUP_P (insn) = 0;
-
 	  /* Make each JUMP_INSN a scheduling barrier for memory
              references.  */
 	  if (GET_CODE (insn) == JUMP_INSN)

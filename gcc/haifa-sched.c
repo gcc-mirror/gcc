@@ -1775,6 +1775,8 @@ move_insn (insn, last)
 	retval = reemit_notes (insn, insn);
       else
 	reemit_notes (insn, insn);
+      /* Consume SCHED_GROUP_P flag.  */
+      SCHED_GROUP_P (insn) = 0;
       insn = prev;
     }
 

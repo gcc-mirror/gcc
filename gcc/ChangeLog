@@ -1,4 +1,11 @@
+2002-05-22  David Edelsohn  <edelsohn@gnu.org>
+	    Jeff Law <law@redhat.com>
+
+	* sched-deps.c (sched_analyze): Do not clear SCHED_GROUP_P.
+	* haifa-sched.c (move_insn): Clear SCHED_GROUP_P after it is used.
+
 2002-05-28	Marc Espie <espie@openbsd.org>
+
 	* config/i386/openbsd.h (HAVE_GAS_MAX_SKIP_P2ALIGN):  Remove, 
 	inherited from gas.h.
 	(ASM_QUAD):  Undef.  OpenBSD does not support it.
