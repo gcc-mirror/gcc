@@ -1,3 +1,9 @@
+Thu Nov 11 12:42:11 MST 1999	Diego Novillo <dnovillo@cygnus.com>
+
+	* gcc/cp/init.c (init_init_processing): Header information for
+	arrays allocated via `new' should have the same alignment used by
+	malloc.
+
 1999-11-11  Bruce Korb  <autogen@linuxbox.com>
 
 	* fixinc/fixincl.c: Added verbose levels for status messages
