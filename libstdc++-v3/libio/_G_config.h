@@ -6,16 +6,11 @@
 
 #ifndef _LIBC
 # include <bits/c++config.h>
-# ifdef _GLIBCPP_USING_THREADS
-#  define _IO_MTSAFE_IO
-# endif
+# define _IO_MTSAFE_IO
 #endif
 
 /* Define types for libio in terms of the standard internal type names.  */
 
-#ifndef _LARGEFILE64_SOURCE
-# define _LARGEFILE64_SOURCE
-#endif
 #include <sys/types.h>
 #define __need_size_t
 #define __need_wchar_t
