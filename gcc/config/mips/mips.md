@@ -3811,7 +3811,7 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (mem:SF (plus:SI (match_operand:SI 1 "register_operand" "d")
 			 (match_operand:SI 2 "register_operand" "d")))
-	(match_operand:SF 0 "register_operand" "=f"))]
+	(match_operand:SF 0 "register_operand" "f"))]
   "mips_isa >= 4 && TARGET_HARD_FLOAT"
   "swxc1\\t%0,%1(%2)"
   [(set_attr "type"	"store")
@@ -3821,7 +3821,7 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (mem:SF (plus:DI (match_operand:DI 1 "se_register_operand" "d")
 			 (match_operand:DI 2 "se_register_operand" "d")))
-	(match_operand:SF 0 "register_operand" "=f"))]
+	(match_operand:SF 0 "register_operand" "f"))]
   "mips_isa >= 4 && TARGET_HARD_FLOAT"
   "swxc1\\t%0,%1(%2)"
   [(set_attr "type"	"store")
@@ -3831,7 +3831,7 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (mem:DF (plus:SI (match_operand:SI 1 "register_operand" "d")
 			 (match_operand:SI 2 "register_operand" "d")))
-	(match_operand:DF 0 "register_operand" "=f"))]
+	(match_operand:DF 0 "register_operand" "f"))]
   "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "sdxc1\\t%0,%1(%2)"
   [(set_attr "type"	"store")
@@ -3841,7 +3841,7 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (mem:DF (plus:DI (match_operand:DI 1 "se_register_operand" "d")
 			 (match_operand:DI 2 "se_register_operand" "d")))
-	(match_operand:DF 0 "register_operand" "=f"))]
+	(match_operand:DF 0 "register_operand" "f"))]
   "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "sdxc1\\t%0,%1(%2)"
   [(set_attr "type"	"store")
