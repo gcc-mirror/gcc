@@ -149,7 +149,10 @@ update_aliases (tree decl, int index, int pc)
 	  && LOCAL_SLOT_P (tmp) == 0
 	  && (pc == -1
 	      || (pc >= DECL_LOCAL_START_PC (tmp)
-		  && pc <= DECL_LOCAL_END_PC (tmp)))
+		  && pc < DECL_LOCAL_END_PC (tmp)))
+	  /* This test is < (rather than <=) because there's no point
+	     updating an alias that's about to die at the end of this
+	     instruction.  */
 	  && (tmp_type == decl_type
 	      || (INTEGRAL_TYPE_P (tmp_type)
 		  && INTEGRAL_TYPE_P (decl_type)
@@ -1741,6 +1744,12 @@ maybe_poplevels (int pc)
   current_pc = pc;
 #endif
 
+  /* FIXME: I'm pretty sure that this is wrong.  Variable scopes are
+     inclusive, so a variable is live if pc == end_pc.  Here, we
+     terminate a range if the current pc is equal to the end of the
+     range, and this is *before* we have generated code for the
+     instruction at end_pc.  We're closing a binding level one
+     instruction too early.  */
   while (current_binding_level->end_pc <= pc)
     poplevel (1, 0, 0);
 }

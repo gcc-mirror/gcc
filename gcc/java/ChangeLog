@@ -1,3 +1,10 @@
+2005-03-18  Andrew Haley  <aph@redhat.com>
+
+	PR java/20522
+	* decl.c (update_aliases): Don't update variables that are about
+	to die.
+	(maybe_poplevels): Add comment.
+
 2005-03-16  Andrew Haley  <aph@redhat.com>
 
         * expr.c (expand_java_arrayload): Don't generate a
