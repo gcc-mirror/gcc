@@ -9967,9 +9967,16 @@ fopen (fname, type)
      char *type;
 {
 #undef fopen	/* Get back the REAL fopen routine */
-  if (strcmp (type, "w") == 0)
-    return fopen (fname, type, "mbc=16", "deq=64", "fop=tef", "shr=nil");
-  return fopen (fname, type, "mbc=16");
+  /* The gcc-vms-1.42 distribution's header files prototype fopen with two
+     fixed arguments, which matches ANSI's specification but not VAXCRTL's
+     pre-ANSI implmentation.  This hack circumvents the mismatch problem.  */
+  FILE *(*vmslib_fopen)() = (FILE *(*)()) fopen;
+
+  if (*type == 'w')
+    return (*vmslib_fopen) (fname, type, "mbc=32",
+			    "deq=64", "fop=tef", "shr=nil");
+  else
+    return (*vmslib_fopen) (fname, type, "mbc=32");
 }
 
 static int 
