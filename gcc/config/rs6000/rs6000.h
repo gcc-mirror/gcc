@@ -213,11 +213,13 @@ extern int target_flags;
 /* Use AltiVec instructions.  */
 #define MASK_ALTIVEC		0x00080000
 
-/* Enhance the current ABI with AltiVec extensions.  */
-#define MASK_ALTIVEC_ABI	0x00100000
+/* Return small structures in memory (as the AIX ABI requires).  */
+#define MASK_AIX_STRUCT_RET	0x00100000
+#define MASK_AIX_STRUCT_RET_SET	0x00200000
 
-/* Use 128-bit long double.  */
-#define MASK_LONG_DOUBLE_128	0x00200000
+/* The only remaining free bit is 0x00400000. sysv4.h uses
+   0x00800000 -> 0x40000000, and 0x80000000 is not available
+   because target_flags is signed.  */
 
 #define TARGET_POWER		(target_flags & MASK_POWER)
 #define TARGET_POWER2		(target_flags & MASK_POWER2)
@@ -238,8 +240,7 @@ extern int target_flags;
 #define TARGET_NO_FUSED_MADD	(target_flags & MASK_NO_FUSED_MADD)
 #define TARGET_SCHED_PROLOG	(target_flags & MASK_SCHED_PROLOG)
 #define TARGET_ALTIVEC		(target_flags & MASK_ALTIVEC)
-#define TARGET_ALTIVEC_ABI	(target_flags & MASK_ALTIVEC_ABI)
-#define TARGET_LONG_DOUBLE_128	(target_flags & MASK_LONG_DOUBLE_128)
+#define TARGET_AIX_STRUCT_RET	(target_flags & MASK_AIX_STRUCT_RET)
 
 #define TARGET_32BIT		(! TARGET_64BIT)
 #define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
@@ -344,10 +345,6 @@ extern int target_flags;
 			N_("Generate fused multiply/add instructions")},\
   {"no-fused-madd",	MASK_NO_FUSED_MADD,				\
 			N_("Don't generate fused multiply/add instructions")},\
-  {"long-double-64",	-MASK_LONG_DOUBLE_128,				\
-			N_("Use 64 bit long doubles") },		\
-  {"long-double-128",	 MASK_LONG_DOUBLE_128, 				\
-			N_("Use 128 bit long doubles") },		\
   {"sched-prolog",      MASK_SCHED_PROLOG,                              \
 			""},						\
   {"no-sched-prolog",   -MASK_SCHED_PROLOG,                             \
@@ -356,6 +353,18 @@ extern int target_flags;
 			""},						\
   {"no-sched-epilog",   -MASK_SCHED_PROLOG,                             \
 			""},						\
+  {"aix-struct-return",	MASK_AIX_STRUCT_RET | MASK_AIX_STRUCT_RET_SET,	\
+			N_("Return all structures in memory (AIX default)")},\
+  {"svr4-struct-return", - MASK_AIX_STRUCT_RET,\
+			N_("Return small structures in registers (SVR4 default)")},\
+  {"svr4-struct-return",MASK_AIX_STRUCT_RET_SET,\
+			""},\
+  {"no-aix-struct-return", - MASK_AIX_STRUCT_RET,\
+			""},\
+  {"no-aix-struct-return", MASK_AIX_STRUCT_RET_SET,\
+			""},\
+  {"no-svr4-struct-return", MASK_AIX_STRUCT_RET | MASK_AIX_STRUCT_RET_SET,\
+			""},\
   SUBTARGET_SWITCHES							\
   {"",			TARGET_DEFAULT | MASK_SCHED_PROLOG,		\
 			""}}
@@ -431,6 +440,8 @@ extern enum processor_type rs6000_cpu;
     N_("Schedule code for given CPU") },				\
    {"debug=", &rs6000_debug_name, N_("Enable debug output") },		\
    {"abi=", &rs6000_abi_string, N_("Specify ABI to use") },		\
+   {"long-double-", &rs6000_long_double_size_string,			\
+    N_("Specify size of long double (64 or 128 bits)") },		\
    SUBTARGET_OPTIONS							\
 }
 
@@ -453,6 +464,15 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 
 #define	TARGET_DEBUG_STACK	rs6000_debug_stack
 #define	TARGET_DEBUG_ARG	rs6000_debug_arg
+
+/* These are separate from target_flags because we've run out of bits
+   there.  */
+extern const char *rs6000_long_double_size_string;
+extern int rs6000_long_double_type_size;
+extern int rs6000_altivec_abi;
+
+#define TARGET_LONG_DOUBLE_128 (rs6000_long_double_type_size == 128)
+#define TARGET_ALTIVEC_ABI rs6000_altivec_abi
 
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
@@ -583,7 +603,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 /* A C expression for the size in bits of the type `long double' on
    the target machine.  If you don't define this, the default is two
    words.  */
-#define LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_128 ? 128 : 64)
+#define LONG_DOUBLE_TYPE_SIZE rs6000_long_double_type_size
 
 /* Constant which presents upper bound of the above value.  */
 #define MAX_LONG_DOUBLE_TYPE_SIZE 128
@@ -1458,14 +1478,22 @@ typedef struct rs6000_stack {
 		     && TARGET_HARD_FLOAT				\
 		     ? FP_ARG_RETURN : GP_ARG_RETURN)
 
-/* The definition of this macro implies that there are cases where
-   a scalar value cannot be returned in registers.
+/* The AIX ABI for the RS/6000 specifies that all structures are
+   returned in memory.  The Darwin ABI does the same.  The SVR4 ABI
+   specifies that structures <= 8 bytes are returned in r3/r4, but a
+   draft put them in memory, and GCC used to implement the draft
+   instead of the final standard.  Therefore, TARGET_AIX_STRUCT_RET
+   controls this instead of DEFAULT_ABI; V.4 targets needing backward
+   compatibility can change DRAFT_V4_STRUCT_RET to override the
+   default, and -m switches get the final word.  See
+   rs6000_override_options for more details.  */
+   
+#define RETURN_IN_MEMORY(TYPE) \
+  (AGGREGATE_TYPE_P (TYPE) && \
+   (TARGET_AIX_STRUCT_RET || int_size_in_bytes (TYPE) > 8))
 
-   For the RS/6000, any structure or union type is returned in memory.
-   (FIXME: Except for V.4, where those <= 8 bytes are returned in
-   registers.  Can't change this without breaking compatibility.)  */
-
-#define RETURN_IN_MEMORY(TYPE) AGGREGATE_TYPE_P (TYPE)
+/* DRAFT_V4_STRUCT_RET defaults off.  */
+#define DRAFT_V4_STRUCT_RET 0
 
 /* Let RETURN_IN_MEMORY control what happens.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
@@ -2773,7 +2801,7 @@ do {									\
 /* Define which CODE values are valid.  */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)  \
-  ((CODE) == '.' || (CODE) == '*' || (CODE) == '$')
+  ((CODE) == '.')
 
 /* Print a memory address as an operand to reference that memory location.  */
 

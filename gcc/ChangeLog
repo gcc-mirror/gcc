@@ -1,3 +1,35 @@
+2001-12-02  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/rs6000/rs6000.h (MASK_ALTIVEC_ABI,
+	MASK_LONG_DOUBLE_128): Delete.
+	(MASK_AIX_STRUCT_RET, MASK_AIX_STRUCT_RET_SET,
+	TARGET_AIX_STRUCT_RET): New flags.
+	(TARGET_SWITCHES): Remove entries for -mlong-double-128 and
+	-mlong-double-64.  Add entries for -m(no-)aix-struct-return
+	and -m(no-)svr4-struct-return.
+	(TARGET_OPTIONS): Add entry for -mlong-double-.
+	(rs6000_long_double_size_string, rs6000_long_double_type_size,
+	rs6000_altivec_abi): Declare.
+	(TARGET_LONG_DOUBLE_128, TARGET_ALTIVEC_ABI,
+	LONG_DOUBLE_TYPE_SIZE): Change definitions to match.
+	(RETURN_IN_MEMORY): If !TARGET_AIX_STRUCT_RET, return
+	structures of size <= 8 bytes in registers.
+	(PRINT_OPERAND_PUNCT_VALID_P): Take out '$' and '*'.
+
+	* config/rs6000/rs6000.c (rs6000_long_double_size_string,
+	rs6000_long_double_type_size, rs6000_altivec_abi): New
+	globals.
+	(rs6000_override_options): Set rs6000_long_double_type_size
+	from rs6000_long_double_size_string, if nonzero.  Set the
+	MASK_AIX_STRUCT_RET bit in target_flags from DEFAULT_ABI, if
+	not already set.
+	(rs6000_parse_abi_options): Set rs6000_altivec_abi, not a
+	target_flags bit.
+	(rs6000_init_builtins): This hook now takes no arguments.
+
+	* config/rs6000/netbsd.h, config/rs6000/linux.h: Define
+	DRAFT_V4_STRUCT_RET to 1.
+
 2001-12-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-typeck.c (really_start_incremental_init, push_init_level):
@@ -27,7 +59,7 @@
 	* emit-rtl.c (component_ref_for_mem_expr): New.
 	(set_mem_attributes): Use it.
 	(set_mem_offset): New.
-	* expr.c (expand_assignment): Call set_mem_attributes for 
+	* expr.c (expand_assignment): Call set_mem_attributes for
 	inner references; adjust the memory offset as needed.
 	* print-rtl.c (print_mem_expr): New.
 	(print_rtx): Use it.
@@ -217,19 +249,19 @@ objc:
 
 2001-11-30  Daniel Berlin  <dan@cgsoftware.com>
 
-	* config/rs6000/rs6000.c (altivec_expand_builtin): add 
-	ALTIVEC_BUILTIN_LD_INTERNAL_4sf and ALTIVEC_BUILTIN_ST_INTERNAL_4sf, 
+	* config/rs6000/rs6000.c (altivec_expand_builtin): add
+	ALTIVEC_BUILTIN_LD_INTERNAL_4sf and ALTIVEC_BUILTIN_ST_INTERNAL_4sf,
 	*_16qi,_8hi, rename existing V4SI ones to *_4si.
 	(altivec_init_builtins): Ditto.
 	(bdesc_2arg): Rename CODE_FOR_* to match changes in MD file.
-	
+
 	* config/rs6000/rs6000.md: Add attribute types vecsimple,
-	veccomplex, vecfloat, and vecperm, for altivec instructions.  
+	veccomplex, vecfloat, and vecperm, for altivec instructions.
 	Modify altivec patterns to use approriate attribute type.
 	Modify altivec patterns to match RTL operations where approriate
 	(IE no unspec where we can avoid it).
 	Add vector unit scheduling for ppc7450.
-	Rename patterns to what they are where approriate 
+	Rename patterns to what they are where approriate
 	(altivec_vaddfp->addv4sf3, etc)
 
 	* config/rs6000/rs6000.h (enum rs6000_builtins): Change VRS->VSR.
@@ -237,7 +269,7 @@ objc:
 
 	* config/rs6000/sysv4.h: Add -mcpu=7450.
 
-	* testsuite/gcc.dg/altivec-1.c: Update test to take into account renamed 
+	* testsuite/gcc.dg/altivec-1.c: Update test to take into account renamed
 	_builtin_altivec_ld_interal function.
 
 2001-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -258,7 +290,7 @@ objc:
 2001-11-30  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.h (STARTING_FRAME_OFFSET): Adjust for altivec.
-        (STACK_DYNAMIC_OFFSET): Same.
+	(STACK_DYNAMIC_OFFSET): Same.
 
 2001-11-30  Richard Henderson  <rth@redhat.com>
 
@@ -266,9 +298,9 @@ objc:
 
 2001-11-30  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.h (CALL_REALLY_USED_REGISTERS): New.
-        (CONDITIONAL_REGISTER_USAGE): Set call_really_used_registers to
-        the values in call_used_registers.
+	* config/rs6000/rs6000.h (CALL_REALLY_USED_REGISTERS): New.
+	(CONDITIONAL_REGISTER_USAGE): Set call_really_used_registers to
+	the values in call_used_registers.
 
 Fri Nov 30 12:48:26 2001  Jeffrey A Law  (law@cygnus.com)
 

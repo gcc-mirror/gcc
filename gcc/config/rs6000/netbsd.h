@@ -59,3 +59,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC NetBSD/ELF)");
+
+/* For backward compatibility, we must continue to use the AIX
+   structure return convention.  */
+#undef DRAFT_V4_STRUCT_RET
+#define DRAFT_V4_STRUCT_RET 1
