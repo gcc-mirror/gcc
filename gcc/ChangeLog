@@ -4,7 +4,7 @@
 	* c-common.h (warn_abi): Likewise.
 	* c-opts.c (COMMAND_LINE_OPTIONS): Add -Wabi.
 	(c_common_decode_option): Handle it.
-	* doc/invoke.texi:P Document -Wabi.
+	* doc/invoke.texi: Document -Wabi.
 	
 Tue Aug 27 23:03:52 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
