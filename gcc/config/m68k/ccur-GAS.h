@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Concurrent 68k version.
-   Copyright (C) 1987, 1988, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -38,7 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #define MOVE_RATIO 100
 
 #define SPACE_AFTER_L_OPTION
-#define SWITCHES_NEED_SPACES " "
+#define SWITCHES_NEED_SPACES "oL"
 
 #define TARGET_DEFAULT 0407 /* See m68k.h.  7 means 68020 with 68881.  */
 
