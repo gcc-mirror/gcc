@@ -1577,7 +1577,7 @@ aix3*)
   fi
   ;;
 
-aix4*)
+aix4* | aix5*)
   test "$enable_shared" = yes && enable_static=no
   ;;
 esac
