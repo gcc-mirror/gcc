@@ -6185,7 +6185,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 	     TARGET_EXPR below since otherwise the INIT_EXPR will
 	     attempt to make a bitwise copy of EXPR to intialize
 	     VAR. */
-	  if (TREE_CODE (init) != TARGET_EXPR)
+	  if (TREE_CODE (expr) != TARGET_EXPR)
 	    expr = get_target_expr (expr);
 	  /* Create the INIT_EXPR that will initialize the temporary
 	     variable.  */
