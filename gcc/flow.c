@@ -2554,7 +2554,7 @@ dump_flow_info (file)
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     if (reg_n_refs[i])
       {
-	enum reg_class class;
+	enum reg_class class, altclass;
 	fprintf (file, "\nRegister %d used %d times across %d insns",
 		 i, reg_n_refs[i], reg_live_length[i]);
 	if (reg_basic_block[i] >= 0)
@@ -2568,12 +2568,17 @@ dump_flow_info (file)
 	if (PSEUDO_REGNO_BYTES (i) != UNITS_PER_WORD)
 	  fprintf (file, "; %d bytes", PSEUDO_REGNO_BYTES (i));
 	class = reg_preferred_class (i);
-	if (class != GENERAL_REGS)
+	altclass = reg_alternate_class (i);
+	if (class != GENERAL_REGS || altclass != ALL_REGS)
 	  {
-	    if (reg_preferred_or_nothing (i))
+	    if (altclass == ALL_REGS || class == ALL_REGS)
+	      fprintf (file, "; pref %s", reg_class_names[(int) class]);
+	    else if (altclass == NO_REGS)
 	      fprintf (file, "; %s or none", reg_class_names[(int) class]);
 	    else
-	      fprintf (file, "; pref %s", reg_class_names[(int) class]);
+	      fprintf (file, "; pref %s, else %s",
+		       reg_class_names[(int) class],
+		       reg_class_names[(int) altclass]);
 	  }
 	if (REGNO_POINTER_FLAG (i))
 	  fprintf (file, "; pointer");

@@ -5836,6 +5836,37 @@ cse_insn (insn, in_libcall_block)
 	    }
         }
 
+      /* See if we have a CONST_INT that is already in a register in a
+	 wider mode.  */
+
+      if (src_const && src_related == 0 && GET_CODE (src_const) == CONST_INT
+	  && GET_MODE_CLASS (mode) == MODE_INT
+	  && GET_MODE_BITSIZE (mode) < BITS_PER_WORD)
+	{
+	  enum machine_mode wider_mode;
+
+	  for (wider_mode = GET_MODE_WIDER_MODE (mode);
+	       GET_MODE_BITSIZE (wider_mode) <= BITS_PER_WORD
+	       && src_related == 0;
+	       wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+	    {
+	      struct table_elt *const_elt
+		= lookup (src_const, HASH (src_const, wider_mode), wider_mode);
+
+	      if (const_elt == 0)
+		continue;
+
+	      for (const_elt = const_elt->first_same_value;
+		   const_elt; const_elt = const_elt->next_same_value)
+		if (GET_CODE (const_elt->exp) == REG)
+		  {
+		    src_related = gen_lowpart_if_possible (mode,
+							   const_elt->exp);
+		    break;
+		  }
+	    }
+	}
+
       /* Another possibility is that we have an AND with a constant in
 	 a mode narrower than a word.  If so, it might have been generated
 	 as part of an "if" which would narrow the AND.  If we already

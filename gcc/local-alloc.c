@@ -145,9 +145,10 @@ static enum machine_mode *qty_mode;
 
 static int *qty_n_calls_crossed;
 
-/* Nonzero means don't allocate qty Q if we can't get its preferred class.  */
+/* Register class within which we allocate qty Q if we can't get
+   its preferred class.  */
 
-static char *qty_preferred_or_nothing;
+static enum reg_class *qty_alternate_class;
 
 /* Element Q is the SCRATCH expression for which this quantity is being
    allocated or 0 if this quantity is allocating registers.  */
@@ -258,7 +259,7 @@ alloc_qty (regno, mode, size, birth)
   qty_birth[qty] = birth;
   qty_n_calls_crossed[qty] = reg_n_calls_crossed[regno];
   qty_min_class[qty] = reg_preferred_class (regno);
-  qty_preferred_or_nothing[qty] = reg_preferred_or_nothing (regno);
+  qty_alternate_class[qty] = reg_alternate_class (regno);
   qty_n_refs[qty] = reg_n_refs[regno];
 }
 
@@ -344,7 +345,7 @@ alloc_qty_for_scratch (scratch, n, insn, insn_code_num, insn_number)
   qty_death[qty] = 2 * insn_number + 1;
   qty_n_calls_crossed[qty] = 0;
   qty_min_class[qty] = class;
-  qty_preferred_or_nothing[qty] = 1;
+  qty_alternate_class[qty] = NO_REGS;
   qty_n_refs[qty] = 1;
 }
 
@@ -389,7 +390,7 @@ local_alloc ()
   qty_mode = (enum machine_mode *) alloca (max_qty * sizeof (enum machine_mode));
   qty_n_calls_crossed = (int *) alloca (max_qty * sizeof (int));
   qty_min_class = (enum reg_class *) alloca (max_qty * sizeof (enum reg_class));
-  qty_preferred_or_nothing = (char *) alloca (max_qty);
+  qty_alternate_class = (enum reg_class *) alloca (max_qty * sizeof (enum reg_class));
   qty_n_refs = (short *) alloca (max_qty * sizeof (short));
 
   reg_qty = (int *) alloca (max_regno * sizeof (int));
@@ -413,7 +414,7 @@ local_alloc ()
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     {
       if (reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1
-	  && (reg_preferred_or_nothing (i)
+	  && (reg_alternate_class (i) == NO_REGS
 	      || reg_class_size[(int) reg_preferred_class (i)] > 1))
 	reg_qty[i] = -2;
       else
@@ -1336,8 +1337,8 @@ block_alloc (b)
 		continue;
 	    }
 
-	  if (!qty_preferred_or_nothing[q])
-	    qty_phys_reg[q] = find_free_reg (ALL_REGS, 
+	  if (qty_alternate_class[q] != NO_REGS)
+	    qty_phys_reg[q] = find_free_reg (qty_alternate_class[q],
 					     qty_mode[q], q, 0, 0,
 					     qty_birth[q], qty_death[q]);
 	}
@@ -1596,8 +1597,6 @@ combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
       /* Update info about quantity SQTY.  */
       qty_n_calls_crossed[sqty] += reg_n_calls_crossed[sreg];
       qty_n_refs[sqty] += reg_n_refs[sreg];
-      if (! reg_preferred_or_nothing (sreg))
-	qty_preferred_or_nothing[sqty] = 0;
       if (usize < ssize)
 	{
 	  register int i;
@@ -1662,6 +1661,10 @@ update_qty_class (qty, reg)
   enum reg_class rclass = reg_preferred_class (reg);
   if (reg_class_subset_p (rclass, qty_min_class[qty]))
     qty_min_class[qty] = rclass;
+
+  rclass = reg_alternate_class (reg);
+  if (reg_class_subset_p (rclass, qty_alternate_class[qty]))
+    qty_alternate_class[qty] = rclass;
 }
 
 /* Handle something which alters the value of an rtx REG.
