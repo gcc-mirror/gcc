@@ -1,3 +1,7 @@
+1998-09-18  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.texi: Various additions and some small fixes.
+
 Thu Sep 10 14:55:44 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
 
 	* Make-lang.in (f77.install-common): Add missing "else true;".
