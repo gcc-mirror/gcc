@@ -1,6 +1,7 @@
 /* Perform various loop optimizations, including strength reduction.
-   Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995,
+   1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4116,7 +4117,7 @@ emit_prefetch_instructions (struct loop *loop)
   struct prefetch_info info[MAX_PREFETCHES];
   struct loop_ivs *ivs = LOOP_IVS (loop);
 
-  if (!HAVE_prefetch)
+  if (!HAVE_prefetch || PREFETCH_BLOCK == 0)
     return;
 
   /* Consider only loops w/o calls.  When a call is done, the loop is probably
