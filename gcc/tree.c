@@ -57,6 +57,7 @@ extern int _obstack_allocated_p PARAMS ((struct obstack *h, PTR obj));
 
 struct obstack permanent_obstack;
 
+#ifdef GATHER_STATISTICS
 /* Statistics-gathering stuff.  */
 typedef enum
 {
@@ -96,6 +97,7 @@ static const char * const tree_node_kind_names[] = {
   "lang_decl kinds",
   "lang_type kinds"
 };
+#endif /* GATHER_STATISTICS */
 
 /* Unique id for next decl created.  */
 static int next_decl_uid;
