@@ -91,10 +91,10 @@ enum node_type
   T_FILE,	   /* `__FILE__' */
   T_BASE_FILE,	   /* `__BASE_FILE__' */
   T_INCLUDE_LEVEL, /* `__INCLUDE_LEVEL__' */
-  T_VERSION,	   /* `__VERSION__' */
   T_TIME,	   /* `__TIME__' */
   T_STDC,	   /* `__STDC__' */
   T_CONST,	   /* Constant string, used by `__SIZE_TYPE__' etc */
+  T_MCONST,	   /* Ditto, but the string is malloced memory */
   T_MACRO,	   /* macro defined by `#define' */
   T_DISABLED,	   /* macro temporarily turned off for rescan */
   T_POISON,	   /* macro defined with `#pragma poison' */
