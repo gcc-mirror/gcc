@@ -1,3 +1,8 @@
+2004-11-20  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc_update (touch_files): Don't rely on "make" being GNU make;
+	grep for "Touching" to determine that the rule executes.
+
 2004-11-14  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc_update (touch_files): Explicitly pass --no-print-directory.
