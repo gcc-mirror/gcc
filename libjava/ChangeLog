@@ -1,3 +1,9 @@
+2001-04-24  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (CPPFLAGS): Added builddir and srcdir to CPPFLAGS
+	for libtool tests.  Pre-create gnu/classpath/Configuration.java.
+	* configure: Rebuilt.
+
 2001-04-21  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
