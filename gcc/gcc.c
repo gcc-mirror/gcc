@@ -3000,7 +3000,10 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	  case 'u':
 	  case 'U':
 	    if (save_temps_flag)
-	      obstack_grow (&obstack, input_basename, basename_length);
+	      {
+		obstack_grow (&obstack, input_basename, basename_length);
+		delete_this_arg = 0;
+	      }
 	    else
 	      {
 #ifdef MKTEMP_EACH_FILE
