@@ -1002,26 +1002,25 @@ extern int alpha_memory_latency;
    On Alpha the value is found in $0 for integer functions and
    $f0 for floating-point functions.  */
 
-#define FUNCTION_VALUE(VALTYPE, FUNC)	\
-  gen_rtx (REG,							\
-	   ((INTEGRAL_TYPE_P (VALTYPE)				\
-	     && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
-	    || POINTER_TYPE_P (VALTYPE))			\
-	   ? word_mode : TYPE_MODE (VALTYPE),			\
-	   ((TARGET_FPREGS					\
-	     && (TREE_CODE (VALTYPE) == REAL_TYPE		\
-		 || TREE_CODE (VALTYPE) == COMPLEX_TYPE))	\
-	    ? 32 : 0))
+#define FUNCTION_VALUE(VALTYPE, FUNC)				\
+  gen_rtx_REG (((INTEGRAL_TYPE_P (VALTYPE)			\
+	         && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
+	        || POINTER_TYPE_P (VALTYPE))			\
+	       ? word_mode : TYPE_MODE (VALTYPE),		\
+	       ((TARGET_FPREGS					\
+	         && (TREE_CODE (VALTYPE) == REAL_TYPE		\
+		     || TREE_CODE (VALTYPE) == COMPLEX_TYPE))	\
+	        ? 32 : 0))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-#define LIBCALL_VALUE(MODE)	\
-   gen_rtx (REG, MODE,						\
-	    (TARGET_FPREGS					\
-	     && (GET_MODE_CLASS (MODE) == MODE_FLOAT		\
-		 || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT) \
-	     ? 32 : 0))
+#define LIBCALL_VALUE(MODE)					\
+   gen_rtx_REG (MODE,						\
+	        (TARGET_FPREGS					\
+	         && (GET_MODE_CLASS (MODE) == MODE_FLOAT	\
+		     || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT) \
+	         ? 32 : 0))
 
 /* The definition of this macro implies that there are cases where
    a scalar value cannot be returned in registers.
@@ -1426,21 +1425,34 @@ extern void alpha_init_expanders ();
 
    First define the basic valid address.  */
 
-#define GO_IF_LEGITIMATE_SIMPLE_ADDRESS(MODE, X, ADDR)	\
-{ if (REG_P (X) && REG_OK_FOR_BASE_P (X))		\
-    goto ADDR;						\
-  if (CONSTANT_ADDRESS_P (X))				\
-    goto ADDR;						\
-  if (GET_CODE (X) == PLUS				\
-      && REG_P (XEXP (X, 0)))				\
-    {							\
-      if (REG_OK_FP_BASE_P (XEXP (X, 0))		\
-	  && GET_CODE (XEXP (X, 1)) == CONST_INT)	\
-	goto ADDR;					\
-      if (REG_OK_FOR_BASE_P (XEXP (X, 0))		\
-	  && CONSTANT_ADDRESS_P (XEXP (X, 1)))		\
-	goto ADDR;					\
-    }							\
+#define GO_IF_LEGITIMATE_SIMPLE_ADDRESS(MODE, X, ADDR)			\
+{									\
+  rtx tmp = (X);							\
+  if (GET_CODE (tmp) == SUBREG						\
+      && (GET_MODE_SIZE (GET_MODE (tmp))				\
+	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (tmp)))))		\
+    tmp = SUBREG_REG (tmp);						\
+  if (REG_P (tmp) && REG_OK_FOR_BASE_P (tmp))				\
+    goto ADDR;								\
+  if (CONSTANT_ADDRESS_P (X))						\
+    goto ADDR;								\
+  if (GET_CODE (X) == PLUS)						\
+    {									\
+      tmp = XEXP (X, 0);						\
+      if (GET_CODE (tmp) == SUBREG					\
+          && (GET_MODE_SIZE (GET_MODE (tmp))				\
+	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (tmp)))))		\
+        tmp = SUBREG_REG (tmp);						\
+      if (REG_P (tmp))							\
+	{								\
+	  if (REG_OK_FP_BASE_P (tmp)					\
+	      && GET_CODE (XEXP (X, 1)) == CONST_INT)			\
+	    goto ADDR;							\
+	  if (REG_OK_FOR_BASE_P (tmp)					\
+	      && CONSTANT_ADDRESS_P (XEXP (X, 1)))			\
+	    goto ADDR;							\
+	}								\
+    }									\
 }
 
 /* Now accept the simple address, or, for DImode only, an AND of a simple

@@ -3297,7 +3297,7 @@ alpha_does_function_need_gp ()
 
 void
 alpha_write_verstamp (file)
-     FILE *file;
+     FILE *file ATTRIBUTE_UNUSED;
 {
 #ifdef MS_STAMP
   fprintf (file, "\t.verstamp %d %d\n", MS_STAMP, LS_STAMP);

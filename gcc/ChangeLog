@@ -1,3 +1,10 @@
+Fri Apr 23 16:57:40 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_write_verstamp): Mark `file' unused.
+	* alpha.h (FUNCTION_VALUE): Use gen_rtx_REG not gen_rtx.
+	(LIBCALL_VALUE): Likewise.
+	(GO_IF_LEGITIMATE_SIMPLE_ADDRESS): Handle normal subregs.
+
 Fri Apr 23 14:57:33 1999  Donn Terry  <donn@interix.com>
 
 	* alpha32.h (INITIALIZE_TRAMPOLINE): Get offsets right.
