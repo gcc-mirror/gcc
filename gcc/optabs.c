@@ -700,8 +700,17 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
   if (flag_force_mem)
     {
-      op0 = force_not_mem (op0);
-      op1 = force_not_mem (op1);
+      /* Load duplicate non-volatile operands once.  */
+      if (rtx_equal_p (op0, op1) && ! volatile_refs_p (op0))
+	{
+	  op0 = force_not_mem (op0);
+	  op1 = op0;
+	}
+      else
+	{
+	  op0 = force_not_mem (op0);
+	  op1 = force_not_mem (op1);
+	}
     }
 
   /* If subtracting an integer constant, convert this into an addition of
@@ -3587,8 +3596,17 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, purpose)
 
   if (mode != BLKmode && flag_force_mem)
     {
-      x = force_not_mem (x);
-      y = force_not_mem (y);
+      /* Load duplicate non-volatile operands once.  */
+      if (rtx_equal_p (x, y) && ! volatile_refs_p (x))
+	{
+	  x = force_not_mem (x);
+	  y = x;
+	}
+      else
+	{
+	  x = force_not_mem (x);
+	  y = force_not_mem (y);
+	}
     }
 
   /* If we are inside an appropriately-short loop and one operand is an

@@ -1,5 +1,11 @@
 2003-06-03  Roger Sayle  <roger@eyesopen.com>
 
+	* optabs.c (expand_binop): Attempt to reuse pseudos for duplicate
+	non-volatile operands of binary operations.
+	(prepare_cmp_insn): Likewise.
+
+2003-06-03  Roger Sayle  <roger@eyesopen.com>
+
 	* varasm.c (force_const_mem): Handle alignment of constants not
 	representable as a type in the front-end language.
 
