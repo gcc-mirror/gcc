@@ -558,7 +558,7 @@ wrapped in @code{extern @samp{C}} when compiling C++.  Mark the end of
 the array with a null element.
 
 The component name denotes what GNU package the include file is part of,
-if any, in all upper-case letters.  For example, it might be @samp{GCC}
+if any, in all uppercase letters.  For example, it might be @samp{GCC}
 or @samp{BINUTILS}.  If the package is part of a vendor-supplied
 operating system, code the component name as @samp{0}.
 
@@ -7348,7 +7348,7 @@ If defined this macro should expand to a series of @code{case}
 statements which will be parsed inside the @code{switch} statement of
 the @code{asm_fprintf} function.  This allows targets to define extra
 printf formats which may useful when generating their assembler
-statements.  Note that upper case letters are reserved for future
+statements.  Note that uppercase letters are reserved for future
 generic extensions to asm_fprintf, and so are not available to target
 specific code.  The output file is given by the parameter @var{file}.
 The varargs input pointer is @var{argptr} and the rest of the format

@@ -1,5 +1,14 @@
 2003-07-30  Matt Kraai  <kraai@alumni.cmu.edu>
 
+	* doc/c-tree.texi: Normalize spellings of "lowercase" and
+	"uppercase".
+	* doc/cpp.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* doc/rtl.texi: Likewise.
+	* doc/tm.texi: Likewise.
+
+2003-07-30  Matt Kraai  <kraai@alumni.cmu.edu>
+
 	* objc/Make-lang.in (objc.stage1, objc.stage2, objc.stage3)
 	(objc.stage4, objc.stageprofile, objc.stagefeedback): Remove moves
 	of cc1obj.
