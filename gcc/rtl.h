@@ -686,6 +686,7 @@ extern rtx force_reg			PROTO((enum machine_mode, rtx));
 extern rtx get_pool_constant		PROTO((rtx));
 extern enum machine_mode get_pool_mode	PROTO((rtx));
 extern int get_pool_offset		PROTO((rtx));
+extern rtx simplify_subtraction		PROTO((rtx));
 extern rtx assign_stack_local		PROTO((enum machine_mode, int, int));
 extern rtx assign_stack_temp		PROTO((enum machine_mode, int, int));
 extern rtx protect_from_queue		PROTO((rtx, int));
