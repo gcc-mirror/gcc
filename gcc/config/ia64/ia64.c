@@ -5870,6 +5870,8 @@ ia64_variable_issue (dump, sched_verbose, insn, can_issue_more)
 	{
 	  /* This must be some kind of asm.  Clear the scheduling state.  */
 	  rotate_two_bundles (sched_verbose ? dump : NULL);
+	  if (ia64_final_schedule)
+	    group_barrier_needed_p (insn);
 	}
       return 1;
     }

@@ -3,6 +3,9 @@
 	* final.c (cleanup_subreg_operands): The address of a MEM can
 	contain SUBREGs.
 
+	* config/ia64/ia64.c (ia64_variable_issue): Call group_barrier_needed_p
+	for asms, too.
+
 2001-02-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.texi (Incompatibilities): Update documentation of
