@@ -291,6 +291,7 @@ static int output_reloadnum;
 static int push_secondary_reload PROTO((int, rtx, int, int, enum reg_class,
 					enum machine_mode, enum reload_type,
 					enum insn_code *));
+static enum reg_class find_valid_class PROTO((enum machine_mode, int));
 static int push_reload		PROTO((rtx, rtx, rtx *, rtx *, enum reg_class,
 				       enum machine_mode, enum machine_mode,
 				       int, int, int, enum reload_type));
@@ -691,6 +692,38 @@ clear_secondary_mem ()
 }
 #endif /* SECONDARY_MEMORY_NEEDED */
 
+/* Find the largest class for which every register number plus N is valid in
+   M1 (if in range).  Abort if no such class exists.  */
+
+static enum reg_class
+find_valid_class (m1, n)
+     enum machine_mode  m1;
+     int n;
+{
+  int class;
+  int regno;
+  enum reg_class best_class;
+  int best_size = 0;
+
+  for (class = 1; class < N_REG_CLASSES; class++)
+    {
+      int bad = 0;
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER && ! bad; regno++)
+	if (TEST_HARD_REG_BIT (reg_class_contents[class], regno)
+	    && TEST_HARD_REG_BIT (reg_class_contents[class], regno + n)
+	    && ! HARD_REGNO_MODE_OK (regno + n, m1))
+	  bad = 1;
+
+      if (! bad && reg_class_size[class] > best_size)
+	best_class = class, best_size = reg_class_size[class];
+    }
+
+  if (best_size == 0)
+    abort ();
+
+  return best_class;
+}
+
 /* Record one reload that needs to be performed.
    IN is an rtx saying where the data are to be found before this instruction.
    OUT says where they must be stored after the instruction.
@@ -896,7 +929,8 @@ push_reload (in, out, inloc, outloc, class,
   if (in != 0 && GET_CODE (in) == SUBREG
       && GET_CODE (SUBREG_REG (in)) == REG
       && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
-      && (! HARD_REGNO_MODE_OK (REGNO (SUBREG_REG (in)), inmode)
+      && (! HARD_REGNO_MODE_OK (REGNO (SUBREG_REG (in)) + SUBREG_WORD (in),
+				inmode)
 	  || (GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
 	      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
 		  > UNITS_PER_WORD)
@@ -911,7 +945,8 @@ push_reload (in, out, inloc, outloc, class,
 	 RELOAD_OTHER, we are guaranteed that this inner reload will be
 	 output before the outer reload.  */
       push_reload (SUBREG_REG (in), NULL_RTX, &SUBREG_REG (in), NULL_PTR,
-		   GENERAL_REGS, VOIDmode, VOIDmode, 0, 0, opnum, type);
+		   find_valid_class (inmode, SUBREG_WORD (in)),
+		   VOIDmode, VOIDmode, 0, 0, opnum, type);
       dont_remove_subreg = 1;
     }
 
@@ -984,7 +1019,8 @@ push_reload (in, out, inloc, outloc, class,
   if (out != 0 && GET_CODE (out) == SUBREG
       && GET_CODE (SUBREG_REG (out)) == REG
       && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER
-      && (! HARD_REGNO_MODE_OK (REGNO (SUBREG_REG (out)), outmode)
+      && (! HARD_REGNO_MODE_OK (REGNO (SUBREG_REG (out)) + SUBREG_WORD (out),
+				outmode)
 	  || (GET_MODE_SIZE (outmode) <= UNITS_PER_WORD
 	      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))
 		  > UNITS_PER_WORD)
@@ -1000,7 +1036,9 @@ push_reload (in, out, inloc, outloc, class,
 	 output after the outer reload.  */
       dont_remove_subreg = 1;
       push_reload (SUBREG_REG (out), SUBREG_REG (out), &SUBREG_REG (out),
-		   &SUBREG_REG (out), ALL_REGS, VOIDmode, VOIDmode, 0, 0,
+		   &SUBREG_REG (out),
+		   find_valid_class (outmode, SUBREG_WORD (out)),
+		   VOIDmode, VOIDmode, 0, 0,
 		   opnum, RELOAD_OTHER);
     }
 
