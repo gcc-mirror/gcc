@@ -28,6 +28,28 @@ Mon Jul 16 18:07:07 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-07-16  Daniel Berlin  <dan@cgsoftware.com>
 
+	* gcse.c: Update comment at top. 
+	Update comment on mem handling.
+	mem_last_set, mem_first_set, mem_set_in_block: gone.
+	Declaration of reg_set_info: gone.
+	(oprs_unchanged_p): Don't use mem_*set_* anymore. They are
+	pointless with load_killed_in_block_p (they are *more*
+	conservative then it, not less, and less accurate).
+	(oprs_not_set_p): Ditto.	
+	(alloc_gcse_mem): Don't allocate mem_set_in_block
+	(free_gcse_mem): Don't free it, either.
+	(record_last_mem_set_info): Update comment in front, remove
+	mem_*set_* stuff. Note the reason we don't handle stores directly
+	here.
+	(compute_hash_table): Update comments to reflect reality. Remove
+	mem_*set_* references.
+	(reset_opr_set_tables): Remove mem_*set_* references.
+	(mark_call): Ditto.
+	(mark_set): Ditto.  Also remove double sets of bitmaps for REG's.	
+	(mark_clobber): Ditto (on both parts, we double set here too).
+	(expr_killed_p): Remove mem_set_in_block test.
+	(compute_transp): Remove mem_set_in_block test.
+
 	* ssa-ccp.c: (optimize_unexecutable_edges): Add note about removal
 	of edge, and removal of phi alternative to dump file. 
 	(ssa_ccp_substitute_constants): Add note about register now being

@@ -24,7 +24,6 @@ Boston, MA 02111-1307, USA.  */
    - do rough calc of how many regs are needed in each block, and a rough
      calc of how many regs are available in each class and use that to
      throttle back the code in cases where RTX_COST is minimal.
-   - dead store elimination
    - a store to the same address as a load does not kill the load if the
      source of the store is also the destination of the load.  Handling this
      allows more load motion, particularly out of loops.
@@ -497,16 +496,6 @@ static rtx * modify_mem_list;
 
 /* This array parallels modify_mem_list, but is kept canonicalized.  */
 static rtx * canon_modify_mem_list;
-
-/* For each block, non-zero if memory is set in that block.
-   This is computed during hash table computation and is used by
-   expr_killed_p and compute_transp.
-   ??? Handling of memory is very simple, we don't make any attempt
-   to optimize things (later).
-   ??? This can be computed by compute_sets since the information
-   doesn't change.  */
-static char *mem_set_in_block;
-
 /* Various variables for statistics gathering.  */
 
 /* Memory used in a pass.
@@ -1032,7 +1021,6 @@ alloc_gcse_mem (f)
   /* Allocate vars to track sets of regs, memory per block.  */
   reg_set_in_block = (sbitmap *) sbitmap_vector_alloc (n_basic_blocks,
 						       max_gcse_regno);
-  mem_set_in_block = (char *) gmalloc (n_basic_blocks);
   /* Allocate array to keep a list of insns which modify memory in each
      basic block.  */
   modify_mem_list = (rtx *) gmalloc (n_basic_blocks * sizeof (rtx *));
@@ -1052,7 +1040,6 @@ free_gcse_mem ()
   free (reg_set_bitmap);
 
   sbitmap_vector_free (reg_set_in_block);
-  free (mem_set_in_block);
   /* re-Cache any INSN_LIST nodes we have allocated.  */
   {
     int i;
@@ -1317,15 +1304,6 @@ compute_sets (f)
 static int *reg_first_set;
 static int *reg_last_set;
 
-/* While computing "first/last set" info, this is the CUID of first/last insn
-   to set memory or -1 if not set.  `mem_last_set' is also used when
-   performing GCSE to record whether memory has been set since the beginning
-   of the block.
-
-   Note that handling of memory is very simple, we don't make any attempt
-   to optimize things (later).  */
-static int mem_first_set;
-static int mem_last_set;
 
 /* See whether X, the source of a set, is something we want to consider for
    GCSE.  */
@@ -1408,12 +1386,6 @@ oprs_unchanged_p (x, insn, avail_p)
     case MEM:
       if (load_killed_in_block_p (BLOCK_FOR_INSN (insn), INSN_CUID (insn),
 				  x, avail_p))
-	return 0;
-      if (avail_p && mem_last_set != NEVER_SET
-	  && mem_last_set >= INSN_CUID (insn))
-	return 0;
-      else if (! avail_p && mem_first_set != NEVER_SET
-	       && mem_first_set < INSN_CUID (insn))
 	return 0;
       else
 	return oprs_unchanged_p (XEXP (x, 0), insn, avail_p);
@@ -2410,7 +2382,6 @@ canon_list_insert (dest, unused1, v_insn)
     alloc_INSN_LIST (dest, canon_modify_mem_list[BLOCK_NUM (insn)]);
 }
 
-/* Record memory first/last/block set information for INSN.  */
 /* Record memory modification information for INSN.  We do not actually care
    about the memory location(s) that are set, or even how they are set (consider
    a CALL_INSN).  We merely need to record which insns modify memory.  */
@@ -2419,11 +2390,8 @@ static void
 record_last_mem_set_info (insn)
      rtx insn;
 {
-  if (mem_first_set == NEVER_SET)
-    mem_first_set = INSN_CUID (insn);
-
-  mem_last_set = INSN_CUID (insn);
-  mem_set_in_block[BLOCK_NUM (insn)] = 1;
+  /* load_killed_in_block_p will handle the case of calls clobbering
+     everything. */
   modify_mem_list[BLOCK_NUM (insn)] = 
     alloc_INSN_LIST (insn, modify_mem_list[BLOCK_NUM (insn)]);
 
@@ -2486,12 +2454,9 @@ compute_hash_table (set_p)
 
   /* While we compute the hash table we also compute a bit array of which
      registers are set in which blocks.
-     We also compute which blocks set memory, in the absence of aliasing
-     support [which is TODO].
      ??? This isn't needed during const/copy propagation, but it's cheap to
      compute.  Later.  */
   sbitmap_vector_zero (reg_set_in_block, n_basic_blocks);
-  memset ((char *) mem_set_in_block, 0, n_basic_blocks);
 
   /* re-Cache any INSN_LIST nodes we have allocated.  */
   {
@@ -2519,14 +2484,12 @@ compute_hash_table (set_p)
 
       /* First pass over the instructions records information used to
 	 determine when registers and memory are first and last set.
-	 ??? The mem_set_in_block and hard-reg reg_set_in_block computation
+	 ??? hard-reg reg_set_in_block computation
 	 could be moved to compute_sets since they currently don't change.  */
 
       for (i = 0; i < max_gcse_regno; i++)
 	reg_first_set[i] = reg_last_set[i] = NEVER_SET;
 
-      mem_first_set = NEVER_SET;
-      mem_last_set = NEVER_SET;
 
       for (insn = BLOCK_HEAD (bb);
 	   insn && insn != NEXT_INSN (BLOCK_END (bb));
@@ -2747,7 +2710,6 @@ reset_opr_set_tables ()
   /* Also keep a record of the last instruction to modify memory.
      For now this is very trivial, we only record whether any memory
      location has been modified.  */
-  mem_last_set = 0;
   {
     int i;
 
@@ -2794,8 +2756,6 @@ oprs_not_set_p (x, insn)
       if (load_killed_in_block_p (BLOCK_FOR_INSN (insn), 
 				  INSN_CUID (insn), x, 0))
 	return 0;
-      if (mem_last_set != 0)
-	return 0;
       else
 	return oprs_not_set_p (XEXP (x, 0), insn);
 
@@ -2834,7 +2794,6 @@ static void
 mark_call (insn)
      rtx insn;
 {
-  mem_last_set = INSN_CUID (insn);
   if (! CONST_CALL_P (insn))
     record_last_mem_set_info (insn);
 }
@@ -2858,11 +2817,6 @@ mark_set (pat, insn)
   else if (GET_CODE (dest) == MEM)
     record_last_mem_set_info (insn);
 
-  if (GET_CODE (dest) == REG)
-    SET_BIT (reg_set_bitmap, REGNO (dest));
-  else if (GET_CODE (dest) == MEM)
-    mem_last_set = INSN_CUID (insn);
-
   if (GET_CODE (SET_SRC (pat)) == CALL)
     mark_call (insn);
 }
@@ -2878,10 +2832,6 @@ mark_clobber (pat, insn)
   while (GET_CODE (clob) == SUBREG || GET_CODE (clob) == STRICT_LOW_PART)
     clob = XEXP (clob, 0);
 
-  if (GET_CODE (clob) == REG)
-    SET_BIT (reg_set_bitmap, REGNO (clob));
-  else
-    mem_last_set = INSN_CUID (insn);
   if (GET_CODE (clob) == REG)
     SET_BIT (reg_set_bitmap, REGNO (clob));
   else
@@ -3120,8 +3070,6 @@ expr_killed_p (x, bb)
 
     case MEM:
       if (load_killed_in_block_p (bb, get_max_uid () + 1, x, 0))
-	return 1;
-      if (mem_set_in_block[bb->index])
 	return 1;
       else
 	return expr_killed_p (XEXP (x, 0), bb);
@@ -3824,18 +3772,6 @@ compute_transp (x, indx, bmap, set_p)
 		}
 	      list_entry = XEXP (list_entry, 1);
 	    }
-	}
-      if (set_p)
-	{
-	  for (bb = 0; bb < n_basic_blocks; bb++)
-	    if (mem_set_in_block[bb])
-	      SET_BIT (bmap[bb], indx);
-	}
-      else
-	{
-	  for (bb = 0; bb < n_basic_blocks; bb++)
-	    if (mem_set_in_block[bb])
-	      RESET_BIT (bmap[bb], indx);
 	}
 
       x = XEXP (x, 0);
