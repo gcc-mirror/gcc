@@ -158,7 +158,7 @@ noinst_LTLIBRARIES = libffi_convenience.la
 
 noinst_PROGRAMS = ffitest
 
-ffitest_SOURCES = src/ffitest.c
+ffitest_OBJECTS = ffitest.lo
 ffitest_LDADD = libffi.la
 ffitest_LDFLAGS = -shared-libgcc
 
@@ -307,7 +307,6 @@ libffi_la_LIBADD =
 noinst_PROGRAMS =  ffitest$(EXEEXT)
 PROGRAMS =  $(noinst_PROGRAMS)
 
-ffitest_OBJECTS =  src/ffitest.$(OBJEXT)
 ffitest_DEPENDENCIES =  libffi.la
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -323,8 +322,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(libffi_convenience_la_SOURCES) $(libffi_la_SOURCES) $(ffitest_SOURCES)
-OBJECTS = $(libffi_convenience_la_OBJECTS) $(libffi_la_OBJECTS) $(ffitest_OBJECTS)
+SOURCES = $(libffi_convenience_la_SOURCES) $(libffi_la_SOURCES)
+OBJECTS = $(libffi_convenience_la_OBJECTS) $(libffi_la_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
