@@ -683,7 +683,7 @@ extern int rs6000_default_long_calls;
    a register, in order to work around problems in allocating stack storage
    in inline functions.  */
 
-#define FIRST_PSEUDO_REGISTER 110
+#define FIRST_PSEUDO_REGISTER 111
 
 /* This must be included for pre gcc 3.0 glibc compatibility.  */
 #define PRE_GCC3_DWARF_FRAME_REGISTERS 77
@@ -707,7 +707,7 @@ extern int rs6000_default_long_calls;
    /* AltiVec registers.  */			   \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-   1						   \
+   1, 1						   \
 }
 
 /* 1 for registers not available across function calls.
@@ -726,7 +726,7 @@ extern int rs6000_default_long_calls;
    /* AltiVec registers.  */			   \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-   1						   \
+   1, 1						   \
 }
 
 /* Like `CALL_USED_REGISTERS' except this macro doesn't require that
@@ -744,7 +744,7 @@ extern int rs6000_default_long_calls;
    /* AltiVec registers.  */			   \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-   0						   \
+   0, 0						   \
 }
 
 #define MQ_REGNO     64
@@ -759,6 +759,7 @@ extern int rs6000_default_long_calls;
 #define LAST_ALTIVEC_REGNO	108
 #define TOTAL_ALTIVEC_REGS	(LAST_ALTIVEC_REGNO - FIRST_ALTIVEC_REGNO + 1)
 #define VRSAVE_REGNO		109
+#define VSCR_REGNO		110
 
 /* List the order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.
@@ -781,7 +782,7 @@ extern int rs6000_default_long_calls;
 	mq		(not saved; best to use it if we can)
 	ctr		(not saved; when we have the choice ctr is better)
 	lr		(saved)
-        cr5, r1, r2, ap, xer, vrsave (fixed)
+        cr5, r1, r2, ap, xer, vrsave, vscr (fixed)
 
 	AltiVec registers:
 	v0 - v1         (not saved or used for anything)
@@ -812,7 +813,7 @@ extern int rs6000_default_long_calls;
    79,							\
    96, 95, 94, 93, 92, 91,				\
    108, 107, 106, 105, 104, 103, 102, 101, 100, 99, 98,	\
-   97, 109						\
+   97, 109, 110						\
 }
 
 /* True if register is floating-point.  */
@@ -967,6 +968,8 @@ extern int rs6000_default_long_calls;
       = fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]			\
       = call_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]			\
       = call_really_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;	\
+  if (TARGET_ALTIVEC)                                                   \
+    global_regs[VSCR_REGNO] = 1;                                        \
   if (! TARGET_ALTIVEC)							\
     {									\
       for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)	\
@@ -1051,6 +1054,7 @@ enum reg_class
   FLOAT_REGS,
   ALTIVEC_REGS,
   VRSAVE_REGS,
+  VSCR_REGS,
   NON_SPECIAL_REGS,
   MQ_REGS,
   LINK_REGS,
@@ -1078,6 +1082,7 @@ enum reg_class
   "FLOAT_REGS",								\
   "ALTIVEC_REGS",							\
   "VRSAVE_REGS",							\
+  "VSCR_REGS",								\
   "NON_SPECIAL_REGS",							\
   "MQ_REGS",								\
   "LINK_REGS",								\
@@ -1104,6 +1109,7 @@ enum reg_class
   { 0x00000000, 0xffffffff, 0x00000000, 0x00000000 }, /* FLOAT_REGS */       \
   { 0x00000000, 0x00000000, 0xffffe000, 0x00001fff }, /* ALTIVEC_REGS */     \
   { 0x00000000, 0x00000000, 0x00000000, 0x00002000 }, /* VRSAVE_REGS */	     \
+  { 0x00000000, 0x00000000, 0x00000000, 0x00004000 }, /* VSCR_REGS */	     \
   { 0xffffffff, 0xffffffff, 0x00000008, 0x00000000 }, /* NON_SPECIAL_REGS */ \
   { 0x00000000, 0x00000000, 0x00000001, 0x00000000 }, /* MQ_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000002, 0x00000000 }, /* LINK_REGS */	     \
@@ -1136,6 +1142,7 @@ enum reg_class
   : (REGNO) == ARG_POINTER_REGNUM ? BASE_REGS	\
   : (REGNO) == XER_REGNO ? XER_REGS		\
   : (REGNO) == VRSAVE_REGNO ? VRSAVE_REGS	\
+  : (REGNO) == VSCR_REGNO ? VRSAVE_REGS	\
   : NO_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
@@ -2626,6 +2633,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   &rs6000_reg_names[107][0],	/* v30  */				\
   &rs6000_reg_names[108][0],	/* v31  */				\
   &rs6000_reg_names[109][0],	/* vrsave  */				\
+  &rs6000_reg_names[110][0],	/* vscr  */				\
 }
 
 /* print-rtl can't handle the above REGISTER_NAMES, so define the
@@ -2649,7 +2657,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
      "v8",  "v9", "v10", "v11", "v12", "v13", "v14", "v15",             \
     "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23",             \
     "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31",             \
-    "vrsave"								\
+    "vrsave", "vscr"							\
 }
 
 /* Table of additional register names to use in user input.  */
@@ -2679,7 +2687,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"v20",  97}, {"v21",  98}, {"v22",  99}, {"v23",  100},	\
   {"v24",  101},{"v25",  102},{"v26",  103},{"v27",  104},      \
   {"v28",  105},{"v29",  106},{"v30",  107},{"v31",  108},      \
-  {"vrsave", 109},						\
+  {"vrsave", 109}, {"vscr", 110},				\
   /* no additional names for: mq, lr, ctr, ap */		\
   {"cr0",  68}, {"cr1",  69}, {"cr2",  70}, {"cr3",  71},	\
   {"cr4",  72}, {"cr5",  73}, {"cr6",  74}, {"cr7",  75},	\

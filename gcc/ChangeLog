@@ -1,3 +1,35 @@
+2002-05-15  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.md ("altivec_mtvscr"): Set VSCR register.
+        ("altivec_mfvscr"): Read from VSCR.
+
+        Add vscr sets for the following insns: altivec_vctuxs,
+        altivec_vaddubs, altivec_vaddsbs, altivec_vadduhs,
+        altivec_vaddshs, altivec_vadduws, altivec_vaddsws, altivec_vctsxs,
+        altivec_vmhaddshs, altivec_vmhraddshs, altivec_vmsumuhs,
+        altivec_vmsumshs, altivec_vpkuhss, altivec_vpkshss,
+        altivec_vpkuwss, altivec_vpkswss, altivec_vpkuhus,
+        altivec_vpkshus, altivec_vpkuwus, altivec_vpkswus,
+        altivec_vsububs, altivec_vsubsbs, altivec_vsubuhs,
+        altivec_vsubshs, altivec_vsubuws, altivec_vsubsws,
+        altivec_vsum4ubs, altivec_vsum4sbs, altivec_vsum4shs,
+        altivec_vsum2sws, altivec_vsumsws.
+
+        * config/rs6000/rs6000.h: Add VSCR fixed register.
+        (CALL_REALLY_USED_REGISTERS): Add vscr.
+        (CALL_USED_REGISTERS): Same.
+        (FIXED_REGISTERS): Same.
+        (REG_ALLOC_ORDER): Same.
+        (reg_class): Add VSCR_REGS.
+        (REG_CLASS_NAMES): Same.
+        (REG_CLASS_CONTENTS): Same.
+        (VSCR_REGNO): New.
+        (REGISTER_NAMES): Add vscr.
+        (DEBUG_REGISTER_NAMES): Same.
+        (ADDITIONAL_REGISTER_NAMES): Same.
+        (FIRST_PSEUDO_REGISTER): Increment.
+        (CONDITIONAL_REGISTER_USAGE): Set VSCR as a global register.
+
 2002-05-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* fold-const.c (fold): Fix a typo.
