@@ -853,7 +853,7 @@ trigraph_replace (pfile, src, limit)
   /* Starting with src[1], find two consecutive '?'.  The case of no
      trigraphs is streamlined.  */
   
-  for (; src + 1 < limit; src += 2)
+  for (src++; src + 1 < limit; src += 2)
     {
       if (src[0] != '?')
 	continue;

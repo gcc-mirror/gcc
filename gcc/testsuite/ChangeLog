@@ -1,3 +1,8 @@
+2000-07-05  Neil Booth  <NeilB@earthling.net>
+
+	* gcc.dg/cpp/lexident.c, gcc.dg/cpp/lexnum.c,
+	  gcc.dg/cpp/lexstrng.c: New tests.
+
 2000-07-04  Neil Booth  <NeilB@earthling.net>
 
 	* gcc.dg/cpp/macro1.c: Add more macro expansion tests.
