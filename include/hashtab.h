@@ -128,7 +128,11 @@ extern htab_t	htab_create_alloc	PARAMS ((size_t, htab_hash,
 						 htab_eq, htab_del,
 						 htab_alloc, htab_free));
 
-/* Provided for convenience... */
+/* Backward-compatibility functions.  */
+extern htab_t htab_create PARAMS ((size_t, htab_hash, htab_eq, htab_del));
+extern htab_t htab_try_create PARAMS ((size_t, htab_hash, htab_eq, htab_del));
+
+/* Provided for convenience.  */
 #define htab_create(SIZE, HASH, EQ, DEL) \
   htab_create_alloc (SIZE, HASH, EQ, DEL, xcalloc, free)
 

@@ -191,6 +191,29 @@ htab_create_alloc (size, hash_f, eq_f, del_f, alloc_f, free_f)
   return result;
 }
 
+/* These functions exist solely for backward compatibility.  */
+
+#undef htab_create
+htab_t
+htab_create (size, hash_f, eq_f, del_f)
+     size_t size;
+     htab_hash hash_f;
+     htab_eq eq_f;
+     htab_del del_f;
+{
+  return htab_create_alloc (size, hash_f, eq_f, del_f, xcalloc, free);
+}
+
+htab_t
+htab_try_create (size, hash_f, eq_f, del_f)
+     size_t size;
+     htab_hash hash_f;
+     htab_eq eq_f;
+     htab_del del_f;
+{
+  return htab_create_alloc (size, hash_f, eq_f, del_f, calloc, free);
+}
+
 /* This function frees all memory allocated for given hash table.
    Naturally the hash table must already exist. */
 
