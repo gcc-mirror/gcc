@@ -909,7 +909,7 @@ flow.o : flow.c $(CONFIG_H) $(RTL_H) flags.h insn-config.h \
    basic-block.h regs.h hard-reg-set.h output.h
 combine.o : combine.c $(CONFIG_H) $(RTL_H) gvarargs.h flags.h  \
    insn-config.h insn-flags.h insn-codes.h insn-attr.h regs.h expr.h \
-   basic-block.h recog.h real.h
+   basic-block.h recog.h real.h hard-reg-set.h
 regclass.o : regclass.c $(CONFIG_H) $(RTL_H) hard-reg-set.h flags.h \
    basic-block.h regs.h insn-config.h recog.h reload.h real.h
 local-alloc.o : local-alloc.c $(CONFIG_H) $(RTL_H) flags.h basic-block.h \
