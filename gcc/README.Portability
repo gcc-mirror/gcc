@@ -46,6 +46,10 @@ should be written
 
   free ((PTR) h->value.expansion);
 
+Further, an initial investigation indicates that pointers to functions
+returning void are okay.  Thus the example given by "Calling functions
+through pointers to functions" below appears not to cause a problem.
+
 
 String literals
 ---------------
@@ -87,7 +91,7 @@ needs to be coded in some other way.
 signed keyword
 --------------
 
-The signed keyword did not exist in K+R compilers, it was introduced
+The signed keyword did not exist in K+R compilers; it was introduced
 in ISO C89, so you cannot use it.  In both K+R and standard C,
 unqualified char and bitfields may be signed or unsigned.  There is no
 way to portably declare signed chars or signed bitfields.

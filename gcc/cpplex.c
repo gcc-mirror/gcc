@@ -71,7 +71,8 @@ struct cpp_context
   /* Pushed token to be returned by next call to get_raw_token.  */
   const cpp_token *pushed_token;
 
-  struct macro_args *args;	/* 0 for arguments and object-like macros.  */
+  struct macro_args *args;	/* The arguments for a function-like
+				   macro.  NULL otherwise.  */
   unsigned short posn;		/* Current posn, index into u.  */
   unsigned short count;		/* No. of tokens in u.  */
   unsigned short level;
@@ -762,8 +763,7 @@ cpp_ideq (token, string)
  have been pushed on the top of the stack as a CPP_BACKSLASH.  The
  newline ('\n' or '\r') handler looks at the token at the top of the
  stack to see if it is a CPP_BACKSLASH, and if so discards both.
- Otherwise it pushes the newline (CPP_VSPACE) token as normal.  Hence
- the '=' handler would never see any intervening escaped newlines.
+ Hence the '=' handler would never see any intervening tokens.
 
  To make trigraphs work in this context, as in precedence trigraphs
  are highest and converted before anything else, the '?' handler does
@@ -2023,7 +2023,168 @@ _cpp_spell_operator (type)
 }
 
 
-/* Macro expansion algorithm.  TODO.  */
+/* Macro expansion algorithm.
+
+Macro expansion is implemented by a single-pass algorithm; there are
+no rescan passes involved.  cpp_get_token expands just enough to be
+able to return a token to the caller, a consequence is that when it
+returns the preprocessor can be in a state of mid-expansion.  The
+algorithm does not work by fully expanding a macro invocation into
+some kind of token list, and then returning them one by one.
+
+Our expansion state is recorded in a context stack.  We start out with
+a single context on the stack, let's call it base context.  This
+consists of the token list returned by lex_line that forms the next
+logical line in the source file.
+
+The current level in the context stack is stored in the cur_context
+member of the cpp_reader structure.  The context it references keeps,
+amongst other things, a count of how many tokens form that context and
+our position within those tokens.
+
+Fundamentally, calling cpp_get_token will return the next token from
+the current context.  If we're at the end of the current context, that
+context is popped from the stack first, unless it is the base context,
+in which case the next logical line is lexed from the source file.
+
+However, before returning the token, if it is a CPP_NAME token
+_cpp_get_token checks to see if it is a macro and if it is enabled.
+Each time it encounters a macro name, it calls push_macro_context.
+This function checks that the macro should be expanded (with
+is_macro_enabled), and if so pushes a new macro context on the stack
+which becomes the current context.  It then loops back to read the
+first token of the macro context.
+
+A macro context basically consists of the token list representing the
+macro's replacement list, which was saved in the hash table by
+save_macro_expansion when its #define statement was parsed.  If the
+macro is function-like, it also contains the tokens that form the
+arguments to the macro.  I say more about macro arguments below, but
+for now just saying that each argument is a set of pointers to tokens
+is enough.
+
+When taking tokens from a macro context, we may get a CPP_MACRO_ARG
+token.  This represents an argument passed to the macro, with the
+argument number stored in the token's AUX field.  The argument should
+be substituted, this is achieved by pushing an "argument context".  An
+argument context is just refers to the tokens forming the argument,
+which are obtained directly from the macro context.  The STRINGIFY
+flag on a CPP_MACRO_ARG token indicates that the argument should be
+stringified.
+
+Here's a few simple rules the context stack obeys:-
+
+  1) The lex_line token list is always context zero.
+
+  2) Context 1, if it exists, must be a macro context.
+
+  3) An argument context can only appear above a macro context.
+
+  4) A macro context can appear above the base context, another macro
+  context, or an argument context.
+
+  5) These imply that the minimal level of an argument context is 2.
+
+The only tricky thing left is ensuring that macros are enabled and
+disabled correctly.  The algorithm controls macro expansion by the
+level of the context a token is taken from in the context stack.  If a
+token is taken from a level equal to no_expand_level (a member of
+struct cpp_reader), no expansion is performed.
+
+When popping a context off the stack, if no_expand_level equals the
+level of the popped context, it is reduced by one to match the new
+context level, so that expansion is still disabled.  It does not
+increase if a context is pushed, though.  It starts out life as
+UINT_MAX, which has the effect that initially macro expansion is
+enabled.  I explain how this mechanism works below.
+
+The standard requires:-
+
+  1) Arguments to be fully expanded before substitution.
+
+  2) Stringified arguments to not be expanded, nor the tokens
+  immediately surrounding a ## operator.
+
+  3) Continual rescanning until there are no more macros left to
+  replace.
+
+  4) Once a macro has been expanded in stage 1) or 3), it cannot be
+  expanded again during later rescans.  This prevents infinite
+  recursion.
+
+The first thing to observe is that stage 3) is mostly redundant.
+Since a macro is disabled once it has been expanded, how can a rescan
+find an unexpanded macro name?  There are only two cases where this is
+possible:-
+
+  a) If the macro name results from a token paste operation.
+
+  b) If the macro in question is a function-like macro that hasn't
+  already been expanded because previously there was not the required
+  '(' token immediately following it.  This is only possible when an
+  argument is substituted, and after substitution the last token of
+  the argument can bind with a parenthesis appearing in the tokens
+  following the substitution.  Note that if the '(' appears within the
+  argument, the ')' must too, as expanding macro arguments cannot
+  "suck in" tokens outside the argument.
+
+So we tackle this as follows.  When parsing the macro invocation for
+arguments, we record the tokens forming each argument as a list of
+pointers to those tokens.  We do not expand any tokens that are "raw",
+i.e. directly from the macro invocation, but other tokens that come
+from (nested) argument substitution are fully expanded.
+
+This is achieved by setting the no_expand_level to that of the macro
+invocation.  A CPP_MACRO_ARG token never appears in the list of tokens
+forming an argument, because parse_args (indirectly) calls
+get_raw_token which automatically pushes argument contexts and traces
+into them.  Since these contexts are at a higher level than the
+no_expand_level, they get fully macro expanded.
+
+"Raw" and non-raw tokens are separated in arguments by null pointers,
+with the policy that the initial state of an argument is raw.  If the
+first token is not raw, it should be preceded by a null pointer.  When
+tracing through the tokens of an argument context, each time
+get_raw_token encounters a null pointer, it toggles the flag
+CONTEXT_RAW.
+
+This flag, when set, indicates to is_macro_disabled that we are
+reading raw tokens which should be macro-expanded.  Similarly, if
+clear, is_macro_disabled suppresses re-expansion.
+
+It's probably time for an example.
+
+#define hash #
+#define str(x) #x
+#define xstr(y) str(y hash)
+str(hash)			// "hash"
+xstr(hash)			// "# hash"
+
+In the invocation of str, parse_args turns off macro expansion and so
+parses the argument as <hash>.  This is the only token (pointer)
+passed as the argument to str.  Since <hash> is raw there is no need
+for an initial null pointer.  stringify_arg is called from
+get_raw_token when tracing through the expansion of str, since the
+argument has the STRINGIFY flag set.  stringify_arg turns off
+macro_expansion by setting the no_expand_level to that of the argument
+context.  Thus it gets the token <hash> and stringifies it to "hash"
+correctly.
+
+Similary xstr is passed <hash>.  However, when parse_args is parsing
+the invocation of str() in xstr's expansion, get_raw_token encounters
+a CPP_MACRO_ARG token for y.  Transparently to parse_args, it pushes
+an argument context, and enters the tokens of the argument,
+i.e. <hash>.  This is at a higher context level than parse_args
+disabled, and so is_macro_disabled permits expansion of it and a macro
+context is pushed on top of the argument context.  This contains the
+<#> token, and the end result is that <hash> is macro expanded.
+However, after popping off the argument context, the <hash> of xstr's
+expansion does not get macro expanded because we're back at the
+no_expand_level.  The end result is that the argument passed to str is
+<NULL> <#> <NULL> <hash>.  Note the nulls - policy is we start off
+raw, <#> is not raw, but then <hash> is.
+
+*/
 
 
 /* Free the storage allocated for macro arguments.  */
