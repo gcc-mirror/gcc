@@ -121,7 +121,8 @@ final class MappedByteBufferImpl extends MappedByteBuffer
     if (pos > 0)
       {
 	int count = remaining();
-	shiftDown(0, pos, count);
+	// Call shiftDown method optimized for direct buffers.
+	DirectByteBufferImpl.shiftDown(address, 0, pos, count);
 	position(count);
 	limit(capacity());
       }
