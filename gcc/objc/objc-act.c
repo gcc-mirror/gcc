@@ -84,6 +84,22 @@ char *objc_tree_code_name[] = {
 };
 #undef DEFTREECODE
 
+/* Set up for use of obstacks.  */
+
+#include "obstack.h"
+
+#define obstack_chunk_alloc xmalloc
+#define obstack_chunk_free free
+
+extern int xmalloc ();
+extern void free ();
+
+/* This obstack is used to accumulate the encoding of a data type.  */
+static struct obstack util_obstack;
+/* This points to the beginning of obstack contents,
+   so we can free the whole contents.  */
+char *util_firstobj;
+
 /* for encode_method_def */
 #include "rtl.h"
 
@@ -274,7 +290,6 @@ static int  method_slot = 0;	/* used by start_method_def */
 #define BUFSIZE		512
 
 static char *errbuf;	/* a buffer for error diagnostics */
-static char *utlbuf;	/* a buffer for general utility */
 
 extern char *strcpy (), *strcat ();
 
@@ -1805,10 +1820,10 @@ build_ivar_list_initializer (field_decl, size)
       }
 
       /* set type */
-      bzero (utlbuf, BUFSIZE);
-      encode_field_decl (field_decl, utlbuf, OBJC_ENCODE_DONT_INLINE_DEFS);
+      encode_field_decl (field_decl, OBJC_ENCODE_DONT_INLINE_DEFS);
+      offset = add_objc_string (get_identifier (obstack_finish (&util_obstack)));
+      obstack_free (&util_obstack, util_firstobj);
 
-      offset = add_objc_string (get_identifier (utlbuf));
       initlist = tree_cons (NULLT, build_msg_pool_reference (offset), initlist);
 
       /* set offset */
@@ -2920,17 +2935,19 @@ tree
 build_encode_expr (type)
      tree type;
 {
+  tree result;
+  char *string;
+
   if (!doing_objc_thang)
     fatal ("Objective-C text in C source file");
 
-  if (!utlbuf)
-    utlbuf = (char *)xmalloc (BUFSIZE);
-  bzero (utlbuf, BUFSIZE);
-
-  encode_type (type, utlbuf, OBJC_ENCODE_INLINE_DEFS);
+  encode_type (type, OBJC_ENCODE_INLINE_DEFS);
+  string = obstack_finish (&util_obstack);
 
   /* synthesize a string that represents the encoded struct/union */
-  return my_build_string (strlen (utlbuf) + 1, utlbuf);
+  result = my_build_string (strlen (string) + 1, string);
+  obstack_free (&util_obstack, util_firstobj);
+  return result;
 }
 
 tree
@@ -3620,9 +3637,7 @@ finish_class (class)
 }
 
 /* "Encode" a data type into a string, whichg rows  in util_obstack.
-   ??? What is the FORMAT?  */
-
-#error rms is in middle of changing this part
+   ??? What is the FORMAT?  Someone please document this!  */
 
 /* Encode a pointer type.  */
 
@@ -3671,7 +3686,7 @@ encode_pointer (type, format)
 
   /* NeXT extension */
   obstack_1grow (&util_obstack, '^');
-  encode_type (pointer_to, str, format);
+  encode_type (pointer_to, format);
 }
 
 static void
@@ -3726,7 +3741,7 @@ encode_aggregate (type, format)
 		obstack_1grow (&util_obstack, '}');
 	      }
 	    else /* we have an untagged structure or a typedef */
-	      obstack_grow (&util_obstack, "{?}");
+	      obstack_grow (&util_obstack, "{?}", 3);
 	  }
 	else
 	  {
@@ -3755,7 +3770,7 @@ encode_aggregate (type, format)
 		obstack_1grow (&util_obstack, '>');
 	      }
 	    else /* we have an untagged structure or a typedef */
-	      obstack_grow (&util_obstack, "<?>");
+	      obstack_grow (&util_obstack, "<?>", 3);
 	  }
 	else
 	  {
@@ -3786,12 +3801,13 @@ encode_aggregate (type, format)
  *  hand generating this string (which is tedious).
  */
 static void
-encode_bitfield (width, str, format)
+encode_bitfield (width, format)
      int width;
-     char *str;
      int format;
 {
-  sprintf (str + strlen (str), "b%d", width);
+  char buffer[40];
+  sprintf (buffer, "b%d", width);
+  obstack_grow (&util_obstack, buffer, strlen (buffer));
 }
 
 /*
@@ -3800,9 +3816,8 @@ encode_bitfield (width, str, format)
  *	OBJC_ENCODE_INLINE_DEFS or OBJC_ENCODE_DONT_INLINE_DEFS
  */
 static void
-encode_type (type, str, format)
+encode_type (type, format)
      tree type;
-     char *str;
      int format;
 {
   enum tree_code code = TREE_CODE (type);
@@ -3814,29 +3829,29 @@ encode_type (type, str, format)
 	  /* unsigned integer types */
 
 	  if (TYPE_MODE (type) == QImode) /* 'C' */
-	    strcat (str, "C");
+	    obstack_1grow (&util_obstack, 'C');
 	  else if (TYPE_MODE (type) == HImode) /* 'S' */
-	    strcat (str, "S");
+	    obstack_1grow (&util_obstack, 'S');
 	  else if (TYPE_MODE (type) == SImode)
 	    {
 	      if (type == long_unsigned_type_node)
-		strcat (str, "L"); /* 'L' */
+		obstack_1grow (&util_obstack, 'L'); /* 'L' */
 	      else
-		strcat (str, "I"); /* 'I' */
+		obstack_1grow (&util_obstack, 'I'); /* 'I' */
 	    }
 	}
       else			/* signed integer types */
 	{
 	  if (TYPE_MODE (type) == QImode) /* 'c' */
-	    strcat (str, "c");
+	    obstack_1grow (&util_obstack, 'c');
 	  else if (TYPE_MODE (type) == HImode) /* 's' */
-	    strcat (str, "s");
+	    obstack_1grow (&util_obstack, 's');
 	  else if (TYPE_MODE (type) == SImode) /* 'i' */
 	    {
 	      if (type == long_integer_type_node)
-		strcat (str, "l"); /* 'l' */
+		obstack_1grow (&util_obstack, 'l'); /* 'l' */
 	      else
-		strcat (str, "i"); /* 'i' */
+		obstack_1grow (&util_obstack, 'i'); /* 'i' */
 	    }
 	}
     }
@@ -3845,38 +3860,37 @@ encode_type (type, str, format)
       /* floating point types */
 
       if (TYPE_MODE (type) == SFmode) /* 'f' */
-	strcat (str, "f");
+	obstack_1grow (&util_obstack, 'f');
       else if (TYPE_MODE (type) == DFmode
 	       || TYPE_MODE (type) == TFmode) /* 'd' */
-	strcat (str, "d");
+	obstack_1grow (&util_obstack, 'd');
     }
 
   else if (code == VOID_TYPE)	/* 'v' */
-    strcat (str, "v");
+    obstack_1grow (&util_obstack, 'v');
 
   else if (code == ARRAY_TYPE)
-    encode_array (type, str, format);
+    encode_array (type, format);
 
   else if (code == POINTER_TYPE)
-    encode_pointer (type, str, format);
+    encode_pointer (type, format);
 
   else if (code == RECORD_TYPE || code == UNION_TYPE || code == ENUMERAL_TYPE)
-    encode_aggregate (type, str, format);
+    encode_aggregate (type, format);
 
   else if (code == FUNCTION_TYPE) /* '?' */
-    strcat (str, "?");
+    obstack_1grow (&util_obstack, '?');
 }
 
 static void
-encode_field_decl (field_decl, str, format)
+encode_field_decl (field_decl, format)
      tree field_decl;
-     char *str;
      int format;
 {
   if (DECL_BIT_FIELD (field_decl))
-    encode_bitfield (DECL_FIELD_SIZE (field_decl), str, format);
+    encode_bitfield (DECL_FIELD_SIZE (field_decl), format);
   else
-    encode_type (TREE_TYPE (field_decl), str, format);
+    encode_type (TREE_TYPE (field_decl), format);
 }
 
 static tree
@@ -4314,11 +4328,11 @@ encode_method_def (func_decl)
 {
   tree parms;
   int stack_size = 0;
-
-  bzero (utlbuf, BUFSIZE);
+  char buffer[40];
+  tree result;
 
   /* return type */
-  encode_type (TREE_TYPE (TREE_TYPE (func_decl)), utlbuf, 
+  encode_type (TREE_TYPE (TREE_TYPE (func_decl)),
 	       OBJC_ENCODE_DONT_INLINE_DEFS);
   /* stack size */
   for (parms = DECL_ARGUMENTS (func_decl); parms;
@@ -4326,7 +4340,8 @@ encode_method_def (func_decl)
     stack_size += TREE_INT_CST_LOW (TYPE_SIZE (DECL_ARG_TYPE (parms)))
 		  / BITS_PER_UNIT;
 
-  sprintf (&utlbuf[strlen (utlbuf)], "%d", stack_size);
+  sprintf (buffer, "%d", stack_size);
+  obstack_grow (&util_obstack, buffer, strlen (buffer));
 
   /* argument types */
   for (parms = DECL_ARGUMENTS (func_decl); parms;
@@ -4335,7 +4350,7 @@ encode_method_def (func_decl)
       int offset_in_bytes;
   
       /* type */ 
-      encode_type (TREE_TYPE (parms), utlbuf, OBJC_ENCODE_DONT_INLINE_DEFS);
+      encode_type (TREE_TYPE (parms), OBJC_ENCODE_DONT_INLINE_DEFS);
   
       /* compute offset */
       if (GET_CODE (DECL_INCOMING_RTL (parms)) == MEM)
@@ -4369,10 +4384,13 @@ encode_method_def (func_decl)
       
       /* The "+ 4" is a total hack to account for the return pc and
          saved fp on the 68k.  We should redefine this format! */
-      sprintf (&utlbuf[strlen (utlbuf)], "%d", offset_in_bytes + 8);
+      sprintf (buffer, "%d", offset_in_bytes + 8);
+      obstack_grow (&util_obstack, buffer, strlen (buffer));
     }
 
-  return get_identifier (utlbuf);
+  result = get_identifier (obstack_finish (&util_obstack));
+  obstack_free (&util_obstack, util_firstobj);
+  return result;
 }
 
 void
@@ -4859,6 +4877,9 @@ init_objc ()
 {
   /* Add the special tree codes of Objective C to the tables.  */
 
+  gcc_obstack_init (&util_obstack);
+  util_firstobj = (char *) obstack_finish (&util_obstack);
+
   tree_code_type
     = (char **) realloc (tree_code_type,
 			 sizeof (char *) * LAST_OBJC_TREE_CODE);
@@ -4882,11 +4903,10 @@ init_objc ()
 	  * sizeof (char *)));
 
   errbuf = (char *)xmalloc (BUFSIZE);
-  utlbuf = (char *)xmalloc (BUFSIZE);
   hash_init ();
   synth_module_prologue ();
 }
-
+
 void
 finish_objc ()
 {
@@ -4949,70 +4969,11 @@ finish_objc ()
      linked environment
      */
   for (chain = cls_ref_chain; chain; chain = TREE_CHAIN (chain))
-    {
-      tree decl;
-
-#if 0 /* Grossly unportable.  */
-      sprintf (utlbuf, ".reference .objc_class_name_%s",
-	       IDENTIFIER_POINTER (TREE_VALUE (chain)));
-      assemble_asm (my_build_string (strlen (utlbuf) + 1, utlbuf));
-#else
-      sprintf (utlbuf, ".objc_class_name_%s",
-	       IDENTIFIER_POINTER (TREE_VALUE (chain)));
-#endif
-      /* Make a decl for this name, so we can use its address in a tree.  */
-      decl = build_decl (VAR_DECL, get_identifier (utlbuf), char_type_node);
-      TREE_EXTERNAL (decl) = 1;
-      TREE_PUBLIC (decl) = 1;
-      
-      pushdecl (decl);
-      rest_of_decl_compilation (decl, 0, 0, 0);
-
-      /* Make following constant read-only (why not)?  */
-      text_section ();
-
-      /* Output a constant to reference this address.  */
-      output_constant (build1 (ADDR_EXPR, string_type_node, decl),
-		       int_size_in_bytes (string_type_node));
-    }
+    handle_class_ref (chain);
 
   for (impent = imp_list; impent; impent = impent->next)
-    {
-      implementation_context = impent->imp_context;
-      implementation_template = impent->imp_template;
+    handle_impent (impent);
 
-      if (TREE_CODE (impent->imp_context) == IMPLEMENTATION_TYPE)
-	{
-#if 0 /* Grossly unportable.
-			    People should know better than to assume
-			    such things about assembler syntax!  */
-	  sprintf (utlbuf, ".objc_class_name_%s=0",
-		   IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context)));
-	  assemble_asm (my_build_string (strlen (utlbuf) + 1, utlbuf));
-#endif
-	  sprintf (utlbuf, ".objc_class_name_%s",
-		   IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context)));
-	  assemble_global (utlbuf);
-	  assemble_label (utlbuf);
-	}
-      else if (TREE_CODE (impent->imp_context) == CATEGORY_TYPE)
-	{
-	  /* Do the same for categories.  Even though no references to these
-	      symbols are generated automatically by the compiler, it gives
-	      you a handle to pull them into an archive by hand. */
-#if 0 /* Grossly unportable.  */
-	  sprintf (utlbuf, ".objc_category_name_%s_%s=0",
-		   IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context)),
-		   IDENTIFIER_POINTER (CLASS_SUPER_NAME (impent->imp_context)));
-	  assemble_asm (my_build_string (strlen (utlbuf) + 1, utlbuf));
-#endif
-	  sprintf (utlbuf, ".objc_category_name_%s_%s",
-		   IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context)),
-		   IDENTIFIER_POINTER (CLASS_SUPER_NAME (impent->imp_context)));
-	  assemble_global (utlbuf);
-	  assemble_label (utlbuf);
-	}
-    }
 #if 0 /* If GAS has such a bug, let's fix it.  */
   /*** this fixes a gross bug in the assembler...it `expects' #APP to have
    *** a matching #NO_APP, or it crashes (sometimes). app_disable () will
@@ -5079,7 +5040,69 @@ finish_objc ()
 	}
     }
 }
+
+/* Subroutines of finish_objc.  */
 
+handle_class_ref (chain)
+     tree chain;
+{
+  tree decl;
+  char *string
+    = (char *) alloca (strlen (IDENTIFIER_POINTER (TREE_VALUE (chain))) + 30);
+
+  sprintf (string, ".objc_class_name_%s",
+	   IDENTIFIER_POINTER (TREE_VALUE (chain)));
+
+  /* Make a decl for this name, so we can use its address in a tree.  */
+  decl = build_decl (VAR_DECL, get_identifier (string), char_type_node);
+  TREE_EXTERNAL (decl) = 1;
+  TREE_PUBLIC (decl) = 1;
+
+  pushdecl (decl);
+  rest_of_decl_compilation (decl, 0, 0, 0);
+
+  /* Make following constant read-only (why not)?  */
+  text_section ();
+
+  /* Output a constant to reference this address.  */
+  output_constant (build1 (ADDR_EXPR, string_type_node, decl),
+		   int_size_in_bytes (string_type_node));
+}
+
+handle_impent (impent)
+     struct imp_entry *impent;
+{
+  implementation_context = impent->imp_context;
+  implementation_template = impent->imp_template;
+
+  if (TREE_CODE (impent->imp_context) == IMPLEMENTATION_TYPE)
+    {
+      char *string
+	= (char *) alloca (strlen (IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context))) + 30);
+
+      sprintf (string, ".objc_class_name_%s",
+	       IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context)));
+      assemble_global (string);
+      assemble_label (string);
+    }
+  else if (TREE_CODE (impent->imp_context) == CATEGORY_TYPE)
+    {
+      char *string
+	= (char *) alloca (strlen (IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context)))
+			   + strlen (IDENTIFIER_POINTER (CLASS_SUPER_NAME (impent->imp_context)))
+			   + 30);
+
+      /* Do the same for categories.  Even though no references to these
+	  symbols are generated automatically by the compiler, it gives
+	  you a handle to pull them into an archive by hand. */
+      sprintf (string, ".objc_category_name_%s_%s",
+	       IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context)),
+	       IDENTIFIER_POINTER (CLASS_SUPER_NAME (impent->imp_context)));
+      assemble_global (string);
+      assemble_label (string);
+    }
+}
+
 #ifdef DEBUG
 
 static void
