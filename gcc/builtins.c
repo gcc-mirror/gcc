@@ -639,7 +639,7 @@ void
 expand_builtin_longjmp (buf_addr, value)
      rtx buf_addr, value;
 {
-  rtx fp, lab, stack, insn;
+  rtx fp, lab, stack, insn, last;
   enum machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
 
   if (setjmp_alias_set == -1)
@@ -662,6 +662,7 @@ expand_builtin_longjmp (buf_addr, value)
 
   current_function_calls_longjmp = 1;
 
+  last = get_last_insn ();
 #ifdef HAVE_builtin_longjmp
   if (HAVE_builtin_longjmp)
     emit_insn (gen_builtin_longjmp (buf_addr));
@@ -707,6 +708,8 @@ expand_builtin_longjmp (buf_addr, value)
      internal exception handling use only.  */
   for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
     {
+      if (insn == last)
+	abort ();
       if (GET_CODE (insn) == JUMP_INSN)
 	{
 	  REG_NOTES (insn) = alloc_EXPR_LIST (REG_NON_LOCAL_GOTO, const0_rtx,
