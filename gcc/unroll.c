@@ -728,7 +728,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
     int copy_start_luid = INSN_LUID (copy_start);
     int copy_end_luid = INSN_LUID (copy_end);
 
-    for (j = 0; j < maxregnum; ++j)
+    for (j = FIRST_PSEUDO_REGISTER; j < maxregnum; ++j)
       {
 	int first_uid = regno_first_uid[j];
 	int last_uid = regno_last_uid[j];
@@ -952,7 +952,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 		if (local_label[j])
 		  map->label_map[j] = gen_label_rtx ();
 
-	      for (j = 0; j < maxregnum; j++)
+	      for (j = FIRST_PSEUDO_REGISTER; j < maxregnum; j++)
 		if (local_regno[j])
 		  map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
 
@@ -1093,7 +1093,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	if (local_label[j])
 	  map->label_map[j] = gen_label_rtx ();
 
-      for (j = 0; j < maxregnum; j++)
+      for (j = FIRST_PSEUDO_REGISTER; j < maxregnum; j++)
 	if (local_regno[j])
 	  map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
 
