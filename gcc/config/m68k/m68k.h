@@ -970,8 +970,8 @@ __transfer_from_trampoline ()					\
 {								\
   register char *a0 asm ("%a0");				\
   asm ("___trampoline:");					\
-  asm volatile ("mov%.l %0,%@" : : "m" (a0[22]));		\
-  asm volatile ("mov%.l %1,%0" : "=a" (a0) : "m" (a0[18]));	\
+  asm volatile ("move%.l %0,%@" : : "m" (a0[22]));		\
+  asm volatile ("move%.l %1,%0" : "=a" (a0) : "m" (a0[18]));	\
   asm ("rts":);							\
 }
 
@@ -1472,13 +1472,13 @@ __transfer_from_trampoline ()					\
    `assemble_name' uses this.  */
 
 #define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  asm_fprintf (FILE, "%U%s", NAME)
+  asm_fprintf (FILE, "%0U%s", NAME)
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
 
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  asm_fprintf (FILE, "%L%s%d:\n", PREFIX, NUM)
+  asm_fprintf (FILE, "%0L%s%d:\n", PREFIX, NUM)
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
