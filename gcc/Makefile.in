@@ -442,7 +442,8 @@ all.indirect: $(ALL)
 INTERNAL_CFLAGS = $(CROSS) -DIN_GCC
 
 # This is the variable actually used when we compile.
-ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS)
+ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS) \
+	@DEFS@
 
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
@@ -660,6 +661,14 @@ Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
 
 $(srcdir)/configure: $(srcdir)/configure.in
 	cd $(srcdir); autoconf
+
+config.in: stamp-h.in
+stamp-h.in: configure.in acconfig.h
+        cd $(srcdir) && autoheader
+	touch stamp-h.in
+config.h: stamp-h ; @true
+stamp-h: config.in config.status
+	CONFIG_HEADERS=config.h:config.in $(SHELL) config.status
 
 all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
@@ -2030,7 +2039,7 @@ clean: mostlyclean bytecode.clean lang.clean
 # Delete all files that users would normally create
 # while building and installing GCC.
 distclean: clean bytecode.distclean lang.distclean
-	-rm -f tm.h config.h tconfig.h hconfig.h md
+	-rm -f tm.h config.h config2.h tconfig.h hconfig.h md stamp-h
 	-rm -f config.status config.run config.cache config.bak
 	-rm -f Make-lang Make-hooks
 	-rm -f Makefile specs.h options.h *.oaux
