@@ -1,3 +1,8 @@
+2001-12-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (legitimize_pic_address): Handle LABEL_REFs in substantially
+	the same way as we handle SYMBOL_REFS.
+
 Thu Dec 13 07:47:24 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* loop.c (remove_constant_addition): Fix prototype and whitespace.
