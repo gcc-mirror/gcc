@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.awt.peer;
 
 import java.awt.*;
+import java.awt.event.PaintEvent;
 import java.awt.image.*;
 
 public interface ComponentPeer
@@ -57,23 +58,38 @@ public interface ComponentPeer
   public Dimension getMinimumSize();
   public Dimension getPreferredSize();
   public Toolkit getToolkit();
-  // The JCL says that handleEvent returns boolean.  However, we've
-  // experimentally determined that it in fact actually returns void.
   public void handleEvent(AWTEvent e);
   public void hide();
+
+  /**
+   * Part of the earlier 1.1 API, replaced by isFocusable().
+   */
   public boolean isFocusTraversable();
+  public boolean isFocusable();
   public Dimension minimumSize();
   public Dimension preferredSize();
   public void paint(Graphics graphics);
   public boolean prepareImage(Image img, int width, int height,
-				       ImageObserver ob);
+			      ImageObserver ob);
   public void print(Graphics graphics);
   public void repaint(long tm, int x, int y, int width, int height);
+
+  /**
+   * Part of the earlier 1.1 API, apparently replaced by argument 
+   * form of the same method.
+   */
   public void requestFocus();
+  public boolean requestFocus(java.awt.Component source, boolean bool1, boolean bool2, long x);
+
   public void reshape(int x, int y, int width, int height);
   public void setBackground(Color color);
   public void setBounds(int x, int y, int width, int height);
+
+  /**
+   * Part of the earlier 1.1 API, apparently no longer needed.
+   */
   public void setCursor(Cursor cursor);
+
   public void setEnabled(boolean enabled);
   public void setFont(Font font);
   public void setForeground(Color color);
@@ -84,7 +100,23 @@ public interface ComponentPeer
    * Get the graphics configuration of the component. The color model
    * of the component can be derived from the configuration.
    */
-  GraphicsConfiguration getGraphicsConfiguration();
+  public GraphicsConfiguration getGraphicsConfiguration();
 
+  /**
+   * Part of an older API, no longer needed.
+   */
   public void setEventMask (long mask);
+
+  // Methods below are introduced since 1.1
+  public boolean isObscured();
+  public boolean canDetermineObscurity();
+  public void coalescePaintEvent(PaintEvent e);
+  public void updateCursorImmediately();
+  public VolatileImage createVolatileImage(int width, int height);
+  public boolean handlesWheelScrolling();
+  public void createBuffers(int x, java.awt.BufferCapabilities capabilities) throws java.awt.AWTException;
+  public java.awt.Image getBackBuffer();
+  public void flip(java.awt.BufferCapabilities.FlipContents contents);
+  public void destroyBuffers();
+  
 }

@@ -42,10 +42,8 @@ import java.io.FilenameFilter;
 
 public interface FileDialogPeer extends DialogPeer
 {
-
-public abstract void setFile(String file);
-public abstract void setDirectory(String dir);
-public abstract void setFilenameFilter(FilenameFilter ff);
-
+  public void setFile(String file);
+  public void setDirectory(String dir);
+  public void setFilenameFilter(FilenameFilter ff);
 } // interface FileDialogPeer 
 

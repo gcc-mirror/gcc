@@ -122,4 +122,8 @@ public class GtkContainerPeer extends GtkComponentPeer
 	break;
       }
   }
+
+  public void beginLayout () { }
+  public void endLayout () { }
+  public boolean isPaintPending () { return false; }
 }

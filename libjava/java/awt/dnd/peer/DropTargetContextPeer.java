@@ -37,9 +37,31 @@ exception statement from your version. */
 
 package java.awt.dnd.peer;
 
+import java.awt.dnd.DropTarget;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.InvalidDnDOperationException;
+
+
 /**
+ * Used to control state of recipient protocol from the 
+ * <code>DropTargetListener</code>.  Occurs when a <code>Component</code>
+ * with an associated <code>DropTarget</code> and visible geometry is first 
+ * intersected by a logical cursor.
+ * 
  * @author Michael Koch <konqueror@gmx.de>
  */
 public interface DropTargetContextPeer
 {
-} // interface DropTargetContextPeer
+  public void setTargetActions(int actions);
+  public int getTargetActions();
+  public DropTarget getDropTarget();
+  public DataFlavor[] getTransferDataFlavors();
+  public Transferable getTransferable() throws InvalidDnDOperationException;
+  public boolean isTransferableJVMLocal();
+  public void acceptDrag(int dragAction);
+  public void rejectDrag();
+  public void acceptDrop(int dropAction);
+  public void rejectDrop();
+  public void dropComplete(boolean success);
+}

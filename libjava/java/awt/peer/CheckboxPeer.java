@@ -40,10 +40,8 @@ package java.awt.peer;
 
 public interface CheckboxPeer extends ComponentPeer
 {
-
-public abstract void setCheckboxGroup(java.awt.CheckboxGroup group);
-public abstract void setLabel(String label);
-public abstract void setState(boolean state);
-
+  public void setCheckboxGroup(java.awt.CheckboxGroup group);
+  public void setLabel(String label);
+  public void setState(boolean state);
 } // interface CheckboxPeer
 

@@ -1,5 +1,5 @@
-/* ListPeer.java -- Interface for list box peer
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* DropTargetPeer.java -- interface for drag-and-drop peers
+   Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,28 +35,14 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+package java.awt.dnd.peer;
 
-package java.awt.peer;
+import java.awt.dnd.DropTarget;
 
-import java.awt.Dimension;
-
-public interface ListPeer extends ComponentPeer
+/**
+ */
+public interface DropTargetPeer
 {
-  
-  public void add(String item, int index);
-  public void addItem(String item, int index);
-  public void clear();
-  public void delItems(int start_index, int end_index);
-  public void deselect(int index);
-  public int[] getSelectedIndexes();
-  public void makeVisible(int index);
-  public Dimension minimumSize(int s);
-  public Dimension preferredSize(int s);
-  public void removeAll();
-  public void select(int index);
-  public void setMultipleMode(boolean multi);
-  public void setMultipleSelections(boolean multi);
-  public Dimension getPreferredSize(int s);
-  public Dimension getMinimumSize(int s);
-} // interface ListPeer 
-
+  public void addDropTarget (DropTarget target);
+  public void removeDropTarget (DropTarget target);
+} // interface DropTargetContextPeer

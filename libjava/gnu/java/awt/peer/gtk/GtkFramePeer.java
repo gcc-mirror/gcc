@@ -127,6 +127,21 @@ public class GtkFramePeer extends GtkWindowPeer
 						y + insets.top, 
 						width, height)));
   }
+
+  public int getState ()
+  {
+    return 0;
+  }
+
+  public void setState (int state)
+  {
+
+  }
+
+  public void setMaximizedBounds (Rectangle r)
+  {
+
+  }
 }
 
 

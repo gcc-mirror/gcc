@@ -41,9 +41,12 @@ import java.awt.Insets;
 
 public interface ContainerPeer extends ComponentPeer
 {
-  public abstract Insets insets();
-  public abstract Insets getInsets();
-  public abstract void beginValidate();
-  public abstract void endValidate();
+  public Insets insets();
+  public Insets getInsets();
+  public void beginValidate();
+  public void endValidate();
+  public void beginLayout();
+  public void endLayout();
+  public boolean isPaintPending();
 } // interface ContainerPeer 
 
