@@ -1,3 +1,8 @@
+2002-02-18  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (do_type_instantiation): Don't pedwarn if in_system_header.
+	(do_decl_instantiation): Likewise.
+
 2002-02-17  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR c++/5685
