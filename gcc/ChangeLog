@@ -1,3 +1,10 @@
+2001-02-10  Anthony Green  <green@redhat.com>
+
+	* cpp.texi (Standard Predefined): Add documentation for
+	__OPTIMIZE_SIZE__.
+
+	* c-common.c (combine_strings): Improve warning message.
+
 2001-02-10  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/rs6000/sysv4.h (LINK_TARGET_SPEC): Use two dashes for
