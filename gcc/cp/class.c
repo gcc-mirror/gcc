@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "ggc.h"
 #include "lex.h"
+#include "target.h"
 
 #include "obstack.h"
 #define obstack_chunk_alloc xmalloc
@@ -3106,7 +3107,8 @@ check_bitfield_decl (field)
       DECL_SIZE (field) = convert (bitsizetype, w);
       DECL_BIT_FIELD (field) = 1;
 
-      if (integer_zerop (w))
+      if (integer_zerop (w)
+	  && ! (* targetm.ms_bitfield_layout_p) (DECL_FIELD_CONTEXT (field)))
 	{
 #ifdef EMPTY_FIELD_BOUNDARY
 	  DECL_ALIGN (field) = MAX (DECL_ALIGN (field), 
