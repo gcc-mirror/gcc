@@ -1719,8 +1719,8 @@ static void cp_parser_check_for_definition_in_return_type
   (tree, int);
 static void cp_parser_check_for_invalid_template_id
   (cp_parser *, tree);
-static tree cp_parser_non_integral_constant_expression
-  (const char *);
+static bool cp_parser_non_integral_constant_expression
+  (cp_parser *, const char *);
 static bool cp_parser_diagnose_invalid_type_name
   (cp_parser *);
 static int cp_parser_skip_to_closing_parenthesis
@@ -1918,14 +1918,24 @@ cp_parser_check_for_invalid_template_id (cp_parser* parser,
     }
 }
 
-/* Issue an error message about the fact that THING appeared in a
-   constant-expression.  Returns ERROR_MARK_NODE.  */
+/* If parsing an integral constant-expression, issue an error message
+   about the fact that THING appeared and return true.  Otherwise,
+   return false, marking the current expression as non-constant.  */
 
-static tree
-cp_parser_non_integral_constant_expression (const char *thing)
+static bool
+cp_parser_non_integral_constant_expression (cp_parser  *parser,
+					    const char *thing)
 {
-  error ("%s cannot appear in a constant-expression", thing);
-  return error_mark_node;
+  if (parser->integral_constant_expression_p)
+    {
+      if (!parser->allow_non_integral_constant_expression_p)
+	{
+	  error ("%s cannot appear in a constant-expression", thing);
+	  return true;
+	}
+      parser->non_integral_constant_expression_p = true;
+    }
+  return false;
 }
 
 /* Check for a common situation where a type-name should be present,
@@ -2468,12 +2478,9 @@ cp_parser_primary_expression (cp_parser *parser,
 	      return error_mark_node;
 	    }
 	  /* Pointers cannot appear in constant-expressions.  */
-	  if (parser->integral_constant_expression_p)
-	    {
-	      if (!parser->allow_non_integral_constant_expression_p)
-		return cp_parser_non_integral_constant_expression ("`this'");
-	      parser->non_integral_constant_expression_p = true;
-	    }
+	  if (cp_parser_non_integral_constant_expression (parser,
+							  "`this'"))
+	    return error_mark_node;
 	  return finish_this_expr ();
 
 	  /* The `operator' keyword can be the beginning of an
@@ -2515,12 +2522,9 @@ cp_parser_primary_expression (cp_parser *parser,
 	    cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
 	    /* Using `va_arg' in a constant-expression is not
 	       allowed.  */
-	    if (parser->integral_constant_expression_p)
-	      {
-		if (!parser->allow_non_integral_constant_expression_p)
-		  return cp_parser_non_integral_constant_expression ("`va_arg'");
-		parser->non_integral_constant_expression_p = true;
-	      }
+	    if (cp_parser_non_integral_constant_expression (parser,
+							    "`va_arg'"))
+	      return error_mark_node;
 	    return build_x_va_arg (expression, type);
 	  }
 
@@ -3444,14 +3448,12 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    && !INTEGRAL_OR_ENUMERATION_TYPE_P (type)
 	    /* A cast to pointer or reference type is allowed in the
 	       implementation of "offsetof".  */
-	    && !(parser->in_offsetof_p && POINTER_TYPE_P (type)))
-	  {
-	    if (!parser->allow_non_integral_constant_expression_p)
-	      return (cp_parser_non_integral_constant_expression 
-		      ("a cast to a type other than an integral or "
-		       "enumeration type"));
-	    parser->non_integral_constant_expression_p = true;
-	  }
+	    && !(parser->in_offsetof_p && POINTER_TYPE_P (type))
+	    && (cp_parser_non_integral_constant_expression 
+		(parser,
+		 "a cast to a type other than an integral or "
+		 "enumeration type")))
+	  return error_mark_node;
 
 	switch (keyword)
 	  {
@@ -3697,13 +3699,9 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    idk = CP_ID_KIND_NONE;
 	    /* Array references are not permitted in
 	       constant-expressions.  */
-	    if (parser->integral_constant_expression_p)
-	      {
-		if (!parser->allow_non_integral_constant_expression_p)
-		  postfix_expression 
-		    = cp_parser_non_integral_constant_expression ("an array reference");
-		parser->non_integral_constant_expression_p = true;
-	      }
+	    if (cp_parser_non_integral_constant_expression 
+		(parser, "an array reference"))
+	      postfix_expression = error_mark_node;
 	  }
 	  break;
 
@@ -3722,15 +3720,11 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    
 	    /* Function calls are not permitted in
 	       constant-expressions.  */
-	    if (parser->integral_constant_expression_p)
+	    if (cp_parser_non_integral_constant_expression (parser,
+							    "a function call"))
 	      {
-		if (!parser->allow_non_integral_constant_expression_p)
-		  {
-		    postfix_expression 
-		      = cp_parser_non_integral_constant_expression ("a function call");
-		    break;
-		  }
-		parser->non_integral_constant_expression_p = true;
+		postfix_expression = error_mark_node;
+		break;
 	      }
 
 	    koenig_p = false;
@@ -3925,18 +3919,14 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	       operator.  */
 	    parser->context->object_type = NULL_TREE;
 	    /* These operators may not appear in constant-expressions.  */
-	    if (parser->integral_constant_expression_p
-		/* The "->" operator is allowed in the implementation
+	    if (/* The "->" operator is allowed in the implementation
 		   of "offsetof".  The "." operator may appear in the
 		   name of the member.  */
-		&& !parser->in_offsetof_p)
-	      {
-		if (!parser->allow_non_integral_constant_expression_p)
-		  postfix_expression 
-		    = (cp_parser_non_integral_constant_expression 
-		       (token_type == CPP_DEREF ? "'->'" : "`.'"));
-		parser->non_integral_constant_expression_p = true;
-	      }
+		!parser->in_offsetof_p
+		&& (cp_parser_non_integral_constant_expression 
+		    (parser,
+		     token_type == CPP_DEREF ? "'->'" : "`.'")))
+	      postfix_expression = error_mark_node;
 	  }
 	  break;
 
@@ -3949,13 +3939,9 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    = finish_increment_expr (postfix_expression, 
 				     POSTINCREMENT_EXPR);
 	  /* Increments may not appear in constant-expressions.  */
-	  if (parser->integral_constant_expression_p)
-	    {
-	      if (!parser->allow_non_integral_constant_expression_p)
-		postfix_expression 
-		  = cp_parser_non_integral_constant_expression ("an increment");
-	      parser->non_integral_constant_expression_p = true;
-	    }
+	  if (cp_parser_non_integral_constant_expression (parser,
+							  "an increment"))
+	    postfix_expression = error_mark_node;
 	  idk = CP_ID_KIND_NONE;
 	  break;
 
@@ -3968,13 +3954,9 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    = finish_increment_expr (postfix_expression, 
 				     POSTDECREMENT_EXPR);
 	  /* Decrements may not appear in constant-expressions.  */
-	  if (parser->integral_constant_expression_p)
-	    {
-	      if (!parser->allow_non_integral_constant_expression_p)
-		postfix_expression 
-		  = cp_parser_non_integral_constant_expression ("a decrement");
-	      parser->non_integral_constant_expression_p = true;
-	    }
+	  if (cp_parser_non_integral_constant_expression (parser,
+							  "a decrement"))
+	    postfix_expression = error_mark_node;
 	  idk = CP_ID_KIND_NONE;
 	  break;
 
@@ -4373,12 +4355,10 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p)
 	  abort ();
 	}
 
-      if (non_constant_p && parser->integral_constant_expression_p)
-	{
-	  if (!parser->allow_non_integral_constant_expression_p)
-	    return cp_parser_non_integral_constant_expression (non_constant_p);
-	  parser->non_integral_constant_expression_p = true;
-	}
+      if (non_constant_p 
+	  && cp_parser_non_integral_constant_expression (parser,
+							 non_constant_p))
+	expression = error_mark_node;
 
       return expression;
     }
@@ -4478,6 +4458,11 @@ cp_parser_new_expression (cp_parser* parser)
     initializer = cp_parser_new_initializer (parser);
   else
     initializer = NULL_TREE;
+
+  /* A new-expression may not appear in an integral constant
+     expression.  */
+  if (cp_parser_non_integral_constant_expression (parser, "`new'"))
+    return error_mark_node;
 
   /* Create a representation of the new-expression.  */
   return build_new (placement, type, initializer, global_scope_p);
@@ -4707,6 +4692,11 @@ cp_parser_delete_expression (cp_parser* parser)
   /* Parse the cast-expression.  */
   expression = cp_parser_simple_cast_expression (parser);
 
+  /* A delete-expression may not appear in an integral constant
+     expression.  */
+  if (cp_parser_non_integral_constant_expression (parser, "`delete'"))
+    return error_mark_node;
+
   return delete_sanity (expression, NULL_TREE, array_p, global_scope_p);
 }
 
@@ -4804,14 +4794,13 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p)
 	     can be used in constant-expressions.  */
 	  if (parser->integral_constant_expression_p
 	      && !dependent_type_p (type)
-	      && !INTEGRAL_OR_ENUMERATION_TYPE_P (type))
-	    {
-	      if (!parser->allow_non_integral_constant_expression_p)
-		return (cp_parser_non_integral_constant_expression 
-			("a casts to a type other than an integral or "
-			 "enumeration type"));
-	      parser->non_integral_constant_expression_p = true;
-	    }
+	      && !INTEGRAL_OR_ENUMERATION_TYPE_P (type)
+	      && (cp_parser_non_integral_constant_expression 
+		  (parser,
+		   "a casts to a type other than an integral or "
+		   "enumeration type")))
+	    return error_mark_node;
+
 	  /* Perform the cast.  */
 	  expr = build_c_cast (type, expr);
 	  return expr;
@@ -5164,12 +5153,9 @@ cp_parser_assignment_expression (cp_parser* parser)
 	      rhs = cp_parser_assignment_expression (parser);
 	      /* An assignment may not appear in a
 		 constant-expression.  */
-	      if (parser->integral_constant_expression_p)
-		{
-		  if (!parser->allow_non_integral_constant_expression_p)
-		    return cp_parser_non_integral_constant_expression ("an assignment");
-		  parser->non_integral_constant_expression_p = true;
-		}
+	      if (cp_parser_non_integral_constant_expression (parser,
+							      "an assignment"))
+		return error_mark_node;
 	      /* Build the assignment expression.  */
 	      expr = build_x_modify_expr (expr, 
 					  assignment_operator, 
@@ -5307,13 +5293,9 @@ cp_parser_expression (cp_parser* parser)
       /* Consume the `,'.  */
       cp_lexer_consume_token (parser->lexer);
       /* A comma operator cannot appear in a constant-expression.  */
-      if (parser->integral_constant_expression_p)
-	{
-	  if (!parser->allow_non_integral_constant_expression_p)
-	    expression 
-	      = cp_parser_non_integral_constant_expression ("a comma operator");
-	  parser->non_integral_constant_expression_p = true;
-	}
+      if (cp_parser_non_integral_constant_expression (parser,
+						      "a comma operator"))
+	expression = error_mark_node;
     }
 
   return expression;

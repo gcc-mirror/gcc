@@ -1,3 +1,8 @@
+2004-03-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14550
+	* g++.dg/parse/template14.C: New test.
+
 2004-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/14533

@@ -1,3 +1,19 @@
+2004-03-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14550
+	* parser.c (cp_parser_non_integral_constant_expression): Encode
+	more of the idiom that surrounded calls to this function within
+	the function itself
+	(cp_parser_primary_expression): Adjust accordingly.
+	(cp_parser_postfix_expression): Likewise.
+	(cp_parser_unary_expression): Likewise.
+	(cp_parser_cast_expression): Likewise.
+	(cp_parser_assignment_expression): Likewise.
+	(cp_parser_expression): Likewise.
+	(cp_parser_new_expression): Note that new-expressions are not
+	allowed in integral constant expressions.
+	(cp_parser_delete_expression): Likewise.
+
 2004-03-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14476
