@@ -9580,7 +9580,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
    typedef-name:
      identifier
 
-   Returns a TYPE_DECL for the the type.  */
+   Returns a TYPE_DECL for the type.  */
 
 static tree
 cp_parser_type_name (cp_parser* parser)
@@ -14333,7 +14333,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	     lookup_member, we must enter the scope here.  */
 	  if (dependent_p)
 	    pushed_scope = push_scope (parser->scope);
-	  /* If the PARSER->SCOPE is a a template specialization, it
+	  /* If the PARSER->SCOPE is a template specialization, it
 	     may be instantiated during name lookup.  In that case,
 	     errors may be issued.  Even if we rollback the current
 	     tentative parse, those errors are valid.  */

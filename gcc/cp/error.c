@@ -2201,7 +2201,7 @@ print_instantiation_full_context (diagnostic_context *context)
       else
 	{
 	  if (current_function_decl == TINST_DECL (p))
-	    /* Avoid redundancy with the the "In function" line.  */;
+	    /* Avoid redundancy with the "In function" line.  */;
 	  else
 	    pp_verbatim (context->printer,
                          "%s: In instantiation of %qs:\n",

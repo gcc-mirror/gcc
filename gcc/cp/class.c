@@ -3505,7 +3505,7 @@ layout_empty_base (tree binfo, tree eoc, splay_tree offsets)
   return atend;
 }
 
-/* Layout the the base given by BINFO in the class indicated by RLI.
+/* Layout the base given by BINFO in the class indicated by RLI.
    *BASE_ALIGN is a running maximum of the alignments of
    any base class.  OFFSETS gives the location of empty base
    subobjects.  T is the most derived type.  Return nonzero if the new
@@ -4035,7 +4035,7 @@ check_bases_and_members (tree t)
   /* Nonzero if the implicitly generated copy constructor should take
      a non-const reference argument.  */
   int cant_have_const_ctor;
-  /* Nonzero if the the implicitly generated assignment operator
+  /* Nonzero if the implicitly generated assignment operator
      should take a non-const reference argument.  */
   int no_const_asn_ref;
   tree access_decls;
@@ -7680,8 +7680,8 @@ build_rtti_vtbl_entries (tree binfo, vtbl_init_data* vid)
   *vid->last_init = build_tree_list (NULL_TREE, init);
   vid->last_init = &TREE_CHAIN (*vid->last_init);
 
-  /* Add the offset-to-top entry.  It comes earlier in the vtable that
-     the the typeinfo entry.  Convert the offset to look like a
+  /* Add the offset-to-top entry.  It comes earlier in the vtable than
+     the typeinfo entry.  Convert the offset to look like a
      function pointer, so that we can put it in the vtable.  */
   init = build_nop (vfunc_ptr_type_node, offset);
   *vid->last_init = build_tree_list (NULL_TREE, init);

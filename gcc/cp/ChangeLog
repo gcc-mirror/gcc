@@ -1,3 +1,8 @@
+2005-02-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* call.c, class.c, cp-tree.h, decl2.c, error.c, init.c, mangle.c,
+	parser.c: Fix comment typo(s).
+
 2005-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/20175
