@@ -2198,8 +2198,11 @@ hppa_expand_prologue()
       }
   /* The hppa calling conventions say that that %r19, the pic offset
      register, is saved at sp - 32 (in this function's frame)  when
-     generating PIC code.  */
-  if (flag_pic)
+     generating PIC code.  FIXME:  What is the correct thing to do
+     for functions which make no calls and allocate no frame?  Do
+     we need to allocate a frame, or can we just omit the save?   For
+     now we'll just omit the save.  */
+  if (actual_fsize != 0 && flag_pic)
     store_reg (PIC_OFFSET_TABLE_REGNUM, -32, STACK_POINTER_REGNUM);
 
   /* Profiling code.
