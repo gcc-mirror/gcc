@@ -1,3 +1,19 @@
+2000-02-20  Anthony Green  <green@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Add
+	gnu/gcj/io/DefaultMimeTypes.java and gnu/gcj/io/MimeTypes.java
+
+	* scripts/MakeDefaultMimeTypes.java: New file.
+	* scripts/mime.types: New file.
+	* scripts/classes.pl: Moved from top level.
+	* classes.pl: Moved to scripts directory.
+
+	* java/net/URLConnection.java: Implement guessContentTypeFromName.
+
+	* gnu/gcj/io/MimeTypes.java: New file.
+	* gnu/gcj/io/DefaultMimeTypes.java: New file.
+
 2000-02-20  Tom Tromey  <tromey@cygnus.com>
 
 	* boehm.cc (_Jv_AllocBytes): Clear returned memory.
