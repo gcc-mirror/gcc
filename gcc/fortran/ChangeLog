@@ -1,3 +1,7 @@
+2004-08-31  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* primary.c: Update copyright boilerplate to say GCC.
+
 2004-08-31  Paul Brook  <paul@codesourcery.com>
 
 	* trans-types.h: Add comments.
