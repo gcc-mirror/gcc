@@ -632,6 +632,7 @@ initialize_inlined_parameters (id, args, fn, block)
 #endif /* not INLINER_FOR_JAVA */
       tree var;
       tree value;
+      tree var_sub;
 
       /* Find the initializer.  */
       value = (*lang_hooks.tree_inlining.convert_parm_for_inlining)
@@ -669,12 +670,23 @@ initialize_inlined_parameters (id, args, fn, block)
 
       /* Make an equivalent VAR_DECL.  */
       var = copy_decl_for_inlining (p, fn, VARRAY_TREE (id->fns, 0));
+
+      /* See if the frontend wants to pass this by invisible reference.  If
+	 so, our new VAR_DECL will have REFERENCE_TYPE, and we need to
+	 replace uses of the PARM_DECL with dereferences.  */
+      if (TREE_TYPE (var) != TREE_TYPE (p)
+	  && POINTER_TYPE_P (TREE_TYPE (var))
+	  && TREE_TYPE (TREE_TYPE (var)) == TREE_TYPE (p))
+	var_sub = build1 (INDIRECT_REF, TREE_TYPE (p), var);
+      else
+	var_sub = var;
+
       /* Register the VAR_DECL as the equivalent for the PARM_DECL;
 	 that way, when the PARM_DECL is encountered, it will be
 	 automatically replaced by the VAR_DECL.  */
       splay_tree_insert (id->decl_map,
 			 (splay_tree_key) p,
-			 (splay_tree_value) var);
+			 (splay_tree_value) var_sub);
 
       /* Declare this new variable.  */
 #ifndef INLINER_FOR_JAVA

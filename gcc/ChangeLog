@@ -1,3 +1,12 @@
+2002-12-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/8461, c++/8625
+	* integrate.c (copy_decl_for_inlining): Handle explicit invisible
+	references.
+	* tree-inline.c (initialize_inlined_parameters): Likewise.
+
+	* tree.c (variably_modified_type_p): Just return an error_mark_node.
+
 2002-12-04  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.md (get_fnaddr): Avoid placing an "la"
