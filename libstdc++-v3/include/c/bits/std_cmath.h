@@ -367,6 +367,7 @@ namespace std {
     //
     // long double
     //
+#ifdef _GLIBCPP_USE_LONG_DOUBLE
 #if _GLIBCPP_HAVE___BUILTIN_FABSL
     inline long double abs(long double __x)
       { return __builtin_fabsl(__x); }
@@ -499,6 +500,7 @@ namespace std {
       { return ::tanhl(__x); }
 #endif
 
+#endif // _GLIBCPP_USE_LONG_DOUBLE
 } // std
 
 #endif // _CPP_CMATH
