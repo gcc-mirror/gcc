@@ -19,7 +19,7 @@
 #define	STREQ(a, b)	(*(a) == *(b) && strcmp((a), (b)) == 0)
 
 #ifndef lint
-static char RCSid[] = "$Header: /egcs/carton/cvsfiles/egcs/./libio/dbz/dbzmain.c,v 1.1 1997/08/21 22:58:23 jason Exp $";
+static char RCSid[] = "$Header: /egcs/carton/cvsfiles/egcs/./libio/dbz/dbzmain.c,v 1.1.1.1 1997/08/21 22:58:23 jason Exp $";
 #endif
 
 char *progname;
@@ -278,7 +278,7 @@ mkfiles()
 	} else if (op == 'b' && dbzint) {
 		if (!exact)
 			siz = dbzsize(siz);
-		if (dbzfresh(my_basename, siz, (int)fs, map, tag) < 0)
+		if (dbzfresh(my_basename, siz, (int)fs, map, (off_t)tag) < 0)
 			fail("dbzfresh(`%s'...) failed", my_basename);
 	} else if (dbminit(my_basename) < 0)
 		fail("dbminit(`%s') failed", my_basename);

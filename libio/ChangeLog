@@ -1,3 +1,9 @@
+Sun Feb  1 13:08:18 1998  Krister Walfridsson (cato@df.lth.se)
+
+	* dbz/dbz.c (putconf): Handle systems which use "long long" as type
+	for "off_t".
+	* dbz/dbzmain.c (mkfiles): Likewise.
+
 Wed Jan 28 10:27:11 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* config.shared (FLAGS_TO_PASS): Add gxx_include_dir.
