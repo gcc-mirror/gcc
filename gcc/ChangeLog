@@ -1,3 +1,10 @@
+2005-03-01  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/predicates.md (branch_comparison_operator): Change
+	to define_special_predicate.
+	(scc_comparison_operator): Same.
+	(branch_positive_comparison_operator): Same.
+
 2005-03-01  Daniel Berlin <dberlin@dberlin.org>
 
 	* Makefile.in (tree-ssa-sink.o): New.

@@ -678,7 +678,7 @@
 
 ;; Return 1 if OP is a comparison operation that is valid for a branch
 ;; instruction.  We only check the opcode against the mode of the CC value.
-(define_predicate "branch_comparison_operator"
+(define_special_predicate "branch_comparison_operator"
   (match_code "eq,ne,le,lt,ge,gt,leu,ltu,geu,gtu,unordered,ordered,unge,unle")
 {
   enum rtx_code code = GET_CODE (op);
@@ -698,13 +698,13 @@
 
 ;; Return 1 if OP is a comparison operation that is valid for an SCC insn --
 ;; it must be a positive comparison.
-(define_predicate "scc_comparison_operator"
+(define_special_predicate "scc_comparison_operator"
   (and (match_code "eq,lt,gt,ltu,gtu,unordered")
        (match_operand 0 "branch_comparison_operator")))
 
 ;; Return 1 if OP is a comparison operation that is valid for a branch
 ;; insn, which is true if the corresponding bit in the CC register is set.
-(define_predicate "branch_positive_comparison_operator"
+(define_special_predicate "branch_positive_comparison_operator"
   (and (match_code "eq,lt,gt,ltu,gtu,unordered")
        (match_operand 0 "branch_comparison_operator")))
 
