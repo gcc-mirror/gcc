@@ -6316,8 +6316,16 @@ cse_insn (insn, libcall_insn)
       if ((src_ent->first_reg == REGNO (SET_DEST (sets[0].rtl)))
 	  && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
 	{
-	  rtx prev = prev_nonnote_insn (insn);
-
+	  rtx prev = insn;
+	  /* Scan for the previous nonnote insn, but stop at a basic
+	     block boundary.  */
+	  do
+	    {
+	      prev = PREV_INSN (prev);
+	    }
+	  while (prev && GET_CODE (prev) == NOTE
+		 && NOTE_LINE_NUMBER (prev) != NOTE_INSN_BASIC_BLOCK);
+	    
 	  /* Do not swap the registers around if the previous instruction
 	     attaches a REG_EQUIV note to REG1.
 

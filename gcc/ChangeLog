@@ -1,3 +1,7 @@
+2002-12-10  Andrew Haley  <aph@redhat.com>
+
+	* cse.c (cse_insn): Don't cse past a basic block boundary.
+
 2002-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/linux.h (LIB_SPEC): If -pthread, add -lpthread even if
