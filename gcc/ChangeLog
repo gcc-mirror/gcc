@@ -1,3 +1,8 @@
+2002-10-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.h (MASK_*): New.
+	(TARGET_*): Use MASK_*.
+
 2002-10-28  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (*-*-netbsd*): Add NETBSD_ENABLE_PTHREADS to
