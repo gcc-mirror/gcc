@@ -4724,7 +4724,9 @@ fold (expr)
 
 	  /* If we have A op 0 ? A : -A, this is A, -A, abs (A), or abs (-A),
 	     depending on the comparison operation.  */
-	  if (integer_zerop (TREE_OPERAND (arg0, 1))
+	  if ((FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (arg0, 1)))
+	       ? real_zerop (TREE_OPERAND (arg0, 1))
+	       : integer_zerop (TREE_OPERAND (arg0, 1)))
 	      && TREE_CODE (arg2) == NEGATE_EXPR
 	      && operand_equal_p (TREE_OPERAND (arg2, 0), arg1, 0))
 	    switch (comp_code)
