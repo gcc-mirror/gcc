@@ -1,3 +1,12 @@
+1999-10-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* method.c (synthesize_method): Call setup_vtbl_ptr for destructors.
+
+	* decl.c (start_function): Set current_in_charge_parm for
+	constructors, too, where appropriate.
+	* search.c (fixup_all_virtual_upcast_offsets): New function.
+	(expand_indirect_vtbls_init): Use it.
+	
 1999-10-04  Nathan Sidwell  <nathan@acm.org>
 
 	* decl2.c (grok_alignof): Don't decay lvalues.

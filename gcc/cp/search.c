@@ -149,6 +149,7 @@ static int protected_accessible_p PROTO ((tree, tree, tree, tree));
 static int friend_accessible_p PROTO ((tree, tree, tree, tree));
 static void setup_class_bindings PROTO ((tree, int));
 static int template_self_reference_p PROTO ((tree, tree));
+static void fixup_all_virtual_upcast_offsets PROTO ((tree, tree));
 
 /* Allocate a level of searching.  */
 
@@ -2774,18 +2775,62 @@ fixup_virtual_upcast_offsets (real_binfo, binfo, init_self, can_elide, addr, ori
     }
 }
 
-/* Build a COMPOUND_EXPR which when expanded will generate the code
-   needed to initialize all the virtual function table slots of all
-   the virtual baseclasses.  MAIN_BINFO is the binfo which determines
-   the virtual baseclasses to use; TYPE is the type of the object to
-   which the initialization applies.  TRUE_EXP is the true object we
-   are initializing, and DECL_PTR is the pointer to the sub-object we
-   are initializing.
+/* Fixup all the virtual upcast offsets for TYPE.  DECL_PTR is the
+   address of the sub-object being initialized.  */
 
-   When USE_COMPUTED_OFFSETS is non-zero, we can assume that the
-   object was laid out by a top-level constructor and the computed
-   offsets are valid to store vtables.  When zero, we must store new
-   vtables through virtual baseclass pointers.  */
+static void
+fixup_all_virtual_upcast_offsets (type, decl_ptr)
+     tree type;
+     tree decl_ptr;
+{
+  tree if_stmt;
+  tree in_charge_node;
+  tree vbases;
+
+  /* Only tweak the vtables if we're in charge.  */
+  in_charge_node = current_in_charge_parm;
+  if (!in_charge_node)
+    /* There's no need for any fixups in this case.  */
+    return;
+  in_charge_node = build_binary_op (EQ_EXPR, 
+				    in_charge_node, integer_zero_node);
+  if_stmt = begin_if_stmt ();
+  finish_if_stmt_cond (in_charge_node, if_stmt);
+  
+  /* Iterate through the virtual bases, fixing up the upcast offset
+     for each one.  */
+  for (vbases = CLASSTYPE_VBASECLASSES (type);
+       vbases;
+       vbases = TREE_CHAIN (vbases))
+    {
+      if (flag_vtable_thunks)
+	/* We don't have dynamic thunks yet!  So for now, just fail
+	   silently.  */
+	;
+      else
+	{
+	  tree vbase_offsets;
+	  tree addr;
+
+	  vbase_offsets = NULL_TREE;
+	  addr = convert_pointer_to_vbase (TREE_TYPE (vbases), decl_ptr);
+	  fixup_virtual_upcast_offsets (vbases,
+					TYPE_BINFO (BINFO_TYPE (vbases)),
+					1, 0, addr, decl_ptr,
+					type, vbases, &vbase_offsets);
+	}
+    }
+
+  /* Close out the if-statement.  */
+  finish_then_clause (if_stmt);
+  finish_if_stmt ();
+}
+
+/* Generate the code needed to initialize all the virtual function
+   table slots of all the virtual baseclasses.  BINFO is the binfo
+   which determines the virtual baseclasses to use.  TRUE_EXP is the
+   true object we are initializing, and DECL_PTR is the pointer to the
+   sub-object we are initializing.  */
 
 void
 expand_indirect_vtbls_init (binfo, true_exp, decl_ptr)
@@ -2807,7 +2852,6 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr)
 
   if (TYPE_USES_VIRTUAL_BASECLASSES (type))
     {
-      rtx fixup_insns = NULL_RTX;
       tree vbases = CLASSTYPE_VBASECLASSES (type);
       struct vbase_info vi;
       vi.decl_ptr = (true_exp ? build_unary_op (ADDR_EXPR, true_exp, 0) 
@@ -2828,44 +2872,10 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr)
 	     binfos.  (in the CLASSTYPE_VFIELD_PARENT sense)  */
 	  expand_direct_vtbls_init (vbases, TYPE_BINFO (BINFO_TYPE (vbases)),
 				    1, 0, addr);
-
-	  /* Now we adjust the offsets for virtual functions that
-	     cross virtual boundaries on an implicit upcast on vf call
-	     so that the layout of the most complete type is used,
-	     instead of assuming the layout of the virtual bases from
-	     our current type.  */
-
-	  if (flag_vtable_thunks)
-	    {
-	      /* We don't have dynamic thunks yet!
-		 So for now, just fail silently.  */
-	    }
-	  else
-	    {
-	      tree vbase_offsets = NULL_TREE;
-	      push_to_sequence (fixup_insns);
-	      fixup_virtual_upcast_offsets (vbases,
-					    TYPE_BINFO (BINFO_TYPE (vbases)),
-					    1, 0, addr, vi.decl_ptr,
-					    type, vbases, &vbase_offsets);
-	      fixup_insns = get_insns ();
-	      end_sequence ();
-	    }
 	}
 
-      if (fixup_insns)
-	{
-	  tree in_charge_node = current_in_charge_parm;
-	  if (! in_charge_node)
-	    {
-	      warning ("recoverable internal compiler error, nobody's in charge!");
-	      in_charge_node = integer_zero_node;
-	    }
-	  in_charge_node = build_binary_op (EQ_EXPR, in_charge_node, integer_zero_node);
-	  expand_start_cond (in_charge_node, 0);
-	  emit_insns (fixup_insns);
-	  expand_end_cond ();
-	}
+      fixup_all_virtual_upcast_offsets (type,
+					vi.decl_ptr);
 
       dfs_walk (binfo, dfs_clear_vbase_slots, marked_new_vtablep, 0);
     }

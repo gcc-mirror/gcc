@@ -2384,7 +2384,7 @@ synthesize_method (fndecl)
       need_body = 0;
     }
   else if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fndecl)))
-    ;
+    setup_vtbl_ptr ();
   else
     {
       tree arg_chain = FUNCTION_ARG_CHAIN (fndecl);

@@ -12971,7 +12971,15 @@ start_function (declspecs, declarator, attrs, flags)
 	= build_indirect_ref (t, NULL_PTR);
       cp_function_chain->x_current_class_ptr = t;
 
+      /* Constructors and destructors need to know whether they're "in
+	 charge" of initializing virtual base classes.  */
       if (DECL_DESTRUCTOR_P (decl1))
+	current_in_charge_parm = TREE_CHAIN (t);
+      else if (DECL_CONSTRUCTOR_P (decl1)
+	       && TREE_CHAIN (t)
+	       && DECL_ARTIFICIAL (TREE_CHAIN (t))
+	       && (DECL_NAME (TREE_CHAIN (t))
+		   == in_charge_identifier))
 	current_in_charge_parm = TREE_CHAIN (t);
     }
 
