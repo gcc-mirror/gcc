@@ -957,8 +957,8 @@ to make big mistakes.
 
 @cindex debugger
 @cindex bugs, finding
-@cindex gdb command
-@cindex commands, gdb
+@cindex @code{gdb}, command
+@cindex commands, @code{gdb}
 @item
 They provide information in the generated machine code
 that can make it easier to find bugs in the program
@@ -967,8 +967,8 @@ such as @code{gdb}).
 
 @cindex libraries
 @cindex linking
-@cindex ld command
-@cindex commands, ld
+@cindex @code{ld} command
+@cindex commands, @code{ld}
 @item
 They locate and gather machine code already generated
 to perform actions requested by statements in
@@ -1027,11 +1027,11 @@ of the language), how much time to spend making
 the generated machine code run faster, and so on.
 
 @cindex components of g77
-@cindex g77, components of
+@cindex @code{g77}, components of
 @code{g77} consists of several components:
 
-@cindex gcc command
-@cindex commands, gcc
+@cindex @code{gcc}, command
+@cindex commands, @code{gcc}
 @itemize @bullet
 @item
 A modified version of the @code{gcc} command, which also might be
@@ -1042,8 +1042,8 @@ might be a non-GNU compiler, or an older version
 of @code{gcc} considered more stable or that is
 used to build the operating system kernel.)
 
-@cindex g77 command
-@cindex commands, g77
+@cindex @code{g77}, command
+@cindex commands, @code{g77}
 @item
 The @code{g77} command itself, which also might be installed as the
 system's @code{f77} command.
@@ -1052,7 +1052,7 @@ system's @code{f77} command.
 @cindex libf2c library
 @cindex libraries, libf2c
 @cindex libraries, libg2c
-@cindex run-time library
+@cindex run-time, library
 @item
 The @code{libg2c} run-time library.
 This library contains the machine code needed to support
@@ -1070,11 +1070,11 @@ on the system.
 The maintainer of @code{libf2c} currently is
 @email{dmg@@bell-labs.com}.
 
-@cindex f771 program
-@cindex programs, f771
+@cindex @code{f771}, program
+@cindex programs, @code{f771}
 @cindex assembler
-@cindex as command
-@cindex commands, as
+@cindex @code{as} command
+@cindex commands, @code{as}
 @cindex assembly code
 @cindex code, assembly
 @item
@@ -1094,7 +1094,7 @@ preprocessing, compiling (in a variety of possible languages), assembling,
 and linking.
 
 @cindex driver, gcc command as
-@cindex gcc command as driver
+@cindex @code{gcc}, command as driver
 @cindex executable file
 @cindex files, executable
 @cindex cc1 program
@@ -1115,14 +1115,14 @@ As another example, the command @samp{gcc foo.cc} would do much the same as
 @samp{gcc foo.c}, but instead of using the C compiler named @code{cc1},
 @code{gcc} would use the C++ compiler (named @code{cc1plus}).
 
-@cindex f771 program
-@cindex programs, f771
+@cindex @code{f771}, program
+@cindex programs, @code{f771}
 In a GNU Fortran installation, @code{gcc} recognizes Fortran source
 files by name just like it does C and C++ source files.
 It knows to use the Fortran compiler named @code{f771}, instead of
 @code{cc1} or @code{cc1plus}, to compile Fortran files.
 
-@cindex gcc not recognizing Fortran source
+@cindex @code{gcc}, not recognizing Fortran source
 @cindex unrecognized file format
 @cindex file format not recognized
 Non-Fortran-related operation of @code{gcc} is generally
@@ -1132,8 +1132,8 @@ GNU Fortran version, @code{gcc} will not be able to compile
 and link Fortran programs---and since @code{g77} uses @code{gcc}
 to do most of the actual work, neither will @code{g77}!
 
-@cindex g77 command
-@cindex commands, g77
+@cindex @code{g77}, command
+@cindex commands, @code{g77}
 The @code{g77} command is essentially just a front-end for
 the @code{gcc} command.
 Fortran users will normally use @code{g77} instead of @code{gcc},
@@ -1192,7 +1192,7 @@ large chunks of code.
 
 @cindex GNU Back End (GBE)
 @cindex GBE
-@cindex gcc back end
+@cindex @code{gcc}, back end
 @cindex back end, gcc
 @cindex code generator
 One chunk is the so-called @dfn{GNU Back End}, or GBE,
@@ -1205,7 +1205,7 @@ whenever the distinction is important.
 
 @cindex GNU Fortran Front End (FFE)
 @cindex FFE
-@cindex g77 front end
+@cindex @code{g77}, front end
 @cindex front end, g77
 The other chunk of @code{f771} is the
 majority of what is unique about GNU Fortran---the code that knows how
@@ -1236,8 +1236,8 @@ of generated code (in terms of speed and size) is roughly similar
 @cindex compiling programs
 @cindex programs, compiling
 
-@cindex gcc command
-@cindex commands, gcc
+@cindex @code{gcc}, command
+@cindex commands, @code{gcc}
 A GNU Fortran installation includes a modified version of the @code{gcc}
 command.
 
@@ -1253,8 +1253,8 @@ but apply to other languages as well.
 for information on the way different languages are handled
 by the GNU CC compiler (@code{gcc}).
 
-@cindex g77 command
-@cindex commands, g77
+@cindex @code{g77}, command
+@cindex commands, @code{g77}
 Also provided as part of GNU Fortran is the @code{g77} command.
 The @code{g77} command is designed to make compiling and linking Fortran
 programs somewhat easier than when using the @code{gcc} command for
@@ -1263,7 +1263,7 @@ It does this by analyzing the command line somewhat and changing it
 appropriately before submitting it to the @code{gcc} command.
 
 @cindex -v option
-@cindex g77 options, -v
+@cindex @code{g77} options, -v
 @cindex options, -v
 Use the @samp{-v} option with @code{g77}
 to see what is going on---the first line of output is the invocation
@@ -1492,9 +1492,9 @@ files included by the @code{INCLUDE} directive---the @code{#include}
 preprocessor directive must be used instead.
 
 @cindex Ratfor preprocessor
-@cindex programs, ratfor
-@cindex .r filename suffix
-@pindex ratfor
+@cindex programs, @code{ratfor}
+@cindex @samp{.r} filename suffix
+@cindex @code{ratfor}
 @item @var{file}.r
 Ratfor source code, which must be preprocessed by the @code{ratfor}
 command, which is available separately (as it is not yet part of the GNU
@@ -1614,10 +1614,10 @@ with a diagnostic if it detects an inconsistency.
 
 @cindex -fno-silent option
 @cindex options, -fno-silent
-@cindex @code{f2c} compatibility
-@cindex compatibility, @code{f2c}
+@cindex f2c compatibility
+@cindex compatibility, f2c
 @cindex status, compilation
-@cindex compilation status
+@cindex compilation, status
 @cindex reporting compilation status
 @cindex printing compilation status
 @item -fno-silent
@@ -1704,10 +1704,10 @@ existing and obsolete Fortran implementations.
 @cindex options, -ff77
 @item -ff77
 @cindex UNIX f77
-@cindex @code{f2c} compatibility
-@cindex compatibility, @code{f2c}
-@cindex @code{f77} compatibility
-@cindex compatibility, @code{f77}
+@cindex f2c compatibility
+@cindex compatibility, f2c
+@cindex f77 compatibility
+@cindex compatibility, f77
 Specify that the program is written in idiomatic UNIX FORTRAN 77
 and/or the dialect accepted by the @code{f2c} product.
 Same as @samp{-fbackslash -fno-typeless-boz}.
@@ -1734,7 +1734,7 @@ existing and obsolete Fortran implementations.
 @node Fortran Dialect Options
 @section Options Controlling Fortran Dialect
 @cindex dialect options
-@cindex language dialect options
+@cindex language, dialect options
 @cindex options, dialect
 
 The following options control the dialect of Fortran
@@ -1745,10 +1745,10 @@ that the compiler accepts:
 @cindex options, -ffree-form
 @cindex -fno-fixed-form option
 @cindex options, -fno-fixed-form
-@cindex source file form
+@cindex source file format
 @cindex free form
 @cindex fixed form
-@cindex Fortran 90 features
+@cindex Fortran 90, features
 @item -ffree-form
 @item -fno-fixed-form
 Specify that the source file is written in free form
@@ -1756,7 +1756,7 @@ Specify that the source file is written in free form
 
 @cindex -ff90 option
 @cindex options, -ff90
-@cindex Fortran 90 features
+@cindex Fortran 90, features
 @item -ff90
 Allow certain Fortran-90 constructs.
 
@@ -1772,8 +1772,8 @@ current level of support for Fortran 90.)
 @cindex -fvxt option
 @cindex options, -fvxt
 @item -fvxt
-@cindex Fortran 90 features
-@cindex VXT features
+@cindex Fortran 90, features
+@cindex VXT extensions
 Specify the treatment of certain constructs that have different
 meanings depending on whether the code is written in
 GNU Fortran (based on FORTRAN 77 and akin to Fortran 90)
@@ -1913,14 +1913,16 @@ For example, automatic conversion between @code{INTEGER} and
 @cindex options, -fonetrip
 @item -fonetrip
 @cindex FORTRAN 66
-@cindex DO loops, one-trip
-@cindex one-trip DO loops
+@cindex @code{DO} loops, one-trip
+@cindex one-trip @code{DO} loops
+@cindex @code{DO} loops, zero-trip
+@cindex zero-trip @code{DO} loops
 @cindex compatibility, FORTRAN 66
-Imperative executable @code{DO} loops are to be executed at
+Executable iterative @code{DO} loops are to be executed at
 least once each time they are reached.
 
 ANSI FORTRAN 77 and more recent versions of the Fortran standard
-specify that the body of an imperative @code{DO} loop is not executed
+specify that the body of an iterative @code{DO} loop is not executed
 if the number of iterations calculated from the parameters of the
 loop is less than 1.
 (For example, @samp{DO 10 I = 1, 0}.)
@@ -1938,7 +1940,7 @@ standard did not specify this behavior.
 The @samp{-fonetrip} option specifies that the source file(s) being
 compiled require one-trip loops.
 
-This option affects only those loops specified by the (imperative) @code{DO}
+This option affects only those loops specified by the (iterative) @code{DO}
 statement and by implied-@code{DO} lists in I/O statements.
 Loops specified by implied-@code{DO} lists in @code{DATA} and
 specification (non-executable) statements are not affected.
@@ -2087,8 +2089,8 @@ variables named @samp{i} and @samp{I} to a procedure named @samp{Foo}.)
 @cindex -fbadu77-intrinsics-enable option
 @cindex options, -fbadu77-intrinsics-enable
 @item -fbadu77-intrinsics-enable
-@cindex badu77 intrinsics
-@cindex intrinsics, badu77
+@cindex @code{badu77} intrinsics
+@cindex intrinsics, @code{badu77}
 Specify status of UNIX intrinsics having inappropriate forms.
 @samp{-fbadu77-intrinsics-enable} is the default.
 @xref{Intrinsic Groups}.
@@ -2105,8 +2107,8 @@ Specify status of UNIX intrinsics having inappropriate forms.
 @cindex -ff2c-intrinsics-enable option
 @cindex options, -ff2c-intrinsics-enable
 @item -ff2c-intrinsics-enable
-@cindex f2c intrinsics
-@cindex intrinsics, f2c
+@cindex @code{f2c} intrinsics
+@cindex intrinsics, @code{f2c}
 Specify status of f2c-specific intrinsics.
 @samp{-ff2c-intrinsics-enable} is the default.
 @xref{Intrinsic Groups}.
@@ -2123,7 +2125,7 @@ Specify status of f2c-specific intrinsics.
 @cindex -ff90-intrinsics-enable option
 @cindex options, -ff90-intrinsics-enable
 @item -ff90-intrinsics-enable
-@cindex Fortran 90 intrinsics
+@cindex Fortran 90, intrinsics
 @cindex intrinsics, Fortran 90
 Specify status of F90-specific intrinsics.
 @samp{-ff90-intrinsics-enable} is the default.
@@ -2142,8 +2144,8 @@ Specify status of F90-specific intrinsics.
 @cindex options, -fgnu-intrinsics-enable
 @item -fgnu-intrinsics-enable
 @cindex Digital Fortran features
-@cindex COMPLEX intrinsics
-@cindex intrinsics, COMPLEX
+@cindex @code{COMPLEX} intrinsics
+@cindex intrinsics, @code{COMPLEX}
 Specify status of Digital's COMPLEX-related intrinsics.
 @samp{-fgnu-intrinsics-enable} is the default.
 @xref{Intrinsic Groups}.
@@ -2206,9 +2208,9 @@ Specify status of VXT intrinsics.
 @cindex options, -ffixed-line-length-@var{n}
 @item -ffixed-line-length-@var{n}
 @cindex source file format
-@cindex line length
+@cindex lines, length
 @cindex length of source lines
-@cindex fixed-form line length
+@cindex fixed form
 Set column after which characters are ignored in typical fixed-form
 lines in the source file, and through which spaces are assumed (as
 if padded to that length) after the ends of short fixed-form lines.
@@ -2229,8 +2231,8 @@ to them to fill out the line.
 
 @node Warning Options
 @section Options to Request or Suppress Warnings
-@cindex options to control warnings
-@cindex warning messages
+@cindex options, warnings
+@cindex warnings, suppressing
 @cindex messages, warning
 @cindex suppressing warnings
 
@@ -2653,16 +2655,16 @@ is @samp{-mno-align-double}, not @samp{-benign-double}.
 @cindex -ffloat-store option
 @cindex options, -ffloat-store
 @item -ffloat-store
-@cindex IEEE conformance
-@cindex conformance, IEEE
-@cindex floating point precision
+@cindex IEEE 754 conformance
+@cindex conformance, IEEE 754
+@cindex floating-point, precision
 Might help a Fortran program that depends on exact IEEE conformance on
 some machines, but might slow down a program that doesn't.
 
-This option is effective when the floating point unit is set to work in
+This option is effective when the floating-point unit is set to work in
 IEEE 854 `extended precision'---as it typically is on x86 and m68k GNU
 systems---rather than IEEE 754 double precision.  @code{-ffloat-store}
-tries to remove the extra precision by spilling data from floating point
+tries to remove the extra precision by spilling data from floating-point
 registers into memory and this typically involves a big performance
 hit.  However, it doesn't affect intermediate results, so that it is
 only partially effective.  `Excess precision' is avoided in code like:
@@ -2676,7 +2678,7 @@ but not in code like:
 @end smallexample
 
 For another, potentially better, way of controlling the precision
-@ref{Floating point precision}.
+@ref{Floating-point precision}.
 
 @cindex -fforce-mem option
 @cindex options, -fforce-mem
@@ -2685,13 +2687,13 @@ For another, potentially better, way of controlling the precision
 @cindex options, -fforce-addr
 @item -fforce-addr
 @cindex loops, speeding up
-@cindex speeding up loops
+@cindex speed, of loops
 Might improve optimization of loops.
 
 @cindex -fno-inline option
 @cindex options, -fno-inline
 @item -fno-inline
-@cindex in-line compilation
+@cindex in-line code
 @cindex compilation, in-line
 @c DL: Only relevant for -O3?
 Don't compile statement functions inline.
@@ -2702,8 +2704,8 @@ Note that if you are not optimizing, no functions can be expanded inline.
 @cindex -ffast-math option
 @cindex options, -ffast-math
 @item -ffast-math
-@cindex IEEE conformance
-@cindex conformance, IEEE
+@cindex IEEE 754 conformance
+@cindex conformance, IEEE 754
 Might allow some programs designed to not be too dependent
 on IEEE behavior for floating-point to run faster, or die trying.
 
@@ -2711,7 +2713,7 @@ on IEEE behavior for floating-point to run faster, or die trying.
 @cindex options, -fstrength-reduce
 @item -fstrength-reduce
 @cindex loops, speeding up
-@cindex speeding up loops
+@cindex speed, of loops
 @c DL: normally defaulted?
 Might make some loops run faster.
 
@@ -2741,10 +2743,15 @@ Might improve performance on some code.
 @item -funroll-loops
 @cindex loops, unrolling
 @cindex unrolling loops
-@cindex loop optimization
+@cindex loops, optimizing
+@cindex indexed (iterative) @code{DO}
+@cindex iterative @code{DO}
 @c DL: fixme: Craig doesn't like `indexed' but f95 doesn't seem to
 @c provide a suitable term
-Typically improves performance on code using indexed @code{DO} loops by
+@c CB: I've decided on `iterative', for the time being, and changed
+@c my previous, rather bizarre, use of `imperative' to that
+@c (though `precomputed-trip' would be a more precise adjective)
+Typically improves performance on code using iterative @code{DO} loops by
 unrolling them and is probably generally appropriate for Fortran, though
 it is not turned on at any optimization level.  
 Note that outer loop unrolling isn't done specifically; decisions about
@@ -2764,17 +2771,17 @@ constructed out of lower-level constructs (such as @code{IF} and
 @code{GOTO}) can lead to generation of more optimal code
 than otherwise.} is done, so only loops written with @code{DO}
 benefit from loop optimizations, including---but not limited
-to---unrolling.  Loops written with @code{IF} and @code{GOTO} will not
-be recognized as such.  This option only unrolls indexed @code{DO}
-loops, not @code{DO WHILE} loops.
+to---unrolling.  Loops written with @code{IF} and @code{GOTO} are not
+currently recognized as such.  This option unrolls only iterative
+@code{DO} loops, not @code{DO WHILE} loops.
 
 @cindex -funroll-all-loops option
 @cindex options, -funroll-all-loops
-@cindex @code{DO WHILE}
+@cindex DO WHILE
 @item -funroll-all-loops
 @c DL: Check my understanding of -funroll-all-loops v. -funroll-loops is correct.
 Probably improves performance on code using @code{DO WHILE} loops by
-unrolling them in addition to indexed @code{DO} loops.  In the absence
+unrolling them in addition to iterative @code{DO} loops.  In the absence
 of @code{DO WHILE}, this option is equivalent to @code{-funroll-loops}
 but possibly slower.
 
@@ -2848,7 +2855,7 @@ contains preprocessor directives.
 
 @node Directory Options
 @section Options for Directory Search
-@cindex directory options
+@cindex directory, options
 @cindex options, directory search
 @cindex search path
 
@@ -2872,9 +2879,10 @@ These options are:
 @cindex -Idir option
 @cindex options, -Idir
 @item -I@var{dir}
-@cindex directory search paths for inclusion
+@cindex directory, search paths for inclusion
 @cindex inclusion, directory search paths for
-@cindex searching for included files
+@cindex search paths, for included files
+@cindex paths, search
 These affect interpretation of the @code{INCLUDE} directive
 (as well as of the @code{#include} directive of the @code{cpp}
 preprocessor).
@@ -2896,9 +2904,9 @@ gcc,Using and Porting GNU CC}, for information on the @samp{-I} option.
 
 @node Code Gen Options
 @section Options for Code Generation Conventions
-@cindex code generation conventions
+@cindex code generation, conventions
 @cindex options, code generation 
-@cindex run-time options
+@cindex run-time, options
 
 These machine-independent options control the interface conventions
 used in code generation.
@@ -2926,7 +2934,7 @@ the name @samp{-static}.)
 @item -finit-local-zero
 @cindex DATA statement
 @cindex statements, DATA
-@cindex initialization of local variables
+@cindex initialization, of local variables
 @cindex variables, initialization of
 @cindex uninitialized variables
 @cindex variables, uninitialized
@@ -3000,7 +3008,7 @@ generating code for an incompatible library.
 @cindex -fno-underscoring option
 @cindex options, -fno-underscoring
 @item -fno-underscoring
-@cindex underscores
+@cindex underscore
 @cindex symbol names, underscores
 @cindex transforming symbol names
 @cindex symbol names, transforming
@@ -3075,7 +3083,7 @@ interfaces.
 @cindex -fno-second-underscore option
 @cindex options, -fno-second-underscore
 @item -fno-second-underscore
-@cindex underscores
+@cindex underscore
 @cindex symbol names, underscores
 @cindex transforming symbol names
 @cindex symbol names, transforming
@@ -3546,7 +3554,7 @@ Support @code{gcc} version 2.8,
 and remove support for prior versions of @code{gcc}.
 
 @cindex -@w{}-driver option
-@cindex g77 options, -@w{}-driver
+@cindex @code{g77} options, -@w{}-driver
 @cindex options, -@w{}-driver
 @item
 Remove support for the @samp{--driver} option,
@@ -3672,7 +3680,7 @@ as well as statically-allocate data.
 @end itemize
 
 @cindex -@w{}-driver option
-@cindex g77 options, -@w{}-driver
+@cindex @code{g77} options, -@w{}-driver
 @cindex options, -@w{}-driver
 @item
 Remove support for the @samp{--driver} option,
@@ -4214,7 +4222,7 @@ Extensions to the ANSI FORTRAN 77 standard:
 @section Direction of Language Development
 @cindex direction of language development
 @cindex features, language
-@cindex language features
+@cindex language, features
 
 The purpose of the following description of the GNU Fortran
 language is to promote wide portability of GNU Fortran programs.
@@ -4359,8 +4367,8 @@ of @code{g77}).
 @node Standard Support
 @section ANSI FORTRAN 77 Standard Support
 @cindex ANSI FORTRAN 77 support
-@cindex standard support
-@cindex support for ANSI FORTRAN 77
+@cindex standard, support for
+@cindex support, FORTRAN 77
 @cindex compatibility, FORTRAN 77
 @cindex FORTRAN 77 compatibility
 
@@ -4651,8 +4659,13 @@ character (which must be a letter).
 
 (Corresponds to Section 2.3 of ANSI X3.9-1978 FORTRAN 77.)
 
-@cindex comments, trailing
-@cindex trailing comments
+@cindex trailing comment
+@cindex comment
+@cindex characters, comment
+@cindex !
+@cindex exclamation point
+@cindex continuation character
+@cindex characters, continuation
 Use of an exclamation point (@samp{!}) to begin a
 trailing comment (a comment that extends to the end of the same
 source line) is permitted under the following conditions:
@@ -4676,7 +4689,8 @@ That is, a trailing comment may contain exclamation points
 in their commentary text.
 @end itemize
 
-@cindex semicolons
+@cindex ;
+@cindex semicolon
 @cindex statements, separated by semicolon
 Use of a semicolon (@samp{;}) as a statement separator
 is permitted under the following conditions:
@@ -4762,36 +4776,65 @@ Special characters include:
 
 @itemize @bullet
 @item
+@cindex ;
+@cindex semicolon
 Semicolon (@samp{;})
 
 @item
+@cindex !
+@cindex exclamation point
 Exclamation point (@samp{!})
 
 @item
+@cindex "
+@cindex double quote
 Double quote (@samp{"})
 
 @item
+@cindex \
+@cindex backslash
 Backslash (@samp{\})
 
 @item
+@cindex ?
+@cindex question mark
 Question mark (@samp{?})
 
 @item
+@cindex #
+@cindex hash mark
+@cindex pound sign
 Hash mark (@samp{#})
 
 @item
+@cindex &
+@cindex ampersand
 Ampersand (@samp{&})
 
 @item
+@cindex %
+@cindex percent sign
 Percent sign (@samp{%})
 
 @item
+@cindex _
+@cindex underscore
 Underscore (@samp{_})
 
 @item
+@cindex <
+@cindex open angle
+@cindex left angle
+@cindex open bracket
+@cindex left bracket
 Open angle (@samp{<})
 
 @item
+@cindex >
+@cindex close angle
+@cindex right angle
+@cindex close bracket
+@cindex right bracket
 Close angle (@samp{>})
 
 @item
@@ -4801,7 +4844,9 @@ The FORTRAN 77 special characters (@key{SPC}, @samp{=},
 and @samp{:})
 @end itemize
 
-@cindex blanks (spaces)
+@cindex blank
+@cindex space
+@cindex SPC
 Note that this document refers to @key{SPC} as @dfn{space},
 while X3.9-1978 FORTRAN 77 refers to it as @dfn{blank}.
 
@@ -4809,8 +4854,8 @@ while X3.9-1978 FORTRAN 77 refers to it as @dfn{blank}.
 @subsection Lines
 @cindex lines
 @cindex source file format
-@cindex source form
-@cindex files, source
+@cindex source format
+@cindex file, source
 @cindex source code
 @cindex code, source
 @cindex fixed form
@@ -4852,7 +4897,9 @@ The end-of-file marker (@code{EOF}) also serves to end the line
 of text that precedes it (and that does not contain a newline).
 
 @item
-@cindex blanks (spaces)
+@cindex blank
+@cindex space
+@cindex SPC
 Any line of text that is shorter than 72 characters is padded to that length
 with spaces (called ``blanks'' in the standard).
 
@@ -4881,10 +4928,10 @@ line containing 72 spaces.
 
 @node Continuation Line
 @subsection Continuation Line
-@cindex continuation lines, number of
+@cindex continuation line, number of
 @cindex lines, continuation
 @cindex number of continuation lines
-@cindex limits on continuation lines
+@cindex limits, continuation lines
 
 (Corresponds to Section 3.2.3 of ANSI X3.9-1978 FORTRAN 77.)
 
@@ -4998,7 +5045,7 @@ An @code{END BLOCK DATA} statement, if the program unit is a block data.
 
 @node INCLUDE
 @subsection Including Source Text
-@cindex INCLUDE
+@cindex INCLUDE directive
 
 Additional source text may be included in the processing of
 the source file via the @code{INCLUDE} directive:
@@ -6375,10 +6422,10 @@ worth adding to the above list, please let us know the details
 
 @node REAL() and AIMAG() of Complex
 @subsection @code{REAL()} and @code{AIMAG()} of Complex
-@cindex REAL intrinsic
-@cindex intrinsics, REAL
-@cindex AIMAG intrinsic
-@cindex intrinsics, AIMAG
+@cindex @code{Real} intrinsic
+@cindex intrinsics, @code{Real}
+@cindex @code{AImag} intrinsic
+@cindex intrinsics, @code{AImag}
 
 The GNU Fortran language disallows @code{REAL(@var{expr})}
 and @code{AIMAG(@var{expr})},
@@ -6435,8 +6482,8 @@ treated as @samp{REAL(REALPART(@var{expr}))}.
 
 @node CMPLX() of DOUBLE PRECISION
 @subsection @code{CMPLX()} of @code{DOUBLE PRECISION}
-@cindex CMPLX intrinsic
-@cindex intrinsics, CMPLX
+@cindex @code{Cmplx} intrinsic
+@cindex intrinsics, @code{Cmplx}
 
 In accordance with Fortran 90 and at least some (perhaps all)
 other compilers, the GNU Fortran language defines @code{CMPLX()}
@@ -6599,7 +6646,7 @@ did not exist, would leave this document in far worse shape!)
 
 @node Scope and Classes of Names
 @section Scope and Classes of Symbolic Names
-@cindex symbolic names
+@cindex symbol names, scope and classes
 @cindex scope
 
 (The following information augments or overrides the information in
@@ -6614,7 +6661,7 @@ for the relevant aspects of GNU Fortran.)
 
 @node Underscores in Symbol Names
 @subsection Underscores in Symbol Names
-@cindex underscores
+@cindex underscore
 
 Underscores (@samp{_}) are accepted in symbol names after the first
 character (which must be a letter).
@@ -6639,6 +6686,7 @@ The @code{OPEN} specifier @code{NAME=} is equivalent to @code{FILE=}.
 These Fortran 90 features are supported: 
 @itemize @bullet
 @item
+@cindex FORMAT descriptors
 @cindex Z edit descriptor
 @cindex edit descriptor, Z
 The @code{Z} edit descriptor is supported.
@@ -6651,6 +6699,7 @@ specifier is supported.
 @node Fortran 90 Features
 @section Fortran 90 Features
 @cindex Fortran 90
+@cindex extensions, from Fortran 90
 
 For convenience this section collects a list (probably incomplete) of
 the Fortran 90 features supported by the GNU Fortran language, even if
@@ -6699,7 +6748,7 @@ permitted.  Character constants may be enclosed in double quotes
 @item @code{IMPLICIT NONE}
 @item @code{INCLUDE} statements
 @xref{INCLUDE}.
-@item List directed and namelist i/o on internal files
+@item List-directed and namelist I/O on internal files
 @item Binary, octal and hexadecimal constants
 These are supported more generally than required by Fortran 90.
 @xref{Integer Type}.
@@ -6707,6 +6756,13 @@ These are supported more generally than required by Fortran 90.
 @xref{NAMELIST}.
 @item @code{OPEN} specifiers
 @code{STATUS='REPLACE'} is supported.
+The @code{FILE=} specifier may be omitted in an @code{OPEN} statement if
+@code{STATUS='SCRATCH'} is supplied.
+@item @code{FORMAT} edit descriptors
+@cindex FORMAT descriptors
+@cindex Z edit descriptor
+@cindex edit descriptor, Z
+The @code{Z} edit descriptor is supported.
 @item Relational operators
 The operators @code{<}, @code{<=}, @code{==}, @code{/=}, @code{>} and
 @code{>=} may be used instead of @code{.LT.}, @code{.LE.}, @code{.EQ.},
@@ -6760,8 +6816,8 @@ of work!}
 @node Source Form
 @section Source Form
 @cindex source file format
-@cindex source form
-@cindex files, source
+@cindex source format
+@cindex file, source
 @cindex source code
 @cindex code, source
 @cindex fixed form
@@ -6810,7 +6866,8 @@ inside such constants.
 
 @node Tabs
 @subsection Tabs
-@cindex tab characters
+@cindex tab character
+@cindex horizontal tab
 
 A source line with a @key{TAB} character anywhere in it is treated as
 entirely significant---however long it is---instead of ending in
@@ -6844,8 +6901,7 @@ the way continued character/Hollerith constants are interpreted).
 @node Short Lines
 @subsection Short Lines
 @cindex short source lines
-@cindex space-padding
-@cindex spaces
+@cindex space, padding with
 @cindex source lines, short
 @cindex lines, short
 
@@ -6871,7 +6927,7 @@ like @samp{-ffixed-line-length-none}, for example.
 @node Long Lines
 @subsection Long Lines
 @cindex long source lines
-@cindex truncation
+@cindex truncation, of long lines
 @cindex lines, long
 @cindex source lines, long
 
@@ -6898,8 +6954,11 @@ continuation line, imitating the behavior of @code{f2c}.
 @section Trailing Comment
 
 @cindex trailing comment
-@cindex comment, trailing
+@cindex comment
+@cindex characters, comment
 @cindex /*
+@cindex !
+@cindex exclamation point
 @code{g77} supports use of @samp{/*} to start a trailing
 comment.
 In the GNU Fortran language, @samp{!} is used for this purpose.
@@ -7292,7 +7351,8 @@ both constructs in the general case, since statements like
 
 @node Exclamation Point
 @subsection Meaning of Exclamation Point in Column 6
-@cindex exclamation points
+@cindex !
+@cindex exclamation point
 @cindex continuation character
 @cindex characters, continuation
 @cindex comment character
@@ -7326,7 +7386,7 @@ marks a line as a continuation line when it appears in column 6.)
 @node Fortran 90
 @section Fortran 90
 @cindex compatibility, Fortran 90
-@cindex Fortran 90 compatibility
+@cindex Fortran 90, compatibility
 
 The GNU Fortran language includes a number of features that are
 part of Fortran 90, even when the @samp{-ff90} option is not specified.
@@ -7679,8 +7739,9 @@ without conversion.
 
 @node Ugly Null Arguments
 @subsection Ugly Null Arguments
-@cindex trailing commas
-@cindex commas, trailing
+@cindex trailing comma
+@cindex comma, trailing
+@cindex characters, comma
 @cindex null arguments
 @cindex arguments, null
 
@@ -8594,8 +8655,8 @@ avoid clashes with C++ reserved words in addition to those in C@.
 @subsection Startup Code
 
 @cindex startup code
-@cindex runtime initialization
-@cindex initialization, runtime
+@cindex run-time, initialization
+@cindex initialization, run-time
 Unlike with some runtime systems,
 it shouldn't be necessary
 (unless there are bugs)
@@ -8830,10 +8891,10 @@ file @file{@value{path-libf2c}/libF77/main.c}, to see what kinds of things
 might need to be done by your @code{main()} in order to provide the
 Fortran environment your Fortran code is expecting.
 
-@cindex IARGC() intrinsic
-@cindex intrinsics, IARGC()
-@cindex GETARG() intrinsic
-@cindex intrinsics, GETARG()
+@cindex @code{IArgC} intrinsic
+@cindex intrinsics, @code{IArgC}
+@cindex @code{GetArg} intrinsic
+@cindex intrinsics, @code{GetArg}
 For example, @code{libg2c}'s @code{main()} sets up the information used by
 the @code{IARGC} and @code{GETARG} intrinsics.
 Bypassing @code{libg2c}'s @code{main()}
@@ -9004,7 +9065,7 @@ functions return @code{float}.
 @node Names
 @section Names
 @cindex symbol names
-@cindex transformation of symbol names
+@cindex transforming symbol names
 
 Fortran permits each implementation to decide how to represent
 names as far as how they're seen in other contexts, such as debuggers
@@ -9104,8 +9165,8 @@ could be used to inhibit the appending of the underscore to the name.
 @node Common Blocks
 @section Common Blocks (COMMON)
 @cindex common blocks
-@cindex COMMON statement
-@cindex statements, COMMON
+@cindex @code{COMMON} statement
+@cindex statements, @code{COMMON}
 
 @code{g77} names and lays out @code{COMMON} areas
 the same way @code{f2c} does,
@@ -9219,7 +9280,7 @@ previous method in the documentation.)
 @node Complex Variables
 @section Complex Variables (COMPLEX)
 @cindex complex variables
-@cindex imaginary part of complex
+@cindex imaginary part
 @cindex COMPLEX statement
 @cindex statements, COMPLEX
 
@@ -9943,8 +10004,8 @@ Microsoft's rumored patent on the digits 0 and 1 is upheld.)
 @cindex BLOCK DATA statement
 @cindex statements, BLOCK DATA
 @cindex libraries, containing BLOCK DATA
-@cindex @code{f2c} compatibility
-@cindex compatibility, @code{f2c}
+@cindex f2c compatibility
+@cindex compatibility, f2c
 
 To ensure that block data program units are linked, especially a concern
 when they are put into libraries, give each one a name (as in
@@ -10044,7 +10105,7 @@ The meaning of a @code{DO} loop in Fortran is precisely specified
 in the Fortran standard@dots{}and is quite different from what
 many programmers might expect.
 
-In particular, Fortran indexed @code{DO} loops are implemented as if
+In particular, Fortran iterative @code{DO} loops are implemented as if
 the number of trips through the loop is calculated @emph{before}
 the loop is entered.
 
@@ -10228,7 +10289,7 @@ tracking down bugs in such programs.
 * Aliasing Assumed To Work::
 * Output Assumed To Flush::
 * Large File Unit Numbers::
-* Floating point precision::
+* Floating-point precision::
 * Inconsistent Calling Sequences::
 @end menu
 
@@ -10287,7 +10348,7 @@ are given types and then evaluated.
 @node Variables Assumed To Be Zero
 @subsection Variables Assumed To Be Zero
 @cindex zero-initialized variables
-@cindex variables assumed to be zero
+@cindex variables, assumed to be zero
 @cindex uninitialized variables
 
 Many Fortran programs were developed on systems that provided
@@ -10312,7 +10373,7 @@ options using @code{g77}.
 
 @node Variables Assumed To Be Saved
 @subsection Variables Assumed To Be Saved
-@cindex variables retaining values across calls
+@cindex variables, retaining values across calls
 @cindex saved variables
 @cindex static variables
 
@@ -10647,22 +10708,23 @@ open by a running program.
 Information on how to increase these limits should be found
 in your system's documentation.
 
-@node Floating point precision
-@subsection Floating point precision
+@node Floating-point precision
+@subsection Floating-point precision
 
-@cindex IEEE 754
-@cindex IEEE conformance
-@cindex conformance, IEEE
-@cindex floating point precision
-If your program depends on exact IEEE 754 floating point handling it may
+@cindex IEEE 754 conformance
+@cindex conformance, IEEE 754
+@cindex floating-point, precision
+@cindex ix86 floating-point
+@cindex x86 floating-point
+If your program depends on exact IEEE 754 floating-point handling it may
 help on some systems---specifically x86 or m68k hardware---to use
 the @code{-ffloat-store} option or to reset the precision flag on the
-floating point unit @xref{Optimize Options}.
+floating-point unit @xref{Optimize Options}.
 
 However, it might be better simply to put the FPU into double precision
 mode and not take the performance hit of @code{-ffloat-store}.  On x86
 and m68k GNU systems you can do this with a technique similar to that
-for turning on floating point exceptions @xref{Floating-point Exception
+for turning on floating-point exceptions @xref{Floating-point Exception
 Handling}.  The control word could be set to double precision by
 replacing the @code{__setfpucw} call with one like this:
 @smallexample
@@ -10679,7 +10741,8 @@ Configurations,gcc,Using and Porting GNU CC}.
 @subsection Inconsistent Calling Sequences
 
 @pindex ftnchek
-@cindex floating point errors
+@cindex floating-point, errors
+@cindex ix86 FPU stack
 @cindex x86 FPU stack
 Code containing inconsistent calling sequences in the same file is
 normally rejected @xref{GLOBALS}.  (Use, say, @code{ftnchek} to ensure
@@ -10695,11 +10758,11 @@ consistency across source files
 
 Mysterious errors, which may appear to be code generation problems, can
 appear specifically on the x86 architecture with some such
-inconsistencies.  On x86 hardware, floating point return values of
-functions are placed on the floating point unit's register stack, not
+inconsistencies.  On x86 hardware, floating-point return values of
+functions are placed on the floating-point unit's register stack, not
 the normal stack.  Thus calling a @code{REAL} or @code{DOUBLE PRECISION}
 @code{FUNCTION} as some other sort of procedure, or vice versa,
-scrambles the floating point stack.  This may break unrelated code
+scrambles the floating-point stack.  This may break unrelated code
 executed later.  Similarly if, say, external C routines are written
 incorrectly.
 
@@ -10798,7 +10861,7 @@ It is easy to find these using @samp{-f@var{group}-intrinsics-disable}.
 
 @node Faster Programs
 @section Faster Programs
-@cindex speeding up programs
+@cindex speed, of programs
 @cindex programs, speeding up
 
 Aside from the usual @code{gcc} options, such as @samp{-O},
@@ -10820,7 +10883,7 @@ it working).
 @cindex aligned data
 @cindex aligned stack
 @cindex Pentium optimizations
-@cindex optimizations, Pentium
+@cindex optimization, for Pentium
 
 On some systems, such as those with Pentium Pro CPUs, programs
 that make heavy use of @code{REAL(KIND=2)} (@code{DOUBLE PRECISION})
@@ -10842,8 +10905,8 @@ There are a variety of approaches to use to address this problem:
 
 @itemize @bullet
 @item
-@cindex COMMON, layout
-@cindex layout of common blocks
+@cindex @code{COMMON} layout
+@cindex layout of @code{COMMON} blocks
 Order your @code{COMMON} and @code{EQUIVALENCE} areas such
 that the variables and arrays with the widest alignment
 guidelines come first.
@@ -10984,7 +11047,7 @@ compiler, typically @code{gcc}.)
 @node Use Submodel Options
 @subsection Use Submodel Options
 @cindex Pentium optimizations
-@cindex optimizations, Pentium
+@cindex optimization, for Pentium
 @cindex 586/686 CPUs
 @cindex submodels
 
@@ -11150,8 +11213,8 @@ a reference to it in future versions of this manual.
 @cindex unresolved reference (various)
 @cindex linking error for user code
 @cindex code, user
-@cindex ld error for user code
-@cindex ld can't find strange names
+@cindex @code{ld}, error linking user code
+@cindex @code{ld}, can't find strange names
 On some systems, perhaps just those with out-of-date (shared?)
 libraries, unresolved-reference errors happen when linking @code{g77}-compiled
 programs (which should be done using @code{g77}).
@@ -11167,10 +11230,10 @@ systems where @samp{-lg2c -lm} is insufficient to resolve code produced
 by @code{g77}.
 
 @cindex undefined reference (_main)
-@cindex linking error for user code
-@cindex ld error for user code
+@cindex linking error, user code
+@cindex @code{ld}, error linking user code
 @cindex code, user
-@cindex ld can't find _main
+@cindex @code{ld}, can't find @samp{_main}
 If your program doesn't link due to unresolved references to names
 like @samp{_main}, make sure you're using the @code{g77} command to do the
 link, since this command ensures that the necessary libraries are
@@ -11187,8 +11250,8 @@ command line, in case that helps.
 @subsection Large Common Blocks
 @cindex common blocks, large
 @cindex large common blocks
-@cindex linker errors
-@cindex ld errors
+@cindex linking, errors
+@cindex @code{ld}, errors
 @cindex errors, linker
 On some older GNU/Linux systems, programs with common blocks larger
 than 16MB cannot be linked without some kind of error
@@ -11199,7 +11262,7 @@ more recent versions of @code{binutils}, such as version 2.6.
 
 @node Debugger Problems
 @subsection Debugger Problems
-@cindex @code{gdb} support
+@cindex @code{gdb}, support
 @cindex support, @code{gdb}
 There are some known problems when using @code{gdb} on code
 compiled by @code{g77}.
@@ -11269,7 +11332,7 @@ not enough.)
 
 @node Stack Overflow
 @subsection Stack Overflow
-@cindex stack overflow
+@cindex stack, overflow
 @cindex segmentation violation
 @code{g77} code might fail at runtime (probably with a ``segmentation
 violation'') due to overflowing the stack.
@@ -11321,9 +11384,9 @@ simply too large for the system, or buggy.)
 @node Nothing Happens
 @subsection Nothing Happens
 @cindex nothing happens
-@cindex naming programs @samp{test}
+@cindex naming programs
 @cindex @samp{test} programs
-@cindex programs named @samp{test}
+@cindex programs, @samp{test}
 It is occasionally reported that a ``simple'' program,
 such as a ``Hello, World!'' program, does nothing when
 it is run, even though the compiler reported no errors,
@@ -11411,7 +11474,7 @@ bugs that lead to these behaviors is, ultimately, the user's
 responsibility, as difficult as that task can sometimes be.
 
 @cindex ``infinite spaces'' printed
-@cindex spaces, endless printing of
+@cindex space, endless printing of
 @cindex libc, non-ANSI or non-default
 @cindex C library
 @cindex linking against non-standard library
@@ -11540,7 +11603,7 @@ instead of converting them to double precision first.
 This would tend to result in output that is more consistent
 with that produced by some other Fortran implementations.
 
-A useful source of information on floating point computation is David
+A useful source of information on floating-point computation is David
 Goldberg, `What Every Computer Scientist Should Know About
 Floating-Point Arithmetic', Computing Surveys, 23, March 1991, pp.@:
 5--48.  At the time of writing this is available online under
@@ -11565,7 +11628,7 @@ as ``spills''.
 
 @cindex spills of floating-point results
 @cindex 80-bit spills
-@cindex truncation of floating-point values
+@cindex truncation, of floating-point values
 (@code{g77} specifically, and @code{gcc} generally, does
 arbitrarily truncate 80-bit results during spills
 as of this writing.
@@ -11577,7 +11640,7 @@ as an option, or as the default behavior.)
 The GNU C library provides routines for controlling the FPU, and other
 documentation about this.
 
-@xref{Floating point precision}, regarding IEEE 754 conformance.
+@xref{Floating-point precision}, regarding IEEE 754 conformance.
 
 @include bugs.texi
 
@@ -11688,7 +11751,7 @@ having to specify, say, a @code{-Wno-col73to80} option.
 
 @node Fortran 90 Support
 @subsection Fortran 90 Support
-@cindex Fortran 90 support
+@cindex Fortran 90, support
 @cindex support, Fortran 90
 
 @code{g77} does not support many of the features that
@@ -11800,8 +11863,10 @@ alleviate this problem).
 
 @node Popular Non-standard Types
 @subsection Popular Non-standard Types
-@cindex INTEGER*2 support
-@cindex LOGICAL*1 support
+@cindex @code{INTEGER*2} support
+@cindex types, @code{INTEGER*2}
+@cindex @code{LOGICAL*1} support
+@cindex types, @code{LOGICAL*1}
 
 @code{g77} doesn't fully support @code{INTEGER*2}, @code{LOGICAL*1},
 and similar.
@@ -11813,7 +11878,10 @@ for them.
 @node Full Support for Compiler Types
 @subsection Full Support for Compiler Types
 
-@cindex REAL*16 support
+@cindex @code{REAL*16} support
+@cindex types, @code{REAL*16}
+@cindex @code{INTEGER*8} support
+@cindex types, @code{INTEGER*8}
 @code{g77} doesn't support @code{INTEGER}, @code{REAL}, and @code{COMPLEX} equivalents
 for @emph{all} applicable back-end-supported types (@code{char}, @code{short int},
 @code{int}, @code{long int}, @code{long long int}, and @code{long double}).
@@ -11829,8 +11897,8 @@ This is scheduled for version 0.6.
 @cindex array elements, in adjustable array bounds
 @cindex function references, in adjustable array bounds
 @cindex array bounds, adjustable
-@cindex DIMENSION statement
-@cindex statements, DIMENSION
+@cindex @code{DIMENSION} statement
+@cindex statements, @code{DIMENSION}
 
 @code{g77} doesn't support more general expressions to dimension
 arrays, such as array element references, function
@@ -12064,7 +12132,7 @@ require much more work on @code{libg2c}.
 
 @cindex FORM='PRINT'
 @cindex ANS carriage control
-@cindex carraige control
+@cindex carriage control
 @pindex asa
 @pindex fpr
 @code{g77} doesn't support @code{FORM='PRINT'} or an equivalent to
@@ -12185,18 +12253,18 @@ files included via the @code{INCLUDE} directive.
 
 @node Bit Operations on Floating-point Data
 @subsection Bit Operations on Floating-point Data
-@cindex AND intrinsic
-@cindex intrinsics, AND
-@cindex OR intrinsic
-@cindex intrinsics, OR
-@cindex SHIFT intrinsic
-@cindex intrinsics, SHIFT
+@cindex @code{And} intrinsic
+@cindex intrinsics, @code{And}
+@cindex @code{Or} intrinsic
+@cindex intrinsics, @code{Or}
+@cindex @code{Shift} intrinsic
+@cindex intrinsics, @code{Shift}
 
 @code{g77} does not allow @code{REAL} and other non-integral types for
-arguments to intrinsics like @code{AND}, @code{OR}, and @code{SHIFT}.
+arguments to intrinsics like @code{And}, @code{Or}, and @code{Shift}.
 
 For example, this program is rejected by @code{g77}, because
-the intrinsic @code{IAND} does not accept @code{REAL} arguments:
+the intrinsic @code{Iand} does not accept @code{REAL} arguments:
 
 @smallexample
 DATA A/7.54/, B/9.112/
@@ -12211,8 +12279,8 @@ END
 
 @node Floating-point Exception Handling
 @subsection Floating-point Exception Handling
-@cindex floating point exceptions
-@cindex exceptions, floating point
+@cindex floating-point, exceptions
+@cindex exceptions, floating-point
 @cindex FPE handling
 @cindex NaN values
 
@@ -12560,7 +12628,7 @@ way around them for now.
 @cindex external names
 @cindex common blocks
 @cindex name space
-@cindex underscores
+@cindex underscore
 
 The current external-interface design, which includes naming of
 external procedures, COMMON blocks, and the library interface,
@@ -12580,8 +12648,8 @@ with popular existing compilers.
 @cindex block data
 @cindex BLOCK DATA statement
 @cindex statements, BLOCK DATA
-@cindex COMMON statement
-@cindex statements, COMMON
+@cindex @code{COMMON} statement
+@cindex statements, @code{COMMON}
 @cindex naming conflicts
 
 @code{g77} doesn't allow a common block and an external procedure or
@@ -12643,8 +12711,8 @@ we do not make because we think GNU Fortran is better without them.
 @node Backslash in Constants
 @subsection Backslash in Constants
 @cindex backslash
-@cindex f77 support
-@cindex support, f77
+@cindex @code{f77} support
+@cindex support, @code{f77}
 
 In the opinion of many experienced Fortran users,
 @samp{-fno-backslash} should be the default, not @samp{-fbackslash},
@@ -14792,6 +14860,8 @@ was not specified on the command line to compile it.
 Free form is a newer form for Fortran code.
 The older, classic form is called fixed form.
 
+@cindex continuation character
+@cindex characters, continuation
 Fixed-form code is visually fairly distinctive, because
 numerical labels and comments are all that appear in
 the first five columns of a line, the sixth column is
@@ -14800,8 +14870,15 @@ and actual statements start at or beyond column 7.
 Spaces generally are not significant, so if you
 see statements such as @samp{REALX,Y} and @samp{DO10I=1,100},
 you are looking at fixed-form code.
+@cindex *
+@cindex asterisk
 Comment lines are indicated by the letter @samp{C} or the symbol
 @samp{*} in column 1.
+@cindex trailing comment
+@cindex comment
+@cindex characters, comment
+@cindex !
+@cindex exclamation point
 (Some code uses @samp{!} or @samp{/*} to begin in-line comments,
 which many compilers support.)
 

@@ -60,6 +60,7 @@ Fixed in @code{egcs}.
 @cindex DNRM2
 @cindex stack, 387 coprocessor
 @cindex ix86
+@cindex x86
 @cindex -O2
 @item
 A code-generation bug afflicts
@@ -123,7 +124,7 @@ This is to be fixed in version 0.6, when @code{g77} will use the
 @cindex compiler memory usage
 @cindex memory usage, of compiler
 @cindex large aggregate areas
-@cindex initialization
+@cindex initialization, bug
 @cindex DATA statement
 @cindex statements, DATA
 @item
