@@ -36,12 +36,18 @@ Boston, MA 02111-1307, USA.  */
    REG_BR_PROB_BASE / 2).  */
    
 
-/* An combined heuristics using Dempster-Shaffer theory.  */
+/* A value used as final outcome of all heuristics.  */
 DEF_PREDICTOR (PRED_COMBINED, "combined", PROB_ALWAYS, 0)
+
+/* An outcome estimated by Dempster-Shaffer theory.  */
+DEF_PREDICTOR (PRED_DS_THEORY, "DS theory", PROB_ALWAYS, 0)
 
 /* An combined heuristics using probability determined by first
    matching heuristics from this list.  */
 DEF_PREDICTOR (PRED_FIRST_MATCH, "first match", PROB_ALWAYS, 0)
+
+/* Heuristic applying when no heuristic bellow applies.  */
+DEF_PREDICTOR (PRED_NO_PREDICTION, "no prediction", PROB_ALWAYS, 0)
 
 /* Mark unconditional jump as taken.  */
 DEF_PREDICTOR (PRED_UNCONDITIONAL, "unconditional jump", PROB_ALWAYS,
