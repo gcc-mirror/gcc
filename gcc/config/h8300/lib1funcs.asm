@@ -442,7 +442,7 @@ ___modsi3:
 	mov	S0,A0
 	mov	S1,A1
 #else
-	mov.l	S0P,A0P
+	mov.l	er3,er0
 #endif
 	bra	exitdiv
 
@@ -455,10 +455,7 @@ ___udivsi3:
 	bsr	divmodsi4
 	bra	reti
 #else
-	;; H8/300H and H8S version of divmodsi4 does not clobber S1P or S2P.
-	PUSHP	S0P
 	bsr	divmodsi4
-	POPP	S0P
 	rts
 #endif
 
@@ -473,11 +470,8 @@ ___umodsi3:
 	mov	S1,A1
 	bra	reti
 #else
-	;; H8/300H and H8S version of divmodsi4 does not clobber S1P or S2P.
-	PUSHP	S0P
 	bsr	divmodsi4
-	mov.l	S0P,A0P
-	POPP	S0P
+	mov.l	er3,er0
 	rts
 #endif
 
@@ -608,17 +602,17 @@ divmodsi4:
 	divxu.w	A1,A2P
 	mov.w	A2E,A0E
 	divxu.w	A1,A0P
-	mov.w	A0E,S0
+	mov.w	A0E,A3
 	mov.w	A2,A0E
-	extu.l	S0P
+	extu.l	A3P
 	rts
 
  	; er0 = er0 / er1
- 	; er4 = er0 % er1
+ 	; er3 = er0 % er1
  	; trashes er1 er2
  	; expects er1 >= 2^16
 DenHighNonZero:
-	mov.l	er0,er4
+	mov.l	er0,er3
 	mov.l	er1,er2
 #ifdef __H8300H__
 divmod_L21:
@@ -647,22 +641,22 @@ divmod_L24:
 	;;  er0 contains shifted dividend
 	;;  er1 contains divisor
 	;;  er2 contains shifted divisor
-	;;  er4 contains dividend, later remainder
+	;;  er3 contains dividend, later remainder
 	divxu.w	r2,er0		; r0 now contains the approximate quotient (AQ)
 	extu.l	er0
 	beq	divmod_L25
 	subs	#1,er0		; er0 = AQ - 1
 	mov.w	e1,r2
 	mulxu.w	r0,er2		; er2 = upper (AQ - 1) * divisor
-	sub.w	r2,e4		; dividend - 65536 * er2
+	sub.w	r2,e3		; dividend - 65536 * er2
 	mov.w	r1,r2
-	mulxu.w	r0,er2		; compute er4 = remainder (tentative)
-	sub.l	er2,er4		; er4 = dividend - (AQ - 1) * divisor
+	mulxu.w	r0,er2		; compute er3 = remainder (tentative)
+	sub.l	er2,er3		; er3 = dividend - (AQ - 1) * divisor
 divmod_L25:
- 	cmp.l	er1,er4		; is divisor < remainder?
+ 	cmp.l	er1,er3		; is divisor < remainder?
 	blo	divmod_L26
  	adds	#1,er0
-	sub.l	er1,er4		; correct the remainder
+	sub.l	er1,er3		; correct the remainder
 divmod_L26:
 	rts
 
