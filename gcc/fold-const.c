@@ -2716,7 +2716,7 @@ sign_bit_p (exp, val)
   int width;
   tree t;
 
-  /* Tree EXP must have a integral type.  */
+  /* Tree EXP must have an integral type.  */
   t = TREE_TYPE (exp);
   if (! INTEGRAL_TYPE_P (t))
     return NULL_TREE;

@@ -4321,7 +4321,7 @@ clear_reload_reg_in_use (regno, opnum, type, mode)
       abort ();
     }
   /* We resolve conflicts with remaining reloads of the same type by
-     excluding the intervals of of reload registers by them from the
+     excluding the intervals of reload registers by them from the
      interval of freed reload registers.  Since we only keep track of
      one set of interval bounds, we might have to exclude somewhat
      more than what would be necessary if we used a HARD_REG_SET here.
