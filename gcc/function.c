@@ -2899,11 +2899,36 @@ purge_addressof_1 (loc, insn, force, store)
 
 	      for (tem = purge_addressof_replacements; tem != NULL_RTX;
 		   tem = XEXP (XEXP (tem, 1), 1))
-		if (rtx_equal_p (x, XEXP (tem, 0)))
-		  {
-		    *loc = XEXP (XEXP (tem, 1), 0);
-		    return;
-		  }
+		{
+		  rtx y = XEXP (tem, 0);
+		  if (GET_CODE (y) == MEM
+		      && rtx_equal_p (XEXP (x, 0), XEXP (y, 0)))
+		    {
+		      /* It can happen that the note may speak of things in
+			 a wider (or just different) mode than the code did. 
+			 This is especially true of REG_RETVAL.  */
+
+		      rtx z = XEXP (XEXP (tem, 1), 0);
+		      if (GET_MODE (x) != GET_MODE (y))
+			{
+			  if (GET_CODE (z) == SUBREG && SUBREG_WORD (z) == 0)
+			    z = SUBREG_REG (z);
+
+			  /* ??? If we'd gotten into any of the really complex
+			     cases below, I'm not sure we can do a proper
+			     replacement.  Might we be able to delete the
+			     note in some cases?  */
+			  if (GET_MODE_SIZE (GET_MODE (x))
+			      < GET_MODE_SIZE (GET_MODE (y)))
+			    abort ();
+
+			  z = gen_lowpart (GET_MODE (x), z);
+			}
+
+		      *loc = z;
+		      return;
+		    }
+		}
 
 	      /* There should always be such a replacement.  */
 	      abort ();
@@ -2991,7 +3016,15 @@ purge_addressof_1 (loc, insn, force, store)
 	    }
 	}
       else if (validate_change (insn, loc, sub, 0))
-	goto restart;
+	{
+	  /* Remember the replacement so that the same one can be done
+	     on the REG_NOTES.  */
+	  purge_addressof_replacements
+	    = gen_rtx_EXPR_LIST (VOIDmode, x,
+				 gen_rtx_EXPR_LIST (VOIDmode, sub,
+						    purge_addressof_replacements));
+	  goto restart;
+	}
     give_up:;
       /* else give up and put it into the stack */
     }
