@@ -153,90 +153,88 @@ struct lang_type GTY(())
 
 
 /* in c-lang.c and objc-act.c */
-extern tree lookup_interface			PARAMS ((tree));
-extern tree is_class_name			PARAMS ((tree));
-extern tree objc_is_id				PARAMS ((tree));
-extern void objc_check_decl			PARAMS ((tree));
-extern void finish_file				PARAMS ((void));
-extern int objc_comptypes                 	PARAMS ((tree, tree, int));
-extern tree objc_message_selector		PARAMS ((void));
-extern tree lookup_objc_ivar			PARAMS ((tree));
-extern void c_expand_body			PARAMS ((tree));
+extern tree lookup_interface (tree);
+extern tree is_class_name (tree);
+extern tree objc_is_id (tree);
+extern void objc_check_decl (tree);
+extern void finish_file (void);
+extern int objc_comptypes (tree, tree, int);
+extern tree objc_message_selector (void);
+extern tree lookup_objc_ivar (tree);
+extern void c_expand_body (tree);
 
 
 /* in c-parse.in */
-extern void c_parse_init			PARAMS ((void));
+extern void c_parse_init (void);
 
 /* in c-aux-info.c */
-extern void gen_aux_info_record                 PARAMS ((tree, int, int, int));
+extern void gen_aux_info_record (tree, int, int, int);
 
 /* in c-decl.c */
-extern int global_bindings_p			PARAMS ((void));
-extern int kept_level_p				PARAMS ((void));
-extern tree getdecls				PARAMS ((void));
-extern void pushlevel				PARAMS ((int));
-extern void insert_block			PARAMS ((tree));
-extern void set_block				PARAMS ((tree));
-extern tree pushdecl				PARAMS ((tree));
+extern int global_bindings_p (void);
+extern int kept_level_p (void);
+extern tree getdecls (void);
+extern void pushlevel (int);
+extern void insert_block (tree);
+extern void set_block (tree);
+extern tree pushdecl (tree);
 
-extern void c_insert_default_attributes		PARAMS ((tree));
-extern void c_init_decl_processing		PARAMS ((void));
-extern void c_dup_lang_specific_decl		PARAMS ((tree));
-extern void c_print_identifier			PARAMS ((FILE *, tree, int));
-extern tree build_array_declarator              PARAMS ((tree, tree, int, int));
-extern tree build_enumerator                    PARAMS ((tree, tree));
-extern void check_for_loop_decls                PARAMS ((void));
-extern void clear_parm_order                    PARAMS ((void));
-extern int  complete_array_type                 PARAMS ((tree, tree, int));
-extern void declare_parm_level                  PARAMS ((int));
-extern tree define_label                        PARAMS ((const char *, int,
-							 tree));
-extern void finish_decl                         PARAMS ((tree, tree, tree));
-extern tree finish_enum                         PARAMS ((tree, tree, tree));
-extern void finish_function                     PARAMS ((int, int));
-extern tree finish_struct                       PARAMS ((tree, tree, tree));
-extern tree get_parm_info                       PARAMS ((int));
-extern tree grokfield                           PARAMS ((const char *, int, tree, tree, tree));
-extern tree groktypename                        PARAMS ((tree));
-extern tree groktypename_in_parm_context        PARAMS ((tree));
-extern tree implicitly_declare                  PARAMS ((tree));
-extern int  in_parm_level_p                     PARAMS ((void));
-extern void keep_next_level                     PARAMS ((void));
-extern tree lookup_name                         PARAMS ((tree));
-extern void parmlist_tags_warning               PARAMS ((void));
-extern void pending_xref_error                  PARAMS ((void));
-extern void c_push_function_context             PARAMS ((struct function *));
-extern void c_pop_function_context              PARAMS ((struct function *));
-extern void pop_label_level                     PARAMS ((void));
-extern void push_label_level                    PARAMS ((void));
-extern void push_parm_decl                      PARAMS ((tree));
-extern tree pushdecl_top_level                  PARAMS ((tree));
-extern tree pushdecl_function_level		PARAMS ((tree, tree));
-extern void pushtag                             PARAMS ((tree, tree));
-extern tree set_array_declarator_type           PARAMS ((tree, tree, int));
-extern tree shadow_label                        PARAMS ((tree));
-extern void shadow_tag                          PARAMS ((tree));
-extern void shadow_tag_warned                   PARAMS ((tree, int));
-extern tree start_enum                          PARAMS ((tree));
-extern int  start_function                      PARAMS ((tree, tree, tree));
-extern tree start_decl                          PARAMS ((tree, tree, int,
-							 tree));
-extern tree start_struct                        PARAMS ((enum tree_code, tree));
-extern void store_parm_decls                    PARAMS ((void));
-extern tree xref_tag                            PARAMS ((enum tree_code, tree));
-extern tree c_begin_compound_stmt               PARAMS ((void));
-extern void c_expand_deferred_function          PARAMS ((tree));
-extern void c_expand_decl_stmt                  PARAMS ((tree));
-extern tree make_pointer_declarator		PARAMS ((tree, tree));
+extern void c_insert_default_attributes (tree);
+extern void c_init_decl_processing (void);
+extern void c_dup_lang_specific_decl (tree);
+extern void c_print_identifier (FILE *, tree, int);
+extern tree build_array_declarator (tree, tree, int, int);
+extern tree build_enumerator (tree, tree);
+extern void check_for_loop_decls (void);
+extern void clear_parm_order (void);
+extern int  complete_array_type (tree, tree, int);
+extern void declare_parm_level (int);
+extern tree define_label (const char *, int, tree);
+extern void finish_decl (tree, tree, tree);
+extern tree finish_enum (tree, tree, tree);
+extern void finish_function (int, int);
+extern tree finish_struct (tree, tree, tree);
+extern tree get_parm_info (int);
+extern tree grokfield (const char *, int, tree, tree, tree);
+extern tree groktypename (tree);
+extern tree groktypename_in_parm_context (tree);
+extern tree implicitly_declare (tree);
+extern int  in_parm_level_p (void);
+extern void keep_next_level (void);
+extern tree lookup_name (tree);
+extern void parmlist_tags_warning (void);
+extern void pending_xref_error (void);
+extern void c_push_function_context (struct function *);
+extern void c_pop_function_context (struct function *);
+extern void pop_label_level (void);
+extern void push_label_level (void);
+extern void push_parm_decl (tree);
+extern tree pushdecl_top_level (tree);
+extern tree pushdecl_function_level (tree, tree);
+extern void pushtag (tree, tree);
+extern tree set_array_declarator_type (tree, tree, int);
+extern tree shadow_label (tree);
+extern void shadow_tag (tree);
+extern void shadow_tag_warned (tree, int);
+extern tree start_enum (tree);
+extern int  start_function (tree, tree, tree);
+extern tree start_decl (tree, tree, int, tree);
+extern tree start_struct (enum tree_code, tree);
+extern void store_parm_decls (void);
+extern tree xref_tag (enum tree_code, tree);
+extern tree c_begin_compound_stmt (void);
+extern void c_expand_deferred_function (tree);
+extern void c_expand_decl_stmt (tree);
+extern tree make_pointer_declarator (tree, tree);
 
 /* in c-objc-common.c */
-extern int c_disregard_inline_limits		PARAMS ((tree));
-extern int c_cannot_inline_tree_fn		PARAMS ((tree *));
-extern bool c_objc_common_init			PARAMS ((void));
-extern int c_missing_noreturn_ok_p		PARAMS ((tree));
-extern void c_objc_common_finish_file		PARAMS ((void));
-extern int defer_fn				PARAMS ((tree));
-extern bool c_warn_unused_global_decl		PARAMS ((tree));
+extern int c_disregard_inline_limits (tree);
+extern int c_cannot_inline_tree_fn (tree *);
+extern bool c_objc_common_init (void);
+extern int c_missing_noreturn_ok_p (tree);
+extern void c_objc_common_finish_file (void);
+extern int defer_fn (tree);
+extern bool c_warn_unused_global_decl (tree);
 
 #define c_build_type_variant(TYPE, CONST_P, VOLATILE_P)		  \
   c_build_qualified_type ((TYPE),				  \
@@ -245,46 +243,42 @@ extern bool c_warn_unused_global_decl		PARAMS ((tree));
 
 #define c_sizeof_nowarn(T)  c_sizeof_or_alignof_type (T, SIZEOF_EXPR, 0)
 /* in c-typeck.c */
-extern tree require_complete_type		PARAMS ((tree));
-extern int comptypes				PARAMS ((tree, tree));
-extern tree c_size_in_bytes                     PARAMS ((tree));
-extern bool c_mark_addressable			PARAMS ((tree));
-extern void c_incomplete_type_error		PARAMS ((tree, tree));
-extern tree c_type_promotes_to			PARAMS ((tree));
-extern tree build_component_ref                 PARAMS ((tree, tree));
-extern tree build_indirect_ref                  PARAMS ((tree, const char *));
-extern tree build_array_ref                     PARAMS ((tree, tree));
-extern tree build_external_ref			PARAMS ((tree, int));
-extern tree parser_build_binary_op              PARAMS ((enum tree_code,
-							 tree, tree));
-extern int c_tree_expr_nonnegative_p          	PARAMS ((tree));
-extern void readonly_warning			PARAMS ((tree, const char *));
-extern tree build_conditional_expr              PARAMS ((tree, tree, tree));
-extern tree build_compound_expr                 PARAMS ((tree));
-extern tree c_cast_expr				PARAMS ((tree, tree));
-extern tree build_c_cast	                PARAMS ((tree, tree));
-extern tree build_modify_expr                   PARAMS ((tree, enum tree_code,
-							 tree));
-extern void store_init_value                    PARAMS ((tree, tree));
-extern void error_init				PARAMS ((const char *));
-extern void pedwarn_init			PARAMS ((const char *));
-extern void start_init				PARAMS ((tree, tree, int));
-extern void finish_init				PARAMS ((void));
-extern void really_start_incremental_init	PARAMS ((tree));
-extern void push_init_level			PARAMS ((int));
-extern tree pop_init_level			PARAMS ((int));
-extern void set_init_index			PARAMS ((tree, tree));
-extern void set_init_label			PARAMS ((tree));
-extern void process_init_element		PARAMS ((tree));
-extern tree build_compound_literal		PARAMS ((tree, tree));
-extern void pedwarn_c99				PARAMS ((const char *, ...))
-							ATTRIBUTE_PRINTF_1;
-extern tree c_start_case                        PARAMS ((tree));
-extern void c_finish_case                       PARAMS ((void));
-extern tree simple_asm_stmt			PARAMS ((tree));
-extern tree build_asm_stmt			PARAMS ((tree, tree, tree,
-							 tree, tree));
-extern tree c_convert_parm_for_inlining		PARAMS ((tree, tree, tree));
+extern tree require_complete_type (tree);
+extern int comptypes (tree, tree);
+extern tree c_size_in_bytes (tree);
+extern bool c_mark_addressable (tree);
+extern void c_incomplete_type_error (tree, tree);
+extern tree c_type_promotes_to (tree);
+extern tree build_component_ref (tree, tree);
+extern tree build_indirect_ref (tree, const char *);
+extern tree build_array_ref (tree, tree);
+extern tree build_external_ref (tree, int);
+extern tree parser_build_binary_op (enum tree_code, tree, tree);
+extern int c_tree_expr_nonnegative_p (tree);
+extern void readonly_warning (tree, const char *);
+extern tree build_conditional_expr (tree, tree, tree);
+extern tree build_compound_expr (tree);
+extern tree c_cast_expr (tree, tree);
+extern tree build_c_cast (tree, tree);
+extern tree build_modify_expr (tree, enum tree_code, tree);
+extern void store_init_value (tree, tree);
+extern void error_init (const char *);
+extern void pedwarn_init (const char *);
+extern void start_init (tree, tree, int);
+extern void finish_init (void);
+extern void really_start_incremental_init (tree);
+extern void push_init_level (int);
+extern tree pop_init_level (int);
+extern void set_init_index (tree, tree);
+extern void set_init_label (tree);
+extern void process_init_element (tree);
+extern tree build_compound_literal (tree, tree);
+extern void pedwarn_c99 (const char *, ...) ATTRIBUTE_PRINTF_1;
+extern tree c_start_case (tree);
+extern void c_finish_case (void);
+extern tree simple_asm_stmt (tree);
+extern tree build_asm_stmt (tree, tree, tree, tree, tree);
+extern tree c_convert_parm_for_inlining (tree, tree, tree);
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
@@ -306,7 +300,7 @@ extern int current_function_returns_abnormally;
 extern int system_header_p;
 
 /* In c-decl.c */
-extern void c_finish_incomplete_decl PARAMS ((tree));
+extern void c_finish_incomplete_decl (tree);
 
 extern GTY(()) tree static_ctors;
 extern GTY(()) tree static_dtors;

@@ -40,30 +40,28 @@ static struct
 } print;
 
 /* General output routines.  */
-static void scan_translation_unit PARAMS ((cpp_reader *));
-static void scan_translation_unit_trad PARAMS ((cpp_reader *));
-static void account_for_newlines PARAMS ((const uchar *, size_t));
-static int dump_macro PARAMS ((cpp_reader *, cpp_hashnode *, void *));
+static void scan_translation_unit (cpp_reader *);
+static void scan_translation_unit_trad (cpp_reader *);
+static void account_for_newlines (const uchar *, size_t);
+static int dump_macro (cpp_reader *, cpp_hashnode *, void *);
 
-static void print_line PARAMS ((const struct line_map *, unsigned int,
-				const char *));
-static void maybe_print_line PARAMS ((const struct line_map *, unsigned int));
+static void print_line (const struct line_map *, unsigned int,
+			const char *);
+static void maybe_print_line (const struct line_map *, unsigned int);
 
 /* Callback routines for the parser.   Most of these are active only
    in specific modes.  */
-static void cb_line_change PARAMS ((cpp_reader *, const cpp_token *, int));
-static void cb_define	PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
-static void cb_undef	PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
-static void cb_include	PARAMS ((cpp_reader *, unsigned int,
-				 const unsigned char *, const char *, int));
-static void cb_ident	  PARAMS ((cpp_reader *, unsigned int,
-				   const cpp_string *));
-static void cb_def_pragma PARAMS ((cpp_reader *, unsigned int));
+static void cb_line_change (cpp_reader *, const cpp_token *, int);
+static void cb_define (cpp_reader *, unsigned int, cpp_hashnode *);
+static void cb_undef (cpp_reader *, unsigned int, cpp_hashnode *);
+static void cb_include (cpp_reader *, unsigned int, const unsigned char *,
+			const char *, int);
+static void cb_ident (cpp_reader *, unsigned int, const cpp_string *);
+static void cb_def_pragma (cpp_reader *, unsigned int);
 
 /* Preprocess and output.  */
 void
-preprocess_file (pfile)
-     cpp_reader *pfile;
+preprocess_file (cpp_reader *pfile)
 {
   /* A successful cpp_read_main_file guarantees that we can call
      cpp_scan_nooutput or cpp_get_token next.  */
@@ -90,8 +88,7 @@ preprocess_file (pfile)
 
 /* Set up the callbacks as appropriate.  */
 void
-init_pp_output (out_stream)
-     FILE *out_stream;
+init_pp_output (FILE *out_stream)
 {
   cpp_callbacks *cb = cpp_get_callbacks (parse_in);
 
@@ -129,8 +126,7 @@ init_pp_output (out_stream)
 /* Writes out the preprocessed file, handling spacing and paste
    avoidance issues.  */
 static void
-scan_translation_unit (pfile)
-     cpp_reader *pfile;
+scan_translation_unit (cpp_reader *pfile)
 {
   bool avoid_paste = false;
 
@@ -178,9 +174,7 @@ scan_translation_unit (pfile)
 
 /* Adjust print.line for newlines embedded in output.  */
 static void
-account_for_newlines (str, len)
-     const uchar *str;
-     size_t len;
+account_for_newlines (const uchar *str, size_t len)
 {
   while (len--)
     if (*str++ == '\n')
@@ -189,8 +183,7 @@ account_for_newlines (str, len)
 
 /* Writes out a traditionally preprocessed file.  */
 static void
-scan_translation_unit_trad (pfile)
-     cpp_reader *pfile;
+scan_translation_unit_trad (cpp_reader *pfile)
 {
   while (_cpp_read_logical_line_trad (pfile))
     {
@@ -207,9 +200,7 @@ scan_translation_unit_trad (pfile)
    different line to the current one, output the required newlines or
    a line marker, and return 1.  Otherwise return 0.  */
 static void
-maybe_print_line (map, line)
-     const struct line_map *map;
-     unsigned int line;
+maybe_print_line (const struct line_map *map, unsigned int line)
 {
   /* End the previous line of text.  */
   if (print.printed)
@@ -234,10 +225,7 @@ maybe_print_line (map, line)
 /* Output a line marker for logical line LINE.  Special flags are "1"
    or "2" indicating entering or leaving a file.  */
 static void
-print_line (map, line, special_flags)
-     const struct line_map *map;
-     unsigned int line;
-     const char *special_flags;
+print_line (const struct line_map *map, unsigned int line, const char *special_flags)
 {
   /* End any previous line of text.  */
   if (print.printed)
@@ -272,10 +260,7 @@ print_line (map, line, special_flags)
 /* Called when a line of output is started.  TOKEN is the first token
    of the line, and at end of file will be CPP_EOF.  */
 static void
-cb_line_change (pfile, token, parsing_args)
-     cpp_reader *pfile;
-     const cpp_token *token;
-     int parsing_args;
+cb_line_change (cpp_reader *pfile, const cpp_token *token, int parsing_args)
 {
   if (token->type == CPP_EOF || parsing_args)
     return;
@@ -303,10 +288,8 @@ cb_line_change (pfile, token, parsing_args)
 }
 
 static void
-cb_ident (pfile, line, str)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-     unsigned int line;
-     const cpp_string * str;
+cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED, unsigned int line,
+	  const cpp_string *str)
 {
   maybe_print_line (print.map, line);
   fprintf (print.outf, "#ident \"%s\"\n", str->text);
@@ -314,10 +297,7 @@ cb_ident (pfile, line, str)
 }
 
 static void
-cb_define (pfile, line, node)
-     cpp_reader *pfile;
-     unsigned int line;
-     cpp_hashnode *node;
+cb_define (cpp_reader *pfile, unsigned int line, cpp_hashnode *node)
 {
   maybe_print_line (print.map, line);
   fputs ("#define ", print.outf);
@@ -334,10 +314,8 @@ cb_define (pfile, line, node)
 }
 
 static void
-cb_undef (pfile, line, node)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-     unsigned int line;
-     cpp_hashnode *node;
+cb_undef (cpp_reader *pfile ATTRIBUTE_UNUSED, unsigned int line,
+	  cpp_hashnode *node)
 {
   maybe_print_line (print.map, line);
   fprintf (print.outf, "#undef %s\n", NODE_NAME (node));
@@ -345,12 +323,8 @@ cb_undef (pfile, line, node)
 }
 
 static void
-cb_include (pfile, line, dir, header, angle_brackets)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-     unsigned int line;
-     const unsigned char *dir;
-     const char *header;
-     int angle_brackets;
+cb_include (cpp_reader *pfile ATTRIBUTE_UNUSED, unsigned int line,
+	    const unsigned char *dir, const char *header, int angle_brackets)
 {
   maybe_print_line (print.map, line);
   if (angle_brackets)
@@ -365,8 +339,7 @@ cb_include (pfile, line, dir, header, angle_brackets)
    pointing to freed memory, and so must not be dereferenced.  */
 
 void
-pp_file_change (map)
-     const struct line_map *map;
+pp_file_change (const struct line_map *map)
 {
   const char *flags = "";
 
@@ -398,9 +371,7 @@ pp_file_change (map)
 
 /* Copy a #pragma directive to the preprocessed output.  */
 static void
-cb_def_pragma (pfile, line)
-     cpp_reader *pfile;
-     unsigned int line;
+cb_def_pragma (cpp_reader *pfile, unsigned int line)
 {
   maybe_print_line (print.map, line);
   fputs ("#pragma ", print.outf);
@@ -410,10 +381,7 @@ cb_def_pragma (pfile, line)
 
 /* Dump out the hash table.  */
 static int
-dump_macro (pfile, node, v)
-     cpp_reader *pfile;
-     cpp_hashnode *node;
-     void *v ATTRIBUTE_UNUSED;
+dump_macro (cpp_reader *pfile, cpp_hashnode *node, void *v ATTRIBUTE_UNUSED)
 {
   if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
     {

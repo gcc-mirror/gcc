@@ -1,5 +1,5 @@
 /* Various declarations for the C and C++ pretty-printers.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -32,7 +32,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 typedef struct c_pretty_print_info *c_pretty_printer;
 
 /* The type of a C pretty-printer 'member' function.  */
-typedef void (*c_pretty_print_fn) PARAMS ((c_pretty_printer, tree));
+typedef void (*c_pretty_print_fn) (c_pretty_printer, tree);
 
 struct c_pretty_print_info
 {
@@ -144,22 +144,22 @@ struct c_pretty_print_info
    macro must be overridden by any subclass of c_pretty_print_info.  */
 #define pp_c_base(PP)  (PP)
 
-extern void pp_c_pretty_printer_init   PARAMS ((c_pretty_printer));
+extern void pp_c_pretty_printer_init (c_pretty_printer);
 
 /* Declarations.  */
-void pp_c_attributes                   PARAMS ((c_pretty_printer, tree));
-void pp_c_cv_qualifier                 PARAMS ((c_pretty_printer, int));
-void pp_c_parameter_declaration_clause PARAMS ((c_pretty_printer, tree));
-void pp_c_declaration                  PARAMS ((c_pretty_printer, tree));
+void pp_c_attributes (c_pretty_printer, tree);
+void pp_c_cv_qualifier (c_pretty_printer, int);
+void pp_c_parameter_declaration_clause (c_pretty_printer, tree);
+void pp_c_declaration (c_pretty_printer, tree);
 /* Statements.  */
-void pp_c_statement                    PARAMS ((c_pretty_printer, tree));
+void pp_c_statement (c_pretty_printer, tree);
 /* Expressions.  */
-void pp_c_expression                   PARAMS ((c_pretty_printer, tree));
-void pp_c_logical_or_expression        PARAMS ((c_pretty_printer, tree));
-void pp_c_expression_list              PARAMS ((c_pretty_printer, tree));
-void pp_c_cast_expression              PARAMS ((c_pretty_printer, tree));
-void pp_c_postfix_expression           PARAMS ((c_pretty_printer, tree));
-void pp_c_initializer                  PARAMS ((c_pretty_printer, tree));
-void pp_c_literal                      PARAMS ((c_pretty_printer, tree));
+void pp_c_expression (c_pretty_printer, tree);
+void pp_c_logical_or_expression (c_pretty_printer, tree);
+void pp_c_expression_list (c_pretty_printer, tree);
+void pp_c_cast_expression (c_pretty_printer, tree);
+void pp_c_postfix_expression (c_pretty_printer, tree);
+void pp_c_initializer (c_pretty_printer, tree);
+void pp_c_literal (c_pretty_printer, tree);
 
 #endif /* GCC_C_PRETTY_PRINTER */
