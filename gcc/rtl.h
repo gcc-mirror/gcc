@@ -818,6 +818,7 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
 #define SUBREG_BYTE(RTX) XCUINT(RTX, 1, SUBREG)
 
 /* in rtlanal.c */
+extern unsigned int subreg_lsb		PARAMS ((rtx));
 extern unsigned int subreg_regno_offset 	PARAMS ((unsigned int, 
 							 enum machine_mode, 
 							 unsigned int, 

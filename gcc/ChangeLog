@@ -1,3 +1,8 @@
+Sat Dec 22 12:20:20 EST 2001  John Wehle  (john@feith.com)
+
+	* rtl.h (subreg_lsb): Declare.
+	* rtlanal.c (subreg_lsb): Implement.
+
 Sat Dec 22 08:59:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* predict.c: Reformatting and minor cleanups.
