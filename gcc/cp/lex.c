@@ -775,7 +775,7 @@ void
 finish_parse ()
 {
 #if USE_CPPLIB
-  cpp_finish (&parse_in, 0 /* no printer */);
+  cpp_finish (&parse_in);
   errorcount += parse_in.errors;
 #else
   fclose (finput);

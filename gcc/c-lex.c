@@ -159,8 +159,7 @@ static void extend_token_buffer_to	PARAMS ((int));
 static int read_line_number		PARAMS ((int *));
 static void process_directive		PARAMS ((void));
 #else
-static void cb_ident		PARAMS ((cpp_reader *, const unsigned char *,
-					 unsigned int));
+static void cb_ident		PARAMS ((cpp_reader *, const cpp_string *));
 static void cb_enter_file	PARAMS ((cpp_reader *));
 static void cb_leave_file	PARAMS ((cpp_reader *));
 static void cb_rename_file	PARAMS ((cpp_reader *));
@@ -221,7 +220,7 @@ init_c_lex (filename)
   /* Make sure parse_in.digraphs matches flag_digraphs.  */
   CPP_OPTION (&parse_in, digraphs) = flag_digraphs;
 
-  if (! cpp_start_read (&parse_in, 0 /* no printer */, filename))
+  if (! cpp_start_read (&parse_in, filename))
     abort ();
 
   if (filename == 0 || !strcmp (filename, "-"))
@@ -673,16 +672,15 @@ linenum:
    No need to deal with linemarkers under normal conditions.  */
 
 static void
-cb_ident (pfile, str, len)
+cb_ident (pfile, str)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
-     const unsigned char *str;
-     unsigned int len;
+     const cpp_string *str;
 {
 #ifdef ASM_OUTPUT_IDENT
   if (! flag_no_ident)
     {
       /* Convert escapes in the string.  */
-      tree value = lex_string ((const char *)str, len, 0);
+      tree value = lex_string ((const char *)str->text, str->len, 0);
       ASM_OUTPUT_IDENT (asm_out_file, TREE_STRING_POINTER (value));
     }
 #endif
@@ -785,11 +783,15 @@ cb_def_pragma (pfile)
      -Wunknown-pragmas has been given. */
   if (warn_unknown_pragmas > in_system_header)
     {
-      const unsigned char *space, *name;
-      const cpp_token *t = pfile->first_directive_token + 2;
+      const unsigned char *space, *name = 0;
+      cpp_token s;
 
-      space = t[0].val.node->name;
-      name  = t[1].type == CPP_NAME ? t[1].val.node->name : 0;
+      cpp_get_token (pfile, &s);
+      space = cpp_token_as_text (pfile, &s);
+      cpp_get_token (pfile, &s);
+      if (s.type == CPP_NAME)
+	name = cpp_token_as_text (pfile, &s);
+
       if (name)
 	warning ("ignoring #pragma %s %s", space, name);
       else
@@ -1417,64 +1419,56 @@ c_lex (value)
      tree *value;
 {
 #if USE_CPPLIB
-  const cpp_token *tok;
+  cpp_token tok;
   enum cpp_ttype type;
 
   retry:
   timevar_push (TV_CPP);
-  tok = cpp_get_token (&parse_in);
+  cpp_get_token (&parse_in, &tok);
   timevar_pop (TV_CPP);
 
   /* The C++ front end does horrible things with the current line
      number.  To ensure an accurate line number, we must reset it
-     every time we return a token.  If we reset it from tok->line
-     every time, we'll get line numbers inside macros referring to the
-     macro definition; this is nice, but we don't want to change the
-     behavior until integrated mode is the only option.  So we keep our
-     own idea of the line number, and reset it from tok->line at each
-     new line (which never happens inside a macro).  */
-  if (tok->flags & BOL)
-    lex_lineno = tok->line;
+     every time we return a token.  */
+  lex_lineno = cpp_get_line (&parse_in)->line;
 
   *value = NULL_TREE;
   lineno = lex_lineno;
-  type = tok->type;
+  type = tok.type;
   switch (type)
     {
     case CPP_OPEN_BRACE:  indent_level++;  break;
     case CPP_CLOSE_BRACE: indent_level--;  break;
 
-    /* Issue this error here, where we can get at tok->val.aux.  */
+    /* Issue this error here, where we can get at tok.val.aux.  */
     case CPP_OTHER:
-      if (ISGRAPH (tok->val.aux))
-	error ("stray '%c' in program", tok->val.aux);
+      if (ISGRAPH (tok.val.aux))
+	error ("stray '%c' in program", tok.val.aux);
       else
-	error ("stray '\\%#o' in program", tok->val.aux);
+	error ("stray '\\%#o' in program", tok.val.aux);
       goto retry;
       
-    case CPP_DEFINED:
-      type = CPP_NAME;
     case CPP_NAME:
-      *value = get_identifier ((const char *)tok->val.node->name);
+      *value = get_identifier ((const char *)tok.val.node->name);
       break;
 
     case CPP_INT:
     case CPP_FLOAT:
     case CPP_NUMBER:
-      *value = lex_number ((const char *)tok->val.str.text, tok->val.str.len);
+      *value = lex_number ((const char *)tok.val.str.text, tok.val.str.len);
       break;
 
     case CPP_CHAR:
     case CPP_WCHAR:
-      *value = lex_charconst ((const char *)tok->val.str.text,
-			      tok->val.str.len, tok->type == CPP_WCHAR);
+      *value = lex_charconst ((const char *)tok.val.str.text,
+			      tok.val.str.len, tok.type == CPP_WCHAR);
       break;
 
     case CPP_STRING:
     case CPP_WSTRING:
     case CPP_OSTRING:
-      *value = lex_string ((const char *)tok->val.str.text,
-			   tok->val.str.len, tok->type == CPP_WSTRING);
+      *value = lex_string ((const char *)tok.val.str.text,
+			   tok.val.str.len, tok.type == CPP_WSTRING);
       break;
 
       /* These tokens should not be visible outside cpplib.  */
