@@ -772,14 +772,14 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
   (C) == 'U' ? EXTRA_CONSTRAINT_U (X) :		\
   0)
 
+#define EXTRA_MEMORY_CONSTRAINT(X, STR) ((X) == 'Q')
+
 #define EXTRA_CONSTRAINT_Q(X)				\
  (							\
-  /* Slottable addressing modes:			\
-     A register?  FIXME: Unnecessary.  */		\
-  (BASE_P (X) && REGNO (X) != CRIS_PC_REGNUM)		\
-  /* Indirect register: [reg]?  */			\
-  || (GET_CODE (X) == MEM && BASE_P (XEXP (X, 0))	\
-      && REGNO (XEXP (X, 0)) != CRIS_PC_REGNUM)		\
+  /* Just an indirect register (happens to also be	\
+     "all" slottable memory addressing modes not	\
+     covered by other constraints, i.e. '>').  */	\
+  GET_CODE (X) == MEM && BASE_P (XEXP (X, 0))		\
  )
 
 #define EXTRA_CONSTRAINT_R(X)					\
