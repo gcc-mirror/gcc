@@ -1,3 +1,8 @@
+2001-07-30  H.J. Lu <hjl@gnu.org>
+
+	* config/mips/linux.h (CPLUSPLUS_CPP_SPEC): Add
+	-D_GNU_SOURCE.
+
 2001-07-30  H.J. Lu  (hjl@gnu.org)
 
 	* config/mips/linux.h (ASM_DECLARE_FUNCTION_NAME): Defined.
