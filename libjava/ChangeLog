@@ -1,5 +1,10 @@
 2002-12-30  Mark Wielaard  <mark@klomp.org>
 
+	* java/net/URLStreamHandler.java (toExternalForm): Ignore port
+	if zero or smaller.
+
+2002-12-30  Mark Wielaard  <mark@klomp.org>
+
 	* java/util/Properties (formatForOutput): Don't fall through to
 	default case after escaping character.
 

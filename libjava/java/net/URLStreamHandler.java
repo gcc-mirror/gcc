@@ -436,7 +436,7 @@ public abstract class URLStreamHandler
     // ignores a non-default port if host is null or "".  That is inconsistent
     // with the spec since the result of this method is spec'ed so it can be
     // used to construct a new URL that is equivalent to the original.
-    boolean port_needed = port >= 0 && port != getDefaultPort();
+    boolean port_needed = port > 0 && port != getDefaultPort();
     if (port_needed)
       sb.append(':').append(port);
 
