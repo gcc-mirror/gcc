@@ -9662,10 +9662,11 @@ patch_invoke (patch, method, args)
 {
   tree dtable, func;
   tree original_call, t, ta;
+  tree cond = NULL_TREE;
 
   /* Last step for args: convert build-in types. If we're dealing with
      a new TYPE() type call, the first argument to the constructor
-     isn't found in the incomming argument list, but delivered by
+     isn't found in the incoming argument list, but delivered by
      `new' */
   t = TYPE_ARG_TYPES (TREE_TYPE (method));
   if (TREE_CODE (patch) == NEW_CLASS_EXPR)
@@ -9693,6 +9694,22 @@ patch_invoke (patch, method, args)
 	  func = build_invokevirtual (dtable, method);
 	  break;
 
+	case INVOKE_NONVIRTUAL:
+	  /* If the object for the method call is null, we throw an
+	     exception.  We don't do this if the object is the current
+	     method's `this'.  In other cases we just rely on an
+	     optimization pass to eliminate redundant checks.  */
+	  if (TREE_VALUE (args) != current_this)
+	    {
+	      /* We use a SAVE_EXPR here to make sure we only evaluate
+		 the new `self' expression once.  */
+	      tree save_arg = save_expr (TREE_VALUE (args));
+	      TREE_VALUE (args) = save_arg;
+	      cond = build (EQ_EXPR, boolean_type_node, save_arg,
+			    null_pointer_node);
+	    }
+	  /* Fall through.  */
+
 	case INVOKE_SUPER:
 	case INVOKE_STATIC:
 	  func = build_known_method_ref (method, TREE_TYPE (method),
@@ -9718,7 +9735,7 @@ patch_invoke (patch, method, args)
   TREE_OPERAND (patch, 1) = args;
   original_call = patch;
 
-  /* We're processing a `new TYPE ()' form. New is called an its
+  /* We're processing a `new TYPE ()' form. New is called and its
      returned value is the first argument to the constructor. We build
      a COMPOUND_EXPR and use saved expression so that the overall NEW
      expression value is a pointer to a newly created and initialized
@@ -9748,6 +9765,26 @@ patch_invoke (patch, method, args)
       TREE_SET_CODE (original_call, CALL_EXPR);
       patch = build (COMPOUND_EXPR, TREE_TYPE (new), patch, saved_new);
     }
+
+  /* If COND is set, then we are building a check to see if the object
+     is NULL.  */
+  if (cond != NULL_TREE)
+    {
+      /* We have to make the `then' branch a compound expression to
+	 make the types turn out right.  This seems bizarre.  */
+      patch = build (COND_EXPR, TREE_TYPE (patch), cond,
+		     build (COMPOUND_EXPR, TREE_TYPE (patch),
+			    build (CALL_EXPR, void_type_node,
+				   build_address_of (soft_nullpointer_node),
+				   NULL_TREE, NULL_TREE),
+			    (FLOAT_TYPE_P (TREE_TYPE (patch))
+			     ? build_real (TREE_TYPE (patch), dconst0)
+			     : build1 (CONVERT_EXPR, TREE_TYPE (patch),
+				       integer_zero_node))),
+		     patch);
+      TREE_SIDE_EFFECTS (patch) = 1;
+    }
+
   return patch;
 }
 
@@ -9761,17 +9798,22 @@ invocation_mode (method, super)
   if (super)
     return INVOKE_SUPER;
 
-  if (access & ACC_STATIC || access & ACC_FINAL || access & ACC_PRIVATE)
+  if (access & ACC_STATIC)
     return INVOKE_STATIC;
 
-  if (CLASS_FINAL (TYPE_NAME (DECL_CONTEXT (method))))
-    return INVOKE_STATIC;
-  
-  if (CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (method))))
-    return INVOKE_INTERFACE;
-  
+  /* We have to look for a constructor before we handle nonvirtual
+     calls; otherwise the constructor will look nonvirtual.  */
   if (DECL_CONSTRUCTOR_P (method))
     return INVOKE_STATIC;
+
+  if (access & ACC_FINAL || access & ACC_PRIVATE)
+    return INVOKE_NONVIRTUAL;
+
+  if (CLASS_FINAL (TYPE_NAME (DECL_CONTEXT (method))))
+    return INVOKE_NONVIRTUAL;
+
+  if (CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (method))))
+    return INVOKE_INTERFACE;
 
   return INVOKE_VIRTUAL;
 }
