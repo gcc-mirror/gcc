@@ -247,10 +247,6 @@ if test -f ${srcdir}/config/${cpu_type}/${cpu_type}-protos.h
 then
 	tm_p_file=${cpu_type}/${cpu_type}-protos.h
 fi
-if test -f ${srcdir}/config/${cpu_type}/x-${cpu_type}
-then
-	xmake_file=${cpu_type}/x-${cpu_type}
-fi
 # On a.out targets, we need to use collect2.
 case $machine in
 *-*-*aout*)
@@ -292,8 +288,6 @@ case $machine in
 	tm_file=${cpu_type}/openbsd.h
 	tmake_file="t-libc-ok t-openbsd"
 	xm_defines=POSIX
-	# don't depend on processor x-fragments as well
-	xmake_file=
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 		tmake_file="${tmake_file} t-openbsd-thread"
@@ -326,7 +320,6 @@ case $machine in
 a29k-*-bsd* | a29k-*-sym1*)
 	tm_file="${tm_file} a29k/unix.h"
 	xm_defines=POSIX
-	xmake_file=a29k/x-unix
 	use_collect2=yes
 	;;
 a29k-*-udi | a29k-*-coff)
@@ -440,7 +433,6 @@ alpha*-dec-osf*)
 	fi
 	use_collect2=yes
 	tmake_file="alpha/t-alpha alpha/t-ieee alpha/t-osf"
-	xmake_file=alpha/x-osf
 	case $machine in
 	  *-*-osf1*)
 	    tm_file="${tm_file} alpha/osf.h alpha/osf12.h alpha/osf2or3.h"
@@ -644,7 +636,6 @@ hppa*64*-*-linux* | parisc*64*-*-linux*)
 	tm_file="pa/pa64-start.h ${tm_file} linux.h pa/pa-linux.h \
 		 pa/pa64-regs.h pa/pa-64.h pa/pa64-linux.h"
 	tmake_file=pa/t-linux64
-	xmake_file=x-linux
 	gas=yes gnu_ld=yes
 	;;
 hppa*-*-linux* | parisc*-*-linux*)
@@ -652,7 +643,6 @@ hppa*-*-linux* | parisc*-*-linux*)
 	tm_file="${tm_file} linux.h pa/pa-linux.h \
 		 pa/pa32-regs.h pa/pa32-linux.h"
 	tmake_file=pa/t-linux
-	xmake_file=x-linux
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gas=yes gnu_ld=yes
 	if test x$enable_threads = xyes; then
@@ -925,7 +915,6 @@ i[34567]86-ibm-aix*)		# IBM PS/2 running AIX
 		use_collect2=yes
 	fi
 	xm_defines=POSIX
-	xmake_file=i386/x-aix
 	;;
 i[34567]86-ncr-sysv4*)		# NCR 3000 - ix86 running system V.4
 	xm_defines="POSIX SMALL_ARG_MAX"
@@ -1154,7 +1143,6 @@ i[34567]86-*-osfrose*)		# 386 using OSF/rose
 		tm_file=i386/osfrose.h
 		use_collect2=yes
 	fi
-	xmake_file=i386/x-osfrose
 	tmake_file=i386/t-osf
 	extra_objs=halfpic.o
 	;;
@@ -1301,7 +1289,6 @@ i[34567]86-*-osf1*)		# Intel 80386's running OSF/1 1.3+
 		tm_file=i386/osf1elf.h
 	fi
 	tmake_file=i386/t-osf1elf
-	xmake_file=i386/x-osf1elf
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	;;
 i[34567]86-*-sysv*)		# Intel 80386's running system V
@@ -1634,7 +1621,6 @@ m68k-bull-sysv*)		# Bull DPX/2
 		tm_file=m68k/dpx2.h
 	fi
 	xm_defines=POSIX
-	xmake_file=m68k/x-dpx2
 	use_collect2=yes
 	extra_headers=math-68881.h
 	;;
@@ -2160,7 +2146,6 @@ mips-sgi-*)			# Mostly like a MIPS.
 		tm_file="${tm_file} dbx.h"
 	fi
 	xm_defines=POSIX
-	xmake_file=mips/x-iris3
 	if test x$gas = xyes
 	then
 		tmake_file=mips/t-mips-gas
@@ -2174,7 +2159,6 @@ mips-sgi-*)			# Mostly like a MIPS.
 	;;
 mips-dec-osfrose*)		# Decstation running OSF/1 reference port with OSF/rose.
 	tm_file="mips/osfrose.h ${tm_file}"
-	xmake_file=mips/x-osfrose
 	tmake_file=mips/t-osfrose
 	extra_objs=halfpic.o
 	use_collect2=yes
@@ -2251,7 +2235,6 @@ mips-sony-bsd* | mips-sony-newsos*)	# Sony NEWS 3600 or risc/news.
 	then
 		use_collect2=yes
 	fi
-	xmake_file=mips/x-sony
 	;;
 mips-sony-sysv*)		# Sony NEWS 3800 with NEWSOS5.0.
 				# That is based on svr4.
@@ -2278,7 +2261,6 @@ mips-tandem-sysv4*)		# Tandem S2 running NonStop UX
 		tm_file="${tm_file} dbx.h"
 	fi
 	xm_defines=POSIX
-	xmake_file=mips/x-sysv
 	if test x$gas = xyes
 	then
 		tmake_file=mips/t-mips-gas
@@ -2348,7 +2330,6 @@ mips-*-riscos[56789]sysv4*)
 	if test x$stabs = xyes; then
 		tm_file="${tm_file} dbx.h"
 	fi
-	xmake_file=mips/x-sysv
 	if test x$gas = xyes
 	then
 		tmake_file=mips/t-svr4-gas
@@ -2367,7 +2348,6 @@ mips-*-sysv4* | mips-*-riscos[1234]sysv4* | mips-*-riscossysv4*)
 		tm_file="${tm_file} dbx.h"
 	fi
 	xm_defines=POSIX
-	xmake_file=mips/x-sysv
 	if test x$gas = xyes
 	then
 		tmake_file=mips/t-svr4-gas
@@ -2386,7 +2366,6 @@ mips-*-riscos[56789]sysv*)
 		tm_file="${tm_file} dbx.h"
 	fi
 	xm_defines=POSIX
-	xmake_file=mips/x-sysv
 	if test x$gas = xyes
 	then
 		tmake_file=mips/t-svr3-gas
@@ -2405,7 +2384,6 @@ mips-*-sysv* | mips-*-riscos*sysv*)
 		tm_file="${tm_file} dbx.h"
 	fi
 	xm_defines=POSIX
-	xmake_file=mips/x-sysv
 	if test x$gas = xyes
 	then
 		tmake_file=mips/t-svr3-gas
@@ -2736,7 +2714,6 @@ powerpcle-*-solaris2*)
 rs6000-ibm-aix3.[01]*)
 	xm_defines=POSIX
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix31.h"
-	xmake_file=rs6000/x-aix31
 	float_format=none
 	use_collect2=yes
 	;;
@@ -2751,7 +2728,6 @@ rs6000-ibm-aix4.[12]* | powerpc-ibm-aix4.[12]*)
 	xm_defines=POSIX
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix41.h"
 	tmake_file=rs6000/t-newas
-	xmake_file=rs6000/x-aix41
 	float_format=none
 	use_collect2=yes
 	;;
@@ -2759,7 +2735,6 @@ rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 	xm_defines=POSIX
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix43.h"
 	tmake_file=rs6000/t-aix43
-	xmake_file=rs6000/x-aix41
 	float_format=none
 	use_collect2=yes
 	thread_file='aix'
@@ -2768,7 +2743,6 @@ rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	xm_defines=POSIX
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix51.h"
 	tmake_file=rs6000/t-aix43
-	xmake_file=rs6000/x-aix41
 	float_format=none
 	use_collect2=yes
 	thread_file='aix'
@@ -3208,10 +3182,6 @@ xscale-*-coff)
 esac
 
 case $machine in
-*-*-sysv4*)
-	xmake_try_sysv=x-sysv
-	install_headers_dir=install-headers-cpio
-	;;
 *-*-sysv*)
 	install_headers_dir=install-headers-cpio
 	;;

@@ -1192,9 +1192,11 @@ if test $gcc_cv_decl_char_bit = no; then
  gcc_cv_c_nbby=
  while test $i -lt 65; do
    AC_TRY_COMPILE(,
-   [switch(0) { case 0: case (char)(1 << $i) && (char)(1 << $i) != 1: ; }],
-         gcc_cv_c_nbby=$i
-         break)
+     [switch(0) {
+  case (unsigned char)((unsigned long)1 << $i) == ((unsigned long)1 << $i):
+  case (unsigned char)((unsigned long)1<<($i-1)) == ((unsigned long)1<<($i-1)):
+  ; }], 
+     [gcc_cv_c_nbby=$i; break])
    i=`expr $i + 1`
  done
  test -z "$gcc_cv_c_nbby" && gcc_cv_c_nbby=failed

@@ -1,3 +1,36 @@
+2001-05-01  Zack Weinberg  <zackw@stanford.edu>
+
+	* config.gcc: Don't default xmake_file to ${cpu_type}/x-${cpu_type}.
+	Remove references to deleted files.
+	(*-*-openbsd): No need to override xmake_file.
+	(*-*-sysv4): Treat like *-*-sysv.
+
+	* configure.in: Probe for ldopen in various places, and set up
+	collect2 to be linked with them if found.
+	Don't dink with Windows registry stuff unless $host_os is a
+	Win32 os name.  Check to see if we need -ladvapi32.
+	* configure: Regenerate.
+
+	* Makefile: Get rid of CLIB and HOST_CLIB.
+	Substitute in COLLECT2_LIBS and link collect2 against its contents.
+	* build-make: Get rid of HOST_CLIB.
+
+	* config/a29k/x-unix, config/alpha/x-osf, config/i386/x-aix,
+	config/i386/x-osfrose, config/m68k/x-dpx2, config/mips/x-iris3,
+	config/mips/x-mips, config/mips/x-osfrose, config/mips/x-sony,
+	config/mips/x-sysv, config/rs6000/x-aix31, config/rs6000/x-aix41,
+	config/rs6000/x-rs6000: Delete.
+
+	* config/i386/x-cygwin, config/m68k/t-aux, config/mips/x-iris:
+	Don't set CLIB.
+
+	24 x-host fragments remain, 0 x-cpu, 3 top level.
+
+2001-05-01  Zack Weinberg  <zackw@stanford.edu>
+
+	* aclocal.m4 (gcc_AC_C_CHAR_BIT): Correct test program.
+	* configure: Regenerate.
+
 2001-05-01  Angela Marie Thomas <angela@cygnus.com>
 
 	* Makefile.in (install-headers): Remove redundant dependency.

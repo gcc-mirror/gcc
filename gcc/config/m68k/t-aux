@@ -4,9 +4,6 @@ LIB2FUNCS_EXTRA=aux-mcount.c aux-exit.c
 
 FIXPROTO_DEFINES=-D_POSIX_SOURCE
 
-# Only really needed for collect2
-CLIB=-lld
-
 # Needed to support builds for multiple versions of A/UX
 # LDFLAGS=-static
 
