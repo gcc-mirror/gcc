@@ -472,7 +472,7 @@ restore_referenced_regs (x, insn, insn_mode)
 				 insn, insn_mode);
       else if (regno >= FIRST_PSEUDO_REGISTER
 	       && reg_equiv_address[regno] != 0)
-	restore_referenced_regs (XEXP (reg_equiv_address[regno], 0),
+	restore_referenced_regs (reg_equiv_address[regno],
 				 insn, insn_mode);
 
       /* Otherwise if this is a hard register, restore any piece of it that
