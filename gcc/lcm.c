@@ -1,5 +1,5 @@
 /* Generic partial redundancy elimination with lazy code motion support.
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1024,7 +1024,7 @@ optimize_mode_switching (file)
   int n_entities;
   int max_num_modes = 0;
   bool emited = false;
-  basic_block post_entry, pre_exit ATTRIBUTE_UNUSED;
+  basic_block post_entry ATTRIBUTE_UNUSED, pre_exit ATTRIBUTE_UNUSED;
 
   clear_bb_flags ();
 

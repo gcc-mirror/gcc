@@ -1236,7 +1236,7 @@ sched_analyze (deps, head, tail)
 
   for (insn = head;; insn = NEXT_INSN (insn))
     {
-      rtx link, end_seq, r0, set, note;
+      rtx link, end_seq, r0, set;
 
       if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
 	{
