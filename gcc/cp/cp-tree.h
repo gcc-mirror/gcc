@@ -2449,6 +2449,7 @@ extern tree perform_qualification_conversions   PROTO((tree, tree));
 
 /* decl.c */
 /* resume_binding_level */
+extern void set_identifier_local_value		PROTO((tree, tree));
 extern int global_bindings_p			PROTO((void));
 extern int toplevel_bindings_p			PROTO((void));
 extern void keep_next_level			PROTO((void));

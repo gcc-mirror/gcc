@@ -4619,9 +4619,6 @@ void
 do_namespace_alias (alias, namespace)
      tree alias, namespace;
 {
-  tree binding;
-  tree old;
-
   if (TREE_CODE (namespace) != NAMESPACE_DECL)
     {
       /* The parser did not find it, so it's not there. */
