@@ -43,6 +43,13 @@ struct gcc_debug_hooks
   /* Record the resumption of a source file.  LINE is the line number
      in the source file we are returning to.  */
   void (* end_source_file) PARAMS ((unsigned int line));
+
+  /* Record the beginning of block N, counting from 1 and not
+     including the function-scope block, at LINE.  Output to FILE.  */
+  void (* begin_block) PARAMS ((FILE *, unsigned int line, unsigned int n));
+
+  /* Record the end of a block.  Arguments as for begin_block.  */
+  void (* end_block) PARAMS ((FILE *, unsigned int line, unsigned int n));
 };
 
 extern struct gcc_debug_hooks *debug_hooks;
@@ -54,11 +61,14 @@ extern void debug_nothing_int_charstar
   PARAMS ((unsigned int, const char *));
 extern void debug_nothing_int
   PARAMS ((unsigned int));
+extern void debug_nothing_file_int_int
+  PARAMS ((FILE *, unsigned int, unsigned int));
 
 /* Hooks for various debug formats.  */
 extern struct gcc_debug_hooks do_nothing_debug_hooks;
 extern struct gcc_debug_hooks dbx_debug_hooks;
 extern struct gcc_debug_hooks sdb_debug_hooks;
+extern struct gcc_debug_hooks xcoff_debug_hooks;
 extern struct gcc_debug_hooks dwarf_debug_hooks;
 extern struct gcc_debug_hooks dwarf2_debug_hooks;
 

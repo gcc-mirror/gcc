@@ -795,6 +795,8 @@ static void dwarfout_start_source_file	PARAMS ((unsigned, const char *));
 static void dwarfout_start_source_file_check PARAMS ((unsigned, const char *));
 static void dwarfout_end_source_file	PARAMS ((unsigned));
 static void dwarfout_end_source_file_check PARAMS ((unsigned));
+static void dwarfout_begin_block	PARAMS ((FILE *, unsigned, unsigned));
+static void dwarfout_end_block		PARAMS ((FILE *, unsigned, unsigned));
 static const char *dwarf_tag_name	PARAMS ((unsigned));
 static const char *dwarf_attr_name	PARAMS ((unsigned));
 static const char *dwarf_stack_op_name	PARAMS ((unsigned));
@@ -1375,7 +1377,9 @@ struct gcc_debug_hooks dwarf_debug_hooks =
   dwarfout_define,
   dwarfout_undef,
   dwarfout_start_source_file_check,
-  dwarfout_end_source_file_check
+  dwarfout_end_source_file_check,
+  dwarfout_begin_block,
+  dwarfout_end_block
 };
 
 /************************ general utility functions **************************/
@@ -5833,9 +5837,11 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 /* Output a marker (i.e. a label) for the beginning of the generated code
    for a lexical block.	 */
 
-void
-dwarfout_begin_block (blocknum)
-     register unsigned blocknum;
+static void
+dwarfout_begin_block (file, line, blocknum)
+     FILE *file ATTRIBUTE_UNUSED;
+     unsigned int line ATTRIBUTE_UNUSED;
+     unsigned int blocknum;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -5847,9 +5853,11 @@ dwarfout_begin_block (blocknum)
 /* Output a marker (i.e. a label) for the end of the generated code
    for a lexical block.	 */
 
-void
-dwarfout_end_block (blocknum)
-     register unsigned blocknum;
+static void
+dwarfout_end_block (file, line, blocknum)
+     FILE *file ATTRIBUTE_UNUSED;
+     unsigned int line ATTRIBUTE_UNUSED;
+     unsigned int blocknum;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 

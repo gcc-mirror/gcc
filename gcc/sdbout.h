@@ -21,9 +21,6 @@ Boston, MA 02111-1307, USA.  */
 extern void sdbout_begin_function	PARAMS ((int));
 extern void sdbout_end_function		PARAMS ((int));
 
-extern void sdbout_begin_block		PARAMS ((FILE *, int, int));
-extern void sdbout_end_block		PARAMS ((FILE *, int, int));
-
 extern void sdbout_label		PARAMS ((rtx));
 extern void sdbout_symbol		PARAMS ((tree, int));
 extern void sdbout_toplevel_data	PARAMS ((tree));

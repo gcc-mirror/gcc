@@ -95,6 +95,8 @@ extern tree current_function_decl;
 static void sdbout_init			PARAMS ((FILE *, const char *));
 static void sdbout_start_source_file	PARAMS ((unsigned, const char *));
 static void sdbout_end_source_file	PARAMS ((unsigned));
+static void sdbout_begin_block		PARAMS ((FILE *, unsigned, unsigned));
+static void sdbout_end_block		PARAMS ((FILE *, unsigned, unsigned));
 static char *gen_fake_label		PARAMS ((void));
 static int plain_type			PARAMS ((tree));
 static int template_name_p		PARAMS ((tree));
@@ -299,7 +301,9 @@ struct gcc_debug_hooks sdb_debug_hooks =
   debug_nothing_int_charstar,
   debug_nothing_int_charstar,
   sdbout_start_source_file,
-  sdbout_end_source_file
+  sdbout_end_source_file,
+  sdbout_begin_block,
+  sdbout_end_block
 };
 
 #if 0
@@ -1466,11 +1470,11 @@ sdbout_reg_parms (parms)
    The blocks match the BLOCKs in DECL_INITIAL (current_function_decl),
    if the count starts at 0 for the outermost one.  */
 
-void
+static void
 sdbout_begin_block (file, line, n)
      FILE *file ATTRIBUTE_UNUSED;
-     int line;
-     int n;
+     unsigned int line;
+     unsigned int n;
 {
   tree decl = current_function_decl;
   MAKE_LINE_SAFE (line);
@@ -1507,8 +1511,8 @@ sdbout_begin_block (file, line, n)
 void
 sdbout_end_block (file, line, n)
      FILE *file ATTRIBUTE_UNUSED;
-     int line;
-     int n ATTRIBUTE_UNUSED;
+     unsigned int line;
+     unsigned int n ATTRIBUTE_UNUSED;
 {
   MAKE_LINE_SAFE (line);
 

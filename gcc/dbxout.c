@@ -312,6 +312,11 @@ static void dbxout_block		PARAMS ((tree, int, tree));
 static void dbxout_really_begin_function PARAMS ((tree));
 
 /* The debug hooks structure.  */
+#if defined (DBX_DEBUGGING_INFO)
+
+static void dbxout_begin_block		PARAMS ((FILE *, unsigned, unsigned));
+static void dbxout_end_block		PARAMS ((FILE *, unsigned, unsigned));
+
 struct gcc_debug_hooks dbx_debug_hooks =
 {
   dbxout_init,
@@ -319,8 +324,25 @@ struct gcc_debug_hooks dbx_debug_hooks =
   debug_nothing_int_charstar,
   debug_nothing_int_charstar,
   dbxout_start_source_file,
-  dbxout_end_source_file
+  dbxout_end_source_file,
+  dbxout_begin_block,
+  dbxout_end_block
 };
+#endif /* DBX_DEBUGGING_INFO  */
+
+#if defined (XCOFF_DEBUGGING_INFO)
+struct gcc_debug_hooks xcoff_debug_hooks =
+{
+  dbxout_init,
+  dbxout_finish,
+  debug_nothing_int_charstar,
+  debug_nothing_int_charstar,
+  dbxout_start_source_file,
+  dbxout_end_source_file,
+  xcoffout_begin_block,
+  xcoffout_end_block
+};
+#endif /* XCOFF_DEBUGGING_INFO  */
 
 #if defined(ASM_OUTPUT_SECTION_NAME)
 static void
@@ -548,6 +570,32 @@ dbxout_source_line (file, filename, lineno)
   fprintf (file, "%s%d,0,%d\n", ASM_STABD_OP, N_SLINE, lineno);
 #endif
 }
+
+#if defined (DBX_DEBUGGING_INFO)
+
+/* Describe the beginning of an internal block within a function.  */
+
+static void
+dbxout_begin_block (file, line, n)
+     FILE *file;
+     unsigned int line ATTRIBUTE_UNUSED;
+     unsigned int n;
+{
+  ASM_OUTPUT_INTERNAL_LABEL (file, "LBB", n);
+}
+
+/* Describe the end line-number of an internal block within a function.  */
+
+static void
+dbxout_end_block (file, line, n)
+     FILE *file;
+     unsigned int line ATTRIBUTE_UNUSED;
+     unsigned int n;
+{
+  ASM_OUTPUT_INTERNAL_LABEL (file, "LBE", n);
+}
+
+#endif /* DBX_DEBUGGING_INFO  */
 
 /* At the end of compilation, finish writing the symbol table.
    Unless you define DBX_OUTPUT_MAIN_SOURCE_FILE_END, the default is

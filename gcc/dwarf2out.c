@@ -3007,6 +3007,8 @@ static void dwarf2out_define	        PARAMS ((unsigned int, const char *));
 static void dwarf2out_undef	        PARAMS ((unsigned int, const char *));
 static void dwarf2out_start_source_file	PARAMS ((unsigned, const char *));
 static void dwarf2out_end_source_file	PARAMS ((unsigned));
+static void dwarf2out_begin_block	PARAMS ((FILE *, unsigned, unsigned));
+static void dwarf2out_end_block		PARAMS ((FILE *, unsigned, unsigned));
 
 /* The debug hooks structure.  */
 
@@ -3017,7 +3019,9 @@ struct gcc_debug_hooks dwarf2_debug_hooks =
   dwarf2out_define,
   dwarf2out_undef,
   dwarf2out_start_source_file,
-  dwarf2out_end_source_file
+  dwarf2out_end_source_file,
+  dwarf2out_begin_block,
+  dwarf2out_end_block
 };
 
 /* NOTE: In the comments in this file, many references are made to
@@ -11103,9 +11107,11 @@ dwarf2out_decl (decl)
 /* Output a marker (i.e. a label) for the beginning of the generated code for
    a lexical block.  */
 
-void
-dwarf2out_begin_block (blocknum)
-     register unsigned blocknum;
+static void
+dwarf2out_begin_block (file, line, blocknum)
+     FILE *file ATTRIBUTE_UNUSED;
+     unsigned int line ATTRIBUTE_UNUSED;
+     unsigned int blocknum;
 {
   function_section (current_function_decl);
   ASM_OUTPUT_DEBUG_LABEL (asm_out_file, BLOCK_BEGIN_LABEL, blocknum);
@@ -11114,9 +11120,11 @@ dwarf2out_begin_block (blocknum)
 /* Output a marker (i.e. a label) for the end of the generated code for a
    lexical block.  */
 
-void
-dwarf2out_end_block (blocknum)
-     register unsigned blocknum;
+static void
+dwarf2out_end_block (file, line, blocknum)
+     FILE *file ATTRIBUTE_UNUSED;
+     unsigned int line ATTRIBUTE_UNUSED;
+     unsigned int blocknum;
 {
   function_section (current_function_decl);
   ASM_OUTPUT_DEBUG_LABEL (asm_out_file, BLOCK_END_LABEL, blocknum);
