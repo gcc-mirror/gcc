@@ -1,3 +1,12 @@
+Sun May  2 01:13:37 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.f-torture/execute/u77-test.f (main): List libU77
+	intrinsics not currently tested.
+	Add tests for TIME8, CTIME_subr, IARGC, TTYNAM_subr,
+	GETENV, FDATE_subr, DTIME_subr, ETIME_subr, DATE, ITIME,
+	FTELL_subr, MCLOCK, MCLOCK8, and CPU_TIME.
+	Trim blanks off the ends of some printed strings.
+
 Sun May  2 00:06:45 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/execute/u77-test.f (main): Just warn about

@@ -3,6 +3,29 @@
 *     good squint at what it prints, though detected errors will cause 
 *     starred messages.
 *
+* Currently not tested:
+*   ALARM
+*   CHDIR (func)
+*   CHMOD (func)
+*   FGET (func/subr)
+*   FGETC (func)
+*   FPUT (func/subr)
+*   FPUTC (func)
+*   FSTAT (subr)
+*   GETCWD (subr)
+*   HOSTNM (subr)
+*   IRAND
+*   KILL
+*   LINK (func)
+*   LSTAT (subr)
+*   RENAME (func/subr)
+*   SIGNAL (subr)
+*   SRAND
+*   STAT (subr)
+*   SYMLNK (func/subr)
+*   UMASK (func)
+*   UNLINK (func)
+*
 * NOTE! This is the libU77 version, so it should be a bit more
 * "interactive" than the testsuite version, which is in
 * gcc/testsuite/g77.f-torture/execute/u77-test.f.
@@ -22,25 +45,29 @@
       integer i, j, k, ltarray (9), idat (3), count, rate, count_max,
      +     pid, mask
       real tarray1(2), tarray2(2), r1, r2
+      double precision d1
+      integer(kind=2) bigi
       logical issum
-      intrinsic getpid, getuid, getgid, ierrno, gerror,
-     +     fnum, isatty, getarg, access, unlink, fstat,
-     +     stat, lstat, getcwd, gmtime, etime, chmod,
+      intrinsic getpid, getuid, getgid, ierrno, gerror, time8,
+     +     fnum, isatty, getarg, access, unlink, fstat, iargc,
+     +     stat, lstat, getcwd, gmtime, etime, chmod, itime, date,
      +     chdir, fgetc, fputc, system_clock, second, idate, secnds,
-     +     time, ctime, fdate, ttynam, date_and_time
+     +     time, ctime, fdate, ttynam, date_and_time, mclock, mclock8,
+     +     cpu_time, dtime
       external lenstr, ctrlc
       integer lenstr
       logical l
       character gerr*80, c*1
       character ctim*25, line*80, lognam*20, wd*100, line2*80, ddate*8,
-     +     ttime*10, zone*5
+     +     ttime*10, zone*5, ctim2*25
       integer fstatb (13), statb (13)
       integer *2 i2zero
       integer values(8)
       integer(kind=7) sigret
 
-      ctim = ctime(time())
-      WRITE (6,'(A/)') '1 GNU libU77 test at: ' // ctim
+      i = time ()
+      ctim = ctime (i)
+      WRITE (6,'(A/)') '1 GNU libU77 test at: ' // ctim(:lenstr (ctim))
       write (6,'(A,I3,'', '',I3)')
      +     ' Logical units 5 and 6 correspond (FNUM) to'
      +     // ' Unix i/o units ', fnum(5), fnum(6)
@@ -48,6 +75,29 @@
         print *, 'LNBLNK or LEN_TRIM failed'
         call abort
       end if
+
+      bigi = time8 ()
+
+      call ctime (ctim2, i)
+      if (ctim .ne. ctim2) then
+        write (6, *) '*** CALL CTIME disagrees with CTIME(): ',
+     +    ctim2(:lenstr (ctim2)), ' vs. ', ctim(:lenstr (ctim))
+        call doabort
+      end if
+
+      j = time ()
+      if (i .gt. bigi .or. bigi .gt. j) then
+        write (6, *) '*** TIME/TIME8/TIME sequence failures: ',
+     +    i, bigi, j
+        call doabort
+      end if
+
+      print *, 'Command-line arguments: ', iargc ()
+      do i = 0, iargc ()
+         call getarg (i, line)
+         print *, 'Arg ', i, ' is: ', line(:lenstr (line))
+      end do
+
       l= isatty(6)
       line2 = ttynam(6)
       if (l) then
@@ -56,6 +106,12 @@
         line = 'and 6 isn''t a tty device (ISATTY)'
       end if
       write (6,'(1X,A)') line(:lenstr(line))
+      call ttynam (line, 6)
+      if (line .ne. line2) then
+        print *, '*** CALL TTYNAM disagrees with TTYNAM: ',
+     +    line(:lenstr (line))
+        call doabort
+      end if
 
 *     regression test for compiler crash fixed by JCB 1998-08-04 com.c
       sigret = signal(2, ctrlc)
@@ -69,23 +125,34 @@
       call flush(6)
       CALL SYSTEM ('echo " " `id`')
       call flush
+
       lognam = 'blahblahblah'
       call getlog (lognam)
-      write (6,*) 'Login name (GETLOG): ', lognam
+      write (6,*) 'Login name (GETLOG): ', lognam(:lenstr (lognam))
+
+      wd = 'blahblahblah'
+      call getenv ('LOGNAME', wd)
+      write (6,*) 'Login name (GETENV of LOGNAME): ', wd(:lenstr (wd))
+
       call umask(0, mask)
       write(6,*) 'UMASK returns', mask
       call umask(mask)
 
       ctim = fdate()
-      write (6,*) 'FDATE returns: ', ctim
+      write (6,*) 'FDATE returns: ', ctim(:lenstr (ctim))
+      call fdate (ctim)
+      write (6,*) 'CALL FDATE returns: ', ctim(:lenstr (ctim))
+
       j=time()
       call ltime (j, ltarray)
       write (6,'(1x,a,9i4)') 'LTIME returns:', ltarray
       call gmtime (j, ltarray)
       write (6,'(1x,a,9i4)') 'GMTIME returns:', ltarray
+
       call system_clock(count)  ! omitting optional args
       call system_clock(count, rate, count_max)
       write(6,*) 'SYSTEM_CLOCK returns: ', count, rate, count_max
+
       call date_and_time(ddate)  ! omitting optional args
       call date_and_time(ddate, ttime, zone, values)
       write(6, *) 'DATE_AND_TIME returns: ', ddate, ' ', ttime, ' ',
@@ -122,10 +189,10 @@ c now try to get times to change enough to see in etime/dtime
       do i = 1,1000
       do j = 1,1000
       end do
-      r2 = dtime (tarray2)
+      call dtime (r2, tarray2)
       if (tarray2(1) .ne. 0. .or. tarray2(2) .ne. 0.) exit
       end do
-      r1 = etime (tarray1)
+      call etime (r1, tarray1)
       if (.not. issum (r1, tarray1(1), tarray1(2))) then
         write (6,*) '*** ETIME didn''t return sum of the array: ',
      +       r1, ' /= ', tarray1(1), '+', tarray1(2)
@@ -152,18 +219,29 @@ c now try to get times to change enough to see in etime/dtime
         print *, '*** VXT and U77 versions don''t agree'
         call doabort
       end if
+
+      call date (ctim)
+      write (6,*) 'DATE (dd-mmm-yy): ', ctim(:lenstr (ctim))
+
+      call itime (idat)
+      write (6,*) 'ITIME (hour,minutes,seconds): ', idat
+
       call time(line(:8))
       print *, 'TIME: ', line(:8)
+
       write (6,*) 'SECNDS(0.0) returns: ',secnds(0.0)
+
       write (6,*) 'SECOND returns: ', second()
       call dumdum(r1)
       call second(r1)
       write (6,*) 'CALL SECOND returns: ', r1
+
 *     compiler crash fixed by 1998-10-01 com.c change
       if (rand(0).lt.0.0 .or. rand(0).gt.1.0) then
         write (6,*) '*** rand(0) error'
         call doabort()
       end if
+
       i = getcwd(wd)
       if (i.ne.0) then
         call perror ('*** getcwd')
@@ -176,6 +254,7 @@ c now try to get times to change enough to see in etime/dtime
         write (6,*) '***CHDIR to ".": ', i
         call doabort
       end if
+
       i=hostnm(wd)
       if(i.ne.0) then
         call perror ('*** hostnm')
@@ -183,6 +262,7 @@ c now try to get times to change enough to see in etime/dtime
       else
         write (6,*) 'Host name is ', wd(:lenstr(wd))
       end if
+
       i = access('/dev/null ', 'rw')
       if (i.ne.0) write (6,*) '***Read/write ACCESS to /dev/null: ', i
       write (6,*) 'Creating file "foo" for testing...'
@@ -211,6 +291,11 @@ C     the better to test with, my dear!  (-- burley)
       i= ftell(3)
       if (i.ne.1) then
         write(6,*) '***FTELL offset: ', i
+        call doabort
+      end if
+      call ftell(3, i)
+      if (i.ne.1) then
+        write(6,*) '***CALL FTELL offset: ', i
         call doabort
       end if
       call chmod ('foo', 'a+w',i)
@@ -269,6 +354,7 @@ C     in case it exists already:
         write (6,*) '***UNLINK "foo" again: ', i
         call doabort
       end if
+
       call gerror (gerr)
       i = ierrno()
       write (6,'(A,I3,A/1X,A)') ' The current error number is: ',
@@ -278,6 +364,13 @@ C     in case it exists already:
       call getarg (0, line)
       call perror (line (:lenstr (line)))
       call unlink ('bar')
+
+      print *, 'MCLOCK returns ', mclock ()
+      print *, 'MCLOCK8 returns ', mclock8 ()
+
+      call cpu_time (d1)
+      print *, 'CPU_TIME returns ', d1
+
       WRITE (6,*) 'You should see exit status 1'
       CALL EXIT(1)
  99   END
