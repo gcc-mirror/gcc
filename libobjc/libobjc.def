@@ -45,6 +45,8 @@ objc_thread_id
 objc_thread_set_data
 objc_thread_set_priority
 objc_thread_yield
+objc_thread_add
+objc_thread_remove
 __objc_class_name_Object
 __objc_class_name_Protocol
 __objc_class_name_NXConstantString

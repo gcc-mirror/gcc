@@ -96,6 +96,8 @@ int objc_thread_get_priority(void);
 void * objc_thread_get_data(void);
 int objc_thread_set_data(void *value);
 objc_thread_t objc_thread_id(void);
+void objc_thread_add(void);
+void objc_thread_remove(void);
 
 /*
   Use this to set the hook function that will be called when the 
