@@ -8270,10 +8270,6 @@ finish_objc ()
 
   generate_forward_declaration_to_string_table ();
 
-#ifdef OBJC_PROLOGUE
-  OBJC_PROLOGUE;
-#endif
-
   /* Process the static instances here because initialization of objc_symtab
      depends on them.  */
   if (objc_static_instances)

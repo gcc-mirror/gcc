@@ -6276,12 +6276,6 @@ information for the debugger in use is appropriate.
 A C statement to output something to the assembler file to handle a
 @samp{#ident} directive containing the text @var{string}.  If this
 macro is not defined, nothing is output for a @samp{#ident} directive.
-
-@findex OBJC_PROLOGUE
-@item OBJC_PROLOGUE
-A C statement to output any assembler statements which are required to
-precede any Objective-C object definitions or message sending.  The
-statement is executed only when compiling an Objective-C program.
 @end table
 
 @deftypefn {Target Hook} void TARGET_ASM_NAMED_SECTION (const char *@var{name}, unsigned int @var{flags}, unsigned int @var{align})
