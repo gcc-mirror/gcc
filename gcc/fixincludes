@@ -1483,7 +1483,9 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
 fi
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file
-  sed -e '/^extern.*double.*__const__.*cos(/s/__const__//' \
+  sed -e '/^extern.*double.*__const__.*sqrt(/s/__const__//' \
+      -e '/^extern.*double.*__const__.*fabs(/s/__const__//' \
+      -e '/^extern.*double.*__const__.*cos(/s/__const__//' \
       -e '/^extern.*double.*__const__.*sin(/s/__const__//' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
