@@ -1,3 +1,7 @@
+2000-02-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.pt/unify7.C: New test.
+
 Sat Feb 26 19:46:09 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* g++.old-deja/g++.ext/attrib5.C: XFAIL on Alpha since no link alias.
