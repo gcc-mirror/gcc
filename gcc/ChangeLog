@@ -1,3 +1,8 @@
+2000-11-29  Loren J. Rittle  <ljrittle@acm.org>
+
+        * fixinc/Makefile.in (fixincl.x): Explicitly state the
+        location of the generated file.
+
 2000-11-30  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* README.FRESCO: Remove obsolete file.
