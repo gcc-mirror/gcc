@@ -1,3 +1,7 @@
+2001-09-16  Brad Lucier  <lucier@math.purdue.edu>
+
+	* Makefile.in: Make rtl-error.o depend on $(CONFIG_H).
+
 Sun Sep 16 21:59:46 CEST 2001  Jan hubicka  <jh@suse.cz>
 
 	* basic-block.h (free_bb_for_insn): Declare.
