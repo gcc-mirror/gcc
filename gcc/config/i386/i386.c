@@ -216,10 +216,13 @@ override_options ()
 	}
     }
 
-  /* Get the architectural level.  */
   if (ix86_arch_string == (char *)0)
+    {
       ix86_arch_string = PROCESSOR_PENTIUM_STRING;
-
+      if (ix86_cpu_string == (char *)0)
+	ix86_cpu_string = PROCESSOR_DEFAULT_STRING;
+    }
+  
   for (i = 0; i < ptt_size; i++)
     if (! strcmp (ix86_arch_string, processor_target_table[i].name))
       {
@@ -257,7 +260,6 @@ override_options ()
       ix86_cpu_string = PROCESSOR_DEFAULT_STRING;
       ix86_cpu = PROCESSOR_DEFAULT;
     }
-
   /* Validate -mregparm= value */
   if (i386_regparm_string)
     {
