@@ -1228,16 +1228,18 @@ build_real (type, d)
      REAL_VALUE_TYPE d;
 {
   tree v;
+  int overflow = 0;
 
   /* Check for valid float value for this type on this target machine;
      if not, can print error message and store a valid value in D.  */
 #ifdef CHECK_FLOAT_VALUE
-  CHECK_FLOAT_VALUE (TYPE_MODE (type), d);
+  CHECK_FLOAT_VALUE (TYPE_MODE (type), d, overflow);
 #endif
 
   v = make_node (REAL_CST);
   TREE_TYPE (v) = type;
   TREE_REAL_CST (v) = d;
+  TREE_OVERFLOW (v) = TREE_CONSTANT_OVERFLOW (v) = overflow;
   return v;
 }
 
