@@ -1,3 +1,9 @@
+2001-11-12  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+ 
+	PR bootstrap/3451
+	* c-pragma.c: Rename macros BAD, BAD2, BAD_ACTION to
+	GCC_BAD, GCC_BAD2, GCC_BAD_ACTION.
+
 2001-11-12  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/ia64/freebsd.h:  Fix comment (sync with mainline).

@@ -2,22 +2,22 @@
    Copyright (C) 1992, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
 
-GNU CC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  */
+along with GCC; see the file COPYING.  If not, write to the Free
+Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
@@ -30,10 +30,11 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "ggc.h"
 #include "c-lex.h"
+#include "output.h"
 #include "tm_p.h"
 
-#define BAD(msgid) do { warning (msgid); return; } while (0)
-#define BAD2(msgid, arg) do { warning (msgid, arg); return; } while (0)
+#define GCC_BAD(msgid) do { warning (msgid); return; } while (0)
+#define GCC_BAD2(msgid, arg) do { warning (msgid, arg); return; } while (0)
 
 #ifdef HANDLE_PRAGMA_PACK
 static void handle_pragma_pack PARAMS ((cpp_reader *));
@@ -53,7 +54,7 @@ static struct align_stack * alignment_stack = NULL;
    #pragma pack(push,<n>) is encountered, this stores the value of 
    maximum_field_alignment in effect.  When the final pop_alignment() 
    happens, we restore the value to this, not to a value of 0 for
-   maximum_field_alignment.  Value is in bits. */
+   maximum_field_alignment.  Value is in bits.  */
 static int  default_alignment;
 #define SET_GLOBAL_ALIGNMENT(ALIGN) \
 (default_alignment = maximum_field_alignment = (ALIGN))
@@ -84,7 +85,7 @@ push_alignment (alignment, id)
       
       /* The current value of maximum_field_alignment is not necessarily 
 	 0 since there may be a #pragma pack(<n>) in effect; remember it 
-	 so that we can restore it after the final #pragma pop(). */
+	 so that we can restore it after the final #pragma pop().  */
       if (alignment_stack == NULL)
 	default_alignment = maximum_field_alignment;
       
@@ -158,9 +159,9 @@ mark_align_stack (p)
 #else  /* not HANDLE_PRAGMA_PACK_PUSH_POP */
 #define SET_GLOBAL_ALIGNMENT(ALIGN) (maximum_field_alignment = (ALIGN))
 #define push_alignment(ID, N) \
-    BAD("#pragma pack(push[, id], <n>) is not supported on this target")
+    GCC_BAD("#pragma pack(push[, id], <n>) is not supported on this target")
 #define pop_alignment(ID) \
-    BAD("#pragma pack(pop[, id], <n>) is not supported on this target")
+    GCC_BAD("#pragma pack(pop[, id], <n>) is not supported on this target")
 #endif /* HANDLE_PRAGMA_PACK_PUSH_POP */
 
 /* #pragma pack ()
@@ -180,7 +181,7 @@ handle_pragma_pack (dummy)
   enum { set, push, pop } action;
 
   if (c_lex (&x) != CPP_OPEN_PAREN)
-    BAD ("missing '(' after '#pragma pack' - ignored");
+    GCC_BAD ("missing '(' after '#pragma pack' - ignored");
 
   token = c_lex (&x);
   if (token == CPP_CLOSE_PAREN)
@@ -193,14 +194,14 @@ handle_pragma_pack (dummy)
       align = TREE_INT_CST_LOW (x);
       action = set;
       if (c_lex (&x) != CPP_CLOSE_PAREN)
-	BAD ("malformed '#pragma pack' - ignored");
+	GCC_BAD ("malformed '#pragma pack' - ignored");
     }
   else if (token == CPP_NAME)
     {
-#define BAD_ACTION do { if (action == push) \
-	  BAD ("malformed '#pragma pack(push[, id], <n>)' - ignored"); \
+#define GCC_BAD_ACTION do { if (action == push) \
+	  GCC_BAD ("malformed '#pragma pack(push[, id], <n>)' - ignored"); \
 	else \
-	  BAD ("malformed '#pragma pack(pop[, id])' - ignored"); \
+	  GCC_BAD ("malformed '#pragma pack(pop[, id])' - ignored"); \
 	} while (0)
 
       const char *op = IDENTIFIER_POINTER (x);
@@ -209,11 +210,11 @@ handle_pragma_pack (dummy)
       else if (!strcmp (op, "pop"))
 	action = pop;
       else
-	BAD2 ("unknown action '%s' for '#pragma pack' - ignored", op);
+	GCC_BAD2 ("unknown action '%s' for '#pragma pack' - ignored", op);
 
       token = c_lex (&x);
       if (token != CPP_COMMA && action == push)
-	BAD_ACTION;
+	GCC_BAD_ACTION;
 
       if (token == CPP_COMMA)
 	{
@@ -222,7 +223,7 @@ handle_pragma_pack (dummy)
 	    {
 	      id = x;
 	      if (action == push && c_lex (&x) != CPP_COMMA)
-		BAD_ACTION;
+		GCC_BAD_ACTION;
 	      token = c_lex (&x);
 	    }
 
@@ -234,16 +235,16 @@ handle_pragma_pack (dummy)
 		  token = c_lex (&x);
 		}
 	      else
-		BAD_ACTION;
+		GCC_BAD_ACTION;
 	    }
 	}
 
       if (token != CPP_CLOSE_PAREN)
-	BAD_ACTION;
-#undef BAD_ACTION
+	GCC_BAD_ACTION;
+#undef GCC_BAD_ACTION
     }
   else
-    BAD ("malformed '#pragma pack' - ignored");
+    GCC_BAD ("malformed '#pragma pack' - ignored");
 
   if (c_lex (&x) != CPP_EOF)
     warning ("junk at end of '#pragma pack'");
@@ -260,7 +261,7 @@ handle_pragma_pack (dummy)
 	align *= BITS_PER_UNIT;
 	break;
       default:
-	BAD2 ("alignment must be a small power of two, not %d", align);
+	GCC_BAD2 ("alignment must be a small power of two, not %d", align);
       }
 
   switch (action)
@@ -286,12 +287,12 @@ handle_pragma_weak (dummy)
   value = 0;
 
   if (c_lex (&name) != CPP_NAME)
-    BAD ("malformed #pragma weak, ignored");
+    GCC_BAD ("malformed #pragma weak, ignored");
   t = c_lex (&x);
   if (t == CPP_EQ)
     {
       if (c_lex (&value) != CPP_NAME)
-	BAD ("malformed #pragma weak, ignored");
+	GCC_BAD ("malformed #pragma weak, ignored");
       t = c_lex (&x);
     }
   if (t != CPP_EOF)
