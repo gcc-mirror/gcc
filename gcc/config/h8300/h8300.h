@@ -99,8 +99,15 @@ extern int target_flags;
     {"exp",8192},		\
     { "", TARGET_DEFAULT}}
 
+/* Merge the meaning of -mdouble64 and -fshort-double.
+   ??? Unfortunately, there's no way to detect -fno-short-double
+   (our default is the opposite of theirs).
+   Also do other things that must be done once at start up.  */
+
 #define OVERRIDE_OPTIONS \
 {				\
+  /*extern int flag_short_double; \
+  flag_short_double = TARGET_DOUBLE32;*/ \
   h8300_init_once ();		\
 }
 
@@ -246,7 +253,7 @@ extern int target_flags;
    MODE.
 
    H8/300: If an even reg, then anything goes. Otherwise the mode must be QI
-   or HI.
+           or HI.
    H8/300H: Anything goes.  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
@@ -282,7 +289,7 @@ extern int target_flags;
 #define ARG_POINTER_REGNUM 8
 
 /* Register in which static-chain is passed to a function.  */
-#define STATIC_CHAIN_REGNUM 4
+#define STATIC_CHAIN_REGNUM 3
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
@@ -659,14 +666,14 @@ extern int current_function_anonymous_args;
 
    H8/300
 	      vvvv context
-   1 0000 79001234 		mov.w	#0x1234,r4
-   2 0004 5A000000 		jmp	@0x1234
+   1 0000 7900xxxx 		mov.w	#0x1234,r3
+   2 0004 5A00xxxx 		jmp	@0x1234
 	      ^^^^ function
 
    H8/300H
 	      vvvvvvvv context
-   2 0000 7A0012345678 		mov.l	#0x12345678,er4
-   3 0006 5A000000 		jmp	@0x12345678
+   2 0000 7A00xxxxxxxx 		mov.l	#0x12345678,er3
+   3 0006 5Axxxxxx 		jmp	@0x123456
 	    ^^^^^^ function
 */
 
@@ -674,12 +681,12 @@ extern int current_function_anonymous_args;
   do {							\
     if (TARGET_H8300)					\
       {							\
-	fprintf (FILE, "\tmov.w	#0x1234,r4\n");		\
+	fprintf (FILE, "\tmov.w	#0x1234,r3\n");		\
 	fprintf (FILE, "\tjmp	@0x1234\n");		\
       }							\
     else						\
       {							\
-	fprintf (FILE, "\tmov.l	#0x12345678,er4\n");	\
+	fprintf (FILE, "\tmov.l	#0x12345678,er3\n");	\
 	fprintf (FILE, "\tjmp	@0x123456\n");	\
       }							\
   } while (0)
@@ -1062,16 +1069,14 @@ dtors_section() 						\
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
 #define REGISTER_NAMES \
-{ "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "ap"}
+{ "r0", "r1", "r2", "r3", "r4", "r5", "r6", "sp", "ap"}
+
+#define ADDITIONAL_REGISTER_NAMES { { "r7", 7 } }
 
 /* How to renumber registers for dbx and gdb.
    H8/300 needs no change in the numeration.  */
 
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
-/* Vax specific: which type character is used for type double?  */
-
-#define ASM_DOUBLE_CHAR ('g')
 
 #define SDB_DEBUGGING_INFO
 #define SDB_DELIM	"\n"
@@ -1197,7 +1202,7 @@ do { char dstr[30];					\
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
   if ((LOG) != 0)			\
-    fprintf (FILE, "\t.align %d\n", 1 << (LOG))
+    fprintf (FILE, "\t.align %d\n", (LOG))
 
 /* This is how to output an assembler line
    that says to advance the location counter by SIZE bytes.  */
