@@ -854,54 +854,6 @@ function_arg_partial_nregs (cum, mode, type, named)
   return 0;
 }
 
-/* Output an insn whose source is a 386 integer register.  SRC is the
-   rtx for the register, and TEMPLATE is the op-code template.  SRC may
-   be either SImode or DImode.
-
-   The template will be output with operands[0] as SRC, and operands[1]
-   as a pointer to the top of the 386 stack.  So a call from floatsidf2
-   would look like this:
-
-      output_op_from_reg (operands[1], AS1 (fild%z0,%1));
-
-   where %z0 corresponds to the caller's operands[1], and is used to
-   emit the proper size suffix.
-
-   ??? Extend this to handle HImode - a 387 can load and store HImode
-   values directly. */
-
-void
-output_op_from_reg (src, template)
-     rtx src;
-     char *template;
-{
-  rtx xops[4];
-  int size = GET_MODE_SIZE (GET_MODE (src));
-
-  xops[0] = src;
-  xops[1] = AT_SP (Pmode);
-  xops[2] = GEN_INT (size);
-  xops[3] = stack_pointer_rtx;
-
-  if (size > UNITS_PER_WORD)
-    {
-      rtx high;
-
-      if (size > 2 * UNITS_PER_WORD)
-	{
-	  high = gen_rtx_REG (SImode, REGNO (src) + 2);
-	  output_asm_insn (AS1 (push%L0,%0), &high);
-	}
-
-      high = gen_rtx_REG (SImode, REGNO (src) + 1);
-      output_asm_insn (AS1 (push%L0,%0), &high);
-    }
-
-  output_asm_insn (AS1 (push%L0,%0), &src);
-  output_asm_insn (template, xops);
-  output_asm_insn (AS2 (add%L3,%2,%3), xops);
-}
-
 /* Output an insn to pop an value from the 387 top-of-stack to 386
    register DEST. The 387 register stack is popped if DIES is true.  If
    the mode of DEST is an integer mode, a `fist' integer store is done,

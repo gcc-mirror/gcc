@@ -1405,6 +1405,14 @@ static void
 delete_insn_for_stacker (insn)
      rtx insn;
 {
+  int i;
+
+  /* Ensure that the side effects were clobbers when deleting a PARALLEL.  */
+  if (GET_CODE (PATTERN (insn)) == PARALLEL)
+    for (i = 1; i < XVECLEN (PATTERN (insn), 0); i++)
+      if (GET_CODE (XVECEXP (PATTERN (insn), 0, i)) != CLOBBER)
+	abort ();
+
   PUT_CODE (insn, NOTE);
   NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
   NOTE_SOURCE_FILE (insn) = 0;
@@ -2478,8 +2486,14 @@ subst_stack_regs (insn, regstack)
 	for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
 	  {
 	    if (stack_regs_mentioned_p (XVECEXP (PATTERN (insn), 0, i)))
-	      subst_stack_regs_pat (insn, regstack,
-				    XVECEXP (PATTERN (insn), 0, i));
+	      {
+		subst_stack_regs_pat (insn, regstack,
+				      XVECEXP (PATTERN (insn), 0, i));
+
+		/* subst_stack_regs_pat may have deleted a no-op insn.  */
+		if (GET_CODE (insn) == NOTE)
+		  break;
+	      }
 	  }
       else
 	subst_stack_regs_pat (insn, regstack, PATTERN (insn));
