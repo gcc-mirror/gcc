@@ -1,3 +1,10 @@
+2000-12-08  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* acinclude.m4: Don't forget to remove check for cpowl as it is no
+	longer needed, nor is the corresponding stub existent.
+	* aclocal.m4: Regenarate.
+	* configure: Regenarate.
+
 2000-12-07  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* config/os/generic/bits/ctype_base.h (ctype_base): Change space mask.
