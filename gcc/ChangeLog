@@ -1,3 +1,8 @@
+2000-03-20  Andreas Jaeger  <aj@suse.de>
+
+	* sdbout.c (sdbout_one_type): Add braces to avoid "ambigous else"
+	warning.
+
 2000-03-20  Richard Henderson  <rth@cygnus.com>
 
 	* regmove.c (stack_memref_p): Fix typo, reorg for readability.
