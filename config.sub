@@ -2,7 +2,9 @@
 # Configuration validation subroutine script, version 1.1.
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
 #   Free Software Foundation, Inc.
-#
+
+version='2000-05-31'
+
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
 # can handle that machine.  It does not imply ALL GNU software can.
@@ -50,30 +52,61 @@
 #	CPU_TYPE-MANUFACTURER-KERNEL-OPERATING_SYSTEM
 # It is wrong to echo any other type of specification.
 
-if [ x$1 = x ]
-then
-	echo Configuration name missing. 1>&2
-	echo "Usage: $0 CPU-MFR-OPSYS" 1>&2
-	echo "or     $0 ALIAS" 1>&2
-	echo where ALIAS is a recognized configuration type. 1>&2
-	exit 1
-fi
+me=`echo "$0" | sed -e 's,.*/,,'`
 
-# First pass through any local machine types.
-case $1 in
-	*local*)
-		echo $1
-		exit 0
-		;;
-	*)
-	;;
+usage="\
+Usage: $0 [OPTION] CPU-MFR-OPSYS
+       $0 [OPTION] ALIAS
+
+Canonicalize a configuration name.
+
+Operation modes:
+  -h, --help               print this help, then exit
+  -V, --version            print version number, then exit"
+
+help="
+Try \`$me --help' for more information."
+
+# Parse command line
+while test $# -gt 0 ; do
+  case "$1" in
+    --version | --vers* | -V )
+       echo "$version" ; exit 0 ;;
+    --help | --h* | -h )
+       echo "$usage"; exit 0 ;;
+    -- )     # Stop option processing
+       shift; break ;;
+    - )	# Use stdin as input.
+       break ;;
+    -* )
+       exec >&2
+       echo "$me: invalid option $1"
+       echo "$help"
+       exit 1 ;;
+
+    *local*)
+       # First pass through any local machine types.
+       echo $1
+       exit 0;;
+
+    * )
+       break ;;
+  esac
+done
+
+case $# in
+ 0) echo "$me: missing argument$help" >&2
+    exit 1;;
+ 1) ;;
+ *) echo "$me: too many arguments$help" >&2
+    exit 1;;
 esac
 
 # Separate what the user gave into CPU-COMPANY and OS or KERNEL-OS (if any).
 # Here we must recognize all the valid KERNEL-OS combinations.
 maybe_os=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\2/'`
 case $maybe_os in
-  linux-gnu*)
+  nto-qnx* | linux-gnu*)
     os=-$maybe_os
     basic_machine=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\1/'`
     ;;
@@ -174,6 +207,7 @@ case $basic_machine in
 	tahoe | i860 | ia64 | m32r | m68k | m68000 | m88k | ns32k | arc | arm \
 		| arme[lb] | pyramid | mn10200 | mn10300 | tron | a29k \
 		| 580 | i960 | h8300 \
+		| x86 | ppcbe | mipsbe | mipsle | shbe | shle | armbe | armle \
 		| hppa | hppa1.0 | hppa1.1 | hppa2.0 | hppa2.0w | hppa2.0n \
 		| hppa64 \
 		| alpha | alphaev[4-8] | alphaev56 | alphapca5[67] \
@@ -184,7 +218,7 @@ case $basic_machine in
 		| mips64vr4300 | mips64vr4300el | mips64vr4100 | mips64vr4100el \
 		| mips64vr5000 | miprs64vr5000el | mcore \
 		| sparc | sparclet | sparclite | sparc64 | sparcv9 | v850 | c4x \
-		| thumb | d10v | d30v | fr30 | avr)
+		| thumb | d10v | fr30 | avr)
 		basic_machine=$basic_machine-unknown
 		;;
 	m88110 | m680[12346]0 | m683?2 | m68360 | m5200 | z8k | v70 | h8500 | w65 | pj | pjl)
@@ -208,6 +242,7 @@ case $basic_machine in
 	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* \
 	      | power-* | none-* | 580-* | cray2-* | h8300-* | h8500-* | i960-* \
 	      | xmp-* | ymp-* \
+	      | x86-* | ppcbe-* | mipsbe-* | mipsle-* | shbe-* | shle-* | armbe-* | armle-* \
 	      | hppa-* | hppa1.0-* | hppa1.1-* | hppa2.0-* | hppa2.0w-* \
 	      | hppa2.0n-* | hppa64-* \
 	      | alpha-* | alphaev[4-8]-* | alphaev56-* | alphapca5[67]-* \
@@ -221,7 +256,8 @@ case $basic_machine in
 	      | mipstx39-* | mipstx39el-* | mcore-* \
 	      | f301-* | armv*-* | s390-* | sv1-* | t3e-* \
 	      | m88110-* | m680[01234]0-* | m683?2-* | m68360-* | z8k-* | d10v-* \
-	      | thumb-* | v850-* | d30v-* | tic30-* | c30-* | fr30-* )
+	      | thumb-* | v850-* | d30v-* | tic30-* | c30-* | fr30-* \
+	      | bs2000-*)
 		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
@@ -473,9 +509,6 @@ case $basic_machine in
 		basic_machine=i386-unknown
 		os=-mingw32
 		;;
-	i386-qnx | qnx)
-		basic_machine=i386-qnx
-		;;
 	iris | iris4d)
 		basic_machine=mips-sgi
 		case $os in
@@ -598,6 +631,9 @@ case $basic_machine in
 	np1)
 		basic_machine=np1-gould
 		;;
+	nsr-tandem)
+		basic_machine=nsr-tandem
+		;;
 	op50n-* | op60c-*)
 		basic_machine=hppa1.1-oki
 		os=-proelf
@@ -630,7 +666,7 @@ case $basic_machine in
 	pentium | p5 | k5 | k6 | nexen)
 		basic_machine=i586-pc
 		;;
-	pentiumpro | p6 | 6x86)
+	pentiumpro | p6 | 6x86 | athlon)
 		basic_machine=i686-pc
 		;;
 	pentiumii | pentium2)
@@ -639,7 +675,7 @@ case $basic_machine in
 	pentium-* | p5-* | k5-* | k6-* | nexen-*)
 		basic_machine=i586-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
-	pentiumpro-* | p6-* | 6x86-*)
+	pentiumpro-* | p6-* | 6x86-* | athlon-*)
 		basic_machine=i686-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
 	pentiumii-* | pentium2-*)
@@ -935,8 +971,21 @@ case $os in
 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
 	      | -cygwin* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
 	      | -mingw32* | -linux-gnu* | -uxpv* | -beos* | -mpeix* | -udk* \
-	      | -interix* | -uwin* | -rhapsody* | -opened* | -openstep* | -oskit*)
+	      | -interix* | -uwin* | -rhapsody* | -darwin* | -opened* \
+	      | -openstep* | -oskit*)
 	# Remember, each alternative MUST END IN *, to match a version number.
+		;;
+	-qnx*)
+		case $basic_machine in
+		    x86-* | i[34567]86-*)
+			;;
+		    *)
+			os=-nto$os
+			;;
+		esac
+		;;
+	-nto*)
+		os=-nto-qnx
 		;;
 	-sim | -es1800* | -hms* | -xray | -os68k* | -none* | -v88r* \
 	      | -windows* | -osx | -abug | -netware* | -os9* | -beos* \
@@ -984,6 +1033,9 @@ case $os in
 	-ns2 )
 	        os=-nextstep2
 		;;
+	-nsk)
+		os=-nsk
+		;;
 	# Preserve the version number of sinix5.
 	-sinix5.*)
 		os=`echo $os | sed -e 's|sinix|sysv|'`
@@ -996,9 +1048,6 @@ case $os in
 		;;
 	-oss*)
 		os=-sysv3
-		;;
-        -qnx)
-		os=-qnx4
 		;;
 	-svr4)
 		os=-sysv4
@@ -1090,9 +1139,6 @@ case $basic_machine in
 		;;
 	*-be)
 		os=-beos
-		;;
-	i370-*)
-		os=-openedition
 		;;
 	*-ibm)
 		os=-aix
@@ -1253,3 +1299,11 @@ case $basic_machine in
 esac
 
 echo $basic_machine$os
+exit 0
+
+# Local variables:
+# eval: (add-hook 'write-file-hooks 'time-stamp)
+# time-stamp-start: "version='"
+# time-stamp-format: "%:y-%02m-%02d"
+# time-stamp-end: "'"
+# End:
