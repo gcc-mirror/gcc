@@ -43,10 +43,10 @@ package java.nio.channels;
  */
 public abstract class SelectionKey
 {
-  public static final int OP_ACCEPT  = 1<<0;
-  public static final int OP_CONNECT = 1<<1;
-  public static final int OP_READ    = 1<<2;
-  public static final int OP_WRITE   = 1<<3;
+  public static final int OP_ACCEPT  = 16;
+  public static final int OP_CONNECT = 8;
+  public static final int OP_READ    = 1;
+  public static final int OP_WRITE   = 4;
     
   Object attached;
    

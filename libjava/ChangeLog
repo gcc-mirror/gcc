@@ -1,3 +1,9 @@
+2003-02-10  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/channels/SelectionKey.java
+	(OP_ACCEPT, OP_CONNECT, OP_READ, OP_WRITE): Initialize with correct
+	values.
+
 2003-02-10  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* java/lang/Win32Process.java (destroy): Declare as native.
