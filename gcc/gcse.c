@@ -150,6 +150,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 
 #include "rtl.h"
+#include "tree.h"
 #include "tm_p.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -4559,6 +4560,38 @@ fis_get_condition (rtx jump)
   return tmp;
 }
 
+/* Check the comparison COND to see if we can safely form an implicit set from
+   it.  COND is either an EQ or NE comparison.  */
+
+static bool
+implicit_set_cond_p (rtx cond)
+{
+  enum machine_mode mode = GET_MODE (XEXP (cond, 0));
+  rtx cst = XEXP (cond, 1);
+
+  /* We can't perform this optimization if either operand might be or might
+     contain a signed zero.  */
+  if (HONOR_SIGNED_ZEROS (mode))
+    {
+      /* It is sufficient to check if CST is or contains a zero.  We must
+	 handle float, complex, and vector.  If any subpart is a zero, then
+	 the optimization can't be performed.  */
+      /* ??? The complex and vector checks are not implemented yet.  We just
+	 always return zero for them.  */
+      if (GET_CODE (cst) == CONST_DOUBLE)
+	{
+	  REAL_VALUE_TYPE d;
+	  REAL_VALUE_FROM_CONST_DOUBLE (d, cst);
+	  if (REAL_VALUES_EQUAL (d, dconst0))
+	    return 0;
+	}
+      else
+	return 0;
+    }
+
+  return gcse_constant_p (cst);
+}
+
 /* Find the implicit sets of a function.  An "implicit set" is a constraint
    on the value of a variable, implied by a conditional jump.  For example,
    following "if (x == 2)", the then branch may be optimized as though the
@@ -4584,7 +4617,7 @@ find_implicit_sets (void)
 	    && (GET_CODE (cond) == EQ || GET_CODE (cond) == NE)
 	    && GET_CODE (XEXP (cond, 0)) == REG
 	    && REGNO (XEXP (cond, 0)) >= FIRST_PSEUDO_REGISTER
-	    && gcse_constant_p (XEXP (cond, 1)))
+	    && implicit_set_cond_p (cond))
 	  {
 	    dest = GET_CODE (cond) == EQ ? BRANCH_EDGE (bb)->dest
 					 : FALLTHRU_EDGE (bb)->dest;

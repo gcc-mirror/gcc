@@ -1,3 +1,8 @@
+2003-12-17  James E Wilson  <wilson@specifixinc.com>
+	    Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c-torture/execute/ieee/mzero5.c: New.
+
 2003-12-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10603
