@@ -451,7 +451,7 @@ lang_printable_name (decl, v)
 
 void
 lang_print_error (file)
-     char *file;
+     const char *file;
 {
   static tree last_error_function_context = NULL_TREE;
   static tree last_error_function = NULL;
@@ -488,7 +488,6 @@ void
 lang_init ()
 {
   extern struct rtx_def * (*lang_expand_expr) ();
-  extern void (*print_error_function) PROTO((char *));
 #if 0
   extern int flag_minimal_debug;
   flag_minimal_debug = 0;
@@ -524,8 +523,9 @@ lang_init ()
    print_error_function hook we don't print error messages with bogus
    function prototypes.  */
 
-void java_dummy_print (s)
-     char *s __attribute__ ((__unused__));
+static void
+java_dummy_print (s)
+     const char *s __attribute__ ((__unused__));
 {
 }
 
@@ -539,7 +539,6 @@ void java_dummy_print (s)
 void lang_init_source (level)
      int level;
 {
-  extern void (*print_error_function) PROTO((char *));
   if (level == 1)
     print_error_function = java_dummy_print;
   else 
@@ -557,7 +556,7 @@ lang_finish ()
 {
 }
 
-char*
+const char *
 lang_identify ()
 {
   return "Java";
