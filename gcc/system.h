@@ -584,6 +584,16 @@ typedef union tree_node *tree;
 #undef calloc
 #undef strdup
  #pragma GCC poison malloc realloc calloc strdup
+
+/* Old target macros that have moved to the target hooks structure.  */
+ #pragma GCC poison ASM_OPEN_PAREN ASM_CLOSE_PAREN			\
+	FUNCTION_PROLOGUE FUNCTION_EPILOGUE				\
+	FUNCTION_END_PROLOGUE FUNCTION_BEGIN_EPILOGUE			\
+	DECL_MACHINE_ATTRIBUTES COMP_TYPE_ATTRIBUTES INSERT_ATTRIBUTES	\
+	VALID_MACHINE_DECL_ATTRIBUTE VALID_MACHINE_TYPE_ATTRIBUTE	\
+	SET_DEFAULT_TYPE_ATTRIBUTES SET_DEFAULT_DECL_ATTRIBUTES		\
+	MERGE_MACHINE_TYPE_ATTRIBUTES MERGE_MACHINE_DECL_ATTRIBUTES	\
+	MD_INIT_BUILTINS MD_EXPAND_BUILTIN
 #endif /* IN_GCC */
 
 /* Note: not all uses of the `index' token (e.g. variable names and

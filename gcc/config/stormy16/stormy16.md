@@ -917,12 +917,13 @@
 ;; ::
 ;; ::::::::::::::::::::
 
-;; Called after register allocation to add any instructions needed for the
-;; prologue.  Using a prologue insn is favored compared to putting all of the
-;; instructions in the FUNCTION_PROLOGUE macro, since it allows the scheduler
-;; to intermix instructions with the saves of the caller saved registers.  In
-;; some cases, it might be necessary to emit a barrier instruction as the last
-;; insn to prevent such scheduling.
+;; Called after register allocation to add any instructions needed for
+;; the prologue.  Using a prologue insn is favored compared to putting
+;; all of the instructions in the TARGET_ASM_FUNCTION_PROLOGUE macro,
+;; since it allows the scheduler to intermix instructions with the
+;; saves of the caller saved registers.  In some cases, it might be
+;; necessary to emit a barrier instruction as the last insn to prevent
+;; such scheduling.
 (define_expand "prologue"
   [(const_int 1)]
   ""
@@ -932,12 +933,13 @@
   DONE;
 }")
 
-;; Called after register allocation to add any instructions needed for the
-;; epilogue.  Using a epilogue insn is favored compared to putting all of the
-;; instructions in the FUNCTION_EPILOGUE macro, since it allows the scheduler
-;; to intermix instructions with the restires of the caller saved registers.
-;; In some cases, it might be necessary to emit a barrier instruction as the
-;; first insn to prevent such scheduling.
+;; Called after register allocation to add any instructions needed for
+;; the epilogue.  Using a epilogue insn is favored compared to putting
+;; all of the instructions in the TARGET_ASM_FUNCTION_EPILOGUE macro,
+;; since it allows the scheduler to intermix instructions with the
+;; restires of the caller saved registers.  In some cases, it might be
+;; necessary to emit a barrier instruction as the first insn to
+;; prevent such scheduling.
 (define_expand "epilogue"
   [(const_int 2)]
   ""
