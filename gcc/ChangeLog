@@ -1,3 +1,11 @@
+2001-07-03  Stan Shebs  <shebs@apple.com>
+
+	* darwin.h (SECTION_FUNCTION): Remove WAS_TEXT argument, remove
+	case for flag_no_mach_text_sections.
+	(EXTRA_SECTION_FUNCTIONS): Remove arg from uses of SECTION_FUNCTION.
+	* darwin.c (flag_no_mach_text_sections): Remove.
+	* darwin-protos.h (darwin_init_pragma): Remove decl.
+
 Tue Jul  3 15:35:52 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* explow.c (plus_constant_wide, case PLUS): Call find_constant_term
