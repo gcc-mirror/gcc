@@ -1,3 +1,8 @@
+2001-05-26  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/fixtests.c(stdc_0_in_system_headers_test): Must return "FIX"
+	when fixincl is operating in test mode
+
 2001-05-26  Philip Blundell  <philb@gnu.org>
 
 	* config/c4x/c4x-protos.h: Use GCC_C_PRAGMA_H in place of _C_PRAGMA_H.
