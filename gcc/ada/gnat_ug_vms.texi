@@ -96,7 +96,7 @@ Free Documentation License''.
 
 @end titlepage
 
-@ifinfo
+@ifnottex
 @node Top, About This Guide, (dir), (dir)
 @top GNAT User's Guide
 
@@ -458,7 +458,7 @@ Performance Considerations
 
 * Index::
 @end menu
-@end ifinfo
+@end ifnottex
 
 @node About This Guide
 @unnumbered About This Guide

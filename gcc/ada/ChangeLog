@@ -1,3 +1,9 @@
+2002-06-01  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gnat_ug.texi: Use @ifnottex instead of @ifinfo.
+	* gnat_ug_unx.texi, gnat_ug_vms.texi, gnat_ug_vxw.texi,
+	gnat_ug_wnt.texi: Regenerate.
+
 2002-05-31  Florian Weimer  <fw@deneb.enyo.de>
 
 	* 5ntaprop.adb (with System.OS_Primitives): Remove.
