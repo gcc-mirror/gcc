@@ -1479,6 +1479,7 @@ extern int rs6000_trunc_used;
    Initialize the section names for the RS/6000 at this point.
 
    Specify filename to assembler.
+
    We want to go into the TOC section so at least one .toc will be emitted.
    Also, in order to output proper .bs/.es pairs, we need at least one static
    [RW] section emitted.
