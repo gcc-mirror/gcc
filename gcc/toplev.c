@@ -2449,6 +2449,7 @@ backend_init (void)
      provide a dummy function context for them.  */
   init_dummy_function_start ();
   init_expmed ();
+  init_optimization_passes ();
   if (flag_caller_saves)
     init_caller_save ();
   expand_dummy_function_end ();
