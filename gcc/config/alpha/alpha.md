@@ -2296,7 +2296,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   "TARGET_HAS_XFLOATING_LIBS"
 {
 #if HOST_BITS_PER_WIDE_INT >= 64
-  operands[2] = force_reg (DImode, GEN_INT (0x8000000000000000));
+  operands[2] = force_reg (DImode, GEN_INT ((HOST_WIDE_INT) 1 << 63));
 #else
   operands[2] = force_reg (DImode, immed_double_const (0, 0x80000000, DImode));
 #endif
@@ -2333,7 +2333,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   "TARGET_HAS_XFLOATING_LIBS"
 {
 #if HOST_BITS_PER_WIDE_INT >= 64
-  operands[2] = force_reg (DImode, GEN_INT (0x8000000000000000));
+  operands[2] = force_reg (DImode, GEN_INT ((HOST_WIDE_INT) 1 << 63));
 #else
   operands[2] = force_reg (DImode, immed_double_const (0, 0x80000000, DImode));
 #endif
