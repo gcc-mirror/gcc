@@ -22,8 +22,6 @@ Boston, MA 02111-1307, USA.  */
    that are the same for all the i386 Unix systems
    (though they may differ in non-Unix systems).  */
 
-#define DEFAULT_ASSEMBLER_DIALECT 0
-
 /* Define macro used to output shift-double opcodes when the shift
    count is in %cl.  Some assemblers require %cl as an argument;
    some don't.  This macro controls what to do: by default, don't
