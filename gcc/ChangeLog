@@ -1,3 +1,8 @@
+2001-10-26  Christopher Faylor  <cgf@redhat.com>
+
+	* config/i386/cygwin.h: Search target specfic include directory, if
+	appropriate.
+
 2001-10-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* dwarf2out.c (PTR_SIZE, default_eh_frame_section): Move outside
