@@ -315,6 +315,7 @@ or with constant text in a single argument.
  %x{OPTION}	Accumulate an option for %X.
  %X	Output the accumulated linker options specified by compilations.
  %Y	Output the accumulated assembler options specified by compilations.
+ %Z	Output the accumulated preprocessor options specified by compilations.
  %v1	Substitute the major version number of GCC.
 	(For version 2.5.n, this is 2.)
  %v2	Substitute the minor version number of GCC.
@@ -540,7 +541,7 @@ static struct compiler default_compilers[] =
 	%{!undef:%{!ansi:%p} %P} %{trigraphs} \
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
+	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
    "%{!M:%{!MM:%{!E:cc1 %{!pipe:%g.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a}\
@@ -561,7 +562,7 @@ static struct compiler default_compilers[] =
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
+	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %W{o*}}\
     %{!E:%e-E required when input is from standard input}"},
   {".m", "@objective-c"},
@@ -574,7 +575,7 @@ static struct compiler default_compilers[] =
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
+	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
    "%{!M:%{!MM:%{!E:cc1obj %{!pipe:%g.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.m %{d*} %{m*} %{a}\
@@ -598,7 +599,7 @@ static struct compiler default_compilers[] =
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
+	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %W{o*}"},
   {".cc", "@c++"},
   {".cxx", "@c++"},
@@ -612,7 +613,7 @@ static struct compiler default_compilers[] =
 	%{ansi:-trigraphs -$ -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional} %{trigraphs}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
+	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.ii}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
    "%{!M:%{!MM:%{!E:cc1plus %{!pipe:%g.ii} %1 %2\
 			    %{!Q:-quiet} -dumpbase %b.cc %{d*} %{m*} %{a}\
@@ -659,7 +660,7 @@ static struct compiler default_compilers[] =
         -undef -$ %{!undef:%p %P} -D__ASSEMBLER__ \
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
+	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.s}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
    "%{!M:%{!MM:%{!E:%{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
                     %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
@@ -729,9 +730,15 @@ static char **linker_options;
 
 /* A vector of options to give to the assembler.
    These options are accumulated by -Wa,
-   and substituted into the assembler command with %X.  */
+   and substituted into the assembler command with %Y.  */
 static int n_assembler_options;
 static char **assembler_options;
+
+/* A vector of options to give to the preprocessor.
+   These options are accumulated by -Wp,
+   and substituted into the preprocessor command with %Z.  */
+static int n_preprocessor_options;
+static char **preprocessor_options;
 
 /* Define how to map long options into short ones.  */
 
@@ -2506,6 +2513,36 @@ process_command (argc, argv)
 	  /* Record the part after the last comma.  */
 	  assembler_options[n_assembler_options - 1] = argv[i] + prev;
 	}
+      else if (! strncmp (argv[i], "-Wp,", 4))
+	{
+	  int prev, j;
+	  /* Pass the rest of this option to the preprocessor.  */
+
+	  n_preprocessor_options++;
+	  if (!preprocessor_options)
+	    preprocessor_options
+	      = (char **) xmalloc (n_preprocessor_options * sizeof (char **));
+	  else
+	    preprocessor_options
+	      = (char **) xrealloc (preprocessor_options,
+				    n_preprocessor_options * sizeof (char **));
+
+	  /* Split the argument at commas.  */
+	  prev = 4;
+	  for (j = 4; argv[i][j]; j++)
+	    if (argv[i][j] == ',')
+	      {
+		preprocessor_options[n_preprocessor_options - 1]
+		  = save_string (argv[i] + prev, j - prev);
+		n_preprocessor_options++;
+		preprocessor_options
+		  = (char **) xrealloc (preprocessor_options,
+					n_preprocessor_options * sizeof (char **));
+		prev = j + 1;
+	      }
+	  /* Record the part after the last comma.  */
+	  preprocessor_options[n_preprocessor_options - 1] = argv[i] + prev;
+	}
       else if (argv[i][0] == '+' && argv[i][1] == 'e')
 	/* The +e options to the C++ front-end.  */
 	n_switches++;
@@ -2673,6 +2710,8 @@ process_command (argc, argv)
       else if (! strncmp (argv[i], "-Wl,", 4))
 	;
       else if (! strncmp (argv[i], "-Wa,", 4))
+	;
+      else if (! strncmp (argv[i], "-Wp,", 4))
 	;
       else if (! strcmp (argv[i], "-print-libgcc-file-name"))
 	;
@@ -3306,6 +3345,16 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    for (i = 0; i < n_assembler_options; i++)
 	      {
 		do_spec_1 (assembler_options[i], 1, NULL_PTR);
+		/* Make each accumulated option a separate argument.  */
+		do_spec_1 (" ", 0, NULL_PTR);
+	      }
+	    break;
+
+	  /* Dump out the options accumulated previously using -Wp,.  */
+	  case 'Z':
+	    for (i = 0; i < n_preprocessor_options; i++)
+	      {
+		do_spec_1 (preprocessor_options[i], 1, NULL_PTR);
 		/* Make each accumulated option a separate argument.  */
 		do_spec_1 (" ", 0, NULL_PTR);
 	      }
