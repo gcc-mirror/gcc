@@ -1,5 +1,12 @@
 2002-03-08  Per Bothner  <per@bothner.com>
 
+	* parse.y (java_complete_lhs):  Check if patch_assignment
+	returned an error-mark.
+
+	* parse.y (try_builtin_assignconv):  Don't special-case zero.
+
+2002-03-08  Per Bothner  <per@bothner.com>
+
 	Fix for PR java/5812.
 	* expr.c (build_java_jsr):  Take pc arguments, and do lookup_label
 	gere instead of in JSR macro.  Likewise with load_type_state call.
