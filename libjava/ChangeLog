@@ -1,3 +1,25 @@
+2002-10-07  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/channels/AlreadyConnectedException.java,
+	java/nio/channels/ClosedChannelException.java,
+	java/nio/channels/ReadableByteChannel.java,
+	java/nio/channels/InterruptibleChannel.java,
+	java/nio/channels/Channel.java,
+	java/nio/channels/ByteChannel.java,
+	java/nio/channels/GatheringByteChannel.java,
+	java/nio/channels/ScatteringByteChannel.java,
+	java/nio/channels/WritableByteChannel.java,
+	java/nio/charset/CharacterCodingException.java,
+	java/nio/charset/IllegalCharsetNameException.java,
+	java/nio/charset/MalformedInputException.java,
+	java/nio/charset/UnmappableCharacterException.java,
+	java/nio/charset/UnsupportedCharsetException.java,
+	java/nio/charset/spi/CharsetProvider.java: New file.
+	These files are exceptions or interfaces,
+	no real or abstract classes.
+	* Makefile.am (java_native_source_files): Added new files.
+	* Makefile.in: Regenerated.
+
 2002-10-05  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/InetAddress.java
