@@ -359,13 +359,12 @@ static int eliminate_regs_in_insn	PROTO((rtx, int));
 static void mark_not_eliminable		PROTO((rtx, rtx));
 static int spill_hard_reg		PROTO((int, int, FILE *, int));
 static void scan_paradoxical_subregs	PROTO((rtx));
-static int hard_reg_use_compare		PROTO((struct hard_reg_n_uses *,
-					       struct hard_reg_n_uses *));
+static int hard_reg_use_compare		PROTO((const GENERIC_PTR, const GENERIC_PTR));
 static void order_regs_for_reload	PROTO((int));
-static int compare_spill_regs		PROTO((short *, short *));
+static int compare_spill_regs		PROTO((const GENERIC_PTR, const GENERIC_PTR));
 static void reload_as_needed		PROTO((rtx, int));
 static void forget_old_reloads_1	PROTO((rtx, rtx));
-static int reload_reg_class_lower	PROTO((short *, short *));
+static int reload_reg_class_lower	PROTO((const GENERIC_PTR, const GENERIC_PTR));
 static void mark_reload_reg_in_use	PROTO((int, int, enum reload_type,
 					       enum machine_mode));
 static void clear_reload_reg_in_use	PROTO((int, int, enum reload_type,
@@ -3624,9 +3623,12 @@ scan_paradoxical_subregs (x)
 }
 
 static int
-hard_reg_use_compare (p1, p2)
-     struct hard_reg_n_uses *p1, *p2;
+hard_reg_use_compare (p1p, p2p)
+  const GENERIC_PTR p1p;
+  const GENERIC_PTR p2p;
 {
+  struct hard_reg_n_uses *p1 = (struct hard_reg_n_uses *)p1p,
+			 *p2 = (struct hard_reg_n_uses *)p2p;
   int tem = p1->uses - p2->uses;
   if (tem != 0) return tem;
   /* If regs are equally good, sort by regno,
@@ -3759,10 +3761,12 @@ order_regs_for_reload (global)
 /* Used in reload_as_needed to sort the spilled regs.  */
 
 static int
-compare_spill_regs (r1, r2)
-     short *r1, *r2;
+compare_spill_regs (r1p, r2p)
+     const GENERIC_PTR r1p;
+     const GENERIC_PTR r2p;
 {
-  return *r1 - *r2;
+  short r1 = *(short *)r1p, r2 = *(short *)r2p;
+  return r1 - r2;
 }
 
 /* Reload pseudo-registers into hard regs around each insn as needed.
@@ -4115,10 +4119,11 @@ static int reload_nregs[MAX_RELOADS];
    should be handled first.  *P1 and *P2 are the reload numbers.  */
 
 static int
-reload_reg_class_lower (p1, p2)
-     short *p1, *p2;
+reload_reg_class_lower (r1p, r2p)
+     const GENERIC_PTR r1p;
+     const GENERIC_PTR r2p;
 {
-  register int r1 = *p1, r2 = *p2;
+  register int r1 = *(short *)r1p, r2 = *(short *)r2p;
   register int t;
 
   /* Consider required reloads before optional ones.  */
