@@ -20,6 +20,8 @@
 
 // 22.2.1.5  Template class codecvt
 
+// { dg-do compile }
+
 #include <locale>
 
 void test01()
