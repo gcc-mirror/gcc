@@ -1,3 +1,7 @@
+Wed Nov  4 18:16:29 1998 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl> 
+
+	* emit-rtl.c (try_split): Fixed error in Oct 10 patch.
+
 Wed Nov  4 15:11:15 1998  Geoffrey Noer  <noer@cygnus.com>
 
 	* i386/cygwin32.h (MASK_WIN32, MASK_CYGWIN, MASK_WINDOWS, MASK_DLL,
