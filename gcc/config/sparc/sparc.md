@@ -1368,11 +1368,16 @@
 {
   rtx temp = gen_reg_rtx (SImode);
   rtx shift_16 = gen_rtx (CONST_INT, VOIDmode, 16);
+  int op1_subword = 0;
 
   if (GET_CODE (operand1) == SUBREG)
-    operand1 = XEXP (operand1, 0);
+    {
+      op1_subword = SUBREG_WORD (operand1);
+      operand1 = XEXP (operand1, 0);
+    }
 
-  emit_insn (gen_ashlsi3 (temp, gen_rtx (SUBREG, SImode, operand1, 0),
+  emit_insn (gen_ashlsi3 (temp, gen_rtx (SUBREG, SImode, operand1,
+					 op1_subword),
 			  shift_16));
   emit_insn (gen_lshrsi3 (operand0, temp, shift_16));
   DONE;
@@ -1469,11 +1474,16 @@
 {
   rtx temp = gen_reg_rtx (SImode);
   rtx shift_16 = gen_rtx (CONST_INT, VOIDmode, 16);
+  int op1_subword = 0;
 
   if (GET_CODE (operand1) == SUBREG)
-    operand1 = XEXP (operand1, 0);
+    {
+      op1_subword = SUBREG_WORD (operand1);
+      operand1 = XEXP (operand1, 0);
+    }
 
-  emit_insn (gen_ashlsi3 (temp, gen_rtx (SUBREG, SImode, operand1, 0),
+  emit_insn (gen_ashlsi3 (temp, gen_rtx (SUBREG, SImode, operand1,
+					 op1_subword),
 			  shift_16));
   emit_insn (gen_ashrsi3 (operand0, temp, shift_16));
   DONE;
@@ -1494,15 +1504,24 @@
 {
   rtx temp = gen_reg_rtx (SImode);
   rtx shift_24 = gen_rtx (CONST_INT, VOIDmode, 24);
+  int op1_subword = 0;
+  int op0_subword = 0;
 
   if (GET_CODE (operand1) == SUBREG)
-    operand1 = XEXP (operand1, 0);
+    {
+      op1_subword = SUBREG_WORD (operand1);
+      operand1 = XEXP (operand1, 0);
+    }
   if (GET_CODE (operand0) == SUBREG)
-    operand0 = XEXP (operand0, 0);
-  emit_insn (gen_ashlsi3 (temp, gen_rtx (SUBREG, SImode, operand1, 0),
+    {
+      op0_subword = SUBREG_WORD (operand0);
+      operand0 = XEXP (operand0, 0);
+    }
+  emit_insn (gen_ashlsi3 (temp, gen_rtx (SUBREG, SImode, operand1,
+					 op1_subword),
 			  shift_24));
   if (GET_MODE (operand0) != SImode)
-    operand0 = gen_rtx (SUBREG, SImode, operand0, 0);
+    operand0 = gen_rtx (SUBREG, SImode, operand0, op0_subword);
   emit_insn (gen_ashrsi3 (operand0, temp, shift_24));
   DONE;
 }")
@@ -1522,10 +1541,16 @@
 {
   rtx temp = gen_reg_rtx (SImode);
   rtx shift_24 = gen_rtx (CONST_INT, VOIDmode, 24);
+  int op1_subword = 0;
 
   if (GET_CODE (operand1) == SUBREG)
-    operand1 = XEXP (operand1, 0);
-  emit_insn (gen_ashlsi3 (temp, gen_rtx (SUBREG, SImode, operand1, 0),
+    {
+      op1_subword = SUBREG_WORD (operand1);
+      operand1 = XEXP (operand1, 0);
+    }
+
+  emit_insn (gen_ashlsi3 (temp, gen_rtx (SUBREG, SImode, operand1,
+					 op1_subword),
 			  shift_24));
   emit_insn (gen_ashrsi3 (operand0, temp, shift_24));
   DONE;
@@ -2510,36 +2535,6 @@
 
 ;;- arithmetic shift instructions
 
-;; We can trivially handle shifting the constant 1 by 64 bits.
-;; For other shifts we use the library routine.
-;; ??? Questionable, we can do better than this can't we?
-(define_expand "ashldi3"
-  [(parallel [(set (match_operand:DI 0 "register_operand" "")
-		   (ashift:DI (match_operand:DI 1 "const_double_operand" "")
-			      (match_operand:SI 2 "register_operand" "")))
-	      (clobber (reg:SI 0))])]
-  ""
-  "
-{
-  if (GET_CODE (operands[1]) == CONST_DOUBLE
-      && CONST_DOUBLE_HIGH (operands[1]) == 0
-      && CONST_DOUBLE_LOW (operands[1]) == 1)
-    operands[1] = const1_rtx;
-  else if (operands[1] != const1_rtx)
-    FAIL;
-}")
-
-;; ??? Questionable, we can do better than this can't we?
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=&r")
-	(ashift:DI (const_int 1)
-		   (match_operand:SI 1 "register_operand" "r")))
-   (clobber (reg:SI 0))]
-  ""
-  "subcc %1,32,%%g0\;addx %%g0,0,%R0\;xor %R0,1,%0\;sll %R0,%1,%R0\;sll %0,%1,%0"
-  [(set_attr "type" "multi")
-   (set_attr "length" "5")])
-
 (define_insn "ashlsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(ashift:SI (match_operand:SI 1 "register_operand" "r")
@@ -2547,9 +2542,9 @@
   ""
   "sll %1,%2,%0")
 
-(define_expand "lshldi3"
+(define_expand "ashldi3"
   [(parallel [(set (match_operand:DI 0 "register_operand" "")
-		   (lshift:DI (match_operand:DI 1 "register_operand" "")
+		   (ashift:DI (match_operand:DI 1 "register_operand" "")
 			      (match_operand:DI 2 "const_int_operand" "")))
 	      (clobber (match_scratch:SI 3 ""))])]
   ""
@@ -2561,7 +2556,7 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(lshift:DI (match_operand:DI 1 "register_operand" "r")
+	(ashift:DI (match_operand:DI 1 "register_operand" "r")
 		     (match_operand:DI 2 "const_int_operand" "I")))
    (clobber (match_scratch:SI 3 "=r"))]
   "INTVAL (operands[2]) < 32"
