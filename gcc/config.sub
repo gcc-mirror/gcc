@@ -125,6 +125,10 @@ case $basic_machine in
 		basic_machine=`echo $1 | sed -e 's/86.*/86-unknown/'`
 		os=-sysv
 		;;
+	i[34]86sol2)
+		basic_machine=`echo $1 | sed -e 's/86.*/86-unknown/'`
+		os=-solaris2
+		;;
 	spur)
 		basic_machine=spur-unknown
 		;;
