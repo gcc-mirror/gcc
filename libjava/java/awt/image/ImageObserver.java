@@ -56,7 +56,7 @@ public interface ImageObserver
      *
      * @see #imageUpdate 
      */
-    public static final int WIDTH = 1;
+    int WIDTH = 1;
 
     /**
      * The height of the image has been provided as the
@@ -64,7 +64,7 @@ public interface ImageObserver
      *
      * @see #imageUpdate 
      */
-    public static final int HEIGHT = 2;
+    int HEIGHT = 2;
 
     /**
      * The properties of the image have been provided.
@@ -72,7 +72,7 @@ public interface ImageObserver
      * @see #imageUpdate
      * @see java.awt.Image#getProperty (java.lang.String, java.awt.image.ImageObserver)
      */
-    public static final int PROPERTIES = 4;
+    int PROPERTIES = 4;
 
     /**
      * More pixels are now available for drawing a scaled variation of
@@ -80,7 +80,7 @@ public interface ImageObserver
      *
      * @see #imageUpdate 
      */
-    public static final int SOMEBITS = 8;
+    int SOMEBITS = 8;
 
     /**
      * All the pixels needed to draw a complete frame of a multi-frame
@@ -88,28 +88,28 @@ public interface ImageObserver
      *
      * @see #imageUpdate 
      */
-    public static final int FRAMEBITS = 16;
+    int FRAMEBITS = 16;
 
     /**
      * An image with a single frame, a static image, is complete.
      *
      * @see #imageUpdate
      */
-    public static final int ALLBITS = 32;
+    int ALLBITS = 32;
 
     /**
      * An error was encountered while producing the image.
      *
      * @see #imageUpdate
      */
-    public static final int ERROR = 64;
+    int ERROR = 64;
 
     /**
      * Production of the image was aborted.
      *
      * @see #imageUpdate
      */
-    public static final int ABORT = 128;
+    int ABORT = 128;
 
     /**
      * This is a callback method for an asynchronous image producer to
@@ -124,6 +124,6 @@ public interface ImageObserver
      * 
      * @see java.awt.Image 
      */
-    public abstract boolean imageUpdate(Image image, int flags, int x, 
+    boolean imageUpdate(Image image, int flags, int x, 
 					int y, int width, int height);
 }

@@ -44,7 +44,8 @@ import java.util.Vector;
 
 public interface RenderableImage
 {
-  static final String HINTS_OBSERVED = "HINTS_OBSERVED";
+  String HINTS_OBSERVED = "HINTS_OBSERVED";
+  
   Vector getSources();
   Object getProperty(String name);
   String[] getPropertyNames();
@@ -56,4 +57,6 @@ public interface RenderableImage
   RenderedImage createScaledRendering(int w, int h, RenderingHints hints);
   RenderedImage createDefaultRendering();
   RenderedImage createRendering(RenderContext context);
+
 } // interface RenderableImage
+

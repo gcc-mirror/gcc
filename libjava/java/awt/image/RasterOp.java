@@ -50,6 +50,6 @@ public interface RasterOp {
 
   Point2D getPoint2D(Point2D srcPoint, Point2D destPoint);
 
-  public RenderingHints getRenderingHints();
+  RenderingHints getRenderingHints();
 }
 

@@ -58,7 +58,7 @@ public interface FlavorMap
    *
    * @return A <code>Map</code> of native data types.
    */
-  public abstract Map getNativesForFlavors (DataFlavor[] flavors);
+  Map getNativesForFlavors (DataFlavor[] flavors);
 
   /**
    * Maps the specified native type names to <code>DataFlavor</code>'s.
@@ -71,5 +71,5 @@ public interface FlavorMap
    *
    * @return A <code>Map</code> of data flavors.
    */
-  public abstract Map getFlavorsForNatives (String[] natives);
+  Map getFlavorsForNatives (String[] natives);
 }

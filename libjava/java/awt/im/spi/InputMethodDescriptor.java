@@ -88,8 +88,8 @@ public interface InputMethodDescriptor
    * @param displayLanguage the language of the result
    * @return the name of the input method when using the given inputLocale
    */
-  public String getInputMethodDisplayName(Locale inputLocale,
-                                          Locale displayLanguage);
+  String getInputMethodDisplayName(Locale inputLocale,
+                                   Locale displayLanguage);
 
   /**
    * Returns a 16x16 icon for the input locale. The inputLocale parameter
@@ -99,7 +99,7 @@ public interface InputMethodDescriptor
    * @param inputLocale the locale of the input method, or null
    * @return a 16x16 icon for the input method when using the given inputLocale
    */
-  public Image getInputMethodIcon(Locale inputLocale);
+  Image getInputMethodIcon(Locale inputLocale);
 
   /**
    * Creates a new instance of the input method.
@@ -107,5 +107,7 @@ public interface InputMethodDescriptor
    * @return the newly created input method
    * @throws Exception if anything goes wrong
    */
-  public InputMethod createInputMethod() throws Exception;
+  InputMethod createInputMethod() throws Exception;
+
 } // interface InputMethodDescriptor
+

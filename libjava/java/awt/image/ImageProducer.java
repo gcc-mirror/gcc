@@ -53,19 +53,19 @@ public interface ImageProducer
      * Used to register an <code>ImageConsumer</code> with this
      * <code>ImageProducer</code>.  
      */
-    public abstract void addConsumer(ImageConsumer ic);
+    void addConsumer(ImageConsumer ic);
 
     /**
      * Used to determine if the given <code>ImageConsumer</code> is
      * already registered with this <code>ImageProducer</code>.  
      */
-    public abstract boolean isConsumer(ImageConsumer ic);
+    boolean isConsumer(ImageConsumer ic);
 
     /**
      * Used to remove an <code>ImageConsumer</code> from the list of
      * registered consumers for this <code>ImageProducer</code>.  
      */
-    public abstract void removeConsumer(ImageConsumer ic);
+    void removeConsumer(ImageConsumer ic);
 
     /**
      * Used to register an <code>ImageConsumer</code> with this
@@ -73,13 +73,13 @@ public interface ImageProducer
      * reconstruction of the image data to be delivered to all
      * registered consumers.  
      */
-    public abstract void startProduction(ImageConsumer ic);
+    void startProduction(ImageConsumer ic);
 
     /**
      * Used to register an <code>ImageConsumer</code> with this
      * <code>ImageProducer</code> and then request that this producer
      * resend the image data in the order top-down, left-right.  
      */
-    public abstract void requestTopDownLeftRightResend(ImageConsumer ic);
+    void requestTopDownLeftRightResend(ImageConsumer ic);
 }
 

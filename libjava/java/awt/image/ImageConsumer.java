@@ -54,21 +54,21 @@ public interface ImageConsumer
      *
      * @see #setHints 
      */
-    public static final int RANDOMPIXELORDER = 1;
+    int RANDOMPIXELORDER = 1;
 
     /**
      * The pixel order is top-down, left-right.
      *
      * @see #setHints
      */
-    public static final int TOPDOWNLEFTRIGHT = 2;
+    int TOPDOWNLEFTRIGHT = 2;
 
     /**
      * The pixel order is in multiples of complete scanlines.
      *
      * @see #setHints
      */
-    public static final int COMPLETESCANLINES = 4;
+    int COMPLETESCANLINES = 4;
 
     /**
      * The pixels will be delivered in a single pass.  There is at
@@ -77,7 +77,7 @@ public interface ImageConsumer
      * @see #setHints
      * @see #setPixels 
      */
-    public static final int SINGLEPASS = 8;
+    int SINGLEPASS = 8;
 
     /**
      * The pixels will be delivered with multiple calls to
@@ -91,35 +91,35 @@ public interface ImageConsumer
      * @see #setHints
      * @see #imageComplete 
      */
-    public static final int SINGLEFRAME = 16;
+    int SINGLEFRAME = 16;
 
     /**
      * Indicates an error occurred while producing an image.
      *
      * @see #imageComplete
      */
-    public static final int IMAGEERROR = 1;
+    int IMAGEERROR = 1;
 
     /**
      * A single frame is complete but more will follow.
      * 
      * @see #imageComplete
      */
-    public static final int SINGLEFRAMEDONE = 2;
+    int SINGLEFRAMEDONE = 2;
 
     /**
      * The image is complete and no more pixels or frames will follow.
      *
      * @see #imageComplete
      */
-    public static final int STATICIMAGEDONE = 3;
+    int STATICIMAGEDONE = 3;
 
     /**
      * Production of the image has been aborted.
      *
      * @see #imageComplete
      */
-    public static final int IMAGEABORTED = 4;
+    int IMAGEABORTED = 4;
 
     /**
      * An <code>ImageProducer</code> indicates the size of the image
@@ -128,7 +128,7 @@ public interface ImageConsumer
      * @param width the width of the image
      * @param height the height of the image 
      */
-    public abstract void setDimensions(int width, int height);
+    void setDimensions(int width, int height);
 
     /**
      * An <code>ImageProducer</code> can set a list of properties
@@ -136,7 +136,7 @@ public interface ImageConsumer
      *
      * @param props the list of properties associated with this image 
      */
-    public abstract void setProperties(Hashtable props);
+    void setProperties(Hashtable props);
 
     /**
      * This <code>ColorModel</code> should indicate the model used by
@@ -147,7 +147,7 @@ public interface ImageConsumer
      * @param model the color model to be used most often by setPixels
      * @see ColorModel 
      */
-    public abstract void setColorModel(ColorModel model);
+    void setColorModel(ColorModel model);
 
     /**
      * The <code>ImageProducer</code> should call this method with a
@@ -157,14 +157,14 @@ public interface ImageConsumer
      * 
      * @param flags a bit mask of hints
      */
-    public abstract void setHints(int flags);
+    void setHints(int flags);
 
     /**
      * This function delivers a rectangle of pixels where any
      * pixel(m,n) is stored in the array as a <code>byte</code> at
      * index (n * scansize + m + offset).  
      */
-    public abstract void setPixels(int x, int y, int w, int h, 
+    void setPixels(int x, int y, int w, int h, 
 	   ColorModel model, byte[] pixels, int offset, int scansize);
 
     /**
@@ -172,7 +172,7 @@ public interface ImageConsumer
      * pixel(m,n) is stored in the array as an <code>int</code> at
      * index (n * scansize + m + offset).  
      */
-    public abstract void setPixels(int x, int y, int w, int h, 
+    void setPixels(int x, int y, int w, int h, 
            ColorModel model, int[] pixels, int offset, int scansize);
 
     /**
@@ -181,6 +181,6 @@ public interface ImageConsumer
      * also used to indicate an error in loading or producing the
      * image.  
      */
-    public abstract void imageComplete(int status);
+    void imageComplete(int status);
 }
 

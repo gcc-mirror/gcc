@@ -56,7 +56,7 @@ public interface Transferable
    *
    * @return adA list of data flavors for this data
    */
-  public abstract DataFlavor[] getTransferDataFlavors();
+  DataFlavor[] getTransferDataFlavors();
 
   /**
    * Tests whether or not this data can be delivered in the specified data
@@ -65,7 +65,7 @@ public interface Transferable
    * @param flavor the data flavor to test
    * @return true if the data flavor is supported
    */
-  public abstract boolean isDataFlavorSupported(DataFlavor flavor);
+  boolean isDataFlavorSupported(DataFlavor flavor);
 
   /**
    * Returns the data in the specified <code>DataFlavor</code>.
@@ -76,6 +76,8 @@ public interface Transferable
    * @throws IOException if the data is not available
    * @see DataFlavor#getRepresentationClass
    */
-  public abstract Object getTransferData(DataFlavor flavor)
+  Object getTransferData(DataFlavor flavor)
     throws UnsupportedFlavorException, IOException;
+
 } // interface Transferable
+

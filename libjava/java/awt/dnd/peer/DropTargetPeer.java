@@ -43,6 +43,6 @@ import java.awt.dnd.DropTarget;
  */
 public interface DropTargetPeer
 {
-  public void addDropTarget (DropTarget target);
-  public void removeDropTarget (DropTarget target);
+  void addDropTarget (DropTarget target);
+  void removeDropTarget (DropTarget target);
 } // interface DropTargetContextPeer

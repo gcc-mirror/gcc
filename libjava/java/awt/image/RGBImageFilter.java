@@ -149,7 +149,7 @@ public abstract class RGBImageFilter extends ImageFilter
 				int off,
 				int scansize)
     {
-	int xp, yp, i;
+	int xp, yp;
 
 	for( xp = x; xp < ( x + w); xp++ )
 	    for( yp = y; yp < (y + h); yp++ )
@@ -212,7 +212,7 @@ public abstract class RGBImageFilter extends ImageFilter
     private void convertColorModelToDefault( int x, int y, int w, int h, 
 	    ColorModel model, int pixels[], int offset, int scansize)
 	{
-	int xp, yp, i;
+	int xp, yp;
 
 	for( xp = x; xp < ( x + w); xp++ )
 	    for( yp = y; yp < (y + h); yp++ )
