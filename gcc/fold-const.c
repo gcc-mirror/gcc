@@ -1741,7 +1741,8 @@ operand_equal_for_comparison_p (arg0, arg1, other)
   if (operand_equal_p (arg0, arg1, 0))
     return 1;
 
-  if (! INTEGRAL_TYPE_P (TREE_TYPE (arg0)))
+  if (! INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+      || ! INTEGRAL_TYPE_P (TREE_TYPE (arg1)))
     return 0;
 
   /* Duplicate what shorten_compare does to ARG1 and see if that gives the
@@ -5053,16 +5054,29 @@ fold (expr)
 	tree arg00 = TREE_OPERAND (arg0, 0);
 	tree arg01;
 
-	if (kind0 == '1')
+	if (kind0 == '1' || code0 == TRUTH_NOT_EXPR)
 	  return fold (build1 (code0, type, 
 			       fold (build1 (CLEANUP_POINT_EXPR,
 					     TREE_TYPE (arg00), arg00))));
-	if ((kind0 == '<' || kind0 == '2')
-	    && ! TREE_SIDE_EFFECTS (arg01 = TREE_OPERAND (arg0, 1)))
-	  return fold (build (code0, type,
-			      fold (build1 (CLEANUP_POINT_EXPR,
-					    TREE_TYPE (arg00), arg00)),
-			      arg01));
+
+	if (kind0 == '<' || kind0 == '2'
+	    || code0 == TRUTH_ANDIF_EXPR || code0 == TRUTH_ORIF_EXPR
+	    || code0 == TRUTH_AND_EXPR   || code0 == TRUTH_OR_EXPR
+	    || code0 == TRUTH_XOR_EXPR)
+	  {
+	    arg01 = TREE_OPERAND (arg0, 1);
+
+	    if (! TREE_SIDE_EFFECTS (arg00))
+	      return fold (build (code0, type, arg00,
+				  fold (build1 (CLEANUP_POINT_EXPR,
+						TREE_TYPE (arg01), arg01))));
+
+	    if (! TREE_SIDE_EFFECTS (arg01))
+	      return fold (build (code0, type,
+				  fold (build1 (CLEANUP_POINT_EXPR,
+						TREE_TYPE (arg00), arg00)),
+				  arg01));
+	  }
 
 	return t;
       }
