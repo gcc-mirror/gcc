@@ -1,3 +1,7 @@
+Wed Oct  9 15:54:49 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.md (ffssi2): Fix emitted code.
+
 2002-10-09  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* cse.c (insn_live_p): Pass insn pattern, not full insn
