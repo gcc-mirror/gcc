@@ -522,21 +522,39 @@ find_basic_blocks (f, nonlocal_label_list)
 	  }
 
       /* Find all call insns and mark them as possibly jumping
-	 to all the nonlocal goto handler labels.  */
+	 to all the nonlocal goto handler labels, or to the current
+	 exception handler.  */
 
-      for (insn = f; insn; insn = NEXT_INSN (insn))
-	if (GET_CODE (insn) == CALL_INSN
-	    && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	  {
-	    for (x = nonlocal_label_list; x; x = XEXP (x, 1))
-	      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
-			      insn, 0);
-
-	    if (! asynchronous_exceptions)
-	      for (x = exception_handler_labels; x; x = XEXP (x, 1))
-		mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
+      for (note = NULL_RTX, insn = f; insn; insn = NEXT_INSN (insn))
+	{
+	  if (! asynchronous_exceptions && GET_CODE (insn) == NOTE)
+	    {
+	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
+		{
+		  for (x = exception_handler_labels; x; x = XEXP (x, 1))
+		    if (CODE_LABEL_NUMBER (XEXP (x, 0))
+			== NOTE_BLOCK_NUMBER (insn))
+		      {
+			note = gen_rtx (EXPR_LIST, VOIDmode,
+					 XEXP (x, 0), note);
+			break;
+		      }
+		  if (x == NULL_RTX)
+		    abort ();
+		}
+	      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
+		note = XEXP (note, 1);
+	    }
+	  else if (GET_CODE (insn) == CALL_INSN
+		   && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
+	    {
+	      if (note)
+		mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (note, 0)),
 				insn, 0);
 
+	      for (x = nonlocal_label_list; x; x = XEXP (x, 1))
+		mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
+				insn, 0);
 	    /* ??? This could be made smarter:
 	       in some cases it's possible to tell that certain
 	       calls will not do a nonlocal goto.
@@ -546,7 +564,8 @@ find_basic_blocks (f, nonlocal_label_list)
 	       only calls to those functions or to other nested
 	       functions that use them could possibly do nonlocal
 	       gotos.  */
-	  }
+	    }
+	}
 
       /* All blocks associated with labels in label_value_list are
 	 trivially considered as marked live, if the list is empty.
