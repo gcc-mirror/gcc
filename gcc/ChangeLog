@@ -1,3 +1,7 @@
+2001-07-04  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Specific): Update information for *-*-solaris*.
+
 2001-07-03  Jan Hubicka  <jh@suse.cz>
 
 	* optabs.c (expand_twoval_binop): Avoid undefined behaviour.

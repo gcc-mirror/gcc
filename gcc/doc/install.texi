@@ -2975,9 +2975,11 @@ bootstrap and install GCC you first have to install a pre-built
 compiler, see our @uref{binaries.html,,binaries page} for
 details.
 
-You must use GNU Make to build GCC on Solaris 2.  If you don't have GNU
-Make installed, you can use the prebuilt compiler mentioned above to
-build it.
+Solaris' @file{/bin/sh} will often fail to configure libstdc++-v3, boehm-gc or
+libjava.  If you encounter this problem, set @var{CONFIG_SHELL} to
+@file{/bin/ksh} in your environment and run @samp{make bootstrap} again.
+Another possibility that sometimes helps is to remove
+@file{*-*-solaris*/config.cache}.
 
 Sun as 4.X is broken in that it cannot cope with long symbol names.
 A typical error message might look similar to the following:
@@ -2987,12 +2989,6 @@ error: can't compute value of an expression involving an external symbol.}
 
 This is Sun bug 4237974.  This is fixed with patch 108908-02 and has
 been fixed in later (5.x) versions of the assembler.
-
-Solaris' @file{/bin/sh} will often fail to configure libstdc++-v3, boehm-gc or
-libjava.  If you encounter this problem, set @var{CONFIG_SHELL} to
-@file{/bin/ksh} in your environment and run @samp{make bootstrap} again.
-Another possibility that sometimes helps is to remove
-@file{*-*-solaris*/config.cache}.
 
 @html
 <p>
