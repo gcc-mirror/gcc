@@ -40,16 +40,26 @@ namespace tr1
     typedef struct { char __arr[2]; } __two;
   };
 
-#define _DEFINE_SPEC_HELPER(_Header, _Spec)                      \
-  template _Header                                               \
-    struct _Spec                                                 \
+#define _DEFINE_SPEC_0_HELPER(_Spec)                            \
+  template<>                                                    \
+    struct _Spec                                                \
     : public true_type { };
+
+#define _DEFINE_SPEC_1_HELPER(_Spec)                            \
+  template<typename _Tp>                                        \
+    struct _Spec                                                \
+    _DEFINE_SPEC_1_VAR
       
-#define _DEFINE_SPEC(_Header, _Trait, _Type)                     \
-  _DEFINE_SPEC_HELPER(_Header, _Trait<_Type>)                    \
-  _DEFINE_SPEC_HELPER(_Header, _Trait<_Type const>)              \
-  _DEFINE_SPEC_HELPER(_Header, _Trait<_Type volatile>)           \
-  _DEFINE_SPEC_HELPER(_Header, _Trait<_Type const volatile>)
+#define _DEFINE_SPEC_2_HELPER(_Spec)                            \
+  template<typename _Tp, typename _Cp>                          \
+    struct _Spec                                                \
+    _DEFINE_SPEC_2_VAR
+
+#define _DEFINE_SPEC(_Order, _Trait, _Type)                     \
+  _DEFINE_SPEC_##_Order##_HELPER(_Trait<_Type>)                 \
+  _DEFINE_SPEC_##_Order##_HELPER(_Trait<_Type const>)           \
+  _DEFINE_SPEC_##_Order##_HELPER(_Trait<_Type volatile>)        \
+  _DEFINE_SPEC_##_Order##_HELPER(_Trait<_Type const volatile>)
 
   /// @brief  helper classes [4.3].
   template<typename _Tp, _Tp __v>
@@ -66,33 +76,33 @@ namespace tr1
   template<typename>
     struct is_void
     : public false_type { };
-  _DEFINE_SPEC(<>, is_void, void)
+  _DEFINE_SPEC(0, is_void, void)
 
   template<typename>
     struct is_integral
     : public false_type { };
-  _DEFINE_SPEC(<>, is_integral, bool)
-  _DEFINE_SPEC(<>, is_integral, char)
-  _DEFINE_SPEC(<>, is_integral, signed char)
-  _DEFINE_SPEC(<>, is_integral, unsigned char)
+  _DEFINE_SPEC(0, is_integral, bool)
+  _DEFINE_SPEC(0, is_integral, char)
+  _DEFINE_SPEC(0, is_integral, signed char)
+  _DEFINE_SPEC(0, is_integral, unsigned char)
 #ifdef _GLIBCXX_USE_WCHAR_T
-  _DEFINE_SPEC(<>, is_integral, wchar_t)
+  _DEFINE_SPEC(0, is_integral, wchar_t)
 #endif
-  _DEFINE_SPEC(<>, is_integral, short)
-  _DEFINE_SPEC(<>, is_integral, unsigned short)
-  _DEFINE_SPEC(<>, is_integral, int)
-  _DEFINE_SPEC(<>, is_integral, unsigned int)
-  _DEFINE_SPEC(<>, is_integral, long)
-  _DEFINE_SPEC(<>, is_integral, unsigned long)
-  _DEFINE_SPEC(<>, is_integral, long long)
-  _DEFINE_SPEC(<>, is_integral, unsigned long long)
+  _DEFINE_SPEC(0, is_integral, short)
+  _DEFINE_SPEC(0, is_integral, unsigned short)
+  _DEFINE_SPEC(0, is_integral, int)
+  _DEFINE_SPEC(0, is_integral, unsigned int)
+  _DEFINE_SPEC(0, is_integral, long)
+  _DEFINE_SPEC(0, is_integral, unsigned long)
+  _DEFINE_SPEC(0, is_integral, long long)
+  _DEFINE_SPEC(0, is_integral, unsigned long long)
 
   template<typename>
     struct is_floating_point
     : public false_type { };
-  _DEFINE_SPEC(<>, is_floating_point, float)
-  _DEFINE_SPEC(<>, is_floating_point, double)
-  _DEFINE_SPEC(<>, is_floating_point, long double)
+  _DEFINE_SPEC(0, is_floating_point, float)
+  _DEFINE_SPEC(0, is_floating_point, double)
+  _DEFINE_SPEC(0, is_floating_point, long double)
 
   template<typename>
     struct is_array
@@ -105,11 +115,14 @@ namespace tr1
   template<typename _Tp>
     struct is_array<_Tp[]>
     : public true_type { };
+
+#define _DEFINE_SPEC_1_VAR        \
+    : public true_type { };
   
   template<typename>
     struct is_pointer
     : public false_type { };
-  _DEFINE_SPEC(<typename _Tp>, is_pointer, _Tp*)
+  _DEFINE_SPEC(1, is_pointer, _Tp*)
  
   template<typename>
     struct is_reference
@@ -118,7 +131,24 @@ namespace tr1
   template<typename _Tp>
     struct is_reference<_Tp&>
     : public true_type { };
-  
+
+#define _DEFINE_SPEC_2_VAR        \
+    : public integral_constant<bool, !is_function<_Tp>::value> { };
+
+  template<typename>
+    struct is_member_object_pointer
+    : public false_type { };
+  _DEFINE_SPEC(2, is_member_object_pointer, _Tp _Cp::*)
+
+#undef _DEFINE_SPEC_2_VAR
+#define _DEFINE_SPEC_2_VAR        \
+    : public integral_constant<bool, is_function<_Tp>::value> { };
+
+  template<typename>
+    struct is_member_function_pointer
+    : public false_type { };
+  _DEFINE_SPEC(2, is_member_function_pointer, _Tp _Cp::*)
+
   template<typename _Tp>
     struct __is_function_helper
     : public __sfinae_types
@@ -322,16 +352,14 @@ namespace tr1
     { typedef typename remove_all_extents<_Tp>::type     type; };
 
   /// @brief  pointer modifications [4.7.4].
-#undef _DEFINE_SPEC_HELPER
-#define _DEFINE_SPEC_HELPER(_Header, _Spec)                      \
-  template _Header                                               \
-    struct _Spec                                                 \
+#undef _DEFINE_SPEC_1_VAR
+#define _DEFINE_SPEC_1_VAR        \
     { typedef _Tp     type; };
 
   template<typename _Tp>
     struct remove_pointer
     { typedef _Tp     type; };
-  _DEFINE_SPEC(<typename _Tp>, remove_pointer, _Tp*)
+  _DEFINE_SPEC(1, remove_pointer, _Tp*)
   
   template<typename _Tp>
     struct add_pointer
@@ -339,8 +367,11 @@ namespace tr1
 
   /// @brief  other transformations [4.8].
 
-#undef _DEFINE_SPEC_HELPER
-#undef _DEFINE_SPEC
+#undef _DEFINE_SPEC_0_HELPER
+#undef _DEFINE_SPEC_1_HELPER
+#undef _DEFINE_SPEC_2_HELPER
+#undef _DEFINE_SPEC_1_VAR
+#undef _DEFINE_SPEC_2_VAR
 
 }
 }
