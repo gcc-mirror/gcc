@@ -3995,7 +3995,7 @@ qualified_lookup_using_namespace (name, scope, result)
 	     usings = TREE_CHAIN (usings))
 	  /* If this was a real directive, and we have not seen it. */
 	  if (!TREE_INDIRECT_USING (usings)
-	      && !purpose_member (seen, TREE_PURPOSE (usings)))
+	      && !purpose_member (TREE_PURPOSE (usings), seen))
 	    todo = temp_tree_cons (TREE_PURPOSE (usings), NULL_TREE, todo);
       if (todo)
 	{

@@ -322,6 +322,15 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
   /* Every decl that gets here is a friend of something.  */
   DECL_FRIEND_P (decl) = 1;
 
+  if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
+    {
+      declarator = TREE_OPERAND (declarator, 0);
+      if (TREE_CODE (declarator) == LOOKUP_EXPR)
+	declarator = TREE_OPERAND (declarator, 0);
+      if (is_overloaded_fn (declarator))
+	declarator = DECL_NAME (get_first_fn (declarator));
+    }
+
   if (TREE_CODE (decl) == FUNCTION_DECL)
     is_friend_template = processing_template_decl >
       template_class_depth (current_class_type);
@@ -371,9 +380,8 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	  if (fields)
 	    add_friends (current_class_type, declarator, ctype);
 	  else
-	    error ("method `%s' is not a member of class `%s'",
-		   IDENTIFIER_POINTER (declarator),
-		   IDENTIFIER_POINTER (cname));
+	    cp_error ("method `%D' is not a member of class `%T'",
+		      declarator, ctype);
 	  decl = void_type_node;
 	}
     }
@@ -453,8 +461,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
       tree decl = lookup_name_nonclass (declarator);
       if (decl == NULL_TREE)
 	{
-	  warning ("implicitly declaring `%s' as struct",
-		   IDENTIFIER_POINTER (declarator));
+	  cp_warning ("implicitly declaring `%T' as struct", declarator);
 	  decl = xref_tag (record_type_node, declarator, NULL_TREE, 1);
 	  decl = TYPE_MAIN_DECL (decl);
 	}
@@ -463,9 +470,8 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	 but not if those functions are really class names.  */
       if (TREE_CODE (decl) == TREE_LIST && TREE_TYPE (TREE_PURPOSE (decl)))
 	{
-	  warning ("`friend %s' archaic, use `friend class %s' instead",
-		   IDENTIFIER_POINTER (declarator),
-		   IDENTIFIER_POINTER (declarator));
+	  cp_warning ("`friend %T' archaic, use `friend class %T' instead",
+		      declarator, declarator);
 	  decl = TREE_TYPE (TREE_PURPOSE (decl));
 	}
 

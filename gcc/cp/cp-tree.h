@@ -1655,8 +1655,9 @@ extern int flag_new_for_scope;
 #define UPT_PARMS(NODE)         TREE_VALUE(TYPE_VALUES(NODE))
 
 /* An un-parsed default argument looks like an identifier.  */
-#define DEFARG_LENGTH(NODE)	IDENTIFIER_LENGTH(NODE)
-#define DEFARG_POINTER(NODE)	IDENTIFIER_POINTER(NODE)
+#define DEFARG_NODE_CHECK(t)	TREE_CHECK(t, DEFAULT_ARG) 
+#define DEFARG_LENGTH(NODE)	(DEFARG_NODE_CHECK(NODE)->identifier.length)
+#define DEFARG_POINTER(NODE)	(DEFARG_NODE_CHECK(NODE)->identifier.pointer)
 
 #define builtin_function(NAME, TYPE, CODE, LIBNAME) \
   define_function (NAME, TYPE, CODE, (void (*) PROTO((tree)))pushdecl, LIBNAME)

@@ -2929,12 +2929,14 @@ warn_hidden (t)
   /* We go through each separately named virtual function.  */
   for (i = 2; i < n_methods; ++i)
     {
-      tree fndecl = TREE_VEC_ELT (method_vec, i);
+      tree fns = TREE_VEC_ELT (method_vec, i);
+      tree fndecl;
 
       tree base_fndecls = NULL_TREE;
       tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
       int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
 
+      fndecl = OVL_CURRENT (fns);
       if (DECL_VINDEX (fndecl) == NULL_TREE)
 	continue;
 
@@ -2949,11 +2951,11 @@ warn_hidden (t)
 				  base_fndecls);
 	}
 
-      if (TREE_CHAIN (fndecl)
-	  && DECL_NAME (TREE_CHAIN (fndecl)) == DECL_NAME (fndecl))
-	  fndecl = TREE_CHAIN (fndecl);
-	else
-	  fndecl = NULL_TREE;
+      fns = OVL_NEXT (fns);
+      if (fns)
+	fndecl = OVL_CURRENT (fns);
+      else
+	fndecl = NULL_TREE;
 
       /* ...then mark up all the base functions with overriders, preferring
 	 overriders to hiders.  */
@@ -2962,9 +2964,9 @@ warn_hidden (t)
 	  {
 	    mark_overriders (fndecl, base_fndecls);
 	    
-	    if (TREE_CHAIN (fndecl)
-		&& DECL_NAME (TREE_CHAIN (fndecl)) == DECL_NAME (fndecl))
-	      fndecl = TREE_CHAIN (fndecl);
+	    fns = OVL_NEXT (fns);
+	    if (fns)
+	      fndecl = OVL_CURRENT (fns);
 	    else
 	      fndecl = NULL_TREE;
 	  }
@@ -4855,6 +4857,10 @@ push_nested_class (type, modify)
      int modify;
 {
   tree context;
+
+  /* FIXME should handle namespaces like classes.  */
+  if (TREE_CODE (type) == NAMESPACE_DECL)
+    return;
 
   if (type == NULL_TREE || type == error_mark_node || ! IS_AGGR_TYPE (type)
       || TREE_CODE (type) == TEMPLATE_TYPE_PARM
