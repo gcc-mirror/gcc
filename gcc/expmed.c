@@ -82,7 +82,7 @@ init_expmed ()
   char *free_point;
   /* This is "some random pseudo register" for purposes of calling recog
      to see what insns exist.  */
-  rtx reg = gen_rtx (REG, word_mode, 10000);
+  rtx reg;
   rtx shift_insn, shiftadd_insn, shiftsub_insn;
   int dummy;
   int m;
@@ -93,8 +93,9 @@ init_expmed ()
   /* Since we are on the permanent obstack, we must be sure we save this
      spot AFTER we call start_sequence, since it will reuse the rtl it
      makes.  */
-
   free_point = (char *) oballoc (0);
+
+  reg = gen_rtx (REG, word_mode, 10000);
 
   zero_cost = rtx_cost (const0_rtx, 0);
   add_cost = rtx_cost (gen_rtx (PLUS, word_mode, reg, reg), SET);
@@ -167,8 +168,10 @@ init_expmed ()
 	    = rtx_cost (gen_rtx (TRUNCATE, mode,
 				 gen_rtx (LSHIFTRT, wider_mode,
 					  gen_rtx (MULT, wider_mode,
-						   gen_rtx (ZERO_EXTEND, wider_mode, reg),
-						   gen_rtx (ZERO_EXTEND, wider_mode, reg)),
+						   gen_rtx (ZERO_EXTEND,
+							    wider_mode, reg),
+						   gen_rtx (ZERO_EXTEND,
+							    wider_mode, reg)),
 					  GEN_INT (GET_MODE_BITSIZE (mode)))),
 			SET);
 	}
