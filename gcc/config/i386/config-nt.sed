@@ -65,7 +65,7 @@ ld.obj: $(srcdir)/config/winnt/ld.c \
 \ 	-I. -I$(srcdir) -I$(srcdir)/config -c $(srcdir)/config/winnt/ld.c \
 \
 ld.exe: ld.obj \
-	link32 -out:ld.exe ld.obj $(LDFLAGS) $(CLIB)
+	link -out:ld.exe ld.obj $(LDFLAGS) $(CLIB)
 s/^C c:/Cc:/
 s/\${OBJS}/\$(OBJS)/g
 s/\${SYSTEM_HEADER_DIR}/\$(SYSTEM_HEADER_DIR)/g
@@ -109,6 +109,6 @@ s/\.o *:/.obj :/
 s/\.o$/.obj/
 s/\.o /.obj /g
 s/-rm -f cpp.exe/del cpp.exe/
-s/\$(CC) \$(ALL_CFLAGS) \$(LDFLAGS) -o /link32 $(LDFLAGS) -out:/
-s/\$(HOST_CC) \$(HOST_CFLAGS) \$(HOST_LDFLAGS) -o /link32 $(HOST_LDFLAGS) -out:/
+s/\$(CC) \$(ALL_CFLAGS) \$(LDFLAGS) -o /link $(LDFLAGS) -out:/
+s/\$(HOST_CC) \$(HOST_CFLAGS) \$(HOST_LDFLAGS) -o /link $(HOST_LDFLAGS) -out:/
 s/^\//
