@@ -1,3 +1,8 @@
+2003-10-24  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-parse.in (array_declarator): Use expr_no_commas.
+	Fixes PR c/11943.
+
 2003-10-24  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/linux.h: Wrap MD_FALLBACK_FRAME_STATE_FOR and

@@ -1,3 +1,7 @@
+2003-10-24  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/c99-arraydecl-2.c: New test.  PR c/11943.
+
 2003-10-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11076
