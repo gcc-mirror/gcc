@@ -1314,6 +1314,7 @@ private:
 	  case op_putfield:
 	  case op_putstatic:
 	  case op_new:
+	  case op_newarray:
 	  case op_anewarray:
 	  case op_instanceof:
 	  case op_checkcast:
@@ -1402,7 +1403,7 @@ private:
 	    break;
 
 	  default:
-	    verify_fail ("unrecognized instruction");
+	    verify_fail ("unrecognized instruction in branch_prepass");
 	  }
 
 	// See if any previous branch tried to branch to the middle of
@@ -1915,39 +1916,90 @@ private:
 	  case op_dup_x2:
 	    {
 	      type t1 = pop32 ();
-	      type t2 = pop32 ();
-	      type t3 = pop32 ();
-	      push_type (t1);
-	      push_type (t3);
+	      type t2 = pop_raw ();
+	      if (! t2.iswide ())
+		{
+		  type t3 = pop32 ();
+		  push_type (t1);
+		  push_type (t3);
+		}
+	      else
+		push_type (t1);
 	      push_type (t2);
 	      push_type (t1);
 	    }
 	    break;
 	  case op_dup2:
 	    {
-	      type t = pop64 ();
-	      push_type (t);
+	      type t = pop_raw ();
+	      if (! t.iswide ())
+		{
+		  type t2 = pop32 ();
+		  push_type (t2);
+		  push_type (t);
+		  push_type (t2);
+		}
 	      push_type (t);
 	    }
 	    break;
 	  case op_dup2_x1:
 	    {
-	      type t1 = pop64 ();
-	      type t2 = pop64 ();
-	      push_type (t1);
+	      type t1 = pop_raw ();
+	      type t2 = pop32 ();
+	      if (! t1.iswide ())
+		{
+		  type t3 = pop32 ();
+		  push_type (t2);
+		  push_type (t1);
+		  push_type (t3);
+		}
+	      else
+		push_type (t1);
 	      push_type (t2);
 	      push_type (t1);
 	    }
 	    break;
 	  case op_dup2_x2:
 	    {
-	      type t1 = pop64 ();
-	      type t2 = pop64 ();
-	      type t3 = pop64 ();
-	      push_type (t1);
-	      push_type (t3);
-	      push_type (t2);
-	      push_type (t1);
+	      // FIXME
+	      type t1 = pop_raw ();
+	      if (t1.iswide ())
+		{
+		  type t2 = pop_raw ();
+		  if (t2.iswide ())
+		    {
+		      push_type (t1);
+		      push_type (t2);
+		    }
+		  else
+		    {
+		      type t3 = pop32 ();
+		      push_type (t1);
+		      push_type (t3);
+		      push_type (t2);
+		    }
+		  push_type (t1);
+		}
+	      else
+		{
+		  type t2 = pop32 ();
+		  type t3 = pop_raw ();
+		  if (t3.iswide ())
+		    {
+		      push_type (t2);
+		      push_type (t1);
+		    }
+		  else
+		    {
+		      type t4 = pop32 ();
+		      push_type (t2);
+		      push_type (t1);
+		      push_type (t4);
+		    }
+		  push_type (t3);
+		  push_type (t2);
+		  push_type (t1);
+		}
 	    }
 	    break;
 	  case op_swap:
@@ -2385,7 +2437,7 @@ private:
 
 	  default:
 	    // Unrecognized opcode.
-	    verify_fail ("unrecognized instruction");
+	    verify_fail ("unrecognized instruction in verify_instructions_0");
 	  }
       }
   }

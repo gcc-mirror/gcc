@@ -1,5 +1,13 @@
 2001-11-14  Tom Tromey  <tromey@redhat.com>
 
+	* verify.cc (class _Jv_BytecodeVerifier) [op_dup2]: Fixed logic.
+	[op_dup_x2]: Likewise.
+	[op_dup2_x1]: Likewise.
+	[op_dup2_x2]: Likewise.
+	(branch_prepass): Added `op_newarray' case.  Updated unrecognized
+	instruction error.
+	(verify_instructions_0): Updated unrecognized instruction error.
+
 	* java/lang/reflect/Constructor.java (toString): Use more
 	efficient form of Modifier.toString().
 
