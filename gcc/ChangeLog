@@ -1,3 +1,14 @@
+1999-01-25 14:10 -0500  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* cpplib.c: Don't include signal.h, sys/times.h, or
+	sys/resource.h. Don't declare localtime.
+	(macroexpand): Handle special symbols here.
+	(push_macro_expansion): Chop off the trailing '@ ' if possible
+	here.
+	(cpp_get_token): Don't do either of the above two things here.
+	Move `string' label just after case '"' so that wide strings
+	don't crash the preprocessor.
+
 Sun Jan 24 20:13:45 1999  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.md (left shift + set cr patterns): Add missing '#' to
