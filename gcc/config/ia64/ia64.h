@@ -813,13 +813,13 @@ while (0)
 /* A C expression for the number of consecutive hard registers, starting at
    register number REGNO, required to hold a value of mode MODE.  */
 
-/* ??? We say that CCmode values require two registers.  This allows us to
+/* ??? We say that BImode PR values require two registers.  This allows us to
    easily store the normal and inverted values.  We use CCImode to indicate
    a single predicate register.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
   ((REGNO) == PR_REG (0) && (MODE) == DImode ? 64			\
-   : PR_REGNO_P (REGNO) && (MODE) == CCmode ? 2				\
+   : PR_REGNO_P (REGNO) && (MODE) == BImode ? 2				\
    : PR_REGNO_P (REGNO) && (MODE) == CCImode ? 1			\
    : FR_REGNO_P (REGNO) && (MODE) == TFmode ? 1				\
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
@@ -828,12 +828,14 @@ while (0)
    MODE in hard register number REGNO (or in several registers starting with
    that one).  */
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  (FR_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) != MODE_CC && (MODE) != TImode \
-   : PR_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) == MODE_CC		\
-   : GR_REGNO_P (REGNO) ? (MODE) != CCImode && (MODE) != TFmode		\
-   : AR_REGNO_P (REGNO) ? (MODE) == DImode				\
-   : BR_REGNO_P (REGNO) ? (MODE) == DImode				\
+#define HARD_REGNO_MODE_OK(REGNO, MODE)				\
+  (FR_REGNO_P (REGNO) ?						\
+     GET_MODE_CLASS (MODE) != MODE_CC && (MODE) != TImode && (MODE) != BImode \
+   : PR_REGNO_P (REGNO) ?					\
+     (MODE) == BImode || GET_MODE_CLASS (MODE) == MODE_CC	\
+   : GR_REGNO_P (REGNO) ? (MODE) != CCImode && (MODE) != TFmode	\
+   : AR_REGNO_P (REGNO) ? (MODE) == DImode			\
+   : BR_REGNO_P (REGNO) ? (MODE) == DImode			\
    : 0)
 
 /* A C expression that is nonzero if it is desirable to choose register
@@ -843,22 +845,13 @@ while (0)
    If `HARD_REGNO_MODE_OK (R, MODE1)' and `HARD_REGNO_MODE_OK (R, MODE2)' are
    ever different for any R, then `MODES_TIEABLE_P (MODE1, MODE2)' must be
    zero.  */
-/* ??? If the comments are true, then this must be zero if one mode is CCmode,
-   INTEGRAL_MODE_P or FLOAT_MODE_P and the other is not.  Otherwise, it is
-   true.  */
 /* Don't tie integer and FP modes, as that causes us to get integer registers
    allocated for FP instructions.  TFmode only supported in FP registers so
    we can't tie it with any other modes.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-  ((GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2)) \
-   && (((MODE1) == TFmode) == ((MODE2) == TFmode)))
-
-/* Define this macro if the compiler should avoid copies to/from CCmode
-   registers.  You should only define this macro if support fo copying to/from
-   CCmode is incomplete.  */
-/* ??? CCmode copies are very expensive, so we might want this defined.  */
-/* #define AVOID_CCMODE_COPIES */
-
+#define MODES_TIEABLE_P(MODE1, MODE2)			\
+  (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2)	\
+   && (((MODE1) == TFmode) == ((MODE2) == TFmode))	\
+   && (((MODE1) == BImode) == ((MODE2) == BImode)))
 
 /* Handling Leaf Functions */
 
@@ -910,9 +903,8 @@ enum reg_class
 /* An initializer containing the names of the register classes as C string
    constants.  These names are used in writing some of the debugging dumps.  */
 #define REG_CLASS_NAMES \
-{ "NO_REGS", "PR_REGS", "BR_REGS", "ADDL_REGS", "GR_REGS", \
-  "FR_REGS", "GR_AND_FR_REGS", "AR_M_REGS", "AR_I_REGS", \
-  "ALL_REGS" }
+{ "NO_REGS", "PR_REGS", "BR_REGS", "ADDL_REGS", "GR_REGS", "FR_REGS", \
+  "GR_AND_FR_REGS", "AR_M_REGS", "AR_I_REGS", "ALL_REGS" }
 
 /* An initializer containing the contents of the register classes, as integers
    which are bit masks.  The Nth integer specifies the contents of class N.
@@ -1022,11 +1014,13 @@ enum reg_class
 
 /* Don't allow volatile mem reloads into floating point registers.  This
    is defined to force reload to choose the r/m case instead of the f/f case
-   when reloading (set (reg fX) (mem/v)).  */
+   when reloading (set (reg fX) (mem/v)).
+
+   Do not reload expressions into AR regs.  */
 
 #define PREFERRED_RELOAD_CLASS(X, CLASS) \
-  ((CLASS == FR_REGS && GET_CODE (X) == MEM && MEM_VOLATILE_P (X))	\
-   ? NO_REGS								\
+  (CLASS == FR_REGS && GET_CODE (X) == MEM && MEM_VOLATILE_P (X) ? NO_REGS   \
+   : GET_RTX_CLASS (GET_CODE (X)) != 'o' && CLASS > GR_AND_FR_REGS ? NO_REGS \
    : CLASS)
 
 /* You should define this macro to indicate to the reload phase that it may
@@ -1061,7 +1055,7 @@ enum reg_class
    This is closely related to the macro `HARD_REGNO_NREGS'.  */
 
 #define CLASS_MAX_NREGS(CLASS, MODE) \
-  ((MODE) == CCmode && (CLASS) == PR_REGS ? 2			\
+  ((MODE) == BImode && (CLASS) == PR_REGS ? 2			\
    : ((CLASS) == FR_REGS && (MODE) == TFmode) ? 1		\
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
@@ -1823,29 +1817,49 @@ do {									\
 
 /* ??? This is incomplete.  */
 
-#define CONST_COSTS(X, CODE, OUTER_CODE) \
+#define CONST_COSTS(X, CODE, OUTER_CODE)				\
   case CONST_INT:							\
     if ((X) == const0_rtx)						\
       return 0;								\
+    switch (OUTER_CODE)							\
+      {									\
+      case SET:								\
+	return CONST_OK_FOR_J (INTVAL (X)) ? 0 : COSTS_N_INSNS (1);	\
+      case PLUS:							\
+	if (CONST_OK_FOR_I (INTVAL (X)))				\
+	  return 0;							\
+	if (CONST_OK_FOR_J (INTVAL (X)))				\
+	  return 1;							\
+	return COSTS_N_INSNS (1);					\
+      default:								\
+	if (CONST_OK_FOR_K (INTVAL (X)) || CONST_OK_FOR_L (INTVAL (X)))	\
+	  return 0;							\
+	return COSTS_N_INSNS (1);					\
+      }									\
   case CONST_DOUBLE:							\
+    return COSTS_N_INSNS (1);						\
   case CONST:								\
   case SYMBOL_REF:							\
   case LABEL_REF:							\
-    return COSTS_N_INSNS (1);
+    return COSTS_N_INSNS (2);
 
 /* Like `CONST_COSTS' but applies to nonconstant RTL expressions.  */
 
-/* ??? Should define this to get better optimized code.  */
-
-/* We make divide expensive, so that divide-by-constant will be optimized to
-   a multiply.  */
-
-#define RTX_COSTS(X, CODE, OUTER_CODE) \
+#define RTX_COSTS(X, CODE, OUTER_CODE)					\
+  case MULT:								\
+    /* For multiplies wider than HImode, we have to go to the FPU,	\
+       which normally involves copies.  Plus there's the latency	\
+       of the multiply itself.  */					\
+    if (GET_MODE_SIZE (GET_MODE (X)) > 2)				\
+      return COSTS_N_INSNS (4);						\
+    return COSTS_N_INSNS (1);						\
   case DIV:								\
   case UDIV:								\
   case MOD:								\
   case UMOD:								\
-    return COSTS_N_INSNS (20);
+    /* We make divide expensive, so that divide-by-constant will be	\
+       optimized to a multiply.  */					\
+    return COSTS_N_INSNS (60);
 
 /* An expression giving the cost of an addressing mode that contains ADDRESS.
    If not defined, the cost is computed from the ADDRESS expression and the
@@ -1859,10 +1873,10 @@ do {									\
 #define REGISTER_MOVE_COST(FROM, TO) \
   ia64_register_move_cost((FROM), (TO))
 
-/* A C expression for the cost of moving data of mode M between a register and
-   memory.  */
-/* ??? Investigate.  Might get better code by defining this.  */
-/* #define MEMORY_MOVE_COST(M,C,I) */
+/* A C expression for the cost of moving data of mode M between a
+   register and memory.  */
+#define MEMORY_MOVE_COST(MODE,CLASS,IN) \
+  ((CLASS) == GENERAL_REGS || (CLASS) == FR_REGS ? 4 : 10)
 
 /* A C expression for the cost of a branch instruction.  A value of 1 is the
    default; other values are interpreted relative to that.  Used by the 
@@ -2682,6 +2696,7 @@ do {									\
 { "fr_reg_or_fp01_operand", {SUBREG, REG, CONST_DOUBLE}},		\
 { "normal_comparison_operator", {EQ, NE, GT, LE, GTU, LEU}},		\
 { "adjusted_comparison_operator", {LT, GE, LTU, GEU}},			\
+{ "signed_inequality_operator", {GE, GT, LE, LT}},			\
 { "call_multiple_values_operation", {PARALLEL}},			\
 { "predicate_operator", {NE, EQ}},					\
 { "ar_lc_reg_operand", {REG}},						\

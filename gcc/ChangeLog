@@ -1,3 +1,45 @@
+2000-09-18  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64-protos.h: Update.
+	* config/ia64/ia64.c (signed_inequality_operator): New.
+	(ia64_expand_compare): New.
+	(ia64_register_move_cost): Handle PR_REGS moves.
+	(ia64_secondary_reload_class): Require a GR when moving to a PR.
+	(struct reg_write_state): Add written_by_and/or.
+	(struct reg_flags): Add is_and/or.
+	(rws_update): Set them.
+	(rws_access_regno): Test them to allow parallel comparisons.
+	(rtx_needs_barrier): Recognize parallel comparisons.
+	(emit_insn_group_barriers): Set prev_insn after a call stop bit.
+	Call recog_memoized; ignore pred_rel_mutex.
+	(emit_predicate_relation_info): Don't call find_basic_blocks here.
+	(ia64_reorg): Do it here instead.
+	* config/ia64/ia64.h: s/CCmode/BImode/g
+	(MODES_TIEABLE_P): Don't tie BImode.
+	(PREFERRED_RELOAD_CLASS): Do not reload operations into AR regs.
+	(CONST_COSTS): Pick sensible values for CONST_INT based on context.
+	(RTX_COSTS): Make multiply 4 insns.
+	(MEMORY_MOVE_COST): New.
+	(PREDICATE_CODES): Update.
+	* config/ia64/ia64.md: s/CCmode/BImode/g
+	(movcci, movbi): New.
+	(andbi3, andcmbi3, iorbi3, iorcmbi3, one_cmplbi2): New.
+	(cmpsi_and_0, cmpsi_and_1, cmpsi_andnot_0, cmpsi_andnot_1): New.
+	(cmpdi_and_0, cmpdi_and_1, cmpdi_andnot_0, cmpdi_andnot_1): New.
+	(tbit_and_0, tbit_and_1, tbit_and_2, tbit_and_3): New.
+	(cmpsi_or_0, cmpsi_or_1, cmpsi_orcm_0, cmpsi_orcm_1): New.
+	(cmpdi_or_0, cmpdi_or_1, cmpdi_orcm_0, cmpdi_orcm_1): New.
+	(tbit_or_0, tbit_or_1, tbit_or_2, tbit_or_3): New.
+	(mulsi, muldi): Use xmpy not xma.
+	(cmpbi): New.
+	(movcc, movcc_internal): Remove.
+	(branch expanders): Use ia64_expand_compare.
+	(setcc expanders): Likewise.
+	(cmov insns): Use move_operand and ia64_move_ok.
+	(pred_rel_mutex): Use unspec not unspec_volatile.  Prevent the
+	scheduler from moving it past a use.
+	* config/ia64/build.hacks: Remove.
+
 Mon 18-Sep-2000 19:21:35 BST  Neil Booth  <NeilB@earthling.net>
 
 	* cpphash.h (HASHSTEP): Take character rather than pointer
