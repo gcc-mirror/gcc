@@ -1,5 +1,11 @@
 1998-05-26  Mark Mitchell  <mark@markmitchell.com>
 
+	* friend.c (is_friend): Use comptypes, rather than == to compare
+	types.  Modify for new representation of template friends.
+	(make_friend_class): Likewise.
+	* pt.c (tsubst_friend_class): Undo 1998-05-21 change.  Tweak.
+	(instantiate_class_template): Deal with template friends.
+
 	* decl.c (store_parm_decls): Remove redundant call to
 	expand_main_function.
 
