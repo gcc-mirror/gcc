@@ -1,3 +1,13 @@
+2003-12-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/9163
+	* c-decl.c (poplevel): Only set DECL_INITIAL of a current function
+	if it is non-null.
+	(finish_function): Check for error_mark_node or null on DECL_RESULT and
+	DECL_RESULT of fndecl.
+	(c_expand_body): Only expand when DECL_INITIAL of fndecl is not
+	error_mark_node and not null.
+
 2003-12-21  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	* rtl.h (dump_rtx_statistics): Declare it.
