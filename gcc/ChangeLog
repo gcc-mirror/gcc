@@ -1,6 +1,7 @@
 2003-10-18  Alan Modra  <amodra@bigpond.net.au>
 
-	* config/rs6000/crtsavres.asm: Correct alignment of powerpc64 code.
+	* config/rs6000/crtsavres.asm: Correct alignment of powerpc64 code
+	for posterity, then remove it.
 
 2003-10-17  Richard Earnshaw <rearnsha@arm.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
