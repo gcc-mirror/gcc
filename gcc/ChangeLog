@@ -1,3 +1,25 @@
+2005-03-29  Ian Lance Taylor  <ian@airs.com>
+
+	PR bootstrap/14316
+	* collect2.c: Never include <vfork.h>.
+	(VFORK_STRING, vfork): Don't define.
+	(pid): Remove global variable.
+	(handler): Call raise instead of kill (getpid(), ...).
+	(collect_wait): Add pex parameter.  Change all callers.  Use
+	pex_get_status rather than pwait.
+	(do_wait): Add pex parameter.  Change all callers.
+	(collect_execute): Return struct pex_obj * rather than void.  Use
+	pex routines rather than pexecute.
+	(fork_execute): Get pex_obj from collect_execute, and pass it to
+	do_wait.
+	(scan_prog_file): Use pex routines rather than pipe/vfork/exec.
+	Only declare quit_handler if SIGQUIT is defined.
+	(scan_libraries): Likewise.
+	* collect2.h (collect_execute): Update declaration.
+	(collect_wait): Update declaration.
+	* tlink.c (tlink_execute): Get pex_obj from collect_execute, and
+	pass it to collect_wait.
+
 2005-03-29  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/20672
