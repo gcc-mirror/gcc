@@ -1,5 +1,28 @@
 2004-02-28  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
 
+	* config/mips/mips.md: Complete the unfinished R4000
+	multiply/shift errata workaround.  Improve documentation.
+	(hazard): Use TARGET_FIX_R4000 to decide whether an "imul" instruction
+	has a hilo hazard.
+	(mulsi3, mulsi3_internal, mulsi3_r4000): Use TARGET_FIX_R4000.
+	(muldi3, muldi3_internal): Likewise.
+	(muldi3_internal2): Remove, replacing with...
+	(muldi3_mult3, muldi3_r4000): ...these new patterns.
+	(mulsidi3): Take the errata into account.
+	(mulsidi3_32bit): Remove, replacing with...
+	(mulsidi3_32bit_internal, mulsidi3_32bit_r4000): ...these new patterns.
+	(mulsidi3_64bit, mulsidi3_64bit_parts): Disable if TARGET_FIX_R4000.
+	(umulsidi3): Take the errata into account.
+	(umulsidi3_32bit): Remove, replacing with..
+	(umulsidi3_32bit_internal, umulsidi3_32bit_r4000): ...these patterns.
+	(umulsi3_highpart, umulsi3_highpart_internal): Disable if
+	TARGET_FIX_R4000.
+	(smulsi3_highpart, smulsi3_highpart_internal): Likewise.
+	(smuldi3_highpart, umuldi3_highpart): Likewise.
+	* doc/invoke.texi: Document the errata workaround.
+
+2004-02-28  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
+
 	* config/mips/mips-protos.h (mips_idiv_insns): Declare.
 	* config/mips/mips.h (MASK_FIX_SB1): Bump.
 	(MASK_FIX_R4000, TARGET_FIX_R4000): New macros.
