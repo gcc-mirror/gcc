@@ -689,10 +689,12 @@ alpha_emit_set_const (target, mode, c, n)
 
   /* If this is a sign-extended 32-bit constant, we can do this in at most
      three insns, so do it if we have enough insns left.  We always have
-     a sign-extended 32-bit constant when compiling on a narrow machine.  */
+     a sign-extended 32-bit constant when compiling on a narrow machine. 
+     Note that we cannot handle the constant 0x80000000.  */
 
-  if (HOST_BITS_PER_WIDE_INT != 64
-      || c >> 31 == -1 || c >> 31 == 0)
+  if ((HOST_BITS_PER_WIDE_INT != 64
+       || c >> 31 == -1 || c >> 31 == 0)
+      && c != 0x80000000u)
     {
       HOST_WIDE_INT low = (c & 0xffff) - 2 * (c & 0x8000);
       HOST_WIDE_INT tmp1 = c - low;
@@ -725,15 +727,13 @@ alpha_emit_set_const (target, mode, c, n)
 	}
     }
 
-  /* If we couldn't do it that way, try some other methods (that depend on
-     being able to compute in the target's word size).  But if we have no
-     instructions left, don't bother.  Also, don't even try if this is 
-     SImode (in which case we should have already done something, but
-     do a sanity check here).  */
+  /* If we couldn't do it that way, try some other methods.  But if we have
+     no instructions left, don't bother.  */
 
-  if (n == 1 || HOST_BITS_PER_WIDE_INT < 64 || mode != DImode)
+  if (n == 1)
     return 0;
 
+#if HOST_BITS_PER_WIDE_INT == 64
   /* First, see if can load a value into the target that is the same as the
      constant except that all bytes that are 0 are changed to be 0xff.  If we
      can, then we can do a ZAPNOT to obtain the desired constant.  */
@@ -745,8 +745,9 @@ alpha_emit_set_const (target, mode, c, n)
   if ((temp = alpha_emit_set_const (subtarget, mode, new, n - 1)) != 0)
     return expand_binop (mode, and_optab, temp, GEN_INT (c | ~ new),
 			 target, 0, OPTAB_WIDEN);
+#endif
 
-  /* Find, see if we can load a related constant and then shift and possibly
+  /* Next, see if we can load a related constant and then shift and possibly
      negate it to get the constant we want.  Try this once each increasing
      numbers of insns.  */
 
@@ -767,8 +768,9 @@ alpha_emit_set_const (target, mode, c, n)
 
       if ((bits = exact_log2 (c & - c)) > 0)
 	for (; bits > 0; bits--)
-	  if ((temp = alpha_emit_set_const (subtarget, mode,
-					    c >> bits, i)) != 0
+	  if ((temp = (alpha_emit_set_const
+		       (subtarget, mode,
+			(unsigned HOST_WIDE_INT) c >> bits, i))) != 0
 	      || ((temp = (alpha_emit_set_const
 			  (subtarget, mode,
 			   ((unsigned HOST_WIDE_INT) c) >> bits, i)))
