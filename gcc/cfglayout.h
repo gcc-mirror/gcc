@@ -35,11 +35,11 @@ typedef struct reorder_block_def
 
 #define RBI(BB)	((reorder_block_def) (BB)->aux)
 
+extern rtx cfg_layout_function_footer;
+
 extern void cfg_layout_initialize	PARAMS ((struct loops *));
 extern void cfg_layout_finalize		PARAMS ((void));
 extern bool cfg_layout_can_duplicate_bb_p PARAMS ((basic_block));
 extern basic_block cfg_layout_duplicate_bb PARAMS ((basic_block, edge));
 extern void scope_to_insns_initialize	PARAMS ((void));
 extern void scope_to_insns_finalize	PARAMS ((void));
-extern bool cfg_layout_redirect_edge	PARAMS ((edge, basic_block));
-extern edge cfg_layout_split_block	PARAMS ((basic_block, rtx));

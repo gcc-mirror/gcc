@@ -26,7 +26,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
      - CFG-aware instruction chain manipulation
 	 delete_insn, delete_insn_chain
      - Basic block manipulation
-	 create_basic_block, flow_delete_block, split_block,
+	 create_basic_block, rtl_delete_block,rtl_split_block,
 	 merge_blocks_nomove
      - Infrastructure to determine quickly basic block for insn
 	 compute_bb_for_insn, update_bb_for_insn, set_block_for_insn,
@@ -59,6 +59,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm_p.h"
 #include "obstack.h"
 #include "insn-config.h"
+#include "cfglayout.h"
 
 /* Stubs in case we don't have a return insn.  */
 #ifndef HAVE_return
@@ -79,6 +80,16 @@ static bool try_redirect_by_replacing_jump PARAMS ((edge, basic_block));
 static rtx last_loop_beg_note		PARAMS ((rtx));
 static bool back_edge_of_syntactic_loop_p PARAMS ((basic_block, basic_block));
 basic_block force_nonfallthru_and_redirect PARAMS ((edge, basic_block));
+static basic_block rtl_split_edge	PARAMS ((edge));
+static void rtl_verify_flow_info	PARAMS ((void));
+static edge cfg_layout_split_block	PARAMS ((basic_block, void *));
+static bool cfg_layout_redirect_edge_and_branch	PARAMS ((edge, basic_block));
+static basic_block cfg_layout_redirect_edge_and_branch_force PARAMS ((edge, basic_block));
+static void cfg_layout_delete_block	PARAMS ((basic_block));
+static void rtl_delete_block		PARAMS ((basic_block));
+static basic_block rtl_redirect_edge_and_branch_force PARAMS ((edge, basic_block));
+static bool rtl_redirect_edge_and_branch PARAMS ((edge, basic_block));
+static edge rtl_split_block		PARAMS ((basic_block, void *));
 
 /* Return true if NOTE is not one of the ones that must be kept paired,
    so that we may simply delete it.  */
@@ -348,11 +359,10 @@ create_basic_block (head, end, after)
 /* ??? Preserving all such notes strikes me as wrong.  It would be nice
    to post-process the stream to remove empty blocks, loops, ranges, etc.  */
 
-int
+void
 flow_delete_block_noexpunge (b)
      basic_block b;
 {
-  int deleted_handler = 0;
   rtx insn, end, tmp;
 
   /* If the head of this block is a CODE_LABEL, then it might be the
@@ -404,20 +414,16 @@ flow_delete_block_noexpunge (b)
 
   b->pred = NULL;
   b->succ = NULL;
-
-  return deleted_handler;
 }
 
-int
-flow_delete_block (b)
+static void
+rtl_delete_block (b)
      basic_block b;
 {
-  int deleted_handler = flow_delete_block_noexpunge (b);
+  flow_delete_block_noexpunge (b);
 
   /* Remove the basic block from the array.  */
   expunge_block (b);
-
-  return deleted_handler;
 }
 
 /* Records the basic block struct in BLOCK_FOR_INSN for every insn.  */
@@ -474,14 +480,15 @@ update_bb_for_insn (bb)
    this function renumbers all the basic blocks so that the new
    one has a number one greater than the block split.  */
 
-edge
-split_block (bb, insn)
+static edge
+rtl_split_block (bb, insnp)
      basic_block bb;
-     rtx insn;
+     void *insnp;
 {
   basic_block new_bb;
   edge new_edge;
   edge e;
+  rtx insn = insnp;
 
   /* There is no point splitting the block after its end.  */
   if (bb->end == insn)
@@ -811,8 +818,8 @@ last_loop_beg_note (insn)
    already destinated TARGET and we didn't managed to simplify instruction
    stream.  */
 
-bool
-redirect_edge_and_branch (e, target)
+static bool
+rtl_redirect_edge_and_branch (e, target)
      edge e;
      basic_block target;
 {
@@ -1076,8 +1083,8 @@ force_nonfallthru (e)
    basic block.  Return new basic block if created, NULL otherwise.
    Abort if conversion is impossible.  */
 
-basic_block
-redirect_edge_and_branch_force (e, target)
+static basic_block
+rtl_redirect_edge_and_branch_force (e, target)
      edge e;
      basic_block target;
 {
@@ -1230,7 +1237,7 @@ back_edge_of_syntactic_loop_p (bb1, bb2)
    block with multiple predecessors is not handled optimally.  */
 
 basic_block
-split_edge (edge_in)
+rtl_split_edge (edge_in)
      edge edge_in;
 {
   basic_block bb;
@@ -1741,7 +1748,7 @@ update_br_prob_note (bb)
    (reachability of basic blocks, life information, etc. etc.).  */
 
 void
-verify_flow_info ()
+rtl_verify_flow_info ()
 {
   const int max_uid = get_max_uid ();
   const rtx rtx_first = get_insns ();
@@ -2363,3 +2370,171 @@ purge_all_dead_edges (update_life_p)
     sbitmap_free (blocks);
   return purged;
 }
+
+/* Same as split_block but update cfg_layout structures.  */
+static edge
+cfg_layout_split_block (bb, insnp)
+     basic_block bb;
+     void *insnp;
+{
+  rtx insn = insnp;
+
+  edge fallthru = rtl_split_block (bb, insn);
+
+  alloc_aux_for_block (fallthru->dest, sizeof (struct reorder_block_def));
+  RBI (fallthru->dest)->footer = RBI (fallthru->src)->footer;
+  RBI (fallthru->src)->footer = NULL;
+  return fallthru;
+}
+
+
+/* Redirect Edge to DEST.  */
+static bool
+cfg_layout_redirect_edge_and_branch (e, dest)
+     edge e;
+     basic_block dest;
+{
+  basic_block src = e->src;
+  basic_block old_next_bb = src->next_bb;
+  bool ret;
+
+  /* Redirect_edge_and_branch may decide to turn branch into fallthru edge
+     in the case the basic block appears to be in sequence.  Avoid this
+     transformation.  */
+
+  src->next_bb = NULL;
+  if (e->flags & EDGE_FALLTHRU)
+    {
+      /* Redirect any branch edges unified with the fallthru one.  */
+      if (GET_CODE (src->end) == JUMP_INSN
+	  && JUMP_LABEL (src->end) == e->dest->head)
+	{
+          if (!redirect_jump (src->end, block_label (dest), 0))
+	    abort ();
+	}
+      /* In case we are redirecting fallthru edge to the branch edge
+         of conditional jump, remove it.  */
+      if (src->succ->succ_next
+	  && !src->succ->succ_next->succ_next)
+	{
+	  edge s = e->succ_next ? e->succ_next : src->succ;
+	  if (s->dest == dest
+	      && any_condjump_p (src->end)
+	      && onlyjump_p (src->end))
+	    delete_insn (src->end);
+	}
+      redirect_edge_succ_nodup (e, dest);
+
+      ret = true;
+    }
+  else
+    ret = rtl_redirect_edge_and_branch (e, dest);
+
+  /* We don't want simplejumps in the insn stream during cfglayout.  */
+  if (simplejump_p (src->end))
+    {
+      delete_insn (src->end);
+      delete_barrier (NEXT_INSN (src->end));
+      src->succ->flags |= EDGE_FALLTHRU;
+    }
+  src->next_bb = old_next_bb;
+
+  return ret;
+}
+
+/* Simple wrapper as we always can redirect fallthru edges.  */
+static basic_block
+cfg_layout_redirect_edge_and_branch_force (e, dest)
+     edge e;
+     basic_block dest;
+{
+  if (!cfg_layout_redirect_edge_and_branch (e, dest))
+    abort ();
+  return NULL;
+}
+
+/* Same as flow_delete_block but update cfg_layout structures.  */
+static void
+cfg_layout_delete_block (bb)
+     basic_block bb;
+{
+  rtx insn, next, prev = PREV_INSN (bb->head), *to, remaints;
+
+  if (RBI (bb)->header)
+    {
+      next = bb->head;
+      if (prev)
+	NEXT_INSN (prev) = RBI (bb)->header;
+      else
+	set_first_insn (RBI (bb)->header);
+      PREV_INSN (RBI (bb)->header) = prev;
+      insn = RBI (bb)->header;
+      while (NEXT_INSN (insn))
+	insn = NEXT_INSN (insn);
+      NEXT_INSN (insn) = next;
+      PREV_INSN (next) = insn;
+    }
+  next = NEXT_INSN (bb->end);
+  if (RBI (bb)->footer)
+    {
+      insn = bb->end;
+      NEXT_INSN (insn) = RBI (bb)->footer;
+      PREV_INSN (RBI (bb)->footer) = insn;
+      while (NEXT_INSN (insn))
+	insn = NEXT_INSN (insn);
+      NEXT_INSN (insn) = next;
+      if (next)
+	PREV_INSN (next) = insn;
+      else
+	set_last_insn (insn);
+    }
+  if (bb->next_bb != EXIT_BLOCK_PTR)
+    to = &RBI(bb->next_bb)->header;
+  else
+    to = &cfg_layout_function_footer;
+  rtl_delete_block (bb);
+
+  if (prev)
+    prev = NEXT_INSN (prev);
+  else 
+    prev = get_insns ();
+  if (next)
+    next = PREV_INSN (next);
+  else 
+    next = get_last_insn ();
+
+  if (next && NEXT_INSN (next) != prev)
+    {
+      remaints = unlink_insn_chain (prev, next);
+      insn = remaints;
+      while (NEXT_INSN (insn))
+	insn = NEXT_INSN (insn);
+      NEXT_INSN (insn) = *to;
+      if (*to)
+	PREV_INSN (*to) = insn;
+      *to = remaints;
+    }
+}
+
+/* Implementation of CFG manipulation for linearized RTL.  */
+struct cfg_hooks rtl_cfg_hooks = {
+  rtl_verify_flow_info,
+  rtl_redirect_edge_and_branch,
+  rtl_redirect_edge_and_branch_force,
+  rtl_delete_block,
+  rtl_split_block,
+  rtl_split_edge
+};
+
+/* Implementation of CFG manipulation for cfg layout RTL, where
+   basic block connected via fallthru edges does not have to be adjacent.
+   This representation will hopefully become the default one in future
+   version of the compiler.  */
+struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
+  NULL,   /* verify_flow_info.  */
+  cfg_layout_redirect_edge_and_branch,
+  cfg_layout_redirect_edge_and_branch_force,
+  cfg_layout_delete_block,
+  cfg_layout_split_block,
+  NULL  /* split_edge.  */
+};

@@ -338,8 +338,6 @@ extern void update_bb_for_insn		PARAMS ((basic_block));
 
 extern void free_basic_block_vars	PARAMS ((int));
 
-extern edge split_block			PARAMS ((basic_block, rtx));
-extern basic_block split_edge		PARAMS ((edge));
 extern void insert_insn_on_edge		PARAMS ((rtx, edge));
 
 extern void commit_edge_insertions	PARAMS ((void));
@@ -363,8 +361,7 @@ extern edge redirect_edge_succ_nodup	PARAMS ((edge, basic_block));
 extern void redirect_edge_pred		PARAMS ((edge, basic_block));
 extern basic_block create_basic_block_structure PARAMS ((rtx, rtx, rtx, basic_block));
 extern basic_block create_basic_block	PARAMS ((rtx, rtx, basic_block));
-extern int flow_delete_block		PARAMS ((basic_block));
-extern int flow_delete_block_noexpunge	PARAMS ((basic_block));
+extern void flow_delete_block_noexpunge	PARAMS ((basic_block));
 extern void clear_bb_flags		PARAMS ((void));
 extern void merge_blocks_nomove		PARAMS ((basic_block, basic_block));
 extern void tidy_fallthru_edge		PARAMS ((edge, basic_block,
@@ -560,9 +557,7 @@ extern void compact_blocks		PARAMS ((void));
 extern basic_block alloc_block		PARAMS ((void));
 extern void find_unreachable_blocks	PARAMS ((void));
 extern int delete_noop_moves		PARAMS ((rtx));
-extern basic_block redirect_edge_and_branch_force PARAMS ((edge, basic_block));
 extern basic_block force_nonfallthru	PARAMS ((edge));
-extern bool redirect_edge_and_branch	PARAMS ((edge, basic_block));
 extern rtx block_label			PARAMS ((basic_block));
 extern bool forwarder_block_p		PARAMS ((basic_block));
 extern bool purge_all_dead_edges	PARAMS ((int));
@@ -649,4 +644,7 @@ extern void redirect_immediate_dominators PARAMS ((dominance_info, basic_block,
 						 basic_block));
 void iterate_fix_dominators PARAMS ((dominance_info, basic_block *, int));
 extern void verify_dominators PARAMS ((dominance_info));
+
+#include "cfghooks.h"
+
 #endif /* GCC_BASIC_BLOCK_H */

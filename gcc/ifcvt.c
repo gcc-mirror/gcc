@@ -2547,7 +2547,7 @@ find_cond_trap (test_bb, then_edge, else_edge)
     {
       if (post_dominators)
 	delete_from_dominance_info (post_dominators, trap_bb);
-      flow_delete_block (trap_bb);
+      delete_block (trap_bb);
       num_removed_blocks++;
     }
 
@@ -2736,7 +2736,7 @@ find_if_case_1 (test_bb, then_edge, else_edge)
   then_bb_index = then_bb->index;
   if (post_dominators)
     delete_from_dominance_info (post_dominators, then_bb);
-  flow_delete_block (then_bb);
+  delete_block (then_bb);
 
   /* Make rest of code believe that the newly created block is the THEN_BB
      block we removed.  */
@@ -2818,7 +2818,7 @@ find_if_case_2 (test_bb, then_edge, else_edge)
   
   if (post_dominators)
     delete_from_dominance_info (post_dominators, else_bb);
-  flow_delete_block (else_bb);
+  delete_block (else_bb);
 
   num_removed_blocks++;
   num_updated_if_blocks++;
