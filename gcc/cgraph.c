@@ -458,7 +458,8 @@ change_decl_assembler_name (tree decl, tree name)
   if (name == DECL_ASSEMBLER_NAME (decl))
     return;
 
-  if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+  if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
+      && DECL_RTL_SET_P (decl))
     warning ("%D renamed after being referenced in assembly", decl);
 
   if (TREE_CODE (decl) == FUNCTION_DECL && cgraph_hash)
