@@ -8630,6 +8630,12 @@ arm_compute_save_reg0_reg12_mask (void)
 	if (regs_ever_live[reg]
 	    || (! current_function_is_leaf && call_used_regs [reg]))
 	  save_reg_mask |= (1 << reg);
+
+      /* Also save the pic base register if neccessary.  */
+      if (flag_pic
+	  && !TARGET_SINGLE_PIC_BASE
+	  && current_function_uses_pic_offset_table)
+	save_reg_mask |= 1 << PIC_OFFSET_TABLE_REGNUM;
     }
   else
     {
@@ -8649,8 +8655,9 @@ arm_compute_save_reg0_reg12_mask (void)
       /* If we aren't loading the PIC register,
 	 don't stack it even though it may be live.  */
       if (flag_pic
-	  && ! TARGET_SINGLE_PIC_BASE
-	  && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+	  && !TARGET_SINGLE_PIC_BASE 
+	  && (regs_ever_live[PIC_OFFSET_TABLE_REGNUM]
+	      || current_function_uses_pic_offset_table))
 	save_reg_mask |= 1 << PIC_OFFSET_TABLE_REGNUM;
     }
 
