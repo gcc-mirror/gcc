@@ -108,7 +108,7 @@ do {									\
 %start program
 
 %union {long itype; tree ttype; enum tree_code code;
-	const char *filename; int lineno; }
+	location_t location; }
 
 /* All identifiers that are not reserved words
    and are not declared typedefs in the current block */
@@ -238,8 +238,7 @@ do {									\
 
 %type <itype> setspecs setspecs_fp
 
-%type <filename> save_filename
-%type <lineno> save_lineno
+%type <location> save_location
 
 ifobjc
 /* the Objective-C nonterminals */
@@ -434,11 +433,10 @@ fndef:
 					all_prefix_attributes))
 		    YYERROR1;
 		}
-	  old_style_parm_decls  save_filename save_lineno
-		{ DECL_SOURCE_FILE (current_function_decl) = $6;
-		  DECL_SOURCE_LINE (current_function_decl) = $7;
+	  old_style_parm_decls save_location
+		{ DECL_SOURCE_LOCATION (current_function_decl) = $6;
 		  store_parm_decls (); }
-	 compstmt_or_error
+	  compstmt_or_error
 		{ finish_function (0, 1);
 		  POP_DECLSPEC_STACK; }
 	| declspecs_ts setspecs declarator error
@@ -448,9 +446,8 @@ fndef:
 					all_prefix_attributes))
 		    YYERROR1;
 		}
-	  old_style_parm_decls save_filename save_lineno
-		{ DECL_SOURCE_FILE (current_function_decl) = $6;
-		  DECL_SOURCE_LINE (current_function_decl) = $7;
+	  old_style_parm_decls save_location
+		{ DECL_SOURCE_LOCATION (current_function_decl) = $6;
 		  store_parm_decls (); }
 	  compstmt_or_error
 		{ finish_function (0, 1);
@@ -462,9 +459,8 @@ fndef:
 					all_prefix_attributes))
 		    YYERROR1;
 		}
-	  old_style_parm_decls save_filename save_lineno
-		{ DECL_SOURCE_FILE (current_function_decl) = $5;
-		  DECL_SOURCE_LINE (current_function_decl) = $6;
+	  old_style_parm_decls save_location
+		{ DECL_SOURCE_LOCATION (current_function_decl) = $5;
 		  store_parm_decls (); }
 	  compstmt_or_error
 		{ finish_function (0, 1);
@@ -805,7 +801,7 @@ old_style_parm_decls_1:
    except that they do not allow nested functions.
    They are used for old-style parm decls.  */
 lineno_datadecl:
-	  save_filename save_lineno datadecl
+	  save_location datadecl
 		{ }
 	;
 
@@ -837,7 +833,7 @@ datadecl:
    This is to avoid shift/reduce conflicts in contexts
    where statement labels are allowed.  */
 lineno_decl:
-	  save_filename save_lineno decl
+	  save_location decl
 		{ }
 	;
 
@@ -1593,10 +1589,9 @@ nested_function:
 		    }
 		  parsing_iso_function_signature = false; /* Don't warn about nested functions.  */
 		}
-	   old_style_parm_decls save_filename save_lineno
+	   old_style_parm_decls save_location
 		{ tree decl = current_function_decl;
-		  DECL_SOURCE_FILE (decl) = $4;
-		  DECL_SOURCE_LINE (decl) = $5;
+		  DECL_SOURCE_LOCATION (decl) = $4;
 		  store_parm_decls (); }
 /* This used to use compstmt_or_error.
    That caused a bug with input `f(g) int g {}',
@@ -1625,10 +1620,9 @@ notype_nested_function:
 		    }
 		  parsing_iso_function_signature = false; /* Don't warn about nested functions.  */
 		}
-	  old_style_parm_decls save_filename save_lineno
+	  old_style_parm_decls save_location
 		{ tree decl = current_function_decl;
-		  DECL_SOURCE_FILE (decl) = $4;
-		  DECL_SOURCE_LINE (decl) = $5;
+		  DECL_SOURCE_LOCATION (decl) = $4;
 		  store_parm_decls (); }
 /* This used to use compstmt_or_error.
    That caused a bug with input `f(g) int g {}',
@@ -2233,8 +2227,7 @@ if_prefix:
 		{ c_expand_start_cond (c_common_truthvalue_conversion ($4),
 				       compstmt_count,$<ttype>2);
 		  $<itype>$ = stmt_count;
-		  if_stmt_locus.file = $<filename>-2;
-		  if_stmt_locus.line = $<lineno>-1; }
+		  if_stmt_locus = $<location>-1; }
         ;
 
 /* This is a subroutine of stmt.
@@ -2260,16 +2253,11 @@ do_stmt_start:
 /* The forced readahead in here is because we might be at the end of a
    line, and the line and file won't be bumped until yylex absorbs the
    first token on the next line.  */
-save_filename:
-		{ if (yychar == YYEMPTY)
-		    yychar = YYLEX;
-		  $$ = input_filename; }
-	;
 
-save_lineno:
+save_location:
 		{ if (yychar == YYEMPTY)
 		    yychar = YYLEX;
-		  $$ = input_line; }
+		  $$ = input_location; }
 	;
 
 lineno_labeled_stmt:
@@ -2285,10 +2273,10 @@ c99_block_lineno_labeled_stmt:
 	;
 
 lineno_stmt:
-	  save_filename save_lineno stmt
-		{ if ($3)
+	  save_location stmt
+		{ if ($2)
 		    {
-		      STMT_LINENO ($3) = $2;
+		      STMT_LINENO ($2) = $1.line;
 		      /* ??? We currently have no way of recording
 			 the filename for a statement.  This probably
 			 matters little in practice at the moment,
@@ -2299,10 +2287,10 @@ lineno_stmt:
 	;
 
 lineno_label:
-	  save_filename save_lineno label
-		{ if ($3)
+	  save_location label
+		{ if ($2)
 		    {
-		      STMT_LINENO ($3) = $2;
+		      STMT_LINENO ($2) = $1.line;
 		    }
 		}
 	;
@@ -2457,12 +2445,12 @@ label:	  CASE expr_no_commas ':'
 	| DEFAULT ':'
                 { stmt_count++;
 		  $$ = do_case (NULL_TREE, NULL_TREE); }
-	| identifier save_filename save_lineno ':' maybe_attribute
-		{ tree label = define_label ($2, $3, $1);
+	| identifier save_location ':' maybe_attribute
+		{ tree label = define_label ($2.file, $2.line, $1);
 		  stmt_count++;
 		  if (label)
 		    {
-		      decl_attributes (&label, $5, 0);
+		      decl_attributes (&label, $4, 0);
 		      $$ = add_stmt (build_stmt (LABEL_STMT, label));
 		    }
 		  else
