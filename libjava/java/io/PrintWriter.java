@@ -86,7 +86,7 @@ public class PrintWriter extends Writer
    */
   public PrintWriter(Writer wr)
   {
-    super(wr);
+    super(wr.lock);
     this.out = wr;
   }
 
@@ -102,7 +102,7 @@ public class PrintWriter extends Writer
    */
   public PrintWriter(Writer wr, boolean autoflush)
   {
-    super(wr);
+    super(wr.lock);
     this.out = wr;
     this.autoflush = autoflush;
   }

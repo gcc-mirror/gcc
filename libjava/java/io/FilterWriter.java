@@ -72,7 +72,7 @@ public abstract class FilterWriter extends Writer
     */
   protected FilterWriter(Writer out)
   {
-    super(out);
+    super(out.lock);
     this.out = out;
   }
 
