@@ -734,25 +734,29 @@ this is the right mode to use for certain pointers.
 
 @findex SFmode
 @item SFmode
-``Single Floating'' mode represents a single-precision (four byte) floating
-point number.
+``Single Floating'' mode represents a four byte floating point number.
+In the common case, of a processor with IEEE arithmetic and 8-bit bytes,
+this is a single-precision IEEE floating point number; it can also be
+used for double-precision (on processors with 16-bit bytes) and
+single-precision Vax types.
 
 @findex DFmode
 @item DFmode
-``Double Floating'' mode represents a double-precision (eight byte) floating
-point number.
+``Double Floating'' mode represents an eight byte floating point number.
+In the common case, of a processor with IEEE arithmetic and 8-bit bytes,
+this is a double-precision IEEE floating point number.
 
 @findex XFmode
 @item XFmode
-``Extended Floating'' mode represents a triple-precision (twelve byte)
-floating point number.  This mode is used for IEEE extended floating
-point.  On some systems not all bits within these bytes will actually
-be used.
+``Extended Floating'' mode represents a twelve byte floating point
+number.  This mode is used for IEEE extended floating point.  On some
+systems not all bits within these bytes will actually be used.
 
 @findex TFmode
 @item TFmode
-``Tetra Floating'' mode represents a quadruple-precision (sixteen byte)
-floating point number.
+``Tetra Floating'' mode represents a sixteen byte floating point number.
+This gets used for both the 96-bit extended IEEE floating-point types
+padded to 128 bits, and true 128-bit extended IEEE floating-point types.
 
 @findex CCmode
 @item CCmode
