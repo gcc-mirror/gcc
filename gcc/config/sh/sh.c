@@ -3796,6 +3796,7 @@ machine_dependent_reorg (first)
 
 		      /* Remove the clobber of r0.  */
 		      XEXP (clobber, 0) = gen_rtx_SCRATCH (Pmode);
+		      RTX_UNCHANGING_P (newsrc) = 1;
 		    }
 		  /* This is a mova needing a label.  Create it.  */
 		  else if (GET_CODE (src) == UNSPEC
@@ -3813,8 +3814,8 @@ machine_dependent_reorg (first)
 		      lab = add_constant (src, mode, 0);
 		      newsrc = gen_rtx_MEM (mode,
 					    gen_rtx_LABEL_REF (VOIDmode, lab));
+		      RTX_UNCHANGING_P (newsrc) = 1;
 		    }
-		  RTX_UNCHANGING_P (newsrc) = 1;
 		  *patp = gen_rtx_SET (VOIDmode, dst, newsrc);
 		  INSN_CODE (scan) = -1;
 		}

@@ -1,3 +1,8 @@
+Thu Jun  6 15:57:23 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (machine_dependent_reorg): Don't set RTX_UNCHANGING_P
+	on an UNSPEC.
+
 Thu Jun  6 07:17:43 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	PR objc/6834
