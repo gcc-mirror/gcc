@@ -1,3 +1,9 @@
+2001-03-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl2.c (do_nonmember_using_decl): Don't complain if we find
+	same function. Do complain about ambiguating extern "C"
+	declarations.
+
 2001-02-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (invalid_nontype_parm_type_p): Deprecate float and

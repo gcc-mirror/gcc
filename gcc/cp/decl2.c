@@ -5123,22 +5123,21 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
 	    {
 	      tree old_fn = OVL_CURRENT (tmp1);
 
-	      if (!OVL_USED (tmp1)
-		  && compparms (TYPE_ARG_TYPES (TREE_TYPE (new_fn)),
-				TYPE_ARG_TYPES (TREE_TYPE (old_fn))))
+              if (new_fn == old_fn)
+                /* The function already exists in the current namespace.  */
+                break;
+	      else if (OVL_USED (tmp1))
+	        continue; /* this is a using decl */
+	      else if (compparms (TYPE_ARG_TYPES (TREE_TYPE (new_fn)),
+		  		  TYPE_ARG_TYPES (TREE_TYPE (old_fn))))
 		{
-		  if (!(DECL_EXTERN_C_P (new_fn)
-			&& DECL_EXTERN_C_P (old_fn)))
-		    /* There was already a non-using declaration in
-		       this scope with the same parameter types.  */
-		    cp_error ("`%D' is already declared in this scope",
-			      name);
+	          /* There was already a non-using declaration in
+		     this scope with the same parameter types. If both
+	             are the same extern "C" functions, that's ok.  */
+                  if (!decls_match (new_fn, old_fn))
+    	            cp_error ("`%D' is already declared in this scope", name);
 		  break;
 		}
-	      else if (duplicate_decls (new_fn, old_fn))
-		/* We're re-using something we already used 
-		   before.  We don't need to add it again.  */ 
-		break;
 	    }
 
 	  /* If we broke out of the loop, there's no reason to add
