@@ -641,7 +641,9 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	  /* If a jump references the end of the function, try to turn
 	     it into a RETURN insn, possibly a conditional one.  */
 	  if (JUMP_LABEL (insn)
-	      && next_active_insn (JUMP_LABEL (insn)) == 0)
+	      && (next_active_insn (JUMP_LABEL (insn)) == 0
+		  || GET_CODE (PATTERN (next_active_insn (JUMP_LABEL (insn))))
+		      == RETURN))
 	    changed |= redirect_jump (insn, NULL_RTX);
 
 	  /* Detect jump to following insn.  */
