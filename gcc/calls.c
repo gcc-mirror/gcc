@@ -796,23 +796,26 @@ flags_from_decl_or_type (exp)
 {
   int flags = 0;
   tree type = exp;
-  /* ??? We can't set IS_MALLOC for function types?  */
+
   if (DECL_P (exp))
     {
       struct cgraph_rtl_info *i = cgraph_rtl_info (exp);
       type = TREE_TYPE (exp);
 
-      if (i && i->pure_function)
-	flags |= ECF_PURE | ECF_LIBCALL_BLOCK;
-      if (i && i->const_function)
-	flags |= ECF_CONST | ECF_LIBCALL_BLOCK;
+      if (i)
+	{
+	  if (i->pure_function)
+	    flags |= ECF_PURE | ECF_LIBCALL_BLOCK;
+	  if (i->const_function)
+	    flags |= ECF_CONST | ECF_LIBCALL_BLOCK;
+	}
 
       /* The function exp may have the `malloc' attribute.  */
-      if (DECL_P (exp) && DECL_IS_MALLOC (exp))
+      if (DECL_IS_MALLOC (exp))
 	flags |= ECF_MALLOC;
 
       /* The function exp may have the `pure' attribute.  */
-      if (DECL_P (exp) && DECL_IS_PURE (exp))
+      if (DECL_IS_PURE (exp))
 	flags |= ECF_PURE | ECF_LIBCALL_BLOCK;
 
       if (TREE_NOTHROW (exp))
