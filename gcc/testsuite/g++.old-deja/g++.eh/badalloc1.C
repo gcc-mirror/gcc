@@ -14,10 +14,9 @@ extern "C" void *memcpy(void *, const void *, size_t);
 #ifdef STACK_SIZE
 const int arena_size = 256;
 #else
-#ifdef __FreeBSD__
-// FreeBSD with threads requires even more space at initialization time.
-#include "bits/c++config.h"
-#include "bits/gthr.h"
+#if defined(__FreeBSD__) || defined(__sun__)
+// FreeBSD with threads and Solaris with threads require even more
+// space at initialization time.
 const int arena_size = 131072;
 #else
 const int arena_size = 32768;
@@ -105,16 +104,15 @@ void fn_catchthrow() throw(int)
 
 int main()
 {
-#ifdef __FreeBSD__
-// FreeBSD with threads fails the test unless each thread primes itself.
-  if (__gthread_active_p())
-    {
-      try{fn_throw();}
-      catch(int a){}
-    }
-// This was added to test with well-known idiom to detect regressions here
-// rather than always failing with -pthread.
-#endif
+  /* On some systems (including FreeBSD and Solaris 2.10),
+     __cxa_get_globals will try to call "malloc" when threads are in
+     use.  Therefore, we throw one exception up front so that
+     __cxa_get_globals is all set up.  Ideally, this would not be
+     necessary, but it is a well-known idiom, and using this technique
+     means that we can still validate the fact that exceptions can be
+     thrown when malloc fails.  */
+  try{fn_throw();}
+  catch(int a){}
 
   fail = 1;
 
