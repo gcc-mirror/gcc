@@ -261,6 +261,12 @@ common_type (t1, t2)
 	  return build_type_attribute_variant (t1, attributes);
 	}
 
+      /* Likewise, prefer long double to double even if same size.  */
+      if (TYPE_MAIN_VARIANT (t1) == long_double_type_node
+	  || TYPE_MAIN_VARIANT (t2) == long_double_type_node)
+	return build_type_attribute_variant (long_double_type_node,
+					     attributes);
+
       /* Otherwise prefer the unsigned one.  */
 
       if (TREE_UNSIGNED (t1))
