@@ -256,8 +256,8 @@ use @command{bash} to be sure.  Then set @env{CONFIG_SHELL} in your
 environment to your ``good'' shell prior to running
 @command{configure}/@command{make}.
 
-It is known that @command{zsh} is not a fully compliant POSIX shell and will not 
-work when configuring gcc. 
+@command{zsh} is not a fully compliant POSIX shell and will not 
+work when configuring GCC.
 
 @item GNU binutils
 

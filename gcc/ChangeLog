@@ -1,5 +1,8 @@
 2003-10-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* doc/install.texi: Remove first part of the sentence for
+	zsh not working.  Change gcc to GCC.
+
 	PR bootstrap/12546
 	* doc/install.texi: Document that zsh does not work when 
 	configuring gcc.
