@@ -1,3 +1,8 @@
+2003-05-03  Geoffrey Keating  <geoffk@apple.com>
+
+	* simplify-rtx.c (simplify_relational_operation): Add case for
+	! (fabs(x) < 0.0).
+
 2003-05-03  Bruce Korb  <bkorb@gnu.org>
 
 	* gcc/fixinc/fixincl.tpl(dne): restore this to force merge conflicts
