@@ -1,5 +1,10 @@
 2002-01-27  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/event/MouseEvent.java (modifiers): Removed field.
+	(when): Likewise.
+	* java/awt/event/InputEvent.java (modifiers, when): Now
+	package-private.
+
 	* verify.cc (class _Jv_BytecodeVerifier): Removed `FIXME' comment
 	and to-do list.
 	(state::merge): Use current class' class loader.
