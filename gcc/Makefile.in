@@ -946,8 +946,8 @@ crtend.o:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 
 # C language specific files.
 
-c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h c-parse.h \
-    c-tree.h input.h flags.h
+c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h \
+    $(srcdir)/c-parse.h c-tree.h input.h flags.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/c-parse.c
 $(srcdir)/c-parse.c $(srcdir)/c-parse.h: $(srcdir)/c-parse.y
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d c-parse.y -o c-parse.c
@@ -965,7 +965,7 @@ $(srcdir)/c-gperf.h: $(srcdir)/c-parse.gperf
 c-decl.o : c-decl.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h flags.h
 c-typeck.o : c-typeck.c $(CONFIG_H) $(TREE_H) c-tree.h flags.h
 c-lang.o : c-lang.c $(CONFIG_H) $(TREE_H)
-c-lex.o : c-lex.c $(CONFIG_H) $(TREE_H) c-lex.h c-tree.h c-parse.h \
+c-lex.o : c-lex.c $(CONFIG_H) $(TREE_H) c-lex.h c-tree.h $(srcdir)/c-parse.h \
     input.h flags.h $(srcdir)/c-gperf.h
 c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(TREE_H) c-tree.h flags.h
 c-convert.o : c-convert.c $(CONFIG_H) $(TREE_H) flags.h
