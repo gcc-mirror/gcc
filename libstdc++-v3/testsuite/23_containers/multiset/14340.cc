@@ -36,7 +36,7 @@
 // libstdc++/14340
 int main()
 {
-  typedef std::multiset<int, int> container;
+  typedef std::multiset<int> container;
   __gnu_test::conversion<container>::iterator_to_const_iterator();
   return 0;
 }

@@ -1,5 +1,10 @@
 2004-09-20  Jonathan Wakely  <redi@gcc.gnu.org>
 
+	* testsuite/23_containers/{set,multiset}/14340.cc: Fix typos in
+	instantiation of set and multiset (functor param given as int).
+
+2004-09-20  Jonathan Wakely  <redi@gcc.gnu.org>
+
 	* include/bits/stl_algo.h (remove): Remove too restrictive
 	concept-check.
 
