@@ -151,6 +151,7 @@ extern "Java"
       class Comparable;
       class Compiler;
       class ConcreteProcess;
+      class ConcreteProcess$EOFInputStream;
       class ConcreteProcess$ProcessManager;
       class Double;
       class Error;
@@ -359,6 +360,7 @@ extern "Java"
       class TreeMap$SubMap;
       class TreeMap$TreeIterator;
       class TreeSet;
+      class VMTimeZone;
       class Vector;
       class WeakHashMap;
       class WeakHashMap$WeakBucket;

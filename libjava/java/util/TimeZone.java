@@ -38,9 +38,7 @@ exception statement from your version. */
 
 
 package java.util;
-import gnu.classpath.Configuration;
 
-import java.io.*;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.DateFormatSymbols;
@@ -90,14 +88,9 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
   /**
    * Tries to get the default TimeZone for this system if not already
    * set.  It will call <code>getDefaultTimeZone(String)</code> with
-   * the result of
-   * <code>System.getProperty("user.timezone")</code>,
-   * <code>System.getenv("TZ")</code>,
-   * <code>readTimeZoneFile("/etc/timezone")</code>,
-   * <code>readtzFile("/etc/localtime")</code> and
-   * <code>getDefaultTimeZoneId()</code>
-   * till a supported TimeZone is found.
-   * If every method fails GMT is returned.
+   * the result of <code>System.getProperty("user.timezone")</code>.
+   * If that fails it calls <code>VMTimeZone.getDefaultTimeZoneId()</code>.
+   * If that also fails GMT is returned.
    */
   private static synchronized TimeZone defaultZone()
   {
@@ -109,11 +102,6 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
 	    {
 	      public Object run()
 	      {
-		if (Configuration.INIT_LOAD_LIBRARY)
-		  {
-		    System.loadLibrary("javautil");
-		  }
-		
 		TimeZone zone = null;
 		
 		// Prefer System property user.timezone.
@@ -121,37 +109,9 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
 		if (tzid != null && !tzid.equals(""))
 		  zone = getDefaultTimeZone(tzid);
 		
-		// See if TZ environment variable is set and accessible.
+		// Try platfom specific way.
 		if (zone == null)
-		  {
-		    tzid = System.getenv("TZ");
-		    if (tzid != null && !tzid.equals(""))
-		      zone = getDefaultTimeZone(tzid);
-		  }
-		
-		// Try to parse /etc/timezone.
-		if (zone == null)
-		  {
-		    tzid = readTimeZoneFile("/etc/timezone");
-		    if (tzid != null && !tzid.equals(""))
-		      zone = getDefaultTimeZone(tzid);
-		  }
-		
-		// Try to parse /etc/localtime
-		if (zone == null)
-		  {
-		    tzid = readtzFile("/etc/localtime");
-		    if (tzid != null && !tzid.equals(""))
-		      zone = getDefaultTimeZone(tzid);
-		  }
-		
-		// Try some system specific way
-		if (zone == null)
-		  {
-		    tzid = getDefaultTimeZoneId();
-		    if (tzid != null && !tzid.equals(""))
-		      zone = getDefaultTimeZone(tzid);
-		  }
+		  zone = VMTimeZone.getDefaultTimeZoneId();
 		
 		// Fall back on GMT.
 		if (zone == null)
@@ -843,238 +803,6 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
   }
 
   /**
-   * This method returns a time zone id string which is in the form
-   * (standard zone name) or (standard zone name)(GMT offset) or
-   * (standard zone name)(GMT offset)(daylight time zone name).  The
-   * GMT offset can be in seconds, or where it is evenly divisible by
-   * 3600, then it can be in hours.  The offset must be the time to
-   * add to the local time to get GMT.  If a offset is given and the
-   * time zone observes daylight saving then the (daylight time zone
-   * name) must also be given (otherwise it is assumed the time zone
-   * does not observe any daylight savings).
-   * <p>
-   * The result of this method is given to getDefaultTimeZone(String)
-   * which tries to map the time zone id to a known TimeZone.  See
-   * that method on how the returned String is mapped to a real
-   * TimeZone object.
-   */
-  private static native String getDefaultTimeZoneId();
-
-  /**
-   * Tries to read the time zone name from a file. Only the first
-   * consecutive letters, digits, slashes, dashes and underscores are
-   * read from the file. If the file cannot be read or an IOException
-   * occurs null is returned.
-   * <p>
-   * The /etc/timezone file is not standard, but a lot of systems have
-   * it. If it exist the first line always contains a string
-   * describing the timezone of the host of domain. Some systems
-   * contain a /etc/TIMEZONE file which is used to set the TZ
-   * environment variable (which is checked before /etc/timezone is
-   * read).
-   */
-  private static String readTimeZoneFile(String file)
-  {
-    File f = new File(file);
-    if (!f.exists())
-      return null;
-
-    InputStreamReader isr = null;
-    try
-      {
-	FileInputStream fis = new FileInputStream(f);
-	BufferedInputStream bis = new BufferedInputStream(fis);
-	isr = new InputStreamReader(bis);
-	
-	StringBuffer sb = new StringBuffer();
-	int i = isr.read();
-	while (i != -1)
-	  {
-	    char c = (char) i;
-	    if (Character.isLetter(c) || Character.isDigit(c)
-		|| c == '/' || c == '-' || c == '_')
-	      {
-		sb.append(c);
-		i = isr.read();
-	      }
-	    else
-	      break;
-	  }
-	return sb.toString();
-      }
-    catch (IOException ioe)
-      {
-	// Parse error, not a proper tzfile.
-	return null;
-      }
-    finally
-      {
-	try
-	  {
-	    if (isr != null)
-	      isr.close();
-	  }
-	catch (IOException ioe)
-	  {
-	    // Error while close, nothing we can do.
-	  }
-      }
-  }
-
-  /**
-   * Tries to read a file as a "standard" tzfile and return a time
-   * zone id string as expected by <code>getDefaultTimeZone(String)</code>.
-   * If the file doesn't exist, an IOException occurs or it isn't a tzfile
-   * that can be parsed null is returned.
-   * <p>
-   * The tzfile structure (as also used by glibc) is described in the Olson
-   * tz database archive as can be found at
-   * <code>ftp://elsie.nci.nih.gov/pub/</code>.
-   * <p>
-   * At least the following platforms support the tzdata file format
-   * and /etc/localtime (GNU/Linux, Darwin, Solaris and FreeBSD at
-   * least). Some systems (like Darwin) don't start the file with the
-   * required magic bytes 'TZif', this implementation can handle
-   * that).
-   */
-  private static String readtzFile(String file)
-  {
-    File f = new File(file);
-    if (!f.exists())
-      return null;
-    
-    DataInputStream dis = null;
-    try
-      {
-        FileInputStream fis = new FileInputStream(f);
-        BufferedInputStream bis = new BufferedInputStream(fis);
-        dis = new DataInputStream(bis);
-	
-        // Make sure we are reading a tzfile.
-        byte[] tzif = new byte[4];
-        dis.readFully(tzif);
-        if (tzif[0] == 'T' && tzif[1] == 'Z'
-            && tzif[2] == 'i' && tzif[3] == 'f')
-	  // Reserved bytes, ttisgmtcnt, ttisstdcnt and leapcnt
-	  skipFully(dis, 16 + 3 * 4);
-	else
-	  // Darwin has tzdata files that don't start with the TZif marker
-	  skipFully(dis, 16 + 3 * 4 - 4);
-	
-	int timecnt = dis.readInt();
-	int typecnt = dis.readInt();
-	if (typecnt > 0)
-	  {
-	    int charcnt = dis.readInt();
-	    // Transition times plus indexed transition times.
-	    skipFully(dis, timecnt * (4 + 1));
-	    
-	    // Get last gmt_offset and dst/non-dst time zone names.
-	    int abbrind = -1;
-	    int dst_abbrind = -1;
-	    int gmt_offset = 0;
-	    while (typecnt-- > 0)
-	      {
-		// gmtoff
-		int offset = dis.readInt();
-		int dst = dis.readByte();
-		if (dst == 0)
-		  {
-		    abbrind = dis.readByte();
-		    gmt_offset = offset;
-		  }
-		else
-		  dst_abbrind = dis.readByte();
-	      }
-	    
-	    // gmt_offset is the offset you must add to UTC/GMT to
-	    // get the local time, we need the offset to add to
-	    // the local time to get UTC/GMT.
-	    gmt_offset *= -1;
-	    
-	    // Turn into hours if possible.
-	    if (gmt_offset % 3600 == 0)
-	      gmt_offset /= 3600;
-	    
-	    if (abbrind >= 0)
-	      {
-		byte[] names = new byte[charcnt];
-		dis.readFully(names);
-		int j = abbrind;
-		while (j < charcnt && names[j] != 0)
-		  j++;
-		
-		String zonename = new String(names, abbrind, j - abbrind,
-					     "ASCII");
-		
-		String dst_zonename;
-		if (dst_abbrind >= 0)
-		  {
-		    j = dst_abbrind;
-		    while (j < charcnt && names[j] != 0)
-		      j++;
-		    dst_zonename = new String(names, dst_abbrind,
-					      j - dst_abbrind, "ASCII");
-		  }
-		else
-		  dst_zonename = "";
-		
-		// Only use gmt offset when necessary.
-		// Also special case GMT+/- timezones.
-		String offset_string;
-		if ("".equals(dst_zonename)
-		    && (gmt_offset == 0
-			|| zonename.startsWith("GMT+")
-			|| zonename.startsWith("GMT-")))
-		  offset_string = "";
-		else
-		  offset_string = Integer.toString(gmt_offset);
-		
-		String id = zonename + offset_string + dst_zonename;
-		
-		return id;
-	      }
-	  }
-	
-	// Something didn't match while reading the file.
-	return null;
-      }
-    catch (IOException ioe)
-      {
-	// Parse error, not a proper tzfile.
-	return null;
-      }
-    finally
-      {
-	try
-	  {
-	    if (dis != null)
-	      dis.close();
-	  }
-	catch(IOException ioe)
-	  {
-	    // Error while close, nothing we can do.
-	  }
-      }
-  }
-  
-  /**
-   * Skips the requested number of bytes in the given InputStream.
-   * Throws EOFException if not enough bytes could be skipped.
-   * Negative numbers of bytes to skip are ignored.
-   */
-  private static void skipFully(InputStream is, long l) throws IOException
-  {
-    while (l > 0)
-      {
-        long k = is.skip(l);
-        if (k <= 0)
-          throw new EOFException();
-        l -= k;
-      }
-  }
-  
-  /**
    * Maps a time zone name (with optional GMT offset and daylight time
    * zone name) to one of the known time zones.  This method called
    * with the result of <code>System.getProperty("user.timezone")</code>
@@ -1111,7 +839,7 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
    * The standard time zone name for The Netherlands is "Europe/Amsterdam",
    * but can also be given as "CET-1CEST".
    */
-  private static TimeZone getDefaultTimeZone(String sysTimeZoneId)
+  static TimeZone getDefaultTimeZone(String sysTimeZoneId)
   {
     // First find start of GMT offset info and any Daylight zone name.
     int startGMToffset = 0;
@@ -1119,7 +847,11 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     for (int i = 0; i < sysTimeZoneIdLength && startGMToffset == 0; i++)
       {
 	char c = sysTimeZoneId.charAt(i);
-	if (c == '+' || c == '-' || Character.isDigit(c))
+	if (Character.isDigit(c))
+	  startGMToffset = i;
+	else if ((c == '+' || c == '-')
+		 && i + 1 < sysTimeZoneIdLength
+		 && Character.isDigit(sysTimeZoneId.charAt(i + 1)))
 	  startGMToffset = i;
       }
     
@@ -1152,7 +884,7 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
 	// Offset could be in hours or seconds.  Convert to millis.
 	// The offset is given as the time to add to local time to get GMT
 	// we need the time to add to GMT to get localtime.
-	if (gmtOffset < 24)
+	if (Math.abs(gmtOffset) < 24)
 	  gmtOffset *= 60 * 60;
 	gmtOffset *= -1000;
       }

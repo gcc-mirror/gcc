@@ -2424,6 +2424,7 @@ java/util/TreeMap.java \
 java/util/TreeSet.java \
 java/util/TooManyListenersException.java \
 java/util/Vector.java \
+java/util/VMTimeZone.java	\
 java/util/WeakHashMap.java \
 java/util/logging/ConsoleHandler.java \
 java/util/logging/ErrorManager.java \
@@ -3191,7 +3192,7 @@ java/nio/channels/natChannels.cc \
 java/nio/natDirectByteBufferImpl.cc \
 java/text/natCollator.cc \
 java/util/natResourceBundle.cc \
-java/util/natTimeZone.cc \
+java/util/natVMTimeZone.cc \
 java/util/zip/natDeflater.cc \
 java/util/zip/natInflater.cc
 
