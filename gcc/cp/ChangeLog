@@ -40,7 +40,7 @@
 	* call.c (convert_like_real): Do not permit the use of a copy
 	constructor to copy a packed field.
 
-	PR c++/17413
+	PR c++/19063
 	* decl.c (grokdeclarator): Return error_mark_node, not
 	void_type_node, to indicate errors.
 	* parser.c (cp_parser_template_parameter_list): Robustify.
