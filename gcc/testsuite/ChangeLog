@@ -1,3 +1,8 @@
+2001-06-08  Stan Shebs  <shebs@apple.com>
+
+	* objc/execute/load-2.m: New test.  From Nicola Pero
+	<n.pero@mi.flashnet.it>.
+	
 2001-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20010605-2.c: New test.
