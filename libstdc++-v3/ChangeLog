@@ -1,3 +1,10 @@
+2003-10-22  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/12657
+	* include/bits/basic_ios.tcc (copyfmt(const basic_ios&)):
+	Implement resolution of DR 292 (WP).
+	* docs/html/ext/howto.html: Add entry for DR 292.
+
 2003-10-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/mt_allocator.h: Change include to gthr.h.
