@@ -1,5 +1,11 @@
 2002-07-18  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* pa-linux.h (DWARF2_UNWIND_INFO): Delete define.
+	* pa.h (EH_RETURN_DATA_REGNO): Revise TARGET_64BIT and correct
+	numbering.
+
+2002-07-18  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
 	* pa.c (output_deferred_plabels): Remove unused millicode enum mulU.
 
 2002-07-18  Richard Henderson  <rth@redhat.com>
