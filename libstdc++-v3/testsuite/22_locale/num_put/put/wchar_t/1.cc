@@ -1,6 +1,6 @@
 // 2001-11-19 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -65,13 +65,13 @@ void test01()
 
   // bool, simple
   iterator_type os_it00 = oss.rdbuf();
-  iterator_type os_it01 = np.put(os_it00, oss, '+', b1);
+  iterator_type os_it01 = np.put(os_it00, oss, L'+', b1);
   result1 = oss.str();
   VERIFY( result1 == L"1" );
   //  VERIFY( os_it00 != os_it01 );
 
   oss.str(empty);
-  np.put(oss.rdbuf(), oss, '+', b0);
+  np.put(oss.rdbuf(), oss, L'+', b0);
   result2 = oss.str();
   VERIFY( result2 == L"0" );
 
@@ -81,7 +81,7 @@ void test01()
   oss.clear();
   oss.width(20);
   oss.setf(ios_base::left, ios_base::adjustfield);
-  np.put(oss.rdbuf(), oss, '+', ul1);
+  np.put(oss.rdbuf(), oss, L'+', ul1);
   result1 = oss.str();
   VERIFY( result1 == L"1.294.967.294+++++++" );
 
@@ -90,7 +90,7 @@ void test01()
   oss.clear();
   oss.width(20);
   oss.setf(ios_base::left, ios_base::adjustfield);
-  np.put(oss.rdbuf(), oss, '+', d1);
+  np.put(oss.rdbuf(), oss, L'+', d1);
   result1 = oss.str();
   VERIFY( result1 == L"1,79769e+308++++++++" );
 
@@ -98,7 +98,7 @@ void test01()
   oss.clear();
   oss.width(20);
   oss.setf(ios_base::right, ios_base::adjustfield);
-  np.put(oss.rdbuf(), oss, '+', d2);
+  np.put(oss.rdbuf(), oss, L'+', d2);
   result1 = oss.str();
   VERIFY( result1 == L"++++++++2,22507e-308" );
 
@@ -107,7 +107,7 @@ void test01()
   oss.width(20);
   oss.setf(ios_base::right, ios_base::adjustfield);
   oss.setf(ios_base::scientific, ios_base::floatfield);
-  np.put(oss.rdbuf(), oss, '+', d2);
+  np.put(oss.rdbuf(), oss, L'+', d2);
   result2 = oss.str();
   VERIFY( result2 == L"+++++++2,225074e-308" );
 
@@ -118,14 +118,14 @@ void test01()
   oss.setf(ios_base::right, ios_base::adjustfield);
   oss.setf(ios_base::scientific, ios_base::floatfield);
   oss.setf(ios_base::uppercase);
-  np.put(oss.rdbuf(), oss, '+', d2);
+  np.put(oss.rdbuf(), oss, L'+', d2);
   result1 = oss.str();
   VERIFY( result1 == L"+++2,2250738585E-308" );
 
   // long double
   oss.str(empty);
   oss.clear();
-  np.put(oss.rdbuf(), oss, '+', ld1);
+  np.put(oss.rdbuf(), oss, L'+', ld1);
   result1 = oss.str();
   VERIFY( result1 == L"1,7976931349E+308" );
 
@@ -133,14 +133,14 @@ void test01()
   oss.clear();
   oss.precision(0);
   oss.setf(ios_base::fixed, ios_base::floatfield);
-  np.put(oss.rdbuf(), oss, '+', ld2);
+  np.put(oss.rdbuf(), oss, L'+', ld2);
   result1 = oss.str();
   VERIFY( result1 == L"0" );
 
   // const void
   oss.str(empty);
   oss.clear();
-  np.put(oss.rdbuf(), oss, '+', cv);
+  np.put(oss.rdbuf(), oss, L'+', cv);
   result1 = oss.str();
   // No grouping characters.
   VERIFY( !char_traits<wchar_t>::find(result1.c_str(), 
@@ -154,7 +154,7 @@ void test01()
 
   oss.str(empty);
   oss.clear();
-  np.put(oss.rdbuf(), oss, '+', ll1);
+  np.put(oss.rdbuf(), oss, L'+', ll1);
   result1 = oss.str();
   VERIFY( result1 == L"9.223.372.036.854.775.807" );
 #endif
@@ -165,5 +165,3 @@ int main()
   test01();
   return 0;
 }
-
-

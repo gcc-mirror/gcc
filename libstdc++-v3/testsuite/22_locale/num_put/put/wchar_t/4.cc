@@ -53,7 +53,7 @@ void test04()
   // 01 put(long)
   const long l = 1798;
   res = x;
-  iter_type ret1 = tp.put(res.begin(), oss, ' ', l);
+  iter_type ret1 = tp.put(res.begin(), oss, L' ', l);
   wstring sanity1(res.begin(), ret1);
   VERIFY( res == L"1798xxxxxxxxxxxxxx" );
   VERIFY( sanity1 == L"1798" );
@@ -61,7 +61,7 @@ void test04()
   // 02 put(long double)
   const long double ld = 1798.0;
   res = x;
-  iter_type ret2 = tp.put(res.begin(), oss, ' ', ld);
+  iter_type ret2 = tp.put(res.begin(), oss, L' ', ld);
   wstring sanity2(res.begin(), ret2);
   VERIFY( res == L"1798xxxxxxxxxxxxxx" );
   VERIFY( sanity2 == L"1798" );
@@ -69,7 +69,7 @@ void test04()
   // 03 put(bool)
   bool b = 1;
   res = x;
-  iter_type ret3 = tp.put(res.begin(), oss, ' ', b);
+  iter_type ret3 = tp.put(res.begin(), oss, L' ', b);
   wstring sanity3(res.begin(), ret3);
   VERIFY( res == L"1xxxxxxxxxxxxxxxxx" );
   VERIFY( sanity3 == L"1" );
@@ -77,7 +77,7 @@ void test04()
   b = 0;
   res = x;
   oss.setf(ios_base::boolalpha);
-  iter_type ret4 = tp.put(res.begin(), oss, ' ', b);
+  iter_type ret4 = tp.put(res.begin(), oss, L' ', b);
   wstring sanity4(res.begin(), ret4);
   VERIFY( res == L"falsexxxxxxxxxxxxx" );
   VERIFY( sanity4 == L"false" );
@@ -87,7 +87,7 @@ void test04()
   const void* cv = &ld;
   res = x;
   oss.setf(ios_base::fixed, ios_base::floatfield);
-  iter_type ret5 = tp.put(res.begin(), oss, ' ', cv);
+  iter_type ret5 = tp.put(res.begin(), oss, L' ', cv);
   wstring sanity5(res.begin(), ret5);
   VERIFY( sanity5.size() );
   VERIFY( sanity5[1] == L'x' );
@@ -98,5 +98,3 @@ int main()
   test04();
   return 0;
 }
-
-

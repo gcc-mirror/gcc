@@ -1,4 +1,4 @@
-// Copyright (C) 2003 Free Software Foundation
+// Copyright (C) 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -51,13 +51,13 @@ void test01()
   long inum = 123;
   double fnum = 123.456;
 
-  np.put(oss.rdbuf(), oss, '+', inum);
+  np.put(oss.rdbuf(), oss, L'+', inum);
   result = oss.str();
   VERIFY( result == L"XYZ" );
 
   oss.clear();
   oss.str(empty);
-  np.put(oss.rdbuf(), oss, '+', fnum);
+  np.put(oss.rdbuf(), oss, L'+', fnum);
   result = oss.str();
   VERIFY( result == L"XYZ.ABC" );
 }

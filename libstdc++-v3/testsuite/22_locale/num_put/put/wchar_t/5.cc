@@ -1,6 +1,6 @@
 // 2001-11-19 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,7 +48,7 @@ void test05()
   oss.clear();
   oss.setf(ios::showbase);
   oss.setf(ios::hex, ios::basefield);
-  np.put(oss.rdbuf(), oss, '+', l);
+  np.put(oss.rdbuf(), oss, L'+', l);
   result = oss.str();
   VERIFY( result == L"0" );
 
@@ -56,7 +56,7 @@ void test05()
   oss.clear();
   oss.setf(ios::showbase);
   oss.setf(ios::oct, ios::basefield);
-  np.put(oss.rdbuf(), oss, '+', l);
+  np.put(oss.rdbuf(), oss, L'+', l);
   result = oss.str();
   VERIFY( result == L"0" );
 }
@@ -66,5 +66,3 @@ int main()
   test05();
   return 0;
 }
-
-

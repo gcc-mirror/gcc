@@ -1,6 +1,6 @@
 // 2001-11-19 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,7 +58,7 @@ void test03()
   // long, in a locale that expects grouping
   oss.str(empty);
   oss.clear();
-  np.put(oss.rdbuf(), oss, '+', l1);
+  np.put(oss.rdbuf(), oss, L'+', l1);
   result1 = oss.str();
   VERIFY( result1 == L"2,147,483,647" );
 
@@ -66,7 +66,7 @@ void test03()
   oss.clear();
   oss.width(20);
   oss.setf(ios_base::left, ios_base::adjustfield);
-  np.put(oss.rdbuf(), oss, '+', l2);
+  np.put(oss.rdbuf(), oss, L'+', l2);
   result1 = oss.str();
   VERIFY( result1 == L"-2,147,483,647++++++" );
 }
@@ -76,5 +76,3 @@ int main()
   test03();
   return 0;
 }
-
-

@@ -1,6 +1,6 @@
 // 2003-02-05 Paolo Carlini <pcarlini@unitus.it>
 
-// Copyright (C) 2003 Free Software Foundation
+// Copyright (C) 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,13 +38,13 @@ void test01()
 
   woss1.precision(-1);
   woss1.setf(ios_base::fixed, ios_base::floatfield);
-  np1.put(woss1.rdbuf(), woss1, '+', 30.5);
+  np1.put(woss1.rdbuf(), woss1, L'+', 30.5);
   result1 = woss1.str();
   VERIFY( result1 == L"30.500000" );
 
   woss2.precision(0);
   woss2.setf(ios_base::scientific, ios_base::floatfield);
-  np2.put(woss2.rdbuf(), woss2, '+', 1.0);
+  np2.put(woss2.rdbuf(), woss2, L'+', 1.0);
   result2 = woss2.str();
   VERIFY( result2 == L"1e+00" );
 }
