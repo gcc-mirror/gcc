@@ -506,6 +506,33 @@ static void add_sym_3ml (const char *name, int elemental,
 	   (void*)0);
 }
 
+/* MINVAL, MAXVAL, PRODUCT, and SUM also get special treatment because
+   their argument also might have to be reordered.  */
+
+static void add_sym_3red (const char *name, int elemental, 
+                          int actual_ok, bt type, int kind,
+                          try (*check)(gfc_actual_arglist *),
+                          gfc_expr*(*simplify)(gfc_expr *,gfc_expr *,gfc_expr *),
+                          void (*resolve)(gfc_expr *,gfc_expr *,gfc_expr *,gfc_expr *),
+                          const char* a1, bt type1, int kind1, int optional1,
+                          const char* a2, bt type2, int kind2, int optional2,
+                          const char* a3, bt type3, int kind3, int optional3
+                          ) {
+  gfc_check_f cf;
+  gfc_simplify_f sf;
+  gfc_resolve_f rf;
+
+  cf.f3red = check;
+  sf.f3 = simplify;
+  rf.f3 = resolve;
+
+  add_sym (name, elemental, actual_ok, type, kind, cf, sf, rf,
+	   a1, type1, kind1, optional1,
+	   a2, type2, kind2, optional2,
+	   a3, type3, kind3, optional3,
+	   (void*)0);
+}
+
 /* Add the name of an intrinsic subroutine with three arguments to the list
    of intrinsic names. */
 
@@ -1378,10 +1405,10 @@ add_functions (void)
 
   make_generic ("maxloc", GFC_ISYM_MAXLOC);
 
-  add_sym_3 ("maxval", 0, 1, BT_REAL, dr,
-	     gfc_check_minval_maxval, NULL, gfc_resolve_maxval,
-	     ar, BT_REAL, dr, 0, dm, BT_INTEGER, ii, 1,
-	     msk, BT_LOGICAL, dl, 1);
+  add_sym_3red ("maxval", 0, 1, BT_REAL, dr,
+                gfc_check_reduction, NULL, gfc_resolve_maxval,
+                ar, BT_REAL, dr, 0, dm, BT_INTEGER, ii, 1,
+                msk, BT_LOGICAL, dl, 1);
 
   make_generic ("maxval", GFC_ISYM_MAXVAL);
 
@@ -1433,10 +1460,10 @@ add_functions (void)
 
   make_generic ("minloc", GFC_ISYM_MINLOC);
 
-  add_sym_3 ("minval", 0, 1, BT_REAL, dr,
-	     gfc_check_minval_maxval, NULL, gfc_resolve_minval,
-	     ar, BT_REAL, dr, 0, dm, BT_INTEGER, ii, 1,
-	     msk, BT_LOGICAL, dl, 1);
+  add_sym_3red ("minval", 0, 1, BT_REAL, dr,
+                gfc_check_reduction, NULL, gfc_resolve_minval,
+                ar, BT_REAL, dr, 0, dm, BT_INTEGER, ii, 1,
+                msk, BT_LOGICAL, dl, 1);
 
   make_generic ("minval", GFC_ISYM_MINVAL);
 
@@ -1506,10 +1533,10 @@ add_functions (void)
 
   make_generic ("present", GFC_ISYM_PRESENT);
 
-  add_sym_3 ("product", 0, 1, BT_REAL, dr,
-	     gfc_check_product, NULL, gfc_resolve_product,
-	     ar, BT_REAL, dr, 0, dm, BT_INTEGER, ii, 1,
-	     msk, BT_LOGICAL, dl, 1);
+  add_sym_3red ("product", 0, 1, BT_REAL, dr,
+                gfc_check_reduction, NULL, gfc_resolve_product,
+                ar, BT_REAL, dr, 0, dm, BT_INTEGER, ii, 1,
+                msk, BT_LOGICAL, dl, 1);
 
   make_generic ("product", GFC_ISYM_PRODUCT);
 
@@ -1688,10 +1715,10 @@ add_functions (void)
 
   make_generic ("sqrt", GFC_ISYM_SQRT);
 
-  add_sym_3 ("sum", 0, 1, BT_UNKNOWN, 0,
-	     gfc_check_sum, NULL, gfc_resolve_sum,
-	     ar, BT_REAL, dr, 0, dm, BT_INTEGER, ii, 1,
-	     msk, BT_LOGICAL, dl, 1);
+  add_sym_3red ("sum", 0, 1, BT_UNKNOWN, 0,
+                gfc_check_reduction, NULL, gfc_resolve_sum,
+                ar, BT_REAL, dr, 0, dm, BT_INTEGER, ii, 1,
+                msk, BT_LOGICAL, dl, 1);
 
   make_generic ("sum", GFC_ISYM_SUM);
 
@@ -2462,7 +2489,15 @@ check_specific (gfc_intrinsic_sym * specific, gfc_expr * expr, int error_flag)
 		   &expr->where) == FAILURE)
     return FAILURE;
 
-  if (specific->check.f3ml != gfc_check_minloc_maxloc)
+  if (specific->check.f3ml == gfc_check_minloc_maxloc)
+    /* This is special because we might have to reorder the argument
+       list.  */
+    t = gfc_check_minloc_maxloc (*ap);
+  else if (specific->check.f3red == gfc_check_reduction)
+    /* This is also special because we also might have to reorder the
+       argument list.  */
+    t = gfc_check_reduction (*ap);
+  else
      {
        if (specific->check.f1 == NULL)
 	 {
@@ -2473,10 +2508,6 @@ check_specific (gfc_intrinsic_sym * specific, gfc_expr * expr, int error_flag)
        else
 	 t = do_check (specific, *ap);
      }
-  else
-    /* This is special because we might have to reorder the argument
-       list.  */
-    t = gfc_check_minloc_maxloc (*ap);
 
   /* Check ranks for elemental intrinsics.  */
   if (t == SUCCESS && specific->elemental)

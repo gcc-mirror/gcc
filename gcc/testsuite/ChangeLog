@@ -1,3 +1,8 @@
+2004-08-19  Erik Schnetter  <schnetter@aei.mpg.de>
+
+	PR fortran/16946
+	* gfortran.dg/reduction.f90: New testcase.
+
 2004-08-19  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/16520
