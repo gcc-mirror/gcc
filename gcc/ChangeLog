@@ -1,3 +1,13 @@
+2002-04-22  Richard Henderson  <rth@redhat.com>
+
+	PR c/6344
+	* alias.c (canon_true_dependence): Special case (mem:blk (scratch)).
+
+	* gcse.c (free_insn_expr_list_list): New.
+	(clear_modify_mem_tables): Use it.  Fix bit set usage.
+	(canon_list_insert): Use EXPR_LISTs for expressions.
+	(record_last_mem_set_info): Factor BLOCK_NUM (insn).
+
 2002-04-22  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppfiles.c (_cpp_pop_file_buffer): Return void.  Move
@@ -15,12 +25,12 @@
 
 2002-04-22  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/altivec.h (vec_xor): Add variant for both args
-        being vector signed int.
-        (vec_andc): Same.
-        (vec_xor): Add variant for both args being vector signed char.
-        Remove redundant variant.
-        (vec_andc): Same.
+	* config/rs6000/altivec.h (vec_xor): Add variant for both args
+	being vector signed int.
+	(vec_andc): Same.
+	(vec_xor): Add variant for both args being vector signed char.
+	Remove redundant variant.
+	(vec_andc): Same.
 
 2002-04-21  David S. Miller  <davem@redhat.com>
 
