@@ -69,9 +69,13 @@ Boston, MA 02111-1307, USA.  */
 #define STARTFILE_SPEC "%{shared|mdll:dllcrt2%O%s} \
   %{!shared:%{!mdll:crt2%O%s}} %{pg:gcrt2%O%s}"
 
-/* An additional prefix to try after the standard prefixes.  */
-#undef MD_STARTFILE_PREFIX
-#define MD_STARTFILE_PREFIX "/mingw/lib/"
+/* Override startfile prefix defaults.  */
+#ifndef STANDARD_STARTFILE_PREFIX_1
+#define STANDARD_STARTFILE_PREFIX_1 "/mingw/lib/"
+#endif
+#ifndef STANDARD_STARTFILE_PREFIX_2
+#define STANDARD_STARTFILE_PREFIX_2 ""
+#endif
 
 /* Output STRING, a string representing a filename, to FILE.
    We canonicalize it to be in Unix format (backslashes are replaced

@@ -469,6 +469,22 @@ try when searching for startup files such as @file{crt0.o}.
 is built as a cross compiler.
 @end defmac
 
+@defmac STANDARD_STARTFILE_PREFIX_1
+Define this macro as a C string constant if you wish to override the
+standard choice of @code{/lib} as a prefix to try after the default prefix
+when searching for startup files such as @file{crt0.o}.
+@code{STANDARD_STARTFILE_PREFIX_1} is not searched when the compiler
+is built as a cross compiler.
+@end defmac
+
+@defmac STANDARD_STARTFILE_PREFIX_2
+Define this macro as a C string constant if you wish to override the
+standard choice of @code{/lib} as yet another prefix to try after the
+default prefix when searching for startup files such as @file{crt0.o}.
+@code{STANDARD_STARTFILE_PREFIX_2} is not searched when the compiler
+is built as a cross compiler.
+@end defmac
+
 @defmac MD_STARTFILE_PREFIX
 If defined, this macro supplies an additional prefix to try after the
 standard prefixes.  @code{MD_EXEC_PREFIX} is not searched when the
