@@ -38,6 +38,7 @@ exception statement from your version. */
 package java.nio.channels;
 
 import gnu.java.nio.InputStreamChannel;
+import gnu.java.nio.OutputStreamChannel;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -78,9 +79,9 @@ public final class Channels
   /**
    * Constructs a channel that writes bytes to the given stream.
    */
-  public static WritableByteChannel newChannel (OutputStream out)
+  public static WritableByteChannel newChannel(OutputStream out)
   {
-    throw new Error ("not implemented");
+    return new OutputStreamChannel (out);
   }
 
   /**
