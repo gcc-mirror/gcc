@@ -19,6 +19,18 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("unix");		\
+	builtin_define_std ("linux");		\
+	builtin_define ("__gnu_linux__");	\
+	builtin_define ("__ELF__");		\
+	builtin_assert ("system=unix");		\
+	builtin_assert ("system=posix");	\
+    }						\
+  while (0)
+
 #define LINUX_DEFAULT_ELF
 
 /* Don't assume anything about the header files.  */
@@ -97,9 +109,6 @@ Boston, MA 02111-1307, USA.  */
    
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -Dunix -D__sparc__ -D__gnu_linux__ -Dlinux -Asystem=unix -Asystem=posix"
 
 #undef CPP_SUBTARGET_SPEC
 #ifdef USE_GNULIBC_1

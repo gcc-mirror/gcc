@@ -1948,7 +1948,7 @@ sparc-*-solaris2*)
 	fi
 	;;
 sparc-*-sysv4*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sysv4-only.h"
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
 	;;

@@ -39,9 +39,6 @@ Boston, MA 02111-1307, USA.  */
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
 
-/* Make sure this is undefined.  */
-#undef CPP_PREDEFINES
-
 /* CPP defines used by all NetBSD targets.  */
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC "%(netbsd_cpp_spec)"

@@ -38,8 +38,14 @@ Boston, MA 02111-1307, USA.  */
 #undef SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL CM_EMBMEDANY
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dsparc -D__ELF__ -Acpu=sparc -Amachine=sparc"
+/* Target OS builtins.  */
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("sparc");		\
+	builtin_define ("__ELF__");		\
+    }						\
+  while (0)
 
 /* __svr4__ is used by the C library (FIXME) */
 #undef CPP_SUBTARGET_SPEC

@@ -19,11 +19,15 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
-/* Names to predefine in the preprocessor for this target machine.  */
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dsparc -DUnicomPBD -Dunix -D__GCC_NEW_VARARGS__ -Asystem=unix -Acpu=sparc -Amachine=sparc"
+/* Target OS builtins.  */
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("unix");		\
+	builtin_define_std ("UnicomPBD");	\
+	builtin_assert ("system=unix");		\
+    }						\
+  while (0)
 
 /* We want DBX format for use with gdb under COFF.  */
 

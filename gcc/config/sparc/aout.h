@@ -23,14 +23,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_VERSION fprintf (stderr, " (sparc)");
 
-/* Names to predefine in the preprocessor for this target machine.
-   ??? It would be nice to not include any subtarget specific values here,
-   however there's no way to portably provide subtarget values to
-   CPP_PREFINES.  Also, -D values in CPP_SUBTARGET_SPEC don't get turned into
-   foo, __foo and __foo__.  */
-
-#define CPP_PREDEFINES "-Dsparc -Acpu=sparc -Amachine=sparc"
-
 /* These compiler options take an argument.  We ignore -target for now.  */
 
 #define WORD_SWITCH_TAKES_ARG(STR)				\
