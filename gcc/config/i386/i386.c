@@ -1105,6 +1105,9 @@ function_arg (cum, mode, type, named)
     (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
+  if (mode == VOIDmode)
+    return constm1_rtx;
+
   switch (mode)
     {
       /* For now, pass fp/complex values on the stack.  */
@@ -2510,7 +2513,7 @@ ix86_expand_prologue ()
 
       sym = gen_rtx_MEM (FUNCTION_MODE,
 			 gen_rtx_SYMBOL_REF (Pmode, "_alloca"));
-      insn = emit_call_insn (gen_call (sym, const0_rtx));
+      insn = emit_call_insn (gen_call (sym, const0_rtx, constm1_rtx));
 
       CALL_INSN_FUNCTION_USAGE (insn)
 	= gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_USE (VOIDmode, arg0),
@@ -6842,7 +6845,7 @@ ix86_split_to_parts (operand, parts, mode)
 	      operand = change_address (operand, DImode, XEXP (operand, 0));
 	      parts[0] = operand;
 	      parts[1] = adj_offsettable_operand (operand, 8);
-	      parts[1] = change_address (parts[1], SImode, XEXP (operand, 0));
+	      parts[1] = change_address (parts[1], SImode, XEXP (parts[1], 0));
 	    }
 	  else if (GET_CODE (operand) == CONST_DOUBLE)
 	    {

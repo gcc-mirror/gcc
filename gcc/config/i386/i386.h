@@ -1632,7 +1632,7 @@ typedef struct ix86_args {
 #define FUNCTION_BLOCK_PROFILER_EXIT			\
 emit_call_insn (gen_call (gen_rtx_MEM (QImode,		\
   gen_rtx_SYMBOL_REF (VOIDmode, "__bb_trace_ret")),	\
-  const0_rtx))
+  const0_rtx, constm1_rtx))
 
 /* The function `__bb_trace_func' is called in every basic block
    and is not allowed to change the machine state. Saving (restoring)
