@@ -133,7 +133,7 @@ print_node_brief (file, prefix, node, indent)
 #else
       {
 	int i;
-	char *p = (char *) &TREE_REAL_CST (node);
+	unsigned char *p = (unsigned char *) &TREE_REAL_CST (node);
 	fprintf (file, " 0x");
 	for (i = 0; i < sizeof TREE_REAL_CST (node); i++)
 	  fprintf (file, "%02x", *p++);
