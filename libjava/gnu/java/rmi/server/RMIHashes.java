@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* RMIHashes.java --
+   Copyright (c) 1996, 1997, 1998, 1999, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,15 +35,15 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.rmi.server;
 
-import java.lang.reflect.Method;
-import gnu.java.io.NullOutputStream;
 import gnu.java.lang.reflect.TypeSignature;
-import java.security.MessageDigest;
-import java.security.DigestOutputStream;
-import java.io.DataOutputStream;
+
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.lang.reflect.Method;
+import java.security.MessageDigest;
 
 public class RMIHashes
 {

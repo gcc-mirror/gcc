@@ -1,5 +1,6 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+/* RMIObjectOutputStream.java -
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,15 +36,15 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.rmi.server;
 
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.IOException;
-import java.rmi.server.RMIClassLoader;
 import java.rmi.Remote;
 import java.rmi.server.RemoteStub;
-import java.rmi.server.ObjID;
+import java.rmi.server.RMIClassLoader;
 
 public class RMIObjectOutputStream
 	extends ObjectOutputStream {

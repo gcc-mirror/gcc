@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* RemoteRef.java --
+   Copyright (c) 1996, 1997, 1998, 1999, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,13 +35,14 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.rmi.server;
 
-import java.lang.reflect.Method;
 import java.io.Externalizable;
+import java.io.ObjectOutput;
+import java.lang.reflect.Method;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.io.ObjectOutput;
 
 public interface RemoteRef extends Externalizable
 {

@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* Skeleton.java --
+   Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +38,6 @@ exception statement from your version. */
 package java.rmi.server;
 
 import java.rmi.Remote;
-import java.rmi.server.RemoteCall;
 
 /**
  * @deprecated

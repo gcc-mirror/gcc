@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999, 2002, 2003 Free Software Foundation, Inc.
+/* UnicastRemoteObject.java --
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,14 +40,11 @@ package java.rmi.server;
 
 import java.rmi.RemoteException;
 import java.rmi.Remote;
-import java.rmi.server.RemoteRef;
 import java.rmi.NoSuchObjectException;
 import gnu.java.rmi.server.UnicastServerRef;
-import gnu.java.rmi.server.UnicastServer;
 
-public class UnicastRemoteObject
-	extends RemoteServer {
-
+public class UnicastRemoteObject extends RemoteServer
+{
 private static final long serialVersionUID = 4974527148936298033L;
 //The following serialized fields are from Java API Documentation "Serialized form"
 private int port = 0;

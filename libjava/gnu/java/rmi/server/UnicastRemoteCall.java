@@ -1,5 +1,5 @@
 /* UnicastRemoteCall.java
-  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,22 +35,21 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.rmi.server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutput;
 import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.StreamCorruptedException;
-import java.rmi.server.RemoteCall;
 import java.rmi.RemoteException;
 import java.rmi.MarshalException;
 import java.rmi.UnmarshalException;
-import java.rmi.server.UID;
+import java.rmi.server.RemoteCall;
 import java.rmi.server.ObjID;
-import java.rmi.server.RemoteObject;
-
+import java.rmi.server.UID;
 import java.util.Vector;
 
 public class UnicastRemoteCall

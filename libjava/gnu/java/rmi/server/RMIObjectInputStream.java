@@ -1,5 +1,6 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+/* RMIObjectInputStream.java --
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,14 +36,14 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.rmi.server;
 
-import java.io.ObjectStreamClass;
-import java.io.ObjectInputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
 import java.lang.reflect.Proxy;
-import java.net.URL;
 import java.net.MalformedURLException;
 import java.rmi.server.RMIClassLoader;
 
