@@ -2132,13 +2132,16 @@ private:
 	  case op_lmul:
 	  case op_ldiv:
 	  case op_lrem:
-	  case op_lshl:
-	  case op_lshr:
-	  case op_lushr:
 	  case op_land:
 	  case op_lor:
 	  case op_lxor:
 	    pop_type (long_type);
+	    push_type (pop_type (long_type));
+	    break;
+	  case op_lshl:
+	  case op_lshr:
+	  case op_lushr:
+	    pop_type (int_type);
 	    push_type (pop_type (long_type));
 	    break;
 	  case op_fadd:
