@@ -272,14 +272,25 @@ struct default_include { const char *fname; int cplusplus; } include_defaults[]
   = {
     /* Pick up GNU C++ specific include files.  */
     { GPLUSPLUS_INCLUDE_DIR, 1},
-    { GCC_INCLUDE_DIR, 0},
-    { TOOL_INCLUDE_DIR, 0},
 #ifdef CROSS_COMPILE
+    /* This is the dir for fixincludes.  Put it just before
+       the files that we fix.  */
+    { GCC_INCLUDE_DIR, 0},
     /* For cross-compilation, this dir name is generated
        automatically in Makefile.in.  */
     { CROSS_INCLUDE_DIR, 0 },
+    /* This is another place that the target system's headers might be.  */
+    { TOOL_INCLUDE_DIR, 0},
 #else /* not CROSS_COMPILE */
+    /* This should be /use/local/include and should come before
+       the fixincludes-fixed header files.  */
     { LOCAL_INCLUDE_DIR, 0},
+    /* This is here ahead of GCC_INCLUDE_DIR because assert.h goes here.
+       Likewise, behind LOCAL_INCLUDE_DIR, where glibc puts its assert.h.  */
+    { TOOL_INCLUDE_DIR, 0},
+    /* This is the dir for fixincludes.  Put it just before
+       the files that we fix.  */
+    { GCC_INCLUDE_DIR, 0},
     /* Some systems have an extra dir of include files.  */
 #ifdef SYSTEM_INCLUDE_DIR
     { SYSTEM_INCLUDE_DIR, 0},
