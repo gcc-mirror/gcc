@@ -1316,7 +1316,7 @@ enum reg_class
 #define SSE_REG_P(N) (REG_P (N) && SSE_REGNO_P (REGNO (N)))
 
 #define SSE_FLOAT_MODE_P(MODE) \
-  ((TARGET_SSE_MATH && (MODE) == SFmode) || (TARGET_SSE2 && (MODE) == DFmode))
+  ((MODE) == SFmode || (TARGET_SSE2 && (MODE) == DFmode))
 
 #define MMX_REGNO_P(N) ((N) >= FIRST_MMX_REG && (N) <= LAST_MMX_REG)
 #define MMX_REG_P(XOP) (REG_P (XOP) && MMX_REGNO_P (REGNO (XOP)))
