@@ -1,5 +1,9 @@
 2001-07-19  Geoffrey Keating  <geoffk@redhat.com>
 
+	* reload1.c (eliminate_regs_in_insn): When updating a set
+	to the frame pointer to the hardware frame pointer, perform
+	the update always not just when REPLACE is set.
+
 	* reload1.c (choose_reload_regs): Don't inherit a reload
 	that crosses multiple registers if registers past the first
 	don't fit in the desired class.

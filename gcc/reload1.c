@@ -2962,22 +2962,29 @@ eliminate_regs_in_insn (insn, replace)
 
 		if (ok)
 		  {
-		    if (replace)
-		      {
-			rtx src
-			  = plus_constant (ep->to_rtx, offset - ep->offset);
+		    rtx src
+		      = plus_constant (ep->to_rtx, offset - ep->offset);
 
-			/* First see if this insn remains valid when we
-			   make the change.  If not, keep the INSN_CODE
-			   the same and let reload fit it up.  */
-			validate_change (insn, &SET_SRC (old_set), src, 1);
-			validate_change (insn, &SET_DEST (old_set),
-					 ep->to_rtx, 1);
-			if (! apply_change_group ())
-			  {
-			    SET_SRC (old_set) = src;
-			    SET_DEST (old_set) = ep->to_rtx;
-			  }
+		    new_body = old_body;
+		    if (! replace)
+		      {
+			new_body = copy_insn (old_body);
+			if (REG_NOTES (insn))
+			  REG_NOTES (insn) = copy_insn_1 (REG_NOTES (insn));
+		      }
+		    PATTERN (insn) = new_body;
+		    old_set = single_set (insn);
+
+		    /* First see if this insn remains valid when we
+		       make the change.  If not, keep the INSN_CODE
+		       the same and let reload fit it up.  */
+		    validate_change (insn, &SET_SRC (old_set), src, 1);
+		    validate_change (insn, &SET_DEST (old_set),
+				     ep->to_rtx, 1);
+		    if (! apply_change_group ())
+		      {
+			SET_SRC (old_set) = src;
+			SET_DEST (old_set) = ep->to_rtx;
 		      }
 
 		    val = 1;
