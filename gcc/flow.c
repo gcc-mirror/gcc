@@ -2891,7 +2891,7 @@ mark_regno_cond_dead (struct propagate_block_info *pbi, int regno, rtx cond)
 
       /* Otherwise this is a conditional set.  Record that fact.
 	 It may have been conditionally used, or there may be a
-	 subsequent set with a complimentary condition.  */
+	 subsequent set with a complementary condition.  */
 
       node = splay_tree_lookup (pbi->reg_cond_dead, regno);
       if (node == NULL)

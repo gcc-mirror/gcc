@@ -1553,7 +1553,7 @@ NAME (TYPE x, Wtype m)
 
 /* All of these would be present in a full C99 implementation of <math.h>
    and <complex.h>.  Our problem is that only a few systems have such full
-   implementations.  Further, libgcc_s.so isn't currenly linked against
+   implementations.  Further, libgcc_s.so isn't currently linked against
    libm.so, and even for systems that do provide full C99, the extra overhead
    of all programs using libgcc having to link against libm.  So avoid it.  */
 
@@ -1653,7 +1653,7 @@ CONCAT3(__div,MODE,3) (MTYPE a, MTYPE b, MTYPE c, MTYPE d)
 {
   MTYPE denom, ratio, x, y;
 
-  /* ??? We can get better behaviour from logrithmic scaling instead of 
+  /* ??? We can get better behavior from logarithmic scaling instead of 
      the division.  But that would mean starting to link libgcc against
      libm.  We could implement something akin to ldexp/frexp as gcc builtins
      fairly easily...  */
@@ -1673,7 +1673,7 @@ CONCAT3(__div,MODE,3) (MTYPE a, MTYPE b, MTYPE c, MTYPE d)
     }
 
   /* Recover infinities and zeros that computed as NaN+iNaN; the only cases
-     are non-zero/zero, infinite/finite, and finite/infinite.  */
+     are nonzero/zero, infinite/finite, and finite/infinite.  */
   if (isnan (x) && isnan (y))
     {
       if (denom == 0.0 && (!isnan (a) || !isnan (b)))

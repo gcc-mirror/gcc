@@ -1089,7 +1089,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     }
 
   /* If we have an out-of-bounds access to a register, just return an
-     uninitialised register of the required mode.  This can occur if the
+     uninitialized register of the required mode.  This can occur if the
      source code contains an out-of-bounds access to a small array.  */
   if (REG_P (op0) && bitnum >= GET_MODE_BITSIZE (GET_MODE (op0)))
     return gen_reg_rtx (tmode);

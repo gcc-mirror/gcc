@@ -428,7 +428,7 @@ tpa_decompact(tpa_p tpa)
 }
 
 
-/* Once a var_map has been created and compressed, a complimentary root_var
+/* Once a var_map has been created and compressed, a complementary root_var
    object can be built.  This creates a list of all the root variables from
    which ssa version names are derived.  Each root variable has a list of 
    which partitions are versions of that root.  
