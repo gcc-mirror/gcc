@@ -1397,7 +1397,7 @@ install-cross-tools: install-dir
 	    if [ -d $(tooldir)/include/. ] ; then \
 	      $(SYMLINK) $(tooldir)/include $(libsubdir)/sys-include \
 	      || (if [ -d $(libsubdir)/sys-include ] ; then true ; else mkdir $(libsubdir)/sys-include ; fi; \
-		  cd $(tooldir)/include; tar cf - . | (cd $(libsubdir)/sys-include; tar xpf -)); \
+		  (cd $(tooldir)/include; tar cf - .) | (cd $(libsubdir)/sys-include; tar xpf -); \
 	    else true; fi; \
 	  else true; \
 	  fi; \
