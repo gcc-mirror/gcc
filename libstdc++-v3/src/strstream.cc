@@ -1,6 +1,6 @@
 // strstream definitions -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -148,7 +148,7 @@ namespace std
     if (pptr() == epptr() && _M_dynamic && !_M_frozen && !_M_constant) 
       {
 	ptrdiff_t old_size = epptr() - pbase();
-	ptrdiff_t new_size = max(2 * old_size, ptrdiff_t(1));
+	ptrdiff_t new_size = max(ptrdiff_t(2 * old_size), ptrdiff_t(1));
 	
 	char* buf = _M_alloc(new_size);
 	if (buf) 

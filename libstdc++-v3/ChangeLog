@@ -1,3 +1,9 @@
+2003-03-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* src/strstream.cc (strstreambuf::overflow): Make sure operands of
+	min and max have the same type.
+	* include/bits/basic_string.tcc (append, rfind, compare): Likewise.
+
 2003-03-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/Makefile.am (CLEANFILES): Add tmp*.
