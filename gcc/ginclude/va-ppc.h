@@ -90,7 +90,7 @@ __extension__ ({							\
 #define __va_size(TYPE)		((sizeof(TYPE) + sizeof (long) - 1) / sizeof (long))
 
 #define va_arg(AP,TYPE)							\
-__extension__ ({							\
+__extension__ (*({							\
   register TYPE *__ptr;							\
 									\
   if (__va_float_p (TYPE) && (AP)->fpr < 8)				\
@@ -123,8 +123,8 @@ __extension__ ({							\
       (AP)->overflow_arg_area += __va_size (TYPE) * sizeof (long);	\
     }									\
 									\
-  *__ptr;								\
-})
+  __ptr;								\
+}))
 
 #define va_end(AP)	((void)0)
 
