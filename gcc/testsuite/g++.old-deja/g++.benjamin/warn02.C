@@ -31,16 +31,16 @@ class C
 class D
 {
 public:
-  int foo2() {return b;}  // WARNING - 
-  int foo2() {return b;}  // WARNING - 
+  int foo2() {return b;}  
+  int foo2() {return b;}  // ERROR - 
   int b;
 };
 
 class E
 {
 public:
-  int foo2(); // WARNING - 
-  int foo2(); // WARNING - 
+  int foo2(); 
+  int foo2(); // ERROR - 
   int b;
 };
 
