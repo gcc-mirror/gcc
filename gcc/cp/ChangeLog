@@ -1,3 +1,20 @@
+1998-06-10  Mark Mitchell  <mark@markmitchell.com>
+
+	* call.c (convert_default_arg): Make global, not static.
+	(convert_arg_for_ellipsis): Split out from ...
+	(build_over_call): Here.
+	* cp-tree.h (convert_default_arg); Declare.
+	(convert_arg_to_ellipsis): Likewise.
+	(do_member_init): Remove.
+	* init.c (do_member_init): Remove; this code is dead.
+	(expand_member_init): Remove much of this code; it is dead.
+	* typeck.c (convert_arguments): Use convert_default_arg and
+	convert_arg_for_ellipsis, rather than duplicating here.
+	
+	* call.c (convert_like): Don't fail silently if 
+	build_user_type_conversion fails.  Always return error_mark_node 
+	for failure.
+
 1998-06-10  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* search.c (covariant_return_p): Complain about ambiguous base.

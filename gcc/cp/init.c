@@ -832,34 +832,6 @@ expand_aggr_vbase_init (binfo, exp, addr, init_list)
     }
 }
 
-/* Subroutine to perform parser actions for member initialization.
-   S_ID is the scoped identifier.
-   NAME is the name of the member.
-   INIT is the initializer, or `void_type_node' if none.  */
-
-void
-do_member_init (s_id, name, init)
-     tree s_id, name, init;
-{
-  tree binfo, base;
-
-  if (current_class_type == NULL_TREE
-      || ! is_aggr_typedef (s_id, 1))
-    return;
-  binfo = get_binfo (IDENTIFIER_TYPE_VALUE (s_id),
-			  current_class_type, 1);
-  if (binfo == error_mark_node)
-    return;
-  if (binfo == 0)
-    {
-      error_not_base_type (IDENTIFIER_TYPE_VALUE (s_id), current_class_type);
-      return;
-    }
-
-  base = convert_pointer_to (binfo, current_class_ptr);
-  expand_member_init (build_indirect_ref (base, NULL_PTR), name, init);
-}
-
 /* Find the context in which this FIELD can be initialized.  */
 
 static tree
@@ -958,151 +930,84 @@ expand_member_init (exp, name, init)
 	return;
       }
 
-  if (init)
+  my_friendly_assert (init != NULL_TREE, 0);
+
+  /* The grammar should not allow fields which have names that are
+     TYPENAMEs.  Therefore, if the field has a non-NULL TREE_TYPE, we
+     may assume that this is an attempt to initialize a base class
+     member of the current type.  Otherwise, it is an attempt to
+     initialize a member field.  */
+
+  if (init == void_type_node)
+    init = NULL_TREE;
+
+  if (name == NULL_TREE || basetype)
     {
-      /* The grammar should not allow fields which have names
-	 that are TYPENAMEs.  Therefore, if the field has
-	 a non-NULL TREE_TYPE, we may assume that this is an
-	 attempt to initialize a base class member of the current
-	 type.  Otherwise, it is an attempt to initialize a
-	 member field.  */
+      tree base_init;
 
-      if (init == void_type_node)
-	init = NULL_TREE;
-
-      if (name == NULL_TREE || basetype)
+      if (name == NULL_TREE)
 	{
-	  tree base_init;
-
-	  if (name == NULL_TREE)
-	    {
 #if 0
-	      if (basetype)
-		name = TYPE_IDENTIFIER (basetype);
-	      else
-		{
-		  error ("no base class to initialize");
-		  return;
-		}
+	  if (basetype)
+	    name = TYPE_IDENTIFIER (basetype);
+	  else
+	    {
+	      error ("no base class to initialize");
+	      return;
+	    }
 #endif
-	    }
-	  else if (basetype != type
-		   && ! current_template_parms
-		   && ! vec_binfo_member (basetype,
-					  TYPE_BINFO_BASETYPES (type))
-		   && ! binfo_member (basetype, CLASSTYPE_VBASECLASSES (type)))
-	    {
-	      if (IDENTIFIER_CLASS_VALUE (name))
-		goto try_member;
-	      if (TYPE_USES_VIRTUAL_BASECLASSES (type))
-		cp_error ("type `%T' is not an immediate or virtual basetype for `%T'",
-			  basetype, type);
-	      else
-		cp_error ("type `%T' is not an immediate basetype for `%T'",
-			  basetype, type);
-	      return;
-	    }
-
-	  if (purpose_member (basetype, current_base_init_list))
-	    {
-	      cp_error ("base class `%T' already initialized", basetype);
-	      return;
-	    }
-
-	  if (warn_reorder && current_member_init_list)
-	    {
-	      cp_warning ("base initializer for `%T'", basetype);
-	      warning ("   will be re-ordered to precede member initializations");
-	    }
-
-	  base_init = build_tree_list (basetype, init);
-	  current_base_init_list = chainon (current_base_init_list, base_init);
 	}
-      else
+      else if (basetype != type
+	       && ! current_template_parms
+	       && ! vec_binfo_member (basetype,
+				      TYPE_BINFO_BASETYPES (type))
+	       && ! binfo_member (basetype, CLASSTYPE_VBASECLASSES (type)))
 	{
-	  tree member_init;
-
-	try_member:
-	  field = lookup_field (type, name, 1, 0);
-
-	  if (! member_init_ok_or_else (field, type, IDENTIFIER_POINTER (name)))
-	    return;
-
-	  if (purpose_member (name, current_member_init_list))
-	    {
-	      cp_error ("field `%D' already initialized", field);
-	      return;
-	    }
-
-	  member_init = build_tree_list (name, init);
-	  current_member_init_list = chainon (current_member_init_list, member_init);
+	  if (IDENTIFIER_CLASS_VALUE (name))
+	    goto try_member;
+	  if (TYPE_USES_VIRTUAL_BASECLASSES (type))
+	    cp_error ("type `%T' is not an immediate or virtual basetype for `%T'",
+		      basetype, type);
+	  else
+	    cp_error ("type `%T' is not an immediate basetype for `%T'",
+		      basetype, type);
+	  return;
 	}
-      return;
-    }
-  else if (name == NULL_TREE)
-    {
-      compiler_error ("expand_member_init: name == NULL_TREE");
-      return;
-    }
 
-  basetype = type;
-  field = lookup_field (basetype, name, 0, 0);
-
-  if (! member_init_ok_or_else (field, basetype, IDENTIFIER_POINTER (name)))
-    return;
-
-  /* now see if there is a constructor for this type
-     which will take these args.  */
-
-  if (TYPE_HAS_CONSTRUCTOR (TREE_TYPE (field)))
-    {
-      tree parmtypes, fndecl;
-
-      if (TREE_CODE (exp) == VAR_DECL || TREE_CODE (exp) == PARM_DECL)
+      if (purpose_member (basetype, current_base_init_list))
 	{
-	  /* just know that we've seen something for this node */
-	  DECL_INITIAL (exp) = error_mark_node;
-	  TREE_USED (exp) = 1;
+	  cp_error ("base class `%T' already initialized", basetype);
+	  return;
 	}
-      type = TYPE_MAIN_VARIANT (TREE_TYPE (field));
-      parm = build_component_ref (exp, name, NULL_TREE, 0);
 
-      /* Now get to the constructors.  */
-      fndecl = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 0);
+      if (warn_reorder && current_member_init_list)
+	{
+	  cp_warning ("base initializer for `%T'", basetype);
+	  warning ("   will be re-ordered to precede member initializations");
+	}
 
-      if (fndecl)
-	my_friendly_assert (TREE_CODE (fndecl) == FUNCTION_DECL, 209);
+      base_init = build_tree_list (basetype, init);
+      current_base_init_list = chainon (current_base_init_list, base_init);
+    }
+  else
+    {
+      tree member_init;
 
-      parmtypes = NULL_TREE;
-      fndecl = NULL_TREE;
+    try_member:
+      field = lookup_field (type, name, 1, 0);
 
-      init = convert_arguments (parm, parmtypes, NULL_TREE, fndecl, LOOKUP_NORMAL);
-      if (init == NULL_TREE || TREE_TYPE (init) != error_mark_node)
-	rval = build_method_call (NULL_TREE, ctor_identifier, init,
-				  TYPE_BINFO (type), LOOKUP_NORMAL);
-      else
+      if (! member_init_ok_or_else (field, type, IDENTIFIER_POINTER (name)))
 	return;
 
-      if (rval != error_mark_node)
+      if (purpose_member (name, current_member_init_list))
 	{
-	  /* Now, fill in the first parm with our guy */
-	  TREE_VALUE (TREE_OPERAND (rval, 1))
-	    = build_unary_op (ADDR_EXPR, parm, 0);
-	  TREE_TYPE (rval) = ptr_type_node;
-	  TREE_SIDE_EFFECTS (rval) = 1;
+	  cp_error ("field `%D' already initialized", field);
+	  return;
 	}
-    }
-  else if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (field)))
-    {
-      parm = build_component_ref (exp, name, NULL_TREE, 0);
-      expand_aggr_init (parm, NULL_TREE, 0, 0);
-      rval = error_mark_node;
-    }
 
-  /* Now initialize the member.  It does not have to
-     be of aggregate type to receive initialization.  */
-  if (rval != error_mark_node)
-    expand_expr_stmt (rval);
+      member_init = build_tree_list (name, init);
+      current_member_init_list = chainon (current_member_init_list, member_init);
+    }
 }
 
 /* This is like `expand_member_init', only it stores one aggregate

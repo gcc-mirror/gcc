@@ -3037,24 +3037,9 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	  if (TREE_CODE (TREE_TYPE (val)) == REFERENCE_TYPE)
 	    val = convert_from_reference (val);
 
-	  if (TREE_CODE (TREE_TYPE (val)) == REAL_TYPE
-	      && (TYPE_PRECISION (TREE_TYPE (val))
-		  < TYPE_PRECISION (double_type_node)))
-	    /* Convert `float' to `double'.  */
-	    result = expr_tree_cons (NULL_TREE,
-				     cp_convert (double_type_node, val),
-				     result);
-	  else if (IS_AGGR_TYPE (TREE_TYPE (val))
-		   && ! TYPE_HAS_TRIVIAL_INIT_REF (TREE_TYPE (val)))
-	    {
-	      cp_warning ("cannot pass objects of type `%T' through `...'",
-			  TREE_TYPE (val));
-	      result = expr_tree_cons (NULL_TREE, val, result);
-	    }
-	  else
-	    /* Convert `short' and `char' to full-size `int'.  */
-	    result = expr_tree_cons (NULL_TREE, default_conversion (val),
-				     result);
+	  result = expr_tree_cons (NULL_TREE,
+				   convert_arg_to_ellipsis (val),
+				   result);
 	}
 
       if (typetail)
@@ -3069,37 +3054,8 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	  for (; typetail != void_list_node; ++i)
 	    {
 	      tree type = TREE_VALUE (typetail);
-	      tree val = break_out_target_exprs (TREE_PURPOSE (typetail));
-	      tree parmval;
-
-	      if (val == NULL_TREE)
-		parmval = error_mark_node;
-	      else if (TREE_CODE (val) == CONSTRUCTOR)
-		{
-		  parmval = digest_init (type, val, (tree *)0);
-		  parmval = convert_for_initialization (return_loc, type,
-							parmval, flags,
-							"default constructor",
-							fndecl, i);
-		}
-	      else
-		{
-		  /* This could get clobbered by the following call.  */
-		  if (TREE_HAS_CONSTRUCTOR (val))
-		    val = copy_node (val);
-
-		  parmval = convert_for_initialization (return_loc, type,
-							val, flags,
-							"default argument",
-							fndecl, i);
-#ifdef PROMOTE_PROTOTYPES
-		  if ((TREE_CODE (type) == INTEGER_TYPE
-		       || TREE_CODE (type) == ENUMERAL_TYPE)
-		      && (TYPE_PRECISION (type)
-			  < TYPE_PRECISION (integer_type_node)))
-		    parmval = default_conversion (parmval);
-#endif
-		}
+	      tree val = TREE_PURPOSE (typetail);
+	      tree parmval = convert_default_arg (type, val);
 
 	      if (parmval == error_mark_node)
 		return error_mark_node;
