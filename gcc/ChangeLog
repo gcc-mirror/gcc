@@ -1,3 +1,24 @@
+2003-08-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (cpp.info): Just state dependencies.
+	(gcc.info): Likewise.
+	(gccint.info): Likewise.
+	(gccinstall.info): Likewise.
+	(cppinternals.info): Likewise.
+	(cpp.dvi): Likewise.
+	(gcc.dvi): Likewise.
+	(gccint.dvi): Likewise.
+	(gccinstall.dvi): Likewise.
+	(cppinternals.dvi): Likewise.
+	(gcov.1): Likewise.
+	(cpp.1): Likewise.
+	(gcc.1): Likewise.
+	(gfdl.7): Likewise.
+	(gpl.7): Likewise.
+	(fsf-funding.7): Likewise.
+	($(objdir)/%.info): New pattern rule.
+	(%.dvi): Likewise.
+	
 2003-08-29  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* Makefile.in (restage1): Pass BOOT_CFLAGS to recursive make.
