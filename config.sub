@@ -1,6 +1,6 @@
 #! /bin/sh
 # Configuration validation subroutine script, version 1.1.
-#   Copyright (C) 1991, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+#   Copyright (C) 1991, 92-97, 1998 Free Software Foundation, Inc.
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
 # can handle that machine.  It does not imply ALL GNU software can.
@@ -173,8 +173,8 @@ case $basic_machine in
 		| sparc | sparclet | sparclite | sparc64 | sparcv9 | v850 | c4x)
 		basic_machine=$basic_machine-unknown
 		;;
-	m88110 | m680[01234]0 | m683?2 | m68360 | z8k | v70 | h8500 | w65) # CYGNUS LOCAL
-		basic_machine=$basic_machine-unknown
+	m88110 | m680[012346]0 | m683?2 | m68360 | m5200 | z8k | v70 \
+		 | h8500 | w65) # CYGNUS LOCAL
 		;;
 	thumb)
 		basic_machine=$basic_machine-unknown
@@ -188,16 +188,16 @@ case $basic_machine in
 	mips64vr5000 | mips64vr5000el) # CYGNUS LOCAL ian/vr5000
 		basic_machine=$basic_machine-unknown
 		;;
-	mips16) # CYGNUS LOCAL krk/mips16
+	mips16)
 		basic_machine=$basic_machine-unknown
 		;;
-	d10v)				# CYGNUS LOCAL meissner/d10v
+	d10v)
 		basic_machine=$basic_machine-unknown
 		;;
 	# We use `pc' rather than `unknown'
 	# because (1) that's what they normally are, and
 	# (2) the word "unknown" tends to confuse beginning users.
-	i[3456]86)
+	i[34567]86)
 	  basic_machine=$basic_machine-pc
 	  ;;
 	# Object if more than one company name word.
@@ -206,7 +206,7 @@ case $basic_machine in
 		exit 1
 		;;
 	# Recognize the basic CPU types with company name.
-	vax-* | tahoe-* | i[3456]86-* | i860-* | m32r-* | m68k-* | m68000-* \
+	vax-* | tahoe-* | i[34567]86-* | i860-* | m32r-* | m68k-* | m68000-* \
 	      | m88k-* | sparc-* | ns32k-* | fx80-* | arc-* | arm-* | c[123]* \
 	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* \
 	      | power-* | none-* | 580-* | cray2-* | h8300-* | i960-* \
@@ -215,21 +215,60 @@ case $basic_machine in
 	      | alphaev6-* | we32k-* | cydra-* | ns16k-* | pn-* | np1-* \
 	      | xps100-* | clipper-* | orion-* \
 	      | sparclite-* | pdp11-* | sh-* | powerpc-* | powerpcle-* \
-	      | sparc64-* | sparcv9-* | mips64-* | mipsel-* \
-	      | mips64el-* | mips64orion-* | mips64orionel-* \
+	      | sparc64-* | sparc86x-* | mips64-* | mipsel-* \
+	      | mips64el-* | mips64orion-* | mips64orionel-*  \
 	      | mipstx39-* | mipstx39el-* \
 	      | f301-*)
 		;;
 	m88110-* | m680[01234]0-* | m683?2-* | m68360-* | z8k-* | h8500-* | d10v-*) # CYGNUS LOCAL
 		;;
-	thumb-*)
+	thumb-*) # CYGNUS LOCAL angela/thumb
 		;;
+# start-sanitize-sky
+	dvp-* | txvu-*)
+		;;
+# end-sanitize-sky
+	v850-*) # CYGNUS LOCAL
+	        ;;
+# start-sanitize-v850e
+	v850e-*) # CYGNUS LOCAL
+	        ;;
+	v850ea-*) # CYGNUS LOCAL
+	        ;;
+# end-sanitize-v850e
+	d30v-*) # CYGNUS LOCAL
+	        ;;
+# start-sanitize-vr4320
+	mips64vr4320-* | mips64vr4320el-*)
+		;;
+# end-sanitize-vr4320
 	mips64vr4300-* | mips64vr4300el-*) # CYGNUS LOCAL jsmith/vr4300
 		;;
 	mips64vr4100-* | mips64vr4100el-*) # CYGNUS LOCAL jsmith/vr4100
 		;;
+# start-sanitize-tx19
+	mipstx19-* | mipstx19el-*)
+		;;
+# end-sanitize-tx19
+# start-sanitize-tx49
+	mips64tx49-* | mips64tx49el-*)
+		;;
+# end-sanitize-tx49
+# start-sanitize-r5900
+	mips64r5900-* | mips64r5900el-*) # CYGNUS LOCAL gavin/r5900
+                ;;
+# end-sanitize-r5900
 	mips16-*) # CYGNUS LOCAL krk/mips16
 		;;
+	tic30-*) # CYGNUS LOCAL ian/tic30
+		;;
+	c30-*) # CYGNUS LOCAL ian/tic30
+		basic_machine=tic30-unknown
+		;;
+# start-sanitize-tic80
+	tic80-*)						# CYGNUS LOCAL fnf/TIc80
+		;;
+# end-sanitize-tic80
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
 	386bsd)						# CYGNUS LOCAL
@@ -420,7 +459,7 @@ case $basic_machine in
                 basic_machine=hppa1.1-hp
                 os=-proelf
                 ;;
-      hp3k9[0-9][0-9] | hp9[0-9][0-9])
+	hp3k9[0-9][0-9] | hp9[0-9][0-9])
 		basic_machine=hppa1.0-hp
 		;;
 	hp9k2[0-9][0-9] | hp9k31[0-9])
@@ -462,19 +501,19 @@ case $basic_machine in
 		os=-mvs
 		;;
 # I'm not sure what "Sysv32" means.  Should this be sysv3.2?
-	i[3456]86v32)
+	i[34567]86v32)
 		basic_machine=`echo $1 | sed -e 's/86.*/86-pc/'`
 		os=-sysv32
 		;;
-	i[3456]86v4*)
+	i[34567]86v4*)
 		basic_machine=`echo $1 | sed -e 's/86.*/86-pc/'`
 		os=-sysv4
 		;;
-	i[3456]86v)
+	i[34567]86v)
 		basic_machine=`echo $1 | sed -e 's/86.*/86-pc/'`
 		os=-sysv
 		;;
-	i[3456]86sol2)
+	i[34567]86sol2)
 		basic_machine=`echo $1 | sed -e 's/86.*/86-pc/'`
 		os=-solaris2
 		;;
@@ -625,25 +664,23 @@ case $basic_machine in
         pc532 | pc532-*)
 		basic_machine=ns32k-pc532
 		;;
-	pentium | p5)
-		basic_machine=i586-intel
+	pentium | p5 | k5 | nexen)
+		basic_machine=i586-pc
 		;;
-	pentiumpro | p6)
-		basic_machine=i686-intel
+	pentiumpro | p6 | k6 | 6x86)
+		basic_machine=i686-pc
 		;;
-	pentium-* | p5-*)
+	pentiumii | pentium2)
+		basic_machine=i786-pc
+		;;
+	pentium-* | p5-* | k5-* | nexen-*)
 		basic_machine=i586-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
-	pentiumpro-* | p6-*)
+	pentiumpro-* | p6-* | k6-* | 6x86-*)
 		basic_machine=i686-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
-	k5)
-		# We don't have specific support for AMD's K5 yet, so just call it a Pentium
-		basic_machine=i586-amd
-		;;
-	nexen)
-		# We don't have specific support for Nexgen yet, so just call it a Pentium
-		basic_machine=i586-nexgen
+	pentiumii-* | pentium2-*)
+		basic_machine=i786-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
 	pn)
 		basic_machine=pn-gould
@@ -897,8 +934,11 @@ case $os in
 	-solaris)
 		os=-solaris2
 		;;
-	-unixware* | svr4*)
+	-svr4*)
 		os=-sysv4
+		;;
+	-unixware*)
+		os=-sysv4.2uw
 		;;
 	-gnu/linux*)
 		os=`echo $os | sed -e 's|gnu/linux|linux-gnu|'`
@@ -919,7 +959,7 @@ case $os in
 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
 	      | -cygwin32* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
-	      | -mingw32* | -linux-gnu* | -uxpv* | -mpeix* | -udk* )
+	      | -mingw32* | -linux-gnu* | -uxpv* | -beos* | -mpeix* | -udk*)
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	# CYGNUS LOCAL
@@ -1059,7 +1099,7 @@ case $basic_machine in
 	sparc-* | *-sun)
 		os=-sunos4.1.1
 		;;
-	*-be)						# CYGNUS LOCAL
+	*-be)
 		os=-beos
 		;;
 	*-ibm)
@@ -1167,15 +1207,15 @@ case $basic_machine in
 			-aix*)
 				vendor=ibm
 				;;
-			-beos*)						# CYGNUS LOCAL
+			-beos*)
 				vendor=be
 				;;
 			-hpux*)
-                              vendor=hp
-                              ;;
+				vendor=hp
+				;;
 			-mpeix*)
-			      vendor=hp
-			      ;;
+				vendor=hp
+				;;
 			-hiux*)
 				vendor=hitachi
 				;;
