@@ -7784,10 +7784,9 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  dest_mem = gen_rtx (MEM, BLKmode,
 			      memory_address (BLKmode, dest_rtx));
 	  /* There could be a void* cast on top of the object.  */
-	  if (TREE_CODE (dest) == NOP_EXPR)
-	    type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (dest, 0)));
-	  else
-	    type = TREE_TYPE (TREE_TYPE (dest));
+	  while (TREE_CODE (dest) == NOP_EXPR)
+	    dest = TREE_OPERAND (dest, 0);
+	  type = TREE_TYPE (TREE_TYPE (dest));
 	  MEM_IN_STRUCT_P (dest_mem) = AGGREGATE_TYPE_P (type);
 	  src_mem = gen_rtx (MEM, BLKmode,
 			     memory_address (BLKmode,
@@ -7795,10 +7794,9 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 							  ptr_mode,
 							  EXPAND_SUM)));
 	  /* There could be a void* cast on top of the object.  */
-	  if (TREE_CODE (src) == NOP_EXPR)
-	    type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (src, 0)));
-	  else
-	    type = TREE_TYPE (TREE_TYPE (src));
+	  while (TREE_CODE (src) == NOP_EXPR)
+	    src = TREE_OPERAND (src, 0);
+	  type = TREE_TYPE (TREE_TYPE (src));
 	  MEM_IN_STRUCT_P (src_mem) = AGGREGATE_TYPE_P (type);
 
 	  /* Copy word part most expediently.  */
