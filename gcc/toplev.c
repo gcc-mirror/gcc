@@ -183,7 +183,7 @@ extern int target_flags;
 
 /* Debug hooks - dependent upon command line options.  */
 
-struct gcc_debug_hooks *debug_hooks = &do_nothing_debug_hooks;
+const struct gcc_debug_hooks *debug_hooks = &do_nothing_debug_hooks;
 
 /* Describes a dump file.  */
 

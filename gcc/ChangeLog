@@ -1,5 +1,21 @@
 2002-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* Makefile.in (debug.o): Depend on debug.h.
+	* dbxout.c (dbx_debug_hooks, xcoff_debug_hooks): Const-ify.
+	* debug.c (do_nothing_debug_hooks): Likewise.
+	* debug.h (debug_hooks, do_nothing_debug_hooks, dbx_debug_hooks,
+	sdb_debug_hooks, xcoff_debug_hooks, dwarf_debug_hooks,
+	dwarf2_debug_hooks, vmsdbg_debug_hooks): Likewise.
+	* dwarf2out.c (dwarf2_debug_hooks): Likewise.
+	* dwarfout.c (dwarf_debug_hooks): Likewise.
+	* integrate.c (output_inline_function): Likewise.
+	* objc/objc-act.c (synth_module_prologue): Likewise.
+	* sdbout.c (sdb_debug_hooks): Likewise.
+	* toplev.c (debug_hooks): Likewise.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Likewise.
+
+2002-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* 1750a.h, a29k.h, arc.h, arm.h, c4x.h, clipper.h, cris.h, d30v.h,
 	dsp16xx.h, fr30.h, h8300.h, i370.h, i386.h, i860.h, i960.h,
 	m32r.h, m68hc11.h, m68k.h, m88k.h, mcore.h, mmix.h, mn10300.h,

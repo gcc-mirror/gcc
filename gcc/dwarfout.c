@@ -1292,7 +1292,7 @@ static void retry_incomplete_types	PARAMS ((void));
 
 
 /* The debug hooks structure.  */
-struct gcc_debug_hooks dwarf_debug_hooks =
+const struct gcc_debug_hooks dwarf_debug_hooks =
 {
   dwarfout_init,
   dwarfout_finish,

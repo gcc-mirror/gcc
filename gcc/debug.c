@@ -20,7 +20,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "debug.h"
 
 /* The do-nothing debug hooks.  */
-struct gcc_debug_hooks do_nothing_debug_hooks =
+const struct gcc_debug_hooks do_nothing_debug_hooks =
 {
   debug_nothing_charstar,
   debug_nothing_charstar,

@@ -2971,7 +2971,7 @@ output_inline_function (fndecl)
 {
   struct function *old_cfun = cfun;
   enum debug_info_type old_write_symbols = write_symbols;
-  struct gcc_debug_hooks *old_debug_hooks = debug_hooks;
+  const struct gcc_debug_hooks *const old_debug_hooks = debug_hooks;
   struct function *f = DECL_SAVED_INSNS (fndecl);
 
   cfun = f;

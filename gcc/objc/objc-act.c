@@ -1173,7 +1173,7 @@ synth_module_prologue ()
 	  /* Suppress outputting debug symbols, because
 	     dbxout_init hasn'r been called yet.  */
 	  enum debug_info_type save_write_symbols = write_symbols;
-	  struct gcc_debug_hooks *save_hooks = debug_hooks;
+	  const struct gcc_debug_hooks *const save_hooks = debug_hooks;
 	  write_symbols = NO_DEBUG;
 	  debug_hooks = &do_nothing_debug_hooks;
 

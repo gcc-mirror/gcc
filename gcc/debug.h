@@ -103,7 +103,7 @@ struct gcc_debug_hooks
   void (* label) PARAMS ((rtx));
 };
 
-extern struct gcc_debug_hooks *debug_hooks;
+extern const struct gcc_debug_hooks *debug_hooks;
 
 /* The do-nothing hooks.  */
 extern void debug_nothing_void
@@ -124,13 +124,13 @@ extern void debug_nothing_rtx
   PARAMS ((rtx));
 
 /* Hooks for various debug formats.  */
-extern struct gcc_debug_hooks do_nothing_debug_hooks;
-extern struct gcc_debug_hooks dbx_debug_hooks;
-extern struct gcc_debug_hooks sdb_debug_hooks;
-extern struct gcc_debug_hooks xcoff_debug_hooks;
-extern struct gcc_debug_hooks dwarf_debug_hooks;
-extern struct gcc_debug_hooks dwarf2_debug_hooks;
-extern struct gcc_debug_hooks vmsdbg_debug_hooks;
+extern const struct gcc_debug_hooks do_nothing_debug_hooks;
+extern const struct gcc_debug_hooks dbx_debug_hooks;
+extern const struct gcc_debug_hooks sdb_debug_hooks;
+extern const struct gcc_debug_hooks xcoff_debug_hooks;
+extern const struct gcc_debug_hooks dwarf_debug_hooks;
+extern const struct gcc_debug_hooks dwarf2_debug_hooks;
+extern const struct gcc_debug_hooks vmsdbg_debug_hooks;
 
 /* Dwarf2 frame information.  */
 

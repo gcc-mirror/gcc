@@ -299,7 +299,7 @@ static struct sdb_file *current_file;
 #endif /* MIPS_DEBUGGING_INFO */
 
 /* The debug hooks structure.  */
-struct gcc_debug_hooks sdb_debug_hooks =
+const struct gcc_debug_hooks sdb_debug_hooks =
 {
   sdbout_init,			/* init */
   sdbout_finish,		/* finish */

@@ -3102,7 +3102,7 @@ static void dwarf2out_abstract_function PARAMS ((tree));
 
 /* The debug hooks structure.  */
 
-struct gcc_debug_hooks dwarf2_debug_hooks =
+const struct gcc_debug_hooks dwarf2_debug_hooks =
 {
   dwarf2out_init,
   dwarf2out_finish,
