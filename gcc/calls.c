@@ -119,6 +119,7 @@ int stack_arg_under_construction;
 #endif
 
 static int calls_function	PROTO((tree, int));
+static int calls_function_1	PROTO((tree, int));
 static void emit_call_1		PROTO((rtx, tree, int, int, rtx, rtx, int,
 				       rtx, int));
 static void store_one_arg	PROTO ((struct arg_data *, rtx, int, int,
