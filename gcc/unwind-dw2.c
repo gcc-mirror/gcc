@@ -107,7 +107,7 @@ typedef struct
 	REG_UNSAVED,
 	REG_SAVED_OFFSET,
 	REG_SAVED_REG,
-	REG_SAVED_EXP,
+	REG_SAVED_EXP
       } how;
     } reg[DWARF_FRAME_REGISTERS+1];
 
@@ -123,7 +123,7 @@ typedef struct
   enum {
     CFA_UNSET,
     CFA_REG_OFFSET,
-    CFA_EXP,
+    CFA_EXP
   } cfa_how;
 
   /* The PC described by the current frame state.  */

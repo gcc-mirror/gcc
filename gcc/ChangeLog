@@ -1,3 +1,8 @@
+2003-11-01  Andreas Jaeger  <aj@suse.de>
+
+	* unwind-dw2.c (_Unwind_FrameState): Remove commas at end of
+	enumeration list.
+
 2003-11-01  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/sysv4.h (SDATA_SECTION_FUNCTION): Update to C90
