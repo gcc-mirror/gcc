@@ -1,3 +1,8 @@
+2003-05-01  Stan Shebs  <shebs@apple.com>
+
+	* config/darwin.c (darwin_encode_section_info): Call
+	default_encode_section_info.
+
 2003-05-01  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (define_attr "type"): Add mfjmpr.

@@ -986,6 +986,12 @@ darwin_encode_section_info (decl, rtl, first)
   char *new_str;
   size_t len, new_len;
 
+  /* Do the standard encoding things first.  */
+  default_encode_section_info (decl, rtl, first);
+
+  /* With the introduction of symbol_ref flags, some of the following
+     code has become redundant and should be removed at some point.  */
+
   if ((TREE_CODE (decl) == FUNCTION_DECL
        || TREE_CODE (decl) == VAR_DECL)
       && !DECL_EXTERNAL (decl)
