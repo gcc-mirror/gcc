@@ -1,3 +1,8 @@
+Sat Apr 24 11:02:48 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* Makefile.in (s-libi77, s-libf77, s-libu77): Revert
+	the patch from <hjl@gnu.org>, as per the commentary.
+
 Sat Apr 17 17:33:30 1999  Craig Burley  <craig@jcb-sc.com>
 
 	From H.J. Lu <hjl@gnu.org>:
