@@ -3399,7 +3399,7 @@ demangle_fund_type (work, mangled, result)
   int done = 0;
   int success = 1;
   char buf[10];
-  int dec = 0;
+  unsigned int dec = 0;
   string btype;
   type_kind_t tk = tk_integral;
 
@@ -3543,7 +3543,7 @@ demangle_fund_type (work, mangled, result)
 	  *mangled += min (strlen (*mangled), 2);
 	}
       sscanf (buf, "%x", &dec);
-      sprintf (buf, "int%i_t", dec);
+      sprintf (buf, "int%u_t", dec);
       APPEND_BLANK (result);
       string_append (result, buf);
       break;
