@@ -1698,6 +1698,13 @@ do {									\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
   sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
 
+#define IDENT_ASM_OP ".ident"
+
+/* Output #ident as a .ident.  */
+
+#define ASM_OUTPUT_IDENT(FILE, NAME) \
+  fprintf (FILE, "\t%s\t\"%s\"\n", IDENT_ASM_OP, NAME);
+
 /* Define the parentheses used to group arithmetic operations
    in assembler code.  */
 
