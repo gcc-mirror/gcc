@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_OS_DEFAULT_SPEC "%(cpp_os_linux)"
 
 #undef LINK_SPEC
-#define LINK_SPEC "-m elf32ppc %{G*} %{shared:-shared} \
+#define LINK_SPEC "-m elf32ppclinux %{G*} %{shared:-shared} \
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
