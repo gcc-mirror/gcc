@@ -2778,14 +2778,13 @@ rest_of_compilation (decl)
 	 compile it by itself, defer decision till end of compilation.
 	 finish_compilation will call rest_of_compilation again
 	 for those functions that need to be output.  Also defer those
-	 functions that were marked inline but weren't inlined; they
-	 may never be used.  */
+	 functions that we are supposed to defer.  */
 
-      if ((specd || DECL_INLINE (decl))
-	  && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)
-	       && ! flag_keep_inline_functions)
-	      || DECL_DEFER_OUTPUT (decl)
-	      || DECL_EXTERNAL (decl)))
+      if (DECL_DEFER_OUTPUT (decl)
+	  || (DECL_INLINE (decl)
+	      && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)
+		   && ! flag_keep_inline_functions)
+		  || DECL_EXTERNAL (decl))))
 	{
 #ifdef DWARF_DEBUGGING_INFO
 	  /* Generate the DWARF info for the "abstract" instance
@@ -2822,10 +2821,12 @@ rest_of_compilation (decl)
 	  saved_arguments = DECL_ARGUMENTS (decl);
 	  TIMEVAR (integration_time, save_for_inline_copying (decl));
 	}
-    }
 
-  if (DECL_DEFER_OUTPUT (decl))
-    goto exit_rest_of_compilation;
+      /* If specified extern inline but we aren't inlining it, we are
+	 done.  */
+      if (specd && DECL_EXTERNAL (decl))
+	goto exit_rest_of_compilation;
+    }
 
   TREE_ASM_WRITTEN (decl) = 1;
 
