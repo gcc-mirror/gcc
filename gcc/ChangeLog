@@ -1,3 +1,8 @@
+2004-02-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* tree.h (frame_base_decl): Add GTY marker.
+	* var-tracking.c (frame_base_decl): Likewise.
+
 2004-02-11  Daniel Berlin  <dberlin@dberlin.org>
 
 	* dwarf2out.c (output_loc_list): Remove no longer necessary, and now
