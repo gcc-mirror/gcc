@@ -177,10 +177,18 @@ no)	;;
 *)	AC_MSG_ERROR(bad value ${enableval} given for checking option) ;;
 esac])
 
-# Enable use of cpplib for C.
+# Use cpplib+cppmain for the preprocessor, but don't link it with the compiler.
 cpp_main=cccp
+AC_ARG_ENABLE(cpplib,
+[  --enable-cpplib         use cpplib for the C preprocessor.],
+if test x$enable_cpplib != xno; then
+  cpp_main=cppmain
+fi)
+
+# Link cpplib into the compiler proper, for C/C++/ObjC.
 AC_ARG_ENABLE(c-cpplib,
-[  --enable-c-cpplib       Use cpplib for C and C++.],
+[  --enable-c-cpplib       link cpplib directly into C and C++ compilers
+                          (implies --enable-cpplib).],
 if test x$enable_c_cpplib != xno; then
   extra_c_objs="${extra_c_objs} cpplib.o cppexp.o cpphash.o cpperror.o"
   extra_c_objs="${extra_c_objs} prefix.o"
@@ -188,32 +196,32 @@ if test x$enable_c_cpplib != xno; then
   extra_c_flags=-DUSE_CPPLIB=1
   cpp_main=cppmain
 fi)
-  
+
 # Enable Multibyte Characters for C/C++
 AC_ARG_ENABLE(c-mbchar,
-[  --enable-c-mbchar       Enable multibyte characters for C and C++.],
+[  --enable-c-mbchar       enable multibyte characters for C and C++.],
 if test x$enable_c_mbchar != xno; then
   extra_c_flags=-DMULTIBYTE_CHARS=1
 fi)
   
 # Enable Haifa scheduler.
 AC_ARG_ENABLE(haifa,
-[  --enable-haifa          Use the experimental scheduler.
-  --disable-haifa         Don't use the experimental scheduler for the
+[  --enable-haifa          use the experimental scheduler.
+  --disable-haifa         don't use the experimental scheduler for the
                           targets which normally enable it.])
 # Fast fixincludes
 #
 # This is a work in progress...
 AC_ARG_WITH(fast-fixincludes,
-[  --with-fast-fixincludes    Use a faster fixinclude program.  Experimental],
+[  --with-fast-fixincludes    use a faster fixinclude program (experimental)],
 fast_fixinc="$with_fast_fixincludes",
 fast_fixinc=no)
 
 # Enable init_priority.
 AC_ARG_ENABLE(init-priority,
-[  --enable-init-priority  Use attributes to assign initialization order
+[  --enable-init-priority  use attributes to assign initialization order
 			  for static objects.
-  --disable-init-priority Conform to ISO C++ rules for ordering static objects
+  --disable-init-priority conform to ISO C++ rules for ordering static objects
 			  (i.e. initialized in order of declaration). ],
 if test x$enable_init_priority != xno; then
   extra_c_flags=-DUSE_INIT_PRIORITY
