@@ -10325,31 +10325,43 @@ ffecom_constantunion (ffebldConstantUnion *cu, ffeinfoBasictype bt,
     {
     case FFEINFO_basictypeINTEGER:
       {
-	int val;
+        HOST_WIDE_INT hi, lo;
 
 	switch (kt)
 	  {
 #if FFETARGET_okINTEGER1
 	  case FFEINFO_kindtypeINTEGER1:
-	    val = ffebld_cu_val_integer1 (*cu);
+	    lo = ffebld_cu_val_integer1 (*cu);
+	    hi = (lo < 0) ? -1 : 0;
 	    break;
 #endif
 
 #if FFETARGET_okINTEGER2
 	  case FFEINFO_kindtypeINTEGER2:
-	    val = ffebld_cu_val_integer2 (*cu);
+	    lo = ffebld_cu_val_integer2 (*cu);
+	    hi = (lo < 0) ? -1 : 0;
 	    break;
 #endif
 
 #if FFETARGET_okINTEGER3
 	  case FFEINFO_kindtypeINTEGER3:
-	    val = ffebld_cu_val_integer3 (*cu);
+	    lo = ffebld_cu_val_integer3 (*cu);
+	    hi = (lo < 0) ? -1 : 0;
 	    break;
 #endif
 
 #if FFETARGET_okINTEGER4
 	  case FFEINFO_kindtypeINTEGER4:
-	    val = ffebld_cu_val_integer4 (*cu);
+#if HOST_BITS_PER_LONGLONG > HOST_BITS_PER_WIDE_INT
+	    {
+	      long long int big = ffebld_cu_val_integer4 (*cu);
+	      hi = (HOST_WIDE_INT) (big >> HOST_BITS_PER_WIDE_INT);
+	      lo = (HOST_WIDE_INT) big;
+	    }
+#else
+	    lo = ffebld_cu_val_integer4 (*cu);
+	    hi = (lo < 0) ? -1 : 0;
+#endif
 	    break;
 #endif
 
@@ -10359,7 +10371,7 @@ ffecom_constantunion (ffebldConstantUnion *cu, ffeinfoBasictype bt,
 	  case FFEINFO_kindtypeANY:
 	    return error_mark_node;
 	  }
-	item = build_int_2 (val, (val < 0) ? -1 : 0);
+	item = build_int_2 (lo, hi);
 	TREE_TYPE (item) = tree_type;
       }
       break;
@@ -10614,8 +10626,17 @@ ffecom_constantunion_with_type (ffebldConstantUnion *cu,
 #endif
 #if FFETARGET_okINTEGER4
 	  case  FFEBLD_constINTEGER4:
+#if HOST_BITS_PER_LONGLONG > HOST_BITS_PER_WIDE_INT
+		  {
+		    long long int big = ffebld_cu_val_integer4 (*cu);
+		    item = build_int_2 ((HOST_WIDE_INT) big,
+					(HOST_WIDE_INT)
+					(big >> HOST_BITS_PER_WIDE_INT));
+		  }
+#else
 		  val = ffebld_cu_val_integer4 (*cu);
 		  item = build_int_2 (val, (val < 0) ? -1 : 0);
+#endif
 		  break;
 #endif
 #if FFETARGET_okLOGICAL1

@@ -790,9 +790,24 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
 
 /* Define macros. */
 
-#define FFETARGET_REAL_VALUE_FROM_INT_(resr, lf, kt)			\
-  REAL_VALUE_FROM_INT (resr, (long) lf, (long) ((lf < 0) ? -1 : 0),	\
+#define FFETARGET_REAL_VALUE_FROM_INT_(resr, lf, kt)		\
+  REAL_VALUE_FROM_INT (resr, (HOST_WIDE_INT) lf,		\
+                       (HOST_WIDE_INT) ((lf < 0) ? -1 : 0),	\
 		       ((kt == 1) ? SFmode : DFmode))
+
+#if HOST_BITS_PER_LONGLONG > HOST_BITS_PER_WIDE_INT
+#define FFETARGET_REAL_VALUE_FROM_LONGLONG_(resr, lf, kt)		\
+  REAL_VALUE_FROM_INT (resr, (HOST_WIDE_INT) lf,			\
+		       (HOST_WIDE_INT) (lf >> HOST_BITS_PER_WIDE_INT),	\
+		       ((kt == 1) ? SFmode : DFmode))
+#define FFETARGET_LONGLONG_FROM_INTS_(hi, lo)		\
+  (((long long int) hi << HOST_BITS_PER_WIDE_INT)	\
+   | (long long int) ((unsigned HOST_WIDE_INT) lo))
+#else
+#define FFETARGET_REAL_VALUE_FROM_LONGLONG_(resr, lf, kt)		\
+  FFETARGET_REAL_VALUE_FROM_INT_ (resr, lf, kt)
+#define FFETARGET_LONGLONG_FROM_INTS_(hi, lo)  lo
+#endif
 
 #define ffetarget_add_complex1(res,l,r) \
   ({ REAL_VALUE_TYPE lr, li, rr, ri, resr, resi; \
@@ -895,7 +910,14 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
 #define ffetarget_convert_complex1_integer1 ffetarget_convert_complex1_integer
 #define ffetarget_convert_complex1_integer2 ffetarget_convert_complex1_integer
 #define ffetarget_convert_complex1_integer3 ffetarget_convert_complex1_integer
-#define ffetarget_convert_complex1_integer4(res,l) FFEBAD_NOCANDO
+#define ffetarget_convert_complex1_integer4(res,l) \
+  ({ REAL_VALUE_TYPE resi, resr; \
+     ffetargetInteger4 lf = (l); \
+     FFETARGET_REAL_VALUE_FROM_LONGLONG_ (resr, lf, 1); \
+     resi = dconst0; \
+     ffetarget_cvt_rv_to_r1_ (resr, (res)->real); \
+     ffetarget_cvt_rv_to_r1_ (resi, (res)->imaginary); \
+     FFEBAD; })
 #define ffetarget_convert_complex1_real1(res,l) \
   ((res)->real = (l), \
    ffetarget_cvt_rv_to_r1_ (dconst0, (res)->imaginary), \
@@ -930,7 +952,14 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
 #define ffetarget_convert_complex2_integer1 ffetarget_convert_complex2_integer
 #define ffetarget_convert_complex2_integer2 ffetarget_convert_complex2_integer
 #define ffetarget_convert_complex2_integer3 ffetarget_convert_complex2_integer
-#define ffetarget_convert_complex2_integer4(res,l) FFEBAD_NOCANDO
+#define ffetarget_convert_complex2_integer4(res,l) \
+  ({ REAL_VALUE_TYPE resi, resr; \
+     ffetargetInteger4 lf = (l); \
+     FFETARGET_REAL_VALUE_FROM_LONGLONG_ (resr, lf, 2); \
+     resi = dconst0; \
+     ffetarget_cvt_rv_to_r2_ (resr, &((res)->real.v[0])); \
+     ffetarget_cvt_rv_to_r2_ (resi, &((res)->imaginary.v[0])); \
+     FFEBAD; })
 #define ffetarget_convert_complex2_real1(res,l) \
   ({ REAL_VALUE_TYPE lr; \
      lr = ffetarget_cvt_r1_to_rv_ (l); \
@@ -993,8 +1022,20 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
         ffetarget_convert_integer1_typeless(res,l)
 #define ffetarget_convert_integer4_character1(res,l) \
         ffetarget_convert_integer1_character1(res,l)
-#define ffetarget_convert_integer4_complex1(res,l) FFEBAD_NOCANDO
-#define ffetarget_convert_integer4_complex2(res,l) FFEBAD_NOCANDO
+#define ffetarget_convert_integer4_complex1(res,l) \
+  ({ REAL_VALUE_TYPE lr; \
+     lr = ffetarget_cvt_r1_to_rv_ ((l).real); \
+     REAL_VALUE_TO_INT (&ffetarget_long_val_, &ffetarget_long_junk_, lr); \
+     *(res) = FFETARGET_LONGLONG_FROM_INTS_ (ffetarget_long_junk_,  \
+					     ffetarget_long_val_); \
+     FFEBAD; })
+#define ffetarget_convert_integer4_complex2(res,l) \
+  ({ REAL_VALUE_TYPE lr; \
+     lr = ffetarget_cvt_r2_to_rv_ (&((l).real.v[0])); \
+     REAL_VALUE_TO_INT (&ffetarget_long_val_, &ffetarget_long_junk_, lr); \
+     *(res) = FFETARGET_LONGLONG_FROM_INTS_ (ffetarget_long_junk_,  \
+					     ffetarget_long_val_); \
+     FFEBAD; })
 #define ffetarget_convert_integer4_hollerith(res,l) \
         ffetarget_convert_integer1_hollerith(res,l)
 #define ffetarget_convert_integer4_integer1(res,l) (*(res) = (l), FFEBAD)
@@ -1008,8 +1049,20 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
         ffetarget_convert_integer1_logical1(res,l)
 #define ffetarget_convert_integer4_logical4(res,l) \
         ffetarget_convert_integer1_logical1(res,l)
-#define ffetarget_convert_integer4_real1(res,l) FFEBAD_NOCANDO
-#define ffetarget_convert_integer4_real2(res,l) FFEBAD_NOCANDO
+#define ffetarget_convert_integer4_real1(res,l) \
+  ({ REAL_VALUE_TYPE lr; \
+     lr = ffetarget_cvt_r1_to_rv_ (l); \
+     REAL_VALUE_TO_INT (&ffetarget_long_val_, &ffetarget_long_junk_, lr); \
+     *(res) = FFETARGET_LONGLONG_FROM_INTS_ (ffetarget_long_junk_, \
+					     ffetarget_long_val_); \
+     FFEBAD; })
+#define ffetarget_convert_integer4_real2(res,l) \
+  ({ REAL_VALUE_TYPE lr; \
+     lr = ffetarget_cvt_r2_to_rv_ (&((l).v[0])); \
+     REAL_VALUE_TO_INT (&ffetarget_long_val_, &ffetarget_long_junk_, lr); \
+     *(res) = FFETARGET_LONGLONG_FROM_INTS_ (ffetarget_long_junk_, \
+					     ffetarget_long_val_); \
+     FFEBAD; })
 #define ffetarget_convert_integer4_typeless(res,l) \
         ffetarget_convert_integer1_typeless(res,l)
 #define ffetarget_convert_logical1_character1(res,l) \
@@ -1109,7 +1162,12 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
         ffetarget_convert_real1_integer1(res,l)
 #define ffetarget_convert_real1_integer3(res,l) \
         ffetarget_convert_real1_integer1(res,l)
-#define ffetarget_convert_real1_integer4(res,l) FFEBAD_NOCANDO
+#define ffetarget_convert_real1_integer4(res,l) \
+  ({ REAL_VALUE_TYPE resr; \
+     ffetargetInteger4 lf = (l); \
+     FFETARGET_REAL_VALUE_FROM_LONGLONG_ (resr, lf, 1); \
+     ffetarget_cvt_rv_to_r1_ (resr, *(res)); \
+     FFEBAD; })
 #define ffetarget_convert_real1_typeless(res,l) \
   ffetarget_convert_any_typeless_ ((char *) (res), sizeof(*(res)), l)
 #define ffetarget_convert_real1_complex1(res,l) (*(res) = (l).real, FFEBAD)
@@ -1134,7 +1192,12 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
         ffetarget_convert_real2_integer1(res,l)
 #define ffetarget_convert_real2_integer3(res,l) \
         ffetarget_convert_real2_integer1(res,l)
-#define ffetarget_convert_real2_integer4(res,l) FFEBAD_NOCANDO
+#define ffetarget_convert_real2_integer4(res,l) \
+  ({ REAL_VALUE_TYPE resr; \
+     ffetargetInteger4 lf = (l); \
+     FFETARGET_REAL_VALUE_FROM_LONGLONG_ (resr, lf, 2); \
+     ffetarget_cvt_rv_to_r2_ (resr, &((res)->v[0])); \
+     FFEBAD; })
 #define ffetarget_convert_real2_typeless(res,l) \
   ffetarget_convert_any_typeless_ ((char *) (res), sizeof(*(res)), l)
 #define ffetarget_convert_real2_complex1(res,l) \

@@ -1,3 +1,21 @@
+2003-05-08  Roger Sayle  <roger@eyesopen.com>
+
+	PR fortran/8485
+	* target.h (FFETARGET_REAL_VALUE_FROM_INT_): Cast to
+	HOST_WIDE_INT instead of long.
+	(FFETARGET_REAL_VALUE_FROM_LONGLONG_): New macro.
+	(FFETARGET_LONGLONG_FROM_INTS_): New macro.
+	(ffetarget_convert_complex1_integer4): Implement.
+	(ffetarget_convert_complex2_integer4): Implement.
+	(ffetarget_convert_integer4_complex1): Implement.
+	(ffetarget_convert_integer4_complex2): Implement.
+	(ffetarget_convert_integer4_real1): Implement.
+	(ffetarget_convert_integer4_real2): Implement.
+	(ffetarget_convert_real1_integer4): Implement.
+	(ffetarget_convert_real2_integer4): Implement.
+	* com.c (ffecom_constantunion): Handle INTEGER*8.
+	(ffecom_constantunion_with_type): Likewise.
+
 2003-05-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* com.c (ffecom_do_entry_): Use location_t and input_location
