@@ -258,7 +258,8 @@ extern int target_flags;
    For any two classes, it is very desirable that there be another
    class that represents their union.  */
    
-enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, FRAME_POINTER_REG, STACK_POINTER_REG, 
+enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
+		 FRAME_POINTER_REG, STACK_POINTER_REG, 
                  GEN_AND_MEM_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
@@ -266,13 +267,15 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, FRAME_POINTER_REG, STACK_POI
 /* Give names of register classes as strings for dump file.   */
 
 #define REG_CLASS_NAMES \
- {"NO_REGS", "GENERAL_REGS", "FLOAT_REGS", "FRAME_POINTER_REG", "STACK_POINTER_REG", "GEN_AND_MEM_REGS", "ALL_REGS" }
+ {"NO_REGS", "GENERAL_REGS", "FLOAT_REGS", "GEN_AND_FP_REGS",  \
+  "FRAME_POINTER_REG", "STACK_POINTER_REG", "GEN_AND_MEM_REGS", "ALL_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS {0, 0x00ff, 0xff00, 0x10000, 0x20000, 0x300ff, 0x3ffff }
+#define REG_CLASS_CONTENTS {0, 0x00ff, 0xff00, 0xffff, \
+			    0x10000, 0x20000, 0x300ff, 0x3ffff }
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
