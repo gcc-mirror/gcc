@@ -497,6 +497,8 @@ extern int target_flags;
 #define FLOAT_TYPE_SIZE		32
 #define DOUBLE_TYPE_SIZE	64
 #define LONG_DOUBLE_TYPE_SIZE	64
+/* This prevents cexp.c from depending on LONG_TYPE_SIZE.  */
+#define MAX_LONG_TYPE_SIZE      64
 
 /* Declare the standard types used by builtins to match convex stddef.h --
    with int rather than long.  */
