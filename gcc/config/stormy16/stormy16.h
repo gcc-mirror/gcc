@@ -497,10 +497,6 @@ enum reg_class
   xstormy16_initialize_trampoline (ADDR, FNADDR, STATIC_CHAIN)
 
 
-/* Implicit Calls to Library Routines */
-
-#define TARGET_MEM_FUNCTIONS
-
 /* Define this macro to override the type used by the library routines to pick
    up arguments of type `float'.  (By default, they use a union of `float' and
    `int'.)

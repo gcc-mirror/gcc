@@ -130,13 +130,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Runtime target specification.  */
 
-/* Implicit calls to library routines.  */
-
-/* Use memcpy and memset instead of bcopy and bzero.  */
-#ifndef TARGET_MEM_FUNCTIONS
-#define TARGET_MEM_FUNCTIONS
-#endif
-
 /* Miscellaneous parameters.  */
 
 /* Controlling debugging info: dbx options.  */

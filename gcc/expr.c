@@ -77,14 +77,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 #endif
 
-/* Convert defined/undefined to boolean.  */
-#ifdef TARGET_MEM_FUNCTIONS
-#undef TARGET_MEM_FUNCTIONS
-#define TARGET_MEM_FUNCTIONS 1
-#else
-#define TARGET_MEM_FUNCTIONS 0
-#endif
-
 
 /* If this is nonzero, we do not bother generating VOLATILE
    around volatile memory references, and we are willing to
@@ -1511,7 +1503,7 @@ emit_block_move_via_movstr (rtx x, rtx y, rtx size, unsigned int align)
   return false;
 }
 
-/* A subroutine of emit_block_move.  Expand a call to memcpy or bcopy.
+/* A subroutine of emit_block_move.  Expand a call to memcpy.
    Return the return value from memcpy, 0 otherwise.  */
 
 static rtx
@@ -1550,10 +1542,7 @@ emit_block_move_via_libcall (rtx dst, rtx src, rtx size)
   dst_tree = make_tree (ptr_type_node, dst_addr);
   src_tree = make_tree (ptr_type_node, src_addr);
 
-  if (TARGET_MEM_FUNCTIONS)
-    size_mode = TYPE_MODE (sizetype);
-  else
-    size_mode = TYPE_MODE (unsigned_type_node);
+  size_mode = TYPE_MODE (sizetype);
 
   size = convert_to_mode (size_mode, size, 1);
   size = copy_to_mode_reg (size_mode, size);
@@ -1562,27 +1551,14 @@ emit_block_move_via_libcall (rtx dst, rtx src, rtx size)
      memcpy in this context.  This could be a user call to memcpy and
      the user may wish to examine the return value from memcpy.  For
      targets where libcalls and normal calls have different conventions
-     for returning pointers, we could end up generating incorrect code.
+     for returning pointers, we could end up generating incorrect code.  */
 
-     For convenience, we generate the call to bcopy this way as well.  */
-
-  if (TARGET_MEM_FUNCTIONS)
-    size_tree = make_tree (sizetype, size);
-  else
-    size_tree = make_tree (unsigned_type_node, size);
+  size_tree = make_tree (sizetype, size);
 
   fn = emit_block_move_libcall_fn (true);
   arg_list = tree_cons (NULL_TREE, size_tree, NULL_TREE);
-  if (TARGET_MEM_FUNCTIONS)
-    {
-      arg_list = tree_cons (NULL_TREE, src_tree, arg_list);
-      arg_list = tree_cons (NULL_TREE, dst_tree, arg_list);
-    }
-  else
-    {
-      arg_list = tree_cons (NULL_TREE, dst_tree, arg_list);
-      arg_list = tree_cons (NULL_TREE, src_tree, arg_list);
-    }
+  arg_list = tree_cons (NULL_TREE, src_tree, arg_list);
+  arg_list = tree_cons (NULL_TREE, dst_tree, arg_list);
 
   /* Now we have to build up the CALL_EXPR itself.  */
   call_expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
@@ -1601,7 +1577,7 @@ emit_block_move_via_libcall (rtx dst, rtx src, rtx size)
 					     gen_rtx_CLOBBER (VOIDmode, dst),
 					     NULL_RTX));
 
-  return TARGET_MEM_FUNCTIONS ? retval : NULL_RTX;
+  return retval;
 }
 
 /* A subroutine of emit_block_move_via_libcall.  Create the tree node
@@ -1617,20 +1593,10 @@ init_block_move_fn (const char *asmspec)
     {
       tree args, fn;
 
-      if (TARGET_MEM_FUNCTIONS)
-	{
-	  fn = get_identifier ("memcpy");
-	  args = build_function_type_list (ptr_type_node, ptr_type_node,
-					   const_ptr_type_node, sizetype,
-					   NULL_TREE);
-	}
-      else
-	{
-	  fn = get_identifier ("bcopy");
-	  args = build_function_type_list (void_type_node, const_ptr_type_node,
-					   ptr_type_node, unsigned_type_node,
-					   NULL_TREE);
-	}
+      fn = get_identifier ("memcpy");
+      args = build_function_type_list (ptr_type_node, ptr_type_node,
+				       const_ptr_type_node, sizetype,
+				       NULL_TREE);
 
       fn = build_decl (FUNCTION_DECL, fn, args);
       DECL_EXTERNAL (fn) = 1;
@@ -2642,7 +2608,7 @@ clear_storage_via_clrstr (rtx object, rtx size, unsigned int align)
   return false;
 }
 
-/* A subroutine of clear_storage.  Expand a call to memset or bzero.
+/* A subroutine of clear_storage.  Expand a call to memset.
    Return the return value of memset, 0 otherwise.  */
 
 static rtx
@@ -2673,10 +2639,7 @@ clear_storage_via_libcall (rtx object, rtx size)
 
   object = copy_to_mode_reg (Pmode, XEXP (object, 0));
 
-  if (TARGET_MEM_FUNCTIONS)
-    size_mode = TYPE_MODE (sizetype);
-  else
-    size_mode = TYPE_MODE (unsigned_type_node);
+  size_mode = TYPE_MODE (sizetype);
   size = convert_to_mode (size_mode, size, 1);
   size = copy_to_mode_reg (size_mode, size);
 
@@ -2684,20 +2647,14 @@ clear_storage_via_libcall (rtx object, rtx size)
      memset in this context.  This could be a user call to memset and
      the user may wish to examine the return value from memset.  For
      targets where libcalls and normal calls have different conventions
-     for returning pointers, we could end up generating incorrect code.
-
-     For convenience, we generate the call to bzero this way as well.  */
+     for returning pointers, we could end up generating incorrect code.  */
 
   object_tree = make_tree (ptr_type_node, object);
-  if (TARGET_MEM_FUNCTIONS)
-    size_tree = make_tree (sizetype, size);
-  else
-    size_tree = make_tree (unsigned_type_node, size);
+  size_tree = make_tree (sizetype, size);
 
   fn = clear_storage_libcall_fn (true);
   arg_list = tree_cons (NULL_TREE, size_tree, NULL_TREE);
-  if (TARGET_MEM_FUNCTIONS)
-    arg_list = tree_cons (NULL_TREE, integer_zero_node, arg_list);
+  arg_list = tree_cons (NULL_TREE, integer_zero_node, arg_list);
   arg_list = tree_cons (NULL_TREE, object_tree, arg_list);
 
   /* Now we have to build up the CALL_EXPR itself.  */
@@ -2713,7 +2670,7 @@ clear_storage_via_libcall (rtx object, rtx size)
   if (RTX_UNCHANGING_P (object))
     emit_insn (gen_rtx_CLOBBER (VOIDmode, object));
 
-  return (TARGET_MEM_FUNCTIONS ? retval : NULL_RTX);
+  return retval;
 }
 
 /* A subroutine of clear_storage_via_libcall.  Create the tree node
@@ -2729,19 +2686,10 @@ init_block_clear_fn (const char *asmspec)
     {
       tree fn, args;
 
-      if (TARGET_MEM_FUNCTIONS)
-	{
-	  fn = get_identifier ("memset");
-	  args = build_function_type_list (ptr_type_node, ptr_type_node,
-					   integer_type_node, sizetype,
-					   NULL_TREE);
-	}
-      else
-	{
-	  fn = get_identifier ("bzero");
-	  args = build_function_type_list (void_type_node, ptr_type_node,
-					   unsigned_type_node, NULL_TREE);
-	}
+      fn = get_identifier ("memset");
+      args = build_function_type_list (ptr_type_node, ptr_type_node,
+				       integer_type_node, sizetype,
+				       NULL_TREE);
 
       fn = build_decl (FUNCTION_DECL, fn, args);
       DECL_EXTERNAL (fn) = 1;
@@ -4029,21 +3977,12 @@ expand_assignment (tree to, tree from, int want_value)
       size = expr_size (from);
       from_rtx = expand_expr (from, NULL_RTX, VOIDmode, 0);
 
-      if (TARGET_MEM_FUNCTIONS)
-	emit_library_call (memmove_libfunc, LCT_NORMAL,
-			   VOIDmode, 3, XEXP (to_rtx, 0), Pmode,
-			   XEXP (from_rtx, 0), Pmode,
-			   convert_to_mode (TYPE_MODE (sizetype),
-					    size, TYPE_UNSIGNED (sizetype)),
-			   TYPE_MODE (sizetype));
-      else
-        emit_library_call (bcopy_libfunc, LCT_NORMAL,
-			   VOIDmode, 3, XEXP (from_rtx, 0), Pmode,
-			   XEXP (to_rtx, 0), Pmode,
-			   convert_to_mode (TYPE_MODE (integer_type_node),
-					    size,
-					    TYPE_UNSIGNED (integer_type_node)),
-			   TYPE_MODE (integer_type_node));
+      emit_library_call (memmove_libfunc, LCT_NORMAL,
+			 VOIDmode, 3, XEXP (to_rtx, 0), Pmode,
+			 XEXP (from_rtx, 0), Pmode,
+			 convert_to_mode (TYPE_MODE (sizetype),
+					  size, TYPE_UNSIGNED (sizetype)),
+			 TYPE_MODE (sizetype));
 
       preserve_temp_slots (to_rtx);
       free_temp_slots ();
@@ -5207,10 +5146,10 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	 and then "or" in whatever non-constant ranges we need in addition.
 
 	 If a large set is all zero or all ones, it is
-	 probably better to set it using memset (if available) or bzero.
+	 probably better to set it using memset.
 	 Also, if a large set has just a single range, it may also be
 	 better to first clear all the first clear the set (using
-	 bzero/memset), and set the bits we want.  */
+	 memset), and set the bits we want.  */
 
       /* Check for all zeros.  */
       if (elt == NULL_TREE && size > 0)
@@ -5342,8 +5281,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 
 	  /* Optimization:  If startbit and endbit are constants divisible
 	     by BITS_PER_UNIT, call memset instead.  */
-	  if (TARGET_MEM_FUNCTIONS
-	      && TREE_CODE (startbit) == INTEGER_CST
+	  if (TREE_CODE (startbit) == INTEGER_CST
 	      && TREE_CODE (endbit) == INTEGER_CST
 	      && (startb = TREE_INT_CST_LOW (startbit)) % BITS_PER_UNIT == 0
 	      && (endb = TREE_INT_CST_LOW (endbit) + 1) % BITS_PER_UNIT == 0)

@@ -2217,10 +2217,6 @@ extern int rs6000_compare_fp_p;
    the end of the line.  */
 #define ASM_COMMENT_START " #"
 
-/* Implicit library calls should use memcpy, not bcopy, etc.  */
-
-#define TARGET_MEM_FUNCTIONS
-
 /* Flag to say the TOC is initialized */
 extern int toc_initialized;
 

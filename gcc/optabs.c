@@ -3744,15 +3744,9 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
 	  return;
 	}
 
-      /* Otherwise call a library function, memcmp if we've got it,
-	 bcmp otherwise.  */
-#ifdef TARGET_MEM_FUNCTIONS
+      /* Otherwise call a library function, memcmp.  */
       libfunc = memcmp_libfunc;
       length_type = sizetype;
-#else
-      libfunc = bcmp_libfunc;
-      length_type = integer_type_node;
-#endif
       result_mode = TYPE_MODE (integer_type_node);
       cmp_mode = TYPE_MODE (length_type);
       size = convert_to_mode (TYPE_MODE (length_type), size,
@@ -5522,11 +5516,8 @@ init_optabs (void)
   abort_libfunc = init_one_libfunc ("abort");
   memcpy_libfunc = init_one_libfunc ("memcpy");
   memmove_libfunc = init_one_libfunc ("memmove");
-  bcopy_libfunc = init_one_libfunc ("bcopy");
   memcmp_libfunc = init_one_libfunc ("memcmp");
-  bcmp_libfunc = init_one_libfunc ("__gcc_bcmp");
   memset_libfunc = init_one_libfunc ("memset");
-  bzero_libfunc = init_one_libfunc ("bzero");
   setbits_libfunc = init_one_libfunc ("__setbits");
 
   unwind_resume_libfunc = init_one_libfunc (USING_SJLJ_EXCEPTIONS

@@ -1138,12 +1138,6 @@ struct cum_arg
 #define FINAL_PRESCAN_INSN(insn, operand, nop)	\
   final_prescan_insn (insn, operand, nop)
 
-/* Define this macro if GCC should generate calls to the System V
-   (and ANSI C) library functions `memcpy' and `memset' rather than
-   the BSD functions `bcopy' and `bzero'.  */
-
-#define TARGET_MEM_FUNCTIONS
-
 #define MOVE_RATIO 3
 
 /* Define the codes that are matched by predicates in h8300.c.  */

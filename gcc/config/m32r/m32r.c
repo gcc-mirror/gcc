@@ -2601,19 +2601,11 @@ block_move_call (rtx dest_reg, rtx src_reg, rtx bytes_rtx)
       && GET_MODE (bytes_rtx) != Pmode)
     bytes_rtx = convert_to_mode (Pmode, bytes_rtx, 1);
 
-#ifdef TARGET_MEM_FUNCTIONS
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "memcpy"), 0,
 		     VOIDmode, 3, dest_reg, Pmode, src_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype), bytes_rtx,
 				      TYPE_UNSIGNED (sizetype)),
 		     TYPE_MODE (sizetype));
-#else
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "bcopy"), 0,
-		     VOIDmode, 3, src_reg, Pmode, dest_reg, Pmode,
-		     convert_to_mode (TYPE_MODE (integer_type_node), bytes_rtx,
-				      TYPE_UNSIGNED (integer_type_node)),
-		     TYPE_MODE (integer_type_node));
-#endif
 }
 
 /* The maximum number of bytes to copy using pairs of load/store instructions.

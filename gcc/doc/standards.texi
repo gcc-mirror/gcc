@@ -145,9 +145,7 @@ GNU C library).  @xref{Standard Libraries,,Standard Libraries}.
 Most of the compiler support routines used by GCC are present in
 @file{libgcc}, but there are a few exceptions.  GCC requires the
 freestanding environment provide @code{memcpy}, @code{memmove},
-@code{memset} and @code{memcmp}.  Some older ports of GCC are
-configured to use the BSD @code{bcopy}, @code{bzero} and @code{bcmp}
-functions instead, but this is deprecated for new ports.
+@code{memset} and @code{memcmp}.
 Finally, if @code{__builtin_trap} is used, and the target does
 not implement the @code{trap} pattern, then GCC will emit a call
 to @code{abort}.

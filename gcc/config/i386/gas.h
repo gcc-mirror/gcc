@@ -49,10 +49,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define ASM_OUTPUT_IDENT(FILE, NAME) fprintf (FILE, "\t.ident \"%s\"\n", NAME);
 
-/* Implicit library calls should use memcpy, not bcopy, etc.  */
-
-#define TARGET_MEM_FUNCTIONS
-
 /* In the past there was confusion as to what the argument to .align was
    in GAS.  For the last several years the rule has been this: for a.out
    file formats that argument is LOG, and for all other file formats the

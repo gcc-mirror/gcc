@@ -1193,10 +1193,6 @@ CUMULATIVE_ARGS;
 	fprintf (FILE, "\tpop\tar2\n");				\
      }
 
-/* Implicit Calls to Library Routines.  */
-
-#define TARGET_MEM_FUNCTIONS
-
 /* CC_NOOVmode should be used when the first operand is a PLUS, MINUS, NEG
    or MULT.
    CCmode should be used when no special processing is needed.  */

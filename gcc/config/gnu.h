@@ -12,10 +12,6 @@
 #undef STANDARD_INCLUDE_DIR
 #define STANDARD_INCLUDE_DIR "/include"
 
-/* Implicit library calls should use memcpy, not bcopy, etc.  */
-#undef TARGET_MEM_FUNCTIONS
-#define TARGET_MEM_FUNCTIONS
-
 /* The system headers under GNU are C++-aware.  */
 #define NO_IMPLICIT_EXTERN_C
 

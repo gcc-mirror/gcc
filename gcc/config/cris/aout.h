@@ -139,11 +139,6 @@ Boston, MA 02111-1307, USA.  */
 #define MAX_OFILE_ALIGNMENT 16
 
 
-/* Node: Library Calls */
-
-#define TARGET_MEM_FUNCTIONS
-
-
 /* Node: Data Output */
 
 #define ESCAPES \

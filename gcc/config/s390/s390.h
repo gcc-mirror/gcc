@@ -722,12 +722,6 @@ CUMULATIVE_ARGS;
    s390_trampoline_template (FILE)
 
 
-/* Library calls.  */
-
-/* We should use memcpy, not bcopy.  */
-#define TARGET_MEM_FUNCTIONS
-
-
 /* Addressing modes, and classification of registers for them.  */
 
 /* Recognize any constant value that is a valid address.  */

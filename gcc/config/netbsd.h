@@ -159,11 +159,6 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_HAS_F_SETLKW
 #define TARGET_HAS_F_SETLKW
 
-/* Implicit library calls should use memcpy, not bcopy, etc.  */
-
-#undef TARGET_MEM_FUNCTIONS
-#define TARGET_MEM_FUNCTIONS 1
-
 /* Handle #pragma weak and #pragma pack.  */
 
 #define HANDLE_SYSV_PRAGMA 1

@@ -2012,11 +2012,13 @@ v850-*-*)
 	;;
 vax-*-bsd*)			# VAXen running BSD
 	tm_file="${tm_file} vax/bsd.h"
+	tmake_file=vax/t-memfuncs
 	use_collect2=yes
 	use_fixproto=yes
 	;;
 vax-*-sysv*)			# VAXen running system V
 	tm_file="${tm_file} vax/vaxv.h"
+	tmake_file=vax/t-memfuncs
 	use_fixproto=yes
 	;;
 vax-*-netbsdelf*)
@@ -2034,6 +2036,7 @@ vax-*-openbsd*)
 	;;
 vax-*-ultrix*)			# VAXen running ultrix
 	tm_file="${tm_file} vax/ultrix.h"
+	tmake_file=vax/t-memfuncs
 	use_fixproto=yes
 	;;
 xscale-*-elf)

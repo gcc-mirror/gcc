@@ -70,10 +70,6 @@ Boston, MA 02111-1307, USA. */
 
 #define NO_DOLLAR_IN_LABEL
 
-/* Implicit library calls should use memcpy, not bcopy, etc.  */
-
-#define TARGET_MEM_FUNCTIONS
-
 /* System V Release 3 uses COFF debugging info.  */
 
 #define SDB_DEBUGGING_INFO 1

@@ -802,11 +802,6 @@ do { \
   emit_insn (gen_flush_icache (validize_mem (gen_rtx_MEM (SImode, TRAMP)))); \
 } while (0)
 
-/* Library calls.  */
-
-/* Generate calls to memcpy, memcmp and memset.  */
-#define TARGET_MEM_FUNCTIONS
-
 /* Addressing modes, and classification of registers for them.  */
 
 /* Maximum number of registers that can appear in a valid memory address.  */

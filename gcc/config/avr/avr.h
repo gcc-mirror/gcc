@@ -803,8 +803,6 @@ extern int avr_case_values_threshold;
 #define ADJUST_INSN_LENGTH(INSN, LENGTH) (LENGTH =\
 					  adjust_insn_length (INSN, LENGTH))
 
-#define TARGET_MEM_FUNCTIONS
-
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
 
 #define CC1_SPEC "%{profile:-p}"

@@ -953,9 +953,6 @@ extern const enum reg_class reg_class_from_letter[];
 
 #define WORD_REGISTER_OPERATIONS
 
-/* Implicit library calls should use memcpy, not bcopy, etc.  */
-#define TARGET_MEM_FUNCTIONS
-
 /* Assembler output control.  */
 #define ASM_COMMENT_START "\t//"
 
