@@ -3802,12 +3802,48 @@ emit_single_push_insn (mode, x, type)
     }
   if (GET_MODE_SIZE (mode) == rounded_size)
     dest_addr = gen_rtx_fmt_e (STACK_PUSH_CODE, Pmode, stack_pointer_rtx);
+  /* If we are to pad downward, adjust the stack pointer first and
+     then store X into the stack location using an offset.  This is
+     because emit_move_insn does not know how to pad; it does not have
+     access to type.  */
+  else if (FUNCTION_ARG_PADDING (mode, type) == downward)
+    {
+      unsigned padding_size = rounded_size - GET_MODE_SIZE (mode);
+      HOST_WIDE_INT offset;
+
+      emit_move_insn (stack_pointer_rtx,
+		      expand_binop (Pmode,
+#ifdef STACK_GROWS_DOWNWARD
+				    sub_optab,
+#else
+				    add_optab,
+#endif
+				    stack_pointer_rtx,
+				    GEN_INT (rounded_size),
+				    NULL_RTX, 0, OPTAB_LIB_WIDEN));
+
+      offset = (HOST_WIDE_INT) padding_size;
+#ifdef STACK_GROWS_DOWNWARD
+      if (STACK_PUSH_CODE == POST_DEC)
+	/* We have already decremented the stack pointer, so get the
+	   previous value.  */
+	offset += (HOST_WIDE_INT) rounded_size;
+#else
+      if (STACK_PUSH_CODE == POST_INC)
+	/* We have already incremented the stack pointer, so get the
+	   previous value.  */
+	offset -= (HOST_WIDE_INT) rounded_size;
+#endif
+      dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (offset));
+    }
   else
     {
 #ifdef STACK_GROWS_DOWNWARD
+      /* ??? This seems wrong if STACK_PUSH_CODE == POST_DEC.  */
       dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
 				GEN_INT (-(HOST_WIDE_INT) rounded_size));
 #else
+      /* ??? This seems wrong if STACK_PUSH_CODE == POST_INC.  */
       dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
 				GEN_INT (rounded_size));
 #endif
