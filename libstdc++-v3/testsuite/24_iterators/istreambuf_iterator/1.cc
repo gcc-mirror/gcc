@@ -1,7 +1,7 @@
 // { dg-do compile }
-// 2001-06-21  Benjamin Kosnik  <bkoz@redhat.com>
+// 1999-06-28 bkoz
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,24 +19,23 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 24.4.1.2 Reverse iterators
+// 24.5.3 template class istreambuf_iterator
 
+#include <sstream>
 #include <iterator>
+#include <testsuite_hooks.h>
 
 void test01()
 {
   using namespace std;
 
   // Check for required base class.
-  long l;
-  typedef reverse_iterator<long*> test_iterator;
-  typedef iterator<iterator_traits<long*>::iterator_category,
-		   iterator_traits<long*>::value_type,
-		   iterator_traits<long*>::difference_type,
-		   iterator_traits<long*>::pointer,
-                   iterator_traits<long*>::reference>
-    base_iterator;
-  test_iterator  r_it(&l);
+  typedef istreambuf_iterator<char> test_iterator;
+  typedef char_traits<char>::off_type off_type;
+  typedef iterator<input_iterator_tag, char, off_type, char*, char&> base_iterator;
+
+  istringstream isstream("this tag");
+  test_iterator  r_it(isstream);
   base_iterator* base __attribute__((unused)) = &r_it;
 
   // Check for required typedefs
@@ -45,7 +44,9 @@ void test01()
   typedef test_iterator::pointer pointer;
   typedef test_iterator::reference reference;
   typedef test_iterator::iterator_category iteratory_category;
-}
 
-// Make sure iterator can be instantiated.
-template class std::reverse_iterator<int*>;
+  typedef test_iterator::char_type char_type;
+  typedef test_iterator::traits_type traits_type;
+  typedef test_iterator::istream_type istream_type;
+  typedef test_iterator::streambuf_type streambuf_type;
+}

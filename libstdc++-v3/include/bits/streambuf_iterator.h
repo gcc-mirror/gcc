@@ -207,15 +207,15 @@ namespace std
       }
 
       ostreambuf_iterator& 
-      operator*() throw()
+      operator*()
       { return *this; }
 
       ostreambuf_iterator& 
-      operator++(int) throw()
+      operator++(int)
       { return *this; }
 
       ostreambuf_iterator& 
-      operator++() throw()
+      operator++()
       { return *this; }
 
       bool 
