@@ -429,6 +429,8 @@ init_decl_processing ()
   tree field = NULL_TREE;
   tree t;
 
+  init_class_processing ();
+
   current_function_decl = NULL;
   current_binding_level = NULL_BINDING_LEVEL;
   free_binding_level = NULL_BINDING_LEVEL;
@@ -903,7 +905,6 @@ init_decl_processing ()
 			build_function_type (long_type_node, t),
 			0, NOT_BUILT_IN, NULL_PTR);
 
-  init_class_processing ();
   init_jcf_parse ();
 
   /* Register nodes with the garbage collector.  */
