@@ -1,3 +1,10 @@
+2001-04-23  Loren J. Rittle  <ljrittle@acm.org>
+
+	* include/c_std/bits/std_cerrno.h (errno): Define macro from
+	identifier declared with external linkage, if needed.
+	* include/c_std/bits/std_csetjmp.h (setjmp): Likewise.
+	* include/c_std/bits/std_cstdarg.h (va_end): Likewise.
+
 2001-04-23  Benjamin Kosnik  <bkoz@fillmore.constant.com>
 
 	* acinclude.m4 (CXX): Set to CXX so that in-directory
