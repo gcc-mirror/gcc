@@ -1,3 +1,12 @@
+2004-02-25  Carlo Wood  <carlo@alinoe.com>
+
+	* bits/demangle.h
+	namespace __gnu_cxx::demangler
+	(session<Allocator>::qualifier_list_Allocator): Add
+	(session<Allocator>::M_qualifier_list_alloc): Add
+	(session<Allocator>::decode_type_with_postfix):
+	Use M_qualifier_list_alloc instead of calling operator new/delete.
+
 2004-02-25  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	PR bootstrap/14207
