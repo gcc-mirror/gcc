@@ -98,7 +98,7 @@ Alignment must be a small power of two, not %d, in #pragma pack",
       
       alignment_stack = entry;
 
-      maximum_field_alignment = alignment * 8;
+      maximum_field_alignment = alignment * BITS_PER_UNIT;
     }
   else
     alignment_stack->num_pushes ++;
@@ -145,7 +145,7 @@ pop_alignment (id)
       if (entry == NULL)
 	maximum_field_alignment = default_alignment;
       else
-	maximum_field_alignment = entry->alignment * 8;
+	maximum_field_alignment = entry->alignment * BITS_PER_UNIT;
 
       free (alignment_stack);
 
@@ -206,7 +206,7 @@ handle_pragma_token (string, token)
 	case ps_pack:
 	  if (state == ps_right)
 	    {
-	      maximum_field_alignment = align * 8;
+	      maximum_field_alignment = align * BITS_PER_UNIT;
 #ifdef HANDLE_PRAGMA_PACK_PUSH_POP
 	      default_alignment = maximum_field_alignment;
 #endif
