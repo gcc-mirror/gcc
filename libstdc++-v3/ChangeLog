@@ -1,3 +1,10 @@
+2002-12-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* testsuite/23_containers/vector_capacity.cc (test03): Move ...
+	* testsuite/23_containers/vector_resize.cc: ...here as a new file.
+	Pass in -lmalloc for irix6.
+	* testsuite/27_io/ios_base_storage.cc: Pass in -lmalloc for irix6.
+
 2002-12-11  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/8887

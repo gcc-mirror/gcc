@@ -99,30 +99,9 @@ void test02()
   }
 }
 
-void test03()
-{
-  bool test = true;
-  std::vector<int> v;
-  try
-    {
-      v.resize(v.max_size());  
-      v[v.max_size() - 1] = 2002;
-    }
-  catch (const std::bad_alloc& error)
-    {
-      test = true;
-    }
-  catch (...)
-    {
-      test = false;
-    }
-  VERIFY( test );
-}
-
 int main()
 {
   test01();
   test02();
-  test03();
   return 0;
 }
