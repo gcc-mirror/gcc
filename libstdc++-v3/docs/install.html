@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 Installation Instructions</TITLE>
 <LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/">
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: install.html,v 1.11 2000/04/18 22:05:49 pme Exp $ -->
+<!-- $Id: install.html,v 1.1 2000/04/21 20:33:30 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
@@ -60,6 +60,16 @@
       is GNU Make, since it is the only 'make' that will parse these
       makefiles correctly.
    </P>
+
+   <P>As of June 19, 2000, libstdc++ attempts to use tricky and
+   space-saving features of the GNU toolchain, enabled with
+   <TT>-ffunction-sections -fdata-sections -Wl,--gc-sections</TT>. To
+   obtain maximum benefit from this, binutils after this date should
+   also be used (bugs were fixed with c++ exception handling related
+   to this change in libstdc++-v3.) The version of these tools should
+   be: <TT>2.10.90</TT>
+   </P>
+ 
    <P>Finally, if you are using cygwin to compile libstdc++-v3 on
       win32, you'll have to get a version of the cygwin.dll that is
       dated on or after February 1, 2000. This is necessary to
@@ -369,7 +379,7 @@ To rebuild just libstdc++, use:
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: install.html,v 1.11 2000/04/18 22:05:49 pme Exp $
+<BR> $Id: install.html,v 1.1 2000/04/21 20:33:30 bkoz Exp $
 </EM></P>
 
 

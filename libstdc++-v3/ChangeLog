@@ -1,3 +1,24 @@
+2000-06-19  Benjamin Kosnik  <bkoz@soma.redhat.com>
+
+	* docs/17_intro/contribute.html: Add bits about getting to the LWG
+	issues pages.
+	* docs/documentation.html: Rename link to make more accurate and scary.
+	* docs/gccrebuild.html: Edit for clarity as these are no longer
+	separate projects.
+	* docs/install.html: Add bits about binutils for
+	-ffunction-sections, -fdata-sections, -Wl,--gc-sections
+
+	* configure.in: Add call for GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT.
+	* math/Makefile.am (EXTRA_DIST): Change USE_LONG_DOUBLE to
+	USE_COMPLEX_LONG_DOUBLE.
+	* acinclude.m4 (GLIBCPP_CHECK_MATH_SUPPORT): Break into
+	GLIBCPP_CHECK_MATH_SUPPORT and GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT.
+	Works around irregularies in powerpc "C" compiler, but a good idea
+	anyway.
+
+	* acinclude.m4 (GLIBCPP_CHECK_COMPLEX_MATH_COMPILER_SUPPORT):
+	New. Merge both old compiler bug checks for complex into this.
+
 2000-06-19  Anthony Williams  <anthony@anthonyw.cjb.net>
 	
 	* testsuite/21_strings/find.cc: Empty strings can be found at all
