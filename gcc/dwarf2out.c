@@ -166,7 +166,7 @@ static dw_cfi_ref cie_cfi_head;
    maximum number of function definitions contained within the current
    compilation unit.  These numbers are used to create unique label id's
    unique to each function definition.  */
-static unsigned current_funcdef_number = 1;
+static unsigned current_funcdef_number = 0;
 
 /* Some DWARF extensions (e.g., MIPS/SGI) implement a subprogram
    attribute that accelerates the lookup of the FDE associated
@@ -1380,6 +1380,8 @@ dwarf2out_begin_prologue ()
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   register dw_fde_ref fde;
 
+  ++current_funcdef_number;
+
   function_section (current_function_decl);
   ASM_GENERATE_INTERNAL_LABEL (label, FUNC_BEGIN_LABEL,
 			       current_funcdef_number);
@@ -1421,8 +1423,6 @@ dwarf2out_end_epilogue ()
   ASM_OUTPUT_LABEL (asm_out_file, label);
   fde = &fde_table[fde_table_in_use - 1];
   fde->dw_fde_end = xstrdup (label);
-
-  ++current_funcdef_number;
 }
 
 void
