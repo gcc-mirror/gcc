@@ -1179,8 +1179,15 @@ cselib_record_sets (insn)
   int i;
   struct set sets[MAX_SETS];
   rtx body = PATTERN (insn);
+  rtx cond = 0;
 
   body = PATTERN (insn);
+  if (GET_CODE (body) == COND_EXEC)
+    {
+      cond = COND_EXEC_TEST (body);
+      body = COND_EXEC_CODE (body);
+    }
+
   /* Find all sets.  */
   if (GET_CODE (body) == SET)
     {
@@ -1219,6 +1226,9 @@ cselib_record_sets (insn)
       /* We don't know how to record anything but REG or MEM.  */
       if (GET_CODE (dest) == REG || GET_CODE (dest) == MEM)
         {
+	  rtx src = sets[i].src;
+	  if (cond)
+	    src = gen_rtx_IF_THEN_ELSE (GET_MODE (src), cond, src, dest);
 	  sets[i].src_elt = cselib_lookup (sets[i].src, GET_MODE (dest), 1);
 	  if (GET_CODE (dest) == MEM)
 	    sets[i].dest_addr_elt = cselib_lookup (XEXP (dest, 0), Pmode, 1);
