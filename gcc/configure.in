@@ -510,8 +510,8 @@ if test $gcc_cv_enum_bf_unsigned = yes; then
     [Define if enumerated bitfields are treated as unsigned values.])
 fi
 
-AC_CHECK_FUNCS(strtoul bsearch putenv popen bcopy bzero bcmp \
-	index rindex strchr strrchr kill getrlimit setrlimit atoll atoq \
+AC_CHECK_FUNCS(strtoul bsearch putenv popen bcopy \
+	strchr strrchr kill getrlimit setrlimit atoll atoq \
 	sysconf isascii gettimeofday strsignal putc_unlocked fputc_unlocked \
 	fputs_unlocked getrusage valloc iconv nl_langinfo)
 
@@ -555,8 +555,8 @@ AC_FUNC_MMAP_FILE
 # We will need to find libiberty.h and ansidecl.h
 saved_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -I${srcdir} -I${srcdir}/../include"
-gcc_AC_CHECK_DECLS(bcopy bzero bcmp \
-	index rindex getenv atol sbrk abort atof getcwd getwd \
+gcc_AC_CHECK_DECLS(bcopy \
+	getenv atol sbrk abort atof getcwd getwd \
 	strsignal putc_unlocked fputs_unlocked strstr environ \
 	malloc realloc calloc free basename getopt, , ,[
 #include "gansidecl.h"

@@ -327,7 +327,7 @@ do {									\
    -0.0 equals 0.0 but they are not identical, and conversely
    two NaNs might be identical but they cannot be equal.  */
 #define REAL_VALUES_IDENTICAL(x, y) \
-  (!bcmp ((char *) &(x), (char *) &(y), sizeof (REAL_VALUE_TYPE)))
+  (!memcmp ((char *) &(x), (char *) &(y), sizeof (REAL_VALUE_TYPE)))
 
 /* Compare two floating-point values for equality.  */
 #ifndef REAL_VALUES_EQUAL

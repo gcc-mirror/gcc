@@ -98,9 +98,9 @@ Boston, MA 02111-1307, USA.  */
    pnt1_ = pnt_ - 1;						\
    while (*++pnt1_)						\
      if ((*pnt1_ >= 'A' && *pnt1_ <= 'Z')) *pnt1_ |= 0x20;	\
-   pnt1_ = rindex (pnt_, ']'); 					\
-   pnt1_ = (pnt1_ == 0 ? rindex (pnt_, '>') : pnt1_);		\
-   pnt1_ = (pnt1_ == 0 ? rindex (pnt_, ':') : pnt1_);		\
+   pnt1_ = strrchr (pnt_, ']'); 				\
+   pnt1_ = (pnt1_ == 0 ? strrchr (pnt_, '>') : pnt1_);		\
+   pnt1_ = (pnt1_ == 0 ? strrchr (pnt_, ':') : pnt1_);		\
    (pnt1_ == 0 ? pnt_ : pnt1_ + 1);				\
  })
 

@@ -2615,7 +2615,7 @@ create_new_parser_context (copy_from_previous)
       new->saved_data_ctx = 1;
     }
   else
-    bzero ((PTR) new, sizeof (struct parser_ctxt));
+    memset ((PTR) new, 0, sizeof (struct parser_ctxt));
       
   new->next = ctxp;
   ctxp = new;

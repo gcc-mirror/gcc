@@ -5440,8 +5440,9 @@ order_regs_for_local_alloc ()
   if (regs_ever_live[15] != last_order_nonleaf)
     {
       last_order_nonleaf = !last_order_nonleaf;
-      bcopy ((char *) reg_alloc_orders[last_order_nonleaf],
-	     (char *) reg_alloc_order, FIRST_PSEUDO_REGISTER * sizeof (int));
+      memcpy ((char *) reg_alloc_order,
+	      (char *) reg_alloc_orders[last_order_nonleaf],
+	      FIRST_PSEUDO_REGISTER * sizeof (int));
     }
 }
 
@@ -7553,7 +7554,7 @@ ultra_flush_pipeline ()
 {
   ultra_cur_hist = (ultra_cur_hist + 1) & (ULTRA_NUM_HIST - 1);
   ultra_cycles_elapsed += 1;
-  bzero ((char *) &ultra_pipe, sizeof ultra_pipe);
+  memset ((char *) &ultra_pipe, 0, sizeof ultra_pipe);
   ultra_pipe.free_slot_mask = 0xf;
 }
 
@@ -7563,7 +7564,7 @@ ultrasparc_sched_init (dump, sched_verbose)
      FILE *dump ATTRIBUTE_UNUSED;
      int sched_verbose ATTRIBUTE_UNUSED;
 {
-  bzero ((char *) ultra_pipe_hist, sizeof ultra_pipe_hist);
+  memset ((char *) ultra_pipe_hist, 0, sizeof ultra_pipe_hist);
   ultra_cur_hist = 0;
   ultra_cycles_elapsed = 0;
   ultra_pipe.free_slot_mask = 0xf;
@@ -7899,7 +7900,7 @@ ultrasparc_sched_reorder (dump, sched_verbose, ready, n_ready)
       }
     else
       {
-	bzero ((char *) &ultra_pipe, sizeof ultra_pipe);
+	memset ((char *) &ultra_pipe, 0, sizeof ultra_pipe);
 	ultra_pipe.free_slot_mask = 0xf;
       }
   }

@@ -336,46 +336,6 @@ extern void bcopy PARAMS ((const PTR, PTR, size_t));
 # endif
 #endif
 
-#ifndef bcmp
-# ifdef HAVE_BCMP
-#  if defined (HAVE_DECL_BCMP) && !HAVE_DECL_BCMP
-extern int bcmp PARAMS ((const PTR, const PTR, size_t));
-#  endif
-# else /* ! HAVE_BCMP */
-#  define bcmp(left,right,len) memcmp ((left),(right),(len))
-# endif
-#endif
-
-#ifndef bzero
-# ifdef HAVE_BZERO
-#  if defined (HAVE_DECL_BZERO) && !HAVE_DECL_BZERO
-extern void bzero PARAMS ((PTR, size_t));
-#  endif
-# else /* ! HAVE_BZERO */
-#  define bzero(dst,len) memset ((dst),0,(len))
-# endif
-#endif
-
-#ifndef index
-# ifdef HAVE_INDEX
-#  if defined (HAVE_DECL_INDEX) && !HAVE_DECL_INDEX
-extern char *index PARAMS ((const char *, int));
-#  endif
-# else /* ! HAVE_INDEX */
-#  define index strchr
-# endif
-#endif
-
-#ifndef rindex
-# ifdef HAVE_RINDEX
-#  if defined (HAVE_DECL_RINDEX) && !HAVE_DECL_RINDEX
-extern char *rindex PARAMS ((const char *, int));
-#  endif
-# else /* ! HAVE_RINDEX */
-#  define rindex strrchr
-# endif
-#endif
-
 #if defined (HAVE_DECL_ATOF) && !HAVE_DECL_ATOF
 extern double atof PARAMS ((const char *));
 #endif

@@ -1118,7 +1118,7 @@ do								\
 	fixed_regs[31] = 1;					\
 	reg_names[FRAME_POINTER_REGNUM] = "%i7";		\
 	/* Disable leaf functions */				\
-	bzero (sparc_leaf_regs, FIRST_PSEUDO_REGISTER);		\
+	memset (sparc_leaf_regs, 0, FIRST_PSEUDO_REGISTER);	\
       }								\
     if (profile_block_flag)					\
       {								\
