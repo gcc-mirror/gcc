@@ -2874,9 +2874,9 @@ print_rtl_with_bb (outf, rtx_first)
       int i, bb;
       enum bb_state { NOT_IN_BB, IN_ONE_BB, IN_MULTIPLE_BB };
       int max_uid = get_max_uid ();
-      int *start = alloca (max_uid * sizeof (int));
-      int *end = alloca (max_uid * sizeof (int));
-      char *in_bb_p = alloca (max_uid * sizeof (enum bb_state));
+      int *start = (int *) alloca (max_uid * sizeof (int));
+      int *end = (int *) alloca (max_uid * sizeof (int));
+      char *in_bb_p = (char *) alloca (max_uid * sizeof (enum bb_state));
 
       for (i = 0; i < max_uid; i++)
 	{
