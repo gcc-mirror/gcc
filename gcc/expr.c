@@ -8103,9 +8103,6 @@ expand_builtin_setjmp (buf_addr, target)
 
   emit_queue ();
 
-  CONST_CALL_P (emit_note (NULL_PTR, NOTE_INSN_SETJMP)) = 1;
-  current_function_calls_setjmp = 1;
-
   /* We store the frame pointer and the address of lab1 in the buffer
      and use the rest of it for the stack save area, which is
      machine-dependent.  */
