@@ -2604,7 +2604,7 @@ emit_libcall_block (insns, target, result, equiv)
         {
           rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
           if (note == NULL_RTX)
-            REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EH_REGION, GEN_INT (0),
+            REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EH_REGION, GEN_INT (-1),
                                                   REG_NOTES (insn));
         }
     }

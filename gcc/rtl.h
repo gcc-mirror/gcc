@@ -343,12 +343,14 @@ typedef struct rtvec_def{
    but are too complex for DWARF to interpret what they imply.  The attached
    rtx is used instead of intuition.  */
 /*   REG_EH_REGION is used to indicate what exception region an INSN
-   belongs in. This can be used to indicate what region a call may throw
-   to. a REGION of 0 indicates that a call cannot throw at all.
+   belongs in.  This can be used to indicate what region a call may throw
+   to.  A REGION of 0 indicates that a call cannot throw at all.
+   A REGION  of -1 indicates that it cannot throw, nor will it execute
+   a non-local goto.
      REG_EH_RETHROW is used to indicate what that a call is actually a
    call to rethrow, and specifies which region the rethrow is targetting.
    This provides a way to generate the non standard flow edges required 
-   for a rethrow. */
+   for a rethrow.  */
    
 
 #define REG_NOTES(INSN)	((INSN)->fld[6].rtx)

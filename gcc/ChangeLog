@@ -1,3 +1,13 @@
+Tue Apr 27 19:50:25 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* rtl.h (REG_EH_REGION): Update comment to indicate a value of -1
+	indicates no throw and no nonlocal gotos.
+	* optabs.c (emit_libcall_block): Emit REG_EH_REGION with a value
+	of -1 instead of 0 to indicate a nonlocal goto won't happen either.
+	* flow.c (count_basic_blocks, find_basic_blocks_1): Ignore libcall
+	blocks, look for REG_EH_REGION note exclusively.
+	(make_edges): Check for REG_EH_REGION > 0 for specified handlers.
+
 Tue Apr 27 15:33:42 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.h (read_only_data_section, private_data_section,
@@ -124,7 +134,7 @@ Mon Apr 26 15:27:33 1999  Mark Mitchell  <mark@codesourcery.com>
 	* fixinc/inclhack.tpl: Remove unnecessary character quote
 	* fixinc/fixincl.sh, fixinc/inclhack.sh: Regenerate
 
-Mon Apr 26 10:41:42 EDT 1999  <amacleod@cygnus.com>
+Mon Apr 26 10:41:42 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* alpha.md (builtin_setjmp_receiver): Use a label_ref instead of 
 	a code label.
