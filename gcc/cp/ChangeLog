@@ -1,4 +1,28 @@
-2004-12-29  Mark Mitchell  <mark@codesourcery.com>
+2004-12-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (cp_declarator): Split "name" field into
+	qualifying_scope and unqualified_name.
+	* decl.c (get_scope_of_declarator): Adjust accordingly.
+	(grokdeclarator): Likewise.
+	* decl2.c (grokfield): Likewise, and adjust call to
+	do_class_using_decl.
+	* name-lookup.c (do_class_using_decl): Split "decl" into
+	"scope" and "name".  Remove unnecessary code.
+	* name-lookup.h (do_class_using_decl): Adjust declaration.
+	* parser.c (make_id_declarator): Split "id" into qualifying_scope
+	and unqualified_name.
+	(cp_parser_using_declaration): Adjust call to do_class_using_decl.
+	(cp_parser_direct_declarator): Adjust to handle the fact that
+	cp_parser_declarator_id no longer returns a SCOPE_REF.
+	(cp_parser_direct_declarator): Likewise.
+	(cp_parser_declarator_id): Do not create a SCOPE_REF for qualified
+	names.
+	(cp_parser_member_declaration): Adjust call to make_id_declarator.
+	(cp_parser_check_declarator_template_parameters): Do not expect a
+	SCOPE_REF. 
+	
+	* decl.c (duplicate_decls): Call ggc_free on declarations we will
+	not be needing any longer.
 
 	PR c++/19190
 	* cvt.c (convert_to_void): Do not use STRIP_NOPs.

@@ -747,8 +747,6 @@ clear_decl_specs (cp_decl_specifier_seq *decl_specs)
    Other parts of the front end that need to create entities (like
    VAR_DECLs or FUNCTION_DECLs) should do that directly.  */
 
-static cp_declarator *make_id_declarator
-  (tree);
 static cp_declarator *make_call_declarator
   (cp_declarator *, cp_parameter_declarator *, cp_cv_quals, tree);
 static cp_declarator *make_array_declarator
@@ -792,15 +790,31 @@ make_declarator (cp_declarator_kind kind)
   return declarator;
 }
 
-/* Make a declarator for a generalized identifier.  */
+/* Make a declarator for a generalized identifier.  If non-NULL, the
+   identifier is QUALIFYING_SCOPE::UNQUALIFIED_NAME; otherwise, it is
+   just UNQUALIFIED_NAME.  */
 
-cp_declarator *
-make_id_declarator (tree id)
+static cp_declarator *
+make_id_declarator (tree qualifying_scope, tree unqualified_name)
 {
   cp_declarator *declarator;
 
+  /* It is valid to write:
+
+       class C { void f(); };
+       typedef C D;
+       void D::f();
+
+     The standard is not clear about whether `typedef const C D' is
+     legal; as of 2002-09-15 the committee is considering that
+     question.  EDG 3.0 allows that syntax.  Therefore, we do as
+     well.  */
+  if (qualifying_scope && TYPE_P (qualifying_scope))
+    qualifying_scope = TYPE_MAIN_VARIANT (qualifying_scope);
+
   declarator = make_declarator (cdk_id);
-  declarator->u.id.name = id;
+  declarator->u.id.qualifying_scope = qualifying_scope;
+  declarator->u.id.unqualified_name = unqualified_name;
   declarator->u.id.sfk = sfk_none;
 
   return declarator;
@@ -10160,9 +10174,7 @@ cp_parser_using_declaration (cp_parser* parser)
       if (at_class_scope_p ())
 	{
 	  /* Create the USING_DECL.  */
-	  decl = do_class_using_decl (build_nt (SCOPE_REF,
-						parser->scope,
-						identifier));
+	  decl = do_class_using_decl (parser->scope, identifier);
 	  /* Add it to the list of members in this class.  */
 	  finish_member_declaration (decl);
 	}
@@ -11018,33 +11030,36 @@ cp_parser_direct_declarator (cp_parser* parser,
 	}
       else if (first && dcl_kind != CP_PARSER_DECLARATOR_ABSTRACT)
 	{
-	  tree id;
+	  tree qualifying_scope;
+	  tree unqualified_name;
 
 	  /* Parse a declarator-id */
 	  if (dcl_kind == CP_PARSER_DECLARATOR_EITHER)
 	    cp_parser_parse_tentatively (parser);
-	  id = cp_parser_declarator_id (parser);
+	  unqualified_name = cp_parser_declarator_id (parser);
+	  qualifying_scope = parser->scope;
 	  if (dcl_kind == CP_PARSER_DECLARATOR_EITHER)
 	    {
 	      if (!cp_parser_parse_definitely (parser))
-		id = error_mark_node;
-	      else if (TREE_CODE (id) != IDENTIFIER_NODE)
+		unqualified_name = error_mark_node;
+	      else if (qualifying_scope
+		       || (TREE_CODE (unqualified_name) 
+			   != IDENTIFIER_NODE))
 		{
 		  cp_parser_error (parser, "expected unqualified-id");
-		  id = error_mark_node;
+		  unqualified_name = error_mark_node;
 		}
 	    }
 
-	  if (id == error_mark_node)
+	  if (unqualified_name == error_mark_node)
 	    {
 	      declarator = cp_error_declarator;
 	      break;
 	    }
 
-	  if (TREE_CODE (id) == SCOPE_REF && at_namespace_scope_p ())
+	  if (qualifying_scope && at_namespace_scope_p ()
+	      && TREE_CODE (qualifying_scope) == TYPENAME_TYPE)
 	    {
-	      tree scope = TREE_OPERAND (id, 0);
-
 	      /* In the declaration of a member of a template class
 	     	 outside of the class itself, the SCOPE will sometimes
 	     	 be a TYPENAME_TYPE.  For example, given:
@@ -11061,40 +11076,30 @@ cp_parser_direct_declarator (cp_parser* parser,
 	     	 `S<T>::R' not a type.  However, if `S' is
 	     	 specialized, then this `i' will not be used, so there
 	     	 is no harm in resolving the types here.  */
-	      if (TREE_CODE (scope) == TYPENAME_TYPE)
-		{
-		  tree type;
-
-		  /* Resolve the TYPENAME_TYPE.  */
-		  type = resolve_typename_type (scope,
-						 /*only_current_p=*/false);
-		  /* If that failed, the declarator is invalid.  */
-		  if (type == error_mark_node)
-		    error ("%<%T::%D%> is not a type",
-			   TYPE_CONTEXT (scope),
-			   TYPE_IDENTIFIER (scope));
-		  /* Build a new DECLARATOR.  */
-		  id = build_nt (SCOPE_REF, type, TREE_OPERAND (id, 1));
-		}
+	      tree type;
+	      
+	      /* Resolve the TYPENAME_TYPE.  */
+	      type = resolve_typename_type (qualifying_scope,
+					    /*only_current_p=*/false);
+	      /* If that failed, the declarator is invalid.  */
+	      if (type == error_mark_node)
+		error ("%<%T::%D%> is not a type",
+		       TYPE_CONTEXT (qualifying_scope),
+		       TYPE_IDENTIFIER (qualifying_scope));
+	      qualifying_scope = type;
 	    }
 
-	  declarator = make_id_declarator (id);
-	  if (id)
+	  declarator = make_id_declarator (qualifying_scope, 
+					   unqualified_name);
+	  if (unqualified_name)
 	    {
 	      tree class_type;
-	      tree unqualified_name;
 
-	      if (TREE_CODE (id) == SCOPE_REF
-		  && CLASS_TYPE_P (TREE_OPERAND (id, 0)))
-		{
-		  class_type = TREE_OPERAND (id, 0);
-		  unqualified_name = TREE_OPERAND (id, 1);
-		}
+	      if (qualifying_scope
+		  && CLASS_TYPE_P (qualifying_scope))
+		class_type = qualifying_scope;
 	      else
-		{
-		  class_type = current_class_type;
-		  unqualified_name = id;
-		}
+		class_type = current_class_type;
 
 	      if (class_type)
 		{
@@ -11111,7 +11116,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 
 		  if (ctor_dtor_or_conv_p && declarator->u.id.sfk != sfk_none)
 		    *ctor_dtor_or_conv_p = -1;
-		  if (TREE_CODE (id) == SCOPE_REF
+		  if (qualifying_scope
 		      && TREE_CODE (unqualified_name) == TYPE_DECL
 		      && CLASSTYPE_USE_TEMPLATE (TREE_TYPE (unqualified_name)))
 		    {
@@ -11333,8 +11338,6 @@ cp_parser_cv_qualifier_seq_opt (cp_parser* parser)
 static tree
 cp_parser_declarator_id (cp_parser* parser)
 {
-  tree id_expression;
-
   /* The expression must be an id-expression.  Assume that qualified
      names are the names of types so that:
 
@@ -11349,20 +11352,11 @@ cp_parser_declarator_id (cp_parser* parser)
        int S<T>::R<T>::i = 3;
 
      will work, too.  */
-  id_expression = cp_parser_id_expression (parser,
-					   /*template_keyword_p=*/false,
-					   /*check_dependency_p=*/false,
-					   /*template_p=*/NULL,
-					   /*declarator_p=*/true);
-  /* If the name was qualified, create a SCOPE_REF to represent
-     that.  */
-  if (parser->scope)
-    {
-      id_expression = build_nt (SCOPE_REF, parser->scope, id_expression);
-      parser->scope = NULL_TREE;
-    }
-
-  return id_expression;
+  return cp_parser_id_expression (parser,
+				  /*template_keyword_p=*/false,
+				  /*check_dependency_p=*/false,
+				  /*template_p=*/NULL,
+				  /*declarator_p=*/true);
 }
 
 /* Parse a type-id.
@@ -13064,7 +13058,8 @@ cp_parser_member_declaration (cp_parser* parser)
 
 	      /* Create the bitfield declaration.  */
 	      decl = grokbitfield (identifier
-				   ? make_id_declarator (identifier)
+				   ? make_id_declarator (NULL_TREE,
+							 identifier)
 				   : NULL,
 				   &decl_specifiers,
 				   width);
@@ -14383,13 +14378,13 @@ cp_parser_check_declarator_template_parameters (cp_parser* parser,
   switch (declarator->kind)
     {
     case cdk_id:
-      if (TREE_CODE (declarator->u.id.name) == SCOPE_REF)
+      if (declarator->u.id.qualifying_scope)
 	{
 	  tree scope;
 	  tree member;
 
-	  scope = TREE_OPERAND (declarator->u.id.name, 0);
-	  member = TREE_OPERAND (declarator->u.id.name, 1);
+	  scope = declarator->u.id.qualifying_scope;
+	  member = declarator->u.id.unqualified_name;
 
 	  while (scope && CLASS_TYPE_P (scope))
 	    {
@@ -14412,10 +14407,10 @@ cp_parser_check_declarator_template_parameters (cp_parser* parser,
 	      scope = TYPE_CONTEXT (scope);
 	    }
 	}
-
-      /* If the DECLARATOR has the form `X<y>' then it uses one
-	 additional level of template parameters.  */
-      if (TREE_CODE (declarator->u.id.name) == TEMPLATE_ID_EXPR)
+      else if (TREE_CODE (declarator->u.id.unqualified_name) 
+	       == TEMPLATE_ID_EXPR)
+	/* If the DECLARATOR has the form `X<y>' then it uses one
+	   additional level of template parameters.  */
 	++num_templates;
 
       return cp_parser_check_template_parameters (parser,
