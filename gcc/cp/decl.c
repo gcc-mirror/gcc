@@ -87,6 +87,8 @@ static tree lookup_tag PARAMS ((enum tree_code, tree,
 static void set_identifier_type_value_with_scope
 	PARAMS ((tree, tree, struct binding_level *));
 static void record_unknown_type PARAMS ((tree, const char *));
+static tree builtin_function_1 PARAMS ((const char *, tree, tree, int,
+                                      enum built_in_class, const char *));
 static tree build_library_fn_1 PARAMS ((tree, enum tree_code, tree));
 static int member_function_or_else PARAMS ((tree, tree, enum overload_flags));
 static void bad_specifiers PARAMS ((tree, const char *, int, int, int, int,
@@ -3145,6 +3147,10 @@ duplicate_decls (newdecl, olddecl)
     {
       if (TREE_CODE (newdecl) != FUNCTION_DECL)
 	{
+          /* Avoid warnings redeclaring anticipated built-ins.  */
+          if (DECL_ANTICIPATED (olddecl))
+            return 0;
+
 	  /* If you declare a built-in or predefined function name as static,
 	     the old definition is overridden, but optionally warn this was a
 	     bad choice of name.  */
@@ -3172,7 +3178,10 @@ duplicate_decls (newdecl, olddecl)
 	}
       else if (!types_match)
 	{
-	  if ((DECL_EXTERN_C_P (newdecl)
+          /* Avoid warnings redeclaring anticipated built-ins.  */
+          if (DECL_ANTICIPATED (olddecl))
+            ;  /* Do nothing yet.  */
+	  else if ((DECL_EXTERN_C_P (newdecl)
 	       && DECL_EXTERN_C_P (olddecl))
 	      || compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
 			    TYPE_ARG_TYPES (TREE_TYPE (olddecl))))
@@ -3614,6 +3623,7 @@ duplicate_decls (newdecl, olddecl)
       TREE_READONLY (olddecl) = TREE_READONLY (newdecl);
       TREE_THIS_VOLATILE (olddecl) = TREE_THIS_VOLATILE (newdecl);
       TREE_SIDE_EFFECTS (olddecl) = TREE_SIDE_EFFECTS (newdecl);
+      COPY_DECL_RTL (newdecl, olddecl);
     }
 
   /* Merge the storage class information.  */
@@ -5507,7 +5517,12 @@ lookup_namespace_name (namespace, name)
       /* If we have a single function from a using decl, pull it out.  */
       if (TREE_CODE (val) == OVERLOAD && ! really_overloaded_fn (val))
 	val = OVL_FUNCTION (val);
-      return val;
+
+      /* Ignore built-in functions that haven't been prototyped yet.  */
+      if (!val || !DECL_P(val)
+          || !DECL_LANG_SPECIFIC(val)
+          || !DECL_ANTICIPATED (val))
+        return val;
     }
 
   error ("`%D' undeclared in namespace `%D'", name, namespace);
@@ -5786,14 +5801,6 @@ select_decl (binding, flags)
   tree val;
   val = BINDING_VALUE (binding);
 
-  /* When we implicitly declare some builtin entity, we mark it
-     DECL_ANTICIPATED, so that we know to ignore it until it is
-     really declared.  */
-  if (val && DECL_P (val)
-      && DECL_LANG_SPECIFIC (val)
-      && DECL_ANTICIPATED (val))
-    return NULL_TREE;
-
   if (LOOKUP_NAMESPACES_ONLY (flags))
     {
       /* We are not interested in types. */
@@ -5843,9 +5850,21 @@ unqualified_namespace_lookup (name, flags, spacesp)
 	*spacesp = tree_cons (scope, NULL_TREE, *spacesp);
       val = binding_for_name (name, scope);
 
-      /* Initialize binding for this context. */
-      BINDING_VALUE (b) = BINDING_VALUE (val);
-      BINDING_TYPE (b) = BINDING_TYPE (val);
+      /* Ignore anticipated built-in functions.  */
+      if (val && BINDING_VALUE (val)
+          && DECL_P (BINDING_VALUE (val))
+          && DECL_LANG_SPECIFIC (BINDING_VALUE (val))
+          && DECL_ANTICIPATED (BINDING_VALUE (val)))
+        {
+          BINDING_VALUE (b) = NULL_TREE;
+          BINDING_TYPE (b) = NULL_TREE;
+        }
+      else
+        {
+          /* Initialize binding for this context. */
+          BINDING_VALUE (b) = BINDING_VALUE (val);
+          BINDING_TYPE (b) = BINDING_TYPE (val);
+        }
 
       /* Add all _DECLs seen through local using-directives. */
       for (level = current_binding_level;
@@ -6435,12 +6454,6 @@ cxx_init_decl_processing ()
       flag_inline_functions = 0;
     }
 
-  /* In C++, we never create builtin functions whose name does not
-     begin with `__'.  Users should be using headers to get prototypes
-     in C++.  It would be nice if we could warn when `-fbuiltin' is
-     used explicitly, but we do not have that information.  */
-  flag_no_builtin = 1;
-
   /* Initially, C.  */
   current_lang_name = lang_name_c;
 
@@ -6704,10 +6717,9 @@ cp_make_fname_decl (id, type_dep)
   return decl;
 }
 
-/* Entry point for the benefit of c_common_nodes_and_builtins.
-
-   Make a definition for a builtin function named NAME and whose data type
-   is TYPE.  TYPE should be a function type with argument types.
+/* Make a definition for a builtin function named NAME in the current
+   namespace, whose data type is TYPE and whose context is CONTEXT.
+   TYPE should be a function type with argument types.
 
    CLASS and CODE tell later passes how to compile calls to this function.
    See tree.h for possible values.
@@ -6715,10 +6727,11 @@ cp_make_fname_decl (id, type_dep)
    If LIBNAME is nonzero, use that for DECL_ASSEMBLER_NAME,
    the name to be called if we can't opencode the function.  */
 
-tree
-builtin_function (name, type, code, class, libname)
+static tree
+builtin_function_1 (name, type, context, code, class, libname)
      const char *name;
      tree type;
+     tree context;
      int code;
      enum built_in_class class;
      const char *libname;
@@ -6726,23 +6739,13 @@ builtin_function (name, type, code, class, libname)
   tree decl = build_library_fn_1 (get_identifier (name), ERROR_MARK, type);
   DECL_BUILT_IN_CLASS (decl) = class;
   DECL_FUNCTION_CODE (decl) = code;
+  DECL_CONTEXT (decl) = context;
 
   /* The return builtins leave the current function.  */
   if (code == BUILT_IN_RETURN || code == BUILT_IN_EH_RETURN)
     TREE_THIS_VOLATILE (decl) = 1;
 
-  my_friendly_assert (DECL_CONTEXT (decl) == NULL_TREE, 392);
-
-  /* All builtins that don't begin with an `_' should go in the `std'
-     namespace.  */
-  if (name[0] != '_')
-    {
-      push_namespace (std_identifier);
-      DECL_CONTEXT (decl) = std_node;
-    }
   pushdecl (decl);
-  if (name[0] != '_')
-    pop_namespace ();
 
   /* Since `pushdecl' relies on DECL_ASSEMBLER_NAME instead of DECL_NAME,
      we cannot change DECL_ASSEMBLER_NAME until we have installed this
@@ -6760,6 +6763,39 @@ builtin_function (name, type, code, class, libname)
   decl_attributes (&decl, NULL_TREE, 0);
 
   return decl;
+}
+
+/* Entry point for the benefit of c_common_nodes_and_builtins.
+
+   Make a defintion for a builtin function named NAME and whose data type
+   is TYPE.  TYPE should be a function type with argument types.  This
+   function places the anticipated declaration in the global namespace
+   and additionally in the std namespace if appropriate.
+
+   CLASS and CODE tell later passes how to compile calls to this function.
+   See tree.h for possible values.
+
+   If LIBNAME is nonzero, use that for DECL_ASSEMBLER_NAME,
+   the name to be called if we can't opencode the function.  */
+
+tree
+builtin_function (name, type, code, class, libname)
+     const char *name;
+     tree type;
+     int code;
+     enum built_in_class class;
+     const char *libname;
+{
+  /* All builtins that don't begin with an '_' should additionally
+     go in the 'std' namespace.  */
+  if (name[0] != '_')
+    {
+      push_namespace (std_identifier);
+      builtin_function_1 (name, type, std_node, code, class, libname);
+      pop_namespace ();
+    }
+
+  return builtin_function_1 (name, type, NULL_TREE, code, class, libname);
 }
 
 /* Generate a FUNCTION_DECL with the typical flags for a runtime library
