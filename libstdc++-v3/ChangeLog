@@ -1,3 +1,10 @@
+2001-07-25  H.J. Lu <hjl@gnu.org>
+
+	* configure.target (cpu_include_dir): Set to `config/cpu/mips'
+	for mips.
+
+	* config/cpu/mips/bits/atomicity.h: New.
+
 2001-07-25  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* acinclude.m4: CHECK_MATH_DECL_AND_LINKAGE for hypot, hypotf,
