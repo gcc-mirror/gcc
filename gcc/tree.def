@@ -1,0 +1,632 @@
+/* This file contains the definitions and documentation for the
+   tree codes used in the GNU C compiler.
+   Copyright (C) 1987, 1988 Free Software Foundation, Inc.
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+
+ 
+/* The third argument can be:
+   "x" for an exceptional code (fits no category).
+   "t" for a type object code.
+   "b" for a lexical block.
+   "c" for codes for constants.
+   "d" for codes for declarations (also serving as variable refs).
+   "r" for codes for references to storage.
+   "<" for codes for comparison expressions.
+   "1" for codes for unary arithmetic expressions.
+   "2" for codes for binary arithmetic expressions.
+   "s" for codes for expressions with inherent side effects.
+   "e" for codes for other kinds of expressions.  */
+
+/* For `r', `e', `<', `1', `2', `s' and `x' nodes,
+   the 4th element is the number of argument slots to allocate.
+   This determines the size of the tree node object.  */
+
+/* Any erroneous construct is parsed into a node of this type.
+   This type of node is accepted without complaint in all contexts
+   by later parsing activities, to avoid multiple error messages
+   for one error.
+   No fields in these nodes are used except the TREE_CODE.  */
+DEFTREECODE (ERROR_MARK, "error_mark", "x", 0)
+
+/* Used to represent a name (such as, in the DECL_NAME of a decl node).
+   Internally it looks like a STRING_CST node.
+   There is only one IDENTIFIER_NODE ever made for any particular name.
+   Use `get_identifier' to get it (or create it, the first time).  */
+DEFTREECODE (IDENTIFIER_NODE, "identifier_node", "x", -1)
+
+/* Used to hold information to identify an operator (or combination
+   of two operators) considered as a `noun' rather than a `verb'.
+   The first operand is encoded in the TREE_TYPE field.  */
+DEFTREECODE (OP_IDENTIFIER, "op_identifier", "x", 2)
+
+/* Has the TREE_VALUE and TREE_PURPOSE fields.  */
+/* These nodes are made into lists by chaining through the
+   TREE_CHAIN field.  The elements of the list live in the
+   TREE_VALUE fields, while TREE_PURPOSE fields are occasionally
+   used as well to get the effect of Lisp association lists.  */
+DEFTREECODE (TREE_LIST, "tree_list", "x", 2)
+
+/* These nodes contain an array of tree nodes.  */
+DEFTREECODE (TREE_VEC, "tree_vec", "x", 2)
+
+/* A symbol binding block.  These are arranged in a tree,
+   where the BLOCK_SUBBLOCKS field contains a chain of subblocks
+   chained through the BLOCK_CHAIN field.
+   BLOCK_SUPERCONTEXT points to the parent block.
+     For a block which represents the outermost scope of a function, it
+     points to the FUNCTION_DECL node.
+   BLOCK_VARS points to a chain of decl nodes.
+   BLOCK_TYPE_TAGS points to a chain of types which have their own names.
+   BLOCK_CHAIN points to the next BLOCK at the same level.
+   BLOCK_ABSTRACT_ORIGIN points to the original (abstract) tree node which
+   this block is an instance of, or else is NULL to indicate that this
+   block is not an instance of anything else.  When non-NULL, the value
+   could either point to another BLOCK node or it could point to a
+   FUNCTION_DECL node (e.g. in the case of a block representing the
+   outermost scope of a particular inlining of a function).
+   BLOCK_ABSTRACT is non-zero if the block represents an abstract
+   instance of a block (i.e. one which is nested within an abstract
+   instance of a inline function. */
+DEFTREECODE (BLOCK, "block", "b", 0)
+
+/* Each data type is represented by a tree node whose code is one of
+   the following:  */
+/* Each node that represents a data type has a component TYPE_SIZE
+   containing a tree that is an expression for the size in bits.
+   The TYPE_MODE contains the machine mode for values of this type.
+   The TYPE_POINTER_TO field contains a type for a pointer to this type,
+     or zero if no such has been created yet.
+   The TYPE_NEXT_VARIANT field is used to chain together types
+     that are variants made by type modifiers such as "const" and "volatile".
+   The TYPE_MAIN_VARIANT field, in any member of such a chain,
+     points to the start of the chain.
+   The TYPE_NONCOPIED_PARTS field is a list specifying which parts
+     of an object of this type should *not* be copied by assignment.
+     The TREE_PURPOSE of each element is the offset of the part
+     and the TREE_VALUE is the size in bits of the part.
+   The TYPE_NAME field contains info on the name used in the program
+     for this type (for GDB symbol table output).  It is either a
+     TYPE_DECL node, for types that are typedefs, or an IDENTIFIER_NODE
+     in the case of structs, unions or enums that are known with a tag,
+     or zero for types that have no special name.
+   The TYPE_CONTEXT for any sort of type which could have a name or
+    which could have named members (e.g. tagged types in C/C++) will
+    point to the node which represents the scope of the given type, or
+    will be NULL_TREE if the type has "file scope".  For most types, this
+    will point to a BLOCK node or a FUNCTION_DECL node, but it could also
+    point to a FUNCTION_TYPE node (for types whose scope is limited to the
+    formal parameter list of some function type specification) or it
+    could point to a RECORD_TYPE or UNION_TYPE node (for C++ "member" types).
+    For non-tagged-types, TYPE_CONTEXT need not be set to anything in
+    particular, since any type which is of some type category  (e.g.
+    an array type or a function type) which cannot either have a name
+    itself or have named members doesn't really have a "scope" per se.  */
+/* TREE_CHAIN is used for ENUMERAL_TYPE, RECORD_TYPE and UNION_TYPE
+   nodes used as forward-references to names; see below.  */
+
+DEFTREECODE (VOID_TYPE, "void_type", "t", 0)	/* The void type in C */
+
+/* Integer types in all languages, including char in C.  */
+/* Has components TYPE_MIN_VALUE, TYPE_MAX_VALUE (expressions, inclusive)
+   and TYPE_PRECISION (number of bits used by this type).
+   In the case of a subrange type in Pascal, the TREE_TYPE
+   of this will point at the supertype (another INTEGER_TYPE).
+   Otherwise, the TREE_TYPE is zero.  */
+DEFTREECODE (INTEGER_TYPE, "integer_type", "t", 0)
+
+/* C's float and double.  Different floating types are distinguished
+   by machine mode and by the TYPE_SIZE and the TYPE_PRECISION.  */
+DEFTREECODE (REAL_TYPE, "real_type", "t", 0)
+
+/* Complex number types.  The TREE_TYPE field is the data type
+   of the real and imaginary parts.  */
+DEFTREECODE (COMPLEX_TYPE, "complex_type", "t", 0)
+
+/* C enums.  The type node looks just like an INTEGER_TYPE node.
+   The symbols for the values of the enum type are defined by
+   CONST_DECL nodes, but the type does not point to them;
+   however, the TREE_VALUES is a list in which each elements' TREE_PURPOSE
+   is a name and the TREE_VALUE is the value (an INTEGER_CST node).  */
+/* A forward reference `enum foo' when no enum named foo is defined yet
+   has zero (a null pointer) in its TYPE_SIZE.  The tag name is in
+   the TYPE_NAME field.  If the type is later defined, the normal
+   fields are filled in.
+   RECORD_TYPE and UNION_TYPE forward refs are treated similarly.  */
+DEFTREECODE (ENUMERAL_TYPE, "enumeral_type", "t", 0)
+
+/* Pascal's boolean type (true or false are the only values);
+   no special fields needed.  */
+DEFTREECODE (BOOLEAN_TYPE, "boolean_type", "t", 0)
+
+/* CHAR in Pascal; not used in C.
+   No special fields needed.  */
+DEFTREECODE (CHAR_TYPE, "char_type", "t", 0)
+
+/* All pointer-to-x types have code POINTER_TYPE.
+   The TREE_TYPE points to the node for the type pointed to.  */
+DEFTREECODE (POINTER_TYPE, "pointer_type", "t", 0)
+
+/* An offset is a pointer relative to an object.
+   The TREE_TYPE field is the type of the object at the offset.
+   The TYPE_OFFSET_BASETYPE points to the node for the type of object
+   that the offset is relative to.  */
+DEFTREECODE (OFFSET_TYPE, "offset_type", "t", 0)
+
+/* A reference is like a pointer except that it is coerced
+   automatically to the value it points to.  Used in C++.  */
+DEFTREECODE (REFERENCE_TYPE, "reference_type", "t", 0)
+
+/* METHOD_TYPE is the type of a function which takes an extra first
+   argument for "self", which is not present in the declared argument list.
+   The TREE_TYPE is the return type of the method.  The TYPE_METHOD_BASETYPE
+   is the type of "self".  TYPE_ARG_TYPES is the real argument list, which
+   includes the hidden argument for "self".  */
+DEFTREECODE (METHOD_TYPE, "method_type", "t", 0)
+
+/* Used for Pascal; details not determined right now.  */
+DEFTREECODE (FILE_TYPE, "file_type", "t", 0)
+
+/* Types of arrays.  Special fields:
+   TREE_TYPE		  Type of an array element.
+   TYPE_DOMAIN		  Type to index by.
+			    Its range of values specifies the array length.
+   TYPE_SEP		  Expression for units from one elt to the next.
+   TYPE_SEP_UNIT	  Number of bits in a unit for previous.
+ The field TYPE_POINTER_TO (TREE_TYPE (array_type)) is always nonzero
+ and holds the type to coerce a value of that array type to in C.  */
+/* Array types in C or Pascal */
+DEFTREECODE (ARRAY_TYPE, "array_type", "t", 0)
+
+/* Types of sets for Pascal.  Special fields are the same as
+   in an array type.  The target type is always a boolean type.  */
+DEFTREECODE (SET_TYPE, "set_type", "t", 0)
+
+/* Not known whether Pascal really needs this
+   or what it should contain.  */
+DEFTREECODE (STRING_TYPE, "string_type", "t", 0)
+
+/* Struct in C, or record in Pascal.  */
+/* Special fields:
+   TYPE_FIELDS  chain of FIELD_DECLs for the fields of the struct.
+   A few may need to be added for Pascal.  */
+/* See the comment above, before ENUMERAL_TYPE, for how
+   forward references to struct tags are handled in C.  */
+DEFTREECODE (RECORD_TYPE, "record_type", "t", 0)
+
+/* Union in C.  Like a struct, except that the offsets of the fields
+   will all be zero.  */
+/* See the comment above, before ENUMERAL_TYPE, for how
+   forward references to union tags are handled in C.  */
+DEFTREECODE (UNION_TYPE, "union_type", "t", 0)	/* C union type */
+
+/* Type of functions.  Special fields:
+   TREE_TYPE		    type of value returned.
+   TYPE_ARG_TYPES      list of types of arguments expected.
+	this list is made of TREE_LIST nodes.
+   Types of "Procedures" in languages where they are different from functions
+   have code FUNCTION_TYPE also, but then TREE_TYPE is zero or void type.  */
+DEFTREECODE (FUNCTION_TYPE, "function_type", "t", 0)
+
+/* This is a language-specific kind of type.
+   Its meaning is defined by the language front end.
+   layout_type does not know how to lay this out,
+   so the front-end must do so manually.  */
+DEFTREECODE (LANG_TYPE, "lang_type", "t", 0)
+
+/* Expressions */
+
+/* First, the constants.  */
+
+/* Contents are in TREE_INT_CST_LOW and TREE_INT_CST_HIGH fields,
+   32 bits each, giving us a 64 bit constant capability.
+   Note: constants of type char in Pascal are INTEGER_CST,
+   and so are pointer constants such as nil in Pascal or NULL in C.
+   `(int *) 1' in C also results in an INTEGER_CST.  */
+DEFTREECODE (INTEGER_CST, "integer_cst", "c", 2)
+
+/* Contents are in TREE_REAL_CST field.  Also there is TREE_CST_RTL.  */
+DEFTREECODE (REAL_CST, "real_cst", "c", 3)
+
+/* Contents are in TREE_REALPART and TREE_IMAGPART fields,
+   whose contents are other constant nodes.
+   Also there is TREE_CST_RTL.  */
+DEFTREECODE (COMPLEX_CST, "complex_cst", "c", 3)
+
+/* Contents are TREE_STRING_LENGTH and TREE_STRING_POINTER fields.
+   Also there is TREE_CST_RTL.  */
+DEFTREECODE (STRING_CST, "string_cst", "c", 3)
+
+/* Declarations.  All references to names are represented as ..._DECL nodes.
+   The decls in one binding context are chained through the TREE_CHAIN field.
+   Each DECL has a DECL_NAME field which contains an IDENTIFIER_NODE.
+    (Some decls, most often labels, may have zero as the DECL_NAME).
+   DECL_CONTEXT points to the node representing the context in which
+    this declaration has its scope.  For FIELD_DECLs, this is the
+    RECORD_TYPE or UNION_TYPE node that the field is a member of.  For
+    VAR_DECL, PARM_DECL, FUNCTION_DECL, LABEL_DECL, and CONST_DECL nodes,
+    this points to the FUNCTION_DECL for the containing function, or else
+    yields NULL_TREE if the given decl has "file scope".
+   DECL_ABSTRACT_ORIGIN, if non-NULL, points to the original (abstract)
+    ..._DECL node of which this decl is an (inlined or template expanded)
+    instance.
+   The TREE_TYPE field holds the data type of the object, when relevant.
+    LABEL_DECLs have no data type.  For TYPE_DECL, the TREE_TYPE field
+    contents are the type whose name is being declared.
+   The DECL_ALIGN, DECL_SIZE,
+    and DECL_MODE fields exist in decl nodes just as in type nodes.
+    They are unused in LABEL_DECL, TYPE_DECL and CONST_DECL nodes.
+
+   DECL_OFFSET holds an integer number of bits offset for the location.
+   DECL_VOFFSET holds an expression for a variable offset; it is
+   to be multiplied by DECL_VOFFSET_UNIT (an integer).
+   These fields are relevant only in FIELD_DECLs and PARM_DECLs.
+
+   DECL_INITIAL holds the value to initialize a variable to,
+   or the value of a constant.  For a function, it holds the body
+   (a node of type BLOCK representing the function's binding contour
+   and whose body contains the function's statements.)  For a LABEL_DECL
+   in C, it is a flag, nonzero if the label's definition has been seen.
+
+   PARM_DECLs use a special field:
+   DECL_ARG_TYPE is the type in which the argument is actually
+    passed, which may be different from its type within the function.
+
+   FUNCTION_DECLs use four special fields:
+   DECL_ARGUMENTS holds a chain of PARM_DECL nodes for the arguments.
+   DECL_RESULT holds a RESULT_DECL node for the value of a function,
+    or it is 0 for a function that returns no value.
+    (C functions returning void have zero here.)
+   DECL_RESULT_TYPE holds the type in which the result is actually
+    returned.  This is usually the same as the type of DECL_RESULT,
+    but (1) it may be a wider integer type and
+    (2) it remains valid, for the sake of inlining, even after the
+    function's compilation is done.
+   DECL_FUNCTION_CODE is a code number that is nonzero for
+    built-in functions.  Its value is an enum built_in_function
+    that says which built-in function it is.
+
+   DECL_SOURCE_FILE holds a filename string and DECL_SOURCE_LINE
+   holds a line number.  In some cases these can be the location of
+   a reference, if no definition has been seen.
+
+   DECL_ABSTRACT is non-zero if the decl represents an abstract instance
+   of a decl (i.e. one which is nested within an abstract instance of a
+   inline function.  */
+
+DEFTREECODE (FUNCTION_DECL, "function_decl", "d", 0)
+DEFTREECODE (LABEL_DECL, "label_decl", "d", 0)
+DEFTREECODE (CONST_DECL, "const_decl", "d", 0)
+DEFTREECODE (TYPE_DECL, "type_decl", "d", 0)
+DEFTREECODE (VAR_DECL, "var_decl", "d", 0)
+DEFTREECODE (PARM_DECL, "parm_decl", "d", 0)
+DEFTREECODE (RESULT_DECL, "result_decl", "d", 0)
+DEFTREECODE (FIELD_DECL, "field_decl", "d", 0)
+
+/* References to storage.  */
+
+/* Value is structure or union component.
+   Operand 0 is the structure or union (an expression);
+   operand 1 is the field (a node of type FIELD_DECL).  */
+DEFTREECODE (COMPONENT_REF, "component_ref", "r", 2)
+
+/* Reference to a group of bits within an object.  Similar to COMPONENT_REF
+   except the position is given explicitly rather than via a FIELD_DECL.
+   Operand 0 is the structure or union expression;
+   operand 1 is a tree giving the number of bits being referenced;
+   operand 2 is a tree giving the position of the first referenced bit.
+   The field can be either a signed or unsigned field;
+   TREE_UNSIGNED says which.  */
+DEFTREECODE (BIT_FIELD_REF, "bit_field_ref", "r", 3)
+   
+/* C unary `*' or Pascal `^'.  One operand, an expression for a pointer.  */
+DEFTREECODE (INDIRECT_REF, "indirect_ref", "r", 1)
+
+/* Reference to the contents of an offset
+   (a value whose type is an OFFSET_TYPE).
+   Operand 0 is the object within which the offset is taken.
+   Operand 1 is the offset.  */
+DEFTREECODE (OFFSET_REF, "offset_ref", "r", 2)
+
+/* Pascal `^` on a file.  One operand, an expression for the file.  */
+DEFTREECODE (BUFFER_REF, "buffer_ref", "r", 1)
+
+/* Array indexing in languages other than C.
+   Operand 0 is the array; operand 1 is a list of indices
+   stored as a chain of TREE_LIST nodes.  */
+DEFTREECODE (ARRAY_REF, "array_ref", "r", 2)
+
+/* Constructor: return an aggregate value made from specified components.
+   In C, this is used only for structure and array initializers.
+   The first "operand" is really a pointer to the RTL,
+   for constant constructors only.
+   The second operand is a list of component values
+   made out of a chain of TREE_LIST nodes.  */
+DEFTREECODE (CONSTRUCTOR, "constructor", "e", 2)
+
+/* The expression types are mostly straightforward,
+   with the fourth argument of DEFTREECODE saying
+   how many operands there are.
+   Unless otherwise specified, the operands are expressions.  */
+
+/* Contains two expressions to compute, one followed by the other.
+   the first value is ignored.  The second one's value is used.  */
+DEFTREECODE (COMPOUND_EXPR, "compound_expr", "e", 2)
+
+/* Assignment expression.  Operand 0 is the what to set; 1, the new value.  */
+DEFTREECODE (MODIFY_EXPR, "modify_expr", "e", 2)
+
+/* Initialization expression.  Operand 0 is the variable to initialize;
+   Operand 1 is the initializer.  */
+DEFTREECODE (INIT_EXPR, "init_expr", "e", 2)
+
+/* For TARGET_EXPR, operand 0 is the target of an initialization,
+   operand 1 is the initializer for the target,
+   and operand 2 is the cleanup for this node, if any.  */
+DEFTREECODE (TARGET_EXPR, "target_expr", "e", 3)
+
+/* Conditional expression ( ... ? ... : ...  in C).
+   Operand 0 is the condition.
+   Operand 1 is the then-value.
+   Operand 2 is the else-value.  */
+DEFTREECODE (COND_EXPR, "cond_expr", "e", 3)
+
+/* Declare local variables, including making RTL and allocating space.
+   Operand 0 is a chain of VAR_DECL nodes for the variables.
+   Operand 1 is the body, the expression to be computed using 
+   the variables.  The value of operand 1 becomes that of the BIND_EXPR.
+   Operand 2 is the BLOCK that corresponds to these bindings
+   for debugging purposes.  If this BIND_EXPR is actually expanded,
+   that sets the TREE_USED flag in the BLOCK.
+
+   The BIND_EXPR is not responsible for informing parsers
+   about these variables.  If the body is coming from the input file,
+   then the code that creates the BIND_EXPR is also responsible for 
+   informing the parser of the variables.
+
+   If the BIND_EXPR is ever expanded, its TREE_USED flag is set.
+   This tells the code for debugging symbol tables not to ignore the BIND_EXPR.
+   If the BIND_EXPR should be output for debugging but will not be expanded, 
+   set the TREE_USED flag by hand.
+
+   In order for the BIND_EXPR to be known at all, the code that creates it
+   must also install it as a subblock in the tree of BLOCK
+   nodes for the function.  */
+DEFTREECODE (BIND_EXPR, "bind_expr", "e", 3)
+
+/* Function call.  Operand 0 is the function.
+   Operand 1 is the argument list, a list of expressions
+   made out of a chain of TREE_LIST nodes.
+   There is no operand 2.  That slot is used for the
+   CALL_EXPR_RTL macro (see preexpand_calls).  */
+DEFTREECODE (CALL_EXPR, "call_expr", "e", 3)
+
+/* Call a method.  Operand 0 is the method, whose type is a METHOD_TYPE.
+   Operand 1 is the expression for "self".
+   Operand 2 is the list of explicit arguments.  */
+DEFTREECODE (METHOD_CALL_EXPR, "method_call_expr", "e", 4)
+
+/* Specify a value to compute along with its corresponding cleanup.
+   Operand 0 argument is an expression whose value needs a cleanup.
+   Operand 1 is an RTL_EXPR which will eventually represent that value.
+   Operand 2 is the cleanup expression for the object.
+     The RTL_EXPR is used in this expression, which is how the expression
+     manages to act on the proper value.
+   The cleanup is executed when the value is no longer needed,
+   which is not at precisely the same time that this value is computed.  */
+DEFTREECODE (WITH_CLEANUP_EXPR, "with_cleanup_expr", "e", 3)
+
+/* Simple arithmetic.  Operands must have the same machine mode
+   and the value shares that mode.  */
+DEFTREECODE (PLUS_EXPR, "plus_expr", "2", 2)
+DEFTREECODE (MINUS_EXPR, "minus_expr", "2", 2)
+DEFTREECODE (MULT_EXPR, "mult_expr", "2", 2)
+
+/* Division for integer result that rounds the quotient toward zero.  */
+/* Operands must have the same machine mode.
+   In principle they may be real, but that is not currently supported.
+   The result is always fixed point, and it has the same type as the
+   operands if they are fixed point.   */
+DEFTREECODE (TRUNC_DIV_EXPR, "trunc_div_expr", "2", 2)
+
+/* Division for integer result that rounds the quotient toward infinity.  */
+DEFTREECODE (CEIL_DIV_EXPR, "ceil_div_expr", "2", 2)
+
+/* Division for integer result that rounds toward minus infinity.  */
+DEFTREECODE (FLOOR_DIV_EXPR, "floor_div_expr", "2", 2)
+
+/* Division for integer result that rounds toward nearest integer.  */
+DEFTREECODE (ROUND_DIV_EXPR, "round_div_expr", "2", 2)
+
+/* Four kinds of remainder that go with the four kinds of division.  */
+DEFTREECODE (TRUNC_MOD_EXPR, "trunc_mod_expr", "2", 2)
+DEFTREECODE (CEIL_MOD_EXPR, "ceil_mod_expr", "2", 2)
+DEFTREECODE (FLOOR_MOD_EXPR, "floor_mod_expr", "2", 2)
+DEFTREECODE (ROUND_MOD_EXPR, "round_mod_expr", "2", 2)
+
+/* Division for real result.  The two operands must have the same type.
+   In principle they could be integers, but currently only real
+   operands are supported.  The result must have the same type
+   as the operands.  */
+DEFTREECODE (RDIV_EXPR, "rdiv_expr", "2", 2)
+
+/* Division which is not supposed to need rounding.
+   Used for pointer subtraction in C.  */
+DEFTREECODE (EXACT_DIV_EXPR, "exact_div_expr", "2", 2)
+
+/* Conversion of real to fixed point: four ways to round,
+   like the four ways to divide.
+   CONVERT_EXPR can also be used to convert a real to an integer,
+   and that is what is used in languages that do not have ways of
+   specifying which of these is wanted.  Maybe these are not needed.  */
+DEFTREECODE (FIX_TRUNC_EXPR, "fix_trunc_expr", "1", 1)
+DEFTREECODE (FIX_CEIL_EXPR, "fix_ceil_expr", "1", 1)
+DEFTREECODE (FIX_FLOOR_EXPR, "fix_floor_expr", "1", 1)
+DEFTREECODE (FIX_ROUND_EXPR, "fix_round_expr", "1", 1)
+
+/* Conversion of an integer to a real.  */
+DEFTREECODE (FLOAT_EXPR, "float_expr", "1", 1)
+
+/* Exponentiation.  Operands may have any types;
+   constraints on value type are not known yet.  */
+DEFTREECODE (EXPON_EXPR, "expon_expr", "2", 2)
+
+/* Unary negation.  Value has same type as operand.  */
+DEFTREECODE (NEGATE_EXPR, "negate_expr", "1", 1)
+
+DEFTREECODE (MIN_EXPR, "min_expr", "2", 2)
+DEFTREECODE (MAX_EXPR, "max_expr", "2", 2)
+DEFTREECODE (ABS_EXPR, "abs_expr", "1", 1)
+DEFTREECODE (FFS_EXPR, "ffs_expr", "1", 1)
+
+/* Shift operations for shift and rotate.
+   Shift is supposed to mean logical shift if done on an
+   unsigned type, arithmetic shift on a signed type.
+   The second operand is the number of bits to
+   shift by, and must always have mode SImode.
+   The result has the same mode as the first operand.  */
+DEFTREECODE (LSHIFT_EXPR, "alshift_expr", "2", 2)
+DEFTREECODE (RSHIFT_EXPR, "arshift_expr", "2", 2)
+DEFTREECODE (LROTATE_EXPR, "lrotate_expr", "2", 2)
+DEFTREECODE (RROTATE_EXPR, "rrotate_expr", "2", 2)
+
+/* Bitwise operations.  Operands have same mode as result.  */
+DEFTREECODE (BIT_IOR_EXPR, "bit_ior_expr", "2", 2)
+DEFTREECODE (BIT_XOR_EXPR, "bit_xor_expr", "2", 2)
+DEFTREECODE (BIT_AND_EXPR, "bit_and_expr", "2", 2)
+DEFTREECODE (BIT_ANDTC_EXPR, "bit_andtc_expr", "2", 2)
+DEFTREECODE (BIT_NOT_EXPR, "bit_not_expr", "1", 1)
+
+/* Combination of boolean values or of integers considered only
+   as zero or nonzero.  ANDIF and ORIF allow the second operand
+   not to be computed if the value of the expression is determined
+   from the first operand.  AND and OR always compute the second
+   operand whether its value is needed or not (for side effects).  */
+DEFTREECODE (TRUTH_ANDIF_EXPR, "truth_andif_expr", "e", 2)
+DEFTREECODE (TRUTH_ORIF_EXPR, "truth_orif_expr", "e", 2)
+DEFTREECODE (TRUTH_AND_EXPR, "truth_and_expr", "2", 2)
+DEFTREECODE (TRUTH_OR_EXPR, "truth_or_expr", "2", 2)
+DEFTREECODE (TRUTH_NOT_EXPR, "truth_not_expr", "e", 1)
+
+/* Relational operators.
+   `EQ_EXPR' and `NE_EXPR' are allowed for any types.
+   The others are allowed only for integer (or pointer or enumeral)
+   or real types.
+   In all cases the operands will have the same type,
+   and the value is always the type used by the language for booleans.  */
+DEFTREECODE (LT_EXPR, "lt_expr", "<", 2)
+DEFTREECODE (LE_EXPR, "le_expr", "<", 2)
+DEFTREECODE (GT_EXPR, "gt_expr", "<", 2)
+DEFTREECODE (GE_EXPR, "ge_expr", "<", 2)
+DEFTREECODE (EQ_EXPR, "eq_expr", "<", 2)
+DEFTREECODE (NE_EXPR, "ne_expr", "<", 2)
+
+/* Operations for Pascal sets.  Not used now.  */
+DEFTREECODE (IN_EXPR, "in_expr", "2", 2)
+DEFTREECODE (SET_LE_EXPR, "set_le_expr", "<", 2)
+DEFTREECODE (CARD_EXPR, "card_expr", "1", 1)
+DEFTREECODE (RANGE_EXPR, "range_expr", "2", 2)
+
+/* Represents a conversion of type of a value.
+   All conversions, including implicit ones, must be
+   represented by CONVERT_EXPR nodes.  */
+DEFTREECODE (CONVERT_EXPR, "convert_expr", "1", 1)
+
+/* Represents a conversion expected to require no code to be generated.  */
+DEFTREECODE (NOP_EXPR, "nop_expr", "1", 1)
+
+/* Value is same as argument, but guaranteed not an lvalue.  */
+DEFTREECODE (NON_LVALUE_EXPR, "non_lvalue_expr", "1", 1)
+
+/* Represents something we computed once and will use multiple times.
+   First operand is that expression.  Second is the function decl
+   in which the SAVE_EXPR was created.  The third operand is the RTL,
+   nonzero only after the expression has been computed.  */
+DEFTREECODE (SAVE_EXPR, "save_expr", "e", 3)
+
+/* Represents something whose RTL has already been expanded
+   as a sequence which should be emitted when this expression is expanded.
+   The first operand is the RTL to emit.  It is the first of a chain of insns.
+   The second is the RTL expression for the result.  */
+DEFTREECODE (RTL_EXPR, "rtl_expr", "e", 2)
+
+/* & in C.  Value is the address at which the operand's value resides.
+   Operand may have any mode.  Result mode is Pmode.  */
+DEFTREECODE (ADDR_EXPR, "addr_expr", "e", 1)
+
+/* Non-lvalue reference or pointer to an object.  */
+DEFTREECODE (REFERENCE_EXPR, "reference_expr", "e", 1)
+
+/* Operand is a function constant; result is a function variable value
+   of typeEPmode.  Used only for languages that need static chains.  */
+DEFTREECODE (ENTRY_VALUE_EXPR, "entry_value_expr", "e", 1)
+
+/* Given two real or integer operands of the same type,
+   returns a complex value of the corresponding complex type.  */
+DEFTREECODE (COMPLEX_EXPR, "complex_expr", "2", 2)
+
+/* Complex conjugate of operand.  Used only on complex types.
+   The value has the same type as the operand.  */
+DEFTREECODE (CONJ_EXPR, "conj_expr", "1", 1)
+
+/* Used only on an operand of complex type, these return
+   a value of the corresponding component type.  */
+DEFTREECODE (REALPART_EXPR, "realpart_expr", "1", 1)
+DEFTREECODE (IMAGPART_EXPR, "imagpart_expr", "1", 1)
+
+/* Nodes for ++ and -- in C.
+   The second arg is how much to increment or decrement by.
+   For a pointer, it would be the size of the object pointed to.  */
+DEFTREECODE (PREDECREMENT_EXPR, "predecrement_expr", "e", 2)
+DEFTREECODE (PREINCREMENT_EXPR, "preincrement_expr", "e", 2)
+DEFTREECODE (POSTDECREMENT_EXPR, "postdecrement_expr", "e", 2)
+DEFTREECODE (POSTINCREMENT_EXPR, "postincrement_expr", "e", 2)
+
+/* These types of expressions have no useful value,
+   and always have side effects.  */
+
+/* A label definition, encapsulated as a statement.
+   Operand 0 is the LABEL_DECL node for the label that appears here.
+   The type should be void and the value should be ignored.  */
+DEFTREECODE (LABEL_EXPR, "label_expr", "s", 1)
+
+/* GOTO.  Operand 0 is a LABEL_DECL node.
+   The type should be void and the value should be ignored.  */
+DEFTREECODE (GOTO_EXPR, "goto_expr", "s", 1)
+
+/* RETURN.  Evaluates operand 0, then returns from the current function.
+   Presumably that operand is an assignment that stores into the
+   RESULT_DECL that hold the value to be returned.
+   The operand may be null.
+   The type should be void and the value should be ignored.  */
+DEFTREECODE (RETURN_EXPR, "return_expr", "s", 1)
+
+/* Exit the inner most loop conditionally.  Operand 0 is the condition.
+   The type should be void and the value should be ignored.  */
+DEFTREECODE (EXIT_EXPR, "exit_expr", "s", 1)
+
+/* A loop.  Operand 0 is the body of the loop.
+   It must contain an EXIT_EXPR or is an infinite loop.
+   The type should be void and the value should be ignored.  */
+DEFTREECODE (LOOP_EXPR, "loop_expr", "s", 1)
+
+/*
+Local variables:
+mode:c
+version-control: t
+End:
+*/
