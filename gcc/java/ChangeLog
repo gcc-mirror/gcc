@@ -1,5 +1,9 @@
 2002-03-11  Eric Blake  <ebb9@email.byu.edu>
 
+	* lex.c: Adjust comments to GNU standards.
+
+2002-03-11  Eric Blake  <ebb9@email.byu.edu>
+
 	Fix for PR java/5902:
 	* lex.c (java_lex): Fix parsing of literals.
 
