@@ -490,7 +490,7 @@ in the following sections.
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
 -m96bit-long-double  -mregparm=@var{num}  -momit-leaf-frame-pointer @gol
--mno-red-zone @gol
+-mno-red-zone -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model} @gol
 -m32  -m64}
 
@@ -8401,6 +8401,17 @@ avoids the instructions to save, set up and restore frame pointers and
 makes an extra register available in leaf functions.  The option
 @option{-fomit-frame-pointer} removes the frame pointer for all functions
 which might make debugging harder.
+
+@item -mtls-direct-seg-refs
+@itemx -mno-tls-direct-seg-refs
+@opindex mtls-direct-seg-refs
+Controls whether TLS variables may be accessed with offsets from the
+TLS segment register (@code{%gs} for 32-bit, @code{%fs} for 64-bit),
+or whether the thread base pointer must be added.  Whether or not this
+is legal depends on the operating system, and whether it maps the
+segment to cover the entire TLS area.
+
+For systems that use GNU libc, the default is on.
 @end table
 
 These @samp{-m} switches are supported in addition to the above
