@@ -1,3 +1,8 @@
+2001-03-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (cr logic): Add original POWER mnemonic alternative
+	for crnot.  Set operands[5] in splitter.
+
 2001-03-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/i370/xm-mvs.h, config/i370/xm-oe.h,
