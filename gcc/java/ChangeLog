@@ -1,3 +1,9 @@
+2004-04-12  Michael Chastain  <mec.gnu@mindspring.com>
+
+	PR bootstrap/14893:
+	* Make-lang.in (java.install-man): Install from either build
+	tree or source tree, whichever has the file first.
+
 2004-03-23  Tom Tromey  <tromey@redhat.com>
 
 	* gcj.texi (Extensions): Document GCJ_PROPERTIES.
