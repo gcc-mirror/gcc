@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *                             $Revision$
+ *                             $Revision: 1.4 $
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -52,6 +52,7 @@
 #include "output.h"
 #include "except.h"
 #include "tm_p.h"
+#include "langhooks.h"
 
 #include "ada.h"
 #include "types.h"
@@ -108,9 +109,15 @@ const char *gnat_tree_code_name[] = {
 #undef DEFTREECODE
 
 /* Structure giving our language-specific hooks.  */
-struct lang_hooks lang_hooks = {gnat_init, 0, gnat_init_options,
-				gnat_decode_option, 0,
-			        {0, 0, 0, 0, 0, 0, 0, 0}};
+
+#undef  LANG_HOOKS_INIT
+#define LANG_HOOKS_INIT			gnat_init
+#undef  LANG_HOOKS_INIT_OPTIONS
+#define LANG_HOOKS_INIT_OPTIONS		gnat_init_options
+#undef  LANG_HOOKS_DECODE_OPTION
+#define LANG_HOOKS_DECODE_OPTION	gnat_decode_option
+
+struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 /* gnat standard argc argv */
 

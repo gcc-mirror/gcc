@@ -90,6 +90,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "convert.h"
 #include "ggc.h"
 #include "diagnostic.h"
+#include "langhooks.h"
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
 #define FFECOM_GCC_INCLUDE 1	/* Enable -I. */
@@ -14634,11 +14635,16 @@ static void ffe_init PARAMS ((void));
 static void ffe_finish PARAMS ((void));
 static void ffe_init_options PARAMS ((void));
 
-struct lang_hooks lang_hooks = {ffe_init,
-				ffe_finish,
-				ffe_init_options,
-				ffe_decode_option,
-				NULL /* post_options */};
+#undef  LANG_HOOKS_INIT
+#define LANG_HOOKS_INIT			ffe_init
+#undef  LANG_HOOKS_FINISH
+#define LANG_HOOKS_FINISH		ffe_finish
+#undef  LANG_HOOKS_INIT_OPTIONS
+#define LANG_HOOKS_INIT_OPTIONS		ffe_init_options
+#undef  LANG_HOOKS_DECODE_OPTION
+#define LANG_HOOKS_DECODE_OPTION	ffe_decode_option
+
+struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 /* used by print-tree.c */
 

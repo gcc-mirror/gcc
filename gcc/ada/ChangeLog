@@ -1,3 +1,11 @@
+2001-10-17  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (misc.o): Depend on langhooks.h.
+	* misc.c: Include it.
+	(LANG_HOOKS_INIT, LANG_HOOKS_INIT_OPTIONS): New.
+	(LANG_HOOKS_DECODE_OPTION): New.
+	(lang_hooks): Use LANG_HOOKS_INITIALIZER.
+
 2001-10-16  Florian Weimer  <fw@deneb.enyo.de>
 
 	* trans.c (tree_transform): Adjust to recent change in
