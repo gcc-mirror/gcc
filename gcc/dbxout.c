@@ -2076,7 +2076,11 @@ dbxout_parms (parms)
 	    dbxout_finish_symbol (parms);
 	  }
 	else if (GET_CODE (DECL_RTL (parms)) == MEM
-		 && XEXP (DECL_RTL (parms), 0) != const0_rtx)
+		 && XEXP (DECL_RTL (parms), 0) != const0_rtx
+		 /* ??? A constant address for a parm can happen
+		    when the reg it lives in is equiv to a constant in memory.
+		    Should make this not happen, after 2.4.  */
+		 && ! CONSTANT_P (XEXP (DECL_RTL (parms), 0)))
 	  {
 	    /* Parm was passed in registers but lives on the stack.  */
 
