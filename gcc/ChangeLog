@@ -1,5 +1,7 @@
 2003-08-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* builtins.def: Categorize.
+
 	* builtins.def (BUILT_IN_CABS, BUILT_IN_CABSF, BUILT_IN_CABSL):
 	Mind fp rounding.
 	(BUILT_IN_FFSL): Use DEF_EXT_LIB_BUILTIN.
