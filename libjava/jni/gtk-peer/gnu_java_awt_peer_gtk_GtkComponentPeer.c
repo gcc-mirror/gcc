@@ -602,11 +602,38 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_addExposeFilt
   void *ptr = NSA_GET_PTR (env, obj);
   jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
   g_assert (gref);
+  GtkObject *filterobj;
+  GtkWidget *vbox, *layout;
+  GList *children;
 
   gdk_threads_enter ();
 
-  g_signal_handlers_block_by_func (GTK_OBJECT(ptr), *pre_event_handler, *gref);
-  g_signal_connect( GTK_OBJECT(ptr), "event",
+  // GtkFramePeer is built as a GtkLayout inside a GtkVBox inside a GtkWindow.
+  // Events go to the GtkLayout layer, so we filter them there.
+  if (GTK_IS_WINDOW(ptr))
+    {
+      children = gtk_container_get_children(GTK_CONTAINER(ptr));
+      vbox = children->data;
+      g_assert (GTK_IS_VBOX(vbox));
+
+      children = gtk_container_get_children(GTK_CONTAINER(vbox));
+      do
+      {
+        layout = children->data;
+        children = children->next;
+      }
+      while (!GTK_IS_LAYOUT (layout) && children != NULL);
+      g_assert (GTK_IS_LAYOUT(layout));
+
+      filterobj = GTK_OBJECT(layout);
+    }
+  else
+    {
+      filterobj = GTK_OBJECT(ptr);
+    }
+
+  g_signal_handlers_block_by_func (filterobj, *pre_event_handler, *gref);
+  g_signal_connect( filterobj, "event",
                     G_CALLBACK(filter_expose_event_handler), *gref);
 
   gdk_threads_leave ();
@@ -618,12 +645,39 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_removeExposeF
   void *ptr = NSA_GET_PTR (env, obj);
   jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
   g_assert (gref);
+  GtkObject *filterobj;
+  GtkWidget *vbox, *layout;
+  GList *children;
 
   gdk_threads_enter ();
 
-  g_signal_handlers_disconnect_by_func (GTK_OBJECT(ptr),
+  // GtkFramePeer is built as a GtkLayout inside a GtkVBox inside a GtkWindow.
+  // Events go to the GtkLayout layer, so we filter them there.
+  if (GTK_IS_WINDOW(ptr))
+    {
+      children = gtk_container_get_children(GTK_CONTAINER(ptr));
+      vbox = children->data;
+      g_assert (GTK_IS_VBOX(vbox));
+
+      children = gtk_container_get_children(GTK_CONTAINER(vbox));
+      do
+      {
+        layout = children->data;
+        children = children->next;
+      }
+      while (!GTK_IS_LAYOUT (layout) && children != NULL);
+      g_assert (GTK_IS_LAYOUT(layout));
+
+      filterobj = GTK_OBJECT(layout);
+    }
+  else
+    {
+      filterobj = GTK_OBJECT(ptr);
+    }
+
+  g_signal_handlers_disconnect_by_func (filterobj,
                                         *filter_expose_event_handler, *gref);
-  g_signal_handlers_unblock_by_func (GTK_OBJECT(ptr), *pre_event_handler, *gref);
+  g_signal_handlers_unblock_by_func (filterobj, *pre_event_handler, *gref);
 
   gdk_threads_leave ();
 }

@@ -1,3 +1,9 @@
+2004-01-27  David Jee  <djee@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c
+	(addExposeFilter): Handle GtkFramePeer separately.
+	(removeExposeFilter): Likewise.
+
 2004-01-27  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/protocol/http/Connection.java
