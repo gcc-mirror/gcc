@@ -138,12 +138,11 @@ complete_type (tree type)
 }
 
 /* Like complete_type, but issue an error if the TYPE cannot be completed.
-   VALUE is used for informative diagnostics.  DIAG_TYPE indicates the type
-   of diagnostic: 0 for an error, 1 for a warning, 2 for a pedwarn.
+   VALUE is used for informative diagnostics.
    Returns NULL_TREE if the type cannot be made complete.  */
 
 tree
-complete_type_or_diagnostic (tree type, tree value, int diag_type)
+complete_type_or_else (tree type, tree value)
 {
   type = complete_type (type);
   if (type == error_mark_node)
@@ -151,7 +150,7 @@ complete_type_or_diagnostic (tree type, tree value, int diag_type)
     return NULL_TREE;
   else if (!COMPLETE_TYPE_P (type))
     {
-      cxx_incomplete_type_diagnostic (value, type, diag_type);
+      cxx_incomplete_type_diagnostic (value, type, 0);
       return NULL_TREE;
     }
   else

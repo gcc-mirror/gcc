@@ -1,5 +1,13 @@
 2005-02-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* cp-tree.h (complete_type_or_else): Remove macro.
+	(complete_type_or_diagnostic): Rename to complete_type_or_else
+	and remove last argument.
+	* typeck.c (complete_type_or_diagnostic): Rename to
+	complete_type_or_else and remove last argument.
+
+2005-02-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* cp-tree.h (commonparms): Remove prototype.
 	(convert_arguments): Likewise.
 	(PFN_FROM_PTRMEMFUNC): Remove.
