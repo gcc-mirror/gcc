@@ -1048,21 +1048,21 @@ profile_function (file)
 
   text_section ();
 
-#ifdef STRUCT_VALUE_INCOMING_REGNUM
+#if defined(STRUCT_VALUE_INCOMING_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
   if (sval)
     ASM_OUTPUT_REG_PUSH (file, STRUCT_VALUE_INCOMING_REGNUM);
 #else
-#ifdef STRUCT_VALUE_REGNUM
+#if defined(STRUCT_VALUE_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
   if (sval)
     ASM_OUTPUT_REG_PUSH (file, STRUCT_VALUE_REGNUM);
 #endif
 #endif
 
-#ifdef STATIC_CHAIN_INCOMING_REGNUM
+#if defined(STATIC_CHAIN_INCOMING_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
   if (cxt)
     ASM_OUTPUT_REG_PUSH (file, STATIC_CHAIN_INCOMING_REGNUM);
 #else
-#ifdef STATIC_CHAIN_REGNUM
+#if defined(STATIC_CHAIN_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
   if (cxt)
     ASM_OUTPUT_REG_PUSH (file, STATIC_CHAIN_REGNUM);
 #endif
@@ -1070,21 +1070,21 @@ profile_function (file)
 
   FUNCTION_PROFILER (file, profile_label_no);
 
-#ifdef STATIC_CHAIN_INCOMING_REGNUM
+#if defined(STATIC_CHAIN_INCOMING_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
   if (cxt)
     ASM_OUTPUT_REG_POP (file, STATIC_CHAIN_INCOMING_REGNUM);
 #else
-#ifdef STATIC_CHAIN_REGNUM
+#if defined(STATIC_CHAIN_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
   if (cxt)
     ASM_OUTPUT_REG_POP (file, STATIC_CHAIN_REGNUM);
 #endif
 #endif
 
-#ifdef STRUCT_VALUE_INCOMING_REGNUM
+#if defined(STRUCT_VALUE_INCOMING_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
   if (sval)
     ASM_OUTPUT_REG_POP (file, STRUCT_VALUE_INCOMING_REGNUM);
 #else
-#ifdef STRUCT_VALUE_REGNUM
+#if defined(STRUCT_VALUE_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
   if (sval)
     ASM_OUTPUT_REG_POP (file, STRUCT_VALUE_REGNUM);
 #endif
