@@ -2860,7 +2860,7 @@ purge_addressof_1 (loc, insn, force, store)
 
       insns = gen_sequence ();
       end_sequence ();
-      emit_insns_before (insns, insn);
+      emit_insn_before (insns, insn);
       return;
     }
   else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF && ! force)
