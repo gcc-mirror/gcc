@@ -1536,6 +1536,8 @@ move_by_pieces_ninsns (l, align)
       max_size = GET_MODE_SIZE (mode);
     }
 
+  if (l)
+    abort ();
   return n_insns;
 }
 

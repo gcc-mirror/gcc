@@ -438,7 +438,7 @@ make_node (code)
 
     case 't':
       TYPE_UID (t) = next_type_uid++;
-      TYPE_ALIGN (t) = 1;
+      TYPE_ALIGN (t) = char_type_node ? TYPE_ALIGN (char_type_node) : 0;
       TYPE_USER_ALIGN (t) = 0;
       TYPE_MAIN_VARIANT (t) = t;
       TYPE_ATTRIBUTES (t) = NULL_TREE;

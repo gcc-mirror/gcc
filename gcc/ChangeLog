@@ -1,3 +1,9 @@
+2000-10-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.c (make_node, case 't'): Set alignment to that of
+	char_type_node.
+	* expr.c (move_by_pieces_ninsns): Abort if some length remains.
+
 2000-10-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (site.exp): Define HAVE_LIBSTDCXX_V3.
