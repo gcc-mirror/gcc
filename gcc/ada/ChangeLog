@@ -1,3 +1,8 @@
+2003-09-04  Michael Matz  <matz@suse.de>
+
+	* misc.c: Include "target.h".
+	* Make-lang.in (misc.o): Add dependency on target.h.
+
 2003-09-03  DJ Delorie  <dj@redhat.com>
 
 	* misc.c (default_pass_by_ref): Convert to calls.return_in_memory
