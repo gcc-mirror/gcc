@@ -1,3 +1,8 @@
+2003-09-29  Paul Koning  <ni1d@arrl.net>
+
+	* MAINTAINERS: Move myself from "Write After Approval"
+	to CPU platform maintainers for pdp11 platform.
+
 2003-09-23  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* MAINTAINERS: Move myself from 'Write After Approval' to
