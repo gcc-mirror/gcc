@@ -760,10 +760,12 @@ pop_scope (void)
 	      TREE_CHAIN (p) = BLOCK_VARS (block);
 	      BLOCK_VARS (block) = p;
 	    }
-	  /* If this is the file scope, must set DECL_CONTEXT on
-	     these.  Do so even for externals, so that
-	     same_translation_unit_p works.  */
-	  if (scope == file_scope)
+	  /* If this is the file scope, and we are processing more
+	     than one translation unit in this compilation, set
+	     DECL_CONTEXT of each decl to the TRANSLATION_UNIT_DECL.
+	     This makes same_translation_unit_p work, and causes
+	     static declarations to be given disambiguating suffixes.  */
+	  if (scope == file_scope && num_in_fnames > 1)
 	    DECL_CONTEXT (p) = context;
 
 	  /* Fall through.  */
