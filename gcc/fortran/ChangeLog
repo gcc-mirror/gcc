@@ -1,3 +1,14 @@
+2004-10-28  Scott Robert Ladd  <scott.ladd@coyotegulch.com>
+
+	PR fortran/13490, PR fortran/17912
+	* gcc/fortran/gfortran.h: Added pedantic_min_int to gfc_integer_info
+	* gcc/fortran/gfortran.h: Added ARITH_ASYMMETRIC to arith
+ 	* gcc/fortran/arith.c: Added support for an "asymmetric integer"
+	warning when compiling with pedantic.
+	* gcc/fortran/arith.c: Set minimum integer values to reflect
+	realities of two's complement signed integers. Added
+	pedantic minimum.
+
 2004-10-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* Make-lang.in (F95_ADDITIONAL_OBJS): Kill.
