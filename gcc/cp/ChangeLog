@@ -1,5 +1,11 @@
 2002-07-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/2862, c++/2863
+	* pt.c (determine_specialization): Compare the length of
+	TYPE_ARG_TYPES.  Tidy.
+
+2002-07-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/3797
 	* decl.c (duplicate_decls): Don't propagate inlining parameters from
 	olddecl to newdecl when newdecl is a specialization of the 

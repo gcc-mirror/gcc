@@ -1,5 +1,10 @@
 2002-07-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	* g++.dg/template/instantiate2.C: New test.
+	* g++.dg/template/spec4.C: New test.
+
+2002-07-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	* g++.dg/template/access2.C: New test.
 	* g++.dg/template/access3.C: New test.
 

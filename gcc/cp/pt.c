@@ -998,28 +998,58 @@ determine_specialization (template_id, decl, targs_out,
 
   for (; fns; fns = OVL_NEXT (fns))
     {
-      tree tmpl;
-
       tree fn = OVL_CURRENT (fns);
 
       if (TREE_CODE (fn) == TEMPLATE_DECL)
-	/* DECL might be a specialization of FN.  */
-	tmpl = fn;
+	{
+	  tree decl_arg_types;
+
+	  /* DECL might be a specialization of FN.  */
+
+	  /* Adjust the type of DECL in case FN is a static member.  */
+	  decl_arg_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
+	  if (DECL_STATIC_FUNCTION_P (fn) 
+	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+	    decl_arg_types = TREE_CHAIN (decl_arg_types);
+
+	  /* Check that the number of function parameters matches.
+	     For example,
+	       template <class T> void f(int i = 0);
+	       template <> void f<int>();
+	     The specialization f<int> is illegal but is not caught
+	     by get_bindings below.  */
+
+	  if (list_length (TYPE_ARG_TYPES (TREE_TYPE (fn)))
+	      != list_length (decl_arg_types))
+	    continue;
+
+	  /* See whether this function might be a specialization of this
+	     template.  */
+	  targs = get_bindings (fn, decl, explicit_targs);
+
+	  if (!targs)
+	    /* We cannot deduce template arguments that when used to
+	       specialize TMPL will produce DECL.  */
+	    continue;
+
+	  /* Save this template, and the arguments deduced.  */
+	  templates = tree_cons (targs, fn, templates);
+	}
       else if (need_member_template)
 	/* FN is an ordinary member function, and we need a
 	   specialization of a member template.  */
-	continue;
+	;
       else if (TREE_CODE (fn) != FUNCTION_DECL)
 	/* We can get IDENTIFIER_NODEs here in certain erroneous
 	   cases.  */
-	continue;
+	;
       else if (!DECL_FUNCTION_MEMBER_P (fn))
 	/* This is just an ordinary non-member function.  Nothing can
 	   be a specialization of that.  */
-	continue;
+	;
       else if (DECL_ARTIFICIAL (fn))
 	/* Cannot specialize functions that are created implicitly.  */
-	continue;
+	;
       else
 	{
 	  tree decl_arg_types;
@@ -1055,21 +1085,7 @@ determine_specialization (template_id, decl, targs_out,
 			 decl_arg_types))
 	    /* They match!  */
 	    candidates = tree_cons (NULL_TREE, fn, candidates);
-
-	  continue;
 	}
-
-      /* See whether this function might be a specialization of this
-	 template.  */
-      targs = get_bindings (tmpl, decl, explicit_targs);
-
-      if (!targs)
-	/* We cannot deduce template arguments that when used to
-	   specialize TMPL will produce DECL.  */
-	continue;
-
-      /* Save this template, and the arguments deduced.  */
-      templates = tree_cons (targs, tmpl, templates);
     }
 
   if (templates && TREE_CHAIN (templates))
