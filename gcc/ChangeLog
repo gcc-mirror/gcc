@@ -1,3 +1,23 @@
+2001-12-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* machmode.h (mode_name, mode_class, mode_size, mode_unit_size,
+	mode_bitsize, mode_mask_array, mode_wider_mode): Set array size in
+	declaration to NUM_MACHINE_MODES.
+	(mode_size, mode_unit_size): Set array type to unsigned char.
+	(mode_bitsize): Set array type to unsigned short.
+
+	* rtl.c (rtx_length): Set array type to unsigned char.
+	(rtx_length, rtx_name, rtx_format, rtx_class): Set array size to
+	NUM_RTX_CODE.
+	(mode_bitsize): Set array type to unsigned short.
+	(mode_size, mode_unit_size): Set array type to unsigned char.
+	(mode_name, mode_class, mode_bitsize, mode_size, mode_unit_size,
+	mode_wider_mode, mode_mask_array): Set array size to
+	NUM_MACHINE_MODES.
+
+	* rtl.h (rtx_length, rtx_name, rtx_format, rtx_class): Set array
+	size in declaration to NUM_RTX_CODE.
+
 2001-12-17  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (unop): Encode RB as $sp.

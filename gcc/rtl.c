@@ -96,7 +96,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   sizeof FORMAT - 1 ,
 
-const int rtx_length[NUM_RTX_CODE + 1] = {
+const unsigned char rtx_length[NUM_RTX_CODE] = {
 #include "rtl.def"
 };
 
@@ -106,7 +106,7 @@ const int rtx_length[NUM_RTX_CODE + 1] = {
 
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   NAME ,
 
-const char * const rtx_name[] = {
+const char * const rtx_name[NUM_RTX_CODE] = {
 #include "rtl.def"		/* rtl expressions are documented here */
 };
 
@@ -117,7 +117,7 @@ const char * const rtx_name[] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  NAME,
 
-const char * const mode_name[] = {
+const char * const mode_name[NUM_MACHINE_MODES] = {
 #include "machmode.def"
 };
 
@@ -127,7 +127,7 @@ const char * const mode_name[] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  CLASS,
 
-const enum mode_class mode_class[] = {
+const enum mode_class mode_class[NUM_MACHINE_MODES] = {
 #include "machmode.def"
 };
 
@@ -138,7 +138,7 @@ const enum mode_class mode_class[] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  BITSIZE,
 
-const unsigned int mode_bitsize[] = {
+const unsigned short mode_bitsize[NUM_MACHINE_MODES] = {
 #include "machmode.def"
 };
 
@@ -149,7 +149,7 @@ const unsigned int mode_bitsize[] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  SIZE,
 
-const unsigned int mode_size[] = {
+const unsigned char mode_size[NUM_MACHINE_MODES] = {
 #include "machmode.def"
 };
 
@@ -160,7 +160,7 @@ const unsigned int mode_size[] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  UNIT,
 
-const unsigned int mode_unit_size[] = {
+const unsigned char mode_unit_size[NUM_MACHINE_MODES] = {
 #include "machmode.def"		/* machine modes are documented here */
 };
 
@@ -173,7 +173,7 @@ const unsigned int mode_unit_size[] = {
 #define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  \
   (unsigned char) WIDER,
 
-const unsigned char mode_wider_mode[] = {
+const unsigned char mode_wider_mode[NUM_MACHINE_MODES] = {
 #include "machmode.def"		/* machine modes are documented here */
 };
 
@@ -184,7 +184,7 @@ const unsigned char mode_wider_mode[] = {
 
 /* Indexed by machine mode, gives mask of significant bits in mode.  */
 
-const unsigned HOST_WIDE_INT mode_mask_array[] = {
+const unsigned HOST_WIDE_INT mode_mask_array[NUM_MACHINE_MODES] = {
 #include "machmode.def"
 };
 
@@ -214,7 +214,7 @@ const enum machine_mode class_narrowest_mode[(int) MAX_MODE_CLASS] = {
    rtx's of that code.  The sequence is a C string in which
    each character describes one operand.  */
 
-const char * const rtx_format[] = {
+const char * const rtx_format[NUM_RTX_CODE] = {
   /* "*" undefined.
          can cause a warning message
      "0" field is unused (or used in a phase-dependent manner)
@@ -249,7 +249,7 @@ const char * const rtx_format[] = {
 /* Indexed by rtx code, gives a character representing the "class" of
    that rtx code.  See rtl.def for documentation on the defined classes.  */
 
-const char rtx_class[] = {
+const char rtx_class[NUM_RTX_CODE] = {
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   CLASS,
 #include "rtl.def"		/* rtl expressions are defined here */
 #undef DEF_RTL_EXPR

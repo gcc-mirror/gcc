@@ -38,7 +38,7 @@ MAX_MACHINE_MODE };
 
 /* Get the name of mode MODE as a string.  */
 
-extern const char * const mode_name[];
+extern const char * const mode_name[NUM_MACHINE_MODES];
 #define GET_MODE_NAME(MODE)		(mode_name[(int) (MODE)])
 
 enum mode_class { MODE_RANDOM, MODE_INT, MODE_FLOAT, MODE_PARTIAL_INT, MODE_CC,
@@ -49,7 +49,7 @@ enum mode_class { MODE_RANDOM, MODE_INT, MODE_FLOAT, MODE_PARTIAL_INT, MODE_CC,
 /* Get the general kind of object that mode MODE represents
    (integer, floating, complex, etc.)  */
 
-extern const enum mode_class mode_class[];
+extern const enum mode_class mode_class[NUM_MACHINE_MODES];
 #define GET_MODE_CLASS(MODE)		(mode_class[(int) (MODE)])
 
 /* Nonzero if MODE is an integral mode.  */
@@ -77,12 +77,12 @@ extern const enum mode_class mode_class[];
 
 /* Get the size in bytes of an object of mode MODE.  */
 
-extern const unsigned int mode_size[];
+extern const unsigned char mode_size[NUM_MACHINE_MODES];
 #define GET_MODE_SIZE(MODE)		(mode_size[(int) (MODE)])
 
 /* Get the size in bytes of the basic parts of an object of mode MODE.  */
 
-extern const unsigned int mode_unit_size[];
+extern const unsigned char mode_unit_size[NUM_MACHINE_MODES];
 #define GET_MODE_UNIT_SIZE(MODE)	(mode_unit_size[(int) (MODE)])
 
 /* Get the number of units in the object.  */
@@ -93,7 +93,7 @@ extern const unsigned int mode_unit_size[];
 
 /* Get the size in bits of an object of mode MODE.  */
 
-extern const unsigned int mode_bitsize[];
+extern const unsigned short mode_bitsize[NUM_MACHINE_MODES];
 #define GET_MODE_BITSIZE(MODE)  (mode_bitsize[(int) (MODE)])
 
 #endif /* not HAVE_MACHINE_MODES */
@@ -103,7 +103,7 @@ extern const unsigned int mode_bitsize[];
 /* Get a bitmask containing 1 for all bits in a word
    that fit within mode MODE.  */
 
-extern const unsigned HOST_WIDE_INT mode_mask_array[];
+extern const unsigned HOST_WIDE_INT mode_mask_array[NUM_MACHINE_MODES];
 
 #define GET_MODE_MASK(MODE) mode_mask_array[(int) (MODE)]
 
@@ -114,7 +114,7 @@ extern const unsigned HOST_WIDE_INT mode_mask_array[];
 
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 
-extern const unsigned char mode_wider_mode[];
+extern const unsigned char mode_wider_mode[NUM_MACHINE_MODES];
 #define GET_MODE_WIDER_MODE(MODE)	((enum machine_mode)mode_wider_mode[(int) (MODE)])
 
 /* Return the mode for data of a given size SIZE and mode class CLASS.
