@@ -1,5 +1,9 @@
 2004-02-06  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/basic_string.h: Fix comment.
+
+2004-02-06  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_construct.h: Wrap overlong lines, reformat
 	according to the coding standards.
 	* include/bits/stl_pair.h: Likewise.

@@ -73,7 +73,7 @@ namespace std
    *                                        [_Rep]
    *                                        _M_length
    *   [basic_string<char_type>]            _M_capacity
-   *   _M_dataplus                          _M_state
+   *   _M_dataplus                          _M_refcount
    *   _M_p ---------------->               unnamed array of char_type
    *  @endcode
    *
