@@ -3806,7 +3806,7 @@ pushdecl (x)
       if (TREE_CODE (x) == FUNCTION_DECL && ! DECL_FUNCTION_MEMBER_P (x))
 	{
 	  t = push_overloaded_decl (x, PUSH_LOCAL);
-	  if (t != x || DECL_LANGUAGE (x) == lang_c)
+	  if (t != x)
 	    return t;
 	  if (!namespace_bindings_p ())
 	    /* We do not need to create a binding for this name;
@@ -3898,7 +3898,13 @@ pushdecl (x)
 	    TREE_PUBLIC (name) = 1;
 
 	  if (!(TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)
-		&& t != NULL_TREE))
+		&& t != NULL_TREE)
+	      /* For an ordinary function, we create a binding from
+		 the mangled name (i.e., NAME) to the DECL.  But, for
+		 an `extern "C"' function, the mangled name and the
+		 ordinary name are the same so we need not do this.  */
+	      && !(TREE_CODE (x) == FUNCTION_DECL && 
+		   DECL_LANGUAGE (x) == lang_c))
 	    {
 	      if (TREE_CODE (x) == FUNCTION_DECL)
 		my_friendly_assert 
@@ -5766,7 +5772,7 @@ lookup_name_current_level (name)
 
   if (b->namespace_p)
     {
-      t =  IDENTIFIER_NAMESPACE_VALUE (name);
+      t = IDENTIFIER_NAMESPACE_VALUE (name);
 
       /* extern "C" function() */
       if (t != NULL_TREE && TREE_CODE (t) == TREE_LIST)
@@ -12138,11 +12144,9 @@ xref_tag (code_type_node, name, globalize)
 	 in global scope.  
          If it is not an IDENTIFIER, this is not a declaration */
       if (b->namespace_p && !class_binding_level
-	  && TREE_CODE (name) == IDENTIFIER_NODE)
-	{
-	  if (IDENTIFIER_NAMESPACE_VALUE (name) == NULL_TREE)
-	    SET_IDENTIFIER_NAMESPACE_VALUE (name, TYPE_NAME (ref));
-	}
+	  && TREE_CODE (name) == IDENTIFIER_NODE
+	  && IDENTIFIER_NAMESPACE_VALUE (name) == NULL_TREE)
+	SET_IDENTIFIER_NAMESPACE_VALUE (name, TYPE_NAME (ref));
 
       if (!globalize && processing_template_decl && IS_AGGR_TYPE (ref))
 	redeclare_class_template (ref, current_template_parms);

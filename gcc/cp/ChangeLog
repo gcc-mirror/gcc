@@ -1,3 +1,12 @@
+1999-09-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (pushdecl): Do create a binding for extern "C" functions,
+	but not for their DECL_ASSEMBLER_NAMEs.
+	(lookup_name_current_level): Fix formatting.
+	(xref_tag): Likewise.
+	* decl2.c (start_objects): Mark static constructors and
+	destructors as used.
+
 1999-09-22  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (define_case_label): Don't crash if we're not in a switch.
