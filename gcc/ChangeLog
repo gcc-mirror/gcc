@@ -1,3 +1,7 @@
+Mon Jan 18 09:56:41 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* invoke.texi (C++ Dialect Options): Document -fno-rtti.
+
 1999-01-18  Vladimir N. Makarov  <vmakarov@cygnus.com>
 
 	*  invoke.texi (-mcpu=740, -mcpu=750): New options.

@@ -1089,10 +1089,23 @@ Disable diagnostics that the standard says a compiler does not need to
 issue.  Currently, this means the diagnostic for a name having multiple 
 meanings within a class.
 
+@item -fpermissive
+Downgrade messages about nonconformant code from errors to warnings.  By
+default, g++ effectively sets @samp{-pedantic-errors} without
+@samp{-pedantic}; this option reverses that.  This behavior and this
+option are superceded by @samp{-pedantic}, which works as it does for GNU C.
+
 @item -frepo
 Enable automatic template instantiation.  This option also implies
 @samp{-fno-implicit-templates}.  @xref{Template Instantiation}, for more
 information.
+
+@item -fno-rtti
+Disable generation of the information used by C++ runtime type
+identification features (@samp{dynamic_cast} and @samp{typeid}).  If you
+don't use those parts of the language (or exception handling, which uses
+@samp{dynamic_cast} internally), you can save some space by using this
+flag.
 
 @item -fstrict-prototype
 Within an @samp{extern "C"} linkage specification, treat a function
