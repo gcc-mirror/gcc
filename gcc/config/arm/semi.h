@@ -38,6 +38,10 @@
 #define TARGET_VERSION fputs (" (ARM/semi-hosted)", stderr);
 #endif
 
+#ifndef TARGET_DEFAULT_FLOAT_ABI
+#define TARGET_DEFAULT_FLOAT_ABI ARM_FLOAT_ABI_HARD
+#endif
+
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT (ARM_FLAG_APCS_FRAME)
 #endif

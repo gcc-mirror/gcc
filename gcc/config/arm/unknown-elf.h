@@ -30,7 +30,7 @@
 
 /* Default to using software floating point.  */
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT	(ARM_FLAG_SOFT_FLOAT)
+#define TARGET_DEFAULT	(0)
 #endif
 
 /* Now we define the strings used to build the spec file.  */

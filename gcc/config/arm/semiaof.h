@@ -32,6 +32,8 @@
 
 #define TARGET_VERSION fputs (" (ARM/semi-hosted)", stderr);
 
+#define TARGET_DEFAULT_FLOAT_ABI ARM_FLOAT_ABI_HARD
+
 #define TARGET_DEFAULT (0)
 
 /* The Norcroft C library defines size_t as "unsigned int".  */

@@ -352,6 +352,9 @@ const char * target_fpe_name = NULL;
 /* Set by the -mfloat-abi=... option.  */
 const char * target_float_abi_name = NULL;
 
+/* Set by the legacy -mhard-float and -msoft-float options.  */
+const char * target_float_switch = NULL;
+
 /* Set by the -mabi=... option.  */
 const char * target_abi_name = NULL;
 
@@ -1078,14 +1081,16 @@ arm_override_options (void)
 	error ("invalid floating point abi: -mfloat-abi=%s",
 	       target_float_abi_name);
     }
-  else
+  else if (target_float_switch)
     {
-      /* Use soft-float target flag.  */
-      if (target_flags & ARM_FLAG_SOFT_FLOAT)
-	arm_float_abi = ARM_FLOAT_ABI_SOFT;
-      else
+      /* This is a bit of a hack to avoid needing target flags for these.  */
+      if (target_float_switch[1] == 'h')
 	arm_float_abi = ARM_FLOAT_ABI_HARD;
+      else
+	arm_float_abi = ARM_FLOAT_ABI_SOFT;
     }
+  else
+    arm_float_abi = TARGET_DEFAULT_FLOAT_ABI;
 
   if (arm_float_abi == ARM_FLOAT_ABI_HARD && TARGET_VFP)
     sorry ("-mfloat-abi=hard and VFP");
