@@ -409,7 +409,6 @@ java_parse_doc_section (c)
 	  break;
 	case '\n': /* ULT */
 	  valid_tag = 1;
-	  break;
 	default:
 	  seen_star = 0;
 	}
