@@ -979,6 +979,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 
 	    while (low++ <= high)
 	      PUSH_PENDING (lookup_label (oldpc + IMMEDIATE_s4));
+	    INVALIDATE_PC;
 	    break;
 	  }
 
@@ -1010,6 +1011,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 		last = match;
 		PUSH_PENDING (lookup_label (oldpc + IMMEDIATE_s4));
 	      }
+	    INVALIDATE_PC;
 	    break;
 	  }
 

@@ -841,7 +841,7 @@ yyparse ()
     }
 
   java_expand_classes ();
-  if (!java_report_errors () && !flag_emit_class_files)
+  if (!java_report_errors () && !flag_syntax_only)
     emit_register_classes ();
   return 0;
 }
