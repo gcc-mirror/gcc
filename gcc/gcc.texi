@@ -4225,6 +4225,12 @@ Define this macro to be a C string representing the suffix for executable
 files on your machine.  If you do not define this macro, GCC will use
 the null string as the suffix for object files.
 
+@findex NO_AUTO_EXE_SUFFIX
+@item NO_AUTO_EXE_SUFFIX
+Define this macro if executable files on your machine have a suffix, but 
+the compiler driver should not automatically append it to the output file
+name, if user hasn't specified one.
+
 @findex HOST_BIT_BUCKET
 @item HOST_BIT_BUCKET
 The name of a file or file-like object on the host system which acts as

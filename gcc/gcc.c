@@ -2888,7 +2888,7 @@ convert_filename (name, do_exe)
     }
 #endif
 
-#ifdef HAVE_EXECUTABLE_SUFFIX
+#if defined(HAVE_EXECUTABLE_SUFFIX) && !defined(NO_AUTO_EXE_SUFFIX)
   /* If there is no filetype, make it the executable suffix (which includes
      the ".").  But don't get confused if we have just "-o".  */
   if (! do_exe || EXECUTABLE_SUFFIX[0] == 0 || (len == 2 && name[0] == '-'))
