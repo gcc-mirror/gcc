@@ -266,7 +266,7 @@ INCLUDES = -I- -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config \
 
 ADA_INCLUDES = -I- -I. -I$(srcdir)
 
-INCLUDES_FOR_SUBDIR = -I. -I.. -I../.. -I../../include -I$(fsrcdir) \
+INCLUDES_FOR_SUBDIR = -I. -I.. -I../.. -I$(fsrcdir) \
 	-I$(fsrcdir)/.. -I$(fsrcdir)/../config -I$(fsrcdir)/../../include
 ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)
 
