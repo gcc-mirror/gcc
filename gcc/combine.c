@@ -4621,7 +4621,7 @@ simplify_set (x)
      we only care about the low bits of the result.
 
      However, on machines without WORD_REGISTER_OPERATIONS defined, we cannot
-     perform a narrower operation that requested since the high-order bits will
+     perform a narrower operation than requested since the high-order bits will
      be undefined.  On machine where it is defined, this transformation is safe
      as long as M1 and M2 have the same number of words.  */
  
@@ -9990,14 +9990,20 @@ simplify_comparison (code, pop0, pop1)
 	  if (GET_CODE (XEXP (op0, 0)) == SUBREG
 	      && ((mode_width
 		   >= GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0)))))
-		  || subreg_lowpart_p (XEXP (op0, 0)))
+#ifdef WORD_REGISTER_OPERATIONS
+		  || subreg_lowpart_p (XEXP (op0, 0))
+#endif
+		  )
 	      && GET_CODE (XEXP (op0, 1)) == CONST_INT
 	      && mode_width <= HOST_BITS_PER_WIDE_INT
 	      && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0))))
 		  <= HOST_BITS_PER_WIDE_INT)
 	      && (INTVAL (XEXP (op0, 1)) & ~ mask) == 0
 	      && 0 == (~ GET_MODE_MASK (GET_MODE (SUBREG_REG (XEXP (op0, 0))))
-		       & INTVAL (XEXP (op0, 1))))
+		       & INTVAL (XEXP (op0, 1)))
+	      && INTVAL (XEXP (op0, 1)) != mask
+	      && (INTVAL (XEXP (op0, 1))
+		  != GET_MODE_MASK (GET_MODE (SUBREG_REG (XEXP (op0, 0))))))
 		       
 	    {
 	      op0
