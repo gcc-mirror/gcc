@@ -136,7 +136,7 @@
                           %{!p: \
 	                    %{pg:gcrt1.o%s gmon.o%s} \
                             %{!pg:crt1.o%s}}}} \
-			crti.o%s" STARTFILE_ARCH_SPEC " \
+			crti.o%s " STARTFILE_ARCH_SPEC " \
 			crtbegin.o%s"
 
 #ifdef SPARC_BI_ARCH
