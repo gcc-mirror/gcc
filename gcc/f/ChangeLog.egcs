@@ -1,3 +1,9 @@
+Wed Oct 22 11:37:41 1997  Richard Henderson  <rth@cygnus.com>
+
+	* com.c (ffecom_expr_): Take an new arg TREE_TYPE that if non-null
+	specifies the type in which to do the calculation.  Change all callers.
+	[FFEBLD_opARRAYREF]: Force the index expr to use sizetype.
+
 Thu Oct 16 02:04:08 1997  Paul Koning <pkoning@xedia.com>
 
 	* Make-lang.in (stmp-f2c.h): Don't configure the runtime

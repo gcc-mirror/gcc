@@ -433,7 +433,7 @@ static ffecomConcatList_ ffecom_concat_list_new_ (ffebld expr,
 static void ffecom_debug_kludge_ (tree aggr, char *aggr_type, ffesymbol member,
 				  tree member_type, ffetargetOffset offset);
 static void ffecom_do_entry_ (ffesymbol fn, int entrynum);
-static tree ffecom_expr_ (ffebld expr, tree dest_tree,
+static tree ffecom_expr_ (ffebld expr, tree type_tree, tree dest_tree,
 			  ffebld dest, bool *dest_used,
 			  bool assignp);
 static tree ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
@@ -2666,11 +2666,15 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
    Recursive descent on expr while making corresponding tree nodes and
    attaching type info and such.  If destination supplied and compatible
    with temporary that would be made in certain cases, temporary isn't
-   made, destination used instead, and dest_used flag set TRUE.  */
+   made, destination used instead, and dest_used flag set TRUE.
+
+   If TREE_TYPE is non-null, it overrides the type that the expression
+   would normally be computed in.  This is most useful for array indices
+   which should be done in sizetype for efficiency.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
-ffecom_expr_ (ffebld expr, tree dest_tree,
+ffecom_expr_ (ffebld expr, tree tree_type, tree dest_tree,
 	      ffebld dest, bool *dest_used,
 	      bool assignp)
 {
@@ -2680,7 +2684,6 @@ ffecom_expr_ (ffebld expr, tree dest_tree,
   ffeinfoBasictype bt;
   ffeinfoKindtype kt;
   tree t;
-  tree tree_type;
   tree dt;			/* decl_tree for an ffesymbol. */
   ffesymbol s;
   enum tree_code code;
@@ -2692,11 +2695,12 @@ ffecom_expr_ (ffebld expr, tree dest_tree,
 
   bt = ffeinfo_basictype (ffebld_info (expr));
   kt = ffeinfo_kindtype (ffebld_info (expr));
+  if (!tree_type)
+    tree_type = ffecom_tree_type[bt][kt];
 
   switch (ffebld_op (expr))
     {
     case FFEBLD_opACCTER:
-      tree_type = ffecom_tree_type[bt][kt];
       {
 	ffebitCount i;
 	ffebit bits = ffebld_accter_bits (expr);
@@ -2760,7 +2764,6 @@ ffecom_expr_ (ffebld expr, tree dest_tree,
       return list;
 
     case FFEBLD_opARRTER:
-      tree_type = ffecom_tree_type[bt][kt];
       {
 	ffetargetOffset i;
 
@@ -2796,7 +2799,6 @@ ffecom_expr_ (ffebld expr, tree dest_tree,
       return list;
 
     case FFEBLD_opCONTER:
-      tree_type = ffecom_tree_type[bt][kt];
       item
 	= ffecom_constantunion (&ffebld_constant_union (ffebld_conter (expr)),
 				bt, kt, tree_type);
@@ -2930,54 +2932,46 @@ ffecom_expr_ (ffebld expr, tree dest_tree,
 	  t = ffecom_2 (ARRAY_REF,
 			TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (t))),
 			t,
-			ffecom_expr (dims[--i]));
+			ffecom_expr_ (dims[--i], sizetype, NULL, NULL,
+				      NULL, FALSE));
 #endif
 
 	return t;
       }
 
     case FFEBLD_opUPLUS:
-      tree_type = ffecom_tree_type[bt][kt];
       return ffecom_1 (NOP_EXPR, tree_type, ffecom_expr (ffebld_left (expr)));
 
     case FFEBLD_opPAREN:	/* ~~~Make sure Fortran rules respected here */
-      tree_type = ffecom_tree_type[bt][kt];
       return ffecom_1 (NOP_EXPR, tree_type, ffecom_expr (ffebld_left (expr)));
 
     case FFEBLD_opUMINUS:
-      tree_type = ffecom_tree_type[bt][kt];
       return ffecom_1 (NEGATE_EXPR, tree_type,
 		       ffecom_expr (ffebld_left (expr)));
 
     case FFEBLD_opADD:
-      tree_type = ffecom_tree_type[bt][kt];
       return ffecom_2 (PLUS_EXPR, tree_type,
 		       ffecom_expr (ffebld_left (expr)),
 		       ffecom_expr (ffebld_right (expr)));
       break;
 
     case FFEBLD_opSUBTRACT:
-      tree_type = ffecom_tree_type[bt][kt];
       return ffecom_2 (MINUS_EXPR, tree_type,
 		       ffecom_expr (ffebld_left (expr)),
 		       ffecom_expr (ffebld_right (expr)));
 
     case FFEBLD_opMULTIPLY:
-      tree_type = ffecom_tree_type[bt][kt];
       return ffecom_2 (MULT_EXPR, tree_type,
 		       ffecom_expr (ffebld_left (expr)),
 		       ffecom_expr (ffebld_right (expr)));
 
     case FFEBLD_opDIVIDE:
-      tree_type = ffecom_tree_type[bt][kt];
-      return
-	ffecom_tree_divide_ (tree_type,
-			     ffecom_expr (ffebld_left (expr)),
-			     ffecom_expr (ffebld_right (expr)),
-			     dest_tree, dest, dest_used);
+      return ffecom_tree_divide_ (tree_type,
+			          ffecom_expr (ffebld_left (expr)),
+			          ffecom_expr (ffebld_right (expr)),
+			          dest_tree, dest, dest_used);
 
     case FFEBLD_opPOWER:
-      tree_type = ffecom_tree_type[bt][kt];
       {
 	ffebld left = ffebld_left (expr);
 	ffebld right = ffebld_right (expr);
@@ -3093,12 +3087,10 @@ ffecom_expr_ (ffebld expr, tree dest_tree,
       }
 
     case FFEBLD_opNOT:
-      tree_type = ffecom_tree_type[bt][kt];
       switch (bt)
 	{
 	case FFEINFO_basictypeLOGICAL:
-	  item
-	    = ffecom_truth_value_invert (ffecom_expr (ffebld_left (expr)));
+	  item = ffecom_truth_value_invert (ffecom_expr (ffebld_left (expr)));
 	  return convert (tree_type, item);
 
 	case FFEINFO_basictypeINTEGER:
@@ -3118,7 +3110,6 @@ ffecom_expr_ (ffebld expr, tree dest_tree,
 	      != FFEINFO_basictypeCHARACTER);
       /* Fall through.	 */
     case FFEBLD_opSUBRREF:
-      tree_type = ffecom_tree_type[bt][kt];
       if (ffeinfo_where (ffebld_info (ffebld_left (expr)))
 	  == FFEINFO_whereINTRINSIC)
 	{			/* Invocation of an intrinsic. */
@@ -3161,7 +3152,6 @@ ffecom_expr_ (ffebld expr, tree dest_tree,
       return item;
 
     case FFEBLD_opAND:
-      tree_type = ffecom_tree_type[bt][kt];
       switch (bt)
 	{
 	case FFEINFO_basictypeLOGICAL:
@@ -3185,7 +3175,6 @@ ffecom_expr_ (ffebld expr, tree dest_tree,
       break;
 
     case FFEBLD_opOR:
-      tree_type = ffecom_tree_type[bt][kt];
       switch (bt)
 	{
 	case FFEINFO_basictypeLOGICAL:
@@ -3210,7 +3199,6 @@ ffecom_expr_ (ffebld expr, tree dest_tree,
 
     case FFEBLD_opXOR:
     case FFEBLD_opNEQV:
-      tree_type = ffecom_tree_type[bt][kt];
       switch (bt)
 	{
 	case FFEINFO_basictypeLOGICAL:
@@ -3234,7 +3222,6 @@ ffecom_expr_ (ffebld expr, tree dest_tree,
       break;
 
     case FFEBLD_opEQV:
-      tree_type = ffecom_tree_type[bt][kt];
       switch (bt)
 	{
 	case FFEINFO_basictypeLOGICAL:
@@ -3263,7 +3250,6 @@ ffecom_expr_ (ffebld expr, tree dest_tree,
       if (ffebld_op (ffebld_left (expr)) == FFEBLD_opANY)
 	return error_mark_node;
 
-      tree_type = ffecom_tree_type[bt][kt];
       switch (bt)
 	{
 	case FFEINFO_basictypeLOGICAL:
@@ -3328,8 +3314,6 @@ ffecom_expr_ (ffebld expr, tree dest_tree,
       code = GE_EXPR;
 
     relational:		/* :::::::::::::::::::: */
-
-      tree_type = ffecom_tree_type[bt][kt];
       switch (ffeinfo_basictype (ffebld_info (ffebld_left (expr))))
 	{
 	case FFEINFO_basictypeLOGICAL:
@@ -3471,7 +3455,6 @@ ffecom_expr_ (ffebld expr, tree dest_tree,
       break;
 
     case FFEBLD_opPERCENT_LOC:
-      tree_type = ffecom_tree_type[bt][kt];
       item = ffecom_arg_ptr_to_expr (ffebld_left (expr), &list);
       return convert (tree_type, item);
 
@@ -11436,7 +11419,7 @@ ffecom_expand_let_stmt (ffebld dest, ffebld source)
 
       if ((TREE_CODE (dest_tree) != VAR_DECL)
 	  || TREE_ADDRESSABLE (dest_tree))
-	source_tree = ffecom_expr_ (source, dest_tree, dest,
+	source_tree = ffecom_expr_ (source, NULL_TREE, dest_tree, dest,
 				    &dest_used, FALSE);
       else
 	{
@@ -11478,7 +11461,7 @@ ffecom_expand_let_stmt (ffebld dest, ffebld source)
 tree
 ffecom_expr (ffebld expr)
 {
-  return ffecom_expr_ (expr, NULL_TREE, NULL, NULL,
+  return ffecom_expr_ (expr, NULL_TREE, NULL_TREE, NULL, NULL,
 		       FALSE);
 }
 
@@ -11489,7 +11472,7 @@ ffecom_expr (ffebld expr)
 tree
 ffecom_expr_assign (ffebld expr)
 {
-  return ffecom_expr_ (expr, NULL_TREE, NULL, NULL,
+  return ffecom_expr_ (expr, NULL_TREE, NULL_TREE, NULL, NULL,
 		       TRUE);
 }
 
@@ -11500,7 +11483,7 @@ ffecom_expr_assign (ffebld expr)
 tree
 ffecom_expr_assign_w (ffebld expr)
 {
-  return ffecom_expr_ (expr, NULL_TREE, NULL, NULL,
+  return ffecom_expr_ (expr, NULL_TREE, NULL_TREE, NULL, NULL,
 		       TRUE);
 }
 
