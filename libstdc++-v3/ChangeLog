@@ -1,3 +1,11 @@
+2002-07-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/7286
+	* libsupc++/new: Add placement delete.
+	* testsuite/18_support/new_delete_placement.cc: New.
+
+	* docs/html/abi.txt: Fix typos.
+	
 2002-07-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/documentation.html: Remove libstdc++-v3.0.86 links,

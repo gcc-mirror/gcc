@@ -139,15 +139,15 @@ one with a new compiler and an old library, and the other with an old
 compiler and a new library, and look for testsuite regressions)
 
 Two.  
-Have the libstdc++ testesuite proactively check the library
-ABI. Probably a couple of items would be covered, although perhaps not
-all would need to be done at once for this to be useful. Compute the
-list of names exported in the shared version of libstdc++
-binary. Then, save this list of names. Have this list of names
-re-computed for each new binary of the same version. Next, use sizeof
-and offset to compute offsets for each structure and type in the
-standard library, saving to another datafile. Then, compute this for
-new binaries, and look for differences.
+Have the libstdc++ testsuite proactive check the library ABI. Probably
+a couple of items would be covered, although perhaps not all would
+need to be done at once for this to be useful. Compute the list of
+names exported in the shared version of libstdc++ binary. Then, save
+this list of names. Have this list of names re-computed for each new
+binary of the same version. Next, use sizeof, alignof, and offset to
+compute offsets for each structure and type in the standard library,
+saving to another datafile. Then, compute this for new binaries, and
+look for differences.
 
 The thought is to choose one or both of these approaches, and to use a
 Makefile hook, perhaps 'make check-abi', to add this capability to the
