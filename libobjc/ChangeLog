@@ -1,3 +1,13 @@
+2004-09-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR libobjc/16448
+	* exception.c: Include config.h
+	(objc_exception_throw): Change _GLIBCXX_SJLJ_EXCEPTIONS to
+	SJLJ_EXCEPTIONS.
+	* configure.ac: Find out what exception handling code we use.
+	* configure: Regenerate.
+	* config.h.in: New file, regenerate.
+
 2004-09-16  Andrew Pinski  <apinski@apple.com>
 
 	* encoding.c (ALTIVEC_VECTOR_MODE): Define a bogus macro.

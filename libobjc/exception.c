@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
    executable file might be covered by the GNU General Public License. */
 
 #include <stdlib.h>
+#include "config.h"
 #include "objc/objc-api.h"
 #include "unwind.h"
 #include "unwind-pe.h"
@@ -356,7 +357,7 @@ objc_exception_throw (id value)
   header->base.exception_cleanup = __objc_exception_cleanup;
   header->value = value;
 
-#ifdef _GLIBCXX_SJLJ_EXCEPTIONS
+#ifdef SJLJ_EXCEPTIONS
   _Unwind_SjLj_RaiseException (&header->base);
 #else
   _Unwind_RaiseException (&header->base);
