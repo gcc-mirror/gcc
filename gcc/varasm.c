@@ -4475,12 +4475,13 @@ default_assemble_visibility (decl, vis)
 
   const char *name, *type;
 
-  name = (* targetm.strip_name_encoding)
-	 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+  name = (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
   type = visibility_types[vis];
 
 #ifdef HAVE_GAS_HIDDEN
-  fprintf (asm_out_file, "\t.%s\t%s\n", type, name);
+  fprintf (asm_out_file, "\t.%s\t", type);
+  assemble_name (asm_out_file, name);
+  fprintf (asm_out_file, "\n");
 #else
   warning ("visibility attribute not supported in this configuration; ignored");
 #endif

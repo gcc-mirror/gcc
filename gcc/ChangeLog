@@ -1,3 +1,7 @@
+2003-04-29  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* varasm.c (default_assemble_visibility): Use assemble_name.
+
 2003-04-29  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/i386/freebsd64.h (LINK_SPEC): Mirror FreeBSD linker.
