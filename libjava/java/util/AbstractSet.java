@@ -38,7 +38,6 @@ package java.util;
  */
 public abstract class AbstractSet extends AbstractCollection implements Set
 {
-
   /**
    * Tests whether the given object is equal to this Set. This implementation
    * first checks whether this set <em>is</em> the given object, and returns

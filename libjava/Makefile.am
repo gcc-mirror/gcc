@@ -843,15 +843,6 @@ java/lang/UnsupportedOperationException.java \
 java/lang/VerifyError.java \
 java/lang/VirtualMachineError.java \
 java/lang/Void.java \
-java/lang/reflect/AccessibleObject.java	\
-java/lang/reflect/Array.java \
-java/lang/reflect/Constructor.java \
-java/lang/reflect/Field.java \
-java/lang/reflect/InvocationTargetException.java \
-java/lang/reflect/Member.java \
-java/lang/reflect/Method.java \
-java/lang/reflect/Modifier.java	\
-java/lang/reflect/ReflectPermission.java \
 java/io/BlockDataException.java	\
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
@@ -934,9 +925,7 @@ java/util/AbstractSequentialList.java \
 java/util/AbstractSet.java \
 java/util/ArrayList.java \
 java/util/Arrays.java \
-java/util/BasicMapEntry.java \
 java/util/BitSet.java \
-java/util/Bucket.java \
 java/util/Calendar.java	\
 java/util/Collection.java \
 java/util/Collections.java \
@@ -950,6 +939,7 @@ java/util/EventListener.java \
 java/util/EventObject.java \
 java/util/GregorianCalendar.java \
 java/util/HashMap.java \
+java/util/HashSet.java \
 java/util/Hashtable.java \
 java/util/Iterator.java	\
 java/util/LinkedList.java \
@@ -978,6 +968,7 @@ java/util/Timer.java \
 java/util/TimerTask.java \
 java/util/TooManyListenersException.java \
 java/util/Vector.java
+#java/util/WeakHashmap.java
 
 
 ## List of all .java files to be compiled.  Please keep this list
@@ -1023,6 +1014,20 @@ gnu/java/locale/Calendar_nl.java \
 gnu/java/security/provider/Gnu.java \
 gnu/java/security/provider/SHA.java \
 gnu/java/security/provider/SHA1PRNG.java \
+java/lang/ref/PhantomReference.java \
+java/lang/ref/Reference.java \
+java/lang/ref/ReferenceQueue.java \
+java/lang/ref/SoftReference.java \
+java/lang/ref/WeakReference.java \
+java/lang/reflect/AccessibleObject.java	\
+java/lang/reflect/Array.java \
+java/lang/reflect/Constructor.java \
+java/lang/reflect/Field.java \
+java/lang/reflect/InvocationTargetException.java \
+java/lang/reflect/Member.java \
+java/lang/reflect/Method.java \
+java/lang/reflect/Modifier.java	\
+java/lang/reflect/ReflectPermission.java \
 java/math/BigDecimal.java \
 java/math/BigInteger.java \
 java/net/BindException.java \

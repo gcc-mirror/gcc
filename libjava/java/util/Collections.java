@@ -149,10 +149,10 @@ public class Collections
     // is sequential-access.
     if (l instanceof AbstractSequentialList)
       {
-	ListIterator i = l.listIterator();
-	while (i.hasNext())
+	ListIterator itr = l.listIterator();
+    	for (int i = l.size() - 1; i >= 0; --i)
 	  {
-	    final int d = compare(key, i.next(), c);
+	    final int d = compare(key, itr.next(), c);
 	    if (d == 0)
 	      {
 		return pos;
@@ -264,10 +264,18 @@ public class Collections
   {
     Iterator i1 = source.iterator();
     ListIterator i2 = dest.listIterator();
-    while (i1.hasNext())
+
+    try
       {
-	i2.next();
-	i2.set(i1.next());
+	for (int i = source.size() - 1; i >= 0; --i)
+	  {
+	    i2.next();
+	    i2.set(i1.next());
+	  }
+      }
+    catch (NoSuchElementException x)
+      {
+	throw new IndexOutOfBoundsException("Source doesn't fit in dest.");      
       }
   }
 
@@ -305,11 +313,11 @@ public class Collections
    */
   public static void fill(List l, Object val)
   {
-    ListIterator i = l.listIterator();
-    while (i.hasNext())
+    ListIterator itr = l.listIterator();
+    for (int i = l.size() - 1; i >= 0; --i)
       {
-	i.next();
-	i.set(val);
+	itr.next();
+	itr.set(val);
       }
   }
 
@@ -326,11 +334,12 @@ public class Collections
    */
   public static Object max(Collection c)
   {
-    Iterator i = c.iterator();
-    Comparable max = (Comparable) i.next();	// throws NoSuchElementException
-    while (i.hasNext())
+    Iterator itr = c.iterator();
+    Comparable max = (Comparable) itr.next();	// throws NoSuchElementException
+    int csize = c.size();
+    for (int i = 1; i < csize; i++)
       {
-	Object o = i.next();
+	Object o = itr.next();
 	if (max.compareTo(o) < 0)
 	  {
 	    max = (Comparable) o;
@@ -352,15 +361,14 @@ public class Collections
    */
   public static Object max(Collection c, Comparator order)
   {
-    Iterator i = c.iterator();
-    Object max = i.next();	// throws NoSuchElementException
-    while (i.hasNext())
+    Iterator itr = c.iterator();
+    Object max = itr.next();	// throws NoSuchElementException
+    int csize = c.size();
+    for (int i = 1; i < csize; i++)
       {
-	Object o = i.next();
+	Object o = itr.next();
 	if (order.compare(max, o) < 0)
-	  {
-	    max = o;
-	  }
+	  max = o;
       }
     return max;
   }
@@ -378,15 +386,14 @@ public class Collections
    */
   public static Object min(Collection c)
   {
-    Iterator i = c.iterator();
-    Comparable min = (Comparable) i.next();	// throws NoSuchElementException
-    while (i.hasNext())
+    Iterator itr = c.iterator();
+    Comparable min = (Comparable) itr.next();	// throws NoSuchElementException
+    int csize = c.size();
+    for (int i = 1; i < csize; i++)
       {
-	Object o = i.next();
+	Object o = itr.next();
 	if (min.compareTo(o) > 0)
-	  {
-	    min = (Comparable) o;
-	  }
+	  min = (Comparable) o;
       }
     return min;
   }
@@ -404,15 +411,14 @@ public class Collections
    */
   public static Object min(Collection c, Comparator order)
   {
-    Iterator i = c.iterator();
-    Object min = i.next();	// throws NoSuchElementExcception
-    while (i.hasNext())
+    Iterator itr = c.iterator();
+    Object min = itr.next();	// throws NoSuchElementExcception
+    int csize = c.size();
+    for (int i = 1; i < csize; i++)
       {
-	Object o = i.next();
+	Object o = itr.next();
 	if (order.compare(min, o) > 0)
-	  {
-	    min = o;
-	  }
+	  min = o;
       }
     return min;
   }
@@ -468,12 +474,16 @@ public class Collections
   public static void reverse(List l)
   {
     ListIterator i1 = l.listIterator();
-    ListIterator i2 = l.listIterator(l.size());
-    while (i1.nextIndex() < i2.previousIndex())
+    int pos1 = 0;
+    int pos2 = l.size();
+    ListIterator i2 = l.listIterator(pos2);
+    while (pos1 < pos2)
       {
 	Object o = i1.next();
 	i1.set(i2.previous());
 	i2.set(o);
+	++pos1;
+	--pos2;
       }
   }
 
@@ -513,8 +523,23 @@ public class Collections
    */
   public static void shuffle(List l)
   {
-    shuffle(l, new Random());
+    if (defaultRandom == null)
+      {
+        synchronized (Collections.class)
+	{
+	  if (defaultRandom == null)
+            defaultRandom = new Random();
+	}
+      }
+    shuffle(l, defaultRandom);
   }
+
+  /** Cache a single Random object for use by shuffle(List). This improves
+    * performance as well as ensuring that sequential calls to shuffle() will
+    * not result in the same shuffle order occuring: the resolution of 
+    * System.currentTimeMillis() is not sufficient to guarantee a unique seed.
+    */
+  private static Random defaultRandom = null;
 
   /**
    * Shuffle a list according to a given source of randomness. The algorithm
@@ -541,20 +566,21 @@ public class Collections
   public static void shuffle(List l, Random r)
   {
     Object[] a = l.toArray();	// Dump l into an array
-    ListIterator i = l.listIterator(l.size());
+    int lsize = l.size();
+    ListIterator i = l.listIterator(lsize);
 
     // Iterate backwards over l
-    while (i.hasPrevious())
+    for (int pos = lsize - 1; pos >= 0; --pos)
       {
-	// Obtain a random position to swap with. nextIndex is used so that the
+	// Obtain a random position to swap with. pos + 1 is used so that the
 	// range of the random number includes the current position.
-	int swap = r.nextInt(i.nextIndex());
+	int swap = r.nextInt(pos + 1);
 
 	// Swap the swapth element of the array with the next element of the
 	// list.
 	Object o = a[swap];
-	a[swap] = a[i.previousIndex()];
-	a[i.previousIndex()] = o;
+	a[swap] = a[pos];
+	a[pos] = o;
 
 	// Set the element in the original list accordingly.
 	i.previous();
@@ -658,7 +684,7 @@ public class Collections
     {
       public Set entrySet()
       {
-	return singleton(new BasicMapEntry(key, value));
+	return singleton(new HashMap.Entry(key, value));
       }
     };
   }

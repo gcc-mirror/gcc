@@ -1,3 +1,37 @@
+2000-12-11  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* Makefile.am: Add HashSet.java and java/lang/ref classes.
+	Remove BasicMapEntry.java and Bucket.java.
+	* Makefile.in: Rebuilt.
+	* java/util/HashMap.java: Rewritten.
+	* java/util/HashSet.java: Imported from classpath.
+	* java/util/WeakHashMap.java: Imported from classpath.
+	* java/util/Hashtable.java: Rewritten based on new HashMap code.
+	* java/util/Bucket.java: Deleted.
+	* java/util/BasicMapEntry.java: Deleted.
+	* java/util/Collections.java (search): Use a for-loop, not iterator
+	hasNext().
+	(copy): Use a for-loop. Throw an IndexOutOfBoundsException if run out 
+	of elements in source.
+	(max): Use a for-loop.
+	(min): Ditto.
+	(reverse): Keep track of positions instead of using Iterator's 
+	nextIndex() and previousIndex().
+	(shuffle(List)): Initialize defaultRandom if required using 
+	double-check thread safety idiom. Call two-argument shuffle method 
+	using defaultRandom.
+	(defaultRandom): New field.
+	(shuffle(List, Random)): Use a for-loop. Keep track of pos instead of
+	using previousIndex() and nextIndex().
+	(singletonMap(iterator)): Use a HashMap.Entry, not BasicMapEntry.
+	* java/util/AbstractCollection.java (toString): Use a StringBuffer.
+	* java/util/AbstractMap.java (toString): Use StringBuffer.
+	* java/lang/ref/PhantomReference.java: Imported from classpath.
+	* java/lang/ref/SoftReference.java: Ditto.
+	* java/lang/ref/Reference.java: Ditto.
+	* java/lang/ref/WeakReference.java: Ditto.
+	* java/lang/ref/ReferenceQueue.java: Ditto.
+
 2000-12-10  Richard Henderson <rth@redhat.com>
 	
 	* configure.host: Recognize alpha*-*, not alphaev6-*.

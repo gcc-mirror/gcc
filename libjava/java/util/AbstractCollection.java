@@ -332,14 +332,14 @@ public abstract class AbstractCollection implements Collection
   {
     Iterator itr = iterator();
     int size = size();
-    String r = "[";
+    StringBuffer r = new StringBuffer("[");
     for (int pos = 0; pos < size; pos++)
       {
-	r += itr.next();
+	r.append(itr.next());
 	if (pos < size - 1)
-	  r += ", ";
+	  r.append(", ");
       }
-    r += "]";
-    return r;
+    r.append("]");
+    return r.toString();
   }
 }

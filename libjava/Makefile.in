@@ -120,43 +120,29 @@ here = @here@
 libgcj_basedir = @libgcj_basedir@
 
 AUTOMAKE_OPTIONS = foreign no-installinfo
-@TESTSUBDIR_TRUE@SUBDIRS = \
-@TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
-@TESTSUBDIR_FALSE@SUBDIRS = \
-@TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
-@USE_LIBDIR_TRUE@toolexeclibdir = \
-@USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = \
-@USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = \
-@USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
-@NO_X_TRUE@cond_x_ltlibrary = \
-@NO_X_FALSE@cond_x_ltlibrary = \
-@NO_X_FALSE@libgcjx.la
+@TESTSUBDIR_TRUE@SUBDIRS = @TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
+@TESTSUBDIR_FALSE@SUBDIRS = @TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
+@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
+@NO_X_TRUE@cond_x_ltlibrary = 
+@NO_X_FALSE@cond_x_ltlibrary = @NO_X_FALSE@libgcjx.la
 
 toolexeclib_LTLIBRARIES = libgcj.la $(cond_x_ltlibrary)
 toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.jar
 
-@NEEDS_DATA_START_TRUE@toolexeclib_LIBRARIES = \
-@NEEDS_DATA_START_TRUE@libgcjdata.a
-@NEEDS_DATA_START_TRUE@libgcjdata_a_SOURCES = \
-@NEEDS_DATA_START_TRUE@libgcjdata.c
+@NEEDS_DATA_START_TRUE@toolexeclib_LIBRARIES = @NEEDS_DATA_START_TRUE@libgcjdata.a
+@NEEDS_DATA_START_TRUE@libgcjdata_a_SOURCES = @NEEDS_DATA_START_TRUE@libgcjdata.c
 
-@NATIVE_TRUE@bin_PROGRAMS = \
-@NATIVE_TRUE@jv-convert gij
+@NATIVE_TRUE@bin_PROGRAMS = @NATIVE_TRUE@jv-convert gij
 
 bin_SCRIPTS = addr2name.awk
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = \
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar$(EXEEXT)
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = \
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@fastjar
-@CANADIAN_FALSE@ZIP = \
-@CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar$(EXEEXT)
-@CANADIAN_TRUE@GCJH = \
-@CANADIAN_TRUE@gcjh
-@CANADIAN_FALSE@GCJH = \
-@CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
+@CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar$(EXEEXT)
+@CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_FALSE@fastjar
+@CANADIAN_FALSE@ZIP = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar$(EXEEXT)
+@CANADIAN_TRUE@GCJH = @CANADIAN_TRUE@gcjh
+@CANADIAN_FALSE@GCJH = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
 
 GCJCOMPILE = $(LIBTOOL) --tag=GCJ --mode=compile $(GCJ) -fassume-compiled -fclasspath=$(here) -L$(here) $(JC1FLAGS) -MD -MT $@ -MF $(@:.lo=.d) -c
 GCJLINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
@@ -171,10 +157,8 @@ AM_CXXFLAGS = -fno-rtti -fvtable-thunks -fasynchronous-exceptions \
 	-fdollars-in-identifiers \
 	@LIBGCJ_CXXFLAGS@ @EXCEPTIONSPEC@ @X_CFLAGS@ $(WARNINGS) -D_GNU_SOURCE
 
-@USING_GCC_TRUE@AM_CFLAGS = \
-@USING_GCC_TRUE@@LIBGCJ_CFLAGS@ $(WARNINGS)
-@USING_GCC_FALSE@AM_CFLAGS = \
-@USING_GCC_FALSE@@LIBGCJ_CFLAGS@
+@USING_GCC_TRUE@AM_CFLAGS = @USING_GCC_TRUE@@LIBGCJ_CFLAGS@ $(WARNINGS)
+@USING_GCC_FALSE@AM_CFLAGS = @USING_GCC_FALSE@@LIBGCJ_CFLAGS@
 
 JCFLAGS = -g
 JC1FLAGS = -g @LIBGCJ_JAVAFLAGS@
@@ -243,8 +227,7 @@ extra_headers = java/lang/Object.h java/lang/Class.h
 
 NM = nm
 
-@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS = \
-@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS
+@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS = @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS
 
 CONVERT_DIR = gnu/gcj/convert
 
@@ -611,15 +594,6 @@ java/lang/UnsupportedOperationException.java \
 java/lang/VerifyError.java \
 java/lang/VirtualMachineError.java \
 java/lang/Void.java \
-java/lang/reflect/AccessibleObject.java	\
-java/lang/reflect/Array.java \
-java/lang/reflect/Constructor.java \
-java/lang/reflect/Field.java \
-java/lang/reflect/InvocationTargetException.java \
-java/lang/reflect/Member.java \
-java/lang/reflect/Method.java \
-java/lang/reflect/Modifier.java	\
-java/lang/reflect/ReflectPermission.java \
 java/io/BlockDataException.java	\
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
@@ -702,9 +676,7 @@ java/util/AbstractSequentialList.java \
 java/util/AbstractSet.java \
 java/util/ArrayList.java \
 java/util/Arrays.java \
-java/util/BasicMapEntry.java \
 java/util/BitSet.java \
-java/util/Bucket.java \
 java/util/Calendar.java	\
 java/util/Collection.java \
 java/util/Collections.java \
@@ -718,6 +690,7 @@ java/util/EventListener.java \
 java/util/EventObject.java \
 java/util/GregorianCalendar.java \
 java/util/HashMap.java \
+java/util/HashSet.java \
 java/util/Hashtable.java \
 java/util/Iterator.java	\
 java/util/LinkedList.java \
@@ -747,6 +720,7 @@ java/util/TimerTask.java \
 java/util/TooManyListenersException.java \
 java/util/Vector.java
 
+#java/util/WeakHashmap.java
 
 ordinary_java_source_files = $(core_java_source_files) \
 gnu/gcj/RawData.java \
@@ -785,6 +759,20 @@ gnu/java/locale/Calendar_nl.java \
 gnu/java/security/provider/Gnu.java \
 gnu/java/security/provider/SHA.java \
 gnu/java/security/provider/SHA1PRNG.java \
+java/lang/ref/PhantomReference.java \
+java/lang/ref/Reference.java \
+java/lang/ref/ReferenceQueue.java \
+java/lang/ref/SoftReference.java \
+java/lang/ref/WeakReference.java \
+java/lang/reflect/AccessibleObject.java	\
+java/lang/reflect/Array.java \
+java/lang/reflect/Constructor.java \
+java/lang/reflect/Field.java \
+java/lang/reflect/InvocationTargetException.java \
+java/lang/reflect/Member.java \
+java/lang/reflect/Method.java \
+java/lang/reflect/Modifier.java	\
+java/lang/reflect/ReflectPermission.java \
 java/math/BigDecimal.java \
 java/math/BigInteger.java \
 java/net/BindException.java \
@@ -1203,7 +1191,7 @@ libgcj-test.spec.in libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -1562,7 +1550,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/natMath.P .deps/java/lang/natObject.P \
 .deps/java/lang/natRuntime.P .deps/java/lang/natString.P \
 .deps/java/lang/natSystem.P .deps/java/lang/natThread.P \
-.deps/java/lang/natThrowable.P \
+.deps/java/lang/natThrowable.P .deps/java/lang/ref/PhantomReference.P \
+.deps/java/lang/ref/Reference.P .deps/java/lang/ref/ReferenceQueue.P \
+.deps/java/lang/ref/SoftReference.P .deps/java/lang/ref/WeakReference.P \
 .deps/java/lang/reflect/AccessibleObject.P \
 .deps/java/lang/reflect/Array.P .deps/java/lang/reflect/Constructor.P \
 .deps/java/lang/reflect/Field.P \
@@ -1682,8 +1672,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/AbstractCollection.P .deps/java/util/AbstractList.P \
 .deps/java/util/AbstractMap.P .deps/java/util/AbstractSequentialList.P \
 .deps/java/util/AbstractSet.P .deps/java/util/ArrayList.P \
-.deps/java/util/Arrays.P .deps/java/util/BasicMapEntry.P \
-.deps/java/util/BitSet.P .deps/java/util/Bucket.P \
+.deps/java/util/Arrays.P .deps/java/util/BitSet.P \
 .deps/java/util/Calendar.P .deps/java/util/Collection.P \
 .deps/java/util/Collections.P .deps/java/util/Comparator.P \
 .deps/java/util/ConcurrentModificationException.P \
@@ -1691,11 +1680,11 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/EmptyStackException.P .deps/java/util/Enumeration.P \
 .deps/java/util/EventListener.P .deps/java/util/EventObject.P \
 .deps/java/util/GregorianCalendar.P .deps/java/util/HashMap.P \
-.deps/java/util/Hashtable.P .deps/java/util/Iterator.P \
-.deps/java/util/LinkedList.P .deps/java/util/List.P \
-.deps/java/util/ListIterator.P .deps/java/util/ListResourceBundle.P \
-.deps/java/util/Locale.P .deps/java/util/Map.P \
-.deps/java/util/MissingResourceException.P \
+.deps/java/util/HashSet.P .deps/java/util/Hashtable.P \
+.deps/java/util/Iterator.P .deps/java/util/LinkedList.P \
+.deps/java/util/List.P .deps/java/util/ListIterator.P \
+.deps/java/util/ListResourceBundle.P .deps/java/util/Locale.P \
+.deps/java/util/Map.P .deps/java/util/MissingResourceException.P \
 .deps/java/util/NoSuchElementException.P .deps/java/util/Observable.P \
 .deps/java/util/Observer.P .deps/java/util/Properties.P \
 .deps/java/util/PropertyPermission.P \
@@ -2103,7 +2092,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
