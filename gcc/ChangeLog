@@ -1,3 +1,19 @@
+2002-04-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-lang.c (LANG_HOOKS_INCOMPLETE_TYPE_ERROR): Redefine.
+	* c-tree.h (c_incomplete_type_error): New.
+	* c-typeck.c (require_complete_type, build_component_ref): Update.
+	(incomplete_type_error): Rename.
+	* langhooks-def.h (lhd_incomplete_type_error): New.
+	(LANG_HOOKS_INCOMPLETE_TYPE_ERROR): New.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Update.
+	* langhooks.c (lhd_incomplete_type_error): New.
+	* langhooks.h (struct lang_hooks_for_types): New hook.
+	* tree.c (size_in_bytes): Use new hook.
+	* tree.h (incomplete_type_error): Remove.
+objc:
+	* objc-lang.c (LANG_HOOKS_INCOMPLETE_TYPE_ERROR): Redefine.
+
 2002-04-18  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/arc/arc.md: Remove #if HOST_FLOAT_FORMAT !=

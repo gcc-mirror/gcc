@@ -250,6 +250,7 @@ extern int comptypes				PARAMS ((tree, tree));
 extern tree c_sizeof_nowarn			PARAMS ((tree));
 extern tree c_size_in_bytes                     PARAMS ((tree));
 extern bool c_mark_addressable			PARAMS ((tree));
+extern void c_incomplete_type_error		PARAMS ((tree, tree));
 extern tree build_component_ref                 PARAMS ((tree, tree));
 extern tree build_indirect_ref                  PARAMS ((tree, const char *));
 extern tree build_array_ref                     PARAMS ((tree, tree));

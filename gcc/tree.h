@@ -2943,10 +2943,6 @@ extern const struct attribute_spec *lang_attribute_table;
 /* Flag saying whether common language attributes are to be supported.  */
 extern int lang_attribute_common;
 
-/* In front end.  */
-
-extern void incomplete_type_error	PARAMS ((tree, tree));
-
 /* In integrate.c */
 extern void save_for_inline		PARAMS ((tree));
 extern void set_decl_abstract_flags	PARAMS ((tree, int));

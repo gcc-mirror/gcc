@@ -99,7 +99,7 @@ require_complete_type (value)
   if (COMPLETE_TYPE_P (type))
     return value;
 
-  incomplete_type_error (value, type);
+  c_incomplete_type_error (value, type);
   return error_mark_node;
 }
 
@@ -108,7 +108,7 @@ require_complete_type (value)
    and TYPE is the type that was invalid.  */
 
 void
-incomplete_type_error (value, type)
+c_incomplete_type_error (value, type)
      tree value;
      tree type;
 {
@@ -1163,7 +1163,7 @@ build_component_ref (datum, component)
     {
       if (!COMPLETE_TYPE_P (type))
 	{
-	  incomplete_type_error (NULL_TREE, type);
+	  c_incomplete_type_error (NULL_TREE, type);
 	  return error_mark_node;
 	}
 

@@ -134,6 +134,8 @@ static bool cxx_warn_unused_global_decl PARAMS ((tree));
 #define LANG_HOOKS_UNSIGNED_TYPE c_common_unsigned_type
 #undef LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE
 #define LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE c_common_signed_or_unsigned_type
+#undef LANG_HOOKS_INCOMPLETE_TYPE_ERROR
+#define LANG_HOOKS_INCOMPLETE_TYPE_ERROR cxx_incomplete_type_error
 
 /* Each front end provides its own hooks, for toplev.c.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;

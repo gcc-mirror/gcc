@@ -166,18 +166,6 @@ convert_to_boolean (type, expr)
   return build1 (NOP_EXPR, type, expr);
 }
 
-/* Print an error message for invalid use of an incomplete type.
-   VALUE is the expression that was used (or 0 if that isn't known)
-   and TYPE is the type that was invalid.  */
-
-void
-incomplete_type_error (value, type)
-  tree value ATTRIBUTE_UNUSED;
-  tree type ATTRIBUTE_UNUSED;
-{
-  error ("internal error - use of undefined type");
-}
-
 /* Return a data type that has machine mode MODE.
    If the mode is an integer,
    then UNSIGNEDP selects between signed and unsigned types.  */

@@ -178,6 +178,17 @@ lhd_clear_binding_stack ()
     poplevel (0, 0, 0);
 }
 
+/* Invalid use of an incomplete type.  */
+void
+lhd_incomplete_type_error (value, type)
+     tree value ATTRIBUTE_UNUSED, type;
+{
+  if (TREE_CODE (type) == ERROR_MARK)
+    return;
+
+  abort ();
+}
+
 /* Provide a default routine for alias sets that always returns -1.  This
    is used by languages that don't need to do anything special.  */
 

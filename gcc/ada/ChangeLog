@@ -1,3 +1,8 @@
+2002-04-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gigi.h (incomplete_type_error): Remove.
+	* utils.c (incomplete_type_error): Remove.
+
 2002-04-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* trans.c (tree_transform): Add has_scope argument to

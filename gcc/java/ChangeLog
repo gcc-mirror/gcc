@@ -1,3 +1,7 @@
+2002-04-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* typeck.c (incomplete_type_error): Remove.
+
 2002-04-18  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* class.c (make_class_data): Set DECL_ALIGN on static class data,

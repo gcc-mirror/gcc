@@ -1187,7 +1187,7 @@ size_in_bytes (type)
 
   if (t == 0)
     {
-      incomplete_type_error (NULL_TREE, type);
+      (*lang_hooks.types.incomplete_type_error) (NULL_TREE, type);
       return size_zero_node;
     }
 

@@ -11115,7 +11115,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  }
 		else
 	          {
-	            incomplete_type_error (NULL_TREE, ctype);
+	            cxx_incomplete_type_error (NULL_TREE, ctype);
 	            return error_mark_node;
 		  }
 
@@ -12136,7 +12136,7 @@ grokparms (first_parm)
               && !DECL_NAME (decl) && !result && !chain && !ellipsis)
             /* this is a parmlist of `(void)', which is ok.  */
             break;
-          incomplete_type_error (decl, type);
+          cxx_incomplete_type_error (decl, type);
 	  /* It's not a good idea to actually create parameters of
 	     type `void'; other parts of the compiler assume that a
 	     void type terminates the parameter list.  */

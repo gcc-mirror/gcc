@@ -185,7 +185,7 @@ abstract_virtuals_error (decl, type)
    and TYPE is the type that was invalid.  */
 
 void
-incomplete_type_error (value, type)
+cxx_incomplete_type_error (value, type)
      tree value;
      tree type;
 {
@@ -1326,7 +1326,7 @@ add_exception_specifier (list, spec, complain)
         }
     }
   else if (complain)
-    incomplete_type_error (NULL_TREE, core);
+    cxx_incomplete_type_error (NULL_TREE, core);
   return list;
 }
 

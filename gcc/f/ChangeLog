@@ -1,3 +1,7 @@
+Thu Apr 18 19:10:44 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (incomplete_type_error): Remove.
+
 Tue Apr 16 14:55:47 2002  Mark Mitchell  <mark@codesourcery.com>
 
 	* com.c (ffecom_expr_power_integer): Add has_scope argument to
