@@ -1,3 +1,10 @@
+2001-08-01  Stan Shebs  <shebs@apple.com>
+
+	* config/darwin.c (machopic_stub_name): Try matching by name.
+	(update_stubs): New function.
+	(darwin_encode_section_info):  Call it and update_non_lazy_ptrs
+	unconditionally.
+
 2001-08-01  Richard Henderson  <rth@redhat.com>
 
 	* except.c (output_function_exception_table): Use assemble_align.
