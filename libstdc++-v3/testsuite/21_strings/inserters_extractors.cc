@@ -304,6 +304,26 @@ void test08()
   VERIFY( year == 2001 );
 }
 
+// libstdc++/2830
+void test09()
+{
+  bool test = true;
+  std::string blanks( 3, '\0');
+  std::string foo = "peace";
+  foo += blanks;
+  foo += "& love";
+  
+  std::ostringstream oss1;
+  oss1 << foo;
+  VERIFY( oss1.str() == foo );
+  
+  std::ostringstream oss2;
+  oss2.width(20);
+  oss2 << foo;
+  VERIFY( oss2.str() != foo );
+  VERIFY( oss2.str().size() == 20 );
+}
+
 int main()
 { 
   test01();
@@ -320,5 +340,7 @@ int main()
   test07();
 
   test08();
+  
+  test09();
   return 0;
 }
