@@ -54,4 +54,8 @@ _IO_vsprintf (string, format, args)
 
 #ifdef weak_alias
 weak_alias (_IO_vsprintf, vsprintf)
+#else
+#ifdef __linux__
+#pragma weak vsprintf = _IO_vsprintf
+#endif
 #endif

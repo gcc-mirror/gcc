@@ -1,3 +1,28 @@
+1997-10-15  Ulrich Drepper  <drepper@cygnus.com>
+
+	* configure.in: Create compatibility code in bits/libc-lock.h file.
+
+Thu Oct  9 07:08:41 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* libio.h (_IO_LOCK_T): Handle glibc 2 when _IO_MTSAFE_IO is
+	not defined.
+
+	* filedoalloc.c (_IO_file_doallocate): Don't call
+	_IO_cleanup_registration_needed if __linux__ is defined.
+
+	* iofclose.c (fclose): Make it weak alias of _IO_fclose if
+	__ELF__ is defined.
+
+	* iovsprintf.c (vsprintf): Make it weak alias of _IO_vsprintf
+	if __ELF__ is defined.
+
+	* iovsscanf.c (vsscanf): Make it weak alias of _IO_vsscanf if
+	__ELF__ is defined.
+
+	* config/linuxlibc1.mt (MT_CFLAGS): Defined as -D_G_HAVE_MMAP.
+	(IO_OBJECTS): Add filedoalloc.o fileops.o genops.o iofclose.o
+	iovsprintf.o iovsscanf.o strops.o.
+
 Fri Oct  3 10:13:13 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* iostream.cc, libio.h: Convert other uses of #ifdef

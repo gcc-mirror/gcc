@@ -75,7 +75,7 @@ _IO_file_doallocate (fp)
   char *p;
   struct stat st;
 
-#ifndef _LIBC
+#if !defined(_LIBC) && !defined(__linux__)
   /* If _IO_cleanup_registration_needed is non-zero, we should call the
      function it points to.  This is to make sure _IO_cleanup gets called
      on exit.  We call it from _IO_file_doallocate, since that is likely
