@@ -1,3 +1,8 @@
+2001-09-04  Richard Henderson  <rth@redhat.com>
+
+	* unwind.h (_UA_END_OF_STACK): New flag.
+	* unwind.inc (_Unwind_ForcedUnwind_Phase2): Set it.
+
 Thu Aug 30 18:50:37 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* t-h8300 (LIB1ASMFUNCS): Add _fixunssfdi and _fixunssfsi_asm.
