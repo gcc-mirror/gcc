@@ -1,6 +1,6 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -424,49 +424,6 @@ rest_of_handle_machine_reorg (void)
   timevar_pop (TV_MACH_DEP);
 }
 
-
-/* Run new register allocator.  Return TRUE if we must exit
-   rest_of_compilation upon return.  */
-static bool
-rest_of_handle_new_regalloc (void)
-{
-  int failure;
-
-  timevar_push (TV_LOCAL_ALLOC);
-  open_dump_file (DFI_lreg, current_function_decl);
-
-  delete_trivially_dead_insns (get_insns (), max_reg_num ());
-  reg_alloc ();
-
-  timevar_pop (TV_LOCAL_ALLOC);
-  close_dump_file (DFI_lreg, NULL, NULL);
-
-  /* XXX clean up the whole mess to bring live info in shape again.  */
-  timevar_push (TV_GLOBAL_ALLOC);
-  open_dump_file (DFI_greg, current_function_decl);
-
-  build_insn_chain (get_insns ());
-  failure = reload (get_insns (), 0);
-
-  timevar_pop (TV_GLOBAL_ALLOC);
-
-  ggc_collect ();
-
-  if (dump_enabled_p (DFI_greg))
-    {
-      timevar_push (TV_DUMP);
-      dump_global_regs (dump_file);
-      timevar_pop (TV_DUMP);
-      close_dump_file (DFI_greg, print_rtl_with_bb, get_insns ());
-    }
-
-  if (failure)
-    return true;
-
-  reload_completed = 1;
-
-  return false;
-}
 
 /* Run old register allocator.  Return TRUE if we must exit
    rest_of_compilation upon return.  */
@@ -970,7 +927,7 @@ rest_of_handle_life (void)
 
   if (optimize)
     {
-      if (!flag_new_regalloc && initialize_uninitialized_subregs ())
+      if (initialize_uninitialized_subregs ())
 	{
 	  /* Insns were inserted, and possibly pseudos created, so
 	     things might look a bit different.  */
@@ -1706,16 +1663,8 @@ rest_of_compilation (void)
      epilogue thus changing register elimination offsets.  */
   current_function_is_leaf = leaf_function_p ();
 
-  if (flag_new_regalloc)
-    {
-      if (rest_of_handle_new_regalloc ())
-	goto exit_rest_of_compilation;
-    }
-  else
-    {
-      if (rest_of_handle_old_regalloc ())
-	goto exit_rest_of_compilation;
-    }
+  if (rest_of_handle_old_regalloc ())
+    goto exit_rest_of_compilation;
 
   if (optimize > 0)
     rest_of_handle_postreload ();

@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+; Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -538,10 +538,6 @@ Add mudflap bounds-checking instrumentation for multi-threaded program.
 fmudflapir
 Common RejectNegative Report Var(flag_mudflap_ignore_reads)
 Ignore read operations when inserting mudflap instrumentation.
-
-fnew-ra
-Common Report Var(flag_new_regalloc)
-Use graph-coloring register allocation
 
 freschedule-modulo-scheduled-loops
 Common Report Var(flag_resched_modulo_sched)
