@@ -1992,10 +1992,16 @@ synth_mult (alg_out, t, cost_limit)
 
       for (w = 1; (w & t) != 0; w <<= 1)
 	;
-      if (w > 2
-	  /* Reject the case where t is 3.
-	     Thus we prefer addition in that case.  */
-	  && t != 3)
+      /* If T was -1, then W will be zero after the loop.  This is another
+	 case where T ends with ...111.  Handling this with (T + 1) and 
+	 subtract 1 produces slightly better code and results in algorithm
+	 selection much faster than treating it like the ...0111 case
+	 below.  */
+      if (w == 0
+	  || (w > 2
+	      /* Reject the case where t is 3.
+		 Thus we prefer addition in that case.  */
+	      && t != 3))
 	{
 	  /* T ends with ...111.  Multiply by (T + 1) and subtract 1.  */
 

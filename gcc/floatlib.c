@@ -737,7 +737,7 @@ __divdf3 (double a1, double a2)
    if (__dcmp(x1m1,x1m2,x2m1,x2m2) < 0) {
 
    /* if x1's mantissa is less than x2's shift it left one and decrement */
-   /* the exponent to accomodate the change in the mantissa              */
+   /* the exponent to accommodate the change in the mantissa             */
 
       x1m1 <<= 1;               /*                          */
       bit_bucket = x1m2 >> 31;  /*  Shift mantissa left one */

@@ -881,6 +881,14 @@ This macro expands to the constant 1, to signify that this is ANSI
 Standard C@.  (Whether that is actually true depends on what C compiler
 will operate on the output from the preprocessor.)
 
+On some hosts, system include files use a different convention, where
+@samp{__STDC__} is normally 0, but is 1 if the user specifies strict
+conformance to the C Standard.  The preprocessor follows the host convention
+when processing system include files, but when processing user files it follows
+the usual GNU C convention.
+
+This macro is not defined if the @samp{-traditional} option is used.
+
 @item __STDC_VERSION__
 @findex __STDC_VERSION__
 This macro expands to the C Standard's version number,
@@ -890,6 +898,8 @@ This signifies which version of the C Standard the preprocessor conforms to.
 Like @samp{__STDC__}, whether this version number is accurate
 for the entire implementation depends on what C compiler
 will operate on the output from the preprocessor.
+
+This macro is not defined if the @samp{-traditional} option is used.
 
 @item __GNUC__
 @findex __GNUC__
@@ -2679,6 +2689,15 @@ Do not search for header files in the C++-specific standard directories,
 but do still search the other standard directories.
 (This option is used when building libg++.)
 
+@item -remap
+@findex -remap
+When searching for a header file in a directory, remap file names if a
+file named @file{header.gcc} exists in that directory.  This can be used
+to work around limitations of file systems with file name restrictions.
+The @file{header.gcc} file should contain a series of lines with two
+tokens on each line: the first token is the name to map, and the second
+token is the actual name to use.
+
 @item -D @var{name}
 @findex -D
 Predefine @var{name} as a macro, with definition @samp{1}.
@@ -2732,6 +2751,10 @@ Like @samp{-dM} except in two respects: it does @emph{not} include the
 predefined macros, and it outputs @emph{both} the @samp{#define}
 directives and the result of preprocessing.  Both kinds of output go to
 the standard output file.
+
+@item -dI
+@findex -dI
+Output @samp{#include} directives in addition to the result of preprocessing.
 
 @item -M [-MG]
 @findex -M
