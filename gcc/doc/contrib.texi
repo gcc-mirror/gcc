@@ -350,7 +350,7 @@ Janis Johnson for ia64 testing and fixes, her quality improvement
 sidetracks, and web page maintenance.
 
 @item
-J. Kean Johnston for OpenServer support.
+Kean Johnston for SCO OpenServer support and various fixes.
 
 @item
 Tim Josling for the sample language treelang based originally on Richard
