@@ -1,3 +1,7 @@
+Wed Sep 24 22:05:30 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Wed Sep 24 17:36:23 1997  Doug Evans  <dje@canuck.cygnus.com>
 
 	Bring over from FSF.
