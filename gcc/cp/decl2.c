@@ -619,14 +619,12 @@ lang_decode_option (argc, argv)
 	{
 	  flag_new_abi = 1;
 	  flag_do_squangling = 1;
-	  flag_honor_std = 1;
 	  flag_vtable_thunks = 1;
 	}
       else if (!strcmp (p, "no-new-abi"))
 	{
 	  flag_new_abi = 0;
 	  flag_do_squangling = 0;
-	  flag_honor_std = 0;
 	}
       else if (!strncmp (p, "template-depth-", 15))
 	max_tinst_depth

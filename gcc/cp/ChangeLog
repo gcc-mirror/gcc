@@ -1,3 +1,8 @@
+2000-01-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (lang_decode_option): Don't couple flag_honor_std to
+	flag_new_abi.
+
 2000-01-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (num_extra_vtbl_entries): New function.
