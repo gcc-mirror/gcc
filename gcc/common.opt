@@ -760,10 +760,6 @@ ftree-dse
 Common
 Enable dead store elimination
 
-ftree-loop-optimize
-Common
-Enable loop optimizations on trees
-
 ftree-points-to=
 Common Joined RejectNegative
 
