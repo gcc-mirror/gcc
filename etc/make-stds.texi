@@ -21,6 +21,8 @@ chapter
 @end ifclear
 @end iftex
 describes conventions for writing the Makefiles for GNU programs.
+Using Automake will help you write a Makefile that follows these
+conventions.
 
 @menu
 * Makefile Basics::		General Conventions for Makefiles
@@ -280,8 +282,8 @@ installed.
 Installation directories should always be named by variables, so it is
 easy to install in a nonstandard place.  The standard names for these
 variables are described below.  They are based on a standard filesystem
-layout; variants of it are used in SVR4, 4.4BSD, Linux, Ultrix v4, and
-other modern operating systems.
+layout; variants of it are used in SVR4, 4.4BSD, GNU/Linux, Ultrix v4,
+and other modern operating systems.
 
 These two variables set the root for the installation.  All the other
 installation directories should be subdirectories of one of these two,
