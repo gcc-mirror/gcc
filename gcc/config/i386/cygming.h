@@ -376,6 +376,9 @@ extern int i386_pe_dllimport_name_p (const char *);
 	alias = XSTR (rtlname, 0);					\
       else								\
 	abort ();							\
+      if (TREE_CODE (DECL) == FUNCTION_DECL)				\
+	i386_pe_declare_function_type (STREAM, alias,			\
+				       TREE_PUBLIC (DECL));		\
       ASM_OUTPUT_DEF (STREAM, alias, IDENTIFIER_POINTER (TARGET));	\
     } while (0)
 
@@ -384,4 +387,3 @@ extern int i386_pe_dllimport_name_p (const char *);
 #ifndef BUFSIZ
 # undef FILE
 #endif
-
