@@ -54,5 +54,4 @@ int main (void)
   return main1 ();
 }
 
-/* xfail: local arrays can't be aligned on a boundary greater than STACK_BOUNDARY */
-/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" {xfail i?86-*-* x86_64-*-*} } } */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */

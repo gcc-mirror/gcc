@@ -1,3 +1,20 @@
+2004-08-19  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/vect-1.c: Remove xfail from i?86-*-* x86_64-*-* due
+	to usage of PREFERRED_STACK_BOUNDARY in the vectorizer.
+	* gcc.dg/vect/vect-2.c: Likewise.
+	* gcc.dg/vect/vect-3.c: Likewise.
+	* gcc.dg/vect/vect-4.c: Likewise.
+	* gcc.dg/vect/vect-5.c: Likewise.
+	* gcc.dg/vect/vect-6.c: Likewise.
+	* gcc.dg/vect/vect-7.c: Likewise.
+	* gcc.dg/vect/vect-25.c: Likewise.
+	* gcc.dg/vect/vect-31.c: Likewise.
+	* gcc.dg/vect/vect-32.c: Likewise.
+	* gcc.dg/vect/vect-34.c: Likewise.
+	* gcc.dg/vect/vect-36.c: Likewise.
+	* gcc.dg/vect/vect-all.c: Likewise.
+
 2004-08-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17068
@@ -32,7 +49,71 @@
 2004-08-17  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* gcc.dg/vect: New directory for vectorizer tests.
-	(vect-*.c): New tests. 
+	* gcc.dg/vect/tree-vect.h: New file.
+	* gcc.dg/vect/vect.exp: New file.
+	* gcc.dg/vect/pr16105.c.c: New test.
+	* gcc.dg/vect/vect-1.c: New test.
+	* gcc.dg/vect/vect-2.c: New test.
+	* gcc.dg/vect/vect-3.c: New test.
+	* gcc.dg/vect/vect-4.c: New test.
+	* gcc.dg/vect/vect-5.c: New test.
+	* gcc.dg/vect/vect-6.c: New test.
+	* gcc.dg/vect/vect-7.c: New test.
+	* gcc.dg/vect/vect-8.c: New test.
+	* gcc.dg/vect/vect-9.c: New test.
+	* gcc.dg/vect/vect-10.c: New test.
+	* gcc.dg/vect/vect-11.c: New test.
+	* gcc.dg/vect/vect-12.c: New test.
+	* gcc.dg/vect/vect-13.c: New test.
+	* gcc.dg/vect/vect-14.c: New test.
+	* gcc.dg/vect/vect-15.c: New test.
+	* gcc.dg/vect/vect-16.c: New test.
+	* gcc.dg/vect/vect-17.c: New test.
+	* gcc.dg/vect/vect-18.c: New test.
+	* gcc.dg/vect/vect-19.c: New test.
+	* gcc.dg/vect/vect-20.c: New test.
+	* gcc.dg/vect/vect-21.c: New test.
+	* gcc.dg/vect/vect-22.c: New test.
+	* gcc.dg/vect/vect-23.c: New test.
+	* gcc.dg/vect/vect-24.c: New test.
+	* gcc.dg/vect/vect-25.c: New test.
+	* gcc.dg/vect/vect-26.c: New test.
+	* gcc.dg/vect/vect-27.c: New test.
+	* gcc.dg/vect/vect-28.c: New test.
+	* gcc.dg/vect/vect-29.c: New test.
+	* gcc.dg/vect/vect-30.c: New test.
+	* gcc.dg/vect/vect-31.c: New test.
+	* gcc.dg/vect/vect-32.c: New test.
+	* gcc.dg/vect/vect-33.c: New test.
+	* gcc.dg/vect/vect-34.c: New test.
+	* gcc.dg/vect/vect-35.c: New test.
+	* gcc.dg/vect/vect-36.c: New test.
+	* gcc.dg/vect/vect-37.c: New test.
+	* gcc.dg/vect/vect-38.c: New test.
+	* gcc.dg/vect/vect-40.c: New test.
+	* gcc.dg/vect/vect-41.c: New test.
+	* gcc.dg/vect/vect-42.c: New test.
+	* gcc.dg/vect/vect-43.c: New test.
+	* gcc.dg/vect/vect-44.c: New test.
+	* gcc.dg/vect/vect-45.c: New test.
+	* gcc.dg/vect/vect-46.c: New test.
+	* gcc.dg/vect/vect-47.c: New test.
+	* gcc.dg/vect/vect-48.c: New test.
+	* gcc.dg/vect/vect-49.c: New test.
+	* gcc.dg/vect/vect-50.c: New test.
+	* gcc.dg/vect/vect-51.c: New test.
+	* gcc.dg/vect/vect-52.c: New test.
+	* gcc.dg/vect/vect-53.c: New test.
+	* gcc.dg/vect/vect-54.c: New test.
+	* gcc.dg/vect/vect-55.c: New test.
+	* gcc.dg/vect/vect-56.c: New test.
+	* gcc.dg/vect/vect-57.c: New test.
+	* gcc.dg/vect/vect-58.c: New test.
+	* gcc.dg/vect/vect-59.c: New test.
+	* gcc.dg/vect/vect-60.c: New test.
+	* gcc.dg/vect/vect-61.c: New test.
+	* gcc.dg/vect/vect-all.c: New test.
+	* gcc.dg/vect/vect-none.c: New test.
 
 2004-08-17  Paul Brook  <paul@codesourcery.com>
 
