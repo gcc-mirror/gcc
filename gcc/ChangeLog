@@ -1828,6 +1828,22 @@ Fri Jul 27 17:53:00 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* flow.c (backward_edge_of_syntactic_loop_p): Avoid uninitialized
 	variable access.
 
+2001-07-26  Andrew Haley  <aph@redhat.com>
+	Joern Rennecke <amylaar@redhat.com>
+
+	* config/sh/linux.h (CPP_DEFAULT_CPU_SPEC): New.
+	(SUBTARGET_CPP_ENDIAN_SPEC): New.
+	(SUBTARGET_CPP_SPEC): New.
+	(CPP_SPEC): Remove.
+	* config/sh/sh.h (SUBTARGET_CPP_ENDIAN_SPEC): New.
+	(SUBTARGET_CPP_PTR_SPEC): New.
+	(CPP_DEFAULT_CPU_SPEC): New.
+	(EXTRA_SPECS): Add SUBTARGET_CPP_ENDIAN_SPEC,
+	SUBTARGET_CPP_PTR_SPEC, and CPP_DEFAULT_CPU_SPEC.
+	(CPP_SPEC): Break out parts into SUBTARGET_CPP_ENDIAN_SPEC,
+	SUBTARGET_CPP_PTR_SPEC, and CPP_DEFAULT_CPU_SPEC.
+	(SUBTARGET_CPP_SPEC): Define as an empty string.
+
 2001-07-27  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Configuration): Properly link the host
