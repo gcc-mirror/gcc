@@ -1,3 +1,9 @@
+2002-07-18  Richard Henderson  <rth@redhat.com>
+
+	PR optimization/7147
+	* ifcvt.c (noce_get_condition): Make certain that the condition
+	is valid at JUMP.
+
 Thu Jul 18 13:44:51 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (barrier_align, push): Shut up compiler warnings.
@@ -63,7 +69,7 @@ Wed Jul 17 19:23:32 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	suppress addition when either ct or cf are zero.
 
 2002-06-17  Eric Botcazou <ebotcazou@multimania.com>
-            Glen Nakamura <glen@imodulo.com>
+	    Glen Nakamura <glen@imodulo.com>
 
 	PR optimization/6713
 	* loop.c (loop_givs_rescan): Explicitly delete the insn that
