@@ -1,3 +1,9 @@
+2005-01-04  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/19240
+	* config/i386/i386.md (*fop_df_1_i387): Disable for TARGET_SSE_MATH.
+	(*fop_df_1_i387): Disable for (TARGET_SSE2 && TARGET_SSE_MATH).
+
 2005-01-03  Richard Henderson  <rth@redhat.com>
 
 	* fold-const.c (force_fit_type): Cope with types larger than 2 HWI.
