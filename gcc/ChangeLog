@@ -1,3 +1,7 @@
+2002-05-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* toplev.c: Fix formatting.
+
 2002-05-07  Janis Johnson  <janis187@us.ibm.com>
 
 	* config.in (ENABLE_RTL_FLAG_CHECKING): New.
