@@ -4272,10 +4272,9 @@ beq\t%2,%.,1b\;\
 		      (match_operand:SI 2 "arith_operand" "dI")))]
   "ISA_HAS_ROTR_<MODE>"
 {
-  if ((GET_CODE (operands[2]) == CONST_INT)
-      && (INTVAL (operands[2]) < 0
-	  || INTVAL (operands[2]) >= GET_MODE_BITSIZE (<MODE>mode)))
-    abort ();
+  if (GET_CODE (operands[2]) == CONST_INT)
+    gcc_assert (INTVAL (operands[2]) >= 0
+		&& INTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode));
 
   return "<d>ror\t%0,%1,%2";
 }
@@ -5479,8 +5478,7 @@ beq\t%2,%.,1b\;\
 {
   REAL_VALUE_TYPE d;
 
-  if (GET_CODE (operands[0]) != CONST_DOUBLE)
-    abort ();
+  gcc_assert (GET_CODE (operands[0]) == CONST_DOUBLE);
   REAL_VALUE_FROM_CONST_DOUBLE (d, operands[0]);
   assemble_real (d, GET_MODE (operands[0]),
 		 GET_MODE_BITSIZE (GET_MODE (operands[0])));
