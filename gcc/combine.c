@@ -173,6 +173,12 @@ static rtx subst_prev_insn;
 
 static int subst_low_cuid;
 
+/* This is an insn to which a LOG_LINKS entry has been added.  If this
+   insn is the earlier than I2 or I3, combine should rescan starting at
+   that location.  */
+
+static rtx added_links_insn;
+
 /* This is the value of undobuf.num_undo when we started processing this 
    substitution.  This will prevent gen_rtx_combine from re-used a piece
    from the previous expression.  Doing so can produce circular rtl
@@ -377,6 +383,7 @@ static rtx make_compound_operation  PROTO((rtx, enum rtx_code));
 static int get_pos_from_mask	PROTO((unsigned HOST_WIDE_INT, int *));
 static rtx force_to_mode	PROTO((rtx, enum machine_mode,
 				       unsigned HOST_WIDE_INT, rtx, int));
+static rtx if_then_else_cond	PROTO((rtx, rtx *, rtx *));
 static rtx known_cond		PROTO((rtx, enum rtx_code, rtx, rtx));
 static rtx make_field_assignment  PROTO((rtx));
 static rtx apply_distributive_law  PROTO((rtx));
@@ -1136,8 +1143,9 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
    and I1 is pseudo-deleted by turning it into a NOTE.  Otherwise, I1 and I2
    are pseudo-deleted.
 
-   If we created two insns, return I2; otherwise return I3.
-   Return 0 if the combination does not work.  Then nothing is changed.  */
+   Return 0 if the combination does not work.  Then nothing is changed. 
+   If we did the combination, return the insn at which combine should
+   resume scanning.  */
 
 static rtx
 try_combine (i3, i2, i1)
@@ -1201,6 +1209,7 @@ try_combine (i3, i2, i1)
     temp = i1, i1 = i2, i2 = temp;
 
   subst_prev_insn = 0;
+  added_links_insn = 0;
 
   /* First check for one important special-case that the code below will
      not handle.  Namely, the case where I1 is zero, I2 has multiple sets,
@@ -2291,7 +2300,12 @@ try_combine (i3, i2, i1)
 
   combine_successes++;
 
-  return newi2pat ? i2 : i3;
+  if (added_links_insn
+      && (newi2pat == 0 || INSN_CUID (added_links_insn) < INSN_CUID (i2))
+      && INSN_CUID (added_links_insn) < INSN_CUID (i3))
+    return added_links_insn;
+  else
+    return newi2pat ? i2 : i3;
 }
 
 /* Undo all the modifications recorded in undobuf.  */
@@ -2941,55 +2955,63 @@ subst (x, from, to, in_dest, unique_copy)
 
   /* If this is a simple operation applied to an IF_THEN_ELSE, try 
      applying it to the arms of the IF_THEN_ELSE.  This often simplifies
-     things.  Don't deal with operations that change modes here.  */
+     things.  Check for cases where both arms are testing the same
+     condition.
 
-  if ((GET_RTX_CLASS (code) == '2' || GET_RTX_CLASS (code) == 'c')
-      && GET_CODE (XEXP (x, 0)) == IF_THEN_ELSE)
+     Don't do anything if all operands are very simple.  */
+
+  if (((GET_RTX_CLASS (code) == '2' || GET_RTX_CLASS (code) == 'c'
+	|| GET_RTX_CLASS (code) == '<')
+       && ((GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) != 'o'
+	    && ! (GET_CODE (XEXP (x, 0)) == SUBREG
+		  && (GET_RTX_CLASS (GET_CODE (SUBREG_REG (XEXP (x, 0))))
+		      == 'o')))
+	   || (GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) != 'o'
+	       && ! (GET_CODE (XEXP (x, 1)) == SUBREG
+		     && (GET_RTX_CLASS (GET_CODE (SUBREG_REG (XEXP (x, 1))))
+			 == 'o')))))
+      || (GET_RTX_CLASS (code) == '1'
+	  && ((GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) != 'o'
+	       && ! (GET_CODE (XEXP (x, 0)) == SUBREG
+		     && (GET_RTX_CLASS (GET_CODE (SUBREG_REG (XEXP (x, 0))))
+			 == 'o'))))))
     {
-      /* Don't do this by using SUBST inside X since we might be messing
-	 up a shared expression.  */
-      rtx cond = XEXP (XEXP (x, 0), 0);
-      rtx t_arm = subst (gen_binary (code, mode, XEXP (XEXP (x, 0), 1),
-				     XEXP (x, 1)),
-			 pc_rtx, pc_rtx, 0, 0);
-      rtx f_arm = subst (gen_binary (code, mode, XEXP (XEXP (x, 0), 2),
-				     XEXP (x, 1)),
-			 pc_rtx, pc_rtx, 0, 0);
+      rtx cond, true, false;
 
+      cond = if_then_else_cond (x, &true, &false);
+      if (cond != 0)
+	{
+	  rtx cop1 = const0_rtx;
+	  enum rtx_code cond_code = simplify_comparison (NE, &cond, &cop1);
 
-      x = gen_rtx (IF_THEN_ELSE, mode, cond, t_arm, f_arm);
-      goto restart;
-    }
+	  /* If the result values are STORE_FLAG_VALUE and zero, we can
+	     just make the comparison operation.  */
+	  if (true == const_true_rtx && false == const0_rtx)
+	    x = gen_binary (cond_code, mode, cond, cop1);
+	  else if (true == const0_rtx && false == const_true_rtx)
+	    x = gen_binary (reverse_condition (cond_code), mode, cond, cop1);
 
-  else if ((GET_RTX_CLASS (code) == '2' || GET_RTX_CLASS (code) == 'c')
-	   && GET_CODE (XEXP (x, 1)) == IF_THEN_ELSE)
-    {
-      /* Don't do this by using SUBST inside X since we might be messing
-	 up a shared expression.  */
-      rtx cond = XEXP (XEXP (x, 1), 0);
-      rtx t_arm = subst (gen_binary (code, mode, XEXP (x, 0),
-				     XEXP (XEXP (x, 1), 1)),
-			 pc_rtx, pc_rtx, 0, 0);
-      rtx f_arm = subst (gen_binary (code, mode, XEXP (x, 0),
-				     XEXP (XEXP (x, 1), 2)),
-			 pc_rtx, pc_rtx, 0, 0);
+	  /* Likewise, we can make the negate of a comparison operation
+	     if the result values are - STORE_FLAG_VALUE and zero.  */
+	  else if (GET_CODE (true) == CONST_INT
+		   && INTVAL (true) == - STORE_FLAG_VALUE
+		   && false == const0_rtx)
+	    x = gen_unary (NEG, mode,
+			   gen_binary (cond_code, mode, cond, cop1));
+	  else if (GET_CODE (false) == CONST_INT
+		   && INTVAL (false) == - STORE_FLAG_VALUE
+		   && true == const0_rtx)
+	    x = gen_unary (NEG, mode,
+			   gen_binary (reverse_condition (cond_code), 
+				       mode, cond, cop1));
+	  else
+	    x = gen_rtx (IF_THEN_ELSE, mode,
+			 gen_binary (cond_code, VOIDmode, cond, cop1),
+			 subst (true, pc_rtx, pc_rtx, 0, 0),
+			 subst (false, pc_rtx, pc_rtx, 0, 0));
 
-      x = gen_rtx (IF_THEN_ELSE, mode, cond, t_arm, f_arm);
-      goto restart;
-    }
-
-  else if (GET_RTX_CLASS (code) == '1'
-	   && GET_CODE (XEXP (x, 0)) == IF_THEN_ELSE
-	   && GET_MODE (XEXP (x, 0)) == mode)
-    {
-      rtx cond = XEXP (XEXP (x, 0), 0);
-      rtx t_arm = subst (gen_unary (code, mode, XEXP (XEXP (x, 0), 1)),
-			 pc_rtx, pc_rtx, 0, 0);
-      rtx f_arm = subst (gen_unary (code, mode, XEXP (XEXP (x, 0), 2)),
-			 pc_rtx, pc_rtx, 0, 0);
-
-      x = gen_rtx_combine (IF_THEN_ELSE, mode, cond, t_arm, f_arm);
-      goto restart;
+	  goto restart;
+	}
     }
 
   /* Try to fold this expression in case we have constants that weren't
@@ -4042,6 +4064,8 @@ subst (x, from, to, in_dest, unique_copy)
 				 gen_binary (MULT, m, c1,
 					     GEN_INT (STORE_FLAG_VALUE)));
 
+	      temp = subst (temp, pc_rtx, pc_rtx, 0, 0);
+
 	      temp = gen_binary (op, m, gen_lowpart_for_combine (m, z), temp);
 
 	      if (extend_op != NIL)
@@ -4402,33 +4426,6 @@ subst (x, from, to, in_dest, unique_copy)
 	{
 	  x = gen_binary (AND, mode, XEXP (XEXP (XEXP (x, 0), 0), 0),
 			  XEXP (x, 1));
-	  goto restart;
-	}
-
-      /* If we have (and A B) with A not an object but that is known to
-	 be -1 or 0, this is equivalent to the expression
-	 (if_then_else (ne A (const_int 0)) B (const_int 0))
-	 We make this conversion because it may allow further
-	 simplifications and then allow use of conditional move insns.
-	 If the machine doesn't have condition moves, code in case SET
-	 will convert the IF_THEN_ELSE back to the logical operation.
-	 We build the IF_THEN_ELSE here in case further simplification
-	 is possible (e.g., we can convert it to ABS).  */
-
-      if (GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) != 'o'
-	  && ! (GET_CODE (XEXP (x, 0)) == SUBREG
-		&& GET_RTX_CLASS (GET_CODE (SUBREG_REG (XEXP (x, 0)))) == 'o')
-	  && (num_sign_bit_copies (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
-	      == GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0)))))
-	{
-	  rtx op0 = XEXP (x, 0);
-	  rtx op1 = const0_rtx;
-	  enum rtx_code comp_code
-	    = simplify_comparison (NE, &op0, &op1);
-
-	  x =  gen_rtx_combine (IF_THEN_ELSE, mode,
-				gen_binary (comp_code, VOIDmode, op0, op1),
-				XEXP (x, 1), const0_rtx);
 	  goto restart;
 	}
 
@@ -6040,6 +6037,112 @@ force_to_mode (x, mode, mask, reg, just_select)
 
   /* Ensure we return a value of the proper mode.  */
   return gen_lowpart_for_combine (mode, x);
+}
+
+/* Return nonzero if X is an expression that has one of two values depending on
+   whether some other value is zero or nonzero.  In that case, we return the
+   value that is being tested, *PTRUE is set to the value if the rtx being
+   returned has a nonzero value, and *PFALSE is set to the other alternative.
+
+   If we return zero, we set *PTRUE and *PFALSE to X.  */
+
+static rtx
+if_then_else_cond (x, ptrue, pfalse)
+     rtx x;
+     rtx *ptrue, *pfalse;
+{
+  enum machine_mode mode = GET_MODE (x);
+  enum rtx_code code = GET_CODE (x);
+  int size = GET_MODE_BITSIZE (mode);
+  rtx cond0, cond1, true0, true1, false0, false1;
+  unsigned HOST_WIDE_INT nz;
+
+  /* If this is a unary operation whose operand has one of two values, apply
+     our opcode to compute those values.  */
+  if (GET_RTX_CLASS (code) == '1'
+      && (cond0 = if_then_else_cond (XEXP (x, 0), &true0, &false0)) != 0)
+    {
+      *ptrue = gen_unary (code, mode, true0);
+      *pfalse = gen_unary (code, mode, false0);
+      return cond0;
+    }
+
+  /* If this is a binary operation, see if either side has only one of two
+     values.  If either one does or if both do and they are conditional on
+     the same value, compute the new true and false values.  */
+  else if (GET_RTX_CLASS (code) == 'c' || GET_RTX_CLASS (code) == '2'
+	   || GET_RTX_CLASS (code) == '<')
+    {
+      cond0 = if_then_else_cond (XEXP (x, 0), &true0, &false0);
+      cond1 = if_then_else_cond (XEXP (x, 1), &true1, &false1);
+
+      if ((cond0 != 0 || cond1 != 0)
+	  && ! (cond0 != 0 && cond1 != 0 && ! rtx_equal_p (cond0, cond1)))
+	{
+	  *ptrue = gen_binary (code, mode, true0, true1);
+	  *pfalse = gen_binary (code, mode, false0, false1);
+	  return cond0 ? cond0 : cond1;
+	}
+    }
+
+  else if (code == IF_THEN_ELSE)
+    {
+      /* If we have IF_THEN_ELSE already, extract the condition and
+	 canonicalize it if it is NE or EQ.  */
+      cond0 = XEXP (x, 0);
+      *ptrue = XEXP (x, 1), *pfalse = XEXP (x, 2);
+      if (GET_CODE (cond0) == NE && XEXP (cond0, 1) == const0_rtx)
+	return XEXP (cond0, 0);
+      else if (GET_CODE (cond0) == EQ && XEXP (cond0, 1) == const0_rtx)
+	{
+	  *ptrue = XEXP (x, 2), *pfalse = XEXP (x, 1);
+	  return XEXP (cond0, 0);
+	}
+      else
+	return cond0;
+    }
+
+  /* If X is a normal SUBREG with both inner and outer modes integral,
+     we can narrow both the true and false values of the inner expression,
+     if there is a condition.  */
+  else if (code == SUBREG && GET_MODE_CLASS (mode) == MODE_INT
+	   && GET_MODE_CLASS (GET_MODE (SUBREG_REG (x))) == MODE_INT
+	   && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
+	   && 0 != (cond0 = if_then_else_cond (SUBREG_REG (x),
+					       &true0, &false0)))
+    {
+      enum machine_mode inner_mode = GET_MODE (SUBREG_REG (x));
+      unsigned HOST_WIDE_INT mask = GET_MODE_MASK (inner_mode);
+
+      *ptrue = force_to_mode (true0, inner_mode, mask, NULL_RTX, 0);
+      *pfalse = force_to_mode (false0, inner_mode, mask, NULL_RTX, 0);
+      return cond0;
+    }
+
+  /* If X is a constant, this isn't special and will cause confusions
+     if we treat it as such.  Likewise if it is equivalent to a constant.  */
+  else if (CONSTANT_P (x)
+	   || ((cond0 = get_last_value (x)) != 0 && CONSTANT_P (cond0)))
+    ;
+
+  /* If X is known to be either 0 or -1, those are the true and 
+     false values when testing X.  */
+  else if (num_sign_bit_copies (x, mode) == size)
+    {
+      *ptrue = constm1_rtx, *pfalse = const0_rtx;
+      return x;
+    }
+
+  /* Likewise for 0 or a single bit.  */
+  else if (exact_log2 (nz = nonzero_bits (x, mode)) >= 0)
+    {
+      *ptrue = GEN_INT (nz), *pfalse = const0_rtx;
+      return x;
+    }
+
+  /* Otherwise fail; show no condition with true and false values the same.  */
+  *ptrue = *pfalse = x;
+  return 0;
 }
 
 /* Return the value of expression X given the fact that condition COND
@@ -10363,6 +10466,12 @@ distribute_links (links)
 	    {
 	      XEXP (link, 1) = LOG_LINKS (place);
 	      LOG_LINKS (place) = link;
+
+	      /* Set added_links_insn to the earliest insn we added a
+		 link to.  */
+	      if (added_links_insn == 0 
+		  || INSN_CUID (added_links_insn) > INSN_CUID (place))
+		added_links_insn = place;
 	    }
 	}
     }
