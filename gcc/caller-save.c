@@ -1,5 +1,5 @@
 /* Save and restore call-clobbered registers which are live across a call.
-   Copyright (C) 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -406,11 +406,7 @@ save_call_clobbered_regs (insn_mode)
 	 saved because we restore all of them before the end of the basic
 	 block.  */
 
-#ifdef HARD_REG_SET
-      hard_regs_live = *regs_live;
-#else
-      COPY_HARD_REG_SET (hard_regs_live, regs_live);
-#endif
+      COPY_HARD_REG_SET (hard_regs_live, *regs_live);
 
       CLEAR_HARD_REG_SET (hard_regs_saved);
       CLEAR_HARD_REG_SET (hard_regs_need_restore);
