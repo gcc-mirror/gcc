@@ -184,9 +184,9 @@ namespace std
 	  const char_type __c = *__beg;
 	  const bool __plus = __traits_type::eq(__c, __lit[_S_iplus]);
 	  if ((__plus || __traits_type::eq(__c, __lit[_S_iminus]))
-	      && !__traits_type::eq(__c, __lc->_M_decimal_point)
 	      && (!__lc->_M_use_grouping
-		  || !__traits_type::eq(__c, __lc->_M_thousands_sep)))
+		  || !__traits_type::eq(__c, __lc->_M_thousands_sep))
+	      && !__traits_type::eq(__c, __lc->_M_decimal_point))
 	    {
 	      __xtrc += __plus ? '+' : '-';
 	      ++__beg;
@@ -197,9 +197,9 @@ namespace std
       while (__beg != __end)
 	{
 	  const char_type __c = *__beg;
-	  if (__traits_type::eq(__c, __lc->_M_decimal_point)
-	      || (__lc->_M_use_grouping
-		  && __traits_type::eq(__c, __lc->_M_thousands_sep)))
+	  if (__lc->_M_use_grouping
+	      && __traits_type::eq(__c, __lc->_M_thousands_sep)
+	      || __traits_type::eq(__c, __lc->_M_decimal_point))
 	    break;
 	  else if (__traits_type::eq(__c, __lit[_S_izero]))
 	    {
@@ -221,7 +221,6 @@ namespace std
       if (__lc->_M_use_grouping)
 	__found_grouping.reserve(32);
       int __sep_pos = 0;
-      bool __e;
       const char_type* __lit_zero = __lit + _S_izero;
       const char_type* __q;
       while (__beg != __end)
@@ -274,14 +273,14 @@ namespace std
 	      ++__sep_pos;
 	      ++__beg;
 	    }
-	  else if ((__e = __traits_type::eq(__c, __lit[_S_ie])
+	  else if ((__traits_type::eq(__c, __lit[_S_ie])
 		    || __traits_type::eq(__c, __lit[_S_iE]))
 		   && __found_mantissa && !__found_sci)
 	    {
 	      // Scientific notation.
 	      if (__found_grouping.size() && !__found_dec)
 		__found_grouping += static_cast<char>(__sep_pos);
-	      __xtrc += __e ? 'e' : 'E';
+	      __xtrc += 'e';
 	      __found_sci = true;
 
 	      // Remove optional plus or minus sign, if they exist.
@@ -289,7 +288,10 @@ namespace std
 		{
 		  const bool __plus = __traits_type::eq(*__beg,
 							__lit[_S_iplus]);
-		  if (__plus || __traits_type::eq(*__beg, __lit[_S_iminus]))
+		  if ((__plus || __traits_type::eq(*__beg, __lit[_S_iminus]))
+		      && (!__lc->_M_use_grouping
+			  || !__traits_type::eq(*__beg, __lc->_M_thousands_sep))
+		      && !__traits_type::eq(*__beg, __lc->_M_decimal_point))
 		    {
 		      __xtrc += __plus ? '+' : '-';
 		      ++__beg;
@@ -351,9 +353,9 @@ namespace std
 	    if (numeric_limits<_ValueT>::is_signed)
 	      __negative = __traits_type::eq(__c, __lit[_S_iminus]);
 	    if ((__negative || __traits_type::eq(__c, __lit[_S_iplus]))
-		&& !__traits_type::eq(__c, __lc->_M_decimal_point)
 		&& (!__lc->_M_use_grouping
-		    || !__traits_type::eq(__c, __lc->_M_thousands_sep)))
+		    || !__traits_type::eq(__c, __lc->_M_thousands_sep))
+		&& !__traits_type::eq(__c, __lc->_M_decimal_point))
 	      ++__beg;
 	  }
 
@@ -362,9 +364,9 @@ namespace std
 	while (__beg != __end)
 	  {
 	    const char_type __c = *__beg;
-	    if (__traits_type::eq(__c, __lc->_M_decimal_point)
-		|| (__lc->_M_use_grouping
-		    && __traits_type::eq(__c, __lc->_M_thousands_sep)))
+	    if (__lc->_M_use_grouping
+		&& __traits_type::eq(__c, __lc->_M_thousands_sep)
+		|| __traits_type::eq(__c, __lc->_M_decimal_point))
 	      break;
 	    else if (__traits_type::eq(__c, __lit[_S_izero])
 		     && (!__found_num || __base == 10))
@@ -1201,8 +1203,10 @@ namespace std
 	string __grouping_tmp;
 	if (__lc->_M_use_grouping)
 	  __grouping_tmp.reserve(32);
-	// Marker for thousands_sep position.
-	int __sep_pos = 0;
+	// Last position before the decimal point.
+	int __last_pos = 0;
+	// Separator positions, then, possibly, fractional digits.
+	int __n = 0;
 	// If input iterator is in a valid state.
 	bool __testvalid = true;
 	// Flag marking when a decimal point is found.
@@ -1277,26 +1281,23 @@ namespace std
 		  if (__q = __traits_type::find(__lit_zero, 10, *__beg))
 		    {
 		      __res += _S_atoms[__q - __lit];
-		      ++__sep_pos;
+		      ++__n;
 		    }
 		  else if (*__beg == __lc->_M_decimal_point && !__testdecfound)
 		    {
-		      // If no grouping chars are seen, no grouping check
-		      // is applied. Therefore __grouping_tmp is adjusted
-		      // only if decimal_point comes after some thousands_sep.
-		      if (__grouping_tmp.size())
-			__grouping_tmp += static_cast<char>(__sep_pos);
-		      __sep_pos = 0;
+		      __last_pos = __n;
+		      __n = 0;
 		      __testdecfound = true;
 		    }
 		  else if (__lc->_M_use_grouping
-			   && *__beg == __lc->_M_thousands_sep)
+			   && *__beg == __lc->_M_thousands_sep
+			   && !__testdecfound)
 		    {
-		      if (!__testdecfound)
+		      if (__n)
 			{
 			  // Mark position for later analysis.
-			  __grouping_tmp += static_cast<char>(__sep_pos);
-			  __sep_pos = 0;
+			  __grouping_tmp += static_cast<char>(__n);
+			  __n = 0;
 			}
 		      else
 			{
@@ -1350,10 +1351,9 @@ namespace std
 	    // Test for grouping fidelity.
 	    if (__grouping_tmp.size())
 	      {
-		// Add the ending grouping if a decimal wasn't found.
-		if (!__testdecfound)
-		  __grouping_tmp += static_cast<char>(__sep_pos);
-		
+		// Add the ending grouping.
+		__grouping_tmp += static_cast<char>(__testdecfound ? __last_pos
+						                   : __n);
 		if (!std::__verify_grouping(__lc->_M_grouping,
 					    __lc->_M_grouping_size,
 					    __grouping_tmp))
@@ -1362,7 +1362,7 @@ namespace std
 	    
 	    // Iff not enough digits were supplied after the decimal-point.
 	    if (__testdecfound && __lc->_M_frac_digits > 0
-		&& __sep_pos != __lc->_M_frac_digits)
+		&& __n != __lc->_M_frac_digits)
 	      __testvalid = false;
 	  }
 	else
