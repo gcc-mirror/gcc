@@ -1,3 +1,7 @@
+Tue Jul 22 00:42:12 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (cgraph_finalize_compilation_unit): Remove redundant if.
+
 2003-07-21  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppfiles.c (open_file_pch): Don't put unused entries in the
