@@ -1342,8 +1342,6 @@ struct tree_ssa_name GTY(())
   /* _DECL wrapped by this SSA name.  */
   tree var;
 
-  tree equiv;
-
   /* SSA version number.  */
   unsigned int version;
 
