@@ -235,6 +235,10 @@
 #   endif
 #   define mach_type_known
 # endif
+# if defined(__pj__)
+#   define PJ
+#   define mach_type_known
+# endif
 
 /* Feel free to add more clauses here */
 
@@ -983,6 +987,13 @@
 #   define SAVE_CALL_CHAIN
 #   define ASM_CLEAR_CODE	/* Stack clearing is crucial, and we 	*/
 				/* include assembly code to do it well.	*/
+# endif
+
+# if defined(PJ)
+#   define ALIGNMENT 4
+    extern int _etext;
+#   define DATASTART ((ptr_t)(&_etext))
+#   define HEURISTIC1
 # endif
 
 # endif

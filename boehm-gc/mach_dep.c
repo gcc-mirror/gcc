@@ -327,12 +327,19 @@ void GC_push_regs()
 	    GC_push_all_stack((ptr_t)regs, lim);
 	}
 #     endif
+#     if defined(PJ)
+	{
+	    register int * sp asm ("optop");
+	    extern int *__libc_stack_end;
 
+	    GC_push_all_stack (sp, __libc_stack_end);
+        }
+#     endif
       /* other machines... */
 #       if !(defined M68K) && !(defined VAX) && !(defined RT) 
 #	if !(defined SPARC) && !(defined I386) && !(defined NS32K)
 #	if !defined(HP_PA) && !defined(M88K) && !defined(POWERPC)
-#	if !defined(UTS4)
+#	if !defined(UTS4) && !defined(PJ)
 	    --> bad news <--
 # 	endif
 #       endif
