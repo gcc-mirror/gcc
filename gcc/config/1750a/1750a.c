@@ -217,26 +217,35 @@ mod_regno_adjust (instr, op)
 }
 
 
-/* Auxiliary to `nonindirect_operand':
-   Check if op is a valid memory operand for 1750A arith./logic (non-move)
-   instructions. */
+/* Check if op is a valid memory operand for 1750A Load/Store instructions
+   (memory indirection permitted.)  */
+
 int
 memop_valid (op)
      rtx op;
 {
-  if (GET_MODE (op) != Pmode && GET_MODE (op) != VOIDmode)
+  static int recurred = 0;
+  int valid;
+
+  if (GET_MODE (op) != Pmode && GET_MODE (op) != VOIDmode
+      && GET_MODE (op) != QImode)
     return 0;
   switch (GET_CODE (op))
     {
     case MEM:
+      if (!recurred && GET_CODE (XEXP (op, 0)) == REG)
+	return 1;
     case MINUS:
     case MULT:
     case DIV:
       return 0;
     case PLUS:
-      if (!memop_valid (XEXP (op, 0)))
-	return 0;
-      return memop_valid (XEXP (op, 1));
+      recurred = 1;
+      valid = memop_valid (XEXP (op, 0));
+      if (valid)
+	valid = memop_valid (XEXP (op, 1));
+       recurred = 0;
+       return valid;
     case REG:
       if (REGNO (op) > 0)
 	return 1;
@@ -252,27 +261,6 @@ memop_valid (op)
     }
 }
 
-/* extra predicate for recog: */
-int
-nonindirect_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  int retval;
-
-  switch (GET_CODE (op))
-    {
-    case MEM:
-      retval = memop_valid (XEXP (op, 0));
-      return retval;
-    case REG:
-      return 1;
-    default:
-      if (!CONSTANT_P (op))
-	return 0;
-    }
-  return 1;
-}
 
 /* predicate for the MOV instruction: */
 int
@@ -544,7 +532,7 @@ print_operand (file, x, letter)
     case CONST_INT:
       if (letter == 'J')
 	fprintf (file, "%d", -INTVAL (x));
-      if (letter == 'b')
+      else if (letter == 'b')
         fprintf (file, "%d", which_bit (INTVAL (x)));
       else if (letter == 'B')
         fprintf (file, "%d", which_bit (~INTVAL (x)));
