@@ -3176,13 +3176,41 @@ convert_arg_to_ellipsis (arg)
 }
 
 /* ARG is a default argument expression being passed to a parameter of
-   the indicated TYPE.  Do any required conversions.  Return the
-   converted value.  */
+   the indicated TYPE, which is a parameter to FN.  Do any required
+   conversions.  Return the converted value.  */
 
 tree
-convert_default_arg (type, arg)
-     tree type, arg;
+convert_default_arg (type, arg, fn)
+     tree type;
+     tree arg;
+     tree fn;
 {
+  if (fn && DECL_TEMPLATE_INFO (fn))
+    {
+      /* This default argument came from a template.  Instantiate the
+	 default argument here, not in tsubst.  In the case of
+	 something like: 
+
+	   template <class T>
+	   struct S {
+	     static T t();
+	     void f(T = t());
+	   };
+
+	 we must be careful to do name lookup in the scope of S<T>,
+	 rather than in the current class.  */
+      if (DECL_CLASS_SCOPE_P (fn))
+	pushclass (DECL_REAL_CONTEXT (fn), 2);
+
+      arg = tsubst_expr (arg, DECL_TI_ARGS (fn), NULL_TREE);
+
+      if (DECL_CLASS_SCOPE_P (fn))
+	popclass (1);
+
+      /* Make sure the default argument is reasonable.  */
+      arg = check_default_argument (type, arg);
+    }
+
   arg = break_out_target_exprs (arg);
 
   if (TREE_CODE (arg) == CONSTRUCTOR)
@@ -3326,34 +3354,12 @@ build_over_call (cand, args, flags)
 
   /* Default arguments */
   for (; parm && parm != void_list_node; parm = TREE_CHAIN (parm))
-    {
-      tree arg = TREE_PURPOSE (parm);
-
-      if (DECL_TEMPLATE_INFO (fn))
-	{
-	  /* This came from a template.  Instantiate the default arg here,
-	     not in tsubst.  In the case of something like:
-
-	       template <class T>
-	       struct S {
-	         static T t();
-		 void f(T = t());
-	       };
-
-	     we must be careful to do name lookup in the scope of
-	     S<T>, rather than in the current class.  */
-	  if (DECL_CLASS_SCOPE_P (fn))
-	    pushclass (DECL_REAL_CONTEXT (fn), 2);
-
-	  arg = tsubst_expr (arg, DECL_TI_ARGS (fn), NULL_TREE);
-
-	  if (DECL_CLASS_SCOPE_P (fn))
-	    popclass (1);
-	}
-      converted_args = expr_tree_cons
-	(NULL_TREE, convert_default_arg (TREE_VALUE (parm), arg),
-	 converted_args);
-    }
+    converted_args 
+      = expr_tree_cons (NULL_TREE, 
+			convert_default_arg (TREE_VALUE (parm), 
+					     TREE_PURPOSE (parm),
+					     fn),
+			converted_args);
 
   /* Ellipsis */
   for (; arg; arg = TREE_CHAIN (arg))

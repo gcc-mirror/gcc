@@ -1,3 +1,25 @@
+1999-01-21  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (PARM_DECL_EXPR): Delete.
+	(convert_default_arg): Change prototype.
+	(check_default_argument): Declare.
+	(search_tree): Likewise.
+	* call.c (convert_default_arg): Take the function to which the
+	default argument belongs as a parameter, and do any necessary
+	instantiation here, instead of ...
+	(build_over_call): Here.
+	* decl.c (local_variable_p): New function.
+	(check_default_argument): Likewise, split out and tidied from ...
+	(grokparms): Here.
+	* error.c (dump_expr): Don't set PARM_DECL_EXPR.
+	* pt.c (tsubst_call_declarator_parms): New function.
+	(for_each_template_parm): Handle ARRAY_REFs.  Do the obvious thing
+	with CALL_EXPRs, rather than trying to be clever.
+	(tsubst): Use tsubst_call_declarator_parms.
+	* tree.c (search_tree): Don't make it static.
+	* typeck.c (convert_arguments): Use new interface to
+	convert_default_arg.
+	
 1999-01-20  Mark Mitchell  <mark@markmitchell.com>
 
 	* error.c (dump_function_decl): Don't print the argument types for

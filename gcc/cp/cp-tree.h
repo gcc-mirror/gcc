@@ -43,7 +43,6 @@ Boston, MA 02111-1307, USA.  */
       BINFO_VBASE_MARKED.
       BINFO_FIELDS_MARKED.
       TYPE_VIRTUAL_P.
-      PARM_DECL_EXPR (in SAVE_EXPR).
    3: TYPE_USES_VIRTUAL_BASECLASSES (in a class TYPE).
       BINFO_VTABLE_PATH_MARKED.
       BINFO_PUSHDECLS_MARKED.
@@ -1704,9 +1703,6 @@ extern int flag_new_for_scope;
    specified in its declaration.  */
 #define DECL_THIS_STATIC(NODE) (DECL_LANG_FLAG_6(NODE))
 
-/* Nonzero for SAVE_EXPR if used to initialize a PARM_DECL.  */
-#define PARM_DECL_EXPR(NODE) (TREE_LANG_FLAG_2(NODE))
-
 /* Nonzero in FUNCTION_DECL means it is really an operator.
    Just used to communicate formatting information to dbxout.c.  */
 #define DECL_OPERATOR(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.operator_attr)
@@ -2645,7 +2641,7 @@ extern tree build_op_delete_call		PROTO((enum tree_code, tree, tree, int, tree))
 extern int can_convert				PROTO((tree, tree));
 extern int can_convert_arg			PROTO((tree, tree, tree));
 extern void enforce_access                      PROTO((tree, tree));
-extern tree convert_default_arg                 PROTO((tree, tree));
+extern tree convert_default_arg                 PROTO((tree, tree, tree));
 extern tree convert_arg_to_ellipsis             PROTO((tree));
 
 /* in class.c */
@@ -2819,6 +2815,7 @@ extern void fixup_anonymous_union               PROTO((tree));
 extern int check_static_variable_definition     PROTO((tree, tree));
 extern void push_local_binding                  PROTO((tree, tree));
 extern void push_class_binding                  PROTO((tree, tree));
+extern tree check_default_argument              PROTO((tree, tree));
 
 /* in decl2.c */
 extern int check_java_method			PROTO((tree));
@@ -3300,6 +3297,7 @@ extern void push_expression_obstack		PROTO((void));
 extern tree build_dummy_object			PROTO((tree));
 extern tree maybe_dummy_object			PROTO((tree, tree *));
 extern int is_dummy_object			PROTO((tree));
+extern tree search_tree                         PROTO((tree, tree (*)(tree)));
 #define scratchalloc expralloc
 #define scratch_tree_cons expr_tree_cons
 #define build_scratch_list build_expr_list

@@ -182,6 +182,7 @@ static boolean typename_compare PROTO((hash_table_key, hash_table_key));
 static void push_binding PROTO((tree, tree, struct binding_level*));
 static void add_binding PROTO((tree, tree));
 static void pop_binding PROTO((tree, tree));
+static tree local_variable_p PROTO((tree));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -11260,6 +11261,103 @@ require_complete_types_for_parms (parms)
     }
 }
 
+/* Returns DECL if DECL is a local variable (or parameter).  Returns
+   NULL_TREE otherwise.  */
+
+static tree
+local_variable_p (t)
+     tree t;
+{
+  if ((TREE_CODE (t) == VAR_DECL 
+       /* A VAR_DECL with a context that is a _TYPE is a static data
+	  member.  */
+       && !TYPE_P (CP_DECL_CONTEXT (t))
+       /* Any other non-local variable must be at namespace scope.  */
+       && TREE_CODE (CP_DECL_CONTEXT (t)) != NAMESPACE_DECL)
+      || (TREE_CODE (t) == PARM_DECL))
+    return t;
+
+  return NULL_TREE;
+}
+
+/* Check that ARG, which is a default-argument expression for a
+   parameter DECL, is legal.  Returns ARG, or ERROR_MARK_NODE, if
+   something goes wrong.  DECL may also be a _TYPE node, rather than a
+   DECL, if there is no DECL available.  */
+
+tree
+check_default_argument (decl, arg)
+     tree decl;
+     tree arg;
+{
+  tree var;
+  tree decl_type;
+
+  if (TREE_CODE (arg) == DEFAULT_ARG)
+    /* We get a DEFAULT_ARG when looking at an in-class declaration
+       with a default argument.  Ignore the argument for now; we'll
+       deal with it after the class is complete.  */
+    return arg;
+
+  if (processing_template_decl || uses_template_parms (arg))
+    /* We don't do anything checking until instantiation-time.  Note
+       that there may be uninstantiated arguments even for an
+       instantiated function, since default arguments are not
+       instantiated until they are needed.  */
+    return arg;
+
+  if (TYPE_P (decl))
+    {
+      decl_type = decl;
+      decl = NULL_TREE;
+    }
+  else
+    decl_type = TREE_TYPE (decl);
+
+  if (arg == error_mark_node 
+      || decl == error_mark_node
+      || TREE_TYPE (arg) == error_mark_node
+      || decl_type == error_mark_node)
+    /* Something already went wrong.  There's no need to check
+       further.  */
+    return error_mark_node;
+
+  /* [dcl.fct.default]
+     
+     A default argument expression is implicitly converted to the
+     parameter type.  */
+  if (!TREE_TYPE (arg)
+      || !can_convert_arg (decl_type, TREE_TYPE (arg), arg))
+    {
+      if (decl)
+	cp_error ("default argument for `%#D' has type `%T'", 
+		  decl, TREE_TYPE (arg));
+      else
+	cp_error ("default argument for paramter of type `%T' has type `%T'",
+		  decl_type, TREE_TYPE (arg));
+
+      return error_mark_node;
+    }
+
+  /* [dcl.fct.default]
+
+     Local variables shall not be used in default argument
+     expressions. 
+
+     The keyword `this' shall not be used in a default argument of a
+     member function.  */
+  var = search_tree (arg, local_variable_p);
+  if (var)
+    {
+      cp_error ("default argument `%E' uses local variable `%D'",
+		arg, var);
+      return error_mark_node;
+    }
+
+  /* All is well.  */
+  return arg;
+}
+
 /* Decode the list of parameter types for a function type.
    Given the list of things declared inside the parens,
    return a list of types.
@@ -11437,51 +11535,10 @@ grokparms (first_parm, funcdef_flag)
 		  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
 		DECL_ARG_TYPE (decl) = integer_type_node;
 #endif
-	      if (!any_error)
+	      if (!any_error && init)
 		{
-		  if (init)
-		    {
-		      any_init++;
-		      if (TREE_CODE (init) == SAVE_EXPR)
-			PARM_DECL_EXPR (init) = 1;
-		      else if (processing_template_decl)
-			;
-		      /* Unparsed default arg from in-class decl.  */
-		      else if (TREE_CODE (init) == DEFAULT_ARG)
-			;
-		      else if (TREE_CODE (init) == PARM_DECL
-			       || TREE_CODE (init) == VAR_DECL)
-			{
-			  if (TREE_CODE (init) == VAR_DECL
-			      && (IDENTIFIER_VALUE (DECL_NAME (init))
-				  == init)
-			      && LOCAL_BINDING_P
-			      (IDENTIFIER_BINDING (DECL_NAME
-						   (init))))
-			    {
-			      /* ``Local variables may not be used in
-				 default argument expressions.''
-				 dpANSI C++ 8.2.6 */
-
-			      cp_error ("local variable `%D' may not be used as a default argument", init);
-			      any_error = 1;
-			    }
-			  else if (TREE_READONLY_DECL_P (init))
-			    init = decl_constant_value (init);
-			}
-		      else if (TREE_TYPE (init) == NULL_TREE)
-			{
-			  error ("argument list may not have an initializer list");
-			  init = error_mark_node;
-			}
-
-		      if (! processing_template_decl
-			  && init != error_mark_node
-			  && TREE_CODE (init) != DEFAULT_ARG
-			  && ! can_convert_arg (type, TREE_TYPE (init), init))
-			cp_pedwarn ("invalid type `%T' for default argument to `%#D'",
-				    TREE_TYPE (init), decl);
-		    }
+		  any_init++;
+		  init = check_default_argument (decl, init);
 		}
 	      else
 		init = NULL_TREE;

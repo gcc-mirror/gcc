@@ -136,6 +136,7 @@ static void check_specialization_scope PROTO((void));
 static tree process_partial_specialization PROTO((tree));
 static void set_current_access_from_decl PROTO((tree));
 static void check_default_tmpl_args PROTO((tree, tree, int, int));
+static tree tsubst_call_declarator_parms PROTO((tree, tree, tree));
 
 /* We use TREE_VECs to hold template arguments.  If there is only one
    level of template arguments, then the TREE_VEC contains the
@@ -3809,6 +3810,10 @@ for_each_template_parm (t, fn, data)
 	 COMPONENT_REF uses template parms.  */
       return for_each_template_parm (TREE_TYPE (t), fn, data);
 
+    case ARRAY_REF:
+      return (for_each_template_parm (TREE_OPERAND (t, 0), fn, data)
+	      || for_each_template_parm (TREE_OPERAND (t, 1), fn, data));
+
     case IDENTIFIER_NODE:
       if (!IDENTIFIER_TEMPLATE (t))
 	return 0;
@@ -3917,7 +3922,9 @@ for_each_template_parm (t, fn, data)
       return 0;
 
     case CALL_EXPR:
-      return for_each_template_parm (TREE_TYPE (t), fn, data);
+      return (for_each_template_parm (TREE_OPERAND (t, 0), fn, data)
+	      || for_each_template_parm (TREE_OPERAND (t, 1), fn, data));
+	
     case ADDR_EXPR:
       return for_each_template_parm (TREE_OPERAND (t, 0), fn, data);
 
@@ -5628,6 +5635,43 @@ tsubst_arg_types (arg_types, args, in_decl)
 			 
 }
 
+/* Substitute into the PARMS of a call-declarator.  */
+
+tree
+tsubst_call_declarator_parms (parms, args, in_decl)
+     tree parms;
+     tree args;
+     tree in_decl;
+{
+  tree new_parms;
+  tree type;
+  tree defarg;
+
+  if (!parms || parms == void_list_node)
+    return parms;
+  
+  new_parms = tsubst_call_declarator_parms (TREE_CHAIN (parms),
+					    args, in_decl);
+
+  /* Figure out the type of this parameter.  */
+  type = tsubst (TREE_VALUE (parms), args, in_decl);
+  
+  /* Figure out the default argument as well.  Note that we use
+     tsubst_copy since the default argument is really an 
+     expression.  */
+  defarg = tsubst_expr (TREE_PURPOSE (parms), args, in_decl);
+
+  /* Chain this parameter on to the front of those we have already
+     processed.  We don't use hash_tree_cons because that function
+     doesn't check TREE_PARMLIST.  */
+  new_parms = tree_cons (defarg, type, new_parms);
+
+  /* And note that these are parameters.  */
+  TREE_PARMLIST (new_parms) = 1;
+  
+  return new_parms;
+}
+
 /* Take the tree structure T and replace template parameters used therein
    with the argument vector ARGS.  IN_DECL is an associated decl for
    diagnostics.
@@ -6061,7 +6105,7 @@ tsubst (t, args, in_decl)
     case CALL_EXPR:
       return make_call_declarator
 	(tsubst (TREE_OPERAND (t, 0), args, in_decl),
-	 tsubst (TREE_OPERAND (t, 1), args, in_decl),
+	 tsubst_call_declarator_parms (TREE_OPERAND (t, 1), args, in_decl),
 	 TREE_OPERAND (t, 2),
 	 tsubst (TREE_TYPE (t), args, in_decl));
 

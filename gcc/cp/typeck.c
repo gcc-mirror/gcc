@@ -3088,9 +3088,10 @@ convert_arguments (typelist, values, fndecl, flags)
 	{
 	  for (; typetail != void_list_node; ++i)
 	    {
-	      tree type = TREE_VALUE (typetail);
-	      tree val = TREE_PURPOSE (typetail);
-	      tree parmval = convert_default_arg (type, val);
+	      tree parmval 
+		= convert_default_arg (TREE_VALUE (typetail), 
+				       TREE_PURPOSE (typetail), 
+				       fndecl);
 
 	      if (parmval == error_mark_node)
 		return error_mark_node;

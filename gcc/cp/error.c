@@ -1344,7 +1344,6 @@ dump_expr (t, nop)
 	{
 	  OB_PUTS ("new ");
 	  dump_type (TREE_TYPE (TREE_TYPE (t)), 0);
-	  PARM_DECL_EXPR (t) = 1;
 	}
       else
 	{
