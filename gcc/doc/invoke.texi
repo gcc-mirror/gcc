@@ -8962,10 +8962,6 @@ architecture option for your machine.  Code compiled for lower numbered
 architectures will run on higher numbered architectures, but not the
 other way around.
 
-PA 2.0 support currently requires gas snapshot 19990413 or later.  The
-next release of binutils (current is 2.9.1) will probably contain PA 2.0
-support.
-
 @item -mpa-risc-1-0
 @itemx -mpa-risc-1-1
 @itemx -mpa-risc-2-0
