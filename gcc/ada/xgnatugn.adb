@@ -2,11 +2,11 @@
 --                                                                          --
 --                          GNAT SYSTEM UTILITIES                           --
 --                                                                          --
---                              X G N A T U G                               --
+--                             X G N A T U G N                              --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2002 Free Software Foundation, Inc.             --
+--          Copyright (C) 2003-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -21,102 +21,110 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This utility is used to process the source of gnat_ug.texi to make a
---  version suitable for running through standard Texinfo processor. It takes
---  three arguments. The first one is the target type of the manual, which
---  can be one of:
---
---     unx       GNU
+--  This utility is used to process the source of gnat_ugn.texi to make a
+--  version suitable for running through standard Texinfo processor. It is
+--  invoked as follows:
+
+--  xgnatugn <target> <in-file> <word-list> [ <out-file> [ <warnings> ] ]
+
+--  1. <target> is the target type of the manual, which is one of:
+
+--     unw       Unix and Windows platforms
 --     vms       OpenVMS
---     wnt       Mirosoft Windows
---     vxworks   Embedded Platforms
---
---  The second parameter is the file name of the Texinfo file to be
+
+--  2. <in-file> is the file name of the Texinfo file to be
 --  preprocessed.
---
---  The third parameter is the name of the word list.  This file is used for
---  rewriting the VMS edition.  Each line contains a word mapping: The source
---  word in the first column, the target words in the second column.  The
---  columns are separated by a '^' character.  When preprocessing for VMS, the
---  first word is replaced with the second.  (Words consist of letters,
+
+--  3. <word-list> is the name of the word list file. This file is used for
+--  rewriting the VMS edition. Each line contains a word mapping: The source
+--  word in the first column, the target word in the second column. The
+--  columns are separated by a '^' character. When preprocessing for VMS, the
+--  first word is replaced with the second. (Words consist of letters,
 --  digits, and the four characters "?-_~". A sequence of multiple words can
---  be replaced if they listed in the first column, separated by a single
---  space character.  If multiple words are to be replaced, there has to be
+--  be replaced if they are listed in the first column, separated by a single
+--  space character. If multiple words are to be replaced, there must be a
 --  replacement for each prefix.)
---
---  The fourth parameter is the name of the output file.  It defaults to
---  gnat_ug_unx.texi, gnat_ug_vms.texi, gnat_ug_wnt.texi or gnat_ug_vxw.texi,
---  depending on the target.
---
+
+--  4. <out-file> (optional) is the name of the output file. It defaults to
+--  gnat_ugn_unw.texi or gnat_ugn_vms.texi, depending on the target.
+
+--  5. <warnings> (optional, and allowed only if <out-file> is explicit)
+--  can be any string. If present, it indicates that warning messages are
+--  to be output to Standard_Error. If absent, no warning messages are
+--  generated.
+
 --  The following steps are performed:
---
+
 --     In VMS mode
---
+
 --       Any occurrences of ^alpha^beta^ are replaced by beta. The sequence
 --       must fit on a single line, and there can only be one occurrence on a
 --       line.
---
+
 --       Any occurrences of a word in the Ug_Words list are replaced by the
 --       appropriate vms equivalents. Note that replacements do not occur
 --       within ^alpha^beta^ sequences.
---
+
 --       Any occurence of [filename].extension, where extension one of the
 --       following:
---
+
 --           "o", "ads", "adb", "ali", "ada", "atb", "ats", "adc", "c"
---
---
+
 --       replaced by the appropriate VMS names (all upper case with .o
 --       replaced .OBJ). Note that replacements do not occur within
 --       ^alpha^beta^ sequences.
---
---     In UNX, VXWORKS or WNT mode
---
+
+--     In UNW mode
+
 --       Any occurrences of ^alpha^beta^ are replaced by alpha. The sequence
 --       must fit on a single line.
---
---     In all modes
---
+
+--     In both modes
+
 --       The sequence ^^^ is replaced by a single ^. This escape sequence
 --       must be used if the literal character ^ is to appear in the
 --       output. A line containing this escape sequence may not also contain
 --       a ^alpha^beta^ sequence.
---
+
 --       Recognize @ifset and @ifclear (this is because we have menu problems
 --       if we let makeinfo handle the ifset/ifclear pairs
 
-with Ada.Command_Line; use Ada.Command_Line;
-with Ada.Strings; use Ada.Strings;
-with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Ada.Strings.Maps; use Ada.Strings.Maps;
+with Ada.Command_Line;           use Ada.Command_Line;
+with Ada.Strings;                use Ada.Strings;
+with Ada.Strings.Fixed;          use Ada.Strings.Fixed;
+with Ada.Strings.Unbounded;      use Ada.Strings.Unbounded;
+with Ada.Strings.Maps;           use Ada.Strings.Maps;
 with Ada.Strings.Maps.Constants; use Ada.Strings.Maps.Constants;
-with Ada.Text_IO; use Ada.Text_IO;
-with GNAT.Spitbol; use GNAT.Spitbol;
+with Ada.Text_IO;                use Ada.Text_IO;
+
+with GNAT.Spitbol;               use GNAT.Spitbol;
 with GNAT.Spitbol.Table_VString; use GNAT.Spitbol.Table_VString;
 
-procedure Xgnatug is
+procedure Xgnatugn is
 
    procedure Usage;
-   --  Print usage information.  Invoked if an invalid command line is
+   --  Print usage information. Invoked if an invalid command line is
    --  encountered.
 
    Output_File : File_Type;
-   --  The preprocessed output is written to this file.
+   --  The preprocessed output is written to this file
 
    type Input_File is record
       Name : VString;
       Data : File_Type;
       Line : Natural := 0;
    end record;
-   --  Records information on an input file.  Name and Line are used
+   --  Records information on an input file. Name and Line are used
    --  in error messages, Line is updated automatically by Get_Line.
 
    function Get_Line (Input : access Input_File) return String;
    --  Returns a line from Input and performs the necessary
    --  line-oriented checks (length, character set, trailing spaces).
 
-   Have_Errors : Boolean := False;
+   Number_Of_Warnings : Natural := 0;
+   Number_Of_Errors   : Natural := 0;
+   Warnings_Enabled   : Boolean;
+
    procedure Error
      (Input        : Input_File;
       At_Character : Natural;
@@ -124,7 +132,7 @@ procedure Xgnatug is
    procedure Error
      (Input        : Input_File;
       Message      : String);
-   --  Prints a message reporting an error on line Input.Line.  If
+   --  Prints a message reporting an error on line Input.Line. If
    --  At_Character is not 0, indicate the exact character at which
    --  the error occurs.
 
@@ -140,33 +148,34 @@ procedure Xgnatug is
    Dictionary_File : aliased Input_File;
    procedure Read_Dictionary_File;
    --  Dictionary_File is opened using the name given on the command
-   --  line.  It contains the replacements for the Ug_Words list.
+   --  line. It contains the replacements for the Ug_Words list.
    --  Read_Dictionary_File reads Dictionary_File and fills the
    --  Ug_Words table.
 
    Source_File : aliased Input_File;
    procedure Process_Source_File;
    --  Source_File is opened using the name given on the command line.
-   --  It contains the Texinfo source code.  Process_Source_File
+   --  It contains the Texinfo source code. Process_Source_File
    --  performs the necessary replacements.
 
-   type Target_Type is (VMS, WNT, UNX, VXWORKS);
+   type Target_Type is (UNW, VMS);
    Target : Target_Type;
-   --  The target for which preprocessing is performed: VMS, Windows,
-   --  GNU, and embedded platforms ("UNX" and "VXWORKS" are misnomers).
-   --  The Target avariable is initialized using the command line.
+   --  The target for which preprocessing is performed:
+   --  UNW (Unix and Windows) or VMS
+   --  The Target variable is initialized using the command line.
 
    Valid_Characters : constant Character_Set
      := To_Set (Span => (' ',  '~'));
    --  This array controls which characters are permitted in the input
-   --  file (after line breaks have been removed).  Valid characters
+   --  file (after line breaks have been removed). Valid characters
    --  are all printable ASCII characters and the space character.
 
-   Word_Characters : constant Character_Set
-     := (To_Set (Ranges => (('0', '9'), ('a', 'z'), ('A', 'Z')))
-         or To_Set ("?-_~"));
-   --  The characters which are permitted in words.  Other (valid)
-   --  characters are assumed to be delimiters between words.  Note that
+   Word_Characters : constant Character_Set :=
+                       (To_Set (Ranges =>
+                                  (('0', '9'), ('a', 'z'), ('A', 'Z')))
+                        or To_Set ("?-_~"));
+   --  The characters which are permitted in words. Other (valid)
+   --  characters are assumed to be delimiters between words. Note that
    --  this set has to include all characters of the source words of the
    --  Ug_Words dictionary.
 
@@ -174,11 +183,11 @@ procedure Xgnatug is
    --  Controls whether Xgnatug rejects superfluous space characters
    --  at the end of lines.
 
-   Maximum_Line_Length : constant Positive := 2000;
+   Maximum_Line_Length     : constant Positive := 79;
    Fatal_Line_Length_Limit : constant Positive := 5000;
-   Fatal_Line_Length : exception;
+   Fatal_Line_Length       : exception;
    --  If Maximum_Line_Length is exceeded in an input file, an error
-   --  message is printed.  If Fatal_Line_Length is exceeded,
+   --  message is printed. If Fatal_Line_Length is exceeded,
    --  execution terminates with a Fatal_Line_Length exception.
 
    VMS_Escape_Character : constant Character := '^';
@@ -191,7 +200,7 @@ procedure Xgnatug is
 
    function Is_Extension (Extension : String) return Boolean;
    function Get_Replacement_Extension (Extension : String) return String;
-   --  These functions query the replacement table.  Is_Extension
+   --  These functions query the replacement table. Is_Extension
    --  checks if the given string is a known extension.
    --  Get_Replacement returns the replacement extension.
 
@@ -199,8 +208,8 @@ procedure Xgnatug is
    function Is_Known_Word (Word : String) return Boolean;
    function Get_Replacement_Word (Word : String) return String;
    --  The Ug_Words table lists replacement words for the VMS version
-   --  of the manual.  Is_Known_Word and Get_Replacement_Word query
-   --  this table.  The table is filled using Read_Dictionary_File.
+   --  of the manual. Is_Known_Word and Get_Replacement_Word query
+   --  this table. The table is filled using Read_Dictionary_File.
 
    function Rewrite_Source_Line (Line : String) return String;
    --  This subprogram takes a line and rewrites it according to Target.
@@ -208,7 +217,7 @@ procedure Xgnatug is
 
    type Conditional is (Set, Clear);
    procedure Push_Conditional (Cond : Conditional; Flag : Target_Type);
-   procedure Pop_Conditional (Cond : Conditional);
+   procedure Pop_Conditional  (Cond : Conditional);
    --  These subprograms deal with conditional processing (@ifset/@ifclear).
    --  They rely on information in Source_File to generate error messages.
 
@@ -221,9 +230,12 @@ procedure Xgnatug is
    --  always have a VMS or a non-VMS version, regardless of the value of
    --  Target.
 
+   function In_VMS_Section return Boolean;
+   --  Returns True if in an "@ifset vms" section.
+
    procedure Check_No_Pending_Conditional;
    --  Checks that all preprocessing directives have been properly matched by
-   --  their @end counterpart.  If this is not the case, print an error
+   --  their @end counterpart. If this is not the case, print an error
    --  message.
 
    --  The following definitions implement a stack to track the conditional
@@ -237,14 +249,12 @@ procedure Xgnatug is
    end record;
 
    Conditional_Stack_Depth : constant := 3;
-   Conditional_Stack : array (1 .. Conditional_Stack_Depth)
-     of Conditional_Context;
+
+   Conditional_Stack :
+     array (1 .. Conditional_Stack_Depth) of Conditional_Context;
+
    Conditional_TOS : Natural := 0;
    --  Pointer to the Top Of Stack for Conditional_Stack.
-
-   -----------------------------------
-   -- Implementation of Subprograms --
-   -----------------------------------
 
    -----------
    -- Usage --
@@ -253,12 +263,14 @@ procedure Xgnatug is
    procedure Usage is
    begin
       Put_Line (Standard_Error,
-                "usage: xgnatug TARGET SOURCE DICTIONARY [OUTFILE]");
+              "usage: xgnatug TARGET SOURCE DICTIONARY [OUTFILE [WARNINGS]]");
       New_Line;
       Put_Line (Standard_Error, "TARGET is one of:");
+
       for T in Target_Type'Range loop
          Put_Line (Standard_Error, "  " & Target_Type'Image (T));
       end loop;
+
       New_Line;
       Put_Line (Standard_Error, "SOURCE is the source file to process.");
       New_Line;
@@ -269,11 +281,17 @@ procedure Xgnatug is
       Put_Line (Standard_Error,
                 "OUT-FILE, if present, is the output file to be created;");
       Put_Line (Standard_Error,
-                "If OUT-FILE is absent, the output file is one of " &
-                "gnat_ug_unx.texi, ");
+                "If OUT-FILE is absent, the output file is either " &
+                "gnat_ugn_unw.texi, ");
       Put_Line (Standard_Error,
-                "gnat_ug_vms.texi, gnat_ug_wnt.texi or gnat_ug_vxw.texi, " &
-                "depending on TARGET.");
+                "or gnat_ugn_vms.texi, depending on TARGET.");
+      New_Line;
+      Put_Line (Standard_Error,
+                "WARNINGS, if present, is any string;");
+      Put_Line (Standard_Error,
+                "it will result in warning messages (e.g., line too long))");
+      Put_Line (Standard_Error,
+                "being output to Standard_Error.");
    end Usage;
 
    --------------
@@ -287,6 +305,7 @@ procedure Xgnatug is
    begin
       Input.Line := Input.Line + 1;
       Get_Line (Input.Data, Line_Buffer, Last);
+
       if Last = Line_Buffer'Last then
          Error (Input.all, "line exceeds fatal line length limit");
          raise Fatal_Line_Length;
@@ -335,13 +354,14 @@ procedure Xgnatug is
       At_Character : Natural;
       Message      : String)
    is
-      Line_Image : constant String := Integer'Image (Input.Line);
+      Line_Image         : constant String := Integer'Image (Input.Line);
       At_Character_Image : constant String := Integer'Image (At_Character);
       --  These variables are required because we have to drop the leading
       --  space character.
 
    begin
-      Have_Errors := True;
+      Number_Of_Errors := Number_Of_Errors + 1;
+
       if At_Character > 0 then
          Put_Line (Standard_Error,
                    S (Input.Name) & ':'
@@ -364,11 +384,13 @@ procedure Xgnatug is
    -------------
 
    procedure Warning
-     (Input        : Input_File;
-      Message      : String)
+     (Input   : Input_File;
+      Message : String)
    is
    begin
-      Warning (Input, 0, Message);
+      if Warnings_Enabled then
+         Warning (Input, 0, Message);
+      end if;
    end Warning;
 
    procedure Warning
@@ -376,12 +398,18 @@ procedure Xgnatug is
       At_Character : Natural;
       Message      : String)
    is
-      Line_Image : constant String := Integer'Image (Input.Line);
+      Line_Image         : constant String := Integer'Image (Input.Line);
       At_Character_Image : constant String := Integer'Image (At_Character);
       --  These variables are required because we have to drop the leading
       --  space character.
 
    begin
+      if not Warnings_Enabled then
+         return;
+      end if;
+
+      Number_Of_Warnings := Number_Of_Warnings + 1;
+
       if At_Character > 0 then
          Put_Line (Standard_Error,
                    S (Input.Name) & ':'
@@ -407,28 +435,34 @@ procedure Xgnatug is
    begin
       while not End_Of_File (Dictionary_File.Data) loop
          declare
-            Line  : String := Get_Line (Dictionary_File'Access);
-            Split : Natural := Index (Line, (1 => VMS_Escape_Character));
+            Line  : constant String :=
+                      Get_Line (Dictionary_File'Access);
+            Split : constant Natural :=
+                      Index (Line, (1 => VMS_Escape_Character));
 
          begin
             if Line'Length = 0 then
                Error (Dictionary_File, "empty line in dictionary file");
+
             elsif Line (Line'First) = ' ' then
                Error (Dictionary_File, 1, "line starts with space character");
+
             elsif Split = 0 then
                Error (Dictionary_File, "line does not contain "
                       & VMS_Escape_Character & " character");
             else
                declare
-                  Source : constant String
-                    := Trim (Line (1 .. Split - 1), Both);
-                  Target : constant String
-                    := Trim (Line (Split + 1 .. Line'Last), Both);
-                  Two_Spaces : constant Natural
-                    := Index (Source, "  ");
-                  Non_Word_Character : constant Natural
-                    := Index (Source, Word_Characters or To_Set (" "),
-                              Outside);
+                  Source : constant String :=
+                             Trim (Line (1 .. Split - 1), Both);
+                  Target : constant String :=
+                             Trim (Line (Split + 1 .. Line'Last), Both);
+                  Two_Spaces : constant Natural :=
+                                 Index (Source, "  ");
+                  Non_Word_Character : constant Natural :=
+                                         Index (Source,
+                                                Word_Characters or
+                                                  To_Set (" "),
+                                                Outside);
 
                begin
                   if Two_Spaces /= 0 then
@@ -443,8 +477,10 @@ procedure Xgnatug is
 
                   if Source'Length = 0 then
                      Error (Dictionary_File, "source is empty");
+
                   elsif Target'Length = 0 then
                      Error (Dictionary_File, "target is empty");
+
                   else
                      Set (Ug_Words, Source, V (Target));
 
@@ -455,8 +491,8 @@ procedure Xgnatug is
                      for J in Source'Range loop
                         if Source (J) = ' ' then
                            declare
-                              Prefix : String renames Source (Source'First
-                                                              .. J - 1);
+                              Prefix : String renames
+                                         Source (Source'First .. J - 1);
 
                            begin
                               if not Is_Known_Word (Prefix) then
@@ -475,27 +511,27 @@ procedure Xgnatug is
    end Read_Dictionary_File;
 
    -------------------------
-   -- Process_Source_Line --
+   -- Rewrite_Source_Line --
    -------------------------
 
    function Rewrite_Source_Line (Line : String) return String is
 
       --  We use a simple lexer to split the line into tokens:
-      --
+
       --    Word             consisting entirely of Word_Characters
       --    VMS_Alternative  ^alpha^beta^ replacement (but not ^^^)
       --    Space            a space character
       --    Other            everything else (sequence of non-word characters)
       --    VMS_Error        incomplete VMS alternative
       --    End_Of_Line      no more characters on this line
-      --
+
       --   A sequence of three VMS_Escape_Characters is automatically
       --   collapsed to an Other token.
 
       type Token_Span is record
          First, Last : Positive;
       end record;
-      --  The character range covered by a token in Line.
+      --  The character range covered by a token in Line
 
       type Token_Kind is (End_Of_Line, Word, Other,
                           VMS_Alternative, VMS_Error);
@@ -513,21 +549,21 @@ procedure Xgnatug is
 
       Input_Position : Positive := Line'First;
       Token : Token_Record;
-      --  The position of the next character to be processed by Next_Token.
+      --  The position of the next character to be processed by Next_Token
 
       procedure Next_Token;
-      --  Returns the next token in Line, starting at Input_Position.
+      --  Returns the next token in Line, starting at Input_Position
 
       Rewritten_Line : VString;
-      --  Collects the line as it is rewritten.
+      --  Collects the line as it is rewritten
 
       procedure Rewrite_Word;
-      --  The current token is assumed to be a Word.  When processing the VMS
+      --  The current token is assumed to be a Word. When processing the VMS
       --  version of the manual, additional tokens are gathered to check if
       --  we have a file name or a sequence of known words.
 
       procedure Maybe_Rewrite_Extension;
-      --  The current token is assumed to be Other.  When processing the VMS
+      --  The current token is assumed to be Other. When processing the VMS
       --  version of the manual and the token represents a single dot ".",
       --  the following word is rewritten according to the rules for
       --  extensions.
@@ -535,6 +571,10 @@ procedure Xgnatug is
       VMS_Token_Seen : Boolean := False;
       --  This is set to true if a VMS_Alternative has been encountered, or a
       --  ^^^ token.
+
+      ----------------
+      -- Next_Token --
+      ----------------
 
       procedure Next_Token is
          Remaining_Line : String renames Line (Input_Position .. Line'Last);
@@ -561,23 +601,25 @@ procedure Xgnatug is
                   VMS_Token_Seen := True;
                end if;
 
-               --  Find the second and third escape character.  If one of
+               --  Find the second and third escape character. If one of
                --  them is not present, generate an error token.
 
-               VMS_Second_Character
-                 := Index (Remaining_Line (Remaining_Line'First + 1
+               VMS_Second_Character :=
+                 Index (Remaining_Line (Remaining_Line'First + 1
                                            .. Remaining_Line'Last),
-                           (1 => VMS_Escape_Character));
+                        (1 => VMS_Escape_Character));
+
                if VMS_Second_Character = 0 then
                   Input_Position := Remaining_Line'Last + 1;
                   Token := (VMS_Error, Remaining_Line'First);
                   return;
                end if;
 
-               VMS_Third_Character
-                 := Index (Remaining_Line (VMS_Second_Character + 1
+               VMS_Third_Character :=
+                 Index (Remaining_Line (VMS_Second_Character + 1
                                            .. Remaining_Line'Last),
-                           (1 => VMS_Escape_Character));
+                        (1 => VMS_Escape_Character));
+
                if VMS_Third_Character = 0 then
                   Input_Position := Remaining_Line'Last + 1;
                   Token := (VMS_Error, Remaining_Line'First);
@@ -607,14 +649,13 @@ procedure Xgnatug is
             end;
          end if;                        --  VMS_Alternative
 
-         --  The Word case.  Search for characters not in Word_Characters.
+         --  The Word case. Search for characters not in Word_Characters.
          --  We have found a word if the first non-word character is not
          --  the first character in Remaining_Line, i.e. if Remaining_Line
          --  starts with a word character.
 
          Last_Character := Index (Remaining_Line, Word_Characters, Outside);
          if Last_Character /= Remaining_Line'First then
-
 
             --  If we haven't found a character which is not in
             --  Word_Characters, all remaining characters are part of the
@@ -630,14 +671,19 @@ procedure Xgnatug is
             return;
          end if;
 
-         --  Remaining characters are in the Other category.  To speed
+         --  Remaining characters are in the Other category. To speed
          --  up processing, we collect them together if there are several
          --  of them.
 
          Input_Position := Last_Character + 1;
-         Token :=  (Other, Remaining_Line'First,
-                    (Remaining_Line'First, Last_Character));
+         Token := (Other,
+                   Remaining_Line'First,
+                   (Remaining_Line'First, Last_Character));
       end Next_Token;
+
+      ------------------
+      -- Rewrite_Word --
+      ------------------
 
       procedure Rewrite_Word is
          First_Word : String
@@ -704,7 +750,7 @@ procedure Xgnatug is
                   end if;
                end loop;
 
-               --  Rewrite Seq, and add the lost space if necessary.
+               --  Rewrite Seq, and add the lost space if necessary
 
                Append (Rewritten_Line,
                        Get_Replacement_Word (Line (Seq.First .. Seq.Last)));
@@ -719,18 +765,18 @@ procedure Xgnatug is
          end if;
 
          Next_Token;
+
          if Token.Kind = Other
            and then Line (Token.Span.First .. Token.Span.Last) = "."
          then
-
-            --  Deal with extensions.
+            --  Deal with extensions
 
             Next_Token;
             if Token.Kind = Word
               and then Is_Extension (Line (Token.Span.First
                                            .. Token.Span.Last))
             then
-               --  We have discovered a file extension.  Convert the file
+               --  We have discovered a file extension. Convert the file
                --  name to upper case.
 
                Append (Rewritten_Line,
@@ -749,7 +795,6 @@ procedure Xgnatug is
                --  iteration of the main loop.
             end if;
 
-
          else
             --  We have an unknown Word, followed by an unknown token.
             --  The unknown token will be processed by the outer loop.
@@ -758,9 +803,13 @@ procedure Xgnatug is
          end if;
       end Rewrite_Word;
 
+      -----------------------------
+      -- Maybe_Rewrite_Extension --
+      -----------------------------
+
       procedure Maybe_Rewrite_Extension is
       begin
-         --  Again, we need no special processing in the non-VMS case.
+         --  Again, we need no special processing in the non-VMS case
 
          if Target = VMS
            and then Line (Token.Span.First .. Token.Span.Last) = "."
@@ -786,12 +835,12 @@ procedure Xgnatug is
          end if;
       end Maybe_Rewrite_Extension;
 
-      --  Start of processing for Process_Source_Line
+   --  Start of processing for Process_Source_Line
 
    begin
       --  The following parser recognizes the following special token
       --  sequences:
-      --
+
       --     Word "." Word    rewrite as file name if second word is extension
       --     Word " " Word    rewrite as a single word using Ug_Words table
 
@@ -809,9 +858,15 @@ procedure Xgnatug is
 
             when VMS_Alternative =>
                if VMS_Context_Determined then
-                  Warning (Source_File, Token.First,
-                           "VMS alternative already determined "
-                           & "by conditionals");
+                  if (not In_VMS_Section)
+                    or else
+                    Line (Token.VMS.First .. Token.VMS.Last) /=
+                    Line (Token.Non_VMS.First .. Token.Non_VMS.Last)
+                  then
+                     Warning (Source_File, Token.First,
+                              "VMS alternative already determined "
+                                & "by conditionals");
+                  end if;
                end if;
                if Target = VMS then
                   Append (Rewritten_Line, Line (Token.VMS.First
@@ -827,6 +882,7 @@ procedure Xgnatug is
                Next_Token;
          end case;
       end loop;
+
       return S (Rewritten_Line);
    end Rewrite_Source_Line;
 
@@ -835,15 +891,15 @@ procedure Xgnatug is
    -------------------------
 
    procedure Process_Source_File is
-      Ifset : constant String := "@ifset ";
-      Ifclear : constant String := "@ifclear ";
+      Ifset       : constant String := "@ifset ";
+      Ifclear     : constant String := "@ifclear ";
       Endsetclear : constant String := "@end ";
       --  Strings to be recognized for conditional processing.
 
    begin
       while not End_Of_File (Source_File.Data) loop
          declare
-            Line : constant String := Get_Line (Source_File'Access);
+            Line      : constant String := Get_Line (Source_File'Access);
             Rewritten : constant String := Rewrite_Source_Line (Line);
             --  We unconditionally rewrite the line so that we can check the
             --  syntax of all lines, and not only those which are actually
@@ -852,32 +908,38 @@ procedure Xgnatug is
             Have_Conditional : Boolean := False;
             --  True if we have encountered a conditional preprocessing
             --  directive.
+
             Cond : Conditional;
             --  The kind of the directive.
+
             Flag : Target_Type;
             --  Its flag.
 
          begin
             --  If the line starts with @ifset or @ifclear, we try to convert
-            --  the following flag to one of our target types.  If we fail,
+            --  the following flag to one of our target types. If we fail,
             --  Have_Conditional remains False.
 
             if Line'Length >= Ifset'Length
               and then Line (1 .. Ifset'Length) = Ifset
             then
                Cond := Set;
+
                declare
-                  Arg : constant String
-                    := Trim (Line (Ifset'Length + 1 .. Line'Last), Both);
+                  Arg : constant String :=
+                          Trim (Line (Ifset'Length + 1 .. Line'Last), Both);
 
                begin
                   Flag := Target_Type'Value (Arg);
+
                   if Translate (Target_Type'Image (Flag), Lower_Case_Map)
-                    /= Arg
+                                                                    /= Arg
                   then
                      Error (Source_File, "flag has to be lowercase");
                   end if;
+
                   Have_Conditional := True;
+
                exception
                   when Constraint_Error =>
                      Error (Source_File, "unknown flag for '@ifset'");
@@ -887,18 +949,21 @@ procedure Xgnatug is
               and then Line (1 .. Ifclear'Length) = Ifclear
             then
                Cond := Clear;
+
                declare
-                  Arg : constant String
-                    := Trim (Line (Ifclear'Length + 1 .. Line'Last), Both);
+                  Arg : constant String :=
+                          Trim (Line (Ifclear'Length + 1 .. Line'Last), Both);
 
                begin
                   Flag := Target_Type'Value (Arg);
                   if Translate (Target_Type'Image (Flag), Lower_Case_Map)
-                    /= Arg
+                                                                     /= Arg
                   then
                      Error (Source_File, "flag has to be lowercase");
                   end if;
+
                   Have_Conditional := True;
+
                exception
                   when Constraint_Error =>
                      Error (Source_File, "unknown flag for '@ifclear'");
@@ -906,6 +971,7 @@ procedure Xgnatug is
             end if;
 
             if Have_Conditional then
+
                --  We create a new conditional context and suppress the
                --  directive in the output.
 
@@ -914,11 +980,12 @@ procedure Xgnatug is
             elsif Line'Length >= Endsetclear'Length
               and then Line (1 .. Endsetclear'Length) = Endsetclear
             then
-               --  The '@end ifset'/'@end ifclear' case is handled here.  We
+               --  The '@end ifset'/'@end ifclear' case is handled here. We
                --  have to pop the conditional context.
 
                declare
                   First, Last : Natural;
+
                begin
                   Find_Token (Source => Line (Endsetclear'Length + 1
                                               .. Line'Length),
@@ -926,6 +993,7 @@ procedure Xgnatug is
                               Test   => Inside,
                               First  => First,
                               Last   => Last);
+
                   if Last = 0 then
                      Error (Source_File, "'@end' without argument");
                   else
@@ -943,18 +1011,22 @@ procedure Xgnatug is
 
                      --  We fall through to the ordinary case for other @end
                      --  directives.
+
                   end if;               --  @end without argument
                end;
             end if;                     --  Have_Conditional
 
             if not Have_Conditional then
+
                --  The ordinary case.
+
                if not Currently_Excluding then
                   Put_Line (Output_File, Rewritten);
                end if;
             end if;
          end;
       end loop;
+
       Check_No_Pending_Conditional;
    end Process_Source_File;
 
@@ -971,6 +1043,10 @@ procedure Xgnatug is
       procedure Add (Extension, Replacement : String);
       --  Adds an extension with a custom replacement.
 
+      ---------
+      -- Add --
+      ---------
+
       procedure Add (Extension : String) is
       begin
          Add (Extension, Translate (Extension, Upper_Case_Map));
@@ -981,7 +1057,7 @@ procedure Xgnatug is
          Set (Extensions, Extension, V (Replacement));
       end Add;
 
-      --  Start of processing for Initialize_Extensions
+   --  Start of processing for Initialize_Extensions
 
    begin
       --  To avoid performance degradation, increase the constant in the
@@ -1040,6 +1116,7 @@ procedure Xgnatug is
 
    procedure Push_Conditional (Cond : Conditional; Flag : Target_Type) is
       Will_Exclude : Boolean;
+
    begin
       --  If we are already in an excluding context, inherit this property,
       --  otherwise calculate it from scratch.
@@ -1066,12 +1143,13 @@ procedure Xgnatug is
                      & Integer'Image (Conditional_Stack (J).Starting_Line));
          end if;
       end loop;
+
       Conditional_TOS := Conditional_TOS + 1;
-      Conditional_Stack (Conditional_TOS)
-        := (Starting_Line => Source_File.Line,
-            Cond          => Cond,
-            Flag          => Flag,
-            Excluding     => Will_Exclude);
+      Conditional_Stack (Conditional_TOS) :=
+        (Starting_Line => Source_File.Line,
+         Cond          => Cond,
+         Flag          => Flag,
+         Excluding     => Will_Exclude);
    end Push_Conditional;
 
    ---------------------
@@ -1089,6 +1167,7 @@ procedure Xgnatug is
                          & Integer'Image (Conditional_Stack
                                           (Conditional_TOS).Starting_Line));
                end if;
+
             when Clear =>
                if Conditional_Stack (Conditional_TOS).Cond /= Clear then
                   Error (Source_File,
@@ -1097,12 +1176,15 @@ procedure Xgnatug is
                                           (Conditional_TOS).Starting_Line));
                end if;
          end case;
+
          Conditional_TOS := Conditional_TOS - 1;
+
       else
          case Cond is
             when Set =>
                Error (Source_File,
                       "'@end ifset' without corresponding '@ifset'");
+
             when Clear =>
                Error (Source_File,
                       "'@end ifclear' without corresponding '@ifclear'");
@@ -1131,8 +1213,24 @@ procedure Xgnatug is
             return True;
          end if;
       end loop;
+
       return False;
    end VMS_Context_Determined;
+
+   --------------------
+   -- In_VMS_Section --
+   --------------------
+
+   function In_VMS_Section return Boolean is
+   begin
+      for J in 1 .. Conditional_TOS loop
+         if Conditional_Stack (J).Flag = VMS then
+            return Conditional_Stack (J).Cond = Set;
+         end if;
+      end loop;
+
+      return False;
+   end In_VMS_Section;
 
    ----------------------------------
    -- Check_No_Pending_Conditional --
@@ -1145,6 +1243,7 @@ procedure Xgnatug is
             when Set =>
                Error (Source_File, "Missing '@end ifset' for '@ifset' at line"
                       & Integer'Image (Conditional_Stack (J).Starting_Line));
+
             when Clear =>
                Error (Source_File,
                       "Missing '@end ifclear' for '@ifclear' at line"
@@ -1163,13 +1262,14 @@ procedure Xgnatug is
 begin
    Initialize_Extensions;
 
-   Valid_Command_Line := Argument_Count in 3 .. 4;
+   Valid_Command_Line := Argument_Count in 3 .. 5;
 
    --  First argument: Target.
 
    if Valid_Command_Line then
       begin
          Target := Target_Type'Value (Argument (1));
+
       exception
          when Constraint_Error =>
             Valid_Command_Line := False;
@@ -1182,6 +1282,7 @@ begin
       begin
          Source_File.Name := V (Argument (2));
          Open (Source_File.Data, In_File, Argument (2));
+
       exception
          when Name_Error =>
             Valid_Command_Line := False;
@@ -1194,6 +1295,7 @@ begin
       begin
          Dictionary_File.Name := V (Argument (3));
          Open (Dictionary_File.Data, In_File, Argument (3));
+
       exception
          when Name_Error =>
             Valid_Command_Line := False;
@@ -1203,23 +1305,22 @@ begin
    --  Fourth argument: Output_File.
 
    if Valid_Command_Line then
-      if Argument_Count = 4 then
+      if Argument_Count in 4 .. 5 then
          Output_File_Name := V (Argument (4));
       else
          case Target is
+            when UNW =>
+               Output_File_Name := V ("gnat_ugn_unw.texi");
             when VMS =>
-               Output_File_Name := V ("gnat_ug_vms.texi");
-            when WNT =>
-               Output_File_Name := V ("gnat_ug_wnt.texi");
-            when UNX =>
-               Output_File_Name := V ("gnat_ug_unx.texi");
-            when VXWORKS =>
-               Output_File_Name := V ("gnat_ug_vxw.texi");
+               Output_File_Name := V ("gnat_ugn_vms.texi");
          end case;
       end if;
 
+      Warnings_Enabled := Argument_Count = 5;
+
       begin
          Create (Output_File, Out_File, S (Output_File_Name));
+
       exception
          when Name_Error | Use_Error =>
             Valid_Command_Line := False;
@@ -1229,6 +1330,7 @@ begin
    if not Valid_Command_Line then
       Usage;
       Set_Exit_Status (Failure);
+
    else
       Read_Dictionary_File;
       Close (Dictionary_File.Data);
@@ -1238,10 +1340,41 @@ begin
       Process_Source_File;
       Close (Output_File);
       Close (Source_File.Data);
-      if Have_Errors then
+
+      New_Line (Standard_Error);
+
+      if Number_Of_Warnings = 0 then
+         Put_Line (Standard_Error, " NO Warnings");
+
+      else
+         Put (Standard_Error, Integer'Image (Number_Of_Warnings));
+         Put (Standard_Error, " Warning");
+
+         if Number_Of_Warnings > 1 then
+            Put (Standard_Error, "s");
+         end if;
+
+         New_Line (Standard_Error);
+      end if;
+
+      if Number_Of_Errors = 0 then
+         Put_Line (Standard_Error, " NO Errors");
+
+      else
+         Put (Standard_Error, Integer'Image (Number_Of_Errors));
+         Put (Standard_Error, " Error");
+
+         if Number_Of_Errors > 1 then
+            Put (Standard_Error, "s");
+         end if;
+
+         New_Line (Standard_Error);
+      end if;
+
+      if Number_Of_Errors /= 0  then
          Set_Exit_Status (Failure);
       else
          Set_Exit_Status (Success);
       end if;
    end if;
-end Xgnatug;
+end Xgnatugn;
