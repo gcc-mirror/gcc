@@ -54,6 +54,7 @@ static tree build_terminate_handler PROTO((void));
 static tree alloc_eh_object PROTO((tree));
 static int complete_ptr_ref_or_void_ptr_p PROTO((tree, tree));
 static void initialize_handler_parm PROTO((tree));
+static tree expand_throw PROTO((tree));
 
 #if 0
 /* This is the startup, and finish stuff per exception table.  */
@@ -825,19 +826,24 @@ alloc_eh_object (type)
 		generate a label for the throw block
 	4. jump to the throw block label.  */
 
-void
+tree
 expand_throw (exp)
      tree exp;
 {
   tree fn;
 
   if (! doing_eh (1))
-    return;
+    return error_mark_node;
 
   if (exp)
     {
       tree throw_type;
       tree cleanup = NULL_TREE, e;
+      tree stmt_expr;
+      tree compound_stmt;
+      tree try_block;
+
+      begin_init_stmts (&stmt_expr, &compound_stmt);
 
       /* throw expression */
       /* First, decay it.  */
@@ -846,15 +852,11 @@ expand_throw (exp)
       /* cleanup_type is void (*)(void *, int),
 	 the internal type of a destructor. */
       if (cleanup_type == NULL_TREE)
-	{
-	  push_permanent_obstack ();
-	  cleanup_type = build_pointer_type
-	    (build_function_type
-	     (void_type_node, tree_cons
-	      (NULL_TREE, ptr_type_node, tree_cons
-	       (NULL_TREE, integer_type_node, void_list_node))));
-	  pop_obstacks ();
-	}
+	cleanup_type = build_pointer_type
+	  (build_function_type
+	   (void_type_node, tree_cons
+	    (NULL_TREE, ptr_type_node, tree_cons
+	     (NULL_TREE, integer_type_node, void_list_node))));
 
       if (TYPE_PTR_P (TREE_TYPE (exp)))
 	throw_type = build_eh_type (exp);
@@ -876,12 +878,8 @@ expand_throw (exp)
 	     first.  Since there could be temps in the expression, we need
 	     to handle that, too.  */
 
-	  expand_start_target_temps ();
+	  my_friendly_assert (stmts_are_full_exprs_p == 1, 19990926);
 
-#if 0
-	  /* Unfortunately, this doesn't work.  */
-	  preexpand_calls (exp);
-#else
 	  /* Store the throw expression into a temp.  This can be less
 	     efficient than storing it into the allocated space directly, but
 	     oh well.  To do this efficiently we would need to insinuate
@@ -893,23 +891,21 @@ expand_throw (exp)
 	      cp_finish_decl (temp, exp, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
 	      exp = temp;
 	    }
-#endif
 
 	  /* Allocate the space for the exception.  */
 	  ptr = save_expr (alloc_eh_object (TREE_TYPE (exp)));
-	  expand_expr (ptr, const0_rtx, VOIDmode, 0);
+	  finish_expr_stmt (ptr);
 
-	  expand_eh_region_start ();
-
+	  try_block = begin_try_block ();
 	  object = build_indirect_ref (ptr, NULL_PTR);
 	  exp = build_modify_expr (object, INIT_EXPR, exp);
 
 	  if (exp == error_mark_node)
 	    error ("  in thrown expression");
 
-	  expand_expr (exp, const0_rtx, VOIDmode, 0);
-	  expand_eh_region_end (build_terminate_handler ());
-	  expand_end_target_temps ();
+	  finish_expr_stmt (exp);
+	  finish_cleanup_try_block (try_block);
+	  finish_cleanup (build_terminate_handler (), try_block);
 
 	  throw_type = build_eh_type (object);
 
@@ -964,8 +960,9 @@ expand_throw (exp)
       e = tree_cons (NULL_TREE, exp, tree_cons
 		     (NULL_TREE, throw_type, tree_cons
 		      (NULL_TREE, cleanup, NULL_TREE)));
-      e = build_function_call (fn, e);
-      expand_expr (e, const0_rtx, VOIDmode, 0);
+      finish_expr_stmt (build_function_call (fn, e));
+
+      exp = finish_init_stmts (stmt_expr, compound_stmt);
     }
   else
     {
@@ -992,10 +989,9 @@ expand_throw (exp)
 
       mark_used (fn);
       exp = build_function_call (fn, NULL_TREE);
-      expand_expr (exp, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
 
-  expand_internal_throw ();
+  return exp;
 }
 
 /* Build a throw expression.  */
@@ -1019,6 +1015,7 @@ build_throw (e)
         return error_mark_node;
     }
 
+  e = expand_throw (e);
   e = build1 (THROW_EXPR, void_type_node, e);
   TREE_SIDE_EFFECTS (e) = 1;
   TREE_USED (e) = 1;

@@ -1,5 +1,14 @@
 1999-09-26  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (expand_throw): Remove prototype.
+	* except.c (expand_throw): Make it static.  Use tree-generation
+	functions, rather than RTL-generation functions.
+	(build_throw): Use it.
+	* expr.c: Include except.h.
+	(cplus_expand_expr): Don't call expand_throw here.
+	* Makefile.in (expr.o): Depend on except.h.
+	* ir.texi: Update documentation for THROW_EXPR.
+	
 	* decl.c (start_function): Set x_dont_save_pending_sizes rather
 	than calling get_pending_sizes.
 	* init.c (build_new): Don't save and restore

@@ -1621,11 +1621,13 @@ function calls are made explicit.
 
 @item THROW_EXPR
 These nodes represent @code{throw} expressions.  The single operand is
-the expression to be thrown.  If the throw expression is of the form 
-@example
-throw;
-@end example
-then the operand is @code{NULL_TREE}.
+an expression for the code that should be executed to throw the
+exception.  However, there is one implicit action not represented in
+that expression; namely the call to @code{__throw}.  This function takes
+no arguments.  If @code{setjmp}/@code{longjmp} exceptiosn are used, the
+function @code{__sjthrow} is called instead.  The normal G++ back-end
+uses the function @code{emit_throw} to generate this code; you can
+examine this function to see what needs to be done.
 
 @item LSHIFT_EXPR
 @itemx RSHIFT_EXPR

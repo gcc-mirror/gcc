@@ -3456,7 +3456,6 @@ extern void expand_end_eh_spec		        PROTO((tree, tree));
 extern void expand_exception_blocks		PROTO((void));
 extern tree start_anon_func			PROTO((void));
 extern void end_anon_func			PROTO((void));
-extern void expand_throw			PROTO((tree));
 extern tree build_throw				PROTO((tree));
 extern void mark_all_runtime_matches            PROTO((void));
 
