@@ -1,3 +1,8 @@
+2004-02-19  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR bootstrap/11932
+	* mkinstalldirs, install-sh: Import from automake CVS HEAD.
+
 2004-02-14  Jerry Quinn  <jlquinn@optonline.net>
 
 	* MAINTAINERS: Added myself to write-after-approval.
