@@ -329,6 +329,7 @@ for machine in $build $host $target; do
 		xm_file="${xm_file} alpha/xm-linux.h"
 		target_cpu_default="MASK_GAS"
 		tmake_file="t-linux alpha/t-linux"
+		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		xmake_file=none
 		fixincludes=Makefile.in
 		gas=yes gnu_ld=yes
