@@ -1,3 +1,7 @@
+2004-09-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* profile.c: Fix a comment typo.
+
 2004-09-26  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR bootstrap/17591

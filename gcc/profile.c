@@ -569,7 +569,7 @@ compute_branch_probabilities (void)
 	  BRANCH_EDGE (bb)->probability = prob;
 	  FALLTHRU_EDGE (bb)->probability = REG_BR_PROB_BASE - prob;
 	}
-      /* As a last resolt, distribute the probabilities evenly.
+      /* As a last resort, distribute the probabilities evenly.
 	 Use simple heuristics that if there are normal edges,
 	 give all abnormals frequency of 0, otherwise distribute the
 	 frequency over abnormals (this is the case of noreturn
