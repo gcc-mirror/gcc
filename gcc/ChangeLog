@@ -1,3 +1,8 @@
+2003-09-24  Alexandre Oliva  <aoliva@redhat.com>
+
+	* cpplib.c (do_pragma): Reintroduce cb_line_change call in the
+	code path that calls a handler.
+
 2003-09-24  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc (c4x-*, tic4x-*, d30v-*, mmix-knuth-mmixware):
