@@ -95,38 +95,37 @@ struct redirection_data
 /* Main data structure to hold information for duplicates of BB.  */
 static varray_type redirection_data;
 
-/* For each PHI node in BB, find or create a PHI node in NEW_BB for the
-   same PHI_RESULT.  Add an argument to the PHI node in NEW_BB which
-   corresponds to the same PHI argument associated with edge E in BB.  */
+/* Add to the destination of edge E those PHI arguments queued on
+   E.  */
 
 static void
-copy_phis_to_block (basic_block new_bb, basic_block bb, edge e)
+copy_phis_to_block (edge e)
 {
-  tree phi, arg;
+  basic_block dest = e->dest;
+  tree var;
 
-  /* Walk over every PHI in BB.  */
-  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+  for (var = PENDING_STMT (e); var; var = TREE_CHAIN (var))
     {
+      tree result = TREE_PURPOSE (var);
+      tree arg = TREE_VALUE (var);
       tree new_phi;
 
       /* First try to find a PHI node in NEW_BB which has the same
          PHI_RESULT as the PHI from BB we are currently processing.  */
-      for (new_phi = phi_nodes (new_bb); new_phi;
+      for (new_phi = phi_nodes (dest); new_phi;
 	   new_phi = PHI_CHAIN (new_phi))
-	if (PHI_RESULT (new_phi) == PHI_RESULT (phi))
+	if (PHI_RESULT (new_phi) == result)
 	  break;
 
       /* If we did not find a suitable PHI in NEW_BB, create one.  */
       if (!new_phi)
-	new_phi = create_phi_node (PHI_RESULT (phi), new_bb);
-
-      /* Extract the argument corresponding to E from the current PHI
-         node in BB.  */
-      arg = PHI_ARG_DEF_TREE (phi, phi_arg_from_edge (phi, e));
+	new_phi = create_phi_node (result, dest);
 
       /* Now add that same argument to the new PHI node in block NEW_BB.  */
       add_phi_arg (&new_phi, arg, e);
     }
+
+  PENDING_STMT (e) = NULL;
 }
 
 /* Remove the last statement in block BB if it is a control statement
@@ -363,14 +362,13 @@ thread_block (basic_block bb)
 	  if (rd->outgoing_edge == new_dest && rd->dup_block)
 	    {
 	      edge e2;
-	      copy_phis_to_block (rd->dup_block, bb, e);
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "  Threaded jump %d --> %d to %d\n",
 			 e->src->index, e->dest->index, rd->dup_block->index);
 
 	      e2 = redirect_edge_and_branch (e, rd->dup_block);
-	      PENDING_STMT (e2) = NULL;
+	      copy_phis_to_block (e2);
 
 	      if ((dump_file && (dump_flags & TDF_DETAILS))
 		  && e->src != e2->src)

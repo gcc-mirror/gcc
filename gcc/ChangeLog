@@ -1,3 +1,10 @@
+2004-11-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-threadupdate.c (copy_phis_to_block): Install PHI
+	arguments using PENDING_STMT.
+	(thread_block): Call copy_phis_to_block after redirecting an
+	edge.
+
 2004-11-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* bitmap.h (bitmap_and, bitmap_and_into, bitmap_and_compl,
