@@ -1,3 +1,7 @@
+Mon Nov  1 18:09:14 1999  Richard Henderson  <rth@cygnus.com>
+
+	* reg-stack.c (convert_regs_1): Handle EH edges specially.
+
 Mon Nov  1 15:41:01 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* bitmap.h (BITMAP_XMALLOC): New macro.
