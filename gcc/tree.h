@@ -2902,7 +2902,19 @@ extern void rrotate_double	PARAMS ((unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 					 HOST_WIDE_INT, unsigned int,
 					 unsigned HOST_WIDE_INT *,
 					 HOST_WIDE_INT *));
+
+extern int div_and_round_double		PARAMS ((enum tree_code, int,
+						 unsigned HOST_WIDE_INT,
+						 HOST_WIDE_INT,
+						 unsigned HOST_WIDE_INT,
+						 HOST_WIDE_INT,
+						 unsigned HOST_WIDE_INT *,
+						 HOST_WIDE_INT *,
+						 unsigned HOST_WIDE_INT *,
+						 HOST_WIDE_INT *));
+
 extern int operand_equal_p	PARAMS ((tree, tree, int));
+extern tree omit_one_operand	PARAMS ((tree, tree, tree));
 extern tree invert_truthvalue	PARAMS ((tree));
 
 /* In builtins.c */
@@ -3049,17 +3061,6 @@ extern int supports_one_only		PARAMS ((void));
 extern void variable_section		PARAMS ((tree, int));
 enum tls_model decl_tls_model		PARAMS ((tree));
 enum symbol_visibility decl_visibility	PARAMS ((tree));
-
-/* In fold-const.c */
-extern int div_and_round_double		PARAMS ((enum tree_code, int,
-						 unsigned HOST_WIDE_INT,
-						 HOST_WIDE_INT,
-						 unsigned HOST_WIDE_INT,
-						 HOST_WIDE_INT,
-						 unsigned HOST_WIDE_INT *,
-						 HOST_WIDE_INT *,
-						 unsigned HOST_WIDE_INT *,
-						 HOST_WIDE_INT *));
 
 /* In stmt.c */
 extern void emit_nop			PARAMS ((void));

@@ -4515,9 +4515,29 @@ builtin_mathfn_code (t)
 
   arglist = TREE_OPERAND (t, 1);
   if (! arglist
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != REAL_TYPE
-      || TREE_CHAIN (arglist))
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != REAL_TYPE)
     return END_BUILTINS;
+
+  arglist = TREE_CHAIN (arglist);
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    case BUILT_IN_POW:
+    case BUILT_IN_POWF:
+    case BUILT_IN_POWL:
+    case BUILT_IN_ATAN2:
+    case BUILT_IN_ATAN2F:
+    case BUILT_IN_ATAN2L:
+      if (! arglist
+	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != REAL_TYPE
+	  || TREE_CHAIN (arglist))
+	return END_BUILTINS;
+      break;
+
+    default:
+      if (arglist)
+	return END_BUILTINS;
+      break;
+    }
 
   return DECL_FUNCTION_CODE (fndecl);
 }
@@ -4653,6 +4673,7 @@ fold_builtin (exp)
 {
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
+  tree type = TREE_TYPE (TREE_TYPE (fndecl));
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
 
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
@@ -4696,10 +4717,10 @@ fold_builtin (exp)
 	      REAL_VALUE_TYPE r, x;
 
 	      x = TREE_REAL_CST (arg);
-	      mode = TYPE_MODE (TREE_TYPE (arg));
+	      mode = TYPE_MODE (type);
 	      if (real_sqrt (&r, mode, &x)
 		  || (!flag_trapping_math && !flag_errno_math))
-		return build_real (TREE_TYPE (arg), r);
+		return build_real (type, r);
 	    }
 
 	  /* Optimize sqrt(exp(x)) = exp(x/2.0).  */
@@ -4710,9 +4731,9 @@ fold_builtin (exp)
 		  || fcode == BUILT_IN_EXPL))
 	    {
 	      tree expfn = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
-	      arg = build (RDIV_EXPR, TREE_TYPE (arg),
+	      arg = build (RDIV_EXPR, type,
 			   TREE_VALUE (TREE_OPERAND (arg, 1)),
-			   build_real (TREE_TYPE (arg), dconst2));
+			   build_real (type, dconst2));
 	      arglist = build_tree_list (NULL_TREE, arg);
 	      return build_function_call_expr (expfn, arglist);
 	    }
@@ -4729,7 +4750,7 @@ fold_builtin (exp)
 
 	  /* Optimize exp(0.0) = 1.0.  */
 	  if (real_zerop (arg))
-	    return build_real (TREE_TYPE (arg), dconst1);
+	    return build_real (type, dconst1);
 
 	  /* Optimize exp(log(x)) = x.  */
 	  fcode = builtin_mathfn_code (arg);
@@ -4751,7 +4772,7 @@ fold_builtin (exp)
 
 	  /* Optimize log(1.0) = 0.0.  */
 	  if (real_onep (arg))
-	    return build_real (TREE_TYPE (arg), dconst0);
+	    return build_real (type, dconst0);
 
 	  /* Optimize log(exp(x)) = x.  */
 	  fcode = builtin_mathfn_code (arg);
@@ -4769,31 +4790,49 @@ fold_builtin (exp)
 	    {
 	      tree logfn = build_function_call_expr (fndecl,
 						     TREE_OPERAND (arg, 1));
-	      return fold (build (RDIV_EXPR, TREE_TYPE (arg), logfn,
-				  build_real (TREE_TYPE (arg), dconst2)));
+	      return fold (build (RDIV_EXPR, type, logfn,
+				  build_real (type, dconst2)));
 	    }
+	}
+      break;
+
+    case BUILT_IN_POW:
+    case BUILT_IN_POWF:
+    case BUILT_IN_POWL:
+      if (validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+	{
+	  tree arg0 = TREE_VALUE (arglist);
+	  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+
+	  /* Optimize pow(x,0.0) = 1.0.  */
+	  if (real_zerop (arg1))
+	    return omit_one_operand (type, build_real (type, dconst1), arg0);
+
+	  /* Optimize pow(1.0,y) = 1.0.  */
+	  if (real_onep (arg0))
+	    return omit_one_operand (type, build_real (type, dconst1), arg1);
 	}
       break;
 
     case BUILT_IN_INF:
     case BUILT_IN_INFF:
     case BUILT_IN_INFL:
-      return fold_builtin_inf (TREE_TYPE (TREE_TYPE (fndecl)), true);
+      return fold_builtin_inf (type, true);
 
     case BUILT_IN_HUGE_VAL:
     case BUILT_IN_HUGE_VALF:
     case BUILT_IN_HUGE_VALL:
-      return fold_builtin_inf (TREE_TYPE (TREE_TYPE (fndecl)), false);
+      return fold_builtin_inf (type, false);
 
     case BUILT_IN_NAN:
     case BUILT_IN_NANF:
     case BUILT_IN_NANL:
-      return fold_builtin_nan (arglist, TREE_TYPE (TREE_TYPE (fndecl)), true);
+      return fold_builtin_nan (arglist, type, true);
 
     case BUILT_IN_NANS:
     case BUILT_IN_NANSF:
     case BUILT_IN_NANSL:
-      return fold_builtin_nan (arglist, TREE_TYPE (TREE_TYPE (fndecl)), false);
+      return fold_builtin_nan (arglist, type, false);
 
     case BUILT_IN_FLOOR:
     case BUILT_IN_FLOORF:

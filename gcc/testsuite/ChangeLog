@@ -1,3 +1,7 @@
+2003-02-21  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-5.c: New test case.
+
 2003-02-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/asmreg-1.c: New test.

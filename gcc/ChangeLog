@@ -1,3 +1,13 @@
+2003-02-21  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (omit_one_operand): No longer static.
+	* tree.h (omit_one_operand): Prototype here.
+	(div_and_round_double): Keep fold-const.c prototypes together.
+	* builtins.c (builtin_mathfn_code): Handle binary built-in
+	funtions, such as "pow" and "atan2".
+	(fold_builtin): Optimize both pow(x,0.0) and pow(1.0,y) to 1.0.
+	Simplify optimizations using "type" the builtin's return type.
+
 2003-02-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c (cris_rtx_costs): Blockify dangling else.
