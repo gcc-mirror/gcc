@@ -1633,7 +1633,7 @@ adjust_address (memref, mode, offset)
       && offset >= 0
       && (unsigned HOST_WIDE_INT) offset
          < GET_MODE_ALIGNMENT (GET_MODE (memref)) / BITS_PER_UNIT)
-    addr = gen_rtx_LO_SUM (mode, XEXP (addr, 0),
+    addr = gen_rtx_LO_SUM (Pmode, XEXP (addr, 0),
 			   plus_constant (XEXP (addr, 1), offset));
   else
     addr = plus_constant (addr, offset);
