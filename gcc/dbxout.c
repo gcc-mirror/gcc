@@ -1843,7 +1843,13 @@ dbxout_symbol_location (decl, type, suffix, home)
 
 	  letter = decl_function_context (decl) ? 'V' : 'S';
 
-	  if (!DECL_INITIAL (decl))
+	  /* This should be the same condition as in assemble_variable, but
+	     we don't have access to dont_output_data here.  So, instead,
+	     we rely on the fact that error_mark_node initializers always
+	     end up in bss for C++ and never end up in bss for C.  */
+	  if (DECL_INITIAL (decl) == 0
+	      || (!strcmp (lang_identify (), "cplusplus")
+		  && DECL_INITIAL (decl) == error_mark_node))
 	    current_sym_code = N_LCSYM;
 	  else if (DECL_IN_TEXT_SECTION (decl))
 	    /* This is not quite right, but it's the closest
