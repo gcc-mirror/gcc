@@ -1,3 +1,8 @@
+2000-04-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* calls.c (combine_pending_stack_adjustment_and_call): New function.
+	(expand_call): Use it.
+	
 2000-04-27  Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (mark_set_1):  Handle MEMs in ZERO_EXTRACT/SIGN_EXTRACT
