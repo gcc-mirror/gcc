@@ -1475,10 +1475,14 @@ move\\t%0,%z4\\n\\
 ;;
 ;;  ....................
 
+;; The SImode scratch register can not be shared with address regs used for
+;; operand zero, because then the address in the move instruction will be
+;; clobbered.  We mark the scratch register as early clobbered to prevent this.
+
 (define_insn "fix_truncdfsi2"
   [(set (match_operand:SI 0 "general_operand" "=d,*f,R,o")
 	(fix:SI (match_operand:DF 1 "register_operand" "f,*f,f,f")))
-   (clobber (match_scratch:SI 2 "=d,*d,d,d"))
+   (clobber (match_scratch:SI 2 "=d,*d,&d,&d"))
    (clobber (match_scratch:DF 3 "=f,*X,f,f"))]
   "TARGET_HARD_FLOAT"
   "*
@@ -1503,7 +1507,7 @@ move\\t%0,%z4\\n\\
 (define_insn "fix_truncsfsi2"
   [(set (match_operand:SI 0 "general_operand" "=d,*f,R,o")
 	(fix:SI (match_operand:SF 1 "register_operand" "f,*f,f,f")))
-   (clobber (match_scratch:SI 2 "=d,*d,d,d"))
+   (clobber (match_scratch:SI 2 "=d,*d,&d,&d"))
    (clobber (match_scratch:SF 3 "=f,*X,f,f"))]
   "TARGET_HARD_FLOAT"
   "*
