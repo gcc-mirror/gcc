@@ -1062,9 +1062,7 @@ __gnat_error_handler (sig, code, sc)
 {
   struct Machine_State  *mstate;
   struct Exception_Data *exception;
-  char *msg;
-
-  int i;
+  const char *msg;
 
   switch (sig)
     {
@@ -1142,7 +1140,6 @@ __gnat_error_handler (sig, code, sc)
 void
 __gnat_install_handler ()
 {
-  stack_t ss;
   struct sigaction act;
 
   /* Setup signal handler to map synchronous signals to appropriate
@@ -1194,7 +1191,7 @@ __gnat_error_handler (sig, sip)
 {
   struct Exception_Data *exception;
   static int recurse = 0;
-  char *msg;
+  const char *msg;
 
   /* If this was an explicit signal from a "kill", just resignal it.  */
   if (SI_FROMUSER (sip))

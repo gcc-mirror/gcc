@@ -162,9 +162,9 @@ __gnat_full_name (nam, buffer)
      char *nam;
      char *buffer;
 {
+#if defined(__EMX__) || defined (__MINGW32__)
   char *p;
 
-#if defined(__EMX__) || defined (__MINGW32__)
   /* If this is a device file return it as is; under Windows NT and
      OS/2 a device file end with ":".  */
   if (nam[strlen (nam) - 1] == ':')
@@ -189,6 +189,7 @@ __gnat_full_name (nam, buffer)
      getcwd approach instead. */
   realpath (nam, buffer);
 
+  return buffer;
 #elif defined (VMS)
   strncpy (buffer, __gnat_to_canonical_file_spec (nam), __gnat_max_path_len);
 
@@ -209,6 +210,8 @@ __gnat_full_name (nam, buffer)
   return buffer;
 
 #else
+  char *p;
+
   if (nam[0] != '/')
     {
       p = getcwd (buffer, __gnat_max_path_len);
