@@ -165,14 +165,16 @@
 #     define __SGI_STL_USE_AUTO_PTR_CONVERSIONS
 #     define __STL_USE_NAMESPACES
 #   endif
-    /* glibc pre 2.0 is very buggy. We have to disable thread for it.
-       It should be upgraded to glibc 2.0 or later. */
-#   if !defined(_NOTHREADS) && __GLIBC__ >= 2 && defined(_G_USING_THUNKS)
-#     define __STL_PTHREADS
-#     ifdef __STRICT_ANSI__
-        /* Work around a bug in the glibc 2.0.x pthread.h.  */
-#       define sigset_t __sigset_t
-#     endif
+#   if defined(__linux__)
+     /* glibc pre 2.0 is very buggy. We have to disable thread for it.
+        It should be upgraded to glibc 2.0 or later. */
+#    if !defined(_NOTHREADS) && __GLIBC__ >= 2 && defined(_G_USING_THUNKS)
+#      define __STL_PTHREADS
+#      ifdef __STRICT_ANSI__
+         /* Work around a bug in the glibc 2.0.x pthread.h.  */
+#        define sigset_t __sigset_t
+#      endif
+#    endif
 #   endif
 #   ifdef __EXCEPTIONS
 #     define __STL_USE_EXCEPTIONS
