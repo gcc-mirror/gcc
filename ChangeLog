@@ -1,3 +1,8 @@
+2004-09-23  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* config.guess: New upstream version
+	* compile, depcomp, install-sh, ylwrap: Likewise.
+
 2004-09-19  Roger Sayle  <roger@eyesopen.com>
 
 	* config/mh-x86omitfp: New host makefile fragment.  Add
