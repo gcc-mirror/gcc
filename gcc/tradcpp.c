@@ -570,7 +570,7 @@ main (argc, argv)
 		 || !strcmp (argv[i], "-iwithprefix")
 		 || !strcmp (argv[i], "-iwithprefixbefore")
 		 || !strcmp (argv[i], "-idirafter"))
-	  goto include;  /* best we can do */
+	  goto add_include;  /* best we can do */
 	  
 	break;
 
@@ -667,7 +667,7 @@ main (argc, argv)
 	break;
 
       case 'I':			/* Add directory to path for includes.  */
-      include:
+      add_include:
 	{
 	  struct file_name_list *dirtmp;
 

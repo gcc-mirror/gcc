@@ -1,3 +1,8 @@
+2000-07-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* tradcpp.c (main): Rename label `include' to `add_include' to
+	avoid conflicts with variable `include' in traditional C.
+
 2000-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* integrate.c (copy_insn_list): Remove REG_LABEL notes.
