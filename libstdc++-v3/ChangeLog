@@ -1,3 +1,14 @@
+2002-11-21  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/doxygen/TODO:  Note change in clause 27 docs.
+	* include/bits/basic_ios.h, include/bits/fpos.h,
+	include/bits/ios_base.h, include/bits/stl_deque.h,
+	include/bits/stl_iterator_base_types.h, include/std/std_fstream.h,
+	include/std/std_iomanip.h, include/std/std_iosfwd.h,
+	include/std/std_iostream.h, include/std/std_istream.h,
+	include/std/std_ostream.h, include/std/std_sstream.h,
+	include/std/std_streambuf.h:  Doxygenate all I/O entities.
+
 2002-11-20  Benjamin Kosnik  <bkoz@redhat.com>
             Jonathan Lennox  <lennox@cs.columbia.edu>
 

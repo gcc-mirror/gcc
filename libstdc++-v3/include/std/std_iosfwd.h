@@ -102,35 +102,64 @@ namespace std
   class ios_base; 
 #endif
 
-  typedef basic_ios<char> 		ios;
-  typedef basic_streambuf<char> 	streambuf;
-  typedef basic_istream<char> 		istream;
-  typedef basic_ostream<char> 		ostream;
-  typedef basic_iostream<char> 		iostream;
-  typedef basic_stringbuf<char> 	stringbuf;
-  typedef basic_istringstream<char> 	istringstream;
-  typedef basic_ostringstream<char> 	ostringstream;
-  typedef basic_stringstream<char> 	stringstream;
-  typedef basic_filebuf<char> 		filebuf;
-  typedef basic_ifstream<char> 		ifstream;
-  typedef basic_ofstream<char> 		ofstream;
-  typedef basic_fstream<char> 		fstream;
+  /** 
+   *  @defgroup s27_2_iosfwd I/O Forward Declarations
+   *
+   *  Nearly all of the I/O classes are parameterized on the type of
+   *  characters they read and write.  (The major exception is ios_base at
+   *  the top of the hierarchy.)  This is a change from pre-Standard
+   *  streams, which were not templates.
+   *
+   *  For ease of use and compatibility, all of the basic_* I/O-related
+   *  classes are given typedef names for both of the builtin character
+   *  widths (wide and narrow).  The typedefs are the same as the
+   *  pre-Standard names, for example:
+   *
+   *  @code
+   *     typedef basic_ifstream<char>  ifstream;
+   *  @endcode
+   *
+   *  Because properly forward-declaring these classes can be difficult, you
+   *  should not do it yourself.  Instead, include the &lt;iosfwd&gt;
+   *  header, which contains only declarations of all the I/O classes as
+   *  well as the typedefs.  Trying to forward-declare the typedefs
+   *  themselves (e.g., "class ostream;") is not valid ISO C++.
+   *
+   *  For more specific declarations, see
+   *  http://gcc.gnu.org/onlinedocs/libstdc++/27_io/howto.html#10
+   *
+   *  @{
+  */
+  typedef basic_ios<char> 		ios;		///< @isiosfwd
+  typedef basic_streambuf<char> 	streambuf;	///< @isiosfwd
+  typedef basic_istream<char> 		istream;	///< @isiosfwd
+  typedef basic_ostream<char> 		ostream;	///< @isiosfwd
+  typedef basic_iostream<char> 		iostream;	///< @isiosfwd
+  typedef basic_stringbuf<char> 	stringbuf;	///< @isiosfwd
+  typedef basic_istringstream<char> 	istringstream;	///< @isiosfwd
+  typedef basic_ostringstream<char> 	ostringstream;	///< @isiosfwd
+  typedef basic_stringstream<char> 	stringstream;	///< @isiosfwd
+  typedef basic_filebuf<char> 		filebuf;	///< @isiosfwd
+  typedef basic_ifstream<char> 		ifstream;	///< @isiosfwd
+  typedef basic_ofstream<char> 		ofstream;	///< @isiosfwd
+  typedef basic_fstream<char> 		fstream;	///< @isiosfwd
 
 #ifdef _GLIBCPP_USE_WCHAR_T
-  typedef basic_ios<wchar_t> 		wios;
-  typedef basic_streambuf<wchar_t> 	wstreambuf;
-  typedef basic_istream<wchar_t> 	wistream;
-  typedef basic_ostream<wchar_t> 	wostream;
-  typedef basic_iostream<wchar_t> 	wiostream;
-  typedef basic_stringbuf<wchar_t> 	wstringbuf;
-  typedef basic_istringstream<wchar_t> 	wistringstream;
-  typedef basic_ostringstream<wchar_t> 	wostringstream;
-  typedef basic_stringstream<wchar_t> 	wstringstream;
-  typedef basic_filebuf<wchar_t> 	wfilebuf;
-  typedef basic_ifstream<wchar_t> 	wifstream;
-  typedef basic_ofstream<wchar_t> 	wofstream;
-  typedef basic_fstream<wchar_t> 	wfstream;
+  typedef basic_ios<wchar_t> 		wios;		///< @isiosfwd
+  typedef basic_streambuf<wchar_t> 	wstreambuf;	///< @isiosfwd
+  typedef basic_istream<wchar_t> 	wistream;	///< @isiosfwd
+  typedef basic_ostream<wchar_t> 	wostream;	///< @isiosfwd
+  typedef basic_iostream<wchar_t> 	wiostream;	///< @isiosfwd
+  typedef basic_stringbuf<wchar_t> 	wstringbuf;	///< @isiosfwd
+  typedef basic_istringstream<wchar_t> 	wistringstream;	///< @isiosfwd
+  typedef basic_ostringstream<wchar_t> 	wostringstream;	///< @isiosfwd
+  typedef basic_stringstream<wchar_t> 	wstringstream;	///< @isiosfwd
+  typedef basic_filebuf<wchar_t> 	wfilebuf;	///< @isiosfwd
+  typedef basic_ifstream<wchar_t> 	wifstream;	///< @isiosfwd
+  typedef basic_ofstream<wchar_t> 	wofstream;	///< @isiosfwd
+  typedef basic_fstream<wchar_t> 	wfstream;	///< @isiosfwd
 #endif
+  /** @}  */
 } // namespace std
 
 #endif
