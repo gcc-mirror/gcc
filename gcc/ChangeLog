@@ -2,6 +2,7 @@
 
 	* collect2.c (ldgetname): Expand declaration to prototype.
 	* read-rtl.c (atoll): Add prototype.
+	* system.h (strsignal): Also declare if no declaration found.
 
 2003-01-19  Alexandre Oliva  <aoliva@redhat.com>
 
