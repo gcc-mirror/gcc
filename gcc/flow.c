@@ -6405,6 +6405,9 @@ dump_edge_info (file, e, do_succ)
   else
     fprintf (file, " %d", side->index);
 
+  if (e->probability)
+    fprintf (file, " [%.1f%%] ", e->probability * 100.0 / REG_BR_PROB_BASE);
+
   if (e->count)
     {
       fprintf (file, " count:");
