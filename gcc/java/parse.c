@@ -1,5 +1,5 @@
 
-/*  A Bison parser, made from parse.y
+/*  A Bison parser, made from gcc/java/parse.y
  by  GNU Bison version 1.25
   */
 
