@@ -1657,7 +1657,7 @@ singlemove_string (operands)
       else if ((intval & 0x7ff) == 0)
 	return "ldil L'%1,%0";
       else if (zdepi_cint_p (intval))
-	return "zdepi %Z1,%0";
+	return "{zdepi %Z1,%0|depwi,z %Z1,%0}";
       else
 	return "ldil L'%1,%0\n\tldo R'%1(%0),%0";
     }
@@ -1770,8 +1770,8 @@ output_move_double (operands)
 		 register.  (We do this in a non-obvious way to
 		 save a register file writeback)  */
 	      if (GET_CODE (addr) == POST_INC)
-		return "stws,ma %1,8(%0)\n\tstw %R1,-4(%0)";
-	      return "stws,ma %1,-8(%0)\n\tstw %R1,12(%0)";
+		return "{stws|stw},ma %1,8(%0)\n\tstw %R1,-4(%0)";
+	      return "{stws|stw},ma %1,-8(%0)\n\tstw %R1,12(%0)";
 	    }
 	  else
 	    abort();
@@ -1790,8 +1790,8 @@ output_move_double (operands)
 		 register.  (We do this in a non-obvious way to
 		 save a register file writeback)  */
 	      if (GET_CODE (addr) == PRE_INC)
-		return "stws,mb %1,8(%0)\n\tstw %R1,4(%0)";
-	      return "stws,mb %1,-8(%0)\n\tstw %R1,4(%0)";
+		return "{stws|stw},mb %1,8(%0)\n\tstw %R1,4(%0)";
+	      return "{stws|stw},mb %1,-8(%0)\n\tstw %R1,4(%0)";
 	    }
 	  else
 	    abort();
@@ -1817,8 +1817,8 @@ output_move_double (operands)
 		 register.  (We do this in a non-obvious way to
 		 save a register file writeback)  */
 	      if (GET_CODE (addr) == POST_INC)
-		return "ldws,ma 8(%1),%0\n\tldw -4(%1),%R0";
-	      return "ldws,ma -8(%1),%0\n\tldw 12(%1),%R0";
+		return "{ldws|ldw},ma 8(%1),%0\n\tldw -4(%1),%R0";
+	      return "{ldws|ldw},ma -8(%1),%0\n\tldw 12(%1),%R0}";
 	    }
 	  else
 	    {
@@ -1826,8 +1826,8 @@ output_move_double (operands)
 		 address register *and* update that register.  Probably
 		 we don't need to handle this at all.  */
 	      if (GET_CODE (addr) == POST_INC)
-		return "ldw 4(%1),%R0\n\tldws,ma 8(%1),%0";
-	      return "ldw 4(%1),%R0\n\tldws,ma -8(%1),%0";
+		return "ldw 4(%1),%R0\n\t{ldws|ldw},ma 8(%1),%0";
+	      return "ldw 4(%1),%R0\n\t{ldws|ldw},ma -8(%1),%0";
 	    }
 	}
       else if (GET_CODE (addr) == PRE_INC || GET_CODE (addr) == PRE_DEC)
@@ -1844,8 +1844,8 @@ output_move_double (operands)
 		 register.  (We do this in a non-obvious way to
 		 save a register file writeback)  */
 	      if (GET_CODE (addr) == PRE_INC)
-		return "ldws,mb 8(%1),%0\n\tldw 4(%1),%R0";
-	      return "ldws,mb -8(%1),%0\n\tldw 4(%1),%R0";
+		return "{ldws|ldw},mb 8(%1),%0\n\tldw 4(%1),%R0";
+	      return "{ldws|ldw},mb -8(%1),%0\n\tldw 4(%1),%R0";
 	    }
 	  else
 	    {
@@ -1853,8 +1853,8 @@ output_move_double (operands)
 		 address register *and* update that register.  Probably
 		 we don't need to handle this at all.  */
 	      if (GET_CODE (addr) == PRE_INC)
-		return "ldw 12(%1),%R0\n\tldws,mb 8(%1),%0";
-	      return "ldw -4(%1),%R0\n\tldws,mb -8(%1),%0";
+		return "ldw 12(%1),%R0\n\t{ldws|ldw},mb 8(%1),%0";
+	      return "ldw -4(%1),%R0\n\t{ldws|ldw},mb -8(%1),%0";
 	    }
 	}
       else if (GET_CODE (addr) == PLUS
@@ -1870,7 +1870,8 @@ output_move_double (operands)
 	      xoperands[1] = XEXP (addr, 1);
 	      xoperands[2] = XEXP (XEXP (addr, 0), 0);
 	      xoperands[3] = XEXP (XEXP (addr, 0), 1);
-	      output_asm_insn ("sh%O3addl %2,%1,%0", xoperands);
+	      output_asm_insn ("{sh%O3addl %2,%1,%0|shladd,l %2,%O3,%1,%0}",
+			       xoperands);
 	      return "ldw 4(%0),%R0\n\tldw 0(%0),%0";
 	    }
 	  else
@@ -1881,7 +1882,8 @@ output_move_double (operands)
 	      xoperands[1] = XEXP (addr, 1);
 	      xoperands[2] = XEXP (XEXP (addr, 0), 0);
 	      xoperands[3] = XEXP (XEXP (addr, 0), 1);
-	      output_asm_insn ("sh%O3addl %2,%1,%R0", xoperands);
+	      output_asm_insn ("{sh%O3addl %2,%1,%R0|shladd,l %2,%O3,%1,%R0}",
+			       xoperands);
 	      return "ldw 0(%R0),%0\n\tldw 4(%R0),%R0";
 	    }
 	   
@@ -2076,11 +2078,11 @@ output_block_move (operands, size_is_constant)
 	output_asm_insn ("ldi %4,%2", operands);
 
 	/* Copying loop.  */
-	output_asm_insn ("ldws,ma 4(%1),%3", operands);
-	output_asm_insn ("ldws,ma 4(%1),%6", operands);
-	output_asm_insn ("stws,ma %3,4(%0)", operands);
+	output_asm_insn ("{ldws|ldw},ma 4(%1),%3", operands);
+	output_asm_insn ("{ldws|ldw},ma 4(%1),%6", operands);
+	output_asm_insn ("{stws|stw},ma %3,4(%0)", operands);
 	output_asm_insn ("addib,>= -8,%2,.-12", operands);
-	output_asm_insn ("stws,ma %6,4(%0)", operands);
+	output_asm_insn ("{stws|stw},ma %6,4(%0)", operands);
 
 	/* Handle the residual.  There could be up to 7 bytes of
 	   residual to copy!  */
@@ -2088,13 +2090,13 @@ output_block_move (operands, size_is_constant)
 	  {
 	    operands[4] = GEN_INT (n_bytes % 4);
 	    if (n_bytes % 8 >= 4)
-	      output_asm_insn ("ldws,ma 4(%1),%3", operands);
+	      output_asm_insn ("{ldws|ldw},ma 4(%1),%3", operands);
 	    if (n_bytes % 4 != 0)
 	      output_asm_insn ("ldw 0(%1),%6", operands);
 	    if (n_bytes % 8 >= 4)
-	      output_asm_insn ("stws,ma %3,4(%0)", operands);
+	      output_asm_insn ("{stws|stw},ma %3,4(%0)", operands);
 	    if (n_bytes % 4 != 0)
-	      output_asm_insn ("stbys,e %6,%4(%0)", operands);
+	      output_asm_insn ("{stbys|stby},e %6,%4(%0)", operands);
 	  }
 	return "";
 
@@ -2104,21 +2106,21 @@ output_block_move (operands, size_is_constant)
 	output_asm_insn ("ldi %4,%2", operands);
 
 	/* Copying loop.  */
-	output_asm_insn ("ldhs,ma 2(%1),%3", operands);
-	output_asm_insn ("ldhs,ma 2(%1),%6", operands);
-	output_asm_insn ("sths,ma %3,2(%0)", operands);
+	output_asm_insn ("{ldhs|ldh},ma 2(%1),%3", operands);
+	output_asm_insn ("{ldhs|ldh},ma 2(%1),%6", operands);
+	output_asm_insn ("{sths|sth},ma %3,2(%0)", operands);
 	output_asm_insn ("addib,>= -4,%2,.-12", operands);
-	output_asm_insn ("sths,ma %6,2(%0)", operands);
+	output_asm_insn ("{sths|sth},ma %6,2(%0)", operands);
 
 	/* Handle the residual.  */
 	if (n_bytes % 4 != 0)
 	  {
 	    if (n_bytes % 4 >= 2)
-	      output_asm_insn ("ldhs,ma 2(%1),%3", operands);
+	      output_asm_insn ("{ldhs|ldh},ma 2(%1),%3", operands);
 	    if (n_bytes % 2 != 0)
 	      output_asm_insn ("ldb 0(%1),%6", operands);
 	    if (n_bytes % 4 >= 2)
-	      output_asm_insn ("sths,ma %3,2(%0)", operands);
+	      output_asm_insn ("{sths|sth},ma %3,2(%0)", operands);
 	    if (n_bytes % 2 != 0)
 	      output_asm_insn ("stb %6,0(%0)", operands);
 	  }
@@ -2130,11 +2132,11 @@ output_block_move (operands, size_is_constant)
 	output_asm_insn ("ldi %4,%2", operands);
 
 	/* Copying loop.  */
-	output_asm_insn ("ldbs,ma 1(%1),%3", operands);
-	output_asm_insn ("ldbs,ma 1(%1),%6", operands);
-	output_asm_insn ("stbs,ma %3,1(%0)", operands);
+	output_asm_insn ("{ldbs|ldb},ma 1(%1),%3", operands);
+	output_asm_insn ("{ldbs|ldb},ma 1(%1),%6", operands);
+	output_asm_insn ("{stbs|stb},ma %3,1(%0)", operands);
 	output_asm_insn ("addib,>= -2,%2,.-12", operands);
-	output_asm_insn ("stbs,ma %6,1(%0)", operands);
+	output_asm_insn ("{stbs|stb},ma %6,1(%0)", operands);
 
 	/* Handle the residual.  */
 	if (n_bytes % 2 != 0)
@@ -2218,7 +2220,7 @@ output_and (operands)
 	    abort ();
 
 	  operands[2] = GEN_INT (len);
-	  return "extru %1,31,%2,%0";
+	  return "{extru|extrw,u} %1,31,%2,%0";
 	}
       else
 	{
@@ -2230,7 +2232,7 @@ output_and (operands)
 
 	  operands[2] = GEN_INT (p);
 	  operands[3] = GEN_INT (len);
-	  return "depi 0,%2,%3,%0";
+	  return "{depi|depwi} 0,%2,%3,%0";
 	}
     }
   else
@@ -2263,7 +2265,7 @@ output_ior (operands)
 
   operands[2] = GEN_INT (p);
   operands[3] = GEN_INT (len);
-  return "depi -1,%2,%3,%0";
+  return "{depi|depwi} -1,%2,%3,%0";
 }
 
 /* Output an ascii string.  */
@@ -3828,21 +3830,32 @@ print_operand (file, x, code)
 	{
 	case PRE_DEC:
 	case PRE_INC:
-	  fputs ("s,mb", file);
+	  if (ASSEMBLER_DIALECT == 0)
+	    fputs ("s,mb", file);
+	  else
+	    fputs (",mb", file);
 	  break;
 	case POST_DEC:
 	case POST_INC:
-	  fputs ("s,ma", file);
+	  if (ASSEMBLER_DIALECT == 0)
+	    fputs ("s,ma", file);
+	  else
+	    fputs (",ma", file);
 	  break;
 	case PLUS:
 	  if (GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT
 	      || GET_CODE (XEXP (XEXP (x, 0), 1)) == MULT)
-	    fputs ("x,s", file);
-	  else if (code == 'F')
+	    {
+	      if (ASSEMBLER_DIALECT == 0)
+		fputs ("x,s", file);
+	      else
+		fputs (",s", file);
+	    }
+	  else if (code == 'F' && ASSEMBLER_DIALECT == 0)
 	    fputs ("s", file);
 	  break;
 	default:
-	  if (code == 'F')
+	  if (code == 'F' && ASSEMBLER_DIALECT == 0)
 	    fputs ("s", file);
 	  break;
 	}
@@ -4526,9 +4539,9 @@ output_cbranch (operands, nullify, length, negated, insn)
 	 delay slot.  */
       case 4:
 	if (useskip)
-	  strcpy (buf, "com%I2clr,");
+	  strcpy (buf, "{com%I2clr,|cmp%I2clr,}");
 	else
-	  strcpy (buf, "com%I2b,");
+	  strcpy (buf, "{com%I2b,|cmp%I2b,}");
 	if (negated)
 	  strcat (buf, "%B3");
 	else
@@ -4551,7 +4564,7 @@ output_cbranch (operands, nullify, length, negated, insn)
 	    && ! forward_branch_p (insn)
 	    && nullify)
 	  {
-	    strcpy (buf, "com%I2b,");
+	    strcpy (buf, "{com%I2b,|cmp%I2b,}");
 	    if (negated)
 	      strcat (buf, "%S3");
 	    else
@@ -4567,7 +4580,7 @@ output_cbranch (operands, nullify, length, negated, insn)
 		 && VAL_14_BITS_P (insn_addresses[INSN_UID (JUMP_LABEL (insn))]
 				    - insn_addresses[INSN_UID (insn)] - 8))
 	  {
-	    strcpy (buf, "com%I2b,");
+	    strcpy (buf, "{com%I2b,|cmp%I2b,}");
 	    if (negated)
 	      strcat (buf, "%B3 %2,%r1,%0%#");
 	    else
@@ -4575,7 +4588,7 @@ output_cbranch (operands, nullify, length, negated, insn)
 	  }
 	else
 	  {
-	    strcpy (buf, "com%I2clr,");
+	    strcpy (buf, "{com%I2clr,|cmp%I2clr,}");
 	    if (negated)
 	      strcat (buf, "%S3");
 	    else
@@ -4596,9 +4609,9 @@ output_cbranch (operands, nullify, length, negated, insn)
 	/* Create a reversed conditional branch which branches around
 	   the following insns.  */
 	if (negated)
-	  strcpy (buf, "com%I2b,%S3,n %2,%r1,.+20");
+	  strcpy (buf, "{com%I2b,%S3,n %2,%r1,.+20|cmp%I2b,%S3,n %2,%r1,.+20}");
 	else
-	  strcpy (buf, "com%I2b,%B3,n %2,%r1,.+20");
+	  strcpy (buf, "{com%I2b,%B3,n %2,%r1,.+20|cmp%I2b,%B3,n %2,%r1,.+20}");
 	output_asm_insn (buf, operands);
 
 	/* Output an insn to save %r1.  */
@@ -4621,9 +4634,9 @@ output_cbranch (operands, nullify, length, negated, insn)
 	/* Create a reversed conditional branch which branches around
 	   the following insns.  */
 	if (negated)
-	  strcpy (buf, "com%I2b,%S3,n %2,%r1,.+28");
+	  strcpy (buf, "{com%I2b,%S3,n %2,%r1,.+28|cmp%I2b,%S3,n %2,%r1,.+28}");
 	else
-	  strcpy (buf, "com%I2b,%B3,n %2,%r1,.+28");
+	  strcpy (buf, "{com%I2b,%B3,n %2,%r1,.+28|cmp%I2b,%B3,n %2,%r1,.+28}");
 	output_asm_insn (buf, operands);
 
 	/* Output an insn to save %r1.  */
@@ -4639,7 +4652,8 @@ output_cbranch (operands, nullify, length, negated, insn)
 	  xoperands[3] = operands[3];
 	  xoperands[4] = gen_label_rtx ();
 
-	  output_asm_insn ("bl .+8,%%r1\n\taddil L'%l0-%l4,%%r1", xoperands);
+	  output_asm_insn ("{bl|b,l} .+8,%%r1\n\taddil L'%l0-%l4,%%r1",
+			   xoperands);
 	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
 				     CODE_LABEL_NUMBER (xoperands[4]));
 	  output_asm_insn ("ldo R'%l0-%l4(%%r1),%%r1\n\tbv %%r0(%%r1)",
@@ -4707,7 +4721,7 @@ output_bb (operands, nullify, length, negated, insn, which)
 	 delay slot.  */
       case 4:
 	if (useskip)
-	  strcpy (buf, "extrs,");
+	  strcpy (buf, "{extrs,|extrw,s,}");
 	else
 	  strcpy (buf, "bb,");
 	if ((which == 0 && negated)
@@ -4770,7 +4784,7 @@ output_bb (operands, nullify, length, negated, insn, which)
 	  }
 	else
 	  {
-	    strcpy (buf, "extrs,");
+	    strcpy (buf, "{extrs,|extrw,s,}");
 	    if ((which == 0 && negated)
 		|| (which == 1 && ! negated))
 	      strcat (buf, "<");
@@ -4845,24 +4859,24 @@ output_bvb (operands, nullify, length, negated, insn, which)
 	 delay slot.  */
       case 4:
 	if (useskip)
-	  strcpy (buf, "vextrs,");
+	  strcpy (buf, "{vextrs,|extrw,s,}");
 	else
-	  strcpy (buf, "bvb,");
+	  strcpy (buf, "{bvb,|bb,}");
 	if ((which == 0 && negated)
 	     || (which == 1 && ! negated))
 	  strcat (buf, ">=");
 	else
 	  strcat (buf, "<");
 	if (useskip)
-	  strcat (buf, " %0,1,%%r0");
+	  strcat (buf, "{ %0,1,%%r0| %0,%%sar,1,%%r0}");
 	else if (nullify && negated)
-	  strcat (buf, ",n %0,%3");
+	  strcat (buf, "{,n %0,%3|,n %0,%%sar,%3}");
 	else if (nullify && ! negated)
-	  strcat (buf, ",n %0,%2");
+	  strcat (buf, "{,n %0,%2|,n %0,%%sar,%2}");
 	else if (! nullify && negated)
-	  strcat (buf, "%0,%3");
+	  strcat (buf, "{%0,%3|%0,%%sar,%3}");
 	else if (! nullify && ! negated)
-	  strcat (buf, " %0,%2");
+	  strcat (buf, "{ %0,%2| %0,%%sar,%2}");
 	break;
 
      /* All long conditionals.  Note an short backward branch with an
@@ -4875,16 +4889,16 @@ output_bvb (operands, nullify, length, negated, insn, which)
 	    && ! forward_branch_p (insn)
 	    && nullify)
 	  {
-	    strcpy (buf, "bvb,");
+	    strcpy (buf, "{bvb,|bb,}");
 	    if ((which == 0 && negated)
 		|| (which == 1 && ! negated))
 	      strcat (buf, "<");
 	    else
 	      strcat (buf, ">=");
 	    if (negated)
-	      strcat (buf, ",n %0,.+12\n\tb %3");
+	      strcat (buf, "{,n %0,.+12\n\tb %3|,n %0,%%sar,.+12\n\tb %3}");
 	    else
-	      strcat (buf, ",n %0,.+12\n\tb %2");
+	      strcat (buf, "{,n %0,.+12\n\tb %2|,n %0,%%sar,.+12\n\tb %2}");
 	  }
 	/* Handle short backwards branch with an unfilled delay slot.
 	   Using a bb;nop rather than extrs;bl saves 1 cycle for both
@@ -4895,33 +4909,33 @@ output_bvb (operands, nullify, length, negated, insn, which)
 		 && VAL_14_BITS_P (insn_addresses[INSN_UID (JUMP_LABEL (insn))]
 				    - insn_addresses[INSN_UID (insn)] - 8))
 	  {
-	    strcpy (buf, "bvb,");
+	    strcpy (buf, "{bvb,|bb,}");
 	    if ((which == 0 && negated)
 		|| (which == 1 && ! negated))
 	      strcat (buf, ">=");
 	    else
 	      strcat (buf, "<");
 	    if (negated)
-	      strcat (buf, " %0,%3%#");
+	      strcat (buf, "{ %0,%3%#| %0,%%sar,%3%#}");
 	    else
-	      strcat (buf, " %0,%2%#");
+	      strcat (buf, "{ %0,%2%#| %0,%%sar,%2%#}");
 	  }
 	else
 	  {
-	    strcpy (buf, "vextrs,");
+	    strcpy (buf, "{vextrs,|extrw,s,}");
 	    if ((which == 0 && negated)
 		|| (which == 1 && ! negated))
 	      strcat (buf, "<");
 	    else
 	      strcat (buf, ">=");
 	    if (nullify && negated)
-	      strcat (buf, " %0,1,%%r0\n\tb,n %3");
+	      strcat (buf, "{ %0,1,%%r0\n\tb,n %3| %0,%%sar,1,%%r0\n\tb,n %3}");
 	    else if (nullify && ! negated)
-	      strcat (buf, " %0,1,%%r0\n\tb,n %2");
+	      strcat (buf, "{ %0,1,%%r0\n\tb,n %2| %0,%%sar,1,%%r0\n\tb,n %2}");
 	    else if (negated)
-	      strcat (buf, " %0,1,%%r0\n\tb %3");
+	      strcat (buf, "{ %0,1,%%r0\n\tb %3| %0,%%sar,1,%%r0\n\tb %3}");
 	    else
-	      strcat (buf, " %0,1,%%r0\n\tb %2");
+	      strcat (buf, "{ %0,1,%%r0\n\tb %2| %0,%%sar,1,%%r0\n\tb %2}");
 	  }
 	break;
 
@@ -4951,10 +4965,10 @@ output_dbra (operands, insn, which_alternative)
 	return "ldo %1(%0),%0";
       else if (which_alternative == 1)
 	{
-	  output_asm_insn ("fstws %0,-16(%%r30)",operands);
+	  output_asm_insn ("{fstws|fstw} %0,-16(%%r30)",operands);
 	  output_asm_insn ("ldw -16(%%r30),%4",operands);
 	  output_asm_insn ("ldo %1(%4),%4\n\tstw %4,-16(%%r30)", operands);
-	  return "fldws -16(%%r30),%0";
+	  return "{fldws|fldw} -16(%%r30),%0";
 	}
       else
 	{
@@ -5016,12 +5030,12 @@ output_dbra (operands, insn, which_alternative)
       /* Move loop counter from FP register to MEM then into a GR,
 	 increment the GR, store the GR into MEM, and finally reload
 	 the FP register from MEM from within the branch's delay slot.  */
-      output_asm_insn ("fstws %0,-16(%%r30)\n\tldw -16(%%r30),%4",operands);
+      output_asm_insn ("{fstws|fstw} %0,-16(%%r30)\n\tldw -16(%%r30),%4",operands);
       output_asm_insn ("ldo %1(%4),%4\n\tstw %4,-16(%%r30)", operands);
       if (get_attr_length (insn) == 24)
-	return "comb,%S2 %%r0,%4,%3\n\tfldws -16(%%r30),%0";
+	return "{comb|cmpb},%S2 %%r0,%4,%3\n\t{fldws|fldw} -16(%%r30),%0";
       else
-	return "comclr,%B2 %%r0,%4,%%r0\n\tb %3\n\tfldws -16(%%r30),%0";
+	return "{comclr|cmpclr},%B2 %%r0,%4,%%r0\n\tb %3\n\t{fldws|fldw} -16(%%r30),%0";
     }
   /* Deal with gross reload from memory case.  */
   else
@@ -5058,7 +5072,7 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
       else if (which_alternative == 1)
 	{
 	  output_asm_insn ("stw %1,-16(%%r30)",operands);
-	  return "fldws -16(%%r30),%0";
+	  return "{fldws|fldw} -16(%%r30),%0";
 	}
       else if (which_alternative == 2)
 	return "stw %1,%0";
@@ -5125,9 +5139,9 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
 	 the FP register from MEM from within the branch's delay slot.  */
       output_asm_insn ("stw %1,-16(%%r30)",operands);
       if (get_attr_length (insn) == 12)
-	return "comb,%S2 %%r0,%1,%3\n\tfldws -16(%%r30),%0";
+	return "{comb|cmpb},%S2 %%r0,%1,%3\n\t{fldws|fldw} -16(%%r30),%0";
       else
-	return "comclr,%B2 %%r0,%1,%%r0\n\tb %3\n\tfldws -16(%%r30),%0";
+	return "{comclr|cmpclr},%B2 %%r0,%1,%%r0\n\tb %3\n\t{fldws|fldw} -16(%%r30),%0";
     }
   /* Deal with gross reload from memory case.  */
   else if (which_alternative == 2)
@@ -5135,17 +5149,17 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
       /* Reload loop counter from memory, the store back to memory
 	 happens in the branch's delay slot.   */
       if (get_attr_length (insn) == 8)
-	return "comb,%S2 %%r0,%1,%3\n\tstw %1,%0";
+	return "{comb|cmpb},%S2 %%r0,%1,%3\n\tstw %1,%0";
       else
-	return "comclr,%B2 %%r0,%1,%%r0\n\tb %3\n\tstw %1,%0";
+	return "{comclr|cmpclr},%B2 %%r0,%1,%%r0\n\tb %3\n\tstw %1,%0";
     }
   /* Handle SAR as a destination.  */
   else
     {
       if (get_attr_length (insn) == 8)
-	return "comb,%S2 %%r0,%1,%3\n\tmtsar %r1";
+	return "{comb|cmpb},%S2 %%r0,%1,%3\n\tmtsar %r1";
       else
-	return "comclr,%B2 %%r0,%1,%%r0\n\tbl %3\n\tmtsar %r1";
+	return "{comclr|cmpclr},%B2 %%r0,%1,%%r0\n\tbl %3\n\tmtsar %r1";
     }
 }
 
@@ -5174,7 +5188,7 @@ output_millicode_call (insn, call_dest)
 	  && get_attr_length (insn) == 4))
     {
       xoperands[0] = call_dest;
-      output_asm_insn ("bl %0,%%r31%#", xoperands);
+      output_asm_insn ("{bl|b,l} %0,%%r31%#", xoperands);
       return "";
     }
 
@@ -5206,7 +5220,7 @@ output_millicode_call (insn, call_dest)
 	{
 	  xoperands[0] = call_dest;
 	  output_asm_insn ("ldil L%%%0,%%r31", xoperands);
-	  output_asm_insn ("ble R%%%0(%%sr4,%%r31)", xoperands);
+	  output_asm_insn ("{ble|be,l} R%%%0(%%sr4,%%r31)", xoperands);
 	  output_asm_insn ("nop", xoperands);
 	}
       /* Pure portable runtime doesn't allow be/ble; we also don't have
@@ -5235,7 +5249,7 @@ output_millicode_call (insn, call_dest)
 	  xoperands[0] = call_dest;
 	  xoperands[1] = gen_label_rtx ();
 	  /* Get our address + 8 into %r1.  */
-	  output_asm_insn ("bl .+8,%%r1", xoperands);
+	  output_asm_insn ("{bl|b,l} .+8,%%r1", xoperands);
 
 	  /* Add %r1 to the offset of our target from the next insn.  */
 	  output_asm_insn ("addil L%%%0-%1,%%r1", xoperands);
@@ -5288,13 +5302,14 @@ output_millicode_call (insn, call_dest)
   xoperands[0] = call_dest;
   xoperands[1] = XEXP (PATTERN (NEXT_INSN (insn)), 1);
   if (! VAL_14_BITS_P (distance))
-    output_asm_insn ("bl %0,%%r31\n\tnop\n\tb,n %1", xoperands);
+    output_asm_insn ("{bl|b,l} %0,%%r31\n\tnop\n\tb,n %1", xoperands);
   else
     {
-      xoperands[3] = gen_label_rtx ();
-      output_asm_insn ("\n\tbl %0,%%r31\n\tldo %1-%3(%%r31),%%r31", xoperands);
+      xoperands[2] = gen_label_rtx ();
+      output_asm_insn ("\n\t{bl|b,l} %0,%%r31\n\tldo %1-%3(%%r31),%%r31",
+		       xoperands);
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
-				 CODE_LABEL_NUMBER (xoperands[3]));
+				 CODE_LABEL_NUMBER (xoperands[2]));
     }
 
   /* Delete the jump.  */
@@ -5333,7 +5348,7 @@ output_call (insn, call_dest)
 	  && get_attr_length (insn) == 4))
     {
       xoperands[0] = call_dest;
-      output_asm_insn ("bl %0,%%r2%#", xoperands);
+      output_asm_insn ("{bl|b,l} %0,%%r2%#", xoperands);
       return "";
     }
 
@@ -5387,14 +5402,16 @@ output_call (insn, call_dest)
 		{
 		  xoperands[0] = XEXP (use, 0);
 		  xoperands[1] = gen_rtx_REG (SImode, 26 - (regno - 32) / 2);
-		  output_asm_insn ("fstws %0,-16(%%sr0,%%r30)", xoperands);
+		  output_asm_insn ("{fstws|fstw} %0,-16(%%sr0,%%r30)",
+				    xoperands);
 		  output_asm_insn ("ldw -16(%%sr0,%%r30),%1", xoperands);
 		}
 	      else
 		{
 		  xoperands[0] = XEXP (use, 0);
 		  xoperands[1] = gen_rtx_REG (DImode, 25 - (regno - 34) / 2);
-		  output_asm_insn ("fstds %0,-16(%%sr0,%%r30)", xoperands);
+		  output_asm_insn ("{fstds|fstd} %0,-16(%%sr0,%%r30)",
+				    xoperands);
 		  output_asm_insn ("ldw -12(%%sr0,%%r30),%R1", xoperands);
 		  output_asm_insn ("ldw -16(%%sr0,%%r30),%1", xoperands);
 		}
@@ -5468,7 +5485,7 @@ output_call (insn, call_dest)
 	      output_asm_insn ("ldw 0(%%r22),%%r22", xoperands);
 
 	      /* Get our address + 8 into %r1.  */
-	      output_asm_insn ("bl .+8,%%r1", xoperands);
+	      output_asm_insn ("{bl|b,l} .+8,%%r1", xoperands);
 
 	      /* Add %r1 to the offset of dyncall from the next insn.  */
 	      output_asm_insn ("addil L%%$$dyncall-%1,%%r1", xoperands);
@@ -5496,7 +5513,8 @@ output_call (insn, call_dest)
 	      /* Get the high part of the  address of $dyncall into %r2, then
 		 add in the low part in the branch instruction.  */
 	      output_asm_insn ("ldil L%%$$dyncall,%%r2", xoperands);
-	      output_asm_insn ("ble  R%%$$dyncall(%%sr4,%%r2)", xoperands);
+	      output_asm_insn ("{ble|be,l}  R%%$$dyncall(%%sr4,%%r2)",
+			       xoperands);
 
 	      /* Copy the return pointer into both %r31 and %r2.  */
 	      output_asm_insn ("copy %%r31,%%r2", xoperands);
@@ -5537,11 +5555,12 @@ output_call (insn, call_dest)
   xoperands[0] = call_dest;
   xoperands[1] = XEXP (PATTERN (NEXT_INSN (insn)), 1);
   if (! VAL_14_BITS_P (distance))
-    output_asm_insn ("bl %0,%%r2\n\tnop\n\tb,n %1", xoperands);
+    output_asm_insn ("{bl|b,l} %0,%%r2\n\tnop\n\tb,n %1", xoperands);
   else
     {
       xoperands[3] = gen_label_rtx ();
-      output_asm_insn ("\n\tbl %0,%%r2\n\tldo %1-%3(%%r2),%%r2", xoperands);
+      output_asm_insn ("\n\t{bl|b,l} %0,%%r2\n\tldo %1-%3(%%r2),%%r2",
+		       xoperands);
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
 				 CODE_LABEL_NUMBER (xoperands[3]));
     }

@@ -200,6 +200,10 @@ extern int target_flags;
   { "arch=",		&pa_arch_string, "Specify architecture for code generation.  Values are 1.0, 1.1, and 2.0.  2.0 requires gas snapshot 19990413 or later." }\
 }
 
+/* Specify the dialect of assembler to use.  New mnemonics is dialect one
+   and the old mnemonics are dialect zero.  */
+#define ASSEMBLER_DIALECT (TARGET_PA_20 ? 1 : 0)
+
 #define OVERRIDE_OPTIONS override_options ()
 
 /* stabs-in-som is nearly identical to stabs-in-elf.  To avoid useless
@@ -1158,7 +1162,10 @@ extern int may_call_alloca;
   {							\
     fputs ("\tldw	36(%r22),%r21\n", FILE);	\
     fputs ("\tbb,>=,n	%r21,30,.+16\n", FILE);	\
-    fputs ("\tdepi	0,31,2,%r21\n", FILE);		\
+    if (ASSEMBLER_DIALECT == 0)				\
+      fputs ("\tdepi	0,31,2,%r21\n", FILE);		\
+    else						\
+      fputs ("\tdepwi	0,31,2,%r21\n", FILE);		\
     fputs ("\tldw	4(%r21),%r19\n", FILE);	\
     fputs ("\tldw	0(%r21),%r21\n", FILE);	\
     fputs ("\tldsid	(%r21),%r1\n", FILE);	\
