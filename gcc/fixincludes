@@ -2152,6 +2152,33 @@ for file in stdio.h stdlib.h; do
   fi
 done
 
+# Fix __page_size* declarations in pthread.h AIX 4.1.[34].
+# The original ones fail if uninitialized externs are not common.
+# This is the default for all ANSI standard C++ compilers.
+for file in pthread.h; do
+  if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+    cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+    chmod +w ${LIB}/$file 2>/dev/null
+    chmod a+r ${LIB}/$file 2>/dev/null
+  fi
+
+  if [ -r ${LIB}/$file ]; then
+    echo Fixing $file, __page_size* declarations
+    sed -e 's/^int __page_size/extern int __page_size/' \
+      ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+      rm -f ${LIB}/$file
+    else
+      # Find any include directives that use "file".
+      for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+        dir=`echo $file | sed -e s'|/[^/]*$||'`
+        required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+      done
+    fi
+  fi
+done
+
 # Determine if we're on Interactive Unix 2.2 or later, in which case we
 # need to fix some additional files.  This is the same test for ISC that
 # Autoconf uses.
