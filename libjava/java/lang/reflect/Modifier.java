@@ -16,7 +16,7 @@ details.  */
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status: Believed complete and correct to version 1.1
+ * Status: Believed complete and correct to version 1.2.
  */
 
 package java.lang.reflect;
@@ -34,6 +34,7 @@ public class Modifier
   public static final int NATIVE    = 0x100;
   public static final int INTERFACE = 0x200;
   public static final int ABSTRACT  = 0x400;
+  public static final int STRICT    = 0x800;
 
   // This is only used by the C++ code, so it is not public.
   static final int ALL_FLAGS = 0x7ff;
@@ -76,6 +77,11 @@ public class Modifier
   public static boolean isStatic (int mod)
   {
     return (mod & STATIC) != 0;
+  }
+
+  public static boolean isStrict (int mod)
+  {
+    return (mod & STRICT) != 0;
   }
 
   public static boolean isSynchronized (int mod)
@@ -124,6 +130,8 @@ public class Modifier
       r.append("synchronized ");
     if (isInterface (mod))
       r.append("interface ");
+    if (isStrict (mod))
+      r.append("strict ");
 
     // Trim trailing space.
     int l = r.length();
