@@ -1,3 +1,10 @@
+2003-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/datatransfer/DataFlavor.java
+	(isRepresentationClassByteBuffer): Removed try-catch block.
+	(isRepresentationClassCharBuffer): Removed try-catch block.
+	(isRepresentationClassReader): Removed try-catch block.
+
 2003-02-15  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
 
 	* java/nio/charset/Charset.java
