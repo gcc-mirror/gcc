@@ -1,3 +1,9 @@
+2001-11-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.c (function_arg): Unnamed vector arguments 
+	go in memory.
+	Remove unused attribute for named.
+
 2001-11-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* genattrtab.c (attr_rtx_1): New function containing the

@@ -2373,7 +2373,7 @@ function_arg (cum, mode, type, named)
      CUMULATIVE_ARGS *cum;
      enum machine_mode mode;
      tree type;
-     int named ATTRIBUTE_UNUSED;
+     int named;
 {
   enum rs6000_abi abi = DEFAULT_ABI;
 
@@ -2399,7 +2399,7 @@ function_arg (cum, mode, type, named)
 
   if (TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
     {
-      if (cum->vregno <= ALTIVEC_ARG_MAX_REG)
+      if (named && cum->vregno <= ALTIVEC_ARG_MAX_REG)
 	return gen_rtx_REG (mode, cum->vregno);
       else
 	return NULL;
