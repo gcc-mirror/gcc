@@ -851,6 +851,7 @@ give rise to questions of this sort.
 
 @menu
 * Static Definitions::  Static member declarations are not definitions
+* Name lookup::         Name lookup, templates, and accessing members of base classes
 * Temporaries::         Temporaries may vanish before you expect
 * Copy Assignment::     Copy Assignment operators copy virtual bases twice
 @end menu
@@ -890,6 +891,94 @@ As a result, when you switch to @command{g++} from one of these compilers,
 you may discover that a program that appeared to work correctly in fact
 does not conform to the standard: @command{g++} reports as undefined
 symbols any static data members that lack definitions.
+
+
+@node Name lookup
+@subsection Name lookup, templates, and accessing members of base classes
+
+@cindex base class members
+@cindex two-stage name lookup
+@cindex dependent name lookup
+
+The C++ standard prescribes that all names that are not dependent on
+template parameters are bound to their present definitions when parsing
+a template function or class.@footnote{The C++ standard just uses the
+term ``dependent'' for names that depend on the type or value of
+template parameters.  This shorter term will also be used in the rest of
+this section.}  Only names that are dependent are looked up at the point
+of instantiation.  For example, consider
+
+@example
+  void foo(double);
+
+  struct A @{
+    template <typename T>
+    void f () @{
+      foo (1);        // 1
+      int i = N;      // 2
+      T t;
+      t.bar();        // 3
+      foo (t);        // 4
+    @}
+
+    static const int N;
+  @};
+@end example
+
+Here, the names @code{foo} and @code{N} appear in a context that does
+not depend on the type of @code{T}.  The compiler will thus require that
+they are defined in the context of use in the template, not only before
+the point of instantiation, and will here use @code{::foo(double)} and
+@code{A::N}, respectively.  In particular, it will convert the integer
+value to a @code{double} when passing it to @code{::foo(double)}.
+
+Conversely, @code{bar} and the call to @code{foo} in the fourth marked
+line are used in contexts that do depend on the type of @code{T}, so
+they are only looked up at the point of instantiation, and you can
+provide declarations for them after declaring the template, but before
+instantiating it.  In particular, if you instantiate @code{A::f<int>},
+the last line will call an overloaded @code{::foo(int)} if one was
+provided, even if after the declaration of @code{struct A}.
+
+This distinction between lookup of dependent and non-dependent names is
+called two-stage (or dependent) name lookup. G++ implements some
+features of it since version 3.4 and is moving towards full compliance
+with the standard.
+
+Two-stage name lookup sometimes leads to situations with behavior
+different from non-template codes. The most common is probably this:
+
+@example
+  template <typename T> struct Base @{
+    int i;
+  @};
+
+  template <typename T> struct Derived : public Base<T> @{
+    int get_i() @{ return i; @}
+  @};
+@end example
+
+In @code{get_i()}, @code{i} is not used in a dependent context, so the
+compiler will look for a name declared at the enclosing namespace scope
+(which is the global scope here).  It will not look into the base class,
+since that is dependent and you may declare specializations of
+@code{Base} even after declaring @code{Derived}, so the compiler can't
+really know what @code{i} would refer to.  If there is no global
+variable @code{i}, then you will get an error message.
+
+In order to make it clear that you want the member of the base class,
+you need to defer lookup until instantiation time, at which the base
+class is known.  For this, you need to access @code{i} in a dependent
+context, by either using @code{this->i} (remember that @code{this} is of
+type @code{Derived<T>*}, so is obviously dependent), or using
+@code{Base<T>::i}. Alternatively, @code{Base<T>::i} might be brought
+into scope by a @code{using}-declaration.
+
+Note that some compilers get this wrong and accept above code without an
+error.  However, this is spurious, since they just don't implement
+two-stage name lookup correctly.  This includes G++ versions prior to
+3.4.
+
 
 @node Temporaries
 @subsection Temporaries May Vanish Before You Expect
@@ -993,7 +1082,7 @@ inside @samp{func} in the example).
 
 g++ implements the ``intuitive'' algorithm for copy-assignment: assign all
 direct bases, then assign all members.  In that algorithm, the virtual
-base subobject can be encountered many times.  In the example, copying
+base subobject can be encountered more than once.  In the example, copying
 proceeds in the following order: @samp{val}, @samp{name} (via
 @code{strdup}), @samp{bval}, and @samp{name} again.
 
