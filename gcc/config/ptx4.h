@@ -333,7 +333,7 @@ while (0)
 #define ASM_OUTPUT_SKIP(FILE,SIZE) \
   fprintf (FILE, "\t%s\t%u\n", SKIP_ASM_OP, (SIZE))
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.
 
    For System V Release 4 the convention is *not* to prepend a leading
    underscore onto user-level symbol names.  */
