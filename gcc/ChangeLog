@@ -1,3 +1,8 @@
+2000-01-03  Anthony Green  <green@cygnus.com>
+	
+	* config/i386/i386.md (builtin_setjmp_receiver): New pattern.
+	Restore the pic register if required.
+
 2000-01-03  Ulrich Drepper  <drepper@cygnus.com>
 
 	* c-common.c (format_char_info): Update comment.
