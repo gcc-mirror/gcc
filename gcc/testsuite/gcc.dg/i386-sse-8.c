@@ -1,7 +1,8 @@
 /* PR target/14313 */
 /* Origin: <Pawe Sikora <pluto@ds14.agh.edu.pl> */
 
-/* { dg-do compile } */
+/* The xstormy16 doesn't support V2DI.  */
+/* { dg-do compile { xfail xstormy16-*-* } } */
 /* { dg-options "" } */
 /* { dg-options "-march=pentium3" { target i?86-*-* } } */
 /* { dg-forbid-option "-m64" { target i?86-*-* } } */

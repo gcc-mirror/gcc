@@ -5,5 +5,5 @@
 void foo()
 {
   union { double d; char c[sizeof(double)]; } tmp;
-  __asm__ ("" : "=m" (tmp.d));	// { dg-bogus "not directly addressable" }
+  __asm__ ("" : "=m" (tmp.d));	// { dg-bogus "not directly addressable" "double sized union element should be addressible" { xfail xstormy16-*-* } }
 }

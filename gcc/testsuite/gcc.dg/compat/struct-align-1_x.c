@@ -63,14 +63,27 @@ return3_##NAME (void)					\
 
 #define CHECK(NAME) test_##NAME()
 
+#if __INT_MAX__ > 32767
 SETUP (orig, 49, 1.0, 111111)
+#else
+SETUP (orig, 49, 1.0, 1111)
+#endif
 #ifndef SKIP_ATTRIBUTE
+#if __INT_MAX__ > 32767
 SETUP (p_all, 50, 2.0, 222222)
 SETUP (p_inner, 51, 3.0, 333333)
 SETUP (p_outer, 52, 4.0, 444444)
 SETUP (a_max, 53, 5.0, 555555)
 SETUP (m_outer_p_inner, 54, 6.0, 666666)
-SETUP (m_inner_p_outer, 55, 7.0, 777777) 
+SETUP (m_inner_p_outer, 55, 7.0, 777777)
+#else
+SETUP (p_all, 50, 2.0, 2222)
+SETUP (p_inner, 51, 3.0, 3333)
+SETUP (p_outer, 52, 4.0, 4444)
+SETUP (a_max, 53, 5.0, 5555)
+SETUP (m_outer_p_inner, 54, 6.0, 6666)
+SETUP (m_inner_p_outer, 55, 7.0, 7777)
+#endif
 #endif
 
 void

@@ -1,3 +1,28 @@
+2004-11-15  Nick Clifton  <nickc@redhat.com>
+
+	* g++.dg/opt/strength-reduce.C: Replace 0x7fffffff with
+	__INT_MAX__ so that the test can be compiled by toolchains
+	targeted at 16-bit processors.
+
+	* gcc.dg/20040625-1.c: Use long constants rather than integers
+	when performing arithmetic that will overflow 16-bits.
+
+	* gcc.dg/i386-sse-8.c: Expect this test to fail for the
+	xstormy16.  It does not support 128-bit vector operations.
+
+	* gcc.dg/ultrasp4.c: Replace all occurrences of the type 'long'
+	with the macro PTR_TYPE.  Define this macro to an integer type
+	suitable for holding a pointer.
+
+	* gcc.dg/compat/struct-align-1_x.c: Use shorter integers if
+	the target is a 16-bit processor.
+
+	* gcc.dg/cpp/if-2.c: Expect a different warning message from
+	16-bit targets where the character constant will be too long.
+
+	* g++.dg/opt/asm1.C: Expect this test to fail on the xstormy16
+	where the double will not be directly addressable.
+
 2004-11-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	Friend class name lookup 1/n, PR c++/18471
