@@ -3,7 +3,9 @@
 AUTOMAKE_OPTIONS = foreign no-installinfo
 
 if TESTSUBDIR
-SUBDIRS = testsuite
+SUBDIRS = testsuite gcj include
+else
+SUBDIRS = gcj include
 endif
 
 ## ################################################################
@@ -79,7 +81,8 @@ JC1FLAGS = -g @LIBGCJ_JAVAFLAGS@
 
 LIBFFIINCS = -I$(top_srcdir)/../libffi/include -I../libffi/include
 
-INCLUDES = -Iinclude -I$(top_srcdir)/include $(GCINCS) $(THREADINCS) \
+INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
+	$(GCINCS) $(THREADINCS) \
 	$(EH_COMMON_INCLUDE) $(ZINCS) $(LIBFFIINCS)
 
 DIVIDESPEC = @DIVIDESPEC@
@@ -248,6 +251,20 @@ gnu/gcj/runtime/MethodInvocation.h: gnu/gcj/runtime/MethodInvocation.class libgc
 	    -friend 'class _Jv_InterpMethod;' \
 	    $(basename $<)
 
+## Headers we maintain by hand and which we want to install.
+extra_headers = java/lang/Object.h java/lang/Class.h
+
+## Install the headers.  It is fairly ugly that we have to do this by
+## hand.
+install-data-local:
+	$(PRE_INSTALL)
+	@for f in $(nat_headers) $(extra_headers); do \
+	  d="`echo $$f | sed -e 's,/[^/]*$$,,'`"; \
+	  $(mkinstalldirs) $(DESTDIR)$(includedir)/$$d; \
+	  if test -f $(srcdir)/$$f; then p=$(srcdir)/$$f; else p=$$f; fi; \
+	  echo " $(INSTALL_DATA) $$p $(DESTDIR)$(includedir)/$$f"; \
+	  $(INSTALL_DATA) $$p $(DESTDIR)$(includedir)/$$f; \
+	done
 
 ## ################################################################
 

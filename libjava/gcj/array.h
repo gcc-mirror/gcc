@@ -1,4 +1,4 @@
-// java-array.h - Header file for CNI arrays.  -*- c++ -*-
+// array.h - Header file for CNI arrays.  -*- c++ -*-
 
 /* Copyright (C) 1998, 1999  Cygnus Solutions
 
@@ -8,8 +8,8 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
-#ifndef __JAVA_ARRAY_H__
-#define __JAVA_ARRAY_H__
+#ifndef __GCJ_ARRAY_H__
+#define __GCJ_ARRAY_H__
 
 #pragma interface
 
@@ -74,4 +74,4 @@ void _Jv_RunMain (const char* name, int argc, const char **argv);
 
 inline jsize JvGetArrayLength (jarray array) { return array->length; }
 
-#endif /* __JAVA_ARRAY_H__ */
+#endif /* __GCJ_ARRAY_H__ */

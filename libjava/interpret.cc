@@ -14,9 +14,7 @@ details.  */
 
 #pragma implementation "java-interp.h"
 
-#include <cni.h>
 #include <jvm.h>
-#include <java-field.h>
 #include <java-cpool.h>
 #include <java-interp.h>
 #include <java/lang/fdlibm.h>

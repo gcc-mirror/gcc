@@ -7,7 +7,7 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 #include <config.h>
-#include <cni.h>
+#include <gcj/cni.h>
 #include <gnu/gcj/convert/Output_EUCJIS.h>
 
 /* A trie structure to map unicode values to JIS codes.

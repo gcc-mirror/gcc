@@ -9,7 +9,7 @@ details.  */
 /* Author: Kresten Krab Thorup <krab@gnu.org>  */
 
 #include <jvm.h>
-#include <cni.h>
+#include <gcj/cni.h>
 #include <stdio.h>
 
 #include <java/lang/System.h>

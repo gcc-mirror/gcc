@@ -15,11 +15,12 @@ details.  */
 #include <stdio.h>
 #include <string.h>
 
-#pragma implementation "java-array.h"
+#pragma implementation "gcj/array.h"
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <jvm.h>
 #include <java-signal.h>
+#include <java-threads.h>
 
 #include <java/lang/Class.h>
 #include <java/lang/Runtime.h>

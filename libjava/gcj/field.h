@@ -1,4 +1,4 @@
-// java-field.h - Header file for fieldID instances.  -*- c++ -*-
+// field.h - Header file for fieldID instances.  -*- c++ -*-
 
 /* Copyright (C) 1998, 1999  Cygnus Solutions
 
@@ -8,8 +8,8 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
-#ifndef __JAVA_FIELD_H__
-#define __JAVA_FIELD_H__
+#ifndef __GCJ_FIELD_H__
+#define __GCJ_FIELD_H__
 
 #include <java/lang/Class.h>
 #include <java/lang/reflect/Field.h>
@@ -138,7 +138,7 @@ _Jv_FromReflectedField (java::lang::reflect::Field *field)
 } 
 
 
-#ifdef __JAVA_CNI_H__
+#ifdef __GCJ_CNI_H__
 extern inline jfieldID
 JvGetFirstInstanceField (jclass klass)
 {
@@ -162,8 +162,8 @@ JvGetObjectField (jobject obj, _Jv_Field* field)
 {
   return _Jv_GetObjectField (obj, field);
 }
-#endif /* defined (__JAVA_CNI_H__) */
+#endif /* defined (__GCJ_CNI_H__) */
 
 #endif
 
-#endif /* __JAVA_FIELD_H */
+#endif /* __GCJ_FIELD_H */

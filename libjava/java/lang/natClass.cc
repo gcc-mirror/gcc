@@ -15,7 +15,7 @@ details.  */
 
 #pragma implementation "Class.h"
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <jvm.h>
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>

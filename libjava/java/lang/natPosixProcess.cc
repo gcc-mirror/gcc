@@ -22,7 +22,7 @@ details.  */
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <jvm.h>
 
 #include <java/lang/ConcreteProcess.h>

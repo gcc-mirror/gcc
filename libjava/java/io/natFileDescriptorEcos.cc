@@ -16,7 +16,7 @@ details.  */
 #include <sys/stat.h>
 #include <sys/param.h>
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <jvm.h>
 #include <java/io/FileDescriptor.h>
 #include <java/io/SyncFailedException.h>

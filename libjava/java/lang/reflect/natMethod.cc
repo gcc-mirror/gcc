@@ -12,9 +12,8 @@ details.  */
 
 #include <config.h>
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <jvm.h>
-#include <java-array.h>
 
 #include <java/lang/reflect/Method.h>
 #include <java/lang/reflect/InvocationTargetException.h>
@@ -32,7 +31,7 @@ details.  */
 #include <java/lang/IllegalArgumentException.h>
 #include <java/lang/NullPointerException.h>
 #include <java/lang/Class.h>
-#include <java-method.h>
+#include <gcj/method.h>
 
 #define ClassClass _CL_Q34java4lang5Class
 extern java::lang::Class ClassClass;

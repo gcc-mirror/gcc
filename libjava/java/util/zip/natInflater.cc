@@ -15,7 +15,7 @@ details.  */
 #include <zlib.h>
 #include <stdlib.h>
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <jvm.h>
 
 #include <java/util/zip/Inflater.h>

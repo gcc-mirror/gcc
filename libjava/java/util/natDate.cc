@@ -14,7 +14,7 @@ details.  */
 #define _POSIX_PTHREAD_SEMANTICS
 #endif
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <java/util/Date.h>
 #include <java/lang/String.h>
 

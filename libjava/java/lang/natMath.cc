@@ -23,7 +23,7 @@ details.  */
 #include <java/lang/Integer.h>
 #include <java/lang/Long.h>
 #include <java/lang/Math.h>
-#include <java-array.h>
+#include <gcj/array.h>
 
 #include "fdlibm.h"
 

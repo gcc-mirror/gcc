@@ -28,7 +28,7 @@ extern "C"
 #include <signal.h>
 #include <errno.h>
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <jvm.h>
 #include <java/lang/Thread.h>
 #include <java/lang/System.h>

@@ -38,7 +38,7 @@ details.  */
 #include <sys/utsname.h>
 #endif
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <jvm.h>
 #include <java/lang/System.h>
 #include <java/lang/Class.h>

@@ -93,7 +93,7 @@ extern "Java"
       class UTFDataFormatException;
       class UnsupportedEncodingException;
       class Writer;
-    };
+    }
 
     namespace lang
     {
@@ -180,8 +180,8 @@ extern "Java"
         class Member;
         class Method;
         class Modifier;
-      };
-    };
+      }
+    }
 
     namespace util
     {
@@ -220,7 +220,7 @@ extern "Java"
         class JarEntry;
         class JarFile;
         class JarInputStream;
-      };
+      }
 
       namespace zip
       {
@@ -243,9 +243,9 @@ extern "Java"
         class ZipFile;
         class ZipInputStream;
         class ZipOutputStream;
-      };
-    };
-  };
+      }
+    }
+  }
 };
 
 typedef struct java::lang::Object* jobject;

@@ -13,7 +13,7 @@ details.  */
 #include <stddef.h>
 
 #include <jni.h>
-#include <java-field.h>
+#include <gcj/field.h>
 
 static jclass
 _Jv_JNI_GetSuperclass (JNIEnv *, jclass clazz)

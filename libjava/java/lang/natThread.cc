@@ -12,8 +12,10 @@ details.  */
 
 #include <stdlib.h>
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <jvm.h>
+#include <java-threads.h>
+
 #include <java/lang/Thread.h>
 #include <java/lang/ThreadGroup.h>
 #include <java/lang/IllegalArgumentException.h>

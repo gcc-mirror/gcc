@@ -22,7 +22,7 @@ details.  */
 #include <string.h>
 #endif
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <java/util/TimeZone.h>
 #include <java/util/GregorianCalendar.h>
 #include <time.h>

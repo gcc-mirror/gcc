@@ -12,10 +12,10 @@ details.  */
 
 #include <stdio.h>
 
-#include <cni.h>
-#include <java/lang/Class.h>
 #include <jvm.h>
-#include <java-field.h>
+#include <gcj/cni.h>
+
+#include <java/lang/Class.h>
 #include <java-interp.h>
 
 // More nastiness: the GC wants to define TRUE and FALSE.  We don't
