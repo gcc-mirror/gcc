@@ -33,7 +33,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* This goes away when the math-emulator is fixed */
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT 0701		/* TARGET_NO_FANCY_MATH_387 | ... */
+#define TARGET_DEFAULT \
+  (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_NO_FANCY_MATH_387)
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -Di386 -D__FreeBSD__ -Asystem(unix) -Asystem(FreeBSD) -Acpu(i386) -Amachine(i386)"
