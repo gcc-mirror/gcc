@@ -1,5 +1,9 @@
 2004-03-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.dg/decl-5.c: Remove XFAIL.
+
+2004-03-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.c-torture/execute/20040313-1.c: New test.
 
 2004-03-13  Mark Mitchell  <mark@codesourcery.com>

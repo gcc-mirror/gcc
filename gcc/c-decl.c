@@ -1478,14 +1478,16 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
     }
 
   /* Copy most of the decl-specific fields of NEWDECL into OLDDECL.
-     But preserve OLDDECL's DECL_UID.  */
+     But preserve OLDDECL's DECL_UID and C_DECL_INVISIBLE.  */
   {
     unsigned olddecl_uid = DECL_UID (olddecl);
+    unsigned olddecl_invisible = C_DECL_INVISIBLE (olddecl);
 
     memcpy ((char *) olddecl + sizeof (struct tree_common),
 	    (char *) newdecl + sizeof (struct tree_common),
 	    sizeof (struct tree_decl) - sizeof (struct tree_common));
     DECL_UID (olddecl) = olddecl_uid;
+    C_DECL_INVISIBLE (olddecl) = olddecl_invisible;
   }
 
   /* If OLDDECL had its DECL_RTL instantiated, re-invoke make_decl_rtl
@@ -1737,13 +1739,15 @@ pushdecl (tree x)
 	 scope ends.  Take care not to do this if we are replacing an
 	 older decl in the same scope (i.e.  duplicate_decls returned
 	 false, above).  */
-      if (scope != global_scope
-	  && IDENTIFIER_SYMBOL_VALUE (name)
-	  && IDENTIFIER_SYMBOL_VALUE (name) != old)
+      if (scope != global_scope)
 	{
-	  warn_if_shadowing (x, IDENTIFIER_SYMBOL_VALUE (name));
-	  scope->shadowed = tree_cons (name, IDENTIFIER_SYMBOL_VALUE (name),
-				       scope->shadowed);
+	  tree inherited_decl = lookup_name (name);
+	  if (inherited_decl && inherited_decl != old)
+	    {
+	      warn_if_shadowing (x, inherited_decl);
+	      scope->shadowed = tree_cons (name, inherited_decl,
+					   scope->shadowed);
+	    }
 	}
 
       /* Install the new declaration in the requested scope.  */
