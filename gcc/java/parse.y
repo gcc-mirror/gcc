@@ -16221,8 +16221,11 @@ attach_init_test_initialization_flags (entry, ptr)
   tree block = (tree)ptr;
   struct treetreehash_entry *ite = (struct treetreehash_entry *) *entry;
 
-  TREE_CHAIN (ite->value) = BLOCK_EXPR_DECLS (block);
-  BLOCK_EXPR_DECLS (block) = ite->value;
+  if (block != error_mark_node)
+    {
+      TREE_CHAIN (ite->value) = BLOCK_EXPR_DECLS (block);
+      BLOCK_EXPR_DECLS (block) = ite->value;
+    }
   return true;
 }
 

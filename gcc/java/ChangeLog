@@ -1,3 +1,8 @@
+2002-10-08  Andrew Haley  <aph@redhat.com>
+
+	* parse.y (attach_init_test_initialization_flags): Check for
+	error_mark_node.
+
 2002-10-07  Anthony Green  <green@redhat.com> 
 
         * parse.y (merge_string_cste): Fix bug in string concatenation. 
