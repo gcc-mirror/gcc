@@ -467,16 +467,6 @@ static int node_is_bounded		PROTO((case_node_ptr, tree));
 static void emit_jump_if_reachable	PROTO((rtx));
 static void emit_case_nodes		PROTO((rtx, case_node_ptr, rtx, tree));
 
-int bc_expand_exit_loop_if_false ();
-void bc_expand_start_cond ();
-void bc_expand_end_cond ();
-void bc_expand_start_else ();
-void bc_expand_end_bindings ();
-void bc_expand_start_case ();
-void bc_check_for_full_enumeration_handling ();
-void bc_expand_end_case ();
-void bc_expand_decl ();
-
 extern rtx bc_allocate_local ();
 extern rtx bc_allocate_variable_array ();
 
@@ -3318,22 +3308,7 @@ bc_expand_end_bindings (vars, mark_ends, dont_jump_in)
 }
 
 /* Generate RTL for the automatic variable declaration DECL.
-   (Other kinds of declarations are simply ignored if seen here.)
-   CLEANUP is an expression to be executed at exit from this binding contour;
-   for example, in C++, it might call the destructor for this variable.
-
-   If CLEANUP contains any SAVE_EXPRs, then you must preevaluate them
-   either before or after calling `expand_decl' but before compiling
-   any subsequent expressions.  This is because CLEANUP may be expanded
-   more than once, on different branches of execution.
-   For the same reason, CLEANUP may not contain a CALL_EXPR
-   except as its topmost node--else `preexpand_calls' would get confused.
-
-   If CLEANUP is nonzero and DECL is zero, we record a cleanup
-   that is not associated with any particular variable.
-
-   There is no special support here for C++ constructors.
-   They should be handled by the proper code in DECL_INITIAL.  */
+   (Other kinds of declarations are simply ignored if seen here.)  */
 
 void
 expand_decl (decl)
@@ -3706,7 +3681,7 @@ bc_expand_decl_init (decl)
    for example, in C++, it might call the destructor for this variable.
 
    If CLEANUP contains any SAVE_EXPRs, then you must preevaluate them
-   either before or after calling `expand_decl' but before compiling
+   either before or after calling `expand_decl_cleanup' but before compiling
    any subsequent expressions.  This is because CLEANUP may be expanded
    more than once, on different branches of execution.
    For the same reason, CLEANUP may not contain a CALL_EXPR
@@ -3749,7 +3724,8 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
   struct nesting *thisblock = block_stack;
   rtx x;
 
-  expand_decl (decl, cleanup);
+  expand_decl (decl);
+  expand_decl_cleanup (decl, cleanup);
   x = DECL_RTL (decl);
 
   while (decl_elts)
