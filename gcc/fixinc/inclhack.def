@@ -2889,14 +2889,14 @@ fix = {
  * __thread is now a keyword.
  */
 fix = {
-    hackname	= thread_keyword;
-    files	= "pthread.h";
-    files	= "bits/sigthread.h";
-    select	= "pthread_t __thread";
+    hackname  = thread_keyword;
+    files     = "pthread.h";
+    files     = "bits/sigthread.h";
+    select    = "pthread_t __thread([^a-z0-9_])";
+    c_fix     = format;
+    c_fix_arg = 'pthread_t __thr%1';
 
-    sed		= "s/pthread_t __thread\\([^a-z0-9_]\\)/pthread_t __thr\\1/";
-
-    test_text	= "extern int pthread_kill (pthread_t __thread, int __signo);";
+    test_text = "extern int pthread_kill (pthread_t __thread, int __signo);";
 };
 
 /*

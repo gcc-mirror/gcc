@@ -1,6 +1,8 @@
 2002-05-21  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/tests/base/pthread.h(THREAD_KEYWORD_CHECK): add fix check
+	* fixinc/inclhack.def(thread_keyword): use c_fix = format.
+	* fixinc/fixincl.x: regen.
 
 2002-05-21  Kazu Hirata  <kazu@cs.umass.edu>
 
