@@ -1,5 +1,10 @@
 2003-12-21  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/mn10300/mn10300.c (mn10300_encode_section_info): Fix
+	a warning.
+
+2003-12-21  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/arm/arm.c: Convert to ISO-C.
 	* config/avr/avr.h: Likewise.
 	* config/fr30/fr30.c: Likewise.
