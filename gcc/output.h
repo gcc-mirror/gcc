@@ -136,6 +136,9 @@ extern int in_text_section		PROTO((void));
    If NAME is NULL, get the name from DECL.  */
 extern void named_section		PROTO((tree, char *));
 
+/* Tell assembler to switch to the section for function DECL.  */
+extern void function_section		PROTO((tree));
+
 /* Create the rtl to represent a function, for a function definition.
    DECL is a FUNCTION_DECL node which describes which function.
    The rtl is stored into DECL.  */
