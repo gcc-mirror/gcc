@@ -24,24 +24,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "auto-host.h"
 
-#include <sys/types.h>
-#include <sys/param.h>
-#include <sys/stat.h>
-#ifdef HAVE_SYS_WAIT_H
-#include <sys/wait.h>
-#endif
+#include "gansidecl.h"
+#include "system.h"
 #include <signal.h>
-#include <stdio.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
-#ifdef HAVE_FCNTL_H
-#include <fcntl.h>
-#endif
-#include <ctype.h>
 
 #include "gnu-regex.h"
 #include "server.h"

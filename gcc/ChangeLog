@@ -1,3 +1,10 @@
+Fri May 28 21:40 1999  Robert Lipe <robertlipe@usa.net>
+
+	* fixincl.c: Replace local include scheme with #includes of
+	gansidecl.h and system.h.
+	* procopen.c:  Likewise.
+	* server.c:  Likewise.
+
 Fri May 28 03:47:03 1999  Eric Raskin (ehr@listworks.com)
 
 	* i386/t-dgux (EXTRA_PARTS): Add crti.o
