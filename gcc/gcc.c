@@ -4944,8 +4944,8 @@ used_arg (p, len)
 
       /* Break multilib_matches into the component strings of string and replacement
          string */
-      for (p = multilib_matches; *p != '\0'; p++)
-	if (*p == ';')
+      for (q = multilib_matches; *q != '\0'; q++)
+	if (*q == ';')
 	  cnt++;
 
       matches = (struct mswitchstr *) alloca ((sizeof (struct mswitchstr)) * cnt);
