@@ -263,7 +263,7 @@ static int find_free_reg	PROTO((enum reg_class, enum machine_mode,
 static void mark_life		PROTO((int, enum machine_mode, int));
 static void post_mark_life	PROTO((int, enum machine_mode, int, int, int));
 static int no_conflict_p	PROTO((rtx, rtx, rtx));
-static int requires_inout_p	PROTO((char *));
+static int requires_inout	PROTO((char *));
 
 /* Allocate a new quantity (new within current basic block)
    for register number REGNO which is born at index BIRTH
@@ -1207,13 +1207,21 @@ block_alloc (b)
 	      )
 	    {
 #ifdef REGISTER_CONSTRAINTS
+	      /* If non-negative, is an operand that must match operand 0.  */
 	      int must_match_0 = -1;
-
+	      /* Counts number of alternatives that require a match with
+		 operand 0.  */
+	      int n_matching_alts = 0;
 
 	      for (i = 1; i < insn_n_operands[insn_code_number]; i++)
-		if (requires_inout_p
-		    (insn_operand_constraint[insn_code_number][i]))
-		  must_match_0 = i;
+		{
+		  char *p = insn_operand_constraint[insn_code_number][i];
+		  int this_match = (requires_inout (p));
+
+		  n_matching_alts += this_match;
+		  if (this_match == insn_n_alternatives[insn_code_number])
+		    must_match_0 = i;
+		}
 #endif
 
 	      r0 = recog_operand[0];
@@ -1229,6 +1237,16 @@ block_alloc (b)
 			    && insn_operand_constraint[insn_code_number][i-1][0] == '%')
 		      && ! (i == must_match_0 - 1
 			    && insn_operand_constraint[insn_code_number][i][0] == '%'))
+		    continue;
+
+		  /* Likewise if each alternative has some operand that
+		     must match operand zero.  In that case, skip any 
+		     operand that doesn't list operand 0 since we know that
+		     the operand always conflicts with operand 0.  We
+		     ignore commutatity in this case to keep things simple.  */
+		  if (n_matching_alts == insn_n_alternatives[insn_code_number]
+		      && (0 == requires_inout
+			  (insn_operand_constraint[insn_code_number][i])))
 		    continue;
 #endif
 
@@ -2265,26 +2283,25 @@ no_conflict_p (insn, r0, r1)
 
 #ifdef REGISTER_CONSTRAINTS
 
-/* Return 1 if the constraint string P indicates that the a the operand
-   must be equal to operand 0 and that no register is acceptable.  */
+/* Return the number of alternatives for which the constraint string P
+   indicates that the operand must be equal to operand 0 and that no register
+   is acceptable.  */
 
 static int
-requires_inout_p (p)
+requires_inout (p)
      char *p;
 {
   char c;
   int found_zero = 0;
+  int reg_allowed = 0;
+  int num_matching_alts = 0;
 
   while (c = *p++)
     switch (c)
       {
-      case '0':
-	found_zero = 1;
-	break;
-
       case '=':  case '+':  case '?':
       case '#':  case '&':  case '!':
-      case '*':  case '%':  case ',':
+      case '*':  case '%':
       case '1':  case '2':  case '3':  case '4':
       case 'm':  case '<':  case '>':  case 'V':  case 'o':
       case 'E':  case 'F':  case 'G':  case 'H':
@@ -2298,14 +2315,28 @@ requires_inout_p (p)
 	/* These don't say anything we care about.  */
 	break;
 
+      case ',':
+	if (found_zero && ! reg_allowed)
+	  num_matching_alts++;
+
+	found_zero = reg_allowed = 0;
+	break;
+
+      case '0':
+	found_zero = 1;
+	break;
+
       case 'p':
       case 'g': case 'r':
       default:
-	/* These mean a register is allowed.  Fail if so.  */
-	return 0;
+	reg_allowed = 1;
+	break;
       }
 
-  return found_zero;
+  if (found_zero && ! reg_allowed)
+    num_matching_alts++;
+
+  return num_matching_alts;
 }
 #endif /* REGISTER_CONSTRAINTS */
 
