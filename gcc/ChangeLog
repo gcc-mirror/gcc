@@ -37,6 +37,8 @@
 
 2003-04-30  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* stor-layout.c (mode_for_size_tree): Use BLKmode if SIZE overflows.
+
 	* doc/install.texi (--enable-threads): Document "gnat" option.
 
 2003-04-30  Gabriel Dos Reis <gdr@integrable-solutions.net>
