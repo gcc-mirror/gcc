@@ -1,3 +1,9 @@
+2004-01-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR optimization/13469
+	* toplev.c (rest_of_compilation): Call purge_all_dead_edges after
+	reload_cse_regs (-fnon-call-exceptions only).
+
 2004-01-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/mcore/lib1.asm: Fix comment formatting.

@@ -3388,6 +3388,10 @@ rest_of_compilation (tree decl)
     {
       timevar_push (TV_RELOAD_CSE_REGS);
       reload_cse_regs (insns);
+      /* reload_cse_regs can eliminate potentially-trapping MEMs.
+	 Remove any EH edges associated with them.  */
+      if (flag_non_call_exceptions)
+	purge_all_dead_edges (0);
       timevar_pop (TV_RELOAD_CSE_REGS);
     }
 
