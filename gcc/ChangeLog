@@ -1,3 +1,8 @@
+2003-03-14  Andreas Jaeger  <aj@suse.de>
+
+        * config/i386/linux64.h (CPP_SPEC): Define __LP64__ and _LP64 for 
+	64-bit.
+
 2003-03-12  Richard Henderson  <rth@redhat.com>
 
         PR opt/8178
